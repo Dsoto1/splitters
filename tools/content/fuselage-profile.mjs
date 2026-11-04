@@ -37,6 +37,15 @@ export const OPENINGS = {
   exit: [2.82, 1.28, FLOOR + 0.25, FLOOR + 2.16],
   rear: [-21.7, -23.2, FLOOR, FLOOR + 2.45],
 };
+/**
+ * The collision gap at an opening (z front, z aft): at least 2 m wide round its middle, wider than the painted door,
+ * because the navmesh keeps about 0.8 m off every obstacle and bots need a lane through (players brush the jambs).
+ */
+export const NAV_GAP = 2.0;
+export const navSpan = ([f, a]) => {
+  const [c, h] = [(f + a) / 2, Math.max((f - a) / 2, NAV_GAP / 2)];
+  return [Math.round((c + h) * 1000) / 1000, Math.round((c - h) * 1000) / 1000];
+};
 const AIRLINER = join(ROOT, 'content/props/meshy-owned-airliner.json');
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
@@ -158,6 +167,7 @@ function writeShellCollision(P, I, stations) {
   segs.push([STRAIGHT[1], STRAIGHT[0]]);
   for (let z = STRAIGHT[0]; z > aft + 1e-6; z -= 1.2) segs.push([z, Math.max(aft, z - 1.2)]);
   const doors = Object.values(OPENINGS);
+  const gaps = doors.map((o) => [...navSpan(o), o[2], o[3]]);
   for (const [za, zb] of segs) {
     const rings = body.filter((b) => b.z <= za + 0.3 && b.z >= zb - 0.3);
     if (!rings.length) continue;
@@ -179,7 +189,7 @@ function writeShellCollision(P, I, stations) {
       for (const side of [-1, 1]) {
         // The band less the openings on this side.
         let spans = [[za, zb]];
-        for (const [f, a, sill, head] of doors) {
+        for (const [f, a, sill, head] of gaps) {
           if (head <= y0 || sill >= y1 || a >= za || f <= zb) continue;
           spans = spans.flatMap(([s0, s1]) => (a >= s0 || f <= s1 ? [[s0, s1]] : [...(s0 > f ? [[s0, f]] : []), ...(a > s1 ? [[a, s1]] : [])]));
         }

@@ -20,7 +20,7 @@ import { fileURLToPath } from 'node:url';
 import { NodeIO } from '@gltf-transform/core';
 import { ALL_EXTENSIONS } from '@gltf-transform/extensions';
 import { dedup, prune } from '@gltf-transform/functions';
-import { FLOOR, OPENINGS } from './fuselage-profile.mjs';
+import { FLOOR, OPENINGS, navSpan } from './fuselage-profile.mjs';
 import { Piece, piecesDocument } from './pieces.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
@@ -350,7 +350,7 @@ function fuselage(p, { z0, z1, straight, openings = [], windows = true, glass = 
   };
   if (capFront) capRing(z0, 'skin', 1);
   if (capAft) capRing(z1, 'skin', -1);
-  return fuselageBoxes({ z0, z1, straight, openings });
+  return fuselageBoxes({ z0, z1, straight, openings: openings.map((o) => ({ ...o, z: o.gap ?? o.z })) });
 }
 
 /** Collision for a section (see fuselage), in segments of at most 1.2 m along a taper. */
@@ -401,7 +401,7 @@ function fuselageBoxes({ z0, z1, straight, openings }) {
 // ---------------------------------------------------------------- cabin fittings
 
 /** Seat rows: `n` seats of `w` (cushion) between armrests, facing +Z, the row's front edge at z = +depth/2. */
-function seatRow(p, n, { w = 0.43, arm = 0.05, depth = 0.74, fabric = 'fabric' } = {}) {
+function seatRow(p, n, { w = 0.41, arm = 0.05, depth = 0.74, fabric = 'fabric' } = {}) {
   const width = n * w + (n + 1) * arm;
   const x0 = -width / 2;
   const back = -depth / 2 + 0.1;
@@ -426,20 +426,24 @@ function seatRow(p, n, { w = 0.43, arm = 0.05, depth = 0.74, fabric = 'fabric' }
   return width;
 }
 
-/** A row's collision: one box to the backrest's top, `inset` short of each end where an aisle runs past (bots keep 0.6 m off it). */
+/**
+ * A row's collision: one box to the backrest's top, `inset` short of each end where an aisle runs past. The navmesh
+ * keeps about 0.8 m off obstacles, so a 1.2 m aisle needs 2 m between rows' collision for bots to have a lane: the
+ * aisle seat collides from its inner armrest (players brush into its edge).
+ */
 const rowBox = (width, depth, insetL, insetR, h = 1.12) => [[-width / 2 + insetL, 0, -depth / 2, width / 2 - insetR, h, depth / 2]];
 
 const FITTINGS = {
   ac_economy_triple() {
     const p = piece('ac_economy_triple');
     const w = seatRow(p, 3);
-    return { p, boxes: rowBox(w, 0.74, 0.2, 0.2) };
+    return { p, boxes: rowBox(w, 0.74, 0.4, 0.4) };
   },
   ac_economy_pair() {
     // Window pair: the aisle is at +x as built; turn it 180° for the other side of the cabin (or mirror by rotation).
     const p = piece('ac_economy_pair');
     const w = seatRow(p, 2);
-    return { p, boxes: rowBox(w, 0.74, 0.2, 0.2) };
+    return { p, boxes: rowBox(w, 0.74, 0.4, 0.4) };
   },
   ac_business_seat() {
     // A business recliner in its own shell: wide leather seat, a side console with a reading light, a footrest.
@@ -459,7 +463,7 @@ const FITTINGS = {
     for (const x of [-0.39, 0.17]) p.box('leather', [x - 0.03, 0.36, -0.35], [x + 0.03, 0.62, 0.3]);
     obox(p, 'leather', [-0.11, 0.3, 0.52], [0.44, 0.08, 0.36], { rx: 0.35 });
     p.box('metal', [-0.3, 0.06, -0.2], [0.08, 0.36, 0.2]);
-    return { p, boxes: [[-w / 2 + 0.06, 0, -d / 2, w / 2 - 0.06, 1.12, d / 2 - 0.25]] };
+    return { p, boxes: [[-w / 2 + 0.2, 0, -d / 2, w / 2 - 0.2, 1.12, d / 2 - 0.25]] };
   },
   ac_cockpit_seat() {
     // A pilot's seat: high back with a sheepskin-grey cover, armrests, on a rail.
@@ -481,9 +485,9 @@ const FITTINGS = {
   ac_galley() {
     // A galley block across the cabin's middle: trolley bays, ovens, a worktop and a coffee maker, stainless steel.
     const p = piece('ac_galley');
-    const [w, d, h] = [2.0, 0.9, 2.1];
+    const [w, d, h] = [1.5, 0.9, 2.1];
     p.box('steel', [-w / 2, 0, -d / 2], [w / 2, 0.04, d / 2]);
-    for (let i = 0; i < 4; i++) {
+    for (let i = 0; i < 3; i++) {
       const x = -w / 2 + 0.02 + i * 0.5;
       p.box('steel', [x, 0.04, -d / 2], [x + 0.46, 1.02, d / 2 - 0.04]);
       p.box('dark', [x + 0.03, 0.1, d / 2 - 0.045], [x + 0.43, 0.98, d / 2 - 0.035]);
@@ -491,13 +495,13 @@ const FITTINGS = {
     }
     p.box('steel', [-w / 2, 1.02, -d / 2], [w / 2, 1.06, d / 2]);
     p.box('steel', [-w / 2, 1.06, -d / 2], [w / 2, h, -d / 2 + 0.35]);
-    for (let i = 0; i < 4; i++) {
+    for (let i = 0; i < 3; i++) {
       const x = -w / 2 + 0.05 + i * 0.5;
       p.box('dark', [x, 1.3, -d / 2 + 0.35], [x + 0.4, 1.62, -d / 2 + 0.36]);
       p.box('screenAmber', [x + 0.3, 1.66, -d / 2 + 0.35], [x + 0.38, 1.7, -d / 2 + 0.365]);
       p.box('steel', [x, 1.75, -d / 2 + 0.35], [x + 0.4, 2.05, -d / 2 + 0.36]);
     }
-    p.cylinder('dark', [0.6, 1.06, -0.05], 0.09, 0, 0.3, { seg: 10 });
+    p.cylinder('dark', [0.45, 1.06, -0.05], 0.09, 0, 0.3, { seg: 10 });
     p.box('light', [-w / 2, h - 0.02, -d / 2 + 0.35], [w / 2, h, -d / 2 + 0.4]);
     return { p, boxes: [[-w / 2, 0, -d / 2, w / 2, 1.06, d / 2], [-w / 2, 1.06, -d / 2, w / 2, h, -d / 2 + 0.35]] };
   },
@@ -526,13 +530,13 @@ const FITTINGS = {
     return { p, boxes: [[-w / 2, 0, -0.08, w / 2, 1.24, 0.08]] };
   },
   ac_boarding_stairs() {
-    // A boarding stair truck up to the cabin floor (6.79 m): 27 steps of 0.25 m, a railed platform at the top,
-    // the truck's cab and chassis under the flight. Steps climb toward +Z (the platform's open end meets the door).
+    // A boarding stair truck up to the cabin floor (6.79 m): 27 steps of 0.25 m, 2 m wide, a railed platform at
+    // the top, the truck's cab and chassis under the flight (the cab under the high end). Steps climb toward +Z (the platform's open end meets the door).
     const p = piece('ac_boarding_stairs');
     const n = 27;
     const rise = FLOOR / n;
     const run = 0.45;
-    const w = 1.6;
+    const w = 2.0;
     const flight = n * run;
     const z0 = -flight / 2 - 0.8;
     const boxes = [];
@@ -561,11 +565,12 @@ const FITTINGS = {
     }
     // Chassis, cab and wheels under the flight.
     p.box('white', [-1.1, 0.5, z0 - 0.6], [1.1, 0.9, zt + 1.2]);
-    p.box('white', [-1.1, 0.9, z0 - 0.6], [1.1, 2.6, z0 + 1.4]);
-    p.box('glass', [-1.0, 1.7, z0 - 0.62], [1.0, 2.4, z0 - 0.58]);
+    // The cab under the high end, facing the plane.
+    p.box('white', [-1.1, 0.9, zt - 2.6], [1.1, 2.6, zt - 0.4]);
+    p.box('glass', [-1.0, 1.7, zt - 0.42], [1.0, 2.4, zt - 0.38]);
     p.box('yellow', [-1.12, 0.6, z0 - 0.62], [1.12, 0.75, zt + 1.22]);
     for (const z of [z0 + 0.4, zt - 1.0]) for (const s of [-1, 1]) p.cylinder('rubber', [s * 0.95, 0.42, z], 0.42, -0.14, 0.14, { seg: 14, axis: 'x' });
-    boxes.push([-1.1, 0, z0 - 0.6, 1.1, 2.6, z0 + 1.4]);
+    void boxes;
     return { p, boxes };
   },
 };
@@ -608,7 +613,8 @@ function bins(name, len) {
 
 // ---------------------------------------------------------------- sections
 
-const opening = (side, z, y) => ({ side, z, y });
+// `z` is the opening as drawn (the shell's painted door); its collision gap is at least 2 m wide (navSpan).
+const opening = (side, z, y) => ({ side, z, y, gap: navSpan(z) });
 const both = (z, y) => [opening(1, z, y), opening(-1, z, y)];
 
 const SECTIONS = {
@@ -638,8 +644,8 @@ const SECTIONS = {
   },
   ac_section_nose() {
     // The nose: the flight deck behind the windscreen (instrument panel, glareshield, centre pedestal, overhead
-    // panel; the pilots' seats are fittings), its bulkhead with an open doorway, a forward galley and lavatory, and
-    // the L1/R1 doors with the cross aisle between them.
+    // panel; the pilots' seats are fittings), its bulkhead with an open doorway, and the L1/R1 doors with the forward
+    // cabin between them (room for a galley or lavatory fitting).
     const p = piece('ac_section_nose');
     const z0 = NOSE_END;
     const z1 = NOSE_JOINT;
@@ -653,7 +659,7 @@ const SECTIONS = {
     p.box('dark', [-hp, FLOOR + 1.1, zp - 0.15], [hp, FLOOR + 1.22, zp + 0.4]);
     for (const x of [-1.05, -0.55, 0.0, 0.55, 1.05]) p.box(x === 0 ? 'screenAmber' : 'screen', [x - 0.2, FLOOR + 0.62, zp - 0.005], [x + 0.2, FLOOR + 0.98, zp]);
     // Centre pedestal with throttles.
-    p.box('console', [-0.3, FLOOR, zp - 1.3], [0.3, FLOOR + 0.75, zp]);
+    p.box('console', [-0.3, FLOOR, zp - 0.9], [0.3, FLOOR + 0.75, zp]);
     p.box('screen', [-0.2, FLOOR + 0.75, zp - 0.5], [0.2, FLOOR + 0.76, zp - 0.15]);
     for (const x of [-0.08, 0.08]) obox(p, 'metal', [x, FLOOR + 0.86, zp - 0.75], [0.05, 0.22, 0.05], { rx: 0.3 });
     // Side consoles under the side windows.
@@ -666,28 +672,19 @@ const SECTIONS = {
     const yo = Math.min(CEIL, ring(zo).cy + radiusAt(ring(zo), Math.PI / 2) - SKIN - WALL) - 0.02;
     p.box('console', [-0.45, yo - 0.12, zo - 0.6], [0.45, yo, zo + 0.6]);
     for (let i = 0; i < 6; i++) p.box(i % 2 ? 'screenAmber' : 'sign', [-0.38 + i * 0.13, yo - 0.125, zo - 0.4], [-0.3 + i * 0.13, yo - 0.12, zo - 0.35]);
-    // Flight deck bulkhead with a doorway (0.9 m wide, 2.05 m high) in the middle.
-    const zb = 28.3;
+    // Flight deck bulkhead with a doorway (1.6 m wide, 2.1 m high: bots need the width) in the middle.
+    const zb = 28.0;
     const hb = half(zb, FLOOR + 1.0);
     const tb = Math.min(CEIL, ring(zb).cy + radiusAt(ring(zb), Math.PI / 2) - SKIN - WALL);
-    p.box('panel', [-hb, FLOOR, zb - 0.08], [-0.45, tb, zb + 0.08]);
-    p.box('panel', [0.45, FLOOR, zb - 0.08], [hb, tb, zb + 0.08]);
-    p.box('panel', [-0.45, FLOOR + 2.05, zb - 0.08], [0.45, tb, zb + 0.08]);
-    p.box('trim', [-0.5, FLOOR, zb - 0.09], [-0.45, FLOOR + 2.1, zb + 0.09]);
-    p.box('trim', [0.45, FLOOR, zb - 0.09], [0.5, FLOOR + 2.1, zb + 0.09]);
-    p.box('trim', [-0.5, FLOOR + 2.05, zb - 0.09], [0.5, FLOOR + 2.1, zb + 0.09]);
-    boxes.push([-hb - 0.1, FLOOR, zb - 0.08, -0.45, tb, zb + 0.08], [0.45, FLOOR, zb - 0.08, hb + 0.1, tb, zb + 0.08], [-0.45, FLOOR + 2.05, zb - 0.08, 0.45, tb, zb + 0.08]);
-    boxes.push([-hp, FLOOR, zp, hp, FLOOR + 1.22, zp + 1.2], [-0.3, FLOOR, zp - 1.3, 0.3, FLOOR + 0.75, zp]);
-    // Forward galley (right) and lavatory (left) between the bulkhead and the doors.
-    const zg = 26.85;
-    const hg = half(zg, FLOOR + 1.0);
-    p.box('steel', [0.6, FLOOR, zg - 0.6], [hg, FLOOR + 1.02, zg + 0.6]);
-    p.box('steel', [0.6, FLOOR + 1.02, zg + 0.25], [hg, FLOOR + 2.1, zg + 0.6]);
-    for (let i = 0; i < 3; i++) p.box('dark', [0.7 + i * 0.5, FLOOR + 0.08, zg - 0.605], [1.1 + i * 0.5, FLOOR + 0.95, zg - 0.6]);
-    p.box('panel', [-hg, FLOOR, zg - 0.6], [-0.6, FLOOR + 2.1, zg + 0.6]);
-    p.box('panelLow', [-1.3, FLOOR + 0.06, zg - 0.62], [-0.7, FLOOR + 1.9, zg - 0.6]);
-    p.box('sign', [-1.1, FLOOR + 1.3, zg - 0.625], [-0.9, FLOOR + 1.38, zg - 0.62]);
-    boxes.push([0.6, FLOOR, zg - 0.6, hg + 0.1, FLOOR + 2.1, zg + 0.6], [-hg - 0.1, FLOOR, zg - 0.6, -0.6, FLOOR + 2.1, zg + 0.6]);
+    const dw = 0.8;
+    p.box('panel', [-hb, FLOOR, zb - 0.06], [-dw, tb, zb + 0.06]);
+    p.box('panel', [dw, FLOOR, zb - 0.06], [hb, tb, zb + 0.06]);
+    p.box('panel', [-dw, FLOOR + 2.1, zb - 0.06], [dw, tb, zb + 0.06]);
+    p.box('trim', [-dw - 0.05, FLOOR, zb - 0.07], [-dw, FLOOR + 2.15, zb + 0.07]);
+    p.box('trim', [dw, FLOOR, zb - 0.07], [dw + 0.05, FLOOR + 2.15, zb + 0.07]);
+    p.box('trim', [-dw - 0.05, FLOOR + 2.1, zb - 0.07], [dw + 0.05, FLOOR + 2.15, zb + 0.07]);
+    p.box('sign', [-0.25, FLOOR + 2.17, zb - 0.075], [0.25, FLOOR + 2.25, zb - 0.07]);
+    boxes.push([-hb - 0.1, FLOOR, zb - 0.06, -dw, tb, zb + 0.06], [dw, FLOOR, zb - 0.06, hb + 0.1, tb, zb + 0.06], [-dw, FLOOR + 2.1, zb - 0.06, dw, tb, zb + 0.06]);
     return { p, boxes, at: { z0, z1 } };
   },
   ac_section_tail() {
