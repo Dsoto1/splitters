@@ -858,10 +858,103 @@ character with every clip.
   only the Ranger and Peasant outfits; the other ten are in the paid Source
   editions.
 - NPCs use the plain mannequins in faction colours until faction outfits exist.
-- Creatures use the player-sized hit capsule, so shots just over a puglin or
-  at the top of a scolitex hit or miss as if they were player-sized.
 - The aliens have no walk, attack or death clips of their own (procedural
   motion stands in).
+
+## Hitboxes
+
+Shots are tested against each look's own **hit shapes**, measured from its model (owner, 2026-11-04: exact per-look
+hitboxes, no evening-out within a size class; small or thin looks are harder to hit). `packages/shared/src/sim/hitbox.ts`.
+
+- **The shapes:** a head sphere; a torso capsule squashed across the body (`w`, half its width, against `r`, its
+  depth, so a broad body is wider than deep); a round capsule for each thigh and each shin (with its foot), so the
+  gap between the legs and a stride are not body; and an arm capsule only where an arm sticks out of the rest
+  (mostly the forearms on the gun). Creatures get their own (an alien without legs or a head has none of those).
+- **Zones** come from the shape a ray meets first: head sphere = head (×`head`), thighs and shins = legs (×`legs`),
+  torso and arms = body. No height bands (the old fixed 0.32 m head band was a third of a small look's height).
+- **Stance and size:** standing, crouching and prone each have their own shapes, measured in the pose the game draws
+  (below). They turn with the body's yaw and scale with its size (the size class, or a `size` stat). The game has
+  no lean input; a hunched body's lean (`fixes.lean`, Hyena, Croakley) is in the model, so its shapes have it.
+- **No animation per frame:** the host has no skeletons. The shapes are the clip's first frame, the same everywhere.
+- **Lag compensation** records each body's feet, yaw, stance, scale and shapes; a rewound shot is tested against
+  exactly what was there (`Match.targetsFor`). Bullets in flight rewind less each tick, as before.
+- **Melee** keeps its forgiving reach capsule (`PLAYER.radius` at the body's size): a swing is a sweep. Thrown and
+  launched projectiles (spears, rockets, grenades, discs) are `PROJECTILE_THICKNESS` (0.12 m) thick against bodies.
+  Medkit and ping aim keep their generous capsules.
+- **Bots** aim at the real head (the head sphere's centre) and the middle of the real chest (`bots/aim.ts`).
+- **NPCs:** a creature is hit as drawn (its own shapes in its own metres); an NPC drawn as a character look uses that
+  look's shapes at the role's scale; soldiers the male or female mannequin (as the client picks, by id); zombies the
+  zombie body or the mannequin. A player in a creature skin uses the creature's shapes fitted to a player's height.
+- **Movement collision is unchanged:** the player collider is still the 0.4 m capsule (physics.ts).
+
+**How they are measured** (`tools/content/hitboxes.mjs` → `packages/shared/src/content/hitboxes.generated.ts`;
+`pnpm content:check` fails while it is out of date, `pnpm content:rebuild` rewrites it). Each look's model (a whole
+body, or a part-built look's head, parts and hair; custom designs use their body's mannequin) is posed in Node
+(`tools/content/skinpose.mjs`) as the game draws it, holding a gun: standing `aim_idle`; crouching `crouch_idle` with
+the upper body half `aim_idle` (the animator layers the aim pose over it); prone `prone_idle`. Its vertices are
+grouped by the joint holding them (head, torso, thighs, shins, arms) and fitted: the head sphere holds 80% of the
+head's vertices (ears, horns and brims stick out) and stands no higher than the head; the torso's axis follows its
+own line, and vertices far from the spine (a tail, a cape's hem) are left out. Everything is in metres at a 1.8 m
+body (the game fits every character's rest height to 1.8 m), creatures in their drawn metres.
+
+**Overrides** in the look's manifest (`content/characters/<id>.json`), applied to every stance:
+
+```json
+"hitbox": { "head": { "r": 0.13, "dy": 0.02, "dz": 0.01 }, "torso": { "w": 0.24, "r": 0.15 }, "legs": { "r": 0.08 }, "arms": false }
+```
+
+`head.r`, `torso.w`/`r` and `legs.r` are absolute (m at 1.8 m), `dy`/`dz` move the head, `arms: false` drops them.
+Then `node tools/content/hitboxes.mjs`. None are set yet.
+
+**Seeing them:** Options → Display → **Show hitboxes** (only on a dev server, a test build or a page served from
+this machine), or `?hitboxes=1`: every body's shapes over it in a match (head red, torso yellow, arms green, legs
+blue). The character viewer (`?mode=characters`) has **Hitboxes** and **Stand / Crouch / Prone** buttons
+(`&hitboxes=1`; `window.__charHitboxes(on, stance)`).
+
+**The audit** (`tools/content/test/hitboxes.test.mjs`, in the unit tests): for every look and creature, posed
+standing, the shapes' top within 0.1 m of the model's (a pointed hat may stand 0.12 m over the head), their bottom
+within 0.12 m of its feet, the head sphere's centre within 0.1 m of the drawn head's middle, and at least 85% of
+the model's vertices inside the shapes with 4 cm of slack (creatures 70%). `HITBOX_AUDIT=1` prints every look's
+numbers. The same file checks shots at the drawn heads of a short, a tall and two hunched looks.
+
+**Cost:** a shot against 96 bodies is about 8-12 µs (a bounding-sphere test rejects almost every body; the old
+capsule test was 16-19 µs); `HITBOX_BENCH=1 npx vitest run packages/shared/test/hitboxPerf.test.ts`.
+
+## Character stats
+
+A look may set its own stats in its manifest (`stats`), each optional; one left out is its size class's value, so
+nothing changes until a field is set (`packages/shared/src/sim/characterStats.ts`):
+
+| Stat | Range | Without it | Wired into |
+|---|---|---|---|
+| `health` | 50–200 | size class: 85 / 100 / 115 | health on spawn, the most pickups give |
+| `speed` | 0.8–1.25 | 1.06 / 1 / 0.94 | movement (and now client prediction) |
+| `size` | 0.7–1.3 | 0.78 / 1 / 1.18 | body, collider, eyes and hit shapes (as the class scale) |
+| `damage` | 0.75–1.3 | 1 | damage dealt by everything but melee |
+| `stamina` | 0.5–2 | 1 | sprint stamina drains this many times slower |
+| `jump` | 0.8–1.3 | 1 | jump speed (and a class's double jump) |
+| `melee` | 0.5–2 | 1 | damage dealt by knives, axes, punches and kicks |
+| `armor` | 0–0.4 | 0 | share of incoming damage shrugged off (before armor pickups) |
+
+```json
+"stats": { "health": 120, "speed": 0.95, "armor": 0.1 }
+```
+
+The match setting **Character stats** (On / Off; `MatchRules.characterStats`, setup `stats`, host rule `stats`)
+off ignores every look's own stats: everyone plays their size class (and with Character sizes: All equal, standard).
+Character Select shows a look's stats as bars (each across its range, a mark at standard; green above, amber below)
+while the match setup has stats on. The Workbench's **Characters** collection edits them. The manifests' checker
+keeps its own copy of the ranges (`STAT_RANGES` in character-manifests.mjs; a test keeps them equal). Speed, jump
+and stamina reach the predicting client in the private state (`bs`).
+
+## Random characters
+
+The match setting **Random characters** (Off by default on every map; `MatchRules.randomCharacters`, setup
+`randomChars`, host rule `randomchars`): everyone, people and bots, plays a random look each life, any on the roster
+(`CORE_LOOKS`: playable, not retired; never NPC-only bodies or NPC skins). The pick hashes the match seed, the slot
+and the life (`sim/randomLooks.ts`: the same every replay, never the look just played); the look travels in the
+`spawn` event (and the roster for anyone joining later), and its size, stats and hit shapes go with it. Off again,
+each plays their own choice from their next life. It works with Character stats on or off.
 
 ## Character sizes
 
@@ -875,10 +968,10 @@ Body tab). Presets: Sprout is small, Bulwark is large, everyone else standard.
 | Standard | 1.80 m | × 1 | 100 |
 | Large | × 1.18 (2.12 m tall) | × 0.94 | 115 |
 
-The body size is the hit box and the collision capsule, so small characters
+The body size scales the hit shapes (see Hitboxes) and the collision capsule, so small characters
 are harder to hit and fit through gaps others must crouch for (a 1.6 m
 ceiling, a low window), and large ones are easier to hit and must crouch
-under openings a little over 2 m. Health pickups fill up to the size's
+under openings a little over 2 m. A look's own `size` stat (Character stats) replaces its class's scale. Health pickups fill up to the size's
 health. The match setting **Character sizes: Matter / All equal**
 (`MatchRules.bodySizes`) makes everyone play and look standard.
 Character Select and the Character Designer draw each look at its size too (a small look at 1.40 m, a large one at

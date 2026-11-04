@@ -81,8 +81,9 @@ describe('bots shoot only along a clear line', () => {
     const r = behindWall(1.3, { look });
     const msg = JSON.stringify(r);
     // Before: the bot aimed at the chest (hidden) and fired anyway: 92 of 93 rounds went into the wall, 1 hit.
-    // Now (when written): 37 rounds, 34 hits, 3 short.
-    expect(r.rounds, msg).toBeGreaterThan(20);
+    // Now (when written): 37 rounds, 34 hits, 3 short. Measured hit shapes (2026-11-04: the bot aims at the real head,
+    // a smaller mark than the old capsule's top): 19-21 rounds, all but a few hits, none short (it was 29-30).
+    expect(r.rounds, msg).toBeGreaterThan(14);
     expect(r.short / r.rounds, msg).toBeLessThan(0.15);
     expect(r.hits / r.rounds, msg).toBeGreaterThan(0.6);
     expect(r.blocked, msg).toBeGreaterThan(0);

@@ -54,7 +54,8 @@ const rules: MatchRules = { ...DEFAULT_DEATHMATCH_RULES, respawnDelayTicks: 100_
 const still = { run: 0, airborne: false, stance: 1 };
 const running = { run: 1, airborne: false, stance: 1 };
 const eye = (p: { x: number; y: number; z: number }) => ({ x: p.x, y: p.y + PLAYER.eyeHeight, z: p.z });
-const chest = (p: { x: number; y: number; z: number }) => ({ x: p.x, y: p.y + 1.1, z: p.z });
+// The middle of the chest of a standing 1.8 m body (the measured torso runs from the belt to the shoulders).
+const chest = (p: { x: number; y: number; z: number }) => ({ x: p.x, y: p.y + 1.25, z: p.z });
 const head = (p: { x: number; y: number; z: number }) => ({ x: p.x, y: p.y + PLAYER.height - 0.12, z: p.z });
 
 function deck(extra: MapEntity[] = []): MapDocument {
@@ -79,6 +80,8 @@ function setup(weapon: string, targets: [number, number, number][], extra: MapEn
   const others = targets.map((_, i) => match.addHuman(`t${i}`)!);
   a.move = { pos: { x: 0, y: 0, z: 0 }, velY: 0, grounded: true };
   targets.forEach((t, i) => (others[i]!.move = { pos: { x: t[0], y: t[1], z: t[2] }, velY: 0, grounded: true }));
+  // Facing the shooter, as in a duel (hit shapes are the measured body, sim/hitbox.ts: narrower side-on).
+  for (const o of others) o.yaw = Math.atan2(a.move.pos.x - o.move.pos.x, a.move.pos.z - o.move.pos.z);
   give(a, weapon);
   let seq = 0;
   const step = (i: Partial<PlayerInput> = {}): GameEvent[] => {

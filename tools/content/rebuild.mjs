@@ -11,6 +11,7 @@
 //              tools/content/weapons.mjs             weapons.generated.ts, weaponFamilies.generated.ts, codes.lock.json
 //              tools/content/vehicles.mjs            mounts.generated.ts from content/vehicles/*.json
 //              tools/content/npcs.mjs                npcRoles.generated.ts and codes.lock.json (npcRoles) from content/npcs.json
+//              tools/content/hitboxes.mjs            hitboxes.generated.ts: hit shapes measured from the character and creature models
 //              tools/content/pickups.mjs             pickups.generated.ts from content/pickups.json
 //              tools/content/materials.mjs           materials.generated.ts from content/materials.json
 //   3. atlas   tools/content/build-palette-atlas.mjs --offline: the palette atlases from the pictures
@@ -62,7 +63,7 @@ if (byHand.length) {
 step('locks');
 node('tools/content/lockfile.mjs');
 
-step('tables: props, characters, weapons, vehicles, NPC roles, pickups and materials');
+step('tables: props, characters, weapons, vehicles, NPC roles, pickups, materials and hit shapes');
 node('tools/content/prepare-props.mjs');
 node('tools/content/character-manifests.mjs');
 node('tools/content/weapons.mjs');
@@ -70,6 +71,8 @@ node('tools/content/vehicles.mjs');
 node('tools/content/npcs.mjs');
 node('tools/content/pickups.mjs');
 node('tools/content/materials.mjs');
+// Hit shapes measured from the character models (after the looks: it reads them).
+node('tools/content/hitboxes.mjs');
 
 step('palette atlas');
 let pending = all;

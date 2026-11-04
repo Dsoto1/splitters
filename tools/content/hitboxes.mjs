@@ -35,9 +35,16 @@ export const STAND = 1.8;
 export const POSES = { stand: 'aim_idle', crouch: 'crouch_idle', prone: 'prone_idle' };
 /**
  * Joints the game's aim pose holds over the locomotion clips (characterAnimator.ts UPPER_BODY): crouching with a gun
- * the upper body is drawn half from crouch_idle and half from aim_idle (two clips at weight 1), so it is more upright.
+ * the hips and legs are crouch_idle's, the chest, neck, head and arms the aim pose's (the clips blend both on the upper
+ * body, and the hold then levels the gun at the eye: drawn, the chest is upright with the gun at the shoulder).
  */
-const UPPER_BODY = new Set(['spine_02', 'spine_03', 'neck_01', 'Head', ...['l', 'r'].flatMap((s) => [`clavicle_${s}`, `upperarm_${s}`, `lowerarm_${s}`, `hand_${s}`, ...['index', 'middle', 'pinky', 'ring', 'thumb'].flatMap((f) => [1, 2, 3].map((j) => `${f}_0${j}_${s}`))])]);
+const UPPER_SPINE = new Set(['spine_02', 'spine_03', 'neck_01', 'Head']);
+/**
+ * How much of the aim pose the crouched chest takes: the clips alone would blend half and half, but the hold keeps the
+ * gun level at the eye and the drawn chest is upright (checked against the character viewer's Crouch, 2026-11-04).
+ */
+const CROUCH_AIM = 1;
+const ARMS = new Set(['l', 'r'].flatMap((s) => [`clavicle_${s}`, `upperarm_${s}`, `lowerarm_${s}`, `hand_${s}`, ...['index', 'middle', 'pinky', 'ring', 'thumb'].flatMap((f) => [1, 2, 3].map((j) => `${f}_0${j}_${s}`))]));
 /** Torso vertices further than this many times the median from the spine line are not body (tails, capes' hems). */
 const SPINE_REACH = 2.4;
 /** Arms are kept when at least this share of their vertices lies outside the head, torso and legs (by ARM_SLACK m). */
@@ -181,7 +188,9 @@ function regions(verts, parents, k, lift = 0) {
 /** Fit one pose's shapes. `arms`: true / false forces them (manifest override), undefined decides by ARM_SHARE. */
 export function fitPose(reg, arms, spine = []) {
   const s = { head: null, torso: null, legs: [], arms: [] };
-  // The torso is what lies round the spine: a tail or a long cape's hem held by the hips is left out.
+  // The torso is what lies round the spine: a tail or a long cape's hem held by the hips is left out. A body with no
+  // legs (a robot on a ball) goes down to the ground under its hips.
+  if (spine.length >= 2 && reg.thigh.length + reg.shin.length < 16) spine = [[spine[0][0], 0, spine[0][2]], ...spine];
   if (spine.length >= 2 && reg.torso.length >= 16) {
     const dist = (p) => {
       let d = Infinity;
@@ -268,7 +277,9 @@ function stanceFrame(rig, d, stance, clipsFrom) {
   const out = new Map(frame);
   for (const [name, e] of frame) {
     const a = aim.get(name);
-    if (UPPER_BODY.has(name) && e.rotation && a?.rotation) out.set(name, { ...e, rotation: halfway(e.rotation, a.rotation) });
+    if (!e.rotation || !a?.rotation) continue;
+    if (UPPER_SPINE.has(name)) out.set(name, { ...e, rotation: CROUCH_AIM >= 1 ? a.rotation : halfway(e.rotation, a.rotation) });
+    else if (ARMS.has(name)) out.set(name, { ...e, rotation: a.rotation });
   }
   return out;
 }

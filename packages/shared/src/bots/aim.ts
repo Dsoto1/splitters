@@ -55,6 +55,13 @@ export interface AimTarget {
   bodyStance?: Stance;
 }
 
+/**
+ * The difficulties' aim errors (BOT_DIFFICULTIES) were tuned against the old 0.8 m-wide body capsule; the measured
+ * bodies (sim/hitbox.ts) are about half as wide across the chest. Their errors shrink with the bodies so each
+ * difficulty keeps its human-like hit rates (botai.test.ts).
+ */
+export const BODY_AIM = 0.5;
+
 /** Scratch body for aim points (at the origin: offsets from the feet). */
 const aimBody: HitBody = { feet: { x: 0, y: 0, z: 0 }, yaw: 0, stance: 0, scale: 1, box: null as unknown as LookHitbox };
 
@@ -163,7 +170,7 @@ export class AimModel {
       this.trackSlot = target.slot;
       this.acquiredTick = ctx.tick;
       this.histCount = 0;
-      const e = skill.acquireRad * this.accuracyScale * (0.7 + 0.6 * this.rng());
+      const e = skill.acquireRad * this.accuracyScale * BODY_AIM * (0.7 + 0.6 * this.rng());
       const a = this.rng() * Math.PI * 2;
       this.errYaw = Math.cos(a) * e;
       this.errPitch = Math.sin(a) * e * 0.5;
@@ -222,7 +229,7 @@ export class AimModel {
     const stanceF = ctx.stance === 2 ? 0.62 : ctx.stance === 1 ? 0.8 : 1;
     const targetF = 1 + Math.min(2, omega * 1.6);
     const steadyF = ctx.steady ? 0.75 : 1;
-    return skill.settledRad * this.accuracyScale * distF * moveF * stanceF * targetF * steadyF;
+    return skill.settledRad * this.accuracyScale * BODY_AIM * distF * moveF * stanceF * targetF * steadyF;
   }
 
   /**
@@ -256,7 +263,10 @@ export class AimModel {
       aimBody.scale = (target.hitScale ?? 1) * size;
       aimBody.box = box;
       const s = shapesFor(box, aimBody.stance);
-      const p = this.head || !s.torso ? headPoint(aimBody) : ctx.tick < this.highUntil ? bodyToWorld(aimBody, s.torso.x, s.torso.b[0], s.torso.b[1]) : bodyToWorld(aimBody, s.torso.x, (s.torso.a[0] + s.torso.b[0]) / 2, (s.torso.a[1] + s.torso.b[1]) / 2);
+      // Over low cover only the head and shoulders show: the bottom of the head, where they meet.
+      const high = ctx.tick < this.highUntil;
+      const p = this.head || high || !s.torso ? headPoint(aimBody) : bodyToWorld(aimBody, s.torso.x, (s.torso.a[0] + s.torso.b[0]) / 2, (s.torso.a[1] + s.torso.b[1]) / 2);
+      if (high && !this.head && s.head) p.y -= s.head.r * 0.5 * aimBody.scale;
       ox = p.x;
       up = p.y;
       oz = p.z;

@@ -608,8 +608,9 @@ else {
   console.log(`checked ${pieces.length} palette pictures in ${names.length} atlases (${(atlasBytes / 1024).toFixed(0)} KB, index ${(indexBytes / 1024).toFixed(0)} KB)`);
 }
 
-// The data tables (weapons, vehicles, NPC roles, pickups, materials): their content checks, and the generated files and codes lock up to date.
-for (const gen of ['weapons', 'vehicles', 'npcs', 'pickups', 'materials']) {
+// The data tables (weapons, vehicles, NPC roles, pickups, materials) and the measured hit shapes (hitboxes): their
+// content checks, and the generated files and codes lock up to date.
+for (const gen of ['weapons', 'vehicles', 'npcs', 'pickups', 'materials', 'hitboxes']) {
   if (!check) break;
   try {
     execFileSync(process.execPath, [join(ROOT, `tools/content/${gen}.mjs`), '--check'], { cwd: ROOT, stdio: 'inherit' });

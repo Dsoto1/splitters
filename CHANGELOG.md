@@ -8,6 +8,12 @@ made only on a commit that passed CI on a check branch.
 
 ## Unreleased
 
+**Hitboxes, character stats and random characters**
+- **Every character is hit where it is drawn**: shots test each look's own head sphere, torso, thighs, shins and (where they stick out) arms, measured from its model standing, crouching and prone, instead of one 0.8 m-wide capsule for everyone. A head shot is the head sphere (no fixed 0.32 m head band, a third of a small character's height), legs are the leg shapes; small and thin characters are harder to hit, broad ones easier. Lag compensation, bullets in flight, rockets, spears and sentries use the same shapes; melee keeps its forgiving reach. Bots aim at the real head and chest. Creatures are hit as drawn (no more player-sized capsule on a puglin or a scolitex). docs/CHARACTERS.md, "Hitboxes".
+- **Show hitboxes** (Options → Display, on a dev server or a test build; or `?hitboxes=1`), and Hitboxes, Crouch and Prone buttons in the character viewer: every body's shapes over it.
+- **Character stats**: a character may have its own health, speed, size, damage, stamina, jump, melee strength and armor (`stats` in its manifest; the Workbench's new Characters collection). One without them plays its size, so nothing has changed yet. Character Select shows them as bars. New match setting **Character stats** (On / Off), in match setup and the host rules.
+- **Random characters**: a new match setting (Off by default): everyone, players and bots, plays a random character from the roster each life.
+
 **Performance tools and big-match fixes**
 - **The F3 overlay splits each frame by system**: rendering (main pass, shadow maps, post-processing), characters (animation, skinning), effects, ragdolls, prop flames, HUD and network, with how many characters were animated and skinned, ragdolls awake and lasting effects drawn. Copy performance report includes the same split.
 - **Record performance** (Pause → Settings): records a whole match, each second's split plus a snapshot of every hitch (where you were, what was in view, your settings, the server's tick), and downloads it as a file when you stop. `tools/perf/compare.mjs` summarises one recording or compares two. Nothing is uploaded.
