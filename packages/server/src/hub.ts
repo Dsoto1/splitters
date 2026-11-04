@@ -7,7 +7,7 @@ import { createBroker } from './broker.ts';
 import { iceFromEnv } from './ice.ts';
 import { discoverLan, lanInterfaces } from './lan.ts';
 import { LobbyStore, lobbyHandler } from './lobby.ts';
-import { PublishedMaps, publishHandler } from './publish.ts';
+import { PublishedMaps, noPublishingHandler, publishHandler } from './publish.ts';
 import { ProfileStore, profileHandler } from './profiles.ts';
 import { siteHandler } from './site.ts';
 import { TicketSigner } from './tickets.ts';
@@ -61,7 +61,7 @@ const account = accountHandler(cognito, proxied, jwks, tickets, (sub) => profile
 // Published maps (publish.ts): the owner's MapMaker publishes; everyone reads.
 const owners = new Set((process.env.OWNER_SUBS ?? '').split(/[\s,]+/).filter(Boolean));
 const published = process.env.PUBLISHED_MAPS_DIR ? new PublishedMaps(process.env.PUBLISHED_MAPS_DIR, builtIn, suite) : null;
-const publish = published ? publishHandler(published, { owners, trustProxy: proxied, verify: cognito && jwks ? (t) => verifyCognitoToken(t, cognito, jwks) : null }) : (_req: unknown, _res: unknown, next: () => void) => next();
+const publish = published ? publishHandler(published, { owners, trustProxy: proxied, verify: cognito && jwks ? (t) => verifyCognitoToken(t, cognito, jwks) : null }) : noPublishingHandler();
 const profile = profiles ? profileHandler(profiles, { trustProxy: proxied, verify: cognito && jwks ? (t) => verifyCognitoToken(t, cognito, jwks) : null }) : (_req: unknown, _res: unknown, next: () => void) => next();
 // The page's sign-in settings (auth.ts authConfigScript): served, never compiled into the site.
 const authConfig = authConfigScript(cognito);

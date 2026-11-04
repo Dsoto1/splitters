@@ -7,7 +7,7 @@ import { gzipSync } from 'node:zlib';
 import { afterEach, describe, expect, it } from 'vitest';
 import { loadMap, serializeMap } from '@tiletrigger/shared';
 import { TokenError, type VerifiedUser } from '../src/auth.ts';
-import { PublishedMaps, publishHandler } from '../src/publish.ts';
+import { PublishedMaps, noPublishingHandler, publishHandler } from '../src/publish.ts';
 
 const cleanup: (() => void)[] = [];
 afterEach(() => {
@@ -78,6 +78,21 @@ describe('published maps', () => {
 });
 
 describe('publishing over HTTP', () => {
+  it("a hub that doesn't publish lists no maps (not a 404 on every page) and has nothing else", async () => {
+    const handler = noPublishingHandler();
+    const http: Server = createServer((req, res) => handler(req, res, () => ((res.statusCode = 404), res.end('next'))));
+    await new Promise<void>((r) => http.listen(0, '127.0.0.1', r));
+    cleanup.push(() => http.close());
+    const base = `http://127.0.0.1:${(http.address() as AddressInfo).port}/api/v1`;
+    const list = await fetch(`${base}/maps`);
+    expect(list.status).toBe(200);
+    expect(list.headers.get('access-control-allow-origin')).toBe('*');
+    expect(await list.json()).toEqual({ maps: [] });
+    expect((await fetch(`${base}/maps/frost_basin`)).status).toBe(404);
+    expect((await fetch(`${base}/maps/frost_basin`, { method: 'PUT', body: '{}' })).status).toBe(404);
+    expect((await fetch(`${base}/owner`)).status).toBe(404);
+  });
+
   async function serve(owners: string[]) {
     const store = new PublishedMaps(temp(), BUILT_IN, new Set(BUILT_IN));
     const verify = async (token: string): Promise<VerifiedUser> => {
