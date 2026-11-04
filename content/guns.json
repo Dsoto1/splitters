@@ -504,9 +504,11 @@
       "label": "Snowmobile by roygbpjyt (Meshy Community, CC0, downloaded 2026-11-04): the Snow Sled",
       "forward": "-x",
       "length": 3.0,
-      "triangles": 18000,
-      "maxError": 0.05,
+      "triangles": 20000,
+      "maxError": 0.02,
       "surface": "rebake",
+      "metalDarken": 0.3,
+      "roughness": 0.5,
       "textureSize": 2048,
       "budget": "vehicle",
       "lod": [

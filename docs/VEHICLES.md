@@ -61,8 +61,8 @@ and Car Kit, a Meshy Community snowmobile, Quaternius' Ultimate Spaceships and T
   the hover bike (speeder A), gunship (cargo craft B) and transport plane
   (cargo craft A) are from Kenney Space Kit. The snow sled is "Snowmobile" by
   roygbpjyt (Meshy Community, CC0; `content/guns.json`, built by
-  `prepare-guns.mjs`: 18k triangles plus a 4.5k one from 40 m, 2048 px colour
-  and 1024 px normal map, 1.35 MB, 3.0 m long), replacing Kenney Holiday Kit's
+  `prepare-guns.mjs`: 20k triangles plus a 5k one from 40 m, 2048 px colour
+  and 1024 px normal map, 1.42 MB, 3.0 m long), replacing Kenney Holiday Kit's
   long sled on 2026-11-04; its riders sit astride (`straddle` on the seats). The tank is Quaternius' Tank Pack (CC0) desert tank. The speeder (Striker), hauler (Dispatcher), skyfighter
   (Spitfire) and dropship (Imperial) are from Quaternius' Ultimate
   Spaceships (CC0), trimmed by `tools/content/prepare-ships.mjs`.

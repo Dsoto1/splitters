@@ -95,7 +95,7 @@ folder can sit directly in it or one level down), and run:
 | Meshy community pickup and prop downloads of 2026-11-03 (CC0 per owner; `medical_supply.glb`, `ammo_rifle.glb`, `ww2_ammo_crate.glb` in the folder `drive-2026-11-03-pickups`) | `ONLY=pickups/health_large.glb,pickups/ammo_rifle.glb node tools/content/prepare-guns.mjs --downloads <dir>/drive-2026-11-03-pickups`; `ONLY=ww2_ammo_crate node tools/content/prepare-props.mjs --downloads <dir>` (then `build-palette-atlas.mjs`) | `public/models/pickups/{health_large,ammo_rifle}.glb` (pack `meshy-community-pickups`, drawn by `game/pickupVisuals.ts`; pickup models sit in guns.json like the medkit and keep to the small-prop budget, as a map carries many) and `props/ww2_ammo_crate.glb` (pack `meshy-community-drive-1103`) |
 | The owner's Meshy landmark props of 2026-10-31 (textured GLBs, named in each entry's `src`; the monk statue is the `_stylize.glb` from its zip), all in one folder named `owned_landmarks` | `node tools/content/prepare-props.mjs --downloads <dir>` (`ONLY=<id>,…` for some) | pack `meshy-owned-landmarks`: market stalls (`dc_market_stall`, `mv_market_stall`, `rustic_market_stall`), the wishing well (`dc_well` and `mv_well`, one download), the crawler crane `dc_crane`, statues (`jt_statue_large`, `temple_fire_statue`, `temple_spear_statue`, `temple_monk_statue`) and fountains (`town_fountain`, `lion_head_fountain`, `eagle_fountain`); all hero tier |
 | The owner's Meshy airliner of 2026-11-04 (the refined GLB in a folder `airliner-2026-11-04/refined/airliner.glb`; preview task 01a1a451-1dda-77ed-82ec-810c24ac1e9a, refine 01a1a451-ee8d-72d3-99ea-48063cd52abe) | `node tools/content/fuselage-profile.mjs <dir>` (its cross-section for the cabin kit, `assets-src/tiletrigger-cabin/fuselage.json`, and its collision and openings, written into its pack file), then `ONLY=airliner_shell node tools/content/prepare-props.mjs --downloads <dir>` | `props/airliner_shell.glb` (pack `meshy-owned-airliner`, hero tier: 19.7k triangles, a 6.1k one from 120 m, 1.38 MB) |
-| "Snowmobile" by roygbpjyt (Meshy Community, CC0: Meshy Terms of Use §3.3 "Community License"; the textured GLB `snowmobile.glb` in a folder `snowmobile-cc0-2026-11-04`) | `ONLY=vehicles/snowmobile.glb node tools/content/prepare-guns.mjs --downloads <dir>` | `public/models/vehicles/snowmobile.glb` (pack `meshy-community-snowmobile`, vehicle tier: 18k triangles plus a 4.5k one from 40 m, 2048 px colour and 1024 px normal map, 1.35 MB), the Snow Sled's model |
+| "Snowmobile" by roygbpjyt (Meshy Community, CC0: Meshy Terms of Use §3.3 "Community License"; the textured GLB `snowmobile.glb` in a folder `snowmobile-cc0-2026-11-04`) | `ONLY=vehicles/snowmobile.glb node tools/content/prepare-guns.mjs --downloads <dir>` | `public/models/vehicles/snowmobile.glb` (pack `meshy-community-snowmobile`, vehicle tier: 20k triangles plus a 5k one from 40 m, 2048 px colour and 1024 px normal map, 1.42 MB), the Snow Sled's model |
 | Styloo Guns Asset Pack (`Styloo Guns Asset Pack GLTF FBX V1.1`), CC0 Guns & Explosives Pack (the rar's `Guns&Explosives` folder) | `node tools/content/prepare-guns.mjs --downloads <dir>` | `public/models/guns`, `content/guns.lock.json` (see `content/guns.json`) |
 
 Locomotion clips (walk, run, sprint) come from Library 1: the Standard edition
@@ -136,7 +136,11 @@ Props take `paintOut` too (the guns' colour rules); a rule with `within` (boxes 
 the built prop's frame) only touches the texels of the download's triangles
 inside them (the airliner's nacelle lettering, not its windows of the same
 grey), and the download's normal map goes flat under everything painted out,
-or its relief would draw the marking again. `bakeSize` sets the rebake's map
+or its relief would draw the marking again. A GLB download's metal/roughness map is dropped (the built
+material is matte); `metalDarken: k` (prepare-guns.mjs) first folds its bare metal into the colour map, darkened
+toward `k` (the snowmobile's ski struts and springs: grey in the colour map, dark steel only through the metal
+channel), and `roughness` sets the built material's (default 0.85; the snowmobile's 0.5 keeps its glossy paint's
+sheen). `bakeSize` sets the rebake's map
 (px, default 1024) before `textureSize` shrinks it.
 
 **Openings and box collision (any prop).** `cut` lists boxes
