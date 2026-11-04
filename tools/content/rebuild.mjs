@@ -11,6 +11,7 @@
 //              tools/content/weapons.mjs             weapons.generated.ts, weaponFamilies.generated.ts, codes.lock.json
 //              tools/content/vehicles.mjs            mounts.generated.ts from content/vehicles/*.json
 //              tools/content/npcs.mjs                npcRoles.generated.ts and codes.lock.json (npcRoles) from content/npcs.json
+//              tools/content/pickups.mjs             pickups.generated.ts from content/pickups.json
 //   3. atlas   tools/content/build-palette-atlas.mjs --offline: the palette atlases from the pictures
 //                                                     already made (any old atlas, either side of a conflict)
 //      only when a piece has no picture yet (new or changed model):
@@ -60,12 +61,13 @@ if (byHand.length) {
 step('locks');
 node('tools/content/lockfile.mjs');
 
-step('tables: props, characters, weapons, vehicles and NPC roles');
+step('tables: props, characters, weapons, vehicles, NPC roles and pickups');
 node('tools/content/prepare-props.mjs');
 node('tools/content/character-manifests.mjs');
 node('tools/content/weapons.mjs');
 node('tools/content/vehicles.mjs');
 node('tools/content/npcs.mjs');
+node('tools/content/pickups.mjs');
 
 step('palette atlas');
 let pending = all;

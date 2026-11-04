@@ -30,6 +30,7 @@
     "content:weapons": "node tools/content/weapons.mjs",
     "content:vehicles": "node tools/content/vehicles.mjs",
     "content:npcs": "node tools/content/npcs.mjs",
+    "content:pickups": "node tools/content/pickups.mjs",
     "dev:hub": "pnpm --filter @tiletrigger/server hub",
     "host": "pnpm --silent --filter @tiletrigger/host start",
     "host:package": "pnpm --filter @tiletrigger/host package --",

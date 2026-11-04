@@ -206,6 +206,47 @@
         { "path": "bot.tags", "label": "Bot: behaviour tags (docs/BOTS.md)", "type": "list", "edit": true },
         { "path": "notes.design", "label": "Design notes", "type": "longtext", "edit": true }
       ]
+    },
+    {
+      "id": "pickups",
+      "label": "Pickups",
+      "files": "content/pickups.json",
+      "items": "pickups",
+      "key": "id",
+      "title": "displayName",
+      "subtitle": "effect.kind",
+      "filters": ["effect.kind"],
+      "fields": [
+        { "path": "id", "label": "Id (maps name it; never changes)", "type": "text" },
+        { "path": "effect.kind", "label": "Kind", "type": "text" },
+        { "path": "displayName", "label": "Name (empty: the weapon's name, or the disc power's)", "type": "text", "edit": true },
+        { "path": "respawnSeconds", "label": "Respawn (s; a placed pickup can override it)", "type": "number", "edit": true },
+        { "path": "botValue", "label": "Bot value (0-1; empty on a weapon pickup: 0.55 + respawn / 120, at most 0.9)", "type": "number", "edit": true },
+        { "path": "effect.amount", "label": "Health / armor: amount", "type": "number", "edit": true },
+        { "path": "effect.ammo", "label": "Ammo: ammo type (empty: every owned weapon, half a pickup each)", "type": "text", "edit": true },
+        { "path": "effect.throwable", "label": "Throwable: kind (content/throwables.json)", "type": "text", "edit": true },
+        { "path": "effect.count", "label": "Throwable: count", "type": "number", "edit": true },
+        { "path": "effect.weapon", "label": "Weapon: weapon id (a carried one; the pickup id is core.weapon_<name>)", "type": "text" },
+        { "path": "effect.powerup", "label": "Powerup: speed or damage", "type": "text", "edit": true },
+        { "path": "effect.seconds", "label": "Powerup / UAV: lasts (s)", "type": "number", "edit": true },
+        { "path": "effect.power", "label": "Disc power", "type": "text" },
+        { "path": "notes.design", "label": "Design notes", "type": "longtext", "edit": true }
+      ]
+    },
+    {
+      "id": "pickup-rules",
+      "label": "Pickup rules",
+      "files": "content/pickups.json",
+      "items": "rules",
+      "key": "$key",
+      "title": "$key",
+      "fields": [
+        { "path": "radius", "label": "Pickup reach (m)", "type": "number", "edit": true },
+        { "path": "max", "label": "Armor: most a player carries", "type": "number", "edit": true },
+        { "path": "absorb", "label": "Armor: share of damage it takes while any is left (0-1)", "type": "number", "edit": true },
+        { "path": "speedBoost", "label": "Speed Boost: speed multiple", "type": "number", "edit": true },
+        { "path": "damageBoost", "label": "Double Damage: damage multiple", "type": "number", "edit": true }
+      ]
     }
   ]
 }
