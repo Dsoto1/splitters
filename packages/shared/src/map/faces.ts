@@ -333,14 +333,261 @@ function fragmentBox(m: FrameBox, f: Fragment): { min: Vec3; max: Vec3 } {
   return { min, max };
 }
 
+// ---------------------------------------------------------------- planes shared across frames
+
+type P2 = [number, number];
+
+/** A plane in world space with a 2D basis on it: world = n·d + u·x + v·y. */
+interface Plane {
+  n: Vec3;
+  d: number;
+  u: Vec3;
+  v: Vec3;
+}
+
+const dot = (a: readonly number[], b: readonly number[]) => a[0]! * b[0]! + a[1]! * b[1]! + a[2]! * b[2]!;
+
+/** The plane of a face with this normal through point p. Horizontal planes use x and z as they are. */
+function planeOf(n: Vec3, p: readonly number[]): Plane {
+  const d = dot(n, p);
+  if (Math.abs(n[1]) > 1 - 1e-9) return { n, d, u: [1, 0, 0], v: [0, 0, 1] };
+  const a: Vec3 = Math.abs(n[0]) < 0.9 ? [1, 0, 0] : [0, 1, 0];
+  const u0: Vec3 = [n[1] * a[2] - n[2] * a[1], n[2] * a[0] - n[0] * a[2], n[0] * a[1] - n[1] * a[0]];
+  const l = Math.hypot(...u0);
+  const u: Vec3 = [u0[0] / l, u0[1] / l, u0[2] / l];
+  const v: Vec3 = [n[1] * u[2] - n[2] * u[1], n[2] * u[0] - n[0] * u[2], n[0] * u[1] - n[1] * u[0]];
+  return { n, d, u, v };
+}
+
+const to2 = (pl: Plane, p: readonly number[]): P2 => [dot(pl.u, p), dot(pl.v, p)];
+function to3(pl: Plane, q: P2): Vec3 {
+  if (pl.u[0] === 1 && pl.v[2] === 1) return [q[0], pl.d * pl.n[1], q[1]];
+  return [0, 1, 2].map((k) => pl.n[k]! * pl.d + pl.u[k]! * q[0] + pl.v[k]! * q[1]) as Vec3;
+}
+
+const area2 = (p: readonly P2[]) => {
+  let s = 0;
+  for (let i = 0; i < p.length; i++) {
+    const a = p[i]!;
+    const b = p[(i + 1) % p.length]!;
+    s += a[0] * b[1] - b[0] * a[1];
+  }
+  return s / 2;
+};
+
+/** The part of a convex polygon on the left of a→b (side +1) or the right (side -1); points on the line count. */
+function halfPlane(poly: readonly P2[], a: P2, b: P2, side: 1 | -1): P2[] {
+  const out: P2[] = [];
+  const f = (p: P2) => side * ((b[0] - a[0]) * (p[1] - a[1]) - (b[1] - a[1]) * (p[0] - a[0]));
+  for (let i = 0; i < poly.length; i++) {
+    const p = poly[i]!;
+    const q = poly[(i + 1) % poly.length]!;
+    const fp = f(p);
+    const fq = f(q);
+    if (fp >= -1e-12) out.push(p);
+    if ((fp > 1e-12 && fq < -1e-12) || (fp < -1e-12 && fq > 1e-12)) {
+      const t = fp / (fp - fq);
+      out.push([p[0] + (q[0] - p[0]) * t, p[1] + (q[1] - p[1]) * t]);
+    }
+  }
+  return out;
+}
+
+const ccw = (p: P2[]): P2[] => (area2(p) < 0 ? [...p].reverse() : p);
+
+/** Convex `a` ∩ convex `b`. */
+function intersect(a: readonly P2[], b: readonly P2[]): P2[] {
+  const c = ccw([...b]);
+  let out: P2[] = [...a];
+  for (let i = 0; i < c.length && out.length >= 3; i++) out = halfPlane(out, c[i]!, c[(i + 1) % c.length]!, 1);
+  return out;
+}
+
+/** Convex `a` minus convex `b`, as convex pieces (in a's winding). */
+function subtractConvex(a: readonly P2[], b: readonly P2[]): P2[][] {
+  const c = ccw([...b]);
+  const pieces: P2[][] = [];
+  let rest: P2[] = [...a];
+  for (let i = 0; i < c.length && rest.length >= 3; i++) {
+    const out = halfPlane(rest, c[i]!, c[(i + 1) % c.length]!, -1);
+    if (out.length >= 3 && Math.abs(area2(out)) > 1e-9) pieces.push(out);
+    rest = halfPlane(rest, c[i]!, c[(i + 1) % c.length]!, 1);
+  }
+  return pieces;
+}
+
+/** A convex polygon with every edge moved `by` inward. */
+function shrink(poly: readonly P2[], by: number): P2[] {
+  const p = ccw([...poly]);
+  const lines = p.map((a, i) => {
+    const b = p[(i + 1) % p.length]!;
+    const l = Math.hypot(b[0] - a[0], b[1] - a[1]) || 1;
+    const nx = -(b[1] - a[1]) / l;
+    const ny = (b[0] - a[0]) / l;
+    return { a: [a[0] + nx * by, a[1] + ny * by] as P2, d: [b[0] - a[0], b[1] - a[1]] as P2 };
+  });
+  return lines.map((l1, i) => {
+    const l0 = lines[(i + p.length - 1) % p.length]!;
+    const den = l0.d[0] * l1.d[1] - l0.d[1] * l1.d[0];
+    if (Math.abs(den) < 1e-12) return l1.a;
+    const t = ((l1.a[0] - l0.a[0]) * l1.d[1] - (l1.a[1] - l0.a[1]) * l1.d[0]) / den;
+    return [l0.a[0] + l0.d[0] * t, l0.a[1] + l0.d[1] * t] as P2;
+  });
+}
+
+/** Width of a convex polygon (its narrowest extent). */
+function width(p: readonly P2[]): number {
+  let w = Infinity;
+  for (let i = 0; i < p.length; i++) {
+    const a = p[i]!;
+    const b = p[(i + 1) % p.length]!;
+    const l = Math.hypot(b[0] - a[0], b[1] - a[1]);
+    if (l < 1e-12) continue;
+    let far = 0;
+    for (const q of p) far = Math.max(far, Math.abs((b[0] - a[0]) * (q[1] - a[1]) - (b[1] - a[1]) * (q[0] - a[0])) / l);
+    w = Math.min(w, far);
+  }
+  return w === Infinity ? 0 : w;
+}
+
+const bounds2 = (p: readonly P2[]): [number, number, number, number] => {
+  let [x0, y0, x1, y1] = [Infinity, Infinity, -Infinity, -Infinity];
+  for (const q of p) {
+    x0 = Math.min(x0, q[0]);
+    y0 = Math.min(y0, q[1]);
+    x1 = Math.max(x1, q[0]);
+    y1 = Math.max(y1, q[1]);
+  }
+  return [x0, y0, x1, y1];
+};
+
+/** Bucket key of a face's plane: its normal and offset, rounded. */
+const planeKey = (n: readonly number[], d: number) => `${Math.round(n[0]! * 1e5)},${Math.round(n[1]! * 1e5)},${Math.round(n[2]! * 1e5)}:${Math.round(d / EPS)}`;
+
+/** A whole face of a box in world space (its frame's face, mapped back). */
+interface WholeFace {
+  box: number;
+  frame: number;
+  corners: Vec3[];
+  normal: Vec3;
+}
+
+function wholeFaces(groups: readonly Group[]): WholeFace[] {
+  const out: WholeFace[] = [];
+  groups.forEach((g, frame) => {
+    const ident = isIdentity(g.q);
+    for (const m of g.members) {
+      for (const [cs, n] of axisFaces(m.min, m.max)) out.push({ box: m.i, frame, corners: ident ? cs : cs.map((p) => rot(g.q, p)), normal: ident ? n : rot(g.q, n) });
+    }
+  });
+  return out;
+}
+
+/** A point in a box's own unturned frame, where its texture coordinates are laid out. */
+function flatOf(b: WorldBox, p: readonly number[]): Vec3 {
+  if (!b.yaw && !b.pitch && !b.roll) return [p[0]!, p[1]!, p[2]!];
+  const c = centre(b);
+  const d = rot(conj(boxQuat(b.yaw, b.pitch, b.roll)), [p[0]! - c[0], p[1]! - c[1], p[2]! - c[2]]);
+  return [c[0] + d[0], c[1] + d[1], c[2] + d[2]];
+}
+
+/**
+ * Faces of boxes in different frames can still share a plane: the tops of two blocks turned
+ * different ways at the same height, the joints of a curved wall's segments. Where they overlap,
+ * the face that is outranked is cut away by the other's whole face (less the seam), as polygons.
+ */
+function clipAcrossFrames(boxes: readonly WorldBox[], groups: readonly Group[], faces: RenderFace[], frameOf: Int32Array): RenderFace[] {
+  if (groups.length < 2) return faces;
+  // Every whole face by plane, to find the planes more than one frame shares.
+  const byPlane = new Map<string, WholeFace[]>();
+  for (const w of wholeFaces(groups)) {
+    const key = planeKey(w.normal, dot(w.normal, w.corners[0]!));
+    let list = byPlane.get(key);
+    if (!list) byPlane.set(key, (list = []));
+    list.push(w);
+  }
+  const shared = new Map<string, WholeFace[]>();
+  for (const [key, list] of byPlane) {
+    const [nk, dk] = key.split(':');
+    const near = [...list, ...(byPlane.get(`${nk}:${Number(dk) + 1}`) ?? []), ...(byPlane.get(`${nk}:${Number(dk) - 1}`) ?? [])];
+    if (new Set(near.map((w) => w.frame)).size > 1) shared.set(key, near);
+  }
+  if (!shared.size) return faces;
+  // Each shared plane's faces once in 2D (on one basis per plane: it depends on the normal only).
+  const flat2 = new Map<string, { pl: Plane; items: { w: WholeFace; poly: P2[]; bb: [number, number, number, number] }[] }>();
+  for (const [key, list] of shared) {
+    const pl = planeOf(list[0]!.normal, list[0]!.corners[0]!);
+    flat2.set(key, {
+      pl,
+      items: list.map((w) => {
+        const poly = w.corners.map((p) => to2(pl, p));
+        return { w, poly, bb: bounds2(poly) };
+      }),
+    });
+  }
+  const out: RenderFace[] = [];
+  for (const f of faces) {
+    const plane = flat2.get(planeKey(f.normal, dot(f.normal, f.corners[0]!)));
+    if (!plane) {
+      out.push(f);
+      continue;
+    }
+    const pl = { ...plane.pl, d: dot(plane.pl.n, f.corners[0]!) };
+    let pieces: P2[][] = [f.corners.map((p) => to2(pl, p))];
+    const fb = bounds2(pieces[0]!);
+    let cut = false;
+    const frame = frameOf[f.box]!;
+    const top = f.normal[1] > 0.5;
+    for (const { w, poly, bb } of plane.items) {
+      if (bb[0] >= fb[2] - EPS || bb[2] <= fb[0] + EPS || bb[1] >= fb[3] - EPS || bb[3] <= fb[1] + EPS) continue;
+      if (w.frame === frame || w.box === f.box || Math.abs(dot(w.normal, f.normal) - 1) > 1e-6 || Math.abs(dot(w.normal, w.corners[0]!) - pl.d) > EPS) continue;
+      if (!outranks(boxes, w.box, f.box, top)) continue;
+      const [x0, y0, x1, y1] = bb;
+      const next: P2[][] = [];
+      for (const piece of pieces) {
+        const [a0, b0, a1, b1] = bounds2(piece);
+        if (x0 >= a1 - EPS || x1 <= a0 + EPS || y0 >= b1 - EPS || y1 <= b0 + EPS) {
+          next.push(piece);
+          continue;
+        }
+        const hit = intersect(piece, poly);
+        if (hit.length < 3 || width(hit) <= EPS) {
+          next.push(piece);
+          continue;
+        }
+        cut = true;
+        next.push(...subtractConvex(piece, shrink(poly, SEAM)));
+      }
+      pieces = next;
+    }
+    if (!cut) {
+      out.push(f);
+      continue;
+    }
+    const b = boxes[f.box]!;
+    for (const piece of pieces) {
+      if (width(piece) <= EPS) continue;
+      const corners = piece.map((q) => to3(pl, q));
+      out.push({ box: f.box, corners, normal: f.normal, flat: corners.map((p) => flatOf(b, p)), flatNormal: f.flatNormal });
+    }
+  }
+  return out;
+}
+
 /**
  * The faces to draw for these boxes (props and barriers draw nothing). `draw`, when given, picks
  * the boxes whose faces are wanted; every drawn box still hides and outranks (MapMaker draws one
- * level at a time but the levels still meet).
+ * level at a time but the levels still meet). A face is a convex polygon: a rectangle, or a piece
+ * of one where a box in another frame cut it.
  */
 export function visibleFaces(boxes: readonly WorldBox[], draw: (i: number) => boolean = () => true): RenderFace[] {
   const out: RenderFace[] = [];
-  for (const g of frameGroups(boxes, isDrawnBox)) {
+  const groups = frameGroups(boxes, isDrawnBox);
+  const frameOf = new Int32Array(boxes.length).fill(-1);
+  groups.forEach((g, k) => {
+    for (const m of g.members) frameOf[m.i] = k;
+  });
+  for (const g of groups) {
     const ident = isIdentity(g.q);
     for (const f of clipGroup(boxes, g, draw)) {
       const m = g.members[f.m]!;
@@ -354,95 +601,62 @@ export function visibleFaces(boxes: readonly WorldBox[], draw: (i: number) => bo
       // Back to world, and into the box's own unturned frame for the texture.
       const world = ident ? corners : corners.map((p) => rot(g.q, p));
       const normal = ident ? n : rot(g.q, n);
-      const own = conj(boxQuat(b.yaw, b.pitch, b.roll));
-      const c = centre(b);
-      const flat = world.map((p) => {
-        const d = rot(own, [p[0] - c[0], p[1] - c[1], p[2] - c[2]]);
-        return [c[0] + d[0], c[1] + d[1], c[2] + d[2]] as Vec3;
-      });
-      const fn = rot(own, normal).map((v) => Math.round(v) + 0) as Vec3;
-      out.push({ box: m.i, corners: world, normal, flat, flatNormal: fn });
+      const fn = rot(conj(boxQuat(b.yaw, b.pitch, b.roll)), normal).map((v) => Math.round(v) + 0) as Vec3;
+      out.push({ box: m.i, corners: world, normal, flat: world.map((p) => flatOf(b, p)), flatNormal: fn });
     }
   }
-  return out;
+  return clipAcrossFrames(boxes, groups, out, frameOf);
 }
 
 /**
  * Coplanar overlaps: places where two drawn boxes' faces lie in the same plane, face the same
- * way and overlap (each pair of faces once). With `faces` (from visibleFaces), the overlaps left
- * among those faces instead: what still draws twice. Smaller than `minArea` (m²) is ignored.
+ * way and overlap by more than SLIVER both ways (each pair of faces once), in any frame. With
+ * `faces` (from visibleFaces), the overlaps left among those faces instead: what still draws
+ * twice. Smaller than `minArea` (m²) is ignored.
  */
 export function coplanarOverlaps(boxes: readonly WorldBox[], o: { faces?: readonly RenderFace[]; minArea?: number } = {}): CoplanarOverlap[] {
   const minArea = o.minArea ?? 1e-6;
   const out: CoplanarOverlap[] = [];
-  for (const g of frameGroups(boxes, isDrawnBox)) {
-    // Every face (or drawn fragment) in this frame, bucketed by facing and plane.
-    const planes = new Map<string, { i: number; rect: Rect; face: number; plane: number }[]>();
-    const add = (i: number, face: number, plane: number, rect: Rect) => {
-      const key = `${face}:${Math.round(plane / EPS)}`;
-      let list = planes.get(key);
-      if (!list) planes.set(key, (list = []));
-      // Neighbouring buckets catch planes that straddle a rounding edge.
-      list.push({ i, rect, face, plane });
-    };
-    if (o.faces) {
-      const inGroup = new Map(g.members.map((m) => [m.i, m]));
-      const qi = conj(g.q);
-      const ident = isIdentity(g.q);
-      for (const f of o.faces) {
-        if (!inGroup.has(f.box)) continue;
-        const cs = ident ? f.corners : f.corners.map((p) => rot(qi, p));
-        const n = (ident ? f.normal : rot(qi, f.normal)).map((v) => Math.round(v));
-        const axis = n[0] ? 0 : n[1] ? 1 : 2;
-        const face = axis * 2 + (n[axis]! > 0 ? 0 : 1);
-        const [ua, va] = PLANE_AXES[axis]!;
-        const us = cs.map((p) => p[ua]!);
-        const vs = cs.map((p) => p[va]!);
-        add(f.box, face, cs[0]![axis]!, [Math.min(...us), Math.min(...vs), Math.max(...us), Math.max(...vs)]);
-      }
-    } else {
-      for (const m of g.members) {
-        for (let face = 0; face < 6; face++) {
-          const axis = face >> 1;
-          const [ua, va] = PLANE_AXES[axis]!;
-          add(m.i, face, face & 1 ? m.min[axis]! : m.max[axis]!, [m.min[ua]!, m.min[va]!, m.max[ua]!, m.max[va]!]);
-        }
+  const list: readonly { box: number; corners: readonly Vec3[]; normal: Vec3 }[] = o.faces ?? wholeFaces(frameGroups(boxes, isDrawnBox));
+  interface Item {
+    box: number;
+    poly: P2[];
+    bb: [number, number, number, number];
+    pl: Plane;
+  }
+  const byPlane = new Map<string, Item[]>();
+  for (const f of list) {
+    const pl = planeOf(f.normal, f.corners[0]!);
+    const key = planeKey(f.normal, pl.d);
+    const poly = f.corners.map((p) => to2(pl, p));
+    let l = byPlane.get(key);
+    if (!l) byPlane.set(key, (l = []));
+    l.push({ box: f.box, poly, bb: bounds2(poly), pl });
+  }
+  const check = (p: Item, q: Item) => {
+    if (p.box === q.box || Math.abs(dot(p.pl.n, q.pl.n) - 1) > 1e-6 || Math.abs(p.pl.d - q.pl.d) > EPS) return;
+    if (p.bb[0] >= q.bb[2] - SLIVER || q.bb[0] >= p.bb[2] - SLIVER || p.bb[1] >= q.bb[3] - SLIVER || q.bb[1] >= p.bb[3] - SLIVER) return;
+    // Both on p's plane basis (normals within 1e-6 of each other: the bases agree as closely).
+    const hit = intersect(p.poly, q.poly);
+    if (hit.length < 3) return;
+    const area = Math.abs(area2(hit));
+    if (area < minArea || width(hit) <= SLIVER) return;
+    const corners = hit.map((c) => to3(p.pl, c));
+    const center = [0, 1, 2].map((k) => corners.reduce((s, c) => s + c[k]!, 0) / corners.length) as Vec3;
+    out.push({ a: Math.min(p.box, q.box), b: Math.max(p.box, q.box), area, center, corners, normal: p.pl.n });
+  };
+  for (const [key, items] of byPlane) {
+    // Sweep along the plane's first axis so only faces overlapping on it are compared.
+    const sorted = [...items].sort((x, y) => x.bb[0] - y.bb[0]);
+    for (let x = 0; x < sorted.length; x++) {
+      for (let y = x + 1; y < sorted.length; y++) {
+        if (sorted[y]!.bb[0] >= sorted[x]!.bb[2] - SLIVER) break;
+        check(sorted[x]!, sorted[y]!);
       }
     }
-    for (const [key, list] of planes) {
-      const [faceS, planeS] = key.split(':');
-      const face = Number(faceS);
-      const neighbour = planes.get(`${face}:${Number(planeS) + 1}`) ?? [];
-      const axis = face >> 1;
-      const [ua, va] = PLANE_AXES[axis]!;
-      const check = (p: (typeof list)[number], q: (typeof list)[number]) => {
-        if (p.i === q.i || Math.abs(p.plane - q.plane) > EPS) return;
-        const r: Rect = [Math.max(p.rect[0], q.rect[0]), Math.max(p.rect[1], q.rect[1]), Math.min(p.rect[2], q.rect[2]), Math.min(p.rect[3], q.rect[3])];
-        const w = r[2] - r[0];
-        const h = r[3] - r[1];
-        if (w <= SLIVER || h <= SLIVER || w * h < minArea) return;
-        const lo: Vec3 = [0, 0, 0];
-        const hi: Vec3 = [0, 0, 0];
-        lo[axis] = hi[axis] = p.plane;
-        lo[ua] = r[0];
-        lo[va] = r[1];
-        hi[ua] = r[2];
-        hi[va] = r[3];
-        const [cs, n] = axisFaces(lo, hi)[face]!;
-        const world = isIdentity(g.q) ? cs : cs.map((c) => rot(g.q, c));
-        const mid: Vec3 = [0, 1, 2].map((k) => world.reduce((s, c) => s + c[k]!, 0) / 4) as Vec3;
-        out.push({ a: Math.min(p.i, q.i), b: Math.max(p.i, q.i), area: w * h, center: mid, corners: world, normal: isIdentity(g.q) ? n : rot(g.q, n) });
-      };
-      // Sweep along u so only faces overlapping in u are compared.
-      const sorted = [...list].sort((x, y) => x.rect[0] - y.rect[0]);
-      for (let x = 0; x < sorted.length; x++) {
-        for (let y = x + 1; y < sorted.length; y++) {
-          if (sorted[y]!.rect[0] >= sorted[x]!.rect[2] - EPS) break;
-          check(sorted[x]!, sorted[y]!);
-        }
-      }
-      for (const p of list) for (const q of neighbour) check(p, q);
-    }
+    // Planes that straddle a rounding edge land in neighbouring buckets.
+    const [nk, dk] = key.split(':');
+    for (const q of byPlane.get(`${nk}:${Number(dk) + 1}`) ?? []) for (const p of items) check(p, q);
   }
   return out;
 }

@@ -2,7 +2,7 @@
 // same plane, and the audit over every map in maps/ (coplanar overlaps left: none).
 import { readdirSync, readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { SLIVER, boxQuat, buildMapDecor, buildMapGeometry, coplanarOverlaps, loadMap, quatRotate, visibleFaces, type RenderFace, type WorldBox } from '../src/index.ts';
+import { SLIVER, axisFaces, boxQuat, buildMapDecor, buildMapGeometry, coplanarOverlaps, loadMap, quatRotate, visibleFaces, type RenderFace, type WorldBox } from '../src/index.ts';
 
 const MAPS = new URL('../../../maps/', import.meta.url);
 const ids = readdirSync(MAPS)
@@ -93,6 +93,27 @@ describe('visibleFaces', () => {
     const front = faces.find((f) => f.box === 0 && f.flatNormal[2] === 1)!;
     expect(front.normal[0]).toBeCloseTo(quatRotate(q, 0, 0, 1)[0], 9);
   });
+
+  it('faces of differently turned boxes in the same plane: the outranked one is cut by the other as a polygon', () => {
+    // A floor slab and a block turned 30° on it, tops level (blocks are floors: the later box wins).
+    const boxes = [box([0, -0.5, 0], [8, 0, 8], 'floor'), box([2, -0.3, 2], [4, 0, 4], 'floor', { yaw: Math.PI / 6 })];
+    expect(coplanarOverlaps(boxes)).toHaveLength(1);
+    const faces = visibleFaces(boxes);
+    expect(coplanarOverlaps(boxes, { faces })).toEqual([]);
+    // The slab's top is cut into convex pieces round the block: 64 m² less the block's 4 m² (plus the seam).
+    const slabTop = facesOf(faces, 0, [0, 1, 0]);
+    expect(slabTop.length).toBeGreaterThan(1);
+    const polyArea = (f: RenderFace) => Math.abs(f.corners.reduce((s, a, i) => { const b = f.corners[(i + 1) % f.corners.length]!; return s + a[0] * b[2] - b[0] * a[2]; }, 0) / 2);
+    expect(slabTop.reduce((s, f) => s + polyArea(f), 0)).toBeCloseTo(60, 1);
+    // Pieces keep the winding (front face up) and lie in the plane.
+    const winding = (cs: readonly (readonly number[])[]) => Math.sign(cs.reduce((s, a, i) => { const b = cs[(i + 1) % cs.length]!; return s + a[0]! * b[2]! - b[0]! * a[2]!; }, 0));
+    const up = winding(axisFaces([0, 0, 0], [1, 1, 1])[2]![0]);
+    for (const f of slabTop) {
+      expect(f.corners.every((c) => c[1] === 0)).toBe(true);
+      expect(winding(f.corners)).toBe(up);
+    }
+    expect(total(facesOf(faces, 1, [0, 1, 0]))).toBeCloseTo(4, 6);
+  });
 });
 
 /** Every face point that can be seen draws exactly once; points inside another box don't draw (sampled). */
@@ -135,7 +156,13 @@ function checkCoverage(boxes: readonly WorldBox[], faces: readonly RenderFace[],
     const covered = (byBox.get(i) ?? []).filter((f) => {
       const fl = f.flat;
       if (f.flatNormal[axis] !== (face & 1 ? -1 : 1)) return false;
-      return [0, 1, 2].every((k) => k === axis || (l[k]! >= Math.min(...fl.map((p) => p[k]!)) - 1e-6 && l[k]! <= Math.max(...fl.map((p) => p[k]!)) + 1e-6));
+      // Inside the (convex) piece, on the face's two in-plane axes.
+      const [ua, va] = [0, 1, 2].filter((k) => k !== axis) as [number, number];
+      const sides = fl.map((p, j) => {
+        const q = fl[(j + 1) % fl.length]!;
+        return (q[ua]! - p[ua]!) * (l[va]! - p[va]!) - (q[va]! - p[va]!) * (l[ua]! - p[ua]!);
+      });
+      return sides.every((x) => x >= -1e-9) || sides.every((x) => x <= 1e-9);
     }).length;
     if (near.every((d) => d > 0.01)) {
       seen++;

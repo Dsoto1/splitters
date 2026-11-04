@@ -44,7 +44,7 @@ class FaceBuffer {
   uvs: number[] = [];
   indices: number[] = [];
 
-  /** Add one face with UVs in world metres divided by the material's repeat size. */
+  /** Add one face (a convex polygon) with UVs in world metres divided by the material's repeat size. */
   /** `flat`/`fn`: the face before any turn, whose two axes perpendicular to the normal lay out the texture. */
   add(corners: number[][], n: readonly [number, number, number], uvScale: number, flat: number[][] = corners, fn: readonly [number, number, number] = n): void {
     const base = this.positions.length / 3;
@@ -56,7 +56,8 @@ class FaceBuffer {
       const v = fn[1] !== 0 ? f[2]! : f[1]!;
       this.uvs.push(u * uvScale, v * uvScale);
     });
-    this.indices.push(base, base + 2, base + 1, base, base + 3, base + 2);
+    // A fan: faces are convex (rectangles, or pieces of one cut by a turned box).
+    for (let k = 1; k < corners.length - 1; k++) this.indices.push(base, base + k + 1, base + k);
   }
 
   toVertexData(): VertexData {
