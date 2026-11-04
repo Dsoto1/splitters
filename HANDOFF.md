@@ -51,6 +51,56 @@ capitol-top, colonnade, rotunda, museum, museum-air, museum-rotunda, monument).
   host e2e timed out under a load of 10-16 from other checkouts: the five files pass on their own (57/57). E2E
   (`CI=1`, ports 4887/7921, `E2E_MAPS=capitol_mall`): scenery PASS 231 s, maps PASS 146 s, editor PASS 492 s.
   New props' GLBs, palette and provenance map to the full suite on CI: needs a `check/` run.
+### Hands round 4: per-look skin weights (`wip/char-hands-skin`, agent, 2026-11-04; pushed, not merged; from main 5a002f8)
+Grips round 3's "left unchanged" list, with the owner's approval to re-weight hands per look. Evidence (before/after per
+look, rifle and pistol: 3/4, each hand close, side, front; audit numbers in each `<id>.json`): agent scratchpad
+`hands4/` (`review-board.png`; `ba/<id>-before-after.png`; `ba/meshy_knight-body-stand-run-strafe-before-over-after.png`;
+`body/` standing/running/strafing views; tools in `hands4/tools/`: `shots.mjs` (now with hand close-ups, a warm-up pose
+and `creature:<kind>` ids), `stretch.mjs` (most stretched edges with their weights), `body.mjs` (spikes standing,
+running, strafing), `curl.mjs` (offline finger-curl stretch test on a GLB), `imptune.mjs` (creature grip trials)).
+Final evidence, shot from the files as committed (built client) against main's: `hands4/final/ba/<id>-before-after.png`
+(all 13 looks in scope) and `hands4/final/review-board-final.png` (`tools/final.mjs`, verdicts in `tools/verdicts.mjs`);
+reverted looks match main there (only framing noise: their files are main's).
+- **New field `fixes.skin`** (tools/content/skinfix.mjs, docs/CHARACTERS.md "A look's own skin weights"): finger
+  options to hands.mjs `fitHands` (`tips`, `knuckle`, `joints`, `lanes`, `fingers: 'lanes'`; per hand under `l`/`r`)
+  and body options after it (`hops`, `clamp`, `smooth`, `wrist`; recorded as `extras.skinFix` on the skin and applied
+  once by rehand-built). A look without it is weighted exactly as before (test). Applied with
+  `ONLY=<id> node tools/content/rehand-built.mjs` on the shipped files (a rebuild from the downloads would also bring
+  in later pipeline changes: Zombie Soldier A rebuilt from its download came out at 13.4k triangles, not 11k);
+  rehand-built takes `SIDES=r` (or `l`) to refit one hand and keep the other as built. prepare-meshy-characters
+  applies `fixes.skin` too (checked: the zombie's download rebuilt with `tips` has no needle).
+- **Kept:** **Zombie Soldier A** `skin { tips 0.3 }`, right hand only (`SIDES=r`): the needle was the middle fingertip
+  measured out of the hand as a stray (past 1.6x the 80th percentile from the hand's centre) and left on `hand_r`
+  while the rest of the finger curled. Needle gone (40.7x -> 2.5x, spikes 6 -> 0, both guns); the left hand is
+  untouched (a refit of the left from the built file changed it for the worse). **Iron Knight** `skin { smooth
+  thigh/calf 6 passes, lanes 0.8, joints 0.2 }`: the tabard flipped from one thigh to the other between neighbouring
+  vertices and tore open between the legs; his left gauntlet's pinky and middle tore apart (a three-finger split).
+  Spikes: hold 18 -> 6 (max 12.3x -> 5.1x), run 17 -> 2, strafe 24 -> 6; the tabard stays closed in all three.
+  **Hyena Warrior** `hands.r.curl 0.6` + `skin { knuckle 0.3, joints 0.3 }`: the right paw was measured a fist and
+  left rigid, hanging open under the grip; it now closes round it (tips 0.057 -> 0.018 m). Curling the left paw too
+  flattened it on the handguard: left as it was. Clearly better at play distance (3/4: a fist on the grip, not claws
+  hanging below it); close up the closed paw shows hard folds, a geometry limit like the shard hands below. **Imp** (bots): new per-creature hold settings, CreatureSpec `grip`
+  (a GripTune, read by characterAnimator `holdWith`; creatures without it hold as before); the Imp has
+  `supportLong [0, -0.05, 0]`, `rollL -0.8`, `curlL 1.3`: its left claw goes under the handguard and closes round it
+  (it stood above it, claws up). `__grips.creature(kind, weapon)` on `?mode=grips` poses an armed creature.
+- **Reverted (not clearly better), owner/lead:** Vanguard, Beanie Alien, Mummy Bot, Zhao (finger blends and lanes:
+  no visible change; a lanes split on Vanguard added stretch), Alien Biker (mitten + blends, or split lanes: the
+  shards got worse). Their hands are low-poly "All Animations" hands whose fingers fold into shards when curled; the
+  weights are not the cause, so they need hand geometry (a rebake or new hands), not weights. **Grunt '68 and Shade**
+  (support hand on its edge): weights cannot turn a hand, unchanged. Tried `fixes.grip.rollL`: -0.7 lays Grunt's
+  rifle support hand under the handguard (fingers round it, not standing up) but also turns his pistol support hand
+  off the shooting hand; a long-gun-only roll (a new GripTune field) would take it: not done. Shade: +/-0.7 not
+  better. **Wealthy Otter** (`wrist`: the cuff on the forearm): the paw sheared and showed its pale underside, worse
+  at both strengths tried; the twist is the paw turning on the gun (`rollR 0.4` and the grip turn), not the cuff's
+  weights. **Croakley** (`hops 4` + `smooth`; `hops 2` tore the belly at 120x): hold max stretch 12 -> 5 but spikes
+  2 -> 4 and strafe 43 -> 53, the belly barely different by eye; its in-house skin puts thigh weight up to the chest,
+  which needs a re-rig, not a smoothing.
+- **Checks** (c2cdda1, re-run after the machine restart): typecheck clean; content:check OK; `rebuild.mjs`: nothing
+  changed; test:changed (all units, shared code) 1361 passed, 2 timed out under machine load (host.test.ts relay
+  join, pads.test.ts eagle_spires; neither touched here) and passed on a rerun of those files (26/26). E2E (`CI=1`,
+  ports 5641/7641): characters, visual, designer, zombies all PASS; no screenshot baseline changed. The first run
+  (before the restart) lost its browser under load. ci:plan: full suite (characterAnimator, shared creatures, character
+  files map to all 38 flows): needs a `check/` run before main.
 
 ### Grips round 3: per-look hands and arms (`wip/char-grips-3`, agent, 2026-11-04; pushed, not merged; from main 47864cb)
 Owner's notes of 3 Nov ("arm position (mainly right arms) and grips", the 28 looks; Santa's and Zombie Soldier A's
