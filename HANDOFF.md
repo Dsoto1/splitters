@@ -51,7 +51,20 @@ SwiftShader WebGL2): agent scratchpad `detoy/before/`, `detoy/A/` (A only), `det
   carton of six. Surfaced props now have a mesh per node (their TEXCOORD_1 differs), so those show every copy; the
   same bug still hides copies in other props. Babylon ordering: a flat-colour material with only a detail map gets
   no UVs (the detail plugin asks after attributes are prepared): worked round with a shared 1×1 white albedo.
-- **Checks**: see the CHANGELOG line and the commit messages; typecheck clean; content:check OK.
+- **Checks**: `pnpm typecheck` clean; `pnpm content:check` OK (content:rebuild's steps run by hand against an A+B
+  preview on port 4813: locks, tables, 251 palette pictures re-rendered, provenance). `pnpm test:changed` (all units,
+  shared changed) at load 17-21: 1301 pass, 9 fail; kit.test's barrel height was this change (fixed: 0.95 m); the
+  other eight are load timeouts / budgets (botai, npc missions, sandgate, scenario, spectate pass with a longer
+  timeout or alone; host.test's Bob account wait and bigMatch's 96-bot tick budget are the known load failures).
+  E2E (`CI=1`, ports 4831/7831): visual PASS (menu 0.5 %, mapmaker 0.1 %, arena 0.0 %, canyon 0.1 %: the per-pixel
+  tolerance absorbs a grade this gentle), editor, offline, scenery, maps, webgpu PASS. Baselines then regenerated
+  after review (`pnpm e2e:baselines`): menu, mapmaker, arena, canyon all rewritten; menu and HUD look the same, the
+  world shots carry the grade. ci:plan: full suite (content/surfaces*, shared props table): needs a `check/` run.
+- **Owner's call**: (1) the strength of the grade (`WORLD_GRADE`) and of each surface (`detail` in
+  content/surfaces.json) are first passes, tuned on SwiftShader; a look on a real GPU and monitor is the real test.
+  (2) Smaller barrels and kegs are less cover (cover height 0.95 m, keg 0.75 m): say if maps relied on them.
+  (3) Fix the mergeModel instancing bug above (more copies of shelf goods, cups and the like will appear on maps).
+  (4) More packs (Quaternius, the Wild West kit, our own code-built kits) can take the same mapping files.
 
 ### Grips round 3: per-look hands and arms (`wip/char-grips-3`, agent, 2026-11-04; pushed, not merged; from main 47864cb)
 Owner's notes of 3 Nov ("arm position (mainly right arms) and grips", the 28 looks; Santa's and Zombie Soldier A's
