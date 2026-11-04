@@ -373,6 +373,7 @@ export class MatchHost {
     for (const r of friends) {
       if (slept) r.heardAt = now;
       else if (now - r.heardAt > (r.loaded ? FRIEND_SILENT_MS : FRIEND_LOADING_SILENT_MS)) {
+        console.warn(`closing ${this.match?.slots[r.slot]?.name ?? 'a friend'}'s link: silent ${((now - r.heardAt) / 1000).toFixed(0)} s${r.loaded ? '' : ' (loading)'}`);
         this.sink.close(r.id, 0);
         this.closed(r.id);
       }
@@ -534,6 +535,7 @@ export class MatchHost {
       // The same browser (or account) again: this link replaces the old one, whose place it takes back (one place per browser).
       const old = key ? [...this.remotes.values()].find((o) => o !== r && o.slot !== null && (o.account ? `sub:${o.account.sub}` : o.pk ? `pk:${o.pk}` : null) === key) : undefined;
       if (old) {
+        console.warn(`${name}'s new link replaces their old one`);
         this.remotes.delete(old.id);
         bots.hold(old.slot!, 'dropped', key, control.fill);
         this.sink.guest(old.id, null);

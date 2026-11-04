@@ -42,6 +42,28 @@ scratchpad `charfix2/`.
   Animations downloads and would change on rebuild (not rebuilt). Comparison tool: `charfix2/tools/cmp.mjs` (raw / old /
   new in their rest pose, same light and framing; serve the files under `public/zz-charfix-raw`, never commit it).
 
+### E2E flakes: dedicatedhost, offline, handoff, lobby (`wip/flaky-e2e`, agent, 2026-11-04; not merged)
+Four flows that failed on CI's slow software-rendered pages (1–2 fps). No check skipped or loosened.
+- **dedicatedhost, Kick:** idle takeover. The visitor (after its walk) and the owner (in the pause menu) sit still
+  for minutes; after 90 s (`AWAY.afkSeconds`) a bot plays for each, `match.roster()` marks them `bot`, and the
+  admin's player list (people only, `session.peopleIn`) drops the visitor's Kick button. Fix: the flow starts the
+  Host Service with its own setting `AFK_SECONDS=0`. (The idle rules have unit tests.)
+- **offline, kill cam / skip:** the kill cam was 3.5 s of wall clock from the death message, so one long frame
+  ate it unseen, and the Space meant to skip it then toggled the free camera. Fix (product): its time is the
+  time it's drawn, each frame counting at most 0.25 s (`spectatorCam.ts` `KILL_CAM_FRAME_MS`, as session.ts caps a
+  frame's step). Same on a normal machine. `spec().killCamEnd` ('skipped' | 'over') lets the flow prove the skip
+  rather than a timeout. **Join game:** the bots weren't held, so one could shoot the player between "alive" and
+  the check; the flow holds them (`holdBots`) and checks the alive it waited for.
+- **handoff:** the friends never touched their controls, so after 90 s they were "away", and an away friend is
+  no successor (`matchHost.tendSuccessor`): the successor, its checkpoints and the takeover went with it. Fix:
+  each friend looks about (a small turn every 3 s) from the moment it's in; both joins wait in parallel. The
+  **404** on every page was the hub's `/api/v1/maps` with publishing off (no `PUBLISHED_MAPS_DIR`, as in e2e and
+  any community hub): it now answers an empty list (`publish.ts noPublishingHandler`), and the flow names any
+  failed request in its log.
+- **lobby, 2 players:** the check waited 30 s for a check-in that comes every 20 s (`LOBBY_HEARTBEAT_SECONDS`) on
+  the host page's timer, late on heavy Sandgate. It now waits for two of the host's check-ins (its PUTs) after the
+  join, then the listing must say 2: independent of map weight.
+
 ### Content scalability step 1: the menu's first download (`wip/menu-bundle`, agent, 2026-11-03; not merged; rebased on main 51519b2)
 docs/CONTENT_SCALABILITY.md step 1. **Menu's first JS 837.0 -> 649.0 kB gzip** (2970 -> 2305 kB raw, on main 51519b2; `index` 396.1 ->
 208.1 kB gzip; `babylon` and `vendor` unchanged). Budget left at 840 kB (now ~190 kB of room). How it works:
