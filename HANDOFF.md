@@ -60,6 +60,8 @@ large, Hyena and Croakley hunched, T-TreeFitty robot, Big Bogdan wide; creatures
   pads.test cases are load timeouts, pass alone). E2E (`CI=1`, ports 4951/7951/9951-9954/7953-7954; the change maps to
   all 38 flows): offline PASS 450 s, arsenal PASS 533 s, characters PASS 1845 s, lobby PASS 785 s, dedicatedhost PASS
   381 s, visual PASS 414 s (baselines unchanged: menu 0.5 %, others <= 0.1 %). Needs a `check/` run (full suite).
+  After the margin and the two retirements: typecheck clean, content:check OK, the affected unit tests pass (gunplay,
+  bots, hitbox, stats, looks); E2E offline PASS 310 s, arsenal PASS 506 s, characters PASS 812 s.
 
 ### Capitol Mall: domes on drums, marble roofs (`wip/capitol-domes`, agent, 2026-11-04; pushed, not merged; from main 5a002f8)
 Owner-approved follow-up to "Map reworks, batch 3" (its "Not done": the slab skirt under the domes, the black corner
