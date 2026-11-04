@@ -211,10 +211,11 @@ export interface WeaponHold {
  */
 export type FireMode = 'auto' | 'semi' | 'burst';
 
-/** Camera kick and spread bloom per shot; bloom recovers while not firing. */
+/**
+ * Legacy spread bloom per shot (the exotic arsenal's, before the gunplay pass); bloom recovers while not firing.
+ * Its camera kick is now the weapon's `kick`.
+ */
 export interface Recoil {
-  /** Upward camera kick per shot (radians; client side). */
-  kick: number;
   /** Spread added per shot (radians), up to `maxBloom`. */
   bloom: number;
   maxBloom: number;
@@ -302,8 +303,8 @@ export interface WeaponDefinition {
   /** Damage multiplier for a leg hit (default: the family's, else LEG_MULTIPLIER). */
   legshot?: number;
   /**
-   * Legacy camera kick and spread bloom, for weapons without a gunplay family
-   * (the exotic arsenal). Family weapons use `kick` and `accuracy` instead.
+   * Legacy spread bloom, for weapons without a gunplay family (the exotic arsenal: their spread can't be moved to
+   * `accuracy` without changing it). Family weapons use `accuracy`; their `maxBloom` only sets bots' burst length.
    */
   recoil?: Recoil;
   // ---- Gunplay (docs/GUNPLAY_SPEC.md §35; see sim/gunplay.ts). Each field overrides the family's default.

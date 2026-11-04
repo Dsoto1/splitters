@@ -20,7 +20,8 @@
   "ammo": "cells",
   "pierce": 3,
   "knockback": 6,
-  "recoil": { "kick": 0.09, "bloom": 0, "maxBloom": 0, "recover": 0 },
+  "recoil": { "bloom": 0, "maxBloom": 0, "recover": 0 },
+  "kick": { "pitch": [0.09], "yaw": [0.0225, -0.0225], "variance": 0.018, "delay": 4, "settle": 8, "rate": 0.1, "visual": 1.2 },
   "view": {
     "model": "weapons/railgun.glb",
     "viewOffset": [0.21, -0.21, 0.52],
@@ -36,6 +37,7 @@
     "beam": true
   },
   "notes": {
+    "recoil": "`kick` is the legacy camera kick folded into family-style kick (identical to what gunplayOf derived from `recoil.kick`). `recoil` is the legacy spread bloom, kept as it was: the family spread model can't reproduce it exactly (docs/CONTENT_SCALABILITY.md, step 4).",
     "group": "The extended arsenal: every one fires differently. 5: precision.",
     "design": "Charges briefly, then one body hit kills an unarmoured player."
   }

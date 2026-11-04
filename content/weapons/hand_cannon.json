@@ -20,7 +20,7 @@
   "botRange": [3, 35],
   "ammo": "light",
   "knockback": 3,
-  "recoil": { "kick": 0.09, "bloom": 0.03, "maxBloom": 0.05, "recover": 0.0012 },
+  "recoil": { "bloom": 0.03, "maxBloom": 0.05, "recover": 0.0012 },
   "view": {
     "model": "weapons/hand_cannon.glb",
     "viewOffset": [0.2, -0.18, 0.42],

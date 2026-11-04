@@ -483,6 +483,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
       hold: { style: 'long', grip: [0, -0.08, -0.08], support: [0, -0.05, 0.28], shoulder: [0, 0.02, -0.41] },
     },
   },
+  // recoil: `kick` is the legacy camera kick folded into family-style kick (identical to what gunplayOf derived from `recoil.kick`). `recoil` is the legacy spread bloom, kept as it was: the family spread model can't reproduce it exactly (docs/CONTENT_SCALABILITY.md, step 4).
   // group: The extended arsenal: every one fires differently. 2: sidearms.
   // model: The owner's ornate energy handgun (Meshy, owned), the sci-fi kit pistol as the fallback.
   'core.pulse_pistol': {
@@ -504,7 +505,16 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     botDesirability: 0.42,
     botRange: [2, 28],
     ammo: 'cells',
-    recoil: { kick: 0.012, bloom: 0.004, maxBloom: 0.02, recover: 0.0015 },
+    recoil: { bloom: 0.004, maxBloom: 0.02, recover: 0.0015 },
+    kick: {
+      pitch: [0.012],
+      yaw: [0.003, -0.003],
+      variance: 0.0024000000000000002,
+      delay: 4,
+      settle: 8,
+      rate: 0.1,
+      visual: 0.18,
+    },
     pellets: 1,
     view: {
       model: 'guns/ornate_pistol.glb',
@@ -538,7 +548,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     botRange: [3, 35],
     ammo: 'light',
     knockback: 3,
-    recoil: { kick: 0.09, bloom: 0.03, maxBloom: 0.05, recover: 0.0012 },
+    recoil: { bloom: 0.03, maxBloom: 0.05, recover: 0.0012 },
     pellets: 1,
     view: {
       model: 'weapons/hand_cannon.glb',
@@ -567,7 +577,16 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     botDesirability: 0.9,
     botRange: [2, 40],
     ammo: 'light',
-    recoil: { kick: 0.05, bloom: 0, maxBloom: 0, recover: 0 },
+    recoil: { bloom: 0, maxBloom: 0, recover: 0 },
+    kick: {
+      pitch: [0.05],
+      yaw: [0.0125, -0.0125],
+      variance: 0.010000000000000002,
+      delay: 4,
+      settle: 8,
+      rate: 0.1,
+      visual: 0.75,
+    },
     pellets: 1,
     spread: 0,
     view: {
@@ -641,7 +660,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     raiseTicks: 12,
     botRange: [0, 14],
     ammo: 'light',
-    recoil: { kick: 0.008, bloom: 0.006, maxBloom: 0.07, recover: 0.002 },
+    recoil: { bloom: 0.006, maxBloom: 0.07, recover: 0.002 },
     pellets: 1,
     botDesirability: 0.5,
     view: {
@@ -652,6 +671,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
       sound: 'fire.smg',
     },
   },
+  // recoil: The legacy spread bloom (bloom per shot, cap, recovery per tick). With a family its spread comes from the family's accuracy; `maxBloom` still sets how long bots fire their bursts.
   // group: The extended arsenal: every one fires differently. 3: rifles.
   // model: The owner's Neon Flux (Meshy, owned), the gun-pack rifle as the fallback.
   'core.burst_rifle': {
@@ -674,7 +694,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     botRange: [5, 45],
     burst: { count: 3, intervalTicks: 4 },
     ammo: 'rifle',
-    recoil: { kick: 0.018, bloom: 0.006, maxBloom: 0.03, recover: 0.002 },
+    recoil: { bloom: 0.006, maxBloom: 0.03, recover: 0.002 },
     pellets: 1,
     raiseTicks: 20,
     view: {
@@ -715,6 +735,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
       beam: true,
     },
   },
+  // recoil: The legacy spread bloom (bloom per shot, cap, recovery per tick). With a family its spread comes from the family's accuracy; `maxBloom` still sets how long bots fire their bursts.
   // group: The extended arsenal: every one fires differently. 3: rifles.
   // model: The owner's Frontier Rifle (Meshy, owned; a scoped rifle), the gun-pack rifle as the fallback.
   'core.marksman': {
@@ -734,7 +755,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     botDesirability: 0.6,
     botRange: [12, 90],
     ammo: 'sniper',
-    recoil: { kick: 0.035, bloom: 0.01, maxBloom: 0.03, recover: 0.0015 },
+    recoil: { bloom: 0.01, maxBloom: 0.03, recover: 0.0015 },
     pellets: 1,
     magazine: 10,
     reserveMax: 40,
@@ -772,7 +793,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     botRange: [0, 6],
     ammo: 'shells',
     knockback: 1.2,
-    recoil: { kick: 0.08, bloom: 0, maxBloom: 0, recover: 0 },
+    recoil: { bloom: 0, maxBloom: 0, recover: 0 },
     view: {
       model: 'weapons/sawed_off.glb',
       viewOffset: [0.21, -0.21, 0.52],
@@ -801,7 +822,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     botDesirability: 0.64,
     botRange: [0, 10],
     ammo: 'shells',
-    recoil: { kick: 0.045, bloom: 0.012, maxBloom: 0.04, recover: 0.0015 },
+    recoil: { bloom: 0.012, maxBloom: 0.04, recover: 0.0015 },
     reserveMax: 40,
     view: {
       model: 'weapons/auto_shotgun.glb',
@@ -852,6 +873,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
       sound: 'fire.flak',
     },
   },
+  // recoil: `kick` is the legacy camera kick folded into family-style kick (identical to what gunplayOf derived from `recoil.kick`). `recoil` is the legacy spread bloom, kept as it was: the family spread model can't reproduce it exactly (docs/CONTENT_SCALABILITY.md, step 4).
   // group: The extended arsenal: every one fires differently. 5: precision.
   // design: Charges briefly, then one body hit kills an unarmoured player.
   'core.railgun': {
@@ -875,7 +897,8 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     ammo: 'cells',
     pierce: 3,
     knockback: 6,
-    recoil: { kick: 0.09, bloom: 0, maxBloom: 0, recover: 0 },
+    recoil: { bloom: 0, maxBloom: 0, recover: 0 },
+    kick: { pitch: [0.09], yaw: [0.0225, -0.0225], variance: 0.018, delay: 4, settle: 8, rate: 0.1, visual: 1.2 },
     pellets: 1,
     spread: 0,
     view: {
@@ -1073,6 +1096,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
       sound: 'fire.goo',
     },
   },
+  // recoil: The legacy spread bloom (bloom per shot, cap, recovery per tick). With a family its spread comes from the family's accuracy; `maxBloom` still sets how long bots fire their bursts.
   // group: The extended arsenal: every one fires differently. 7: automatics.
   // design: Huge belt, poor handling: slow to draw and a long, dangerous reload.
   // model: The owner's Rotary Gatling Gun (Meshy, owned; content/guns.json), the gun-pack machine gun as the fallback. (Before it: a Meshy community rotary-barrel gun, CC0 per the owner: no stock, so the rear handle sat at the shoulder.)
@@ -1098,7 +1122,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     botRange: [3, 40],
     windupTicks: 28,
     ammo: 'rifle',
-    recoil: { kick: 0.006, bloom: 0.002, maxBloom: 0.04, recover: 0.001 },
+    recoil: { bloom: 0.002, maxBloom: 0.04, recover: 0.001 },
     pellets: 1,
     view: {
       model: 'guns/gatling_gun.glb',

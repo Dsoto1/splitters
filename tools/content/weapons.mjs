@@ -87,7 +87,7 @@ export function schemas(root = ROOT, families = []) {
     'grapple?': obj({ speed: num }), 'alt?': alt, 'burst?': obj({ count: int, intervalTicks: int }), 'windupTicks?': int,
     'windupResets?': bool, 'heat?': obj({ perShot: num, coolPerTick: num }), 'pierce?': int,
     'chain?': obj({ jumps: int, range: num, falloff: num }), 'status?': status, 'knockback?': num, 'stoppingPower?': num,
-    'headshot?': num, 'legshot?': num, 'recoil?': obj({ 'kick?': num, bloom: num, maxBloom: num, recover: num }),
+    'headshot?': num, 'legshot?': num, 'recoil?': obj({ bloom: num, maxBloom: num, recover: num }),
     'ballistic?': nullable(partial(ballistic)), 'accuracy?': partial(accuracy), 'kick?': partial(kick), 'reload?': reload,
     'falloff?': falloff, botDesirability: num, botRange: tup(2), view, 'notes?': notes,
   });

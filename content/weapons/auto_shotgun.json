@@ -18,7 +18,7 @@
   "botDesirability": 0.64,
   "botRange": [0, 10],
   "ammo": "shells",
-  "recoil": { "kick": 0.045, "bloom": 0.012, "maxBloom": 0.04, "recover": 0.0015 },
+  "recoil": { "bloom": 0.012, "maxBloom": 0.04, "recover": 0.0015 },
   "view": {
     "model": "weapons/auto_shotgun.glb",
     "viewOffset": [0.21, -0.21, 0.52],

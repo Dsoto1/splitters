@@ -955,10 +955,23 @@
     "fireMode": "semi",
     "ammo": "cells",
     "recoil": {
-     "kick": 0.012,
      "bloom": 0.004,
      "maxBloom": 0.02,
      "recover": 0.0015
+    },
+    "kick": {
+     "pitch": [
+      0.012
+     ],
+     "yaw": [
+      0.003,
+      -0.003
+     ],
+     "variance": 0.0024000000000000002,
+     "delay": 4,
+     "settle": 8,
+     "rate": 0.1,
+     "visual": 0.18
     },
     "view": {
      "model": "guns/ornate_pistol.glb",
@@ -1045,7 +1058,6 @@
     "ammo": "light",
     "knockback": 3,
     "recoil": {
-     "kick": 0.09,
      "bloom": 0.03,
      "maxBloom": 0.05,
      "recover": 0.0012
@@ -1151,10 +1163,23 @@
     "fireMode": "semi",
     "ammo": "light",
     "recoil": {
-     "kick": 0.05,
      "bloom": 0,
      "maxBloom": 0,
      "recover": 0
+    },
+    "kick": {
+     "pitch": [
+      0.05
+     ],
+     "yaw": [
+      0.0125,
+      -0.0125
+     ],
+     "variance": 0.010000000000000002,
+     "delay": 4,
+     "settle": 8,
+     "rate": 0.1,
+     "visual": 0.75
     },
     "view": {
      "model": "weapons/gilded_pistol.glb",
@@ -1326,7 +1351,6 @@
     "family": "machine_pistol",
     "ammo": "light",
     "recoil": {
-     "kick": 0.008,
      "bloom": 0.006,
      "maxBloom": 0.07,
      "recover": 0.002
@@ -1439,7 +1463,6 @@
     },
     "ammo": "rifle",
     "recoil": {
-     "kick": 0.018,
      "bloom": 0.006,
      "maxBloom": 0.03,
      "recover": 0.002
@@ -1637,7 +1660,6 @@
     "fireMode": "semi",
     "ammo": "sniper",
     "recoil": {
-     "kick": 0.035,
      "bloom": 0.01,
      "maxBloom": 0.03,
      "recover": 0.0015
@@ -1752,7 +1774,6 @@
     "ammo": "shells",
     "knockback": 1.2,
     "recoil": {
-     "kick": 0.08,
      "bloom": 0,
      "maxBloom": 0,
      "recover": 0
@@ -1858,7 +1879,6 @@
     "family": "shotgun",
     "ammo": "shells",
     "recoil": {
-     "kick": 0.045,
      "bloom": 0.012,
      "maxBloom": 0.04,
      "recover": 0.0015
@@ -2051,10 +2071,23 @@
     "pierce": 3,
     "knockback": 6,
     "recoil": {
-     "kick": 0.09,
      "bloom": 0,
      "maxBloom": 0,
      "recover": 0
+    },
+    "kick": {
+     "pitch": [
+      0.09
+     ],
+     "yaw": [
+      0.0225,
+      -0.0225
+     ],
+     "variance": 0.018,
+     "delay": 4,
+     "settle": 8,
+     "rate": 0.1,
+     "visual": 1.2
     },
     "view": {
      "model": "weapons/railgun.glb",
@@ -2521,7 +2554,6 @@
     "family": "lmg",
     "ammo": "rifle",
     "recoil": {
-     "kick": 0.006,
      "bloom": 0.002,
      "maxBloom": 0.04,
      "recover": 0.001

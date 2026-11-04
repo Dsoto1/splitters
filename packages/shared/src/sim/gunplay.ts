@@ -171,9 +171,9 @@ export function gunplayOf(def: WeaponDefinition): Gunplay {
     // Hitscan weapons with a bullet family fly; projectiles, beams and melee never do.
     ballistic: def.kind === 'hitscan' && !def.view.beam ? ballistic : null,
     accuracy: def.accuracy ? { ...(fam?.accuracy ?? acc(def.spread, 0.014, 0.035, 0, 0, 0.1, 6, 0.55)), ...def.accuracy } : (fam?.accuracy ?? null),
-    // Weapons without a family keep their old camera kick, now as a deterministic climb.
+    // Weapons without a family kick only by their own `kick` (the exotic arsenal's old camera kick, folded in).
     // A melee weapon never kicks; its second trigger's kick (the Battle Axe's blunderbuss) settles by its own curve.
-    kick: def.kick ? { ...(fam?.kick ?? kick([0], [0], 0, 4, 8, 0.1, 0.5)), ...def.kick } : (fam?.kick ?? (def.recoil?.kick ? kick([def.recoil.kick], [0.25 * def.recoil.kick, -0.25 * def.recoil.kick], 0.2 * def.recoil.kick, 4, 8, 0.1, Math.min(1.2, def.recoil.kick * 15)) : def.kind === 'melee' ? (def.alt?.kick ?? null) : null)),
+    kick: def.kick ? { ...(fam?.kick ?? kick([0], [0], 0, 4, 8, 0.1, 0.5)), ...def.kick } : (fam?.kick ?? (def.kind === 'melee' ? (def.alt?.kick ?? null) : null)),
     reload: def.reload ?? { type: 'magazine', tactical: def.reloadTicks, empty: def.reloadTicks, out: 0.35, in: 1 },
     falloff: def.falloff ?? fam?.falloff ?? null,
     head: def.headshot ?? fam?.head ?? DEFAULT_HEAD,

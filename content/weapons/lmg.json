@@ -19,7 +19,7 @@
   "botRange": [3, 40],
   "windupTicks": 28,
   "ammo": "rifle",
-  "recoil": { "kick": 0.006, "bloom": 0.002, "maxBloom": 0.04, "recover": 0.001 },
+  "recoil": { "bloom": 0.002, "maxBloom": 0.04, "recover": 0.001 },
   "view": {
     "model": "guns/gatling_gun.glb",
     "viewOffset": [0.25, -0.31, 0.74],
@@ -34,6 +34,7 @@
     "sound": "fire.smg"
   },
   "notes": {
+    "recoil": "The legacy spread bloom (bloom per shot, cap, recovery per tick). With a family its spread comes from the family's accuracy; `maxBloom` still sets how long bots fire their bursts.",
     "group": "The extended arsenal: every one fires differently. 7: automatics.",
     "design": "Huge belt, poor handling: slow to draw and a long, dangerous reload.",
     "model": "The owner's Rotary Gatling Gun (Meshy, owned; content/guns.json), the gun-pack machine gun as the fallback. (Before it: a Meshy community rotary-barrel gun, CC0 per the owner: no stock, so the rear handle sat at the shoulder.)",

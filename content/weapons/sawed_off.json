@@ -21,7 +21,7 @@
   "botRange": [0, 6],
   "ammo": "shells",
   "knockback": 1.2,
-  "recoil": { "kick": 0.08, "bloom": 0, "maxBloom": 0, "recover": 0 },
+  "recoil": { "bloom": 0, "maxBloom": 0, "recover": 0 },
   "view": {
     "model": "weapons/sawed_off.glb",
     "viewOffset": [0.21, -0.21, 0.52],

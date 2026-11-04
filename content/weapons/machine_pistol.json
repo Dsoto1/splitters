@@ -17,7 +17,7 @@
   "raiseTicks": 12,
   "botRange": [0, 14],
   "ammo": "light",
-  "recoil": { "kick": 0.008, "bloom": 0.006, "maxBloom": 0.07, "recover": 0.002 },
+  "recoil": { "bloom": 0.006, "maxBloom": 0.07, "recover": 0.002 },
   "view": {
     "model": "weapons/machine_pistol.glb",
     "viewOffset": [0.2, -0.18, 0.42],

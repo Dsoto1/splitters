@@ -19,7 +19,7 @@
   "botRange": [5, 45],
   "burst": { "count": 3, "intervalTicks": 4 },
   "ammo": "rifle",
-  "recoil": { "kick": 0.018, "bloom": 0.006, "maxBloom": 0.03, "recover": 0.002 },
+  "recoil": { "bloom": 0.006, "maxBloom": 0.03, "recover": 0.002 },
   "view": {
     "model": "guns/neon_flux.glb",
     "viewOffset": [0.21, -0.21, 0.52],
@@ -29,6 +29,7 @@
     "sound": "fire.rifle"
   },
   "notes": {
+    "recoil": "The legacy spread bloom (bloom per shot, cap, recovery per tick). With a family its spread comes from the family's accuracy; `maxBloom` still sets how long bots fire their bursts.",
     "group": "The extended arsenal: every one fires differently. 3: rifles.",
     "model": "The owner's Neon Flux (Meshy, owned), the gun-pack rifle as the fallback."
   }
