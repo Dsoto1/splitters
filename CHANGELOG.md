@@ -62,6 +62,7 @@ made only on a commit that passed CI on a check branch.
 
 **Infrastructure**
 - Faster CI: a commit whose code matches one already green on a check branch (only docs differ) isn't tested again; `tools/ci/train.mjs` lands several green branches as one candidate; a change to the match renderer or a content manifest runs only the browser tests that exercise it.
+- Pickups are data: health, armour, ammo, throwables, weapon pickups, powerups and the other pickup items (amounts, respawn times, bot value) and the pickup rules (armour cap and absorption, powerup multiples, pickup reach) live in `content/pickups.json` and show in the Workbench. Nothing plays differently.
 
 ## 0.7.0 (2026-11-03)
 
