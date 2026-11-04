@@ -4065,15 +4065,16 @@ async function dedicatedhostFlow(browser) {
     // Nothing but /host may look for a Host Service on this computer.
     page.on('request', (r) => /127\.0\.0\.1:(7797|7801|7802)/.test(r.url()) && probes.push(r.url()));
     await page.addInitScript((n) => localStorage.setItem('cs.name', n), name);
-    // (Opened beside a Sandgate match on a loaded machine: Playwright's 30 s default ran out.)
-    await page.goto(url, { waitUntil: 'domcontentloaded', timeout: T(60000) });
+    // Each caller waits for what it needs next (the menu, or play). Loading the page's scripts beside a Sandgate match
+    // on a loaded machine outran Playwright's 30 s, then even a minute: that wait has its own room.
+    await page.goto(url, { waitUntil: 'commit', timeout: T(60000) });
     return page;
   };
   const playing = () => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown';
 
   // A player finds it in the game browser and joins from there.
   const player = await open('Visitor', `${CLIENT}/?${hub}`);
-  await player.waitForFunction(() => window.__front, null, { timeout: T(30000) });
+  await player.waitForFunction(() => window.__front, null, { timeout: T(90000) });
   await player.evaluate(() => document.getElementById('nav-online')?.click());
   const row = await player.waitForFunction(() => [...document.querySelectorAll('.gb-row:not(.gb-head)')].map((r) => r.textContent).find((t) => t.includes('E2E Dedicated')) ?? null, null, { timeout: T(30000) }).then((h) => h.jsonValue(), () => null);
   check(!!row && row.includes('Dedicated host') && !row.includes('Player-hosted'), `the game browser shows it as a Dedicated host (${row})`);
