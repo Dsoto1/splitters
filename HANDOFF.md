@@ -10,7 +10,7 @@ The session branch is **`claude/launcher-ui-map-cards`**. Poll CI without auth:
 `curl -s "https://api.github.com/repos/Dsoto1/splitters/actions/workflows/ci.yml/runs?branch=check/candidate&per_page=1"`.
 Use `pnpm typecheck`, not `pnpm -s typecheck` (the silent flag hides type errors; one reached CI that way).
 
-### Content scalability step 4: vehicles, turrets and NPC roles as data (`wip/vehicles-npcs-data`, agent, 2026-11-04; not merged; on `wip/per-pack-content` 27d7a58)
+### Content scalability step 4: vehicles, turrets and NPC roles as data (`wip/vehicles-npcs-data`, agent, 2026-11-04; not merged; on `wip/per-pack-content` eee1833, which has main)
 docs/CONTENT_SCALABILITY.md step 4, same pattern as weapons; how to add one: docs/CONTENT_PIPELINE.md, "Vehicles, turrets and NPC roles".
 - **Where things are now:** `content/vehicles/<id>.json` (one per mount: the 17 placeable ones with an `order`, which
   is MapMaker's palette order, and the 2 route crafts `airplane` / `dropship_drop`; kind, model, health, box, seats
