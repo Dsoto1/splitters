@@ -420,7 +420,7 @@ The first item of the owner's queue above. Three commits:
 - Tests: tools/ci/test/greenTree.test.mjs, train.test.mjs, testChanged.test.mjs; select.test.mjs's "runs everything" list
   lost view.ts and content/props.json (they no longer do) and gained models.json, packs.json, intake/, assets-src/.
 - Not proven on GitHub yet: the github-script step (dynamic import of greenTree.mjs, listWorkflowRuns) needs one check/ run.
-### Airliner: Meshy shell, in-house cabin kit, Runway Nine rework (`wip/airliner`, agent, 2026-11-04; pushed, not merged; from wip/per-pack-content eee1833)
+### Airliner: Meshy shell, in-house cabin kit, Runway Nine rework (`wip/airliner`, agent, 2026-11-04; pushed, not merged; from wip/per-pack-content eee1833, origin/main merged)
 Owner's note on the old plane: "airplane looks like roblox/minecraft. not good". Pictures (before, after, cabin,
 cockpit, bridge, stairs, wing, tail): agent scratchpad `airliner/before-*.png`, `airliner/after-*.png`; MapMaker
 steps `airliner/pass1.mjs`, `pass2.mjs` (driver `airliner/maker-air.mjs`, maker3 plus a `logic` op and chunked
@@ -454,6 +454,7 @@ deletes), placements `airliner/layout.mjs`.
   In the logic panel a card's buttons hold the rule's index at render time: redraw the panel between edits. The
   generated prop table does not escape apostrophes in names.
 - **Not done:** an exterior step at the over-wing exits for bots; cargo-hold interior (the old hold is gone).
+- **Checks** (merged origin/main 2386d48 after; content:rebuild changed nothing): `pnpm typecheck` clean; `pnpm test:changed` 1306 + 308 passed; validate-map 0 issues; e2e (`CI=1`, ports 4822/7893, `E2E_MAPS=runway_nine`) editor PASS 183 s, scenery PASS 78 s, maps PASS 40 s. Needs a `check/` run before main (shared code: validate.ts, the prop table).
 
 ### Map reworks, batch 2 (`wip/map-rework-2`, agent, 2026-11-04; pushed, not merged; from wip/map-rework 9b2373f)
 Same method as batch 1 below (MapMaker driven by Playwright, steps in agent scratchpad `rework/<map>/pass*.mjs`,
