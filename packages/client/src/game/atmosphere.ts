@@ -30,6 +30,9 @@ const MIN_TEXELS = 6;
  * as they're created (map, props, characters, pickups); the first-person
  * view model, the sky and the far backdrop are left out.
  */
+/** Small clutter props (propVisuals.ts `isSmallProp`) cast shadows only within this many metres of the camera. */
+export const SMALL_CASTER_REACH = 15;
+
 export class Atmosphere {
   private shadows: ShadowGenerator | null = null;
   private pipeline: DefaultRenderingPipeline | null = null;
@@ -104,7 +107,10 @@ export class Atmosphere {
         for (let i = 0; i < length; i++) {
           const m = list[i]!;
           const b = m.getBoundingInfo().boundingSphere;
-          if (Vector3.Distance(b.centerWorld, c) - b.radiusWorld > reach) continue;
+          const d = Vector3.Distance(b.centerWorld, c) - b.radiusWorld;
+          if (d > reach) continue;
+          // Small clutter (grass, flowers, small rocks: propVisuals' `smallCaster`) casts only near the camera.
+          if (d > SMALL_CASTER_REACH && (m.metadata as { smallCaster?: boolean } | null)?.smallCaster) continue;
           if (off.size && underAny(m, off)) continue;
           near.push(m);
         }

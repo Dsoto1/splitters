@@ -110,8 +110,9 @@ import type { RendererKind } from '../engine.ts';
 import { Hud } from './hud.ts';
 import { MountState } from './mountState.ts';
 import { LocalTransport } from './localTransport.ts';
-import { netProbe, perfProbe } from './perfProbe.ts';
+import { SYS, netProbe, perfProbe } from './perfProbe.ts';
 import { PerfOverlay, loadPerfOverlay, savePerfOverlay } from './perfOverlay.ts';
+import { PerfRecorder, captureTrace, downloadJson, fileStamp, type RecorderContext } from './perfRecorder.ts';
 import { NetTransport } from './netTransport.ts';
 import { HostPanel } from './hostPanel.ts';
 import { loadSignaling, type HostLink } from './transport.ts';
@@ -394,6 +395,29 @@ export class GameSession {
   private frameMs = 0;
   /** The performance overlay's measurements (on while it shows). */
   private readonly perf = new PerfOverlay();
+  /** The match recording while "Record performance" is on (perfRecorder.ts). */
+  private recorder: PerfRecorder | null = null;
+  /** What a recording (and a trace's header) needs to know about the moment. */
+  private recorderContext(): RecorderContext {
+    const cam = this.view.cameraPosition();
+    return {
+      map: this.map?.metadata.name ?? '?',
+      mode: this.rules?.mode ?? '?',
+      players: this.view.avatarCount + 1,
+      match: this.opts.transport.label,
+      renderer: this.opts.rendererKind,
+      pos: this.local ? [this.drawnPos.x, this.drawnPos.y, this.drawnPos.z] : [cam.x, cam.y, cam.z],
+      server: this.serverStats,
+      shaders: this.view.shaderCount(),
+    };
+  }
+  /** Stop the recording and download it. */
+  private stopRecording(): void {
+    const r = this.recorder;
+    if (!r) return;
+    this.recorder = null;
+    downloadJson(`tiletrigger-perf-${fileStamp(this.map?.metadata.name ?? 'match')}.json`, r.finish());
+  }
   private lastCorrections = 0;
   private correctionsPerSec = 0;
   private bytesInAt = 0;
@@ -635,6 +659,39 @@ export class GameSession {
       },
       { signal },
     );
+    // Record performance (a whole match, downloaded as a file on stop) and the 10 s trace (docs/PERF_TOOLS.md).
+    const recordBtn = $('perf-record') as HTMLButtonElement;
+    const recordNote = $('perf-record-note');
+    recordBtn.addEventListener(
+      'click',
+      () => {
+        if (this.recorder) {
+          this.stopRecording();
+          recordBtn.textContent = 'Start recording';
+          recordNote.textContent = 'Saved to your downloads: send that file.';
+          return;
+        }
+        this.recorder = new PerfRecorder(() => this.recorderContext());
+        recordBtn.textContent = 'Stop and save';
+        recordNote.textContent = 'Recording: play on. Stop here (or leave the match) to save the file.';
+      },
+      { signal },
+    );
+    const traceBtn = $('perf-trace') as HTMLButtonElement;
+    traceBtn.addEventListener(
+      'click',
+      () => {
+        if (traceBtn.disabled) return;
+        traceBtn.disabled = true;
+        recordNote.textContent = 'Tracing for 10 s: close this menu and play.';
+        const x = this.recorderContext();
+        void captureTrace(10, `tiletrigger-${fileStamp(x.map)}`, { map: x.map, mode: x.mode, players: x.players, renderer: x.renderer }).then((n) => {
+          traceBtn.disabled = false;
+          recordNote.textContent = `Trace saved to your downloads (${n} spans).`;
+        });
+      },
+      { signal },
+    );
     const bloodBox = $('blood-toggle') as HTMLInputElement;
     bloodBox.checked = this.view.blood.enabled;
     bloodBox.addEventListener(
@@ -707,7 +764,9 @@ export class GameSession {
         if (!perfProbe.on) return this.onMessage(m);
         const t0 = performance.now();
         this.onMessage(m);
-        perfProbe.msg += performance.now() - t0;
+        const t1 = performance.now();
+        perfProbe.msg += t1 - t0;
+        if (perfProbe.trace) perfProbe.mark('tt:net in', t0, t1);
       },
       // The link closed by itself: after the welcome that's a lost connection (a sleeping phone, a network blip), not a refusal.
       (reason) => this.exit(reason, this.welcomed && !this.rejected ? 'lost' : undefined),
@@ -1319,6 +1378,9 @@ export class GameSession {
   exit(reason?: string, how?: 'lost' | 'rejected'): void {
     if (this.closed) return;
     this.closed = true;
+    // A recording running when the match ends is saved, not lost.
+    this.stopRecording();
+    perfProbe.use('overlay', false);
     this.advertiser?.stop();
     const local = this.opts.transport instanceof LocalTransport ? this.opts.transport : null;
     if (reason === 'travel' && this.travel && this.peerHost && local) {
@@ -2087,12 +2149,17 @@ export class GameSession {
   /** Advance prediction at a fixed 60 Hz and render one frame. */
   frame(): void {
     if (this.closed) return;
+    const t0 = performance.now();
     if (!$('pause').hidden) {
       this.pauseMenu.pollPad();
       this.drawPause();
     }
     const now = performance.now();
-    if (perfProbe.on) perfProbe.beginFrame(now);
+    if (perfProbe.on) {
+      perfProbe.beginFrame(t0);
+      // The pause menu is HUD.
+      perfProbe.add(SYS.hud, t0);
+    }
     // Snapshots that came in a burst and wait merged: this frame draws the newest, not the one before it.
     this.opts.transport.flush?.();
     const dt = Math.min(0.25, (now - this.last) / 1000);
@@ -2420,6 +2487,7 @@ export class GameSession {
     this.view.updateLocalTrolley(local?.alive && !self && !this.seat && local.state.zip !== undefined ? this.drawnPos : null, local?.state.zip, local?.scale ?? 1);
     // Hostage Rescue: the hostages walk about like everyone else.
     const hostages = this.modeHud?.hostagePoses() ?? [];
+    const tAvatars = perfProbe.on ? performance.now() : 0;
     this.view.updateAvatars(
       hostages.length ? [...poses, ...hostages] : poses,
       self ? -1 : this.slot,
@@ -2447,11 +2515,13 @@ export class GameSession {
       this.mounts?.riders(),
       this.mounts?.sitters(),
     );
+    if (tAvatars) perfProbe.add(SYS.avatars, tAvatars);
     this.sfx.remoteSteps(poses);
     if (this.fxWatch) {
       const me = this.local;
       this.fxWatch.update(me ? [...poses.filter((p) => p.slot !== this.slot), { slot: this.slot, x: me.state.pos.x, y: me.state.pos.y, z: me.state.pos.z, alive: me.alive, grounded: me.state.grounded, ...(me.state.zip !== undefined ? { zip: me.state.zip } : {}) }] : poses);
     }
+    const tHud = perfProbe.on ? performance.now() : 0;
     this.hud.renderScoreboard(this.input.held('Tab') || this.phase === 'intermission', this.scores, this.slot, this.phase === 'intermission');
     this.hud.setTeamScore(this.scores, this.slot, this.rules?.scoreLimit ?? 0, this.allied);
     if (local) {
@@ -2504,14 +2574,17 @@ export class GameSession {
       this.botStates,
     );
     this.perf.visible = this.showStats;
+    if (tHud && perfProbe.on) perfProbe.add(SYS.hud, tHud);
     if (!perfProbe.on) return this.view.render();
-    if (this.perf.visible) this.view.countDraws();
+    this.view.countDraws();
     const r0 = performance.now();
     this.view.render();
     const end = performance.now();
     perfProbe.render = end - r0;
     perfProbe.endFrame(end);
-    if (this.perf.visible) this.perf.noteFrame(this.view.perfCounts());
+    const counts = this.view.perfCounts();
+    this.perf.noteFrame(counts);
+    this.recorder?.noteFrame(counts);
   }
 }
 
