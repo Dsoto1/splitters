@@ -31,6 +31,7 @@
     "content:vehicles": "node tools/content/vehicles.mjs",
     "content:npcs": "node tools/content/npcs.mjs",
     "content:pickups": "node tools/content/pickups.mjs",
+    "content:materials": "node tools/content/materials.mjs",
     "dev:hub": "pnpm --filter @tiletrigger/server hub",
     "host": "pnpm --silent --filter @tiletrigger/host start",
     "host:package": "pnpm --filter @tiletrigger/host package --",
