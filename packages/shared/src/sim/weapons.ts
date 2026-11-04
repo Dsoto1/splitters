@@ -1159,8 +1159,8 @@ export const WEAPONS_BY_SLOT: readonly WeaponDefinition[] = Object.values(CORE_W
  * key cycles through them), so the slot can't identify a weapon.
  */
 const WEAPON_LIST: readonly WeaponDefinition[] = Object.values(CORE_WEAPONS);
-const CODES = new Map(WEAPON_LIST.map((w, i) => [w.id, i + 1]));
-export const weaponCode = (def: Pick<WeaponDefinition, 'id'>): number => CODES.get(def.id) ?? 0;
+let codes: Map<string, number> | undefined; // built on first use (as in serverRules.ts): the menu sends no weapons
+export const weaponCode = (def: Pick<WeaponDefinition, 'id'>): number => (codes ??= new Map(WEAPON_LIST.map((w, i) => [w.id, i + 1]))).get(def.id) ?? 0;
 export const weaponByCode = (code: number): WeaponDefinition | undefined => WEAPON_LIST[code - 1];
 
 /**

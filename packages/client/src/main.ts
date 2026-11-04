@@ -7,7 +7,7 @@ import '@fontsource/chakra-petch/700-italic.css';
 import '@fontsource/barlow/400.css';
 import '@fontsource/barlow/500.css';
 import '@fontsource/barlow/600.css';
-import { CHECKPOINT_MAX_AGE_SECONDS, HANDOFF_FOLLOW_SECONDS, HANDOFF_JOIN_SECONDS, MapRotation, gameIsGone, keepJoining, type JoinTry, isRetiredMap, isGameMode, loadMap, mapCanRun, playableModes, playlistNext, rulesForMap, rulesForMode, setIdRandom, type BotSet, type CarryOver, type GameMode, type MapDocument, type MatchCheckpoint, type MatchRules, type Playlist } from '@tiletrigger/shared';
+import { CHECKPOINT_MAX_AGE_SECONDS, HANDOFF_FOLLOW_SECONDS, HANDOFF_JOIN_SECONDS, MapRotation, gameIsGone, keepJoining, type JoinTry, isRetiredMap, isGameMode, mapCanRun, playableModes, playlistNext, rulesForMap, rulesForMode, setIdRandom, type BotSet, type CarryOver, type GameMode, type MapDocument, type MatchCheckpoint, type MatchRules, type Playlist } from '@tiletrigger/shared';
 import { AudioSystem } from './audio/audio.ts';
 import { createEngine, type RendererKind } from './engine.ts';
 import { currentFrameCap, loadRenderScale, renderRatio } from './game/graphicsSettings.ts';
@@ -21,8 +21,8 @@ import { setWeaponIconSource } from './frontend/weaponIcons.ts';
 import { PortraitRenderer } from './frontend/portraits.ts';
 import type { GameSession, SessionEnd, SessionOptions, Travel } from './game/session.ts';
 import { dropListing } from './game/hub.ts';
-import { listLibrary, openFromLibrary } from './editor/storage.ts';
 import { MAP_INDEX, builtInMapJson, loadBuiltInMap, type MapIndexEntry } from './mapIndex.ts';
+import { loadMapContent } from './mapContentLoader.ts';
 import { publishedMaps, type PublishedEntry } from './publishedMaps.ts';
 import { PLAYLISTS, addToSuite, inSuite } from './playlists.ts';
 import { installFullscreenKeys } from './fullscreen.ts';
@@ -198,10 +198,10 @@ function applyPublished(maps: ArcadeMap[], published: ReadonlyMap<string, Publis
   maps.push(...rest);
 }
 
-/** Your MapMaker maps (this browser's library), for an offline host's Change map. */
-function ownMaps(): ArcadeMap[] {
-  return listLibrary().flatMap((e): ArcadeMap[] => {
-    const r = openFromLibrary(e.id);
+/** Your MapMaker maps (this browser's library), for an offline host's Change map (in a match: `code` is its code). */
+function ownMaps(code: MatchCode): ArcadeMap[] {
+  return code.listLibrary().flatMap((e): ArcadeMap[] => {
+    const r = code.openFromLibrary(e.id);
     return 'map' in r ? [loadedEntry(`own:${e.id}`, r.map, { blurb: 'Your map', modes: playableModes(r.map), bots: 4, group: 'Your' })] : [];
   });
 }
@@ -428,7 +428,7 @@ class App {
     void loadMatchCode().catch(() => undefined);
     await this.init();
     const file = isOfflineMap(which) ? OFFLINE_MAPS[which] : which;
-    const json = await builtInMapJson(file);
+    const [json, { loadMap }] = await Promise.all([builtInMapJson(file), loadMapContent()]);
     if (!json) return void this.showMenu(`No map called ${which}`);
     const arena = loadMap(json);
     if (!arena.ok) return void this.showMenu('Built-in map failed to load');
@@ -502,11 +502,11 @@ class App {
   }
 
   /** The host's Change map (pause menu → Match): the Arcade's map cards; offline, your MapMaker maps too. */
-  private mapPicker: NonNullable<SessionOptions['mapPicker']> = (o) =>
+  private mapPicker = (code: MatchCode): NonNullable<SessionOptions['mapPicker']> => (o) =>
     this.front!.hostMapPicker({
       ...o,
       isSuite: inSuite,
-      own: o.suiteOnly ? [] : ownMaps(),
+      own: o.suiteOnly ? [] : ownMaps(code),
       // A built-in map loads when its card is picked; usually it's in by the time Change map is pressed.
       onPick: (m, mode) => (m.map ? o.onPick(m.map, mode) : void m.load().then((doc) => o.onPick(doc, mode), (e: unknown) => console.warn('map failed to load', e))),
     });
@@ -533,7 +533,8 @@ class App {
       return void this.showMenu(chain ? `${chain.playlist.name} complete!` : '');
     }
     const json = inSuite(id) ? await builtInMapJson(id).catch(() => undefined) : undefined;
-    const loaded = json ? loadMap(json) : null;
+    const content = json ? await loadMapContent().catch(() => null) : null;
+    const loaded = json && content ? content.loadMap(json) : null;
     if (!loaded?.ok) {
       this.chain = null;
       travel.hosting?.peer.close();
@@ -779,7 +780,7 @@ class App {
       autoHost: !!o.autoHost,
       autoList: !!o.autoList,
       ...(o.greeting ? { greeting: o.greeting } : {}),
-      mapPicker: this.mapPicker,
+      mapPicker: this.mapPicker(m),
       ...(o.rotation ? { rotation: o.rotation } : {}),
       onExit: (reason, travel, how, end) => {
         if (this.session === session) this.session = undefined;
