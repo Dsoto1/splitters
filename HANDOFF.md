@@ -220,6 +220,47 @@ The first item of the owner's queue above. Three commits:
 - Tests: tools/ci/test/greenTree.test.mjs, train.test.mjs, testChanged.test.mjs; select.test.mjs's "runs everything" list
   lost view.ts and content/props.json (they no longer do) and gained models.json, packs.json, intake/, assets-src/.
 - Not proven on GitHub yet: the github-script step (dynamic import of greenTree.mjs, listWorkflowRuns) needs one check/ run.
+### Map reworks, batch 2 (`wip/map-rework-2`, agent, 2026-11-04; pushed, not merged; from wip/map-rework 9b2373f)
+Same method as batch 1 below (MapMaker driven by Playwright, steps in agent scratchpad `rework/<map>/pass*.mjs`,
+pictures in `rework/<map>-before-*.png` / `-after-*.png` and `rework/<map>/cmp-*.png`). New driver ops: terrain
+paint strokes with a ground material, the sky pane's controls redrawn between changes (a stale pane reverted the
+sky), per-pass `SEED`.
+- **Fogbound:** 22 craters with the lower brush (four hold swamp mud), rough rises at the rear corners, Meshy
+  armoured trucks and burnt cars in no-man's land, a ruined farm on each flank, eight dead trees, stormy sky.
+- **Citadel:** a Medieval Village town a level down the hill, south of the bailey: a gate in the bailey's south
+  wall (tile Walls → wide) with a 0.2 m cobble step, the slope smoothed (smooth brush), a market square (the
+  Meshy fountain and stalls), houses, a smithy, a bell tower turned to open onto the square, a watchtower; four
+  spawns, large health, the marksman (in the bell tower; its belfry and the watchtower's lookout don't path), and
+  the fire basket swapped for a fire bowl.
+- **Eagle Spires:** four ziplines, one from each flank spire's top to the valley. They must be under 35°, start
+  near the top's edge and use 4.9-5.1 m posts to pass the reach and clearance checks. Frozen-rock cover walls on
+  the mesas and the summit, boulder pairs in the valley, snow caps (paint brush), "Paint steep slopes as stone".
+- **Express Lobby:** five steel-grating sky bridges with glass rails across the atrium (alternating ends); street
+  dressing. Sofas and vending machines on the 3 m balconies cut off routes, so the balconies only got planters.
+- **Gallows Yard:** a Wild West gallows on the central platform (railgun moved 4.5 m along it), fire bowls for the
+  fire baskets, weeping angels, sarcophagi, night sky, mist 0.6.
+- **Sandgate:** Desert City theme, rooms roofed with desert facades, dc_dome/dc_dome_blue on the roofs, market
+  dressing, a backdrop (it had none). Layout unchanged; the `sandgate` e2e flow passes.
+- **Sandfall Colosseum:** ludus west, market east, cypress avenues, four broken columns on the sand. MapMaker's
+  in-page check warns the arena hill can't be reached from spawn_268; it warns the same on the original map, and
+  validate-map reports 0 issues.
+- **Not reached, and why:**
+  - **runway_nine:** the owner wants an imported airliner. No airliner model exists in the props or vehicles (only
+    the transport plane and dropship that fly over). It needs a Meshy model, which can't be made without the
+    owner's go-ahead on credits; the walkable cabin would stay as blocks under it.
+  - **apex_ring:** needs a new race-car vehicle class (a MOUNT_DEFS entry on kart handling with an imported car
+    model, wheels and tests). That is engineering work, not map work.
+  - **underdrain** ("not what I thought it would be. layout strange"): needs the owner to say what he expected.
+  - **capitol_mall, atomic_court, backwoods, st_johns (better paths), iron_compound (spawns, layout):** not
+    started.
+- Checks: validate-map 0 issues on each map. These e2e flows pass: maps (fogbound, citadel, eagle_spires,
+  express_lobby, gallows_yard, sandfall_colosseum), sandgate, citadel and zombies.
+  **lobby fails here with the new Sandgate and passes with the old one.** The lobby flow hosts on Sandgate. Twice
+  the host's check-in reported 2 players only after the check's 30 s wait (the listing then showed 2); once the
+  join timed out. That points to the heavier Sandgate (roofs, facades, domes) slowing the SwiftShader host page at
+  load 12, not to a broken map. Watch the lobby shard on CI; if it fails there too, trim Sandgate's domes and
+  facades or give that check more time.
+
 ### Map reworks from the owner's review (`wip/map-rework`, agent, 2026-11-03; ST and VZ on main, the rest pushed, not merged)
 Owner's notes (review page, rounds 1 and 2) for the rework-verdict maps. Every edit was made in MapMaker by a
 Playwright driver (agent scratchpad `rework/tools/maker3.mjs`): Import, palette card plus a click on the view, then

@@ -1,13 +1,13 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 17,
+  "formatVersion": 25,
   "metadata": {
     "id": "sandgate",
     "name": "Sandgate",
     "author": "Tile Trigger",
     "description": "A sun-baked desert town for Team Deathmatch. Embers spawn in the south, Tide in the north. A long street runs up the west side, mid doors split the centre, covered tunnels wind up the east, and two crate-filled squares wait at the north end: bomb sites A and B in Bomb mode.",
     "createdAt": "2026-10-23T00:00:00.000Z",
-    "updatedAt": "2026-10-23T00:00:00.000Z",
+    "updatedAt": "2026-11-04T00:33:00.285Z",
     "parentId": null,
     "recommendedPlayers": {
       "min": 4,
@@ -21,7 +21,7 @@
   "classicStructure": {
     "cellSize": 8,
     "levelHeight": 4,
-    "theme": "core.desert",
+    "theme": "core.desert_city",
     "tiles": [
       {
         "id": "tile_001",
@@ -133,7 +133,11 @@
         "x": 1,
         "y": 0,
         "z": 0,
-        "rotation": 0
+        "rotation": 0,
+        "options": {
+          "ceiling": "roof",
+          "facade": "desert_plaster"
+        }
       },
       {
         "id": "tile_015",
@@ -333,7 +337,11 @@
         "x": 5,
         "y": 3,
         "z": 0,
-        "rotation": 0
+        "rotation": 0,
+        "options": {
+          "ceiling": "roof",
+          "facade": "desert_ashlar"
+        }
       },
       {
         "id": "tile_040",
@@ -397,7 +405,11 @@
         "x": 7,
         "y": 6,
         "z": 0,
-        "rotation": 0
+        "rotation": 0,
+        "options": {
+          "ceiling": "roof",
+          "facade": "desert_ashlar"
+        }
       },
       {
         "id": "tile_048",
@@ -461,7 +473,11 @@
         "x": 8,
         "y": 0,
         "z": 1,
-        "rotation": 0
+        "rotation": 0,
+        "options": {
+          "ceiling": "roof",
+          "facade": "desert_plaster"
+        }
       },
       {
         "id": "tile_056",
@@ -469,7 +485,11 @@
         "x": 8,
         "y": 1,
         "z": 1,
-        "rotation": 0
+        "rotation": 0,
+        "options": {
+          "ceiling": "roof",
+          "facade": "desert_ashlar"
+        }
       },
       {
         "id": "tile_057",
@@ -477,7 +497,11 @@
         "x": 8,
         "y": 2,
         "z": 1,
-        "rotation": 0
+        "rotation": 0,
+        "options": {
+          "ceiling": "roof",
+          "facade": "desert_ashlar"
+        }
       },
       {
         "id": "tile_058",
@@ -485,7 +509,11 @@
         "x": 8,
         "y": 3,
         "z": 1,
-        "rotation": 0
+        "rotation": 0,
+        "options": {
+          "ceiling": "roof",
+          "facade": "desert_plaster"
+        }
       },
       {
         "id": "tile_059",
@@ -493,7 +521,11 @@
         "x": 8,
         "y": 4,
         "z": 1,
-        "rotation": 0
+        "rotation": 0,
+        "options": {
+          "ceiling": "roof",
+          "facade": "desert_ashlar"
+        }
       },
       {
         "id": "tile_060",
@@ -501,7 +533,11 @@
         "x": 7,
         "y": 2,
         "z": 1,
-        "rotation": 0
+        "rotation": 0,
+        "options": {
+          "ceiling": "roof",
+          "facade": "desert_ashlar"
+        }
       },
       {
         "id": "tile_061",
@@ -509,7 +545,11 @@
         "x": 6,
         "y": 2,
         "z": 1,
-        "rotation": 0
+        "rotation": 0,
+        "options": {
+          "ceiling": "roof",
+          "facade": "desert_plaster"
+        }
       },
       {
         "id": "tile_062",
@@ -517,7 +557,11 @@
         "x": 1,
         "y": 0,
         "z": 1,
-        "rotation": 0
+        "rotation": 0,
+        "options": {
+          "ceiling": "roof",
+          "facade": "desert_ashlar"
+        }
       },
       {
         "id": "tile_063",
@@ -525,7 +569,11 @@
         "x": 5,
         "y": 3,
         "z": 1,
-        "rotation": 0
+        "rotation": 0,
+        "options": {
+          "ceiling": "roof",
+          "facade": "desert_ashlar"
+        }
       },
       {
         "id": "tile_064",
@@ -533,7 +581,11 @@
         "x": 7,
         "y": 6,
         "z": 1,
-        "rotation": 0
+        "rotation": 0,
+        "options": {
+          "ceiling": "roof",
+          "facade": "desert_plaster"
+        }
       },
       {
         "id": "tile_065",
@@ -541,7 +593,11 @@
         "x": 3,
         "y": 5,
         "z": 1,
-        "rotation": 0
+        "rotation": 0,
+        "options": {
+          "ceiling": "roof",
+          "facade": "desert_ashlar"
+        }
       },
       {
         "id": "tile_066",
@@ -549,7 +605,11 @@
         "x": 4,
         "y": 5,
         "z": 1,
-        "rotation": 0
+        "rotation": 0,
+        "options": {
+          "ceiling": "roof",
+          "facade": "desert_ashlar"
+        }
       }
     ]
   },
@@ -3049,6 +3109,258 @@
       "yaw": 0.3,
       "scale": 1.2,
       "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_dmxokrxrmg",
+      "position": [
+        8,
+        8,
+        0
+      ],
+      "kind": "prop",
+      "model": "prop.dc_dome",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_jo92buckom",
+      "position": [
+        40,
+        8,
+        24
+      ],
+      "kind": "prop",
+      "model": "prop.dc_dome",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_1b7vb2ebxt",
+      "position": [
+        56,
+        8,
+        48
+      ],
+      "kind": "prop",
+      "model": "prop.dc_dome",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_ddrdoryh7l",
+      "position": [
+        28,
+        8,
+        40
+      ],
+      "kind": "prop",
+      "model": "prop.dc_dome_blue",
+      "yaw": 0,
+      "scale": 1.3,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_w42hr4qujz",
+      "position": [
+        52,
+        8,
+        16
+      ],
+      "kind": "prop",
+      "model": "prop.dc_dome",
+      "yaw": 0,
+      "scale": 1.2,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_6ctcqgmocs",
+      "position": [
+        64,
+        8,
+        4
+      ],
+      "kind": "prop",
+      "model": "prop.dc_dome",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_6ac1tuagd0",
+      "position": [
+        64,
+        8,
+        28
+      ],
+      "kind": "prop",
+      "model": "prop.dc_dome",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_zpwk35dqcp",
+      "position": [
+        17.5,
+        -0.43,
+        30
+      ],
+      "kind": "prop",
+      "model": "prop.dc_palm_planter",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_5ts8ky0uqr",
+      "position": [
+        17.5,
+        0,
+        10
+      ],
+      "kind": "prop",
+      "model": "prop.dc_jars",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_t7qf6k4zjn",
+      "position": [
+        22,
+        0,
+        2
+      ],
+      "kind": "prop",
+      "model": "prop.dc_market_stall",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_2jqidvnp6y",
+      "position": [
+        38,
+        0,
+        2.5
+      ],
+      "kind": "prop",
+      "model": "prop.dc_vase",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_05ldagivf5",
+      "position": [
+        46,
+        0,
+        2
+      ],
+      "kind": "prop",
+      "model": "prop.dc_spice_baskets",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_mfl0mwrrnn",
+      "position": [
+        52,
+        0,
+        46
+      ],
+      "kind": "prop",
+      "model": "prop.dc_well",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_x0rc1yotvd",
+      "position": [
+        10,
+        0,
+        58
+      ],
+      "kind": "prop",
+      "model": "prop.dc_palm_planter",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_ypl82jhglz",
+      "position": [
+        30,
+        0,
+        60
+      ],
+      "kind": "prop",
+      "model": "prop.dc_jars",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_7nlyaxevjz",
+      "position": [
+        60,
+        0,
+        58
+      ],
+      "kind": "prop",
+      "model": "prop.cargo_crate_stack",
+      "yaw": 1.571,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_amleo2l0kj",
+      "position": [
+        14,
+        0,
+        50
+      ],
+      "kind": "prop",
+      "model": "prop.cargo_crate_stack",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_w9sdjfv9q9",
+      "position": [
+        2,
+        0,
+        46
+      ],
+      "kind": "prop",
+      "model": "prop.dc_rug_rack",
+      "yaw": 1.571,
+      "scale": 1,
+      "solid": true,
       "tint": null
     }
   ],
@@ -54038,7 +54350,12 @@
     ]
   },
   "bounds": null,
-  "backdrop": null,
+  "backdrop": {
+    "sky": "clear",
+    "scenery": "dunes",
+    "ground": "stone",
+    "haze": 0.45
+  },
   "physics": null,
   "blood": null,
   "teamSetup": null,
