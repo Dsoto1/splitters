@@ -35,6 +35,17 @@ Docs: CONTENT_PIPELINE "Surface types", GUNPLAY_SPEC §8 implementation note.
   "pane", `core.carved_stone` thin_metal from "car", sandstone soil, cacti concrete, `iron_fence` thin_wood, ~105
   concrete-class props that look wooden, e.g. ww_* buildings). Fixing each is setting its `surface` (and adding it to
   INTENDED in the test).
+- **Checks run (after rebasing on main da7d432):** `pnpm typecheck` OK, `pnpm test:changed` OK (1343 tests),
+  `pnpm content:check` OK, e2e `physicsfx` and `arsenal` PASS (CI=1). `offline` was stopped at hand-off (18 checks
+  passed, none failed, flow not finished). Not run: the full suite (`pnpm ci:plan` says full: shared sim changed).
+  Before/after impact screenshots (trunk, bush, boulder, metal) were taken on Backwoods in the agent scratchpad.
+- **Next steps:** finish `E2E_ONLY=offline node e2e/run.mjs`; push a check/ branch for the full suite when the
+  owner merges; then procedural environment Phase 1 can read `sim/surfaceTypes.ts`.
+- **Files:** content/surface-types.json, content/props/*.json (93 `surface`), content/vfx.json (impacts by type),
+  content/sounds.json (+4 impact sounds), tools/content/surface-types.mjs (+test), materials.mjs, props-manifest.mjs,
+  build.mjs, rebuild.mjs, vfx-map.mjs, packages/shared/src/sim/{surfaceTypes,gunplay}.ts, map/materials.ts,
+  content/surfaceTypes.generated.ts, client game/{fxMap,impactVisuals,view,session,sessionAudio}.ts,
+  .control-center/workbench.json, tests packages/shared/test/surfaceTypes.test.ts (+fixture), client fxMap.test.ts.
 
 ### Look: less like a toy, part A (grade) and part B (prop surfaces) (`wip/detoy`, agent, 2026-11-04; pushed, not merged; from main 5a002f8)
 Owner's note "everything looks too much like a toy"; the approved easy wins. Two commits: A (grade) then B (surfaces).
