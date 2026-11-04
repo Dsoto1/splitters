@@ -1,9 +1,87 @@
-# Handoff: where Tile Trigger stands (2026-11-03)
+# Handoff: where Tile Trigger stands (2026-11-04)
 
 A briefing for the next Claude session or agent picking up this repo. Read
 `CLAUDE.md` first (workflow and rules), then this file. Keep this file current.
 
-## Start here (session of 2026-10-30 afternoon, handed off)
+## Start here (session of 2026-11-04, handed off to the next account)
+
+**State:** `main` = 798bf75, green. Everything below "Landed" is on main; nothing is half-merged.
+Workflow is unchanged (CLAUDE.md): work on a `wip/<name>` branch → push `check/<name>` (or a train of several) → when
+that run is green, fast-forward `main`. CI is now ~9–10 min a round (balanced shards, headless all-maps check,
+coverage map; browser map tour only nightly/tags/Run workflow; new push cancels the older check run; fail-fast).
+Poll a run without auth: `curl -s "https://api.github.com/repos/Dsoto1/splitters/actions/workflows/ci.yml/runs?branch=check/<name>&per_page=1"`.
+Repo is public: Actions minutes are free. Run fast checks locally before any push to check/ (`pnpm typecheck`,
+`pnpm content:check`, the unit tests you touched); let CI run the slow e2e. Max 2–3 agents at once (the container
+gets overloaded above that: local e2e times out and flakes). Prune landed worktrees; disk is limited.
+
+### Landed 2026-11-04 (newest first)
+- 798bf75 Hitboxes per look (+ generous margin, `HITBOX_MARGIN`), character stats (optional, default = size class),
+  match settings "Character stats" (on) and "Random characters" (off); Wealthy Otter and Shade retired; CI speed-up
+  (coverage map `maps/test_coverage.json`, `testOnly` map flag, headless allMaps tests, shard packing, fail-fast).
+- da7d432 De-toy pass: world colour grade (`WORLD_GRADE`, docs/LOOK.md) and real surfaces + real-world sizes on
+  man-made Kenney props (`content/surfaces*.json`); CC0 Meshy Community snowmobile replaces the Kenney sled.
+- e5932fb Procedural environment spec + Phase 0 audit (docs/PROCEDURAL_ENVIRONMENT*.md) with the owner's decisions.
+- c44d379 Tiles as data (content scalability step 7: core kit + edge styles) and character hands round 4.
+- f5cc70b Capitol Mall domes, roofs; Capitol Dome / Copper Dome / Pediment / Pyramidion props; room Roof surface.
+- Earlier the same day: content scalability steps 2–6, perf toolset, flaky e2e fixes, Runway Nine airliner, map
+  reworks batches 2–3, character fixes rounds 2–3 (see the entries below and CHANGELOG).
+
+### In flight
+- **Surface types** (`wip/surface-types`, worktree /home/user/wt-surfaces if the container survives): one shared
+  list of surface types (ballistic class + impact effect), optional `surface`/`ballistic` field on materials and
+  props (unset = today's guess), fixes for the misreads (bush→"bus" thin_metal, tree_plateau→metal, trunks/boulders
+  →concrete): trunks become heavy_wood (still full cover), bushes foliage (pass-through, still conceal), boulders
+  stone; client impact effects keyed by surface type. See its HANDOFF entry on that branch for exact next steps.
+  Not merged: finish, run fast checks, push `check/surface-types`, land.
+
+### Next, in the owner's agreed order
+1. **Environment Phase 1** (after surface types): vertical slice per docs/PROCEDURAL_ENVIRONMENT_AUDIT.md §10 — one
+   broadleaf, one conifer, one bush, one grass clump, one boulder, one cliff section; eye-level showcase; owner
+   reviews before Phase 2. Owner decisions are in that doc ("Owner decisions": all 13 recommendations; blocky trees
+   retired).
+2. **Texture flicker fix** (z-fighting): build-time pass in the shared geometry builder — overlapping SAME-FACING
+   coplanar faces (floors, trim/facades on walls, wall-run ends, pack tiles over core) clipped by a fixed priority;
+   back-to-back hidden faces dropped (walls stay 1 m solid, collision unchanged); audit test over maps/, MapMaker
+   warning + overlay; check float depth buffer with reverse-Z on WebGL2. Owner confirmed the cause.
+3. **Set pieces**: multi-cell placeable pieces as data (footprint, levels, parts/props/FX, door markers, rotate/
+   mirror, re-theme by style pack), MapMaker "Save selection as set piece", "Set pieces" palette tab; placed as one
+   piece AND an "Explode to tiles" option (owner confirmed both). First: the **carriageway / pend** family (owner's
+   photo: Collegiate Gothic stone, shallow segmental arch underpass, doors into both buildings from the passage, the
+   2nd floor crossing over the arch), plus an enclosed **skybridge**; place one in St. John's. Then the brainstorm list
+   (power core hall, catwalk bridge, twin-stair overlook, atrium tower, loading dock, sunken arena, reactor room,
+   bunker cluster, courtyard gate, server vault, crossroads plaza, multi-level ramp junction). Old big pieces retired.
+4. **Core / experimental tiers + quality gates** (owner deferred it until content scalability was done; steps 1–7
+   are now done): let the owner promote characters/maps from an experimental to a core roster, with gates, managed
+   from the Control Center Workbench (`.control-center/workbench.json`).
+5. CI follow-ups: split unit tests by duration (shard 1/3 is 5 min, others 1–2); confirm the nightly 16-shard tour,
+   the timings refresh and fail-fast on a real failing run.
+
+### Open questions for the owner
+- Barrels/powder keg were resized to real sizes (barrel 0.95 m, keg 0.75 m): less cover. Keep, or put back?
+- Grade and surface detail strength were tuned on software rendering: owner to look on their M1 Pro (one value each:
+  `WORLD_GRADE`, `content/surfaces.json`).
+- Hands round 5 (offered, not yet answered): Grunt '68 long-gun-only hand roll (small); new hand geometry for
+  Vanguard, Beanie Alien, Alien Biker, Mummy Bot, Zhao; Croakley re-rig (pipeline or Meshy credits; Meshy needs approval).
+- Older open items: Underdrain (what did the owner expect?), Apex Ring race-car class, menu budget 840 → ~700 kB,
+  unify legacy spread bloom on exotic weapons, a smaller size class for Goblina/Space Marine, frost_basin card look.
+- Known bug found by the de-toy job: `ModelLibrary.mergeModel` drops glTF mesh instances (a mesh reused under several
+  nodes draws once). Surfaced props are fixed; others still lose copies.
+
+### Not in the repo (previous container only, may be gone)
+- MapMaker Playwright drivers that agents used for map edits (`rework3/tools/maker.mjs`, `coverage-map/tools/maker.mjs`)
+  lived in the session scratchpad; recreate as needed (they drive MapMaker's own UI, which is the rule).
+- Raw downloads (`/home/user/meshy-drive/...`: airliner, snowmobile, character sources) are never committed; re-download
+  from the owner's Drive/Meshy if a rebuild needs them.
+
+### Owner preferences learned this session
+- Easy wins first; CI improvements stay top of the queue; ask with numbered options and a recommendation.
+- Exact hitboxes but generous padding (responsiveness over realism); likes meta characters and per-character stats.
+- Look: "everything looks too much like a toy" — move to grounded realism (procedural environment, set pieces,
+  replacement models); the grade alone is subtle.
+- Retire rather than delete; models not in T-pose get retired (Otter, Shade).
+- Meshy credits need approval each time; Meshy Community models are CC0 (Terms §3.3) — record author and post URL.
+
+## Earlier start notes (session of 2026-10-30 afternoon)
 
 **Read CLAUDE.md first.** Workflow: session branch → `check/candidate` → when green, fast-forward `main`.
 The session branch is **`claude/launcher-ui-map-cards`**. Poll CI without auth:
