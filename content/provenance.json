@@ -28324,6 +28324,36 @@
       ]
     },
     {
+      "file": "props/dc_dome.glb",
+      "sha256": "f0b507058fc33d5c",
+      "triangles": 768,
+      "bytes": 25568,
+      "source": "tiletrigger-desert/dc_dome.glb",
+      "title": "Style Pack pieces (Desert City)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-desert.mjs)",
+      "url": "tools/content/prepare-desert.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-desert.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/dc_dome_blue.glb",
+      "sha256": "c5a313888ec44ee1",
+      "triangles": 768,
+      "bytes": 25576,
+      "source": "tiletrigger-desert/dc_dome_blue.glb",
+      "title": "Style Pack pieces (Desert City)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-desert.mjs)",
+      "url": "tools/content/prepare-desert.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-desert.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
       "file": "props/jt_zipline_post.glb",
       "sha256": "d72cb973a3f0182a",
       "triangles": 304,
@@ -29758,8 +29788,8 @@
     },
     {
       "file": "vfx/flame_fx.json",
-      "sha256": "37c190bb59c54eef",
-      "bytes": 9676,
+      "sha256": "f425d7fbc90b9e21",
+      "bytes": 25032,
       "source": "binbun-flame-fx/BinbunVFX_Vol2/FlameFX/effects/**/*.tscn",
       "title": "Stylized Flame FX (full edition, purchased by the owner): flame effect scenes",
       "creator": "Binbun (bun3d.com)",

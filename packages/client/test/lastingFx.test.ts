@@ -63,6 +63,25 @@ describe('lasting effects (lastingFx.ts)', () => {
     expect(live[0]!.stopped).toBe(true);
   });
 
+  it('hands places to decor (fire props) only after every other lasting effect', () => {
+    const { vfx } = fakeVfx(2);
+    const fx = new LastingFx(vfx);
+    const cam = { x: 0, y: 0, z: 0 };
+    fx.want('torch1', 'flame.torch', { x: 1, y: 0, z: 0 });
+    fx.want('torch2', 'flame.torch', { x: 2, y: 0, z: 0 });
+    fx.want('torch3', 'flame.torch', { x: 3, y: 0, z: 0 });
+    fx.update(cam);
+    expect([fx.drawn('torch1'), fx.drawn('torch2'), fx.drawn('torch3')]).toEqual([true, true, false]);
+    // A burning patch 40 m off takes the farther torch's place.
+    fx.want('torch1', 'flame.torch', { x: 1, y: 0, z: 0 });
+    fx.want('torch2', 'flame.torch', { x: 2, y: 0, z: 0 });
+    fx.want('torch3', 'flame.torch', { x: 3, y: 0, z: 0 });
+    fx.want('patch', 'fire.zone', { x: 40, y: 0, z: 0 });
+    fx.update(cam);
+    fx.update(cam);
+    expect([fx.drawn('patch'), fx.drawn('torch1'), fx.drawn('torch2')]).toEqual([true, true, false]);
+  });
+
   it('leaves out what is beyond its range and unknown keys', () => {
     const { vfx } = fakeVfx(4);
     const fx = new LastingFx(vfx);

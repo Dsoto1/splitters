@@ -13457,6 +13457,22 @@
       "sha256": "52e6cc167951e330"
     },
     {
+      "file": "props/dc_dome.glb",
+      "source": "tiletrigger-desert",
+      "src": "dc_dome.glb",
+      "triangles": 768,
+      "bytes": 25568,
+      "sha256": "f0b507058fc33d5c"
+    },
+    {
+      "file": "props/dc_dome_blue.glb",
+      "source": "tiletrigger-desert",
+      "src": "dc_dome_blue.glb",
+      "triangles": 768,
+      "bytes": 25576,
+      "sha256": "c5a313888ec44ee1"
+    },
+    {
       "file": "props/jt_zipline_post.glb",
       "source": "tiletrigger-jungle",
       "src": "jt_zipline_post.glb",

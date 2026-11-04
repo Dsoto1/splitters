@@ -118,6 +118,114 @@ the content JSON; `.control-center/workbench.json` collections, dashboard docs/W
 (grip audit, portrait and face checks, map card not facing a wall, perf budget, spawn and route reachability, a
 bots-only match) that block promotion to core and only report for experimental.
 
+### Fire props: pack flames on braziers, fire bowls, torches, campfires (`wip/fire-props`, agent, 2026-11-03; not merged; from main c3e7e7b, rebased on 716c012)
+Owner's request: the bought Flame FX on the fire props placed on maps. docs/PHYSICS_FX.md "Pack effects" has the rule.
+- **Data, not maps**: content/props.json `flame` per prop (`fx` brazier / torch / candle / campfire, `at` the
+  flame's foot in the prop's space as drawn (x mirrored), `size` its height in m, `hide` the model's own flame
+  materials); prepare-props.mjs validates and writes it to props.generated.ts. content/vfx.json map.lasting
+  `flame.brazier` (basic_fire_02), `flame.torch` (basic_candle_02, scale 2: the cheaper 24-particle variant),
+  `flame.candle` (basic_candle_01, scale 2), `flame.campfire` (basic_bonfire), all `decor: true`.
+- **Which props**: brazier: jt_fire_bowl, jt_hanging_brazier, jt_altar_fire, jg_brazier, im_brazier, eg_torch (Fire
+  Stand), im_altar, mv_forge, sd_brazier, fire_basket (Step Temple's; its green model keeps showing under the flame,
+  one textured material, nothing to hide); torch: jt_wall_torch, dg_wall_torch, sv_torch_stand; candle:
+  ge_writing_desk, lantern (Kenney candle lantern); campfire: sv_campfire, dg_woodfire. Left alone (and why):
+  multi-candle props (candles, rn_candles, ge_candelabra, ge_chandelier: one effect per wick would eat the lasting
+  places; their own flames stay), unlit models (Kenney campfire pit, campfire_stones, Kenney candles have no flame),
+  enclosed lamps (lantern_post, dc_lantern, ww_lantern, gas/street lamps), light entities (light:candle /
+  chandelier fixtures are code-drawn lights, not props). No burning-barrel prop exists.
+- **game/propFlames.ts**: per frame, fire props within 75 m ask LastingFx for `prop:<id>`; the model's `hide`
+  meshes are switched off only while `drawn`. LastingFx sorts `decor` after every other lasting effect (a burning
+  patch 40 m off beats a torch at 2 m), so the caps (low 4 / medium 10 / high 16) and the 70 m rule hold. Low
+  graphics: no prop flames at all (own flames). Broken props ask for nothing; props on movers move theirs.
+- **Mesh-part bug fixed** (the FX agent's lead): godotVfx `pieceOf` shared the base mesh's Geometry, and thin
+  instances keep their matrix/pcolor/pextra buffers on the geometry, so pieces of one effect drew with whichever
+  set its buffers last, and with disposed buffers (nothing) once that piece went (warm() at load already did that
+  to every mapped effect's `Core`). Each piece now gets its own geometry from the base's vertex data. Fires' `Core`
+  now draws (bright heart at the base, after/zoom_vinefall_bowl.png). Loot glows were not re-tried: likely the same
+  cause, worth wiring again.
+- Evidence (agent scratchpad `fireprops/`): `before/` and `after/` step_temple_basket, step_temple_candles,
+  vinefall_fire_bowl, jade_wall_torch, colosseum_brazier, raven_writing_desk (`_1` the settled frame), zooms in
+  `after/zoom_*.png`. Harness `fireprops/tools/propshot.mjs` / `shots.sh`.
+- Perf (perf:budget settings, jade_sanctum (27 wall torches) and vinefall_sanctum (12 fire bowls, 4 altars, 2
+  hanging braziers); the 96-bot run stalled for 600 s on this shared machine (load 24-45; PERF_96.md "Warm-up
+  hang"), so PERF_BOTS=32; before = main d517c5f's build): after passes (exit 0), before failed only on vinefall
+  medium clumped draws 1008 > 900 (camera-dependent; after's clump 807). Starting a flame: flame.brazier 0,
+  flame.torch 0, flame.candle 0, flame.campfire 0-0.1 ms (budget 40); slowest effect overall 24.4 ms after vs
+  31.1 ms before (arc, noise). Effects in the shadow pass: 0 both. Frame times not comparable: SwiftShader drew
+  1-4 frames per 4 s under that load. A drawn flame is 2 draws (particles + Core), at most 10 on medium.
+- Not in MapMaker's view: the editor has no pack effects, so it shows the models' own flames (as before).
+- Checks: typecheck clean; test:changed 1282 pass, 5 timing tests failed under load (host e2e, bigMatch bench, two
+  npc missions, eagle_spires pads) and pass alone (51/51); new tests propFlames 3, lastingFx decor 1; content:check
+  OK after content:build (provenance for flame_fx.json). E2E (`CI=1`): physicsfx PASS (198 s), visual PASS (canyon
+  0.1 %, no baseline change), setpieces PASS (33 s). ci:plan: content paths -> full suite; needs a `check/` run.
+
+### CI pipeline: green by code, batch landing, finer routing (`wip/ci-pipeline`, agent, 2026-11-03; not merged; from main d30d9c5)
+The first item of the owner's queue above. Three commits:
+- **Green by code** (`tools/ci/greenTree.mjs`, ci.yml's "Already green on a check branch?" step, now also on `check/**`
+  pushes): when the commit itself has no green check run, the step lists the last 100 successful CI push runs
+  (`listWorkflowRuns`, ci.yml), takes the check/ ones (up to 30 commits, fetching a deleted branch's commit by sha) and
+  skips when `git diff --name-only --no-renames <green> <candidate>` lists only docs (`DOC_PATTERNS` in e2e/flowMap.mjs:
+  docs/, top-level and package-level *.md, LICENSE; `.gitignore`/`.editorconfig` deliberately not). A twin's package names
+  the other commit, so on main the release job builds this commit's package again (run_id left empty).
+- **Batch landing** `tools/ci/train.mjs` (CLAUDE.md Git workflow): merges wip/ or check/ branches in order in a temporary
+  worktree, stops on a conflict naming the branch and files, pushes `check/train-<UTC>`; `--land <sha>` checks the
+  branch's latest CI run (gh api) and that origin/main is an ancestor, then pushes `<sha>:main` without force.
+- **Routing** (e2e/flowMap.mjs): `game/view.ts` runs the 35 flows that play a match (not editorux/hostpage/webgpu) and the
+  client tests, not all 38 + all units; content manifests route by kind (characters, clip-sets, gear, props, guns, vfx,
+  skies, city, sounds); other content/ paths (models.json, packs.json, intake/, textures…) still run everything. New unit
+  name `content` = tools/content/test. `pnpm test:changed` is now `tools/ci/testChanged.mjs`: vitest --changed, plus the
+  tests whose source (or test helper) reads a changed maps/ file (19 for an ordinary map, ~95 for phase0_arena).
+- Tests: tools/ci/test/greenTree.test.mjs, train.test.mjs, testChanged.test.mjs; select.test.mjs's "runs everything" list
+  lost view.ts and content/props.json (they no longer do) and gained models.json, packs.json, intake/, assets-src/.
+- Not proven on GitHub yet: the github-script step (dynamic import of greenTree.mjs, listWorkflowRuns) needs one check/ run.
+### Map reworks from the owner's review (`wip/map-rework`, agent, 2026-11-03; ST and VZ on main, the rest pushed, not merged)
+Owner's notes (review page, rounds 1 and 2) for the rework-verdict maps. Every edit was made in MapMaker by a
+Playwright driver (agent scratchpad `rework/tools/maker3.mjs`): Import, palette card plus a click on the view, then
+the inspector's fields, selects and checkboxes, the toolbar's Delete, Ctrl+D, R, terrain-brush strokes, Settle on
+ground, the theme picker and the sky pane, then Save. The saved file is MapMaker's own output. Steps files are in
+`rework/<map>/pass*.mjs`. Before and after pictures are in `rework/<map>-before-*.png` / `-after-*.png`, side by
+side in `rework/<map>/cmp-*.png`.
+- **Driving MapMaker fast (SwiftShader runs at about 1 fps here):** the driver pauses the engine's render loop while
+  it edits. Edits are synchronous, and setSelection rebuilds the inspector from the document, so nothing waits on a
+  frame. It drops new pieces at a fixed point on the view and the inspector puts them in place, clears the
+  400 ms navigation-check timer between edits, and runs one full check (navigation included) before Save. Terrain
+  strokes resume the loop while the button is held. Give each pass on an already-edited map its own `&seed=N`:
+  test-mode ids restart from the seed, and a second pass's new props collided with the first's.
+- **Step Temple:** Ancient Temple theme; inlaid court with column corners, plinth cover and a fire altar; galleries
+  roofed, wing rooms beamed with relief walls. Four Terrace Stairs from the ring of ground to landings, arches into
+  the galleries, terraces with Summit Shrines (armour). Props swapped for the jungle/temple set and the owner's
+  Meshy statues. Ammo matched to the wing weapons, spear for the laser rifle, four spawns at the stair feet.
+- **Verdant Ziggurat:** jungle.ziggurat kept as the core (stylePacks2.test.ts wants it; a carved-terrace rebuild
+  was reverted). The pack's ziggurat stone is hard-coded castle stone, so tile paint can't lighten it; it is dressed
+  instead (monk statues, banners, lianas, moss, torches). River crossings (slab bridge, stepping stones), a zipline
+  from the giant tree's 7.5 m lookout to the 4 m tier, a watch tower (its lookout pickup didn't path, so the
+  pickup is at its foot), ruined walls at the edges, mist 0.45, grapples. Side courts are Overgrown Ruins; the
+  north-west court is not (its walls cut off two spawns).
+- **Dustwater:** hotel (Saloon tile turned about), gunsmith, barber, assay office, graveyard and gallows. Buildings
+  painted (clapboard, siding, brick, sandstone, plaster). Street cover from the purchased Wild West kit. Red Rock
+  Spires mesas, raised mounds (terrain brush), scrub, revolvers, explosive barrels. Prop models kept under the
+  80-model budget.
+- **Bottling Plant:** roofs as Sky Blocks (concrete, corrugated, a reinforced-glass skylight), 14 ceiling lights,
+  hazard solids/trim repainted steel, theme Downtown (the factory theme's backdrop dressing is hazard-striped
+  blocks), acid spill.
+- **Concrete Annex:** it already had a roof (an extra one floated past the walls and was dropped); per-area
+  materials; hangar props swapped to the owner's Meshy cargo; a flame trap in the tunnels.
+- **Dune Harbor:** new MapMaker props `prop.dc_dome` / `prop.dc_dome_blue` (prepare-desert.mjs, Desert City pack,
+  palette atlas rebuilt) replace the 22 eight-slab domes; Desert City market, Meshy well, stalls, buggies.
+- **Coldwater Gulch:** rocks unified (spires → Mossy Rock Spire, rest → Quaternius mossy), small rocks removed,
+  all settled.
+- **Checks:** validate-map 0 issues on each. Every vitest file that reads maps/ passes. `pnpm test:changed` finds
+  no test files for JSON-only changes, so run those files by hand. The dome commit's full test:changed, run under
+  load 20+, timed out heavy sim tests (hub, bots, pads); they don't touch props, and need a clean rerun on a
+  `check/` branch (the dome commit maps to the full suite). e2e maps flow passes for all eight maps. perf96
+  clumped medium draws/casters (budget 900/600): Step Temple 483/163, Dustwater 523/289, Bottling 496/163,
+  Concrete Annex 311/100. Verdant Ziggurat is over and was over before the rework: main's original map measured
+  1153/524, the rework 1302/601, and a copy with 9 edge plants removed 1363/618. The clump frames are too noisy
+  under this load to tell ±150 draws apart, so the plants stayed. VZ needs a clean perf run (most casters are the
+  characters in view).
+- **Not reached:** fogbound, runway_nine, citadel, eagle_spires, express_lobby, underdrain, sandgate,
+  sandfall_colosseum, capitol_mall, atomic_court, backwoods, st_johns, iron_compound, gallows_yard, apex_ring.
+
 ### Map removals round 2 and card pictures (`wip/map-removals-2`, agent, 2026-11-03; not merged; from main ef2c103)
 - Deleted (file, picture, inspirations, rotation entries): after_hours, clockwork, fallout_lane, ridge_camp, stonewatch_keep.
   Retired (RETIRED_MAPS, kept as fixtures): blackout (co-op mission test in npc.test.ts), cedar_lane (style pack 08 demo and

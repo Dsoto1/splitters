@@ -35,9 +35,11 @@ describe('change-based selection', () => {
     'pnpm-lock.yaml',
     'packages/client/src/main.ts',
     'packages/client/src/game/session.ts',
-    'packages/client/src/game/view.ts',
     'packages/client/src/game/matchHost.ts',
-    'content/props.json',
+    'content/models.json',
+    'content/packs.json',
+    'content/intake/queue.json',
+    'assets-src/x.png',
     'tools/content/build.mjs',
     'maps/phase0_arena.json',
   ])('shared code or infrastructure (%s) runs everything', (p) => {
@@ -46,6 +48,39 @@ describe('change-based selection', () => {
     expect(s.flows).toEqual(FLOWS);
     expect(s.unit).toBe('all');
     expect(s.perf).toBe(true);
+  });
+
+  it('the match renderer runs every flow that plays a match, and the client unit tests', () => {
+    const s = sel('packages/client/src/game/view.ts');
+    expect(s.full).toBe(false);
+    expect(s.flows).toEqual(FLOWS.filter((f) => !['editorux', 'hostpage', 'webgpu'].includes(f)));
+    expect(s.unit).toEqual(['client']);
+    expect(s.perf).toBe(true);
+  });
+
+  it.each([
+    ['content/characters/soldier.json', ['designer', 'characters', 'visual'], ['client', 'content', 'shared']],
+    ['content/characters.lock.json', ['designer', 'characters', 'visual'], ['client', 'content', 'shared']],
+    ['content/clip-sets/rifle.json', ['characters', 'visual'], ['client', 'content', 'shared']],
+    ['content/props.json', ['editor', 'scenery', 'setpieces', 'visual'], ['shared']],
+    ['content/props.lock.json', ['editor', 'scenery', 'setpieces', 'visual'], ['shared']],
+    ['content/guns.json', ['arsenal', 'vehicles', 'characters'], ['shared']],
+    ['content/vfx.json', ['physicsfx', 'arsenal'], ['client']],
+    ['content/gear.json', ['designer', 'characters', 'visual'], ['shared']],
+    ['content/sounds.json', ['offline'], ['client']],
+  ])('a content manifest (%s) runs the flows that look at it', (p, flows, unit) => {
+    const s = sel(p);
+    expect(s).toMatchObject({ full: false, flows, unit, perf: true, docsOnly: false });
+  });
+
+  it('skies and city run the map flows, not the online ones', () => {
+    for (const p of ['content/skies.json', 'content/city.json']) {
+      const s = sel(p);
+      expect(s.full).toBe(false);
+      expect(s.flows).toEqual(expect.arrayContaining([...MAP_FLOWS, 'scenery', 'setpieces', 'canyon']));
+      expect(s.flows).not.toContain('online');
+    }
+    expect(unitTestPaths(['content'])).toEqual(['tools/content/test']);
   });
 
   it('MapMaker code runs the editor flows and client unit tests only', () => {

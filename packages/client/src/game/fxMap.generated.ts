@@ -405,6 +405,30 @@ export const FX_MAP = {
       "pack": "smoke_fx",
       "effect": "smoke_thin_vfx_01",
       "scale": 0.35
+    },
+    "flame.brazier": {
+      "pack": "flame_fx",
+      "effect": "vfx_basic_fire_02",
+      "scale": 1,
+      "decor": true
+    },
+    "flame.torch": {
+      "pack": "flame_fx",
+      "effect": "vfx_basic_candle_02",
+      "scale": 2,
+      "decor": true
+    },
+    "flame.candle": {
+      "pack": "flame_fx",
+      "effect": "vfx_basic_candle_01",
+      "scale": 2,
+      "decor": true
+    },
+    "flame.campfire": {
+      "pack": "flame_fx",
+      "effect": "vfx_basic_bonfire",
+      "scale": 1,
+      "decor": true
     }
   }
 } as const;

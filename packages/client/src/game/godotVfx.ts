@@ -336,13 +336,21 @@ function packTexture(scene: Scene, file: string): Texture {
 
 // ------------------------------------------------------------------ meshes (Godot's primitive meshes, with their UVs)
 
+/** Each base mesh's vertex data, taken once (every piece of it gets its own copy on the GPU). */
+const baseData = new WeakMap<Mesh, VertexData>();
+
 /**
- * A playing effect's mesh on a base mesh's geometry, with its settings. Not `clone()`: that deep-copies the
- * source's properties, about a millisecond a mesh, every time an effect plays.
+ * A playing effect's mesh: a base mesh's shape, with its settings. Not `clone()`: that deep-copies the
+ * source's properties, about a millisecond a mesh, every time an effect plays. Not the base's geometry either:
+ * thin instances keep their matrix, colour and extra buffers on the geometry, so pieces sharing one drew with
+ * whichever piece set its buffers last, and drew nothing once that piece was gone (two fires of one kind, a
+ * lasting effect started after the same effect was warmed: its MeshInstance parts, a fire's `Core`, vanished).
  */
 function pieceOf(base: Mesh, name: string): Mesh {
   const mesh = new Mesh(name, base.getScene());
-  base.geometry?.applyToMesh(mesh);
+  let data = baseData.get(base);
+  if (!data) baseData.set(base, (data = VertexData.ExtractFromMesh(base, false, true)));
+  data.applyToMesh(mesh, false);
   mesh.isPickable = false;
   mesh.alwaysSelectAsActiveMesh = true;
   mesh.doNotSyncBoundingInfo = true;

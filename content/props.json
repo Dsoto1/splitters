@@ -1,5 +1,5 @@
 {
-  "$comment": "Placeable props from CC0 packs. tools/content/prepare-props.mjs normalises each model (centred, standing on y = 0, scaled to `height` metres), embeds its texture, writes packages/client/public/props, content/props.lock.json and packages/shared/src/content/props.generated.ts (sizes and collision for the simulation). collide: box = the model's bounds, trunk = a 0.5 m post, none = walk through.",
+  "$comment": "Placeable props from CC0 packs. tools/content/prepare-props.mjs normalises each model (centred, standing on y = 0, scaled to `height` metres), embeds its texture, writes packages/client/public/props, content/props.lock.json and packages/shared/src/content/props.generated.ts (sizes and collision for the simulation). collide: box = the model's bounds, trunk = a 0.5 m post, none = walk through. flame: a fire prop's open flame, drawn with the Flame FX pack near the camera (content/vfx.json map.lasting `flame.<fx>`: brazier, torch, candle or campfire): `at` where it stands in the prop's space as the game draws it (x mirrored like the collision boxes), `size` its height in metres, `hide` the model's own flame materials, shown only where the pack flame isn't drawn.",
   "packs": {
     "kenney-survival-kit": {
       "title": "Survival Kit",
@@ -1797,7 +1797,8 @@
       "name": "Lantern",
       "category": "Gothic",
       "height": 0.6,
-      "collide": "none"
+      "collide": "none",
+      "flame": {"fx": "candle", "at": [0, 0.25, 0], "size": 0.1}
     },
     {
       "id": "candles",
@@ -1824,7 +1825,8 @@
           "damage": 50,
           "edge": 8
         }
-      }
+      },
+      "flame": {"fx": "brazier", "at": [0, 0.67, 0], "size": 1.3}
     },
     {
       "id": "urn",
@@ -5058,7 +5060,8 @@
       "name": "Writing Desk",
       "category": "Gothic Estate",
       "height": 1.09,
-      "collide": "box"
+      "collide": "box",
+      "flame": {"fx": "candle", "at": [0.45, 1.01, -0.1], "size": 0.08, "hide": ["flame"]}
     },
     {
       "id": "ge_sarcophagus",
@@ -5278,7 +5281,8 @@
       "name": "Fire Brazier",
       "category": "Jungle Ruins",
       "height": 1.85,
-      "collide": "trunk"
+      "collide": "trunk",
+      "flame": {"fx": "brazier", "at": [0, 1.21, 0], "size": 0.65, "hide": ["fire"]}
     },
     {
       "id": "jg_rubble_blocks",
@@ -5593,7 +5597,8 @@
       "name": "Campfire",
       "category": "Survival",
       "height": 0.9,
-      "collide": "box"
+      "collide": "box",
+      "flame": {"fx": "campfire", "at": [0.02, 0.05, -0.02], "size": 0.85, "hide": ["Fire"]}
     },
     {
       "id": "sv_campfire_out",
@@ -5691,7 +5696,8 @@
       "name": "Torch Stand",
       "category": "Survival",
       "height": 1.6,
-      "collide": "trunk"
+      "collide": "trunk",
+      "flame": {"fx": "torch", "at": [0, 0.95, 0], "size": 0.6, "hide": ["Fire"]}
     },
     {
       "id": "sv_shovel",
@@ -6852,7 +6858,8 @@
       "name": "Wall Torch",
       "category": "Dungeon",
       "height": 0.8,
-      "collide": "none"
+      "collide": "none",
+      "flame": {"fx": "torch", "at": [0, 0.5, 0.06], "size": 0.34, "hide": ["Fire"]}
     },
     {
       "id": "dg_vase",
@@ -6874,7 +6881,8 @@
       "name": "Wood Fire",
       "category": "Dungeon",
       "height": 0.6,
-      "collide": "box"
+      "collide": "box",
+      "flame": {"fx": "campfire", "at": [0, 0.1, 0], "size": 0.5, "hide": ["Fire"]}
     },
     {
       "id": "dg_iron_fence",
@@ -8457,7 +8465,8 @@
       "name": "Bronze Brazier",
       "category": "Imperial Arena",
       "height": 1.73,
-      "collide": "box"
+      "collide": "box",
+      "flame": {"fx": "brazier", "at": [0, 1.19, 0], "size": 0.55, "hide": ["fire", "flame"]}
     },
     {
       "id": "im_statue_emperor",
@@ -8555,7 +8564,8 @@
       "name": "Marble Altar",
       "category": "Imperial Arena",
       "height": 1.39,
-      "collide": "box"
+      "collide": "box",
+      "flame": {"fx": "brazier", "at": [0, 1.1, 0], "size": 0.3, "hide": ["fire", "flame"]}
     },
     {
       "id": "im_bench",
@@ -8712,7 +8722,8 @@
       "name": "Fire Stand",
       "category": "Sands of Egypt",
       "height": 2.36,
-      "collide": "trunk"
+      "collide": "trunk",
+      "flame": {"fx": "brazier", "at": [0, 2.0, 0], "size": 0.4, "hide": ["fire", "flame"]}
     },
     {
       "id": "eg_chest",
@@ -11280,7 +11291,8 @@
       "src": "Props/GLB format/Brazier.glb",
       "name": "Brazier",
       "category": "Dark Dungeon",
-      "collide": "box"
+      "collide": "box",
+      "flame": {"fx": "brazier", "at": [0, 0.98, 0], "size": 0.4}
     },
     {
       "id": "sd_coffin",
@@ -12910,7 +12922,8 @@
       "name": "Blacksmith Forge",
       "category": "Medieval Village",
       "height": 3.4,
-      "collide": "box"
+      "collide": "box",
+      "flame": {"fx": "brazier", "at": [-0.02, 1.0, 0.18], "size": 0.3, "hide": ["fire"]}
     },
     {
       "id": "mv_workbench",
@@ -13563,6 +13576,24 @@
       "collide": "frame"
     },
     {
+      "id": "dc_dome",
+      "pack": "tiletrigger-desert",
+      "src": "dc_dome.glb",
+      "name": "Plaster Dome",
+      "category": "Desert City",
+      "height": 3.19,
+      "collide": "box"
+    },
+    {
+      "id": "dc_dome_blue",
+      "pack": "tiletrigger-desert",
+      "src": "dc_dome_blue.glb",
+      "name": "Blue Tiled Dome",
+      "category": "Desert City",
+      "height": 3.19,
+      "collide": "box"
+    },
+    {
       "id": "jt_zipline_post",
       "pack": "tiletrigger-jungle",
       "src": "jt_zipline_post.glb",
@@ -13771,7 +13802,8 @@
       "name": "Fire Bowl",
       "category": "Jungle Ruins",
       "height": 1.89,
-      "collide": "trunk"
+      "collide": "trunk",
+      "flame": {"fx": "brazier", "at": [0, 1.27, 0], "size": 0.63, "hide": ["fire"]}
     },
     {
       "id": "jt_hanging_brazier",
@@ -13780,7 +13812,8 @@
       "name": "Hanging Brazier",
       "category": "Jungle Ruins",
       "height": 2.94,
-      "collide": "none"
+      "collide": "none",
+      "flame": {"fx": "brazier", "at": [0, 0.61, 0], "size": 0.53, "hide": ["fire"]}
     },
     {
       "id": "jt_wall_torch",
@@ -13789,7 +13822,8 @@
       "name": "Wall Torch",
       "category": "Jungle Ruins",
       "height": 0.95,
-      "collide": "none"
+      "collide": "none",
+      "flame": {"fx": "torch", "at": [0, 0.69, 0.105], "size": 0.3, "hide": ["fire"]}
     },
     {
       "id": "jt_banner_teal",
@@ -13924,7 +13958,8 @@
       "name": "Temple Altar",
       "category": "Jungle Ruins",
       "height": 1.83,
-      "collide": "box"
+      "collide": "box",
+      "flame": {"fx": "brazier", "at": [0, 1.37, 0], "size": 0.47, "hide": ["fire"]}
     },
     {
       "id": "jt_overgrown_beam",

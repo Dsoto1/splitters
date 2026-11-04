@@ -219,7 +219,13 @@ export class Ragdoll {
     // Settle faster: once the first tumble is over and the body has slowed, damping goes up so it comes to rest sooner.
     const torso = this.parts[0]?.body.linvel();
     const speed = torso ? Math.hypot(torso.x, torso.y, torso.z) : 0;
-    if (!this.settled && age > 0.9 && speed < 0.8) {
+    // Slow is only "at rest" on something: at the top of a jump pad's arc a body barely moves for a moment, and it
+    // must fall on, not take the settle damping (a slow drift down) or freeze in mid-air. One short ray, only when slow.
+    const onGround = () => {
+      const t = this.parts[0]?.body.translation();
+      return !t || !!this.world.raycast({ x: t.x, y: t.y, z: t.z }, { x: 0, y: -1, z: 0 }, 0.75);
+    };
+    if (!this.settled && age > 0.9 && speed < 0.8 && onGround()) {
       this.settled = true;
       for (const p of this.parts) {
         p.body.setLinearDamping(2.2);
@@ -235,7 +241,7 @@ export class Ragdoll {
       }
     }
     // Its time runs out only once it has slowed: a body still tumbling down a slope rolls on (to maxSeconds at most).
-    const still = speed < RAGDOLL_BUDGET.stillSpeed;
+    const still = speed < RAGDOLL_BUDGET.stillSpeed && onGround();
     const time = this.tier === 'full' ? RAGDOLL_BUDGET.fullSeconds : RAGDOLL_BUDGET.cheapSeconds;
     if (this.parts.every((p) => p.body.isSleeping()) || (age > time && still) || age > RAGDOLL_BUDGET.maxSeconds) {
       this.freeze();

@@ -72,6 +72,7 @@ import {
   type Zipline,
   suspensionOf,
   hungPropLift,
+  getProp,
 } from '@tiletrigger/shared';
 import type { AbstractMesh } from '@babylonjs/core/Meshes/abstractMesh';
 import type { Material } from '@babylonjs/core/Materials/material';
@@ -85,6 +86,7 @@ import { createStarFlash, kickFlash } from './muzzleVisuals.ts';
 import { MuzzleFlashRig, loadMuzzleFlashes, muzzleEffectFor } from './muzzleFlash.ts';
 import { GodotVfx, type VfxHandle } from './godotVfx.ts';
 import { LastingFx } from './lastingFx.ts';
+import { PropFlames } from './propFlames.ts';
 import { ACCENT_RANGE, arcFx, explosionFor, gameplayFx, impactStyle, lastingFx, lastingKeys, mappedEffects, mappedPacks, meleeImpact, surfaceIndex, surfaceOfBox, weaponImpact, type FxRef, type Surface } from './fxMap.ts';
 import { buildPathMeshes } from '../pathMeshes.ts';
 
@@ -286,6 +288,8 @@ export class GameView {
   private readonly vfx: GodotVfx;
   /** Pack effects that last while something burns or glows (fires, flares), the nearest drawn first. */
   private readonly lasting: LastingFx;
+  /** Fire props' open flames (content/props.json `flame`), drawn with Flame FX near the camera. */
+  private propFlames: PropFlames;
   /** Each placement's surface (stone, metal, wood …) for where rounds land (fxMap.ts), made with the map. */
   private surfaces: Map<string, Surface> | null = null;
   private sunLight?: DirectionalLight;
@@ -393,6 +397,8 @@ export class GameView {
     // Low graphics plays fewer pack effects at once and thins the lasting ones (fires, charge balls).
     this.vfx.quality = this.atmosphere.quality;
     this.lasting = new LastingFx(this.vfx);
+    // Low graphics keeps the fire props' own flames: its few lasting places go to the fires that matter.
+    this.propFlames = new PropFlames(this.lasting, this.atmosphere.quality !== 'low');
     this.zoneVisuals.lasting = this.lasting;
     this.scenario.lasting = this.lasting;
     void GodotVfx.preload(...mappedPacks());
@@ -453,6 +459,8 @@ export class GameView {
       // A chandelier (and other hung props) is drawn with its top against the ceiling over it.
       if (!carried.has(e.id)) node.position.y += hungPropLift(boxes, e);
       this.props.set(i, node);
+      const flame = getProp(e.model)?.flame;
+      if (flame) this.propFlames.add(e.id, node, flame, e.scale, carried.has(e.id));
     });
     this.scenario.build(doc.entities, doc);
     this.entrances = doc.entities.filter((e): e is Extract<MapEntity, { kind: 'encounter' }> => e.kind === 'encounter' && (e.entrance ?? 'none') !== 'none');
@@ -910,7 +918,9 @@ export class GameView {
     const wall = Math.min(1, (now - this.lastFrame) / 1000);
     const dt = Math.min(0.1, wall);
     this.lastFrame = now;
+    this.propFlames.want(this.camera.globalPosition);
     this.lasting.update(this.camera.globalPosition);
+    this.propFlames.show();
     if (this.vfx.count) {
       // The packs' toon smoke is lit like everything else: this sun, this sky.
       if (this.sunLight) this.vfx.setLight(this.sunLight.direction.clone(), this.sunLight.diffuse.scale(this.sunLight.intensity), (this.hemi?.diffuse ?? Color3.White()).scale((this.hemi?.intensity ?? 0.8) * 0.7));

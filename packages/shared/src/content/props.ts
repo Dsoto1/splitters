@@ -28,6 +28,20 @@ export interface PropDefinition {
   breakable?: { health: number; blast?: { radius: number; damage: number; edge: number }; debris: string };
   /** Foliage you can hide in (bushes, ferns, tall crops): bots only spot someone inside it up close or when they fire. */
   conceals?: boolean;
+  /**
+   * A fire prop's open flame (braziers, fire bowls, torches, candles, campfires), drawn with the Flame FX pack
+   * (content/vfx.json map.lasting `flame.<fx>`) near the camera: `at` in the prop's own space as drawn (metres at
+   * scale 1), `size` the flame's height in metres, `hide` the model's own flame materials, shown only while the
+   * pack flame isn't drawn.
+   */
+  flame?: PropFlame;
+}
+
+export interface PropFlame {
+  fx: 'brazier' | 'torch' | 'candle' | 'campfire';
+  at: readonly [number, number, number];
+  size: number;
+  hide?: readonly string[];
 }
 
 export { CORE_PROPS, PROP_CATEGORIES };

@@ -10,7 +10,7 @@
     "build": "pnpm --filter @tiletrigger/client build",
     "typecheck": "pnpm -r typecheck",
     "test": "vitest run",
-    "test:changed": "vitest run --changed origin/main",
+    "test:changed": "node tools/ci/testChanged.mjs",
     "bench": "pnpm --filter @tiletrigger/server bench",
     "bench:96": "pnpm --filter @tiletrigger/server bench 96 60 maps/frost_basin.json --mode=core.tdm",
     "bench:96:maps": "pnpm --filter @tiletrigger/server bench 96 60 maps/norman_shores.json maps/apex_ring.json maps/capitol_mall.json maps/riot_junction.json maps/eagle_spires.json maps/shingle_point.json maps/frost_basin.json maps/primeval_park.json --mode=core.tdm",

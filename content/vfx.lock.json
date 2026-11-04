@@ -46,8 +46,8 @@
       "source": "binbun-flame-fx",
       "src": "BinbunVFX_Vol2/FlameFX/effects/**/*.tscn",
       "title": "flame effect scenes",
-      "bytes": 9676,
-      "sha256": "37c190bb59c54eef"
+      "bytes": 25032,
+      "sha256": "f425d7fbc90b9e21"
     },
     {
       "file": "vfx/poison_fx.json",

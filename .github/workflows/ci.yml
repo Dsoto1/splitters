@@ -53,13 +53,16 @@ jobs:
         with:
           # The merge base with main, for the changed files.
           fetch-depth: 0
-      # main is fast-forwarded only to commits that went green on a check branch: don't test them twice.
+      # main is fast-forwarded only to commits that went green on a check branch: don't test them twice. Nor a
+      # commit (on main or a check branch) whose code, docs left out, equals one that went green there: a docs-only
+      # commit merged into a green batch re-ran the whole suite (tools/ci/greenTree.mjs decides; any other file differing runs).
       - name: Already green on a check branch?
         id: prior
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/check/'))
         uses: actions/github-script@v7
         with:
           script: |
+            const isGreenCheck = (r) => r.path === '.github/workflows/ci.yml' && r.event === 'push' && (r.head_branch ?? '').startsWith('check/') && r.id !== context.runId;
             const runs = await github.paginate(github.rest.actions.listWorkflowRunsForRepo, {
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -67,19 +70,36 @@ jobs:
               status: 'success',
               per_page: 100,
             });
-            const green = runs.find((r) => r.path === '.github/workflows/ci.yml' && r.event === 'push' && (r.head_branch ?? '').startsWith('check/') && r.id !== context.runId);
-            core.setOutput('green', green ? 'true' : 'false');
-            // Its packaged site (client-release), so main publishes that very build instead of building again.
-            core.setOutput('run_id', green ? String(green.id) : '');
-            if (green) core.notice(`Commit ${context.sha.slice(0, 7)} already passed CI on ${green.head_branch}: ${green.html_url}`);
+            const green = runs.find(isGreenCheck);
+            if (green) {
+              core.setOutput('green', 'true');
+              // Its packaged site (client-release), so main publishes that very build instead of building again.
+              core.setOutput('run_id', String(green.id));
+              core.notice(`Commit ${context.sha.slice(0, 7)} already passed CI on ${green.head_branch}: ${green.html_url}`);
+              return;
+            }
+            // The same code as a recent green check commit (docs may differ). Its package names the other commit, so
+            // the release job builds this one's (no run_id).
+            const { findGreenTwin } = await import(`${process.env.GITHUB_WORKSPACE}/tools/ci/greenTree.mjs`);
+            const { data } = await github.rest.actions.listWorkflowRuns({ owner: context.repo.owner, repo: context.repo.repo, workflow_id: 'ci.yml', event: 'push', status: 'success', per_page: 100 });
+            const recent = data.workflow_runs.filter(isGreenCheck);
+            const twin = findGreenTwin(context.sha, recent.map((r) => r.head_sha), { cwd: process.env.GITHUB_WORKSPACE, fetch: true });
+            if (twin) {
+              const run = recent.find((r) => r.head_sha === twin.sha);
+              core.setOutput('green', 'true');
+              core.setOutput('run_id', '');
+              core.notice(`Same code as ${twin.sha.slice(0, 7)}, green on ${run.head_branch} (${run.html_url}); only docs differ: ${twin.docs.join(', ') || 'none'}`);
+              return;
+            }
+            core.setOutput('green', 'false');
             // Not itself green on a check branch (a notes-only commit pushed straight to main): test what changed since
             // the nearest earlier main commit that was, rather than everything (a flaky flow then held back the release).
-            if (!green) {
+            if (context.ref === 'refs/heads/main') {
               const { execSync } = require('child_process');
               const shas = execSync('git rev-list --first-parent -n 30 HEAD~1', { encoding: 'utf8' }).split('\n').filter(Boolean);
               for (const sha of shas) {
                 const prior = await github.paginate(github.rest.actions.listWorkflowRunsForRepo, { owner: context.repo.owner, repo: context.repo.repo, head_sha: sha, status: 'success', per_page: 100 });
-                if (prior.some((r) => r.path === '.github/workflows/ci.yml' && r.event === 'push' && (r.head_branch ?? '').startsWith('check/'))) {
+                if (prior.some(isGreenCheck)) {
                   core.setOutput('green_base', sha);
                   core.notice(`Testing what changed since ${sha.slice(0, 7)}, the nearest commit that passed on a check branch`);
                   break;
@@ -98,7 +118,7 @@ jobs:
         run: |
           if [ "$GREEN" = "true" ]; then
             echo "skip=true" >> "$GITHUB_OUTPUT"
-            echo "### CI plan"$'\n\n'"- Already green on a check branch: nothing to run again." >> "$GITHUB_STEP_SUMMARY"
+            echo "### CI plan"$'\n\n'"- Already green on a check branch (this commit, or the same code with only docs differing): nothing to run again." >> "$GITHUB_STEP_SUMMARY"
             exit 0
           fi
           echo "skip=false" >> "$GITHUB_OUTPUT"

@@ -135,6 +135,13 @@ the extracted zips in `/home/user/fx-packs/`); `node tools/content/vfx-map.mjs` 
   an id (a fire on a burning patch, a vehicle, a flare, a flame trap; the Arc Turret's charge ball; a toxic cloud;
   wreck smoke). The nearest within 70 m are drawn, as many as the graphics quality allows (low 4, medium 10,
   high 16; low also thins their particles), started once and moved; the rest keep their plain look (`drawn(id)`).
+- **Fire props** (`game/propFlames.ts`): braziers, fire bowls, torches, campfires and a few candles carry a
+  `flame` in content/props.json (`fx` brazier / torch / candle / campfire → map.lasting `flame.<fx>`,
+  `at` the flame's foot in the prop's space as drawn, x mirrored; `size` its height in metres; `hide` the model's
+  own flame materials). They are `decor`: placed after every gameplay effect, not drawn on low graphics, and the
+  model's flame shows wherever the pack flame isn't drawn. Torches use the cheaper candle effect (24 particles).
+- Every effect piece has its own geometry: thin-instance buffers live on the geometry, so pieces sharing one
+  drew with another's buffers and nothing once it was gone (the mesh-part bug that hid fires' `Core`).
 - One-shots are capped too (low 6 / medium 12 / high 16 at once, minor ones 3 / 7 / 10), and every mapped effect
   is built while the map loads (`warm`), so the first one mid-fight costs no build.
 - `pnpm perf:budget` times starting each kind (`arc`, `arc sentry`, `lasting <key>`) against the 40 ms budget.
