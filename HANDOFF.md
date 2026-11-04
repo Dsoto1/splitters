@@ -314,6 +314,41 @@ The first item of the owner's queue above. Three commits:
 - Tests: tools/ci/test/greenTree.test.mjs, train.test.mjs, testChanged.test.mjs; select.test.mjs's "runs everything" list
   lost view.ts and content/props.json (they no longer do) and gained models.json, packs.json, intake/, assets-src/.
 - Not proven on GitHub yet: the github-script step (dynamic import of greenTree.mjs, listWorkflowRuns) needs one check/ run.
+### Airliner: Meshy shell, in-house cabin kit, Runway Nine rework (`wip/airliner`, agent, 2026-11-04; pushed, not merged; from wip/per-pack-content eee1833)
+Owner's note on the old plane: "airplane looks like roblox/minecraft. not good". Pictures (before, after, cabin,
+cockpit, bridge, stairs, wing, tail): agent scratchpad `airliner/before-*.png`, `airliner/after-*.png`; MapMaker
+steps `airliner/pass1.mjs`, `pass2.mjs` (driver `airliner/maker-air.mjs`, maker3 plus a `logic` op and chunked
+deletes), placements `airliner/layout.mjs`.
+- **Shell** (`prop.airliner_shell`, pack `meshy-owned-airliner`, Meshy owned; preview task
+  01a1a451-1dda-77ed-82ec-810c24ac1e9a, refine 01a1a451-ee8d-72d3-99ea-48063cd52abe; download in
+  `/home/user/meshy-drive/airliner-2026-11-04/`, not committed): 230k → 19.7k triangles (hero tier; LOD 6.1k from
+  120 m), 2048 px colour map rebaked, 1.38 MB. Scale ×36: 68.4 m long, 59.9 m span (a 60 m widebody grown ~14 % so a
+  2-3-2 cabin with 1.2 m aisles fits). The red nacelle mark and the nacelle wordmark painted out; the wordmark is in
+  Meshy's own normal map too, so the normal map is flattened under what is painted out. Eight openings cut (L1/R1,
+  L2/R2, over-wing, rear) with clipped edges. Collision: 492 boxes (body as hollow bands round the cabin with 2 m door
+  gaps, solid below the floor and over the ceiling; wings, engines, tail, gear as merged vertical spans).
+- **Pipeline** (prepare-props.mjs, meshy-mesh.mjs): `cut`, `collide: "boxes"`, `collide: "model"` (boxes in a
+  code-built GLB's extras), `scale` for code-built pieces, `paintOut`/`bakeSize` for Meshy props, `within` boxes on
+  paintOut rules. docs/CONTENT_PIPELINE.md. `tools/content/fuselage-profile.mjs <downloads>` measures the shell's
+  rings (assets-src/tiletrigger-cabin/fuselage.json) and writes its `cut`/`boxes` into the pack file.
+- **Cabin kit** (pack `tiletrigger-cabin`, Owned, `tools/content/prepare-cabin.mjs`): 6 sections lofted from the
+  measured rings (0.8–3.9k triangles each), 10 fittings (48–1.3k). docs/BUILDING_KIT.md "Airliner" has the
+  assembly numbers.
+- **Runway Nine:** the 588-entity block plane deleted; shell at (0, 0, −4.4) with 15 sections and 107 fittings;
+  jet bridge rebuilt in blocks (12° ramp from the lounge at 4 m, rotunda, gallery to L1 at 6.79 m, breakable glass);
+  stair trucks at R1 and rear left; ladders to both wings; 13 hidden lights; Meshy containers, crates, IBC tanks,
+  jersey barriers, hazard blocks and barrels as apron cover. Spawns, pickups, hostages, bomb sites (A at the flight
+  deck door, B by the mid-cabin galley), the hijackers' flag and a hill moved aboard / onto the wing. Rules
+  `rule_board`/`rule_slides` deleted with the doors (the 3 m door entity can't fit a 1.5 m airliner door);
+  `rule_start` says how to board. validate-map 0 issues; map card picture recaptured.
+- **Pitfalls:** the navmesh keeps ~0.8 m off obstacles: every lane needs 2 m between collision boxes (seat rows
+  collide 0.4 m short of the aisles; door gaps 2 m; a mid-cabin fitting beside the rows plus another in line closes
+  the aisles: the cabin divider is not placed for that reason). The flight deck itself has no navmesh (too tight);
+  bots reach its door. Over-wing exits sit ~1 m above the wing root: players jump back up, bots use the wing ladders.
+  In the logic panel a card's buttons hold the rule's index at render time: redraw the panel between edits. The
+  generated prop table does not escape apostrophes in names.
+- **Not done:** an exterior step at the over-wing exits for bots; cargo-hold interior (the old hold is gone).
+
 ### Map reworks, batch 2 (`wip/map-rework-2`, agent, 2026-11-04; pushed, not merged; from wip/map-rework 9b2373f)
 Same method as batch 1 below (MapMaker driven by Playwright, steps in agent scratchpad `rework/<map>/pass*.mjs`,
 pictures in `rework/<map>-before-*.png` / `-after-*.png` and `rework/<map>/cmp-*.png`). New driver ops: terrain

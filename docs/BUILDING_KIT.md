@@ -943,17 +943,22 @@ lined and signed. Sections snap end to end on 0.9 m window bays:
 
 | Piece | Length | What it is |
 |---|---|---|
-| Cabin: Nose & Flight Deck | 9.75 m | windscreen, instrument panel, pedestal, overhead panel; bulkhead with a doorway; forward galley and lavatory; the L1/R1 doors |
+| Cabin: Nose & Flight Deck | 9.75 m | windscreen, instrument panel, pedestal, overhead panel; bulkhead with a 1.6 m doorway; the forward cabin and the L1/R1 doors |
 | Cabin: Door Section | 3.6 m | a door each side, centred (the shell's L2/R2) |
 | Cabin: Straight Section / Short Section | 3.6 m / 1.8 m | windows every 0.9 m |
 | Cabin: Over-Wing Exits | 3.6 m | an exit each side, centred, up a 0.25 m sill onto the wing root |
 | Cabin: Tail & Rear Doors | 11.45 m | the taper, the rear doors, two lavatories, the aft galley, the pressure bulkhead |
 
-Fittings: Economy Seats (Triple, Pair) for a 2-3-2 layout with 1.15 m aisles (seat rows collide to their backrests'
-tops, 0.2 m short of each aisle so the navmesh keeps a lane: 1.6 m between rows' collision), Business Seat (a pod, set
-1-2-1), Pilot Seat, Overhead Bins (3.6 m and 1.8 m: both sides and the centre; set at 1.95 m above the floor), Galley,
-Lavatory, Cabin Divider and Boarding Stairs (a stair truck up to the cabin floor, 27 steps of 0.25 m; its platform end
-goes against the door).
+Fittings: Economy Seats (Triple, Pair) for a 2-3-2 layout with 1.2 m aisles, Business Seat (a pod; 1-1-1 suites),
+Pilot Seat, Overhead Bins (3.6 m and 1.8 m: both sides and the centre; set at 1.95 m above the floor), Galley,
+Lavatory, Cabin Divider and Boarding Stairs (a stair truck up to the cabin floor, 27 steps of 0.25 m, 2 m wide; its
+platform end goes against the door).
+
+**Bots in the cabin.** The navmesh keeps about 0.8 m off every obstacle, so a lane needs 2 m between collision boxes.
+Seat rows collide to their backrests' tops but 0.4 m short of each aisle (players brush into the aisle seats), the
+business pods 0.2 m short of each side, and every opening's collision gap is at least 2 m wide (the shell's cut holes
+stay on its painted doors; players brush the jambs). Keep a fitting in the middle of the cabin (the galley, a
+divider) at least 2 m clear of the rows round it, and never two in line, or the aisles between them close off.
 
 **Assembling** (shell at (sx, sy, sz), facing 0; positions are what the inspector shows; z along the shell): cabin
 floor at sy + 6.79. Nose at (sx, sy + 4.011, sz + 28.525); every other section at height sy + 4.107 and centre z:
