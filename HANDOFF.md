@@ -46,6 +46,59 @@ Evidence (before/after per look, review board, audits): agent scratchpad `grips3
 - **Checks:** typecheck clean; content:check OK; test:changed (all units: shared code) 1347 passed. E2E (`CI=1`,
   ports 4873/7897): characters PASS, visual PASS (baselines unchanged: menu 0.5 %, others ≤ 0.1 %). ci:plan: full suite (characterAnimator/looks are shared): needs a `check/` run.
 
+### Content scalability step 7: tiles as data, core kit (`wip/tiles-data`, agent, 2026-11-04; pushed, not merged; from main 5a002f8)
+docs/CONTENT_SCALABILITY.md step 7, owner's scope "1a" (the core building kit only); same pattern as steps 3-6; how to
+add one: docs/CONTENT_PIPELINE.md, "Tiles and edge styles".
+- **Where things are now:** `content/tiles/core.json` (all 71 tiles `map/catalog.ts` defined by hand, in catalog order:
+  rooms, corridors, stairs, open ground, the buildings, curves, balconies, the city pieces and the 04 Orbital / 07 Neon
+  pieces; one part a line) and `content/tiles/edges.json` (the 17 edge styles: label, `segments` that collide, `trim`,
+  `openings`, and the `glass`, `corner`, `facade`, `street`, `openDefault`, `trimFrom` and `dressing` settings that
+  were lists scattered over geometry.ts, sim/glass.ts and dressing.ts). `tools/content/tiles.mjs`
+  (`pnpm content:tiles`) -> `packages/shared/src/content/kitTiles.generated.ts` (`KIT_TILES`) and
+  `edgeStyles.generated.ts` (`EDGE_STYLES`, `EDGE_STYLE_LABELS`, `EDGE_SHAPES`, the flag lists). A part names a builder
+  and its numbers (box, flight, descending, rail, columns, partition, lamp, arc, arcTrim, arcade, roundRoom,
+  discStrips, block); `catalog.ts` `kitPart` / `resolveKitTile` build them (builders stay code; `descending` gained a
+  `run`, the round tower became the `roundRoom` builder). `geometry.ts` `edgeSegments` / `edgeTrim` read the shapes
+  (`edgeTrim` is exported now); `tileOptions.ts` re-exports `EDGE_STYLES` and labels from the generated file (menu
+  split test still holds) and holds the `EdgeShape` types.
+- **No network codes:** tiles and edge styles travel as ids in the map document; `content/codes.lock.json` unchanged.
+- **Checks in the generator:** strict schema, palette groups and sides from tileOptions.ts, cells xor footprint,
+  floors on its levels, ports and edgeDefaults on its own cells, default edges are edge styles, one builder per part,
+  boxes min <= max, yaw/surface only on boxes, surface materials in content/materials.json, models under
+  packages/client/public, edge-value grammar, repeats, glass needs openings, auto/open kept (auto first), unique ids,
+  and every tile / edge style named in `maps/*.json` and the Style Packs' `tiles` exists (kit prefixes core/city/
+  orbital/neon here; other prefixes must be a code pack's). `tilesData.test.ts` also checks every map's tiles against
+  the whole catalog (pack tiles included).
+- **Proof of no change:** `packages/shared/test/fixtures/tiles-resolved.json` (committed first, c25308a, from the
+  hand-written code): catalog order, all 71 kit tiles resolved, every edge style's segments and trim at six sizes, glass
+  openings, a synthetic map of every style x corner style x facades (geometry, trim, facades, window panes,
+  validation, room dressing), and the same six hashes for all 88 maps. Deep-equal, and the kit's JSON byte-equal (key
+  order matters: MapMaker's palette pictures are keyed by a hash of the tile's JSON, so `content:check` stays green with
+  no re-render; the round corners keep `category` before `id` in the JSON for that reason).
+- **Wiring:** `content:rebuild` and `content:check` run tiles.mjs; `tools/content/test/tiles.test.mjs` (5 tests).
+- **Workbench:** "Kit tiles" (17 fields: name, group, blurb, floors, open, room options, default edge, model, notes
+  editable; id, footprint, cells, ports, per-side defaults and parts read-only) and "Edge styles" (15 fields: name,
+  trim offset, glass/corner/facade/street/open flags, dressing kind and span, notes editable; id, rule, segments, trim
+  and openings read-only). Not checked with the dashboard's parser.
+- **Stayed in code (listed, not moved):** the part builders; room options (layouts, floor inserts, ceilings, corners:
+  sized to the footprint, parametric); the facades (city model sets and `PACK_FACADES` boxes); the auto/open rule in
+  `resolveEdge`; `TILE_DIMENSIONS` (8 m / 4 m grid assumptions everywhere); MapMaker's edge icons (drawn from the
+  segments, so a new style gets one); the Style Pack tiles drawn by code (`paint(box, ...)` in `packTiles*.ts`, 176
+  tiles: a future step, e.g. `content/tiles/<pack>.json` with the pack helpers (`shell`, `gableRoof`, `win`,
+  `door`, `paint`) as builders, and `STYLE_PACKS` as JSON).
+- **Pitfalls:** edit the JSON, never the generated files; never rename a tile or edge style id maps use; a changed kit
+  tile needs its palette picture redrawn (`pnpm content:rebuild`); keep a tile's keys in their order or every picture
+  goes stale.
+- **Checks (on 75f28fe, box at load 11-20 from other agents):** `pnpm typecheck` clean (70 s). `pnpm content:check` OK
+  (95 s); `content:rebuild` changed nothing (30 s). `pnpm test:changed` (everything, shared changed): 1548 pass, 2
+  skipped, 3 timed out under load (botai "bot aim" 20 s, pads eagle_spires / frost_basin 180 s; untouched by this
+  change); both files rerun alone: 32 pass, 1 skipped. Menu's first JS unchanged: 2307.7 kB raw / 648.9 kB gzip
+  (`index` 591,035 bytes both ways, gzip 207,542 -> 207,543; base built from 5a002f8's shared sources on the same
+  machine); the kit tiles land in the `geometry` chunk. E2E (`CI=1`, ports 4483/7911): editor PASS (377 s), visual PASS
+  (358 s; menu 0.5 %, mapmaker 0.1 %, arena 0.1 %, canyon 0.1 %, no baseline changed), scenery PASS (248 s), maps
+  1 of 30 checks failed (1369 s): diamond_park "no match", the known load flake (see the terrain-paths entry), rerun alone
+  (`E2E_MAPS=diamond_park`) PASS (213 s). ci:plan: full suite (38 flows, shared code); the rest needs a `check/` run.
+
 ### Content scalability step 6: library materials as data (`wip/materials-data`, agent, 2026-11-04; pushed, not merged; on `wip/pickups-data` 01420e4)
 docs/CONTENT_SCALABILITY.md step 6, same pattern as steps 3-5; how to add one: docs/CONTENT_PIPELINE.md, "Materials and themes".
 - **Where things are now:** `content/materials.json`: `materials` (all 149 in the old `CORE_MATERIALS` order, which is
