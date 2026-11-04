@@ -1,0 +1,1097 @@
+{
+ "items": [
+  {
+   "item": {
+    "id": "core.health_small",
+    "displayName": "Health (Small)",
+    "effect": {
+     "kind": "health",
+     "amount": 25
+    },
+    "respawnSeconds": 15,
+    "botValue": 0.4
+   },
+   "category": null,
+   "found": true
+  },
+  {
+   "item": {
+    "id": "core.health_large",
+    "displayName": "Health (Large)",
+    "effect": {
+     "kind": "health",
+     "amount": 50
+    },
+    "respawnSeconds": 25,
+    "botValue": 0.7
+   },
+   "category": null,
+   "found": true
+  },
+  {
+   "item": {
+    "id": "core.armor_small",
+    "displayName": "Armor (Small)",
+    "effect": {
+     "kind": "armor",
+     "amount": 25
+    },
+    "respawnSeconds": 20,
+    "botValue": 0.4
+   },
+   "category": null,
+   "found": true
+  },
+  {
+   "item": {
+    "id": "core.armor_large",
+    "displayName": "Armor (Large)",
+    "effect": {
+     "kind": "armor",
+     "amount": 75
+    },
+    "respawnSeconds": 30,
+    "botValue": 0.75
+   },
+   "category": null,
+   "found": true
+  },
+  {
+   "item": {
+    "id": "core.ammo",
+    "displayName": "Ammo Box",
+    "effect": {
+     "kind": "ammo"
+    },
+    "respawnSeconds": 15,
+    "botValue": 0.3
+   },
+   "category": null,
+   "found": true
+  },
+  {
+   "item": {
+    "id": "core.weapon_rifle",
+    "displayName": "Assault Rifle",
+    "effect": {
+     "kind": "weapon",
+     "weapon": "core.rifle"
+    },
+    "respawnSeconds": 15,
+    "botValue": 0.6
+   },
+   "category": "rifle",
+   "found": true
+  },
+  {
+   "item": {
+    "id": "core.weapon_shotgun",
+    "displayName": "Shotgun",
+    "effect": {
+     "kind": "weapon",
+     "weapon": "core.shotgun"
+    },
+    "respawnSeconds": 15,
+    "botValue": 0.6
+   },
+   "category": "shotgun",
+   "found": true
+  },
+  {
+   "item": {
+    "id": "core.weapon_sniper",
+    "displayName": "Sniper Rifle",
+    "effect": {
+     "kind": "weapon",
+     "weapon": "core.sniper"
+    },
+    "respawnSeconds": 20,
+    "botValue": 0.6
+   },
+   "category": "sniper",
+   "found": true
+  },
+  {
+   "item": {
+    "id": "core.weapon_launcher",
+    "displayName": "Grenade Launcher",
+    "effect": {
+     "kind": "weapon",
+     "weapon": "core.launcher"
+    },
+    "respawnSeconds": 25,
+    "botValue": 0.7
+   },
+   "category": "explosive",
+   "found": true
+  },
+  {
+   "item": {
+    "id": "core.weapon_smg",
+    "displayName": "Submachine Gun",
+    "effect": {
+     "kind": "weapon",
+     "weapon": "core.smg"
+    },
+    "respawnSeconds": 15,
+    "botValue": 0.55
+   },
+   "category": "smg",
+   "found": true
+  },
+  {
+   "item": {
+    "id": "core.weapon_rockets",
+    "displayName": "Rocket Launcher",
+    "effect": {
+     "kind": "weapon",
+     "weapon": "core.rockets"
+    },
+    "respawnSeconds": 30,
+    "botValue": 0.8
+   },
+   "category": "explosive",
+   "found": true
+  },
+  {
+   "item": {
+    "id": "core.weapon_plasma",
+    "displayName": "Plasma Rifle",
+    "effect": {
+     "kind": "weapon",
+     "weapon": "core.plasma"
+    },
+    "respawnSeconds": 25,
+    "botValue": 0.7
+   },
+   "category": "rifle",
+   "found": true
+  },
+  {
+   "item": {
+    "id": "core.ammo_light",
+    "displayName": "Light Rounds",
+    "effect": {
+     "kind": "ammo",
+     "ammo": "light"
+    },
+    "respawnSeconds": 12,
+    "botValue": 0.25
+   },
+   "category": null,
+   "found": true
+  },
+  {
+   "item": {
+    "id": "core.ammo_rifle",
+    "displayName": "Rifle Rounds",
+    "effect": {
+     "kind": "ammo",
+     "ammo": "rifle"
+    },
+    "respawnSeconds": 12,
+    "botValue": 0.25
+   },
+   "category": null,
+   "found": true
+  },
+  {
+   "item": {
+    "id": "core.ammo_shells",
+    "displayName": "Shells",
+    "effect": {
+     "kind": "ammo",
+     "ammo": "shells"
+    },
+    "respawnSeconds": 12,
+    "botValue": 0.25
+   },
+   "category": null,
+   "found": true
+  },
+  {
+   "item": {
+    "id": "core.ammo_sniper",
+    "displayName": "Sniper Rounds",
+    "effect": {
+     "kind": "ammo",
+     "ammo": "sniper"
+    },
+    "respawnSeconds": 15,
+    "botValue": 0.25
+   },
+   "category": null,
+   "found": true
+  },
+  {
+   "item": {
+    "id": "core.ammo_explosive",
+    "displayName": "Explosives",
+    "effect": {
+     "kind": "ammo",
+     "ammo": "explosive"
+    },
+    "respawnSeconds": 20,
+    "botValue": 0.35
+   },
+   "category": null,
+   "found": true
+  },
+  {
+   "item": {
+    "id": "core.ammo_cells",
+    "displayName": "Energy Cells",
+    "effect": {
+     "kind": "ammo",
+     "ammo": "cells"
+    },
+    "respawnSeconds": 15,
+    "botValue": 0.25
+   },
+   "category": null,
+   "found": true
+  },
+  {
+   "item": {
+    "id": "core.grenades",
+    "displayName": "Frag Grenades",
+    "effect": {
+     "kind": "throwable",
+     "throwable": "frag",
+     "count": 2
+    },
+    "respawnSeconds": 20,
+    "botValue": 0.45
+   },
+   "category": null,
+   "found": true
+  },
+  {
+   "item": {
+    "id": "core.mines",
+    "displayName": "Proximity Mines",
+    "effect": {
+     "kind": "throwable",
+     "throwable": "mine",
+     "count": 2
+    },
+    "respawnSeconds": 25,
+    "botValue": 0.4
+   },
+   "category": null,
+   "found": true
+  },
+  {
+   "item": {
+    "id": "core.weapon_pulse_pistol",
+    "displayName": "Pulse Pistol",
+    "effect": {
+     "kind": "weapon",
+     "weapon": "core.pulse_pistol"
+    },
+    "respawnSeconds": 15,
+    "botValue": 0.675
+   },
+   "category": "pistol",
+   "found": true
+  },
+  {
+   "item": {
+    "id": "core.weapon_hand_cannon",
+    "displayName": "Hand Cannon",
+    "effect": {
+     "kind": "weapon",
+     "weapon": "core.hand_cannon"
+    },
+    "respawnSeconds": 20,
+    "botValue": 0.7166666666666667
+   },
+   "category": "pistol",
+   "found": true
+  },
+  {
+   "item": {
+    "id": "core.weapon_gilded_pistol",
+    "displayName": "Gilded Pistol",
+    "effect": {
+     "kind": "weapon",
+     "weapon": "core.gilded_pistol"
+    },
+    "respawnSeconds": 60,
+    "botValue": 0.9
+   },
+   "category": "special",
+   "found": true
+  },
+  {
+   "item": {
+    "id": "core.weapon_flare_gun",
+    "displayName": "Flare Gun",
+    "effect": {
+     "kind": "weapon",
+     "weapon": "core.flare_gun"
+    },
+    "respawnSeconds": 20,
+    "botValue": 0.7166666666666667
+   },
+   "category": "special",
+   "found": true
+  },
+  {
+   "item": {
+    "id": "core.weapon_machine_pistol",
+    "displayName": "Machine Pistol",
+    "effect": {
+     "kind": "weapon",
+     "weapon": "core.machine_pistol"
+    },
+    "respawnSeconds": 15,
+    "botValue": 0.675
+   },
+   "category": "smg",
+   "found": true
+  },
+  {
+   "item": {
+    "id": "core.weapon_burst_rifle",
+    "displayName": "Burst Rifle",
+    "effect": {
+     "kind": "weapon",
+     "weapon": "core.burst_rifle"
+    },
+    "respawnSeconds": 15,
+    "botValue": 0.675
+   },
+   "category": "rifle",
+   "found": true
+  },
+  {
+   "item": {
+    "id": "core.weapon_laser_rifle",
+    "displayName": "Laser Rifle",
+    "effect": {
+     "kind": "weapon",
+     "weapon": "core.laser_rifle"
+    },
+    "respawnSeconds": 25,
+    "botValue": 0.7583333333333334
+   },
+   "category": "rifle",
+   "found": true
+  },
+  {
+   "item": {
+    "id": "core.weapon_marksman",
+    "displayName": "Marksman Rifle",
+    "effect": {
+     "kind": "weapon",
+     "weapon": "core.marksman"
+    },
+    "respawnSeconds": 20,
+    "botValue": 0.7166666666666667
+   },
+   "category": "sniper",
+   "found": true
+  },
+  {
+   "item": {
+    "id": "core.weapon_sawed_off",
+    "displayName": "Sawed-Off",
+    "effect": {
+     "kind": "weapon",
+     "weapon": "core.sawed_off"
+    },
+    "respawnSeconds": 15,
+    "botValue": 0.675
+   },
+   "category": "shotgun",
+   "found": true
+  },
+  {
+   "item": {
+    "id": "core.weapon_auto_shotgun",
+    "displayName": "Auto Shotgun",
+    "effect": {
+     "kind": "weapon",
+     "weapon": "core.auto_shotgun"
+    },
+    "respawnSeconds": 20,
+    "botValue": 0.7166666666666667
+   },
+   "category": "shotgun",
+   "found": true
+  },
+  {
+   "item": {
+    "id": "core.weapon_flak",
+    "displayName": "Flak Cannon",
+    "effect": {
+     "kind": "weapon",
+     "weapon": "core.flak"
+    },
+    "respawnSeconds": 25,
+    "botValue": 0.7583333333333334
+   },
+   "category": "shotgun",
+   "found": true
+  },
+  {
+   "item": {
+    "id": "core.weapon_railgun",
+    "displayName": "Railgun",
+    "effect": {
+     "kind": "weapon",
+     "weapon": "core.railgun"
+    },
+    "respawnSeconds": 35,
+    "botValue": 0.8416666666666668
+   },
+   "category": "sniper",
+   "found": true
+  },
+  {
+   "item": {
+    "id": "core.weapon_disc_launcher",
+    "displayName": "Disc Launcher",
+    "effect": {
+     "kind": "weapon",
+     "weapon": "core.disc_launcher"
+    },
+    "respawnSeconds": 25,
+    "botValue": 0.7583333333333334
+   },
+   "category": "explosive",
+   "found": true
+  },
+  {
+   "item": {
+    "id": "core.weapon_bubble_blaster",
+    "displayName": "Bubble Blaster",
+    "effect": {
+     "kind": "weapon",
+     "weapon": "core.bubble_blaster"
+    },
+    "respawnSeconds": 20,
+    "botValue": 0.7166666666666667
+   },
+   "category": "special",
+   "found": true
+  },
+  {
+   "item": {
+    "id": "core.weapon_goo_gun",
+    "displayName": "Goo Gun",
+    "effect": {
+     "kind": "weapon",
+     "weapon": "core.goo_gun"
+    },
+    "respawnSeconds": 20,
+    "botValue": 0.7166666666666667
+   },
+   "category": "special",
+   "found": true
+  },
+  {
+   "item": {
+    "id": "core.weapon_oil_slicker",
+    "displayName": "Oil Slicker",
+    "effect": {
+     "kind": "weapon",
+     "weapon": "core.oil_slicker"
+    },
+    "respawnSeconds": 20,
+    "botValue": 0.7166666666666667
+   },
+   "category": "special",
+   "found": true
+  },
+  {
+   "item": {
+    "id": "core.weapon_lmg",
+    "displayName": "Spin Gun",
+    "effect": {
+     "kind": "weapon",
+     "weapon": "core.lmg"
+    },
+    "respawnSeconds": 30,
+    "botValue": 0.8
+   },
+   "category": "smg",
+   "found": true
+  },
+  {
+   "item": {
+    "id": "core.weapon_nailgun",
+    "displayName": "Nailgun",
+    "effect": {
+     "kind": "weapon",
+     "weapon": "core.nailgun"
+    },
+    "respawnSeconds": 20,
+    "botValue": 0.7166666666666667
+   },
+   "category": "smg",
+   "found": true
+  },
+  {
+   "item": {
+    "id": "core.weapon_swarm",
+    "displayName": "Swarm Launcher",
+    "effect": {
+     "kind": "weapon",
+     "weapon": "core.swarm"
+    },
+    "respawnSeconds": 35,
+    "botValue": 0.8416666666666668
+   },
+   "category": "explosive",
+   "found": true
+  },
+  {
+   "item": {
+    "id": "core.weapon_guided",
+    "displayName": "Guided Rocket",
+    "effect": {
+     "kind": "weapon",
+     "weapon": "core.guided"
+    },
+    "respawnSeconds": 40,
+    "botValue": 0.8833333333333333
+   },
+   "category": "explosive",
+   "found": true
+  },
+  {
+   "item": {
+    "id": "core.weapon_singularity",
+    "displayName": "Singularity Cannon",
+    "effect": {
+     "kind": "weapon",
+     "weapon": "core.singularity"
+    },
+    "respawnSeconds": 45,
+    "botValue": 0.9
+   },
+   "category": "special",
+   "found": true
+  },
+  {
+   "item": {
+    "id": "core.weapon_arc_caster",
+    "displayName": "Arc Caster",
+    "effect": {
+     "kind": "weapon",
+     "weapon": "core.arc_caster"
+    },
+    "respawnSeconds": 25,
+    "botValue": 0.7583333333333334
+   },
+   "category": "special",
+   "found": true
+  },
+  {
+   "item": {
+    "id": "core.weapon_flamethrower",
+    "displayName": "Flamethrower",
+    "effect": {
+     "kind": "weapon",
+     "weapon": "core.flamethrower"
+    },
+    "respawnSeconds": 25,
+    "botValue": 0.7583333333333334
+   },
+   "category": "special",
+   "found": true
+  },
+  {
+   "item": {
+    "id": "core.weapon_freeze_ray",
+    "displayName": "Freeze Ray",
+    "effect": {
+     "kind": "weapon",
+     "weapon": "core.freeze_ray"
+    },
+    "respawnSeconds": 25,
+    "botValue": 0.7583333333333334
+   },
+   "category": "special",
+   "found": true
+  },
+  {
+   "item": {
+    "id": "core.ammo_fuel",
+    "displayName": "Fuel Canisters",
+    "effect": {
+     "kind": "ammo",
+     "ammo": "fuel"
+    },
+    "respawnSeconds": 15,
+    "botValue": 0.25
+   },
+   "category": null,
+   "found": true
+  },
+  {
+   "item": {
+    "id": "core.ammo_chem",
+    "displayName": "Chem Canisters",
+    "effect": {
+     "kind": "ammo",
+     "ammo": "chem"
+    },
+    "respawnSeconds": 15,
+    "botValue": 0.25
+   },
+   "category": null,
+   "found": true
+  },
+  {
+   "item": {
+    "id": "core.sticky_grenades",
+    "displayName": "Sticky Grenades",
+    "effect": {
+     "kind": "throwable",
+     "throwable": "sticky",
+     "count": 2
+    },
+    "respawnSeconds": 25,
+    "botValue": 0.45
+   },
+   "category": null,
+   "found": true
+  },
+  {
+   "item": {
+    "id": "core.incendiaries",
+    "displayName": "Incendiaries",
+    "effect": {
+     "kind": "throwable",
+     "throwable": "incendiary",
+     "count": 2
+    },
+    "respawnSeconds": 25,
+    "botValue": 0.45
+   },
+   "category": null,
+   "found": true
+  },
+  {
+   "item": {
+    "id": "core.gas_grenades",
+    "displayName": "Gas Grenades",
+    "effect": {
+     "kind": "throwable",
+     "throwable": "toxic",
+     "count": 2
+    },
+    "respawnSeconds": 25,
+    "botValue": 0.4
+   },
+   "category": null,
+   "found": true
+  },
+  {
+   "item": {
+    "id": "core.vortex_grenades",
+    "displayName": "Vortex Grenades",
+    "effect": {
+     "kind": "throwable",
+     "throwable": "vortex",
+     "count": 1
+    },
+    "respawnSeconds": 35,
+    "botValue": 0.5
+   },
+   "category": null,
+   "found": true
+  },
+  {
+   "item": {
+    "id": "core.weapon_medkit",
+    "displayName": "Medkit",
+    "effect": {
+     "kind": "weapon",
+     "weapon": "core.medkit"
+    },
+    "respawnSeconds": 30,
+    "botValue": 0.5
+   },
+   "category": null,
+   "found": true
+  },
+  {
+   "item": {
+    "id": "core.weapon_spear",
+    "displayName": "Spear",
+    "effect": {
+     "kind": "weapon",
+     "weapon": "core.spear"
+    },
+    "respawnSeconds": 20,
+    "botValue": 0.5
+   },
+   "category": "melee",
+   "found": true
+  },
+  {
+   "item": {
+    "id": "core.weapon_grapple",
+    "displayName": "Grapple Hook",
+    "effect": {
+     "kind": "weapon",
+     "weapon": "core.grapple"
+    },
+    "respawnSeconds": 30,
+    "botValue": 0.3
+   },
+   "category": null,
+   "found": true
+  },
+  {
+   "item": {
+    "id": "core.holy_bomb",
+    "displayName": "Holy Bomb",
+    "effect": {
+     "kind": "throwable",
+     "throwable": "holy",
+     "count": 1
+    },
+    "respawnSeconds": 60,
+    "botValue": 0.55
+   },
+   "category": null,
+   "found": true
+  },
+  {
+   "item": {
+    "id": "core.cluster_bombs",
+    "displayName": "Cluster Bombs",
+    "effect": {
+     "kind": "throwable",
+     "throwable": "cluster",
+     "count": 1
+    },
+    "respawnSeconds": 40,
+    "botValue": 0.5
+   },
+   "category": null,
+   "found": true
+  },
+  {
+   "item": {
+    "id": "core.sheep",
+    "displayName": "Sheep",
+    "effect": {
+     "kind": "throwable",
+     "throwable": "sheep",
+     "count": 1
+    },
+    "respawnSeconds": 45,
+    "botValue": 0.55
+   },
+   "category": null,
+   "found": true
+  },
+  {
+   "item": {
+    "id": "core.airstrike",
+    "displayName": "Airstrike Flare",
+    "effect": {
+     "kind": "throwable",
+     "throwable": "airstrike",
+     "count": 1
+    },
+    "respawnSeconds": 60,
+    "botValue": 0.5
+   },
+   "category": null,
+   "found": true
+  },
+  {
+   "item": {
+    "id": "core.sandbags",
+    "displayName": "Sandbags",
+    "effect": {
+     "kind": "throwable",
+     "throwable": "sandbag",
+     "count": 2
+    },
+    "respawnSeconds": 30,
+    "botValue": 0.35
+   },
+   "category": null,
+   "found": true
+  },
+  {
+   "item": {
+    "id": "core.dynamite",
+    "displayName": "Dynamite",
+    "effect": {
+     "kind": "throwable",
+     "throwable": "dynamite",
+     "count": 2
+    },
+    "respawnSeconds": 30,
+    "botValue": 0.5
+   },
+   "category": null,
+   "found": true
+  },
+  {
+   "item": {
+    "id": "core.powerup_speed",
+    "displayName": "Speed Boost",
+    "effect": {
+     "kind": "powerup",
+     "powerup": "speed",
+     "seconds": 15
+    },
+    "respawnSeconds": 60,
+    "botValue": 0.6
+   },
+   "category": null,
+   "found": true
+  },
+  {
+   "item": {
+    "id": "core.powerup_damage",
+    "displayName": "Double Damage",
+    "effect": {
+     "kind": "powerup",
+     "powerup": "damage",
+     "seconds": 15
+    },
+    "respawnSeconds": 60,
+    "botValue": 0.85
+   },
+   "category": null,
+   "found": true
+  },
+  {
+   "item": {
+    "id": "core.jetpack",
+    "displayName": "Jetpack",
+    "effect": {
+     "kind": "jetpack"
+    },
+    "respawnSeconds": 45,
+    "botValue": 0.6
+   },
+   "category": null,
+   "found": true
+  },
+  {
+   "item": {
+    "id": "core.glider",
+    "displayName": "Glider",
+    "effect": {
+     "kind": "glider"
+    },
+    "respawnSeconds": 40,
+    "botValue": 0.35
+   },
+   "category": null,
+   "found": true
+  },
+  {
+   "item": {
+    "id": "core.uav",
+    "displayName": "UAV Uplink",
+    "effect": {
+     "kind": "uav",
+     "seconds": 20
+    },
+    "respawnSeconds": 75,
+    "botValue": 0.5
+   },
+   "category": null,
+   "found": true
+  },
+  {
+   "item": {
+    "id": "core.weapon_arena_disc",
+    "displayName": "Arena Disc",
+    "effect": {
+     "kind": "weapon",
+     "weapon": "core.arena_disc"
+    },
+    "respawnSeconds": 20,
+    "botValue": 0.5
+   },
+   "category": null,
+   "found": true
+  },
+  {
+   "item": {
+    "id": "core.weapon_blast_rockets",
+    "displayName": "Blast Rockets",
+    "effect": {
+     "kind": "weapon",
+     "weapon": "core.blast_rockets"
+    },
+    "respawnSeconds": 30,
+    "botValue": 0.8
+   },
+   "category": "explosive",
+   "found": true
+  },
+  {
+   "item": {
+    "id": "core.weapon_medi_beam",
+    "displayName": "Medi-Beam",
+    "effect": {
+     "kind": "weapon",
+     "weapon": "core.medi_beam"
+    },
+    "respawnSeconds": 30,
+    "botValue": 0.5
+   },
+   "category": null,
+   "found": true
+  },
+  {
+   "item": {
+    "id": "core.disc_fast",
+    "displayName": "Fast Discs",
+    "effect": {
+     "kind": "disc",
+     "power": "fast"
+    },
+    "respawnSeconds": 20,
+    "botValue": 0.7
+   },
+   "category": null,
+   "found": true
+  },
+  {
+   "item": {
+    "id": "core.disc_triple",
+    "displayName": "Triple Discs",
+    "effect": {
+     "kind": "disc",
+     "power": "triple"
+    },
+    "respawnSeconds": 25,
+    "botValue": 0.75
+   },
+   "category": null,
+   "found": true
+  },
+  {
+   "item": {
+    "id": "core.disc_split",
+    "displayName": "Splitting Discs",
+    "effect": {
+     "kind": "disc",
+     "power": "split"
+    },
+    "respawnSeconds": 25,
+    "botValue": 0.75
+   },
+   "category": null,
+   "found": true
+  },
+  {
+   "item": {
+    "id": "core.disc_freeze",
+    "displayName": "Freeze Discs",
+    "effect": {
+     "kind": "disc",
+     "power": "freeze"
+    },
+    "respawnSeconds": 30,
+    "botValue": 0.8
+   },
+   "category": null,
+   "found": true
+  },
+  {
+   "item": {
+    "id": "core.weapon_revolver",
+    "displayName": "Heavy Revolver",
+    "effect": {
+     "kind": "weapon",
+     "weapon": "core.revolver"
+    },
+    "respawnSeconds": 20,
+    "botValue": 0.6
+   },
+   "category": "pistol",
+   "found": true
+  },
+  {
+   "item": {
+    "id": "core.weapon_battle_axe",
+    "displayName": "Battle Axe",
+    "effect": {
+     "kind": "weapon",
+     "weapon": "core.battle_axe"
+    },
+    "respawnSeconds": 20,
+    "botValue": 0.5
+   },
+   "category": "melee",
+   "found": true
+  }
+ ],
+ "rules": {
+  "MAX_ARMOR": 100,
+  "ARMOR_ABSORB": 0.6666666666666666,
+  "SPEED_BOOST": 1.35,
+  "DAMAGE_BOOST": 2,
+  "PICKUP_RADIUS": 1.1
+ },
+ "pools": {
+  "pistol": [
+   "core.weapon_pulse_pistol",
+   "core.weapon_hand_cannon",
+   "core.weapon_revolver"
+  ],
+  "smg": [
+   "core.weapon_smg",
+   "core.weapon_machine_pistol",
+   "core.weapon_lmg",
+   "core.weapon_nailgun"
+  ],
+  "rifle": [
+   "core.weapon_rifle",
+   "core.weapon_plasma",
+   "core.weapon_burst_rifle",
+   "core.weapon_laser_rifle"
+  ],
+  "shotgun": [
+   "core.weapon_shotgun",
+   "core.weapon_sawed_off",
+   "core.weapon_auto_shotgun",
+   "core.weapon_flak"
+  ],
+  "sniper": [
+   "core.weapon_sniper",
+   "core.weapon_marksman",
+   "core.weapon_railgun"
+  ],
+  "explosive": [
+   "core.weapon_launcher",
+   "core.weapon_rockets",
+   "core.weapon_disc_launcher",
+   "core.weapon_swarm",
+   "core.weapon_guided",
+   "core.weapon_blast_rockets"
+  ],
+  "melee": [
+   "core.weapon_spear",
+   "core.weapon_battle_axe"
+  ],
+  "special": [
+   "core.weapon_gilded_pistol",
+   "core.weapon_flare_gun",
+   "core.weapon_bubble_blaster",
+   "core.weapon_goo_gun",
+   "core.weapon_oil_slicker",
+   "core.weapon_singularity",
+   "core.weapon_arc_caster",
+   "core.weapon_flamethrower",
+   "core.weapon_freeze_ray"
+  ]
+ }
+}
