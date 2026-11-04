@@ -1,0 +1,27 @@
+{
+  "$comment": "Cliff faces (tools/content/env/rock.mjs). familySeed: shared by every panel of the family (edge profiles and ledges, so panels butt seamlessly); seed: the panel's own detail. 8 m wide, 8 m high, 3 m deep; the face looks along -z; a skirt 1 m below grade. lods: the front grid's cells across (nx) and up (ny). Collision: the lightest level as a triangle mesh. See broadleaf.json for the fields.",
+  "family": "cliff",
+  "species": [
+    {
+      "id": "env.cliff.face",
+      "displayName": "Cliff Face",
+      "category": "cliff",
+      "assetVersion": 1,
+      "notes": { "1": "First version (Phase 1 slice)." },
+      "nominalHeight": 8,
+      "nav": "boundary",
+      "role": "blocking",
+      "placement": { "maxSlopeDegrees": 60, "minSpacing": 8, "scale": [1, 1.5] },
+      "generator": { "kind": "cliff", "familySeed": 100, "seed": 101, "width": 8, "height": 8, "depth": 3, "skirt": 1, "relief": 1.2, "strata": 1.6, "ledgeDepth": 0.45, "uvRepeat": 2 },
+      "lods": [
+        { "distance": 0, "nx": 30, "ny": 32 },
+        { "distance": 40, "nx": 16, "ny": 18 },
+        { "distance": 100, "nx": 8, "ny": 8 }
+      ],
+      "variants": [
+        { "index": 0, "name": "bare", "look": { "rock": "#7e786e", "band": "#958c80", "strataFreq": 3 } },
+        { "index": 1, "name": "snow", "look": { "rock": "#7a756c", "band": "#8f877c", "strataFreq": 3, "cover": "#e4e8ec", "coverFrom": 0.35 } }
+      ]
+    }
+  ]
+}

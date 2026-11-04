@@ -1,0 +1,27 @@
+{
+  "$comment": "Boulders (tools/content/env/rock.mjs). lods: triangle targets for meshoptimizer from the detailed surface. Collision: the hull before displacement (stone). See broadleaf.json for the fields.",
+  "family": "rock",
+  "species": [
+    {
+      "id": "env.rock.boulder_angular",
+      "displayName": "Angular Boulder",
+      "category": "boulder",
+      "assetVersion": 1,
+      "notes": { "1": "First version (Phase 1 slice)." },
+      "nominalHeight": 1.7,
+      "nav": "obstacle",
+      "role": "cover",
+      "placement": { "maxSlopeDegrees": 40, "minSpacing": 2.5, "scale": [0.6, 1.6] },
+      "generator": { "kind": "boulder", "seed": 2, "size": [2.3, 1.7, 2.0], "points": 22, "cuts": [4, 7], "maxPoints": 32, "subdivide": 3, "displace": 0.035, "freq": 1.3, "wear": 2, "uvScale": 2.5 },
+      "lods": [
+        { "distance": 0, "triangles": 700 },
+        { "distance": 30, "triangles": 220 },
+        { "distance": 80, "triangles": 60 }
+      ],
+      "variants": [
+        { "index": 0, "name": "bare", "look": { "rock": "#8a857c", "band": "#9c9488" } },
+        { "index": 1, "name": "moss", "look": { "rock": "#86827a", "band": "#968f84", "cover": "#4e6a2c", "coverFrom": 0.45 } }
+      ]
+    }
+  ]
+}

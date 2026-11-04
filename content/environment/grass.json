@@ -1,0 +1,23 @@
+{
+  "$comment": "Grass (tools/content/env/plants.mjs). Ground cover: decorative only (no collision, no concealment, no sight blocking), so the renderer may grow it from the terrain's painted plants and thin it with distance and graphics tier. One level of detail.",
+  "family": "grass",
+  "species": [
+    {
+      "id": "env.grass.clump",
+      "displayName": "Grass Clump",
+      "category": "groundcover",
+      "assetVersion": 1,
+      "notes": { "1": "First version (Phase 1 slice)." },
+      "nominalHeight": 0.4,
+      "nav": "none",
+      "role": "decorative",
+      "placement": { "maxSlopeDegrees": 45, "minSpacing": 0.2, "scale": [0.7, 1.4] },
+      "generator": { "kind": "grass", "seed": 5, "height": 0.42, "width": 0.05, "spread": 0.08, "blades": [7, 7] },
+      "lods": [{ "distance": 0 }],
+      "variants": [
+        { "index": 0, "name": "summer", "look": { "root": "#3c4a22", "tip": "#7f9a46", "alt": "#93a554" } },
+        { "index": 1, "name": "dry", "look": { "root": "#5a5232", "tip": "#b8a768", "alt": "#a39a5c" } }
+      ]
+    }
+  ]
+}

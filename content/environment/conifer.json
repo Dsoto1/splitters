@@ -1,0 +1,43 @@
+{
+  "$comment": "Conifers (tools/content/env/conifer.mjs). See broadleaf.json for the fields.",
+  "family": "conifer",
+  "species": [
+    {
+      "id": "env.conifer.pine_tall",
+      "displayName": "Tall Pine",
+      "category": "tree",
+      "assetVersion": 1,
+      "notes": { "1": "First version (Phase 1 slice)." },
+      "nominalHeight": 11,
+      "nav": "obstacle",
+      "role": "cover",
+      "placement": { "maxSlopeDegrees": 35, "minSpacing": 3, "scale": [0.8, 1.25] },
+      "generator": {
+        "kind": "conifer",
+        "seed": 3,
+        "height": 11,
+        "lean": [0, 3],
+        "trunkRadius": 0.26,
+        "firstWhorl": 1.2,
+        "deadBelow": 2.2,
+        "whorl": [4, 6],
+        "whorlStep": [0.4, 0.7],
+        "missing": 0.15,
+        "maxBranch": 2.6,
+        "elevation": [-8, 25],
+        "droop": 0.5,
+        "minShapeRadius": 0.2
+      },
+      "lods": [
+        { "distance": 0, "trunkSides": 8, "branchSides": 3, "branchMin": 0.02, "barkBudget": 850, "sprays": 3.6, "minSprays": 3, "sprayScale": 1, "bend": 0.3, "leader": 5 },
+        { "distance": 30, "trunkSides": 6, "branchSides": 3, "branchMin": 0.03, "barkBudget": 240, "step": 2, "sprays": 1.6, "minSprays": 1, "sprayScale": 1.45, "bend": 0, "leader": 3 },
+        { "distance": 70, "trunkSides": 4, "branchSides": 3, "branchMin": 0.1, "barkBudget": 60, "step": 4, "sprays": 0.4, "minSprays": 0, "sprayScale": 2.2, "bend": 0, "leader": 2 }
+      ],
+      "impostor": { "distance": 140, "size": 256 },
+      "variants": [
+        { "index": 0, "name": "summer", "look": { "bark": "#6a5446", "leaves": ["#3a5230", "#405a34", "#34492b"], "jitter": 0.1 } },
+        { "index": 1, "name": "snow", "look": { "bark": "#5e4c40", "leaves": ["#33482c", "#3a5030", "#2f4228"], "jitter": 0.1, "snow": 0.75 } }
+      ]
+    }
+  ]
+}

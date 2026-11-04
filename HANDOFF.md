@@ -81,6 +81,17 @@ gets overloaded above that: local e2e times out and flakes). Prune landed worktr
 - Retire rather than delete; models not in T-pose get retired (Otter, Shade).
 - Meshy credits need approval each time; Meshy Community models are CC0 (Terms §3.3) — record author and post URL.
 
+### Environment Phase 1: the vertical slice (`wip/env-phase1`, agent, 2026-11-04; in progress, pushed, not merged; from main b1423beb)
+Plan: docs/PROCEDURAL_ENVIRONMENT_AUDIT.md §10 and "Owner decisions". Status is kept here at every push.
+- **Done:** the generator. `content/environment.json` + `content/environment/<family>.json` (six species, two
+  material variants each) → `node tools/content/environment.mjs` (`--check`: rebuild in memory, byte-identical)
+  → `packages/client/public/env/*.glb` (levels of detail + crossed-card stand-in), shared pictures (bark, rock,
+  leaves atlas), `content/environment.lock.json`, `packages/shared/src/content/environment.generated.ts`
+  (gameplay data), `packages/client/src/content/environment.generated.ts`. Code: `tools/content/env/*.mjs`.
+- **Next:** shared schema + collision/nav/surface integration, client renderer behind `?env=1`, `?envlab`, the
+  showcase map via MapMaker, tests, perf, screenshots.
+- **Resume:** `git fetch && git checkout wip/env-phase1`; `node tools/content/environment.mjs --check`.
+
 ## Earlier start notes (session of 2026-10-30 afternoon)
 
 **Read CLAUDE.md first.** Workflow: session branch → `check/candidate` → when green, fast-forward `main`.

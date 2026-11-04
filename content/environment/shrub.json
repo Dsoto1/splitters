@@ -1,0 +1,28 @@
+{
+  "$comment": "Shrubs (tools/content/env/plants.mjs). No collision; `conceals` comes from the generated bounds (radius: half the smaller footprint side, height: the full height), the same rule bushes use today. See broadleaf.json for the fields.",
+  "family": "shrub",
+  "species": [
+    {
+      "id": "env.shrub.broadleaf",
+      "displayName": "Broadleaf Shrub",
+      "category": "plant",
+      "assetVersion": 1,
+      "notes": { "1": "First version (Phase 1 slice)." },
+      "nominalHeight": 1.2,
+      "nav": "none",
+      "role": "cover",
+      "conceals": true,
+      "placement": { "maxSlopeDegrees": 40, "minSpacing": 1.5, "scale": [0.7, 1.4] },
+      "generator": { "kind": "shrub", "seed": 4, "height": 1.2, "width": 1.6, "stems": [4, 7], "cardSize": 0.5 },
+      "lods": [
+        { "distance": 0, "stems": true, "cards": 110, "cardScale": 1 },
+        { "distance": 25, "stems": false, "cards": 50, "cardScale": 1.5 }
+      ],
+      "impostor": { "distance": 60, "size": 128 },
+      "variants": [
+        { "index": 0, "name": "summer", "look": { "bark": "#5a4a3c", "leaves": ["#4d6b2e", "#587534", "#45612a"], "jitter": 0.12 } },
+        { "index": 1, "name": "autumn", "look": { "bark": "#5a4a3c", "leaves": ["#a5582a", "#b87a30", "#8e4424"], "jitter": 0.14 } }
+      ]
+    }
+  ]
+}
