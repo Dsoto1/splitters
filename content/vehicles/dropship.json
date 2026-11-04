@@ -1,0 +1,33 @@
+{
+  "id": "dropship",
+  "order": 9,
+  "displayName": "Dropship",
+  "kind": "vehicle",
+  "model": "vehicles/dropship.glb",
+  "health": 750,
+  "half": [2, 0.85, 4.8],
+  "seats": [
+    { "role": "driver", "label": "Pilot", "offset": [0, 2, 3.2] },
+    { "role": "gunner", "label": "Gunner", "offset": [0, 2.1, 0.6], "weapon": "core.mount_mg" },
+    { "role": "passenger", "label": "Left front", "offset": [-1.2, 2, 1.4] },
+    { "role": "passenger", "label": "Right front", "offset": [1.2, 2, 1.4] },
+    { "role": "passenger", "label": "Left back", "offset": [-1.2, 2, -1.6] },
+    { "role": "passenger", "label": "Right back", "offset": [1.2, 2, -1.6] }
+  ],
+  "enterRadius": 4.5,
+  "respawnSeconds": 70,
+  "blast": { "radius": 6, "damage": 110 },
+  "vehicle": {
+    "maxSpeed": 15,
+    "reverseSpeed": 5,
+    "accel": 5,
+    "turnRate": 0.9,
+    "hover": true,
+    "grip": 0.05,
+    "mass": 3.5,
+    "fly": { "climb": 4, "ceiling": 25 }
+  },
+  "cockpitEye": [0, 2.3, 2.6],
+  "blurb": "A flying troop carrier for six: a pilot, a door gunner and four riding on the deck",
+  "notes": { "cockpitEye": "Low over the deck, looking down the nose." }
+}

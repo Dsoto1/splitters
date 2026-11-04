@@ -1,5 +1,5 @@
 {
-  "$comment": "Every network code ever given (tools/content/weapons.mjs keeps it): a code never changes and is never reused, also after its weapon, throwable or class is gone.",
+  "$comment": "Every network code ever given (tools/content/weapons.mjs and npcs.mjs keep it): a code never changes and is never reused, also after its weapon, throwable, class or NPC role is gone.",
   "weapons": {
     "core.knife": 1,
     "core.pistol": 2,
@@ -74,5 +74,25 @@
     "medic": 6,
     "marksman": 7,
     "shade": 8
+  },
+  "npcRoles": {
+    "trooper": 0,
+    "gunner": 1,
+    "heavy": 2,
+    "sniper": 3,
+    "imp": 4,
+    "puglin": 5,
+    "cyclops": 6,
+    "oculus": 7,
+    "scolitex": 8,
+    "zombie": 9,
+    "goblin": 10,
+    "otter": 11,
+    "boglurker": 12,
+    "warlord": 13,
+    "hyena": 14,
+    "alien": 15,
+    "pirate": 16,
+    "titan": 17
   }
 }

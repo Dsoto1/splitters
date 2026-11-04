@@ -316,6 +316,61 @@ gaps (clients read them by position). A class ability is code first (`sim/classe
 The Workbench (`.control-center/workbench.json`) shows weapons, weapon families, classes, class abilities and
 throwables from these files; id, code, kind and holds are read-only there.
 
+### Vehicles, turrets and NPC roles
+
+Mounts (vehicles, turrets, sentries) and NPC roles are data too (docs/CONTENT_SCALABILITY.md step 4): the numbers are
+in JSON, the behaviour in code (driving, suspension, flying, sentry aim and the arc lock in the match; the brain;
+`NPC_PROFILE`, the NPC skins and their colours in `sim/npc.ts`; `NPC_KEPT_LOOKS` in `content/looks.ts`).
+
+| File | Holds |
+|---|---|
+| `content/vehicles/<id>.json` | one mount: `kind` (`turret`, `sentry`, `vehicle`), `order` (MapMaker palette order), model, health, collision box, seats (role, label, place, mounted `weapon`, aim `arc`), get-in reach, respawn, blast, the `vehicle` handling (speeds, grip, mass, hover, fly, suspension) or the `sentry` block, drawing numbers (`rideHeight`, `wheels`, `cockpitEye`, `glow`), `blurb` and `notes` |
+| `content/npcs.json` | every NPC role: its network `code`, health, weapon, speed, size (`scale`), `damage` multiple, `creature` / `melee`, the character `look` it is drawn as, and `bot` (what its bot profile changes from `NPC_PROFILE`) |
+
+#### How to add a vehicle or turret
+
+1. **Copy the closest mount** to `content/vehicles/<id>.json` (`id` = the file name, lower case and `_`). Maps name
+   a mount by id: never rename one. Mounts have no network code (a mount travels as its map entity index).
+2. **Give it an `order`:** where it goes in MapMaker's palette and inspector (unique; renumber freely, maps don't
+   store it). The two route crafts (`airplane: true`: `airplane`, `dropship_drop`) have none and can't be placed.
+3. **Kind and seats:** a `turret` has gunner seats only, each with a mounted `weapon`; a `sentry` has no seats,
+   `enterRadius` 0 and a `sentry` block; a `vehicle` has a `vehicle` block and exactly one `driver`. Gunners need a
+   `weapon` (a slot-0 weapon from content/weapons: add a new mounted gun there first); a driver may have one (fires
+   ahead within `arc`); passengers never do (they shoot their own). `arc` is radians either side of the seat's
+   `facing` (leave it out for all round). Seat `offset` is the feet, or the cushion with `seated: true`.
+4. **Model:** `model` (and `wheels.model`) must exist under `packages/client/public/models` (content/models.json or
+   guns.json builds it). The palette picture comes from `pnpm content:rebuild`.
+5. **Generate and check:** `pnpm content:vehicles` (`node tools/content/vehicles.mjs`) checks the schema (an unknown
+   field is an error), the weapons, the models, the seats by kind and the order, and writes
+   `packages/shared/src/content/mounts.generated.ts`; `--check` only verifies it is up to date.
+6. **Test:** `pnpm typecheck`, `pnpm test:changed` and the `vehicles` e2e flow. Changing a mount's numbers changes
+   `packages/shared/test/fixtures/vehicles-resolved.json`: rewrite it with
+   `UPDATE_VEHICLE_FIXTURE=1 pnpm vitest run packages/shared/test/vehiclesNpcsData.test.ts` and read the diff.
+   To offer it in a Style Pack, add it to that pack's `mounts` (`editor/stylePacks.ts`).
+
+#### How to add an NPC role
+
+1. **Add it to `content/npcs.json`** with the next `code` (the highest in `content/codes.lock.json` `npcRoles` plus
+   one): NPC snapshots carry it and clients read a role back by position, so codes run 0, 1, 2... with no gaps and a
+   code is never changed or reused (the lock keeps it).
+2. **Numbers:** `health`, `weapon` (a carried weapon, slot 1-9), `speed` (multiple of a player's), `scale` (drawn
+   size), `damage` (multiple on its attacks, default 1), `melee` (charges into claw range).
+3. **Looks:** a soldier role is drawn as a uniformed mannequin (its colour: `NPC_LOOK_COLORS` and `NPC_ARM_COLORS` in
+   `sim/npc.ts`, code); `look` draws it as a character look from `content/characters` instead; `creature: true` needs
+   its body in `sim/creatures.ts` `CREATURE_SPECS` first (code).
+4. **Bot:** `bot.id` (`core.npc_<role>`), `displayName`, the 0-100 traits that differ from `NPC_PROFILE` and `tags`
+   (ones the brain reads: docs/BOTS.md).
+5. **Generate and check:** `pnpm content:npcs` (`node tools/content/npcs.mjs`) checks the schema, the weapon, the
+   look, the creature body, the tags and the codes, and writes `packages/shared/src/content/npcRoles.generated.ts`
+   (`NPC_ROLES` in code order, `CREATURE_ROLES`, the specs and bot changes) and the lock.
+6. **Test:** `pnpm typecheck`, `pnpm test:changed` and the `zombies` and `outpost` e2e flows (NPC squads); rewrite
+   `npc-roles-resolved.json` as above and read the diff. MapMaker's encounter roster offers every role in
+   `NPC_ROLES` (client `editor/editorApp.ts`).
+
+`pnpm content:rebuild` and `pnpm content:check` run all three data generators (weapons, vehicles, NPC roles). The
+Workbench shows **Vehicles & turrets** and **NPC roles** from these files; id, kind, order, code, creature and look are
+read-only there, and a seat's place is edited in the JSON (the Workbench edits the first three seats' weapon and arc).
+
 ### Audio
 
 - Original recordings, foley and synthesis by the team.

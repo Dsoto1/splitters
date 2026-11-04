@@ -14,11 +14,11 @@ export const MAP_FORMAT_VERSION = 25;
 export const PLAYERS_FACTION = 'players';
 
 /**
- * NPC kinds an encounter can field: the soldiers, then the creatures (see
- * sim/npc.ts and sim/creatures.ts). Order matters: snapshots send the index.
+ * NPC kinds an encounter can field (NPC_ROLES: the soldiers, then the creatures, in code order) and the creature kinds
+ * among them (CREATURE_ROLES: their own bodies and clips, not the soldier rig): content/npcs.json, built by
+ * tools/content/npcs.mjs (see sim/npc.ts and sim/creatures.ts). Snapshots send a role's code (its index): never
+ * change or reuse one (content/codes.lock.json).
  */
-export const NPC_ROLES = ['trooper', 'gunner', 'heavy', 'sniper', 'imp', 'puglin', 'cyclops', 'oculus', 'scolitex', 'zombie', 'goblin', 'otter', 'boglurker', 'warlord', 'hyena', 'alien', 'pirate', 'titan'] as const;
-/** The creature kinds among NPC_ROLES (their own bodies and clips, not the soldier rig). */
-export const CREATURE_ROLES = ['imp', 'puglin', 'cyclops', 'oculus', 'scolitex'] as const satisfies readonly (typeof NPC_ROLES)[number][];
+export { CREATURE_ROLES, NPC_ROLES } from '../content/npcRoles.generated.ts';
 
 export const SQUAD_ORDERS = ['hold', 'attack', 'defend', 'patrol', 'follow', 'roam'] as const;

@@ -1,0 +1,77 @@
+{
+  "id": "buggy",
+  "order": 6,
+  "displayName": "Buggy",
+  "kind": "vehicle",
+  "model": "vehicles/offroad_buggy.glb",
+  "rideHeight": 0.24,
+  "wheels": {
+    "model": "vehicles/offroad_tire.glb",
+    "at": [[-1, 0.42, 1.74], [1, 0.42, 1.74], [-1, 0.42, -1.86], [1, 0.42, -1.86]]
+  },
+  "health": 450,
+  "half": [1.05, 0.8, 2.2],
+  "seats": [
+    {
+      "role": "driver",
+      "label": "Driver",
+      "offset": [-0.32, 0.8, 0.3],
+      "seated": true,
+      "legDrop": 0.18
+    },
+    {
+      "role": "passenger",
+      "label": "Front passenger",
+      "offset": [0.32, 0.8, 0.3],
+      "seated": true,
+      "legDrop": 0.18
+    },
+    {
+      "role": "passenger",
+      "label": "Back left",
+      "offset": [-0.32, 0.8, -0.45],
+      "seated": true,
+      "legDrop": 0.28
+    },
+    {
+      "role": "passenger",
+      "label": "Back right",
+      "offset": [0.32, 0.8, -0.45],
+      "seated": true,
+      "legDrop": 0.28
+    }
+  ],
+  "cockpitEye": [-0.32, 1.36, 0.32],
+  "enterRadius": 3.2,
+  "respawnSeconds": 45,
+  "blast": { "radius": 4.5, "damage": 90 },
+  "vehicle": {
+    "maxSpeed": 18,
+    "reverseSpeed": 7,
+    "accel": 10,
+    "turnRate": 1.8,
+    "grip": 0.22,
+    "mass": 1.4,
+    "drift": 0.55,
+    "suspension": {
+      "travel": 0.2,
+      "bump": 0.16,
+      "freq": 1.5,
+      "damping": 0.32,
+      "squat": 0.004,
+      "lean": 0.0045,
+      "tumble": 1.4,
+      "land": 0.5,
+      "maxTilt": 0.45,
+      "steer": 0.5
+    }
+  },
+  "blurb": "Four seats: a driver and three passengers who shoot their own weapons",
+  "notes": {
+    "model": "The owner's Tactical Off-Road Beast and its Rugged Off-Road Tire (Meshy, owned; content/guns.json): a long tube-frame buggy with a roof gun, its hubs bare, so the tires go on at its hubs and it rides on them.",
+    "half": "The body is 1.74 m wide and 1.44 m tall on 0.24 m of ride height, 4.4 m long; the tires stand out to 2.2 m.",
+    "seats": "On the model's seats (measured on the model): two rows of cushions 0.8 m up, 0.32 m either side of the middle, the hips just ahead of each backrest (front row z 0.3, back row z -0.45); the steering wheel is on the left, at z 0.75. The front footwell floor is only 0.18 m under the cushion (legs stretched out under the dash), the back one 0.36 m (feet under the front seats). The roof gun over the back row is not manned (the owner's ask: a driver and three passengers who all shoot their own weapons).",
+    "cockpitEye": "A seated head height, under the front roof bar (1.6 m at z 0.55), looking over the wheel and dash. Up close the driver sees an in-house cockpit instead of the body's own (client content/cockpits.ts).",
+    "vehicle": "The Warthog feel: soft, long-travel springs (bouncy, leans out of turns), loose at speed so it powerslides."
+  }
+}

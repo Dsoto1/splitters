@@ -1,0 +1,32 @@
+{
+  "id": "skyfighter",
+  "order": 8,
+  "displayName": "Skyfighter",
+  "kind": "vehicle",
+  "model": "vehicles/skyfighter.glb",
+  "health": 280,
+  "half": [1.6, 0.8, 2.2],
+  "seats": [
+    {
+      "role": "driver",
+      "label": "Pilot",
+      "offset": [0, 1.4, 0.3],
+      "weapon": "core.speeder_guns",
+      "arc": 0.3
+    }
+  ],
+  "enterRadius": 3.2,
+  "respawnSeconds": 50,
+  "blast": { "radius": 5, "damage": 90 },
+  "vehicle": {
+    "maxSpeed": 28,
+    "reverseSpeed": 6,
+    "accel": 12,
+    "turnRate": 1.9,
+    "hover": true,
+    "grip": 0.08,
+    "mass": 0.7,
+    "fly": { "climb": 7, "ceiling": 30 }
+  },
+  "blurb": "A one-seat fighter that flies: jump to climb, crouch to dive; twin blasters ahead"
+}

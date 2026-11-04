@@ -1,0 +1,25 @@
+{
+  "id": "turret_mg",
+  "order": 0,
+  "displayName": "Heavy MG Turret",
+  "kind": "turret",
+  "model": "guns/tripod_mg.glb",
+  "health": 400,
+  "half": [0.6, 0.5, 0.6],
+  "seats": [
+    {
+      "role": "gunner",
+      "label": "Gunner",
+      "offset": [0, 0, -1.1],
+      "weapon": "core.mount_mg",
+      "arc": 1.4
+    }
+  ],
+  "enterRadius": 2.4,
+  "respawnSeconds": 45,
+  "blast": { "radius": 3, "damage": 60 },
+  "blurb": "A heavy machine gun on a tripod: one gunner, a wide arc, overheats instead of reloading",
+  "notes": {
+    "model": "The owner's toy machine gun on a tripod (Meshy, owned; content/guns.json, centred on its tripod)."
+  }
+}
