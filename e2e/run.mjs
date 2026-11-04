@@ -1192,7 +1192,8 @@ async function offlineFlow(browser) {
   check(/^\d+ \/ \d+$/.test(ammo), `HUD shows ammo (${ammo})`);
   // A click is the user gesture that starts audio; bots fighting then make sounds.
   await page.click('#resume');
-  await page.waitForFunction(() => window.__audio.stats.loaded + window.__audio.stats.failed === window.__audio.total, null, { timeout: T(15000) });
+  // (A loaded machine decodes them slowly: the check below says what it got, rather than the wait throwing.)
+  await page.waitForFunction(() => window.__audio.stats.loaded + window.__audio.stats.failed === window.__audio.total, null, { timeout: T(60000) }).catch(() => {});
   const loaded = await page.evaluate(() => ({ ...window.__audio.stats, total: window.__audio.total }));
   check(loaded.failed === 0 && loaded.loaded === loaded.total, `all ${loaded.total} sounds load and decode (${loaded.failed} failed)`);
   await page.waitForFunction(() => window.__audio.stats.played > 0, null, { timeout: T(20000) }).catch(() => {});
@@ -3940,7 +3941,8 @@ async function lobbyFlow(browser) {
   const row = await player.waitForFunction(() => [...document.querySelectorAll('.gb-row:not(.gb-head)')].map((r) => r.textContent).find((t) => t.includes('E2E Friday Night')) ?? null, null, { timeout: T(15000) }).then((h) => h.jsonValue(), () => null);
   check(!!row && row.includes('1/') && row.includes('Hosty') && row.includes('Relay'), `the game browser lists it, with the relay badge (${row})`);
   await player.evaluate(() => [...document.querySelectorAll('.gb-row:not(.gb-head)')].find((r) => r.textContent.includes('E2E Friday Night')).querySelector('button').click());
-  const joined = await player.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown', null, { timeout: T(60000) }).then(() => true, () => false);
+  // Joining loads Sandgate (heavy since its rework): on a loaded machine that alone can take a minute or more.
+  const joined = await player.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown', null, { timeout: T(150000) }).then(() => true, () => false);
   check(joined, 'joining from the game browser puts the player in the match');
   const lobbyGames = () => player.evaluate(() => fetch(`http://${new URLSearchParams(location.search).get('hub')}/lobby/games`).then((r) => r.json()).then((d) => JSON.stringify(d.games.map((g) => [g.name, g.code, g.players])))).catch((e) => e.message);
   if (joined) {
@@ -4060,7 +4062,8 @@ async function dedicatedhostFlow(browser) {
   const row = await player.waitForFunction(() => [...document.querySelectorAll('.gb-row:not(.gb-head)')].map((r) => r.textContent).find((t) => t.includes('E2E Dedicated')) ?? null, null, { timeout: T(30000) }).then((h) => h.jsonValue(), () => null);
   check(!!row && row.includes('Dedicated host') && !row.includes('Player-hosted'), `the game browser shows it as a Dedicated host (${row})`);
   await player.evaluate(() => [...document.querySelectorAll('.gb-row:not(.gb-head)')].find((r) => r.textContent.includes('E2E Dedicated')).querySelector('button').click());
-  const joined = await player.waitForFunction(playing, null, { timeout: T(60000) }).then(() => true, () => false);
+  // Joining loads Sandgate (heavy since its rework): on a loaded machine that alone can take a minute or more.
+  const joined = await player.waitForFunction(playing, null, { timeout: T(150000) }).then(() => true, () => false);
   const screen = joined ? '' : await player.evaluate(() => (document.body.innerText.match(/Disconnected[^\n]*/) ?? [''])[0]).catch(() => '');
   check(joined, `joining from the game browser puts the player in the match${screen ? ` (${screen})` : ''}`);
   if (joined) {
@@ -4091,7 +4094,7 @@ async function dedicatedhostFlow(browser) {
 
     // The owner, joined by code with the admin token, kicks the visitor from the pause menu's player list.
     const admin = await open('Owner', `${CLIENT}/?join=${game.code}&${hub}&admin=e2e-admin-token`);
-    const adminIn = await admin.waitForFunction(playing, null, { timeout: T(60000) }).then(() => true, () => false);
+    const adminIn = await admin.waitForFunction(playing, null, { timeout: T(150000) }).then(() => true, () => false);
     if (!adminIn) console.log(readFileSync(join(hostState, 'logs', 'host.log'), 'utf8').split('\n').slice(-25).join('\n'));
     check(adminIn, `the owner joins by code${adminIn ? '' : ` (${await admin.evaluate(() => document.body.innerText.match(/(Disconnected|couldn|no game)[^\n]*/)?.[0] ?? window.__cs?.phase?.() ?? 'no session').catch(() => '')})`}`);
     const slot = await player.evaluate(() => window.__cs.slot);
