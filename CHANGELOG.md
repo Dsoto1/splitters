@@ -8,6 +8,9 @@ made only on a commit that passed CI on a check branch.
 
 ## Unreleased
 
+**Snowmobile**
+- **The Snow Sled is a snowmobile now**: "Snowmobile" by roygbpjyt (Meshy Community, CC0) replaces the toy-like Kenney sled, 3.0 m long with skis, track, handlebars and windscreen (18k triangles, a 4.5k one from 40 m). The driver and passenger sit astride its saddle (new seat `straddle`), feet in the footwells; collision box and cockpit view refitted. Handling unchanged.
+
 **Performance tools and big-match fixes**
 - **The F3 overlay splits each frame by system**: rendering (main pass, shadow maps, post-processing), characters (animation, skinning), effects, ragdolls, prop flames, HUD and network, with how many characters were animated and skinned, ragdolls awake and lasting effects drawn. Copy performance report includes the same split.
 - **Record performance** (Pause → Settings): records a whole match, each second's split plus a snapshot of every hitch (where you were, what was in view, your settings, the server's tick), and downloads it as a file when you stop. `tools/perf/compare.mjs` summarises one recording or compares two. Nothing is uploaded.

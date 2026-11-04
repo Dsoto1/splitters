@@ -1324,8 +1324,8 @@
        -0.55
       ],
       "seated": true,
-      "legDrop": 0.2,
-      "straddle": 0.4
+      "legDrop": 0.1,
+      "straddle": 0.25
      },
      {
       "role": "passenger",
@@ -1336,8 +1336,8 @@
        -1.02
       ],
       "seated": true,
-      "legDrop": 0.24,
-      "straddle": 0.45
+      "legDrop": 0.14,
+      "straddle": 0.3
      }
     ],
     "cockpitEye": [
