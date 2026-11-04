@@ -7,7 +7,7 @@
     "author": "Tile Trigger",
     "description": "A look-alike of the St. John's Northwestern Military Academy campus in Delafield, Wisconsin, laid out on the real ground at its real size: grey lannonstone halls built like castles, with towers, turrets and battlements, round the drill field and its flagpole. Fight through the barracks of Hazelwood and Scott Johnston along Exeter Street and the classrooms of the Knight block, through the Argonne Gate into the Welles refectory under its clock tower and up DeKoven's four storeys, across the quad to Memorial Hall, the Victory Memorial Chapel and Smythe Hall by St. John's Road. Take the sniper rifle from DeKoven's roof, the railgun from upstairs in Smythe, rockets from the chapel and the damage boost from the Gerber pool. The west team holds the drill field and Hazelwood; the east team the Farrand gym, the old red church and its churchyard above the bluff down to the Bark River flats. Layout: map data © OpenStreetMap contributors (ODbL). Ground: USGS 3D Elevation Program (3DEP), public domain.",
     "createdAt": "2026-10-23T00:00:00.000Z",
-    "updatedAt": "2026-11-02T16:46:44.658Z",
+    "updatedAt": "2026-11-04T07:06:21.521Z",
     "parentId": null,
     "recommendedPlayers": {
       "min": 8,
@@ -61351,20 +61351,6 @@
       "tint": null
     },
     {
-      "id": "prop_3324",
-      "position": [
-        155.877,
-        -0.231,
-        -27.054
-      ],
-      "kind": "prop",
-      "model": "prop.nt_bush_leafy",
-      "yaw": 0.38,
-      "scale": 0.93,
-      "solid": true,
-      "tint": null
-    },
-    {
       "id": "prop_3325",
       "position": [
         6.704,
@@ -66794,6 +66780,118 @@
       "kind": "pickup",
       "item": "core.weapon_marksman",
       "respawnSeconds": null
+    },
+    {
+      "id": "prop_4q1062m0wn",
+      "kind": "prop",
+      "position": [
+        -110,
+        -0.68,
+        1.2
+      ],
+      "model": "prop.lantern_post",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_fmdjzllxyz",
+      "kind": "prop",
+      "position": [
+        -86,
+        0.68,
+        1.6
+      ],
+      "model": "prop.lantern_post",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_148s84mud0",
+      "kind": "prop",
+      "position": [
+        -134.3,
+        -1.12,
+        36
+      ],
+      "model": "prop.lantern_post",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_2cqzqhkrbl",
+      "kind": "prop",
+      "position": [
+        -134,
+        -1.12,
+        -40
+      ],
+      "model": "prop.lantern_post",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_vhdg7v8tol",
+      "kind": "prop",
+      "position": [
+        104.6,
+        -0.01,
+        -25
+      ],
+      "model": "prop.lantern_post",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_34lpnb9flt",
+      "kind": "prop",
+      "position": [
+        157.4,
+        -0.43,
+        -24
+      ],
+      "model": "prop.lantern_post",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_dhn0keb53x",
+      "kind": "prop",
+      "position": [
+        -100,
+        -0.58,
+        4.5
+      ],
+      "model": "prop.hedge",
+      "yaw": 1.571,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_3ssx3p0wtr",
+      "kind": "prop",
+      "position": [
+        -82,
+        0.64,
+        -7.2
+      ],
+      "model": "prop.hedge",
+      "yaw": 1.344,
+      "scale": 1,
+      "solid": true,
+      "tint": null
     }
   ],
   "factions": [],
@@ -105512,6 +105610,22 @@
     "style": "invisible",
     "height": 8
   },
+  "backdrop": {
+    "sky": "clear",
+    "scenery": "forest",
+    "ground": "grass",
+    "haze": 0.4,
+    "mist": 0.2
+  },
+  "physics": null,
+  "blood": null,
+  "teamSetup": {
+    "sizes": [
+      12,
+      12
+    ]
+  },
+  "dependencies": [],
   "paths": [
     {
       "id": "osm_21644223_0",
@@ -106751,8 +106865,8 @@
       "uses": [
         "road"
       ],
-      "width": 2.5,
-      "style": "flagstone",
+      "width": 3,
+      "style": "cobble",
       "lay": true
     },
     {
@@ -106818,8 +106932,8 @@
       "uses": [
         "road"
       ],
-      "width": 2.5,
-      "style": "flagstone",
+      "width": 3,
+      "style": "cobble",
       "lay": true
     },
     {
@@ -106870,8 +106984,8 @@
       "uses": [
         "road"
       ],
-      "width": 2.5,
-      "style": "flagstone",
+      "width": 3,
+      "style": "cobble",
       "lay": true
     },
     {
@@ -106937,8 +107051,8 @@
       "uses": [
         "road"
       ],
-      "width": 2.5,
-      "style": "flagstone",
+      "width": 3,
+      "style": "cobble",
       "lay": true
     },
     {
@@ -106989,8 +107103,8 @@
       "uses": [
         "road"
       ],
-      "width": 2.5,
-      "style": "flagstone",
+      "width": 3,
+      "style": "cobble",
       "lay": true
     },
     {
@@ -107031,8 +107145,8 @@
       "uses": [
         "road"
       ],
-      "width": 2.5,
-      "style": "flagstone",
+      "width": 3,
+      "style": "cobble",
       "lay": true
     },
     {
@@ -107078,8 +107192,8 @@
       "uses": [
         "road"
       ],
-      "width": 2.5,
-      "style": "flagstone",
+      "width": 3,
+      "style": "cobble",
       "lay": true
     },
     {
@@ -107110,8 +107224,8 @@
       "uses": [
         "road"
       ],
-      "width": 2.5,
-      "style": "flagstone",
+      "width": 3,
+      "style": "cobble",
       "lay": true
     },
     {
@@ -107147,8 +107261,8 @@
       "uses": [
         "road"
       ],
-      "width": 2.5,
-      "style": "flagstone",
+      "width": 3,
+      "style": "cobble",
       "lay": true
     },
     {
@@ -107184,8 +107298,8 @@
       "uses": [
         "road"
       ],
-      "width": 2.5,
-      "style": "flagstone",
+      "width": 3,
+      "style": "cobble",
       "lay": true
     },
     {
@@ -107211,25 +107325,154 @@
       "uses": [
         "road"
       ],
-      "width": 2.5,
-      "style": "flagstone",
+      "width": 3,
+      "style": "cobble",
+      "lay": true
+    },
+    {
+      "id": "path_xisb44grw7",
+      "points": [
+        [
+          -118,
+          -0.8,
+          -2.7
+        ],
+        [
+          -92,
+          -0.01,
+          -1.01
+        ],
+        [
+          -75,
+          0.73,
+          -5
+        ],
+        [
+          -64,
+          0.84,
+          -6
+        ]
+      ],
+      "closed": false,
+      "uses": [
+        "road"
+      ],
+      "width": 3,
+      "style": "cobble",
+      "lay": true
+    },
+    {
+      "id": "path_wm74yeusjn",
+      "points": [
+        [
+          -136,
+          -1.09,
+          25.04
+        ],
+        [
+          -138,
+          -1.09,
+          44.04
+        ],
+        [
+          -136,
+          -1.38,
+          68.78
+        ],
+        [
+          -140,
+          -1.07,
+          87.1
+        ]
+      ],
+      "closed": false,
+      "uses": [
+        "road"
+      ],
+      "width": 3,
+      "style": "cobble",
+      "lay": true
+    },
+    {
+      "id": "path_5qmyw79azn",
+      "points": [
+        [
+          -136,
+          -1.09,
+          -30.96
+        ],
+        [
+          -137,
+          -1.09,
+          -45.96
+        ],
+        [
+          -145,
+          -0.82,
+          -63.73
+        ]
+      ],
+      "closed": false,
+      "uses": [
+        "road"
+      ],
+      "width": 3,
+      "style": "cobble",
+      "lay": true
+    },
+    {
+      "id": "path_khzxdmyhvo",
+      "points": [
+        [
+          102,
+          -0.31,
+          -13.28
+        ],
+        [
+          102,
+          0.21,
+          -30
+        ],
+        [
+          103,
+          1.46,
+          -46.99
+        ]
+      ],
+      "closed": false,
+      "uses": [
+        "road"
+      ],
+      "width": 3,
+      "style": "cobble",
+      "lay": true
+    },
+    {
+      "id": "path_ma51gjwda3",
+      "points": [
+        [
+          154,
+          -0.95,
+          -13.85
+        ],
+        [
+          155,
+          0.04,
+          -32
+        ],
+        [
+          145,
+          1.02,
+          -49
+        ]
+      ],
+      "closed": false,
+      "uses": [
+        "road"
+      ],
+      "width": 3,
+      "style": "cobble",
       "lay": true
     }
-  ],
-  "backdrop": {
-    "sky": "clear",
-    "scenery": "forest",
-    "ground": "grass",
-    "haze": 0.4,
-    "mist": 0.2
-  },
-  "physics": null,
-  "blood": null,
-  "teamSetup": {
-    "sizes": [
-      12,
-      12
-    ]
-  },
-  "dependencies": []
+  ]
 }
