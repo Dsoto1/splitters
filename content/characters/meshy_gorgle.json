@@ -35,8 +35,7 @@
     "triangles": 11000,
     "feet": true,
     "grip": {
-      "supportPistol": [0, 0.04, -0.08],
-      "curlL": 1.4
+      "supportPistol": [0, 0.04, -0.08]
     }
   }
 }

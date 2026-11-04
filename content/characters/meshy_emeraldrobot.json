@@ -36,9 +36,7 @@
     "grip": {
       "gripLong": [-0.06, 0, -0.03],
       "supportPistol": [0, 0.02, -0.08],
-      "curlR": 1.2,
-      "curlL": 0.8,
-      "rollL": 0.25
+      "curlR": 1.2
     }
   }
 }

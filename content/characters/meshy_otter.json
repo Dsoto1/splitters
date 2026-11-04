@@ -37,7 +37,6 @@
       "supportLong": [-0.04, 0, 0.06],
       "supportPistol": [0, 0.02, -0.06],
       "curlR": 0.6,
-      "curlL": 1.2,
       "rollR": 0.4
     }
   },
