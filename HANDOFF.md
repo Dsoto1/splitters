@@ -27,7 +27,9 @@ gets overloaded above that: local e2e times out and flakes). Prune landed worktr
   reworks batches 2–3, character fixes rounds 2–3 (see the entries below and CHANGELOG).
 
 ### In flight
-- Nothing. Surface types landed last (f61f2cf): `content/surface-types.json` (23 types), optional `surface` on props
+- Picked up by the claude/launcher-ui-map-cards account (2026-11-04): `wip/env-phase1` (Environment Phase 1
+  vertical slice, queue item 1) and `wip/zfight` (texture flicker fix, item 2). Each keeps its own HANDOFF section.
+- Before that: nothing. Surface types landed last (f61f2cf): `content/surface-types.json` (23 types), optional `surface` on props
   and `surface`/`ballistic` on materials, trunks heavy_wood / bushes foliage / boulders stone, impact effects keyed by
   surface type. Its open questions are below.
 
