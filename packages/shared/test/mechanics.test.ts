@@ -428,7 +428,8 @@ describe('extended arsenal', () => {
     const { d, a, others, aim } = duel([[6, 0, 4]], 'core.pistol');
     a.throwable = { kind: 'sticky', count: 1 };
     const look = lookAngles(eye(a.move.pos), chest(others[0]!.move.pos));
-    d.run(2, () => aim({ yaw: look.yaw, pitch: look.pitch + 0.08, buttons: BUTTON_THROW }));
+    // A little over the chest for the arc (the chest point is 1.25 m now: the measured torso's middle).
+    d.run(2, () => aim({ yaw: look.yaw, pitch: look.pitch + 0.04, buttons: BUTTON_THROW }));
     // Let the target run away: the grenade goes with them.
     d.run(150, () => d.input(others[0]!, { yaw: Math.PI / 2, forward: 1 }));
     expect(others[0]!.alive).toBe(false);
