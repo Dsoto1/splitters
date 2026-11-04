@@ -13,7 +13,7 @@ import type { Node } from '@babylonjs/core/node';
 import '@babylonjs/core/Lights/Shadows/shadowGeneratorSceneComponent';
 import '@babylonjs/core/Rendering/geometryBufferRendererSceneComponent';
 import '@babylonjs/core/PostProcesses/RenderPipeline/postProcessRenderPipelineManagerSceneComponent';
-import { applyToneMapping, loadGraphicsQuality, type GraphicsQuality } from './graphicsSettings.ts';
+import { applyWorldGrade, loadGraphicsQuality, type GraphicsQuality } from './graphicsSettings.ts';
 
 export * from './graphicsSettings.ts';
 
@@ -47,7 +47,7 @@ export class Atmosphere {
     private readonly viewRoot: TransformNode,
     readonly quality: GraphicsQuality = loadGraphicsQuality(),
   ) {
-    applyToneMapping(scene);
+    applyWorldGrade(scene);
     if (quality === 'low') return;
 
     const webgpu = (scene.getEngine() as { isWebGPU?: boolean }).isWebGPU === true;
@@ -75,8 +75,9 @@ export class Atmosphere {
     const s = this.shadows;
     s.usePercentageCloserFiltering = true;
     s.filteringQuality = quality === 'high' ? ShadowGenerator.QUALITY_HIGH : ShadowGenerator.QUALITY_MEDIUM;
-    s.bias = 0.0015;
-    s.normalBias = 0.02;
+    // Tight enough that shadows meet the things casting them (contact), loose enough to stay free of acne.
+    s.bias = 0.001;
+    s.normalBias = 0.014;
     s.darkness = 0.1;
     s.transparencyShadow = false;
     // Only casters that can reach the shadows: the shadow map draws its whole list every frame (no
@@ -175,8 +176,9 @@ export class Atmosphere {
         if (!webgpu) {
           // Occlusion worked out at half size, denoised at full size: denoised at half size too it was grainy.
           this.ssao = new SSAO2RenderingPipeline('atmosAO', scene, { ssaoRatio: 0.5, blurRatio: 1 }, [camera]);
-          this.ssao.radius = 1.6;
-          this.ssao.totalStrength = 0.9;
+          // Corners and contact: a tighter radius and more strength than before the world grade (docs/LOOK.md).
+          this.ssao.radius = 1.3;
+          this.ssao.totalStrength = 1.15;
           this.ssao.samples = 16;
           this.ssao.bilateralSoften = 0.04;
           this.ssao.maxZ = 120;

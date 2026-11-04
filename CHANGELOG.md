@@ -8,6 +8,9 @@ made only on a commit that passed CI on a check branch.
 
 ## Unreleased
 
+**Look: less like a toy** (docs/LOOK.md)
+- **A calmer, filmic grade for the world**: matches and MapMaker use ACES tone mapping at a lower exposure with firmer contrast and colour curves that take the edge off saturated paint, so whites stop glowing and candy colours settle; a little less sky fill and more sun, a darker ground bounce and tighter shadow bias, so shadows meet what casts them; stronger, tighter ambient occlusion on high. No cost on low or medium; the same on WebGPU and WebGL2. The menu, Character Select and the HUD keep their look.
+
 **Performance tools and big-match fixes**
 - **The F3 overlay splits each frame by system**: rendering (main pass, shadow maps, post-processing), characters (animation, skinning), effects, ragdolls, prop flames, HUD and network, with how many characters were animated and skinned, ragdolls awake and lasting effects drawn. Copy performance report includes the same split.
 - **Record performance** (Pause → Settings): records a whole match, each second's split plus a snapshot of every hitch (where you were, what was in view, your settings, the server's tick), and downloads it as a file when you stop. `tools/perf/compare.mjs` summarises one recording or compares two. Nothing is uploaded.

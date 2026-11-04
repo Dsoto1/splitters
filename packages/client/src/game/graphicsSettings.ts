@@ -1,5 +1,6 @@
 import type { Scene } from '@babylonjs/core/scene';
 import { ImageProcessingConfiguration } from '@babylonjs/core/Materials/imageProcessingConfiguration';
+import { ColorCurves } from '@babylonjs/core/Materials/colorCurves';
 import { isTouchDevice } from '../touchDevice.ts';
 
 // The graphics settings and the game's tone mapping: what the menu and the Options screen need,
@@ -35,10 +36,10 @@ export function saveGraphicsQuality(q: GraphicsQuality): void {
 }
 
 /**
- * The game's colour: ACES tone mapping with a touch more exposure and
- * contrast, and a vignette (left off where it would hide work, as in the
- * MapMaker). Matches, the menu, the MapMaker and the Character Designer use it, so a map and a
- * character look the same wherever you see them.
+ * The menu's colour: ACES tone mapping with a touch more exposure and
+ * contrast, and a vignette. The main menu's lineup and the Character
+ * Designer use it: characters shown on their own stay bright and saturated.
+ * The world (matches, MapMaker) uses `applyWorldGrade` instead.
  */
 export function applyToneMapping(scene: Scene, o: { vignette?: boolean } = {}): void {
   const ip = scene.imageProcessingConfiguration;
@@ -46,8 +47,42 @@ export function applyToneMapping(scene: Scene, o: { vignette?: boolean } = {}): 
   ip.toneMappingType = ImageProcessingConfiguration.TONEMAPPING_ACES;
   ip.exposure = 1.15;
   ip.contrast = 1.12;
+  ip.colorCurvesEnabled = false;
   ip.vignetteEnabled = o.vignette ?? true;
   ip.vignetteWeight = 1.2;
+  ip.vignetteStretch = 0.6;
+}
+
+/**
+ * The world's grade (docs/LOOK.md): filmic ACES a little below the menu's exposure (whites roll off instead of
+ * glowing), firm contrast, and colour curves that take the edge off saturated paint, most in the highlights, so
+ * props and tiles read as materials, not toys. Hues are kept (no tint), so every part stays recognisable. Applied
+ * per scene through Babylon's image processing (the materials' own shaders, or the post-process on high): no
+ * extra pass, the same on WebGPU and WebGL2. HTML (HUD, menus) and the portrait scenes don't go through it.
+ */
+export const WORLD_GRADE = {
+  exposure: 1.05,
+  contrast: 1.15,
+  /** -100..100: the whole picture, then highlights on top of it. */
+  saturation: -12,
+  highlightsSaturation: -20,
+  vignetteWeight: 1.0,
+} as const;
+
+export function applyWorldGrade(scene: Scene, o: { vignette?: boolean } = {}): void {
+  const g = WORLD_GRADE;
+  const ip = scene.imageProcessingConfiguration;
+  ip.toneMappingEnabled = true;
+  ip.toneMappingType = ImageProcessingConfiguration.TONEMAPPING_ACES;
+  ip.exposure = g.exposure;
+  ip.contrast = g.contrast;
+  const c = new ColorCurves();
+  c.globalSaturation = g.saturation;
+  c.highlightsSaturation = g.highlightsSaturation;
+  ip.colorCurves = c;
+  ip.colorCurvesEnabled = true;
+  ip.vignetteEnabled = o.vignette ?? true;
+  ip.vignetteWeight = g.vignetteWeight;
   ip.vignetteStretch = 0.6;
 }
 

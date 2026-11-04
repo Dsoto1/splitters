@@ -18,6 +18,13 @@ import type { MapStyler } from './mapMeshes.ts';
 import { versioned } from './assetUrl.ts';
 
 /**
+ * How each sky's `light` (content/skies.json) is turned into the scene's lights under the world grade
+ * (graphicsSettings.ts `applyWorldGrade`): a little less sky fill and bounce and a little more sun than before the
+ * grade, so shadows and corners read darker against lit faces (contact) at no cost.
+ */
+export const LIGHT_BALANCE = { hemi: 0.8, sun: 1.6, bounce: new Color3(0.5, 0.47, 0.43) };
+
+/**
  * Everything past the play area, drawn but never collided with: a photo sky
  * (or stars), the ground carrying on beyond the border, distant scenery
  * (hills, mountains, mesas, a city skyline, forest…) and haze that fades it
@@ -87,14 +94,15 @@ export class BackdropVisuals {
   private applyLighting(sky: SkyDefinition): void {
     const hemi = this.scene.getLightByName('hemi') as HemisphericLight | null;
     const sun = this.scene.getLightByName('sun') as DirectionalLight | null;
-    // A stronger sun against a softer sky light, so shadows and the sunny sides of things read (tone mapping evens it out).
+    // A stronger sun against a softer sky light, so shadows and the sunny sides of things read (tone mapping evens it
+    // out). The balance is the world grade's (docs/LOOK.md): HEMI and SUN scale each sky's own `light` data.
     if (hemi) {
-      hemi.intensity = sky.light.hemi * 0.9;
+      hemi.intensity = sky.light.hemi * LIGHT_BALANCE.hemi;
       // Light bouncing up off the ground: without it every ceiling and underside is black (indoors, roofed maps).
-      hemi.groundColor = new Color3(0.62, 0.58, 0.54);
+      hemi.groundColor = LIGHT_BALANCE.bounce.clone();
     }
     if (sun) {
-      sun.intensity = sky.light.sun * 1.5;
+      sun.intensity = sky.light.sun * LIGHT_BALANCE.sun;
       sun.diffuse = Color3.FromHexString(sky.light.sunColor);
       const el = (sky.light.elevation * Math.PI) / 180;
       sun.direction = new Vector3(-0.8 * Math.cos(el), -Math.max(0.15, Math.sin(el)), 0.6 * Math.cos(el));
