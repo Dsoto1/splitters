@@ -43,26 +43,39 @@ scratchpad `charfix2/`.
   new in their rest pose, same light and framing; serve the files under `public/zz-charfix-raw`, never commit it).
 
 ### E2E flakes: dedicatedhost, offline, handoff, lobby (`wip/flaky-e2e`, agent, 2026-11-04; not merged)
-Four flows that failed on CI's slow software-rendered pages (1–2 fps). No check skipped or loosened.
-- **dedicatedhost, Kick:** idle takeover. The visitor (after its walk) and the owner (in the pause menu) sit still
-  for minutes; after 90 s (`AWAY.afkSeconds`) a bot plays for each, `match.roster()` marks them `bot`, and the
-  admin's player list (people only, `session.peopleIn`) drops the visitor's Kick button. Fix: the flow starts the
-  Host Service with its own setting `AFK_SECONDS=0`. (The idle rules have unit tests.)
-- **offline, kill cam / skip:** the kill cam was 3.5 s of wall clock from the death message, so one long frame
-  ate it unseen, and the Space meant to skip it then toggled the free camera. Fix (product): its time is the
-  time it's drawn, each frame counting at most 0.25 s (`spectatorCam.ts` `KILL_CAM_FRAME_MS`, as session.ts caps a
-  frame's step). Same on a normal machine. `spec().killCamEnd` ('skipped' | 'over') lets the flow prove the skip
-  rather than a timeout. **Join game:** the bots weren't held, so one could shoot the player between "alive" and
-  the check; the flow holds them (`holdBots`) and checks the alive it waited for.
+Four flows that failed on CI's slow software-rendered pages (1–2 fps). No check skipped or loosened; waits are on
+conditions, some with roomier caps.
+- **dedicatedhost, Kick:** (1) idle takeover: the visitor (after its walk) and the owner (in the pause menu) sit
+  still; after 90 s (`AWAY.afkSeconds`) a bot plays for each, `match.roster()` marks them `bot`, and the admin's
+  player list (people only, `session.peopleIn`) drops the Kick button. The flow starts the Host Service with
+  `AFK_SECONDS=0` (the idle rules have unit tests). (2) **Server fix:** a client still loading the match (no `ready`)
+  now gets 60 s before a silent close (`server.ts LOADING_SILENT_MS`, as `matchHost` already allows friends);
+  the owner's page building Sandgate went 20 s without a word and was dropped mid-join. The host log now says
+  "nothing heard for N s, closing the connection". (3) The Kick click ran inside a 15 s `waitForFunction` that
+  could click after timing out (a kick that landed failed the check): it clicks once (`__kickClicked`), with room.
+  Page opens wait on what each needs next (`goto` to `commit`); the failure messages carry the pages' warnings,
+  failed requests and the host log.
+- **offline, kill cam / skip:** the kill cam was 3.5 s of wall clock from the death message, so one long frame ate
+  it unseen and the Space meant to skip it toggled the free camera. **Product fix:** its time is the time it's
+  drawn, each frame counting at most 0.25 s (`spectatorCam.ts KILL_CAM_FRAME_MS`, as session.ts caps a frame's
+  step); same on a normal machine. `spec().killCamEnd` ('skipped' | 'over') proves the skip. **Join game:** the
+  bots weren't held, so one could shoot the player between "alive" and the check (`holdBots` now). The sounds wait
+  no longer throws (the check after it reports).
 - **handoff:** the friends never touched their controls, so after 90 s they were "away", and an away friend is
-  no successor (`matchHost.tendSuccessor`): the successor, its checkpoints and the takeover went with it. Fix:
-  each friend looks about (a small turn every 3 s) from the moment it's in; both joins wait in parallel. The
-  **404** on every page was the hub's `/api/v1/maps` with publishing off (no `PUBLISHED_MAPS_DIR`, as in e2e and
-  any community hub): it now answers an empty list (`publish.ts noPublishingHandler`), and the flow names any
-  failed request in its log.
-- **lobby, 2 players:** the check waited 30 s for a check-in that comes every 20 s (`LOBBY_HEARTBEAT_SECONDS`) on
-  the host page's timer, late on heavy Sandgate. It now waits for two of the host's check-ins (its PUTs) after the
-  join, then the listing must say 2: independent of map weight.
+  no successor (`matchHost.tendSuccessor`): the successor, its checkpoints and the takeover went with it. Each
+  friend now looks about (a small turn every 3 s) from the moment it's in; both joins wait in parallel. The
+  **404** on every page was the hub's `/api/v1/maps` with publishing off (no `PUBLISHED_MAPS_DIR`): it answers an
+  empty list now (`publish.ts noPublishingHandler`). Every failed check dumps the console (pages and the match
+  worker, where `matchHost` now says why it closes a friend's link), and failed requests are named.
+  **Open:** CI's "two friends join" (Bo's link "closed" 3 s after loading) wasn't reproduced; the new logs will
+  name the cause next time.
+- **lobby, 2 players:** waited 30 s for a check-in that comes every 20 s on the host page's timer, late on heavy
+  Sandgate. It now waits for two of the host's check-ins (its PUTs) after the join, reading the hub only as each
+  lands, then the listing must say 2. List predicates treat a hub "slow down" answer (no `games`) as "not yet"
+  (`gone` used to throw on it and fail at once). Sandgate join and game-browser waits got room.
+- Seen, not changed: the game browser probes localhost:7777–7780 `/info` and `/lobby/lan` (404 when the hub runs
+  with `LAN_DISCOVERY=0`): console noise on dedicatedhost pages, harmless. offline's Character Select "E E
+  scrolls the grid two sections" failed once under load (unrelated).
 
 ### Content scalability step 1: the menu's first download (`wip/menu-bundle`, agent, 2026-11-03; not merged; rebased on main 51519b2)
 docs/CONTENT_SCALABILITY.md step 1. **Menu's first JS 837.0 -> 649.0 kB gzip** (2970 -> 2305 kB raw, on main 51519b2; `index` 396.1 ->
