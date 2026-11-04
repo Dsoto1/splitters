@@ -20,8 +20,14 @@ import { angleDelta, fitBounds, lookAngles, viewDirection, type MapDocument, typ
  * Pure logic, no Babylon: the session asks it for a camera pose each frame.
  */
 
-/** How long the kill cam lasts at most (s); it ends sooner when you respawn. */
+/** How long the kill cam lasts at most (s, as drawn); it ends sooner when you respawn. */
 export const KILL_CAM_SECONDS = 3.5;
+/**
+ * A frame counts at most this long (ms) of the kill cam (session.ts caps a frame's step the same way): its time is
+ * the time it was on screen, so a hitch (a long frame as the death comes in, a page drawing a frame a second)
+ * doesn't use it up unseen.
+ */
+const KILL_CAM_FRAME_MS = 250;
 /** How long the view takes to turn to the killer (s). */
 const KILL_CAM_TURN = 0.45;
 /** Free camera speed (m/s), and with Shift held. */
@@ -73,8 +79,11 @@ export interface FreeBounds {
 interface KillCam {
   killer: number;
   weapon: string;
-  startedAt: number;
-  until: number;
+  /** Its length, and how much of it has been drawn (ms). */
+  length: number;
+  shown: number;
+  /** When it was last drawn (null: not yet). */
+  drawnAt: number | null;
   /** Where you died (your body), and where the killing shot came from (null: not seen). */
   body: Vec3;
   from: Vec3 | null;
@@ -103,6 +112,8 @@ export function freeCamBounds(map: MapDocument): FreeBounds | null {
 
 export class SpectatorCam {
   private kill: KillCam | null = null;
+  /** How the last kill cam ended: skipped (a key), over (its time ran out), or null (in progress, reset or none yet). */
+  killCamEnd: 'skipped' | 'over' | null = null;
   /** The slot followed (-1: none yet). */
   following = -1;
   /** Flying the free camera. */
@@ -111,31 +122,35 @@ export class SpectatorCam {
   private freePos: Vec3 | null = null;
 
   /** You died to `killer` (a player or NPC, not yourself): the kill cam starts. */
-  startKillCam(o: { killer: number; weapon: string; body: Vec3; from: Vec3 | null; yaw: number; pitch: number; now: number; seconds?: number }): void {
-    this.kill = { killer: o.killer, weapon: o.weapon, startedAt: o.now, until: o.now + (o.seconds ?? KILL_CAM_SECONDS) * 1000, body: { ...o.body }, from: o.from, yaw: o.yaw, pitch: o.pitch, lastSeen: null };
+  startKillCam(o: { killer: number; weapon: string; body: Vec3; from: Vec3 | null; yaw: number; pitch: number; seconds?: number }): void {
+    this.kill = { killer: o.killer, weapon: o.weapon, length: (o.seconds ?? KILL_CAM_SECONDS) * 1000, shown: 0, drawnAt: null, body: { ...o.body }, from: o.from, yaw: o.yaw, pitch: o.pitch, lastSeen: null };
+    this.killCamEnd = null;
     // Whom to follow afterwards is picked afresh (spectateRule decides who may be watched).
     this.following = -1;
   }
 
-  /** The kill cam in progress (null when it isn't), for the banner. */
-  killCam(now: number): { killer: number; weapon: string; left: number } | null {
+  /** The kill cam in progress (null when it isn't), for the banner. `left`: seconds of it still to draw. */
+  killCam(): { killer: number; weapon: string; left: number } | null {
     const k = this.kill;
     if (!k) return null;
-    if (now >= k.until) {
+    if (k.shown >= k.length) {
       this.kill = null;
+      this.killCamEnd = 'over';
       return null;
     }
-    return { killer: k.killer, weapon: k.weapon, left: (k.until - now) / 1000 };
+    return { killer: k.killer, weapon: k.weapon, left: (k.length - k.shown) / 1000 };
   }
 
-  /** End the kill cam now (skipped, or you respawned). */
+  /** Skip the kill cam (a spectator key). */
   endKillCam(): void {
+    if (this.kill) this.killCamEnd = 'skipped';
     this.kill = null;
   }
 
   /** Back in play: everything resets for the next time. */
   reset(): void {
     this.kill = null;
+    this.killCamEnd = null;
     this.free = false;
     this.freePos = null;
   }
@@ -143,11 +158,13 @@ export class SpectatorCam {
   /**
    * The kill cam's view this frame: from behind and above your body, turning (over KILL_CAM_TURN) from where
    * you looked to the killer (`target`: their chest as drawn), or to where the shot came from when they
-   * aren't in view.
+   * aren't in view. Called once a frame it's drawn: that's what runs its time.
    */
   killCamPose(now: number, target: Vec3 | null, cast: Cast): CameraPose | null {
     const k = this.kill;
     if (!k) return null;
+    if (k.drawnAt !== null) k.shown += Math.min(KILL_CAM_FRAME_MS, Math.max(0, now - k.drawnAt));
+    k.drawnAt = now;
     if (target) k.lastSeen = { ...target };
     const look = target ?? k.lastSeen ?? k.from;
     const head = { x: k.body.x, y: k.body.y + 1.6, z: k.body.z };
@@ -164,7 +181,7 @@ export class SpectatorCam {
     const pos = { x: head.x + dir.x * d, y: head.y + dir.y * d, z: head.z + dir.z * d };
     const aim = lookAngles(pos, look);
     // Ease out: a quick turn that settles on them.
-    const t = Math.min(1, (now - k.startedAt) / 1000 / KILL_CAM_TURN);
+    const t = Math.min(1, k.shown / 1000 / KILL_CAM_TURN);
     const e = 1 - (1 - t) * (1 - t);
     return { pos, yaw: lerpAngle(k.yaw, aim.yaw, e), pitch: k.pitch + (aim.pitch - k.pitch) * e };
   }

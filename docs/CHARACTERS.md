@@ -487,6 +487,12 @@ MegaKit's aliens, and checked against `content/creatures.lock.json`.
   turns the thigh and shin only a little. The goblin's rags are hundreds of
   small texture islands: its simplification collapses across seams only where
   the texture matches on both sides (and between them), 19.7k to 11.7k triangles.
+- **Normal maps (2026-11-03).** A download's own map is read as its renderer draws it (no TANGENT attribute: each
+  triangle's own texture directions); a map we baked (a rebake's) in our own green (`hiGreen`; read as a download's,
+  every rebaked face was lit upside down: Cal's cheek line, Sgt. Mackie's wedge); the map we ship is the inverse of the
+  shader's interpolated frame (Babylon's vTBN). A download kept uncut (a low-poly one within its budget: Biker Gang
+  Girl, Kenji) ships its own map, untouched, with no TANGENT attribute, and its texture's gutters are filled before it is
+  shrunk (`padCharts`).
 - **Rebaked characters (`surface: rebake`):** some downloads cut their texture
   into thousands of small islands (Barnaby Bruin's coat, Slugger-9's plating, the
   Rusty Mech's baked map): every cut that keeps the texture coordinates stops over
@@ -577,7 +583,7 @@ repo; they live in a downloads dir outside it.
 | `source.author`, `date`, `url` | Who made it, when (YYYY-MM-DD), and the community post or the owner's share link (`https://www.meshy.ai/s/…`), or `null`. |
 | `source.meshy` | The owner's own models only: Meshy task IDs (`preview`, `refine`, `image`, `multiImage`, `remesh`, `retexture`, `rig`), which `fetch-meshy.mjs` downloads by. |
 | `source.file` | A regular expression for the download's file name (a rigged `.glb`, or the textured `.fbx`), when it isn't saved as `<id>.glb`. |
-| `finish` | The one material's metallic and roughness (0–1). |
+| `finish` | The one material's metallic and roughness (0–1). `maps: true` keeps the download's metal-roughness map (G roughness, B metal; 512 px, painted into the new layout for a rebake) and the factors multiply it (give 1 and 1 for the download's own): Grinning Gus's black chrome skull, Dog Tag Doyle's glossy helmet. |
 | `clipsFrom` | A rigged download's own clips to retarget onto the rig as this character's clip set (`<id>_clips.glb`): `{ "<clip>": "<the download's clip name>" }` for `clip_walk`, `clip_run` (both needed), `clip_shoot_fwd`, `clip_shoot_run`, `clip_shoot_back`. See "Authored clip sets". |
 | `clips` | The clip set this look moves with while it holds a gun: left out, the default (`shooter`); a shared set's id (`content/clip-sets`) or a manifest with `clipsFrom`; `false` (with `clipsWhy`, the reason): the rig's own gait. |
 | `clipsWhy` | With `clips: false` only: why this body keeps the rig's own gait. |
@@ -875,6 +881,8 @@ ceiling, a low window), and large ones are easier to hit and must crouch
 under openings a little over 2 m. Health pickups fill up to the size's
 health. The match setting **Character sizes: Matter / All equal**
 (`MatchRules.bodySizes`) makes everyone play and look standard.
+Character Select and the Character Designer draw each look at its size too (a small look at 1.40 m, a large one at
+2.12 m), as a match does.
 
 ## Portraits
 
