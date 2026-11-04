@@ -39,6 +39,12 @@ export interface HostStatus {
   mapId: string;
   /** Simulation time per tick (ms, last second) and everything sent to players (KB/s). */
   tickMs: number;
+  /**
+   * The last second's tick breakdown (docs/PERF_TOOLS.md "On the host"): the slowest tick, bot AI, the sections
+   * (ms a tick: sim parts, bot think / perceive / path / aim, snapshot building), snapshot bytes per client,
+   * ticks over budget (this second, and since the start) and late ticks. Null before the first second.
+   */
+  perf: { tickMax: number; ai: number; split: Record<string, number>; snapshotBytes: number; snapshotBytesMax: number; spikes: number; spikesTotal: number; late: number; spikeLog: string | null } | null;
   upKBps: number;
   people: { slot: number; name: string; account: boolean; ping: number | null; team: string | null; kills: number; deaths: number }[];
   /** The map rotation now, and as config items (the service saves them, so a restart keeps it). */
@@ -178,6 +184,8 @@ export async function startHost(config: HostConfig, deps: HostDeps = {}): Promis
   void tickets.refresh();
   let linkRef: HubLink | null = null;
   let lastStats: ServerStats | null = null;
+  /** Ticks over budget since the match process started. */
+  let spikesTotal = 0;
 
   const server = await startServer({
     port: null,
@@ -201,8 +209,11 @@ export async function startHost(config: HostConfig, deps: HostDeps = {}): Promis
     name: config.name,
     adminToken: config.adminToken,
     lanDiscovery: false,
+    // Ticks over budget, with what ran, in the logs folder (main.ts sets the file: docs/PERF_TOOLS.md).
+    ...(process.env.HOST_PERF_LOG ? { spikeLog: process.env.HOST_PERF_LOG } : {}),
     onStats: (line, stats) => {
       lastStats = stats;
+      spikesTotal += stats.spikes ?? 0;
       deps.onStats?.(line);
     },
     onEvent: deps.onEvent,
@@ -346,6 +357,19 @@ export async function startHost(config: HostConfig, deps: HostDeps = {}): Promis
         uptimeS: Math.round((Date.now() - startedAt) / 1000),
         hubReconnects: link.reconnects,
         tickMs: lastStats?.tickMsAvg ?? 0,
+        perf: lastStats
+          ? {
+              tickMax: lastStats.tickMsMax,
+              ai: lastStats.aiMsAvg,
+              split: lastStats.split ?? {},
+              snapshotBytes: lastStats.snapshotBytes,
+              snapshotBytesMax: lastStats.snapshotBytesMax ?? lastStats.snapshotBytes,
+              spikes: lastStats.spikes ?? 0,
+              spikesTotal,
+              late: lastStats.lateTicks,
+              spikeLog: process.env.HOST_PERF_LOG ? 'perf-spikes.log' : null,
+            }
+          : null,
         upKBps: lastStats ? Math.round((lastStats.bytesPerSecPerClient * lastStats.humans) / 102.4) / 10 : 0,
         people: server.players().map((p) => ({ slot: p.slot, name: p.name, account: !!p.sub, ping: p.ping, team: p.team, kills: p.kills, deaths: p.deaths })),
         rotation: server.rotation(),

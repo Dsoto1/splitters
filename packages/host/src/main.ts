@@ -71,6 +71,8 @@ async function service(): Promise<void> {
   };
   let logger = new Logger(appDir ? join(appDir, 'logs') : join(state.dir, 'logs'), printLog);
   if (!logger.file && appDir) logger = new Logger(join(state.dir, 'logs'), printLog);
+  // The match process writes ticks over budget next to the log (perf-spikes.log, rolling; docs/PERF_TOOLS.md).
+  if (logger.file && !process.env.HOST_PERF_LOG) process.env.HOST_PERF_LOG = join(dirname(logger.file), 'perf-spikes.log');
   const log = (l: string) => logger.line(l);
 
   let config: HostConfig;

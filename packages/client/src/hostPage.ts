@@ -29,11 +29,14 @@ export const HOST_DOWNLOADS = [
   { os: 'linux', label: 'Linux (x64)', file: 'tiletrigger-host-linux-x64.tar.gz', how: 'Unpack, then run ./start-host.sh in a terminal.' },
 ] as const;
 
+/** The Host Service's live tick breakdown (host.ts HostStatus.perf). */
+interface HostPerf { tickMax: number; ai: number; split: Record<string, number>; snapshotBytes: number; snapshotBytesMax: number; spikes: number; spikesTotal: number; late: number; spikeLog: string | null }
+
 type Status = {
   state: 'stopped' | 'starting' | 'running' | 'stopping' | 'restarting' | 'crashloop';
   version: string;
   config: { map: string; mode?: GameMode; botFill: number; maxPlayers: number; name: string; visibility: 'listed' | 'code'; adminTokenSet: boolean; hub: string } | null;
-  host: { code: string; online: boolean; listed: boolean; listingError: string | null; relay: boolean; map: string; mode: string; players: number; bots: number; maxPlayers: number; uptimeS: number; tickMs: number; upKBps: number; community: boolean; people: { slot: number; name: string; account: boolean; ping: number | null; kills: number; deaths: number }[] } | null;
+  host: { code: string; online: boolean; listed: boolean; listingError: string | null; relay: boolean; map: string; mode: string; players: number; bots: number; maxPlayers: number; uptimeS: number; tickMs: number; upKBps: number; perf?: HostPerf | null; community: boolean; people: { slot: number; name: string; account: boolean; ping: number | null; kills: number; deaths: number }[] } | null;
   lastError: { at: number; summary: string } | null;
   bans: { id: string; name: string; account: boolean; until: number; reason: string }[];
 };
@@ -224,6 +227,7 @@ export function openHostPage(maps: HostPageMap[]): void {
           `${h.players}/${h.maxPlayers} players, ${h.bots} bots · up ${fmtUptime(h.uptimeS)}`,
           h.online ? (s.config?.visibility === 'code' ? 'Join code only' : h.listed ? 'Listed in the game browser' : `Not listed yet${h.listingError ? `: ${h.listingError}` : ''}`) : 'Hub unreachable: players already in carry on; it reconnects by itself',
           `Tick ${h.tickMs.toFixed(1)} ms · upload ${h.upKBps} KB/s${h.relay ? ' · relay available' : ''}`,
+          ...perfLines(h.perf),
         ]
       : [];
     statusBox.replaceChildren(el('b', { id: 'hp-run-state', textContent: state }), ...lines.map((l) => el('div', { textContent: l })), ...(s.lastError ? [el('div', { className: 'hp-error', id: 'hp-last-error', textContent: `Last error: ${s.lastError.summary}` })] : []));
@@ -284,4 +288,16 @@ export function openHostPage(maps: HostPageMap[]): void {
     void detect();
   });
   void detect();
+}
+
+/** The host's live tick breakdown (docs/PERF_TOOLS.md "On the host"), a few short lines under the tick. */
+function perfLines(p: HostPerf | null | undefined): string[] {
+  if (!p) return [];
+  const sp = p.split;
+  const ms = (k: string) => (sp[k] ?? 0).toFixed(2);
+  const sim = ['players', 'mounts', 'projectiles', 'scenario'].reduce((s, k) => s + (sp[k] ?? 0), 0);
+  return [
+    `Tick split: bots ${ms('bots')} (think ${ms('botThink')} · perceive ${ms('botPerceive')} · path ${ms('botPath')} · aim ${ms('botAim')}) · sim ${sim.toFixed(2)} · snapshots ${ms('snapshot')} ms · slowest tick ${p.tickMax.toFixed(1)} ms`,
+    `Snapshot ${(p.snapshotBytes / 1024).toFixed(1)} KB a client (largest ${(p.snapshotBytesMax / 1024).toFixed(1)} KB) · over budget ${p.spikes} this second, ${p.spikesTotal} in all${p.late ? ` · ${p.late} late` : ''}${p.spikeLog && p.spikesTotal ? ` (logs/${p.spikeLog})` : ''}`,
+  ];
 }
