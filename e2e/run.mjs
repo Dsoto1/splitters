@@ -3486,8 +3486,60 @@ const VISUAL_SCENES = [
   // A map in play, alone (bots=1: just you), at the seeded spawn (hidden: the pause menu headless pages open, and HUD messages such as the slow-device hint).
   { name: 'arena', url: '/?offline=arena&test=1&god=1&bots=1&name=Tester', ready: () => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() === 'playing' && !document.getElementById('view').classList.contains('veiled'), css: '#pause, #message { display: none !important; }', share: 0.08 },
   // Outdoors: terrain, sky, foliage.
+  // The procedural environment at eye height (the envlab's 'small' view: shrubs, boulders, grass, trees behind).
+  { name: 'envlab', url: '/?envlab&test=1&view=small', ready: () => window.__envlab?.ready, share: 0.1 },
   { name: 'canyon', url: '/?offline=canyon&test=1&god=1&bots=1&name=Tester', ready: () => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() === 'playing' && !document.getElementById('view').classList.contains('veiled'), css: '#pause, #message { display: none !important; }', share: 0.1 },
 ];
+
+/**
+ * The procedural environment, Phase 1 (docs/PROCEDURAL_ENVIRONMENT_AUDIT.md §10): the environment lab draws every
+ * species and variant on WebGL2 with no shader or material errors, its level of detail, wireframe, collider, wind and
+ * tier toggles work; and the showcase map (maps/env_showcase.json, retired: never offered) plays with the new renderer
+ * (?env=1: chunked thin instances, the grass as generated clumps) and without it (each species a prop node).
+ */
+async function environmentFlow(browser) {
+  const page = await (await browser.newContext({ viewport: { width: 960, height: 540 } })).newPage();
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  page.on('console', (m) => m.type() === 'error' && /shader|effect|compil|material|uniform|attribute/i.test(m.text()) && errors.push(m.text().slice(0, 200)));
+  await page.goto(`${CLIENT}/?envlab&test=1&view=small`);
+  const ready = await page.waitForFunction(() => window.__envlab?.ready, null, { timeout: T(120000) }).then(() => true, () => false);
+  check(ready, 'the environment lab opens');
+  if (!ready) return void (await page.context().close());
+  const stats = () => page.evaluate(() => window.__envlab.stats().env);
+  const s0 = await stats();
+  check(s0.copies >= 90 && s0.drawnBatches > 0 && s0.perLevel[0] > 0, `it draws every species as thin-instance batches (${JSON.stringify(s0)})`);
+  const species = await page.evaluate(() => [...new Set(window.__envlab.scene.meshes.filter((m) => /^env_[a-z]/.test(m.name) && !m.name.startsWith('env_tpl') && m.isEnabled() && m.thinInstanceCount > 0).map((m) => m.name.split('_l')[0]))].sort());
+  check(species.length === 12, `every species and variant is drawn (${species.join(', ')})`);
+  // Level of detail forced: every copy at that level (or its species' last).
+  for (const lod of [1, 2, 3]) {
+    await page.evaluate((lod) => window.__envlab.set({ lod }), lod);
+    const s = await stats();
+    check(s.perLevel.slice(0, lod).every((n) => !n) && s.perLevel.reduce((a, b) => a + (b ?? 0), 0) === s.copies, `level ${lod} forced: no copy nearer than it (${s.perLevel.join(' / ')})`);
+  }
+  await page.evaluate(() => window.__envlab.set({ lod: null, wireframe: true, colliders: true, tier: 'low' }));
+  const lines = await page.evaluate(() => window.__envlab.scene.getMeshByName('env_colliders')?.getTotalVertices() ?? 0);
+  check(lines > 100, `the collider overlay draws the species' collision shapes (${lines} line vertices)`);
+  await page.evaluate(() => window.__envlab.set({ wireframe: false, colliders: false, tier: 'high', wind: true }));
+  await frames(page, 10);
+  check(errors.length === 0, `no shader, material or page errors in the lab (${errors.join('; ')})`);
+  // The showcase map in play, with the new renderer, then without it.
+  for (const env of [true, false]) {
+    await page.goto(`${CLIENT}/?offline=env_showcase&test=1&god=1&bots=1&name=Tester${env ? '&env=1' : ''}`);
+    const playing = await page.waitForFunction(() => window.__cs?.phase?.() === 'playing', null, { timeout: T(180000) }).then(() => true, () => false);
+    const drawn = playing
+      ? await page.waitForFunction((env) => {
+          const v = window.__cs.view;
+          const s = v.environment?.stats();
+          const nodes = v.scene.transformNodes.filter((n) => /^prop_/.test(n.name)).length;
+          return env ? (s && s.copies > 2000 && s.drawnBatches > 0 ? { copies: s.copies, batches: s.drawnBatches, nodes } : null) : !v.environment && nodes > 2000 ? { nodes } : null;
+        }, env, { timeout: T(120000) }).then((h) => h.jsonValue(), () => null)
+      : null;
+    check(!!drawn, `the showcase map plays ${env ? 'with the environment renderer (?env=1)' : 'with its species as props (no flag)'} (${JSON.stringify(drawn)})`);
+  }
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  await page.context().close();
+}
 
 async function visualFlow(browser) {
   const { existsSync, readFileSync } = await import('node:fs');
@@ -3661,6 +3713,11 @@ async function webgpuFlow() {
       }),
     );
     check(lut, 'every scene and PBR material uses the pass-free BRDF table');
+    // The environment lab on WebGPU: its materials (and the wind plugin's WGSL) compile and every species draws.
+    await page.goto(`${CLIENT}/?envlab&test=1&renderer=webgpu&view=small`);
+    const lab = await page.waitForFunction(() => window.__envlab?.ready, null, { timeout: T(120000) }).then(() => true, () => false);
+    const env = lab ? await page.evaluate(() => ({ gpu: window.__envlab.scene.getEngine().isWebGPU, stats: window.__envlab.stats().env })) : null;
+    check(lab && env.gpu && env.stats.drawnBatches > 0 && env.stats.copies > 50, `the environment lab draws on WebGPU (${JSON.stringify(env)})`);
     check(errors.length === 0, `no page or WebGPU errors (${errors.join('; ')})`);
   } finally {
     await browser.close();
@@ -4888,7 +4945,7 @@ try {
   };
   // E2E_ONLY=editor,characters runs a subset; E2E_SHARD=2/8 one of CI's parallel groups (balanced by e2e/timings.json;
   // CI's plan job passes each shard's flows in E2E_ONLY itself).
-  const flows = { editor: editorFlow, editorux: editoruxFlow, offline: offlineFlow, mobile: mobileFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, scenery: sceneryFlow, setpieces: setpiecesFlow, physicsfx: physicsfxFlow, teams: teamsFlow, ctf: ctfFlow, forts: fortsFlow, arsenal: arsenalFlow, vehicles: vehiclesFlow, race: raceFlow, zombies: zombiesFlow, classes: classesFlow, coverage: coverageFlow, ...Object.fromEntries(MAP_FLOWS.map((name, part) => [name, (b) => mapsFlow(b, part)])), designer: designerFlow, ...Object.fromEntries(CHARACTER_FLOWS.map((name, part) => [name, (b) => charactersFlow(b, part)])), online: onlineFlow, hostgame: hostgameFlow, hostcontrols: hostcontrolsFlow, lobby: lobbyFlow, handoff: handoffFlow, dedicatedhost: dedicatedhostFlow, hostpage: hostpageFlow, webgpu: webgpuFlow, visual: visualFlow };
+  const flows = { editor: editorFlow, editorux: editoruxFlow, offline: offlineFlow, mobile: mobileFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, scenery: sceneryFlow, setpieces: setpiecesFlow, physicsfx: physicsfxFlow, teams: teamsFlow, ctf: ctfFlow, forts: fortsFlow, arsenal: arsenalFlow, vehicles: vehiclesFlow, race: raceFlow, zombies: zombiesFlow, classes: classesFlow, coverage: coverageFlow, ...Object.fromEntries(MAP_FLOWS.map((name, part) => [name, (b) => mapsFlow(b, part)])), designer: designerFlow, ...Object.fromEntries(CHARACTER_FLOWS.map((name, part) => [name, (b) => charactersFlow(b, part)])), online: onlineFlow, hostgame: hostgameFlow, hostcontrols: hostcontrolsFlow, lobby: lobbyFlow, handoff: handoffFlow, dedicatedhost: dedicatedhostFlow, hostpage: hostpageFlow, webgpu: webgpuFlow, visual: visualFlow, environment: environmentFlow };
   // e2e/flowMap.mjs (change-based selection, shards) must know every flow, and only those.
   const known = new Set(FLOWS);
   const drift = [...Object.keys(flows).filter((f) => !known.has(f)), ...FLOWS.filter((f) => !(f in flows))];

@@ -138,6 +138,9 @@ export async function openEnvLab(engine: AbstractEngine, canvas: HTMLCanvasEleme
   }
 
   const env = new EnvironmentVisuals(scene, 'high');
+  // Browser tests (?test=1) see a still picture: no wind.
+  const still = new URLSearchParams(location.search).has('test');
+  if (still) env.materials.setWind(0);
   await env.setPlacements(entities, null);
   const library = new ModelLibrary(scene);
   const oldNodes = oldEntities.map((e) => createPropNode(scene, library, e, `old_${e.id}`, true, false, null));
@@ -203,7 +206,7 @@ ${opt('el-view', 'View', Object.keys(VIEWS))}
 ${opt('el-lod', 'Level of detail', ['auto', '0', '1', '2', '3'])}
 ${opt('el-tier', 'Tier', ['high', 'medium', 'low'])}
 ${opt('el-rows', 'Show', ['both', 'new', 'old'])}
-${chk('el-wire', 'Wireframe')}${chk('el-coll', 'Colliders')}${chk('el-wind', 'Wind', true)}
+${chk('el-wire', 'Wireframe')}${chk('el-coll', 'Colliders')}${chk('el-wind', 'Wind', !still)}
 <div id="el-stats" style="margin-top:6px;color:#9ab;white-space:pre"></div>
 <div style="color:#789;margin-top:4px">WASD + drag to look · species: ${ENV_RENDER.map((s) => s.id.slice(4)).join(', ')}</div>`;
   document.body.append(panel);

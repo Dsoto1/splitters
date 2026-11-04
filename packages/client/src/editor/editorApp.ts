@@ -144,6 +144,8 @@ import {
   LIQUIDS,
   LIQUID_SPECS,
   SCATTER_SETS,
+  ENV_SPECIES,
+  getEnvSpecies,
   SCATTER_SET_IDS,
   scatterProps,
   type ScatterSetId,
@@ -238,6 +240,7 @@ import { ModelThumbnails } from '../frontend/modelThumbs.ts';
 import { Palette } from './palette.ts';
 import { PaletteAtlas } from './paletteAtlas.ts';
 import { NATURE_PROP_CATEGORIES, PROP_GROUPS, propGroup, scenarioGroup } from './paletteCatalog.ts';
+import { envRendererOn } from '../environment/envFlag.ts';
 import { thumbnailSection, type ThumbHost } from './makerThumb.ts';
 import { libraryThumb } from './libraryThumbs.ts';
 import { isOwner, openPublishDialog } from './ownerPublish.ts';
@@ -2895,7 +2898,7 @@ export class EditorApp {
     const r = this.brushRadius;
     const label = SCATTER_SETS[set].label;
     if (clear) {
-      const models = new Set<string>(SCATTER_SETS[set].models.map(([m]) => m));
+      const models = new Set<string>(SCATTER_SETS[set].models.map(([m]) => m.split('#')[0]!));
       const gone = this.doc.entities.filter((e) => e.kind === 'prop' && models.has(e.model) && Math.hypot(e.position[0] - p.x, e.position[2] - p.z) <= r);
       if (gone.length) this.run(`Clear ${label}`, { kind: 'removeEntities', entities: gone });
       return;
@@ -2919,9 +2922,14 @@ export class EditorApp {
       meadow: '<path d="M10 46 Q12 32 14 26 M20 46 Q22 30 26 22 M34 46 Q34 34 38 26 M44 46 Q46 34 48 30" stroke="#6fbf4a" stroke-width="3" fill="none"/><circle cx="14" cy="24" r="4" fill="#ff6a8a"/><circle cx="26" cy="20" r="4" fill="#ffd34d"/><circle cx="38" cy="24" r="4" fill="#b98aff"/>',
       desert: '<path d="M26 46V14a4 4 0 0 1 8 0V46Z M26 30h-6V20a3 3 0 0 1 6 0 M34 26h6V16a3 3 0 0 0-6 0" fill="#5e8f4a"/><rect x="6" y="44" width="44" height="4" fill="#d9b77a"/>',
       rocks: '<path d="M8 46 L14 32 L26 28 L32 36 L30 46Z" fill="#8a8d92"/><path d="M30 46 L36 30 L46 32 L50 46Z" fill="#6c7076"/>',
+      envForest: '<path d="M10 46 L18 16 L26 46Z" fill="#355b34"/><circle cx="38" cy="22" r="11" fill="#55803c"/><path d="M36 30 L37 46 L39 46 L40 30Z" fill="#6a4a30"/><text x="28" y="54" font-size="9" fill="#cde" text-anchor="middle">NEW</text>',
+      envShrubs: '<circle cx="20" cy="34" r="10" fill="#4d6b2e"/><circle cx="36" cy="32" r="12" fill="#a5582a"/><text x="28" y="54" font-size="9" fill="#cde" text-anchor="middle">NEW</text>',
+      envRocks: '<path d="M8 44 L16 26 L30 22 L36 32 L32 44Z" fill="#86827a"/><path d="M16 26 L30 22 L26 30Z" fill="#4e6a2c"/><text x="28" y="54" font-size="9" fill="#cde" text-anchor="middle">NEW</text>',
     };
     box.id = 'ed-scatter';
     for (const id of SCATTER_SET_IDS) {
+      // The procedural environment's preview sets, with ?env=1 only.
+      if ((SCATTER_SETS[id] as { preview?: true }).preview && !envRendererOn()) continue;
       const b = document.createElement('button');
       b.className = 'tile-btn';
       b.dataset.tool = `scatter:${id}`;
@@ -2938,7 +2946,7 @@ export class EditorApp {
   }
 
   /** A prop card; its picture comes from the atlas as it scrolls into view. */
-  private propButton(grid: HTMLElement, def: PropDefinition, tags = ''): void {
+  private propButton(grid: HTMLElement, def: PropDefinition, tags = '', picture = true): void {
     const b = document.createElement('button');
     b.className = 'tile-btn prop-btn';
     b.dataset.tool = `prop:${def.id}`;
@@ -2951,7 +2959,7 @@ export class EditorApp {
       key: b.dataset.tool,
       name: def.displayName,
       tags: `${def.category} prop ${tags} ${packs.join(' ')} ${def.breakable ? 'breakable destructible' : ''} ${def.collision ? '' : 'walk-through decoration'}`,
-      picture: true,
+      picture,
     });
   }
 
@@ -2974,6 +2982,12 @@ export class EditorApp {
     for (const cat of NATURE_PROP_CATEGORIES) {
       const grid = this.palette.group($('ed-nature'), `nature:${cat}`, cat);
       for (const def of CORE_PROPS.filter((d) => d.category === cat)) this.propButton(grid, def, 'nature');
+    }
+    // The procedural environment's species (Phase 1 preview, docs/PROCEDURAL_ENVIRONMENT_AUDIT.md §10): with ?env=1 only,
+    // no palette picture yet (their pictures join the atlas when they ship).
+    if (envRendererOn()) {
+      const grid = this.palette.group($('ed-nature'), 'nature:environment', 'Environment (preview)', { note: 'Procedural species: trees, shrub, grass, boulder, cliff · variants in the inspector' });
+      for (const s of ENV_SPECIES) this.propButton(grid, getProp(s.id)!, 'nature environment procedural preview', false);
     }
   }
 
@@ -3453,8 +3467,21 @@ export class EditorApp {
           for (const def of CORE_PROPS.filter((d) => d.category === category)) group.append(new Option(def.displayName, def.id, false, def.id === e.model));
           model.append(group);
         }
-        model.addEventListener('change', () => update('Change prop', { model: model.value }));
+        // Environment species (the procedural environment's preview): listed when the map has one or with ?env=1.
+        const species = getEnvSpecies(e.model);
+        if (species || envRendererOn()) {
+          const group = document.createElement('optgroup');
+          group.label = 'Environment (preview)';
+          for (const s of ENV_SPECIES) group.append(new Option(s.displayName, s.id, false, s.id === e.model));
+          model.append(group);
+        }
+        // A species' variant is kept only while it stays an environment species.
+        model.addEventListener('change', () => update('Change prop', { model: model.value, variant: getEnvSpecies(model.value) ? e.variant : undefined }));
         el.append(row('Model', model));
+        if (species) {
+          choose('Variant', species.variants.map((v) => [String(v.index), v.name[0]!.toUpperCase() + v.name.slice(1)] as const), String(e.variant ?? 0), (v) => ({ variant: v === '0' ? undefined : Number(v) }));
+          el.append(small(`${species.displayName}: ${species.role === 'decorative' ? 'decoration only' : species.nav === 'none' ? 'walk-through cover (conceals)' : 'solid: its trunk or rock stops movement, shots and bots'}.`));
+        }
         number('Scale', e.scale, 0.25, (v) => ({ scale: Math.max(0.25, Math.min(4, v)) }));
         toggle('Solid', e.solid, (v) => ({ solid: v }));
         const tint = document.createElement('input');
@@ -3462,7 +3489,7 @@ export class EditorApp {
         tint.value = e.tint ?? '#ffffff';
         tint.addEventListener('change', () => update('Tint prop', { tint: tint.value.toLowerCase() === '#ffffff' ? null : tint.value.toLowerCase() }));
         el.append(row('Tint', tint));
-        if (!getProp(e.model)?.collision) el.append(small('This prop never blocks (decoration).'));
+        if (!getProp(e.model)?.collision && !species) el.append(small('This prop never blocks (decoration).'));
         break;
       }
       case 'pickup': {

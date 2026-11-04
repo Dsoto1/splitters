@@ -13,6 +13,8 @@ export interface ScatterSet {
   /** Least distance between two plants of the stroke (m). */
   spacing: number;
   scale: readonly [number, number];
+  /** A preview set of the procedural environment's species (`env.*`; `#n` picks a variant): MapMaker offers it with ?env=1 only. */
+  preview?: true;
   /** Tint for Kenney's grass and ferns (their greens are teal; this matches the terrain's grass). The painted mn_* plants keep their own colours (and their instancing). */
   tint?: string;
 }
@@ -29,6 +31,9 @@ export const SCATTER_SETS = {
   desert: { label: 'Desert scrub', models: [['prop.cactus', 3], ['prop.cactus_tall', 1], ['prop.plant_low', 3], ['prop.stones', 2], ['prop.palm_short', 0.5]], spacing: 3.5, scale: [0.8, 1.2] },
   water: { label: 'Water plants', models: [['prop.mn_eelgrass', 1]], spacing: 1.1, scale: [0.8, 1.3] },
   rocks: { label: 'Rocks', models: [['prop.boulder_round', 2], ['prop.boulder_jagged', 2], ['prop.boulder_flat', 2], ['prop.rock_medium', 2], ['prop.stones', 3]], spacing: 3, scale: [0.6, 1.3] },
+  envForest: { label: 'Procedural forest (preview)', models: [['env.broadleaf.oak', 3], ['env.broadleaf.oak#1', 1], ['env.conifer.pine_tall', 4]], spacing: 3.8, scale: [0.8, 1.25], preview: true },
+  envShrubs: { label: 'Procedural shrubs (preview)', models: [['env.shrub.broadleaf', 3], ['env.shrub.broadleaf#1', 1]], spacing: 2.4, scale: [0.75, 1.3], preview: true },
+  envRocks: { label: 'Procedural boulders (preview)', models: [['env.rock.boulder_angular', 2], ['env.rock.boulder_angular#1', 1]], spacing: 6, scale: [0.6, 1.4], preview: true },
 } as const satisfies Record<string, ScatterSet>;
 export type ScatterSetId = keyof typeof SCATTER_SETS;
 export const SCATTER_SET_IDS = Object.keys(SCATTER_SETS) as ScatterSetId[];
@@ -65,7 +70,8 @@ export function scatterProps(doc: MapDocument, set: ScatterSetId, x: number, z: 
     const pz = z + Math.sin(a) * r;
     if (taken.some(([tx, tz, d]) => Math.hypot(tx - px, tz - pz) < d)) continue;
     taken.push([px, pz, s.spacing]);
-    const model = pick();
+    // `env.<id>#<n>`: an environment species' variant n.
+    const [model, variant] = pick().split('#') as [string, string | undefined];
     const yaw = round(rand() * Math.PI * 2 - Math.PI);
     const scale = round(s.scale[0] + rand() * (s.scale[1] - s.scale[0]));
     // Bedded into the slope: the lowest ground under the footprint, so no edge hangs in the air.
@@ -78,6 +84,7 @@ export function scatterProps(doc: MapDocument, set: ScatterSetId, x: number, z: 
       scale,
       solid: true,
       tint: s.tint && /grass|fern/.test(model) && !model.startsWith('prop.mn_') ? s.tint : null,
+      ...(variant ? { variant: Number(variant) } : {}),
     });
   }
   return out;

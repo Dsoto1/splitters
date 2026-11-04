@@ -10,6 +10,7 @@ import {
   THEME_BACKDROPS,
   TERRAIN_MATERIALS,
   applyBrush,
+  getEnvSpecies,
   cellFoliage,
   loadMap,
   newTerrain,
@@ -93,7 +94,8 @@ describe('scatter brush', () => {
   const ids = new Set(CORE_PROPS.map((p) => p.id));
 
   it('every set only uses props that exist', () => {
-    for (const id of SCATTER_SET_IDS) for (const [model] of SCATTER_SETS[id].models) expect(ids.has(model), `${id}: ${model}`).toBe(true);
+    // Preview sets plant environment species (`env.<id>`, `#n` a variant).
+    for (const id of SCATTER_SET_IDS) for (const [model] of SCATTER_SETS[id].models) expect(ids.has(model) || !!getEnvSpecies(model.split('#')[0]!), `${id}: ${model}`).toBe(true);
   });
 
   it('plants a patch with its spacing, on the terrain, the same for the same seed', () => {
