@@ -3938,26 +3938,33 @@ async function lobbyFlow(browser) {
   await player.goto(`${CLIENT}/?${hub}`, { waitUntil: 'domcontentloaded' });
   await player.waitForFunction(() => window.__front, null, { timeout: T(30000) });
   await player.evaluate(() => document.getElementById('nav-online')?.click());
-  const row = await player.waitForFunction(() => [...document.querySelectorAll('.gb-row:not(.gb-head)')].map((r) => r.textContent).find((t) => t.includes('E2E Friday Night')) ?? null, null, { timeout: T(15000) }).then((h) => h.jsonValue(), () => null);
+  // (The game browser refreshes every 10 s; a page drawing slowly beside a Sandgate host can miss the first.)
+  const row = await player.waitForFunction(() => [...document.querySelectorAll('.gb-row:not(.gb-head)')].map((r) => r.textContent).find((t) => t.includes('E2E Friday Night')) ?? null, null, { timeout: T(45000) }).then((h) => h.jsonValue(), () => null);
   check(!!row && row.includes('1/') && row.includes('Hosty') && row.includes('Relay'), `the game browser lists it, with the relay badge (${row})`);
   await player.evaluate(() => [...document.querySelectorAll('.gb-row:not(.gb-head)')].find((r) => r.textContent.includes('E2E Friday Night')).querySelector('button').click());
   // Joining loads Sandgate (heavy since its rework): on a loaded machine that alone can take a minute or more.
   const joined = await player.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown', null, { timeout: T(150000) }).then(() => true, () => false);
   check(joined, 'joining from the game browser puts the player in the match');
-  const lobbyGames = () => player.evaluate(() => fetch(`http://${new URLSearchParams(location.search).get('hub')}/lobby/games`).then((r) => r.json()).then((d) => JSON.stringify(d.games.map((g) => [g.name, g.code, g.players])))).catch((e) => e.message);
+  const lobbyGames = () => player.evaluate(() => fetch(`http://${new URLSearchParams(location.search).get('hub')}/lobby/games`).then((r) => r.json()).then((d) => JSON.stringify(d.games?.map((g) => [g.name, g.code, g.players]) ?? d))).catch((e) => e.message);
   if (joined) {
     // The host's next check-in reports two players. Its timer runs on the host's page, which on a heavy map and a
     // loaded machine fires late: wait for the check-ins themselves, not a time. Two finished after the join (the
     // first may have been sent before the host counted the player), then the listing must say 2.
+    // (The hub is read only as a check-in lands: every page and this runner share one address's read budget.)
     const from = checkins;
+    let seen = from;
     const twoNow = async () => ((await hubGames(HUB_PORT)) ?? []).find((g) => g.name === 'E2E Friday Night')?.players === 2;
-    await hubUntil(async () => (await twoNow()) || checkins >= from + 2, T(180000));
+    await until(async () => {
+      if (checkins === seen) return false;
+      seen = checkins;
+      return (await twoNow()) || checkins >= from + 2;
+    }, T(180000));
     const two = await hubUntil(twoNow, 3000);
     check(two, `the listing updates to 2 players${two ? '' : ` (${checkins - from} check-ins since the join: ${await lobbyGames()})`}`);
   }
   await host.context().close();
   // The host's listing goes (the player may carry the match on under a listing of their own: host handoff).
-  const gone = await player.waitForFunction((c) => fetch(`http://${new URLSearchParams(location.search).get('hub')}/lobby/games`).then((r) => r.json()).then((d) => !d.games.some((g) => g.name === 'E2E Friday Night' && g.code === c)), hostCode, { timeout: T(15000), polling: 1000 }).then(() => true, () => false);
+  const gone = await player.waitForFunction((c) => fetch(`http://${new URLSearchParams(location.search).get('hub')}/lobby/games`).then((r) => r.json()).then((d) => !!d.games && !d.games.some((g) => g.name === 'E2E Friday Night' && g.code === c)), hostCode, { timeout: T(15000), polling: 1000 }).then(() => true, () => false);
   check(gone, `the host's listing goes away when the host closes the game${gone ? '' : ` (${hostCode}: ${await lobbyGames()})`}`);
   await player.context().close();
 
@@ -3969,7 +3976,7 @@ async function lobbyFlow(browser) {
   await solo.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown', null, { timeout: T(60000) });
   const offline = await solo.evaluate(() => ({ online: !document.getElementById('go-online').hidden, badge: !!window.__cs.hud.onlineNote }));
   check(offline.online && !offline.badge, 'an offline match stays offline and offers "Go online"');
-  const listedAs = (name) => solo.evaluate((n) => fetch(`http://${new URLSearchParams(location.search).get('hub')}/lobby/games`).then((r) => r.json()).then((d) => d.games.some((g) => g.name === n)), name);
+  const listedAs = (name) => solo.evaluate((n) => fetch(`http://${new URLSearchParams(location.search).get('hub')}/lobby/games`).then((r) => r.json()).then((d) => !!d.games?.some((g) => g.name === n)), name);
   await sim(solo, (m) => void (m.combatants().find((c) => c.kind === 'human').kills = 5));
   await solo.evaluate(() => {
     document.getElementById('host-name').value = 'E2E Go Online';
@@ -3984,7 +3991,7 @@ async function lobbyFlow(browser) {
   const badge = await solo.evaluate(() => window.__cs.hud.onlineNote ?? '');
   check(up && (await listedAs('E2E Go Online')), `the match is online and in the game browser (${badge})`);
   await solo.evaluate(() => document.getElementById('go-offline').click());
-  const down = await solo.waitForFunction(() => fetch(`http://${new URLSearchParams(location.search).get('hub')}/lobby/games`).then((r) => r.json()).then((d) => !d.games.some((g) => g.name === 'E2E Go Online')), null, { timeout: T(15000), polling: 1000 }).then(() => true, () => false);
+  const down = await solo.waitForFunction(() => fetch(`http://${new URLSearchParams(location.search).get('hub')}/lobby/games`).then((r) => r.json()).then((d) => !!d.games && !d.games.some((g) => g.name === 'E2E Go Online')), null, { timeout: T(15000), polling: 1000 }).then(() => true, () => false);
   const after = await solo.evaluate(() => ({ badge: !!window.__cs.hud.onlineNote, online: !document.getElementById('go-online').hidden }));
   check(down && !after.badge && after.online, 'Go offline removes the listing and the online line');
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
@@ -4050,7 +4057,8 @@ async function dedicatedhostFlow(browser) {
     // Nothing but /host may look for a Host Service on this computer.
     page.on('request', (r) => /127\.0\.0\.1:(7797|7801|7802)/.test(r.url()) && probes.push(r.url()));
     await page.addInitScript((n) => localStorage.setItem('cs.name', n), name);
-    await page.goto(url, { waitUntil: 'domcontentloaded' });
+    // (Opened beside a Sandgate match on a loaded machine: Playwright's 30 s default ran out.)
+    await page.goto(url, { waitUntil: 'domcontentloaded', timeout: T(60000) });
     return page;
   };
   const playing = () => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown';
@@ -4698,7 +4706,7 @@ async function handoffFlow(browser) {
   check(back, `${other.name} has their place back, with their score (${seen.join(', ')})`);
   if (!followed || !back) dump();
   const moved = await heir.page
-    .waitForFunction((c) => fetch(`http://${new URLSearchParams(location.search).get('hub')}/lobby/games`).then((r) => r.json()).then((d) => { const g = d.games.filter((x) => x.name === 'E2E Handoff'); return g.length === 1 && g[0].code === c; }), heirCode, { timeout: T(40000), polling: 1000 })
+    .waitForFunction((c) => fetch(`http://${new URLSearchParams(location.search).get('hub')}/lobby/games`).then((r) => r.json()).then((d) => { const g = (d.games ?? []).filter((x) => x.name === 'E2E Handoff'); return g.length === 1 && g[0].code === c; }), heirCode, { timeout: T(40000), polling: 1000 })
     .then(() => true, () => false);
   check(moved, 'the listing moves to the new host');
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
