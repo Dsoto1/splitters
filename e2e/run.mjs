@@ -1193,7 +1193,8 @@ async function offlineFlow(browser) {
   check(/^\d+ \/ \d+$/.test(ammo), `HUD shows ammo (${ammo})`);
   // A click is the user gesture that starts audio; bots fighting then make sounds.
   await page.click('#resume');
-  await page.waitForFunction(() => window.__audio.stats.loaded + window.__audio.stats.failed === window.__audio.total, null, { timeout: T(15000) });
+  // (A loaded machine decodes them slowly: the check below says what it got, rather than the wait throwing.)
+  await page.waitForFunction(() => window.__audio.stats.loaded + window.__audio.stats.failed === window.__audio.total, null, { timeout: T(60000) }).catch(() => {});
   const loaded = await page.evaluate(() => ({ ...window.__audio.stats, total: window.__audio.total }));
   check(loaded.failed === 0 && loaded.loaded === loaded.total, `all ${loaded.total} sounds load and decode (${loaded.failed} failed)`);
   await page.waitForFunction(() => window.__audio.stats.played > 0, null, { timeout: T(20000) }).catch(() => {});
@@ -3938,25 +3939,33 @@ async function lobbyFlow(browser) {
   await player.goto(`${CLIENT}/?${hub}`, { waitUntil: 'domcontentloaded' });
   await player.waitForFunction(() => window.__front, null, { timeout: T(30000) });
   await player.evaluate(() => document.getElementById('nav-online')?.click());
-  const row = await player.waitForFunction(() => [...document.querySelectorAll('.gb-row:not(.gb-head)')].map((r) => r.textContent).find((t) => t.includes('E2E Friday Night')) ?? null, null, { timeout: T(15000) }).then((h) => h.jsonValue(), () => null);
+  // (The game browser refreshes every 10 s; a page drawing slowly beside a Sandgate host can miss the first.)
+  const row = await player.waitForFunction(() => [...document.querySelectorAll('.gb-row:not(.gb-head)')].map((r) => r.textContent).find((t) => t.includes('E2E Friday Night')) ?? null, null, { timeout: T(45000) }).then((h) => h.jsonValue(), () => null);
   check(!!row && row.includes('1/') && row.includes('Hosty') && row.includes('Relay'), `the game browser lists it, with the relay badge (${row})`);
   await player.evaluate(() => [...document.querySelectorAll('.gb-row:not(.gb-head)')].find((r) => r.textContent.includes('E2E Friday Night')).querySelector('button').click());
-  const joined = await player.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown', null, { timeout: T(60000) }).then(() => true, () => false);
+  // Joining loads Sandgate (heavy since its rework): on a loaded machine that alone can take a minute or more.
+  const joined = await player.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown', null, { timeout: T(150000) }).then(() => true, () => false);
   check(joined, 'joining from the game browser puts the player in the match');
-  const lobbyGames = () => player.evaluate(() => fetch(`http://${new URLSearchParams(location.search).get('hub')}/lobby/games`).then((r) => r.json()).then((d) => JSON.stringify(d.games.map((g) => [g.name, g.code, g.players])))).catch((e) => e.message);
+  const lobbyGames = () => player.evaluate(() => fetch(`http://${new URLSearchParams(location.search).get('hub')}/lobby/games`).then((r) => r.json()).then((d) => JSON.stringify(d.games?.map((g) => [g.name, g.code, g.players]) ?? d))).catch((e) => e.message);
   if (joined) {
     // The host's next check-in reports two players. Its timer runs on the host's page, which on a heavy map and a
     // loaded machine fires late: wait for the check-ins themselves, not a time. Two finished after the join (the
     // first may have been sent before the host counted the player), then the listing must say 2.
+    // (The hub is read only as a check-in lands: every page and this runner share one address's read budget.)
     const from = checkins;
+    let seen = from;
     const twoNow = async () => ((await hubGames(HUB_PORT)) ?? []).find((g) => g.name === 'E2E Friday Night')?.players === 2;
-    await hubUntil(async () => (await twoNow()) || checkins >= from + 2, T(180000));
+    await until(async () => {
+      if (checkins === seen) return false;
+      seen = checkins;
+      return (await twoNow()) || checkins >= from + 2;
+    }, T(180000));
     const two = await hubUntil(twoNow, 3000);
     check(two, `the listing updates to 2 players${two ? '' : ` (${checkins - from} check-ins since the join: ${await lobbyGames()})`}`);
   }
   await host.context().close();
   // The host's listing goes (the player may carry the match on under a listing of their own: host handoff).
-  const gone = await player.waitForFunction((c) => fetch(`http://${new URLSearchParams(location.search).get('hub')}/lobby/games`).then((r) => r.json()).then((d) => !d.games.some((g) => g.name === 'E2E Friday Night' && g.code === c)), hostCode, { timeout: T(15000), polling: 1000 }).then(() => true, () => false);
+  const gone = await player.waitForFunction((c) => fetch(`http://${new URLSearchParams(location.search).get('hub')}/lobby/games`).then((r) => r.json()).then((d) => !!d.games && !d.games.some((g) => g.name === 'E2E Friday Night' && g.code === c)), hostCode, { timeout: T(15000), polling: 1000 }).then(() => true, () => false);
   check(gone, `the host's listing goes away when the host closes the game${gone ? '' : ` (${hostCode}: ${await lobbyGames()})`}`);
   await player.context().close();
 
@@ -3968,7 +3977,7 @@ async function lobbyFlow(browser) {
   await solo.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown', null, { timeout: T(60000) });
   const offline = await solo.evaluate(() => ({ online: !document.getElementById('go-online').hidden, badge: !!window.__cs.hud.onlineNote }));
   check(offline.online && !offline.badge, 'an offline match stays offline and offers "Go online"');
-  const listedAs = (name) => solo.evaluate((n) => fetch(`http://${new URLSearchParams(location.search).get('hub')}/lobby/games`).then((r) => r.json()).then((d) => d.games.some((g) => g.name === n)), name);
+  const listedAs = (name) => solo.evaluate((n) => fetch(`http://${new URLSearchParams(location.search).get('hub')}/lobby/games`).then((r) => r.json()).then((d) => !!d.games?.some((g) => g.name === n)), name);
   await sim(solo, (m) => void (m.combatants().find((c) => c.kind === 'human').kills = 5));
   await solo.evaluate(() => {
     document.getElementById('host-name').value = 'E2E Go Online';
@@ -3983,7 +3992,7 @@ async function lobbyFlow(browser) {
   const badge = await solo.evaluate(() => window.__cs.hud.onlineNote ?? '');
   check(up && (await listedAs('E2E Go Online')), `the match is online and in the game browser (${badge})`);
   await solo.evaluate(() => document.getElementById('go-offline').click());
-  const down = await solo.waitForFunction(() => fetch(`http://${new URLSearchParams(location.search).get('hub')}/lobby/games`).then((r) => r.json()).then((d) => !d.games.some((g) => g.name === 'E2E Go Online')), null, { timeout: T(15000), polling: 1000 }).then(() => true, () => false);
+  const down = await solo.waitForFunction(() => fetch(`http://${new URLSearchParams(location.search).get('hub')}/lobby/games`).then((r) => r.json()).then((d) => !!d.games && !d.games.some((g) => g.name === 'E2E Go Online')), null, { timeout: T(15000), polling: 1000 }).then(() => true, () => false);
   const after = await solo.evaluate(() => ({ badge: !!window.__cs.hud.onlineNote, online: !document.getElementById('go-online').hidden }));
   check(down && !after.badge && after.online, 'Go offline removes the listing and the online line');
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
@@ -4043,25 +4052,36 @@ async function dedicatedhostFlow(browser) {
   const hub = `hub=127.0.0.1:${HUB_PORT}`;
   const errors = [];
   const probes = [];
+  // The pages' warnings, and the Host Service's log, for a failed check about who is in the match.
+  const consoleLines = [];
+  const began = Date.now();
+  const hostLog = () => { try { return readFileSync(join(hostState, 'logs', 'host.log'), 'utf8').split('\n').filter(Boolean).slice(-8).join(' / ').slice(0, 600); } catch { return 'none'; } };
+  const whoSaw = () => ` [console: ${consoleLines.slice(-6).join(' / ')}; host log: ${hostLog()}]`;
   const open = async (name, url) => {
     const page = await (await browser.newContext({ viewport: { width: 1280, height: 720 } })).newPage();
     page.on('pageerror', (e) => errors.push(`${name}: ${e.message}`));
+    page.on('console', (m) => (m.type() === 'warning' || m.type() === 'error') && consoleLines.push(`${((Date.now() - began) / 1000).toFixed(0)} ${name}: ${m.text().slice(0, 160)}`));
+    page.on('response', (r) => r.status() >= 400 && consoleLines.push(`${((Date.now() - began) / 1000).toFixed(0)} ${name}: ${r.status()} ${r.url().slice(0, 120)}`));
+    page.on('requestfailed', (r) => consoleLines.push(`${((Date.now() - began) / 1000).toFixed(0)} ${name}: ${r.failure()?.errorText ?? 'failed'} ${r.url().slice(0, 120)}`));
     // Nothing but /host may look for a Host Service on this computer.
     page.on('request', (r) => /127\.0\.0\.1:(7797|7801|7802)/.test(r.url()) && probes.push(r.url()));
     await page.addInitScript((n) => localStorage.setItem('cs.name', n), name);
-    await page.goto(url, { waitUntil: 'domcontentloaded' });
+    // Each caller waits for what it needs next (the menu, or play). Loading the page's scripts beside a Sandgate match
+    // on a loaded machine outran Playwright's 30 s, then even a minute: that wait has its own room.
+    await page.goto(url, { waitUntil: 'commit', timeout: T(60000) });
     return page;
   };
   const playing = () => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown';
 
   // A player finds it in the game browser and joins from there.
   const player = await open('Visitor', `${CLIENT}/?${hub}`);
-  await player.waitForFunction(() => window.__front, null, { timeout: T(30000) });
+  await player.waitForFunction(() => window.__front, null, { timeout: T(90000) });
   await player.evaluate(() => document.getElementById('nav-online')?.click());
   const row = await player.waitForFunction(() => [...document.querySelectorAll('.gb-row:not(.gb-head)')].map((r) => r.textContent).find((t) => t.includes('E2E Dedicated')) ?? null, null, { timeout: T(30000) }).then((h) => h.jsonValue(), () => null);
   check(!!row && row.includes('Dedicated host') && !row.includes('Player-hosted'), `the game browser shows it as a Dedicated host (${row})`);
   await player.evaluate(() => [...document.querySelectorAll('.gb-row:not(.gb-head)')].find((r) => r.textContent.includes('E2E Dedicated')).querySelector('button').click());
-  const joined = await player.waitForFunction(playing, null, { timeout: T(60000) }).then(() => true, () => false);
+  // Joining loads Sandgate (heavy since its rework): on a loaded machine that alone can take a minute or more.
+  const joined = await player.waitForFunction(playing, null, { timeout: T(150000) }).then(() => true, () => false);
   const screen = joined ? '' : await player.evaluate(() => (document.body.innerText.match(/Disconnected[^\n]*/) ?? [''])[0]).catch(() => '');
   check(joined, `joining from the game browser puts the player in the match${screen ? ` (${screen})` : ''}`);
   if (joined) {
@@ -4092,18 +4112,21 @@ async function dedicatedhostFlow(browser) {
 
     // The owner, joined by code with the admin token, kicks the visitor from the pause menu's player list.
     const admin = await open('Owner', `${CLIENT}/?join=${game.code}&${hub}&admin=e2e-admin-token`);
-    const adminIn = await admin.waitForFunction(playing, null, { timeout: T(60000) }).then(() => true, () => false);
+    const adminIn = await admin.waitForFunction(playing, null, { timeout: T(150000) }).then(() => true, () => false);
     if (!adminIn) console.log(readFileSync(join(hostState, 'logs', 'host.log'), 'utf8').split('\n').slice(-25).join('\n'));
     check(adminIn, `the owner joins by code${adminIn ? '' : ` (${await admin.evaluate(() => document.body.innerText.match(/(Disconnected|couldn|no game)[^\n]*/)?.[0] ?? window.__cs?.phase?.() ?? 'no session').catch(() => '')})`}`);
     const slot = await player.evaluate(() => window.__cs.slot);
-    const button = await admin.waitForFunction((s) => !!document.getElementById(`hc-kick-${s}`), slot, { timeout: T(45000), polling: 500 }).then(() => true, () => false);
-    check(button, `the admin gets the match controls, with the visitor in its player list${button ? '' : ` (${await admin.evaluate(() => JSON.stringify({ host: window.__cs?.host?.(), panels: document.querySelectorAll('[id=host-controls]').length, people: [...document.querySelectorAll('.hc-person')].map((e) => e.textContent), ids: [...document.querySelectorAll('[id^=hc-kick]')].map((e) => e.id), roster: [...(window.__cs?.hud?.roster?.values() ?? [])].filter((p) => !p.bot).map((p) => `${p.slot}:${p.name}`) }))}, visitor slot ${slot})`}`);
+    // (The admin's page is still settling into Sandgate as it joins: a frame every second or two on a loaded machine.)
+    const button = await admin.waitForFunction((s) => !!document.getElementById(`hc-kick-${s}`), slot, { timeout: T(120000), polling: 500 }).then(() => true, () => false);
+    check(button, `the admin gets the match controls, with the visitor in its player list${button ? '' : ` (${await admin.evaluate(() => JSON.stringify({ host: window.__cs?.host?.(), panels: document.querySelectorAll('[id=host-controls]').length, people: [...document.querySelectorAll('.hc-person')].map((e) => e.textContent), ids: [...document.querySelectorAll('[id^=hc-kick]')].map((e) => e.id), roster: [...(window.__cs?.hud?.roster?.values() ?? [])].filter((p) => !p.bot).map((p) => `${p.slot}:${p.name}`) }))}, visitor slot ${slot})${whoSaw()}`}`);
     if (button) {
       // The player list is rebuilt as the roster changes, so the button can be replaced between the wait above and a
       // separate click (CI: "Cannot read properties of null (reading 'click')"): find and click it in one step.
-      const clicked = await admin.waitForFunction((s) => { const b = document.getElementById(`hc-kick-${s}`); if (!b) return false; b.click(); return true; }, slot, { timeout: T(15000), polling: 250 }).then(() => true, () => false);
+      // Once only (a slow page can run the poll that clicks after a short timeout ran out: CI then failed a kick that
+      // landed), and with room for a page drawing a frame every second or two.
+      const clicked = await admin.waitForFunction((s) => { if (window.__kickClicked) return true; const b = document.getElementById(`hc-kick-${s}`); if (!b) return false; b.click(); return (window.__kickClicked = true); }, slot, { timeout: T(60000), polling: 250 }).then(() => true, () => false);
       // CI once timed out here with the button gone for 45 s after it had shown: what the admin's list held then.
-      if (!clicked) check(false, `the admin can click Kick for the visitor (${await admin.evaluate(() => JSON.stringify({ people: [...document.querySelectorAll('.hc-person')].map((e) => e.textContent), ids: [...document.querySelectorAll('[id^=hc-kick]')].map((e) => e.id), roster: [...(window.__cs?.hud?.roster?.values() ?? [])].filter((p) => !p.bot).map((p) => `${p.slot}:${p.name}`), phase: window.__cs?.phase?.() })).catch(() => '')}, visitor slot ${slot}, now ${await player.evaluate(() => window.__cs?.slot).catch(() => 'gone')})`);
+      if (!clicked) check(false, `the admin can click Kick for the visitor (${await admin.evaluate(() => JSON.stringify({ people: [...document.querySelectorAll('.hc-person')].map((e) => e.textContent), ids: [...document.querySelectorAll('[id^=hc-kick]')].map((e) => e.id), roster: [...(window.__cs?.hud?.roster?.values() ?? [])].filter((p) => !p.bot).map((p) => `${p.slot}:${p.name}`), phase: window.__cs?.phase?.() })).catch(() => '')}, visitor slot ${slot}, now ${await player.evaluate(() => window.__cs?.slot).catch(() => 'gone')})${whoSaw()}`);
       const kicked = await player.waitForFunction(() => /kicked/i.test(document.body.innerText), null, { timeout: T(20000) }).then(() => true, () => false);
       // What the player saw and what the host logged, when the kick didn't land (CI annotations carry it).
       const why = kicked
@@ -4124,8 +4147,8 @@ async function dedicatedhostFlow(browser) {
       const live = await until(async () => { const s = await status(); return s.host?.rules?.now?.scoreLimit === 5 && s.host.rules.now.timeLimitSeconds === 180; }, T(20000));
       check(live, 'after the restart the match plays to 5, with 3 minutes on the clock');
       // (The rules arrive at once; the clock once the restarted match is under way: it waits for everyone to load first.)
-      const seen = (await admin.waitForFunction(() => window.__cs?.rules?.()?.scoreLimit === 5 && window.__cs.rules().timeLimitSeconds === 180, null, { timeout: T(20000), polling: 500 }).then(() => true, () => false)) && (await admin.waitForFunction(() => window.__cs.phase() === 'playing' && window.__cs.timeLeft() > 0 && window.__cs.timeLeft() <= 180, null, { timeout: T(90000), polling: 500 }).then(() => true, () => false));
-      check(seen, `the player's game follows: score limit 5, clock under 3 minutes (${await admin.evaluate(() => JSON.stringify({ limit: window.__cs?.rules?.()?.scoreLimit, time: window.__cs?.rules?.()?.timeLimitSeconds, left: window.__cs?.timeLeft?.(), phase: window.__cs?.phase?.() })).catch(() => '')})`);
+      const seen = (await admin.waitForFunction(() => window.__cs?.rules?.()?.scoreLimit === 5 && window.__cs.rules().timeLimitSeconds === 180, null, { timeout: T(60000), polling: 500 }).then(() => true, () => false)) && (await admin.waitForFunction(() => window.__cs.phase() === 'playing' && window.__cs.timeLeft() > 0 && window.__cs.timeLeft() <= 180, null, { timeout: T(90000), polling: 500 }).then(() => true, () => false));
+      check(seen, `the player's game follows: score limit 5, clock under 3 minutes (${await admin.evaluate(() => JSON.stringify({ limit: window.__cs?.rules?.()?.scoreLimit, time: window.__cs?.rules?.()?.timeLimitSeconds, left: window.__cs?.timeLeft?.(), phase: window.__cs?.phase?.() })).catch(() => '')})${seen ? '' : whoSaw()}`);
       // Kept for the next start too.
       const saved = await until(async () => (await status()).config?.rules?.modes?.tdm?.score === 5, T(10000));
       check(saved, 'the Host Service keeps them in its settings for the next start');
@@ -4696,7 +4719,7 @@ async function handoffFlow(browser) {
   check(back, `${other.name} has their place back, with their score (${seen.join(', ')})`);
   if (!followed || !back) dump();
   const moved = await heir.page
-    .waitForFunction((c) => fetch(`http://${new URLSearchParams(location.search).get('hub')}/lobby/games`).then((r) => r.json()).then((d) => { const g = d.games.filter((x) => x.name === 'E2E Handoff'); return g.length === 1 && g[0].code === c; }), heirCode, { timeout: T(40000), polling: 1000 })
+    .waitForFunction((c) => fetch(`http://${new URLSearchParams(location.search).get('hub')}/lobby/games`).then((r) => r.json()).then((d) => { const g = (d.games ?? []).filter((x) => x.name === 'E2E Handoff'); return g.length === 1 && g[0].code === c; }), heirCode, { timeout: T(40000), polling: 1000 })
     .then(() => true, () => false);
   check(moved, 'the listing moves to the new host');
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
