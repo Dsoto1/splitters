@@ -36,6 +36,8 @@ const map = (of) => ({ t: 'map', of });
 const lazy = (f) => ({ t: 'lazy', f });
 const vec3 = tup(3);
 const notes = map(str);
+/** Schema building blocks, for the other data generators (vehicles.mjs, npcs.mjs). */
+export const shape = { num, int, str, bool, en, tup, arr, obj, nullable, oneOf, map, lazy, vec3, notes };
 
 /** The enum lists live in TypeScript (one source); read them from it. */
 function tsList(file, name) {
@@ -198,7 +200,9 @@ export function build(content, root = ROOT) {
   const procedural = new Set([...readFileSync(join(root, 'packages/client/src/content/models.ts'), 'utf8').matchAll(/path === '(procedural\/[\w-]+)'/g)].map((m) => m[1]));
   const modelExists = (p) => procedural.has(p) || existsSync(join(root, 'packages/client/public/models', p));
 
-  const lock = { weapons: { ...content.lock.weapons }, throwables: { ...(content.lock.throwables ?? {}) }, classes: { ...(content.lock.classes ?? {}) } };
+  // Other sections (npcRoles: tools/content/npcs.mjs) are kept as they are.
+  const { $comment: _lc, ...others } = content.lock;
+  const lock = { ...others, weapons: { ...content.lock.weapons }, throwables: { ...(content.lock.throwables ?? {}) }, classes: { ...(content.lock.classes ?? {}) } };
   /** Codes: unique, and a code once given always names the same thing (also after it is retired). */
   const codes = (what, items, min) => {
     const seen = new Map();
@@ -305,10 +309,10 @@ export function build(content, root = ROOT) {
 // ---------------------------------------------------------------- write
 
 const IDENT = /^[A-Za-z_$][\w$]*$/;
-const sq = (s) => `'${s.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/\n/g, '\\n')}'`;
-const numTs = (n) => (Object.is(n, -0) ? '-0' : String(n));
-const key = (k) => (IDENT.test(k) ? k : sq(k));
-function tsInline(v) {
+export const sq = (s) => `'${s.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/\n/g, '\\n')}'`;
+export const numTs = (n) => (Object.is(n, -0) ? '-0' : String(n));
+export const key = (k) => (IDENT.test(k) ? k : sq(k));
+export function tsInline(v) {
   if (v === null) return 'null';
   if (typeof v === 'number') return numTs(v);
   if (typeof v === 'string') return sq(v);
@@ -322,7 +326,7 @@ function ts(v, ind) {
   const next = `${ind}  `;
   return `{\n${Object.entries(v).map(([k, x]) => `${next}${key(k)}: ${ts(x, next)},`).join('\n')}\n${ind}}`;
 }
-const comments = (notes, ind) => Object.entries(notes ?? {}).map(([k, n]) => `${ind}// ${k}: ${n}\n`).join('');
+export const comments = (notes, ind) => Object.entries(notes ?? {}).map(([k, n]) => `${ind}// ${k}: ${n}\n`).join('');
 
 export function render(out) {
   const L = [];
@@ -396,17 +400,22 @@ export function renderFamilies(out) {
 }
 
 const byCode = (m) => Object.fromEntries(Object.entries(m).sort((a, b) => a[1] - b[1]));
-export const lockText = (lock) =>
-  `${JSON.stringify(
+/** The whole register: weapons.mjs's sections, then the other generators' (npcRoles: npcs.mjs), by name. */
+export const lockText = (lock) => {
+  const { weapons, throwables, classes, ...others } = lock;
+  return `${JSON.stringify(
     {
-      $comment: 'Every network code ever given (tools/content/weapons.mjs keeps it): a code never changes and is never reused, also after its weapon, throwable or class is gone.',
-      weapons: byCode(lock.weapons),
-      throwables: byCode(lock.throwables),
-      classes: byCode(lock.classes),
+      $comment:
+        'Every network code ever given (tools/content/weapons.mjs and npcs.mjs keep it): a code never changes and is never reused, also after its weapon, throwable, class or NPC role is gone.',
+      weapons: byCode(weapons ?? {}),
+      throwables: byCode(throwables ?? {}),
+      classes: byCode(classes ?? {}),
+      ...Object.fromEntries(Object.keys(others).sort().map((k) => [k, byCode(others[k])])),
     },
     null,
     2,
   )}\n`;
+};
 
 // ---------------------------------------------------------------- main
 

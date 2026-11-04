@@ -1,0 +1,18 @@
+{
+  "id": "sentry",
+  "order": 2,
+  "displayName": "Sentry Gun",
+  "kind": "sentry",
+  "model": "guns/sentry_turret.glb",
+  "health": 220,
+  "half": [0.5, 0.5, 0.5],
+  "seats": [],
+  "enterRadius": 0,
+  "respawnSeconds": 40,
+  "blast": { "radius": 3, "damage": 50 },
+  "sentry": { "weapon": "core.sentry_gun", "range": 30, "turnRate": 2.4 },
+  "blurb": "Shoots enemies of its team on sight (any team: everyone). Destroy it and it comes back later",
+  "notes": {
+    "model": "The owner's Large Sentry Gun (Meshy, owned; content/guns.json, centred on its base)."
+  }
+}

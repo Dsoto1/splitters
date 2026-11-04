@@ -1,0 +1,42 @@
+{
+  "id": "airplane",
+  "displayName": "Transport Plane",
+  "kind": "vehicle",
+  "model": "vehicles/transport_plane.glb",
+  "health": 1000000,
+  "half": [5.2, 2.6, 8],
+  "seats": [
+    { "role": "passenger", "label": "Bench 1", "offset": [-1.4, 1, 6] },
+    { "role": "passenger", "label": "Bench 2", "offset": [1.4, 1, 6] },
+    { "role": "passenger", "label": "Bench 3", "offset": [-1.4, 1, 5] },
+    { "role": "passenger", "label": "Bench 4", "offset": [1.4, 1, 5] },
+    { "role": "passenger", "label": "Bench 5", "offset": [-1.4, 1, 4] },
+    { "role": "passenger", "label": "Bench 6", "offset": [1.4, 1, 4] },
+    { "role": "passenger", "label": "Bench 7", "offset": [-1.4, 1, 3] },
+    { "role": "passenger", "label": "Bench 8", "offset": [1.4, 1, 3] },
+    { "role": "passenger", "label": "Bench 9", "offset": [-1.4, 1, 2] },
+    { "role": "passenger", "label": "Bench 10", "offset": [1.4, 1, 2] },
+    { "role": "passenger", "label": "Bench 11", "offset": [-1.4, 1, 1] },
+    { "role": "passenger", "label": "Bench 12", "offset": [1.4, 1, 1] },
+    { "role": "passenger", "label": "Bench 13", "offset": [-1.4, 1, 0] },
+    { "role": "passenger", "label": "Bench 14", "offset": [1.4, 1, 0] },
+    { "role": "passenger", "label": "Bench 15", "offset": [-1.4, 1, -1] },
+    { "role": "passenger", "label": "Bench 16", "offset": [1.4, 1, -1] },
+    { "role": "passenger", "label": "Bench 17", "offset": [-1.4, 1, -2] },
+    { "role": "passenger", "label": "Bench 18", "offset": [1.4, 1, -2] },
+    { "role": "passenger", "label": "Bench 19", "offset": [-1.4, 1, -3] },
+    { "role": "passenger", "label": "Bench 20", "offset": [1.4, 1, -3] },
+    { "role": "passenger", "label": "Bench 21", "offset": [-1.4, 1, -4] },
+    { "role": "passenger", "label": "Bench 22", "offset": [1.4, 1, -4] },
+    { "role": "passenger", "label": "Bench 23", "offset": [-1.4, 1, -5] },
+    { "role": "passenger", "label": "Bench 24", "offset": [1.4, 1, -5] }
+  ],
+  "enterRadius": 0,
+  "respawnSeconds": 600,
+  "blast": { "radius": 0, "damage": 0 },
+  "airplane": true,
+  "blurb": "Flies a fixed route; jump out with E or jump and parachute down",
+  "notes": {
+    "design": "The transport plane (AirplaneEntity, sim/airplane.ts): 24 passenger benches along the hold; it cannot be hurt and nobody flies it. Not placeable: it flies its map entity's route."
+  }
+}

@@ -1,0 +1,50 @@
+{
+  "id": "gunship",
+  "order": 14,
+  "displayName": "Gunship",
+  "kind": "vehicle",
+  "model": "vehicles/gunship.glb",
+  "health": 950,
+  "half": [2.4, 1.2, 4.3],
+  "seats": [
+    {
+      "role": "driver",
+      "label": "Pilot",
+      "offset": [0, 3.1, 2.4],
+      "weapon": "core.speeder_guns",
+      "arc": 0.3
+    },
+    {
+      "role": "gunner",
+      "label": "Left door gun",
+      "offset": [-2, 2.4, -0.4],
+      "weapon": "core.mount_mg",
+      "arc": 1.25,
+      "facing": -1.5707963267948966
+    },
+    {
+      "role": "gunner",
+      "label": "Right door gun",
+      "offset": [2, 2.4, -0.4],
+      "weapon": "core.mount_mg",
+      "arc": 1.25,
+      "facing": 1.5707963267948966
+    }
+  ],
+  "enterRadius": 4.5,
+  "respawnSeconds": 80,
+  "blast": { "radius": 6, "damage": 120 },
+  "vehicle": {
+    "maxSpeed": 17,
+    "reverseSpeed": 6,
+    "accel": 6,
+    "turnRate": 1.1,
+    "hover": true,
+    "grip": 0.06,
+    "mass": 3,
+    "fly": { "climb": 5, "ceiling": 30 }
+  },
+  "cockpitEye": [0, 2.9, 2.8],
+  "blurb": "A flying gunship (the dropship's flight model): the pilot fires blasters ahead, two door gunners cover the sides",
+  "notes": { "cockpitEye": "In the cockpit between its frames, not on the roof." }
+}

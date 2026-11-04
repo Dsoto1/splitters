@@ -1,5 +1,6 @@
 import { CORE_LOOKS, RETIRED_LOOKS, encodeLook, getLook, type CharacterGroup } from '../content/looks.ts';
 import { CORE_BOT_PROFILES, type BotProfile } from '../bots/profile.ts';
+import { NPC_ROLE_BOTS, NPC_ROLE_SPECS } from '../content/npcRoles.generated.ts';
 import { NPC_ROLES, PLAYERS_FACTION } from '../map/mapKeys.ts';
 import type { Faction, MapDocument, NpcRole, Relation } from '../map/schema.ts';
 
@@ -36,37 +37,13 @@ export interface NpcRoleSpec {
 }
 
 /**
- * The basic squad archetype: troopers with rifles, gunners with shotguns,
- * heavies with grenade launchers, snipers with scoped rifles. Then the creatures: imps and puglins rush
- * in and claw (the knife's melee strike), the cyclops spits slowing goo, the
- * oculus spits fast plasma bolts, and the scolitex is a slow, heavy brute
- * whose claws hit hard.
+ * The roles' numbers (health, weapon, speed, size, damage, flags, look) are data: content/npcs.json, built by
+ * tools/content/npcs.mjs (how to add a role: docs/CONTENT_PIPELINE.md). The basic squad archetype: troopers with
+ * rifles, gunners with shotguns, heavies with grenade launchers, snipers with scoped rifles. Then the creatures: imps
+ * and puglins rush in and claw (the knife's melee strike), the cyclops spits slowing goo, the oculus spits fast plasma
+ * bolts, and the scolitex is a slow, heavy brute whose claws hit hard.
  */
-export const NPC_ROLE_SPECS: Record<NpcRole, NpcRoleSpec> = {
-  trooper: { label: 'Trooper', health: 70, weapon: 'core.rifle', speed: 0.82, scale: 1 },
-  gunner: { label: 'Gunner', health: 90, weapon: 'core.shotgun', speed: 0.9, scale: 1.05 },
-  heavy: { label: 'Heavy', health: 160, weapon: 'core.launcher', speed: 0.7, scale: 1.18 },
-  sniper: { label: 'Sniper', health: 60, weapon: 'core.sniper', speed: 0.8, scale: 0.97 },
-  imp: { label: 'Imp', health: 70, weapon: 'core.knife', speed: 1.05, scale: 1, creature: true, melee: true, damage: 0.7 },
-  puglin: { label: 'Puglin', health: 45, weapon: 'core.knife', speed: 1.15, scale: 1, creature: true, melee: true, damage: 0.45 },
-  cyclops: { label: 'Cyclops', health: 90, weapon: 'core.goo_gun', speed: 0.75, scale: 1, creature: true },
-  oculus: { label: 'Oculus', health: 60, weapon: 'core.plasma', speed: 0.9, scale: 1, creature: true },
-  scolitex: { label: 'Scolitex', health: 320, weapon: 'core.knife', speed: 0.8, scale: 1, creature: true, melee: true, damage: 1.5 },
-  // Shambles on the soldiers' rig with its own clips; claws, never shoots. Head shots drop it fast.
-  zombie: { label: 'Zombie', health: 90, weapon: 'core.knife', speed: 0.68, scale: 1, melee: true, damage: 0.55 },
-  // The creature originals, on the soldiers' rig with their weapons: goblins dart in with blades, the otter
-  // snipes from the back, the boglurker soaks up fire, the warlord shells you, hyenas run you down in packs.
-  goblin: { label: 'Goblin', health: 55, weapon: 'core.knife', speed: 1.1, scale: 0.9, melee: true, damage: 0.6, look: 'core.goblin' },
-  otter: { label: 'Wealthy Otter', health: 60, weapon: 'core.marksman', speed: 0.85, scale: 1, look: 'core.otter' },
-  boglurker: { label: 'Boglurker', health: 200, weapon: 'core.shotgun', speed: 0.72, scale: 1.1, look: 'core.boglurker' },
-  warlord: { label: 'Salamander Warlord', health: 260, weapon: 'core.launcher', speed: 0.7, scale: 1.15, look: 'core.warlord' },
-  hyena: { label: 'Hyena Warrior', health: 85, weapon: 'core.smg', speed: 1.05, scale: 1, look: 'core.hyena' },
-  // The Meshy community originals: grey visitors pick you off with lasers from mid range, pirates board with
-  // sawed-offs, and the strongman walks a spin gun straight at you, hard to put down.
-  alien: { label: 'Visitor', health: 65, weapon: 'core.laser_rifle', speed: 0.95, scale: 1, look: 'core.visitor' },
-  pirate: { label: 'Pirate', health: 90, weapon: 'core.sawed_off', speed: 0.92, scale: 1, look: 'core.barnacle' },
-  titan: { label: 'Strongman', health: 300, weapon: 'core.lmg', speed: 0.66, scale: 1.18, look: 'core.bogdan' },
-};
+export { NPC_ROLE_SPECS };
 
 /** How many NPCs an encounter roster fields in its first wave. */
 export const rosterSize = (roster: Partial<Record<NpcRole, number>>): number => NPC_ROLES.reduce((n, r) => n + (roster[r] ?? 0), 0);
@@ -98,31 +75,13 @@ export const NPC_PROFILE: BotProfile = {
 
 /**
  * Role behaviour on top of NPC_PROFILE (same aim model and cover use as
- * Player Bots): troopers and gunners are grunts that advance in pairs (one
+ * Player Bots; each role's changes are its `bot` in content/npcs.json): troopers and gunners are grunts that advance in pairs (one
  * moves while the other covers), heavies keep firing at where an enemy went
  * into cover, snipers hang back and go prone at range.
  */
-export const NPC_ROLE_PROFILES: Record<NpcRole, BotProfile> = {
-  trooper: { ...NPC_PROFILE, id: 'core.npc_trooper', tags: ['NPC', 'GRUNT'] },
-  gunner: { ...NPC_PROFILE, id: 'core.npc_gunner', aggression: 75, rangePreference: 15, tags: ['NPC', 'GRUNT'] },
-  heavy: { ...NPC_PROFILE, id: 'core.npc_heavy', aggression: 45, rangePreference: 60, pursuitPersistence: 30, tags: ['NPC', 'SUPPRESSOR'] },
-  sniper: { ...NPC_PROFILE, id: 'core.npc_sniper', displayName: 'Sniper', accuracy: 45, aggression: 25, rangePreference: 95, pursuitPersistence: 10, tacticalAwareness: 65, tags: ['NPC', 'SNIPER'] },
-  // Creatures: the clawing ones rush you across open ground; the spitters keep their distance.
-  imp: { ...NPC_PROFILE, id: 'core.npc_imp', displayName: 'Imp', aggression: 95, selfPreservation: 10, rangePreference: 5, tacticalAwareness: 15, tags: ['NPC', 'BERSERKER', 'RECKLESS'] },
-  puglin: { ...NPC_PROFILE, id: 'core.npc_puglin', displayName: 'Puglin', aggression: 95, selfPreservation: 15, rangePreference: 5, tacticalAwareness: 10, tags: ['NPC', 'BERSERKER', 'RECKLESS'] },
-  cyclops: { ...NPC_PROFILE, id: 'core.npc_cyclops', displayName: 'Cyclops', aggression: 55, rangePreference: 45, tacticalAwareness: 30, tags: ['NPC'] },
-  oculus: { ...NPC_PROFILE, id: 'core.npc_oculus', displayName: 'Oculus', aggression: 60, rangePreference: 50, tacticalAwareness: 30, tags: ['NPC'] },
-  scolitex: { ...NPC_PROFILE, id: 'core.npc_scolitex', displayName: 'Scolitex', aggression: 90, selfPreservation: 5, rangePreference: 5, tacticalAwareness: 10, tags: ['NPC', 'BERSERKER', 'RECKLESS'] },
-  zombie: { ...NPC_PROFILE, id: 'core.npc_zombie', displayName: 'Zombie', aggression: 100, selfPreservation: 0, pursuitPersistence: 100, rangePreference: 0, tacticalAwareness: 0, tags: ['NPC', 'BERSERKER', 'RECKLESS'] },
-  goblin: { ...NPC_PROFILE, id: 'core.npc_goblin', displayName: 'Goblin', aggression: 95, selfPreservation: 20, rangePreference: 5, tacticalAwareness: 20, tags: ['NPC', 'BERSERKER', 'RECKLESS'] },
-  otter: { ...NPC_PROFILE, id: 'core.npc_otter', displayName: 'Wealthy Otter', accuracy: 45, aggression: 25, rangePreference: 90, pursuitPersistence: 15, tacticalAwareness: 60, tags: ['NPC', 'SNIPER'] },
-  boglurker: { ...NPC_PROFILE, id: 'core.npc_boglurker', displayName: 'Boglurker', aggression: 80, selfPreservation: 10, rangePreference: 15, tags: ['NPC', 'GRUNT'] },
-  warlord: { ...NPC_PROFILE, id: 'core.npc_warlord', displayName: 'Salamander Warlord', aggression: 50, rangePreference: 60, pursuitPersistence: 30, tags: ['NPC', 'SUPPRESSOR'] },
-  hyena: { ...NPC_PROFILE, id: 'core.npc_hyena', displayName: 'Hyena Warrior', aggression: 85, rangePreference: 25, pursuitPersistence: 80, tags: ['NPC', 'GRUNT'] },
-  alien: { ...NPC_PROFILE, id: 'core.npc_alien', displayName: 'Visitor', accuracy: 40, aggression: 45, rangePreference: 65, tacticalAwareness: 55, tags: ['NPC'] },
-  pirate: { ...NPC_PROFILE, id: 'core.npc_pirate', displayName: 'Pirate', aggression: 85, selfPreservation: 20, rangePreference: 10, tags: ['NPC', 'GRUNT', 'RECKLESS'] },
-  titan: { ...NPC_PROFILE, id: 'core.npc_titan', displayName: 'Strongman', aggression: 70, selfPreservation: 5, rangePreference: 30, pursuitPersistence: 60, tags: ['NPC', 'SUPPRESSOR'] },
-};
+export const NPC_ROLE_PROFILES: Record<NpcRole, BotProfile> = /* @__PURE__ */ Object.fromEntries(
+  NPC_ROLES.map((role) => [role, { ...NPC_PROFILE, ...NPC_ROLE_BOTS[role] }]),
+) as Record<NpcRole, BotProfile>;
 
 /** The enemy faction every map has unless it defines its own. */
 export const DEFAULT_FACTIONS: readonly Faction[] = [{ id: 'syndicate', name: 'Syndicate', color: '#d04a3a', relations: {} }];

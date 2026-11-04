@@ -1,0 +1,62 @@
+{
+  "id": "gun_jeep",
+  "order": 11,
+  "displayName": "Gun Jeep",
+  "kind": "vehicle",
+  "model": "vehicles/gun_jeep.glb",
+  "health": 380,
+  "half": [1.1, 0.95, 2.2],
+  "seats": [
+    { "role": "driver", "label": "Driver", "offset": [-0.4, 0.7, 0.15], "seated": true },
+    { "role": "gunner", "label": "Roof gun", "offset": [0, 1.25, -1.1], "weapon": "core.mount_mg" },
+    { "role": "passenger", "label": "Passenger", "offset": [0.4, 0.7, 0.15], "seated": true },
+    {
+      "role": "passenger",
+      "label": "Left rail",
+      "offset": [-0.78, 1.3, -1.65],
+      "seated": true,
+      "facing": -1.5707963267948966,
+      "legDrop": 0.7
+    },
+    {
+      "role": "passenger",
+      "label": "Right rail",
+      "offset": [0.78, 1.3, -1.65],
+      "seated": true,
+      "facing": 1.5707963267948966,
+      "legDrop": 0.7
+    }
+  ],
+  "enterRadius": 3.2,
+  "respawnSeconds": 40,
+  "blast": { "radius": 4.5, "damage": 85 },
+  "vehicle": {
+    "maxSpeed": 21,
+    "reverseSpeed": 8,
+    "accel": 12,
+    "turnRate": 2,
+    "grip": 0.26,
+    "mass": 1.1,
+    "drift": 0.4,
+    "suspension": {
+      "wheels": [[-0.63, 1.32], [0.63, 1.32], [-0.63, -1.1], [0.63, -1.1]],
+      "hub": 0.45,
+      "travel": 0.16,
+      "bump": 0.13,
+      "freq": 1.8,
+      "damping": 0.38,
+      "squat": 0.0028,
+      "lean": 0.0038,
+      "tumble": 1.2,
+      "land": 0.45,
+      "maxTilt": 0.4,
+      "steer": 0.45
+    }
+  },
+  "blurb": "A light pickup with a machine gun on the back: a driver, a gunner who fires all round and three passengers with their own weapons",
+  "notes": {
+    "half": "The model is 2.24 m wide, 1.94 m tall and 4.4 m long.",
+    "seats": "Measured on the model: the cab (roof 1.94 m, floor 0.25 m) has no seats of its own, so the two cab riders sit on cushions 0.7 m up, just ahead of its back wall; the bed floor is about 1.0 m up and its side rails 1.3 m. The roof gunner stands in the bed at the gun; two more ride sitting on the side rails behind it, legs over the side.",
+    "vehicle": "Its own wheels (the model's wheel meshes, measured on it) on stiffer springs than the buggy's: a pickup."
+  }
+}
