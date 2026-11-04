@@ -1,6 +1,6 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import { NavWorld, initNavigation } from '../src/nav/index.ts';
-import { CEILINGS, CORNERS, FLOOR_INSERTS, ROOM_LAYOUTS, boxBounds, buildMapDecor, buildMapGeometry, coreCatalog, footprintSize, loadMap, validateMap, yawXZ, type MapDocument, type Rotation, type WorldBox } from '../src/index.ts';
+import { CEILINGS, CORNERS, FLOOR_INSERTS, ROOM_LAYOUTS, boxBounds, buildMapDecor, buildMapGeometry, coreCatalog, faceSlot, footprintSize, loadMap, resolveSurface, validateMap, yawXZ, type MapDocument, type Rotation, type WorldBox } from '../src/index.ts';
 import { makeMap } from './helpers.ts';
 
 beforeAll(() => initNavigation());
@@ -75,6 +75,29 @@ describe('room options', () => {
       expect(end.y, JSON.stringify(options)).toBeGreaterThan(top - 0.3);
       nav.destroy();
     }
+  });
+
+  it("paints a roof's top as the room's roof surface, which looks like its floor until painted", () => {
+    const carpet = { floor: { material: 'core.pbr_carpet', tint: '#2c3f78' } };
+    const roofOf = (map: MapDocument) => tileGeometry(map).find((b) => b.kind === 'floor' && Math.abs(b.max[1] - 4) < 1e-6)!;
+    const plain = makeMap([t('roof_room', 'core.room', 0, 0, 0, 0, { options: { ceiling: 'roof' }, surfaces: carpet })]);
+    const roof = roofOf(plain);
+    expect(roof.roof).toBe(true);
+    expect(faceSlot(roof, [0, 1, 0])).toBe('roof');
+    expect(faceSlot(roof, [0, -1, 0])).toBe('underside');
+    // The room's own floor slab is still its floor.
+    const floor = tileGeometry(plain).find((b) => b.kind === 'floor' && b.max[1] < 1)!;
+    expect(faceSlot(floor, [0, 1, 0])).toBe('floor');
+    const tile = plain.classicStructure.tiles[0]!;
+    expect(resolveSurface(plain, tile, 'roof').material.id).toBe('core.pbr_carpet');
+    const marble = makeMap([t('roof_room', 'core.room', 0, 0, 0, 0, { options: { ceiling: 'roof' }, surfaces: { ...carpet, roof: { material: 'core.marble', tint: '#e4dfd2' } } })]);
+    const painted = resolveSurface(marble, marble.classicStructure.tiles[0]!, 'roof');
+    expect([painted.material.id, painted.tint]).toEqual(['core.marble', '#e4dfd2']);
+    expect(resolveSurface(marble, marble.classicStructure.tiles[0]!, 'floor').material.id).toBe('core.pbr_carpet');
+    expect(validateMap(marble).filter((i) => i.severity === 'error')).toEqual([]);
+    // It survives a save and load.
+    const loaded = loadMap(JSON.stringify(marble));
+    expect(loaded.ok ? loaded.map.classicStructure.tiles[0]!.surfaces?.roof?.material : loaded.issues).toBe('core.marble');
   });
 
   it('roofs a room unless something is built on top, and a skylight leaves the middle open', () => {

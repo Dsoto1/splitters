@@ -3,7 +3,10 @@
 Everything here is data in `packages/shared` and works in MapMaker, offline
 matches and the dedicated server alike.
 
-## Pieces (`map/catalog.ts`)
+## Pieces (`content/tiles/core.json`, built by `map/catalog.ts`)
+
+The core kit's tiles and the edge styles below are data in `content/tiles/` (how to add one:
+docs/CONTENT_PIPELINE.md, "Tiles and edge styles"); the Style Pack tiles further down are drawn in code.
 
 37 tiles in six palette groups. Multi-cell pieces build no walls inside
 themselves; partial floors (balconies, decks, ledges) are painted like floors.
@@ -22,7 +25,7 @@ Every climbable piece is tested for bot paths in all four rotations
 (narrower runs fall foul of the navmesh's ledge filter), and flights need
 clear space at both ends.
 
-## Walls and openings (edge styles)
+## Walls and openings (edge styles, `content/tiles/edges.json`)
 
 Any side of any cell can be built as: Auto, Solid wall, Doorway, Wide doorway,
 Archway, Window, Twin windows, Firing slit, Half wall, Railing, High wall,

@@ -28,6 +28,97 @@ Findings to know before touching it:
 - Frame times were not measurable here (SwiftShader under load). Q9 asks the owner for a recording on real
   hardware.
 Next: the owner answers Q1–Q13, then Phase 1.
+### Capitol Mall: domes on drums, marble roofs (`wip/capitol-domes`, agent, 2026-11-04; pushed, not merged; from main 5a002f8)
+Owner-approved follow-up to "Map reworks, batch 3" (its "Not done": the slab skirt under the domes, the black corner
+roofs). MapMaker driven by Playwright as before (agent scratchpad `capitol2/`: driver `tools/maker.mjs`, steps
+`pass1.mjs` / `pass2.mjs`, pictures `before-*.png` / `after-*.png` for overview, top, capitol, capitol-air,
+capitol-top, colonnade, rotunda, museum, museum-air, museum-rotunda, monument).
+- **What dome pieces there were:** only the Desert City props `dc_dome` / `dc_dome_blue` (5 m, a low drum, one
+  material: Tint multiplies all of it) and the `desert.dome` tile (blue dome on an octagonal drum). No capitol dome,
+  no drum, no copper. So four in-house props, built in code in `tools/content/prepare-ancient.mjs` (pack
+  tiletrigger-ancient, Owned, provenance "built in code"), `scale: 1` (modelled to size):
+  - **Capitol Dome** (`im_capitol_dome`, Imperial Arena, 28.8 x 24.2 m, 5.9k tris, under the 6k budget): a hollow
+    drum with windows, 20 columns, entablature, balustrade, attic, a ribbed white dome lined inside (a ceiling seen
+    from the rotunda), lantern and bronze finial. `collide: "model"`: drum and dome as twelve-sided rounds, each column
+    its own box, so the walk between drum and colonnade stays open.
+  - **Copper Dome** (`im_copper_dome`, 23.6 x 16.8 m, 4k tris): limestone drum with pilasters and windows, verdigris
+    ribbed dome lined inside, small lantern. Same collision scheme.
+  - **Pediment** (`im_pediment`, 12.4 x 2.3 x 1.9 m, 15 degrees, the same both ways round) and **Pyramidion**
+    (`eg_pyramidion`, Sands of Egypt, 4 x 2.6 m, gilded tip).
+  - Helpers there: `domeShell` (outward or inward bands), `domeRibs` (faces wound by their normals), `radialBox`,
+    `roundColumn`, `roundBoxes`, `prism`; a prop's `make()` may return `{ p, boxes }` to carry collision.
+- **MapMaker: Roof surface.** The roof slab of a room option Ceiling (roof, skylight, beams) took its top from the
+  floor slot: carpeted chambers had carpet roofs (the black). New optional slot `roof` (SURFACE_SLOTS, schema
+  `TileSurfaces.roof`, `WorldBox.roof` on the slab, `faceSlot` -> 'roof' for its top); unpainted it resolves to the
+  floor, so no existing map changes; themes have no roof default (`ThemeSlot`; tools/content/materials.mjs skips
+  it). Inspector row "Roof (top, outside)" only on roofed rooms; the Paint tool paints it on a click on the roof.
+  No format bump: an older client drops the field and draws the floor's material (as before).
+- **Capitol Mall:** capitol drum panels, columns, entablature, 12-point star, Plaster Dome and slab lantern (117
+  pieces) -> Capitol Dome on the old marble ring (y 8.4); museum likewise (39) -> Copper Dome; the three stepped slab
+  pediments -> Pediments (Scale 1.9 / 1.32 / 2) on their cornice blocks; the monument's stepped top -> Pyramidion
+  (Scale 3.75); roofs: 20 capitol rooms marble #e4dfd2, 11 museum rooms travertine #e8e2d4. Card picture recaptured.
+- **Pitfall (driver):** the old drum's columns were props `prop_112..131`, not blocks: deleting a `block_` range
+  silently skips ids that don't exist (pass2 deleted them). Check removals by the saved file, not the log.
+- **Left as they are:** the block-built exhibits (dinosaur skeletons in the museum hall, the rocket by the air and
+  space museum) and the monument's slab-built shaft with its stair (playable); the museum's travertine reads
+  tan/brown at sunset (material, not changed).
+- **Tests fixed:** the Pyramidion makes Sands of Egypt 27 pieces (`stylePacksAncient.test.ts`), and `SURFACE_SLOTS`
+  now ends in `roof` (`tools/content/test/materials.test.mjs`).
+- **Checks:** typecheck clean; validate-map 0 issues; content:check OK; content:rebuild changes nothing;
+  test:changed 1307 passed, the two above fixed, and npc (two co-op playthroughs), bigMatch (tick budget) and
+  host e2e timed out under a load of 10-16 from other checkouts: the five files pass on their own (57/57). E2E
+  (`CI=1`, ports 4887/7921, `E2E_MAPS=capitol_mall`): scenery PASS 231 s, maps PASS 146 s, editor PASS 492 s.
+  New props' GLBs, palette and provenance map to the full suite on CI: needs a `check/` run.
+### Hands round 4: per-look skin weights (`wip/char-hands-skin`, agent, 2026-11-04; pushed, not merged; from main 5a002f8)
+Grips round 3's "left unchanged" list, with the owner's approval to re-weight hands per look. Evidence (before/after per
+look, rifle and pistol: 3/4, each hand close, side, front; audit numbers in each `<id>.json`): agent scratchpad
+`hands4/` (`review-board.png`; `ba/<id>-before-after.png`; `ba/meshy_knight-body-stand-run-strafe-before-over-after.png`;
+`body/` standing/running/strafing views; tools in `hands4/tools/`: `shots.mjs` (now with hand close-ups, a warm-up pose
+and `creature:<kind>` ids), `stretch.mjs` (most stretched edges with their weights), `body.mjs` (spikes standing,
+running, strafing), `curl.mjs` (offline finger-curl stretch test on a GLB), `imptune.mjs` (creature grip trials)).
+Final evidence, shot from the files as committed (built client) against main's: `hands4/final/ba/<id>-before-after.png`
+(all 13 looks in scope) and `hands4/final/review-board-final.png` (`tools/final.mjs`, verdicts in `tools/verdicts.mjs`);
+reverted looks match main there (only framing noise: their files are main's).
+- **New field `fixes.skin`** (tools/content/skinfix.mjs, docs/CHARACTERS.md "A look's own skin weights"): finger
+  options to hands.mjs `fitHands` (`tips`, `knuckle`, `joints`, `lanes`, `fingers: 'lanes'`; per hand under `l`/`r`)
+  and body options after it (`hops`, `clamp`, `smooth`, `wrist`; recorded as `extras.skinFix` on the skin and applied
+  once by rehand-built). A look without it is weighted exactly as before (test). Applied with
+  `ONLY=<id> node tools/content/rehand-built.mjs` on the shipped files (a rebuild from the downloads would also bring
+  in later pipeline changes: Zombie Soldier A rebuilt from its download came out at 13.4k triangles, not 11k);
+  rehand-built takes `SIDES=r` (or `l`) to refit one hand and keep the other as built. prepare-meshy-characters
+  applies `fixes.skin` too (checked: the zombie's download rebuilt with `tips` has no needle).
+- **Kept:** **Zombie Soldier A** `skin { tips 0.3 }`, right hand only (`SIDES=r`): the needle was the middle fingertip
+  measured out of the hand as a stray (past 1.6x the 80th percentile from the hand's centre) and left on `hand_r`
+  while the rest of the finger curled. Needle gone (40.7x -> 2.5x, spikes 6 -> 0, both guns); the left hand is
+  untouched (a refit of the left from the built file changed it for the worse). **Iron Knight** `skin { smooth
+  thigh/calf 6 passes, lanes 0.8, joints 0.2 }`: the tabard flipped from one thigh to the other between neighbouring
+  vertices and tore open between the legs; his left gauntlet's pinky and middle tore apart (a three-finger split).
+  Spikes: hold 18 -> 6 (max 12.3x -> 5.1x), run 17 -> 2, strafe 24 -> 6; the tabard stays closed in all three.
+  **Hyena Warrior** `hands.r.curl 0.6` + `skin { knuckle 0.3, joints 0.3 }`: the right paw was measured a fist and
+  left rigid, hanging open under the grip; it now closes round it (tips 0.057 -> 0.018 m). Curling the left paw too
+  flattened it on the handguard: left as it was. Clearly better at play distance (3/4: a fist on the grip, not claws
+  hanging below it); close up the closed paw shows hard folds, a geometry limit like the shard hands below. **Imp** (bots): new per-creature hold settings, CreatureSpec `grip`
+  (a GripTune, read by characterAnimator `holdWith`; creatures without it hold as before); the Imp has
+  `supportLong [0, -0.05, 0]`, `rollL -0.8`, `curlL 1.3`: its left claw goes under the handguard and closes round it
+  (it stood above it, claws up). `__grips.creature(kind, weapon)` on `?mode=grips` poses an armed creature.
+- **Reverted (not clearly better), owner/lead:** Vanguard, Beanie Alien, Mummy Bot, Zhao (finger blends and lanes:
+  no visible change; a lanes split on Vanguard added stretch), Alien Biker (mitten + blends, or split lanes: the
+  shards got worse). Their hands are low-poly "All Animations" hands whose fingers fold into shards when curled; the
+  weights are not the cause, so they need hand geometry (a rebake or new hands), not weights. **Grunt '68 and Shade**
+  (support hand on its edge): weights cannot turn a hand, unchanged. Tried `fixes.grip.rollL`: -0.7 lays Grunt's
+  rifle support hand under the handguard (fingers round it, not standing up) but also turns his pistol support hand
+  off the shooting hand; a long-gun-only roll (a new GripTune field) would take it: not done. Shade: +/-0.7 not
+  better. **Wealthy Otter** (`wrist`: the cuff on the forearm): the paw sheared and showed its pale underside, worse
+  at both strengths tried; the twist is the paw turning on the gun (`rollR 0.4` and the grip turn), not the cuff's
+  weights. **Croakley** (`hops 4` + `smooth`; `hops 2` tore the belly at 120x): hold max stretch 12 -> 5 but spikes
+  2 -> 4 and strafe 43 -> 53, the belly barely different by eye; its in-house skin puts thigh weight up to the chest,
+  which needs a re-rig, not a smoothing.
+- **Checks** (c2cdda1, re-run after the machine restart): typecheck clean; content:check OK; `rebuild.mjs`: nothing
+  changed; test:changed (all units, shared code) 1361 passed, 2 timed out under machine load (host.test.ts relay
+  join, pads.test.ts eagle_spires; neither touched here) and passed on a rerun of those files (26/26). E2E (`CI=1`,
+  ports 5641/7641): characters, visual, designer, zombies all PASS; no screenshot baseline changed. The first run
+  (before the restart) lost its browser under load. ci:plan: full suite (characterAnimator, shared creatures, character
+  files map to all 38 flows): needs a `check/` run before main.
 
 ### Grips round 3: per-look hands and arms (`wip/char-grips-3`, agent, 2026-11-04; pushed, not merged; from main 47864cb)
 Owner's notes of 3 Nov ("arm position (mainly right arms) and grips", the 28 looks; Santa's and Zombie Soldier A's
@@ -64,6 +155,59 @@ Evidence (before/after per look, review board, audits): agent scratchpad `grips3
   Anoobys 3 -> 3 (its rifle support hand still curls away; pistol better by eye).
 - **Checks:** typecheck clean; content:check OK; test:changed (all units: shared code) 1347 passed. E2E (`CI=1`,
   ports 4873/7897): characters PASS, visual PASS (baselines unchanged: menu 0.5 %, others ≤ 0.1 %). ci:plan: full suite (characterAnimator/looks are shared): needs a `check/` run.
+
+### Content scalability step 7: tiles as data, core kit (`wip/tiles-data`, agent, 2026-11-04; pushed, not merged; from main 5a002f8)
+docs/CONTENT_SCALABILITY.md step 7, owner's scope "1a" (the core building kit only); same pattern as steps 3-6; how to
+add one: docs/CONTENT_PIPELINE.md, "Tiles and edge styles".
+- **Where things are now:** `content/tiles/core.json` (all 71 tiles `map/catalog.ts` defined by hand, in catalog order:
+  rooms, corridors, stairs, open ground, the buildings, curves, balconies, the city pieces and the 04 Orbital / 07 Neon
+  pieces; one part a line) and `content/tiles/edges.json` (the 17 edge styles: label, `segments` that collide, `trim`,
+  `openings`, and the `glass`, `corner`, `facade`, `street`, `openDefault`, `trimFrom` and `dressing` settings that
+  were lists scattered over geometry.ts, sim/glass.ts and dressing.ts). `tools/content/tiles.mjs`
+  (`pnpm content:tiles`) -> `packages/shared/src/content/kitTiles.generated.ts` (`KIT_TILES`) and
+  `edgeStyles.generated.ts` (`EDGE_STYLES`, `EDGE_STYLE_LABELS`, `EDGE_SHAPES`, the flag lists). A part names a builder
+  and its numbers (box, flight, descending, rail, columns, partition, lamp, arc, arcTrim, arcade, roundRoom,
+  discStrips, block); `catalog.ts` `kitPart` / `resolveKitTile` build them (builders stay code; `descending` gained a
+  `run`, the round tower became the `roundRoom` builder). `geometry.ts` `edgeSegments` / `edgeTrim` read the shapes
+  (`edgeTrim` is exported now); `tileOptions.ts` re-exports `EDGE_STYLES` and labels from the generated file (menu
+  split test still holds) and holds the `EdgeShape` types.
+- **No network codes:** tiles and edge styles travel as ids in the map document; `content/codes.lock.json` unchanged.
+- **Checks in the generator:** strict schema, palette groups and sides from tileOptions.ts, cells xor footprint,
+  floors on its levels, ports and edgeDefaults on its own cells, default edges are edge styles, one builder per part,
+  boxes min <= max, yaw/surface only on boxes, surface materials in content/materials.json, models under
+  packages/client/public, edge-value grammar, repeats, glass needs openings, auto/open kept (auto first), unique ids,
+  and every tile / edge style named in `maps/*.json` and the Style Packs' `tiles` exists (kit prefixes core/city/
+  orbital/neon here; other prefixes must be a code pack's). `tilesData.test.ts` also checks every map's tiles against
+  the whole catalog (pack tiles included).
+- **Proof of no change:** `packages/shared/test/fixtures/tiles-resolved.json` (committed first, c25308a, from the
+  hand-written code): catalog order, all 71 kit tiles resolved, every edge style's segments and trim at six sizes, glass
+  openings, a synthetic map of every style x corner style x facades (geometry, trim, facades, window panes,
+  validation, room dressing), and the same six hashes for all 88 maps. Deep-equal, and the kit's JSON byte-equal (key
+  order matters: MapMaker's palette pictures are keyed by a hash of the tile's JSON, so `content:check` stays green with
+  no re-render; the round corners keep `category` before `id` in the JSON for that reason).
+- **Wiring:** `content:rebuild` and `content:check` run tiles.mjs; `tools/content/test/tiles.test.mjs` (5 tests).
+- **Workbench:** "Kit tiles" (17 fields: name, group, blurb, floors, open, room options, default edge, model, notes
+  editable; id, footprint, cells, ports, per-side defaults and parts read-only) and "Edge styles" (15 fields: name,
+  trim offset, glass/corner/facade/street/open flags, dressing kind and span, notes editable; id, rule, segments, trim
+  and openings read-only). Not checked with the dashboard's parser.
+- **Stayed in code (listed, not moved):** the part builders; room options (layouts, floor inserts, ceilings, corners:
+  sized to the footprint, parametric); the facades (city model sets and `PACK_FACADES` boxes); the auto/open rule in
+  `resolveEdge`; `TILE_DIMENSIONS` (8 m / 4 m grid assumptions everywhere); MapMaker's edge icons (drawn from the
+  segments, so a new style gets one); the Style Pack tiles drawn by code (`paint(box, ...)` in `packTiles*.ts`, 176
+  tiles: a future step, e.g. `content/tiles/<pack>.json` with the pack helpers (`shell`, `gableRoof`, `win`,
+  `door`, `paint`) as builders, and `STYLE_PACKS` as JSON).
+- **Pitfalls:** edit the JSON, never the generated files; never rename a tile or edge style id maps use; a changed kit
+  tile needs its palette picture redrawn (`pnpm content:rebuild`); keep a tile's keys in their order or every picture
+  goes stale.
+- **Checks (on 75f28fe, box at load 11-20 from other agents):** `pnpm typecheck` clean (70 s). `pnpm content:check` OK
+  (95 s); `content:rebuild` changed nothing (30 s). `pnpm test:changed` (everything, shared changed): 1548 pass, 2
+  skipped, 3 timed out under load (botai "bot aim" 20 s, pads eagle_spires / frost_basin 180 s; untouched by this
+  change); both files rerun alone: 32 pass, 1 skipped. Menu's first JS unchanged: 2307.7 kB raw both ways, 648.8 -> 648.9 kB gzip (a 1-byte rounding step)
+  (`index` 591,035 bytes both ways, gzip 207,542 -> 207,543; base built from 5a002f8's shared sources on the same
+  machine); the kit tiles land in the `geometry` chunk. E2E (`CI=1`, ports 4483/7911): editor PASS (377 s), visual PASS
+  (358 s; menu 0.5 %, mapmaker 0.1 %, arena 0.1 %, canyon 0.1 %, no baseline changed), scenery PASS (248 s), maps
+  1 of 30 checks failed (1369 s): diamond_park "no match", the known load flake (see the terrain-paths entry), rerun alone
+  (`E2E_MAPS=diamond_park`) PASS (213 s). ci:plan: full suite (38 flows, shared code); the rest needs a `check/` run.
 
 ### Content scalability step 6: library materials as data (`wip/materials-data`, agent, 2026-11-04; pushed, not merged; on `wip/pickups-data` 01420e4)
 docs/CONTENT_SCALABILITY.md step 6, same pattern as steps 3-5; how to add one: docs/CONTENT_PIPELINE.md, "Materials and themes".

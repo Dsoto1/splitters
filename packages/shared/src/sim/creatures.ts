@@ -2,6 +2,7 @@ import { CREATURE_ROLES } from '../map/mapKeys.ts';
 import type { PlayerInput } from './movement.ts';
 import { BUTTON_FIRE } from './movement.ts';
 import type { Vec3 } from '../math.ts';
+import type { GripTune } from '../content/looks.ts';
 import { hypot } from '../math.ts';
 
 /**
@@ -39,10 +40,16 @@ export interface CreatureSpec {
    * rig clips go by the rig's speeds and the hip height).
    */
   gait?: { walk: number; run: number; runFrom: number };
+  /**
+   * Its own hands and arms on a gun when it carries one (a player or bot in its skin; humanoids only), as a look's
+   * `whole.grip` (GripTune): the shared creature hold (characterAnimator holdWith) is left as it is for the rest.
+   */
+  grip?: GripTune;
 }
 
 export const CREATURE_SPECS: Record<CreatureModel, CreatureSpec> = {
-  imp: { model: 'creatures/imp.glb', scale: 1, hover: 0, body: 'humanoid' },
+  // Its left claw stood above a long gun's handguard, claws up: down under it, turned and closed round it.
+  imp: { model: 'creatures/imp.glb', scale: 1, hover: 0, body: 'humanoid', grip: { supportLong: [0, -0.05, 0], rollL: -0.8, curlL: 1.3 } },
   puglin: { model: 'creatures/puglin.glb', scale: 1.2, hover: 0, body: 'humanoid' },
   cyclops: { model: 'creatures/cyclops.glb', scale: 1, hover: 0.25, body: 'alien' },
   oculus: { model: 'creatures/oculus.glb', scale: 1, hover: 0.5, body: 'alien' },

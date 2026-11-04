@@ -110,6 +110,8 @@ export const TileSurfaces = z.object({
   solids: SurfaceStyle.optional(),
   underside: SurfaceStyle.optional(),
   trim: SurfaceStyle.optional(),
+  /** The top of a room's roof (absent: as the floor). */
+  roof: SurfaceStyle.optional(),
 });
 
 /** One side of one tile cell, in the tile's own frame: "dx,dy,dz:N". */

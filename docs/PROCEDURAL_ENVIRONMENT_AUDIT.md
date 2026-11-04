@@ -951,6 +951,12 @@ under the baseline; both renderers are clean.
     no realistic twin. *Recommended:* `tree_blocks` (unused) is retired without a replacement species, migrating
     to `env.broadleaf.round`; topiary stays a small species.
 
+### Owner decisions (2026-11-04)
+
+The owner accepted **all 13 recommendations above**, with one specific choice on 13: the stylised outliers (`tree_blocks` and the other blocky trees) are **retired**, not folded into nearby species. Map migration maps their placements to the nearest real species while keeping position and cover; the old ids stay readable as retired ids.
+
+Order agreed: Phase 1 starts after the shared "surface types" job (per-material ballistic class plus impact surface tags, including the new heavy-wood trunk class from question 3).
+
 ## 12. Where the work goes, by phase (files)
 
 - Phase 1:

@@ -4994,14 +4994,16 @@
    "walls",
    "solids",
    "underside",
-   "trim"
+   "trim",
+   "roof"
   ],
   "SURFACE_SLOT_LABELS": {
    "floor": "Floor",
    "walls": "Walls",
    "solids": "Pillars, cover & steps",
    "underside": "Underside (ceiling below)",
-   "trim": "Trim & frames"
+   "trim": "Trim & frames",
+   "roof": "Roof (top, outside)"
   }
  }
 }

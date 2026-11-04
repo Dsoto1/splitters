@@ -430,6 +430,11 @@ MegaKit's aliens, and checked against `content/creatures.lock.json`.
   pose, and the hips' motion is scaled by leg length. Clips: `idle`, `walk`,
   `run`, `attack` (the imp's is the heavy swing, the puglin's the punch),
   `hit`, `death`.
+- **Holding a gun** (a player or bot in a humanoid creature's skin): `holdWith` (characterAnimator.ts) closes its
+  hands on the gun as for a look, and the creature's own `grip` in `CREATURE_SPECS` (packages/shared/src/sim/creatures.ts;
+  a GripTune, as a look's `fixes.grip`: points moved, curl, roll, elbow) adjusts that creature alone. The Imp's left
+  claw stood above the handguard with its claws up: `supportLong [0, -0.05, 0]`, `rollL -0.8`, `curlL 1.3` put it
+  under the handguard round it. Check with `window.__grips.creature('imp', 'core.rifle')` on `?mode=grips`.
 - **Aliens** keep their own spine-chain skeletons and their one `idle` clip.
   The game leans them into their motion, speeds the idle up as they move,
   lunges them forward to attack, jolts them on hits, and drops and rolls them
@@ -589,7 +594,7 @@ repo; they live in a downloads dir outside it.
 | `clipsWhy` | With `clips: false` only: why this body keeps the rig's own gait. |
 | `firstPerson.arms` | `own` (its own forearms and hands, `<id>_fparms.glb`), or a universal arms part with `skin`, `cloth` and `trim` dyes. |
 | `firstPerson.body` | `false`: full-body first person shows this character's arms only (its hat brim, cape or hood would fill the view from its own eyes: Grizzelda). Left out: full body. |
-| `fixes` | `triangles` (the body's budget; 11000 for an unrigged download, half the download's for a rigged one), `lean` (degrees back per spine joint for a hunched body), `cloth` (cloth below the hips follows the pelvis), `tail` (points from the hips), `feet` (turn the feet level: the foot bone pointed the rig's way, then each foot turned about its ankle until the lowest points of its heel and of its front are level; Meshy's rig left feet 7-23 degrees toes up without this), `seamWeld` (simplify across texture seams; the head and hands then get no share of their own), `surface` (`rebake`: the download cut to `triangles` with its texture seams closed, laid out afresh and its colour and normal maps painted from the full download; see "Rebaked characters"), `scrubBlue` (repaint blue badges), `hands` (below), `armCloth` (cloth hanging off an arm goes with the body; see "Arm skin kept to the arms"), `skinClean` (weights cleaned in the download's own pose, contacts torn; see "Skin cleaned in the download's pose"), `handsShare` (the share of the triangle budget the hands keep in the cut, 0.04 unless set (0.08 in a rebake): more where cuffs the skinning left on the hands took it, as on King Aldric), `headShare` (the head's share, 0.12 unless set), `normalSize` (1024: a 1024 px normal map instead of 512), `lod` (the far copy's share of the body's triangles, 0.3 unless set; see "Level of detail"), `hold` (`{ forward, down }`, metres at a 1.8 m body: this look's long-gun hold against everyone's, along the barrel and square to it, in third person and Character Select; Bandit's broad build put the stock at his snout), `grip` (this look's own hands and arms on a gun, in third person and Character Select: `supportPistol` / `supportLong` / `gripLong` move the support hand's point on a pistol or handguard and the shooting palm's point on a long gun's grip (`[right, up, ahead]` in the gun's frame, m), `curlR` / `curlL` scale how far each hand closes, `rollR` / `rollL` turn a hand about its fingers (radians), `elbowOut` / `elbowDown` move where the long-gun shooting elbow bends toward (m); set per look from before/after shots and the grip audit, since a change to the shared hold moves every look; HANDOFF.md, "Grips round 3"). |
+| `fixes` | `triangles` (the body's budget; 11000 for an unrigged download, half the download's for a rigged one), `lean` (degrees back per spine joint for a hunched body), `cloth` (cloth below the hips follows the pelvis), `tail` (points from the hips), `feet` (turn the feet level: the foot bone pointed the rig's way, then each foot turned about its ankle until the lowest points of its heel and of its front are level; Meshy's rig left feet 7-23 degrees toes up without this), `seamWeld` (simplify across texture seams; the head and hands then get no share of their own), `surface` (`rebake`: the download cut to `triangles` with its texture seams closed, laid out afresh and its colour and normal maps painted from the full download; see "Rebaked characters"), `scrubBlue` (repaint blue badges), `hands` (below), `armCloth` (cloth hanging off an arm goes with the body; see "Arm skin kept to the arms"), `skinClean` (weights cleaned in the download's own pose, contacts torn; see "Skin cleaned in the download's pose"), `handsShare` (the share of the triangle budget the hands keep in the cut, 0.04 unless set (0.08 in a rebake): more where cuffs the skinning left on the hands took it, as on King Aldric), `headShare` (the head's share, 0.12 unless set), `normalSize` (1024: a 1024 px normal map instead of 512), `lod` (the far copy's share of the body's triangles, 0.3 unless set; see "Level of detail"), `hold` (`{ forward, down }`, metres at a 1.8 m body: this look's long-gun hold against everyone's, along the barrel and square to it, in third person and Character Select; Bandit's broad build put the stock at his snout), `grip` (this look's own hands and arms on a gun, in third person and Character Select: `supportPistol` / `supportLong` / `gripLong` move the support hand's point on a pistol or handguard and the shooting palm's point on a long gun's grip (`[right, up, ahead]` in the gun's frame, m), `curlR` / `curlL` scale how far each hand closes, `rollR` / `rollL` turn a hand about its fingers (radians), `elbowOut` / `elbowDown` move where the long-gun shooting elbow bends toward (m); set per look from before/after shots and the grip audit, since a change to the shared hold moves every look; HANDOFF.md, "Grips round 3"), `skin` (this look's own skin weights: finger `tips`, `knuckle`, `joints`, `lanes`, `fingers`; body `hops`, `clamp`, `smooth`, `wrist`; see "A look's own skin weights"). |
 | `source.modelUrl` | For Meshy's rigging API: `"upload"` (the unrigged download in the downloads dir, sent as a data URI; the usual choice), or a public link to a `.glb` file. Meshy refuses a link whose path doesn't end in `.glb` ("invalid model file format"), so Google Drive download links don't work. |
 | `landmarks` | Optional, for an unrigged download: found from the mesh when left out (see "Rigging an unrigged download"). The joints in units of the model's height, feet at y = 0, +x the character's left, +z its front. `spine`: hips, three spine joints, neck, head, top of the head. `L`/`R`: clavicle, shoulder, elbow, wrist, hand tip, hip, knee, ankle, ball, toe tip. Read them off front and side views. |
 
@@ -773,6 +778,37 @@ Freaky Frida it pulled pigtails hanging by her shoulders into strands, and it
 put a flap on Kenji's vest side (both already fixed by hand-set landmarks and
 `armCloth`). Check a character in its download pose with the weight pictures
 (any rest mesh coloured by limb) before turning it on.
+
+**A look's own skin weights** (`fixes.skin`, `tools/content/skinfix.mjs`; owner-approved 2026-11-04). For a
+fault the shared weighting leaves on one look's hands or cloth, that look's manifest sets its own weighting; a look
+without `fixes.skin` is weighted exactly as before. Set from before/after shots (rifle and pistol: 3/4, each hand
+close, side, front) and the grip audit, and kept only where the shots are clearly better (HANDOFF.md, "Hands round
+4"). The finger options go to `fitHands` (hands.mjs) and so are applied afresh on every build and rehand; each takes
+both hands or one (`l` / `r`):
+- `tips` (0–0.5): skin past the knuckle line that the hand's core measured out as a stray (a long fingertip) is
+  weighted as its finger, up to this share of the hand's length past the fingertips. Zombie Soldier A's right
+  middle fingertip stayed on the hand while the rest of the finger curled: a 40x "needle" (`tips: 0.3`).
+- `knuckle` (0.02–0.3, default 0.1) and `joints` (0.02–0.3, default 0.08): how wide the blend from the hand to the
+  fingers, and between a finger's joints, is (shares of the hand's and of the finger's length).
+- `lanes` (0–1): skin within this share of a finger's width of the boundary between two split fingers is shared by
+  both (half each on the boundary), so neighbouring fingers don't tear apart (the Iron Knight's gauntlet: `0.8`).
+- `fingers: 'lanes'`: fused fingers (no gaps to find) split evenly across the hand into four.
+
+The body options run after the hands, once (a file records them as `extras.skinFix` on its skin, and
+`rehand-built.mjs` does not apply the same ones again; to change them, start from the file before them):
+- `hops` (1–4): influences of joints further than this many steps along the skeleton from the vertex's own joint
+  are dropped (a belly held by a thigh and a collarbone at once). Low values tear blended skin (a belly half on the
+  spine, half on a thigh): Croakley at `hops: 2` stretched 120x; not used.
+- `clamp` (0–0.3): influences under this weight are dropped.
+- `smooth` (`{ joints: "<regex>", passes: 1–8 }`): the weights of vertices those joints hold most are evened with
+  their neighbours' (texture seams joined). The Iron Knight's tabard flipped from one thigh to the other between
+  neighbouring vertices and tore open between the legs: `{ "joints": "^(thigh|calf)_", "passes": 6 }`.
+- `wrist` (`{ until, band }`, shares of the hand's length past the wrist joint): the skin up to `until` rides the
+  forearm alone, easing back to the hand over `band` (a cuff or bracelet twisting with the hand).
+
+`rehand-built.mjs` applies `fixes.skin` to a built file (`ONLY=<ids>`); `SIDES=r` (or `l`) refits only that hand,
+the other kept as built (a refit from the built file measures a hand a little differently from the download, so a
+fix for one hand needn't move the other: Zombie Soldier A).
 
 **Head and hands keep their detail** (`cutKeeping` in `tools/content/meshy-mesh.mjs`):
 both cuts (an unrigged download's work cut to 40k triangles, and the final

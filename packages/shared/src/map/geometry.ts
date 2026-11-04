@@ -1,5 +1,5 @@
 import { PLAYER } from '../sim/constants.ts';
-import { MODEL_FACADES, SIDES, SIDE_DIRS, TILE_DIMENSIONS, coreCatalog, floorInsertBoxes, footprintSize, roomLayoutBoxes, seededRandom, type Corner, type EdgeStyle, type Facade, type LocalBox, type Side, type TileCatalog, type TileDefinition } from './catalog.ts';
+import { MODEL_FACADES, SIDES, SIDE_DIRS, TILE_DIMENSIONS, coreCatalog, floorInsertBoxes, footprintSize, roomLayoutBoxes, seededRandom, type Corner, type EdgeRepeat, type EdgeShape, type EdgeStyle, type EdgeValue, type Facade, type LocalBox, type Side, type TileCatalog, type TileDefinition } from './catalog.ts';
 import type { MapDocument, MapEntity, TilePlacement } from './schema.ts';
 import { logicTargets } from './logic.ts';
 import { getProp } from '../content/props.ts';
@@ -7,6 +7,7 @@ import { terrainBoundary, terrainTriangles } from './terrain.ts';
 import { resolveBackdrop } from './backdrop.ts';
 import { borderBoxes, borderFloor, electricFenceBoxes, hasBorder } from './border.ts';
 import { pathsExtent } from './paths.ts';
+import { CORNER_EDGE_STYLES, EDGE_SHAPES, FACADE_EDGE_STYLES, STREET_EDGE_STYLES } from '../content/edgeStyles.generated.ts';
 
 /**
  * `trim` boxes are visual only (baseboards, cornices, frames): never in physics
@@ -37,6 +38,8 @@ export interface WorldBox {
   roll?: number;
   /** Material for every face (free blocks), instead of the theme's. */
   surface?: { material: string; tint: string | null };
+  /** A room's roof slab (room option Ceiling): its top is painted as the tile's `roof` surface. */
+  roof?: true;
 }
 
 /** Turn an (x, z) offset by `yaw` about +Y (right-handed, the same as physics and the renderer). */
@@ -232,7 +235,7 @@ export function resolveEdge(cells: Map<string, CellOccupant>, x: number, y: numb
   const choice = (occ: CellOccupant | undefined, s: Side) => occ?.placement.edges?.[edgeKey(occ.local, localSide(s, occ.placement.rotation))];
   const picked = choice(here, side) ?? choice(there, OPPOSITE[side]);
   const fallback = here.def.edgeDefaults?.[edgeKey(here.local, localSide(side, here.placement.rotation))] ?? here.def.edgeDefault ?? 'wall';
-  const openish = fallback === 'open' || fallback === 'railing';
+  const openish = fallback === 'open' || !!(fallback !== 'auto' && EDGE_SHAPES[fallback]?.openDefault);
   let style: EdgeStyle = picked ?? 'auto';
   if (style === 'auto') {
     // Ports meeting: nothing between open ground, no frame of its own on a platform or bridge, else a doorway.
@@ -242,135 +245,62 @@ export function resolveEdge(cells: Map<string, CellOccupant>, x: number, y: numb
   return style === 'open' || style === 'auto' ? 'none' : style;
 }
 
+/** The shape of a built edge style (content/tiles/edges.json); none for `none`. */
+const shapeOf = (style: ResolvedEdge): EdgeShape | undefined => (style === 'none' ? undefined : EDGE_SHAPES[style]);
+
+/** An edge value along a side `half` long each way from its middle, on a level `height` high. */
+function edgeValue(v: EdgeValue, half: number, height: number): number {
+  if (typeof v === 'number') return v;
+  if ('upTo' in v) return Math.min(v.upTo, height);
+  const [x, k] = 'half' in v ? [half, v.half] : [height, v.height];
+  const base = k === 1 ? x : k === -1 ? -x : x * k;
+  return v.add === undefined ? base : base + v.add;
+}
+
+/** Each position of a repeat along a side. */
+function repeatAlong(r: EdgeRepeat, half: number, height: number, at: (u: number) => void): void {
+  const from = edgeValue(r.from, half, height);
+  const to = edgeValue(r.to, half, height);
+  if (r.through) for (let u = from; u <= to + 1e-6; u += r.step) at(u);
+  else for (let u = from; u < to; u += r.step) at(u);
+}
+
 /** Wall pieces of an edge style along one side: [u0, u1, y0, y1, thickness] with u along the side (-half..half). */
 export function edgeSegments(style: ResolvedEdge, half: number, height: number): [number, number, number, number, number][] {
-  const t = TILE_DIMENSIONS.wallThickness;
-  const top = (h: number) => Math.min(h, height);
-  switch (style) {
-    case 'none':
-      return [];
-    case 'wall':
-      return [[-half, half, 0, height, t]];
-    case 'door': {
-      const d = TILE_DIMENSIONS.doorWidth / 2;
-      return [[-half, -d, 0, height, t], [d, half, 0, height, t], [-d, d, top(TILE_DIMENSIONS.doorHeight), height, t]];
-    }
-    case 'wide':
-      return [[-half, -2.5, 0, height, t], [2.5, half, 0, height, t], [-2.5, 2.5, top(3.5), height, t]];
-    case 'arch':
-      return [[-half, -half + 0.75, 0, height, t], [half - 0.75, half, 0, height, t], [-half + 0.75, half - 0.75, top(3.4), height, t]];
-    case 'window':
-      // Sill 0.9 m, opening 1.6 m: jump and crouch (legs tucked) to climb through.
-      return [[-half, -1.3, 0, height, t], [1.3, half, 0, height, t], [-1.3, 1.3, 0, 0.9, t], [-1.3, 1.3, top(2.5), height, t]];
-    case 'windows':
-      return [[-half, -2.7, 0, height, t], [-0.8, 0.8, 0, height, t], [2.7, half, 0, height, t], [-2.7, -0.8, 0, 0.9, t], [0.8, 2.7, 0, 0.9, t], [-2.7, -0.8, top(2.5), height, t], [0.8, 2.7, top(2.5), height, t]];
-    case 'slit':
-      return [[-half, -1.5, 0, height, t], [1.5, half, 0, height, t], [-1.5, 1.5, 0, 1.25, t], [-1.5, 1.5, top(1.6), height, t]];
-    case 'half':
-      return [[-half, half, 0, 1.1, t]];
-    case 'railing':
-      return [[-half, half, 0, 1, 0.12]];
-    case 'high':
-      return [[-half, half, 0, height * 2, t]];
-    case 'tower':
-      return [[-half, half, 0, height * 4, t]];
-    case 'fence': {
-      // Posts every metre and three rails: 3 m high, see-through, stops players and blocks most shots' paths only at the bars.
-      const out: [number, number, number, number, number][] = [];
-      for (let u = -half; u <= half + 1e-6; u += 1) out.push([Math.max(-half, u - 0.06), Math.min(half, u + 0.06), 0, 3, 0.12]);
-      out.push([-half, half, 0.05, 0.2, 0.1], [-half, half, 1.45, 1.6, 0.1], [-half, half, 2.85, 3, 0.1]);
-      return out;
-    }
-    case 'broken':
-      // A ragged hole knocked through, a heap of masonry on one side of it.
-      return [[-half, -2.2, 0, height, t], [1.4, half, 0, height, t], [-2.2, -0.6, top(2.7), height, t], [-0.6, 1.4, top(3.2), height, t], [-2.2, -1.3, 0, 0.45, t]];
-    case 'bars': {
-      // Floor-to-ceiling bars 0.3 m apart: see and shoot through, nobody squeezes through.
-      const out: [number, number, number, number, number][] = [];
-      for (let u = -half + 0.15; u < half - 0.1; u += 0.3) out.push([u - 0.03, u + 0.03, 0, height, 0.1]);
-      out.push([-half, half, 0, 0.12, 0.12], [-half, half, height - 0.15, height, 0.12]);
-      return out;
-    }
-    case 'shutter':
-      // A wide opening with its roller shutter stuck 1.35 m up: crouch under it.
-      return [[-half, -2.5, 0, height, t], [2.5, half, 0, height, t], [-2.5, 2.5, top(3.5), height, t], [-2.5, 2.5, 1.35, top(3.5), 0.12]];
+  const out: [number, number, number, number, number][] = [];
+  const v = (x: EdgeValue) => edgeValue(x, half, height);
+  for (const s of shapeOf(style)?.segments ?? []) {
+    const t = s.t ?? TILE_DIMENSIONS.wallThickness;
+    const r = s.repeat;
+    if (r) {
+      const [o0, o1] = s.u as readonly [number, number];
+      repeatAlong(r, half, height, (u) => out.push([r.clamp ? Math.max(-half, u + o0) : u + o0, r.clamp ? Math.min(half, u + o1) : u + o1, v(s.y[0]), v(s.y[1]), t]));
+    } else out.push([v(s.u[0]), v(s.u[1]), v(s.y[0]), v(s.y[1]), t]);
   }
+  return out;
 }
 
 /** Visual trim for an edge (inner face only): [u0, u1, y0, y1, depth] standing off the wall face. */
-function edgeTrim(style: ResolvedEdge, half: number, height: number): [number, number, number, number, number][] {
+export function edgeTrim(style: ResolvedEdge, half: number, height: number): [number, number, number, number, number][] {
   const out: [number, number, number, number, number][] = [];
-  const base = (u0: number, u1: number) => out.push([u0, u1, 0, 0.16, 0.04]);
-  const cornice = (u0: number, u1: number) => height >= 3 && out.push([u0, u1, height - 0.2, height, 0.07]);
-  const frame = (d: number, h: number) => out.push([-d - 0.16, -d, 0, h, 0.06], [d, d + 0.16, 0, h, 0.06], [-d - 0.16, d + 0.16, h, h + 0.16, 0.06]);
-  const window = (u0: number, u1: number, y0: number, y1: number) => out.push([u0 - 0.08, u1 + 0.08, y0 - 0.08, y0, 0.12], [u0 - 0.1, u1 + 0.1, y1, y1 + 0.12, 0.05], [u0 - 0.1, u0, y0, y1, 0.05], [u1, u1 + 0.1, y0, y1, 0.05]);
-  switch (style) {
-    case 'none':
-      return out;
-    case 'wall':
-      base(-half, half);
-      cornice(-half, half);
-      return out;
-    case 'door':
-    case 'wide': {
-      const d = style === 'door' ? TILE_DIMENSIONS.doorWidth / 2 : 2.5;
-      base(-half, -d - 0.16);
-      base(d + 0.16, half);
-      cornice(-half, half);
-      if (height > (style === 'door' ? TILE_DIMENSIONS.doorHeight : 3.5) + 0.2) frame(d, style === 'door' ? TILE_DIMENSIONS.doorHeight : 3.5);
-      return out;
-    }
-    case 'arch':
-      base(-half, -half + 0.75);
-      base(half - 0.75, half);
-      cornice(-half, half);
-      out.push([-half + 0.75, half - 0.75, 3.25, 3.4, 0.08]);
-      return out;
-    case 'window':
-      base(-half, half);
-      cornice(-half, half);
-      window(-1.3, 1.3, 0.9, 2.5);
-      return out;
-    case 'windows':
-      base(-half, half);
-      cornice(-half, half);
-      window(-2.7, -0.8, 0.9, 2.5);
-      window(0.8, 2.7, 0.9, 2.5);
-      return out;
-    case 'slit':
-      base(-half, half);
-      cornice(-half, half);
-      window(-1.5, 1.5, 1.25, 1.6);
-      return out;
-    case 'half':
-      base(-half, half);
-      out.push([-half, half, 1.1, 1.18, 0.04]);
-      return out;
-    case 'high':
-    case 'tower':
-      base(-half, half);
-      out.push([-half, half, height * (style === 'high' ? 2 : 4) - 0.2, height * (style === 'high' ? 2 : 4), 0.07]);
-      return out;
-    case 'fence':
-    case 'bars':
-      return out;
-    case 'broken':
-      base(-half, -2.2);
-      base(1.4, half);
-      cornice(-half, half);
-      return out;
-    case 'shutter':
-      base(-half, -2.66);
-      base(2.66, half);
-      cornice(-half, half);
-      if (height > 3.7) frame(2.5, 3.5);
-      return out;
-    case 'railing':
-      // Posts every 2 m and a top rail.
-      for (let u = -half + 0.1; u <= half - 0.1 + 1e-6; u += 2) out.push([u - 0.06, u + 0.06, 0, 1.08, 0.04]);
-      out.push([-half, half, 0.95, 1.08, 0.05]);
-      return out;
+  const v = (x: EdgeValue) => edgeValue(x, half, height);
+  for (const p of shapeOf(style)?.trim ?? []) {
+    if ('base' in p) out.push([v(p.base[0]), v(p.base[1]), 0, 0.16, 0.04]);
+    else if ('cornice' in p) {
+      if (height >= 3) out.push([v(p.cornice[0]), v(p.cornice[1]), height - 0.2, height, 0.07]);
+    } else if ('frame' in p) {
+      const { half: d, top: h } = p.frame;
+      if (height > h + 0.2) out.push([-d - 0.16, -d, 0, h, 0.06], [d, d + 0.16, 0, h, 0.06], [-d - 0.16, d + 0.16, h, h + 0.16, 0.06]);
+    } else if ('window' in p) {
+      const [u0, u1] = p.window.u;
+      const [y0, y1] = p.window.y;
+      out.push([u0 - 0.08, u1 + 0.08, y0 - 0.08, y0, 0.12], [u0 - 0.1, u1 + 0.1, y1, y1 + 0.12, 0.05], [u0 - 0.1, u0, y0, y1, 0.05], [u1, u1 + 0.1, y0, y1, 0.05]);
+    } else if (p.repeat) {
+      const [o0, o1] = p.u as readonly [number, number];
+      repeatAlong(p.repeat, half, height, (u) => out.push([u + o0, u + o1, v(p.y[0]), v(p.y[1]), p.depth]));
+    } else out.push([v(p.u[0]), v(p.u[1]), v(p.y[0]), v(p.y[1]), p.depth]);
   }
+  return out;
 }
 
 /** True when both cells on either side of this edge expose a port toward each other. */
@@ -575,7 +505,7 @@ function buildBoxes(map: MapDocument, catalog: TileCatalog, decor: boolean): Wor
     for (const side of SIDES) {
       const style = resolveEdge(cells, gx, gy, gz, side);
       if (decor) {
-        const t = style === 'railing' ? 0.12 : TILE_DIMENSIONS.wallThickness;
+        const t = shapeOf(style)?.trimFrom ?? TILE_DIMENSIONS.wallThickness;
         for (const [u0, u1, y0, y1, depth] of edgeTrim(style, half, levelHeight)) {
           boxes.push(sideBox(side, cx, cz, half, u0, u1, baseY + y0, baseY + y1, t, t + depth, id, 'trim'));
         }
@@ -626,7 +556,7 @@ function buildBoxes(map: MapDocument, catalog: TileCatalog, decor: boolean): Wor
 }
 
 /** Wall styles a corner piece can stand against (solid enough at the corner itself). */
-const CORNER_WALLS = new Set<ResolvedEdge>(['wall', 'door', 'wide', 'window', 'windows', 'slit', 'high', 'tower', 'shutter']);
+const CORNER_WALLS = new Set<ResolvedEdge>(CORNER_EDGE_STYLES);
 
 /** The two sides meeting at each corner of a cell, and which way that corner lies from the centre. */
 const CELL_CORNERS: [Side, Side, number, number][] = [
@@ -690,7 +620,7 @@ function roomOptionBoxes(map: MapDocument, catalog: TileCatalog, cells: Map<stri
       const cz = y * cellSize;
       const top = z * levelHeight + levelHeight;
       if (o.ceiling && o.ceiling !== 'open' && !cells.has(cellKey(x, y, z + 1))) {
-        const roof = (x0: number, z0: number, x1: number, z1: number) => out.push({ min: [cx + x0, top - TILE_DIMENSIONS.floorThickness, cz + z0], max: [cx + x1, top, cz + z1], kind: 'floor', sourceId: placement.id });
+        const roof = (x0: number, z0: number, x1: number, z1: number) => out.push({ min: [cx + x0, top - TILE_DIMENSIONS.floorThickness, cz + z0], max: [cx + x1, top, cz + z1], kind: 'floor', sourceId: placement.id, roof: true });
         if (decor) {
           if (o.ceiling === 'beams') {
             // Three beams under the roof, across the room's short way in its own frame.
@@ -978,17 +908,6 @@ const BAY = 8 / 3;
 const BAND = 4 / 3;
 /** Facades stand this far out from our walls: the kit's windows sit up to 0.3 m back from their face. */
 const FACADE_OUT = 0.32;
-/** Openings (doorways, windows) in each edge style, framed where a facade stands proud of the wall: [u0, u1, y0, y1]. */
-const OPENINGS: Partial<Record<ResolvedEdge, [number, number, number, number][]>> = {
-  door: [[-1.5, 1.5, 0, 3]],
-  wide: [[-2.5, 2.5, 0, 3.5]],
-  shutter: [[-2.5, 2.5, 0, 3.5]],
-  arch: [[-3.25, 3.25, 0, 3.4]],
-  window: [[-1.3, 1.3, 0.9, 2.5]],
-  windows: [[-2.7, -0.8, 0.9, 2.5], [0.8, 2.7, 0.9, 2.5]],
-  slit: [[-1.5, 1.5, 1.25, 1.6]],
-};
-
 /** Frames round the openings of walls that wear a facade (trim, never collides): the reveal between the facade and our wall. */
 function facadeFrames(map: MapDocument, cells: Map<string, CellOccupant>): WorldBox[] {
   const { cellSize, levelHeight } = map.classicStructure;
@@ -1007,7 +926,8 @@ function facadeFrames(map: MapDocument, cells: Map<string, CellOccupant>): World
       if (there && !there.def.open) continue;
       // Open ground next door builds its own wall on this side: the facade stands outside that one.
       const base = there && resolveEdge(cells, gx + dx, gy + dy, gz, OPPOSITE[side]) !== 'none' ? TILE_DIMENSIONS.wallThickness : 0;
-      for (const [u0, u1, y0, y1] of OPENINGS[style] ?? []) {
+      // The style's openings (doorways, windows: content/tiles/edges.json).
+      for (const [u0, u1, y0, y1] of shapeOf(style)?.openings ?? []) {
         const top = Math.min(y1, levelHeight);
         const pieces: [number, number, number, number][] = [[u0 - f, u0, y0, top + f], [u1, u1 + f, y0, top + f], [u0, u1, top, top + f]];
         if (y0 > 0) pieces.push([u0, u1, y0 - f, y0]);
@@ -1039,7 +959,7 @@ export const FACADE_FILES: Readonly<Record<string, readonly string[]>> = (Object
 export const FACADE_PIECES: readonly string[] = FACADE_FILES[CITY_FACADE_FILE]!;
 
 /** Edges that get a facade on their outside (solid enough to dress). */
-const FACADE_WALLS = new Set<ResolvedEdge>(['wall', 'door', 'wide', 'window', 'windows', 'slit', 'high', 'tower', 'shutter', 'arch', 'broken', 'half']);
+const FACADE_WALLS = new Set<ResolvedEdge>(FACADE_EDGE_STYLES);
 
 /**
  * The city facade pieces for every room with a `facade` option: each outside
@@ -1168,7 +1088,7 @@ function facadeOpenings(segs: readonly [number, number, number, number, number][
   return out;
 }
 /** Walls whose street face gets a frontier false front, awning and boardwalk. */
-const STREET_FACES = new Set<ResolvedEdge>(['door', 'wide', 'windows', 'shutter', 'arch']);
+const STREET_FACES = new Set<ResolvedEdge>(STREET_EDGE_STYLES);
 
 /** The boxes of every Style Pack facade (visual only: trim with its own material). */
 function packFacadeBoxes(map: MapDocument, cells: Map<string, CellOccupant>): WorldBox[] {

@@ -87,7 +87,8 @@ export function build(content, root = ROOT) {
   const problems = [];
   const patterns = tsList(root, MATERIALS_TS, 'PATTERN_IDS');
   const categories = tsList(root, MATERIALS_TS, 'MATERIAL_CATEGORIES');
-  const slots = tsList(root, MATERIALS_TS, 'SURFACE_SLOTS');
+  // A theme gives every slot a default but the roof (an unpainted roof looks like the room's floor).
+  const slots = tsList(root, MATERIALS_TS, 'SURFACE_SLOTS').filter((s) => s !== 'roof');
   const textureSets = new Set(readJson(root, 'content/textures.json').textures);
 
   const material = obj({
