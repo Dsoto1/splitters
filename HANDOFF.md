@@ -10,6 +10,36 @@ The session branch is **`claude/launcher-ui-map-cards`**. Poll CI without auth:
 `curl -s "https://api.github.com/repos/Dsoto1/splitters/actions/workflows/ci.yml/runs?branch=check/candidate&per_page=1"`.
 Use `pnpm typecheck`, not `pnpm -s typecheck` (the silent flag hides type errors; one reached CI that way).
 
+### Snowmobile: the Snow Sled's new model (`wip/snowmobile`, agent, 2026-11-04; pushed, not merged; on main e5932fb)
+The owner's ask: a CC0 snowmobile instead of the toy-like Kenney sled. Evidence (before/after, raw vs processed): agent
+scratchpad `snowmobile/` (`before/`, `after/`, `after/glacier-line/`, `raw-vs-processed.jpg`, `compare/`).
+- **Model:** "Snowmobile" by roygbpjyt (Meshy Community post 019ea836-0675-77b9-8dae-09fcc54aca2e; CC0 1.0 per Meshy
+  Terms §3.3 "Community License", terms of 2026-09-19; author credited). Pack `meshy-community-snowmobile` in
+  content/guns.json (licence `assets-src/meshy-community-snowmobile/License.txt`), built by prepare-guns.mjs:
+  `ONLY=vehicles/snowmobile.glb node tools/content/prepare-guns.mjs --downloads <dir holding snowmobile.glb>`.
+  311k triangles -> 20.0k + a 5.0k LOD from 40 m, 2048 px colour, 1024 px normal, 1.42 MB (vehicle tier: 45k / 4.5 MB),
+  3.0 m long, skis forward (`forward: -x`). The Kenney Holiday Kit sled and its source are retired.
+- **Appearance (coordinator's review):** compared in-game against the raw download (`compare/`): the cut and the maps
+  kept shape and colour (32k triangles looked the same as 18k); what the first build lost was material: its ski struts
+  and springs are grey paint that reads dark only through the metal channel, and its paint is glossy. New prepare-guns
+  options `metalDarken` (folds a GLB's bare metal into the colour map) and `roughness` (built material's, default 0.85);
+  the snowmobile uses 0.3 and 0.5, and maxError 0.02 (tighter rebake ray reach). The model itself is a faceted grey and
+  black design; on Frost Basin it shows team paint (Automatic: ember orange times grey reads brown); Glacier Line's
+  sleds use the Snow skin (pale grey).
+- **Refit (content/vehicles/snow_sled.json, measured from a height map of the built mesh; see its `notes`):** box
+  `half [0.66, 0.55, 1.5]`; riders seated on the saddle (driver cushion [0, 0.56, -0.55], passenger [0, 0.6, -1.02]),
+  astride via the new `SeatDef.straddle` (thighs turned out about the upright, characterAnimator applySit; schema in
+  vehicles.mjs), `legDrop` 0.1/0.14 so the feet sit in the footwells; `cockpitEye [0, 1.42, -0.42]` over the
+  windscreen; rideHeight 0 (skis and track on the snow). Handling unchanged. No glow, no wheels.
+- **Checks:** typecheck clean; content:check OK; test:changed (all units) 1320 passed, 1 failed (host.test.ts end to
+  end, a 51 s timeout under load; passes alone); tools/content tests 89 passed. E2E (`CI=1`, ports 4893/7893, load
+  average ~19 from other agents' runs): maps5 (Frost Basin) PASS, maps7 (Glacier Line) PASS, characters PASS, visual
+  PASS; vehicles FAIL in all 4 runs, a different timing check each time (Arc Turret wind-up, buggy fire, buggy
+  steering/chase camera, buggy riders' hips), every check passing in at least one run; none touches the sled. ci:plan:
+  full suite (assets-src, content/models.json): needs a `check/` run.
+- **Not done:** the driver's hands don't hold the handlebars (seated riders hold their gun or idle; no grip pose for
+  vehicles exists); team paint on this grey model reads brown (a paint-gain per mount would fix it: owner's call).
+
 ### Procedural environment, Phase 0: audit and plan (`wip/env-audit`, agent, 2026-11-04; docs only, pushed, not merged)
 The owner's spec for replacing natural assets with an in-house procedural pipeline is `docs/PROCEDURAL_ENVIRONMENT.md`
 (verbatim). The audit and plan are in `docs/PROCEDURAL_ENVIRONMENT_AUDIT.md`: an inventory of 143 natural prop ids
