@@ -31,6 +31,14 @@
   "fixes": {
     "hands": {
       "curl": 1
+    },
+    "grip": {
+      "gripLong": [-0.045, 0, 0],
+      "supportLong": [0, 0, -0.02],
+      "supportPistol": [0.04, 0.02, 0],
+      "curlR": 1.4,
+      "curlL": 1.6,
+      "rollR": -0.25
     }
   }
 }

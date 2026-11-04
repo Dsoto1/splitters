@@ -39,6 +39,12 @@
         "mitten": true,
         "curl": 1.2
       }
+    },
+    "grip": {
+      "gripLong": [-0.045, 0, -0.03],
+      "supportLong": [-0.02, 0.04, 0],
+      "supportPistol": [0, 0.06, -0.06],
+      "curlR": 0.8
     }
   }
 }

@@ -13,7 +13,7 @@ import { Texture } from '@babylonjs/core/Materials/Textures/texture';
 import type { PBRMaterial } from '@babylonjs/core/Materials/PBR/pbrMaterial';
 import { LoadAssetContainerAsync } from '@babylonjs/core/Loading/sceneLoader';
 import './gltf.ts';
-import { NPC_LOOK_COLORS, NPC_ROLE_SPECS, PLAYER, clipSetOf, firstPersonArms, getLook, npcLookRole, materialTint, textureFor, type BodyType, type CharacterLook } from '@tiletrigger/shared';
+import { NPC_LOOK_COLORS, NPC_ROLE_SPECS, PLAYER, clipSetOf, firstPersonArms, getLook, npcLookRole, materialTint, textureFor, type BodyType, type CharacterLook, type GripTune } from '@tiletrigger/shared';
 import { GLB, versioned } from '../assetUrl.ts';
 import { dyeTexture } from './dye.ts';
 import { mergeSkinnedParts, skinGear } from './mergeParts.ts';
@@ -124,6 +124,8 @@ export interface CharacterInstance {
   hands: { l?: HandData; r?: HandData };
   /** This body's own long-gun hold against everyone's (model metres at a 1.8 m body; the look's `whole.hold`). */
   hold?: { forward?: number; down?: number; out?: number };
+  /** This body's own hands and arms on a gun against everyone's (the look's `whole.grip`, GripTune). */
+  grip?: GripTune;
   /** How the body gets about (the look's `locomotion`): `roll` glides with no walk cycle. */
   locomotion?: 'roll';
   /** The look's authored clip set (`clips`), loaded: each clip's natural speed, length and left-foot touchdown (gait.ts ClipLoop). */
@@ -254,6 +256,7 @@ export class CharacterLibrary {
     let body: CharacterInstance['body'];
     let hands: CharacterInstance['hands'] = {};
     let hold: CharacterInstance['hold'];
+    let grip: CharacterInstance['grip'];
     let locomotion: CharacterInstance['locomotion'];
     let clipLoops: CharacterInstance['clipLoops'];
 
@@ -306,6 +309,7 @@ export class CharacterLibrary {
       const look = getLook(spec.look);
       if (!spec.armsOnly) {
         hold = look.whole?.hold;
+        grip = look.whole?.grip;
         locomotion = look.locomotion;
       }
       // The beard isn't a file: buildGear makes it on the face (gear.ts, BEARD).
@@ -424,6 +428,7 @@ export class CharacterLibrary {
       body,
       hands,
       ...(hold ? { hold } : {}),
+      ...(grip ? { grip } : {}),
       ...(locomotion ? { locomotion } : {}),
       ...(clipLoops ? { clipLoops } : {}),
       dispose: () => {

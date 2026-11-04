@@ -36,7 +36,7 @@ export const MESHY_TASKS = {
 const PACK = { owned: 'meshy-owned', CC0: 'meshy-community-characters' };
 const KINDS = new Set(['character', 'creature']);
 const USES = new Set(['player', 'npc', 'player+npc', 'npc+player']);
-const FIXES = new Set(['triangles', 'surface', 'seamWeld', 'lean', 'cloth', 'tail', 'feet', 'scrubBlue', 'hands', 'armCloth', 'skinClean', 'handsShare', 'headShare', 'lod', 'normalSize', 'hold']);
+const FIXES = new Set(['triangles', 'surface', 'seamWeld', 'lean', 'cloth', 'tail', 'feet', 'scrubBlue', 'hands', 'armCloth', 'skinClean', 'handsShare', 'headShare', 'lod', 'normalSize', 'hold', 'grip']);
 /** How a character gets about: left out, it walks on the rig's clips; `roll`, it has no legs (a ball, a wheel) and rolls. */
 const LOCOMOTION = new Set(['roll']);
 /** The clips a clip set (`clipsFrom`, tools/content/clip-set.mjs) can hold, as the game asks for them (characterAnimator.ts). */
@@ -143,6 +143,17 @@ export function manifestProblems(m, file = `${m?.id}.json`) {
     const h = x.hold;
     need(h && typeof h === 'object' && Object.keys(h).every((k) => k === 'forward' || k === 'down' || k === 'out'), 'fixes.hold: { forward, down, out } (metres at a 1.8 m body)');
     for (const k of ['forward', 'down', 'out']) need(h?.[k] === undefined || (typeof h[k] === 'number' && Math.abs(h[k]) <= 0.15), `fixes.hold.${k}: metres (−0.15–0.15)`);
+  }
+  if (x.grip !== undefined) {
+    // This look's own hands and arms on a gun (GripTune in packages/shared/src/content/looks.ts).
+    const g = x.grip;
+    const NUM = { elbowOut: 0.4, elbowDown: 0.4, curlR: 1.6, curlL: 1.6, rollR: 1.6, rollL: 1.6 };
+    const PTS = ['supportPistol', 'supportLong', 'gripLong'];
+    need(g && typeof g === 'object' && Object.keys(g).every((k) => k in NUM || PTS.includes(k)), `fixes.grip: { ${[...Object.keys(NUM), ...PTS].join(', ')} }`);
+    for (const k of ['elbowOut', 'elbowDown']) need(g?.[k] === undefined || (typeof g[k] === 'number' && Math.abs(g[k]) <= NUM[k]), `fixes.grip.${k}: metres (−${NUM[k]}–${NUM[k]})`);
+    for (const k of ['rollR', 'rollL']) need(g?.[k] === undefined || (typeof g[k] === 'number' && Math.abs(g[k]) <= NUM[k]), `fixes.grip.${k}: radians (−${NUM[k]}–${NUM[k]})`);
+    for (const k of ['curlR', 'curlL']) need(g?.[k] === undefined || (typeof g[k] === 'number' && g[k] >= 0 && g[k] <= NUM[k]), `fixes.grip.${k}: 0–${NUM[k]} (a share of the hand's measured curl)`);
+    for (const k of PTS) need(g?.[k] === undefined || (isPoint(g[k]) && g[k].every((v) => Math.abs(v) <= 0.15)), `fixes.grip.${k}: [right, up, ahead] in the gun's frame (m, each −0.15–0.15)`);
   }
   for (const k of ['seamWeld', 'cloth', 'feet', 'armCloth', 'skinClean']) need(x[k] === undefined || typeof x[k] === 'boolean', `fixes.${k}: true or false`);
   if (x.hands !== undefined) {
@@ -301,7 +312,8 @@ function lookLine(m) {
   const fp = m.firstPerson ?? {};
   const own = !fp.arms || fp.arms === 'own';
   const hold = m.fixes?.hold ? `, hold: { ${Object.entries(m.fixes.hold).map(([k, v]) => `${k}: ${v}`).join(', ')} }` : '';
-  const body = (fp.body === false ? ', body: false' : '') + hold;
+  const grip = m.fixes?.grip ? `, grip: { ${Object.entries(m.fixes.grip).map(([k, v]) => `${k}: ${Array.isArray(v) ? `[${v.join(', ')}]` : v}`).join(', ')} }` : '';
+  const body = (fp.body === false ? ', body: false' : '') + hold + grip;
   const whole = own ? `whole: { arms: ${q(armsOf(m))}${body} }` : `whole: { arms: ${q(fp.arms)}, skin: ${q(fp.skin)}, cloth: ${q(fp.cloth)}, trim: ${q(fp.trim)}${body} }`;
   const parts = [`id: ${q(m.look)}`, `name: ${q(m.name)}`, `body: ${q(m.body)}`, "head: ''", `parts: [${q(m.id)}]`, 'hair: []', 'colorways: []', 'skin: null', 'hairColor: null', ...(m.size ? [`size: ${q(m.size)}`] : []), ...(m.locomotion ? [`locomotion: ${q(m.locomotion)}`] : []), ...(m.clips ? [`clips: ${q(m.clips)}`] : m.clips === false ? ['clips: false'] : []), whole, ...(m.group ? [`group: ${q(m.group)}`] : []), ...(m.nameTheme ? [`nameTheme: ${q(m.nameTheme)}`] : [])];
   return `  { ${parts.join(', ')} },`;

@@ -35,7 +35,12 @@
       [0, 0.3, -0.2],
       [0, 0.2, -0.32]
     ],
-    "feet": true
+    "feet": true,
+    "grip": {
+      "gripLong": [-0.045, -0.03, -0.015],
+      "supportPistol": [0.02, 0.02, -0.04],
+      "rollL": 0.25
+    }
   },
   "landmarks": {
     "spine": [

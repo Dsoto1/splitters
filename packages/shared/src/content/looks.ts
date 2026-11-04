@@ -61,11 +61,34 @@ export interface CharacterLook {
    * barrel, `down` square to it, `out` level toward the gun shoulder's side), for a build the shared hold puts the stock at the face of (Bandit: broad, with
    * his head low between high shoulders); `fixes.hold` in its manifest.
    */
-  whole?: { arms: string; skin?: string; cloth?: string; trim?: string; body?: false; hold?: { forward?: number; down?: number; out?: number } };
+  whole?: { arms: string; skin?: string; cloth?: string; trim?: string; body?: false; hold?: { forward?: number; down?: number; out?: number }; grip?: GripTune };
   /** What the character is (Character Select's tabs): set on every built-in look; a design of yours has none. */
   group?: CharacterGroup;
   /** What kind of creature it is, for its bots' names (NAME_THEMES in botNames.ts); absent: its group's. */
   nameTheme?: string;
+}
+
+/**
+ * One look's own hands and arms on a held gun, against everyone's (`fixes.grip` in its manifest; third person and
+ * Character Select). Each is left out unless that look needs it: the shared hold is tuned for most bodies, and a
+ * change to it moves every look (round 2 of the owner's 3 Nov notes), so a body that holds badly is fixed here.
+ * Lengths in metres at a 1.8 m body; points `[right, up, ahead]` in the gun's own frame.
+ */
+export interface GripTune {
+  /** Long gun: where the shooting elbow bends toward, added to the shared pole (out from the shoulder, and down). */
+  elbowOut?: number;
+  elbowDown?: number;
+  /** How far each hand closes, as a share of its measured curl (1 unless set; up to 1.6). */
+  curlR?: number;
+  curlL?: number;
+  /** The support hand's point on a pistol / on a long gun's handguard, moved by this much. */
+  supportPistol?: [number, number, number];
+  supportLong?: [number, number, number];
+  /** Each hand turned about its own fingers once it is on the gun (radians). */
+  rollR?: number;
+  rollL?: number;
+  /** The shooting palm's point on a long gun's grip, moved by this much. */
+  gripLong?: [number, number, number];
 }
 
 /**

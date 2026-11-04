@@ -37,6 +37,11 @@
     "headShare": 0.16,
     "handsShare": 0.08,
     "normalSize": 1024,
-    "lod": 0.22
+    "lod": 0.22,
+    "grip": {
+      "gripLong": [-0.06, -0.015, -0.03],
+      "supportLong": [0, -0.02, 0.02],
+      "supportPistol": [0, 0.04, -0.08]
+    }
   }
 }

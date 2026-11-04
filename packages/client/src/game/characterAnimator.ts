@@ -1281,6 +1281,11 @@ export class CharacterAnimator {
         if (grip.style === 'long') cupHand(space, arms.l, aimM, this.ik);
         else gripHand(space, arms.l, aimM, 'support', this.ik);
       }
+      // This look's own turn of each hand about its fingers (the look's `whole.grip`): a hand whose measured frame
+      // leaves it standing on its edge on the gun.
+      const tune = this.ch.grip;
+      if (tune?.rollR) rollHand(space, arms.r, tune.rollR, this.ik);
+      if (tune?.rollL && grip.support) rollHand(space, arms.l, tune.rollL, this.ik);
     }
     // Where the weapon goes when gripped (world space).
     let gripped: { pos: Vector3; rot: Quaternion } | null = null;
@@ -1357,13 +1362,21 @@ export class CharacterAnimator {
     if (gripped && w > 0) {
       const outward = pos(arms.r.upper).subtract(pos(arms.l.upper)).normalize();
       const down = new Vector3(0, -1, 0);
+      // This look's own hands and arms (the look's `whole.grip`, GripTune); nothing moves for a look without one.
+      const tune = this.ch.grip;
+      const shift = (p: ModelPoint, by: readonly [number, number, number] | undefined): ModelPoint => (by ? [p[0] + by[0], p[1] + by[1], p[2] + by[2]] : p);
+      const gripAt = grip.style === 'long' ? shift(grip.grip, tune?.gripLong) : grip.grip;
+      if (support) support = shift(support, grip.style === 'long' ? tune?.supportLong : tune?.supportPistol);
       if (grip.style === 'long') {
-        solveArm(space, arms.r, palmOnGrip(arms.r, point(gripped.pos, gripped.rot, grip.grip), scale), pos(arms.r.upper).add(outward.scale(ELBOW_POLE_OUT)).add(down.scale(ELBOW_POLE_DOWN)), w);
+        const pole = pos(arms.r.upper)
+          .add(outward.scale(ELBOW_POLE_OUT + (tune?.elbowOut ?? 0) * scale))
+          .add(down.scale(ELBOW_POLE_DOWN + (tune?.elbowDown ?? 0) * scale));
+        solveArm(space, arms.r, palmOnGrip(arms.r, point(gripped.pos, gripped.rot, gripAt), scale), pole, w);
       }
-      closeHand(space, arms.r, w, point(gripped.pos, gripped.rot, grip.grip));
+      closeHand(space, arms.r, w * (tune?.curlR ?? 1), point(gripped.pos, gripped.rot, gripAt));
       if (support) {
         solveArm(space, arms.l, palmOnGrip(arms.l, point(gripped.pos, gripped.rot, support), scale, grip.style === 'long'), pos(arms.l.upper).subtract(outward.scale(0.1)).add(down.scale(0.4)), w);
-        closeHand(space, arms.l, w * supportCurl(grip), point(gripped.pos, gripped.rot, support));
+        closeHand(space, arms.l, w * supportCurl(grip) * (tune?.curlL ?? 1), point(gripped.pos, gripped.rot, support));
       }
     }
 
@@ -1673,6 +1686,16 @@ function gripHand(space: SkeletonSpace, arm: Arm, weapon: Matrix, role: 'grip' |
   const { up, ahead, right } = gunAxes(weapon);
   if (role === 'grip') turnHand(space, arm, ahead.scale(0.9).subtract(up.scale(0.35)), right.scale(-1), weight);
   else turnHand(space, arm, ahead.scale(0.7).add(right.scale(0.6)).subtract(up.scale(0.1)), right.scale(0.3).add(up.scale(0.95)), weight);
+}
+
+/** Turn a hand about its own finger axis by `angle` (radians; + turns the palm toward the thumb side), blended by `weight`. */
+function rollHand(space: SkeletonSpace, arm: Arm, angle: number, weight: number): void {
+  const along = handAxes(arm).along;
+  if (along.lengthSquared() < 1e-8 || weight <= 0) return;
+  arm.hand.computeWorldMatrix(true);
+  const wrist = arm.hand.getAbsolutePosition().clone();
+  const axis = space.point(wrist.add(along)).subtract(space.point(wrist)).normalize();
+  space.setRot(arm.hand, Quaternion.RotationAxis(axis, angle).multiply(space.rot(arm.hand)), weight);
 }
 
 /** World position of a hand's palm centre. */

@@ -37,6 +37,11 @@
     "hands": {
       "scale": 0.65,
       "curl": 1
+    },
+    "grip": {
+      "gripLong": [-0.06, 0, -0.03],
+      "supportLong": [-0.02, 0.04, 0.04],
+      "supportPistol": [-0.02, 0.04, -0.02]
     }
   }
 }

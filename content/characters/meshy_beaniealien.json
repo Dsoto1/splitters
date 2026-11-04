@@ -37,6 +37,12 @@
     "feet": true,
     "hands": {
       "scale": 0.7
+    },
+    "grip": {
+      "gripLong": [-0.045, 0, -0.045],
+      "supportLong": [-0.02, -0.02, 0],
+      "supportPistol": [0, 0.04, -0.08],
+      "curlL": 0.6
     }
   }
 }

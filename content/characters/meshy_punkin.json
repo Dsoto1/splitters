@@ -33,6 +33,10 @@
   },
   "fixes": {
     "triangles": 11000,
-    "feet": true
+    "feet": true,
+    "grip": {
+      "gripLong": [-0.06, 0, -0.03],
+      "supportPistol": [-0.02, 0.04, -0.06]
+    }
   }
 }

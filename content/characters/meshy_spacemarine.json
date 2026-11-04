@@ -43,6 +43,13 @@
       "forward": 0.06,
       "down": 0.1,
       "out": 0.08
+    },
+    "grip": {
+      "gripLong": [-0.06, 0, -0.045],
+      "supportLong": [0.06, -0.02, 0],
+      "supportPistol": [0, 0.02, -0.1],
+      "curlR": 1.6,
+      "curlL": 1.2
     }
   }
 }

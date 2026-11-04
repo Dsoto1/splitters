@@ -50,6 +50,17 @@
     },
     "headShare": 0.16,
     "handsShare": 0.08,
-    "normalSize": 1024
+    "normalSize": 1024,
+    "grip": {
+      "elbowOut": 0.1,
+      "elbowDown": 0.3,
+      "gripLong": [-0.015, 0.015, 0],
+      "supportLong": [0, 0.02, 0.06],
+      "supportPistol": [-0.02, 0.04, 0]
+    },
+    "hold": {
+      "out": 0.12,
+      "down": 0.04
+    }
   }
 }
