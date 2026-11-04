@@ -55,6 +55,7 @@ import { buildSpec, jointsFromLandmarks, readManifests } from './character-manif
 import { findLandmarks, landmarkPicture } from './landmarks.mjs';
 import { fbxToDocument } from './fbx.mjs';
 import { fitHands } from './hands.mjs';
+import { bodySkin, fingerSkin, fixBodySkin } from './skinfix.mjs';
 import { keepArmsToArms } from './armweights.mjs';
 import { SIDE_DEPTH, capTears, cleanSkin, tearStretched } from './skinclean.mjs';
 import { addLowDetail } from './character-lod.mjs';
@@ -953,7 +954,14 @@ async function build(c, src, out, { keep = () => true, ratio = FULL_RATIO, lod =
   // Cloth hanging off an arm goes with the body (armweights.mjs), then the hands are fitted without it.
   // Opt-in (fixes.armCloth), by distance along the surface.
   if (!fp && c.armCloth) keepArmsToArms({ meshes: [{ pos, J, W, idx: src.indices }], jointNames: rigNames, world: fitted, log: (l) => console.log(`  ${out} ${l}`) });
-  const hands = fitHands({ meshes: [{ pos, J, W }], jointNames: rigNames, world: fitted, rig: ual, overrides: c.hands, log: (l) => console.log(`  ${out} ${l}`) });
+  const hands = fitHands({ meshes: [{ pos, J, W }], jointNames: rigNames, world: fitted, rig: ual, overrides: c.hands, skin: fingerSkin(c.skin), log: (l) => console.log(`  ${out} ${l}`) });
+  // This look's own body skin fixes (fixes.skin: hops, clamp, smooth; skinfix.mjs), recorded on the skin.
+  const skinBody = bodySkin(c.skin);
+  if (skinBody) {
+    const parentOf = new Map(joints.map((j) => [j.getName(), j.getParentNode()?.getName()]));
+    fixBodySkin({ meshes: [{ pos, J, W, idx: src.indices }], jointNames: rigNames, parentOf, fix: skinBody, log: (l) => console.log(`  ${out} ${l}`) });
+    skin.setExtras({ ...skin.getExtras(), skinFix: skinBody });
+  }
   for (const [n, t] of hands.moved) target.set(n, t);
   for (const j of joints) if (hands.data[j.getName().slice(-1)] && j.getName().startsWith('hand_')) j.setExtras({ hand: hands.data[j.getName().slice(-1)] });
   for (const j of joints) {

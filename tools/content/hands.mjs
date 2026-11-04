@@ -18,6 +18,8 @@
 //   hand joints.
 // The thumb stays on the hand joint (the game never curls it; its joints move to fit the hand).
 // Manifest overrides (`fixes.hands`: palm, curl, scale, wrist, or per side under l / r) cover the odd model.
+// A look's own finger weighting (`fixes.skin`, skinfix.mjs: tips, knuckle, joints, lanes, fingers) changes how the
+// fingers are weighted, for that look only; without it every hand is weighted as before.
 
 const sub = (a, b) => [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
 const add = (a, b) => [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
@@ -287,7 +289,7 @@ export function fingerGaps(uvt, uK, u1) {
  * `fixes.hands`. Weights are rewritten in place (J, W); returns the new world
  * positions of the moved finger joints and the measurements per side.
  */
-export function fitHands({ meshes, jointNames, world, rig, overrides = {}, log = () => {} }) {
+export function fitHands({ meshes, jointNames, world, rig, overrides = {}, skin = {}, log = () => {} }) {
   const index = new Map(jointNames.map((n, i) => [n, i]));
   const moved = new Map();
   const data = {};
@@ -298,6 +300,8 @@ export function fitHands({ meshes, jointNames, world, rig, overrides = {}, log =
     const o = { ...overrides, ...(overrides[s] ?? {}) };
     delete o.l;
     delete o.r;
+    // This look's finger weighting (fixes.skin; defaults: as every other look's).
+    const sk = { ...skin, ...(skin?.[s] ?? {}) };
     const toLocal = (p) => qrot(qinv(H.q), sub(p, H.t));
     const toWorld = (p) => add(H.t, qrot(H.q, p));
     const chain = new Set([n.hand, ...n.fingers.flat(), ...n.thumb].map((x) => index.get(x)).filter((x) => x !== undefined));
@@ -343,7 +347,9 @@ export function fitHands({ meshes, jointNames, world, rig, overrides = {}, log =
     const uK = u0 + KNUCKLE_AT * span;
     const closed = hand.fist && o.curl === undefined;
     // `mitten`: the fingers bend together even where gaps are found (a thumb or a fold read as a gap crumpled them).
-    const gaps = closed || o.mitten ? null : fingerGaps(hand.uvt, uK, u1);
+    // (`fixes.skin.fingers: 'lanes'`: fused fingers, no gaps to find, split evenly across the hand into four.)
+    const lanesOnly = !closed && sk.fingers === 'lanes';
+    const gaps = lanesOnly ? [0.25, 0, -0.25].map((k) => vP + k * width) : closed || o.mitten ? null : fingerGaps(hand.uvt, uK, u1);
     const mode = closed ? 'none' : gaps ? 'split' : 'mitten';
     // How far the fingers close in the game: open hands all the way. A mitten curls as one wide finger, at the
     // knuckle line and at the two joints along it (bent once at the knuckles, as it was, it stood out from the gun
@@ -391,15 +397,36 @@ export function fitHands({ meshes, jointNames, world, rig, overrides = {}, log =
 
     // Weights: what the hand chain holds is shared out again, so running this twice gives the same.
     const fingerIdx = n.fingers.map((c) => c.slice(0, 3).map((x) => index.get(x)));
-    const band = 0.1 * span;
+    const band = (sk.knuckle ?? 0.1) * span;
+    // Each finger's share of a vertex across the hand: its own finger's, or (`fixes.skin.lanes`) blended with the
+    // next finger's near the boundary between them (half each on it), so split fingers bend apart without tearing.
+    const bounds = gaps && gaps.length === 3 ? gaps : null;
+    const spacing = width / 4;
+    const sharesOf = (v) => {
+      const f = mode === 'mitten' ? 1 : groupOf(v);
+      if (!bounds || !sk.lanes) return [[f, 1]];
+      const reach = sk.lanes * spacing;
+      for (const [b, other] of [[bounds[f - 1], f - 1], [bounds[f], f + 1]]) {
+        if (b === undefined) continue;
+        const d = Math.abs(v - b);
+        if (d < reach) {
+          const k = 0.5 * (1 - smooth(0, reach, d));
+          return [[f, 1 - k], [other, k]];
+        }
+      }
+      return [[f, 1]];
+    };
     let weighted = 0;
     for (const m of meshes) {
       const mine = m === main ? verts : pick(m, loose);
       for (const v of mine) {
         const p = toLocal([m.pos[v * 3], m.pos[v * 3 + 1], m.pos[v * 3 + 2]]);
-        // A stray keeps its weights (armweights.mjs gives it to the body it hangs from).
-        if (Math.hypot(...sub(p, hand.core.centre)) > hand.core.reach) continue;
         const u = dot(p, along);
+        // A stray keeps its weights (armweights.mjs gives it to the body it hangs from)... except (`fixes.skin.tips`)
+        // past the knuckle line, no further out than this share of the hand's span past the fingertips: a long
+        // fingertip measured out as a stray stayed on the hand while the rest of its finger curled (Zombie Soldier
+        // A's needle).
+        if (Math.hypot(...sub(p, hand.core.centre)) > hand.core.reach && !(sk.tips && mode !== 'none' && u > uK && u < u1 + sk.tips * span)) continue;
         const acc = new Map();
         let held = 0;
         for (let q = 0; q < 4; q++) {
@@ -415,15 +442,16 @@ export function fitHands({ meshes, jointNames, world, rig, overrides = {}, log =
         const past = mode === 'none' ? 0 : smooth(uK - band, uK + band, u);
         put(hi, held * (1 - past));
         if (past > 0) {
-          {
-            const f = mode === 'mitten' ? 1 : groupOf(dot(p, across));
+          for (const [f, share] of sharesOf(dot(p, across))) {
             const len = Math.max(0.015, tips[f] - uK);
-            const b = 0.08 * len;
+            // (`fixes.skin.joints`: a wider blend at each finger joint, so a long thin finger bends round, not in kinks.)
+            const b = (sk.joints ?? 0.08) * len;
             const s2 = smooth(uK + FINGER_JOINTS[0] * len - b, uK + FINGER_JOINTS[0] * len + b, u);
             const s3 = smooth(uK + FINGER_JOINTS[1] * len - b, uK + FINGER_JOINTS[1] * len + b, u);
-            put(fingerIdx[f][0], held * past * (1 - s2));
-            put(fingerIdx[f][1], held * past * s2 * (1 - s3));
-            put(fingerIdx[f][2], held * past * s2 * s3);
+            const h = held * past * share;
+            put(fingerIdx[f][0], h * (1 - s2));
+            put(fingerIdx[f][1], h * s2 * (1 - s3));
+            put(fingerIdx[f][2], h * s2 * s3);
           }
           weighted++;
         }
