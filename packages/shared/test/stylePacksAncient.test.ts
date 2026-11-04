@@ -35,11 +35,11 @@ type Tile = MapDocument['classicStructure']['tiles'][number];
 const t = (id: string, tile: string, x: number, y: number, z = 0, rotation: Rotation = 0, extra: Partial<Tile> = {}): Tile => ({ id, tile, x, y, z, rotation, ...extra });
 
 describe('Style Packs 03 Imperial Arena and 09 Sands of Egypt', () => {
-  it('Sands of Egypt lives on inside 09 Desert City (which replaced it): its 26 pieces stay defined and listed', () => {
+  it('Sands of Egypt lives on inside 09 Desert City (which replaced it): its 27 pieces (the Pyramidion added) stay defined and listed', () => {
     expect(getStylePack('egypt')).toBeUndefined();
     const pack = getStylePack('desert')!;
     const egypt = [...pack.tiles.filter((x) => x.startsWith('egypt.')), ...pack.props.filter((p) => getProp(p)?.category === 'Sands of Egypt')];
-    expect(egypt.length).toBe(26);
+    expect(egypt.length).toBe(27);
     expect(pack.themes).toContain('core.egypt');
     expect(pack.gameplay).toContain('portal');
   });
