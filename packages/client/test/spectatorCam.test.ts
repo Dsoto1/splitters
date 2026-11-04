@@ -40,29 +40,66 @@ describe('spectator camera', () => {
 
   it('turns from where you looked to the killer, from behind your body, and ends on time', () => {
     const cam = new SpectatorCam();
-    cam.startKillCam({ killer: 3, weapon: 'core.pistol', body: { x: 0, y: 0, z: 0 }, from: null, yaw: Math.PI, pitch: 0, now: 0 });
+    cam.startKillCam({ killer: 3, weapon: 'core.pistol', body: { x: 0, y: 0, z: 0 }, from: null, yaw: Math.PI, pitch: 0 });
     const killer = { x: 10, y: 1.3, z: 0 };
     const start = cam.killCamPose(0, killer, noWalls)!;
     expect(start.yaw).toBeCloseTo(Math.PI);
-    const settled = cam.killCamPose(1000, killer, noWalls)!;
+    let settled = start;
+    for (let t = 16; t <= 1000; t += 16) settled = cam.killCamPose(t, killer, noWalls)!;
     // Behind the body (away from the killer) and above it, looking at them.
     expect(settled.pos.x).toBeLessThan(0);
     expect(settled.pos.y).toBeGreaterThan(1.6);
     expect(settled.yaw).toBeCloseTo(lookAngles(settled.pos, killer).yaw);
     // The killer drops out of view: it keeps looking where they were last seen.
-    expect(cam.killCamPose(1100, null, noWalls)!.yaw).toBeCloseTo(settled.yaw);
-    expect(cam.killCam(1000)).toMatchObject({ killer: 3, weapon: 'core.pistol' });
-    expect(cam.killCam(KILL_CAM_SECONDS * 1000 + 1)).toBeNull();
+    expect(cam.killCamPose(1008, null, noWalls)!.yaw).toBeCloseTo(settled.yaw);
+    expect(cam.killCam()).toMatchObject({ killer: 3, weapon: 'core.pistol' });
+    // Drawn at 60 fps, it lasts KILL_CAM_SECONDS.
+    let t = 1008;
+    while (cam.killCam() && t < 10000) cam.killCamPose((t += 16), killer, noWalls);
+    expect(t).toBeGreaterThanOrEqual(KILL_CAM_SECONDS * 1000);
+    expect(t).toBeLessThan(KILL_CAM_SECONDS * 1000 + 50);
+    expect(cam.killCamEnd).toBe('over');
+  });
+
+  it('counts only the time it was drawn: a hitch does not use it up unseen', () => {
+    const cam = new SpectatorCam();
+    cam.startKillCam({ killer: 3, weapon: 'core.pistol', body: { x: 0, y: 0, z: 0 }, from: null, yaw: 0, pitch: 0 });
+    // Not drawn yet (the death came in during a long frame): still all to see.
+    expect(cam.killCam()!.left).toBeCloseTo(KILL_CAM_SECONDS);
+    cam.killCamPose(5000, null, noWalls);
+    // A frame every 2 s (a loaded page): each counts a quarter second, so it stays up for 14 more frames.
+    cam.killCamPose(7000, null, noWalls);
+    expect(cam.killCam()!.left).toBeCloseTo(KILL_CAM_SECONDS - 0.25);
+    let frames = 2;
+    for (let t = 9000; cam.killCam() && frames < 100; t += 2000) {
+      cam.killCamPose(t, null, noWalls);
+      frames++;
+    }
+    expect(frames).toBe(KILL_CAM_SECONDS / 0.25 + 1);
+  });
+
+  it('a key skips it, and says so; a reset forgets', () => {
+    const cam = new SpectatorCam();
+    cam.startKillCam({ killer: 3, weapon: 'core.pistol', body: { x: 0, y: 0, z: 0 }, from: null, yaw: 0, pitch: 0 });
+    cam.killCamPose(0, null, noWalls);
+    expect(cam.killCamEnd).toBeNull();
+    cam.endKillCam();
+    expect(cam.killCam()).toBeNull();
+    expect(cam.killCamEnd).toBe('skipped');
+    cam.reset();
+    expect(cam.killCamEnd).toBeNull();
   });
 
   it('looks where the shot came from when the killer was never in view, and is pulled in by walls', () => {
     const cam = new SpectatorCam();
     const from = { x: 0, y: 1.5, z: 20 };
-    cam.startKillCam({ killer: 9, weapon: 'core.rifle', body: { x: 0, y: 0, z: 0 }, from, yaw: 0, pitch: 0, now: 0, seconds: 2 });
-    const pose = cam.killCamPose(2000 - 1, null, () => 0.5)!;
+    cam.startKillCam({ killer: 9, weapon: 'core.rifle', body: { x: 0, y: 0, z: 0 }, from, yaw: 0, pitch: 0, seconds: 2 });
+    let pose = cam.killCamPose(0, null, () => 0.5)!;
+    for (let t = 20; t < 2000; t += 20) pose = cam.killCamPose(t, null, () => 0.5)!;
     expect(pose.yaw).toBeCloseTo(lookAngles(pose.pos, from).yaw);
     expect(Math.hypot(pose.pos.x, pose.pos.y - 1.6, pose.pos.z)).toBeLessThan(0.5);
-    expect(cam.killCam(2000)).toBeNull();
+    cam.killCamPose(2000, null, () => 0.5);
+    expect(cam.killCam()).toBeNull();
   });
 
   it('flies the free camera along the view and keeps it inside the bounds', () => {

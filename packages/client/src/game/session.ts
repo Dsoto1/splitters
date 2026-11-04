@@ -826,9 +826,9 @@ export class GameSession {
   }
 
   /** For browser tests: what the out-of-play camera is doing. */
-  private specState(): { spectator: boolean; can: boolean; out: boolean; killCam: number | null; following: number; free: boolean; camera: Vec3; rule: SpectateRule } {
+  private specState(): { spectator: boolean; can: boolean; out: boolean; killCam: number | null; killCamEnd: 'skipped' | 'over' | null; following: number; free: boolean; camera: Vec3; rule: SpectateRule } {
     const c = this.view.cameraPosition();
-    return { spectator: this.spectator, can: this.canSpectate, out: this.outOfPlay, killCam: this.specCam.killCam(performance.now())?.killer ?? null, following: this.specCam.following, free: this.specCam.free, camera: { x: c.x, y: c.y, z: c.z }, rule: this.spectateRule() };
+    return { spectator: this.spectator, can: this.canSpectate, out: this.outOfPlay, killCam: this.specCam.killCam()?.killer ?? null, killCamEnd: this.specCam.killCamEnd, following: this.specCam.following, free: this.specCam.free, camera: { x: c.x, y: c.y, z: c.z }, rule: this.spectateRule() };
   }
 
   /** Who you may watch and whether the free camera is yours (spectatorCam.ts spectateRule). */
@@ -1962,7 +1962,7 @@ export class GameSession {
     const hit = this.lastHitBy && this.lastHitBy.slot === killer && now - this.lastHitBy.at < 3000 ? this.lastHitBy.from : null;
     const delay = (this.rules?.respawnDelayTicks ?? 0) / TICK_RATE;
     const seconds = Math.max(KILL_CAM_SECONDS, delay > 0 && delay <= KILL_CAM_SECONDS + 1 ? delay + 0.5 : 0);
-    this.specCam.startKillCam({ killer, weapon, body: this.drawnPos, from: hit, yaw: this.input.yaw, pitch: this.input.pitch, now, seconds });
+    this.specCam.startKillCam({ killer, weapon, body: this.drawnPos, from: hit, yaw: this.input.yaw, pitch: this.input.pitch, seconds });
   }
 
   /**
@@ -1974,7 +1974,7 @@ export class GameSession {
     const cast = (o: Vec3, d: Vec3, len: number) => local.physics.raycastWorld(o, d, len);
     const poses = this.interp.sample(now);
     const rule = this.spectateRule();
-    const kc = this.spectator ? null : this.specCam.killCam(now);
+    const kc = this.spectator ? null : this.specCam.killCam();
     if (kc) {
       // Any spectator key skips it.
       if (picks.step || picks.toggle) {

@@ -50,6 +50,60 @@ docs/CONTENT_SCALABILITY.md "Weapons as data", all five steps; how to add a weap
   always regenerates shared code anyway); stopping power by category stays in `sim/impact.ts`; the menu could
   import a small weapon-name list instead of the whole table (CONTENT_SCALABILITY step 1 note).
 
+### Character fixes 2: Imp portrait, bodies, shoulders, faces (`wip/char-fixes-2`, agent, 2026-11-03; pushed, not merged; from main 716c012)
+Continues the entry below (owner's notes of 3 Nov). Evidence (before/after screenshots, audits, raw comparisons): agent
+scratchpad `charfix2/`.
+- **Imp portrait** framed on its top 42 % (portraits.ts `CREATURE_TOPS`), recaptured.
+- **Bodies:** Character Select draws each look at its size class (menuScene.ts: small 1.40 m, large 2.12 m), which
+  is what made Goblina and the Space Marine (both already small) look too big. Honest Abe `"size": "large"` (gameplay:
+  speed x0.94, 115 health). Goblina: `lean.neck` 0 (was 10) and `lean.Head` 18, rebuilt from her rigged download
+  (meshy-drive `skin-fix-rig/meshy_grizzelda.glb`). Goblina and the Space Marine were not made smaller than small: at
+  their size class they read small next to a standard look (`charfix2/select-after-heroes.png`); a further shrink would
+  need a new size class or a visual scale that disagrees with the hit box: owner to say.
+- **Shoulders (every character, long guns):** `LONG_GUN_BLADE` 0.45 -> 0.22, stock pocket 7 -> 4 cm inside the shoulder
+  (`POCKET_IN`), shooting elbow aimed out and less down (`ELBOW_POLE_OUT/DOWN` 0.45/0.18, were 0.35/0.3): the right
+  arm stands out from the chest instead of running along it (Santa, Zombie Soldier A). Grip audit (rifle+pistol, 29
+  looks): before 101 / 21 flagged, after 106 / 22 (Anoobys +3 back, Beanie Alien +2 off, Honest Abe +3 flat, Shade -3).
+- **Hands/fingers: NOT fixed.** Tried and reverted: palm 0.3 hand-lengths further along the grip and a gentler curl
+  (audit 201, every hand drawn off its point); `mitten` for 11 looks and `wrist` for the Otter via rehand-built (no
+  visible change; the Otter measured worse). What the sheets show (`charfix2/hands-all1-p*.png`): the support hand lies
+  flat under the handguard with its fingers straight out (Abe, Gorgle, Zhao, Punkin, Shade), and split fingers crumple
+  when the shooting hand closes fully (Desert Ranger, Grunt '68). Next: curl the support fingers about the handguard's
+  axis rather than the hand's own, and cap the curl per joint for low-poly hands. The Imp (bots only now) holds its
+  left claw above the handguard: creatureAnimator `holdWith`, not touched.
+- **Faces (pipeline, tools/content):** `finish.maps` keeps the download's metal-roughness map (Grinning Gus: black
+  chrome; Dog Tag Doyle: glossy, and rebaked at 17k with `headShare` 0.24). Rebaked characters' own normal maps were read
+  as a download's (`DOWNLOAD_GREEN`) in the final bake: fixed (`hiGreen`), Cal's cheek line and Sgt. Mackie's wedge
+  gone; Bonesworth, Elder Tomo (centre seam gone), Thornweaver and Goblina rebuilt with it. Barnaby, Slugger and Rusty
+  Mech are rebakes with the same bug, NOT rebuilt (downloads in meshy-drive `build-newchars/`, `tposes-2026-11-01/`; check
+  each against its download). Uncut downloads (a low-poly download within budget) ship the download's own normal map
+  with no TANGENT attribute and padded gutters: Biker Gang Girl's nose wedge gone; Kenji rebuilt the same way (his pale
+  fringe patch is in the download itself: `charfix2/raw-faces-1.jpg`). WWII Infantry and Stealth Operative are All
+  Animations downloads and would change on rebuild (not rebuilt). Comparison tool: `charfix2/tools/cmp.mjs` (raw / old /
+  new in their rest pose, same light and framing; serve the files under `public/zz-charfix-raw`, never commit it).
+
+### E2E flakes: dedicatedhost, offline, handoff, lobby (`wip/flaky-e2e`, agent, 2026-11-04; not merged)
+Four flows that failed on CI's slow software-rendered pages (1–2 fps). No check skipped or loosened.
+- **dedicatedhost, Kick:** idle takeover. The visitor (after its walk) and the owner (in the pause menu) sit still
+  for minutes; after 90 s (`AWAY.afkSeconds`) a bot plays for each, `match.roster()` marks them `bot`, and the
+  admin's player list (people only, `session.peopleIn`) drops the visitor's Kick button. Fix: the flow starts the
+  Host Service with its own setting `AFK_SECONDS=0`. (The idle rules have unit tests.)
+- **offline, kill cam / skip:** the kill cam was 3.5 s of wall clock from the death message, so one long frame
+  ate it unseen, and the Space meant to skip it then toggled the free camera. Fix (product): its time is the
+  time it's drawn, each frame counting at most 0.25 s (`spectatorCam.ts` `KILL_CAM_FRAME_MS`, as session.ts caps a
+  frame's step). Same on a normal machine. `spec().killCamEnd` ('skipped' | 'over') lets the flow prove the skip
+  rather than a timeout. **Join game:** the bots weren't held, so one could shoot the player between "alive" and
+  the check; the flow holds them (`holdBots`) and checks the alive it waited for.
+- **handoff:** the friends never touched their controls, so after 90 s they were "away", and an away friend is
+  no successor (`matchHost.tendSuccessor`): the successor, its checkpoints and the takeover went with it. Fix:
+  each friend looks about (a small turn every 3 s) from the moment it's in; both joins wait in parallel. The
+  **404** on every page was the hub's `/api/v1/maps` with publishing off (no `PUBLISHED_MAPS_DIR`, as in e2e and
+  any community hub): it now answers an empty list (`publish.ts noPublishingHandler`), and the flow names any
+  failed request in its log.
+- **lobby, 2 players:** the check waited 30 s for a check-in that comes every 20 s (`LOBBY_HEARTBEAT_SECONDS`) on
+  the host page's timer, late on heavy Sandgate. It now waits for two of the host's check-ins (its PUTs) after the
+  join, then the listing must say 2: independent of map weight.
+
 ### Content scalability step 1: the menu's first download (`wip/menu-bundle`, agent, 2026-11-03; not merged; rebased on main 51519b2)
 docs/CONTENT_SCALABILITY.md step 1. **Menu's first JS 837.0 -> 649.0 kB gzip** (2970 -> 2305 kB raw, on main 51519b2; `index` 396.1 ->
 208.1 kB gzip; `babylon` and `vendor` unchanged). Budget left at 840 kB (now ~190 kB of room). How it works:

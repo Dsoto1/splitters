@@ -56,6 +56,9 @@ const PORTRAIT_VIEWS: Record<string, PortraitView> = {
   'core.saintnick': { aim: [0, -0.12, 0], zoom: 1.1 },
 };
 
+/** Creatures framed on the top share of their body instead of whole (owner, 2026-11-03: "zoom in on the imp thumbnail"). */
+const CREATURE_TOPS: Partial<Record<string, number>> = { imp: 0.42 };
+
 /**
  * Character portraits rendered from our own 3D characters (never painted
  * art): each look is built in a private scene, framed head and shoulders,
@@ -158,7 +161,7 @@ export class PortraitRenderer {
         anim.update(0.1, { speed: 0, moveAngle: 0, airborne: false, alive: true, pitch: 0, celebrate: false });
         this.scene.render();
       }
-      this.frameBody(ch.meshes);
+      this.frameBody(ch.meshes, CREATURE_TOPS[kind]);
       return await this.snap(ch.meshes);
     } finally {
       anim.dispose();
@@ -208,10 +211,12 @@ export class PortraitRenderer {
   }
 
   /** A creature (or anything without a head joint), whole, seen three-quarter from the front: they come in every shape. */
-  private frameBody(meshes: AbstractMesh[]): void {
+  private frameBody(meshes: AbstractMesh[], top?: number): void {
     const { min, max } = bounds(meshes);
-    const size = Math.min(6, Math.max(0.4, max.y - min.y, (max.x - min.x) * 0.8, (max.z - min.z) * 0.8));
-    const at = new Vector3((min.x + max.x) / 2, min.y + (max.y - min.y) * 0.55, (min.z + max.z) / 2);
+    // `top`: only the top share of the body, head and shoulders (a tall, thin creature whole is a speck in the tile).
+    const h = (max.y - min.y) * (top ?? 1);
+    const size = Math.min(6, Math.max(0.3, h, top ? 0 : (max.x - min.x) * 0.8, top ? 0 : (max.z - min.z) * 0.8));
+    const at = new Vector3((min.x + max.x) / 2, top ? max.y - h * 0.5 : min.y + (max.y - min.y) * 0.55, (min.z + max.z) / 2);
     const dist = (size * 1.15) / (2 * Math.tan(this.camera.fov / 2));
     const from = new Vector3(0.45, 0.25, 1).normalize();
     this.camera.position.copyFrom(at.add(from.scale(dist)));

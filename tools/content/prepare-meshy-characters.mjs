@@ -60,7 +60,7 @@ import { SIDE_DEPTH, capTears, cleanSkin, tearStretched } from './skinclean.mjs'
 import { addLowDetail } from './character-lod.mjs';
 import { clipSet, writeClipSet } from './clip-set.mjs';
 import { meshyName } from './retarget.mjs';
-import { HANDS_SHARE, HEAD_SHARE, bakeNormals, cutKeeping, normalJpeg, rebake, seamAwareSimplify } from './meshy-mesh.mjs';
+import { GREEN, HANDS_SHARE, HEAD_SHARE, bakeNormals, padCharts, cutKeeping, normalJpeg, rebake, seamAwareSimplify } from './meshy-mesh.mjs';
 import { writeLock } from './lockfile.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
@@ -238,6 +238,8 @@ async function readMeshy(file, ual, c) {
   let baseColor = material.getBaseColorTexture()?.getImage();
   if (!baseColor) throw new Error(`${file}: no base colour texture`);
   let normalMap = material.getNormalTexture()?.getImage() ?? null;
+  let metalRough = c.finishMaps ? (material.getMetallicRoughnessTexture()?.getImage() ?? null) : null;
+  let ownNormalMap = false;
   if (c.surface === 'rebake') {
     // Cut to the budget with the seams closed and painted afresh (rebakeDownload), in the mesh's own bind pose; each
     // vertex kept is one of the download's, so it keeps its skin weights. The head and hands are the vertices mostly
@@ -247,7 +249,7 @@ async function readMeshy(file, ual, c) {
       for (let k = 1; k < 4; k++) if (W[v * 4 + k] > W[v * 4 + b]) b = k;
       return names[J[v * 4 + b]];
     };
-    const out = await rebakeDownload({ P, N, UV, I: indices }, baseColor, normalMap, c.triangles ?? 11000, [
+    const out = await rebakeDownload({ P, N, UV, I: indices }, baseColor, normalMap, c.triangles ?? 11000, metalRough, [
       { inside: (v) => /^(Head|head_end|headfront)$/.test(major(v)), share: c.headShare ?? HEAD_SHARE },
       { inside: (v) => /Hand/.test(major(v)), share: c.handsShare ?? REBAKE_HANDS_SHARE },
     ]);
@@ -258,6 +260,8 @@ async function readMeshy(file, ual, c) {
       W2.set(W.subarray(v * 4, v * 4 + 4), i * 4);
     });
     [P, N, UV, indices, J, W, baseColor, normalMap] = [out.P, out.N, out.UV, out.I, J2, W2, Buffer.from(out.colour), out.normal];
+    metalRough = out.metalRough;
+    ownNormalMap = true;
   }
   const index = new Map(names.map((n, i) => [n, i]));
   const parent = joints.map((j) => (j.getParentNode() ? (index.get(nameOf(j.getParentNode())) ?? -1) : -1));
@@ -272,6 +276,8 @@ async function readMeshy(file, ual, c) {
     indices,
     baseColor,
     normalMap,
+    metalRough,
+    ownNormalMap,
   };
   return pose(skel, verts, ual, c);
 }
@@ -480,6 +486,8 @@ function pose(skel, verts, ual, c) {
     indices: out.indices,
     baseColor: verts.baseColor,
     normalMap: verts.normalMap ?? null,
+    metalRough: verts.metalRough ?? null,
+    ownNormalMap: verts.ownNormalMap ?? false,
   };
 }
 
@@ -586,7 +594,8 @@ async function readUnrigged(file, c, ual) {
       if (!image) throw new Error(`${file}: no base colour texture`);
       const normalImage = glb ? (mat?.getNormalTexture()?.getImage() ?? null) : existsSync(file.replace(/\.fbx$/i, '_normal.png')) ? readFileSync(file.replace(/\.fbx$/i, '_normal.png')) : null;
       const full = { P: pos, N: new Float32Array(p.getAttribute('NORMAL').getArray()), UV: new Float32Array(p.getAttribute('TEXCOORD_0').getArray()), I: new Uint32Array(p.getIndices().getArray()) };
-      rebaked = await rebakeDownload(full, image, normalImage, c.triangles ?? 11000, [{ ...parts[0], share: c.headShare ?? HEAD_SHARE }, { ...parts[1], share: c.handsShare ?? REBAKE_HANDS_SHARE }]);
+      const mrImage = glb && c.finishMaps ? (mat?.getMetallicRoughnessTexture()?.getImage() ?? null) : null;
+      rebaked = await rebakeDownload(full, image, normalImage, c.triangles ?? 11000, mrImage, [{ ...parts[0], share: c.headShare ?? HEAD_SHARE }, { ...parts[1], share: c.handsShare ?? REBAKE_HANDS_SHARE }]);
       const acc = (type, array) => doc.createAccessor().setType(type).setArray(array).setBuffer(doc.getRoot().listBuffers()[0]);
       p.setAttribute('POSITION', acc('VEC3', rebaked.P)).setAttribute('NORMAL', acc('VEC3', rebaked.N)).setAttribute('TEXCOORD_0', acc('VEC2', rebaked.UV)).setIndices(acc('SCALAR', rebaked.I));
       for (const sem of p.listSemantics()) if (!['POSITION', 'NORMAL', 'TEXCOORD_0'].includes(sem)) p.setAttribute(sem, null);
@@ -656,11 +665,13 @@ async function readUnrigged(file, c, ual) {
   // The base colour: the GLB's own, or the map beside the FBX (Meshy embeds it too, but not every download links it).
   let baseColor;
   let normalMap = null;
+  let metalRough = null;
   if (glb) {
     const image = prim.getMaterial()?.getBaseColorTexture()?.getImage();
     if (!image) throw new Error(`${file}: no base colour texture`);
     baseColor = Buffer.from(image);
     normalMap = prim.getMaterial()?.getNormalTexture()?.getImage() ?? null;
+    if (c.finishMaps) metalRough = prim.getMaterial()?.getMetallicRoughnessTexture()?.getImage() ?? null;
   } else {
     const png = file.replace(/\.fbx$/i, '.png');
     if (!existsSync(png)) throw new Error(`${file}: no base colour map ${basename(png)} beside it`);
@@ -668,7 +679,7 @@ async function readUnrigged(file, c, ual) {
     const normal = file.replace(/\.fbx$/i, '_normal.png');
     if (existsSync(normal)) normalMap = readFileSync(normal);
   }
-  if (rebaked) [baseColor, normalMap] = [Buffer.from(rebaked.colour), rebaked.normal];
+  if (rebaked) [baseColor, normalMap, metalRough] = [Buffer.from(rebaked.colour), rebaked.normal, rebaked.metalRough];
   const src = pose(
     { names, parent: FBX_JOINTS.map(([, p]) => (p ? index.get(p) : -1)), rest: names.map(at) },
     {
@@ -680,6 +691,8 @@ async function readUnrigged(file, c, ual) {
       indices,
       baseColor,
       normalMap,
+      metalRough,
+      ownNormalMap: !!rebaked,
     },
     ual,
     c,
@@ -783,7 +796,7 @@ const REBAKE_HANDS_SHARE = 0.08;
  * vertex index and its position. Returns { P, N, UV, I, from, colour, normal }: `from[i]` is the download vertex the
  * new vertex i is (the cut only removes vertices), for its skin weights.
  */
-async function rebakeDownload(mesh, image, normalImage, target, parts) {
+async function rebakeDownload(mesh, image, normalImage, target, metalRoughImage, parts) {
   const { P, N, UV, I } = mesh;
   const n = P.length / 3;
   const index = new Uint32Array(n);
@@ -819,7 +832,16 @@ async function rebakeDownload(mesh, image, normalImage, target, parts) {
   let [lo, hi] = [Infinity, -Infinity];
   for (let v = 1; v < P.length; v += 3) [lo, hi] = [Math.min(lo, P[v]), Math.max(hi, P[v])];
   const { png } = await bakeNormals({ P: out.pos, N: out.nrm, UV: out.uv, idx: out.idx }, { P, N, UV, I }, { size: REBAKE_SIZE, reach: (hi - lo) * REBAKE_REACH * 1.5, hiMap });
-  return { P: out.pos, N: out.nrm, UV: out.uv, I: out.idx, from: Uint32Array.from(out.from, (k) => first[k]), colour: out.jpeg, normal: png };
+  // The download's metal-roughness map (`finish.maps`), painted into the same new layout: the cut and the charts don't
+  // depend on the map painted, so a second pass lays out the same charts.
+  let metalRough = null;
+  if (metalRoughImage) {
+    const mr = await sharp(Buffer.from(metalRoughImage)).removeAlpha().raw().toBuffer({ resolveWithObject: true });
+    const again = await rebake({ pos, idx: cut }, { P, I, UV }, mr, REBAKE_SIZE, 0.008, { grow: REBAKE_GROW, crease: -1, reach: REBAKE_REACH, dense });
+    if (again.uv.length !== out.uv.length || again.uv.some((u, i) => Math.abs(u - out.uv[i]) > 1e-6)) throw new Error('metal-roughness rebake laid out different charts');
+    metalRough = Buffer.from(again.jpeg);
+  }
+  return { P: out.pos, N: out.nrm, UV: out.uv, I: out.idx, from: Uint32Array.from(out.from, (k) => first[k]), colour: out.jpeg, normal: png, metalRough };
 }
 
 /** Every group of vertices at one position given the same skin: their weights summed per joint, the four largest kept. */
@@ -955,10 +977,19 @@ async function build(c, src, out, { keep = () => true, ratio = FULL_RATIO, lod =
 
   const buffer = root.listBuffers()[0] ?? doc.createBuffer();
   const acc = (type, array) => doc.createAccessor().setType(type).setArray(array).setBuffer(buffer);
-  const jpeg = await sharp(await scrub(src.baseColor, c.scrubBlue)).resize(1024, 1024).jpeg({ quality: 86 }).toBuffer();
+  // The download's own layout: its gutters filled before it is shrunk (padCharts; a rebake fills its own).
+  const padded = (image) => (src.ownNormalMap ? Buffer.from(image) : padCharts(image, src.uv, src.indices));
+  const jpeg = await sharp(await scrub(await padded(src.baseColor), c.scrubBlue)).resize(1024, 1024).jpeg({ quality: 86 }).toBuffer();
   const tex = doc.createTexture(`${c.id}_albedo`).setImage(new Uint8Array(jpeg)).setMimeType('image/jpeg');
   // The game leaves materials it doesn't recognise as they are (textureFor), so this one keeps its texture.
   const material = doc.createMaterial(`MI_Meshy_${c.id}`).setBaseColorTexture(tex).setMetallicFactor(c.metallic).setRoughnessFactor(c.roughness);
+  // `finish.maps`: the download's metal-roughness map (G roughness, B metal) at half the colour map's size; the
+  // factors are then the download's own (1), as glTF multiplies them in. Grinning Gus's and Dog Tag Doyle's black
+  // chrome skulls came out matte white with one finish for the whole body.
+  if (src.metalRough) {
+    const mr = await sharp(await padded(src.metalRough)).resize(512, 512).removeAlpha().jpeg({ quality: 85 }).toBuffer();
+    material.setMetallicRoughnessTexture(doc.createTexture(`${c.id}_metalrough`).setImage(new Uint8Array(mr)).setMimeType('image/jpeg')).setMetallicFactor(1).setRoughnessFactor(1);
+  }
   const prim = doc
     .createPrimitive()
     .setMaterial(material)
@@ -1006,10 +1037,19 @@ async function build(c, src, out, { keep = () => true, ratio = FULL_RATIO, lod =
   // The shape the cut took away (and the download's own normal map) as a normal map in the download's texture
   // layout, drawn with the TANGENT attribute: without it the cut body shades as flat facets.
   const normalSize = c.normalSize ?? NORMAL_SIZE;
-  if (normalSize) {
+  if (normalSize && !(ratio < 1) && src.normalMap && !src.ownNormalMap) {
+    // Not cut (a low-poly download within its budget: Biker Gang Girl's, Kenji's): the download's own normal map on its
+    // own texture layout, drawn as the download is (no TANGENT attribute: the texel's own derivatives). Baked again
+    // into per-vertex frames it drew a pale wedge down Biker Gang Girl's nose where her face's charts meet mirrored;
+    // with the download's map the build shades as the download does (agent scratchpad charfix2/swap-biker.jpg).
+    material.setNormalTexture(doc.createTexture(`${c.id}_normal`).setImage(new Uint8Array(await normalJpeg(await padCharts(src.normalMap, src.uv, src.indices), normalSize))).setMimeType('image/jpeg'));
+  } else if (normalSize) {
     const hiMap = src.normalMap ? await sharp(Buffer.from(src.normalMap)).removeAlpha().raw().toBuffer({ resolveWithObject: true }) : null;
     const low = { P: prim.getAttribute('POSITION').getArray(), N: prim.getAttribute('NORMAL').getArray(), UV: prim.getAttribute('TEXCOORD_0').getArray(), idx: prim.getIndices().getArray() };
-    const { tangents, png } = await bakeNormals(low, high, { size: normalSize * 2, reach: HEIGHT * 0.03, hiMap });
+    // A rebaked character's map is our own bake (rebakeDownload), in our green, not the download's: read as the
+    // download's it was bent in upside down, lighting the faces' detail from below (Cal's cheek line, Sgt. Mackie's
+    // dark wedge; 2026-11-03).
+    const { tangents, png } = await bakeNormals(low, high, { size: normalSize * 2, reach: HEIGHT * 0.03, hiMap, ...(src.ownNormalMap ? { hiGreen: GREEN } : {}) });
     prim.setAttribute('TANGENT', acc('VEC4', tangents));
     material.setNormalTexture(doc.createTexture(`${c.id}_normal`).setImage(new Uint8Array(await normalJpeg(png, normalSize))).setMimeType('image/jpeg'));
   }
