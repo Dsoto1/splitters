@@ -48,7 +48,8 @@ export interface CreatureSpec {
 }
 
 export const CREATURE_SPECS: Record<CreatureModel, CreatureSpec> = {
-  imp: { model: 'creatures/imp.glb', scale: 1, hover: 0, body: 'humanoid' },
+  // Its left claw stood above a long gun's handguard, claws up: down under it, turned and closed round it.
+  imp: { model: 'creatures/imp.glb', scale: 1, hover: 0, body: 'humanoid', grip: { supportLong: [0, -0.05, 0], rollL: -0.8, curlL: 1.3 } },
   puglin: { model: 'creatures/puglin.glb', scale: 1.2, hover: 0, body: 'humanoid' },
   cyclops: { model: 'creatures/cyclops.glb', scale: 1, hover: 0.25, body: 'alien' },
   oculus: { model: 'creatures/oculus.glb', scale: 1, hover: 0.5, body: 'alien' },
