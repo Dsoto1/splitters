@@ -4115,7 +4115,8 @@ async function dedicatedhostFlow(browser) {
     if (!adminIn) console.log(readFileSync(join(hostState, 'logs', 'host.log'), 'utf8').split('\n').slice(-25).join('\n'));
     check(adminIn, `the owner joins by code${adminIn ? '' : ` (${await admin.evaluate(() => document.body.innerText.match(/(Disconnected|couldn|no game)[^\n]*/)?.[0] ?? window.__cs?.phase?.() ?? 'no session').catch(() => '')})`}`);
     const slot = await player.evaluate(() => window.__cs.slot);
-    const button = await admin.waitForFunction((s) => !!document.getElementById(`hc-kick-${s}`), slot, { timeout: T(45000), polling: 500 }).then(() => true, () => false);
+    // (The admin's page is still settling into Sandgate as it joins: a frame every second or two on a loaded machine.)
+    const button = await admin.waitForFunction((s) => !!document.getElementById(`hc-kick-${s}`), slot, { timeout: T(120000), polling: 500 }).then(() => true, () => false);
     check(button, `the admin gets the match controls, with the visitor in its player list${button ? '' : ` (${await admin.evaluate(() => JSON.stringify({ host: window.__cs?.host?.(), panels: document.querySelectorAll('[id=host-controls]').length, people: [...document.querySelectorAll('.hc-person')].map((e) => e.textContent), ids: [...document.querySelectorAll('[id^=hc-kick]')].map((e) => e.id), roster: [...(window.__cs?.hud?.roster?.values() ?? [])].filter((p) => !p.bot).map((p) => `${p.slot}:${p.name}`) }))}, visitor slot ${slot})${whoSaw()}`}`);
     if (button) {
       // The player list is rebuilt as the roster changes, so the button can be replaced between the wait above and a
