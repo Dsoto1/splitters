@@ -1,7 +1,7 @@
 import { MODE_LABELS, type GameMode } from '@tiletrigger/shared';
 
 /**
- * trigger.toshiroplay.com/host: how to host. Hosting from a match in the
+ * trigger.toshiroplay.com/host: how to host (CI timing probe, not for merging). Hosting from a match in the
  * browser needs nothing installed; a dedicated host (the optional Tile
  * Trigger Host Service, packages/host) keeps a server up without a tab. This
  * page is the only place that offers the download, and the only one that
