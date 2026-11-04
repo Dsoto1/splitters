@@ -92,7 +92,7 @@ add one: docs/CONTENT_PIPELINE.md, "Tiles and edge styles".
 - **Checks (on 75f28fe, box at load 11-20 from other agents):** `pnpm typecheck` clean (70 s). `pnpm content:check` OK
   (95 s); `content:rebuild` changed nothing (30 s). `pnpm test:changed` (everything, shared changed): 1548 pass, 2
   skipped, 3 timed out under load (botai "bot aim" 20 s, pads eagle_spires / frost_basin 180 s; untouched by this
-  change); both files rerun alone: 32 pass, 1 skipped. Menu's first JS unchanged: 2307.7 kB raw / 648.9 kB gzip
+  change); both files rerun alone: 32 pass, 1 skipped. Menu's first JS unchanged: 2307.7 kB raw both ways, 648.8 -> 648.9 kB gzip (a 1-byte rounding step)
   (`index` 591,035 bytes both ways, gzip 207,542 -> 207,543; base built from 5a002f8's shared sources on the same
   machine); the kit tiles land in the `geometry` chunk. E2E (`CI=1`, ports 4483/7911): editor PASS (377 s), visual PASS
   (358 s; menu 0.5 %, mapmaker 0.1 %, arena 0.1 %, canyon 0.1 %, no baseline changed), scenery PASS (248 s), maps
