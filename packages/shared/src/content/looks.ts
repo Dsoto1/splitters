@@ -5,6 +5,7 @@
  * tints combine freely. The Character Designer builds custom looks from the
  * same catalogue; they travel as short IDs (encodeLook / decodeLook).
  */
+import type { CharacterStats } from '../sim/characterStats.ts';
 import { WHOLE_BODY_BIOS, WHOLE_BODY_LOOKS } from './characters.generated.ts';
 
 export type BodyType = 'male' | 'female';
@@ -66,6 +67,8 @@ export interface CharacterLook {
   group?: CharacterGroup;
   /** What kind of creature it is, for its bots' names (NAME_THEMES in botNames.ts); absent: its group's. */
   nameTheme?: string;
+  /** Its own character stats (sim/characterStats.ts; `stats` in its manifest): each left out is its size class's. */
+  stats?: Partial<CharacterStats>;
 }
 
 /**

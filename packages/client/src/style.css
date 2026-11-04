@@ -445,12 +445,23 @@ button.cta:hover { background: #ffc46e; }
 .char-spin .spin-label { display: inline-flex; align-items: center; gap: 8px; }
 .char-spin .spin-label kbd { height: 18px; font-size: 10px; }
 html.touch .char-spin .spin-label kbd { display: none; }
-.char-info { flex: none; margin-top: 14px; width: min(900px, 64vw); display: grid; grid-template-columns: 110px 1fr auto auto; gap: 18px; align-items: center; padding: 14px; }
+.char-info { flex: none; margin-top: 14px; width: min(900px, 64vw); display: grid; grid-template-columns: 110px 1fr auto auto auto; gap: 18px; align-items: center; padding: 14px; }
 .char-info > img { width: 110px; height: 110px; border-radius: 4px; background: linear-gradient(160deg, #2a3a55, #121827); }
 .char-info h3 { margin: 0 0 4px; font: 700 26px var(--font-display); text-transform: uppercase; letter-spacing: 0.04em; }
 .char-info p { margin: 0 0 8px; color: var(--muted); font-size: 14px; max-width: 360px; }
 .char-info .tags { display: flex; gap: 6px; }
 .char-info .tags span { font: 700 10px var(--font-display); letter-spacing: 0.1em; text-transform: uppercase; padding: 2px 6px; border-radius: 2px; background: rgba(135, 101, 255, 0.2); color: #c7b8ff; }
+/* Character Select: character stats as bars (frontEnd.ts statBars). */
+.char-stats { display: grid; gap: 3px; min-width: 210px; }
+.char-stats h4 { margin: 0 0 4px; font: 700 11px var(--font-display); letter-spacing: 0.14em; color: var(--muted); text-transform: uppercase; }
+.stat-row { display: grid; grid-template-columns: 62px 1fr 44px; align-items: center; gap: 6px; font: 600 11px var(--font-display); text-transform: uppercase; letter-spacing: 0.06em; }
+.stat-label { color: var(--muted); }
+.stat-val { text-align: right; color: var(--text); font-variant-numeric: tabular-nums; }
+.stat-bar { position: relative; height: 7px; border-radius: 4px; background: rgba(255, 255, 255, 0.1); overflow: hidden; }
+.stat-fill { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 4px; background: #9a8cff; }
+.stat-fill.up { background: #4cd38a; }
+.stat-fill.down { background: #f0a43a; }
+.stat-mark { position: absolute; top: -1px; bottom: -1px; width: 2px; margin-left: -1px; background: rgba(255, 255, 255, 0.75); }
 .loadout h4 { margin: 0 0 6px; font: 700 11px var(--font-display); letter-spacing: 0.14em; color: var(--muted); text-transform: uppercase; }
 .loadout span { display: block; font: 600 14px var(--font-display); text-transform: uppercase; }
 .controls { display: grid; gap: 6px; }
@@ -1191,10 +1202,11 @@ html.touch #feed { transform: scale(0.85); transform-origin: top right; }
   .screen.characters .screen-head h2, .screen.profile .screen-head h2 { font-size: 22px; }
   .char-jump { margin-top: 8px; padding: 4px 6px; }
   .char-sec-tiles { grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: 6px; }
-  .char-info { margin-top: 8px; grid-template-columns: 56px 1fr auto; gap: 10px; padding: 8px; }
+  .char-info { margin-top: 8px; grid-template-columns: 56px 1fr auto auto; gap: 10px; padding: 8px; }
   .char-info > img { width: 56px; height: 56px; }
   .char-info h3 { font-size: 18px; }
   .char-info .who p, .char-info .loadout { display: none; }
+  .char-stats { min-width: 170px; }
   .char-info .char-actions { flex-direction: row; }
   .char-info .char-actions button { padding: 6px 10px; font-size: 12px; }
   .profile-panel { margin-top: 8px; max-height: calc(100% - 40px); }

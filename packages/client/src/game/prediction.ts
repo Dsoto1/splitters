@@ -124,6 +124,10 @@ export class LocalPlayer {
   unarmed = false;
   /** Movement multiplier from status effects (server value). */
   statusSpeed = 1;
+  /** Your body's own speed, jump and stamina (size class and character stats; server values). */
+  bodySpeed = 1;
+  jump = 1;
+  stamina = 1;
   /** Classes: extra jumps in the air your class has (the Runner's double jump). */
   airJumps = 0;
   /** Ground hazards from the latest snapshot (oil makes movement slick). */
@@ -332,7 +336,7 @@ export class LocalPlayer {
     }
     const jet = this.jetFuel !== null && this.jetFuel >= JET.burn;
     const before = state;
-    let next = applyPads(this.pads, stepMovement(this.physics, this.collider, state, input, (this.speedTicks > 0 ? SPEED_BOOST : 1) * this.statusSpeed, TICK_DT, this.traction(state.pos), { liquids: this.liquids, jet, ladders: this.ladders, scale: this.scale, gravity: this.gravity, ...(this.gravityZones.length ? { gravityZones: this.gravityZones } : {}), ...(this.airJumps ? { airJumps: this.airJumps } : {}), ...(this.jetFuel !== null ? { jetpack: true } : {}), ...(this.glider ? { glider: true } : {}), ...(this.ziplines.length ? { ziplines: this.ziplines, team: this.team() } : {}) }));
+    let next = applyPads(this.pads, stepMovement(this.physics, this.collider, state, input, (this.speedTicks > 0 ? SPEED_BOOST : 1) * this.bodySpeed * this.statusSpeed, TICK_DT, this.traction(state.pos), { liquids: this.liquids, jet, ladders: this.ladders, scale: this.scale, jump: this.jump, stamina: this.stamina, gravity: this.gravity, ...(this.gravityZones.length ? { gravityZones: this.gravityZones } : {}), ...(this.airJumps ? { airJumps: this.airJumps } : {}), ...(this.jetFuel !== null ? { jetpack: true } : {}), ...(this.glider ? { glider: true } : {}), ...(this.ziplines.length ? { ziplines: this.ziplines, team: this.team() } : {}) }));
     // Portals, exactly as the server takes them (Match.step).
     const through = this.portals.length && next.zip === undefined ? applyPortals(this.portals, before, next, this.portalOn, this.scale, bodyHeightOf(next, this.scale)) : null;
     if (through) {
@@ -489,6 +493,7 @@ export class LocalPlayer {
     if (me) {
       this.inventory = new Map(me.inv.map(([code, mag, reserve, alt, heat]) => [code, [mag, reserve, alt ?? 0, heat ?? 0]]));
       this.statusSpeed = (me.ms ?? 1000) / 1000;
+      [this.bodySpeed, this.jump, this.stamina] = (me.bs ?? [1000, 1000, 1000]).map((v) => v / 1000) as [number, number, number];
       this.mounted = !!me.mo;
       this.seatAmmo = [0, 0, 0, me.mo?.[2] ?? 0];
       this.throwable = me.gr ? { kind: THROWABLES[me.gr[0]] ?? 'frag', count: me.gr[1] } : null;

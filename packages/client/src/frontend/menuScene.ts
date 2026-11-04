@@ -11,7 +11,7 @@ import { CreateBox } from '@babylonjs/core/Meshes/Builders/boxBuilder';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import type { AbstractMesh } from '@babylonjs/core/Meshes/abstractMesh';
 import type { TransformNode } from '@babylonjs/core/Meshes/transformNode';
-import { BODY_SIZES, PLAYER, bodySizeOf, getWeapon, isCreature, npcLookRole } from '@tiletrigger/shared';
+import { PLAYER, getWeapon, isCreature, lookStats, npcLookRole } from '@tiletrigger/shared';
 import { CreatureLibrary, fitPlayerSkin } from '../content/creatures.ts';
 import { CreatureAnimator } from '../game/creatureAnimator.ts';
 import { CharacterLibrary } from '../content/characters.ts';
@@ -187,7 +187,7 @@ export class MenuScene {
       const { min, max } = ch.root.getHierarchyBoundingVectors(true);
       // At the look's body size, as a match draws it (small 0.78, large 1.18): Character Select showed every body at
       // the standard height, so a small goblin stood as tall as a large one (owner, 2026-11-03).
-      ch.root.scaling.scaleInPlace((PLAYER.height * BODY_SIZES[bodySizeOf(look)].scale) / Math.max(0.5, max.y - min.y));
+      ch.root.scaling.scaleInPlace((PLAYER.height * lookStats(look).size) / Math.max(0.5, max.y - min.y));
       ch.root.rotation.y = this.baseYaw + this.yaw;
       this.heroRoot = ch.root;
       this.hide(ch.meshes);

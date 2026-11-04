@@ -200,13 +200,16 @@ export const lastHit: { zone: HitZone } = { zone: 0 };
 
 /**
  * A ray against a body's shapes: the distance along `d` (unit length) to the nearest shape within `max`, or null.
- * The zone of that shape is left in `lastHit.zone`.
+ * The zone of that shape is left in `lastHit.zone`. `thick` (world metres) fattens every shape: a thrown spear or a
+ * rocket is a body of its own, not a line.
  */
-export function rayBody(o: Vec3, d: Vec3, body: HitBody, max = Infinity): number | null {
+export function rayBody(o: Vec3, d: Vec3, body: HitBody, max = Infinity, thick = 0): number | null {
   const s = shapesFor(body.box, body.stance);
   const k = body.scale;
+  const fat = thick / k;
   // Broad phase: the stance's bounding sphere.
-  const [cy, R] = shapesBounds(s);
+  const [cy, R0] = shapesBounds(s);
+  const R = R0 + fat;
   const ex = o.x - body.feet.x;
   const ey = o.y - (body.feet.y + cy * k);
   const ez = o.z - body.feet.z;
@@ -234,18 +237,19 @@ export function rayBody(o: Vec3, d: Vec3, body: HitBody, max = Infinity): number
     const cx = lx - h.x, cyy = ly - h.y, cz = lz - h.z;
     const dd = qx * qx + qy * qy + qz * qz;
     const B = qx * cx + qy * cyy + qz * cz;
-    const C = cx * cx + cyy * cyy + cz * cz - h.r * h.r;
+    const hr = h.r + fat;
+    const C = cx * cx + cyy * cyy + cz * cz - hr * hr;
     const disc = B * B - dd * C;
     if (C <= 0) take(0, 1);
     else if (disc >= 0) take((-B - Math.sqrt(disc)) / dd, 1);
   }
   if (s.torso) {
     const c = s.torso;
-    const sq = c.r / c.w;
-    take(capsule((lx - c.x) * sq, ly, lz, qx * sq, qy, qz, 0, c.a[0], c.a[1], 0, c.b[0], c.b[1], c.r), 0);
+    const sq = (c.r + fat) / (c.w + fat);
+    take(capsule((lx - c.x) * sq, ly, lz, qx * sq, qy, qz, 0, c.a[0], c.a[1], 0, c.b[0], c.b[1], c.r + fat), 0);
   }
-  for (const l of s.legs) take(capsule(lx, ly, lz, qx, qy, qz, l.a[0], l.a[1], l.a[2], l.b[0], l.b[1], l.b[2], l.r), 2);
-  for (const l of s.arms) take(capsule(lx, ly, lz, qx, qy, qz, l.a[0], l.a[1], l.a[2], l.b[0], l.b[1], l.b[2], l.r), 0);
+  for (const l of s.legs) take(capsule(lx, ly, lz, qx, qy, qz, l.a[0], l.a[1], l.a[2], l.b[0], l.b[1], l.b[2], l.r + fat), 2);
+  for (const l of s.arms) take(capsule(lx, ly, lz, qx, qy, qz, l.a[0], l.a[1], l.a[2], l.b[0], l.b[1], l.b[2], l.r + fat), 0);
   if (zone === -1) return null;
   lastHit.zone = zone;
   return best;

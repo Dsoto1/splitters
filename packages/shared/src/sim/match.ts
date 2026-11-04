@@ -41,8 +41,11 @@ import {
   type MountSnapshot,
   type CoverSnapshot,
 } from '../protocol.ts';
-import { BODY_SIZES, MAX_PLAYER_SLOTS, PLAYER, TICK_DT, TICK_RATE, type Stance } from './constants.ts';
+import { MAX_PLAYER_SLOTS, PLAYER, TICK_DT, TICK_RATE, type Stance } from './constants.ts';
+import { CORE_WEAPONS } from '../content/weapons.generated.ts';
 import { lastHit, lookHitbox, npcHitbox, type LookHitbox } from './hitbox.ts';
+import { classStats, matchStats, type CharacterStats } from './characterStats.ts';
+import { randomLook } from './randomLooks.ts';
 import { RESOURCE_BUDGETS } from '../map/budgets.ts';
 import { ARMOR_ABSORB, DAMAGE_BOOST, MAX_ARMOR, PICKUP_RADIUS, SPEED_BOOST, STREAK_REWARDS, getItem, type ItemDefinition } from './items.ts';
 import { pickupPool, rollPickup } from './pickupRoll.ts';
@@ -74,7 +77,7 @@ import { TrackDriver } from './trackDriver.ts';
 import { vehicleGuides, type Guide } from '../bots/guides.ts';
 import { ambientCarEntities, raceGridEntities, trackGeometry, type TrackGeometry } from '../map/track.ts';
 import { chargeIntoMelee } from './creatures.ts';
-import { DEFAULT_LOOK, bodySizeOf, getLook, lookForBot } from '../content/looks.ts';
+import { DEFAULT_LOOK, getLook, lookForBot } from '../content/looks.ts';
 import { BOT_NAMES, botNameFor } from '../content/botNames.ts';
 import { castLooks, validBotCast } from '../content/botThemes.ts';
 import { NPC_DAMAGE_TO_PLAYERS, NPC_ID_BASE, NPC_ROLE_PROFILES, NPC_ROLE_SPECS, mapFactions, mapTeams, matchTeams, relation, validLookId } from './npc.ts';
@@ -84,7 +87,7 @@ import {
   type BallisticMaterial, type FalloffSpec, type GunState, type Gunplay, type KickSpec, type ReloadRun,
 } from './gunplay.ts';
 import { GLASS, glassAt } from './glass.ts';
-import { OIL_TRACTION, PROJECTILE_VISUALS, THROWABLES, THROWABLE_DEFS, ZONE_KINDS, getWeapon, zoneContains, rayCapsule, rayTarget, weaponByCode, weaponCode, resolveHitscan, throwableWeaponId, type HitZone, UNARMED, unarmedStrike, type AltFire, type ProjectileSpec, type StatusHit, type ThrowableKind, type WeaponDefinition, type ZoneKind, type ZoneSpec } from './weapons.ts';
+import { OIL_TRACTION, PROJECTILE_VISUALS, THROWABLES, THROWABLE_DEFS, ZONE_KINDS, getWeapon, zoneContains, rayCapsule, rayTarget, PROJECTILE_THICKNESS, weaponByCode, weaponCode, resolveHitscan, throwableWeaponId, type HitZone, UNARMED, unarmedStrike, type AltFire, type ProjectileSpec, type StatusHit, type ThrowableKind, type WeaponDefinition, type ZoneKind, type ZoneSpec } from './weapons.ts';
 import { blastKnockback, blastThrow, hitImpact, impactSpeed, newImpact, stepImpact, stoppingPower, type ImpactState } from './impact.ts';
 
 /** At most this many queued inputs are applied per player per tick, which caps speed hacks. */
@@ -242,6 +245,11 @@ export interface Combatant {
   hitbox: LookHitbox;
   hitLook: string;
   hitScale: number;
+  /** Character stats it plays with (sim/characterStats.ts): its look's, its size class's, or standard. */
+  stats: CharacterStats;
+  /** Random characters (rules.randomCharacters): the look it chose, kept while it plays random ones; and lives begun. */
+  ownLook?: string;
+  lives?: number;
   /** Health on spawn and the most health pickups can give. */
   maxHealth: number;
   /** Dancing until this tick (emote); and the next tick a quick message or emote may be sent. */
@@ -593,7 +601,7 @@ export class Match {
    */
   readonly watchers = new Set<number>();
   /** The movement environment handed to stepMovement, refilled per actor (applyInputs). */
-  private readonly moveEnv: MoveEnv = { liquids: undefined, jet: false, ladders: undefined, scale: 1, gravity: 1, gravityZones: undefined, airJumps: undefined, jetpack: undefined, glider: undefined, autoChute: undefined, ground: undefined };
+  private readonly moveEnv: MoveEnv = { liquids: undefined, jet: false, ladders: undefined, scale: 1, gravity: 1, gravityZones: undefined, airJumps: undefined, jetpack: undefined, glider: undefined, autoChute: undefined, ground: undefined, jump: 1, stamina: 1 };
   /** Where the people (and watchers) are this tick, in big matches only (relaxedMove). */
   private watched: Vec3[] | null = null;
   /** The terrain's height, for coarse moves (relaxedMove), on maps with terrain. */
@@ -1230,6 +1238,7 @@ export class Match {
       hitbox: DEFAULT_HITBOX.box,
       hitLook: DEFAULT_LOOK,
       hitScale: DEFAULT_HITBOX.scale,
+      stats: classStats('standard'),
       maxHealth: PLAYER.maxHealth,
       collider: this.physics.createPlayerCollider(),
       move: { pos: { x: 0, y: 0, z: 0 }, velY: 0, grounded: false },
@@ -1296,10 +1305,7 @@ export class Match {
   /** `team`: the faction to join (default: the rules' team assignment). */
   addHuman(name: string, look?: string, team?: string | null): Combatant | null {
     const c = this.addCombatant('human', name, team);
-    if (c) {
-      c.look = validLookId(look);
-      this.applyBodySize(c);
-    }
+    if (c) this.chooseLook(c, validLookId(look));
     return c;
   }
 
@@ -1311,13 +1317,13 @@ export class Match {
     const team = o?.team !== undefined && this.teams?.some((t) => t.id === o.team) ? o.team : undefined;
     const c = this.addCombatant('bot', typeof name === 'string' ? name : '', team);
     if (c) {
-      c.look = o?.look ? validLookId(o.look) : this.botLook(c.slot);
+      const own = o?.look ? validLookId(o.look) : this.botLook(c.slot);
       // A random bot is named after what it wears (BotFiller: the look's own name, else its theme's).
-      if (typeof name === 'function') c.name = name(c.look);
-      this.applyBodySize(c);
+      if (typeof name === 'function') c.name = name(own);
+      this.chooseLook(c, own);
       if (o?.botSet) c.botSet = { ...o.botSet };
       const skill = c.botSet?.skill ? BOT_DIFFICULTIES[c.botSet.skill] : difficulty;
-      c.bot = new BotBrain(c.slot, asCharacter ? profileFor(c.look, profile, c.botSet?.style ?? this.rules.botStyle) : profile, skill, this.seed);
+      c.bot = new BotBrain(c.slot, asCharacter ? profileFor(c.ownLook ?? c.look, profile, c.botSet?.style ?? this.rules.botStyle) : profile, skill, this.seed);
       c.bot.onSpawn(c.yaw);
       // Bots choose routes from the navmesh's sample places: build them now, not mid-match.
       this.nav.places();
@@ -1509,16 +1515,56 @@ export class Match {
     this.startRound();
   }
 
-  /** Small and large looks play differently unless the match turns body sizes off. */
+  /**
+   * A look's size and stats (sim/characterStats.ts): small and large looks play differently unless the match turns
+   * body sizes off, and a look's own stats count unless it turns character stats off.
+   */
   private applyBodySize(c: Combatant): void {
-    const spec = BODY_SIZES[this.rules.bodySizes === false ? 'standard' : bodySizeOf(c.look)];
-    c.size = spec.scale;
+    const spec = matchStats(c.look, this.rules);
+    c.stats = spec;
+    c.size = spec.size;
     // Classes set health and speed themselves.
     if (c.cls) return;
     c.speedMul = spec.speed;
     // At full health (as everyone is, joining: they spawn before their look is set), full health of the new size.
     if (!c.alive || c.health >= c.maxHealth) c.health = spec.health;
     c.maxHealth = spec.health;
+  }
+
+  /**
+   * A player's or bot's own choice of look: worn now, or (while Random characters gives it random ones) kept for
+   * when that goes off.
+   */
+  private chooseLook(c: Combatant, look: string): void {
+    if (c.ownLook !== undefined) {
+      c.ownLook = look;
+      return;
+    }
+    c.look = look;
+    this.applyBodySize(c);
+  }
+
+  /**
+   * Random characters: a player or bot (not an NPC) starting a life plays a random roster look (sim/randomLooks.ts),
+   * its own choice kept for when the setting goes off again. True when its look changed (the spawn event carries it).
+   */
+  private relookOnSpawn(c: Combatant): boolean {
+    if (c.kind === 'npc') return false;
+    if (this.rules.randomCharacters) {
+      c.ownLook ??= c.look;
+      c.lives = (c.lives ?? 0) + 1;
+      const look = randomLook(this.seed, c.slot, c.lives, c.look);
+      if (look === c.look) return false;
+      c.look = look;
+    } else {
+      if (c.ownLook === undefined) return false;
+      const own = c.ownLook;
+      c.ownLook = undefined;
+      if (own === c.look) return false;
+      c.look = own;
+    }
+    this.applyBodySize(c);
+    return true;
   }
 
   /** `at`: this slot (a spectator joining again takes back the slot kept for them); else the first free one. */
@@ -1577,8 +1623,7 @@ export class Match {
     this.spectators.delete(slot);
     const c = this.addCombatant('human', s.name, undefined, slot);
     if (!c) return null;
-    c.look = validLookId(s.look);
-    this.applyBodySize(c);
+    this.chooseLook(c, validLookId(s.look));
     c.kills = s.kills;
     c.deaths = s.deaths;
     c.selfKills = s.selfKills;
@@ -2496,6 +2541,8 @@ export class Match {
           env.jet = c.jetFuel !== null && c.jetFuel >= JET.burn;
           env.ladders = this.ladders;
           env.scale = c.size;
+          env.jump = c.stats.jump;
+          env.stamina = c.stats.stamina;
           env.gravity = this.phys.gravity;
           env.gravityZones = this.gravityZones.length ? this.gravityZones : undefined;
           env.airJumps = c.cls ? (this.classes?.airJumps(c) ?? 0) : undefined;
@@ -2982,8 +3029,11 @@ export class Match {
   }
 
   /** Three short rays in a narrow fan (forgiving melee without a full sweep): who it hits, or the body it strikes. A swing at a window smashes it. */
-  private meleeTrace(shooter: Combatant, eye: Vec3, range: number, targets: ReturnType<Match['targetsFor']>): { hit: number | null; body: number | null } {
+  private meleeTrace(shooter: Combatant, eye: Vec3, range: number, shapes: ReturnType<Match['targetsFor']>): { hit: number | null; body: number | null } {
     let body: number | null = null;
+    // Melee reaches the body's whole capsule (PLAYER.radius at its size), not the measured shapes: a swing is a
+    // sweep, forgiving by design (responsiveness over realism, GUNPLAY_DIRECTION.md).
+    const targets = shapes.map((t) => ({ slot: t.slot, feet: t.feet, height: t.height, radius: t.radius }));
     for (const yawOffset of [0, -0.3, 0.3]) {
       const dir = viewDirection(shooter.yaw + yawOffset, shooter.pitch);
       const world = this.physics.raycastHit(eye, dir, range);
@@ -3171,7 +3221,7 @@ export class Match {
         // Your own discs never hit you.
         if (!c.alive || (c === owner && (p.age < OWNER_GRACE_TICKS || spec.disc))) continue;
         if (owner && c !== owner && !this.hostile(owner, c)) continue;
-        const d = rayTarget(p.pos, dir, this.shotBody(c), len);
+        const d = rayTarget(p.pos, dir, this.shotBody(c), len, PROJECTILE_THICKNESS);
         if (d !== null && d <= len && (hitDist === null || d < hitDist)) {
           hitDist = d;
           victim = c;
@@ -4761,6 +4811,9 @@ export class Match {
     }
     if (attacker?.npc && !victim.npc) amount *= NPC_DAMAGE_TO_PLAYERS;
     if (attacker?.npc) amount *= (NPC_ROLE_SPECS[attacker.npc.role].damage ?? 1) * attacker.npc.damage;
+    // Character stats: the attacker's damage dealt (melee strength for a melee hit), the victim's armor.
+    else if (attacker && attacker !== victim) amount *= isMeleeWeapon(weapon) ? attacker.stats.melee : attacker.stats.damage;
+    if (victim.stats.armor > 0) amount *= 1 - victim.stats.armor;
     let dmg = attacker && attacker !== victim && attacker.damageTicks > 0 ? amount * DAMAGE_BOOST : amount;
     if (victim.armor > 0) {
       const absorbed = Math.min(victim.armor, dmg * ARMOR_ABSORB);
@@ -4993,6 +5046,7 @@ export class Match {
    */
   private spawn(c: Combatant): void {
     this.ensureSpawnCapacity();
+    const relook = this.relookOnSpawn(c);
     const enemies: Vec3[] = [];
     const occupants: Vec3[] = [];
     for (const o of this.actors()) {
@@ -5050,7 +5104,7 @@ export class Match {
     this.classes?.onSpawn(c);
     c.bot?.onSpawn(sp.yaw);
     this.mode?.onSpawn?.(c);
-    this.pendingEvents.push({ e: 'spawn', s: c.slot });
+    this.pendingEvents.push({ e: 'spawn', s: c.slot, ...(relook ? { l: c.look } : {}) });
     // Race: straight into your vehicle, on the grid or at your last checkpoint.
     this.race?.onSpawn(c.slot);
     // Air drop maps start you (or always spawn you) in the transport plane.
@@ -5523,6 +5577,7 @@ export class Match {
     return {
       inv: [...c.weapons.entries()].sort((a, b) => a[0] - b[0]).map(([code, w]) => (w.def.heat ? [code, w.mag, w.reserve, w.alt, Math.round((w.heat ?? 0) * 100) + (w.overheated ? 100 : 0)] : [code, w.mag, w.reserve, w.alt])),
       ...(statusSpeed(c) !== 1 ? { ms: Math.round(statusSpeed(c) * 1000) } : {}),
+      ...(c.speedMul !== 1 || c.stats.jump !== 1 || c.stats.stamina !== 1 ? { bs: [Math.round(c.speedMul * 1000), Math.round(c.stats.jump * 1000), Math.round(c.stats.stamina * 1000)] as [number, number, number] } : {}),
       ...(c.mount ? { mo: [this.mounts[c.mount.index]!.index, c.mount.seat, Math.round((this.mounts[c.mount.index]!.guns[c.mount.seat]?.heat ?? 0) * 100)] as [number, number, number] } : {}),
       ...(c.throwable ? { gr: [THROWABLES.indexOf(c.throwable.kind), c.throwable.count] as [number, number] } : {}),
       rl: c.reloadTicks,
@@ -6224,6 +6279,12 @@ function spendRound(w: WeaponState): boolean {
     w.mag--;
   }
   return true;
+}
+
+/** Whether a hit came from a melee strike (a melee weapon, a punch or a kick): melee strength counts, not damage dealt. */
+function isMeleeWeapon(weapon: string): boolean {
+  if (weapon === UNARMED.punch.id || weapon === UNARMED.kick.id) return true;
+  return CORE_WEAPONS[weapon]?.kind === 'melee';
 }
 
 /** Body-zone damage multiple for a weapon: head, torso or legs (spec §11). */

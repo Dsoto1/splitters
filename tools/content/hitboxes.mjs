@@ -24,7 +24,7 @@ import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { firstFrame, jointParents, jointPositions, readGlb, retargetFrame, skinnedVertices } from './skinpose.mjs';
-import { isQueued, readManifests } from './character-manifests.mjs';
+import { hitboxOverrideProblems, isQueued, readManifests } from './character-manifests.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 export const OUT_FILE = join(ROOT, 'packages/shared/src/content/hitboxes.generated.ts');
@@ -228,20 +228,6 @@ export function applyOverrides(s, o) {
   if (o.legs) s.legs = s.legs.map((l) => ({ ...l, r: o.legs.r ?? l.r }));
   if (o.arms === false) s.arms = [];
   return s;
-}
-
-/** Problems with a manifest's `hitbox` (empty when fine). */
-export function hitboxOverrideProblems(o) {
-  const out = [];
-  if (o === undefined) return out;
-  if (!o || typeof o !== 'object') return ['hitbox: { head, torso, legs, arms }'];
-  const num = (v, lo, hi) => v === undefined || (typeof v === 'number' && v >= lo && v <= hi);
-  for (const k of Object.keys(o)) if (!['head', 'torso', 'legs', 'arms'].includes(k)) out.push(`hitbox.${k}: unknown (head, torso, legs, arms)`);
-  if (o.head && (!num(o.head.r, 0.05, 0.35) || !num(o.head.dy, -0.3, 0.3) || !num(o.head.dz, -0.3, 0.3) || Object.keys(o.head).some((k) => !['r', 'dy', 'dz'].includes(k)))) out.push('hitbox.head: { r 0.05–0.35, dy, dz −0.3–0.3 } (m at 1.8 m)');
-  if (o.torso && (!num(o.torso.w, 0.04, 0.6) || !num(o.torso.r, 0.03, 0.5) || Object.keys(o.torso).some((k) => !['w', 'r'].includes(k)))) out.push('hitbox.torso: { w 0.04–0.6, r 0.03–0.5 } (m at 1.8 m)');
-  if (o.legs && (!num(o.legs.r, 0.03, 0.3) || Object.keys(o.legs).some((k) => k !== 'r'))) out.push('hitbox.legs: { r 0.03–0.3 } (m at 1.8 m)');
-  if (o.arms !== undefined && typeof o.arms !== 'boolean') out.push('hitbox.arms: true or false');
-  return out;
 }
 
 /** Rest height (the game's fit: the bind pose's full height) of one or more docs. */

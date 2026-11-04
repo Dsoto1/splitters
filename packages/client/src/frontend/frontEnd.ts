@@ -49,6 +49,10 @@ import {
   raceTrack,
   usernameProblem,
   type Region,
+  STAT_SPECS,
+  classStats,
+  lookStats,
+  type StatKey,
 } from '@tiletrigger/shared';
 import { DEFAULT_WHEEL_KEY, RESERVED_KEYS, keyLabel, loadMousePrefs, loadWheelKey, saveMousePrefs, saveWheelKey } from '../game/input.ts';
 import { loadRelay, saveRelay } from '../game/relay.ts';
@@ -257,6 +261,32 @@ const MODE_TIPS: Partial<Record<GameMode, string>> = {
 };
 
 const FAMILY_LABEL = { ranger: 'Ranger', peasant: 'Peasant', athlete: 'Sportswear' } as const;
+
+/**
+ * A look's character stats as bars (Character Select, while the setup plays with Character stats): each stat across
+ * its whole range (STAT_SPECS), the standard body's mark on it, above standard green and below amber.
+ */
+function statBars(look: string, sizes: boolean): HTMLElement {
+  const st = lookStats(look, { sizes, stats: true });
+  const std = classStats('standard');
+  const fmt = (k: StatKey, v: number) => (k === 'health' ? String(Math.round(v)) : k === 'armor' ? `${Math.round(v * 100)}%` : `×${v.toFixed(2)}`);
+  return el(
+    'div',
+    { class: 'char-stats', id: 'char-stats' },
+    el('h4', { textContent: 'Stats' }),
+    ...STAT_SPECS.map((sp) => {
+      const v = st[sp.key];
+      const at = (x: number) => `${Math.round(Math.max(0, Math.min(1, (x - sp.min) / (sp.max - sp.min))) * 100)}%`;
+      const diff = v > std[sp.key] + 1e-9 ? 'up' : v < std[sp.key] - 1e-9 ? 'down' : 'same';
+      const bar = el('span', { class: 'stat-bar' }, el('i', { class: `stat-fill ${diff}` }), el('b', { class: 'stat-mark' }));
+      (bar.firstChild as HTMLElement).style.width = at(v);
+      (bar.lastChild as HTMLElement).style.left = at(std[sp.key]);
+      const row = el('div', { class: 'stat-row', title: sp.help }, el('span', { class: 'stat-label', textContent: sp.label }), bar, el('span', { class: 'stat-val', textContent: fmt(sp.key, v) }));
+      row.dataset.stat = sp.key;
+      return row;
+    }),
+  );
+}
 
 function storage(key: string, value?: string): string | null {
   try {
@@ -1004,6 +1034,8 @@ export class FrontEnd {
       { id: 'squad', label: 'Spawn on teammates', tip: 'Team modes: respawn beside a teammate who is out of the fight, when one is free.', changed: s.squadSpawn === false && team, value: 'No squad spawns', control: choice([['on', 'On'], ['off', 'Off']], s.squadSpawn === false ? 'off' : 'on', (v) => this.change((x) => (x.squadSpawn = v === 'on'))), disabled: noTeams },
       { id: 'streaks', label: 'Kill streaks', tip: 'Rewards for kills without dying: 3 UAV, 5 Supply Pulse (heal + ammo for nearby teammates), 7 Counter-UAV (jams enemy minimaps), 9 Airstrike.', changed: s.killstreaks === false, value: 'No kill streaks', control: choice([['on', 'On'], ['off', 'Off']], s.killstreaks === false ? 'off' : 'on', (v) => this.change((x) => (x.killstreaks = v === 'on'))) },
       { id: 'sizes', label: 'Character sizes', tip: 'Matter: small characters are smaller, quicker targets with less health that fit through gaps others must crouch for; large ones are bigger, slower and tougher. All equal: everyone plays at standard size.', changed: s.sizes === false, value: 'Equal sizes', control: choice([['on', 'Matter'], ['off', 'All equal']], s.sizes === false ? 'off' : 'on', (v) => this.change((x) => (x.sizes = v === 'on'))) },
+      { id: 'stats', label: 'Character stats', tip: "On: each character plays with its own health, speed, size, damage, stamina, jump, melee and armor (Character Select shows them); one without its own plays its size. Off: nobody's own stats count.", changed: s.stats === false, value: 'No character stats', control: choice([['on', 'On'], ['off', 'Off']], s.stats === false ? 'off' : 'on', (v) => this.change((x) => (x.stats = v === 'on' ? undefined : false))) },
+      { id: 'randomchars', label: 'Random characters', tip: 'Everyone, you and the bots, plays a random character each life (any on the roster).', changed: !!s.randomChars, value: 'Random characters', control: choice([['off', 'Off'], ['on', 'On']], s.randomChars ? 'on' : 'off', (v) => this.change((x) => (x.randomChars = v === 'on' || undefined))) },
       { id: 'gravity', label: 'Gravity', tip: 'Map: whatever the map was built with (normal unless its maker changed it).', changed: s.gravity !== undefined, value: `${s.gravity === 0.4 ? 'Low' : s.gravity === 1.6 ? 'Heavy' : 'Normal'} gravity`, control: choice([['map', 'Map'], ['0.4', 'Low'], ['1', 'Normal'], ['1.6', 'Heavy']], s.gravity === undefined ? 'map' : String(s.gravity), (v) => this.change((x) => (x.gravity = v === 'map' ? undefined : Number(v)))) },
       { id: 'fall', label: 'Fall damage', tip: "Drops past about 5 m hurt; about 16 m kills. Map: the map's own setting.", changed: s.fallDamage !== undefined, value: `Fall damage ${s.fallDamage ? 'on' : 'off'}`, control: choice([['map', 'Map'], ['on', 'On'], ['off', 'Off']], s.fallDamage === undefined ? 'map' : s.fallDamage ? 'on' : 'off', (v) => this.change((x) => (x.fallDamage = v === 'map' ? undefined : v === 'on'))) },
       { id: 'lethality', label: 'Lethality', tip: 'How quickly fights end, for every weapon alike. Arcade: everyone soaks about 40% more (longer fights, tracking matters). Standard: the official balance. Tactical: everyone soaks about 30% less (very lethal).', changed: !!s.lethality, value: `${s.lethality === 'arcade' ? 'Arcade' : 'Tactical'} lethality`, control: choice([['arcade', 'Arcade'], ['standard', 'Standard'], ['tactical', 'Tactical']], s.lethality ?? 'standard', (v) => this.change((x) => (x.lethality = v === 'standard' ? undefined : (v as 'arcade' | 'tactical')))) },
@@ -1030,7 +1062,7 @@ export class FrontEnd {
     reset.addEventListener('click', (e) => {
       e.preventDefault();
       this.change((x) => {
-        for (const k of ['spears', 'discs', 'mixPickups', 'dropWeapons', 'classes', 'classLimit', 'botStyle', 'botCast', 'gravity', 'fallDamage', 'friendlyFire', 'killstreaks', 'squadSpawn', 'emotes', 'sizes', 'vehicleDamage', 'leaders', 'lethality', 'ballistics', 'respawn'] as const) delete x[k];
+        for (const k of ['spears', 'discs', 'mixPickups', 'dropWeapons', 'classes', 'classLimit', 'botStyle', 'botCast', 'gravity', 'fallDamage', 'friendlyFire', 'killstreaks', 'squadSpawn', 'emotes', 'sizes', 'stats', 'randomChars', 'vehicleDamage', 'leaders', 'lethality', 'ballistics', 'respawn'] as const) delete x[k];
       });
     });
     const count = (xs: typeof extras) => {
@@ -1617,6 +1649,8 @@ export class FrontEnd {
       }),
       el('span', { title: 'Frag grenade (G)' }, '● Frag grenade'),
     );
+    // Character stats (shown while the match setup plays with them): each against everyone's range.
+    const stats = this.setup.stats === false ? null : statBars(id, this.setup.sizes !== false);
     const chosen = id === this.look;
     const choose = el('button', { id: 'char-choose', class: 'primary', disabled: chosen, textContent: chosen ? 'Chosen' : `Choose ${name}`, title: chosen ? 'Your character now' : `Play as ${name} (Enter, controller A)` });
     choose.addEventListener('click', () => this.select(id));
@@ -1637,6 +1671,7 @@ export class FrontEnd {
     info.replaceChildren(
       img,
       el('div', { class: 'who' }, el('h3', { textContent: name }), el('p', { textContent: LOOK_BIOS[id] ?? 'Your own design.' }), ...(style ? [el('p', { class: 'bot-style', textContent: style })] : []), el('div', { class: 'tags' }, ...(lookGroup(id) ? [el('span', { textContent: CHARACTER_GROUP_LABELS[lookGroup(id)!] })] : []), ...(l.whole ? [el('span', { textContent: 'Original' })] : [el('span', { textContent: l.body === 'male' ? 'Male' : 'Female' }), el('span', { textContent: outfits })]))),
+      ...(stats ? [stats] : []),
       loadout,
       el('div', { class: 'char-actions' }, choose, customise),
     );

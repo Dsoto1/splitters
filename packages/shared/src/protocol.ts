@@ -193,6 +193,8 @@ export interface PrivateState {
   jp?: number;
   /** Carrying a glider (canopies open as gliders). */
   gl?: 1;
+  /** Your body's own movement (size class and character stats): [speed, jump, stamina] ×1000, when any is not 1000. */
+  bs?: [number, number, number];
   /** Seconds of UAV sweep left for your side (enemies on the minimap). */
   uv?: number;
   /** Seconds your minimap stays jammed by an enemy Counter-UAV. */
@@ -266,7 +268,7 @@ export type GameEvent =
   | { e: 'knock'; s: number; t: number }
   | { e: 'pickup'; s: number; id: string; item: string }
   | { e: 'kill'; killer: number | null; victim: number; weapon: string; /** The killing blow was a head hit. */ hs?: 1 }
-  | { e: 'spawn'; s: number }
+  | { e: 'spawn'; s: number; /** Random characters: the look this life plays (sim/randomLooks.ts). */ l?: string }
   /** `outcome` is set when a co-op mission ends (victory or defeat). */
   | { e: 'round_end'; winner: number | null; outcome?: 'victory' | 'defeat'; /** Winning team (faction ID) in Team Deathmatch; null for a draw. */ team?: string | null; /** "Next map" logic: the suite map ID everyone goes on to. */ next?: string;
       /** The map rotation's next map (its display name) and mode, where the match goes after the scoreboard. */ up?: { map: string; mode: GameMode } }

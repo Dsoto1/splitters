@@ -435,7 +435,7 @@ export interface ShotResult {
 }
 
 /** A shot target against its measured shapes (or, for a target given without them, the standard look's): distance, or null; the zone in `lastHit.zone`. */
-export function rayTarget(origin: Vec3, dir: Vec3, t: ShotTarget, max = Infinity): number | null {
+export function rayTarget(origin: Vec3, dir: Vec3, t: ShotTarget, max = Infinity, thick = 0): number | null {
   if (!t.box) {
     const d = rayCapsule(origin, dir, t.feet, t.radius ?? PLAYER.radius, t.height ?? PLAYER.height);
     if (d === null || d > max) return null;
@@ -447,8 +447,14 @@ export function rayTarget(origin: Vec3, dir: Vec3, t: ShotTarget, max = Infinity
   scratchBody.stance = t.stance ?? 0;
   scratchBody.scale = t.scale ?? 1;
   scratchBody.box = t.box;
-  return rayBody(origin, dir, scratchBody, max);
+  return rayBody(origin, dir, scratchBody, max, thick);
 }
+
+/**
+ * How thick a thrown or launched projectile (a spear, a rocket, a grenade, a disc) is against bodies (m): it is an
+ * object, not a line, so it strikes a body it passes this close to. Bullets and hitscan rounds are lines.
+ */
+export const PROJECTILE_THICKNESS = 0.12;
 const scratchBody: HitBody = { feet: { x: 0, y: 0, z: 0 }, yaw: 0, stance: 0, scale: 1, box: undefined as unknown as LookHitbox };
 
 /**

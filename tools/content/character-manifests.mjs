@@ -49,6 +49,39 @@ const HEX = /^#[0-9a-f]{6}$/;
 export const GROUPS = ['soldiers', 'legends', 'folk', 'horror', 'animals', 'creatures'];
 /** Bot name themes (what kind of creature: its bots' names); the same list as NAME_THEMES in packages/shared/src/content/botNames.ts (a test keeps them equal). */
 export const NAME_THEMES = ['soldier', 'monkey', 'bear', 'wolf', 'dog', 'cat', 'raccoon', 'critter', 'frog', 'pirate', 'knight', 'ninja', 'wizard', 'barbarian', 'undead', 'spooky', 'robot', 'alien', 'goblin', 'cowboy', 'gangster', 'townsfolk', 'myth'];
+/**
+ * Character stats a manifest may set (`stats`): the same keys and ranges as STAT_SPECS in
+ * packages/shared/src/sim/characterStats.ts (a test keeps them equal).
+ */
+export const STAT_RANGES = { health: [50, 200], speed: [0.8, 1.25], size: [0.7, 1.3], damage: [0.75, 1.3], stamina: [0.5, 2], jump: [0.8, 1.3], melee: [0.5, 2], armor: [0, 0.4] };
+const STAT_ORDER = Object.keys(STAT_RANGES);
+/** Problems with a manifest's `stats` (empty when fine). */
+export function statsProblems(stats) {
+  if (stats === undefined) return [];
+  if (!stats || typeof stats !== 'object' || Array.isArray(stats)) return [`stats: { ${STAT_ORDER.join(', ')} }`];
+  const out = [];
+  for (const [k, v] of Object.entries(stats)) {
+    const r = STAT_RANGES[k];
+    if (!r) out.push(`stats.${k}: unknown (${STAT_ORDER.join(', ')})`);
+    else if (typeof v !== 'number' || !Number.isFinite(v) || v < r[0] || v > r[1]) out.push(`stats.${k}: ${r[0]}–${r[1]}`);
+  }
+  return out;
+}
+
+/** Problems with a manifest's `hitbox` overrides (tools/content/hitboxes.mjs; empty when fine). */
+export function hitboxOverrideProblems(o) {
+  const out = [];
+  if (o === undefined) return out;
+  if (!o || typeof o !== 'object') return ['hitbox: { head, torso, legs, arms }'];
+  const num = (v, lo, hi) => v === undefined || (typeof v === 'number' && v >= lo && v <= hi);
+  for (const k of Object.keys(o)) if (!['head', 'torso', 'legs', 'arms'].includes(k)) out.push(`hitbox.${k}: unknown (head, torso, legs, arms)`);
+  if (o.head && (!num(o.head.r, 0.05, 0.35) || !num(o.head.dy, -0.3, 0.3) || !num(o.head.dz, -0.3, 0.3) || Object.keys(o.head).some((k) => !['r', 'dy', 'dz'].includes(k)))) out.push('hitbox.head: { r 0.05–0.35, dy, dz −0.3–0.3 } (m at 1.8 m)');
+  if (o.torso && (!num(o.torso.w, 0.04, 0.6) || !num(o.torso.r, 0.03, 0.5) || Object.keys(o.torso).some((k) => !['w', 'r'].includes(k)))) out.push('hitbox.torso: { w 0.04–0.6, r 0.03–0.5 } (m at 1.8 m)');
+  if (o.legs && (!num(o.legs.r, 0.03, 0.3) || Object.keys(o.legs).some((k) => k !== 'r'))) out.push('hitbox.legs: { r 0.03–0.3 } (m at 1.8 m)');
+  if (o.arms !== undefined && typeof o.arms !== 'boolean') out.push('hitbox.arms: true or false');
+  return out;
+}
+
 const isPoint = (p) => Array.isArray(p) && p.length === 3 && p.every((x) => typeof x === 'number' && Number.isFinite(x));
 
 /** Whether a manifest is waiting for its download and landmarks (a stub from the queue): not built, no look. */
@@ -168,6 +201,9 @@ export function manifestProblems(m, file = `${m?.id}.json`) {
       need(side.wrist === undefined || typeof side.wrist === 'boolean', 'fixes.hands.wrist: true (the skin past the wrist rides the hand alone)');
     }
   }
+  // Hit-shape overrides (tools/content/hitboxes.mjs) and character stats (packages/shared/src/sim/characterStats.ts).
+  for (const p of hitboxOverrideProblems(m.hitbox)) need(false, p);
+  for (const p of statsProblems(m.stats)) need(false, p);
   // Landmarks are needed only to rig an unrigged (FBX) download; a rigged GLB brings its own joints.
   if (m.landmarks !== undefined) {
     const l = m.landmarks;
@@ -315,7 +351,7 @@ function lookLine(m) {
   const grip = m.fixes?.grip ? `, grip: { ${Object.entries(m.fixes.grip).map(([k, v]) => `${k}: ${Array.isArray(v) ? `[${v.join(', ')}]` : v}`).join(', ')} }` : '';
   const body = (fp.body === false ? ', body: false' : '') + hold + grip;
   const whole = own ? `whole: { arms: ${q(armsOf(m))}${body} }` : `whole: { arms: ${q(fp.arms)}, skin: ${q(fp.skin)}, cloth: ${q(fp.cloth)}, trim: ${q(fp.trim)}${body} }`;
-  const parts = [`id: ${q(m.look)}`, `name: ${q(m.name)}`, `body: ${q(m.body)}`, "head: ''", `parts: [${q(m.id)}]`, 'hair: []', 'colorways: []', 'skin: null', 'hairColor: null', ...(m.size ? [`size: ${q(m.size)}`] : []), ...(m.locomotion ? [`locomotion: ${q(m.locomotion)}`] : []), ...(m.clips ? [`clips: ${q(m.clips)}`] : m.clips === false ? ['clips: false'] : []), whole, ...(m.group ? [`group: ${q(m.group)}`] : []), ...(m.nameTheme ? [`nameTheme: ${q(m.nameTheme)}`] : [])];
+  const parts = [`id: ${q(m.look)}`, `name: ${q(m.name)}`, `body: ${q(m.body)}`, "head: ''", `parts: [${q(m.id)}]`, 'hair: []', 'colorways: []', 'skin: null', 'hairColor: null', ...(m.size ? [`size: ${q(m.size)}`] : []), ...(m.locomotion ? [`locomotion: ${q(m.locomotion)}`] : []), ...(m.clips ? [`clips: ${q(m.clips)}`] : m.clips === false ? ['clips: false'] : []), whole, ...(m.group ? [`group: ${q(m.group)}`] : []), ...(m.nameTheme ? [`nameTheme: ${q(m.nameTheme)}`] : []), ...(m.stats ? [`stats: { ${STAT_ORDER.filter((k) => m.stats[k] !== undefined).map((k) => `${k}: ${m.stats[k]}`).join(', ')} }`] : [])];
   return `  { ${parts.join(', ')} },`;
 }
 

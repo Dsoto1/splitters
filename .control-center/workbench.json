@@ -294,6 +294,37 @@
         { "path": "slots.trim.tint", "label": "Trim & frames: tint (#rrggbb; empty: none)", "type": "text", "edit": true },
         { "path": "notes.section", "label": "Notes", "type": "longtext", "edit": true }
       ]
+    },
+    {
+      "id": "characters",
+      "label": "Characters",
+      "files": "content/characters/*.json",
+      "key": "id",
+      "title": "name",
+      "subtitle": "group",
+      "filters": ["group", "size", "use", "kind"],
+      "fields": [
+        { "path": "id", "label": "Id (file name; never changes)", "type": "text" },
+        { "path": "look", "label": "Look id (never changes)", "type": "text" },
+        { "path": "name", "label": "Name", "type": "text", "edit": true },
+        { "path": "group", "label": "Group (Character Select)", "type": "select", "options": ["soldiers", "legends", "folk", "horror", "animals", "creatures"], "edit": true },
+        { "path": "size", "label": "Size class (empty: standard)", "type": "select", "options": ["small", "large"], "edit": true },
+        { "path": "bio", "label": "Bio", "type": "longtext", "edit": true },
+        { "path": "stats.health", "label": "Health (50-200; empty: its size's: 85 small, 100, 115 large)", "type": "number", "min": 50, "max": 200, "step": 5, "edit": true },
+        { "path": "stats.speed", "label": "Speed (multiple, 0.8-1.25; empty: its size's: 1.06 small, 1, 0.94 large)", "type": "number", "min": 0.8, "max": 1.25, "step": 0.01, "edit": true },
+        { "path": "stats.size", "label": "Size (multiple of 1.8 m, 0.7-1.3; empty: its size's: 0.78 small, 1, 1.18 large)", "type": "number", "min": 0.7, "max": 1.3, "step": 0.01, "edit": true },
+        { "path": "stats.damage", "label": "Damage dealt (multiple, 0.75-1.3; empty: 1)", "type": "number", "min": 0.75, "max": 1.3, "step": 0.01, "edit": true },
+        { "path": "stats.stamina", "label": "Stamina (sprint lasts this many times as long, 0.5-2; empty: 1)", "type": "number", "min": 0.5, "max": 2, "step": 0.05, "edit": true },
+        { "path": "stats.jump", "label": "Jump (multiple of jump speed, 0.8-1.3; empty: 1)", "type": "number", "min": 0.8, "max": 1.3, "step": 0.01, "edit": true },
+        { "path": "stats.melee", "label": "Melee strength (multiple, 0.5-2; empty: 1)", "type": "number", "min": 0.5, "max": 2, "step": 0.05, "edit": true },
+        { "path": "stats.armor", "label": "Armor (share of damage shrugged off, 0-0.4; empty: 0)", "type": "number", "min": 0, "max": 0.4, "step": 0.01, "edit": true },
+        { "path": "hitbox.head.r", "label": "Hitbox: head radius (m at 1.8 m; empty: measured)", "type": "number", "edit": true },
+        { "path": "hitbox.head.dy", "label": "Hitbox: head moved up (m; empty: 0)", "type": "number", "edit": true },
+        { "path": "hitbox.torso.w", "label": "Hitbox: torso half-width (m; empty: measured)", "type": "number", "edit": true },
+        { "path": "hitbox.torso.r", "label": "Hitbox: torso depth radius (m; empty: measured)", "type": "number", "edit": true },
+        { "path": "hitbox.arms", "label": "Hitbox: arms (empty: measured; false: none)", "type": "bool", "edit": true },
+        { "path": "notes", "label": "Notes", "type": "longtext", "edit": true }
+      ]
     }
   ]
 }

@@ -70,6 +70,13 @@ export interface MatchRules {
   hillSeconds?: number;
   /** Small and large characters play differently (BODY_SIZES); false makes everyone standard. Default true. */
   bodySizes?: boolean;
+  /**
+   * Character stats: each look's own health, speed, size, damage, stamina, jump, melee and armor (sim/characterStats.ts;
+   * a look without one plays its size class's). false: nobody's own stats count. Default true.
+   */
+  characterStats?: boolean;
+  /** Random characters: everyone, people and bots, plays a random playable look each life (sim/randomLooks.ts). Default false. */
+  randomCharacters?: boolean;
   /** Quick messages and emotes (default true). */
   emotes?: boolean;
   /** How bots play: each character's own way (mixed, default), all arena-style or all tactical. */

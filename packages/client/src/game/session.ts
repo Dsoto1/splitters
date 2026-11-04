@@ -11,8 +11,7 @@ import {
   CHUTE,
   CHUTE_GLIDER,
   heightAboveGround,
-  BODY_SIZES,
-  bodySizeOf,
+  matchStats,
   CORE_WEAPONS,
   gunplayOf,
   traceBullet,
@@ -282,9 +281,24 @@ export class GameSession {
   /** Character look of each player slot (from the roster). */
   private looks = new Map<number, string>();
 
-  /** A player's body scale: their look's size, unless the match plays everyone at standard size. */
+  /** A player plays another look from now (Random characters): their body, size, portrait and arms follow. */
+  private relook(slot: number, look: string): void {
+    this.looks.set(slot, look);
+    const entry = this.lastRoster?.find((p) => p.slot === slot);
+    if (entry) {
+      entry.look = look;
+      this.hud.setRoster(this.lastRoster!);
+    }
+    if (slot === this.slot) {
+      this.view.setLocalLook(look);
+      if (this.local) this.local.scale = this.sizeOf(slot);
+    }
+    this.view.characters.preload({ look });
+  }
+
+  /** A player's body scale: their look's size (class, or its own size stat), as the match plays it (Character sizes and stats). */
   private sizeOf(slot: number): number {
-    return this.rules?.bodySizes === false ? 1 : BODY_SIZES[bodySizeOf(this.looks.get(slot))].scale;
+    return matchStats(this.looks.get(slot), this.rules ?? {}).size;
   }
   private botStates: string[] = [];
   private outbox: PlayerInput[] = [];
@@ -1584,6 +1598,8 @@ export class GameSession {
         let poses: ReturnType<Interpolator['sample']> | undefined;
         const posesNow = () => (poses ??= this.interp.sample());
         for (const ev of msg.ev) {
+          // Random characters: this life's look (the roster has the one they had when it was sent).
+          if (ev.e === 'spawn' && ev.l) this.relook(ev.s, ev.l);
           // In a background tab nothing draws, so effects would only pile up (blood, bullets,
           // sounds) and all land at once when you come back: skip the purely visual ones.
           if (document.hidden && VISUAL_EVENTS.has(ev.e)) continue;

@@ -159,6 +159,9 @@ export interface MoveEnv {
   ziplines?: readonly Zipline[];
   /** Your team or faction (team-only ziplines). */
   team?: string | null;
+  /** Character stats (sim/characterStats.ts): jump speed and how long stamina lasts, multiples of everyone's. */
+  jump?: number;
+  stamina?: number;
 }
 
 /** A zone that changes gravity inside it (an axis-aligned box from `min` to `max`), as movement sees it. */
@@ -320,7 +323,7 @@ export function stepMovement(physics: PhysicsWorld, collider: RAPIER.Collider, s
   const sprint = !aiming && (input.buttons & BUTTON_SPRINT) !== 0 && (input.buttons & BUTTON_FIRE) === 0 && input.forward > 0.3 && stance === 0 && !winded && stamina > 0;
   if (sprint) {
     // Quantised here (not just on output) so running dry is seen the same on server and client.
-    stamina = quantize(Math.max(0, stamina - SPRINT.drain * dt));
+    stamina = quantize(Math.max(0, stamina - (SPRINT.drain / (env.stamina ?? 1)) * dt));
     rest = Math.round(SPRINT.rest / dt);
     if (stamina === 0) winded = true;
   } else if (rest > 0) rest--;
@@ -410,10 +413,10 @@ export function stepMovement(physics: PhysicsWorld, collider: RAPIER.Collider, s
     wx = glide.x;
     wz = glide.z;
   } else {
-    if (state.grounded && jump) velY = PLAYER.jumpSpeed;
+    if (state.grounded && jump) velY = PLAYER.jumpSpeed * (env.jump ?? 1);
     else if (jump && env.airJumps && !state.grounded && !state.jumpHeld && (state.airJumps ?? 0) < env.airJumps) {
       // Double jump: a fresh press in the air kicks you up again.
-      velY = PLAYER.jumpSpeed * 0.9;
+      velY = PLAYER.jumpSpeed * 0.9 * (env.jump ?? 1);
       airJumped = 1;
     } else if (jump && env.jet && !state.grounded) {
       // Jetpack: thrust while jump is held in the air.
