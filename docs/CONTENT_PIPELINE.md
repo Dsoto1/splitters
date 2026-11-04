@@ -390,9 +390,100 @@ in JSON, the behaviour in code (driving, suspension, flying, sentry aim and the 
    `npc-roles-resolved.json` as above and read the diff. MapMaker's encounter roster offers every role in
    `NPC_ROLES` (client `editor/editorApp.ts`).
 
-`pnpm content:rebuild` and `pnpm content:check` run all three data generators (weapons, vehicles, NPC roles). The
+`pnpm content:rebuild` and `pnpm content:check` run all the data generators (weapons, vehicles, NPC roles, pickups, materials). The
 Workbench shows **Vehicles & turrets** and **NPC roles** from these files; id, kind, order, code, creature and look are
 read-only there, and a seat's place is edited in the JSON (the Workbench edits the first three seats' weapon and arc).
+
+### Pickups
+
+Pickup items and the pickup rules are data too (docs/CONTENT_SCALABILITY.md step 5): the names and numbers are in
+`content/pickups.json`, what each effect does is code (`sim/match.ts` `applyItem`; random weapon pickups,
+`sim/pickupRoll.ts`; how much bots want one, `bots/brain.ts` `pickupNeed`; the pickup models and MapMaker's icons and
+groups in the client).
+
+| File | Holds |
+|---|---|
+| `content/pickups.json` `pickups` | every pickup, in MapMaker's palette order: `id`, `displayName`, `effect` (its `kind` and numbers), `respawnSeconds` (the default; a placed pickup can override it), `botValue` (0-1, before the situation scales it), `notes` |
+| `content/pickups.json` `rules` | `armor` (`max`, `absorb`: the share of incoming damage armour takes while any is left), `powerup` (`speedBoost`, `damageBoost` multiples), `pickup` (`radius`: how close you walk to take one) |
+
+#### How to add a pickup
+
+1. **Add it at the end of `pickups`** (the order is the palette order and the order a random weapon pickup rolls
+   from, so inserting in the middle changes what a seeded match rolls). `id` is `core.<name>`; maps name a pickup by
+   id, so never rename or remove one a map or Style Pack uses (the generator refuses). Pickups have **no network
+   code**: pickup events and snapshots carry the id.
+2. **Effect:** `health` / `armor` (`amount`), `ammo` (`ammo`: one ammo type, which fills those weapons by their
+   `pickupAmmo`; leave it out for the general box, half a pickup to every weapon), `throwable` (`throwable` from
+   content/throwables.json, `count` up to its `max`), `weapon` (`weapon`: a carried weapon, slot 1-9; the id must be
+   `core.weapon_<name>`, since drops and the match look a weapon's pickup up by it), `powerup` (`powerup` `speed` or
+   `damage`, `seconds`), `jetpack`, `glider`, `uav` (`seconds`), `disc` (`power`). A new kind of effect is code first
+   (`ItemEffect` in `sim/items.ts`, `applyItem`, `pickupNeed`, the client's pickup model and MapMaker's group), then
+   its case in the generator's schema.
+3. **Names and bot value:** a weapon pickup takes its weapon's `displayName` and a disc power its label
+   (`sim/discs.ts`) when `displayName` is left out; a weapon pickup without `botValue` gets
+   0.55 + `respawnSeconds` / 120, at most 0.9 (power weapons respawn slower and are worth more). Every other pickup
+   writes both.
+4. **Generate and check:** `pnpm content:pickups` (`node tools/content/pickups.mjs`) checks the schema (an unknown
+   field is an error), the weapons, ammo types, throwables, powerups and disc powers, the numbers (amounts, seconds
+   and respawn above 0, bot value 0-1, throwable count within the carry limit), that every pickup `maps/*.json` and
+   the Style Packs (`editor/stylePacks.ts` `pickups`) name exists, and writes
+   `packages/shared/src/content/pickups.generated.ts` (`CORE_ITEMS`, `PICKUP_RULES`); `--check` only verifies it
+   is up to date (`tools/content/test/pickups.test.mjs` does the same). A weapon renamed in content/weapons renames
+   its pickup on the next run.
+5. **Test:** `pnpm typecheck`, `pnpm test:changed` and the `arsenal` e2e flow. Changing a pickup's numbers or adding
+   one changes `packages/shared/test/fixtures/pickups-resolved.json`: rewrite it with
+   `UPDATE_PICKUP_FIXTURE=1 pnpm vitest run packages/shared/test/pickupsData.test.ts` and read the diff. To offer it
+   in a Style Pack, add it to that pack's `pickups`.
+
+`pnpm content:rebuild` and `pnpm content:check` run it with the other data generators. The Workbench shows
+**Pickups** (name, respawn, bot value and the effect's numbers; id, kind, weapon and disc power read-only) and
+**Pickup rules** from this file.
+
+### Materials and themes
+
+Library surface materials, themes and the tint swatches are data too (docs/CONTENT_SCALABILITY.md step 6): names,
+colours and settings in `content/materials.json`; drawing is code (the pattern painters,
+`packages/client/src/materials/patterns.ts`; the Babylon materials, `client/mapMeshes.ts`). What a material is made of
+for bullets (`materialClass` in `sim/gunplay.ts`, from the id and category) and which terrain layer a material paints
+as (`map/terrainPaint.ts`) are derived in code; the eight terrain grounds (`map/terrain.ts`) are stored by index in
+maps and stay in code.
+
+| File | Holds |
+|---|---|
+| `content/materials.json` `materials` | every material, in MapMaker's palette order: `id`, `displayName`, `category` (palette group: `MATERIAL_CATEGORIES`), either a procedural `pattern` (`PATTERN_IDS`) with `base` and `accent` colours, or a scanned `texture` set with `base` (its average colour, for minimaps and icons); `scale` (metres one repeat covers), `shine` (0 matte to 1 glossy), `emissive` (glows whatever the light), `notes` |
+| `content/materials.json` `themes` | every theme: `id`, `displayName`, `sky` colour and `slots` (`floor`, `walls`, `solids`, `underside`, `trim`: each a `material` and optional `tint`) |
+| `content/materials.json` `tintSwatches` | the tints MapMaker offers first (any #rrggbb is allowed) |
+
+#### How to add a material or theme
+
+1. **Add it to `materials`** where it belongs in the palette (the order is only the palette's; maps don't store it).
+   `id` is `core.<name>`; maps, tiles, themes, Style Packs and code name a material by id, so never rename or remove
+   one that is used (the generator refuses). Materials have **no network code**: maps carry the id.
+2. **Procedural or scanned:** a procedural material names a `pattern` and gives `base` and `accent` (lower-case
+   #rrggbb). A new pattern is code first (its id in `PATTERN_IDS`, `map/materials.ts`, and its painter in
+   `client/materials/patterns.ts`). A scanned material gives `texture` (and no pattern or accent): the set must be in
+   `content/textures.json` and prepared (`node tools/content/prepare-textures.mjs --only <id>`), so that
+   `packages/client/public/textures/<id>_color.jpg` and `_normal.jpg` exist (and `_emission.jpg` for `emissive`).
+3. **Settings:** `scale` above 0, `shine` 0-1, `emissive: true` only for light panels, neon, lava.
+4. **A theme** sets each of the five slots to a `material` from the list and an optional `tint`, plus the `sky`
+   colour. Keep `core.prototype` (the fallback theme). Offer it in a Style Pack through that pack's `themes` (and new
+   materials through its `materials`, `editor/stylePacks.ts`).
+5. **Generate and check:** `pnpm content:materials` (`node tools/content/materials.mjs`) checks the schema (an unknown
+   field is an error), patterns and categories, colours, numbers, the texture sets and their files, unique ids, that
+   the themes' materials exist and that every material and theme named in `maps/*.json`, the Style Packs' `themes` and
+   `materials`, the terrain grounds (`TERRAIN_SURFACES`) and code (`material:` / `surface:` / `skin:` 'core.…' in the
+   shared and client sources) exists, and writes `packages/shared/src/content/materials.generated.ts`
+   (`CORE_MATERIALS`, `CORE_THEMES`, `TINT_SWATCHES`); `--check` only verifies it is up to date
+   (`tools/content/test/materials.test.mjs` does the same). The Style Pack tiles' own paint (`paint(box, '<name>')` in
+   `map/packTiles*.ts`) is checked by `packages/shared/test/materialsData.test.ts`.
+6. **Test:** `pnpm typecheck`, `pnpm test:changed` and the `editor` and `visual` e2e flows. Changing or adding a
+   material changes `packages/shared/test/fixtures/materials-resolved.json`: rewrite it with
+   `UPDATE_MATERIAL_FIXTURE=1 pnpm vitest run packages/shared/test/materialsData.test.ts` and read the diff (it also
+   shows each material's ballistic class and terrain layer, so a rename that changes what bullets do shows there).
+
+`pnpm content:rebuild` and `pnpm content:check` run it with the other data generators. The Workbench shows
+**Materials** (name, category, pattern, texture, colours, tiling, shine, glow, notes; id read-only) and **Themes**
+(name, sky, each slot's material and tint, notes; id read-only) from this file.
 
 ### Audio
 

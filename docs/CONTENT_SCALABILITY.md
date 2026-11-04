@@ -37,8 +37,16 @@ scoped, done on its own `wip/` branch, green on a `check/` branch, then fast-for
    `npcRoles`), `tools/content/vehicles.mjs` and `npcs.mjs`, fixtures `vehicles-resolved.json` and
    `npc-roles-resolved.json` deep-equal. How to add one: docs/CONTENT_PIPELINE.md, "Vehicles, turrets and NPC roles".
 5. **Pickups as data** (`sim/items.ts`): heal, armor and ammo amounts, respawn.
+   **Done** on `wip/pickups-data` (2026-11-04; not merged; HANDOFF): `content/pickups.json` (73 pickups in palette
+   order and the pickup `rules`), `tools/content/pickups.mjs`, fixture `pickups-resolved.json` deep-equal. Pickups have
+   no network code (they travel as their id). How to add one: docs/CONTENT_PIPELINE.md, "Pickups".
 6. **Library materials as data** (`map/materials.ts`): colour, pattern id and settings; the pattern painters
    stay in code (`client/materials/patterns.ts`).
+   **Done** on `wip/materials-data` (2026-11-04; not merged; HANDOFF): `content/materials.json` (149 materials in palette
+   order, 35 themes, 30 tint swatches), `tools/content/materials.mjs`, fixture `materials-resolved.json` deep-equal.
+   Materials and themes have no network code (maps store their id). Left in code: the ballistic class (derived from the
+   id and category, `sim/gunplay.ts`) and the terrain grounds (`map/terrain.ts`, stored by index in maps). How to add
+   one: docs/CONTENT_PIPELINE.md, "Materials and themes".
 7. **Tiles as data, as the base of the planned MapMaker overhaul** (HANDOFF "After the style packs").
    - **Today:** each pack is 400–900 lines of procedural TypeScript (`packTiles*.ts`).
    - **Target:** a tile is a list of parts from a shared kit (box, wall with opening, gable roof, stair, arch,

@@ -1,5 +1,5 @@
 {
-  "$comment": "Surface textures from ambientCG (CC0). tools/content/prepare-textures.mjs downloads the 1K-JPG sets, keeps colour, OpenGL normal and emission maps at 512 px, and writes content/textures.lock.json. Material definitions that use them live in packages/shared/src/map/materials.ts.",
+  "$comment": "Surface textures from ambientCG (CC0). tools/content/prepare-textures.mjs downloads the 1K-JPG sets, keeps colour, OpenGL normal and emission maps at 512 px, and writes content/textures.lock.json. The materials that use them are in content/materials.json (`texture`).",
   "pack": {
     "id": "ambientcg",
     "title": "ambientCG PBR materials",

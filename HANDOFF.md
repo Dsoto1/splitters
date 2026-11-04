@@ -10,6 +10,91 @@ The session branch is **`claude/launcher-ui-map-cards`**. Poll CI without auth:
 `curl -s "https://api.github.com/repos/Dsoto1/splitters/actions/workflows/ci.yml/runs?branch=check/candidate&per_page=1"`.
 Use `pnpm typecheck`, not `pnpm -s typecheck` (the silent flag hides type errors; one reached CI that way).
 
+### Content scalability step 6: library materials as data (`wip/materials-data`, agent, 2026-11-04; pushed, not merged; on `wip/pickups-data` 01420e4)
+docs/CONTENT_SCALABILITY.md step 6, same pattern as steps 3-5; how to add one: docs/CONTENT_PIPELINE.md, "Materials and themes".
+- **Where things are now:** `content/materials.json`: `materials` (all 149 in the old `CORE_MATERIALS` order, which is
+  MapMaker's palette order, one a line: id, displayName, category, `pattern` + `base` + `accent` for the 89
+  procedural ones or `texture` + `base` for the 60 scanned sets, `scale` (tiling), `shine`, `emissive`; the old section
+  comments as `notes.section`), `themes` (35: sky and each slot's material and tint) and `tintSwatches` (30).
+  `tools/content/materials.mjs` (`pnpm content:materials`) -> `packages/shared/src/content/materials.generated.ts`
+  (`CORE_MATERIALS`, `CORE_THEMES`, `TINT_SWATCHES`). `map/materials.ts` keeps the types, the lookups
+  (`coreMaterials`, `coreThemes`), `SURFACE_SLOTS` and labels, and two new lists the generator reads: `PATTERN_IDS`
+  (was the `PatternId` union, comments kept) and `MATERIAL_CATEGORIES`. Painters, Babylon materials, the ballistic
+  class and the terrain grounds stay in code.
+- **Derived values:** a scanned material leaves out `pattern` and `accent` (resolved as `plain` and its `base`, as
+  the old `t()` helper did); every material writes its `shine` (0.05 / 0.08 defaults of the old helpers written out).
+- **No network codes:** materials and themes travel as their id inside the map document, so nothing was added to
+  `content/codes.lock.json` (unchanged).
+- **Checks in the generator:** strict schema (unknown fields in a material, theme, slot or the file are errors),
+  category and pattern from `map/materials.ts`, lower-case #rrggbb colours (base, accent, sky, tints), scale > 0,
+  shine 0-1, procedural xor texture, texture sets in `content/textures.json` with `_color` / `_normal` (and
+  `_emission` when emissive) under `packages/client/public/textures`, unique ids and swatches, `core.prototype`
+  kept, themes name real materials, and every material / theme named by `maps/*.json` (`material`, `theme`), the
+  Style Packs' `themes` / `materials`, `TERRAIN_SURFACES` and code literals (`material:` / `surface:` / `skin:`
+  'core.…' in shared and client src) exists. The Style Pack tiles' own `paint(box, '<name>')` calls are checked at
+  runtime by `materialsData.test.ts` (every tile's solids and extra floors).
+- **Proof of no change:** `packages/shared/test/fixtures/materials-resolved.json` (committed first, 8c96947, from the
+  hand-written tables: every material with its key order, lookup, ballistic class and terrain layer; palette order;
+  themes; swatches; slots); `materialsData.test.ts` deep-equals it.
+- **Wiring:** `content:rebuild` (ran: nothing changed) and `content:check` run materials.mjs;
+  `tools/content/test/materials.test.mjs` (6 tests).
+- **Workbench:** "Materials" (11 fields: id read-only; name, category and pattern as selects, texture, base, accent,
+  tiling, shine, glows, notes) and "Themes" (14 fields: id read-only; name, sky, each slot's material and tint,
+  notes). Not checked with the dashboard's parser (not in this container); same shapes as the pickups collections.
+- **Pitfalls:** edit the JSON, never `materials.generated.ts`; never rename a material or theme id that maps use (the
+  generator refuses); a material id also drives its ballistic class (`materialClass` regexes the id): the fixture
+  shows a change. A new pattern is code first (`PATTERN_IDS` + painter).
+- **Checks:** menu's first JS unchanged: 2304.0 kB raw / 648.0 kB gzip both ways (`index` 587.4 / 207.1 kB; base built
+  from 01420e4 on the same machine; the materials are in the `geometry` chunk, not the menu's). `pnpm typecheck` clean.
+  `pnpm test:changed` (everything, shared changed): 1542 pass, 2 skipped, 0 failed. `content:check` OK, `content:rebuild`
+  changed nothing. E2E (`CI=1`, ports 4297/7899): visual PASS (133 s; menu 0.5 %, mapmaker 0.1 %, arena 0.0 %, canyon
+  0.1 % of pixels differ, no baseline changed), editor PASS (203 s), offline PASS (114 s). The full set the change maps
+  to (38 flows) was not run locally: it needs a check branch.
+- **Not done / next (owner's call):** (1) per-material ballistic class as data: today derived from id + category by
+  regex (`sim/gunplay.ts` `materialClass`); an optional `ballistic` override in the JSON would let the Workbench set
+  it without renaming (recommended, zero change if no material sets it). (2) footstep / impact sounds by surface:
+  none exist (one `footstep` sound, `impact.world` for every surface), a feature, not a move. (3) the terrain grounds
+  (`TERRAIN_MATERIALS`, labels, `TERRAIN_SURFACES`, foliage) are stored by index in maps: moving them needs codes in
+  the lock; small table, recommend leaving in code until the terrain tools change. (4) `terrainPaint.ts` `NEAREST` /
+  `BY_PATTERN` and `PATH_LOOKS` stay code (they map materials to behaviour). (5) e2e/flowMap has no rule for
+  `content/materials.json` (it regenerates shared code, so the full suite runs anyway).
+
+### Content scalability step 5: pickups as data (`wip/pickups-data`, agent, 2026-11-04; pushed, not merged; from main 2386d48)
+docs/CONTENT_SCALABILITY.md step 5, same pattern as steps 3-4; how to add one: docs/CONTENT_PIPELINE.md, "Pickups".
+- **Where things are now:** `content/pickups.json`: `pickups` (all 73 items in the old `CORE_ITEMS` order, one a
+  line: id, displayName, effect, respawnSeconds, botValue) and `rules` (`armor.max` 100, `armor.absorb` 2/3,
+  `powerup.speedBoost` 1.35 / `damageBoost` 2, `pickup.radius` 1.1). `tools/content/pickups.mjs`
+  (`pnpm content:pickups`) -> `packages/shared/src/content/pickups.generated.ts` (`CORE_ITEMS`, `PICKUP_RULES`).
+  `sim/items.ts` keeps the types (`ItemEffect`, `ItemDefinition`, new `POWERUP_KINDS`), `getItem`, the five
+  constants (now read from `PICKUP_RULES`) and `STREAK_REWARDS` (kill streaks, not pickups: left in code).
+  Behaviour and visuals stay in code: `applyItem`, pickupRoll, the bots' `pickupNeed`, client pickup models,
+  MapMaker icons and groups, `DISC_POWER_SHOTS`, `JET`.
+- **Derived values:** a weapon pickup without `displayName` takes its weapon's (all 39 do: same names as before), a
+  disc power its `DISC_POWER_LABELS` entry (the generated file references it); a weapon pickup without `botValue`
+  gets 0.55 + respawn / 120 capped at 0.9, the old formula of the extended-arsenal list (those 24 leave it out; the
+  other 15 weapon pickups keep their written value).
+- **No network codes:** pickups travel as their id (`pickup` event `item`, snapshot taken ids and `pw` [pickup, item]),
+  so nothing was added to `content/codes.lock.json` (unchanged). The id is what must not change: the generator fails
+  if a pickup named in `maps/*.json` or a Style Pack's `pickups` is missing, and requires weapon pickups to be
+  `core.weapon_<weapon>` (drops.ts and match.ts look them up so). Order matters (palette, random-pickup pools).
+- **Checks in the generator:** strict schema (unknown fields in a pickup, its effect, `rules` or the file are errors;
+  effect is one of the ten kinds), weapons exist and are carried (slot 1-9), ammo types (`AMMO_TYPES`), throwables
+  (content/throwables.json; count 1..max), powerups (`POWERUP_KINDS`), disc powers (`DISC_POWERS`), amounts / seconds /
+  respawn above 0, bot value 0-1, unique ids, rules ranges.
+- **Proof of no change:** `packages/shared/test/fixtures/pickups-resolved.json` (committed first, 3019d57, from the
+  hand-written table: every item, its weapon category and lookup, the rules, the random pools per category);
+  `pickupsData.test.ts` deep-equals it (and checks `ARMOR_ABSORB === 2/3` and every bot value exactly).
+- **Wiring:** `content:rebuild` and `content:check` run pickups.mjs; `tools/content/test/pickups.test.mjs`.
+- **Workbench:** "Pickups" (14 fields: name, respawn, bot value, amount, ammo type, throwable and count, powerup,
+  seconds, notes; id, kind, weapon and disc power read-only) and "Pickup rules" (5 fields).
+- **Checks:** menu's first JS unchanged: 2304.0 kB raw / 648.0 kB gzip both ways (`index` 587.4 /
+  207.1 kB; base built from main's items.ts on the same machine). `pnpm typecheck` clean. `pnpm test:changed`
+  (everything, shared changed): 1534 pass, 2 skipped, 0 failed. `content:check` OK. E2E (`CI=1`, ports 4293/7893/9093):
+  arsenal PASS (186 s), offline PASS (97 s), editor PASS (195 s). The full suite the change maps to (38 flows) was
+  not run locally: it needs a check branch.
+- **Not done / next:** step 6 (materials). flowMap has no rule for `.control-center/workbench.json` (it runs
+  everything); a pickups.json change always regenerates shared code, which runs everything anyway.
+
 ### Content scalability step 4: vehicles, turrets and NPC roles as data (`wip/vehicles-npcs-data`, agent, 2026-11-04; not merged; on `wip/per-pack-content` eee1833, which has main)
 docs/CONTENT_SCALABILITY.md step 4, same pattern as weapons; how to add one: docs/CONTENT_PIPELINE.md, "Vehicles, turrets and NPC roles".
 - **Where things are now:** `content/vehicles/<id>.json` (one per mount: the 17 placeable ones with an `order`, which

@@ -206,6 +206,94 @@
         { "path": "bot.tags", "label": "Bot: behaviour tags (docs/BOTS.md)", "type": "list", "edit": true },
         { "path": "notes.design", "label": "Design notes", "type": "longtext", "edit": true }
       ]
+    },
+    {
+      "id": "pickups",
+      "label": "Pickups",
+      "files": "content/pickups.json",
+      "items": "pickups",
+      "key": "id",
+      "title": "displayName",
+      "subtitle": "effect.kind",
+      "filters": ["effect.kind"],
+      "fields": [
+        { "path": "id", "label": "Id (maps name it; never changes)", "type": "text" },
+        { "path": "effect.kind", "label": "Kind", "type": "text" },
+        { "path": "displayName", "label": "Name (empty: the weapon's name, or the disc power's)", "type": "text", "edit": true },
+        { "path": "respawnSeconds", "label": "Respawn (s; a placed pickup can override it)", "type": "number", "edit": true },
+        { "path": "botValue", "label": "Bot value (0-1; empty on a weapon pickup: 0.55 + respawn / 120, at most 0.9)", "type": "number", "edit": true },
+        { "path": "effect.amount", "label": "Health / armor: amount", "type": "number", "edit": true },
+        { "path": "effect.ammo", "label": "Ammo: ammo type (empty: every owned weapon, half a pickup each)", "type": "text", "edit": true },
+        { "path": "effect.throwable", "label": "Throwable: kind (content/throwables.json)", "type": "text", "edit": true },
+        { "path": "effect.count", "label": "Throwable: count", "type": "number", "edit": true },
+        { "path": "effect.weapon", "label": "Weapon: weapon id (a carried one; the pickup id is core.weapon_<name>)", "type": "text" },
+        { "path": "effect.powerup", "label": "Powerup: speed or damage", "type": "text", "edit": true },
+        { "path": "effect.seconds", "label": "Powerup / UAV: lasts (s)", "type": "number", "edit": true },
+        { "path": "effect.power", "label": "Disc power", "type": "text" },
+        { "path": "notes.design", "label": "Design notes", "type": "longtext", "edit": true }
+      ]
+    },
+    {
+      "id": "pickup-rules",
+      "label": "Pickup rules",
+      "files": "content/pickups.json",
+      "items": "rules",
+      "key": "$key",
+      "title": "$key",
+      "fields": [
+        { "path": "radius", "label": "Pickup reach (m)", "type": "number", "edit": true },
+        { "path": "max", "label": "Armor: most a player carries", "type": "number", "edit": true },
+        { "path": "absorb", "label": "Armor: share of damage it takes while any is left (0-1)", "type": "number", "edit": true },
+        { "path": "speedBoost", "label": "Speed Boost: speed multiple", "type": "number", "edit": true },
+        { "path": "damageBoost", "label": "Double Damage: damage multiple", "type": "number", "edit": true }
+      ]
+    },
+    {
+      "id": "materials",
+      "label": "Materials",
+      "files": "content/materials.json",
+      "items": "materials",
+      "key": "id",
+      "title": "displayName",
+      "subtitle": "category",
+      "filters": ["category", "pattern"],
+      "fields": [
+        { "path": "id", "label": "Id (maps, tiles and themes name it; never changes)", "type": "text" },
+        { "path": "displayName", "label": "Name", "type": "text", "edit": true },
+        { "path": "category", "label": "Category (palette group)", "type": "select", "options": ["Prototype", "Stone", "Brick", "Wood", "Metal", "Tile", "Fabric", "Ground", "Tech", "Paint"], "edit": true },
+        { "path": "pattern", "label": "Pattern (procedural; painter in client code; empty on a scanned texture)", "type": "select", "options": ["grid", "plain", "noise", "bricks", "blocks", "planks", "tiles", "checker", "plates", "grate", "panels", "stripes", "hex", "marble", "weave", "glyphs", "glyphs_painted", "mosaic", "cobbles", "setts", "diamonds", "pantiles", "timber", "snow", "ice", "prefab", "snowcrete", "frostrock", "decking", "ashlar", "pebbles", "corrugated", "lapboards", "bands", "sandstone_ashlar", "stucco", "scales", "zellige", "flags", "rug", "lattice", "slabs", "fret", "relief", "inlay", "roots", "thatch"], "edit": true },
+        { "path": "texture", "label": "Scanned texture set (content/textures.json; empty: the pattern is drawn)", "type": "text", "edit": true },
+        { "path": "base", "label": "Base colour (#rrggbb; a texture's average colour, for minimaps and icons)", "type": "text", "edit": true },
+        { "path": "accent", "label": "Accent colour (#rrggbb; empty on a scanned texture)", "type": "text", "edit": true },
+        { "path": "scale", "label": "Tiling: metres one repeat covers", "type": "number", "edit": true },
+        { "path": "shine", "label": "Shine (0 matte - 1 glossy)", "type": "number", "edit": true },
+        { "path": "emissive", "label": "Glows whatever the light", "type": "bool", "edit": true },
+        { "path": "notes.section", "label": "Notes", "type": "longtext", "edit": true }
+      ]
+    },
+    {
+      "id": "themes",
+      "label": "Themes",
+      "files": "content/materials.json",
+      "items": "themes",
+      "key": "id",
+      "title": "displayName",
+      "fields": [
+        { "path": "id", "label": "Id (maps name it; never changes)", "type": "text" },
+        { "path": "displayName", "label": "Name", "type": "text", "edit": true },
+        { "path": "sky", "label": "Sky colour (#rrggbb)", "type": "text", "edit": true },
+        { "path": "slots.floor.material", "label": "Floor: material id", "type": "text", "edit": true },
+        { "path": "slots.floor.tint", "label": "Floor: tint (#rrggbb; empty: none)", "type": "text", "edit": true },
+        { "path": "slots.walls.material", "label": "Walls: material id", "type": "text", "edit": true },
+        { "path": "slots.walls.tint", "label": "Walls: tint (#rrggbb; empty: none)", "type": "text", "edit": true },
+        { "path": "slots.solids.material", "label": "Pillars, cover & steps: material id", "type": "text", "edit": true },
+        { "path": "slots.solids.tint", "label": "Pillars, cover & steps: tint (#rrggbb; empty: none)", "type": "text", "edit": true },
+        { "path": "slots.underside.material", "label": "Underside: material id", "type": "text", "edit": true },
+        { "path": "slots.underside.tint", "label": "Underside: tint (#rrggbb; empty: none)", "type": "text", "edit": true },
+        { "path": "slots.trim.material", "label": "Trim & frames: material id", "type": "text", "edit": true },
+        { "path": "slots.trim.tint", "label": "Trim & frames: tint (#rrggbb; empty: none)", "type": "text", "edit": true },
+        { "path": "notes.section", "label": "Notes", "type": "longtext", "edit": true }
+      ]
     }
   ]
 }

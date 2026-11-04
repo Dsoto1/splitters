@@ -2,7 +2,7 @@
 
 All gameplay numbers live in `content/weapons/*.json`, `content/throwables.json`
 (built into `packages/shared/src/content/weapons.generated.ts`; docs/CONTENT_PIPELINE.md,
-"How to add a weapon") and `sim/items.ts`; nothing in the simulation names a specific weapon.
+"How to add a weapon") and `content/pickups.json` (pickups; "Pickups" there); nothing in the simulation names a specific weapon.
 
 | Slot | Weapon | Ammo | Second trigger (right mouse) |
 |---|---|---|---|

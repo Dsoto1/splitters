@@ -36,7 +36,7 @@ const map = (of) => ({ t: 'map', of });
 const lazy = (f) => ({ t: 'lazy', f });
 const vec3 = tup(3);
 const notes = map(str);
-/** Schema building blocks, for the other data generators (vehicles.mjs, npcs.mjs). */
+/** Schema building blocks, for the other data generators (vehicles.mjs, npcs.mjs, pickups.mjs). */
 export const shape = { num, int, str, bool, en, tup, arr, obj, nullable, oneOf, map, lazy, vec3, notes };
 
 /** The enum lists live in TypeScript (one source); read them from it. */

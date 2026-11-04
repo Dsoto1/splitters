@@ -760,7 +760,10 @@ falling rocks, spikes, flames, water and swamp. **Zipline:** the pack lists the 
 [Ziplines](#ziplines-simziplinets-format-v25)); the Zipline Post prop stays as scenery, and the Grapple Hook
 still crosses between high points no line joins. Vinefall Sanctum has two gorge ziplines.
 
-## Materials and themes (`map/materials.ts`)
+## Materials and themes (`content/materials.json`)
+
+The tables are data (how to add one: docs/CONTENT_PIPELINE.md, "Materials and themes"); `map/materials.ts`
+keeps the types, the pattern and category lists and the lookups. Counts below are from when the library began.
 
 28 procedural materials plus 49 scanned sets from ambientCG (CC0), prepared by
 `node tools/content/prepare-textures.mjs` into `public/textures` (512 px colour,
