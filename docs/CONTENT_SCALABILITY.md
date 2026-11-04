@@ -55,6 +55,14 @@ scoped, done on its own `wip/` branch, green on a `check/` branch, then fast-for
    - **What it buys:** fixes such as upside-down roofs and floating trims happen once, in the shared parts.
      MapMaker can later let the owner make tiles. It fits "maps are declarative data".
    - **Before starting:** scope it with the owner.
+   **Done for the core kit** (owner's scope "1a") on `wip/tiles-data` (2026-11-04; not merged; HANDOFF):
+   `content/tiles/core.json` (the 71 tiles catalog.ts defined, palette order; each part names a kit builder and its
+   numbers) and `content/tiles/edges.json` (the 17 edge styles: label, collision segments, trim, openings, glass,
+   corner, facade and dressing flags), `tools/content/tiles.mjs`, fixture `tiles-resolved.json` deep-equal (the kit,
+   every edge style at six sizes, and what all 88 maps build). Tiles and edge styles have no network code (maps store
+   ids). Left in code: the part builders, the room options and facades, the auto/open rule, `TILE_DIMENSIONS`, and the
+   Style Pack tiles drawn by code (`paint(box, …)` in `packTiles*.ts`, a later step). How to add one:
+   docs/CONTENT_PIPELINE.md, "Tiles and edge styles".
 
 Not worth moving: behaviour code (mine arming, abilities' mechanics, VFX), sounds and skies (already data), and
 maps (already data).

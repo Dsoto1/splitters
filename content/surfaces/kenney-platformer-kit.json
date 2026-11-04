@@ -1,0 +1,17 @@
+{
+  "$comment": "Platformer Kit: painted steel with bare-metal blades and springs, a wooden crate core.",
+  "default": "painted_metal",
+  "colors": {
+    "#3b3b41": "metal",
+    "#353539": "metal",
+    "#42424a": "metal",
+    "#43435c": "metal",
+    "#3e3e44": "metal",
+    "#43434b": "metal",
+    "#6c6e83": "metal",
+    "#868ba1": "metal",
+    "#a8b0d3": "metal",
+    "#d9835c": "wood",
+    "#955941": "wood"
+  }
+}

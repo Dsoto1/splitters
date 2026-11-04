@@ -205,12 +205,12 @@ export class MountState {
   }
 
   /** Riders in a real seat (SeatDef.seated), drawn sitting: the way the seat faces and its floor under the cushion. */
-  sitters(): Map<number, { yaw: number; legDrop: number }> {
-    const out = new Map<number, { yaw: number; legDrop: number }>();
+  sitters(): Map<number, { yaw: number; legDrop: number; straddle: number }> {
+    const out = new Map<number, { yaw: number; legDrop: number; straddle: number }>();
     for (const m of this.mounts.values())
       m.seats.forEach((s, i) => {
         const seat = m.def.seats[i];
-        if (s >= 0 && seat?.seated) out.set(s, { yaw: m.shown.yaw + (seat.facing ?? 0), legDrop: seat.legDrop ?? SEAT_LEG_DROP });
+        if (s >= 0 && seat?.seated) out.set(s, { yaw: m.shown.yaw + (seat.facing ?? 0), legDrop: seat.legDrop ?? SEAT_LEG_DROP, straddle: seat.straddle ?? 0 });
       });
     return out;
   }

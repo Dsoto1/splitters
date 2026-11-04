@@ -1,0 +1,5 @@
+{
+  "$comment": "Modular Space Kit: painted panels and frames; the laser gate's beam as it was.",
+  "default": "painted_metal",
+  "colors": {"#dd8472": "none", "#43434b": "metal"}
+}

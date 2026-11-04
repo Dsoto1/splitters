@@ -3,6 +3,7 @@ import { buildOccupancy, edgeKey, localSide, resolveEdge, type ResolvedEdge } fr
 import type { GlassKind, MapDocument, MapEntity } from '../map/schema.ts';
 import type { Vec3 } from '../math.ts';
 import type { OBox } from './scenarioDefs.ts';
+import { EDGE_SHAPES, GLASS_EDGE_STYLES } from '../content/edgeStyles.generated.ts';
 
 /**
  * Glass panes: real glass in window edges (a tile placement's `glass` per
@@ -26,28 +27,17 @@ export const GLASS = {
   tint: '#bfe3e8',
 } as const;
 
-/** Edge styles that have a window opening glass can fill. */
-export const GLASS_EDGES: ReadonlySet<ResolvedEdge> = new Set<ResolvedEdge>(['window', 'windows', 'slit']);
+/** Edge styles that have a window opening glass can fill (content/tiles/edges.json `glass`). */
+export const GLASS_EDGES: ReadonlySet<ResolvedEdge> = new Set<ResolvedEdge>(GLASS_EDGE_STYLES);
 
 /**
  * The window openings of an edge style along one side: [u0, u1, y0, y1], u
- * along the side (-half..half), y above the floor. Matches edgeSegments.
+ * along the side (-half..half), y above the floor (the top capped at the level
+ * height). The style's `openings` in content/tiles/edges.json.
  */
 export function windowOpenings(style: ResolvedEdge, height: number): [number, number, number, number][] {
-  const top = (h: number) => Math.min(h, height);
-  switch (style) {
-    case 'window':
-      return [[-1.3, 1.3, 0.9, top(2.5)]];
-    case 'windows':
-      return [
-        [-2.7, -0.8, 0.9, top(2.5)],
-        [0.8, 2.7, 0.9, top(2.5)],
-      ];
-    case 'slit':
-      return [[-1.5, 1.5, 1.25, top(1.6)]];
-    default:
-      return [];
-  }
+  if (style === 'none' || !GLASS_EDGES.has(style)) return [];
+  return (EDGE_SHAPES[style]?.openings ?? []).map(([u0, u1, y0, y1]) => [u0, u1, y0, Math.min(y1, height)]);
 }
 
 export interface GlassPane {

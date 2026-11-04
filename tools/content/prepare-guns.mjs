@@ -36,6 +36,9 @@
 // a muzzle ring: the orange and red pixels the `warm` test picks, as in `paintOut`) are recoloured to `color`,
 // keeping their light and dark, and the built model gets an emissive map of them (glowColour): a weapon whose
 // in-house model glowed in its own colour keeps that glow on its new model (the Singularity Cannon's purple).
+// `metalDarken: k` folds the download's bare metal (its metal/roughness map) into the matte colour map, darkened toward
+// `k` (a GLB's metal parts read as dark steel, not flat grey); `roughness` (default 0.85) leaves painted bodywork some
+// sheen (the snowmobile's 0.55: its download's paint is glossy).
 // `tint: { color, warm }` recolours the same way without the emissive map: a painted emblem in another colour
 // (the medical bag's red crosses, green by the owner's call, 2026-11-03).
 //
@@ -117,6 +120,27 @@ function recolourGlow(glow) {
       n++;
     }
     console.log(`  recoloured ${n} px of glow to ${glow.color}`);
+  };
+}
+
+/**
+ * `metalDarken: k` (GLB downloads with a metal/roughness map): the built model is matte, and a matte copy of a bare
+ * metal part (the download's metal channel, blue) reads as flat grey where the original shows dark steel; its colour
+ * is scaled toward `k` of itself by how metallic it is (1: unchanged, 0.3: the snowmobile's ski struts go near black).
+ */
+function metalDarken(k) {
+  return ({ data }, metalRough) => {
+    if (!metalRough) throw new Error('metalDarken: the download has no metal/roughness map');
+    const mr = metalRough.data;
+    let n = 0;
+    for (let i = 0; i < data.length; i += 3) {
+      const metal = mr[i + 2] / 255;
+      if (metal < 0.05) continue;
+      const f = 1 - (1 - k) * metal;
+      for (let c = 0; c < 3; c++) data[i + c] = Math.round(data[i + c] * f);
+      n++;
+    }
+    console.log(`  darkened ${n} px of bare metal (x${k})`);
   };
 }
 
@@ -216,7 +240,9 @@ async function build(src, entry, pack, place = null) {
     const paint = entry.paintOut ? async (img) => console.log(`  painted out ${await paintOut(img, markings(entry.paintOut), { grow: entry.grow ?? 2, holes: entry.holes ?? 0 })} px of markings`) : null;
     const glow = entry.glow ? recolourGlow(entry.glow) : null;
     const tint = entry.tint ? recolourGlow(entry.tint) : null;
-    const recolor = paint || glow || tint ? async (img) => {
+    const darken = entry.metalDarken !== undefined ? metalDarken(entry.metalDarken) : null;
+    const recolor = paint || glow || tint || darken ? async (img, extra = {}) => {
+      if (darken) darken(img, extra.metalRough);
       if (paint) await paint(img);
       if (glow) await glow(img);
       if (tint) await tint(img);
@@ -263,7 +289,7 @@ async function build(src, entry, pack, place = null) {
   // An interior says which part of the body it stands in for (`box`, in its glTF extras).
   if (place && entry.box) holder.setExtras({ cockpit: { box: entry.box } });
   for (const mat of doc.getRoot().listMaterials()) {
-    mat.setMetallicFactor(0).setRoughnessFactor(0.85).setMetallicRoughnessTexture(null).setOcclusionTexture(null).setEmissiveTexture(null);
+    mat.setMetallicFactor(0).setRoughnessFactor(entry.roughness ?? 0.85).setMetallicRoughnessTexture(null).setOcclusionTexture(null).setEmissiveTexture(null);
     for (const ext of mat.listExtensions()) ext.dispose();
     const baseMap = mat.getBaseColorTexture();
     if (baseMap) await shrink(baseMap, entry.textureSize ?? 512, mat.getAlphaMode() === 'OPAQUE' ? 'image/jpeg' : 'image/png');

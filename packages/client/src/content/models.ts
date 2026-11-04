@@ -14,6 +14,7 @@ import { LoadAssetContainerAsync } from '@babylonjs/core/Loading/sceneLoader';
 import './gltf.ts';
 import { MODEL_FALLBACKS } from '@tiletrigger/shared';
 import { GLB, versioned } from '../assetUrl.ts';
+import { applyPropSurfaces } from './propSurfaces.ts';
 
 /** Base URL of built content (packages/client/public/models). */
 export const MODEL_BASE = `${import.meta.env.BASE_URL}models/`;
@@ -38,6 +39,8 @@ export class ModelLibrary {
     if (!p) {
       p = LoadAssetContainerAsync(versioned(/^(props|creatures|city|packs)\//.test(path) ? `${import.meta.env.BASE_URL}${path}` : `${MODEL_BASE}${path}`), this.scene, GLB).then((c) => {
         this.lods.set(path, takeLods(c));
+        // Kit props carry their surfaces (tools/content/surfaces.mjs): shared detail maps on their materials.
+        if (path.startsWith('props/')) applyPropSurfaces(c, this.scene);
         return c;
       });
       // Models from pack downloads (content/guns.json) fall back to the ones they replaced.

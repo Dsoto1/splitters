@@ -55,6 +55,7 @@ import { flattenTextures } from './flatten.mjs';
 import { buildNatureDocument, cutBelow, normalise, readSoup } from './nature.mjs';
 import { MESHY_QUANTIZE, markings, meshyDocument, normalJpeg, paintOut } from './meshy-mesh.mjs';
 import { readLock, writeLock } from './lockfile.mjs';
+import { applySurfaces, isSurfaced, surfaceRules } from './surfaces.mjs';
 import { loadPropManifest } from './props-manifest.mjs';
 
 await MeshoptSimplifier.ready;
@@ -428,6 +429,8 @@ function collisionBoxes(p, size, tris, modelBoxes = null) {
 }
 
 const built = new Map(oldLock.files.map((f) => [f.file, f]));
+/** The surfaces each prop was given (tools/content/surfaces.mjs), for the lock file. */
+const surfaced = new Map();
 
 /**
  * A single-file GLB (the Kenney kits and our own code-built pieces): centred on
@@ -452,7 +455,10 @@ async function normaliseGlb(src, p) {
   }
   scene.addChild(root);
   if (p.cut) cutOpenings(doc, p.cut);
-  await doc.transform(weld(), dedup(), prune());
+  // Real surfaces for man-made kit props (content/surfaces/<pack>.json), measured in the prop's frame as drawn.
+  surfaced.set(p.id, await applySurfaces(doc, p.pack, p.id));
+  // A surfaced prop's second coordinates are read by the game, not by a texture in the file: prune keeps them.
+  await doc.transform(weld(), dedup(), prune({ keepAttributes: !!surfaced.get(p.id) }));
   return { glb: Buffer.from(await io.writeBinary(doc)), size: [round((b.max[0] - b.min[0]) * s), round((b.max[1] - b.min[1]) * s), round((b.max[2] - b.min[2]) * s)], boxes };
 }
 
@@ -800,7 +806,8 @@ for (const p of manifest.props) {
     scene.removeChild(turn);
     root.addChild(turn);
     scene.addChild(root);
-    await doc.transform(weld(), dedup(), ...(p.simplify ? [simplify({ simplifier: MeshoptSimplifier, ratio: p.simplify, error: 0.002 })] : []), prune());
+    surfaced.set(p.id, await applySurfaces(doc, p.pack, p.id));
+    await doc.transform(weld(), dedup(), ...(p.simplify ? [simplify({ simplifier: MeshoptSimplifier, ratio: p.simplify, error: 0.002 })] : []), prune({ keepAttributes: !!surfaced.get(p.id) }));
     glb = Buffer.from(await io.writeBinary(doc));
     writeFileSync(path, glb);
   } else if (external && pack.nature && dir) {
@@ -819,6 +826,15 @@ for (const p of manifest.props) {
     const was = built.get(file);
     if (was?.sha256 !== createHash('sha256').update(glb).digest('hex').slice(0, 16)) throw new Error(`${file} does not match content/props.lock.json; rebuild it with --downloads <dir>`);
     if (was.size) size = was.size;
+    // Surfaces reach a kit prop kept as built once (they can't be taken off again without its download).
+    const kept = await io.readBinary(new Uint8Array(glb));
+    if (isSurfaced(kept)) surfaced.set(p.id, was.surfaces ?? null);
+    else if (surfaceRules(p.pack, p.id)) {
+      surfaced.set(p.id, await applySurfaces(kept, p.pack, p.id));
+      await kept.transform(weld(), dedup(), prune({ keepAttributes: true }));
+      glb = Buffer.from(await io.writeBinary(kept));
+      writeFileSync(path, glb);
+    }
   } else {
     ({ glb, size, boxes: modelBoxes } = await normaliseGlb(join(ROOT, 'assets-src', p.pack, p.src), p));
     writeFileSync(path, glb);
@@ -845,7 +861,7 @@ for (const p of manifest.props) {
   // The game draws glTF models mirrored in x (Babylon's import into its left-handed space), so the boxes are too.
   const boxes = collision ? collisionBoxes(p, size, sceneTriangles(scene), modelBoxes)?.map(([x0, y0, z0, x1, y1, z1]) => [round(-x1), y0, z0, round(-x0), y1, z1]) : null;
   defs.push({ id: `prop.${p.id}`, file, displayName: p.name, category: p.category, size, collision, ...(boxes ? { boxes } : {}), ...(p.breakable && collision ? { breakable: p.breakable } : {}), ...(p.conceals ? { conceals: true } : {}), ...(p.flame ? { flame: propFlame(p) } : {}) });
-  lock.files.push({ file, source: p.pack, ...(p.budget ? { budget: p.budget } : {}), ...(p.source ? { title: `${p.source.model} (download dated ${p.source.date})` } : {}), src: Array.isArray(p.src) ? p.src.join(' + ') : p.src, triangles, ...(lodTriangles.length ? { lodTriangles } : {}), ...(pack.meshy && doc.getRoot().listMaterials().some((m) => m.getNormalTexture()) ? { normalMap: true } : {}), bytes: glb.byteLength, sha256: createHash('sha256').update(glb).digest('hex').slice(0, 16) , ...(external && !gltfKit ? { size } : {}) });
+  lock.files.push({ file, source: p.pack, ...(p.budget ? { budget: p.budget } : {}), ...(p.source ? { title: `${p.source.model} (download dated ${p.source.date})` } : {}), src: Array.isArray(p.src) ? p.src.join(' + ') : p.src, triangles, ...(lodTriangles.length ? { lodTriangles } : {}), ...(pack.meshy && doc.getRoot().listMaterials().some((m) => m.getNormalTexture()) ? { normalMap: true } : {}), ...(surfaced.get(p.id) ? { surfaces: surfaced.get(p.id) } : {}), bytes: glb.byteLength, sha256: createHash('sha256').update(glb).digest('hex').slice(0, 16) , ...(external && !gltfKit ? { size } : {}) });
 }
 
 /**

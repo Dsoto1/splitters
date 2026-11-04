@@ -79,6 +79,11 @@ export interface SeatDef {
   seated?: boolean;
   /** Seated (drawing only): how far below the cushion the floor under the rider's feet is (m). Default 0.45: the shins hang straight down. */
   legDrop?: number;
+  /**
+   * Seated astride a saddle (drawing only: a snowmobile, a bike): how far each thigh turns out from straight ahead
+   * (radians), so the knees pass either side of the saddle and the feet reach footrests at its sides. Default 0.
+   */
+  straddle?: number;
 }
 
 export interface MountDef {

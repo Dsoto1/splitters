@@ -1,0 +1,5 @@
+{
+  "$comment": "City Kit (Industrial): painted steel containers, tanks and tower; dark bare-metal frames.",
+  "default": "painted_metal",
+  "colors": {"#4e5160": "metal", "#6a6b80": "metal"}
+}

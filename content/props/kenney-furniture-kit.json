@@ -219,7 +219,7 @@
       "src": "kitchenFridgeLarge.glb",
       "name": "Fridge",
       "category": "Furniture",
-      "height": 2.0,
+      "height": 1.8,
       "collide": "box",
       "breakable": {
         "health": 100,

@@ -36,7 +36,7 @@ export const MESHY_TASKS = {
 const PACK = { owned: 'meshy-owned', CC0: 'meshy-community-characters' };
 const KINDS = new Set(['character', 'creature']);
 const USES = new Set(['player', 'npc', 'player+npc', 'npc+player']);
-const FIXES = new Set(['triangles', 'surface', 'seamWeld', 'lean', 'cloth', 'tail', 'feet', 'scrubBlue', 'hands', 'armCloth', 'skinClean', 'handsShare', 'headShare', 'lod', 'normalSize', 'hold', 'grip']);
+const FIXES = new Set(['triangles', 'surface', 'seamWeld', 'lean', 'cloth', 'tail', 'feet', 'scrubBlue', 'hands', 'armCloth', 'skinClean', 'handsShare', 'headShare', 'lod', 'normalSize', 'hold', 'grip', 'skin']);
 /** How a character gets about: left out, it walks on the rig's clips; `roll`, it has no legs (a ball, a wheel) and rolls. */
 const LOCOMOTION = new Set(['roll']);
 /** The clips a clip set (`clipsFrom`, tools/content/clip-set.mjs) can hold, as the game asks for them (characterAnimator.ts). */
@@ -201,6 +201,32 @@ export function manifestProblems(m, file = `${m?.id}.json`) {
       need(side.wrist === undefined || typeof side.wrist === 'boolean', 'fixes.hands.wrist: true (the skin past the wrist rides the hand alone)');
     }
   }
+  if (x.skin !== undefined) {
+    // This look's own skin weights (tools/content/skinfix.mjs; docs/CHARACTERS.md, "A look's own skin weights").
+    const k = x.skin;
+    const FINGER = ['tips', 'knuckle', 'joints', 'lanes', 'fingers'];
+    need(typeof k === 'object' && k !== null && Object.keys(k).every((q) => [...FINGER, 'hops', 'clamp', 'smooth', 'wrist', 'l', 'r'].includes(q)), `fixes.skin: { ${FINGER.join(', ')}, hops, clamp, smooth, wrist; or l / r for one hand's fingers }`);
+    for (const side of [k, k?.l, k?.r].filter(Boolean)) {
+      if (side !== k) need(Object.keys(side).every((q) => FINGER.includes(q)), `fixes.skin.l / r: { ${FINGER.join(', ')} }`);
+      need(side.tips === undefined || (typeof side.tips === 'number' && side.tips > 0 && side.tips <= 0.5), 'fixes.skin.tips: 0–0.5 (strays past the knuckles up to this share of the hand past its tips are fingers)');
+      need(side.knuckle === undefined || (typeof side.knuckle === 'number' && side.knuckle >= 0.02 && side.knuckle <= 0.3), 'fixes.skin.knuckle: 0.02–0.3 (the knuckle blend, a share of the hand)');
+      need(side.joints === undefined || (typeof side.joints === 'number' && side.joints >= 0.02 && side.joints <= 0.3), 'fixes.skin.joints: 0.02–0.3 (the finger-joint blend, a share of the finger)');
+      need(side.lanes === undefined || (typeof side.lanes === 'number' && side.lanes > 0 && side.lanes <= 1), 'fixes.skin.lanes: 0–1 (neighbouring fingers blended within this share of a finger\'s width of their boundary)');
+      need(side.fingers === undefined || side.fingers === 'lanes', "fixes.skin.fingers: 'lanes' (fused fingers split evenly into four)");
+    }
+    need(k?.hops === undefined || (Number.isInteger(k.hops) && k.hops >= 1 && k.hops <= 4), 'fixes.skin.hops: 1–4 (joints further along the skeleton from a vertex\'s own are dropped)');
+    need(k?.clamp === undefined || (typeof k.clamp === 'number' && k.clamp > 0 && k.clamp <= 0.3), 'fixes.skin.clamp: 0–0.3 (influences under it are dropped)');
+    need(k?.wrist === undefined || (typeof k.wrist === 'object' && k.wrist !== null && Object.keys(k.wrist).every((q) => ['until', 'band'].includes(q)) && Object.values(k.wrist).every((x) => typeof x === 'number' && x >= 0 && x <= 0.4)), 'fixes.skin.wrist: { until, band } (shares of the hand\'s length past the wrist joint, 0–0.4)');
+    if (k?.smooth !== undefined) {
+      let ok = false;
+      try {
+        ok = typeof k.smooth.joints === 'string' && !!new RegExp(k.smooth.joints) && (k.smooth.passes === undefined || (Number.isInteger(k.smooth.passes) && k.smooth.passes >= 1 && k.smooth.passes <= 8));
+      } catch {
+        ok = false;
+      }
+      need(ok, 'fixes.skin.smooth: { joints: "<regex of joint names>", passes: 1–8 }');
+    }
+  }
   // Hit-shape overrides (tools/content/hitboxes.mjs) and character stats (packages/shared/src/sim/characterStats.ts).
   for (const p of hitboxOverrideProblems(m.hitbox)) need(false, p);
   for (const p of statsProblems(m.stats)) need(false, p);
@@ -333,6 +359,7 @@ export function buildSpec(m) {
     feet: x.feet,
     scrubBlue: x.scrubBlue,
     hands: x.hands,
+    skin: x.skin,
     handsShare: x.handsShare,
     headShare: x.headShare,
     lod: x.lod,

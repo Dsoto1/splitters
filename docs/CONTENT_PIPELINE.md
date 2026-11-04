@@ -95,6 +95,7 @@ folder can sit directly in it or one level down), and run:
 | Meshy community pickup and prop downloads of 2026-11-03 (CC0 per owner; `medical_supply.glb`, `ammo_rifle.glb`, `ww2_ammo_crate.glb` in the folder `drive-2026-11-03-pickups`) | `ONLY=pickups/health_large.glb,pickups/ammo_rifle.glb node tools/content/prepare-guns.mjs --downloads <dir>/drive-2026-11-03-pickups`; `ONLY=ww2_ammo_crate node tools/content/prepare-props.mjs --downloads <dir>` (then `build-palette-atlas.mjs`) | `public/models/pickups/{health_large,ammo_rifle}.glb` (pack `meshy-community-pickups`, drawn by `game/pickupVisuals.ts`; pickup models sit in guns.json like the medkit and keep to the small-prop budget, as a map carries many) and `props/ww2_ammo_crate.glb` (pack `meshy-community-drive-1103`) |
 | The owner's Meshy landmark props of 2026-10-31 (textured GLBs, named in each entry's `src`; the monk statue is the `_stylize.glb` from its zip), all in one folder named `owned_landmarks` | `node tools/content/prepare-props.mjs --downloads <dir>` (`ONLY=<id>,…` for some) | pack `meshy-owned-landmarks`: market stalls (`dc_market_stall`, `mv_market_stall`, `rustic_market_stall`), the wishing well (`dc_well` and `mv_well`, one download), the crawler crane `dc_crane`, statues (`jt_statue_large`, `temple_fire_statue`, `temple_spear_statue`, `temple_monk_statue`) and fountains (`town_fountain`, `lion_head_fountain`, `eagle_fountain`); all hero tier |
 | The owner's Meshy airliner of 2026-11-04 (the refined GLB in a folder `airliner-2026-11-04/refined/airliner.glb`; preview task 01a1a451-1dda-77ed-82ec-810c24ac1e9a, refine 01a1a451-ee8d-72d3-99ea-48063cd52abe) | `node tools/content/fuselage-profile.mjs <dir>` (its cross-section for the cabin kit, `assets-src/tiletrigger-cabin/fuselage.json`, and its collision and openings, written into its pack file), then `ONLY=airliner_shell node tools/content/prepare-props.mjs --downloads <dir>` | `props/airliner_shell.glb` (pack `meshy-owned-airliner`, hero tier: 19.7k triangles, a 6.1k one from 120 m, 1.38 MB) |
+| "Snowmobile" by roygbpjyt (Meshy Community, CC0: Meshy Terms of Use §3.3 "Community License"; the textured GLB `snowmobile.glb` in a folder `snowmobile-cc0-2026-11-04`) | `ONLY=vehicles/snowmobile.glb node tools/content/prepare-guns.mjs --downloads <dir>` | `public/models/vehicles/snowmobile.glb` (pack `meshy-community-snowmobile`, vehicle tier: 20k triangles plus a 5k one from 40 m, 2048 px colour and 1024 px normal map, 1.42 MB), the Snow Sled's model |
 | Styloo Guns Asset Pack (`Styloo Guns Asset Pack GLTF FBX V1.1`), CC0 Guns & Explosives Pack (the rar's `Guns&Explosives` folder) | `node tools/content/prepare-guns.mjs --downloads <dir>` | `public/models/guns`, `content/guns.lock.json` (see `content/guns.json`) |
 
 Locomotion clips (walk, run, sprint) come from Library 1: the Standard edition
@@ -135,7 +136,11 @@ Props take `paintOut` too (the guns' colour rules); a rule with `within` (boxes 
 the built prop's frame) only touches the texels of the download's triangles
 inside them (the airliner's nacelle lettering, not its windows of the same
 grey), and the download's normal map goes flat under everything painted out,
-or its relief would draw the marking again. `bakeSize` sets the rebake's map
+or its relief would draw the marking again. A GLB download's metal/roughness map is dropped (the built
+material is matte); `metalDarken: k` (prepare-guns.mjs) first folds its bare metal into the colour map, darkened
+toward `k` (the snowmobile's ski struts and springs: grey in the colour map, dark steel only through the metal
+channel), and `roughness` sets the built material's (default 0.85; the snowmobile's 0.5 keeps its glossy paint's
+sheen). `bakeSize` sets the rebake's map
 (px, default 1024) before `textureSize` shrinks it.
 
 **Openings and box collision (any prop).** `cut` lists boxes
@@ -283,7 +288,8 @@ mesh level.
 
 - Gameplay shape stays in tile data, as today. An art kit supplies meshes per tile *part* (floor, wall, doorway frame, stairs, columns) per theme, snapped to the same grid and ports.
 - The kit viewer shows every tile in the theme next to its collision boxes. `content:check` verifies each art piece sits inside its tile's cell and doesn't block a doorway.
-- New tiles are added as data first (graybox is playable immediately), with art following.
+- New tiles are added as data first (graybox is playable immediately), with art following: the core kit is in
+  `content/tiles/` ("Tiles and edge styles" below).
 
 ### Weapons and items
 
@@ -360,7 +366,9 @@ in JSON, the behaviour in code (driving, suspension, flying, sentry aim and the 
    `enterRadius` 0 and a `sentry` block; a `vehicle` has a `vehicle` block and exactly one `driver`. Gunners need a
    `weapon` (a slot-0 weapon from content/weapons: add a new mounted gun there first); a driver may have one (fires
    ahead within `arc`); passengers never do (they shoot their own). `arc` is radians either side of the seat's
-   `facing` (leave it out for all round). Seat `offset` is the feet, or the cushion with `seated: true`.
+   `facing` (leave it out for all round). Seat `offset` is the feet, or the cushion with `seated: true`; a seated
+   rider's `legDrop` is the floor under the cushion and `straddle` (radians) turns the thighs out either side of a
+   saddle (the snowmobile).
 4. **Model:** `model` (and `wheels.model`) must exist under `packages/client/public/models` (content/models.json or
    guns.json builds it). The palette picture comes from `pnpm content:rebuild`.
 5. **Generate and check:** `pnpm content:vehicles` (`node tools/content/vehicles.mjs`) checks the schema (an unknown
@@ -390,7 +398,7 @@ in JSON, the behaviour in code (driving, suspension, flying, sentry aim and the 
    `npc-roles-resolved.json` as above and read the diff. MapMaker's encounter roster offers every role in
    `NPC_ROLES` (client `editor/editorApp.ts`).
 
-`pnpm content:rebuild` and `pnpm content:check` run all the data generators (weapons, vehicles, NPC roles, pickups, materials). The
+`pnpm content:rebuild` and `pnpm content:check` run all the data generators (weapons, vehicles, NPC roles, pickups, materials, tiles). The
 Workbench shows **Vehicles & turrets** and **NPC roles** from these files; id, kind, order, code, creature and look are
 read-only there, and a seat's place is edited in the JSON (the Workbench edits the first three seats' weapon and arc).
 
@@ -485,6 +493,65 @@ maps and stay in code.
 **Materials** (name, category, pattern, texture, colours, tiling, shine, glow, notes; id read-only) and **Themes**
 (name, sky, each slot's material and tint, notes; id read-only) from this file.
 
+### Tiles and edge styles
+
+The core building kit is data (docs/CONTENT_SCALABILITY.md step 7, scope "core kit"): what a tile occupies, where its
+doorways can open, its default walls and the parts it is built from are in `content/tiles/core.json`; how each side
+of a cell can be built (an edge style: what collides, the trim, the openings) is in `content/tiles/edges.json`. The
+builders are code: the parts (`map/catalog.ts`: `kitPart`, `resolveKitTile`), the room options (layouts, floor
+inserts, ceilings, corners), the facades and the auto/open rule (`map/geometry.ts`), `TILE_DIMENSIONS` (8 m cells,
+4 m levels, 0.5 m walls, 3 m doorways). The Style Pack tiles drawn in code (`paint(box, …)` in `map/packTiles*.ts`)
+stay there and follow the kit in the catalog.
+
+| File | Holds |
+|---|---|
+| `content/tiles/core.json` `tiles` | every kit tile in palette order: `id`, `displayName`, `category` (palette group: `TILE_CATEGORIES`), `blurb`, `cells` or `footprint` ([w, d] or [w, d, levels]), `floors` (levels with a slab), `ports` (`{side, level, cell}`, or `{allSides: level}`, or `{perimeter: [w, d], levels}`), `open`, `edgeDefault`, `edgeDefaults` (`"dx,dy,dz:S"`: style), `configurable` (room options), `model` (`file`, `lift`), `solids` and `extraFloors` (parts), `notes` |
+| `content/tiles/edges.json` `edges` | every edge style in MapMaker's order: `id`, `label`; `auto` and `open` are `rule`s in code; the rest give `segments` (collide: `u` along the side, `y` up, `t` thick, or a `repeat`), `trim` (`base`, `cornice`, `frame`, `window` or a box with `depth`), `trimFrom`, `openings` ([u0, u1, y0, y1]: framed under a facade, glazed when `glass`), `corner`, `facade`, `street`, `openDefault`, `dressing` (`door` / `window` with `span`, or `see-through`), `notes` |
+
+A part names one builder and its numbers (local metres: x east, y up, z north from the first cell's centre and
+floor): `box` [x0, y0, z0, x1, y1, z1] (with `yaw`, `surface`), `flight` (steps of 0.25 m: `axis`, `dir`, `from`,
+`across`, `steps`, `base`, `run`, `floor`), `descending` (steps down off a raised block), `rail` (1 m railing),
+`columns` (square columns at points), `partition` (a thin interior wall with gaps), `lamp`, `arc`, `arcTrim`,
+`arcade` (curves; `turns` in quarter turns), `roundRoom`, `discStrips` (a half-round floor), `block` (a model's
+collision, centred on the footprint). `kind` says what paints it: `solid` (default; the theme's solids slot), `wall`,
+`floor`, `trim` (drawn, never collides) or `prop` (collides, invisible: a model is drawn); `surface` gives a box a
+library material of its own. Edge values are metres or `half`, `-half`, `half-0.75`, `-half+0.75`, `height`,
+`height*2`, `height-0.15`, `height*2-0.2`, `min(3.5,height)`.
+
+#### How to add a tile or an edge style
+
+1. **A tile:** add it to `content/tiles/core.json` where it belongs in the palette (the order is only the palette's).
+   `id` is `core.<name>` (or `city.` / `orbital.` / `neon.` for those pieces); maps and Style Packs name a tile by id,
+   so never rename or remove one they use (the generator refuses). Tiles have **no network code**: a map carries the
+   id. Give its cells (or a `footprint`), the levels with floors, the ports, and its parts from the builders above. A
+   new kind of part is code first (`KitPart` and `kitPart` in `map/catalog.ts`), then its case in the generator's
+   schema. To offer it in a Style Pack, add it to that pack's `tiles` (`editor/stylePacks.ts`).
+2. **An edge style:** add it to `content/tiles/edges.json` (between `auto` and `open`, which stay first and last);
+   maps store a side's style by id, so never rename or remove one a map uses. Give `segments` and `trim` (an empty
+   list for none), and the flags that apply. MapMaker offers it at once (Walls & Openings, the inspector; its icon is
+   drawn from the segments) and maps accept it.
+3. **Generate and check:** `pnpm content:tiles` (`node tools/content/tiles.mjs`) checks the schema (an unknown field is
+   an error), palette groups and sides (`map/tileOptions.ts`), cells and footprints, that ports and default edges
+   sit on the tile's own cells, default edges are edge styles, one builder per part, boxes with min ≤ max, models
+   under `packages/client/public`, surfaces are materials in `content/materials.json`, edge values and repeats, that
+   glass styles have openings, unique ids, and that every tile and edge style `maps/*.json` and the Style Packs name
+   exists (kit ids here, other prefixes in `packTiles*.ts`); it writes `packages/shared/src/content/kitTiles.generated.ts`
+   (`KIT_TILES`) and `edgeStyles.generated.ts` (`EDGE_STYLES`, `EDGE_STYLE_LABELS`, `EDGE_SHAPES` and the glass,
+   corner, facade and street lists); `--check` only verifies they are up to date (`tools/content/test/tiles.test.mjs`
+   does the same).
+4. **Test:** `pnpm typecheck`, `pnpm test:changed` and the `editor`, `visual`, `scenery` and `maps` e2e flows; a
+   climbable tile also needs its bot paths (`test/kit.test.ts`). Changing a tile or a style changes
+   `packages/shared/test/fixtures/tiles-resolved.json` (the kit, the styles at six sizes, and a hash of what every map
+   builds: geometry, trim, facades, glass, validation, room dressing): rewrite it with
+   `UPDATE_TILE_FIXTURE=1 pnpm vitest run packages/shared/test/tilesData.test.ts` and read the diff. A changed tile
+   also needs its palette picture redrawn (`pnpm content:rebuild`; the picture is keyed by a hash of the tile's
+   resolved definition, key order included, so keep a tile's keys in their order).
+
+`pnpm content:rebuild` and `pnpm content:check` run it with the other data generators. The Workbench shows **Kit tiles**
+(name, palette group, blurb, floors, open, room options, default edge, model; id, cells, ports and parts read-only:
+edited in the JSON) and **Edge styles** (name, trim offset, the glass / corner / facade / street / open flags, room
+dressing; id, segments, trim and openings read-only) from these files.
+
 ### Audio
 
 - Original recordings, foley and synthesis by the team.
@@ -551,6 +618,49 @@ rendering; to render, `pnpm build`, serve it (`pnpm --filter @tiletrigger/client
 re-renders everything; `ATLAS_JOBS=2` uses two pages). Atlases with no change keep their file. The
 tool and the check list the pieces with `tools/content/palette-items.ts` (run by Node with
 `--experimental-transform-types`).
+
+### Prop surfaces (man-made Kenney props)
+
+Kenney paints every part one flat colour: a material per colour in the older kits (Furniture, Space
+Kit: `wood`, `metalDark`, `carpet`…) or one palette texture (`colormap`) whose swatches the faces point
+at in the newer ones. That flatness is much of the "toy" look (docs/LOOK.md). `tools/content/surfaces.mjs`
+maps each colour to a surface, as data, when `prepare-props.mjs` builds the prop:
+
+- **Surfaces** (`content/surfaces.json`): `wood`, `painted_wood`, `painted_metal`, `metal`, `concrete`,
+  `stone`, `fabric`, `plastic`, `cardboard`, `glass`. Each names one of our ambientCG sets
+  (`content/textures.json`; nothing new downloaded), its roughness and metalness, `tile` (metres per
+  repeat), `detail` (how strongly it changes colour, roughness and normals, 0-1) and `grime`. The tool
+  turns each set into one shared 256 px Babylon detail map, `public/surfaces/<id>.webp` (RGBA: high-passed
+  brightness, normal y, roughness, normal x; tileable grime blotches worked into brightness and roughness),
+  locked in `content/surfaces.lock.json`. `glass` has no picture (roughness only).
+- **Mapping, one file per pack** (`content/surfaces/<pack>.json`): `default` (any colour not listed;
+  `none` leaves it as it is), `materials` (flat-material kits, by material name), `colors` (palette kits:
+  `#rrggbb` of a swatch; the nearest listed colour within 40 wins, since Kenney's swatches are gradients),
+  `minShare` (a palette prop's surfaces under this share of its area join its largest, default 0.18, so most
+  props stay at one or two parts), `skip` (props left alone) and `props.<id>` (a prop's own `default`,
+  `materials`, `colors`, matched before the pack's). `node tools/content/surfaces.mjs --palette <pack>` lists
+  the colours a pack uses, grouped by family, with their area and which props use them.
+- **What a prop gets**: each mapped part keeps its colour (the base colour or the palette swatch) as the
+  tint, gets the surface's roughness and metalness, a second set of texture coordinates box-projected in
+  the prop's frame as drawn (after `height`/`scale`; whole centimetres in 16 bits, KHR_mesh_quantization), and
+  material extras `{ surface, tile, uv, detail }`. A palette material whose faces land on several surfaces is split into one
+  part per surface (one draw each for every copy on the map). The game (`content/propSurfaces.ts`, from
+  `ModelLibrary`) gives those materials the shared detail map; on low graphics it is left off. (A flat-colour
+  material also gets a shared 1×1 white colour map on the same coordinates: Babylon picks a mesh's texture
+  coordinates before the detail map asks for them, and without a texture of its own the material would draw
+  its detail from nowhere.)
+- **Natural pieces are never mapped** (trees, bushes, grass, plants, rocks, logs, stumps, cliffs: a
+  procedural environment replaces them): the Nature Kit has no mapping file, and the other packs `skip`
+  theirs.
+- **Kit props kept as built** (packs from a `download`: City Kit Industrial and Roads, Retro Urban,
+  the Modular Space and Space kits) are surfaced once, in place; changing their mapping afterwards needs
+  their download (`--downloads`). The lock entry lists `surfaces`, and provenance says so.
+
+Mapped packs: Castle, City (Commercial, Industrial, Roads), Factory, Fantasy Town, Furniture, Graveyard,
+Mini Dungeon, Mini Market, Modular Space, Pirate, Platformer, Retro Urban, Space, Space Station,
+Survival and Train kits. Real-world sizes are the props' `height` in their pack files as before (the
+2026-11-04 pass shrank the chunkiest clutter: barrels, the powder keg, bottle, bucket, anvil, lantern,
+candles, shopping cart, fridge); collision follows the built size.
 
 ### Adding a prop pack
 

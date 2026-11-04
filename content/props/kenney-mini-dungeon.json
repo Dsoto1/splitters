@@ -14,7 +14,7 @@
       "src": "barrel.glb",
       "name": "Oak Barrel",
       "category": "Crates & Barrels",
-      "height": 1.0,
+      "height": 0.9,
       "collide": "box",
       "breakable": {
         "health": 40,

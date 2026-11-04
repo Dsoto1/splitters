@@ -5,7 +5,8 @@
 //   1. locks   tools/content/lockfile.mjs            every content/*.lock.json in the stable format; git
 //                                                     conflict markers in one are settled (both sides'
 //                                                     entries; the one matching the file on disk wins)
-//   2. tables  tools/content/prepare-props.mjs       props.generated.ts and props.lock.json from
+//   2. tables  tools/content/surfaces.mjs            the prop surface pictures and content/surfaces.lock.json
+//              tools/content/prepare-props.mjs       props.generated.ts and props.lock.json from
 //                                                     content/props/*.json (packs from downloads kept as built)
 //              tools/content/character-manifests.mjs characters.generated.ts from content/characters/*.json
 //              tools/content/weapons.mjs             weapons.generated.ts, weaponFamilies.generated.ts, codes.lock.json
@@ -14,6 +15,7 @@
 //              tools/content/hitboxes.mjs            hitboxes.generated.ts: hit shapes measured from the character and creature models
 //              tools/content/pickups.mjs             pickups.generated.ts from content/pickups.json
 //              tools/content/materials.mjs           materials.generated.ts from content/materials.json
+//              tools/content/tiles.mjs               kitTiles.generated.ts and edgeStyles.generated.ts from content/tiles/
 //   3. atlas   tools/content/build-palette-atlas.mjs --offline: the palette atlases from the pictures
 //                                                     already made (any old atlas, either side of a conflict)
 //      only when a piece has no picture yet (new or changed model):
@@ -63,7 +65,8 @@ if (byHand.length) {
 step('locks');
 node('tools/content/lockfile.mjs');
 
-step('tables: props, characters, weapons, vehicles, NPC roles, pickups, materials and hit shapes');
+step('tables: props, characters, weapons, vehicles, NPC roles, pickups, materials, tiles and hit shapes');
+node('tools/content/surfaces.mjs');
 node('tools/content/prepare-props.mjs');
 node('tools/content/character-manifests.mjs');
 node('tools/content/weapons.mjs');
@@ -71,6 +74,7 @@ node('tools/content/vehicles.mjs');
 node('tools/content/npcs.mjs');
 node('tools/content/pickups.mjs');
 node('tools/content/materials.mjs');
+node('tools/content/tiles.mjs');
 // Hit shapes measured from the character models (after the looks: it reads them).
 node('tools/content/hitboxes.mjs');
 

@@ -12,6 +12,9 @@ import { CORE_LOOKS, PLAYER, armsLookFor, getWeapon } from '@tiletrigger/shared'
 import { CharacterLibrary } from '../content/characters.ts';
 import { ModelLibrary } from '../content/models.ts';
 import { CharacterAnimator, setCurlShare, type MotionState } from '../game/characterAnimator.ts';
+import { CreatureAnimator } from '../game/creatureAnimator.ts';
+import { CreatureLibrary, fitPlayerSkin } from '../content/creatures.ts';
+import type { CreatureModel } from '@tiletrigger/shared';
 import { createViewCamera, poseCamera } from '../game/cameraPose.ts';
 import { fitFirstPersonArms } from '../game/firstPersonArms.ts';
 import { FirstPersonBodyRig, fitFirstPersonBody } from '../game/firstPersonBody.ts';
@@ -68,8 +71,13 @@ export async function openGripSheet(engine: AbstractEngine): Promise<void> {
   /** `__grips.crowd`: extra characters driven like the posed one (an animation cost measurement). */
   const crowd: CharacterAnimator[] = [];
 
+  /** `__grips.creature`: a creature carrying a gun as a player or bot in its skin does (its own hold, CreatureSpec grip). */
+  let creature: { anim: CreatureAnimator; dispose(): void } | null = null;
+  let creatures: CreatureLibrary | null = null;
+
   engine.runRenderLoop(() => {
     current?.anim.update(1 / 30, { ...still, pitch: eyePitch });
+    creature?.anim.update(1 / 30, { ...still, pitch: eyePitch });
     for (const a of crowd) a.update(1 / 30, { ...still, pitch: eyePitch });
     if (fireRate > 0 && current && frames - firedAt >= 30 / fireRate) {
       firedAt = frames;
@@ -91,6 +99,8 @@ export async function openGripSheet(engine: AbstractEngine): Promise<void> {
 
   /** Show `look` holding `weapon` from `view`; resolves once the pose has settled and is on screen. */
   async function pose(look: string, weapon: string, view: GripView): Promise<void> {
+    creature?.dispose();
+    creature = null;
     current?.dispose();
     current = null;
     joints = null;
@@ -233,7 +243,43 @@ export async function openGripSheet(engine: AbstractEngine): Promise<void> {
     await settle(4);
   }
 
+  /** A creature (`imp`, `puglin`, ...) holding `weapon` at a player's height, framed on its hands, as `pose(..., 'third')`. */
+  async function poseCreature(kind: CreatureModel, weapon: string): Promise<void> {
+    creature?.dispose();
+    creature = null;
+    current?.dispose();
+    current = null;
+    posed = null;
+    rig = null;
+    ground.setEnabled(true);
+    creatures ??= new CreatureLibrary(scene);
+    const ch = await creatures.create(kind, 'grip_creature');
+    fitPlayerSkin(ch, PLAYER.height);
+    const anim = new CreatureAnimator(scene, ch, true);
+    const def = getWeapon(weapon);
+    const node = await models.instantiate(def.view.model, 'grip_weapon');
+    anim.hold(node, def.view.hold);
+    creature = { anim, dispose: () => (anim.dispose(), ch.dispose(), node.dispose()) };
+    joints = ch.joints;
+    scene.activeCamera = orbit;
+    await settle(40);
+    const at = (n: string) => {
+      const j = ch.joints.get(n);
+      j?.computeWorldMatrix(true);
+      return j ? j.getAbsolutePosition().clone() : new Vector3(0, 1.2, 0.3);
+    };
+    const side = Math.sign(at('upperarm_r').x) || 1;
+    orbit.target.copyFrom(at('hand_r').add(at('hand_l')).scale(0.5));
+    orbit.alpha = Math.PI / 2 - side * 0.75;
+    orbit.beta = 1.25;
+    orbit.radius = 0.95;
+    await settle(4);
+  }
+
   const api = {
+    creature: poseCreature,
+    /** The posed creature's animator (`__grips.creature`). */
+    creatureAnim: () => creature?.anim ?? null,
     looks: () => CORE_LOOKS.map((l) => ({ id: l.id, name: l.name, parts: l.parts })),
     pose,
     head,

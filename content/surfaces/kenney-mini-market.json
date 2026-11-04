@@ -1,0 +1,28 @@
+{
+  "$comment": "Mini Market: painted steel shelving and freezers, wooden produce crates, cardboard cartons, plastic packaging and fittings.",
+  "default": "painted_metal",
+  "colors": {
+    "#da845d": "wood",
+    "#b36343": "wood",
+    "#fa6b41": "plastic",
+    "#2c9671": "plastic",
+    "#48b27f": "plastic",
+    "#b977e9": "plastic",
+    "#ffc053": "plastic",
+    "#ff952f": "plastic",
+    "#353539": "plastic",
+    "#86ade5": "cardboard",
+    "#98bceb": "cardboard"
+  },
+  "props": {
+    "shelf_boxes": {
+      "colors": {"#efeff5": "cardboard", "#eaeaf2": "cardboard", "#c1c1d8": "cardboard", "#dadae7": "cardboard"}
+    },
+    "shelf_bags": {
+      "colors": {"#efeff5": "cardboard", "#eaeaf2": "cardboard", "#c1c1d8": "cardboard", "#dadae7": "cardboard"}
+    },
+    "shelf_end": {
+      "colors": {"#efeff5": "cardboard", "#eaeaf2": "cardboard", "#c1c1d8": "cardboard", "#dadae7": "cardboard"}
+    }
+  }
+}

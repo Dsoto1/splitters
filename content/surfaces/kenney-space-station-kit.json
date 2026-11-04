@@ -1,0 +1,21 @@
+{
+  "$comment": "Space Station Kit: painted panels and containers, plastic screens, a fabric bed and seats.",
+  "default": "painted_metal",
+  "colors": {
+    "#3b3b41": "plastic",
+    "#353539": "plastic",
+    "#42424a": "plastic",
+    "#43435c": "plastic",
+    "#3e3e44": "plastic",
+    "#43434b": "plastic",
+    "#719cdd": "none"
+  },
+  "props": {
+    "space_bed": {
+      "colors": {"#ffbd51": "fabric", "#ff9a33": "fabric"}
+    },
+    "space_chair": {
+      "colors": {"#ffbd51": "fabric"}
+    }
+  }
+}

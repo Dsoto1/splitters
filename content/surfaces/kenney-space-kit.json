@@ -1,0 +1,11 @@
+{
+  "$comment": "Space Kit (flat material per colour): painted hulls, bare dark metal, plastic trim.",
+  "default": "painted_metal",
+  "materials": {
+    "metal": "painted_metal",
+    "metalRed": "painted_metal",
+    "metalDark": "metal",
+    "dark": "plastic",
+    "_defaultMat": "painted_metal"
+  }
+}

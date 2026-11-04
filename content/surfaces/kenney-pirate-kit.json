@@ -1,0 +1,13 @@
+{
+  "$comment": "Pirate Kit: ship timber, iron cannons and fittings, glass bottles, a cloth flag. The palms are natural: left alone.",
+  "default": "wood",
+  "colors": {"#4b4e5c": "metal", "#6d6e83": "metal", "#8d93b1": "metal", "#adb5d9": "metal", "#329b74": "glass", "#56c086": "glass"},
+  "skip": ["palm", "palm_bent"],
+  "props": {
+    "bottle": {"default": "glass"},
+    "cannonballs": {"default": "metal"},
+    "flag": {
+      "colors": {"#4b4e5c": "fabric", "#8d93b1": "fabric", "#adb5d9": "fabric"}
+    }
+  }
+}

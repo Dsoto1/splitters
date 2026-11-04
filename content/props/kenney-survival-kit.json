@@ -14,7 +14,7 @@
       "src": "barrel.glb",
       "name": "Barrel",
       "category": "Crates & Barrels",
-      "height": 1.1,
+      "height": 0.95,
       "collide": "box",
       "breakable": {
         "health": 40,
@@ -26,7 +26,7 @@
       "src": "barrel-open.glb",
       "name": "Open Barrel",
       "category": "Crates & Barrels",
-      "height": 1.1,
+      "height": 0.95,
       "collide": "box",
       "breakable": {
         "health": 40,
@@ -99,7 +99,7 @@
       "src": "workbench-anvil.glb",
       "name": "Anvil",
       "category": "Industrial",
-      "height": 0.9,
+      "height": 0.8,
       "collide": "box"
     },
     {
@@ -298,7 +298,7 @@
       "src": "bucket.glb",
       "name": "Bucket",
       "category": "Medieval",
-      "height": 0.4,
+      "height": 0.32,
       "collide": "none"
     }
   ]

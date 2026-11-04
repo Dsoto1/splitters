@@ -22,6 +22,7 @@ import { CLIP_SETS_LOCK, isQueued, looksProblems, readClipSets, readManifests } 
 import { checkFxMap } from './vfx-map.mjs';
 import { lockProblems } from './lockfile.mjs';
 import { loadPropManifest } from './props-manifest.mjs';
+import { loadSurfaces } from './surfaces.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const MANIFEST = join(ROOT, 'content/models.json');
@@ -450,6 +451,13 @@ function checkLocked(lockPath, dir, packFor, budgets, modifications, prepare) {
 }
 const textureManifest = JSON.parse(readFileSync(join(ROOT, 'content/textures.json'), 'utf8'));
 const textureCount = checkLocked('content/textures.lock.json', 'textures', () => textureManifest.pack, textureManifest.budgets, ['downscaled to 512 px', 'colour, normal and emission maps only'], 'node tools/content/prepare-textures.mjs');
+// The prop surfaces (tools/content/surfaces.mjs): their mapping files checked, their shared pictures locked.
+try {
+  loadSurfaces();
+} catch (e) {
+  problems.push(String(e.message ?? e));
+}
+const surfaceCount = checkLocked('content/surfaces.lock.json', 'surfaces', () => textureManifest.pack, { maxBytes: 160000 }, ['packed into one Babylon detail map at 256 px (high-passed brightness, normal, roughness) with tileable grime worked into brightness and roughness; WebP'], 'node tools/content/surfaces.mjs');
 const propManifest = loadPropManifest();
 const propById = new Map(propManifest.props.map((p) => [`props/${p.id}.glb`, p]));
 const propCount = checkLocked(
@@ -457,7 +465,7 @@ const propCount = checkLocked(
   'props',
   (f) => propManifest.packs[f.source],
   propManifest.budgets,
-  (f, pack) => (pack.nature ? ['converted to glTF (FBX via three.js FBXLoader)', 'turned, centred, stood on the ground and scaled to metres', 'decimated with meshoptimizer (leaf masses rebuilt on a voxel grid first), with lower levels of detail and, for trees, a camera-facing picture card for the distance', "colour map baked into one colour per face (no image shipped but the card's)", 'emissive and metal/roughness/normal maps dropped']  : pack.meshy ? [/\.glb$/i.test(f.src) ? "read from Meshy's textured GLB download (base colour map only)" : 'converted to glTF (FBX via three.js FBXLoader)', 'simplified with the texture seams closed, the colour map painted afresh onto new flat charts from the full download (tools/content/meshy-mesh.mjs)', ...(propById.get(f.file)?.stone ? ['colour map turned to stone'] : []), ...(propById.get(f.file)?.paintOut ? ['markings painted out of the colour map (a logo)'] : []), ...(propById.get(f.file)?.dropHidden ? ['triangles nothing outside can see dropped'] : []), ...(f.normalMap ? ['normal map baked from the full download onto the cut mesh (its own normal map included; tangents added)'] : []), ...(f.lodTriangles ? ['lower level of detail added'] : []), 'turned to face +Z, centred, stood on the ground and scaled to metres', ...(propById.get(f.file)?.cut ? ['openings cut through the model (doors)'] : []), `maps re-encoded as JPEGs (${propById.get(f.file)?.textureSize ?? pack.textureSize} px colour)`] : pack.convert ? [/\.fbx(#|$)/i.test(f.src) ? 'converted to glTF (FBX via three.js FBXLoader)' : 'read from the glTF in the download', 'turned to face +Z, centred, stood on the ground and scaled to metres', pack.flatten || propById.get(f.file)?.flatten ? 'photo textures replaced by one flat colour per face (no image shipped)' : pack.colors ? 'untextured materials given flat colours (per material, some pieces banded by height)' : pack.textureSize ? `embedded maps re-encoded as ${pack.textureSize} px JPEGs` : pack.untextured ? "untextured: each material keeps the pack's own colour" : 'palette texture embedded'] : pack.download && pack.images ? ['turned to face +Z, centred and stood on the ground', 'textures downscaled and embedded, metal/roughness maps dropped', ...(f.src.includes(' + ') ? ['kit pieces combined'] : [])] : pack.license === 'Owned' ? [`built in code by ${pack.url}`, 'centred, stood on the ground and scaled to metres'] : ['centred, stood on the ground and scaled to metres', 'texture embedded']),
+  (f, pack) => (pack.nature ? ['converted to glTF (FBX via three.js FBXLoader)', 'turned, centred, stood on the ground and scaled to metres', 'decimated with meshoptimizer (leaf masses rebuilt on a voxel grid first), with lower levels of detail and, for trees, a camera-facing picture card for the distance', "colour map baked into one colour per face (no image shipped but the card's)", 'emissive and metal/roughness/normal maps dropped']  : pack.meshy ? [/\.glb$/i.test(f.src) ? "read from Meshy's textured GLB download (base colour map only)" : 'converted to glTF (FBX via three.js FBXLoader)', 'simplified with the texture seams closed, the colour map painted afresh onto new flat charts from the full download (tools/content/meshy-mesh.mjs)', ...(propById.get(f.file)?.stone ? ['colour map turned to stone'] : []), ...(propById.get(f.file)?.paintOut ? ['markings painted out of the colour map (a logo)'] : []), ...(propById.get(f.file)?.dropHidden ? ['triangles nothing outside can see dropped'] : []), ...(f.normalMap ? ['normal map baked from the full download onto the cut mesh (its own normal map included; tangents added)'] : []), ...(f.lodTriangles ? ['lower level of detail added'] : []), 'turned to face +Z, centred, stood on the ground and scaled to metres', ...(propById.get(f.file)?.cut ? ['openings cut through the model (doors)'] : []), `maps re-encoded as JPEGs (${propById.get(f.file)?.textureSize ?? pack.textureSize} px colour)`] : pack.convert ? [/\.fbx(#|$)/i.test(f.src) ? 'converted to glTF (FBX via three.js FBXLoader)' : 'read from the glTF in the download', 'turned to face +Z, centred, stood on the ground and scaled to metres', pack.flatten || propById.get(f.file)?.flatten ? 'photo textures replaced by one flat colour per face (no image shipped)' : pack.colors ? 'untextured materials given flat colours (per material, some pieces banded by height)' : pack.textureSize ? `embedded maps re-encoded as ${pack.textureSize} px JPEGs` : pack.untextured ? "untextured: each material keeps the pack's own colour" : 'palette texture embedded'] : pack.download && pack.images ? ['turned to face +Z, centred and stood on the ground', 'textures downscaled and embedded, metal/roughness maps dropped', ...(f.src.includes(' + ') ? ['kit pieces combined'] : [])] : pack.license === 'Owned' ? [`built in code by ${pack.url}`, 'centred, stood on the ground and scaled to metres'] : ['centred, stood on the ground and scaled to metres', 'texture embedded']).concat(f.surfaces ? [`colours mapped to shared surfaces (${f.surfaces.join(', ')}): roughness, metalness and box-projected detail coordinates (tools/content/surfaces.mjs)`] : []),
   'node tools/content/prepare-props.mjs',
 );
 const skyManifest = JSON.parse(readFileSync(join(ROOT, 'content/skies.json'), 'utf8'));
@@ -483,7 +491,7 @@ const gunCount = checkLocked(
   'models/guns',
   (f) => gunsManifest.packs[f.source],
   gunsManifest.budgets,
-  (f, pack) => (pack.meshy ? [pack.glb ? "read from Meshy's textured GLB download (base colour map only)" : 'converted to glTF (FBX via three.js FBXLoader)', 'simplified with the texture seams closed, the colour map painted afresh onto new flat charts from the full download (tools/content/meshy-mesh.mjs)', ...(/markings painted out/.test(f.src) ? ['lettering and logos painted out of the colour map'] : []), ...(gunByFile.get(f.file)?.glow ? [`glowing parts recoloured to ${gunByFile.get(f.file).glow.color}, with an emissive map of them`] : []), ...(f.normalMap ? ['normal map baked from the full download onto the cut mesh (its own normal map included; tangents added)'] : []), ...(f.lodTriangles ? ['lower level of detail added'] : []), ...(f.interiorOf ? [`the cockpit of ${f.interiorOf}: cropped to a box in its frame from the same download, cut far less, with colour and normal maps of its own; placed exactly as the body`] : []), 'turned so the barrel runs along +Z, centred and scaled', 'colour map shrunk to 512 px, matte material'] : ['turned so the barrel runs along +Z, centred and scaled', 'colour map shrunk to 512 px, normal map to 256 px, matte material']),
+  (f, pack) => (pack.meshy ? [pack.glb ? "read from Meshy's textured GLB download (base colour map only)" : 'converted to glTF (FBX via three.js FBXLoader)', 'simplified with the texture seams closed, the colour map painted afresh onto new flat charts from the full download (tools/content/meshy-mesh.mjs)', ...(/markings painted out/.test(f.src) ? ['lettering and logos painted out of the colour map'] : []), ...(gunByFile.get(f.file)?.metalDarken !== undefined ? ['bare metal parts (its metal/roughness map) darkened into the colour map'] : []), ...(gunByFile.get(f.file)?.glow ? [`glowing parts recoloured to ${gunByFile.get(f.file).glow.color}, with an emissive map of them`] : []), ...(f.normalMap ? ['normal map baked from the full download onto the cut mesh (its own normal map included; tangents added)'] : []), ...(f.lodTriangles ? ['lower level of detail added'] : []), ...(f.interiorOf ? [`the cockpit of ${f.interiorOf}: cropped to a box in its frame from the same download, cut far less, with colour and normal maps of its own; placed exactly as the body`] : []), /^models\/vehicles\//.test(f.file) ? 'turned so its front faces +Z, centred and scaled' : 'turned so the barrel runs along +Z, centred and scaled', `colour map shrunk to ${gunByFile.get(f.file)?.textureSize ?? 512} px, ${gunByFile.get(f.file)?.roughness !== undefined ? `non-metal material, roughness ${gunByFile.get(f.file).roughness}` : 'matte material'}`] : ['turned so the barrel runs along +Z, centred and scaled', 'colour map shrunk to 512 px, normal map to 256 px, matte material']),
   'node tools/content/prepare-guns.mjs --downloads <dir>',
 );
 const vfxManifest = JSON.parse(readFileSync(join(ROOT, 'content/vfx.json'), 'utf8'));
@@ -500,7 +508,7 @@ const gearCount = checkLocked(
   'node tools/content/prepare-gear.mjs --downloads <dir>',
 );
 console.log(`checked ${gearCount} gear models`);
-console.log(`checked ${textureCount} texture files, ${propCount} props, ${skyCount} skies, ${cityCount} city files, ${packFileCount} style pack files and ${gunCount} gun models`);
+console.log(`checked ${textureCount} texture files, ${surfaceCount} prop surfaces, ${propCount} props, ${skyCount} skies, ${cityCount} city files, ${packFileCount} style pack files and ${gunCount} gun models`);
 
 // Map pictures (tools/content/capture-map-shots.mjs): one 640×360 JPEG per shipped (not retired) map, within budget, nothing else.
 const SHOTS_DIR = join(ROOT, 'packages/client/public/maps/shots');
@@ -608,9 +616,9 @@ else {
   console.log(`checked ${pieces.length} palette pictures in ${names.length} atlases (${(atlasBytes / 1024).toFixed(0)} KB, index ${(indexBytes / 1024).toFixed(0)} KB)`);
 }
 
-// The data tables (weapons, vehicles, NPC roles, pickups, materials) and the measured hit shapes (hitboxes): their
-// content checks, and the generated files and codes lock up to date.
-for (const gen of ['weapons', 'vehicles', 'npcs', 'pickups', 'materials', 'hitboxes']) {
+// The data tables (weapons, vehicles, NPC roles, pickups, materials, tiles) and the measured hit shapes (hitboxes):
+// their content checks, and the generated files and codes lock up to date.
+for (const gen of ['weapons', 'vehicles', 'npcs', 'pickups', 'materials', 'tiles', 'hitboxes']) {
   if (!check) break;
   try {
     execFileSync(process.execPath, [join(ROOT, `tools/content/${gen}.mjs`), '--check'], { cwd: ROOT, stdio: 'inherit' });

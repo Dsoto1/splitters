@@ -62,7 +62,7 @@
       "src": "shopping-cart.glb",
       "name": "Shopping Cart",
       "category": "Shop",
-      "height": 1.1,
+      "height": 1.0,
       "collide": "box"
     },
     {

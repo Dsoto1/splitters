@@ -147,7 +147,7 @@ export class CreatureAnimator {
       w.rotationQuaternion = aim;
     }
     w.computeWorldMatrix(true);
-    if (arms && this.grip && this.skelRoot && !this.dead) holdWith(new SkeletonSpace(this.skelRoot), arms, w, this.grip, 1, this.ik);
+    if (arms && this.grip && this.skelRoot && !this.dead) holdWith(new SkeletonSpace(this.skelRoot), arms, w, this.grip, 1, this.ik, this.ch.spec.grip);
   }
 
   /** Creatures are never ragdolled (their skeletons aren't ours); they play their death instead. */

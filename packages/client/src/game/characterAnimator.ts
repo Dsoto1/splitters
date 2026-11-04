@@ -7,7 +7,7 @@ import type { Skeleton } from '@babylonjs/core/Bones/skeleton';
 import { Matrix, Quaternion, Vector3 } from '@babylonjs/core/Maths/math.vector';
 import type { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import type { AbstractMesh } from '@babylonjs/core/Meshes/abstractMesh';
-import type { ModelPoint, WeaponHold } from '@tiletrigger/shared';
+import type { GripTune, ModelPoint, WeaponHold } from '@tiletrigger/shared';
 import type { CharacterInstance, Clip } from '../content/characters.ts';
 import { gripReport, skinHandFrame } from './handProbe.ts';
 import { TorsoSurface, armReach, reachAlong } from './torsoSurface.ts';
@@ -39,6 +39,8 @@ export interface MotionState {
   seated?: boolean;
   /** Seated: how far below the cushion the floor is (m); the shins reach down to it (SeatDef.legDrop). */
   legDrop?: number;
+  /** Seated astride a saddle: each thigh's turn out from straight ahead (rad; SeatDef.straddle). */
+  straddle?: number;
   /** Seated: which way the seat faces, relative to the body's facing (radians, like moveAngle); the hips turn toward it. */
   seatFacing?: number;
 }
@@ -551,6 +553,7 @@ export class CharacterAnimator {
     // Into and out of a seat quickly (getting in is instant in the sim).
     const sitTarget = s.seated ? 1 : 0;
     if (s.seated && s.legDrop !== undefined) this.legDrop = s.legDrop;
+    if (s.seated) this.straddle = s.straddle ?? 0;
     this.sit += Math.sign(sitTarget - this.sit) * Math.min(Math.abs(sitTarget - this.sit), dt * 6);
     this.applyProne();
     if (this.rolls) this.roll(dt, s);
@@ -1120,6 +1123,8 @@ export class CharacterAnimator {
   private shin: number | null = null;
   /** The seat's floor under the cushion (MotionState.legDrop). */
   private legDrop = 0.45;
+  /** Astride a saddle: each thigh turned out this far (MotionState.straddle). */
+  private straddle = 0;
   private appliedSit = 0;
 
   /** Where the body sits before any prone offset (first-person arms are placed under the camera). */
@@ -1141,7 +1146,7 @@ export class CharacterAnimator {
   }
 
   /** Bend the legs over the seat (after the clips); measures the hip height first, while it can (not lying down). */
-  private applySit(right: Vector3): void {
+  private applySit(right: Vector3, up: Vector3): void {
     const thigh = this.ch.joints.get('thigh_l');
     const calf = this.ch.joints.get('calf_l');
     const foot = this.ch.joints.get('foot_l');
@@ -1166,6 +1171,8 @@ export class CharacterAnimator {
     const knee = Math.max(SIT_KNEE_MIN, Math.min(SIT_KNEE_MAX, SIT_THIGH - shinAngle));
     for (const side of ['l', 'r'] as const) {
       this.turnJoint(this.ch.joints.get(`thigh_${side}`), right, -SIT_THIGH * this.sit);
+      // Astride: the raised thigh swings out about the upright, knee to its own side of the saddle.
+      this.turnJoint(this.ch.joints.get(`thigh_${side}`), up, (side === 'l' ? -1 : 1) * this.straddle * this.sit);
       this.turnJoint(this.ch.joints.get(`calf_${side}`), right, knee * this.sit);
     }
   }
@@ -1243,7 +1250,7 @@ export class CharacterAnimator {
       const q = worldTurn(parent, right, pitch).multiply(worldTurn(parent, up, -twist * share));
       bone.rotationQuaternion = q.multiply(bone.rotationQuaternion);
     }
-    this.applySit(right);
+    this.applySit(right, up);
     this.applyReactions(right, up, rootRot);
     if (this.fp) {
       // Your own body seen from its eyes: the head shrunk away, then the body (bent for the aim) moved under the
@@ -1869,27 +1876,35 @@ export function armsFrom(joints: Map<string, TransformNode>, meshes: readonly Ab
 /**
  * Close the hands on a gun placed by the caller (a creature's held gun): the shooting hand turned onto the grip,
  * the support hand cupping a long gun's handguard or under a pistol's, both palms brought there by the arm IK and
- * the fingers closed. `scale`: the body's size against the model's (points on the gun are model metres).
+ * the fingers closed. `scale`: the body's size against the model's (points on the gun are model metres). `tune`:
+ * this creature's own hands and arms (CreatureSpec `grip`, as a look's `whole.grip`); none: as every creature's.
  */
-export function holdWith(space: SkeletonSpace, arms: HoldingArms, weapon: TransformNode, grip: WeaponHold, scale: number, weight: number): void {
+export function holdWith(space: SkeletonSpace, arms: HoldingArms, weapon: TransformNode, grip: WeaponHold, scale: number, weight: number, tune?: GripTune): void {
   if (grip.style === 'melee' || weight <= 0) return;
   weapon.computeWorldMatrix(true);
   const world = weapon.getWorldMatrix();
   const point = (p: ModelPoint) => Vector3.TransformCoordinates(new Vector3(p[0], p[1], p[2]), world);
+  const shift = (p: ModelPoint, by: readonly [number, number, number] | undefined): ModelPoint => (by ? [p[0] + by[0], p[1] + by[1], p[2] + by[2]] : p);
+  const gripPoint = grip.style === 'long' ? shift(grip.grip, tune?.gripLong) : grip.grip;
+  const supportPoint = grip.support ? shift(grip.support, grip.style === 'long' ? tune?.supportLong : tune?.supportPistol) : undefined;
   gripHand(space, arms.r, world, 'grip', weight, true);
   if (grip.support && grip.style === 'long') cupHand(space, arms.l, world, weight);
   else if (grip.support) gripHand(space, arms.l, world, 'support', weight, true);
-  const gripAt = palmOnGrip(arms.r, point(grip.grip), scale);
-  const supportAt = grip.support ? palmOnGrip(arms.l, point(grip.support), scale, grip.style === 'long') : null;
+  if (tune?.rollR) rollHand(space, arms.r, tune.rollR, weight);
+  if (tune?.rollL && grip.support) rollHand(space, arms.l, tune.rollL, weight);
+  const gripAt = palmOnGrip(arms.r, point(gripPoint), scale);
+  const supportAt = supportPoint ? palmOnGrip(arms.l, point(supportPoint), scale, grip.style === 'long') : null;
   refreshArm(arms.r);
   refreshArm(arms.l);
   const outward = arms.r.upper.getAbsolutePosition().subtract(arms.l.upper.getAbsolutePosition()).normalize();
   const down = Vector3.TransformNormal(new Vector3(0, -1, 0), world).normalize();
-  solveArm(space, arms.r, gripAt, arms.r.upper.getAbsolutePosition().add(outward.scale(0.35 * scale)).add(down.scale(0.3 * scale)), weight);
-  closeHand(space, arms.r, weight, point(grip.grip));
-  if (supportAt && grip.support) {
+  const out = grip.style === 'long' ? (tune?.elbowOut ?? 0) : 0;
+  const drop = grip.style === 'long' ? (tune?.elbowDown ?? 0) : 0;
+  solveArm(space, arms.r, gripAt, arms.r.upper.getAbsolutePosition().add(outward.scale((0.35 + out) * scale)).add(down.scale((0.3 + drop) * scale)), weight);
+  closeHand(space, arms.r, weight * (tune?.curlR ?? 1), point(gripPoint));
+  if (supportAt && supportPoint) {
     solveArm(space, arms.l, supportAt, arms.l.upper.getAbsolutePosition().subtract(outward.scale(0.1 * scale)).add(down.scale(0.4 * scale)), weight);
-    closeHand(space, arms.l, weight * supportCurl(grip), point(grip.support));
+    closeHand(space, arms.l, weight * supportCurl(grip) * (tune?.curlL ?? 1), point(supportPoint));
   }
 }
 

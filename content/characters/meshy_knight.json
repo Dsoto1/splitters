@@ -39,6 +39,14 @@
       "curlR": 1.4,
       "curlL": 1.6,
       "rollR": -0.25
+    },
+    "skin": {
+      "smooth": {
+        "joints": "^(thigh|calf)_",
+        "passes": 6
+      },
+      "lanes": 0.8,
+      "joints": 0.2
     }
   }
 }

@@ -203,7 +203,8 @@ describe('props', () => {
   it('has a catalogue of real-size props in several categories', () => {
     expect(CORE_PROPS.length).toBeGreaterThanOrEqual(140);
     const barrel = CORE_PROPS.find((p) => p.id === 'prop.barrel')!;
-    expect(barrel.size[1]).toBeCloseTo(1.1);
+    // A 55-gallon drum is about 0.9 m: content/props/kenney-survival-kit.json, real-world sizes (docs/LOOK.md).
+    expect(barrel.size[1]).toBeCloseTo(0.95);
     expect(barrel.collision).not.toBeNull();
     expect(CORE_PROPS.find((p) => p.id === 'prop.rug')!.collision).toBeNull();
   });

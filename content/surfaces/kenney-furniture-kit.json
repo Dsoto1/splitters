@@ -1,0 +1,44 @@
+{
+  "$comment": "Furniture Kit (flat material per colour): wood, upholstery and carpets as fabric, metal frames and appliances, glass, plastic fittings. Plants and lamp shades as they were.",
+  "default": "plastic",
+  "materials": {
+    "wood": "wood",
+    "woodDark": "wood",
+    "carpet": "fabric",
+    "carpetWhite": "fabric",
+    "carpetDarker": "fabric",
+    "metal": "metal",
+    "metalMedium": "metal",
+    "metalDark": "metal",
+    "metalLight": "painted_metal",
+    "glass": "glass",
+    "plant": "none",
+    "lamp": "none"
+  },
+  "skip": ["potted_plant", "plant_small"],
+  "props": {
+    "cardboard_box": {
+      "default": "cardboard",
+      "materials": {"wood": "cardboard", "woodDark": "cardboard"}
+    },
+    "cardboard_open": {
+      "default": "cardboard",
+      "materials": {"wood": "cardboard", "woodDark": "cardboard"}
+    },
+    "bathtub": {
+      "materials": {"carpetWhite": "plastic"}
+    },
+    "toilet": {
+      "materials": {"carpetWhite": "plastic"}
+    },
+    "washer": {
+      "materials": {"carpetWhite": "painted_metal"}
+    },
+    "fridge": {
+      "materials": {"carpetWhite": "painted_metal"}
+    },
+    "stove": {
+      "materials": {"carpetWhite": "painted_metal"}
+    }
+  }
+}
