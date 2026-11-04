@@ -33,3 +33,37 @@ Change the grade in `WORLD_GRADE`, the light balance in `LIGHT_BALANCE`, a sky's
 content/skies.json. Then review a city, an industrial, an interior and a snow map at eye level and from
 above (the screenshots in the HANDOFF entry of 2026-11-04 were made that way) and regenerate the visual
 baselines (`pnpm e2e:baselines`).
+
+## No flicker: coplanar faces (`visibleFaces`, packages/shared/src/map/faces.ts)
+
+Texture flicker on map geometry was z-fighting: two faces in the same plane (a floor slab's edge and the wall
+over it, wall-run ends at corners, trim flush with walls, floors over floors, a block's top level with a tile's).
+The renderer used to grow every box by a random 2-14 mm so one face would win; at range the depth buffer can't
+tell a few millimetres apart (about 6 mm at 100 m on WebGL2), so they fought again, and boxes that drew the same
+random amount fought at any range. Now a build-time pass works out the faces to draw:
+
+- Boxes sharing a rotation (axis-aligned, the same yaw give or take quarter turns, the same tilt) are compared in
+  that frame. Parts of a face inside another box, or back to back with another box's face, are dropped. Where two
+  faces share a plane and facing, one draws, by a fixed priority: on tops, floors (and blocks) over solids over
+  walls over trim; on every other face, trim over solids over walls over floors; then a box with its own material
+  (style pack pieces, painted blocks) over a themed one; then the later box. A box wholly inside another draws nothing.
+- Faces of differently turned boxes that still share a plane (the tops of two blocks at different yaws, curved-wall
+  joints) are cut as convex polygons by the same priority.
+- A cut face still reaches 0.5 mm under the face that won (the seam), so no pixel cracks open along the joins; the
+  sliver is far below a pixel past arm's length.
+
+Rendering only: physics, navigation and the server never see it (the collider list of every map is unchanged).
+`packages/shared/test/zfight.test.ts` audits every map in maps/ (coplanar overlaps left: none) and samples that
+every open face point draws exactly once. MapMaker warns (`geometry.coplanar`) when a free block's face lies in
+the same plane as another piece's in a different look (only one shows), and **Overlaps** in its top bar highlights
+those places.
+
+### Depth buffer
+
+WebGL2 keeps reverse depth on, though it buys little there: the canvas's depth buffer is 24-bit fixed point and
+WebGL's depth range is [-1, 1] (Babylon has no clip-control path), so precision stays about d² × 6e-7 m (1.5 mm at
+50 m, 6 mm at 100 m, 24 mm at 200 m) either way. A float depth target plus EXT_clip_control would make it
+sub-millimetre at any range but needs a full-screen copy every frame and patching Babylon; with no coplanar faces
+left it isn't needed. WebGPU (opt-in, `?renderer=webgpu`) now runs without a stencil buffer (nothing uses one), so
+Babylon gives it a 32-bit float depth buffer, and with reverse depth on WebGPU's [0, 1] range that is the precise
+setup at no cost. Not measurable in the container (SwiftShader's depth is float either way); not judged on a GPU.

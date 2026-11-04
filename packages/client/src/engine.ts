@@ -49,8 +49,12 @@ export async function createEngine(canvas: HTMLCanvasElement): Promise<{ engine:
       const { WebGPUEngine } = await import('@babylonjs/core/Engines/webgpuEngine');
       if (await WebGPUEngine.IsSupportedAsync) {
         touchedCanvas = true;
-        const engine = new WebGPUEngine(canvas, { antialias: true, stencil: true, powerPreference: 'high-performance' });
+        // No stencil (nothing draws with one): Babylon then gives the main pass a 32-bit float depth buffer instead of
+        // depth24plus, and with reverse depth on WebGPU's [0, 1] depth range that keeps millimetres apart at any range
+        // (docs/LOOK.md, "Depth buffer"). WebGL2 can't have either on the canvas (see below).
+        const engine = new WebGPUEngine(canvas, { antialias: true, stencil: false, powerPreference: 'high-performance' });
         await engine.initAsync();
+        engine.useReverseDepthBuffer = true;
         engine.onNewSceneAddedObservable.add(installEnvironmentBrdf);
         if (forced === 'webgpu' || (await webgpuSurvives(engine))) return { engine, kind: 'WebGPU', canvas };
         engine.dispose();
@@ -66,7 +70,10 @@ export async function createEngine(canvas: HTMLCanvasElement): Promise<{ engine:
   // A canvas that had a WebGPU context cannot get a WebGL one; swap in a fresh canvas.
   if (touchedCanvas) canvas = replaceCanvas(canvas);
   const engine = new Engine(canvas, true, { stencil: true, powerPreference: 'high-performance' }, true);
-  // Reverse depth spreads depth precision far more evenly from near to far, so distant walls don't flicker.
+  // Reverse depth. On WebGL2 it buys little: the canvas's depth buffer is 24-bit fixed point and WebGL's depth range
+  // is [-1, 1], so precision stays about d² / 17,000 km (6 mm at 100 m) either way; a float depth target plus
+  // EXT_clip_control would fix that at the cost of a full-screen copy. Coplanar faces, the cause of the flicker
+  // the owner saw, are gone at build time instead (visibleFaces); this stays as it was.
   engine.useReverseDepthBuffer = true;
   // Every scene's PBR materials share a BRDF table that needs no GPU pre-pass (see content/brdf.ts).
   engine.onNewSceneAddedObservable.add(installEnvironmentBrdf);
