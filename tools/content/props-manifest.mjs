@@ -7,7 +7,8 @@
 //     "pack": { "title", "creator", "url", "license", "licenseFile", ... },   what was packs[<pack>]
 //     "order": 830,                                                            where its props sit in the prop table
 //     "props": [ { "id", "src", "name", "category", ... }, ... ]               no `pack` field: the file names it
-//   }
+//     "surface": "rock"                                                        optional: the surface type of all its props
+//   }                                                                          (content/surface-types.json; a prop's own wins)
 //
 // The prop table (props.generated.ts, and so MapMaker's palette) lists the props by `order`, then pack
 // id, then their place in the file. A prop may carry its own `order`: it and the props after it (until
@@ -41,8 +42,8 @@ export function readPropPacks(dir = PROPS_DIR) {
     } catch (e) {
       throw new Error(`${where}: ${e.message}`);
     }
-    const keys = Object.keys(data).filter((k) => !['$comment', 'pack', 'order', 'props'].includes(k));
-    if (keys.length) throw new Error(`${where}: unknown fields ${keys.join(', ')} (a pack file holds pack, order and props)`);
+    const keys = Object.keys(data).filter((k) => !['$comment', 'pack', 'order', 'props', 'surface'].includes(k));
+    if (keys.length) throw new Error(`${where}: unknown fields ${keys.join(', ')} (a pack file holds pack, order, props and surface)`);
     if (!data.pack || typeof data.pack !== 'object' || !data.pack.title || !data.pack.license || !data.pack.licenseFile) throw new Error(`${where}: pack must give at least title, license and licenseFile`);
     if (!Number.isFinite(data.order)) throw new Error(`${where}: order must be a number (where the pack's props sit in the prop table)`);
     if (!Array.isArray(data.props) || !data.props.length) throw new Error(`${where}: props must list the pack's props`);
@@ -56,7 +57,7 @@ export function readPropPacks(dir = PROPS_DIR) {
         order = p.order;
       }
     }
-    return { id, pack: data.pack, order: data.order, props: data.props };
+    return { id, pack: data.pack, order: data.order, props: data.props, ...(data.surface !== undefined ? { surface: data.surface } : {}) };
   });
 }
 

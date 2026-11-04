@@ -268,7 +268,28 @@
         { "path": "scale", "label": "Tiling: metres one repeat covers", "type": "number", "edit": true },
         { "path": "shine", "label": "Shine (0 matte - 1 glossy)", "type": "number", "edit": true },
         { "path": "emissive", "label": "Glows whatever the light", "type": "bool", "edit": true },
+        { "path": "surface", "label": "Surface type (content/surface-types.json: ballistic class and impact; empty: guessed from the id, as before)", "type": "select", "options": ["concrete", "stone", "rock", "brick", "plaster", "wood", "thin_wood", "bark", "foliage", "metal", "sheet_metal", "glass", "dirt", "grass", "sand", "gravel", "snow", "water", "flesh", "fabric", "plastic", "armor", "energy"], "edit": true },
+        { "path": "ballistic", "label": "Ballistic class override (empty: the surface type's, or the guess)", "type": "select", "options": ["flesh", "glass", "thin_wood", "wood", "drywall", "stone", "brick", "concrete", "thin_metal", "metal", "armor", "water", "soil", "energy", "heavy_wood", "foliage"], "edit": true },
         { "path": "notes.section", "label": "Notes", "type": "longtext", "edit": true }
+      ]
+    },
+    {
+      "id": "surface-types",
+      "label": "Surface types",
+      "files": "content/surface-types.json",
+      "items": "types",
+      "key": "id",
+      "title": "name",
+      "subtitle": "ballistic",
+      "filters": ["ballistic", "impact.sound"],
+      "fields": [
+        { "path": "id", "label": "Id (materials and props name it; never changes)", "type": "text" },
+        { "path": "name", "label": "Name", "type": "text", "edit": true },
+        { "path": "ballistic", "label": "Ballistic class (penetration and ricochet: sim/gunplay.ts MATERIAL_BALLISTICS)", "type": "select", "options": ["flesh", "glass", "thin_wood", "wood", "drywall", "stone", "brick", "concrete", "thin_metal", "metal", "armor", "water", "soil", "energy", "heavy_wood", "foliage"], "edit": true },
+        { "path": "impact.decal", "label": "Impact decal", "type": "select", "options": ["hole", "none"], "edit": true },
+        { "path": "impact.debris", "label": "Impact debris (dust, splinters, chips, leaves, sparks; amounts and colours: content/vfx.json map.impacts)", "type": "list", "edit": true },
+        { "path": "impact.sound", "label": "Impact sound family", "type": "select", "options": ["hard", "wood", "metal", "soft", "glass", "water", "none"], "edit": true },
+        { "path": "footstep", "label": "Footstep family (for later; not played yet)", "type": "select", "options": ["hard", "wood", "metal", "soft", "foliage", "sand", "gravel", "snow", "water"], "edit": true }
       ]
     },
     {

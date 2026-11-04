@@ -79,6 +79,7 @@
       "src": "DeadTree_1.glb",
       "name": "Gnarled Tree",
       "category": "Ruins",
+      "surface": "bark",
       "height": 5,
       "collide": "trunk"
     },

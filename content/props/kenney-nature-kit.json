@@ -14,6 +14,7 @@
       "src": "tree_oak.glb",
       "name": "Oak",
       "category": "Trees",
+      "surface": "bark",
       "height": 7.0,
       "collide": "trunk"
     },
@@ -22,6 +23,7 @@
       "src": "tree_oak_dark.glb",
       "name": "Dark Oak",
       "category": "Trees",
+      "surface": "bark",
       "height": 7.0,
       "collide": "trunk"
     },
@@ -30,6 +32,7 @@
       "src": "tree_oak_fall.glb",
       "name": "Autumn Oak",
       "category": "Trees",
+      "surface": "bark",
       "height": 7.0,
       "collide": "trunk"
     },
@@ -38,6 +41,7 @@
       "src": "tree_default.glb",
       "name": "Round Tree",
       "category": "Trees",
+      "surface": "bark",
       "height": 5.5,
       "collide": "trunk"
     },
@@ -46,6 +50,7 @@
       "src": "tree_default_dark.glb",
       "name": "Dark Round Tree",
       "category": "Trees",
+      "surface": "bark",
       "height": 5.5,
       "collide": "trunk"
     },
@@ -54,6 +59,7 @@
       "src": "tree_default_fall.glb",
       "name": "Autumn Round Tree",
       "category": "Trees",
+      "surface": "bark",
       "height": 5.5,
       "collide": "trunk"
     },
@@ -62,6 +68,7 @@
       "src": "tree_fat.glb",
       "name": "Bushy Tree",
       "category": "Trees",
+      "surface": "bark",
       "height": 5.0,
       "collide": "trunk"
     },
@@ -70,6 +77,7 @@
       "src": "tree_detailed.glb",
       "name": "Leafy Tree",
       "category": "Trees",
+      "surface": "bark",
       "height": 6.0,
       "collide": "trunk"
     },
@@ -78,6 +86,7 @@
       "src": "tree_cone.glb",
       "name": "Cone Tree",
       "category": "Trees",
+      "surface": "bark",
       "height": 6.0,
       "collide": "trunk"
     },
@@ -86,6 +95,7 @@
       "src": "tree_plateau.glb",
       "name": "Flat-top Tree",
       "category": "Trees",
+      "surface": "bark",
       "height": 6.0,
       "collide": "trunk"
     },
@@ -94,6 +104,7 @@
       "src": "tree_thin.glb",
       "name": "Thin Tree",
       "category": "Trees",
+      "surface": "bark",
       "height": 6.0,
       "collide": "trunk"
     },
@@ -102,6 +113,7 @@
       "src": "tree_blocks.glb",
       "name": "Blocky Tree",
       "category": "Trees",
+      "surface": "bark",
       "height": 5.0,
       "collide": "trunk"
     },
@@ -110,6 +122,7 @@
       "src": "tree_small.glb",
       "name": "Sapling",
       "category": "Trees",
+      "surface": "bark",
       "height": 3.0,
       "collide": "trunk"
     },
@@ -118,6 +131,7 @@
       "src": "tree_pineTallA_detailed.glb",
       "name": "Tall Pine",
       "category": "Trees",
+      "surface": "bark",
       "height": 11.0,
       "collide": "trunk"
     },
@@ -126,6 +140,7 @@
       "src": "tree_pineTallC_detailed.glb",
       "name": "Tall Pine B",
       "category": "Trees",
+      "surface": "bark",
       "height": 10.0,
       "collide": "trunk"
     },
@@ -134,6 +149,7 @@
       "src": "tree_pineRoundC.glb",
       "name": "Round Pine",
       "category": "Trees",
+      "surface": "bark",
       "height": 7.0,
       "collide": "trunk"
     },
@@ -142,6 +158,7 @@
       "src": "tree_pineSmallA.glb",
       "name": "Small Pine",
       "category": "Trees",
+      "surface": "bark",
       "height": 3.5,
       "collide": "trunk"
     },
@@ -158,6 +175,7 @@
       "src": "tree_palmDetailedTall.glb",
       "name": "Tall Palm",
       "category": "Trees",
+      "surface": "bark",
       "height": 9.0,
       "collide": "trunk"
     },
@@ -166,6 +184,7 @@
       "src": "tree_palmDetailedShort.glb",
       "name": "Short Palm",
       "category": "Trees",
+      "surface": "bark",
       "height": 5.0,
       "collide": "trunk"
     },
@@ -174,6 +193,7 @@
       "src": "plant_bush.glb",
       "name": "Bush",
       "category": "Plants & Flowers",
+      "surface": "foliage",
       "height": 1.1,
       "collide": "none",
       "conceals": true
@@ -183,6 +203,7 @@
       "src": "plant_bushLarge.glb",
       "name": "Large Bush",
       "category": "Plants & Flowers",
+      "surface": "foliage",
       "height": 1.6,
       "collide": "none",
       "conceals": true
@@ -192,6 +213,7 @@
       "src": "plant_bushDetailed.glb",
       "name": "Leafy Bush",
       "category": "Plants & Flowers",
+      "surface": "foliage",
       "height": 1.2,
       "collide": "none",
       "conceals": true
@@ -201,6 +223,7 @@
       "src": "plant_bushSmall.glb",
       "name": "Small Bush",
       "category": "Plants & Flowers",
+      "surface": "foliage",
       "height": 0.7,
       "collide": "none",
       "conceals": true
@@ -210,6 +233,7 @@
       "src": "plant_bushTriangle.glb",
       "name": "Cone Bush",
       "category": "Plants & Flowers",
+      "surface": "foliage",
       "height": 1.4,
       "collide": "none",
       "conceals": true
@@ -348,6 +372,7 @@
       "src": "rock_largeA.glb",
       "name": "Round Boulder",
       "category": "Rocks & Wood",
+      "surface": "rock",
       "height": 2.2,
       "collide": "box"
     },
@@ -356,6 +381,7 @@
       "src": "rock_largeD.glb",
       "name": "Jagged Boulder",
       "category": "Rocks & Wood",
+      "surface": "rock",
       "height": 2.6,
       "collide": "box"
     },
@@ -364,6 +390,7 @@
       "src": "rock_largeF.glb",
       "name": "Flat Boulder",
       "category": "Rocks & Wood",
+      "surface": "rock",
       "height": 1.4,
       "collide": "box"
     },
@@ -373,6 +400,7 @@
       "src": "rock_tallB.glb",
       "name": "Tall Rock",
       "category": "Rocks & Wood",
+      "surface": "rock",
       "height": 4.0,
       "collide": "box"
     },
@@ -397,6 +425,7 @@
       "src": "stump_oldTall.glb",
       "name": "Old Stump",
       "category": "Rocks & Wood",
+      "surface": "bark",
       "height": 1.0,
       "collide": "box"
     },
@@ -405,6 +434,7 @@
       "src": "stump_roundDetailed.glb",
       "name": "Cut Stump",
       "category": "Rocks & Wood",
+      "surface": "bark",
       "height": 0.6,
       "collide": "box"
     },
@@ -413,6 +443,7 @@
       "src": "log_large.glb",
       "name": "Big Log",
       "category": "Rocks & Wood",
+      "surface": "bark",
       "height": 1.0,
       "collide": "box"
     },
@@ -421,6 +452,7 @@
       "src": "log_stackLarge.glb",
       "name": "Log Stack",
       "category": "Rocks & Wood",
+      "surface": "bark",
       "height": 1.4,
       "collide": "box"
     },
@@ -437,6 +469,7 @@
       "src": "cliff_block_rock.glb",
       "name": "Cliff Block",
       "category": "Rocks & Wood",
+      "surface": "rock",
       "height": 4.0,
       "collide": "box"
     },
@@ -445,6 +478,7 @@
       "src": "cliff_corner_rock.glb",
       "name": "Cliff Corner",
       "category": "Rocks & Wood",
+      "surface": "rock",
       "height": 4.0,
       "collide": "box"
     },
@@ -453,6 +487,7 @@
       "src": "cliff_steps_rock.glb",
       "name": "Cliff Steps",
       "category": "Rocks & Wood",
+      "surface": "rock",
       "height": 4.0,
       "collide": "box"
     }

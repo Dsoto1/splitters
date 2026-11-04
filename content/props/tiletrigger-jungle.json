@@ -114,6 +114,7 @@
       "src": "jt_tree_trunk.glb",
       "name": "Mossy Tree Trunk",
       "category": "Jungle Ruins",
+      "surface": "bark",
       "height": 6.35,
       "collide": "trunk"
     },

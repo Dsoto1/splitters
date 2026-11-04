@@ -1,0 +1,37 @@
+{
+  "$comment": "Surface types: what a surface is made of, for gameplay (docs/CONTENT_PIPELINE.md, \"Surface types\"). One list shared by the server and the client: each type names its ballistic class (sim/gunplay.ts BALLISTIC_MATERIALS: penetration resistance and ricochet, GUNPLAY_SPEC §8) and its impact (the decal left, the debris thrown: dust, splinters, chips, leaves, sparks, and the sound family), and optionally its footstep family (not played yet). How each impact is drawn (spark count, dust and chip colours, sizes, the Binbun accent) is content/vfx.json map.impacts, keyed by these ids. Library materials (content/materials.json `surface`, and `ballistic` to override the class alone) and props (content/props/<pack>.json `surface`, per prop or for a whole pack) name a type; an entry with none keeps today's guess (`guess` below for the effect, sim/gunplay.ts materialClass for the class), so nothing changes until it is set. These are gameplay types, not looks: a prop's visual surface is its model. Edit, then run `node tools/content/surface-types.mjs`.",
+  "types": [
+    { "id": "concrete", "name": "Concrete", "ballistic": "concrete", "impact": { "decal": "hole", "debris": ["dust", "sparks"], "sound": "hard" }, "footstep": "hard" },
+    { "id": "stone", "name": "Stone (dressed)", "ballistic": "stone", "impact": { "decal": "hole", "debris": ["dust", "sparks"], "sound": "hard" }, "footstep": "hard" },
+    { "id": "rock", "name": "Rock (boulders, cliffs)", "ballistic": "stone", "impact": { "decal": "hole", "debris": ["dust", "chips", "sparks"], "sound": "hard" }, "footstep": "hard" },
+    { "id": "brick", "name": "Brick", "ballistic": "brick", "impact": { "decal": "hole", "debris": ["dust", "chips", "sparks"], "sound": "hard" }, "footstep": "hard" },
+    { "id": "plaster", "name": "Plaster and drywall", "ballistic": "drywall", "impact": { "decal": "hole", "debris": ["dust"], "sound": "hard" }, "footstep": "hard" },
+    { "id": "wood", "name": "Wood", "ballistic": "wood", "impact": { "decal": "hole", "debris": ["dust", "splinters"], "sound": "wood" }, "footstep": "wood" },
+    { "id": "thin_wood", "name": "Thin wood (boards, crates)", "ballistic": "thin_wood", "impact": { "decal": "hole", "debris": ["dust", "splinters"], "sound": "wood" }, "footstep": "wood" },
+    { "id": "bark", "name": "Bark (trunks, stumps, logs)", "ballistic": "heavy_wood", "impact": { "decal": "hole", "debris": ["dust", "splinters"], "sound": "wood" }, "footstep": "wood" },
+    { "id": "foliage", "name": "Foliage (bushes, crowns)", "ballistic": "foliage", "impact": { "decal": "none", "debris": ["dust", "leaves"], "sound": "soft" }, "footstep": "foliage" },
+    { "id": "metal", "name": "Metal (heavy)", "ballistic": "metal", "impact": { "decal": "hole", "debris": ["dust", "sparks"], "sound": "metal" }, "footstep": "metal" },
+    { "id": "sheet_metal", "name": "Sheet metal (containers, vehicles)", "ballistic": "thin_metal", "impact": { "decal": "hole", "debris": ["dust", "sparks"], "sound": "metal" }, "footstep": "metal" },
+    { "id": "glass", "name": "Glass", "ballistic": "glass", "impact": { "decal": "hole", "debris": ["dust", "chips"], "sound": "glass" }, "footstep": "hard" },
+    { "id": "dirt", "name": "Dirt and mud", "ballistic": "soil", "impact": { "decal": "hole", "debris": ["dust"], "sound": "soft" }, "footstep": "soft" },
+    { "id": "grass", "name": "Grass and moss", "ballistic": "soil", "impact": { "decal": "hole", "debris": ["dust"], "sound": "soft" }, "footstep": "soft" },
+    { "id": "sand", "name": "Sand", "ballistic": "soil", "impact": { "decal": "hole", "debris": ["dust"], "sound": "soft" }, "footstep": "sand" },
+    { "id": "gravel", "name": "Gravel", "ballistic": "soil", "impact": { "decal": "hole", "debris": ["dust", "chips"], "sound": "hard" }, "footstep": "gravel" },
+    { "id": "snow", "name": "Snow", "ballistic": "soil", "impact": { "decal": "hole", "debris": ["dust"], "sound": "soft" }, "footstep": "snow" },
+    { "id": "water", "name": "Water", "ballistic": "water", "impact": { "decal": "none", "debris": [], "sound": "water" }, "footstep": "water" },
+    { "id": "flesh", "name": "Flesh", "ballistic": "flesh", "impact": { "decal": "none", "debris": [], "sound": "none" } },
+    { "id": "fabric", "name": "Fabric (canvas, carpet, tents)", "ballistic": "drywall", "impact": { "decal": "hole", "debris": ["dust"], "sound": "soft" }, "footstep": "soft" },
+    { "id": "plastic", "name": "Plastic", "ballistic": "drywall", "impact": { "decal": "hole", "debris": ["dust", "chips"], "sound": "hard" }, "footstep": "hard" },
+    { "id": "armor", "name": "Armour plate (vaults, bulletproof glass)", "ballistic": "armor", "impact": { "decal": "hole", "debris": ["dust", "sparks"], "sound": "metal" }, "footstep": "metal" },
+    { "id": "energy", "name": "Energy (force fields)", "ballistic": "energy", "impact": { "decal": "none", "debris": ["sparks"], "sound": "none" } }
+  ],
+  "guess": {
+    "$comment": "The effect of an entry with no `surface` (props by their model id, tiles by their id and the map's theme, library materials by their id): the first type whose words appear in the name, else `fallback`. Moved here unchanged from content/vfx.json (map.surfaces, where stone was the fallback), so unset entries look as they did. It retires as entries get a `surface`; the ballistic class of an unset entry is sim/gunplay.ts materialClass, as before.",
+    "fallback": "concrete",
+    "words": {
+      "metal": ["metal", "steel", "iron", "container", "barrel", "drum", "tank", "pipe", "vehicle", "truck", "car_", "_car", "bus", "train", "rail", "crane", "excavator", "machine", "sci", "orbital", "station", "space", "hangar", "gantry", "catwalk", "grate", "locker", "generator", "turret", "fence_metal", "sign", "lamp", "neon", "industrial", "factory"],
+      "wood": ["wood", "timber", "plank", "crate", "pallet", "log", "cabin", "barn", "shack", "stall", "cart", "wagon", "fence", "table", "bench", "chair", "shelf", "door", "dock", "pier", "boat", "ship", "frontier", "wild_west", "ww_", "saloon", "medieval", "mv_"],
+      "dirt": ["dirt", "sand", "mud", "grass", "soil", "hay", "sandbag", "earth", "ground", "desert", "dune", "snow", "jungle_floor"]
+    }
+  }
+}

@@ -27,6 +27,7 @@ export * from './sim/liquids.ts';
 export * from './sim/effectsPhysics.ts';
 export * from './sim/weapons.ts';
 export * from './sim/gunplay.ts';
+export * from './sim/surfaceTypes.ts';
 export * from './sim/impact.ts';
 export * from './sim/trajectory.ts';
 export * from './sim/mounts.ts';

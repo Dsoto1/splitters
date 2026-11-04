@@ -12,12 +12,15 @@
 // the Style Packs and the code name exists), then writes packages/shared/src/content/materials.generated.ts.
 // Materials and themes have no network code: maps store them as their id, so the id is what never changes.
 // Behaviour and rendering stay in code: the pattern painters (client/materials/patterns.ts), the Babylon materials
-// (client/mapMeshes.ts), the ballistic class (sim/gunplay.ts materialClass) and the terrain layers (map/terrain.ts).
+// (client/mapMeshes.ts) and the terrain layers (map/terrain.ts). A material's optional `surface` (a type in
+// content/surface-types.json) sets its ballistic class and impact effect, and `ballistic` its class alone; unset, both
+// are guessed from the id as before (sim/gunplay.ts materialClass, sim/surfaceTypes.ts guessSurface).
 
 import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { check, comments, shape, sq, tsInline } from './weapons.mjs';
+import { surfaceTypeIds } from './surface-types.mjs';
 
 export const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const FILE = 'content/materials.json';
@@ -93,7 +96,7 @@ export function build(content, root = ROOT) {
 
   const material = obj({
     id: str, displayName: str, category: en(categories), 'pattern?': en(patterns), 'texture?': str, base: str, 'accent?': str,
-    scale: num, shine: num, 'emissive?': bool, 'notes?': notes,
+    scale: num, shine: num, 'emissive?': bool, 'surface?': en(surfaceTypeIds(root)), 'ballistic?': en(tsList(root, 'packages/shared/src/sim/gunplay.ts', 'BALLISTIC_MATERIALS')), 'notes?': notes,
   });
   const style = obj({ material: str, 'tint?': str });
   const theme = obj({ id: str, displayName: str, sky: str, slots: obj(Object.fromEntries(slots.map((s) => [s, style]))), 'notes?': notes });
@@ -131,6 +134,7 @@ export function build(content, root = ROOT) {
     const def = {
       id: m.id, displayName: m.displayName, category: m.category, pattern: m.pattern ?? 'plain', base: m.base, accent: m.accent ?? m.base,
       scale: m.scale, shine: m.shine, ...(m.emissive ? { emissive: true } : {}), ...(m.texture !== undefined ? { texture: m.texture } : {}),
+      ...(m.surface !== undefined ? { surface: m.surface } : {}), ...(m.ballistic !== undefined ? { ballistic: m.ballistic } : {}),
     };
     materials.push({ def, notes: m.notes });
   }

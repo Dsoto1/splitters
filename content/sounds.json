@@ -211,6 +211,66 @@
         }
       ]
     },
+    "impact.wood": {
+      "gain": 0.4,
+      "range": "mid",
+      "jitter": 0.12,
+      "variants": [
+        {
+          "pack": "kenney-impact-sounds",
+          "file": "Audio/impactWood_heavy_000.ogg"
+        },
+        {
+          "pack": "kenney-impact-sounds",
+          "file": "Audio/impactWood_heavy_001.ogg"
+        }
+      ]
+    },
+    "impact.metal": {
+      "gain": 0.3,
+      "range": "mid",
+      "jitter": 0.12,
+      "variants": [
+        {
+          "pack": "kenney-impact-sounds",
+          "file": "Audio/impactPlate_light_000.ogg"
+        },
+        {
+          "pack": "kenney-impact-sounds",
+          "file": "Audio/impactMetal_heavy_000.ogg"
+        }
+      ]
+    },
+    "impact.soft": {
+      "gain": 0.45,
+      "range": "mid",
+      "jitter": 0.12,
+      "variants": [
+        {
+          "pack": "kenney-impact-sounds",
+          "file": "Audio/impactSoft_medium_000.ogg"
+        },
+        {
+          "pack": "kenney-impact-sounds",
+          "file": "Audio/impactSoft_medium_001.ogg"
+        }
+      ]
+    },
+    "impact.glass": {
+      "gain": 0.3,
+      "range": "mid",
+      "jitter": 0.12,
+      "variants": [
+        {
+          "pack": "kenney-impact-sounds",
+          "file": "Audio/impactGlass_heavy_000.ogg"
+        },
+        {
+          "pack": "kenney-impact-sounds",
+          "file": "Audio/impactGlass_heavy_001.ogg"
+        }
+      ]
+    },
     "impact.body": {
       "gain": 0.75,
       "range": "mid",

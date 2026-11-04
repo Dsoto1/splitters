@@ -47,6 +47,12 @@ export class SessionAudio {
   /** Your team in team modes (null otherwise), for objective and round announcements. */
   myTeam: () => string | null = () => null;
 
+  /**
+   * The sound of a round from `from` landing at `to` in the level: its surface type's sound family (game/fxMap.ts
+   * impactSoundId; the session asks the view what it struck). Default: the one generic impact.
+   */
+  worldImpact: (from: Vec3, to: Vec3) => SoundId | null = () => 'impact.world';
+
   /** Whether blood is shown (the map's setting and the player's): the wet splat on a kill goes with it. */
   bloodOn: () => boolean = () => true;
 
@@ -260,7 +266,8 @@ export class SessionAudio {
           }
           if (impacts >= MAX_IMPACTS_PER_SHOT) return;
           impacts++;
-          this.audio.play('impact.world', { at: tuple(to) });
+          const sound = this.worldImpact(tuple(ev.from), tuple(to));
+          if (sound) this.audio.play(sound, { at: tuple(to) });
         });
         for (const [victim, v] of perVictim) {
           const heavy = v.head || ((ev.alt ? def.alt?.damage : undefined) ?? def.damage) * v.pellets >= 45;
@@ -280,7 +287,10 @@ export class SessionAudio {
           const at = ev.hit === me ? undefined : tuple(ev.to);
           this.audio.play(head || def.damage >= 45 ? 'impact.heavy' : 'impact.body', { at, gain: ev.hit === me ? 0.6 : 1 });
           this.audio.play('impact.thud', { at, gain: 0.8 });
-        } else this.audio.play('impact.world', { at: tuple(ev.to) });
+        } else {
+          const sound = this.worldImpact(tuple(ev.from), tuple(ev.to));
+          if (sound) this.audio.play(sound, { at: tuple(ev.to) });
+        }
         if (ev.s === me) this.hitSound([ev.hit], ev.z !== undefined ? [ev.z] : undefined, !!ev.ar);
         break;
       }

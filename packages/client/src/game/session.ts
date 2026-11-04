@@ -137,6 +137,7 @@ import { markerSetting } from './crosshair.ts';
 import { Interpolator } from './interpolation.ts';
 import { LocalPlayer } from './prediction.ts';
 import { SessionAudio } from './sessionAudio.ts';
+import { impactSoundId, impactStyle } from './fxMap.ts';
 import { ScenarioState } from './scenarioState.ts';
 import { VISUAL_EVENTS } from './snapshotMerge.ts';
 import type { Transport } from './transport.ts';
@@ -707,6 +708,11 @@ export class GameSession {
       { signal },
     );
     this.sfx.bloodOn = () => this.view.blood.on;
+    // A round landing in the level sounds like what it struck (its surface type's sound family: bark knocks, metal rings).
+    this.sfx.worldImpact = (from, to) => {
+      const struck = this.view.surfaceStruck(from, to);
+      return impactSoundId(struck ? impactStyle(struck).sound : 'hard');
+    };
     this.sfx.blockPresent = (i) => this.scenario?.present(i) ?? true;
     this.view.scenario.liquids.fx.onSplash = (at) => this.sfx.splash(at);
     // Bodies: stay all match, or sink away after a while.

@@ -915,11 +915,18 @@ export class GameView {
     }
     const wall = this.impacts.surfaceHit(o.eye, o.to);
     if (wall) {
-      // The surface it hit (content/vfx.json map.impacts): metal sparks, wood and earth puff their own dust.
+      // The surface type it hit (content/surface-types.json, the same one the server's ballistic class comes from;
+      // drawn as content/vfx.json map.impacts says): metal sparks, bark and wood splinters, foliage leaves.
       const style = impactStyle(surfaceOfBox(wall.box, this.surfaces));
       this.impacts.wallImpact(wall.point, wall.normal, Math.min(1.6, 0.7 + o.strength * 0.4), style);
       this.accent(style.accent, wall.point, wall.normal);
     }
+  }
+
+  /** The surface type a round from `from` landing at `to` struck in the level (null: nothing there, or a body). */
+  surfaceStruck(from: Vec3, to: Vec3): Surface | null {
+    const wall = this.impacts.surfaceHit(from, to);
+    return wall ? surfaceOfBox(wall.box, this.surfaces) : null;
   }
 
   /** The accent of a surface hit somewhere other than the level (a round going into water). */

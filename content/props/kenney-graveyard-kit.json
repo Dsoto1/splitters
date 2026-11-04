@@ -258,6 +258,7 @@
       "src": "pine.glb",
       "name": "Pine",
       "category": "Trees",
+      "surface": "bark",
       "height": 6.5,
       "collide": "trunk"
     },
@@ -266,6 +267,7 @@
       "src": "pine-crooked.glb",
       "name": "Crooked Pine",
       "category": "Trees",
+      "surface": "bark",
       "height": 6.0,
       "collide": "trunk"
     },
@@ -275,6 +277,7 @@
       "src": "rocks-tall.glb",
       "name": "Rock Spire",
       "category": "Rocks & Wood",
+      "surface": "rock",
       "height": 2.4,
       "collide": "box"
     }

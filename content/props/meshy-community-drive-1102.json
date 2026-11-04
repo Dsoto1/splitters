@@ -18,6 +18,7 @@
       "src": "Meshy_AI_low_poly_beautiful_mo_1101170024_texture.glb",
       "name": "Mossy Rock Spire",
       "category": "Rocks & Wood",
+      "surface": "rock",
       "height": 2.4,
       "collide": "box",
       "triangles": 5000,

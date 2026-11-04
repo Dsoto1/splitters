@@ -56,6 +56,7 @@
       "src": "palm-straight.glb",
       "name": "Palm",
       "category": "Trees",
+      "surface": "bark",
       "height": 7.0,
       "collide": "trunk"
     },
@@ -64,6 +65,7 @@
       "src": "palm-bend.glb",
       "name": "Leaning Palm",
       "category": "Trees",
+      "surface": "bark",
       "height": 6.5,
       "collide": "trunk"
     },

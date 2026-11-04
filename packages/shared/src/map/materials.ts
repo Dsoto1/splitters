@@ -12,6 +12,8 @@
  * the lookups stay here; the painters stay in client/materials/patterns.ts.
  */
 import { CORE_MATERIALS, CORE_THEMES, TINT_SWATCHES } from '../content/materials.generated.ts';
+import type { BallisticMaterial } from '../sim/gunplay.ts';
+import type { SurfaceTypeId } from '../sim/surfaceTypes.ts';
 
 export { CORE_MATERIALS, CORE_THEMES, TINT_SWATCHES };
 
@@ -141,6 +143,13 @@ export interface MaterialDefinition {
    * minimaps and icons).
    */
   texture?: string;
+  /**
+   * What it is made of, for gameplay (content/surface-types.json): sets its ballistic class and its impact
+   * effect and sound. Unset: the class and effect guessed from its id, as before (sim/surfaceTypes.ts).
+   */
+  surface?: SurfaceTypeId;
+  /** Its ballistic class when it should differ from its surface type's (sim/gunplay.ts BALLISTIC_MATERIALS). */
+  ballistic?: BallisticMaterial;
 }
 
 export interface SurfaceStyleDef {

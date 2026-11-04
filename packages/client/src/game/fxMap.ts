@@ -1,9 +1,9 @@
-import type { MapDocument, WeaponDefinition, WorldBox } from '@tiletrigger/shared';
+import { SURFACE_TYPES, guessSurface, materialSurface, propSurface, type ImpactSound, type MapDocument, type SurfaceTypeId, type WeaponDefinition, type WorldBox } from '@tiletrigger/shared';
 import { FX_MAP } from './fxMap.generated.ts';
 
 /**
  * Which effect plays where, read from content/vfx.json's `map` (fxMap.generated.ts): muzzle flashes by
- * weapon family, impacts by the surface a round hit, explosions by weapon and kind, and moments of play.
+ * weapon family, impacts by the surface type a round hit (content/surface-types.json, shared with the server), explosions by weapon and kind, and moments of play.
  * Everything here is data lookups; godotVfx.ts and impactVisuals.ts draw.
  */
 
@@ -16,13 +16,21 @@ export interface FxRef {
   readonly decor?: boolean;
 }
 
-export type Surface = 'stone' | 'metal' | 'wood' | 'dirt' | 'flesh' | 'water';
+/** What a surface is made of (content/surface-types.json), the same list the server's ballistic classes come from. */
+export type Surface = SurfaceTypeId;
 
-/** How a round hitting a level surface looks: sparks, dust colour and size, and an optional accent effect. */
+/**
+ * How a round hitting a level surface looks and sounds: sparks, dust colour and size, chips (splinters, leaves,
+ * grit) and their colour, whether it leaves a hole, the sound family, and an optional accent effect.
+ */
 export interface ImpactStyle {
   readonly sparks: number;
-  readonly dust: string;
+  readonly dust: string | null;
   readonly dustSize: number;
+  readonly chips: number;
+  readonly chip: string;
+  readonly hole: boolean;
+  readonly sound: ImpactSound;
   readonly accent: FxRef | null;
 }
 
@@ -37,38 +45,56 @@ export function muzzleEffectFor(def: WeaponDefinition): { id: string; scale: num
   return m ? { id: m.effect, scale: m.scale } : null;
 }
 
-const SURFACE_WORDS = Object.entries(FX_MAP.surfaces as Record<string, readonly string[]>).filter(([, w]) => w.length) as [Surface, readonly string[]][];
-
-/** The surface named by an id or material (`prop.shipping_container_red`, `core.wood_planks` …): the first word list that matches; stone otherwise. */
-export function surfaceOfName(name: string): Surface {
-  const n = name.toLowerCase();
-  for (const [s, words] of SURFACE_WORDS) if (words.some((w) => n.includes(w))) return s;
-  return 'stone';
-}
-
-/** Each placement's surface (prop entities by their model, tiles by their id with the map's theme), made once per map. */
+/**
+ * Each placement's surface type, made once per map: a prop's own (content/props `surface`, the one the server's
+ * ballistic class comes from), else guessed from its model; tiles guessed from their id with the map's theme
+ * (their structure is concrete to the server).
+ */
 export function surfaceIndex(doc: Pick<MapDocument, 'entities' | 'classicStructure'>): Map<string, Surface> {
   const out = new Map<string, Surface>();
-  for (const e of doc.entities) if (e.kind === 'prop') out.set(e.id, surfaceOfName(e.model));
+  for (const e of doc.entities) if (e.kind === 'prop') out.set(e.id, propSurface(e.model));
   const theme = doc.classicStructure.theme;
-  for (const t of doc.classicStructure.tiles) out.set(t.id, surfaceOfName(`${t.tile} ${theme}`));
+  for (const t of doc.classicStructure.tiles) out.set(t.id, guessSurface(`${t.tile} ${theme}`));
   return out;
 }
 
 /** The surface of a level box a round hit (none: the terrain, which is dirt): a free block's material, else its placement's (surfaceIndex). */
 export function surfaceOfBox(box: WorldBox | null | undefined, index: ReadonlyMap<string, Surface> | null): Surface {
   if (!box) return 'dirt';
-  if (box.surface?.material) return surfaceOfName(box.surface.material);
-  return index?.get(box.sourceId) ?? 'stone';
+  if (box.surface?.material) return materialSurface(box.surface.material);
+  return index?.get(box.sourceId) ?? SURFACE_GUESS_FALLBACK;
 }
 
-const impacts = FX_MAP.impacts as unknown as Record<string, Partial<ImpactStyle> | number>;
-const STONE: ImpactStyle = { sparks: 2, dust: '#a39d92', dustSize: 1, accent: null };
+const SURFACE_GUESS_FALLBACK = guessSurface('');
 
-/** How a round lands on `surface`. */
+const impacts = FX_MAP.impacts as unknown as Record<string, Partial<Omit<ImpactStyle, 'hole' | 'sound'>> | number>;
+
+/** How a round lands on `surface`: content/vfx.json map.impacts for the drawing, content/surface-types.json for the decal and sound. */
 export function impactStyle(surface: Surface): ImpactStyle {
-  const s = impacts[surface];
-  return typeof s === 'object' ? { ...STONE, ...s } : STONE;
+  const t = SURFACE_TYPES[surface] ?? SURFACE_TYPES[SURFACE_GUESS_FALLBACK];
+  const s = impacts[t.id];
+  const d = typeof s === 'object' ? s : {};
+  return { sparks: d.sparks ?? 0, dust: d.dust ?? null, dustSize: d.dustSize ?? 1, chips: d.chips ?? 0, chip: d.chip ?? '#808080', hole: t.impact.decal === 'hole', sound: t.impact.sound, accent: d.accent ?? null };
+}
+
+/** The sound a round makes landing on a surface type's sound family (content/sounds.json), or none. */
+export function impactSoundId(sound: ImpactSound): 'impact.world' | 'impact.wood' | 'impact.metal' | 'impact.soft' | 'impact.glass' | 'water.splash' | null {
+  switch (sound) {
+    case 'hard':
+      return 'impact.world';
+    case 'wood':
+      return 'impact.wood';
+    case 'metal':
+      return 'impact.metal';
+    case 'soft':
+      return 'impact.soft';
+    case 'glass':
+      return 'impact.glass';
+    case 'water':
+      return 'water.splash';
+    default:
+      return null;
+  }
 }
 
 /** Beyond this many metres from the camera an impact's accent effect is skipped. */
@@ -151,7 +177,7 @@ export function mappedEffects(): FxRef[] {
     if ('pack' in r && 'effect' in r) seen.set(`${(r as FxRef).pack}/${(r as FxRef).effect}`, r as FxRef);
     else for (const x of Object.values(r)) visit(x);
   };
-  const { muzzle: _m, surfaces: _s, ...rest } = FX_MAP as Record<string, unknown>;
+  const { muzzle: _m, ...rest } = FX_MAP as Record<string, unknown>;
   visit(rest);
   return [...seen.values()];
 }

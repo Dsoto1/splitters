@@ -16,6 +16,7 @@
       "src": "Meshy_AI_a_tree_20250510_texture_fbx/Meshy_AI_a_tree_20250510_texture.fbx",
       "name": "Broad Oak",
       "category": "Trees",
+      "surface": "bark",
       "height": 7.0,
       "collide": "trunk",
       "source": {
@@ -45,6 +46,7 @@
       "src": "Meshy_AI_A_tall_slender_birch_tree_distinguished_20250923_texture_fbx/Meshy_AI_A_tall_slender_birch_tree_distinguished_20250923_texture.fbx",
       "name": "Slender Birch",
       "category": "Trees",
+      "surface": "bark",
       "height": 10.0,
       "collide": "trunk",
       "source": {
@@ -73,6 +75,7 @@
       "src": "Meshy_AI_fir_tree_20250730_texture_fbx/Meshy_AI_fir_tree_20250730_texture.fbx",
       "name": "Fir Tree",
       "category": "Trees",
+      "surface": "bark",
       "height": 9.0,
       "collide": "trunk",
       "source": {
@@ -101,6 +104,7 @@
       "src": "Meshy_AI_Banana_Plant_20260324_texture_fbx/Meshy_AI_Banana_Plant_20260324_texture.fbx",
       "name": "Banana Plant (leafy)",
       "category": "Trees",
+      "surface": "bark",
       "height": 3.2,
       "collide": "trunk",
       "source": {
@@ -130,6 +134,7 @@
       "src": "Meshy_AI_A_dense_forest_shrub_with_woody_20250923_texture_fbx/Meshy_AI_A_dense_forest_shrub_with_woody_20250923_texture.fbx",
       "name": "Forest Shrub",
       "category": "Plants & Flowers",
+      "surface": "foliage",
       "height": 1.2,
       "collide": "none",
       "source": {
@@ -214,6 +219,7 @@
       "src": "Meshy_AI_Red_Rock_Spires_20260603_texture_remesh_tri_fbx/Meshy_AI_Red_Rock_Spires_20260603_texture_remesh_tri.fbx",
       "name": "Red Rock Spires",
       "category": "Rocks & Wood",
+      "surface": "rock",
       "height": 8.0,
       "collide": "shell",
       "source": {

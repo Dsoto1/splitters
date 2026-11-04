@@ -18,6 +18,7 @@ import type { WeaponDefinition } from './weapons.ts';
 import { hypot } from '../math.ts';
 import { WEAPON_FAMILIES } from '../content/weapons.generated.ts';
 import { FAMILY_DEFAULTS } from '../content/weaponFamilies.generated.ts';
+import { SURFACE_TYPES, materialBallisticOf, propSurfaceOf } from './surfaceTypes.ts';
 
 // ---------------------------------------------------------------- families
 
@@ -568,7 +569,7 @@ export function isTracer(b: BallisticSpec | null, n: number, left: number): bool
 
 // ---------------------------------------------------------------- materials (spec §8, G1)
 
-export const BALLISTIC_MATERIALS = ['flesh', 'glass', 'thin_wood', 'wood', 'drywall', 'stone', 'brick', 'concrete', 'thin_metal', 'metal', 'armor', 'water', 'soil', 'energy'] as const;
+export const BALLISTIC_MATERIALS = ['flesh', 'glass', 'thin_wood', 'wood', 'drywall', 'stone', 'brick', 'concrete', 'thin_metal', 'metal', 'armor', 'water', 'soil', 'energy', 'heavy_wood', 'foliage'] as const;
 export type BallisticMaterial = (typeof BALLISTIC_MATERIALS)[number];
 
 export interface MaterialBallistics {
@@ -595,6 +596,11 @@ export const MATERIAL_BALLISTICS: Readonly<Record<BallisticMaterial, MaterialBal
   water: { resist: 400, ricochet: 0.2, destruction: 0 },
   soil: { resist: 5000, ricochet: 0, destruction: 0 },
   energy: { resist: 1e9, ricochet: 0, destruction: 0 },
+  // Tree trunks, stumps and logs (surface type `bark`, owner decision Q3 of PROCEDURAL_ENVIRONMENT_AUDIT.md): full
+  // cover, a 0.5 m trunk stops even a precision round (3000 energy), but no ricochet off bark, unlike concrete.
+  heavy_wood: { resist: 6000, ricochet: 0, destruction: 0.3 },
+  // Bushes and crowns (surface type `foliage`): rounds pass through, barely slowed (they have no collider today).
+  foliage: { resist: 30, ricochet: 0, destruction: 0 },
 };
 
 /** A bullet goes on through a surface only with this much energy left. */
@@ -664,8 +670,17 @@ export function ricochets(m: BallisticMaterial, grazing: number, roll: number): 
 
 const MATERIAL_CATEGORY = new Map(CORE_MATERIALS.map((m) => [m.id, m.category]));
 
-/** Ballistic class of a library surface material (free blocks, Style Pack pieces). */
-export const surfaceMaterial = (id: string | null | undefined): BallisticMaterial => (id ? materialClass(id, MATERIAL_CATEGORY.get(id) ?? null) : 'concrete');
+/**
+ * Ballistic class of a library surface material (free blocks, Style Pack pieces): the class content/materials.json
+ * sets (`ballistic`, else its `surface` type's: surfaceTypes.ts), else the guess from its id and category.
+ */
+export const surfaceMaterial = (id: string | null | undefined): BallisticMaterial => (id ? (materialBallisticOf(id) ?? materialClass(id, MATERIAL_CATEGORY.get(id) ?? null)) : 'concrete');
+
+/** Ballistic class of a prop model (`prop.<id>`): its surface type's (content/props/<pack>.json `surface`), else the guess from its id. */
+export function propMaterial(model: string): BallisticMaterial {
+  const s = propSurfaceOf(model);
+  return s ? SURFACE_TYPES[s].ballistic : materialClass(model);
+}
 
 const DESTRUCTIBLE_MATERIAL: Readonly<Record<string, BallisticMaterial>> = { crate: 'thin_wood', barrel: 'thin_metal', wall: 'brick', glass: 'glass', boards: 'thin_wood', gas: 'thin_metal', generator: 'metal' };
 
@@ -683,7 +698,7 @@ export function entityMaterial(e: MapEntity): BallisticMaterial {
     case 'block':
       return surfaceMaterial(e.material);
     case 'prop':
-      return materialClass(e.model);
+      return propMaterial(e.model);
     default:
       return 'concrete';
   }

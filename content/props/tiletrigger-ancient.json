@@ -260,6 +260,7 @@
       "src": "eg_palm.glb",
       "name": "Date Palm",
       "category": "Sands of Egypt",
+      "surface": "bark",
       "height": 7.5,
       "collide": "trunk"
     },

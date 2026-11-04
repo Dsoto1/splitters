@@ -10,6 +10,32 @@ The session branch is **`claude/launcher-ui-map-cards`**. Poll CI without auth:
 `curl -s "https://api.github.com/repos/Dsoto1/splitters/actions/workflows/ci.yml/runs?branch=check/candidate&per_page=1"`.
 Use `pnpm typecheck`, not `pnpm -s typecheck` (the silent flag hides type errors; one reached CI that way).
 
+### Surface types (`wip/surface-types`, agent, 2026-11-04; pushed, not merged; rebased on main da7d432)
+Owner-approved first step before procedural environment Phase 1 (audit Q3, decision 2a). One shared list of 23
+surface types, `content/surface-types.json` (generator `tools/content/surface-types.mjs` -> `surfaceTypes.generated.ts`;
+`sim/surfaceTypes.ts`): each its ballistic class, impact (decal, debris, sound family) and footstep family (unused yet).
+Docs: CONTENT_PIPELINE "Surface types", GUNPLAY_SPEC §8 implementation note.
+- **New classes** in `sim/gunplay.ts`: `heavy_wood` (resist 6000, no ricochet; a 0.5 m trunk stops even the 3000-energy
+  precision round) and `foliage` (resist 30).
+- **Props name a surface** (`surface` per prop or per pack in `content/props/<pack>.json`); **materials** may name
+  `surface` / `ballistic` (none does yet). Unset = today's guesses, unchanged (`materialClass` for the class; the old
+  vfx.json word list, moved to surface-types.json `guess`, for the effect).
+- **Set (93 props):** bark on every collidable Trees prop plus rn_dead_tree, eg_palm, jt_tree_trunk, jg_bamboo, stumps
+  and logs; foliage on the 8 bushes and mn_shrub; rock on boulders, cliffs and the rocks (rocks keep stone).
+- **Client:** effects and sounds come from the surface type (`fxMap.ts`); vfx.json `map.impacts` keyed by type
+  (`map.surfaces` gone); new chips (splinters, leaves, grit) in `impactVisuals.ts`; foliage leaves no hole; new
+  sounds impact.wood/metal/soft/glass (Kenney Impact Sounds, CC0, already in assets-src) picked by a local ray
+  (`SessionAudio.worldImpact`).
+- **Proof:** `packages/shared/test/surfaceTypes.test.ts` vs `fixtures/surface-classes-before.json` (taken on main
+  before; never regenerate): the only class changes are the listed ones (61 concrete->heavy_wood, tree_plateau
+  metal->heavy_wood, 8 bushes thin_metal->foliage, mn_shrub concrete->foliage, 10 boulders/cliffs concrete->stone);
+  unset props and all materials keep class and effect. Match test: trunk and boulder stop a rifle, a bush doesn't.
+- Pitfall: a bush still has no collider, so its foliage effect is never seen (rounds land behind it).
+- Open for the owner: many materials and props are still misread by the guessers (e.g. `core.scifi_panel` glass from
+  "pane", `core.carved_stone` thin_metal from "car", sandstone soil, cacti concrete, `iron_fence` thin_wood, ~105
+  concrete-class props that look wooden, e.g. ww_* buildings). Fixing each is setting its `surface` (and adding it to
+  INTENDED in the test).
+
 ### Look: less like a toy, part A (grade) and part B (prop surfaces) (`wip/detoy`, agent, 2026-11-04; pushed, not merged; from main 5a002f8)
 Owner's note "everything looks too much like a toy"; the approved easy wins. Two commits: A (grade) then B (surfaces).
 Docs: docs/LOOK.md (the grade), docs/CONTENT_PIPELINE.md "Prop surfaces" (the mapping). Evidence (1280×720, medium,
@@ -94,6 +120,7 @@ scratchpad `snowmobile/` (`before/`, `after/`, `after/glacier-line/`, `raw-vs-pr
   full suite (assets-src, content/models.json): needs a `check/` run.
 - **Not done:** the driver's hands don't hold the handlebars (seated riders hold their gun or idle; no grip pose for
   vehicles exists); team paint on this grey model reads brown (a paint-gain per mount would fix it: owner's call).
+
 
 ### Procedural environment, Phase 0: audit and plan (`wip/env-audit`, agent, 2026-11-04; docs only, pushed, not merged)
 The owner's spec for replacing natural assets with an in-house procedural pipeline is `docs/PROCEDURAL_ENVIRONMENT.md`

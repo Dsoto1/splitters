@@ -116,6 +116,7 @@
       "src": "tree.glb",
       "name": "Tree",
       "category": "Trees",
+      "surface": "bark",
       "height": 5.0,
       "collide": "trunk"
     },
@@ -124,6 +125,7 @@
       "src": "tree-tall.glb",
       "name": "Tall Tree",
       "category": "Trees",
+      "surface": "bark",
       "height": 7.0,
       "collide": "trunk"
     },
@@ -132,6 +134,7 @@
       "src": "tree-autumn.glb",
       "name": "Autumn Tree",
       "category": "Trees",
+      "surface": "bark",
       "height": 5.0,
       "collide": "trunk"
     },
@@ -141,6 +144,7 @@
       "src": "tree-log.glb",
       "name": "Log",
       "category": "Rocks & Wood",
+      "surface": "bark",
       "height": 0.6,
       "collide": "box",
       "breakable": {
@@ -153,6 +157,7 @@
       "src": "rock-a.glb",
       "name": "Boulder",
       "category": "Rocks & Wood",
+      "surface": "rock",
       "height": 1.4,
       "collide": "box"
     },
@@ -161,6 +166,7 @@
       "src": "rock-b.glb",
       "name": "Rock",
       "category": "Rocks & Wood",
+      "surface": "rock",
       "height": 1.0,
       "collide": "box"
     },
@@ -169,6 +175,7 @@
       "src": "rock-c.glb",
       "name": "Small Rock",
       "category": "Rocks & Wood",
+      "surface": "rock",
       "height": 0.7,
       "collide": "box"
     },
@@ -177,6 +184,7 @@
       "src": "rock-flat.glb",
       "name": "Flat Rock",
       "category": "Rocks & Wood",
+      "surface": "rock",
       "height": 0.4,
       "collide": "box"
     },
@@ -194,6 +202,7 @@
       "src": "tree-trunk.glb",
       "name": "Stump",
       "category": "Rocks & Wood",
+      "surface": "bark",
       "height": 0.6,
       "collide": "box",
       "breakable": {

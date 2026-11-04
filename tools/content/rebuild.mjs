@@ -14,6 +14,7 @@
 //              tools/content/npcs.mjs                npcRoles.generated.ts and codes.lock.json (npcRoles) from content/npcs.json
 //              tools/content/pickups.mjs             pickups.generated.ts from content/pickups.json
 //              tools/content/materials.mjs           materials.generated.ts from content/materials.json
+//              tools/content/surface-types.mjs       surfaceTypes.generated.ts from content/surface-types.json and the props' `surface`
 //              tools/content/tiles.mjs               kitTiles.generated.ts and edgeStyles.generated.ts from content/tiles/
 //   3. atlas   tools/content/build-palette-atlas.mjs --offline: the palette atlases from the pictures
 //                                                     already made (any old atlas, either side of a conflict)
@@ -73,6 +74,7 @@ node('tools/content/vehicles.mjs');
 node('tools/content/npcs.mjs');
 node('tools/content/pickups.mjs');
 node('tools/content/materials.mjs');
+node('tools/content/surface-types.mjs');
 node('tools/content/tiles.mjs');
 
 step('palette atlas');

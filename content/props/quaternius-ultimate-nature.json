@@ -15,6 +15,7 @@
       "src": "BirchTree_1.glb",
       "name": "Birch",
       "category": "Trees",
+      "surface": "bark",
       "height": 8.0,
       "collide": "trunk"
     },
@@ -23,6 +24,7 @@
       "src": "BirchTree_Autumn_1.glb",
       "name": "Autumn Birch",
       "category": "Trees",
+      "surface": "bark",
       "height": 8.0,
       "collide": "trunk"
     },
@@ -31,6 +33,7 @@
       "src": "BirchTree_Snow_1.glb",
       "name": "Snowy Birch",
       "category": "Trees",
+      "surface": "bark",
       "height": 8.0,
       "collide": "trunk"
     },
@@ -39,6 +42,7 @@
       "src": "CommonTree_1.glb",
       "name": "Broadleaf Tree",
       "category": "Trees",
+      "surface": "bark",
       "height": 7.0,
       "collide": "trunk"
     },
@@ -47,6 +51,7 @@
       "src": "CommonTree_2.glb",
       "name": "Broadleaf Tree (round)",
       "category": "Trees",
+      "surface": "bark",
       "height": 6.5,
       "collide": "trunk"
     },
@@ -55,6 +60,7 @@
       "src": "CommonTree_Autumn_1.glb",
       "name": "Autumn Broadleaf",
       "category": "Trees",
+      "surface": "bark",
       "height": 7.0,
       "collide": "trunk"
     },
@@ -63,6 +69,7 @@
       "src": "CommonTree_Dead_1.glb",
       "name": "Dead Tree",
       "category": "Trees",
+      "surface": "bark",
       "height": 6.0,
       "collide": "trunk"
     },
@@ -71,6 +78,7 @@
       "src": "CommonTree_Snow_1.glb",
       "name": "Snowy Broadleaf",
       "category": "Trees",
+      "surface": "bark",
       "height": 7.0,
       "collide": "trunk"
     },
@@ -79,6 +87,7 @@
       "src": "PineTree_1.glb",
       "name": "Tall Pine",
       "category": "Trees",
+      "surface": "bark",
       "height": 9.0,
       "collide": "trunk"
     },
@@ -87,6 +96,7 @@
       "src": "PineTree_3.glb",
       "name": "Young Pine",
       "category": "Trees",
+      "surface": "bark",
       "height": 6.0,
       "collide": "trunk"
     },
@@ -95,6 +105,7 @@
       "src": "PineTree_Snow_1.glb",
       "name": "Snowy Tall Pine",
       "category": "Trees",
+      "surface": "bark",
       "height": 9.0,
       "collide": "trunk"
     },
@@ -103,6 +114,7 @@
       "src": "PineTree_Autumn_1.glb",
       "name": "Autumn Pine",
       "category": "Trees",
+      "surface": "bark",
       "height": 8.0,
       "collide": "trunk"
     },
@@ -111,6 +123,7 @@
       "src": "PalmTree_1.glb",
       "name": "Curved Palm",
       "category": "Trees",
+      "surface": "bark",
       "height": 7.0,
       "collide": "trunk"
     },
@@ -119,6 +132,7 @@
       "src": "PalmTree_3.glb",
       "name": "Tall Palm",
       "category": "Trees",
+      "surface": "bark",
       "height": 8.0,
       "collide": "trunk"
     },
@@ -127,6 +141,7 @@
       "src": "Willow_1.glb",
       "name": "Willow",
       "category": "Trees",
+      "surface": "bark",
       "height": 7.0,
       "collide": "trunk"
     },
@@ -135,6 +150,7 @@
       "src": "Willow_Autumn_1.glb",
       "name": "Autumn Willow",
       "category": "Trees",
+      "surface": "bark",
       "height": 7.0,
       "collide": "trunk"
     },
@@ -143,6 +159,7 @@
       "src": "Willow_Dead_1.glb",
       "name": "Dead Willow",
       "category": "Trees",
+      "surface": "bark",
       "height": 6.0,
       "collide": "trunk"
     },
@@ -175,6 +192,7 @@
       "src": "Bush_1.glb",
       "name": "Leafy Bush",
       "category": "Plants & Flowers",
+      "surface": "foliage",
       "height": 1.2,
       "collide": "none",
       "conceals": true
@@ -184,6 +202,7 @@
       "src": "BushBerries_1.glb",
       "name": "Berry Bush",
       "category": "Plants & Flowers",
+      "surface": "foliage",
       "height": 1.1,
       "collide": "none",
       "conceals": true
@@ -193,6 +212,7 @@
       "src": "Bush_Snow_1.glb",
       "name": "Snowy Bush",
       "category": "Plants & Flowers",
+      "surface": "foliage",
       "height": 1.1,
       "collide": "none",
       "conceals": true
@@ -237,6 +257,7 @@
       "src": "Rock_1.glb",
       "name": "Tall Boulder",
       "category": "Rocks & Wood",
+      "surface": "rock",
       "height": 2.2,
       "collide": "box"
     },
@@ -245,6 +266,7 @@
       "src": "Rock_3.glb",
       "name": "Boulder",
       "category": "Rocks & Wood",
+      "surface": "rock",
       "height": 1.4,
       "collide": "box"
     },
@@ -253,6 +275,7 @@
       "src": "Rock_5.glb",
       "name": "Flat Rock",
       "category": "Rocks & Wood",
+      "surface": "rock",
       "height": 0.8,
       "collide": "box"
     },
@@ -261,6 +284,7 @@
       "src": "Rock_Moss_1.glb",
       "name": "Mossy Boulder",
       "category": "Rocks & Wood",
+      "surface": "rock",
       "height": 2.0,
       "collide": "box"
     },
@@ -269,6 +293,7 @@
       "src": "Rock_Moss_4.glb",
       "name": "Mossy Rock",
       "category": "Rocks & Wood",
+      "surface": "rock",
       "height": 1.2,
       "collide": "box"
     },
@@ -277,6 +302,7 @@
       "src": "Rock_Snow_1.glb",
       "name": "Snowy Boulder",
       "category": "Rocks & Wood",
+      "surface": "rock",
       "height": 2.0,
       "collide": "box"
     },
@@ -285,6 +311,7 @@
       "src": "Rock_Snow_3.glb",
       "name": "Snowy Rock",
       "category": "Rocks & Wood",
+      "surface": "rock",
       "height": 1.2,
       "collide": "box"
     },
@@ -293,6 +320,7 @@
       "src": "TreeStump.glb",
       "name": "Large Stump",
       "category": "Rocks & Wood",
+      "surface": "bark",
       "height": 0.8,
       "collide": "box"
     },
@@ -301,6 +329,7 @@
       "src": "TreeStump_Moss.glb",
       "name": "Mossy Stump",
       "category": "Rocks & Wood",
+      "surface": "bark",
       "height": 0.8,
       "collide": "box"
     },
@@ -309,6 +338,7 @@
       "src": "WoodLog.glb",
       "name": "Large Log",
       "category": "Rocks & Wood",
+      "surface": "bark",
       "height": 0.7,
       "collide": "box"
     },
@@ -317,6 +347,7 @@
       "src": "WoodLog_Moss.glb",
       "name": "Mossy Log",
       "category": "Rocks & Wood",
+      "surface": "bark",
       "height": 0.7,
       "collide": "box"
     },
@@ -325,6 +356,7 @@
       "src": "WoodLog_Snow.glb",
       "name": "Snowy Log",
       "category": "Rocks & Wood",
+      "surface": "bark",
       "height": 0.75,
       "collide": "box"
     }

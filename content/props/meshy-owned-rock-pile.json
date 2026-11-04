@@ -22,6 +22,7 @@
       "src": "Meshy_AI_Rock_Pile_20260520_texture_remesh_tri.fbx",
       "name": "Rock Pile",
       "category": "Rocks & Wood",
+      "surface": "rock",
       "height": 1.3,
       "collide": "box"
     }

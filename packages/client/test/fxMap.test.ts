@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
-import { CORE_WEAPONS, WEAPONS_BY_SLOT, type WorldBox } from '@tiletrigger/shared';
-import { arcFx, explosionFor, gameplayFx, impactStyle, lastingFx, mappedEffects, mappedPacks, muzzleEffectFor, surfaceOfBox, surfaceOfName, weaponImpact } from '../src/game/fxMap.ts';
+import { CORE_WEAPONS, SURFACE_TYPE_IDS, WEAPONS_BY_SLOT, entityMaterial, guessSurface, type MapDocument, type MapEntity, type WorldBox } from '@tiletrigger/shared';
+import { arcFx, explosionFor, gameplayFx, impactSoundId, impactStyle, lastingFx, mappedEffects, mappedPacks, muzzleEffectFor, surfaceIndex, surfaceOfBox, weaponImpact } from '../src/game/fxMap.ts';
 import { portName } from '../src/game/godotVfx.ts';
 import { GameplayFxWatch, type WatchedPose } from '../src/game/gameplayFxWatch.ts';
 
@@ -49,17 +49,47 @@ describe('fx map (content/vfx.json map)', () => {
   });
 
   it('reads surfaces from names and level boxes', () => {
-    expect(surfaceOfName('prop.shipping_container_red')).toBe('metal');
-    expect(surfaceOfName('prop.crate_large')).toBe('wood');
-    expect(surfaceOfName('prop.sandbag_wall')).toBe('dirt');
-    expect(surfaceOfName('core.corridor_clear core.prototype')).toBe('stone');
+    expect(guessSurface('prop.shipping_container_red')).toBe('metal');
+    expect(guessSurface('prop.crate_large')).toBe('wood');
+    expect(guessSurface('prop.sandbag_wall')).toBe('dirt');
+    expect(guessSurface('core.corridor_clear core.prototype')).toBe('concrete');
     const box = (sourceId: string, extra: Partial<WorldBox> = {}): WorldBox => ({ min: [0, 0, 0], max: [1, 1, 1], kind: 'prop', sourceId, ...extra });
     const index = new Map([['p1', 'metal' as const]]);
     expect(surfaceOfBox(undefined, index)).toBe('dirt');
     expect(surfaceOfBox(box('p1'), index)).toBe('metal');
-    expect(surfaceOfBox(box('nope'), index)).toBe('stone');
+    expect(surfaceOfBox(box('nope'), index)).toBe('concrete');
     expect(surfaceOfBox(box('p1', { surface: { material: 'core.wood_planks', tint: null } }), index)).toBe('wood');
     expect(impactStyle('metal').sparks).toBeGreaterThan(impactStyle('wood').sparks);
+  });
+
+  it('draws every surface type, and unset surfaces as before (stone dust, metal sparks, wood dust)', () => {
+    for (const t of SURFACE_TYPE_IDS) expect(impactStyle(t), t).toBeTruthy();
+    // What content/vfx.json map.impacts stone/metal/wood/dirt drew before the surface types.
+    expect(impactStyle('concrete')).toMatchObject({ sparks: 2, dust: '#a39d92', dustSize: 1, chips: 0, hole: true, accent: null });
+    expect(impactStyle('metal')).toMatchObject({ sparks: 8, dust: '#8e8a84', dustSize: 0.5, hole: true, accent: { pack: 'hit_fx', effect: 'vfx_strike_01' } });
+    expect(impactStyle('wood')).toMatchObject({ sparks: 0, dust: '#8a6a45', dustSize: 0.9 });
+    expect(impactStyle('dirt')).toMatchObject({ sparks: 0, dust: '#7d6a52', dustSize: 1.4, chips: 0 });
+  });
+
+  it('picks wood effects and sound for a tree trunk, the same surface the server shoots (not stone dust)', () => {
+    const doc = { entities: [{ id: 't1', kind: 'prop', model: 'prop.oak', position: [0, 0, 0], yaw: 0 }, { id: 'b1', kind: 'prop', model: 'prop.bush_large', position: [0, 0, 0], yaw: 0 }, { id: 'r1', kind: 'prop', model: 'prop.nt_boulder', position: [0, 0, 0], yaw: 0 }, { id: 'c1', kind: 'prop', model: 'prop.shipping_container_red', position: [0, 0, 0], yaw: 0 }], classicStructure: { theme: 'core.prototype', tiles: [] } } as unknown as Pick<MapDocument, 'entities' | 'classicStructure'>;
+    const index = surfaceIndex(doc);
+    const box = (sourceId: string): WorldBox => ({ min: [0, 0, 0], max: [1, 1, 1], kind: 'prop', sourceId });
+    const trunk = surfaceOfBox(box('t1'), index);
+    expect(trunk).toBe('bark');
+    expect(entityMaterial(doc.entities[0] as MapEntity)).toBe('heavy_wood');
+    const style = impactStyle(trunk);
+    expect(style.chips).toBeGreaterThan(0);
+    expect(style.sparks).toBe(0);
+    expect(style.dust).not.toBe(impactStyle('stone').dust);
+    expect(impactSoundId(style.sound)).toBe('impact.wood');
+    // A bush: leaves, no hole, a soft sound; a boulder: rock dust and grit; a container: metal sparks and ring.
+    expect(surfaceOfBox(box('b1'), index)).toBe('foliage');
+    expect(impactStyle('foliage')).toMatchObject({ hole: false, sound: 'soft' });
+    expect(surfaceOfBox(box('r1'), index)).toBe('rock');
+    expect(impactSoundId(impactStyle('rock').sound)).toBe('impact.world');
+    expect(surfaceOfBox(box('c1'), index)).toBe('metal');
+    expect(impactSoundId(impactStyle('metal').sound)).toBe('impact.metal');
   });
 
   it('picks explosions by weapon, projectile, kind and air', () => {

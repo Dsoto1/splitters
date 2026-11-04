@@ -279,6 +279,7 @@
       "src": "jg_bamboo.glb",
       "name": "Bamboo Stand",
       "category": "Jungle Ruins",
+      "surface": "bark",
       "height": 5.72,
       "collide": "trunk"
     },

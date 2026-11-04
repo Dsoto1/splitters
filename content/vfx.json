@@ -90,22 +90,32 @@
       "heavy": { "effect": "big_flash_01", "scale": 0.13 },
       "default": { "effect": "muzzle_flash_01", "scale": 0.18 }
     },
-    "surfaces": {
-      "$comment": "What a round hit, read from the level: words matched (in order) against the prop model, the tile and theme, or a free block's material. Terrain is dirt; anything unmatched is stone.",
-      "metal": ["metal", "steel", "iron", "container", "barrel", "drum", "tank", "pipe", "vehicle", "truck", "car_", "_car", "bus", "train", "rail", "crane", "excavator", "machine", "sci", "orbital", "station", "space", "hangar", "gantry", "catwalk", "grate", "locker", "generator", "turret", "fence_metal", "sign", "lamp", "neon", "industrial", "factory"],
-      "wood": ["wood", "timber", "plank", "crate", "pallet", "log", "cabin", "barn", "shack", "stall", "cart", "wagon", "fence", "table", "bench", "chair", "shelf", "door", "dock", "pier", "boat", "ship", "frontier", "wild_west", "ww_", "saloon", "medieval", "mv_"],
-      "dirt": ["dirt", "sand", "mud", "grass", "soil", "hay", "sandbag", "earth", "ground", "desert", "dune", "snow", "jungle_floor"],
-      "stone": []
-    },
     "impacts": {
-      "$comment": "A round hitting a surface: the hole, sparks and dust drawn in house (impactVisuals.ts) as set here, and an optional Binbun accent played on top (minor: dropped when many effects are playing, and past `accentRange` metres from the camera).",
+      "$comment": "A round hitting a surface, by surface type (content/surface-types.json, which says what each throws: dust, splinters, chips, leaves or sparks; its decal and sound family): the hole, sparks, dust and chips drawn in house (impactVisuals.ts) as set here, and an optional Binbun accent played on top (minor: dropped when many effects are playing, and past `accentRange` metres from the camera). `chips` are small lit flakes in `chip` colour: splinters on wood and bark, leaves on foliage, grit on rock.",
       "accentRange": 45,
+      "concrete": { "sparks": 2, "dust": "#a39d92", "dustSize": 1, "accent": null },
       "stone": { "sparks": 2, "dust": "#a39d92", "dustSize": 1, "accent": null },
+      "rock": { "sparks": 2, "dust": "#8f897e", "dustSize": 1.1, "chips": 3, "chip": "#6d6860", "accent": null },
+      "brick": { "sparks": 1, "dust": "#a8735e", "dustSize": 1, "chips": 2, "chip": "#8c4a35", "accent": null },
+      "plaster": { "dust": "#e0d9cb", "dustSize": 1.2, "accent": null },
+      "wood": { "dust": "#8a6a45", "dustSize": 0.9, "chips": 4, "chip": "#a07a4a", "accent": null },
+      "thin_wood": { "dust": "#8a6a45", "dustSize": 0.9, "chips": 4, "chip": "#a8804e", "accent": null },
+      "bark": { "dust": "#6e5238", "dustSize": 0.8, "chips": 5, "chip": "#5c4129", "accent": null },
+      "foliage": { "dust": "#6a8240", "dustSize": 0.6, "chips": 6, "chip": "#4f7f2c", "accent": null },
       "metal": { "sparks": 8, "dust": "#8e8a84", "dustSize": 0.5, "accent": { "pack": "hit_fx", "effect": "vfx_strike_01", "scale": 0.1 } },
-      "wood": { "sparks": 0, "dust": "#8a6a45", "dustSize": 0.9, "accent": null },
-      "dirt": { "sparks": 0, "dust": "#7d6a52", "dustSize": 1.4, "accent": null },
+      "sheet_metal": { "sparks": 8, "dust": "#8e8a84", "dustSize": 0.5, "accent": { "pack": "hit_fx", "effect": "vfx_strike_01", "scale": 0.1 } },
+      "glass": { "dust": "#d6e0e4", "dustSize": 0.4, "chips": 3, "chip": "#e4f0f4", "accent": null },
+      "dirt": { "dust": "#7d6a52", "dustSize": 1.4, "accent": null },
+      "grass": { "dust": "#6f6b48", "dustSize": 1.3, "accent": null },
+      "sand": { "dust": "#cdb88e", "dustSize": 1.6, "accent": null },
+      "gravel": { "dust": "#8a867e", "dustSize": 1.2, "chips": 2, "chip": "#6f6b65", "accent": null },
+      "snow": { "dust": "#eef2f6", "dustSize": 1.6, "accent": null },
+      "water": { "accent": { "pack": "hit_fx", "effect": "vfx_strike_02", "scale": 0.14 } },
       "flesh": { "accent": { "pack": "hit_fx", "effect": "vfx_strike_03", "scale": 0.08 } },
-      "water": { "accent": { "pack": "hit_fx", "effect": "vfx_strike_02", "scale": 0.14 } }
+      "fabric": { "dust": "#b8ad93", "dustSize": 0.8, "accent": null },
+      "plastic": { "dust": "#c4c4c0", "dustSize": 0.6, "chips": 2, "chip": "#d0d0cc", "accent": null },
+      "armor": { "sparks": 10, "dust": "#8e8a84", "dustSize": 0.4, "accent": { "pack": "hit_fx", "effect": "vfx_strike_01", "scale": 0.1 } },
+      "energy": { "sparks": 4, "accent": null }
     },
     "weaponImpacts": {
       "$comment": "Where a weapon's rounds land with their own effect, by weapon id or projectile visual (in place of the surface accent).",

@@ -452,13 +452,15 @@ groups in the client).
 Library surface materials, themes and the tint swatches are data too (docs/CONTENT_SCALABILITY.md step 6): names,
 colours and settings in `content/materials.json`; drawing is code (the pattern painters,
 `packages/client/src/materials/patterns.ts`; the Babylon materials, `client/mapMeshes.ts`). What a material is made of
-for bullets (`materialClass` in `sim/gunplay.ts`, from the id and category) and which terrain layer a material paints
-as (`map/terrainPaint.ts`) are derived in code; the eight terrain grounds (`map/terrain.ts`) are stored by index in
+for bullets and how hits on it look is its optional `surface` (a surface type, next section; `ballistic` overrides the
+class alone); unset, both are guessed from the id and category as before (`materialClass` in `sim/gunplay.ts`, the
+`guess` words of `content/surface-types.json`). Which terrain layer a material paints as (`map/terrainPaint.ts`) is
+derived in code; the eight terrain grounds (`map/terrain.ts`) are stored by index in
 maps and stay in code.
 
 | File | Holds |
 |---|---|
-| `content/materials.json` `materials` | every material, in MapMaker's palette order: `id`, `displayName`, `category` (palette group: `MATERIAL_CATEGORIES`), either a procedural `pattern` (`PATTERN_IDS`) with `base` and `accent` colours, or a scanned `texture` set with `base` (its average colour, for minimaps and icons); `scale` (metres one repeat covers), `shine` (0 matte to 1 glossy), `emissive` (glows whatever the light), `notes` |
+| `content/materials.json` `materials` | every material, in MapMaker's palette order: `id`, `displayName`, `category` (palette group: `MATERIAL_CATEGORIES`), either a procedural `pattern` (`PATTERN_IDS`) with `base` and `accent` colours, or a scanned `texture` set with `base` (its average colour, for minimaps and icons); `scale` (metres one repeat covers), `shine` (0 matte to 1 glossy), `emissive` (glows whatever the light), optional `surface` (a type in `content/surface-types.json`) and `ballistic` (a class in `BALLISTIC_MATERIALS`), `notes` |
 | `content/materials.json` `themes` | every theme: `id`, `displayName`, `sky` colour and `slots` (`floor`, `walls`, `solids`, `underside`, `trim`: each a `material` and optional `tint`) |
 | `content/materials.json` `tintSwatches` | the tints MapMaker offers first (any #rrggbb is allowed) |
 
@@ -492,6 +494,56 @@ maps and stay in code.
 `pnpm content:rebuild` and `pnpm content:check` run it with the other data generators. The Workbench shows
 **Materials** (name, category, pattern, texture, colours, tiling, shine, glow, notes; id read-only) and **Themes**
 (name, sky, each slot's material and tint, notes; id read-only) from this file.
+
+### Surface types
+
+What a surface is made of, for gameplay, is one shared list: `content/surface-types.json` (generator
+`tools/content/surface-types.mjs` → `packages/shared/src/content/surfaceTypes.generated.ts`, read through
+`packages/shared/src/sim/surfaceTypes.ts`). The server's ballistic class and the client's impact effect and sound come
+from the same type, so they can't disagree for anything that names one. These are gameplay types, not looks (a prop's
+look is its model).
+
+| File | Holds |
+|---|---|
+| `content/surface-types.json` `types` | each type: `id`, `name`, `ballistic` (its class: `BALLISTIC_MATERIALS` / `MATERIAL_BALLISTICS` in `sim/gunplay.ts`, penetration resistance, ricochet, destruction), `impact` (`decal`: `hole` or `none`; `debris`: any of `dust`, `splinters`, `chips`, `leaves`, `sparks`; `sound`: `hard`, `wood`, `metal`, `soft`, `glass`, `water` or `none`) and optional `footstep` (a family for later; not played yet) |
+| `content/surface-types.json` `guess` | the legacy effect guess for entries with no `surface`: words per type (moved unchanged from content/vfx.json `map.surfaces`), else `fallback` |
+| `content/vfx.json` `map.impacts` | how each type's hit is drawn, keyed by type id: `sparks`, `dust` colour and `dustSize`, `chips` and `chip` colour (splinters, leaves, grit), the Binbun `accent` |
+| `content/props/<pack>.json` | `surface` on a prop, or at the file's top level for every prop of the pack (a prop's own wins) |
+| `content/materials.json` | `surface` (and `ballistic` to override its class alone) on a library material |
+| `content/sounds.json` | the impact sounds per family: `impact.world` (hard), `impact.wood`, `impact.metal`, `impact.soft`, `impact.glass`, `water.splash` |
+
+The types (2026-11-04): `concrete`, `stone`, `rock` (boulders, cliffs; stone class), `brick`, `plaster` (drywall),
+`wood`, `thin_wood`, `bark` (trunks, stumps, logs; class `heavy_wood`, full cover), `foliage` (bushes; class
+`foliage`, pass-through), `metal`, `sheet_metal` (thin_metal), `glass`, `dirt`, `grass`, `sand`, `gravel`, `snow`
+(all soil), `water`, `flesh`, `fabric` and `plastic` (drywall), `armor`, `energy`.
+
+**Unset keeps today's behaviour.** A prop or material with no `surface` keeps the ballistic class `materialClass`
+guesses from its id and the effect the `guess` words give, exactly as before; nothing changes until a surface is set.
+Tile structure stays concrete to the server (effects guessed from the tile id and theme), terrain concrete to the
+server and dirt on the client. `packages/shared/test/surfaceTypes.test.ts` compares every material's and prop's class
+and effect with `packages/shared/test/fixtures/surface-classes-before.json` (taken before surface types; never
+regenerated) and lists every intended change by id: setting a surface that changes a class means adding it there, on
+purpose.
+
+#### How to add or change one
+
+1. **Name a prop's surface** with `"surface": "<type>"` in its entry in `content/props/<pack>.json` (or the pack's top
+   level), a material's in `content/materials.json`. Prefer a type whose class is what the piece should do to bullets;
+   if the class must differ (rare), a material can add `ballistic`.
+2. **A new type**: add it to `types` and its drawing to `content/vfx.json` `map.impacts` (what it draws must match its
+   `debris`: sparks only if it lists `sparks`, `chips` only for `chips`, `splinters` or `leaves`, `dust` only for
+   `dust`). A new ballistic class is code first (`BALLISTIC_MATERIALS` and `MATERIAL_BALLISTICS`, `sim/gunplay.ts`;
+   read docs/GUNPLAY_SPEC.md and GUNPLAY_DIRECTION.md first).
+3. **Generate and check:** `node tools/content/surface-types.mjs` checks the schema (unknown fields are errors), that every
+   class is in `BALLISTIC_MATERIALS`, every surface named by a prop, pack or the guess is a type, every type has its
+   drawing in vfx.json and nothing else does, and writes the generated file (`--check` only verifies; it runs in
+   `pnpm content:check` and `pnpm content:rebuild`; `tools/content/materials.mjs` checks materials' `surface` and
+   `ballistic`). Then `node tools/content/vfx-map.mjs` if vfx.json changed.
+4. **Test:** `pnpm typecheck`, `pnpm test:changed` (the fixture test above; `packages/client/test/fxMap.test.ts`) and
+   the `physicsfx` and `arsenal` e2e flows.
+
+The Workbench shows **Surface types** (name, class, decal, debris, sound, footstep; id read-only) and a surface and
+ballistic column on **Materials**.
 
 ### Tiles and edge styles
 

@@ -436,6 +436,23 @@ Ricochets should be rare, readable, and bounded.
 
 They should primarily provide spectacle and occasional skill expression—not random unavoidable deaths.
 
+### Implementation note: surface types (2026-11-04)
+
+The classes above live in `sim/gunplay.ts` (`BALLISTIC_MATERIALS`, `MATERIAL_BALLISTICS`). What a surface is made of
+comes from one shared list, `content/surface-types.json` (docs/CONTENT_PIPELINE.md, "Surface types"): each type names
+its ballistic class and its impact (decal, debris, sound family), so the server's penetration and ricochet and the
+client's impact effect and sound agree. Props and library materials name a type (`surface`); unset ones keep the
+class guessed from their id (`materialClass`). Two classes were added with it:
+
+- **Heavy Wood** (`heavy_wood`, resist 6000, no ricochet, destruction 0.3): tree trunks, stumps and logs (surface
+  `bark`). Full cover: a 0.5 m trunk post stops every round in the game (the strongest, the precision family, carries
+  3000 energy), as concrete did, but nothing ricochets off bark and hits show splinters and a wood knock.
+- **Foliage** (`foliage`, resist 30, no ricochet): bushes. Rounds pass through barely slowed; bushes still have no
+  collider and still conceal from bots.
+
+Boulders and cliffs are `rock` (the stone class, as rocks already were) instead of concrete. Owner decision Q3 of
+PROCEDURAL_ENVIRONMENT_AUDIT.md; `packages/shared/test/surfaceTypes.test.ts` lists every prop whose class changed.
+
 ---
 
 # 9. Environmental Damage
