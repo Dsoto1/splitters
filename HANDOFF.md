@@ -42,6 +42,36 @@ scratchpad `charfix2/`.
   Animations downloads and would change on rebuild (not rebuilt). Comparison tool: `charfix2/tools/cmp.mjs` (raw / old /
   new in their rest pose, same light and framing; serve the files under `public/zz-charfix-raw`, never commit it).
 
+### Content scalability step 1: the menu's first download (`wip/menu-bundle`, agent, 2026-11-03; not merged; rebased on main 51519b2)
+docs/CONTENT_SCALABILITY.md step 1. **Menu's first JS 837.0 -> 649.0 kB gzip** (2970 -> 2305 kB raw, on main 51519b2; `index` 396.1 ->
+208.1 kB gzip; `babylon` and `vendor` unchanged). Budget left at 840 kB (now ~190 kB of room). How it works:
+docs/LOADING.md, "Map content".
+- **What moved out:** the pack tiles (`packTiles*.ts`), `catalog.ts`'s tables, the prop table (`props.generated.ts`),
+  geometry, validate, dressing, editor operations, the zod map schemas (`schema.ts`, `logic.ts`), mounts, border,
+  backdrop, gunplay, serverRules, scenarioDefs, `mapPlan.ts`, `mapMeshes.ts` and its patterns, `editor/storage.ts`.
+  `STYLE_PACKS` was never in the menu chunk (editor only). The map content (`client/src/mapContent.ts`, ~149 kB
+  gzip) loads with the first map drawn, opened or played (`loadMapContent()`, in parallel with the map file).
+- **Why they were in:** the shared barrel re-exports everything and the package had no `sideEffects` field, so any
+  menu import kept every module; `schema.ts` imported `catalog.ts` for six constants (and catalog builds
+  `CORE_TILES` from every pack at load); `track.ts` ran `RaceSettings.parse({})` at load.
+- **Changes:** `@tiletrigger/shared` `"sideEffects": false`; `map/tileOptions.ts` (out of catalog.ts, re-exported)
+  and `map/mapKeys.ts` (out of schema.ts, re-exported); `DEFAULT_RACE` written out (test/menuSplit.test.ts checks
+  it equals the parse); client `mapContent.ts` + `mapContentLoader.ts`; mapIndex, mapThumbs (plan), modelThumbs
+  (tile pictures import mapMeshes on demand), main.ts (`playOffline`, `travelLocal`; Change map's own maps via
+  matchCode). Hygiene: lazy weapon-code, prop and look maps, pure `CORE_TILES`/`coreCatalog` (no menu change).
+- **Pitfall:** a static import of `loadMap`, `buildMapGeometry`, `mapPlan.ts`, `mapMeshes.ts` or `editor/storage.ts`
+  from anything the menu loads brings ~190 kB back; so does an import-for-effect module in shared.
+- **Still in the menu chunk, could be trimmed next** (rendered size before minifying): `frontEnd.ts` 123 kB (every
+  screen; split per screen), `characterAnimator.ts` 66 kB (Character Select preview), `virtual:map-index` 66 kB
+  (cards; could drop fields the cards don't show), `sim/weapons.ts` 52 kB (the menu reads names and models: a
+  weapon-list module, which step 3 "weapons as data" makes natural), `characters.generated.ts` 34 kB, the inline
+  env BRDF PNG 31 kB (could be a fetched file), `game/input.ts` 23 kB (frontEnd's controls screen), synth 17 kB.
+- **Checks:** `pnpm typecheck` clean. `pnpm test:changed` (everything, the change is unmapped): 1450 pass, 2 fail,
+  both known load failures: host.test (hub wait: Bob's account) and pads eagle_spires (180 s timeout). E2E: see the
+  next line. `pnpm ci:plan`: full suite (the new client files have no rule): needs a `check/` run before main.
+- **E2E (local):** offline (53 checks), editor (60), visual (4: menu, mapmaker, arena, canyon at 0.1 %) and maps (30) PASS
+  (`CI=1 E2E_CLIENT_PORT=4273 E2E_SERVER_PORT=7887`: another session's preview held 4173).
+
 ### Character fixes: faces, roster (`wip/char-fixes`, agent, 2026-11-03; not merged, not pushed; from main ef2c103)
 Owner's notes of 3 Nov (agent scratchpad `charfix/owner-notes.md`). Steps 1-2 done here; steps 3-5 (Imp thumbnail,
 bodies, arms/grips/shoulders/fingers) NOT done: see "Open" below. Evidence: agent scratchpad `charfix/`.
@@ -91,7 +121,7 @@ bodies, arms/grips/shoulders/fingers) NOT done: see "Open" below. Evidence: agen
   Not pushed: the lead asked that the face rebuilds not go towards main until they match the downloads.
 
 ### Queued (owner-approved, 2026-11-03): content scalability, see docs/CONTENT_SCALABILITY.md
-The owner approved every pick in docs/CONTENT_SCALABILITY.md. Not started. Order:
+The owner approved every pick in docs/CONTENT_SCALABILITY.md. Step 1 done on `wip/menu-bundle` (above; not merged). Order:
 1. Get the menu's first JS off its 800 KB gzip ceiling: pack tiles, the prop table and STYLE_PACKS load with a
    match or MapMaker, not the menu.
 2. Per-pack prop files and palette atlases, plus one `pnpm content:rebuild` command, so parallel branches stop

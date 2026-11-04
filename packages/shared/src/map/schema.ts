@@ -1,9 +1,13 @@
 import { z } from 'zod';
-import { CEILINGS, CORNERS, EDGE_STYLES, FACADES, FLOOR_INSERTS, ROOM_LAYOUTS } from './catalog.ts';
+import { MAP_FORMAT, MAP_FORMAT_VERSION, NPC_ROLES, SQUAD_ORDERS } from './mapKeys.ts';
+import { CEILINGS, CORNERS, EDGE_STYLES, FACADES, FLOOR_INSERTS, ROOM_LAYOUTS } from './tileOptions.ts';
 import { MAX_TERRAIN_VERTS, TERRAIN_MATERIALS } from './terrain.ts';
 import { BACKDROP_GROUNDS, SCENERY_IDS, SKY_IDS } from './backdrop.ts';
 import { BORDER_STYLES } from './border.ts';
 import { ScenarioLogic } from './logic.ts';
+
+// The plain constants (format, factions, NPC roles, squad orders): mapKeys.ts, which the menu reads without the schemas.
+export * from './mapKeys.ts';
 import { MOUNT_MODELS, MOUNT_SKINS } from '../sim/mounts.ts';
 import { WEAPON_CATEGORIES } from '../sim/weapons.ts';
 
@@ -22,10 +26,6 @@ import { WEAPON_CATEGORIES } from '../sim/weapons.ts';
  * legacyMetadata) are not populated in Phase 0; they will be added through
  * migrations as each system lands.
  */
-export const MAP_FORMAT = 'tiletrigger.map';
-/** The format name maps were saved under while the game was called ChronoSplit; they load and are re-saved as MAP_FORMAT. */
-export const LEGACY_MAP_FORMAT = 'chronosplit.map';
-export const MAP_FORMAT_VERSION = 25;
 /** Content packs a map may name in `dependencies`. */
 export const MAX_MAP_DEPENDENCIES = 16;
 
@@ -314,19 +314,10 @@ export const TrapEntity = EntityBase.extend({
   style: z.enum(['rockfall']).optional(),
 });
 
-/** Faction IDs are short lowercase words; `players` is the built-in faction of every player in co-op. */
+/** Faction IDs are short lowercase words (PLAYERS_FACTION, in mapKeys.ts, is every player's in co-op). */
 export const FactionId = z.string().regex(/^[a-z0-9_]{2,32}$/, 'faction IDs are 2-32 chars of [a-z0-9_]');
-export const PLAYERS_FACTION = 'players';
 
-/**
- * NPC kinds an encounter can field: the soldiers, then the creatures (see
- * sim/npc.ts and sim/creatures.ts). Order matters: snapshots send the index.
- */
-export const NPC_ROLES = ['trooper', 'gunner', 'heavy', 'sniper', 'imp', 'puglin', 'cyclops', 'oculus', 'scolitex', 'zombie', 'goblin', 'otter', 'boglurker', 'warlord', 'hyena', 'alien', 'pirate', 'titan'] as const;
-/** The creature kinds among NPC_ROLES (their own bodies and clips, not the soldier rig). */
-export const CREATURE_ROLES = ['imp', 'puglin', 'cyclops', 'oculus', 'scolitex'] as const satisfies readonly (typeof NPC_ROLES)[number][];
 const squadCount = z.number().int().min(0).max(16);
-export const SQUAD_ORDERS = ['hold', 'attack', 'defend', 'patrol', 'follow', 'roam'] as const;
 /**
  * How a squad arrives: spread round the point (none), or one by one out of a
  * fixture drawn there: dropping from a ceiling vent, climbing out of a floor

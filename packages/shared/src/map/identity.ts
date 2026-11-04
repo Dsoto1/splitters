@@ -1,4 +1,5 @@
-import { MAP_FORMAT_VERSION, type MapDocument, type MapRelease } from './schema.ts';
+import { MAP_FORMAT_VERSION } from './mapKeys.ts';
+import type { MapDocument, MapRelease } from './schema.ts';
 
 /**
  * Map identity (direction §9, MULTIPLAYER_REVIEW.md 5.5): a map that leaves

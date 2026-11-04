@@ -9,3 +9,5 @@ export { LocalTransport, prewarmSimWorker } from './localTransport.ts';
 export { NetTransport } from './netTransport.ts';
 export { initPhysics } from '@tiletrigger/shared';
 export { HostLeftScreen } from './hostLeft.ts';
+// The host's Change map lists your MapMaker maps too (main.ts ownMaps): loading them reads the tile tables.
+export { listLibrary, openFromLibrary } from '../editor/storage.ts';

@@ -9,9 +9,10 @@ import { offscreenCamera, offscreenProjection } from './offscreen.ts';
 import { RenderTargetTexture } from '@babylonjs/core/Materials/Textures/renderTargetTexture';
 import type { AbstractMesh } from '@babylonjs/core/Meshes/abstractMesh';
 import { Vector3 as V3 } from '@babylonjs/core/Maths/math.vector';
-import { buildMapGeometry, newMapDocument, type TileDefinition } from '@tiletrigger/shared';
+import type { TileDefinition } from '@tiletrigger/shared';
 import { ModelLibrary } from '../content/models.ts';
-import { MapStyler } from '../mapMeshes.ts';
+import type { MapStyler } from '../mapMeshes.ts';
+import { loadMapContent } from '../mapContentLoader.ts';
 
 const SIZE = 96;
 
@@ -85,6 +86,8 @@ export class ModelThumbnails {
   }
 
   private async renderTile(def: TileDefinition, size: number): Promise<string> {
+    // Tile pictures are MapMaker's (weapon icons, on the menu, draw models): the map content is in by then.
+    const [{ MapStyler }, { buildMapGeometry, newMapDocument }] = await Promise.all([import('../mapMeshes.ts'), loadMapContent()]);
     const base = newMapDocument('thumb');
     const doc = { ...base, classicStructure: { ...base.classicStructure, tiles: [{ id: 'thumb_tile', tile: def.id, x: 0, y: 0, z: 0, rotation: 0 as const }] } };
     this.styler ??= new MapStyler(this.scene);
