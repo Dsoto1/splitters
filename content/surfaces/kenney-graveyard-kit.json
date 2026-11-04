@@ -1,0 +1,25 @@
+{
+  "$comment": "Graveyard Kit: stone graves and walls, green-painted iron fences and lamps, wooden coffins and benches. The pines, the tall rocks, the pumpkin and the hay bale are natural: left alone; lamp glass and flames as they were.",
+  "default": "stone",
+  "colors": {
+    "#20896b": "painted_metal",
+    "#43ac7c": "painted_metal",
+    "#b66545": "wood",
+    "#dd865f": "wood",
+    "#905741": "wood",
+    "#e0a57e": "wood",
+    "#ffc044": "none"
+  },
+  "skip": ["pine", "pine_crooked", "rocks_tall", "pumpkin", "hay_bale"],
+  "props": {
+    "candles": {
+      "default": "plastic",
+      "colors": {"#e0a57e": "plastic"}
+    },
+    "lantern": {
+      "default": "painted_metal",
+      "colors": {"#e0a57e": "none", "#dd865f": "none"}
+    },
+    "fire_basket": {"default": "metal"}
+  }
+}

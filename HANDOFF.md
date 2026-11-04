@@ -10,6 +10,49 @@ The session branch is **`claude/launcher-ui-map-cards`**. Poll CI without auth:
 `curl -s "https://api.github.com/repos/Dsoto1/splitters/actions/workflows/ci.yml/runs?branch=check/candidate&per_page=1"`.
 Use `pnpm typecheck`, not `pnpm -s typecheck` (the silent flag hides type errors; one reached CI that way).
 
+### Look: less like a toy, part A (grade) and part B (prop surfaces) (`wip/detoy`, agent, 2026-11-04; pushed, not merged; from main 5a002f8)
+Owner's note "everything looks too much like a toy"; the approved easy wins. Two commits: A (grade) then B (surfaces).
+Docs: docs/LOOK.md (the grade), docs/CONTENT_PIPELINE.md "Prop surfaces" (the mapping). Evidence (1280×720, medium,
+SwiftShader WebGL2): agent scratchpad `detoy/before/`, `detoy/A/` (A only), `detoy/AB/` (A+B): Bunker Cross
+(military, clear), Frost Basin (snow), Flatpack Depot (interiors, dusk; `eye`, `eye2`), Diamond Park (city, night);
+`<map>-eye.jpg` at eye level, `<map>-over.jpg` from above.
+- **A, the grade** (`applyWorldGrade` / `WORLD_GRADE`, graphicsSettings.ts; matches and MapMaker): ACES at exposure 1.05
+  (was 1.15), contrast 1.15 (1.12), colour curves saturation -12 / highlights -20, vignette 1.0 (1.2). Menu lineup,
+  Character Select portraits and the Designer keep `applyToneMapping` unchanged (portraits.ts never used either).
+  `LIGHT_BALANCE` (backdrop.ts) on each sky's `light` data: sky fill ×0.8 (0.9), sun ×1.6 (1.5), ground bounce 0.5
+  (0.62). Shadow bias 0.001 / normal bias 0.014 (0.0015 / 0.02). SSAO (high, WebGL2 only as before) radius 1.3,
+  strength 1.15. No new pass: draws identical before/after on low and medium. No per-map retune was needed (skies
+  data untouched). Tried and dropped: a cool tint in the shadows (beige walls went grey).
+- **B, prop surfaces** (`tools/content/surfaces.mjs`, run by prepare-props): 18 Kenney packs, 251 props mapped
+  colour → surface (`content/surfaces.json`: wood, painted_wood, painted_metal, metal, concrete, stone, fabric,
+  plastic, cardboard, glass) by per-pack files `content/surfaces/<pack>.json` (`default`, `materials`, `colors`,
+  `minShare` 0.18, `skip`, per-prop `props.<id>`). Each part keeps its colour as tint, gets roughness/metalness,
+  whole-centimetre box-projected TEXCOORD_1 and extras `{ surface, tile, uv, detail }`; the game
+  (`content/propSurfaces.ts`, from ModelLibrary) adds a shared 256 px detail map per surface (`public/surfaces/*.webp`,
+  near-lossless, from our ambientCG sets + tileable grime), off on low. Natural pieces skipped (Nature Kit has no
+  file; survival trees/rocks/logs/stumps/grass/campfire, graveyard pines/rocks/pumpkin/hay, pirate palms, fantasy
+  hedges). Kit props kept as built (Industrial, Roads, Retro Urban, Modular Space, Space, the external Train Kit
+  pieces) were surfaced once in place.
+- **Sizes**: barrel and open barrel 1.1 -> 0.95 m, anvil 0.9 -> 0.8, bucket 0.4 -> 0.32, powder keg 1.0 -> 0.75,
+  bottle 0.4 -> 0.3, lantern 0.6 -> 0.45 (flame `at` and size scaled with it), candles 0.4 -> 0.3, shopping cart
+  1.1 -> 1.0, oak barrel 1.0 -> 0.9, fridge 2.0 -> 1.8 (pack `height`; collision follows the built size).
+- **Numbers**: menu first JS 2307.7 / 648.8 kB gzip before, 2308.2 / 649.0 after A, 2308.9 / 649.2 after A+B. Props
+  73.96 -> 74.66 MB (+0.7 MB, +10.6 % on the 251 surfaced), surface pictures 0.47 MB (9 files, loaded once a map uses
+  them), palette atlases 986 -> 1093 KB. Materials in the surfaced props 343 -> 437 (86 props split into 2-3 parts).
+  Frost Basin, the two fixed cameras of the screenshots, no bots (a page probe, not committed: median of 25 `scene.render()` + `gl.finish()`; draws a frame): medium eye 146 / 146 /
+  152, overview 167 / 168 / 177; low eye 94 / 94 / 98, overview 114 / 115 / 123 (before / A / A+B). Frame times on
+  this container were noise (loaded machine, SwiftShader: medians 25-90 ms either way, p90 up to seconds); perf96's
+  96-bot runs measured 1-2 frames a scenario and are not usable. Needs a real-GPU check (PERF_GPU=1).
+- **WebGPU** (SwiftShader adapter, a match on Bunker Cross): medium with A+B renders without WebGPU errors, colour
+  curves on, 34 detail-mapped materials. High shows "EntryPoint main infringes limits" / invalid bloom pipeline errors
+  on main before this change too (SwiftShader limits; not from this work).
+- **Found, not fixed**: `ModelLibrary.mergeModel` drops glTF mesh instances (a mesh reused by several nodes comes in
+  as an InstancedMesh, which the `instanceof Mesh` filter skips): placed props like the Mini Market shelves drew one
+  carton of six. Surfaced props now have a mesh per node (their TEXCOORD_1 differs), so those show every copy; the
+  same bug still hides copies in other props. Babylon ordering: a flat-colour material with only a detail map gets
+  no UVs (the detail plugin asks after attributes are prepared): worked round with a shared 1×1 white albedo.
+- **Checks**: see the CHANGELOG line and the commit messages; typecheck clean; content:check OK.
+
 ### Grips round 3: per-look hands and arms (`wip/char-grips-3`, agent, 2026-11-04; pushed, not merged; from main 47864cb)
 Owner's notes of 3 Nov ("arm position (mainly right arms) and grips", the 28 looks; Santa's and Zombie Soldier A's
 shoulders). Round 2's global changes made things worse, so nothing shared moved: each look carries its own data.

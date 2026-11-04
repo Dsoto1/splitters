@@ -1,0 +1,39 @@
+{
+  "$comment": "Factory Kit: painted machinery, dark bare-metal parts, cardboard boxes, plastic cones, glass windows.",
+  "default": "painted_metal",
+  "materials": {"material-glass": "glass"},
+  "colors": {
+    "#3b3b41": "metal",
+    "#353539": "metal",
+    "#42424a": "metal",
+    "#43435c": "metal",
+    "#3e3e44": "metal",
+    "#43434b": "metal",
+    "#c77451": "cardboard",
+    "#ea9168": "cardboard",
+    "#eeb993": "cardboard",
+    "#ff9944": "plastic",
+    "#cacade": "plastic"
+  },
+  "props": {
+    "pipe_valve": {
+      "colors": {"#c77451": "painted_metal", "#ea9168": "painted_metal", "#eeb993": "painted_metal"}
+    },
+    "lever": {
+      "colors": {"#c77451": "wood", "#ea9168": "wood", "#eeb993": "wood"}
+    },
+    "machine": {
+      "colors": {"#ea9168": "painted_metal"}
+    },
+    "machine_window": {
+      "colors": {"#ea9168": "painted_metal"}
+    },
+    "scanner": {
+      "colors": {"#ea9168": "painted_metal"}
+    },
+    "warning_sign": {
+      "colors": {"#c77451": "painted_metal", "#ea9168": "painted_metal"}
+    },
+    "cone": {"default": "plastic"}
+  }
+}

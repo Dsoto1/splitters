@@ -1,0 +1,22 @@
+{
+  "$comment": "Train Kit: painted rolling stock, dark bare-metal running gear, timber sleepers and loads; rails bare steel.",
+  "default": "painted_metal",
+  "colors": {"#3b3b41": "metal", "#ec9368": "wood", "#b46444": "wood", "#e7ae88": "wood"},
+  "props": {
+    "rail_track": {
+      "colors": {"#80859c": "metal", "#5c6179": "metal", "#a6add0": "metal", "#bdc5ed": "metal"}
+    },
+    "rail_track_wide": {
+      "colors": {"#80859c": "metal", "#5c6179": "metal", "#a6add0": "metal", "#bdc5ed": "metal"}
+    },
+    "railroad": {
+      "colors": {"#80859c": "metal", "#5c6179": "metal", "#a6add0": "metal", "#bdc5ed": "metal"}
+    },
+    "railroad_broken": {
+      "colors": {"#80859c": "metal", "#5c6179": "metal", "#a6add0": "metal", "#bdc5ed": "metal"}
+    },
+    "mine_rails": {
+      "colors": {"#80859c": "metal", "#5c6179": "metal", "#a6add0": "metal", "#bdc5ed": "metal"}
+    }
+  }
+}

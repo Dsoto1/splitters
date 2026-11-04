@@ -1,0 +1,54 @@
+{
+  "$comment": "City Kit (Roads): painted street furniture, a concrete pillar, a plastic cone; lamps as they were.",
+  "default": "painted_metal",
+  "colors": {"#ffffff": "none", "#e2e2ec": "none"},
+  "props": {
+    "nc_elevated_pillar": {
+      "default": "concrete",
+      "colors": {
+        "#8d93b1": "concrete",
+        "#adb5d9": "concrete",
+        "#a9b1d4": "concrete",
+        "#9197b6": "concrete",
+        "#7d829a": "concrete",
+        "#676c84": "concrete",
+        "#bfc8f0": "concrete",
+        "#595f77": "concrete",
+        "#a6add0": "concrete",
+        "#7c8199": "concrete",
+        "#80859c": "concrete",
+        "#5c6179": "concrete",
+        "#bdc5ed": "concrete",
+        "#626881": "concrete",
+        "#717388": "concrete",
+        "#5a6078": "concrete",
+        "#bec7ee": "concrete",
+        "#868ba1": "concrete",
+        "#6c6e83": "concrete",
+        "#a8b0d3": "concrete",
+        "#a2aacc": "concrete",
+        "#686d85": "concrete",
+        "#bdc6ee": "concrete",
+        "#7d829c": "concrete",
+        "#99a1c1": "concrete",
+        "#6a6b80": "concrete",
+        "#666b7f": "concrete",
+        "#a2abcc": "concrete",
+        "#7c829c": "concrete",
+        "#bec5ef": "concrete",
+        "#80859e": "concrete",
+        "#a8b0d2": "concrete",
+        "#6d6e83": "concrete",
+        "#4b4e5c": "concrete",
+        "#4e5160": "concrete"
+      }
+    },
+    "nc_cone": {
+      "default": "plastic",
+      "colors": {"#ffad45": "plastic", "#ff7f45": "plastic", "#ffffff": "plastic"}
+    },
+    "nc_power_pole": {
+      "colors": {"#c67351": "wood", "#ea9167": "wood"}
+    }
+  }
+}

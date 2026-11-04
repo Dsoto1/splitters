@@ -5,7 +5,8 @@
 //   1. locks   tools/content/lockfile.mjs            every content/*.lock.json in the stable format; git
 //                                                     conflict markers in one are settled (both sides'
 //                                                     entries; the one matching the file on disk wins)
-//   2. tables  tools/content/prepare-props.mjs       props.generated.ts and props.lock.json from
+//   2. tables  tools/content/surfaces.mjs            the prop surface pictures and content/surfaces.lock.json
+//              tools/content/prepare-props.mjs       props.generated.ts and props.lock.json from
 //                                                     content/props/*.json (packs from downloads kept as built)
 //              tools/content/character-manifests.mjs characters.generated.ts from content/characters/*.json
 //              tools/content/weapons.mjs             weapons.generated.ts, weaponFamilies.generated.ts, codes.lock.json
@@ -63,6 +64,7 @@ step('locks');
 node('tools/content/lockfile.mjs');
 
 step('tables: props, characters, weapons, vehicles, NPC roles, pickups and materials');
+node('tools/content/surfaces.mjs');
 node('tools/content/prepare-props.mjs');
 node('tools/content/character-manifests.mjs');
 node('tools/content/weapons.mjs');

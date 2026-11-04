@@ -552,6 +552,49 @@ re-renders everything; `ATLAS_JOBS=2` uses two pages). Atlases with no change ke
 tool and the check list the pieces with `tools/content/palette-items.ts` (run by Node with
 `--experimental-transform-types`).
 
+### Prop surfaces (man-made Kenney props)
+
+Kenney paints every part one flat colour: a material per colour in the older kits (Furniture, Space
+Kit: `wood`, `metalDark`, `carpet`…) or one palette texture (`colormap`) whose swatches the faces point
+at in the newer ones. That flatness is much of the "toy" look (docs/LOOK.md). `tools/content/surfaces.mjs`
+maps each colour to a surface, as data, when `prepare-props.mjs` builds the prop:
+
+- **Surfaces** (`content/surfaces.json`): `wood`, `painted_wood`, `painted_metal`, `metal`, `concrete`,
+  `stone`, `fabric`, `plastic`, `cardboard`, `glass`. Each names one of our ambientCG sets
+  (`content/textures.json`; nothing new downloaded), its roughness and metalness, `tile` (metres per
+  repeat), `detail` (how strongly it changes colour, roughness and normals, 0-1) and `grime`. The tool
+  turns each set into one shared 256 px Babylon detail map, `public/surfaces/<id>.webp` (RGBA: high-passed
+  brightness, normal y, roughness, normal x; tileable grime blotches worked into brightness and roughness),
+  locked in `content/surfaces.lock.json`. `glass` has no picture (roughness only).
+- **Mapping, one file per pack** (`content/surfaces/<pack>.json`): `default` (any colour not listed;
+  `none` leaves it as it is), `materials` (flat-material kits, by material name), `colors` (palette kits:
+  `#rrggbb` of a swatch; the nearest listed colour within 40 wins, since Kenney's swatches are gradients),
+  `minShare` (a palette prop's surfaces under this share of its area join its largest, default 0.18, so most
+  props stay at one or two parts), `skip` (props left alone) and `props.<id>` (a prop's own `default`,
+  `materials`, `colors`, matched before the pack's). `node tools/content/surfaces.mjs --palette <pack>` lists
+  the colours a pack uses, grouped by family, with their area and which props use them.
+- **What a prop gets**: each mapped part keeps its colour (the base colour or the palette swatch) as the
+  tint, gets the surface's roughness and metalness, a second set of texture coordinates box-projected in
+  the prop's frame as drawn (after `height`/`scale`; whole centimetres in 16 bits, KHR_mesh_quantization), and
+  material extras `{ surface, tile, uv, detail }`. A palette material whose faces land on several surfaces is split into one
+  part per surface (one draw each for every copy on the map). The game (`content/propSurfaces.ts`, from
+  `ModelLibrary`) gives those materials the shared detail map; on low graphics it is left off. (A flat-colour
+  material also gets a shared 1×1 white colour map on the same coordinates: Babylon picks a mesh's texture
+  coordinates before the detail map asks for them, and without a texture of its own the material would draw
+  its detail from nowhere.)
+- **Natural pieces are never mapped** (trees, bushes, grass, plants, rocks, logs, stumps, cliffs: a
+  procedural environment replaces them): the Nature Kit has no mapping file, and the other packs `skip`
+  theirs.
+- **Kit props kept as built** (packs from a `download`: City Kit Industrial and Roads, Retro Urban,
+  the Modular Space and Space kits) are surfaced once, in place; changing their mapping afterwards needs
+  their download (`--downloads`). The lock entry lists `surfaces`, and provenance says so.
+
+Mapped packs: Castle, City (Commercial, Industrial, Roads), Factory, Fantasy Town, Furniture, Graveyard,
+Mini Dungeon, Mini Market, Modular Space, Pirate, Platformer, Retro Urban, Space, Space Station,
+Survival and Train kits. Real-world sizes are the props' `height` in their pack files as before (the
+2026-11-04 pass shrank the chunkiest clutter: barrels, the powder keg, bottle, bucket, anvil, lantern,
+candles, shopping cart, fridge); collision follows the built size.
+
 ### Adding a prop pack
 
 Props live one file per content pack, `content/props/<pack>.json` (the pack id is the file name),

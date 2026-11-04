@@ -38,7 +38,7 @@
       "src": "barrel.glb",
       "name": "Powder Keg",
       "category": "Crates & Barrels",
-      "height": 1.0,
+      "height": 0.75,
       "collide": "box",
       "breakable": {
         "health": 30,
@@ -125,7 +125,7 @@
       "src": "bottle-large.glb",
       "name": "Bottle",
       "category": "Pirate & Coast",
-      "height": 0.4,
+      "height": 0.3,
       "collide": "none"
     }
   ]

@@ -166,16 +166,16 @@
       "src": "lantern-candle.glb",
       "name": "Lantern",
       "category": "Gothic",
-      "height": 0.6,
+      "height": 0.45,
       "collide": "none",
-      "flame": {"fx": "candle", "at": [0, 0.25, 0], "size": 0.1}
+      "flame": {"fx": "candle", "at": [0, 0.188, 0], "size": 0.075}
     },
     {
       "id": "candles",
       "src": "candle-multiple.glb",
       "name": "Candles",
       "category": "Gothic",
-      "height": 0.4,
+      "height": 0.3,
       "collide": "none"
     },
     {

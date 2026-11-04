@@ -1,0 +1,20 @@
+{
+  "$comment": "Castle Kit: dressed stone walls and towers, iron gates; the siege engines are wood with iron, the banners fabric.",
+  "default": "stone",
+  "colors": {"#80859e": "metal", "#a8b0d2": "metal", "#d7d7e6": "metal", "#f3f3f8": "metal", "#6078cd": "fabric"},
+  "props": {
+    "drawbridge": {"default": "wood"},
+    "catapult": {"default": "wood"},
+    "ballista": {"default": "wood"},
+    "battering_ram": {"default": "wood"},
+    "siege_tower": {"default": "wood"},
+    "trebuchet": {"default": "wood"},
+    "catapult_wrecked": {"default": "wood"},
+    "banner_long": {
+      "default": "fabric",
+      "colors": {"#d7d7e6": "fabric", "#f3f3f8": "fabric"}
+    },
+    "pennant": {"default": "fabric"},
+    "portcullis": {"default": "metal"}
+  }
+}

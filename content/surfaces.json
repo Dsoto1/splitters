@@ -1,0 +1,16 @@
+{
+  "$comment": "Surfaces for man-made kit props (tools/content/surfaces.mjs; docs/CONTENT_PIPELINE.md, \"Prop surfaces\"). Each is a shared 256 px Babylon detail map built from one of our ambientCG sets (content/textures.json) plus grime, the roughness and metalness the part gets, and how strongly the detail shows (albedo, roughness, bump, 0-1). `tile` is metres per repeat. A surface without `texture` (glass) changes roughness and metalness only. Which colour of which pack becomes which surface: content/surfaces/<pack>.json.",
+  "size": 256,
+  "surfaces": [
+    {"id": "wood", "name": "Wood", "texture": "Wood051", "tile": 0.9, "roughness": 0.74, "metallic": 0, "detail": {"albedo": 0.45, "roughness": 0.6, "bump": 0.5}, "grime": 0.45},
+    {"id": "painted_wood", "name": "Painted wood", "texture": "PaintedWood005", "tile": 1.2, "roughness": 0.66, "metallic": 0, "detail": {"albedo": 0.35, "roughness": 0.55, "bump": 0.35}, "grime": 0.4},
+    {"id": "painted_metal", "name": "Painted metal", "texture": "Metal063", "tile": 1.8, "roughness": 0.5, "metallic": 0.12, "detail": {"albedo": 0.3, "roughness": 0.55, "bump": 0.2}, "grime": 0.6},
+    {"id": "metal", "name": "Bare metal", "texture": "Metal063", "tile": 1.4, "roughness": 0.42, "metallic": 0.3, "detail": {"albedo": 0.45, "roughness": 0.6, "bump": 0.3}, "grime": 0.5},
+    {"id": "concrete", "name": "Concrete", "texture": "Concrete034", "tile": 2.0, "roughness": 0.9, "metallic": 0, "detail": {"albedo": 0.5, "roughness": 0.45, "bump": 0.45}, "grime": 0.5},
+    {"id": "stone", "name": "Dressed stone", "texture": "Concrete031", "tile": 1.6, "roughness": 0.88, "metallic": 0, "detail": {"albedo": 0.55, "roughness": 0.45, "bump": 0.5}, "grime": 0.45},
+    {"id": "fabric", "name": "Fabric", "texture": "Fabric028", "tile": 0.6, "roughness": 0.95, "metallic": 0, "detail": {"albedo": 0.25, "roughness": 0.3, "bump": 0.35}, "grime": 0.25},
+    {"id": "cardboard", "name": "Cardboard", "texture": "Plaster001", "tile": 0.8, "roughness": 0.92, "metallic": 0, "detail": {"albedo": 0.3, "roughness": 0.3, "bump": 0.2}, "grime": 0.3},
+    {"id": "plastic", "name": "Plastic", "texture": "Plaster001", "tile": 1.0, "roughness": 0.45, "metallic": 0, "detail": {"albedo": 0.2, "roughness": 0.5, "bump": 0.15}, "grime": 0.35},
+    {"id": "glass", "name": "Glass", "roughness": 0.08, "metallic": 0}
+  ]
+}

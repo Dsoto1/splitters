@@ -10,6 +10,7 @@ made only on a commit that passed CI on a check branch.
 
 **Look: less like a toy** (docs/LOOK.md)
 - **A calmer, filmic grade for the world**: matches and MapMaker use ACES tone mapping at a lower exposure with firmer contrast and colour curves that take the edge off saturated paint, so whites stop glowing and candy colours settle; a little less sky fill and more sun, a darker ground bounce and tighter shadow bias, so shadows meet what casts them; stronger, tighter ambient occlusion on high. No cost on low or medium; the same on WebGPU and WebGL2. The menu, Character Select and the HUD keep their look.
+- **Real surfaces on man-made Kenney props**: crates, furniture, shelving, machinery, castle walls, trains and street furniture now show wood grain, painted and bare metal, concrete, stone, fabric, plastic, cardboard and glass, with a little wear and grime, while keeping their colours. Natural pieces (trees, plants, rocks) are unchanged. Barrels, the powder keg, bottle, bucket, anvil, lantern, candles, shopping cart, oak barrel and fridge are closer to real-world size. On low graphics the surface detail is left off.
 
 **Performance tools and big-match fixes**
 - **The F3 overlay splits each frame by system**: rendering (main pass, shadow maps, post-processing), characters (animation, skinning), effects, ragdolls, prop flames, HUD and network, with how many characters were animated and skinned, ragdolls awake and lasting effects drawn. Copy performance report includes the same split.

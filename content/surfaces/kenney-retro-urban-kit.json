@@ -1,0 +1,14 @@
+{
+  "$comment": "Retro Urban Kit: concrete barriers and blocks, painted trucks, lamps and bins, black rubber, a wooden pallet.",
+  "default": "concrete",
+  "colors": {"#252225": "plastic", "#020305": "plastic", "#7a4d29": "wood"},
+  "props": {
+    "supply_truck": {"default": "painted_metal"},
+    "flatbed_truck": {"default": "painted_metal"},
+    "floodlight": {"default": "painted_metal"},
+    "yard_lamp": {"default": "painted_metal"},
+    "dumpster": {"default": "painted_metal"},
+    "road_barrier": {"default": "painted_metal"},
+    "pallet": {"default": "wood"}
+  }
+}
