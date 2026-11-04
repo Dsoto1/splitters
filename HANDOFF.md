@@ -10,6 +10,47 @@ The session branch is **`claude/launcher-ui-map-cards`**. Poll CI without auth:
 `curl -s "https://api.github.com/repos/Dsoto1/splitters/actions/workflows/ci.yml/runs?branch=check/candidate&per_page=1"`.
 Use `pnpm typecheck`, not `pnpm -s typecheck` (the silent flag hides type errors; one reached CI that way).
 
+### Performance toolset and first busy-area fixes (`wip/perf-toolset`, agent, 2026-11-04; pushed, not merged; from main 9b2373f)
+Owner-approved. Guide for the owner: docs/PERF_TOOLS.md (how to record on the host, what to send, reading the split).
+- **Level 1, F3 split** (`perfProbe.ts` SYS/COUNT, `perfOverlay.ts` frameSplit): render split into main pass
+  (`scene`, with mesh evaluation), shadow + depth maps, post; characters (updateAvatars + Babylon clips/aim + skinning),
+  effects, ragdolls/effects physics, prop flames, HUD, net in; counts: animated, skinned, ragdolls awake, lasting
+  drawn, characters let through to build. Render spans are Babylon observables (`view.ts instrumentRender`), skinning
+  through `CharacterAnimator.skinProbe` (a hook, so the menu doesn't load the probe). Report has the same split.
+- **Level 2, Record performance** (Pause → Settings; `perfRecorder.ts`): per-second split (avg + slowest), per-system
+  histograms, hitch snapshots (>50 ms: position, map, in view, quality, server tick + split, shaders built). Plain
+  download on stop or on leaving the match. `tools/perf/compare.mjs a.json [b.json]`.
+- **Level 3, Capture 10 s trace**: `performance.measure` spans `tt:*` + a Chrome trace-event JSON download
+  (ui.perfetto.dev / chrome://tracing).
+- **Host**: server `tickSplit` on by default (simProfile per tick → `ServerStats.split`, `snapshotBytesMax`, `spikes`),
+  `SpikeLog` (stats.ts) → `logs/perf-spikes.log` (HOST_PERF_LOG set by host main.ts), shown on /host (hostPage.ts
+  perfLines) and the launcher's Tick tile (tooltip). Smoke: 24 bots Frost Basin, lines and spike JSON as expected.
+- **Fixes** (measured same-frame on the after build, Shingle Point 64 bots medium, SwiftShader at load 10-15; the
+  probe evaluates the old rule and the new one on the same frame: scratchpad `probe/probe2.mjs`):
+  - Shadows: nearest 12 living characters in view cast (+ anyone within 10 m); in crowds nobody past 30 m, now
+    including the dead/dying and corpses (main let every corpse and pending death cast, at any distance). Casting
+    characters old rule → now: 9 → 6, 6 → 0, 8 → 0, 14 → 1 (four samples; the base build's own count matched the old
+    rule exactly). Small clutter (`isSmallProp`: < 0.75 m, or a plant < 1.2 m: grass, wheat, flowers, small rocks)
+    casts only within 15 m: 25 instances in shadow reach → 1.
+  - Animation: crowds' characters 15-35 m step at 30 Hz (was every frame); 35-70 m 15 Hz, > 70 m 10 Hz as before.
+    Evaluations a second at 60 fps, same frames: 750 → 570, 625 → 595, 590 → 590, 585 → 585 (depends on who stands at
+    15-35 m; −24 % at most here). Low-detail model in crowds at 12.6 m (`CROWD_LOD_SHARE` 0.7 of 18 m).
+  - Off-screen skeletons were already frozen in crowds (culled → dormant, prepare not called): perf96 posed ≈ shown.
+  - Static props: Shingle Point's 446 props are 38 untinted models, all already GPU instances merged per material
+    with frozen world matrices; nothing left to batch. Materials not frozen (atmosphere changes; PERF_96.md).
+  - Merging far characters' draws: not done (each has its own skeleton; needs baked animation textures).
+  - First-sight hitch: `GameView.prewarm` at the loading gate (session.prepareMatch, waits 8 s at most): one
+    character per look (up to 32) at y −10000, every mapped effect played out of sight, `scene.whenReadyAsync`, then
+    disposed; `Effect.PersistentMode = true` keeps the programs. Shader programs built by a round of effects after
+    loading (explosion, hits, both lightning, lasting ones): main 6 (gv_zap, streaks, flare, four_point_star,
+    ElectricFX impact/glow) → 0. On this SwiftShader box the prewarm took 192 s (finished in the background after the
+    start); on a GPU expect seconds, unmeasured. Risk: 32 characters built during loading.
+- perf96: timing-free counts (skeletons posed, characters animated from Babylon's state), bands, active meshes and
+  casters by kind, `rows` scenario (PERF_SCENARIOS=rows), shader builds after the gate, prewarm report. Its spread/clump
+  views differ between runs, so draws/casters there don't compare build to build (see probe numbers above).
+- Menu bundle 837.2 → 835.4 kB gzip (perfOverlay out of the menu; net probe in its own file).
+- Checks: see the commit after this entry (CHECKS).
+
 ### Character fixes: faces, roster (`wip/char-fixes`, agent, 2026-11-03; not merged, not pushed; from main ef2c103)
 Owner's notes of 3 Nov (agent scratchpad `charfix/owner-notes.md`). Steps 1-2 done here; steps 3-5 (Imp thumbnail,
 bodies, arms/grips/shoulders/fingers) NOT done: see "Open" below. Evidence: agent scratchpad `charfix/`.
