@@ -10,6 +10,45 @@ The session branch is **`claude/launcher-ui-map-cards`**. Poll CI without auth:
 `curl -s "https://api.github.com/repos/Dsoto1/splitters/actions/workflows/ci.yml/runs?branch=check/candidate&per_page=1"`.
 Use `pnpm typecheck`, not `pnpm -s typecheck` (the silent flag hides type errors; one reached CI that way).
 
+### Hitboxes, character stats, random characters (`wip/hitboxes-stats`, agent, 2026-11-04; pushed, not merged; from main f5cc70b)
+Owner's decisions of 2026-11-04 (exact per-look hitboxes; debug and audit; per-character stats; random characters).
+Docs: CHARACTERS.md "Hitboxes", "Character stats", "Random characters"; GUNPLAY_SPEC §11 note. Evidence (agent
+scratchpad `hitboxes/`): overlay shots `<look>-<stance>-<front|side>.png` (Sprout small, Linktifa standard, Honest Abe
+large, Hyena and Croakley hunched, T-TreeFitty robot, Big Bogdan wide; creatures), `charselect-*.png`, `setup-rules.png`.
+- **Hit shapes** (`shared/sim/hitbox.ts`): head sphere, torso capsule squashed across the body, a round capsule per
+  thigh and shin, arm capsules where they stick out; stand / crouch / prone each; zone = the shape met (head sphere
+  head, legs legs). Generated per look and creature by `tools/content/hitboxes.mjs` (Node skinning,
+  `tools/content/skinpose.mjs`) into `hitboxes.generated.ts`; `content:check` and `content:rebuild` run it. Manifest
+  overrides `hitbox` (none set). `Combatant.hitbox/hitScale` (refreshed when the look changes); NPCs as drawn.
+- **Wired:** hitscan, pellets, piercing, ballistic bullets, rockets/spears/grenades (0.12 m thick), sentries, third
+  person aim, lag compensation (history keeps feet, yaw, stance, scale, shapes). Melee keeps its reach capsule;
+  medkit and ping aim keep theirs. Bots aim at the head sphere / chest middle (head base over cover); their aim error
+  is scaled by `BODY_AIM` 0.5 so each difficulty keeps its hit rates (15/34/55 % against base 18/31/54 %).
+- **Pitfalls:** crouch is measured as drawn, by hand-checked rules (crouch_idle hips and legs, the chest, neck and head
+  3/4 of the way to the aim pose, `CROUCH_AIM`; the standing arms carried with the head): the drawn crouch also turns
+  the upper body toward the gun side, so crouched shapes sit up to ~8 cm off sideways. The audit (stand pose) flagged
+  Wealthy Otter (head sphere 0.11 m behind its forward-reaching head) and Boglurker (its wide frog head, 84 % of the
+  vertices inside): both now have `hitbox` overrides (Otter `head dy -0.03 dz 0.08`, Boglurker `head r 0.23`). The
+  character viewer draws everyone 1.8 m tall (no size classes), and the shapes at the same scale. A model, clip or
+  rig change needs `node tools/content/hitboxes.mjs` (content:check says so).
+- **Stats** (`shared/sim/characterStats.ts`): manifest `stats` { health, speed, size, damage, stamina, jump, melee,
+  armor }, each defaulting to the size class (none set: nothing changed). Match setting Character stats (default on).
+  Speed/jump/stamina reach the predicting client (`PrivateState.bs`; size-class speed was never predicted before).
+  Workbench: new Characters collection. Stat bars on Character Select.
+- **Random characters** (`shared/sim/randomLooks.ts`): setting (default off), per life, hash of seed/slot/life, roster
+  looks only; the look rides the `spawn` event (`l`); own choice kept in `Combatant.ownLook`.
+- **Tests changed (intended):** bodies are about 0.35 m across the chest, not 0.8 m: mechanics (duel targets face the
+  shooter; chest at 1.25 m; thigh shot; scoped sniper ≥ 75 % at 30 m), weapons (shotgun ≥ 3 of 10 pellets at 5.7 m),
+  ballistics (holdover retries until a round strikes the 0.26 m head; running target 4 of 6), benchmarks (targets face
+  the shooter), botClearShot (rounds > 14), botPush (first contact < 36 s), serverRules parity (two rules).
+- **Owner to decide:** (1) every weapon lands fewer rounds than it was tuned against (a body is ~0.35 m across the chest,
+  was 0.8 m): TTK goes up, the shotgun's one-shot range shrinks; bots were compensated (`BODY_AIM`), players weren't;
+  (2) Character stats off = everyone plays their size class (Character sizes still decides sizes); (3) arms count as
+  body (1.0x), the spec allows 0.8-1.0x; (4) tails, capes' hems and hat brims are not hittable.
+- **Perf (96 bots, Frost Basin TDM, 30 s, process CPU per tick, two interleaved runs each, load 12-17):** clumped
+  6.41 / 6.36 ms -> 6.69 / 6.69 ms; combat 0.44 / 0.41 -> 0.48 / 0.50 ms; spread 7.40 / 7.51 -> 7.72 / 8.29 ms (noisy).
+  A shot against 96 bodies: 8-12 us (old capsule 16-19 us), `hitboxPerf.test.ts`.
+
 ### Capitol Mall: domes on drums, marble roofs (`wip/capitol-domes`, agent, 2026-11-04; pushed, not merged; from main 5a002f8)
 Owner-approved follow-up to "Map reworks, batch 3" (its "Not done": the slab skirt under the domes, the black corner
 roofs). MapMaker driven by Playwright as before (agent scratchpad `capitol2/`: driver `tools/maker.mjs`, steps
