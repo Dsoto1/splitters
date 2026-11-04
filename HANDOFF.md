@@ -10,6 +10,48 @@ The session branch is **`claude/launcher-ui-map-cards`**. Poll CI without auth:
 `curl -s "https://api.github.com/repos/Dsoto1/splitters/actions/workflows/ci.yml/runs?branch=check/candidate&per_page=1"`.
 Use `pnpm typecheck`, not `pnpm -s typecheck` (the silent flag hides type errors; one reached CI that way).
 
+### Capitol Mall: domes on drums, marble roofs (`wip/capitol-domes`, agent, 2026-11-04; pushed, not merged; from main 5a002f8)
+Owner-approved follow-up to "Map reworks, batch 3" (its "Not done": the slab skirt under the domes, the black corner
+roofs). MapMaker driven by Playwright as before (agent scratchpad `capitol2/`: driver `tools/maker.mjs`, steps
+`pass1.mjs` / `pass2.mjs`, pictures `before-*.png` / `after-*.png` for overview, top, capitol, capitol-air,
+capitol-top, colonnade, rotunda, museum, museum-air, museum-rotunda, monument).
+- **What dome pieces there were:** only the Desert City props `dc_dome` / `dc_dome_blue` (5 m, a low drum, one
+  material: Tint multiplies all of it) and the `desert.dome` tile (blue dome on an octagonal drum). No capitol dome,
+  no drum, no copper. So four in-house props, built in code in `tools/content/prepare-ancient.mjs` (pack
+  tiletrigger-ancient, Owned, provenance "built in code"), `scale: 1` (modelled to size):
+  - **Capitol Dome** (`im_capitol_dome`, Imperial Arena, 28.8 x 24.2 m, 5.9k tris, under the 6k budget): a hollow
+    drum with windows, 20 columns, entablature, balustrade, attic, a ribbed white dome lined inside (a ceiling seen
+    from the rotunda), lantern and bronze finial. `collide: "model"`: drum and dome as twelve-sided rounds, each column
+    its own box, so the walk between drum and colonnade stays open.
+  - **Copper Dome** (`im_copper_dome`, 23.6 x 16.8 m, 4k tris): limestone drum with pilasters and windows, verdigris
+    ribbed dome lined inside, small lantern. Same collision scheme.
+  - **Pediment** (`im_pediment`, 12.4 x 2.3 x 1.9 m, 15 degrees, the same both ways round) and **Pyramidion**
+    (`eg_pyramidion`, Sands of Egypt, 4 x 2.6 m, gilded tip).
+  - Helpers there: `domeShell` (outward or inward bands), `domeRibs` (faces wound by their normals), `radialBox`,
+    `roundColumn`, `roundBoxes`, `prism`; a prop's `make()` may return `{ p, boxes }` to carry collision.
+- **MapMaker: Roof surface.** The roof slab of a room option Ceiling (roof, skylight, beams) took its top from the
+  floor slot: carpeted chambers had carpet roofs (the black). New optional slot `roof` (SURFACE_SLOTS, schema
+  `TileSurfaces.roof`, `WorldBox.roof` on the slab, `faceSlot` -> 'roof' for its top); unpainted it resolves to the
+  floor, so no existing map changes; themes have no roof default (`ThemeSlot`; tools/content/materials.mjs skips
+  it). Inspector row "Roof (top, outside)" only on roofed rooms; the Paint tool paints it on a click on the roof.
+  No format bump: an older client drops the field and draws the floor's material (as before).
+- **Capitol Mall:** capitol drum panels, columns, entablature, 12-point star, Plaster Dome and slab lantern (117
+  pieces) -> Capitol Dome on the old marble ring (y 8.4); museum likewise (39) -> Copper Dome; the three stepped slab
+  pediments -> Pediments (Scale 1.9 / 1.32 / 2) on their cornice blocks; the monument's stepped top -> Pyramidion
+  (Scale 3.75); roofs: 20 capitol rooms marble #e4dfd2, 11 museum rooms travertine #e8e2d4. Card picture recaptured.
+- **Pitfall (driver):** the old drum's columns were props `prop_112..131`, not blocks: deleting a `block_` range
+  silently skips ids that don't exist (pass2 deleted them). Check removals by the saved file, not the log.
+- **Left as they are:** the block-built exhibits (dinosaur skeletons in the museum hall, the rocket by the air and
+  space museum) and the monument's slab-built shaft with its stair (playable); the museum's travertine reads
+  tan/brown at sunset (material, not changed).
+- **Tests fixed:** the Pyramidion makes Sands of Egypt 27 pieces (`stylePacksAncient.test.ts`), and `SURFACE_SLOTS`
+  now ends in `roof` (`tools/content/test/materials.test.mjs`).
+- **Checks:** typecheck clean; validate-map 0 issues; content:check OK; content:rebuild changes nothing;
+  test:changed 1307 passed, the two above fixed, and npc (two co-op playthroughs), bigMatch (tick budget) and
+  host e2e timed out under a load of 10-16 from other checkouts: the five files pass on their own (57/57). E2E
+  (`CI=1`, ports 4887/7921, `E2E_MAPS=capitol_mall`): scenery PASS 231 s, maps PASS 146 s, editor PASS 492 s.
+  New props' GLBs, palette and provenance map to the full suite on CI: needs a `check/` run.
+
 ### Grips round 3: per-look hands and arms (`wip/char-grips-3`, agent, 2026-11-04; pushed, not merged; from main 47864cb)
 Owner's notes of 3 Nov ("arm position (mainly right arms) and grips", the 28 looks; Santa's and Zombie Soldier A's
 shoulders). Round 2's global changes made things worse, so nothing shared moved: each look carries its own data.
