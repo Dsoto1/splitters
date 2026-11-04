@@ -50,6 +50,29 @@
     "core.revolver": 47,
     "core.battle_axe": 48
   },
-  "throwables": {},
-  "classes": {}
+  "throwables": {
+    "frag": 0,
+    "mine": 1,
+    "sticky": 2,
+    "incendiary": 3,
+    "toxic": 4,
+    "vortex": 5,
+    "holy": 6,
+    "cluster": 7,
+    "sheep": 8,
+    "airstrike": 9,
+    "sandbag": 10,
+    "dynamite": 11
+  },
+  "classes": {
+    "runner": 0,
+    "rocketeer": 1,
+    "torch": 2,
+    "breacher": 3,
+    "bulwark": 4,
+    "mechanic": 5,
+    "medic": 6,
+    "marksman": 7,
+    "shade": 8
+  }
 }

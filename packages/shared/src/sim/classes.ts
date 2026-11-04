@@ -16,10 +16,15 @@ import type { Combatant } from './match.ts';
 import { BUTTON_ALT, BUTTON_FIRE, BUTTON_THROW, type PlayerInput } from './movement.ts';
 import { restrictedWeapons, type MatchRules } from './rules.ts';
 import { getWeapon, weaponCode, type ThrowableKind } from './weapons.ts';
+import { ABILITIES, CLASS_ABILITIES, CLASS_DEFS, CLASS_IDS } from '../content/weapons.generated.ts';
 
-export const CLASS_IDS = ['runner', 'rocketeer', 'torch', 'breacher', 'bulwark', 'mechanic', 'medic', 'marksman', 'shade'] as const;
+/**
+ * The classes are data: content/classes.json (their codes: the class screen and snapshots send a class's index in
+ * CLASS_IDS) and content/abilities.json (each ability's numbers), built by tools/content/weapons.mjs.
+ */
+export { ABILITIES, CLASS_ABILITIES, CLASS_DEFS, CLASS_IDS };
 export type ClassId = (typeof CLASS_IDS)[number];
-export type ClassAbility = 'sentry' | 'overcharge' | 'cloak';
+export type ClassAbility = (typeof CLASS_ABILITIES)[number];
 
 export interface ClassDef {
   id: ClassId;
@@ -40,18 +45,6 @@ export interface ClassDef {
   /** Knife hits from behind kill outright. */
   backstab?: boolean;
 }
-
-export const CLASS_DEFS: Readonly<Record<ClassId, ClassDef>> = {
-  runner: { id: 'runner', name: 'Runner', role: 'Offence', blurb: 'Fastest on foot, double jump, a sawed-off up close. Fragile.', health: 75, speed: 1.3, airJumps: 1, weapons: ['core.knife', 'core.machine_pistol', 'core.sawed_off'] },
-  rocketeer: { id: 'rocketeer', name: 'Rocketeer', role: 'Offence', blurb: 'Blast rockets: fire one at your feet to rocket-jump.', health: 130, speed: 0.86, weapons: ['core.knife', 'core.shotgun', 'core.blast_rockets'], throwable: { kind: 'frag', count: 1 } },
-  torch: { id: 'torch', name: 'Torch', role: 'Offence', blurb: 'Flamethrower up close; the oil slicker lays slick, flammable puddles.', health: 115, speed: 1, weapons: ['core.knife', 'core.shotgun', 'core.oil_slicker', 'core.flamethrower'] },
-  breacher: { id: 'breacher', name: 'Breacher', role: 'Defence', blurb: 'Grenade launcher and three proximity mines to lock down a route.', health: 115, speed: 0.93, weapons: ['core.knife', 'core.pistol', 'core.launcher'], throwable: { kind: 'mine', count: 3 } },
-  bulwark: { id: 'bulwark', name: 'Bulwark', role: 'Defence', blurb: 'Huge health, slow, and a spin gun that shreds once it is turning.', health: 200, speed: 0.77, weapons: ['core.knife', 'core.shotgun', 'core.lmg'] },
-  mechanic: { id: 'mechanic', name: 'Mechanic', role: 'Defence', blurb: 'G builds a sentry gun that also heals and restocks teammates beside it.', health: 100, speed: 1, weapons: ['core.knife', 'core.pistol', 'core.shotgun'], ability: 'sentry' },
-  medic: { id: 'medic', name: 'Medic', role: 'Support', blurb: 'Medi-beam heals teammates; healing charges an overcharge (G): 6 s untouchable for you and your patient.', health: 100, speed: 1.07, weapons: ['core.knife', 'core.nailgun', 'core.medi_beam'], ability: 'overcharge' },
-  marksman: { id: 'marksman', name: 'Marksman', role: 'Support', blurb: 'A charged railgun from long range, an SMG for anyone who gets close.', health: 85, speed: 1, weapons: ['core.knife', 'core.smg', 'core.railgun'] },
-  shade: { id: 'shade', name: 'Shade', role: 'Support', blurb: 'G cloaks you (firing breaks it); a knife in the back kills outright.', health: 85, speed: 1.07, weapons: ['core.hand_cannon', 'core.knife'], ability: 'cloak', backstab: true },
-};
 
 export const classIndex = (id: ClassId): number => CLASS_IDS.indexOf(id);
 
@@ -119,17 +112,17 @@ export interface ClassHost {
   removeSentry(slot: number): void;
 }
 
-/** Seconds: a Mechanic's sentry kit comes back after its sentry is destroyed; cloak lasts and recharges; overcharge lasts. */
-const SENTRY_REBUILD_SECONDS = 12;
-const CLOAK_SECONDS = 9;
-const CLOAK_RECHARGE_SECONDS = 10;
-const OVERCHARGE_SECONDS = 6;
+/** Seconds (content/abilities.json): a Mechanic's sentry kit comes back after its sentry is destroyed; cloak lasts and recharges; overcharge lasts. */
+const SENTRY_REBUILD_SECONDS = ABILITIES.sentry.rebuildSeconds;
+const CLOAK_SECONDS = ABILITIES.cloak.seconds;
+const CLOAK_RECHARGE_SECONDS = ABILITIES.cloak.rechargeSeconds;
+const OVERCHARGE_SECONDS = ABILITIES.overcharge.seconds;
 /** Health a Medic heals to fill the overcharge. */
-const OVERCHARGE_HEALING = 300;
+const OVERCHARGE_HEALING = ABILITIES.overcharge.healing;
 /** Changing class this soon after spawning (and before being hurt) swaps the loadout on the spot. */
 const SWAP_GRACE_SECONDS = 8;
 /** The sentry's dispenser: reach (m), health per second, and a share of each weapon's pickup ammo per second. */
-export const DISPENSER = { radius: 3.5, hps: 10, ammo: 0.25 } as const;
+export const DISPENSER = ABILITIES.sentry.dispenser;
 
 export class ClassPlay {
   /** Overcharged players (Medics and their patients): slot -> tick it ends. */

@@ -249,9 +249,8 @@ export function build(content, root = ROOT) {
     throwables = [];
     for (const [i, t] of (content.throwables.throwables ?? []).entries()) {
       const where = `content/throwables.json: throwables[${i}]`;
-      const p = check(t, S.throwable, where);
-      problems.push(...p);
-      if (!p.length) throwables.push({ code: t.code, kind: t.kind, notes: t.notes, def: strip(t), where });
+      problems.push(...check(t, S.throwable, where));
+      if (t && typeof t === 'object') throwables.push({ code: t.code, kind: t.kind, notes: t.notes, def: strip(t), where });
     }
     codes('throwables', throwables.map((t) => ({ id: t.kind, code: t.code, where: t.where })), 0);
     throwables.sort((a, b) => a.code - b.code);
@@ -285,11 +284,10 @@ export function build(content, root = ROOT) {
     classes = [];
     for (const [i, c] of (content.classes.classes ?? []).entries()) {
       const where = `content/classes.json: classes[${i}] (${c?.id})`;
-      const p = check(c, classShape, where);
-      problems.push(...p);
-      if (p.length) continue;
-      for (const w of c.weapons) if (!weaponIds.has(w)) problems.push(`${where}: weapon ${w} doesn't exist`);
-      if (c.throwable && throwables && !kinds.has(c.throwable.kind)) problems.push(`${where}: throwable ${c.throwable.kind} doesn't exist`);
+      problems.push(...check(c, classShape, where));
+      if (!c || typeof c !== 'object') continue;
+      for (const w of Array.isArray(c.weapons) ? c.weapons : []) if (!weaponIds.has(w)) problems.push(`${where}: weapon ${w} doesn't exist`);
+      if (c.throwable?.kind && throwables && !kinds.has(c.throwable.kind)) problems.push(`${where}: throwable ${c.throwable.kind} doesn't exist`);
       classes.push({ code: c.code, id: c.id, notes: c.notes, def: strip(c), where });
     }
     codes('classes', classes.map((c) => ({ id: c.id, code: c.code, where: c.where })), 0);

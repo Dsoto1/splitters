@@ -1,7 +1,7 @@
 import { add, dot, scale, type Vec3, hypot } from '../math.ts';
 import { PLAYER } from './constants.ts';
 import type { AccuracySpec, BallisticSpec, FalloffSpec, KickSpec, ReloadSpec, WeaponFamily } from './gunplay.ts';
-import { CORE_WEAPONS, WEAPON_CODES } from '../content/weapons.generated.ts';
+import { CORE_WEAPONS, THROWABLES, THROWABLE_DEFS, WEAPON_CODES } from '../content/weapons.generated.ts';
 
 export type WeaponKind = 'hitscan' | 'projectile' | 'melee';
 
@@ -331,8 +331,11 @@ export interface WeaponDefinition {
  */
 export { CORE_WEAPONS };
 
-/** Thrown equipment (G): one kind carried at a time, with a count. */
-export const THROWABLES = ['frag', 'mine', 'sticky', 'incendiary', 'toxic', 'vortex', 'holy', 'cluster', 'sheep', 'airstrike', 'sandbag', 'dynamite'] as const;
+/**
+ * Thrown equipment (G): one kind carried at a time, with a count. The data is content/throwables.json (a snapshot
+ * sends a kind's code: its index in THROWABLES), built by tools/content/weapons.mjs.
+ */
+export { THROWABLES, THROWABLE_DEFS };
 export type ThrowableKind = (typeof THROWABLES)[number];
 export interface ThrowableDefinition {
   kind: ThrowableKind;
@@ -341,104 +344,6 @@ export interface ThrowableDefinition {
   throwIntervalTicks: number;
   projectile: ProjectileSpec;
 }
-export const THROWABLE_DEFS: Record<ThrowableKind, ThrowableDefinition> = {
-  frag: {
-    kind: 'frag',
-    displayName: 'Frag Grenade',
-    max: 4,
-    throwIntervalTicks: 45,
-    projectile: { speed: 16, gravity: 14, fuseSeconds: 2.5, splashRadius: 4.5, splashDamage: 100, splashEdgeDamage: 15, selfDamageScale: 0.8, visual: 'frag', bounce: 0.45 },
-  },
-  mine: {
-    kind: 'mine',
-    displayName: 'Proximity Mine',
-    max: 3,
-    throwIntervalTicks: 45,
-    projectile: { speed: 11, gravity: 14, fuseSeconds: 90, splashRadius: 4, splashDamage: 110, splashEdgeDamage: 15, selfDamageScale: 0.8, visual: 'mine', mine: { armSeconds: 1.2, triggerRadius: 2.2 } },
-  },
-  sticky: {
-    kind: 'sticky',
-    displayName: 'Sticky Grenade',
-    max: 3,
-    throwIntervalTicks: 45,
-    projectile: { speed: 17, gravity: 12, fuseSeconds: 2, splashRadius: 4, splashDamage: 115, splashEdgeDamage: 15, selfDamageScale: 0.8, visual: 'sticky', sticky: 'any' },
-  },
-  incendiary: {
-    kind: 'incendiary',
-    displayName: 'Incendiary',
-    max: 3,
-    throwIntervalTicks: 45,
-    projectile: { speed: 15, gravity: 14, fuseSeconds: 1.6, splashRadius: 2.5, splashDamage: 25, splashEdgeDamage: 10, selfDamageScale: 0.5, visual: 'molotov', ignites: true, status: { kind: 'burn', seconds: 4 }, zone: { kind: 'fire', radius: 4, seconds: 7 } },
-  },
-  toxic: {
-    kind: 'toxic',
-    displayName: 'Gas Grenade',
-    max: 3,
-    throwIntervalTicks: 45,
-    projectile: { speed: 15, gravity: 14, fuseSeconds: 1.8, splashRadius: 0, splashDamage: 0, splashEdgeDamage: 0, selfDamageScale: 0, visual: 'gas', bounce: 0.4, zone: { kind: 'toxic', radius: 4.5, seconds: 9 } },
-  },
-  vortex: {
-    kind: 'vortex',
-    displayName: 'Vortex Grenade',
-    max: 2,
-    throwIntervalTicks: 60,
-    projectile: { speed: 15, gravity: 14, fuseSeconds: 1.5, splashRadius: 0, splashDamage: 0, splashEdgeDamage: 0, selfDamageScale: 0, visual: 'vortex', bounce: 0.3, zone: { kind: 'singularity', radius: 7, seconds: 2 } },
-  },
-  // ---------------------------------------------------------------- Worms-style specials
-  holy: {
-    kind: 'holy',
-    displayName: 'Holy Bomb',
-    max: 1,
-    throwIntervalTicks: 90,
-    // Heavy, slow fuse, enormous blast: get well clear.
-    projectile: { speed: 12, gravity: 16, fuseSeconds: 3, splashRadius: 9, splashDamage: 200, splashEdgeDamage: 30, selfDamageScale: 1, visual: 'holy', bounce: 0.25, knockback: 16 },
-  },
-  cluster: {
-    kind: 'cluster',
-    displayName: 'Cluster Bomb',
-    max: 2,
-    throwIntervalTicks: 60,
-    projectile: {
-      speed: 15, gravity: 14, fuseSeconds: 2.2, splashRadius: 3, splashDamage: 50, splashEdgeDamage: 10, selfDamageScale: 0.8, visual: 'banana', bounce: 0.4,
-      cluster: { count: 6, speed: 7, spec: { speed: 7, gravity: 14, fuseSeconds: 1.4, splashRadius: 3, splashDamage: 55, splashEdgeDamage: 8, selfDamageScale: 0.8, visual: 'bomblet', bounce: 0.35, maxBounces: 1 } },
-    },
-  },
-  sheep: {
-    kind: 'sheep',
-    displayName: 'Sheep',
-    max: 1,
-    throwIntervalTicks: 90,
-    // Lands, waddles off the way it was thrown, hops over low things, and goes off on the first enemy it bumps into.
-    projectile: { speed: 9, gravity: 14, fuseSeconds: 7, splashRadius: 5, splashDamage: 130, splashEdgeDamage: 20, selfDamageScale: 0.8, visual: 'sheep', walker: { speed: 3.2 }, knockback: 10 },
-  },
-  airstrike: {
-    kind: 'airstrike',
-    displayName: 'Airstrike Flare',
-    max: 1,
-    throwIntervalTicks: 120,
-    // A flare that marks the spot: two seconds later five bombs fall in a line along the way you threw it.
-    projectile: {
-      speed: 14, gravity: 14, fuseSeconds: 2, splashRadius: 0, splashDamage: 0, splashEdgeDamage: 0, selfDamageScale: 0, visual: 'flare', bounce: 0.3,
-      airstrike: { count: 5, spacing: 3.5, height: 30, bomb: { speed: 0, gravity: 20, fuseSeconds: 4, splashRadius: 4.5, splashDamage: 110, splashEdgeDamage: 15, selfDamageScale: 0.8, visual: 'bomb' } },
-    },
-  },
-  sandbag: {
-    kind: 'sandbag',
-    displayName: 'Sandbags',
-    max: 3,
-    throwIntervalTicks: 40,
-    // Tossed a few metres ahead; where it lands it becomes a waist-high wall facing you.
-    projectile: { speed: 7, gravity: 16, fuseSeconds: 1.5, splashRadius: 0, splashDamage: 0, splashEdgeDamage: 0, selfDamageScale: 0, visual: 'sandbag', cover: { half: [0.95, 0.5, 0.3], health: 300 } },
-  },
-  // Style Pack 02 Frontier Dust: a lit stick on a long fuse, a big blast that throws people about.
-  dynamite: {
-    kind: 'dynamite',
-    displayName: 'Dynamite',
-    max: 3,
-    throwIntervalTicks: 50,
-    projectile: { speed: 14, gravity: 14, fuseSeconds: 3, splashRadius: 6, splashDamage: 140, splashEdgeDamage: 20, selfDamageScale: 0.9, visual: 'dynamite', bounce: 0.3, knockback: 12 },
-  },
-};
 /** Weapon IDs used for kill credit of thrown equipment. */
 export const throwableWeaponId = (k: ThrowableKind): string => `core.${k}`;
 

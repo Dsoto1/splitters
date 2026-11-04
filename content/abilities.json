@@ -1,0 +1,25 @@
+{
+  "$comment": "Class abilities: the numbers per kind (seconds, metres, per second). Their behaviour is code (sim/classes.ts ClassPlay); a new kind needs code first. Edit, then run `node tools/content/weapons.mjs`.",
+  "abilities": {
+    "sentry": {
+      "rebuildSeconds": 12,
+      "dispenser": { "radius": 3.5, "hps": 10, "ammo": 0.25 },
+      "notes": {
+        "rebuildSeconds": "A Mechanic's sentry kit comes back this long after its sentry is destroyed.",
+        "dispenser": "The sentry's dispenser: reach (m), health per second, and a share of each weapon's pickup ammo per second."
+      }
+    },
+    "cloak": {
+      "seconds": 9,
+      "rechargeSeconds": 10,
+      "notes": {
+        "design": "Cloak lasts `seconds` from full and recharges from empty in `rechargeSeconds`; firing breaks it."
+      }
+    },
+    "overcharge": {
+      "seconds": 6,
+      "healing": 300,
+      "notes": { "healing": "Health a Medic heals to fill the overcharge.", "seconds": "How long it lasts." }
+    }
+  }
+}

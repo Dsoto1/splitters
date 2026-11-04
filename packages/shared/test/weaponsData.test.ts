@@ -10,6 +10,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import {
+  ABILITIES,
   CLASS_DEFS,
   CLASS_IDS,
   CORE_WEAPONS,
@@ -56,6 +57,15 @@ describe('weapons as data: the resolved tables', () => {
   it('deep-equal the fixture written before the move', () => {
     expect(existsSync(FIXTURE)).toBe(true);
     expect(resolved()).toEqual(JSON.parse(readFileSync(FIXTURE, 'utf8')));
+  });
+
+  it('keep the ability numbers that were constants in sim/classes.ts', () => {
+    // SENTRY_REBUILD_SECONDS, DISPENSER, CLOAK_SECONDS, CLOAK_RECHARGE_SECONDS, OVERCHARGE_SECONDS, OVERCHARGE_HEALING.
+    expect(norm(ABILITIES)).toEqual({
+      sentry: { rebuildSeconds: 12, dispenser: { radius: 3.5, hps: 10, ammo: 0.25 } },
+      cloak: { seconds: 9, rechargeSeconds: 10 },
+      overcharge: { seconds: 6, healing: 300 },
+    });
   });
 
   it('keep every network code (weapons, throwables, classes)', () => {
