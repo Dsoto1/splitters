@@ -5,7 +5,7 @@ import { CHUNK, GUEST_TO_HOST_LIMITS, HOST_TO_GUEST_LIMITS, Reassembler, Unzippe
 import { hubAddress, hubSetting } from './hub.ts';
 import { baseIceServers, loadRelay, sessionIce } from './relay.ts';
 import { makeJoinCode } from './joinCode.ts';
-import { netProbe } from './perfProbe.ts';
+import { netProbe } from './netProbe.ts';
 import { playerKey } from './playerKey.ts';
 import { SnapshotCoalescer } from './snapshotMerge.ts';
 import { adminToken, rememberAdminToken } from './netTransport.ts';

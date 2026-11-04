@@ -1,5 +1,5 @@
 import { TICK_RATE, angleDelta, type PlayerSnapshot } from '@tiletrigger/shared';
-import { netProbe } from './perfProbe.ts';
+import { netProbe } from './netProbe.ts';
 
 /** Remote actors render this far behind the newest snapshot so there are always two to blend between. */
 const INTERP_DELAY_TICKS = 6; // 100 ms at 60 Hz

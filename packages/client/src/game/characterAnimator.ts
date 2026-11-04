@@ -293,6 +293,11 @@ function patchAnimatables(): void {
  * the clips, and the weapon carried in the right hand.
  */
 export class CharacterAnimator {
+  /**
+   * While the performance probe runs (the game's GameView sets it): called after each skeleton's bone matrices
+   * with when they began. Kept as a hook so the menu's characters don't load the probe.
+   */
+  static skinProbe: ((t0: number) => void) | null = null;
   private readonly weights = new Map<Clip, number>();
   private current: Clip = 'aim_idle';
   private overlay: { clip: AnimationGroup; until: number } | null = null;
@@ -376,7 +381,13 @@ export class CharacterAnimator {
     for (const sk of skeletons) {
       const prepare = sk.prepare.bind(sk);
       sk.prepare = (dontCheckFrameId?: boolean) => {
-        if (!this.gate.skip) prepare(dontCheckFrameId);
+        if (this.gate.skip) return;
+        const probe = CharacterAnimator.skinProbe;
+        if (!probe) return prepare(dontCheckFrameId);
+        // The performance split: skinning (bone matrices) on its own, and how many skeletons it posed.
+        const t = performance.now();
+        prepare(dontCheckFrameId);
+        probe(t);
       };
       this.prepareSkins.push(() => prepare(true));
     }

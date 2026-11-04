@@ -55,11 +55,11 @@ import {
   type ServerMessage,
   type ServerStats,
 } from '@tiletrigger/shared';
-import { AWAY, BotFiller, HostControl, Match, initNavigation, validateNavigation } from '@tiletrigger/shared/match';
+import { AWAY, BotFiller, HostControl, Match, initNavigation, simProfile, validateNavigation } from '@tiletrigger/shared/match';
 import { answerDiscovery, lanAddresses } from './lan.ts';
 import { expandRotation, readRotationPresets, suiteLookup } from './rotation.ts';
 import { readBotSetPresets, resolveBotSet } from './botSets.ts';
-import { StatsWindow } from './stats.ts';
+import { SpikeLog, StatsWindow } from './stats.ts';
 
 export interface ServerOptions {
   /** WebSocket/HTTP port (0: any free one), or null for no listener: players arrive through `accept` (the Host Service's WebRTC links). */
@@ -88,6 +88,13 @@ export interface ServerOptions {
   startGate?: boolean;
   /** Called once per second with instrumentation. */
   onStats?: (line: string, stats: ServerStats) => void;
+  /**
+   * The per-tick breakdown (sim sections, bot AI parts, snapshot building) in the stats, on by default: a few
+   * hundred timer reads a tick (docs/PERF_TOOLS.md "On the host"). `false` turns it off.
+   */
+  tickSplit?: boolean;
+  /** Write each tick over budget (with its breakdown and bot counts) to this rolling log file (stats.ts SpikeLog). */
+  spikeLog?: string;
   /** Server name in LAN discovery and /info (default "<map> server"). */
   name?: string;
   /**
@@ -667,12 +674,14 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
     const texts = encodeSnapshots(body, to.map((c) => ({ slot: c.slot, ack: match.slots[c.slot]?.lastSeq ?? 0, me: match.privateState(c.slot), stream: c.stream })));
     let total = 0;
     let n = 0;
+    let most = 0;
     to.forEach((c, i) => {
       send(c, texts[i]!);
       total += texts[i]!.length;
+      most = Math.max(most, texts[i]!.length);
       n++;
     });
-    if (n) stats.recordSnapshot(total / n);
+    if (n) stats.recordSnapshot(total / n, most);
   };
 
   // Fixed-rate loop that catches up after hiccups instead of drifting.
@@ -750,12 +759,21 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
     console.log(`[chain] now playing ${map.metadata.name}`);
   };
 
+  // The per-tick breakdown: simProfile's sections each tick, summed into the second (and kept for a spike's line).
+  const split = opts.tickSplit !== false;
+  if (split) {
+    simProfile.reset();
+    simProfile.on = true;
+  }
+  const spikeLog = opts.spikeLog ? new SpikeLog(opts.spikeLog) : null;
   const loop = () => {
     if (stopped) return;
     const now = performance.now();
     let ran = 0;
     while (now >= nextTickAt && ran < 5) {
       const t0 = performance.now();
+      // (Another server in this process, a test's, may have reset it: on again.)
+      if (split) simProfile.on = true;
       const events = match.step();
       pendingEvents.push(...events);
       for (const ev of events) {
@@ -771,9 +789,39 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
         broadcast({ t: 'roster', players: match.roster() });
         if (!bots.settling) refreshAdmins();
       }
-      if (match.tick % SNAPSHOT_INTERVAL_TICKS === 0) sendSnapshots();
+      let snapMs = 0;
+      if (match.tick % SNAPSHOT_INTERVAL_TICKS === 0) {
+        const s0 = performance.now();
+        sendSnapshots();
+        snapMs = performance.now() - s0;
+        if (split) simProfile.add('snapshot', snapMs);
+      }
       if (travel && match.tick >= travel.atTick) doTravel();
-      stats.recordTick(performance.now() - t0, match.lastAiMs);
+      const took = performance.now() - t0;
+      stats.recordTick(took, match.lastAiMs);
+      if (split) {
+        stats.absorb(simProfile.ms);
+        if (took > tickMs) {
+          stats.recordSpike();
+          const r = (v: number) => Math.round(v * 100) / 100;
+          const all = match.combatants();
+          spikeLog?.write({
+            map: map.metadata.name,
+            tick: match.tick,
+            ms: r(took),
+            budgetMs: r(tickMs),
+            ai: r(match.lastAiMs),
+            snapshot: r(snapMs),
+            bots: all.filter((c) => c.kind === 'bot').length,
+            alive: all.filter((c) => c.kind === 'bot' && c.alive).length,
+            humans: all.filter((c) => c.kind === 'human').length,
+            events: events.length,
+            sections: Object.fromEntries([...simProfile.ms].map(([k, v]) => [k, r(v)])),
+            counts: Object.fromEntries(simProfile.n),
+          });
+        }
+        simProfile.reset();
+      }
       nextTickAt += tickMs;
       ran++;
     }
@@ -908,6 +956,7 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
       }),
     close: async () => {
       stopped = true;
+      if (split) simProfile.on = false;
       clearTimeout(timer);
       discovery?.close();
       for (const c of clients) c.conn.close(1001, 'server stopping');

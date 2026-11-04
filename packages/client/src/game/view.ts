@@ -101,7 +101,7 @@ import { LIQUID_LOOKS, ScenarioVisuals } from './scenarioVisuals.ts';
 import { createPropNode } from './propVisuals.ts';
 import { CityVisuals } from './cityVisuals.ts';
 import { SkyEffects } from './skyEffects.ts';
-import { CharacterLibrary, setCharacterLodZoom, type CharacterInstance } from '../content/characters.ts';
+import { CharacterLibrary, setCharacterLodCrowd, setCharacterLodZoom, type CharacterInstance } from '../content/characters.ts';
 import { CharacterAnimator, type OneShot } from './characterAnimator.ts';
 import { fitFirstPersonArms } from './firstPersonArms.ts';
 import { FirstPersonBodyRig } from './firstPersonBody.ts';
@@ -109,6 +109,8 @@ import { loadFirstPersonMode, type FirstPersonMode } from './graphicsSettings.ts
 import { CreatureLibrary, fitPlayerSkin, type AvatarSpec } from '../content/creatures.ts';
 import { CreatureAnimator } from './creatureAnimator.ts';
 import type { RemotePose } from './interpolation.ts';
+import { COUNT, SYS, perfProbe } from './perfProbe.ts';
+import { Effect } from '@babylonjs/core/Materials/effect';
 
 /** Remote players' pack muzzle flashes: within this range of the camera (m), on at most this many guns. */
 const REMOTE_FLASH_RANGE = 45;
@@ -227,10 +229,23 @@ const RAGDOLL_PREWARM_BODIES = 12;
  * meshes already drop to the low-detail copy past LOD_DISTANCE).
  */
 const ANIM_LOD_CROWD = 24;
+/** Crowds: characters nearer than this (m) animate every frame; between it and ANIM_LOD_NEAR at 30 Hz (every 2nd frame at 60 fps). */
+const ANIM_LOD_FULL = 15;
 const ANIM_LOD_NEAR = 35;
 const ANIM_LOD_FAR = 70;
 /** Crowds: characters further than this (m) cast no shadow (a crowd's far shadows are a draw each for a few pixels). */
 const CROWD_SHADOW_REACH = 30;
+/**
+ * Only this many characters cast shadows, the nearest in view (a crowd's shadow pass was a draw or three per
+ * character), and anyone nearer than SHADOW_ALWAYS (m) whatever their rank, so nothing changes close by.
+ */
+export const SHADOW_CHARACTERS = 12;
+const SHADOW_ALWAYS = 10;
+
+/** How often (ms between evaluations, 0 every frame) a crowd's character in view at `dist` m animates. */
+export function animStepMs(dist: number): number {
+  return dist > ANIM_LOD_FAR ? 100 : dist > ANIM_LOD_NEAR ? 1000 / 15 : dist > ANIM_LOD_FULL ? 1000 / 30 : 0;
+}
 /** Crowds: a character is drawn while a sphere this big (m) round its middle touches the view (it covers the gun and most of a shadow). */
 const CULL_RADIUS = 2.5;
 
@@ -363,7 +378,10 @@ export class GameView {
     this.characters.turn = () => new Promise((go) => turns.push(go));
     this.scene.onBeforeRenderObservable.add(() => {
       const now = performance.now();
-      for (let n = Math.max(1, Math.floor((now - lastTurn) / 16)); n > 0 && turns.length; n--) turns.shift()!();
+      for (let n = Math.max(1, Math.floor((now - lastTurn) / 16)); n > 0 && turns.length; n--) {
+        turns.shift()!();
+        if (perfProbe.on) perfProbe.n[COUNT.built]!++;
+      }
       lastTurn = now;
     });
     this.creatures = new CreatureLibrary(this.scene);
@@ -407,6 +425,9 @@ export class GameView {
     this.brass = new StandardMaterial('brassMat', this.scene);
     this.brass.diffuseColor = new Color3(0.78, 0.6, 0.22);
     this.brass.specularColor = new Color3(0.9, 0.8, 0.5);
+    instrumentRender(this.scene);
+    // Shader programs stay built once made (prewarm's samples go, the programs stay for the real thing).
+    Effect.PersistentMode = true;
   }
 
   /** A free camera made the active one, for map screenshots (tools/content/capture-map-shots.mjs). */
@@ -479,6 +500,77 @@ export class GameView {
       if (this.scene.isDisposed) return;
       // Every effect content/vfx.json's map can play (impacts, explosions, moments of play, lightning, lasting ones).
       for (const r of mappedEffects()) this.vfx.warm(r.pack, r.effect);
+    });
+  }
+
+  /**
+   * The loading gate's shader warm-up (session.prepareMatch waits for it): a character of each look in the
+   * match is built out of sight, every effect the map can play plays once out of sight, and the scene waits
+   * until every shader they and the map need (shadow-map ones too) is built. Effect.PersistentMode (set in the
+   * constructor) keeps those programs when the samples go, so the first sight of a model or an effect mid-match
+   * doesn't stall on a shader build. Resolves with how many shader programs were built by then.
+   */
+  async prewarm(specs: readonly AvatarSpec[]): Promise<number> {
+    const t0 = performance.now();
+    const ready = () => (this.scene.isDisposed ? Promise.resolve() : Promise.race([this.scene.whenReadyAsync(), new Promise((r) => setTimeout(r, 8000))]));
+    // The effects first (they don't wait for the characters' files), ended as soon as their shaders are built.
+    let effects = 0;
+    try {
+      await GodotVfx.preload(...mappedPacks());
+      const ends: (() => void)[] = [];
+      // Each effect plays out of sight for a few frames (its particles spawn: their pieces draw then).
+      for (const r of mappedEffects()) {
+        const end = this.vfx.warm(r.pack, r.effect, true);
+        if (end) ends.push(end);
+      }
+      effects = ends.length;
+      await this.afterFrames(4, 2500);
+      await ready();
+      for (const end of ends) end();
+    } catch {
+      // Effects that didn't load stay as they were (their first play builds them).
+    }
+    if (this.scene.isDisposed) return 0;
+    // Then a character of each look, out of sight.
+    const stage = new TransformNode('prewarm', this.scene);
+    stage.position.set(0, -10000, 0);
+    const made = await Promise.all(
+      specs.slice(0, 32).map((spec, i) =>
+        this.characters.create(spec, `prewarm_${i}`).then(
+          (ch) => {
+            if (stage.isDisposed()) return void ch.dispose();
+            ch.root.parent = stage;
+            for (const g of ch.clips.values()) g.stop();
+            return ch;
+          },
+          () => undefined,
+        ),
+      ),
+    );
+    if (this.scene.isDisposed) return 0;
+    // Two frames: the atmosphere sorts new meshes into the shadow map a frame later (their shaders differ).
+    await this.afterFrames(2, 1500);
+    await ready();
+    for (const ch of made) ch?.dispose();
+    stage.dispose();
+    this.prewarmed = { ms: Math.round(performance.now() - t0), shaders: this.shaderCount(), characters: made.filter(Boolean).length, effects };
+    return this.prewarmed.shaders;
+  }
+
+  /** What the loading gate's warm-up did (tests and perf96): how long it took, shader programs by then, samples. */
+  prewarmed: { ms: number; shaders: number; characters: number; effects: number } | null = null;
+
+  /** After `n` rendered frames (or `ms` at most: a hidden tab renders none). */
+  private afterFrames(n: number, ms: number): Promise<void> {
+    return new Promise((done) => {
+      let left = n;
+      const end = () => {
+        this.scene.onAfterRenderObservable.remove(obs);
+        clearTimeout(timer);
+        done();
+      };
+      const obs = this.scene.onAfterRenderObservable.add(() => void (--left <= 0 && end()));
+      const timer = setTimeout(end, ms);
     });
   }
 
@@ -918,9 +1010,15 @@ export class GameView {
     const wall = Math.min(1, (now - this.lastFrame) / 1000);
     const dt = Math.min(0.1, wall);
     this.lastFrame = now;
+    // The performance split (perfProbe.SYS): prop flames, effects, ragdolls; one boolean check each when off.
+    const prof = perfProbe.on;
+    let t = prof ? now : 0;
     this.propFlames.want(this.camera.globalPosition);
+    if (prof) t = perfProbe.add(SYS.flames, t);
     this.lasting.update(this.camera.globalPosition);
+    if (prof) t = perfProbe.add(SYS.fx, t);
     this.propFlames.show();
+    if (prof) t = perfProbe.add(SYS.flames, t);
     if (this.vfx.count) {
       // The packs' toon smoke is lit like everything else: this sun, this sky.
       if (this.sunLight) this.vfx.setLight(this.sunLight.direction.clone(), this.sunLight.diffuse.scale(this.sunLight.intensity), (this.hemi?.diffuse ?? Color3.White()).scale((this.hemi?.intensity ?? 0.8) * 0.7));
@@ -938,17 +1036,24 @@ export class GameView {
         a.flash.position.copyFrom(Vector3.TransformCoordinates(a.muzzle.local, a.muzzle.node.getWorldMatrix()));
       }
     }
+    if (prof) t = perfProbe.add(SYS.fx, t);
     for (const a of this.avatars.values()) if (a.fall && !a.ragdoll) this.stepFall(a, dt);
     for (const c of this.corpses) if (c.a.fall && !c.a.ragdoll) this.stepFall(c.a, dt);
     if (this.physics) {
       this.physics.step(dt);
       // A body that stops (it rested, or its time ran out) keeps its pose as it is, at no cost per frame.
       const settle = (a: Avatar) => {
-        if (a.ragdoll && !a.ragdoll.frozen && a.ragdoll.update() && a.anim instanceof CharacterAnimator) a.anim.freezePose();
+        if (!a.ragdoll || a.ragdoll.frozen) return;
+        if (prof) perfProbe.n[COUNT.ragdolls]!++;
+        if (a.ragdoll.update() && a.anim instanceof CharacterAnimator) a.anim.freezePose();
       };
       for (const a of this.avatars.values()) settle(a);
+      const eye = this.camera.globalPosition;
       this.corpses = this.corpses.filter((c) => {
         settle(c.a);
+        // Crowds: bodies past the shadow reach cast none, like the living.
+        if (this.crowd && Math.hypot(c.a.root.position.x - eye.x, c.a.root.position.z - eye.z) > CROWD_SHADOW_REACH) this.atmosphere.shadowless.add(c.a.root);
+        else this.atmosphere.shadowless.delete(c.a.root);
         if (this.bodies !== 'fade') return true;
         const age = (now - c.born) / 1000 - CORPSE_STAY;
         if (age <= 0) return true;
@@ -981,7 +1086,13 @@ export class GameView {
         return true;
       });
     }
+    if (prof) t = perfProbe.add(SYS.ragdoll, t);
     this.blood.update(wall);
+    if (prof) {
+      perfProbe.add(SYS.fx, t);
+      perfProbe.n[COUNT.lasting] = this.lasting.count;
+      perfProbe.n[COUNT.effects] = this.vfx.count + this.effects.length;
+    }
   }
 
   private dropCanopy(a: Avatar): void {
@@ -1381,8 +1492,22 @@ export class GameView {
     const now = performance.now();
     const crowd = poses.length > ANIM_LOD_CROWD;
     this.crowd = crowd;
+    // Crowds draw characters' low-detail meshes sooner.
+    setCharacterLodCrowd(crowd);
     const cam = crowd ? this.scene.activeCamera?.globalPosition : undefined;
     const planes = crowd && this.scene.activeCamera ? Frustum.GetPlanes(this.scene.activeCamera.getTransformationMatrix()) : null;
+    // Shadows: the nearest SHADOW_CHARACTERS live characters in view cast (squared distance of the last that does).
+    const eye = this.scene.activeCamera?.globalPosition;
+    let shadowCut = Infinity;
+    if (eye) {
+      const near: number[] = [];
+      for (const p of poses) {
+        if (p.slot === localSlot || !p.alive) continue;
+        if (planes && !inView(planes, p.x, p.y + 0.9, p.z, CULL_RADIUS)) continue;
+        near.push((p.x - eye.x) ** 2 + (p.z - eye.z) ** 2);
+      }
+      if (near.length > SHADOW_CHARACTERS) shadowCut = near.sort((x, y) => x - y)[SHADOW_CHARACTERS - 1]!;
+    }
     const seen = new Set<number>();
     let deathMs = 0;
     let deathsStarted = 0;
@@ -1447,6 +1572,11 @@ export class GameView {
         if (Math.hypot(p.x - a.last.x, p.z - a.last.z) > 4) a.vel = { x: 0, z: 0 };
       }
       a.last = { x: p.x, y: p.y, z: p.z, t: now };
+      // Shadows from the nearest few living characters (and anyone within SHADOW_ALWAYS); in crowds none past
+      // CROWD_SHADOW_REACH, the dead and dying included (a body far off waiting for its ragdoll cast one before).
+      const d2 = eye ? (p.x - eye.x) ** 2 + (p.z - eye.z) ** 2 : 0;
+      if ((crowd && d2 > CROWD_SHADOW_REACH ** 2) || (p.alive && d2 > shadowCut && d2 > SHADOW_ALWAYS ** 2)) this.atmosphere.shadowless.add(a.root);
+      else this.atmosphere.shadowless.delete(a.root);
       if (a.hiddenSelf) {
         // Back to third person: draw it again (it was kept loaded while hidden).
         if (this.fpBody?.a === a) this.dropFpBody();
@@ -1516,18 +1646,17 @@ export class GameView {
         const speed = seated.has(p.slot) ? 0 : Math.hypot(a.vel.x, a.vel.z);
         // Far characters in a crowd animate every few frames, with the time saved up (a death always plays at once).
         const far = crowd && cam && p.alive ? Math.hypot(p.x - cam.x, p.z - cam.z) : 0;
-        // Crowds: far characters cast no shadow.
-        if (crowd && far > CROWD_SHADOW_REACH) this.atmosphere.shadowless.add(a.root);
-        else this.atmosphere.shadowless.delete(a.root);
         a.animDt = (a.animDt ?? 0) + dt;
         let run: boolean;
         let stepped: boolean;
         if (a.anim instanceof CharacterAnimator && !a.culled) {
-          // Characters in view: past ANIM_LOD_NEAR their clips, bones and aim are evaluated at 15 Hz, past
-          // ANIM_LOD_FAR at 10 Hz (on each one's own phase), and the state machine runs with them.
-          const stepMs = far > ANIM_LOD_FAR ? 100 : far > ANIM_LOD_NEAR ? 1000 / 15 : 0;
+          // Characters in view: past ANIM_LOD_FULL their clips, bones and aim are evaluated at 30 Hz, past
+          // ANIM_LOD_NEAR at 15 Hz, past ANIM_LOD_FAR at 10 Hz (on each one's own phase), and the state machine
+          // runs with them.
+          const stepMs = animStepMs(far);
           run = a.anim.stepAt(now, stepMs, (p.slot * 37) % 100);
           stepped = stepMs > 0;
+          if (run && perfProbe.on) perfProbe.n[COUNT.animated]!++;
         } else {
           // Out of view (asleep) characters, and creatures: the state machine every few frames.
           const every = a.culled ? 8 : far > ANIM_LOD_FAR ? 4 : far > ANIM_LOD_NEAR ? 2 : 1;
@@ -2914,6 +3043,12 @@ export class GameView {
     return this.avatars.size;
   }
 
+  /** Shader programs the engine has built so far (one built mid-match is a first-sight stall; perfRecorder). */
+  shaderCount(): number {
+    const fx = (this.scene.getEngine() as unknown as { _compiledEffects?: Record<string, unknown> })._compiledEffects;
+    return fx ? Object.keys(fx).length : 0;
+  }
+
   /** Start counting this frame's draw calls (before `render`), for the performance overlay. */
   countDraws(): void {
     this.drawCounter?.fetchNewFrame();
@@ -2944,6 +3079,7 @@ export class GameView {
   }
 
   dispose(): void {
+    setCharacterLodCrowd(false);
     this.atmosphere.dispose();
     this.blood.dispose();
     this.impacts.dispose();
@@ -2951,6 +3087,54 @@ export class GameView {
     this.physics?.free();
     this.physics = null;
   }
+}
+
+/**
+ * The render parts of the performance split (perfProbe.SYS): spans inside `scene.render()` between Babylon's
+ * own observables, first in each list so they bracket everyone else's. Off: one boolean check per observable.
+ * Animation runs from before the clips to before the render (the clips, then the after-animation aim and grip);
+ * mesh evaluation leaves out the skinning inside it (CharacterAnimator times that); render targets are the
+ * shadow maps and the mist's depth map; post-processing from the end of the draw to the end of the camera.
+ */
+function instrumentRender(scene: Scene): void {
+  const skin = (t0: number) => {
+    perfProbe.add(SYS.skin, t0);
+    perfProbe.n[COUNT.skinned]!++;
+  };
+  scene.onBeforeAnimationsObservable.add(() => void (CharacterAnimator.skinProbe = perfProbe.on ? skin : null), undefined, true);
+  scene.onDisposeObservable.addOnce(() => void (CharacterAnimator.skinProbe = null));
+  let anim = 0;
+  let cull = 0;
+  let skin0 = 0;
+  let targets = 0;
+  let post = 0;
+  const on = () => perfProbe.on;
+  scene.onBeforeAnimationsObservable.add(() => void (anim = on() ? performance.now() : 0), undefined, true);
+  scene.onBeforeRenderObservable.add(() => {
+    if (anim && on()) perfProbe.add(SYS.anim, anim);
+    anim = 0;
+  }, undefined, true);
+  scene.onBeforeActiveMeshesEvaluationObservable.add(() => {
+    cull = on() ? performance.now() : 0;
+    skin0 = perfProbe.sys[SYS.skin]!;
+  }, undefined, true);
+  scene.onAfterActiveMeshesEvaluationObservable.add(() => {
+    if (!cull || !on()) return;
+    perfProbe.add(SYS.cull, cull);
+    // Skinning ran inside: it is counted on its own.
+    perfProbe.sys[SYS.cull]! -= perfProbe.sys[SYS.skin]! - skin0;
+    cull = 0;
+  }, undefined, true);
+  scene.onBeforeRenderTargetsRenderObservable.add(() => void (targets = on() ? performance.now() : 0), undefined, true);
+  scene.onAfterRenderTargetsRenderObservable.add(() => {
+    if (targets && on()) perfProbe.add(SYS.shadow, targets);
+    targets = 0;
+  }, undefined, true);
+  scene.onAfterDrawPhaseObservable.add(() => void (post = on() ? performance.now() : 0), undefined, true);
+  scene.onAfterCameraRenderObservable.add(() => {
+    if (post && on()) perfProbe.add(SYS.post, post);
+    post = 0;
+  }, undefined, true);
 }
 
 function solid(scene: Scene, name: string, hex: string): StandardMaterial {

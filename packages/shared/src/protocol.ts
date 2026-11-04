@@ -378,6 +378,15 @@ export interface ServerStats {
   bots: number;
   /** Ticks the server fell behind schedule in the last second. */
   lateTicks: number;
+  /**
+   * Where a tick's time went over the last second (ms a tick, averaged): sim sections (bots, players, mounts,
+   * projectiles, scenario), bot AI parts (think, perceive, path, aim) and snapshot building (server stats.ts).
+   */
+  split?: Record<string, number>;
+  /** Snapshot bytes per client: the largest this second. */
+  snapshotBytesMax?: number;
+  /** Ticks over budget this second (each written to the host's spike log). */
+  spikes?: number;
 }
 
 /**

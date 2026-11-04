@@ -37,14 +37,36 @@ export function setCharacterLodZoom(k: number): void {
   const z = Math.max(1, k);
   if (Math.abs(z - lodZoom) < 0.01) return;
   lodZoom = z;
-  for (const m of zoomed) for (const level of m.getLODLevels()) level.distanceOrScreenCoverage = LOD_DISTANCE * z;
+  relod();
+}
+
+/** Crowds (GameView's animation LOD crowd) switch to the low-detail meshes at this share of LOD_DISTANCE. */
+export const CROWD_LOD_SHARE = 0.7;
+let lodCrowd = 1;
+
+/** A crowd is in view: low detail sooner (CROWD_LOD_SHARE of the distance; through a scope it still scales up). */
+export function setCharacterLodCrowd(on: boolean): void {
+  const k = on ? CROWD_LOD_SHARE : 1;
+  if (k === lodCrowd) return;
+  lodCrowd = k;
+  relod();
+}
+
+/** The distance characters switch to their low-detail meshes now. */
+export function characterLodDistance(): number {
+  return LOD_DISTANCE * lodZoom * lodCrowd;
+}
+
+function relod(): void {
+  const d = characterLodDistance();
+  for (const m of zoomed) for (const level of m.getLODLevels()) level.distanceOrScreenCoverage = d;
 }
 
 /** Follow the view's zoom from now on (until the mesh goes). */
 function followZoom(m: Mesh): void {
   if (zoomed.has(m)) return;
   zoomed.add(m);
-  for (const level of m.getLODLevels()) level.distanceOrScreenCoverage = LOD_DISTANCE * lodZoom;
+  for (const level of m.getLODLevels()) level.distanceOrScreenCoverage = characterLodDistance();
   m.onDisposeObservable.addOnce(() => zoomed.delete(m));
 }
 
