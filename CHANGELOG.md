@@ -8,6 +8,11 @@ made only on a commit that passed CI on a check branch.
 
 ## Unreleased
 
+**No more texture flicker**
+- **Map surfaces stop flickering**: where two pieces' faces lay in the same plane (a floor slab's edge under the wall over it, wall runs meeting at corners, trim and facades flush with walls, floors over floors, a block level with a tile, the joints of curved walls) they fought for the same pixels and shimmered at grazing angles and range. Maps are now built so only one face draws there, by a fixed priority (floors on top, walls over slab edges, trim and style-pack pieces over what they dress), and hidden faces are dropped. Nothing else about the look changes, except that floor slab edges no longer show as dark bands at random cells on outside walls. Collision is unchanged. A test checks every map in maps/ for overlaps left (none).
+- **MapMaker**: a warning when a block's face lies in the same plane as another piece's in a different look (only one shows), and **Overlaps** in the top bar highlights those places.
+- **WebGPU** (`?renderer=webgpu`) gets a float depth buffer with reverse depth, for precise depth at any range.
+
 **Surface types**
 - **Trees, bushes and boulders shoot and look like what they are**: one shared list of surface types (content/surface-types.json) gives each surface its ballistic class and its impact, so the server and the client agree. Tree trunks, stumps and logs are bark: still full cover (a new heavy-wood class; no ricochet), now with splinters and a wood knock instead of stone dust. Bushes are foliage (pass-through, still hide you from bots), no longer "metal" (read from "bus"); `tree_plateau` no longer "metal" (from "plate"); boulders and cliffs are rock (stone) instead of concrete. Rounds now sound like what they hit (wood, metal, soft ground, glass). Props and library materials can name their surface; nothing else changed (a fixture test proves it).
 
