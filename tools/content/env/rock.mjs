@@ -344,25 +344,30 @@ export function cliffField(familySeed, seed, g) {
     const local = g.relief * (panelN(x * 0.22, y * 0.22, 0.5) + 0.55 * ribs + 0.3 * fineN(x * 0.9, y * 0.9, 0.3));
     return edge(y) + ledge(y) + fade(x) * local + top * 0.6;
   };
-  return { z, half };
+  // The top edge rises and falls across the panel (back to the shared height at both edges, so neighbours meet).
+  const topN = fbm3(seed + 5, 3);
+  const topAt = (x) => g.height + fade(x) * (g.topRelief ?? 0) * (0.5 + 0.5 * topN(x * 0.35, 0.2, 0.6));
+  return { z, half, topAt };
 }
 
 /** One level of the cliff panel: { rock: Mesh } with a front grid `nx` × `ny`, top lip, sides and back. */
 export function cliffMesh(familySeed, seed, g, lod, look) {
-  const { z, half } = cliffField(familySeed, seed, g);
+  const { z, half, topAt } = cliffField(familySeed, seed, g);
   const m = new Mesh();
   const colour = rockColour(seed, look, g.height);
   const y0 = -g.skirt;
   const y1 = g.height;
+  const yTop = (x) => topAt(x);
   const nx = lod.nx;
   const ny = lod.ny;
   const e = 0.01;
   const front = [];
   for (let j = 0; j <= ny; j++) {
     const row = [];
-    const y = y0 + ((y1 - y0) * j) / ny;
     for (let i = 0; i <= nx; i++) {
       const x = -half + (2 * half * i) / nx;
+      // Each column runs from the skirt to its own top.
+      const y = y0 + ((yTop(x) - y0) * j) / ny;
       const p = [x, y, z(x, y)];
       // Normal from the field (so both edges of every panel agree exactly): the face looks toward -z.
       // At the two edges the panel's own detail has faded out with no slope (smoothstep), so only the shared
@@ -381,14 +386,14 @@ export function cliffMesh(familySeed, seed, g, lod, look) {
   const topRow = [];
   for (let i = 0; i <= nx; i++) {
     const x = -half + (2 * half * i) / nx;
-    const p = [x, y1 + 0.15, back];
+    const p = [x, yTop(x) + 0.15, back];
     topRow.push(m.vertex(p, [0, 1, 0], [((x + half) / (2 * half)) * g.uvRepeat, back / ((2 * half) / g.uvRepeat)], colour(p, [0, 1, 0]), [0, 0]));
   }
   const lip = [];
   for (let i = 0; i <= nx; i++) {
     const x = -half + (2 * half * i) / nx;
-    const p = [x, y1, z(x, y1)];
-    lip.push(m.vertex(p, [0, 1, 0], [((x + half) / (2 * half)) * g.uvRepeat, z(x, y1) / ((2 * half) / g.uvRepeat)], colour(p, [0, 1, 0]), [0, 0]));
+    const p = [x, yTop(x), z(x, yTop(x))];
+    lip.push(m.vertex(p, [0, 1, 0], [((x + half) / (2 * half)) * g.uvRepeat, p[2] / ((2 * half) / g.uvRepeat)], colour(p, [0, 1, 0]), [0, 0]));
   }
   for (let i = 0; i < nx; i++) m.quad(lip[i], topRow[i], topRow[i + 1], lip[i + 1]);
   // Sides (they meet a neighbour's back to back) and the back.
@@ -406,12 +411,15 @@ export function cliffMesh(familySeed, seed, g, lod, look) {
     }
   }
   {
+    // The back, up to the top's line (a strip of columns as wide as the lightest level's, so it stays cheap).
     const n = [0, 0, 1];
-    const a = m.vertex([-half, y0, back], n, [0, 0], colour([0, 0, back], n), [0, 0]);
-    const b = m.vertex([half, y0, back], n, [1, 0], colour([0, 0, back], n), [0, 0]);
-    const c = m.vertex([half, y1 + 0.15, back], n, [1, 1], colour([0, y1, back], n), [0, 0]);
-    const d = m.vertex([-half, y1 + 0.15, back], n, [0, 1], colour([0, y1, back], n), [0, 0]);
-    m.quad(a, b, c, d);
+    const cols = Math.min(nx, 8);
+    const ids = [];
+    for (let i = 0; i <= cols; i++) {
+      const x = -half + (2 * half * i) / cols;
+      ids.push([m.vertex([x, y0, back], n, [i / cols, 0], colour([x, 0, back], n), [0, 0]), m.vertex([x, yTop(x) + 0.15, back], n, [i / cols, 1], colour([x, y1, back], n), [0, 0])]);
+    }
+    for (let i = 0; i < cols; i++) m.quad(ids[i][0], ids[i + 1][0], ids[i + 1][1], ids[i][1]);
   }
   return { rock: m };
 }

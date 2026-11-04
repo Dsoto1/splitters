@@ -23,6 +23,8 @@ import { createCanopy, placeCanopy, releaseCanopy } from './canopyVisuals.ts';
 import { BackdropVisuals } from '../backdrop.ts';
 import { BorderVisuals } from '../borderVisuals.ts';
 import { FoliageVisuals } from '../foliage.ts';
+import { EnvironmentVisuals } from '../environment/environmentVisuals.ts';
+import { envRendererOn } from '../environment/envFlag.ts';
 import type { ClientMount } from './mountState.ts';
 import { ARSENAL_LOOKS, ZoneVisuals, animateArsenalProjectile, createArc, createArsenalProjectile, createAura, createBeam, setAura } from './arsenalVisuals.ts';
 import { CreateCylinder } from '@babylonjs/core/Meshes/Builders/cylinderBuilder';
@@ -44,6 +46,7 @@ import {
   CORE_WEAPONS,
   gunplayOf,
   type MapDocument,
+  type PropEntity,
   type PickupEntity,
   type Vec3,
   type WeaponDefinition,
@@ -107,7 +110,7 @@ import { CharacterLibrary, setCharacterLodCrowd, setCharacterLodZoom, type Chara
 import { CharacterAnimator, type OneShot } from './characterAnimator.ts';
 import { fitFirstPersonArms } from './firstPersonArms.ts';
 import { FirstPersonBodyRig } from './firstPersonBody.ts';
-import { loadFirstPersonMode, type FirstPersonMode } from './graphicsSettings.ts';
+import { loadFirstPersonMode, loadGraphicsQuality, type FirstPersonMode } from './graphicsSettings.ts';
 import { CreatureLibrary, fitPlayerSkin, type AvatarSpec } from '../content/creatures.ts';
 import { BodyHitbox, hitboxForSpec } from './hitboxOverlay.ts';
 import { CreatureAnimator } from './creatureAnimator.ts';
@@ -318,6 +321,8 @@ export class GameView {
   private zoneVisuals!: ZoneVisuals;
   private readonly viewRoot: TransformNode;
   private readonly foliage: FoliageVisuals;
+  /** The environment renderer (?env=1, environment/environmentVisuals.ts): made with the first map that has species. */
+  environment: EnvironmentVisuals | null = null;
   private viewmodel?: TransformNode;
   private viewWeapon?: string;
   /** Your own character's arms in first person, gripping the viewmodel. */
@@ -481,8 +486,15 @@ export class GameView {
     for (const e of doc.entities) if (e.kind === 'pickup') this.addPickup(e);
     // Props riding movers (a locomotive, a mine cart) move, so their matrices stay live.
     const carried = new Set(doc.entities.flatMap((e) => (e.kind === 'mover' ? (e.props ?? []) : [])));
+    // Environment species (`env.*`) with the new renderer (?env=1): chunked thin instances, not a node each.
+    const env = envRendererOn() ? doc.entities.filter((e): e is PropEntity => e.kind === 'prop' && !carried.has(e.id) && EnvironmentVisuals.draws(e)) : [];
+    if (env.length) {
+      this.environment ??= new EnvironmentVisuals(this.scene, loadGraphicsQuality());
+      void this.environment.setPlacements(env, doc.terrain);
+    }
+    const drawnAsEnv = new Set(env.map((e) => e.id));
     doc.entities.forEach((e, i) => {
-      if (e.kind !== 'prop') return;
+      if (e.kind !== 'prop' || drawnAsEnv.has(e.id)) return;
       const node = createPropNode(this.scene, this.models, e, `prop_${e.id}`, !carried.has(e.id), true, doc.terrain);
       // A chandelier (and other hung props) is drawn with its top against the ceiling over it.
       if (!carried.has(e.id)) node.position.y += hungPropLift(boxes, e);
@@ -1226,6 +1238,7 @@ export class GameView {
     // Through a scope characters keep their full detail as far as they look as big as at the switch distance unzoomed.
     setCharacterLodZoom(Math.tan(DEFAULT_FOV / 2) / Math.tan(fov / 2));
     this.foliage.update(this.camera.position);
+    this.environment?.update(this.camera.position);
     this.updateUnderwater();
     this.updateEffects();
   }
@@ -3103,6 +3116,7 @@ export class GameView {
     this.atmosphere.dispose();
     this.blood.dispose();
     this.impacts.dispose();
+    this.environment?.dispose();
     this.scene.dispose();
     this.physics?.free();
     this.physics = null;

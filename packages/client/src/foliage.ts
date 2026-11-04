@@ -6,9 +6,10 @@ import type { PBRMaterial } from '@babylonjs/core/Materials/PBR/pbrMaterial';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import type { BaseTexture } from '@babylonjs/core/Materials/Textures/baseTexture';
 import '@babylonjs/core/Meshes/thinInstanceMesh';
-import { TERRAIN_MATERIALS, boxBounds, cellFoliage, getProp, terrainHeightAt, type TerrainData, type TerrainMaterial, type WorldBox } from '@tiletrigger/shared';
+import { TERRAIN_MATERIALS, boxBounds, cellFoliage, envModelFile, getProp, terrainHeightAt, type TerrainData, type TerrainMaterial, type WorldBox } from '@tiletrigger/shared';
 import type { ModelLibrary } from './content/models.ts';
 import { loadGraphicsQuality } from './game/graphicsSettings.ts';
+import { envRendererOn } from './environment/envFlag.ts';
 
 /** Plants by the job they do: carpet grass, taller tufts, flowers, low shrubs, bushes, and pebbles on bare ground. */
 const KINDS = {
@@ -22,6 +23,10 @@ const KINDS = {
   reed: ['prop.mn_eelgrass'],
 } as const;
 type Kind = keyof typeof KINDS;
+/** With the new environment renderer (?env=1): the generated grass clump for grass and tall grass, one in six the dry variant. */
+const ENV_GRASS = ['env.grass.clump', 'env.grass.clump', 'env.grass.clump', 'env.grass.clump', 'env.grass.clump', 'env.grass.clump#1'] as const;
+/** How many more generated clumps grow than Kenney patches did (a clump is a few blades): about four a 2 m cell at full cover. */
+const ENV_GRASS_DENSITY = 2.2;
 
 /**
  * How many of each kind a cell grows (fractions are chances), by its cover
@@ -130,13 +135,16 @@ export class FoliageVisuals {
     const build = ++this.build;
     this.clear();
     if (!t) return;
-    const placements = place(t, boxes, seed, water);
+    const placements = place(t, boxes, seed, water, envRendererOn());
     if (!placements.size) return;
     const geometry = new Map<string, Mesh[]>();
     await Promise.all(
       [...new Set([...placements.values()].flatMap((byModel) => [...byModel.keys()]))].map(async (model) => {
-        const def = getProp(model);
-        if (def) geometry.set(model, await this.bake(def.file, model));
+        // Environment species (?env=1 grass): `env.<id>` or `env.<id>#<variant>`, drawn from their variant's file.
+        const [id, variant] = model.split('#') as [string, string | undefined];
+        const def = getProp(id);
+        const file = id.startsWith('env.') ? envModelFile(id, variant ? Number(variant) : undefined) : def?.file;
+        if (def && file) geometry.set(model, await this.bake(file, model));
       }),
     );
     if (build !== this.build) {
@@ -285,7 +293,8 @@ export class FoliageVisuals {
         // A plain lambert material instead of the model's PBR one (most of a plant's cost is its
         // pixels, and thousands of them cover the ground), no specular, few lights. Kenney's greens
         // are teal; pull them toward the ground's olive so plants sit in the grass.
-        if (m.material && 'albedoColor' in m.material) {
+        // Environment grass keeps its own material (the environment's, with wind: content/models.ts applyEnvMaterials).
+        if (!model.startsWith('env.') && m.material && 'albedoColor' in m.material) {
           const pbr = m.material as PBRMaterial;
           const mat = new StandardMaterial(`${pbr.name}_foliage`, this.scene);
           mat.diffuseColor = pbr.albedoColor.multiply(FOLIAGE_TINT);
@@ -311,7 +320,7 @@ export class FoliageVisuals {
 }
 
 /** Every plant's model and matrix, grouped by `kind:chunkX:chunkZ`. Deterministic for a given terrain and seed. */
-export function place(t: TerrainData, boxes: readonly WorldBox[], seed: string, water: readonly FoliageWater[] = []): Map<string, Map<string, number[]>> {
+export function place(t: TerrainData, boxes: readonly WorldBox[], seed: string, water: readonly FoliageWater[] = [], env = false): Map<string, Map<string, number[]>> {
   const out = new Map<string, Map<string, number[]>>();
   const rand = seeded(seed);
   const covered = coverage(boxes);
@@ -342,16 +351,19 @@ export function place(t: TerrainData, boxes: readonly WorldBox[], seed: string, 
     if (!level && !wet) continue;
     const material = TERRAIN_MATERIALS[t.materials[i]!] ?? 'grass';
     for (const [kind, amount] of Object.entries(wet ?? recipe(material, level)) as [Kind, number][]) {
-      let n = Math.floor(amount) + (rand() < amount % 1 ? 1 : 0);
+      // The generated grass clump (?env=1) is a few blades, not a patch: more of them, the same ground covered.
+      const grassy = env && (kind === 'grass' || kind === 'tall');
+      const amt = grassy ? amount * ENV_GRASS_DENSITY : amount;
+      let n = Math.floor(amt) + (rand() < amt % 1 ? 1 : 0);
       while (n-- > 0) {
         const x = t.origin[0] + (c + rand()) * t.spacing;
         const z = t.origin[1] + (r + rand()) * t.spacing;
         const y = terrainHeightAt(t, x, z);
-        const models = KINDS[kind];
+        const models = grassy ? ENV_GRASS : KINDS[kind];
         const model = models[Math.floor(rand() * models.length)]!;
         const yaw = rand() * Math.PI * 2;
         // Kept low (ankle to shin height) so plants never hide a player.
-        const size = kind === 'grass' ? 0.45 + rand() * 0.35 : kind === 'tall' ? 0.5 + rand() * 0.25 : kind === 'bush' ? 0.7 + rand() * 0.4 : kind === 'reed' ? 0.85 + rand() * 0.45 : 0.6 + rand() * 0.3;
+        const size = grassy ? 0.8 + rand() * 0.55 : kind === 'grass' ? 0.45 + rand() * 0.35 : kind === 'tall' ? 0.5 + rand() * 0.25 : kind === 'bush' ? 0.7 + rand() * 0.4 : kind === 'reed' ? 0.85 + rand() * 0.45 : 0.6 + rand() * 0.3;
         if (y === null || covered(x, y, z)) continue;
         // Steep slopes (cliff faces) stay bare.
         const dy = Math.abs((terrainHeightAt(t, x + 0.5, z) ?? y) - y) + Math.abs((terrainHeightAt(t, x, z + 0.5) ?? y) - y);
