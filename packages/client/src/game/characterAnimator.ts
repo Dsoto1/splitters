@@ -39,6 +39,8 @@ export interface MotionState {
   seated?: boolean;
   /** Seated: how far below the cushion the floor is (m); the shins reach down to it (SeatDef.legDrop). */
   legDrop?: number;
+  /** Seated astride a saddle: each thigh's turn out from straight ahead (rad; SeatDef.straddle). */
+  straddle?: number;
   /** Seated: which way the seat faces, relative to the body's facing (radians, like moveAngle); the hips turn toward it. */
   seatFacing?: number;
 }
@@ -551,6 +553,7 @@ export class CharacterAnimator {
     // Into and out of a seat quickly (getting in is instant in the sim).
     const sitTarget = s.seated ? 1 : 0;
     if (s.seated && s.legDrop !== undefined) this.legDrop = s.legDrop;
+    if (s.seated) this.straddle = s.straddle ?? 0;
     this.sit += Math.sign(sitTarget - this.sit) * Math.min(Math.abs(sitTarget - this.sit), dt * 6);
     this.applyProne();
     if (this.rolls) this.roll(dt, s);
@@ -1120,6 +1123,8 @@ export class CharacterAnimator {
   private shin: number | null = null;
   /** The seat's floor under the cushion (MotionState.legDrop). */
   private legDrop = 0.45;
+  /** Astride a saddle: each thigh turned out this far (MotionState.straddle). */
+  private straddle = 0;
   private appliedSit = 0;
 
   /** Where the body sits before any prone offset (first-person arms are placed under the camera). */
@@ -1141,7 +1146,7 @@ export class CharacterAnimator {
   }
 
   /** Bend the legs over the seat (after the clips); measures the hip height first, while it can (not lying down). */
-  private applySit(right: Vector3): void {
+  private applySit(right: Vector3, up: Vector3): void {
     const thigh = this.ch.joints.get('thigh_l');
     const calf = this.ch.joints.get('calf_l');
     const foot = this.ch.joints.get('foot_l');
@@ -1166,6 +1171,8 @@ export class CharacterAnimator {
     const knee = Math.max(SIT_KNEE_MIN, Math.min(SIT_KNEE_MAX, SIT_THIGH - shinAngle));
     for (const side of ['l', 'r'] as const) {
       this.turnJoint(this.ch.joints.get(`thigh_${side}`), right, -SIT_THIGH * this.sit);
+      // Astride: the raised thigh swings out about the upright, knee to its own side of the saddle.
+      this.turnJoint(this.ch.joints.get(`thigh_${side}`), up, (side === 'l' ? -1 : 1) * this.straddle * this.sit);
       this.turnJoint(this.ch.joints.get(`calf_${side}`), right, knee * this.sit);
     }
   }
@@ -1243,7 +1250,7 @@ export class CharacterAnimator {
       const q = worldTurn(parent, right, pitch).multiply(worldTurn(parent, up, -twist * share));
       bone.rotationQuaternion = q.multiply(bone.rotationQuaternion);
     }
-    this.applySit(right);
+    this.applySit(right, up);
     this.applyReactions(right, up, rootRot);
     if (this.fp) {
       // Your own body seen from its eyes: the head shrunk away, then the body (bent for the aim) moved under the

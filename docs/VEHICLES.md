@@ -3,8 +3,8 @@
 Place them from MapMaker's Entities → Vehicles tab. Players walk
 up and press **E** to get in (driver first, then gunner, then passengers) and
 **E** again to get out. The definitions are data in
-`packages/shared/src/sim/mounts.ts`. Models come from Kenney Space Kit,
-Car Kit and Holiday Kit, Quaternius' Ultimate Spaceships and Tank Pack (all CC0).
+`packages/shared/src/sim/mounts.ts`. Models come from Kenney Space Kit
+and Car Kit, a Meshy Community snowmobile, Quaternius' Ultimate Spaceships and Tank Pack (all CC0).
 
 | Mount | Seats | What it does |
 |---|---|---|
@@ -24,7 +24,7 @@ Car Kit and Holiday Kit, Quaternius' Ultimate Spaceships and Tank Pack (all CC0)
 | Hover Bike | 1 rider | Hover: the fastest thing on the map (31 m/s), fragile (170 health), no gun |
 | Gunship | 3 (pilot, left and right door guns) | Flying, on the dropship's flight model: the pilot fires blasters ahead, each door gunner covers ±70° off their own side (950 health) |
 | Ice Cream Truck | 4 (driver, 3 riders) | Wheeled light, the fun one: no gun, but the three riders shoot their own weapons out of the windows |
-| Snow Sled | 2 (driver, passenger) | Hover handling on runners: quick and slidey, sits on the snow instead of floating |
+| Snow Sled | 2 (driver, passenger) | A snowmobile with hover handling: quick and slidey, sits on the snow instead of floating; both riders sit astride the saddle |
 
 - **Driving.** W/S throttle and reverse, A/D steer (harder the faster you
   go), or **look to steer** (Options → Controls → Vehicle steering: the
@@ -59,8 +59,11 @@ Car Kit and Holiday Kit, Quaternius' Ultimate Spaceships and Tank Pack (all CC0)
 - **Models.** The gun jeep (pickup truck), armored rover (delivery truck) and
   ice cream truck (van) are Kenney Car Kit models recoloured at build time;
   the hover bike (speeder A), gunship (cargo craft B) and transport plane
-  (cargo craft A) are from Kenney Space Kit; the snow sled is Kenney Holiday
-  Kit's long sled. The tank is Quaternius' Tank Pack (CC0) desert tank. The speeder (Striker), hauler (Dispatcher), skyfighter
+  (cargo craft A) are from Kenney Space Kit. The snow sled is "Snowmobile" by
+  roygbpjyt (Meshy Community, CC0; `content/guns.json`, built by
+  `prepare-guns.mjs`: 20k triangles plus a 5k one from 40 m, 2048 px colour
+  and 1024 px normal map, 1.42 MB, 3.0 m long), replacing Kenney Holiday Kit's
+  long sled on 2026-11-04; its riders sit astride (`straddle` on the seats). The tank is Quaternius' Tank Pack (CC0) desert tank. The speeder (Striker), hauler (Dispatcher), skyfighter
   (Spitfire) and dropship (Imperial) are from Quaternius' Ultimate
   Spaceships (CC0), trimmed by `tools/content/prepare-ships.mjs`.
   The buggy is the owner's own Meshy model (Tactical Off-Road Beast, owned;

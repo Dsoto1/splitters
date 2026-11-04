@@ -1307,12 +1307,12 @@
     "id": "snow_sled",
     "displayName": "Snow Sled",
     "kind": "vehicle",
-    "model": "vehicles/snow_sled.glb",
+    "model": "vehicles/snowmobile.glb",
     "health": 200,
     "half": [
-     0.85,
-     0.5,
-     1.4
+     0.66,
+     0.55,
+     1.5
     ],
     "seats": [
      {
@@ -1320,19 +1320,30 @@
       "label": "Driver",
       "offset": [
        0,
-       0.75,
-       0.35
-      ]
+       0.56,
+       -0.55
+      ],
+      "seated": true,
+      "legDrop": 0.1,
+      "straddle": 0.25
      },
      {
       "role": "passenger",
       "label": "Passenger",
       "offset": [
        0,
-       0.75,
-       -0.75
-      ]
+       0.6,
+       -1.02
+      ],
+      "seated": true,
+      "legDrop": 0.14,
+      "straddle": 0.3
      }
+    ],
+    "cockpitEye": [
+     0,
+     1.42,
+     -0.42
     ],
     "enterRadius": 2.8,
     "respawnSeconds": 30,
@@ -1350,19 +1361,19 @@
      "mass": 0.45
     },
     "rideHeight": 0,
-    "blurb": "A two-seat sled that skims over snow (hover handling): a driver and a passenger with their own gun"
+    "blurb": "A two-seat snowmobile that skims over snow (hover handling): a driver and a passenger with their own gun"
    },
    "mass": 0.45,
    "eyes": [
     [
      0,
-     1.75,
-     0.5
+     1.42,
+     -0.42
     ],
     [
      0,
-     1.75,
-     -0.6
+     1.6,
+     -0.87
     ]
    ]
   }

@@ -128,7 +128,7 @@ const HIDDEN_WORK = 40000;
  */
 export async function meshyDocument(fbxPath, { triangles, recolor = null, renormal = null, metallic = 0, roughness = 0.75, maxError = 0.02, surface = 'texture', textureSize = 1024, normalSize = 1024, dropHidden = false, sloppy = false, lod = null, crop = null } = {}) {
   const glb = /\.glb$/i.test(fbxPath);
-  const { doc, normalImage } = glb ? await glbDocument(fbxPath) : { ...(await fbxToDocument(fbxPath, { keepUv: true })), normalImage: existsSync(fbxPath.replace(/\.fbx$/i, '_normal.png')) ? readFileSync(fbxPath.replace(/\.fbx$/i, '_normal.png')) : null };
+  const { doc, normalImage, metalRoughImage = null } = glb ? await glbDocument(fbxPath) : { ...(await fbxToDocument(fbxPath, { keepUv: true })), normalImage: existsSync(fbxPath.replace(/\.fbx$/i, '_normal.png')) ? readFileSync(fbxPath.replace(/\.fbx$/i, '_normal.png')) : null };
   const prims = doc.getRoot().listMeshes().flatMap((m) => m.listPrimitives());
   if (prims.length !== 1) throw new Error(`${basename(fbxPath)}: expected one mesh with one material, found ${prims.length} primitives`);
   const prim = prims[0];
@@ -147,7 +147,10 @@ export async function meshyDocument(fbxPath, { triangles, recolor = null, renorm
   const png = fbxPath.replace(/\.fbx$/i, '.png');
   if (!glb && !existsSync(png)) throw new Error(`${basename(fbxPath)}: no base colour map ${basename(png)} beside it`);
   const map = await sharp(glb ? Buffer.from(glbMap) : readFileSync(png)).removeAlpha().raw().toBuffer({ resolveWithObject: true });
-  if (recolor) await recolor(map);
+  // `recolor` gets the download's metal/roughness map too (a GLB's, raw RGB at the colour map's size, or null): the
+  // built model is matte, so `metalDarken` (prepare-guns.mjs) folds its metal parts' dark look into the colour.
+  const metalRough = metalRoughImage ? await sharp(Buffer.from(metalRoughImage)).removeAlpha().resize(map.info.width, map.info.height, { fit: 'fill' }).raw().toBuffer({ resolveWithObject: true }) : null;
+  if (recolor) await recolor(map, { metalRough });
   const image = () => sharp(map.data, { raw: { width: map.info.width, height: map.info.height, channels: 3 } });
   const jpeg = await image().resize(1024, 1024, { fit: 'inside', kernel: 'lanczos3' }).jpeg({ quality: 88 }).toBuffer();
   const material = doc.createMaterial(prim.getMaterial()?.getName() || 'meshy').setMetallicFactor(metallic).setRoughnessFactor(roughness);
@@ -254,11 +257,12 @@ async function glbDocument(path) {
   await doc.transform(flatten());
   for (const node of doc.getRoot().listNodes()) if (node.getMesh()) clearNodeTransform(node);
   const normalImage = doc.getRoot().listMaterials().map((m) => m.getNormalTexture()?.getImage()).find(Boolean) ?? null;
+  const metalRoughImage = doc.getRoot().listMaterials().map((m) => m.getMetallicRoughnessTexture()?.getImage()).find(Boolean) ?? null;
   for (const mat of doc.getRoot().listMaterials()) {
     mat.setNormalTexture(null).setMetallicRoughnessTexture(null).setOcclusionTexture(null).setEmissiveTexture(null);
     for (const ext of mat.listExtensions()) ext.dispose();
   }
-  return { doc, normalImage };
+  return { doc, normalImage, metalRoughImage };
 }
 
 /** Raw RGB pixels from a colour test: 1 where `marked(r, g, b)`. */
