@@ -3261,6 +3261,15 @@ export class EditorApp {
       desc.placeholder = 'Description';
       desc.addEventListener('change', () => this.run('Edit description', { kind: 'setMetadata', before: { description: doc.metadata.description }, after: { description: desc.value.slice(0, 2000) } }));
       el.append(desc);
+      // A map for the tests (maps/test_coverage.json): no map list, template list, rotation or host picker offers it.
+      const testOnly = document.createElement('input');
+      testOnly.type = 'checkbox';
+      testOnly.id = 'ed-prop-testonly';
+      testOnly.checked = !!doc.metadata.testOnly;
+      testOnly.addEventListener('change', () => this.run(testOnly.checked ? 'Mark as test map' : 'Unmark test map', { kind: 'setMetadata', before: { testOnly: doc.metadata.testOnly }, after: { testOnly: testOnly.checked || undefined } }));
+      const testRow = row('Test map', testOnly);
+      testRow.title = 'A map for the automated tests: hidden from the map lists, templates, rotations and the host picker';
+      el.append(testRow);
 
       const sky = button('Sky, scenery & border…', () => {
         this.setWorkspace('environment');

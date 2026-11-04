@@ -20,7 +20,7 @@ const RESOLVED = `\0${ID}`;
  * metadata a map card shows and the modes it can play. The map files
  * themselves load on demand (mapIndex.ts), so the first visit doesn't
  * download and parse every map to draw the menu. A map that fails to load is
- * left out, as the menu did before.
+ * left out, as the menu did before, and so is a test map (metadata.testOnly).
  */
 export function mapIndexPlugin(mapsDir: string): Plugin {
   return {
@@ -39,7 +39,8 @@ export function mapIndexPlugin(mapsDir: string): Plugin {
         const path = join(mapsDir, file);
         this.addWatchFile(path);
         const r = loadMap(JSON.parse(readFileSync(path, 'utf8')));
-        if (!r.ok) continue;
+        // Test maps (testOnly, MapMaker's Map properties) are left out of every list the menu draws.
+        if (!r.ok || r.map.metadata.testOnly) continue;
         const md = r.map.metadata;
         entries.push({
           key: file.slice(0, -'.json'.length),

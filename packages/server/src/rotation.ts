@@ -9,8 +9,8 @@ import { isMapId, isRetiredMap, parseRotationPreset, playableModes, type GameMod
  */
 
 /**
- * Map names and playable modes by ID, from the suite folder (retired maps and
- * anything else left out). Read once per map: a rotation set mid-match must
+ * Map names and playable modes by ID, from the suite folder (retired maps, test
+ * maps (metadata.testOnly) and anything else left out). Read once per map: a rotation set mid-match must
  * not stall the tick loop loading 20 maps. `forget()` after the suite changes.
  */
 export function suiteLookup(mapsDir: string): RotationLookup & { forget(): void } {
@@ -23,7 +23,7 @@ export function suiteLookup(mapsDir: string): RotationLookup & { forget(): void 
         try {
           // The raw document: the modes depend only on its metadata and entities (flags, hills, bomb sites…).
           const doc = JSON.parse(readFileSync(file, 'utf8')) as MapDocument;
-          if (doc?.metadata && Array.isArray(doc.entities)) info = { name: String(doc.metadata.name ?? id), modes: playableModes(doc) };
+          if (doc?.metadata && Array.isArray(doc.entities) && !doc.metadata.testOnly) info = { name: String(doc.metadata.name ?? id), modes: playableModes(doc) };
         } catch {
           info = null;
         }

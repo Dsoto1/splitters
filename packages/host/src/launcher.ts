@@ -71,7 +71,9 @@ export function mapCatalog(mapsDir: string, suite: ReadonlySet<string>): Launche
     const id = f.replace(/\.json$/, '');
     if (!f.endsWith('.json') || !suite.has(id)) continue;
     try {
-      const meta = (JSON.parse(readFileSync(join(mapsDir, f), 'utf8')) as { metadata?: { name?: unknown; supportedModes?: unknown } }).metadata ?? {};
+      const meta = (JSON.parse(readFileSync(join(mapsDir, f), 'utf8')) as { metadata?: { name?: unknown; supportedModes?: unknown; testOnly?: unknown } }).metadata ?? {};
+      // Test maps (maps/test_coverage.json) aren't offered.
+      if (meta.testOnly === true) continue;
       const modes = (Array.isArray(meta.supportedModes) ? meta.supportedModes : ['core.deathmatch']).filter((m): m is string => typeof m === 'string' && isGameMode(m));
       out.push({ id, name: typeof meta.name === 'string' ? meta.name : id, modes: modes.map((m) => ({ id: m, label: MODE_LABELS[m as keyof typeof MODE_LABELS] ?? m, team: isTeamMode(m) })) });
     } catch {

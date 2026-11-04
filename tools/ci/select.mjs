@@ -5,11 +5,12 @@
 //   node tools/ci/select.mjs --run            run the mapped e2e flows locally (pnpm e2e:changed); needs `pnpm build`
 //   node tools/ci/select.mjs --run --all      … even when the change needs the full suite (otherwise a smoke set)
 //   node tools/ci/select.mjs --github         CI: committed changes only, outputs to $GITHUB_OUTPUT, plan to the job summary
-//   options: --base <ref> (default origin/main), --full (everything), --files a,b (instead of git)
+//   options: --base <ref> (default origin/main), --full (everything), --tour (the browser map tour too: nightly, v* tags,
+//            Run workflow), --files a,b (instead of git)
 import { execFileSync, spawnSync } from 'node:child_process';
 import { appendFileSync, readdirSync } from 'node:fs';
-import { FLOWS, selectForPaths, unitTestPaths } from '../../e2e/flowMap.mjs';
-import { assignShards, loadTimings, shardCount } from '../../e2e/shards.mjs';
+import { FLOWS, selectForPaths, unitJobs, unitTestPaths } from '../../e2e/flowMap.mjs';
+import { loadTimings, planShards, withNamedMaps } from '../../e2e/shards.mjs';
 
 const argv = process.argv.slice(2);
 const flag = (name) => argv.includes(name);
@@ -41,16 +42,19 @@ function changedFiles(base, withWorktree) {
 const mapIds = readdirSync(new URL('maps/', ROOT)).filter((f) => f.endsWith('.json')).map((f) => f.slice(0, -5));
 const base = opt('--base') ?? 'origin/main';
 const files = opt('--files') !== undefined ? opt('--files').split(',').filter(Boolean) : flag('--full') ? null : changedFiles(base, !flag('--github'));
-const sel = files === null ? { ...selectForPaths([], mapIds), full: true, flows: [...FLOWS], unit: 'all', docsOnly: false, perf: true, reasons: [flag('--full') ? 'asked for the full suite' : `no merge base with ${base}: everything`] } : selectForPaths(files, mapIds);
-const timings = loadTimings();
-const shards = sel.flows.length ? assignShards(sel.flows, timings, shardCount(sel.flows, timings), FLOWS) : [];
-const matrix = shards.map((s, i) => ({ index: i + 1, of: shards.length, flows: s.flows.join(','), seconds: Math.round(s.seconds) }));
+const tour = flag('--tour');
+const sel = files === null ? { ...selectForPaths(['package.json'], mapIds, { tour }), reasons: [flag('--full') ? 'asked for the full suite' : `no merge base with ${base}: everything`] } : selectForPaths(files, mapIds, { tour });
+const timings = withNamedMaps(loadTimings(), sel.maps);
+const shards = planShards(sel.flows, timings, { order: FLOWS });
+const matrix = shards.map((s, i) => ({ index: i + 1, of: shards.length, flows: s.flows.join(','), seconds: Math.round(s.seconds), maps: s.flows.includes('maps') ? sel.maps.join(',') : '' }));
+const units = unitJobs(sel.unit);
 
 const lines = [
   `Changed files: ${files === null ? '(not compared)' : files.length}`,
   `Full suite: ${sel.full ? 'yes' : 'no'}${sel.reasons.length ? ` (${sel.reasons.slice(0, 5).join('; ')}${sel.reasons.length > 5 ? '; …' : ''})` : ''}`,
-  `Unit tests: ${sel.unit === 'all' ? 'all' : sel.unit.length ? sel.unit.join(', ') : 'none'}`,
-  `E2E flows (${sel.flows.length}): ${sel.flows.join(', ') || 'none'}`,
+  `Unit tests: ${sel.unit === 'all' ? 'all' : sel.unit.length ? sel.unit.join(', ') : 'none'}${units.length ? ` (${units.length} jobs)` : ''}`,
+  `E2E flows (${sel.flows.length}): ${sel.flows.join(', ') || 'none'}${sel.maps.length ? ` (map tour of ${sel.maps.join(', ')} only)` : ''}`,
+  `Browser map tour: ${tour ? 'yes (all parts)' : sel.maps.length ? `the changed maps (${sel.maps.join(', ')})` : 'no (nightly, v* tags and Run workflow)'}`,
   `Perf budget check: ${sel.perf ? 'yes' : 'no'}`,
   ...matrix.map((s) => `  shard ${s.index}/${s.of} (~${Math.round(s.seconds / 60)} min): ${s.flows}`),
 ];
@@ -65,6 +69,8 @@ if (flag('--github')) {
     shards: JSON.stringify(matrix),
     // 'all', 'none', or the vitest paths to run.
     unit: sel.unit === 'all' ? 'all' : sel.unit.length ? unitTestPaths(sel.unit).join(' ') : 'none',
+    // The unit-test jobs' matrix: [{ name, args }] (vitest arguments).
+    unit_jobs: JSON.stringify(units),
     perf: String(sel.perf),
     docs_only: String(sel.docsOnly),
   };
@@ -83,6 +89,6 @@ if (flag('--run')) {
     console.log('\nNo e2e flows map to these changes.');
     process.exit(0);
   }
-  const r = spawnSync('node', ['e2e/run.mjs'], { cwd: ROOT, stdio: 'inherit', env: { ...process.env, E2E_ONLY: flows.join(',') } });
+  const r = spawnSync('node', ['e2e/run.mjs'], { cwd: ROOT, stdio: 'inherit', env: { ...process.env, E2E_ONLY: flows.join(','), ...(sel.maps.length ? { E2E_MAPS: sel.maps.join(',') } : {}) } });
   process.exit(r.status ?? 1);
 }
