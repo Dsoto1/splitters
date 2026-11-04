@@ -10,7 +10,7 @@ The session branch is **`claude/launcher-ui-map-cards`**. Poll CI without auth:
 `curl -s "https://api.github.com/repos/Dsoto1/splitters/actions/workflows/ci.yml/runs?branch=check/candidate&per_page=1"`.
 Use `pnpm typecheck`, not `pnpm -s typecheck` (the silent flag hides type errors; one reached CI that way).
 
-### Content scalability step 3: weapons, throwables, classes and abilities as data (`wip/weapons-data`, agent, 2026-11-04; not merged; from main c4cedd7)
+### Content scalability step 3: weapons, throwables, classes and abilities as data (`wip/weapons-data`, agent, 2026-11-04; not merged; rebased on main 5bc2455)
 docs/CONTENT_SCALABILITY.md "Weapons as data", all five steps; how to add a weapon: docs/CONTENT_PIPELINE.md.
 - **Where things are now:** `content/weapons/families.json` (the old `weapon()` default block and the ten gunplay
   families with named fields), `content/weapons/<name>.json` (one per weapon: only what differs, an explicit
