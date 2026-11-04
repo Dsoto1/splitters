@@ -10,6 +10,42 @@ The session branch is **`claude/launcher-ui-map-cards`**. Poll CI without auth:
 `curl -s "https://api.github.com/repos/Dsoto1/splitters/actions/workflows/ci.yml/runs?branch=check/candidate&per_page=1"`.
 Use `pnpm typecheck`, not `pnpm -s typecheck` (the silent flag hides type errors; one reached CI that way).
 
+### Grips round 3: per-look hands and arms (`wip/char-grips-3`, agent, 2026-11-04; pushed, not merged; from main 47864cb)
+Owner's notes of 3 Nov ("arm position (mainly right arms) and grips", the 28 looks; Santa's and Zombie Soldier A's
+shoulders). Round 2's global changes made things worse, so nothing shared moved: each look carries its own data.
+Evidence (before/after per look, review board, audits): agent scratchpad `grips3/` (`ba/<id>-before-after.png`,
+`review-board-after.png`, `audit-before/`, `audit-after/`, `faces-raw-old-new-*.jpg`).
+- **Per-look data:** manifest `fixes.grip` -> generated `whole.grip` (`GripTune`, looks.ts) -> `CharacterInstance.grip`,
+  read each frame by the third-person hold (characterAnimator.ts; also Character Select): `supportPistol`,
+  `supportLong`, `gripLong` (points moved, `[right, up, ahead]` in the gun's frame), `curlR`/`curlL` (share of the
+  measured curl), `rollR`/`rollL` (hand turned about its fingers), `elbowOut`/`elbowDown` (long-gun shooting
+  elbow's pole). A look without it holds exactly as before. First person (`gripExternal`) and creatures untouched.
+- **How the values were found:** `grips3/tools/tune.mjs` sets `a.ch.grip` in a posed page (rifle and pistol
+  open at once) and descends on the audit's own distances (drawn hand to its point, fingertips), then every look
+  was checked by eye before/after (`shots.mjs`: rifle and pistol, 3/4 on the hands, side, front). Curl and roll
+  that made a support hand curl away from the grip in the audit's curl test were dropped again (Big Bab, Emerald
+  Robot, Gorgle, Greyfang, Otter, Anoobys keep point offsets only).
+- **Result:** grip audit (rifle + pistol, 29 looks) 86 -> 48, flagged 22 -> 13. The clear win is the pistol's
+  support hand: it hung open under/ahead of the gun on nearly every look and now sits under it round the shooting
+  hand (27 of the 28; not the Imp). Rifle: grip hand further back on the grip for most; support hand mostly as before.
+  **Santa** `hold { out 0.12, down 0.04 }` + `elbowOut 0.1, elbowDown 0.3`: rifle out at his right shoulder, face
+  clear. **Zombie Soldier A** `hold { out 0.07 }`: same.
+- **Not fixed (owner/lead):** Zombie Soldier A's right-hand needle (an edge from a `hand_r` vertex to `middle_03_r`
+  stretched 40x; there with curl 0 and on both weapons, so a skin weight in the file; a looser stray cut-off in
+  hands.mjs didn't move it: tried and reverted). Rifle support hands that stand on edge (Grunt '68, Shade) and
+  flat/fused fingers (Hyena, Vanguard, Beanie Alien, Alien Biker, Mummy Bot, Zhao: audit `flat`) need the hands
+  re-skinned, not offsets. Iron Knight and Croakley keep their `spikes` (cloth/skin). The Otter's "twisted wrist":
+  `rollR 0.4` puts the paw flatter on the grip, but the twist itself reads as the cuff's skin. **Imp** (bots only):
+  creatureAnimator `holdWith` has no per-creature data; not done.
+- **Barnaby, Slugger, Rusty Mech rebuilt** from `meshy-drive/build-newchars/` with the fixed rebake normal maps
+  (`ONLY=... prepare-meshy-characters.mjs`; provenance refreshed). Against their downloads (standalone viewer,
+  `faces-raw-old-new-*.jpg`): Slugger's cap logo, visor lights and ear discs now show; Rusty Mech's face plate and
+  slit are crisp; Barnaby barely changed (his blur is the 17k cut of a 1.5M download, not the normal map).
+- **Re-checked Anoobys, Beanie Alien, Honest Abe** (round 2's audit had them worse): Abe 3 -> 0, Beanie 5 -> 3,
+  Anoobys 3 -> 3 (its rifle support hand still curls away; pistol better by eye).
+- **Checks:** typecheck clean; content:check OK; test:changed (all units: shared code) 1347 passed. E2E (`CI=1`,
+  ports 4873/7897): see the next line. ci:plan: full suite (characterAnimator/looks are shared): needs a `check/` run.
+
 ### Content scalability step 6: library materials as data (`wip/materials-data`, agent, 2026-11-04; pushed, not merged; on `wip/pickups-data` 01420e4)
 docs/CONTENT_SCALABILITY.md step 6, same pattern as steps 3-5; how to add one: docs/CONTENT_PIPELINE.md, "Materials and themes".
 - **Where things are now:** `content/materials.json`: `materials` (all 149 in the old `CORE_MATERIALS` order, which is
