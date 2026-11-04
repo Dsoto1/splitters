@@ -815,7 +815,11 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
       }
       if (away.away.length || away.released.length) broadcast({ t: 'roster', players: match.roster() });
       const nowMs = Date.now();
-      for (const c of clients) if (c.slot !== null && nowMs - c.heardAt > SILENT_MS) c.conn.close(4009, 'no answer');
+      for (const c of clients) {
+        if (c.slot === null || nowMs - c.heardAt <= SILENT_MS) continue;
+        event(`${c.who?.name ?? 'a player'}: nothing heard for ${Math.round((nowMs - c.heardAt) / 1000)} s, closing the connection`);
+        c.conn.close(4009, 'no answer');
+      }
       // Every other second: each human's ping, for the scoreboard.
       if (++pingRounds % 2 === 0) {
         const p = connected.flatMap((c) => (c.rtt !== undefined ? [c.slot!, c.rtt] : []));

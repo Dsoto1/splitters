@@ -4051,9 +4051,17 @@ async function dedicatedhostFlow(browser) {
   const hub = `hub=127.0.0.1:${HUB_PORT}`;
   const errors = [];
   const probes = [];
+  // The pages' warnings, and the Host Service's log, for a failed check about who is in the match.
+  const consoleLines = [];
+  const began = Date.now();
+  const hostLog = () => { try { return readFileSync(join(hostState, 'logs', 'host.log'), 'utf8').split('\n').filter(Boolean).slice(-8).join(' / ').slice(0, 600); } catch { return 'none'; } };
+  const whoSaw = () => ` [console: ${consoleLines.slice(-6).join(' / ')}; host log: ${hostLog()}]`;
   const open = async (name, url) => {
     const page = await (await browser.newContext({ viewport: { width: 1280, height: 720 } })).newPage();
     page.on('pageerror', (e) => errors.push(`${name}: ${e.message}`));
+    page.on('console', (m) => (m.type() === 'warning' || m.type() === 'error') && consoleLines.push(`${((Date.now() - began) / 1000).toFixed(0)} ${name}: ${m.text().slice(0, 160)}`));
+    page.on('response', (r) => r.status() >= 400 && consoleLines.push(`${((Date.now() - began) / 1000).toFixed(0)} ${name}: ${r.status()} ${r.url().slice(0, 120)}`));
+    page.on('requestfailed', (r) => consoleLines.push(`${((Date.now() - began) / 1000).toFixed(0)} ${name}: ${r.failure()?.errorText ?? 'failed'} ${r.url().slice(0, 120)}`));
     // Nothing but /host may look for a Host Service on this computer.
     page.on('request', (r) => /127\.0\.0\.1:(7797|7801|7802)/.test(r.url()) && probes.push(r.url()));
     await page.addInitScript((n) => localStorage.setItem('cs.name', n), name);
@@ -4107,13 +4115,15 @@ async function dedicatedhostFlow(browser) {
     check(adminIn, `the owner joins by code${adminIn ? '' : ` (${await admin.evaluate(() => document.body.innerText.match(/(Disconnected|couldn|no game)[^\n]*/)?.[0] ?? window.__cs?.phase?.() ?? 'no session').catch(() => '')})`}`);
     const slot = await player.evaluate(() => window.__cs.slot);
     const button = await admin.waitForFunction((s) => !!document.getElementById(`hc-kick-${s}`), slot, { timeout: T(45000), polling: 500 }).then(() => true, () => false);
-    check(button, `the admin gets the match controls, with the visitor in its player list${button ? '' : ` (${await admin.evaluate(() => JSON.stringify({ host: window.__cs?.host?.(), panels: document.querySelectorAll('[id=host-controls]').length, people: [...document.querySelectorAll('.hc-person')].map((e) => e.textContent), ids: [...document.querySelectorAll('[id^=hc-kick]')].map((e) => e.id), roster: [...(window.__cs?.hud?.roster?.values() ?? [])].filter((p) => !p.bot).map((p) => `${p.slot}:${p.name}`) }))}, visitor slot ${slot})`}`);
+    check(button, `the admin gets the match controls, with the visitor in its player list${button ? '' : ` (${await admin.evaluate(() => JSON.stringify({ host: window.__cs?.host?.(), panels: document.querySelectorAll('[id=host-controls]').length, people: [...document.querySelectorAll('.hc-person')].map((e) => e.textContent), ids: [...document.querySelectorAll('[id^=hc-kick]')].map((e) => e.id), roster: [...(window.__cs?.hud?.roster?.values() ?? [])].filter((p) => !p.bot).map((p) => `${p.slot}:${p.name}`) }))}, visitor slot ${slot})${whoSaw()}`}`);
     if (button) {
       // The player list is rebuilt as the roster changes, so the button can be replaced between the wait above and a
       // separate click (CI: "Cannot read properties of null (reading 'click')"): find and click it in one step.
-      const clicked = await admin.waitForFunction((s) => { const b = document.getElementById(`hc-kick-${s}`); if (!b) return false; b.click(); return true; }, slot, { timeout: T(15000), polling: 250 }).then(() => true, () => false);
+      // Once only (a slow page can run the poll that clicks after a short timeout ran out: CI then failed a kick that
+      // landed), and with room for a page drawing a frame every second or two.
+      const clicked = await admin.waitForFunction((s) => { if (window.__kickClicked) return true; const b = document.getElementById(`hc-kick-${s}`); if (!b) return false; b.click(); return (window.__kickClicked = true); }, slot, { timeout: T(60000), polling: 250 }).then(() => true, () => false);
       // CI once timed out here with the button gone for 45 s after it had shown: what the admin's list held then.
-      if (!clicked) check(false, `the admin can click Kick for the visitor (${await admin.evaluate(() => JSON.stringify({ people: [...document.querySelectorAll('.hc-person')].map((e) => e.textContent), ids: [...document.querySelectorAll('[id^=hc-kick]')].map((e) => e.id), roster: [...(window.__cs?.hud?.roster?.values() ?? [])].filter((p) => !p.bot).map((p) => `${p.slot}:${p.name}`), phase: window.__cs?.phase?.() })).catch(() => '')}, visitor slot ${slot}, now ${await player.evaluate(() => window.__cs?.slot).catch(() => 'gone')})`);
+      if (!clicked) check(false, `the admin can click Kick for the visitor (${await admin.evaluate(() => JSON.stringify({ people: [...document.querySelectorAll('.hc-person')].map((e) => e.textContent), ids: [...document.querySelectorAll('[id^=hc-kick]')].map((e) => e.id), roster: [...(window.__cs?.hud?.roster?.values() ?? [])].filter((p) => !p.bot).map((p) => `${p.slot}:${p.name}`), phase: window.__cs?.phase?.() })).catch(() => '')}, visitor slot ${slot}, now ${await player.evaluate(() => window.__cs?.slot).catch(() => 'gone')})${whoSaw()}`);
       const kicked = await player.waitForFunction(() => /kicked/i.test(document.body.innerText), null, { timeout: T(20000) }).then(() => true, () => false);
       // What the player saw and what the host logged, when the kick didn't land (CI annotations carry it).
       const why = kicked
@@ -4134,8 +4144,8 @@ async function dedicatedhostFlow(browser) {
       const live = await until(async () => { const s = await status(); return s.host?.rules?.now?.scoreLimit === 5 && s.host.rules.now.timeLimitSeconds === 180; }, T(20000));
       check(live, 'after the restart the match plays to 5, with 3 minutes on the clock');
       // (The rules arrive at once; the clock once the restarted match is under way: it waits for everyone to load first.)
-      const seen = (await admin.waitForFunction(() => window.__cs?.rules?.()?.scoreLimit === 5 && window.__cs.rules().timeLimitSeconds === 180, null, { timeout: T(20000), polling: 500 }).then(() => true, () => false)) && (await admin.waitForFunction(() => window.__cs.phase() === 'playing' && window.__cs.timeLeft() > 0 && window.__cs.timeLeft() <= 180, null, { timeout: T(90000), polling: 500 }).then(() => true, () => false));
-      check(seen, `the player's game follows: score limit 5, clock under 3 minutes (${await admin.evaluate(() => JSON.stringify({ limit: window.__cs?.rules?.()?.scoreLimit, time: window.__cs?.rules?.()?.timeLimitSeconds, left: window.__cs?.timeLeft?.(), phase: window.__cs?.phase?.() })).catch(() => '')})`);
+      const seen = (await admin.waitForFunction(() => window.__cs?.rules?.()?.scoreLimit === 5 && window.__cs.rules().timeLimitSeconds === 180, null, { timeout: T(60000), polling: 500 }).then(() => true, () => false)) && (await admin.waitForFunction(() => window.__cs.phase() === 'playing' && window.__cs.timeLeft() > 0 && window.__cs.timeLeft() <= 180, null, { timeout: T(90000), polling: 500 }).then(() => true, () => false));
+      check(seen, `the player's game follows: score limit 5, clock under 3 minutes (${await admin.evaluate(() => JSON.stringify({ limit: window.__cs?.rules?.()?.scoreLimit, time: window.__cs?.rules?.()?.timeLimitSeconds, left: window.__cs?.timeLeft?.(), phase: window.__cs?.phase?.() })).catch(() => '')})${seen ? '' : whoSaw()}`);
       // Kept for the next start too.
       const saved = await until(async () => (await status()).config?.rules?.modes?.tdm?.score === 5, T(10000));
       check(saved, 'the Host Service keeps them in its settings for the next start');
