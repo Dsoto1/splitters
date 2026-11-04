@@ -35,15 +35,16 @@ export const STAND = 1.8;
 export const POSES = { stand: 'aim_idle', crouch: 'crouch_idle', prone: 'prone_idle' };
 /**
  * Joints the game's aim pose holds over the locomotion clips (characterAnimator.ts UPPER_BODY): crouching with a gun
- * the hips and legs are crouch_idle's, the chest, neck, head and arms the aim pose's (the clips blend both on the upper
- * body, and the hold then levels the gun at the eye: drawn, the chest is upright with the gun at the shoulder).
+ * the hips and legs are crouch_idle's, the chest, neck and head mostly the aim pose's (CROUCH_AIM), and the arms hold
+ * the gun at the eye as standing (measureCharacter carries the standing arms with the head).
  */
 const UPPER_SPINE = new Set(['spine_02', 'spine_03', 'neck_01', 'Head']);
 /**
- * How much of the aim pose the crouched chest takes: the clips alone would blend half and half, but the hold keeps the
- * gun level at the eye and the drawn chest is upright (checked against the character viewer's Crouch, 2026-11-04).
+ * How much of the aim pose the crouched chest, neck and head take: the two clips blend half and half, and the hold
+ * then lifts the gun to the eye (checked against the character viewer's Crouch with Hitboxes, 2026-11-04: half
+ * left the chest too low, all aim stood the head over the drawn one).
  */
-const CROUCH_AIM = 1;
+const CROUCH_AIM = 0.75;
 const ARMS = new Set(['l', 'r'].flatMap((s) => [`clavicle_${s}`, `upperarm_${s}`, `lowerarm_${s}`, `hand_${s}`, ...['index', 'middle', 'pinky', 'ring', 'thumb'].flatMap((f) => [1, 2, 3].map((j) => `${f}_0${j}_${s}`))]));
 /** Torso vertices further than this many times the median from the spine line are not body (tails, capes' hems). */
 const SPINE_REACH = 2.4;
@@ -259,10 +260,10 @@ function merge(list) {
   return out;
 }
 
-/** Half way between two rotations (normalised), as two clips at equal weight blend. */
-function halfway(a, b) {
+/** A rotation `t` of the way from `a` to `b` (normalised), as two clips blend by weight. */
+function blend(a, b, t) {
   const sign = a[0] * b[0] + a[1] * b[1] + a[2] * b[2] + a[3] * b[3] < 0 ? -1 : 1;
-  const q = a.map((v, i) => (v + sign * b[i]) / 2);
+  const q = a.map((v, i) => v * (1 - t) + sign * b[i] * t);
   const l = Math.hypot(...q) || 1;
   return q.map((v) => v / l);
 }
@@ -278,7 +279,7 @@ function stanceFrame(rig, d, stance, clipsFrom) {
   for (const [name, e] of frame) {
     const a = aim.get(name);
     if (!e.rotation || !a?.rotation) continue;
-    if (UPPER_SPINE.has(name)) out.set(name, { ...e, rotation: CROUCH_AIM >= 1 ? a.rotation : halfway(e.rotation, a.rotation) });
+    if (UPPER_SPINE.has(name)) out.set(name, { ...e, rotation: blend(e.rotation, a.rotation, CROUCH_AIM) });
     else if (ARMS.has(name)) out.set(name, { ...e, rotation: a.rotation });
   }
   return out;
@@ -316,6 +317,13 @@ export async function measureCharacter(files, overrides, clipsFrom) {
     const { reg, rest, spine } = await characterPoints(files, stance, clipsFrom);
     out.rest = r3(rest);
     out[stance] = applyOverrides(fitPose(reg, overrides?.arms, spine), overrides);
+  }
+  // Crouched, the hold still brings the gun up to the eye: the arms are the standing ones, carried with the head.
+  const st = out.stand, cr = out.crouch;
+  if (st.head && cr.head) {
+    const d = [cr.head.x - st.head.x, cr.head.y - st.head.y, cr.head.z - st.head.z];
+    const move = (p) => p.map((v, i) => v + d[i]);
+    cr.arms = st.arms.map((a) => ({ a: move(a.a), b: move(a.b), r: a.r }));
   }
   return out;
 }

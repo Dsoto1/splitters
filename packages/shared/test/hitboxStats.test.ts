@@ -34,6 +34,7 @@ import {
 import { Match, initNavigation, type Combatant } from '../src/match.ts';
 import { makeMap } from './helpers.ts';
 // The manifests' checker keeps its own copy of the stat ranges (tools/content/character-manifests.mjs).
+// @ts-expect-error: a plain .mjs tool without types
 import { STAT_RANGES } from '../../../tools/content/character-manifests.mjs';
 
 beforeAll(() => Promise.all([initPhysics(), initNavigation()]));
@@ -108,7 +109,7 @@ describe('zones in the match come from the shapes', () => {
       expect(zoneAt((b) => ({ x: b.move.pos.x, y: ((t.a[0] + t.b[0]) / 2) * k, z: b.move.pos.z }))).toEqual({ hit: 1, z: 0 });
       // A thigh (body frame x right; b faces -x, so its right is +z).
       const thigh = box.legs[0]!;
-      const mid = [(thigh.a[0] + thigh.b[0]) / 2, (thigh.a[1] + thigh.b[1]) / 2, (thigh.a[2] + thigh.b[2]) / 2];
+      const mid = [(thigh.a[0] + thigh.b[0]) / 2, (thigh.a[1] + thigh.b[1]) / 2, (thigh.a[2] + thigh.b[2]) / 2] as const;
       expect(zoneAt((b) => ({ x: b.move.pos.x - mid[2] * k, y: mid[1] * k, z: b.move.pos.z + mid[0] * k }))).toEqual({ hit: 1, z: 2 });
     });
   }
@@ -174,7 +175,7 @@ describe('character stats', () => {
 
   it('the manifests take the same stats and ranges as the game', () => {
     expect(Object.keys(STAT_RANGES)).toEqual([...STAT_KEYS]);
-    for (const s of STAT_SPECS) expect(STAT_RANGES[s.key as keyof typeof STAT_RANGES]).toEqual([s.min, s.max]);
+    for (const s of STAT_SPECS) expect((STAT_RANGES as Record<string, number[]>)[s.key]).toEqual([s.min, s.max]);
     expect(statsProblems({ health: 120, armor: 0.1 })).toEqual([]);
     expect(statsProblems({ health: 500 })).toHaveLength(1);
     expect(statsProblems({ luck: 1 })).toHaveLength(1);

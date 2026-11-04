@@ -890,8 +890,10 @@ hitboxes, no evening-out within a size class; small or thin looks are harder to 
 **How they are measured** (`tools/content/hitboxes.mjs` → `packages/shared/src/content/hitboxes.generated.ts`;
 `pnpm content:check` fails while it is out of date, `pnpm content:rebuild` rewrites it). Each look's model (a whole
 body, or a part-built look's head, parts and hair; custom designs use their body's mannequin) is posed in Node
-(`tools/content/skinpose.mjs`) as the game draws it, holding a gun: standing `aim_idle`; crouching `crouch_idle` with
-the upper body half `aim_idle` (the animator layers the aim pose over it); prone `prone_idle`. Its vertices are
+(`tools/content/skinpose.mjs`) as the game draws it, holding a gun: standing `aim_idle`; crouching `crouch_idle`'s
+hips and legs under the aim pose's chest, head and arms (the animator layers the aim pose over the upper body and the
+hold levels the gun at the eye; drawn, the crouched chest is upright, its top about the crouch height, 1.2 m); prone
+`prone_idle`. Its vertices are
 grouped by the joint holding them (head, torso, thighs, shins, arms) and fitted: the head sphere holds 80% of the
 head's vertices (ears, horns and brims stick out) and stands no higher than the head; the torso's axis follows its
 own line, and vertices far from the spine (a tail, a cape's hem) are left out. Everything is in metres at a 1.8 m
