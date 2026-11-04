@@ -136,7 +136,7 @@ the extracted zips in `/home/user/fx-packs/`); `node tools/content/vfx-map.mjs` 
   wreck smoke). The nearest within 70 m are drawn, as many as the graphics quality allows (low 4, medium 10,
   high 16; low also thins their particles), started once and moved; the rest keep their plain look (`drawn(id)`).
 - **Fire props** (`game/propFlames.ts`): braziers, fire bowls, torches, campfires and a few candles carry a
-  `flame` in content/props.json (`fx` brazier / torch / candle / campfire → map.lasting `flame.<fx>`,
+  `flame` in content/props/<pack>.json (`fx` brazier / torch / candle / campfire → map.lasting `flame.<fx>`,
   `at` the flame's foot in the prop's space as drawn, x mirrored; `size` its height in metres; `hide` the model's
   own flame materials). They are `decor`: placed after every gameplay effect, not drawn on low graphics, and the
   model's flame shows wherever the pack flame isn't drawn. Torches use the cheaper candle effect (24 particles).

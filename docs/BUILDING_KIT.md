@@ -516,7 +516,7 @@ Owned): Stone Well, Market Awning, Market Pavilion, Hanging Shop Sign, Hay Cart,
 Workbench, Flower Planter, Tarpaulined Crates, Tarp Tent, Chimney Stack, Wattle Fence, Spiked Fence, Church
 Bell, Market Cross, The Stocks, Oak Post, Grain Sacks, Bay Window, Shuttered Window. The Forge, Hay Cart,
 Well and Tarp Tent are simple stand-ins under stable ids (`mv_forge`, `mv_hay_cart`, `mv_well`,
-`mv_tarp_tent`): community downloads can replace them later through `content/props.json` without touching
+`mv_tarp_tent`): community downloads can replace them later through `content/props/<pack>.json` without touching
 a map. The pack also lists the castle, siege, market, cart, barrel, banner, lantern, fence and tree props
 already in the game.
 
@@ -610,7 +610,7 @@ Market Stall, Market Canopy, Desert Banner, Hanging Lantern, Palm Planter, Water
 Jars (both break), Market Rug, Timber Crane, Cloth Line, Scaffold, Awning Window, Lattice Window, Shuttered
 Window, Spice Baskets, Floor Cushions, Rug Rack, Sandstone Column, Ornate Arch (collides as a frame: walk
 through it). The Market Stall, Water Well and Timber Crane are simple in-house versions under stable ids
-(`dc_market_stall`, `dc_well`, `dc_crane`): a hero model can take the same id later in `content/props.json`
+(`dc_market_stall`, `dc_well`, `dc_crane`): a hero model can take the same id later in `content/props/<pack>.json`
 without touching a map. The pack also lists the crates, barrels, sandbags, palms, lanterns, pots, carts,
 ladders and troughs already in the game, then every Sands of Egypt prop.
 
@@ -768,7 +768,7 @@ normal and emission maps; `--only <ids>` fetches just new sets). 22 themes
 assign a material to each slot (floor, walls, pillars/cover/steps, underside,
 trim).
 
-## Props (`content/props.json`)
+## Props (`content/props/<pack>.json`)
 
 145 props from eight Kenney kits (CC0), prepared by
 `node tools/content/prepare-props.mjs`: centred, stood on the floor, scaled to

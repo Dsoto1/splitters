@@ -26,6 +26,7 @@ Session memory: at the end of a session, write `.control-center/session-summary.
 - Every map, official ones included, is its file in `maps/<id>.json`, made and edited with MapMaker's own tools. No map build scripts and no one-off code for a single map: a piece a map needs goes into MapMaker (palette, inspector, logic) so the owner and players can edit it.
 
 ## Content rules
+- After a merge or a new prop pack, run `pnpm content:rebuild` (props are one file per pack, `content/props/<pack>.json`; it rewrites the generated tables, locks, palette atlases and provenance; docs/CONTENT_PIPELINE.md, "Adding a prop pack").
 - No in-game AI generation: players can't make content through an AI service or connector, and can't upload assets.
 - Models we generate ourselves on the owner's Meshy subscription are fine to ship (record them in content provenance as Meshy, owned).
 - Assets the owner buys a full licence for are always allowed (owner, 2026-11-01): record each in content provenance (licence name, "purchased by the owner"), ship only processed output.

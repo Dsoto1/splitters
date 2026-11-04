@@ -64,7 +64,7 @@ to run are low-poly kits that share one small colour texture:
 
 For a new prop, prefer: under 1,500 triangles, sharing an existing kit's
 texture, and a simple collision box (`collide: box`, `trunk` or `none` in
-`content/props.json`).
+`content/props/<pack>.json`).
 
 ## Keeping it fast
 

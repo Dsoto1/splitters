@@ -108,13 +108,13 @@ Then `pnpm content:build` (provenance) and `pnpm content:check`. Without
 `prepare-props.mjs` rebuilds the in-repo packs and keeps the kit props as
 built (checking them against the lock file), so a downloads directory holding
 only some of the kits rebuilds just those. Kits with an `images` folder in
-`content/props.json` (the MegaKit, and the Orbital and Neon Kenney kits) get
+their `content/props/<pack>.json` (the MegaKit, and the Orbital and Neon Kenney kits) get
 their materials baked and shrunk; the other GLB kits are normalised as they
 are. Never copy the raw downloads into the repo. (Older Train Kit props whose
 source GLB is in `assets-src/kenney-train-kit/` keep building from there.)
 
 **Meshy downloads** (`tools/content/meshy-mesh.mjs`, `meshy: true` packs in
-`content/guns.json` and `content/props.json`). Meshy's textured FBX is one
+`content/guns.json` and `content/props/<pack>.json`). Meshy's textured FBX is one
 mesh of 0.3–3.3 million triangles whose colour map is cut into thousands of
 islands scattered over the atlas. Keeping those seams (`surface: texture`, the
 seam-aware simplifier the creature originals use) stops far above a prop's
@@ -147,7 +147,7 @@ are quantized with 8-bit normals and tangents (`MESHY_QUANTIZE`).
 `ONLY=<id>,… node tools/content/prepare-props.mjs --downloads <dir>` rebuilds
 just those props.
 
-**Budget tiers.** `budgets` in `content/props.json` and `content/guns.json` are
+**Budget tiers.** `budgets` in `content/props.json` (shared by every prop pack) and `content/guns.json` are
 the default caps (props 6,000 triangles / 400 KB; guns 8,000 / 512 KB);
 `budgets.tiers.hero` (20,000 triangles, 1.6 MB, and a lower level of detail
 required above 8,000) applies to entries marked `"budget": "hero"`: big landmark
@@ -193,7 +193,7 @@ accepts for our own work:
 facades are boxes drawn with the level (`map/geometry.ts`), so they need no
 files; their new ambientCG sets come from `prepare-textures.mjs --only`.
 
-Kit props (`content/props.json` entries of a pack with a `download` folder)
+Kit props (`content/props/<pack>.json` entries of a pack with a `download` folder)
 take extra fields: `src` may list several pieces merged in kit space (a wall
 and its top), `yaw` turns the piece so it faces +Z, `scale` replaces `height`
 (the kit is already metric), `lift` raises flat pieces off the floor,
@@ -305,28 +305,78 @@ mesh level.
 
 ### Palette pictures (MapMaker)
 
-MapMaker's palette shows a picture of every shipped tile, prop and vehicle/turret (about 1,350
+MapMaker's palette shows a picture of every shipped tile, prop and vehicle/turret (about 1,600
 pieces) without rendering 3D thumbnails in the browser: they are pre-rendered into sprite sheets.
 
-- `packages/client/public/thumbs/<group>.<hash>.webp`: one atlas per palette group
-  (`editor/paletteCatalog.ts`: tiles, vehicles, nature and the seven prop themes), 80 px cells
-  (rendered at 160 px and shrunk), 16 to a row, transparent background, WebP.
-- `packages/client/public/thumbs/palette.json`: piece key (`tile:core.room`, `prop:prop.barrel`,
-  `mount:tank`) → atlas, cell, a hash of what the picture was made from (the tile's definition or the
-  model file) and the content pack a prop comes from (for search).
+- `packages/client/public/thumbs/<atlas>.<hash>.webp`: one atlas per content source
+  (`editor/paletteCatalog.ts` `atlasGroup`): `tiles-<style pack>` (the tile id's prefix: `tiles-core`,
+  `tiles-desert`), `props-<content pack>` (the prop's `content/props/<pack>.json`) and `vehicles`.
+  80 px cells (rendered at 160 px and shrunk), 16 to a row, transparent background, WebP. Two
+  branches adding different packs write different files, and the hash in the name keeps two
+  versions of one atlas apart, so atlases never conflict in git.
+- `packages/client/public/thumbs/palette.json`: the index (version 2), one line per atlas, sorted:
+  its file, rows, bytes, the pack its props come from (for search) and its pieces in cell order as
+  `[palette key, hash of what the picture was made from]` (the tile's definition or the model file).
+  The client builds its key lookup from it (`editor/paletteAtlas.ts`).
 - MapMaker loads an atlas the first time one of its pieces is shown and draws the cells as CSS
-  sprites (`editor/paletteAtlas.ts`); a piece missing from the atlas is rendered at runtime by
-  `ModelThumbnails`, as before.
+  sprites; a piece missing from the atlas is rendered at runtime by `ModelThumbnails`, as before.
 - `content:check` fails when a shipped piece has no picture, its hash no longer matches (the model
-  or tile changed), a piece in the atlas isn't shipped, an atlas has the wrong size or isn't a
-  WebP, an atlas is over 400 KB or all of them over 3 MB, or another file sits in `thumbs/`.
+  or tile changed, or the prop moved pack), a piece in the atlas isn't shipped, an atlas has the wrong
+  size, isn't a WebP or isn't named after its atlas, an atlas is over 400 KB, all of them over 3 MB,
+  the index over 160 KB, or another file sits in `thumbs/`.
 
-After adding or changing tiles, props or vehicles, rebuild them with the game's own renderer: `pnpm
-build`, serve it (`pnpm --filter @tiletrigger/client exec vite preview --port 4799`), then
-`node tools/content/build-palette-atlas.mjs http://localhost:4799` (`--all` re-renders everything;
-`ATLAS_JOBS=2` uses two pages). Pieces whose hash is unchanged keep their cells, and groups with no
-change keep their file. The tool and the check list the pieces with
-`tools/content/palette-items.ts` (run by Node with `--experimental-transform-types`).
+`pnpm content:rebuild` (below) keeps them up to date. By hand: `node
+tools/content/build-palette-atlas.mjs --offline` rewrites the atlases from the pictures already made
+(a piece keeps its cell from whichever atlas held it) and exits with code 3 when something needs
+rendering; to render, `pnpm build`, serve it (`pnpm --filter @tiletrigger/client exec vite preview
+--port 4799`), then `node tools/content/build-palette-atlas.mjs http://localhost:4799` (`--all`
+re-renders everything; `ATLAS_JOBS=2` uses two pages). Atlases with no change keep their file. The
+tool and the check list the pieces with `tools/content/palette-items.ts` (run by Node with
+`--experimental-transform-types`).
+
+### Adding a prop pack
+
+Props live one file per content pack, `content/props/<pack>.json` (the pack id is the file name),
+read by `tools/content/props-manifest.mjs` for every tool:
+
+```json
+{
+  "pack": { "title": "…", "creator": "…", "url": "…", "license": "CC0-1.0", "licenseFile": "assets-src/<pack>/License.txt", "retrieved": "2026-11-04" },
+  "order": 830,
+  "props": [
+    { "id": "…", "src": "…", "name": "…", "category": "…", "height": 1.2, "collide": "box" }
+  ]
+}
+```
+
+- `pack` is the pack's licence and build settings (what `packs.<id>` was in the old single file);
+  props carry no `pack` field. `content/props.json` holds only the budgets shared by every pack.
+- **Order.** The prop table (`props.generated.ts`, so the palette within each category) lists props by
+  `order`, then pack id, then place in the file. A prop may carry its own `order`: from it until the
+  next prop with one, those props sit there instead (how a pack's trees sit with the other packs'
+  trees). Orders in a file only go up. A new pack takes a number above the highest in use; two
+  branches picking the same number still give one order (by pack id) and no merge conflict.
+- **Build.** Add the sources (`assets-src/<pack>/` with `License.txt`, or a `download` folder), then
+  `pnpm content:rebuild`. Commit the pack file, the built GLBs and what the rebuild wrote.
+
+**`pnpm content:rebuild`** (`tools/content/rebuild.mjs`) rebuilds every generated content file in
+order, deterministically (run twice, the second run changes nothing): settle and format the lock
+files (`tools/content/lockfile.mjs`) → `prepare-props.mjs` and `character-manifests.mjs` (the prop
+and character tables; packs from downloads kept as built) → the palette atlas offline, and only when
+a picture is missing `pnpm build`, `vite preview` on a free port (never 4173, 4391 or 4567; stopped by
+its PID) and the atlas tool rendering against it → `content:build` (provenance) → `content:check`.
+
+**After a merge**, resolve the source files git couldn't merge (a pack file both sides edited, code,
+maps; the rebuild stops and lists them), then run `pnpm content:rebuild` and `git add` what it wrote.
+Generated files are rewritten, not merged: `props.generated.ts`, `characters.generated.ts`,
+`provenance.json` and the palette index, conflict markers and all. The lock files (every
+`content/*.lock.json`) and `provenance.json` are one entry per line, sorted by file, so different
+files merge line by line; where git still conflicts in a lock (neighbouring lines), the rebuild keeps
+both sides' entries and, for a file on both sides, the one matching the file on disk. What can
+still conflict: the same pack file edited on both sides, the same built GLB rebuilt on both sides
+(binary: pick one and rebuild the other), and an entry one side removed inside a conflicting part of
+a lock (it comes back from the other side: the props lock is rewritten anyway; for the others
+`content:check` names the missing file).
 
 ## 5. In-house tools to build
 

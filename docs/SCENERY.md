@@ -179,7 +179,7 @@ solid (bots path round them); bushes, flowers and grass can be walked through.
   tools/content/prepare-skies.mjs` downloads and scales them to 2048 × 1024
   JPEGs (25–125 KB each) and records them in `content/skies.lock.json`.
 - **Plants and trees:** Kenney Nature Kit 2.1 (CC0), 55 models added to
-  `content/props.json` under Trees, Plants & Flowers, and Rocks & Wood.
+  `content/props/kenney-nature-kit.json` under Trees, Plants & Flowers, and Rocks & Wood.
 - **Painted trees and plants (`mn_*`):** eight Meshy community models (CC0 per
   the owner, page URLs pending; see ASSET_SOURCES.md): Broad Oak, Slender Birch,
   Fir Tree, Banana Plant, Forest Shrub, Forest Fern, Eelgrass and Red Rock
