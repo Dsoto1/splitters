@@ -1884,7 +1884,8 @@ export class GameSession {
     // Every shader the match will need (a character of each look, every effect), built before the start:
     // the first sight of a model or an effect mid-fight otherwise stalled on it (GameView.prewarm).
     const looks = [...new Set(this.looks.values())].map((look) => ({ look }));
-    jobs.push(this.view.prewarm(looks));
+    // (The gate waits for it 8 s at most: a slow machine finishes it in the background, out of sight.)
+    jobs.push(Promise.race([this.view.prewarm(looks), new Promise((r) => setTimeout(r, 8000))]));
     let done = 0;
     let started = false;
     const total = jobs.length + 2;

@@ -1043,8 +1043,12 @@ export class GameView {
         if (a.ragdoll.update() && a.anim instanceof CharacterAnimator) a.anim.freezePose();
       };
       for (const a of this.avatars.values()) settle(a);
+      const eye = this.camera.globalPosition;
       this.corpses = this.corpses.filter((c) => {
         settle(c.a);
+        // Crowds: bodies past the shadow reach cast none, like the living.
+        if (this.crowd && Math.hypot(c.a.root.position.x - eye.x, c.a.root.position.z - eye.z) > CROWD_SHADOW_REACH) this.atmosphere.shadowless.add(c.a.root);
+        else this.atmosphere.shadowless.delete(c.a.root);
         if (this.bodies !== 'fade') return true;
         const age = (now - c.born) / 1000 - CORPSE_STAY;
         if (age <= 0) return true;
@@ -1563,6 +1567,11 @@ export class GameView {
         if (Math.hypot(p.x - a.last.x, p.z - a.last.z) > 4) a.vel = { x: 0, z: 0 };
       }
       a.last = { x: p.x, y: p.y, z: p.z, t: now };
+      // Shadows from the nearest few living characters (and anyone within SHADOW_ALWAYS); in crowds none past
+      // CROWD_SHADOW_REACH, the dead and dying included (a body far off waiting for its ragdoll cast one before).
+      const d2 = eye ? (p.x - eye.x) ** 2 + (p.z - eye.z) ** 2 : 0;
+      if ((crowd && d2 > CROWD_SHADOW_REACH ** 2) || (p.alive && d2 > shadowCut && d2 > SHADOW_ALWAYS ** 2)) this.atmosphere.shadowless.add(a.root);
+      else this.atmosphere.shadowless.delete(a.root);
       if (a.hiddenSelf) {
         // Back to third person: draw it again (it was kept loaded while hidden).
         if (this.fpBody?.a === a) this.dropFpBody();
@@ -1632,10 +1641,6 @@ export class GameView {
         const speed = seated.has(p.slot) ? 0 : Math.hypot(a.vel.x, a.vel.z);
         // Far characters in a crowd animate every few frames, with the time saved up (a death always plays at once).
         const far = crowd && cam && p.alive ? Math.hypot(p.x - cam.x, p.z - cam.z) : 0;
-        // Shadows from the nearest few only (and, in crowds, none past CROWD_SHADOW_REACH).
-        const d2 = eye && p.alive ? (p.x - eye.x) ** 2 + (p.z - eye.z) ** 2 : 0;
-        if ((crowd && far > CROWD_SHADOW_REACH) || (d2 > shadowCut && d2 > SHADOW_ALWAYS ** 2)) this.atmosphere.shadowless.add(a.root);
-        else this.atmosphere.shadowless.delete(a.root);
         a.animDt = (a.animDt ?? 0) + dt;
         let run: boolean;
         let stepped: boolean;
