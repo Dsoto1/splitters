@@ -98,9 +98,11 @@ jobs:
               return;
             }
             core.setOutput('green', 'false');
-            // Not itself green on a check branch (a notes-only commit pushed straight to main): test what changed since
-            // the nearest earlier main commit that was, rather than everything (a flaky flow then held back the release).
-            if (context.ref === 'refs/heads/main') {
+            // Not itself green on a check branch (a notes-only commit pushed straight to main, or a check branch built
+            // on a candidate that already went green): test what changed since the nearest earlier first-parent commit
+            // that was, rather than everything (a flaky flow then held back the release; a small change on top of a
+            // green candidate re-ran its whole suite).
+            if (context.ref === 'refs/heads/main' || context.ref.startsWith('refs/heads/check/')) {
               const { execSync } = require('child_process');
               const shas = execSync('git rev-list --first-parent -n 30 HEAD~1', { encoding: 'utf8' }).split('\n').filter(Boolean);
               for (const sha of shas) {
@@ -163,7 +165,11 @@ jobs:
           case "$EVENT" in
             schedule) full="--full --tour" ;;
             workflow_dispatch) [ "$DISPATCH_FULL" = "true" ] && full="--full --tour" ;;
-            push) case "$REF" in refs/tags/*) full="--full --tour" ;; refs/heads/main) if [ -n "$GREEN_BASE" ]; then base="$GREEN_BASE"; else full=--full; fi ;; esac ;;
+            push) case "$REF" in
+                refs/tags/*) full="--full --tour" ;;
+                refs/heads/main) if [ -n "$GREEN_BASE" ]; then base="$GREEN_BASE"; else full=--full; fi ;;
+                refs/heads/check/*) [ -n "$GREEN_BASE" ] && base="$GREEN_BASE" ;;
+              esac ;;
           esac
           # shellcheck disable=SC2086 # the flags are separate words
           node tools/ci/select.mjs --github --base "$base" $full

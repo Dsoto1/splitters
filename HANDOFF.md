@@ -31,6 +31,9 @@ Owner's request: a CI round in about 8-10 min (run 41851112171 took 36 min: buil
 - **Fail fast:** a new push to a check/ branch cancels its older run (concurrency, check/ only). The unit, e2e and
   perf steps run under `tools/ci/stop-on-failure.sh`: once another job of the run has failed (polled every 40 s) the
   step stops and fails, so the run reads failure (cancelling it would read "cancelled"); land/train refuse it.
+- **Green base on check branches:** like main pushes, a check/ commit whose first-parent ancestor (up to 30 back)
+  went green on a check branch is planned against that ancestor, not origin/main: a small change on a green
+  candidate runs only what it needs.
 - **Coverage map** `maps/test_coverage.json` (MapMaker, driven by Playwright; scratch `coverage-map/`: driver
   `tools/maker.mjs` with new ops props/glass/rule/logicTemplate/inPlace, steps `pass1.mjs`, `pass2.mjs`, pictures
   `shots/`): 320 m terrain; 81 tiles (all 71 kit + one per style pack with own tiles), 16 wall styles + both glass
