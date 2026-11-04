@@ -7,7 +7,7 @@
     "author": "",
     "description": "Test map: one of every tile, wall style, prop pack, pickup kind, vehicle and turret, liquid, path, logic piece and mode marker (the coverage unit test lists them). Hidden from map lists and rotations.",
     "createdAt": "2026-11-04T19:42:42.094Z",
-    "updatedAt": "2026-11-04T19:42:54.056Z",
+    "updatedAt": "2026-11-04T20:07:43.255Z",
     "parentId": null,
     "recommendedPlayers": {
       "min": 2,
@@ -24,10 +24,678 @@
     "theme": "core.prototype",
     "tiles": [
       {
-        "id": "tile_jo92buckom",
-        "tile": "core.room",
+        "id": "tile_flqvdgnmi9",
+        "tile": "city.crossroads",
+        "x": -17,
+        "y": -18,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_zwwcuxbg1y",
+        "tile": "city.highrise",
+        "x": -12,
+        "y": -18,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_4tk9szl7qm",
+        "tile": "core.hall",
+        "x": -8,
+        "y": -18,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_1i5icqcroq",
+        "tile": "core.round_arcade_l",
+        "x": -4,
+        "y": -18,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_e9qm958kk0",
+        "tile": "core.round_corner_l",
         "x": 0,
-        "y": 0,
+        "y": -18,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_ggf9q3blik",
+        "tile": "core.round_half_l",
+        "x": 4,
+        "y": -18,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_t66df92olb",
+        "tile": "orbital.hangar",
+        "x": 8,
+        "y": -18,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_y1e2x6777d",
+        "tile": "core.warehouse",
+        "x": 12,
+        "y": -18,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_eyvk4bho9o",
+        "tile": "city.brownstone",
+        "x": 16,
+        "y": -18,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_1rjiwya25v",
+        "tile": "city.midrise",
+        "x": -17,
+        "y": -13,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_rk0h6gdh31",
+        "tile": "core.atrium",
+        "x": -14,
+        "y": -13,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_wblwo9k65z",
+        "tile": "core.gas_station",
+        "x": -11,
+        "y": -13,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_67j498jb1u",
+        "tile": "core.house",
+        "x": -8,
+        "y": -13,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_zegccn6akw",
+        "tile": "core.plaza",
+        "x": -5,
+        "y": -13,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_aies8376wl",
+        "tile": "core.room_large",
+        "x": -2,
+        "y": -13,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_63ri3enlta",
+        "tile": "core.round_arcade_m",
+        "x": 1,
+        "y": -13,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_g8pzizobkt",
+        "tile": "core.round_corner_m",
+        "x": 4,
+        "y": -13,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_9oux28o6aw",
+        "tile": "core.round_half_m",
+        "x": 7,
+        "y": -13,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_0acgchgcdk",
+        "tile": "core.round_tower",
+        "x": 10,
+        "y": -13,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_qxu107f2n6",
+        "tile": "neon.block_n",
+        "x": 13,
+        "y": -13,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_1wn5mla4fz",
+        "tile": "neon.tower_a",
+        "x": 16,
+        "y": -13,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_mokk977esi",
+        "tile": "neon.tower_b",
+        "x": -17,
+        "y": -10,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_bhdegwi69w",
+        "tile": "neon.tower_c",
+        "x": -14,
+        "y": -10,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_eanacv51jg",
+        "tile": "neon.tower_e",
+        "x": -11,
+        "y": -10,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_vd6p1zqgh1",
+        "tile": "orbital.reactor_hall",
+        "x": -8,
+        "y": -10,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_ca3qnt7puz",
+        "tile": "city.street",
+        "x": -5,
+        "y": -10,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_b6nkt03be2",
+        "tile": "core.corridor_long",
+        "x": -3,
+        "y": -10,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_okzu4l94bq",
+        "tile": "core.room_long",
+        "x": -1,
+        "y": -10,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_34grnc872a",
+        "tile": "core.bunker",
+        "x": 1,
+        "y": -10,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_4klslfq0ca",
+        "tile": "core.ramp",
+        "x": 4,
+        "y": -10,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_wlcowlm88e",
+        "tile": "core.shop",
+        "x": 7,
+        "y": -10,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_p6p60ng3md",
+        "tile": "core.balcony",
+        "x": 10,
+        "y": -10,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_oesc6121g0",
+        "tile": "core.balcony_round",
+        "x": 12,
+        "y": -10,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_8q5b4m3fgj",
+        "tile": "core.bridge",
+        "x": 14,
+        "y": -10,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_avdsyxsfin",
+        "tile": "core.catwalk",
+        "x": 16,
+        "y": -10,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_7risnmxlyq",
+        "tile": "core.corner",
+        "x": -17,
+        "y": -7,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_889xwjfx2b",
+        "tile": "core.corridor",
+        "x": -15,
+        "y": -7,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_gukp8updjs",
+        "tile": "core.corridor_clear",
+        "x": -13,
+        "y": -7,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_os0xz7vpai",
+        "tile": "core.corridor_curve",
+        "x": -11,
+        "y": -7,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_4mpigjdslc",
+        "tile": "core.corridor_windows",
+        "x": -9,
+        "y": -7,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_k4vt3gh2fh",
+        "tile": "core.dead_end",
+        "x": -7,
+        "y": -7,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_u5n60cfnl2",
+        "tile": "core.drop",
+        "x": -5,
+        "y": -7,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_c97sjnmk8y",
+        "tile": "core.intersection",
+        "x": -3,
+        "y": -7,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_3kfi94dmt2",
+        "tile": "core.junction_t",
+        "x": -1,
+        "y": -7,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_cxj1eps95z",
+        "tile": "core.junction_x",
+        "x": 1,
+        "y": -7,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_i4v94u3jbs",
+        "tile": "core.pit",
+        "x": 3,
+        "y": -7,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_aw7pc6pc53",
+        "tile": "core.platform",
+        "x": 5,
+        "y": -7,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_uuk266byo3",
+        "tile": "core.platform_rail",
+        "x": 7,
+        "y": -7,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_gsj8slfutt",
+        "tile": "core.room",
+        "x": 9,
+        "y": -7,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:N": "wall",
+          "0,0,0:E": "door",
+          "0,0,0:S": "wide",
+          "0,0,0:W": "arch"
+        }
+      },
+      {
+        "id": "tile_l2zo3kyzgq",
+        "tile": "core.room_columns",
+        "x": 11,
+        "y": -7,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:N": "railing",
+          "0,0,0:E": "high",
+          "0,0,0:S": "tower",
+          "0,0,0:W": "fence"
+        }
+      },
+      {
+        "id": "tile_dc7uk575dq",
+        "tile": "core.room_cover",
+        "x": 13,
+        "y": -7,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:N": "broken",
+          "0,0,0:E": "bars",
+          "0,0,0:S": "shutter",
+          "0,0,0:W": "open"
+        }
+      },
+      {
+        "id": "tile_m67zlhqb8c",
+        "tile": "core.room_dais",
+        "x": 15,
+        "y": -7,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_m3ycx2qx0p",
+        "tile": "core.room_ledge",
+        "x": 17,
+        "y": -7,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_u9kgxvtlfm",
+        "tile": "core.room_pillar",
+        "x": -17,
+        "y": -5,
+        "z": 0,
+        "rotation": 0,
+        "glass": {
+          "0,0,0:N": "breakable",
+          "0,0,0:E": "reinforced"
+        },
+        "edges": {
+          "0,0,0:N": "window",
+          "0,0,0:E": "windows",
+          "0,0,0:S": "slit",
+          "0,0,0:W": "half"
+        }
+      },
+      {
+        "id": "tile_hdi2tdexbw",
+        "tile": "core.room_split",
+        "x": -15,
+        "y": -5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_306ilyfrw8",
+        "tile": "core.room_sunken",
+        "x": -13,
+        "y": -5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_7zjr1vb9b1",
+        "tile": "core.room_tall",
+        "x": -11,
+        "y": -5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_eaqugfy8bm",
+        "tile": "core.round_arcade_s",
+        "x": -9,
+        "y": -5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_9qy99zam1f",
+        "tile": "core.round_corner_s",
+        "x": -7,
+        "y": -5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_ivfvfo84yu",
+        "tile": "core.round_half_s",
+        "x": -5,
+        "y": -5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_mbvw1uimdv",
+        "tile": "core.stairs",
+        "x": -3,
+        "y": -5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_sj8puo8p5r",
+        "tile": "core.stairs_open",
+        "x": -1,
+        "y": -5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_3rv6xj68sl",
+        "tile": "core.stairwell",
+        "x": 1,
+        "y": -5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_6b6xgymzxg",
+        "tile": "core.street",
+        "x": 3,
+        "y": -5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_q3436d58mo",
+        "tile": "core.terrace",
+        "x": 5,
+        "y": -5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_4aohwl1228",
+        "tile": "core.tower",
+        "x": 7,
+        "y": -5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_y069d2nmbr",
+        "tile": "core.yard",
+        "x": 9,
+        "y": -5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_q8yrlelrjj",
+        "tile": "core.yard_crates",
+        "x": 11,
+        "y": -5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_r9ngddsx5f",
+        "tile": "core.yard_ruins",
+        "x": 13,
+        "y": -5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_qdbkzs9u4h",
+        "tile": "core.yard_wall",
+        "x": 15,
+        "y": -5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_0dcxcbe9mf",
+        "tile": "desert.market_street",
+        "x": 17,
+        "y": -5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_hxzbg7kqfv",
+        "tile": "frontier.mine_entrance",
+        "x": -17,
+        "y": -3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_c7apqn9tov",
+        "tile": "gothic.crypt",
+        "x": -15,
+        "y": -3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_wq3vtx1k42",
+        "tile": "harbor.pier",
+        "x": -13,
+        "y": -3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_nailum3gyv",
+        "tile": "imperial.arena_hatch",
+        "x": -11,
+        "y": -3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_cq5ixpgklg",
+        "tile": "jungle.temple_wall",
+        "x": -9,
+        "y": -3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_j75mgvr4ki",
+        "tile": "medieval.stream",
+        "x": -7,
+        "y": -3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_so0eo1if5d",
+        "tile": "military.pillbox",
+        "x": -5,
+        "y": -3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_9hda7mwprt",
+        "tile": "neon.shop_a",
+        "x": -3,
+        "y": -3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_vyc7mtoqv9",
+        "tile": "snow.fuel_depot",
+        "x": -1,
+        "y": -3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_3nf4w1z0xz",
+        "tile": "suburban.playground",
+        "x": 1,
+        "y": -3,
         "z": 0,
         "rotation": 0
       }
@@ -35,12 +703,89 @@
   },
   "entities": [
     {
-      "id": "spawn_1b7vb2ebxt",
+      "id": "spawn_c21s6extmy",
       "kind": "spawn",
       "position": [
+        -126,
         0,
+        -12
+      ],
+      "yaw": 0,
+      "faction": null
+    },
+    {
+      "id": "spawn_mv1hjyr2b3",
+      "kind": "spawn",
+      "position": [
+        -90,
         0,
-        0
+        -12
+      ],
+      "yaw": 0,
+      "faction": null
+    },
+    {
+      "id": "spawn_dy2f5b95fu",
+      "kind": "spawn",
+      "position": [
+        -54,
+        0,
+        -12
+      ],
+      "yaw": 0,
+      "faction": null
+    },
+    {
+      "id": "spawn_5hcaxh24b1",
+      "kind": "spawn",
+      "position": [
+        -18,
+        0,
+        -12
+      ],
+      "yaw": 0,
+      "faction": null
+    },
+    {
+      "id": "spawn_a1rh47sgre",
+      "kind": "spawn",
+      "position": [
+        18,
+        0,
+        -12
+      ],
+      "yaw": 0,
+      "faction": null
+    },
+    {
+      "id": "spawn_0nedjeg80l",
+      "kind": "spawn",
+      "position": [
+        54,
+        0,
+        -12
+      ],
+      "yaw": 0,
+      "faction": null
+    },
+    {
+      "id": "spawn_euwmkg2b33",
+      "kind": "spawn",
+      "position": [
+        90,
+        0,
+        -12
+      ],
+      "yaw": 0,
+      "faction": null
+    },
+    {
+      "id": "spawn_8ec2pni47t",
+      "kind": "spawn",
+      "position": [
+        126,
+        0,
+        -12
       ],
       "yaw": 0,
       "faction": null
@@ -9427,6 +10172,11 @@
       0,
       0,
       0,
+      -140,
+      -140,
+      -140,
+      -140,
+      -140,
       0,
       0,
       0,
@@ -9583,6 +10333,11 @@
       0,
       0,
       0,
+      -140,
+      -187,
+      -187,
+      -187,
+      -140,
       0,
       0,
       0,
@@ -9739,6 +10494,11 @@
       0,
       0,
       0,
+      -140,
+      -187,
+      -187,
+      -187,
+      -140,
       0,
       0,
       0,
@@ -9895,6 +10655,11 @@
       0,
       0,
       0,
+      -140,
+      -187,
+      -187,
+      -187,
+      -140,
       0,
       0,
       0,
@@ -10051,6 +10816,11 @@
       0,
       0,
       0,
+      -140,
+      -140,
+      -140,
+      -140,
+      -140,
       0,
       0,
       0,
@@ -10714,6 +11484,11 @@
       0,
       0,
       0,
+      -190,
+      -190,
+      -190,
+      -190,
+      -190,
       0,
       0,
       0,
@@ -10870,6 +11645,11 @@
       0,
       0,
       0,
+      -190,
+      -237,
+      -237,
+      -237,
+      -190,
       0,
       0,
       0,
@@ -11026,6 +11806,11 @@
       0,
       0,
       0,
+      -190,
+      -237,
+      -237,
+      -237,
+      -190,
       0,
       0,
       0,
@@ -11182,6 +11967,11 @@
       0,
       0,
       0,
+      -190,
+      -237,
+      -237,
+      -237,
+      -190,
       0,
       0,
       0,
@@ -11338,56 +12128,11 @@
       0,
       0,
       0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
+      -190,
+      -190,
+      -190,
+      -190,
+      -190,
       0,
       0,
       0,
@@ -51591,9 +52336,9 @@
     "foliage": []
   },
   "bounds": null,
-  "teamSetup": null,
   "backdrop": null,
-  "blood": null,
   "physics": null,
+  "blood": null,
+  "teamSetup": null,
   "dependencies": []
 }

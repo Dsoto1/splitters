@@ -28,12 +28,16 @@ permissions:
   contents: read
   actions: read
 
-# A newer commit makes the run for the older one pointless (the nightly run has its own group), except on main:
-# every main commit must finish and publish main-latest (a fast-forward followed seconds later by a notes-only
-# commit cancelled the release of 9a959ee, and the box stayed on an older build).
+# One run per branch: a new push to a check/ branch cancels the older run there (it is pointless now). Nothing else is
+# cancelled: every main commit must finish and publish main-latest (a fast-forward followed seconds later by a
+# notes-only commit cancelled the release of 9a959ee, and the box stayed on an older build), and nightly runs and
+# tags have their own groups.
+# Fail fast: the long steps (unit tests, e2e shards, perf) run under tools/ci/stop-on-failure.sh, which stops them as
+# soon as any other job of the run has failed; they fail too, so the run reads "failure" (not "cancelled") and
+# land/train refuse it as before.
 concurrency:
   group: ci-${{ github.event.pull_request.number || github.ref }}-${{ github.event_name == 'schedule' && 'nightly' || 'push' }}
-  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+  cancel-in-progress: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/heads/check/') }}
 
 jobs:
   plan:
@@ -290,9 +294,10 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - env:
           ARGS: ${{ matrix.job.args }}
+          GH_TOKEN: ${{ github.token }}
         run: |
           # shellcheck disable=SC2086 # vitest's arguments, one word each
-          pnpm exec vitest run $ARGS
+          tools/ci/stop-on-failure.sh pnpm exec vitest run $ARGS
 
   e2e:
     needs: [plan, build]
@@ -344,8 +349,9 @@ jobs:
           node -e "require('playwright').chromium.launch().then((b) => b.close())" && exit 0
           for i in 1 2 3; do timeout 300 pnpm exec playwright install-deps chromium && exit 0; echo "playwright install-deps try $i failed"; sleep 10; done; exit 1
         timeout-minutes: 17
-      - run: pnpm e2e
+      - run: tools/ci/stop-on-failure.sh pnpm e2e
         env:
+          GH_TOKEN: ${{ github.token }}
           E2E_ONLY: ${{ matrix.shard.flows }}
           # A change to a few maps: the 'maps' flow tours just those (empty: its whole part).
           E2E_MAPS: ${{ matrix.shard.maps }}
@@ -461,11 +467,15 @@ jobs:
           for i in 1 2 3; do timeout 300 pnpm exec playwright install-deps chromium && exit 0; echo "playwright install-deps try $i failed"; sleep 10; done; exit 1
         timeout-minutes: 17
       - if: matrix.check == 'budget'
-        run: pnpm perf:budget
+        run: tools/ci/stop-on-failure.sh pnpm perf:budget
+        env:
+          GH_TOKEN: ${{ github.token }}
       # Mass casualty (docs/PHYSICS_FX.md): one blast kills 20 in a 24 v 24; the worst frame's game JS after it and
       # the ragdoll bodies awake at once stay within budget (CPU rendering doesn't inflate the JS part).
       - if: matrix.check == 'mass'
-        run: pnpm perf:mass
+        run: tools/ci/stop-on-failure.sh pnpm perf:mass
+        env:
+          GH_TOKEN: ${{ github.token }}
 
   # Publishes the site package once everything this run needed is green (or the commit already went green on
   # a check branch: then that run's package, the very bytes it tested). Signs it with a Sigstore build-provenance
