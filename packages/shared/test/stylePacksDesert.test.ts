@@ -2,7 +2,7 @@ import { beforeAll, describe, expect, it } from 'vitest';
 import { readFileSync, readdirSync } from 'node:fs';
 import { MODEL_FACADES, PhysicsWorld, SCENARIO_PALETTE, STYLE_PACKS, blockBoxes, buildFacades, buildMapDecor, buildMapGeometry, coreCatalog, coreMaterials, coreThemes, getItem, getProp, getStylePack, initPhysics, liftLinks, loadMap, mapTerrainMesh, navLinks, newScenarioEntities, propBoxes, validateMap, type MapDocument, type Rotation } from '../src/index.ts';
 import { NavWorld, initNavigation, validateNavigation } from '../src/match.ts';
-import { makeMap } from './helpers.ts';
+import { makeMap, propManifest } from './helpers.ts';
 
 beforeAll(() => Promise.all([initPhysics(), initNavigation()]));
 
@@ -66,7 +66,7 @@ describe('Style Pack 09 Desert City (in Sands of Egypt\'s place)', () => {
   });
 
   it('our own props come from code, licence Owned; the hero stand-ins keep stable ids', () => {
-    const manifest = JSON.parse(read('content/props.json')) as { packs: Record<string, { license: string; url: string }>; props: { id: string; pack: string }[] };
+    const manifest = propManifest();
     expect(manifest.packs['tiletrigger-desert']).toMatchObject({ license: 'Owned', url: 'tools/content/prepare-desert.mjs' });
     const ours = manifest.props.filter((p) => p.id.startsWith('dc_'));
     expect(ours.length).toBeGreaterThanOrEqual(16);

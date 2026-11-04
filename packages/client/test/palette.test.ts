@@ -1,9 +1,9 @@
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { CORE_PROPS, SCENARIO_PALETTE } from '@tiletrigger/shared';
 import { matchScore, searchFields } from '../src/editor/paletteSearch.ts';
 import { PROP_GROUPS, atlasGroup, pictureKeys, propGroup, scenarioGroup } from '../src/editor/paletteCatalog.ts';
-import type { AtlasManifest } from '../src/editor/paletteAtlas.ts';
+import { atlasManifest, type AtlasIndex } from '../src/editor/paletteAtlas.ts';
 
 const rank = (query: string, names: [string, string?, string?][]) =>
   names
@@ -58,12 +58,19 @@ describe('palette organisation', () => {
     for (const e of SCENARIO_PALETTE) expect(scenarioGroup(e.key).group).toBeTruthy();
   });
 
-  it('has a picture in the prebuilt atlas for every shipped tile, prop and vehicle', () => {
-    const manifest = JSON.parse(readFileSync(new URL('../public/thumbs/palette.json', import.meta.url), 'utf8')) as AtlasManifest;
+  it('has a picture in the prebuilt atlas for every shipped tile, prop and vehicle, one atlas per content pack', () => {
+    const index = JSON.parse(readFileSync(new URL('../public/thumbs/palette.json', import.meta.url), 'utf8')) as AtlasIndex;
+    expect(index.version).toBe(2);
+    const manifest = atlasManifest(index);
+    // Each prop's content pack is the file it is listed in: content/props/<pack>.json.
+    const dir = new URL('../../../content/props/', import.meta.url);
+    const packOf = new Map<string, string>();
+    for (const f of readdirSync(dir)) for (const p of (JSON.parse(readFileSync(new URL(f, dir), 'utf8')) as { props: { id: string }[] }).props) packOf.set(`prop:prop.${p.id}`, f.slice(0, -5));
     const keys = pictureKeys().map((p) => p.key);
     expect(keys.length).toBeGreaterThan(1000);
     expect(keys.filter((k) => !manifest.items[k])).toEqual([]);
-    for (const k of keys) expect(manifest.items[k]![0]).toBe(atlasGroup(k));
-    expect(Object.keys(manifest.atlases).length).toBeLessThanOrEqual(12);
+    for (const k of keys) expect(manifest.items[k]![0]).toBe(atlasGroup(k, packOf.get(k)));
+    expect(manifest.items['tile:core.room']![0]).toBe('tiles-core');
+    expect(index.atlases[manifest.items['prop:prop.barrel']![0]]!.pack).toBe('Survival Kit (Kenney)');
   });
 });

@@ -91,7 +91,8 @@ const RULES = [
   [/^content\/(characters\/|characters\.lock\.json$)/, ['characters', 'designer', 'visual'], ['client', 'content', 'shared']],
   [/^content\/(clip-sets\/|clip-sets\.lock\.json$)/, ['characters', 'visual'], ['client', 'content', 'shared']],
   [/^content\/gear(\.lock)?\.json$/, ['characters', 'designer', 'visual'], ['shared']],
-  [/^content\/props(\.lock)?\.json$/, ['editor', 'scenery', 'setpieces', 'visual'], ['shared']],
+  // Props: one file per content pack (content/props/<pack>.json); the palette test reads them too.
+  [/^content\/(props\/|props(\.lock)?\.json$)/, ['editor', 'scenery', 'setpieces', 'visual'], ['client', 'shared']],
   // Guns: the arsenal, the grips on them (characters), mounted guns (vehicles).
   [/^content\/guns(\.lock)?\.json$/, ['arsenal', 'characters', 'vehicles'], ['shared']],
   [/^content\/vfx(\.lock)?\.json$/, ['physicsfx', 'arsenal'], ['client']],

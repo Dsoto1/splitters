@@ -38,7 +38,7 @@ import {
   raceTrack,
 } from '../src/index.ts';
 import { NavWorld, initNavigation, validateNavigation } from '../src/match.ts';
-import { makeMap } from './helpers.ts';
+import { makeMap, propManifest } from './helpers.ts';
 
 beforeAll(() => Promise.all([initPhysics(), initNavigation()]));
 
@@ -192,7 +192,7 @@ describe('Style Packs', () => {
 
   it('ships every pack prop and texture exactly as the lock files record (content:check)', () => {
     const props = JSON.parse(read('content/props.lock.json').toString()) as { files: { file: string; sha256: string; source: string }[] };
-    const manifest = JSON.parse(read('content/props.json').toString()) as { packs: Record<string, { license: string; licenseFile: string; download?: string }> };
+    const manifest = propManifest();
     const files = new Map(props.files.map((f) => [f.file, f]));
     for (const p of STYLE_PACKS) {
       for (const id of p.props) {

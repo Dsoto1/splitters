@@ -64,14 +64,16 @@ export function propGroup(def: Pick<PropDefinition, 'category'>): string {
 
 /**
  * The atlas a piece's picture is in, by palette key (`tile:<id>`, `prop:<id>`,
- * `mount:<id>`): one per tab or prop theme group, so opening a group loads one
- * image.
+ * `mount:<id>`): one per content source, so two branches adding different packs
+ * write different atlas files. Tiles go by their Style Pack (`tiles-<prefix>`:
+ * `tiles-core`, `tiles-desert`), props by the content pack they come from
+ * (`props-<pack>`, content/props/<pack>.json: the tools pass it, the client
+ * reads the atlas from thumbs/palette.json), vehicles and turrets share one.
  */
-export function atlasGroup(key: string): string {
-  if (key.startsWith('tile:')) return 'tiles';
+export function atlasGroup(key: string, propPack?: string): string {
+  if (key.startsWith('tile:')) return `tiles-${key.slice(5).split('.')[0]}`;
   if (key.startsWith('mount:')) return 'vehicles';
-  const def = CORE_PROPS.find((p) => `prop:${p.id}` === key);
-  return def ? propGroup(def) : 'other';
+  return propPack ? `props-${propPack}` : 'other';
 }
 
 /** Every shipped piece that has a model picture: tiles, props and vehicles/turrets, by palette key. */

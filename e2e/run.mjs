@@ -602,15 +602,16 @@ async function editoruxFlow(browser) {
   check((await page.getAttribute('#ed-tb-select', 'class')).includes('active') && (await page.textContent('#ed-toolhint')).includes('Select'), 'Select is the lit tool and the hint says what it does');
 
   check(parseFloat(await page.evaluate(() => getComputedStyle(document.getElementById('ed-palette')).width)) >= 300, 'the palette is wide (300 px or more)');
-  // Palette pictures come from the prebuilt atlases, one image per group, loaded as a group is shown.
+  // Palette pictures come from the prebuilt atlases, one image per content source (a Style Pack's tiles, a content
+  // pack's props), loaded as their pieces are shown.
   await page.waitForFunction(() => document.querySelector('#ed-tiles .thumb.atlas .spr'), null, { timeout: T(30000) }).catch(() => {});
   const tilePics = await page.evaluate(() => ({
     bg: getComputedStyle(document.querySelector('#ed-tiles .thumb.atlas .spr') ?? document.body).backgroundImage,
     loaded: [...window.__editor.paletteAtlas.loaded],
     rendered: window.__editor.thumbs.rendered,
   }));
-  check(/\/thumbs\/tiles\.[0-9a-f]+\.webp/.test(tilePics.bg), `tile cards show pictures from the tiles atlas (${tilePics.bg.slice(0, 80)})`);
-  check(!tilePics.loaded.includes('western') && !tilePics.loaded.includes('scifi') && tilePics.rendered === 0, `only the shown groups' atlases load, nothing is rendered at runtime (${tilePics.loaded.join(', ')}; ${tilePics.rendered} rendered)`);
+  check(/\/thumbs\/tiles-[a-z]+\.[0-9a-f]+\.webp/.test(tilePics.bg), `tile cards show pictures from a tiles atlas (${tilePics.bg.slice(0, 80)})`);
+  check(!tilePics.loaded.includes('props-lowpolyassets-wild-west') && !tilePics.loaded.includes('props-quaternius-modular-scifi-megakit') && tilePics.rendered === 0, `only the shown groups' atlases load, nothing is rendered at runtime (${tilePics.loaded.join(', ')}; ${tilePics.rendered} rendered)`);
   // A piece the atlas lacks (new or user content) falls back to the runtime renderer.
   await page.evaluate(async () => {
     const m = await window.__editor.paletteAtlas.manifest;
@@ -619,8 +620,8 @@ async function editoruxFlow(browser) {
   await clickTool(page, '[data-tool="prop:prop.crate_small"]');
   await page.waitForFunction(() => document.querySelector('[data-tool="prop:prop.barrel"] .thumb img')?.src.startsWith('data:image/png'), null, { timeout: T(30000) }).catch(() => {});
   const propPics = await page.evaluate(() => ({ barrel: !!document.querySelector('[data-tool="prop:prop.barrel"] .thumb img')?.src.startsWith('data:image/png'), crate: document.querySelector('[data-tool="prop:prop.crate_small"] .thumb')?.dataset.atlas, loaded: [...window.__editor.paletteAtlas.loaded] }));
-  check(propPics.barrel && propPics.crate === 'industrial', `a prop missing from the atlas is rendered at runtime, the rest come from its group's atlas (${JSON.stringify(propPics)})`);
-  check(!propPics.loaded.includes('western'), 'closed prop groups load nothing');
+  check(propPics.barrel && propPics.crate === 'props-kenney-survival-kit', `a prop missing from the atlas is rendered at runtime, the rest come from its pack's atlas (${JSON.stringify(propPics)})`);
+  check(!propPics.loaded.includes('props-lowpolyassets-wild-west'), 'closed prop groups load nothing');
 
   // Search: fuzzy over names, tags and packs, ranked across every tab; Enter picks the best match.
   await page.fill('#ed-search', 'sandbg');

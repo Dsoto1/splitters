@@ -11,7 +11,7 @@
 
 import { createHash } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
-import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { Document, NodeIO } from '@gltf-transform/core';
@@ -536,12 +536,15 @@ for (const f of existsSync(SHOTS_DIR) ? readdirSync(SHOTS_DIR) : []) if (!shotNa
 console.log(`checked ${shotNames.size} map pictures (${(shotBytes / 1024).toFixed(0)} KB)`);
 
 // MapMaker palette pictures (tools/content/build-palette-atlas.mjs): every shipped tile, prop and
-// vehicle/turret has a cell in an atlas, made from its current model or definition (same hash);
-// the atlases are WebP sprite sheets of the right size, within budget, and nothing else is there.
+// vehicle/turret has a cell in an atlas (one per Style Pack's tiles, per content pack's props, and
+// vehicles), made from its current model or definition (same hash); the atlases are WebP sprite sheets
+// of the right size, each and all within budget, the index too, and nothing else is there.
 const THUMBS_DIR = join(ROOT, 'packages/client/public/thumbs');
 const ATLAS_MAX_BYTES = 400 * 1024;
 const ATLAS_TOTAL_MAX_BYTES = 3 * 1024 * 1024;
-const ATLAS_FIX = 'run node tools/content/build-palette-atlas.mjs';
+/** The index MapMaker loads first (about 60 bytes a piece). */
+const ATLAS_INDEX_MAX_BYTES = 160 * 1024;
+const ATLAS_FIX = 'run pnpm content:rebuild';
 /** Width and height of a WebP (lossy, lossless or extended). */
 function webpSize(buf) {
   if (buf.toString('ascii', 0, 4) !== 'RIFF' || buf.toString('ascii', 8, 12) !== 'WEBP') return null;
@@ -558,24 +561,31 @@ const atlasManifestPath = join(THUMBS_DIR, 'palette.json');
 if (!existsSync(atlasManifestPath)) problems.push(`thumbs/palette.json: missing (${ATLAS_FIX})`);
 else {
   const atlas = JSON.parse(readFileSync(atlasManifestPath, 'utf8'));
+  if (atlas.version !== 2) problems.push(`thumbs/palette.json: version ${atlas.version}, not 2 (${ATLAS_FIX})`);
+  // The index: one entry per atlas with its pieces in cell order as [key, source hash].
+  const items = {};
+  for (const [group, a] of Object.entries(atlas.atlases ?? {})) (a.items ?? []).forEach(([key, hash], i) => (items[key] = [group, i, hash]));
   const pieces = JSON.parse(execFileSync(process.execPath, ['--experimental-transform-types', '--no-warnings', join(ROOT, 'tools/content/palette-items.ts')], { cwd: ROOT, maxBuffer: 64 << 20 }).toString());
   const missing = [];
   const stale = [];
   for (const p of pieces) {
-    const it = atlas.items[p.key];
+    const it = items[p.key];
     if (!it) missing.push(p.key);
     else if (it[2] !== p.hash || it[0] !== p.group) stale.push(p.key);
   }
   const list = (keys) => `${keys.slice(0, 8).join(', ')}${keys.length > 8 ? ` and ${keys.length - 8} more` : ''}`;
   if (missing.length) problems.push(`thumbs/palette.json: no palette picture for ${missing.length} shipped pieces: ${list(missing)} (${ATLAS_FIX})`);
-  if (stale.length) problems.push(`thumbs/palette.json: ${stale.length} palette pictures are out of date (model or tile changed): ${list(stale)} (${ATLAS_FIX})`);
+  if (stale.length) problems.push(`thumbs/palette.json: ${stale.length} palette pictures are out of date (model, tile or pack changed): ${list(stale)} (${ATLAS_FIX})`);
   const shipped = new Set(pieces.map((p) => p.key));
-  const extra = Object.keys(atlas.items).filter((k) => !shipped.has(k));
+  const extra = Object.keys(items).filter((k) => !shipped.has(k));
   if (extra.length) problems.push(`thumbs/palette.json: pictures of pieces that aren't shipped: ${list(extra)} (${ATLAS_FIX})`);
+  const names = Object.keys(atlas.atlases ?? {});
+  if (names.join('\n') !== [...names].sort().join('\n')) problems.push(`thumbs/palette.json: atlases not sorted by name (${ATLAS_FIX})`);
   let atlasBytes = 0;
   const files = new Set(['palette.json']);
-  for (const [group, a] of Object.entries(atlas.atlases)) {
+  for (const [group, a] of Object.entries(atlas.atlases ?? {})) {
     files.add(a.file);
+    if (!a.file.startsWith(`${group}.`)) problems.push(`thumbs/${a.file}: atlas ${group}'s file must be named ${group}.<hash>.webp`);
     const path = join(THUMBS_DIR, a.file);
     if (!existsSync(path)) {
       problems.push(`thumbs/${a.file}: missing (${ATLAS_FIX})`);
@@ -583,16 +593,19 @@ else {
     }
     const buf = readFileSync(path);
     atlasBytes += buf.length;
-    const count = Object.values(atlas.items).filter((it) => it[0] === group).length;
+    const count = a.items?.length ?? 0;
     const size = webpSize(buf);
-    if (count !== a.count || a.rows !== Math.ceil(count / atlas.cols)) problems.push(`thumbs/palette.json: atlas ${group} lists ${a.count} pieces in ${a.rows} rows, but ${count} pieces point at it`);
+    if (!count || a.rows !== Math.ceil(count / atlas.cols)) problems.push(`thumbs/palette.json: atlas ${group} lists ${count} pieces in ${a.rows} rows`);
+    if (a.bytes !== buf.length) problems.push(`thumbs/palette.json: atlas ${group} says ${a.bytes} bytes, its file has ${buf.length}`);
     if (!size || size.width !== atlas.cols * atlas.cell || size.height !== a.rows * atlas.cell) problems.push(`thumbs/${a.file}: must be a ${atlas.cols * atlas.cell}×${a.rows * atlas.cell} WebP`);
     if (buf.length > ATLAS_MAX_BYTES) problems.push(`thumbs/${a.file}: ${buf.length} bytes exceeds budget ${ATLAS_MAX_BYTES}`);
   }
   if (atlasBytes > ATLAS_TOTAL_MAX_BYTES) problems.push(`thumbs: atlases total ${atlasBytes} bytes, over budget ${ATLAS_TOTAL_MAX_BYTES}`);
+  const indexBytes = statSync(atlasManifestPath).size;
+  if (indexBytes > ATLAS_INDEX_MAX_BYTES) problems.push(`thumbs/palette.json: ${indexBytes} bytes, over budget ${ATLAS_INDEX_MAX_BYTES}`);
   if (atlas.cell > 128) problems.push(`thumbs/palette.json: ${atlas.cell} px cells are over 128 px`);
   for (const f of readdirSync(THUMBS_DIR)) if (!files.has(f)) problems.push(`thumbs/${f}: not part of the palette atlas (${ATLAS_FIX})`);
-  console.log(`checked ${pieces.length} palette pictures in ${Object.keys(atlas.atlases).length} atlases (${(atlasBytes / 1024).toFixed(0)} KB)`);
+  console.log(`checked ${pieces.length} palette pictures in ${names.length} atlases (${(atlasBytes / 1024).toFixed(0)} KB, index ${(indexBytes / 1024).toFixed(0)} KB)`);
 }
 
 // One asset a line, sorted by file: branches that add or rebuild different files change different lines.

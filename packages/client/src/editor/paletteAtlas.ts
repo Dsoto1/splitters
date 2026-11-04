@@ -3,19 +3,33 @@ import { versioned } from '../assetUrl.ts';
 /**
  * The palette's picture atlases (`public/thumbs/`, written by
  * tools/content/build-palette-atlas.mjs): every shipped tile, prop and
- * vehicle pre-rendered into a few sprite sheets, one per palette group, so
- * MapMaker shows pictures without rendering 3D thumbnails at runtime.
+ * vehicle pre-rendered into sprite sheets, one per content source (a Style
+ * Pack's tiles, a content pack's props, the vehicles), so MapMaker shows
+ * pictures without rendering 3D thumbnails at runtime.
  */
-export interface AtlasManifest {
-  version: 1;
+/** thumbs/palette.json as written: the index, one entry per atlas with its pieces in cell order. */
+export interface AtlasIndex {
+  version: 2;
   /** Cell size in pixels (square) and cells per row. */
   cell: number;
   cols: number;
-  atlases: Record<string, { file: string; count: number; rows: number; bytes: number }>;
-  /** Palette key (`tile:core.room`, `prop:prop.barrel`, `mount:tank`) → [atlas, cell index, source hash, pack index]. */
-  items: Record<string, [string, number, string, number?]>;
-  /** Pack names (the content pack each prop comes from), for search. */
-  packs: string[];
+  /** Atlas → its file, rows, bytes, the pack its props come from (for search) and its pieces as [palette key, source hash]. */
+  atlases: Record<string, { file: string; rows: number; bytes: number; pack?: string; items: [string, string][] }>;
+}
+
+/** The index as the palette uses it: each palette key (`tile:core.room`, `prop:prop.barrel`, `mount:tank`) → [atlas, cell index]. */
+export interface AtlasManifest {
+  cell: number;
+  cols: number;
+  atlases: AtlasIndex['atlases'];
+  items: Record<string, [string, number]>;
+}
+
+/** Look up pieces by key. */
+export function atlasManifest(index: AtlasIndex): AtlasManifest {
+  const items: AtlasManifest['items'] = {};
+  for (const [name, a] of Object.entries(index.atlases)) a.items.forEach(([key], i) => (items[key] = [name, i]));
+  return { cell: index.cell, cols: index.cols, atlases: index.atlases, items };
 }
 
 export const ATLAS_BASE = `${import.meta.env.BASE_URL}thumbs/`;
@@ -23,18 +37,21 @@ export const ATLAS_BASE = `${import.meta.env.BASE_URL}thumbs/`;
 export class PaletteAtlas {
   readonly manifest: Promise<AtlasManifest | null>;
   private readonly images = new Map<string, Promise<string | null>>();
-  /** Atlas groups requested so far (each loads once, the first time one of its pictures is shown). */
+  /** Atlases requested so far (each loads once, the first time one of its pictures is shown). */
   readonly loaded = new Set<string>();
 
-  constructor(fetchManifest: () => Promise<AtlasManifest | null> = () => fetch(versioned(`${ATLAS_BASE}palette.json`)).then((r) => (r.ok ? (r.json() as Promise<AtlasManifest>) : null))) {
+  constructor(
+    fetchManifest: () => Promise<AtlasManifest | null> = () =>
+      fetch(versioned(`${ATLAS_BASE}palette.json`)).then((r) => (r.ok ? (r.json() as Promise<AtlasIndex>).then(atlasManifest) : null)),
+  ) {
     this.manifest = fetchManifest().catch(() => null);
   }
 
   /** The pack a piece comes from, if the atlas knows it. */
   async pack(key: string): Promise<string | undefined> {
     const m = await this.manifest;
-    const p = m?.items[key]?.[3];
-    return p === undefined ? undefined : m!.packs[p];
+    const item = m?.items[key];
+    return item && m.atlases[item[0]]?.pack;
   }
 
   /** Paint the piece's picture into `slot` as a sprite from its atlas; false when the atlas hasn't got it. */

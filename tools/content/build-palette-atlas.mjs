@@ -1,19 +1,26 @@
 // Builds MapMaker's palette picture atlases: every shipped tile, prop and vehicle/turret, rendered
 // from its real model by the game's own thumbnail renderer (frontend/modelThumbs.ts, through
-// EditorApp.thumbFor), shrunk to small cells and packed into one WebP sprite sheet per palette group
-// (editor/paletteCatalog.ts: tiles, vehicles, nature and the prop theme groups):
-//   packages/client/public/thumbs/<group>.<hash>.webp   16 cells a row, transparent background
-//   packages/client/public/thumbs/palette.json          key → [atlas, cell, source hash, pack]
+// EditorApp.thumbFor), shrunk to small cells and packed into WebP sprite sheets, one per content
+// source (editor/paletteCatalog.ts atlasGroup: `tiles-<style pack>`, `props-<content pack>`,
+// `vehicles`), so two branches adding different packs write different files:
+//   packages/client/public/thumbs/<atlas>.<hash>.webp   16 cells a row, transparent background
+//   packages/client/public/thumbs/palette.json          the index: one line per atlas, sorted, with its
+//                                                       file, rows, bytes, pack name (props, for search)
+//                                                       and its pieces in cell order as [key, source hash]
 // MapMaker loads an atlas the first time one of its pictures scrolls into view, and renders a
 // picture at runtime only for a piece the atlas lacks. content:check fails when a shipped piece is
 // missing or its model/definition changed since (the hash), so re-run this after adding or
-// changing tiles, props or vehicles. Pieces whose hash is unchanged keep their cells; groups with
-// no change keep their file as it is.
+// changing tiles, props or vehicles. A piece whose hash is unchanged keeps its picture (taken from
+// whichever atlas held it, an older index format, or either side of a merge conflict in the index);
+// atlases with no change keep their file as it is.
 //
 // Run against a built client being served (pnpm build, then vite preview):
 //   pnpm --filter @tiletrigger/client exec vite preview --port 4799
 //   node tools/content/build-palette-atlas.mjs http://localhost:4799 [--all]
 // --all re-renders everything; ATLAS_JOBS=2 renders in two pages at once.
+//   node tools/content/build-palette-atlas.mjs --offline
+// renders nothing: rewrites the atlases from the pictures already made, or exits with code 3 (and
+// lists them) when some piece needs rendering (pnpm content:rebuild then builds and serves the client).
 import { createHash } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
 import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
@@ -21,6 +28,7 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright';
 import sharp from 'sharp';
+import { loadPropManifest } from './props-manifest.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const OUT = join(ROOT, 'packages/client/public/thumbs');
@@ -31,6 +39,7 @@ const RENDER = 160;
 const COLS = 16;
 const base = process.argv.slice(2).find((a) => !a.startsWith('--')) ?? 'http://localhost:4799';
 const all = process.argv.includes('--all');
+const offline = process.argv.includes('--offline');
 const JOBS = Number(process.env.ATLAS_JOBS ?? 1);
 /** Pages are recycled after this many renders (each model stays loaded in the page). */
 const PER_PAGE = 200;
@@ -41,19 +50,41 @@ function paletteItems() {
 }
 
 const items = paletteItems();
-const old = existsSync(MANIFEST) ? JSON.parse(readFileSync(MANIFEST, 'utf8')) : null;
+const CONFLICT = /^(<{7}|={7}|>{7}|\|{7})( |$)/;
 
-// Pack names for search: the content pack each prop comes from.
-const propsJson = JSON.parse(readFileSync(join(ROOT, 'content/props.json'), 'utf8'));
-const packNames = [];
-const packOf = new Map();
-for (const p of propsJson.props) {
-  const pack = propsJson.packs[p.pack];
-  if (!pack) continue;
-  const name = `${pack.title.replace(/^FREE - /, '')} (${pack.creator})`;
-  if (!packNames.includes(name)) packNames.push(name);
-  packOf.set(`prop:prop.${p.id}`, packNames.indexOf(name));
+/**
+ * The atlases of the index on disk, as [{ name, file, cell, cols, items: [[key, hash], ...] }] (cell
+ * order). Reads the per-atlas index (version 2), the older one-index-for-all format (version 1), and
+ * an index git left with conflict markers (every atlas line of both sides: their files are both there,
+ * as the hash in a file's name keeps them apart).
+ */
+function oldAtlases() {
+  if (!existsSync(MANIFEST)) return [];
+  const text = readFileSync(MANIFEST, 'utf8');
+  if (text.split('\n').some((l) => CONFLICT.test(l))) {
+    const list = [];
+    for (const line of text.split('\n')) {
+      const m = /^\s*("[^"]+"): (\{"file".*\}),?$/.exec(line);
+      if (m) list.push({ name: JSON.parse(m[1]), cell: CELL, cols: COLS, ...JSON.parse(m[2]), conflicted: true });
+    }
+    return list;
+  }
+  const m = JSON.parse(text);
+  if (m.version === 2) return Object.entries(m.atlases).map(([name, a]) => ({ name, cell: m.cell, cols: m.cols, ...a }));
+  // Version 1: items { key: [atlas, cell, hash, pack] }.
+  return Object.entries(m.atlases).map(([name, a]) => {
+    const cells = Object.entries(m.items).filter(([, it]) => it[0] === name).sort((x, y) => x[1][1] - y[1][1]);
+    return { name, file: a.file, cell: m.cell, cols: m.cols, items: cells.map(([key, it]) => [key, it[2]]) };
+  });
 }
+const old = oldAtlases();
+
+// Pack names for search: the content pack each prop atlas holds.
+const propManifest = loadPropManifest();
+const packName = (id) => {
+  const pack = propManifest.packs[id];
+  return pack ? `${pack.title.replace(/^FREE - /, '')} (${pack.creator})` : undefined;
+};
 
 const groups = new Map();
 for (const it of items) {
@@ -61,39 +92,40 @@ for (const it of items) {
   groups.get(it.group).push(it);
 }
 
-/** A group whose pieces, order and hashes are all as before keeps its file. */
-function unchanged(group, list) {
-  const a = old?.atlases?.[group];
-  if (all || !a || a.count !== list.length || !existsSync(join(OUT, a.file))) return false;
-  return list.every((it, i) => {
-    const o = old.items[it.key];
-    return o && o[0] === group && o[1] === i && o[2] === it.hash;
-  });
+/** The old atlas a group keeps as it is: same pieces, order and hashes, file still there (null: write it afresh). */
+function kept(group, list) {
+  if (all) return null;
+  return (
+    old.find(
+      (a) => a.name === group && a.items.length === list.length && existsSync(join(OUT, a.file)) && list.every((it, i) => a.items[i][0] === it.key && a.items[i][1] === it.hash),
+    ) ?? null
+  );
 }
 
-/** Cells (raw RGBA) of an old atlas, for pieces whose hash hasn't changed. */
-async function oldCells(group) {
-  const a = old?.atlases?.[group];
-  if (all || !a || !existsSync(join(OUT, a.file))) return new Map();
-  const { data, info } = await sharp(join(OUT, a.file)).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+/** Cells (raw RGBA) of every old atlas, by `key@hash`, for pieces whose hash hasn't changed (whichever atlas held them). */
+async function oldCells() {
   const cells = new Map();
-  for (const [key, o] of Object.entries(old.items)) {
-    if (o[0] !== group) continue;
-    const cell = Buffer.alloc(CELL * CELL * 4);
-    const x0 = (o[1] % old.cols) * old.cell;
-    const y0 = Math.floor(o[1] / old.cols) * old.cell;
-    if (old.cell !== CELL) continue;
-    for (let y = 0; y < CELL; y++) data.copy(cell, y * CELL * 4, ((y0 + y) * info.width + x0) * 4, ((y0 + y) * info.width + x0 + CELL) * 4);
-    cells.set(`${key}@${o[2]}`, cell);
+  if (all) return cells;
+  for (const a of old) {
+    if (a.cell !== CELL || !existsSync(join(OUT, a.file))) continue;
+    const { data, info } = await sharp(join(OUT, a.file)).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+    a.items.forEach(([key, hash], i) => {
+      if (cells.has(`${key}@${hash}`)) return;
+      const cell = Buffer.alloc(CELL * CELL * 4);
+      const x0 = (i % a.cols) * CELL;
+      const y0 = Math.floor(i / a.cols) * CELL;
+      for (let y = 0; y < CELL; y++) data.copy(cell, y * CELL * 4, ((y0 + y) * info.width + x0) * 4, ((y0 + y) * info.width + x0 + CELL) * 4);
+      cells.set(`${key}@${hash}`, cell);
+    });
   }
   return cells;
 }
 
 const cells = new Map();
 const todo = [];
+const reuse = [...groups].every(([g, list]) => kept(g, list)) ? new Map() : await oldCells();
 for (const [group, list] of groups) {
-  if (unchanged(group, list)) continue;
-  const reuse = await oldCells(group);
+  if (kept(group, list)) continue;
   for (const it of list) {
     const c = reuse.get(`${it.key}@${it.hash}`);
     if (c) cells.set(it.key, c);
@@ -101,6 +133,10 @@ for (const [group, list] of groups) {
   }
 }
 
+if (offline && todo.length) {
+  console.error(`${todo.length} palette pictures need rendering: ${todo.slice(0, 8).map((it) => it.key).join(', ')}${todo.length > 8 ? ` and ${todo.length - 8} more` : ''}`);
+  process.exit(3);
+}
 console.log(`${items.length} pieces in ${groups.size} groups; rendering ${todo.length}`);
 const failed = [];
 if (todo.length) {
@@ -137,13 +173,14 @@ if (todo.length) {
 }
 
 mkdirSync(OUT, { recursive: true });
-const manifest = { version: 1, cell: CELL, cols: COLS, atlases: {}, items: {}, packs: packNames };
+const atlases = {};
 let total = 0;
-for (const [group, list] of groups) {
+for (const [group, list] of [...groups].sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))) {
   let file;
   let bytes;
-  if (unchanged(group, list)) {
-    file = old.atlases[group].file;
+  const keep = kept(group, list);
+  if (keep) {
+    file = keep.file;
     bytes = readFileSync(join(OUT, file)).length;
   } else {
     const present = list.filter((it) => cells.has(it.key));
@@ -157,20 +194,22 @@ for (const [group, list] of groups) {
     writeFileSync(join(OUT, file), buf);
     list.splice(0, list.length, ...present);
   }
-  list.forEach((it, i) => {
-    const entry = [group, i, it.hash];
-    if (packOf.has(it.key)) entry.push(packOf.get(it.key));
-    manifest.items[it.key] = entry;
-  });
-  manifest.atlases[group] = { file, count: list.length, rows: Math.ceil(list.length / COLS), bytes };
+  const pack = group.startsWith('props-') ? packName(group.slice(6)) : undefined;
+  atlases[group] = { file, rows: Math.ceil(list.length / COLS), bytes, ...(pack ? { pack } : {}), items: list.map((it) => [it.key, it.hash]) };
   total += bytes;
-  console.log(`${group.padEnd(12)} ${String(list.length).padStart(4)} pieces  ${COLS * CELL}×${Math.ceil(list.length / COLS) * CELL}  ${(bytes / 1024).toFixed(0).padStart(4)} KB  ${file}`);
+  console.log(`${group.padEnd(44)} ${String(list.length).padStart(4)} pieces  ${COLS * CELL}×${Math.ceil(list.length / COLS) * CELL}  ${(bytes / 1024).toFixed(0).padStart(4)} KB  ${file}`);
 }
-const keep = new Set(Object.values(manifest.atlases).map((a) => a.file));
-for (const f of readdirSync(OUT)) if (f.endsWith('.webp') && !keep.has(f)) rmSync(join(OUT, f));
-writeFileSync(MANIFEST, `${JSON.stringify(manifest)}\n`);
-console.log(`total ${(total / 1024).toFixed(0)} KB in ${groups.size} atlases; manifest ${(readFileSync(MANIFEST).length / 1024).toFixed(0)} KB`);
+const keepFiles = new Set(Object.values(atlases).map((a) => a.file));
+for (const f of readdirSync(OUT)) if (f.endsWith('.webp') && !keepFiles.has(f)) rmSync(join(OUT, f));
+writeFileSync(MANIFEST, formatIndex({ version: 2, cell: CELL, cols: COLS, atlases }));
+console.log(`total ${(total / 1024).toFixed(0)} KB in ${groups.size} atlases; index ${(readFileSync(MANIFEST).length / 1024).toFixed(0)} KB`);
 if (failed.length) {
   console.error(`${failed.length} pieces failed to render: ${failed.join(', ')}`);
   process.exit(1);
+}
+
+/** The index's text: one line per atlas (sorted), so branches that change different atlases change different lines. */
+function formatIndex(m) {
+  const lines = Object.entries(m.atlases).map(([name, a]) => `    ${JSON.stringify(name)}: ${JSON.stringify(a)}`);
+  return `{\n  "version": ${m.version},\n  "cell": ${m.cell},\n  "cols": ${m.cols},\n  "atlases": {\n${lines.join(',\n')}\n  }\n}\n`;
 }

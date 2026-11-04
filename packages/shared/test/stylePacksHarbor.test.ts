@@ -3,7 +3,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { MODEL_FACADES, PhysicsWorld, SCENARIO_PALETTE, blockBoxes, buildFacades, buildMapDecor, buildMapGeometry, coreCatalog, coreThemes, getItem, getProp, getStylePack, initPhysics, liftLinks, loadMap, mapLiquids, mapTerrainMesh, navLinks, newScenarioEntities, propBoxes, validateMap, type MapDocument, type Rotation } from '../src/index.ts';
 import { NavWorld, initNavigation, validateNavigation } from '../src/match.ts';
 import { HARBOR_BED, HARBOR_SEA } from '../src/map/packTilesHarbor.ts';
-import { makeMap } from './helpers.ts';
+import { makeMap, propManifest } from './helpers.ts';
 
 beforeAll(() => Promise.all([initPhysics(), initNavigation()]));
 
@@ -29,7 +29,7 @@ describe('Style Pack 11 Coastal Harbor', () => {
   });
 
   it('our own props come from code, licence Owned; the boat stand-in keeps its stable id', () => {
-    const manifest = JSON.parse(read('content/props.json')) as { packs: Record<string, { license: string; url: string }>; props: { id: string; pack: string }[] };
+    const manifest = propManifest();
     expect(manifest.packs['tiletrigger-harbor']).toMatchObject({ license: 'Owned', url: 'tools/content/prepare-harbor.mjs' });
     const ours = manifest.props.filter((p) => p.id.startsWith('hb_'));
     expect(ours.length).toBeGreaterThanOrEqual(16);

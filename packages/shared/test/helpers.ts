@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { MAP_FORMAT_VERSION, loadMap, type MapDocument } from '../src/index.ts';
 
@@ -38,4 +38,26 @@ export function makeMap(tiles: MapDocument['classicStructure']['tiles'], spawns:
     physics: null,
     dependencies: [],
   };
+}
+
+/** A prop as content/props/<pack>.json lists it, with its pack (the file it is in). */
+export interface PropEntry {
+  id: string;
+  pack: string;
+  category: string;
+  [field: string]: unknown;
+}
+
+/** The prop packs and props of content/props/<pack>.json (tools/content/props-manifest.mjs reads them for the tools). */
+export function propManifest(): { packs: Record<string, { title: string; creator: string; license: string; licenseFile: string; url: string; download?: string }>; props: PropEntry[] } {
+  const dir = new URL('../../../content/props/', import.meta.url);
+  const packs: ReturnType<typeof propManifest>['packs'] = {};
+  const props: PropEntry[] = [];
+  for (const f of readdirSync(dir).filter((n) => n.endsWith('.json')).sort()) {
+    const data = JSON.parse(readFileSync(new URL(f, dir), 'utf8')) as { pack: ReturnType<typeof propManifest>['packs'][string]; props: Omit<PropEntry, 'pack'>[] };
+    const pack = f.slice(0, -5);
+    packs[pack] = data.pack;
+    for (const p of data.props) props.push({ ...p, pack } as PropEntry);
+  }
+  return { packs, props };
 }

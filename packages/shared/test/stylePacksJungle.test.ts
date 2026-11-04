@@ -2,7 +2,7 @@ import { beforeAll, describe, expect, it } from 'vitest';
 import { readFileSync, readdirSync } from 'node:fs';
 import { PhysicsWorld, SCENARIO_PALETTE, blockBoxes, buildMapDecor, buildMapGeometry, coreCatalog, coreMaterials, coreThemes, getItem, getProp, getStylePack, initPhysics, liftLinks, loadMap, mapTerrainMesh, navLinks, propBoxes, validateMap, type MapDocument, type Rotation } from '../src/index.ts';
 import { NavWorld, initNavigation, validateNavigation } from '../src/match.ts';
-import { makeMap } from './helpers.ts';
+import { makeMap, propManifest } from './helpers.ts';
 
 beforeAll(() => Promise.all([initPhysics(), initNavigation()]));
 
@@ -45,7 +45,7 @@ describe('Style Pack 06 Jungle Ruins (refreshed, Ancient Temple folded in)', () 
   });
 
   it('our own new props come from code, licence Owned; the hero stand-ins keep stable ids', () => {
-    const manifest = JSON.parse(read('content/props.json')) as { packs: Record<string, { license: string; url: string }>; props: { id: string; pack: string; category: string }[] };
+    const manifest = propManifest();
     expect(manifest.packs['tiletrigger-jungle']).toMatchObject({ license: 'Owned', url: 'tools/content/prepare-jungle.mjs' });
     const ours = manifest.props.filter((p) => p.id.startsWith('jt_'));
     expect(ours.length).toBeGreaterThanOrEqual(18);
