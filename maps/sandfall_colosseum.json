@@ -1,13 +1,13 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 20,
+  "formatVersion": 25,
   "metadata": {
     "id": "sandfall_colosseum",
     "name": "Sandfall Colosseum",
     "author": "Tile Trigger",
     "description": "A Roman arena (Style Pack 03: Imperial Arena). Fight on the sand between spike traps and fire jets, ride the lift cages up from the hypogeum through hatches in the floor, and watch for the beast lift the emperor sends up through a trapdoor from his box. The main gate is a portcullis worked from a winch; the side gates rise as you come. Outer arcades with stairs up to the seating ring the arena; east lies a forum with a temple and a triumphal arch, west an aqueduct. A portal links the hypogeum's west tunnel to the forum, until the emperor seals it.",
     "createdAt": "2026-10-23T00:00:00.000Z",
-    "updatedAt": "2026-10-23T00:00:00.000Z",
+    "updatedAt": "2026-11-04T00:58:15.320Z",
     "parentId": null,
     "recommendedPlayers": {
       "min": 4,
@@ -3733,6 +3733,412 @@
       "kind": "flag",
       "yaw": -1.5707963267948966,
       "team": "tide"
+    },
+    {
+      "id": "prop_dmxokrxrmg",
+      "kind": "prop",
+      "position": [
+        -36,
+        0,
+        -4
+      ],
+      "model": "prop.im_training_post",
+      "yaw": 1.571,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_jo92buckom",
+      "kind": "prop",
+      "position": [
+        -36,
+        0,
+        2
+      ],
+      "model": "prop.im_training_post",
+      "yaw": 1.571,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_1b7vb2ebxt",
+      "kind": "prop",
+      "position": [
+        -36,
+        0,
+        8
+      ],
+      "model": "prop.im_training_post",
+      "yaw": 1.571,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_ddrdoryh7l",
+      "kind": "prop",
+      "position": [
+        -39,
+        0,
+        14
+      ],
+      "model": "prop.im_weapon_rack",
+      "yaw": 1.571,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_w42hr4qujz",
+      "kind": "prop",
+      "position": [
+        -30,
+        0,
+        22
+      ],
+      "model": "prop.im_stakes",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_6ctcqgmocs",
+      "kind": "prop",
+      "position": [
+        -34,
+        0,
+        28
+      ],
+      "model": "prop.sv_tent",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_6ac1tuagd0",
+      "kind": "prop",
+      "position": [
+        -34,
+        0,
+        -24
+      ],
+      "model": "prop.sv_tent",
+      "yaw": 3.142,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_zpwk35dqcp",
+      "kind": "prop",
+      "position": [
+        -30,
+        0,
+        -12
+      ],
+      "model": "prop.im_bench",
+      "yaw": 1.571,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_5ts8ky0uqr",
+      "kind": "prop",
+      "position": [
+        -36,
+        0,
+        -14
+      ],
+      "model": "prop.lion_head_fountain",
+      "yaw": 1.571,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_t7qf6k4zjn",
+      "kind": "prop",
+      "position": [
+        90,
+        0,
+        -4
+      ],
+      "model": "prop.rustic_market_stall",
+      "yaw": -1.571,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_2jqidvnp6y",
+      "kind": "prop",
+      "position": [
+        90,
+        0,
+        22
+      ],
+      "model": "prop.mv_market_stall",
+      "yaw": -1.571,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_05ldagivf5",
+      "kind": "prop",
+      "position": [
+        92,
+        0,
+        9
+      ],
+      "model": "prop.eagle_fountain",
+      "yaw": -1.571,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_mfl0mwrrnn",
+      "kind": "prop",
+      "position": [
+        88,
+        0,
+        30
+      ],
+      "model": "prop.im_amphorae",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_x0rc1yotvd",
+      "kind": "prop",
+      "position": [
+        -4,
+        0,
+        44
+      ],
+      "model": "prop.nt_pine_tall",
+      "yaw": 0,
+      "scale": 1.1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_ypl82jhglz",
+      "kind": "prop",
+      "position": [
+        -4,
+        0,
+        -28
+      ],
+      "model": "prop.nt_pine_tall",
+      "yaw": 0,
+      "scale": 1.1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_7nlyaxevjz",
+      "kind": "prop",
+      "position": [
+        8,
+        0,
+        44
+      ],
+      "model": "prop.nt_pine_tall",
+      "yaw": 0,
+      "scale": 1.1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_amleo2l0kj",
+      "kind": "prop",
+      "position": [
+        8,
+        0,
+        -28
+      ],
+      "model": "prop.nt_pine_tall",
+      "yaw": 0,
+      "scale": 1.1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_w9sdjfv9q9",
+      "kind": "prop",
+      "position": [
+        24,
+        0,
+        44
+      ],
+      "model": "prop.nt_pine_tall",
+      "yaw": 0,
+      "scale": 1.1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_odkmv3mx3b",
+      "kind": "prop",
+      "position": [
+        24,
+        0,
+        -28
+      ],
+      "model": "prop.nt_pine_tall",
+      "yaw": 0,
+      "scale": 1.1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_x9abza46ly",
+      "kind": "prop",
+      "position": [
+        36,
+        0,
+        44
+      ],
+      "model": "prop.nt_pine_tall",
+      "yaw": 0,
+      "scale": 1.1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_e2hxfyh75y",
+      "kind": "prop",
+      "position": [
+        36,
+        0,
+        -28
+      ],
+      "model": "prop.nt_pine_tall",
+      "yaw": 0,
+      "scale": 1.1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_q1y59c4csi",
+      "kind": "prop",
+      "position": [
+        2,
+        0,
+        44
+      ],
+      "model": "prop.im_bust",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_gp7msgjmhm",
+      "kind": "prop",
+      "position": [
+        2,
+        0,
+        -28
+      ],
+      "model": "prop.im_bust",
+      "yaw": 3.142,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_26cjl0x171",
+      "kind": "prop",
+      "position": [
+        30,
+        0,
+        44
+      ],
+      "model": "prop.im_bust",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_epqtnvm8q3",
+      "kind": "prop",
+      "position": [
+        30,
+        0,
+        -28
+      ],
+      "model": "prop.im_bust",
+      "yaw": 3.142,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_xo4odrco3m",
+      "kind": "prop",
+      "position": [
+        4,
+        0,
+        14
+      ],
+      "model": "prop.rn_column_broken",
+      "yaw": 0.349,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_kkfpi0eazr",
+      "kind": "prop",
+      "position": [
+        28,
+        0,
+        2
+      ],
+      "model": "prop.rn_column_broken",
+      "yaw": -2.793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_y07fpt0nwn",
+      "kind": "prop",
+      "position": [
+        12,
+        0,
+        1
+      ],
+      "model": "prop.rn_column_broken",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_0af7pnzsw8",
+      "kind": "prop",
+      "position": [
+        20,
+        0,
+        15
+      ],
+      "model": "prop.rn_column_broken",
+      "yaw": 3.142,
+      "scale": 1,
+      "solid": true,
+      "tint": null
     }
   ],
   "factions": [],
@@ -3964,12 +4370,11 @@
     "style": "invisible",
     "height": 8
   },
-  "track": null,
   "backdrop": {
     "sky": "clear",
     "scenery": "hills",
     "ground": "dirt",
-    "haze": 0.4,
+    "haze": 0.5,
     "border": "cliffs"
   },
   "physics": null,
