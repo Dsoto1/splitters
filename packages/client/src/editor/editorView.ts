@@ -7,6 +7,7 @@ import { Color3, Color4 } from '@babylonjs/core/Maths/math.color';
 import { HemisphericLight } from '@babylonjs/core/Lights/hemisphericLight';
 import { DirectionalLight } from '@babylonjs/core/Lights/directionalLight';
 import { Mesh } from '@babylonjs/core/Meshes/mesh';
+import { VertexData } from '@babylonjs/core/Meshes/mesh.vertexData';
 // Side-effect import: registers scene.createPickingRay.
 import { Ray } from '@babylonjs/core/Culling/ray';
 import { CreateBox } from '@babylonjs/core/Meshes/Builders/boxBuilder';
@@ -380,6 +381,42 @@ export class EditorView {
     this.grid?.setEnabled(on);
   }
 
+  private overlaps?: Mesh;
+
+  /**
+   * Top bar Overlaps: highlight coplanar overlaps (faces of two pieces in the same plane, where only
+   * one look draws) in magenta, lifted a little off the face and drawn over everything. Null hides it.
+   */
+  setOverlaps(spots: readonly { corners: readonly (readonly number[])[]; normal: readonly number[] }[] | null): void {
+    this.overlaps?.dispose();
+    this.overlaps = undefined;
+    if (!spots) return;
+    const positions: number[] = [];
+    const indices: number[] = [];
+    for (const s of spots) {
+      const base = positions.length / 3;
+      for (const c of s.corners) positions.push(c[0]! + s.normal[0]! * 0.02, c[1]! + s.normal[1]! * 0.02, c[2]! + s.normal[2]! * 0.02);
+      for (let k = 1; k < s.corners.length - 1; k++) indices.push(base, base + k, base + k + 1);
+    }
+    const mesh = new Mesh('edOverlaps', this.scene);
+    const vd = new VertexData();
+    vd.positions = positions;
+    vd.indices = indices;
+    vd.applyToMesh(mesh);
+    const mat = new StandardMaterial('edOverlapsMat', this.scene);
+    mat.diffuseColor = Color3.Black();
+    mat.emissiveColor = Color3.FromHexString('#ff2bd6');
+    mat.specularColor = Color3.Black();
+    mat.disableLighting = true;
+    mat.backFaceCulling = false;
+    mat.alpha = 0.6;
+    mesh.material = mat;
+    // Over the level, so a spot behind a wall still shows where it is.
+    mesh.renderingGroupId = 1;
+    mesh.isPickable = false;
+    this.overlaps = mesh;
+  }
+
   /** What photoMode hid, to bring back. */
   private photoHidden: TransformNode[] = [];
 
@@ -392,7 +429,7 @@ export class EditorView {
     for (const n of this.photoHidden) n.setEnabled(true);
     this.photoHidden = [];
     if (!on) return;
-    const aids: (TransformNode | undefined)[] = [this.trace?.mesh, this.grid, this.brushRing, this.gizmo, this.hover, this.ghost, this.faceHighlight, this.propGhost?.node, ...this.outlines, ...this.pickBoxes];
+    const aids: (TransformNode | undefined)[] = [this.trace?.mesh, this.grid, this.overlaps, this.brushRing, this.gizmo, this.hover, this.ghost, this.faceHighlight, this.propGhost?.node, ...this.outlines, ...this.pickBoxes];
     for (const m of this.markers.values()) aids.push(m.ring, m.key === 'spawn' ? m.node : undefined);
     for (const n of aids) {
       if (!n || !n.isEnabled(false)) continue;

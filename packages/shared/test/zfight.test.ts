@@ -2,7 +2,8 @@
 // same plane, and the audit over every map in maps/ (coplanar overlaps left: none).
 import { readdirSync, readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { SLIVER, axisFaces, boxQuat, buildMapDecor, buildMapGeometry, coplanarOverlaps, loadMap, quatRotate, visibleFaces, type RenderFace, type WorldBox } from '../src/index.ts';
+import { SLIVER, axisFaces, boxQuat, buildMapDecor, buildMapGeometry, coplanarIssues, coplanarOverlaps, coplanarSpots, loadMap, quatRotate, visibleFaces, type MapEntity, type RenderFace, type WorldBox } from '../src/index.ts';
+import { makeMap } from './helpers.ts';
 
 const MAPS = new URL('../../../maps/', import.meta.url);
 const ids = readdirSync(MAPS)
@@ -198,5 +199,30 @@ describe('z-fighting audit over maps/', () => {
       left.slice(0, 5).map((o) => `${boxes[o.a]!.kind} ${boxes[o.a]!.sourceId} / ${boxes[o.b]!.kind} ${boxes[o.b]!.sourceId} at ${o.center.map((v) => v.toFixed(2))} (${o.area.toFixed(3)} m²)`),
       `${left.length} coplanar overlaps (thinner than ${SLIVER} m don't count)`,
     ).toEqual([]);
+  });
+});
+
+// MapMaker's warning: a free block flush with another piece in a different look (one warning for the map).
+describe('coplanar spots (MapMaker warning and Overlaps highlight)', () => {
+  const block = (id: string, position: [number, number, number], size: [number, number, number], material: string | null): MapEntity => ({ id, kind: 'block', position, size, yaw: 0, material, tint: null, behaviour: 'solid', trigger: 'step', delaySeconds: 0.8, respawnSeconds: 8, health: 120 });
+  const withBlocks = (blocks: MapEntity[]) => {
+    const map = makeMap([]);
+    return { ...map, entities: [...map.entities, ...blocks] };
+  };
+
+  it('two blocks with level tops in different materials: one warning naming them, spots to highlight', () => {
+    const map = withBlocks([block('b1', [0, 0, 0], [4, 1, 4], 'core.concrete'), block('b2', [2, 0, 0], [4, 1, 2], 'core.sandstone')]);
+    const spots = coplanarSpots(map);
+    expect(spots.length).toBeGreaterThan(0);
+    expect(spots.every((s) => s.ids.includes('b1') && s.ids.includes('b2'))).toBe(true);
+    const issues = coplanarIssues(map, spots);
+    expect(issues).toHaveLength(1);
+    expect(issues[0]).toMatchObject({ severity: 'warning', code: 'geometry.coplanar', targetId: 'b2' });
+    expect(issues[0]!.message).toMatch(/b1 and b2/);
+  });
+
+  it('nothing to say when the faces look the same, or nothing lines up', () => {
+    expect(coplanarIssues(withBlocks([block('b1', [0, 0, 0], [4, 1, 4], 'core.concrete'), block('b2', [2, 0, 0], [4, 1, 2], 'core.concrete')]))).toEqual([]);
+    expect(coplanarIssues(withBlocks([block('b1', [0, 0, 0], [4, 1, 4], 'core.concrete'), block('b2', [2, 0.1, 0], [4, 1.2, 2], 'core.sandstone')]))).toEqual([]);
   });
 });
