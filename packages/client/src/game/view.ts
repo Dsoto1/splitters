@@ -512,20 +512,28 @@ export class GameView {
    */
   async prewarm(specs: readonly AvatarSpec[]): Promise<number> {
     const t0 = performance.now();
-    const stage = new TransformNode('prewarm', this.scene);
-    stage.position.set(0, -10000, 0);
-    // The effects first (they don't wait for the characters' files).
-    const ends: (() => void)[] = [];
+    const ready = () => (this.scene.isDisposed ? Promise.resolve() : Promise.race([this.scene.whenReadyAsync(), new Promise((r) => setTimeout(r, 8000))]));
+    // The effects first (they don't wait for the characters' files), ended as soon as their shaders are built.
+    let effects = 0;
     try {
       await GodotVfx.preload(...mappedPacks());
+      const ends: (() => void)[] = [];
       // Each effect plays out of sight for a few frames (its particles spawn: their pieces draw then).
       for (const r of mappedEffects()) {
         const end = this.vfx.warm(r.pack, r.effect, true);
         if (end) ends.push(end);
       }
+      effects = ends.length;
+      await this.afterFrames(4, 2500);
+      await ready();
+      for (const end of ends) end();
     } catch {
       // Effects that didn't load stay as they were (their first play builds them).
     }
+    if (this.scene.isDisposed) return 0;
+    // Then a character of each look, out of sight.
+    const stage = new TransformNode('prewarm', this.scene);
+    stage.position.set(0, -10000, 0);
     const made = await Promise.all(
       specs.slice(0, 32).map((spec, i) =>
         this.characters.create(spec, `prewarm_${i}`).then(
@@ -540,15 +548,12 @@ export class GameView {
       ),
     );
     if (this.scene.isDisposed) return 0;
-    // A few frames: the effects' particles come out, and the atmosphere sorts new meshes into the shadow map a
-    // frame later (their shaders differ).
-    await this.afterFrames(4, 2500);
-    if (!this.scene.isDisposed) await Promise.race([this.scene.whenReadyAsync(), new Promise((r) => setTimeout(r, 8000))]);
-    await this.afterFrames(1, 500);
-    for (const end of ends) end();
+    // Two frames: the atmosphere sorts new meshes into the shadow map a frame later (their shaders differ).
+    await this.afterFrames(2, 1500);
+    await ready();
     for (const ch of made) ch?.dispose();
     stage.dispose();
-    this.prewarmed = { ms: Math.round(performance.now() - t0), shaders: this.shaderCount(), characters: made.filter(Boolean).length, effects: ends.length };
+    this.prewarmed = { ms: Math.round(performance.now() - t0), shaders: this.shaderCount(), characters: made.filter(Boolean).length, effects };
     return this.prewarmed.shaders;
   }
 
