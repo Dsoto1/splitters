@@ -267,8 +267,8 @@ export function build(content, root = ROOT) {
     };
     edges.push({ def, shape, flags: { glass: !!e.glass, corner: !!e.corner, facade: !!e.facade, street: !!e.street }, notes: e.notes });
   }
-  for (const rule of ['auto', 'open']) if (edges.length === edgeList.length && !edges.some((e) => e.rule === rule)) problems.push(`${EDGES}: keep the "${rule}" style (rule: "${rule}"; map/geometry.ts resolveEdge)`);
-  if (edges[0] && edges[0].def.id !== 'auto') problems.push(`${EDGES}: auto comes first (MapMaker's reset)`);
+  for (const rule of ['auto', 'open']) if (!edgeList.some((e) => e?.id === rule && e?.rule === rule)) problems.push(`${EDGES}: keep the "${rule}" style (rule: "${rule}"; map/geometry.ts resolveEdge)`);
+  if (edgeList[0] && edgeList[0].id !== 'auto') problems.push(`${EDGES}: auto comes first (MapMaker's reset)`);
 
   // Tiles.
   const core = content.core;

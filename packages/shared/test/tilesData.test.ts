@@ -18,11 +18,14 @@ import {
   EDGE_STYLE_LABELS,
   FACADES,
   GLASS_EDGES,
+  STYLE_PACKS,
   TILE_DIMENSIONS,
   buildFacades,
   buildMapDecor,
   buildMapGeometry,
   coreCatalog,
+  coreMaterials,
+  resolveKitTile,
   dressSpace,
   edgeSegments,
   edgeTrim,
@@ -42,6 +45,7 @@ import { harborPackTiles } from '../src/map/packTilesHarbor.ts';
 import { junglePackTiles } from '../src/map/packTilesJungle.ts';
 import { medievalPackTiles } from '../src/map/packTilesMedieval.ts';
 import { snowPackTiles } from '../src/map/packTilesSnow.ts';
+import { KIT_TILES } from '../src/content/kitTiles.generated.ts';
 import { makeMap } from './helpers.ts';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -141,4 +145,23 @@ describe('tiles as data: the resolved kit', () => {
     for (const k of Object.keys(was)) expect(now[k], k).toEqual(was[k]);
     expect(now).toEqual(was);
   }, 600_000);
+
+  it('every tile the maps and Style Packs name exists, kit or Style Pack (the generator checks the kit\'s side)', () => {
+    const missing: string[] = [];
+    for (const f of readdirSync(MAPS).filter((x) => x.endsWith('.json'))) {
+      for (const m of readFileSync(join(MAPS, f), 'utf8').matchAll(/"tile":\s*"([^"]+)"/g)) if (!coreCatalog.get(m[1]!)) missing.push(`${f}: ${m[1]}`);
+    }
+    for (const p of STYLE_PACKS) for (const id of p.tiles) if (!coreCatalog.get(id)) missing.push(`${p.id}: ${id}`);
+    expect(missing).toEqual([]);
+  });
+
+  it('builds every kit tile from its data, and the kit names only edge styles and materials that exist', () => {
+    expect(KIT_TILES.length).toBeGreaterThan(60);
+    for (const spec of KIT_TILES) {
+      const def = coreCatalog.get(spec.id)!;
+      expect(def, spec.id).toEqual(resolveKitTile(spec));
+      for (const s of [def.edgeDefault, ...Object.values(def.edgeDefaults ?? {})]) if (s) expect(EDGE_STYLES, spec.id).toContain(s);
+      for (const b of [...(def.solids ?? []), ...(def.extraFloors ?? [])]) if (b.surface) expect(coreMaterials.get(b.surface.material), spec.id).toBeTruthy();
+    }
+  });
 });
