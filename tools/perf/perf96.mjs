@@ -104,6 +104,32 @@ const MASS_PLACE = `(m, me, arg) => {
   globalThis.__mass = { victims, at };
   return { slots: victims.map((c) => c.slot), at };
 }`;
+/**
+ * Runs inside the match: the same layout for every build (scenario `rows`): n bots held in front of the player
+ * from 5 to 65 m out (spread a little sideways, in view), unhurt, so draws, shadow casters and animation counts
+ * compare between builds whatever the map's fighting does. ROWS_END lets them go.
+ */
+const ROWS_PLACE = `(m, me, arg) => {
+  const d = arg.dir;
+  const side = { x: -d.z, z: d.x };
+  const bots = m.combatants().filter((c) => c.alive && c !== me && !c.mount).slice(0, arg.n);
+  const held = [];
+  bots.forEach((c, i) => {
+    const dist = 5 + (i / bots.length) * 60;
+    const lat = ((i % 5) - 2) * Math.min(4, dist * 0.12);
+    const want = { x: me.move.pos.x + d.x * dist + side.x * lat, y: me.move.pos.y, z: me.move.pos.z + d.z * dist + side.z * lat };
+    const p = m.nav.closestPoint(want, { x: 4, y: 30, z: 4 }) ?? want;
+    held.push([c, { x: p.x, y: p.y + 0.05, z: p.z }]);
+  });
+  globalThis.__rowsHold = setInterval(() => {
+    for (const [c, pos] of held) {
+      c.move = { ...c.move, pos: { ...pos }, velY: 0, grounded: true };
+      c.health = Math.max(c.health, 100);
+    }
+  }, 5);
+  return held.length;
+}`;
+const ROWS_END = `() => clearInterval(globalThis.__rowsHold)`;
 /** Runs inside the match: the blast (after MASS_PLACE). */
 const MASS = `(m) => {
   clearInterval(globalThis.__massHold);
@@ -299,6 +325,19 @@ for (const id of maps) {
               continue;
             }
             if (scenario === 'clump') row.placed = await sim(CLUMP, 7);
+            if (scenario === 'rows') {
+              const dir = await page.evaluate(() => {
+                const f = window.__cs.view.camera.getForwardRay(1).direction;
+                const len = Math.hypot(f.x, f.z) || 1;
+                return { x: f.x / len, z: f.z / len };
+              });
+              row.placed = await sim(ROWS_PLACE, { n: Number(process.env.PERF_ROWS ?? 48), dir });
+              // Their characters walk there in this view (a CPU-rendered page takes a while).
+              for (let waited = 0; waited < 90000; waited += 2000) {
+                if ((await page.evaluate(() => [...window.__cs.view.avatars.values()].filter((a) => a.anim && !a.culled).length)) >= row.placed * 0.8) break;
+                await sleep(2000);
+              }
+            }
             await sim(PROFILE, true);
             await page.evaluate(() => {
               window.__perf.reset();
@@ -314,6 +353,7 @@ for (const id of maps) {
               window.__perf.on = false;
               return window.__perf.frames;
             });
+            if (scenario === 'rows') await sim(ROWS_END);
             // What rendering draws now (2 s of frames): draw calls, active meshes, triangles, skinned characters, particles.
             const scene = await page.evaluate(async () => {
               const sc = window.__cs.view.scene;
@@ -384,6 +424,7 @@ for (const id of maps) {
               // The shadow map's casters by kind (its own per-frame list), and how many characters cast.
               const casterKinds = {};
               let castingCharacters = 0;
+              const otherNames = {};
               const map = sc.lights.map((l) => l.getShadowGenerator?.()?.getShadowMap()).find(Boolean);
               if (map?.getCustomRenderList && map.renderList) {
                 const list = map.getCustomRenderList(0, map.renderList, map.renderList.length) ?? map.renderList;
@@ -392,6 +433,12 @@ for (const id of maps) {
                   if (!m.isEnabled()) continue;
                   const k = kindOf(m);
                   casterKinds[k] = (casterKinds[k] ?? 0) + 1;
+                  if (k === 'other') {
+                    let r = m;
+                    while (r.parent) r = r.parent;
+                    const name = (r.name ?? '?').replace(/[_\d]+$/, '');
+                    otherNames[name] = (otherNames[name] ?? 0) + 1;
+                  }
                   if (k === 'characters') {
                     let r = m;
                     while (r.parent) r = r.parent;
@@ -402,7 +449,7 @@ for (const id of maps) {
               }
               const n = Math.max(1, s.draws.length);
               const kinds = Object.fromEntries(Object.entries(s.kinds).map(([k, v]) => [k, Math.round(v / n)]));
-              return { frames: s.draws.length, draws: avg(s.draws), meshes: avg(s.meshes), tris: avg(s.tris), skinned: avg(s.skinned), casters: avg(s.casters), effectCasters, shown, skeletons: sc.skeletons.length, particles: sc.particleSystems.length, lights: sc.lights.length, posed: avg(s.posed), animated: avg(s.animated), bands, activeByKind: kinds, casterKinds, castingCharacters, shaders: window.__cs.view.shaderCount?.() ?? Object.keys(engine._compiledEffects ?? {}).length };
+              return { frames: s.draws.length, draws: avg(s.draws), meshes: avg(s.meshes), tris: avg(s.tris), skinned: avg(s.skinned), casters: avg(s.casters), effectCasters, shown, skeletons: sc.skeletons.length, particles: sc.particleSystems.length, lights: sc.lights.length, posed: avg(s.posed), animated: avg(s.animated), bands, activeByKind: kinds, casterKinds, castingCharacters, otherCasters: Object.entries(otherNames).sort((a, b) => b[1] - a[1]).slice(0, 6), shaders: window.__cs.view.shaderCount?.() ?? Object.keys(engine._compiledEffects ?? {}).length };
             });
             const prof = await sim(PROFILE, false);
             const wall = (Date.now() - t0) / 1000;
@@ -439,7 +486,7 @@ for (const id of maps) {
             };
             const r = row[scenario];
             console.log(
-              `${id} ${graphics} ${mode} ${scenario}:${r.sys ? ` split [avatars, anim, skin, fx, ragdoll, flames, hud, shadow, post, cull] ${JSON.stringify(r.sys)} counts [animated, skinned, ragdolls, lasting, effects, built] ${JSON.stringify(r.counts)} |` : ''} ${r.fps.toFixed(1)} fps, frame ${r.dt.toFixed(1)} ms (p50 ${r.p50.toFixed(1)}, p95 ${r.p95.toFixed(1)}, max ${r.max.toFixed(0)}) = sim ${r.sim.toFixed(1)} (${r.ticksPerFrame.toFixed(2)} ticks, max ${r.maxBatch}; ${r.simShare.toFixed(0)} ms/s) + msg ${r.msg.toFixed(1)} (${r.msgShare.toFixed(0)} ms/s) + js ${r.js.toFixed(1)} + render ${r.render.toFixed(1)} + other ${r.other.toFixed(1)} | ${r.tickRate.toFixed(1)} ticks/s, tick ${r.tick.total.toFixed(2)} ms = bots ${r.tick.bots.toFixed(2)} + physics ${r.tick.physics.toFixed(2)} + rest ${r.tick.rest.toFixed(2)}${prof.wake ? ` | worker wakes: ${JSON.stringify(prof.wake)}` : ''}${scenario === 'clump' ? ` | ${row.placed} placed` : ''} | scene ${JSON.stringify(scene)}`,
+              `${id} ${graphics} ${mode} ${scenario}:${r.sys ? ` split [avatars, anim, skin, fx, ragdoll, flames, hud, shadow, post, cull] ${JSON.stringify(r.sys)} counts [animated, skinned, ragdolls, lasting, effects, built] ${JSON.stringify(r.counts)} |` : ''} ${r.fps.toFixed(1)} fps, frame ${r.dt.toFixed(1)} ms (p50 ${r.p50.toFixed(1)}, p95 ${r.p95.toFixed(1)}, max ${r.max.toFixed(0)}) = sim ${r.sim.toFixed(1)} (${r.ticksPerFrame.toFixed(2)} ticks, max ${r.maxBatch}; ${r.simShare.toFixed(0)} ms/s) + msg ${r.msg.toFixed(1)} (${r.msgShare.toFixed(0)} ms/s) + js ${r.js.toFixed(1)} + render ${r.render.toFixed(1)} + other ${r.other.toFixed(1)} | ${r.tickRate.toFixed(1)} ticks/s, tick ${r.tick.total.toFixed(2)} ms = bots ${r.tick.bots.toFixed(2)} + physics ${r.tick.physics.toFixed(2)} + rest ${r.tick.rest.toFixed(2)}${prof.wake ? ` | worker wakes: ${JSON.stringify(prof.wake)}` : ''}${scenario === 'clump' || scenario === 'rows' ? ` | ${row.placed} placed` : ''} | scene ${JSON.stringify(scene)}`,
             );
           }
           // What starting each effect costs now, mid-fight: an explosion, both hits, a muzzle flash of every kind

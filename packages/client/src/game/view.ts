@@ -514,8 +514,20 @@ export class GameView {
     const t0 = performance.now();
     const stage = new TransformNode('prewarm', this.scene);
     stage.position.set(0, -10000, 0);
+    // The effects first (they don't wait for the characters' files).
+    const ends: (() => void)[] = [];
+    try {
+      await GodotVfx.preload(...mappedPacks());
+      // Each effect plays out of sight for a few frames (its particles spawn: their pieces draw then).
+      for (const r of mappedEffects()) {
+        const end = this.vfx.warm(r.pack, r.effect, true);
+        if (end) ends.push(end);
+      }
+    } catch {
+      // Effects that didn't load stay as they were (their first play builds them).
+    }
     const made = await Promise.all(
-      specs.slice(0, 48).map((spec, i) =>
+      specs.slice(0, 32).map((spec, i) =>
         this.characters.create(spec, `prewarm_${i}`).then(
           (ch) => {
             if (stage.isDisposed()) return void ch.dispose();
@@ -528,17 +540,6 @@ export class GameView {
       ),
     );
     if (this.scene.isDisposed) return 0;
-    const ends: (() => void)[] = [];
-    try {
-      await GodotVfx.preload(...mappedPacks());
-      // Each effect plays out of sight for a few frames (its particles spawn: their pieces draw then).
-      for (const r of mappedEffects()) {
-        const end = this.vfx.warm(r.pack, r.effect, true);
-        if (end) ends.push(end);
-      }
-    } catch {
-      // Effects that didn't load stay as they were (their first play builds them).
-    }
     // A few frames: the effects' particles come out, and the atmosphere sorts new meshes into the shadow map a
     // frame later (their shaders differ).
     await this.afterFrames(4, 2500);
