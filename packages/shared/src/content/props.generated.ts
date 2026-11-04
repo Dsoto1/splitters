@@ -670,7 +670,7 @@ export const CORE_PROPS: readonly PropDefinition[] = [
   {id: 'prop.ammo_crate', file: 'props/ammo_crate.glb', displayName: 'Ammo Crate', category: 'Military', size: [1.06,0.45,0.52], collision: [1.06,0.45,0.52], breakable: {health: 40, debris: '#56603a'}},
   {id: 'prop.ammo_stack', file: 'props/ammo_stack.glb', displayName: 'Ammo Crates (Stack)', category: 'Military', size: [2.02,0.9,0.629], collision: [2.02,0.9,0.629], breakable: {health: 90, debris: '#56603a'}},
   {id: 'prop.fuel_drum', file: 'props/fuel_drum.glb', displayName: 'Fuel Drum', category: 'Military', size: [0.63,0.93,0.614], collision: [0.63,0.93,0.614], breakable: {health: 40, debris: '#56603a', blast: {radius: 5, damage: 100, edge: 15}}},
-  {id: 'prop.burn_barrel', file: 'props/burn_barrel.glb', displayName: 'Burn Barrel', category: 'Military', size: [0.571,0.95,0.557], collision: [0.571,0.95,0.557], flame: {fx: 'campfire', at: [0,0.88,0], size: 0.7}},
+  {id: 'prop.burn_barrel', file: 'props/burn_barrel.glb', displayName: 'Burn Barrel', category: 'Military', size: [0.571,0.95,0.557], collision: [0.571,0.95,0.557], flame: {fx: 'campfire', at: [0,0.8,0], size: 0.35}},
   {id: 'prop.razor_wire', file: 'props/razor_wire.glb', displayName: 'Razor Wire', category: 'Military', size: [3.225,1,0.837], collision: [3.225,1,0.837], breakable: {health: 60, debris: '#8f959b'}},
   {id: 'prop.camo_net', file: 'props/camo_net.glb', displayName: 'Camouflage Net', category: 'Military', size: [4.814,2.69,4.799], collision: null},
   {id: 'prop.mine_cart', file: 'props/mine_cart.glb', displayName: 'Mine Cart', category: 'Frontier', size: [1.134,1.01,1.5], collision: [1.134,1.01,1.5]},
