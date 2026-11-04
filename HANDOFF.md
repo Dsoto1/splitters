@@ -44,7 +44,7 @@ Evidence (before/after per look, review board, audits): agent scratchpad `grips3
 - **Re-checked Anoobys, Beanie Alien, Honest Abe** (round 2's audit had them worse): Abe 3 -> 0, Beanie 5 -> 3,
   Anoobys 3 -> 3 (its rifle support hand still curls away; pistol better by eye).
 - **Checks:** typecheck clean; content:check OK; test:changed (all units: shared code) 1347 passed. E2E (`CI=1`,
-  ports 4873/7897): see the next line. ci:plan: full suite (characterAnimator/looks are shared): needs a `check/` run.
+  ports 4873/7897): characters PASS, visual PASS (baselines unchanged: menu 0.5 %, others ≤ 0.1 %). ci:plan: full suite (characterAnimator/looks are shared): needs a `check/` run.
 
 ### Content scalability step 6: library materials as data (`wip/materials-data`, agent, 2026-11-04; pushed, not merged; on `wip/pickups-data` 01420e4)
 docs/CONTENT_SCALABILITY.md step 6, same pattern as steps 3-5; how to add one: docs/CONTENT_PIPELINE.md, "Materials and themes".
