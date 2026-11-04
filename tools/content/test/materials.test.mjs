@@ -21,7 +21,7 @@ describe('materials generator (tools/content/materials.mjs)', () => {
     const src = 'packages/shared/src/map/materials.ts';
     expect(materials.tsList(ROOT, src, 'PATTERN_IDS')).toContain('glyphs_painted');
     expect(materials.tsList(ROOT, src, 'MATERIAL_CATEGORIES')).toContain('Ground');
-    expect(materials.tsList(ROOT, src, 'SURFACE_SLOTS')).toEqual(['floor', 'walls', 'solids', 'underside', 'trim']);
+    expect(materials.tsList(ROOT, src, 'SURFACE_SLOTS')).toEqual(['floor', 'walls', 'solids', 'underside', 'trim', 'roof']);
   });
 
   it('checks the schema: unknown fields, enums, colours and numbers', () => {

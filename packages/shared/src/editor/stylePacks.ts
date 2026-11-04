@@ -120,7 +120,7 @@ export const STYLE_PACKS: readonly StylePack[] = [
     ],
     props: /* @__PURE__ */ props(
       'im_column_ionic', 'im_brazier', 'im_statue_emperor', 'im_amphorae', 'im_weapon_rack', 'im_training_post', 'im_aquila', 'im_vexillum', 'im_chariot',
-      'im_lift_cage', 'im_stakes', 'im_altar', 'im_bench', 'im_fountain', 'im_velarium', 'im_bust', 'im_throne',
+      'im_lift_cage', 'im_stakes', 'im_altar', 'im_bench', 'im_fountain', 'im_velarium', 'im_bust', 'im_throne', 'im_capitol_dome', 'im_copper_dome', 'im_pediment',
       // Quaternius Ultimate Modular Ruins, already in the game.
       'rn_column_round', 'rn_column_square', 'rn_column_broken', 'rn_arch_round', 'rn_wall', 'rn_wall_broken', 'rn_wall_half', 'rn_stairs', 'rn_urn', 'rn_urn_broken', 'rn_cart', 'rn_buttress',
     ),
@@ -384,7 +384,7 @@ export const STYLE_PACKS: readonly StylePack[] = [
       'cart', 'rn_cart', 'ww_ladder', 'water_trough', 'im_velarium', 'stall', 'awning', 'rug', 'hm_potted_palm',
       // Sands of Egypt (the pack this one replaced).
       'eg_obelisk', 'eg_sphinx', 'eg_statue_pharaoh', 'eg_anubis', 'eg_sarcophagus', 'eg_canopic_jars', 'eg_column_papyrus', 'eg_felucca', 'eg_reed_boat',
-      'eg_palm', 'eg_papyrus', 'eg_torch', 'eg_chest', 'eg_stele', 'eg_cat_statue',
+      'eg_palm', 'eg_papyrus', 'eg_torch', 'eg_chest', 'eg_stele', 'eg_cat_statue', 'eg_pyramidion',
       // Shared with 03 Imperial Arena and the game's ruins.
       'im_amphorae', 'im_brazier', 'im_altar', 'rn_column_broken', 'rn_urn', 'rn_urn_broken', 'cactus', 'nt_cactus_round', 'dg_coin_pile', 'dg_coin_bag',
     ),
