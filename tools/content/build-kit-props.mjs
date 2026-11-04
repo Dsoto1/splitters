@@ -49,6 +49,8 @@ const COLOURS = {
   gold: '#c9a23a',
   straw: '#c8a85a',
   white: '#e8e4da',
+  char: '#241e1a',
+  ember: '#c4541c',
 };
 
 // ---------------------------------------------------------------- geometry
@@ -326,6 +328,22 @@ const PIECES = {
     place(ring('oliveDark', 0.3, 0.015, 14, 3), { at: [0, 0.6, 0], rx: Math.PI / 2 }),
     box('stencil', [0.3, 0.12, 0.01], [0, 0.45, 0.3]),
     cylinder('steelDark', 0.05, 0.9, 0.93, 8),
+  ],
+  burn_barrel: () => [
+    // An open oil drum burning scrap wood: rusted, scorched round the rim, charred logs over the embers. The flame
+    // itself is the pack's campfire effect (content/props/tiletrigger-kit.json "flame").
+    cylinder('rust', 0.3, 0, 0.86, 14),
+    cylinder('iron', 0.305, 0.74, 0.86, 14),
+    place(ring('iron', 0.3, 0.016, 14, 3), { at: [0, 0.3, 0], rx: Math.PI / 2 }),
+    place(ring('iron', 0.3, 0.016, 14, 3), { at: [0, 0.58, 0], rx: Math.PI / 2 }),
+    place(ring('steelDark', 0.3, 0.02, 14, 3), { at: [0, 0.86, 0], rx: Math.PI / 2 }),
+    cylinder('char', 0.27, 0.86, 0.875, 12),
+    cylinder('ember', 0.16, 0.875, 0.885, 10),
+    beam('char', [-0.22, 0.8, 0.05], [0.12, 1.02, -0.04], 0.07),
+    beam('char', [0.2, 0.8, 0.12], [-0.06, 1.0, -0.1], 0.06),
+    beam('woodDark', [0.04, 0.8, -0.22], [0.02, 1.04, 0.1], 0.06),
+    // Air holes punched round the foot.
+    ...[0, 1, 2, 3, 4, 5].map((i) => place(box('char', [0.07, 0.05, 0.02], [0, 0.1, 0.301]), { ry: (i * Math.PI) / 3 })),
   ],
   razor_wire: () => {
     // A concertina coil 3 m long on a few pickets.

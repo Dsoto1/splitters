@@ -1,13 +1,13 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 17,
+  "formatVersion": 25,
   "metadata": {
     "id": "atomic_court",
     "name": "Atomic Court",
     "author": "Tile Trigger",
-    "description": "A tiny cul-de-sac in the desert: two two-storey houses face each other across a street blocked by a school bus and a truck, each with a garage, a lawn and a fenced backyard. Fast and close, for 2–12 players; the flags are in the backyards and King of the Hill moves between the bus and the two upstairs landings.",
+    "description": "A tiny cul-de-sac in the desert at golden hour: two two-storey houses face each other across a street blocked by a delivery truck, a burnt-out car, a pickup and a flatbed, each house with a garage, a lawn and a fenced backyard: picket fences, box hedges, swing sets, slides, barbecues and parked cars to fight round. Fast and close, for 2–12 players; the flags are in the backyards and King of the Hill moves between the street and the two upstairs landings.",
     "createdAt": "2026-10-23T00:00:00.000Z",
-    "updatedAt": "2026-10-23T00:00:00.000Z",
+    "updatedAt": "2026-11-04T07:03:37.644Z",
     "parentId": null,
     "recommendedPlayers": {
       "min": 2,
@@ -1197,336 +1197,6 @@
   },
   "entities": [
     {
-      "id": "block_074",
-      "position": [
-        34,
-        0.6,
-        32
-      ],
-      "kind": "block",
-      "size": [
-        10,
-        2.4,
-        2.6
-      ],
-      "yaw": 0,
-      "material": "core.paint_gloss",
-      "tint": "#e8b923",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_075",
-      "position": [
-        34,
-        1.7,
-        32
-      ],
-      "kind": "block",
-      "size": [
-        9.4,
-        0.8,
-        2.66
-      ],
-      "yaw": 0,
-      "material": "core.paint_gloss",
-      "tint": "#1c2228",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_076",
-      "position": [
-        39.6,
-        0.4,
-        32
-      ],
-      "kind": "block",
-      "size": [
-        1.4,
-        1.6,
-        2.5
-      ],
-      "yaw": 0,
-      "material": "core.paint_gloss",
-      "tint": "#e8b923",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_077",
-      "position": [
-        30.8,
-        0,
-        32
-      ],
-      "kind": "block",
-      "size": [
-        1.2,
-        0.6,
-        2.4
-      ],
-      "yaw": 0,
-      "material": "core.pbr_steel",
-      "tint": "#2a2a2a",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_078",
-      "position": [
-        37.6,
-        0,
-        32
-      ],
-      "kind": "block",
-      "size": [
-        1.2,
-        0.6,
-        2.4
-      ],
-      "yaw": 0,
-      "material": "core.pbr_steel",
-      "tint": "#2a2a2a",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_079",
-      "position": [
-        22,
-        1,
-        32
-      ],
-      "kind": "block",
-      "size": [
-        7,
-        2.8,
-        2.5
-      ],
-      "yaw": 0,
-      "material": "core.pbr_white_panel",
-      "tint": null,
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_080",
-      "position": [
-        26.9,
-        0,
-        32
-      ],
-      "kind": "block",
-      "size": [
-        2.6,
-        2.6,
-        2.5
-      ],
-      "yaw": 0,
-      "material": "core.paint_gloss",
-      "tint": "#9c2a24",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_081",
-      "position": [
-        19.5,
-        0,
-        32
-      ],
-      "kind": "block",
-      "size": [
-        1.2,
-        1,
-        2.3
-      ],
-      "yaw": 0,
-      "material": "core.pbr_steel",
-      "tint": "#2a2a2a",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_082",
-      "position": [
-        24.5,
-        0,
-        32
-      ],
-      "kind": "block",
-      "size": [
-        1.2,
-        1,
-        2.3
-      ],
-      "yaw": 0,
-      "material": "core.pbr_steel",
-      "tint": "#2a2a2a",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_083",
-      "position": [
-        12,
-        0.25,
-        41
-      ],
-      "kind": "block",
-      "size": [
-        2,
-        0.85,
-        4.4
-      ],
-      "yaw": 0,
-      "material": "core.paint_gloss",
-      "tint": "#c4473a",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_084",
-      "position": [
-        12,
-        1.1,
-        41
-      ],
-      "kind": "block",
-      "size": [
-        1.8,
-        0.6,
-        2.2
-      ],
-      "yaw": 0,
-      "material": "core.paint_gloss",
-      "tint": "#1c2228",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_085",
-      "position": [
-        12,
-        0,
-        41
-      ],
-      "kind": "block",
-      "size": [
-        1.9,
-        0.25,
-        3.6
-      ],
-      "yaw": 0,
-      "material": "core.pbr_steel",
-      "tint": "#2a2a2a",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_086",
-      "position": [
-        52,
-        0.25,
-        23
-      ],
-      "kind": "block",
-      "size": [
-        2,
-        0.85,
-        4.4
-      ],
-      "yaw": 0,
-      "material": "core.paint_gloss",
-      "tint": "#3a6fb0",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_087",
-      "position": [
-        52,
-        1.1,
-        23
-      ],
-      "kind": "block",
-      "size": [
-        1.8,
-        0.6,
-        2.2
-      ],
-      "yaw": 0,
-      "material": "core.paint_gloss",
-      "tint": "#1c2228",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_088",
-      "position": [
-        52,
-        0,
-        23
-      ],
-      "kind": "block",
-      "size": [
-        1.9,
-        0.25,
-        3.6
-      ],
-      "yaw": 0,
-      "material": "core.pbr_steel",
-      "tint": "#2a2a2a",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
       "id": "prop_089",
       "position": [
         36,
@@ -1777,50 +1447,6 @@
       "scale": 1,
       "solid": true,
       "tint": null
-    },
-    {
-      "id": "block_107",
-      "position": [
-        60,
-        0,
-        58
-      ],
-      "kind": "block",
-      "size": [
-        3,
-        2.6,
-        2.4
-      ],
-      "yaw": 0,
-      "material": "core.pbr_planks",
-      "tint": "#a0703a",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_108",
-      "position": [
-        4,
-        0,
-        6
-      ],
-      "kind": "block",
-      "size": [
-        3,
-        2.6,
-        2.4
-      ],
-      "yaw": 0,
-      "material": "core.pbr_planks",
-      "tint": "#a0703a",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
     },
     {
       "id": "prop_109",
@@ -3457,6 +3083,748 @@
       "intensity": 1,
       "range": 9,
       "fixture": "ceiling"
+    },
+    {
+      "id": "prop_p2s647p0wl",
+      "position": [
+        21,
+        0,
+        32
+      ],
+      "kind": "prop",
+      "model": "prop.supply_truck",
+      "yaw": 1.571,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_azfou6hk83",
+      "position": [
+        31.5,
+        0,
+        31.6
+      ],
+      "kind": "prop",
+      "model": "prop.mp_burnt_car",
+      "yaw": 1.745,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_9h86u9ba7k",
+      "position": [
+        41,
+        0,
+        32.4
+      ],
+      "kind": "prop",
+      "model": "prop.car_pickup",
+      "yaw": 1.466,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_23sfuwtyhy",
+      "position": [
+        52,
+        0,
+        31.8
+      ],
+      "kind": "prop",
+      "model": "prop.flatbed_truck",
+      "yaw": 1.606,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_6t8xkq7hxc",
+      "position": [
+        12,
+        0,
+        41
+      ],
+      "kind": "prop",
+      "model": "prop.sb_sedan",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_d9ca1874y9",
+      "position": [
+        52,
+        0,
+        23
+      ],
+      "kind": "prop",
+      "model": "prop.sb_sedan",
+      "yaw": 3.142,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_ysrctxdthc",
+      "position": [
+        66,
+        0,
+        44
+      ],
+      "kind": "prop",
+      "model": "prop.car_beetle",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_fx23utx452",
+      "position": [
+        60,
+        0,
+        58
+      ],
+      "kind": "prop",
+      "model": "prop.outhouse",
+      "yaw": 3.142,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_524h0dkaz8",
+      "position": [
+        4,
+        0,
+        6
+      ],
+      "kind": "prop",
+      "model": "prop.outhouse",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_m2nufxshe8",
+      "position": [
+        18.5,
+        0,
+        37.6
+      ],
+      "kind": "prop",
+      "model": "prop.sb_mailbox",
+      "yaw": 3.142,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_dgslqsvcc1",
+      "position": [
+        46,
+        0,
+        26.4
+      ],
+      "kind": "prop",
+      "model": "prop.sb_mailbox",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_a8qvwi8aoe",
+      "position": [
+        9.5,
+        0,
+        36.8
+      ],
+      "kind": "prop",
+      "model": "prop.sb_fire_hydrant",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_gzb3ggchj0",
+      "position": [
+        57.5,
+        0,
+        27.2
+      ],
+      "kind": "prop",
+      "model": "prop.sb_fire_hydrant",
+      "yaw": 3.142,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_gi9n9j5r1t",
+      "position": [
+        16.8,
+        0,
+        40.2
+      ],
+      "kind": "prop",
+      "model": "prop.sb_wheelie_bin",
+      "yaw": 3.142,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_mmdu8te2fd",
+      "position": [
+        47.8,
+        0,
+        24
+      ],
+      "kind": "prop",
+      "model": "prop.sb_wheelie_bin",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_6s4rr1hr6x",
+      "position": [
+        28.2,
+        0,
+        38.6
+      ],
+      "kind": "prop",
+      "model": "prop.sb_picket_fence",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_p5oklpef32",
+      "position": [
+        33.4,
+        0,
+        38.6
+      ],
+      "kind": "prop",
+      "model": "prop.sb_picket_fence",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_pnewnm80au",
+      "position": [
+        38.2,
+        0,
+        25.4
+      ],
+      "kind": "prop",
+      "model": "prop.sb_picket_fence",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_lq9pbmyqjg",
+      "position": [
+        25.6,
+        0,
+        25.4
+      ],
+      "kind": "prop",
+      "model": "prop.sb_picket_fence",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_2vnzfidqu9",
+      "position": [
+        44,
+        0,
+        40
+      ],
+      "kind": "prop",
+      "model": "prop.ge_hedge_wall",
+      "yaw": 1.571,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_9aionlo1ft",
+      "position": [
+        4,
+        0,
+        26
+      ],
+      "kind": "prop",
+      "model": "prop.ge_hedge_wall",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_72txi7d39n",
+      "position": [
+        62,
+        0,
+        48.5
+      ],
+      "kind": "prop",
+      "model": "prop.ge_hedge_wall",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_l69dnm7tx9",
+      "position": [
+        14,
+        0,
+        11
+      ],
+      "kind": "prop",
+      "model": "prop.sb_swing_set",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_ly8n2xo96x",
+      "position": [
+        6.5,
+        0,
+        18.5
+      ],
+      "kind": "prop",
+      "model": "prop.sb_trampoline",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_gd6unr6mix",
+      "position": [
+        22,
+        0,
+        6.5
+      ],
+      "kind": "prop",
+      "model": "prop.sb_bbq_grill",
+      "yaw": 3.142,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_u2wxkxhao0",
+      "position": [
+        16,
+        0,
+        3.5
+      ],
+      "kind": "prop",
+      "model": "prop.sb_patio_set",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_g243pjzft8",
+      "position": [
+        23.6,
+        0,
+        6.2
+      ],
+      "kind": "prop",
+      "model": "prop.sb_propane_tank",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_ovk5m4iqee",
+      "position": [
+        9,
+        0,
+        23
+      ],
+      "kind": "prop",
+      "model": "prop.sb_lawnmower",
+      "yaw": 0.698,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_3unfawpgmq",
+      "position": [
+        62,
+        0,
+        8
+      ],
+      "kind": "prop",
+      "model": "prop.sb_slide",
+      "yaw": -1.571,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_ftdlmfbebv",
+      "position": [
+        26.4,
+        0,
+        10
+      ],
+      "kind": "prop",
+      "model": "prop.sb_garden_gnome",
+      "yaw": 1.571,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_ft2f9rizo8",
+      "position": [
+        54,
+        0,
+        46
+      ],
+      "kind": "prop",
+      "model": "prop.sb_slide",
+      "yaw": 1.571,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_95kf2gpo6n",
+      "position": [
+        48,
+        0,
+        56
+      ],
+      "kind": "prop",
+      "model": "prop.sb_sun_lounger",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_7dpscjr5a5",
+      "position": [
+        50,
+        0,
+        56
+      ],
+      "kind": "prop",
+      "model": "prop.sb_sun_lounger",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_bxf1wjpn2t",
+      "position": [
+        2.5,
+        0,
+        44
+      ],
+      "kind": "prop",
+      "model": "prop.sb_basketball_hoop",
+      "yaw": 1.571,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_b3z4e45zww",
+      "position": [
+        32,
+        0,
+        63
+      ],
+      "kind": "prop",
+      "model": "prop.sb_bbq_grill",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_8u97by4egt",
+      "position": [
+        44,
+        0,
+        62
+      ],
+      "kind": "prop",
+      "model": "prop.sb_patio_set",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_6xd9bn15fh",
+      "position": [
+        40.5,
+        0,
+        54
+      ],
+      "kind": "prop",
+      "model": "prop.sb_garden_gnome",
+      "yaw": 3.142,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_c9iqt5fl5g",
+      "position": [
+        12,
+        0,
+        58
+      ],
+      "kind": "prop",
+      "model": "prop.sb_lawnmower",
+      "yaw": -2.793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_ej9bs6fkzw",
+      "position": [
+        21.5,
+        0,
+        51.6
+      ],
+      "kind": "prop",
+      "model": "prop.sb_tv_flat",
+      "yaw": 3.142,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_detoe9qofj",
+      "position": [
+        35.4,
+        0,
+        51.4
+      ],
+      "kind": "prop",
+      "model": "prop.sb_fridge",
+      "yaw": 3.142,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_1vhp6d84pq",
+      "position": [
+        35.5,
+        0,
+        50.2
+      ],
+      "kind": "prop",
+      "model": "prop.sb_washing_machine",
+      "yaw": -1.571,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_sc7uis22g8",
+      "position": [
+        21.4,
+        4,
+        52
+      ],
+      "kind": "prop",
+      "model": "prop.hm_bed_single",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_7u3k3f62xu",
+      "position": [
+        34.6,
+        4,
+        53
+      ],
+      "kind": "prop",
+      "model": "prop.hm_bed_single",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_2cth8a9k2n",
+      "position": [
+        29.5,
+        0,
+        11.6
+      ],
+      "kind": "prop",
+      "model": "prop.sb_tv_flat",
+      "yaw": 3.142,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_ys3m2sv9ig",
+      "position": [
+        43.4,
+        0,
+        11.4
+      ],
+      "kind": "prop",
+      "model": "prop.sb_fridge",
+      "yaw": 3.142,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_xb6n50n1m2",
+      "position": [
+        43.5,
+        0,
+        10.2
+      ],
+      "kind": "prop",
+      "model": "prop.sb_washing_machine",
+      "yaw": -1.571,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_zapk7x0l91",
+      "position": [
+        29.4,
+        4,
+        12
+      ],
+      "kind": "prop",
+      "model": "prop.hm_bed_single",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_5pp14jw111",
+      "position": [
+        42.6,
+        4,
+        13
+      ],
+      "kind": "prop",
+      "model": "prop.hm_bed_single",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_0q8joaheql",
+      "kind": "prop",
+      "position": [
+        18,
+        0,
+        17
+      ],
+      "model": "prop.sb_picket_fence",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_k16m74i748",
+      "kind": "prop",
+      "position": [
+        22.8,
+        0,
+        17
+      ],
+      "model": "prop.sb_picket_fence",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_wk1dk4w27u",
+      "kind": "prop",
+      "position": [
+        16.8,
+        0,
+        19.3
+      ],
+      "model": "prop.sb_picket_fence",
+      "yaw": 1.571,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_v2d83t7ium",
+      "kind": "prop",
+      "position": [
+        52,
+        0,
+        40.5
+      ],
+      "model": "prop.ge_hedge_wall",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_y1j8m30l01",
+      "kind": "prop",
+      "position": [
+        46,
+        0,
+        50
+      ],
+      "model": "prop.ge_hedge_wall",
+      "yaw": 1.571,
+      "scale": 1,
+      "solid": true,
+      "tint": null
     }
   ],
   "factions": [],
@@ -6416,43 +6784,43 @@
       0,
       0,
       0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
+      -5,
+      -5,
+      -5,
+      -5,
+      -5,
+      -5,
+      -5,
+      -5,
+      -5,
+      -5,
+      -5,
+      -5,
+      -5,
+      -5,
+      -5,
+      -5,
+      -5,
+      -5,
+      -5,
+      -5,
+      -5,
+      -5,
+      -5,
+      -5,
+      -5,
+      -5,
+      -5,
+      -5,
+      -5,
+      -5,
+      -5,
+      -5,
+      -5,
+      -5,
+      -5,
+      -5,
+      -5,
       0,
       0,
       0,
@@ -6513,7 +6881,7 @@
       0,
       0,
       0,
-      0,
+      -5,
       -360,
       -360,
       -360,
@@ -6549,7 +6917,7 @@
       -360,
       -360,
       -360,
-      0,
+      -5,
       0,
       0,
       0,
@@ -6610,7 +6978,7 @@
       0,
       0,
       0,
-      0,
+      -5,
       -360,
       -360,
       -360,
@@ -6646,7 +7014,7 @@
       -360,
       -360,
       -360,
-      0,
+      -5,
       0,
       0,
       0,
@@ -6707,7 +7075,7 @@
       0,
       0,
       0,
-      0,
+      -5,
       -360,
       -360,
       -360,
@@ -6743,7 +7111,7 @@
       -360,
       -360,
       -360,
-      0,
+      -5,
       0,
       0,
       0,
@@ -6804,7 +7172,7 @@
       0,
       0,
       0,
-      0,
+      -5,
       -360,
       -360,
       -360,
@@ -6840,7 +7208,7 @@
       -360,
       -360,
       -360,
-      0,
+      -5,
       0,
       0,
       0,
@@ -6901,7 +7269,7 @@
       0,
       0,
       0,
-      0,
+      -5,
       -360,
       -360,
       -360,
@@ -6937,7 +7305,7 @@
       -360,
       -360,
       -360,
-      0,
+      -5,
       0,
       0,
       0,
@@ -6998,7 +7366,7 @@
       0,
       0,
       0,
-      0,
+      -5,
       -360,
       -360,
       -360,
@@ -7034,7 +7402,7 @@
       -360,
       -360,
       -360,
-      0,
+      -5,
       0,
       0,
       0,
@@ -7095,7 +7463,7 @@
       0,
       0,
       0,
-      0,
+      -5,
       -360,
       -360,
       -360,
@@ -7131,7 +7499,7 @@
       -360,
       -360,
       -360,
-      0,
+      -5,
       0,
       0,
       0,
@@ -7192,7 +7560,7 @@
       0,
       0,
       0,
-      0,
+      -5,
       -360,
       -360,
       -360,
@@ -7228,7 +7596,7 @@
       -360,
       -360,
       -360,
-      0,
+      -5,
       0,
       0,
       0,
@@ -7289,7 +7657,7 @@
       0,
       0,
       0,
-      0,
+      -5,
       -360,
       -360,
       -360,
@@ -7325,7 +7693,7 @@
       -360,
       -360,
       -360,
-      0,
+      -5,
       0,
       0,
       0,
@@ -7386,7 +7754,7 @@
       0,
       0,
       0,
-      0,
+      -5,
       -360,
       -360,
       -360,
@@ -7422,7 +7790,7 @@
       -360,
       -360,
       -360,
-      0,
+      -5,
       0,
       0,
       0,
@@ -7483,7 +7851,7 @@
       0,
       0,
       0,
-      0,
+      -5,
       -360,
       -360,
       -360,
@@ -7519,7 +7887,7 @@
       -360,
       -360,
       -360,
-      0,
+      -5,
       0,
       0,
       0,
@@ -7580,7 +7948,7 @@
       0,
       0,
       0,
-      0,
+      -5,
       -360,
       -360,
       -360,
@@ -7616,7 +7984,7 @@
       -360,
       -360,
       -360,
-      0,
+      -5,
       0,
       0,
       0,
@@ -7677,7 +8045,7 @@
       0,
       0,
       0,
-      0,
+      -5,
       -360,
       -360,
       -360,
@@ -7713,7 +8081,7 @@
       -360,
       -360,
       -360,
-      0,
+      -5,
       0,
       0,
       0,
@@ -7774,7 +8142,7 @@
       0,
       0,
       0,
-      0,
+      -5,
       -360,
       -360,
       -360,
@@ -7810,7 +8178,7 @@
       -360,
       -360,
       -360,
-      0,
+      -5,
       0,
       0,
       0,
@@ -7871,7 +8239,7 @@
       0,
       0,
       0,
-      0,
+      -5,
       -360,
       -360,
       -360,
@@ -7907,7 +8275,7 @@
       -360,
       -360,
       -360,
-      0,
+      -5,
       0,
       0,
       0,
@@ -7968,7 +8336,7 @@
       0,
       0,
       0,
-      0,
+      -5,
       -360,
       -360,
       -360,
@@ -8004,7 +8372,7 @@
       -360,
       -360,
       -360,
-      0,
+      -5,
       0,
       0,
       0,
@@ -8065,7 +8433,7 @@
       0,
       0,
       0,
-      0,
+      -5,
       -360,
       -360,
       -360,
@@ -8101,7 +8469,7 @@
       -360,
       -360,
       -360,
-      0,
+      -5,
       0,
       0,
       0,
@@ -8162,7 +8530,7 @@
       0,
       0,
       0,
-      0,
+      -5,
       -360,
       -360,
       -360,
@@ -8198,7 +8566,7 @@
       -360,
       -360,
       -360,
-      0,
+      -5,
       0,
       0,
       0,
@@ -8259,7 +8627,7 @@
       0,
       0,
       0,
-      0,
+      -5,
       -360,
       -360,
       -360,
@@ -8295,7 +8663,7 @@
       -360,
       -360,
       -360,
-      0,
+      -5,
       0,
       0,
       0,
@@ -8356,7 +8724,7 @@
       0,
       0,
       0,
-      0,
+      -5,
       -360,
       -360,
       -360,
@@ -8392,7 +8760,7 @@
       -360,
       -360,
       -360,
-      0,
+      -5,
       0,
       0,
       0,
@@ -8453,7 +8821,7 @@
       0,
       0,
       0,
-      0,
+      -5,
       -360,
       -360,
       -360,
@@ -8489,7 +8857,7 @@
       -360,
       -360,
       -360,
-      0,
+      -5,
       0,
       0,
       0,
@@ -8550,7 +8918,7 @@
       0,
       0,
       0,
-      0,
+      -5,
       -360,
       -360,
       -360,
@@ -8586,7 +8954,7 @@
       -360,
       -360,
       -360,
-      0,
+      -5,
       0,
       0,
       0,
@@ -8647,7 +9015,7 @@
       0,
       0,
       0,
-      0,
+      -5,
       -360,
       -360,
       -360,
@@ -8683,7 +9051,7 @@
       -360,
       -360,
       -360,
-      0,
+      -5,
       0,
       0,
       0,
@@ -8744,7 +9112,7 @@
       0,
       0,
       0,
-      0,
+      -5,
       -360,
       -360,
       -360,
@@ -8780,7 +9148,7 @@
       -360,
       -360,
       -360,
-      0,
+      -5,
       0,
       0,
       0,
@@ -8841,7 +9209,7 @@
       0,
       0,
       0,
-      0,
+      -5,
       -360,
       -360,
       -360,
@@ -8877,7 +9245,7 @@
       -360,
       -360,
       -360,
-      0,
+      -5,
       0,
       0,
       0,
@@ -8938,7 +9306,7 @@
       0,
       0,
       0,
-      0,
+      -5,
       -360,
       -360,
       -360,
@@ -8974,7 +9342,7 @@
       -360,
       -360,
       -360,
-      0,
+      -5,
       0,
       0,
       0,
@@ -9035,7 +9403,7 @@
       0,
       0,
       0,
-      0,
+      -5,
       -360,
       -360,
       -360,
@@ -9071,7 +9439,7 @@
       -360,
       -360,
       -360,
-      0,
+      -5,
       0,
       0,
       0,
@@ -9132,7 +9500,7 @@
       0,
       0,
       0,
-      0,
+      -5,
       -360,
       -360,
       -360,
@@ -9168,7 +9536,7 @@
       -360,
       -360,
       -360,
-      0,
+      -5,
       0,
       0,
       0,
@@ -9229,7 +9597,7 @@
       0,
       0,
       0,
-      0,
+      -5,
       -360,
       -360,
       -360,
@@ -9265,7 +9633,7 @@
       -360,
       -360,
       -360,
-      0,
+      -5,
       0,
       0,
       0,
@@ -9326,7 +9694,7 @@
       0,
       0,
       0,
-      0,
+      -5,
       -360,
       -360,
       -360,
@@ -9362,7 +9730,7 @@
       -360,
       -360,
       -360,
-      0,
+      -5,
       0,
       0,
       0,
@@ -9423,7 +9791,7 @@
       0,
       0,
       0,
-      0,
+      -5,
       -360,
       -360,
       -360,
@@ -9459,7 +9827,7 @@
       -360,
       -360,
       -360,
-      0,
+      -5,
       0,
       0,
       0,
@@ -9520,7 +9888,7 @@
       0,
       0,
       0,
-      0,
+      -5,
       -360,
       -360,
       -360,
@@ -9556,7 +9924,7 @@
       -360,
       -360,
       -360,
-      0,
+      -5,
       0,
       0,
       0,
@@ -9617,7 +9985,7 @@
       0,
       0,
       0,
-      0,
+      -5,
       -360,
       -360,
       -360,
@@ -9653,7 +10021,7 @@
       -360,
       -360,
       -360,
-      0,
+      -5,
       0,
       0,
       0,
@@ -9714,7 +10082,7 @@
       0,
       0,
       0,
-      0,
+      -5,
       -360,
       -360,
       -360,
@@ -9750,7 +10118,7 @@
       -360,
       -360,
       -360,
-      0,
+      -5,
       0,
       0,
       0,
@@ -9811,7 +10179,7 @@
       0,
       0,
       0,
-      0,
+      -5,
       -360,
       -360,
       -360,
@@ -9847,7 +10215,7 @@
       -360,
       -360,
       -360,
-      0,
+      -5,
       0,
       0,
       0,
@@ -9908,43 +10276,43 @@
       0,
       0,
       0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
+      -5,
+      -5,
+      -5,
+      -5,
+      -5,
+      -5,
+      -5,
+      -5,
+      -5,
+      -5,
+      -5,
+      -5,
+      -5,
+      -5,
+      -5,
+      -5,
+      -5,
+      -5,
+      -5,
+      -5,
+      -5,
+      -5,
+      -5,
+      -5,
+      -5,
+      -5,
+      -5,
+      -5,
+      -5,
+      -5,
+      -5,
+      -5,
+      -5,
+      -5,
+      -5,
+      -5,
+      -5,
       0,
       0,
       0,
@@ -31337,7 +31705,7 @@
     "height": 8
   },
   "backdrop": {
-    "sky": "clear",
+    "sky": "sunset",
     "scenery": "mesas",
     "ground": "sand",
     "haze": 0.35

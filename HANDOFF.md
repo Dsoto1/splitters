@@ -541,6 +541,47 @@ The first item of the owner's queue above. Three commits:
 - Tests: tools/ci/test/greenTree.test.mjs, train.test.mjs, testChanged.test.mjs; select.test.mjs's "runs everything" list
   lost view.ts and content/props.json (they no longer do) and gained models.json, packs.json, intake/, assets-src/.
 - Not proven on GitHub yet: the github-script step (dynamic import of greenTree.mjs, listWorkflowRuns) needs one check/ run.
+### Map reworks, batch 3 (`wip/map-rework-3`, agent, 2026-11-04; pushed, not merged; from main daef0aa)
+The last five maps of the owner's review (agent scratchpad `rework3/`): MapMaker driven by Playwright as in batches 1-2
+(driver `rework3/tools/maker.mjs` = the airliner driver plus a Paths-tool op; steps `rework3/<ic|ac|bw|sj|cm>/pass*.mjs`;
+pictures `rework3/<map>-before-*.png` / `-after-*.png`, the same camera names before and after).
+- **New MapMaker prop: Burn Barrel** (`prop.burn_barrel`, pack tiletrigger-kit, built in code in build-kit-props.mjs,
+  category Military): a rusted drum with charred wood and the pack campfire flame (`flame.size` 0.35; 0.7 was a 2.5 m
+  fire). content:rebuild run.
+- **Iron Compound** (owner: spawns, layout, not fun): a third way in, a gate tile in the west wall at cell (0,3) held by
+  a breakable plank block (260 HP, comes back); a container yard by it, a motor pool (armoured truck, hazard barriers)
+  inside the east gate, a stores row on the north wall, a sandbag nest, gabions and crates by the helipad; in front of
+  the raiders' spawns a container, an armoured truck and a burnt car, a tent and a campfire; wrecks in no-man's land;
+  three of the eight deathmatch spawns moved inside (four inside now) and an Embers spawn moved off the breach; burn
+  barrels; sunset, mist 0.25; description.
+- **Atomic Court**: the block bus, truck and cars (17 blocks) replaced by a supply truck, burnt car, pickup, flatbed,
+  two family cars and a beetle; sheds as outhouses; Suburban Chaos yards (picket fences, box hedges, swing set, slides,
+  trampoline, barbecues, patio sets, mailboxes, hydrants, bins); a TV, fridge, washer and beds in each house; sunset.
+- **Backwoods**: six drawn paths (dirt trails bridge → lodge and drain bank → porch, the gravel road, the camp's
+  trails to both bridges); the old stair-stepped painted trails painted back (77 Paint-brush dabs, ground picked from
+  the cells round each); the camp (campfire, tents, torches, pickup, crate); creek rocks and logs; cart and woodpile.
+  The map was at the 80-model budget: new pieces reuse models it had (pass2 swapped them).
+- **St. John's** ("needs better paths"): the 11 Dark Flagstone walks (black lines on the lawns) → 3 m Mossy Cobbles;
+  five new cobbled walks across the two bases' lawns (flagpole ring → central road, → north road, → south barracks;
+  Tide's lawn → the hall on the slope, twice); six lantern posts, two hedges.
+- **Capitol Mall** ("it feels strange"): the slab domes → `dc_dome` ×4 (capitol white on its lowest tier, museum copper
+  green), lanterns lifted; 88 ruin columns → Ionic (scale ×5/6, same height); blocky trees → Broad Oaks (×1.25) and
+  birches; seven Historic City Buildings (owner's Meshy) along the side lawns; a cordon round the obelisk; the capitol's
+  four walnut corner chambers marble outside; sunset; description.
+- **Card pictures** recaptured for all five (capture-map-shots; Capitol Mall keeps its fixed camera).
+- **Pitfalls (driver):** the Paths tool picks another path when a click lands on its ribbon or near a handle: click
+  every point with Shift (a new path's first two clicks too), and check no other path changed (the first St. John's
+  run added four points to a road; rerun from the original). The path pane's style/width controls keep the path as it
+  was drawn: redraw the pane (list → none → the path) between changes, or the second change undoes the first.
+  `shots.mjs` cameras need the map's real layout: Iron Compound's yard ring has an outer wall at x −12 / z −36.
+- **Not done / for the owner:** the capitol's corner chambers have black roofs from above (their roof material, not
+  changed); the domes sit on the old 12-point slab tier (reads as a skirt); the Burn Barrel flame and the camp fires
+  did not all show in some shots (whether lasting flames are capped by distance or count was not checked).
+- **Checks:** typecheck clean; validate-map 0 issues on all five; test:changed 1301 passed, 1 failed: bigMatch "96 bots
+  on Frost Basin within the tick budget" (timing, load ~9); rerun alone: bigMatch.test.ts 10/10 passed; map-reading
+  files 311 passed. E2E (`CI=1`, ports 4877/7911, `E2E_MAPS` = the five): scenery PASS 98 s, maps PASS 252 s, editor
+  PASS 203 s. ci:plan: the new prop's GLB, palette and provenance map to the full suite, so this needs a `check/` run.
+
 ### Airliner: Meshy shell, in-house cabin kit, Runway Nine rework (`wip/airliner`, agent, 2026-11-04; pushed, not merged; from wip/per-pack-content eee1833, origin/main merged)
 Owner's note on the old plane: "airplane looks like roblox/minecraft. not good". Pictures (before, after, cabin,
 cockpit, bridge, stairs, wing, tail): agent scratchpad `airliner/before-*.png`, `airliner/after-*.png`; MapMaker

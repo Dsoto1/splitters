@@ -50,6 +50,7 @@
     {"file":"props/brick_rubble.glb","source":"kenney-retro-urban-kit","src":"detail-bricks-type-b.glb","triangles":88,"bytes":10304,"sha256":"526ebf70c77dae43","size":[1.45,0.45,0.958]},
     {"file":"props/bucket.glb","source":"kenney-survival-kit","src":"bucket.glb","triangles":68,"bytes":12940,"sha256":"88e0965b5d51e975"},
     {"file":"props/bunk_bed.glb","source":"kenney-furniture-kit","src":"bedBunk.glb","triangles":466,"bytes":22868,"sha256":"498e4a43119d3683"},
+    {"file":"props/burn_barrel.glb","source":"tiletrigger-kit","src":"burn_barrel.glb","triangles":560,"bytes":22304,"sha256":"e5ec9c20836db223"},
     {"file":"props/bush.glb","source":"kenney-nature-kit","src":"plant_bush.glb","triangles":32,"bytes":3280,"sha256":"298ec361adae263f"},
     {"file":"props/bush_cone.glb","source":"kenney-nature-kit","src":"plant_bushTriangle.glb","triangles":30,"bytes":2964,"sha256":"476ca8aaddcee9ee"},
     {"file":"props/bush_large.glb","source":"kenney-nature-kit","src":"plant_bushLarge.glb","triangles":60,"bytes":4732,"sha256":"9b6b1727af3e481f"},
