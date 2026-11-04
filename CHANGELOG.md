@@ -74,6 +74,7 @@ made only on a commit that passed CI on a check branch.
 - Faster CI: a commit whose code matches one already green on a check branch (only docs differ) isn't tested again; `tools/ci/train.mjs` lands several green branches as one candidate; a change to the match renderer or a content manifest runs only the browser tests that exercise it.
 - Pickups are data: health, armour, ammo, throwables, weapon pickups, powerups and the other pickup items (amounts, respawn times, bot value) and the pickup rules (armour cap and absorption, powerup multiples, pickup reach) live in `content/pickups.json` and show in the Workbench. Nothing plays differently.
 - Surface materials are data: every library material (name, palette group, pattern or scanned texture, colours, tiling, shine, glow), the themes (each surface's default material and tint, the sky colour) and the tint swatches live in `content/materials.json` and show in the Workbench. Nothing looks different.
+- The core building kit is data: every core tile (rooms, corridors, stairs, platforms, open ground, buildings, curves, the city and Orbital/Neon pieces: cells, ports, default walls and the parts each is built from) and every wall style (doorways, windows, half walls, railings, arches, fences, bars, shutters: what collides, the trim, the window openings) live in `content/tiles/` and show in the Workbench. Every map builds exactly as before.
 
 ## 0.7.0 (2026-11-03)
 

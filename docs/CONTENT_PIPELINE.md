@@ -283,7 +283,8 @@ mesh level.
 
 - Gameplay shape stays in tile data, as today. An art kit supplies meshes per tile *part* (floor, wall, doorway frame, stairs, columns) per theme, snapped to the same grid and ports.
 - The kit viewer shows every tile in the theme next to its collision boxes. `content:check` verifies each art piece sits inside its tile's cell and doesn't block a doorway.
-- New tiles are added as data first (graybox is playable immediately), with art following.
+- New tiles are added as data first (graybox is playable immediately), with art following: the core kit is in
+  `content/tiles/` ("Tiles and edge styles" below).
 
 ### Weapons and items
 
@@ -390,7 +391,7 @@ in JSON, the behaviour in code (driving, suspension, flying, sentry aim and the 
    `npc-roles-resolved.json` as above and read the diff. MapMaker's encounter roster offers every role in
    `NPC_ROLES` (client `editor/editorApp.ts`).
 
-`pnpm content:rebuild` and `pnpm content:check` run all the data generators (weapons, vehicles, NPC roles, pickups, materials). The
+`pnpm content:rebuild` and `pnpm content:check` run all the data generators (weapons, vehicles, NPC roles, pickups, materials, tiles). The
 Workbench shows **Vehicles & turrets** and **NPC roles** from these files; id, kind, order, code, creature and look are
 read-only there, and a seat's place is edited in the JSON (the Workbench edits the first three seats' weapon and arc).
 
@@ -484,6 +485,63 @@ maps and stay in code.
 `pnpm content:rebuild` and `pnpm content:check` run it with the other data generators. The Workbench shows
 **Materials** (name, category, pattern, texture, colours, tiling, shine, glow, notes; id read-only) and **Themes**
 (name, sky, each slot's material and tint, notes; id read-only) from this file.
+
+### Tiles and edge styles
+
+The core building kit is data (docs/CONTENT_SCALABILITY.md step 7, scope "core kit"): what a tile occupies, where its
+doorways can open, its default walls and the parts it is built from are in `content/tiles/core.json`; how each side
+of a cell can be built (an edge style: what collides, the trim, the openings) is in `content/tiles/edges.json`. The
+builders are code: the parts (`map/catalog.ts`: `kitPart`, `resolveKitTile`), the room options (layouts, floor
+inserts, ceilings, corners), the facades and the auto/open rule (`map/geometry.ts`), `TILE_DIMENSIONS` (8 m cells,
+4 m levels, 0.5 m walls, 3 m doorways). The Style Pack tiles drawn in code (`paint(box, …)` in `map/packTiles*.ts`)
+stay there and follow the kit in the catalog.
+
+| File | Holds |
+|---|---|
+| `content/tiles/core.json` `tiles` | every kit tile in palette order: `id`, `displayName`, `category` (palette group: `TILE_CATEGORIES`), `blurb`, `cells` or `footprint` ([w, d] or [w, d, levels]), `floors` (levels with a slab), `ports` (`{side, level, cell}`, or `{allSides: level}`, or `{perimeter: [w, d], levels}`), `open`, `edgeDefault`, `edgeDefaults` (`"dx,dy,dz:S"`: style), `configurable` (room options), `model` (`file`, `lift`), `solids` and `extraFloors` (parts), `notes` |
+| `content/tiles/edges.json` `edges` | every edge style in MapMaker's order: `id`, `label`; `auto` and `open` are `rule`s in code; the rest give `segments` (collide: `u` along the side, `y` up, `t` thick, or a `repeat`), `trim` (`base`, `cornice`, `frame`, `window` or a box with `depth`), `trimFrom`, `openings` ([u0, u1, y0, y1]: framed under a facade, glazed when `glass`), `corner`, `facade`, `street`, `openDefault`, `dressing` (`door` / `window` with `span`, or `see-through`), `notes` |
+
+A part names one builder and its numbers (local metres: x east, y up, z north from the first cell's centre and
+floor): `box` [x0, y0, z0, x1, y1, z1] (with `yaw`, `surface`), `flight` (steps of 0.25 m: `axis`, `dir`, `from`,
+`across`, `steps`, `base`, `run`, `floor`), `descending` (steps down off a raised block), `rail` (1 m railing),
+`columns` (square columns at points), `partition` (a thin interior wall with gaps), `lamp`, `arc`, `arcTrim`,
+`arcade` (curves; `turns` in quarter turns), `roundRoom`, `discStrips` (a half-round floor), `block` (a model's
+collision, centred on the footprint). `kind` says what paints it: `solid` (default; the theme's solids slot), `wall`,
+`floor`, `trim` (drawn, never collides) or `prop` (collides, invisible: a model is drawn); `surface` gives a box a
+library material of its own. Edge values are metres or `half`, `-half`, `half-0.75`, `-half+0.75`, `height`,
+`height*2`, `height-0.15`, `height*2-0.2`, `min(3.5,height)`.
+
+#### How to add a tile or an edge style
+
+1. **A tile:** add it to `content/tiles/core.json` where it belongs in the palette (the order is only the palette's).
+   `id` is `core.<name>` (or `city.` / `orbital.` / `neon.` for those pieces); maps and Style Packs name a tile by id,
+   so never rename or remove one they use (the generator refuses). Tiles have **no network code**: a map carries the
+   id. Give its cells (or a `footprint`), the levels with floors, the ports, and its parts from the builders above. A
+   new kind of part is code first (`KitPart` and `kitPart` in `map/catalog.ts`), then its case in the generator's
+   schema. To offer it in a Style Pack, add it to that pack's `tiles` (`editor/stylePacks.ts`).
+2. **An edge style:** add it to `content/tiles/edges.json` (between `auto` and `open`, which stay first and last);
+   maps store a side's style by id, so never rename or remove one a map uses. Give `segments` and `trim` (an empty
+   list for none), and the flags that apply. MapMaker offers it at once (Walls & Openings, the inspector; its icon is
+   drawn from the segments) and maps accept it.
+3. **Generate and check:** `pnpm content:tiles` (`node tools/content/tiles.mjs`) checks the schema (an unknown field is
+   an error), palette groups and sides (`map/tileOptions.ts`), cells and footprints, that ports and default edges
+   sit on the tile's own cells, default edges are edge styles, one builder per part, boxes with min ≤ max, models
+   under `packages/client/public`, surfaces are materials in `content/materials.json`, edge values and repeats, that
+   glass styles have openings, unique ids, and that every tile and edge style `maps/*.json` and the Style Packs name
+   exists (kit ids here, other prefixes in `packTiles*.ts`); it writes `packages/shared/src/content/kitTiles.generated.ts`
+   (`KIT_TILES`) and `edgeStyles.generated.ts` (`EDGE_STYLES`, `EDGE_STYLE_LABELS`, `EDGE_SHAPES` and the glass,
+   corner, facade and street lists); `--check` only verifies they are up to date (`tools/content/test/tiles.test.mjs`
+   does the same).
+4. **Test:** `pnpm typecheck`, `pnpm test:changed` and the `editor`, `visual`, `scenery` and `maps` e2e flows; a
+   climbable tile also needs its bot paths (`test/kit.test.ts`). Changing a tile or a style changes
+   `packages/shared/test/fixtures/tiles-resolved.json` (the kit, the styles at six sizes, and a hash of what every map
+   builds: geometry, trim, facades, glass, validation, room dressing): rewrite it with
+   `UPDATE_TILE_FIXTURE=1 pnpm vitest run packages/shared/test/tilesData.test.ts` and read the diff.
+
+`pnpm content:rebuild` and `pnpm content:check` run it with the other data generators. The Workbench shows **Kit tiles**
+(name, palette group, blurb, floors, open, room options, default edge, model; id, cells, ports and parts read-only:
+edited in the JSON) and **Edge styles** (name, trim offset, the glass / corner / facade / street / open flags, room
+dressing; id, segments, trim and openings read-only) from these files.
 
 ### Audio
 
