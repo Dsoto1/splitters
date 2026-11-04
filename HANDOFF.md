@@ -76,6 +76,11 @@ docs/CONTENT_SCALABILITY.md step 2; how-to in docs/CONTENT_PIPELINE.md, "Adding 
   them, no hand edit); an entry removed by one side inside a conflicting part of a non-props lock comes back
   (content:check names the missing file). Not split: guns.json, packs.json, textures.json and the other
   single manifests, `stylePacks.ts`, `catalog.ts`, CHANGELOG/HANDOFF.
+- **Checks (local, load average 14 on 4 cores):** typecheck clean; test:changed ran all units (tools/content
+  changed): 1,496 passed, 2 failed under load and passed alone (bigMatch tick 31.0 ms vs 30; npc Outpost Siege
+  20 s timeout); content:check OK; e2e editorux PASS (atlas checks, pack search), editor PASS (first run failed
+  "random pickup ... drawn false", a 10 s wait; passed on rerun), scenery PASS (first run timed out starting
+  the match). tools/content changes run the full e2e suite on CI: needs a `check/` run.
 - **Pitfall:** a branch made before this that edits content/props.json conflicts on it: move its new props
   to their pack file (or a new one), then `pnpm content:rebuild`.
 
