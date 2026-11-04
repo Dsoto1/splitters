@@ -55,11 +55,11 @@ import {
   type ServerMessage,
   type ServerStats,
 } from '@tiletrigger/shared';
-import { AWAY, BotFiller, HostControl, Match, initNavigation, validateNavigation } from '@tiletrigger/shared/match';
+import { AWAY, BotFiller, HostControl, Match, initNavigation, simProfile, validateNavigation } from '@tiletrigger/shared/match';
 import { answerDiscovery, lanAddresses } from './lan.ts';
 import { expandRotation, readRotationPresets, suiteLookup } from './rotation.ts';
 import { readBotSetPresets, resolveBotSet } from './botSets.ts';
-import { StatsWindow } from './stats.ts';
+import { SpikeLog, StatsWindow } from './stats.ts';
 
 export interface ServerOptions {
   /** WebSocket/HTTP port (0: any free one), or null for no listener: players arrive through `accept` (the Host Service's WebRTC links). */
@@ -88,6 +88,13 @@ export interface ServerOptions {
   startGate?: boolean;
   /** Called once per second with instrumentation. */
   onStats?: (line: string, stats: ServerStats) => void;
+  /**
+   * The per-tick breakdown (sim sections, bot AI parts, snapshot building) in the stats, on by default: a few
+   * hundred timer reads a tick (docs/PERF_TOOLS.md "On the host"). `false` turns it off.
+   */
+  tickSplit?: boolean;
+  /** Write each tick over budget (with its breakdown and bot counts) to this rolling log file (stats.ts SpikeLog). */
+  spikeLog?: string;
   /** Server name in LAN discovery and /info (default "<map> server"). */
   name?: string;
   /**
@@ -239,6 +246,8 @@ interface Client {
   who?: PlayerIdentity;
   /** When this connection last sent anything (ms): a silent one is closed (SILENT_MS). */
   heardAt: number;
+  /** Said it's ready (has the match loaded): until then, LOADING_SILENT_MS. */
+  loaded?: boolean;
   /** Kicked or banned: their place isn't kept for them. */
   gone?: boolean;
 }
@@ -250,6 +259,11 @@ interface Client {
  * frame and pings every second.
  */
 const SILENT_MS = 20_000;
+/**
+ * …and one still loading the match (no `ready` yet): a slow machine building a big map can't answer meanwhile
+ * (as a browser host allows its friends, matchHost.ts FRIEND_LOADING_SILENT_MS).
+ */
+const LOADING_SILENT_MS = 60_000;
 
 /**
  * Limits on who can come in (on top of the hub's: broker sockets and joins per
@@ -618,6 +632,7 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
           broadcast({ t: 'roster', players: match.roster() });
         }
       } else if (msg.t === 'ready' && client.slot !== null) {
+        client.loaded = true;
         match.ready(client.slot);
       } else if (msg.t === 'ping') {
         if (msg.rtt !== undefined) client.rtt = msg.rtt;
@@ -667,12 +682,14 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
     const texts = encodeSnapshots(body, to.map((c) => ({ slot: c.slot, ack: match.slots[c.slot]?.lastSeq ?? 0, me: match.privateState(c.slot), stream: c.stream })));
     let total = 0;
     let n = 0;
+    let most = 0;
     to.forEach((c, i) => {
       send(c, texts[i]!);
       total += texts[i]!.length;
+      most = Math.max(most, texts[i]!.length);
       n++;
     });
-    if (n) stats.recordSnapshot(total / n);
+    if (n) stats.recordSnapshot(total / n, most);
   };
 
   // Fixed-rate loop that catches up after hiccups instead of drifting.
@@ -750,12 +767,21 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
     console.log(`[chain] now playing ${map.metadata.name}`);
   };
 
+  // The per-tick breakdown: simProfile's sections each tick, summed into the second (and kept for a spike's line).
+  const split = opts.tickSplit !== false;
+  if (split) {
+    simProfile.reset();
+    simProfile.on = true;
+  }
+  const spikeLog = opts.spikeLog ? new SpikeLog(opts.spikeLog) : null;
   const loop = () => {
     if (stopped) return;
     const now = performance.now();
     let ran = 0;
     while (now >= nextTickAt && ran < 5) {
       const t0 = performance.now();
+      // (Another server in this process, a test's, may have reset it: on again.)
+      if (split) simProfile.on = true;
       const events = match.step();
       pendingEvents.push(...events);
       for (const ev of events) {
@@ -771,9 +797,39 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
         broadcast({ t: 'roster', players: match.roster() });
         if (!bots.settling) refreshAdmins();
       }
-      if (match.tick % SNAPSHOT_INTERVAL_TICKS === 0) sendSnapshots();
+      let snapMs = 0;
+      if (match.tick % SNAPSHOT_INTERVAL_TICKS === 0) {
+        const s0 = performance.now();
+        sendSnapshots();
+        snapMs = performance.now() - s0;
+        if (split) simProfile.add('snapshot', snapMs);
+      }
       if (travel && match.tick >= travel.atTick) doTravel();
-      stats.recordTick(performance.now() - t0, match.lastAiMs);
+      const took = performance.now() - t0;
+      stats.recordTick(took, match.lastAiMs);
+      if (split) {
+        stats.absorb(simProfile.ms);
+        if (took > tickMs) {
+          stats.recordSpike();
+          const r = (v: number) => Math.round(v * 100) / 100;
+          const all = match.combatants();
+          spikeLog?.write({
+            map: map.metadata.name,
+            tick: match.tick,
+            ms: r(took),
+            budgetMs: r(tickMs),
+            ai: r(match.lastAiMs),
+            snapshot: r(snapMs),
+            bots: all.filter((c) => c.kind === 'bot').length,
+            alive: all.filter((c) => c.kind === 'bot' && c.alive).length,
+            humans: all.filter((c) => c.kind === 'human').length,
+            events: events.length,
+            sections: Object.fromEntries([...simProfile.ms].map(([k, v]) => [k, r(v)])),
+            counts: Object.fromEntries(simProfile.n),
+          });
+        }
+        simProfile.reset();
+      }
       nextTickAt += tickMs;
       ran++;
     }
@@ -815,7 +871,11 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
       }
       if (away.away.length || away.released.length) broadcast({ t: 'roster', players: match.roster() });
       const nowMs = Date.now();
-      for (const c of clients) if (c.slot !== null && nowMs - c.heardAt > SILENT_MS) c.conn.close(4009, 'no answer');
+      for (const c of clients) {
+        if (c.slot === null || nowMs - c.heardAt <= (c.loaded ? SILENT_MS : LOADING_SILENT_MS)) continue;
+        event(`${c.who?.name ?? 'a player'}: nothing heard for ${Math.round((nowMs - c.heardAt) / 1000)} s${c.loaded ? '' : ' (loading)'}, closing the connection`);
+        c.conn.close(4009, 'no answer');
+      }
       // Every other second: each human's ping, for the scoreboard.
       if (++pingRounds % 2 === 0) {
         const p = connected.flatMap((c) => (c.rtt !== undefined ? [c.slot!, c.rtt] : []));
@@ -908,6 +968,7 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
       }),
     close: async () => {
       stopped = true;
+      if (split) simProfile.on = false;
       clearTimeout(timer);
       discovery?.close();
       for (const c of clients) c.conn.close(1001, 'server stopping');

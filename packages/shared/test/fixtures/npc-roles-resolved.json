@@ -1,0 +1,698 @@
+{
+ "roles": [
+  {
+   "code": 0,
+   "role": "trooper",
+   "spec": {
+    "label": "Trooper",
+    "health": 70,
+    "weapon": "core.rifle",
+    "speed": 0.82,
+    "scale": 1
+   },
+   "profile": {
+    "accuracy": 30,
+    "reactionSpeed": 35,
+    "aggression": 55,
+    "selfPreservation": 30,
+    "tacticalAwareness": 65,
+    "objectivePriority": 50,
+    "itemGreed": 0,
+    "pursuitPersistence": 45,
+    "exploration": 0,
+    "teamLoyalty": 50,
+    "riskTolerance": 50,
+    "meleePreference": 20,
+    "rangePreference": 55,
+    "weaponPreferences": [],
+    "id": "core.npc_trooper",
+    "displayName": "Soldier",
+    "tags": [
+     "NPC",
+     "GRUNT"
+    ]
+   }
+  },
+  {
+   "code": 1,
+   "role": "gunner",
+   "spec": {
+    "label": "Gunner",
+    "health": 90,
+    "weapon": "core.shotgun",
+    "speed": 0.9,
+    "scale": 1.05
+   },
+   "profile": {
+    "accuracy": 30,
+    "reactionSpeed": 35,
+    "aggression": 75,
+    "selfPreservation": 30,
+    "tacticalAwareness": 65,
+    "objectivePriority": 50,
+    "itemGreed": 0,
+    "pursuitPersistence": 45,
+    "exploration": 0,
+    "teamLoyalty": 50,
+    "riskTolerance": 50,
+    "meleePreference": 20,
+    "rangePreference": 15,
+    "weaponPreferences": [],
+    "id": "core.npc_gunner",
+    "displayName": "Soldier",
+    "tags": [
+     "NPC",
+     "GRUNT"
+    ]
+   }
+  },
+  {
+   "code": 2,
+   "role": "heavy",
+   "spec": {
+    "label": "Heavy",
+    "health": 160,
+    "weapon": "core.launcher",
+    "speed": 0.7,
+    "scale": 1.18
+   },
+   "profile": {
+    "accuracy": 30,
+    "reactionSpeed": 35,
+    "aggression": 45,
+    "selfPreservation": 30,
+    "tacticalAwareness": 65,
+    "objectivePriority": 50,
+    "itemGreed": 0,
+    "pursuitPersistence": 30,
+    "exploration": 0,
+    "teamLoyalty": 50,
+    "riskTolerance": 50,
+    "meleePreference": 20,
+    "rangePreference": 60,
+    "weaponPreferences": [],
+    "id": "core.npc_heavy",
+    "displayName": "Soldier",
+    "tags": [
+     "NPC",
+     "SUPPRESSOR"
+    ]
+   }
+  },
+  {
+   "code": 3,
+   "role": "sniper",
+   "spec": {
+    "label": "Sniper",
+    "health": 60,
+    "weapon": "core.sniper",
+    "speed": 0.8,
+    "scale": 0.97
+   },
+   "profile": {
+    "accuracy": 45,
+    "reactionSpeed": 35,
+    "aggression": 25,
+    "selfPreservation": 30,
+    "tacticalAwareness": 65,
+    "objectivePriority": 50,
+    "itemGreed": 0,
+    "pursuitPersistence": 10,
+    "exploration": 0,
+    "teamLoyalty": 50,
+    "riskTolerance": 50,
+    "meleePreference": 20,
+    "rangePreference": 95,
+    "weaponPreferences": [],
+    "id": "core.npc_sniper",
+    "displayName": "Sniper",
+    "tags": [
+     "NPC",
+     "SNIPER"
+    ]
+   }
+  },
+  {
+   "code": 4,
+   "role": "imp",
+   "spec": {
+    "label": "Imp",
+    "health": 70,
+    "weapon": "core.knife",
+    "speed": 1.05,
+    "scale": 1,
+    "creature": true,
+    "melee": true,
+    "damage": 0.7
+   },
+   "profile": {
+    "accuracy": 30,
+    "reactionSpeed": 35,
+    "aggression": 95,
+    "selfPreservation": 10,
+    "tacticalAwareness": 15,
+    "objectivePriority": 50,
+    "itemGreed": 0,
+    "pursuitPersistence": 45,
+    "exploration": 0,
+    "teamLoyalty": 50,
+    "riskTolerance": 50,
+    "meleePreference": 20,
+    "rangePreference": 5,
+    "weaponPreferences": [],
+    "id": "core.npc_imp",
+    "displayName": "Imp",
+    "tags": [
+     "NPC",
+     "BERSERKER",
+     "RECKLESS"
+    ]
+   }
+  },
+  {
+   "code": 5,
+   "role": "puglin",
+   "spec": {
+    "label": "Puglin",
+    "health": 45,
+    "weapon": "core.knife",
+    "speed": 1.15,
+    "scale": 1,
+    "creature": true,
+    "melee": true,
+    "damage": 0.45
+   },
+   "profile": {
+    "accuracy": 30,
+    "reactionSpeed": 35,
+    "aggression": 95,
+    "selfPreservation": 15,
+    "tacticalAwareness": 10,
+    "objectivePriority": 50,
+    "itemGreed": 0,
+    "pursuitPersistence": 45,
+    "exploration": 0,
+    "teamLoyalty": 50,
+    "riskTolerance": 50,
+    "meleePreference": 20,
+    "rangePreference": 5,
+    "weaponPreferences": [],
+    "id": "core.npc_puglin",
+    "displayName": "Puglin",
+    "tags": [
+     "NPC",
+     "BERSERKER",
+     "RECKLESS"
+    ]
+   }
+  },
+  {
+   "code": 6,
+   "role": "cyclops",
+   "spec": {
+    "label": "Cyclops",
+    "health": 90,
+    "weapon": "core.goo_gun",
+    "speed": 0.75,
+    "scale": 1,
+    "creature": true
+   },
+   "profile": {
+    "accuracy": 30,
+    "reactionSpeed": 35,
+    "aggression": 55,
+    "selfPreservation": 30,
+    "tacticalAwareness": 30,
+    "objectivePriority": 50,
+    "itemGreed": 0,
+    "pursuitPersistence": 45,
+    "exploration": 0,
+    "teamLoyalty": 50,
+    "riskTolerance": 50,
+    "meleePreference": 20,
+    "rangePreference": 45,
+    "weaponPreferences": [],
+    "id": "core.npc_cyclops",
+    "displayName": "Cyclops",
+    "tags": [
+     "NPC"
+    ]
+   }
+  },
+  {
+   "code": 7,
+   "role": "oculus",
+   "spec": {
+    "label": "Oculus",
+    "health": 60,
+    "weapon": "core.plasma",
+    "speed": 0.9,
+    "scale": 1,
+    "creature": true
+   },
+   "profile": {
+    "accuracy": 30,
+    "reactionSpeed": 35,
+    "aggression": 60,
+    "selfPreservation": 30,
+    "tacticalAwareness": 30,
+    "objectivePriority": 50,
+    "itemGreed": 0,
+    "pursuitPersistence": 45,
+    "exploration": 0,
+    "teamLoyalty": 50,
+    "riskTolerance": 50,
+    "meleePreference": 20,
+    "rangePreference": 50,
+    "weaponPreferences": [],
+    "id": "core.npc_oculus",
+    "displayName": "Oculus",
+    "tags": [
+     "NPC"
+    ]
+   }
+  },
+  {
+   "code": 8,
+   "role": "scolitex",
+   "spec": {
+    "label": "Scolitex",
+    "health": 320,
+    "weapon": "core.knife",
+    "speed": 0.8,
+    "scale": 1,
+    "creature": true,
+    "melee": true,
+    "damage": 1.5
+   },
+   "profile": {
+    "accuracy": 30,
+    "reactionSpeed": 35,
+    "aggression": 90,
+    "selfPreservation": 5,
+    "tacticalAwareness": 10,
+    "objectivePriority": 50,
+    "itemGreed": 0,
+    "pursuitPersistence": 45,
+    "exploration": 0,
+    "teamLoyalty": 50,
+    "riskTolerance": 50,
+    "meleePreference": 20,
+    "rangePreference": 5,
+    "weaponPreferences": [],
+    "id": "core.npc_scolitex",
+    "displayName": "Scolitex",
+    "tags": [
+     "NPC",
+     "BERSERKER",
+     "RECKLESS"
+    ]
+   }
+  },
+  {
+   "code": 9,
+   "role": "zombie",
+   "spec": {
+    "label": "Zombie",
+    "health": 90,
+    "weapon": "core.knife",
+    "speed": 0.68,
+    "scale": 1,
+    "melee": true,
+    "damage": 0.55
+   },
+   "profile": {
+    "accuracy": 30,
+    "reactionSpeed": 35,
+    "aggression": 100,
+    "selfPreservation": 0,
+    "tacticalAwareness": 0,
+    "objectivePriority": 50,
+    "itemGreed": 0,
+    "pursuitPersistence": 100,
+    "exploration": 0,
+    "teamLoyalty": 50,
+    "riskTolerance": 50,
+    "meleePreference": 20,
+    "rangePreference": 0,
+    "weaponPreferences": [],
+    "id": "core.npc_zombie",
+    "displayName": "Zombie",
+    "tags": [
+     "NPC",
+     "BERSERKER",
+     "RECKLESS"
+    ]
+   }
+  },
+  {
+   "code": 10,
+   "role": "goblin",
+   "spec": {
+    "label": "Goblin",
+    "health": 55,
+    "weapon": "core.knife",
+    "speed": 1.1,
+    "scale": 0.9,
+    "melee": true,
+    "damage": 0.6,
+    "look": "core.goblin"
+   },
+   "profile": {
+    "accuracy": 30,
+    "reactionSpeed": 35,
+    "aggression": 95,
+    "selfPreservation": 20,
+    "tacticalAwareness": 20,
+    "objectivePriority": 50,
+    "itemGreed": 0,
+    "pursuitPersistence": 45,
+    "exploration": 0,
+    "teamLoyalty": 50,
+    "riskTolerance": 50,
+    "meleePreference": 20,
+    "rangePreference": 5,
+    "weaponPreferences": [],
+    "id": "core.npc_goblin",
+    "displayName": "Goblin",
+    "tags": [
+     "NPC",
+     "BERSERKER",
+     "RECKLESS"
+    ]
+   }
+  },
+  {
+   "code": 11,
+   "role": "otter",
+   "spec": {
+    "label": "Wealthy Otter",
+    "health": 60,
+    "weapon": "core.marksman",
+    "speed": 0.85,
+    "scale": 1,
+    "look": "core.otter"
+   },
+   "profile": {
+    "accuracy": 45,
+    "reactionSpeed": 35,
+    "aggression": 25,
+    "selfPreservation": 30,
+    "tacticalAwareness": 60,
+    "objectivePriority": 50,
+    "itemGreed": 0,
+    "pursuitPersistence": 15,
+    "exploration": 0,
+    "teamLoyalty": 50,
+    "riskTolerance": 50,
+    "meleePreference": 20,
+    "rangePreference": 90,
+    "weaponPreferences": [],
+    "id": "core.npc_otter",
+    "displayName": "Wealthy Otter",
+    "tags": [
+     "NPC",
+     "SNIPER"
+    ]
+   }
+  },
+  {
+   "code": 12,
+   "role": "boglurker",
+   "spec": {
+    "label": "Boglurker",
+    "health": 200,
+    "weapon": "core.shotgun",
+    "speed": 0.72,
+    "scale": 1.1,
+    "look": "core.boglurker"
+   },
+   "profile": {
+    "accuracy": 30,
+    "reactionSpeed": 35,
+    "aggression": 80,
+    "selfPreservation": 10,
+    "tacticalAwareness": 65,
+    "objectivePriority": 50,
+    "itemGreed": 0,
+    "pursuitPersistence": 45,
+    "exploration": 0,
+    "teamLoyalty": 50,
+    "riskTolerance": 50,
+    "meleePreference": 20,
+    "rangePreference": 15,
+    "weaponPreferences": [],
+    "id": "core.npc_boglurker",
+    "displayName": "Boglurker",
+    "tags": [
+     "NPC",
+     "GRUNT"
+    ]
+   }
+  },
+  {
+   "code": 13,
+   "role": "warlord",
+   "spec": {
+    "label": "Salamander Warlord",
+    "health": 260,
+    "weapon": "core.launcher",
+    "speed": 0.7,
+    "scale": 1.15,
+    "look": "core.warlord"
+   },
+   "profile": {
+    "accuracy": 30,
+    "reactionSpeed": 35,
+    "aggression": 50,
+    "selfPreservation": 30,
+    "tacticalAwareness": 65,
+    "objectivePriority": 50,
+    "itemGreed": 0,
+    "pursuitPersistence": 30,
+    "exploration": 0,
+    "teamLoyalty": 50,
+    "riskTolerance": 50,
+    "meleePreference": 20,
+    "rangePreference": 60,
+    "weaponPreferences": [],
+    "id": "core.npc_warlord",
+    "displayName": "Salamander Warlord",
+    "tags": [
+     "NPC",
+     "SUPPRESSOR"
+    ]
+   }
+  },
+  {
+   "code": 14,
+   "role": "hyena",
+   "spec": {
+    "label": "Hyena Warrior",
+    "health": 85,
+    "weapon": "core.smg",
+    "speed": 1.05,
+    "scale": 1,
+    "look": "core.hyena"
+   },
+   "profile": {
+    "accuracy": 30,
+    "reactionSpeed": 35,
+    "aggression": 85,
+    "selfPreservation": 30,
+    "tacticalAwareness": 65,
+    "objectivePriority": 50,
+    "itemGreed": 0,
+    "pursuitPersistence": 80,
+    "exploration": 0,
+    "teamLoyalty": 50,
+    "riskTolerance": 50,
+    "meleePreference": 20,
+    "rangePreference": 25,
+    "weaponPreferences": [],
+    "id": "core.npc_hyena",
+    "displayName": "Hyena Warrior",
+    "tags": [
+     "NPC",
+     "GRUNT"
+    ]
+   }
+  },
+  {
+   "code": 15,
+   "role": "alien",
+   "spec": {
+    "label": "Visitor",
+    "health": 65,
+    "weapon": "core.laser_rifle",
+    "speed": 0.95,
+    "scale": 1,
+    "look": "core.visitor"
+   },
+   "profile": {
+    "accuracy": 40,
+    "reactionSpeed": 35,
+    "aggression": 45,
+    "selfPreservation": 30,
+    "tacticalAwareness": 55,
+    "objectivePriority": 50,
+    "itemGreed": 0,
+    "pursuitPersistence": 45,
+    "exploration": 0,
+    "teamLoyalty": 50,
+    "riskTolerance": 50,
+    "meleePreference": 20,
+    "rangePreference": 65,
+    "weaponPreferences": [],
+    "id": "core.npc_alien",
+    "displayName": "Visitor",
+    "tags": [
+     "NPC"
+    ]
+   }
+  },
+  {
+   "code": 16,
+   "role": "pirate",
+   "spec": {
+    "label": "Pirate",
+    "health": 90,
+    "weapon": "core.sawed_off",
+    "speed": 0.92,
+    "scale": 1,
+    "look": "core.barnacle"
+   },
+   "profile": {
+    "accuracy": 30,
+    "reactionSpeed": 35,
+    "aggression": 85,
+    "selfPreservation": 20,
+    "tacticalAwareness": 65,
+    "objectivePriority": 50,
+    "itemGreed": 0,
+    "pursuitPersistence": 45,
+    "exploration": 0,
+    "teamLoyalty": 50,
+    "riskTolerance": 50,
+    "meleePreference": 20,
+    "rangePreference": 10,
+    "weaponPreferences": [],
+    "id": "core.npc_pirate",
+    "displayName": "Pirate",
+    "tags": [
+     "NPC",
+     "GRUNT",
+     "RECKLESS"
+    ]
+   }
+  },
+  {
+   "code": 17,
+   "role": "titan",
+   "spec": {
+    "label": "Strongman",
+    "health": 300,
+    "weapon": "core.lmg",
+    "speed": 0.66,
+    "scale": 1.18,
+    "look": "core.bogdan"
+   },
+   "profile": {
+    "accuracy": 30,
+    "reactionSpeed": 35,
+    "aggression": 70,
+    "selfPreservation": 5,
+    "tacticalAwareness": 65,
+    "objectivePriority": 50,
+    "itemGreed": 0,
+    "pursuitPersistence": 60,
+    "exploration": 0,
+    "teamLoyalty": 50,
+    "riskTolerance": 50,
+    "meleePreference": 20,
+    "rangePreference": 30,
+    "weaponPreferences": [],
+    "id": "core.npc_titan",
+    "displayName": "Strongman",
+    "tags": [
+     "NPC",
+     "SUPPRESSOR"
+    ]
+   }
+  }
+ ],
+ "creatures": [
+  "imp",
+  "puglin",
+  "cyclops",
+  "oculus",
+  "scolitex"
+ ],
+ "looks": [
+  {
+   "id": "npc:trooper",
+   "name": "Dummy",
+   "role": "trooper"
+  },
+  {
+   "id": "npc:gunner",
+   "name": "Gunner",
+   "role": "gunner"
+  },
+  {
+   "id": "npc:heavy",
+   "name": "Heavy",
+   "role": "heavy"
+  },
+  {
+   "id": "npc:sniper",
+   "name": "Sniper",
+   "role": "sniper"
+  },
+  {
+   "id": "npc:imp",
+   "name": "Imp",
+   "role": "imp"
+  },
+  {
+   "id": "npc:puglin",
+   "name": "Puglin",
+   "role": "puglin"
+  },
+  {
+   "id": "npc:cyclops",
+   "name": "Cyclops",
+   "role": "cyclops"
+  },
+  {
+   "id": "npc:oculus",
+   "name": "Oculus",
+   "role": "oculus"
+  },
+  {
+   "id": "npc:scolitex",
+   "name": "Scolitex",
+   "role": "scolitex"
+  },
+  {
+   "id": "npc:zombie",
+   "name": "Zombie",
+   "role": "zombie"
+  }
+ ],
+ "playerLooks": [
+  "npc:trooper"
+ ],
+ "lookGroups": {
+  "npc:trooper": "soldiers",
+  "npc:gunner": "soldiers",
+  "npc:heavy": "soldiers",
+  "npc:sniper": "soldiers",
+  "npc:imp": "creatures",
+  "npc:puglin": "creatures",
+  "npc:cyclops": "creatures",
+  "npc:oculus": "creatures",
+  "npc:scolitex": "creatures",
+  "npc:zombie": "horror"
+ }
+}

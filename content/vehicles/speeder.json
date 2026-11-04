@@ -1,0 +1,32 @@
+{
+  "id": "speeder",
+  "order": 5,
+  "displayName": "Speeder",
+  "kind": "vehicle",
+  "model": "vehicles/speeder.glb",
+  "health": 300,
+  "half": [1.2, 0.65, 2.1],
+  "seats": [
+    {
+      "role": "driver",
+      "label": "Pilot",
+      "offset": [0, 0.95, 0.5],
+      "weapon": "core.speeder_guns",
+      "arc": 0.35
+    },
+    { "role": "passenger", "label": "Passenger", "offset": [0, 1, -0.8] }
+  ],
+  "enterRadius": 3,
+  "respawnSeconds": 40,
+  "blast": { "radius": 4, "damage": 80 },
+  "vehicle": {
+    "maxSpeed": 24,
+    "reverseSpeed": 8,
+    "accel": 14,
+    "turnRate": 2.1,
+    "hover": true,
+    "grip": 0.07,
+    "mass": 0.6
+  },
+  "blurb": "A hovering two-seater: the pilot fires twin blasters ahead, the passenger shoots their own gun"
+}

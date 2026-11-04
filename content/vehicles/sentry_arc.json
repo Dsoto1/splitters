@@ -1,0 +1,24 @@
+{
+  "id": "sentry_arc",
+  "order": 3,
+  "displayName": "Arc Turret",
+  "kind": "sentry",
+  "model": "guns/arc_cannon_turret.glb",
+  "health": 240,
+  "half": [0.6, 0.5, 0.6],
+  "seats": [],
+  "enterRadius": 0,
+  "respawnSeconds": 45,
+  "blast": { "radius": 3, "damage": 50 },
+  "sentry": {
+    "weapon": "core.sentry_arc",
+    "range": 22,
+    "turnRate": 2,
+    "arc": { "windUpSeconds": 0.75, "lockSeconds": 2, "ventSeconds": 1.25 }
+  },
+  "glow": "#8f7bff",
+  "blurb": "Winds up on an enemy it can see, then locks an energy arc onto them that jumps to one more. Break its line of sight to shake it off",
+  "notes": {
+    "model": "The Rocket Turret's cannon (Meshy community, CC0 per the owner), drawn in its own energy colour (glow)."
+  }
+}

@@ -1,0 +1,346 @@
+{
+  "$comment": "NPC roles (scenario soldiers and creatures, sim/npc.ts). `code`: what NPC snapshots carry; never change one, never reuse one (content/codes.lock.json), and they run 0, 1, 2... `speed`: movement relative to players. `scale`: drawn size. `damage`: multiplier on its attacks. `creature`: its own body and clips (sim/creatures.ts). `melee`: charges into claw range. `look`: drawn as that character look holding its weapon. `bot`: what its bot profile changes from NPC_PROFILE (sim/npc.ts; 0-100 traits, tags: docs/BOTS.md). Edit, then run `node tools/content/npcs.mjs`.",
+  "roles": [
+    {
+      "role": "trooper",
+      "code": 0,
+      "label": "Trooper",
+      "health": 70,
+      "weapon": "core.rifle",
+      "speed": 0.82,
+      "scale": 1,
+      "bot": { "id": "core.npc_trooper", "tags": ["NPC", "GRUNT"] }
+    },
+    {
+      "role": "gunner",
+      "code": 1,
+      "label": "Gunner",
+      "health": 90,
+      "weapon": "core.shotgun",
+      "speed": 0.9,
+      "scale": 1.05,
+      "bot": { "id": "core.npc_gunner", "aggression": 75, "rangePreference": 15, "tags": ["NPC", "GRUNT"] }
+    },
+    {
+      "role": "heavy",
+      "code": 2,
+      "label": "Heavy",
+      "health": 160,
+      "weapon": "core.launcher",
+      "speed": 0.7,
+      "scale": 1.18,
+      "bot": {
+        "id": "core.npc_heavy",
+        "aggression": 45,
+        "pursuitPersistence": 30,
+        "rangePreference": 60,
+        "tags": ["NPC", "SUPPRESSOR"]
+      }
+    },
+    {
+      "role": "sniper",
+      "code": 3,
+      "label": "Sniper",
+      "health": 60,
+      "weapon": "core.sniper",
+      "speed": 0.8,
+      "scale": 0.97,
+      "bot": {
+        "id": "core.npc_sniper",
+        "displayName": "Sniper",
+        "accuracy": 45,
+        "aggression": 25,
+        "pursuitPersistence": 10,
+        "rangePreference": 95,
+        "tags": ["NPC", "SNIPER"]
+      }
+    },
+    {
+      "role": "imp",
+      "code": 4,
+      "label": "Imp",
+      "health": 70,
+      "weapon": "core.knife",
+      "speed": 1.05,
+      "scale": 1,
+      "creature": true,
+      "melee": true,
+      "damage": 0.7,
+      "bot": {
+        "id": "core.npc_imp",
+        "displayName": "Imp",
+        "aggression": 95,
+        "selfPreservation": 10,
+        "tacticalAwareness": 15,
+        "rangePreference": 5,
+        "tags": ["NPC", "BERSERKER", "RECKLESS"]
+      }
+    },
+    {
+      "role": "puglin",
+      "code": 5,
+      "label": "Puglin",
+      "health": 45,
+      "weapon": "core.knife",
+      "speed": 1.15,
+      "scale": 1,
+      "creature": true,
+      "melee": true,
+      "damage": 0.45,
+      "bot": {
+        "id": "core.npc_puglin",
+        "displayName": "Puglin",
+        "aggression": 95,
+        "selfPreservation": 15,
+        "tacticalAwareness": 10,
+        "rangePreference": 5,
+        "tags": ["NPC", "BERSERKER", "RECKLESS"]
+      }
+    },
+    {
+      "role": "cyclops",
+      "code": 6,
+      "label": "Cyclops",
+      "health": 90,
+      "weapon": "core.goo_gun",
+      "speed": 0.75,
+      "scale": 1,
+      "creature": true,
+      "bot": {
+        "id": "core.npc_cyclops",
+        "displayName": "Cyclops",
+        "tacticalAwareness": 30,
+        "rangePreference": 45,
+        "tags": ["NPC"]
+      }
+    },
+    {
+      "role": "oculus",
+      "code": 7,
+      "label": "Oculus",
+      "health": 60,
+      "weapon": "core.plasma",
+      "speed": 0.9,
+      "scale": 1,
+      "creature": true,
+      "bot": {
+        "id": "core.npc_oculus",
+        "displayName": "Oculus",
+        "aggression": 60,
+        "tacticalAwareness": 30,
+        "rangePreference": 50,
+        "tags": ["NPC"]
+      }
+    },
+    {
+      "role": "scolitex",
+      "code": 8,
+      "label": "Scolitex",
+      "health": 320,
+      "weapon": "core.knife",
+      "speed": 0.8,
+      "scale": 1,
+      "creature": true,
+      "melee": true,
+      "damage": 1.5,
+      "bot": {
+        "id": "core.npc_scolitex",
+        "displayName": "Scolitex",
+        "aggression": 90,
+        "selfPreservation": 5,
+        "tacticalAwareness": 10,
+        "rangePreference": 5,
+        "tags": ["NPC", "BERSERKER", "RECKLESS"]
+      }
+    },
+    {
+      "role": "zombie",
+      "code": 9,
+      "label": "Zombie",
+      "health": 90,
+      "weapon": "core.knife",
+      "speed": 0.68,
+      "scale": 1,
+      "melee": true,
+      "damage": 0.55,
+      "bot": {
+        "id": "core.npc_zombie",
+        "displayName": "Zombie",
+        "aggression": 100,
+        "selfPreservation": 0,
+        "tacticalAwareness": 0,
+        "pursuitPersistence": 100,
+        "rangePreference": 0,
+        "tags": ["NPC", "BERSERKER", "RECKLESS"]
+      },
+      "notes": {
+        "design": "Shambles on the soldiers' rig with its own clips; claws, never shoots. Head shots drop it fast."
+      }
+    },
+    {
+      "role": "goblin",
+      "code": 10,
+      "label": "Goblin",
+      "health": 55,
+      "weapon": "core.knife",
+      "speed": 1.1,
+      "scale": 0.9,
+      "melee": true,
+      "damage": 0.6,
+      "look": "core.goblin",
+      "bot": {
+        "id": "core.npc_goblin",
+        "displayName": "Goblin",
+        "aggression": 95,
+        "selfPreservation": 20,
+        "tacticalAwareness": 20,
+        "rangePreference": 5,
+        "tags": ["NPC", "BERSERKER", "RECKLESS"]
+      },
+      "notes": {
+        "design": "A creature original on the soldiers' rig with its weapon: darts in with blades."
+      }
+    },
+    {
+      "role": "otter",
+      "code": 11,
+      "label": "Wealthy Otter",
+      "health": 60,
+      "weapon": "core.marksman",
+      "speed": 0.85,
+      "scale": 1,
+      "look": "core.otter",
+      "bot": {
+        "id": "core.npc_otter",
+        "displayName": "Wealthy Otter",
+        "accuracy": 45,
+        "aggression": 25,
+        "tacticalAwareness": 60,
+        "pursuitPersistence": 15,
+        "rangePreference": 90,
+        "tags": ["NPC", "SNIPER"]
+      },
+      "notes": { "design": "A creature original on the soldiers' rig: snipes from the back." }
+    },
+    {
+      "role": "boglurker",
+      "code": 12,
+      "label": "Boglurker",
+      "health": 200,
+      "weapon": "core.shotgun",
+      "speed": 0.72,
+      "scale": 1.1,
+      "look": "core.boglurker",
+      "bot": {
+        "id": "core.npc_boglurker",
+        "displayName": "Boglurker",
+        "aggression": 80,
+        "selfPreservation": 10,
+        "rangePreference": 15,
+        "tags": ["NPC", "GRUNT"]
+      },
+      "notes": { "design": "A creature original on the soldiers' rig: soaks up fire." }
+    },
+    {
+      "role": "warlord",
+      "code": 13,
+      "label": "Salamander Warlord",
+      "health": 260,
+      "weapon": "core.launcher",
+      "speed": 0.7,
+      "scale": 1.15,
+      "look": "core.warlord",
+      "bot": {
+        "id": "core.npc_warlord",
+        "displayName": "Salamander Warlord",
+        "aggression": 50,
+        "pursuitPersistence": 30,
+        "rangePreference": 60,
+        "tags": ["NPC", "SUPPRESSOR"]
+      },
+      "notes": { "design": "A creature original on the soldiers' rig: shells you." }
+    },
+    {
+      "role": "hyena",
+      "code": 14,
+      "label": "Hyena Warrior",
+      "health": 85,
+      "weapon": "core.smg",
+      "speed": 1.05,
+      "scale": 1,
+      "look": "core.hyena",
+      "bot": {
+        "id": "core.npc_hyena",
+        "displayName": "Hyena Warrior",
+        "aggression": 85,
+        "pursuitPersistence": 80,
+        "rangePreference": 25,
+        "tags": ["NPC", "GRUNT"]
+      },
+      "notes": { "design": "A creature original on the soldiers' rig: hyenas run you down in packs." }
+    },
+    {
+      "role": "alien",
+      "code": 15,
+      "label": "Visitor",
+      "health": 65,
+      "weapon": "core.laser_rifle",
+      "speed": 0.95,
+      "scale": 1,
+      "look": "core.visitor",
+      "bot": {
+        "id": "core.npc_alien",
+        "displayName": "Visitor",
+        "accuracy": 40,
+        "aggression": 45,
+        "tacticalAwareness": 55,
+        "rangePreference": 65,
+        "tags": ["NPC"]
+      },
+      "notes": {
+        "design": "A Meshy community original: grey visitors pick you off with lasers from mid range."
+      }
+    },
+    {
+      "role": "pirate",
+      "code": 16,
+      "label": "Pirate",
+      "health": 90,
+      "weapon": "core.sawed_off",
+      "speed": 0.92,
+      "scale": 1,
+      "look": "core.barnacle",
+      "bot": {
+        "id": "core.npc_pirate",
+        "displayName": "Pirate",
+        "aggression": 85,
+        "selfPreservation": 20,
+        "rangePreference": 10,
+        "tags": ["NPC", "GRUNT", "RECKLESS"]
+      },
+      "notes": { "design": "A Meshy community original: pirates board with sawed-offs." }
+    },
+    {
+      "role": "titan",
+      "code": 17,
+      "label": "Strongman",
+      "health": 300,
+      "weapon": "core.lmg",
+      "speed": 0.66,
+      "scale": 1.18,
+      "look": "core.bogdan",
+      "bot": {
+        "id": "core.npc_titan",
+        "displayName": "Strongman",
+        "aggression": 70,
+        "selfPreservation": 5,
+        "pursuitPersistence": 60,
+        "rangePreference": 30,
+        "tags": ["NPC", "SUPPRESSOR"]
+      },
+      "notes": {
+        "design": "A Meshy community original: the strongman walks a spin gun straight at you, hard to put down."
+      }
+    }
+  ]
+}

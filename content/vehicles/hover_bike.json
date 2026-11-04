@@ -1,0 +1,26 @@
+{
+  "id": "hover_bike",
+  "order": 13,
+  "displayName": "Hover Bike",
+  "kind": "vehicle",
+  "model": "vehicles/hover_bike.glb",
+  "health": 170,
+  "half": [0.9, 0.5, 1.5],
+  "seats": [{ "role": "driver", "label": "Rider", "offset": [0, 0.95, 0.25] }],
+  "enterRadius": 2.6,
+  "respawnSeconds": 30,
+  "blast": { "radius": 3.5, "damage": 70 },
+  "vehicle": {
+    "maxSpeed": 31,
+    "reverseSpeed": 8,
+    "accel": 18,
+    "turnRate": 2.4,
+    "hover": true,
+    "grip": 0.1,
+    "mass": 0.35
+  },
+  "blurb": "The fastest thing on the map: one rider, no gun, drifts like a hovercraft",
+  "notes": {
+    "seats": "Astride the canopy, ahead of the middle: the nose (+Z) leads and the twin exhausts trail."
+  }
+}

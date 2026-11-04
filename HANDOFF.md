@@ -10,6 +10,49 @@ The session branch is **`claude/launcher-ui-map-cards`**. Poll CI without auth:
 `curl -s "https://api.github.com/repos/Dsoto1/splitters/actions/workflows/ci.yml/runs?branch=check/candidate&per_page=1"`.
 Use `pnpm typecheck`, not `pnpm -s typecheck` (the silent flag hides type errors; one reached CI that way).
 
+### Content scalability step 4: vehicles, turrets and NPC roles as data (`wip/vehicles-npcs-data`, agent, 2026-11-04; not merged; on `wip/per-pack-content` eee1833, which has main)
+docs/CONTENT_SCALABILITY.md step 4, same pattern as weapons; how to add one: docs/CONTENT_PIPELINE.md, "Vehicles, turrets and NPC roles".
+- **Where things are now:** `content/vehicles/<id>.json` (one per mount: the 17 placeable ones with an `order`, which
+  is MapMaker's palette order, and the 2 route crafts `airplane` / `dropship_drop`; kind, model, health, box, seats
+  with mounted weapons and arcs, reach, respawn, blast, `vehicle` handling incl. suspension, `sentry` block, drawing
+  numbers, blurb, `notes` from the old comments). `content/npcs.json` (18 roles: explicit `code`, health, weapon,
+  speed, scale, damage, creature / melee, look, and `bot`: what each role's profile changes from `NPC_PROFILE`).
+  `tools/content/vehicles.mjs` (`pnpm content:vehicles`) -> `packages/shared/src/content/mounts.generated.ts`;
+  `tools/content/npcs.mjs` (`pnpm content:npcs`) -> `npcRoles.generated.ts` (`NPC_ROLES` in code order,
+  `CREATURE_ROLES`, `NPC_ROLE_SPECS`, `NPC_ROLE_BOTS`) and `content/codes.lock.json` `npcRoles`. sim/mounts.ts,
+  sim/npc.ts and map/mapKeys.ts keep the types and all behaviour and re-export; `NPC_ROLE_PROFILES` is built from
+  `NPC_PROFILE` + `NPC_ROLE_BOTS`. NPC looks logic (skins, colours, `NPC_KEPT_LOOKS`) stays in code.
+- **Checks in the generators:** schema (unknown fields are errors); mounts: weapons exist and are slot 0, models
+  exist, the two vehicle sounds every mount plays exist, seats fit the kind (turret: gunners only; sentry: none;
+  vehicle: one driver; gunners need a weapon, passengers have none), unique `order`, both route crafts present.
+  NPC roles: weapon exists and is carried (slot 1-9), look is a `content/characters` look, a creature has its body
+  in `CREATURE_SPECS`, tags are ones the brain reads (`hasTag`), traits 0-100, codes unique / never changed / never
+  reused / 0..n-1. Mounts have **no network code** (a mount travels as its map entity index; maps name it by id).
+- **Proof of no change:** `packages/shared/test/fixtures/vehicles-resolved.json` and `npc-roles-resolved.json`
+  (written from the hand-written tables first: every MountDef with `mountMass` and each seat's `cockpitEye`, the
+  route crafts and lookups; every role's code, spec and full bot profile, CREATURE_ROLES, the NPC skins and their
+  groups); `vehiclesNpcsData.test.ts` deep-equals them. NPC role codes equal the old `NPC_ROLES` order.
+- **Wiring:** `pnpm content:rebuild` runs weapons, vehicles and npcs (its generated-file pattern now also matches
+  camel-case names: `weaponFamilies`, `npcRoles`); `pnpm content:check` now runs all three `--check`s (the weapons one
+  wasn't in it). weapons.mjs exports its schema / TS helpers and keeps other sections of the codes lock.
+- **Workbench:** "Vehicles & turrets" (37 fields: name, blurb, model, health, box, reach, respawn, blast, speeds,
+  grip, drift, mass, hover, fly, ride height, sentry and arc numbers, the first three seats' weapon and arc, glow;
+  id, kind, order and the seat list read-only) and "NPC roles" (20 fields: name, health, weapon, speed, size, damage,
+  melee, seven bot traits, tags, notes; role, code, creature and look read-only). Checked with the dashboard's
+  `parseManifest` / `itemsOf` (no errors; `seats.1.weapon` paths resolve).
+- **Pitfalls:** edit the JSON, never the `.generated.ts`; never rename a mount id (maps) or change / reuse an NPC
+  code; a seat's place and the suspension are JSON-only; a numbers change is a fixture change
+  (`UPDATE_VEHICLE_FIXTURE=1`). Seat `facing` of ±π/2 is written as ±1.5707963267948966 (exact).
+- **Checks:** menu's first JS 649.3 -> 649.4 kB gzip (`index` 208.4 -> 208.6; raw 2308.2 -> 2308.1 kB;
+  base built from 27d7a58's shared sources on the same machine); the mount tables stay out of the menu chunk (they
+  load with a match / MapMaker), the NPC roles were already in it (Character Select's NPC skins). `pnpm typecheck`
+  clean. `pnpm test:changed` (everything, shared changed): 1517 pass, 1 failed at load ~18 (spectate idle-kick, 22 s
+  timeout), passes alone. `content:check` and `content:rebuild` (nothing changed). E2E (`CI=1`, ports 4287/7897):
+  vehicles PASS (215 s), zombies PASS (49 s), outpost FAIL at load (2 characters in 20 s, run took 143 s), rerun PASS
+  (9 characters, 51 s).
+- **Not done / next:** e2e/flowMap has no rule for `content/vehicles/` or `content/npcs.json` (a change regenerates
+  shared code, which runs the full suite anyway); per-role NPC skin colours stay in code (looks logic, as asked).
+
 ### Content scalability step 3: weapons, throwables, classes and abilities as data (`wip/weapons-data`, agent, 2026-11-04; not merged; rebased on main 5bc2455)
 docs/CONTENT_SCALABILITY.md "Weapons as data", all five steps; how to add a weapon: docs/CONTENT_PIPELINE.md.
 - **Where things are now:** `content/weapons/families.json` (the old `weapon()` default block and the ten gunplay
@@ -49,6 +92,56 @@ docs/CONTENT_SCALABILITY.md "Weapons as data", all five steps; how to add a weap
   e2e/flowMap has no rule for `content/weapons/` or `.control-center/` (they run the full suite; a weapon change
   always regenerates shared code anyway); stopping power by category stays in `sim/impact.ts`; the menu could
   import a small weapon-name list instead of the whole table (CONTENT_SCALABILITY step 1 note).
+### Performance toolset and first busy-area fixes (`wip/perf-toolset`, agent, 2026-11-04; pushed, not merged; from main 9b2373f)
+Owner-approved. Guide for the owner: docs/PERF_TOOLS.md (how to record on the host, what to send, reading the split).
+- **Level 1, F3 split** (`perfProbe.ts` SYS/COUNT, `perfOverlay.ts` frameSplit): render split into main pass
+  (`scene`, with mesh evaluation), shadow + depth maps, post; characters (updateAvatars + Babylon clips/aim + skinning),
+  effects, ragdolls/effects physics, prop flames, HUD, net in; counts: animated, skinned, ragdolls awake, lasting
+  drawn, characters let through to build. Render spans are Babylon observables (`view.ts instrumentRender`), skinning
+  through `CharacterAnimator.skinProbe` (a hook, so the menu doesn't load the probe). Report has the same split.
+- **Level 2, Record performance** (Pause → Settings; `perfRecorder.ts`): per-second split (avg + slowest), per-system
+  histograms, hitch snapshots (>50 ms: position, map, in view, quality, server tick + split, shaders built). Plain
+  download on stop or on leaving the match. `tools/perf/compare.mjs a.json [b.json]`.
+- **Level 3, Capture 10 s trace**: `performance.measure` spans `tt:*` + a Chrome trace-event JSON download
+  (ui.perfetto.dev / chrome://tracing).
+- **Host**: server `tickSplit` on by default (simProfile per tick → `ServerStats.split`, `snapshotBytesMax`, `spikes`),
+  `SpikeLog` (stats.ts) → `logs/perf-spikes.log` (HOST_PERF_LOG set by host main.ts), shown on /host (hostPage.ts
+  perfLines) and the launcher's Tick tile (tooltip). Smoke: 24 bots Frost Basin, lines and spike JSON as expected.
+- **Fixes** (measured same-frame on the after build, Shingle Point 64 bots medium, SwiftShader at load 10-15; the
+  probe evaluates the old rule and the new one on the same frame: scratchpad `probe/probe2.mjs`):
+  - Shadows: nearest 12 living characters in view cast (+ anyone within 10 m); in crowds nobody past 30 m, now
+    including the dead/dying and corpses (main let every corpse and pending death cast, at any distance). Casting
+    characters old rule → now: 9 → 6, 6 → 0, 8 → 0, 14 → 1 (four samples; the base build's own count matched the old
+    rule exactly). Small clutter (`isSmallProp`: < 0.75 m, or a plant < 1.2 m: grass, wheat, flowers, small rocks)
+    casts only within 15 m: 25 instances in shadow reach → 1.
+  - Animation: crowds' characters 15-35 m step at 30 Hz (was every frame); 35-70 m 15 Hz, > 70 m 10 Hz as before.
+    Evaluations a second at 60 fps, same frames: 750 → 570, 625 → 595, 590 → 590, 585 → 585 (depends on who stands at
+    15-35 m; −24 % at most here). Low-detail model in crowds at 12.6 m (`CROWD_LOD_SHARE` 0.7 of 18 m).
+  - Off-screen skeletons were already frozen in crowds (culled → dormant, prepare not called): perf96 posed ≈ shown.
+  - Static props: Shingle Point's 446 props are 38 untinted models, all already GPU instances merged per material
+    with frozen world matrices; nothing left to batch. Materials not frozen (atmosphere changes; PERF_96.md).
+  - Merging far characters' draws: not done (each has its own skeleton; needs baked animation textures).
+  - First-sight hitch: `GameView.prewarm` at the loading gate (session.prepareMatch, waits 8 s at most): every
+    mapped effect played out of sight until `scene.whenReadyAsync`, then ended; then one character per look (up to
+    32) at y −10000, `whenReadyAsync`, disposed; `Effect.PersistentMode = true` keeps the programs. Shader programs built by a round of effects after
+    loading (explosion, hits, both lightning, lasting ones): main 6 (gv_zap, streaks, flare, four_point_star,
+    ElectricFX impact/glow) → 0. On this SwiftShader box the prewarm took 192 s (finished in the background after the
+    start); on a GPU expect seconds, unmeasured. Risk: 32 characters built during loading.
+- perf96: timing-free counts (skeletons posed, characters animated from Babylon's state), bands, active meshes and
+  casters by kind, `rows` scenario (PERF_SCENARIOS=rows), shader builds after the gate, prewarm report. Its spread/clump
+  views differ between runs, so draws/casters there don't compare build to build (see probe numbers above).
+- Menu bundle 837.2 → 835.4 kB gzip (perfOverlay out of the menu; net probe in its own file).
+- Recording/trace smoke (Frost Basin, 31 players, SwiftShader): Record → Stop downloaded a 38 KB file that
+  compare.mjs reads (split, counts, 47 hitch snapshots with in-view counts and server tick); the trace downloaded
+  14 KB of `tt:` spans; no page errors. Second same-frame probe after the two-phase prewarm: shaders built by the
+  round of effects 0; casting characters 10 → 10 (nobody past 30 m in view then), small clutter casting 45 → 0,
+  animation evaluations 610 → 490 a second.
+- Checks: typecheck; test:changed 1295 pass, 2 fail at load 20-28 (host.test account ticket, botai aim timeout),
+  both pass alone; e2e (`CI=1`, other ports): physicsfx PASS (twice), characters PASS (1,666 s), hostpage PASS;
+  offline FAIL (kill cam banner checks) and dedicatedhost FAIL (admin player list), and main 9b2373f's build fails
+  the same checks of both flows on this box at the same load, so not from this branch; menu 837.2 → 835.4 kB gzip.
+  ci:plan: full suite (index.html, atmosphere, characters): needs a `check/` run before main; visual baselines may
+  move where small clutter's far shadows went (not run here).
 
 ### Character fixes 2: Imp portrait, bodies, shoulders, faces (`wip/char-fixes-2`, agent, 2026-11-03; pushed, not merged; from main 716c012)
 Continues the entry below (owner's notes of 3 Nov). Evidence (before/after screenshots, audits, raw comparisons): agent
@@ -83,26 +176,39 @@ scratchpad `charfix2/`.
   new in their rest pose, same light and framing; serve the files under `public/zz-charfix-raw`, never commit it).
 
 ### E2E flakes: dedicatedhost, offline, handoff, lobby (`wip/flaky-e2e`, agent, 2026-11-04; not merged)
-Four flows that failed on CI's slow software-rendered pages (1–2 fps). No check skipped or loosened.
-- **dedicatedhost, Kick:** idle takeover. The visitor (after its walk) and the owner (in the pause menu) sit still
-  for minutes; after 90 s (`AWAY.afkSeconds`) a bot plays for each, `match.roster()` marks them `bot`, and the
-  admin's player list (people only, `session.peopleIn`) drops the visitor's Kick button. Fix: the flow starts the
-  Host Service with its own setting `AFK_SECONDS=0`. (The idle rules have unit tests.)
-- **offline, kill cam / skip:** the kill cam was 3.5 s of wall clock from the death message, so one long frame
-  ate it unseen, and the Space meant to skip it then toggled the free camera. Fix (product): its time is the
-  time it's drawn, each frame counting at most 0.25 s (`spectatorCam.ts` `KILL_CAM_FRAME_MS`, as session.ts caps a
-  frame's step). Same on a normal machine. `spec().killCamEnd` ('skipped' | 'over') lets the flow prove the skip
-  rather than a timeout. **Join game:** the bots weren't held, so one could shoot the player between "alive" and
-  the check; the flow holds them (`holdBots`) and checks the alive it waited for.
+Four flows that failed on CI's slow software-rendered pages (1–2 fps). No check skipped or loosened; waits are on
+conditions, some with roomier caps.
+- **dedicatedhost, Kick:** (1) idle takeover: the visitor (after its walk) and the owner (in the pause menu) sit
+  still; after 90 s (`AWAY.afkSeconds`) a bot plays for each, `match.roster()` marks them `bot`, and the admin's
+  player list (people only, `session.peopleIn`) drops the Kick button. The flow starts the Host Service with
+  `AFK_SECONDS=0` (the idle rules have unit tests). (2) **Server fix:** a client still loading the match (no `ready`)
+  now gets 60 s before a silent close (`server.ts LOADING_SILENT_MS`, as `matchHost` already allows friends);
+  the owner's page building Sandgate went 20 s without a word and was dropped mid-join. The host log now says
+  "nothing heard for N s, closing the connection". (3) The Kick click ran inside a 15 s `waitForFunction` that
+  could click after timing out (a kick that landed failed the check): it clicks once (`__kickClicked`), with room.
+  Page opens wait on what each needs next (`goto` to `commit`); the failure messages carry the pages' warnings,
+  failed requests and the host log.
+- **offline, kill cam / skip:** the kill cam was 3.5 s of wall clock from the death message, so one long frame ate
+  it unseen and the Space meant to skip it toggled the free camera. **Product fix:** its time is the time it's
+  drawn, each frame counting at most 0.25 s (`spectatorCam.ts KILL_CAM_FRAME_MS`, as session.ts caps a frame's
+  step); same on a normal machine. `spec().killCamEnd` ('skipped' | 'over') proves the skip. **Join game:** the
+  bots weren't held, so one could shoot the player between "alive" and the check (`holdBots` now). The sounds wait
+  no longer throws (the check after it reports).
 - **handoff:** the friends never touched their controls, so after 90 s they were "away", and an away friend is
-  no successor (`matchHost.tendSuccessor`): the successor, its checkpoints and the takeover went with it. Fix:
-  each friend looks about (a small turn every 3 s) from the moment it's in; both joins wait in parallel. The
-  **404** on every page was the hub's `/api/v1/maps` with publishing off (no `PUBLISHED_MAPS_DIR`, as in e2e and
-  any community hub): it now answers an empty list (`publish.ts noPublishingHandler`), and the flow names any
-  failed request in its log.
-- **lobby, 2 players:** the check waited 30 s for a check-in that comes every 20 s (`LOBBY_HEARTBEAT_SECONDS`) on
-  the host page's timer, late on heavy Sandgate. It now waits for two of the host's check-ins (its PUTs) after the
-  join, then the listing must say 2: independent of map weight.
+  no successor (`matchHost.tendSuccessor`): the successor, its checkpoints and the takeover went with it. Each
+  friend now looks about (a small turn every 3 s) from the moment it's in; both joins wait in parallel. The
+  **404** on every page was the hub's `/api/v1/maps` with publishing off (no `PUBLISHED_MAPS_DIR`): it answers an
+  empty list now (`publish.ts noPublishingHandler`). Every failed check dumps the console (pages and the match
+  worker, where `matchHost` now says why it closes a friend's link), and failed requests are named.
+  **Open:** CI's "two friends join" (Bo's link "closed" 3 s after loading) wasn't reproduced; the new logs will
+  name the cause next time.
+- **lobby, 2 players:** waited 30 s for a check-in that comes every 20 s on the host page's timer, late on heavy
+  Sandgate. It now waits for two of the host's check-ins (its PUTs) after the join, reading the hub only as each
+  lands, then the listing must say 2. List predicates treat a hub "slow down" answer (no `games`) as "not yet"
+  (`gone` used to throw on it and fail at once). Sandgate join and game-browser waits got room.
+- Seen, not changed: the game browser probes localhost:7777–7780 `/info` and `/lobby/lan` (404 when the hub runs
+  with `LAN_DISCOVERY=0`): console noise on dedicatedhost pages, harmless. offline's Character Select "E E
+  scrolls the grid two sections" failed once under load (unrelated).
 
 ### Content scalability step 1: the menu's first download (`wip/menu-bundle`, agent, 2026-11-03; not merged; rebased on main 51519b2)
 docs/CONTENT_SCALABILITY.md step 1. **Menu's first JS 837.0 -> 649.0 kB gzip** (2970 -> 2305 kB raw, on main 51519b2; `index` 396.1 ->

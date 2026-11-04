@@ -23,6 +23,7 @@ export function createPropNode(scene: Scene, models: ModelLibrary, e: PropEntity
   orientProp(root, e, terrain);
   const def = getProp(e.model);
   if (!def) return root;
+  const small = isSmallProp(def.size, !!def.collision, e.scale);
   // Untinted copies of the same prop share one draw call per material (their parts merged); tinted ones need their own materials.
   const model = instanced && !e.tint ? models.instantiateStatic(def.file, `${name}_model`) : models.instantiate(def.file, `${name}_model`, false);
   void model.then((node) => {
@@ -39,9 +40,20 @@ export function createPropNode(scene: Scene, models: ModelLibrary, e: PropEntity
         }
       }
       if (frozen) m.freezeWorldMatrix();
+      // Small clutter casts its shadow only near the camera (Atmosphere, SMALL_CASTER_REACH).
+      if (small) m.metadata = { ...(m.metadata as object | null), smallCaster: true };
     }
   });
   return root;
+}
+
+/**
+ * Small clutter: a prop under 0.75 m tall, or a plant (nothing to collide with) under 1.2 m (grass, wheat, flowers,
+ * small rocks and crates). Its shadow is a speck past a few metres: drawn only near the camera.
+ */
+export function isSmallProp(size: readonly number[], collides: boolean, scale: number): boolean {
+  const h = (size[1] ?? 0) * scale;
+  return h < 0.75 || (!collides && h < 1.2);
 }
 
 /** The materials a prop made for itself (its tinted copies); every other material belongs to the model library. */

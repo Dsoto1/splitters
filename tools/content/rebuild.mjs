@@ -8,6 +8,9 @@
 //   2. tables  tools/content/prepare-props.mjs       props.generated.ts and props.lock.json from
 //                                                     content/props/*.json (packs from downloads kept as built)
 //              tools/content/character-manifests.mjs characters.generated.ts from content/characters/*.json
+//              tools/content/weapons.mjs             weapons.generated.ts, weaponFamilies.generated.ts, codes.lock.json
+//              tools/content/vehicles.mjs            mounts.generated.ts from content/vehicles/*.json
+//              tools/content/npcs.mjs                npcRoles.generated.ts and codes.lock.json (npcRoles) from content/npcs.json
 //   3. atlas   tools/content/build-palette-atlas.mjs --offline: the palette atlases from the pictures
 //                                                     already made (any old atlas, either side of a conflict)
 //      only when a piece has no picture yet (new or changed model):
@@ -32,7 +35,7 @@ import { fileURLToPath } from 'node:url';
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const all = process.argv.includes('--all');
 /** Generated files: a merge conflict in one is settled by rebuilding it. */
-const GENERATED = /^(content\/[a-z-]+\.lock\.json|content\/provenance\.json|packages\/shared\/src\/content\/[a-z]+\.generated\.ts|packages\/client\/public\/thumbs\/palette\.json)$/;
+const GENERATED = /^(content\/[a-z-]+\.lock\.json|content\/provenance\.json|packages\/shared\/src\/content\/[A-Za-z]+\.generated\.ts|packages\/client\/public\/thumbs\/palette\.json)$/;
 /** Ports other tools and sessions use. */
 const AVOID = new Set([4173, 4391, 4567]);
 
@@ -57,10 +60,12 @@ if (byHand.length) {
 step('locks');
 node('tools/content/lockfile.mjs');
 
-step('tables: props and characters');
+step('tables: props, characters, weapons, vehicles and NPC roles');
 node('tools/content/prepare-props.mjs');
 node('tools/content/character-manifests.mjs');
 node('tools/content/weapons.mjs');
+node('tools/content/vehicles.mjs');
+node('tools/content/npcs.mjs');
 
 step('palette atlas');
 let pending = all;

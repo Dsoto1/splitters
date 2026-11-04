@@ -58,7 +58,7 @@ import { cachedProfile, checkUsername, loadProfile, myRegion, saveProfile, setRe
 import { installTooltips } from './tooltip.ts';
 import { deviceMaxPlayers, isTouchDevice } from '../touchDevice.ts';
 import { FIRST_PERSON_LABELS, FIRST_PERSON_MODES, FRAME_CAPS, GRAPHICS_QUALITIES, RENDER_SCALES, RENDER_SCALE_LABELS, currentFrameCap, loadFirstPersonMode, loadGraphicsQuality, loadRenderScale, saveFirstPersonMode, saveFrameCap, saveGraphicsQuality, saveRenderScale, type FirstPersonMode, type FrameCap, type GraphicsQuality, type RenderScale } from '../game/graphicsSettings.ts';
-import { loadPerfOverlay, savePerfOverlay } from '../game/perfOverlay.ts';
+import { loadPerfOverlay, savePerfOverlay } from '../game/perfPrefs.ts';
 import { fetchGames, hubSetting, saveHub } from '../game/hub.ts';
 import type { AudioSystem } from '../audio/audio.ts';
 import { listCustomLooks } from '../designer/customLooks.ts';

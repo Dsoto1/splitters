@@ -8,6 +8,14 @@ made only on a commit that passed CI on a check branch.
 
 ## Unreleased
 
+**Performance tools and big-match fixes**
+- **The F3 overlay splits each frame by system**: rendering (main pass, shadow maps, post-processing), characters (animation, skinning), effects, ragdolls, prop flames, HUD and network, with how many characters were animated and skinned, ragdolls awake and lasting effects drawn. Copy performance report includes the same split.
+- **Record performance** (Pause → Settings): records a whole match, each second's split plus a snapshot of every hitch (where you were, what was in view, your settings, the server's tick), and downloads it as a file when you stop. `tools/perf/compare.mjs` summarises one recording or compares two. Nothing is uploaded.
+- **Capture 10 s trace** (same menu): marks every system's time for a Chrome DevTools Performance recording and downloads a trace file that ui.perfetto.dev opens. How to use all three: docs/PERF_TOOLS.md.
+- **Host Service**: the tick split (bot think, perceive, path, aim; simulation; snapshot building), snapshot size per player and ticks over budget show on the /host page and the launcher; slow ticks are written to `logs/perf-spikes.log`.
+- **Busy matches draw less**: only the nearest 12 characters in view cast shadows (and anyone within 10 m), small clutter (grass, wheat, flowers, small rocks) casts shadows only within 15 m, characters 15–35 m away animate at 30 Hz, and in crowds characters switch to their low-detail model at 12.6 m instead of 18 m. Nothing changes close to you.
+- **No stall on the first sight of an effect or a character**: the loading screen now builds the shaders for every character in the match and every effect the map can play.
+
 **Loading**
 - **The menu's first download is about a fifth smaller** (837 to 649 kB gzipped): MapMaker's building pieces, the prop table and the map checks now load with the first map that is drawn, opened or played, not before the menu. The game, maps and MapMaker work as before.
 

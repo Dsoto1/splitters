@@ -836,7 +836,11 @@ const SCRIPT = `
     $('t-players').textContent = h ? h.players + ' / ' + h.maxPlayers : '–';
     $('t-bots').textContent = h ? h.bots : '–';
     $('t-map').textContent = h ? h.map + ' · ' + modeShort(h.mode) : (draft && mapById[draft.map] ? mapById[draft.map].name + ' (next start)' : '–');
-    $('t-tick').textContent = h ? h.tickMs.toFixed(1) + ' ms' : '–';
+    $('t-tick').textContent = h ? h.tickMs.toFixed(1) + ' ms' + (h.perf && h.perf.spikesTotal ? ' · ' + h.perf.spikesTotal + ' slow' : '') : '–';
+    var pf = h && h.perf;
+    var sp = (pf && pf.split) || {};
+    var f2 = function (k) { return (sp[k] || 0).toFixed(2); };
+    $('t-tick').title = pf ? 'Slowest tick ' + pf.tickMax.toFixed(1) + ' ms; bots ' + f2('bots') + ' (think ' + f2('botThink') + ', perceive ' + f2('botPerceive') + ', path ' + f2('botPath') + ', aim ' + f2('botAim') + '), snapshots ' + f2('snapshot') + ' ms a tick; snapshot ' + (pf.snapshotBytes / 1024).toFixed(1) + ' KB a client; ' + pf.spikesTotal + ' ticks over budget (logs/perf-spikes.log)' : '';
     $('t-up').textContent = h ? h.upKBps + ' KB/s' : '–';
     $('t-uptime').textContent = h ? fmtUptime(h.uptimeS) : '–';
     var busy = st === 'starting' || st === 'stopping' || st === 'restarting';

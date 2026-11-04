@@ -688,3 +688,27 @@ main a2fd44b → this branch:
 Shadow casters 76 → 89 (medium clump; characters in view), effect casters 0. Lasting effects start in 0.1–1.6 ms
 each. Draw counts swing with what is in view (low spread 100 → 280 is where the camera landed, not effects: the
 scene counts show 15 → 47 characters shown). Menu bundle 837.5 kB gzip before and after (budget 840).
+
+## Busy areas: first fixes from the owner's host data (4 Nov 2026, `wip/perf-toolset`)
+
+Owner's data (M1 Pro, Chrome, dedicated host, ~94 bots, Shingle Point): medium at 1.25× render scale 32.1 ms render,
+647 draws, 184 shadow casters, 39 characters drawn; low at 0.75× 20.9 ms, 340 draws, no shadows. 2.8× fewer pixels
+and no shadows saved a third: the cost is per draw and per character on the CPU. The per-system split to confirm it
+on that machine is the new toolset (docs/PERF_TOOLS.md). Changes, measured on the same frame against the old rule
+(SwiftShader here, so counts only; HANDOFF has every sample):
+
+| | old rule | now |
+|---|---|---|
+| characters casting shadows (crowd, 4 samples) | 9, 6, 8, 14 | 6, 0, 0, 1 |
+| small clutter instances in the shadow pass | 25 | 1 |
+| character animation evaluations a second at 60 fps | 750, 625, 590, 585 | 570, 595, 590, 585 |
+| shader programs built by the first explosion, hits, lightning and lasting effects | 6 | 0 |
+
+- Shadows: the nearest 12 living characters in view cast (and anyone within 10 m); in crowds none past 30 m, the
+  dead and corpses included (they all cast before). Small clutter casts within 15 m only.
+- Animation: crowds' characters 15–35 m away step at 30 Hz (every 2nd frame at 60 fps); 35–70 m at 15 Hz and past
+  70 m at 10 Hz as before. Crowds switch to the low-detail model at 12.6 m (was 18 m).
+- Already in place: off-screen characters don't animate or skin in crowds; Shingle Point's 446 props are 38 models,
+  all GPU instances merged per material with frozen matrices.
+- Not done: merging far characters' draws (each has its own skeleton: needs baked animation textures).
+- The loading gate builds every character look's and effect's shaders (GameView.prewarm, programs kept).

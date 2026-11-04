@@ -2051,12 +2051,21 @@ export class GodotVfx {
    * first play otherwise built them mid-fight. What it made stays cached for later plays. (Not forceCompilation:
    * it polls every 16 ms until the material is ready, for ever once its mesh is gone.)
    */
-  warm(pack: string, effect: string): void {
+  warm(pack: string, effect: string, draw = false): (() => void) | null {
     const p = this.begin(pack, effect, new Vector3(0, -10000, 0), {}, false);
-    if (!p) return;
-    this.playing.splice(this.playing.indexOf(p), 1);
-    for (const e of p.emitters.values()) e.dispose();
-    for (const pr of p.props) pr.mesh.dispose();
+    if (!p) return null;
+    const end = () => {
+      const i = this.playing.indexOf(p);
+      if (i < 0) return;
+      this.playing.splice(i, 1);
+      for (const e of p.emitters.values()) e.dispose();
+      for (const pr of p.props) pr.mesh.dispose();
+    };
+    // `draw`: it plays out of sight (its pieces draw wherever they are) until `end` is called, so each piece's
+    // shader, with the particles' instancing as played, is built now (GameView.prewarm: the loading gate waits).
+    if (draw) return end;
+    end();
+    return null;
   }
 
   /** At most this many one-shot effects play at once on medium graphics (each is a handful of meshes and particles). */
