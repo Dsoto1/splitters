@@ -608,6 +608,16 @@ else {
   console.log(`checked ${pieces.length} palette pictures in ${names.length} atlases (${(atlasBytes / 1024).toFixed(0)} KB, index ${(indexBytes / 1024).toFixed(0)} KB)`);
 }
 
+// The data tables (weapons, vehicles, NPC roles): their content checks, and the generated files and codes lock up to date.
+for (const gen of ['weapons', 'vehicles', 'npcs']) {
+  if (!check) break;
+  try {
+    execFileSync(process.execPath, [join(ROOT, `tools/content/${gen}.mjs`), '--check'], { cwd: ROOT, stdio: 'inherit' });
+  } catch {
+    problems.push(`tools/content/${gen}.mjs --check failed (above)`);
+  }
+}
+
 // One asset a line, sorted by file: branches that add or rebuild different files change different lines.
 problems.push(...lockProblems());
 ledger.assets.sort((a, b) => (a.file < b.file ? -1 : a.file > b.file ? 1 : 0));
