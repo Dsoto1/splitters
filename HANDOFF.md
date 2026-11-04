@@ -17,6 +17,9 @@ look, rifle and pistol: 3/4, each hand close, side, front; audit numbers in each
 `body/` standing/running/strafing views; tools in `hands4/tools/`: `shots.mjs` (now with hand close-ups, a warm-up pose
 and `creature:<kind>` ids), `stretch.mjs` (most stretched edges with their weights), `body.mjs` (spikes standing,
 running, strafing), `curl.mjs` (offline finger-curl stretch test on a GLB), `imptune.mjs` (creature grip trials)).
+Final evidence, shot from the files as committed (built client) against main's: `hands4/final/ba/<id>-before-after.png`
+(all 13 looks in scope) and `hands4/final/review-board-final.png` (`tools/final.mjs`, verdicts in `tools/verdicts.mjs`);
+reverted looks match main there (only framing noise: their files are main's).
 - **New field `fixes.skin`** (tools/content/skinfix.mjs, docs/CHARACTERS.md "A look's own skin weights"): finger
   options to hands.mjs `fitHands` (`tips`, `knuckle`, `joints`, `lanes`, `fingers: 'lanes'`; per hand under `l`/`r`)
   and body options after it (`hops`, `clamp`, `smooth`, `wrist`; recorded as `extras.skinFix` on the skin and applied
@@ -34,7 +37,8 @@ running, strafing), `curl.mjs` (offline finger-curl stretch test on a GLB), `imp
   Spikes: hold 18 -> 6 (max 12.3x -> 5.1x), run 17 -> 2, strafe 24 -> 6; the tabard stays closed in all three.
   **Hyena Warrior** `hands.r.curl 0.6` + `skin { knuckle 0.3, joints 0.3 }`: the right paw was measured a fist and
   left rigid, hanging open under the grip; it now closes round it (tips 0.057 -> 0.018 m). Curling the left paw too
-  flattened it on the handguard: left as it was. **Imp** (bots): new per-creature hold settings, CreatureSpec `grip`
+  flattened it on the handguard: left as it was. Clearly better at play distance (3/4: a fist on the grip, not claws
+  hanging below it); close up the closed paw shows hard folds, a geometry limit like the shard hands below. **Imp** (bots): new per-creature hold settings, CreatureSpec `grip`
   (a GripTune, read by characterAnimator `holdWith`; creatures without it hold as before); the Imp has
   `supportLong [0, -0.05, 0]`, `rollL -0.8`, `curlL 1.3`: its left claw goes under the handguard and closes round it
   (it stood above it, claws up). `__grips.creature(kind, weapon)` on `?mode=grips` poses an armed creature.
@@ -50,9 +54,12 @@ running, strafing), `curl.mjs` (offline finger-curl stretch test on a GLB), `imp
   weights. **Croakley** (`hops 4` + `smooth`; `hops 2` tore the belly at 120x): hold max stretch 12 -> 5 but spikes
   2 -> 4 and strafe 43 -> 53, the belly barely different by eye; its in-house skin puts thigh weight up to the chest,
   which needs a re-rig, not a smoothing.
-- **Checks:** typecheck clean; test:changed (all units, shared code) 1363 passed; content:check OK. E2E (`CI=1`,
-  ports 4977/7977): see the end of this entry. ci:plan: full suite (shared code and character files): needs a
-  `check/` run.
+- **Checks** (c2cdda1, re-run after the machine restart): typecheck clean; content:check OK; `rebuild.mjs`: nothing
+  changed; test:changed (all units, shared code) 1361 passed, 2 timed out under machine load (host.test.ts relay
+  join, pads.test.ts eagle_spires; neither touched here) and passed on a rerun of those files (26/26). E2E (`CI=1`,
+  ports 5641/7641): characters, visual, designer, zombies all PASS; no screenshot baseline changed. The first run
+  (before the restart) lost its browser under load. ci:plan: full suite (characterAnimator, shared creatures, character
+  files map to all 38 flows): needs a `check/` run before main.
 
 ### Grips round 3: per-look hands and arms (`wip/char-grips-3`, agent, 2026-11-04; pushed, not merged; from main 47864cb)
 Owner's notes of 3 Nov ("arm position (mainly right arms) and grips", the 28 looks; Santa's and Zombie Soldier A's
