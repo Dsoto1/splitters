@@ -536,7 +536,9 @@ library material of its own. Edge values are metres or `half`, `-half`, `half-0.
    climbable tile also needs its bot paths (`test/kit.test.ts`). Changing a tile or a style changes
    `packages/shared/test/fixtures/tiles-resolved.json` (the kit, the styles at six sizes, and a hash of what every map
    builds: geometry, trim, facades, glass, validation, room dressing): rewrite it with
-   `UPDATE_TILE_FIXTURE=1 pnpm vitest run packages/shared/test/tilesData.test.ts` and read the diff.
+   `UPDATE_TILE_FIXTURE=1 pnpm vitest run packages/shared/test/tilesData.test.ts` and read the diff. A changed tile
+   also needs its palette picture redrawn (`pnpm content:rebuild`; the picture is keyed by a hash of the tile's
+   resolved definition, key order included, so keep a tile's keys in their order).
 
 `pnpm content:rebuild` and `pnpm content:check` run it with the other data generators. The Workbench shows **Kit tiles**
 (name, palette group, blurb, floors, open, room options, default edge, model; id, cells, ports and parts read-only:

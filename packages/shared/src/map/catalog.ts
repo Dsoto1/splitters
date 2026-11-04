@@ -515,15 +515,17 @@ function kitPart(p: KitPart, spec: TileSpec): LocalBox[] {
 
 /** A kit tile from its data: its cells, ports and parts built (map/catalog.ts's builders; tools/content/tiles.mjs checks the data). */
 export function resolveKitTile(spec: TileSpec): TileDefinition {
-  const { footprint: fp, cells, ports, solids, extraFloors, ...rest } = spec;
-  const def: TileDefinition = {
-    ...rest,
-    cells: cells ?? footprint(fp![0]!, fp![1]!, fp![2] ?? 1),
-    ports: ports.flatMap((p): TilePort[] => ('allSides' in p ? SIDES.map((side) => ({ side, level: p.allSides })) : 'perimeter' in p ? perimeterPorts(p.perimeter[0], p.perimeter[1], p.levels ?? [0]) : [p])),
-  };
-  if (solids) def.solids = solids.flatMap((p) => kitPart(p, spec));
-  if (extraFloors) def.extraFloors = extraFloors.flatMap((p) => kitPart(p, spec));
-  return def;
+  // Keys in the data's order (a palette picture's hash is the definition's JSON: tools/content/palette-items.ts).
+  const def: Record<string, unknown> = {};
+  for (const [k, v] of Object.entries(spec)) {
+    if (k === 'footprint') {
+      const fp = v as readonly number[];
+      def.cells = footprint(fp[0]!, fp[1]!, fp[2] ?? 1);
+    } else if (k === 'ports') def.ports = spec.ports.flatMap((p): TilePort[] => ('allSides' in p ? SIDES.map((side) => ({ side, level: p.allSides })) : 'perimeter' in p ? perimeterPorts(p.perimeter[0], p.perimeter[1], p.levels ?? [0]) : [p]));
+    else if (k === 'solids' || k === 'extraFloors') def[k] = (v as readonly KitPart[]).flatMap((p) => kitPart(p, spec));
+    else def[k] = v;
+  }
+  return def as unknown as TileDefinition;
 }
 
 // Built in a pure call: a module that reads only catalog's helpers can drop the tables (docs/LOADING.md).

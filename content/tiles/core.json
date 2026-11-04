@@ -751,123 +751,123 @@
       ]
     },
     {
-      "id": "core.round_corner_s",
-      "displayName": "Round Corner (Small)",
-      "blurb": "A curved wall turning the corner: a rounded room inside, a rounded building outside",
       "category": "Curves",
       "footprint": [1,1],
       "floors": [0],
       "ports": [{"side":"S","level":0,"cell":[0,0]},{"side":"W","level":0,"cell":[0,0]}],
       "edgeDefaults": {"0,0,0:N":"open","0,0,0:E":"open"},
+      "id": "core.round_corner_s",
+      "displayName": "Round Corner (Small)",
+      "blurb": "A curved wall turning the corner: a rounded room inside, a rounded building outside",
       "solids": [
         {"arc":{"centre":[-4,-4],"r":7.75,"turns":[0,1],"y":[0,4]}},
         {"arcTrim":{"centre":[-4,-4],"r":7.75,"turns":[0,1]}}
       ]
     },
     {
-      "id": "core.round_arcade_s",
-      "displayName": "Round Arcade (Small)",
-      "blurb": "A curved colonnade of arches: a cloister inside, a portico outside",
       "category": "Curves",
       "footprint": [1,1],
       "floors": [0],
       "ports": [{"side":"S","level":0,"cell":[0,0]},{"side":"W","level":0,"cell":[0,0]}],
       "edgeDefaults": {"0,0,0:N":"open","0,0,0:E":"open"},
+      "id": "core.round_arcade_s",
+      "displayName": "Round Arcade (Small)",
+      "blurb": "A curved colonnade of arches: a cloister inside, a portico outside",
       "solids": [
         {"arcade":{"centre":[-4,-4],"r":7.75,"turns":[0,1],"bays":3}}
       ]
     },
     {
-      "id": "core.round_half_s",
-      "displayName": "Round Low Wall (Small)",
-      "blurb": "A curved waist-high wall: cover, a garden edge or a balcony parapet",
       "category": "Curves",
       "footprint": [1,1],
       "floors": [0],
       "ports": [{"side":"S","level":0,"cell":[0,0]},{"side":"W","level":0,"cell":[0,0]}],
       "edgeDefaults": {"0,0,0:N":"open","0,0,0:E":"open"},
+      "id": "core.round_half_s",
+      "displayName": "Round Low Wall (Small)",
+      "blurb": "A curved waist-high wall: cover, a garden edge or a balcony parapet",
       "solids": [
         {"arc":{"centre":[-4,-4],"r":7.75,"turns":[0,1],"y":[0,1.1]}},
         {"arc":{"centre":[-4,-4],"r":7.75,"turns":[0,1],"y":[1.1,1.18],"t":0.6},"kind":"trim"}
       ]
     },
     {
-      "id": "core.round_corner_m",
-      "displayName": "Round Corner (Medium)",
-      "blurb": "A curved wall turning the corner: a rounded room inside, a rounded building outside",
       "category": "Curves",
       "footprint": [2,2],
       "floors": [0],
       "ports": [{"side":"S","level":0,"cell":[0,0]},{"side":"W","level":0,"cell":[0,0]},{"side":"S","level":0,"cell":[1,0]},{"side":"W","level":0,"cell":[0,1]}],
       "edgeDefaults": {"0,1,0:N":"open","1,0,0:E":"open","1,1,0:N":"open","1,1,0:E":"open"},
+      "id": "core.round_corner_m",
+      "displayName": "Round Corner (Medium)",
+      "blurb": "A curved wall turning the corner: a rounded room inside, a rounded building outside",
       "solids": [
         {"arc":{"centre":[-4,-4],"r":15.75,"turns":[0,1],"y":[0,4]}},
         {"arcTrim":{"centre":[-4,-4],"r":15.75,"turns":[0,1]}}
       ]
     },
     {
-      "id": "core.round_arcade_m",
-      "displayName": "Round Arcade (Medium)",
-      "blurb": "A curved colonnade of arches: a cloister inside, a portico outside",
       "category": "Curves",
       "footprint": [2,2],
       "floors": [0],
       "ports": [{"side":"S","level":0,"cell":[0,0]},{"side":"W","level":0,"cell":[0,0]},{"side":"S","level":0,"cell":[1,0]},{"side":"W","level":0,"cell":[0,1]}],
       "edgeDefaults": {"0,1,0:N":"open","1,0,0:E":"open","1,1,0:N":"open","1,1,0:E":"open"},
+      "id": "core.round_arcade_m",
+      "displayName": "Round Arcade (Medium)",
+      "blurb": "A curved colonnade of arches: a cloister inside, a portico outside",
       "solids": [
         {"arcade":{"centre":[-4,-4],"r":15.75,"turns":[0,1],"bays":5}}
       ]
     },
     {
-      "id": "core.round_half_m",
-      "displayName": "Round Low Wall (Medium)",
-      "blurb": "A curved waist-high wall: cover, a garden edge or a balcony parapet",
       "category": "Curves",
       "footprint": [2,2],
       "floors": [0],
       "ports": [{"side":"S","level":0,"cell":[0,0]},{"side":"W","level":0,"cell":[0,0]},{"side":"S","level":0,"cell":[1,0]},{"side":"W","level":0,"cell":[0,1]}],
       "edgeDefaults": {"0,1,0:N":"open","1,0,0:E":"open","1,1,0:N":"open","1,1,0:E":"open"},
+      "id": "core.round_half_m",
+      "displayName": "Round Low Wall (Medium)",
+      "blurb": "A curved waist-high wall: cover, a garden edge or a balcony parapet",
       "solids": [
         {"arc":{"centre":[-4,-4],"r":15.75,"turns":[0,1],"y":[0,1.1]}},
         {"arc":{"centre":[-4,-4],"r":15.75,"turns":[0,1],"y":[1.1,1.18],"t":0.6},"kind":"trim"}
       ]
     },
     {
-      "id": "core.round_corner_l",
-      "displayName": "Round Corner (Large)",
-      "blurb": "A curved wall turning the corner: a rounded room inside, a rounded building outside",
       "category": "Curves",
       "footprint": [3,3],
       "floors": [0],
       "ports": [{"side":"S","level":0,"cell":[0,0]},{"side":"W","level":0,"cell":[0,0]},{"side":"S","level":0,"cell":[1,0]},{"side":"W","level":0,"cell":[0,1]},{"side":"S","level":0,"cell":[2,0]},{"side":"W","level":0,"cell":[0,2]}],
       "edgeDefaults": {"0,2,0:N":"open","2,0,0:E":"open","1,2,0:N":"open","2,1,0:E":"open","2,2,0:N":"open","2,2,0:E":"open"},
+      "id": "core.round_corner_l",
+      "displayName": "Round Corner (Large)",
+      "blurb": "A curved wall turning the corner: a rounded room inside, a rounded building outside",
       "solids": [
         {"arc":{"centre":[-4,-4],"r":23.75,"turns":[0,1],"y":[0,4]}},
         {"arcTrim":{"centre":[-4,-4],"r":23.75,"turns":[0,1]}}
       ]
     },
     {
-      "id": "core.round_arcade_l",
-      "displayName": "Round Arcade (Large)",
-      "blurb": "A curved colonnade of arches: a cloister inside, a portico outside",
       "category": "Curves",
       "footprint": [3,3],
       "floors": [0],
       "ports": [{"side":"S","level":0,"cell":[0,0]},{"side":"W","level":0,"cell":[0,0]},{"side":"S","level":0,"cell":[1,0]},{"side":"W","level":0,"cell":[0,1]},{"side":"S","level":0,"cell":[2,0]},{"side":"W","level":0,"cell":[0,2]}],
       "edgeDefaults": {"0,2,0:N":"open","2,0,0:E":"open","1,2,0:N":"open","2,1,0:E":"open","2,2,0:N":"open","2,2,0:E":"open"},
+      "id": "core.round_arcade_l",
+      "displayName": "Round Arcade (Large)",
+      "blurb": "A curved colonnade of arches: a cloister inside, a portico outside",
       "solids": [
         {"arcade":{"centre":[-4,-4],"r":23.75,"turns":[0,1],"bays":7}}
       ]
     },
     {
-      "id": "core.round_half_l",
-      "displayName": "Round Low Wall (Large)",
-      "blurb": "A curved waist-high wall: cover, a garden edge or a balcony parapet",
       "category": "Curves",
       "footprint": [3,3],
       "floors": [0],
       "ports": [{"side":"S","level":0,"cell":[0,0]},{"side":"W","level":0,"cell":[0,0]},{"side":"S","level":0,"cell":[1,0]},{"side":"W","level":0,"cell":[0,1]},{"side":"S","level":0,"cell":[2,0]},{"side":"W","level":0,"cell":[0,2]}],
       "edgeDefaults": {"0,2,0:N":"open","2,0,0:E":"open","1,2,0:N":"open","2,1,0:E":"open","2,2,0:N":"open","2,2,0:E":"open"},
+      "id": "core.round_half_l",
+      "displayName": "Round Low Wall (Large)",
+      "blurb": "A curved waist-high wall: cover, a garden edge or a balcony parapet",
       "solids": [
         {"arc":{"centre":[-4,-4],"r":23.75,"turns":[0,1],"y":[0,1.1]}},
         {"arc":{"centre":[-4,-4],"r":23.75,"turns":[0,1],"y":[1.1,1.18],"t":0.6},"kind":"trim"}

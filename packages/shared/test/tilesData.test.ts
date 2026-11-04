@@ -144,6 +144,8 @@ describe('tiles as data: the resolved kit', () => {
     // Part by part first, so a failure says which part changed.
     for (const k of Object.keys(was)) expect(now[k], k).toEqual(was[k]);
     expect(now).toEqual(was);
+    // Key order too: a tile's palette picture is keyed by a hash of its definition's JSON (tools/content/palette-items.ts).
+    expect(JSON.stringify(now.kit)).toBe(JSON.stringify(was.kit));
   }, 600_000);
 
   it('every tile the maps and Style Packs name exists, kit or Style Pack (the generator checks the kit\'s side)', () => {
