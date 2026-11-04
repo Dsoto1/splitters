@@ -201,13 +201,17 @@ export const RETIRED_LOOKS: Readonly<Record<string, string>> = {
   'core.goblin': 'core.grizzelda',
   'core.rotter': 'core.shambler',
   'core.giggles': 'core.punkin',
+  // Owner, 2026-11-04: off the roster (files and manifests kept): their source models weren't in a T-pose, so their
+  // hands can't be fixed. The otter NPC role keeps its model (NPC_KEPT_LOOKS).
+  'core.otter': 'core.brasshare',
+  'core.shade': 'core.mei',
 };
 
 /**
  * Retired looks an NPC role is still drawn as (NPC_ROLE_SPECS `look`): off the roster, and a player's saved choice
  * of one plays its replacement (validLookId), but getLook still gives the look itself so the NPC keeps its model.
  */
-export const NPC_KEPT_LOOKS: ReadonlySet<string> = new Set(['core.goblin']);
+export const NPC_KEPT_LOOKS: ReadonlySet<string> = new Set(['core.goblin', 'core.otter']);
 
 /** Every preset ever defined, retired ones included (see RETIRED_LOOKS). */
 const ALL_LOOKS: readonly CharacterLook[] = [

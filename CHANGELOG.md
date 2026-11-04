@@ -13,6 +13,7 @@ made only on a commit that passed CI on a check branch.
 - **Show hitboxes** (Options → Display, on a dev server or a test build; or `?hitboxes=1`), and Hitboxes, Crouch and Prone buttons in the character viewer: every body's shapes over it, with the margin as a faint shell.
 - **Character stats**: a character may have its own health, speed, size, damage, stamina, jump, melee strength and armor (`stats` in its manifest; the Workbench's new Characters collection). One without them plays its size, so nothing has changed yet. Character Select shows them as bars. New match setting **Character stats** (On / Off), in match setup and the host rules.
 - **Random characters**: a new match setting (Off by default): everyone, players and bots, plays a random character from the roster each life.
+- **Wealthy Otter and Shade leave the roster** (their source models weren't in a T-pose, so their hands can't be fixed): a saved choice of either plays Brass Hare or Lancer Mei; the otter NPC keeps its model.
 
 **Performance tools and big-match fixes**
 - **The F3 overlay splits each frame by system**: rendering (main pass, shadow maps, post-processing), characters (animation, skinning), effects, ragdolls, prop flames, HUD and network, with how many characters were animated and skinned, ragdolls awake and lasting effects drawn. Copy performance report includes the same split.

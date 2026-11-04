@@ -38,6 +38,10 @@ large, Hyena and Croakley hunched, T-TreeFitty robot, Big Bogdan wide; creatures
   armor }, each defaulting to the size class (none set: nothing changed). Match setting Character stats (default on).
   Speed/jump/stamina reach the predicting client (`PrivateState.bs`; size-class speed was never predicted before).
   Workbench: new Characters collection. Stat bars on Character Select.
+- **Retired (owner, 2026-11-04): Wealthy Otter and Shade** (source models not in a T-pose: hands unfixable).
+  `RETIRED_LOOKS` like the others: `core.otter` -> Brass Hare, `core.shade` -> Lancer Mei (saved choices, bot sets,
+  maps fall back); manifests and files kept; the otter NPC role keeps its model (`NPC_KEPT_LOOKS`, like the goblin).
+  Off the roster, so off Random characters' pool too. lookGroups.test: Bandit stands in for the otter.
 - **Random characters** (`shared/sim/randomLooks.ts`): setting (default off), per life, hash of seed/slot/life, roster
   looks only; the look rides the `spawn` event (`l`); own choice kept in `Combatant.ownLook`.
 - **Tests:** with the margin, mechanics, weapons, ballistics, benchmarks and botClearShot are main's files unchanged
