@@ -11,7 +11,7 @@ import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { CORE_MATERIALS, CORE_THEMES, SURFACE_SLOTS, SURFACE_SLOT_LABELS, TINT_SWATCHES, coreMaterials, coreThemes, surfaceMaterial, terrainMaterialFor } from '../src/index.ts';
+import { CORE_MATERIALS, CORE_THEMES, STYLE_PACKS, SURFACE_SLOTS, SURFACE_SLOT_LABELS, TINT_SWATCHES, coreCatalog, coreMaterials, coreThemes, surfaceMaterial, terrainMaterialFor } from '../src/index.ts';
 
 const FIXTURE = join(dirname(fileURLToPath(import.meta.url)), 'fixtures', 'materials-resolved.json');
 
@@ -46,5 +46,23 @@ describe('materials as data: the resolved tables', () => {
   it('deep-equals the fixture written before the move', () => {
     expect(existsSync(FIXTURE)).toBe(true);
     expect(materials()).toEqual(JSON.parse(readFileSync(FIXTURE, 'utf8')));
+  });
+
+  it('names only materials that exist in every tile and Style Pack (the generator checks maps and code)', () => {
+    const missing: string[] = [];
+    let painted = 0;
+    for (const t of coreCatalog.all()) {
+      for (const b of [...(t.solids ?? []), ...(t.extraFloors ?? [])]) {
+        if (!b.surface) continue;
+        painted++;
+        if (!coreMaterials.get(b.surface.material)) missing.push(`${t.id}: ${b.surface.material}`);
+      }
+    }
+    expect(painted).toBeGreaterThan(100);
+    for (const p of STYLE_PACKS) {
+      for (const id of p.materials) if (!coreMaterials.get(id)) missing.push(`${p.id}: ${id}`);
+      for (const id of p.themes) if (!coreThemes.get(id)) missing.push(`${p.id}: theme ${id}`);
+    }
+    expect(missing).toEqual([]);
   });
 });
