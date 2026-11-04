@@ -1,0 +1,31 @@
+{
+  "id": "core.freeze_ray",
+  "code": 33,
+  "displayName": "Freeze Ray",
+  "category": "special",
+  "kind": "hitscan",
+  "slot": 9,
+  "damage": 3,
+  "fireIntervalTicks": 3,
+  "range": 40,
+  "magazine": 0,
+  "reserveMax": 0,
+  "pickupAmmo": 0,
+  "reloadTicks": 0,
+  "botRange": [2, 30],
+  "heat": { "perShot": 0.018, "coolPerTick": 0.01 },
+  "status": { "kind": "chill", "seconds": 2, "amount": 0.07 },
+  "view": {
+    "model": "guns/freeze_gun.glb",
+    "viewOffset": [0.2, -0.18, 0.42],
+    "tracer": "#bff0ff",
+    "hold": { "style": "pistol", "grip": [0, -0.06, -0.12], "support": [-0.02, -0.07, -0.11] },
+    "fallback": "weapons/freeze_ray.glb",
+    "sound": "fire.freeze",
+    "beam": true
+  },
+  "notes": {
+    "group": "The extended arsenal: every one fires differently. 9: energy and chemical.",
+    "model": "The owner's Freeze Gun (Meshy, owned), the sci-fi kit gun as the fallback."
+  }
+}

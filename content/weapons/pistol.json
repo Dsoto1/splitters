@@ -1,0 +1,32 @@
+{
+  "id": "core.pistol",
+  "code": 2,
+  "displayName": "Pistol",
+  "category": "pistol",
+  "kind": "hitscan",
+  "slot": 2,
+  "family": "pistol",
+  "fireMode": "semi",
+  "damage": 24,
+  "spread": 0.002,
+  "range": 250,
+  "magazine": 12,
+  "reserveMax": 96,
+  "pickupAmmo": 24,
+  "reloadTicks": 66,
+  "reload": { "type": "magazine", "tactical": 50, "empty": 66, "out": 0.3, "in": 0.65 },
+  "raiseTicks": 9,
+  "ammo": "light",
+  "botDesirability": 0.35,
+  "botRange": [2, 25],
+  "view": {
+    "model": "weapons/pistol.glb",
+    "viewOffset": [0.2, -0.18, 0.42],
+    "tracer": "#ffe08a",
+    "hold": { "style": "pistol", "grip": [0, -0.03, -0.075], "support": [-0.02, -0.04, -0.065] }
+  },
+  "notes": {
+    "design": "Benchmark A (service pistol): instant handling, moderate damage and velocity, low recoil, true first shot, fast reload.",
+    "fireMode": "One shot per click; holding the trigger doesn't keep firing (the Machine Pistol is the automatic one)."
+  }
+}

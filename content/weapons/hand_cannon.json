@@ -1,0 +1,36 @@
+{
+  "id": "core.hand_cannon",
+  "code": 11,
+  "displayName": "Hand Cannon",
+  "category": "pistol",
+  "kind": "hitscan",
+  "slot": 2,
+  "family": "revolver",
+  "fireMode": "semi",
+  "damage": 58,
+  "spread": 0.002,
+  "fireIntervalTicks": 30,
+  "range": 140,
+  "magazine": 6,
+  "reserveMax": 36,
+  "pickupAmmo": 12,
+  "reloadTicks": 100,
+  "raiseTicks": 22,
+  "botDesirability": 0.55,
+  "botRange": [3, 35],
+  "ammo": "light",
+  "knockback": 3,
+  "recoil": { "kick": 0.09, "bloom": 0.03, "maxBloom": 0.05, "recover": 0.0012 },
+  "view": {
+    "model": "weapons/hand_cannon.glb",
+    "viewOffset": [0.2, -0.18, 0.42],
+    "tracer": "#ffd08a",
+    "hold": {
+      "style": "pistol",
+      "grip": [0, -0.03, -0.11560000000000002],
+      "support": [-0.02, -0.04, -0.10200000000000001]
+    },
+    "sound": "fire.heavy"
+  },
+  "notes": { "group": "The extended arsenal: every one fires differently. 2: sidearms." }
+}

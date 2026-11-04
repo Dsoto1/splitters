@@ -1,0 +1,30 @@
+{
+  "id": "core.sentry_arc",
+  "code": 39,
+  "displayName": "Arc Turret",
+  "kind": "hitscan",
+  "slot": 0,
+  "damage": 5,
+  "fireIntervalTicks": 6,
+  "range": 22,
+  "magazine": 0,
+  "reserveMax": 0,
+  "pickupAmmo": 0,
+  "reloadTicks": 0,
+  "raiseTicks": 0,
+  "botDesirability": 0,
+  "botRange": [0, 22],
+  "chain": { "jumps": 1, "range": 6, "falloff": 0.5 },
+  "view": {
+    "model": "guns/arc_cannon_turret.glb",
+    "fallback": "turrets/rocket.glb",
+    "viewOffset": [0, 0, 0],
+    "tracer": "#8f7bff",
+    "hold": { "style": "long", "grip": [0, 0, 0] },
+    "sound": "fire.arc",
+    "beam": true
+  },
+  "notes": {
+    "design": "A gun on a turret or vehicle (slot 0: never carried or picked up). It runs on heat, so a gunner never reloads but has to pace the trigger. The Arc Turret's locked arc (mounts.ts ArcSentrySpec): a hit every 0.1 s while it holds the lock, never a miss, but only after a 0.75 s wind-up and only while it can see you. 50 a second: 100 health is 20 hits, 1.9 s of arc (2.65 s in the open from when it starts charging); a 2 s lock does 100 at most, then it vents 1.25 s."
+  }
+}

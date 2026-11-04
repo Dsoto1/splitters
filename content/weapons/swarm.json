@@ -1,0 +1,44 @@
+{
+  "id": "core.swarm",
+  "code": 28,
+  "displayName": "Swarm Launcher",
+  "category": "explosive",
+  "kind": "projectile",
+  "slot": 8,
+  "pellets": 4,
+  "spread": 0.14,
+  "fireIntervalTicks": 70,
+  "magazine": 4,
+  "reserveMax": 12,
+  "pickupAmmo": 4,
+  "reloadTicks": 100,
+  "raiseTicks": 30,
+  "botDesirability": 0.78,
+  "botRange": [8, 45],
+  "ammo": "explosive",
+  "projectile": {
+    "speed": 20,
+    "gravity": 0,
+    "fuseSeconds": 4,
+    "splashRadius": 2.6,
+    "splashDamage": 40,
+    "splashEdgeDamage": 8,
+    "selfDamageScale": 0.5,
+    "visual": "swarm",
+    "impactDamage": 10,
+    "homing": { "turnRate": 2.6, "range": 45 }
+  },
+  "view": {
+    "model": "weapons/swarm.glb",
+    "viewOffset": [0.21, -0.21, 0.52],
+    "tracer": "#ffb347",
+    "hold": {
+      "style": "long",
+      "grip": [0, -0.07, -0.07],
+      "support": [0, 0.012, 0.247],
+      "shoulder": [0, 0.029, -0.405]
+    },
+    "sound": "fire.swarm"
+  },
+  "notes": { "group": "The extended arsenal: every one fires differently. 8: heavy." }
+}

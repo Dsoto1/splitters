@@ -1,0 +1,43 @@
+{
+  "id": "core.nailgun",
+  "code": 27,
+  "displayName": "Nailgun",
+  "category": "smg",
+  "kind": "projectile",
+  "slot": 7,
+  "spread": 0.02,
+  "fireIntervalTicks": 5,
+  "magazine": 50,
+  "reserveMax": 200,
+  "pickupAmmo": 60,
+  "raiseTicks": 18,
+  "botDesirability": 0.6,
+  "botRange": [2, 25],
+  "ammo": "light",
+  "projectile": {
+    "speed": 75,
+    "gravity": 2,
+    "fuseSeconds": 1.5,
+    "splashRadius": 0,
+    "splashDamage": 0,
+    "splashEdgeDamage": 0,
+    "selfDamageScale": 0,
+    "visual": "nail",
+    "impactDamage": 11,
+    "bounce": 0.75,
+    "maxBounces": 2
+  },
+  "view": {
+    "model": "weapons/nailgun.glb",
+    "viewOffset": [0.21, -0.21, 0.52],
+    "tracer": "#d8d8d8",
+    "hold": {
+      "style": "long",
+      "grip": [0, -0.029, -0.126],
+      "support": [0, 0.058, 0.168],
+      "shoulder": [0, -0.002, -0.33]
+    },
+    "sound": "fire.nail"
+  },
+  "notes": { "group": "The extended arsenal: every one fires differently. 7: automatics." }
+}

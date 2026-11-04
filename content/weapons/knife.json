@@ -1,0 +1,24 @@
+{
+  "id": "core.knife",
+  "code": 1,
+  "displayName": "Knife",
+  "category": "melee",
+  "kind": "melee",
+  "slot": 1,
+  "damage": 55,
+  "fireIntervalTicks": 30,
+  "range": 2.2,
+  "magazine": 0,
+  "reserveMax": 0,
+  "pickupAmmo": 0,
+  "reloadTicks": 0,
+  "raiseTicks": 10,
+  "botDesirability": 0.15,
+  "botRange": [0, 2],
+  "view": {
+    "model": "weapons/knife.glb",
+    "viewOffset": [0.2, -0.2, 0.42],
+    "tracer": "#ffffff",
+    "hold": { "style": "melee", "grip": [0, 0, -0.1] }
+  }
+}

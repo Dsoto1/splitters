@@ -1,0 +1,32 @@
+{
+  "id": "core.laser_rifle",
+  "code": 16,
+  "displayName": "Laser Rifle",
+  "category": "rifle",
+  "kind": "hitscan",
+  "slot": 3,
+  "damage": 4,
+  "fireIntervalTicks": 2,
+  "range": 90,
+  "magazine": 0,
+  "reserveMax": 0,
+  "pickupAmmo": 0,
+  "reloadTicks": 0,
+  "botDesirability": 0.66,
+  "botRange": [3, 40],
+  "heat": { "perShot": 0.022, "coolPerTick": 0.01 },
+  "view": {
+    "model": "weapons/laser_rifle.glb",
+    "viewOffset": [0.21, -0.21, 0.52],
+    "tracer": "#ff3b4a",
+    "hold": {
+      "style": "long",
+      "grip": [0, -0.06, -0.08],
+      "support": [0, -0.012, 0.328],
+      "shoulder": [0, 0.078, -0.455]
+    },
+    "sound": "fire.laser",
+    "beam": true
+  },
+  "notes": { "group": "The extended arsenal: every one fires differently. 3: rifles." }
+}

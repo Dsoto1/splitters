@@ -1,0 +1,297 @@
+{
+  "$comment": "Weapon defaults (docs/CONTENT_PIPELINE.md, \"How to add a weapon\"). `defaults`: what every weapon file starts from. `families`: gunplay defaults (docs/GUNPLAY_SPEC.md §34-37) a weapon with that `family` inherits through gunplayOf; its own `ballistic` / `accuracy` / `kick` / `falloff` / `headshot` / `legshot` override them. Ticks are 1/60 s. Edit, then run `node tools/content/weapons.mjs`.",
+  "notes": {
+    "codes": "Each weapon file carries its network `code`: never change one, never reuse one (content/codes.lock.json remembers every code ever given).",
+    "slots": "Slots: 1 melee and tools, sidearms in 2, rifles in 3, shotguns in 4, precision in 5, lobbers in 6, automatics in 7, heavy weapons in 8 and energy and chemical weapons in 9; pressing a number again cycles through what you carry in that slot. 0: mounted guns (never carried or picked up)."
+  },
+  "defaults": {
+    "damage": 0,
+    "pellets": 1,
+    "spread": 0,
+    "fireIntervalTicks": 10,
+    "range": 120,
+    "magazine": 10,
+    "reserveMax": 40,
+    "pickupAmmo": 20,
+    "reloadTicks": 80,
+    "raiseTicks": 20,
+    "botDesirability": 0.5,
+    "botRange": [3, 30]
+  },
+  "families": {
+    "pistol": {
+      "ballistic": { "velocity": 375, "gravityScale": 1, "energy": 450, "tracerEvery": 0, "tracerFinal": 0 },
+      "accuracy": {
+        "base": 0.002,
+        "move": 0.006,
+        "air": 0.02,
+        "perShot": 0.003,
+        "tight": 1,
+        "max": 0.03,
+        "recovery": 10,
+        "ads": 0.6,
+        "adsTicks": 8
+      },
+      "kick": {
+        "pitch": [0.012],
+        "yaw": [0.002, -0.002],
+        "variance": 0.003,
+        "delay": 4,
+        "settle": 12,
+        "rate": 0.35,
+        "visual": 0.5
+      },
+      "falloff": { "start": 18, "end": 45, "min": 0.65, "curve": "linear" },
+      "head": 2,
+      "legs": 0.8
+    },
+    "revolver": {
+      "ballistic": { "velocity": 300, "gravityScale": 1, "energy": 1800, "tracerEvery": 1 },
+      "accuracy": {
+        "base": 0.0005,
+        "move": 0.012,
+        "air": 0.06,
+        "perShot": 0.022,
+        "tight": 0,
+        "max": 0.06,
+        "recovery": 3,
+        "ads": 0.5,
+        "adsTicks": 10
+      },
+      "kick": {
+        "pitch": [0.12],
+        "yaw": [0.012, -0.008],
+        "variance": 0.008,
+        "delay": 10,
+        "settle": 3.5,
+        "rate": 0.06,
+        "visual": 1.5
+      },
+      "falloff": { "start": 25, "end": 60, "min": 0.7, "curve": "smooth" },
+      "head": 1.75,
+      "legs": 0.85,
+      "notes": {
+        "accuracy": "A true first shot, but a round fired before the last one's spray has settled (about half a second) is a guess."
+      }
+    },
+    "machine_pistol": {
+      "ballistic": { "velocity": 360, "gravityScale": 1, "energy": 350, "tracerEvery": 4 },
+      "accuracy": {
+        "base": 0.012,
+        "move": 0.006,
+        "air": 0.03,
+        "perShot": 0.006,
+        "tight": 2,
+        "max": 0.08,
+        "recovery": 16,
+        "ads": 0.85,
+        "adsTicks": 8
+      },
+      "kick": {
+        "pitch": [0.006],
+        "yaw": [0.003, 0.004, -0.002, -0.004],
+        "variance": 0.004,
+        "delay": 3,
+        "settle": 14,
+        "rate": 0.3,
+        "visual": 0.4
+      },
+      "falloff": { "start": 8, "end": 25, "min": 0.5, "curve": "steep" },
+      "head": 1.5,
+      "legs": 0.85
+    },
+    "smg": {
+      "ballistic": { "velocity": 400, "gravityScale": 1, "energy": 400, "tracerEvery": 3, "tracerFinal": 5 },
+      "accuracy": {
+        "base": 0.006,
+        "move": 0.004,
+        "air": 0.03,
+        "perShot": 0.0065,
+        "tight": 5,
+        "max": 0.09,
+        "recovery": 40,
+        "ads": 0.8,
+        "adsTicks": 10
+      },
+      "kick": {
+        "pitch": [0.003, 0.003, 0.003, 0.003, 0.003, 0.006, 0.008, 0.01, 0.011],
+        "yaw": [0, 0.001, 0.002, 0.003, 0.004, 0.002, -0.002, -0.004, -0.004, -0.002],
+        "variance": 0.004,
+        "delay": 3,
+        "settle": 14,
+        "rate": 0.3,
+        "visual": 0.45
+      },
+      "falloff": { "start": 12, "end": 35, "min": 0.55, "curve": "steep" },
+      "head": 1.5,
+      "legs": 0.85,
+      "notes": {
+        "accuracy": "Dead steady for five rounds, then it climbs and blooms hard; let go and it is steady again almost at once."
+      }
+    },
+    "rifle": {
+      "ballistic": { "velocity": 820, "gravityScale": 1, "energy": 1200, "tracerEvery": 3, "tracerFinal": 3 },
+      "accuracy": {
+        "base": 0.0015,
+        "move": 0.008,
+        "air": 0.035,
+        "perShot": 0.0012,
+        "tight": 3,
+        "max": 0.025,
+        "recovery": 8,
+        "ads": 0.4,
+        "adsTicks": 14
+      },
+      "kick": {
+        "pitch": [0.01, 0.0085],
+        "yaw": [0, 0.001, 0.002, 0.002, 0.001, 0, -0.001, -0.002, -0.002, -0.001],
+        "variance": 0.002,
+        "delay": 5,
+        "settle": 7,
+        "rate": 0.12,
+        "visual": 0.6
+      },
+      "falloff": { "start": 30, "end": 80, "min": 0.75, "curve": "smooth" },
+      "head": 2,
+      "legs": 0.8
+    },
+    "battle_rifle": {
+      "ballistic": { "velocity": 880, "gravityScale": 1, "energy": 1800, "tracerEvery": 2 },
+      "accuracy": {
+        "base": 0.001,
+        "move": 0.02,
+        "air": 0.06,
+        "perShot": 0.004,
+        "tight": 1,
+        "max": 0.03,
+        "recovery": 6,
+        "ads": 0.3,
+        "adsTicks": 16
+      },
+      "kick": {
+        "pitch": [0.03],
+        "yaw": [0.004, -0.003],
+        "variance": 0.004,
+        "delay": 6,
+        "settle": 6,
+        "rate": 0.1,
+        "visual": 0.8
+      },
+      "falloff": { "start": 40, "end": 100, "min": 0.8, "curve": "smooth" },
+      "head": 2,
+      "legs": 0.85
+    },
+    "marksman": {
+      "ballistic": { "velocity": 900, "gravityScale": 1, "energy": 2000, "tracerEvery": 1 },
+      "accuracy": {
+        "base": 0.001,
+        "move": 0.025,
+        "air": 0.07,
+        "perShot": 0.005,
+        "tight": 0,
+        "max": 0.035,
+        "recovery": 5,
+        "ads": 0.3,
+        "adsTicks": 16
+      },
+      "kick": {
+        "pitch": [0.035],
+        "yaw": [0.003, -0.003],
+        "variance": 0.004,
+        "delay": 6,
+        "settle": 6,
+        "rate": 0.1,
+        "visual": 0.8
+      },
+      "falloff": { "start": 60, "end": 150, "min": 0.85, "curve": "smooth" },
+      "head": 2,
+      "legs": 0.85
+    },
+    "precision": {
+      "ballistic": { "velocity": 950, "gravityScale": 2.5, "energy": 3000, "tracerEvery": 1 },
+      "accuracy": {
+        "base": 0,
+        "move": 0.03,
+        "air": 0.1,
+        "perShot": 0.015,
+        "tight": 0,
+        "max": 0.05,
+        "recovery": 1.2,
+        "ads": 0.2,
+        "adsTicks": 18
+      },
+      "kick": {
+        "pitch": [0.07],
+        "yaw": [0.006, -0.004],
+        "variance": 0.005,
+        "delay": 8,
+        "settle": 5,
+        "rate": 0.08,
+        "visual": 1.1
+      },
+      "falloff": { "start": 150, "end": 300, "min": 0.9, "curve": "linear" },
+      "head": 3,
+      "legs": 0.9,
+      "notes": {
+        "ballistic": "Fast (least lead of all) but heavy: 12 cm of drop at 100 m, half a metre at 200 m.",
+        "accuracy": "A shot taken the moment the bolt closes is a little off; wait a beat and it is dead on (patience)."
+      }
+    },
+    "lmg": {
+      "ballistic": { "velocity": 760, "gravityScale": 1, "energy": 1500, "tracerEvery": 4 },
+      "accuracy": {
+        "base": 0.012,
+        "move": 0.03,
+        "air": 0.07,
+        "perShot": 0.0012,
+        "tight": 6,
+        "max": 0.045,
+        "recovery": 5,
+        "ads": 0.7,
+        "adsTicks": 20
+      },
+      "kick": {
+        "pitch": [0.005],
+        "yaw": [0.002, -0.001, 0.001, -0.002],
+        "variance": 0.003,
+        "delay": 4,
+        "settle": 6,
+        "rate": 0.12,
+        "visual": 0.45
+      },
+      "falloff": { "start": 30, "end": 80, "min": 0.7, "curve": "smooth" },
+      "head": 1.5,
+      "legs": 0.85
+    },
+    "shotgun": {
+      "ballistic": null,
+      "accuracy": {
+        "base": 0,
+        "move": 0.006,
+        "air": 0.02,
+        "perShot": 0,
+        "tight": 0,
+        "max": 0.04,
+        "recovery": 6,
+        "ads": 0.9,
+        "adsTicks": 10
+      },
+      "kick": {
+        "pitch": [0.06],
+        "yaw": [0.006, -0.006],
+        "variance": 0.004,
+        "delay": 8,
+        "settle": 5,
+        "rate": 0.1,
+        "visual": 1
+      },
+      "falloff": { "start": 6, "end": 22, "min": 0.25, "curve": "steep" },
+      "head": 1.25,
+      "legs": 0.85,
+      "notes": {
+        "ballistic": "Pellets stay hitscan (spec §3.1 allows it for performance): damage loss comes from spread and per-pellet falloff.",
+        "accuracy": "The pellet pattern is the weapon's own `spread` (pelletCone); this is aim error on top of it."
+      }
+    }
+  }
+}

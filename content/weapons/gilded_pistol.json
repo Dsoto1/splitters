@@ -1,0 +1,29 @@
+{
+  "id": "core.gilded_pistol",
+  "code": 12,
+  "displayName": "Gilded Pistol",
+  "category": "special",
+  "kind": "hitscan",
+  "slot": 2,
+  "fireMode": "semi",
+  "damage": 999,
+  "fireIntervalTicks": 45,
+  "range": 160,
+  "magazine": 1,
+  "reserveMax": 6,
+  "pickupAmmo": 3,
+  "reloadTicks": 85,
+  "raiseTicks": 25,
+  "botDesirability": 0.9,
+  "botRange": [2, 40],
+  "ammo": "light",
+  "recoil": { "kick": 0.05, "bloom": 0, "maxBloom": 0, "recover": 0 },
+  "view": {
+    "model": "weapons/gilded_pistol.glb",
+    "viewOffset": [0.2, -0.18, 0.42],
+    "tracer": "#ffe070",
+    "hold": { "style": "pistol", "grip": [0, -0.03, -0.0816], "support": [-0.02, -0.04, -0.072] },
+    "sound": "fire.heavy"
+  },
+  "notes": { "group": "The extended arsenal: every one fires differently. 2: sidearms." }
+}

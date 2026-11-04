@@ -1,0 +1,42 @@
+{
+  "id": "core.goo_gun",
+  "code": 24,
+  "displayName": "Goo Gun",
+  "category": "special",
+  "kind": "projectile",
+  "slot": 6,
+  "fireIntervalTicks": 12,
+  "magazine": 20,
+  "reserveMax": 80,
+  "pickupAmmo": 30,
+  "reloadTicks": 75,
+  "raiseTicks": 18,
+  "botDesirability": 0.45,
+  "botRange": [3, 20],
+  "ammo": "chem",
+  "projectile": {
+    "speed": 22,
+    "gravity": 12,
+    "fuseSeconds": 3,
+    "splashRadius": 1.8,
+    "splashDamage": 10,
+    "splashEdgeDamage": 6,
+    "selfDamageScale": 0,
+    "visual": "goo",
+    "impactDamage": 8,
+    "zone": { "kind": "goo", "radius": 2.4, "seconds": 7 },
+    "status": { "kind": "slow", "seconds": 2.5 }
+  },
+  "view": {
+    "model": "guns/glue_gun.glb",
+    "viewOffset": [0.2, -0.18, 0.42],
+    "tracer": "#ff6ad0",
+    "hold": { "style": "pistol", "grip": [0, -0.05, -0.11], "support": [-0.02, -0.06, -0.1] },
+    "fallback": "weapons/goo_gun.glb",
+    "sound": "fire.goo"
+  },
+  "notes": {
+    "group": "The extended arsenal: every one fires differently. 6: lobbers.",
+    "model": "The owner's Mystical Glue Gun (Meshy, owned), the sci-fi kit gun as the fallback."
+  }
+}

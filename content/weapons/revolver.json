@@ -1,0 +1,36 @@
+{
+  "id": "core.revolver",
+  "code": 47,
+  "displayName": "Heavy Revolver",
+  "category": "pistol",
+  "kind": "hitscan",
+  "slot": 2,
+  "family": "revolver",
+  "fireMode": "semi",
+  "damage": 90,
+  "spread": 0.0005,
+  "fireIntervalTicks": 40,
+  "range": 300,
+  "magazine": 5,
+  "reserveMax": 30,
+  "pickupAmmo": 10,
+  "reloadTicks": 118,
+  "raiseTicks": 16,
+  "botDesirability": 0.6,
+  "botRange": [3, 40],
+  "reload": { "type": "shell", "start": 18, "each": 18, "end": 10 },
+  "ammo": "light",
+  "knockback": 4,
+  "view": {
+    "model": "guns/ironclad_revolver.glb",
+    "viewOffset": [0.2, -0.18, 0.42],
+    "tracer": "#ffcf7a",
+    "hold": { "style": "pistol", "grip": [0, -0.03, -0.108], "support": [-0.02, -0.04, -0.098] },
+    "fallback": "weapons/revolver.glb",
+    "sound": "fire.revolver"
+  },
+  "notes": {
+    "design": "Weapon of the gunplay pass (docs/GUNPLAY_SPEC.md), benchmark B: every trigger pull is an event. Absurd damage for a handgun (a head shot kills at any range, a body shot takes nine tenths of a life), savage kick, five rounds, a true first shot that only comes back once the last one has settled (fan it and you miss), and a slow, rhythmic round-by-round reload (each cartridge can be fired as soon as it is in).",
+    "model": "A Meshy community revolver (CC0 per the owner, markings painted out; content/guns.json), held on its own grip."
+  }
+}

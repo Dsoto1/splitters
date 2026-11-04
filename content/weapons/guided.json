@@ -1,0 +1,41 @@
+{
+  "id": "core.guided",
+  "code": 29,
+  "displayName": "Guided Rocket",
+  "category": "explosive",
+  "kind": "projectile",
+  "slot": 8,
+  "fireMode": "semi",
+  "fireIntervalTicks": 75,
+  "magazine": 1,
+  "reserveMax": 6,
+  "pickupAmmo": 3,
+  "reloadTicks": 90,
+  "raiseTicks": 32,
+  "botDesirability": 0.7,
+  "botRange": [10, 60],
+  "ammo": "explosive",
+  "projectile": {
+    "speed": 17,
+    "gravity": 0,
+    "fuseSeconds": 8,
+    "splashRadius": 5,
+    "splashDamage": 130,
+    "splashEdgeDamage": 20,
+    "selfDamageScale": 0.6,
+    "visual": "rocket",
+    "impactDamage": 35,
+    "guided": { "turnRate": 3.2 }
+  },
+  "view": {
+    "model": "weapons/rockets.glb",
+    "viewOffset": [0.24, -0.24, 0.5],
+    "tracer": "#ff4a3a",
+    "sound": "fire.rockets",
+    "hold": { "style": "long", "grip": [0, -0.1, 0], "support": [0, -0.101, 0.24], "shoulder": [0, 0.034, -0.48] }
+  },
+  "notes": {
+    "group": "The extended arsenal: every one fires differently. 8: heavy.",
+    "design": "Laser-guided: the rocket flies wherever you keep your crosshair. Slow, so steer it round corners."
+  }
+}

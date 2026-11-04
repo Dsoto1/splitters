@@ -1,0 +1,43 @@
+{
+  "id": "core.lmg",
+  "code": 26,
+  "displayName": "Spin Gun",
+  "category": "smg",
+  "kind": "hitscan",
+  "slot": 7,
+  "family": "lmg",
+  "damage": 9,
+  "spread": 0.035,
+  "fireIntervalTicks": 3,
+  "range": 300,
+  "magazine": 120,
+  "reserveMax": 240,
+  "pickupAmmo": 120,
+  "reloadTicks": 210,
+  "raiseTicks": 48,
+  "botDesirability": 0.72,
+  "botRange": [3, 40],
+  "windupTicks": 28,
+  "ammo": "rifle",
+  "recoil": { "kick": 0.006, "bloom": 0.002, "maxBloom": 0.04, "recover": 0.001 },
+  "view": {
+    "model": "guns/gatling_gun.glb",
+    "viewOffset": [0.25, -0.31, 0.74],
+    "tracer": "#ffd36b",
+    "hold": {
+      "style": "long",
+      "grip": [0, -0.09, -0.243],
+      "support": [0, -0.126, -0.018],
+      "shoulder": [0, 0.09, -0.423]
+    },
+    "fallback": "weapons/lmg.glb",
+    "sound": "fire.smg"
+  },
+  "notes": {
+    "group": "The extended arsenal: every one fires differently. 7: automatics.",
+    "design": "Huge belt, poor handling: slow to draw and a long, dangerous reload.",
+    "model": "The owner's Rotary Gatling Gun (Meshy, owned; content/guns.json), the gun-pack machine gun as the fallback. (Before it: a Meshy community rotary-barrel gun, CC0 per the owner: no stock, so the rear handle sat at the shoulder.)",
+    "viewOffset": "Chunky (a tall body and a carry loop): further out and lower than a rifle, so it doesn't fill the view.",
+    "hold": "The stock is tall: its top sits in the shoulder, so the gun rides below the face."
+  }
+}

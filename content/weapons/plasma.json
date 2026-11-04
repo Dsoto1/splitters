@@ -1,0 +1,57 @@
+{
+  "id": "core.plasma",
+  "code": 9,
+  "displayName": "Plasma Rifle",
+  "category": "rifle",
+  "kind": "projectile",
+  "slot": 9,
+  "spread": 0.01,
+  "fireIntervalTicks": 7,
+  "range": 0,
+  "magazine": 40,
+  "reserveMax": 160,
+  "pickupAmmo": 60,
+  "reloadTicks": 90,
+  "projectile": {
+    "speed": 55,
+    "gravity": 0,
+    "fuseSeconds": 2,
+    "splashRadius": 1.2,
+    "splashDamage": 14,
+    "splashEdgeDamage": 8,
+    "selfDamageScale": 0.3,
+    "visual": "plasma",
+    "impactDamage": 12
+  },
+  "ammo": "cells",
+  "alt": {
+    "label": "Charged orb",
+    "ammo": "shared",
+    "cost": 8,
+    "fireIntervalTicks": 60,
+    "kind": "projectile",
+    "projectile": {
+      "speed": 20,
+      "gravity": 0,
+      "fuseSeconds": 3,
+      "splashRadius": 4,
+      "splashDamage": 95,
+      "splashEdgeDamage": 20,
+      "selfDamageScale": 0.5,
+      "visual": "orb",
+      "impactDamage": 20
+    }
+  },
+  "botDesirability": 0.7,
+  "botRange": [3, 25],
+  "view": {
+    "model": "guns/futuristic_blaster.glb",
+    "fallback": "weapons/plasma.glb",
+    "viewOffset": [0.21, -0.21, 0.52],
+    "tracer": "#7dffb0",
+    "hold": { "style": "long", "grip": [0, -0.08, -0.08], "support": [0, -0.05, 0.28], "shoulder": [0, 0.02, -0.41] }
+  },
+  "notes": {
+    "model": "The owner's Futuristic Blaster (Meshy, owned; content/guns.json), the sci-fi kit rifle it replaced as the fallback."
+  }
+}

@@ -1,0 +1,45 @@
+{
+  "id": "core.arena_disc",
+  "code": 44,
+  "displayName": "Arena Disc",
+  "kind": "projectile",
+  "slot": 6,
+  "fireMode": "semi",
+  "fireIntervalTicks": 20,
+  "range": 60,
+  "magazine": 3,
+  "reserveMax": 0,
+  "pickupAmmo": 0,
+  "reloadTicks": 0,
+  "raiseTicks": 10,
+  "botDesirability": 0.6,
+  "botRange": [3, 28],
+  "projectile": {
+    "speed": 24,
+    "gravity": 0,
+    "fuseSeconds": 2.4,
+    "splashRadius": 0,
+    "splashDamage": 0,
+    "splashEdgeDamage": 0,
+    "selfDamageScale": 0,
+    "visual": "disc",
+    "bounce": 1,
+    "maxBounces": 6,
+    "disc": { "push": 12, "lift": 4.5 }
+  },
+  "view": {
+    "model": "weapons/disc_launcher.glb",
+    "viewOffset": [0.21, -0.21, 0.52],
+    "tracer": "#7ad6ff",
+    "sound": "fire.disc",
+    "hold": {
+      "style": "long",
+      "grip": [0, -0.06, -0.06],
+      "support": [0, -0.022, 0.142],
+      "shoulder": [0, -0.076, -0.43]
+    }
+  },
+  "notes": {
+    "design": "A variant of an existing weapon for Disc Arena and Classes. The arena disc: a Disc Launcher that shoves instead of hurting, three discs you pick up again."
+  }
+}

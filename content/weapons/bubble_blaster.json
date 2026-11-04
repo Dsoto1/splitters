@@ -1,0 +1,42 @@
+{
+  "id": "core.bubble_blaster",
+  "code": 23,
+  "displayName": "Bubble Blaster",
+  "category": "special",
+  "kind": "projectile",
+  "slot": 6,
+  "fireIntervalTicks": 22,
+  "magazine": 6,
+  "reserveMax": 30,
+  "pickupAmmo": 12,
+  "botRange": [3, 16],
+  "ammo": "chem",
+  "projectile": {
+    "speed": 10,
+    "gravity": -0.6,
+    "drag": 0.12,
+    "fuseSeconds": 7,
+    "splashRadius": 2.4,
+    "splashDamage": 22,
+    "splashEdgeDamage": 8,
+    "selfDamageScale": 0.5,
+    "visual": "bubble",
+    "bounce": 0.95,
+    "maxBounces": 7,
+    "zone": { "kind": "toxic", "radius": 3, "seconds": 5 },
+    "status": { "kind": "poison", "seconds": 3 }
+  },
+  "view": {
+    "model": "weapons/bubble_blaster.glb",
+    "viewOffset": [0.21, -0.21, 0.52],
+    "tracer": "#7dff6a",
+    "hold": {
+      "style": "long",
+      "grip": [0, -0.036, -0.163],
+      "support": [0, -0.006, 0.129],
+      "shoulder": [0, 0.043, -0.29]
+    },
+    "sound": "fire.bubble"
+  },
+  "notes": { "group": "The extended arsenal: every one fires differently. 6: lobbers." }
+}

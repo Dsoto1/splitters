@@ -1,0 +1,33 @@
+{
+  "id": "core.smg",
+  "code": 7,
+  "displayName": "Submachine Gun",
+  "category": "smg",
+  "kind": "hitscan",
+  "slot": 7,
+  "family": "smg",
+  "damage": 11,
+  "spread": 0.006,
+  "fireIntervalTicks": 4,
+  "range": 200,
+  "magazine": 32,
+  "reserveMax": 192,
+  "pickupAmmo": 64,
+  "reloadTicks": 72,
+  "reload": { "type": "magazine", "tactical": 54, "empty": 72, "out": 0.3, "in": 0.65 },
+  "raiseTicks": 12,
+  "ammo": "light",
+  "botDesirability": 0.6,
+  "botRange": [0, 18],
+  "view": {
+    "model": "guns/tommy_gun.glb",
+    "fallback": "weapons/smg.glb",
+    "viewOffset": [0.2, -0.2, 0.5],
+    "tracer": "#ffe9a8",
+    "hold": { "style": "long", "grip": [0, -0.04, -0.075], "support": [0, 0.06, 0.22], "shoulder": [0, -0.01, -0.41] }
+  },
+  "notes": {
+    "design": "Benchmark C: very high rate of weak rounds, tight for the first few then widening fast, very fast recovery, snappy reload.",
+    "model": "The owner's Tommy Gun (Meshy, owned; content/guns.json), the gun-pack SMG as the fallback."
+  }
+}

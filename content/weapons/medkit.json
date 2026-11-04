@@ -1,0 +1,28 @@
+{
+  "id": "core.medkit",
+  "code": 40,
+  "displayName": "Medkit",
+  "kind": "melee",
+  "slot": 1,
+  "fireIntervalTicks": 75,
+  "range": 3,
+  "magazine": 0,
+  "reserveMax": 0,
+  "pickupAmmo": 0,
+  "reloadTicks": 0,
+  "raiseTicks": 15,
+  "heal": 25,
+  "botDesirability": 0,
+  "botRange": [0, 0],
+  "view": {
+    "model": "guns/medkit.glb",
+    "fallback": "procedural/medkit",
+    "viewOffset": [0.22, -0.3, 0.52],
+    "tracer": "#ffffff",
+    "sound": "pickup.health",
+    "hold": { "style": "pistol", "grip": [0, 0.1, 0] }
+  },
+  "notes": {
+    "model": "The owner's Medkit (Meshy, owned), carried by its handle; the boxes-in-code case as the fallback."
+  }
+}

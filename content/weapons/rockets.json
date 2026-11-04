@@ -1,0 +1,44 @@
+{
+  "id": "core.rockets",
+  "code": 8,
+  "displayName": "Rocket Launcher",
+  "category": "explosive",
+  "kind": "projectile",
+  "slot": 8,
+  "fireIntervalTicks": 36,
+  "range": 0,
+  "magazine": 1,
+  "reserveMax": 8,
+  "pickupAmmo": 4,
+  "reloadTicks": 54,
+  "raiseTicks": 32,
+  "projectile": {
+    "speed": 30,
+    "gravity": 0,
+    "fuseSeconds": 4,
+    "splashRadius": 5,
+    "splashDamage": 120,
+    "splashEdgeDamage": 15,
+    "selfDamageScale": 0.75,
+    "visual": "rocket",
+    "impactDamage": 40
+  },
+  "ammo": "explosive",
+  "botDesirability": 0.8,
+  "botRange": [7, 40],
+  "view": {
+    "model": "guns/rocket_launcher.glb",
+    "fallback": "weapons/rockets.glb",
+    "viewOffset": [0.24, -0.24, 0.5],
+    "tracer": "#ffb347",
+    "hold": {
+      "style": "long",
+      "grip": [0, -0.09, -0.115],
+      "support": [0, -0.09, 0.095],
+      "shoulder": [0, -0.03, -0.25]
+    }
+  },
+  "notes": {
+    "design": "Benchmark rocket: rewards predicting where they will be. A slow 30 m/s rocket (a runner moves 4 m while it crosses 25 m), a 5 m blast and a direct hit that kills outright; your own blast hurts you three quarters as much. Quick to bring back: a rocket every 1.5 s, fire again as soon as it is loaded."
+  }
+}

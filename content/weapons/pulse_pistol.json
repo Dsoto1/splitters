@@ -1,0 +1,35 @@
+{
+  "id": "core.pulse_pistol",
+  "code": 10,
+  "displayName": "Pulse Pistol",
+  "category": "pistol",
+  "kind": "hitscan",
+  "slot": 2,
+  "fireMode": "semi",
+  "damage": 24,
+  "spread": 0.004,
+  "fireIntervalTicks": 9,
+  "range": 110,
+  "magazine": 15,
+  "reserveMax": 90,
+  "pickupAmmo": 30,
+  "reloadTicks": 55,
+  "raiseTicks": 12,
+  "botDesirability": 0.42,
+  "botRange": [2, 28],
+  "ammo": "cells",
+  "recoil": { "kick": 0.012, "bloom": 0.004, "maxBloom": 0.02, "recover": 0.0015 },
+  "view": {
+    "model": "guns/ornate_pistol.glb",
+    "viewOffset": [0.2, -0.18, 0.42],
+    "tracer": "#c69bff",
+    "hold": { "style": "pistol", "grip": [0, -0.05, -0.115], "support": [-0.02, -0.06, -0.105] },
+    "fallback": "weapons/pulse_pistol.glb",
+    "sound": "fire.pulse",
+    "beam": true
+  },
+  "notes": {
+    "group": "The extended arsenal: every one fires differently. 2: sidearms.",
+    "model": "The owner's ornate energy handgun (Meshy, owned), the sci-fi kit pistol as the fallback."
+  }
+}

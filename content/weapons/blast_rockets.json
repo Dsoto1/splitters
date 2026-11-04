@@ -1,0 +1,40 @@
+{
+  "id": "core.blast_rockets",
+  "code": 45,
+  "displayName": "Blast Rockets",
+  "category": "explosive",
+  "kind": "projectile",
+  "slot": 8,
+  "fireIntervalTicks": 48,
+  "range": 0,
+  "magazine": 4,
+  "reserveMax": 20,
+  "pickupAmmo": 8,
+  "reloadTicks": 110,
+  "raiseTicks": 28,
+  "botDesirability": 0.78,
+  "botRange": [6, 40],
+  "ammo": "explosive",
+  "projectile": {
+    "speed": 26,
+    "gravity": 0,
+    "fuseSeconds": 4,
+    "splashRadius": 4.2,
+    "splashDamage": 95,
+    "splashEdgeDamage": 18,
+    "selfDamageScale": 0.3,
+    "visual": "rocket",
+    "impactDamage": 20,
+    "knockback": 11
+  },
+  "view": {
+    "model": "weapons/rockets.glb",
+    "viewOffset": [0.24, -0.24, 0.5],
+    "tracer": "#ffb347",
+    "sound": "fire.rockets",
+    "hold": { "style": "long", "grip": [0, -0.1, 0], "support": [0, -0.101, 0.24], "shoulder": [0, 0.034, -0.48] }
+  },
+  "notes": {
+    "design": "A variant of an existing weapon for Disc Arena and Classes. Blast rockets: a Rocket Launcher with a four-rocket drum and the knockback to rocket-jump."
+  }
+}

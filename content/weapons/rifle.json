@@ -1,0 +1,50 @@
+{
+  "id": "core.rifle",
+  "code": 3,
+  "displayName": "Assault Rifle",
+  "category": "rifle",
+  "kind": "hitscan",
+  "slot": 3,
+  "family": "rifle",
+  "damage": 18,
+  "spread": 0.0015,
+  "fireIntervalTicks": 6,
+  "range": 500,
+  "magazine": 30,
+  "reserveMax": 180,
+  "pickupAmmo": 60,
+  "reloadTicks": 108,
+  "reload": { "type": "magazine", "tactical": 84, "empty": 108, "out": 0.3, "in": 0.7 },
+  "ammo": "rifle",
+  "alt": {
+    "label": "Underbarrel grenade",
+    "ammo": "own",
+    "cost": 1,
+    "max": 4,
+    "pickup": 2,
+    "fireIntervalTicks": 50,
+    "kind": "projectile",
+    "projectile": {
+      "speed": 24,
+      "gravity": 12,
+      "fuseSeconds": 3,
+      "splashRadius": 3.5,
+      "splashDamage": 85,
+      "splashEdgeDamage": 12,
+      "selfDamageScale": 0.6,
+      "visual": "grenade"
+    }
+  },
+  "botDesirability": 0.7,
+  "botRange": [4, 35],
+  "view": {
+    "model": "guns/ak47.glb",
+    "fallback": "weapons/rifle.glb",
+    "viewOffset": [0.2, -0.2, 0.55],
+    "tracer": "#ffd36b",
+    "hold": { "style": "long", "grip": [0, -0.01, -0.165], "support": [0, 0.05, 0.14], "shoulder": [0, 0.02, -0.41] }
+  },
+  "notes": {
+    "design": "Benchmark D: high velocity, visible long-range travel and drop, predictable vertical climb, a medium-range workhorse."
+  }
+}
