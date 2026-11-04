@@ -35,7 +35,7 @@ content/
   core/                     # always present
     pack.json               # id, version, list of content entries
     tiles/*.json            # TileDefinition data (today: shared/src/map/catalog.ts)
-    weapons/*.json          # WeaponDefinition data (today: shared/src/sim/weapons.ts)
+    weapons/*.json          # WeaponDefinition data (today: content/weapons/*.json, see "How to add a weapon")
     characters/*.json       # CharacterDefinition (CHARACTERS_BOTS_V2 §28)
     bots/*.json             # BotProfile (§29)
     themes/*.json           # visual kit mapping per tile family
@@ -266,6 +266,54 @@ mesh level.
 
 - Data definition (damage, fire rate, bot desirability) plus viewmodel, world model, muzzle/impact effects and audio set, all referenced by ID.
 - Balance changes are data-only and need no art rebuild.
+
+#### How to add a weapon
+
+Weapons, throwables, classes and class abilities are data (docs/CONTENT_SCALABILITY.md, "Weapons as data"); the
+behaviour (projectile kinds, alt fire, status effects, the ability handlers, `gunplayOf`) stays in code. Read
+`docs/GUNPLAY_SPEC.md` and `docs/GUNPLAY_DIRECTION.md` first: a new weapon has to be clearly different from the ones
+there are.
+
+| File | Holds |
+|---|---|
+| `content/weapons/families.json` | `defaults` (what every weapon file starts from) and the ten gunplay `families` (velocity, spread, recoil, falloff, head and leg multipliers) |
+| `content/weapons/<name>.json` | one weapon: id `core.<name>`, its network `code`, and only the values that differ from `defaults` |
+| `content/throwables.json`, `content/classes.json`, `content/abilities.json` | thrown equipment, classes (loadout, health, speed, ability) and each ability's numbers |
+| `content/codes.lock.json` | every network code ever given (written by the generator; never edit by hand) |
+
+1. **Copy the closest weapon** to `content/weapons/<name>.json` and set `id` to `core.<name>`.
+2. **Give it a new `code`:** the highest code in `content/codes.lock.json` plus one. Codes go on the wire and into
+   inventories: never change one, never reuse one, also after a weapon is removed (the lock keeps it).
+3. **Name and place it:** `displayName`, `category` (what random weapon pickups roll it as; leave it out for tools,
+   mode-only and mounted weapons), `slot` (1 melee and tools, 2 sidearms, 3 rifles, 4 shotguns, 5 precision,
+   6 lobbers, 7 automatics, 8 heavy, 9 energy and chemical; 0 mounted guns, never carried).
+4. **Pick a `family`** for a conventional gun: it brings ballistic bullets, the spread model, the recoil pattern,
+   falloff and the head and leg multipliers. Override only what differs: `accuracy` and `kick` merge field by field
+   with the family's, `ballistic` too (`null`: hitscan), while `falloff` and `reload` replace it whole (write all of
+   their fields). Exotic weapons (beams, heat, projectiles) can go without a family.
+5. **Numbers:** time is in ticks (60 a second: `fireIntervalTicks` 6 is 600 RPM, `reloadTicks` 90 is 1.5 s).
+   Damage is per pellet. `projectile` for anything that flies (its fields are in `ProjectileSpec`, sim/weapons.ts),
+   `heat` for a weapon without ammunition, `alt` for a second trigger.
+6. **Presentation:** `view.model` and `view.fallback` must exist under `packages/client/public/models` (or be a
+   `procedural/` model), `view.sound` in `content/sounds.json` (default `fire.<name>`). Holds (`view.hold`) are set
+   with the grip tool, not by hand or in the Workbench.
+7. **Notes:** put the design intent in `notes` (`design`, `model`, or the field it explains), not in code comments.
+8. **Generate and check:** `pnpm content:weapons` (`node tools/content/weapons.mjs`) checks the schema (an unknown
+   field is an error), the references (ammo types, models, sounds, slots 0-9, codes; classes naming real weapons,
+   throwables and abilities) and writes `packages/shared/src/content/weapons.generated.ts` and the lock. `--check`
+   only verifies that both are up to date (the unit test `tools/content/test/weapons.test.mjs` does the same).
+9. **Test:** `pnpm typecheck`, `pnpm test:changed` and the `arsenal` e2e flow; a weapon that changes an existing
+   one's numbers also changes `packages/shared/test/fixtures/weapons-resolved.json` (rewrite it with
+   `UPDATE_WEAPON_FIXTURE=1 pnpm vitest run packages/shared/test/weaponsData.test.ts` and read the diff: only the
+   weapon you meant to change may move). A new weapon is added to the fixture the same way.
+10. **Pictures:** its icon comes from the "Capture portraits" workflow (`tools/content/capture-weapon-icons.mjs`).
+
+A throwable or class is added the same way in its file, with the next code: their codes run 0, 1, 2... without
+gaps (clients read them by position). A class ability is code first (`sim/classes.ts`), then its numbers go in
+`content/abilities.json`.
+
+The Workbench (`.control-center/workbench.json`) shows weapons, weapon families, classes, class abilities and
+throwables from these files; id, code, kind and holds are read-only there.
 
 ### Audio
 

@@ -23,7 +23,8 @@ scoped, done on its own `wip/` branch, green on a `check/` branch, then fast-for
      - give each style pack its own palette atlas file;
      - add `pnpm content:rebuild`, which runs build → preview → atlas → `content:build` → `content:check`
        after a merge.
-3. **Weapons, throwables, classes and abilities as data:** see "Weapons as data" below.
+3. **Weapons, throwables, classes and abilities as data:** see "Weapons as data" below. **Done** on
+   `wip/weapons-data` (2026-11-04; not merged): all five steps, with one part of step 4 left as it was (below).
 4. **Vehicles, turrets and NPC roles as data:**
    - vehicles and turrets (`sim/mounts.ts`): speed, health, seats, weapons;
    - NPC roles (`sim/npc.ts`): health, speed, damage, size.
@@ -111,12 +112,28 @@ maps (already data).
 - **Classes:** name, role, blurb, health, speed, weapons, ability and its numbers.
 - **Throwables:** name, max, interval, splash, fuse.
 
-**Steps:**
-1. Fixture test.
-2. One-off extraction to JSON plus the generator, proven identical.
-3. Throwables, classes and abilities.
-4. Fold the legacy recoil into kicks, proven identical.
-5. Workbench collections and a "how to add a weapon" section in docs/CONTENT_PIPELINE.md.
+**Steps** (all done on `wip/weapons-data`, 2026-11-04; how to add a weapon: docs/CONTENT_PIPELINE.md):
+1. Fixture test. **Done:** `packages/shared/test/fixtures/weapons-resolved.json`, `weaponsData.test.ts`.
+2. One-off extraction to JSON plus the generator, proven identical. **Done:** `content/weapons/`,
+   `tools/content/weapons.mjs` (`pnpm content:weapons`), `content/codes.lock.json`.
+3. Throwables, classes and abilities. **Done:** `content/throwables.json`, `content/classes.json`,
+   `content/abilities.json`.
+4. Fold the legacy recoil into kicks, proven identical. **Done for the camera kick** (Pulse Pistol, Gilded
+   Pistol, Railgun now carry an explicit `kick`; on the family weapons `recoil.kick` was never read).
+   **Not done for the legacy spread bloom** (`recoil.bloom` / `maxBloom` / `recover`), because it can't be made
+   identical with the family spread model (`accuracy`):
+   - bloom recovers by a fixed angle on every tick without a shot; spray recovers only once the trigger has been
+     let go for a full fire interval;
+   - `maxBloom` caps the bloom alone; `accuracy.max` caps the whole cone, movement and air included;
+   - aiming down the sights is instant (×0.55, scoped ×0.35); `accuracy.ads` blends in over `adsTicks`;
+   - an unscoped shot from a scoped weapon adds its penalty before the stance multiple; the accuracy path adds it
+     after;
+   - giving a weapon an `accuracy` also changes bots (burst discipline reads `accuracy.tight`).
+   It stays on the old path for the Pulse Pistol, Gilded Pistol and Railgun (bloom 0 on the last two); on family
+   weapons `recoil.maxBloom` only sets how long bots fire bursts. Moving them to `accuracy` is a feel change: the
+   owner's call.
+5. Workbench collections and a "how to add a weapon" section in docs/CONTENT_PIPELINE.md. **Done:**
+   `.control-center/workbench.json` (weapons, weapon families, classes, class abilities, throwables).
 
 **Risks:**
 - network codes;
