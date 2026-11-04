@@ -36,6 +36,8 @@ const ids = readdirSync(join(ROOT, 'maps'))
   .filter((f) => f.endsWith('.json'))
   .map((f) => f.slice(0, -5))
   .filter((id) => (only.length ? only.includes(id) : !RETIRED.has(id)))
+  // Test maps (metadata.testOnly) have no map card.
+  .filter((id) => JSON.parse(readFileSync(join(ROOT, 'maps', `${id}.json`), 'utf8')).metadata?.testOnly !== true)
   // SHOT_MISSING=1: only maps without a picture yet (resuming an interrupted run).
   .filter((id) => !process.env.SHOT_MISSING || !existsSync(join(OUT, `${id}.jpg`)));
 mkdirSync(OUT, { recursive: true });

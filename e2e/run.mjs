@@ -13,7 +13,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { setTimeout as sleep } from 'node:timers/promises';
 import { chromium, devices } from 'playwright';
-import { COVERED_MAPS, FLOWS, MAP_FLOWS, MAP_PARTS } from './flowMap.mjs';
+import { CHARACTER_FLOWS, COVERAGE_MAP, COVERED_MAPS, FLOWS, MAP_FLOWS, MAP_PARTS } from './flowMap.mjs';
 import { assignShards, loadTimings } from './shards.mjs';
 
 // E2E_CLIENT_PORT / E2E_SERVER_PORT move the preview and game servers (e.g. when another checkout is testing).
@@ -3352,6 +3352,58 @@ async function raceFlow(browser) {
 }
 
 /**
+ * The coverage map (maps/test_coverage.json: one of every tile, wall style, prop pack, pickup kind, vehicle and
+ * turret, liquid, path, logic piece and mode marker, made in MapMaker): a match starts on it and runs 90 ticks with
+ * every pickup and vehicle in the match, you stand on solid ground, nothing throws; it opens in MapMaker whole, as a
+ * test map. Check branches run this instead of the browser map tour (nightly).
+ */
+async function coverageFlow(browser) {
+  const { readFileSync } = await import('node:fs');
+  const path = new URL(`../maps/${COVERAGE_MAP}.json`, import.meta.url);
+  const file = JSON.parse(readFileSync(path, 'utf8'));
+  const count = (kind) => file.entities.filter((e) => e.kind === kind).length;
+  const page = await (await browser.newContext({ viewport: { width: 800, height: 450 } })).newPage();
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
+  await page.goto(`${CLIENT}/?offline=${COVERAGE_MAP}&test=1&god=1`);
+  const ok = await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown', null, { timeout: T(90000) }).then(() => true, () => false);
+  check(ok, 'the coverage map starts a match');
+  if (ok) {
+    const t0 = await sim(page, (m) => m.tick).catch(() => 0);
+    const ran = await simWait(page, (m, _me, t) => m.tick >= t, t0 + 90, T(30000));
+    const floor = Math.min(-5, ...file.entities.filter((e) => e.kind === 'spawn').map((e) => e.position[1] - 2));
+    const me = await page.evaluate(() => ({ alive: window.__cs.local.alive, y: window.__cs.local.state.pos.y }));
+    check(ran && me.alive && me.y > floor, `90 ticks on it, and you stand on solid ground (y ${me.y.toFixed(1)}, floor ${floor.toFixed(1)})`);
+    const got = await sim(page, (m) => ({ pickups: m.pickups.length, mounts: m.mounts.length, ziplines: m.ziplines.length }));
+    // The match also runs the transport plane and the dropship as mounts.
+    const want = { pickups: count('pickup'), mounts: count('mount') + count('airplane'), ziplines: count('zipline') };
+    check(got.pickups >= want.pickups && got.mounts === want.mounts && got.ziplines === want.ziplines, `every pickup, vehicle, turret and zipline is in the match (${JSON.stringify(got)} of ${JSON.stringify(want)})`);
+  }
+  check(errors.length === 0, `no page errors on the coverage map (${errors.join('; ')})`);
+  await page.context().close();
+  // MapMaker: it opens whole through Import, with no errors, as a test map.
+  const ed = await (await browser.newContext({ viewport: { width: 1280, height: 800 } })).newPage();
+  const edErrors = [];
+  ed.on('pageerror', (e) => edErrors.push(process.env.E2E_STACKS ? e.stack : e.message));
+  ed.on('dialog', (d) => d.accept());
+  await ed.goto(`${CLIENT}/?mode=editor&test=1`);
+  await ed.waitForFunction(() => window.__editor, null, { timeout: T(30000) });
+  await ed.setInputFiles('#ed-import-file', path.pathname);
+  const opened = await ed.waitForFunction((want) => window.__editor.doc.metadata.id === want && Array.isArray(window.__editor.issues), file.metadata.id, { timeout: T(60000) }).then(() => true, () => false);
+  const r = opened ? await ed.evaluate(() => ({ errors: window.__editor.issues.filter((i) => i.severity === 'error').map((i) => i.message), entities: window.__editor.doc.entities.length, tiles: window.__editor.doc.classicStructure.tiles.length, testOnly: !!window.__editor.doc.metadata.testOnly })) : null;
+  check(!!r && !r.errors.length && r.entities === file.entities.length && r.tiles === file.classicStructure.tiles.length && r.testOnly, `the coverage map opens in MapMaker whole, marked as a test map (${JSON.stringify(r)})`);
+  // Map properties show it as a test map.
+  if (opened) await ed.evaluate(() => window.__editor.setSelection({ tiles: [], entities: [] }));
+  const box = opened && (await ed.evaluate(() => document.getElementById('ed-prop-testonly')?.checked ?? null));
+  check(box === true, `Map properties: "Test map" is ticked (${box})`);
+  check(edErrors.length === 0, `no page errors in MapMaker (${edErrors.join('; ')})`);
+  await ed.context().close();
+}
+
+/** Seconds each map of the browser tour took (played and opened in MapMaker), for timings' perMap. */
+const mapSeconds = [];
+
+/**
  * Every homage map (and any other map without a flow of its own) starts a match cleanly. The tour is long: CI runs
  * it in MAP_PARTS parts ('maps', 'maps2', ...), part i taking every MAP_PARTS-th map by name (flowMap.mapPartOf).
  * E2E_MAPS=id1,id2 checks those maps in 'maps' alone.
@@ -3361,6 +3413,7 @@ async function mapsFlow(browser, part = 0) {
   const only = process.env.E2E_MAPS?.split(',');
   const all = readdirSync(new URL('../maps/', import.meta.url)).filter((f) => f.endsWith('.json')).map((f) => f.slice(0, -5)).filter((id) => !COVERED_MAPS.has(id)).sort();
   const ids = only ? (part ? [] : all.filter((id) => only.includes(id))) : all.filter((_, i) => i % MAP_PARTS === part);
+  const t0 = Date.now();
   for (const id of ids) {
     const page = await (await browser.newContext({ viewport: { width: 800, height: 450 } })).newPage();
     const errors = [];
@@ -3405,6 +3458,7 @@ async function mapsFlow(browser, part = 0) {
     check(opened && !r.errors.length && whole && !errors.length, `${id}: opens in MapMaker with no errors and nothing lost${why ? ` (${why})` : ''}`);
   }
   await page.context().close();
+  if (ids.length) mapSeconds.push((Date.now() - t0) / 1000 / ids.length);
 }
 
 /** Draw `n` more frames (a page's own clock, whatever the machine's speed). */
@@ -3613,10 +3667,24 @@ async function webgpuFlow() {
   }
 }
 
-async function charactersFlow(browser) {
+/**
+ * The character checks, in three flows that CI runs side by side (each was ~3.5 min of an 11-min flow): part 0 the
+ * viewer, the palms on large guns (first person, full body) and third-person strafing; part 1 where the hands are
+ * drawn; part 2 grips in a real match (gripsInPlay).
+ */
+async function charactersFlow(browser, part = 0) {
+  if (part === 2) return gripsInPlay(browser);
   const page = await (await browser.newContext({ viewport: { width: 960, height: 540 } })).newPage();
   const errors = [];
   page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
+  if (part === 1) {
+    await page.goto(`${CLIENT}/?mode=grips&test=1`);
+    await page.waitForFunction(() => window.__grips, null, { timeout: T(60000) });
+    await drawnHands(page);
+    check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+    await page.context().close();
+    return;
+  }
   await page.goto(`${CLIENT}/?mode=characters`);
   await page.waitForFunction(() => window.__charsReady === true, null, { timeout: T(30000) });
   const [n, want] = await page.evaluate(() => [window.__charAnimators.length, window.__charSpecs]);
@@ -3713,6 +3781,12 @@ async function charactersFlow(browser) {
   if (roller.set || roller.rigRun) strafes.push(`core.rollerbot rolls on ${JSON.stringify(roller)}`);
   await page.evaluate(() => window.__grips.drive({ speed: 0 }, 0, 2));
   check(strafes.length === 0, `third person, strafing and backing up while firing: shoulders square to the aim, hips toward the motion, hands on the gun; every walking look on the shared clip set, the rolling one on none (${strafes.join('; ') || 'all'})`);
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  await page.context().close();
+}
+
+/** Where the hands are DRAWN, on the grip page (`?mode=grips`): characters part 1. */
+async function drawnHands(page) {
   // The palm checks above measure the joints. Where the hands are DRAWN (each hand's skin through its skeleton,
   // handProbe.ts): on the grip, the shooting hand's fingers along the barrel and its flat against the grip's side.
   // A Meshy hand sits on its joint its own way: the dapper's palm faced the camera and its edge the grip in every
@@ -3743,9 +3817,6 @@ async function charactersFlow(browser) {
     if (badHand(d, 0.05)) spearMisses.push(`${view}: ${fmtHand(d)}`);
   }
   check(spearMisses.length === 0, `the Spear's hand is drawn on its shaft, fingers along it (${spearMisses.join('; ') || 'all within 5 cm'})`);
-  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
-  await page.context().close();
-  await gripsInPlay(browser);
 }
 
 /**
@@ -3952,12 +4023,20 @@ async function lobbyFlow(browser) {
     // loaded machine fires late: wait for the check-ins themselves, not a time. Two finished after the join (the
     // first may have been sent before the host counted the player), then the listing must say 2.
     // (The hub is read only as a check-in lands: every page and this runner share one address's read budget.)
+    // The listing is also read every 5 s (well inside the hub's read budget): CI's run of 4 Nov counted no check-ins
+    // from the host's page for the whole 9-min wait, while the listing already said 2.
     const from = checkins;
     let seen = from;
+    let readAt = Date.now();
     const twoNow = async () => ((await hubGames(HUB_PORT)) ?? []).find((g) => g.name === 'E2E Friday Night')?.players === 2;
     await until(async () => {
-      if (checkins === seen) return false;
+      if (checkins === seen) {
+        if (Date.now() - readAt < 5000) return false;
+        readAt = Date.now();
+        return twoNow();
+      }
       seen = checkins;
+      readAt = Date.now();
       return (await twoNow()) || checkins >= from + 2;
     }, T(180000));
     const two = await hubUntil(twoNow, 3000);
@@ -4210,8 +4289,13 @@ async function hostpageFlow(browser) {
   const started = await launcher.waitForFunction(() => document.getElementById('pill')?.dataset.state === 'running', null, { timeout: T(60000) }).then(() => true, () => false);
   check(started, 'Start in the right bar starts the server');
   if (started) {
-    await launcher.click('#f-vis button[data-v="listed"]');
-    const ran = await launcher.waitForFunction(() => [...document.querySelectorAll('#log .ln.cmd')].some((l) => /visibility listed/.test(l.textContent)), null, { timeout: T(10000) }).then(() => true, () => false);
+    // The bar runs the command only once its own status poll has seen the server running (the pill can turn first,
+    // CI 4 Nov: the click only set the draft): click again until the command shows.
+    const ran = await until(async () => {
+      if (await launcher.evaluate(() => [...document.querySelectorAll('#log .ln.cmd')].some((l) => /visibility listed/.test(l.textContent)))) return true;
+      await launcher.click('#f-vis button[data-v="listed"]');
+      return launcher.waitForFunction(() => [...document.querySelectorAll('#log .ln.cmd')].some((l) => /visibility listed/.test(l.textContent)), null, { timeout: 2000 }).then(() => true, () => false);
+    }, T(10000));
     check(ran, 'a right-bar toggle runs its console command (visibility listed)');
     // Match rules: the score and time limit steppers run rules commands, wait for the restart, and Restart now plays them.
     const status = () => fetch(`http://127.0.0.1:${CONTROL_PORT}/api/status`, { headers: { Authorization: `Bearer ${token}` } }).then((r) => r.json());
@@ -4732,11 +4816,20 @@ const results = [];
  * Per-flow timings (E2E_TIMINGS_OUT=file: JSON merged into e2e/timings.json by tools/ci/timings.mjs), flaky
  * flows (e2e-artifacts/flaky.log) and a table for the CI job summary ($GITHUB_STEP_SUMMARY).
  */
+/** This run's timings: passing flows' seconds, and the tour's seconds a map (a 'maps' flow touring E2E_MAPS isn't a part's time). */
+function timingsOut() {
+  const named = !!process.env.E2E_MAPS;
+  const flows = Object.fromEntries(results.filter((r) => r.status === 'PASS' && !(named && MAP_FLOWS.includes(r.flow))).map((r) => [r.flow, Math.round(r.seconds)]));
+  return { flows, ...(mapSeconds.length ? { perMap: Math.round(mapSeconds.reduce((a, b) => a + b, 0) / mapSeconds.length) } : {}) };
+}
+
 function report() {
   if (!results.length) return;
   try {
-    if (process.env.E2E_TIMINGS_OUT) writeFileSync(process.env.E2E_TIMINGS_OUT, JSON.stringify({ flows: Object.fromEntries(results.filter((r) => r.status === 'PASS').map((r) => [r.flow, Math.round(r.seconds)])) }, null, 2));
+    if (process.env.E2E_TIMINGS_OUT) writeFileSync(process.env.E2E_TIMINGS_OUT, JSON.stringify(timingsOut(), null, 2));
   } catch {}
+  // The same in the log, on one line (readable from the job log alone).
+  console.log(`E2E_TIMINGS ${JSON.stringify(timingsOut())}`);
   const flaky = results.filter((r) => r.status === 'FLAKY');
   for (const r of flaky) console.log(`FLAKY ${r.flow}: ${r.fails.flat().join(' | ')}`);
   if (flaky.length) {
@@ -4795,7 +4888,7 @@ try {
   };
   // E2E_ONLY=editor,characters runs a subset; E2E_SHARD=2/8 one of CI's parallel groups (balanced by e2e/timings.json;
   // CI's plan job passes each shard's flows in E2E_ONLY itself).
-  const flows = { editor: editorFlow, editorux: editoruxFlow, offline: offlineFlow, mobile: mobileFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, scenery: sceneryFlow, setpieces: setpiecesFlow, physicsfx: physicsfxFlow, teams: teamsFlow, ctf: ctfFlow, forts: fortsFlow, arsenal: arsenalFlow, vehicles: vehiclesFlow, race: raceFlow, zombies: zombiesFlow, classes: classesFlow, ...Object.fromEntries(MAP_FLOWS.map((name, part) => [name, (b) => mapsFlow(b, part)])), designer: designerFlow, characters: charactersFlow, online: onlineFlow, hostgame: hostgameFlow, hostcontrols: hostcontrolsFlow, lobby: lobbyFlow, handoff: handoffFlow, dedicatedhost: dedicatedhostFlow, hostpage: hostpageFlow, webgpu: webgpuFlow, visual: visualFlow };
+  const flows = { editor: editorFlow, editorux: editoruxFlow, offline: offlineFlow, mobile: mobileFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, scenery: sceneryFlow, setpieces: setpiecesFlow, physicsfx: physicsfxFlow, teams: teamsFlow, ctf: ctfFlow, forts: fortsFlow, arsenal: arsenalFlow, vehicles: vehiclesFlow, race: raceFlow, zombies: zombiesFlow, classes: classesFlow, coverage: coverageFlow, ...Object.fromEntries(MAP_FLOWS.map((name, part) => [name, (b) => mapsFlow(b, part)])), designer: designerFlow, ...Object.fromEntries(CHARACTER_FLOWS.map((name, part) => [name, (b) => charactersFlow(b, part)])), online: onlineFlow, hostgame: hostgameFlow, hostcontrols: hostcontrolsFlow, lobby: lobbyFlow, handoff: handoffFlow, dedicatedhost: dedicatedhostFlow, hostpage: hostpageFlow, webgpu: webgpuFlow, visual: visualFlow };
   // e2e/flowMap.mjs (change-based selection, shards) must know every flow, and only those.
   const known = new Set(FLOWS);
   const drift = [...Object.keys(flows).filter((f) => !known.has(f)), ...FLOWS.filter((f) => !(f in flows))];

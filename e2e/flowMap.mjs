@@ -3,19 +3,30 @@
 // Safe default: a path no rule names, or one in the shared simulation / infrastructure,
 // runs everything. Docs alone run nothing. Tested in tools/ci/test/select.test.mjs.
 
-/** The map tour is long: CI runs it in this many parts ('maps', 'maps2', … 'maps7'). */
-export const MAP_PARTS = 7;
+/**
+ * The browser map tour (every map in a match, then opened in MapMaker) is long: it runs in this many parts ('maps',
+ * 'maps2', … 'maps14', about 6 maps and 6 minutes each), and only on full runs (nightly, v* tags, Run workflow:
+ * select's `tour`). Check branches and main pushes rely on the headless check of every map (packages/shared/test/
+ * allMaps*.test.ts) and the coverage map's flow; a change to a few maps tours just those (E2E_MAPS).
+ */
+export const MAP_PARTS = 14;
 export const MAP_FLOWS = Array.from({ length: MAP_PARTS }, (_, i) => (i ? `maps${i + 1}` : 'maps'));
+/** The character checks, in three parts (viewer and palms; drawn hands; grips in a match): ~11 min in one. */
+export const CHARACTER_FLOWS = ['characters', 'characters2', 'characters3'];
+/** A change to at most this many maps tours just those maps (E2E_MAPS) on a check branch; more run their tour parts. */
+export const MAX_NAMED_MAPS = 6;
+/** The map with one of everything (maps/test_coverage.json; testOnly: no map list or rotation offers it). */
+export const COVERAGE_MAP = 'test_coverage';
 
 /** Every flow in e2e/run.mjs (run.mjs refuses to start if they differ). */
 export const FLOWS = [
   'editor', 'editorux', 'offline', 'mobile', 'vault', 'outpost', 'sandgate', 'citadel', 'canyon', 'scenery', 'setpieces', 'physicsfx',
-  'teams', 'ctf', 'forts', 'arsenal', 'vehicles', 'race', 'zombies', 'classes', ...MAP_FLOWS,
-  'designer', 'characters', 'online', 'hostgame', 'hostcontrols', 'lobby', 'handoff', 'dedicatedhost', 'hostpage', 'webgpu', 'visual',
+  'teams', 'ctf', 'forts', 'arsenal', 'vehicles', 'race', 'zombies', 'classes', 'coverage', ...MAP_FLOWS,
+  'designer', ...CHARACTER_FLOWS, 'online', 'hostgame', 'hostcontrols', 'lobby', 'handoff', 'dedicatedhost', 'hostpage', 'webgpu', 'visual',
 ];
 
 /** Maps that have a flow of their own, so the tour leaves them out. */
-export const COVERED_MAPS = new Set(['phase0_arena', 'm3_vault', 'm4_outpost', 'sandgate', 'citadel', 'canyon']);
+export const COVERED_MAPS = new Set(['phase0_arena', 'm3_vault', 'm4_outpost', 'sandgate', 'citadel', 'canyon', COVERAGE_MAP]);
 
 /** The tour's maps (sorted ids, covered ones left out) split into MAP_PARTS parts: part `i` gets every MAP_PARTS-th. */
 export function mapPartOf(id, ids) {
@@ -41,6 +52,7 @@ const MAP_USERS = {
   sandsweep: ['race'],
   atomic_court: ['hostcontrols'],
   void_yard: ['hostcontrols'],
+  [COVERAGE_MAP]: ['coverage'],
 };
 
 /**
@@ -88,13 +100,13 @@ const RULES = [
   // always runs, holds them to the built files). What the runtime reads is the build output (public/models,
   // packages/shared/src/content/*.generated.ts: those run everything), so a manifest alone runs the flows that
   // look at that kind of content, and the unit tests that read it. Any other content/ path: everything.
-  [/^content\/(characters\/|characters\.lock\.json$)/, ['characters', 'designer', 'visual'], ['client', 'content', 'shared']],
-  [/^content\/(clip-sets\/|clip-sets\.lock\.json$)/, ['characters', 'visual'], ['client', 'content', 'shared']],
-  [/^content\/gear(\.lock)?\.json$/, ['characters', 'designer', 'visual'], ['shared']],
+  [/^content\/(characters\/|characters\.lock\.json$)/, [...CHARACTER_FLOWS, 'designer', 'visual'], ['client', 'content', 'shared']],
+  [/^content\/(clip-sets\/|clip-sets\.lock\.json$)/, [...CHARACTER_FLOWS, 'visual'], ['client', 'content', 'shared']],
+  [/^content\/gear(\.lock)?\.json$/, [...CHARACTER_FLOWS, 'designer', 'visual'], ['shared']],
   // Props: one file per content pack (content/props/<pack>.json); the palette test reads them too.
   [/^content\/(props\/|props(\.lock)?\.json$)/, ['editor', 'scenery', 'setpieces', 'visual'], ['client', 'shared']],
   // Guns: the arsenal, the grips on them (characters), mounted guns (vehicles).
-  [/^content\/guns(\.lock)?\.json$/, ['arsenal', 'characters', 'vehicles'], ['shared']],
+  [/^content\/guns(\.lock)?\.json$/, ['arsenal', ...CHARACTER_FLOWS, 'vehicles'], ['shared']],
   [/^content\/vfx(\.lock)?\.json$/, ['physicsfx', 'arsenal'], ['client']],
   [/^content\/skies(\.lock)?\.json$/, [...MAP_FLOWS, 'scenery', 'setpieces', 'canyon', 'visual'], ['shared']],
   [/^content\/city(\.lock)?\.json$/, [...MAP_FLOWS, 'vault', 'outpost', 'sandgate', 'citadel', 'canyon', 'scenery', 'setpieces'], ['client', 'shared']],
@@ -113,12 +125,12 @@ const RULES = [
   // Phones and tablets (on-screen controls, touch detection) and the weapon wheel.
   [/^packages\/client\/src\/(touchDevice|game\/(touchControls|weaponWheel))\.ts$/, ['mobile', 'offline'], ['client']],
   [/^packages\/client\/src\/editor\//, ['editor', 'editorux', 'scenery', 'canyon', 'race', 'visual'], ['client']],
-  [/^packages\/client\/src\/designer\//, ['designer', 'characters'], ['client']],
-  [/^packages\/client\/src\/tools\/characterViewer/, ['characters'], ['client']],
+  [/^packages\/client\/src\/designer\//, ['designer', ...CHARACTER_FLOWS], ['client']],
+  [/^packages\/client\/src\/tools\/characterViewer/, [...CHARACTER_FLOWS], ['client']],
   // Your own body and arms in first person, and where hands are drawn on guns (the grip checks).
-  [/^packages\/client\/src\/game\/(firstPersonBody|firstPersonArms|handProbe)\.ts$/, ['characters', 'offline', 'arsenal', 'visual'], ['client']],
+  [/^packages\/client\/src\/game\/(firstPersonBody|firstPersonArms|handProbe)\.ts$/, [...CHARACTER_FLOWS, 'offline', 'arsenal', 'visual'], ['client']],
   [/^packages\/client\/src\/tools\//, NONE, ['client']],
-  [/^packages\/client\/src\/frontend\//, ['offline', 'mobile', 'teams', 'lobby', 'hostgame', 'hostcontrols', 'dedicatedhost', 'designer', 'characters', 'editor', 'webgpu', 'visual'], ['client']],
+  [/^packages\/client\/src\/frontend\//, ['offline', 'mobile', 'teams', 'lobby', 'hostgame', 'hostcontrols', 'dedicatedhost', 'designer', ...CHARACTER_FLOWS, 'editor', 'webgpu', 'visual'], ['client']],
   [/^packages\/client\/src\/hostPage\.ts$/, ['hostpage'], ['client']],
   [/^packages\/client\/src\/audio\//, ['offline'], ['client']],
   [/^packages\/client\/src\/game\/(hostPanel|pauseMenu)\.ts$/, ['offline', 'hostgame', 'hostcontrols', 'lobby', 'dedicatedhost'], ['client']],
@@ -132,7 +144,7 @@ const RULES = [
   [/^packages\/client\/src\/game\/scoreBoard\.ts$/, ['teams', 'ctf', 'zombies', 'classes', 'hostcontrols'], ['client']],
   [/^packages\/client\/src\/game\/(glassVisuals|waterVisuals|ragdoll|ragdollBudget|ragdollJoints|bloodVisuals|impactVisuals|reflections|skyEffects)\.ts$/, ['physicsfx', 'setpieces'], ['client']],
   [/^packages\/client\/src\/game\/(arsenalVisuals|muzzleVisuals|crosshair|throwArc|coverState)\.ts$/, ['arsenal', 'physicsfx'], ['client']],
-  [/^packages\/client\/src\/game\/(scenarioVisuals|scenarioState|pickupVisuals|propVisuals|canopyVisuals|cityVisuals|creatureAnimator|gait|torsoSurface|minimap|perfProbe|sessionAudio)\.ts$/, [...MAP_FLOWS, 'vault', 'outpost', 'sandgate', 'citadel', 'canyon', 'scenery', 'setpieces', 'zombies', 'characters'], ['client']],
+  [/^packages\/client\/src\/game\/(scenarioVisuals|scenarioState|pickupVisuals|propVisuals|canopyVisuals|cityVisuals|creatureAnimator|gait|torsoSurface|minimap|perfProbe|sessionAudio)\.ts$/, [...MAP_FLOWS, 'vault', 'outpost', 'sandgate', 'citadel', 'canyon', 'scenery', 'setpieces', 'zombies', ...CHARACTER_FLOWS], ['client']],
   [/^packages\/client\/src\/(backdrop|borderVisuals|foliage|mapMeshes|playlists)\.ts$/, [...MAP_FLOWS, 'vault', 'outpost', 'sandgate', 'citadel', 'canyon', 'scenery', 'setpieces', 'visual'], ['client']],
 
   // The server (dedicated server, hub, lobby).
@@ -145,10 +157,15 @@ const RULES = [
 
 /**
  * What a set of changed paths (repo-relative) needs.
- * Returns { full, flows (sorted, every flow when full), unit ('all' or a sorted list of packages), docsOnly, perf, reasons }.
+ * Returns { full, flows (sorted, every flow when full), maps (E2E_MAPS: the maps the 'maps' flow tours, [] for its
+ * whole part), unit ('all' or a sorted list of packages), docsOnly, perf, reasons }.
  * `mapIds`: the map files there are (ids, without .json), to find a changed map's tour part.
+ * `tour`: a full run (nightly, v* tags, Run workflow) that takes the browser map tour; otherwise the tour's parts are
+ * left out: the flows a rule maps to the tour get the coverage map's flow instead, and a change to a few maps tours
+ * just those maps (`maps`, at most MAX_NAMED_MAPS; more run the parts that hold them).
  */
-export function selectForPaths(paths, mapIds = []) {
+export function selectForPaths(paths, mapIds = [], { tour = false } = {}) {
+  const changedMaps = [];
   const flows = new Set();
   const unit = new Set();
   let full = false;
@@ -167,8 +184,7 @@ export function selectForPaths(paths, mapIds = []) {
         full = true;
         reasons.push(`${p}: the default map of most flows`);
       } else {
-        const part = mapPartOf(id, mapIds.length ? mapIds : [id]);
-        if (part >= 0) flows.add(MAP_FLOWS[part]);
+        if (!COVERED_MAPS.has(id)) changedMaps.push(id);
         for (const f of MAP_USERS[id] ?? []) flows.add(f);
       }
       unitAll = true;
@@ -208,10 +224,21 @@ export function selectForPaths(paths, mapIds = []) {
     if (units === UNIT_ALL) unitAll = true;
     else for (const u of units) unit.add(u);
   }
-  const docsOnly = !full && flows.size === 0 && unit.size === 0 && !unitAll && !perf;
+  const docsOnly = !full && flows.size === 0 && unit.size === 0 && !unitAll && !perf && !changedMaps.length;
+  if (full) for (const f of FLOWS) flows.add(f);
+  let maps = [];
+  if (!tour) {
+    // No browser tour: what asked for it (a rule, or the full suite) gets the coverage map's flow instead.
+    if (MAP_FLOWS.filter((f) => flows.delete(f)).length) flows.add('coverage');
+    if (changedMaps.length && changedMaps.length <= MAX_NAMED_MAPS) {
+      flows.add('maps');
+      maps = [...changedMaps].sort();
+    } else for (const id of changedMaps) flows.add(MAP_FLOWS[Math.max(0, mapPartOf(id, mapIds.length ? mapIds : changedMaps))]);
+  } else if (!full) for (const id of changedMaps) flows.add(MAP_FLOWS[Math.max(0, mapPartOf(id, mapIds.length ? mapIds : changedMaps))]);
   return {
     full,
-    flows: full ? [...FLOWS] : FLOWS.filter((f) => flows.has(f)),
+    flows: FLOWS.filter((f) => flows.has(f)),
+    maps,
     unit: unitAll || full ? UNIT_ALL : [...unit].sort(),
     docsOnly,
     perf: perf || full,
@@ -223,4 +250,18 @@ export function selectForPaths(paths, mapIds = []) {
 export function unitTestPaths(unit) {
   if (unit === UNIT_ALL) return [];
   return unit.map((u) => (u === 'tools' ? 'tools/ci/test' : u === 'content' ? 'tools/content/test' : `packages/${u}/test`));
+}
+
+/**
+ * Unit-test jobs, side by side: the suite (~6 min on one runner) in vitest shards, and the headless check of every map
+ * (packages/shared/test/allMaps*.test.ts, ~6 min of CPU) in jobs of its own. [{ name, args }]: vitest's arguments.
+ */
+export function unitJobs(unit) {
+  if (unit !== 'all' && !unit.length) return [];
+  const paths = unit === 'all' ? [] : unitTestPaths(unit);
+  const maps = unit === 'all' || unit.includes('shared');
+  const n = unit === 'all' ? 3 : unit.length > 1 || maps ? 2 : 1;
+  const rest = Array.from({ length: n }, (_, i) => ({ name: `${i + 1}/${n}`, args: [...paths, `--shard=${i + 1}/${n}`, ...(maps ? ['--exclude=**/allMaps*.test.ts'] : [])].join(' ') }));
+  const mapJobs = maps ? [1, 2].map((i) => ({ name: `maps ${i}/2`, args: `packages/shared/test/allMaps --shard=${i}/2` })) : [];
+  return [...rest, ...mapJobs];
 }

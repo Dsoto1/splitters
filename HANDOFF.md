@@ -147,6 +147,52 @@ scratchpad `snowmobile/` (`before/`, `after/`, `after/glacier-line/`, `raw-vs-pr
   full suite (assets-src, content/models.json): needs a `check/` run.
 - **Not done:** the driver's hands don't hold the handlebars (seated riders hold their gun or idle; no grip pose for
   vehicles exists); team paint on this grey model reads brown (a paint-gain per mount would fix it: owner's call).
+### CI speed-up: ~9-minute rounds, coverage map, headless map check (`wip/ci-speed`, agent, 2026-11-04; pushed, not merged; from main e5932fb)
+Owner's request: a CI round in about 8-10 min (run 41851112171 took 36 min: build 2, unit 6.6, e2e shards 8-34 min).
+- **Measured** (job API + E2E_TIMINGS log lines): the e2e table was far off (editor 85 → 285 s, characters 31 → 644 s,
+  lobby 154 → 658 s: 540 s of it a wait that never saw the host's check-ins). Map tour parts 6-15 min each.
+- **Shards** (`e2e/shards.mjs` planShards): LPT into the fewest shards (max 16) whose longest is within 5 min or the
+  longest flow; table `e2e/timings.json` (also `perMap`). CI refreshes it: each e2e shard uploads its timings, the
+  `timings` job merges them into the table the plan used (`tools/ci/timings.mjs merge --base --out`) and uploads
+  `e2e-timings` (30 days); the plan job starts from the newest such artifact. Commit a refreshed table now and then
+  (download that artifact over e2e/timings.json; the job's log lists the changes).
+- **Splits:** characters → characters / characters2 (drawn hands) / characters3 (grips in a match); lobby polls the
+  listing every 5 s; hostpage's right-bar toggle clicks until its command shows (failed twice on CI once).
+- **Map tour nightly only** (`--tour`: schedule, v* tags, Run workflow), now 14 parts of ~6 maps. Elsewhere: the
+  headless check of every map (`packages/shared/test/allMaps1..8.test.ts` + `allMapsCheck.ts`: load, validate,
+  geometry, navmesh, physics, spawns on walkable ground, 90 ticks with 8 bots, nobody below the world; ~1.5 min on
+  two CI jobs) and the `coverage` flow; rules that named the tour get `coverage`. A change to up to 6 maps tours just
+  those (shard `maps` → E2E_MAPS) plus MAP_USERS; more map parts otherwise; phase0_arena still runs everything.
+- **Unit tests** in a matrix (`unitJobs` in flowMap: 3 vitest shards + 2 map-check jobs for everything), perf
+  split into budget/mass jobs, sparse checkouts (no client models / asset sources) for e2e and perf.
+- **Fail fast:** a new push to a check/ branch cancels its older run (concurrency, check/ only). The unit, e2e and
+  perf steps run under `tools/ci/stop-on-failure.sh`: once another job of the run has failed (polled every 40 s) the
+  step stops and fails, so the run reads failure (cancelling it would read "cancelled"); land/train refuse it.
+- **Green base on check branches:** like main pushes, a check/ commit whose first-parent ancestor (up to 30 back)
+  went green on a check branch is planned against that ancestor, not origin/main: a small change on a green
+  candidate runs only what it needs.
+- **Coverage map** `maps/test_coverage.json` (MapMaker, driven by Playwright; scratch `coverage-map/`: driver
+  `tools/maker.mjs` with new ops props/glass/rule/logicTemplate/inPlace, steps `pass1.mjs`, `pass2.mjs`, pictures
+  `shots/`): 320 m terrain; 81 tiles (all 71 kit + one per style pack with own tiles), 16 wall styles + both glass
+  kinds, one prop per pack (57), one pickup per kind (10), 17 vehicles/turrets, all 89 scenario pieces, flags of both
+  teams, hill, bomb site, hostage + rescue, 8 spawns, road, AI route, race track, terrain hill, 3 logic rules.
+  validate-map 0 issues. Only hand edit: metadata.id set to test_coverage after MapMaker's first save. Known: the
+  airliner shell and mining truck (the only/smallest props of their packs) overlap the race track.
+  `packages/shared/test/coverageMap.test.ts` fails when any kit tile, pack, wall style, glass kind, prop pack, pickup
+  kind, mount, entity kind, scenario piece, mode marker, path use or logic is missing: add new content to the map.
+- **testOnly** (MapMaker Map properties: Test map): left out of the map index (menu, templates, host page),
+  rotations (server suiteLookup), the Host Service launcher and the map-card picture check (content:check,
+  capture-map-shots). Tests: client mapIndexPlugin.test, server testMaps.test, host units.
+- **tilesData test:** the per-map hash section and its fixture part are gone (failed on every intended map/prop
+  change); kit, edge styles and the style map stay, ~3 s.
+- **Results** (wall time, plan to last job): full check-branch run (everything but the tour) 10.5 min, green
+  (run 41910774081 on 21c28a5; 13 e2e shards 2.6-7.5 min, unit 1.1-5.2, perf 2.9/5.6); client-only change
+  (hostPage.ts comment, check/ci-speed-client) 4.3 min (1 e2e shard); one map (apex_ring description,
+  check/ci-speed-map) 6.7 min (`maps` touring apex_ring only, 1.7 min; bounded by unit 1/3). Was 36 min.
+- **Next:** vitest's `--shard` splits by file count, and unit (1/3) takes 5.2-5.5 min while the others take 1-2.3:
+  try 4 shards or a duration-based split. hostcontrols (320 s) is the longest flow (it sets the shard goal of ~6 min).
+  The first nightly run will be the first all-parts tour on 16 shards: check its times.
+  check/ci-speed-client and check/ci-speed-map are probe branches; delete them, don't merge them.
 
 ### Procedural environment, Phase 0: audit and plan (`wip/env-audit`, agent, 2026-11-04; docs only, pushed, not merged)
 The owner's spec for replacing natural assets with an in-house procedural pipeline is `docs/PROCEDURAL_ENVIRONMENT.md`

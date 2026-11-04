@@ -510,7 +510,7 @@ const gearCount = checkLocked(
 console.log(`checked ${gearCount} gear models`);
 console.log(`checked ${textureCount} texture files, ${surfaceCount} prop surfaces, ${propCount} props, ${skyCount} skies, ${cityCount} city files, ${packFileCount} style pack files and ${gunCount} gun models`);
 
-// Map pictures (tools/content/capture-map-shots.mjs): one 640×360 JPEG per shipped (not retired) map, within budget, nothing else.
+// Map pictures (tools/content/capture-map-shots.mjs): one 640×360 JPEG per shipped (not retired, not test) map, within budget, nothing else.
 const SHOTS_DIR = join(ROOT, 'packages/client/public/maps/shots');
 const SHOT_MAX_BYTES = 60 * 1024;
 /** Width and height from a JPEG's start-of-frame marker. */
@@ -526,7 +526,15 @@ function jpegSize(buf) {
 }
 const retiredSrc = readFileSync(join(ROOT, 'packages/shared/src/map/retired.ts'), 'utf8');
 const retiredMaps = new Set([...retiredSrc.slice(retiredSrc.indexOf('new Set([')).matchAll(/'([a-z0-9_]+)'/g)].map((m) => m[1]));
-const shotNames = new Set(readdirSync(join(ROOT, 'maps')).filter((f) => f.endsWith('.json') && !retiredMaps.has(f.slice(0, -5))).map((f) => `${f.slice(0, -5)}.jpg`));
+/** Test maps (metadata.testOnly: maps/test_coverage.json) have no map card, so no picture either. */
+const isTestMap = (f) => {
+  try {
+    return JSON.parse(readFileSync(join(ROOT, 'maps', f), 'utf8')).metadata?.testOnly === true;
+  } catch {
+    return false;
+  }
+};
+const shotNames = new Set(readdirSync(join(ROOT, 'maps')).filter((f) => f.endsWith('.json') && !retiredMaps.has(f.slice(0, -5)) && !isTestMap(f)).map((f) => `${f.slice(0, -5)}.jpg`));
 let shotBytes = 0;
 for (const name of shotNames) {
   const path = join(SHOTS_DIR, name);
