@@ -829,6 +829,27 @@ const PROPS = {
     p.cylinder('black', [0.18, 0.2, -0.3], 0.03, 0, 0.5, { seg: 5, axis: 'z' });
     return p;
   },
+  eg_pyramidion() {
+    // The cap of an obelisk or a monument: a white marble pyramid on a thin course, 4 m square and 2.6 m tall
+    // (Scale it to the shaft it crowns), its tip gilded.
+    const p = piece('eg_pyramidion');
+    p.box('marble', [-2, 0, -2], [2, 0.2, 2]);
+    // A four-sided cone turned 45 degrees: its corners on the course's corners.
+    const r = 2 * Math.SQRT2;
+    const quarter = Math.PI / 4;
+    const at = (k, y, rr) => [Math.cos(quarter + (k * Math.PI) / 2) * rr, y, Math.sin(quarter + (k * Math.PI) / 2) * rr];
+    const tipY = 2.6;
+    const goldY = 2.25;
+    const goldR = r * ((tipY - goldY) / (tipY - 0.2));
+    for (let k = 0; k < 4; k++) {
+      const am = quarter + ((k + 0.5) * Math.PI) / 2;
+      const s = Math.hypot(2, tipY - 0.2);
+      const n = [(Math.cos(am) * (tipY - 0.2)) / s, 2 / s, (Math.sin(am) * (tipY - 0.2)) / s];
+      p.quad('marble', at(k + 1, 0.2, r), at(k, 0.2, r), at(k, goldY, goldR), at(k + 1, goldY, goldR), n);
+      p.tri('gold', at(k + 1, goldY, goldR), at(k, goldY, goldR), [0, tipY, 0], n);
+    }
+    return p;
+  },
 };
 
 // ---------------------------------------------------------------- build

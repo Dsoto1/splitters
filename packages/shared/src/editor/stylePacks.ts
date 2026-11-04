@@ -384,7 +384,7 @@ export const STYLE_PACKS: readonly StylePack[] = [
       'cart', 'rn_cart', 'ww_ladder', 'water_trough', 'im_velarium', 'stall', 'awning', 'rug', 'hm_potted_palm',
       // Sands of Egypt (the pack this one replaced).
       'eg_obelisk', 'eg_sphinx', 'eg_statue_pharaoh', 'eg_anubis', 'eg_sarcophagus', 'eg_canopic_jars', 'eg_column_papyrus', 'eg_felucca', 'eg_reed_boat',
-      'eg_palm', 'eg_papyrus', 'eg_torch', 'eg_chest', 'eg_stele', 'eg_cat_statue',
+      'eg_palm', 'eg_papyrus', 'eg_torch', 'eg_chest', 'eg_stele', 'eg_cat_statue', 'eg_pyramidion',
       // Shared with 03 Imperial Arena and the game's ruins.
       'im_amphorae', 'im_brazier', 'im_altar', 'rn_column_broken', 'rn_urn', 'rn_urn_broken', 'cactus', 'nt_cactus_round', 'dg_coin_pile', 'dg_coin_bag',
     ),

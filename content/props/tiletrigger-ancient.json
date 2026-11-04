@@ -303,6 +303,14 @@
       "category": "Sands of Egypt",
       "height": 1.12,
       "collide": "box"
+    },
+    {
+      "id": "eg_pyramidion",
+      "src": "eg_pyramidion.glb",
+      "name": "Pyramidion",
+      "category": "Sands of Egypt",
+      "scale": 1,
+      "collide": "shell"
     }
   ]
 }

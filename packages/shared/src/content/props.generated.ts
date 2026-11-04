@@ -842,6 +842,7 @@ export const CORE_PROPS: readonly PropDefinition[] = [
   {id: 'prop.eg_chest', file: 'props/eg_chest.glb', displayName: 'Gilded Chest', category: 'Sands of Egypt', size: [2,0.88,0.8], collision: [2,0.88,0.8]},
   {id: 'prop.eg_stele', file: 'props/eg_stele.glb', displayName: 'Stele', category: 'Sands of Egypt', size: [1.4,2.45,0.7], collision: [1.4,2.45,0.7]},
   {id: 'prop.eg_cat_statue', file: 'props/eg_cat_statue.glb', displayName: 'Bastet Statue', category: 'Sands of Egypt', size: [0.6,1.12,0.7], collision: [0.6,1.12,0.7]},
+  {id: 'prop.eg_pyramidion', file: 'props/eg_pyramidion.glb', displayName: 'Pyramidion', category: 'Sands of Egypt', size: [4,2.6,4], collision: [4,2.6,4], boxes: [[-2,0,-2,2,2.6,2]]},
   {id: 'prop.hp_floor_tile', file: 'props/hp_floor_tile.glb', displayName: 'Ward Floor Tile', category: 'Hospital', size: [3,0.15,3], collision: [3,0.15,3]},
   {id: 'prop.hp_floor_tile_blue', file: 'props/hp_floor_tile_blue.glb', displayName: 'Corridor Floor Tile', category: 'Hospital', size: [3,0.15,3], collision: [3,0.15,3]},
   {id: 'prop.hp_ceiling_tile', file: 'props/hp_ceiling_tile.glb', displayName: 'Ceiling Tile', category: 'Hospital', size: [3,0.15,3], collision: [3,0.15,3]},
