@@ -110,6 +110,7 @@ import { CreatureLibrary, fitPlayerSkin, type AvatarSpec } from '../content/crea
 import { CreatureAnimator } from './creatureAnimator.ts';
 import type { RemotePose } from './interpolation.ts';
 import { COUNT, SYS, perfProbe } from './perfProbe.ts';
+import { Effect } from '@babylonjs/core/Materials/effect';
 
 /** Remote players' pack muzzle flashes: within this range of the camera (m), on at most this many guns. */
 const REMOTE_FLASH_RANGE = 45;
@@ -425,6 +426,8 @@ export class GameView {
     this.brass.diffuseColor = new Color3(0.78, 0.6, 0.22);
     this.brass.specularColor = new Color3(0.9, 0.8, 0.5);
     instrumentRender(this.scene);
+    // Shader programs stay built once made (prewarm's samples go, the programs stay for the real thing).
+    Effect.PersistentMode = true;
   }
 
   /** A free camera made the active one, for map screenshots (tools/content/capture-map-shots.mjs). */
@@ -497,6 +500,58 @@ export class GameView {
       if (this.scene.isDisposed) return;
       // Every effect content/vfx.json's map can play (impacts, explosions, moments of play, lightning, lasting ones).
       for (const r of mappedEffects()) this.vfx.warm(r.pack, r.effect);
+    });
+  }
+
+  /**
+   * The loading gate's shader warm-up (session.prepareMatch waits for it): a character of each look in the
+   * match is built out of sight, every effect the map can play plays once out of sight, and the scene waits
+   * until every shader they and the map need (shadow-map ones too) is built. Effect.PersistentMode (set in the
+   * constructor) keeps those programs when the samples go, so the first sight of a model or an effect mid-match
+   * doesn't stall on a shader build. Resolves with how many shader programs were built by then.
+   */
+  async prewarm(specs: readonly AvatarSpec[]): Promise<number> {
+    const stage = new TransformNode('prewarm', this.scene);
+    stage.position.set(0, -10000, 0);
+    const made = await Promise.all(
+      specs.slice(0, 48).map((spec, i) =>
+        this.characters.create(spec, `prewarm_${i}`).then(
+          (ch) => {
+            if (stage.isDisposed()) return void ch.dispose();
+            ch.root.parent = stage;
+            for (const g of ch.clips.values()) g.stop();
+            return ch;
+          },
+          () => undefined,
+        ),
+      ),
+    );
+    if (this.scene.isDisposed) return 0;
+    try {
+      await GodotVfx.preload(...mappedPacks());
+      for (const r of mappedEffects()) this.vfx.warm(r.pack, r.effect, true);
+    } catch {
+      // Effects that didn't load stay as they were (their first play builds them).
+    }
+    // Two frames: the atmosphere sorts new meshes into the shadow map a frame later (its shaders differ).
+    await this.afterFrames(2, 1500);
+    if (!this.scene.isDisposed) await Promise.race([this.scene.whenReadyAsync(), new Promise((r) => setTimeout(r, 8000))]);
+    for (const ch of made) ch?.dispose();
+    stage.dispose();
+    return this.shaderCount();
+  }
+
+  /** After `n` rendered frames (or `ms` at most: a hidden tab renders none). */
+  private afterFrames(n: number, ms: number): Promise<void> {
+    return new Promise((done) => {
+      let left = n;
+      const end = () => {
+        this.scene.onAfterRenderObservable.remove(obs);
+        clearTimeout(timer);
+        done();
+      };
+      const obs = this.scene.onAfterRenderObservable.add(() => void (--left <= 0 && end()));
+      const timer = setTimeout(end, ms);
     });
   }
 
