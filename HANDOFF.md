@@ -10,6 +10,42 @@ The session branch is **`claude/launcher-ui-map-cards`**. Poll CI without auth:
 `curl -s "https://api.github.com/repos/Dsoto1/splitters/actions/workflows/ci.yml/runs?branch=check/candidate&per_page=1"`.
 Use `pnpm typecheck`, not `pnpm -s typecheck` (the silent flag hides type errors; one reached CI that way).
 
+### Content scalability step 5: pickups as data (`wip/pickups-data`, agent, 2026-11-04; pushed, not merged; from main 2386d48)
+docs/CONTENT_SCALABILITY.md step 5, same pattern as steps 3-4; how to add one: docs/CONTENT_PIPELINE.md, "Pickups".
+- **Where things are now:** `content/pickups.json`: `pickups` (all 73 items in the old `CORE_ITEMS` order, one a
+  line: id, displayName, effect, respawnSeconds, botValue) and `rules` (`armor.max` 100, `armor.absorb` 2/3,
+  `powerup.speedBoost` 1.35 / `damageBoost` 2, `pickup.radius` 1.1). `tools/content/pickups.mjs`
+  (`pnpm content:pickups`) -> `packages/shared/src/content/pickups.generated.ts` (`CORE_ITEMS`, `PICKUP_RULES`).
+  `sim/items.ts` keeps the types (`ItemEffect`, `ItemDefinition`, new `POWERUP_KINDS`), `getItem`, the five
+  constants (now read from `PICKUP_RULES`) and `STREAK_REWARDS` (kill streaks, not pickups: left in code).
+  Behaviour and visuals stay in code: `applyItem`, pickupRoll, the bots' `pickupNeed`, client pickup models,
+  MapMaker icons and groups, `DISC_POWER_SHOTS`, `JET`.
+- **Derived values:** a weapon pickup without `displayName` takes its weapon's (all 39 do: same names as before), a
+  disc power its `DISC_POWER_LABELS` entry (the generated file references it); a weapon pickup without `botValue`
+  gets 0.55 + respawn / 120 capped at 0.9, the old formula of the extended-arsenal list (those 24 leave it out; the
+  other 15 weapon pickups keep their written value).
+- **No network codes:** pickups travel as their id (`pickup` event `item`, snapshot taken ids and `pw` [pickup, item]),
+  so nothing was added to `content/codes.lock.json` (unchanged). The id is what must not change: the generator fails
+  if a pickup named in `maps/*.json` or a Style Pack's `pickups` is missing, and requires weapon pickups to be
+  `core.weapon_<weapon>` (drops.ts and match.ts look them up so). Order matters (palette, random-pickup pools).
+- **Checks in the generator:** strict schema (unknown fields in a pickup, its effect, `rules` or the file are errors;
+  effect is one of the ten kinds), weapons exist and are carried (slot 1-9), ammo types (`AMMO_TYPES`), throwables
+  (content/throwables.json; count 1..max), powerups (`POWERUP_KINDS`), disc powers (`DISC_POWERS`), amounts / seconds /
+  respawn above 0, bot value 0-1, unique ids, rules ranges.
+- **Proof of no change:** `packages/shared/test/fixtures/pickups-resolved.json` (committed first, 3019d57, from the
+  hand-written table: every item, its weapon category and lookup, the rules, the random pools per category);
+  `pickupsData.test.ts` deep-equals it (and checks `ARMOR_ABSORB === 2/3` and every bot value exactly).
+- **Wiring:** `content:rebuild` and `content:check` run pickups.mjs; `tools/content/test/pickups.test.mjs`.
+- **Workbench:** "Pickups" (14 fields: name, respawn, bot value, amount, ammo type, throwable and count, powerup,
+  seconds, notes; id, kind, weapon and disc power read-only) and "Pickup rules" (5 fields).
+- **Checks:** menu's first JS unchanged: 2304.0 kB raw / 648.0 kB gzip both ways (`index` 587.4 /
+  207.1 kB; base built from main's items.ts on the same machine). `pnpm typecheck` clean. `pnpm test:changed`
+  (everything, shared changed): 1534 pass, 2 skipped, 0 failed. `content:check` OK. E2E (`CI=1`, ports 4293/7893/9093):
+  arsenal PASS (186 s), offline PASS (97 s), editor PASS (195 s). The full suite the change maps to (38 flows) was
+  not run locally: it needs a check branch.
+- **Not done / next:** step 6 (materials). flowMap has no rule for `.control-center/workbench.json` (it runs
+  everything); a pickups.json change always regenerates shared code, which runs everything anyway.
+
 ### Content scalability step 4: vehicles, turrets and NPC roles as data (`wip/vehicles-npcs-data`, agent, 2026-11-04; not merged; on `wip/per-pack-content` eee1833, which has main)
 docs/CONTENT_SCALABILITY.md step 4, same pattern as weapons; how to add one: docs/CONTENT_PIPELINE.md, "Vehicles, turrets and NPC roles".
 - **Where things are now:** `content/vehicles/<id>.json` (one per mount: the 17 placeable ones with an `order`, which
