@@ -80,8 +80,13 @@ export function readLock(path) {
   return { ...head, files };
 }
 
-/** Every content/*.lock.json. */
-export const lockPaths = () => readdirSync(join(ROOT, 'content')).filter((f) => f.endsWith('.lock.json')).sort().map((f) => join(ROOT, 'content', f));
+/**
+ * Every content/*.lock.json that records built files (`files`). codes.lock.json is not one: it is the register of
+ * network codes ever given (weapons, throwables, classes), written and checked by tools/content/weapons.mjs.
+ */
+const NOT_FILE_LOCKS = new Set(['codes.lock.json']);
+export const lockPaths = () =>
+  readdirSync(join(ROOT, 'content')).filter((f) => f.endsWith('.lock.json') && !NOT_FILE_LOCKS.has(f)).sort().map((f) => join(ROOT, 'content', f));
 
 /** Locks not in the stable format (content:check). */
 export function lockProblems() {

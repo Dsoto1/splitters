@@ -60,6 +60,7 @@ node('tools/content/lockfile.mjs');
 step('tables: props and characters');
 node('tools/content/prepare-props.mjs');
 node('tools/content/character-manifests.mjs');
+node('tools/content/weapons.mjs');
 
 step('palette atlas');
 let pending = all;
