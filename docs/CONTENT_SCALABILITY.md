@@ -25,8 +25,6 @@ scoped, done on its own `wip/` branch, green on a `check/` branch, then fast-for
        after a merge.
    - **Done** on `wip/per-pack-content` (2026-11-04; HANDOFF): props in `content/props/<pack>.json`, an atlas per
      content pack and per Style Pack's tiles, locks and provenance one sorted line per entry, `pnpm content:rebuild`.
-3. **Weapons, throwables, classes and abilities as data:** see "Weapons as data" below.
-
 3. **Weapons, throwables, classes and abilities as data:** see "Weapons as data" below. **Done** on
    `wip/weapons-data` (2026-11-04; not merged): all five steps, with one part of step 4 left as it was (below).
 4. **Vehicles, turrets and NPC roles as data:**
@@ -34,6 +32,10 @@ scoped, done on its own `wip/` branch, green on a `check/` branch, then fast-for
    - NPC roles (`sim/npc.ts`): health, speed, damage, size.
 
    Same pattern as weapons: JSON → generator → `.generated.ts`, behaviour stays in code.
+   **Done** on `wip/vehicles-npcs-data` (2026-11-04; not merged; HANDOFF): `content/vehicles/<id>.json` (17 placeable
+   mounts and the 2 route crafts) and `content/npcs.json` (18 roles, explicit codes in `content/codes.lock.json`
+   `npcRoles`), `tools/content/vehicles.mjs` and `npcs.mjs`, fixtures `vehicles-resolved.json` and
+   `npc-roles-resolved.json` deep-equal. How to add one: docs/CONTENT_PIPELINE.md, "Vehicles, turrets and NPC roles".
 5. **Pickups as data** (`sim/items.ts`): heal, armor and ammo amounts, respawn.
 6. **Library materials as data** (`map/materials.ts`): colour, pattern id and settings; the pattern painters
    stay in code (`client/materials/patterns.ts`).
