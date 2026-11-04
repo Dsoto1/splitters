@@ -1,0 +1,20 @@
+"Snowmobile" by roygbpjyt (Meshy Community)
+
+Source:   https://www.meshy.ai/posts/019ea836-0675-77b9-8dae-09fcc54aca2e
+Author:   roygbpjyt (credited by choice; CC0 does not require it)
+Licence:  CC0 1.0 Universal (public domain dedication), the Meshy Community
+          licence for models published to the Community: Meshy Terms of Use
+          §3.3 "Community License" (terms last updated 2026-09-19).
+          https://creativecommons.org/publicdomain/zero/1.0/
+Retrieved: 2026-11-04 (textured GLB, one mesh of 311k triangles, three
+          2048 px JPEG maps: colour, normal, roughness/metal; no rig)
+
+Used as: models/vehicles/snowmobile.glb, the Snow Sled vehicle's model
+(content/vehicles/snow_sled.json), built by tools/content/prepare-guns.mjs
+(pack meshy-community-snowmobile in content/guns.json): cut to the vehicle
+budget by tools/content/meshy-mesh.mjs (seams closed, colour map painted
+afresh from the full download, normal map baked from it, a lower level of
+detail added), turned to face +Z and scaled to 3.0 m long.
+
+The raw download stays out of the repo; content/guns.lock.json checks the
+built file.

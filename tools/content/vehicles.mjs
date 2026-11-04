@@ -33,7 +33,7 @@ const { num, int, str, bool, en, tup, arr, obj, vec3, notes } = shape;
 
 export function schemas() {
   const seat = obj({
-    role: en(['driver', 'gunner', 'passenger']), label: str, offset: vec3, 'weapon?': str, 'arc?': num, 'facing?': num, 'seated?': bool, 'legDrop?': num,
+    role: en(['driver', 'gunner', 'passenger']), label: str, offset: vec3, 'weapon?': str, 'arc?': num, 'facing?': num, 'seated?': bool, 'legDrop?': num, 'straddle?': num,
   });
   const suspension = obj({
     'wheels?': arr(tup(2), 1), 'hub?': num, travel: num, bump: num, freq: num, damping: num, squat: num, lean: num, tumble: num, land: num,
@@ -118,6 +118,8 @@ export function build(content, root = ROOT) {
       if (s.arc !== undefined && (s.arc <= 0 || s.arc > Math.PI)) problems.push(`${where}: arc must be above 0 and at most π (leave it out for all round)`);
       if (s.arc !== undefined && !s.weapon) problems.push(`${where}: an arc only limits a mounted weapon`);
       if (s.legDrop !== undefined && !s.seated) problems.push(`${where}: legDrop is for seated riders`);
+      if (s.straddle !== undefined && !s.seated) problems.push(`${where}: straddle is for seated riders`);
+      if (s.straddle !== undefined && (s.straddle < 0 || s.straddle > 0.8)) problems.push(`${where}: straddle must be 0 to 0.8 rad`);
     });
     if (d.kind === 'turret') {
       if (!d.seats.length || roles.some((r) => r !== 'gunner')) problems.push(`${file}: a turret has gunner seats only (at least one)`);

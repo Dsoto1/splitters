@@ -113,14 +113,6 @@
       "licenseFile": "assets-src/quaternius-ultimate-spaceships/License.txt",
       "retrieved": "2026-10-25"
     },
-    "kenney-holiday-kit": {
-      "title": "Holiday Kit 2.0",
-      "creator": "Kenney",
-      "url": "https://kenney.nl/assets/holiday-kit",
-      "license": "CC0-1.0",
-      "licenseFile": "assets-src/kenney-holiday-kit/License.txt",
-      "retrieved": "2026-10-26"
-    },
     "quaternius-tank-pack": {
       "title": "Tank Pack",
       "creator": "Quaternius",
@@ -523,13 +515,6 @@
       "file": "craft_cargoA.glb",
       "forward": "+z",
       "length": 16
-    },
-    {
-      "out": "vehicles/snow_sled.glb",
-      "pack": "kenney-holiday-kit",
-      "file": "sled-long.glb",
-      "forward": "+z",
-      "length": 2.8
     }
   ],
   "budgets": {

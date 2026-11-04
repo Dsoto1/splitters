@@ -1488,7 +1488,7 @@ export class GameView {
    * Update remote player and NPC avatars from interpolated poses. Each one is
    * a capsule until its character model has loaded, then an animated character.
    */
-  updateAvatars(poses: readonly RemotePose[], localSlot: number, spec: (slot: number) => AvatarSpec, celebrate = false, allyColor: (slot: number) => string | null = () => null, seated: ReadonlySet<number> = new Set(), sitting: ReadonlyMap<number, { yaw: number; legDrop: number }> = new Map()): void {
+  updateAvatars(poses: readonly RemotePose[], localSlot: number, spec: (slot: number) => AvatarSpec, celebrate = false, allyColor: (slot: number) => string | null = () => null, seated: ReadonlySet<number> = new Set(), sitting: ReadonlyMap<number, { yaw: number; legDrop: number; straddle?: number }> = new Map()): void {
     const now = performance.now();
     const crowd = poses.length > ANIM_LOD_CROWD;
     this.crowd = crowd;
@@ -1677,7 +1677,7 @@ export class GameView {
           celebrate: (celebrate || !!p.emote) && p.alive,
           stance: p.stance ?? 0,
           sprinting: !!p.sprinting,
-          ...(sit ? { seated: true, legDrop: sit.legDrop, seatFacing: angleDelta(p.yaw, sit.yaw) } : {}),
+          ...(sit ? { seated: true, legDrop: sit.legDrop, straddle: sit.straddle ?? 0, seatFacing: angleDelta(p.yaw, sit.yaw) } : {}),
         });
         if (reglow && a.anim instanceof CharacterAnimator) for (const m of a.anim.ch.meshes) if (m.material && 'emissiveColor' in m.material) (m.material as unknown as { emissiveColor: Color3 }).emissiveColor = glowColor ? Color3.FromHexString(glowColor).scale(0.35) : Color3.Black();
       }
