@@ -40,6 +40,45 @@ docs/LOADING.md, "Map content".
 - **E2E (local):** offline (53 checks), editor (60), visual (4: menu, mapmaker, arena, canyon at 0.1 %) and maps (30) PASS
   (`CI=1 E2E_CLIENT_PORT=4273 E2E_SERVER_PORT=7887`: another session's preview held 4173).
 
+### Content scalability step 2: generated files per pack, `pnpm content:rebuild` (`wip/per-pack-content`, agent, 2026-11-04; not merged; from wip/menu-bundle c4cedd7 = main)
+
+docs/CONTENT_SCALABILITY.md step 2; how-to in docs/CONTENT_PIPELINE.md, "Adding a prop pack".
+- **Props, one file per pack:** `content/props/<pack>.json` (55 files: `pack` = what `packs.<id>` was,
+  `order`, `props` without a `pack` field). `content/props.json` keeps only the shared budgets (the loader
+  refuses it if it still holds packs or props, so a stale branch can't add props there silently).
+  `tools/content/props-manifest.mjs` reads the folder for prepare-props, build.mjs, the atlas tool,
+  palette-items.ts and prepare-obj-props; `packages/shared/test/helpers.ts` `propManifest()` for the tests.
+  The old table interleaved packs (81 runs of 55 packs), so a prop can carry `order` to start a run:
+  props sort by order, pack id, place in file. Proof: the loaded manifest deep-equals the old file's
+  props (key order too); `props.generated.ts` is byte-identical but its header comment; every prop GLB
+  unchanged; props.lock.json the same entries.
+- **Palette atlases per pack:** `thumbs/props-<pack>.<hash>.webp`, `tiles-<style pack>`, `vehicles` (71
+  atlases, 972 KB; were 11, 1,155 KB). `thumbs/palette.json` v2 is the index, one sorted line per atlas
+  (file, rows, bytes, pack name, `[key, hash]` in cell order; 86 KB, was 105). Client: `paletteAtlas.ts`
+  builds its lookup (`atlasManifest`); search's pack name comes from the atlas. The tool reuses a cell
+  from any old atlas by key and hash (v1, v2, or both sides of a conflicted index); `--offline` never
+  renders (exit 3 when something must be). Same pictures in the same order, all 1,608 hashes kept;
+  re-encoding once in lossy WebP moved 3.9% of (premultiplied) channel values by 4/255 or more, mean
+  0.45/255, the worst pixel per cell 19/255 median, 64 max. Lossless would be 4 MB, over the 3 MB budget.
+  content:check also checks file names, `bytes`, sort and an index budget of 160 KB.
+- **`pnpm content:rebuild`** (`tools/content/rebuild.mjs`): lockfile.mjs → prepare-props +
+  character-manifests → atlas `--offline` (only if pictures are missing: `pnpm build`, vite preview on a
+  free port from 4799, never 4173/4391/4567, killed by PID, then the atlas tool) → content:build →
+  content:check. Stops on unmerged source files. Run twice: nothing changes (19 s with nothing to render).
+  Tried on throwaway branches: two branches each dropping a prop from neighbouring packs merged with only
+  the palette index conflicting; after the rebuild the tree equalled doing both on one branch.
+- **Locks and provenance:** every `content/*.lock.json` (all 16 writers use `writeLock`) and provenance.json
+  are one entry per line, sorted by file; same entries as before. `readLock` settles conflict markers
+  (both sides; on a clash the entry matching the file on disk). content:check fails a lock not in the format.
+- **CI:** flowMap maps `content/props/` like props.json, unit tests client + shared (palette.test reads it).
+- **Still conflicts:** one pack file edited on both sides; one GLB rebuilt on both sides (binary);
+  `props.generated.ts` / provenance when two branches add props at neighbouring lines (rebuild rewrites
+  them, no hand edit); an entry removed by one side inside a conflicting part of a non-props lock comes back
+  (content:check names the missing file). Not split: guns.json, packs.json, textures.json and the other
+  single manifests, `stylePacks.ts`, `catalog.ts`, CHANGELOG/HANDOFF.
+- **Pitfall:** a branch made before this that edits content/props.json conflicts on it: move its new props
+  to their pack file (or a new one), then `pnpm content:rebuild`.
+
 ### Character fixes: faces, roster (`wip/char-fixes`, agent, 2026-11-03; not merged, not pushed; from main ef2c103)
 Owner's notes of 3 Nov (agent scratchpad `charfix/owner-notes.md`). Steps 1-2 done here; steps 3-5 (Imp thumbnail,
 bodies, arms/grips/shoulders/fingers) NOT done: see "Open" below. Evidence: agent scratchpad `charfix/`.

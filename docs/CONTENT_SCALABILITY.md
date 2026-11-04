@@ -23,6 +23,8 @@ scoped, done on its own `wip/` branch, green on a `check/` branch, then fast-for
      - give each style pack its own palette atlas file;
      - add `pnpm content:rebuild`, which runs build → preview → atlas → `content:build` → `content:check`
        after a merge.
+   - **Done** on `wip/per-pack-content` (2026-11-04; HANDOFF): props in `content/props/<pack>.json`, an atlas per
+     content pack and per Style Pack's tiles, locks and provenance one sorted line per entry, `pnpm content:rebuild`.
 3. **Weapons, throwables, classes and abilities as data:** see "Weapons as data" below.
 4. **Vehicles, turrets and NPC roles as data:**
    - vehicles and turrets (`sim/mounts.ts`): speed, health, seats, weapons;
