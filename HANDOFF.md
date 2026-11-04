@@ -38,7 +38,7 @@ gets overloaded above that: local e2e times out and flakes). Prune landed worktr
     differently turned boxes sharing a plane are cut as convex polygons; cuts stop 0.5 mm short (seam, no cracks).
     Client `MapStyler.buildBoxes` draws those faces (n-gon fans); MapMaker clips all levels together then draws
     active/dim sets. Audit + coverage tests: `packages/shared/test/zfight.test.ts` (every map: 0 coplanar overlaps
-    left; was 279,777 raw, 208,081 as the old renderer drew them, 34,056 exact ties). Collision unchanged (hash of
+    left; was 279,777 raw, 220,509 as the old renderer drew them (after its contained-box drop), 34,751 of those exact ties). Collision unchanged (hash of
     buildMapGeometry/props/blocks/terrain over all 89 maps identical to origin/main).
   - MapMaker: one `geometry.coplanar` warning per map when a free block's face shares a plane with another piece in a
     different look (45 of 89 maps have one today; tile-vs-tile is left to the pass), and **Overlaps** in the top bar
@@ -49,7 +49,8 @@ gets overloaded above that: local e2e times out and flakes). Prune landed worktr
   - Visible change: floor slab edges no longer show as dark "underside" bands at random cells on exterior walls (the
     wall wins on sides now); seams/thin lines between wall runs gone. Before/after shots were in the session
     scratchpad (not in the repo).
-  - Next / resume: if `check/zfight` is green, land it (train or fast-forward). Open: owner to look on the M1 Pro
+  - CI: `check/zfight` run 41934273414 green at 52b495d (full e2e set, 15 shards, perf budget/mass).
+  - Next / resume: land it (fast-forward `main` to the green commit, or a train). Open: owner to look on the M1 Pro
     (WebGL2 and `?renderer=webgpu`); the priority order is a choice (ask if a floor band was wanted anywhere).
     MapMaker clip cost on the biggest maps ~0.2-0.5 s per rebuild (node); memoise per level if edits feel slow.
 
