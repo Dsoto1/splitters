@@ -111,6 +111,15 @@
       }
     },
     {
+      "id": "burn_barrel",
+      "src": "burn_barrel.glb",
+      "name": "Burn Barrel",
+      "category": "Military",
+      "height": 0.95,
+      "collide": "box",
+      "flame": {"fx": "campfire", "at": [0, 0.88, 0], "size": 0.7}
+    },
+    {
       "id": "razor_wire",
       "src": "razor_wire.glb",
       "name": "Razor Wire",
