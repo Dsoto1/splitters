@@ -1,0 +1,75 @@
+{
+  "pack": {
+    "title": "Modular Space Kit 1.0",
+    "creator": "Kenney",
+    "url": "https://kenney.nl/assets/modular-space-kit",
+    "license": "CC0-1.0",
+    "licenseFile": "assets-src/kenney-modular-space-kit/License.txt",
+    "retrieved": "2026-10-26",
+    "download": "kenney_modular-space-kit_1.0",
+    "models": "Models/GLB format",
+    "images": "Models/GLB format",
+    "textureSize": 512,
+    "normalSize": 0,
+    "decalSize": 512
+  },
+  "order": 330,
+  "props": [
+    {
+      "id": "os_airlock_frame",
+      "src": "gate.glb",
+      "name": "Airlock Frame",
+      "category": "Orbital Station",
+      "scale": 0.86,
+      "collide": "frame"
+    },
+    {
+      "id": "os_bulkhead",
+      "src": "gate-door.glb",
+      "name": "Sealed Bulkhead",
+      "category": "Orbital Station",
+      "scale": 0.86,
+      "collide": "box"
+    },
+    {
+      "id": "os_bulkhead_window",
+      "src": "gate-door-window.glb",
+      "name": "Bulkhead (Window)",
+      "category": "Orbital Station",
+      "scale": 0.86,
+      "collide": "box"
+    },
+    {
+      "id": "os_laser_gate",
+      "src": "gate-lasers.glb",
+      "name": "Laser Gate Frame",
+      "category": "Orbital Station",
+      "scale": 0.86,
+      "collide": "frame"
+    },
+    {
+      "id": "os_floor_cables",
+      "src": "cables.glb",
+      "name": "Floor Cables",
+      "category": "Orbital Station",
+      "scale": 1,
+      "collide": "none"
+    },
+    {
+      "id": "os_wall_column",
+      "src": "template-detail.glb",
+      "name": "Station Column",
+      "category": "Orbital Station",
+      "scale": 0.94,
+      "collide": "box"
+    },
+    {
+      "id": "os_wall_panel",
+      "src": "template-wall-detail-a.glb",
+      "name": "Station Wall Section",
+      "category": "Orbital Station",
+      "scale": 0.94,
+      "collide": "box"
+    }
+  ]
+}

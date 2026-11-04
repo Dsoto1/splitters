@@ -1,0 +1,93 @@
+{
+  "pack": {
+    "title": "Mini Market",
+    "creator": "Kenney",
+    "url": "https://kenney.nl/assets/mini-market",
+    "license": "CC0-1.0",
+    "licenseFile": "assets-src/kenney-mini-market/License.txt",
+    "retrieved": "2026-10-23"
+  },
+  "order": 300,
+  "props": [
+    {
+      "id": "shelf_boxes",
+      "src": "shelf-boxes.glb",
+      "name": "Shop Shelf",
+      "category": "Shop",
+      "height": 2.0,
+      "collide": "box"
+    },
+    {
+      "id": "shelf_bags",
+      "src": "shelf-bags.glb",
+      "name": "Snack Shelf",
+      "category": "Shop",
+      "height": 2.0,
+      "collide": "box"
+    },
+    {
+      "id": "shelf_end",
+      "src": "shelf-end.glb",
+      "name": "Shelf End",
+      "category": "Shop",
+      "height": 2.0,
+      "collide": "box"
+    },
+    {
+      "id": "freezer",
+      "src": "freezer.glb",
+      "name": "Chest Freezer",
+      "category": "Shop",
+      "height": 1.0,
+      "collide": "box"
+    },
+    {
+      "id": "freezers_upright",
+      "src": "freezers-standing.glb",
+      "name": "Drinks Fridges",
+      "category": "Shop",
+      "height": 2.2,
+      "collide": "box"
+    },
+    {
+      "id": "checkout",
+      "src": "cash-register.glb",
+      "name": "Checkout",
+      "category": "Shop",
+      "height": 1.2,
+      "collide": "box"
+    },
+    {
+      "id": "shopping_cart",
+      "src": "shopping-cart.glb",
+      "name": "Shopping Cart",
+      "category": "Shop",
+      "height": 1.1,
+      "collide": "box"
+    },
+    {
+      "id": "fruit_display",
+      "src": "display-fruit.glb",
+      "name": "Fruit Display",
+      "category": "Shop",
+      "height": 1.2,
+      "collide": "box"
+    },
+    {
+      "id": "bread_display",
+      "src": "display-bread.glb",
+      "name": "Bread Display",
+      "category": "Shop",
+      "height": 1.6,
+      "collide": "box"
+    },
+    {
+      "id": "bottle_return",
+      "src": "bottle-return.glb",
+      "name": "Bottle Return",
+      "category": "Shop",
+      "height": 2.0,
+      "collide": "box"
+    }
+  ]
+}

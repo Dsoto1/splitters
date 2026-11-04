@@ -1,0 +1,157 @@
+{
+  "pack": {
+    "title": "Castle Kit",
+    "creator": "Kenney",
+    "url": "https://kenney.nl/assets/castle-kit",
+    "license": "CC0-1.0",
+    "licenseFile": "assets-src/kenney-castle-kit/License.txt",
+    "retrieved": "2026-10-23"
+  },
+  "order": 270,
+  "props": [
+    {
+      "id": "castle_tower",
+      "src": "tower-square.glb",
+      "name": "Castle Tower",
+      "category": "Castle & Siege",
+      "height": 9.0,
+      "collide": "box"
+    },
+    {
+      "id": "castle_tower_round",
+      "src": "tower-hexagon-base.glb",
+      "name": "Round Tower Base",
+      "category": "Castle & Siege",
+      "height": 4.0,
+      "collide": "box"
+    },
+    {
+      "id": "castle_gate",
+      "src": "gate.glb",
+      "name": "Castle Gate",
+      "category": "Castle & Siege",
+      "height": 6.0,
+      "collide": "box"
+    },
+    {
+      "id": "castle_wall",
+      "src": "wall.glb",
+      "name": "Castle Wall",
+      "category": "Castle & Siege",
+      "height": 4.0,
+      "collide": "box"
+    },
+    {
+      "id": "castle_wall_door",
+      "src": "wall-doorway.glb",
+      "name": "Wall Doorway",
+      "category": "Castle & Siege",
+      "height": 4.0,
+      "collide": "box"
+    },
+    {
+      "id": "castle_wall_corner",
+      "src": "wall-corner.glb",
+      "name": "Wall Corner",
+      "category": "Castle & Siege",
+      "height": 4.0,
+      "collide": "box"
+    },
+    {
+      "id": "castle_wall_half",
+      "src": "wall-half.glb",
+      "name": "Low Castle Wall",
+      "category": "Castle & Siege",
+      "height": 2.0,
+      "collide": "box"
+    },
+    {
+      "id": "castle_stairs",
+      "src": "stairs-stone.glb",
+      "name": "Stone Stairs",
+      "category": "Castle & Siege",
+      "height": 2.0,
+      "collide": "stairs"
+    },
+    {
+      "id": "drawbridge",
+      "src": "bridge-draw.glb",
+      "name": "Drawbridge",
+      "category": "Castle & Siege",
+      "height": 1.2,
+      "collide": "box"
+    },
+    {
+      "id": "portcullis",
+      "src": "metal-gate.glb",
+      "name": "Portcullis",
+      "category": "Castle & Siege",
+      "height": 4.0,
+      "collide": "box"
+    },
+    {
+      "id": "catapult",
+      "src": "siege-catapult.glb",
+      "name": "Catapult",
+      "category": "Castle & Siege",
+      "height": 3.0,
+      "collide": "box"
+    },
+    {
+      "id": "ballista",
+      "src": "siege-ballista.glb",
+      "name": "Ballista",
+      "category": "Castle & Siege",
+      "height": 2.0,
+      "collide": "box"
+    },
+    {
+      "id": "battering_ram",
+      "src": "siege-ram.glb",
+      "name": "Battering Ram",
+      "category": "Castle & Siege",
+      "height": 2.6,
+      "collide": "box"
+    },
+    {
+      "id": "siege_tower",
+      "src": "siege-tower.glb",
+      "name": "Siege Tower",
+      "category": "Castle & Siege",
+      "height": 9.0,
+      "collide": "box"
+    },
+    {
+      "id": "trebuchet",
+      "src": "siege-trebuchet.glb",
+      "name": "Trebuchet",
+      "category": "Castle & Siege",
+      "height": 7.0,
+      "collide": "box"
+    },
+    {
+      "id": "catapult_wrecked",
+      "src": "siege-catapult-demolished.glb",
+      "name": "Wrecked Catapult",
+      "category": "Castle & Siege",
+      "height": 1.5,
+      "collide": "box"
+    },
+    {
+      "id": "banner_long",
+      "src": "flag-banner-long.glb",
+      "name": "Long Banner",
+      "category": "Castle & Siege",
+      "height": 5.0,
+      "collide": "trunk"
+    },
+    {
+      "id": "pennant",
+      "src": "flag-pennant.glb",
+      "name": "Pennant",
+      "category": "Castle & Siege",
+      "height": 4.0,
+      "collide": "trunk"
+    }
+  ]
+}

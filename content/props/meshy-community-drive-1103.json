@@ -1,0 +1,35 @@
+{
+  "pack": {
+    "title": "Meshy community models (props, textured GLB downloads of 2026-11-03)",
+    "creator": "Meshy community, CC0 (per owner)",
+    "url": "https://www.meshy.ai (community page URL pending from the owner)",
+    "license": "CC0-1.0",
+    "licenseFile": "assets-src/meshy-community/License.txt",
+    "retrieved": "2026-11-03",
+    "download": "drive-2026-11-03-pickups",
+    "meshy": true,
+    "convert": true,
+    "textureSize": 512
+  },
+  "order": 250,
+  "props": [
+    {
+      "id": "ww2_ammo_crate",
+      "src": "ww2_ammo_crate.glb",
+      "name": "WWII Ammo Crate",
+      "category": "Crates & Barrels",
+      "height": 0.9,
+      "collide": "box",
+      "triangles": 4000,
+      "maxError": 0.03,
+      "breakable": {
+        "health": 40,
+        "debris": "#56603a"
+      },
+      "source": {
+        "model": "WWII Ammo Crate (Meshy community)",
+        "date": "2026-11-03"
+      }
+    }
+  ]
+}

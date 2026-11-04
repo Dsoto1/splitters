@@ -1,0 +1,95 @@
+{
+  "pack": {
+    "title": "House",
+    "creator": "Elbolillo",
+    "url": "https://elbolilloduro.itch.io/house",
+    "license": "CC0-1.0",
+    "licenseFile": "assets-src/elbolillo-house/License.txt",
+    "retrieved": "2026-10-26",
+    "download": "House",
+    "models": "Models",
+    "convert": true,
+    "flatten": true,
+    "scale": 0.01
+  },
+  "order": 580,
+  "props": [
+    {
+      "id": "hs_mower",
+      "src": "House.fbx#^Mower$",
+      "name": "Lawn Mower",
+      "category": "Garage & Garden",
+      "collide": "box"
+    },
+    {
+      "id": "hs_tool_cabinet",
+      "src": "House.fbx#^Tool_Cabinet$",
+      "name": "Tool Cabinet",
+      "category": "Garage & Garden",
+      "collide": "box"
+    },
+    {
+      "id": "hs_toolbox",
+      "src": "House.fbx#^Toolbox$",
+      "name": "Toolbox",
+      "category": "Garage & Garden",
+      "collide": "none"
+    },
+    {
+      "id": "hs_petrol_can",
+      "src": "House.fbx#^Petrol_Can001$",
+      "name": "Petrol Can",
+      "category": "Garage & Garden",
+      "collide": "none"
+    },
+    {
+      "id": "hs_paint_pot",
+      "src": "House.fbx#^Paint_pot$",
+      "name": "Paint Pot",
+      "category": "Garage & Garden",
+      "collide": "none"
+    },
+    {
+      "id": "hs_wheelie_bin",
+      "src": "House.fbx#^trash_can(_cover)?$",
+      "name": "Wheelie Bin",
+      "category": "Garage & Garden",
+      "collide": "box"
+    },
+    {
+      "id": "hs_wardrobe",
+      "src": "House.fbx#^Wardrobe$",
+      "name": "Wardrobe",
+      "category": "Garage & Garden",
+      "collide": "box"
+    },
+    {
+      "id": "hs_fridge",
+      "src": "House.fbx#^Refrigerator(_Door(_01)?)?001$",
+      "name": "Old Fridge",
+      "category": "Garage & Garden",
+      "collide": "box"
+    },
+    {
+      "id": "hs_stove",
+      "src": "House.fbx#^Stove$",
+      "name": "Old Cooker",
+      "category": "Garage & Garden",
+      "collide": "box"
+    },
+    {
+      "id": "hs_lamppost",
+      "src": "House.fbx#^Lamppost$",
+      "name": "Double Street Lamp",
+      "category": "Garage & Garden",
+      "collide": "trunk"
+    },
+    {
+      "id": "hs_garden_gate",
+      "src": "House.fbx#^garden_gate$",
+      "name": "Garden Gate",
+      "category": "Garage & Garden",
+      "collide": "box"
+    }
+  ]
+}

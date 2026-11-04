@@ -1,0 +1,110 @@
+{
+  "pack": {
+    "title": "Mini Dungeon",
+    "creator": "Kenney",
+    "url": "https://kenney.nl/assets/mini-dungeon",
+    "license": "CC0-1.0",
+    "licenseFile": "assets-src/kenney-mini-dungeon/License.txt",
+    "retrieved": "2026-10-23"
+  },
+  "order": 60,
+  "props": [
+    {
+      "id": "dungeon_barrel",
+      "src": "barrel.glb",
+      "name": "Oak Barrel",
+      "category": "Crates & Barrels",
+      "height": 1.0,
+      "collide": "box",
+      "breakable": {
+        "health": 40,
+        "debris": "#8a5a32"
+      }
+    },
+    {
+      "id": "dungeon_chest",
+      "src": "chest.glb",
+      "name": "Treasure Chest",
+      "category": "Crates & Barrels",
+      "height": 0.8,
+      "collide": "box",
+      "breakable": {
+        "health": 80,
+        "debris": "#8a5a32"
+      }
+    },
+    {
+      "id": "column",
+      "order": 190,
+      "src": "column.glb",
+      "name": "Column",
+      "category": "Medieval",
+      "height": 3.4,
+      "collide": "box"
+    },
+    {
+      "id": "wood_support",
+      "src": "wood-support.glb",
+      "name": "Timber Support",
+      "category": "Medieval",
+      "height": 3.2,
+      "collide": "box",
+      "breakable": {
+        "health": 120,
+        "debris": "#8a5a32"
+      }
+    },
+    {
+      "id": "banner",
+      "src": "banner.glb",
+      "name": "Banner",
+      "category": "Medieval",
+      "height": 2.6,
+      "collide": "none"
+    },
+    {
+      "id": "pot",
+      "src": "pot.glb",
+      "name": "Clay Pot",
+      "category": "Medieval",
+      "height": 0.6,
+      "collide": "box",
+      "breakable": {
+        "health": 10,
+        "debris": "#b06a40"
+      }
+    },
+    {
+      "id": "dungeon_table",
+      "src": "table.glb",
+      "name": "Tavern Table",
+      "category": "Medieval",
+      "height": 0.8,
+      "collide": "box",
+      "breakable": {
+        "health": 40,
+        "debris": "#8a5a32"
+      }
+    },
+    {
+      "id": "dungeon_chair",
+      "src": "chair.glb",
+      "name": "Stool",
+      "category": "Medieval",
+      "height": 0.8,
+      "collide": "box",
+      "breakable": {
+        "health": 20,
+        "debris": "#8a5a32"
+      }
+    },
+    {
+      "id": "shield",
+      "src": "shield-round.glb",
+      "name": "Round Shield",
+      "category": "Medieval",
+      "height": 0.8,
+      "collide": "none"
+    }
+  ]
+}

@@ -1,0 +1,212 @@
+{
+  "pack": {
+    "title": "Modular Dungeon",
+    "creator": "Quaternius",
+    "url": "https://quaternius.itch.io/lowpoly-modular-dungeon-pack",
+    "license": "CC0-1.0",
+    "licenseFile": "assets-src/quaternius-modular-dungeon/License.txt",
+    "retrieved": "2026-10-25",
+    "objSource": "Updated Modular Dungeon - May 2019/OBJ"
+  },
+  "order": 460,
+  "props": [
+    {
+      "id": "dg_arch",
+      "src": "Arch.glb",
+      "name": "Dungeon Arch",
+      "category": "Dungeon",
+      "height": 4,
+      "collide": "shell"
+    },
+    {
+      "id": "dg_arch_door",
+      "src": "Arch_Door.glb",
+      "name": "Arched Door",
+      "category": "Dungeon",
+      "height": 4,
+      "collide": "box"
+    },
+    {
+      "id": "dg_arch_bars",
+      "src": "Arch_bars.glb",
+      "name": "Barred Arch",
+      "category": "Dungeon",
+      "height": 4,
+      "collide": "box"
+    },
+    {
+      "id": "dg_coin_bag",
+      "src": "Bag_Coins.glb",
+      "name": "Coin Bag",
+      "category": "Dungeon",
+      "height": 0.4,
+      "collide": "none"
+    },
+    {
+      "id": "dg_banner",
+      "src": "Banner.glb",
+      "name": "Banner",
+      "category": "Dungeon",
+      "height": 2.5,
+      "collide": "none"
+    },
+    {
+      "id": "dg_barrel",
+      "src": "Barrel.glb",
+      "name": "Dungeon Barrel",
+      "category": "Dungeon",
+      "height": 1.1,
+      "collide": "box",
+      "breakable": {
+        "health": 40,
+        "debris": "#7a5a3a"
+      }
+    },
+    {
+      "id": "dg_bucket",
+      "src": "Bucket.glb",
+      "name": "Bucket",
+      "category": "Dungeon",
+      "height": 0.4,
+      "collide": "none"
+    },
+    {
+      "id": "dg_chest",
+      "src": "Chest.glb",
+      "name": "Chest",
+      "category": "Dungeon",
+      "height": 0.8,
+      "collide": "box"
+    },
+    {
+      "id": "dg_coin_pile",
+      "src": "Coin_Pile.glb",
+      "name": "Coin Pile",
+      "category": "Dungeon",
+      "height": 0.3,
+      "collide": "none"
+    },
+    {
+      "id": "dg_pillar",
+      "src": "Column.glb",
+      "name": "Dungeon Pillar",
+      "category": "Dungeon",
+      "height": 4,
+      "collide": "box"
+    },
+    {
+      "id": "dg_crate",
+      "src": "Crate.glb",
+      "name": "Dungeon Crate",
+      "category": "Dungeon",
+      "height": 1.0,
+      "collide": "box",
+      "breakable": {
+        "health": 40,
+        "debris": "#7a5a3a"
+      }
+    },
+    {
+      "id": "dg_pedestal",
+      "src": "Pedestal.glb",
+      "name": "Pedestal",
+      "category": "Dungeon",
+      "height": 1.1,
+      "collide": "box"
+    },
+    {
+      "id": "dg_skull",
+      "src": "Skull.glb",
+      "name": "Skull",
+      "category": "Dungeon",
+      "height": 0.2,
+      "collide": "none"
+    },
+    {
+      "id": "dg_spikes",
+      "src": "Spikes.glb",
+      "name": "Floor Spikes",
+      "category": "Dungeon",
+      "height": 0.5,
+      "collide": "none"
+    },
+    {
+      "id": "dg_statue_horse",
+      "src": "Statue_Horse.glb",
+      "name": "Horse Statue",
+      "category": "Dungeon",
+      "height": 2.4,
+      "collide": "box"
+    },
+    {
+      "id": "dg_sword_mount",
+      "src": "Sword_WallMount.glb",
+      "name": "Wall Swords",
+      "category": "Dungeon",
+      "height": 1.0,
+      "collide": "none"
+    },
+    {
+      "id": "dg_table_long",
+      "src": "Table_Big.glb",
+      "name": "Long Table",
+      "category": "Dungeon",
+      "height": 0.85,
+      "collide": "box"
+    },
+    {
+      "id": "dg_table_small",
+      "src": "Table_Small.glb",
+      "name": "Small Table",
+      "category": "Dungeon",
+      "height": 0.8,
+      "collide": "box"
+    },
+    {
+      "id": "dg_wall_torch",
+      "src": "Torch.glb",
+      "name": "Wall Torch",
+      "category": "Dungeon",
+      "height": 0.8,
+      "collide": "none",
+      "flame": {"fx": "torch", "at": [0, 0.5, 0.06], "size": 0.34, "hide": ["Fire"]}
+    },
+    {
+      "id": "dg_vase",
+      "src": "Vase.glb",
+      "name": "Vase",
+      "category": "Dungeon",
+      "height": 0.9,
+      "collide": "box",
+      "breakable": {
+        "health": 20,
+        "debris": "#7a5a3a"
+      }
+    },
+    {
+      "id": "dg_woodfire",
+      "src": "Woodfire.glb",
+      "name": "Wood Fire",
+      "category": "Dungeon",
+      "height": 0.6,
+      "collide": "box",
+      "flame": {"fx": "campfire", "at": [0, 0.1, 0], "size": 0.5, "hide": ["Fire"]}
+    },
+    {
+      "id": "dg_iron_fence",
+      "src": "Fence_Straight_Modular.glb",
+      "name": "Iron Fence",
+      "category": "Dungeon",
+      "height": 1.6,
+      "collide": "box"
+    },
+    {
+      "id": "dg_stairs",
+      "src": "Stairs_Modular.glb",
+      "name": "Dungeon Stairs",
+      "category": "Dungeon",
+      "height": 2,
+      "collide": "stairs"
+    }
+  ]
+}

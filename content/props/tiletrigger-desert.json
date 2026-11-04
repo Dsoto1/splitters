@@ -1,0 +1,175 @@
+{
+  "pack": {
+    "title": "Style Pack pieces (Desert City)",
+    "creator": "Tile Trigger team (modelled in code by tools/content/prepare-desert.mjs)",
+    "url": "tools/content/prepare-desert.mjs",
+    "license": "Owned",
+    "licenseFile": "assets-src/tiletrigger-desert/License.txt",
+    "retrieved": "2026-10-31"
+  },
+  "order": 730,
+  "props": [
+    {
+      "id": "dc_canopy",
+      "src": "dc_canopy.glb",
+      "name": "Market Canopy",
+      "category": "Desert City",
+      "height": 2.965,
+      "collide": "none"
+    },
+    {
+      "id": "dc_banner",
+      "src": "dc_banner.glb",
+      "name": "Desert Banner",
+      "category": "Desert City",
+      "height": 4.2,
+      "collide": "none"
+    },
+    {
+      "id": "dc_lantern",
+      "src": "dc_lantern.glb",
+      "name": "Hanging Lantern",
+      "category": "Desert City",
+      "height": 1.4,
+      "collide": "none"
+    },
+    {
+      "id": "dc_palm_planter",
+      "src": "dc_palm_planter.glb",
+      "name": "Palm Planter",
+      "category": "Desert City",
+      "height": 4.1,
+      "collide": "trunk"
+    },
+    {
+      "id": "dc_vase",
+      "order": 750,
+      "src": "dc_vase.glb",
+      "name": "Tall Vase",
+      "category": "Desert City",
+      "height": 1.1,
+      "collide": "box",
+      "breakable": {
+        "health": 25,
+        "debris": "#b86a3e"
+      }
+    },
+    {
+      "id": "dc_jars",
+      "src": "dc_jars.glb",
+      "name": "Water Jars",
+      "category": "Desert City",
+      "height": 0.75,
+      "collide": "box",
+      "breakable": {
+        "health": 30,
+        "debris": "#b86a3e"
+      }
+    },
+    {
+      "id": "dc_rug",
+      "src": "dc_rug.glb",
+      "name": "Market Rug",
+      "category": "Desert City",
+      "height": 0.025,
+      "collide": "none"
+    },
+    {
+      "id": "dc_cloth_line",
+      "order": 770,
+      "src": "dc_cloth_line.glb",
+      "name": "Cloth Line",
+      "category": "Desert City",
+      "height": 2.6,
+      "collide": "none"
+    },
+    {
+      "id": "dc_scaffold",
+      "src": "dc_scaffold.glb",
+      "name": "Scaffold",
+      "category": "Desert City",
+      "height": 4.2,
+      "collide": "box"
+    },
+    {
+      "id": "dc_awning_window",
+      "src": "dc_awning_window.glb",
+      "name": "Awning Window",
+      "category": "Desert City",
+      "height": 1.597,
+      "collide": "none"
+    },
+    {
+      "id": "dc_lattice_window",
+      "src": "dc_lattice_window.glb",
+      "name": "Lattice Window",
+      "category": "Desert City",
+      "height": 2.498,
+      "collide": "none"
+    },
+    {
+      "id": "dc_shutter_window",
+      "src": "dc_shutter_window.glb",
+      "name": "Shuttered Window",
+      "category": "Desert City",
+      "height": 1.42,
+      "collide": "none"
+    },
+    {
+      "id": "dc_spice_baskets",
+      "src": "dc_spice_baskets.glb",
+      "name": "Spice Baskets",
+      "category": "Desert City",
+      "height": 0.772,
+      "collide": "box"
+    },
+    {
+      "id": "dc_cushions",
+      "src": "dc_cushions.glb",
+      "name": "Floor Cushions",
+      "category": "Desert City",
+      "height": 0.55,
+      "collide": "none"
+    },
+    {
+      "id": "dc_rug_rack",
+      "src": "dc_rug_rack.glb",
+      "name": "Rug Rack",
+      "category": "Desert City",
+      "height": 2.03,
+      "collide": "box"
+    },
+    {
+      "id": "dc_column",
+      "src": "dc_column.glb",
+      "name": "Sandstone Column",
+      "category": "Desert City",
+      "height": 3.62,
+      "collide": "box"
+    },
+    {
+      "id": "dc_ornate_arch",
+      "src": "dc_ornate_arch.glb",
+      "name": "Ornate Arch",
+      "category": "Desert City",
+      "height": 4.35,
+      "collide": "frame"
+    },
+    {
+      "id": "dc_dome",
+      "src": "dc_dome.glb",
+      "name": "Plaster Dome",
+      "category": "Desert City",
+      "height": 3.19,
+      "collide": "box"
+    },
+    {
+      "id": "dc_dome_blue",
+      "src": "dc_dome_blue.glb",
+      "name": "Blue Tiled Dome",
+      "category": "Desert City",
+      "height": 3.19,
+      "collide": "box"
+    }
+  ]
+}

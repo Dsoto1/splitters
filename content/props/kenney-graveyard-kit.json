@@ -1,0 +1,282 @@
+{
+  "pack": {
+    "title": "Graveyard Kit 5.0",
+    "creator": "Kenney",
+    "url": "https://kenney.nl/assets/graveyard-kit",
+    "license": "CC0-1.0",
+    "licenseFile": "assets-src/kenney-graveyard-kit/License.txt",
+    "retrieved": "2026-10-23"
+  },
+  "order": 120,
+  "props": [
+    {
+      "id": "gravestone_cross",
+      "src": "gravestone-cross.glb",
+      "name": "Cross Gravestone",
+      "category": "Gothic",
+      "height": 1.2,
+      "collide": "box"
+    },
+    {
+      "id": "gravestone_round",
+      "src": "gravestone-round.glb",
+      "name": "Round Gravestone",
+      "category": "Gothic",
+      "height": 0.9,
+      "collide": "box"
+    },
+    {
+      "id": "gravestone_broken",
+      "src": "gravestone-broken.glb",
+      "name": "Broken Gravestone",
+      "category": "Gothic",
+      "height": 0.6,
+      "collide": "box",
+      "breakable": {
+        "health": 40,
+        "debris": "#8a8a88"
+      }
+    },
+    {
+      "id": "grave",
+      "src": "grave.glb",
+      "name": "Grave",
+      "category": "Gothic",
+      "height": 0.4,
+      "collide": "none"
+    },
+    {
+      "id": "coffin",
+      "src": "coffin.glb",
+      "name": "Coffin",
+      "category": "Gothic",
+      "height": 0.6,
+      "collide": "box",
+      "breakable": {
+        "health": 40,
+        "debris": "#5a3a24"
+      }
+    },
+    {
+      "id": "coffin_old",
+      "src": "coffin-old.glb",
+      "name": "Old Coffin",
+      "category": "Gothic",
+      "height": 0.6,
+      "collide": "box",
+      "breakable": {
+        "health": 30,
+        "debris": "#5a3a24"
+      }
+    },
+    {
+      "id": "crypt",
+      "src": "crypt-small.glb",
+      "name": "Small Crypt",
+      "category": "Gothic",
+      "height": 3.2,
+      "collide": "box"
+    },
+    {
+      "id": "altar",
+      "src": "altar-stone.glb",
+      "name": "Stone Altar",
+      "category": "Gothic",
+      "height": 1.0,
+      "collide": "box"
+    },
+    {
+      "id": "pillar",
+      "src": "pillar-large.glb",
+      "name": "Stone Pillar",
+      "category": "Gothic",
+      "height": 3.0,
+      "collide": "box"
+    },
+    {
+      "id": "obelisk",
+      "src": "pillar-obelisk.glb",
+      "name": "Obelisk",
+      "category": "Gothic",
+      "height": 3.2,
+      "collide": "box"
+    },
+    {
+      "id": "cross_column",
+      "src": "cross-column.glb",
+      "name": "Cross Column",
+      "category": "Gothic",
+      "height": 2.6,
+      "collide": "box"
+    },
+    {
+      "id": "iron_fence",
+      "src": "iron-fence.glb",
+      "name": "Iron Fence",
+      "category": "Gothic",
+      "height": 1.6,
+      "collide": "box"
+    },
+    {
+      "id": "iron_fence_damaged",
+      "src": "iron-fence-damaged.glb",
+      "name": "Broken Iron Fence",
+      "category": "Gothic",
+      "height": 1.6,
+      "collide": "box",
+      "breakable": {
+        "health": 60,
+        "debris": "#3a3a3a"
+      }
+    },
+    {
+      "id": "stone_wall",
+      "src": "stone-wall.glb",
+      "name": "Low Stone Wall",
+      "category": "Gothic",
+      "height": 1.4,
+      "collide": "box"
+    },
+    {
+      "id": "stone_wall_damaged",
+      "src": "stone-wall-damaged.glb",
+      "name": "Crumbling Wall",
+      "category": "Gothic",
+      "height": 1.3,
+      "collide": "box"
+    },
+    {
+      "id": "lightpost",
+      "src": "lightpost-single.glb",
+      "name": "Lamp Post",
+      "category": "Gothic",
+      "height": 3.0,
+      "collide": "trunk"
+    },
+    {
+      "id": "lightpost_double",
+      "src": "lightpost-double.glb",
+      "name": "Double Lamp Post",
+      "category": "Gothic",
+      "height": 3.0,
+      "collide": "trunk"
+    },
+    {
+      "id": "lantern",
+      "src": "lantern-candle.glb",
+      "name": "Lantern",
+      "category": "Gothic",
+      "height": 0.6,
+      "collide": "none",
+      "flame": {"fx": "candle", "at": [0, 0.25, 0], "size": 0.1}
+    },
+    {
+      "id": "candles",
+      "src": "candle-multiple.glb",
+      "name": "Candles",
+      "category": "Gothic",
+      "height": 0.4,
+      "collide": "none"
+    },
+    {
+      "id": "fire_basket",
+      "src": "fire-basket.glb",
+      "name": "Fire Basket",
+      "category": "Gothic",
+      "height": 1.2,
+      "collide": "box",
+      "breakable": {
+        "health": 30,
+        "debris": "#7a8088",
+        "blast": {
+          "radius": 3,
+          "damage": 50,
+          "edge": 8
+        }
+      },
+      "flame": {"fx": "brazier", "at": [0, 0.67, 0], "size": 1.3}
+    },
+    {
+      "id": "urn",
+      "src": "urn-round.glb",
+      "name": "Urn",
+      "category": "Gothic",
+      "height": 0.8,
+      "collide": "box",
+      "breakable": {
+        "health": 15,
+        "debris": "#b06a40"
+      }
+    },
+    {
+      "id": "pumpkin",
+      "src": "pumpkin-carved.glb",
+      "name": "Carved Pumpkin",
+      "category": "Gothic",
+      "height": 0.45,
+      "collide": "none",
+      "breakable": {
+        "health": 5,
+        "debris": "#e07a20"
+      }
+    },
+    {
+      "id": "hay_bale",
+      "src": "hay-bale.glb",
+      "name": "Hay Bale",
+      "category": "Gothic",
+      "height": 0.8,
+      "collide": "box",
+      "breakable": {
+        "health": 30,
+        "debris": "#d8b860"
+      }
+    },
+    {
+      "id": "graveyard_bench",
+      "src": "bench.glb",
+      "name": "Stone Bench",
+      "category": "Gothic",
+      "height": 0.5,
+      "collide": "box",
+      "breakable": {
+        "health": 80,
+        "debris": "#8a8a88"
+      }
+    },
+    {
+      "id": "debris",
+      "src": "debris.glb",
+      "name": "Rubble",
+      "category": "Gothic",
+      "height": 0.3,
+      "collide": "none"
+    },
+    {
+      "id": "pine",
+      "order": 140,
+      "src": "pine.glb",
+      "name": "Pine",
+      "category": "Trees",
+      "height": 6.5,
+      "collide": "trunk"
+    },
+    {
+      "id": "pine_crooked",
+      "src": "pine-crooked.glb",
+      "name": "Crooked Pine",
+      "category": "Trees",
+      "height": 6.0,
+      "collide": "trunk"
+    },
+    {
+      "id": "rocks_tall",
+      "order": 170,
+      "src": "rocks-tall.glb",
+      "name": "Rock Spire",
+      "category": "Rocks & Wood",
+      "height": 2.4,
+      "collide": "box"
+    }
+  ]
+}

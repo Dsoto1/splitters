@@ -1,0 +1,350 @@
+{
+  "pack": {
+    "title": "Ultimate House Interior Pack",
+    "creator": "Quaternius",
+    "url": "https://quaternius.itch.io/ultimate-house-interior-pack",
+    "license": "CC0-1.0",
+    "licenseFile": "assets-src/quaternius-house-interior/License.txt",
+    "retrieved": "2026-10-25",
+    "objSource": "Ultimate House Interior Pack - June 2020/OBJ"
+  },
+  "order": 430,
+  "props": [
+    {
+      "id": "hm_bathtub",
+      "src": "Bathroom_Bathtub.glb",
+      "name": "Bathtub",
+      "category": "Home",
+      "height": 0.75,
+      "collide": "box"
+    },
+    {
+      "id": "hm_shower",
+      "src": "Bathroom_Shower1.glb",
+      "name": "Shower",
+      "category": "Home",
+      "height": 2.2,
+      "collide": "box"
+    },
+    {
+      "id": "hm_bathroom_sink",
+      "src": "Bathroom_Sink.glb",
+      "name": "Bathroom Sink",
+      "category": "Home",
+      "height": 0.95,
+      "collide": "box"
+    },
+    {
+      "id": "hm_toilet",
+      "src": "Bathroom_Toilet.glb",
+      "name": "Toilet",
+      "category": "Home",
+      "height": 0.8,
+      "collide": "box"
+    },
+    {
+      "id": "hm_washer",
+      "src": "Bathroom_WashingMachine.glb",
+      "name": "Washing Machine",
+      "category": "Home",
+      "height": 0.9,
+      "collide": "box"
+    },
+    {
+      "id": "hm_bunk_bed",
+      "src": "Bed_Bunk.glb",
+      "name": "Bunk Bed",
+      "category": "Home",
+      "height": 1.8,
+      "collide": "box"
+    },
+    {
+      "id": "hm_bed_king",
+      "src": "Bed_King.glb",
+      "name": "King Bed",
+      "category": "Home",
+      "height": 1.1,
+      "collide": "box"
+    },
+    {
+      "id": "hm_bed_single",
+      "src": "Bed_Single.glb",
+      "name": "Single Bed",
+      "category": "Home",
+      "height": 0.9,
+      "collide": "box"
+    },
+    {
+      "id": "hm_bookshelf",
+      "src": "Bookshelf.glb",
+      "name": "Bookshelf",
+      "category": "Home",
+      "height": 2.0,
+      "collide": "box"
+    },
+    {
+      "id": "hm_chair_wood",
+      "src": "Chair_1.glb",
+      "name": "Wooden Chair",
+      "category": "Home",
+      "height": 0.95,
+      "collide": "box"
+    },
+    {
+      "id": "hm_chair_office",
+      "src": "Chair_3.glb",
+      "name": "Office Chair",
+      "category": "Home",
+      "height": 1.0,
+      "collide": "box"
+    },
+    {
+      "id": "hm_couch_l",
+      "src": "Couch_L.glb",
+      "name": "Corner Sofa",
+      "category": "Home",
+      "height": 0.85,
+      "collide": "box"
+    },
+    {
+      "id": "hm_couch_large",
+      "src": "Couch_Large1.glb",
+      "name": "Large Sofa",
+      "category": "Home",
+      "height": 0.85,
+      "collide": "box"
+    },
+    {
+      "id": "hm_couch",
+      "src": "Couch_Medium1.glb",
+      "name": "Sofa",
+      "category": "Home",
+      "height": 0.85,
+      "collide": "box"
+    },
+    {
+      "id": "hm_armchair",
+      "src": "Couch_Small1.glb",
+      "name": "Armchair",
+      "category": "Home",
+      "height": 0.85,
+      "collide": "box"
+    },
+    {
+      "id": "hm_dresser",
+      "src": "Drawer_1.glb",
+      "name": "Dresser",
+      "category": "Home",
+      "height": 1.0,
+      "collide": "box"
+    },
+    {
+      "id": "hm_chest_drawers",
+      "src": "Drawer_3.glb",
+      "name": "Chest of Drawers",
+      "category": "Home",
+      "height": 1.3,
+      "collide": "box"
+    },
+    {
+      "id": "hm_fireplace",
+      "src": "Fireplace.glb",
+      "name": "Fireplace",
+      "category": "Home",
+      "height": 1.4,
+      "collide": "box"
+    },
+    {
+      "id": "hm_kitchen_counter",
+      "src": "Kitchen_2Drawers.glb",
+      "name": "Kitchen Counter",
+      "category": "Home",
+      "height": 0.95,
+      "collide": "box"
+    },
+    {
+      "id": "hm_kitchen_counter_long",
+      "src": "Kitchen_3Drawers.glb",
+      "name": "Long Kitchen Counter",
+      "category": "Home",
+      "height": 0.95,
+      "collide": "box"
+    },
+    {
+      "id": "hm_kitchen_cabinet",
+      "src": "Kitchen_Cabinet1.glb",
+      "name": "Kitchen Cabinet",
+      "category": "Home",
+      "height": 2.0,
+      "collide": "box"
+    },
+    {
+      "id": "hm_fridge",
+      "src": "Kitchen_Fridge.glb",
+      "name": "Fridge",
+      "category": "Home",
+      "height": 1.9,
+      "collide": "box"
+    },
+    {
+      "id": "hm_oven",
+      "src": "Kitchen_Oven.glb",
+      "name": "Oven",
+      "category": "Home",
+      "height": 0.95,
+      "collide": "box"
+    },
+    {
+      "id": "hm_kitchen_sink",
+      "src": "Kitchen_Sink.glb",
+      "name": "Kitchen Sink",
+      "category": "Home",
+      "height": 0.95,
+      "collide": "box"
+    },
+    {
+      "id": "hm_nightstand",
+      "src": "NightStand_1.glb",
+      "name": "Nightstand",
+      "category": "Home",
+      "height": 0.6,
+      "collide": "box"
+    },
+    {
+      "id": "hm_shelf_large",
+      "src": "Shelf_Large.glb",
+      "name": "Large Shelf",
+      "category": "Home",
+      "height": 2.0,
+      "collide": "box"
+    },
+    {
+      "id": "hm_stool",
+      "src": "Stool.glb",
+      "name": "Stool",
+      "category": "Home",
+      "height": 0.65,
+      "collide": "box"
+    },
+    {
+      "id": "hm_table_round",
+      "src": "Table_RoundLarge.glb",
+      "name": "Round Table",
+      "category": "Home",
+      "height": 0.78,
+      "collide": "box"
+    },
+    {
+      "id": "hm_side_table",
+      "src": "Table_RoundSmall.glb",
+      "name": "Side Table",
+      "category": "Home",
+      "height": 0.6,
+      "collide": "box"
+    },
+    {
+      "id": "hm_bin_large",
+      "src": "Trashcan_Large.glb",
+      "name": "Large Bin",
+      "category": "Home",
+      "height": 1.0,
+      "collide": "box"
+    },
+    {
+      "id": "hm_door",
+      "src": "Door_1.glb",
+      "name": "Door",
+      "category": "Home",
+      "height": 2.1,
+      "collide": "box"
+    },
+    {
+      "id": "hm_door_double",
+      "src": "Door_Double.glb",
+      "name": "Double Door",
+      "category": "Home",
+      "height": 2.2,
+      "collide": "box"
+    },
+    {
+      "id": "hm_rug",
+      "src": "Carpet_1.glb",
+      "name": "Rug",
+      "category": "Home",
+      "height": 0.03,
+      "collide": "none"
+    },
+    {
+      "id": "hm_rug_round",
+      "src": "Carpet_Round.glb",
+      "name": "Round Rug",
+      "category": "Home",
+      "height": 0.03,
+      "collide": "none"
+    },
+    {
+      "id": "hm_houseplant",
+      "src": "Houseplant_1.glb",
+      "name": "Houseplant",
+      "category": "Home",
+      "height": 0.9,
+      "collide": "none"
+    },
+    {
+      "id": "hm_houseplant_tall",
+      "src": "Houseplant_3.glb",
+      "name": "Tall Houseplant",
+      "category": "Home",
+      "height": 1.4,
+      "collide": "none"
+    },
+    {
+      "id": "hm_potted_palm",
+      "src": "Houseplant_5.glb",
+      "name": "Potted Palm",
+      "category": "Home",
+      "height": 1.6,
+      "collide": "none"
+    },
+    {
+      "id": "hm_floor_lamp",
+      "src": "Light_Floor1.glb",
+      "name": "Floor Lamp",
+      "category": "Home",
+      "height": 1.6,
+      "collide": "none"
+    },
+    {
+      "id": "hm_desk_lamp",
+      "src": "Light_Desk.glb",
+      "name": "Desk Lamp",
+      "category": "Home",
+      "height": 0.45,
+      "collide": "none"
+    },
+    {
+      "id": "hm_chandelier",
+      "src": "Light_Chandelier.glb",
+      "name": "Chandelier",
+      "category": "Home",
+      "height": 1.0,
+      "collide": "none"
+    },
+    {
+      "id": "hm_wall_shelf",
+      "src": "Shelf_1.glb",
+      "name": "Wall Shelf",
+      "category": "Home",
+      "height": 0.4,
+      "collide": "none"
+    },
+    {
+      "id": "hm_window",
+      "src": "Window_Large1.glb",
+      "name": "Window",
+      "category": "Home",
+      "height": 1.6,
+      "collide": "none"
+    }
+  ]
+}

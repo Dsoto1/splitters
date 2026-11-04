@@ -1,0 +1,21 @@
+{
+  "pack": {
+    "title": "City Kit (Commercial) 2.1",
+    "creator": "Kenney",
+    "url": "https://kenney.nl/assets/city-kit-commercial",
+    "license": "CC0-1.0",
+    "licenseFile": "assets-src/kenney-city-kit-commercial/License.txt",
+    "retrieved": "2026-10-23"
+  },
+  "order": 110,
+  "props": [
+    {
+      "id": "parasol",
+      "src": "detail-parasol-a.glb",
+      "name": "Parasol",
+      "category": "Decor",
+      "height": 2.6,
+      "collide": "trunk"
+    }
+  ]
+}

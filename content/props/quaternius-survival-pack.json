@@ -1,0 +1,152 @@
+{
+  "pack": {
+    "title": "Survival Pack",
+    "creator": "Quaternius",
+    "url": "https://quaternius.itch.io/lowpoly-survival-pack",
+    "license": "CC0-1.0",
+    "licenseFile": "assets-src/quaternius-survival-pack/License.txt",
+    "retrieved": "2026-10-25",
+    "objSource": "Survival Pack - Sept 2020/OBJ"
+  },
+  "order": 420,
+  "props": [
+    {
+      "id": "sv_backpack",
+      "src": "Backpack.glb",
+      "name": "Backpack",
+      "category": "Survival",
+      "height": 0.55,
+      "collide": "none"
+    },
+    {
+      "id": "sv_campfire",
+      "src": "Bonfire_Fire.glb",
+      "name": "Campfire",
+      "category": "Survival",
+      "height": 0.9,
+      "collide": "box",
+      "flame": {"fx": "campfire", "at": [0.02, 0.05, -0.02], "size": 0.85, "hide": ["Fire"]}
+    },
+    {
+      "id": "sv_campfire_out",
+      "src": "Bonfire.glb",
+      "name": "Campfire (out)",
+      "category": "Survival",
+      "height": 0.4,
+      "collide": "box"
+    },
+    {
+      "id": "sv_beartrap",
+      "src": "BearTrap_Open.glb",
+      "name": "Bear Trap",
+      "category": "Survival",
+      "height": 0.15,
+      "collide": "none"
+    },
+    {
+      "id": "sv_medkit_case",
+      "src": "FirstAidKit_Hard.glb",
+      "name": "First Aid Case",
+      "category": "Survival",
+      "height": 0.3,
+      "collide": "none"
+    },
+    {
+      "id": "sv_gas_can",
+      "src": "GasCan.glb",
+      "name": "Gas Can",
+      "category": "Survival",
+      "height": 0.45,
+      "collide": "box",
+      "breakable": {
+        "health": 30,
+        "debris": "#7a5a3a"
+      }
+    },
+    {
+      "id": "sv_propane",
+      "src": "PropaneTank.glb",
+      "name": "Propane Tank",
+      "category": "Survival",
+      "height": 1.2,
+      "collide": "box",
+      "breakable": {
+        "health": 30,
+        "debris": "#7a5a3a"
+      }
+    },
+    {
+      "id": "sv_radio",
+      "src": "Radio.glb",
+      "name": "Radio",
+      "category": "Survival",
+      "height": 0.3,
+      "collide": "none"
+    },
+    {
+      "id": "sv_raft",
+      "src": "Raft.glb",
+      "name": "Raft",
+      "category": "Survival",
+      "height": 0.5,
+      "collide": "box"
+    },
+    {
+      "id": "sv_tent",
+      "src": "Tent.glb",
+      "name": "Tent",
+      "category": "Survival",
+      "height": 1.9,
+      "collide": "box"
+    },
+    {
+      "id": "sv_trashcan_metal",
+      "src": "Trashcan.glb",
+      "name": "Metal Trash Can",
+      "category": "Survival",
+      "height": 1.0,
+      "collide": "box"
+    },
+    {
+      "id": "sv_torch_stand",
+      "src": "WoodenTorch_Fire.glb",
+      "name": "Torch Stand",
+      "category": "Survival",
+      "height": 1.6,
+      "collide": "trunk",
+      "flame": {"fx": "torch", "at": [0, 0.95, 0], "size": 0.6, "hide": ["Fire"]}
+    },
+    {
+      "id": "sv_shovel",
+      "src": "Shovel.glb",
+      "name": "Shovel",
+      "category": "Survival",
+      "height": 1.2,
+      "collide": "none"
+    },
+    {
+      "id": "sv_axe",
+      "src": "Axe.glb",
+      "name": "Axe",
+      "category": "Survival",
+      "height": 0.8,
+      "collide": "none"
+    },
+    {
+      "id": "sv_cook_pot",
+      "src": "Pot.glb",
+      "name": "Cooking Pot",
+      "category": "Survival",
+      "height": 0.35,
+      "collide": "none"
+    },
+    {
+      "id": "sv_can",
+      "src": "Can_Red.glb",
+      "name": "Tin Can",
+      "category": "Survival",
+      "height": 0.15,
+      "collide": "none"
+    }
+  ]
+}

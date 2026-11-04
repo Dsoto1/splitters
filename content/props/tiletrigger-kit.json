@@ -1,0 +1,272 @@
+{
+  "pack": {
+    "title": "Tile Trigger kit pieces (built in code)",
+    "creator": "Tile Trigger",
+    "url": "tools/content/build-kit-props.mjs",
+    "license": "Owned",
+    "licenseFile": "assets-src/tiletrigger-kit/License.txt",
+    "retrieved": "2026-10-26"
+  },
+  "order": 500,
+  "props": [
+    {
+      "id": "sandbag_wall",
+      "src": "sandbag_wall.glb",
+      "name": "Sandbag Wall",
+      "category": "Military",
+      "height": 0.82,
+      "collide": "box"
+    },
+    {
+      "id": "sandbag_wall_low",
+      "src": "sandbag_wall_low.glb",
+      "name": "Low Sandbags",
+      "category": "Military",
+      "height": 0.42,
+      "collide": "box"
+    },
+    {
+      "id": "sandbag_corner",
+      "src": "sandbag_corner.glb",
+      "name": "Sandbag Corner",
+      "category": "Military",
+      "height": 0.82,
+      "collide": "shell"
+    },
+    {
+      "id": "sandbag_nest",
+      "src": "sandbag_nest.glb",
+      "name": "Sandbag Nest",
+      "category": "Military",
+      "height": 0.82,
+      "collide": "shell"
+    },
+    {
+      "id": "hesco_wall",
+      "src": "hesco_wall.glb",
+      "name": "Blast Wall (Gabions)",
+      "category": "Military",
+      "height": 1.36,
+      "collide": "box",
+      "breakable": {
+        "health": 600,
+        "debris": "#8a7350"
+      }
+    },
+    {
+      "id": "hedgehog",
+      "src": "hedgehog.glb",
+      "name": "Steel Hedgehog",
+      "category": "Military",
+      "height": 1.38,
+      "collide": "box"
+    },
+    {
+      "id": "dragon_tooth",
+      "src": "dragon_tooth.glb",
+      "name": "Concrete Tank Trap",
+      "category": "Military",
+      "height": 0.9,
+      "collide": "box"
+    },
+    {
+      "id": "ammo_crate",
+      "src": "ammo_crate.glb",
+      "name": "Ammo Crate",
+      "category": "Military",
+      "height": 0.45,
+      "collide": "box",
+      "breakable": {
+        "health": 40,
+        "debris": "#56603a"
+      }
+    },
+    {
+      "id": "ammo_stack",
+      "src": "ammo_stack.glb",
+      "name": "Ammo Crates (Stack)",
+      "category": "Military",
+      "height": 0.9,
+      "collide": "box",
+      "breakable": {
+        "health": 90,
+        "debris": "#56603a"
+      }
+    },
+    {
+      "id": "fuel_drum",
+      "src": "fuel_drum.glb",
+      "name": "Fuel Drum",
+      "category": "Military",
+      "height": 0.93,
+      "collide": "box",
+      "breakable": {
+        "health": 40,
+        "debris": "#56603a",
+        "blast": {
+          "radius": 5,
+          "damage": 100,
+          "edge": 15
+        }
+      }
+    },
+    {
+      "id": "razor_wire",
+      "src": "razor_wire.glb",
+      "name": "Razor Wire",
+      "category": "Military",
+      "height": 1.0,
+      "collide": "box",
+      "breakable": {
+        "health": 60,
+        "debris": "#8f959b"
+      }
+    },
+    {
+      "id": "camo_net",
+      "src": "camo_net.glb",
+      "name": "Camouflage Net",
+      "category": "Military",
+      "height": 2.69,
+      "collide": "none"
+    },
+    {
+      "id": "mine_cart",
+      "src": "mine_cart.glb",
+      "name": "Mine Cart",
+      "category": "Frontier",
+      "height": 1.01,
+      "collide": "box"
+    },
+    {
+      "id": "ore_cart",
+      "src": "ore_cart.glb",
+      "name": "Ore Cart",
+      "category": "Frontier",
+      "height": 1.22,
+      "collide": "box"
+    },
+    {
+      "id": "dynamite_crate",
+      "src": "dynamite_crate.glb",
+      "name": "Dynamite Crate",
+      "category": "Frontier",
+      "height": 0.6,
+      "collide": "box",
+      "breakable": {
+        "health": 25,
+        "debris": "#a77a4c",
+        "blast": {
+          "radius": 6.5,
+          "damage": 150,
+          "edge": 25
+        }
+      }
+    },
+    {
+      "id": "dynamite_bundle",
+      "src": "dynamite_bundle.glb",
+      "name": "Dynamite Bundle",
+      "category": "Frontier",
+      "height": 0.18,
+      "collide": "box",
+      "breakable": {
+        "health": 10,
+        "debris": "#b3261e",
+        "blast": {
+          "radius": 4.5,
+          "damage": 110,
+          "edge": 15
+        }
+      }
+    },
+    {
+      "id": "hitching_post",
+      "src": "hitching_post.glb",
+      "name": "Hitching Post",
+      "category": "Frontier",
+      "height": 1.1,
+      "collide": "box"
+    },
+    {
+      "id": "water_trough",
+      "src": "water_trough.glb",
+      "name": "Water Trough",
+      "category": "Frontier",
+      "height": 0.76,
+      "collide": "box",
+      "breakable": {
+        "health": 60,
+        "debris": "#8a5f3a"
+      }
+    },
+    {
+      "id": "wagon_wheel",
+      "src": "wagon_wheel.glb",
+      "name": "Wagon Wheel",
+      "category": "Frontier",
+      "height": 1.26,
+      "collide": "none"
+    },
+    {
+      "id": "wanted_board",
+      "src": "wanted_board.glb",
+      "name": "Wanted Board",
+      "category": "Frontier",
+      "height": 2.1,
+      "collide": "trunk"
+    },
+    {
+      "id": "outhouse",
+      "src": "outhouse.glb",
+      "name": "Outhouse",
+      "category": "Frontier",
+      "height": 2.5,
+      "collide": "box",
+      "breakable": {
+        "health": 120,
+        "debris": "#a77a4c"
+      }
+    },
+    {
+      "id": "rail_buffer",
+      "src": "rail_buffer.glb",
+      "name": "Buffer Stop",
+      "category": "Frontier",
+      "height": 1.24,
+      "collide": "box"
+    },
+    {
+      "id": "mine_frame",
+      "src": "mine_frame.glb",
+      "name": "Mine Timber Frame",
+      "category": "Frontier",
+      "height": 3.55,
+      "collide": "frame"
+    },
+    {
+      "id": "tumbleweed",
+      "src": "tumbleweed.glb",
+      "name": "Tumbleweed",
+      "category": "Frontier",
+      "height": 0.62,
+      "collide": "none"
+    },
+    {
+      "id": "covered_wagon",
+      "src": "covered_wagon.glb",
+      "name": "Covered Wagon",
+      "category": "Frontier",
+      "height": 2.37,
+      "collide": "box"
+    },
+    {
+      "id": "wind_pump",
+      "src": "wind_pump.glb",
+      "name": "Wind Pump",
+      "category": "Frontier",
+      "height": 9.26,
+      "collide": "trunk"
+    }
+  ]
+}

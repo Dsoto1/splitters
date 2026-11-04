@@ -23,6 +23,7 @@ import { Document, NodeIO } from '@gltf-transform/core';
 import { ALL_EXTENSIONS } from '@gltf-transform/extensions';
 import { RIG_FROM_MESHY, meshyName, retargetClip } from './retarget.mjs';
 import { CLIP_SETS_LOCK, readClipSets } from './character-manifests.mjs';
+import { writeLock } from './lockfile.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const OUT = join(ROOT, 'packages/client/public/characters');
@@ -198,7 +199,7 @@ export async function buildClipSets(dir, only) {
       clips: report,
     });
   }
-  writeFileSync(CLIP_SETS_LOCK, `${JSON.stringify(lock, null, 2)}\n`);
+  writeLock(CLIP_SETS_LOCK, lock);
   console.log(`wrote ${lock.files.length} clip sets and ${basename(CLIP_SETS_LOCK)}`);
 }
 

@@ -1,0 +1,460 @@
+{
+  "pack": {
+    "title": "Nature Kit 2.1",
+    "creator": "Kenney",
+    "url": "https://kenney.nl/assets/nature-kit",
+    "license": "CC0-1.0",
+    "licenseFile": "assets-src/kenney-nature-kit/License.txt",
+    "retrieved": "2026-10-23"
+  },
+  "order": 210,
+  "props": [
+    {
+      "id": "oak",
+      "src": "tree_oak.glb",
+      "name": "Oak",
+      "category": "Trees",
+      "height": 7.0,
+      "collide": "trunk"
+    },
+    {
+      "id": "oak_dark",
+      "src": "tree_oak_dark.glb",
+      "name": "Dark Oak",
+      "category": "Trees",
+      "height": 7.0,
+      "collide": "trunk"
+    },
+    {
+      "id": "oak_autumn",
+      "src": "tree_oak_fall.glb",
+      "name": "Autumn Oak",
+      "category": "Trees",
+      "height": 7.0,
+      "collide": "trunk"
+    },
+    {
+      "id": "tree_round",
+      "src": "tree_default.glb",
+      "name": "Round Tree",
+      "category": "Trees",
+      "height": 5.5,
+      "collide": "trunk"
+    },
+    {
+      "id": "tree_round_dark",
+      "src": "tree_default_dark.glb",
+      "name": "Dark Round Tree",
+      "category": "Trees",
+      "height": 5.5,
+      "collide": "trunk"
+    },
+    {
+      "id": "tree_round_autumn",
+      "src": "tree_default_fall.glb",
+      "name": "Autumn Round Tree",
+      "category": "Trees",
+      "height": 5.5,
+      "collide": "trunk"
+    },
+    {
+      "id": "tree_fat",
+      "src": "tree_fat.glb",
+      "name": "Bushy Tree",
+      "category": "Trees",
+      "height": 5.0,
+      "collide": "trunk"
+    },
+    {
+      "id": "tree_detailed",
+      "src": "tree_detailed.glb",
+      "name": "Leafy Tree",
+      "category": "Trees",
+      "height": 6.0,
+      "collide": "trunk"
+    },
+    {
+      "id": "tree_cone",
+      "src": "tree_cone.glb",
+      "name": "Cone Tree",
+      "category": "Trees",
+      "height": 6.0,
+      "collide": "trunk"
+    },
+    {
+      "id": "tree_plateau",
+      "src": "tree_plateau.glb",
+      "name": "Flat-top Tree",
+      "category": "Trees",
+      "height": 6.0,
+      "collide": "trunk"
+    },
+    {
+      "id": "tree_thin",
+      "src": "tree_thin.glb",
+      "name": "Thin Tree",
+      "category": "Trees",
+      "height": 6.0,
+      "collide": "trunk"
+    },
+    {
+      "id": "tree_blocks",
+      "src": "tree_blocks.glb",
+      "name": "Blocky Tree",
+      "category": "Trees",
+      "height": 5.0,
+      "collide": "trunk"
+    },
+    {
+      "id": "tree_small",
+      "src": "tree_small.glb",
+      "name": "Sapling",
+      "category": "Trees",
+      "height": 3.0,
+      "collide": "trunk"
+    },
+    {
+      "id": "pine_tall",
+      "src": "tree_pineTallA_detailed.glb",
+      "name": "Tall Pine",
+      "category": "Trees",
+      "height": 11.0,
+      "collide": "trunk"
+    },
+    {
+      "id": "pine_tall_b",
+      "src": "tree_pineTallC_detailed.glb",
+      "name": "Tall Pine B",
+      "category": "Trees",
+      "height": 10.0,
+      "collide": "trunk"
+    },
+    {
+      "id": "pine_round",
+      "src": "tree_pineRoundC.glb",
+      "name": "Round Pine",
+      "category": "Trees",
+      "height": 7.0,
+      "collide": "trunk"
+    },
+    {
+      "id": "pine_small",
+      "src": "tree_pineSmallA.glb",
+      "name": "Small Pine",
+      "category": "Trees",
+      "height": 3.5,
+      "collide": "trunk"
+    },
+    {
+      "id": "pine_ground",
+      "src": "tree_pineGroundA.glb",
+      "name": "Low Pine",
+      "category": "Trees",
+      "height": 2.2,
+      "collide": "none"
+    },
+    {
+      "id": "palm_tall",
+      "src": "tree_palmDetailedTall.glb",
+      "name": "Tall Palm",
+      "category": "Trees",
+      "height": 9.0,
+      "collide": "trunk"
+    },
+    {
+      "id": "palm_short",
+      "src": "tree_palmDetailedShort.glb",
+      "name": "Short Palm",
+      "category": "Trees",
+      "height": 5.0,
+      "collide": "trunk"
+    },
+    {
+      "id": "bush",
+      "src": "plant_bush.glb",
+      "name": "Bush",
+      "category": "Plants & Flowers",
+      "height": 1.1,
+      "collide": "none",
+      "conceals": true
+    },
+    {
+      "id": "bush_large",
+      "src": "plant_bushLarge.glb",
+      "name": "Large Bush",
+      "category": "Plants & Flowers",
+      "height": 1.6,
+      "collide": "none",
+      "conceals": true
+    },
+    {
+      "id": "bush_leafy",
+      "src": "plant_bushDetailed.glb",
+      "name": "Leafy Bush",
+      "category": "Plants & Flowers",
+      "height": 1.2,
+      "collide": "none",
+      "conceals": true
+    },
+    {
+      "id": "bush_small",
+      "src": "plant_bushSmall.glb",
+      "name": "Small Bush",
+      "category": "Plants & Flowers",
+      "height": 0.7,
+      "collide": "none",
+      "conceals": true
+    },
+    {
+      "id": "bush_cone",
+      "src": "plant_bushTriangle.glb",
+      "name": "Cone Bush",
+      "category": "Plants & Flowers",
+      "height": 1.4,
+      "collide": "none",
+      "conceals": true
+    },
+    {
+      "id": "fern",
+      "src": "plant_flatTall.glb",
+      "name": "Fern",
+      "category": "Plants & Flowers",
+      "height": 0.9,
+      "collide": "none",
+      "conceals": true
+    },
+    {
+      "id": "plant_low",
+      "src": "plant_flatShort.glb",
+      "name": "Low Plant",
+      "category": "Plants & Flowers",
+      "height": 0.5,
+      "collide": "none"
+    },
+    {
+      "id": "grass_tall",
+      "src": "grass_large.glb",
+      "name": "Tall Grass",
+      "category": "Plants & Flowers",
+      "height": 0.7,
+      "collide": "none"
+    },
+    {
+      "id": "grass_patch",
+      "src": "grass.glb",
+      "name": "Grass Patch",
+      "category": "Plants & Flowers",
+      "height": 0.35,
+      "collide": "none"
+    },
+    {
+      "id": "grass_leafy",
+      "src": "grass_leafsLarge.glb",
+      "name": "Leafy Grass",
+      "category": "Plants & Flowers",
+      "height": 0.6,
+      "collide": "none"
+    },
+    {
+      "id": "flower_red",
+      "src": "flower_redA.glb",
+      "name": "Red Flowers",
+      "category": "Plants & Flowers",
+      "height": 0.5,
+      "collide": "none"
+    },
+    {
+      "id": "flower_yellow",
+      "src": "flower_yellowA.glb",
+      "name": "Yellow Flowers",
+      "category": "Plants & Flowers",
+      "height": 0.5,
+      "collide": "none"
+    },
+    {
+      "id": "flower_purple",
+      "src": "flower_purpleA.glb",
+      "name": "Purple Flowers",
+      "category": "Plants & Flowers",
+      "height": 0.5,
+      "collide": "none"
+    },
+    {
+      "id": "mushrooms",
+      "src": "mushroom_redGroup.glb",
+      "name": "Mushrooms",
+      "category": "Plants & Flowers",
+      "height": 0.4,
+      "collide": "none"
+    },
+    {
+      "id": "mushroom_tall",
+      "src": "mushroom_tanTall.glb",
+      "name": "Tall Mushroom",
+      "category": "Plants & Flowers",
+      "height": 0.6,
+      "collide": "none"
+    },
+    {
+      "id": "cactus_tall",
+      "src": "cactus_tall.glb",
+      "name": "Tall Cactus",
+      "category": "Plants & Flowers",
+      "height": 3.0,
+      "collide": "trunk"
+    },
+    {
+      "id": "cactus",
+      "src": "cactus_short.glb",
+      "name": "Cactus",
+      "category": "Plants & Flowers",
+      "height": 1.4,
+      "collide": "trunk"
+    },
+    {
+      "id": "corn",
+      "src": "crops_cornStageD.glb",
+      "name": "Corn",
+      "category": "Plants & Flowers",
+      "height": 2.2,
+      "collide": "none"
+    },
+    {
+      "id": "wheat",
+      "src": "crops_wheatStageB.glb",
+      "name": "Wheat",
+      "category": "Plants & Flowers",
+      "height": 1.1,
+      "collide": "none"
+    },
+    {
+      "id": "hanging_moss",
+      "src": "hanging_moss.glb",
+      "name": "Hanging Moss",
+      "category": "Plants & Flowers",
+      "height": 1.5,
+      "collide": "none"
+    },
+    {
+      "id": "lily",
+      "src": "lily_large.glb",
+      "name": "Lily Pad",
+      "category": "Plants & Flowers",
+      "height": 0.05,
+      "collide": "none"
+    },
+    {
+      "id": "boulder_round",
+      "src": "rock_largeA.glb",
+      "name": "Round Boulder",
+      "category": "Rocks & Wood",
+      "height": 2.2,
+      "collide": "box"
+    },
+    {
+      "id": "boulder_jagged",
+      "src": "rock_largeD.glb",
+      "name": "Jagged Boulder",
+      "category": "Rocks & Wood",
+      "height": 2.6,
+      "collide": "box"
+    },
+    {
+      "id": "boulder_flat",
+      "src": "rock_largeF.glb",
+      "name": "Flat Boulder",
+      "category": "Rocks & Wood",
+      "height": 1.4,
+      "collide": "box"
+    },
+    {
+      "id": "rock_spire_tall",
+      "order": 260,
+      "src": "rock_tallB.glb",
+      "name": "Tall Rock",
+      "category": "Rocks & Wood",
+      "height": 4.0,
+      "collide": "box"
+    },
+    {
+      "id": "stone_pillar",
+      "src": "stone_tallA.glb",
+      "name": "Stone Pillar",
+      "category": "Rocks & Wood",
+      "height": 3.5,
+      "collide": "box"
+    },
+    {
+      "id": "stones",
+      "src": "stone_smallA.glb",
+      "name": "Stones",
+      "category": "Rocks & Wood",
+      "height": 0.4,
+      "collide": "none"
+    },
+    {
+      "id": "stump_old",
+      "src": "stump_oldTall.glb",
+      "name": "Old Stump",
+      "category": "Rocks & Wood",
+      "height": 1.0,
+      "collide": "box"
+    },
+    {
+      "id": "stump_cut",
+      "src": "stump_roundDetailed.glb",
+      "name": "Cut Stump",
+      "category": "Rocks & Wood",
+      "height": 0.6,
+      "collide": "box"
+    },
+    {
+      "id": "log_big",
+      "src": "log_large.glb",
+      "name": "Big Log",
+      "category": "Rocks & Wood",
+      "height": 1.0,
+      "collide": "box"
+    },
+    {
+      "id": "log_stack",
+      "src": "log_stackLarge.glb",
+      "name": "Log Stack",
+      "category": "Rocks & Wood",
+      "height": 1.4,
+      "collide": "box"
+    },
+    {
+      "id": "campfire_stones",
+      "src": "campfire_stones.glb",
+      "name": "Stone Campfire",
+      "category": "Rocks & Wood",
+      "height": 0.5,
+      "collide": "none"
+    },
+    {
+      "id": "cliff",
+      "src": "cliff_block_rock.glb",
+      "name": "Cliff Block",
+      "category": "Rocks & Wood",
+      "height": 4.0,
+      "collide": "box"
+    },
+    {
+      "id": "cliff_corner",
+      "src": "cliff_corner_rock.glb",
+      "name": "Cliff Corner",
+      "category": "Rocks & Wood",
+      "height": 4.0,
+      "collide": "box"
+    },
+    {
+      "id": "cliff_steps",
+      "src": "cliff_steps_rock.glb",
+      "name": "Cliff Steps",
+      "category": "Rocks & Wood",
+      "height": 4.0,
+      "collide": "box"
+    }
+  ]
+}

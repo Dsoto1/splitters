@@ -1,0 +1,174 @@
+{
+  "pack": {
+    "title": "Space Station Kit",
+    "creator": "Kenney",
+    "url": "https://kenney.nl/assets/space-station-kit",
+    "license": "CC0-1.0",
+    "licenseFile": "assets-src/kenney-space-station-kit/License.txt",
+    "retrieved": "2026-10-23"
+  },
+  "order": 50,
+  "props": [
+    {
+      "id": "container",
+      "src": "container.glb",
+      "name": "Supply Container",
+      "category": "Crates & Barrels",
+      "height": 1.1,
+      "collide": "box",
+      "breakable": {
+        "health": 90,
+        "debris": "#7a8088"
+      }
+    },
+    {
+      "id": "container_tall",
+      "src": "container-tall.glb",
+      "name": "Tall Container",
+      "category": "Crates & Barrels",
+      "height": 2.2,
+      "collide": "box"
+    },
+    {
+      "id": "container_wide",
+      "src": "container-wide.glb",
+      "name": "Wide Container",
+      "category": "Crates & Barrels",
+      "height": 1.1,
+      "collide": "box"
+    },
+    {
+      "id": "computer_bank",
+      "order": 90,
+      "src": "computer-system.glb",
+      "name": "Computer Bank",
+      "category": "Sci-Fi",
+      "height": 2.0,
+      "collide": "box",
+      "breakable": {
+        "health": 60,
+        "debris": "#7a8088"
+      }
+    },
+    {
+      "id": "computer_wide",
+      "src": "computer-wide.glb",
+      "name": "Wide Console",
+      "category": "Sci-Fi",
+      "height": 1.3,
+      "collide": "box",
+      "breakable": {
+        "health": 45,
+        "debris": "#7a8088"
+      }
+    },
+    {
+      "id": "computer",
+      "src": "computer.glb",
+      "name": "Console",
+      "category": "Sci-Fi",
+      "height": 1.2,
+      "collide": "box",
+      "breakable": {
+        "health": 35,
+        "debris": "#7a8088"
+      }
+    },
+    {
+      "id": "holo_table",
+      "src": "table-display-planet.glb",
+      "name": "Holo Table",
+      "category": "Sci-Fi",
+      "height": 1.3,
+      "collide": "box",
+      "breakable": {
+        "health": 50,
+        "debris": "#7a8088"
+      }
+    },
+    {
+      "id": "display_table",
+      "src": "table-display.glb",
+      "name": "Display Table",
+      "category": "Sci-Fi",
+      "height": 1.0,
+      "collide": "box",
+      "breakable": {
+        "health": 40,
+        "debris": "#7a8088"
+      }
+    },
+    {
+      "id": "space_table",
+      "src": "table.glb",
+      "name": "Station Table",
+      "category": "Sci-Fi",
+      "height": 0.9,
+      "collide": "box",
+      "breakable": {
+        "health": 40,
+        "debris": "#c8c8d0"
+      }
+    },
+    {
+      "id": "space_chair",
+      "src": "chair-armrest-headrest.glb",
+      "name": "Station Chair",
+      "category": "Sci-Fi",
+      "height": 1.1,
+      "collide": "box",
+      "breakable": {
+        "health": 25,
+        "debris": "#c8c8d0"
+      }
+    },
+    {
+      "id": "space_bed",
+      "src": "bed-single-cover.glb",
+      "name": "Bunk",
+      "category": "Sci-Fi",
+      "height": 0.7,
+      "collide": "box"
+    },
+    {
+      "id": "barrier",
+      "src": "structure-barrier.glb",
+      "name": "Barrier",
+      "category": "Sci-Fi",
+      "height": 1.1,
+      "collide": "box",
+      "breakable": {
+        "health": 120,
+        "debris": "#7a8088"
+      }
+    },
+    {
+      "id": "barrier_high",
+      "src": "structure-barrier-high.glb",
+      "name": "High Barrier",
+      "category": "Sci-Fi",
+      "height": 2.2,
+      "collide": "box"
+    },
+    {
+      "id": "display_wall",
+      "src": "display-wall-wide.glb",
+      "name": "Wall Display",
+      "category": "Sci-Fi",
+      "height": 2.0,
+      "collide": "box",
+      "breakable": {
+        "health": 50,
+        "debris": "#7a8088"
+      }
+    },
+    {
+      "id": "skip",
+      "src": "skip-rocks.glb",
+      "name": "Ore Skip",
+      "category": "Sci-Fi",
+      "height": 1.2,
+      "collide": "box"
+    }
+  ]
+}

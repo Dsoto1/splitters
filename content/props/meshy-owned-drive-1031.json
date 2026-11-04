@@ -1,0 +1,136 @@
+{
+  "pack": {
+    "title": "Tile Trigger originals (made with Meshy): barriers, a smithy bench, a tiled well, ruin stairs and two parked vehicles",
+    "creator": "Meshy, owned (generated on the owner's Meshy subscription)",
+    "url": "https://www.meshy.ai",
+    "license": "Owned",
+    "licenseFile": "assets-src/meshy-owned/License.txt",
+    "retrieved": "2026-10-31",
+    "download": "owned_drive_1031",
+    "meshy": true,
+    "convert": true,
+    "textureSize": 512
+  },
+  "order": 800,
+  "props": [
+    {
+      "id": "temple_ruin_stair",
+      "src": "Meshy_AI_A_low_polygon_ancient_1031011424_texture.glb",
+      "name": "Ruined Stone Stair",
+      "category": "Jungle Ruins",
+      "height": 2,
+      "collide": "stairs",
+      "climbs": "auto",
+      "triangles": 9000,
+      "maxError": 0.03,
+      "source": {
+        "model": "A low polygon ancient stair (owner's Meshy)",
+        "date": "2026-10-31"
+      },
+      "budget": "hero",
+      "textureSize": 1024
+    },
+    {
+      "id": "smithy_workbench",
+      "src": "Meshy_AI_Blacksmith_s_Workbenc_1030171853_texture.glb",
+      "name": "Smithy Workbench",
+      "category": "Medieval Village",
+      "height": 1.3,
+      "collide": "box",
+      "triangles": 5500,
+      "maxError": 0.03,
+      "source": {
+        "model": "Blacksmith's Workbench (owner's Meshy)",
+        "date": "2026-10-31"
+      }
+    },
+    {
+      "id": "jersey_barrier_hazard",
+      "src": "Meshy_AI_Concrete_Barrier_with_1031011429_texture.glb",
+      "name": "Concrete Barrier (hazard stripes)",
+      "category": "Military",
+      "height": 0.9,
+      "collide": "box",
+      "triangles": 3000,
+      "maxError": 0.05,
+      "source": {
+        "model": "Concrete Barrier with hazard stripes (owner's Meshy)",
+        "date": "2026-10-31"
+      }
+    },
+    {
+      "id": "plastic_road_barrier",
+      "src": "Meshy_AI_Construction_Barrier_1030203752_texture.glb",
+      "name": "Plastic Road Barrier",
+      "category": "Industrial",
+      "height": 1,
+      "collide": "box",
+      "triangles": 3000,
+      "maxError": 0.05,
+      "source": {
+        "model": "Construction Barrier (owner's Meshy)",
+        "date": "2026-10-31"
+      }
+    },
+    {
+      "id": "hazard_block_barrier",
+      "src": "Meshy_AI_Hazard_Barrier_1030173959_texture.glb",
+      "name": "Hazard Block Barrier",
+      "category": "Military",
+      "height": 1,
+      "collide": "box",
+      "triangles": 3000,
+      "maxError": 0.05,
+      "source": {
+        "model": "Hazard Barrier (owner's Meshy)",
+        "date": "2026-10-31"
+      }
+    },
+    {
+      "id": "tiled_well",
+      "src": "Meshy_AI_Red_Tile_Roof_Well_1031011413_texture.glb",
+      "name": "Tiled Well",
+      "category": "Medieval Village",
+      "height": 2.3,
+      "collide": "box",
+      "triangles": 5500,
+      "maxError": 0.03,
+      "source": {
+        "model": "Red Tile Roof Well (owner's Meshy)",
+        "date": "2026-10-31"
+      }
+    },
+    {
+      "id": "vehicle_raider_buggy",
+      "src": "Meshy_AI__1031011334_texture.glb",
+      "name": "Raider Buggy (parked)",
+      "category": "Vehicles",
+      "height": 2,
+      "collide": "box",
+      "triangles": 16000,
+      "maxError": 0.03,
+      "source": {
+        "model": "Untitled sci-fi buggy (owner's Meshy)",
+        "date": "2026-10-31"
+      },
+      "budget": "hero",
+      "textureSize": 1024
+    },
+    {
+      "id": "vehicle_armored_truck",
+      "src": "Meshy_AI__1031015233_texture.glb",
+      "name": "Armoured 8x8 Truck (parked)",
+      "category": "Vehicles",
+      "height": 4,
+      "collide": "shell",
+      "triangles": 16000,
+      "maxError": 0.03,
+      "source": {
+        "model": "Untitled 8x8 armoured truck (owner's Meshy)",
+        "date": "2026-10-31"
+      },
+      "budget": "hero",
+      "textureSize": 1024
+    }
+  ]
+}

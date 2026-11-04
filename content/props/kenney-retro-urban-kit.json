@@ -1,0 +1,127 @@
+{
+  "pack": {
+    "title": "Retro Urban Kit 2.0",
+    "creator": "Kenney",
+    "url": "https://kenney.nl/assets/retro-urban-kit",
+    "license": "CC0-1.0",
+    "licenseFile": "assets-src/kenney-retro-urban-kit/License.txt",
+    "retrieved": "2026-10-26",
+    "download": "kenney_retro-urban-kit",
+    "models": "Models/GLB format"
+  },
+  "order": 470,
+  "props": [
+    {
+      "id": "jersey_barrier",
+      "src": "detail-barrier-strong-type-a.glb",
+      "name": "Concrete Barrier",
+      "category": "Military",
+      "height": 1.0,
+      "collide": "box",
+      "breakable": {
+        "health": 400,
+        "debris": "#9c9a94"
+      }
+    },
+    {
+      "id": "jersey_barrier_striped",
+      "src": "detail-barrier-strong-type-b.glb",
+      "name": "Striped Barrier",
+      "category": "Military",
+      "height": 1.0,
+      "collide": "box",
+      "breakable": {
+        "health": 400,
+        "debris": "#9c9a94"
+      }
+    },
+    {
+      "id": "jersey_barrier_broken",
+      "src": "detail-barrier-strong-damaged.glb",
+      "name": "Broken Barrier",
+      "category": "Military",
+      "height": 1.0,
+      "collide": "box"
+    },
+    {
+      "id": "road_barrier",
+      "src": "detail-barrier-type-b.glb",
+      "name": "Road Barrier (Retro Urban)",
+      "category": "Military",
+      "height": 1.05,
+      "collide": "box",
+      "breakable": {
+        "health": 40,
+        "debris": "#d8b020"
+      }
+    },
+    {
+      "id": "concrete_block",
+      "src": "detail-block.glb",
+      "name": "Concrete Block",
+      "category": "Military",
+      "height": 1.2,
+      "collide": "box",
+      "breakable": {
+        "health": 300,
+        "debris": "#9c9a94"
+      }
+    },
+    {
+      "id": "brick_rubble",
+      "src": "detail-bricks-type-b.glb",
+      "name": "Brick Rubble",
+      "category": "Military",
+      "height": 0.45,
+      "collide": "none"
+    },
+    {
+      "id": "floodlight",
+      "src": "detail-light-double.glb",
+      "name": "Floodlight Mast",
+      "category": "Military",
+      "height": 5.5,
+      "collide": "trunk"
+    },
+    {
+      "id": "yard_lamp",
+      "src": "detail-light-single.glb",
+      "name": "Yard Lamp",
+      "category": "Military",
+      "height": 4.6,
+      "collide": "trunk"
+    },
+    {
+      "id": "pallet",
+      "src": "pallet.glb",
+      "name": "Pallet",
+      "category": "Military",
+      "height": 0.15,
+      "collide": "box"
+    },
+    {
+      "id": "supply_truck",
+      "src": "truck-green.glb",
+      "name": "Supply Truck",
+      "category": "Military",
+      "height": 3.0,
+      "collide": "box"
+    },
+    {
+      "id": "flatbed_truck",
+      "src": "truck-flat.glb",
+      "name": "Flatbed Truck",
+      "category": "Military",
+      "height": 3.0,
+      "collide": "box"
+    },
+    {
+      "id": "dumpster",
+      "src": "detail-dumpster-closed.glb",
+      "name": "Dumpster (Retro Urban)",
+      "category": "Industrial",
+      "height": 1.5,
+      "collide": "box"
+    }
+  ]
+}

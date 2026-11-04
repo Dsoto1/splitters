@@ -1,0 +1,65 @@
+{
+  "pack": {
+    "title": "FREE - Low Poly Car Pack 1 (extras)",
+    "creator": "Designersoup",
+    "url": "https://designersoup.itch.io/low-poly-car-pack-1",
+    "license": "CC0-1.0",
+    "licenseFile": "assets-src/designersoup-car-pack-1/License.txt",
+    "retrieved": "2026-10-26",
+    "download": "extras",
+    "models": ".",
+    "convert": true
+  },
+  "order": 520,
+  "props": [
+    {
+      "id": "ds_traffic_cone",
+      "src": "cone.fbx",
+      "name": "Traffic Cone",
+      "category": "Vehicles",
+      "collide": "box",
+      "scale": 0.01
+    },
+    {
+      "id": "ds_oil_drum",
+      "src": "oildrum.fbx",
+      "name": "Oil Drum",
+      "category": "Vehicles",
+      "collide": "box",
+      "scale": 0.01
+    },
+    {
+      "id": "ds_tyre_rack",
+      "src": "tireRack.fbx",
+      "name": "Tyre Rack",
+      "category": "Vehicles",
+      "collide": "box",
+      "scale": 0.01,
+      "simplify": 0.8
+    },
+    {
+      "id": "ds_spare_wheel",
+      "src": "offroadSpareWheel.fbx",
+      "name": "Spare Wheel",
+      "category": "Vehicles",
+      "collide": "box",
+      "scale": 0.01
+    },
+    {
+      "id": "ds_air_pump",
+      "src": "airgun.fbx",
+      "name": "Air Pump",
+      "category": "Vehicles",
+      "collide": "box",
+      "scale": 0.01
+    },
+    {
+      "id": "ds_windsock",
+      "src": "windsock.fbx",
+      "name": "Windsock",
+      "category": "Vehicles",
+      "collide": "trunk",
+      "scale": 0.01
+    }
+  ]
+}

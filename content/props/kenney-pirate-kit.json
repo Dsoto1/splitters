@@ -1,0 +1,132 @@
+{
+  "pack": {
+    "title": "Pirate Kit",
+    "creator": "Kenney",
+    "url": "https://kenney.nl/assets/pirate-kit",
+    "license": "CC0-1.0",
+    "licenseFile": "assets-src/kenney-pirate-kit/License.txt",
+    "retrieved": "2026-10-23"
+  },
+  "order": 20,
+  "props": [
+    {
+      "id": "crate_bottles",
+      "src": "crate-bottles.glb",
+      "name": "Bottle Crate",
+      "category": "Crates & Barrels",
+      "height": 0.8,
+      "collide": "box",
+      "breakable": {
+        "health": 25,
+        "debris": "#8a5a32"
+      }
+    },
+    {
+      "id": "cargo_crate",
+      "src": "crate.glb",
+      "name": "Cargo Crate",
+      "category": "Crates & Barrels",
+      "height": 1.2,
+      "collide": "box",
+      "breakable": {
+        "health": 70,
+        "debris": "#8a5a32"
+      }
+    },
+    {
+      "id": "powder_keg",
+      "src": "barrel.glb",
+      "name": "Powder Keg",
+      "category": "Crates & Barrels",
+      "height": 1.0,
+      "collide": "box",
+      "breakable": {
+        "health": 30,
+        "debris": "#5a3a24",
+        "blast": {
+          "radius": 5,
+          "damage": 110,
+          "edge": 20
+        }
+      }
+    },
+    {
+      "id": "palm",
+      "order": 150,
+      "src": "palm-straight.glb",
+      "name": "Palm",
+      "category": "Trees",
+      "height": 7.0,
+      "collide": "trunk"
+    },
+    {
+      "id": "palm_bent",
+      "src": "palm-bend.glb",
+      "name": "Leaning Palm",
+      "category": "Trees",
+      "height": 6.5,
+      "collide": "trunk"
+    },
+    {
+      "id": "cannon",
+      "order": 200,
+      "src": "cannon.glb",
+      "name": "Cannon",
+      "category": "Pirate & Coast",
+      "height": 1.0,
+      "collide": "box"
+    },
+    {
+      "id": "cannon_mobile",
+      "src": "cannon-mobile.glb",
+      "name": "Field Cannon",
+      "category": "Pirate & Coast",
+      "height": 1.2,
+      "collide": "box"
+    },
+    {
+      "id": "cannonballs",
+      "src": "cannon-ball.glb",
+      "name": "Cannonball",
+      "category": "Pirate & Coast",
+      "height": 0.3,
+      "collide": "none"
+    },
+    {
+      "id": "rowboat",
+      "src": "boat-row-small.glb",
+      "name": "Rowing Boat",
+      "category": "Pirate & Coast",
+      "height": 0.7,
+      "collide": "box",
+      "breakable": {
+        "health": 60,
+        "debris": "#8a5a32"
+      }
+    },
+    {
+      "id": "flag",
+      "src": "flag-pirate.glb",
+      "name": "Flag",
+      "category": "Pirate & Coast",
+      "height": 4.0,
+      "collide": "trunk"
+    },
+    {
+      "id": "mast",
+      "src": "mast.glb",
+      "name": "Mast",
+      "category": "Pirate & Coast",
+      "height": 8.0,
+      "collide": "trunk"
+    },
+    {
+      "id": "bottle",
+      "src": "bottle-large.glb",
+      "name": "Bottle",
+      "category": "Pirate & Coast",
+      "height": 0.4,
+      "collide": "none"
+    }
+  ]
+}

@@ -34,6 +34,7 @@ import { Document, NodeIO, PropertyType } from '@gltf-transform/core';
 import { ALL_EXTENSIONS } from '@gltf-transform/extensions';
 import { compactPrimitive, dedup, prune, resample, simplify, simplifyPrimitive, weld } from '@gltf-transform/functions';
 import { MeshoptSimplifier } from 'meshoptimizer';
+import { writeLock } from './lockfile.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const OUT = join(ROOT, 'packages/client/public/characters');
@@ -616,7 +617,7 @@ for (const [h, sex] of HAIR) {
   lock.files.push({ role: 'npc', id: 'mannequin_f', body: 'female', source: 'quaternius-universal-animation-library-2', ...(await finish(doc, 'mannequin_f.glb', { ratio: 0.5 })) });
 }
 
-writeFileSync(LOCK, `${JSON.stringify(lock, null, 2)}\n`);
+writeLock(LOCK, lock);
 rmSync(tmp, { recursive: true, force: true });
 console.log(`wrote ${lock.files.length} files and content/characters.lock.json`);
 void Document;

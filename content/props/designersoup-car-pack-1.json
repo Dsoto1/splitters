@@ -1,0 +1,55 @@
+{
+  "pack": {
+    "title": "FREE - Low Poly Car Pack 1",
+    "creator": "Designersoup",
+    "url": "https://designersoup.itch.io/low-poly-car-pack-1",
+    "license": "CC0-1.0",
+    "licenseFile": "assets-src/designersoup-car-pack-1/License.txt",
+    "retrieved": "2026-10-26",
+    "download": "Designersoup_Low_Poly_Car_Pack_Volume_1_updated",
+    "models": ".",
+    "convert": true
+  },
+  "order": 510,
+  "props": [
+    {
+      "id": "car_beetle",
+      "src": "Beatall.fbx",
+      "name": "Beetle Car",
+      "category": "Vehicles",
+      "collide": "box",
+      "scale": 0.01,
+      "yaw": 90,
+      "simplify": 0.85
+    },
+    {
+      "id": "car_offroader",
+      "src": "Landyroamer.fbx",
+      "name": "Offroader",
+      "category": "Vehicles",
+      "collide": "box",
+      "scale": 0.01,
+      "yaw": 90,
+      "simplify": 0.65
+    },
+    {
+      "id": "car_pickup",
+      "src": "Toyoyo Highlight.fbx",
+      "name": "Desert Pickup",
+      "category": "Vehicles",
+      "collide": "box",
+      "scale": 0.01,
+      "yaw": 90,
+      "simplify": 0.6
+    },
+    {
+      "id": "car_racer",
+      "src": "Tristar Racer.fbx",
+      "name": "Sports Racer",
+      "category": "Vehicles",
+      "collide": "box",
+      "scale": 0.01,
+      "yaw": 90
+    }
+  ]
+}

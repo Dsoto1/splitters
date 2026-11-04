@@ -1,0 +1,206 @@
+{
+  "pack": {
+    "title": "Mines and Caves Set",
+    "creator": "loafbrr",
+    "url": "https://loafbrr.itch.io/",
+    "license": "CC0-1.0",
+    "licenseFile": "assets-src/loafbrr-mines-and-caves/License.txt",
+    "retrieved": "2026-10-26",
+    "download": "MinesAndCaves_Set_blend_gltf_fbx",
+    "models": "gltf",
+    "convert": true,
+    "dropVertexColors": true,
+    "textureSize": 512,
+    "maps": {
+      "Mine_Carts": "Textures/MineCarts/Mine_Carts_1k_Diffuse.png",
+      "MinesTrim": "Textures/MineTrim/MineTrim_1k_Diffuse.png",
+      "Mines_Ground": "Textures/MinesGround/Mines_Ground_1k_Diffuse.png",
+      "Mines_Walls": "Textures/MineWalls/Mine_Walls_1k_Diffuse.png"
+    }
+  },
+  "order": 570,
+  "props": [
+    {
+      "id": "mc_cart",
+      "src": "Modular_Mine_Set.glb#^Mine_Cart_AB_grp$",
+      "name": "Mine Cart (Ore)",
+      "category": "Mines & Caves",
+      "collide": "box"
+    },
+    {
+      "id": "mc_cart_empty",
+      "src": "Modular_Mine_Set.glb#^Mine_Cart_BB_grp$",
+      "name": "Mine Cart (Low)",
+      "category": "Mines & Caves",
+      "collide": "box"
+    },
+    {
+      "id": "mc_cart_tipper",
+      "src": "Modular_Mine_Set.glb#^Mine_Cart_CB_grp$",
+      "name": "Mine Cart (Tipper)",
+      "category": "Mines & Caves",
+      "collide": "box"
+    },
+    {
+      "id": "mc_rail",
+      "src": "Modular_Mine_Set.glb#^Rail_A$",
+      "name": "Mine Rail (4 m)",
+      "category": "Mines & Caves",
+      "collide": "none"
+    },
+    {
+      "id": "mc_rail_curve",
+      "src": "Modular_Mine_Set.glb#^Rails_Corner_90Deg_A$",
+      "name": "Mine Rail Curve",
+      "category": "Mines & Caves",
+      "collide": "none"
+    },
+    {
+      "id": "mc_rail_end",
+      "src": "Modular_Mine_Set.glb#^Rail_End$",
+      "name": "Mine Rail Stop",
+      "category": "Mines & Caves",
+      "collide": "box"
+    },
+    {
+      "id": "mc_ladder",
+      "src": "Modular_Mine_Set.glb#^Ladder_Tall$",
+      "name": "Mine Ladder",
+      "category": "Mines & Caves",
+      "collide": "none"
+    },
+    {
+      "id": "mc_support_frame",
+      "src": "Modular_Mine_Set.glb#^Post_Reinforced_F$",
+      "name": "Mine Support Frame",
+      "category": "Mines & Caves",
+      "collide": "frame"
+    },
+    {
+      "id": "mc_support_post",
+      "src": "Modular_Mine_Set.glb#^Post_Reinforced_A$",
+      "name": "Mine Support Post",
+      "category": "Mines & Caves",
+      "collide": "box"
+    },
+    {
+      "id": "mc_beam",
+      "src": "Modular_Mine_Set.glb#^Beam_A$",
+      "name": "Mine Beam",
+      "category": "Mines & Caves",
+      "collide": "none"
+    },
+    {
+      "id": "mc_mine_wall",
+      "src": "Modular_Mine_Set.glb#^Wall_Mines_A$",
+      "name": "Mine Wall",
+      "category": "Mines & Caves",
+      "collide": "box"
+    },
+    {
+      "id": "mc_mine_entrance",
+      "src": "Modular_Mine_Set.glb#^Wall_Mines_Entrance_A$",
+      "name": "Mine Entrance",
+      "category": "Mines & Caves",
+      "collide": "frame"
+    },
+    {
+      "id": "mc_mine_tunnel",
+      "src": "Modular_Mine_Set.glb#^Wall_Mines_Tunnel_Mid$",
+      "name": "Mine Tunnel Mouth",
+      "category": "Mines & Caves",
+      "collide": "shell"
+    },
+    {
+      "id": "mc_cave_wall",
+      "src": "Modular_Mine_Set.glb#^Wall_Caves_A$",
+      "name": "Cave Wall",
+      "category": "Mines & Caves",
+      "collide": "box"
+    },
+    {
+      "id": "mc_cave_entrance",
+      "src": "Modular_Mine_Set.glb#^Wall_Caves_Entrance_A$",
+      "name": "Cave Entrance",
+      "category": "Mines & Caves",
+      "collide": "frame"
+    },
+    {
+      "id": "mc_cave_rock_wall",
+      "src": "Modular_Mine_Set.glb#^Cave_Wall_Rocks_A$",
+      "name": "Cave Rock Wall",
+      "category": "Mines & Caves",
+      "collide": "box"
+    },
+    {
+      "id": "mc_cave_rocks_a",
+      "src": "Modular_Mine_Set.glb#^Cave_Rocks_A$",
+      "name": "Cave Rocks A",
+      "category": "Mines & Caves",
+      "collide": "box"
+    },
+    {
+      "id": "mc_cave_rocks_b",
+      "src": "Modular_Mine_Set.glb#^Cave_Rocks_B$",
+      "name": "Cave Rocks B",
+      "category": "Mines & Caves",
+      "collide": "box"
+    },
+    {
+      "id": "mc_cave_rocks_c",
+      "src": "Modular_Mine_Set.glb#^Cave_Rocks_C$",
+      "name": "Cave Rocks C",
+      "category": "Mines & Caves",
+      "collide": "box"
+    },
+    {
+      "id": "mc_cave_rocks_d",
+      "src": "Modular_Mine_Set.glb#^Cave_Rocks_D$",
+      "name": "Cave Rocks D",
+      "category": "Mines & Caves",
+      "collide": "box"
+    },
+    {
+      "id": "mc_cave_pillar",
+      "src": "Modular_Mine_Set.glb#^Cave_Pillar_A$",
+      "name": "Cave Pillar",
+      "category": "Mines & Caves",
+      "collide": "box"
+    },
+    {
+      "id": "mc_cave_pillar_wide",
+      "src": "Modular_Mine_Set.glb#^Cave_Pillar_C$",
+      "name": "Wide Cave Pillar",
+      "category": "Mines & Caves",
+      "collide": "box"
+    },
+    {
+      "id": "mc_cave_ledge",
+      "src": "Modular_Mine_Set.glb#^Cave_Platform_G$",
+      "name": "Cave Ledge",
+      "category": "Mines & Caves",
+      "collide": "box"
+    },
+    {
+      "id": "mc_mound",
+      "src": "Modular_Mine_Set.glb#^Ground_Mound_A$",
+      "name": "Spoil Mound",
+      "category": "Mines & Caves",
+      "collide": "box"
+    },
+    {
+      "id": "mc_plank_wall",
+      "src": "Modular_Mine_Set.glb#^Panel_Wood_A$",
+      "name": "Plank Wall",
+      "category": "Mines & Caves",
+      "collide": "box"
+    },
+    {
+      "id": "mc_plank_entrance",
+      "src": "Modular_Mine_Set.glb#^Panel_Wood_Entrance_A$",
+      "name": "Plank Entrance",
+      "category": "Mines & Caves",
+      "collide": "frame"
+    }
+  ]
+}

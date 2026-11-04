@@ -17,6 +17,7 @@ import { fileURLToPath } from 'node:url';
 import { NodeIO } from '@gltf-transform/core';
 import { ALL_EXTENSIONS } from '@gltf-transform/extensions';
 import { resample } from '@gltf-transform/functions';
+import { writeLock } from './lockfile.mjs';
 
 /** [UAL2 clip, name in the rig]. */
 export const UAL2_EXTRA_CLIPS = [
@@ -70,5 +71,5 @@ const lock = JSON.parse(readFileSync(LOCK, 'utf8'));
 const entry = lock.files.find((f) => f.role === 'rig');
 entry.sha256 = createHash('sha256').update(glb).digest('hex').slice(0, 16);
 entry.bytes = glb.byteLength;
-writeFileSync(LOCK, `${JSON.stringify(lock, null, 2)}\n`);
+writeLock(LOCK, lock);
 console.log(`rig.glb: ${doc.getRoot().listAnimations().length} clips, ${(glb.byteLength / 1024).toFixed(0)} KB`);

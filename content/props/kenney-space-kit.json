@@ -1,0 +1,156 @@
+{
+  "pack": {
+    "title": "Space Kit",
+    "creator": "Kenney",
+    "url": "https://kenney.nl/assets/space-kit",
+    "license": "CC0-1.0",
+    "licenseFile": "assets-src/kenney-space-kit/License.txt",
+    "retrieved": "2026-10-26",
+    "download": "kenney_space-kit",
+    "models": "Models/GLTF format",
+    "images": "Models/GLTF format",
+    "textureSize": 512,
+    "normalSize": 0,
+    "decalSize": 512
+  },
+  "order": 340,
+  "props": [
+    {
+      "id": "os_satellite_dish",
+      "src": "satelliteDish_large.glb",
+      "name": "Satellite Dish",
+      "category": "Orbital Station",
+      "height": 3.6,
+      "collide": "box"
+    },
+    {
+      "id": "os_comms_dish",
+      "src": "satelliteDish.glb",
+      "name": "Comms Dish",
+      "category": "Orbital Station",
+      "height": 2.4,
+      "collide": "box"
+    },
+    {
+      "id": "os_generator",
+      "src": "machine_generatorLarge.glb",
+      "name": "Fusion Generator",
+      "category": "Orbital Station",
+      "height": 1.8,
+      "collide": "box"
+    },
+    {
+      "id": "os_power_unit",
+      "src": "machine_generator.glb",
+      "name": "Power Unit",
+      "category": "Orbital Station",
+      "height": 1.1,
+      "collide": "box"
+    },
+    {
+      "id": "os_transmitter",
+      "src": "machine_wireless.glb",
+      "name": "Transmitter",
+      "category": "Orbital Station",
+      "height": 1.5,
+      "collide": "box"
+    },
+    {
+      "id": "os_truss",
+      "src": "supports_high.glb",
+      "name": "Support Truss",
+      "category": "Orbital Station",
+      "height": 4,
+      "collide": "box"
+    },
+    {
+      "id": "os_frame_module",
+      "src": "structure_detailed.glb",
+      "name": "Frame Module",
+      "category": "Orbital Station",
+      "height": 3,
+      "collide": "box"
+    },
+    {
+      "id": "os_coolant_pipe",
+      "src": "pipe_straight.glb",
+      "name": "Coolant Pipe",
+      "category": "Orbital Station",
+      "height": 1.4,
+      "collide": "box"
+    },
+    {
+      "id": "os_pipe_junction",
+      "src": "pipe_ring.glb",
+      "name": "Pipe Junction",
+      "category": "Orbital Station",
+      "height": 1.7,
+      "collide": "box"
+    },
+    {
+      "id": "os_console_corner",
+      "src": "desk_computerCorner.glb",
+      "name": "Corner Console",
+      "category": "Orbital Station",
+      "height": 1.0,
+      "collide": "box"
+    },
+    {
+      "id": "os_terminal",
+      "src": "desk_computer.glb",
+      "name": "Desk Terminal",
+      "category": "Orbital Station",
+      "height": 0.9,
+      "collide": "box"
+    },
+    {
+      "id": "os_canister_rack",
+      "src": "barrels_rail.glb",
+      "name": "Canister Rack",
+      "category": "Orbital Station",
+      "height": 1.2,
+      "collide": "box"
+    },
+    {
+      "id": "nc_monorail_track",
+      "order": 370,
+      "src": "monorail_trackStraight.glb",
+      "name": "Skytrain Track",
+      "category": "Neon Megacity",
+      "scale": 8,
+      "collide": "box"
+    },
+    {
+      "id": "nc_monorail_pylon",
+      "src": "monorail_trackSupport.glb",
+      "name": "Skytrain Pylon",
+      "category": "Neon Megacity",
+      "scale": 16,
+      "collide": "box"
+    },
+    {
+      "id": "nc_skytrain_car",
+      "src": "monorail_trainPassenger.glb",
+      "name": "Skytrain Car",
+      "category": "Neon Megacity",
+      "scale": 5,
+      "collide": "box"
+    },
+    {
+      "id": "nc_skytrain_front",
+      "src": "monorail_trainFront.glb",
+      "name": "Skytrain Cab",
+      "category": "Neon Megacity",
+      "scale": 5,
+      "collide": "box"
+    },
+    {
+      "id": "nc_skytrain_end",
+      "src": "monorail_trainEnd.glb",
+      "name": "Skytrain Tail",
+      "category": "Neon Megacity",
+      "scale": 5,
+      "collide": "box"
+    }
+  ]
+}

@@ -1,0 +1,184 @@
+{
+  "pack": {
+    "title": "Train Kit",
+    "creator": "Kenney",
+    "url": "https://kenney.nl/assets/train-kit",
+    "license": "CC0-1.0",
+    "licenseFile": "assets-src/kenney-train-kit/License.txt",
+    "retrieved": "2026-10-23",
+    "download": "kenney_train-kit",
+    "models": "Models/GLB format"
+  },
+  "order": 290,
+  "props": [
+    {
+      "id": "locomotive",
+      "src": "train-locomotive-a.glb",
+      "name": "Steam Locomotive",
+      "category": "Trains & Rail",
+      "height": 4.2,
+      "collide": "box"
+    },
+    {
+      "id": "diesel",
+      "src": "train-diesel-a.glb",
+      "name": "Diesel Engine",
+      "category": "Trains & Rail",
+      "height": 4.0,
+      "collide": "box"
+    },
+    {
+      "id": "tram",
+      "src": "train-tram-classic.glb",
+      "name": "Tram",
+      "category": "Trains & Rail",
+      "height": 3.8,
+      "collide": "box"
+    },
+    {
+      "id": "subway_car",
+      "src": "train-electric-subway-a.glb",
+      "name": "Subway Car",
+      "category": "Trains & Rail",
+      "height": 3.8,
+      "collide": "box"
+    },
+    {
+      "id": "container_car_red",
+      "src": "train-carriage-container-red.glb",
+      "name": "Container Car (Red)",
+      "category": "Trains & Rail",
+      "height": 3.8,
+      "collide": "box"
+    },
+    {
+      "id": "container_car_blue",
+      "src": "train-carriage-container-blue.glb",
+      "name": "Container Car (Blue)",
+      "category": "Trains & Rail",
+      "height": 3.8,
+      "collide": "box"
+    },
+    {
+      "id": "tank_car",
+      "src": "train-carriage-tank-large.glb",
+      "name": "Tank Car",
+      "category": "Trains & Rail",
+      "height": 3.8,
+      "collide": "box"
+    },
+    {
+      "id": "coal_car",
+      "src": "train-carriage-coal.glb",
+      "name": "Coal Car",
+      "category": "Trains & Rail",
+      "height": 2.6,
+      "collide": "box"
+    },
+    {
+      "id": "lumber_car",
+      "src": "train-carriage-lumber.glb",
+      "name": "Lumber Car",
+      "category": "Trains & Rail",
+      "height": 2.6,
+      "collide": "box"
+    },
+    {
+      "id": "flatbed_car",
+      "src": "train-carriage-flatbed.glb",
+      "name": "Flatbed Car",
+      "category": "Trains & Rail",
+      "height": 1.4,
+      "collide": "box"
+    },
+    {
+      "id": "rail_track",
+      "src": "track-single-detailed.glb",
+      "name": "Rail Track",
+      "category": "Trains & Rail",
+      "height": 0.25,
+      "collide": "none"
+    },
+    {
+      "id": "rail_track_wide",
+      "src": "track-detailed.glb",
+      "name": "Double Track",
+      "category": "Trains & Rail",
+      "height": 0.25,
+      "collide": "none"
+    },
+    {
+      "id": "locomotive_red",
+      "order": 490,
+      "src": "train-locomotive-b.glb",
+      "name": "Steam Locomotive (Red)",
+      "category": "Trains & Rail",
+      "height": 4.3,
+      "collide": "box"
+    },
+    {
+      "id": "passenger_car",
+      "src": "train-locomotive-passenger-a.glb",
+      "name": "Passenger Car",
+      "category": "Trains & Rail",
+      "height": 4.3,
+      "collide": "box"
+    },
+    {
+      "id": "ore_wagon",
+      "src": "train-carriage-dirt.glb",
+      "name": "Ore Wagon",
+      "category": "Trains & Rail",
+      "height": 4.28,
+      "collide": "box"
+    },
+    {
+      "id": "hopper_wagon",
+      "src": "train-carriage-box.glb",
+      "name": "Hopper Wagon",
+      "category": "Trains & Rail",
+      "height": 3.37,
+      "collide": "box"
+    },
+    {
+      "id": "timber_wagon",
+      "src": "train-carriage-wood.glb",
+      "name": "Timber Wagon",
+      "category": "Trains & Rail",
+      "height": 4.1,
+      "collide": "box"
+    },
+    {
+      "id": "flatbed_wagon",
+      "src": "train-carriage-flatbed-wood.glb",
+      "name": "Wooden Flatbed",
+      "category": "Trains & Rail",
+      "height": 3.01,
+      "collide": "box"
+    },
+    {
+      "id": "railroad",
+      "src": "railroad-straight.glb",
+      "name": "Railroad",
+      "category": "Trains & Rail",
+      "height": 0.26,
+      "collide": "none"
+    },
+    {
+      "id": "railroad_broken",
+      "src": "railroad-damaged-straight.glb",
+      "name": "Broken Railroad",
+      "category": "Trains & Rail",
+      "height": 0.26,
+      "collide": "none"
+    },
+    {
+      "id": "mine_rails",
+      "src": "railroad-rail-straight.glb",
+      "name": "Mine Rails",
+      "category": "Trains & Rail",
+      "height": 0.15,
+      "collide": "none"
+    }
+  ]
+}

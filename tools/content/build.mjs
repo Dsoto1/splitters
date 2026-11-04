@@ -20,6 +20,8 @@ import { PNG } from 'pngjs';
 import { objToDocument } from './obj.mjs';
 import { CLIP_SETS_LOCK, isQueued, looksProblems, readClipSets, readManifests } from './character-manifests.mjs';
 import { checkFxMap } from './vfx-map.mjs';
+import { lockProblems } from './lockfile.mjs';
+import { loadPropManifest } from './props-manifest.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const MANIFEST = join(ROOT, 'content/models.json');
@@ -448,7 +450,7 @@ function checkLocked(lockPath, dir, packFor, budgets, modifications, prepare) {
 }
 const textureManifest = JSON.parse(readFileSync(join(ROOT, 'content/textures.json'), 'utf8'));
 const textureCount = checkLocked('content/textures.lock.json', 'textures', () => textureManifest.pack, textureManifest.budgets, ['downscaled to 512 px', 'colour, normal and emission maps only'], 'node tools/content/prepare-textures.mjs');
-const propManifest = JSON.parse(readFileSync(join(ROOT, 'content/props.json'), 'utf8'));
+const propManifest = loadPropManifest();
 const propById = new Map(propManifest.props.map((p) => [`props/${p.id}.glb`, p]));
 const propCount = checkLocked(
   'content/props.lock.json',
@@ -593,7 +595,10 @@ else {
   console.log(`checked ${pieces.length} palette pictures in ${Object.keys(atlas.atlases).length} atlases (${(atlasBytes / 1024).toFixed(0)} KB)`);
 }
 
-const ledgerText = `${JSON.stringify(ledger, null, 2)}\n`;
+// One asset a line, sorted by file: branches that add or rebuild different files change different lines.
+problems.push(...lockProblems());
+ledger.assets.sort((a, b) => (a.file < b.file ? -1 : a.file > b.file ? 1 : 0));
+const ledgerText = `{\n  "$comment": ${JSON.stringify(ledger.$comment)},\n  "assets": [\n${ledger.assets.map((a) => `    ${JSON.stringify(a)}`).join(',\n')}\n  ]\n}\n`;
 if (check) {
   if (!existsSync(LEDGER) || readFileSync(LEDGER, 'utf8') !== ledgerText) problems.push('content/provenance.json is out of date (run pnpm content:build)');
 } else writeFileSync(LEDGER, ledgerText);

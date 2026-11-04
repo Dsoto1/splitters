@@ -1,0 +1,72 @@
+{
+  "pack": {
+    "title": "City Kit (Industrial) 2.0",
+    "creator": "Kenney",
+    "url": "https://kenney.nl/assets/city-kit-industrial",
+    "license": "CC0-1.0",
+    "licenseFile": "assets-src/kenney-city-kit-industrial/License.txt",
+    "retrieved": "2026-10-26",
+    "download": "kenney_city-kit-industrial_2.0",
+    "models": "Models/GLB format"
+  },
+  "order": 480,
+  "props": [
+    {
+      "id": "shipping_container_red",
+      "src": "shipping-container-a.glb",
+      "name": "Shipping Container (Red)",
+      "category": "Industrial",
+      "height": 2.6,
+      "collide": "box"
+    },
+    {
+      "id": "shipping_container_blue",
+      "src": "shipping-container-b.glb",
+      "name": "Shipping Container (Blue)",
+      "category": "Industrial",
+      "height": 2.6,
+      "collide": "box"
+    },
+    {
+      "id": "shipping_container_green",
+      "src": "shipping-container-c.glb",
+      "name": "Shipping Container (Green)",
+      "category": "Industrial",
+      "height": 2.6,
+      "collide": "box"
+    },
+    {
+      "id": "fuel_tank",
+      "src": "detail-tank.glb",
+      "name": "Fuel Tank",
+      "category": "Industrial",
+      "height": 2.2,
+      "collide": "box",
+      "breakable": {
+        "health": 150,
+        "debris": "#c8a040",
+        "blast": {
+          "radius": 6,
+          "damage": 120,
+          "edge": 20
+        }
+      }
+    },
+    {
+      "id": "storage_tank",
+      "src": "detail-tank-large.glb",
+      "name": "Storage Tank",
+      "category": "Industrial",
+      "height": 4.0,
+      "collide": "box"
+    },
+    {
+      "id": "steel_water_tower",
+      "src": "water-tower.glb",
+      "name": "Steel Water Tower",
+      "category": "Industrial",
+      "height": 11.0,
+      "collide": "box"
+    }
+  ]
+}

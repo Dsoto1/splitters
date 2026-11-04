@@ -1,0 +1,202 @@
+{
+  "pack": {
+    "title": "Factory Kit 3.0",
+    "creator": "Kenney",
+    "url": "https://kenney.nl/assets/factory-kit",
+    "license": "CC0-1.0",
+    "licenseFile": "assets-src/kenney-factory-kit/License.txt",
+    "retrieved": "2026-10-23"
+  },
+  "order": 40,
+  "props": [
+    {
+      "id": "factory_box",
+      "src": "box-large.glb",
+      "name": "Shipping Box",
+      "category": "Crates & Barrels",
+      "height": 1.2,
+      "collide": "box",
+      "breakable": {
+        "health": 60,
+        "debris": "#c8a070"
+      }
+    },
+    {
+      "id": "factory_box_long",
+      "src": "box-long.glb",
+      "name": "Long Shipping Box",
+      "category": "Crates & Barrels",
+      "height": 0.9,
+      "collide": "box",
+      "breakable": {
+        "health": 50,
+        "debris": "#c8a070"
+      }
+    },
+    {
+      "id": "machine",
+      "order": 70,
+      "src": "machine-fortified.glb",
+      "name": "Heavy Machine",
+      "category": "Industrial",
+      "height": 2.2,
+      "collide": "box",
+      "breakable": {
+        "health": 250,
+        "debris": "#7a8088",
+        "blast": {
+          "radius": 4,
+          "damage": 80,
+          "edge": 10
+        }
+      }
+    },
+    {
+      "id": "machine_window",
+      "src": "machine-window.glb",
+      "name": "Machine (Window)",
+      "category": "Industrial",
+      "height": 2.0,
+      "collide": "box",
+      "breakable": {
+        "health": 220,
+        "debris": "#7a8088",
+        "blast": {
+          "radius": 4,
+          "damage": 80,
+          "edge": 10
+        }
+      }
+    },
+    {
+      "id": "hopper",
+      "src": "hopper-round.glb",
+      "name": "Hopper",
+      "category": "Industrial",
+      "height": 3.0,
+      "collide": "box",
+      "breakable": {
+        "health": 200,
+        "debris": "#7a8088",
+        "blast": {
+          "radius": 4,
+          "damage": 80,
+          "edge": 10
+        }
+      }
+    },
+    {
+      "id": "hopper_tall",
+      "src": "hopper-high-square.glb",
+      "name": "Tall Hopper",
+      "category": "Industrial",
+      "height": 4.0,
+      "collide": "box"
+    },
+    {
+      "id": "piston",
+      "src": "piston-round.glb",
+      "name": "Piston",
+      "category": "Industrial",
+      "height": 2.2,
+      "collide": "box"
+    },
+    {
+      "id": "scanner",
+      "src": "scanner-high.glb",
+      "name": "Scanner Gate",
+      "category": "Industrial",
+      "height": 3.0,
+      "collide": "box"
+    },
+    {
+      "id": "conveyor",
+      "src": "conveyor-long.glb",
+      "name": "Conveyor",
+      "category": "Industrial",
+      "height": 1.0,
+      "collide": "box"
+    },
+    {
+      "id": "pipe_valve",
+      "src": "pipe-large-valve.glb",
+      "name": "Pipe Valve",
+      "category": "Industrial",
+      "height": 1.6,
+      "collide": "box",
+      "breakable": {
+        "health": 60,
+        "debris": "#7a8088",
+        "blast": {
+          "radius": 3.5,
+          "damage": 70,
+          "edge": 10
+        }
+      }
+    },
+    {
+      "id": "pipe_glass",
+      "src": "pipe-glass-large.glb",
+      "name": "Glass Pipe",
+      "category": "Industrial",
+      "height": 1.6,
+      "collide": "box",
+      "breakable": {
+        "health": 20,
+        "debris": "#b8e0f0"
+      }
+    },
+    {
+      "id": "lever",
+      "src": "lever-double.glb",
+      "name": "Lever Panel",
+      "category": "Industrial",
+      "height": 1.2,
+      "collide": "box",
+      "breakable": {
+        "health": 40,
+        "debris": "#7a8088"
+      }
+    },
+    {
+      "id": "screen_panel",
+      "src": "screen-panel-wide.glb",
+      "name": "Control Screen",
+      "category": "Industrial",
+      "height": 1.6,
+      "collide": "box",
+      "breakable": {
+        "health": 30,
+        "debris": "#7a8088"
+      }
+    },
+    {
+      "id": "cone",
+      "src": "cone.glb",
+      "name": "Traffic Cone",
+      "category": "Industrial",
+      "height": 0.7,
+      "collide": "none"
+    },
+    {
+      "id": "warning_sign",
+      "src": "warning-traffic.glb",
+      "name": "Barrier",
+      "category": "Industrial",
+      "height": 1.1,
+      "collide": "box",
+      "breakable": {
+        "health": 25,
+        "debris": "#e8b520"
+      }
+    },
+    {
+      "id": "cog",
+      "src": "cog-c.glb",
+      "name": "Giant Cog",
+      "category": "Industrial",
+      "height": 2.0,
+      "collide": "box"
+    }
+  ]
+}

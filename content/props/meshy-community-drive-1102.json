@@ -1,0 +1,31 @@
+{
+  "pack": {
+    "title": "Meshy community models (props, textured GLB downloads of 2026-11-02)",
+    "creator": "Meshy community, CC0 (per owner)",
+    "url": "https://www.meshy.ai (community page URL pending from the owner)",
+    "license": "CC0-1.0",
+    "licenseFile": "assets-src/meshy-community/License.txt",
+    "retrieved": "2026-11-02",
+    "download": "drive-2026-11-02-props",
+    "meshy": true,
+    "convert": true,
+    "textureSize": 512
+  },
+  "order": 240,
+  "props": [
+    {
+      "id": "rock_mossy_spire",
+      "src": "Meshy_AI_low_poly_beautiful_mo_1101170024_texture.glb",
+      "name": "Mossy Rock Spire",
+      "category": "Rocks & Wood",
+      "height": 2.4,
+      "collide": "box",
+      "triangles": 5000,
+      "maxError": 0.03,
+      "source": {
+        "model": "low poly beautiful mo… (Meshy community, name cut short on the download)",
+        "date": "2026-11-01"
+      }
+    }
+  ]
+}

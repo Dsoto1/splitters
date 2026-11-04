@@ -1,13 +1,13 @@
 // Converts the props picked from Quaternius' OBJ-only packs (Survival, Ultimate
 // House Interior, Ultimate Nature, Modular Ruins, Modular Dungeon) into small
 // GLBs in assets-src/<pack>/, which prepare-props.mjs then builds like any
-// other prop. Only the props listed in content/props.json are converted; the
+// other prop. Only the props listed in content/props/<pack>.json are converted; the
 // packs themselves (FBX, OBJ and Blender files for every piece) stay out of
 // the repo.
 //
 //   node tools/content/prepare-obj-props.mjs --downloads <dir holding the extracted packs>
 //
-// A pack opts in with `objSource` in content/props.json: the folder of OBJ
+// A pack opts in with `objSource` in content/props/<pack>.json: the folder of OBJ
 // files inside its download, e.g. "Survival Pack - Sept 2020/OBJ".
 import { copyFileSync, existsSync, mkdirSync, readdirSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
@@ -16,9 +16,10 @@ import { readFileSync } from 'node:fs';
 import { NodeIO } from '@gltf-transform/core';
 import { dedup, weld } from '@gltf-transform/functions';
 import { objToDocument } from './obj.mjs';
+import { loadPropManifest } from './props-manifest.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
-const manifest = JSON.parse(readFileSync(join(ROOT, 'content/props.json'), 'utf8'));
+const manifest = loadPropManifest();
 const arg = process.argv.indexOf('--downloads');
 if (arg < 0) throw new Error('usage: prepare-obj-props.mjs --downloads <dir>');
 const downloads = resolve(process.argv[arg + 1]);

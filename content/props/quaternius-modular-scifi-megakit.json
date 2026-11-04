@@ -1,0 +1,993 @@
+{
+  "pack": {
+    "title": "Modular SciFi MegaKit [Standard]",
+    "creator": "Quaternius",
+    "url": "https://quaternius.itch.io/modular-sci-fi-megakit",
+    "license": "CC0-1.0",
+    "licenseFile": "assets-src/quaternius-modular-scifi-megakit/License.txt",
+    "retrieved": "2026-10-23",
+    "download": "Modular SciFi MegaKit[Standard]",
+    "models": "glTF",
+    "images": "Textures",
+    "textureSize": 512,
+    "normalSize": 256,
+    "decalSize": 512
+  },
+  "order": 320,
+  "props": [
+    {
+      "id": "sf_access_panel",
+      "src": "Props/Prop_AccessPoint.gltf",
+      "name": "Access Panel",
+      "category": "Sci-Fi Base",
+      "scale": 1,
+      "collide": "box",
+      "yaw": -90
+    },
+    {
+      "id": "sf_barrel",
+      "src": "Props/Prop_Barrel_Large.gltf",
+      "name": "Sci-Fi Barrel",
+      "category": "Sci-Fi Base",
+      "scale": 1,
+      "collide": "box"
+    },
+    {
+      "id": "sf_cable",
+      "src": "Props/Prop_Cable_1.gltf",
+      "name": "Floor Cable",
+      "category": "Sci-Fi Base",
+      "scale": 1,
+      "collide": "none",
+      "lift": 0.01,
+      "simplify": 0.5
+    },
+    {
+      "id": "sf_cable_long",
+      "src": "Props/Prop_Cable_3.gltf",
+      "name": "Long Floor Cables",
+      "category": "Sci-Fi Base",
+      "scale": 1,
+      "collide": "none",
+      "lift": 0.01,
+      "simplify": 0.4
+    },
+    {
+      "id": "sf_chest",
+      "src": "Props/Prop_Chest.gltf",
+      "name": "Supply Chest",
+      "category": "Sci-Fi Base",
+      "scale": 1,
+      "collide": "box"
+    },
+    {
+      "id": "sf_clamp",
+      "src": "Props/Prop_Clamp.gltf",
+      "name": "Cable Clamp",
+      "category": "Sci-Fi Base",
+      "scale": 1,
+      "collide": "none"
+    },
+    {
+      "id": "sf_computer",
+      "src": "Props/Prop_Computer.gltf",
+      "name": "Terminal",
+      "category": "Sci-Fi Base",
+      "scale": 1,
+      "collide": "box"
+    },
+    {
+      "id": "sf_crate",
+      "src": "Props/Prop_Crate3.gltf",
+      "name": "Cargo Crate",
+      "category": "Sci-Fi Base",
+      "scale": 1,
+      "collide": "box"
+    },
+    {
+      "id": "sf_crate_large",
+      "src": "Props/Prop_Crate4.gltf",
+      "name": "Large Cargo Crate",
+      "category": "Sci-Fi Base",
+      "scale": 1,
+      "collide": "box"
+    },
+    {
+      "id": "sf_fan",
+      "src": "Props/Prop_Fan_Small.gltf",
+      "name": "Floor Fan",
+      "category": "Sci-Fi Base",
+      "scale": 1,
+      "collide": "box"
+    },
+    {
+      "id": "sf_item_holder",
+      "src": "Props/Prop_ItemHolder.gltf",
+      "name": "Item Pedestal",
+      "category": "Sci-Fi Base",
+      "scale": 1,
+      "collide": "box"
+    },
+    {
+      "id": "sf_light_corner",
+      "src": "Props/Prop_Light_Corner.gltf",
+      "name": "Corner Light Strip",
+      "category": "Sci-Fi Base",
+      "scale": 1,
+      "collide": "none"
+    },
+    {
+      "id": "sf_floor_light",
+      "src": "Props/Prop_Light_Floor.gltf",
+      "name": "Floor Light",
+      "category": "Sci-Fi Base",
+      "scale": 1,
+      "collide": "box"
+    },
+    {
+      "id": "sf_light_small",
+      "src": "Props/Prop_Light_Small.gltf",
+      "name": "Small Ceiling Light",
+      "category": "Sci-Fi Base",
+      "scale": 1,
+      "collide": "none"
+    },
+    {
+      "id": "sf_light_wide",
+      "src": "Props/Prop_Light_Wide.gltf",
+      "name": "Wide Ceiling Light",
+      "category": "Sci-Fi Base",
+      "scale": 1,
+      "collide": "none"
+    },
+    {
+      "id": "sf_pipe_rack",
+      "src": "Props/Prop_PipeHolder.gltf",
+      "name": "Pipe Rack",
+      "category": "Sci-Fi Base",
+      "scale": 1,
+      "collide": "box",
+      "simplify": 0.5
+    },
+    {
+      "id": "sf_railing_2",
+      "src": "Props/Prop_Rail_2.gltf",
+      "name": "Railing (2 m)",
+      "category": "Sci-Fi Platforms",
+      "scale": 1,
+      "collide": "box",
+      "yaw": -90
+    },
+    {
+      "id": "sf_railing_3",
+      "src": "Props/Prop_Rail_3.gltf",
+      "name": "Railing (3 m)",
+      "category": "Sci-Fi Platforms",
+      "scale": 1,
+      "collide": "box",
+      "yaw": -90
+    },
+    {
+      "id": "sf_railing_4",
+      "src": "Props/Prop_Rail_4.gltf",
+      "name": "Railing (4 m)",
+      "category": "Sci-Fi Platforms",
+      "scale": 1,
+      "collide": "box",
+      "yaw": -90
+    },
+    {
+      "id": "sf_railing_incline_l",
+      "src": "Props/Prop_Rail_Incline_Long_L.gltf",
+      "name": "Stair Railing, Long (Left)",
+      "category": "Sci-Fi Platforms",
+      "scale": 1,
+      "collide": "shell",
+      "yaw": 180
+    },
+    {
+      "id": "sf_railing_incline_r",
+      "src": "Props/Prop_Rail_Incline_Long_R.gltf",
+      "name": "Stair Railing, Long (Right)",
+      "category": "Sci-Fi Platforms",
+      "scale": 1,
+      "collide": "shell",
+      "yaw": 180
+    },
+    {
+      "id": "sf_railing_incline_short_l",
+      "src": "Props/Prop_Rail_Incline_Short_L.gltf",
+      "name": "Stair Railing, Short (Left)",
+      "category": "Sci-Fi Platforms",
+      "scale": 1,
+      "collide": "shell",
+      "yaw": 180
+    },
+    {
+      "id": "sf_railing_incline_short_r",
+      "src": "Props/Prop_Rail_Incline_Short_R.gltf",
+      "name": "Stair Railing, Short (Right)",
+      "category": "Sci-Fi Platforms",
+      "scale": 1,
+      "collide": "shell",
+      "yaw": 180
+    },
+    {
+      "id": "sf_railing_round",
+      "src": "Props/Prop_Rail_Round_Big.gltf",
+      "name": "Curved Railing",
+      "category": "Sci-Fi Platforms",
+      "scale": 1,
+      "collide": "shell"
+    },
+    {
+      "id": "sf_railing_round_small",
+      "src": "Props/Prop_Rail_Round_Small.gltf",
+      "name": "Small Curved Railing",
+      "category": "Sci-Fi Platforms",
+      "scale": 1,
+      "collide": "shell"
+    },
+    {
+      "id": "sf_vent",
+      "src": "Props/Prop_Vent_Big.gltf",
+      "name": "Floor Vent",
+      "category": "Sci-Fi Base",
+      "scale": 1,
+      "collide": "none",
+      "lift": 0.01
+    },
+    {
+      "id": "sf_vent_small",
+      "src": "Props/Prop_Vent_Small.gltf",
+      "name": "Small Vent",
+      "category": "Sci-Fi Base",
+      "scale": 1,
+      "collide": "none",
+      "lift": 0.01
+    },
+    {
+      "id": "sf_vent_wide",
+      "src": "Props/Prop_Vent_Wide.gltf",
+      "name": "Slot Vent",
+      "category": "Sci-Fi Base",
+      "scale": 1,
+      "collide": "none",
+      "lift": 0.01
+    },
+    {
+      "id": "sf_column_astra",
+      "src": "Columns/Column_Astra.gltf",
+      "name": "Wall Pillar",
+      "category": "Sci-Fi Base",
+      "scale": 1,
+      "collide": "box",
+      "yaw": -90
+    },
+    {
+      "id": "sf_column_hollow",
+      "src": "Columns/Column_Hollow.gltf",
+      "name": "Hollow Column",
+      "category": "Sci-Fi Base",
+      "scale": 1,
+      "collide": "box"
+    },
+    {
+      "id": "sf_column_large",
+      "src": "Columns/Column_Large_Straight.gltf",
+      "name": "Great Column (10 m)",
+      "category": "Sci-Fi Base",
+      "scale": 1,
+      "collide": "box"
+    },
+    {
+      "id": "sf_beam",
+      "src": "Columns/Column_MetalSupport.gltf",
+      "name": "Support Beam",
+      "category": "Sci-Fi Base",
+      "scale": 1,
+      "collide": "none",
+      "lift": 0.01,
+      "yaw": -90
+    },
+    {
+      "id": "sf_beam_curve",
+      "src": "Columns/Column_MetalSupport_Curve.gltf",
+      "name": "Curved Support Beam",
+      "category": "Sci-Fi Base",
+      "scale": 1,
+      "collide": "none",
+      "lift": 0.01
+    },
+    {
+      "id": "sf_column_pipes",
+      "src": "Columns/Column_Pipes.gltf",
+      "name": "Pipe Column",
+      "category": "Sci-Fi Base",
+      "scale": 1,
+      "collide": "box",
+      "simplify": 0.4
+    },
+    {
+      "id": "sf_column_round",
+      "src": "Columns/Column_Round.gltf",
+      "name": "Round Column",
+      "category": "Sci-Fi Base",
+      "scale": 1,
+      "collide": "box"
+    },
+    {
+      "id": "sf_column",
+      "src": "Columns/Column_Simple.gltf",
+      "name": "Column",
+      "category": "Sci-Fi Base",
+      "scale": 1,
+      "collide": "box"
+    },
+    {
+      "id": "sf_low_wall_band",
+      "src": "Walls/ShortWall_Band2_Straight.gltf",
+      "name": "Banded Wall Panel (2 m)",
+      "category": "Sci-Fi Walls",
+      "scale": 1,
+      "collide": "box",
+      "yaw": -90
+    },
+    {
+      "id": "sf_low_wall_dark",
+      "src": "Walls/ShortWall_DarkMetal2_Straight.gltf",
+      "name": "Dark Wall Panel (2 m)",
+      "category": "Sci-Fi Walls",
+      "scale": 1,
+      "collide": "box",
+      "yaw": -90
+    },
+    {
+      "id": "sf_low_wall_metal",
+      "src": "Walls/ShortWall_Metal2_Straight.gltf",
+      "name": "Metal Wall Panel (2 m)",
+      "category": "Sci-Fi Walls",
+      "scale": 1,
+      "collide": "box",
+      "yaw": -90
+    },
+    {
+      "id": "sf_low_wall_white",
+      "src": "Walls/ShortWall_WhitePlate2_Straight.gltf",
+      "name": "White Wall Panel (2 m)",
+      "category": "Sci-Fi Walls",
+      "scale": 1,
+      "collide": "box",
+      "yaw": -90
+    },
+    {
+      "id": "sf_low_wall_plates",
+      "src": "Walls/ShortWall_MetalPlates_Straight.gltf",
+      "name": "Plated Barrier (1 m)",
+      "category": "Sci-Fi Walls",
+      "scale": 1,
+      "collide": "box",
+      "yaw": -90
+    },
+    {
+      "id": "sf_low_wall_triangles",
+      "src": "Walls/ShortWall_Triangles_Straight.gltf",
+      "name": "Hazard Barrier (1 m)",
+      "category": "Sci-Fi Walls",
+      "scale": 1,
+      "collide": "box",
+      "yaw": -90
+    },
+    {
+      "id": "sf_low_wall_metal_corner",
+      "src": "Walls/ShortWall_Metal2_Corner_Outer.gltf",
+      "name": "Metal Wall Panel Corner",
+      "category": "Sci-Fi Walls",
+      "scale": 1,
+      "collide": "shell"
+    },
+    {
+      "id": "sf_low_wall_triangles_corner",
+      "src": "Walls/ShortWall_Triangles_Corner_Inner.gltf",
+      "name": "Hazard Barrier Corner",
+      "category": "Sci-Fi Walls",
+      "scale": 1,
+      "collide": "shell"
+    },
+    {
+      "id": "sf_wall_astra",
+      "src": "Walls/WallAstra_Straight.gltf",
+      "name": "Ribbed Wall",
+      "category": "Sci-Fi Walls",
+      "scale": 1,
+      "collide": "box",
+      "yaw": -90
+    },
+    {
+      "id": "sf_wall_astra_broken",
+      "src": "Walls/WallAstra_Straight_Broken.gltf",
+      "name": "Ribbed Wall, Broken",
+      "category": "Sci-Fi Walls",
+      "scale": 1,
+      "collide": "box",
+      "yaw": -90,
+      "simplify": 0.5
+    },
+    {
+      "id": "sf_wall_astra_divided",
+      "src": "Walls/WallAstra_Straight_Divided.gltf",
+      "name": "Ribbed Wall, Divided",
+      "category": "Sci-Fi Walls",
+      "scale": 1,
+      "collide": "box",
+      "yaw": -90
+    },
+    {
+      "id": "sf_wall_astra_flat",
+      "src": "Walls/WallAstra_Straight_Flat.gltf",
+      "name": "Flat Panel Wall",
+      "category": "Sci-Fi Walls",
+      "scale": 1,
+      "collide": "box",
+      "yaw": -90
+    },
+    {
+      "id": "sf_wall_astra_flat_window",
+      "src": "Walls/WallAstra_Straight_Flat_Window.gltf",
+      "name": "Flat Panel Wall, Window",
+      "category": "Sci-Fi Walls",
+      "scale": 1,
+      "collide": "box",
+      "yaw": -90
+    },
+    {
+      "id": "sf_wall_astra_window",
+      "src": "Walls/WallAstra_Straight_Window.gltf",
+      "name": "Ribbed Wall, Window",
+      "category": "Sci-Fi Walls",
+      "scale": 1,
+      "collide": "box",
+      "yaw": -90
+    },
+    {
+      "id": "sf_wall_band",
+      "src": "Walls/WallBand_Straight.gltf",
+      "name": "Banded Wall",
+      "category": "Sci-Fi Walls",
+      "scale": 1,
+      "collide": "box",
+      "yaw": -90
+    },
+    {
+      "id": "sf_wall_band_broken",
+      "src": "Walls/WallBand_Straight_Broken.gltf",
+      "name": "Banded Wall, Broken",
+      "category": "Sci-Fi Walls",
+      "scale": 1,
+      "collide": "box",
+      "yaw": -90
+    },
+    {
+      "id": "sf_wall_window",
+      "src": "Walls/WallWindow_Straight.gltf",
+      "name": "Padded Window Wall",
+      "category": "Sci-Fi Walls",
+      "scale": 1,
+      "collide": "box",
+      "yaw": -90
+    },
+    {
+      "id": "sf_wall_astra_tall",
+      "src": [
+        "Walls/WallAstra_Straight.gltf",
+        "Walls/TopAstra_Straight.gltf"
+      ],
+      "name": "Ribbed Wall, Full Height",
+      "category": "Sci-Fi Walls",
+      "scale": 1,
+      "collide": "box",
+      "yaw": -90
+    },
+    {
+      "id": "sf_wall_window_tall",
+      "src": [
+        "Walls/WallWindow_Straight.gltf",
+        "Walls/TopWindow_Straight.gltf"
+      ],
+      "name": "Window Wall, Full Height",
+      "category": "Sci-Fi Walls",
+      "scale": 1,
+      "collide": "box",
+      "yaw": -90
+    },
+    {
+      "id": "sf_wall_band_tall",
+      "src": [
+        "Walls/WallBand_Straight.gltf",
+        "Walls/TopSimple_Straight.gltf"
+      ],
+      "name": "Banded Wall, Full Height",
+      "category": "Sci-Fi Walls",
+      "scale": 1,
+      "collide": "box",
+      "yaw": -90
+    },
+    {
+      "id": "sf_wall_cables_tall",
+      "src": [
+        "Walls/WallAstra_Straight_Flat.gltf",
+        "Walls/TopCables_Straight.gltf"
+      ],
+      "name": "Cable Duct Wall, Full Height",
+      "category": "Sci-Fi Walls",
+      "scale": 1,
+      "collide": "box",
+      "yaw": -90
+    },
+    {
+      "id": "sf_wall_plastic_tall",
+      "src": [
+        "Walls/WallBand_Straight.gltf",
+        "Walls/TopPlastic_Straight.gltf"
+      ],
+      "name": "Panelled Wall, Full Height",
+      "category": "Sci-Fi Walls",
+      "scale": 1,
+      "collide": "box",
+      "yaw": -90
+    },
+    {
+      "id": "sf_hanging_cables",
+      "src": "Walls/TopCables_Straight_Hanging.gltf",
+      "name": "Hanging Cables",
+      "category": "Sci-Fi Walls",
+      "scale": 1,
+      "collide": "none",
+      "yaw": -90,
+      "simplify": 0.5
+    },
+    {
+      "id": "sf_wall_astra_corner",
+      "src": "Walls/WallAstra_Corner_Square_Outer.gltf",
+      "name": "Ribbed Wall Corner",
+      "category": "Sci-Fi Walls",
+      "scale": 1,
+      "collide": "shell"
+    },
+    {
+      "id": "sf_wall_astra_corner_round",
+      "src": "Walls/WallAstra_Corner_Round_Outer.gltf",
+      "name": "Ribbed Wall Corner, Round",
+      "category": "Sci-Fi Walls",
+      "scale": 1,
+      "collide": "shell"
+    },
+    {
+      "id": "sf_wall_window_corner",
+      "src": "Walls/WallWindow_Corner_Square_Outer.gltf",
+      "name": "Window Wall Corner",
+      "category": "Sci-Fi Walls",
+      "scale": 1,
+      "collide": "shell"
+    },
+    {
+      "id": "sf_wall_window_corner_round",
+      "src": "Walls/WallWindow_Corner_Round_Inner.gltf",
+      "name": "Window Wall Corner, Round",
+      "category": "Sci-Fi Walls",
+      "scale": 1,
+      "collide": "shell"
+    },
+    {
+      "id": "sf_wall_band_corner",
+      "src": "Walls/WallBand_Corner_Square_Outer.gltf",
+      "name": "Banded Wall Corner",
+      "category": "Sci-Fi Walls",
+      "scale": 1,
+      "collide": "shell"
+    },
+    {
+      "id": "sf_wall_band_corner_round",
+      "src": "Walls/WallBand_Corner_Round_Inner.gltf",
+      "name": "Banded Wall Corner, Round",
+      "category": "Sci-Fi Walls",
+      "scale": 1,
+      "collide": "shell"
+    },
+    {
+      "id": "sf_door_dark",
+      "src": "Platforms/Door_DarkMetal.gltf",
+      "name": "Dark Door Panel",
+      "category": "Sci-Fi Platforms",
+      "scale": 1,
+      "collide": "box"
+    },
+    {
+      "id": "sf_door_metal",
+      "src": "Platforms/Door_Metal.gltf",
+      "name": "Metal Door Panel",
+      "category": "Sci-Fi Platforms",
+      "scale": 1,
+      "collide": "box"
+    },
+    {
+      "id": "sf_door_simple",
+      "src": "Platforms/Door_Simple.gltf",
+      "name": "Door Panel",
+      "category": "Sci-Fi Platforms",
+      "scale": 1,
+      "collide": "box"
+    },
+    {
+      "id": "sf_doorway_a",
+      "src": "Platforms/Door_Frame_A.gltf",
+      "name": "Doorway Frame",
+      "category": "Sci-Fi Platforms",
+      "scale": 1,
+      "collide": "frame"
+    },
+    {
+      "id": "sf_doorway_square",
+      "src": "Platforms/Door_Frame_Square.gltf",
+      "name": "Square Doorway",
+      "category": "Sci-Fi Platforms",
+      "scale": 1,
+      "collide": "frame"
+    },
+    {
+      "id": "sf_doorway_tall",
+      "src": "Platforms/Door_Frame_SquareTall.gltf",
+      "name": "Tall Doorway",
+      "category": "Sci-Fi Platforms",
+      "scale": 1,
+      "collide": "frame"
+    },
+    {
+      "id": "sf_doorway_blocked",
+      "src": "Platforms/Door_Frame_Square_Blocked.gltf",
+      "name": "Sealed Doorway",
+      "category": "Sci-Fi Platforms",
+      "scale": 1,
+      "collide": "box"
+    },
+    {
+      "id": "sf_floor_3plates",
+      "src": "Platforms/Platform_3Plates.gltf",
+      "name": "Floor Plate, Three Panels",
+      "category": "Sci-Fi Platforms",
+      "scale": 1,
+      "collide": "none",
+      "lift": 0.01
+    },
+    {
+      "id": "sf_floor_center",
+      "src": "Platforms/Platform_CenterPlate.gltf",
+      "name": "Floor Plate, Centre Panel",
+      "category": "Sci-Fi Platforms",
+      "scale": 1,
+      "collide": "none",
+      "lift": 0.01
+    },
+    {
+      "id": "sf_floor_center_curve",
+      "src": "Platforms/Platform_CenterPlate_Curve.gltf",
+      "name": "Floor Plate, Centre Panel (Curved)",
+      "category": "Sci-Fi Platforms",
+      "scale": 1,
+      "collide": "none",
+      "lift": 0.01
+    },
+    {
+      "id": "sf_floor_dark",
+      "src": "Platforms/Platform_DarkPlates.gltf",
+      "name": "Floor Plate, Dark",
+      "category": "Sci-Fi Platforms",
+      "scale": 1,
+      "collide": "none",
+      "lift": 0.01
+    },
+    {
+      "id": "sf_floor_dark_curve",
+      "src": "Platforms/Platform_DarkPlates_Curves.gltf",
+      "name": "Floor Plate, Dark (Curved)",
+      "category": "Sci-Fi Platforms",
+      "scale": 1,
+      "collide": "none",
+      "lift": 0.01
+    },
+    {
+      "id": "sf_floor_metal",
+      "src": "Platforms/Platform_Metal.gltf",
+      "name": "Floor Plate, Metal",
+      "category": "Sci-Fi Platforms",
+      "scale": 1,
+      "collide": "none",
+      "lift": 0.01
+    },
+    {
+      "id": "sf_floor_metal2",
+      "src": "Platforms/Platform_Metal2.gltf",
+      "name": "Floor Plate, Grille",
+      "category": "Sci-Fi Platforms",
+      "scale": 1,
+      "collide": "none",
+      "lift": 0.01
+    },
+    {
+      "id": "sf_floor_simple",
+      "src": "Platforms/Platform_Simple.gltf",
+      "name": "Floor Plate, Plain",
+      "category": "Sci-Fi Platforms",
+      "scale": 1,
+      "collide": "none",
+      "lift": 0.01
+    },
+    {
+      "id": "sf_floor_simple2",
+      "src": "Platforms/Platform_Simple2.gltf",
+      "name": "Floor Plate, Plain 2",
+      "category": "Sci-Fi Platforms",
+      "scale": 1,
+      "collide": "none",
+      "lift": 0.01
+    },
+    {
+      "id": "sf_floor_squares",
+      "src": "Platforms/Platform_Squares.gltf",
+      "name": "Floor Plate, Squares",
+      "category": "Sci-Fi Platforms",
+      "scale": 1,
+      "collide": "none",
+      "lift": 0.01
+    },
+    {
+      "id": "sf_floor_squares_curve",
+      "src": "Platforms/Platform_Squares_Curve.gltf",
+      "name": "Floor Plate, Squares (Curved)",
+      "category": "Sci-Fi Platforms",
+      "scale": 1,
+      "collide": "none",
+      "lift": 0.01
+    },
+    {
+      "id": "sf_floor_x",
+      "src": "Platforms/Platform_X.gltf",
+      "name": "Floor Plate, Cross",
+      "category": "Sci-Fi Platforms",
+      "scale": 1,
+      "collide": "none",
+      "lift": 0.01
+    },
+    {
+      "id": "sf_round_platform",
+      "src": "Platforms/Platform_Round1.gltf",
+      "name": "Round Platform",
+      "category": "Sci-Fi Platforms",
+      "scale": 1,
+      "collide": "shell"
+    },
+    {
+      "id": "sf_glass_floor",
+      "src": "Platforms/Platform_Window_Thin.gltf",
+      "name": "Glass Floor, Narrow",
+      "category": "Sci-Fi Platforms",
+      "scale": 1,
+      "collide": "box"
+    },
+    {
+      "id": "sf_glass_floor_wide",
+      "src": "Platforms/Platform_Window_Wide.gltf",
+      "name": "Glass Floor",
+      "category": "Sci-Fi Platforms",
+      "scale": 1,
+      "collide": "box"
+    },
+    {
+      "id": "sf_stairs_2",
+      "src": "Platforms/Platform_Stairs_2.gltf",
+      "name": "Stairs (1 m up)",
+      "category": "Sci-Fi Platforms",
+      "scale": 1,
+      "collide": "stairs",
+      "yaw": 180
+    },
+    {
+      "id": "sf_stairs_4",
+      "src": "Platforms/Platform_Stairs_4.gltf",
+      "name": "Stairs (2 m up)",
+      "category": "Sci-Fi Platforms",
+      "scale": 1,
+      "collide": "stairs",
+      "yaw": 180
+    },
+    {
+      "id": "sf_stairs_wide",
+      "src": "Platforms/Platform_Stairs_4Wide.gltf",
+      "name": "Wide Stairs (2 m up)",
+      "category": "Sci-Fi Platforms",
+      "scale": 1,
+      "collide": "stairs",
+      "yaw": 180
+    },
+    {
+      "id": "sf_stairs_tall",
+      "src": "Platforms/Platform_Stairs_4WideTall.gltf",
+      "name": "Wide Stairs (3 m up)",
+      "category": "Sci-Fi Platforms",
+      "scale": 1,
+      "collide": "stairs",
+      "yaw": 180
+    },
+    {
+      "id": "sf_ramp_2",
+      "src": "Platforms/Platform_Ramp_2.gltf",
+      "name": "Ramp (1 m up)",
+      "category": "Sci-Fi Platforms",
+      "scale": 1,
+      "collide": "stairs",
+      "yaw": 180
+    },
+    {
+      "id": "sf_ramp_short",
+      "src": "Platforms/Platform_Ramp_2Short.gltf",
+      "name": "Steep Ramp (1 m up)",
+      "category": "Sci-Fi Platforms",
+      "scale": 1,
+      "collide": "stairs",
+      "yaw": 180
+    },
+    {
+      "id": "sf_ramp_4",
+      "src": "Platforms/Platform_Ramp_4.gltf",
+      "name": "Ramp (2 m up)",
+      "category": "Sci-Fi Platforms",
+      "scale": 1,
+      "collide": "stairs",
+      "yaw": 180
+    },
+    {
+      "id": "sf_ramp_wide",
+      "src": "Platforms/Platform_Ramp_4Wide.gltf",
+      "name": "Wide Ramp (2 m up)",
+      "category": "Sci-Fi Platforms",
+      "scale": 1,
+      "collide": "stairs",
+      "yaw": 180
+    },
+    {
+      "id": "sf_stair_rails",
+      "src": "Platforms/Platform_Rails_2.gltf",
+      "name": "Stair Rails (1 m)",
+      "category": "Sci-Fi Platforms",
+      "scale": 1,
+      "collide": "shell",
+      "yaw": 180
+    },
+    {
+      "id": "sf_stair_rails_4",
+      "src": "Platforms/Platform_Rails_4.gltf",
+      "name": "Stair Rails (2 m)",
+      "category": "Sci-Fi Platforms",
+      "scale": 1,
+      "collide": "shell",
+      "yaw": 180
+    },
+    {
+      "id": "sf_stair_rails_wide",
+      "src": "Platforms/Platform_Rails_4Wide.gltf",
+      "name": "Wide Stair Rails (2 m)",
+      "category": "Sci-Fi Platforms",
+      "scale": 1,
+      "collide": "shell",
+      "yaw": 180
+    },
+    {
+      "id": "sf_stair_rails_tall",
+      "src": "Platforms/Platform_Rails_4WideTall.gltf",
+      "name": "Wide Stair Rails (3 m)",
+      "category": "Sci-Fi Platforms",
+      "scale": 1,
+      "collide": "shell",
+      "yaw": 180
+    },
+    {
+      "id": "sf_decal_logo",
+      "src": "Decals/Decal_Logo.gltf",
+      "name": "Decal: Logo",
+      "category": "Sci-Fi Decals",
+      "scale": 1,
+      "collide": "none",
+      "lift": 0.02
+    },
+    {
+      "id": "sf_decal_letters",
+      "src": "Decals/Decal_Logo_Letters.gltf",
+      "name": "Decal: Lettering",
+      "category": "Sci-Fi Decals",
+      "scale": 1,
+      "collide": "none",
+      "lift": 0.02
+    },
+    {
+      "id": "sf_decal_caution",
+      "src": "Decals/Decal_Sign.gltf",
+      "name": "Decal: Caution Sign",
+      "category": "Sci-Fi Decals",
+      "scale": 1,
+      "collide": "none",
+      "lift": 0.02
+    },
+    {
+      "id": "sf_decal_x",
+      "src": "Decals/Decal_XSign.gltf",
+      "name": "Decal: X Sign",
+      "category": "Sci-Fi Decals",
+      "scale": 1,
+      "collide": "none",
+      "lift": 0.02
+    },
+    {
+      "id": "sf_decal_dashes",
+      "src": "Decals/Decal_Dashes.gltf",
+      "name": "Decal: Dashes",
+      "category": "Sci-Fi Decals",
+      "scale": 1,
+      "collide": "none",
+      "lift": 0.02
+    },
+    {
+      "id": "sf_decal_a",
+      "src": "Decals/Decal_A.gltf",
+      "name": "Decal: Letter A",
+      "category": "Sci-Fi Decals",
+      "scale": 1,
+      "collide": "none",
+      "lift": 0.02
+    },
+    {
+      "id": "sf_decal_1",
+      "src": "Decals/Decal_1.gltf",
+      "name": "Decal: Number 1",
+      "category": "Sci-Fi Decals",
+      "scale": 1,
+      "collide": "none",
+      "lift": 0.02
+    },
+    {
+      "id": "sf_decal_2",
+      "src": "Decals/Decal_2.gltf",
+      "name": "Decal: Number 2",
+      "category": "Sci-Fi Decals",
+      "scale": 1,
+      "collide": "none",
+      "lift": 0.02
+    },
+    {
+      "id": "sf_decal_line",
+      "src": "Decals/Decal_Line_Straight.gltf",
+      "name": "Floor Line",
+      "category": "Sci-Fi Decals",
+      "scale": 1,
+      "collide": "none",
+      "lift": 0.02
+    },
+    {
+      "id": "sf_decal_line_bend",
+      "src": "Decals/Decal_Line_Bend1_L.gltf",
+      "name": "Floor Line, Bend",
+      "category": "Sci-Fi Decals",
+      "scale": 1,
+      "collide": "none",
+      "lift": 0.02
+    },
+    {
+      "id": "sf_decal_line_round",
+      "src": "Decals/Decal_Line_90_Round.gltf",
+      "name": "Floor Line, Round Corner",
+      "category": "Sci-Fi Decals",
+      "scale": 1,
+      "collide": "none",
+      "lift": 0.02
+    }
+  ]
+}

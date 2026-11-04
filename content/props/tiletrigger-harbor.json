@@ -1,0 +1,157 @@
+{
+  "pack": {
+    "title": "Style Pack pieces (Coastal Harbor)",
+    "creator": "Tile Trigger team (modelled in code by tools/content/prepare-harbor.mjs)",
+    "url": "tools/content/prepare-harbor.mjs",
+    "license": "Owned",
+    "licenseFile": "assets-src/tiletrigger-harbor/License.txt",
+    "retrieved": "2026-10-31"
+  },
+  "order": 700,
+  "props": [
+    {
+      "id": "hb_bollard",
+      "src": "hb_bollard.glb",
+      "name": "Mooring Bollard",
+      "category": "Coastal Harbor",
+      "height": 0.68,
+      "collide": "box"
+    },
+    {
+      "id": "hb_capstan",
+      "src": "hb_capstan.glb",
+      "name": "Capstan",
+      "category": "Coastal Harbor",
+      "height": 0.95,
+      "collide": "box"
+    },
+    {
+      "id": "hb_lobster_pots",
+      "src": "hb_lobster_pots.glb",
+      "name": "Lobster Pots",
+      "category": "Coastal Harbor",
+      "height": 0.87,
+      "collide": "box"
+    },
+    {
+      "id": "hb_buoy",
+      "src": "hb_buoy.glb",
+      "name": "Mooring Buoy",
+      "category": "Coastal Harbor",
+      "height": 1.07,
+      "collide": "box"
+    },
+    {
+      "id": "hb_marker_buoy",
+      "src": "hb_marker_buoy.glb",
+      "name": "Channel Marker Buoy",
+      "category": "Coastal Harbor",
+      "height": 2.81,
+      "collide": "trunk"
+    },
+    {
+      "id": "hb_net_rack",
+      "src": "hb_net_rack.glb",
+      "name": "Net Drying Rack",
+      "category": "Coastal Harbor",
+      "height": 2.2,
+      "collide": "box"
+    },
+    {
+      "id": "hb_fish_stall",
+      "src": "hb_fish_stall.glb",
+      "name": "Fish Stall",
+      "category": "Coastal Harbor",
+      "height": 2.32,
+      "collide": "box"
+    },
+    {
+      "id": "hb_fish_crates",
+      "src": "hb_fish_crates.glb",
+      "name": "Fish Boxes",
+      "category": "Coastal Harbor",
+      "height": 0.86,
+      "collide": "box"
+    },
+    {
+      "id": "hb_fishing_boat",
+      "src": "hb_fishing_boat.glb",
+      "name": "Fishing Boat",
+      "category": "Coastal Harbor",
+      "height": 6.36,
+      "collide": "shell"
+    },
+    {
+      "id": "hb_anchor",
+      "src": "hb_anchor.glb",
+      "name": "Anchor",
+      "category": "Coastal Harbor",
+      "height": 2.25,
+      "collide": "box"
+    },
+    {
+      "id": "hb_rope_coil",
+      "src": "hb_rope_coil.glb",
+      "name": "Rope Coils",
+      "category": "Coastal Harbor",
+      "height": 0.2,
+      "collide": "none"
+    },
+    {
+      "id": "hb_lamp_post",
+      "src": "hb_lamp_post.glb",
+      "name": "Harbour Lamp Post",
+      "category": "Coastal Harbor",
+      "height": 4.31,
+      "collide": "trunk"
+    },
+    {
+      "id": "hb_life_ring",
+      "src": "hb_life_ring.glb",
+      "name": "Life Ring",
+      "category": "Coastal Harbor",
+      "height": 1.5,
+      "collide": "trunk"
+    },
+    {
+      "id": "hb_net_pile",
+      "src": "hb_net_pile.glb",
+      "name": "Heap of Nets",
+      "category": "Coastal Harbor",
+      "height": 0.64,
+      "collide": "none"
+    },
+    {
+      "id": "hb_gull",
+      "src": "hb_gull.glb",
+      "name": "Herring Gull",
+      "category": "Coastal Harbor",
+      "height": 0.4,
+      "collide": "none"
+    },
+    {
+      "id": "hb_tide_board",
+      "src": "hb_tide_board.glb",
+      "name": "Tide Board",
+      "category": "Coastal Harbor",
+      "height": 2.0,
+      "collide": "box"
+    },
+    {
+      "id": "hb_dolphin",
+      "src": "hb_dolphin.glb",
+      "name": "Mooring Dolphin",
+      "category": "Coastal Harbor",
+      "height": 4.7,
+      "collide": "box"
+    },
+    {
+      "id": "hb_fenders",
+      "src": "hb_fenders.glb",
+      "name": "Tyre Fenders",
+      "category": "Coastal Harbor",
+      "height": 1.22,
+      "collide": "none"
+    }
+  ]
+}

@@ -52,6 +52,7 @@ import { clearNodeTransform, dedup, flatten, prune, quantize, weld } from '@gltf
 import sharp from 'sharp';
 import { fbxToDocument } from './fbx.mjs';
 import { MESHY_QUANTIZE, meshyDocument, normalJpeg, paintOut } from './meshy-mesh.mjs';
+import { writeLock } from './lockfile.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const manifest = JSON.parse(readFileSync(join(ROOT, 'content/guns.json'), 'utf8'));
@@ -350,4 +351,4 @@ for (const entry of manifest.models) {
     record(interior.out, interior, pack, made ? await build(from, interior, pack, made.place) : null, { interiorOf: `models/${entry.out}` });
   }
 }
-writeFileSync(LOCK, `${JSON.stringify(lock, null, 2)}\n`);
+writeLock(LOCK, lock);

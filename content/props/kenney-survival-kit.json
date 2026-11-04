@@ -1,0 +1,305 @@
+{
+  "pack": {
+    "title": "Survival Kit",
+    "creator": "Kenney",
+    "url": "https://kenney.nl/assets/survival-kit",
+    "license": "CC0-1.0",
+    "licenseFile": "assets-src/kenney-survival-kit/License.txt",
+    "retrieved": "2026-10-23"
+  },
+  "order": 10,
+  "props": [
+    {
+      "id": "barrel",
+      "src": "barrel.glb",
+      "name": "Barrel",
+      "category": "Crates & Barrels",
+      "height": 1.1,
+      "collide": "box",
+      "breakable": {
+        "health": 40,
+        "debris": "#8a5a32"
+      }
+    },
+    {
+      "id": "barrel_open",
+      "src": "barrel-open.glb",
+      "name": "Open Barrel",
+      "category": "Crates & Barrels",
+      "height": 1.1,
+      "collide": "box",
+      "breakable": {
+        "health": 40,
+        "debris": "#8a5a32"
+      }
+    },
+    {
+      "id": "crate_small",
+      "src": "box.glb",
+      "name": "Small Crate",
+      "category": "Crates & Barrels",
+      "height": 0.6,
+      "collide": "box",
+      "breakable": {
+        "health": 30,
+        "debris": "#8a5a32"
+      }
+    },
+    {
+      "id": "crate_large",
+      "src": "box-large.glb",
+      "name": "Large Crate",
+      "category": "Crates & Barrels",
+      "height": 1.1,
+      "collide": "box",
+      "breakable": {
+        "health": 60,
+        "debris": "#8a5a32"
+      }
+    },
+    {
+      "id": "crate_open",
+      "src": "box-open.glb",
+      "name": "Open Crate",
+      "category": "Crates & Barrels",
+      "height": 0.6,
+      "collide": "box",
+      "breakable": {
+        "health": 30,
+        "debris": "#8a5a32"
+      }
+    },
+    {
+      "id": "chest",
+      "src": "chest.glb",
+      "name": "Chest",
+      "category": "Crates & Barrels",
+      "height": 0.7,
+      "collide": "box",
+      "breakable": {
+        "health": 80,
+        "debris": "#8a5a32"
+      }
+    },
+    {
+      "id": "workbench",
+      "order": 80,
+      "src": "workbench.glb",
+      "name": "Workbench",
+      "category": "Industrial",
+      "height": 1.0,
+      "collide": "box",
+      "breakable": {
+        "health": 60,
+        "debris": "#8a5a32"
+      }
+    },
+    {
+      "id": "anvil",
+      "src": "workbench-anvil.glb",
+      "name": "Anvil",
+      "category": "Industrial",
+      "height": 0.9,
+      "collide": "box"
+    },
+    {
+      "id": "metal_panel",
+      "src": "metal-panel-screws.glb",
+      "name": "Metal Barricade",
+      "category": "Industrial",
+      "height": 2.0,
+      "collide": "box"
+    },
+    {
+      "id": "tree",
+      "order": 130,
+      "src": "tree.glb",
+      "name": "Tree",
+      "category": "Trees",
+      "height": 5.0,
+      "collide": "trunk"
+    },
+    {
+      "id": "tree_tall",
+      "src": "tree-tall.glb",
+      "name": "Tall Tree",
+      "category": "Trees",
+      "height": 7.0,
+      "collide": "trunk"
+    },
+    {
+      "id": "tree_autumn",
+      "src": "tree-autumn.glb",
+      "name": "Autumn Tree",
+      "category": "Trees",
+      "height": 5.0,
+      "collide": "trunk"
+    },
+    {
+      "id": "log",
+      "order": 160,
+      "src": "tree-log.glb",
+      "name": "Log",
+      "category": "Rocks & Wood",
+      "height": 0.6,
+      "collide": "box",
+      "breakable": {
+        "health": 60,
+        "debris": "#8a5a32"
+      }
+    },
+    {
+      "id": "rock_large",
+      "src": "rock-a.glb",
+      "name": "Boulder",
+      "category": "Rocks & Wood",
+      "height": 1.4,
+      "collide": "box"
+    },
+    {
+      "id": "rock_medium",
+      "src": "rock-b.glb",
+      "name": "Rock",
+      "category": "Rocks & Wood",
+      "height": 1.0,
+      "collide": "box"
+    },
+    {
+      "id": "rock_small",
+      "src": "rock-c.glb",
+      "name": "Small Rock",
+      "category": "Rocks & Wood",
+      "height": 0.7,
+      "collide": "box"
+    },
+    {
+      "id": "rock_flat",
+      "src": "rock-flat.glb",
+      "name": "Flat Rock",
+      "category": "Rocks & Wood",
+      "height": 0.4,
+      "collide": "box"
+    },
+    {
+      "id": "grass_tuft",
+      "order": 180,
+      "src": "grass-large.glb",
+      "name": "Grass Tuft",
+      "category": "Plants & Flowers",
+      "height": 0.5,
+      "collide": "none"
+    },
+    {
+      "id": "stump",
+      "src": "tree-trunk.glb",
+      "name": "Stump",
+      "category": "Rocks & Wood",
+      "height": 0.6,
+      "collide": "box",
+      "breakable": {
+        "health": 60,
+        "debris": "#8a5a32"
+      }
+    },
+    {
+      "id": "woodpile",
+      "src": "resource-wood.glb",
+      "name": "Woodpile",
+      "category": "Rocks & Wood",
+      "height": 0.8,
+      "collide": "box",
+      "breakable": {
+        "health": 40,
+        "debris": "#8a5a32"
+      }
+    },
+    {
+      "id": "planks_stack",
+      "src": "resource-planks.glb",
+      "name": "Plank Stack",
+      "category": "Rocks & Wood",
+      "height": 0.5,
+      "collide": "box",
+      "breakable": {
+        "health": 30,
+        "debris": "#8a5a32"
+      }
+    },
+    {
+      "id": "tent",
+      "src": "tent.glb",
+      "name": "Tent",
+      "category": "Medieval",
+      "height": 2.2,
+      "collide": "box",
+      "breakable": {
+        "health": 40,
+        "debris": "#c8b890"
+      }
+    },
+    {
+      "id": "tent_canvas",
+      "src": "tent-canvas.glb",
+      "name": "Canvas Shelter",
+      "category": "Medieval",
+      "height": 2.2,
+      "collide": "box",
+      "breakable": {
+        "health": 40,
+        "debris": "#c8b890"
+      }
+    },
+    {
+      "id": "campfire",
+      "src": "campfire-pit.glb",
+      "name": "Campfire",
+      "category": "Medieval",
+      "height": 0.4,
+      "collide": "none"
+    },
+    {
+      "id": "fence",
+      "src": "fence.glb",
+      "name": "Wooden Fence",
+      "category": "Medieval",
+      "height": 1.2,
+      "collide": "box",
+      "breakable": {
+        "health": 40,
+        "debris": "#8a5a32"
+      }
+    },
+    {
+      "id": "palisade",
+      "src": "fence-fortified.glb",
+      "name": "Palisade",
+      "category": "Medieval",
+      "height": 1.8,
+      "collide": "box",
+      "breakable": {
+        "health": 100,
+        "debris": "#8a5a32"
+      }
+    },
+    {
+      "id": "signpost",
+      "src": "signpost.glb",
+      "name": "Signpost",
+      "category": "Medieval",
+      "height": 2.0,
+      "collide": "trunk",
+      "breakable": {
+        "health": 25,
+        "debris": "#8a5a32"
+      }
+    },
+    {
+      "id": "bucket",
+      "src": "bucket.glb",
+      "name": "Bucket",
+      "category": "Medieval",
+      "height": 0.4,
+      "collide": "none"
+    }
+  ]
+}

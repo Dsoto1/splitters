@@ -1,0 +1,95 @@
+{
+  "pack": {
+    "title": "Gas station",
+    "creator": "Elbolillo",
+    "url": "https://elbolilloduro.itch.io/gas-station",
+    "license": "CC0-1.0",
+    "licenseFile": "assets-src/elbolillo-gas-station/License.txt",
+    "retrieved": "2026-10-26",
+    "download": "Gas_station",
+    "models": "Models",
+    "convert": true,
+    "flatten": true,
+    "scale": 0.01
+  },
+  "order": 550,
+  "props": [
+    {
+      "id": "gs_fuel_pump",
+      "src": "Gas_station_Props.fbx#^Fuel_pump$",
+      "name": "Fuel Pump",
+      "category": "Gas Station",
+      "collide": "box"
+    },
+    {
+      "id": "gs_fuel_pump_slim",
+      "src": "Gas_station_Props.fbx#^(Fuel_pump_|Dispenser)$",
+      "name": "Slim Fuel Pump",
+      "category": "Gas Station",
+      "collide": "box"
+    },
+    {
+      "id": "gs_dumpster",
+      "src": "Gas_station_Props.fbx#^Dumpster",
+      "name": "Dumpster",
+      "category": "Gas Station",
+      "collide": "box"
+    },
+    {
+      "id": "gs_ice_chest",
+      "src": "Gas_station_Props.fbx#^ICE$",
+      "name": "Ice Chest",
+      "category": "Gas Station",
+      "collide": "box"
+    },
+    {
+      "id": "gs_slush_machine",
+      "src": "Gas_station_Props.fbx#^ice_slush_machine$",
+      "name": "Slush Machine",
+      "category": "Gas Station",
+      "collide": "box"
+    },
+    {
+      "id": "gs_coffee_machine",
+      "src": "Gas_station_Props.fbx#^Coffee_machine$",
+      "name": "Coffee Machine",
+      "category": "Gas Station",
+      "collide": "box"
+    },
+    {
+      "id": "gs_drinks_fridge",
+      "src": "Gas_station_Props.fbx#^Fridge",
+      "name": "Drinks Chest Freezer",
+      "category": "Gas Station",
+      "collide": "box"
+    },
+    {
+      "id": "gs_shop_shelving",
+      "src": "Gas_station_Props.fbx#^Shelving003$",
+      "name": "Shop Shelving",
+      "category": "Gas Station",
+      "collide": "box"
+    },
+    {
+      "id": "gs_metal_shelf",
+      "src": "Gas_station_Props.fbx#^Shelf_Metal$",
+      "name": "Stockroom Shelf",
+      "category": "Gas Station",
+      "collide": "box"
+    },
+    {
+      "id": "gs_trash_bags",
+      "src": "Gas_station_Props.fbx#^Trash$",
+      "name": "Rubbish Bags",
+      "category": "Gas Station",
+      "collide": "box"
+    },
+    {
+      "id": "gs_shop_counter",
+      "src": "Gas_station_Props.fbx#^Desk$",
+      "name": "Shop Counter",
+      "category": "Gas Station",
+      "collide": "box"
+    }
+  ]
+}

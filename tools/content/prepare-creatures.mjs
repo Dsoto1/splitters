@@ -41,6 +41,7 @@ import { dedup, prune, resample, simplify, weld } from '@gltf-transform/function
 import { MeshoptSimplifier } from 'meshoptimizer';
 import sharp from 'sharp';
 import { fbxRiggedToGlb } from './fbx.mjs';
+import { writeLock } from './lockfile.mjs';
 
 await MeshoptSimplifier.ready;
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
@@ -248,5 +249,5 @@ for (const [id, pack, src, ratio, clips, fbx] of CREATURES) {
 }
 // Files of creatures no longer listed.
 for (const f of readdirSync(OUT)) if (!lock.files.some((x) => x.file === `creatures/${f}`)) rmSync(join(OUT, f));
-writeFileSync(LOCK, `${JSON.stringify(lock, null, 2)}\n`);
+writeLock(LOCK, lock);
 console.log(`wrote ${lock.files.length} creatures and content/creatures.lock.json`);

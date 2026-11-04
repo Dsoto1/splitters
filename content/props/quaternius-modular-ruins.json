@@ -1,0 +1,202 @@
+{
+  "pack": {
+    "title": "Ultimate Modular Ruins Pack",
+    "creator": "Quaternius",
+    "url": "https://quaternius.itch.io/modular-ruins-pack",
+    "license": "CC0-1.0",
+    "licenseFile": "assets-src/quaternius-modular-ruins/License.txt",
+    "retrieved": "2026-10-25",
+    "objSource": "Ultimate Modular Ruins Pack - Aug 2021/OBJ"
+  },
+  "order": 450,
+  "props": [
+    {
+      "id": "rn_arch_gothic",
+      "src": "Arch_Gothic.glb",
+      "name": "Gothic Arch",
+      "category": "Ruins",
+      "height": 5,
+      "collide": "shell"
+    },
+    {
+      "id": "rn_arch_round",
+      "src": "Arch_Round.glb",
+      "name": "Round Arch",
+      "category": "Ruins",
+      "height": 5,
+      "collide": "shell"
+    },
+    {
+      "id": "rn_bookcase",
+      "src": "Bookcase_Full.glb",
+      "name": "Old Bookcase",
+      "category": "Ruins",
+      "height": 2.2,
+      "collide": "box"
+    },
+    {
+      "id": "rn_bridge",
+      "src": "BridgeSection.glb",
+      "name": "Stone Bridge",
+      "category": "Ruins",
+      "height": 2.4,
+      "collide": "shell"
+    },
+    {
+      "id": "rn_cart",
+      "src": "Cart.glb",
+      "name": "Hand Cart",
+      "category": "Ruins",
+      "height": 1.3,
+      "collide": "box"
+    },
+    {
+      "id": "rn_column_round",
+      "src": "Column_Round.glb",
+      "name": "Round Column",
+      "category": "Ruins",
+      "height": 5,
+      "collide": "box"
+    },
+    {
+      "id": "rn_column_square",
+      "src": "Column_Square.glb",
+      "name": "Square Column",
+      "category": "Ruins",
+      "height": 5,
+      "collide": "box"
+    },
+    {
+      "id": "rn_column_broken",
+      "src": "Column_Round_Short.glb",
+      "name": "Broken Column",
+      "category": "Ruins",
+      "height": 1.6,
+      "collide": "box"
+    },
+    {
+      "id": "rn_dead_tree",
+      "src": "DeadTree_1.glb",
+      "name": "Gnarled Tree",
+      "category": "Ruins",
+      "height": 5,
+      "collide": "trunk"
+    },
+    {
+      "id": "rn_door_gothic",
+      "src": "Doors_GothicArch.glb",
+      "name": "Gothic Doors",
+      "category": "Ruins",
+      "height": 4,
+      "collide": "shell"
+    },
+    {
+      "id": "rn_urn",
+      "src": "Pot1.glb",
+      "name": "Urn",
+      "category": "Ruins",
+      "height": 0.8,
+      "collide": "box",
+      "breakable": {
+        "health": 25,
+        "debris": "#7a5a3a"
+      }
+    },
+    {
+      "id": "rn_urn_broken",
+      "src": "Pot1_Broken.glb",
+      "name": "Broken Urn",
+      "category": "Ruins",
+      "height": 0.6,
+      "collide": "box"
+    },
+    {
+      "id": "rn_statue_fox",
+      "src": "Statue_Fox.glb",
+      "name": "Fox Statue",
+      "category": "Ruins",
+      "height": 2.2,
+      "collide": "box"
+    },
+    {
+      "id": "rn_statue_stag",
+      "src": "Statue_Stag.glb",
+      "name": "Stag Statue",
+      "category": "Ruins",
+      "height": 2.6,
+      "collide": "box"
+    },
+    {
+      "id": "rn_wall",
+      "src": "Wall.glb",
+      "name": "Ruined Wall",
+      "category": "Ruins",
+      "height": 4,
+      "collide": "box"
+    },
+    {
+      "id": "rn_wall_broken",
+      "src": "Wall_Broken.glb",
+      "name": "Broken Wall",
+      "category": "Ruins",
+      "height": 4,
+      "collide": "shell"
+    },
+    {
+      "id": "rn_wall_arch_ivy",
+      "src": "Wall_ArchRound_Overgrown.glb",
+      "name": "Ivy Arch Wall",
+      "category": "Ruins",
+      "height": 4,
+      "collide": "shell"
+    },
+    {
+      "id": "rn_wall_hole",
+      "src": "Wall_Hole.glb",
+      "name": "Holed Wall",
+      "category": "Ruins",
+      "height": 4,
+      "collide": "shell"
+    },
+    {
+      "id": "rn_wall_half",
+      "src": "Wall_Half.glb",
+      "name": "Half Wall",
+      "category": "Ruins",
+      "height": 2,
+      "collide": "box"
+    },
+    {
+      "id": "rn_window_bars",
+      "src": "Window_Bars.glb",
+      "name": "Barred Window Wall",
+      "category": "Ruins",
+      "height": 4,
+      "collide": "shell"
+    },
+    {
+      "id": "rn_stairs",
+      "src": "Stairs.glb",
+      "name": "Stone Stairs",
+      "category": "Ruins",
+      "height": 2,
+      "collide": "stairs"
+    },
+    {
+      "id": "rn_candles",
+      "src": "Candles_1.glb",
+      "name": "Candles",
+      "category": "Ruins",
+      "height": 0.4,
+      "collide": "none"
+    },
+    {
+      "id": "rn_buttress",
+      "src": "Support_Tall.glb",
+      "name": "Buttress",
+      "category": "Ruins",
+      "height": 5,
+      "collide": "box"
+    }
+  ]
+}

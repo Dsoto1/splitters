@@ -1,0 +1,118 @@
+{
+  "pack": {
+    "title": "Style Pack pieces (Orbital Station, Neon Megacity)",
+    "creator": "Tile Trigger team (modelled in code by tools/content/prepare-packs.mjs)",
+    "url": "tools/content/prepare-packs.mjs",
+    "license": "Owned",
+    "licenseFile": "assets-src/tiletrigger-stylepacks/License.txt",
+    "retrieved": "2026-10-26"
+  },
+  "order": 350,
+  "props": [
+    {
+      "id": "os_viewport",
+      "src": "os_viewport.glb",
+      "name": "Space Viewport",
+      "category": "Orbital Station",
+      "height": 2.4,
+      "collide": "none"
+    },
+    {
+      "id": "os_reactor_core",
+      "src": "os_reactor_core.glb",
+      "name": "Reactor Core",
+      "category": "Orbital Station",
+      "height": 7.8,
+      "collide": "box"
+    },
+    {
+      "id": "os_field_emitter",
+      "src": "os_field_emitter.glb",
+      "name": "Field Emitter",
+      "category": "Orbital Station",
+      "height": 3.3,
+      "collide": "box"
+    },
+    {
+      "id": "os_cryo_pod",
+      "src": "os_cryo_pod.glb",
+      "name": "Cryo Pod",
+      "category": "Orbital Station",
+      "height": 2.35,
+      "collide": "box"
+    },
+    {
+      "id": "os_holo_globe",
+      "src": "os_holo_globe.glb",
+      "name": "Holo Globe",
+      "category": "Orbital Station",
+      "height": 2.25,
+      "collide": "box"
+    },
+    {
+      "id": "os_cargo_crate",
+      "src": "os_cargo_crate.glb",
+      "name": "Station Cargo Crate",
+      "category": "Orbital Station",
+      "height": 1.1,
+      "collide": "box"
+    },
+    {
+      "id": "nc_vending",
+      "order": 380,
+      "src": "nc_vending.glb",
+      "name": "Vending Machine",
+      "category": "Neon Megacity",
+      "height": 2.0,
+      "collide": "box"
+    },
+    {
+      "id": "nc_ac_unit",
+      "src": "nc_ac_unit.glb",
+      "name": "Rooftop AC Unit",
+      "category": "Neon Megacity",
+      "height": 1.1,
+      "collide": "box"
+    },
+    {
+      "id": "nc_water_tank",
+      "src": "nc_water_tank.glb",
+      "name": "Rooftop Water Tank",
+      "category": "Neon Megacity",
+      "height": 4.0,
+      "collide": "box"
+    },
+    {
+      "id": "nc_holo_kiosk",
+      "src": "nc_holo_kiosk.glb",
+      "name": "Holo Kiosk",
+      "category": "Neon Megacity",
+      "height": 2.65,
+      "collide": "box"
+    },
+    {
+      "id": "nc_food_stall",
+      "src": "nc_food_stall.glb",
+      "name": "Noodle Stall",
+      "category": "Neon Megacity",
+      "height": 2.55,
+      "collide": "box"
+    },
+    {
+      "id": "nc_antenna",
+      "src": "nc_antenna.glb",
+      "name": "Rooftop Antenna",
+      "category": "Neon Megacity",
+      "height": 6.43,
+      "collide": "trunk"
+    },
+    {
+      "id": "nc_neon_barrier",
+      "src": "nc_neon_barrier.glb",
+      "name": "Neon Barrier",
+      "category": "Neon Megacity",
+      "height": 0.95,
+      "collide": "box"
+    }
+  ]
+}

@@ -1,0 +1,108 @@
+{
+  "pack": {
+    "title": "City Kit Roads 2.2",
+    "creator": "Kenney",
+    "url": "https://kenney.nl/assets/city-kit-roads",
+    "license": "CC0-1.0",
+    "licenseFile": "assets-src/kenney-city-kit-roads/License.txt",
+    "retrieved": "2026-10-26",
+    "download": "kenney_city-kit-roads",
+    "models": "Models/GLB format",
+    "images": "Models/GLB format",
+    "textureSize": 512,
+    "normalSize": 0,
+    "decalSize": 512
+  },
+  "order": 360,
+  "props": [
+    {
+      "id": "nc_streetlight",
+      "src": "light-curved.glb",
+      "name": "Street Light",
+      "category": "Neon Megacity",
+      "height": 7,
+      "collide": "trunk"
+    },
+    {
+      "id": "nc_streetlight_double",
+      "src": "light-curved-double.glb",
+      "name": "Double Street Light",
+      "category": "Neon Megacity",
+      "height": 7,
+      "collide": "trunk"
+    },
+    {
+      "id": "nc_traffic_light",
+      "src": "traffic-light.glb",
+      "name": "Traffic Light",
+      "category": "Neon Megacity",
+      "height": 4,
+      "collide": "trunk"
+    },
+    {
+      "id": "nc_traffic_light_hanging",
+      "src": "traffic-light-hanging.glb",
+      "name": "Hanging Traffic Light",
+      "category": "Neon Megacity",
+      "height": 5.5,
+      "collide": "none"
+    },
+    {
+      "id": "nc_highway_sign",
+      "src": "sign-highway-wide.glb",
+      "name": "Overhead Sign Gantry",
+      "category": "Neon Megacity",
+      "height": 6.5,
+      "collide": "frame",
+      "yaw": 90
+    },
+    {
+      "id": "nc_street_sign",
+      "src": "road-sign-street.glb",
+      "name": "Street Sign",
+      "category": "Neon Megacity",
+      "height": 3.2,
+      "collide": "trunk"
+    },
+    {
+      "id": "nc_dumpster",
+      "src": "dumpster.glb",
+      "name": "Dumpster",
+      "category": "Neon Megacity",
+      "height": 1.4,
+      "collide": "box"
+    },
+    {
+      "id": "nc_road_barrier",
+      "src": "construction-barrier.glb",
+      "name": "Road Barrier",
+      "category": "Neon Megacity",
+      "height": 1.1,
+      "collide": "box"
+    },
+    {
+      "id": "nc_cone",
+      "src": "construction-cone.glb",
+      "name": "Traffic Cone",
+      "category": "Neon Megacity",
+      "height": 0.7,
+      "collide": "none"
+    },
+    {
+      "id": "nc_elevated_pillar",
+      "src": "bridge-pillar-wide.glb",
+      "name": "Elevated Pillar",
+      "category": "Neon Megacity",
+      "height": 10,
+      "collide": "box"
+    },
+    {
+      "id": "nc_power_pole",
+      "src": "electricity-pole.glb",
+      "name": "Power Pole",
+      "category": "Neon Megacity",
+      "height": 9,
+      "collide": "trunk"
+    }
+  ]
+}

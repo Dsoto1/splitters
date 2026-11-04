@@ -17,6 +17,7 @@ import { ALL_EXTENSIONS } from '@gltf-transform/extensions';
 import { prune } from '@gltf-transform/functions';
 import { buildSpec, readManifests } from './character-manifests.mjs';
 import { addLowDetail } from './character-lod.mjs';
+import { writeLock } from './lockfile.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const DIR = join(ROOT, 'packages/client/public/characters');
@@ -56,4 +57,4 @@ for (const c of specs) {
   console.log(`${c.id.padEnd(24)} low detail ${entry.lodTriangles} → ${lodTriangles} triangles, ${(entry.bytes / 1024).toFixed(0)} → ${(glb.byteLength / 1024).toFixed(0)} KB`);
   if (!TRIAL) Object.assign(entry, { sha256: createHash('sha256').update(glb).digest('hex').slice(0, 16), lodTriangles, bytes: glb.byteLength });
 }
-if (!TRIAL) writeFileSync(LOCK, `${JSON.stringify(lock, null, 2)}\n`);
+if (!TRIAL) writeLock(LOCK, lock);

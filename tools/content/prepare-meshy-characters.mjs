@@ -61,6 +61,7 @@ import { addLowDetail } from './character-lod.mjs';
 import { clipSet, writeClipSet } from './clip-set.mjs';
 import { meshyName } from './retarget.mjs';
 import { HANDS_SHARE, HEAD_SHARE, bakeNormals, cutKeeping, normalJpeg, rebake, seamAwareSimplify } from './meshy-mesh.mjs';
+import { writeLock } from './lockfile.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const OUT = join(ROOT, 'packages/client/public/characters');
@@ -1109,5 +1110,5 @@ for (const c of SPECS) {
   lock.files.push({ role: 'meshy-autorig', id: c.id, source: c.pack, ...from, ...built, ...(c.surface === 'rebake' ? { surface: 'rebake' } : {}) });
   lock.files.push({ role: 'meshy-fparms', id: `${c.id}_fparms`, source: c.pack, ...from, ...(await fparms(c, src)) });
 }
-writeFileSync(LOCK, `${JSON.stringify(lock, null, 2)}\n`);
+writeLock(LOCK, lock);
 console.log(`wrote ${lock.files.length} files and content/meshy.lock.json`);

@@ -19,6 +19,7 @@ import { fileURLToPath } from 'node:url';
 import { NodeIO } from '@gltf-transform/core';
 import { ALL_EXTENSIONS } from '@gltf-transform/extensions';
 import sharp from 'sharp';
+import { writeLock } from './lockfile.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const DIR = join(ROOT, 'packages/client/public/characters');
@@ -105,4 +106,4 @@ for (const id of only) {
   Object.assign(entry, { sha256: createHash('sha256').update(glb).digest('hex').slice(0, 16), bytes: glb.byteLength });
   console.log(`${id}: ${moved} head vertices taken off the arms${flip ? `, ${flipped} normal map(s) with green inverted` : ''}`);
 }
-if (!TRIAL) writeFileSync(LOCK, `${JSON.stringify(lock, null, 2)}\n`);
+if (!TRIAL) writeLock(LOCK, lock);

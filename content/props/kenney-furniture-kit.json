@@ -1,0 +1,418 @@
+{
+  "pack": {
+    "title": "Furniture Kit",
+    "creator": "Kenney",
+    "url": "https://kenney.nl/assets/furniture-kit",
+    "license": "CC0-1.0",
+    "licenseFile": "assets-src/kenney-furniture-kit/License.txt",
+    "retrieved": "2026-10-23"
+  },
+  "order": 30,
+  "props": [
+    {
+      "id": "cardboard_box",
+      "src": "cardboardBoxClosed.glb",
+      "name": "Cardboard Box",
+      "category": "Crates & Barrels",
+      "height": 0.5,
+      "collide": "box",
+      "breakable": {
+        "health": 10,
+        "debris": "#c8a070"
+      }
+    },
+    {
+      "id": "cardboard_open",
+      "src": "cardboardBoxOpen.glb",
+      "name": "Open Cardboard Box",
+      "category": "Crates & Barrels",
+      "height": 0.5,
+      "collide": "box",
+      "breakable": {
+        "health": 10,
+        "debris": "#c8a070"
+      }
+    },
+    {
+      "id": "table",
+      "order": 100,
+      "src": "table.glb",
+      "name": "Table",
+      "category": "Furniture",
+      "height": 0.8,
+      "collide": "box",
+      "breakable": {
+        "health": 40,
+        "debris": "#8a5a32"
+      }
+    },
+    {
+      "id": "table_round",
+      "src": "tableRound.glb",
+      "name": "Round Table",
+      "category": "Furniture",
+      "height": 0.8,
+      "collide": "box",
+      "breakable": {
+        "health": 40,
+        "debris": "#8a5a32"
+      }
+    },
+    {
+      "id": "table_cloth",
+      "src": "tableCloth.glb",
+      "name": "Dining Table",
+      "category": "Furniture",
+      "height": 0.8,
+      "collide": "box",
+      "breakable": {
+        "health": 40,
+        "debris": "#8a5a32"
+      }
+    },
+    {
+      "id": "chair",
+      "src": "chair.glb",
+      "name": "Chair",
+      "category": "Furniture",
+      "height": 0.95,
+      "collide": "box",
+      "breakable": {
+        "health": 20,
+        "debris": "#8a5a32"
+      }
+    },
+    {
+      "id": "chair_cushion",
+      "src": "chairCushion.glb",
+      "name": "Cushioned Chair",
+      "category": "Furniture",
+      "height": 0.95,
+      "collide": "box",
+      "breakable": {
+        "health": 20,
+        "debris": "#8a5a32"
+      }
+    },
+    {
+      "id": "desk",
+      "src": "desk.glb",
+      "name": "Desk",
+      "category": "Furniture",
+      "height": 0.8,
+      "collide": "box",
+      "breakable": {
+        "health": 50,
+        "debris": "#8a5a32"
+      }
+    },
+    {
+      "id": "desk_corner",
+      "src": "deskCorner.glb",
+      "name": "Corner Desk",
+      "category": "Furniture",
+      "height": 0.8,
+      "collide": "box",
+      "breakable": {
+        "health": 60,
+        "debris": "#8a5a32"
+      }
+    },
+    {
+      "id": "office_chair",
+      "src": "chairDesk.glb",
+      "name": "Office Chair",
+      "category": "Furniture",
+      "height": 1.0,
+      "collide": "box",
+      "breakable": {
+        "health": 20,
+        "debris": "#3a3a3a"
+      }
+    },
+    {
+      "id": "bookcase",
+      "src": "bookcaseOpen.glb",
+      "name": "Bookcase",
+      "category": "Furniture",
+      "height": 2.0,
+      "collide": "box",
+      "breakable": {
+        "health": 60,
+        "debris": "#8a5a32"
+      }
+    },
+    {
+      "id": "bookcase_wide",
+      "src": "bookcaseClosedWide.glb",
+      "name": "Wide Cabinet",
+      "category": "Furniture",
+      "height": 2.0,
+      "collide": "box",
+      "breakable": {
+        "health": 70,
+        "debris": "#8a5a32"
+      }
+    },
+    {
+      "id": "sofa",
+      "src": "loungeSofa.glb",
+      "name": "Sofa",
+      "category": "Furniture",
+      "height": 0.85,
+      "collide": "box",
+      "breakable": {
+        "health": 60,
+        "debris": "#7a6a8a"
+      }
+    },
+    {
+      "id": "sofa_long",
+      "src": "loungeSofaLong.glb",
+      "name": "Long Sofa",
+      "category": "Furniture",
+      "height": 0.85,
+      "collide": "box",
+      "breakable": {
+        "health": 70,
+        "debris": "#7a6a8a"
+      }
+    },
+    {
+      "id": "armchair",
+      "src": "loungeChair.glb",
+      "name": "Armchair",
+      "category": "Furniture",
+      "height": 0.85,
+      "collide": "box",
+      "breakable": {
+        "health": 40,
+        "debris": "#7a6a8a"
+      }
+    },
+    {
+      "id": "bed",
+      "src": "bedDouble.glb",
+      "name": "Double Bed",
+      "category": "Furniture",
+      "height": 0.65,
+      "collide": "box",
+      "breakable": {
+        "health": 70,
+        "debris": "#7a6a8a"
+      }
+    },
+    {
+      "id": "bunk_bed",
+      "src": "bedBunk.glb",
+      "name": "Bunk Bed",
+      "category": "Furniture",
+      "height": 1.7,
+      "collide": "box",
+      "breakable": {
+        "health": 70,
+        "debris": "#8a5a32"
+      }
+    },
+    {
+      "id": "fridge",
+      "src": "kitchenFridgeLarge.glb",
+      "name": "Fridge",
+      "category": "Furniture",
+      "height": 2.0,
+      "collide": "box",
+      "breakable": {
+        "health": 100,
+        "debris": "#c8c8d0"
+      }
+    },
+    {
+      "id": "stove",
+      "src": "kitchenStove.glb",
+      "name": "Stove",
+      "category": "Furniture",
+      "height": 0.95,
+      "collide": "box",
+      "breakable": {
+        "health": 90,
+        "debris": "#7a8088"
+      }
+    },
+    {
+      "id": "kitchen_cabinet",
+      "src": "kitchenCabinet.glb",
+      "name": "Kitchen Cabinet",
+      "category": "Furniture",
+      "height": 0.95,
+      "collide": "box",
+      "breakable": {
+        "health": 50,
+        "debris": "#8a5a32"
+      }
+    },
+    {
+      "id": "tv",
+      "src": "televisionModern.glb",
+      "name": "Television",
+      "category": "Furniture",
+      "height": 0.75,
+      "collide": "box",
+      "breakable": {
+        "health": 15,
+        "debris": "#202020"
+      }
+    },
+    {
+      "id": "tv_cabinet",
+      "src": "cabinetTelevision.glb",
+      "name": "TV Cabinet",
+      "category": "Furniture",
+      "height": 0.6,
+      "collide": "box",
+      "breakable": {
+        "health": 40,
+        "debris": "#8a5a32"
+      }
+    },
+    {
+      "id": "washer",
+      "src": "washer.glb",
+      "name": "Washing Machine",
+      "category": "Furniture",
+      "height": 0.9,
+      "collide": "box",
+      "breakable": {
+        "health": 90,
+        "debris": "#c8c8d0"
+      }
+    },
+    {
+      "id": "bathtub",
+      "src": "bathtub.glb",
+      "name": "Bathtub",
+      "category": "Furniture",
+      "height": 0.6,
+      "collide": "box"
+    },
+    {
+      "id": "toilet",
+      "src": "toilet.glb",
+      "name": "Toilet",
+      "category": "Furniture",
+      "height": 0.8,
+      "collide": "box",
+      "breakable": {
+        "health": 40,
+        "debris": "#c8c8d0"
+      }
+    },
+    {
+      "id": "side_table",
+      "src": "sideTableDrawers.glb",
+      "name": "Side Table",
+      "category": "Furniture",
+      "height": 0.6,
+      "collide": "box",
+      "breakable": {
+        "health": 25,
+        "debris": "#8a5a32"
+      }
+    },
+    {
+      "id": "bench",
+      "src": "bench.glb",
+      "name": "Bench",
+      "category": "Furniture",
+      "height": 0.45,
+      "collide": "box",
+      "breakable": {
+        "health": 30,
+        "debris": "#8a5a32"
+      }
+    },
+    {
+      "id": "speaker",
+      "src": "speaker.glb",
+      "name": "Speaker",
+      "category": "Furniture",
+      "height": 1.1,
+      "collide": "box",
+      "breakable": {
+        "health": 25,
+        "debris": "#303030"
+      }
+    },
+    {
+      "id": "trashcan",
+      "src": "trashcan.glb",
+      "name": "Bin",
+      "category": "Furniture",
+      "height": 0.6,
+      "collide": "box",
+      "breakable": {
+        "health": 15,
+        "debris": "#7a8088"
+      }
+    },
+    {
+      "id": "potted_plant",
+      "src": "pottedPlant.glb",
+      "name": "Potted Plant",
+      "category": "Decor",
+      "height": 1.1,
+      "collide": "box",
+      "breakable": {
+        "health": 15,
+        "debris": "#b06a40"
+      }
+    },
+    {
+      "id": "plant_small",
+      "src": "plantSmall1.glb",
+      "name": "Small Plant",
+      "category": "Decor",
+      "height": 0.4,
+      "collide": "none"
+    },
+    {
+      "id": "floor_lamp",
+      "src": "lampRoundFloor.glb",
+      "name": "Floor Lamp",
+      "category": "Decor",
+      "height": 1.7,
+      "collide": "none"
+    },
+    {
+      "id": "coat_rack",
+      "src": "coatRackStanding.glb",
+      "name": "Coat Rack",
+      "category": "Decor",
+      "height": 1.8,
+      "collide": "none"
+    },
+    {
+      "id": "rug",
+      "src": "rugRectangle.glb",
+      "name": "Rug",
+      "category": "Decor",
+      "height": 0.02,
+      "collide": "none"
+    },
+    {
+      "id": "rug_round",
+      "src": "rugRound.glb",
+      "name": "Round Rug",
+      "category": "Decor",
+      "height": 0.02,
+      "collide": "none"
+    },
+    {
+      "id": "bar_stool",
+      "src": "stoolBar.glb",
+      "name": "Bar Stool",
+      "category": "Furniture",
+      "height": 0.75,
+      "collide": "none"
+    }
+  ]
+}

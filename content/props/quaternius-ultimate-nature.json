@@ -1,0 +1,332 @@
+{
+  "pack": {
+    "title": "Ultimate Nature Pack",
+    "creator": "Quaternius",
+    "url": "https://quaternius.itch.io/ultimate-nature-pack",
+    "license": "CC0-1.0",
+    "licenseFile": "assets-src/quaternius-ultimate-nature/License.txt",
+    "retrieved": "2026-10-25",
+    "objSource": "Ultimate Nature Pack - Jun 2019/OBJ"
+  },
+  "order": 440,
+  "props": [
+    {
+      "id": "nt_birch",
+      "src": "BirchTree_1.glb",
+      "name": "Birch",
+      "category": "Trees",
+      "height": 8.0,
+      "collide": "trunk"
+    },
+    {
+      "id": "nt_birch_autumn",
+      "src": "BirchTree_Autumn_1.glb",
+      "name": "Autumn Birch",
+      "category": "Trees",
+      "height": 8.0,
+      "collide": "trunk"
+    },
+    {
+      "id": "nt_birch_snow",
+      "src": "BirchTree_Snow_1.glb",
+      "name": "Snowy Birch",
+      "category": "Trees",
+      "height": 8.0,
+      "collide": "trunk"
+    },
+    {
+      "id": "nt_common_tree",
+      "src": "CommonTree_1.glb",
+      "name": "Broadleaf Tree",
+      "category": "Trees",
+      "height": 7.0,
+      "collide": "trunk"
+    },
+    {
+      "id": "nt_common_tree_2",
+      "src": "CommonTree_2.glb",
+      "name": "Broadleaf Tree (round)",
+      "category": "Trees",
+      "height": 6.5,
+      "collide": "trunk"
+    },
+    {
+      "id": "nt_common_tree_autumn",
+      "src": "CommonTree_Autumn_1.glb",
+      "name": "Autumn Broadleaf",
+      "category": "Trees",
+      "height": 7.0,
+      "collide": "trunk"
+    },
+    {
+      "id": "nt_dead_tree",
+      "src": "CommonTree_Dead_1.glb",
+      "name": "Dead Tree",
+      "category": "Trees",
+      "height": 6.0,
+      "collide": "trunk"
+    },
+    {
+      "id": "nt_common_tree_snow",
+      "src": "CommonTree_Snow_1.glb",
+      "name": "Snowy Broadleaf",
+      "category": "Trees",
+      "height": 7.0,
+      "collide": "trunk"
+    },
+    {
+      "id": "nt_pine_tall",
+      "src": "PineTree_1.glb",
+      "name": "Tall Pine",
+      "category": "Trees",
+      "height": 9.0,
+      "collide": "trunk"
+    },
+    {
+      "id": "nt_pine_small",
+      "src": "PineTree_3.glb",
+      "name": "Young Pine",
+      "category": "Trees",
+      "height": 6.0,
+      "collide": "trunk"
+    },
+    {
+      "id": "nt_pine_snow_tall",
+      "src": "PineTree_Snow_1.glb",
+      "name": "Snowy Tall Pine",
+      "category": "Trees",
+      "height": 9.0,
+      "collide": "trunk"
+    },
+    {
+      "id": "nt_pine_autumn",
+      "src": "PineTree_Autumn_1.glb",
+      "name": "Autumn Pine",
+      "category": "Trees",
+      "height": 8.0,
+      "collide": "trunk"
+    },
+    {
+      "id": "nt_palm_curved",
+      "src": "PalmTree_1.glb",
+      "name": "Curved Palm",
+      "category": "Trees",
+      "height": 7.0,
+      "collide": "trunk"
+    },
+    {
+      "id": "nt_palm_tall",
+      "src": "PalmTree_3.glb",
+      "name": "Tall Palm",
+      "category": "Trees",
+      "height": 8.0,
+      "collide": "trunk"
+    },
+    {
+      "id": "nt_willow",
+      "src": "Willow_1.glb",
+      "name": "Willow",
+      "category": "Trees",
+      "height": 7.0,
+      "collide": "trunk"
+    },
+    {
+      "id": "nt_willow_autumn",
+      "src": "Willow_Autumn_1.glb",
+      "name": "Autumn Willow",
+      "category": "Trees",
+      "height": 7.0,
+      "collide": "trunk"
+    },
+    {
+      "id": "nt_willow_dead",
+      "src": "Willow_Dead_1.glb",
+      "name": "Dead Willow",
+      "category": "Trees",
+      "height": 6.0,
+      "collide": "trunk"
+    },
+    {
+      "id": "nt_saguaro",
+      "src": "Cactus_1.glb",
+      "name": "Saguaro Cactus",
+      "category": "Plants & Flowers",
+      "height": 3.5,
+      "collide": "trunk"
+    },
+    {
+      "id": "nt_cactus_round",
+      "src": "Cactus_3.glb",
+      "name": "Barrel Cactus",
+      "category": "Plants & Flowers",
+      "height": 1.2,
+      "collide": "box"
+    },
+    {
+      "id": "nt_cactus_flowers",
+      "src": "CactusFlowers_2.glb",
+      "name": "Flowering Cactus",
+      "category": "Plants & Flowers",
+      "height": 1.0,
+      "collide": "box"
+    },
+    {
+      "id": "nt_bush_leafy",
+      "src": "Bush_1.glb",
+      "name": "Leafy Bush",
+      "category": "Plants & Flowers",
+      "height": 1.2,
+      "collide": "none",
+      "conceals": true
+    },
+    {
+      "id": "nt_bush_berries",
+      "src": "BushBerries_1.glb",
+      "name": "Berry Bush",
+      "category": "Plants & Flowers",
+      "height": 1.1,
+      "collide": "none",
+      "conceals": true
+    },
+    {
+      "id": "nt_bush_snow",
+      "src": "Bush_Snow_1.glb",
+      "name": "Snowy Bush",
+      "category": "Plants & Flowers",
+      "height": 1.1,
+      "collide": "none",
+      "conceals": true
+    },
+    {
+      "id": "nt_corn",
+      "src": "Corn_1.glb",
+      "name": "Corn",
+      "category": "Plants & Flowers",
+      "height": 2.0,
+      "collide": "none",
+      "conceals": true
+    },
+    {
+      "id": "nt_wheat",
+      "src": "Wheat.glb",
+      "name": "Wheat",
+      "category": "Plants & Flowers",
+      "height": 1.0,
+      "collide": "none",
+      "conceals": true
+    },
+    {
+      "id": "nt_wildflowers",
+      "src": "Flowers.glb",
+      "name": "Wildflowers",
+      "category": "Plants & Flowers",
+      "height": 0.4,
+      "collide": "none"
+    },
+    {
+      "id": "nt_fern_wide",
+      "src": "Plant_1.glb",
+      "name": "Wide Fern",
+      "category": "Plants & Flowers",
+      "height": 0.8,
+      "collide": "none",
+      "conceals": true
+    },
+    {
+      "id": "nt_boulder_tall",
+      "src": "Rock_1.glb",
+      "name": "Tall Boulder",
+      "category": "Rocks & Wood",
+      "height": 2.2,
+      "collide": "box"
+    },
+    {
+      "id": "nt_boulder",
+      "src": "Rock_3.glb",
+      "name": "Boulder",
+      "category": "Rocks & Wood",
+      "height": 1.4,
+      "collide": "box"
+    },
+    {
+      "id": "nt_rock_flat",
+      "src": "Rock_5.glb",
+      "name": "Flat Rock",
+      "category": "Rocks & Wood",
+      "height": 0.8,
+      "collide": "box"
+    },
+    {
+      "id": "nt_boulder_moss",
+      "src": "Rock_Moss_1.glb",
+      "name": "Mossy Boulder",
+      "category": "Rocks & Wood",
+      "height": 2.0,
+      "collide": "box"
+    },
+    {
+      "id": "nt_rock_moss",
+      "src": "Rock_Moss_4.glb",
+      "name": "Mossy Rock",
+      "category": "Rocks & Wood",
+      "height": 1.2,
+      "collide": "box"
+    },
+    {
+      "id": "nt_boulder_snow",
+      "src": "Rock_Snow_1.glb",
+      "name": "Snowy Boulder",
+      "category": "Rocks & Wood",
+      "height": 2.0,
+      "collide": "box"
+    },
+    {
+      "id": "nt_rock_snow",
+      "src": "Rock_Snow_3.glb",
+      "name": "Snowy Rock",
+      "category": "Rocks & Wood",
+      "height": 1.2,
+      "collide": "box"
+    },
+    {
+      "id": "nt_stump_large",
+      "src": "TreeStump.glb",
+      "name": "Large Stump",
+      "category": "Rocks & Wood",
+      "height": 0.8,
+      "collide": "box"
+    },
+    {
+      "id": "nt_stump_moss",
+      "src": "TreeStump_Moss.glb",
+      "name": "Mossy Stump",
+      "category": "Rocks & Wood",
+      "height": 0.8,
+      "collide": "box"
+    },
+    {
+      "id": "nt_log_large",
+      "src": "WoodLog.glb",
+      "name": "Large Log",
+      "category": "Rocks & Wood",
+      "height": 0.7,
+      "collide": "box"
+    },
+    {
+      "id": "nt_log_moss",
+      "src": "WoodLog_Moss.glb",
+      "name": "Mossy Log",
+      "category": "Rocks & Wood",
+      "height": 0.7,
+      "collide": "box"
+    },
+    {
+      "id": "nt_log_snow",
+      "src": "WoodLog_Snow.glb",
+      "name": "Snowy Log",
+      "category": "Rocks & Wood",
+      "height": 0.75,
+      "collide": "box"
+    }
+  ]
+}

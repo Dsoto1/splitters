@@ -1,0 +1,174 @@
+{
+  "pack": {
+    "title": "Fantasy Town Kit 2.0",
+    "creator": "Kenney",
+    "url": "https://kenney.nl/assets/fantasy-town-kit",
+    "license": "CC0-1.0",
+    "licenseFile": "assets-src/kenney-fantasy-town-kit/License.txt",
+    "retrieved": "2026-10-23"
+  },
+  "order": 280,
+  "props": [
+    {
+      "id": "fountain",
+      "src": "fountain-round-detail.glb",
+      "name": "Fountain",
+      "category": "Town & Market",
+      "height": 2.2,
+      "collide": "box"
+    },
+    {
+      "id": "fountain_square",
+      "src": "fountain-square-detail.glb",
+      "name": "Square Fountain",
+      "category": "Town & Market",
+      "height": 2.2,
+      "collide": "box"
+    },
+    {
+      "id": "stall",
+      "src": "stall-red.glb",
+      "name": "Market Stall",
+      "category": "Town & Market",
+      "height": 2.8,
+      "collide": "box"
+    },
+    {
+      "id": "stall_green",
+      "src": "stall-green.glb",
+      "name": "Green Stall",
+      "category": "Town & Market",
+      "height": 2.8,
+      "collide": "box"
+    },
+    {
+      "id": "stall_bench",
+      "src": "stall-bench.glb",
+      "name": "Stall Bench",
+      "category": "Town & Market",
+      "height": 0.8,
+      "collide": "box"
+    },
+    {
+      "id": "cart",
+      "src": "cart.glb",
+      "name": "Cart",
+      "category": "Town & Market",
+      "height": 1.6,
+      "collide": "box"
+    },
+    {
+      "id": "cart_high",
+      "src": "cart-high.glb",
+      "name": "Hay Cart",
+      "category": "Town & Market",
+      "height": 2.2,
+      "collide": "box"
+    },
+    {
+      "id": "windmill",
+      "src": "windmill.glb",
+      "name": "Windmill",
+      "category": "Town & Market",
+      "height": 11.0,
+      "collide": "box"
+    },
+    {
+      "id": "watermill",
+      "src": "watermill.glb",
+      "name": "Watermill",
+      "category": "Town & Market",
+      "height": 6.0,
+      "collide": "box"
+    },
+    {
+      "id": "water_wheel",
+      "src": "wheel.glb",
+      "name": "Water Wheel",
+      "category": "Town & Market",
+      "height": 4.0,
+      "collide": "box"
+    },
+    {
+      "id": "lantern_post",
+      "src": "lantern.glb",
+      "name": "Lantern Post",
+      "category": "Town & Market",
+      "height": 2.6,
+      "collide": "trunk"
+    },
+    {
+      "id": "banner_red",
+      "src": "banner-red.glb",
+      "name": "Red Banner",
+      "category": "Town & Market",
+      "height": 3.0,
+      "collide": "trunk"
+    },
+    {
+      "id": "banner_green",
+      "src": "banner-green.glb",
+      "name": "Green Banner",
+      "category": "Town & Market",
+      "height": 3.0,
+      "collide": "trunk"
+    },
+    {
+      "id": "hedge_large",
+      "src": "hedge-large.glb",
+      "name": "Tall Hedge",
+      "category": "Town & Market",
+      "height": 2.2,
+      "collide": "box"
+    },
+    {
+      "id": "hedge",
+      "src": "hedge.glb",
+      "name": "Hedge",
+      "category": "Town & Market",
+      "height": 1.2,
+      "collide": "box"
+    },
+    {
+      "id": "hedge_gate",
+      "src": "hedge-gate.glb",
+      "name": "Hedge Gate",
+      "category": "Town & Market",
+      "height": 1.4,
+      "collide": "box"
+    },
+    {
+      "id": "town_fence",
+      "src": "fence.glb",
+      "name": "Town Fence",
+      "category": "Town & Market",
+      "height": 1.1,
+      "collide": "box"
+    },
+    {
+      "id": "stone_pillar_town",
+      "src": "pillar-stone.glb",
+      "name": "Stone Pillar",
+      "category": "Town & Market",
+      "height": 3.2,
+      "collide": "box"
+    },
+    {
+      "id": "wood_stairs",
+      "src": "stairs-wood-handrail.glb",
+      "name": "Wooden Stairs",
+      "category": "Town & Market",
+      "height": 2.0,
+      "collide": "stairs",
+      "climbs": "+x"
+    },
+    {
+      "id": "awning",
+      "src": "overhang.glb",
+      "name": "Awning",
+      "category": "Town & Market",
+      "height": 1.0,
+      "collide": "none"
+    }
+  ]
+}

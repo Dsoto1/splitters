@@ -1,0 +1,73 @@
+{
+  "pack": {
+    "title": "Metro",
+    "creator": "Elbolillo",
+    "url": "https://elbolilloduro.itch.io/metro",
+    "license": "CC0-1.0",
+    "licenseFile": "assets-src/elbolillo-metro/License.txt",
+    "retrieved": "2026-10-26",
+    "download": "Metro_PSX",
+    "models": "Models",
+    "convert": true,
+    "flatten": true,
+    "scale": 0.85
+  },
+  "order": 560,
+  "props": [
+    {
+      "id": "mt_subway_car",
+      "src": "Metro.glb#^(subway_car|seats(\\.\\d+)?|Railing_V(\\.\\d+)?|Door(\\.\\d+)?|Glass\\.\\d+)$",
+      "name": "Metro Car",
+      "category": "Metro",
+      "collide": "box",
+      "scale": 0.75
+    },
+    {
+      "id": "mt_ticket_gate",
+      "src": "Metro.glb#^automatic_ticket_gate$",
+      "name": "Ticket Gate",
+      "category": "Metro",
+      "collide": "box",
+      "yaw": 180
+    },
+    {
+      "id": "mt_ticket_machine",
+      "src": "Metro.glb#^ticket_machine$",
+      "name": "Ticket Machine",
+      "category": "Metro",
+      "collide": "box",
+      "yaw": 180
+    },
+    {
+      "id": "mt_vending_machine",
+      "src": "Metro.glb#^Vending_machine$",
+      "name": "Vending Machine",
+      "category": "Metro",
+      "collide": "box",
+      "yaw": 180
+    },
+    {
+      "id": "mt_bin",
+      "src": "Metro.glb#^trash_can$",
+      "name": "Platform Bin",
+      "category": "Metro",
+      "collide": "box",
+      "yaw": 180
+    },
+    {
+      "id": "mt_bench",
+      "src": "Metro.glb#^Chair$",
+      "name": "Platform Seats",
+      "category": "Metro",
+      "collide": "box",
+      "yaw": 180
+    },
+    {
+      "id": "mt_light",
+      "src": "Metro.glb#^light$",
+      "name": "Strip Light",
+      "category": "Metro",
+      "collide": "none"
+    }
+  ]
+}

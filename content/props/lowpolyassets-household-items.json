@@ -1,0 +1,395 @@
+{
+  "pack": {
+    "title": "Low Poly Household Items Pack",
+    "creator": "LowPolyAssets",
+    "url": "https://lowpolyassets.itch.io/low-poly-household-item-pack",
+    "license": "LicenseRef-Free-Use",
+    "licenseFile": "assets-src/lowpolyassets-household-items/License.txt",
+    "retrieved": "2026-10-26",
+    "download": "Low_Poly_Household_Items",
+    "models": "Low Poly Furniture",
+    "convert": true,
+    "scale": 0.002
+  },
+  "order": 540,
+  "props": [
+    {
+      "id": "hh_fridge",
+      "src": "Kitchen/Fridge A.fbx",
+      "name": "Tall Fridge",
+      "category": "Household",
+      "collide": "box"
+    },
+    {
+      "id": "hh_fridge_freezer",
+      "src": "Kitchen/Fridge B.fbx",
+      "name": "Fridge Freezer",
+      "category": "Household",
+      "collide": "box"
+    },
+    {
+      "id": "hh_oven",
+      "src": "Kitchen/Oven.fbx",
+      "name": "Cooker",
+      "category": "Household",
+      "collide": "box"
+    },
+    {
+      "id": "hh_dishwasher",
+      "src": "Kitchen/Dishwasher.fbx",
+      "name": "Dishwasher",
+      "category": "Household",
+      "collide": "box"
+    },
+    {
+      "id": "hh_washing_machine",
+      "src": "Kitchen/Washing Machine.fbx",
+      "name": "Washing Machine",
+      "category": "Household",
+      "collide": "box"
+    },
+    {
+      "id": "hh_cupboard",
+      "src": "Kitchen/Cupboard A.fbx",
+      "name": "Kitchen Unit",
+      "category": "Household",
+      "collide": "box"
+    },
+    {
+      "id": "hh_cupboard_double",
+      "src": "Kitchen/Cupboard B.fbx",
+      "name": "Double Kitchen Unit",
+      "category": "Household",
+      "collide": "box"
+    },
+    {
+      "id": "hh_cupboard_sink",
+      "src": "Kitchen/Cupboard Sink.fbx",
+      "name": "Sink Unit",
+      "category": "Household",
+      "collide": "box"
+    },
+    {
+      "id": "hh_cupboard_drawers",
+      "src": "Kitchen/Cupboard C.fbx",
+      "name": "Kitchen Drawers",
+      "category": "Household",
+      "collide": "box"
+    },
+    {
+      "id": "hh_microwave",
+      "src": "Kitchen/Microwave.fbx",
+      "name": "Microwave",
+      "category": "Household",
+      "collide": "none"
+    },
+    {
+      "id": "hh_kettle",
+      "src": "Kitchen/Kettle.fbx",
+      "name": "Kettle",
+      "category": "Household",
+      "collide": "none"
+    },
+    {
+      "id": "hh_toaster",
+      "src": "Kitchen/Toaster.fbx",
+      "name": "Toaster",
+      "category": "Household",
+      "collide": "none"
+    },
+    {
+      "id": "hh_bath",
+      "src": "Bathroom/Bath.fbx",
+      "name": "Bath",
+      "category": "Household",
+      "collide": "box"
+    },
+    {
+      "id": "hh_shower",
+      "src": "Bathroom/Shower.fbx",
+      "name": "Shower",
+      "category": "Household",
+      "collide": "box"
+    },
+    {
+      "id": "hh_basin",
+      "src": "Bathroom/Sink.fbx",
+      "name": "Wash Basin",
+      "category": "Household",
+      "collide": "box"
+    },
+    {
+      "id": "hh_toilet",
+      "src": "Bathroom/Toilet.fbx",
+      "name": "Toilet",
+      "category": "Household",
+      "collide": "box"
+    },
+    {
+      "id": "hh_bed_double",
+      "src": "Beds/Bed Double.fbx",
+      "name": "Double Bed",
+      "category": "Household",
+      "collide": "box"
+    },
+    {
+      "id": "hh_bed_single",
+      "src": "Beds/Bed Single.fbx",
+      "name": "Single Bed",
+      "category": "Household",
+      "collide": "box"
+    },
+    {
+      "id": "hh_bunk_bed",
+      "src": "Beds/Bunk Bed.fbx",
+      "name": "Bunk Bed",
+      "category": "Household",
+      "collide": "box"
+    },
+    {
+      "id": "hh_chair",
+      "src": "Chairs/Chair A.fbx",
+      "name": "Dining Chair",
+      "category": "Household",
+      "collide": "box"
+    },
+    {
+      "id": "hh_stool",
+      "src": "Chairs/Chair C.fbx",
+      "name": "Bar Stool",
+      "category": "Household",
+      "collide": "box"
+    },
+    {
+      "id": "hh_office_chair",
+      "src": "Chairs/Chair E.fbx",
+      "name": "Swivel Chair",
+      "category": "Household",
+      "collide": "box"
+    },
+    {
+      "id": "hh_table",
+      "src": "Tables/Table A.fbx",
+      "name": "Dining Table",
+      "category": "Household",
+      "collide": "box"
+    },
+    {
+      "id": "hh_table_small",
+      "src": "Tables/Table B.fbx",
+      "name": "Small Table",
+      "category": "Household",
+      "collide": "box"
+    },
+    {
+      "id": "hh_coffee_table",
+      "src": "Tables/Table C.fbx",
+      "name": "Coffee Table",
+      "category": "Household",
+      "collide": "box"
+    },
+    {
+      "id": "hh_round_table",
+      "src": "Tables/Rounded Table B.fbx",
+      "name": "Round Table",
+      "category": "Household",
+      "collide": "box"
+    },
+    {
+      "id": "hh_desk",
+      "src": "Tables/Desk.fbx",
+      "name": "Writing Desk",
+      "category": "Household",
+      "collide": "box"
+    },
+    {
+      "id": "hh_sofa",
+      "src": "Sofas/Sofa A.fbx",
+      "name": "Three-Seat Sofa",
+      "category": "Household",
+      "collide": "box"
+    },
+    {
+      "id": "hh_sofa_small",
+      "src": "Sofas/Sofa B.fbx",
+      "name": "Two-Seat Sofa",
+      "category": "Household",
+      "collide": "box"
+    },
+    {
+      "id": "hh_armchair",
+      "src": "Sofas/Sofa C.fbx",
+      "name": "Blue Armchair",
+      "category": "Household",
+      "collide": "box"
+    },
+    {
+      "id": "hh_corner_sofa",
+      "src": "Sofas/Sofa D.fbx",
+      "name": "Long Sofa",
+      "category": "Household",
+      "collide": "box"
+    },
+    {
+      "id": "hh_bookcase",
+      "src": "Shelves/Shelf A.fbx",
+      "name": "Tall Bookcase",
+      "category": "Household",
+      "collide": "box"
+    },
+    {
+      "id": "hh_bookcase_wide",
+      "src": "Shelves/Shelf B.fbx",
+      "name": "Wide Bookcase",
+      "category": "Household",
+      "collide": "box"
+    },
+    {
+      "id": "hh_wall_shelf",
+      "src": "Shelves/Wall Shelf A.fbx",
+      "name": "Long Wall Shelf",
+      "category": "Household",
+      "collide": "none"
+    },
+    {
+      "id": "hh_chest_drawers",
+      "src": "Drawers/Drawer A.fbx",
+      "name": "Chest of Drawers",
+      "category": "Household",
+      "collide": "box"
+    },
+    {
+      "id": "hh_bedside",
+      "src": "Drawers/Drawer B.fbx",
+      "name": "Bedside Drawers",
+      "category": "Household",
+      "collide": "box"
+    },
+    {
+      "id": "hh_tv",
+      "src": "Electronics/TV B.fbx",
+      "name": "Flat TV",
+      "category": "Household",
+      "collide": "none"
+    },
+    {
+      "id": "hh_monitor",
+      "src": "Electronics/Monitor.fbx",
+      "name": "Monitor",
+      "category": "Household",
+      "collide": "none"
+    },
+    {
+      "id": "hh_pc",
+      "src": "Electronics/Pc.fbx",
+      "name": "PC Tower",
+      "category": "Household",
+      "collide": "box"
+    },
+    {
+      "id": "hh_laptop",
+      "src": "Electronics/Laptop.fbx",
+      "name": "Laptop",
+      "category": "Household",
+      "collide": "none"
+    },
+    {
+      "id": "hh_floor_lamp",
+      "src": "Lights/Lamp A.fbx",
+      "name": "Red Floor Lamp",
+      "category": "Household",
+      "collide": "trunk"
+    },
+    {
+      "id": "hh_desk_lamp",
+      "src": "Lights/Lamp C.fbx",
+      "name": "Table Lamp",
+      "category": "Household",
+      "collide": "none"
+    },
+    {
+      "id": "hh_plant",
+      "src": "Miscellaneous/Plant A.fbx",
+      "name": "Pot Plant",
+      "category": "Household",
+      "collide": "box"
+    },
+    {
+      "id": "hh_bin",
+      "src": "Miscellaneous/Bin.fbx",
+      "name": "Pedal Bin",
+      "category": "Household",
+      "collide": "box"
+    },
+    {
+      "id": "hh_radiator",
+      "src": "Miscellaneous/Radiator A.fbx",
+      "name": "Radiator",
+      "category": "Household",
+      "collide": "box"
+    },
+    {
+      "id": "hh_safe",
+      "src": "Miscellaneous/Safe B.fbx",
+      "name": "Safe",
+      "category": "Household",
+      "collide": "box"
+    },
+    {
+      "id": "hh_books",
+      "src": "Miscellaneous/Books A.fbx",
+      "name": "Row of Books",
+      "category": "Household",
+      "collide": "none"
+    },
+    {
+      "id": "hh_globe",
+      "src": "Miscellaneous/Globe.fbx",
+      "name": "Globe",
+      "category": "Household",
+      "collide": "none"
+    },
+    {
+      "id": "hh_speaker",
+      "src": "Miscellaneous/Speaker.fbx",
+      "name": "Speaker",
+      "category": "Household",
+      "collide": "box"
+    },
+    {
+      "id": "hh_fan",
+      "src": "Miscellaneous/Fan.fbx",
+      "name": "Desk Fan",
+      "category": "Household",
+      "collide": "none"
+    },
+    {
+      "id": "hh_wall_clock",
+      "src": "Miscellaneous/Clock.fbx",
+      "name": "Wall Clock",
+      "category": "Household",
+      "collide": "none"
+    },
+    {
+      "id": "hh_mirror",
+      "src": "Miscellaneous/Mirror A.fbx",
+      "name": "Wall Mirror",
+      "category": "Household",
+      "collide": "none"
+    },
+    {
+      "id": "hh_rug",
+      "src": "Carpets/Carpet A.fbx",
+      "name": "Patterned Rug",
+      "category": "Household",
+      "collide": "none"
+    },
+    {
+      "id": "hh_rug_small",
+      "src": "Carpets/Carpet C.fbx",
+      "name": "Small Rug",
+      "category": "Household",
+      "collide": "none"
+    }
+  ]
+}

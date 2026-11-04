@@ -22,6 +22,7 @@ import { compactPrimitive, prune } from '@gltf-transform/functions';
 import { buildSpec, readManifests } from './character-manifests.mjs';
 import { fitHands } from './hands.mjs';
 import { keepArmsToArms } from './armweights.mjs';
+import { writeLock } from './lockfile.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const OUT = join(ROOT, 'packages/client/public/characters');
@@ -298,6 +299,6 @@ for (const m of readManifests({ ready: true })) {
 }
 if (TRIAL) console.log(`hands fitted on ${files.length} characters, written to ${TRIAL} (trial: lock unchanged)`);
 else {
-  writeFileSync(LOCK, `${JSON.stringify(lock, null, 2)}\n`);
+  writeLock(LOCK, lock);
   console.log(`hands fitted on ${files.length} characters; content/meshy.lock.json updated`);
 }
