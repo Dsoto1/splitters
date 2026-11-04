@@ -1242,7 +1242,9 @@ export class GameSession {
   }
 
   private noteIfSlow(stats: Extract<ServerMessage, { t: 'stats' }>): void {
-    if (this.slowSeconds < 0 || !(this.opts.transport instanceof LocalTransport)) return;
+    // Not in a browser test's match: on CI's software-rendered page every match is "heavy", and the advice took the
+    // announcer's line from the check reading it (ctf: "the announcer calls it").
+    if (this.slowSeconds < 0 || !(this.opts.transport instanceof LocalTransport) || this.offlineOnly) return;
     const slow = !document.hidden && (stats.lateTicks > 12 || this.frameMs > 50);
     this.slowSeconds = slow ? this.slowSeconds + 1 : 0;
     if (this.slowSeconds < 5) return;
