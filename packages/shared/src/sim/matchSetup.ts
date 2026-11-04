@@ -33,6 +33,10 @@ export interface MatchSetup {
   playlist?: string;
   leaders?: 'on' | 'vip';
   sizes?: boolean;
+  /** Character stats (absent: on). */
+  stats?: boolean;
+  /** Random characters each life (absent: off). */
+  randomChars?: boolean;
   emotes?: boolean;
   botStyle?: 'arena' | 'tactical';
   /** Which looks random bots wear (content/botNames.ts): absent, the map's own; empty, every look; else groups and/or name themes. */
@@ -230,6 +234,8 @@ export function rulesFromSetup(setup: MatchSetup, map: MapDocument): { rules: Ma
   const base = DEFAULT_RULES[s.mode];
   const rules: MatchRules = isCoopMode(s.mode) ? { ...base } : { ...base, scoreLimit: s.scoreLimit, timeLimitSeconds: s.minutes * 60 };
   if (s.sizes === false) rules.bodySizes = false;
+  if (s.stats === false) rules.characterStats = false;
+  if (s.randomChars) rules.randomCharacters = true;
   if (s.emotes === false) rules.emotes = false;
   if (s.botStyle) rules.botStyle = s.botStyle;
   if (Array.isArray(s.botCast)) rules.botCast = validBotCast(s.botCast);

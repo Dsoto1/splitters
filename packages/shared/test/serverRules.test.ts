@@ -29,6 +29,8 @@ const PARITY: [string, unknown, GameMode, Partial<MatchSetup>, (keyof MatchRules
   ['squadspawn', false, 'core.tdm', { squadSpawn: false }, ['squadSpawn']],
   ['streaks', false, 'core.deathmatch', { killstreaks: false }, ['killstreaks']],
   ['sizes', false, 'core.deathmatch', { sizes: false }, ['bodySizes']],
+  ['stats', false, 'core.deathmatch', { stats: false }, ['characterStats']],
+  ['randomchars', true, 'core.deathmatch', { randomChars: true }, ['randomCharacters']],
   ['gravity', 'low', 'core.deathmatch', { gravity: 0.4 }, ['gravity']],
   ['fall', true, 'core.deathmatch', { fallDamage: true }, ['fallDamage']],
   ['lethality', 'tactical', 'core.deathmatch', { lethality: 'tactical' }, ['lethality']],

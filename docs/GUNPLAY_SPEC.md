@@ -565,6 +565,14 @@ Shotguns may use reduced headshot multipliers to prevent random pellet distribut
 
 Explosives should not use conventional headshot logic.
 
+**Implementation note (2026-11-04): measured hit shapes.** Zones are no longer height bands on a 0.4 m capsule.
+Every look has its own head sphere, torso, thigh, shin and (where they stick out) arm shapes measured from its model
+standing, crouching and prone; the zone is the shape a round meets (head sphere: head, legs: legs, torso and arms:
+upper body at 1.0×; the zone is the shape whose own core the round passes nearest). Lag compensation rewinds the
+same shapes. Every shape carries a margin (`HITBOX_MARGIN`: 0.18 m body, 0.12 m head at a 1.8 m body) so hit rates
+and TTK stay where the 0.8 m capsule had them: a standard chest is 0.68 × 0.62 m with it, the head 0.50 m across.
+Melee keeps its forgiving reach and thrown projectiles are 0.12 m thick. docs/CHARACTERS.md, "Hitboxes".
+
 ---
 
 # 12. Recoil Philosophy

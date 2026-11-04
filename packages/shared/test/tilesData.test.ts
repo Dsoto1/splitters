@@ -1,11 +1,14 @@
 /**
  * Tiles as data (docs/CONTENT_SCALABILITY.md step 7): the core building kit (every tile catalog.ts defines, in
  * catalog order), the edge styles (labels, collision segments, trim, window openings, how glass, corners, facades and
- * room dressing read them) and what they build in every map must stay exactly what they were before the kit moved to
- * content/tiles/. The fixture was written from the hand-written tables, before the move; it is only rewritten on
- * purpose:
+ * room dressing read them) and what they build in a map of every edge style (styleMap) must stay exactly what they
+ * were before the kit moved to content/tiles/. The fixture was written from the hand-written tables, before the move;
+ * it is only rewritten on purpose:
  *   UPDATE_TILE_FIXTURE=1 pnpm vitest run packages/shared/test/tilesData.test.ts
  * and the diff of test/fixtures/tiles-resolved.json then shows exactly what changed.
+ * Every shipped map's built geometry was hashed here too until the move was proven (2026-11-04); it failed on every
+ * intended map or prop change since, and the headless check of every map (allMaps*.test.ts) now catches maps that
+ * break, so it went.
  */
 import { createHash } from 'node:crypto';
 import { existsSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
@@ -29,7 +32,6 @@ import {
   dressSpace,
   edgeSegments,
   edgeTrim,
-  loadMap,
   validateMap,
   windowOpenings,
   windowPanes,
@@ -100,11 +102,6 @@ function built(map: MapDocument) {
 
 function tiles() {
   const all = coreCatalog.all();
-  const maps: Record<string, unknown> = {};
-  for (const f of readdirSync(MAPS).filter((x) => x.endsWith('.json')).sort()) {
-    const r = loadMap(readFileSync(join(MAPS, f), 'utf8'));
-    maps[f] = r.ok ? built(r.map) : { failed: hash(r.issues) };
-  }
   return norm({
     order: all.map((t) => t.id),
     kit: all.filter((t) => !PACK_IDS.has(t.id)),
@@ -125,7 +122,6 @@ function tiles() {
       none: { segments: edgeSegments('none', 4, 4), trim: edgeTrim('none', 4, 4) },
     },
     styleMap: built(styleMap()),
-    maps,
   });
 }
 
@@ -133,7 +129,7 @@ describe('tiles as data: the resolved kit', () => {
   if (process.env.UPDATE_TILE_FIXTURE) {
     it('writes the fixture', () => {
       writeFileSync(FIXTURE, JSON.stringify(tiles(), null, 1) + '\n');
-    }, 600_000);
+    }, 120_000);
     return;
   }
 
@@ -146,7 +142,7 @@ describe('tiles as data: the resolved kit', () => {
     expect(now).toEqual(was);
     // Key order too: a tile's palette picture is keyed by a hash of its definition's JSON (tools/content/palette-items.ts).
     expect(JSON.stringify(now.kit)).toBe(JSON.stringify(was.kit));
-  }, 600_000);
+  }, 120_000);
 
   it('every tile the maps and Style Packs name exists, kit or Style Pack (the generator checks the kit\'s side)', () => {
     const missing: string[] = [];

@@ -91,6 +91,11 @@ export const MapMetadata = z.object({
   thumbnailCamera: ThumbnailCamera.optional(),
   /** Map ID, version ID and content hash, stamped when the map is exported (map/identity.ts). */
   release: MapRelease.optional(),
+  /**
+   * A map for the tests (maps/test_coverage.json: one of everything), set in MapMaker's Map properties: no map list,
+   * template list, rotation or host picker offers it; `?offline=<id>` and MapMaker's Import still open it.
+   */
+  testOnly: z.boolean().optional(),
 });
 
 /** A material from the library plus an optional tint, applied to one surface slot. */

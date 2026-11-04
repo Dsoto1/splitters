@@ -1,3 +1,4 @@
+import { bodyToWorld, headPoint, shapesFor, type HitBody, type LookHitbox } from '../sim/hitbox.ts';
 import { angleDelta, clamp, lookAngles, type Vec3, hypot } from '../math.ts';
 import { PLAYER, STANCES, TICK_DT, TICK_RATE, type Stance } from '../sim/constants.ts';
 import type { WeaponDefinition } from '../sim/weapons.ts';
@@ -44,7 +45,18 @@ export interface AimTarget {
   stance?: Stance;
   /** Body size (BODY_SIZES scale, absent = 1): the aim point scales with it. */
   size?: number;
+  /**
+   * Its measured hit shapes (sim/hitbox.ts), facing `yaw`, at `hitScale` before `size`, in `bodyStance` (its real
+   * stance; `stance` is where to aim, which explosives lower): the head and chest are where the model's are.
+   */
+  box?: LookHitbox | null;
+  yaw?: number;
+  hitScale?: number;
+  bodyStance?: Stance;
 }
+
+/** Scratch body for aim points (at the origin: offsets from the feet). */
+const aimBody: HitBody = { feet: { x: 0, y: 0, z: 0 }, yaw: 0, stance: 0, scale: 1, box: null as unknown as LookHitbox };
 
 export interface AimSolution {
   yaw: number;
@@ -232,7 +244,26 @@ export class AimModel {
       this.head = settled && dist0 < 40 && this.rng() < skill.headChance * (this.profile.accuracy / 50);
       this.nextPointPick = ctx.tick + Math.round(TICK_RATE * (0.6 + this.rng() * 0.8));
     }
-    const up = this.head ? height - 0.15 * size : ctx.tick < this.highUntil ? height - 0.3 * size : height * 0.6;
+    let up = this.head ? height - 0.15 * size : ctx.tick < this.highUntil ? height - 0.3 * size : height * 0.6;
+    let ox = 0;
+    let oz = 0;
+    const box = target.box;
+    if (box && (target.stance ?? 0) === (target.bodyStance ?? 0)) {
+      // The real head (the head sphere's centre), the top of the chest (only head and shoulders over cover), or the
+      // middle of the chest, as this body is measured: a hunched creature's head is low and ahead of its feet.
+      aimBody.yaw = target.yaw ?? 0;
+      aimBody.stance = target.bodyStance ?? 0;
+      aimBody.scale = (target.hitScale ?? 1) * size;
+      aimBody.box = box;
+      const s = shapesFor(box, aimBody.stance);
+      // Over low cover only the head and shoulders show: the bottom of the head, where they meet.
+      const high = ctx.tick < this.highUntil;
+      const p = this.head || high || !s.torso ? headPoint(aimBody) : bodyToWorld(aimBody, s.torso.x, (s.torso.a[0] + s.torso.b[0]) / 2, (s.torso.a[1] + s.torso.b[1]) / 2);
+      if (high && !this.head && s.head) p.y -= s.head.r * 0.5 * aimBody.scale;
+      ox = p.x;
+      up = p.y;
+      oz = p.z;
+    }
     let lead = skill.lagSeconds * skill.prediction;
     const proj = ctx.weapon?.projectile;
     const dist = hypot(seen.x - ctx.eye.x, seen.y + up - ctx.eye.y, seen.z - ctx.eye.z);
@@ -243,7 +274,7 @@ export class AimModel {
     const bal = ctx.weapon ? gunplayOf(ctx.weapon).ballistic : null;
     const flight = bal ? Math.max(0, dist - NEAR_INSTANT_M) / bal.velocity : 0;
     if (bal) lead += flight * (skill.leadSkill ?? 0.5);
-    const point = { x: seen.x + v.x * lead, y: seen.y + up, z: seen.z + v.z * lead };
+    const point = { x: seen.x + ox + v.x * lead, y: seen.y + up, z: seen.z + oz + v.z * lead };
     const want = lookAngles(ctx.eye, point);
     if (proj && proj.gravity > 0) {
       const t = dist / proj.speed;

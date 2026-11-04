@@ -28,12 +28,16 @@ permissions:
   contents: read
   actions: read
 
-# A newer commit makes the run for the older one pointless (the nightly run has its own group), except on main:
-# every main commit must finish and publish main-latest (a fast-forward followed seconds later by a notes-only
-# commit cancelled the release of 9a959ee, and the box stayed on an older build).
+# One run per branch: a new push to a check/ branch cancels the older run there (it is pointless now). Nothing else is
+# cancelled: every main commit must finish and publish main-latest (a fast-forward followed seconds later by a
+# notes-only commit cancelled the release of 9a959ee, and the box stayed on an older build), and nightly runs and
+# tags have their own groups.
+# Fail fast: the long steps (unit tests, e2e shards, perf) run under tools/ci/stop-on-failure.sh, which stops them as
+# soon as any other job of the run has failed; they fail too, so the run reads "failure" (not "cancelled") and
+# land/train refuse it as before.
 concurrency:
   group: ci-${{ github.event.pull_request.number || github.ref }}-${{ github.event_name == 'schedule' && 'nightly' || 'push' }}
-  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+  cancel-in-progress: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/heads/check/') }}
 
 jobs:
   plan:
@@ -46,6 +50,8 @@ jobs:
       e2e: ${{ steps.plan.outputs.e2e }}
       shards: ${{ steps.plan.outputs.shards }}
       unit: ${{ steps.plan.outputs.unit }}
+      unit_jobs: ${{ steps.plan.outputs.unit_jobs }}
+      timings_run: ${{ steps.timings.outputs.run_id }}
       perf: ${{ steps.plan.outputs.perf }}
       docs_only: ${{ steps.plan.outputs.docs_only }}
     steps:
@@ -92,9 +98,11 @@ jobs:
               return;
             }
             core.setOutput('green', 'false');
-            // Not itself green on a check branch (a notes-only commit pushed straight to main): test what changed since
-            // the nearest earlier main commit that was, rather than everything (a flaky flow then held back the release).
-            if (context.ref === 'refs/heads/main') {
+            // Not itself green on a check branch (a notes-only commit pushed straight to main, or a check branch built
+            // on a candidate that already went green): test what changed since the nearest earlier first-parent commit
+            // that was, rather than everything (a flaky flow then held back the release; a small change on top of a
+            // green candidate re-ran its whole suite).
+            if (context.ref === 'refs/heads/main' || context.ref.startsWith('refs/heads/check/')) {
               const { execSync } = require('child_process');
               const shas = execSync('git rev-list --first-parent -n 30 HEAD~1', { encoding: 'utf8' }).split('\n').filter(Boolean);
               for (const sha of shas) {
@@ -106,6 +114,34 @@ jobs:
                 }
               }
             }
+      # The flows' measured durations the shards are packed by: the newest table CI merged from its own timings
+      # (the timings job's e2e-timings artifact, kept 30 days), else the committed e2e/timings.json.
+      - name: Newest e2e timings
+        id: timings
+        if: steps.prior.outputs.green != 'true'
+        continue-on-error: true
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data } = await github.rest.actions.listWorkflowRuns({ owner: context.repo.owner, repo: context.repo.repo, workflow_id: 'ci.yml', status: 'completed', per_page: 30 });
+            for (const run of data.workflow_runs) {
+              if (run.id === context.runId) continue;
+              const { data: a } = await github.rest.actions.listWorkflowRunArtifacts({ owner: context.repo.owner, repo: context.repo.repo, run_id: run.id, name: 'e2e-timings' });
+              if (a.artifacts.some((x) => !x.expired)) {
+                core.setOutput('run_id', String(run.id));
+                core.notice(`e2e timings from run ${run.id} (${run.head_branch})`);
+                return;
+              }
+            }
+            core.notice('No e2e-timings artifact in the last 30 runs: the committed e2e/timings.json');
+      - if: steps.timings.outputs.run_id != ''
+        continue-on-error: true
+        uses: actions/download-artifact@v4
+        with:
+          name: e2e-timings
+          path: e2e
+          run-id: ${{ steps.timings.outputs.run_id }}
+          github-token: ${{ github.token }}
       - name: Plan
         id: plan
         env:
@@ -125,11 +161,17 @@ jobs:
           base=origin/main
           [ "$EVENT" = "pull_request" ] && base="origin/$BASE_REF"
           full=""
+          # The browser map tour (every map in a browser) only nightly, for v* tags and from Run workflow.
           case "$EVENT" in
-            schedule) full=--full ;;
-            workflow_dispatch) [ "$DISPATCH_FULL" = "true" ] && full=--full ;;
-            push) case "$REF" in refs/tags/*) full=--full ;; refs/heads/main) if [ -n "$GREEN_BASE" ]; then base="$GREEN_BASE"; else full=--full; fi ;; esac ;;
+            schedule) full="--full --tour" ;;
+            workflow_dispatch) [ "$DISPATCH_FULL" = "true" ] && full="--full --tour" ;;
+            push) case "$REF" in
+                refs/tags/*) full="--full --tour" ;;
+                refs/heads/main) if [ -n "$GREEN_BASE" ]; then base="$GREEN_BASE"; else full=--full; fi ;;
+                refs/heads/check/*) [ -n "$GREEN_BASE" ] && base="$GREEN_BASE" ;;
+              esac ;;
           esac
+          # shellcheck disable=SC2086 # the flags are separate words
           node tools/ci/select.mjs --github --base "$base" $full
 
   # The built site for the browser tests and the perf check (they don't build it again).
@@ -199,6 +241,7 @@ jobs:
           path: client-release
           retention-days: 14
 
+  # Lints, types, content and the map validator, bot benches; the unit tests run beside it (unit job).
   check:
     needs: plan
     if: needs.plan.outputs.skip != 'true'
@@ -223,22 +266,44 @@ jobs:
         run: pnpm typecheck
       - if: needs.plan.outputs.docs_only != 'true'
         run: pnpm content:check
-      # Unit tests: all of them, or the packages the change touches ('none': no tests to run).
-      - if: env.UNIT == 'all'
-        run: pnpm test
-      - if: env.UNIT != 'all' && env.UNIT != 'none' && env.UNIT != ''
-        run: |
-          # shellcheck disable=SC2086 # one argument per test folder
-          pnpm exec vitest run $UNIT
       - if: env.UNIT == 'all'
         run: |
           pnpm validate-map maps/phase0_arena.json
           pnpm validate-map maps/m3_vault.json
           pnpm validate-map maps/m4_outpost.json
+          pnpm validate-map maps/test_coverage.json
       - if: env.UNIT == 'all'
         run: pnpm bench 32 15 -- --npcs=32
       - if: env.UNIT == 'all'
         run: pnpm bench 32 30
+
+  # Unit tests, side by side (the plan's unit_jobs: vitest shards of the packages the change touches, and the
+  # headless check of every map, packages/shared/test/allMaps*.test.ts, in jobs of its own).
+  unit:
+    needs: plan
+    if: needs.plan.outputs.skip != 'true' && needs.plan.outputs.unit_jobs != '[]' && needs.plan.outputs.unit_jobs != ''
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        job: ${{ fromJSON(needs.plan.outputs.unit_jobs) }}
+    name: unit (${{ matrix.job.name }})
+    steps:
+      # The whole tree: content tests read the client's models.
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - env:
+          ARGS: ${{ matrix.job.args }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # shellcheck disable=SC2086 # vitest's arguments, one word each
+          tools/ci/stop-on-failure.sh pnpm exec vitest run $ARGS
 
   e2e:
     needs: [plan, build]
@@ -246,14 +311,22 @@ jobs:
     runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
-      # Flows balanced over up to 8 shards by measured time (e2e/timings.json, e2e/shards.mjs).
+      # Flows packed into up to 16 shards by measured time (e2e/timings.json, refreshed by the timings job; e2e/shards.mjs).
       matrix:
         shard: ${{ fromJSON(needs.plan.outputs.shards) }}
     name: e2e (${{ matrix.shard.index }}/${{ matrix.shard.of }})
-    # A shard is planned at about 10 minutes; a failed flow runs twice.
+    # A shard is planned at about 5 minutes; a failed flow runs twice.
     timeout-minutes: 45
     steps:
+      # The site comes built (client-dist): no need for the client's models or the raw asset sources.
       - uses: actions/checkout@v4
+        with:
+          filter: blob:none
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /*
+            !/packages/client/public/
+            !/assets-src/
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
@@ -282,9 +355,12 @@ jobs:
           node -e "require('playwright').chromium.launch().then((b) => b.close())" && exit 0
           for i in 1 2 3; do timeout 300 pnpm exec playwright install-deps chromium && exit 0; echo "playwright install-deps try $i failed"; sleep 10; done; exit 1
         timeout-minutes: 17
-      - run: pnpm e2e
+      - run: tools/ci/stop-on-failure.sh pnpm e2e
         env:
+          GH_TOKEN: ${{ github.token }}
           E2E_ONLY: ${{ matrix.shard.flows }}
+          # A change to a few maps: the 'maps' flow tours just those (empty: its whole part).
+          E2E_MAPS: ${{ matrix.shard.maps }}
           E2E_SHARD_LABEL: ${{ matrix.shard.index }}/${{ matrix.shard.of }}
           # A failed flow runs once more; passing then, it's reported as FLAKY (job summary, flaky log) and doesn't fail the run.
           E2E_RETRIES: '1'
@@ -314,15 +390,63 @@ jobs:
           retention-days: 7
           if-no-files-found: ignore
 
+  # The flows' durations for the next plan: this run's measurements merged into the table its plan used, kept as the
+  # e2e-timings artifact (the plan job takes the newest). Commit a refreshed table from it now and then.
+  timings:
+    needs: [plan, e2e]
+    if: always() && needs.plan.outputs.e2e == 'true' && needs.e2e.result != 'skipped' && needs.e2e.result != 'cancelled'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            e2e
+            tools/ci
+      - if: needs.plan.outputs.timings_run != ''
+        continue-on-error: true
+        uses: actions/download-artifact@v4
+        with:
+          name: e2e-timings
+          path: e2e
+          run-id: ${{ needs.plan.outputs.timings_run }}
+          github-token: ${{ github.token }}
+      - continue-on-error: true
+        uses: actions/download-artifact@v4
+        with:
+          pattern: e2e-timings-*
+          path: measured
+      - run: |
+          mkdir -p out measured
+          node tools/ci/timings.mjs merge --base e2e/timings.json --out out/timings.json measured | tee -a "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: e2e-timings
+          path: out/timings.json
+          retention-days: 30
+
   # Draw-call budget (docs/PERF_96.md): 96 players clumped on Frost Basin at Medium and Low. It counts draw
   # calls, not frame times, so CPU rendering on the runner doesn't matter.
+  # The two checks run side by side (each ~3-5 min on its own runner).
   perf:
     needs: [plan, build]
     if: needs.plan.outputs.skip != 'true' && needs.plan.outputs.perf == 'true'
     runs-on: ubuntu-24.04
     timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        check: [budget, mass]
+    name: perf (${{ matrix.check }})
     steps:
       - uses: actions/checkout@v4
+        with:
+          filter: blob:none
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /*
+            !/packages/client/public/
+            !/assets-src/
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
@@ -348,16 +472,22 @@ jobs:
           node -e "require('playwright').chromium.launch().then((b) => b.close())" && exit 0
           for i in 1 2 3; do timeout 300 pnpm exec playwright install-deps chromium && exit 0; echo "playwright install-deps try $i failed"; sleep 10; done; exit 1
         timeout-minutes: 17
-      - run: pnpm perf:budget
+      - if: matrix.check == 'budget'
+        run: tools/ci/stop-on-failure.sh pnpm perf:budget
+        env:
+          GH_TOKEN: ${{ github.token }}
       # Mass casualty (docs/PHYSICS_FX.md): one blast kills 20 in a 24 v 24; the worst frame's game JS after it and
       # the ragdoll bodies awake at once stay within budget (CPU rendering doesn't inflate the JS part).
-      - run: pnpm perf:mass
+      - if: matrix.check == 'mass'
+        run: tools/ci/stop-on-failure.sh pnpm perf:mass
+        env:
+          GH_TOKEN: ${{ github.token }}
 
   # Publishes the site package once everything this run needed is green (or the commit already went green on
   # a check branch: then that run's package, the very bytes it tested). Signs it with a Sigstore build-provenance
   # attestation (keyless: GitHub's OIDC identity of this workflow; no key to manage), which the box verifies.
   release:
-    needs: [plan, site, check, build, e2e, perf]
+    needs: [plan, site, check, unit, build, e2e, perf]
     if: >-
       always() && github.event_name == 'push' && needs.plan.result == 'success' &&
       (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v') || startsWith(github.ref, 'refs/heads/check/')) &&

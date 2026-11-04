@@ -135,6 +135,14 @@ export const SERVER_RULES: readonly RuleSpec[] = [
     read: (r) => r.bodySizes !== false, write: (r, v) => (v ? delete r.bodySizes : (r.bodySizes = false)),
   },
   {
+    key: 'stats', label: 'Character stats', help: "On: each character's own health, speed, size, damage, stamina, jump, melee and armor (a character without them plays its size). Off: nobody's own stats count.", type: onOff, apply: 'next',
+    read: (r) => r.characterStats !== false, write: (r, v) => (v ? delete r.characterStats : (r.characterStats = false)),
+  },
+  {
+    key: 'randomchars', label: 'Random characters', help: 'Everyone, players and bots, plays a random character each life.', type: onOff, apply: 'next',
+    read: (r) => !!r.randomCharacters, write: (r, v) => (v ? (r.randomCharacters = true) : delete r.randomCharacters),
+  },
+  {
     key: 'gravity', label: 'Gravity', help: "Low, normal or heavy (default: the map's own).", type: choice(['low', 'Low'], ['normal', 'Normal'], ['heavy', 'Heavy']), apply: 'next',
     read: (r) => (r.gravity === undefined ? 'normal' : r.gravity <= 0.5 ? 'low' : r.gravity >= 1.5 ? 'heavy' : 'normal'), write: (r, v) => (r.gravity = v === 'low' ? 0.4 : v === 'heavy' ? 1.6 : 1),
   },
@@ -374,7 +382,7 @@ export function applyServerRules(rules: MatchRules, sr: ServerRules, map: MapDoc
 
 /** The MatchRules fields each "next match" rule writes, put back to the base's. */
 const FIELDS: Record<string, (keyof MatchRules)[]> = {
-  assign: ['teamAssign'], teamnames: ['teamNames'], teamcolors: ['teamColors'], leaders: ['leaders'], squadspawn: ['squadSpawn'], streaks: ['killstreaks'], sizes: ['bodySizes'], gravity: ['gravity'], fall: ['fallDamage'],
+  assign: ['teamAssign'], teamnames: ['teamNames'], teamcolors: ['teamColors'], leaders: ['leaders'], squadspawn: ['squadSpawn'], streaks: ['killstreaks'], sizes: ['bodySizes'], stats: ['characterStats'], randomchars: ['randomCharacters'], gravity: ['gravity'], fall: ['fallDamage'],
   lethality: ['lethality'], ballistics: ['ballistics'], emotes: ['emotes'], weapons: ['weapons'], classes: ['classes', 'classLimit'], vehicles: ['vehicleDamage'], flagreturn: ['flagReturnSeconds'], hill: ['hillSeconds'],
   fortbuild: ['fortBuildSeconds'], fortcombat: ['fortCombatSeconds'], fortcycles: ['fortCycles'], fortbudget: ['fortBudget'], laps: ['raceLaps'], racevehicle: ['raceVehicle'], racecombat: ['raceCombat'],
 };

@@ -1,9 +1,87 @@
-# Handoff: where Tile Trigger stands (2026-11-03)
+# Handoff: where Tile Trigger stands (2026-11-04)
 
 A briefing for the next Claude session or agent picking up this repo. Read
 `CLAUDE.md` first (workflow and rules), then this file. Keep this file current.
 
-## Start here (session of 2026-10-30 afternoon, handed off)
+## Start here (session of 2026-11-04, handed off to the next account)
+
+**State:** `main` = 798bf75, green. Everything below "Landed" is on main; nothing is half-merged.
+Workflow is unchanged (CLAUDE.md): work on a `wip/<name>` branch → push `check/<name>` (or a train of several) → when
+that run is green, fast-forward `main`. CI is now ~9–10 min a round (balanced shards, headless all-maps check,
+coverage map; browser map tour only nightly/tags/Run workflow; new push cancels the older check run; fail-fast).
+Poll a run without auth: `curl -s "https://api.github.com/repos/Dsoto1/splitters/actions/workflows/ci.yml/runs?branch=check/<name>&per_page=1"`.
+Repo is public: Actions minutes are free. Run fast checks locally before any push to check/ (`pnpm typecheck`,
+`pnpm content:check`, the unit tests you touched); let CI run the slow e2e. Max 2–3 agents at once (the container
+gets overloaded above that: local e2e times out and flakes). Prune landed worktrees; disk is limited.
+
+### Landed 2026-11-04 (newest first)
+- 798bf75 Hitboxes per look (+ generous margin, `HITBOX_MARGIN`), character stats (optional, default = size class),
+  match settings "Character stats" (on) and "Random characters" (off); Wealthy Otter and Shade retired; CI speed-up
+  (coverage map `maps/test_coverage.json`, `testOnly` map flag, headless allMaps tests, shard packing, fail-fast).
+- da7d432 De-toy pass: world colour grade (`WORLD_GRADE`, docs/LOOK.md) and real surfaces + real-world sizes on
+  man-made Kenney props (`content/surfaces*.json`); CC0 Meshy Community snowmobile replaces the Kenney sled.
+- e5932fb Procedural environment spec + Phase 0 audit (docs/PROCEDURAL_ENVIRONMENT*.md) with the owner's decisions.
+- c44d379 Tiles as data (content scalability step 7: core kit + edge styles) and character hands round 4.
+- f5cc70b Capitol Mall domes, roofs; Capitol Dome / Copper Dome / Pediment / Pyramidion props; room Roof surface.
+- Earlier the same day: content scalability steps 2–6, perf toolset, flaky e2e fixes, Runway Nine airliner, map
+  reworks batches 2–3, character fixes rounds 2–3 (see the entries below and CHANGELOG).
+
+### In flight
+- **Surface types** (`wip/surface-types`, worktree /home/user/wt-surfaces if the container survives): one shared
+  list of surface types (ballistic class + impact effect), optional `surface`/`ballistic` field on materials and
+  props (unset = today's guess), fixes for the misreads (bush→"bus" thin_metal, tree_plateau→metal, trunks/boulders
+  →concrete): trunks become heavy_wood (still full cover), bushes foliage (pass-through, still conceal), boulders
+  stone; client impact effects keyed by surface type. See its HANDOFF entry on that branch for exact next steps.
+  Not merged: finish, run fast checks, push `check/surface-types`, land.
+
+### Next, in the owner's agreed order
+1. **Environment Phase 1** (after surface types): vertical slice per docs/PROCEDURAL_ENVIRONMENT_AUDIT.md §10 — one
+   broadleaf, one conifer, one bush, one grass clump, one boulder, one cliff section; eye-level showcase; owner
+   reviews before Phase 2. Owner decisions are in that doc ("Owner decisions": all 13 recommendations; blocky trees
+   retired).
+2. **Texture flicker fix** (z-fighting): build-time pass in the shared geometry builder — overlapping SAME-FACING
+   coplanar faces (floors, trim/facades on walls, wall-run ends, pack tiles over core) clipped by a fixed priority;
+   back-to-back hidden faces dropped (walls stay 1 m solid, collision unchanged); audit test over maps/, MapMaker
+   warning + overlay; check float depth buffer with reverse-Z on WebGL2. Owner confirmed the cause.
+3. **Set pieces**: multi-cell placeable pieces as data (footprint, levels, parts/props/FX, door markers, rotate/
+   mirror, re-theme by style pack), MapMaker "Save selection as set piece", "Set pieces" palette tab; placed as one
+   piece AND an "Explode to tiles" option (owner confirmed both). First: the **carriageway / pend** family (owner's
+   photo: Collegiate Gothic stone, shallow segmental arch underpass, doors into both buildings from the passage, the
+   2nd floor crossing over the arch), plus an enclosed **skybridge**; place one in St. John's. Then the brainstorm list
+   (power core hall, catwalk bridge, twin-stair overlook, atrium tower, loading dock, sunken arena, reactor room,
+   bunker cluster, courtyard gate, server vault, crossroads plaza, multi-level ramp junction). Old big pieces retired.
+4. **Core / experimental tiers + quality gates** (owner deferred it until content scalability was done; steps 1–7
+   are now done): let the owner promote characters/maps from an experimental to a core roster, with gates, managed
+   from the Control Center Workbench (`.control-center/workbench.json`).
+5. CI follow-ups: split unit tests by duration (shard 1/3 is 5 min, others 1–2); confirm the nightly 16-shard tour,
+   the timings refresh and fail-fast on a real failing run.
+
+### Open questions for the owner
+- Barrels/powder keg were resized to real sizes (barrel 0.95 m, keg 0.75 m): less cover. Keep, or put back?
+- Grade and surface detail strength were tuned on software rendering: owner to look on their M1 Pro (one value each:
+  `WORLD_GRADE`, `content/surfaces.json`).
+- Hands round 5 (offered, not yet answered): Grunt '68 long-gun-only hand roll (small); new hand geometry for
+  Vanguard, Beanie Alien, Alien Biker, Mummy Bot, Zhao; Croakley re-rig (pipeline or Meshy credits; Meshy needs approval).
+- Older open items: Underdrain (what did the owner expect?), Apex Ring race-car class, menu budget 840 → ~700 kB,
+  unify legacy spread bloom on exotic weapons, a smaller size class for Goblina/Space Marine, frost_basin card look.
+- Known bug found by the de-toy job: `ModelLibrary.mergeModel` drops glTF mesh instances (a mesh reused under several
+  nodes draws once). Surfaced props are fixed; others still lose copies.
+
+### Not in the repo (previous container only, may be gone)
+- MapMaker Playwright drivers that agents used for map edits (`rework3/tools/maker.mjs`, `coverage-map/tools/maker.mjs`)
+  lived in the session scratchpad; recreate as needed (they drive MapMaker's own UI, which is the rule).
+- Raw downloads (`/home/user/meshy-drive/...`: airliner, snowmobile, character sources) are never committed; re-download
+  from the owner's Drive/Meshy if a rebuild needs them.
+
+### Owner preferences learned this session
+- Easy wins first; CI improvements stay top of the queue; ask with numbered options and a recommendation.
+- Exact hitboxes but generous padding (responsiveness over realism); likes meta characters and per-character stats.
+- Look: "everything looks too much like a toy" — move to grounded realism (procedural environment, set pieces,
+  replacement models); the grade alone is subtle.
+- Retire rather than delete; models not in T-pose get retired (Otter, Shade).
+- Meshy credits need approval each time; Meshy Community models are CC0 (Terms §3.3) — record author and post URL.
+
+## Earlier start notes (session of 2026-10-30 afternoon)
 
 **Read CLAUDE.md first.** Workflow: session branch → `check/candidate` → when green, fast-forward `main`.
 The session branch is **`claude/launcher-ui-map-cards`**. Poll CI without auth:
@@ -46,6 +124,58 @@ Docs: CONTENT_PIPELINE "Surface types", GUNPLAY_SPEC §8 implementation note.
   build.mjs, rebuild.mjs, vfx-map.mjs, packages/shared/src/sim/{surfaceTypes,gunplay}.ts, map/materials.ts,
   content/surfaceTypes.generated.ts, client game/{fxMap,impactVisuals,view,session,sessionAudio}.ts,
   .control-center/workbench.json, tests packages/shared/test/surfaceTypes.test.ts (+fixture), client fxMap.test.ts.
+### Hitboxes, character stats, random characters (`wip/hitboxes-stats`, agent, 2026-11-04; pushed, not merged; from main f5cc70b)
+Owner's decisions of 2026-11-04 (exact per-look hitboxes; debug and audit; per-character stats; random characters).
+Docs: CHARACTERS.md "Hitboxes", "Character stats", "Random characters"; GUNPLAY_SPEC §11 note. Evidence (agent
+scratchpad `hitboxes/`): overlay shots `<look>-<stance>-<front|side>.png` (Sprout small, Linktifa standard, Honest Abe
+large, Hyena and Croakley hunched, T-TreeFitty robot, Big Bogdan wide; creatures), `charselect-*.png`, `setup-rules.png`.
+- **Hit shapes** (`shared/sim/hitbox.ts`): head sphere, torso capsule squashed across the body, a round capsule per
+  thigh and shin, arm capsules where they stick out; stand / crouch / prone each. **Margin** (owner's follow-up the
+  same day: generous padding): `HITBOX_MARGIN` in constants.ts, 0.18 m body / 0.12 m head at a 1.8 m body, so hit
+  rates and TTK stay at main's; a standard chest is 0.68 x 0.62 m with it (0.32 x 0.26 measured), its head 0.50 m
+  across (0.26). Zone = the shape whose own core the round passes nearest (the strike is the nearest padded surface). Generated per look and creature by `tools/content/hitboxes.mjs` (Node skinning,
+  `tools/content/skinpose.mjs`) into `hitboxes.generated.ts`; `content:check` and `content:rebuild` run it. Manifest
+  overrides `hitbox` (Otter, Boglurker). `Combatant.hitbox/hitScale` (refreshed when the look changes); NPCs as drawn.
+- **Wired:** hitscan, pellets, piercing, ballistic bullets, rockets/spears/grenades (0.12 m thick), sentries, third
+  person aim, lag compensation (history keeps feet, yaw, stance, scale, shapes). Melee keeps its reach capsule;
+  medkit and ping aim keep theirs; a sticky grenade sticks within 0.25 m of the body's middle. Bots aim at the head
+  sphere / chest middle (head base over cover); aim error unchanged (the first pass's `BODY_AIM` scaling is gone with
+  the margin): 5-seed hit rates easy / normal / hard 16.8 / 33.6 / 51.6 % against main's 17.6 / 30.6 / 53.6 %.
+- **Pitfalls:** crouch is measured as drawn, by hand-checked rules (crouch_idle hips and legs, the chest, neck and head
+  3/4 of the way to the aim pose, `CROUCH_AIM`; the standing arms carried with the head): the drawn crouch also turns
+  the upper body toward the gun side, so crouched shapes sit up to ~8 cm off sideways. The audit (stand pose) flagged
+  Wealthy Otter (head sphere 0.11 m behind its forward-reaching head) and Boglurker (its wide frog head, 84 % of the
+  vertices inside): both now have `hitbox` overrides (Otter `head dy -0.03 dz 0.08`, Boglurker `head r 0.23`). The
+  character viewer draws everyone 1.8 m tall (no size classes), and the shapes at the same scale. A model, clip or
+  rig change needs `node tools/content/hitboxes.mjs` (content:check says so).
+- **Stats** (`shared/sim/characterStats.ts`): manifest `stats` { health, speed, size, damage, stamina, jump, melee,
+  armor }, each defaulting to the size class (none set: nothing changed). Match setting Character stats (default on).
+  Speed/jump/stamina reach the predicting client (`PrivateState.bs`; size-class speed was never predicted before).
+  Workbench: new Characters collection. Stat bars on Character Select.
+- **Retired (owner, 2026-11-04): Wealthy Otter and Shade** (source models not in a T-pose: hands unfixable).
+  `RETIRED_LOOKS` like the others: `core.otter` -> Brass Hare, `core.shade` -> Lancer Mei (saved choices, bot sets,
+  maps fall back); manifests and files kept; the otter NPC role keeps its model (`NPC_KEPT_LOOKS`, like the goblin).
+  Off the roster, so off Random characters' pool too. lookGroups.test: Bandit stands in for the otter.
+- **Random characters** (`shared/sim/randomLooks.ts`): setting (default off), per life, hash of seed/slot/life, roster
+  looks only; the look rides the `spawn` event (`l`); own choice kept in `Combatant.ownLook`.
+- **Tests:** with the margin, mechanics, weapons, ballistics, benchmarks and botClearShot are main's files unchanged
+  (scoped sniper 100 % at 30 m, shotgun > 4 pellets, running target 5 of 6, holdover, rounds > 20). Still off main:
+  botPush first contact < 36 s (33 s; main 24 s) and worst stuck bot < 26 (23; main 12), botMovement easy speed
+  > 1.15 m/s (1.18; main > 1.2): emergent fight metrics that shift with any change to who wins fights; serverRules
+  parity (two new rules).
+- **Owner's defaults (2026-11-04):** Character stats off leaves size classes alone; arms 1.0x; tails, capes' hems and
+  brims unhittable; the up-to-8 cm crouch offset accepted.
+- **Perf (96 bots, Frost Basin TDM, 30 s, process CPU per tick, two interleaved runs each, load 12-17):** clumped
+  6.41 / 6.36 ms -> 6.69 / 6.69 ms; combat 0.44 / 0.41 -> 0.48 / 0.50 ms; spread 7.40 / 7.51 -> 7.72 / 8.29 ms (noisy).
+  (measured before the margin; the margin adds a few additions per shape). A shot against 96 bodies with the margin:
+  11.8 us (old capsule 13.8 us, same run), `hitboxPerf.test.ts`; 4060 vs 3633 hits on its random rays.
+- **Checks:** typecheck clean; content:check OK (hitboxes up to date); test:changed (all units: shared code) 1359 of
+  1366 passed, then the 5 fixed or re-run alone (sticky grenade throw and botPush bound fixed; host.test and two
+  pads.test cases are load timeouts, pass alone). E2E (`CI=1`, ports 4951/7951/9951-9954/7953-7954; the change maps to
+  all 38 flows): offline PASS 450 s, arsenal PASS 533 s, characters PASS 1845 s, lobby PASS 785 s, dedicatedhost PASS
+  381 s, visual PASS 414 s (baselines unchanged: menu 0.5 %, others <= 0.1 %). Needs a `check/` run (full suite).
+  After the margin and the two retirements: typecheck clean, content:check OK, the affected unit tests pass (gunplay,
+  bots, hitbox, stats, looks); E2E offline PASS 310 s, arsenal PASS 506 s, characters PASS 812 s.
 
 ### Look: less like a toy, part A (grade) and part B (prop surfaces) (`wip/detoy`, agent, 2026-11-04; pushed, not merged; from main 5a002f8)
 Owner's note "everything looks too much like a toy"; the approved easy wins. Two commits: A (grade) then B (surfaces).
@@ -131,6 +261,52 @@ scratchpad `snowmobile/` (`before/`, `after/`, `after/glacier-line/`, `raw-vs-pr
   full suite (assets-src, content/models.json): needs a `check/` run.
 - **Not done:** the driver's hands don't hold the handlebars (seated riders hold their gun or idle; no grip pose for
   vehicles exists); team paint on this grey model reads brown (a paint-gain per mount would fix it: owner's call).
+### CI speed-up: ~9-minute rounds, coverage map, headless map check (`wip/ci-speed`, agent, 2026-11-04; pushed, not merged; from main e5932fb)
+Owner's request: a CI round in about 8-10 min (run 41851112171 took 36 min: build 2, unit 6.6, e2e shards 8-34 min).
+- **Measured** (job API + E2E_TIMINGS log lines): the e2e table was far off (editor 85 → 285 s, characters 31 → 644 s,
+  lobby 154 → 658 s: 540 s of it a wait that never saw the host's check-ins). Map tour parts 6-15 min each.
+- **Shards** (`e2e/shards.mjs` planShards): LPT into the fewest shards (max 16) whose longest is within 5 min or the
+  longest flow; table `e2e/timings.json` (also `perMap`). CI refreshes it: each e2e shard uploads its timings, the
+  `timings` job merges them into the table the plan used (`tools/ci/timings.mjs merge --base --out`) and uploads
+  `e2e-timings` (30 days); the plan job starts from the newest such artifact. Commit a refreshed table now and then
+  (download that artifact over e2e/timings.json; the job's log lists the changes).
+- **Splits:** characters → characters / characters2 (drawn hands) / characters3 (grips in a match); lobby polls the
+  listing every 5 s; hostpage's right-bar toggle clicks until its command shows (failed twice on CI once).
+- **Map tour nightly only** (`--tour`: schedule, v* tags, Run workflow), now 14 parts of ~6 maps. Elsewhere: the
+  headless check of every map (`packages/shared/test/allMaps1..8.test.ts` + `allMapsCheck.ts`: load, validate,
+  geometry, navmesh, physics, spawns on walkable ground, 90 ticks with 8 bots, nobody below the world; ~1.5 min on
+  two CI jobs) and the `coverage` flow; rules that named the tour get `coverage`. A change to up to 6 maps tours just
+  those (shard `maps` → E2E_MAPS) plus MAP_USERS; more map parts otherwise; phase0_arena still runs everything.
+- **Unit tests** in a matrix (`unitJobs` in flowMap: 3 vitest shards + 2 map-check jobs for everything), perf
+  split into budget/mass jobs, sparse checkouts (no client models / asset sources) for e2e and perf.
+- **Fail fast:** a new push to a check/ branch cancels its older run (concurrency, check/ only). The unit, e2e and
+  perf steps run under `tools/ci/stop-on-failure.sh`: once another job of the run has failed (polled every 40 s) the
+  step stops and fails, so the run reads failure (cancelling it would read "cancelled"); land/train refuse it.
+- **Green base on check branches:** like main pushes, a check/ commit whose first-parent ancestor (up to 30 back)
+  went green on a check branch is planned against that ancestor, not origin/main: a small change on a green
+  candidate runs only what it needs.
+- **Coverage map** `maps/test_coverage.json` (MapMaker, driven by Playwright; scratch `coverage-map/`: driver
+  `tools/maker.mjs` with new ops props/glass/rule/logicTemplate/inPlace, steps `pass1.mjs`, `pass2.mjs`, pictures
+  `shots/`): 320 m terrain; 81 tiles (all 71 kit + one per style pack with own tiles), 16 wall styles + both glass
+  kinds, one prop per pack (57), one pickup per kind (10), 17 vehicles/turrets, all 89 scenario pieces, flags of both
+  teams, hill, bomb site, hostage + rescue, 8 spawns, road, AI route, race track, terrain hill, 3 logic rules.
+  validate-map 0 issues. Only hand edit: metadata.id set to test_coverage after MapMaker's first save. Known: the
+  airliner shell and mining truck (the only/smallest props of their packs) overlap the race track.
+  `packages/shared/test/coverageMap.test.ts` fails when any kit tile, pack, wall style, glass kind, prop pack, pickup
+  kind, mount, entity kind, scenario piece, mode marker, path use or logic is missing: add new content to the map.
+- **testOnly** (MapMaker Map properties: Test map): left out of the map index (menu, templates, host page),
+  rotations (server suiteLookup), the Host Service launcher and the map-card picture check (content:check,
+  capture-map-shots). Tests: client mapIndexPlugin.test, server testMaps.test, host units.
+- **tilesData test:** the per-map hash section and its fixture part are gone (failed on every intended map/prop
+  change); kit, edge styles and the style map stay, ~3 s.
+- **Results** (wall time, plan to last job): full check-branch run (everything but the tour) 10.5 min, green
+  (run 41910774081 on 21c28a5; 13 e2e shards 2.6-7.5 min, unit 1.1-5.2, perf 2.9/5.6); client-only change
+  (hostPage.ts comment, check/ci-speed-client) 4.3 min (1 e2e shard); one map (apex_ring description,
+  check/ci-speed-map) 6.7 min (`maps` touring apex_ring only, 1.7 min; bounded by unit 1/3). Was 36 min.
+- **Next:** vitest's `--shard` splits by file count, and unit (1/3) takes 5.2-5.5 min while the others take 1-2.3:
+  try 4 shards or a duration-based split. hostcontrols (320 s) is the longest flow (it sets the shard goal of ~6 min).
+  The first nightly run will be the first all-parts tour on 16 shards: check its times.
+  check/ci-speed-client and check/ci-speed-map are probe branches; delete them, don't merge them.
 
 
 ### Procedural environment, Phase 0: audit and plan (`wip/env-audit`, agent, 2026-11-04; docs only, pushed, not merged)

@@ -1,5 +1,6 @@
 import { add, dot, scale, type Vec3, hypot } from '../math.ts';
-import { PLAYER } from './constants.ts';
+import { PLAYER, type Stance } from './constants.ts';
+import { lastHit, rayBody, type HitBody, type LookHitbox } from './hitbox.ts';
 import type { AccuracySpec, BallisticSpec, FalloffSpec, KickSpec, ReloadSpec, WeaponFamily } from './gunplay.ts';
 import { CORE_WEAPONS, THROWABLES, THROWABLE_DEFS, WEAPON_CODES } from '../content/weapons.generated.ts';
 
@@ -414,17 +415,47 @@ export function rayCapsule(origin: Vec3, dir: Vec3, feet: Vec3, radius: number =
 export interface ShotTarget {
   slot: number;
   feet: Vec3;
-  /** Body height (crouching and prone players are shorter); standing when absent. */
+  /** Body height (crouching and prone players are shorter); standing when absent. Only used without `box`. */
   height?: number;
-  /** Body radius (small and large characters); standard when absent. */
+  /** Body radius (small and large characters); standard when absent. Only used without `box`. */
   radius?: number;
+  /** The body's measured hit shapes (sim/hitbox.ts), facing `yaw` in `stance` at `scale`: what shots are tested against. */
+  box?: LookHitbox;
+  yaw?: number;
+  stance?: Stance;
+  scale?: number;
 }
 
 export interface ShotResult {
   hitSlot: number | null;
   distance: number;
   end: Vec3;
+  /** Where on the body the shot landed (0 when nothing was hit). */
+  zone: HitZone;
 }
+
+/** A shot target against its measured shapes (or, for a target given without them, the standard look's): distance, or null; the zone in `lastHit.zone`. */
+export function rayTarget(origin: Vec3, dir: Vec3, t: ShotTarget, max = Infinity, thick = 0): number | null {
+  if (!t.box) {
+    const d = rayCapsule(origin, dir, t.feet, t.radius ?? PLAYER.radius, t.height ?? PLAYER.height);
+    if (d === null || d > max) return null;
+    lastHit.zone = hitZone(t.feet, origin.y + dir.y * d, t.height ?? PLAYER.height);
+    return d;
+  }
+  scratchBody.feet = t.feet;
+  scratchBody.yaw = t.yaw ?? 0;
+  scratchBody.stance = t.stance ?? 0;
+  scratchBody.scale = t.scale ?? 1;
+  scratchBody.box = t.box;
+  return rayBody(origin, dir, scratchBody, max, thick);
+}
+
+/**
+ * How thick a thrown or launched projectile (a spear, a rocket, a grenade, a disc) is against bodies (m): it is an
+ * object, not a line, so it strikes a body it passes this close to. Bullets and hitscan rounds are lines.
+ */
+export const PROJECTILE_THICKNESS = 0.12;
+const scratchBody: HitBody = { feet: { x: 0, y: 0, z: 0 }, yaw: 0, stance: 0, scale: 1, box: undefined as unknown as LookHitbox };
 
 /**
  * Resolve a hitscan shot: the nearest of the first static surface and any
@@ -456,7 +487,7 @@ export function unarmedStrike(forward: number, ticksSincePunch: number): Unarmed
 }
 export const LEG_MULTIPLIER = 0.75;
 
-/** The body zone at height `y` on a player standing at `feet` (`height` tall). */
+/** The body zone at height `y` on a player standing at `feet` (`height` tall): the old height bands, for targets without measured shapes. */
 export function hitZone(feet: Vec3, y: number, height: number = PLAYER.height): HitZone {
   const up = y - feet.y;
   if (up >= height - 0.32) return 1;
@@ -471,14 +502,16 @@ export function zoneMultiplier(zone: HitZone, headshot: number = HEAD_MULTIPLIER
 export function resolveHitscan(origin: Vec3, dir: Vec3, range: number, worldDistance: number | null, targets: readonly ShotTarget[]): ShotResult {
   let distance = worldDistance ?? range;
   let hitSlot: number | null = null;
+  let zone: HitZone = 0;
   for (const t of targets) {
-    const d = rayCapsule(origin, dir, t.feet, t.radius ?? PLAYER.radius, t.height ?? PLAYER.height);
+    const d = rayTarget(origin, dir, t, distance);
     if (d !== null && d < distance) {
       distance = d;
       hitSlot = t.slot;
+      zone = lastHit.zone;
     }
   }
-  return { hitSlot, distance, end: add(origin, scale(dir, distance)) };
+  return { hitSlot, distance, end: add(origin, scale(dir, distance)), zone };
 }
 
 /** Models a weapon or projectile falls back to when its own fails to load (see WeaponPresentation.fallback). */

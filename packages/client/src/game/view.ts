@@ -73,6 +73,7 @@ import {
   suspensionOf,
   hungPropLift,
   getProp,
+  type Stance,
 } from '@tiletrigger/shared';
 import type { AbstractMesh } from '@babylonjs/core/Meshes/abstractMesh';
 import type { Material } from '@babylonjs/core/Materials/material';
@@ -107,6 +108,7 @@ import { fitFirstPersonArms } from './firstPersonArms.ts';
 import { FirstPersonBodyRig } from './firstPersonBody.ts';
 import { loadFirstPersonMode, type FirstPersonMode } from './graphicsSettings.ts';
 import { CreatureLibrary, fitPlayerSkin, type AvatarSpec } from '../content/creatures.ts';
+import { BodyHitbox, hitboxForSpec } from './hitboxOverlay.ts';
 import { CreatureAnimator } from './creatureAnimator.ts';
 import type { RemotePose } from './interpolation.ts';
 import { COUNT, SYS, perfProbe } from './perfProbe.ts';
@@ -191,6 +193,8 @@ interface Avatar {
   culled?: boolean;
   /** Your own body while you look through your own eyes: kept loaded, not drawn. */
   hiddenSelf?: boolean;
+  /** Its hit shapes drawn over it (the Show hitboxes dev setting). */
+  hitbox?: BodyHitbox;
 }
 
 /** How long an NPC takes to climb out of a hatch or burrow (ms), and from how deep. */
@@ -281,6 +285,8 @@ interface PickupVisual {
 /** First-person match scene: map, viewmodel, remote avatars, pickups, projectiles and effects. */
 export class GameView {
   readonly scene: Scene;
+  /** Draw every body's hit shapes over it (Options → Display → Show hitboxes, a dev and test setting). */
+  showHitboxes = false;
   readonly camera: FreeCamera;
   readonly models: ModelLibrary;
   /** City facades and building/street tile models. */
@@ -1631,6 +1637,11 @@ export class GameView {
         }
         a.root.rotation.y = p.yaw;
       }
+      // Show hitboxes (dev and test setting): the shapes the host tests shots against, over the body.
+      if (this.showHitboxes && p.alive && !a.ragdoll) {
+        const h = hitboxForSpec(want);
+        (a.hitbox ??= new BodyHitbox(this.scene)).show(a.root, h.box, (p.stance ?? 0) as Stance, h.scale);
+      } else a.hitbox?.hide();
       // Crowds: characters outside the view (with a margin for their shadows) are left out of drawing
       // and the shadow map, and animate only now and then.
       const out = !!planes && !a.ragdoll && !inView(planes, p.x, p.y + 0.9, p.z, CULL_RADIUS);
@@ -2077,6 +2088,7 @@ export class GameView {
 
   private disposeAvatar(a: Avatar): void {
     if (this.fpBody?.a === a) this.dropFpBody();
+    a.hitbox?.dispose();
     this.atmosphere.shadowless.delete(a.root);
     // The flash texture is shared by every flash: dispose the material, never the texture.
     a.flash?.material?.dispose();

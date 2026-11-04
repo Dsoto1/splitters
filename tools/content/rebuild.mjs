@@ -12,6 +12,7 @@
 //              tools/content/weapons.mjs             weapons.generated.ts, weaponFamilies.generated.ts, codes.lock.json
 //              tools/content/vehicles.mjs            mounts.generated.ts from content/vehicles/*.json
 //              tools/content/npcs.mjs                npcRoles.generated.ts and codes.lock.json (npcRoles) from content/npcs.json
+//              tools/content/hitboxes.mjs            hitboxes.generated.ts: hit shapes measured from the character and creature models
 //              tools/content/pickups.mjs             pickups.generated.ts from content/pickups.json
 //              tools/content/materials.mjs           materials.generated.ts from content/materials.json
 //              tools/content/surface-types.mjs       surfaceTypes.generated.ts from content/surface-types.json and the props' `surface`
@@ -65,7 +66,7 @@ if (byHand.length) {
 step('locks');
 node('tools/content/lockfile.mjs');
 
-step('tables: props, characters, weapons, vehicles, NPC roles, pickups, materials and tiles');
+step('tables: props, characters, weapons, vehicles, NPC roles, pickups, materials, tiles and hit shapes');
 node('tools/content/surfaces.mjs');
 node('tools/content/prepare-props.mjs');
 node('tools/content/character-manifests.mjs');
@@ -76,6 +77,8 @@ node('tools/content/pickups.mjs');
 node('tools/content/materials.mjs');
 node('tools/content/surface-types.mjs');
 node('tools/content/tiles.mjs');
+// Hit shapes measured from the character models (after the looks: it reads them).
+node('tools/content/hitboxes.mjs');
 
 step('palette atlas');
 let pending = all;

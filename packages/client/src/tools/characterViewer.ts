@@ -13,11 +13,16 @@ import { CreatureAnimator } from '../game/creatureAnimator.ts';
 import { CharacterLibrary, setCharacterLodZoom, type CharacterSpec } from '../content/characters.ts';
 import { ModelLibrary } from '../content/models.ts';
 import { CharacterAnimator, type MotionState, type OneShot } from '../game/characterAnimator.ts';
+import { TransformNode } from '@babylonjs/core/Meshes/transformNode';
+import { BodyHitbox, hitboxForSpec } from '../game/hitboxOverlay.ts';
+import type { AvatarSpec } from '../content/creatures.ts';
+import type { Stance } from '@tiletrigger/shared';
 
 /**
  * Character viewer (team tool, `?mode=characters`): every preset look plus the
  * NPC mannequins in two rows (front row first), with buttons for each animation state, aim pitch
- * and held weapon, to check rig, retargeting, scale and facing.
+ * and held weapon, to check rig, retargeting, scale and facing. Hitboxes (or `&hitboxes=1`) draws each body's
+ * measured hit shapes over it in the stance shown (Stand, Crouch, Prone): how the host tests shots.
  */
 export async function openCharacterViewer(engine: AbstractEngine, canvas: HTMLCanvasElement): Promise<() => void> {
   const scene = new Scene(engine);
@@ -78,6 +83,28 @@ export async function openCharacterViewer(engine: AbstractEngine, canvas: HTMLCa
   // Characters face the camera: the camera looks along -Z from +Z.
   const state: MotionState = { speed: 0, moveAngle: 0, airborne: false, alive: true, pitch: 0, celebrate: false };
 
+  // Hit shapes over every body (at the body's feet, facing as it does).
+  const overlays: { node: TransformNode; spec: AvatarSpec; box: BodyHitbox }[] = [
+    ...specs.map((s, i) => ({ s: s as AvatarSpec, at: place(i) })),
+    ...bodies.map((kind, i) => ({ s: { creature: kind } as AvatarSpec, at: { x: mid + (i - (bodies.length - 1) / 2) * 2.6, z: 2.4 } })),
+  ].map(({ s, at }, i) => {
+    const node = new TransformNode(`hitbox_at_${i}`, scene);
+    node.position.set(at.x, 0, at.z);
+    return { node, spec: s, box: new BodyHitbox(scene) };
+  });
+  let showHitboxes = params.get('hitboxes') === '1';
+  const drawHitboxes = () => {
+    for (const o of overlays) {
+      if (!showHitboxes) {
+        o.box.hide();
+        continue;
+      }
+      const h = hitboxForSpec(o.spec);
+      o.box.show(o.node, h.box, (state.stance ?? 0) as Stance, h.scale);
+    }
+  };
+  drawHitboxes();
+
   const panel = document.createElement('div');
   panel.id = 'char-panel';
   panel.style.cssText = 'position:fixed;left:0;right:0;bottom:0;padding:10px;background:rgba(21,24,29,.94);font:12px system-ui;color:#eee;display:flex;flex-wrap:wrap;gap:6px;align-items:center';
@@ -101,6 +128,8 @@ export async function openCharacterViewer(engine: AbstractEngine, canvas: HTMLCa
   btn('Airborne', () => Object.assign(state, { airborne: !state.airborne }));
   btn('Death', () => Object.assign(state, { alive: !state.alive }));
   btn('Dance', () => Object.assign(state, { celebrate: !state.celebrate }));
+  for (const [label, stance] of [['Stand', 0], ['Crouch', 1], ['Prone', 2]] as const) btn(label, () => (Object.assign(state, { stance }), drawHitboxes()));
+  btn('Hitboxes', () => ((showHitboxes = !showHitboxes), drawHitboxes()));
   for (const a of ['shoot', 'melee', 'melee_heavy', 'reload', 'throw', 'hit', 'interact'] as OneShot[]) btn(a, () => [...animators, ...creatures].forEach((x) => x.trigger(a)));
   for (const [label, w] of [['Knife', 'core.knife'], ['Pistol', 'core.pistol'], ['Rifle', 'core.rifle'], ['Shotgun', 'core.shotgun'], ['Sniper', 'core.sniper'], ['Launcher', 'core.launcher'], ['Revolver', 'core.revolver'], ['Spin Gun', 'core.lmg']] as const) {
     btn(label, () => animators.forEach((x, i) => void models.instantiate(getWeapon(w).view.model, `held_${i}`).then((n) => x.hold(n, getWeapon(w).view.hold))));
@@ -114,7 +143,7 @@ export async function openCharacterViewer(engine: AbstractEngine, canvas: HTMLCa
   panel.append(' Aim pitch ', pitch, ` ${specs.map((s) => s.label).join(' · ')} · front: ${bodies.join(', ')}`);
   document.body.append(panel);
   (window as unknown as { __charsReady: boolean; __charState: MotionState; __charAnimators: CharacterAnimator[] }).__charsReady = true;
-  Object.assign(window, { __charCamera: camera, __charState: state, __charAnimators: animators, __creatureAnimators: creatures, __charSpecs: specs.length, __charLodZoom: setCharacterLodZoom });
+  Object.assign(window, { __charHitboxes: (on: boolean, stance?: Stance) => ((showHitboxes = on), stance !== undefined && (state.stance = stance), drawHitboxes()), __charCamera: camera, __charState: state, __charAnimators: animators, __creatureAnimators: creatures, __charSpecs: specs.length, __charLodZoom: setCharacterLodZoom });
 
   let last = performance.now();
   engine.runRenderLoop(() => {

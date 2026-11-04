@@ -430,6 +430,8 @@ describe('launcher', () => {
     const maps = mapCatalog(DEFAULT_MAPS_DIR, suiteIds(DEFAULT_MAPS_DIR));
     expect(maps.length).toBeGreaterThan(20);
     expect(maps.find((m) => m.id === 'frost_basin')).toMatchObject({ name: 'Frost Basin', modes: expect.arrayContaining([expect.objectContaining({ id: 'core.tdm', team: true })]) });
+    // Test maps (metadata.testOnly: maps/test_coverage.json) aren't offered.
+    expect(maps.some((m) => m.id === 'test_coverage')).toBe(false);
     const html = launcherPage({ version: '1.0.0', commands: COMMANDS, maps: [{ id: 'x', name: '</script><script>alert(1)</script>', modes: [] }], site: 'https://trigger.toshiroplay.com' }, 'N0NCE');
     expect(html).not.toContain('</script><script>alert(1)');
     expect(html.match(/<script nonce="N0NCE">/g)).toHaveLength(1);
