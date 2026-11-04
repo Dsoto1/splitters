@@ -31,30 +31,52 @@ export interface TilePort {
  * How one side of one cell is built. `auto` is the classic rule (doorway where
  * two ports meet, otherwise the tile's default edge). The others are chosen by
  * creators per side in MapMaker, so the same room can have windows, arches,
- * half walls or no wall at all.
+ * half walls or no wall at all. The styles, their labels and shapes are data:
+ * content/tiles/edges.json (tools/content/tiles.mjs).
  */
-export const EDGE_STYLES = ['auto', 'wall', 'door', 'wide', 'arch', 'window', 'windows', 'slit', 'half', 'railing', 'high', 'tower', 'fence', 'broken', 'bars', 'shutter', 'open'] as const;
+import { EDGE_STYLES, EDGE_STYLE_LABELS } from '../content/edgeStyles.generated.ts';
+
+export { EDGE_STYLES, EDGE_STYLE_LABELS };
 export type EdgeStyle = (typeof EDGE_STYLES)[number];
 
-export const EDGE_STYLE_LABELS: Record<EdgeStyle, string> = {
-  auto: 'Auto',
-  wall: 'Solid wall',
-  door: 'Doorway',
-  wide: 'Wide doorway',
-  arch: 'Archway',
-  window: 'Window',
-  windows: 'Twin windows',
-  slit: 'Firing slit',
-  half: 'Half wall',
-  railing: 'Railing',
-  high: 'High wall (2 storeys)',
-  tower: 'Towering wall (4 storeys)',
-  fence: 'Tall fence',
-  broken: 'Broken wall',
-  bars: 'Bars',
-  shutter: 'Shutter (crouch under)',
-  open: 'No wall',
-};
+/** Metres, or `half` (half the side) / `height` (the level height) times a factor plus metres, or the height capped at `upTo`. */
+export type EdgeValue = number | { half: number; add?: number } | { height: number; add?: number } | { upTo: number };
+/** Repeat a piece along the side, from `from` to `to` (inclusive with `through`) every `step` m; its u is then offsets. */
+export interface EdgeRepeat {
+  from: EdgeValue;
+  to: EdgeValue;
+  through?: boolean;
+  step: number;
+  /** Keep each piece within the side. */
+  clamp?: boolean;
+}
+/** A colliding piece of a side: u along it, y up, `t` thick (default the wall thickness). */
+export interface EdgeSegment {
+  u: readonly [EdgeValue, EdgeValue];
+  y: readonly [EdgeValue, EdgeValue];
+  t?: number;
+  repeat?: EdgeRepeat;
+}
+/** Trim on a side's inner face: a baseboard, a cornice (levels 3 m or more), a door frame (when the level is 0.2 m over its top), a window surround, or a box standing `depth` off the wall. */
+export type EdgeTrim =
+  | { base: readonly [EdgeValue, EdgeValue] }
+  | { cornice: readonly [EdgeValue, EdgeValue] }
+  | { frame: { half: number; top: number } }
+  | { window: { u: readonly [number, number]; y: readonly [number, number] } }
+  | { u: readonly [EdgeValue, EdgeValue]; y: readonly [EdgeValue, EdgeValue]; depth: number; repeat?: EdgeRepeat };
+/** What a built edge style is made of (content/tiles/edges.json). */
+export interface EdgeShape {
+  segments: readonly EdgeSegment[];
+  trim: readonly EdgeTrim[];
+  /** How far the trim's face stands off (default the wall thickness). */
+  trimFrom?: number;
+  /** Doorway and window openings [u0, u1, y0, y1]: framed under a facade, glazed on glass styles. */
+  openings?: readonly (readonly [number, number, number, number])[];
+  /** As a tile's default edge it counts as open: ports meeting there build no doorway (railings). */
+  openDefault?: boolean;
+  /** How room dressing reads it: a way in, a window gap, or see-through (default: wall to stand things against). */
+  dressing?: { kind: 'door' | 'window'; span: number } | { kind: 'see-through' };
+}
 
 // ---------------------------------------------------------------- room options
 

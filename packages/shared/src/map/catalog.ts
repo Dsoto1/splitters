@@ -4,8 +4,14 @@
  * Tiles are data: occupied cells, connection ports, and extra solids, all in
  * the tile's local frame before rotation. Walls and floors are derived by the
  * geometry builder, which keeps tile definitions small and lets unconnected
- * ports auto-cap into solid walls.
+ * ports auto-cap into solid walls. The core kit's tiles are in
+ * content/tiles/core.json (tools/content/tiles.mjs generates
+ * content/kitTiles.generated.ts): each part names one of the builders here
+ * (box, flight, rail, arc, partition…) and its numbers. The Style Pack tiles
+ * drawn in code follow (packTiles*.ts).
  */
+
+import { KIT_TILES } from '../content/kitTiles.generated.ts';
 
 import { boxPackTiles } from './packTiles.ts';
 import { boxPackTiles2 } from './packTiles2.ts';
@@ -85,19 +91,6 @@ export const TILE_DIMENSIONS = {
   doorHeight: 3,
 } as const;
 
-function stairSteps(): LocalBox[] {
-  // 16 steps of 0.25 m rise and 0.5 m run climb one 4 m level across one 8 m cell,
-  // rising from the local west (low) side to the local east (high) side.
-  const steps: LocalBox[] = [];
-  const inner = 4 - TILE_DIMENSIONS.wallThickness;
-  for (let i = 0; i < 16; i++) {
-    steps.push({ min: [-4 + i * 0.5, 0, -inner], max: [-4 + (i + 1) * 0.5, (i + 1) * 0.25, inner] });
-  }
-  return steps;
-}
-
-const ALL_SIDES: TilePort[] = SIDES.map((side) => ({ side, level: 0 }));
-
 /** Every outward side of a w × d footprint (cells [0..w-1] × [0..d-1]) on the given levels. */
 function perimeterPorts(w: number, d: number, levels: readonly number[] = [0]): TilePort[] {
   const ports: TilePort[] = [];
@@ -139,10 +132,10 @@ function flight(axis: 'x' | 'z', dir: 1 | -1, from: number, a0: number, a1: numb
 /**
  * Steps down from the edge of a raised block at local z = `edge` (heading -z),
  * between x0 and x1: the first step `top` high, each next one 0.25 m lower,
- * standing on `floor`.
+ * `run` deep, standing on `floor`.
  */
-function descending(edge: number, x0: number, x1: number, n: number, top: number, floor = 0): LocalBox[] {
-  return Array.from({ length: n }, (_, i) => box(x0, floor, edge - (i + 1) * 0.5, x1, top - i * 0.25, edge - i * 0.5));
+function descending(edge: number, x0: number, x1: number, n: number, top: number, floor = 0, run = 0.5): LocalBox[] {
+  return Array.from({ length: n }, (_, i) => box(x0, floor, edge - (i + 1) * run, x1, top - i * 0.25, edge - i * run));
 }
 
 /** A thin rail (1 m high) along a line at height `y`. */
@@ -404,76 +397,13 @@ function arcade(cx: number, cz: number, r: number, a0: number, a1: number, bays:
 
 const HALF_PI = Math.PI / 2;
 
-/** Outer sides of an n × n corner piece left open (north row and east column), so the curve is the only wall. */
-function openNorthEast(n: number): Record<string, EdgeStyle> {
-  const out: Record<string, EdgeStyle> = {};
-  for (let i = 0; i < n; i++) {
-    out[`${i},${n - 1},0:N`] = 'open';
-    out[`${n - 1},${i},0:E`] = 'open';
-  }
-  return out;
-}
-
-/** Ports on the south row and west column of an n × n corner piece: where it joins the rest of the building. */
-function southWestPorts(n: number): TilePort[] {
-  const out: TilePort[] = [];
-  for (let i = 0; i < n; i++) out.push({ side: 'S', level: 0, cell: [i, 0] }, { side: 'W', level: 0, cell: [0, i] });
-  return out;
-}
-
 /**
- * Rounded corners, small (1 cell), medium (2 × 2) and large (3 × 3): a
- * quarter-circle wall from the south-east corner to the north-west corner,
- * centred on the south-west corner. Inside it is a room with a rounded
- * corner; from outside it is a building's rounded corner. The ends meet the
- * straight walls of neighbouring rooms exactly.
+ * A round room: a full circle of wall (radius `r` to the middle of the wall) with a doorway `door` m wide each side
+ * of south and windows `win` m wide each side of east, north and west, each with its trim.
  */
-function roundCorners(): TileDefinition[] {
-  const sizes = [
-    ['s', 'Small', 1],
-    ['m', 'Medium', 2],
-    ['l', 'Large', 3],
-  ] as const;
-  return sizes.flatMap(([key, label, n]) => {
-    const r = n * 8 - TILE_DIMENSIONS.wallThickness / 2;
-    const common = {
-      category: 'Curves' as const,
-      cells: footprint(n, n),
-      floors: [0],
-      ports: southWestPorts(n),
-      edgeDefaults: openNorthEast(n),
-    };
-    return [
-      {
-        ...common,
-        id: `core.round_corner_${key}`,
-        displayName: `Round Corner (${label})`,
-        blurb: 'A curved wall turning the corner: a rounded room inside, a rounded building outside',
-        solids: [...arc(-4, -4, r, 0, HALF_PI, pieces(r, HALF_PI), 0, 4), ...arcTrim(-4, -4, r, 0, HALF_PI)],
-      },
-      {
-        ...common,
-        id: `core.round_arcade_${key}`,
-        displayName: `Round Arcade (${label})`,
-        blurb: 'A curved colonnade of arches: a cloister inside, a portico outside',
-        solids: arcade(-4, -4, r, 0, HALF_PI, n * 2 + 1),
-      },
-      {
-        ...common,
-        id: `core.round_half_${key}`,
-        displayName: `Round Low Wall (${label})`,
-        blurb: 'A curved waist-high wall: cover, a garden edge or a balcony parapet',
-        solids: [...arc(-4, -4, r, 0, HALF_PI, pieces(r, HALF_PI), 0, 1.1), ...arc(-4, -4, r, 0, HALF_PI, pieces(r, HALF_PI), 1.1, 1.18, 0.6, 'trim')],
-      },
-    ];
-  });
-}
-
-/** A round tower room: a full circle of wall in a 2 × 2 footprint, a doorway south and windows round it. */
-function roundTower(): TileDefinition {
-  const r = 7.5;
-  const door = 1.6 / r; // half the doorway angle
-  const win = 0.75 / r;
+function roundRoom(cx: number, cz: number, r: number, doorHalf: number, winHalf: number): LocalBox[] {
+  const door = doorHalf / r; // half the doorway angle
+  const win = winHalf / r;
   const south = -HALF_PI;
   const solids: LocalBox[] = [];
   // Wall runs between the doorway (south) and three windows (east, north, west).
@@ -481,581 +411,127 @@ function roundTower(): TileDefinition {
   for (let i = 0; i < 4; i++) {
     const a = openings[i]! + (i === 0 ? door : win);
     const b = (i === 3 ? south + 2 * Math.PI : openings[i + 1]!) - (i === 3 ? door : win);
-    solids.push(...arc(4, 4, r, a, b, pieces(r, b - a), 0, 4), ...arcTrim(4, 4, r, a, b));
+    solids.push(...arc(cx, cz, r, a, b, pieces(r, b - a), 0, 4), ...arcTrim(cx, cz, r, a, b));
   }
-  solids.push(...arc(4, 4, r, south - door, south + door, 3, 3.2, 4));
-  for (const a of [0, HALF_PI, Math.PI]) solids.push(...arc(4, 4, r, a - win, a + win, 2, 0, 1), ...arc(4, 4, r, a - win, a + win, 2, 2.4, 4));
-  return {
-    id: 'core.round_tower',
-    category: 'Curves',
-    displayName: 'Round Tower',
-    blurb: '2 × 2 open ground with a round room in the middle: doorway south, windows round it',
-    cells: footprint(2, 2),
-    floors: [0],
-    ports: perimeterPorts(2, 2),
-    open: true,
-    edgeDefault: 'open',
-    solids,
-  };
+  solids.push(...arc(cx, cz, r, south - door, south + door, 3, 3.2, 4));
+  for (const a of [0, HALF_PI, Math.PI]) solids.push(...arc(cx, cz, r, a - win, a + win, 2, 0, 1), ...arc(cx, cz, r, a - win, a + win, 2, 2.4, 4));
+  return solids;
 }
 
-/** A quarter-circle corridor from the south doorway round to the west doorway. */
-function curvedCorridor(): TileDefinition {
-  const solids = [
-    ...arc(-4, -4, 2.25, 0, HALF_PI, 4, 0, 4),
-    ...arc(-4, -4, 5.75, 0, HALF_PI, 8, 0, 4),
-    ...arcTrim(-4, -4, 2.25, 0, HALF_PI),
-    ...arcTrim(-4, -4, 5.75, 0, HALF_PI),
-  ];
-  return {
-    id: 'core.corridor_curve',
-    category: 'Curves',
-    displayName: 'Curved Corridor',
-    blurb: 'A corridor sweeping round the corner from the south doorway to the west one',
-    cells: [[0, 0, 0]],
-    floors: [0],
-    ports: [{ side: 'S', level: 0 }, { side: 'W', level: 0 }],
-    solids,
-  };
+// ---------------------------------------------------------------- the kit as data
+
+type Pair = readonly [number, number];
+
+/**
+ * One part of a kit tile, as content/tiles/core.json lists it: the builder it names and that builder's numbers.
+ * `kind` (which theme slot paints it), `yaw` and `surface` (a library material of its own) apply to what it builds.
+ */
+export type KitPart = { kind?: NonNullable<LocalBox['kind']>; yaw?: number; surface?: LocalBox['surface'] } & (
+  | { box: readonly [number, number, number, number, number, number] }
+  | { flight: { axis: 'x' | 'z'; dir: 1 | -1; from: number; across: Pair; steps: number; base?: number; run?: number; floor?: number } }
+  | { descending: { edge: number; across: Pair; steps: number; top: number; floor?: number; run?: number } }
+  | { rail: { from: Pair; to: Pair; y?: number } }
+  | { columns: { at: readonly Pair[]; half: number; y: Pair } }
+  | { partition: { axis: 'x' | 'z'; at: number; from: number; to: number; gaps?: readonly Pair[]; y?: Pair; t?: number } }
+  | { lamp: { at: Pair; dir: 1 | -1 } }
+  | { arc: { centre: Pair; r: number; turns: Pair; pieces?: number; y: Pair; t?: number } }
+  | { arcTrim: { centre: Pair; r: number; turns: Pair; height?: number } }
+  | { arcade: { centre: Pair; r: number; turns: Pair; bays: number; height?: number } }
+  | { roundRoom: { centre: Pair; r: number; door: number; window: number } }
+  | { discStrips: { centre: Pair; r: number; strips: number; width: number; y: Pair } }
+  | { block: { across: number; height: number } }
+);
+
+/** A port, or every side of the first cell on a level, or the perimeter of a w × d footprint on some levels. */
+export type PortSpec = TilePort | { allSides: number } | { perimeter: Pair; levels?: readonly number[] };
+
+/** A kit tile as data (content/tiles/core.json, generated into content/kitTiles.generated.ts). */
+export interface TileSpec extends Omit<TileDefinition, 'cells' | 'ports' | 'solids' | 'extraFloors'> {
+  cells?: TileDefinition['cells'];
+  /** [w, d] or [w, d, levels]: every cell of that block, instead of listing `cells`. */
+  footprint?: readonly number[];
+  ports: readonly PortSpec[];
+  solids?: readonly KitPart[];
+  extraFloors?: readonly KitPart[];
 }
 
-/** Balconies jutting out from an upper doorway (on their south side) over the open air. */
-function balconies(): TileDefinition[] {
-  const rails = [rail(-3.94, -1.5, 3.94, -1.5), rail(-3.94, -4, -3.94, -1.5), rail(3.94, -4, 3.94, -1.5)];
-  // Round balcony: a half-disc floor (in strips under the rail) and a curved railing.
-  const R = 3.5;
-  const strips: LocalBox[] = [];
-  for (let j = 0; j < 7; j++) {
-    const z0 = -4 + j * 0.5;
-    const w = Math.sqrt(Math.max(0, R * R - (z0 + 4) * (z0 + 4)));
-    strips.push(box(-w, -0.3, z0, w, 0, z0 + 0.5));
+/** The boxes one part builds (local frame), from the shared kit's builders. */
+function kitPart(p: KitPart, spec: TileSpec): LocalBox[] {
+  const turns = (t: Pair): [number, number] => [t[0] * HALF_PI, t[1] * HALF_PI];
+  let out: LocalBox[];
+  if ('box' in p) {
+    const [x0, y0, z0, x1, y1, z1] = p.box;
+    const b: LocalBox = { min: [x0, y0, z0], max: [x1, y1, z1] };
+    return [{ ...b, ...(p.yaw !== undefined ? { yaw: p.yaw } : {}), ...(p.kind ? { kind: p.kind } : {}), ...(p.surface ? { surface: p.surface } : {}) }];
+  } else if ('flight' in p) {
+    const f = p.flight;
+    out = flight(f.axis, f.dir, f.from, f.across[0], f.across[1], f.steps, f.base ?? 0, f.run ?? 0.5, f.floor ?? 0);
+  } else if ('descending' in p) {
+    const d = p.descending;
+    out = descending(d.edge, d.across[0], d.across[1], d.steps, d.top, d.floor ?? 0, d.run ?? 0.5);
+  } else if ('rail' in p) out = [rail(p.rail.from[0], p.rail.from[1], p.rail.to[0], p.rail.to[1], p.rail.y ?? 0)];
+  else if ('columns' in p) {
+    const { half: h, y } = p.columns;
+    out = p.columns.at.map(([x, z]) => box(x - h, y[0], z - h, x + h, y[1], z + h));
+  } else if ('partition' in p) {
+    const w = p.partition;
+    out = partition(w.axis, w.at, w.from, w.to, w.gaps ?? [], w.y?.[0] ?? 0, w.y?.[1] ?? 3.5, w.t ?? 0.12);
+  } else if ('lamp' in p) out = lamp(p.lamp.at[0], p.lamp.at[1], p.lamp.dir);
+  else if ('arc' in p) {
+    const a = p.arc;
+    const [a0, a1] = turns(a.turns);
+    // An arc is wall unless the part says otherwise.
+    return arc(a.centre[0], a.centre[1], a.r, a0, a1, a.pieces ?? pieces(a.r, a1 - a0), a.y[0], a.y[1], a.t ?? TILE_DIMENSIONS.wallThickness, p.kind ?? 'wall');
+  } else if ('arcTrim' in p) {
+    const a = p.arcTrim;
+    const [a0, a1] = turns(a.turns);
+    out = arcTrim(a.centre[0], a.centre[1], a.r, a0, a1, a.height ?? 4);
+  } else if ('arcade' in p) {
+    const a = p.arcade;
+    const [a0, a1] = turns(a.turns);
+    out = arcade(a.centre[0], a.centre[1], a.r, a0, a1, a.bays, a.height ?? 4);
+  } else if ('roundRoom' in p) {
+    const a = p.roundRoom;
+    out = roundRoom(a.centre[0], a.centre[1], a.r, a.door, a.window);
+  } else if ('discStrips' in p) {
+    // A half-disc floor in strips (z from the centre outward), each as wide as the circle there.
+    const { centre: [cx, cz], r, strips, width, y } = p.discStrips;
+    out = [];
+    for (let j = 0; j < strips; j++) {
+      const z0 = cz + j * width;
+      const w = Math.sqrt(Math.max(0, r * r - (z0 - cz) * (z0 - cz)));
+      out.push(box(cx - w, y[0], z0, cx + w, y[1], z0 + width));
+    }
+  } else {
+    // A block centred on the tile's footprint (a model's collision).
+    const [w = 1, d = 1] = spec.footprint ?? [];
+    const cx = ((w - 1) * 8) / 2;
+    const cz = ((d - 1) * 8) / 2;
+    const h = p.block.across / 2;
+    out = [{ min: [cx - h, 0, cz - h], max: [cx + h, p.block.height, cz + h] }];
   }
-  return [
-    {
-      id: 'core.balcony',
-      category: 'Curves',
-      displayName: 'Balcony',
-      blurb: 'A railed ledge 2.5 m deep off an upper doorway (on its south side); place it on the level above the ground',
-      cells: [[0, 0, 0]],
-      floors: [],
-      ports: [{ side: 'S', level: 0 }],
-      edgeDefault: 'open',
-      extraFloors: [box(-4, -0.3, -4, 4, 0, -1.5)],
-      solids: rails,
-    },
-    {
-      id: 'core.balcony_round',
-      category: 'Curves',
-      displayName: 'Round Balcony',
-      blurb: 'A half-round railed balcony off an upper doorway (on its south side)',
-      cells: [[0, 0, 0]],
-      floors: [],
-      ports: [{ side: 'S', level: 0 }],
-      edgeDefault: 'open',
-      extraFloors: strips,
-      solids: [...arc(0, -4, R - 0.1, 0, Math.PI, 10, 0, 1.05, 0.12, 'solid'), ...arc(0, -4, R - 0.1, 0, Math.PI, 10, 0.95, 1.08, 0.16, 'trim')],
-    },
-  ];
+  return p.kind ? out.map((b) => ({ ...b, kind: p.kind })) : out;
+}
+
+/** A kit tile from its data: its cells, ports and parts built (map/catalog.ts's builders; tools/content/tiles.mjs checks the data). */
+export function resolveKitTile(spec: TileSpec): TileDefinition {
+  const { footprint: fp, cells, ports, solids, extraFloors, ...rest } = spec;
+  const def: TileDefinition = {
+    ...rest,
+    cells: cells ?? footprint(fp![0]!, fp![1]!, fp![2] ?? 1),
+    ports: ports.flatMap((p): TilePort[] => ('allSides' in p ? SIDES.map((side) => ({ side, level: p.allSides })) : 'perimeter' in p ? perimeterPorts(p.perimeter[0], p.perimeter[1], p.levels ?? [0]) : [p])),
+  };
+  if (solids) def.solids = solids.flatMap((p) => kitPart(p, spec));
+  if (extraFloors) def.extraFloors = extraFloors.flatMap((p) => kitPart(p, spec));
+  return def;
 }
 
 // Built in a pure call: a module that reads only catalog's helpers can drop the tables (docs/LOADING.md).
 export const CORE_TILES: readonly TileDefinition[] = /* @__PURE__ */ (() => [
-  { id: 'core.room', category: 'Rooms', displayName: 'Room', cells: [[0, 0, 0]], floors: [0], ports: ALL_SIDES, configurable: true },
-  {
-    id: 'core.room_pillar', configurable: true, category: 'Rooms',
-    displayName: 'Room (Pillar)',
-    cells: [[0, 0, 0]],
-    floors: [0],
-    ports: ALL_SIDES,
-    solids: [{ min: [-1, 0, -1], max: [1, 4, 1] }],
-  },
-  {
-    id: 'core.corridor', category: 'Corridors',
-    displayName: 'Corridor',
-    cells: [[0, 0, 0]],
-    floors: [0],
-    ports: [
-      { side: 'N', level: 0 },
-      { side: 'S', level: 0 },
-    ],
-    // Low cover block off-centre so corridors are not pure sightlines.
-    solids: [{ min: [-3.5, 0, -0.75], max: [-1.5, 1.1, 0.75] }],
-  },
-  {
-    id: 'core.corner', category: 'Corridors',
-    displayName: 'Corner',
-    cells: [[0, 0, 0]],
-    floors: [0],
-    ports: [
-      { side: 'N', level: 0 },
-      { side: 'E', level: 0 },
-    ],
-  },
-  {
-    id: 'core.junction_t', category: 'Corridors',
-    displayName: 'T-Junction',
-    cells: [[0, 0, 0]],
-    floors: [0],
-    ports: [
-      { side: 'N', level: 0 },
-      { side: 'E', level: 0 },
-      { side: 'W', level: 0 },
-    ],
-  },
-  {
-    id: 'core.dead_end', category: 'Corridors',
-    displayName: 'Dead End',
-    cells: [[0, 0, 0]],
-    floors: [0],
-    ports: [{ side: 'N', level: 0 }],
-    solids: [{ min: [-1.5, 0, -3.5], max: [1.5, 1.1, -2.5] }],
-  },
-  {
-    id: 'core.junction_x', category: 'Corridors',
-    displayName: 'Crossroads',
-    cells: [[0, 0, 0]],
-    floors: [0],
-    ports: ALL_SIDES,
-    // Corner pillars narrow the sightlines through the crossing.
-    solids: [
-      { min: [-3.5, 0, -3.5], max: [-2.5, 4, -2.5] },
-      { min: [2.5, 0, -3.5], max: [3.5, 4, -2.5] },
-      { min: [-3.5, 0, 2.5], max: [-2.5, 4, 3.5] },
-      { min: [2.5, 0, 2.5], max: [3.5, 4, 3.5] },
-    ],
-  },
-  {
-    id: 'core.room_columns', configurable: true, category: 'Rooms',
-    displayName: 'Room (Columns)',
-    cells: [[0, 0, 0]],
-    floors: [0],
-    ports: ALL_SIDES,
-    solids: [
-      { min: [-2.4, 0, -2.4], max: [-1.6, 4, -1.6] },
-      { min: [1.6, 0, -2.4], max: [2.4, 4, -1.6] },
-      { min: [-2.4, 0, 1.6], max: [-1.6, 4, 2.4] },
-      { min: [1.6, 0, 1.6], max: [2.4, 4, 2.4] },
-    ],
-  },
-  {
-    id: 'core.room_cover', configurable: true, category: 'Rooms',
-    displayName: 'Room (Low Cover)',
-    cells: [[0, 0, 0]],
-    floors: [0],
-    ports: ALL_SIDES,
-    solids: [
-      { min: [-2.5, 0, -0.5], max: [-0.5, 1.1, 0.5] },
-      { min: [0.5, 0, 1.5], max: [1.5, 1.1, 3] },
-      { min: [1, 0, -2.5], max: [2.5, 1.1, -1.5] },
-    ],
-  },
-  {
-    id: 'core.room_dais', configurable: true, category: 'Rooms',
-    displayName: 'Room (Dais)',
-    cells: [[0, 0, 0]],
-    floors: [0],
-    ports: ALL_SIDES,
-    // Raised 0.75 m platform with three 0.25 m steps on its south side.
-    solids: [
-      { min: [-2, 0, -1], max: [2, 0.75, 2] },
-      { min: [-1, 0, -1.5], max: [1, 0.5, -1] },
-      { min: [-1, 0, -2], max: [1, 0.25, -1.5] },
-    ],
-  },
-  // City streets (Downtown City MegaKit at 4/3): walked at floor height, the kerbs are only a few centimetres.
-  {
-    id: 'city.street', category: 'Open',
-    displayName: 'City Street',
-    blurb: 'A two-lane road with pavements: 1 cell along the road, 2 across',
-    cells: footprint(1, 2),
-    floors: [0],
-    ports: perimeterPorts(1, 2),
-    open: true,
-    edgeDefault: 'open',
-    model: { file: 'city/street.glb', lift: 0.02 },
-  },
-  {
-    id: 'city.crossroads', category: 'Open',
-    displayName: 'City Crossroads',
-    blurb: '4 × 4 cells: two streets crossing, with crossings and corner pavements',
-    cells: footprint(4, 4),
-    floors: [0],
-    ports: perimeterPorts(4, 4),
-    open: true,
-    edgeDefault: 'open',
-    model: { file: 'city/crossroads.glb', lift: 0.02 },
-  },
-  { id: 'core.yard', category: 'Open', displayName: 'Courtyard', cells: [[0, 0, 0]], floors: [0], ports: ALL_SIDES, open: true, configurable: true },
-  {
-    id: 'core.yard_crates', category: 'Open',
-    displayName: 'Courtyard (Crates)',
-    cells: [[0, 0, 0]],
-    floors: [0],
-    ports: ALL_SIDES,
-    open: true,
-    // A two-high stack with a single crate beside it to climb on.
-    solids: [
-      { min: [0.8, 0, 0.8], max: [2.2, 2, 2.2] },
-      { min: [2.2, 0, 1], max: [3.2, 1, 2] },
-    ],
-  },
-  {
-    id: 'core.yard_wall', category: 'Open',
-    displayName: 'Courtyard (Low Wall)',
-    cells: [[0, 0, 0]],
-    floors: [0],
-    ports: ALL_SIDES,
-    open: true,
-    // Waist-high wall across the middle with a gap to walk through.
-    solids: [
-      { min: [-4, 0, -0.25], max: [-0.9, 1.1, 0.25] },
-      { min: [0.9, 0, -0.25], max: [4, 1.1, 0.25] },
-    ],
-  },
-  {
-    id: 'core.stairs', category: 'Vertical',
-    displayName: 'Stairs',
-    cells: [
-      [0, 0, 0],
-      [0, 0, 1],
-    ],
-    floors: [0],
-    ports: [
-      { side: 'W', level: 0 },
-      { side: 'E', level: 1 },
-    ],
-    solids: stairSteps(),
-  },  // ---------------------------------------------------------------- rooms with elevation
-  {
-    id: 'core.room_ledge',
-    category: 'Rooms',
-    displayName: 'Room (Raised Ledge)',
-    blurb: 'A 1.5 m ledge along the back wall with steps up the middle',
-    cells: [[0, 0, 0]],
-    floors: [0],
-    ports: [
-      { side: 'E', level: 0 },
-      { side: 'S', level: 0 },
-      { side: 'W', level: 0 },
-    ],
-    solids: [box(-3.5, 0, 1.25, 3.5, 1.5, 3.5), ...descending(1.25, -1.25, 1.25, 5, 1.25)],
-  },
-  {
-    id: 'core.room_split',
-    category: 'Rooms',
-    displayName: 'Split-Level Room',
-    blurb: 'The back half 1 m higher, steps at both sides',
-    cells: [[0, 0, 0]],
-    floors: [0],
-    ports: ALL_SIDES,
-    solids: [box(-3.5, 0, 1.5, 3.5, 1, 3.5), ...descending(1.5, -3.5, -1.5, 3, 0.75), ...descending(1.5, 1.5, 3.5, 3, 0.75)],
-  },
-  {
-    id: 'core.room_sunken',
-    category: 'Rooms',
-    displayName: 'Sunken Room',
-    blurb: 'The front of the room drops 1.5 m into a pit, with steps down; enter from the back',
-    cells: [
-      [0, 0, -1],
-      [0, 0, 0],
-    ],
-    floors: [],
-    ports: [{ side: 'N', level: 0 }],
-    extraFloors: [
-      // Pit floor, and the walkway behind it as a solid block down to the pit.
-      box(-4, -2, -4, 4, -1.5, 4),
-      box(-4, -1.5, 1, 4, 0, 4),
-    ],
-    solids: flight('z', -1, 1, -3.5, -1.5, 5, -1.5, 0.45, -1.5).map((b, i) => box(b.min[0], -1.5, b.min[2], b.max[0], -0.25 * (i + 1), b.max[2])),
-  },
-  {
-    id: 'core.room_tall',
-    category: 'Rooms',
-    displayName: 'Tall Room',
-    blurb: 'Two storeys high; doorways on either level',
-    cells: [
-      [0, 0, 0],
-      [0, 0, 1],
-    ],
-    floors: [0],
-    ports: [...ALL_SIDES, ...SIDES.map((side) => ({ side, level: 1 }))],
-    solids: [box(-0.75, 0, -0.75, 0.75, 8, 0.75)],
-  },
-  // ---------------------------------------------------------------- large pieces
-  {
-    id: 'core.room_long', configurable: true,
-    category: 'Large',
-    displayName: 'Long Room',
-    blurb: '1 × 2 cells with cover at both ends',
-    cells: footprint(1, 2),
-    floors: [0],
-    ports: perimeterPorts(1, 2),
-    solids: [box(-2, 0, 1, 2, 1.1, 2), box(-2, 0, 6, 2, 1.1, 7), box(-0.6, 0, 3.4, 0.6, 4, 4.6)],
-  },
-  {
-    id: 'core.room_large', configurable: true,
-    category: 'Large',
-    displayName: 'Large Room',
-    blurb: '2 × 2 cells, open floor with four columns',
-    cells: footprint(2, 2),
-    floors: [0],
-    ports: perimeterPorts(2, 2),
-    solids: [box(0.8, 0, 0.8, 1.6, 4, 1.6), box(6.4, 0, 0.8, 7.2, 4, 1.6), box(0.8, 0, 6.4, 1.6, 4, 7.2), box(6.4, 0, 6.4, 7.2, 4, 7.2)],
-  },
-  // Whole city buildings (not enterable): solid blocks you can stand on, their street face toward local +z (north at rotation 0).
-  {
-    id: 'city.brownstone', category: 'Buildings',
-    displayName: 'Brownstone',
-    blurb: '2 × 2 cells, five storeys of pale brick with a stoop (solid; climb the roof)',
-    cells: footprint(2, 2, 6),
-    floors: [0],
-    ports: [],
-    edgeDefault: 'open',
-    solids: [{ min: [-4, 0, -4], max: [12, 22.7, 12], kind: 'prop' }],
-    model: { file: 'city/brownstone.glb' },
-  },
-  {
-    id: 'city.midrise', category: 'Buildings',
-    displayName: 'Midrise',
-    blurb: '2 × 2 cells, seven storeys with a green shopfront (solid)',
-    cells: footprint(2, 2, 8),
-    floors: [0],
-    ports: [],
-    edgeDefault: 'open',
-    solids: [{ min: [-4, 0, -1.7], max: [12, 28.6, 12], kind: 'prop' }],
-    model: { file: 'city/midrise.glb' },
-  },
-  {
-    id: 'city.highrise', category: 'Buildings',
-    displayName: 'Office Block',
-    blurb: '3 × 3 cells, eight storeys of glass and brick (solid)',
-    cells: footprint(3, 3, 9),
-    floors: [0],
-    ports: [],
-    edgeDefault: 'open',
-    solids: [{ min: [-4, 0, 0.8], max: [20, 33.6, 20], kind: 'prop' }],
-    model: { file: 'city/highrise.glb' },
-  },
-  {
-    id: 'core.hall', configurable: true,
-    category: 'Large',
-    displayName: 'Great Hall',
-    blurb: '3 × 3 cells with colonnades and a central dais',
-    cells: footprint(3, 3),
-    floors: [0],
-    ports: perimeterPorts(3, 3),
-    solids: [...[2, 6, 10, 14].flatMap((x) => [box(x - 0.5, 0, 1.5, x + 0.5, 4, 2.5), box(x - 0.5, 0, 13.5, x + 0.5, 4, 14.5)]), box(5, 0, 5, 11, 0.5, 11), box(6, 0, 6, 10, 1, 10)],
-  },
-  {
-    id: 'core.atrium',
-    category: 'Large',
-    displayName: 'Atrium',
-    blurb: '2 × 2 cells, two storeys, a balcony all round and stairs up',
-    cells: footprint(2, 2, 2),
-    floors: [0],
-    ports: perimeterPorts(2, 2, [0, 1]),
-    extraFloors: [box(-4, 3.5, 9.5, 12, 4, 12), box(-4, 3.5, -4, 12, 4, -1.5), box(-4, 3.5, -1.5, -1.5, 4, 9.5), box(9.5, 3.5, -1.5, 12, 4, 9.5)],
-    solids: [...flight('x', 1, 1.5, -1.5, 0.75, 16), rail(-1.5, 9.5, 9.5, 9.5, 4), rail(-1.5, -1.5, -1.5, 9.5, 4), rail(9.5, 0.75, 9.5, 9.5, 4), rail(-1.5, -1.5, 9.5, -1.5, 4)],
-  },
-  {
-    id: 'core.plaza', configurable: true,
-    category: 'Large',
-    displayName: 'Plaza',
-    blurb: '2 × 2 cells of open ground round a raised fountain',
-    cells: footprint(2, 2),
-    floors: [0],
-    ports: perimeterPorts(2, 2),
-    open: true,
-    solids: [box(1.5, 0, 1.5, 6.5, 0.6, 6.5), box(3, 0, 3, 5, 1.6, 5)],
-  },
-  // ---------------------------------------------------------------- corridors and bridges
-  { id: 'core.corridor_clear', category: 'Corridors', displayName: 'Corridor (Clear)', cells: [[0, 0, 0]], floors: [0], ports: [{ side: 'N', level: 0 }, { side: 'S', level: 0 }] },
-  {
-    id: 'core.corridor_windows',
-    category: 'Corridors',
-    displayName: 'Corridor (Windowed)',
-    blurb: 'Its closed sides are windows unless you change them',
-    cells: [[0, 0, 0]],
-    floors: [0],
-    ports: [{ side: 'N', level: 0 }, { side: 'S', level: 0 }],
-    edgeDefault: 'windows',
-  },
-  {
-    id: 'core.corridor_long',
-    category: 'Corridors',
-    displayName: 'Long Corridor',
-    blurb: 'Two cells long, with low cover halfway',
-    cells: footprint(1, 2),
-    floors: [0],
-    ports: [{ side: 'S', level: 0, cell: [0, 0] }, { side: 'N', level: 0, cell: [0, 1] }],
-    solids: [box(1.5, 0, 3.4, 3.5, 1.1, 4.6)],
-  },
-  {
-    id: 'core.bridge',
-    category: 'Corridors',
-    displayName: 'Bridge',
-    blurb: 'A 3 m deck with railings and nothing underneath',
-    cells: [[0, 0, 0]],
-    floors: [],
-    ports: [{ side: 'N', level: 0 }, { side: 'S', level: 0 }],
-    edgeDefault: 'open',
-    extraFloors: [box(-1.5, -0.5, -4, 1.5, 0, 4)],
-    solids: [rail(-1.5, -4, -1.5, 4), rail(1.5, -4, 1.5, 4)],
-  },
-  {
-    id: 'core.catwalk',
-    category: 'Corridors',
-    displayName: 'Catwalk Corner',
-    blurb: 'A narrow walkway turning a corner over the drop',
-    cells: [[0, 0, 0]],
-    floors: [],
-    ports: [{ side: 'N', level: 0 }, { side: 'E', level: 0 }],
-    edgeDefault: 'open',
-    extraFloors: [box(-1, -0.3, -1, 1, 0, 4), box(1, -0.3, -1, 4, 0, 1)],
-    solids: [rail(-1, -1, -1, 4), rail(-1, -1, 4, -1)],
-  },
-  // ---------------------------------------------------------------- vertical
-  {
-    id: 'core.stairwell',
-    category: 'Vertical',
-    displayName: 'Stairwell',
-    blurb: 'Switchback stairs up one level; doorways west on both floors',
-    cells: [
-      [0, 0, 0],
-      [0, 0, 1],
-    ],
-    floors: [0],
-    ports: [
-      { side: 'W', level: 0 },
-      { side: 'W', level: 1 },
-    ],
-    // Two flights side by side (no stairwell gap), joined by a landing at 2 m.
-    extraFloors: [box(-4, 3.5, -1.5, -1.9, 4, 4)],
-    solids: [...flight('x', 1, -1.9, -3.5, 0, 8, 0, 0.45), box(1.7, 0, -3.5, 3.5, 2, 3.5), ...flight('x', -1, 1.7, 0, 3.5, 8, 2, 0.45)],
-  },
-  {
-    id: 'core.ramp',
-    category: 'Vertical',
-    displayName: 'Long Ramp',
-    blurb: 'A gentle climb of one level over two cells',
-    cells: [
-      [0, 0, 0],
-      [1, 0, 0],
-      [0, 0, 1],
-      [1, 0, 1],
-    ],
-    floors: [0],
-    ports: [
-      { side: 'W', level: 0, cell: [0, 0] },
-      { side: 'E', level: 1, cell: [1, 0] },
-    ],
-    solids: flight('x', 1, -4, -3.5, 3.5, 16, 0, 1),
-  },
-  {
-    id: 'core.stairs_open',
-    category: 'Vertical',
-    displayName: 'Open Stairs',
-    blurb: 'Outdoor steps up one level, no walls',
-    cells: [
-      [0, 0, 0],
-      [0, 0, 1],
-    ],
-    floors: [0],
-    ports: [
-      { side: 'W', level: 0 },
-      { side: 'E', level: 1 },
-    ],
-    open: true,
-    edgeDefault: 'open',
-    solids: flight('x', 1, -4, -2, 2, 16),
-  },
-  {
-    id: 'core.tower',
-    category: 'Vertical',
-    displayName: 'Watchtower',
-    blurb: 'Open ground with a 1.5 m lookout along one side and steps up',
-    cells: [
-      [0, 0, 0],
-      [0, 0, 1],
-    ],
-    floors: [0],
-    ports: ALL_SIDES,
-    open: true,
-    // A lookout along the east side, reached by steps along the south wall.
-    extraFloors: [box(1.3, 1.1, -3.5, 3.5, 1.5, 3.5)],
-    solids: [
-      box(1.3, 0, 3.1, 1.7, 1.1, 3.5),
-      box(1.3, 0, -1.2, 1.7, 1.1, -0.8),
-      ...flight('x', 1, -1.4, -3.5, -1.2, 6, 0, 0.45),
-      rail(1.3, -1.2, 1.3, 3.5, 1.5),
-      rail(1.3, 3.5, 3.5, 3.5, 1.5),
-      rail(3.5, -3.5, 3.5, 3.5, 1.5),
-    ],
-  },
-  // ---------------------------------------------------------------- open ground
-  { id: 'core.platform', category: 'Open', displayName: 'Platform', blurb: 'Floor only: no walls, mind the edge', cells: [[0, 0, 0]], floors: [0], ports: ALL_SIDES, open: true, edgeDefault: 'open' },
-  {
-    id: 'core.platform_rail',
-    category: 'Open',
-    displayName: 'Platform (Railing)',
-    blurb: 'Floor with railings on the unconnected sides',
-    cells: [[0, 0, 0]],
-    floors: [0],
-    ports: ALL_SIDES,
-    open: true,
-    edgeDefault: 'railing',
-  },
-  {
-    id: 'core.terrace',
-    category: 'Open',
-    displayName: 'Terrace',
-    blurb: 'Open ground with a 1 m step-up across the back',
-    cells: [[0, 0, 0]],
-    floors: [0],
-    ports: ALL_SIDES,
-    open: true,
-    solids: [box(-4, 0, 1, 4, 1, 4), ...descending(1, -1.5, 1.5, 3, 0.75)],
-  },
-  {
-    id: 'core.yard_ruins',
-    category: 'Open',
-    displayName: 'Courtyard (Ruins)',
-    blurb: 'Broken columns and a fallen block',
-    cells: [[0, 0, 0]],
-    floors: [0],
-    ports: ALL_SIDES,
-    open: true,
-    solids: [box(-3, 0, 2, -2, 3.2, 3), box(2, 0, 2, 3, 1.4, 3), box(-3, 0, -3, -2, 0.8, -2), box(0.5, 0, -2.5, 3.2, 0.9, -1.4)],
-  },
-  ...buildings(),
-  ...roundCorners(),
-  roundTower(),
-  curvedCorridor(),
-  ...balconies(),
-  ...stylePackTiles(),
-  // ---------------------------------------------------------------- special
-  {
-    id: 'core.pit',
-    category: 'Special',
-    displayName: 'Pit',
-    blurb: 'A 4 × 4 m hole with a walkway round it: falls to the level below, or to your doom',
-    cells: [[0, 0, 0]],
-    floors: [],
-    ports: ALL_SIDES,
-    extraFloors: [box(-4, -0.5, 2, 4, 0, 4), box(-4, -0.5, -4, 4, 0, -2), box(-4, -0.5, -2, -2, 0, 2), box(2, -0.5, -2, 4, 0, 2)],
-  },
-  {
-    id: 'core.drop',
-    category: 'Special',
-    displayName: 'Drop Shaft',
-    blurb: 'Most of the floor gone: a quick way down to the level below',
-    cells: [[0, 0, 0]],
-    floors: [],
-    ports: ALL_SIDES,
-    extraFloors: [box(-4, -0.5, 1.5, 4, 0, 4)],
-    solids: [rail(-4, 1.5, -1.6, 1.5), rail(1.6, 1.5, 4, 1.5)],
-  },
-  // Style Pack pieces (01 Military Compound, 02 Frontier Dust): see packTiles.ts and editor/stylePacks.ts.
+  // The core building kit (content/tiles/core.json): rooms, corridors, stairs, open ground, buildings, curves,
+  // the city pieces and the 04 Orbital Station / 07 Neon Megacity pieces.
+  ...KIT_TILES.map(resolveKitTile),
+  // Style Pack pieces drawn in code (01 Military Compound, 02 Frontier Dust): see packTiles.ts and editor/stylePacks.ts.
   ...boxPackTiles(),
   // Style Pack pieces (05 Gothic Estate, 06 Jungle Ruins, 08 Suburban Chaos): see packTiles2.ts.
   ...boxPackTiles2(),
@@ -1087,291 +563,12 @@ function partition(axis: 'x' | 'z', at: number, a0: number, a1: number, gaps: re
   return out.map((b) => ({ ...b, kind: 'wall' as const }));
 }
 
-/** Decorative only (the theme's trim paint): frames, beams, lines. */
-function trim(x0: number, y0: number, z0: number, x1: number, y1: number, z1: number): LocalBox {
-  return { min: [x0, y0, z0], max: [x1, y1, z1], kind: 'trim' };
-}
-
-/** A street lamp: a pole with an arm reaching over the road (`dir` +1 east, -1 west). */
+/** A street lamp: a pole with an arm reaching over the road (`dir` +1 east, -1 west); the arm and lantern are trim. */
 function lamp(x: number, z: number, dir: 1 | -1): LocalBox[] {
+  const trim = (x0: number, y0: number, z0: number, x1: number, y1: number, z1: number): LocalBox => ({ ...box(x0, y0, z0, x1, y1, z1), kind: 'trim' });
   return [box(x - 0.1, 0, z - 0.1, x + 0.1, 4.6, z + 0.1), trim(Math.min(x, x + dir * 1.4), 4.4, z - 0.06, Math.max(x, x + dir * 1.4), 4.55, z + 0.06), trim(x + dir * 1.2 - 0.25, 4.2, z - 0.18, x + dir * 1.2 + 0.25, 4.4, z + 0.18)];
 }
 
-/**
- * Whole buildings as single pieces, with their insides laid out: rooms,
- * stairs, counters and shelving as solid blocks, interior walls in the wall
- * paint and frames and beams in the trim paint, so they take any theme.
- */
-function buildings(): TileDefinition[] {
-  return [
-    {
-      id: 'core.house',
-      category: 'Buildings',
-      displayName: 'House',
-      blurb: '2 × 2 cells, two storeys: living room, kitchen, stair hall, two rooms upstairs, windows all round',
-      cells: footprint(2, 2, 2),
-      floors: [0],
-      ports: [
-        { side: 'S', level: 0, cell: [0, 0] },
-        { side: 'E', level: 0, cell: [1, 0] },
-        { side: 'N', level: 0, cell: [1, 1] },
-      ],
-      edgeDefault: 'window',
-      // The upper floor, open over the stairs (x -1..7 along the north wall, with room to walk on at the foot).
-      extraFloors: [box(-4, 3.5, -4, 12, 4, 8.5), box(7, 3.5, 8.5, 12, 4, 12)],
-      solids: [
-        ...flight('x', 1, -1, 8.6, 11.6, 16),
-        rail(-1, 8.5, 7, 8.5, 4),
-        // Ground floor: living room (south-west), kitchen (south-east), stair hall (north).
-        ...partition('x', 4, -4, 12, [[0.5, 2.5], [8.5, 10.5]]),
-        ...partition('z', 4, -4, 4, [[-1, 1]]),
-        box(9, 0, -3.7, 11.7, 0.95, -0.8),
-        box(6, 0, 0.6, 8, 0.95, 2),
-        box(-3.6, 0, -3.7, -0.4, 0.75, -2.7),
-        // Upstairs: two rooms either side of a landing.
-        ...partition('z', 4, -4, 8.5, [[2.5, 4.5]], 4, 7.5),
-        box(-3.6, 4, -3.7, -1, 4.5, -1.6),
-        box(9.6, 4, -3.7, 11.7, 4.5, -1),
-        // A flat roof with a parapet, and trim at the eaves and between the floors.
-        box(-4, 8, -4, 12, 8.35, 12),
-        trim(-4, 8.35, -4, 12, 8.8, -3.7),
-        trim(-4, 8.35, 11.7, 12, 8.8, 12),
-        trim(-4, 8.35, -3.7, -3.7, 8.8, 11.7),
-        trim(11.7, 8.35, -3.7, 12, 8.8, 11.7),
-        trim(-3.75, 3.75, -3.75, 11.75, 3.95, -3.6),
-        trim(-3.75, 3.75, 11.6, 11.75, 3.95, 11.75),
-      ],
-    },
-    {
-      id: 'core.warehouse',
-      category: 'Buildings',
-      displayName: 'Warehouse',
-      blurb: '3 × 2 cells, double height: pallet stacks on the floor, a mezzanine along the back reached by stairs',
-      cells: footprint(3, 2, 2),
-      floors: [0],
-      ports: [
-        { side: 'S', level: 0, cell: [0, 0] },
-        { side: 'S', level: 0, cell: [2, 0] },
-        { side: 'W', level: 0, cell: [0, 1] },
-        { side: 'E', level: 0, cell: [2, 0] },
-        { side: 'N', level: 1, cell: [1, 1] },
-      ],
-      edgeDefaults: { '0,0,1:S': 'windows', '1,0,1:S': 'windows', '2,0,1:S': 'windows', '0,1,1:W': 'windows', '2,1,1:E': 'windows' },
-      // The mezzanine (north half, 4 m up), with a landing at the top of the stairs.
-      extraFloors: [box(-4, 3.5, 6, 20, 4, 12), box(16, 3.5, 3, 20, 4, 6)],
-      solids: [
-        ...flight('x', 1, 8, 3, 5.4, 16),
-        rail(-4, 6, 11, 6, 4),
-        // Columns under the mezzanine and pallet stacks out on the floor.
-        box(3.8, 0, 5.8, 4.2, 3.5, 6.2),
-        box(7.8, 0, 5.8, 8.2, 3.5, 6.2),
-        box(0, 0, -2.5, 2.2, 1.2, -0.5),
-        box(0.2, 1.2, -2.3, 2, 2.3, -0.7),
-        box(6, 0, -3, 8.4, 2.4, -1),
-        box(14, 0, 0.5, 16.2, 1.2, 2.5),
-        box(16.6, 0, -3.5, 19.6, 1.2, -1.5),
-        box(-3.6, 4, 8.5, -1, 5.2, 11.6),
-        // A roof over the trusses.
-        box(-4, 8, -4, 20, 8.35, 12),
-        trim(-4, 8.35, -4, 20, 8.6, -3.7),
-        // Roof trusses.
-        ...[0, 8, 16].map((x) => trim(x - 0.15, 7.4, -4, x + 0.15, 7.8, 12)),
-        trim(-4, 7.6, 3.85, 20, 7.8, 4.15),
-      ],
-    },
-    {
-      id: 'core.bunker',
-      category: 'Buildings',
-      displayName: 'Bunker',
-      blurb: '2 × 1 cells of thick concrete: firing slits, a centre pillar, sandbag cover at the doors',
-      cells: footprint(2, 1),
-      floors: [0],
-      ports: [
-        { side: 'W', level: 0 },
-        { side: 'E', level: 0, cell: [1, 0] },
-        { side: 'S', level: 0 },
-      ],
-      edgeDefault: 'slit',
-      solids: [
-        box(3.4, 0, -0.6, 4.6, 4, 0.6),
-        // Sandbag cover inside each door, leaving a way round.
-        box(-1.6, 0, -2.4, -1, 1.1, -0.6),
-        box(9, 0, 0.6, 9.6, 1.1, 2.4),
-        box(-2.6, 0, -1.4, -0.6, 1.1, -0.8),
-        box(6, 0, 2.6, 9.5, 0.9, 3.6),
-        // A thick roof slab with a lip.
-        box(-4, 4, -4, 12, 4.9, 4),
-        trim(-4, 4.9, -4, 12, 5.05, -3.6),
-        trim(-4, 4.9, 3.6, 12, 5.05, 4),
-      ],
-    },
-    {
-      id: 'core.shop',
-      category: 'Buildings',
-      displayName: 'Shop',
-      blurb: '2 × 1 cells: a glass shopfront, shelving aisles and a counter, a stock room behind',
-      cells: footprint(2, 1),
-      floors: [0],
-      ports: [
-        { side: 'S', level: 0 },
-        { side: 'N', level: 0, cell: [1, 0] },
-      ],
-      edgeDefaults: { '1,0,0:S': 'windows', '0,0,0:N': 'window', '0,0,0:W': 'window' },
-      solids: [
-        box(-2.8, 0, -1.2, 2.2, 1.8, -0.6),
-        box(-2.8, 0, 1, 2.2, 1.8, 1.6),
-        box(-3.7, 0, 3, 2.2, 2, 3.7),
-        box(5, 0, -3.2, 6, 1.05, 0.5),
-        ...partition('z', 8, -4, 4, [[-1.4, 1.4]]),
-        box(9, 0, 2.2, 11.6, 1.6, 3.7),
-        box(10.4, 0, -3.7, 11.7, 2.2, -1.2),
-        // Pelmet over the shopfront, inside.
-        trim(-3.75, 3, -3.75, 11.75, 3.4, -3.5),
-        // Flat roof with a parapet.
-        box(-4, 4, -4, 12, 4.35, 4),
-        trim(-4, 4.35, -4, 12, 4.8, -3.8),
-        trim(-4, 4.35, 3.8, 12, 4.8, 4),
-      ],
-    },
-    {
-      id: 'core.gas_station',
-      category: 'Buildings',
-      displayName: 'Gas Station',
-      blurb: '2 × 2 cells of forecourt: a canopy on pillars over two pump islands, and a kiosk at the back',
-      cells: footprint(2, 2),
-      floors: [0],
-      ports: perimeterPorts(2, 2),
-      open: true,
-      solids: [
-        // Canopy (you can stand on it) on four pillars.
-        ...[[-1.5, -1.5], [9.5, -1.5], [-1.5, 5.5], [9.5, 5.5]].map(([x, z]) => box(x! - 0.3, 0, z! - 0.3, x! + 0.3, 5, z! + 0.3)),
-        box(-2.5, 5, -2.5, 10.5, 5.4, 6.5),
-        trim(-2.6, 5.4, -2.6, 10.6, 5.7, 6.6),
-        // Pump islands.
-        box(0.5, 0, 0.5, 7.5, 0.2, 1.7),
-        box(1.5, 0.2, 0.75, 2.3, 1.7, 1.45),
-        box(5.7, 0.2, 0.75, 6.5, 1.7, 1.45),
-        box(0.5, 0, 3.3, 7.5, 0.2, 4.5),
-        box(1.5, 0.2, 3.55, 2.3, 1.7, 4.25),
-        box(5.7, 0.2, 3.55, 6.5, 1.7, 4.25),
-        // Kiosk: a small room with a counter, door and window to the forecourt.
-        ...partition('x', 7.6, 2, 9, [[4, 6.6]], 0, 3.2, 0.15),
-        ...partition('x', 11.6, 2, 9, [], 0, 3.2, 0.15),
-        ...partition('z', 2, 7.6, 11.6, [], 0, 3.2, 0.15),
-        ...partition('z', 9, 7.6, 11.6, [[8.2, 10.8]], 0, 3.2, 0.15),
-        box(1.8, 3.2, 7.4, 9.2, 3.5, 11.8),
-        box(2.6, 0, 10.6, 6.4, 1.05, 11.4),
-      ],
-    },
-    {
-      id: 'core.street',
-      category: 'Buildings',
-      displayName: 'Street',
-      blurb: 'A road north–south with raised sidewalks, a centre line and a street lamp',
-      cells: [[0, 0, 0]],
-      floors: [0],
-      ports: ALL_SIDES,
-      open: true,
-      solids: [box(-4, 0, -4, -2.6, 0.15, 4), box(2.6, 0, -4, 4, 0.15, 4), trim(-0.08, 0, -3.2, 0.08, 0.02, -0.8), trim(-0.08, 0, 0.8, 0.08, 0.02, 3.2), ...lamp(-3.3, 3.4, 1)],
-    },
-    {
-      id: 'core.intersection',
-      category: 'Buildings',
-      displayName: 'Intersection',
-      blurb: 'Where two streets cross: sidewalk corners and crosswalks',
-      cells: [[0, 0, 0]],
-      floors: [0],
-      ports: ALL_SIDES,
-      open: true,
-      solids: [
-        ...[[-4, -4], [2.6, -4], [-4, 2.6], [2.6, 2.6]].map(([x, z]) => box(x!, 0, z!, x! + 1.4, 0.15, z! + 1.4)),
-        ...[-2, -1, 0, 1].flatMap((i) => [trim(i * 0.9 - 0.3, 0, -2.5, i * 0.9 + 0.15, 0.02, -1.9), trim(i * 0.9 - 0.3, 0, 1.9, i * 0.9 + 0.15, 0.02, 2.5), trim(-2.5, 0, i * 0.9 - 0.3, -1.9, 0.02, i * 0.9 + 0.15), trim(1.9, 0, i * 0.9 - 0.3, 2.5, 0.02, i * 0.9 + 0.15)]),
-        ...lamp(3.3, 3.3, -1),
-      ],
-    },
-  ];
-}
-
-// ---------------------------------------------------------------- Style Packs (Set 1)
-
-/**
- * Tiles of the MapMaker Style Packs (see editor/stylePacks.ts): 04 Orbital
- * Station's hangar and reactor hall (our own geometry, painted by the theme)
- * and 07 Neon Megacity's towers (Kenney's City Kit (Commercial), CC0, fitted
- * to whole cells by tools/content/prepare-packs.mjs). Towers are solid blocks
- * as tall as their roofs (measured by the script), so rooftops are walkable;
- * rooftop clutter above that is walk-through, as for the city buildings.
- */
-function stylePackTiles(): TileDefinition[] {
-  /** A model-backed tower w × d cells, `across` metres wide (centred on its cells), its roof `roof` metres up. */
-  const tower = (id: string, displayName: string, blurb: string, w: number, d: number, across: number, roof: number): TileDefinition => {
-    const cx = ((w - 1) * 8) / 2;
-    const cz = ((d - 1) * 8) / 2;
-    const h = across / 2;
-    return {
-      id,
-      category: 'Buildings',
-      displayName,
-      blurb,
-      cells: footprint(w, d, Math.ceil(roof / 4)),
-      floors: [0],
-      ports: [],
-      edgeDefault: 'open',
-      solids: [{ min: [cx - h, 0, cz - h], max: [cx + h, roof, cz + h], kind: 'prop' }],
-      model: { file: `packs/${id.replace('neon.', 'neon_')}.glb` },
-    };
-  };
-  return [
-    {
-      id: 'orbital.hangar',
-      category: 'Large',
-      displayName: 'Hangar Bay',
-      blurb: '3 × 3 cells, two storeys: a landing pad under a gantry along the back wall, stairs up the west side (open the front onto space and seal it with a force field)',
-      cells: footprint(3, 3, 2),
-      floors: [0],
-      ports: [...perimeterPorts(3, 3, [0]), ...[0, 1, 2].map((x) => ({ side: 'N' as const, level: 1, cell: [x, 2] as const }))],
-      extraFloors: [box(-4, 3.5, 16.5, 20, 4, 20), box(-4, 3.5, 8.5, -0.5, 4, 16.5)],
-      solids: [
-        ...flight('z', 1, 0.5, -3.5, -1, 16),
-        rail(-0.5, 16.5, 20, 16.5, 4),
-        rail(-0.5, 8.5, -0.5, 16.5, 4),
-        // The landing pad: a low deck with glowing marks round it (trim).
-        box(3, 0, 3, 13, 0.2, 13),
-        trim(2.8, 0, 2.8, 13.2, 0.22, 3),
-        trim(2.8, 0, 13, 13.2, 0.22, 13.2),
-        trim(2.8, 0, 3, 3, 0.22, 13),
-        trim(13, 0, 3, 13.2, 0.22, 13),
-      ],
-    },
-    {
-      id: 'orbital.reactor_hall',
-      category: 'Large',
-      displayName: 'Reactor Hall',
-      blurb: '2 × 2 cells, two storeys: a catwalk all round under glowing edge lights, stairs up, and room in the middle for the Reactor Core prop. Pair it with a Low-Gravity Zone and float up to the catwalk',
-      cells: footprint(2, 2, 2),
-      floors: [0],
-      ports: perimeterPorts(2, 2, [0, 1]),
-      extraFloors: [box(-4, 3.5, 9.5, 12, 4, 12), box(-4, 3.5, -4, 12, 4, -1.5), box(-4, 3.5, -1.5, -1.5, 4, 9.5), box(9.5, 3.5, -1.5, 12, 4, 9.5)],
-      solids: [
-        ...flight('x', 1, 1.5, -1.5, 0.75, 16),
-        // Glowing strips along the catwalk's inner edge (trim: paint them with Glow Trim).
-        trim(-1.5, 3.5, 9.4, 9.5, 4.02, 9.5),
-        trim(-1.5, 3.5, -1.5, -1.4, 4.02, 9.5),
-        trim(9.4, 3.5, 0.75, 9.5, 4.02, 9.5),
-        // Coolant pylons in the corners.
-        box(-3.6, 0, -3.6, -2.6, 3.5, -2.6),
-        box(10.6, 0, 10.6, 11.6, 3.5, 11.6),
-        box(-3.6, 0, 10.6, -2.6, 3.5, 11.6),
-      ],
-    },
-    tower('neon.tower_a', 'Glass Tower', '2 × 2 cells, a 31 m glass office tower (solid; elevators and pads up to its roof)', 2, 2, 15.2, 31.29),
-    tower('neon.tower_b', 'Spire Tower', '2 × 2 cells, a 49 m glass spire (solid; a skyline piece)', 2, 2, 15.2, 49.18),
-    tower('neon.tower_c', 'Stepped Tower', '2 × 2 cells, a 39 m tower with a stepped crown (solid)', 2, 2, 15.2, 39.43),
-    tower('neon.tower_e', 'Twin-Block Tower', '2 × 2 cells, a 47 m tower (solid; a skyline piece)', 2, 2, 15.2, 46.95),
-    tower('neon.shop_a', 'Corner Shop Block', '1 cell, three storeys of flats over a shop (solid; climb the roof)', 1, 1, 7.4, 9.45),
-    tower('neon.block_n', 'Apartment Block', '2 × 2 cells, a 13 m apartment block with a roof terrace (solid)', 2, 2, 15.2, 13.1),
-  ];
-}
 
 export class TileCatalog {
   private readonly byId = new Map<string, TileDefinition>();

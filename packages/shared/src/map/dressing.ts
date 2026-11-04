@@ -22,9 +22,10 @@
  * walls, doors and windows, and what already stands in it).
  */
 import { getProp } from '../content/props.ts';
-import { SIDE_DIRS, SIDES, seededRandom, type Side } from './catalog.ts';
+import { SIDE_DIRS, SIDES, seededRandom, type EdgeShape, type Side } from './catalog.ts';
 import { boxBounds, buildMapGeometry, buildOccupancy, cellKey, edgeSegments, resolveEdge, rotateXZ, type WorldBox } from './geometry.ts';
 import type { MapDocument } from './schema.ts';
+import { EDGE_SHAPES } from '../content/edgeStyles.generated.ts';
 
 // ---------------------------------------------------------------- room types
 
@@ -1034,19 +1035,8 @@ function concaveCorners(walls: DressWall[]): { x: number; z: number; nx: number;
 
 // ---------------------------------------------------------------- reading a room from a map
 
-/** How each edge style is read: a way in, a gap to keep clear, or wall to stand things against. */
-const OPENING_SPAN: Partial<Record<string, { kind: 'door' | 'window'; span: number }>> = {
-  door: { kind: 'door', span: 3 },
-  wide: { kind: 'door', span: 5 },
-  arch: { kind: 'door', span: 6.5 },
-  broken: { kind: 'door', span: 4.4 },
-  shutter: { kind: 'door', span: 5 },
-  window: { kind: 'window', span: 2.6 },
-  windows: { kind: 'window', span: 5.4 },
-  slit: { kind: 'window', span: 3 },
-};
-const SEE_THROUGH = new Set(['half', 'railing', 'fence', 'bars']);
-const SOLID = new Set(['wall', 'high', 'tower']);
+/** How room dressing reads an edge style (content/tiles/edges.json `dressing`): a way in, a gap to keep clear, see-through, or (by default) wall to stand things against. */
+const dressingOf = (style: string) => (EDGE_SHAPES as Readonly<Record<string, EdgeShape | undefined>>)[style]?.dressing;
 /** Entities with an area of their own (kept clear only at their centre). */
 const KEEP_CLEAR_RADIUS = 1.2;
 
@@ -1134,11 +1124,10 @@ export function dressSpace(map: MapDocument, cellList: readonly (readonly [numbe
         walls.push(dx === 0 ? { x0: u0, z0: line, x1: u1, z1: line, nx, nz } : { x0: line, z0: u0, x1: line, z1: u1, nx, nz });
       };
       const open = (kind: 'door' | 'window', width: number) => openings.push(dx === 0 ? { x: mid, z: line, nx, nz, width, kind } : { x: line, z: mid, nx, nz, width, kind });
-      if (SOLID.has(style)) seg(a0, a1);
-      else if (style === 'none') open('door', a1 - a0);
-      else if (style === 'drop' || SEE_THROUGH.has(style)) open('window', a1 - a0);
+      const o = dressingOf(style);
+      if (style === 'none') open('door', a1 - a0);
+      else if (style === 'drop' || o?.kind === 'see-through') open('window', a1 - a0);
       else {
-        const o = OPENING_SPAN[style];
         if (!o) {
           seg(a0, a1);
           continue;
