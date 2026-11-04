@@ -4597,6 +4597,8 @@ async function handoffFlow(browser) {
   const errors = [];
   const logs = [];
   const began = Date.now();
+  // The pages' console, for a failed check (CI annotations carry it).
+  const dump = () => console.log(`handoff console (last 40):\n  ${logs.slice(-40).join('\n  ')}`);
   const playing = () => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown';
   const open = async (name, url) => {
     const p = await (await browser.newContext({ viewport: { width: 640, height: 360 } })).newPage();
@@ -4635,7 +4637,7 @@ async function handoffFlow(browser) {
   const joins = (p) => p.waitForFunction(playing, null, { timeout: T(120000) }).then(() => lookAbout(p).then(() => true), () => false);
   const inBoth = (await Promise.all([joins(ann), joins(bo)])).every(Boolean);
   check(inBoth, 'two friends join the hosted match');
-  if (!inBoth) return void console.log(`handoff console (last 40):\n  ${logs.slice(-40).join('\n  ')}`);
+  if (!inBoth) return void dump();
   // What each friend's link knows: its standby code (asked to stand by), the successor named, a checkpoint.
   const known = (p) => p.evaluate(() => {
     const h = window.__cs?.transport?.handoff;
@@ -4652,7 +4654,7 @@ async function handoffFlow(browser) {
     return !!heir;
   }, T(180000));
   check(named, `the host names a successor in advance, everyone knows its code, and it gets checkpoints (${((Date.now() - t0) / 1000).toFixed(0)} s; ${JSON.stringify([await known(ann), await known(bo)])})`);
-  if (!named) return;
+  if (!named) return void dump();
   // Both friends score: the other one's must survive the handoff. No score limit: on a slow run a bot reaching
   // it would end the round, and the next round's scores start from nothing.
   const scores = { Ann: 7, Bo: 6 };
@@ -4671,7 +4673,7 @@ async function handoffFlow(browser) {
     return true;
   }, T(30000));
   check(carried, "the successor's checkpoint carries the other friend's score");
-  if (!carried) return;
+  if (!carried) return void dump();
   // The host leaves; whichever friend was named last carries the match on.
   await host.evaluate(() => document.getElementById('exitmatch').click());
   await host.evaluate(() => document.getElementById('leave-yes')?.click());
@@ -4683,14 +4685,14 @@ async function handoffFlow(browser) {
     return true;
   }, T(60000));
   check(took, `${heir.name} takes the match over and hosts it`);
-  if (!took) return void console.log(`handoff console (last 40):\n  ${logs.slice(-40).join('\n  ')}`);
+  if (!took) return void dump();
   const heirCode = await heir.page.evaluate(() => document.querySelector('#host-info .host-code b').textContent);
   const followed = await other.page.waitForFunction((c) => window.__cs?.transport?.label === `code ${c}` && !!window.__cs.local && !document.getElementById('host-left'), heirCode, { timeout: T(95000) }).then(() => true, () => false);
   check(followed, `${other.name} follows to ${heir.name}'s code (${heirCode}) by themselves`);
   const back = await simWait(heir.page, (m, me, [n, k]) => m.combatants().some((c) => c.kind === 'human' && c.name === n && !c.away && c.kills >= k), [other.name, scores[other.name]], T(30000));
   const seen = await sim(heir.page, (m) => m.combatants().map((c) => `${c.name}:${c.kind}:${c.kills}`));
   check(back, `${other.name} has their place back, with their score (${seen.join(', ')})`);
-  if (!followed || !back) console.log(`handoff console (last 40):\n  ${logs.slice(-40).join('\n  ')}`);
+  if (!followed || !back) dump();
   const moved = await heir.page
     .waitForFunction((c) => fetch(`http://${new URLSearchParams(location.search).get('hub')}/lobby/games`).then((r) => r.json()).then((d) => { const g = d.games.filter((x) => x.name === 'E2E Handoff'); return g.length === 1 && g[0].code === c; }), heirCode, { timeout: T(40000), polling: 1000 })
     .then(() => true, () => false);
