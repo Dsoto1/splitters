@@ -300,7 +300,8 @@ there are.
 7. **Notes:** put the design intent in `notes` (`design`, `model`, or the field it explains), not in code comments.
 8. **Generate and check:** `pnpm content:weapons` (`node tools/content/weapons.mjs`) checks the schema (an unknown
    field is an error), the references (ammo types, models, sounds, slots 0-9, codes; classes naming real weapons,
-   throwables and abilities) and writes `packages/shared/src/content/weapons.generated.ts` and the lock. `--check`
+   throwables and abilities) and writes `packages/shared/src/content/weapons.generated.ts`,
+   `weaponFamilies.generated.ts` (the families, which load with a match, not the menu) and the lock. `--check`
    only verifies that both are up to date (the unit test `tools/content/test/weapons.test.mjs` does the same).
 9. **Test:** `pnpm typecheck`, `pnpm test:changed` and the `arsenal` e2e flow; a weapon that changes an existing
    one's numbers also changes `packages/shared/test/fixtures/weapons-resolved.json` (rewrite it with

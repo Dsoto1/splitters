@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { ROOT, build, load, lockText, render } from '../weapons.mjs';
+import { ROOT, build, load, lockText, render, renderFamilies } from '../weapons.mjs';
 
 const clone = (v) => JSON.parse(JSON.stringify(v));
 
@@ -12,6 +12,7 @@ describe('weapons generator (tools/content/weapons.mjs)', () => {
     const { problems, out } = build(content);
     expect(problems).toEqual([]);
     expect(render(out)).toBe(readFileSync(join(ROOT, 'packages/shared/src/content/weapons.generated.ts'), 'utf8'));
+    expect(renderFamilies(out)).toBe(readFileSync(join(ROOT, 'packages/shared/src/content/weaponFamilies.generated.ts'), 'utf8'));
     expect(lockText(out.lock)).toBe(readFileSync(join(ROOT, 'content/codes.lock.json'), 'utf8'));
   });
 

@@ -16,7 +16,8 @@ import type { MapEntity } from '../map/schema.ts';
 import type { MatchRules } from './rules.ts';
 import type { WeaponDefinition } from './weapons.ts';
 import { hypot } from '../math.ts';
-import { FAMILY_DEFAULTS, WEAPON_FAMILIES } from '../content/weapons.generated.ts';
+import { WEAPON_FAMILIES } from '../content/weapons.generated.ts';
+import { FAMILY_DEFAULTS } from '../content/weaponFamilies.generated.ts';
 
 // ---------------------------------------------------------------- families
 
