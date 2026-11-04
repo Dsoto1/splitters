@@ -1,0 +1,22 @@
+Airliner cabin kit (built in code)
+
+These models are original to Tile Trigger. They are not taken from any pack
+and no generative AI service made them: each one is assembled from plain
+geometry (boxes, cylinders, lofted rings and flat sheets) by
+tools/content/prepare-cabin.mjs with tools/content/pieces.mjs, which write
+the GLB files in this folder. Re-run that script to rebuild them; the same
+code writes the same files.
+
+The fuselage sections follow the cross-section of the owner's Meshy airliner
+shell (prop airliner_shell), measured into fuselage.json here by
+tools/content/fuselage-profile.mjs: a table of ring radii, our own
+measurement, holding none of the download's geometry or texture.
+
+They belong to the Tile Trigger owner and ship as part of the game
+(licence "Owned" in content/props/tiletrigger-cabin.json and the provenance
+ledger).
+
+Pieces: nose and flight deck, door section, straight section, short section,
+over-wing exit section, tail with rear doors; economy seats (triple, pair),
+business seat, pilot seat, overhead bins (long, short), galley, lavatory,
+cabin divider, boarding stairs.
