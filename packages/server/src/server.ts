@@ -239,6 +239,8 @@ interface Client {
   who?: PlayerIdentity;
   /** When this connection last sent anything (ms): a silent one is closed (SILENT_MS). */
   heardAt: number;
+  /** Said it's ready (has the match loaded): until then, LOADING_SILENT_MS. */
+  loaded?: boolean;
   /** Kicked or banned: their place isn't kept for them. */
   gone?: boolean;
 }
@@ -250,6 +252,11 @@ interface Client {
  * frame and pings every second.
  */
 const SILENT_MS = 20_000;
+/**
+ * …and one still loading the match (no `ready` yet): a slow machine building a big map can't answer meanwhile
+ * (as a browser host allows its friends, matchHost.ts FRIEND_LOADING_SILENT_MS).
+ */
+const LOADING_SILENT_MS = 60_000;
 
 /**
  * Limits on who can come in (on top of the hub's: broker sockets and joins per
@@ -618,6 +625,7 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
           broadcast({ t: 'roster', players: match.roster() });
         }
       } else if (msg.t === 'ready' && client.slot !== null) {
+        client.loaded = true;
         match.ready(client.slot);
       } else if (msg.t === 'ping') {
         if (msg.rtt !== undefined) client.rtt = msg.rtt;
@@ -816,8 +824,8 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
       if (away.away.length || away.released.length) broadcast({ t: 'roster', players: match.roster() });
       const nowMs = Date.now();
       for (const c of clients) {
-        if (c.slot === null || nowMs - c.heardAt <= SILENT_MS) continue;
-        event(`${c.who?.name ?? 'a player'}: nothing heard for ${Math.round((nowMs - c.heardAt) / 1000)} s, closing the connection`);
+        if (c.slot === null || nowMs - c.heardAt <= (c.loaded ? SILENT_MS : LOADING_SILENT_MS)) continue;
+        event(`${c.who?.name ?? 'a player'}: nothing heard for ${Math.round((nowMs - c.heardAt) / 1000)} s${c.loaded ? '' : ' (loading)'}, closing the connection`);
         c.conn.close(4009, 'no answer');
       }
       // Every other second: each human's ping, for the scoreboard.
