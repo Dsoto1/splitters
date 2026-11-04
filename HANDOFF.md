@@ -44,8 +44,12 @@ docs/CONTENT_SCALABILITY.md step 6, same pattern as steps 3-5; how to add one: d
 - **Pitfalls:** edit the JSON, never `materials.generated.ts`; never rename a material or theme id that maps use (the
   generator refuses); a material id also drives its ballistic class (`materialClass` regexes the id): the fixture
   shows a change. A new pattern is code first (`PATTERN_IDS` + painter).
-- **Checks:** see the commit and the report; menu's first JS unchanged (2304.0 kB raw / 648.0 kB gzip; `index` 587.4 /
-  207.1 both ways; the materials are in the `geometry` chunk, not the menu's).
+- **Checks:** menu's first JS unchanged: 2304.0 kB raw / 648.0 kB gzip both ways (`index` 587.4 / 207.1 kB; base built
+  from 01420e4 on the same machine; the materials are in the `geometry` chunk, not the menu's). `pnpm typecheck` clean.
+  `pnpm test:changed` (everything, shared changed): 1542 pass, 2 skipped, 0 failed. `content:check` OK, `content:rebuild`
+  changed nothing. E2E (`CI=1`, ports 4297/7899): visual PASS (133 s; menu 0.5 %, mapmaker 0.1 %, arena 0.0 %, canyon
+  0.1 % of pixels differ, no baseline changed), editor PASS (203 s), offline PASS (114 s). The full set the change maps
+  to (38 flows) was not run locally: it needs a check branch.
 - **Not done / next (owner's call):** (1) per-material ballistic class as data: today derived from id + category by
   regex (`sim/gunplay.ts` `materialClass`); an optional `ballistic` override in the JSON would let the Workbench set
   it without renaming (recommended, zero change if no material sets it). (2) footstep / impact sounds by surface:
