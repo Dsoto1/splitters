@@ -508,6 +508,10 @@ const gearCount = checkLocked(
   'node tools/content/prepare-gear.mjs --downloads <dir>',
 );
 console.log(`checked ${gearCount} gear models`);
+// The procedural environment (tools/content/environment.mjs): generated in code from seeds, owned; its files locked.
+const envManifest = JSON.parse(readFileSync(join(ROOT, 'content/environment.json'), 'utf8'));
+const envCount = checkLocked('content/environment.lock.json', 'env', () => envManifest.pack, { maxBytes: envManifest.budgets.maxBytes }, (f) => (f.file.endsWith('.glb') ? ['generated in code from its seed (tools/content/environment.mjs): levels of detail and a two-card stand-in for the distance'] : ['drawn in code from seeded noise (tools/content/env/textures.mjs)']), 'node tools/content/environment.mjs');
+console.log(`checked ${envCount} environment files`);
 console.log(`checked ${textureCount} texture files, ${surfaceCount} prop surfaces, ${propCount} props, ${skyCount} skies, ${cityCount} city files, ${packFileCount} style pack files and ${gunCount} gun models`);
 
 // Map pictures (tools/content/capture-map-shots.mjs): one 640×360 JPEG per shipped (not retired, not test) map, within budget, nothing else.
@@ -626,7 +630,7 @@ else {
 
 // The data tables (weapons, vehicles, NPC roles, pickups, materials, surface types, tiles) and the measured hit shapes
 // (hitboxes): their content checks, and the generated files and codes lock up to date.
-for (const gen of ['weapons', 'vehicles', 'npcs', 'pickups', 'materials', 'surface-types', 'tiles', 'hitboxes']) {
+for (const gen of ['weapons', 'vehicles', 'npcs', 'pickups', 'materials', 'surface-types', 'tiles', 'hitboxes', 'environment']) {
   if (!check) break;
   try {
     execFileSync(process.execPath, [join(ROOT, `tools/content/${gen}.mjs`), '--check'], { cwd: ROOT, stdio: 'inherit' });

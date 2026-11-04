@@ -17,6 +17,7 @@
 //              tools/content/materials.mjs           materials.generated.ts from content/materials.json
 //              tools/content/surface-types.mjs       surfaceTypes.generated.ts from content/surface-types.json and the props' `surface`
 //              tools/content/tiles.mjs               kitTiles.generated.ts and edgeStyles.generated.ts from content/tiles/
+//              tools/content/environment.mjs         the environment species (public/env/), environment.lock.json and both environment.generated.ts
 //   3. atlas   tools/content/build-palette-atlas.mjs --offline: the palette atlases from the pictures
 //                                                     already made (any old atlas, either side of a conflict)
 //      only when a piece has no picture yet (new or changed model):
@@ -77,6 +78,7 @@ node('tools/content/pickups.mjs');
 node('tools/content/materials.mjs');
 node('tools/content/surface-types.mjs');
 node('tools/content/tiles.mjs');
+node('tools/content/environment.mjs');
 // Hit shapes measured from the character models (after the looks: it reads them).
 node('tools/content/hitboxes.mjs');
 

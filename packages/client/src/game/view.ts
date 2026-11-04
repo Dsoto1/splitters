@@ -62,6 +62,7 @@ import {
   DEFAULT_BLOOD,
   EffectsWorld,
   mapTerrainMesh,
+  environmentShapes,
   type MapEntity,
   type Movers,
   MOUNT_WRECK_FADE_SECONDS,
@@ -465,7 +466,7 @@ export class GameView {
     this.surfaces = surfaceIndex(doc);
     this.physics?.free();
     try {
-      this.physics = new EffectsWorld(boxes, mapTerrainMesh(doc));
+      this.physics = new EffectsWorld(boxes, mapTerrainMesh(doc), environmentShapes(doc));
       // A blast that kills ten takes its ragdolls from the pool rather than allocating them mid-fight.
       this.physics.prewarm(RAGDOLL_PREWARM, RAGDOLL_PREWARM_BODIES);
     } catch {
@@ -923,7 +924,7 @@ export class GameView {
     if (wall) {
       // The surface type it hit (content/surface-types.json, the same one the server's ballistic class comes from;
       // drawn as content/vfx.json map.impacts says): metal sparks, bark and wood splinters, foliage leaves.
-      const style = impactStyle(surfaceOfBox(wall.box, this.surfaces));
+      const style = impactStyle(wall.surface ?? surfaceOfBox(wall.box, this.surfaces));
       this.impacts.wallImpact(wall.point, wall.normal, Math.min(1.6, 0.7 + o.strength * 0.4), style);
       this.accent(style.accent, wall.point, wall.normal);
     }
@@ -932,7 +933,7 @@ export class GameView {
   /** The surface type a round from `from` landing at `to` struck in the level (null: nothing there, or a body). */
   surfaceStruck(from: Vec3, to: Vec3): Surface | null {
     const wall = this.impacts.surfaceHit(from, to);
-    return wall ? surfaceOfBox(wall.box, this.surfaces) : null;
+    return wall ? (wall.surface ?? surfaceOfBox(wall.box, this.surfaces)) : null;
   }
 
   /** The accent of a surface hit somewhere other than the level (a round going into water). */

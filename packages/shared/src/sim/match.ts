@@ -53,6 +53,9 @@ import { DROP_LIE_SECONDS, DROP_REACH, MAX_DROPS, chooseDrop, dropItem, dropSpen
 import { bodyHeightOf, eyeHeightOf, stanceOf } from './movement.ts';
 import { thirdPersonAim, type RayQuery } from './thirdPerson.ts';
 import { getProp } from '../content/props.ts';
+import { getEnvSpecies } from '../content/environment.ts';
+import { environmentNavTriangles, environmentShapes, joinTriangles, type EnvWorldShape } from '../map/environment.ts';
+import { SURFACE_TYPES } from './surfaceTypes.ts';
 import { ZIP, leaveZipline, mapZiplines, oneHanded, ziplineLinks, type Zipline } from './zipline.ts';
 import { BUTTON_THIRD_PERSON, BUTTON_STEER_LOOK, BUTTON_ALT, BUTTON_MELEE, BUTTON_JUMP, BUTTON_CROUCH, BUTTON_PRONE, BUTTON_SPRINT, EMOTE_DANCE, PING, QUICK_MESSAGES, SAY_FOLLOW, SAY_HOLD, BUTTON_RESPAWN, BUTTON_FIRE, BUTTON_RELOAD, BUTTON_ZOOM, BUTTON_THROW, BUTTON_USE, applyPads, mapLadders, mapPads, navLinks,
   padLandings, sanitizeInput, stepMovement, gravityAt, mapGravityZones, type GravityZone, type JumpPad, type Ladder, type MoveEnv, type MoveState, type PlayerInput } from './movement.ts';
@@ -523,6 +526,8 @@ export const heldWeapon = (c: Combatant): WeaponState => c.weapons.get(c.current
  */
 export class Match {
   readonly geometry: WorldBox[];
+  /** The map's environment colliders (map/environment.ts): physics and navigation. */
+  readonly envShapes: EnvWorldShape[];
   /** Falling below this height kills (some way under the lowest floor). */
   readonly killY: number;
   /** Gravity multiple and fall damage in force (match rules over the map's own). */
@@ -645,10 +650,11 @@ export class Match {
     this.geometry = buildMapGeometry(map);
     this.killY = mapKillY(this.geometry, map);
     this.phys = matchPhysics(rules, map);
-    this.physics = new PhysicsWorld(this.geometry, mapTerrainMesh(map));
+    this.envShapes = environmentShapes(map);
+    this.physics = new PhysicsWorld(this.geometry, mapTerrainMesh(map), this.envShapes);
     this.sight = new SightCache(this.physics);
     // Bots plan around breakable props too (they are scenario colliders, not static geometry).
-    this.nav = NavWorld.build([...this.geometry, ...propBoxes(map, true), ...blockBoxes(map, true)], mapTerrainMesh(map), [...navLinks(map.entities, this.physics, this.phys.gravity), ...liftLinks(map)]);
+    this.nav = NavWorld.build([...this.geometry, ...propBoxes(map, true), ...blockBoxes(map, true)], this.navExtra(), [...navLinks(map.entities, this.physics, this.phys.gravity), ...liftLinks(map)]);
     this.rng = createRng(seed);
     this.spawnPoints = map.entities
       .filter((e) => e.kind === 'spawn')
@@ -664,6 +670,12 @@ export class Match {
     }
     for (const e of map.entities) {
       if (e.kind !== 'prop') continue;
+      // Environment species carry their own concealment cylinder (content/environment.ts); props read their size.
+      const env = getEnvSpecies(e.model);
+      if (env) {
+        if (env.conceals) this.hides.push({ x: e.position[0], z: e.position[2], r: env.conceals.radius * e.scale, y0: e.position[1] - 0.3, y1: e.position[1] + env.conceals.height * e.scale });
+        continue;
+      }
       const def = getProp(e.model);
       if (!def?.conceals) continue;
       this.hides.push({ x: e.position[0], z: e.position[2], r: (Math.min(def.size[0], def.size[2]) * e.scale) / 2, y0: e.position[1] - 0.3, y1: e.position[1] + def.size[1] * e.scale });
@@ -1031,7 +1043,7 @@ export class Match {
     const area = xs.length ? (Math.max(...xs) - Math.min(...xs)) * (Math.max(...zs) - Math.min(...zs)) : 0;
     if (area > NAV_REBUILD_MAX_AREA) return false;
     const old = this.nav;
-    this.nav = NavWorld.build([...this.geometry, ...propBoxes(this.map, true), ...blockBoxes(this.map, true), ...extra], mapTerrainMesh(this.map), [...navLinks(this.map.entities, this.physics, this.phys.gravity), ...liftLinks(this.map)]);
+    this.nav = NavWorld.build([...this.geometry, ...propBoxes(this.map, true), ...blockBoxes(this.map, true), ...extra], this.navExtra(), [...navLinks(this.map.entities, this.physics, this.phys.gravity), ...liftLinks(this.map)]);
     old.destroy();
     this.nav.places();
     this.sight.clear();
@@ -3572,6 +3584,11 @@ export class Match {
     return add(start, scale(u, -back.dist));
   }
 
+  /** Navigation's extra triangles: the terrain and the environment's movement-blocking shapes (map/environment.ts). */
+  private navExtra(): { positions: Float32Array; indices: Uint32Array } | null {
+    return joinTriangles(mapTerrainMesh(this.map), environmentNavTriangles(this.envShapes));
+  }
+
   /** What a collider is made of, ballistically (gunplay.ts). */
   private materialAt(handle: number): BallisticMaterial {
     if (this.mountBodies.has(handle)) return 'metal';
@@ -3583,6 +3600,9 @@ export class Match {
       const e = this.map.entities[i];
       return e ? entityMaterial(e) : 'concrete';
     }
+    // Environment shapes (trunks, limbs, boulders, cliffs) are made of their species' surface.
+    const env = this.physics.shapeAt(handle);
+    if (env) return SURFACE_TYPES[env.surface].ballistic;
     const box = this.physics.boxAt(handle);
     if (!box) return 'concrete';
     if (box.kind === 'prop') {

@@ -399,6 +399,11 @@ export const PropEntity = EntityBase.extend({
   scale: z.number().min(0.25).max(4).default(1),
   /** Collides with players, shots and bots (if the prop has a collision box at all). */
   solid: z.boolean().default(true),
+  /**
+   * An environment species' variant (`model: 'env.…'`, content/environment.ts): its index (material variants
+   * such as summer, autumn, snow share the species' shapes). Absent: the species' first. Other props ignore it.
+   */
+  variant: z.number().int().min(0).max(255).optional(),
   tint: z
     .string()
     .regex(/^#[0-9a-f]{6}$/)

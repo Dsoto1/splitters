@@ -334,7 +334,7 @@ export function cliffField(familySeed, seed, g) {
     return g.ledgeDepth * smoothstep(0.75, 0.95, f);
   };
   const fade = (x) => {
-    const t = Math.min(1, (half - Math.abs(x)) / (half * 0.45));
+    const t = Math.max(0, Math.min(1, (half - Math.abs(x)) / (half * 0.45)));
     return t * t * (3 - 2 * t);
   };
   const z = (x, y) => {
@@ -365,7 +365,9 @@ export function cliffMesh(familySeed, seed, g, lod, look) {
       const x = -half + (2 * half * i) / nx;
       const p = [x, y, z(x, y)];
       // Normal from the field (so both edges of every panel agree exactly): the face looks toward -z.
-      const dx = (z(x + e, y) - z(x - e, y)) / (2 * e);
+      // At the two edges the panel's own detail has faded out with no slope (smoothstep), so only the shared
+      // profile is left: no slope across, which makes both edges' normals the same exactly.
+      const dx = i === 0 || i === nx ? 0 : (z(x + e, y) - z(x - e, y)) / (2 * e);
       const dy = (z(x, y + e) - z(x, y - e)) / (2 * e);
       const n = norm([dx, dy, -1]);
       // u wraps a whole number of times across the panel, so neighbours continue the picture.

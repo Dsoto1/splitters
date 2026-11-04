@@ -1,8 +1,12 @@
 import { getProp } from '../content/props.ts';
+import { envTilts, getEnvSpecies, isEnvModel } from '../content/environment.ts';
 import type { Vec3 } from '../math.ts';
 import { blockBoxes, buildMapGeometry, propBoxes, type WorldBox } from './geometry.ts';
 import type { LightEntity, LightFixture, MapDocument, PropEntity } from './schema.ts';
 import { terrainHeightAt, type TerrainData } from './terrain.ts';
+
+/** What an environment tree stands on when settled on a slope: its trunk, not its crown's spread. */
+const TRUNK_FOOTPRINT = [0.6, 0, 0.6] as const;
 
 /**
  * Props on sloping ground. A prop is "settled" when its base sits at the
@@ -25,7 +29,8 @@ export function propFootprint(e: Pick<PropEntity, 'model' | 'position' | 'yaw' |
   const [x, , z] = e.position;
   if (!def) return [[x, z]];
   // Trees stand on their trunk, not the spread of their crown.
-  const box = def.category === 'Trees' && def.collision ? def.collision : def.size;
+  const env = getEnvSpecies(e.model);
+  const box = env?.category === 'tree' ? TRUNK_FOOTPRINT : def.category === 'Trees' && def.collision ? def.collision : def.size;
   const hx = (box[0] * e.scale * 0.85) / 2;
   const hz = (box[2] * e.scale * 0.85) / 2;
   const c = Math.cos(e.yaw);
@@ -76,6 +81,7 @@ export function groundNormal(t: TerrainData, x: number, z: number, span = 0.6, m
 /** Whether a prop leans with the ground when drawn. */
 export function propTilts(model: string): boolean {
   const def = getProp(model);
+  if (isEnvModel(model)) return envTilts(model);
   return !!def && TILTED_PROP_CATEGORIES.has(def.category);
 }
 

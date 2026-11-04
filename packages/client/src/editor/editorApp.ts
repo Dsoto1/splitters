@@ -199,6 +199,9 @@ import {
   TEAM_PRESETS,
   teamLayoutLabel,
   mapTerrainMesh,
+  environmentShapes,
+  environmentNavTriangles,
+  joinTriangles,
   type BoundaryStyle,
   newTerrain,
   paintSlopes,
@@ -4155,8 +4158,8 @@ export class EditorApp {
       try {
         const geometry = buildMapGeometry(doc);
         await initPhysics();
-        const physics = new PhysicsWorld(geometry, mapTerrainMesh(doc));
-        const nav = NavWorld.build(geometry, mapTerrainMesh(doc), [...navLinks(doc.entities, physics), ...liftLinks(doc)]);
+        const physics = new PhysicsWorld(geometry, mapTerrainMesh(doc), environmentShapes(doc));
+        const nav = NavWorld.build(geometry, joinTriangles(mapTerrainMesh(doc), environmentNavTriangles(environmentShapes(doc))), [...navLinks(doc.entities, physics), ...liftLinks(doc)]);
         this.navIssues = validateNavigation(doc, nav, physics);
         physics.free();
         nav.destroy();

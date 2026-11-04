@@ -4,6 +4,37 @@ import type { Vec3 } from '../math.ts';
 import { PLAYER } from './constants.ts';
 import { simProfile } from './profile.ts';
 import { hypot } from '../math.ts';
+import type { EnvWorldShape } from '../map/environment.ts';
+import type { SurfaceTypeId } from './surfaceTypes.ts';
+
+/**
+ * A Rapier collider for an environment shape (map/environment.ts), groups unset: a capsule turned from +Y onto its
+ * axis, a convex hull, or a triangle mesh. Null when Rapier can't make it (a degenerate hull).
+ */
+export function envColliderDesc(sh: EnvWorldShape): RAPIER.ColliderDesc | null {
+  if (sh.kind === 'capsule') {
+    const d = { x: sh.b[0] - sh.a[0], y: sh.b[1] - sh.a[1], z: sh.b[2] - sh.a[2] };
+    const len = Math.hypot(d.x, d.y, d.z);
+    const c = { x: (sh.a[0] + sh.b[0]) / 2, y: (sh.a[1] + sh.b[1]) / 2, z: (sh.a[2] + sh.b[2]) / 2 };
+    const desc = RAPIER.ColliderDesc.capsule(Math.max(1e-4, len / 2), sh.r).setTranslation(c.x, c.y, c.z);
+    if (len > 1e-6) {
+      // The shortest turn taking +Y onto the axis.
+      const ux = d.x / len;
+      const uy = d.y / len;
+      const uz = d.z / len;
+      const w = 1 + uy;
+      if (w < 1e-6) desc.setRotation({ x: 1, y: 0, z: 0, w: 0 });
+      else {
+        const q = { x: uz, y: 0, z: -ux, w };
+        const ql = Math.hypot(q.x, q.y, q.z, q.w);
+        desc.setRotation({ x: q.x / ql, y: 0, z: q.z / ql, w: q.w / ql });
+      }
+    }
+    return desc;
+  }
+  if (sh.kind === 'hull') return RAPIER.ColliderDesc.convexHull(new Float32Array(sh.points));
+  return RAPIER.ColliderDesc.trimesh(new Float32Array(sh.positions), new Uint32Array(sh.indices));
+}
 
 let initPromise: Promise<void> | undefined;
 
@@ -33,12 +64,20 @@ const GROUP_GLASS = 0x0010;
 const GROUP_ARMOR_GLASS = 0x0020;
 const GLASS_COLLIDER_GROUPS = groups(GROUP_GLASS, 0xffff);
 const ARMOR_GLASS_COLLIDER_GROUPS = groups(GROUP_ARMOR_GLASS, 0xffff);
+/**
+ * Environment shapes that stop shots and sight but not movement (a tree's thick limbs overhead: `blocks: 'shots'`,
+ * content/environment.ts): in the shot and sight queries, never in movement.
+ */
+const GROUP_SHOTS_ONLY = 0x0040;
+const SHOTS_ONLY_COLLIDER_GROUPS = groups(GROUP_SHOTS_ONLY, 0xffff);
 /** Movement queries: static geometry, force fields and glass. */
 const MOVE_QUERY = groups(0xffff, GROUP_WORLD | GROUP_FIELD | GROUP_TERRAIN | GROUP_GLASS | GROUP_ARMOR_GLASS);
 /** Coarse moves (moveCharacter with a ground function): everything but the terrain, which the function stands in for. */
 const MOVE_NO_TERRAIN_QUERY = groups(0xffff, GROUP_WORLD | GROUP_FIELD | GROUP_GLASS | GROUP_ARMOR_GLASS);
-/** Shots and thrown things: static geometry and bulletproof glass. */
-const SHOT_QUERY = groups(0xffff, GROUP_WORLD | GROUP_TERRAIN | GROUP_ARMOR_GLASS);
+/** Shots and thrown things: static geometry, bulletproof glass and shots-only environment shapes. */
+const SHOT_QUERY = groups(0xffff, GROUP_WORLD | GROUP_TERRAIN | GROUP_ARMOR_GLASS | GROUP_SHOTS_ONLY);
+/** Sight lines and world rays: static geometry and shots-only environment shapes (a thick limb hides you too). */
+const SIGHT_QUERY = groups(0xffff, GROUP_WORLD | GROUP_TERRAIN | GROUP_SHOTS_ONLY);
 /** What wheels stand on (PhysicsWorld.groundBelow): everything solid but players and force fields. */
 const GROUND_QUERY = groups(0xffff, GROUP_WORLD | GROUP_TERRAIN | GROUP_GLASS | GROUP_ARMOR_GLASS);
 const DOWN = { x: 0, y: -1, z: 0 };
@@ -122,9 +161,19 @@ export class PhysicsWorld {
   /** One ray for every cast (queries are synchronous): no allocation per sight line or shot. */
   private readonly ray = new RAPIER.Ray({ x: 0, y: 0, z: 0 }, { x: 0, y: 0, z: 1 });
 
-  constructor(boxes: readonly WorldBox[], terrain: { positions: Float32Array; indices: Uint32Array } | null = null) {
+  /** The environment shape behind each environment collider (map/environment.ts): its placement and surface. */
+  private readonly staticShapes = new Map<number, { sourceId: string; surface: SurfaceTypeId }>();
+
+  /** `shapes`: the map's environment colliders (map/environment.ts `environmentShapes`), next to its boxes. */
+  constructor(boxes: readonly WorldBox[], terrain: { positions: Float32Array; indices: Uint32Array } | null = null, shapes: readonly EnvWorldShape[] = []) {
     this.world = new RAPIER.World({ x: 0, y: 0, z: 0 });
     if (terrain) this.world.createCollider(RAPIER.ColliderDesc.trimesh(terrain.positions, terrain.indices).setCollisionGroups(TERRAIN_COLLIDER_GROUPS));
+    for (const sh of shapes) {
+      const desc = envColliderDesc(sh);
+      if (!desc) continue;
+      desc.setCollisionGroups(sh.blocks === 'all' ? WORLD_COLLIDER_GROUPS : SHOTS_ONLY_COLLIDER_GROUPS);
+      this.staticShapes.set(this.world.createCollider(desc).handle, { sourceId: sh.sourceId, surface: sh.surface });
+    }
     for (const b of mergeBoxes(boxes)) {
       const hx = (b.max[0] - b.min[0]) / 2;
       const hy = (b.max[1] - b.min[1]) / 2;
@@ -351,6 +400,16 @@ export class PhysicsWorld {
     return this.staticBoxes.get(handle);
   }
 
+  /** The environment placement and surface behind a collider (undefined for everything else). */
+  shapeAt(handle: number): { sourceId: string; surface: SurfaceTypeId } | undefined {
+    return this.staticShapes.get(handle);
+  }
+
+  /** How many environment colliders the world has (tests, diagnostics). */
+  get environmentColliders(): number {
+    return this.staticShapes.size;
+  }
+
   /** Like raycastWorld, but also returns the collider handle that was hit (shots: bulletproof glass stops them too). */
   raycastHit(origin: Vec3, dir: Vec3, maxDist: number): { dist: number; handle: number } | null {
     const hit = this.world.castRay(this.rayFrom(origin, dir), maxDist, true, undefined, SHOT_QUERY, this.shotSkip ?? undefined);
@@ -421,7 +480,7 @@ export class PhysicsWorld {
     r.dir.x = dx / len;
     r.dir.y = dy / len;
     r.dir.z = dz / len;
-    return !this.world.castRay(r, len, true, undefined, WORLD_ONLY_QUERY);
+    return !this.world.castRay(r, len, true, undefined, SIGHT_QUERY);
   }
 
   free(): void {

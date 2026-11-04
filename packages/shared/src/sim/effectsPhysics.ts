@@ -1,6 +1,9 @@
 import RAPIER from '@dimforge/rapier3d-compat';
 import { boxQuat, type WorldBox } from '../map/geometry.ts';
 import type { Vec3 } from '../math.ts';
+import type { EnvWorldShape } from '../map/environment.ts';
+import type { SurfaceTypeId } from './surfaceTypes.ts';
+import { envColliderDesc } from './physics.ts';
 
 /**
  * A physics world for looks only: ragdolls, flying debris and blood drops.
@@ -50,10 +53,19 @@ export class EffectsWorld {
   /** The level box behind each static collider (the terrain has none): what a shot hit, for its impact (stone, metal, wood …). */
   private readonly boxes = new Map<number, WorldBox>();
 
-  constructor(boxes: readonly WorldBox[], terrain: { positions: Float32Array; indices: Uint32Array } | null = null) {
+  /** The environment shape behind each environment collider (trunks, limbs, boulders, cliffs): its surface. */
+  private readonly envSurfaces = new Map<number, SurfaceTypeId>();
+
+  constructor(boxes: readonly WorldBox[], terrain: { positions: Float32Array; indices: Uint32Array } | null = null, shapes: readonly EnvWorldShape[] = []) {
     this.world = new RAPIER.World({ x: 0, y: -20, z: 0 });
     const statics = groups(GROUP_STATIC, GROUP_DEBRIS | GROUP_RAGDOLL | GROUP_STATIC);
     if (terrain) this.world.createCollider(RAPIER.ColliderDesc.trimesh(terrain.positions, terrain.indices).setCollisionGroups(statics));
+    // The same environment colliders as the game's physics (sim/physics.ts envColliderDesc), so a round's
+    // local impact lands on the trunk or rock the server's round stopped at.
+    for (const sh of shapes) {
+      const desc = envColliderDesc(sh);
+      if (desc) this.envSurfaces.set(this.world.createCollider(desc.setCollisionGroups(statics).setFriction(0.9)).handle, sh.surface);
+    }
     for (const b of boxes) {
       // Invisible walls don't stop bodies and debris; the ground under and round a built map does.
       if (b.kind === 'barrier' && b.sourceId !== 'ground') continue;
@@ -80,12 +92,16 @@ export class EffectsWorld {
     }
   }
 
-  /** First static surface along a ray: distance, the surface normal and the level box it belongs to (none: the terrain). */
-  raycast(from: Vec3, dir: Vec3, maxDist: number): { dist: number; normal: Vec3; box?: WorldBox } | null {
+  /**
+   * First static surface along a ray: distance, the surface normal and the level box it belongs to (none: the
+   * terrain), or the surface type of the environment shape it hit.
+   */
+  raycast(from: Vec3, dir: Vec3, maxDist: number): { dist: number; normal: Vec3; box?: WorldBox; surface?: SurfaceTypeId } | null {
     const hit = this.world.castRayAndGetNormal(new RAPIER.Ray(from, dir), maxDist, true, undefined, groups(0xffff, GROUP_STATIC));
     if (!hit) return null;
     const box = this.boxes.get(hit.collider.handle);
-    return { dist: hit.timeOfImpact, normal: { x: hit.normal.x, y: hit.normal.y, z: hit.normal.z }, ...(box ? { box } : {}) };
+    const surface = this.envSurfaces.get(hit.collider.handle);
+    return { dist: hit.timeOfImpact, normal: { x: hit.normal.x, y: hit.normal.y, z: hit.normal.z }, ...(box ? { box } : {}), ...(surface ? { surface } : {}) };
   }
 
   /** First ragdoll body along a ray (a corpse in the way of a shot): the body, distance and surface normal. */
