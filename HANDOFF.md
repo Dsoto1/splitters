@@ -426,6 +426,37 @@ up. The new Gnoll (Hyena Warrior) in the intake-2 sheets shows it.
 - **Owner's decisions:** keep the Hyena (Gnoll) and Snikkit (Goblin Mischief) and fix their hands with this;
   Bill is retired. Do the pistol-hold tweak after this.
 
+### Queued FIRST (owner bug report, 2026-11-05 late): CTF bots don't go for the flag
+**Owner:** "CTF: no bots are actually going for the flag, most just hang out and do little. We should only have
+like 2–3 bots protect a flag, and the rest go out there and try to get the other team's."
+
+**Code today:** `sim/modes/ctfBots.ts`.
+- **Standing roles, by team order:** attack, defend, attack, escort. That gives about ¼ defenders; escorts also go
+  for the enemy flag.
+- **Situational overrides:** carrier, dropped flag, carried flag.
+- **Goal handling:** `Match.botGoal` hands the goal to the brain as `orderGoal`, but "the brain only follows the goal
+  while roaming". The bot director's squad plans (`director.planFor`), roaming, explore, posts and pickups compete
+  with it.
+- **Known:** on Sunken Kingdom, with flags 190 m apart, bots never captured.
+
+**Do:**
+- Measure first in headless CTF sims, over several seeds and maps (Sunken Kingdom, Iron Maw, the CTF suite):
+  - time each bot spends moving toward its CTF goal versus idling, holding or roaming;
+  - flag touches, pickups, captures and returns per match;
+  - path failures.
+- Find why attackers "hang out". Suspects:
+  - the director or squad plans overriding the CTF goal;
+  - hold, post or explore states;
+  - noPath back-off on long routes;
+  - the goal radius;
+  - defenders and escorts clumping.
+- **Owner's role split:** 2–3 defenders per team (2 for small teams, 3 for 12+), all others attack, a carrier gets
+  escorts, and anyone near their own flag in trouble responds.
+- Bots must actually run the flag: pick it up, carry it home, capture.
+- Prove it with captures per match before and after; the target is regular captures on every CTF map.
+
+
+
 ### Owner-approved order after the current agents (2026-11-05 late; owner set effort to max: "hoping for some great work")
 1. **Set pieces:** plan in docs/SET_PIECES_PLAN.md. Next free slot.
 2. **Hands round 5,** in parallel; small. Give it to the pistol-hold agent as a follow-on once its pistol work lands.
