@@ -276,6 +276,60 @@ hands move up more into the gun. Looks as if their fingers are just pinching the
   several characters, including Meshy rigs with Meshy's finger weights once intake-2 lands.
 - Start it once a slot frees. It touches the hands, so after intake-2 step 2a.
 
+### Queued (owner-approved, 2026-11-05): performance round 2 (next free agent slot)
+**Owner's second M1 Pro recording** (build 4e77fab; Market Town, TDM, 49 players, high, 60 fps cap). Files in the
+session scratchpad `perf2/`: the perf JSON and the trace.
+
+| | Before | After round 1 |
+|---|---|---|
+| Average frame | 25.9 ms | 20.3 ms (~49 fps) |
+| Big fights | 38–45 ms | 26–32 ms |
+| Hitches over 50 ms | 19 in 25 s | 3 in 49 s |
+| Clips + aim | 8.2 ms | 4.6 ms |
+| Shadow + depth | 6.6 ms | 3.8 ms |
+| Casters | ~600 | 210–270 |
+| Draws | 950–1,400 | 590–800 |
+
+Still CPU-bound, not GPU-bound: a quiet frame is about 20 ms against the 16.7 ms needed for 60 fps.
+- render: about 16.4 ms in total, including about 5 ms of draw submission;
+- mesh evaluation: 3.0 ms;
+- characters update: 1.4 ms;
+- ragdolls and effects physics: 1.2 ms.
+
+Targets, aiming for 4–6 ms off:
+1. **Level draw merging:** Market Town still has about 58 per-material level draws. Use shared texture atlases /
+   material merging across packs; this helps every map.
+2. **Animation, further:**
+   - mid-range stepping;
+   - skip aim refinement past 35 m;
+   - animation LOD for creatures, whose clips still run every frame.
+3. **Mesh evaluation:** freeze more static meshes and cut the per-frame bookkeeping.
+4. **Shadows:** cache the static cascade and refresh it every few frames.
+
+Measure relatively in the container, keep the CI perf budgets, then ask the owner to re-record on the M1.
+
+### Owner's map notes for later (2026-11-05; not started)
+- **No Man's Field:** asset refresh. It still uses Kenney kits; move it to our generated environment and props.
+- **Rockfall Canyon** (`maps/canyon.json`): asset and foliage refresh, onto our generated environment, rocks and plants.
+- **Step Temple:** its menu card shot should be a grounded, eye-level view, not aerial.
+- **Sandfall Colosseum, a full rebuild ("this is your moment to shine").** Owner's brief:
+  - **Layout:** replicate the layout of the owner's game **Flavius Rule (classic)**. Get reference material from the
+    owner before starting: screenshots, a top-down plan, or a description. **Received 2026-11-05:**
+    docs/map-briefs/sandfall_colosseum/BRIEF.md and `reference/`: the 13×13 board, the seating chart and a mood
+    painting. The emperor's box comes back.
+  - **Feel:** epic and grand, far more immersive than today's map.
+  - **The arena:** use mostly the assets we have today (Imperial Arena pack, Roman pieces), with a better layout and a
+    much grander scale. The colosseum stands 6–8 storeys tall if possible.
+  - **Under the stands:** a tunnel network that circles the arena. It branches to the animal cages and the gladiators'
+    quarters: rest, recovery, imprisonment.
+  - **Around it:** a Roman village whose main square leads to the arena entrance.
+  - **Backdrop:** a volcano in the distance.
+  - **How:** built in MapMaker (CLAUDE.md "Maps"), with in-house detail. Anything MapMaker lacks goes into MapMaker
+    as a piece, e.g. set pieces like the arena arcade bay, vomitorium, tunnel junction, cage block and village
+    insula, plus a volcano backdrop. Follow docs/map-briefs/AGENT_BUILD_CONTRACT.md: playable footprint, routes,
+    spawns, budgets, bots, and NOT TESTED where it applies.
+  - **Timing:** a natural first big use of set pieces (agreed queue item 3), so after those exist.
+
 ### Queued (owner-approved, 2026-11-05): community maps
 Plan in docs/COMMUNITY_MAPS.md:
 - local saving is unlimited;
