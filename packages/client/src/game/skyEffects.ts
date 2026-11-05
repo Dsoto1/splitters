@@ -16,6 +16,8 @@ import '@babylonjs/core/Rendering/depthRendererSceneComponent';
 import type { Backdrop, MapDocument, SkyDefinition } from '@tiletrigger/shared';
 import type { GraphicsQuality } from './atmosphere.ts';
 import { markWholeSceneDepth } from './sceneDepth.ts';
+import { perfOn } from './perfSwitches.ts';
+import type { BaseTexture } from '@babylonjs/core/Materials/Textures/baseTexture';
 
 /**
  * Height fog: haze along each view ray that is thickest at the ground and thins
@@ -50,6 +52,28 @@ void main(void) {
   float f = clamp(1.0 - exp(-amount), 0.0, maxFog);
   gl_FragColor = vec4(mix(color.rgb, fogColor, f), color.a);
 }`;
+
+/** Babylon's pre-pass texture of camera-space depth (Constants.PREPASS_DEPTH_TEXTURE_TYPE: view z, as the fog wants). */
+const PREPASS_DEPTH = 5;
+
+interface PrePass {
+  enabled: boolean;
+  getIndex(type: number): number;
+  getRenderTarget(): { textures?: BaseTexture[] } | null;
+}
+
+/** The scene's pre-pass renderer (SSAO2 on high turns it on), or null. */
+function prePass(scene: Scene): PrePass | null {
+  return (scene as unknown as { prePassRenderer?: PrePass | null }).prePassRenderer ?? null;
+}
+
+/** The pre-pass's camera-space depth texture this frame, or null when it writes none. */
+export function prePassDepth(scene: Scene): BaseTexture | null {
+  const pp = prePass(scene);
+  if (!pp?.enabled) return null;
+  const i = pp.getIndex(PREPASS_DEPTH);
+  return i >= 0 ? (pp.getRenderTarget()?.textures?.[i] ?? null) : null;
+}
 
 /** Skies the sun shines through brightly enough for shafts of light. */
 const SUNNY = new Set(['clear', 'cloudy', 'sunrise', 'sunset', 'dusk', 'misty', 'snowy']);
@@ -112,10 +136,11 @@ export class SkyEffects {
   }
 
   private addFog(doc: MapDocument, mist: number, color: Color3): void {
-    this.depth = this.scene.enableDepthRenderer(this.camera, false, true, Texture.NEAREST_SAMPLINGMODE, true);
-    // The fog reads the depth of the whole view: water (which shares this depth map) mustn't trim it to itself.
-    markWholeSceneDepth(this.depth);
-    const map = this.depth.getDepthMap();
+    // High graphics' ambient occlusion already writes the view's camera-space depth in the main pass (Babylon's
+    // pre-pass, for SSAO2): the fog reads that. Its own depth map drew the whole view a second time (Shingle Point:
+    // 400 of a frame's 1,000 draws). Without the pre-pass (WebGPU, no SSAO) it draws its own, as before.
+    const shared = perfOn('fogprepass') && !!prePass(this.scene);
+    if (!shared) this.wholeDepth();
     // The mist lies on the low ground: the lowest fifth of the terrain, or the ground floor.
     const t = doc.terrain;
     const baseY = t ? t.baseY + [...t.heights].sort((a, b) => a - b)[Math.floor(t.heights.length * 0.2)]! / 100 : 0;
@@ -123,7 +148,9 @@ export class SkyEffects {
     const inv = new Matrix();
     fog.onApply = (effect) => {
       this.camera.getTransformationMatrix().invertToRef(inv);
-      effect.setTexture('depthSampler', map);
+      // The pre-pass's depth while it has one (else, from now on, a depth map of its own).
+      const depth = (this.depth ? null : prePassDepth(this.scene)) ?? this.wholeDepth().getDepthMap();
+      effect.setTexture('depthSampler', depth);
       effect.setMatrix('invViewProj', inv);
       effect.setVector3('camPos', this.camera.globalPosition);
       effect.setVector3('camForward', this.camera.getDirection(Vector3.Forward()));
@@ -134,6 +161,16 @@ export class SkyEffects {
       effect.setFloat('maxFog', 0.35 + mist * 0.35);
     };
     this.fog = fog;
+  }
+
+  /** The scene's depth map of the whole view (made on first use; water shares it and leaves it whole). */
+  private wholeDepth(): DepthRenderer {
+    if (!this.depth) {
+      this.depth = this.scene.enableDepthRenderer(this.camera, false, true, Texture.NEAREST_SAMPLINGMODE, true);
+      // The fog reads the depth of the whole view: water (which shares this depth map) mustn't trim it to itself.
+      markWholeSceneDepth(this.depth);
+    }
+    return this.depth;
   }
 
   private addRays(sky: SkyDefinition): void {

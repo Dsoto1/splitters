@@ -84,7 +84,8 @@ import type { Material } from '@babylonjs/core/Materials/material';
 import { BloodVisuals, bloodPreference } from './bloodVisuals.ts';
 import { PosedBody, RAGDOLL_PREWARM, Ragdoll, type DeadBody } from './ragdoll.ts';
 import { fitBudget, tierFor, type RagdollTier } from './ragdollBudget.ts';
-import { Atmosphere } from './atmosphere.ts';
+import { Atmosphere, SMALL_CASTER_REACH } from './atmosphere.ts';
+import { PropBatches } from './propBatches.ts';
 import { castSmall } from './shadowFlags.ts';
 import { ImpactVisuals } from './impactVisuals.ts';
 import { ThrowArc } from './throwArc.ts';
@@ -378,6 +379,8 @@ export class GameView {
   /** Shadows, tone mapping and post effects (Options → Graphics). */
   readonly atmosphere: Atmosphere;
   private readonly brass: StandardMaterial;
+  /** The map's static props, batched (buildMap; null with `?perfoff=propbatch`). */
+  propBatches: PropBatches | null = null;
   /** The level's draw merge in progress (buildMap), and its outcome: draws before and after (null: not merged). */
   private levelMerge: Promise<{ before: number; after: number; merged: string[] } | null> | null = null;
   /** Level meshes before and after the merge, and the per-style meshes merged (by name; tests). */
@@ -536,9 +539,13 @@ export class GameView {
       void this.environment.setPlacements(env, doc.terrain);
     }
     const drawnAsEnv = new Set(env.map((e) => e.id));
+    // Static props as thin instances per model, material and square (propBatches.ts), not a node of instances each.
+    this.propBatches?.dispose();
+    this.propBatches = perfOn('propbatch') ? new PropBatches(this.scene, (path) => this.models.staticSources(path), SMALL_CASTER_REACH) : null;
+    const batches = this.propBatches;
     doc.entities.forEach((e, i) => {
       if (e.kind !== 'prop' || drawnAsEnv.has(e.id)) return;
-      const node = createPropNode(this.scene, this.models, e, `prop_${e.id}`, !carried.has(e.id), true, doc.terrain);
+      const node = createPropNode(this.scene, this.models, e, `prop_${e.id}`, !carried.has(e.id), true, doc.terrain, batches);
       // A chandelier (and other hung props) is drawn with its top against the ceiling over it.
       if (!carried.has(e.id)) node.position.y += hungPropLift(boxes, e);
       this.props.set(i, node);
@@ -576,6 +583,11 @@ export class GameView {
     const t0 = performance.now();
     // The merged level first (its textures load in a moment; its shader is then built with everyone else's).
     if (this.levelMerge) await Promise.race([this.levelMerge, new Promise((r) => setTimeout(r, 15000))]);
+    // And the prop batches: their models in, their meshes made (the next frame), so their shaders are built below.
+    if (this.propBatches) {
+      await Promise.race([this.propBatches.settled(), new Promise((r) => setTimeout(r, 15000))]);
+      await this.afterFrames(2, 1500);
+    }
     const ready = () => (this.scene.isDisposed ? Promise.resolve() : Promise.race([this.scene.whenReadyAsync(), new Promise((r) => setTimeout(r, 8000))]));
     // The effects first (they don't wait for the characters' files), ended as soon as their shaders are built.
     let effects = 0;
@@ -3225,6 +3237,9 @@ export class GameView {
 
   render(): void {
     const now = performance.now();
+    // Prop batches' levels of detail (and small props' near shadows) follow the camera.
+    const cam = this.scene.activeCamera;
+    if (this.propBatches && cam) this.propBatches.update(cam.globalPosition);
     this.effects = this.effects.filter((fx) => {
       const f = (now - fx.born) / fx.ttl;
       if (f >= 1) {
@@ -3243,6 +3258,7 @@ export class GameView {
     for (const list of this.bodyPool.values()) for (const anim of list) anim.dispose();
     this.bodyPool.clear();
     this.atmosphere.dispose();
+    this.propBatches?.dispose();
     this.blood.dispose();
     this.impacts.dispose();
     this.environment?.dispose();

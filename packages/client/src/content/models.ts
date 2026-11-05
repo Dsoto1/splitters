@@ -77,12 +77,7 @@ export class ModelLibrary {
    * back to `instantiate` (instanced) for models that animate, skin or morph.
    */
   async instantiateStatic(path: string, name: string): Promise<TransformNode> {
-    let p = this.merged.get(path);
-    if (!p) {
-      p = this.mergeModel(path).catch(() => null);
-      this.merged.set(path, p);
-    }
-    const sources = await p;
+    const sources = await this.staticSources(path);
     if (!sources) return this.instantiate(path, name, true);
     const root = new TransformNode(name, this.scene);
     for (const src of sources) {
@@ -93,6 +88,20 @@ export class ModelLibrary {
       inst.isPickable = false;
     }
     return root;
+  }
+
+  /**
+   * A static model's meshes merged per material (in the model's own space, parked out of sight; the first carries the
+   * model's levels of detail), or null for models that animate, skin or morph: instance sources, and what the game's
+   * prop batches (game/propBatches.ts) copy their geometry from.
+   */
+  staticSources(path: string): Promise<Mesh[] | null> {
+    let p = this.merged.get(path);
+    if (!p) {
+      p = this.mergeModel(path).catch(() => null);
+      this.merged.set(path, p);
+    }
+    return p;
   }
 
   /** The model's meshes merged per material (in the model's own space), parked out of sight as instance sources. */
