@@ -1,5 +1,5 @@
 import { beforeAll, describe, expect, it } from 'vitest';
-import { BOT_DIFFICULTIES, BUTTON_CROUCH, BUTTON_PRONE, CORE_BOT_PROFILES, BUTTON_FIRE, DEFAULT_DEATHMATCH_RULES, applyCommand, getEnvSpecies, getProp, initPhysics, replacePropsCommand, type MapDocument } from '../src/index.ts';
+import { BOT_DIFFICULTIES, BUTTON_CROUCH, BUTTON_PRONE, CORE_BOT_PROFILES, BUTTON_FIRE, DEFAULT_DEATHMATCH_RULES, applyCommand, getEnvSpecies, getProp, initPhysics, replacePropsCommand, type MapDocument, type PropEntity } from '../src/index.ts';
 import { Match, initNavigation, type Combatant } from '../src/match.ts';
 import { makeMap } from './helpers.ts';
 
@@ -78,7 +78,7 @@ describe('our fern and shrub hide players as the Kenney fern and small bush did'
   /** The yard with one plant (`model`, at `scale`) at (12, 0, 4). */
   const yardWith = (model: string, scale: number, variant?: number): MapDocument => {
     const map = yard();
-    return { ...map, entities: map.entities.map((e) => (e.id === 'bush' ? { ...e, model, scale, ...(variant !== undefined ? { variant } : {}) } : e)) };
+    return { ...map, entities: map.entities.map((e) => (e.id === 'bush' && e.kind === 'prop' ? ({ ...e, model, scale, ...(variant !== undefined ? { variant } : {}) } as PropEntity) : e)) };
   };
   /** The plant as "Replace all" turns `from` (at `scale`) into `to`. */
   const replaced = (from: string, scale: number, to: string): { model: string; scale: number; variant?: number } => {

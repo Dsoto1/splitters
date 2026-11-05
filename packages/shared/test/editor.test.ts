@@ -26,6 +26,7 @@ import {
   replacePropsCommand,
   type EditCommand,
   type MapDocument,
+  type PropEntity,
 } from '../src/index.ts';
 import { readFileSync } from 'node:fs';
 import { loadArena } from './helpers.ts';
@@ -335,7 +336,7 @@ describe('Replace all <prop> with <prop or species>', () => {
     const cmd = replacePropsCommand(h.doc, 'prop.fern', 'env.fern.bracken#1');
     expect(cmd.kind === 'updateEntities' && cmd.after.length).toBe(2);
     h.execute('Replace all', cmd);
-    const [a, b, c, d] = h.doc.entities as ReturnType<typeof prop>[];
+    const [a, b, c, d] = h.doc.entities as PropEntity[];
     // Kenney fern 0.9 m, bracken 0.555 m: scale × 1.62.
     expect([a!.model, a!.variant, a!.scale, a!.position, a!.yaw]).toEqual(['env.fern.bracken', 1, 1.62, [1, 0.2, 3], 0.7]);
     expect([b!.id, b!.scale, b!.name, b!.tint]).toEqual(['p2', 2.11, 'Big fern', '#88aa66']);
@@ -348,9 +349,9 @@ describe('Replace all <prop> with <prop or species>', () => {
 
   it('keeps the scale number when asked; variant 0 and props carry no variant; nothing to replace is an empty step', () => {
     const d = doc();
-    const kept = applyCommand(d, replacePropsCommand(d, 'prop.grass_tall', 'env.grass.clump', 'scale')).entities[2] as ReturnType<typeof prop>;
+    const kept = applyCommand(d, replacePropsCommand(d, 'prop.grass_tall', 'env.grass.clump', 'scale')).entities[2] as PropEntity;
     expect([kept.model, kept.scale, 'variant' in kept]).toEqual(['env.grass.clump', 1, false]);
-    const back = applyCommand(d, replacePropsCommand(d, 'env.fern.bracken', 'prop.plant_low')).entities[3] as ReturnType<typeof prop>;
+    const back = applyCommand(d, replacePropsCommand(d, 'env.fern.bracken', 'prop.plant_low')).entities[3] as PropEntity;
     expect([back.model, 'variant' in back]).toEqual(['prop.plant_low', false]);
     for (const [from, to] of [['prop.crate', 'env.grass.clump'], ['prop.fern', 'prop.no_such_thing'], ['prop.fern', 'prop.fern']]) {
       const cmd = replacePropsCommand(d, from!, to!);

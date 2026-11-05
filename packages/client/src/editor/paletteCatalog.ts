@@ -79,6 +79,24 @@ export const GROUND_COVER_SPECIES: Readonly<Record<string, readonly string[]>> =
   'Plants & Flowers': ['env.grass.clump', 'env.flower.meadow', 'env.fern.bracken', 'env.shrub.broadleaf', 'env.water.eelgrass'],
   'Rocks & Wood': ['env.rock.pebbles'],
 };
+/**
+ * What "Replace all" (the prop inspector) offers first for a retired piece: the species (and variant) that took its
+ * place in the plants brush. Any other prop or species can still be chosen.
+ */
+export const REPLACEMENTS: Readonly<Record<string, string>> = {
+  'prop.grass_patch': 'env.grass.clump',
+  'prop.grass_leafy': 'env.grass.clump',
+  'prop.grass_tall': 'env.grass.clump',
+  'prop.grass_tuft': 'env.grass.clump',
+  'prop.flower_red': 'env.flower.meadow',
+  'prop.flower_yellow': 'env.flower.meadow#1',
+  'prop.flower_purple': 'env.flower.meadow#2',
+  'prop.plant_low': 'env.fern.bracken',
+  'prop.fern': 'env.fern.bracken',
+  'prop.bush_small': 'env.shrub.broadleaf',
+  'prop.stones': 'env.rock.pebbles',
+  'prop.mn_eelgrass': 'env.water.eelgrass',
+};
 /** Every species GROUND_COVER_SPECIES offers. */
 export const GROUND_COVER_IDS: readonly string[] = Object.values(GROUND_COVER_SPECIES).flat();
 /** Prop categories shown in the Vehicles tab (parked, not drivable). */
