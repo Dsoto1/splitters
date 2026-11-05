@@ -41,7 +41,14 @@ ammo crate: the pickup models). New, never referenced anywhere. Downloaded to `/
   - from 2026-11-03: "futuristic baseball b…" (image-to-3D).
 - **Vehicle:** "A tank from World War…" (2026-11-01), a candidate model for the tank mount (`vehicles/tank.glb`).
 
-Open questions before the import:
+Owner's answers (2026-11-05):
+- Replace the tank with the WWII tank.
+- Import only models that already have rigs: the clown, the Tactical Soldier and the umpire. The owner vets and rigs
+  everything else in Meshy first; never take in an unrigged model.
+- Don't use the baseball animations.
+
+The import is in progress on `wip/intake-1105`.
+Earlier open questions, kept for the record:
 - Which files are the owner's own Meshy generations (Owned) and which are Meshy Community (CC0)? For CC0, record the
   author and post URL.
 - Rigging the static ones uses Meshy credits (needs approval) or our own pipeline.
