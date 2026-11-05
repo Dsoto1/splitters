@@ -26,6 +26,27 @@ gets overloaded above that: local e2e times out and flakes). Prune landed worktr
 - Earlier the same day: content scalability steps 2–6, perf toolset, flaky e2e fixes, Runway Nine airliner, map
   reworks batches 2–3, character fixes rounds 2–3 (see the entries below and CHANGELOG).
 
+<!-- shingle -->
+### Shingle Point asset refresh (`wip/shingle`, agent, 2026-11-05; from main 76a4b038; in progress)
+Owner's decision: same layout and gameplay, every dated asset replaced, so it compares fairly with MAP 21 (a new map,
+later). Not a layout rework.
+- **Done (pushed):**
+  - New kit pieces built in code (`build-kit-props.mjs`, pack `tiletrigger-kit`, 2-3 materials each so each costs
+    2-3 draws per map): Landing Craft, Landing Craft Wreck and Czech Hedgehog carry their own collision
+    (`collide: "model"`): the craft and wreck exactly the boxes of the map's block-built ones, the hedgehog its three
+    beams as six short boxes each; Sandbag Stack (120 HP), Timber Baulk (60 HP), Timber Stack, Wooden Dory (60 HP,
+    surface `dirt`: a sand-filled hull, stops rounds as the rowing boat did), Straw Bale (30 HP). Surfaces for these
+    only (`content/surfaces/tiletrigger-kit.json`, rest of the kit skipped). In the Military / Coastal Harbor packs.
+  - MapMaker Replace all: size **Keep length** and a **Turn** (quarter turns) for pieces modelled along the other axis.
+  - Conceal test: the large and leafy bushes → `env.shrub.broadleaf` hide the same stances at Shingle Point's scales.
+- **In progress:** the map edit, driven in MapMaker from the session scratchpad (`shingle/tools/maker.mjs`: theme →
+  Military Compound; 23 Replace alls; 56 block groups → kit pieces via Delete + palette + inspector fields; canvas
+  blocks → Burlap; Export). Checkpoint after the Replace alls: scratchpad `shingle/maker/stage-replaced.json`.
+- **Next:** finalize the export (drop `metadata.release`, add the eye-level `thumbnailCamera`), proof test
+  (scratchpad copy of `packages/shared/test/zz_shingle_proof.test.ts`, not committed), perf before/after on the same
+  spots (owner's M1 note: the static scene's draws/meshes are the bottleneck here; must not add any), screenshots,
+  merge main (68663142, flicker fix), checks, `check/shingle`.
+
 ### Drive intake of 2026-11-05 (`wip/intake-1105`, agent; step 1 on `check/intake-1105`, step 2 next)
 Downloads in `/home/user/meshy-drive/intake-2026-11-05/` (raw, never committed); the agent linked the ones it uses
 into a scratch downloads dir (any dir works: the importers find files by `source.file` / `glb` name). Owner's rules:
