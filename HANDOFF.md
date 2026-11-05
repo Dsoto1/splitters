@@ -426,6 +426,21 @@ up. The new Gnoll (Hyena Warrior) in the intake-2 sheets shows it.
 - **Owner's decisions:** keep the Hyena (Gnoll) and Snikkit (Goblin Mischief) and fix their hands with this;
   Bill is retired. Do the pistol-hold tweak after this.
 
+### Owner-approved order after the current agents (2026-11-05 late; owner set effort to max: "hoping for some great work")
+1. **Set pieces:** plan in docs/SET_PIECES_PLAN.md. Next free slot.
+2. **Hands round 5,** in parallel; small. Give it to the pistol-hold agent as a follow-on once its pistol work lands.
+   It covers:
+   - re-tuning the support hands the palm fix changed (Pharaoh, Gorgle, Vanguard, Croakley, Big Bab, Desert Ranger,
+     Stealth Op, Tactical Soldier, Masked Figure, Anoobys, Greyfang, Kenji, Seetah, WWII Infantry, Goblin Warlord);
+   - Frost Viking and Bamboo holds;
+   - the Knight's gauntlet;
+   - the Spin Gun and Spear audit.
+3. **MAP 21 (Omaha beach assault) and the Sandfall Colosseum rebuild:** the showpiece maps, built with set pieces.
+4. **Environment Phase 2:** more species; the border forest moves to our trees.
+5. **Core / experimental tiers** with quality gates, in the Control Center Workbench.
+
+The MapMaker overhaul and community maps follow, once the owner marks the MapMaker list.
+
 ### Agent queue order (2026-11-05)
 1. Small environment follow-ups (below).
 2. Shingle Point asset refresh (owner: "start when it is a good time"). It doesn't need set pieces.
