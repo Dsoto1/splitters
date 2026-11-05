@@ -373,7 +373,8 @@ function modelHeight(model: string, variant: number | undefined): number | undef
 /**
  * "Replace all <prop> with <prop or species>": every prop placed as `from` becomes `to` (`env.<id>#<n>` picks a
  * variant), keeping its ID, position, facing, name, solid flag and tint; its scale per `size`, rounded to 0.01 and
- * held to the inspector's 0.25–4. One undo step. Nothing to do (no such props, or `to` is unknown): an empty update.
+ * held to the inspector's 0.25–4; one bedded into the terrain is bedded again under its new footprint (settle.ts
+ * settledPropY), so a wider plant does not float on a slope. One undo step. Nothing to do (no such props, or `to` is unknown): an empty update.
  */
 export function replacePropsCommand(doc: MapDocument, from: string, to: string, size: ReplaceSize = 'height'): EditCommand {
   const before: MapEntity[] = [];
@@ -387,8 +388,13 @@ export function replacePropsCommand(doc: MapDocument, from: string, to: string, 
     const ratio = size === 'height' && oldHeight ? oldHeight / newHeight : 1;
     const scale = Math.round(Math.max(0.25, Math.min(4, e.scale * ratio)) * 100) / 100;
     const { variant: _old, ...rest } = e;
+    const next = { ...rest, model: target.model, scale, ...(target.variant !== undefined ? { variant: target.variant } : {}) };
+    // One bedded into the terrain (MapMaker's settling, scatter) stays bedded under its new footprint.
+    const t = doc.terrain;
+    const was = t ? settledPropY(t, e) : null;
+    const now = t && was !== null && Math.abs(was - e.position[1]) <= 0.02 ? settledPropY(t, next) : null;
     before.push(e);
-    after.push({ ...rest, model: target.model, scale, ...(target.variant !== undefined ? { variant: target.variant } : {}) });
+    after.push(now === null ? next : { ...next, position: [e.position[0], now, e.position[2]] });
   }
   return { kind: 'updateEntities', before, after };
 }
