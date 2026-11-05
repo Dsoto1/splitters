@@ -17,9 +17,14 @@ describe('character manifests', () => {
     expect(goblin.file.test('Meshy_AI_Goblin_1026113732_texture.fbx')).toBe(true);
     expect(goblin.joints.LeftHandTip).toEqual([0.258, 0.317, 0.2]);
     expect(goblin.joints.head_end).toEqual([0, 0.95, 0.14]);
+    // A Meshy rigging task the owner ran (fetch-meshy.mjs downloads by it).
+    const ashwalker = buildSpec(list.find((m) => m.id === 'meshy_ashwalker'));
+    expect(ashwalker.meshy.rig).toBe('01a18a0b-1e9b-7362-a818-d0779745bb32');
+    // The Iron Knight's model since 2026-11-05: a community download (no task IDs), its triangle budget its own.
     const knight = buildSpec(list.find((m) => m.id === 'meshy_knight'));
-    expect(knight.meshy.rig).toBe('01a173c0-4d21-712b-97ba-7f08daf670c7');
-    expect(knight.triangles).toBeUndefined();
+    expect(knight.meshy).toBeUndefined();
+    expect(knight.pack).toBe('meshy-community-characters');
+    expect(knight.triangles).toBe(11000);
     expect(armsOf({ id: 'meshy_x', firstPerson: { arms: 'own' } })).toBe('meshy_x_fparms');
     const cat = buildSpec(list.find((m) => m.id === 'meshy_cat'));
     expect(cat.pack).toBe('meshy-community-characters');
