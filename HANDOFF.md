@@ -50,6 +50,11 @@ Owner's answers (2026-11-05):
 - The owner re-rigged six existing characters with Mixamo skeletons that have finger chains: The Dapper, Croakley,
   CRT Robot, Freaky Frida, Field Medic Automaton and Stealth Operative. The downloads are in the same folder.
   They're added to the same intake, to be rebuilt with before/after grip scores.
+- Later the same day the owner added seven more Mixamo rigs:
+  - Beanie Alien, Alien Biker, WWII Infantry and Grunt '68 ("Realistic T Pose"): re-rigs of existing characters.
+  - Gnoll warrior (maybe Hyena Warrior), Iron Warden (maybe Iron Knight, or new) and "T Pose on Green Screen" (maybe
+    CRT Robot, or new): the agent confirms each by rendering it beside the shipped character.
+  - The intake lands in steps: new characters and the tank first, then the re-rigs.
 - **Download format the owner was asked to use from now on:**
   - Meshy rig with the Mixamo-style skeleton, fingers included;
   - GLB with "Rigged Character" on: rest pose, no animations (we ignore the clips);
