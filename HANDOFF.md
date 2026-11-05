@@ -236,7 +236,9 @@ hands move up more into the gun. Looks as if their fingers are just pinching the
 - **Step Temple:** its menu card shot should be a grounded, eye-level view, not aerial.
 - **Sandfall Colosseum, a full rebuild ("this is your moment to shine").** Owner's brief:
   - **Layout:** replicate the layout of the owner's game **Flavius Rule (classic)**. Get reference material from the
-    owner before starting: screenshots, a top-down plan, or a description.
+    owner before starting: screenshots, a top-down plan, or a description. **Received 2026-11-05:**
+    docs/map-briefs/sandfall_colosseum/BRIEF.md and `reference/`: the 13×13 board, the seating chart and a mood
+    painting. The emperor's box comes back.
   - **Feel:** epic and grand, far more immersive than today's map.
   - **The arena:** use mostly the assets we have today (Imperial Arena pack, Roman pieces), with a better layout and a
     much grander scale. The colosseum stands 6–8 storeys tall if possible.
