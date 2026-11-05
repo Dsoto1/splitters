@@ -3919,6 +3919,19 @@ async function drawnHands(page) {
     }
   }
   check(drawnMisses.length === 0, `hands are drawn on the grip, fingers along the gun, the shooting palm in against its side and the support palm up (${drawnMisses.join('; ') || 'all'})`);
+  // Hands whose palms were read back to front (the thumb's first joint said the back of the hand): the Gnoll's paws
+  // and Honest Abe's hands were turned onto the gun palm out (shooting) and palm down (support), owner 2026-11-05.
+  const flipped = [];
+  for (const look of ['core.hyena', 'core.abe']) {
+    for (const weapon of ['core.rifle', 'core.pistol']) {
+      for (const view of ['third', 'body']) {
+        await page.evaluate(([l, w, v]) => window.__grips.pose(l, w, v), [look, weapon, view]);
+        const d = await page.evaluate(() => window.__grips.drawn());
+        if (!d || d.sideR < 0.6 || d.palmL === null || d.palmL < 0.3) flipped.push(`${look} ${weapon} ${view}: ${fmtHand(d)}`);
+      }
+    }
+  }
+  check(flipped.length === 0, `palms read the right way round: shooting palm in, support palm up (${flipped.join('; ') || 'the Gnoll and Honest Abe, rifle and pistol, third and first person'})`);
   // The Spear (a 2 m model held a third of the way back): the shooting hand drawn on the shaft, fingers along it,
   // in every view.
   const spearMisses = [];

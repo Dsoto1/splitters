@@ -1885,11 +1885,11 @@ export function setCurlShare(share: number): void {
 }
 
 /**
- * Curl the fingers toward the palm (the side the thumb is on), as if round a grip. `onto` (world): the point on
- * the gun the hand holds; the fingers then close whichever way brings their tips toward it. A Meshy hand's palm
- * side is read off its model and can come out the wrong way round (Big Bogdan's, Shade's, Sir Galloway's
- * shooting hands curled their fingers up off the grip: an open palm on the gun); closing onto the gun is right
- * either way.
+ * Curl the fingers toward the palm, as if round a grip: a measured hand's palm as its frame has it (read off its
+ * joints, handProbe.skinHandFrame); otherwise toward `onto` (world: the point on the gun the hand holds; the
+ * fingers close whichever way brings their tips toward it), or the side the thumb is on. (When a Meshy hand's
+ * palm side could come out the wrong way round, Big Bogdan's, Shade's and Sir Galloway's shooting hands curled
+ * their fingers up off the grip; closing onto the gun was the workaround.)
  */
 function closeHand(space: SkeletonSpace, arm: Arm, weight: number, onto?: Vector3): void {
   // A measured hand closes as far as it was found able to (not at all if it is rigid or already a fist).
@@ -1904,7 +1904,18 @@ function closeHand(space: SkeletonSpace, arm: Arm, weight: number, onto?: Vector
   let sign = Vector3.Dot(forward.applyRotationQuaternion(Quaternion.RotationAxis(across, 0.5)), palmSide) > 0 ? 1 : -1;
   // ...or toward the gun: the middle finger's tip swung both ways about its knuckle, the nearer to the point wins.
   const middle = arm.fingers[1] ?? arm.fingers[0];
-  if (onto && middle && middle.length) {
+  if (arm.frame && arm.frame.by !== 'old' && middle && middle.length) {
+    // A hand that knows its palm (read off its joints, handProbe.skinHandFrame) bends its fingers toward it, as fingers
+    // bend. ("Toward the gun" bent some backwards: a support hand cupped back from the handguard has the gun about level
+    // with its knuckles, and Honest Abe's then curled up away from it.)
+    arm.hand.computeWorldMatrix(true);
+    const wrist = arm.hand.getAbsolutePosition().clone();
+    const palm = space.point(wrist.add(handAxes(arm).palm)).subtract(space.point(wrist));
+    const knuckle = space.pos(middle[0]!);
+    const tip = space.pos(middle[middle.length - 1]!).subtract(knuckle).add(forward.scale(0.02));
+    const swung = (s: number) => Vector3.Dot(tip.applyRotationQuaternion(Quaternion.RotationAxis(across, s * 1.2)).subtract(tip), palm);
+    sign = swung(1) >= swung(-1) ? 1 : -1;
+  } else if (onto && middle && middle.length) {
     const target = space.point(onto);
     const knuckle = space.pos(middle[0]!);
     const tip = space.pos(middle[middle.length - 1]!).subtract(knuckle).add(forward.scale(0.02));
