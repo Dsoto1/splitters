@@ -582,9 +582,28 @@ shrubs, grass, boulders and cliff faces generated in code from seeds, owned, not
   stress target, 2,001 trees, 401 boulders, 30 cliff panels, 94 shrubs and ~46 k grass clumps (thick grass painted
   over the 200 m square). Play it with `?offline=env_showcase&env=1`; compare with
   `PERF_QUERY=env=1 node tools/perf/client-perf.mjs env_showcase` against `node tools/perf/client-perf.mjs backwoods`
-  (`PERF_BOTS=2`, medium, same turn at the spawn). It has 2,526 props, over the 1,500-prop budget on purpose.
+  (`PERF_BOTS=2`, medium, same turn at the spawn). Its 2,526 species placements are within the environment budget (docs/MAP_BUDGETS.md): it validates clean.
+- **Ground cover the plants brush grows** (owner, 2026-11-05: our own grass replaces Kenney's): `env.grass.clump`
+  (summer, dry), `env.flower.meadow` (white daisy, yellow buttercup, purple clover: basal leaves and stems in vertex
+  colour, a flower-head card per stem from the leaves atlas' `flower.*` cells) and `env.fern.bracken` (summer,
+  autumn: fronds as bent `fern.0` cards). Decorative only (ground cover is checked to be: no collision, nav or
+  concealment). `packages/client/src/foliage.ts` grows them at every plants level in every match and in MapMaker, no
+  flag needed: grass and tall grass → the clump (2.2 a Kenney patch's count), flowers → the meadow flowers, low
+  plants → the fern, bushes → `env.shrub.broadleaf` at its lighter level (100 triangles); pebbles and eelgrass are
+  still pack props. MapMaker offers the three in Nature → Plants & Flowers (no palette picture yet) and the
+  "Flowers & grass" scatter brush plants them; Kenney's grass, flowers and low plant are retired from the palette
+  (`editor/paletteCatalog.ts` `RETIRED_PROPS`), still loaded and drawn where maps place them.
+- **Rock:** boulders are a convex hull cut by 8–12 fracture planes (the collision hull), then, on the visual surface
+  only and only inward of the hull: bedding grooves, corner chips (never at the six corners that set the bounds) and a
+  little edge wear; vertex colour from strata, curvature (cavities dark, worn edges pale), patchy moss and hue patches.
+  Cliff panels add joint blocks to their near levels only (the collision level is unchanged) and read colour noise on
+  a circle round the panel, so neighbours match. The rock picture (`rock.webp`: albedo, roughness in alpha;
+  `rock_n.webp`) is drawn tri-planar in world space on medium and high (`EnvRockPlugin`, envMaterials.ts, GLSL and
+  WGSL: no uv seams, no two boulders alike, a larger second sample of the same picture breaks up the repeat); low
+  keeps the GLB's box-projected uv.
 - **Adding a species** (Phase 2+): a new entry in its family file (or a new family file and generator kind), budgets
   for its category, run the build, add its fixture entry, check it in `?envlab`. No simulation code changes.
+- **Map budget:** environment species have their own (docs/MAP_BUDGETS.md), apart from props.
 
 ### Tiles and edge styles
 

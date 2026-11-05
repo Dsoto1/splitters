@@ -139,6 +139,32 @@ palette atlas step of `pnpm content:rebuild` needs a temp copy of build-palette-
 
 This work is on `wip/env-p1b`. Phase 2 (more species) still needs the owner's go after that.
 
+### Environment Phase 1b: rocks, our own ground cover, env budget (`wip/env-p1b`, agent, 2026-11-05; from main 76c48223; pushed, not merged)
+- **Done:**
+  - **Budget:** `MAP_BUDGETS.env` in `shared/src/map/validate.ts` (4,000 placed, 3,000 colliding, 120 cliffs, 24 variants;
+    codes `budget.env*`); env placements no longer count toward Props / prop models. docs/MAP_BUDGETS.md. `env_showcase`
+    validates clean (test in environmentData.test.ts).
+  - **Rocks:** boulder hull cut by 8–12 fracture planes (was 4–7): collision hull changes → `assetVersion` 2 + fixture
+    entry (still ≤ 32 points, stone, size 2.01 × 1.48 × 1.74 vs 2.10 × 1.47 × 1.94). Visual surface only, inward of the
+    hull: bedding grooves, corner chips (never the 6 bound-setting corners), less wear, crease 38°; vertex colour from
+    strata, curvature, moss, hue patches. Cliff: joint blocks on levels 0–1 only (`lods[].detail`), so its collision
+    (level 2) and fixture are unchanged; colour noise on a circle so panel edges match. `rock.webp` (RGBA, roughness in
+    alpha) / `rock_n.webp` redrawn; `EnvRockPlugin` (envMaterials.ts, GLSL + WGSL) draws it tri-planar in world space on
+    medium/high (macro sample + warm/cool patches; roughness via a regex swap of `reflectivityBlock`'s first argument).
+  - **Ground cover:** new species `env.flower.meadow` (white/yellow/purple, 27 tris) and `env.fern.bracken`
+    (summer/autumn, 56 tris; groundcover budget 40 → 64), from new atlas cells `flower.0-2`, `fern.0` (existing cards
+    and tree GLBs byte-identical). `foliage.ts` grows env species at every plants level with no flag: grass/tall →
+    clump (density 2.2 as reviewed, untouched), flower → meadow, shrub → fern, bush → `env.shrub.broadleaf` level 1;
+    pebbles (`prop.stones`) and eelgrass unchanged. Kenney grass/flowers/plant_low retired from the palette
+    (`RETIRED_PROPS`, paletteCatalog.ts; maps still load them); the three species are in Nature → Plants & Flowers (no
+    picture); "Flowers & grass" and "Desert scrub" scatter sets use them. envlab lineup has the flowers and fern.
+- **Screenshots** (session scratchpad `env2/`): `envlab-before-*` / `envlab-after-*` (rock-close, rocks, cliff-close,
+  cliffs, plants, small, lineup) and `backwoods-*`, `env_showcase-*` before/after at eye height.
+- **Pitfall:** another agent's `vite preview` held port 4951 all day; a preview started with `--strictPort` on a taken
+  port fails silently and the page is served by the other checkout. Use free ports (this job: 4981–4983, e2e 4991/4992).
+- **Resume:** `git fetch && git checkout wip/env-p1b`; `node tools/content/environment.mjs --check`; envlab at
+  `?envlab` (views rock-close via the camera, rocks, cliffs, plants).
+
 ### In flight
 - **Market Town perf on the M1 Pro, branch `wip/perf-market`** (agent, 2026-11-05; from main d29e6a8; not merged).
   Owner's capture (high, 44 players): 23 ms frames with few in view, 38-45 ms with 20-40; characters (clips + aim)
