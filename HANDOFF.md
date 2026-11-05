@@ -232,6 +232,7 @@ hands move up more into the gun. Looks as if their fingers are just pinching the
 
 ### Owner's map notes for later (2026-11-05; not started)
 - **No Man's Field:** asset refresh. It still uses Kenney kits; move it to our generated environment and props.
+- **Rockfall Canyon** (`maps/canyon.json`): asset and foliage refresh, onto our generated environment, rocks and plants.
 - **Step Temple:** its menu card shot should be a grounded, eye-level view, not aerial.
 - **Sandfall Colosseum, a full rebuild ("this is your moment to shine").** Owner's brief:
   - **Layout:** replicate the layout of the owner's game **Flavius Rule (classic)**. Get reference material from the
