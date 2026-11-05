@@ -362,6 +362,11 @@ requested.
 
 ### Critical product rule: NO USER-UPLOADED ASSETS
 
+> **Amended by the owner, 2026-11-05.** Still no uploaded assets or code of any kind. Players' declarative map files
+> may be stored centrally only once a map earns **Community Pick** through real plays. Those files are validated,
+> hash-checked, and reference in-house asset IDs only. Players save their own maps locally without limit and share
+> them by hosting. See docs/COMMUNITY_MAPS.md.
+
 Community creators are **not allowed to upload arbitrary external
 assets**.
 
