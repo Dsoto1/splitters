@@ -9,7 +9,7 @@ import type { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import type { AbstractMesh } from '@babylonjs/core/Meshes/abstractMesh';
 import type { GripTune, ModelPoint, WeaponHold } from '@tiletrigger/shared';
 import type { CharacterInstance, Clip } from '../content/characters.ts';
-import { gripReport, skinHandFrame } from './handProbe.ts';
+import { gripReport, skinHandFrame, type PalmCues } from './handProbe.ts';
 import { EVERY_FRAME, StepClock, type AnimStep } from './animLod.ts';
 import { TorsoSurface, armReach, reachAlong } from './torsoSurface.ts';
 import { GAIT, GAIT_CLIPS, clipCycleRate, clipGaitWeights, clipUpperWeights, gaitCycleRate, gaitWeights, matchClipPhase, matchPhase, strideWarp, type ClipLoop, type GaitClip } from './gait.ts';
@@ -241,7 +241,7 @@ interface Arm {
    * which way its palm faces. A Meshy hand needn't sit on its joint as the rig's hand does (the dapper's palm
    * faced away from the grip in the clips' hold), so it is turned onto the grip by this frame (gripHand).
    */
-  frame?: { along: Vector3; palm: Vector3 };
+  frame?: { along: Vector3; palm: Vector3 } & Partial<PalmCues>;
   /** Knuckles used to build the hand's frame. */
   index: TransformNode;
   pinky: TransformNode;
@@ -354,7 +354,7 @@ export class CharacterAnimator {
       if (measured) {
         const gripOffset = Math.max(MIN_GRIP_OFFSET, GRIP_RADIUS_MEASURED + (measured.thickness - REF_HAND_THICKNESS) / 2);
         // The hand's own frame, read off its skin (its measured palm side is the rig's, which a Meshy hand needn't match).
-        const frame = skinHandFrame(ch.meshes, hand, ch.joints.get(`thumb_01_${side}`) ?? thumb, side) ?? undefined;
+        const frame = skinHandFrame(ch.meshes, (n) => ch.joints.get(n), side, measured.palmSide) ?? undefined;
         return { upper, lower, hand, palm: new Vector3(...measured.palm), gripOffset, curl: measured.curl, span: measured.length, fingers, index, pinky, knuckle, thumb, ...(frame ? { frame } : {}) };
       }
       // The rig's own hands: the palm sits a little over halfway from the wrist to the middle knuckle.
@@ -1934,7 +1934,7 @@ export function armsFrom(joints: Map<string, TransformNode>, meshes: readonly Ab
     if (!upper || !lower || !hand || !knuckle || !index || !thumb) return null;
     const pinky = get('pinky_01') ?? get('ring_01') ?? knuckle;
     const fingers = ['index', 'middle', 'ring', 'pinky'].map((f) => [1, 2, 3].map((j) => joints.get(`${f}_0${j}_${side}`)).filter((n): n is TransformNode => !!n)).filter((c) => c.length > 0);
-    const frame = skinHandFrame(meshes, hand, get('thumb_01') ?? thumb, side) ?? undefined;
+    const frame = skinHandFrame(meshes, (n) => joints.get(n), side) ?? undefined;
     return { upper, lower, hand, palm: knuckle.position.scale(0.6), gripOffset: GRIP_RADIUS, curl: 1, span: knuckle.position.length() * RIG_SPAN, fingers, index, pinky, knuckle, thumb, ...(frame ? { frame } : {}) };
   };
   const [r, l] = [arm('r'), arm('l')];

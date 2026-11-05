@@ -3899,9 +3899,11 @@ async function drawnHands(page) {
   // The palm checks above measure the joints. Where the hands are DRAWN (each hand's skin through its skeleton,
   // handProbe.ts): on the grip, the shooting hand's fingers along the barrel and its flat against the grip's side.
   // A Meshy hand sits on its joint its own way: the dapper's palm faced the camera and its edge the grip in every
-  // view while the joint checks passed (owner, live 2026-10-31).
-  const badHand = (d, far = 0.09) => !d || d.r === null || d.r > far || d.aheadR < 0.6 || d.sideR < 0.6;
-  const fmtHand = (d) => (d ? `${(d.r * 100).toFixed(0)} cm, along ${d.aheadR.toFixed(2)}, flat ${d.sideR.toFixed(2)}` : 'none');
+  // view while the joint checks passed (owner, live 2026-10-31). The palm's side counts (`sideR` 1: the shooting palm
+  // in against the grip; -1: its back there, palm out), and the support palm faces up, not down (`palmL`): some hands
+  // were read back to front and turned onto the gun that way (owner, 2026-11-05).
+  const badHand = (d, far = 0.09) => !d || d.r === null || d.r > far || d.aheadR < 0.6 || d.sideR < 0.6 || (d.palmL !== null && d.palmL < 0);
+  const fmtHand = (d) => (d ? `${(d.r * 100).toFixed(0)} cm, along ${d.aheadR.toFixed(2)}, palm in ${d.sideR.toFixed(2)}, support palm ${d.palmL === null ? '-' : d.palmL.toFixed(2)}` : 'none');
   const drawnMisses = [];
   for (const look of ['core.dapper', 'core.biscuit', 'core.ranger', 'core.galloway']) {
     for (const weapon of ['core.pistol', 'core.rifle', 'core.grapple']) {
@@ -3916,7 +3918,7 @@ async function drawnHands(page) {
       }
     }
   }
-  check(drawnMisses.length === 0, `hands are drawn on the grip, fingers along the gun, flat to its side (${drawnMisses.join('; ') || 'all'})`);
+  check(drawnMisses.length === 0, `hands are drawn on the grip, fingers along the gun, the shooting palm in against its side and the support palm up (${drawnMisses.join('; ') || 'all'})`);
   // The Spear (a 2 m model held a third of the way back): the shooting hand drawn on the shaft, fingers along it,
   // in every view.
   const spearMisses = [];
@@ -3938,8 +3940,8 @@ async function gripsInPlay(browser) {
   const page = await (await browser.newContext({ viewport: { width: 960, height: 540 } })).newPage();
   const errors = [];
   page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
-  const badHand = (d) => !d || d.r === null || d.r > 0.09 || d.aheadR < 0.6 || d.sideR < 0.6;
-  const fmt = (d) => (d ? `${d.mode ?? ''} ${(d.r * 100).toFixed(0)} cm, along ${d.aheadR.toFixed(2)}, flat ${d.sideR.toFixed(2)}` : 'no hands on a gun');
+  const badHand = (d) => !d || d.r === null || d.r > 0.09 || d.aheadR < 0.6 || d.sideR < 0.6 || (d.palmL !== null && d.palmL < 0);
+  const fmt = (d) => (d ? `${d.mode ?? ''} ${(d.r * 100).toFixed(0)} cm, along ${d.aheadR.toFixed(2)}, palm in ${d.sideR.toFixed(2)}, support palm ${d.palmL === null ? '-' : d.palmL.toFixed(2)}` : 'no hands on a gun');
   // Your own hands, measured once the switch has settled (a few tries: the gun comes up over a quarter second).
   const own = async () => {
     let d = null;

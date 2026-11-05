@@ -27,7 +27,13 @@
 //            (a long gun's support hand slides back along the handguard on short arms, so its distance counts on pistols only)
 //   off      a drawn hand's centre is far from its point on the gun
 //   spikes   skin edges stretched to several times their bind length (cloth dragged out by an arm)
+//   palm     a palm faces the wrong way (drawn, third or first person): the shooting palm out from the grip instead
+//            of in against it (`sideR`), or the support palm down or out instead of up into the handguard / round
+//            the shooting hand (`palmL`); the palm's side is the hand's handedness from its drawn knuckles (handProbe.ts)
 //   fp       full-body first person: a drawn hand far off the gun, or fingers not along it
+//
+// PALMS=old reads every hand's palm by the rule before 2026-11-05 (the thumb's first joint: it flipped some hands),
+// for a before/after with the same measures.
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join, relative, resolve } from 'node:path';
@@ -59,9 +65,11 @@ export const FLAGS = {
   SPIKE_MAX: 8,
   FP_OFF: 0.065,
   FP_AHEAD: 0.3,
+  PALM_R: 0.25,
+  PALM_L: 0,
 };
 /** How much each flag counts toward the rank (the owner's worst first: a gun at the face, then backwards elbows, then flat hands). */
-const WEIGHT = { face: 5, crossed: 4, elbow: 4, flat: 3, back: 3, open: 2, off: 2, spikes: 3, fp: 2 };
+const WEIGHT = { face: 5, crossed: 4, elbow: 4, flat: 3, back: 3, palm: 3, open: 2, off: 2, spikes: 3, fp: 2 };
 
 const WEAPONS = [
   ['rifle', 'core.rifle'],
@@ -130,6 +138,13 @@ export function flagsOf(r) {
     if (d && ((d.r ?? 0) > FLAGS.OFF_R || (pistol && (d.l ?? 0) > FLAGS.OFF_L))) f.add('off');
     if (a.stretch.spikes >= FLAGS.SPIKES || a.stretch.max > FLAGS.SPIKE_MAX) f.add('spikes');
     const fp = m.fp;
+    // Palms the wrong way round, as drawn in third person or first person.
+    for (const x of [d, fp]) {
+      if (x && ((x.sideR ?? 1) < FLAGS.PALM_R || (x.palmL ?? 1) < FLAGS.PALM_L)) {
+        f.add('palm');
+        notes.push(`${w} ${x === d ? 'third' : 'first'} person palms: shooting ${x.sideR?.toFixed(2) ?? '-'}, support ${x.palmL?.toFixed(2) ?? '-'}`);
+      }
+    }
     if (fp && ((fp.r ?? 0) > FLAGS.FP_OFF || (pistol && (fp.l ?? 0) > FLAGS.OFF_L) || (fp.aheadR ?? 1) < FLAGS.FP_AHEAD)) f.add('fp');
     for (const x of f) all.add(x);
   }
@@ -182,6 +197,7 @@ if (rescore) {
   page.on('pageerror', (e) => errors.push(e.message));
   await page.goto(`${base}/?mode=grips&test=1`, { waitUntil: 'domcontentloaded' });
   await page.waitForFunction(() => window.__grips, null, { timeout: 180_000 });
+  if (process.env.PALMS) await page.evaluate((rule) => window.__grips.palmRule(rule), process.env.PALMS);
   const known = new Set((await page.evaluate(() => window.__grips.looks())).map((l) => l.id));
 
   const done = new Set(process.env.RESUME ? saved.filter((r) => Object.values(r.weapons).every((m) => !m.error)).map((r) => r.id) : []);
@@ -254,13 +270,13 @@ const n = (x, d = 2) => (x === null || x === undefined ? '-' : Number(x).toFixed
 const rows = results.map((r) => {
   const a = r.weapons.rifle?.audit;
   const d = r.weapons.rifle?.drawn;
-  return `| ${r.name} | ${r.rig} | ${r.score} | ${r.flags.join(' ') || 'ok'} | ${n(a?.gun?.headToGun)} | ${n(a?.gun?.elbowSide.r)} | ${n(a?.elbows.r?.flex)}/${n(a?.elbows.l?.flex)} | ${n(a?.hands.r?.fingerShare)}/${n(a?.hands.l?.fingerShare)} | ${n(a?.hands.r?.tips)}/${n(a?.hands.l?.tips)} | ${n(d?.r)}/${n(d?.l)} | ${a?.stretch.spikes ?? '-'} (${a?.stretch.max ?? '-'}) |`;
+  return `| ${r.name} | ${r.rig} | ${r.score} | ${r.flags.join(' ') || 'ok'} | ${n(a?.gun?.headToGun)} | ${n(a?.gun?.elbowSide.r)} | ${n(a?.elbows.r?.flex)}/${n(a?.elbows.l?.flex)} | ${n(a?.hands.r?.fingerShare)}/${n(a?.hands.l?.fingerShare)} | ${n(a?.hands.r?.tips)}/${n(a?.hands.l?.tips)} | ${n(d?.r)}/${n(d?.l)} | ${n(d?.sideR)}/${n(d?.palmL)} | ${a?.stretch.spikes ?? '-'} (${a?.stretch.max ?? '-'}) |`;
 });
 writeFileSync(
   join(out, 'summary.md'),
   [
-    '| Character | Rig | Score | Flags | head-gun m | R elbow side | elbow flex R/L | finger share R/L | tips m R/L | drawn m R/L | spikes (max) |',
-    '|---|---|---|---|---|---|---|---|---|---|---|',
+    '| Character | Rig | Score | Flags | head-gun m | R elbow side | elbow flex R/L | finger share R/L | tips m R/L | drawn m R/L | palms R/L | spikes (max) |',
+    '|---|---|---|---|---|---|---|---|---|---|---|---|',
     ...rows,
     '',
     `Flags per weapon (${weapons.map(([w]) => w).join(', ')}):`,
