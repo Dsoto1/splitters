@@ -896,3 +896,70 @@ Target: 4-6 ms off.
 - **Cheaper clip stops and disposals** (`game/animPatches.ts`): a group's stop disposes its animations without the
   per-joint lookup (the group's own sweep removes them, as before); a node nothing ever animated skips the scene's
   stop walk when it is disposed. Not switchable.
+
+### Measured
+
+Round 1's scenario and probe (a scratchpad script: `?offline=market_town&gamemode=core.tdm&bots=44&test=1&god=1`,
+graphics high, render scale auto, 640 × 360, SwiftShader; the player pinned at (4, 0, -34) looking north, 43 bots on
+fixed points 5-60 m ahead, two in three running small circles; 10 / 14 / 20 characters at < 15 / 15-35 / 35-70 m).
+One build, run back to back with everything on and with `?perfoff=shadowcache,levelmerge,meshsel,animlod2`, twice
+each (on, off, on, off), on a 4-core box shared with two other agents (load 12-17). SwiftShader frames take seconds,
+so the frame spans (5 frames a run) are noise; the counts are exact, and the CPU costs come from in-page
+micro-benchmarks on the live scene (the render loop paused, each part run in batches, the fastest batch kept).
+The clip-stop and disposal patches are in both columns (not switchable).
+
+| Per frame, 43 characters in view | off (round 1) | on (round 2) |
+|---|---|---|
+| all draws | 692, 697 | 441, 513 (-31 %) |
+| render-target draws (shadow, water depth, reflection, the rest) | 411, 410 | 197, 220 (-49 %) |
+| shadow casters drawn | 278, 279 | 126, 150 (-51 %) |
+| level draws in the main pass / in the reflection | 58 / 38 | 39 / 17 |
+| water depth-map draws | 49, 47 | 36, 35 |
+| characters animated (clips evaluated) | 22.6, 22.6 | 17.8, 20.2 (-16 %) |
+| mesh candidates Babylon walks (twice) | 3,283, 3,303 | 826, 810 |
+| active-mesh evaluation, micro, ms | 11.4, 9.5 | 3.4, 1.9 (-75 %) |
+| main camera's draws, micro, ms (draws) | 10.0, 10.1 (174, 183) | 9.3, 5.2 (147, 147) (-27 %) |
+| shadow map pass, micro, ms (draws) | 6.0, 8.0 (278, 285) | 7.5, 7.7 (128, 106) |
+| shadow + depth maps, frame span, ms | 35.5, 28.7 | 26.7, 20.7 (-26 %) |
+
+The shadow pass's micro time did not fall here although its draws halved: on SwiftShader the per-layer depth copy is
+done on the CPU too (three 2048 × 2048 layers); on the M1 it is a GPU blit (about 50 MB of bandwidth a frame, well
+under a millisecond of GPU time) and the CPU cost follows the draws. In the measuring window (camera still) no
+cascade redrew its static casters; in the micro-benchmarks 45-53 of ~400 layer renders did (the every-30-frames
+refresh). A CPU profile of round 1's build in this scenario put clip stops (AnimationGroup.stop's lookups) at a third
+of the frame's JS; they no longer show.
+
+**Look**: CI's visual baselines pass unchanged (arena 1.0 %, canyon 0.4 % of pixels differ; allowed 8 / 10 %);
+the zfight audit is untouched (the merge changes no faces).
+
+### Projected on the M1 Pro
+
+From the owner's 20.3 ms trace frame, scaling each part by what it measured here:
+
+| Part | round 1 (M1) | round 2 (projected) |
+|---|---|---|
+| mesh evaluation | 3.0 | ~0.8-1.0 |
+| shadow + depth maps | 3.8 | ~2.0-2.3 |
+| issuing the main pass (~5 ms of the rest of render) | ~5 | ~3.7-4.0 |
+| characters (clips + aim) | 4.6 | ~3.4-3.8 |
+| characters (update), net in (clip stops) | 1.8 | ~1.5 |
+| ragdolls, effects, hud, post | 2.0 | ~1.9 |
+| **frame** | **20.3** | **~14-15.5** |
+
+So the average frame should sit at the 60 fps cap on the M1, with big fights around 19-23 ms (from 26-32). Not
+measured there: see below.
+
+### For the owner to re-record on the M1 Pro
+
+The same as last time: Market Town, TDM, 44 players, high, render scale auto, 60 fps cap, a 25 s recording through
+a big fight and a 10 s trace. Expect mesh evaluation about a third of before, shadow + depth maps a little over half,
+draws about a third fewer (~450-500), shadow casters about half (~120-150), `animated` a few lower. If a part didn't
+fall, the same match with `?perfoff=<that part>` (shadowcache, levelmerge, meshsel, animlod2) in the address gives
+the comparison on the same build.
+
+### Next
+
+- Doors re-set by their logic every frame were recomputed (and so not cached) in the measurement: they are now judged
+  by their matrix (`shadowCache.ts`, after the measurement; ~27 shadow draws on Market Town).
+- Roads, paths and the border's ground use the styler's materials but are not merged (their own meshes).
+- Effects still dispose Godot VFX emitters when done (a mesh removal each); pooling them is next for "effects".

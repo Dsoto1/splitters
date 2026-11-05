@@ -327,7 +327,11 @@ hands move up more into the gun. Looks as if their fingers are just pinching the
   re-run of Replace all from the old map with Keep scale); a red meadow-flower variant and palette
   pictures for the species are open.
 ### Performance round 2 (`wip/perf-2`, agent, 2026-11-05; from main 2c8f3e21, origin/main merged; check run on `check/perf-2`)
-Status: in progress. Details and numbers: docs/PERF_96.md, "Performance round 2".
+Status: on main (train dfdfe792, CI green on `check/perf-2` run 42080981667 at d52410d8); the follow-up (still doors
+judged by their matrix) and the measured write-up are on `wip/perf-2`. Details and numbers: docs/PERF_96.md,
+"Performance round 2". Measured (SwiftShader, same build, on vs off): draws -31 %, render-target draws -49 %, shadow
+casters -51 %, mesh evaluation -75 %, main-pass issue -27 %, animated characters -16 %. Projected M1 frame
+20.3 → ~14-15.5 ms.
 - **Done (code)**: static shadow cache (`game/shadowCache.ts`: static casters drawn only when a cascade moves past its
   margin, every ~30 frames, or when they change; doors and gates join once still for 60 frames; WebGL2 depth blit);
   level draw merging (`levelMerge.ts`, `MapStyler.merge`: per-style level and terrain meshes merged over array
@@ -335,7 +339,9 @@ Status: in progress. Details and numbers: docs/PERF_96.md, "Performance round 2"
   full grip kept; creatures' clips on the same LOD); cheaper clip stops and node disposals (`animPatches.ts`); live
   mesh candidates and frozen static materials (`meshSelection.ts`). A/B on one build:
   `?perfoff=shadowcache,levelmerge,meshsel,animlod2`.
-- **Next**: finish the measurements, docs, CI green on `check/perf-2`, owner re-record on the M1.
+- **Next**: owner re-records on the M1 (PERF_96 says what to expect; `?perfoff=` isolates a part); doors' caching
+  measured; roads/paths merged too; Godot VFX emitters pooled. NOT TESTED: the M1 itself, WebGPU (all of round 2's
+  rendering parts are off there), local e2e runs (CI ran every shard green).
 - **Resume**: check out `wip/perf-2`; the probe is a scratchpad script (docs/PERF_96.md says how it is set up).
 
 ### Queued (owner-approved, 2026-11-05): performance round 2 (next free agent slot)
