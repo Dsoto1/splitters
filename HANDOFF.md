@@ -69,7 +69,10 @@ fingers included; GLB with "Rigged Character" on (rest pose, no animations); upr
   `core.tposesoldier1` -> WWII Infantry; manifests, files and portraits kept (as Otter/Shade). No bot set, map,
   preset or the coverage map named them.
 - Grip audit (rifle, pistol, shotgun; lower is better): Patches 7 (back, off, fp), Tactical Soldier 7 (flat, off,
-  fp), Umpire 3 (flat), Bamboo and The Butcher: see the step's report. Hands look on the gun in the sheets; not tuned.
+  fp), Umpire 3 (flat), Old Timer 3 (flat), The Butcher 6 (flat, spikes), Imperial Guard 6 (flat, spikes), Bamboo 10
+  (flat, off, spikes, fp: the gun sits close to the face), Frost Viking 12 (open, back, off, spikes, fp: big splayed
+  hands). Not tuned: candidates for the next hands round (fixes.hands scale/curl, fixes.grip). All animate in
+  Character Select and in play (no T-pose or freeze seen: screenshots in the agent's scratchpad `chars-shots/`).
 
 **Replacements (own step):** Tattered Circus Nightmare replaces Giggles (`meshy_giggles`, keeps name/id/size small),
 Bear Warrior replaces Barnaby Bruin (`meshy_barnaby`), Gnoll warrior replaces Hyena Warrior (`meshy_hyena`), all with
