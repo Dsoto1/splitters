@@ -230,6 +230,38 @@ hands move up more into the gun. Looks as if their fingers are just pinching the
   several characters, including Meshy rigs with Meshy's finger weights once intake-2 lands.
 - Start it once a slot frees. It touches the hands, so after intake-2 step 2a.
 
+### Queued (owner-approved, 2026-11-05): performance round 2 (next free agent slot)
+**Owner's second M1 Pro recording** (build 4e77fab; Market Town, TDM, 49 players, high, 60 fps cap). Files in the
+session scratchpad `perf2/`: the perf JSON and the trace.
+
+| | Before | After round 1 |
+|---|---|---|
+| Average frame | 25.9 ms | 20.3 ms (~49 fps) |
+| Big fights | 38–45 ms | 26–32 ms |
+| Hitches over 50 ms | 19 in 25 s | 3 in 49 s |
+| Clips + aim | 8.2 ms | 4.6 ms |
+| Shadow + depth | 6.6 ms | 3.8 ms |
+| Casters | ~600 | 210–270 |
+| Draws | 950–1,400 | 590–800 |
+
+Still CPU-bound, not GPU-bound: a quiet frame is about 20 ms against the 16.7 ms needed for 60 fps.
+- render: about 16.4 ms in total, including about 5 ms of draw submission;
+- mesh evaluation: 3.0 ms;
+- characters update: 1.4 ms;
+- ragdolls and effects physics: 1.2 ms.
+
+Targets, aiming for 4–6 ms off:
+1. **Level draw merging:** Market Town still has about 58 per-material level draws. Use shared texture atlases /
+   material merging across packs; this helps every map.
+2. **Animation, further:**
+   - mid-range stepping;
+   - skip aim refinement past 35 m;
+   - animation LOD for creatures, whose clips still run every frame.
+3. **Mesh evaluation:** freeze more static meshes and cut the per-frame bookkeeping.
+4. **Shadows:** cache the static cascade and refresh it every few frames.
+
+Measure relatively in the container, keep the CI perf budgets, then ask the owner to re-record on the M1.
+
 ### Owner's map notes for later (2026-11-05; not started)
 - **No Man's Field:** asset refresh. It still uses Kenney kits; move it to our generated environment and props.
 - **Rockfall Canyon** (`maps/canyon.json`): asset and foliage refresh, onto our generated environment, rocks and plants.
