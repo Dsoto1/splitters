@@ -47,6 +47,14 @@ Owner's answers (2026-11-05):
   everything else in Meshy first; never take in an unrigged model.
 - Don't use the baseball animations.
 
+- The owner re-rigged six existing characters with Mixamo skeletons that have finger chains: The Dapper, Croakley,
+  CRT Robot, Freaky Frida, Field Medic Automaton and Stealth Operative. The downloads are in the same folder.
+  They're added to the same intake, to be rebuilt with before/after grip scores.
+- **Download format the owner was asked to use from now on:**
+  - Meshy rig with the Mixamo-style skeleton, fingers included;
+  - GLB with "Rigged Character" on: rest pose, no animations (we ignore the clips);
+  - upright T-pose or A-pose, nothing in the hands.
+
 The import is in progress on `wip/intake-1105`.
 Earlier open questions, kept for the record:
 - Which files are the owner's own Meshy generations (Owned) and which are Meshy Community (CC0)? For CC0, record the
