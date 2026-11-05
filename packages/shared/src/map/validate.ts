@@ -5,6 +5,7 @@ import { getItem } from '../sim/items.ts';
 import { itemCategory } from '../sim/pickupRoll.ts';
 import { WEAPON_CATEGORY_LABELS } from '../sim/weapons.ts';
 import { getProp } from '../content/props.ts';
+import { getEnvSpecies, isEnvModel } from '../content/environment.ts';
 import { buildMapGeometry, buildOccupancy, cellHasFloor, cellKey, cellSides, dynamicBlockIds, propBoxes, resolveEdge, yawXZ, type WorldBox } from './geometry.ts';
 import { terrainHeightAt } from './terrain.ts';
 import { borderRect, hasBorder } from './border.ts';
@@ -293,6 +294,21 @@ export const MAP_BUDGETS = {
   active: 300,
   /** Lights (each lamp lights the pixels within its range: clustered, but a crowd of overlapping ones still costs every pixel they reach). */
   lights: 256,
+  /**
+   * Procedural environment species (`env.*` props, docs/PROCEDURAL_ENVIRONMENT.md): their own budget, apart from props.
+   * They draw as thin instances batched per species, variant, level of detail and 64 m sector, so a copy costs far
+   * less than a prop; what grows with the count is collision and navigation (trunks, boulders, cliffs).
+   */
+  env: {
+    /** Placements in all (trees, shrubs, ground cover, boulders, cliffs). */
+    placements: 4000,
+    /** Placements that collide (trees, boulders, cliffs): shapes in every player's physics and the navmesh. */
+    colliding: 3000,
+    /** Cliff panels: each is a triangle-mesh collider and a navigation boundary. */
+    cliffs: 120,
+    /** Different species variants (each is a download and its own batches). */
+    variants: 24,
+  },
 } as const;
 
 function budgetIssues(map: MapDocument): ValidationIssue[] {
@@ -301,10 +317,20 @@ function budgetIssues(map: MapDocument): ValidationIssue[] {
     if (n > max) out.push({ severity: 'warning', code: `budget.${code}`, message: `${n} ${what} (budget ${max}): the map may run slowly on ordinary laptops` });
   };
   const e = map.entities;
-  const props = e.filter((x) => x.kind === 'prop');
+  const all = e.filter((x) => x.kind === 'prop');
+  // Environment species have their own budget (below); props are everything else.
+  const props = all.filter((x) => !isEnvModel(x.model));
+  const env = all.filter((x) => isEnvModel(x.model));
   over('tiles', map.classicStructure.tiles.length, MAP_BUDGETS.tiles, 'tiles');
   over('props', props.length, MAP_BUDGETS.props, 'props');
   over('prop_models', new Set(props.map((x) => x.model)).size, MAP_BUDGETS.propModels, 'different prop models');
+  if (env.length) {
+    const species = env.map((x) => getEnvSpecies(x.model));
+    over('env', env.length, MAP_BUDGETS.env.placements, 'environment species placed (trees, plants, rocks, cliffs)');
+    over('env_colliding', species.filter((s) => s && s.nav !== 'none').length, MAP_BUDGETS.env.colliding, 'trees, boulders and cliffs (environment species that collide)');
+    over('env_cliffs', species.filter((s) => s?.category === 'cliff').length, MAP_BUDGETS.env.cliffs, 'cliff panels');
+    over('env_variants', new Set(env.map((x) => `${x.model}#${x.variant ?? 0}`)).size, MAP_BUDGETS.env.variants, 'different environment species variants');
+  }
   // Dynamic: breakable, crumbling and trapdoor blocks, and solid ones logic drives or movers carry (v20).
   const dynamic = dynamicBlockIds(map);
   over('blocks', e.filter((x) => x.kind === 'block' && !dynamic.has(x.id)).length, MAP_BUDGETS.blocks, 'solid blocks');

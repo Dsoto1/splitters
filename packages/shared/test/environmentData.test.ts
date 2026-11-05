@@ -8,7 +8,7 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { EnvironmentSpeciesSchema } from '../src/content/environmentSchema.ts';
-import { ENV_SPECIES, SURFACE_TYPES, envModelFile, envPropDefinition, envVariant, getEnvSpecies, getProp, propMaterial, propSurface, type EnvShape } from '../src/index.ts';
+import { ENV_SPECIES, MAP_BUDGETS, SURFACE_TYPES, envModelFile, envPropDefinition, envVariant, getEnvSpecies, getProp, loadMap, newMapDocument, propMaterial, propSurface, validateMap, type EnvShape, type MapDocument } from '../src/index.ts';
 
 const fixture = JSON.parse(readFileSync(new URL('./fixtures/environment-resolved.json', import.meta.url), 'utf8')) as Record<string, unknown>;
 
@@ -106,5 +106,27 @@ describe('environment data', () => {
       expect(fixture[key], `${key}: not in the fixture (bumped assetVersion? add its entry on purpose)`).toBeDefined();
       expect(resolved(s.id), `${key}: a shape or size changed without an assetVersion bump`).toEqual(fixture[key]);
     }
+  });
+});
+
+describe('environment budget (docs/MAP_BUDGETS.md)', () => {
+  const prop = (i: number, model: string, variant?: number) => ({ id: `p${i}`, kind: 'prop', model, position: [i % 60, 0, Math.floor(i / 60)], yaw: 0, scale: 1, solid: true, tint: null, ...(variant !== undefined ? { variant } : {}) });
+  const codes = (entities: unknown[]) => validateMap({ ...newMapDocument('Budget'), entities } as MapDocument).filter((i) => i.code.startsWith('budget.')).map((i) => i.code);
+
+  it('env species count apart from props: 2,000 trees stay within the environment budget and leave the props budget alone', () => {
+    expect(codes(Array.from({ length: 2000 }, (_, i) => prop(i, 'env.broadleaf.oak', i % 2)))).toEqual([]);
+    expect(codes(Array.from({ length: MAP_BUDGETS.props + 1 }, (_, i) => prop(i, 'prop.crate')))).toContain('budget.props');
+  });
+
+  it('warns over the environment budgets: placements, colliding species, cliffs', () => {
+    expect(codes(Array.from({ length: MAP_BUDGETS.env.placements + 1 }, (_, i) => prop(i, 'env.grass.clump')))).toEqual(['budget.env']);
+    expect(codes(Array.from({ length: MAP_BUDGETS.env.colliding + 1 }, (_, i) => prop(i, 'env.rock.boulder_angular')))).toEqual(['budget.env_colliding']);
+    expect(codes(Array.from({ length: MAP_BUDGETS.env.cliffs + 1 }, (_, i) => prop(i, 'env.cliff.face')))).toEqual(['budget.env_cliffs']);
+  });
+
+  it('the environment showcase (2,526 species placed) validates clean', () => {
+    const loaded = loadMap(readFileSync(new URL('../../../maps/env_showcase.json', import.meta.url), 'utf8'));
+    expect(loaded.ok).toBe(true);
+    expect(loaded.issues.filter((i) => i.severity !== 'info').map((i) => `${i.code}: ${i.message}`)).toEqual([]);
   });
 });

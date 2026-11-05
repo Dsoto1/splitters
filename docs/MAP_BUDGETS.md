@@ -23,6 +23,22 @@ the map format (4,096 entities, terrain 161 × 161 vertices).
 | Active pieces | 300 | Doors, traps, zones, NPC squads, vehicles, pads and buttons think every tick. |
 | Lights | 256 | Lights are clustered (each pixel only adds up the lamps that reach it), but overlapping ones still cost every pixel they light; fixtures nothing switches are merged into a few meshes. |
 
+**Environment species** (`env.*` placements: the procedural trees, shrubs, ground cover, boulders and cliffs,
+docs/PROCEDURAL_ENVIRONMENT.md) have their own budget and don't count toward Props or Different prop models. They
+draw as thin instances batched per species, variant, level of detail and 64 m sector, so a copy costs far less than
+a prop; what grows with the count is collision and navigation. `env_showcase` (2,001 trees, 401 boulders, 30 cliff
+panels, 94 shrubs) sits inside every row.
+
+| What | Budget | Why |
+|---|---|---|
+| Environment species placed | 4,000 | Batched draws, so mostly memory for the instance lists and a share of the level's load. |
+| Colliding species (trees, boulders, cliffs) | 3,000 | Each is one or more static shapes in every player's physics and in the navmesh build (trunk capsules, a boulder hull). |
+| Cliff panels | 120 | Each is a triangle-mesh collider (≤ 200 triangles) and a navigation boundary. |
+| Different species variants | 24 | Each is a download (≤ 400 KB) and its own set of batches per sector. |
+
+Without `?env=1` (until Phase 4) species still draw as one prop node each, at level 0: a map near these budgets is
+only smooth with the environment renderer on.
+
 Suggested sizes by player count:
 
 | Map | Players | Footprint | Typical content |
