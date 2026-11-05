@@ -372,6 +372,17 @@ up. The new Gnoll (Hyena Warrior) in the intake-2 sheets shows it.
 - **Owner's decisions:** keep the Hyena (Gnoll) and Snikkit (Goblin Mischief) and fix their hands with this;
   Bill is retired. Do the pistol-hold tweak after this.
 
+### Queued (owner, 2026-11-05): small environment follow-ups (next free agent)
+- **Tall grass:** keep it as it is on Coldwater Gulch and Shingle Point (0.7–1.4 m clumps).
+- **Pebbles bigger:**
+  - make `env.rock.pebbles` read at play distance;
+  - add a larger variant, or raise the base size, so Sunstone Crag's swapped stones are no longer faint;
+  - redo Sunstone Crag's pebbles with MapMaker's Replace all if needed;
+  - they still don't collide.
+- **Red meadow flower:**
+  - add a red variant to `env.flower.meadow` (the generator, plus a new leaf-atlas cell if needed);
+  - turn Serene City's one formerly-red flower back to red with Replace all or the inspector variant.
+
 ### Open bug (found 2026-11-05): explosion debris can fall through the world
 On the env + intake merge (`check/env-land2`), physicsfx counted 32 debris bodies where it expected 10, with the
 fastest moving at about 60 m/s, on both attempts.
