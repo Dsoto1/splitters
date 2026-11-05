@@ -533,6 +533,9 @@ AGENT_BUILD_CONTRACT.md.
 
 ### Owner's map notes for later (2026-11-05; not started)
 - **No Man's Field:** asset refresh. It still uses Kenney kits; move it to our generated environment and props.
+- **Border forest backdrop** (owner's note, 2026-11-05): maps' surrounding forest still uses the old blocky tree
+  models (owner's screenshot on a temple test map). Swap it to our generated oak and pine, which is Environment
+  Phase 4 work. No rush.
 - **Rockfall Canyon** (`maps/canyon.json`): asset and foliage refresh, onto our generated environment, rocks and plants.
 - **Shingle Point** (`maps/shingle_point.json`, the beach landing): an asset refresh. The owner also suggests a
   layout rework from the reference `docs/map-briefs/shingle_point_reference.jpg`:
