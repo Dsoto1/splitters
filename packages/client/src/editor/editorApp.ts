@@ -1590,7 +1590,7 @@ export class EditorApp {
     if (this.tool.kind === 'select' || this.tool.kind === 'erase') {
       const target = this.drag || this.looking ? null : this.pick();
       this.view.setPickHighlight(this.doc, target, this.tool.kind === 'erase' ? 'erase' : 'pick', this.history.revision);
-      $('ed-target').textContent = target ? `${this.tool.kind === 'erase' ? 'Erase' : 'Select'}: ${this.targetName(target)}` : '';
+      $('ed-target').textContent = target ? `${this.tool.kind === 'erase' ? 'Erase' : 'Select'}: ${this.targetName(target)}` : this.zoneNote();
       this.view.setFaceHighlight(null, null);
       this.view.setHoverCell(this.doc, null);
       this.view.setGhost(this.doc, null, null, 0, true);

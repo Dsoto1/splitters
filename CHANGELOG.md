@@ -11,7 +11,7 @@ made only on a commit that passed CI on a check branch.
 **MapMaker: see where you can build** (the owner's request, 2026-11-05)
 - **The grid follows you**: instead of a fixed patch round the centre of the map, the level grid covers the cells round where the camera looks, fades out at its edge and draws every 4th line stronger; it widens as you fly higher.
 - **Two outlines, always shown**: the **playable boundary** (orange: the map's boundary, or its terrain's edge when it has none) and the **build limit** (white, dashed: 256 cells, about 2 km, from the centre and 16 levels up or down), where placement stops. Both show through hills and buildings.
-- **The scenery zone**: between the two, a hatched band and a label say "outside play, building here is fine", since scenery there blends the map into the world round it. The status bar names the zone under the pointer.
+- **The scenery zone**: between the two, a hatched band just outside the boundary and a label ("Scenery zone · building here is fine") mark it, since scenery there blends the map into the world round it. The status bar names the zone under the pointer.
 - **Full grid** (top bar, next to Grid) shows the grid over the whole build area on demand.
 - A piece refused at the edge now says it is **past the build limit**; the camera can fly out that far.
 

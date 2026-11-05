@@ -326,7 +326,7 @@ export class EditorView {
       this.foliageKey = foliageKey;
       void this.foliage.grow(shown.terrain, boxes, doc.metadata.id, water);
     }
-    this.area.setMap(doc, level);
+    this.area.setMap(doc, level, this.shownTerrain);
     // Light fixtures and hung props are drawn fastened to the ceiling over them (settle.ts fixtureGap, hungPropLift).
     this.scenario.ceilings = boxes;
     this.setEntities(doc, level, showAll, new Set());

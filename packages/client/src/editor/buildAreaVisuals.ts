@@ -9,7 +9,7 @@ import { VertexData } from '@babylonjs/core/Meshes/mesh.vertexData';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import { DynamicTexture } from '@babylonjs/core/Materials/Textures/dynamicTexture';
 import { Texture } from '@babylonjs/core/Materials/Textures/texture';
-import { BUILD_LEVELS, buildLimitRect, playableRect, type AreaRect, type MapDocument, type Vec3 } from '@tiletrigger/shared';
+import { BUILD_LEVELS, buildLimitRect, playableRect, terrainHeightAt, type AreaRect, type MapDocument, type TerrainData, type Vec3 } from '@tiletrigger/shared';
 
 /** The level grid's selection cyan, the playable boundary's orange (as before), the build limit's white. */
 const GRID = Color3.FromHexString('#00d1ff');
@@ -49,6 +49,9 @@ export class BuildAreaVisuals {
   private levelHeight = 4;
   private level = 0;
   private limit: Rect = { min: [-2052, -2052], max: [2052, 2052] };
+  /** The ground as drawn: outlines, band and labels lie on it where it rises above the level. */
+  private ground: TerrainData | null = null;
+  private builtGround: TerrainData | null | undefined = undefined;
   private hatchMat?: StandardMaterial;
   private labelMats = new Map<string, { mat: StandardMaterial; aspect: number }>();
 
@@ -63,8 +66,8 @@ export class BuildAreaVisuals {
     return this.limit.max[0] + 120;
   }
 
-  /** The map or level changed: outlines now, the grid on the next update. */
-  setMap(doc: MapDocument, level: number): void {
+  /** The map, its ground or the level changed: outlines now, the grid on the next update. */
+  setMap(doc: MapDocument, level: number, ground: TerrainData | null): void {
     const { cellSize, levelHeight } = doc.classicStructure;
     this.cellSize = cellSize;
     this.levelHeight = levelHeight;
@@ -72,8 +75,10 @@ export class BuildAreaVisuals {
     this.limit = buildLimitRect(doc);
     const play = playableRect(doc);
     const key = JSON.stringify([cellSize, levelHeight, level, play]);
-    if (key === this.outlineKey) return;
+    if (key === this.outlineKey && ground === this.builtGround) return;
     this.outlineKey = key;
+    this.builtGround = ground;
+    this.ground = ground;
     for (const m of this.outlines) m.dispose();
     this.outlines = [];
     const y = level * levelHeight;
@@ -181,11 +186,32 @@ export class BuildAreaVisuals {
     return mesh;
   }
 
+  /** Height to draw at over (x, z): the level, or the ground where it rises above it. */
+  private lift(x: number, z: number, y: number): number {
+    const g = this.ground ? terrainHeightAt(this.ground, x, z) : null;
+    return g === null ? y : Math.max(y, g);
+  }
+
+  /** a → b on the level, following the ground where it rises above it, `up` m above that. */
+  private drape(ax: number, az: number, bx: number, bz: number, y: number, up: number): Vector3[] {
+    const len = Math.hypot(bx - ax, bz - az);
+    const n = this.ground ? Math.max(1, Math.ceil(len / Math.max(1, this.ground.spacing))) : 1;
+    const pts: Vector3[] = [];
+    for (let i = 0; i <= n; i++) {
+      const x = ax + ((bx - ax) * i) / n;
+      const z = az + ((bz - az) * i) / n;
+      pts.push(new Vector3(x, this.lift(x, z, y) + up, z));
+    }
+    return pts;
+  }
+
   /** A line system here, and a faint copy drawn over everything, so hills and buildings never hide it. */
   private outline(name: string, lines: Vector3[][], color: Color3, xray: number): void {
     const m = CreateLineSystem(name, { lines }, this.scene);
     m.color = color;
     m.isPickable = false;
+    // Fog would hide the build limit, 2 km out.
+    m.applyFog = false;
     m.parent = this.root;
     this.outlines.push(m);
     if (!xray) return;
@@ -194,6 +220,7 @@ export class BuildAreaVisuals {
     over.alpha = xray;
     over.isPickable = false;
     over.renderingGroupId = 1;
+    over.applyFog = false;
     over.parent = this.root;
     this.outlines.push(over);
   }
@@ -203,17 +230,16 @@ export class BuildAreaVisuals {
     const cs = this.cellSize;
     const [x0, z0] = this.limit.min;
     const [x1, z1] = this.limit.max;
-    const yy = y + 0.1;
     const dashes: Vector3[][] = [];
     // A dash per cell along each side, 5/8 of the cell long.
     const dash = cs * 0.625;
     for (let t = x0; t < x1 - 1e-6; t += cs) {
       const t1 = Math.min(t + dash, x1);
-      dashes.push([new Vector3(t, yy, z0), new Vector3(t1, yy, z0)], [new Vector3(t, yy, z1), new Vector3(t1, yy, z1)]);
+      dashes.push(this.drape(t, z0, t1, z0, y, 0.1), this.drape(t, z1, t1, z1, y, 0.1));
     }
     for (let t = z0; t < z1 - 1e-6; t += cs) {
       const t1 = Math.min(t + dash, z1);
-      dashes.push([new Vector3(x0, yy, t), new Vector3(x0, yy, t1)], [new Vector3(x1, yy, t), new Vector3(x1, yy, t1)]);
+      dashes.push(this.drape(x0, t, x0, t1, y, 0.1), this.drape(x1, t, x1, t1, y, 0.1));
     }
     const bottom = BUILD_LEVELS.min * this.levelHeight;
     const top = (BUILD_LEVELS.max + 1) * this.levelHeight;
@@ -225,21 +251,24 @@ export class BuildAreaVisuals {
     }
     this.outline('buildLimit', dashes, LIMIT, 0.4);
     this.outline('buildLimitPosts', posts, LIMIT, 0);
-    // Its name, inside each side, read from within.
+    // Its name, just inside each side.
     const size = Math.max(6, cs);
-    this.sideLabels('BUILD LIMIT', 'limit', { min: [x0 + size, z0 + size], max: [x1 - size, z1 - size] }, yy, size, '#eef3f8');
+    this.sideLabels('BUILD LIMIT', 'limit', { min: [x0 + size, z0 + size], max: [x1 - size, z1 - size] }, y, size, '#eef3f8');
   }
 
   /** The playable boundary: orange at the level and 6 m up with corner posts, and the scenery band outside it. */
   private boundaryOutline(r: Rect, y: number): void {
     const [x0, z0] = r.min;
     const [x1, z1] = r.max;
-    const loop = (h: number) => [new Vector3(x0, h, z0), new Vector3(x1, h, z0), new Vector3(x1, h, z1), new Vector3(x0, h, z1), new Vector3(x0, h, z0)];
-    const posts = [[x0, z0], [x1, z0], [x1, z1], [x0, z1]].map(([x, z]) => [new Vector3(x!, y + 0.05, z!), new Vector3(x!, y + 6, z!)]);
-    this.outline('bounds', [loop(y + 0.08)], BOUNDARY, 0.45);
-    this.outline('boundsTop', [loop(y + 6), ...posts], BOUNDARY, 0);
-    this.sceneryBand(r, y + 0.04);
-    this.sideLabels('SCENERY ZONE · outside play, building here is fine', 'scenery', { min: [x0 - BAND / 2, z0 - BAND / 2], max: [x1 + BAND / 2, z1 + BAND / 2] }, y + 0.06, 3, '#ffb36b');
+    const corners: [number, number][] = [[x0, z0], [x1, z0], [x1, z1], [x0, z1]];
+    const loop = (up: number) => corners.map(([ax, az], i) => this.drape(ax, az, corners[(i + 1) % 4]![0], corners[(i + 1) % 4]![1], y, up));
+    const posts = corners.map(([x, z]) => [new Vector3(x, this.lift(x, z, y) + 0.05, z), new Vector3(x, this.lift(x, z, y) + 6, z)]);
+    this.outline('bounds', loop(0.12), BOUNDARY, 0.45);
+    this.outline('boundsTop', [...loop(6), ...posts], BOUNDARY, 0);
+    this.sceneryBand(r, y);
+    // Sized to the map, so it reads from a view of the whole of it.
+    const size = Math.max(3, Math.min(8, Math.min(x1 - x0, z1 - z0) / 24));
+    this.sideLabels('SCENERY ZONE · building here is fine', 'scenery', { min: [x0 - BAND / 2, z0 - BAND / 2], max: [x1 + BAND / 2, z1 + BAND / 2] }, y, size, '#ffc48a');
   }
 
   /** A hatched orange band round the boundary, fading out over BAND m: what lies outside is scenery, not an error. */
@@ -253,15 +282,27 @@ export class BuildAreaVisuals {
     const colors: number[] = [];
     const uvs: number[] = [];
     const indices: number[] = [];
+    const step = Math.max(2, this.ground?.spacing ?? Infinity);
     for (let s = 0; s < 4; s++) {
+      const e = (s + 1) % 4;
+      const [ia, ib, oa, ob] = [inner[s]!, inner[e]!, outer[s]!, outer[e]!];
+      // Strips across the band, so it lies on the ground where that rises above the level.
+      const n = Number.isFinite(step) ? Math.max(1, Math.ceil(Math.hypot(ib[0]! - ia[0]!, ib[1]! - ia[1]!) / step)) : 1;
       const base = positions.length / 3;
-      const n = (s + 1) % 4;
-      for (const [[x, z], a] of [[inner[s]!, 1], [inner[n]!, 1], [outer[n]!, 0], [outer[s]!, 0]] as const) {
-        positions.push(x!, y, z!);
-        colors.push(1, 1, 1, a);
-        uvs.push(x! / 6, z! / 6);
+      for (let i = 0; i <= n; i++) {
+        const t = i / n;
+        for (const [a, b, alpha] of [[ia, ib, 1], [oa, ob, 0]] as const) {
+          const x = a[0]! + (b[0]! - a[0]!) * t;
+          const z = a[1]! + (b[1]! - a[1]!) * t;
+          positions.push(x, this.lift(x, z, y) + 0.08, z);
+          colors.push(1, 1, 1, alpha);
+          uvs.push(x / 6, z / 6);
+        }
+        if (i) {
+          const k = base + (i - 1) * 2;
+          indices.push(k, k + 2, k + 3, k, k + 3, k + 1);
+        }
       }
-      indices.push(base, base + 1, base + 2, base, base + 2, base + 3);
     }
     const vd = new VertexData();
     vd.positions = positions;
@@ -303,7 +344,7 @@ export class BuildAreaVisuals {
     mat.specularColor = Color3.Black();
     mat.disableLighting = true;
     mat.backFaceCulling = false;
-    mat.alpha = 0.32;
+    mat.alpha = 0.5;
     this.hatchMat = mat;
     return mat;
   }
@@ -340,21 +381,24 @@ export class BuildAreaVisuals {
     return made;
   }
 
-  /** `text` flat on the ground at the middle of each side of `r`, its top towards the outside (read from within). */
+  /** `text` flat on the ground at the middle of each side of `r`, drawn over everything. */
   private sideLabels(text: string, name: string, r: Rect, y: number, height: number, colour: string): void {
     const { mat, aspect } = this.label(text, colour);
     const [x0, z0] = r.min;
     const [x1, z1] = r.max;
     const mx = (x0 + x1) / 2;
     const mz = (z0 + z1) / 2;
-    // Each label's middle, and its "up" (the way out of the rectangle).
-    const sides: [number, number, number, number][] = [[mx, z1, 0, 1], [x1, mz, 1, 0], [mx, z0, 0, -1], [x0, mz, -1, 0]];
+    // Each label's middle and its "up": north on the north and south sides, west on the others, so all of them read
+    // from MapMaker's usual view (from the south, looking north), the side ones bottom to top.
+    const sides: [number, number, number, number][] = [[mx, z1, 0, 1], [x1, mz, -1, 0], [mx, z0, 0, 1], [x0, mz, -1, 0]];
     const width = height * aspect;
     for (const [cx, cz, ux, uz] of sides) {
       // Right of the text = up turned a quarter clockwise seen from above.
       const rx = uz;
       const rz = -ux;
-      const corner = (s: number, t: number) => [cx + rx * s * width / 2 + ux * t * height / 2, y, cz + rz * s * width / 2 + uz * t * height / 2];
+      // Over the ground at its middle, and drawn over everything (hills and backdrops would hide it).
+      const ly = this.lift(cx, cz, y) + 0.3;
+      const corner = (s: number, t: number) => [cx + rx * s * width / 2 + ux * t * height / 2, ly, cz + rz * s * width / 2 + uz * t * height / 2];
       const positions = [...corner(-1, -1), ...corner(1, -1), ...corner(1, 1), ...corner(-1, 1)];
       const vd = new VertexData();
       vd.positions = positions;
@@ -364,6 +408,8 @@ export class BuildAreaVisuals {
       vd.applyToMesh(mesh);
       mesh.material = mat;
       mesh.isPickable = false;
+      mesh.renderingGroupId = 1;
+      mesh.applyFog = false;
       mesh.parent = this.root;
       this.outlines.push(mesh);
     }
