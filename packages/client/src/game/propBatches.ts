@@ -185,6 +185,9 @@ export class PropBatches {
         for (const b of g.batches.values()) this.disposeBatch(b);
         g.batches.clear();
         for (const k of g.copies) k.level = -1;
+        // Every level's batch made now, not when a copy first needs it: no meshes come and go as you walk about
+        // (a new mesh thaws its frozen material), and the loading gate builds every level's shaders.
+        for (let l = 0; l < g.model.levels.length; l++) this.batch(g, l);
       }
       const levels = g.model.levels;
       for (const c of g.copies) {
@@ -269,10 +272,11 @@ export class PropBatches {
     const meshes = level.parts.map((part, pi) => {
       const mesh = this.partMesh(`static_batch_near_${this.seq++}_${model.path}_p${pi}`, part);
       mesh.layerMask = 0;
+      // One (empty) copy from the start, so its shaders are the thin-instanced ones from the first check on.
       mesh.thinInstanceSetBuffer('matrix', matrices, 16, false);
-      mesh.thinInstanceCount = 0;
       mesh.setEnabled(false);
-      mesh.metadata = { propBatch: true, nearCaster: true };
+      // A small caster: never merged into the shadow proxies (it changes), and cast only near the camera.
+      mesh.metadata = { propBatch: true, nearCaster: true, smallCaster: true };
       return mesh;
     });
     n = { model, copies: [], meshes, matrices, shown: -1 };
@@ -295,6 +299,7 @@ export class PropBatches {
     if (count === 0 && n.shown === 0) return;
     n.shown = count;
     for (const m of n.meshes) {
+      // Kept at its last count while hidden: an empty thin-instanced mesh would check its shaders as a plain one.
       m.setEnabled(count > 0);
       if (!count) continue;
       m.thinInstanceCount = count;
