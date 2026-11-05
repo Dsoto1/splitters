@@ -1573,8 +1573,10 @@ async function canyonFlow(browser) {
   // The game: terrain meshes per ground material, and players stand on the ground.
   await page.goto(`${CLIENT}/?offline=canyon`);
   await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown', null, { timeout: T(60000) });
-  await page.waitForFunction(() => window.__cs.view.scene.meshes.filter((m) => m.name.includes('_terrain_')).length >= 5, null, { timeout: T(15000) }).catch(() => {});
-  const grounds = await page.evaluate(() => window.__cs.view.scene.meshes.filter((m) => m.name.includes('_terrain_')).map((m) => m.name.split('_terrain_')[1]));
+  // Each ground material is its own mesh, or (WebGL2) merged with the level over array textures (levelMerge.ts): by name.
+  const terrainNames = () => [...window.__cs.view.scene.meshes.map((m) => m.name), ...(window.__cs.view.levelDraws?.merged ?? [])].filter((n) => n.includes('_terrain_'));
+  await page.waitForFunction(`(${terrainNames})().length >= 5`, null, { timeout: T(15000) }).catch(() => {});
+  const grounds = await page.evaluate(`(${terrainNames})().map((n) => n.split('_terrain_')[1])`);
   check(grounds.length >= 5 && grounds.includes('grass') && grounds.includes('stone'), `canyon terrain is drawn in its ground materials (${grounds.join(', ')})`);
   const y = await page.evaluate(() => window.__cs.local.eye.y);
   check(y > 0.5 && y < 3, `the player stands on the ground at a base (eye ${y.toFixed(2)} m)`);

@@ -1,13 +1,15 @@
 import type { Scene } from '@babylonjs/core/scene';
 import type { Observer } from '@babylonjs/core/Misc/observable';
 import type { AnimationGroup } from '@babylonjs/core/Animations/animationGroup';
+import type { Skeleton } from '@babylonjs/core/Bones/skeleton';
 import type { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import type { AbstractMesh } from '@babylonjs/core/Meshes/abstractMesh';
 import { Matrix, Quaternion, Vector3 } from '@babylonjs/core/Maths/math.vector';
 import type { WeaponHold } from '@tiletrigger/shared';
 import type { CreatureInstance } from '../content/creatures.ts';
 import { gripReport } from './handProbe.ts';
-import { SkeletonSpace, armsFrom, holdWith, type HoldingArms, type MotionState, type OneShot } from './characterAnimator.ts';
+import { SkeletonSpace, armsFrom, holdWith, patchAnimatables, type AnimGate, type HoldingArms, type MotionState, type OneShot } from './characterAnimator.ts';
+import { EVERY_FRAME, StepClock, type AnimStep } from './animLod.ts';
 
 /** Natural ground speed (m/s) of the rig's walk and run for a body with hips 0.92 m up. */
 const RIG_WALK = 1.6;
@@ -77,6 +79,36 @@ export class CreatureAnimator {
     // After the clips, before anything draws: a shadow pass drawing the skin before the hands were put on the gun
     // (onBeforeRender) showed them where the clip had them.
     this.observer = scene.onAfterAnimationsObservable.add(() => this.animateBody());
+    // Animation LOD, as characters have it (animLod.ts): the clips and bones only on the frames stepAt lets through.
+    patchAnimatables();
+    for (const g of ch.clips.values()) for (const t of g.targetedAnimations) if (t.target) (t.target as { _animGate?: AnimGate })._animGate = this.gate;
+    const skeletons = new Set<Skeleton>();
+    for (const m of ch.meshes) if (m.skeleton) skeletons.add(m.skeleton);
+    for (const sk of skeletons) {
+      const prepare = sk.prepare.bind(sk);
+      sk.prepare = (dontCheckFrameId?: boolean) => {
+        if (!this.gate.skip) prepare(dontCheckFrameId);
+      };
+    }
+  }
+
+  private readonly gate: AnimGate = { skip: false };
+  private readonly clock = new StepClock();
+
+  /**
+   * Animation LOD (docs/PERF_96.md, "Performance round 2"): evaluate the clips and bones only as often as `step` says
+   * (out of view: not at all), on frame `frame` from `phase`. Returns whether this frame evaluates (the state machine
+   * updates then, with the time saved up). A dying creature plays every frame.
+   */
+  stepAt(now: number, step: AnimStep = EVERY_FRAME, frame = 0, phase = 0, hidden = false): boolean {
+    if (this.dead || this.overlay) {
+      this.gate.skip = false;
+      this.clock.due(now, frame, EVERY_FRAME);
+      return true;
+    }
+    const run = !hidden && this.clock.due(now, frame, step, phase);
+    this.gate.skip = !run;
+    return run;
   }
 
   /** NPC creatures hold no weapon (whatever they're handed is dropped); a player's creature carries its gun. */

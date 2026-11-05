@@ -17,6 +17,8 @@ import '@babylonjs/core/PostProcesses/RenderPipeline/postProcessRenderPipelineMa
 import { applyWorldGrade, loadGraphicsQuality, type GraphicsQuality } from './graphicsSettings.ts';
 import { buildShadowProxies, proxyable } from './shadowProxy.ts';
 import { underSmall } from './shadowFlags.ts';
+import { BOX_SLACK, ShadowCache, isStaticCaster } from './shadowCache.ts';
+import { perfOn } from './perfSwitches.ts';
 
 export * from './graphicsSettings.ts';
 
@@ -89,6 +91,8 @@ export class Atmosphere {
     // culling of its own), which on a big map with 96 characters was several thousand draw calls.
     const reach = quality === 'high' ? 180 : BOX * Math.SQRT2 + BOX * AHEAD + 10;
     const near: AbstractMesh[] = [];
+    /** `near` without the static casters, for a cascade that takes them from the static shadow cache this frame. */
+    const nearMoving: AbstractMesh[] = [];
     let nearFrame = -1;
     // Then each map (a cascade on high) draws only the casters inside its own square, as the light sees
     // it: with three cascades every caster was drawn three times. Depth is clamped, so only the sides cut.
@@ -101,13 +105,18 @@ export class Atmosphere {
     /** The square the map being drawn covers, worked out once per map per frame. */
     const square = { frame: -1, layer: -1, ok: false, kx: 0, ky: 0, minRadius: 0 };
     let counted = -1;
+    // Static casters drawn only when a cascade moves (shadowCache.ts), the rest every frame on top.
+    this.cache = map && perfOn('shadowcache') ? ShadowCache.attach(scene, s, csm) : null;
+    const cache = this.cache;
     if (map) {
-      map.getCustomRenderList = (_pass, list, length) => {
+      map.getCustomRenderList = (pass, list, length) => {
         if (!list) return null;
         const frame = scene.getFrameId();
-        if (frame === nearFrame) return near;
+        const pick = () => (cache && !cache.drawsStatic(pass) ? nearMoving : near);
+        if (frame === nearFrame) return pick();
         nearFrame = frame;
         near.length = 0;
+        nearMoving.length = 0;
         const c = this.camera.globalPosition;
         const off = this.shadowless;
         for (let i = 0; i < length; i++) {
@@ -119,8 +128,9 @@ export class Atmosphere {
           if (d > SMALL_CASTER_REACH && (m.metadata as { smallCaster?: boolean } | null)?.smallCaster) continue;
           if (off.size && underAny(m, off)) continue;
           near.push(m);
+          if (!(cache ? cache.isStatic(m) : isStaticCaster(m))) nearMoving.push(m);
         }
-        return near;
+        return pick();
       };
       s.customAllowRendering = (sub) => {
         const m = sub.getRenderingMesh();
@@ -203,6 +213,10 @@ export class Atmosphere {
   readonly shadowless = new Set<Node>();
   /** Meshes the shadow map drew in the last frame (the performance overlay shows it). */
   casterCount = 0;
+  /** The static shadow cache (null on low, WebGPU and WebGL1, or with `?perfoff=shadowcache`). */
+  readonly cache: ShadowCache | null = null;
+  /** Medium: where the shadow box was last put (it moves only past BOX_SLACK while the static cache is on). */
+  private boxAt: Vector3 | null = null;
 
   /**
    * Static casters wait here a moment (the level and the props stream in over a few frames) and then cast through
@@ -252,6 +266,8 @@ export class Atmosphere {
     b.sources = sources;
     for (const p of proxies) addCaster(map, p);
     b.proxies = proxies;
+    // The static casters changed: every cascade draws them into its cache again.
+    this.cache?.invalidate();
   }
 
   private readonly watched = new Set<AbstractMesh>();
@@ -315,12 +331,17 @@ export class Atmosphere {
     const cx = c.x + (fwd.x / flat) * BOX * AHEAD;
     const cz = c.z + (fwd.z / flat) * BOX * AHEAD;
     const at = new Vector3(Math.round(cx / step) * step, Math.round(c.y / step) * step, Math.round(cz / step) * step);
+    // With the static cache the box stays put until the camera's box is BOX_SLACK away (its static casters drawn again then).
+    if (this.cache && this.boxAt && Vector3.Distance(at, this.boxAt) < BOX_SLACK) return;
+    this.boxAt = at;
+    this.cache?.moved();
     this.sun.position = at.subtract(dir.scale(200));
   }
 
   dispose(): void {
     for (const o of this.observers) o.remove();
     for (const b of this.batches) for (const p of b.proxies) p.dispose();
+    this.cache?.dispose();
     this.pipeline?.dispose();
     this.ssao?.dispose();
     this.shadows?.dispose();

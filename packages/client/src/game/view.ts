@@ -112,6 +112,9 @@ import { SkyEffects } from './skyEffects.ts';
 import { CharacterLibrary, setCharacterLodCrowd, setCharacterLodZoom, type CharacterInstance } from '../content/characters.ts';
 import { CharacterAnimator, type OneShot } from './characterAnimator.ts';
 import { ANIM_LOD_FAR, ANIM_LOD_NEAR, SHOT_OVERLAY_REACH, animStep } from './animLod.ts';
+import { perfOn } from './perfSwitches.ts';
+import { installAnimationPatches, trackAnimatedTargets } from './animPatches.ts';
+import { freezeStaticMaterials, selectLiveCandidates } from './meshSelection.ts';
 import { fitFirstPersonArms } from './firstPersonArms.ts';
 import { FirstPersonBodyRig } from './firstPersonBody.ts';
 import { loadFirstPersonMode, loadGraphicsQuality, type FirstPersonMode } from './graphicsSettings.ts';
@@ -375,9 +378,27 @@ export class GameView {
   /** Shadows, tone mapping and post effects (Options → Graphics). */
   readonly atmosphere: Atmosphere;
   private readonly brass: StandardMaterial;
+  /** The level's draw merge in progress (buildMap), and its outcome: draws before and after (null: not merged). */
+  private levelMerge: Promise<{ before: number; after: number; merged: string[] } | null> | null = null;
+  /** Level meshes before and after the merge, and the per-style meshes merged (by name; tests). */
+  levelDraws: { before: number; after: number; merged: string[] } | null = null;
 
   constructor(engine: AbstractEngine) {
+    // Cheaper clip stops and node disposals with thousands of animations running (animPatches.ts).
+    installAnimationPatches();
     this.scene = new Scene(engine);
+    trackAnimatedTargets(this.scene);
+    // The meshes switched on, once a frame, for Babylon's two walks over every mesh (meshSelection.ts).
+    if (perfOn('meshsel')) {
+      selectLiveCandidates(this.scene);
+      // The level's and the props' materials frozen once settled (they never change in a match).
+      freezeStaticMaterials(this.scene, (m) => {
+        if (!m.isWorldMatrixFrozen || m.skeleton) return false;
+        let root: { name: string; parent: unknown } = m;
+        while (root.parent) root = root.parent as typeof root;
+        return /^(map_|prop_|static_)/.test(root.name);
+      });
+    }
     this.scene.clearColor = new Color4(0.52, 0.62, 0.72, 1);
     this.scene.skipPointerMovePicking = true;
     this.camera = createViewCamera('camera', this.scene);
@@ -469,6 +490,16 @@ export class GameView {
     this.ziplines = mapZiplines(doc.entities);
     const styler = new MapStyler(this.scene);
     styler.build(doc, boxes);
+    // The level's per-style meshes merged across styles over array textures (levelMerge.ts; WebGL2): the loading gate
+    // (prewarm) waits for it, so its shader is built before play.
+    const engine = this.scene.getEngine() as { isWebGPU?: boolean; webGLVersion?: number };
+    if (perfOn('levelmerge') && !engine.isWebGPU && (engine.webGLVersion ?? 1) >= 2) {
+      this.levelMerge = styler.merge().catch((e: unknown) => {
+        console.warn('level merge skipped:', e);
+        return null;
+      });
+      void this.levelMerge.then((r) => (this.levelDraws = r));
+    }
     buildRoadMeshes(this.scene, doc, styler);
     // Paths (MapMaker's roads, streets and trails), on the ground as played (loadMap laid them in).
     buildPathMeshes(this.scene, doc, doc.terrain, styler);
@@ -543,6 +574,8 @@ export class GameView {
    */
   async prewarm(specs: readonly AvatarSpec[]): Promise<number> {
     const t0 = performance.now();
+    // The merged level first (its textures load in a moment; its shader is then built with everyone else's).
+    if (this.levelMerge) await Promise.race([this.levelMerge, new Promise((r) => setTimeout(r, 15000))]);
     const ready = () => (this.scene.isDisposed ? Promise.resolve() : Promise.race([this.scene.whenReadyAsync(), new Promise((r) => setTimeout(r, 8000))]));
     // The effects first (they don't wait for the characters' files), ended as soon as their shaders are built.
     let effects = 0;
@@ -1701,10 +1734,21 @@ export class GameView {
           // Characters in view: past ANIM_LOD_FULL their clips, bones and aim are evaluated at 30 Hz (and at most
           // every 2nd frame), past ANIM_LOD_NEAR at 15 Hz (every 3rd), past ANIM_LOD_FAR at 10 Hz (every 4th), on each
           // one's own phase, with the fingers' pose kept from the last full close; the state machine runs with them.
-          const step = animStep(far);
+          const step = animStep(far, perfOn('animlod2'));
           run = a.anim.stepAt(now, step, this.avatarFrame, (p.slot * 37) % 100);
           stepped = step.frames > 1;
           if (run && perfProbe.on) perfProbe.n[COUNT.animated]!++;
+        } else if (a.anim instanceof CreatureAnimator && perfOn('animlod2')) {
+          // Creatures: their clips and bones step by distance as characters' do (round 2; they were evaluated every
+          // frame and only the state machine stepped), and not at all out of view; the state machine runs with them.
+          const step = animStep(far);
+          run = a.anim.stepAt(now, step, this.avatarFrame, (p.slot * 37) % 100, !!a.culled);
+          stepped = step.frames > 1 || !!a.culled;
+          if (a.culled) {
+            // Out of view: the state machine every 8th frame, as before; the clips wait until it is seen again.
+            a.animFrame = ((a.animFrame ?? 0) + 1) % 8;
+            run = a.animFrame === 0;
+          } else if (run && perfProbe.on) perfProbe.n[COUNT.animated]!++;
         } else {
           // Out of view (asleep) characters, and creatures: the state machine every few frames.
           const every = a.culled ? 8 : far > ANIM_LOD_FAR ? 4 : far > ANIM_LOD_NEAR ? 2 : 1;
