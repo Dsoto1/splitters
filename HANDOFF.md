@@ -87,7 +87,7 @@ fingers included; GLB with "Rigged Character" on (rest pose, no animations); upr
 - Grip audit (rifle, pistol, shotgun; lower is better): Patches 7 (back, off, fp), Tactical Soldier 7 (flat, off,
   fp), Umpire 3 (flat), Old Timer 3 (flat), The Butcher 6 (flat, spikes), Imperial Guard 6 (flat, spikes), Bamboo 10
   (flat, off, spikes, fp: the gun sits close to the face), Frost Viking 12 (open, back, off, spikes, fp: big splayed
-  hands). Not tuned: candidates for the next hands round (fixes.hands scale/curl, fixes.grip). All animate in
+  hands), Goblin Warlord 6 (back, spikes), The Masked Figure 4 (off, fp). Not tuned: candidates for the next hands round (fixes.hands scale/curl, fixes.grip). All animate in
   Character Select and in play (no T-pose or freeze seen: screenshots in the agent's scratchpad `chars-shots/`).
 
 **Replacements (own step):** Goblin Mischief replaces Snikkit (`meshy_snikkit`?, keep name/id/size), Tattered Circus Nightmare replaces Giggles (`meshy_giggles`, keeps name/id/size small),
@@ -95,7 +95,16 @@ Bear Warrior replaces Barnaby Bruin (`meshy_barnaby`), Gnoll warrior replaces Hy
 new portraits. **Re-rigs, more:** Desert Sentinel -> Desert Ranger, Grandpa Chains, Old King Halvard, Hazmat Joe,
 King Aldric (side-by-sides in the agent's scratchpad `match/pairs*.png`).
 
-**Step 2 (re-rigs; not started on disk yet):** rebuild each through the normal path from the new download, grip audit
+- CI: run 41960435500 failed only on "every built-in character's portrait is shipped" (fixed: portraits captured);
+  run 41962428581 (835115c3) hit a GitHub API 500 in `plan` and was re-run.
+
+**Step 2 (re-rigs and replacements; not started on disk):** suggested split: 2a the six first re-rigs (Dapper,
+Croakley, CRT Robot, Frida, Medic Automaton, Stealth Operative), 2b the next ten, 2c the three replacements
+(Giggles, Barnaby Bruin, Snikkit; new portraits). For each: point `source.file` at the new download, `ONLY=<id>
+node tools/content/prepare-meshy-characters.mjs <dir>`, `pnpm content:rebuild`, build, grip audit after, and keep the
+old build (restore its files, manifest and its meshy.lock.json lines) where the new one scores worse.
+
+**Step 2 detail:** rebuild each through the normal path from the new download, grip audit
 before/after, keep the old build where the new is worse. Matches (by render, then the owner):
 - The Dapper, Croakley, CRT Robot (two candidates: "crt robot rigged" 20261101 and "T Pose on Green Screen"), Freaky
   Frida, Field Medic Automaton, Stealth Operative, Beanie Alien, Alien Biker, WWII Infantry, Grunt '68 ("Realistic
