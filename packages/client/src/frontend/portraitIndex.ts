@@ -20,6 +20,7 @@ export const SHIPPED_PORTRAITS: Readonly<Record<string, string>> = {
   'core.beaniealien': 'core.beaniealien.webp?v=4946705512',
   'core.bigbab': 'core.bigbab.webp?v=58022c2150',
   'core.bikergirl': 'core.bikergirl.webp?v=f74ca9cf57',
+  'core.bill': 'core.bill.webp?v=9484f7a04d',
   'core.biscuit': 'core.biscuit.webp?v=f3a9bb0a6e',
   'core.bogdan': 'core.bogdan.webp?v=88ea18a54b',
   'core.boglurker': 'core.boglurker.webp?v=90dfc75b95',

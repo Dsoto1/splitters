@@ -36,7 +36,7 @@ export const MESHY_TASKS = {
 const PACK = { owned: 'meshy-owned', CC0: 'meshy-community-characters' };
 const KINDS = new Set(['character', 'creature']);
 const USES = new Set(['player', 'npc', 'player+npc', 'npc+player']);
-const FIXES = new Set(['triangles', 'surface', 'seamWeld', 'lean', 'cloth', 'tail', 'feet', 'scrubBlue', 'hands', 'armCloth', 'skinClean', 'handsShare', 'headShare', 'lod', 'normalSize', 'hold', 'grip', 'skin']);
+const FIXES = new Set(['triangles', 'surface', 'seamWeld', 'lean', 'cloth', 'tail', 'feet', 'scrubBlue', 'hands', 'armCloth', 'skinClean', 'handsShare', 'headShare', 'lod', 'normalSize', 'hold', 'grip', 'skin', 'fingers']);
 /** How a character gets about: left out, it walks on the rig's clips; `roll`, it has no legs (a ball, a wheel) and rolls. */
 const LOCOMOTION = new Set(['roll']);
 /** The clips a clip set (`clipsFrom`, tools/content/clip-set.mjs) can hold, as the game asks for them (characterAnimator.ts). */
@@ -172,6 +172,7 @@ export function manifestProblems(m, file = `${m?.id}.json`) {
   need(!(x.surface && x.seamWeld), 'fixes: surface rebake closes every seam itself; leave seamWeld out');
   need(x.lod === undefined || (typeof x.lod === 'number' && x.lod >= 0.15 && x.lod <= 0.6), 'fixes.lod: 0.15–0.6 (the share of the body\'s triangles its low-detail copy keeps; 0.3 unless set)');
   need(x.normalSize === undefined || x.normalSize === 512 || x.normalSize === 1024, 'fixes.normalSize: 512 or 1024 (the baked normal map, px)');
+  need(x.fingers === undefined || x.fingers === 'own' || x.fingers === 'fit', "fixes.fingers: 'own' (a rigged download's own finger joints and weights, where its finger chains are whole; the default) or 'fit' (re-fitted from the mesh, hands.mjs)");
   if (x.hold !== undefined) {
     const h = x.hold;
     need(h && typeof h === 'object' && Object.keys(h).every((k) => k === 'forward' || k === 'down' || k === 'out'), 'fixes.hold: { forward, down, out } (metres at a 1.8 m body)');
@@ -364,6 +365,7 @@ export function buildSpec(m) {
     headShare: x.headShare,
     lod: x.lod,
     normalSize: x.normalSize,
+    fingers: x.fingers,
     joints,
   };
 }

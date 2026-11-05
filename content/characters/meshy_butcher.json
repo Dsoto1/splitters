@@ -9,10 +9,13 @@
   "nameTheme": "townsfolk",
   "bio": "Forty years behind the counter. Knows exactly where to cut.",
   "body": "male",
-  "notes": "Drive intake of 2026-11-05 (\"Painter in a T Pose\", rigged and animated on Meshy: Mixamo joint names read as Meshy's, finger chains folded into the hands and refitted by hands.mjs; clips not used). A butcher in a stained apron and rubber gloves (the download is named \"Painter\"; the owner reads it as a butcher). Display name a placeholder for the owner. Standard size. 223k triangles: rebaked. Licence recorded as owned (the intake's rule: no metadata says otherwise); the owner to confirm, and if it is a Meshy community model, switch to CC0 with its author and post URL.",
+  "notes": "Drive intake of 2026-11-05 (\"Painter in a T Pose\", rigged and animated on Meshy: Mixamo joint names read as Meshy's, finger chains refitted by hands.mjs: `fixes.fingers: fit`, the grip audit scored its own finger weights worse, 7 against 6; clips not used). A butcher in a stained apron and rubber gloves (the download is named \"Painter\"; the owner reads it as a butcher). Display name a placeholder for the owner. Standard size. 223k triangles: rebaked. Licence recorded as owned (the intake's rule: no metadata says otherwise); the owner to confirm, and if it is a Meshy community model, switch to CC0 with its author and post URL. Licence: Meshy Community, CC0 per the owner (2026-11-05: most of this intake is community, not owned); author and post URL pending from the owner (HANDOFF.md).",
   "source": {
-    "license": "owned",
-    "author": "the owner, on their Meshy subscription",
+    "license": "CC0",
+    "author": "Meshy Community (CC0 per the owner; author pending from the owner)",
+    "community": {
+      "model": "Painter in a T Pose"
+    },
     "date": "2026-11-05",
     "url": null,
     "file": "^Meshy_AI_Painter_in_a_T_Pose_\\d+_animated_mixamo_All_animation\\.glb$"
@@ -30,6 +33,7 @@
     "headShare": 0.16,
     "normalSize": 1024,
     "lod": 0.25,
-    "feet": true
+    "feet": true,
+    "fingers": "fit"
   }
 }

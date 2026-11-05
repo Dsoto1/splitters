@@ -72,6 +72,21 @@ describe('hands', () => {
     for (let i = 0; i < mesh.pts.length; i++) expect(mesh.W[i * 4] + mesh.W[i * 4 + 1] + mesh.W[i * 4 + 2] + mesh.W[i * 4 + 3]).toBeCloseTo(1, 5);
   });
 
+  it("keeps a download's own fingers (fixes.fingers: own): measured, nothing moved or re-weighted", () => {
+    const mesh = handMesh([palm, ...fingers]);
+    // The download's finger weights: each fingertip on its finger's last joint.
+    const tips = [0.025, 0.012, -0.012, -0.025].map((v) => mesh.pts.map(([u, w], i) => (u > 0.15 && Math.abs(w - v) < 0.006 ? i : -1)).filter((i) => i >= 0));
+    tips.forEach((list, k) => list.forEach((i) => (mesh.J[i * 4] = J(`${FINGERS[k]}_03_r`))));
+    const before = { J: mesh.J.slice(), W: mesh.W.slice() };
+    const { moved, data } = fitHands({ meshes: [mesh], jointNames, world: new Map(rig), rig, keep: ['r'] });
+    expect(data.r.fingers).toBe('own');
+    expect(data.r.curl).toBeGreaterThan(0.9);
+    expect(data.r.length).toBeCloseTo(0.2, 1);
+    expect([...moved.keys()].filter((n) => n.endsWith('_r'))).toEqual([]);
+    expect(Array.from(mesh.J)).toEqual(Array.from(before.J));
+    expect(Array.from(mesh.W)).toEqual(Array.from(before.W));
+  });
+
   it('bends a split hand as a mitten when the manifest says so', () => {
     const mesh = handMesh([palm, ...fingers]);
     const { data } = fit(mesh, { r: { mitten: true, curl: 1.2 } });

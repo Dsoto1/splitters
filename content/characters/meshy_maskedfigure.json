@@ -9,10 +9,13 @@
   "nameTheme": "spooky",
   "bio": "Nobody has seen his face. Nobody wants to.",
   "body": "male",
-  "notes": "Drive intake of 2026-11-05 (\"The Masked Figure\", rigged and animated on Meshy (Mixamo joint names read as Meshy's; finger chains, where it has them, folded into the hands and refitted by hands.mjs; its clips not used)). A man in a sack mask, a stained work shirt and trousers (Undead & Horror). Standard size. Rigged in an A-pose. Display name a placeholder for the owner. Licence recorded as owned (no metadata says otherwise); the owner to confirm, and if it is a Meshy community model, switch to CC0 with its author and post URL.",
+  "notes": "Drive intake of 2026-11-05 (\"The Masked Figure\", rigged and animated on Meshy (Mixamo joint names read as Meshy's; finger chains, where it has them, folded into the hands and refitted by hands.mjs; its clips not used)). A man in a sack mask, a stained work shirt and trousers (Undead & Horror). Standard size. Rigged in an A-pose. Display name a placeholder for the owner. Licence: Meshy Community, CC0 per the owner (2026-11-05: most of this intake is community, not owned); author and post URL pending from the owner (HANDOFF.md).",
   "source": {
-    "license": "owned",
-    "author": "the owner, on their Meshy subscription",
+    "license": "CC0",
+    "author": "Meshy Community (CC0 per the owner; author pending from the owner)",
+    "community": {
+      "model": "The Masked Figure"
+    },
     "date": "2026-11-05",
     "url": null,
     "file": "^Meshy_AI_The_Masked_Figure_\\d+_animated_mixamo_All_animation\\.glb$"

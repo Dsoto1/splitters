@@ -80,6 +80,24 @@ Drive), rebuilt on the game's rig by tools/content/prepare-meshy-characters.mjs
 - "space marine uniform" (downloaded 2026-11-02)  -> character meshy_spacemarine (look Space Marine)
 - "Spiked Skeleton Biker" (downloaded 2026-11-02)  -> character meshy_skeletonbiker (look Spiked Skeleton Biker)
 
+Drive intake of 2026-11-05: models rigged and animated on Meshy ("All Animations"
+downloads from the owner's Drive), rebuilt on the game's rig. The owner says
+most of this intake is Meshy Community, CC0 (2026-11-05), not owned; each is
+recorded as "Meshy Community (CC0 per the owner)". Author and post URL pending
+from the owner for every one (HANDOFF.md, "Drive intake of 2026-11-05"):
+
+- "hobo bozo clown tpose" (downloaded 2026-11-04)  -> character meshy_hoboclown (look Patches)
+- "Tactical T Pose Soldier" (downloaded 2026-11-03)  -> character meshy_tacticalsoldier (look Tactical Soldier)
+- "umpire rigged" (downloaded 2026-11-02)  -> character meshy_umpire (look Umpire)
+- "Open Arms Panda" (downloaded 2026-11-05)  -> character meshy_panda (look Bamboo)
+- "Painter in a T Pose" (downloaded 2026-11-05)  -> character meshy_butcher (look The Butcher)
+- "An old man in his 90s presented in a" (downloaded 2026-11-05)  -> character meshy_oldtimer (look Old Timer)
+- "A fit ancient Chinese male soldier from" (downloaded 2026-11-05)  -> character meshy_imperialguard (look Imperial Guard)
+- "Frost Viking" (downloaded 2026-11-05)  -> character meshy_frostviking (look Frost Viking)
+- "Goblin Warlord villain" (downloaded 2026-11-05)  -> character meshy_goblinwarlord (look Goblin Warlord)
+- "The Masked Figure" (downloaded 2026-11-05)  -> character meshy_maskedfigure (look The Masked Figure)
+- "T Pose on Green Screen" (downloaded 2026-11-05)  -> character meshy_bill (look Bill)
+
 Looked at and not used (they closely resemble real people, so they fail the
 likeness screen):
 

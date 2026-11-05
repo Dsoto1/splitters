@@ -17,6 +17,8 @@
 //   the grip, and sets the grip's offset from the hand's thickness), written as `extras.hand` on the
 //   hand joints.
 // The thumb stays on the hand joint (the game never curls it; its joints move to fit the hand).
+// A hand whose download brought its own finger chains and weights (`fixes.fingers: own`, `keep` below) is measured
+// only: its joints and weights stay the download's.
 // Manifest overrides (`fixes.hands`: palm, curl, scale, wrist, or per side under l / r) cover the odd model.
 // A look's own finger weighting (`fixes.skin`, skinfix.mjs: tips, knuckle, joints, lanes, fingers) changes how the
 // fingers are weighted, for that look only; without it every hand is weighted as before.
@@ -289,8 +291,10 @@ export function fingerGaps(uvt, uK, u1) {
  * `fixes.hands`, `skin` its `fixes.skin` finger options (skinfix.mjs fingerSkin), `sides` the hands to fit (both
  * unless set). Weights are rewritten in place (J, W); returns the new world
  * positions of the moved finger joints and the measurements per side.
+ * `keep`: sides whose finger joints and weights are the download's own (prepare-meshy-characters.mjs, `fixes.fingers`):
+ * measured only (`fingers: 'own'` in the measurements), nothing moved or re-weighted (a `scale` override still applies).
  */
-export function fitHands({ meshes, jointNames, world, rig, overrides = {}, skin = {}, sides = ['l', 'r'], log = () => {} }) {
+export function fitHands({ meshes, jointNames, world, rig, overrides = {}, skin = {}, sides = ['l', 'r'], keep = [], log = () => {} }) {
   const index = new Map(jointNames.map((n, i) => [n, i]));
   const moved = new Map();
   const data = {};
@@ -362,6 +366,13 @@ export function fitHands({ meshes, jointNames, world, rig, overrides = {}, skin 
     const rigFinger = Math.hypot(...ref.fingers[1][3]) - Math.hypot(...ref.fingers[1][0]);
     const long = Math.min(LONG_CURL, Math.max(1, fingerLen / Math.max(1e-6, rigFinger)));
     const curl = o.curl ?? (closed ? 0 : round(Math.max(0.5, hand.open) * long));
+    if (keep.includes(s)) {
+      // The download's own fingers (`fixes.fingers: own`): its finger joints and weights stay as they came; only the
+      // measurements (palm, frame, size, curl) are taken for the game.
+      data[s] = { palm: hand.palm.map(round), dir: along.map(round), across: across.map(round), palmSide: palmSide.map(round), length: round(u1), width: round(width), thickness: round(thickness), curl, fingers: 'own' };
+      log(`hand_${s}: ${pts.length} vertices, ${(span * 100).toFixed(1)} cm long, ${(width * 100).toFixed(1)} wide, ${(thickness * 100).toFixed(1)} thick${hand.turned ? ', turned on its joint' : ''}: own fingers (the download's joints and weights), curl ${curl}`);
+      continue;
+    }
     // Joints: knuckles on the knuckle line, spread across the hand (each split finger at its own middle).
     const lanes = [0.375, 0.125, -0.125, -0.375].map((k) => vP + k * width);
     const groupOf = (v) => {

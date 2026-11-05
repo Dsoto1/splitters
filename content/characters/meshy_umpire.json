@@ -9,10 +9,13 @@
   "nameTheme": "townsfolk",
   "bio": "Has never once been wrong. Ask him.",
   "body": "male",
-  "notes": "Drive intake of 2026-11-05 (\"umpire rigged\", 2026-11-02, saved as umpire_28.glb; Drive's two \"Meshy_AI_umpire_rigged_All_Animations.glb\" files are byte-identical; the owner's own Meshy model, rigged on Meshy: Mixamo joint names, read as Meshy's, no finger joints, an armature in centimetres; its Walking and Running clips are not used). Catcher's-style face mask. The baseball animations in the same Drive folder are not used (owner, 2026-11-05). Display name a placeholder for the owner.",
+  "notes": "Drive intake of 2026-11-05 (\"umpire rigged\", 2026-11-02, saved as umpire_28.glb; Drive's two \"Meshy_AI_umpire_rigged_All_Animations.glb\" files are byte-identical; rigged on Meshy: Mixamo joint names, read as Meshy's, no finger joints, an armature in centimetres; its Walking and Running clips are not used). Catcher's-style face mask. The baseball animations in the same Drive folder are not used (owner, 2026-11-05). Display name a placeholder for the owner. Licence: Meshy Community, CC0 per the owner (2026-11-05: most of this intake is community, not owned); author and post URL pending from the owner (HANDOFF.md).",
   "source": {
-    "license": "owned",
-    "author": "the owner, on their Meshy subscription",
+    "license": "CC0",
+    "author": "Meshy Community (CC0 per the owner; author pending from the owner)",
+    "community": {
+      "model": "umpire rigged"
+    },
     "date": "2026-11-02",
     "url": null,
     "file": "^(umpire_\\d+|Meshy_AI_umpire_rigged_All_Animations)\\.glb$"

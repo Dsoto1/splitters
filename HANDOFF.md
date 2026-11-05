@@ -129,6 +129,28 @@ tools/content/grip-audit.mjs <url> <out>`. On this machine Playwright's bundled 
 palette atlas step of `pnpm content:rebuild` needs a temp copy of build-palette-atlas.mjs with
 `executablePath: '/opt/pw-browsers/chromium'` (delete it after), like e2e/run.mjs.
 
+<!-- intake-2 -->
+### Intake step 2 (`wip/intake-2`, agent, 2026-11-05; from main 4d511dd2; in progress)
+**Step 2a (finger option, Bill, tank box, goblins small, licence): built, local checks running; not yet on a check branch.**
+- `fixes.fingers` (`own` default / `fit`): a rigged download with whole finger chains keeps Meshy's finger joints and
+  weights (prepare-meshy-characters.mjs FINGERS / checkOwnFingers; hands.mjs `keep`: measured only; rehand-built keeps
+  them). Falls back to the re-fit with no or part chains, a failed check, or `fit` in the manifest. docs/CHARACTERS.md,
+  "The download's own fingers".
+- Proof (grip audit rifle/pistol/shotgun, before = re-fit, after = own): Tactical Soldier 7 -> 4 (own kept), Frost Viking
+  12 -> 12 (curl -0.098 -> -0.033, spikes 33 -> 14, better by eye: own kept), Goblin Warlord 6 -> 6 (back -> flat,
+  spikes 43 -> 10: own kept), The Butcher 6 -> 7 (`fit`), Bill 3 -> 5 (`fit`). Mixed: decide per look by audit.
+- Bill `meshy_bill` / `core.bill` (folk, standard, rebaked 145k -> 14k, portrait captured). Name sits close to "Bill
+  the Barbarian" (meshy_hector): kept "Bill", owner to be told.
+- Tank box half [2.1, 1, 3] -> [1.47, 1, 3.06] (hull 2.93 x 6.12 m, up to the deck; turret not solid as before);
+  vehicle fixture updated; new test packages/shared/test/tankBox.test.ts (walk into side/front, get in, get out).
+- Goblin Warlord `size: small` (Goblin, Goblina, Snikkit already small). Hit shapes and stats follow the size class.
+- Licence: the ten step-1 characters and Bill recorded as CC0 "Meshy Community (CC0 per the owner; author pending
+  from the owner)", url null; licence file and docs/ASSET_SOURCES.md updated.
+- **Resume:** downloads linked in the agent scratchpad `intake2/dl`; audits in `intake2/audit-*`. Next: finish checks
+  (test:changed, e2e characters/vehicles/coverage/visual), push `check/intake-2a`, then step 2b (re-rigs with
+  `.cache/s/rerig.py`-style manifest edits; the before scores are in `intake2/audit-before`).
+<!-- /intake-2 -->
+
 ### Owner review of Environment Phase 1 (2026-11-05)
 1. "Looking pretty good":
    - the rocks need improvement;
