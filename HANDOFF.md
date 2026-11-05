@@ -26,47 +26,68 @@ gets overloaded above that: local e2e times out and flakes). Prune landed worktr
 - Earlier the same day: content scalability steps 2–6, perf toolset, flaky e2e fixes, Runway Nine airliner, map
   reworks batches 2–3, character fixes rounds 2–3 (see the entries below and CHANGELOG).
 
-### Queued: Drive intake of 2026-11-05 (owner: "get them queued for import"; not started)
-The owner's Drive folder (gdown folder id 18MaKefMCWARf1Y3gAjhZuxTto86vGAYl, 152 files) was compared with content/,
-docs/ and HANDOFF: everything else in it is already imported or handled (FX zips: the fx pass; ammo_rifle and WWII
-ammo crate: the pickup models). New, never referenced anywhere. Downloaded to `/home/user/meshy-drive/intake-2026-11-05/`
-(raw, never committed):
-- **Rigged and animated characters:** "hobo bozo clown" (Mixamo, 2026-11-04), "Tactical T-Pose Soldier" (Mixamo,
-  2026-11-03), "umpire rigged" (the two files with that name are byte-identical: one model).
-- **18 Mixamo baseball animations** (FBX, in `anims/`): Bunt, Catcher, Hit ×3, Idle ×2, Milling Idle, Pitching ×2,
-  Step In, Step Out, Step Up To Bat, Strike, Umpire, Walk In, Walk Out, Batter On Deck.
-- **Static models with no rig:**
-  - from 2026-11-01: Skeleton Soldier, Soldier Prepared, "a world war 2 american…", "Low poly 3D game char…",
-    "Futuristic Cyberpunk…";
-  - from 2026-11-03: "futuristic baseball b…" (image-to-3D).
-- **Vehicle:** "A tank from World War…" (2026-11-01), a candidate model for the tank mount (`vehicles/tank.glb`).
+### Drive intake of 2026-11-05 (`wip/intake-1105`, agent; step 1 on `check/intake-1105`, step 2 next)
+Downloads in `/home/user/meshy-drive/intake-2026-11-05/` (raw, never committed); the agent linked the ones it uses
+into a scratch downloads dir (any dir works: the importers find files by `source.file` / `glb` name). Owner's rules:
+rigged models only (the six static ones wait for the owner's Meshy rigs), no baseball animations (`anims/` untouched),
+the WWII tank replaces the tank. Download format asked for from now on: Meshy rig with the Mixamo-style skeleton,
+fingers included; GLB with "Rigged Character" on (rest pose, no animations); upright T- or A-pose, nothing in hands.
 
-Owner's answers (2026-11-05):
-- Replace the tank with the WWII tank.
-- Import only models that already have rigs: the clown, the Tactical Soldier and the umpire. The owner vets and rigs
-  everything else in Meshy first; never take in an unrigged model.
-- Don't use the baseball animations.
+**Step 1 (new characters + tank), pushed to `check/intake-1105`:**
+- New characters (manifests in content/characters, built by prepare-meshy-characters.mjs; names are placeholders):
+  - **Patches** `meshy_hoboclown` / `core.hoboclown` (folk, standard; "hobo bozo clown": "Bozo" is a trademark, so
+    Patches until the owner picks), 9.7k tris, 512 px normal map (1.80 MB at 1024, over the 1.8 MB budget);
+  - **Tactical Soldier** `meshy_tacticalsoldier` (soldiers, standard), 10.4k tris;
+  - **Umpire** `meshy_umpire` (folk, standard; `umpire_28.glb`, armature in cm, no finger joints), 10.3k tris;
+  - **Bamboo** `meshy_panda` (animals, large; "Open Arms Panda"), rebaked 169k -> 14k tris;
+  - **The Butcher** `meshy_butcher` (folk, standard; the download is "Painter in a T Pose", the owner reads it as a
+    butcher), rebaked 223k -> 14k tris.
+  - All owned (meshy-owned). Bamboo and The Butcher: no metadata says otherwise, but their names follow Meshy
+    community naming: owner to confirm (CC0 would need author + post URL).
+- **Tank:** `content/guns.json` `vehicles/tank_wwii.glb` (hero tier, 18.9k tris + 5.6k LOD from 45 m, 1536 px colour,
+  512 px baked normal map, 1.51 MB; 2.14 MB with 2048/1024 maps was over the 1.6 MB hero budget). Built in parts
+  (prepare-guns.mjs `parts` / `splitParts`: hull, turret, barrel on pivots, a dark cap over the deck under the turret).
+  `content/vehicles/tank.json`: same box `half [2.1, 1, 3]`, health, handling, weapons, arcs; `fallback`
+  `vehicles/tank.glb` (the Quaternius tank, its models.json entry kept); seats moved onto the model (driver
+  [-0.6, 1.95, 1.8] front left of the deck, cannon [-0.3, 3.05, -0.3] and roof gun [0.4, 3.05, 0.1] on the turret
+  roof; the old ones were inside the new turret or off its roof); cockpitEye over the driver's hatch;
+  `turret: { seat: 1, pitch: [-0.17, 0.35] }`: the cannon gunner's aim turns the turret (within its 0.6 rad arc) and
+  pitches the barrel (View.turnTurret, eased); the sim lets only that seat set the tank's aim (the roof gun used to
+  overwrite it). Shots still leave from the gunner's eye, as for every mounted weapon (no muzzle point in the data).
+  The Tank Cannon's `view.model` stays `vehicles/tank.glb` (its weapon icon is keyed by that path).
+  - Fit: hull 6.2 m to the box's 6 m; 2.93 m wide against the box's 4.2 m (about 0.6 m each side is beside the
+    tracks: shots and bodies stop on air there). **Owner's call:** keep the box (asked) or narrow it to ~1.5 half-width.
+- Vehicles now draw their LOD (ModelLibrary.attachLods: per part, parented beside it so paint/char/fade reach it).
+  Before, mounts (plain copies) never used their guns.json `lod`.
+- e2e: coverage flow checks the tank's parts, their LODs and that a manned cannon seat's aim swings the barrel right
+  and up. Local run of that check didn't complete (the e2e preview server went away mid-flow on the loaded machine).
+- Grip audit (rifle, pistol, shotgun; lower is better): Patches 7 (back, off, fp), Tactical Soldier 7 (flat, off,
+  fp), Umpire 3 (flat), Bamboo and The Butcher: see the step's report. Hands look on the gun in the sheets; not tuned.
 
-- The owner re-rigged six existing characters with Mixamo skeletons that have finger chains: The Dapper, Croakley,
-  CRT Robot, Freaky Frida, Field Medic Automaton and Stealth Operative. The downloads are in the same folder.
-  They're added to the same intake, to be rebuilt with before/after grip scores.
-- Later the same day the owner added seven more Mixamo rigs:
-  - Beanie Alien, Alien Biker, WWII Infantry and Grunt '68 ("Realistic T Pose"): re-rigs of existing characters.
-  - Gnoll warrior (maybe Hyena Warrior), Iron Warden (maybe Iron Knight, or new) and "T Pose on Green Screen" (maybe
-    CRT Robot, or new): the agent confirms each by rendering it beside the shipped character.
-  - The intake lands in steps: new characters and the tank first, then the re-rigs.
-- **Download format the owner was asked to use from now on:**
-  - Meshy rig with the Mixamo-style skeleton, fingers included;
-  - GLB with "Rigged Character" on: rest pose, no animations (we ignore the clips);
-  - upright T-pose or A-pose, nothing in the hands.
+**Step 2 (re-rigs; not started on disk yet):** rebuild each through the normal path from the new download, grip audit
+before/after, keep the old build where the new is worse. Matches (by render, then the owner):
+- The Dapper, Croakley, CRT Robot (two candidates: "crt robot rigged" 20261101 and "T Pose on Green Screen"), Freaky
+  Frida, Field Medic Automaton, Stealth Operative, Beanie Alien, Alien Biker, WWII Infantry, Grunt '68 ("Realistic
+  T Pose"), Big Bab ("T Pose Monkey" 20261105; Scamp unchanged), Agent Zhao ("Uniformed Worker in a T Pose"), Iron
+  Knight ("Iron Warden", owner), Hyena Warrior ("Gnoll warrior", owner: replaces the model, keeps the name).
+- **Flags:** "T Pose on Green Screen" renders as a photoreal middle-aged man in a shirt and jeans, nothing like CRT
+  Robot (scratch `match/pairs2.png`): show the owner before using it for the robot. Iron Warden and Gnoll are visibly
+  different models from the Iron Knight and Hyena Warrior (new portraits needed if adopted).
+- Skeletons: Dapper, CRT Robot (20261101), Frida and Alien Biker have 24 joints (no finger chains); the others have
+  fingers (Croakley no index finger). **The importer does not use a download's finger chains**: they fold into the
+  hand joint and hands.mjs re-derives the finger weights from the mesh, so a re-rig changes body weights and the
+  hand mesh's pose, not the finger rig. Using Meshy's finger weights would be an importer option (map the Mixamo
+  finger chains to the rig's, place the rig's finger joints on them, keep hands.mjs's measurements): not built.
+- Before scores (same audit): Dapper 3 (flat), Croakley 5 (spikes, fp), CRT Robot 6 (back, flat), Frida 0, Medic
+  Automaton 3 (back), Stealth Operative 0, Beanie Alien 3 (flat), Alien Biker 3 (flat), WWII Infantry 0, Grunt '68 0;
+  Big Bab, Zhao, Iron Knight, Hyena: not yet measured.
 
-The import is in progress on `wip/intake-1105`.
-Earlier open questions, kept for the record:
-- Which files are the owner's own Meshy generations (Owned) and which are Meshy Community (CC0)? For CC0, record the
-  author and post URL.
-- Rigging the static ones uses Meshy credits (needs approval) or our own pipeline.
-- What the baseball animations are for: an umpire NPC, emotes, or a mode.
-- Whether the WWII tank replaces the tank model.
+**Resume:** `git checkout wip/intake-1105`; scratch tools were in the agent's scratchpad (`intake1105/tools/`:
+glbinfo.py, joints.py, preview.mjs (software views of any GLB), slices.mjs, montage.mjs, tankshots.mjs). Grip audit:
+`CHROMIUM=/opt/pw-browsers/chromium ONLY=<ids> WEAPONS_ONLY=rifle,pistol,shotgun AUDIT_PX=400 node
+tools/content/grip-audit.mjs <url> <out>`. On this machine Playwright's bundled headless shell is missing: the
+palette atlas step of `pnpm content:rebuild` needs a temp copy of build-palette-atlas.mjs with
+`executablePath: '/opt/pw-browsers/chromium'` (delete it after), like e2e/run.mjs.
 
 ### In flight
 - Picked up by the claude/launcher-ui-map-cards account (2026-11-04): `wip/env-phase1` (Environment Phase 1
