@@ -27,6 +27,13 @@ gets overloaded above that: local e2e times out and flakes). Prune landed worktr
   reworks batches 2–3, character fixes rounds 2–3 (see the entries below and CHANGELOG).
 
 ### In flight
+- **Market Town perf on the M1 Pro, branch `wip/perf-market`** (agent, 2026-11-05; from main d29e6a8; not merged).
+  Owner's capture: high, 44 players, 23 ms frames with few in view, 38-45 ms with 20-40; characters (clips + aim)
+  8.5 ms, shadow + depth maps 6.6 ms a frame. Done so far (details: docs/PERF_96.md "Market Town on an M1 Pro"):
+  animation LOD by frames as well as time (animLod.ts) in every match, finger pose cached past 15 m, remote shots
+  restart their clip instead of stop/start (none past 35 m); static geometry casts through merged shadow proxies
+  (shadowProxy.ts), water's scene depth only round water, pickups and held guns cast within 15 m.
+  Probe: scratchpad `probe/mt.mjs` (not in the repo; see PERF_96). Next: checks, check/perf-market CI, docs.
 - Picked up by the claude/launcher-ui-map-cards account (2026-11-04): `wip/env-phase1` (Environment Phase 1
   vertical slice, queue item 1, in flight) and `wip/zfight` (texture flicker fix, item 2: landed on main).
 - Surface types landed last (f61f2cf): `content/surface-types.json` (23 types), optional `surface` on props
