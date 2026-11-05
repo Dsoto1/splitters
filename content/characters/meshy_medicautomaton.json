@@ -10,7 +10,7 @@
   "bio": "Patches you up, then patches you out. Bedside manner not installed.",
   "body": "male",
   "size": "large",
-  "notes": "Drive batch of 2026-11-01 evening, second drop (\"Field Medic Automaton\", rigged): the larger medic (owner; a new character, T-TreeFitty unchanged). A rigged Meshy download (\"All Animations\": Mixamo joint names, read as Meshy's; its finger joints and two clips are not used: the hands are fitted by hands.mjs). Name a placeholder from the Roster Board.",
+  "notes": "Drive batch of 2026-11-01 evening, second drop (\"Field Medic Automaton\", rigged): the larger medic (owner; a new character, T-TreeFitty unchanged). A rigged Meshy download (\"All Animations\": Mixamo joint names, read as Meshy's; its finger joints and two clips are not used: the hands are fitted by hands.mjs). Name a placeholder from the Roster Board. Rebuilt 2026-11-05 (intake step 2b) from the re-rigged download \"Field Medic Automaton\" (Meshy rig, Mixamo skeleton; its clips not used).",
   "source": {
     "license": "CC0",
     "author": "Meshy community (author not recorded; CC0 per the owner)",
@@ -19,7 +19,7 @@
     },
     "date": "2026-11-01",
     "url": null,
-    "file": "^Meshy_AI_Field_Medic_Automaton_All_Animations\\.glb$"
+    "file": "^Meshy_AI_Field_Medic_Automaton_\\d+_animated_mixamo_All_animation\\.glb$"
   },
   "finish": {
     "metallic": 0.35,

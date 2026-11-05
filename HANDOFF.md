@@ -129,6 +129,74 @@ tools/content/grip-audit.mjs <url> <out>`. On this machine Playwright's bundled 
 palette atlas step of `pnpm content:rebuild` needs a temp copy of build-palette-atlas.mjs with
 `executablePath: '/opt/pw-browsers/chromium'` (delete it after), like e2e/run.mjs.
 
+<!-- intake-2 -->
+### Intake step 2 (`wip/intake-2`, agent, 2026-11-05; from main 4d511dd2)
+**Step 2a: on main** (f7d456e0, `check/intake-2a` CI run 42034304208 green; landed by the coordinator).
+- `fixes.fingers` (`own` default / `fit`): a rigged download with whole finger chains keeps Meshy's finger joints and
+  weights (prepare-meshy-characters.mjs FINGERS / checkOwnFingers; hands.mjs `keep`: measured only; rehand-built keeps
+  them). Falls back to the re-fit with no or part chains, a failed check, or `fit` in the manifest. docs/CHARACTERS.md,
+  "The download's own fingers". The lock records `fingers: own l r`.
+- Proof (grip audit rifle/pistol/shotgun, re-fit -> own): Tactical Soldier 7 -> 4, Frost Viking 12 -> 12 (curl and spikes
+  better, better by eye), Goblin Warlord 6 -> 6 (own kept on those three); The Butcher 6 -> 7 and Bill 3 -> 5 (`fit`).
+  Across 2a and 2b own fingers scored better 2 times (Tactical Soldier, Beanie Alien), level 4, worse 10: **not a
+  general win**; the per-manifest audit decides. Worth a look: why own fingers often score `off`/`back` (the palm
+  measured on Meshy's finger weights?).
+- Bill `meshy_bill` / `core.bill` (folk, standard, rebaked 145k -> 14k, portrait). Close to "Bill the Barbarian"
+  (meshy_hector): kept "Bill"; owner told. A photoreal man: owner to confirm the likeness screen (not a real person).
+- Tank box half [2.1, 1, 3] -> [1.47, 1, 3.06] (hull 2.93 x 6.12 m, up to the 2 m deck; the turret above the deck is
+  not solid, as before: one box can't fit both without an invisible roof over the deck). Fixture updated;
+  packages/shared/test/tankBox.test.ts (walking into the side or front stops at the hull, get in from beside, get out clear).
+- Goblin Warlord `size: small` (Goblin, Goblina, Snikkit were already). Hit shapes, health and speed follow the class.
+
+**Step 2b (re-rigs and replacements): e69a8f6b on `check/intake-2b`, CI run 42046872621 green (run 42045527179 failed on a manifest test that named the Iron Knight's old Meshy task IDs; fixed). Not on main: the coordinator lands it.** Grip scores (lower is
+better; before = main's build; "own" = Meshy's fingers, "fit" = re-fitted):
+| Character | before | new (own, or no chains) | new (fit) | shipped |
+|---|---|---|---|---|
+| The Dapper | 3 | 3 (no chains) | - | new |
+| Croakley | 5 | 5 (no index finger) | - | new |
+| Freaky Frida | 0 | 3 (no chains) | - | **old** (worse) |
+| Field Medic Automaton | 3 | 3 own | - | new, own |
+| Stealth Operative | 0 | 3 own | 0 | new, fit |
+| Beanie Alien | 3 | 0 own | - | new, own |
+| Alien Biker | 3 | 3 (no chains) | - | new |
+| WWII Infantry | 0 | 6 own | 3 | **old** (worse) |
+| Grunt '68 | 0 | 3 own | 5 | **old** (worse) |
+| Iron Knight (Iron Warden) | 5 | 5 own | 7 | new, own (new portrait) |
+| Hyena Warrior (Gnoll) | 5 | 10 (no chains) | - | new (owner's model swap; worse: flat, off, spikes, fp) |
+| Desert Ranger (Desert Sentinel) | 2 | 5 own | 5 | **old** (worse) |
+| Big Bab | 3 | 5 (no chains) | - | **old** (worse) |
+| Customs Agent Zhao | 3 | 3 (part chains) | - | new |
+| Grandpa Chains | 0 | 9 own | 8 | **old** (worse) |
+| Old King Halvard | 6 | 6 (part chains) | - | new |
+| Hazmat Joe | 0 | 4 own | 6 | **old** (worse) |
+| King Aldric | 6 | 8 own | 6 | new, fit |
+| CRT Robot (crt robot rigged, 11-01) | 6 | 6 (no chains) | - | new |
+| Giggles (Tattered Circus Nightmare) | retired | 3 own | 3 | new, own; back on the roster (new portrait) |
+| Barnaby Bruin (Bear Warrior) | 8 | 10 own | 8 | new, fit (new portrait) |
+| Snikkit (Goblin Mischief) | 3 | 12 (part chains) | - | new (replacement; worse: open, back, flat, off, fp) |
+- Kept old builds: files, manifest and lock lines from main, a note in the manifest saying why.
+- Hyena Warrior and Snikkit ship their new models though they audit worse (the owner's model swaps); both are
+  candidates for the next hands round (`fixes.hands` / `fixes.grip`), as is Barnaby (8).
+- Sizes, stats and hit boxes unchanged (heights are normalised; no size class changed). Giggles and Snikkit stay small.
+- The old grip/hands/skin tuning was dropped on the five new models (it fitted the old ones); kept on same-model re-rigs.
+- Portraits re-captured for every shipped re-rig and new model.
+- Local checks: typecheck, content:check, bundle budget (2468 kB, 691 kB gzip) pass; tool and look unit tests pass; e2e characters, coverage and visual PASS; vehicles fails locally on the buggy's chase-camera checks (also on 2a, which CI passed; this container's software GL), green on CI.
+
+**Licence: author and post URL pending from the owner** (recorded "Meshy Community (CC0 per the owner)", url null;
+assets-src/meshy-community-characters/License.txt, docs/ASSET_SOURCES.md): Patches ("hobo bozo clown tpose"),
+Tactical Soldier ("Tactical T Pose Soldier"), Umpire ("umpire rigged"), Bamboo ("Open Arms Panda"), The Butcher
+("Painter in a T Pose"), Old Timer ("An old man in his 90s presented in a"), Imperial Guard ("A fit ancient Chinese male
+soldier from"), Frost Viking, Goblin Warlord ("Goblin Warlord villain"), The Masked Figure, Bill ("T Pose on Green
+Screen"), Iron Knight ("Iron Warden"; was the owner's own), Hyena Warrior ("Gnoll warrior"; was the owner's own),
+Customs Agent Zhao ("Uniformed Worker in a T Pose"; the old model's post was 019df47b-…), Giggles ("Tattered Circus
+Nightmare"), Barnaby Bruin ("Bear Warrior"), Snikkit ("Goblin Mischief"). The owner said "most" are CC0: any that are
+the owner's own go back to `owned` (manifest `source`, then rebuild that id for the lock).
+
+**Resume:** downloads linked in the agent scratchpad `intake2/dl`; audits in `intake2/audit-*`, before/after sheets in
+`intake2/sheets/` (scores.tsv), shots in `intake2/shots/`. Rebuild any character with `ONLY=<id> node
+tools/content/prepare-meshy-characters.mjs <dl>` (deterministic: an unchanged manifest gives the same file).
+<!-- /intake-2 -->
+
 ### Owner review of Environment Phase 1 (2026-11-05)
 1. "Looking pretty good":
    - the rocks need improvement;
@@ -258,6 +326,107 @@ hands move up more into the gun. Looks as if their fingers are just pinching the
   Coldwater Gulch / Shingle Point, as the Kenney patches stood; smaller would need the Scale field per piece or a
   re-run of Replace all from the old map with Keep scale); a red meadow-flower variant and palette
   pictures for the species are open.
+### Queued (owner-approved, 2026-11-05): performance round 2 (next free agent slot)
+**Owner's second M1 Pro recording** (build 4e77fab; Market Town, TDM, 49 players, high, 60 fps cap). Files in the
+session scratchpad `perf2/`: the perf JSON and the trace.
+
+| | Before | After round 1 |
+|---|---|---|
+| Average frame | 25.9 ms | 20.3 ms (~49 fps) |
+| Big fights | 38–45 ms | 26–32 ms |
+| Hitches over 50 ms | 19 in 25 s | 3 in 49 s |
+| Clips + aim | 8.2 ms | 4.6 ms |
+| Shadow + depth | 6.6 ms | 3.8 ms |
+| Casters | ~600 | 210–270 |
+| Draws | 950–1,400 | 590–800 |
+
+Still CPU-bound, not GPU-bound: a quiet frame is about 20 ms against the 16.7 ms needed for 60 fps.
+- render: about 16.4 ms in total, including about 5 ms of draw submission;
+- mesh evaluation: 3.0 ms;
+- characters update: 1.4 ms;
+- ragdolls and effects physics: 1.2 ms.
+
+Targets, aiming for 4–6 ms off:
+1. **Level draw merging:** Market Town still has about 58 per-material level draws. Use shared texture atlases /
+   material merging across packs; this helps every map.
+2. **Animation, further:**
+   - mid-range stepping;
+   - skip aim refinement past 35 m;
+   - animation LOD for creatures, whose clips still run every frame.
+3. **Mesh evaluation:** freeze more static meshes and cut the per-frame bookkeeping.
+4. **Shadows:** cache the static cascade and refresh it every few frames.
+
+Measure relatively in the container, keep the CI perf budgets, then ask the owner to re-record on the M1.
+
+### Owner's map notes for later (2026-11-05; not started)
+- **No Man's Field:** asset refresh. It still uses Kenney kits; move it to our generated environment and props.
+- **Rockfall Canyon** (`maps/canyon.json`): asset and foliage refresh, onto our generated environment, rocks and plants.
+- **Step Temple:** its menu card shot should be a grounded, eye-level view, not aerial.
+- **Sandfall Colosseum, a full rebuild ("this is your moment to shine").** Owner's brief:
+  - **Layout:** replicate the layout of the owner's game **Flavius Rule (classic)**. Get reference material from the
+    owner before starting: screenshots, a top-down plan, or a description. **Received 2026-11-05:**
+    docs/map-briefs/sandfall_colosseum/BRIEF.md and `reference/`: the 13×13 board, the seating chart and a mood
+    painting. The emperor's box comes back.
+  - **Feel:** epic and grand, far more immersive than today's map.
+  - **The arena:** use mostly the assets we have today (Imperial Arena pack, Roman pieces), with a better layout and a
+    much grander scale. The colosseum stands 6–8 storeys tall if possible.
+  - **Under the stands:** a tunnel network that circles the arena. It branches to the animal cages and the gladiators'
+    quarters: rest, recovery, imprisonment.
+  - **Around it:** a Roman village whose main square leads to the arena entrance.
+  - **Backdrop:** a volcano in the distance.
+  - **How:** built in MapMaker (CLAUDE.md "Maps"), with in-house detail. Anything MapMaker lacks goes into MapMaker
+    as a piece, e.g. set pieces like the arena arcade bay, vomitorium, tunnel junction, cage block and village
+    insula, plus a volcano backdrop. Follow docs/map-briefs/AGENT_BUILD_CONTRACT.md: playable footprint, routes,
+    spawns, budgets, bots, and NOT TESTED where it applies.
+  - **Timing:** a natural first big use of set pieces (agreed queue item 3), so after those exist.
+
+### Queued (owner-approved, 2026-11-05): community maps
+Plan in docs/COMMUNITY_MAPS.md:
+- local saving is unlimited;
+- sharing is by hosting (Far Cry 2-style browser);
+- maps reach Community Picks automatically by play thresholds, with a weekly owner summary and one-click Official;
+- Community Pick map files are kept on the hub.
+
+MULTIPLAYER_DIRECTION §7 is amended to match. Starts after the current work.
+
+### Proposed (not yet approved): MapMaker quality-of-life list
+The owner asked what MapMaker could use, by comparison with the Far Cry and TimeSplitters editors. My picks, in order:
+1. A green/red ghost before placing, with the reason; plus a live budget bar.
+2. "Play from here", and a top-down plan view.
+3. Set pieces/prefabs, groups, and copy/paste between maps.
+4. Bot test heatmaps, sightline/spawn exposure, and a measure tool.
+5. Time of day and weather.
+6. Interface: mode tabs, collapsible panels, an outliner with hide/lock, favourites/recents, a shortcut overlay, and a
+   guided first-time tour.
+
+Also proposed: note pins, templates, mirror for team maps, a card-shot camera, and snap-to-surface/randomise for props.
+
+Waiting for the owner to mark which ones. This becomes the "MapMaker overhaul" in the agreed queue.
+
+### Queued (owner-approved, 2026-11-05): kit-prop generators
+docs/PROCEDURAL_ENVIRONMENT.md Phase 6, after Environment Phase 2. Generated families replace most of the simple
+man-made props: crates and barrels first, then fences and walls, then containers. Characters, weapons, vehicles and
+hero props stay authored.
+
+### Plan (proposed to the owner, 2026-11-05): retire the old nature models after the environment passes
+About 120 nature props today:
+- Kenney Nature Kit: 55
+- Quaternius Ultimate Nature: 39
+- Kenney Survival: 12
+- Meshy community nature: 8
+- a few in other packs
+
+They come to about 3.6 MB of GLBs.
+
+Plan:
+1. **Retire from the palette** as each environment family covers them (grass, flowers, ferns and pebbles are done).
+2. **Map migration:** move the maps with MapMaker's "Replace all".
+3. **Load-time alias table** (retired id → species and variant), so players' own saved maps and old files still load
+   and upgrade.
+4. **Drop the files from the build only** once no official map and no alias needs them.
+5. **Keep for now:** pieces with no species yet (palms, cacti, snow trees, jungle plants, mushrooms, dead trees,
+   logs and stumps) until Phase 2+ species cover them. Stylised pieces that a style pack depends on stay until
+   that pack's refresh.
 
 ### In flight
 - **Market Town perf on the M1 Pro, branch `wip/perf-market`** (agent, 2026-11-05; from main d29e6a8; not merged).

@@ -47,11 +47,11 @@ The owner's batch of 2026-10-29 (unrigged textured GLBs, rigged here from landma
 - "Knight Stance" (downloaded 2026-10-29, https://www.meshy.ai/posts/019cee3e-fd2f-7ebb-9d95-b12f1aee4046)  -> character meshy_brannock (look Ser Brannock)
 - "Medieval Monk in Contemplation" (downloaded 2026-10-29, https://www.meshy.ai/posts/019b0a85-3058-7a32-829c-1ecfeee310b3)  -> character meshy_monk (look Brother Ansel)
 - "T Pose Monkey" (downloaded 2026-10-29, https://www.meshy.ai/posts/019f6ba3-0841-7739-af7e-d60ab20641e0)  -> character meshy_big_bab (look Big Bab)
-- "Uniformed Worker in a Jacket" (downloaded 2026-10-29, https://www.meshy.ai/posts/019df47b-abde-7afe-955f-5350acdc8ff9)  -> character meshy_zhao (look Agent Zhao)
+- "Uniformed Worker in a Jacket" (downloaded 2026-10-29, https://www.meshy.ai/posts/019df47b-abde-7afe-955f-5350acdc8ff9)  -> character meshy_zhao (look Agent Zhao) [replaced 2026-11-05: no longer shipped]
 - "Ultra detailed desert soldier" (downloaded 2026-10-29, https://www.meshy.ai/posts/019852b3-fb04-7b24-863c-fbe5855aac95)  -> character meshy_desert_ranger (look Desert Ranger)
 - "Zombie T Pose" (downloaded 2026-10-29, https://www.meshy.ai/posts/0199594a-3684-74a4-97d0-6835e11a29b3)  -> character meshy_zombie_groaner (look Groaner)
 - "A horrifying mutated creature" (downloaded 2026-10-29, https://www.meshy.ai/posts/0196daa9-6371-746f-b8ec-eb93815c0c4c)  -> character meshy_gorgle (look Gorgle)
-- "A humanoid harlequin clown" (downloaded 2026-10-29, https://www.meshy.ai/posts/0196fae7-c794-7d54-bbaa-a14d04f1d66e)  -> character meshy_giggles (look Giggles)
+- "A humanoid harlequin clown" (downloaded 2026-10-29, https://www.meshy.ai/posts/0196fae7-c794-7d54-bbaa-a14d04f1d66e)  -> character meshy_giggles (look Giggles) [replaced 2026-11-05: no longer shipped]
 - "A futuristic warrior character" (downloaded 2026-10-29, https://www.meshy.ai/posts/019485cc-4435-76fc-b859-f22eef2f296f)  -> character meshy_vanguard (look Vanguard)
 - "Full body of a man wearing a mask" (downloaded 2026-10-29, https://www.meshy.ai/posts/0195d603-a9a2-7f18-9198-d748d6f89ab3)  -> character meshy_dust_trooper (look Dust Trooper)
 - "Pumpkin head scarecrow" (downloaded 2026-10-29, https://www.meshy.ai/posts/0197fbf8-fb47-7104-9f72-7ffa62554825)  -> character meshy_punkin (look Punkin)
@@ -79,6 +79,30 @@ Drive), rebuilt on the game's rig by tools/content/prepare-meshy-characters.mjs
 - "Emerald Robot" (downloaded 2026-11-02)  -> character meshy_emeraldrobot (look Emerald Robot)
 - "space marine uniform" (downloaded 2026-11-02)  -> character meshy_spacemarine (look Space Marine)
 - "Spiked Skeleton Biker" (downloaded 2026-11-02)  -> character meshy_skeletonbiker (look Spiked Skeleton Biker)
+
+Drive intake of 2026-11-05: models rigged and animated on Meshy ("All Animations"
+downloads from the owner's Drive), rebuilt on the game's rig. The owner says
+most of this intake is Meshy Community, CC0 (2026-11-05), not owned; each is
+recorded as "Meshy Community (CC0 per the owner)". Author and post URL pending
+from the owner for every one (HANDOFF.md, "Drive intake of 2026-11-05"):
+
+- "hobo bozo clown tpose" (downloaded 2026-11-04)  -> character meshy_hoboclown (look Patches)
+- "Tactical T Pose Soldier" (downloaded 2026-11-03)  -> character meshy_tacticalsoldier (look Tactical Soldier)
+- "umpire rigged" (downloaded 2026-11-02)  -> character meshy_umpire (look Umpire)
+- "Open Arms Panda" (downloaded 2026-11-05)  -> character meshy_panda (look Bamboo)
+- "Painter in a T Pose" (downloaded 2026-11-05)  -> character meshy_butcher (look The Butcher)
+- "An old man in his 90s presented in a" (downloaded 2026-11-05)  -> character meshy_oldtimer (look Old Timer)
+- "A fit ancient Chinese male soldier from" (downloaded 2026-11-05)  -> character meshy_imperialguard (look Imperial Guard)
+- "Frost Viking" (downloaded 2026-11-05)  -> character meshy_frostviking (look Frost Viking)
+- "Goblin Warlord villain" (downloaded 2026-11-05)  -> character meshy_goblinwarlord (look Goblin Warlord)
+- "The Masked Figure" (downloaded 2026-11-05)  -> character meshy_maskedfigure (look The Masked Figure)
+- "T Pose on Green Screen" (downloaded 2026-11-05)  -> character meshy_bill (look Bill)
+- "Iron Warden" (downloaded 2026-11-05)  -> character meshy_knight (look Iron Knight), its new model (intake step 2b; the model it replaced is no longer shipped)
+- "Gnoll warrior" (downloaded 2026-11-05)  -> character meshy_hyena (look Hyena Warrior), its new model (intake step 2b; the model it replaced is no longer shipped)
+- "Uniformed Worker in a T Pose" (downloaded 2026-11-05)  -> character meshy_zhao (look Customs Agent Zhao), its new model (intake step 2b; the model it replaced is no longer shipped)
+- "Tattered Circus Nightmare" (downloaded 2026-11-05)  -> character meshy_giggles (look Giggles), its new model (intake step 2b; the model it replaced is no longer shipped)
+- "Bear Warrior" (downloaded 2026-11-05)  -> character meshy_barnaby (look Barnaby Bruin), its new model (intake step 2b; the model it replaced is no longer shipped)
+- "Goblin Mischief" (downloaded 2026-11-05)  -> character meshy_snikkit (look Snikkit), its new model (intake step 2b; the model it replaced is no longer shipped)
 
 Looked at and not used (they closely resemble real people, so they fail the
 likeness screen):

@@ -10,7 +10,7 @@
   "bio": "Left the zoo for the city. Kept the attitude, lost the bananas.",
   "body": "male",
   "size": "large",
-  "notes": "Downloaded by hand (owner, 2026-10-29) as an unrigged textured GLB; rigged by Meshy's rigging API (source.modelUrl \"upload\", the download sent as a data URI). Queue note: baboon in street clothes.",
+  "notes": "Downloaded by hand (owner, 2026-10-29) as an unrigged textured GLB; rigged by Meshy's rigging API (source.modelUrl \"upload\", the download sent as a data URI). Queue note: baboon in street clothes. Intake 2026-11-05 step 2b: its re-rigged download was built and not used (grip audit 3 before, 5 after (no finger chains: re-fitted)); this build kept.",
   "source": {
     "license": "CC0",
     "author": "Meshy community (author not recorded; CC0 per the owner)",

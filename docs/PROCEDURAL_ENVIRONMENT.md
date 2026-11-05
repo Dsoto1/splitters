@@ -137,6 +137,32 @@ Implement quality tiers that adjust density of non-gameplay decoration, shadow d
 
 **Phase 5 — Polish:** terrain material transitions, seasonal/biome variations if appropriate, LOD/shadow tuning, visual consistency pass.
 
+**Phase 6 — Kit-prop generators (owner-approved 2026-11-05; after Environment Phase 2):** the same deterministic
+generator approach applied to simple man-made props. Families, each with endless variants under a stable family id:
+- crates and barrels;
+- fences and walls;
+- containers;
+- pipes and scaffolding;
+- sandbags and rubble;
+- signs;
+- simple furniture;
+- market stalls.
+
+Each family includes collision, surface types, LODs, budgets and tests, like the species.
+- **Migration:** maps move with MapMaker's "Replace all" plus the load-time alias table (old prop id → family and
+  variant), so players' saved maps upgrade.
+- **Retirement:** the old pack props are retired from the palette as each family covers them. Their files are dropped
+  from the build only when no map or alias needs them.
+- **Order:**
+  1. crates and barrels;
+  2. fences and walls;
+  3. containers;
+  4. the rest by how often maps use them (count the placements first).
+- **Stays authored** (Meshy, owned or purchased): characters, first-person weapons, vehicles, and hero props and
+  landmarks (the airliner, excavator, cranes, statues, detailed machinery).
+- **Target:** roughly 60–75% of today's ~1,366 props generated, for one consistent, grounded art style.
+- **Later option:** generate at load instead of at build time, for smaller downloads, measured against load time.
+
 Do not scale to dozens of generated species before the first vertical slice looks good at eye level and passes performance/collision checks.
 
 ## 12. Required automated and manual acceptance tests

@@ -10,10 +10,13 @@
   "bio": "Eats forty kilos of bamboo a day and wants the other twenty.",
   "body": "male",
   "size": "large",
-  "notes": "Drive intake of 2026-11-05 (\"Open Arms Panda\", rigged and animated on Meshy: Mixamo joint names read as Meshy's, extra Bone_* joints ride their parents; clips not used). No panda shipped before. Large: a broad, heavy body. 169k triangles: rebaked. Licence recorded as owned (the intake's rule: no metadata says otherwise); the owner to confirm, and if it is a Meshy community model, switch to CC0 with its author and post URL.",
+  "notes": "Drive intake of 2026-11-05 (\"Open Arms Panda\", rigged and animated on Meshy: Mixamo joint names read as Meshy's, extra Bone_* joints ride their parents; clips not used). No panda shipped before. Large: a broad, heavy body. 169k triangles: rebaked. Licence recorded as owned (the intake's rule: no metadata says otherwise); the owner to confirm, and if it is a Meshy community model, switch to CC0 with its author and post URL. Licence: Meshy Community, CC0 per the owner (2026-11-05: most of this intake is community, not owned); author and post URL pending from the owner (HANDOFF.md).",
   "source": {
-    "license": "owned",
-    "author": "the owner, on their Meshy subscription",
+    "license": "CC0",
+    "author": "Meshy Community (CC0 per the owner; author pending from the owner)",
+    "community": {
+      "model": "Open Arms Panda"
+    },
     "date": "2026-11-05",
     "url": null,
     "file": "^Meshy_AI_Open_Arms_Panda_\\d+_animated_mixamo_All_animation\\.glb$"

@@ -8,9 +8,16 @@ made only on a commit that passed CI on a check branch.
 
 ## Unreleased
 
-**Ten new characters and a new tank** (the owner's Meshy models, 2026-11-05)
+**Eleven new characters and a new tank** (Meshy models, 2026-11-05)
 - **Ten new characters**: **Patches** (a hobo clown, Everyday Folk), **Tactical Soldier** (Soldiers), **Umpire** (Everyday Folk), **The Butcher** (Everyday Folk), **Old Timer** (Everyday Folk), **Bamboo** (a large panda, Animals), **Frost Viking** (large, Knights & Legends) **Imperial Guard** (an ancient Chinese soldier, Knights & Legends), **Goblin Warlord** (Knights & Legends) and **The Masked Figure** (Undead & Horror) join the roster, with their portraits: the shared clips, their own first-person arms, a far copy and their own hit shapes. Names are placeholders for the owner.
 - **The Tank is a WWII tank now**: the owner's Meshy model replaces the Quaternius tank (kept as the fallback if it fails to load), 6.2 m long with a 1.2 m gun barrel, 19k triangles with a 5.6k far copy from 45 m and a baked normal map. Its turret turns and its barrel pitches with the cannon gunner's aim (the roof gun no longer moves it). Same collision box, health, handling and weapons; the driver now stands at the front left of the deck and both gunners on the turret roof.
+- **Bill** (Everyday Folk) joins them: a grey-haired man in a patterned shirt and jeans ("T Pose on Green Screen", which is not the CRT Robot's model).
+- **Goblins are small**: the Goblin Warlord is small now, as Goblin, Goblina and Snikkit already were (body, hit shapes, health and speed follow the size).
+- **The Tank's collision box fits its hull**: 2.94 m wide instead of 4.2 m (shots and bodies no longer stop on air beside the tracks) and 6.12 m long; the seats, getting in and getting out are unchanged.
+- **Characters keep Meshy's own finger rig where it's better** (`fixes.fingers`): a re-rigged download with whole finger chains now keeps its own finger joints and weights instead of having the fingers re-fitted from the mesh (the Tactical Soldier, Frost Viking and Goblin Warlord); a look the grip audit scored worse keeps the re-fit (The Butcher, Bill).
+- **Licences**: this intake's new characters are recorded as Meshy Community models, CC0 per the owner (authors and post URLs to follow), instead of the owner's own.
+- **New models for five characters** (names and ids kept, new portraits): the **Iron Knight** (now the dark "Iron Warden" armour), the **Hyena Warrior** (a gnoll warrior), **Barnaby Bruin** (a bear warrior), **Snikkit** (a mohawked goblin, still small) and **Giggles** (a tattered circus clown, still small); Giggles is back on the roster, since the old model's tearing at the waist is gone.
+- **Re-rigged characters**: The Dapper, Croakley, the Field Medic Automaton, the Stealth Operative, the Beanie Alien, the Alien Biker, Customs Agent Zhao, Old King Halvard, King Aldric and the CRT Robot are rebuilt from Meshy's new rigs (the Beanie Alien holds its guns better; the others as well as before); Desert Ranger, Grandpa Chains, Grunt '68, Hazmat Joe, WWII Infantry, Big Bab and Freaky Frida keep their old builds, which held their guns better than the new rigs.
 - **Briggs and Hollis leave the roster** (owner's call; files kept): a saved choice of either plays Grunt '68 or WWII Infantry.
 - Vehicles now draw their far copy (a lower level of detail) past its distance; before, vehicle models stayed at full detail at any range.
 

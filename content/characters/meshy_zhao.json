@@ -9,20 +9,16 @@
   "nameTheme": "townsfolk",
   "bio": "Thirty years at customs. Nothing gets past him, and nobody gets through.",
   "body": "male",
-  "notes": "Downloaded by hand (owner, 2026-10-29) as an unrigged textured GLB; rigged by Meshy's rigging API (source.modelUrl \"upload\", the download sent as a data URI). Queue note: customs agent.",
+  "notes": "Downloaded by hand (owner, 2026-10-29) as an unrigged textured GLB; rigged by Meshy's rigging API (source.modelUrl \"upload\", the download sent as a data URI). Queue note: customs agent. Its model replaced 2026-11-05 (intake step 2b, the owner's mapping) by \"Uniformed Worker in a T Pose\" (Meshy rig, Mixamo skeleton; its clips not used); it was built from Uniformed Worker in a Jacket (https://www.meshy.ai/posts/019df47b-abde-7afe-955f-5350acdc8ff9). Licence: Meshy Community, CC0 per the owner; author and post URL pending from the owner.",
   "source": {
     "license": "CC0",
-    "author": "Meshy community (author not recorded; CC0 per the owner)",
-    "date": "2026-10-29",
-    "url": "https://www.meshy.ai/posts/019df47b-abde-7afe-955f-5350acdc8ff9",
+    "author": "Meshy Community (CC0 per the owner; author pending from the owner)",
     "community": {
-      "model": "Uniformed Worker in a Jacket"
+      "model": "Uniformed Worker in a T Pose"
     },
-    "modelUrl": "upload",
-    "file": "^Meshy_AI_Uniformed_Worker_in_a_\\d+_(image-to-3d-)?texture\\.glb$",
-    "meshy": {
-      "rig": "01a18a05-39b1-7653-b17c-03916e736722"
-    }
+    "date": "2026-11-05",
+    "url": null,
+    "file": "^Meshy_AI_Uniformed_Worker_in_a_T_Pose_\\d+_animated_mixamo_All_animation\\.glb$"
   },
   "finish": {
     "metallic": 0.05,
@@ -32,7 +28,11 @@
     "arms": "own"
   },
   "fixes": {
-    "triangles": 11000,
+    "triangles": 14000,
+    "surface": "rebake",
+    "headShare": 0.16,
+    "normalSize": 1024,
+    "lod": 0.25,
     "feet": true,
     "hands": {
       "scale": 0.85,

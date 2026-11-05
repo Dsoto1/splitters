@@ -10,7 +10,7 @@
   "bio": "Ran the bait shop by the pond until somebody shot it up. Now he returns the favour, suspenders and all.",
   "body": "male",
   "size": "small",
-  "notes": "From the owner's T-pose uploads (2026-11-01, \"found some new ones\"): an unrigged textured GLB, rigged here from T-pose landmarks (arms level; the manifest's landmarks, read off front and side views). Named here; the owner reviews it on the grip and portrait sheets. Not Boglurker (a different toad, in rags): a cartoon frog in a vest, jeans and suspenders.",
+  "notes": "From the owner's T-pose uploads (2026-11-01, \"found some new ones\"): an unrigged textured GLB, rigged here from T-pose landmarks (arms level; the manifest's landmarks, read off front and side views). Named here; the owner reviews it on the grip and portrait sheets. Not Boglurker (a different toad, in rags): a cartoon frog in a vest, jeans and suspenders. Rebuilt 2026-11-05 (intake step 2b) from the re-rigged download \"T Pose Frog in Suspenders\" (Meshy rig, Mixamo skeleton; its clips not used).",
   "source": {
     "license": "CC0",
     "author": "Meshy community (author not recorded; CC0 per the owner)",
@@ -19,7 +19,7 @@
     },
     "date": "2026-11-01",
     "url": null,
-    "file": "^Meshy_AI_T_Pose_Frog_in_Suspen_\\d+_texture\\.glb$"
+    "file": "^Meshy_AI_T_Pose_Frog_in_Suspenders_\\d+_animated_mixamo_All_animation\\.glb$"
   },
   "finish": {
     "metallic": 0,
@@ -38,40 +38,5 @@
       "curlL": 1.2,
       "rollL": -0.25
     }
-  },
-  "landmarks": {
-    "spine": [
-      [0, 0.46, -0.06],
-      [0, 0.53, -0.06],
-      [0, 0.6, -0.065],
-      [0, 0.67, -0.07],
-      [0, 0.75, -0.05],
-      [0, 0.8, -0.02],
-      [0, 1, 0.03]
-    ],
-    "L": [
-      [0.04, 0.73, -0.075],
-      [0.15, 0.725, -0.08],
-      [0.3, 0.715, -0.08],
-      [0.46, 0.705, -0.08],
-      [0.58, 0.69, -0.07],
-      [0.1, 0.45, -0.06],
-      [0.13, 0.26, -0.06],
-      [0.13, 0.065, -0.08],
-      [0.14, 0.02, 0.01],
-      [0.14, 0.015, 0.08]
-    ],
-    "R": [
-      [-0.04, 0.73, -0.075],
-      [-0.15, 0.725, -0.08],
-      [-0.3, 0.715, -0.08],
-      [-0.46, 0.705, -0.08],
-      [-0.58, 0.69, -0.07],
-      [-0.1, 0.45, -0.06],
-      [-0.13, 0.26, -0.06],
-      [-0.13, 0.065, -0.08],
-      [-0.14, 0.02, 0.01],
-      [-0.14, 0.015, 0.08]
-    ]
   }
 }

@@ -9,7 +9,7 @@
   "nameTheme": "soldier",
   "bio": "Two tours in the sand. Thinks the arena is a nice change of scenery.",
   "body": "female",
-  "notes": "Downloaded by hand (owner, 2026-10-29) as an unrigged textured GLB; rigged by Meshy's rigging API (source.modelUrl \"upload\", the download sent as a data URI). Queue note: US soldier, desert.",
+  "notes": "Downloaded by hand (owner, 2026-10-29) as an unrigged textured GLB; rigged by Meshy's rigging API (source.modelUrl \"upload\", the download sent as a data URI). Queue note: US soldier, desert. Intake 2026-11-05 step 2b: its re-rigged download was built and not used (grip audit 2 before, 5 with Desert Sentinel's own fingers and 5 re-fitted); this build kept.",
   "source": {
     "license": "CC0",
     "author": "Meshy community (author not recorded; CC0 per the owner)",

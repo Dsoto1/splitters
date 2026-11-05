@@ -11,15 +11,14 @@
   "body": "male",
   "size": "large",
   "source": {
-    "license": "owned",
-    "author": "the owner, on their Meshy subscription",
-    "date": "2026-10-25",
+    "license": "CC0",
+    "author": "Meshy Community (CC0 per the owner; author pending from the owner)",
+    "community": {
+      "model": "Iron Warden"
+    },
+    "date": "2026-11-05",
     "url": null,
-    "meshy": {
-      "preview": "01a173bc-08fd-7255-a545-bb6519425146",
-      "refine": "01a173bd-fc9c-7307-bff2-a15a52b42102",
-      "rig": "01a173c0-4d21-712b-97ba-7f08daf670c7"
-    }
+    "file": "^Meshy_AI_Iron_Warden_\\d+_animated_mixamo_All_animation\\.glb$"
   },
   "finish": {
     "metallic": 0.35,
@@ -29,24 +28,12 @@
     "arms": "own"
   },
   "fixes": {
-    "hands": {
-      "curl": 1
-    },
-    "grip": {
-      "gripLong": [-0.045, 0, 0],
-      "supportLong": [0, 0, -0.02],
-      "supportPistol": [0.04, 0.02, 0],
-      "curlR": 1.4,
-      "curlL": 1.6,
-      "rollR": -0.25
-    },
-    "skin": {
-      "smooth": {
-        "joints": "^(thigh|calf)_",
-        "passes": 6
-      },
-      "lanes": 0.8,
-      "joints": 0.2
-    }
-  }
+    "triangles": 11000,
+    "headShare": 0.16,
+    "handsShare": 0.1,
+    "normalSize": 1024,
+    "lod": 0.25,
+    "feet": true
+  },
+  "notes": "Its model replaced 2026-11-05 (intake step 2b, the owner's mapping) by \"Iron Warden\" (Meshy rig, Mixamo skeleton; its clips not used); it was built from the owner's own model. Licence: Meshy Community, CC0 per the owner; author and post URL pending from the owner."
 }

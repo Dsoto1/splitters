@@ -9,20 +9,19 @@
   "nameTheme": "knight",
   "bio": "Rules three kingdoms and one leaderboard. Only one of them by election.",
   "body": "male",
-  "notes": "Downloaded by hand (owner, 2026-10-29) as an unrigged textured GLB; rigged by Meshy's rigging API (source.modelUrl \"upload\": the download, cut to 200k triangles, sent as a data URI; the task in source.meshy.rig). Queue note: king. Was held back: his arms are fused with the cape, so the landmarks found on the mesh put the hands on the cape.",
+  "notes": "Downloaded by hand (owner, 2026-10-29) as an unrigged textured GLB; rigged by Meshy's rigging API (source.modelUrl \"upload\": the download, cut to 200k triangles, sent as a data URI; the task in source.meshy.rig). Queue note: king. Was held back: his arms are fused with the cape, so the landmarks found on the mesh put the hands on the cape. Rebuilt 2026-11-05 (intake step 2b) from the re-rigged download \"Regal Monarch in Velvet Robes\" (Meshy rig, Mixamo skeleton; its clips not used).",
   "source": {
     "license": "CC0",
     "author": "Meshy community (author not recorded; CC0 per the owner)",
-    "date": "2026-10-29",
-    "url": "https://www.meshy.ai/posts/019eab72-7fbe-78d2-9936-e1d7328721a8",
     "community": {
       "model": "Regal Monarch in Velvet"
     },
-    "modelUrl": "upload",
-    "file": "^Meshy_AI_Regal_Monarch_in_Velv_\\d+_(image-to-3d-)?texture\\.glb$",
+    "date": "2026-10-29",
+    "url": "https://www.meshy.ai/posts/019eab72-7fbe-78d2-9936-e1d7328721a8",
     "meshy": {
       "rig": "01a189fa-2941-7114-b236-ddbc173a1660"
-    }
+    },
+    "file": "^Meshy_AI_Regal_Monarch_in_Velvet_Robes_\\d+_animated_mixamo_All_animation\\.glb$"
   },
   "finish": {
     "metallic": 0.1,
@@ -34,13 +33,13 @@
   "fixes": {
     "triangles": 17000,
     "feet": true,
-    "cloth": true,
     "hands": {
       "curl": 1
     },
     "handsShare": 0.1,
     "headShare": 0.16,
     "normalSize": 1024,
-    "lod": 0.28
+    "lod": 0.28,
+    "fingers": "fit"
   }
 }

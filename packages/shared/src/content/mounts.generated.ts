@@ -226,7 +226,7 @@ export const MOUNT_DEFS: Readonly<Record<(typeof MOUNT_MODELS)[number], MountDef
     cockpitEye: [0, 2.3, 2.6],
     blurb: 'A flying troop carrier for six: a pilot, a door gunner and four riding on the deck',
   },
-  // model: The owner's WWII tank (Meshy, owned; content/guns.json vehicles/tank_wwii.glb, 2026-11-05): hull 6.2 m long to the box's 6 m, 2.93 m wide, deck 2.0 m and turret roof 3.05 m up; the barrel reaches 1.2 m past the box's front (not solid, as before). The box is unchanged (4.2 m wide: about 0.6 m of it each side is beside the tracks, not on them). The Quaternius tank it replaced is the fallback (vehicles/tank.glb).
+  // model: The owner's WWII tank (Meshy, owned; content/guns.json vehicles/tank_wwii.glb, 2026-11-05): hull 6.12 m long, 2.93 m wide, deck 2.0 m and turret roof 3.05 m up; the barrel reaches 1.15 m past the box's front (not solid, as before). The box (half [1.47, 1, 3.06], 2026-11-05) is fitted to the hull: 2.94 m wide over the tracks (was 4.2 m, about 0.6 m of it each side beside the tracks, where shots and bodies stopped on air), 6.12 m long (was 6 m) and up to the deck (2 m); the turret (1.84 m wide, inside the hull's footprint) sits on top of it, not solid, as before (one box: raised to the turret roof it would put an invisible roof over the whole deck). The Quaternius tank it replaced is the fallback (vehicles/tank.glb).
   // seats: Moved onto the new model, roles, weapons and arcs unchanged: the driver from the deck under the new turret to the front left of the deck (feet 1.95 m); both gunners up 0.15 m onto the turret roof, the roof gun from beside the roof (x 0.9) onto it.
   // cockpitEye: The driver's hatch, front left of the deck, over the glacis (was the commander's hatch on the old turret).
   // turret: The cannon gunner's aim turns the turret (within the seat's 0.6 rad arc) and pitches the barrel (drawn within -0.17..0.35 rad); the roof gun no longer turns it. Shots still leave from the gunner's eye, as for every mounted weapon.
@@ -237,7 +237,7 @@ export const MOUNT_DEFS: Readonly<Record<(typeof MOUNT_MODELS)[number], MountDef
     model: 'vehicles/tank_wwii.glb',
     fallback: 'vehicles/tank.glb',
     health: 1200,
-    half: [2.1, 1, 3],
+    half: [1.47, 1, 3.06],
     seats: [
       { role: 'driver', label: 'Driver', offset: [-0.6, 1.95, 1.8] },
       { role: 'gunner', label: 'Cannon', offset: [-0.3, 3.05, -0.3], weapon: 'core.tank_cannon', arc: 0.6 },

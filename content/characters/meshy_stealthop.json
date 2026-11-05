@@ -9,7 +9,7 @@
   "nameTheme": "soldier",
   "bio": "You won't hear her coming. You'll hear the respawn timer.",
   "body": "female",
-  "notes": "Drive batch of 2026-11-01 evening, second drop (\"Stealth Operative\", rigged). A rigged Meshy download (\"All Animations\": Mixamo joint names, read as Meshy's; its finger joints and two clips are not used: the hands are fitted by hands.mjs). Name a placeholder from the Roster Board.",
+  "notes": "Drive batch of 2026-11-01 evening, second drop (\"Stealth Operative\", rigged). A rigged Meshy download (\"All Animations\": Mixamo joint names, read as Meshy's; its finger joints and two clips are not used: the hands are fitted by hands.mjs). Name a placeholder from the Roster Board. Rebuilt 2026-11-05 (intake step 2b) from the re-rigged download \"Stealth Operative\" (Meshy rig, Mixamo skeleton; its clips not used).",
   "source": {
     "license": "CC0",
     "author": "Meshy community (author not recorded; CC0 per the owner)",
@@ -18,7 +18,7 @@
     },
     "date": "2026-11-01",
     "url": null,
-    "file": "^Meshy_AI_Stealth_Operative_All_Animations\\.glb$"
+    "file": "^Meshy_AI_Stealth_Operative_\\d+_animated_mixamo_All_animation\\.glb$"
   },
   "finish": {
     "metallic": 0.05,
@@ -41,6 +41,7 @@
       "gripLong": [-0.06, 0, -0.03],
       "supportPistol": [0, 0.04, -0.06],
       "curlL": 0.8
-    }
+    },
+    "fingers": "fit"
   }
 }
