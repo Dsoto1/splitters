@@ -9,7 +9,7 @@
   "nameTheme": "knight",
   "bio": "Reigned for fifty years and outlived every rival. Not planning to stop now.",
   "body": "male",
-  "notes": "From the owner's T-pose uploads (2026-11-01, \"found some new ones\"): an unrigged textured GLB, rigged here from T-pose landmarks (arms level; the manifest's landmarks, read off front and side views). Named here; the owner reviews it on the grip and portrait sheets. Not King Aldric (blue velvet robe): an old king in red and gold with a long white beard and a cape.",
+  "notes": "From the owner's T-pose uploads (2026-11-01, \"found some new ones\"): an unrigged textured GLB, rigged here from T-pose landmarks (arms level; the manifest's landmarks, read off front and side views). Named here; the owner reviews it on the grip and portrait sheets. Not King Aldric (blue velvet robe): an old king in red and gold with a long white beard and a cape. Rebuilt 2026-11-05 (intake step 2b) from the re-rigged download \"T Pose Old medieval king around 50 60\" (Meshy rig, Mixamo skeleton; its clips not used).",
   "source": {
     "license": "CC0",
     "author": "Meshy community (author not recorded; CC0 per the owner)",
@@ -18,7 +18,7 @@
     },
     "date": "2026-11-01",
     "url": null,
-    "file": "^Meshy_AI_T_Pose_Old_medieval__\\d+_texture\\.glb$"
+    "file": "^Meshy_AI_T_Pose_Old_medieval_king_around_50_60_\\d+_animated_mixamo_All_animation\\.glb$"
   },
   "finish": {
     "metallic": 0.1,
@@ -28,43 +28,11 @@
     "arms": "own"
   },
   "fixes": {
-    "triangles": 11000,
-    "cloth": true,
+    "triangles": 14000,
+    "surface": "rebake",
+    "headShare": 0.16,
+    "normalSize": 1024,
+    "lod": 0.25,
     "feet": true
-  },
-  "landmarks": {
-    "spine": [
-      [0, 0.47, -0.01],
-      [0, 0.55, -0.005],
-      [0, 0.63, 0],
-      [0, 0.71, 0],
-      [0, 0.82, -0.01],
-      [0, 0.86, 0],
-      [0, 0.97, 0]
-    ],
-    "L": [
-      [0.035, 0.8, -0.03],
-      [0.13, 0.785, -0.04],
-      [0.28, 0.77, -0.04],
-      [0.41, 0.76, -0.04],
-      [0.54, 0.755, -0.04],
-      [0.07, 0.46, -0.02],
-      [0.085, 0.26, -0.04],
-      [0.09, 0.065, -0.025],
-      [0.095, 0.02, 0.07],
-      [0.095, 0.015, 0.12]
-    ],
-    "R": [
-      [-0.035, 0.8, -0.03],
-      [-0.13, 0.785, -0.04],
-      [-0.28, 0.77, -0.04],
-      [-0.41, 0.76, -0.04],
-      [-0.54, 0.755, -0.04],
-      [-0.07, 0.46, -0.02],
-      [-0.085, 0.26, -0.04],
-      [-0.09, 0.065, -0.025],
-      [-0.095, 0.02, 0.07],
-      [-0.095, 0.015, 0.12]
-    ]
   }
 }

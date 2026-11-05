@@ -9,13 +9,13 @@
   "nameTheme": "alien",
   "bio": "Crossed four galaxies for the open road. Still can't find parking.",
   "body": "male",
-  "notes": "Drive, 2026-11-01 evening (\"stylized alien biker\", rigged; via the lead). A rigged Meshy download (\"All Animations\": Mixamo joint names, read as Meshy's; its finger joints and two clips are not used: the hands are fitted by hands.mjs). The owner's own model (owned; confirmed by the owner 2026-11-01). Name a placeholder.",
+  "notes": "Drive, 2026-11-01 evening (\"stylized alien biker\", rigged; via the lead). A rigged Meshy download (\"All Animations\": Mixamo joint names, read as Meshy's; its finger joints and two clips are not used: the hands are fitted by hands.mjs). The owner's own model (owned; confirmed by the owner 2026-11-01). Name a placeholder. Rebuilt 2026-11-05 (intake step 2b) from the re-rigged download \"stylized alien biker rigged\" (Meshy rig, Mixamo skeleton; its clips not used).",
   "source": {
     "license": "owned",
     "author": "The owner (Meshy, owner's account)",
     "date": "2026-11-01",
     "url": null,
-    "file": "^Meshy_AI_stylized_alien_biker__All_Animations\\.glb$"
+    "file": "^Meshy_AI_stylized_alien_biker_rigged_\\d+_animated_mixamo_All_animation\\.glb$"
   },
   "finish": {
     "metallic": 0.1,

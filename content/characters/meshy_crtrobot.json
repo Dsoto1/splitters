@@ -9,7 +9,7 @@
   "nameTheme": "robot",
   "bio": "Runs on vacuum tubes and spite. The screen shows what it thinks of you.",
   "body": "male",
-  "notes": "Drive batch of 2026-11-01 evening (\"crt robot remeshed\", textured, unrigged, 10k triangles): rigged here from T-pose landmarks found on the mesh. Name a placeholder from the Roster Board.",
+  "notes": "Drive batch of 2026-11-01 evening (\"crt robot remeshed\", textured, unrigged, 10k triangles): rigged here from T-pose landmarks found on the mesh. Name a placeholder from the Roster Board. Rebuilt 2026-11-05 (intake step 2b) from the re-rigged download \"crt robot rigged\" (Meshy rig, Mixamo skeleton; its clips not used).",
   "source": {
     "license": "CC0",
     "author": "Meshy community (author not recorded; CC0 per the owner)",
@@ -18,7 +18,7 @@
     },
     "date": "2026-11-01",
     "url": null,
-    "file": "^Meshy_AI_crt_robot_remeshed_\\d+_texture\\.glb$"
+    "file": "^Meshy_AI_crt_robot_rigged_\\d+_animated_mixamo_All_animation\\.glb$"
   },
   "finish": {
     "metallic": 0.4,

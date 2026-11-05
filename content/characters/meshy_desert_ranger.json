@@ -9,20 +9,16 @@
   "nameTheme": "soldier",
   "bio": "Two tours in the sand. Thinks the arena is a nice change of scenery.",
   "body": "female",
-  "notes": "Downloaded by hand (owner, 2026-10-29) as an unrigged textured GLB; rigged by Meshy's rigging API (source.modelUrl \"upload\", the download sent as a data URI). Queue note: US soldier, desert.",
+  "notes": "Downloaded by hand (owner, 2026-10-29) as an unrigged textured GLB; rigged by Meshy's rigging API (source.modelUrl \"upload\", the download sent as a data URI). Queue note: US soldier, desert. Its model replaced 2026-11-05 (intake step 2b, the owner's mapping) by \"Desert Sentinel\" (Meshy rig, Mixamo skeleton; its clips not used); it was built from Ultra detailed desert soldier (https://www.meshy.ai/posts/019852b3-fb04-7b24-863c-fbe5855aac95). Licence: Meshy Community, CC0 per the owner; author and post URL pending from the owner.",
   "source": {
     "license": "CC0",
-    "author": "Meshy community (author not recorded; CC0 per the owner)",
-    "date": "2026-10-29",
-    "url": "https://www.meshy.ai/posts/019852b3-fb04-7b24-863c-fbe5855aac95",
+    "author": "Meshy Community (CC0 per the owner; author pending from the owner)",
     "community": {
-      "model": "Ultra detailed desert soldier"
+      "model": "Desert Sentinel"
     },
-    "modelUrl": "upload",
-    "file": "^Meshy_AI_Ultra_detailed_3D_mod_\\d+_(image-to-3d-)?texture\\.glb$",
-    "meshy": {
-      "rig": "01a18a05-bda7-72d5-8ce2-0edc7a029806"
-    }
+    "date": "2026-11-05",
+    "url": null,
+    "file": "^Meshy_AI_Desert_Sentinel_\\d+_animated_mixamo_All_animation\\.glb$"
   },
   "finish": {
     "metallic": 0.1,

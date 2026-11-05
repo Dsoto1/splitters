@@ -10,7 +10,7 @@
   "bio": "Varsity jacket, knit beanie, three-fingered trigger discipline.",
   "body": "male",
   "size": "small",
-  "notes": "Drive, 2026-11-01 evening, fourth drop (\"Beanie Alien T Pose\", rigged). A rigged Meshy download (\"All Animations\": Mixamo joint names, read as Meshy's; its finger joints and two clips are not used: the hands are fitted by hands.mjs). CC0 (Meshy community; confirmed by the owner 2026-11-01). Name a placeholder.",
+  "notes": "Drive, 2026-11-01 evening, fourth drop (\"Beanie Alien T Pose\", rigged). A rigged Meshy download (\"All Animations\": Mixamo joint names, read as Meshy's; its finger joints and two clips are not used: the hands are fitted by hands.mjs). CC0 (Meshy community; confirmed by the owner 2026-11-01). Name a placeholder. Rebuilt 2026-11-05 (intake step 2b) from the re-rigged download \"Beanie Alien T Pose\" (Meshy rig, Mixamo skeleton; its clips not used).",
   "source": {
     "license": "CC0",
     "author": "Meshy community (author not recorded; CC0 per the owner)",
@@ -19,7 +19,7 @@
     },
     "date": "2026-11-01",
     "url": null,
-    "file": "^Meshy_AI_Beanie_Alien_T_Pose_All_Animations\\.glb$"
+    "file": "^Meshy_AI_Beanie_Alien_T_Pose_\\d+_animated_mixamo_All_animation\\.glb$"
   },
   "finish": {
     "metallic": 0.05,

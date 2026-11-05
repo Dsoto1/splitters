@@ -9,16 +9,16 @@
   "nameTheme": "soldier",
   "bio": "Rated for every spill on the map. Mostly the ones he causes.",
   "body": "male",
-  "notes": "Downloaded by hand (owner, 2026-10-29) as an unrigged textured GLB; rigged here from landmarks found on the mesh. Queue note: hazmat suit.",
+  "notes": "Downloaded by hand (owner, 2026-10-29) as an unrigged textured GLB; rigged here from landmarks found on the mesh. Queue note: hazmat suit. Rebuilt 2026-11-05 (intake step 2b) from the re-rigged download \"Hazmat T Pose\" (Meshy rig, Mixamo skeleton; its clips not used).",
   "source": {
     "license": "CC0",
     "author": "Meshy community (author not recorded; CC0 per the owner)",
-    "date": "2026-10-29",
-    "url": "https://www.meshy.ai/posts/Hazmat-TPose-019fb676-c586-71cd-ba94-77e8fc3b1c36",
     "community": {
       "model": "Hazmat T Pose"
     },
-    "file": "^Meshy_AI_Hazmat_T_Pose_\\d+_(image-to-3d-)?texture\\.glb$"
+    "date": "2026-10-29",
+    "url": "https://www.meshy.ai/posts/Hazmat-TPose-019fb676-c586-71cd-ba94-77e8fc3b1c36",
+    "file": "^Meshy_AI_Hazmat_T_Pose_\\d+_animated_mixamo_All_animation\\.glb$"
   },
   "finish": {
     "metallic": 0.05,
@@ -28,7 +28,11 @@
     "arms": "own"
   },
   "fixes": {
-    "triangles": 11000,
+    "triangles": 14000,
+    "surface": "rebake",
+    "headShare": 0.16,
+    "normalSize": 1024,
+    "lod": 0.25,
     "feet": true
   }
 }

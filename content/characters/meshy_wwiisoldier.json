@@ -9,7 +9,7 @@
   "nameTheme": "soldier",
   "bio": "Dug in since '44. Nobody told him the war ended, and he is not taking chances.",
   "body": "male",
-  "notes": "Drive, 2026-11-01 evening, fourth drop (\"WWII Infantry Soldier\", rigged); rebuilt 2026-11-02 from the owner's updated download (\"Meshy_AI_WWII_Infantry_Soldier_All_Animations-3.glb\", Drive id 1-aQAgjpSXNcO3XmZjkjNL7S4SxrsMFze), which adds clips of walking forward and back while shooting. A rigged Meshy download (\"All Animations\": Mixamo joint names, read as Meshy's; its finger joints are not used: the hands are fitted by hands.mjs). Its Walking clip is in the shared clip set every look moves with (content/clip-sets/shooter.json); it had a set of its own (meshy_wwiisoldier_clips, 2026-11-02) until the shared set, which adds a running-while-shooting upper body his download lacks, replaced it. CC0 (Meshy community; confirmed by the owner 2026-11-01). Name a placeholder.",
+  "notes": "Drive, 2026-11-01 evening, fourth drop (\"WWII Infantry Soldier\", rigged); rebuilt 2026-11-02 from the owner's updated download (\"Meshy_AI_WWII_Infantry_Soldier_All_Animations-3.glb\", Drive id 1-aQAgjpSXNcO3XmZjkjNL7S4SxrsMFze), which adds clips of walking forward and back while shooting. A rigged Meshy download (\"All Animations\": Mixamo joint names, read as Meshy's; its finger joints are not used: the hands are fitted by hands.mjs). Its Walking clip is in the shared clip set every look moves with (content/clip-sets/shooter.json); it had a set of its own (meshy_wwiisoldier_clips, 2026-11-02) until the shared set, which adds a running-while-shooting upper body his download lacks, replaced it. CC0 (Meshy community; confirmed by the owner 2026-11-01). Name a placeholder. Rebuilt 2026-11-05 (intake step 2b) from the re-rigged download \"WWII Infantry Soldier in Olive Uniform\" (Meshy rig, Mixamo skeleton; its clips not used).",
   "source": {
     "license": "CC0",
     "author": "Meshy community (author not recorded; CC0 per the owner)",
@@ -18,7 +18,7 @@
     },
     "date": "2026-11-02",
     "url": null,
-    "file": "^Meshy_AI_WWII_Infantry_Soldier_All_Animations(-\\d+)?\\.glb$"
+    "file": "^Meshy_AI_WWII_Infantry_Soldier_in_Olive_Uniform_\\d+_animated_mixamo_All_animation\\.glb$"
   },
   "finish": {
     "metallic": 0.05,

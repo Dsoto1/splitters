@@ -9,16 +9,16 @@
   "nameTheme": "townsfolk",
   "bio": "Slippers on, gold chain out, and a better aim than any of his grandchildren.",
   "body": "male",
-  "notes": "Downloaded by hand (owner, 2026-10-29) as an unrigged textured GLB; rigged here from landmarks found on the mesh. Queue note: old man, slippers, gold chain.",
+  "notes": "Downloaded by hand (owner, 2026-10-29) as an unrigged textured GLB; rigged here from landmarks found on the mesh. Queue note: old man, slippers, gold chain. Rebuilt 2026-11-05 (intake step 2b) from the re-rigged download \"Elderly Man with Outstretched Arms\" (Meshy rig, Mixamo skeleton; its clips not used).",
   "source": {
     "license": "CC0",
     "author": "Meshy community (author not recorded; CC0 per the owner)",
-    "date": "2026-10-29",
-    "url": "https://www.meshy.ai/posts/019d6583-4e6b-7f44-9d84-2463443e8cf9",
     "community": {
       "model": "Elderly Man with Outstretched arms"
     },
-    "file": "^Meshy_AI_Elderly_Man_with_Outs_\\d+_(image-to-3d-)?texture\\.glb$"
+    "date": "2026-10-29",
+    "url": "https://www.meshy.ai/posts/019d6583-4e6b-7f44-9d84-2463443e8cf9",
+    "file": "^Meshy_AI_Elderly_Man_with_Outstretched_Arms_\\d+_animated_mixamo_All_animation\\.glb$"
   },
   "finish": {
     "metallic": 0.1,
@@ -28,7 +28,11 @@
     "arms": "own"
   },
   "fixes": {
-    "triangles": 11000,
+    "triangles": 14000,
+    "surface": "rebake",
+    "headShare": 0.16,
+    "normalSize": 1024,
+    "lod": 0.25,
     "feet": true,
     "lean": {
       "Spine01": 3,

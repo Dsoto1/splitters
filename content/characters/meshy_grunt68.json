@@ -9,17 +9,16 @@
   "nameTheme": "soldier",
   "bio": "Has been in the field so long the field started calling him sir.",
   "body": "male",
-  "notes": "Downloaded by hand (owner, 2026-10-29) as an unrigged textured GLB; rigged here from landmarks found on the mesh. Queue note: Vietnam-era soldier.",
+  "notes": "Downloaded by hand (owner, 2026-10-29) as an unrigged textured GLB; rigged here from landmarks found on the mesh. Queue note: Vietnam-era soldier. Rebuilt 2026-11-05 (intake step 2b) from the re-rigged download \"Realistic T Pose\" (Meshy rig, Mixamo skeleton; its clips not used).",
   "source": {
     "license": "CC0",
     "author": "Meshy community (author not recorded; CC0 per the owner)",
-    "date": "2026-10-29",
-    "url": "https://www.meshy.ai/posts/019f9d4e-ce1b-787b-a3d7-6e078cb86602",
     "community": {
       "model": "Realistic T Pose"
     },
-    "modelUrl": "https://drive.usercontent.google.com/download?id=1NdviLcJ_CGeiJczOwHks5C_oPhSrpJvI&export=download&confirm=t",
-    "file": "^Meshy_AI_Realistic_T_Pose_\\d+_(image-to-3d-)?texture\\.glb$"
+    "date": "2026-10-29",
+    "url": "https://www.meshy.ai/posts/019f9d4e-ce1b-787b-a3d7-6e078cb86602",
+    "file": "^Meshy_AI_Realistic_T_Pose_\\d+_animated_mixamo_All_animation\\.glb$"
   },
   "finish": {
     "metallic": 0,

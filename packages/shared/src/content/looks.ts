@@ -193,14 +193,14 @@ export const RETIRED_LOOKS: Readonly<Record<string, string>> = {
   'core.rustwalker': 'core.t350',
   'core.slugger': 'core.t350',
   'core.crimsonop': 'core.stealthop', // held back: a close likeness of a famous game character; owner to decide (files kept)
-  // Owner, 2026-11-03: off the roster (files and manifests kept). Rotter and Giggles tear open at the sides and
-  // waist (their downloads stand with the hands on the hips; see HANDOFF); the others by the owner's choice.
+  // Owner, 2026-11-03: off the roster (files and manifests kept). Rotter tears open at the sides and
+  // waist (its download stands with the hands on the hips; see HANDOFF); the others by the owner's choice. Giggles
+  // was here too until its new model (Tattered Circus Nightmare, a T-pose rig) replaced it, 2026-11-05.
   'core.vampire': 'core.bonesworth',
   'core.hollowvisitor': 'core.visitor',
   'core.dusttrooper': 'core.desertranger',
   'core.goblin': 'core.grizzelda',
   'core.rotter': 'core.shambler',
-  'core.giggles': 'core.punkin',
   // Owner, 2026-11-04: off the roster (files and manifests kept): their source models weren't in a T-pose, so their
   // hands can't be fixed. The otter NPC role keeps its model (NPC_KEPT_LOOKS).
   'core.otter': 'core.brasshare',
