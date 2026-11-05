@@ -10,6 +10,7 @@ import type { AbstractMesh } from '@babylonjs/core/Meshes/abstractMesh';
 import type { GripTune, ModelPoint, WeaponHold } from '@tiletrigger/shared';
 import type { CharacterInstance, Clip } from '../content/characters.ts';
 import { gripReport, skinHandFrame } from './handProbe.ts';
+import { EVERY_FRAME, StepClock, type AnimStep } from './animLod.ts';
 import { TorsoSurface, armReach, reachAlong } from './torsoSurface.ts';
 import { GAIT, GAIT_CLIPS, clipCycleRate, clipGaitWeights, clipUpperWeights, gaitCycleRate, gaitWeights, matchClipPhase, matchPhase, strideWarp, type ClipLoop, type GaitClip } from './gait.ts';
 
@@ -396,30 +397,29 @@ export class CharacterAnimator {
   }
 
   private readonly gate: AnimGate = { skip: false };
-  /** Animation LOD: the next time (ms) the clips are evaluated, and the step between evaluations (0: every frame). */
-  private nextStep = 0;
+  /** Animation LOD: when the clips are next evaluated (animLod.ts). */
+  private readonly clock = new StepClock();
+  /** Animation LOD's after-clip detail for the evaluations from now on (animLod.ts AnimStep.detail). */
+  private detail: AnimStep['detail'] = 'full';
 
   /**
-   * Animation LOD (a crowd's far characters): evaluate the clips, bones and
-   * aim only every `stepMs` (0: every frame), from `phase` (ms) so a crowd's
-   * evaluations spread over frames. Returns whether this frame evaluates (the
-   * state machine should update then, with the time saved up). Clips are
-   * sampled at the current time when they do, so motion keeps its speed.
+   * Animation LOD (far characters, animLod.ts): evaluate the clips, bones and
+   * aim only as often as `step` says (EVERY_FRAME: every frame), on frame
+   * `frame`, from `phase` so a crowd's evaluations spread over frames. Returns
+   * whether this frame evaluates (the state machine should update then, with
+   * the time saved up). Clips are sampled at the current time when they do,
+   * so motion keeps its speed.
    */
-  stepAt(now: number, stepMs: number, phase = 0): boolean {
-    if (stepMs <= 0 || this.dead) {
+  stepAt(now: number, step: AnimStep = EVERY_FRAME, frame = 0, phase = 0): boolean {
+    this.detail = this.dead || this.fp || this.external ? 'full' : step.detail;
+    if (this.dead) {
       this.gate.skip = false;
-      this.nextStep = 0;
+      this.clock.due(now, frame, EVERY_FRAME);
       return true;
     }
-    if (now >= this.nextStep) {
-      // On the character's own phase, so not every far character evaluates on the same frame.
-      this.nextStep = now + stepMs - ((((now - phase) % stepMs) + stepMs) % stepMs);
-      this.gate.skip = false;
-      return true;
-    }
-    this.gate.skip = true;
-    return false;
+    const run = this.clock.due(now, frame, step, phase);
+    this.gate.skip = !run;
+    return run;
   }
 
   /** Carry a weapon model, held as `grip` describes (null to empty the hands). */
@@ -968,11 +968,18 @@ export class CharacterAnimator {
     }
     const g = this.ch.clips.get(action === 'hit_head' && !this.ch.clips.has('hit_head') ? 'hit' : action === 'jab' && !this.ch.clips.has('jab') ? 'melee' : (action as Clip));
     if (!g) return;
-    this.overlay?.clip.stop();
-    g.mask = this.mask;
-    g.weight = OVERLAY_WEIGHT;
-    g.start(false, action === 'shoot' ? 1.6 : 1.2);
-    const seconds = (g.to - g.from) / 60 / (action === 'shoot' ? 1.6 : 1.2);
+    const speed = action === 'shoot' ? 1.6 : 1.2;
+    if (this.overlay?.clip === g && g.isPlaying && g.speedRatio === speed) {
+      // The same action again while it still plays (an automatic weapon's next shot): back to its start. Stopping and
+      // starting a group makes and frees an animation per joint (some 70), the biggest cost of a firefight's shots.
+      g.goToFrame(g.from);
+    } else {
+      this.overlay?.clip.stop();
+      g.mask = this.mask;
+      g.weight = OVERLAY_WEIGHT;
+      g.start(false, speed);
+    }
+    const seconds = (g.to - g.from) / 60 / speed;
     this.overlay = { clip: g, until: performance.now() + Math.max(0.15, seconds) * 1000 };
     this.handsOff = HANDS_OFF.has(action);
   }
@@ -1380,10 +1387,11 @@ export class CharacterAnimator {
           .add(down.scale(ELBOW_POLE_DOWN + (tune?.elbowDown ?? 0) * scale));
         solveArm(space, arms.r, palmOnGrip(arms.r, point(gripped.pos, gripped.rot, gripAt), scale), pole, w);
       }
-      closeHand(space, arms.r, w * (tune?.curlR ?? 1), point(gripped.pos, gripped.rot, gripAt));
+      this.curl(space, arms.r, w * (tune?.curlR ?? 1), () => point(gripped!.pos, gripped!.rot, gripAt));
       if (support) {
         solveArm(space, arms.l, palmOnGrip(arms.l, point(gripped.pos, gripped.rot, support), scale, grip.style === 'long'), pos(arms.l.upper).subtract(outward.scale(0.1)).add(down.scale(0.4)), w);
-        closeHand(space, arms.l, w * supportCurl(grip) * (tune?.curlL ?? 1), point(gripped.pos, gripped.rot, support));
+        const at = support;
+        this.curl(space, arms.l, w * supportCurl(grip) * (tune?.curlL ?? 1), () => point(gripped!.pos, gripped!.rot, at));
       }
     }
 
@@ -1401,7 +1409,7 @@ export class CharacterAnimator {
       this.inHand.pos = palmWorld(arms.r).subtract(hand.pos).scale(1 / scale).applyRotationQuaternion(inv).subtract(new Vector3(...grip.grip).applyRotationQuaternion(this.inHand.rot));
       this.inHand.valid = true;
     }
-    if (!gripped) closeHand(space, arms.r, 1);
+    if (!gripped) this.curl(space, arms.r, 1);
     const carried = { rot: hand.rot.multiply(this.inHand.rot), pos: hand.pos.add(this.inHand.pos.scale(scale).applyRotationQuaternion(hand.rot)) };
     const at = gripped ? Vector3.Lerp(carried.pos, gripped.pos, w) : carried.pos;
     const rot = gripped ? Quaternion.Slerp(carried.rot, gripped.rot, w) : carried.rot;
@@ -1413,6 +1421,34 @@ export class CharacterAnimator {
       this.unplaced = false;
       weapon.setEnabled(true);
     }
+  }
+
+  /** Each hand's fingers as the last full close left them (animation LOD's `cached` detail), for this grip and weight. */
+  private readonly fingerPose = new Map<Arm, { grip: WeaponHold | null; weight: number; rots: Quaternion[] }>();
+
+  /**
+   * Close a hand's fingers on the gun (closeHand), or, at the animation LOD's `cached` detail, put back the pose the
+   * last full close of the same grip and weight gave them: about 40 joint matrices and decompositions a hand saved,
+   * for a finger pose that doesn't change on a held gun.
+   */
+  private curl(space: SkeletonSpace, arm: Arm, weight: number, onto?: () => Vector3): void {
+    const kept = this.fingerPose.get(arm);
+    if (this.detail === 'cached' && kept && kept.grip === this.grip && Math.abs(kept.weight - weight) < 1e-3) {
+      let i = 0;
+      for (const chain of arm.fingers) {
+        for (const joint of chain) {
+          const q = kept.rots[i++];
+          // A copy (the clips write into the joint's quaternion at their next evaluation; the cache stays apart).
+          if (q) joint.rotationQuaternion = q.clone();
+        }
+      }
+      return;
+    }
+    closeHand(space, arm, weight, onto?.());
+    const rots = kept?.rots ?? [];
+    let i = 0;
+    for (const chain of arm.fingers) for (const joint of chain) (rots[i++] ??= new Quaternion()).copyFrom(joint.rotationQuaternion ?? Quaternion.Identity());
+    this.fingerPose.set(arm, { grip: this.grip, weight, rots });
   }
 
   /**
