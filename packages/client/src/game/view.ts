@@ -112,6 +112,8 @@ import { SkyEffects } from './skyEffects.ts';
 import { CharacterLibrary, setCharacterLodCrowd, setCharacterLodZoom, type CharacterInstance } from '../content/characters.ts';
 import { CharacterAnimator, type OneShot } from './characterAnimator.ts';
 import { ANIM_LOD_FAR, ANIM_LOD_NEAR, SHOT_OVERLAY_REACH, animStep } from './animLod.ts';
+import { perfOn } from './perfSwitches.ts';
+import { installAnimationPatches, trackAnimatedTargets } from './animPatches.ts';
 import { fitFirstPersonArms } from './firstPersonArms.ts';
 import { FirstPersonBodyRig } from './firstPersonBody.ts';
 import { loadFirstPersonMode, loadGraphicsQuality, type FirstPersonMode } from './graphicsSettings.ts';
@@ -377,7 +379,10 @@ export class GameView {
   private readonly brass: StandardMaterial;
 
   constructor(engine: AbstractEngine) {
+    // Cheaper clip stops and node disposals with thousands of animations running (animPatches.ts).
+    installAnimationPatches();
     this.scene = new Scene(engine);
+    trackAnimatedTargets(this.scene);
     this.scene.clearColor = new Color4(0.52, 0.62, 0.72, 1);
     this.scene.skipPointerMovePicking = true;
     this.camera = createViewCamera('camera', this.scene);
@@ -1701,10 +1706,21 @@ export class GameView {
           // Characters in view: past ANIM_LOD_FULL their clips, bones and aim are evaluated at 30 Hz (and at most
           // every 2nd frame), past ANIM_LOD_NEAR at 15 Hz (every 3rd), past ANIM_LOD_FAR at 10 Hz (every 4th), on each
           // one's own phase, with the fingers' pose kept from the last full close; the state machine runs with them.
-          const step = animStep(far);
+          const step = animStep(far, perfOn('animlod2'));
           run = a.anim.stepAt(now, step, this.avatarFrame, (p.slot * 37) % 100);
           stepped = step.frames > 1;
           if (run && perfProbe.on) perfProbe.n[COUNT.animated]!++;
+        } else if (a.anim instanceof CreatureAnimator && perfOn('animlod2')) {
+          // Creatures: their clips and bones step by distance as characters' do (round 2; they were evaluated every
+          // frame and only the state machine stepped), and not at all out of view; the state machine runs with them.
+          const step = animStep(far);
+          run = a.anim.stepAt(now, step, this.avatarFrame, (p.slot * 37) % 100, !!a.culled);
+          stepped = step.frames > 1 || !!a.culled;
+          if (a.culled) {
+            // Out of view: the state machine every 8th frame, as before; the clips wait until it is seen again.
+            a.animFrame = ((a.animFrame ?? 0) + 1) % 8;
+            run = a.animFrame === 0;
+          } else if (run && perfProbe.on) perfProbe.n[COUNT.animated]!++;
         } else {
           // Out of view (asleep) characters, and creatures: the state machine every few frames.
           const every = a.culled ? 8 : far > ANIM_LOD_FAR ? 4 : far > ANIM_LOD_NEAR ? 2 : 1;

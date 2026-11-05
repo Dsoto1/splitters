@@ -2,9 +2,9 @@ import { describe, expect, it } from 'vitest';
 import { ANIM_LOD_FAR, ANIM_LOD_FULL, ANIM_LOD_NEAR, EVERY_FRAME, StepClock, animStep } from '../src/game/animLod.ts';
 
 /** Evaluations a second for a character at `dist` m when frames take `frameMs`, over `seconds`. */
-function rate(dist: number, frameMs: number, seconds = 10, phase = 0): number {
+function rate(dist: number, frameMs: number, seconds = 10, phase = 0, round2 = true): number {
   const clock = new StepClock();
-  const step = animStep(dist);
+  const step = animStep(dist, round2);
   let n = 0;
   const frames = Math.round((seconds * 1000) / frameMs);
   for (let f = 0; f < frames; f++) if (clock.due(f * frameMs, f, step, phase)) n++;
@@ -19,22 +19,31 @@ describe('character animation LOD', () => {
     expect(rate(5, 40)).toBeCloseTo(25, 0);
   });
 
-  it('keeps the 60 fps rates of before: 30 Hz, 15 Hz and 10 Hz by distance', () => {
-    expect(rate(ANIM_LOD_FULL + 5, 1000 / 60)).toBeCloseTo(30, 0);
-    expect(rate(ANIM_LOD_NEAR + 5, 1000 / 60)).toBeCloseTo(15, 0);
-    expect(rate(ANIM_LOD_FAR + 5, 1000 / 60)).toBeCloseTo(10, 0);
+  it('steps 20 Hz, 12 Hz and 8 Hz by distance at 60 fps (round 2)', () => {
+    expect(rate(ANIM_LOD_FULL + 5, 1000 / 60)).toBeCloseTo(20, 0);
+    expect(rate(ANIM_LOD_NEAR + 5, 1000 / 60)).toBeCloseTo(12, 0);
+    expect(rate(ANIM_LOD_FAR + 5, 1000 / 60)).toBeCloseTo(8, 0);
+  });
+
+  it("keeps round 1's rates behind the switch: 30 Hz, 15 Hz and 10 Hz", () => {
+    expect(rate(ANIM_LOD_FULL + 5, 1000 / 60, 10, 0, false)).toBeCloseTo(30, 0);
+    expect(rate(ANIM_LOD_NEAR + 5, 1000 / 60, 10, 0, false)).toBeCloseTo(15, 0);
+    expect(rate(ANIM_LOD_FAR + 5, 1000 / 60, 10, 0, false)).toBeCloseTo(10, 0);
   });
 
   it('still saves on slow frames, where a time step alone was due every frame', () => {
-    // 25 fps (a busy fight on a laptop): every 2nd, 3rd and 4th frame instead of every frame.
-    expect(rate(ANIM_LOD_FULL + 5, 40)).toBeCloseTo(12.5, 0);
-    expect(rate(ANIM_LOD_NEAR + 5, 40)).toBeCloseTo(25 / 3, 0);
-    expect(rate(ANIM_LOD_FAR + 5, 40)).toBeCloseTo(6.25, 0);
+    // 25 fps (a busy fight on a laptop): every 3rd, 4th and 5th frame instead of every frame.
+    expect(rate(ANIM_LOD_FULL + 5, 40)).toBeCloseTo(25 / 3, 0);
+    expect(rate(ANIM_LOD_NEAR + 5, 40)).toBeCloseTo(6.25, 0);
+    expect(rate(ANIM_LOD_FAR + 5, 40)).toBeCloseTo(5, 0);
   });
 
-  it('keeps fingers from the last full close past the full-detail distance', () => {
+  it('keeps fingers from the last full close past the full-detail distance, and the coarse detail past the near one', () => {
     expect(animStep(ANIM_LOD_FULL + 1).detail).toBe('cached');
-    expect(animStep(ANIM_LOD_FAR + 50).detail).toBe('cached');
+    expect(animStep(ANIM_LOD_NEAR - 1).detail).toBe('cached');
+    expect(animStep(ANIM_LOD_NEAR + 1).detail).toBe('coarse');
+    expect(animStep(ANIM_LOD_FAR + 50).detail).toBe('coarse');
+    expect(animStep(ANIM_LOD_FAR + 50, false).detail).toBe('cached');
   });
 
   it('spreads a crowd over frames: characters on different phases step on different frames', () => {
