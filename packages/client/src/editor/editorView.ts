@@ -17,7 +17,8 @@ import { Material } from '@babylonjs/core/Materials/material';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import type { LinesMesh } from '@babylonjs/core/Meshes/linesMesh';
 import type { MapDocument, MapEntity, PropEntity, Rotation, TerrainData, Vec3, WorldBox } from '@tiletrigger/shared';
-import { DESTRUCTIBLE_SPECS, MAX_TEAMS, MOUNT_DEFS, mountTint, PLAYER, buildMapDecor, buildMapGeometry, dynamicBlockIds, getProp, mapLiquids, terrainHeightAt, yawXZ, mapFactions, mapTeams, placementCells, viewDirection, terrainUnderFloors, withPathsLaid, hungPropLift, rebedShift, visibleFaces } from '@tiletrigger/shared';
+import { DESTRUCTIBLE_SPECS, MAX_TEAMS, MOUNT_DEFS, mountTint, PLAYER, buildMapDecor, buildMapGeometry, dynamicBlockIds, getProp, mapLiquids, terrainHeightAt, yawXZ, mapFactions, mapTeams, placementCells, viewDirection, terrainUnderFloors, withPathsLaid, hungPropLift, rebedShift, visibleFaces, propFlushLifts } from '@tiletrigger/shared';
+import { PROP_CONTACTS } from '@tiletrigger/shared/propContacts';
 import { ScenarioVisuals, placeScenarioNode } from '../game/scenarioVisuals.ts';
 import { applyWorldGrade } from '../game/graphicsSettings.ts';
 import { MapStyler, boxVertexData } from '../mapMeshes.ts';
@@ -460,8 +461,18 @@ export class EditorView {
   /** Map layers switched off in the inspector: 'prop', 'spawn', 'pickup', 'logic'. */
   readonly hiddenLayers = new Set<string>();
 
+  /** Props drawn a hair apart where they lie flush on other props (propFlushLifts), worked out again when the props change. */
+  private flush: { key: string; lifts: Map<string, [number, number, number]> } = { key: '', lifts: new Map() };
+
+  private flushLifts(doc: MapDocument): Map<string, [number, number, number]> {
+    const key = this.scenario.ceilings.length + JSON.stringify(doc.entities.filter((e) => e.kind === 'prop' || e.kind === 'mover').map((e) => (e.kind === 'prop' ? [e.id, e.model, e.position, e.yaw, e.scale] : [e.id, e.props ?? []])));
+    if (key !== this.flush.key) this.flush = { key, lifts: propFlushLifts(doc, PROP_CONTACTS, this.scenario.ceilings) };
+    return this.flush.lifts;
+  }
+
   setEntities(doc: MapDocument, level: number, showAll: boolean, selected: ReadonlySet<string>): void {
     const { levelHeight } = doc.classicStructure;
+    this.flushLifts(doc);
     const seen = new Set<string>();
     const factions = mapFactions(doc);
     const factionColor = (id: string) => factions.find((f) => f.id === id)?.color ?? '#888888';
@@ -533,6 +544,9 @@ export class EditorView {
     if (e.kind === 'prop') {
       orientProp(node, e, doc.terrain);
       node.position.y += hungPropLift(this.scenario.ceilings, e);
+      // Flush on another prop: drawn a hair apart, as in the game (no flicker).
+      const lift = this.flush.lifts.get(e.id);
+      if (lift) node.position.addInPlaceFromFloats(lift[0], lift[1], lift[2]);
       // Shown on the ground as played (paths laid in), as the game re-beds it (settle.ts rebedProps).
       if (doc.terrain && this.shownTerrain && this.shownTerrain !== doc.terrain) node.position.y += rebedShift(doc.terrain, this.shownTerrain, e);
     } else if (e.kind === 'mount') node.rotation.y = e.yaw;

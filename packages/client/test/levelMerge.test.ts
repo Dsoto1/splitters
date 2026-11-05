@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { Color3 } from '@babylonjs/core/Maths/math.color';
 import type { Mesh } from '@babylonjs/core/Meshes/mesh';
-import { MERGE_CHUNK, mergeGeometry, planLayers, type MergeSource } from '../src/levelMerge.ts';
+import { MERGE_CHUNK, levelMipBias, mergeGeometry, planLayers, type MergeSource } from '../src/levelMerge.ts';
 
 /** A quad (two triangles) at x..x+1 on the ground, as a fake mesh. */
 function quad(x: number): { mesh: Mesh; geo: { positions: number[]; normals: number[]; uvs: number[]; indices: number[] } } {
@@ -104,5 +104,39 @@ describe('level draw merging on a built level', () => {
     // The added floor's slab is in the merge.
     expect(b.before).toBeGreaterThan(a.before);
     scene.dispose();
+  });
+});
+
+describe('level depth bias (docs/LOOK.md, "No flicker: props")', () => {
+  it('draws every level material a hair behind what lies in its planes (props flush on floors and walls win)', async () => {
+    const { NullEngine } = await import('@babylonjs/core/Engines/nullEngine');
+    const { Scene } = await import('@babylonjs/core/scene');
+    const { MapStyler } = await import('../src/mapMeshes.ts');
+    const { LEVEL_DEPTH_BIAS, buildMapGeometry } = await import('@tiletrigger/shared');
+    const { makeMap } = await import('../../shared/test/helpers.ts');
+    const scene = new Scene(new NullEngine());
+    const doc = makeMap([{ id: 't_arch', tile: 'imperial.triumphal_arch', x: 2, y: 3, z: 0, rotation: 0 as const }], [[16, 4, 24]]);
+    const styler = new MapStyler(scene);
+    styler.build(doc, buildMapGeometry(doc));
+    const sources = styler.mergeSources();
+    expect(sources.length).toBeGreaterThan(0);
+    expect(LEVEL_DEPTH_BIAS.factor).toBeGreaterThan(0);
+    expect(LEVEL_DEPTH_BIAS.units).toBeGreaterThan(0);
+    for (const s of sources) {
+      expect(s.mesh.material?.zOffset).toBe(LEVEL_DEPTH_BIAS.factor);
+      expect(s.mesh.material?.zOffsetUnits).toBe(LEVEL_DEPTH_BIAS.units);
+    }
+    expect(styler.surfaceMaterial(doc, 'core.concrete', null).zOffset).toBe(LEVEL_DEPTH_BIAS.factor);
+    scene.dispose();
+  });
+});
+
+describe('level mip bias (docs/LOOK.md, "No flicker: texture shimmer")', () => {
+  it('none on a desktop at its usual scale, some on a phone drawing small, never past one level', () => {
+    expect(levelMipBias(1, 1)).toBe(0);
+    expect(levelMipBias(2, 1.25)).toBeLessThan(0.15);
+    expect(levelMipBias(2.6, 0.75)).toBe(1);
+    expect(levelMipBias(2, 1)).toBeCloseTo(0.42, 2);
+    expect(levelMipBias(4, 0.25)).toBe(1);
   });
 });

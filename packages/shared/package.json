@@ -6,7 +6,8 @@
   "exports": {
     ".": "./src/index.ts",
     "./match": "./src/match.ts",
-    "./peerZip": "./src/net/peerZip.ts"
+    "./peerZip": "./src/net/peerZip.ts",
+    "./propContacts": "./src/content/propContacts.generated.ts"
   },
   "scripts": {
     "typecheck": "tsc -p ."

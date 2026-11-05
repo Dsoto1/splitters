@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { TERRAIN_MATERIALS, type TerrainData } from '@tiletrigger/shared';
+import { TERRAIN_MATERIALS, buildMapDecor, buildMapGeometry, type TerrainData } from '@tiletrigger/shared';
+import { makeMap } from '../../shared/test/helpers.ts';
 import { place } from '../src/foliage.ts';
 
 /** A flat 40 m square of grass at y = 0. */
@@ -22,6 +23,27 @@ const kinds = (out: Map<string, Map<string, number[]>>) => new Set([...out.keys(
 const models = (out: Map<string, Map<string, number[]>>, kind: string) => [...out].filter(([k]) => k.startsWith(`${kind}:`)).flatMap(([, m]) => [...m.keys()]);
 
 describe('terrain plants', () => {
+  it('never grow under or through placed tiles (Temple Terraces and ground tiles on grass)', () => {
+    const t = flat();
+    t.foliage = new Array(t.materials.length).fill(4);
+    const tile = (id: string, x: number, y: number, kind: string) => ({ id, tile: kind, x, y, z: 0, rotation: 0 as const });
+    const map = { ...makeMap([tile('a', 0, 0, 'jungle.terrace'), tile('b', 1, 0, 'jungle.terrace'), tile('c', 0, 1, 'jungle.terrace'), tile('d', -1, -1, 'core.yard')]), terrain: t };
+    const out = place(t, [...buildMapGeometry(map), ...buildMapDecor(map)], 'tiles');
+    let n = 0;
+    for (const byModel of out.values()) {
+      for (const m of byModel.values()) {
+        for (let i = 0; i < m.length; i += 16) {
+          n++;
+          const [x, z] = [m[i + 12]!, m[i + 14]!];
+          const inCell = (cx: number, cz: number) => x > cx * 8 - 4 && x < cx * 8 + 4 && z > cz * 8 - 4 && z < cz * 8 + 4;
+          expect(inCell(0, 0) || inCell(1, 0) || inCell(0, 1) || inCell(-1, -1), `a plant at ${x.toFixed(2)}, ${z.toFixed(2)}`).toBe(false);
+        }
+      }
+    }
+    // Round them the meadow still grows.
+    expect(n).toBeGreaterThan(50);
+  });
+
   it('grow eelgrass in shallow water only', () => {
     const t = flat();
     expect(kinds(place(t, [], 'seed')).has('reed')).toBe(false);
