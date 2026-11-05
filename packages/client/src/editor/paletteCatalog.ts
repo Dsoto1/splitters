@@ -4,7 +4,7 @@
  * atlas each piece's preview lives in. Plain data, no Babylon, so the atlas
  * tool (tools/content/palette-items.ts) and the tests read the same rules.
  */
-import { CORE_PROPS, MOUNT_DEFS, MOUNT_MODELS, coreCatalog, type PropDefinition } from '@tiletrigger/shared';
+import { CORE_PROPS, MOUNT_DEFS, MOUNT_MODELS, coreCatalog, envModelFile, type PropDefinition } from '@tiletrigger/shared';
 
 /** Palette categories: each tab has one, with one colour used on the tab, its headings and a thin accent on its pieces. */
 export const PALETTE_CATEGORIES = {
@@ -74,7 +74,7 @@ export const RETIRED_PROPS: ReadonlySet<string> = new Set([
   'prop.stones',
   'prop.mn_eelgrass',
 ]);
-/** The generated species offered in Nature's prop categories in their place (no palette picture yet), by category. */
+/** The generated species offered in Nature's prop categories in their place (pictured from their first variant, in the `environment` atlas), by category. */
 export const GROUND_COVER_SPECIES: Readonly<Record<string, readonly string[]>> = {
   'Plants & Flowers': ['env.grass.clump', 'env.flower.meadow', 'env.fern.bracken', 'env.shrub.broadleaf', 'env.water.eelgrass'],
   'Rocks & Wood': ['env.rock.pebbles'],
@@ -115,19 +115,22 @@ export function propGroup(def: Pick<PropDefinition, 'category'>): string {
  * write different atlas files. Tiles go by their Style Pack (`tiles-<prefix>`:
  * `tiles-core`, `tiles-desert`), props by the content pack they come from
  * (`props-<pack>`, content/props/<pack>.json: the tools pass it, the client
- * reads the atlas from thumbs/palette.json), vehicles and turrets share one.
+ * reads the atlas from thumbs/palette.json), vehicles and turrets share one,
+ * and so do the generated species (`environment`).
  */
 export function atlasGroup(key: string, propPack?: string): string {
   if (key.startsWith('tile:')) return `tiles-${key.slice(5).split('.')[0]}`;
+  if (key.startsWith('prop:env.')) return 'environment';
   if (key.startsWith('mount:')) return 'vehicles';
   return propPack ? `props-${propPack}` : 'other';
 }
 
-/** Every shipped piece that has a model picture: tiles, props and vehicles/turrets, by palette key. */
+/** Every shipped piece that has a model picture: tiles, props, the Nature tab's generated species and vehicles/turrets, by palette key. */
 export function pictureKeys(): { key: string; tile?: string; file?: string }[] {
   return [
     ...coreCatalog.all().map((d) => ({ key: `tile:${d.id}`, tile: d.id })),
     ...CORE_PROPS.map((p) => ({ key: `prop:${p.id}`, file: p.file })),
+    ...GROUND_COVER_IDS.map((id) => ({ key: `prop:${id}`, file: envModelFile(id)! })),
     ...MOUNT_MODELS.map((m) => ({ key: `mount:${m}`, file: MOUNT_DEFS[m].model })),
   ];
 }
