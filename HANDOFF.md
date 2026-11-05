@@ -372,6 +372,53 @@ up. The new Gnoll (Hyena Warrior) in the intake-2 sheets shows it.
 - **Owner's decisions:** keep the Hyena (Gnoll) and Snikkit (Goblin Mischief) and fix their hands with this;
   Bill is retired. Do the pistol-hold tweak after this.
 
+<!-- palms -->
+### Palms the right way round (`wip/palms`, agent, 2026-11-05; from main 2c8f3e21, main merged in at ce8a893a)
+**Cause (confirmed):** `skinHandFrame` signed the hand's flat by the thumb's FIRST joint against the wrist joint, which
+sits nearly level with the flat; on 34 of 100 looks (the Gnoll, Honest Abe, Scamp, Salamander Warlord, Patches,
+Tactical Soldier, Space Marine, Gorgle, ...; own-finger and re-fitted hands alike, in-house rigs too) it picked the
+back of the hand. `gripHand` then turned the shooting palm OUT (drawn `sideR` -0.8..-1.0) and `cupHand` the support
+palm DOWN (`palmL` -0.7..-1.0), third person, first person and Character Select alike. The audit missed it
+(`sideR` was `Math.abs`), and the curl test then often scored such hands well (the back of the hand on the gun with
+the fingers bent "toward the gun", i.e. backwards). Creatures (Imp, Puglin) were not affected.
+- **Fix** (handProbe.ts): the palm's side comes from the hand's joints, first cue that speaks: handedness (index vs
+  little-finger knuckles across the fingers: right palm = across x along, left = along x across, in the mesh's
+  right-handed glTF space), the fingers' bend, the thumb's tip, the import's `palmSide`; the old rule last. Checked
+  against the rig's own hands (Ranger: agrees 0.95/0.90 with the rig's thumb reading) and a unit test
+  (`packages/client/test/handProbe.test.ts`). `drawnHand` signs the drawn flat the same way: `sideR` (shooting palm
+  in: +1) and new `palmL` (support palm up / round the shooting hand: +1) are signed.
+- **Tools:** grip audit flag `palm` (`sideR` < 0.25 or `palmL` < 0, third or first person; weight 3), `PALMS=old`
+  audits by the old rule; `__grips.palms()` (each hand's cues and votes), `__grips.palmRule('old')`; summary.md has a
+  palms column. e2e `characters`: the drawn-hand checks need `palmL` >= 0, and the Gnoll and Abe (rifle, pistol;
+  third and full-body first person) need `sideR` >= 0.6 and `palmL` >= 0.3.
+- **Audit (rifle + pistol + shotgun, 100 looks; before = same build with `PALMS=old`):** total 483 -> 384, flagged
+  83 -> 75, `palm` 38 -> 4. Without the palm flag 369 -> 372: fp 19 -> 8 and off 17 -> 11 better; back 18 -> 24 and
+  flat 51 -> 56 worse, nearly all the curl test on long-gun SUPPORT hands: a palm-up hand under the handguard curls
+  its fingers up round it, away from the support point at the guard's underside (the test measures to that point; to
+  the guard's line would suit it better: not changed). Tried and dropped: fingers curl toward the frame's palm instead
+  of "toward the gun" (Space Marine's shooting hand then curled off the grip).
+- **Tuned after the fix:** Gnoll `fixes.hands.l.curl 1` (its left paw was a rigid fist; rebuilt from the download):
+  13 -> 6 (flat: right paw's curl test, spikes: body cloth). Snikkit `fixes.hands.scale 0.75` (31 cm hands, rebuilt)
+  + `fixes.grip` (gripLong [-0.03, 0.015, -0.03], curlR 0.7, curlL 0.3, supportPistol [0, 0.02, -0.04]): 12 -> 0
+  (his palms were never flipped). Space Marine and Honest Abe: round 3's support offsets were tuned on flipped hands,
+  re-tuned (5 -> 3, 3 -> 3: palm -> flat).
+- **Still `palm`:** Boglurker (rigid frog hand 19-21 cm off the grip, first person palm out; was broken before),
+  Brass Hare (hands buried in huge cuffs; the drawn flat is the cuff's; same before), Shiba (shooting palm 0.22,
+  lying more under than beside the grip; same before), Rattles (pistol support hand on edge, -0.04; same before).
+- **Candidates for the next hands round** (new flags, mostly the support curl test): Pharaoh 3 -> 6 (back, spikes),
+  Gorgle, Vanguard, Croakley, Big Bab, Desert Ranger, Stealth Operative, Tactical Soldier (+back); Masked Figure,
+  Anoobys, Greyfang, Kenji, Seetah, WWII Infantry (+flat); Goblin Warlord (+off). Grips round 3's per-look support
+  offsets (`supportLong`, `rollL`) were all tuned on whatever way the hand was read then: worth a re-tune pass.
+- **Intake-2 verdicts:** "own fingers often score off/back" was this bug in part (own-finger Meshy hands were among
+  the flipped). Not re-decided: the keep-old looks (Frida, WWII Infantry, Grunt '68, Desert Ranger, Big Bab, Grandpa
+  Chains, Hazmat Joe) ship their OLD builds, and own/fit was chosen between builds no longer shipped: re-deciding
+  needs those alternatives rebuilt and re-audited (not done). The shipped builds after the fix: Frida, Grandpa Chains,
+  Hazmat 0; Grunt '68 3 -> 0, WWII Infantry 3 -> 3, Desert Ranger 5 -> 3, Big Bab 6 -> 6, Stealth Operative (fit)
+  3 -> 3, Beanie Alien (own) 3 -> 0, Tactical Soldier (own) 7 -> 3. No verdict clearly changes on this evidence.
+- Evidence: agent scratchpad `palms/` (summary/summary.md ranked, `summary/<id>-before-after.png`, `fp/` first and
+  third person before/after, `close/`, audits `before/`, `after/`, `after-final/`; tools in `palms/tools/`).
+<!-- /palms -->
+
 ### Open bug (found 2026-11-05): explosion debris can fall through the world
 On the env + intake merge (`check/env-land2`), physicsfx counted 32 debris bodies where it expected 10, with the
 fastest moving at about 60 m/s, on both attempts.
