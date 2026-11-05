@@ -52,6 +52,14 @@ Owner: "The ikea map has significant flickering" / "flicker when I look around, 
 - Not reproducible in the container: SwiftShader's float depth draws exact ties steadily, so causes 1-2 looked steady
   here; the audit is the proof. Owner to check on the phone (the Showroom rugs, the market hall shelving, the speckled
   floors while turning) and on the M1 (warehouse racks and windows over the warehouse, Medium/High).
+- Phone emulation, terrazzo region of the owner's spot, mean frame-to-frame change turning 0.23°: 42 → 32 (-24 %).
+  Desktop Medium shots before/after differ in <0.5 % of pixels (glass, shadows); visual baselines unchanged.
+- Checks: typecheck, content:check, bundle 692.6 kB gzip (unchanged: contacts table loads with the match code),
+  zfight/levelMerge/foliage/glass tests; local test:changed and e2e visual/mobile had only load timeouts (machine at
+  load 10-14). CI: `check/flatpack` run 42122718849 green at 49adda8f (full suite). Not landed: land when wanted.
+- Side question (Temple Terrace "cracks", MapMaker): no geometric gaps (tops sampled every 5 cm over 2×2 terraces);
+  the lines are the facade's moss dressing (moss cap strips, vines); the owner confirmed in play. A foliage test now
+  checks no plants grow under or through placed tiles.
 - Screenshots: session scratchpad `flatpack/` (before/after, phone emulation and Medium).
 
 ### Drive intake of 2026-11-05 (`wip/intake-1105`, agent; step 1 on `check/intake-1105`, step 2 next)
