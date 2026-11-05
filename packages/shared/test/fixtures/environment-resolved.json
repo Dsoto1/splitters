@@ -2530,6 +2530,54 @@
    }
   ]
  },
+ "env.flower.meadow@2": {
+  "surface": "foliage",
+  "nav": "none",
+  "role": "decorative",
+  "conceals": null,
+  "variants": [
+   {
+    "index": 0,
+    "name": "white",
+    "size": [
+     0.319,
+     0.42,
+     0.353
+    ],
+    "shapes": []
+   },
+   {
+    "index": 1,
+    "name": "yellow",
+    "size": [
+     0.319,
+     0.42,
+     0.353
+    ],
+    "shapes": []
+   },
+   {
+    "index": 2,
+    "name": "purple",
+    "size": [
+     0.319,
+     0.42,
+     0.353
+    ],
+    "shapes": []
+   },
+   {
+    "index": 3,
+    "name": "red",
+    "size": [
+     0.319,
+     0.42,
+     0.353
+    ],
+    "shapes": []
+   }
+  ]
+ },
  "env.grass.clump@1": {
   "surface": "foliage",
   "nav": "none",
@@ -3309,6 +3357,34 @@
      0.832,
      0.125,
      0.956
+    ],
+    "shapes": []
+   }
+  ]
+ },
+ "env.rock.pebbles@2": {
+  "surface": "rock",
+  "nav": "none",
+  "role": "decorative",
+  "conceals": null,
+  "variants": [
+   {
+    "index": 0,
+    "name": "grey",
+    "size": [
+     1.239,
+     0.32,
+     1.092
+    ],
+    "shapes": []
+   },
+   {
+    "index": 1,
+    "name": "sand",
+    "size": [
+     1.239,
+     0.32,
+     1.092
     ],
     "shapes": []
    }

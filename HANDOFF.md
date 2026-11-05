@@ -426,16 +426,42 @@ up. The new Gnoll (Hyena Warrior) in the intake-2 sheets shows it.
 
 The pistol-hold tweak follows the palm fix.
 
-### Queued (owner, 2026-11-05): small environment follow-ups (next free agent)
-- **Tall grass:** keep it as it is on Coldwater Gulch and Shingle Point (0.7–1.4 m clumps).
-- **Pebbles bigger:**
-  - make `env.rock.pebbles` read at play distance;
-  - add a larger variant, or raise the base size, so Sunstone Crag's swapped stones are no longer faint;
-  - redo Sunstone Crag's pebbles with MapMaker's Replace all if needed;
-  - they still don't collide.
-- **Red meadow flower:**
-  - add a red variant to `env.flower.meadow` (the generator, plus a new leaf-atlas cell if needed);
-  - turn Serene City's one formerly-red flower back to red with Replace all or the inspector variant.
+### Environment Phase 1d: bigger pebbles, red meadow flower, Nature pictures (`wip/env-p1d`, agent, 2026-11-05; from main 9cd28e63, main dfdfe792 merged in; pushed, not merged)
+The owner's small environment follow-ups. Tall grass kept as it is (no change).
+- **Pebbles bigger:** `env.rock.pebbles` assetVersion 2 (content/environment/rock.json; same generator kind `pebbles`):
+  4 stones (0.2–0.58 m), rounder and higher (`flat` 0.9–1.25, `ring` [7, 4]), 60 triangles (budget `rock: [64]`),
+  1.24 × 0.32 × 1.09 m at scale 1 (was 0.83 × 0.13 × 0.96; the Kenney stones were 0.76 × 0.40 × 0.76). Raised the
+  base size rather than adding a variant: variants share one size (`envPropDefinition` and Replace all's Keep height
+  read variant 0), and the brush's pebbles were just as faint. Still nav none, no shapes, decorative.
+  `placement.minSpacing` 0.6 → 0.9, nominalHeight 0.32. Fixture `env.rock.pebbles@2`.
+- **Sunstone Crag:** the 36 clusters (Kenney stones, scale kept, 1.04–1.94) are now 0.33–0.62 m high; set from sand to
+  **grey** (the Kenney stones were grey; sand on the dark sand still read faint at 12 m) with MapMaker's inspector
+  Variant list, one piece at a time (23 selected by clicking, 13 directly), driven without ?test=1 by the scratchpad
+  driver `env4/tools/variant.mjs`; Replace all can't do it (same model is a no-op in `replacePropsCommand`).
+- **Red meadow flower:** `env.flower.meadow` assetVersion 2, variant 3 `red` (a poppy: the buttercup card `flower.1`
+  tinted `#d0261c`, its eye darker). No new atlas cell: `leaves.webp` and every existing GLB byte-identical; new
+  `env/flower.meadow.red.glb`. Fixture `env.flower.meadow@2`. Serene City's `prop_391` (Kenney red, then white) →
+  variant 3 via the inspector (selected directly: no click hit it). envlab lineup: red beside the Kenney red flower,
+  white with no "before" piece (`''`).
+- **Palette pictures:** the Nature tab's species (`GROUND_COVER_SPECIES`: grass, meadow flowers, fern, shrub, eelgrass,
+  pebbles) are in `pictureKeys` (their first variant's file) and a new `environment` atlas (`atlasGroup`: any
+  `prop:env.*`); palette-items.ts reads `env/` files from public/. The `?env=1` preview group still has no pictures.
+- Both maps exported by MapMaker, release stamp dropped (`env4/tools/finalize.mjs`); the export also carries what
+  loading does (format 25 → 26, key order), as in 1c. `validate-map`: 0 issues on both.
+- **Screenshots** (session scratchpad `env4/`): `sunstone_crag-before-{1..4}` (main), `-asset-*` (new pebbles, map
+  still sand), `-after-*` (grey) at eye height, 5 m and 12 m; `serene_city-red-1`; `envlab-after-{plants,ground,small,mid}`;
+  `palette-environment.png` (the new atlas row).
+- **Checks:** typecheck; test:changed (1658 passed; npc "Outpost Siege" and pads "eagle_spires" timed out under load
+  17 and passed when rerun alone); content:rebuild + content:check; build; bundle budget (692.6 kB gzip of 840);
+  validate-map on both maps (0 issues). Local e2e (ports 4971/4972; editor, offline, online, maps, environment, visual,
+  scenery) on a container at load 13–18: offline, online, environment PASS, visual's envlab baseline holds (1.7 %
+  differ, 10 % allowed, so no new baseline); editor (dropship / random pickup timing), scenery, maps (both maps'
+  tour: "no match", setInputFiles timeout) and visual's arena ("scene never got ready") failed on timeouts. CI
+  `check/env-p1d` run 42119067704 at 357a368c (main 8722f6ca merged in): **green**, full suite (unit, 15 e2e shards,
+  the two maps' browser tour, perf).
+- **Not tested:** the GPU cost of bigger pebbles (60 vs 55 triangles a cluster, more pixels) on the M1; how the
+  bigger brush-grown pebbles look across every snow / gravel / sand map (seen in envlab and on Sunstone Crag only).
+- **Resume:** `git fetch && git checkout wip/env-p1d`; land with the train once the owner has seen the screenshots.
 <!-- palms -->
 ### Palms the right way round (`wip/palms`, agent, 2026-11-05; from main 2c8f3e21, main merged in at ce8a893a)
 **Cause (confirmed):** `skinHandFrame` signed the hand's flat by the thumb's FIRST joint against the wrist joint, which
@@ -535,6 +561,9 @@ AGENT_BUILD_CONTRACT.md.
 
 ### Owner's map notes for later (2026-11-05; not started)
 - **No Man's Field:** asset refresh. It still uses Kenney kits; move it to our generated environment and props.
+- **Border forest backdrop** (owner's note, 2026-11-05): maps' surrounding forest still uses the old blocky tree
+  models (owner's screenshot on a temple test map). Swap it to our generated oak and pine, which is Environment
+  Phase 4 work. No rush.
 - **Rockfall Canyon** (`maps/canyon.json`): asset and foliage refresh, onto our generated environment, rocks and plants.
 - **Shingle Point** (`maps/shingle_point.json`, the beach landing): an asset refresh. The owner also suggests a
   layout rework from the reference `docs/map-briefs/shingle_point_reference.jpg`:

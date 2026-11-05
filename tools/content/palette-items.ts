@@ -21,7 +21,7 @@ const items = pictureKeys().map(({ key, tile, file }) => {
   if (tile) hash = sha(JSON.stringify(coreCatalog.get(tile)));
   else {
     // Same rule as the client's model loader: kit folders sit in public/, the rest under public/models/.
-    const path = /^(props|creatures|city|packs)\//.test(file!) ? join(PUBLIC, file!) : join(MODELS, file!);
+    const path = /^(props|creatures|city|packs|env)\//.test(file!) ? join(PUBLIC, file!) : join(MODELS, file!);
     hash = sha(readFileSync(path));
   }
   return { key, group: atlasGroup(key, key.startsWith('prop:') ? packOf.get(key.slice(5)) : undefined), hash };

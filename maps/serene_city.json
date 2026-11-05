@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 25,
+  "formatVersion": 26,
   "metadata": {
     "id": "serene_city",
     "name": "Serene City",
@@ -8216,8 +8216,8 @@
       "yaw": 0,
       "scale": 2.38,
       "solid": false,
-      "tint": null,
-      "variant": 2
+      "variant": 2,
+      "tint": null
     },
     {
       "id": "prop_391",
@@ -8231,7 +8231,8 @@
       "yaw": 0,
       "scale": 2.38,
       "solid": false,
-      "tint": null
+      "tint": null,
+      "variant": 3
     },
     {
       "id": "prop_392",
@@ -8245,8 +8246,8 @@
       "yaw": 0,
       "scale": 2.38,
       "solid": false,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_393",
@@ -8260,8 +8261,8 @@
       "yaw": 0,
       "scale": 2.38,
       "solid": false,
-      "tint": null,
-      "variant": 2
+      "variant": 2,
+      "tint": null
     },
     {
       "id": "prop_394",

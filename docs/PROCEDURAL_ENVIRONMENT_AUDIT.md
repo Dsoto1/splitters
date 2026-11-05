@@ -591,7 +591,7 @@ Rules:
 | nt_boulder | `env.rock.boulder_rounded` |  | stone hull boxes |  |
 | nt_boulder_moss | `env.rock.boulder_rounded` | moss | stone hull boxes |  |
 | nt_boulder_snow | `env.rock.boulder_rounded` | snow | stone hull boxes |  |
-| stones | `env.rock.pebbles` (done, Phase 1c: scale kept) | grey / sand | none | no collider (as now) |
+| stones | `env.rock.pebbles` (done, Phase 1c: scale kept; bigger in 1d) | grey / sand | none | no collider (as now) |
 | nt_rock_moss | `env.rock.rock` | moss | stone hull boxes |  |
 | nt_rock_snow | `env.rock.rock` | snow | stone hull boxes |  |
 | rock_medium | `env.rock.rock` | medium | stone hull boxes |  |
