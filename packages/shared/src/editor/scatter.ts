@@ -24,14 +24,15 @@ export const SCATTER_SETS = {
   woods: { label: 'Leafy woods', models: [['prop.oak', 3], ['prop.tree_round', 2], ['prop.tree_detailed', 2], ['prop.tree_fat', 1], ['prop.tree_thin', 1]], spacing: 6, scale: [0.8, 1.2] },
   autumn: { label: 'Autumn woods', models: [['prop.oak_autumn', 3], ['prop.tree_round_autumn', 2], ['prop.oak', 1], ['prop.tree_autumn', 1]], spacing: 6, scale: [0.8, 1.2] },
   mixed: { label: 'Fir & birch forest', models: [['prop.mn_fir', 3], ['prop.mn_birch', 2], ['prop.mn_oak', 1], ['prop.mn_shrub', 2], ['prop.mn_fern', 2]], spacing: 5, scale: [0.85, 1.2] },
-  jungle: { label: 'Jungle', models: [['prop.palm_tall', 2], ['prop.palm_short', 2], ['prop.tree_plateau', 1], ['prop.mn_banana', 2], ['prop.fern', 2], ['prop.mn_fern', 2], ['prop.bush_large', 2]], spacing: 3.5, scale: [0.8, 1.3] },
-  undergrowth: { label: 'Undergrowth', models: [['prop.mn_shrub', 3], ['prop.mn_fern', 3], ['prop.bush_small', 1]], spacing: 1.8, scale: [0.75, 1.2] },
-  bushes: { label: 'Bushes', models: [['prop.bush', 3], ['prop.bush_leafy', 2], ['prop.bush_large', 1], ['prop.bush_small', 3], ['prop.bush_cone', 1]], spacing: 2.2, scale: [0.8, 1.3] },
-  // Our own grass and flowers (the Kenney ones are retired from the palette, editor/paletteCatalog.ts RETIRED_PROPS).
+  jungle: { label: 'Jungle', models: [['prop.palm_tall', 2], ['prop.palm_short', 2], ['prop.tree_plateau', 1], ['prop.mn_banana', 2], ['env.fern.bracken', 2], ['prop.mn_fern', 2], ['prop.bush_large', 2]], spacing: 3.5, scale: [0.8, 1.3] },
+  undergrowth: { label: 'Undergrowth', models: [['prop.mn_shrub', 3], ['prop.mn_fern', 3], ['env.fern.bracken', 1]], spacing: 1.8, scale: [0.75, 1.2] },
+  bushes: { label: 'Bushes', models: [['prop.bush', 3], ['prop.bush_leafy', 2], ['prop.bush_large', 1], ['env.shrub.broadleaf', 2], ['env.shrub.broadleaf#1', 1], ['prop.bush_cone', 1]], spacing: 2.2, scale: [0.8, 1.3] },
+  // Our own grass, flowers, fern, shrub, pebbles and eelgrass (the Kenney grass, flowers, fern, small bush and stones and
+  // the Meshy eelgrass are retired from the palette, client editor/paletteCatalog.ts RETIRED_PROPS).
   meadow: { label: 'Flowers & grass', models: [['env.flower.meadow', 2], ['env.flower.meadow#1', 2], ['env.flower.meadow#2', 2], ['env.grass.clump', 4], ['env.grass.clump#1', 1], ['prop.mushrooms', 0.5]], spacing: 1.2, scale: [0.8, 1.3] },
-  desert: { label: 'Desert scrub', models: [['prop.cactus', 3], ['prop.cactus_tall', 1], ['env.grass.clump#1', 3], ['prop.stones', 2], ['prop.palm_short', 0.5]], spacing: 3.5, scale: [0.8, 1.2] },
-  water: { label: 'Water plants', models: [['prop.mn_eelgrass', 1]], spacing: 1.1, scale: [0.8, 1.3] },
-  rocks: { label: 'Rocks', models: [['prop.boulder_round', 2], ['prop.boulder_jagged', 2], ['prop.boulder_flat', 2], ['prop.rock_medium', 2], ['prop.stones', 3]], spacing: 3, scale: [0.6, 1.3] },
+  desert: { label: 'Desert scrub', models: [['prop.cactus', 3], ['prop.cactus_tall', 1], ['env.grass.clump#1', 3], ['env.rock.pebbles#1', 2], ['prop.palm_short', 0.5]], spacing: 3.5, scale: [0.8, 1.2] },
+  water: { label: 'Water plants', models: [['env.water.eelgrass', 3], ['env.water.eelgrass#1', 1]], spacing: 1.1, scale: [0.8, 1.3] },
+  rocks: { label: 'Rocks', models: [['prop.boulder_round', 2], ['prop.boulder_jagged', 2], ['prop.boulder_flat', 2], ['prop.rock_medium', 2], ['env.rock.pebbles', 3]], spacing: 3, scale: [0.6, 1.3] },
   envForest: { label: 'Procedural forest (preview)', models: [['env.broadleaf.oak', 3], ['env.broadleaf.oak#1', 1], ['env.conifer.pine_tall', 4]], spacing: 3, scale: [0.8, 1.25], preview: true },
   envShrubs: { label: 'Procedural shrubs (preview)', models: [['env.shrub.broadleaf', 3], ['env.shrub.broadleaf#1', 1]], spacing: 2.4, scale: [0.75, 1.3], preview: true },
   envRocks: { label: 'Procedural boulders (preview)', models: [['env.rock.boulder_angular', 2], ['env.rock.boulder_angular#1', 1]], spacing: 6, scale: [0.6, 1.4], preview: true },

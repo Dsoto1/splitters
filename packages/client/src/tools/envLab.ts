@@ -52,6 +52,11 @@ const LINEUP: [string, number, string, number, number][] = [
   ['env.flower.meadow', 2, 'prop.flower_purple', -4.4, -6.6],
   ['env.fern.bracken', 0, 'prop.fern', -2.9, -6.4],
   ['env.fern.bracken', 1, 'prop.plant_low', -1.5, -6.7],
+  // Pebbles and eelgrass (the plants brush's stones and water plants), in front of the boulders.
+  ['env.rock.pebbles', 0, 'prop.stones', 0.9, -6.5],
+  ['env.rock.pebbles', 1, 'prop.stones', 2.2, -6.8],
+  ['env.water.eelgrass', 0, 'prop.mn_eelgrass', 3.7, -6.5],
+  ['env.water.eelgrass', 1, 'prop.mn_eelgrass', 5.0, -6.5],
 ];
 
 const EYE = 1.7;
@@ -128,6 +133,12 @@ export async function openEnvLab(engine: AbstractEngine, canvas: HTMLCanvasEleme
       oldEntities.push(ent(`old_${i}`, old, [x + BEFORE_X, 0, z]));
       continue;
     }
+    if (model === 'env.water.eelgrass') {
+      // A small bed of clumps (as the plants brush grows it); the old eelgrass as one piece.
+      for (let k = 0; k < 4; k++) entities.push(ent(`eelgrass_${i}_${k}`, model, [x + ((k % 2) - 0.5) * 0.42, 0, z + Math.floor(k / 2) * 0.38], variant, k * 1.9, 0.9 + (k % 3) * 0.15));
+      oldEntities.push(ent(`old_${i}`, old, [x + BEFORE_X, 0, z]));
+      continue;
+    }
     if (model === 'env.grass.clump') {
       // Grass as a small patch of clumps; the old tuft as one piece.
       for (let k = 0; k < 30; k++) entities.push(ent(`grass_${i}_${k}`, model, [x + ((k % 5) - 2) * 0.28, 0, z + Math.floor(k / 5) * 0.3], variant, k * 1.3, 0.9 + (k % 3) * 0.15));
@@ -196,6 +207,7 @@ export async function openEnvLab(engine: AbstractEngine, canvas: HTMLCanvasEleme
     small: [[0, EYE, -11], [-1, 0.6, -4]],
     plants: [[-4.6, EYE, -8.2], [-4.2, 0.5, -4]],
     rocks: [[3.2, EYE, -8.6], [3.1, 0.6, -4]],
+    ground: [[3, EYE, -10], [3, 0.1, -6.6]],
     cliffs: [[2, EYE, 15], [4, 4, 30]],
   };
   const VIEWS: Record<string, [Vector3, Vector3]> = {};

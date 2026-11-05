@@ -4758,13 +4758,13 @@
       "id": "prop_365",
       "position": [
         52.7,
-        0.43,
+        0.45,
         64.05
       ],
       "kind": "prop",
-      "model": "prop.grass_tall",
+      "model": "env.grass.clump",
       "yaw": 1.332,
-      "scale": 1,
+      "scale": 1.67,
       "solid": false,
       "tint": null
     },
@@ -4786,13 +4786,13 @@
       "id": "prop_367",
       "position": [
         -28.64,
-        0.69,
+        0.71,
         -22.3
       ],
       "kind": "prop",
-      "model": "prop.grass_tall",
+      "model": "env.grass.clump",
       "yaw": 3.843,
-      "scale": 1.33,
+      "scale": 2.22,
       "solid": false,
       "tint": null
     },
@@ -4870,13 +4870,13 @@
       "id": "prop_373",
       "position": [
         -28.08,
-        0.36,
+        0.39,
         -78.34
       ],
       "kind": "prop",
-      "model": "prop.grass_tall",
+      "model": "env.grass.clump",
       "yaw": 2.218,
-      "scale": 1.5,
+      "scale": 2.51,
       "solid": false,
       "tint": null
     },
@@ -4902,9 +4902,9 @@
         37.7
       ],
       "kind": "prop",
-      "model": "prop.grass_tall",
+      "model": "env.grass.clump",
       "yaw": 5.616,
-      "scale": 1.03,
+      "scale": 1.72,
       "solid": false,
       "tint": null
     },
@@ -4916,9 +4916,9 @@
         7.96
       ],
       "kind": "prop",
-      "model": "prop.grass_tall",
+      "model": "env.grass.clump",
       "yaw": 4.093,
-      "scale": 1.59,
+      "scale": 2.66,
       "solid": false,
       "tint": null
     },
@@ -4926,13 +4926,13 @@
       "id": "prop_377",
       "position": [
         -6.02,
-        0.28,
+        0.29,
         -28.15
       ],
       "kind": "prop",
-      "model": "prop.grass_tall",
+      "model": "env.grass.clump",
       "yaw": 4.503,
-      "scale": 1.59,
+      "scale": 2.66,
       "solid": false,
       "tint": null
     },
@@ -4996,13 +4996,13 @@
       "id": "prop_383",
       "position": [
         21.99,
-        0.04,
+        0.05,
         -72.19
       ],
       "kind": "prop",
-      "model": "prop.grass_tall",
+      "model": "env.grass.clump",
       "yaw": 5.261,
-      "scale": 1.45,
+      "scale": 2.42,
       "solid": false,
       "tint": null
     },
@@ -5010,13 +5010,13 @@
       "id": "prop_384",
       "position": [
         16.51,
-        0.83,
+        0.87,
         -23.51
       ],
       "kind": "prop",
-      "model": "prop.grass_tall",
+      "model": "env.grass.clump",
       "yaw": 2.757,
-      "scale": 1.46,
+      "scale": 2.44,
       "solid": false,
       "tint": null
     },
@@ -5024,13 +5024,13 @@
       "id": "prop_385",
       "position": [
         1.43,
-        0.04,
+        0.06,
         51.08
       ],
       "kind": "prop",
-      "model": "prop.grass_tall",
+      "model": "env.grass.clump",
       "yaw": 3.372,
-      "scale": 1.12,
+      "scale": 1.87,
       "solid": false,
       "tint": null
     },
@@ -5052,13 +5052,13 @@
       "id": "prop_387",
       "position": [
         42.85,
-        0.19,
+        0.21,
         -130.94
       ],
       "kind": "prop",
-      "model": "prop.grass_tall",
+      "model": "env.grass.clump",
       "yaw": 3.97,
-      "scale": 1.3,
+      "scale": 2.17,
       "solid": false,
       "tint": null
     },
@@ -5080,13 +5080,13 @@
       "id": "prop_389",
       "position": [
         -33.45,
-        1.77,
+        1.84,
         78.48
       ],
       "kind": "prop",
-      "model": "prop.grass_tall",
+      "model": "env.grass.clump",
       "yaw": 2.317,
-      "scale": 1.48,
+      "scale": 2.47,
       "solid": false,
       "tint": null
     },
@@ -5112,9 +5112,9 @@
         -112.94
       ],
       "kind": "prop",
-      "model": "prop.grass_tall",
+      "model": "env.grass.clump",
       "yaw": 3.292,
-      "scale": 1.48,
+      "scale": 2.47,
       "solid": false,
       "tint": null
     },
@@ -5136,13 +5136,13 @@
       "id": "prop_394",
       "position": [
         11.35,
-        0.29,
+        0.3,
         -65.89
       ],
       "kind": "prop",
-      "model": "prop.grass_tall",
+      "model": "env.grass.clump",
       "yaw": 3.257,
-      "scale": 1.16,
+      "scale": 1.94,
       "solid": false,
       "tint": null
     },
@@ -5150,13 +5150,13 @@
       "id": "prop_395",
       "position": [
         -52.76,
-        0.16,
+        0.17,
         -51.88
       ],
       "kind": "prop",
-      "model": "prop.grass_tall",
+      "model": "env.grass.clump",
       "yaw": 1.085,
-      "scale": 1.11,
+      "scale": 1.85,
       "solid": false,
       "tint": null
     },
@@ -5164,13 +5164,13 @@
       "id": "prop_396",
       "position": [
         50.91,
-        0.75,
+        0.76,
         18.59
       ],
       "kind": "prop",
-      "model": "prop.grass_tall",
+      "model": "env.grass.clump",
       "yaw": 4.414,
-      "scale": 1.03,
+      "scale": 1.72,
       "solid": false,
       "tint": null
     },
@@ -5178,13 +5178,13 @@
       "id": "prop_398",
       "position": [
         55.14,
-        0.52,
+        0.54,
         73.91
       ],
       "kind": "prop",
-      "model": "prop.grass_tall",
+      "model": "env.grass.clump",
       "yaw": 3.237,
-      "scale": 1.3,
+      "scale": 2.17,
       "solid": false,
       "tint": null
     },
@@ -5192,13 +5192,13 @@
       "id": "prop_400",
       "position": [
         -50.18,
-        0.82,
+        0.87,
         78.57
       ],
       "kind": "prop",
-      "model": "prop.grass_tall",
+      "model": "env.grass.clump",
       "yaw": 3.891,
-      "scale": 1.43,
+      "scale": 2.39,
       "solid": false,
       "tint": null
     },
@@ -5206,13 +5206,13 @@
       "id": "prop_401",
       "position": [
         -23.86,
-        0.02,
+        0.03,
         -9.26
       ],
       "kind": "prop",
-      "model": "prop.grass_tall",
+      "model": "env.grass.clump",
       "yaw": 3.231,
-      "scale": 1.49,
+      "scale": 2.49,
       "solid": false,
       "tint": null
     },
@@ -5220,13 +5220,13 @@
       "id": "prop_402",
       "position": [
         -4.74,
-        1.82,
+        1.84,
         3.92
       ],
       "kind": "prop",
-      "model": "prop.grass_tall",
+      "model": "env.grass.clump",
       "yaw": 0.272,
-      "scale": 1.03,
+      "scale": 1.72,
       "solid": false,
       "tint": null
     },
@@ -5234,13 +5234,13 @@
       "id": "prop_403",
       "position": [
         2.07,
-        0.09,
+        0.1,
         57.31
       ],
       "kind": "prop",
-      "model": "prop.grass_tall",
+      "model": "env.grass.clump",
       "yaw": 2.286,
-      "scale": 1.03,
+      "scale": 1.72,
       "solid": false,
       "tint": null
     },
@@ -5248,13 +5248,13 @@
       "id": "prop_404",
       "position": [
         -25.48,
-        2.07,
+        2.13,
         28.22
       ],
       "kind": "prop",
-      "model": "prop.grass_tall",
+      "model": "env.grass.clump",
       "yaw": 1.222,
-      "scale": 1.26,
+      "scale": 2.11,
       "solid": false,
       "tint": null
     },
@@ -5276,13 +5276,13 @@
       "id": "prop_406",
       "position": [
         -20.83,
-        0.49,
+        0.5,
         -76.94
       ],
       "kind": "prop",
-      "model": "prop.grass_tall",
+      "model": "env.grass.clump",
       "yaw": 4.656,
-      "scale": 1.07,
+      "scale": 1.79,
       "solid": false,
       "tint": null
     },
@@ -5290,13 +5290,13 @@
       "id": "prop_408",
       "position": [
         -7.11,
-        0.3,
+        0.31,
         67.57
       ],
       "kind": "prop",
-      "model": "prop.grass_tall",
+      "model": "env.grass.clump",
       "yaw": 0.974,
-      "scale": 1.01,
+      "scale": 1.69,
       "solid": false,
       "tint": null
     },
@@ -5308,9 +5308,9 @@
         -26.55
       ],
       "kind": "prop",
-      "model": "prop.grass_tall",
+      "model": "env.grass.clump",
       "yaw": 5.902,
-      "scale": 1.22,
+      "scale": 2.04,
       "solid": false,
       "tint": null
     },
@@ -5332,13 +5332,13 @@
       "id": "prop_411",
       "position": [
         23.53,
-        0.63,
+        0.65,
         -61.51
       ],
       "kind": "prop",
-      "model": "prop.grass_tall",
+      "model": "env.grass.clump",
       "yaw": 0.264,
-      "scale": 1.4,
+      "scale": 2.34,
       "solid": false,
       "tint": null
     },
@@ -5346,13 +5346,13 @@
       "id": "prop_412",
       "position": [
         19.91,
-        0.59,
+        0.62,
         -19.94
       ],
       "kind": "prop",
-      "model": "prop.grass_tall",
+      "model": "env.grass.clump",
       "yaw": 1.851,
-      "scale": 1.13,
+      "scale": 1.89,
       "solid": false,
       "tint": null
     },
@@ -5374,13 +5374,13 @@
       "id": "prop_414",
       "position": [
         -22.35,
-        0.18,
+        0.19,
         67.18
       ],
       "kind": "prop",
-      "model": "prop.grass_tall",
+      "model": "env.grass.clump",
       "yaw": 5.132,
-      "scale": 1.35,
+      "scale": 2.26,
       "solid": false,
       "tint": null
     },
@@ -5388,13 +5388,13 @@
       "id": "prop_415",
       "position": [
         -26,
-        3.76,
+        3.82,
         47.15
       ],
       "kind": "prop",
-      "model": "prop.grass_tall",
+      "model": "env.grass.clump",
       "yaw": 0.922,
-      "scale": 1.45,
+      "scale": 2.42,
       "solid": false,
       "tint": null
     },
@@ -5402,13 +5402,13 @@
       "id": "prop_416",
       "position": [
         48.06,
-        0.31,
+        0.32,
         -126.02
       ],
       "kind": "prop",
-      "model": "prop.grass_tall",
+      "model": "env.grass.clump",
       "yaw": 3.419,
-      "scale": 1.17,
+      "scale": 1.95,
       "solid": false,
       "tint": null
     },
@@ -5416,13 +5416,13 @@
       "id": "prop_417",
       "position": [
         -18.36,
-        0.23,
+        0.24,
         -1.94
       ],
       "kind": "prop",
-      "model": "prop.grass_tall",
+      "model": "env.grass.clump",
       "yaw": 1.65,
-      "scale": 1.06,
+      "scale": 1.77,
       "solid": false,
       "tint": null
     },
@@ -5486,13 +5486,13 @@
       "id": "prop_422",
       "position": [
         -30.04,
-        0.1,
+        0.12,
         -8.15
       ],
       "kind": "prop",
-      "model": "prop.grass_tall",
+      "model": "env.grass.clump",
       "yaw": 2.537,
-      "scale": 1.33,
+      "scale": 2.22,
       "solid": false,
       "tint": null
     },
@@ -5504,9 +5504,9 @@
         130.58
       ],
       "kind": "prop",
-      "model": "prop.grass_tall",
+      "model": "env.grass.clump",
       "yaw": 2.405,
-      "scale": 1.43,
+      "scale": 2.39,
       "solid": false,
       "tint": null
     },
@@ -5514,13 +5514,13 @@
       "id": "prop_424",
       "position": [
         28.72,
-        -0.1,
+        -0.09,
         4.5
       ],
       "kind": "prop",
-      "model": "prop.grass_tall",
+      "model": "env.grass.clump",
       "yaw": 4.87,
-      "scale": 1.04,
+      "scale": 1.74,
       "solid": false,
       "tint": null
     },
@@ -5528,13 +5528,13 @@
       "id": "prop_425",
       "position": [
         -11.57,
-        0.04,
+        0.06,
         70.94
       ],
       "kind": "prop",
-      "model": "prop.grass_tall",
+      "model": "env.grass.clump",
       "yaw": 1.885,
-      "scale": 1.58,
+      "scale": 2.64,
       "solid": false,
       "tint": null
     },
@@ -5602,9 +5602,9 @@
         24.07
       ],
       "kind": "prop",
-      "model": "prop.grass_tall",
+      "model": "env.grass.clump",
       "yaw": 0.043,
-      "scale": 1.44,
+      "scale": 2.41,
       "solid": false,
       "tint": null
     },
@@ -5612,13 +5612,13 @@
       "id": "prop_432",
       "position": [
         30.95,
-        0.61,
+        0.62,
         27.07
       ],
       "kind": "prop",
-      "model": "prop.grass_tall",
+      "model": "env.grass.clump",
       "yaw": 3.008,
-      "scale": 1.3,
+      "scale": 2.17,
       "solid": false,
       "tint": null
     },
@@ -5626,13 +5626,13 @@
       "id": "prop_433",
       "position": [
         -49.01,
-        0.2,
+        0.22,
         120.79
       ],
       "kind": "prop",
-      "model": "prop.grass_tall",
+      "model": "env.grass.clump",
       "yaw": 5.885,
-      "scale": 1.6,
+      "scale": 2.67,
       "solid": false,
       "tint": null
     },
@@ -5654,13 +5654,13 @@
       "id": "prop_436",
       "position": [
         -19.96,
-        0,
+        0.01,
         5.79
       ],
       "kind": "prop",
-      "model": "prop.grass_tall",
+      "model": "env.grass.clump",
       "yaw": 4.057,
-      "scale": 1.54,
+      "scale": 2.57,
       "solid": false,
       "tint": null
     },
@@ -5668,13 +5668,13 @@
       "id": "prop_437",
       "position": [
         -11.17,
-        0.26,
+        0.27,
         19.14
       ],
       "kind": "prop",
-      "model": "prop.grass_tall",
+      "model": "env.grass.clump",
       "yaw": 4.413,
-      "scale": 1.15,
+      "scale": 1.92,
       "solid": false,
       "tint": null
     },
@@ -5742,9 +5742,9 @@
         76.38
       ],
       "kind": "prop",
-      "model": "prop.grass_tall",
+      "model": "env.grass.clump",
       "yaw": 3.24,
-      "scale": 1.09,
+      "scale": 1.82,
       "solid": false,
       "tint": null
     },
@@ -5780,13 +5780,13 @@
       "id": "prop_446",
       "position": [
         5.22,
-        1,
+        1.05,
         -42.42
       ],
       "kind": "prop",
-      "model": "prop.grass_tall",
+      "model": "env.grass.clump",
       "yaw": 4.241,
-      "scale": 1.03,
+      "scale": 1.72,
       "solid": false,
       "tint": null
     },
@@ -5836,13 +5836,13 @@
       "id": "prop_451",
       "position": [
         -15.11,
-        3.34,
+        3.42,
         36.93
       ],
       "kind": "prop",
-      "model": "prop.grass_tall",
+      "model": "env.grass.clump",
       "yaw": 5.574,
-      "scale": 1.34,
+      "scale": 2.24,
       "solid": false,
       "tint": null
     },
@@ -5868,9 +5868,9 @@
         -107.16
       ],
       "kind": "prop",
-      "model": "prop.grass_tall",
+      "model": "env.grass.clump",
       "yaw": 5.318,
-      "scale": 1.26,
+      "scale": 2.11,
       "solid": false,
       "tint": null
     },
@@ -5892,13 +5892,13 @@
       "id": "prop_455",
       "position": [
         -4.18,
-        0.47,
+        0.5,
         33.88
       ],
       "kind": "prop",
-      "model": "prop.grass_tall",
+      "model": "env.grass.clump",
       "yaw": 4.776,
-      "scale": 1.48,
+      "scale": 2.47,
       "solid": false,
       "tint": null
     },
@@ -5906,13 +5906,13 @@
       "id": "prop_456",
       "position": [
         28.96,
-        0.49,
+        0.5,
         -64.65
       ],
       "kind": "prop",
-      "model": "prop.grass_tall",
+      "model": "env.grass.clump",
       "yaw": 3.051,
-      "scale": 1.1,
+      "scale": 1.84,
       "solid": false,
       "tint": null
     },
@@ -5920,13 +5920,13 @@
       "id": "prop_457",
       "position": [
         23.42,
-        0.13,
+        0.15,
         -74.94
       ],
       "kind": "prop",
-      "model": "prop.grass_tall",
+      "model": "env.grass.clump",
       "yaw": 1.078,
-      "scale": 1.22,
+      "scale": 2.04,
       "solid": false,
       "tint": null
     },
@@ -5938,9 +5938,9 @@
         -108.89
       ],
       "kind": "prop",
-      "model": "prop.grass_tall",
+      "model": "env.grass.clump",
       "yaw": 0.634,
-      "scale": 1.45,
+      "scale": 2.42,
       "solid": false,
       "tint": null
     },
@@ -5948,13 +5948,13 @@
       "id": "prop_459",
       "position": [
         -5.05,
-        0.57,
+        0.59,
         14.25
       ],
       "kind": "prop",
-      "model": "prop.grass_tall",
+      "model": "env.grass.clump",
       "yaw": 1.151,
-      "scale": 1.21,
+      "scale": 2.02,
       "solid": false,
       "tint": null
     },
@@ -5990,13 +5990,13 @@
       "id": "prop_462",
       "position": [
         48.71,
-        0.96,
+        0.97,
         -65.82
       ],
       "kind": "prop",
-      "model": "prop.grass_tall",
+      "model": "env.grass.clump",
       "yaw": 3.546,
-      "scale": 1.02,
+      "scale": 1.7,
       "solid": false,
       "tint": null
     },
@@ -6060,13 +6060,13 @@
       "id": "prop_470",
       "position": [
         -21.88,
-        0.7,
+        0.73,
         20.35
       ],
       "kind": "prop",
-      "model": "prop.grass_tall",
+      "model": "env.grass.clump",
       "yaw": 2.087,
-      "scale": 1.34,
+      "scale": 2.24,
       "solid": false,
       "tint": null
     },
@@ -6088,13 +6088,13 @@
       "id": "prop_473",
       "position": [
         16.57,
-        0.59,
+        0.62,
         8.06
       ],
       "kind": "prop",
-      "model": "prop.grass_tall",
+      "model": "env.grass.clump",
       "yaw": 3.419,
-      "scale": 1.09,
+      "scale": 1.82,
       "solid": false,
       "tint": null
     },
@@ -6116,13 +6116,13 @@
       "id": "prop_475",
       "position": [
         -35.06,
-        1.71,
+        1.78,
         74.74
       ],
       "kind": "prop",
-      "model": "prop.grass_tall",
+      "model": "env.grass.clump",
       "yaw": 0.152,
-      "scale": 1.53,
+      "scale": 2.56,
       "solid": false,
       "tint": null
     },
@@ -6158,13 +6158,13 @@
       "id": "prop_478",
       "position": [
         -20.66,
-        2.38,
+        2.43,
         53.62
       ],
       "kind": "prop",
-      "model": "prop.grass_tall",
+      "model": "env.grass.clump",
       "yaw": 3.146,
-      "scale": 1.36,
+      "scale": 2.27,
       "solid": false,
       "tint": null
     },
@@ -6172,13 +6172,13 @@
       "id": "prop_479",
       "position": [
         14.12,
-        0.5,
+        0.54,
         65.26
       ],
       "kind": "prop",
-      "model": "prop.grass_tall",
+      "model": "env.grass.clump",
       "yaw": 4.05,
-      "scale": 1.54,
+      "scale": 2.57,
       "solid": false,
       "tint": null
     },
@@ -6186,13 +6186,13 @@
       "id": "prop_480",
       "position": [
         18.43,
-        0.57,
+        0.59,
         74.76
       ],
       "kind": "prop",
-      "model": "prop.grass_tall",
+      "model": "env.grass.clump",
       "yaw": 0.977,
-      "scale": 1.27,
+      "scale": 2.12,
       "solid": false,
       "tint": null
     },
@@ -6200,13 +6200,13 @@
       "id": "prop_481",
       "position": [
         23.46,
-        0.14,
+        0.15,
         12.25
       ],
       "kind": "prop",
-      "model": "prop.grass_tall",
+      "model": "env.grass.clump",
       "yaw": 3.34,
-      "scale": 1.41,
+      "scale": 2.36,
       "solid": false,
       "tint": null
     },
@@ -6228,13 +6228,13 @@
       "id": "prop_483",
       "position": [
         20.08,
-        0.05,
+        0.07,
         -68.81
       ],
       "kind": "prop",
-      "model": "prop.grass_tall",
+      "model": "env.grass.clump",
       "yaw": 5.576,
-      "scale": 1.58,
+      "scale": 2.64,
       "solid": false,
       "tint": null
     },
@@ -6270,13 +6270,13 @@
       "id": "prop_486",
       "position": [
         -19.72,
-        3.31,
+        3.38,
         33.14
       ],
       "kind": "prop",
-      "model": "prop.grass_tall",
+      "model": "env.grass.clump",
       "yaw": 6.257,
-      "scale": 1.3,
+      "scale": 2.17,
       "solid": false,
       "tint": null
     },
@@ -6284,13 +6284,13 @@
       "id": "prop_487",
       "position": [
         42.98,
-        0.26,
+        0.27,
         129.79
       ],
       "kind": "prop",
-      "model": "prop.grass_tall",
+      "model": "env.grass.clump",
       "yaw": 2.551,
-      "scale": 1.48,
+      "scale": 2.47,
       "solid": false,
       "tint": null
     },
@@ -6302,9 +6302,9 @@
         80.44
       ],
       "kind": "prop",
-      "model": "prop.grass_tall",
+      "model": "env.grass.clump",
       "yaw": 1.827,
-      "scale": 1.22,
+      "scale": 2.04,
       "solid": false,
       "tint": null
     },
@@ -6312,13 +6312,13 @@
       "id": "prop_489",
       "position": [
         -51.8,
-        0.38,
+        0.39,
         122.2
       ],
       "kind": "prop",
-      "model": "prop.grass_tall",
+      "model": "env.grass.clump",
       "yaw": 3.739,
-      "scale": 1.4,
+      "scale": 2.34,
       "solid": false,
       "tint": null
     },
@@ -6344,9 +6344,9 @@
         -77.72
       ],
       "kind": "prop",
-      "model": "prop.grass_tall",
+      "model": "env.grass.clump",
       "yaw": 4.026,
-      "scale": 1.36,
+      "scale": 2.27,
       "solid": false,
       "tint": null
     },
@@ -6354,13 +6354,13 @@
       "id": "prop_492",
       "position": [
         14.25,
-        3.43,
+        3.52,
         -39.56
       ],
       "kind": "prop",
-      "model": "prop.grass_tall",
+      "model": "env.grass.clump",
       "yaw": 1.39,
-      "scale": 1.39,
+      "scale": 2.32,
       "solid": false,
       "tint": null
     },
@@ -6382,13 +6382,13 @@
       "id": "prop_494",
       "position": [
         27.67,
-        0.6,
+        0.61,
         34.18
       ],
       "kind": "prop",
-      "model": "prop.grass_tall",
+      "model": "env.grass.clump",
       "yaw": 5.154,
-      "scale": 1.02,
+      "scale": 1.7,
       "solid": false,
       "tint": null
     },
@@ -6396,13 +6396,13 @@
       "id": "prop_495",
       "position": [
         42.64,
-        2.08,
+        2.16,
         -83.4
       ],
       "kind": "prop",
-      "model": "prop.grass_tall",
+      "model": "env.grass.clump",
       "yaw": 2.049,
-      "scale": 1.27,
+      "scale": 2.12,
       "solid": false,
       "tint": null
     },
@@ -6410,13 +6410,13 @@
       "id": "prop_496",
       "position": [
         15.21,
-        0.11,
+        0.12,
         -67.99
       ],
       "kind": "prop",
-      "model": "prop.grass_tall",
+      "model": "env.grass.clump",
       "yaw": 1.567,
-      "scale": 1.11,
+      "scale": 1.85,
       "solid": false,
       "tint": null
     },
@@ -6438,13 +6438,13 @@
       "id": "prop_498",
       "position": [
         -32.78,
-        0.88,
+        0.92,
         -74.4
       ],
       "kind": "prop",
-      "model": "prop.grass_tall",
+      "model": "env.grass.clump",
       "yaw": 2.588,
-      "scale": 1.2,
+      "scale": 2,
       "solid": false,
       "tint": null
     },
@@ -6466,13 +6466,13 @@
       "id": "prop_501",
       "position": [
         -15.89,
-        0.57,
+        0.61,
         21.92
       ],
       "kind": "prop",
-      "model": "prop.grass_tall",
+      "model": "env.grass.clump",
       "yaw": 4.923,
-      "scale": 1.5,
+      "scale": 2.51,
       "solid": false,
       "tint": null
     },
@@ -6498,9 +6498,9 @@
         18.68
       ],
       "kind": "prop",
-      "model": "prop.grass_tall",
+      "model": "env.grass.clump",
       "yaw": 1.538,
-      "scale": 1.4,
+      "scale": 2.34,
       "solid": false,
       "tint": null
     },
@@ -6508,13 +6508,13 @@
       "id": "prop_505",
       "position": [
         -47.52,
-        0.11,
+        0.12,
         -129.51
       ],
       "kind": "prop",
-      "model": "prop.grass_tall",
+      "model": "env.grass.clump",
       "yaw": 0.998,
-      "scale": 1.44,
+      "scale": 2.41,
       "solid": false,
       "tint": null
     },
@@ -6536,13 +6536,13 @@
       "id": "prop_509",
       "position": [
         7.64,
-        0.62,
+        0.64,
         -59.88
       ],
       "kind": "prop",
-      "model": "prop.grass_tall",
+      "model": "env.grass.clump",
       "yaw": 0.437,
-      "scale": 1.23,
+      "scale": 2.05,
       "solid": false,
       "tint": null
     },
@@ -6564,13 +6564,13 @@
       "id": "prop_511",
       "position": [
         9.89,
-        0.86,
+        0.9,
         -57.83
       ],
       "kind": "prop",
-      "model": "prop.grass_tall",
+      "model": "env.grass.clump",
       "yaw": 6.164,
-      "scale": 1.6,
+      "scale": 2.67,
       "solid": false,
       "tint": null
     },
@@ -6582,9 +6582,9 @@
         -24.82
       ],
       "kind": "prop",
-      "model": "prop.grass_tall",
+      "model": "env.grass.clump",
       "yaw": 2.436,
-      "scale": 1.45,
+      "scale": 2.42,
       "solid": false,
       "tint": null
     },
@@ -6648,13 +6648,13 @@
       "id": "prop_517",
       "position": [
         1.6,
-        0.34,
+        0.37,
         -44.13
       ],
       "kind": "prop",
-      "model": "prop.grass_tall",
+      "model": "env.grass.clump",
       "yaw": 2.852,
-      "scale": 1.36,
+      "scale": 2.27,
       "solid": false,
       "tint": null
     },
@@ -6662,13 +6662,13 @@
       "id": "prop_518",
       "position": [
         19.86,
-        0.46,
+        0.47,
         17.47
       ],
       "kind": "prop",
-      "model": "prop.grass_tall",
+      "model": "env.grass.clump",
       "yaw": 5.7,
-      "scale": 1.16,
+      "scale": 1.94,
       "solid": false,
       "tint": null
     },
@@ -6690,13 +6690,13 @@
       "id": "prop_520",
       "position": [
         26.7,
-        1.26,
+        1.3,
         -57.3
       ],
       "kind": "prop",
-      "model": "prop.grass_tall",
+      "model": "env.grass.clump",
       "yaw": 4.395,
-      "scale": 1.06,
+      "scale": 1.77,
       "solid": false,
       "tint": null
     },
@@ -6704,13 +6704,13 @@
       "id": "prop_521",
       "position": [
         16.99,
-        0.57,
+        0.59,
         13.95
       ],
       "kind": "prop",
-      "model": "prop.grass_tall",
+      "model": "env.grass.clump",
       "yaw": 1.828,
-      "scale": 1.24,
+      "scale": 2.07,
       "solid": false,
       "tint": null
     },
@@ -6718,13 +6718,13 @@
       "id": "prop_522",
       "position": [
         -29.39,
-        3.42,
+        3.5,
         38.7
       ],
       "kind": "prop",
-      "model": "prop.grass_tall",
+      "model": "env.grass.clump",
       "yaw": 2.05,
-      "scale": 1.28,
+      "scale": 2.14,
       "solid": false,
       "tint": null
     },
@@ -6760,13 +6760,13 @@
       "id": "prop_526",
       "position": [
         -49.77,
-        0.09,
+        0.1,
         -97.79
       ],
       "kind": "prop",
-      "model": "prop.grass_tall",
+      "model": "env.grass.clump",
       "yaw": 1.307,
-      "scale": 1.04,
+      "scale": 1.74,
       "solid": false,
       "tint": null
     },
@@ -6774,13 +6774,13 @@
       "id": "prop_528",
       "position": [
         -19.77,
-        0.33,
+        0.35,
         -13.33
       ],
       "kind": "prop",
-      "model": "prop.grass_tall",
+      "model": "env.grass.clump",
       "yaw": 5.81,
-      "scale": 1.37,
+      "scale": 2.29,
       "solid": false,
       "tint": null
     },
@@ -6788,13 +6788,13 @@
       "id": "prop_529",
       "position": [
         20.4,
-        0.36,
+        0.38,
         -64.18
       ],
       "kind": "prop",
-      "model": "prop.grass_tall",
+      "model": "env.grass.clump",
       "yaw": 0.169,
-      "scale": 1.07,
+      "scale": 1.79,
       "solid": false,
       "tint": null
     },
@@ -6830,13 +6830,13 @@
       "id": "prop_533",
       "position": [
         6.02,
-        0.58,
+        0.59,
         22.3
       ],
       "kind": "prop",
-      "model": "prop.grass_tall",
+      "model": "env.grass.clump",
       "yaw": 5.144,
-      "scale": 1.02,
+      "scale": 1.7,
       "solid": false,
       "tint": null
     },
@@ -6872,13 +6872,13 @@
       "id": "prop_536",
       "position": [
         -16.96,
-        0.38,
+        0.41,
         63.7
       ],
       "kind": "prop",
-      "model": "prop.grass_tall",
+      "model": "env.grass.clump",
       "yaw": 2.767,
-      "scale": 1.48,
+      "scale": 2.47,
       "solid": false,
       "tint": null
     },
@@ -6886,13 +6886,13 @@
       "id": "prop_537",
       "position": [
         -9.56,
-        0.87,
+        0.89,
         57.97
       ],
       "kind": "prop",
-      "model": "prop.grass_tall",
+      "model": "env.grass.clump",
       "yaw": 2.161,
-      "scale": 1.2,
+      "scale": 2,
       "solid": false,
       "tint": null
     },
@@ -6900,13 +6900,13 @@
       "id": "prop_539",
       "position": [
         -18.85,
-        0.06,
+        0.07,
         2.26
       ],
       "kind": "prop",
-      "model": "prop.grass_tall",
+      "model": "env.grass.clump",
       "yaw": 2.712,
-      "scale": 1.41,
+      "scale": 2.36,
       "solid": false,
       "tint": null
     },
@@ -6914,13 +6914,13 @@
       "id": "prop_540",
       "position": [
         -43.55,
-        0.31,
+        0.32,
         -131.54
       ],
       "kind": "prop",
-      "model": "prop.grass_tall",
+      "model": "env.grass.clump",
       "yaw": 4.348,
-      "scale": 1.07,
+      "scale": 1.79,
       "solid": false,
       "tint": null
     },
@@ -6942,13 +6942,13 @@
       "id": "prop_542",
       "position": [
         -38.56,
-        1.88,
+        1.92,
         72.68
       ],
       "kind": "prop",
-      "model": "prop.grass_tall",
+      "model": "env.grass.clump",
       "yaw": 0.02,
-      "scale": 1.07,
+      "scale": 1.79,
       "solid": false,
       "tint": null
     },
@@ -6956,13 +6956,13 @@
       "id": "prop_543",
       "position": [
         27.98,
-        0.15,
+        0.16,
         81.62
       ],
       "kind": "prop",
-      "model": "prop.grass_tall",
+      "model": "env.grass.clump",
       "yaw": 0.616,
-      "scale": 1.28,
+      "scale": 2.14,
       "solid": false,
       "tint": null
     },
@@ -6998,13 +6998,13 @@
       "id": "prop_547",
       "position": [
         13.41,
-        0.28,
+        0.3,
         60.2
       ],
       "kind": "prop",
-      "model": "prop.grass_tall",
+      "model": "env.grass.clump",
       "yaw": 0.04,
-      "scale": 1.13,
+      "scale": 1.89,
       "solid": false,
       "tint": null
     },
@@ -7016,9 +7016,9 @@
         104.89
       ],
       "kind": "prop",
-      "model": "prop.grass_tall",
+      "model": "env.grass.clump",
       "yaw": 1.069,
-      "scale": 1.18,
+      "scale": 1.97,
       "solid": false,
       "tint": null
     },
@@ -7026,13 +7026,13 @@
       "id": "prop_549",
       "position": [
         17.53,
-        1.1,
+        1.16,
         61.65
       ],
       "kind": "prop",
-      "model": "prop.grass_tall",
+      "model": "env.grass.clump",
       "yaw": 5.68,
-      "scale": 1.16,
+      "scale": 1.94,
       "solid": false,
       "tint": null
     },
@@ -7054,13 +7054,13 @@
       "id": "prop_552",
       "position": [
         28.93,
-        0.34,
+        0.36,
         -12.75
       ],
       "kind": "prop",
-      "model": "prop.grass_tall",
+      "model": "env.grass.clump",
       "yaw": 5.539,
-      "scale": 1.54,
+      "scale": 2.57,
       "solid": false,
       "tint": null
     },
@@ -7068,13 +7068,13 @@
       "id": "prop_553",
       "position": [
         1.89,
-        0.01,
+        0.02,
         45.94
       ],
       "kind": "prop",
-      "model": "prop.grass_tall",
+      "model": "env.grass.clump",
       "yaw": 2.764,
-      "scale": 1.51,
+      "scale": 2.52,
       "solid": false,
       "tint": null
     },
@@ -7082,13 +7082,13 @@
       "id": "prop_554",
       "position": [
         -11.34,
-        1.6,
+        1.67,
         53.08
       ],
       "kind": "prop",
-      "model": "prop.grass_tall",
+      "model": "env.grass.clump",
       "yaw": 0.399,
-      "scale": 1.53,
+      "scale": 2.56,
       "solid": false,
       "tint": null
     },
@@ -7114,9 +7114,9 @@
         128.66
       ],
       "kind": "prop",
-      "model": "prop.grass_tall",
+      "model": "env.grass.clump",
       "yaw": 4.136,
-      "scale": 1.52,
+      "scale": 2.54,
       "solid": false,
       "tint": null
     },
@@ -7124,13 +7124,13 @@
       "id": "prop_558",
       "position": [
         23.3,
-        1.8,
+        1.86,
         69.86
       ],
       "kind": "prop",
-      "model": "prop.grass_tall",
+      "model": "env.grass.clump",
       "yaw": 2.301,
-      "scale": 1.21,
+      "scale": 2.02,
       "solid": false,
       "tint": null
     },
@@ -7152,13 +7152,13 @@
       "id": "prop_560",
       "position": [
         -2.18,
-        0.38,
+        0.39,
         -82.04
       ],
       "kind": "prop",
-      "model": "prop.grass_tall",
+      "model": "env.grass.clump",
       "yaw": 3.895,
-      "scale": 1.07,
+      "scale": 1.79,
       "solid": false,
       "tint": null
     },

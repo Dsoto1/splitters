@@ -121,6 +121,38 @@ narrower gaps drop out of the bots' navmesh.
 Trim (baseboards, cornices, door and window frames, railing posts) is drawn
 with the map but never collides, and has its own paintable slot.
 
+## Floors over tall pieces (format v26)
+
+A grid cell holds one piece. A piece that stands more than one level tall
+(Tall Room, Atrium, Triumphal Arch, Hypostyle Hall, Temple Pylon, Arena
+Seating, City Wall…) holds its cells on its upper levels
+too, so nothing else can be placed there, even where it builds little or
+nothing. To put a floor in up there (the ceiling of the storey below, a floor
+to build on), the floor becomes part of that piece:
+
+- **Place a Platform on the cell** (go up to that level first, Page Up or the
+  level strip): instead of a second piece in the cell, the tall piece gets a
+  floor of its own there. The ghost shows green where that works.
+- **Or select the piece** and tick **Floor on Level N** under *Upper floors* in
+  the inspector: a floor over its whole footprint at that level. Untick it to
+  take it out (one undo step either way).
+
+The floor is a full 0.5 m slab at that level's floor height, like a floor the
+piece came with (theme floor on top, underside below; paint it as usual), and
+it collides. Columns, arches and piers that rise through it still stand. Only
+storeys a piece leaves without a full floor take one: not its bottom storey,
+not stairs, ramps, towers or lifts (their upper storey is the way up) and not
+buildings drawn from a model. Stored per cell in the piece's own frame
+(`TilePlacement.upperFloors`, `"dx,dy,dz"`), so it moves and turns with it;
+`geometry.ts` `canAddFloor` / `cellSlab`, `editor/operations.ts`
+`placeTileCommand` / `setUpperFloorsCommand`. Tested for every such piece with
+every floor in, turned and not, by the flicker audit's rule (no two faces in
+one plane: `test/upperFloors.test.ts`).
+
+When a placement is refused, MapMaker says what is in the way (the piece and
+the level) and what to do instead: pick a free cell or another level, move or
+delete the piece, or, on a tall piece's empty upper storey, the floor above.
+
 ## City kit (Quaternius Downtown City MegaKit, 4/3 scale)
 
 The kit is scaled by 4/3 so its 3 m storeys are our 4 m levels and three of

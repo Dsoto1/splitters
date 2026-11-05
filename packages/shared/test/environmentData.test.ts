@@ -30,12 +30,12 @@ function shapePoints(sh: EnvShape): [number, number, number][] {
 
 describe('environment data', () => {
   it('every species matches the schema', () => {
-    expect(ENV_SPECIES.length).toBe(8);
+    expect(ENV_SPECIES.length).toBe(10);
     for (const s of ENV_SPECIES) expect(() => EnvironmentSpeciesSchema.parse(s), s.id).not.toThrow();
   });
 
-  it('the six Phase 1 species and the plants brush flowers and fern, each with material variants', () => {
-    expect(ENV_SPECIES.map((s) => s.id).sort()).toEqual(['env.broadleaf.oak', 'env.cliff.face', 'env.conifer.pine_tall', 'env.fern.bracken', 'env.flower.meadow', 'env.grass.clump', 'env.rock.boulder_angular', 'env.shrub.broadleaf']);
+  it('the six Phase 1 species and the plants brush flowers, fern, pebbles and eelgrass, each with material variants', () => {
+    expect(ENV_SPECIES.map((s) => s.id).sort()).toEqual(['env.broadleaf.oak', 'env.cliff.face', 'env.conifer.pine_tall', 'env.fern.bracken', 'env.flower.meadow', 'env.grass.clump', 'env.rock.boulder_angular', 'env.rock.pebbles', 'env.shrub.broadleaf', 'env.water.eelgrass']);
     for (const s of ENV_SPECIES) {
       expect(s.variants.length, s.id).toBeGreaterThanOrEqual(2);
       // Material variants share the structure, so they share the collision exactly.
@@ -44,8 +44,10 @@ describe('environment data', () => {
         expect(v.size, s.id).toEqual(s.variants[0]!.size);
       }
     }
-    // Ground cover (grass, flowers, fern) is decoration only: no collision, no nav, no concealment.
-    for (const s of ENV_SPECIES.filter((x) => x.category === 'groundcover')) expect([s.role, s.nav, s.conceals, s.variants[0]!.shapes.length], s.id).toEqual(['decorative', 'none', null, 0]);
+    // Ground cover (grass, flowers, eelgrass) and pebbles are decoration only: no collision, no nav, no concealment.
+    // The fern is ground cover that conceals (it replaces the Kenney fern): cover, still no collision or nav.
+    for (const s of ENV_SPECIES.filter((x) => x.category === 'groundcover' || x.category === 'rock')) expect([s.role, s.nav, s.conceals !== null, s.variants[0]!.shapes.length], s.id).toEqual([s.id === 'env.fern.bracken' ? 'cover' : 'decorative', 'none', s.id === 'env.fern.bracken', 0]);
+    expect(getEnvSpecies('env.rock.pebbles')!.surface).toBe('rock');
   });
 
   it('every species has a surface the server and client know, nav and concealment data', () => {
@@ -61,8 +63,8 @@ describe('environment data', () => {
     expect(propMaterial('env.rock.boulder_angular')).toBe('stone');
     expect(propMaterial('env.cliff.face')).toBe('stone');
     expect(propSurface('env.shrub.broadleaf')).toBe('foliage');
-    // Only the shrub conceals (the rule bushes follow); grass is decoration only.
-    expect(ENV_SPECIES.filter((s) => s.conceals).map((s) => s.id)).toEqual(['env.shrub.broadleaf']);
+    // The shrub and the fern conceal (the rule bushes follow); grass is decoration only.
+    expect(ENV_SPECIES.filter((s) => s.conceals).map((s) => s.id).sort()).toEqual(['env.fern.bracken', 'env.shrub.broadleaf']);
     const grass = getEnvSpecies('env.grass.clump')!;
     expect([grass.role, grass.nav, grass.variants[0]!.shapes.length]).toEqual(['decorative', 'none', 0]);
   });

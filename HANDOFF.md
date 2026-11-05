@@ -276,6 +276,56 @@ hands move up more into the gun. Looks as if their fingers are just pinching the
   several characters, including Meshy rigs with Meshy's finger weights once intake-2 lands.
 - Start it once a slot frees. It touches the hands, so after intake-2 step 2a.
 
+### Environment Phase 1c: pebbles, eelgrass, concealing fern, Replace all, maps updated (`wip/env-p1c`, agent, 2026-11-05; from main 4d511dd2, main baf26064 merged in; pushed, not merged)
+- **Done:**
+  - **Species:** `env.rock.pebbles` (category `rock`, generator kind `pebbles` in `env/rock.mjs`: 6–7 faceted convex
+    stones sunk a quarter, grey / sand, 55 tris; budget `rock: [64]`) and `env.water.eelgrass` (new family file
+    `content/environment/water.json`, kind `eelgrass` in `env/plants.mjs`: 7–8 S-curved ribbons, green / olive, 49
+    tris). Existing GLBs byte-identical. Fixture entries `env.rock.pebbles@1`, `env.water.eelgrass@1`.
+  - **Fern conceals:** `env.fern.bracken` assetVersion 2, `conceals: true`, role `cover` (cylinder r 0.363, h 0.555 at
+    scale 1, from its bounds; shape unchanged; fixture `@2`). The generator's rule now: ground cover / small rocks have
+    nav none; role cover iff they conceal; rocks never conceal.
+  - **Proof** (`packages/shared/test/conceal.test.ts`, "our fern and shrub hide players as the Kenney fern and small
+    bush did"): on what Replace all makes (height kept), standing / crouched / prone at the middle and just inside the
+    Kenney piece's radius, hidden exactly when the Kenney piece hid them (fern ×1, ×1.3, autumn ×0.85; small bush ×1,
+    autumn ×1.3); fern hides crouch + prone, small-bush-sized shrub prone only, as before; a bot 10 m away holds fire
+    at a crouched (fern) / prone (shrub) player and fires once they stand, the same as with the Kenney piece, and does
+    fire in the open (control). Then `prop.fern` and `prop.bush_small` were retired.
+  - **Brushes / palette:** foliage.ts pebbles → `env.rock.pebbles` (`#1` on sand), shallow water →
+    `env.water.eelgrass` (1 in 4 olive); scatter: Rocks / Desert pebbles, Water plants eelgrass, Jungle and
+    Undergrowth the fern, Bushes the shrub. `RETIRED_PROPS` += grass_tuft, fern, bush_small, stones, mn_eelgrass;
+    `GROUND_COVER_SPECIES` is per category (Plants & Flowers: grass, flowers, fern, shrub, eelgrass; Rocks & Wood:
+    pebbles); `REPLACEMENTS` (suggested species per retired piece).
+  - **MapMaker Replace all** (prop inspector, `replaceAllSection`; `replacePropsCommand` in shared
+    editor/operations.ts): target select (`#ed-replace-with`: species variants, then non-retired props), size
+    (`#ed-replace-size`: Keep height (default) / Keep scale), button `#ed-replace-all`; one undo step; keeps ID,
+    position, yaw, name, solid, tint; scale × old height / new height, rounded 0.01, 0.25–4; a prop bedded on the
+    terrain is re-bedded under its new footprint (without this a wider fern floated 0.31 m on Jungle Steps). Tests:
+    shared editor.test.ts, physicsfx.test.ts.
+  - **Maps** (driven in MapMaker without ?test=1 by the scratchpad driver `env3/tools/maker.mjs`: Import file, click a
+    piece with Select (direct selection when no click hit it: Shingle Point's grass, Serene City's red and yellow
+    flower), Replace all, undo/redo check, Export; `finalize.mjs` drops
+    `metadata.release`). Hand-placed Kenney foliage before (all now 0):
+    - backwoods: grass_tall 46, fern 28, flower_yellow 6, flower_purple 5 → clump, bracken, meadow #1 / #2 (height);
+    - coldwater_gulch: grass_tall 97 → clump; shingle_point: grass_tall 96 → clump; st_johns: grass_tall 3 → clump;
+    - jungle_steps: grass_tuft 8 → clump, fern 12 → bracken; serpent_gorge: fern 4 → bracken;
+    - primeval_park: fern 62, plant_low 52 → bracken;
+    - serene_city: flower_purple 2, flower_red 1 (→ white: no red variant), flower_yellow 1 → meadow;
+    - sunstone_crag: stones 36 → pebbles sand (Keep scale: by height they would be 3 m wide), plant_low 18 → bracken
+      autumn.
+    Export also carries what loading does anyway (format 25 migration: `track` → `paths`, terrain kept under floors
+    on Primeval Park and Sunstone Crag, key order): no gameplay change. Metadata otherwise unchanged. Not touched:
+    `test_coverage` (keeps mn_eelgrass as its Meshy-pack sample), other Kenney bushes (`bush`, `bush_large`,
+    `bush_leafy`: Phase 4). New gameplay: crouch/prone in the replaced ferns hides you as before; the 70 replaced low
+    plants (Primeval Park 52, Sunstone Crag 18) now hide a prone player (they never concealed).
+  - **Pitfall:** two clicks on the MapMaker canvas within ~0.5 s are a double-click, which changed a wall edge (open →
+    window) on Serpent Gorge in one run; the driver now waits 1 s between clicks; compare each export with
+    `env3/tools/compare.mjs` before taking it.
+- **Next / resume:** `git fetch && git checkout wip/env-p1c`; CI on `check/env-p1c` (status below); owner to look at
+  the screenshots (scratchpad `env3/`) and decide on grass sizes (tall grass kept its height: 0.7–1.4 m clumps on
+  Coldwater Gulch / Shingle Point, as the Kenney patches stood; smaller would need the Scale field per piece or a
+  re-run of Replace all from the old map with Keep scale); a red meadow-flower variant and palette
+  pictures for the species are open.
 ### Queued (owner-approved, 2026-11-05): performance round 2 (next free agent slot)
 **Owner's second M1 Pro recording** (build 4e77fab; Market Town, TDM, 49 players, high, 60 fps cap). Files in the
 session scratchpad `perf2/`: the perf JSON and the trace.
@@ -307,6 +357,31 @@ Targets, aiming for 4–6 ms off:
 4. **Shadows:** cache the static cascade and refresh it every few frames.
 
 Measure relatively in the container, keep the CI perf budgets, then ask the owner to re-record on the M1.
+
+### Queued next (owner, 2026-11-05): hand palm orientation (before the pistol-hold tweak)
+The owner noticed that rigged hands come out with the right palm facing outward and the left palm down instead of
+up. The new Gnoll (Hyena Warrior) in the intake-2 sheets shows it.
+- **Likely cause:** `skinHandFrame` (client game/handProbe.ts) takes the palm normal from the hand mesh's thinnest
+  direction, whose sign is arbitrary, and chooses the thumb's side. On some rigs that picks the back of the hand, so
+  the grip turn rotates the hand 180° about its fingers.
+- **The audit misses it:** `gripReport`'s `sideR` uses `Math.abs`, so palm-in and palm-out score the same.
+- **Fix:**
+  - derive the palm side from the finger joints' bend direction;
+  - make the audit sign-aware: the right palm faces the grip, the left palm faces up into the handguard;
+  - re-audit every look, with third-person, first-person and Character Select before/after sheets.
+- **Owner's decisions:** keep the Hyena (Gnoll) and Snikkit (Goblin Mischief) and fix their hands with this;
+  Bill is retired. Do the pistol-hold tweak after this.
+
+### Open bug (found 2026-11-05): explosion debris can fall through the world
+On the env + intake merge (`check/env-land2`), physicsfx counted 32 debris bodies where it expected 10, with the
+fastest moving at about 60 m/s, on both attempts.
+- 22 extra is exactly one explosion's debris (view.ts `explosion()`: 16 + 6).
+- 60 m/s matches about 3 s of free fall at g = 20. So those chunks were falling through the world rather than
+  landing.
+- Likely source: the test's 500-damage mass blast destroying a vehicle or turret near the spawn on Rockfall Canyon.
+- The test now checks only its own burst (`check/env-land3`), and its message lists the older chunks and their
+  colours.
+- **Still to find:** why explosion debris doesn't collide with the ground in the effects world.
 
 ### Owner's map notes for later (2026-11-05; not started)
 - **No Man's Field:** asset refresh. It still uses Kenney kits; move it to our generated environment and props.
@@ -349,6 +424,20 @@ The owner asked what MapMaker could use, by comparison with the Far Cry and Time
 6. Interface: mode tabs, collapsible panels, an outliner with hide/lock, favourites/recents, a shortcut overlay, and a
    guided first-time tour.
 
+Owner request (2026-11-05): show the real buildable area.
+- Today the editor grid is a fixed ±12 cells around the origin (`GRID_EXTENT` in client editor/editorView.ts), while
+  placement allows ±256 cells and ±16 levels (`checkPlacement`).
+- **Owner's refinement:** "I don't think I need to always see the entire space; the border would be more helpful."
+  So the grid stays local around the cursor and the work area; it may follow the camera or cursor and fade out.
+  What matters is two clear outlines, always visible:
+  - the **playable boundary** (map bounds);
+  - the **build limit**: where placement stops, on the ground and at the level being edited.
+- A toggle may show the full-area grid on demand.
+- The owner sees this as a quick win; do it first in the MapMaker work. It goes to the next free agent.
+- **Building outside the playable bounds is intended (owner).** Scenery beyond the boundary blends the playable
+  space into the outer world cheaply, so don't discourage it. Show the full build area, with the playable bounds
+  as a distinct outline inside it. The area outside the bounds should read as "scenery zone", not as an error.
+
 Also proposed: note pins, templates, mirror for team maps, a card-shot camera, and snap-to-surface/randomise for props.
 
 Waiting for the owner to mark which ones. This becomes the "MapMaker overhaul" in the agreed queue.
@@ -379,6 +468,34 @@ Plan:
    that pack's refresh.
 
 ### In flight
+- **Floors over tall pieces, branch `wip/ceiling`** (agent, 2026-11-05; from main 4e77fabc; runs on `check/ceiling`).
+  Owner's screenshot (live, TDM): "notice the blue edge? … tried to place another tile above where i am now, but it
+  said i could not overlap tiles. I would like to add a ceiling/floor here". Later: the blue doesn't matter, it only
+  marks the level (Level 1) where they want a floor, over "the set piece I am on".
+  - The spot: not a map in `maps/`. The blue is the Sands of Egypt theme's underside (`core.lapis`) under Level-1
+    floors; only Pharaoh's Reach and Sunken Kingdom use that theme and neither has grass terrain. Grass + cacti, stones
+    and rock spires = a MapMaker map of the owner's (new-map grass terrain, Desert scrub scatter) with Egypt-theme
+    pieces (the walkway looks like the Sphinx Avenue's paving and plinth). So the exact piece is unknown; any piece two
+    or more levels tall refuses a tile on its upper storey (one cell, one piece).
+  - Blue edge: dropped at the owner's word (not a bug: lapis is that theme's ceiling paint; not a flicker-fix regression
+    by reading, not compared in a browser).
+  - Done: `TilePlacement.upperFloors` (format v26, tile-local "dx,dy,dz"): a full floor slab in a tall piece's own
+    upper storey (`geometry.ts` `canAddFloor`/`cellSlab`; not bottom storeys, Vertical pieces or model buildings).
+    MapMaker: a **Platform placed on such a cell becomes that piece's floor** (`placeTileCommand` → `floorOf`, green
+    ghost), and the inspector's **Upper floors → Floor on Level N** ticks a whole storey. `checkPlacement` refusals now
+    name the piece and level and say what to do. Docs: BUILDING_KIT "Floors over tall pieces", CHANGELOG.
+  - Tests: `packages/shared/test/upperFloors.test.ts` (incl. no coplanar overlaps for every eligible piece with all
+    its floors, two rotations); editor.test.ts messages; e2e editorux "A floor over a piece two levels tall".
+  - Demo (scratchpad only): a stand-in spot (Egypt theme, grass, a Tall Room open on three sides under Level-1 floors);
+    in play it looks like the owner's shot (the cacti, stones and red spires are the theme's dunes backdrop). MapMaker:
+    a room there is refused with the new message, a Platform makes the floor, the inspector shows it ticked.
+  - Checks: typecheck, content:check, build, bundle 690.7 kB gzip (budget 840); unit upperFloors + editor + zipline
+    pass (test:changed under load 13-18 timed out on 14 sim/bench tests that pass alone or on CI); e2e editorux PASS
+    (ports 4961/4962); editor and visual failed locally only on load timeouts (random pickup drawn, jump-off hint,
+    canyon scene not ready in time; canyon 0.1 % differ) and passed on CI. CI: `check/ceiling` run 42053469134 green at 6cd5f392 (full suite, 13 e2e shards, perf).
+  - Next / resume: land it (fast-forward `main` to the green commit, or a train). Owner: tell us which piece the
+    screenshot stands on if the new way doesn't cover it. Open: per-cell floors are only by Platform (the inspector ticks
+    a whole storey); Vertical pieces never take one (by design: their upper storey is the way up).
 - **Market Town perf on the M1 Pro, branch `wip/perf-market`** (agent, 2026-11-05; from main d29e6a8; not merged).
   Owner's capture (high, 44 players): 23 ms frames with few in view, 38-45 ms with 20-40; characters (clips + aim)
   8.5 ms and shadow + depth maps 6.6 ms a frame. Write-up with causes and numbers: docs/PERF_96.md "Market Town on

@@ -54,13 +54,51 @@ export const PROP_GROUPS = [
 /** Prop categories shown in the Nature tab. */
 export const NATURE_PROP_CATEGORIES: readonly string[] = ['Trees', 'Rocks & Wood', 'Plants & Flowers'];
 /**
- * Retired from the palette, kept in the game (maps that place them still load and draw them): Kenney's grass and
- * flowers, which the generated ground cover replaces (owner, 2026-11-05: "lose Kenney grass"; the plants brush grows
- * `env.grass.clump`, `env.flower.meadow` and `env.fern.bracken` now). Their palette pictures stay in the atlas.
+ * Retired from the palette, kept in the game (maps that place them still load and draw them): Kenney's grass, flowers,
+ * fern, low plant, small bush and stones and the Meshy eelgrass, which the generated species replace (owner,
+ * 2026-11-05: "lose Kenney grass"; then pebbles, eelgrass, and the fern and small bush once ours conceal the same way:
+ * shared/test/conceal.test.ts). The plants brush grows the species now, and MapMaker's "Replace all" (the prop
+ * inspector) swaps placed pieces. Their palette pictures stay in the atlas.
  */
-export const RETIRED_PROPS: ReadonlySet<string> = new Set(['prop.grass_patch', 'prop.grass_leafy', 'prop.grass_tall', 'prop.flower_red', 'prop.flower_yellow', 'prop.flower_purple', 'prop.plant_low']);
-/** The generated ground cover offered in Nature → Plants & Flowers in their place (no palette picture yet). */
-export const GROUND_COVER_SPECIES: readonly string[] = ['env.grass.clump', 'env.flower.meadow', 'env.fern.bracken'];
+export const RETIRED_PROPS: ReadonlySet<string> = new Set([
+  'prop.grass_patch',
+  'prop.grass_leafy',
+  'prop.grass_tall',
+  'prop.grass_tuft',
+  'prop.flower_red',
+  'prop.flower_yellow',
+  'prop.flower_purple',
+  'prop.plant_low',
+  'prop.fern',
+  'prop.bush_small',
+  'prop.stones',
+  'prop.mn_eelgrass',
+]);
+/** The generated species offered in Nature's prop categories in their place (no palette picture yet), by category. */
+export const GROUND_COVER_SPECIES: Readonly<Record<string, readonly string[]>> = {
+  'Plants & Flowers': ['env.grass.clump', 'env.flower.meadow', 'env.fern.bracken', 'env.shrub.broadleaf', 'env.water.eelgrass'],
+  'Rocks & Wood': ['env.rock.pebbles'],
+};
+/**
+ * What "Replace all" (the prop inspector) offers first for a retired piece: the species (and variant) that took its
+ * place in the plants brush. Any other prop or species can still be chosen.
+ */
+export const REPLACEMENTS: Readonly<Record<string, string>> = {
+  'prop.grass_patch': 'env.grass.clump',
+  'prop.grass_leafy': 'env.grass.clump',
+  'prop.grass_tall': 'env.grass.clump',
+  'prop.grass_tuft': 'env.grass.clump',
+  'prop.flower_red': 'env.flower.meadow',
+  'prop.flower_yellow': 'env.flower.meadow#1',
+  'prop.flower_purple': 'env.flower.meadow#2',
+  'prop.plant_low': 'env.fern.bracken',
+  'prop.fern': 'env.fern.bracken',
+  'prop.bush_small': 'env.shrub.broadleaf',
+  'prop.stones': 'env.rock.pebbles',
+  'prop.mn_eelgrass': 'env.water.eelgrass',
+};
+/** Every species GROUND_COVER_SPECIES offers. */
+export const GROUND_COVER_IDS: readonly string[] = Object.values(GROUND_COVER_SPECIES).flat();
 /** Prop categories shown in the Vehicles tab (parked, not drivable). */
 export const VEHICLE_PROP_CATEGORIES: readonly string[] = ['Vehicles'];
 
