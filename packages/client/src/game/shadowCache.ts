@@ -222,7 +222,7 @@ export class ShadowCache {
   private readonly lists = { s: [emptyList(), emptyList(), emptyList(), emptyList()], d: [emptyList(), emptyList(), emptyList(), emptyList()] };
   private readonly disposers: (() => void)[] = [];
   /** Casters that can move, watched: their world matrix's update flag, the frame it last changed, and whether cached now. */
-  private readonly still = new Map<AbstractMesh, { flag: number; since: number; cached: boolean }>();
+  private readonly still = new Map<AbstractMesh, { flag: number; since: number; cached: boolean; at: Float32Array }>();
 
   private constructor(
     private readonly scene: Scene,
@@ -261,7 +261,10 @@ export class ShadowCache {
     if (isStaticCaster(m)) return true;
     const r = this.still.get(m);
     if (r) return r.cached;
-    if (stillable(m)) this.still.set(m, { flag: m.getWorldMatrix().updateFlag, since: this.frame, cached: false });
+    if (stillable(m)) {
+      const w = m.getWorldMatrix();
+      this.still.set(m, { flag: w.updateFlag, since: this.frame, cached: false, at: Float32Array.from(w.m) });
+    }
     return false;
   }
 
@@ -273,9 +276,13 @@ export class ShadowCache {
         if (r.cached) this.dirtyAll = true;
         continue;
       }
-      const flag = m.getWorldMatrix().updateFlag;
+      const w = m.getWorldMatrix();
+      const flag = w.updateFlag;
+      // Worked out again isn't moved: a door whose logic sets its turn every frame keeps the same matrix.
+      if (flag !== r.flag && sameMatrix(r.at, w.m)) r.flag = flag;
       if (flag !== r.flag || !m.isEnabled() || !m.isVisible) {
         r.flag = flag;
+        r.at.set(w.m);
         r.since = this.frame;
         if (r.cached) {
           r.cached = false;
@@ -463,6 +470,11 @@ function blankState(): CascadeState {
     light: new Vector3(),
     drawn: 0,
   };
+}
+
+function sameMatrix(a: Float32Array, b: ArrayLike<number>): boolean {
+  for (let i = 0; i < 16; i++) if (Math.abs(a[i]! - b[i]!) > 1e-6) return false;
+  return true;
 }
 
 /** Sort a rendering list's submeshes into static casters (`s`) and the rest (`d`). */

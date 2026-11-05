@@ -836,3 +836,63 @@ fight and a 10 s trace. Expect characters (clips + aim) and shadow + depth maps 
 `animated` well under the characters in view, shadow casters about half (300 instead of 600), draws about a
 third fewer. If hitches still show large `outside`, record once more on render scale "sharp" (fewer pixels):
 if `outside` falls, it is the GPU.
+
+## Performance round 2 (5 Nov 2026, `wip/perf-2`)
+
+**Owner's second recording** (M1 Pro, Chrome 156, WebGL2, high, render scale auto, 60 fps cap; Market Town TDM,
+49 players, build 4e77fab after round 1): 20.3 ms frames on average in the trace (~49 fps), 26-32 ms in big fights,
+3 hitches over 50 ms in 49 s. CPU-bound: per frame render 16.4 ms (characters' clips + aim 4.6, shadow + depth maps
+3.8, mesh evaluation 3.0, the rest mostly issuing ~700 draws), characters' update 1.4, ragdolls + effects 1.2.
+Target: 4-6 ms off.
+
+### What it was
+
+1. **Static shadows drawn every frame.** Round 1 merged the static casters into shadow proxies, but every cascade
+   still drew them every frame (~150 of ~290 shadow draws), with doors and ladder gates (not frozen, so not merged)
+   another ~55.
+2. **The level was 34 meshes (58 draws with roads, paths and the border)**, one per surface style (material and
+   tint), drawn again in the water's reflection (38 draws) and its depth map.
+3. **Babylon walked every mesh twice a frame**: 3,300 in a 48-player match, about half switched off (pooled sparks,
+   chips, dust and blood drops, parked effect sources, characters kept for reuse) and 97 shadow proxies no camera
+   draws. That was most of "mesh evaluation".
+4. **Clip stops and node disposals scanned 8,000 running animations**: AnimationGroup.stop looks each of its ~70
+   joint animations up in the scene's list (an indexOf each), and every disposed mesh (effect emitters every few
+   frames) asked the scene to stop its animations (a walk over the list). In a CPU profile of the scenario below, the
+   stops alone were a third of the frame's JS.
+5. **Animation LOD**: the 15-35 m band still stepped at 30 Hz and the far bands worked out the full arm IK, hand
+   turns and stock fitting; creatures' clips ran every frame (only their state machine stepped).
+
+### What changed
+
+- **Static shadow cache** (`game/shadowCache.ts`, Atmosphere): each cascade's square is made a margin bigger than its
+  view slice needs (25 / 15 / 12 % of its radius, near to far) and kept while the slice still fits inside it. The
+  static casters (shadow proxies, and doors, gates or anything plain that has stood still 60 frames) are drawn into
+  a cascade only when it moves, the sun turns, the static set changes, or every ~30 frames (staggered by cascade);
+  their depth is then copied aside (a WebGL2 depth blit per layer) and every other frame the cascade starts from that
+  copy, with only the moving casters drawn on top. A cascade that moves lands on the same texel grid (stabilised
+  cascades), so static shadows don't swim. A caster that moves leaves the cached set at once (all cascades redraw).
+  Medium graphics: the single box moves only when the camera's wanted box is 6 m away. WebGPU and WebGL1: as before.
+  Off with `?perfoff=shadowcache`.
+- **Level draw merging** (`levelMerge.ts`, `MapStyler.merge`, every map): the level's and terrain's per-style meshes
+  (opaque, not glowing) are merged into one mesh per texture size and 128 m square over shared array textures (colour
+  and normal-map layers); each vertex carries its surface's layers, tint, specular colour and power, and a material
+  plugin (`LevelArrayPlugin`) takes those few inputs from the vertex instead of the material. Everything else is
+  StandardMaterial's own lighting, so the look is the same (CI's visual baselines: arena 1.0 %, canyon 0.4 % of pixels
+  differ, within their noise). Collision never used these meshes. Upper-storey floors (format v26) merge like any
+  slab (unit test). The loading gate waits for it (its textures load in a moment). WebGL2 only; `?perfoff=levelmerge`.
+- **Live mesh candidates** (`game/meshSelection.ts`): once a frame, Babylon's two walks see only the meshes switched
+  on, less frozen ones no camera draws (layer mask 0: the shadow proxies). Market Town: ~830 instead of 3,300.
+- **Static materials frozen** (same file): the materials only the level and the props use, once their meshes have
+  been in the scene 2 s; a new mesh drawn with one thaws it. Safe because every map light is in the clustered
+  container (each mesh sees the same lights) and nothing changes those materials after they are made.
+  Both: `?perfoff=meshsel`.
+- **Animation LOD, round 2** (`animLod.ts`): 20 Hz / every 3rd frame at 15-35 m (was 30 Hz / 2nd), 12 Hz / 4th at
+  35-70 m (was 15 / 3rd), 8 Hz / 5th beyond (was 10 / 4th). Past 35 m (`coarse`, a character ~40 px tall) the arms
+  take back the last full grip's pose relative to the shoulders (the spine still bends for the aim), the gun rides in
+  the right hand as that grip held it and the fingers keep their last close; every 4th coarse evaluation works the
+  grip out in full (stance and pitch). Nearer than 15 m nothing changed (no pops close up).
+  **Creatures** (`creatureAnimator.ts`) now step their clips and bones by the same distances, and not at all out of
+  view. `?perfoff=animlod2` gives round 1's steps.
+- **Cheaper clip stops and disposals** (`game/animPatches.ts`): a group's stop disposes its animations without the
+  per-joint lookup (the group's own sweep removes them, as before); a node nothing ever animated skips the scene's
+  stop walk when it is disposed. Not switchable.
