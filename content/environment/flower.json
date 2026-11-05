@@ -1,13 +1,13 @@
 {
-  "$comment": "Meadow flowers (tools/content/env/plants.mjs flowerMesh). Ground cover: decorative only (no collision, no concealment), grown by the terrain's plants brush (packages/client/src/foliage.ts) and placeable as a prop. Basal leaves and stems in vertex colour (env.grass), a flower-head card per stem from the leaves atlas (env.leaf; look.card: 0 daisy, 1 buttercup, 2 clover). The variants share the plant and change the flower: white, yellow, purple. One level of detail.",
+  "$comment": "Meadow flowers (tools/content/env/plants.mjs flowerMesh). Ground cover: decorative only (no collision, no concealment), grown by the terrain's plants brush (packages/client/src/foliage.ts) and placeable as a prop. Basal leaves and stems in vertex colour (env.grass), a flower-head card per stem from the leaves atlas (env.leaf; look.card: 0 daisy, 1 buttercup, 2 clover). The variants share the plant and change the flower: white, yellow, purple, red (a poppy: card 1 in red). One level of detail.",
   "family": "flower",
   "species": [
     {
       "id": "env.flower.meadow",
       "displayName": "Meadow Flowers",
       "category": "groundcover",
-      "assetVersion": 1,
-      "notes": { "1": "First version: replaces the Kenney flowers the plants brush grew (owner, 2026-11-05)." },
+      "assetVersion": 2,
+      "notes": { "1": "First version: replaces the Kenney flowers the plants brush grew (owner, 2026-11-05).", "2": "A red variant (a poppy: the buttercup's broad petals in red, its eye darker), for the Kenney red flower (owner, 2026-11-05); the plant, its size and the other variants unchanged." },
       "nominalHeight": 0.42,
       "nav": "none",
       "role": "decorative",
@@ -17,7 +17,8 @@
       "variants": [
         { "index": 0, "name": "white", "look": { "stem": "#4a6a2a", "leaf": "#3f5f26", "petal": "#f1f0e6", "card": 0 } },
         { "index": 1, "name": "yellow", "look": { "stem": "#4a6a2a", "leaf": "#3f5f26", "petal": "#f2c21a", "card": 1 } },
-        { "index": 2, "name": "purple", "look": { "stem": "#4a6a2a", "leaf": "#3f5f26", "petal": "#9a5cc0", "card": 2 } }
+        { "index": 2, "name": "purple", "look": { "stem": "#4a6a2a", "leaf": "#3f5f26", "petal": "#9a5cc0", "card": 2 } },
+        { "index": 3, "name": "red", "look": { "stem": "#4a6a2a", "leaf": "#3f5f26", "petal": "#d0261c", "card": 1 } }
       ]
     }
   ]
