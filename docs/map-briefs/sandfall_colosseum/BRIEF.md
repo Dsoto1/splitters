@@ -66,7 +66,10 @@ Follow the board's positions.
 - **Assets:** mostly today's Imperial Arena and Roman pieces, at a grander scale. New detail is made in house, as
   set pieces where they repeat: arcade bay, vomitorium, stair tower, tunnel junction, cage block, insula.
 
-## Open (ask the owner)
-- Cell size: how big one board square is in metres.
-- Modes to support; today's map supports its own set. CTF between gates 1/2 and 3/4, KOTH on the medallions, TDM.
-- Which side gets the emperor's box.
+## Owner's answers (2026-11-05)
+- **Cell size:** 4 m per board square, so the floor is about 52 m across.
+- **Modes:**
+  - TDM;
+  - CTF between gates 1/2 and gates 3/4;
+  - King of the Hill on the five medallions.
+- **Emperor's box:** the centre of the north long side, facing the main entrance from the village.
