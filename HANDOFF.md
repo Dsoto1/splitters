@@ -217,6 +217,65 @@ This work is on `wip/env-p1b`. Phase 2 (more species) still needs the owner's go
 
   This work is on `wip/intake-2`.
 
+### Queued (owner, 2026-11-05): first-person pistol hold
+"The first person view when holding a pistol could be adjusted. Either the gun moves back more into the hands or the
+hands move up more into the gun. Looks as if their fingers are just pinching the grip."
+- First person `gripExternal` (characterAnimator.ts) IKs the palms onto the viewmodel's grip and support points.
+  The pistol's hold points and viewOffset are in content/weapons (view.hold).
+- Seat the pistol's grip deep in the palm, web of the thumb high on the backstrap, fingers wrapped, support hand
+  cupping. Do this for every pistol-class weapon.
+- Check with the `aheadR`/`sideR` measures and the characters e2e, with before/after first-person shots across
+  several characters, including Meshy rigs with Meshy's finger weights once intake-2 lands.
+- Start it once a slot frees. It touches the hands, so after intake-2 step 2a.
+
+### Queued (owner-approved, 2026-11-05): community maps
+Plan in docs/COMMUNITY_MAPS.md:
+- local saving is unlimited;
+- sharing is by hosting (Far Cry 2-style browser);
+- maps reach Community Picks automatically by play thresholds, with a weekly owner summary and one-click Official;
+- Community Pick map files are kept on the hub.
+
+MULTIPLAYER_DIRECTION §7 is amended to match. Starts after the current work.
+
+### Proposed (not yet approved): MapMaker quality-of-life list
+The owner asked what MapMaker could use, by comparison with the Far Cry and TimeSplitters editors. My picks, in order:
+1. A green/red ghost before placing, with the reason; plus a live budget bar.
+2. "Play from here", and a top-down plan view.
+3. Set pieces/prefabs, groups, and copy/paste between maps.
+4. Bot test heatmaps, sightline/spawn exposure, and a measure tool.
+5. Time of day and weather.
+6. Interface: mode tabs, collapsible panels, an outliner with hide/lock, favourites/recents, a shortcut overlay, and a
+   guided first-time tour.
+
+Also proposed: note pins, templates, mirror for team maps, a card-shot camera, and snap-to-surface/randomise for props.
+
+Waiting for the owner to mark which ones. This becomes the "MapMaker overhaul" in the agreed queue.
+
+### Queued (owner-approved, 2026-11-05): kit-prop generators
+docs/PROCEDURAL_ENVIRONMENT.md Phase 6, after Environment Phase 2. Generated families replace most of the simple
+man-made props: crates and barrels first, then fences and walls, then containers. Characters, weapons, vehicles and
+hero props stay authored.
+
+### Plan (proposed to the owner, 2026-11-05): retire the old nature models after the environment passes
+About 120 nature props today:
+- Kenney Nature Kit: 55
+- Quaternius Ultimate Nature: 39
+- Kenney Survival: 12
+- Meshy community nature: 8
+- a few in other packs
+
+They come to about 3.6 MB of GLBs.
+
+Plan:
+1. **Retire from the palette** as each environment family covers them (grass, flowers, ferns and pebbles are done).
+2. **Map migration:** move the maps with MapMaker's "Replace all".
+3. **Load-time alias table** (retired id → species and variant), so players' own saved maps and old files still load
+   and upgrade.
+4. **Drop the files from the build only** once no official map and no alias needs them.
+5. **Keep for now:** pieces with no species yet (palms, cacti, snow trees, jungle plants, mushrooms, dead trees,
+   logs and stumps) until Phase 2+ species cover them. Stylised pieces that a style pack depends on stay until
+   that pack's refresh.
+
 ### In flight
 - **Market Town perf on the M1 Pro, branch `wip/perf-market`** (agent, 2026-11-05; from main d29e6a8; not merged).
   Owner's capture (high, 44 players): 23 ms frames with few in view, 38-45 ms with 20-40; characters (clips + aim)
