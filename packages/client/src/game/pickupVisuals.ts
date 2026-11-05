@@ -9,6 +9,7 @@ import { CreateSphere } from '@babylonjs/core/Meshes/Builders/sphereBuilder';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import { getItem, getWeapon , type AmmoType, type DiscPower } from '@tiletrigger/shared';
 import type { ModelLibrary } from '../content/models.ts';
+import { castSmall } from './shadowFlags.ts';
 
 /** The small health pickup's model: the medkit (it falls back to the boxes-in-code case when it can't load). */
 const HEALTH_MODEL = 'guns/medkit.glb';
@@ -51,6 +52,8 @@ function mat(scene: Scene, hex: string, glow = 0): StandardMaterial {
  */
 export function createPickupVisual(scene: Scene, models: ModelLibrary, itemId: string, name: string, instanced = false, lying = false): TransformNode {
   const root = new TransformNode(name, scene);
+  // Small and floating: its shadow is cast only near the camera (Atmosphere).
+  castSmall(root);
   const item = getItem(itemId);
   const part = (m: Mesh, material: StandardMaterial) => {
     m.material = material;

@@ -149,6 +149,8 @@ export class BorderVisuals {
     for (const m of splitThin(mesh)) {
       m.isPickable = false;
       m.freezeWorldMatrix();
+      // Placed for good: its shadow can be merged with the level's (game/shadowProxy.ts).
+      m.metadata = { ...(m.metadata as object | null), staticThin: true };
       this.meshes.push(m);
     }
     return mesh;

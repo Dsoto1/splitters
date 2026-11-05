@@ -15,6 +15,7 @@ import type { DepthRenderer } from '@babylonjs/core/Rendering/depthRenderer';
 import '@babylonjs/core/Rendering/depthRendererSceneComponent';
 import type { Backdrop, MapDocument, SkyDefinition } from '@tiletrigger/shared';
 import type { GraphicsQuality } from './atmosphere.ts';
+import { markWholeSceneDepth } from './sceneDepth.ts';
 
 /**
  * Height fog: haze along each view ray that is thickest at the ground and thins
@@ -112,6 +113,8 @@ export class SkyEffects {
 
   private addFog(doc: MapDocument, mist: number, color: Color3): void {
     this.depth = this.scene.enableDepthRenderer(this.camera, false, true, Texture.NEAREST_SAMPLINGMODE, true);
+    // The fog reads the depth of the whole view: water (which shares this depth map) mustn't trim it to itself.
+    markWholeSceneDepth(this.depth);
     const map = this.depth.getDepthMap();
     // The mist lies on the low ground: the lowest fifth of the terrain, or the ground floor.
     const t = doc.terrain;

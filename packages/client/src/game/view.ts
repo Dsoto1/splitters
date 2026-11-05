@@ -81,6 +81,7 @@ import { BloodVisuals, bloodPreference } from './bloodVisuals.ts';
 import { PosedBody, RAGDOLL_PREWARM, Ragdoll, type DeadBody } from './ragdoll.ts';
 import { fitBudget, tierFor, type RagdollTier } from './ragdollBudget.ts';
 import { Atmosphere } from './atmosphere.ts';
+import { castSmall } from './shadowFlags.ts';
 import { ImpactVisuals } from './impactVisuals.ts';
 import { ThrowArc } from './throwArc.ts';
 import { createStarFlash, kickFlash } from './muzzleVisuals.ts';
@@ -1934,6 +1935,8 @@ export class GameView {
     // Crowds: everyone's copy of a gun is a GPU instance of one mesh (one draw per gun model and part, not per player).
     void this.models.instantiate(def.view.model, `held_${slot}`, this.crowd).then((node) => {
       if (a.weaponSlot !== slot || a.root.isDisposed()) return node.dispose();
+      // A held gun's shadow is a speck past a few metres: it casts only near the camera.
+      castSmall(node);
       // The muzzle is the front of the gun along its forward axis, measured before it's put in a hand.
       const { min, max } = node.getHierarchyBoundingVectors(true);
       const at = def.view.muzzleAt;
