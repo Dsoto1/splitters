@@ -69,7 +69,8 @@ describe('one path primitive: migration (v22 -> v23)', () => {
   // Every shipped map with a race track races and draws exactly as before: the same curve, checkpoints, grid,
   // ambient cars and pit, and the same ground (the track was never laid in on load and had no ground of its own).
   const tracked = readdirSync(MAPS).filter((f) => f.endsWith('.json')).map((f) => f.slice(0, -5)).filter((id) => raw(id).track);
-  it('finds the shipped race maps', () => expect(tracked.length).toBeGreaterThanOrEqual(5));
+  // Serene City was re-exported from MapMaker (format 25: its track is a path now), so four still carry the old field.
+  it('finds the shipped race maps', () => expect(tracked.length).toBeGreaterThanOrEqual(4));
   for (const id of tracked) {
     it(`${id}: races exactly as before`, () => {
       const file = raw(id);
