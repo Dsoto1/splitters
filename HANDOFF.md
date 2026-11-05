@@ -262,7 +262,8 @@ hands move up more into the gun. Looks as if their fingers are just pinching the
   maps" (real: Serene City's export migrated `track` to `paths`; threshold now 4) and 8 load timeouts (bigMatch,
   botai, npc x2, pads x2, scenario, spectate) that pass on CI. e2e here (temp runner, ports 4971/4972):
   environment PASS, visual PASS (no baseline changed: envlab 1.2 % off its baseline, under 10 %), editor failed
-  locally on the airdrop "jump off the map" check (load; it passes on CI). CI `check/env-p1c`: run 42048938686 at
+  locally twice (the airdrop "jump off the map" check, and once the random pickup's drawn weapon in TEST: neither
+  touches foliage or MapMaker's inspector; the box was at load 8-10; it passes on CI). CI `check/env-p1c`: run 42048938686 at
   26c988a2 green (full suite: units, build, 16 e2e shards, perf budget and mass; the first attempt failed only in
   the handoff flow's successor-score check, a known flake, and its rerun passed); run 42043777362 at 13e980d4 failed
   on the unifiedPaths count, fixed.
