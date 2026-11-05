@@ -158,6 +158,21 @@ This work is on `wip/env-p1b`. Phase 2 (more species) still needs the owner's go
     pebbles (`prop.stones`) and eelgrass unchanged. Kenney grass/flowers/plant_low retired from the palette
     (`RETIRED_PROPS`, paletteCatalog.ts; maps still load them); the three species are in Nature → Plants & Flowers (no
     picture); "Flowers & grass" and "Desert scrub" scatter sets use them. envlab lineup has the flowers and fern.
+- **Perf** (client-perf.mjs, medium, `PERF_BOTS=2`, 20 s, SwiftShader on the shared container; two interleaved
+  before/after pairs, before = a build of main 7c0ebb14; counts only): plants on Backwoods 103 / 74 → 73 / 80 draws,
+  0.54 / 0.44 → 0.26 / 0.26 M triangles (≈4.2 k → 7.1 k instances: clumps are a few blades); Norman Shores 56 / 57 → 40
+  / 47 draws, 0.44 / 0.39 → 0.19 / 0.21 M. Whole frame: Backwoods 420 / 367 → 323 / 355 draws, 1.94 / 1.83 → 1.61 /
+  1.62 M triangles; Norman Shores 383 / 376 → 342 / 422 draws (the second pair's camera saw more; not plants),
+  1.72 / 1.42 → 1.38 / 1.37 M. Menu first JS 683.4 kB gzip (budget 840). Not measured: GPU time (the plants now use the
+  environment's PBR materials with wind instead of lambert; grass capped at 2 lights).
+- **Checks:** typecheck, test:changed (1568 passed), content:rebuild + content:check, build, bundle budget,
+  validate-map env_showcase (0 issues); e2e here (ports 4991/4992): environment, visual (baselines envlab and canyon
+  updated; arena, mapmaker, menu left as they were), scenery, editor, offline, sandgate PASS. CI `check/env-p1b` run
+  41976898146 at 7a2d9e8f: green (full suite, every e2e shard).
+- **Open for the owner:** grass reads thinner than Kenney's patches at the reviewed density (density waits for the M1
+  recording); placed Kenney grass/fern props on maps (e.g. Backwoods' teal tufts) are map entities, unchanged until
+  Phase 4 migration; pebbles (`prop.stones`) and eelgrass still pack pieces; Kenney fern and small bush (they conceal)
+  stay in the palette; the three ground-cover species have no palette picture yet.
 - **Screenshots** (session scratchpad `env2/`): `envlab-before-*` / `envlab-after-*` (rock-close, rocks, cliff-close,
   cliffs, plants, small, lineup) and `backwoods-*`, `env_showcase-*` before/after at eye height.
 - **Pitfall:** another agent's `vite preview` held port 4951 all day; a preview started with `--strictPort` on a taken
