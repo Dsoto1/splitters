@@ -879,13 +879,13 @@ async function editoruxFlow(browser) {
     return target;
   };
   await clickTool(page, '[data-tool="tile:core.room"]');
-  const tilesBefore = (await doc()).classicStructure.tiles.length;
+  const areaTiles = (await doc()).classicStructure.tiles.length;
   const sceneryNote = await placeAt(64, -64);
   check((await doc()).classicStructure.tiles.some((t) => t.x === 8 && t.y === -8), 'a room in the scenery zone (outside the boundary) places');
   check(/Scenery zone/.test(sceneryNote ?? ''), `hovering there says it is the scenery zone (${sceneryNote})`);
   const beyondNote = await placeAt(2072, 0);
   const limitRefusal = (await page.textContent('#ed-toast')) ?? '';
-  check((await doc()).classicStructure.tiles.length === tilesBefore + 1 && /build limit/.test(limitRefusal), `a room past the build limit is refused, naming it (${limitRefusal})`);
+  check((await doc()).classicStructure.tiles.length === areaTiles + 1 && /build limit/.test(limitRefusal), `a room past the build limit is refused, naming it (${limitRefusal})`);
   check(/Past the build limit/.test(beyondNote ?? ''), `hovering past it says so (${beyondNote})`);
   await page.click('#ed-grid-full');
   await settle();
@@ -901,7 +901,7 @@ async function editoruxFlow(browser) {
   await page.click('#ed-grid');
   await page.keyboard.press('Control+KeyZ');
   await page.keyboard.press('Control+KeyZ');
-  check((await doc()).classicStructure.tiles.length === tilesBefore && JSON.stringify((await doc()).bounds) === JSON.stringify(boundsBefore), 'undo takes the room and the boundary back out');
+  check((await doc()).classicStructure.tiles.length === areaTiles && JSON.stringify((await doc()).bounds) === JSON.stringify(boundsBefore), 'undo takes the room and the boundary back out');
   await page.keyboard.press('Escape');
 
   // A floor over a piece two levels tall (the owner's case, 2026-11-05): the Triumphal Arch holds its cell on Level 1
