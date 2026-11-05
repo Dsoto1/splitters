@@ -487,6 +487,24 @@ fastest moving at about 60 m/s, on both attempts.
 Each brief has its reference image beside it. The owner approves the concept before any placement work; follow
 AGENT_BUILD_CONTRACT.md.
 
+### Queued: performance round 3 (owner's Shingle Point M1 recording, 2026-11-05; files in session scratchpad perf3/)
+**The recording:** build 76a4b03, M1 Pro, high, 49 players.
+- Averages about 20.5 ms. It holds 60 fps only in quiet views (390 draws, 185 meshes).
+- In the main views: 700–870 draws and 850–1,090 active meshes.
+- Per frame: render about 17 ms, of which:
+  - mesh evaluation 3.5 ms
+  - shadow and depth maps 4.4 ms
+  - about 6.5 ms issuing draws
+  - clips and aim 2.8 ms (round 2 worked there)
+- One hitch at 55 s compiled 8 new shaders mid-match (75–83 ms frames).
+- HUD costs 0.7 ms, against 0.1 ms on Market Town.
+
+**Targets:**
+1. Static prop merging and instancing on big open maps: chunked merging of static props and decorations, like levelMerge.
+2. Shadow cache effectiveness on large outdoor maps.
+3. Shader warm-up so no shaders compile mid-match. Find which material first appeared at 55 s.
+4. HUD cost: why 0.7 ms here (minimap or markers with 49 players?).
+
 ### Owner's map notes for later (2026-11-05; not started)
 - **No Man's Field:** asset refresh. It still uses Kenney kits; move it to our generated environment and props.
 - **Rockfall Canyon** (`maps/canyon.json`): asset and foliage refresh, onto our generated environment, rocks and plants.
