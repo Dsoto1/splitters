@@ -39,6 +39,7 @@
       "supportLong": [-0.02, 0.04, 0],
       "supportPistol": [-0.02, 0.04, -0.02],
       "curlR": 0.4
-    }
+    },
+    "fingers": "fit"
   }
 }

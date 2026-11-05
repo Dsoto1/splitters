@@ -39,6 +39,7 @@
     "handsShare": 0.1,
     "headShare": 0.16,
     "normalSize": 1024,
-    "lod": 0.28
+    "lod": 0.28,
+    "fingers": "fit"
   }
 }

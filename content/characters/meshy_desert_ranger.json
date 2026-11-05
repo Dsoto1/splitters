@@ -38,6 +38,7 @@
       "gripLong": [-0.06, -0.015, -0.03],
       "supportLong": [0, -0.02, 0.02],
       "supportPistol": [0, 0.04, -0.08]
-    }
+    },
+    "fingers": "fit"
   }
 }

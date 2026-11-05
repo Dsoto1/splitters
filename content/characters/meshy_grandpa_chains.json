@@ -38,6 +38,7 @@
       "Spine01": 3,
       "Spine": 4,
       "neck": 4
-    }
+    },
+    "fingers": "fit"
   }
 }
