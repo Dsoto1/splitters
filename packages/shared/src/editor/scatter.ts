@@ -31,7 +31,7 @@ export const SCATTER_SETS = {
   desert: { label: 'Desert scrub', models: [['prop.cactus', 3], ['prop.cactus_tall', 1], ['prop.plant_low', 3], ['prop.stones', 2], ['prop.palm_short', 0.5]], spacing: 3.5, scale: [0.8, 1.2] },
   water: { label: 'Water plants', models: [['prop.mn_eelgrass', 1]], spacing: 1.1, scale: [0.8, 1.3] },
   rocks: { label: 'Rocks', models: [['prop.boulder_round', 2], ['prop.boulder_jagged', 2], ['prop.boulder_flat', 2], ['prop.rock_medium', 2], ['prop.stones', 3]], spacing: 3, scale: [0.6, 1.3] },
-  envForest: { label: 'Procedural forest (preview)', models: [['env.broadleaf.oak', 3], ['env.broadleaf.oak#1', 1], ['env.conifer.pine_tall', 4]], spacing: 3.8, scale: [0.8, 1.25], preview: true },
+  envForest: { label: 'Procedural forest (preview)', models: [['env.broadleaf.oak', 3], ['env.broadleaf.oak#1', 1], ['env.conifer.pine_tall', 4]], spacing: 3, scale: [0.8, 1.25], preview: true },
   envShrubs: { label: 'Procedural shrubs (preview)', models: [['env.shrub.broadleaf', 3], ['env.shrub.broadleaf#1', 1]], spacing: 2.4, scale: [0.75, 1.3], preview: true },
   envRocks: { label: 'Procedural boulders (preview)', models: [['env.rock.boulder_angular', 2], ['env.rock.boulder_angular#1', 1]], spacing: 6, scale: [0.6, 1.4], preview: true },
 } as const satisfies Record<string, ScatterSet>;
