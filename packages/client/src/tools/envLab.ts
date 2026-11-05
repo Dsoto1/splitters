@@ -207,7 +207,7 @@ export async function openEnvLab(engine: AbstractEngine, canvas: HTMLCanvasEleme
     small: [[0, EYE, -11], [-1, 0.6, -4]],
     plants: [[-4.6, EYE, -8.2], [-4.2, 0.5, -4]],
     rocks: [[3.2, EYE, -8.6], [3.1, 0.6, -4]],
-    ground: [[2.2, EYE, -9.2], [2.4, 0.1, -6.6]],
+    ground: [[3, EYE, -10], [3, 0.1, -6.6]],
     cliffs: [[2, EYE, 15], [4, 4, 30]],
   };
   const VIEWS: Record<string, [Vector3, Vector3]> = {};
