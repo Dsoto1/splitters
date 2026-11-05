@@ -427,9 +427,9 @@ export function boulderShapes(hull) {
 // ---------------------------------------------------------------- pebbles
 
 /**
- * A pebble cluster (env.rock.pebbles): `stones` small convex stones, each the hull of a few seeded points on a
- * squashed ellipsoid, the largest near the middle, the rest round it, sunk a quarter of their height into the
- * ground; faces wholly below grade are dropped. Faceted (a low crease angle) and coloured like the boulder (strata,
+ * A pebble cluster (env.rock.pebbles): `stones` small rounded stones, each the convex hull of a jittered waist ring,
+ * a smaller ring above and a crown (`ring`: points per ring), the largest near the middle, the rest round it, sunk to
+ * the waist; faces below grade are dropped. Smooth-shaded within `crease` and coloured like the boulder (strata,
  * patches, `look`). Decoration only: no collision. { rock: Mesh }.
  */
 export function pebblesMesh(seed, g, look) {
@@ -450,18 +450,31 @@ export function pebblesMesh(seed, g, look) {
     }
     placed.push([c[0], c[1], s]);
     const flat = r.range(g.flat[0], g.flat[1]);
-    const long = r.range(1, 1.45);
+    const long = r.range(1, 1.35);
     const turn = r.next() * Math.PI;
-    const pts = [];
-    for (let i = 0; i < g.points; i++) {
-      const u = r.unit();
-      const x = (u[0] * s * long) / 2;
-      const z = (u[2] * s) / 2;
-      pts.push([x * Math.cos(turn) - z * Math.sin(turn), (u[1] * s * flat) / 2, x * Math.sin(turn) + z * Math.cos(turn)]);
-    }
-    const lo = Math.min(...pts.map((p) => p[1]));
-    const hi = Math.max(...pts.map((p) => p[1]));
-    const lift = -lo - (hi - lo) * 0.25;
+    // A water-worn pebble: a jittered ring round its waist, a smaller ring above, a crown point (a rounded dome,
+    // not a shard); everything under the waist is in the ground.
+    const local = [];
+    const ring = (n, rad, y, jit) => {
+      const a0 = r.next() * Math.PI * 2;
+      for (let i = 0; i < n; i++) {
+        const a = a0 + (i / n) * Math.PI * 2 + r.jitter(jit);
+        const k = rad * (1 + r.jitter(0.12));
+        local.push([Math.cos(a) * k, y + r.jitter(0.06), Math.sin(a) * k]);
+      }
+    };
+    ring(g.ring[0], 1, -0.1, 0.25);
+    ring(g.ring[1], 0.68, 0.5, 0.35);
+    local.push([r.jitter(0.15), 0.82 + r.jitter(0.06), r.jitter(0.15)]);
+    local.push([0, -0.5, 0]);
+    const pts = local.map(([u, v, w]) => {
+      const x = (u * s * long) / 2;
+      const z = (w * s) / 2;
+      return [x * Math.cos(turn) - z * Math.sin(turn), (v * s * flat) / 2, x * Math.sin(turn) + z * Math.cos(turn)];
+    });
+    // The waist ring a hair under the ground.
+    const waist = Math.max(...pts.slice(0, g.ring[0]).map((p) => p[1]));
+    const lift = -waist - 0.006;
     const o = P.length;
     for (const p of pts) P.push([p[0] + c[0], p[1] + lift, p[2] + c[1]]);
     for (const f of convexHull(pts)) if (f.some((i) => P[o + i][1] > 0.004)) I.push(o + f[0], o + f[1], o + f[2]);

@@ -1,5 +1,5 @@
 {
-  "$comment": "Boulders and pebbles (tools/content/env/rock.mjs). Pebbles (category rock): a cluster of small faceted stones, decoration only (no collision, no concealment), grown by the terrain's plants brush on stone, gravel, snow and sand (packages/client/src/foliage.ts) and placeable as a prop; one level of detail. Boulder lods: triangle targets for meshoptimizer from the detailed surface. Collision: the hull before displacement (stone). See broadleaf.json for the fields.",
+  "$comment": "Boulders and pebbles (tools/content/env/rock.mjs). Pebbles (category rock): a cluster of small rounded stones, decoration only (no collision, no concealment), grown by the terrain's plants brush on stone, gravel, snow and sand (packages/client/src/foliage.ts) and placeable as a prop; one level of detail. Boulder lods: triangle targets for meshoptimizer from the detailed surface. Collision: the hull before displacement (stone). See broadleaf.json for the fields.",
   "family": "rock",
   "species": [
     {
@@ -33,7 +33,7 @@
       "nav": "none",
       "role": "decorative",
       "placement": { "maxSlopeDegrees": 45, "minSpacing": 0.6, "scale": [0.6, 1.5] },
-      "generator": { "kind": "pebbles", "seed": 21, "radius": 0.36, "stones": [6, 7], "size": [0.1, 0.36], "flat": [0.6, 0.9], "points": 7, "crease": 30, "uvScale": 0.6 },
+      "generator": { "kind": "pebbles", "seed": 21, "radius": 0.36, "stones": [5, 5], "size": [0.1, 0.34], "flat": [0.6, 0.9], "ring": [5, 3], "crease": 60, "uvScale": 0.6 },
       "lods": [{ "distance": 0 }],
       "variants": [
         { "index": 0, "name": "grey", "look": { "rock": "#7a766e", "band": "#948d80", "strataFreq": 30, "hue": 0.1 } },
