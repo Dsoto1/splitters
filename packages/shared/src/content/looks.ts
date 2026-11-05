@@ -209,6 +209,10 @@ export const RETIRED_LOOKS: Readonly<Record<string, string>> = {
   // the closest soldier kept.
   'core.tposesoldier1': 'core.wwiisoldier', // Hollis
   'core.tposesoldier2': 'core.grunt68', // Briggs
+  // Owner, 2026-11-05: off the roster (files and manifests kept). Snikkit's new model (Goblin Mischief) audited
+  // worse than the old one; Bill by the owner's choice. (Hyena Warrior: the owner is deciding keep-and-tune vs retire.)
+  'core.snikkit': 'core.goblinwarlord',
+  'core.bill': 'core.dale',
 };
 
 /**
