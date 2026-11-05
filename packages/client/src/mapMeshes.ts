@@ -240,11 +240,12 @@ export class MapStyler {
    * style become a few meshes over shared array textures, and the per-style meshes, and the materials and textures
    * nothing else uses, go. Resolves with how many draws the level was and is (null: nothing merged, all left as built).
    */
-  async merge(name = 'map'): Promise<{ before: number; after: number } | null> {
+  async merge(name = 'map'): Promise<{ before: number; after: number; merged: string[] } | null> {
     const all = [...this.meshes, ...this.terrainMeshes].filter((m) => !m.isDisposed());
     const sources = this.mergeSources();
     const result = await mergeLevel(this.scene, sources, name);
     if (!result || this.scene.isDisposed) return null;
+    const names = result.merged.map((m) => m.name);
     // The merged styles' meshes go (a style alone at its texture size stays as it was).
     for (const m of result.merged) {
       this.styleOf.delete(m);
@@ -253,7 +254,7 @@ export class MapStyler {
     this.meshes = [...this.meshes.filter((m) => !m.isDisposed()), ...result.meshes];
     this.terrainMeshes = this.terrainMeshes.filter((m) => !m.isDisposed());
     this.dropUnused();
-    return { before: all.length, after: this.meshes.length + this.terrainMeshes.length };
+    return { before: all.length, after: this.meshes.length + this.terrainMeshes.length, merged: names };
   }
 
   /** The level's and terrain's per-style meshes that can merge (opaque, not glowing), with their surfaces' textures. */

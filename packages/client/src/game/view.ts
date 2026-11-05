@@ -379,8 +379,9 @@ export class GameView {
   readonly atmosphere: Atmosphere;
   private readonly brass: StandardMaterial;
   /** The level's draw merge in progress (buildMap), and its outcome: draws before and after (null: not merged). */
-  private levelMerge: Promise<{ before: number; after: number } | null> | null = null;
-  levelDraws: { before: number; after: number } | null = null;
+  private levelMerge: Promise<{ before: number; after: number; merged: string[] } | null> | null = null;
+  /** Level meshes before and after the merge, and the per-style meshes merged (by name; tests). */
+  levelDraws: { before: number; after: number; merged: string[] } | null = null;
 
   constructor(engine: AbstractEngine) {
     // Cheaper clip stops and node disposals with thousands of animations running (animPatches.ts).

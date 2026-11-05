@@ -11,9 +11,9 @@ import type { AbstractMesh } from '@babylonjs/core/Meshes/abstractMesh';
  * skip the rest; what they do with each candidate is unchanged.
  */
 
+/** Babylon 9 keeps a node's own and its parents' enabled state here (Node.isEnabled reads the same two). */
 interface NodeFlags {
-  _isEnabled: boolean;
-  _isParentEnabled: boolean;
+  _nodeDataStorage?: { _isEnabled: boolean; _isParentEnabled: boolean };
 }
 
 export function selectLiveCandidates(scene: Scene): () => void {
@@ -29,8 +29,8 @@ export function selectLiveCandidates(scene: Scene): () => void {
       let n = 0;
       for (let i = 0; i < all.length; i++) {
         const m = all[i]!;
-        const flags = m as unknown as NodeFlags;
-        if (!flags._isEnabled || !flags._isParentEnabled) continue;
+        const flags = (m as unknown as NodeFlags)._nodeDataStorage;
+        if (flags ? !flags._isEnabled || !flags._isParentEnabled : !m.isEnabled()) continue;
         if (m.layerMask === 0 && m.isWorldMatrixFrozen) continue;
         list[n++] = m;
       }
