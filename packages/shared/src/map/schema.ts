@@ -122,6 +122,9 @@ export const TileSurfaces = z.object({
 /** One side of one tile cell, in the tile's own frame: "dx,dy,dz:N". */
 export const EdgeKey = z.string().regex(/^-?\d+,-?\d+,-?\d+:[NESW]$/, 'edge keys look like "0,0,0:N"');
 
+/** One cell of a tile, in the tile's own frame: "dx,dy,dz". */
+export const LocalCellKey = z.string().regex(/^-?\d+,-?\d+,-?\d+$/, 'cell keys look like "0,0,1"');
+
 /**
  * Real glass in a window (glass panes): `breakable` panes shatter at the
  * first shot or blast (they come back next round, or after the map's glass
@@ -151,6 +154,12 @@ export const TilePlacement = z.object({
   edges: z.record(EdgeKey, z.enum(EDGE_STYLES)).optional(),
   /** Glass in window edges (window, twin windows, firing slit), per side; absent sides have none. */
   glass: z.record(EdgeKey, z.enum(GLASS_KINDS)).optional(),
+  /**
+   * Floors added in the piece's own upper storeys (format v26), per tile cell ("dx,dy,dz", its own frame): a full
+   * slab at that storey's floor level, like a floor the piece came with. Only storeys a piece leaves without a floor
+   * take one (geometry.ts `canAddFloor`); others are ignored.
+   */
+  upperFloors: z.array(LocalCellKey).max(256).optional(),
   /** Room options on rooms that take them (catalog `configurable`); absent fields leave the tile as designed. */
   options: z
     .object({

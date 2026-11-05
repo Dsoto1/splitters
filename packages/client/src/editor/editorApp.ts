@@ -11,6 +11,12 @@ import {
   addSpawnCommand,
   buildMapGeometry,
   checkPlacement,
+  levelName,
+  placeTileCommand,
+  setUpperFloorsCommand,
+  upperFloorLevels,
+  upperFloorAt,
+  isBareFloor,
   coreCatalog,
   deleteCommand,
   duplicateCommand,
@@ -431,13 +437,6 @@ function toolKey(tool: Tool): string {
     default:
       return tool.kind;
   }
-}
-
-/** Display name of a level: Ground, Level 1, Basement… */
-export function levelName(level: number): string {
-  if (level === 0) return 'Ground';
-  if (level > 0) return `Level ${level}`;
-  return level === -1 ? 'Basement' : `Basement ${-level}`;
 }
 
 /** Toolbar icons (24×24, drawn in the button's text colour). */
@@ -1002,11 +1001,16 @@ export class EditorApp {
   private placeAtHover(): void {
     if (this.tool.kind === 'tile' && this.hoverCell) {
       const [x, y, z] = this.hoverCell;
-      const placement = { id: newId('tile'), tile: this.tool.tile, x, y, z, rotation: this.rotation };
-      const check = checkPlacement(this.doc, [placement]);
-      if (!check.ok) return this.toast(`Can't place: ${check.reason}`, true);
+      const placed = placeTileCommand(this.doc, this.tool.tile, x, y, z, this.rotation);
+      if ('error' in placed) return this.toast(`Can't place: ${placed.error}`, true);
+      if (placed.floorOf) {
+        // A Platform on another piece's empty upper storey: that piece's own floor there (one cell, one piece).
+        const host = coreCatalog.get(placed.floorOf.tile)?.displayName ?? placed.floorOf.tile;
+        if (this.run(`Floor on ${levelName(z)} of ${host}`, placed.command)) this.toast(`${host}: a floor on ${levelName(z)} here (part of the ${host}: untick “Floor on ${levelName(z)}” in its inspector to take it out)`);
+        return;
+      }
       const name = coreCatalog.get(this.tool.tile)?.displayName ?? this.tool.tile;
-      this.run(`Place ${name}`, { kind: 'addTiles', tiles: [placement] });
+      this.run(`Place ${name}`, placed.command);
     } else if (this.tool.kind === 'spawn' && this.hoverPoint) {
       const p = this.placeSpot()!;
       const { command, id } = addSpawnCommand(p, this.spawnYaw);
@@ -1645,7 +1649,10 @@ export class EditorApp {
     const cell = this.hoverCell ? ([this.hoverCell[0], this.hoverCell[1], this.level] as [number, number, number]) : null;
     this.view.setHoverCell(this.doc, this.tool.kind === 'tile' || this.tool.kind === 'spawn' || this.tool.kind === 'pickup' || this.tool.kind === 'scenario' || this.tool.kind === 'npc' ? cell : null);
     if (this.tool.kind === 'tile' && cell) {
-      const ok = checkPlacement(this.doc, [{ id: '__ghost', tile: this.tool.tile, x: cell[0], y: cell[1], z: cell[2], rotation: this.rotation }]).ok;
+      // A Platform over another piece's empty upper storey becomes its floor: that's fine too.
+      const ok =
+        checkPlacement(this.doc, [{ id: '__ghost', tile: this.tool.tile, x: cell[0], y: cell[1], z: cell[2], rotation: this.rotation }]).ok ||
+        (isBareFloor(coreCatalog.get(this.tool.tile)) && upperFloorAt(this.doc, cell[0], cell[1], cell[2])?.has === false);
       this.view.setGhost(this.doc, this.tool.tile, cell, this.rotation, ok);
     } else {
       this.view.setGhost(this.doc, null, null, 0, true);
@@ -3372,6 +3379,7 @@ export class EditorApp {
         }
       } else el.append(small('Use the Walls & Openings tool (O) to change any side of this piece.'));
       if (def?.configurable) this.roomOptionsPanel(el, t);
+      this.upperFloorsPanel(el, t);
       if (def && dressable(def)) this.dressPanel(el, t);
       const h3 = document.createElement('h3');
       h3.textContent = 'Surfaces';
@@ -4174,6 +4182,31 @@ export class EditorApp {
       return;
     }
     if (this.run('Dress all rooms', { kind: 'addEntities', entities: added })) this.toast(`Dressed ${rooms} room${rooms > 1 ? 's' : ''} (${added.length} props)`);
+  }
+
+  /**
+   * Floors in a tall piece's own upper storeys (`upperFloors`): one tick per storey that has none, over the whole
+   * footprint. A cell holds one piece, so this is how a floor (the ceiling of the storey below) goes in over a piece
+   * that stands more than one level tall; a Platform placed on such a cell ticks it for that cell alone.
+   */
+  private upperFloorsPanel(el: HTMLElement, t: TilePlacement): void {
+    const levels = upperFloorLevels(t);
+    if (!levels.length) return;
+    const head = document.createElement('h3');
+    head.textContent = 'Upper floors';
+    el.append(head);
+    for (const { dz, keys, on } of levels) {
+      const box = document.createElement('input');
+      box.type = 'checkbox';
+      box.className = 'ed-upper-floor';
+      box.dataset.level = String(t.z + dz);
+      box.checked = on === keys.length;
+      box.indeterminate = on > 0 && on < keys.length;
+      const name = levelName(t.z + dz);
+      box.addEventListener('change', () => this.run(`${box.checked ? 'Floor on' : 'No floor on'} ${name}`, setUpperFloorsCommand(this.doc, t, keys, box.checked)));
+      el.append(row(`Floor on ${name}`, box));
+    }
+    el.append(small('A full floor across the piece at that level: the ceiling below and a floor to build on. Things that rise through it (columns, arches) still stand.'));
   }
 
   /** One surface slot in the tile inspector: material (or theme default) and tint. */

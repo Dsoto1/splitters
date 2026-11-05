@@ -207,9 +207,31 @@ export const localSide = (worldSide: Side, rotation: number): Side => SIDES[(SID
 /** A cell's four sides as [tile-local edge key, world side]. */
 export const cellSides = (occ: CellOccupant): [string, Side][] => SIDES.map((side) => [edgeKey(occ.local, localSide(side, occ.placement.rotation)), side]);
 
+/** A tile cell's key in the piece's own frame ("dx,dy,dz"), as `upperFloors` stores it. */
+export const localCellKey = (local: readonly number[]): string => `${local[0]},${local[1]},${local[2]}`;
+
+/**
+ * Whether a piece can take a floor of its own in one of its cells (MapMaker's "Floor on Level N", `upperFloors`):
+ * an upper storey the piece leaves without a full floor. Not the bottom storey (pits, bridges and sunken rooms are
+ * floorless on purpose), not stairs, ramps, towers or lifts (their upper storey is the way up), and not buildings
+ * drawn from a model (their storeys are in the model).
+ */
+export function canAddFloor(def: TileDefinition, local: readonly number[]): boolean {
+  if (def.model || def.category === 'Vertical') return false;
+  const bottom = Math.min(...def.cells.map((c) => c[2]));
+  return local[2]! > bottom && !def.floors.includes(local[2]!) && def.cells.some((c) => c[0] === local[0] && c[1] === local[1] && c[2] === local[2]);
+}
+
+/** Whether a cell gets a full floor slab: one its piece came with, or one added in MapMaker. */
+export function cellSlab(occ: CellOccupant): boolean {
+  if (occ.def.floors.includes(occ.level)) return true;
+  const added = occ.placement.upperFloors;
+  return !!added?.length && added.includes(localCellKey(occ.local)) && canAddFloor(occ.def, occ.local);
+}
+
 /** Whether a cell has walkable floor of its own (a full slab or partial floors). */
 export function cellHasFloor(occ: CellOccupant): boolean {
-  return occ.def.floors.includes(occ.level) || !!occ.def.extraFloors?.length;
+  return cellSlab(occ) || !!occ.def.extraFloors?.length;
 }
 
 /**
@@ -498,7 +520,7 @@ function buildBoxes(map: MapDocument, catalog: TileCatalog, decor: boolean): Wor
     const baseY = gz * levelHeight;
     const id = occ.placement.id;
 
-    if (!decor && occ.def.floors.includes(occ.level) && !(occ.level === 0 && rooms.noSlabs.has(id))) {
+    if (!decor && cellSlab(occ) && !(occ.level === 0 && rooms.noSlabs.has(id))) {
       boxes.push({ min: [cx - half, baseY - floorThickness, cz - half], max: [cx + half, baseY, cz + half], kind: 'floor', sourceId: id });
     }
 

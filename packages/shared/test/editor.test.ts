@@ -133,9 +133,10 @@ describe('EditHistory', () => {
 describe('editor operations', () => {
   it('refuses to place a tile on an occupied cell, including multi-cell tiles', () => {
     const doc = loadArena();
-    expect(placeTileCommand(doc, 'core.room', 0, 0, 0, 0)).toEqual({ error: 'overlaps another tile' });
-    // Stairs at (1,2,0) also reserve (1,2,1).
-    expect(placeTileCommand(doc, 'core.room', 1, 2, 1, 0)).toEqual({ error: 'overlaps another tile' });
+    // The refusal names what is in the way and says what to do instead.
+    expect(placeTileCommand(doc, 'core.room', 0, 0, 0, 0)).toEqual({ error: expect.stringMatching(/^overlaps .+ on Ground: pick a free cell or another level, or move or delete the .+ first$/) });
+    // Stairs at (1,2,0) also reserve (1,2,1): their upper storey is the way up, so no floor goes in there.
+    expect(placeTileCommand(doc, 'core.room', 1, 2, 1, 0)).toEqual({ error: 'overlaps Stairs: Level 1 here is part of it (it stands 2 levels tall). Pick a free cell or another level, or move the Stairs' });
     expect('command' in placeTileCommand(doc, 'core.room', 5, 5, 0, 0)).toBe(true);
     expect(tileAt(doc, 1, 2, 1)?.id).toBe('t_stairs');
   });
@@ -147,7 +148,7 @@ describe('editor operations', () => {
     expect(moved.classicStructure.tiles[0]).toMatchObject({ x: 2, y: -1, z: 1 });
     expect(moved.entities[0]!.position).toEqual([16, 4, -8]);
     const arena = loadArena();
-    expect(moveCommand(arena, { tiles: ['t_room_sw'], entities: [] }, 1, 0, 0)).toEqual({ error: 'overlaps another tile' });
+    expect(moveCommand(arena, { tiles: ['t_room_sw'], entities: [] }, 1, 0, 0)).toEqual({ error: expect.stringMatching(/^overlaps /) });
   });
 
   it('turns one thing by its kind\'s step and a group as one about its centre', () => {
@@ -258,7 +259,7 @@ describe('fine-grained edits', () => {
     const doc = loadArena();
     const room = doc.classicStructure.tiles.find((t) => t.id === 't_room_ne')!;
     // Turning the room under the upper floor into stairs would need the occupied cell above.
-    expect(updateTileCommand(doc, room, { ...room, tile: 'core.stairs' })).toEqual({ error: 'overlaps another tile' });
+    expect(updateTileCommand(doc, room, { ...room, tile: 'core.stairs' })).toEqual({ error: expect.stringMatching(/^overlaps /) });
     const ok = updateTileCommand(doc, room, { ...room, tile: 'core.room_columns' });
     expect('kind' in ok).toBe(true);
     const moved = applyCommand(doc, moveEntitiesCommand(doc, ['sp_hub'], 0.5, 0, -0.5));

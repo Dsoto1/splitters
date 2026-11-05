@@ -23,7 +23,7 @@
  */
 import { getProp } from '../content/props.ts';
 import { SIDE_DIRS, SIDES, seededRandom, type EdgeShape, type Side } from './catalog.ts';
-import { boxBounds, buildMapGeometry, buildOccupancy, cellKey, edgeSegments, resolveEdge, rotateXZ, type WorldBox } from './geometry.ts';
+import { boxBounds, buildMapGeometry, buildOccupancy, cellKey, cellSlab, edgeSegments, resolveEdge, rotateXZ, type WorldBox } from './geometry.ts';
 import type { MapDocument } from './schema.ts';
 import { EDGE_SHAPES } from '../content/edgeStyles.generated.ts';
 
@@ -1090,7 +1090,7 @@ export function dressSpace(map: MapDocument, cellList: readonly (readonly [numbe
     }
     const r: DressRect = { x0: cx - half + inset.W, x1: cx + half - inset.E, z0: cz - half + inset.S, z1: cz + half - inset.N };
     const occ = cells.get(cellKey(gx, gy, gz))!;
-    if (occ.def.floors.includes(occ.level)) rects.push(r);
+    if (cellSlab(occ)) rects.push(r);
     else {
       // Upper storeys of buildings stand on partial floors (round a stair hole, a mezzanine): only those count.
       const p = occ.placement;
