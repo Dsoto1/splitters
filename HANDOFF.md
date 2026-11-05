@@ -368,7 +368,10 @@ Owner request (2026-11-05): show the real buildable area.
   placement allows ±256 cells and ±16 levels (`checkPlacement`).
 - Draw the grid over the whole usable area: the map bounds if set, else the terrain's extent. Make every 4th line a
   stronger major line, fade the grid with distance, and outline the build limit.
-- The owner sees this as a quick win; do it first in the MapMaker work.
+- The owner sees this as a quick win; do it first in the MapMaker work. It goes to the next free agent.
+- **Building outside the playable bounds is intended (owner).** Scenery beyond the boundary blends the playable
+  space into the outer world cheaply, so don't discourage it. Show the full build area, with the playable bounds
+  as a distinct outline inside it. The area outside the bounds should read as "scenery zone", not as an error.
 
 Also proposed: note pins, templates, mirror for team maps, a card-shot camera, and snap-to-surface/randomise for props.
 
