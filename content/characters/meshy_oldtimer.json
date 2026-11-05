@@ -1,0 +1,35 @@
+{
+  "id": "meshy_oldtimer",
+  "kind": "character",
+  "use": "player",
+  "order": 108,
+  "name": "Old Timer",
+  "look": "core.oldtimer",
+  "group": "folk",
+  "nameTheme": "townsfolk",
+  "bio": "Ninety-three, still drives, still wins.",
+  "body": "male",
+  "notes": "Drive intake of 2026-11-05 (\"An old man in his 90s presented in a\", rigged and animated on Meshy (Mixamo joint names read as Meshy's; finger chains, where it has them, folded into the hands and refitted by hands.mjs; its clips not used)). An old man in his 90s in a shirt and slacks. A new character (owner, 2026-11-05), not Uncle Bao or Elder Tomo. 122k triangles: rebaked. Display name a placeholder for the owner. Licence recorded as owned (no metadata says otherwise); the owner to confirm, and if it is a Meshy community model, switch to CC0 with its author and post URL.",
+  "source": {
+    "license": "owned",
+    "author": "the owner, on their Meshy subscription",
+    "date": "2026-11-05",
+    "url": null,
+    "file": "^Meshy_AI_An_old_man_in_his_90s_presented_in_a_\\d+_animated_mixamo_All_animation\\.glb$"
+  },
+  "finish": {
+    "metallic": 0,
+    "roughness": 0.75
+  },
+  "firstPerson": {
+    "arms": "own"
+  },
+  "fixes": {
+    "triangles": 14000,
+    "surface": "rebake",
+    "headShare": 0.16,
+    "normalSize": 1024,
+    "lod": 0.25,
+    "feet": true
+  }
+}

@@ -41,9 +41,13 @@ fingers included; GLB with "Rigged Character" on (rest pose, no animations); upr
   - **Umpire** `meshy_umpire` (folk, standard; `umpire_28.glb`, armature in cm, no finger joints), 10.3k tris;
   - **Bamboo** `meshy_panda` (animals, large; "Open Arms Panda"), rebaked 169k -> 14k tris;
   - **The Butcher** `meshy_butcher` (folk, standard; the download is "Painter in a T Pose", the owner reads it as a
-    butcher), rebaked 223k -> 14k tris.
-  - All owned (meshy-owned). Bamboo and The Butcher: no metadata says otherwise, but their names follow Meshy
-    community naming: owner to confirm (CC0 would need author + post URL).
+    butcher), rebaked 223k -> 14k tris;
+  - **Old Timer** `meshy_oldtimer` (folk, standard; "An old man in his 90s"), rebaked 122k -> 14k tris;
+  - **Imperial Guard** `meshy_imperialguard` (legends, standard; "A fit ancient Chinese male soldier"), rebaked
+    165k -> 14k tris;
+  - **Frost Viking** `meshy_frostviking` (legends, large), 10.2k tris (the owner's "fantasy": Knights & Legends).
+  - All owned (meshy-owned). The last five: no metadata says otherwise, but some names follow Meshy community
+    naming: owner to confirm (CC0 would need author + post URL). "Alfred Neubauer": not used (owner).
 - **Tank:** `content/guns.json` `vehicles/tank_wwii.glb` (hero tier, 18.9k tris + 5.6k LOD from 45 m, 1536 px colour,
   512 px baked normal map, 1.51 MB; 2.14 MB with 2048/1024 maps was over the 1.6 MB hero budget). Built in parts
   (prepare-guns.mjs `parts` / `splitParts`: hull, turret, barrel on pivots, a dark cap over the deck under the turret).
@@ -66,6 +70,11 @@ fingers included; GLB with "Rigged Character" on (rest pose, no animations); upr
   preset or the coverage map named them.
 - Grip audit (rifle, pistol, shotgun; lower is better): Patches 7 (back, off, fp), Tactical Soldier 7 (flat, off,
   fp), Umpire 3 (flat), Bamboo and The Butcher: see the step's report. Hands look on the gun in the sheets; not tuned.
+
+**Replacements (own step):** Tattered Circus Nightmare replaces Giggles (`meshy_giggles`, keeps name/id/size small),
+Bear Warrior replaces Barnaby Bruin (`meshy_barnaby`), Gnoll warrior replaces Hyena Warrior (`meshy_hyena`), all with
+new portraits. **Re-rigs, more:** Desert Sentinel -> Desert Ranger, Grandpa Chains, Old King Halvard, Hazmat Joe,
+King Aldric (side-by-sides in the agent's scratchpad `match/pairs*.png`).
 
 **Step 2 (re-rigs; not started on disk yet):** rebuild each through the normal path from the new download, grip audit
 before/after, keep the old build where the new is worse. Matches (by render, then the owner):

@@ -109,6 +109,9 @@ export const WHOLE_BODY_LOOKS: readonly CharacterLook[] = [
   { id: 'core.umpire', name: 'Umpire', body: 'male', head: '', parts: ['meshy_umpire'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_umpire_fparms' }, group: 'folk', nameTheme: 'townsfolk' },
   { id: 'core.panda', name: 'Bamboo', body: 'male', head: '', parts: ['meshy_panda'], hair: [], colorways: [], skin: null, hairColor: null, size: 'large', whole: { arms: 'meshy_panda_fparms' }, group: 'animals', nameTheme: 'bear' },
   { id: 'core.butcher', name: 'The Butcher', body: 'male', head: '', parts: ['meshy_butcher'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_butcher_fparms' }, group: 'folk', nameTheme: 'townsfolk' },
+  { id: 'core.oldtimer', name: 'Old Timer', body: 'male', head: '', parts: ['meshy_oldtimer'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_oldtimer_fparms' }, group: 'folk', nameTheme: 'townsfolk' },
+  { id: 'core.imperialguard', name: 'Imperial Guard', body: 'male', head: '', parts: ['meshy_imperialguard'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_imperialguard_fparms' }, group: 'legends', nameTheme: 'knight' },
+  { id: 'core.frostviking', name: 'Frost Viking', body: 'male', head: '', parts: ['meshy_frostviking'], hair: [], colorways: [], skin: null, hairColor: null, size: 'large', whole: { arms: 'meshy_frostviking_fparms' }, group: 'legends', nameTheme: 'barbarian' },
 ];
 
 /** Whole-body characters made for NPCs only (`use: npc`): not on the roster; NPC_ROLE_SPECS can name them. */
@@ -221,4 +224,7 @@ export const WHOLE_BODY_BIOS: Readonly<Record<string, string>> = {
   'core.umpire': 'Has never once been wrong. Ask him.',
   'core.panda': 'Eats forty kilos of bamboo a day and wants the other twenty.',
   'core.butcher': 'Forty years behind the counter. Knows exactly where to cut.',
+  'core.oldtimer': 'Ninety-three, still drives, still wins.',
+  'core.imperialguard': 'Stood guard for a dynasty. Standing guard for you now.',
+  'core.frostviking': 'Sailed south for the weather. Stayed for the fighting.',
 };

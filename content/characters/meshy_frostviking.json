@@ -1,0 +1,36 @@
+{
+  "id": "meshy_frostviking",
+  "kind": "character",
+  "use": "player",
+  "order": 110,
+  "name": "Frost Viking",
+  "look": "core.frostviking",
+  "group": "legends",
+  "nameTheme": "barbarian",
+  "bio": "Sailed south for the weather. Stayed for the fighting.",
+  "body": "male",
+  "size": "large",
+  "notes": "Drive intake of 2026-11-05 (\"Frost Viking\", rigged and animated on Meshy (Mixamo joint names read as Meshy's; finger chains, where it has them, folded into the hands and refitted by hands.mjs; its clips not used)). A burly fur-clad viking. Large. Display name a placeholder for the owner. Licence recorded as owned (no metadata says otherwise); the owner to confirm, and if it is a Meshy community model, switch to CC0 with its author and post URL.",
+  "source": {
+    "license": "owned",
+    "author": "the owner, on their Meshy subscription",
+    "date": "2026-11-05",
+    "url": null,
+    "file": "^Meshy_AI_Frost_Viking_\\d+_animated_mixamo_All_animation\\.glb$"
+  },
+  "finish": {
+    "metallic": 0.05,
+    "roughness": 0.75
+  },
+  "firstPerson": {
+    "arms": "own"
+  },
+  "fixes": {
+    "triangles": 11000,
+    "headShare": 0.16,
+    "handsShare": 0.1,
+    "normalSize": 1024,
+    "lod": 0.25,
+    "feet": true
+  }
+}
