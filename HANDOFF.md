@@ -148,6 +148,20 @@ Plan: docs/PROCEDURAL_ENVIRONMENT_AUDIT.md §10 and "Owner decisions". Status is
   "ID … already exists" on the first new pieces (drive MapMaker without test=1). Pushing from this shallow clone
   failed with "missing necessary objects" after a GitHub hiccup (the remote ACKed commits it could not use);
   `git -c push.negotiate=false push …` works.
+- **Checks (2026-11-05):** `node tools/content/environment.mjs --check` OK; `pnpm typecheck` clean; `pnpm content:check`
+  OK; `pnpm test:changed` (all units) 1628 passed, 2 failed then fixed or passed alone (select.test wanted an
+  e2e/timings.json entry for `environment`; pads.test eagle_spires is a load timeout, passes alone);
+  `validate-map maps/env_showcase.json` one warning (budget.props); bundle budget OK (menu first JS 682.6 kB gzip;
+  env code in its own chunks). E2E (`CI=1`, ports 4951/4952): environment PASS (after fixing its forced-level check:
+  grass has one level, shrubs three, so they stop short of a forced level 3), visual PASS (envlab baseline written,
+  `e2e/baselines/envlab.png`), editor PASS; webgpu fails here in 1 s on its first page.evaluate (before any env
+  code; this container's browser) — CI runs it. CI on check/env-phase1: the first run failed only on zfight.test's
+  Norman Shores timeout (20 s; now 90 s).
+- **Screenshots for the owner** (agent scratchpad `env/`): `envlab-<view>.png` and `envlab-before-<view>.png` for
+  lineup, trees, small, plants, rocks, cliffs (the before set is the Kenney/Quaternius pieces in the same places),
+  `envlab-lod-row.png`, `envlab-overview.png`; the showcase in play with `?env=1` on high:
+  `showcase-env-high-{clearing,forest-edge,forest,north-cliffs,east-cliffs}.png`.
+- **Next:** owner reviews the screenshots (Phase 1 gate); land via a train when the check run is green; Phase 2.
 - **Not done from §10:** `dedicatedhost` on env_showcase comparing host and browser collider hashes (the unit test
   environmentCollision covers both load paths); impact sounds per surface (no sounds yet).
 - **Resume:** `git fetch && git checkout wip/env-phase1`; `node tools/content/environment.mjs --check`.
