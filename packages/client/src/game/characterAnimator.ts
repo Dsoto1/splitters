@@ -243,7 +243,7 @@ interface Arm {
    * which way its palm faces. A Meshy hand needn't sit on its joint as the rig's hand does (the dapper's palm
    * faced away from the grip in the clips' hold), so it is turned onto the grip by this frame (gripHand).
    */
-  frame?: { along: Vector3; palm: Vector3 } & Partial<PalmCues>;
+  frame?: { along: Vector3; palm: Vector3; centre?: Vector3 } & Partial<PalmCues>;
   /** Knuckles used to build the hand's frame. */
   index: TransformNode;
   pinky: TransformNode;
@@ -1567,10 +1567,15 @@ export class CharacterAnimator {
     // In first person the shooting hand is turned onto the grip whatever its rig: the clips' hold is made for a
     // body aiming level, and the view's gun points where you look (a rig's hand looking down lay across the grip).
     gripHand(space, arms.r, world, 'grip', w, true);
-    if (grip.style === 'pistol' && grip.support) gripHand(space, arms.l, world, 'support', w);
+    // ...and a pistol's support hand, which cups the shooting hand from below whatever its rig.
+    if (grip.style === 'pistol' && grip.support) gripHand(space, arms.l, world, 'support', w, true);
     // The hands' turn on the gun, kept while the shoulders move below (a collarbone's roll would carry it off).
     const handsOn = { r: space.rot(arms.r.hand), l: space.rot(arms.l.hand) };
+    // A pistol's grip runs up and down the hand's knuckle line: set the hand on it by its middle knuckle, not its
+    // palm point (a measured palm sits up to 3 cm toward the index or the little finger, and the hand rode that far
+    // up or down the grip).
     const gripAt = palmOnGrip(arms.r, point(grip.grip), scale);
+    if (grip.style === 'pistol') gripAt.subtractInPlace(knuckleLine(arms.r));
     let supportAt = grip.support ? palmOnGrip(arms.l, point(grip.support), scale, grip.style === 'long') : null;
     const view = this.ch.root.parent as TransformNode | null;
     if (this.fp) {
@@ -1647,10 +1652,15 @@ export class CharacterAnimator {
     const outward = pos(arms.r.upper).subtract(pos(arms.l.upper)).normalize();
     const down = Vector3.TransformNormal(new Vector3(0, -1, 0), world).normalize();
     solveArm(space, arms.r, gripAt, pos(arms.r.upper).add(outward.scale(0.35 * scale)).add(down.scale(0.3 * scale)), w);
-    closeHand(space, arms.r, w, point(grip.grip));
+    // A pistol's fingers close round its grip to its far side, no further.
+    const gun = gunAxes(world);
+    const unit = Vector3.TransformNormal(new Vector3(0, 0, 1), world).length();
+    closeHand(space, arms.r, w, point(grip.grip), grip.style === 'pistol' ? point(grip.grip).subtract(gun.right.scale(PISTOL_WRAP * unit)) : undefined);
     if (supportAt) {
       solveArm(space, arms.l, supportAt, pos(arms.l.upper).subtract(outward.scale(0.1 * scale)).add(down.scale(0.4 * scale)), w);
-      closeHand(space, arms.l, w * supportCurl(grip), supportAt.add(palmSideWorld(arms.l).scale(arms.l.gripOffset * scale)));
+      // A pistol's support fingers close up round the front of the shooting hand's, no further.
+      const cupAt = grip.style === 'pistol' ? point(grip.support).add(gun.ahead.scale(PISTOL_CUP_AHEAD * unit)).add(gun.right.scale(PISTOL_CUP_RIGHT * unit)) : undefined;
+      closeHand(space, arms.l, w * supportCurl(grip), supportAt.add(palmSideWorld(arms.l).scale(arms.l.gripOffset * scale)), cupAt);
     } else if (this.fp) {
       // Full body, one-handed (a knife, an axe): the free arm hangs at your side instead of holding the aim pose up in view.
       const s = pos(arms.l.upper);
@@ -1753,6 +1763,11 @@ const RIG_SPAN = 1.9;
  * fingers reach across under it and close up its far side instead of standing out past it.
  */
 const CUP_BACK = 0.22;
+/** A pistol's shooting fingers close round to this far (model m) past the grip's middle, on its far side. */
+const PISTOL_WRAP = 0.015;
+/** ...and the support hand's close up round the front of the shooting hand's: to this far ahead of and right of its point (model m). */
+const PISTOL_CUP_AHEAD = 0.04;
+const PISTOL_CUP_RIGHT = 0.015;
 
 /** Where to put a palm so the grip point sits inside the closed hand rather than in the palm itself (`cup`: a support hand under a handguard). */
 function palmOnGrip(arm: Arm, gripPoint: Vector3, scale: number, cup = false): Vector3 {
@@ -1770,6 +1785,22 @@ function palmSideWorld(arm: Arm): Vector3 {
   const towardThumb = arm.thumb.getAbsolutePosition().subtract(wrist);
   const side = towardThumb.subtract(forward.scale(Vector3.Dot(towardThumb, forward))).subtract(across.scale(Vector3.Dot(towardThumb, across)));
   return side.lengthSquared() > 1e-10 ? side.normalize() : Vector3.Zero();
+}
+
+/**
+ * How far (world) the middle of the hand's width sits from its palm point, across the fingers: a hand on a pistol's
+ * grip is set by it (see gripPlaced). A measured hand's middle is its skin's (skinHandFrame `centre`: its finger
+ * joints needn't lie where its skin does), the rig's its middle knuckle.
+ */
+function knuckleLine(arm: Arm): Vector3 {
+  const { along, palm } = handAxes(arm);
+  const across = Vector3.Cross(palm, along);
+  if (across.lengthSquared() < 1e-10) return Vector3.Zero();
+  across.normalize();
+  arm.hand.computeWorldMatrix(true);
+  arm.knuckle.computeWorldMatrix(true);
+  const middle = arm.frame?.centre ? Vector3.TransformCoordinates(arm.frame.centre, arm.hand.getWorldMatrix()) : arm.knuckle.getAbsolutePosition();
+  return across.scale(Vector3.Dot(middle.subtract(palmWorld(arm)), across));
 }
 
 /** World directions of a hand's fingers (wrist to tips) and palm: the measured frame, or the rig's knuckles. */
@@ -1953,7 +1984,7 @@ export function setCurlShare(share: number): void {
  * shooting hands curled their fingers up off the grip: an open palm on the gun); closing onto the gun is right
  * either way.
  */
-function closeHand(space: SkeletonSpace, arm: Arm, weight: number, onto?: Vector3): void {
+function closeHand(space: SkeletonSpace, arm: Arm, weight: number, onto?: Vector3, wrap?: Vector3): void {
   // A measured hand closes as far as it was found able to (not at all if it is rigid or already a fist).
   weight *= arm.curl * curlShare;
   if (weight <= 0) return;
@@ -1966,14 +1997,41 @@ function closeHand(space: SkeletonSpace, arm: Arm, weight: number, onto?: Vector
   let sign = Vector3.Dot(forward.applyRotationQuaternion(Quaternion.RotationAxis(across, 0.5)), palmSide) > 0 ? 1 : -1;
   // ...or toward the gun: the middle finger's tip swung both ways about its knuckle, the nearer to the point wins.
   const middle = arm.fingers[1] ?? arm.fingers[0];
-  if (onto && middle && middle.length) {
+  const curl = [0.9, 1.1, 0.7];
+  if (wrap && middle && middle.length >= 2) {
+    // Round a thin grip (a pistol's, first person): close only as far as brings the middle fingertip nearest `wrap`
+    // (on the grip's far side), whichever way. The clips' hold already bends the fingers, and the full close on top
+    // folded them past a pistol's grip back into the palm (the fingertips on the near side again: a pinch).
+    const target = space.point(wrap);
+    const joints = middle.map((j) => space.pos(j));
+    const last = joints[joints.length - 1]!.subtract(joints[joints.length - 2]!);
+    const chain = [...joints, joints[joints.length - 1]!.add(last.scale(0.8))];
+    const tipAt = (s: number, t: number) => {
+      const p = chain.map((v) => v.clone());
+      for (let i = 0; i < Math.min(curl.length, p.length - 1); i++) {
+        const q = Quaternion.RotationAxis(across, s * curl[i]! * t);
+        for (let k = i + 1; k < p.length; k++) p[k] = p[i]!.add(p[k]!.subtract(p[i]!).applyRotationQuaternion(q));
+      }
+      return p[p.length - 1]!;
+    };
+    let best = { d: Vector3.Distance(chain[chain.length - 1]!, target), s: sign, t: 0 };
+    for (const s of [1, -1]) {
+      for (let step = 1; step <= 10; step++) {
+        const t = (weight * step) / 10;
+        const d = Vector3.Distance(tipAt(s, t), target);
+        if (d < best.d - 1e-4) best = { d, s, t };
+      }
+    }
+    sign = best.s;
+    weight = best.t;
+    if (weight <= 0) return;
+  } else if (onto && middle && middle.length) {
     const target = space.point(onto);
     const knuckle = space.pos(middle[0]!);
     const tip = space.pos(middle[middle.length - 1]!).subtract(knuckle).add(forward.scale(0.02));
     const swung = (s: number) => Vector3.Distance(knuckle.add(tip.applyRotationQuaternion(Quaternion.RotationAxis(across, s * 1.2))), target);
     sign = swung(1) <= swung(-1) ? 1 : -1;
   }
-  const curl = [0.9, 1.1, 0.7];
   for (const chain of arm.fingers) {
     chain.forEach((joint, i) => {
       const q = Quaternion.RotationAxis(across, sign * curl[i]! * weight);

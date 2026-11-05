@@ -29,6 +29,8 @@ export interface DrawnHand {
   palm: boolean;
   /** Skin vertices measured. */
   count: number;
+  /** The skin's points (world). */
+  skin: Vector3[];
 }
 
 /** The thinnest direction of a cloud of points (the normal of its best-fit plane). */
@@ -132,7 +134,7 @@ export function drawnHand(meshes: readonly AbstractMesh[], hand: TransformNode, 
       }
     }
   }
-  return { centre, wrist, along: tip.subtract(wrist).normalize(), flat, palm, count: pts.length };
+  return { centre, wrist, along: tip.subtract(wrist).normalize(), flat, palm, count: pts.length, skin: pts };
 }
 
 /** Where the drawn hands are on a held gun (see gripReport). */
@@ -142,6 +144,19 @@ export interface GripReport {
   aheadR: number | null;
   sideR: number | null;
   palmL: number | null;
+  /**
+   * Where each drawn hand's skin centre is from its point on the gun, in the gun's own axes (model m: right, up,
+   * ahead along the barrel). A pistol seated in the shooting hand has it beside the grip point, a little ahead and
+   * level or below; a hand pinching the grip's foot has it well below or ahead.
+   */
+  atR: [number, number, number] | null;
+  atL: [number, number, number] | null;
+  /**
+   * The share of the shooting hand's skin past the grip's middle on the far (left) side: its fingers wrapped round
+   * the grip (a pistol held deep in the palm: about 0.15-0.35); near 0, the fingers stay on the near side or point
+   * past the grip (pinching it).
+   */
+  wrapR: number | null;
 }
 
 /**
@@ -172,6 +187,12 @@ export function gripReport(meshes: readonly AbstractMesh[], arms: { r: { hand: T
   // The gun's right in the world (left-handed), whether or not its node is mirrored (as characterAnimator's gunAxes).
   const right = Vector3.Cross(up, ahead).normalize();
   const facing = (h: DrawnHand, want: Vector3) => (h.palm ? Vector3.Dot(h.flat, want) : Math.abs(Vector3.Dot(h.flat, want)));
+  const round = (v: number) => Math.round(v * 1000) / 1000;
+  const inGun = (p: Vector3, from: Vector3): [number, number, number] => {
+    const d = p.subtract(from);
+    return [round(Vector3.Dot(d, right) / s), round(Vector3.Dot(d, up) / s), round(Vector3.Dot(d, ahead) / s)];
+  };
+  const gripAt = at(hold.grip);
   const supportWant = hold.style === 'long' ? up : up.scale(0.95).add(right.scale(0.3)).normalize();
   return {
     r: r ? Vector3.Distance(r.centre, at(hold.grip)) / s : null,
@@ -181,6 +202,9 @@ export function gripReport(meshes: readonly AbstractMesh[], arms: { r: { hand: T
     // ...and its palm lies against the grip's right side, facing in across the gun (1), not out, up or down.
     sideR: r ? facing(r, right.scale(-1)) : null,
     palmL: l ? facing(l, supportWant) : null,
+    atR: r ? inGun(r.centre, gripAt) : null,
+    atL: l && hold.support ? inGun(l.centre, at(hold.support)) : null,
+    wrapR: r ? round(r.skin.filter((p) => Vector3.Dot(p.subtract(gripAt), right) < 0).length / r.skin.length) : null,
   };
 }
 
@@ -236,9 +260,11 @@ function square(v: Vector3, axis: Vector3): Vector3 {
  * then the finger joints' bend toward the palm, then the thumb's tip on the palm side, then the import's measured
  * palm side. (It used to be the thumb's first joint against the wrist joint, nearly level with the flat on most
  * hands: on some it said the back, and the grip turn put the shooting palm outward and the support palm down.)
+ * `centre`: the middle of the hand's skin off the thumb, in the hand joint's space (across the hand's width it is
+ * where a grip running up the knuckle line goes; a measured palm point can sit well toward one edge).
  * Null when the skin has too little on the hand to tell.
  */
-export function skinHandFrame(meshes: readonly AbstractMesh[], joint: (name: string) => TransformNode | undefined, side: 'l' | 'r', measuredPalm?: readonly number[]): ({ along: Vector3; palm: Vector3 } & PalmCues) | null {
+export function skinHandFrame(meshes: readonly AbstractMesh[], joint: (name: string) => TransformNode | undefined, side: 'l' | 'r', measuredPalm?: readonly number[]): ({ along: Vector3; palm: Vector3; centre: Vector3 } & PalmCues) | null {
   const re = HAND(side);
   const hand = joint(`hand_${side}`);
   if (!hand) return null;
@@ -255,11 +281,25 @@ export function skinHandFrame(meshes: readonly AbstractMesh[], joint: (name: str
     const on = sk.bones.map((b) => re.test(b.getTransformNode()?.name ?? b.name));
     // Everything in the mesh's own (bind, glTF: right-handed) space, then into the hand joint's.
     const pts: Vector3[] = [];
+    const thumbBone = sk.bones.map((b) => /(?:^|_)thumb_0\d_/.test(b.getTransformNode()?.name ?? b.name));
+    /** The skin off the thumb (the hand's middle across its width: the thumb would pull it toward the index). */
+    const body = Vector3.Zero();
+    let bodyCount = 0;
     const n = Math.min(pos.length / 3, bw.length / 4);
     for (let v = 0; v < n; v++) {
       let w = 0;
-      for (let k = 0; k < 4; k++) if (on[bi[v * 4 + k]!]) w += bw[v * 4 + k]!;
-      if (w >= 0.5) pts.push(new Vector3(pos[v * 3]!, pos[v * 3 + 1]!, pos[v * 3 + 2]!));
+      let wt = 0;
+      for (let k = 0; k < 4; k++) {
+        if (on[bi[v * 4 + k]!]) w += bw[v * 4 + k]!;
+        if (thumbBone[bi[v * 4 + k]!]) wt += bw[v * 4 + k]!;
+      }
+      if (w < 0.5) continue;
+      const p = new Vector3(pos[v * 3]!, pos[v * 3 + 1]!, pos[v * 3 + 2]!);
+      pts.push(p);
+      if (wt < 0.5) {
+        body.addInPlace(p);
+        bodyCount++;
+      }
     }
     if (pts.length < 24) return null;
     const wrist = bindAt(bones, handBone.getTransformNode()?.name ?? handBone.name) ?? Vector3.Zero();
@@ -317,6 +357,7 @@ export function skinHandFrame(meshes: readonly AbstractMesh[], joint: (name: str
     const palm = flat.scale(sign);
     const say = (v: number | null) => (v === null ? null : Math.round(v * sign * 100) / 100);
     return {
+      centre: Vector3.TransformCoordinates(bodyCount ? body.scale(1 / bodyCount) : centre, inv),
       along: Vector3.TransformNormal(along, inv).normalize(),
       palm: square(Vector3.TransformNormal(palm, inv), Vector3.TransformNormal(along, inv).normalize()).normalize(),
       by: pick[0],

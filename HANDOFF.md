@@ -312,6 +312,25 @@ hands move up more into the gun. Looks as if their fingers are just pinching the
   several characters, including Meshy rigs with Meshy's finger weights once intake-2 lands.
 - Start it once a slot frees. It touches the hands, so after intake-2 step 2a.
 
+<!-- pistol -->
+### First-person pistol hold (`wip/pistol`, agent, 2026-11-05; from main 68663142; in progress, WIP pushed)
+**Cause (seen, measured):** in first person the shooting palm went ON the grip point (a third of the way down the
+grip, toward its front), so the knuckles stood 2-3 cm ahead of the front strap, around the trigger guard; the full
+finger close on top of the clips' own bend folded the fingers past a thin pistol grip back into the palm; a
+measured palm point sits up to 3 cm toward the index or the little finger (Tactical Soldier's hand rode 3.6 cm low);
+the rig's support hand kept the clip's hold beside the grip, and the measured ones lay palm up with straight fingers
+ahead of the grip (the owner's "pinch").
+- **WIP (first person only so far):** gripReport has `atR`/`atL` (drawn hand centre from its point, gun axes:
+  right, up, ahead) and `wrapR` (share of the shooting hand's skin past the grip's middle); `closeHand` takes a
+  wrap target and closes only as far as brings the middle fingertip nearest it (pistol: the grip's far side;
+  support: up round the front of the shooting hand); the shooting hand is set on the grip by the middle of its width
+  (`skinHandFrame` `centre`, the rig's middle knuckle), not its palm point; every pistol support hand is turned in
+  first person (rigs too). Hold points in content/weapons not changed yet (being tuned live: grip about 1 cm up and
+  3.5 cm back, support under the butt).
+- Tools and shots: agent scratchpad `pistol/` (`tools/iter.mjs` live hold override + close views, `tools/shots.mjs`
+  before/after, `before/` from the main build).
+<!-- /pistol -->
+
 ### Environment Phase 1c: pebbles, eelgrass, concealing fern, Replace all, maps updated (`wip/env-p1c`, agent, 2026-11-05; from main 4d511dd2, main baf26064 merged in; pushed, not merged)
 - **Done:**
   - **Species:** `env.rock.pebbles` (category `rock`, generator kind `pebbles` in `env/rock.mjs`: 6–7 faceted convex
