@@ -8,6 +8,17 @@ made only on a commit that passed CI on a check branch.
 
 ## Unreleased
 
+**Shingle Point: new assets, same battle** (owner, 2026-11-05: an asset refresh, layout and gameplay kept)
+- **Landing craft, wrecks and hedgehogs** are real pieces now instead of grey blocks: four landing craft at the
+  waterline, six rusted wrecks sunk in the sand and 46 Czech hedgehogs of riveted steel angles. They block exactly
+  what the blocks did (the craft and wrecks to the centimetre; the hedgehogs as their beams).
+- **Our own nature and props**: the beach's logs are squared obstacle timbers, the rowing boats wooden dories, the
+  bluff's barriers sandbag stacks, the village's hay bales straw bales; trees are our oaks, bushes our shrubs (they
+  hide you as before), wildflowers and wheat our meadow flowers and dry grass, rocks our boulders; tall hedges, crates,
+  lamp posts, carts and rubble come from our in-house and owned packs. Breakable pieces stay breakable.
+- The bunkers wear the Military Compound look (no more hazard stripes) and the machine-gun nests' walls burlap.
+- MapMaker's **Replace all** can keep a piece's length (rows of hedges stay closed) and turn the new pieces a quarter.
+
 **No flicker on props** (owner's report on Flatpack Depot, 2026-11-05: "significant flickering", "flicker when I look
 around", on an Android phone; docs/LOOK.md, "No flicker: props")
 - **Rugs, shelves, crates and boxes no longer fight the floor**: many props have flat faces in the floor's own plane
