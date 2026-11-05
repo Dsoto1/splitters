@@ -28,12 +28,24 @@ gets overloaded above that: local e2e times out and flakes). Prune landed worktr
 
 ### In flight
 - **Market Town perf on the M1 Pro, branch `wip/perf-market`** (agent, 2026-11-05; from main d29e6a8; not merged).
-  Owner's capture: high, 44 players, 23 ms frames with few in view, 38-45 ms with 20-40; characters (clips + aim)
-  8.5 ms, shadow + depth maps 6.6 ms a frame. Done so far (details: docs/PERF_96.md "Market Town on an M1 Pro"):
-  animation LOD by frames as well as time (animLod.ts) in every match, finger pose cached past 15 m, remote shots
-  restart their clip instead of stop/start (none past 35 m); static geometry casts through merged shadow proxies
-  (shadowProxy.ts), water's scene depth only round water, pickups and held guns cast within 15 m.
-  Probe: scratchpad `probe/mt.mjs` (not in the repo; see PERF_96). Next: checks, check/perf-market CI, docs.
+  Owner's capture (high, 44 players): 23 ms frames with few in view, 38-45 ms with 20-40; characters (clips + aim)
+  8.5 ms and shadow + depth maps 6.6 ms a frame. Write-up with causes and numbers: docs/PERF_96.md "Market Town on
+  an M1 Pro". Done:
+  - Animation LOD by frames as well as time, in every match (`game/animLod.ts`); fingers cached past 15 m
+    (`CharacterAnimator.curl`); shot/hit overlay clips kept started (`KEPT_OVERLAYS`), none past 35 m.
+  - Shadow proxies (`game/shadowProxy.ts`, Atmosphere batches static casters after 0.5 s); pickups and held guns
+    cast within 15 m (`shadowFlags.ts`); water's scene depth only round water (`sceneDepth.ts`, WaterVisuals).
+  - Blood splats instanced; one character build a frame (`BUILD_CATCH_UP_MS`); bodies reused per look
+    (`GameView.keepBody`, `CharacterAnimator.standBy`, `BODY_POOL_PER_LOOK` 2).
+  - Probe (scratchpad only, `probe/mt.mjs`: Market Town, fixed placement, perf split + draws by pass/kind + CPU
+    profile / Chrome trace): rebuild it from PERF_96's description if needed.
+  - CI: `check/perf-market` run 41961274052 green at c684c02 (full suite: unit, build, 13 e2e shards incl. visual,
+    perf budget and mass). Local: typecheck, test:changed (17), content:check, bundle 681.8 → 682.6 kB gzip (budget
+    840), e2e offline + characters PASS (ports 4971/4972).
+  - Next / resume: owner re-records on the M1 (PERF_96 "For the owner to re-record"); land when green. Open:
+    creatures' Babylon clips are not gated by the LOD (only their state machine is stepped); scenario doors and
+    the ladder gate are a mesh per bar (55 shadow draws on Market Town); the level's 58 materials are 58 main-pass
+    draws (a per-pack atlas would cut them).
 - Picked up by the claude/launcher-ui-map-cards account (2026-11-04): `wip/env-phase1` (Environment Phase 1
   vertical slice, queue item 1, in flight) and `wip/zfight` (texture flicker fix, item 2: landed on main).
 - Surface types landed last (f61f2cf): `content/surface-types.json` (23 types), optional `surface` on props
