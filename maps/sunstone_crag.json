@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 19,
+  "formatVersion": 25,
   "metadata": {
     "id": "sunstone_crag",
     "name": "Sunstone Crag",
@@ -15985,11 +15985,12 @@
         51.15
       ],
       "kind": "prop",
-      "model": "prop.stones",
+      "model": "env.rock.pebbles",
       "yaw": 5.627,
       "scale": 1.49,
       "solid": false,
-      "tint": null
+      "tint": null,
+      "variant": 1
     },
     {
       "id": "prop_850",
@@ -15999,39 +16000,42 @@
         -51.15
       ],
       "kind": "prop",
-      "model": "prop.stones",
+      "model": "env.rock.pebbles",
       "yaw": 8.768,
       "scale": 1.49,
       "solid": false,
-      "tint": null
+      "tint": null,
+      "variant": 1
     },
     {
       "id": "prop_851",
       "position": [
         85.92,
-        1.18,
+        1.16,
         34.35
       ],
       "kind": "prop",
-      "model": "prop.stones",
+      "model": "env.rock.pebbles",
       "yaw": 2.766,
       "scale": 1.32,
       "solid": false,
-      "tint": null
+      "tint": null,
+      "variant": 1
     },
     {
       "id": "prop_852",
       "position": [
         -85.92,
-        1.18,
+        1.16,
         -34.35
       ],
       "kind": "prop",
-      "model": "prop.stones",
+      "model": "env.rock.pebbles",
       "yaw": 5.907,
       "scale": 1.32,
       "solid": false,
-      "tint": null
+      "tint": null,
+      "variant": 1
     },
     {
       "id": "prop_853",
@@ -16125,11 +16129,12 @@
         113.31
       ],
       "kind": "prop",
-      "model": "prop.plant_low",
+      "model": "env.fern.bracken",
       "yaw": 0.438,
-      "scale": 1.02,
+      "scale": 0.92,
       "solid": false,
-      "tint": null
+      "tint": null,
+      "variant": 1
     },
     {
       "id": "prop_860",
@@ -16139,11 +16144,12 @@
         -113.31
       ],
       "kind": "prop",
-      "model": "prop.plant_low",
+      "model": "env.fern.bracken",
       "yaw": 3.579,
-      "scale": 1.02,
+      "scale": 0.92,
       "solid": false,
-      "tint": null
+      "tint": null,
+      "variant": 1
     },
     {
       "id": "prop_861",
@@ -16625,29 +16631,31 @@
       "id": "prop_895",
       "position": [
         84.68,
-        3.55,
+        3.54,
         99.76
       ],
       "kind": "prop",
-      "model": "prop.plant_low",
+      "model": "env.fern.bracken",
       "yaw": 6.028,
-      "scale": 1.05,
+      "scale": 0.95,
       "solid": false,
-      "tint": null
+      "tint": null,
+      "variant": 1
     },
     {
       "id": "prop_896",
       "position": [
         -84.68,
-        3.55,
+        3.54,
         -99.76
       ],
       "kind": "prop",
-      "model": "prop.plant_low",
+      "model": "env.fern.bracken",
       "yaw": 9.17,
-      "scale": 1.05,
+      "scale": 0.95,
       "solid": false,
-      "tint": null
+      "tint": null,
+      "variant": 1
     },
     {
       "id": "prop_897",
@@ -17217,11 +17225,12 @@
         70.32
       ],
       "kind": "prop",
-      "model": "prop.stones",
+      "model": "env.rock.pebbles",
       "yaw": 4.573,
       "scale": 1.5,
       "solid": false,
-      "tint": null
+      "tint": null,
+      "variant": 1
     },
     {
       "id": "prop_938",
@@ -17231,39 +17240,42 @@
         -70.32
       ],
       "kind": "prop",
-      "model": "prop.stones",
+      "model": "env.rock.pebbles",
       "yaw": 7.714,
       "scale": 1.5,
       "solid": false,
-      "tint": null
+      "tint": null,
+      "variant": 1
     },
     {
       "id": "prop_939",
       "position": [
         -44.11,
-        2,
+        2.01,
         119.29
       ],
       "kind": "prop",
-      "model": "prop.stones",
+      "model": "env.rock.pebbles",
       "yaw": 3.965,
       "scale": 1.29,
       "solid": false,
-      "tint": null
+      "tint": null,
+      "variant": 1
     },
     {
       "id": "prop_940",
       "position": [
         44.11,
-        2,
+        2.01,
         -119.29
       ],
       "kind": "prop",
-      "model": "prop.stones",
+      "model": "env.rock.pebbles",
       "yaw": 7.106,
       "scale": 1.29,
       "solid": false,
-      "tint": null
+      "tint": null,
+      "variant": 1
     },
     {
       "id": "prop_941",
@@ -17385,11 +17397,12 @@
         -93.01
       ],
       "kind": "prop",
-      "model": "prop.stones",
+      "model": "env.rock.pebbles",
       "yaw": 2.202,
       "scale": 1.04,
       "solid": false,
-      "tint": null
+      "tint": null,
+      "variant": 1
     },
     {
       "id": "prop_950",
@@ -17399,11 +17412,12 @@
         93.01
       ],
       "kind": "prop",
-      "model": "prop.stones",
+      "model": "env.rock.pebbles",
       "yaw": 5.344,
       "scale": 1.04,
       "solid": false,
-      "tint": null
+      "tint": null,
+      "variant": 1
     },
     {
       "id": "prop_951",
@@ -17469,11 +17483,12 @@
         107.87
       ],
       "kind": "prop",
-      "model": "prop.plant_low",
+      "model": "env.fern.bracken",
       "yaw": 1.731,
-      "scale": 1.29,
+      "scale": 1.16,
       "solid": false,
-      "tint": null
+      "tint": null,
+      "variant": 1
     },
     {
       "id": "prop_956",
@@ -17483,11 +17498,12 @@
         -107.87
       ],
       "kind": "prop",
-      "model": "prop.plant_low",
+      "model": "env.fern.bracken",
       "yaw": 4.873,
-      "scale": 1.29,
+      "scale": 1.16,
       "solid": false,
-      "tint": null
+      "tint": null,
+      "variant": 1
     },
     {
       "id": "prop_957",
@@ -17497,11 +17513,12 @@
         127.04
       ],
       "kind": "prop",
-      "model": "prop.stones",
+      "model": "env.rock.pebbles",
       "yaw": 4.112,
       "scale": 1.21,
       "solid": false,
-      "tint": null
+      "tint": null,
+      "variant": 1
     },
     {
       "id": "prop_958",
@@ -17511,11 +17528,12 @@
         -127.04
       ],
       "kind": "prop",
-      "model": "prop.stones",
+      "model": "env.rock.pebbles",
       "yaw": 7.253,
       "scale": 1.21,
       "solid": false,
-      "tint": null
+      "tint": null,
+      "variant": 1
     },
     {
       "id": "prop_959",
@@ -17633,29 +17651,31 @@
       "id": "prop_967",
       "position": [
         -90.21,
-        0.94,
+        0.91,
         35.07
       ],
       "kind": "prop",
-      "model": "prop.plant_low",
+      "model": "env.fern.bracken",
       "yaw": 2.334,
-      "scale": 1.41,
+      "scale": 1.27,
       "solid": false,
-      "tint": null
+      "tint": null,
+      "variant": 1
     },
     {
       "id": "prop_968",
       "position": [
         90.21,
-        0.94,
+        0.91,
         -35.07
       ],
       "kind": "prop",
-      "model": "prop.plant_low",
+      "model": "env.fern.bracken",
       "yaw": 5.476,
-      "scale": 1.41,
+      "scale": 1.27,
       "solid": false,
-      "tint": null
+      "tint": null,
+      "variant": 1
     },
     {
       "id": "prop_969",
@@ -17717,57 +17737,61 @@
       "id": "prop_973",
       "position": [
         -4.03,
-        6.65,
+        6.64,
         -135.36
       ],
       "kind": "prop",
-      "model": "prop.stones",
+      "model": "env.rock.pebbles",
       "yaw": 2.728,
       "scale": 1.12,
       "solid": false,
-      "tint": null
+      "tint": null,
+      "variant": 1
     },
     {
       "id": "prop_974",
       "position": [
         4.03,
-        6.65,
+        6.64,
         135.36
       ],
       "kind": "prop",
-      "model": "prop.stones",
+      "model": "env.rock.pebbles",
       "yaw": 5.87,
       "scale": 1.12,
       "solid": false,
-      "tint": null
+      "tint": null,
+      "variant": 1
     },
     {
       "id": "prop_975",
       "position": [
         13.15,
-        3.46,
+        3.44,
         -125.51
       ],
       "kind": "prop",
-      "model": "prop.stones",
+      "model": "env.rock.pebbles",
       "yaw": 4.138,
       "scale": 1.94,
       "solid": false,
-      "tint": null
+      "tint": null,
+      "variant": 1
     },
     {
       "id": "prop_976",
       "position": [
         -13.15,
-        3.46,
+        3.44,
         125.51
       ],
       "kind": "prop",
-      "model": "prop.stones",
+      "model": "env.rock.pebbles",
       "yaw": 7.28,
       "scale": 1.94,
       "solid": false,
-      "tint": null
+      "tint": null,
+      "variant": 1
     },
     {
       "id": "prop_977",
@@ -17833,11 +17857,12 @@
         -110.67
       ],
       "kind": "prop",
-      "model": "prop.stones",
+      "model": "env.rock.pebbles",
       "yaw": 0.853,
       "scale": 1.93,
       "solid": false,
-      "tint": null
+      "tint": null,
+      "variant": 1
     },
     {
       "id": "prop_982",
@@ -17847,11 +17872,12 @@
         110.67
       ],
       "kind": "prop",
-      "model": "prop.stones",
+      "model": "env.rock.pebbles",
       "yaw": 3.995,
       "scale": 1.93,
       "solid": false,
-      "tint": null
+      "tint": null,
+      "variant": 1
     },
     {
       "id": "prop_983",
@@ -17889,11 +17915,12 @@
         -121.08
       ],
       "kind": "prop",
-      "model": "prop.plant_low",
+      "model": "env.fern.bracken",
       "yaw": 5.127,
-      "scale": 1.13,
+      "scale": 1.02,
       "solid": false,
-      "tint": null
+      "tint": null,
+      "variant": 1
     },
     {
       "id": "prop_986",
@@ -17903,11 +17930,12 @@
         121.08
       ],
       "kind": "prop",
-      "model": "prop.plant_low",
+      "model": "env.fern.bracken",
       "yaw": 8.269,
-      "scale": 1.13,
+      "scale": 1.02,
       "solid": false,
-      "tint": null
+      "tint": null,
+      "variant": 1
     },
     {
       "id": "prop_987",
@@ -18277,29 +18305,31 @@
       "id": "prop_1013",
       "position": [
         -70.89,
-        0.45,
+        0.44,
         32.3
       ],
       "kind": "prop",
-      "model": "prop.plant_low",
+      "model": "env.fern.bracken",
       "yaw": 4.047,
-      "scale": 1.3,
+      "scale": 1.17,
       "solid": false,
-      "tint": null
+      "tint": null,
+      "variant": 1
     },
     {
       "id": "prop_1014",
       "position": [
         70.89,
-        0.45,
+        0.44,
         -32.3
       ],
       "kind": "prop",
-      "model": "prop.plant_low",
+      "model": "env.fern.bracken",
       "yaw": 7.189,
-      "scale": 1.3,
+      "scale": 1.17,
       "solid": false,
-      "tint": null
+      "tint": null,
+      "variant": 1
     },
     {
       "id": "prop_1015",
@@ -18529,29 +18559,31 @@
       "id": "prop_1031",
       "position": [
         127.13,
-        3.21,
+        3.17,
         35.64
       ],
       "kind": "prop",
-      "model": "prop.stones",
+      "model": "env.rock.pebbles",
       "yaw": 0.192,
       "scale": 1.64,
       "solid": false,
-      "tint": null
+      "tint": null,
+      "variant": 1
     },
     {
       "id": "prop_1032",
       "position": [
         -127.13,
-        3.21,
+        3.17,
         -35.64
       ],
       "kind": "prop",
-      "model": "prop.stones",
+      "model": "env.rock.pebbles",
       "yaw": 3.333,
       "scale": 1.64,
       "solid": false,
-      "tint": null
+      "tint": null,
+      "variant": 1
     },
     {
       "id": "prop_1033",
@@ -18585,29 +18617,31 @@
       "id": "prop_1035",
       "position": [
         95.95,
-        10.78,
+        10.7,
         -132.83
       ],
       "kind": "prop",
-      "model": "prop.stones",
+      "model": "env.rock.pebbles",
       "yaw": 4.624,
       "scale": 1.56,
       "solid": false,
-      "tint": null
+      "tint": null,
+      "variant": 1
     },
     {
       "id": "prop_1036",
       "position": [
         -95.95,
-        10.78,
+        10.7,
         132.83
       ],
       "kind": "prop",
-      "model": "prop.stones",
+      "model": "env.rock.pebbles",
       "yaw": 7.766,
       "scale": 1.56,
       "solid": false,
-      "tint": null
+      "tint": null,
+      "variant": 1
     },
     {
       "id": "prop_1037",
@@ -18729,11 +18763,12 @@
         -16.86
       ],
       "kind": "prop",
-      "model": "prop.stones",
+      "model": "env.rock.pebbles",
       "yaw": 3.068,
       "scale": 1.4,
       "solid": false,
-      "tint": null
+      "tint": null,
+      "variant": 1
     },
     {
       "id": "prop_1046",
@@ -18743,11 +18778,12 @@
         16.86
       ],
       "kind": "prop",
-      "model": "prop.stones",
+      "model": "env.rock.pebbles",
       "yaw": 6.209,
       "scale": 1.4,
       "solid": false,
-      "tint": null
+      "tint": null,
+      "variant": 1
     },
     {
       "id": "prop_1047",
@@ -18837,29 +18873,31 @@
       "id": "prop_1053",
       "position": [
         126.09,
-        3.86,
+        3.83,
         -60.43
       ],
       "kind": "prop",
-      "model": "prop.stones",
+      "model": "env.rock.pebbles",
       "yaw": 2.327,
       "scale": 1.61,
       "solid": false,
-      "tint": null
+      "tint": null,
+      "variant": 1
     },
     {
       "id": "prop_1054",
       "position": [
         -126.09,
-        3.86,
+        3.83,
         60.43
       ],
       "kind": "prop",
-      "model": "prop.stones",
+      "model": "env.rock.pebbles",
       "yaw": 5.469,
       "scale": 1.61,
       "solid": false,
-      "tint": null
+      "tint": null,
+      "variant": 1
     },
     {
       "id": "prop_1055",
@@ -18981,11 +19019,12 @@
         17.61
       ],
       "kind": "prop",
-      "model": "prop.stones",
+      "model": "env.rock.pebbles",
       "yaw": 5.532,
       "scale": 1.32,
       "solid": false,
-      "tint": null
+      "tint": null,
+      "variant": 1
     },
     {
       "id": "prop_1064",
@@ -18995,11 +19034,12 @@
         -17.61
       ],
       "kind": "prop",
-      "model": "prop.stones",
+      "model": "env.rock.pebbles",
       "yaw": 8.673,
       "scale": 1.32,
       "solid": false,
-      "tint": null
+      "tint": null,
+      "variant": 1
     },
     {
       "id": "prop_1065",
@@ -19033,57 +19073,61 @@
       "id": "prop_1067",
       "position": [
         -123.93,
-        2.17,
+        2.16,
         74.95
       ],
       "kind": "prop",
-      "model": "prop.stones",
+      "model": "env.rock.pebbles",
       "yaw": 2.535,
       "scale": 1.52,
       "solid": false,
-      "tint": null
+      "tint": null,
+      "variant": 1
     },
     {
       "id": "prop_1068",
       "position": [
         123.93,
-        2.17,
+        2.16,
         -74.95
       ],
       "kind": "prop",
-      "model": "prop.stones",
+      "model": "env.rock.pebbles",
       "yaw": 5.677,
       "scale": 1.52,
       "solid": false,
-      "tint": null
+      "tint": null,
+      "variant": 1
     },
     {
       "id": "prop_1069",
       "position": [
         -91.59,
-        3.17,
+        3.16,
         -92.03
       ],
       "kind": "prop",
-      "model": "prop.stones",
+      "model": "env.rock.pebbles",
       "yaw": 0.54,
       "scale": 1.9,
       "solid": false,
-      "tint": null
+      "tint": null,
+      "variant": 1
     },
     {
       "id": "prop_1070",
       "position": [
         91.59,
-        3.17,
+        3.16,
         92.03
       ],
       "kind": "prop",
-      "model": "prop.stones",
+      "model": "env.rock.pebbles",
       "yaw": 3.682,
       "scale": 1.9,
       "solid": false,
-      "tint": null
+      "tint": null,
+      "variant": 1
     },
     {
       "id": "prop_1071",
@@ -19117,29 +19161,31 @@
       "id": "prop_1073",
       "position": [
         66.82,
-        5.83,
+        5.82,
         105.85
       ],
       "kind": "prop",
-      "model": "prop.stones",
+      "model": "env.rock.pebbles",
       "yaw": 5.025,
       "scale": 1.68,
       "solid": false,
-      "tint": null
+      "tint": null,
+      "variant": 1
     },
     {
       "id": "prop_1074",
       "position": [
         -66.82,
-        5.83,
+        5.82,
         -105.85
       ],
       "kind": "prop",
-      "model": "prop.stones",
+      "model": "env.rock.pebbles",
       "yaw": 8.167,
       "scale": 1.68,
       "solid": false,
-      "tint": null
+      "tint": null,
+      "variant": 1
     },
     {
       "id": "prop_1075",
@@ -19401,11 +19447,12 @@
         -28.25
       ],
       "kind": "prop",
-      "model": "prop.plant_low",
+      "model": "env.fern.bracken",
       "yaw": 1.761,
-      "scale": 1.24,
+      "scale": 1.12,
       "solid": false,
-      "tint": null
+      "tint": null,
+      "variant": 1
     },
     {
       "id": "prop_1094",
@@ -19415,11 +19462,12 @@
         28.25
       ],
       "kind": "prop",
-      "model": "prop.plant_low",
+      "model": "env.fern.bracken",
       "yaw": 4.903,
-      "scale": 1.24,
+      "scale": 1.12,
       "solid": false,
-      "tint": null
+      "tint": null,
+      "variant": 1
     },
     {
       "id": "prop_1095",
@@ -19593,29 +19641,31 @@
       "id": "prop_1107",
       "position": [
         -28.06,
-        1.41,
+        1.4,
         70.28
       ],
       "kind": "prop",
-      "model": "prop.plant_low",
+      "model": "env.fern.bracken",
       "yaw": 6.209,
-      "scale": 1.49,
+      "scale": 1.34,
       "solid": false,
-      "tint": null
+      "tint": null,
+      "variant": 1
     },
     {
       "id": "prop_1108",
       "position": [
         28.06,
-        1.41,
+        1.4,
         -70.28
       ],
       "kind": "prop",
-      "model": "prop.plant_low",
+      "model": "env.fern.bracken",
       "yaw": 9.351,
-      "scale": 1.49,
+      "scale": 1.34,
       "solid": false,
-      "tint": null
+      "tint": null,
+      "variant": 1
     },
     {
       "id": "prop_1109",
@@ -19649,29 +19699,31 @@
       "id": "prop_1111",
       "position": [
         20.82,
-        9.08,
+        9.05,
         -135.26
       ],
       "kind": "prop",
-      "model": "prop.stones",
+      "model": "env.rock.pebbles",
       "yaw": 1.86,
       "scale": 1.44,
       "solid": false,
-      "tint": null
+      "tint": null,
+      "variant": 1
     },
     {
       "id": "prop_1112",
       "position": [
         -20.82,
-        9.08,
+        9.05,
         135.26
       ],
       "kind": "prop",
-      "model": "prop.stones",
+      "model": "env.rock.pebbles",
       "yaw": 5.001,
       "scale": 1.44,
       "solid": false,
-      "tint": null
+      "tint": null,
+      "variant": 1
     },
     {
       "id": "prop_1113",
@@ -19793,11 +19845,12 @@
         -96.25
       ],
       "kind": "prop",
-      "model": "prop.plant_low",
+      "model": "env.fern.bracken",
       "yaw": 1.727,
-      "scale": 1.04,
+      "scale": 0.94,
       "solid": false,
-      "tint": null
+      "tint": null,
+      "variant": 1
     },
     {
       "id": "prop_1122",
@@ -19807,11 +19860,12 @@
         96.25
       ],
       "kind": "prop",
-      "model": "prop.plant_low",
+      "model": "env.fern.bracken",
       "yaw": 4.869,
-      "scale": 1.04,
+      "scale": 0.94,
       "solid": false,
-      "tint": null
+      "tint": null,
+      "variant": 1
     },
     {
       "id": "prop_1123",
@@ -28559,11 +28613,11 @@
       407,
       415,
       415,
-      415,
-      415,
-      415,
-      407,
-      388,
+      370,
+      370,
+      370,
+      370,
+      370,
       357,
       313,
       261,
@@ -28710,11 +28764,11 @@
       405,
       414,
       415,
-      415,
-      415,
-      414,
-      405,
-      385,
+      370,
+      -37,
+      -37,
+      -37,
+      -37,
       353,
       309,
       257,
@@ -28861,11 +28915,11 @@
       397,
       409,
       414,
-      415,
-      414,
-      409,
-      397,
-      375,
+      370,
+      -37,
+      -37,
+      -37,
+      -37,
       341,
       297,
       245,
@@ -29012,10 +29066,10 @@
       382,
       397,
       405,
-      407,
-      405,
-      397,
-      382,
+      370,
+      -37,
+      -37,
+      -37,
       357,
       321,
       277,
@@ -29163,9 +29217,9 @@
       357,
       375,
       385,
-      388,
-      385,
-      375,
+      370,
+      -37,
+      -37,
       357,
       329,
       293,
@@ -34033,9 +34087,9 @@
       293,
       329,
       357,
-      375,
-      385,
-      388,
+      -37,
+      -37,
+      370,
       385,
       375,
       357,
@@ -34183,10 +34237,10 @@
       277,
       321,
       357,
-      382,
-      397,
-      405,
-      407,
+      -37,
+      -37,
+      -37,
+      370,
       405,
       397,
       382,
@@ -34333,11 +34387,11 @@
       245,
       297,
       341,
-      375,
-      397,
-      409,
-      414,
-      415,
+      -37,
+      -37,
+      -37,
+      -37,
+      370,
       414,
       409,
       397,
@@ -34484,11 +34538,11 @@
       257,
       309,
       353,
-      385,
-      405,
-      414,
-      415,
-      415,
+      -37,
+      -37,
+      -37,
+      -37,
+      370,
       415,
       414,
       405,
@@ -34635,11 +34689,11 @@
       261,
       313,
       357,
-      388,
-      407,
-      415,
-      415,
-      415,
+      370,
+      370,
+      370,
+      370,
+      370,
       415,
       415,
       407,
@@ -88019,7 +88073,6 @@
     "style": "invisible",
     "height": 12
   },
-  "track": null,
   "backdrop": {
     "sky": "sunset",
     "scenery": "dunes",
