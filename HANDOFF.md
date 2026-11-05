@@ -129,13 +129,27 @@ Plan: docs/PROCEDURAL_ENVIRONMENT_AUDIT.md §10 and "Owner decisions". Status is
   CHANGELOG conflicted), provenance refreshed for the regenerated cliff GLBs (content:check was red), env_showcase in
   `RETIRED_MAPS`, `envForest` brush spacing 3.8 → 3 m (2,000 trees fit in the 200 m square only that dense),
   `tools/perf/client-perf.mjs` takes `PERF_QUERY=env=1` and prints the environment renderer's stats.
-- **Showcase map** (in progress): made in MapMaker by a Playwright driver in the agent scratchpad (`showcase/maker.mjs`,
-  passes `pass1..3.mjs`, checkpoints as JSON loaded back through MapMaker's Import): 240 m terrain, 9 spawns in a
-  central clearing, 30 cliff panels (15 along z = 96 facing south, 15 along x = 96 facing west), shrubs round the
-  clearing, 400 boulders, 2,000 trees (scatter brushes), the clearing and cliff feet cleared with the brushes'
-  right-click.
-- **Pitfall:** pushing from this shallow clone failed with "missing necessary objects" after a GitHub hiccup (the
-  remote ACKed commits it could not use); `git -c push.negotiate=false push …` works.
+- **Showcase map done:** `maps/env_showcase.json`, made in MapMaker (`?mode=editor&env=1`) by a Playwright driver in
+  the agent scratchpad (`showcase/maker.mjs`, passes `pass1..7.mjs`, checkpoints as JSON loaded back through MapMaker's
+  Import): 240 m terrain, 9 spawns and 2 small health in a central clearing, 30 cliff panels (15 along z = 96 facing
+  south, 15 along x = 96 facing west), 94 shrubs round the clearing, 401 boulders, 2,001 trees (oak, autumn oak, pine;
+  scatter brushes), the clearing and cliff feet cleared with the brushes' right-click, "thick grass" painted over the
+  square (Terrain → plants brush): ~46 k generated clumps inside the 200 m square with `?env=1` (62 k on the map).
+  Hand edits after Export: `metadata.id` = env_showcase and the export's release stamp left out (as the other maps).
+  validate-map: one warning, budget.props (2,526 props > 1,500: the §10 counts are over the budget by design).
+- **Perf** (§10 target; `tools/perf/client-perf.mjs`, medium, 960×540, `PERF_BOTS=2`, 40 s turning at the spawn,
+  SwiftShader on this shared container at load 10–20, so counts not frame rates; two interleaved runs each):
+  Backwoods 471 / 465 draws, 1.93 / 2.02 M triangles, 945 / 883 shadow casters, 467 / 465 materials; env_showcase
+  with `?env=1` 398 / 418 draws, 1.80 / 1.97 M triangles, 403 / 402 casters, 268 / 273 materials (2,526 copies in
+  ~230 batches; per level ~85 / 600 / 1,665 / 175). Under the baseline in each pair, but triangles only by 3–7 %:
+  the grass (0.49 M in view) is the largest share. The same map without the flag (species as prop nodes): 2,052
+  active meshes, 6.60 M triangles, 3,840 casters.
+- **Pitfalls:** MapMaker under `?test=1` seeds its id generator per page load: a map imported in a new page gets
+  "ID … already exists" on the first new pieces (drive MapMaker without test=1). Pushing from this shallow clone
+  failed with "missing necessary objects" after a GitHub hiccup (the remote ACKed commits it could not use);
+  `git -c push.negotiate=false push …` works.
+- **Not done from §10:** `dedicatedhost` on env_showcase comparing host and browser collider hashes (the unit test
+  environmentCollision covers both load paths); impact sounds per surface (no sounds yet).
 - **Resume:** `git fetch && git checkout wip/env-phase1`; `node tools/content/environment.mjs --check`.
 
 

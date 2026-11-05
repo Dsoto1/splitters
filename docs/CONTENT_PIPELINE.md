@@ -571,6 +571,11 @@ shrubs, grass, boulders and cliff faces generated in code from seeds, owned, not
   needs an assetVersion bump, a note and a fixture entry, on purpose: it is a gameplay change).
 - **Maps:** species are props (`model: 'env.…'`, optional `variant`); `getProp` gives a view of them with no box: their
   shapes collide (`map/environment.ts` → physics capsules, hulls, meshes; nav triangles; `shapeAt` → surface).
+- **Showcase:** `maps/env_showcase.json` (made in MapMaker with `?env=1`; in `RETIRED_MAPS`, never offered): the §10
+  stress target, 2,001 trees, 401 boulders, 30 cliff panels, 94 shrubs and ~46 k grass clumps (thick grass painted
+  over the 200 m square). Play it with `?offline=env_showcase&env=1`; compare with
+  `PERF_QUERY=env=1 node tools/perf/client-perf.mjs env_showcase` against `node tools/perf/client-perf.mjs backwoods`
+  (`PERF_BOTS=2`, medium, same turn at the spawn). It has 2,526 props, over the 1,500-prop budget on purpose.
 - **Adding a species** (Phase 2+): a new entry in its family file (or a new family file and generator kind), budgets
   for its category, run the build, add its fixture entry, check it in `?envlab`. No simulation code changes.
 
