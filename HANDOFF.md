@@ -129,6 +129,16 @@ tools/content/grip-audit.mjs <url> <out>`. On this machine Playwright's bundled 
 palette atlas step of `pnpm content:rebuild` needs a temp copy of build-palette-atlas.mjs with
 `executablePath: '/opt/pw-browsers/chromium'` (delete it after), like e2e/run.mjs.
 
+### Owner review of Environment Phase 1 (2026-11-05)
+1. "Looking pretty good":
+   - the rocks need improvement;
+   - lose the Kenney grass and use our own, since grass is a core part of the foliage.
+2. env species get their own budget.
+3. Replace the toy-like Kenney flowers and shrubs that the plants brush grows, now.
+4. Grass density waits for an M1 recording.
+
+This work is on `wip/env-p1b`. Phase 2 (more species) still needs the owner's go after that.
+
 ### In flight
 - **Market Town perf on the M1 Pro, branch `wip/perf-market`** (agent, 2026-11-05; from main d29e6a8; not merged).
   Owner's capture (high, 44 players): 23 ms frames with few in view, 38-45 ms with 20-40; characters (clips + aim)
