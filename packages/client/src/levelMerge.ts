@@ -105,9 +105,11 @@ export class LevelArrayPlugin extends MaterialPluginBase {
       '!vec3 diffuseColor=vDiffuseColor\\.rgb;': 'vec3 diffuseColor=vLevelA.rgb;',
       // Colour texel from the surface's layer.
       '!baseColor=TEXRD\\(diffuseSampler,vDiffuseUV\\+uvOffset\\);': 'baseColor=texture(levelColors,vec3(vDiffuseUV+uvOffset,vLevelA.w));',
-      // Normal-map texel from the surface's layer (a surface without one stays flat).
+      // Normal-map texel from the surface's layer (a surface without one stays flat). Sampled on every pixel, then
+      // chosen: a texture lookup inside a branch that differs between neighbouring pixels picks its mip level from
+      // undefined derivatives (GLSL ES 3.0), which some phone GPUs show as sparkling.
       '!normalW=perturbNormal\\(TBN,TEXRD\\(bumpSampler,vBumpUV\\+uvOffset\\)\\.xyz,vBumpInfos\\.y\\);':
-        'normalW=perturbNormal(TBN,vLevelB.x<-0.5?vec3(0.5,0.5,1.0):texture(levelNormals,vec3(vBumpUV+uvOffset,vLevelB.x)).xyz,vBumpInfos.y);',
+        'normalW=perturbNormal(TBN,mix(texture(levelNormals,vec3(vBumpUV+uvOffset,max(vLevelB.x,0.0))).xyz,vec3(0.5,0.5,1.0),step(vLevelB.x,-0.5)),vBumpInfos.y);',
       // Specular colour and power.
       '!float glossiness=vSpecularColor\\.a;vec3 specularColor=vSpecularColor\\.rgb;': 'float glossiness=vLevelB.z;vec3 specularColor=vec3(vLevelB.y);',
     };
@@ -256,6 +258,10 @@ export async function mergeLevel(scene: Scene, sources: readonly MergeSource[], 
       mat.invertNormalMapY = true;
     }
     mat.diffuseColor = Color3.White();
+    // The per-style materials' depth bias (mapMeshes.ts levelDepthBias: drawn a hair behind what lies in its planes).
+    const first = group.sources[0]!.mesh.material;
+    mat.zOffset = first?.zOffset ?? 0;
+    mat.zOffsetUnits = first?.zOffsetUnits ?? 0;
     // Any non-black specular keeps the specular term in the shader; each vertex brings its own colour and power.
     mat.specularColor = new Color3(0.1, 0.1, 0.1);
     new LevelArrayPlugin(mat, colorArray, normalArray);

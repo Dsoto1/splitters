@@ -5,10 +5,22 @@ import { VertexData } from '@babylonjs/core/Meshes/mesh.vertexData';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import { RawTexture } from '@babylonjs/core/Materials/Textures/rawTexture';
 import { Texture } from '@babylonjs/core/Materials/Textures/texture';
-import { TERRAIN_MATERIALS, TERRAIN_SURFACES, axisFaces, buildMapDecor, boxQuat, quatRotate, coreMaterials, coreThemes, vertexY, yawXZ, faceSlot, resolveSurface, styleKey, type MapDocument, type MaterialDefinition, type ResolvedStyle, type TerrainMaterial, type RenderFace, type TilePlacement, type WorldBox, visibleFaces } from '@tiletrigger/shared';
+import { TERRAIN_MATERIALS, TERRAIN_SURFACES, axisFaces, buildMapDecor, boxQuat, quatRotate, coreMaterials, coreThemes, vertexY, yawXZ, faceSlot, resolveSurface, styleKey, type MapDocument, type MaterialDefinition, type ResolvedStyle, type TerrainMaterial, type RenderFace, type TilePlacement, type WorldBox, visibleFaces, LEVEL_DEPTH_BIAS } from '@tiletrigger/shared';
 import { materialPixels, patternSize } from './materials/patterns.ts';
 import { versioned } from './assetUrl.ts';
 import { jpegPixels, mergeLevel, type MergeSource } from './levelMerge.ts';
+
+/**
+ * The level is drawn a hair behind whatever lies in its planes (docs/LOOK.md, "No flicker: props"): a rug's cloth on a
+ * floor, the bottom board of open shelving, a crate's double-sided base, a sign flush with a wall. Those faces share a
+ * plane with the floor or wall and fought it (the texture flicker), worst on a phone's depth buffer; with this depth
+ * bias (polygon offset, in depth-buffer steps) the prop always wins, at any range. Level faces never share a plane with
+ * each other (visibleFaces), so the bias changes nothing else.
+ */
+export function levelDepthBias(mat: { zOffset: number; zOffsetUnits: number }): void {
+  mat.zOffset = LEVEL_DEPTH_BIAS.factor;
+  mat.zOffsetUnits = LEVEL_DEPTH_BIAS.units;
+}
 
 /** Faces of a box: corners (clockwise from outside), outward normal, and the same before any turn (texture coordinates are laid out on those). */
 type Face = [corners: number[][], normal: readonly [number, number, number], flat: number[][], flatNormal: readonly [number, number, number]];
@@ -358,6 +370,7 @@ export class MapStyler {
     if (!mat) {
       const def = style.material;
       mat = new StandardMaterial(`mat_${key}`, this.scene);
+      levelDepthBias(mat);
       if (def.texture) {
         mat.diffuseTexture = this.image(def.texture, 'color');
         mat.bumpTexture = this.image(def.texture, 'normal');
