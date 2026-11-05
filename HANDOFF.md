@@ -130,23 +130,70 @@ palette atlas step of `pnpm content:rebuild` needs a temp copy of build-palette-
 `executablePath: '/opt/pw-browsers/chromium'` (delete it after), like e2e/run.mjs.
 
 <!-- intake-2 -->
-### Intake step 2 (`wip/intake-2`, agent, 2026-11-05; from main 4d511dd2; in progress)
-**Step 2a (finger option, Bill, tank box, goblins small, licence): f7d456e0 on `check/intake-2a`, CI run 42034304208 green. Local: typecheck, content:check, bundle budget pass; test:changed pass (host and pads tests timed out under load, pass alone); e2e characters, coverage, visual PASS; vehicles: the buggy chase-camera "not in a wall" check failed locally (CI-timeouts run), green on CI.**
+### Intake step 2 (`wip/intake-2`, agent, 2026-11-05; from main 4d511dd2)
+**Step 2a: on main** (f7d456e0, `check/intake-2a` CI run 42034304208 green; landed by the coordinator).
 - `fixes.fingers` (`own` default / `fit`): a rigged download with whole finger chains keeps Meshy's finger joints and
   weights (prepare-meshy-characters.mjs FINGERS / checkOwnFingers; hands.mjs `keep`: measured only; rehand-built keeps
   them). Falls back to the re-fit with no or part chains, a failed check, or `fit` in the manifest. docs/CHARACTERS.md,
-  "The download's own fingers".
-- Proof (grip audit rifle/pistol/shotgun, before = re-fit, after = own): Tactical Soldier 7 -> 4 (own kept), Frost Viking
-  12 -> 12 (curl -0.098 -> -0.033, spikes 33 -> 14, better by eye: own kept), Goblin Warlord 6 -> 6 (back -> flat,
-  spikes 43 -> 10: own kept), The Butcher 6 -> 7 (`fit`), Bill 3 -> 5 (`fit`). Mixed: decide per look by audit.
-- Bill `meshy_bill` / `core.bill` (folk, standard, rebaked 145k -> 14k, portrait captured). Name sits close to "Bill
-  the Barbarian" (meshy_hector): kept "Bill", owner to be told.
-- Tank box half [2.1, 1, 3] -> [1.47, 1, 3.06] (hull 2.93 x 6.12 m, up to the deck; turret not solid as before);
-  vehicle fixture updated; new test packages/shared/test/tankBox.test.ts (walk into side/front, get in, get out).
-- Goblin Warlord `size: small` (Goblin, Goblina, Snikkit already small). Hit shapes and stats follow the size class.
-- Licence: the ten step-1 characters and Bill recorded as CC0 "Meshy Community (CC0 per the owner; author pending
-  from the owner)", url null; licence file and docs/ASSET_SOURCES.md updated.
-- **Resume (2b in progress):** manifests edited with `.cache/s/rerig.py` (scratch, worktree-local), all 22 re-rigs and replacements being built (`ONLY=... prepare-meshy-characters.mjs <scratchpad intake2/dl>`); before scores in `intake2/audit-before`. Next: audit after, keep-old decisions, portraits (Iron Knight, Hyena Warrior, Giggles, Barnaby Bruin, Snikkit), `check/intake-2b`.
+  "The download's own fingers". The lock records `fingers: own l r`.
+- Proof (grip audit rifle/pistol/shotgun, re-fit -> own): Tactical Soldier 7 -> 4, Frost Viking 12 -> 12 (curl and spikes
+  better, better by eye), Goblin Warlord 6 -> 6 (own kept on those three); The Butcher 6 -> 7 and Bill 3 -> 5 (`fit`).
+  Across 2a and 2b own fingers scored better 2 times (Tactical Soldier, Beanie Alien), level 4, worse 10: **not a
+  general win**; the per-manifest audit decides. Worth a look: why own fingers often score `off`/`back` (the palm
+  measured on Meshy's finger weights?).
+- Bill `meshy_bill` / `core.bill` (folk, standard, rebaked 145k -> 14k, portrait). Close to "Bill the Barbarian"
+  (meshy_hector): kept "Bill"; owner told. A photoreal man: owner to confirm the likeness screen (not a real person).
+- Tank box half [2.1, 1, 3] -> [1.47, 1, 3.06] (hull 2.93 x 6.12 m, up to the 2 m deck; the turret above the deck is
+  not solid, as before: one box can't fit both without an invisible roof over the deck). Fixture updated;
+  packages/shared/test/tankBox.test.ts (walking into the side or front stops at the hull, get in from beside, get out clear).
+- Goblin Warlord `size: small` (Goblin, Goblina, Snikkit were already). Hit shapes, health and speed follow the class.
+
+**Step 2b (re-rigs and replacements): on `wip/intake-2`, check branch `check/intake-2b`.** Grip scores (lower is
+better; before = main's build; "own" = Meshy's fingers, "fit" = re-fitted):
+| Character | before | new (own, or no chains) | new (fit) | shipped |
+|---|---|---|---|---|
+| The Dapper | 3 | 3 (no chains) | - | new |
+| Croakley | 5 | 5 (no index finger) | - | new |
+| Freaky Frida | 0 | 3 (no chains) | - | **old** (worse) |
+| Field Medic Automaton | 3 | 3 own | - | new, own |
+| Stealth Operative | 0 | 3 own | 0 | new, fit |
+| Beanie Alien | 3 | 0 own | - | new, own |
+| Alien Biker | 3 | 3 (no chains) | - | new |
+| WWII Infantry | 0 | 6 own | 3 | **old** (worse) |
+| Grunt '68 | 0 | 3 own | 5 | **old** (worse) |
+| Iron Knight (Iron Warden) | 5 | 5 own | 7 | new, own (new portrait) |
+| Hyena Warrior (Gnoll) | 5 | 10 (no chains) | - | new (owner's model swap; worse: flat, off, spikes, fp) |
+| Desert Ranger (Desert Sentinel) | 2 | 5 own | 5 | **old** (worse) |
+| Big Bab | 3 | 5 (no chains) | - | **old** (worse) |
+| Customs Agent Zhao | 3 | 3 (part chains) | - | new |
+| Grandpa Chains | 0 | 9 own | 8 | **old** (worse) |
+| Old King Halvard | 6 | 6 (part chains) | - | new |
+| Hazmat Joe | 0 | 4 own | 6 | **old** (worse) |
+| King Aldric | 6 | 8 own | 6 | new, fit |
+| CRT Robot (crt robot rigged, 11-01) | 6 | 6 (no chains) | - | new |
+| Giggles (Tattered Circus Nightmare) | retired | 3 own | 3 | new, own; back on the roster (new portrait) |
+| Barnaby Bruin (Bear Warrior) | 8 | 10 own | 8 | new, fit (new portrait) |
+| Snikkit (Goblin Mischief) | 3 | 12 (part chains) | - | new (replacement; worse: open, back, flat, off, fp) |
+- Kept old builds: files, manifest and lock lines from main, a note in the manifest saying why.
+- Hyena Warrior and Snikkit ship their new models though they audit worse (the owner's model swaps); both are
+  candidates for the next hands round (`fixes.hands` / `fixes.grip`), as is Barnaby (8).
+- Sizes, stats and hit boxes unchanged (heights are normalised; no size class changed). Giggles and Snikkit stay small.
+- The old grip/hands/skin tuning was dropped on the five new models (it fitted the old ones); kept on same-model re-rigs.
+- Portraits re-captured for every shipped re-rig and new model.
+
+**Licence: author and post URL pending from the owner** (recorded "Meshy Community (CC0 per the owner)", url null;
+assets-src/meshy-community-characters/License.txt, docs/ASSET_SOURCES.md): Patches ("hobo bozo clown tpose"),
+Tactical Soldier ("Tactical T Pose Soldier"), Umpire ("umpire rigged"), Bamboo ("Open Arms Panda"), The Butcher
+("Painter in a T Pose"), Old Timer ("An old man in his 90s presented in a"), Imperial Guard ("A fit ancient Chinese male
+soldier from"), Frost Viking, Goblin Warlord ("Goblin Warlord villain"), The Masked Figure, Bill ("T Pose on Green
+Screen"), Iron Knight ("Iron Warden"; was the owner's own), Hyena Warrior ("Gnoll warrior"; was the owner's own),
+Customs Agent Zhao ("Uniformed Worker in a T Pose"; the old model's post was 019df47b-…), Giggles ("Tattered Circus
+Nightmare"), Barnaby Bruin ("Bear Warrior"), Snikkit ("Goblin Mischief"). The owner said "most" are CC0: any that are
+the owner's own go back to `owned` (manifest `source`, then rebuild that id for the lock).
+
+**Resume:** downloads linked in the agent scratchpad `intake2/dl`; audits in `intake2/audit-*`, before/after sheets in
+`intake2/sheets/` (scores.tsv), shots in `intake2/shots/`. Rebuild any character with `ONLY=<id> node
+tools/content/prepare-meshy-characters.mjs <dl>` (deterministic: an unchanged manifest gives the same file).
 <!-- /intake-2 -->
 
 ### Owner review of Environment Phase 1 (2026-11-05)
