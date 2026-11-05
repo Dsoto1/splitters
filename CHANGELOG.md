@@ -19,10 +19,11 @@ around", on an Android phone; docs/LOOK.md, "No flicker: props")
 - **Glass no longer pops**: windows seen through other windows (the showroom over the warehouse) stayed hidden or
   showed depending on which glass was drawn first; glass now blends in any order.
 - **Phones: speckled floors twinkle less when you turn** (terrazzo, gravel, carpet): at the phone's render scale each
-  drawn pixel is shown 3-4 screen pixels wide, so the level's textures are taken a touch softer there (none on a
-  desktop at its usual scale).
+  drawn pixel is shown 3-4 screen pixels wide, so the level's textures are taken a touch softer there (barely
+  any on a desktop).
 - Team tools: the z-fighting audit now checks props against the level and against each other on every map (none left);
   the props' contact faces are measured from the models (`tools/content/prop-contacts.mjs`, in `pnpm content:check`).
+
 **Bigger pebbles, a red meadow flower, pictures in the Nature tab** (the owner's environment follow-ups, 2026-11-05)
 - **Pebbles you can see**: our pebbles are now four rounded stones up to about half a metre across (1.2 m wide and
   0.3 m high at scale 1, near the Kenney stones they replaced; they were 0.8 × 0.13 m and vanished past a few metres),
