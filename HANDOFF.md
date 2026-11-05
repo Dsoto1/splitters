@@ -496,7 +496,14 @@ Also proposed: note pins, templates, mirror for team maps, a card-shot camera, a
   Top bar `#ed-grid-full` (Full grid). Camera clamp is now the build limit + 120 m, 600 m up. Status bar
   (`#ed-target`) names the scenery zone / past the limit under the pointer. Photo mode hides all of it (the old
   bounds outline was not hidden in thumbnails before).
-- e2e: editorux "The build area" block. Docs: BUILDING_KIT "Where you can build".
+- Outlines, band and labels lie on the terrain where it rises above the edited level (`max(level, ground)`); labels
+  (rendering group 1, no fog) read from the usual south-facing view; the grid itself stays on the level plane (tiles
+  sit there), so on hilly terrain it shows only where the ground is below the level, as before.
+- e2e: editorux "The build area" block. Docs: BUILDING_KIT "Where you can build". `mapmaker.png` baseline
+  regenerated (the starter map's grid now fades out round the look point).
+- Not done / open: the grid isn't draped on terrain; the top bar at 960 px wide already overflowed by ~76 px before
+  this (Full grid adds ~32 px; only 1280 is checked); the camera may now fly 600 m up and out to the limit, which
+  draws the whole map (fine on desktop, not measured on weak GPUs).
 
 Waiting for the owner to mark which ones. This becomes the "MapMaker overhaul" in the agreed queue.
 

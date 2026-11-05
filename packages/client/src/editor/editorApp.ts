@@ -1005,7 +1005,7 @@ export class EditorApp {
     const p = this.hoverPoint;
     if (!p) return '';
     const zone = buildZone(this.doc, p.x, p.z);
-    if (zone === 'scenery') return 'Scenery zone: outside the playable boundary. Building here is fine: it blends the map into the world round it';
+    if (zone === 'scenery') return 'Scenery zone, outside the playable boundary: building here is fine';
     if (zone === 'beyond') return 'Past the build limit: no tiles can be placed here';
     return '';
   }
