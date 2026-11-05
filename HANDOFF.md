@@ -327,7 +327,11 @@ hands move up more into the gun. Looks as if their fingers are just pinching the
   re-run of Replace all from the old map with Keep scale); a red meadow-flower variant and palette
   pictures for the species are open.
 ### Performance round 2 (`wip/perf-2`, agent, 2026-11-05; from main 2c8f3e21, origin/main merged; check run on `check/perf-2`)
-Status: in progress. Details and numbers: docs/PERF_96.md, "Performance round 2".
+Status: on main (train dfdfe792, CI green on `check/perf-2` run 42080981667 at d52410d8); the follow-up (still doors
+judged by their matrix) and the measured write-up are on `wip/perf-2`. Details and numbers: docs/PERF_96.md,
+"Performance round 2". Measured (SwiftShader, same build, on vs off): draws -31 %, render-target draws -49 %, shadow
+casters -51 %, mesh evaluation -75 %, main-pass issue -27 %, animated characters -16 %. Projected M1 frame
+20.3 → ~14-15.5 ms.
 - **Done (code)**: static shadow cache (`game/shadowCache.ts`: static casters drawn only when a cascade moves past its
   margin, every ~30 frames, or when they change; doors and gates join once still for 60 frames; WebGL2 depth blit);
   level draw merging (`levelMerge.ts`, `MapStyler.merge`: per-style level and terrain meshes merged over array
@@ -335,7 +339,9 @@ Status: in progress. Details and numbers: docs/PERF_96.md, "Performance round 2"
   full grip kept; creatures' clips on the same LOD); cheaper clip stops and node disposals (`animPatches.ts`); live
   mesh candidates and frozen static materials (`meshSelection.ts`). A/B on one build:
   `?perfoff=shadowcache,levelmerge,meshsel,animlod2`.
-- **Next**: finish the measurements, docs, CI green on `check/perf-2`, owner re-record on the M1.
+- **Next**: owner re-records on the M1 (PERF_96 says what to expect; `?perfoff=` isolates a part); doors' caching
+  measured; roads/paths merged too; Godot VFX emitters pooled. NOT TESTED: the M1 itself, WebGPU (all of round 2's
+  rendering parts are off there), local e2e runs (CI ran every shard green).
 - **Resume**: check out `wip/perf-2`; the probe is a scratchpad script (docs/PERF_96.md says how it is set up).
 
 ### Queued (owner-approved, 2026-11-05): performance round 2 (next free agent slot)
@@ -495,6 +501,24 @@ fastest moving at about 60 m/s, on both attempts.
 
 Each brief has its reference image beside it. The owner approves the concept before any placement work; follow
 AGENT_BUILD_CONTRACT.md.
+
+### Queued: performance round 3 (owner's Shingle Point M1 recording, 2026-11-05; files in session scratchpad perf3/)
+**The recording:** build 76a4b03, M1 Pro, high, 49 players.
+- Averages about 20.5 ms. It holds 60 fps only in quiet views (390 draws, 185 meshes).
+- In the main views: 700–870 draws and 850–1,090 active meshes.
+- Per frame: render about 17 ms, of which:
+  - mesh evaluation 3.5 ms
+  - shadow and depth maps 4.4 ms
+  - about 6.5 ms issuing draws
+  - clips and aim 2.8 ms (round 2 worked there)
+- One hitch at 55 s compiled 8 new shaders mid-match (75–83 ms frames).
+- HUD costs 0.7 ms, against 0.1 ms on Market Town.
+
+**Targets:**
+1. Static prop merging and instancing on big open maps: chunked merging of static props and decorations, like levelMerge.
+2. Shadow cache effectiveness on large outdoor maps.
+3. Shader warm-up so no shaders compile mid-match. Find which material first appeared at 55 s.
+4. HUD cost: why 0.7 ms here (minimap or markers with 49 players?).
 
 ### Owner's map notes for later (2026-11-05; not started)
 - **No Man's Field:** asset refresh. It still uses Kenney kits; move it to our generated environment and props.
