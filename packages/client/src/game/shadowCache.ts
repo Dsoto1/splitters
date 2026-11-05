@@ -27,6 +27,8 @@ export const CASCADE_MARGIN = [0.25, 0.15, 0.12] as const;
 export const REFRESH_FRAMES = 30;
 /** Medium graphics' single box (half-size 45 m) moves when the camera's wanted box is this far (m) from the drawn one. */
 export const BOX_SLACK = 6;
+/** A caster that can move (a door, a gate, a lift) joins the cached ones after standing still this many frames. */
+export const STILL_FRAMES = 60;
 
 /** A cascade's square: its centre and radius (world metres). */
 export interface CascadeSphere {
@@ -195,8 +197,17 @@ class DepthCopy {
 
 const emptyList = (): SubList => ({ data: [], length: 0 });
 
-/** Is this a static caster (drawn into the cache, not every frame)? */
+/** Is this a static caster for good (a shadow proxy), drawn into the cache? */
 export const isStaticCaster = (m: AbstractMesh): boolean => (m.metadata as { shadowProxy?: boolean } | null)?.shadowProxy === true;
+
+/**
+ * Can this caster be cached while it stands still? Plain meshes only: no skeleton or morphs, no instances (one draw
+ * stands for every copy) and no thin instances (destructibles change theirs without moving).
+ */
+function stillable(m: AbstractMesh): boolean {
+  const mesh = m as AbstractMesh & { hasInstances?: boolean; morphTargetManager?: unknown };
+  return !m.skeleton && !mesh.morphTargetManager && !m.isAnInstance && !mesh.hasInstances && !m.hasThinInstances && !(m.metadata as { smallCaster?: boolean } | null)?.smallCaster;
+}
 
 export class ShadowCache {
   /** Per layer: draw the static casters this frame. */
@@ -210,6 +221,8 @@ export class ShadowCache {
   readonly stats = { redraws: 0, renders: 0 };
   private readonly lists = { s: [emptyList(), emptyList(), emptyList(), emptyList()], d: [emptyList(), emptyList(), emptyList(), emptyList()] };
   private readonly disposers: (() => void)[] = [];
+  /** Casters that can move, watched: their world matrix's update flag, the frame it last changed, and whether cached now. */
+  private readonly still = new Map<AbstractMesh, { flag: number; since: number; cached: boolean }>();
 
   private constructor(
     private readonly scene: Scene,
@@ -238,6 +251,41 @@ export class ShadowCache {
   /** The layer being drawn now. */
   private get layer(): number {
     return this.csm ? (this.csm._currentLayer ?? 0) : 0;
+  }
+
+  /**
+   * Is `m` drawn into the cache (a shadow proxy, or a movable caster standing still for STILL_FRAMES)? A movable caster
+   * is watched from its first ask on.
+   */
+  isStatic(m: AbstractMesh): boolean {
+    if (isStaticCaster(m)) return true;
+    const r = this.still.get(m);
+    if (r) return r.cached;
+    if (stillable(m)) this.still.set(m, { flag: m.getWorldMatrix().updateFlag, since: this.frame, cached: false });
+    return false;
+  }
+
+  /** Each frame first: movable casters that moved, went or hid leave the cache (all layers redraw), still ones join it. */
+  private watchStill(): void {
+    for (const [m, r] of this.still) {
+      if (m.isDisposed()) {
+        this.still.delete(m);
+        if (r.cached) this.dirtyAll = true;
+        continue;
+      }
+      const flag = m.getWorldMatrix().updateFlag;
+      if (flag !== r.flag || !m.isEnabled() || !m.isVisible) {
+        r.flag = flag;
+        r.since = this.frame;
+        if (r.cached) {
+          r.cached = false;
+          this.dirtyAll = true;
+        }
+      } else if (!r.cached && this.frame - r.since >= STILL_FRAMES) {
+        r.cached = true;
+        this.dirtyAll = true;
+      }
+    }
   }
 
   /** Whether layer `layer` draws its static casters this frame (else they come from the cache). */
@@ -274,10 +322,11 @@ export class ShadowCache {
       const L = this.layer;
       if (!this.redraw[L] || this.copied[L]) return render(opaque, alphaTest, transparent, depthOnly);
       const { s, d } = this.lists;
-      split(opaque, s[0]!, d[0]!);
-      split(alphaTest, s[1]!, d[1]!);
-      split(transparent, s[2]!, d[2]!);
-      split(depthOnly, s[3]!, d[3]!);
+      const isStatic = (m: AbstractMesh) => this.isStatic(m);
+      split(opaque, s[0]!, d[0]!, isStatic);
+      split(alphaTest, s[1]!, d[1]!, isStatic);
+      split(transparent, s[2]!, d[2]!, isStatic);
+      split(depthOnly, s[3]!, d[3]!, isStatic);
       render(s[0]!, s[1]!, s[2]!, s[3]!);
       this.depth.copy(L, true);
       this.copied[L] = true;
@@ -326,8 +375,9 @@ export class ShadowCache {
 
   /** Before the layers each frame: which draw their static casters. */
   private beginFrame(): void {
+    if (this.csm) return; // keepSquares (inside the cascades' matrices update, just before this) decides per cascade.
     this.frame++;
-    if (this.csm) return; // keepSquares (inside the matrices' update, after this) decides per cascade.
+    this.watchStill();
     const st = this.states[0];
     const due = this.dirtyAll || !st || refreshDue(this.frame, 0, st.drawn);
     this.redraw[0] = due;
@@ -340,6 +390,8 @@ export class ShadowCache {
   /** High graphics: per cascade, keep last frame's square (and its cached static depth) or take the new one. */
   private keepSquares(): void {
     const csm = this.csm!;
+    this.frame++;
+    this.watchStill();
     const all = this.dirtyAll;
     this.dirtyAll = false;
     for (let i = 0; i < this.layers; i++) {
@@ -414,12 +466,12 @@ function blankState(): CascadeState {
 }
 
 /** Sort a rendering list's submeshes into static casters (`s`) and the rest (`d`). */
-function split(from: SubList, s: SubList, d: SubList): void {
+function split(from: SubList, s: SubList, d: SubList, isStatic: (m: AbstractMesh) => boolean): void {
   s.length = 0;
   d.length = 0;
   for (let i = 0; i < from.length; i++) {
     const sub = from.data[i]!;
-    const to = isStaticCaster(sub.getRenderingMesh()) ? s : d;
+    const to = isStatic(sub.getRenderingMesh()) ? s : d;
     to.data[to.length++] = sub;
   }
 }

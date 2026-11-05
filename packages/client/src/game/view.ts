@@ -114,6 +114,7 @@ import { CharacterAnimator, type OneShot } from './characterAnimator.ts';
 import { ANIM_LOD_FAR, ANIM_LOD_NEAR, SHOT_OVERLAY_REACH, animStep } from './animLod.ts';
 import { perfOn } from './perfSwitches.ts';
 import { installAnimationPatches, trackAnimatedTargets } from './animPatches.ts';
+import { freezeStaticMaterials, selectLiveCandidates } from './meshSelection.ts';
 import { fitFirstPersonArms } from './firstPersonArms.ts';
 import { FirstPersonBodyRig } from './firstPersonBody.ts';
 import { loadFirstPersonMode, loadGraphicsQuality, type FirstPersonMode } from './graphicsSettings.ts';
@@ -386,6 +387,17 @@ export class GameView {
     installAnimationPatches();
     this.scene = new Scene(engine);
     trackAnimatedTargets(this.scene);
+    // The meshes switched on, once a frame, for Babylon's two walks over every mesh (meshSelection.ts).
+    if (perfOn('meshsel')) {
+      selectLiveCandidates(this.scene);
+      // The level's and the props' materials frozen once settled (they never change in a match).
+      freezeStaticMaterials(this.scene, (m) => {
+        if (!m.isWorldMatrixFrozen || m.skeleton) return false;
+        let root: { name: string; parent: unknown } = m;
+        while (root.parent) root = root.parent as typeof root;
+        return /^(map_|prop_|static_)/.test(root.name);
+      });
+    }
     this.scene.clearColor = new Color4(0.52, 0.62, 0.72, 1);
     this.scene.skipPointerMovePicking = true;
     this.camera = createViewCamera('camera', this.scene);

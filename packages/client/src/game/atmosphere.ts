@@ -128,7 +128,7 @@ export class Atmosphere {
           if (d > SMALL_CASTER_REACH && (m.metadata as { smallCaster?: boolean } | null)?.smallCaster) continue;
           if (off.size && underAny(m, off)) continue;
           near.push(m);
-          if (!isStaticCaster(m)) nearMoving.push(m);
+          if (!(cache ? cache.isStatic(m) : isStaticCaster(m))) nearMoving.push(m);
         }
         return pick();
       };
