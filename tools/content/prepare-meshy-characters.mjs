@@ -107,13 +107,41 @@ const JOINT_MAP = {
 };
 
 /**
- * The rig joint each source joint's skin goes to: its own (JOINT_MAP), else its nearest ancestor's. Finger chains
- * (LeftHandIndex1 ...: hands.mjs fits the rig's fingers to the mesh itself), end markers and extra bones (a mummy's
- * wrappings, a heel bone) ride the joint they hang from.
+ * A download's finger chains (Mixamo names: LeftHandThumb1 ... LeftHandPinky4) onto the rig's (thumb_01_l ...
+ * pinky_04_leaf_l), per side: `joints` the source joint for each rig finger joint (its place), `skin` the rig joint
+ * each source finger joint's weights go to (the end markers, ...4, onto the last joint, ..._03).
  */
-function rigJoints(names, parent, file) {
+const FINGER_CHAINS = ['Thumb', 'Index', 'Middle', 'Ring', 'Pinky'];
+const fingerMap = (s) => {
+  const S = s === 'l' ? 'Left' : 'Right';
+  const joints = {};
+  const skin = {};
+  for (const F of FINGER_CHAINS) {
+    const f = F.toLowerCase();
+    for (let i = 1; i <= 4; i++) {
+      const rig = i === 4 ? `${f}_04_leaf_${s}` : `${f}_0${i}_${s}`;
+      joints[rig] = `${S}Hand${F}${i}`;
+      skin[`${S}Hand${F}${i}`] = `${f}_0${Math.min(3, i)}_${s}`;
+    }
+  }
+  return { joints, skin };
+};
+const FINGERS = { l: fingerMap('l'), r: fingerMap('r') };
+/** The sides of a download whose finger chains are whole: every finger and the thumb, three joints each (the end markers may be missing). */
+const fingerSides = (names) => ['l', 'r'].filter((s) => Object.values(FINGERS[s].joints).filter((m) => !/4$/.test(m)).every((m) => names.includes(m)));
+/** Fewest vertices a kept finger may mostly hold (fewer: Meshy left that finger on the hand, and the re-fit is used). */
+const OWN_FINGER_MIN = 6;
+
+/**
+ * The rig joint each source joint's skin goes to: its own (JOINT_MAP, or the finger chains of the sides in `own`:
+ * `fixes.fingers`), else its nearest ancestor's. Finger chains not kept (LeftHandIndex1 ...: hands.mjs fits the
+ * rig's fingers to the mesh itself), end markers and extra bones (a mummy's wrappings, a heel bone) ride the joint
+ * they hang from.
+ */
+function rigJoints(names, parent, file, own = []) {
+  const map = { ...JOINT_MAP, ...Object.assign({}, ...own.map((s) => FINGERS[s].skin)) };
   return names.map((n, i) => {
-    for (let k = i; k >= 0; k = parent[k]) if (JOINT_MAP[names[k]]) return JOINT_MAP[names[k]];
+    for (let k = i; k >= 0; k = parent[k]) if (map[names[k]]) return map[names[k]];
     if (names.every((m) => m !== 'Hips')) throw new Error(`${file}: no Hips joint (name the rig's joints with source.joints)`);
     return 'pelvis';
   });
@@ -266,7 +294,12 @@ async function readMeshy(file, ual, c) {
   }
   const index = new Map(names.map((n, i) => [n, i]));
   const parent = joints.map((j) => (j.getParentNode() ? (index.get(nameOf(j.getParentNode())) ?? -1) : -1));
-  const skel = { names, parent, rest, rig: rigJoints(names, parent, file) };
+  // `fixes.fingers` (default `own`): a side whose finger chains are whole keeps the download's finger joints and
+  // weights; otherwise (`fit`, or no whole chains: a 24-joint rig, a three-fingered frog) hands.mjs re-fits them.
+  const whole = fingerSides(names);
+  const own = c.fingers === 'fit' ? [] : whole;
+  if (c.fingers !== 'fit' && whole.length < 2) console.log(`  fingers: ${whole.length ? `only the ${whole[0] === 'l' ? 'left' : 'right'} hand's` : 'no'} finger chains whole in the download; ${whole.length ? 'the other is' : 'both are'} re-fitted`);
+  const skel = { names, parent, rest, rig: rigJoints(names, parent, file, own), own };
   const verts = {
     count: P.length / 3,
     joints: J,
@@ -478,6 +511,7 @@ function pose(skel, verts, ual, c) {
   return {
     names,
     rig: skel.rig ?? names.map((n) => JOINT_MAP[n]),
+    own: skel.own ?? [],
     posed: new Map(names.map((n, i) => [n, posed[i]])),
     pos: out.pos,
     nrm: out.nrm,
@@ -899,6 +933,8 @@ async function build(c, src, out, { keep = () => true, ratio = FULL_RATIO, lod =
   // Each rig joint onto its Meshy counterpart; the rest (fingers, leaf ends) keep their offsets from their parents.
   const target = new Map();
   const reverse = new Map(Object.entries(JOINT_MAP).filter(([m]) => !/head_end|headfront|Middle4|Toe_End/.test(m)).map(([m, u]) => [u, m]));
+  // The download's own fingers (`fixes.fingers`): the rig's finger joints on its (an end marker it lacks: the rig's offset).
+  for (const s of src.own ?? []) for (const [u, m] of Object.entries(FINGERS[s].joints)) if (src.posed.has(m)) reverse.set(u, m);
   const place = (j) => {
     const name = j.getName();
     if (target.has(name)) return target.get(name);
@@ -912,6 +948,13 @@ async function build(c, src, out, { keep = () => true, ratio = FULL_RATIO, lod =
     return t;
   };
   for (const j of joints) place(j);
+  // First-person arms shrink their hands about the hand joint (slimArms): the download's own finger joints with them.
+  if (firstPerson) {
+    for (const s of src.own ?? []) {
+      const H = target.get(`hand_${s}`);
+      for (const u of Object.keys(FINGERS[s].joints)) if (target.has(u)) target.set(u, add(H, scale(sub(target.get(u), H), FP_HAND)));
+    }
+  }
 
   // Out with the mannequin and the clips; in with the character.
   for (const a of root.listAnimations()) {
@@ -954,7 +997,7 @@ async function build(c, src, out, { keep = () => true, ratio = FULL_RATIO, lod =
   // Cloth hanging off an arm goes with the body (armweights.mjs), then the hands are fitted without it.
   // Opt-in (fixes.armCloth), by distance along the surface.
   if (!fp && c.armCloth) keepArmsToArms({ meshes: [{ pos, J, W, idx: src.indices }], jointNames: rigNames, world: fitted, log: (l) => console.log(`  ${out} ${l}`) });
-  const hands = fitHands({ meshes: [{ pos, J, W }], jointNames: rigNames, world: fitted, rig: ual, overrides: c.hands, skin: fingerSkin(c.skin), log: (l) => console.log(`  ${out} ${l}`) });
+  const hands = fitHands({ meshes: [{ pos, J, W }], jointNames: rigNames, world: fitted, rig: ual, overrides: c.hands, skin: fingerSkin(c.skin), keep: src.own ?? [], log: (l) => console.log(`  ${out} ${l}`) });
   // This look's own body skin fixes (fixes.skin: hops, clamp, smooth; skinfix.mjs), recorded on the skin.
   const skinBody = bodySkin(c.skin);
   if (skinBody) {
@@ -1124,6 +1167,44 @@ function glbHasSkin(file) {
     closeSync(fd);
   }
 }
+/**
+ * The download's own fingers checked before they are kept (`fixes.fingers: own`): each of the four fingers must
+ * mostly hold at least OWN_FINGER_MIN vertices and its tip must lie further from the wrist than its knuckle. A side
+ * that fails (Meshy left a finger on the palm, or its chain runs back into the hand) goes back to the re-fit
+ * (hands.mjs), its finger weights onto the hand joint. Returns what was found, for the log and the lock.
+ */
+function checkOwnFingers(src) {
+  const count = new Map();
+  for (let v = 0; v < src.pos.length / 3; v++) {
+    let b = 0;
+    for (let k = 1; k < 4; k++) if (src.weights[v * 4 + k] > src.weights[v * 4 + b]) b = k;
+    const r = src.rig[src.joints[v * 4 + b]];
+    count.set(r, (count.get(r) ?? 0) + 1);
+  }
+  const report = {};
+  for (const s of [...src.own]) {
+    const S = s === 'l' ? 'Left' : 'Right';
+    const held = Object.fromEntries(['index', 'middle', 'ring', 'pinky', 'thumb'].map((f) => [f, [1, 2, 3].reduce((n, i) => n + (count.get(`${f}_0${i}_${s}`) ?? 0), 0)]));
+    const wrist = src.posed.get(`${S}Hand`);
+    const outward = ['Index', 'Middle', 'Ring', 'Pinky'].every((F) => {
+      const [k, t] = [src.posed.get(`${S}Hand${F}1`), src.posed.get(`${S}Hand${F}3`)];
+      return k && t && Math.hypot(...sub(t, wrist)) > Math.hypot(...sub(k, wrist));
+    });
+    const thin = ['index', 'middle', 'ring', 'pinky'].filter((f) => held[f] < OWN_FINGER_MIN);
+    if (thin.length || !outward) {
+      const why = thin.length ? `${thin.join(', ')} hold${thin.length === 1 ? 's' : ''} under ${OWN_FINGER_MIN} vertices` : 'a finger runs back into the hand';
+      console.log(`  fingers: hand_${s}'s own finger weights fail the check (${why}): re-fitted`);
+      src.own = src.own.filter((x) => x !== s);
+      src.rig = src.rig.map((r, i) => (FINGERS[s].skin[src.names[i]] ? `hand_${s}` : r));
+      report[s] = 'fit';
+    } else {
+      console.log(`  fingers: hand_${s} keeps the download's fingers (vertices: ${Object.entries(held).map(([f, n]) => `${f} ${n}`).join(', ')})`);
+      report[s] = 'own';
+    }
+  }
+  return report;
+}
+
 /** The first-person arms (forearms and hands) every character gets, from the same source as its body. */
 const fparms = (c, src, ratio = 0.8, loose = false) => build(c, src, `${c.id}_fparms.glb`, { keep: (j) => ARM_JOINT.test(j), ratio, lod: false, firstPerson: true, loose });
 for (const c of SPECS) {
@@ -1134,7 +1215,8 @@ for (const c of SPECS) {
   }
   if (found.rigged) {
     const src = await readMeshy(found.file, ual, c);
-    const from = { ...(c.meshy ? { meshy: c.meshy } : {}), ...(c.community ?? {}), ...(c.meshy ? {} : { src: basename(found.file) }) };
+    checkOwnFingers(src);
+    const from = { ...(c.meshy ? { meshy: c.meshy } : {}), ...(c.community ?? {}), ...(c.meshy ? {} : { src: basename(found.file) }), ...(src.own.length ? { fingers: `own ${src.own.join(' ')}` } : {}) };
     // A rebaked download is cut to its budget already (rebakeDownload).
     const ratio = c.surface === 'rebake' ? { ratio: 1 } : c.triangles ? { ratio: c.triangles / (src.indices.length / 3) } : {};
     lock.files.push({ role: 'meshy', id: c.id, source: c.pack, ...from, ...(await build(c, src, `${c.id}.glb`, { loose: true, ...ratio })), ...(c.surface === 'rebake' ? { surface: 'rebake' } : {}) });

@@ -149,7 +149,8 @@ export interface HandData {
   width: number;
   thickness: number;
   curl: number;
-  fingers: 'split' | 'mitten' | 'none';
+  /** How the fingers were weighted: split, as one (mitten), not at all (a fist), or the download's own (`fixes.fingers`). */
+  fingers: 'split' | 'mitten' | 'none' | 'own';
 }
 
 export interface CharacterSpec {

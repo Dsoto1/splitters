@@ -220,7 +220,9 @@ function rehand(doc, overrides, label, skinFix) {
   // Cloth hanging off an arm goes with the body (armweights.mjs), then the hands are fitted without it.
   // Opt-in (fixes.armCloth), by distance along the surface (armweights.mjs).
   if (label === 'body' && overrides?.armCloth) keepArmsToArms({ meshes: c.meshes, jointNames: c.jointNames, world: c.world, log: (l) => console.log(`  ${label} ${l}`) });
-  const { moved, data } = fitHands({ meshes: c.meshes, jointNames: c.jointNames, world: c.world, rig, overrides, skin: fingerSkin(skinFix), sides: SIDES, log: (l) => console.log(`  ${label} ${l}`) });
+  // A hand built with the download's own fingers (`fixes.fingers: own`, extras.hand.fingers 'own') keeps them: measured only.
+  const keep = ['l', 'r'].filter((s) => c.joints.find((j) => j.getName() === `hand_${s}`)?.getExtras()?.hand?.fingers === 'own');
+  const { moved, data } = fitHands({ meshes: c.meshes, jointNames: c.jointNames, world: c.world, rig, overrides, skin: fingerSkin(skinFix), sides: SIDES, keep, log: (l) => console.log(`  ${label} ${l}`) });
   // This look's body skin fixes (fixes.skin; skinfix.mjs), once: a file records the ones it was given.
   const body = bodySkin(skinFix);
   const had = c.skin.getExtras()?.skinFix;

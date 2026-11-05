@@ -129,6 +129,28 @@ tools/content/grip-audit.mjs <url> <out>`. On this machine Playwright's bundled 
 palette atlas step of `pnpm content:rebuild` needs a temp copy of build-palette-atlas.mjs with
 `executablePath: '/opt/pw-browsers/chromium'` (delete it after), like e2e/run.mjs.
 
+<!-- intake-2 -->
+### Intake step 2 (`wip/intake-2`, agent, 2026-11-05; from main 4d511dd2; in progress)
+**Step 2a (finger option, Bill, tank box, goblins small, licence): built, local checks running; not yet on a check branch.**
+- `fixes.fingers` (`own` default / `fit`): a rigged download with whole finger chains keeps Meshy's finger joints and
+  weights (prepare-meshy-characters.mjs FINGERS / checkOwnFingers; hands.mjs `keep`: measured only; rehand-built keeps
+  them). Falls back to the re-fit with no or part chains, a failed check, or `fit` in the manifest. docs/CHARACTERS.md,
+  "The download's own fingers".
+- Proof (grip audit rifle/pistol/shotgun, before = re-fit, after = own): Tactical Soldier 7 -> 4 (own kept), Frost Viking
+  12 -> 12 (curl -0.098 -> -0.033, spikes 33 -> 14, better by eye: own kept), Goblin Warlord 6 -> 6 (back -> flat,
+  spikes 43 -> 10: own kept), The Butcher 6 -> 7 (`fit`), Bill 3 -> 5 (`fit`). Mixed: decide per look by audit.
+- Bill `meshy_bill` / `core.bill` (folk, standard, rebaked 145k -> 14k, portrait captured). Name sits close to "Bill
+  the Barbarian" (meshy_hector): kept "Bill", owner to be told.
+- Tank box half [2.1, 1, 3] -> [1.47, 1, 3.06] (hull 2.93 x 6.12 m, up to the deck; turret not solid as before);
+  vehicle fixture updated; new test packages/shared/test/tankBox.test.ts (walk into side/front, get in, get out).
+- Goblin Warlord `size: small` (Goblin, Goblina, Snikkit already small). Hit shapes and stats follow the size class.
+- Licence: the ten step-1 characters and Bill recorded as CC0 "Meshy Community (CC0 per the owner; author pending
+  from the owner)", url null; licence file and docs/ASSET_SOURCES.md updated.
+- **Resume:** downloads linked in the agent scratchpad `intake2/dl`; audits in `intake2/audit-*`. Next: finish checks
+  (test:changed, e2e characters/vehicles/coverage/visual), push `check/intake-2a`, then step 2b (re-rigs with
+  `.cache/s/rerig.py`-style manifest edits; the before scores are in `intake2/audit-before`).
+<!-- /intake-2 -->
+
 ### Owner review of Environment Phase 1 (2026-11-05)
 1. "Looking pretty good":
    - the rocks need improvement;
@@ -196,6 +218,119 @@ This work is on `wip/env-p1b`. Phase 2 (more species) still needs the owner's go
   - keep Meshy's finger weights when a download has finger chains (my call; the owner said "your call").
 
   This work is on `wip/intake-2`.
+
+### Queued (owner, 2026-11-05): first-person pistol hold
+"The first person view when holding a pistol could be adjusted. Either the gun moves back more into the hands or the
+hands move up more into the gun. Looks as if their fingers are just pinching the grip."
+- First person `gripExternal` (characterAnimator.ts) IKs the palms onto the viewmodel's grip and support points.
+  The pistol's hold points and viewOffset are in content/weapons (view.hold).
+- Seat the pistol's grip deep in the palm, web of the thumb high on the backstrap, fingers wrapped, support hand
+  cupping. Do this for every pistol-class weapon.
+- Check with the `aheadR`/`sideR` measures and the characters e2e, with before/after first-person shots across
+  several characters, including Meshy rigs with Meshy's finger weights once intake-2 lands.
+- Start it once a slot frees. It touches the hands, so after intake-2 step 2a.
+
+### Queued (owner-approved, 2026-11-05): performance round 2 (next free agent slot)
+**Owner's second M1 Pro recording** (build 4e77fab; Market Town, TDM, 49 players, high, 60 fps cap). Files in the
+session scratchpad `perf2/`: the perf JSON and the trace.
+
+| | Before | After round 1 |
+|---|---|---|
+| Average frame | 25.9 ms | 20.3 ms (~49 fps) |
+| Big fights | 38–45 ms | 26–32 ms |
+| Hitches over 50 ms | 19 in 25 s | 3 in 49 s |
+| Clips + aim | 8.2 ms | 4.6 ms |
+| Shadow + depth | 6.6 ms | 3.8 ms |
+| Casters | ~600 | 210–270 |
+| Draws | 950–1,400 | 590–800 |
+
+Still CPU-bound, not GPU-bound: a quiet frame is about 20 ms against the 16.7 ms needed for 60 fps.
+- render: about 16.4 ms in total, including about 5 ms of draw submission;
+- mesh evaluation: 3.0 ms;
+- characters update: 1.4 ms;
+- ragdolls and effects physics: 1.2 ms.
+
+Targets, aiming for 4–6 ms off:
+1. **Level draw merging:** Market Town still has about 58 per-material level draws. Use shared texture atlases /
+   material merging across packs; this helps every map.
+2. **Animation, further:**
+   - mid-range stepping;
+   - skip aim refinement past 35 m;
+   - animation LOD for creatures, whose clips still run every frame.
+3. **Mesh evaluation:** freeze more static meshes and cut the per-frame bookkeeping.
+4. **Shadows:** cache the static cascade and refresh it every few frames.
+
+Measure relatively in the container, keep the CI perf budgets, then ask the owner to re-record on the M1.
+
+### Owner's map notes for later (2026-11-05; not started)
+- **No Man's Field:** asset refresh. It still uses Kenney kits; move it to our generated environment and props.
+- **Rockfall Canyon** (`maps/canyon.json`): asset and foliage refresh, onto our generated environment, rocks and plants.
+- **Step Temple:** its menu card shot should be a grounded, eye-level view, not aerial.
+- **Sandfall Colosseum, a full rebuild ("this is your moment to shine").** Owner's brief:
+  - **Layout:** replicate the layout of the owner's game **Flavius Rule (classic)**. Get reference material from the
+    owner before starting: screenshots, a top-down plan, or a description. **Received 2026-11-05:**
+    docs/map-briefs/sandfall_colosseum/BRIEF.md and `reference/`: the 13×13 board, the seating chart and a mood
+    painting. The emperor's box comes back.
+  - **Feel:** epic and grand, far more immersive than today's map.
+  - **The arena:** use mostly the assets we have today (Imperial Arena pack, Roman pieces), with a better layout and a
+    much grander scale. The colosseum stands 6–8 storeys tall if possible.
+  - **Under the stands:** a tunnel network that circles the arena. It branches to the animal cages and the gladiators'
+    quarters: rest, recovery, imprisonment.
+  - **Around it:** a Roman village whose main square leads to the arena entrance.
+  - **Backdrop:** a volcano in the distance.
+  - **How:** built in MapMaker (CLAUDE.md "Maps"), with in-house detail. Anything MapMaker lacks goes into MapMaker
+    as a piece, e.g. set pieces like the arena arcade bay, vomitorium, tunnel junction, cage block and village
+    insula, plus a volcano backdrop. Follow docs/map-briefs/AGENT_BUILD_CONTRACT.md: playable footprint, routes,
+    spawns, budgets, bots, and NOT TESTED where it applies.
+  - **Timing:** a natural first big use of set pieces (agreed queue item 3), so after those exist.
+
+### Queued (owner-approved, 2026-11-05): community maps
+Plan in docs/COMMUNITY_MAPS.md:
+- local saving is unlimited;
+- sharing is by hosting (Far Cry 2-style browser);
+- maps reach Community Picks automatically by play thresholds, with a weekly owner summary and one-click Official;
+- Community Pick map files are kept on the hub.
+
+MULTIPLAYER_DIRECTION §7 is amended to match. Starts after the current work.
+
+### Proposed (not yet approved): MapMaker quality-of-life list
+The owner asked what MapMaker could use, by comparison with the Far Cry and TimeSplitters editors. My picks, in order:
+1. A green/red ghost before placing, with the reason; plus a live budget bar.
+2. "Play from here", and a top-down plan view.
+3. Set pieces/prefabs, groups, and copy/paste between maps.
+4. Bot test heatmaps, sightline/spawn exposure, and a measure tool.
+5. Time of day and weather.
+6. Interface: mode tabs, collapsible panels, an outliner with hide/lock, favourites/recents, a shortcut overlay, and a
+   guided first-time tour.
+
+Also proposed: note pins, templates, mirror for team maps, a card-shot camera, and snap-to-surface/randomise for props.
+
+Waiting for the owner to mark which ones. This becomes the "MapMaker overhaul" in the agreed queue.
+
+### Queued (owner-approved, 2026-11-05): kit-prop generators
+docs/PROCEDURAL_ENVIRONMENT.md Phase 6, after Environment Phase 2. Generated families replace most of the simple
+man-made props: crates and barrels first, then fences and walls, then containers. Characters, weapons, vehicles and
+hero props stay authored.
+
+### Plan (proposed to the owner, 2026-11-05): retire the old nature models after the environment passes
+About 120 nature props today:
+- Kenney Nature Kit: 55
+- Quaternius Ultimate Nature: 39
+- Kenney Survival: 12
+- Meshy community nature: 8
+- a few in other packs
+
+They come to about 3.6 MB of GLBs.
+
+Plan:
+1. **Retire from the palette** as each environment family covers them (grass, flowers, ferns and pebbles are done).
+2. **Map migration:** move the maps with MapMaker's "Replace all".
+3. **Load-time alias table** (retired id → species and variant), so players' own saved maps and old files still load
+   and upgrade.
+4. **Drop the files from the build only** once no official map and no alias needs them.
+5. **Keep for now:** pieces with no species yet (palms, cacti, snow trees, jungle plants, mushrooms, dead trees,
+   logs and stumps) until Phase 2+ species cover them. Stylised pieces that a style pack depends on stay until
+   that pack's refresh.
 
 ### In flight
 - **Floors over tall pieces, branch `wip/ceiling`** (agent, 2026-11-05; from main 4e77fabc; runs on `check/ceiling`).

@@ -9,10 +9,14 @@
   "nameTheme": "goblin",
   "bio": "Rules the warren by fear, spite and a very large knife.",
   "body": "male",
-  "notes": "Drive intake of 2026-11-05 (\"Goblin Warlord villain\", rigged and animated on Meshy (Mixamo joint names read as Meshy's; finger chains, where it has them, folded into the hands and refitted by hands.mjs; its clips not used)). A green goblin in spiked leather armour and a tattered cloak hung with skulls (the owner's \"fantasy\": Knights & Legends). Standard size: a warlord, not a little goblin (the owner may prefer small, as goblins usually are). Not Snikkit (Goblin Mischief replaces Snikkit). Display name a placeholder for the owner. Licence recorded as owned (no metadata says otherwise); the owner to confirm, and if it is a Meshy community model, switch to CC0 with its author and post URL.",
+  "size": "small",
+  "notes": "Drive intake of 2026-11-05 (\"Goblin Warlord villain\", rigged and animated on Meshy (Mixamo joint names read as Meshy's; its own finger joints and weights kept (`fixes.fingers` default, intake step 2a: the grip audit scored them better than or level with the re-fit); its clips not used)). A green goblin in spiked leather armour and a tattered cloak hung with skulls (the owner's \"fantasy\": Knights & Legends). Small, as every goblin is (owner, 2026-11-05: \"make every goblin character small\"; it was standard at first, a warlord). Not Snikkit (Goblin Mischief replaces Snikkit). Display name a placeholder for the owner. Licence: Meshy Community, CC0 per the owner (2026-11-05: most of this intake is community, not owned); author and post URL pending from the owner (HANDOFF.md).",
   "source": {
-    "license": "owned",
-    "author": "the owner, on their Meshy subscription",
+    "license": "CC0",
+    "author": "Meshy Community (CC0 per the owner; author pending from the owner)",
+    "community": {
+      "model": "Goblin Warlord villain"
+    },
     "date": "2026-11-05",
     "url": null,
     "file": "^Meshy_AI_Goblin_Warlord_villain_\\d+_animated_mixamo_All_animation\\.glb$"

@@ -112,8 +112,9 @@ export const WHOLE_BODY_LOOKS: readonly CharacterLook[] = [
   { id: 'core.oldtimer', name: 'Old Timer', body: 'male', head: '', parts: ['meshy_oldtimer'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_oldtimer_fparms' }, group: 'folk', nameTheme: 'townsfolk' },
   { id: 'core.imperialguard', name: 'Imperial Guard', body: 'male', head: '', parts: ['meshy_imperialguard'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_imperialguard_fparms' }, group: 'legends', nameTheme: 'knight' },
   { id: 'core.frostviking', name: 'Frost Viking', body: 'male', head: '', parts: ['meshy_frostviking'], hair: [], colorways: [], skin: null, hairColor: null, size: 'large', whole: { arms: 'meshy_frostviking_fparms' }, group: 'legends', nameTheme: 'barbarian' },
-  { id: 'core.goblinwarlord', name: 'Goblin Warlord', body: 'male', head: '', parts: ['meshy_goblinwarlord'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_goblinwarlord_fparms' }, group: 'legends', nameTheme: 'goblin' },
+  { id: 'core.goblinwarlord', name: 'Goblin Warlord', body: 'male', head: '', parts: ['meshy_goblinwarlord'], hair: [], colorways: [], skin: null, hairColor: null, size: 'small', whole: { arms: 'meshy_goblinwarlord_fparms' }, group: 'legends', nameTheme: 'goblin' },
   { id: 'core.maskedfigure', name: 'The Masked Figure', body: 'male', head: '', parts: ['meshy_maskedfigure'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_maskedfigure_fparms' }, group: 'horror', nameTheme: 'spooky' },
+  { id: 'core.bill', name: 'Bill', body: 'male', head: '', parts: ['meshy_bill'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_bill_fparms' }, group: 'folk', nameTheme: 'townsfolk' },
 ];
 
 /** Whole-body characters made for NPCs only (`use: npc`): not on the roster; NPC_ROLE_SPECS can name them. */
@@ -231,4 +232,5 @@ export const WHOLE_BODY_BIOS: Readonly<Record<string, string>> = {
   'core.frostviking': 'Sailed south for the weather. Stayed for the fighting.',
   'core.goblinwarlord': 'Rules the warren by fear, spite and a very large knife.',
   'core.maskedfigure': 'Nobody has seen his face. Nobody wants to.',
+  'core.bill': 'Came for the barbecue. Stayed for the firefight.',
 };

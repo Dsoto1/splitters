@@ -1,0 +1,39 @@
+{
+  "id": "meshy_bill",
+  "kind": "character",
+  "use": "player",
+  "order": 113,
+  "name": "Bill",
+  "look": "core.bill",
+  "group": "folk",
+  "nameTheme": "townsfolk",
+  "bio": "Came for the barbecue. Stayed for the firefight.",
+  "body": "male",
+  "notes": "Drive intake of 2026-11-05 (\"T Pose on Green Screen\", rigged and animated on Meshy (Mixamo joint names read as Meshy's; finger chains refitted by hands.mjs: `fixes.fingers: fit`, the grip audit scored its own finger weights worse, 5 against 3; its clips not used)). A grey-haired man with a moustache in a patterned short-sleeved shirt, jeans and brown shoes. Not the CRT Robot (owner, 2026-11-05: \"we can call Bill\"); a new character. Its name sits close to Bill the Barbarian's (meshy_hector): kept as \"Bill\" (owner's name), the owner told. 145k triangles: rebaked. Licence: Meshy Community, CC0 per the owner (2026-11-05); author and post URL pending from the owner.",
+  "source": {
+    "license": "CC0",
+    "author": "Meshy Community (CC0 per the owner; author pending from the owner)",
+    "community": {
+      "model": "T Pose on Green Screen"
+    },
+    "date": "2026-11-05",
+    "url": null,
+    "file": "^Meshy_AI_T_Pose_on_Green_Screen_\\d+_animated_mixamo_All_animation\\.glb$"
+  },
+  "finish": {
+    "metallic": 0,
+    "roughness": 0.75
+  },
+  "firstPerson": {
+    "arms": "own"
+  },
+  "fixes": {
+    "triangles": 14000,
+    "surface": "rebake",
+    "headShare": 0.16,
+    "normalSize": 1024,
+    "lod": 0.25,
+    "feet": true,
+    "fingers": "fit"
+  }
+}
