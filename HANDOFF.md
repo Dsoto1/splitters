@@ -26,6 +26,28 @@ gets overloaded above that: local e2e times out and flakes). Prune landed worktr
 - Earlier the same day: content scalability steps 2–6, perf toolset, flaky e2e fixes, Runway Nine airliner, map
   reworks batches 2–3, character fixes rounds 2–3 (see the entries below and CHANGELOG).
 
+### Queued: Drive intake of 2026-11-05 (owner: "get them queued for import"; not started)
+The owner's Drive folder (gdown folder id 18MaKefMCWARf1Y3gAjhZuxTto86vGAYl, 152 files) was compared with content/,
+docs/ and HANDOFF: everything else in it is already imported or handled (FX zips: the fx pass; ammo_rifle and WWII
+ammo crate: the pickup models). New, never referenced anywhere. Downloaded to `/home/user/meshy-drive/intake-2026-11-05/`
+(raw, never committed):
+- **Rigged and animated characters:** "hobo bozo clown" (Mixamo, 2026-11-04), "Tactical T-Pose Soldier" (Mixamo,
+  2026-11-03), "umpire rigged" (two files with the same name).
+- **17 Mixamo baseball animations** (FBX, in `anims/`): Bunt, Catcher, Hit ×3, Idle ×2, Milling Idle, Pitching ×2,
+  Step In, Step Out, Step Up To Bat, Strike, Umpire, Walk In, Walk Out, Batter On Deck.
+- **Static models with no rig:**
+  - from 2026-11-01: Skeleton Soldier, Soldier Prepared, "a world war 2 american…", "Low poly 3D game char…",
+    "Futuristic Cyberpunk…";
+  - from 2026-11-03: "futuristic baseball b…" (image-to-3D).
+- **Vehicle:** "A tank from World War…" (2026-11-01), a candidate model for the tank mount (`vehicles/tank.glb`).
+
+Open questions before the import:
+- Which files are the owner's own Meshy generations (Owned) and which are Meshy Community (CC0)? For CC0, record the
+  author and post URL.
+- Rigging the static ones uses Meshy credits (needs approval) or our own pipeline.
+- What the baseball animations are for: an umpire NPC, emotes, or a mode.
+- Whether the WWII tank replaces the tank model.
+
 ### In flight
 - Picked up by the claude/launcher-ui-map-cards account (2026-11-04): `wip/env-phase1` (Environment Phase 1
   vertical slice, queue item 1, in flight) and `wip/zfight` (texture flicker fix, item 2: landed on main).
