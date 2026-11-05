@@ -35,6 +35,7 @@ import type { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import { CreateCylinder } from '@babylonjs/core/Meshes/Builders/cylinderBuilder';
 import { CreateGround } from '@babylonjs/core/Meshes/Builders/groundBuilder';
 import { Texture } from '@babylonjs/core/Materials/Textures/texture';
+import { BuildAreaVisuals } from './buildAreaVisuals.ts';
 
 /** A picture laid over the ground while editing (MapMaker → Terrain, owner): never part of the map. */
 export interface TraceImage {
@@ -53,8 +54,6 @@ interface EntityMarker {
   /** Selection outline for pickups. */
   ring?: Mesh;
 }
-
-const GRID_EXTENT = 12;
 
 /**
  * Editor scene: the map (with floor isolation), active-level grid, ghost
@@ -75,7 +74,8 @@ export class EditorView {
   private foliageKey = '';
   private faceHighlight?: Mesh;
   private brushRing?: LinesMesh;
-  private grid?: LinesMesh;
+  /** The level grid, the playable boundary and the build limit (buildAreaVisuals.ts). */
+  readonly area: BuildAreaVisuals;
   private hover?: Mesh;
   private ghost?: Mesh;
   private ghostKey = '';
@@ -133,6 +133,8 @@ export class EditorView {
     this.border = new BorderVisuals(this.scene, this.styler, this.models);
     this.foliage = new FoliageVisuals(this.scene, this.models);
     this.scene.onBeforeRenderObservable.add(() => this.foliage.update(this.camera.position));
+    this.area = new BuildAreaVisuals(this.scene);
+    this.scene.onBeforeRenderObservable.add(() => this.area.update(this.camera.position, viewDirection(this.yaw, this.pitch)));
     this.scenario = new ScenarioVisuals(this.scene, { editor: true });
 
     const flat = (name: string, hex: string, alpha = 1, wire = false) => {
@@ -186,12 +188,13 @@ export class EditorView {
     this.clampCamera();
   }
 
-  /** Keep the camera out of the ground and within reach of the map (touchpads zoom fast). */
+  /** Keep the camera out of the ground and within reach of the build area (touchpads zoom fast). */
   private clampCamera(): void {
     const p = this.camera.position;
-    p.y = Math.max(-12, Math.min(260, p.y));
-    p.x = Math.max(-400, Math.min(400, p.x));
-    p.z = Math.max(-400, Math.min(400, p.z));
+    const reach = this.area.reach;
+    p.y = Math.max(-12, Math.min(600, p.y));
+    p.x = Math.max(-reach, Math.min(reach, p.x));
+    p.z = Math.max(-reach, Math.min(reach, p.z));
   }
 
   /** Back to the starting view over `target`, looking north. */
@@ -323,8 +326,7 @@ export class EditorView {
       this.foliageKey = foliageKey;
       void this.foliage.grow(shown.terrain, boxes, doc.metadata.id, water);
     }
-    this.setGrid(doc, level);
-    this.setBoundsOutline(doc);
+    this.area.setMap(doc, level);
     // Light fixtures and hung props are drawn fastened to the ceiling over them (settle.ts fixtureGap, hungPropLift).
     this.scenario.ceilings = boxes;
     this.setEntities(doc, level, showAll, new Set());
@@ -339,46 +341,14 @@ export class EditorView {
     return this.shownTerrain;
   }
 
-  private boundsLine?: LinesMesh;
-
-  /** The map boundary as an orange outline at floor and wall-top height. */
-  private setBoundsOutline(doc: MapDocument): void {
-    this.boundsLine?.dispose();
-    this.boundsLine = undefined;
-    const b = doc.bounds;
-    if (!b) return;
-    const loop = (y: number) => [new Vector3(b.min[0], y, b.min[1]), new Vector3(b.max[0], y, b.min[1]), new Vector3(b.max[0], y, b.max[1]), new Vector3(b.min[0], y, b.max[1]), new Vector3(b.min[0], y, b.min[1])];
-    const posts = [[b.min[0], b.min[1]], [b.max[0], b.min[1]], [b.max[0], b.max[1]], [b.min[0], b.max[1]]].map(([x, z]) => [new Vector3(x, 0.05, z), new Vector3(x, 6, z)]);
-    this.boundsLine = CreateLineSystem('bounds', { lines: [loop(0.08), loop(6), ...posts] }, this.scene);
-    this.boundsLine.color = new Color3(1, 0.55, 0.1);
-    this.boundsLine.isPickable = false;
-  }
-
-  private setGrid(doc: MapDocument, level: number): void {
-    this.grid?.dispose();
-    const { cellSize, levelHeight } = doc.classicStructure;
-    const y = level * levelHeight + 0.03;
-    const lines: Vector3[][] = [];
-    const lo = (-GRID_EXTENT - 0.5) * cellSize;
-    const hi = (GRID_EXTENT + 0.5) * cellSize;
-    for (let i = -GRID_EXTENT; i <= GRID_EXTENT + 1; i++) {
-      const v = (i - 0.5) * cellSize;
-      lines.push([new Vector3(v, y, lo), new Vector3(v, y, hi)], [new Vector3(lo, y, v), new Vector3(hi, y, v)]);
-    }
-    this.grid = CreateLineSystem('grid', { lines }, this.scene);
-    // The level being edited: its grid in the selection cyan.
-    this.grid.color = Color3.FromHexString('#00d1ff');
-    this.grid.alpha = 0.55;
-    this.grid.isPickable = false;
-    this.grid.setEnabled(this.gridVisible);
-  }
-
-  private gridVisible = true;
-
-  /** Top bar Grid: show or hide the level grid. */
+  /** Top bar Grid: show or hide the level grid (the boundary and build limit stay). */
   setGridVisible(on: boolean): void {
-    this.gridVisible = on;
-    this.grid?.setEnabled(on);
+    this.area.setGridVisible(on);
+  }
+
+  /** Top bar Full grid: the grid over the whole build area instead of round where the camera looks. */
+  setGridFull(on: boolean): void {
+    this.area.setGridFull(on);
   }
 
   private overlaps?: Mesh;
@@ -429,7 +399,7 @@ export class EditorView {
     for (const n of this.photoHidden) n.setEnabled(true);
     this.photoHidden = [];
     if (!on) return;
-    const aids: (TransformNode | undefined)[] = [this.trace?.mesh, this.grid, this.overlaps, this.brushRing, this.gizmo, this.hover, this.ghost, this.faceHighlight, this.propGhost?.node, ...this.outlines, ...this.pickBoxes];
+    const aids: (TransformNode | undefined)[] = [this.trace?.mesh, this.area.root, this.overlaps, this.brushRing, this.gizmo, this.hover, this.ghost, this.faceHighlight, this.propGhost?.node, ...this.outlines, ...this.pickBoxes];
     for (const m of this.markers.values()) aids.push(m.ring, m.key === 'spawn' ? m.node : undefined);
     for (const n of aids) {
       if (!n || !n.isEnabled(false)) continue;

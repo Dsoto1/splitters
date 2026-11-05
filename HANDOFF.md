@@ -390,6 +390,19 @@ Owner request (2026-11-05): show the real buildable area.
 
 Also proposed: note pins, templates, mirror for team maps, a card-shot camera, and snap-to-surface/randomise for props.
 
+**Build area: done on `wip/grid` (agent, 2026-11-05; check run on `check/grid`, see below).**
+- Shared: `editor/buildArea.ts` (`buildLimitRect`, `playableRect` = bounds else terrain extent, `buildZone`,
+  `insideBuildLimit`, `buildLimitReason`); `MAX_TILE_CELL` / `MAX_TILE_LEVEL` in the schema replace the literal
+  256 / 16; checkPlacement's refusal now says "past the build limit…". Test: `packages/shared/test/buildArea.test.ts`.
+- Client: `editor/buildAreaVisuals.ts` (owned by EditorView as `view.area`): local grid round the camera's look point
+  on the edited level (radius 12–40 cells with camera distance, fade, majors every 4, rebuilt only when the centre
+  moves 4 cells / radius / level changes); playable boundary (orange, + x-ray copy in rendering group 1); build limit
+  (white dashed + level-span posts + "BUILD LIMIT" labels); scenery band (hatched orange, 24 m, fading) and labels.
+  Top bar `#ed-grid-full` (Full grid). Camera clamp is now the build limit + 120 m, 600 m up. Status bar
+  (`#ed-target`) names the scenery zone / past the limit under the pointer. Photo mode hides all of it (the old
+  bounds outline was not hidden in thumbnails before).
+- e2e: editorux "The build area" block. Docs: BUILDING_KIT "Where you can build".
+
 Waiting for the owner to mark which ones. This becomes the "MapMaker overhaul" in the agreed queue.
 
 ### Queued (owner-approved, 2026-11-05): kit-prop generators

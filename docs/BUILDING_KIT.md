@@ -121,6 +121,33 @@ narrower gaps drop out of the bots' navmesh.
 Trim (baseboards, cornices, door and window frames, railing posts) is drawn
 with the map but never collides, and has its own paintable slot.
 
+## Where you can build: grid, playable boundary, build limit
+
+MapMaker draws the build area on the level being edited
+(`client/src/editor/buildAreaVisuals.ts`, rules in `shared/src/editor/buildArea.ts`):
+
+- **The grid** (top bar **Grid**) is local: it covers the cells round where the
+  camera looks at the level being edited, fades out with distance, and draws
+  every 4th line stronger. It grows as the camera rises (12 to 40 cells) and is
+  rebuilt only when its centre moves 4 cells, so it stays cheap.
+  **Full grid** (next to it) draws every cell of the whole build area instead,
+  on demand. Grid off hides either; the outlines stay.
+- **The playable boundary** (orange, at the level and 6 m up with corner posts):
+  the map's **Boundary** (Map properties), or, when it has none, its terrain's
+  edge. A faint copy shows through hills and buildings.
+- **The build limit** (white, dashed, with corner posts that span the levels):
+  where placement stops. Tiles stand within **256 cells** (2,048 m with 8 m
+  cells) of the centre and **16 levels up or down** (`MAX_TILE_CELL`,
+  `MAX_TILE_LEVEL` in the map schema). A placement past it is refused with
+  "past the build limit…", and the level strip says when a level is the last.
+- **The scenery zone** between them (a hatched orange band just outside the
+  boundary, labelled) is meant to be built in: scenery there blends the play
+  space into the world round it cheaply (owner, 2026-11-05). Nothing warns about
+  it; the status bar names the zone when the pointer is there.
+
+The camera may fly out to the build limit (and 600 m up). Photo mode (Set
+thumbnail) hides all of it.
+
 ## Floors over tall pieces (format v26)
 
 A grid cell holds one piece. A piece that stands more than one level tall
@@ -898,8 +925,8 @@ in the same themes and paint slots as straight walls.
   fence round a rectangle. Choosing a style fits it round everything built,
   4 m out; "Fit to map" refits; the edges and height can be typed in. An
   invisible barrier always reaches 60 m up, so nothing is thrown or jumped
-  out. MapMaker shows it as an orange outline, and spawns outside it are an
-  error.
+  out. MapMaker shows it as an orange outline (see "Where you can build"), and
+  spawns outside it are an error.
 
 ## Drop routes: transport plane and dropship (`sim/airplane.ts`)
 

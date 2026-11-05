@@ -11,6 +11,8 @@ import {
   addSpawnCommand,
   buildMapGeometry,
   checkPlacement,
+  BUILD_LEVELS,
+  buildZone,
   levelName,
   placeTileCommand,
   setUpperFloorsCommand,
@@ -933,7 +935,7 @@ export class EditorApp {
   private setLevel(level: number, quiet = false): void {
     const next = Math.max(-16, Math.min(16, level));
     if (next === this.level) {
-      if (!quiet && next !== level) this.toast(`${levelName(next)} is as far as levels go`);
+      if (!quiet && next !== level) this.toast(`${levelName(next)} is the build limit: levels go ${BUILD_LEVELS.max} up and ${-BUILD_LEVELS.min} down`);
       return;
     }
     this.level = next;
@@ -994,6 +996,16 @@ export class EditorApp {
     const bottom = e.position[1];
     const top = bottom + ('size' in e && Array.isArray(e.size) ? e.size[1] : e.kind === 'prop' ? (getProp(e.model)?.size[1] ?? 1) * e.scale : 2);
     return top >= this.level * h - 0.5 && bottom < (this.level + 1) * h - 0.1;
+  }
+
+  /** Where the pointer is, outside the play area: the scenery zone (building is fine) or past the build limit. */
+  private zoneNote(): string {
+    const p = this.hoverPoint;
+    if (!p) return '';
+    const zone = buildZone(this.doc, p.x, p.z);
+    if (zone === 'scenery') return 'Scenery zone: outside the playable boundary. Building here is fine: it blends the map into the world round it';
+    if (zone === 'beyond') return 'Past the build limit: no tiles can be placed here';
+    return '';
   }
 
   private placeAtHover(): void {
@@ -1643,7 +1655,7 @@ export class EditorApp {
     } else if (this.tool.kind === 'path') {
       const over = this.paths.hovering;
       $('ed-target').textContent = this.paths.dragging ? 'Moving the point' : over === 'point' ? (this.paths.joining ? 'Click to join the ends (a loop) · drag to move this point' : 'Drag to move this point · right-click removes it') : over === 'path' ? 'Click to edit this path · Shift-click puts a point here' : '';
-    } else $('ed-target').textContent = '';
+    } else $('ed-target').textContent = this.zoneNote();
     const cell = this.hoverCell ? ([this.hoverCell[0], this.hoverCell[1], this.level] as [number, number, number]) : null;
     this.view.setHoverCell(this.doc, this.tool.kind === 'tile' || this.tool.kind === 'spawn' || this.tool.kind === 'pickup' || this.tool.kind === 'scenario' || this.tool.kind === 'npc' ? cell : null);
     if (this.tool.kind === 'tile' && cell) {
@@ -3169,7 +3181,11 @@ export class EditorApp {
       $('ed-grid').classList.toggle('on', on);
       $('ed-grid').setAttribute('aria-pressed', String(on));
       this.view.setGridVisible(on);
+      // Off also leaves the full grid.
+      if (!on && this.view.area.gridFull) this.setGridFull(false);
     });
+    // Full grid: over the whole build area, out to the build limit (owner, 2026-11-05); turns Grid on.
+    $('ed-grid-full').addEventListener('click', () => this.setGridFull(!this.view.area.gridFull));
     // Overlaps: highlight where two pieces' faces share a plane (the geometry.coplanar warning's places).
     $('ed-overlaps').addEventListener('click', () => {
       this.overlapsOn = !this.overlapsOn;
@@ -3181,6 +3197,13 @@ export class EditorApp {
     const theme = $<HTMLSelectElement>('ed-theme');
     for (const t of coreThemes.all()) theme.append(new Option(t.displayName, t.id));
     theme.addEventListener('change', () => this.run('Change theme', setThemeCommand(this.doc, theme.value)));
+  }
+
+  private setGridFull(on: boolean): void {
+    this.view.setGridFull(on);
+    $('ed-grid-full').classList.toggle('on', on);
+    $('ed-grid-full').setAttribute('aria-pressed', String(on));
+    if (on && !$('ed-grid').classList.contains('on')) $('ed-grid').click();
   }
 
   private updateTopBar(): void {
