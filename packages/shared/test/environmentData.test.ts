@@ -131,6 +131,6 @@ describe('environment budget (docs/MAP_BUDGETS.md)', () => {
   it('the environment showcase (2,526 species placed) validates clean', () => {
     const loaded = loadMap(readFileSync(new URL('../../../maps/env_showcase.json', import.meta.url), 'utf8'));
     expect(loaded.ok).toBe(true);
-    expect(loaded.issues.filter((i) => i.severity !== 'info').map((i) => `${i.code}: ${i.message}`)).toEqual([]);
+    expect(loaded.issues.map((i) => `${i.code}: ${i.message}`)).toEqual([]);
   });
 });

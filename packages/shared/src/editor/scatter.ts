@@ -27,8 +27,9 @@ export const SCATTER_SETS = {
   jungle: { label: 'Jungle', models: [['prop.palm_tall', 2], ['prop.palm_short', 2], ['prop.tree_plateau', 1], ['prop.mn_banana', 2], ['prop.fern', 2], ['prop.mn_fern', 2], ['prop.bush_large', 2]], spacing: 3.5, scale: [0.8, 1.3] },
   undergrowth: { label: 'Undergrowth', models: [['prop.mn_shrub', 3], ['prop.mn_fern', 3], ['prop.bush_small', 1]], spacing: 1.8, scale: [0.75, 1.2] },
   bushes: { label: 'Bushes', models: [['prop.bush', 3], ['prop.bush_leafy', 2], ['prop.bush_large', 1], ['prop.bush_small', 3], ['prop.bush_cone', 1]], spacing: 2.2, scale: [0.8, 1.3] },
-  meadow: { label: 'Flowers & grass', models: [['prop.flower_red', 2], ['prop.flower_yellow', 2], ['prop.flower_purple', 2], ['prop.grass_tall', 3], ['prop.grass_leafy', 2], ['prop.mushrooms', 0.5]], spacing: 1.8, scale: [0.5, 0.85], tint: '#c9d27a' },
-  desert: { label: 'Desert scrub', models: [['prop.cactus', 3], ['prop.cactus_tall', 1], ['prop.plant_low', 3], ['prop.stones', 2], ['prop.palm_short', 0.5]], spacing: 3.5, scale: [0.8, 1.2] },
+  // Our own grass and flowers (the Kenney ones are retired from the palette, editor/paletteCatalog.ts RETIRED_PROPS).
+  meadow: { label: 'Flowers & grass', models: [['env.flower.meadow', 2], ['env.flower.meadow#1', 2], ['env.flower.meadow#2', 2], ['env.grass.clump', 4], ['env.grass.clump#1', 1], ['prop.mushrooms', 0.5]], spacing: 1.2, scale: [0.8, 1.3] },
+  desert: { label: 'Desert scrub', models: [['prop.cactus', 3], ['prop.cactus_tall', 1], ['env.grass.clump#1', 3], ['prop.stones', 2], ['prop.palm_short', 0.5]], spacing: 3.5, scale: [0.8, 1.2] },
   water: { label: 'Water plants', models: [['prop.mn_eelgrass', 1]], spacing: 1.1, scale: [0.8, 1.3] },
   rocks: { label: 'Rocks', models: [['prop.boulder_round', 2], ['prop.boulder_jagged', 2], ['prop.boulder_flat', 2], ['prop.rock_medium', 2], ['prop.stones', 3]], spacing: 3, scale: [0.6, 1.3] },
   envForest: { label: 'Procedural forest (preview)', models: [['env.broadleaf.oak', 3], ['env.broadleaf.oak#1', 1], ['env.conifer.pine_tall', 4]], spacing: 3, scale: [0.8, 1.25], preview: true },

@@ -12,7 +12,7 @@
       "nav": "boundary",
       "role": "blocking",
       "placement": { "maxSlopeDegrees": 60, "minSpacing": 8, "scale": [1, 1.5] },
-      "generator": { "kind": "cliff", "familySeed": 100, "seed": 101, "width": 8, "height": 8, "depth": 3, "skirt": 1, "relief": 1.3, "topRelief": 1.6, "strata": 1.6, "ledgeDepth": 0.45, "joints": { "size": [1.4, 0.8], "depth": 0.14, "groove": 0.12 }, "uvRepeat": 2 },
+      "generator": { "kind": "cliff", "familySeed": 100, "seed": 101, "width": 8, "height": 8, "depth": 3, "skirt": 1, "relief": 1.3, "topRelief": 1.6, "strata": 1.6, "ledgeDepth": 0.45, "joints": { "size": [1.8, 1.0], "depth": 0.22, "groove": 0.08 }, "uvRepeat": 2 },
       "lods": [
         { "distance": 0, "nx": 30, "ny": 32, "detail": 1 },
         { "distance": 40, "nx": 16, "ny": 18, "detail": 0.6 },
@@ -20,7 +20,7 @@
       ],
       "variants": [
         { "index": 0, "name": "bare", "look": { "rock": "#77726a", "band": "#958d80", "strataFreq": 2.2 } },
-        { "index": 1, "name": "snow", "look": { "rock": "#7a756c", "band": "#8f877c", "strataFreq": 3, "cover": "#dfe3e8", "coverFrom": 0.55 } }
+        { "index": 1, "name": "snow", "look": { "rock": "#7a756c", "band": "#8f877c", "strataFreq": 3, "cover": "#e6eaf0", "coverFrom": 0.85 } }
       ]
     }
   ]

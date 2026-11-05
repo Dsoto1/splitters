@@ -165,10 +165,14 @@ export function fernMesh(seed, g, look, atlas) {
     const L = g.length * r.range(0.75, 1.1);
     // Steeper fronds stand taller; all arch over.
     const rise = g.height * r.range(0.75, 1.1);
-    const w = L * info.aspect * 0.95;
-    const side = norm(cross([0, 1, 0], out));
+    // Narrower than the picture: a frond is long and slim; the leaflets in the picture slant enough to take it.
+    const w = L * info.aspect * 0.55;
+    // Each frond rolled about its own length, one way or the other, so the fern is a vase of fronds, not a mat.
+    const roll = (f % 2 ? 1 : -1) * r.range(0.35, 0.7);
+    const flat = norm(cross([0, 1, 0], out));
+    const side = norm(add(mul(flat, Math.cos(roll)), [0, Math.sin(roll), 0]));
     // Along the frond: base, middle (highest), tip (lower and further out).
-    const path = [0, 0.5, 1].map((t) => add(mul(out, L * (0.08 + 0.85 * t)), [0, rise * (2.1 * t - 1.45 * t * t) + 0.02, 0]));
+    const path = [0, 0.5, 1].map((t) => add(mul(out, L * (0.04 + 0.5 * t)), [0, rise * (2.6 * t - 1.7 * t * t) + 0.02, 0]));
     const tilt = r.jitter(0.25);
     const col = cols[r.int(0, cols.length - 1)].map((v) => v * (0.85 + 0.25 * r.next()));
     const ids = path.map((p, k) => {

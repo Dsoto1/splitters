@@ -20,7 +20,7 @@ import { versioned } from '../assetUrl.ts';
 import { ENV_RENDER } from '../content/environment.generated.ts';
 
 /**
- * Environment lab (team tool, `?envlab`; docs/PROCEDURAL_ENVIRONMENT_AUDIT.md §10): every Phase 1 species and
+ * Environment lab (team tool, `?envlab`; docs/PROCEDURAL_ENVIRONMENT_AUDIT.md §10): every species and
  * variant in a lineup seen from a player's eye height (1.7 m), next to the Kenney and Quaternius pieces they
  * replace, with toggles for level of detail, wireframe, collider overlay, wind, graphics tier and the renderer
  * (WebGL2 by default, `&renderer=webgpu`). A row of oaks and pines going back to 170 m shows the levels of detail
@@ -46,6 +46,11 @@ const LINEUP: [string, number, string, number, number][] = [
   ['env.rock.boulder_angular', 1, 'prop.nt_boulder_moss', 4.6, -4],
   ['env.grass.clump', 0, 'prop.grass_tall', -7.5, -5],
   ['env.grass.clump', 1, 'prop.grass_patch', -6.2, -5],
+  // The plants brush's flowers and fern (foliage.ts), in front of the grass.
+  ['env.flower.meadow', 0, 'prop.flower_red', -6.4, -6.6],
+  ['env.flower.meadow', 1, 'prop.flower_yellow', -5.4, -6.9],
+  ['env.flower.meadow', 2, 'prop.flower_purple', -4.4, -6.6],
+  ['env.fern.bracken', 0, 'prop.fern', -2.9, -6.4],
 ];
 
 const EYE = 1.7;
@@ -116,6 +121,12 @@ export async function openEnvLab(engine: AbstractEngine, canvas: HTMLCanvasEleme
   const oldEntities: PropEntity[] = [];
   const ent = (id: string, model: string, pos: [number, number, number], variant?: number, yaw = 0, scale = 1): PropEntity => ({ id, kind: 'prop', model, position: pos, yaw, scale, solid: true, tint: null, ...(variant !== undefined ? { variant } : {}) }) as PropEntity;
   for (const [i, [model, variant, old, x, z]] of LINEUP.entries()) {
+    if (model === 'env.flower.meadow') {
+      // A few plants of each colour; the old flower as one piece.
+      for (let k = 0; k < 5; k++) entities.push(ent(`flower_${i}_${k}`, model, [x + ((k % 3) - 1) * 0.3, 0, z + Math.floor(k / 3) * 0.32 + (k % 2) * 0.08], variant, k * 2.1, 0.9 + (k % 3) * 0.12));
+      oldEntities.push(ent(`old_${i}`, old, [x + BEFORE_X, 0, z]));
+      continue;
+    }
     if (model === 'env.grass.clump') {
       // Grass as a small patch of clumps; the old tuft as one piece.
       for (let k = 0; k < 30; k++) entities.push(ent(`grass_${i}_${k}`, model, [x + ((k % 5) - 2) * 0.28, 0, z + Math.floor(k / 5) * 0.3], variant, k * 1.3, 0.9 + (k % 3) * 0.15));

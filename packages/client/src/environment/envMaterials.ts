@@ -203,7 +203,7 @@ var envRough: f32 = uniforms.vReflectivityColor.y;
     + textureSample(envRockAlbedoSampler, envRockAlbedoSamplerSampler, envQ.xy + vec2f(0.13, 0.71)).g * envW.z;
   let envF = textureSample(envRockAlbedoSampler, envRockAlbedoSamplerSampler, fragmentInputs.vPositionW.xz * 0.023 + vec2f(0.5, 0.5)).g;
   let envWarm = mix(vec3f(0.93, 0.95, 1.0), vec3f(1.06, 1.0, 0.92), smoothstep(0.35, 0.65, envF));
-  surfaceAlbedo = surfaceAlbedo * toLinearSpaceVec3(envC.rgb) * ${ROCK_GAIN} * (0.62 + 0.7 * envM) * envWarm;
+  surfaceAlbedo = surfaceAlbedo * toLinearSpaceVec3(envC.rgb) * ${ROCK_GAIN} * (0.78 + 0.42 * envM) * envWarm;
   envRough = envC.a;
 #ifdef VERTEXCOLOR
   envRough = mix(envRough, 0.97, clamp((fragmentInputs.vColor.g - fragmentInputs.vColor.r) * 9.0, 0.0, 1.0));
@@ -241,7 +241,7 @@ float envRough = vReflectivityColor.y;
   float envM = texture2D(envRockAlbedoSampler, envQ.zy + vec2(0.37, 0.11)).g * envW.x + texture2D(envRockAlbedoSampler, envQ.xz + vec2(0.61, 0.29)).g * envW.y + texture2D(envRockAlbedoSampler, envQ.xy + vec2(0.13, 0.71)).g * envW.z;
   float envF = texture2D(envRockAlbedoSampler, vPositionW.xz * 0.023 + vec2(0.5)).g;
   vec3 envWarm = mix(vec3(0.93, 0.95, 1.0), vec3(1.06, 1.0, 0.92), smoothstep(0.35, 0.65, envF));
-  surfaceAlbedo *= toLinearSpace(envC.rgb) * ${ROCK_GAIN} * (0.62 + 0.7 * envM) * envWarm;
+  surfaceAlbedo *= toLinearSpace(envC.rgb) * ${ROCK_GAIN} * (0.78 + 0.42 * envM) * envWarm;
   envRough = envC.a;
 #ifdef VERTEXCOLOR
   envRough = mix(envRough, 0.97, clamp((vColor.g - vColor.r) * 9.0, 0.0, 1.0));

@@ -152,7 +152,7 @@ export async function rockTextures(seed) {
       // Tone: mid grey with patches; dark grains and pale feldspar specks; joints dark, their lips pale.
       const speckDark = smoothstep(0.42, 0.62, g) * 0.1;
       const speckPale = smoothstep(0.5, 0.7, -g) * 0.09;
-      let t = 0.49 + 0.2 * b + 0.1 * m + 0.06 * f + 0.05 * lam - speckDark + speckPale - 0.13 * joint - 0.15 * crack - 0.1 * pit + 0.08 * lip;
+      let t = 0.49 + 0.2 * b + 0.1 * m + 0.06 * f + 0.05 * lam - speckDark + speckPale - 0.07 * joint - 0.1 * crack - 0.1 * pit + 0.04 * lip;
       // Water stains run in the low places (dark, slightly warm).
       const stain = smoothstep(0.1, 0.45, -b) * 0.08;
       t -= stain;

@@ -53,6 +53,14 @@ export const PROP_GROUPS = [
 ] as const;
 /** Prop categories shown in the Nature tab. */
 export const NATURE_PROP_CATEGORIES: readonly string[] = ['Trees', 'Rocks & Wood', 'Plants & Flowers'];
+/**
+ * Retired from the palette, kept in the game (maps that place them still load and draw them): Kenney's grass and
+ * flowers, which the generated ground cover replaces (owner, 2026-11-05: "lose Kenney grass"; the plants brush grows
+ * `env.grass.clump`, `env.flower.meadow` and `env.fern.bracken` now). Their palette pictures stay in the atlas.
+ */
+export const RETIRED_PROPS: ReadonlySet<string> = new Set(['prop.grass_patch', 'prop.grass_leafy', 'prop.grass_tall', 'prop.flower_red', 'prop.flower_yellow', 'prop.flower_purple', 'prop.plant_low']);
+/** The generated ground cover offered in Nature → Plants & Flowers in their place (no palette picture yet). */
+export const GROUND_COVER_SPECIES: readonly string[] = ['env.grass.clump', 'env.flower.meadow', 'env.fern.bracken'];
 /** Prop categories shown in the Vehicles tab (parked, not drivable). */
 export const VEHICLE_PROP_CATEGORIES: readonly string[] = ['Vehicles'];
 
