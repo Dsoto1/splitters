@@ -33,6 +33,19 @@ rigged models only (the six static ones wait for the owner's Meshy rigs), no bas
 the WWII tank replaces the tank. Download format asked for from now on: Meshy rig with the Mixamo-style skeleton,
 fingers included; GLB with "Rigged Character" on (rest pose, no animations); upright T- or A-pose, nothing in hands.
 
+- Owner mapping (2026-11-05, final, from main's HANDOFF; later messages added: Goblin Warlord and The Masked Figure
+  new, Goblin Mischief replaces Snikkit, Gnoll replaces Hyena Warrior's model):
+  - **Re-rigs:**
+    - Iron Warden → Iron Knight; Gnoll warrior → Hyena Warrior; "T Pose on Green Screen" → CRT Robot.
+    - Monkey → Big Bab; Uniformed Worker → Customs Agent Zhao; Desert Sentinel → Desert Ranger.
+    - Elderly Man → Grandpa Chains; Old medieval king → Old King Halvard; Hazmat → Hazmat Joe; Regal Monarch →
+      King Aldric.
+    - Plus the Dapper, Croakley, Frida, Field Medic Automaton, Stealth Operative, Beanie Alien, Alien Biker,
+      WWII Infantry and Grunt '68.
+  - **Replacements** (same name and id, new model): Tattered Circus Nightmare → Giggles; Bear Warrior → Barnaby
+    Bruin.
+  - **Never use:** Alfred Neubauer, the 6 unrigged statics, the baseball animations.
+
 **Step 1 (new characters + tank), pushed to `check/intake-1105`:**
 - New characters (manifests in content/characters, built by prepare-meshy-characters.mjs; names are placeholders):
   - **Patches** `meshy_hoboclown` / `core.hoboclown` (folk, standard; "hobo bozo clown": "Bozo" is a trademark, so
