@@ -18,7 +18,7 @@ describe('environment generator', () => {
 
   it('the content is valid', () => {
     expect(problems).toEqual([]);
-    expect(species.map((s) => s.id).sort()).toEqual(['env.broadleaf.oak', 'env.cliff.face', 'env.conifer.pine_tall', 'env.fern.bracken', 'env.flower.meadow', 'env.grass.clump', 'env.rock.boulder_angular', 'env.shrub.broadleaf']);
+    expect(species.map((s) => s.id).sort()).toEqual(['env.broadleaf.oak', 'env.cliff.face', 'env.conifer.pine_tall', 'env.fern.bracken', 'env.flower.meadow', 'env.grass.clump', 'env.rock.boulder_angular', 'env.rock.pebbles', 'env.shrub.broadleaf', 'env.water.eelgrass']);
   });
 
   it('builds byte-identical output twice, the same as is shipped and locked', async () => {
@@ -48,6 +48,9 @@ describe('environment generator', () => {
     // The plants brush's flowers and fern: no heavier than the Kenney pieces they replace (76 and 32-44 triangles).
     expect(tris['env.flower.meadow'][0]).toBeLessThanOrEqual(40);
     expect(tris['env.fern.bracken'][0]).toBeLessThanOrEqual(64);
+    // Pebbles and eelgrass: light enough to grow by the thousand (Kenney's stones 16, the Meshy eelgrass 751).
+    expect(tris['env.rock.pebbles'][0]).toBeLessThanOrEqual(64);
+    expect(tris['env.water.eelgrass'][0]).toBeLessThanOrEqual(64);
     // Every level is lighter than the one before.
     for (const s of first.clientSpecies) for (let i = 1; i < s.triangles.length; i++) expect(s.triangles[i], s.id).toBeLessThan(s.triangles[i - 1]);
   }, 60000);
