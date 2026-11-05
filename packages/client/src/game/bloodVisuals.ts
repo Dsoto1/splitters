@@ -5,7 +5,8 @@ import { CreateDisc } from '@babylonjs/core/Meshes/Builders/discBuilder';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import { Color3, Color4 } from '@babylonjs/core/Maths/math.color';
 import type { InstancedMesh } from '@babylonjs/core/Meshes/instancedMesh';
-import { Quaternion, Vector3 } from '@babylonjs/core/Maths/math.vector';
+import { Matrix, Quaternion, Vector3 } from '@babylonjs/core/Maths/math.vector';
+import '@babylonjs/core/Meshes/thinInstanceMesh';
 import { DEFAULT_BLOOD, type BloodAmount, type EffectsWorld, type Vec3 } from '@tiletrigger/shared';
 import { MeshPool } from './meshPool.ts';
 
@@ -27,9 +28,13 @@ interface Drop {
 }
 
 interface Splat {
-  mesh: InstancedMesh;
+  /** Its world matrix (a row in the splats' thin-instance buffer). */
+  matrix: Float32Array;
   born: number;
 }
+
+/** Splats at once at most (heavy blood's cap). */
+const MAX_SPLATS = 120;
 
 const GRAVITY = 16;
 const DROP_LIFE = 0.9;
@@ -58,11 +63,14 @@ export class BloodVisuals {
   private readonly mistBase: Mesh;
   private readonly mistPool: MeshPool<InstancedMesh>;
   /**
-   * Splats: GPU instances of one unit disc, scaled to their size and faded by their instance colour's alpha (one draw
-   * for them all; each was a mesh and a draw of its own, 50 in a busy fight's frame).
+   * Splats: thin instances of one unit disc, scaled to their size and faded by their instance colour's alpha (one draw
+   * and one mesh for them all; each was a mesh and a draw of its own, 50 in a busy fight's frame, then a GPU instance:
+   * one draw, but still 50 meshes Babylon looked at every frame).
    */
   private readonly splatBase: Mesh;
-  private readonly splatPool: MeshPool<InstancedMesh>;
+  private readonly splatMatrices = new Float32Array(MAX_SPLATS * 16);
+  private readonly splatColors = new Float32Array(MAX_SPLATS * 4).fill(1);
+  private splatsDirty = false;
   private readonly splatMat: StandardMaterial;
   private readonly dropMat: StandardMaterial;
   private readonly mistMat: StandardMaterial;
@@ -113,19 +121,13 @@ export class BloodVisuals {
     this.splatBase.isPickable = false;
     // Flat on a surface: it catches shadows but casts none.
     this.splatBase.metadata = { castsNoShadow: true };
-    this.splatBase.registerInstancedBuffer('color', 4);
-    this.splatBase.instancedBuffers.color = new Color4(1, 1, 1, 1);
+    this.splatBase.thinInstanceSetBuffer('matrix', this.splatMatrices, 16, false);
+    this.splatBase.thinInstanceSetBuffer('color', this.splatColors, 4, false);
+    this.splatBase.thinInstanceCount = 0;
     this.splatBase.hasVertexAlpha = true;
-    this.splatBase.scaling.setAll(0);
     this.splatBase.alwaysSelectAsActiveMesh = true;
-    this.splatPool = new MeshPool(() => {
-      const m = this.splatBase.createInstance('bloodSplat');
-      m.isPickable = false;
-      m.metadata = { castsNoShadow: true };
-      m.rotationQuaternion = new Quaternion();
-      m.instancedBuffers.color = new Color4(1, 1, 1, 1);
-      return m;
-    }, 140);
+    this.splatBase.doNotSyncBoundingInfo = true;
+    this.splatBase.freezeWorldMatrix();
     this.setLook(DEFAULT_BLOOD.color, DEFAULT_BLOOD.amount);
   }
 
@@ -133,11 +135,10 @@ export class BloodVisuals {
   warm(): void {
     this.dropPool.warm((m) => m.scaling.setAll(0.05));
     this.mistPool.warm((m) => m.scaling.setAll(0.3));
-    this.splatPool.warm((m) => m.scaling.set(0.3, 0.25, 0.3));
-    this.splatPool.warm((m) => {
-      m.scaling.set(0.3, 0.25, 0.3);
-      (m.instancedBuffers.color as Color4).a = 0.5;
-    });
+    // A splat out of sight (its shader, with the thin instances' colours, is built with the rest): gone in a frame.
+    this.splats.push({ matrix: Float32Array.from(Matrix.Compose(new Vector3(0.3, 0.25, 0.3), Quaternion.Identity(), new Vector3(0, -10000, 0)).m), born: performance.now() - (SPLAT_STAY + SPLAT_FADE) * 1000 + 50 });
+    this.splatsDirty = true;
+    this.flushSplats();
   }
 
   setLook(color: string, amount: BloodAmount): void {
@@ -195,17 +196,40 @@ export class BloodVisuals {
 
   private splat(at: Vector3, normal: Vec3, radius: number): void {
     const n = new Vector3(normal.x, normal.y, normal.z).normalize();
-    const disc = this.splatPool.take();
-    (disc.instancedBuffers.color as Color4).a = 1;
-    disc.position.copyFrom(at.add(n.scale(0.015)));
     // Discs face -Z; turn them to face out of the surface, with a random twist.
     const q = new Quaternion();
+    const turn = new Quaternion();
     Quaternion.FromUnitVectorsToRef(new Vector3(0, 0, -1), n, q);
-    q.multiplyToRef(Quaternion.RotationAxis(new Vector3(0, 0, 1), Math.random() * Math.PI * 2), disc.rotationQuaternion!);
-    disc.scaling.set(radius, radius * (0.6 + Math.random() * 0.5), radius);
-    this.splats.push({ mesh: disc, born: performance.now() });
-    const cap = this.amount === 'heavy' ? 120 : 50;
-    while (this.splats.length > cap) this.splatPool.give(this.splats.shift()!.mesh);
+    q.multiplyToRef(Quaternion.RotationAxis(new Vector3(0, 0, 1), Math.random() * Math.PI * 2), turn);
+    const m = Matrix.Compose(new Vector3(radius, radius * (0.6 + Math.random() * 0.5), radius), turn, at.add(n.scale(0.015)));
+    this.splats.push({ matrix: Float32Array.from(m.m), born: performance.now() });
+    const cap = this.amount === 'heavy' ? MAX_SPLATS : 50;
+    while (this.splats.length > cap) this.splats.shift();
+    this.splatsDirty = true;
+  }
+
+  /** Splats lying now (tests). */
+  get splatCount(): number {
+    return this.splats.length;
+  }
+
+  /** The splats into their thin-instance buffers (when one came, went or is fading). */
+  private flushSplats(): void {
+    if (!this.splatsDirty) return;
+    this.splatsDirty = false;
+    const now = performance.now();
+    let i = 0;
+    for (const s of this.splats) {
+      const age = (now - s.born) / 1000;
+      this.splatMatrices.set(s.matrix, i * 16);
+      this.splatColors[i * 4 + 3] = age > SPLAT_STAY ? Math.max(0, 1 - (age - SPLAT_STAY) / SPLAT_FADE) : 1;
+      i++;
+    }
+    this.splatBase.thinInstanceCount = i;
+    this.splatBase.thinInstanceBufferUpdated('matrix');
+    this.splatBase.thinInstanceBufferUpdated('color');
+    // Always drawn when any are there (alwaysSelectAsActiveMesh): no bounds to keep.
+    this.splatBase.setEnabled(i > 0);
   }
 
   /** Move drops, fade mist and old splats. Call every frame. */
@@ -235,22 +259,17 @@ export class BloodVisuals {
       return false;
     });
     const now = performance.now();
-    this.splats = this.splats.filter((s) => {
-      const age = (now - s.born) / 1000;
-      if (age > SPLAT_STAY + SPLAT_FADE) {
-        this.splatPool.give(s.mesh);
-        return false;
-      }
-      (s.mesh.instancedBuffers.color as Color4).a = age > SPLAT_STAY ? 1 - (age - SPLAT_STAY) / SPLAT_FADE : 1;
-      return true;
-    });
+    const before = this.splats.length;
+    this.splats = this.splats.filter((s) => (now - s.born) / 1000 <= SPLAT_STAY + SPLAT_FADE);
+    if (this.splats.length !== before || this.splats.some((s) => (now - s.born) / 1000 > SPLAT_STAY)) this.splatsDirty = true;
+    this.flushSplats();
   }
 
   dispose(): void {
     for (const d of this.drops) d.mesh.dispose();
-    for (const s of this.splats) s.mesh.dispose();
+    this.splats = [];
     for (const m of this.mist) m.mesh.dispose();
-    for (const p of [this.dropPool, this.mistPool, this.splatPool]) p.dispose();
+    for (const p of [this.dropPool, this.mistPool]) p.dispose();
     this.mistBase.dispose();
     this.splatBase.dispose();
     this.dropBase.dispose();

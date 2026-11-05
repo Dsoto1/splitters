@@ -1896,8 +1896,9 @@ async function physicsfxFlow(browser) {
   }
   if (process.env.E2E_SHOTS) await page.screenshot({ path: `${process.env.E2E_SHOTS}/physicsfx-ragdoll.png` });
   // The sampling above stops once the body is down: give the blood time to land.
-  await page.waitForFunction(() => window.__cs.view.scene.meshes.some((m) => m.name === 'bloodSplat' && m.isEnabled()), null, { timeout: T(2500) }).catch(() => {});
-  const dead = await page.evaluate(() => ({ splats: window.__cs.view.scene.meshes.filter((m) => m.name === 'bloodSplat' && m.isEnabled()).length }));
+  // Splats are thin instances of one disc (bloodVisuals.ts): count them.
+  await page.waitForFunction(() => window.__cs.view.blood.splatCount > 0, null, { timeout: T(2500) }).catch(() => {});
+  const dead = await page.evaluate(() => ({ splats: window.__cs.view.blood.splatCount }));
   check(ragdolled && fell() > 0.5, `the killed bot drops as a ragdoll (${ragdolled ? 'ragdoll' : 'no ragdoll'}, head ${track.map((y) => y.toFixed(2)).join(' → ')})`);
   check(dead.splats > 0, `blood splats where it fell (${dead.splats})`);
   // A body that has come to rest (its capsules back in the pool) is a ragdoll again when a round hits it,

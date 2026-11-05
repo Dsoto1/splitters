@@ -86,7 +86,7 @@ import type { AbstractMesh } from '@babylonjs/core/Meshes/abstractMesh';
 import type { Material } from '@babylonjs/core/Materials/material';
 import { BloodVisuals, bloodPreference } from './bloodVisuals.ts';
 import { PosedBody, RAGDOLL_PREWARM, Ragdoll, type DeadBody } from './ragdoll.ts';
-import { fitBudget, tierFor, type RagdollTier } from './ragdollBudget.ts';
+import { RAGDOLL_BUDGET, fitBudget, screenShare, tierFor, type RagdollTier } from './ragdollBudget.ts';
 import { Atmosphere, SMALL_CASTER_REACH } from './atmosphere.ts';
 import { PropBatches } from './propBatches.ts';
 import { castSmall } from './shadowFlags.ts';
@@ -237,6 +237,8 @@ export function bodiesPreference(): BodiesSetting {
 const MAX_CORPSES = 32;
 /** Time (ms) a frame may spend starting dead bodies before further fresh deaths wait for the next frame (at least one starts). */
 const DEATH_START_MS = 4;
+/** A push (a hit, a blast) is used by a death that starts its body within this long of it (ms). */
+const PUSH_KEEP_MS = 1200;
 /** The way an avatar faces (its yaw; characters face +Z at yaw 0), for its ragdoll to tell front from back. */
 const facingOf = (a: Avatar): Vec3 => ({ x: Math.sin(a.root.rotation.y), y: 0, z: Math.cos(a.root.rotation.y) });
 
@@ -589,7 +591,7 @@ export class GameView {
    * constructor) keeps those programs when the samples go, so the first sight of a model or an effect mid-match
    * doesn't stall on a shader build. Resolves with how many shader programs were built by then.
    */
-  async prewarm(specs: readonly AvatarSpec[]): Promise<number> {
+  async prewarm(specs: readonly AvatarSpec[], guns: readonly string[] = [], veiled: () => boolean = () => false): Promise<number> {
     const t0 = performance.now();
     // The merged level first (its textures load in a moment; its shader is then built with everyone else's).
     if (this.levelMerge) await Promise.race([this.levelMerge, new Promise((r) => setTimeout(r, 15000))]);
@@ -617,15 +619,45 @@ export class GameView {
       // Effects that didn't load stay as they were (their first play builds them).
     }
     if (this.scene.isDisposed) return 0;
-    // Then a character of each look, out of sight.
+    // Then a character of each look and every gun the match can hold (a crowd's GPU instance and a plain copy: the
+    // view model, a small match's held gun). While the loading screen is up they stand in front of the camera, so
+    // every pass that will draw them in play draws them now (the main pass and its pre-pass outputs, the shadow
+    // cascades, water's depth), each variant built: out of sight only the materials' own checks ran, and the first
+    // gun or body seen in a shadow or in the depth map built its programs mid-match (round 3 of docs/PERF_96.md).
+    // Once the game shows (a slow machine finishes this in the background) they are parked out of sight.
     const stage = new TransformNode('prewarm', this.scene);
     stage.position.set(0, -10000, 0);
+    const place = this.scene.onBeforeRenderObservable.add(() => {
+      const cam = this.scene.activeCamera;
+      if (!cam || !veiled()) return void stage.position.set(0, -10000, 0);
+      const f = cam.getDirection(Vector3.Forward());
+      const flat = Math.hypot(f.x, f.z) || 1;
+      const c = cam.globalPosition;
+      stage.position.set(c.x + (f.x / flat) * 7, c.y - 1.6, c.z + (f.z / flat) * 7);
+      stage.rotation.y = Math.atan2(f.x, f.z) + Math.PI;
+    });
+    const spot = (n: TransformNode, i: number, row: number) => n.position.set(((i % 8) - 3.5) * 0.9, 0, row + Math.floor(i / 8) * 1.2);
+    const gunCopies = guns.flatMap((path, i) =>
+      [true, false].map((instanced, k) =>
+        this.models.instantiate(path, `prewarm_gun_${i}_${k}`, instanced).then(
+          (node) => {
+            if (stage.isDisposed()) return void node.dispose();
+            node.parent = stage;
+            spot(node, i * 2 + k, 4.5);
+            node.position.y = 1.2;
+            return node;
+          },
+          () => undefined,
+        ),
+      ),
+    );
     const made = await Promise.all(
       specs.slice(0, 32).map((spec, i) =>
         this.characters.create(spec, `prewarm_${i}`).then(
           (ch) => {
             if (stage.isDisposed()) return void ch.dispose();
             ch.root.parent = stage;
+            spot(ch.root, i, 0);
             for (const g of ch.clips.values()) g.stop();
             return ch;
           },
@@ -633,18 +665,21 @@ export class GameView {
         ),
       ),
     );
+    const held = await Promise.all(gunCopies);
     if (this.scene.isDisposed) return 0;
-    // Two frames: the atmosphere sorts new meshes into the shadow map a frame later (their shaders differ).
-    await this.afterFrames(2, 1500);
+    // Three frames: the atmosphere sorts new meshes into the shadow map a frame later (their shaders differ).
+    await this.afterFrames(3, 2000);
     await ready();
+    place.remove();
     for (const ch of made) ch?.dispose();
+    for (const g of held) g?.dispose();
     stage.dispose();
-    this.prewarmed = { ms: Math.round(performance.now() - t0), shaders: this.shaderCount(), characters: made.filter(Boolean).length, effects };
+    this.prewarmed = { ms: Math.round(performance.now() - t0), shaders: this.shaderCount(), characters: made.filter(Boolean).length, effects, guns: held.filter(Boolean).length };
     return this.prewarmed.shaders;
   }
 
   /** What the loading gate's warm-up did (tests and perf96): how long it took, shader programs by then, samples. */
-  prewarmed: { ms: number; shaders: number; characters: number; effects: number } | null = null;
+  prewarmed: { ms: number; shaders: number; characters: number; effects: number; guns: number } | null = null;
 
   /** After `n` rendered frames (or `ms` at most: a hidden tab renders none). */
   private afterFrames(n: number, ms: number): Promise<void> {
@@ -751,7 +786,8 @@ export class GameView {
     const root = a.anim?.skeletonRoot;
     if (!(a.anim instanceof CharacterAnimator) || !root || !this.physics) return;
     const push = this.pushes.get(slot);
-    const fresh = push && performance.now() - push.t < 600 ? push.v : { x: 0, y: 0, z: 0 };
+    // A blast's push is kept long enough for every body it killed to start with it (starts are spread over frames).
+    const fresh = push && performance.now() - push.t < PUSH_KEEP_MS ? push.v : { x: 0, y: 0, z: 0 };
     const v = { x: a.vel.x * 0.6 + fresh.x, y: 0.5 + fresh.y, z: a.vel.z * 0.6 + fresh.z };
     const p = a.root.position;
     const cam = this.scene.activeCamera?.globalPosition;
@@ -759,7 +795,9 @@ export class GameView {
     const view = planes ?? (this.scene.activeCamera ? Frustum.GetPlanes(this.scene.activeCamera.getTransformationMatrix()) : null);
     const seen = !view || inView(view, p.x, p.y + 0.9, p.z, CULL_RADIUS);
     const moving = this.movingRagdolls();
-    const fit = fitBudget(tierFor(dist, seen), dist, moving.map((m) => ({ tier: m.body.tier, dist: m.dist })));
+    // Full physics for bodies near or big on screen (a scope makes far ones big), cheap for small ones in view.
+    const fov = (this.scene.activeCamera as { fov?: number } | null)?.fov ?? DEFAULT_FOV;
+    const fit = fitBudget(tierFor(dist, seen, screenShare(dist, fov)), dist, moving.map((m) => ({ tier: m.body.tier, dist: m.dist })));
     for (const i of fit.drop) this.dropTier(moving[i]!.a);
     this.ragdollTiers[fit.tier]++;
     this.lastDeath = { slot, tier: fit.tier, dist: Math.round(dist * 10) / 10, seen };
@@ -772,6 +810,19 @@ export class GameView {
     } catch {
       a.ragdoll = undefined;
     }
+  }
+
+  /** The fresh deaths that may start their bodies this frame: the nearest RAGDOLL_BUDGET.startsPerFrame. */
+  private deathsToStart(poses: readonly RemotePose[], eye: Vector3 | undefined): Set<number> {
+    const fresh: [number, number][] = [];
+    for (const p of poses) {
+      if (p.alive) continue;
+      const a = this.avatars.get(p.slot);
+      if (!a?.wasAlive || !(a.anim instanceof CharacterAnimator) || a.ragdoll) continue;
+      fresh.push([p.slot, eye ? (p.x - eye.x) ** 2 + (p.z - eye.z) ** 2 : 0]);
+    }
+    if (fresh.length > RAGDOLL_BUDGET.startsPerFrame) fresh.sort((x, y) => x[1] - y[1]);
+    return new Set(fresh.slice(0, RAGDOLL_BUDGET.startsPerFrame).map((f) => f[0]));
   }
 
   /** The last death's tier, distance from the camera and whether it was in view (tests). */
@@ -1609,6 +1660,9 @@ export class GameView {
     const seen = new Set<number>();
     let deathMs = 0;
     let deathsStarted = 0;
+    // Fresh deaths start their bodies nearest first, RAGDOLL_BUDGET.startsPerFrame a frame at most (and DEATH_START_MS
+    // of work): a blast that kills thirty spreads its starts over a few frames, the ones you see best first.
+    const starting = this.deathsToStart(poses, eye);
     for (const p of poses) {
       if (p.slot === localSlot) {
         // Your own body in first person: kept loaded but not drawn (and not animated), so switching to
@@ -1693,7 +1747,7 @@ export class GameView {
       if (a.wasAlive && !p.alive && a.anim && this.physics && !a.ragdoll) {
         // A blast that kills twenty doesn't start twenty bodies in one frame: past a few milliseconds of
         // starting them, the rest hold their pose a frame or two and start on the next ones.
-        if (deathsStarted > 0 && deathMs > DEATH_START_MS) continue;
+        if ((deathsStarted > 0 && deathMs > DEATH_START_MS) || !starting.has(p.slot)) continue;
         deathsStarted++;
         const t0 = performance.now();
         this.startRagdoll(p.slot, a, planes);

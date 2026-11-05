@@ -99,6 +99,7 @@ import {
   type RotationCommand,
   type RotationLookup,
   mapIdentity,
+  WEAPONS_BY_SLOT,
 } from '@tiletrigger/shared';
 import { GameplayFxWatch } from './gameplayFxWatch.ts';
 import type { AudioSystem } from '../audio/audio.ts';
@@ -1913,9 +1914,11 @@ export class GameSession {
     // the first sight of a model or an effect mid-fight otherwise stalled on it (GameView.prewarm).
     const looks = [...new Set(this.looks.values())].map((look) => ({ look }));
     // (The gate waits for it 8 s at most: a slow machine finishes it in the background, out of sight.)
-    jobs.push(Promise.race([this.view.prewarm(looks), new Promise((r) => setTimeout(r, 8000))]));
-    let done = 0;
+    // Every gun the match can put in a hand (starting weapons, pickups and what they may roll), as held and as yours.
+    const guns = [...models].filter((m) => WEAPONS_BY_SLOT.some((w) => w.view.model === m));
     let started = false;
+    jobs.push(Promise.race([this.view.prewarm(looks, guns, () => !started && !this.closed), new Promise((r) => setTimeout(r, 8000))]));
+    let done = 0;
     const total = jobs.length + 2;
     // A file that finishes after the start (see the cap below) must not bring the loading screen back over the game.
     const tick = () => void (started || this.hud.setLoading(`Loading ${map.metadata.name}`, ++done / total));
