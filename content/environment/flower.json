@@ -1,0 +1,24 @@
+{
+  "$comment": "Meadow flowers (tools/content/env/plants.mjs flowerMesh). Ground cover: decorative only (no collision, no concealment), grown by the terrain's plants brush (packages/client/src/foliage.ts) and placeable as a prop. Basal leaves and stems in vertex colour (env.grass), a flower-head card per stem from the leaves atlas (env.leaf; look.card: 0 daisy, 1 buttercup, 2 clover). The variants share the plant and change the flower: white, yellow, purple. One level of detail.",
+  "family": "flower",
+  "species": [
+    {
+      "id": "env.flower.meadow",
+      "displayName": "Meadow Flowers",
+      "category": "groundcover",
+      "assetVersion": 1,
+      "notes": { "1": "First version: replaces the Kenney flowers the plants brush grew (owner, 2026-11-05)." },
+      "nominalHeight": 0.36,
+      "nav": "none",
+      "role": "decorative",
+      "placement": { "maxSlopeDegrees": 40, "minSpacing": 0.3, "scale": [0.7, 1.3] },
+      "generator": { "kind": "flower", "seed": 11, "height": 0.36, "stems": [3, 4], "stemWidth": 0.008, "leaves": 3, "leafLength": 0.16, "leafWidth": 0.03, "headSize": 0.075 },
+      "lods": [{ "distance": 0 }],
+      "variants": [
+        { "index": 0, "name": "white", "look": { "stem": "#4a6a2a", "leaf": "#3f5f26", "petal": "#f1f0e6", "card": 0 } },
+        { "index": 1, "name": "yellow", "look": { "stem": "#4a6a2a", "leaf": "#3f5f26", "petal": "#f2c21a", "card": 1 } },
+        { "index": 2, "name": "purple", "look": { "stem": "#4a6a2a", "leaf": "#3f5f26", "petal": "#9a5cc0", "card": 2 } }
+      ]
+    }
+  ]
+}

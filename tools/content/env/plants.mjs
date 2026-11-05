@@ -85,6 +85,113 @@ export function shrubMesh(seed, sk, g, lod, look, atlas) {
   return { bark, leaf };
 }
 
+/** A thin strip along `pts` (one quad per segment, a point at the tip when `tip`), width `w` tapering to `tipW`. */
+function strip(m, pts, side, w, tipW, nrm, colourAt, windAt, tip) {
+  const ids = [];
+  const last = tip ? pts.length - 1 : pts.length;
+  for (let k = 0; k < last; k++) {
+    const t = k / (pts.length - 1);
+    const half = (w + (tipW - w) * t) / 2;
+    ids.push([m.vertex(add(pts[k], mul(side, -half)), nrm, [0, 1 - t], colourAt(t), windAt(t)), m.vertex(add(pts[k], mul(side, half)), nrm, [1, 1 - t], colourAt(t), windAt(t))]);
+  }
+  for (let k = 0; k + 1 < ids.length; k++) m.quad(ids[k][0], ids[k][1], ids[k + 1][1], ids[k + 1][0]);
+  if (tip) {
+    const t = 1;
+    const id = m.vertex(pts[pts.length - 1], nrm, [0.5, 0], colourAt(t), windAt(t));
+    m.tri(ids[ids.length - 1][0], ids[ids.length - 1][1], id);
+  }
+}
+
+/**
+ * A meadow flower plant (env.flower.*): a few basal leaves, 3–4 thin stems, a flower-head card on each (the leaves
+ * atlas' flower pictures, `look.card` picks which), turned up and outward so the heads read from eye height.
+ * { stems: Mesh (env.grass: stems and leaves, vertex colour only), heads: Mesh (env.leaf: alpha-tested cards) }.
+ */
+export function flowerMesh(seed, g, look, atlas) {
+  const r = rng(seed);
+  const stems = new Mesh();
+  const heads = new Mesh();
+  const stemCol = toLinear(look.stem);
+  const leafCol = toLinear(look.leaf ?? look.stem);
+  const petal = toLinear(look.petal);
+  const headCard = atlas.cards[`flower.${look.card ?? 0}`];
+  // Basal leaves: short broad blades.
+  const nl = g.leaves;
+  for (let b = 0; b < nl; b++) {
+    const a = (b / nl) * Math.PI * 2 + r.jitter(0.6);
+    const out = [Math.cos(a), 0, Math.sin(a)];
+    const h = g.leafLength * r.range(0.7, 1.1);
+    const pts = [0, 0.5, 1].map((t) => add(mul(out, h * (0.15 + 0.75 * t)), [0, h * (0.55 * t - 0.25 * t * t) + 0.01, 0]));
+    const side = norm(cross([0, 1, 0], out));
+    strip(stems, pts, side, g.leafWidth, g.leafWidth * 0.4, [0, 1, 0], (t) => leafCol.map((v) => v * (0.75 + 0.3 * t)), (t) => [t * t * 0.5, 0], true);
+  }
+  // Stems with a head each.
+  const n = r.int(g.stems[0], g.stems[1]);
+  for (let s = 0; s < n; s++) {
+    const a = (s / n) * Math.PI * 2 + r.jitter(0.7);
+    const out = [Math.cos(a), 0, Math.sin(a)];
+    const h = g.height * r.range(0.68, 1.05);
+    const lean = r.range(0.08, 0.3);
+    const base = mul(out, r.range(0.01, 0.04));
+    const pts = [0, 0.55, 1].map((t) => add(base, add(mul(out, lean * h * t * t), [0, h * t, 0])));
+    const side = norm(cross([0, 1, 0], out));
+    strip(stems, pts, side, g.stemWidth, g.stemWidth * 0.7, norm(add(mul(side, 0.2), [0, 1, 0])), (t) => stemCol.map((v) => v * (0.8 + 0.25 * t)), (t) => [t * t, 0], false);
+    // The head: facing up and out, a little random.
+    const face = norm(add([0, 0.8, 0], add(mul(out, 0.55), [r.jitter(0.25), 0, r.jitter(0.25)])));
+    const up = norm(cross(face, norm(cross([0, 1, 0], face))));
+    const size = g.headSize * r.range(0.85, 1.2);
+    const top = pts[2];
+    const tone = 0.9 + 0.12 * r.next();
+    card(heads, { c: add(top, mul(face, 0.004)), up, face, size, card: headCard, colour: petal.map((v) => v * tone), lit: norm(add(face, [0, 0.6, 0])), wind: () => [1, 0.4] });
+  }
+  return { stems, heads };
+}
+
+/**
+ * A fern (env.fern.*): 5–7 fronds, each the leaves atlas' frond picture on a card bent in two along an arch that
+ * rises from the crown and falls back toward the ground. { fronds: Mesh (env.leaf) }.
+ */
+export function fernMesh(seed, g, look, atlas) {
+  const r = rng(seed);
+  const m = new Mesh();
+  const info = atlas.cards['fern.0'];
+  const [u0, v0, u1, v1] = info.uv;
+  const cols = look.fronds.map(toLinear);
+  const n = r.int(g.fronds[0], g.fronds[1]);
+  let az = r.next() * Math.PI * 2;
+  for (let f = 0; f < n; f++) {
+    az += ((137.5 + r.jitter(25)) * Math.PI) / 180;
+    const out = [Math.cos(az), 0, Math.sin(az)];
+    const L = g.length * r.range(0.75, 1.1);
+    // Steeper fronds stand taller; all arch over.
+    const rise = g.height * r.range(0.75, 1.1);
+    const w = L * info.aspect * 0.95;
+    const side = norm(cross([0, 1, 0], out));
+    // Along the frond: base, middle (highest), tip (lower and further out).
+    const path = [0, 0.5, 1].map((t) => add(mul(out, L * (0.08 + 0.85 * t)), [0, rise * (2.1 * t - 1.45 * t * t) + 0.02, 0]));
+    const tilt = r.jitter(0.25);
+    const col = cols[r.int(0, cols.length - 1)].map((v) => v * (0.85 + 0.25 * r.next()));
+    const ids = path.map((p, k) => {
+      const t = k / 2;
+      // Each half of the frond droops a little from the rachis.
+      const halfW = (w / 2) * (0.35 + 0.65 * Math.sin(Math.PI * Math.min(1, 0.25 + 0.75 * t)));
+      const nrm = norm(add([0, 1, 0], mul(side, tilt)));
+      const vv = v1 + (v0 - v1) * t;
+      const droop = [0, -halfW * 0.25, 0];
+      return [
+        m.vertex(add(add(p, mul(side, -halfW)), droop), nrm, [u0, vv], col, [t * t * 0.7, t]),
+        m.vertex(p, nrm, [(u0 + u1) / 2, vv], col, [t * t * 0.7, t]),
+        m.vertex(add(add(p, mul(side, halfW)), droop), nrm, [u1, vv], col, [t * t * 0.7, t]),
+      ];
+    });
+    for (let k = 0; k < 2; k++) {
+      m.quad(ids[k][0], ids[k][1], ids[k + 1][1], ids[k + 1][0]);
+      m.quad(ids[k][1], ids[k][2], ids[k + 1][2], ids[k + 1][1]);
+    }
+  }
+  return { fronds: m };
+}
+
 /** A grass clump: { grass: Mesh } (one level). */
 export function grassMesh(seed, g, look) {
   const r = rng(seed);

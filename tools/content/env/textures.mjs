@@ -86,39 +86,102 @@ export async function barkTextures(seed) {
   return { color: await webp(col, W, Hh, 3), normal: await webp(normalMap(H, W, Hh, 6), W, Hh, 3, { quality: 90 }), raw: { data: col, width: W, height: Hh, channels: 3 } };
 }
 
-/** Rock: [colour, normal] WebP buffers. */
+/**
+ * Rock: { color (RGBA WebP: albedo, roughness in alpha), normal (WebP), raw (RGB, for stand-in pictures) }.
+ *
+ * Drawn tri-planar in world space on medium and high (envMaterials.ts), so it must read as rock from any side and
+ * at any scale without a direction of its own: a weathered granite/sandstone surface of
+ * - broad tonal patches and a few fine sedimentary laminae (faint, so they don't stripe a top face),
+ * - joint fractures: long straight cracks in three directions (whole numbers of periods across, so they tile),
+ *   each a dark V-groove with a pale weathered lip, plus short Worley cracks here and there,
+ * - mineral grain: dark and light specks at two sizes, and small solution pits,
+ * - pale lichen rosettes and darker water stains in the low places.
+ * Roughness follows the relief: polished, worn highs smoother (0.62), cracks, pits and lichen rough (0.95).
+ */
 export async function rockTextures(seed) {
   const W = 512;
-  const cells = tileWorley2(seed + 11, 5, 5);
+  const cells = tileWorley2(seed + 11, 6, 6);
+  const pits = tileWorley2(seed + 17, 22, 22);
   const big = tileFbm2(seed + 12, 3, 3, 5);
   const mid = tileFbm2(seed + 14, 8, 8, 4);
   const fine = tileFbm2(seed + 13, 32, 32, 3);
-  const bands = tileFbm2(seed + 15, 2, 12, 3);
+  const grain = tileFbm2(seed + 18, 96, 96, 2);
+  const bands = tileFbm2(seed + 15, 2, 16, 3);
   const mask = tileFbm2(seed + 16, 4, 4, 3);
+  const lichen = tileFbm2(seed + 19, 10, 10, 3);
+  const warp = tileFbm2(seed + 20, 4, 4, 3);
+  // Joint sets: [a, b] whole periods across u and v (so the line family tiles), the groove's half width.
+  const joints = [
+    [2, 1, 0.006],
+    [-1, 3, 0.005],
+    [3, -2, 0.004],
+  ];
   const H = new Float32Array(W * W);
-  const col = Buffer.alloc(W * W * 3);
+  const col = Buffer.alloc(W * W * 4);
+  const raw = Buffer.alloc(W * W * 3);
   for (let y = 0; y < W; y++)
     for (let x = 0; x < W; x++) {
       const u = x / W;
       const v = y / W;
       const b = big(u, v);
-      const [f1, f2] = cells(u + b * 0.08, v + mid(u, v) * 0.04);
-      // Cracks only here and there (a mask), thin and dark.
-      const crack = (1 - smoothstep(0.0, 0.03, f2 - f1)) * smoothstep(0.05, 0.3, mask(u, v));
       const m = mid(u, v);
       const f = fine(u, v);
-      const band = bands(u, v);
-      const h = clamp(0.5 + 0.25 * b + 0.2 * m + 0.12 * f - 0.4 * crack);
+      const g = grain(u, v);
+      const wu = u + 0.035 * warp(u, v);
+      const wv = v + 0.035 * warp(v + 0.37, u + 0.11);
+      // Joints: distance to the nearest line of each family (fract of a whole-number projection), masked so each
+      // family breaks off along its length.
+      let joint = 0;
+      let lip = 0;
+      joints.forEach(([a, c, hw], k) => {
+        const s = wu * a + wv * c + k * 0.37;
+        const d = Math.abs(s - Math.round(s)) / Math.hypot(a, c);
+        const on = smoothstep(0.0, 0.2, mask(u + k * 0.31, v + k * 0.17));
+        joint = Math.max(joint, (1 - smoothstep(hw * 0.4, hw, d)) * on);
+        lip = Math.max(lip, (smoothstep(hw, hw * 2.2, d) - smoothstep(hw * 2.2, hw * 5, d)) * on);
+      });
+      const [f1, f2] = cells(u + b * 0.07, v + m * 0.05);
+      const crack = (1 - smoothstep(0.0, 0.025, f2 - f1)) * smoothstep(0.15, 0.4, mask(u + 0.5, v + 0.5));
+      const [p1] = pits(u, v);
+      const pit = (1 - smoothstep(0.05, 0.16, p1)) * smoothstep(0.0, 0.35, fine(u * 2 + 0.2, v * 2));
+      const lam = bands(u, v);
+      const lich = smoothstep(0.36, 0.55, lichen(u, v)) * smoothstep(-0.2, 0.3, fine(u * 3, v * 3)) * (1 - joint);
+      // Height: broad relief, grain, joints and cracks cut in, pits.
+      const h = clamp(0.5 + 0.22 * b + 0.16 * m + 0.08 * f + 0.04 * g - 0.42 * joint - 0.3 * crack - 0.18 * pit + 0.05 * lip + 0.04 * lich);
       H[y * W + x] = h;
-      const t = 0.52 + 0.2 * b + 0.14 * m + 0.12 * f + 0.08 * band - 0.32 * crack;
-      const i = (y * W + x) * 3;
-      // Pale lichen speckles on the highs.
-      const speck = smoothstep(0.55, 0.65, 0.5 + 0.5 * fine(u * 2.3, v * 2.3)) * 0.05;
-      col[i] = srgb8(t + speck);
-      col[i + 1] = srgb8(t * 0.985 + speck);
-      col[i + 2] = srgb8(t * 0.95 + speck * 0.8);
+      // Tone: mid grey with patches; dark grains and pale feldspar specks; joints dark, their lips pale.
+      const speckDark = smoothstep(0.42, 0.62, g) * 0.1;
+      const speckPale = smoothstep(0.5, 0.7, -g) * 0.09;
+      let t = 0.49 + 0.2 * b + 0.1 * m + 0.06 * f + 0.05 * lam - speckDark + speckPale - 0.13 * joint - 0.15 * crack - 0.1 * pit + 0.08 * lip;
+      // Water stains run in the low places (dark, slightly warm).
+      const stain = smoothstep(0.1, 0.45, -b) * 0.08;
+      t -= stain;
+      let r = t * (1.0 + 0.04 * b + stain * 0.4);
+      let gg = t * (0.985 + 0.01 * m);
+      let bl = t * (0.955 - 0.03 * b - stain * 0.5);
+      // Lichen: pale grey-green rosettes.
+      if (lich > 0) {
+        const lc = [0.72, 0.74, 0.62];
+        r += (lc[0] - r) * lich * 0.35;
+        gg += (lc[1] - gg) * lich * 0.35;
+        bl += (lc[2] - bl) * lich * 0.35;
+      }
+      const rough = clamp(0.8 - 0.18 * smoothstep(0.55, 0.8, h) + 0.15 * joint + 0.12 * crack + 0.12 * pit + 0.1 * lich + 0.03 * g);
+      const i = (y * W + x) * 4;
+      col[i] = srgb8(r);
+      col[i + 1] = srgb8(gg);
+      col[i + 2] = srgb8(bl);
+      col[i + 3] = srgb8(rough);
+      const j = (y * W + x) * 3;
+      raw[j] = col[i];
+      raw[j + 1] = col[i + 1];
+      raw[j + 2] = col[i + 2];
     }
-  return { color: await webp(col, W, W, 3), normal: await webp(normalMap(H, W, W, 4), W, W, 3, { quality: 90 }), raw: { data: col, width: W, height: W, channels: 3 } };
+  return {
+    color: await sharp(col, { raw: { width: W, height: W, channels: 4 } }).webp({ quality: 86, alphaQuality: 90, effort: 4 }).toBuffer(),
+    normal: await webp(normalMap(H, W, W, 5), W, W, 3, { quality: 90 }),
+    raw: { data: raw, width: W, height: W, channels: 3 },
+  };
 }
 
 
@@ -136,6 +199,7 @@ export const ATLAS_CELLS = {
   'oak.0': [0, 0], 'oak.1': [1, 0], 'oak.2': [2, 0], 'oak.3': [3, 0],
   'needle.0': [0, 1], 'needle.1': [1, 1], 'needle.2': [2, 1], 'needle.3': [3, 1],
   'shrub.0': [0, 2], 'shrub.1': [1, 2], 'shrub.2': [2, 2], 'shrub.3': [3, 2],
+  'flower.0': [0, 3], 'flower.1': [1, 3], 'flower.2': [2, 3], 'fern.0': [3, 3],
 };
 
 /** A filled leaf: centre (x, y) px, direction a (radians), length, half width, lobes (oak) and a brightness. */
@@ -186,6 +250,22 @@ function line(img, ox, oy, x0, y0, x1, y1, hw, shade) {
     }
 }
 
+/** A filled disc of colour `rgb` (a flower's eye), a little darker at the rim and speckled. */
+function disc(img, ox, oy, x0, y0, R, rgb, r) {
+  for (let y = Math.floor(y0 - R); y <= Math.ceil(y0 + R); y++)
+    for (let x = Math.floor(x0 - R); x <= Math.ceil(x0 + R); x++) {
+      if (x < 0 || y < 0 || x >= CELL || y >= CELL) continue;
+      const d = Math.hypot(x + 0.5 - x0, y + 0.5 - y0) / R;
+      if (d > 1) continue;
+      const b = (0.85 + 0.15 * (1 - d)) * (0.9 + 0.1 * r.next());
+      const i = ((oy + y) * ATLAS_SIZE + ox + x) * 4;
+      img[i] = srgb8(rgb[0] * b);
+      img[i + 1] = srgb8(rgb[1] * b);
+      img[i + 2] = srgb8(rgb[2] * b);
+      img[i + 3] = 255;
+    }
+}
+
 function drawCell(img, key, seed) {
   const [cx, cy] = ATLAS_CELLS[key];
   const ox = cx * CELL;
@@ -224,6 +304,56 @@ function drawCell(img, key, seed) {
         const sy = by + Math.sin(a) * stalk;
         line(img, ox, oy, bx, by, sx, sy, 1.2, 0.45);
         leaf(img, ox, oy, sx, sy, a, len, len * (oak ? 0.34 : 0.4), oak ? 4.5 : 0, 0.7 + 0.3 * r.next(), r);
+      }
+    }
+  } else if (key === 'flower.0' || key === 'flower.1') {
+    // Flower heads seen face on. 0: a daisy (many narrow white rays round a yellow disc); 1: a buttercup (five broad
+    // round petals, a green-gold eye). Petals near-white, so the variant's vertex colour sets their colour.
+    const c = [CELL / 2, CELL / 2];
+    const daisy = key === 'flower.0';
+    const n = daisy ? 22 : 5;
+    const a0 = r.next() * Math.PI * 2;
+    for (let k = 0; k < n; k++) {
+      const a = a0 + (k / n) * Math.PI * 2 + r.jitter(daisy ? 0.06 : 0.1);
+      const L = (daisy ? 118 : 112) * (0.9 + 0.1 * r.next());
+      leaf(img, ox, oy, c[0], c[1], a, L, daisy ? 11 : 58, 0, 0.9 + 0.08 * r.next(), r);
+    }
+    disc(img, ox, oy, c[0], c[1], daisy ? 26 : 22, daisy ? [0.93, 0.74, 0.18] : [0.62, 0.66, 0.2], r);
+  } else if (key === 'flower.2') {
+    // A clover or knapweed head: a round tuft of small florets (light, so the vertex colour sets it).
+    const c = [CELL / 2, CELL / 2];
+    for (let k = 0; k < 260; k++) {
+      const a = r.next() * Math.PI * 2;
+      const d = Math.sqrt(r.next()) * 96;
+      const x = c[0] + Math.cos(a) * d;
+      const y = c[1] + Math.sin(a) * d;
+      const a2 = a + r.jitter(1.4);
+      const l2 = 14 + 22 * r.next();
+      line(img, ox, oy, x, y, x + Math.cos(a2) * l2, y + Math.sin(a2) * l2, 5, 0.72 + 0.26 * r.next());
+    }
+  } else if (key === 'fern.0') {
+    // A bracken frond: a rachis from the bottom middle to the tip, pinnae in pairs, longest a third of the way up,
+    // each lobed into pinnules. Dense, so the trimmed card is mostly frond.
+    const top = [CELL / 2 + r.jitter(4), 4];
+    line(img, ox, oy, root[0], root[1], top[0], top[1], 3.2, 0.42);
+    const pairs = 15;
+    for (let k = 0; k < pairs; k++) {
+      const s = 0.04 + (k / pairs) * 0.94;
+      const b = [root[0] + (top[0] - root[0]) * s, root[1] + (top[1] - root[1]) * s];
+      const reach = 118 * Math.sin(Math.PI * Math.min(1, (s + 0.2) / 1.05)) ** 0.9 * (0.94 + 0.08 * r.next());
+      for (const side of [-1, 1]) {
+        const a = -Math.PI / 2 + side * (1.25 - 0.25 * s + r.jitter(0.05));
+        const e = [b[0] + Math.cos(a) * reach, b[1] + Math.sin(a) * reach];
+        line(img, ox, oy, b[0], b[1], e[0], e[1], 1.6, 0.45);
+        // Pinnules along the pinna, each a small blunt leaf.
+        const m = Math.max(3, Math.round(reach / 9));
+        for (let j = 0; j < m; j++) {
+          const t = (j + 0.5) / m;
+          const px = b[0] + Math.cos(a) * reach * t;
+          const py = b[1] + Math.sin(a) * reach * t;
+          const len = 15 * (1 - 0.6 * t) + 4;
+          for (const ps of [-1, 1]) leaf(img, ox, oy, px, py, a + ps * (1.05 + r.jitter(0.2)), len * (0.85 + 0.3 * r.next()), len * 0.42, 0, 0.72 + 0.22 * r.next(), r);
+        }
       }
     }
   } else {

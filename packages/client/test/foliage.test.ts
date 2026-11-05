@@ -38,6 +38,26 @@ describe('terrain plants', () => {
     expect(kinds(out).has('reed')).toBe(true);
   });
 
+  it('grows our generated grass, flowers, ferns and bushes at every plants level (no Kenney grass, flowers or shrubs)', () => {
+    for (const level of [1, 2, 3, 4]) {
+      const t = flat();
+      t.foliage = new Array(t.materials.length).fill(level);
+      const out = place(t, [], `seed${level}`);
+      const all = [...out.values()].flatMap((m) => [...m.keys()]);
+      expect(all.length, `level ${level}`).toBeGreaterThan(0);
+      expect(all.filter((m) => !m.startsWith('env.')), `level ${level}`).toEqual([]);
+    }
+    const t = flat();
+    t.foliage = new Array(t.materials.length).fill(4);
+    const out = place(t, [], 'thick');
+    expect(new Set(models(out, 'grass').map((m) => m.split('#')[0]))).toEqual(new Set(['env.grass.clump']));
+    expect(new Set(models(out, 'flower').map((m) => m.split('#')[0]))).toEqual(new Set(['env.flower.meadow']));
+    expect(new Set(models(out, 'shrub').map((m) => m.split('#')[0]))).toEqual(new Set(['env.fern.bracken']));
+    expect(new Set(models(out, 'bush').map((m) => m.split('#')[0]))).toEqual(new Set(['env.shrub.broadleaf']));
+    // The same terrain and seed grow the same plants (every machine draws the same meadow).
+    expect([...place(t, [], 'thick')]).toEqual([...out]);
+  });
+
   it('keeps a cell painted bare bare, even in shallow water', () => {
     const t = flat();
     t.foliage = new Array(t.materials.length).fill(0);

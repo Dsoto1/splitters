@@ -9,24 +9,32 @@ import '@babylonjs/core/Meshes/thinInstanceMesh';
 import { TERRAIN_MATERIALS, boxBounds, cellFoliage, envModelFile, getProp, terrainHeightAt, type TerrainData, type TerrainMaterial, type WorldBox } from '@tiletrigger/shared';
 import type { ModelLibrary } from './content/models.ts';
 import { loadGraphicsQuality } from './game/graphicsSettings.ts';
-import { envRendererOn } from './environment/envFlag.ts';
+import { envMaterialsFor } from './environment/envMaterials.ts';
+import { loadEnvModel, partMesh } from './environment/envModels.ts';
 
-/** Plants by the job they do: carpet grass, taller tufts, flowers, low shrubs, bushes, and pebbles on bare ground. */
+/** The generated grass clump, one in six the dry variant. */
+const ENV_GRASS = ['env.grass.clump', 'env.grass.clump', 'env.grass.clump', 'env.grass.clump', 'env.grass.clump', 'env.grass.clump#1'] as const;
+/**
+ * Plants by the job they do: carpet grass, taller tufts, flowers, low plants, bushes, and pebbles on bare ground.
+ * Grass, flowers, low plants and bushes are the generated environment species (tools/content/environment.mjs:
+ * `env.<id>`, `#n` a variant), in every match and in MapMaker (the owner, 2026-11-05: our own grass replaces Kenney's;
+ * the Kenney flowers, ferns and bushes the brush grew are retired from it). Pebbles and eelgrass are still pack props.
+ */
 const KINDS = {
-  grass: ['prop.grass_patch', 'prop.grass_leafy'],
-  tall: ['prop.grass_tall'],
-  flower: ['prop.flower_red', 'prop.flower_yellow', 'prop.flower_purple'],
-  shrub: ['prop.bush_small', 'prop.fern', 'prop.plant_low', 'prop.mn_fern'],
-  bush: ['prop.bush', 'prop.bush_leafy', 'prop.mn_shrub'],
+  grass: ENV_GRASS,
+  tall: ENV_GRASS,
+  flower: ['env.flower.meadow', 'env.flower.meadow#1', 'env.flower.meadow#2'],
+  shrub: ['env.fern.bracken', 'env.fern.bracken', 'env.fern.bracken', 'env.fern.bracken#1'],
+  bush: ['env.shrub.broadleaf', 'env.shrub.broadleaf', 'env.shrub.broadleaf', 'env.shrub.broadleaf#1'],
   pebbles: ['prop.stones'],
   /** Eelgrass in shallow water (see WATER_DEPTH). */
   reed: ['prop.mn_eelgrass'],
 } as const;
 type Kind = keyof typeof KINDS;
-/** With the new environment renderer (?env=1): the generated grass clump for grass and tall grass, one in six the dry variant. */
-const ENV_GRASS = ['env.grass.clump', 'env.grass.clump', 'env.grass.clump', 'env.grass.clump', 'env.grass.clump', 'env.grass.clump#1'] as const;
 /** How many more generated clumps grow than Kenney patches did (a clump is a few blades): about four a 2 m cell at full cover. */
 const ENV_GRASS_DENSITY = 2.2;
+/** The level of detail a species grows at (bushes: their lighter level, 100 triangles; the rest have one). */
+const ENV_LEVEL: Readonly<Record<string, number>> = { 'env.shrub.broadleaf': 1 };
 
 /**
  * How many of each kind a cell grows (fractions are chances), by its cover
@@ -135,16 +143,18 @@ export class FoliageVisuals {
     const build = ++this.build;
     this.clear();
     if (!t) return;
-    const placements = place(t, boxes, seed, water, envRendererOn());
+    const placements = place(t, boxes, seed, water);
     if (!placements.size) return;
     const geometry = new Map<string, Mesh[]>();
     await Promise.all(
       [...new Set([...placements.values()].flatMap((byModel) => [...byModel.keys()]))].map(async (model) => {
-        // Environment species (?env=1 grass): `env.<id>` or `env.<id>#<variant>`, drawn from their variant's file.
+        // Environment species: `env.<id>` or `env.<id>#<variant>`, drawn from their variant's file.
         const [id, variant] = model.split('#') as [string, string | undefined];
         const def = getProp(id);
-        const file = id.startsWith('env.') ? envModelFile(id, variant ? Number(variant) : undefined) : def?.file;
-        if (def && file) geometry.set(model, await this.bake(file, model));
+        if (id.startsWith('env.')) {
+          const file = envModelFile(id, variant ? Number(variant) : undefined);
+          if (file) geometry.set(model, await this.bakeEnv(file, model, ENV_LEVEL[id] ?? 0));
+        } else if (def) geometry.set(model, await this.bake(def.file, model));
       }),
     );
     if (build !== this.build) {
@@ -252,6 +262,23 @@ export class FoliageVisuals {
   }
 
   /**
+   * A generated species' level `level` (its lightest if it has fewer): one hidden mesh per part (the environment's
+   * own materials, with wind; envMaterials.ts), ready to be cloned per sector. A missing file grows nothing.
+   */
+  private async bakeEnv(file: string, model: string, level: number): Promise<Mesh[]> {
+    try {
+      const env = await loadEnvModel(this.scene, file);
+      const l = env.levels[Math.min(level, env.levels.length - 1)];
+      if (!l) return [];
+      const materials = envMaterialsFor(this.scene, loadGraphicsQuality());
+      return l.parts.map((part, i) => partMesh(this.scene, `foliage_${model}_${i}`, part, materials));
+    } catch (e) {
+      console.warn(`foliage: ${file} failed to load`, e);
+      return [];
+    }
+  }
+
+  /**
    * The model's meshes with its own transform baked in, hidden, ready to be cloned per chunk. Models with
    * levels of detail (the painted mn_* plants) grow as their lightest level: thousands of them cover the ground.
    */
@@ -293,8 +320,7 @@ export class FoliageVisuals {
         // A plain lambert material instead of the model's PBR one (most of a plant's cost is its
         // pixels, and thousands of them cover the ground), no specular, few lights. Kenney's greens
         // are teal; pull them toward the ground's olive so plants sit in the grass.
-        // Environment grass keeps its own material (the environment's, with wind: content/models.ts applyEnvMaterials).
-        if (!model.startsWith('env.') && m.material && 'albedoColor' in m.material) {
+        if (m.material && 'albedoColor' in m.material) {
           const pbr = m.material as PBRMaterial;
           const mat = new StandardMaterial(`${pbr.name}_foliage`, this.scene);
           mat.diffuseColor = pbr.albedoColor.multiply(FOLIAGE_TINT);
@@ -320,7 +346,7 @@ export class FoliageVisuals {
 }
 
 /** Every plant's model and matrix, grouped by `kind:chunkX:chunkZ`. Deterministic for a given terrain and seed. */
-export function place(t: TerrainData, boxes: readonly WorldBox[], seed: string, water: readonly FoliageWater[] = [], env = false): Map<string, Map<string, number[]>> {
+export function place(t: TerrainData, boxes: readonly WorldBox[], seed: string, water: readonly FoliageWater[] = []): Map<string, Map<string, number[]>> {
   const out = new Map<string, Map<string, number[]>>();
   const rand = seeded(seed);
   const covered = coverage(boxes);
@@ -351,19 +377,19 @@ export function place(t: TerrainData, boxes: readonly WorldBox[], seed: string, 
     if (!level && !wet) continue;
     const material = TERRAIN_MATERIALS[t.materials[i]!] ?? 'grass';
     for (const [kind, amount] of Object.entries(wet ?? recipe(material, level)) as [Kind, number][]) {
-      // The generated grass clump (?env=1) is a few blades, not a patch: more of them, the same ground covered.
-      const grassy = env && (kind === 'grass' || kind === 'tall');
+      // The generated grass clump is a few blades, not a patch: more of them, the same ground covered.
+      const grassy = kind === 'grass' || kind === 'tall';
       const amt = grassy ? amount * ENV_GRASS_DENSITY : amount;
       let n = Math.floor(amt) + (rand() < amt % 1 ? 1 : 0);
       while (n-- > 0) {
         const x = t.origin[0] + (c + rand()) * t.spacing;
         const z = t.origin[1] + (r + rand()) * t.spacing;
         const y = terrainHeightAt(t, x, z);
-        const models = grassy ? ENV_GRASS : KINDS[kind];
+        const models: readonly string[] = KINDS[kind];
         const model = models[Math.floor(rand() * models.length)]!;
         const yaw = rand() * Math.PI * 2;
-        // Kept low (ankle to shin height) so plants never hide a player.
-        const size = grassy ? 0.8 + rand() * 0.55 : kind === 'grass' ? 0.45 + rand() * 0.35 : kind === 'tall' ? 0.5 + rand() * 0.25 : kind === 'bush' ? 0.7 + rand() * 0.4 : kind === 'reed' ? 0.85 + rand() * 0.45 : 0.6 + rand() * 0.3;
+        // Kept low (ankle to shin height; bushes to the waist) so plants never hide a player.
+        const size = grassy ? 0.8 + rand() * 0.55 : kind === 'bush' ? 0.5 + rand() * 0.3 : kind === 'reed' ? 0.85 + rand() * 0.45 : kind === 'flower' ? 0.8 + rand() * 0.35 : kind === 'shrub' ? 0.75 + rand() * 0.35 : 0.6 + rand() * 0.3;
         if (y === null || covered(x, y, z)) continue;
         // Steep slopes (cliff faces) stay bare.
         const dy = Math.abs((terrainHeightAt(t, x + 0.5, z) ?? y) - y) + Math.abs((terrainHeightAt(t, x, z + 0.5) ?? y) - y);

@@ -23,7 +23,7 @@ import { writeModel } from './env/mesh.mjs';
 import { crossedImpostor } from './env/impostor.mjs';
 import { broadleafMesh, broadleafShapes, broadleafSkeleton } from './env/tree.mjs';
 import { coniferMesh, coniferShapes, coniferSkeleton } from './env/conifer.mjs';
-import { grassMesh, shrubMesh, shrubSkeleton } from './env/plants.mjs';
+import { fernMesh, flowerMesh, grassMesh, shrubMesh, shrubSkeleton } from './env/plants.mjs';
 import { boulderHull, boulderMesh, boulderShapes, boulderSurface, cliffMesh, cliffShapes } from './env/rock.mjs';
 
 export const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
@@ -35,7 +35,7 @@ const SHARED = 'packages/shared/src/content/environment.generated.ts';
 const CLIENT = 'packages/client/src/content/environment.generated.ts';
 
 export const CATEGORIES = ['tree', 'plant', 'groundcover', 'rock', 'boulder', 'cliff'];
-const KINDS = { broadleaf: 'tree', conifer: 'tree', shrub: 'plant', grass: 'groundcover', boulder: 'boulder', cliff: 'cliff' };
+const KINDS = { broadleaf: 'tree', conifer: 'tree', shrub: 'plant', grass: 'groundcover', flower: 'groundcover', fern: 'groundcover', boulder: 'boulder', cliff: 'cliff' };
 const { num, int, str, bool, en, tup, arr, obj, map } = shape;
 const ID = /^env\.[a-z][a-z0-9_]*\.[a-z][a-z0-9_]*$/;
 const mm = (v) => Math.round(v * 1000) / 1000;
@@ -142,6 +142,12 @@ export async function build(content, species) {
           });
         case 'grass':
           return [{ distance: 0, parts: [{ material: 'env.grass', mesh: grassMesh(g.seed, g, look).grass }] }];
+        case 'flower': {
+          const f = flowerMesh(g.seed, g, look, atlas);
+          return [{ distance: 0, parts: [{ material: 'env.grass', mesh: f.stems }, { material: 'env.leaf', mesh: f.heads }] }];
+        }
+        case 'fern':
+          return [{ distance: 0, parts: [{ material: 'env.leaf', mesh: fernMesh(g.seed, g, look, atlas).fronds }] }];
         case 'boulder':
           return s.lods.map((l) => ({ distance: l.distance, parts: [{ material: 'env.rock', mesh: boulderMesh(g.seed, g, structure.surface, l.triangles, look).rock }] }));
         case 'cliff':

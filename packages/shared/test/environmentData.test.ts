@@ -30,18 +30,22 @@ function shapePoints(sh: EnvShape): [number, number, number][] {
 
 describe('environment data', () => {
   it('every species matches the schema', () => {
-    expect(ENV_SPECIES.length).toBe(6);
+    expect(ENV_SPECIES.length).toBe(8);
     for (const s of ENV_SPECIES) expect(() => EnvironmentSpeciesSchema.parse(s), s.id).not.toThrow();
   });
 
-  it('the six Phase 1 species, each with a material variant', () => {
-    expect(ENV_SPECIES.map((s) => s.id).sort()).toEqual(['env.broadleaf.oak', 'env.cliff.face', 'env.conifer.pine_tall', 'env.grass.clump', 'env.rock.boulder_angular', 'env.shrub.broadleaf']);
+  it('the six Phase 1 species and the plants brush flowers and fern, each with material variants', () => {
+    expect(ENV_SPECIES.map((s) => s.id).sort()).toEqual(['env.broadleaf.oak', 'env.cliff.face', 'env.conifer.pine_tall', 'env.fern.bracken', 'env.flower.meadow', 'env.grass.clump', 'env.rock.boulder_angular', 'env.shrub.broadleaf']);
     for (const s of ENV_SPECIES) {
-      expect(s.variants.length, s.id).toBe(2);
+      expect(s.variants.length, s.id).toBeGreaterThanOrEqual(2);
       // Material variants share the structure, so they share the collision exactly.
-      expect(s.variants[1]!.shapes, s.id).toEqual(s.variants[0]!.shapes);
-      expect(s.variants[1]!.size, s.id).toEqual(s.variants[0]!.size);
+      for (const v of s.variants.slice(1)) {
+        expect(v.shapes, s.id).toEqual(s.variants[0]!.shapes);
+        expect(v.size, s.id).toEqual(s.variants[0]!.size);
+      }
     }
+    // Ground cover (grass, flowers, fern) is decoration only: no collision, no nav, no concealment.
+    for (const s of ENV_SPECIES.filter((x) => x.category === 'groundcover')) expect([s.role, s.nav, s.conceals, s.variants[0]!.shapes.length], s.id).toEqual(['decorative', 'none', null, 0]);
   });
 
   it('every species has a surface the server and client know, nav and concealment data', () => {

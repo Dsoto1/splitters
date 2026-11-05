@@ -16,7 +16,7 @@
     "triangles": {
       "tree": [3000, 1000, 300, 8],
       "plant": [500, 150, 8],
-      "groundcover": [40],
+      "groundcover": [64],
       "boulder": [760, 240, 70],
       "cliff": [2200, 700, 200]
     }
