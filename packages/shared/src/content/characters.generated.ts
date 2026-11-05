@@ -107,6 +107,8 @@ export const WHOLE_BODY_LOOKS: readonly CharacterLook[] = [
   { id: 'core.hoboclown', name: 'Patches', body: 'male', head: '', parts: ['meshy_hoboclown'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_hoboclown_fparms' }, group: 'folk', nameTheme: 'townsfolk' },
   { id: 'core.tacticalsoldier', name: 'Tactical Soldier', body: 'male', head: '', parts: ['meshy_tacticalsoldier'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_tacticalsoldier_fparms' }, group: 'soldiers', nameTheme: 'soldier' },
   { id: 'core.umpire', name: 'Umpire', body: 'male', head: '', parts: ['meshy_umpire'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_umpire_fparms' }, group: 'folk', nameTheme: 'townsfolk' },
+  { id: 'core.panda', name: 'Bamboo', body: 'male', head: '', parts: ['meshy_panda'], hair: [], colorways: [], skin: null, hairColor: null, size: 'large', whole: { arms: 'meshy_panda_fparms' }, group: 'animals', nameTheme: 'bear' },
+  { id: 'core.butcher', name: 'The Butcher', body: 'male', head: '', parts: ['meshy_butcher'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_butcher_fparms' }, group: 'folk', nameTheme: 'townsfolk' },
 ];
 
 /** Whole-body characters made for NPCs only (`use: npc`): not on the roster; NPC_ROLE_SPECS can name them. */
@@ -217,4 +219,6 @@ export const WHOLE_BODY_BIOS: Readonly<Record<string, string>> = {
   'core.hoboclown': 'Twenty years of birthday parties, three of them paid. Today he is working for tips.',
   'core.tacticalsoldier': 'Plate carrier, six mags, one plan. The plan is the six mags.',
   'core.umpire': 'Has never once been wrong. Ask him.',
+  'core.panda': 'Eats forty kilos of bamboo a day and wants the other twenty.',
+  'core.butcher': 'Forty years behind the counter. Knows exactly where to cut.',
 };

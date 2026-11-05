@@ -1,0 +1,36 @@
+{
+  "id": "meshy_panda",
+  "kind": "character",
+  "use": "player",
+  "order": 106,
+  "name": "Bamboo",
+  "look": "core.panda",
+  "group": "animals",
+  "nameTheme": "bear",
+  "bio": "Eats forty kilos of bamboo a day and wants the other twenty.",
+  "body": "male",
+  "size": "large",
+  "notes": "Drive intake of 2026-11-05 (\"Open Arms Panda\", rigged and animated on Meshy: Mixamo joint names read as Meshy's, extra Bone_* joints ride their parents; clips not used). No panda shipped before. Large: a broad, heavy body. 169k triangles: rebaked. Licence recorded as owned (the intake's rule: no metadata says otherwise); the owner to confirm, and if it is a Meshy community model, switch to CC0 with its author and post URL.",
+  "source": {
+    "license": "owned",
+    "author": "the owner, on their Meshy subscription",
+    "date": "2026-11-05",
+    "url": null,
+    "file": "^Meshy_AI_Open_Arms_Panda_\\d+_animated_mixamo_All_animation\\.glb$"
+  },
+  "finish": {
+    "metallic": 0,
+    "roughness": 0.8
+  },
+  "firstPerson": {
+    "arms": "own"
+  },
+  "fixes": {
+    "triangles": 14000,
+    "surface": "rebake",
+    "headShare": 0.16,
+    "normalSize": 1024,
+    "lod": 0.25,
+    "feet": true
+  }
+}

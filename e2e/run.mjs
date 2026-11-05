@@ -3405,7 +3405,19 @@ async function coverageFlow(browser) {
         const root = window.__cs.view.scene.transformNodes.find((n) => n.name === `mount_${window.__match.mounts[at].index}`);
         const turret = root.getChildTransformNodes(false, (n) => n.name.endsWith('_model_turret'))[0];
         const barrel = turret.getChildTransformNodes(false, (n) => n.name.endsWith('_model_barrel'))[0];
-        return Math.abs(Math.abs(turret.rotationQuaternion.toEulerAngles().y) - 0.5) < 0.05 && Math.abs(Math.abs(barrel.rotationQuaternion.toEulerAngles().x) - 0.3) < 0.05;
+        if (!(Math.abs(Math.abs(turret.rotationQuaternion.toEulerAngles().y) - 0.5) < 0.05 && Math.abs(Math.abs(barrel.rotationQuaternion.toEulerAngles().x) - 0.3) < 0.05)) return false;
+        // The barrel's far end, in the vehicle's frame (+x its right, +y up, +z ahead): right of and above its root.
+        const body = barrel.getChildMeshes(false).find((m) => !m.isBlocked);
+        const V3 = window.__cs.view.camera.position.constructor;
+        const toLocal = body.computeWorldMatrix(true).multiply(root.computeWorldMatrix(true).clone().invert());
+        const pos = body.getVerticesData('position');
+        let far = null;
+        for (let i = 0; i < pos.length; i += 3) {
+          const p = V3.TransformCoordinates(new V3(pos[i], pos[i + 1], pos[i + 2]), toLocal);
+          if (!far || p.z > far.z) far = p;
+        }
+        const pivot = V3.TransformCoordinates(barrel.getAbsolutePosition(), root.getWorldMatrix().clone().invert());
+        return far.x > pivot.x + 0.5 && far.y > pivot.y + 0.3;
       }, null, { timeout: T(15000) }).then(() => true, () => false);
       const tank1 = await parts();
       await page.evaluate((at) => {
