@@ -31,12 +31,12 @@ import { Constants } from '@babylonjs/core/Engines/constants';
  * Mip bias for the level's textures on a view drawn small and shown magnified (docs/LOOK.md, "No flicker: texture
  * shimmer"). A phone draws at 0.75 px per CSS pixel on a 2.5-3x screen: each drawn pixel is shown 3-4 device pixels
  * wide, so a speckled floor (terrazzo, gravel, carpet) whose specks are a drawn pixel across twinkles as you turn,
- * mipmaps or not. Half a mip level per doubling of that magnification past 1.5x (none on a desktop at its usual scale,
- * about 0.6 on a phone at Performance), at most 1: a touch softer, steady.
+ * mipmaps or not. A mip level per doubling of that magnification past 1.5x (about 0.1 on a desktop at its usual scale,
+ * a whole level on a phone at Performance), at most 1: a touch softer, steady.
  */
 export function levelMipBias(devicePixelRatio: number, renderRatio: number): number {
   const shown = devicePixelRatio / Math.max(renderRatio, 0.05);
-  return shown <= 1.5 ? 0 : Math.min(1, Math.round(Math.log2(shown / 1.5) * 50) / 100);
+  return shown <= 1.5 ? 0 : Math.min(1, Math.round(Math.log2(shown / 1.5) * 100) / 100);
 }
 
 /** Merged level meshes are cut into squares this big (m): the whole level in view is a few draws, and far parts cull. */

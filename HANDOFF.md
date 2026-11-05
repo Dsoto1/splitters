@@ -43,7 +43,7 @@ Owner: "The ikea map has significant flickering" / "flicker when I look around, 
      flipped; `disableDepthWrite` on the glass material.
   4. **Texture shimmer on phones** (reproduced: Chromium at 900×415 CSS, DPR 2.6, touch, Low, Performance): speckled
      terrazzo twinkles when turning 0.2°. The merged level's lookups take a mip bias on magnified low-res views
-     (`levelMipBias`: ~0.6 on a phone at Performance, ~0 on a desktop); the normal-map lookup no longer sits in a branch
+     (`levelMipBias`: a whole mip level on a phone at Performance, ~0.1 on a desktop; the first try, 0.6, cut the floor's twinkle only 14 %); the normal-map lookup no longer sits in a branch
      (undefined derivatives on some mobile GPUs).
 - Looked at, not changed: shader precision (Babylon declares highp; our plugins add no mediump), depth precision
   (Chrome gives depth24 with the stencil we ask for; the bias is in depth steps so it holds on a 16-bit buffer too),

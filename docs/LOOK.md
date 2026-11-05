@@ -97,8 +97,8 @@ frame by frame (the flicker).
 - **Texture shimmer on phones** (`levelMipBias`, levelMerge.ts). A phone draws at 0.75 px per CSS pixel on a 2.5-3x
   screen, so each drawn pixel is shown 3-4 screen pixels wide; a speckled floor (terrazzo, gravel, carpet) whose
   specks are about a drawn pixel twinkles as you turn, mipmaps or not. The merged level's colour and normal lookups
-  take a mip bias of half a level per doubling of that magnification past 1.5x (about 0.6 on a phone at Performance,
-  none on a desktop at its usual scale, at most 1): a touch softer, steady. Set when the level is built (a render scale
+  take a mip bias of a level per doubling of that magnification past 1.5x (a whole level on a phone at Performance,
+  about 0.1 on a desktop at its usual scale, at most 1): a touch softer, steady. Set when the level is built (a render scale
   changed mid-match applies from the next map). The normal-map lookup is taken on every pixel and then chosen (it sat
   in a branch: undefined mip level on some phone GPUs). WebGL2 (the merged level); WebGPU draws the level unmerged.
 

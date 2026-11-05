@@ -134,8 +134,9 @@ describe('level depth bias (docs/LOOK.md, "No flicker: props")', () => {
 describe('level mip bias (docs/LOOK.md, "No flicker: texture shimmer")', () => {
   it('none on a desktop at its usual scale, some on a phone drawing small, never past one level', () => {
     expect(levelMipBias(1, 1)).toBe(0);
-    expect(levelMipBias(2, 1.25)).toBeLessThan(0.1);
-    expect(levelMipBias(2.6, 0.75)).toBeCloseTo(0.6, 1);
+    expect(levelMipBias(2, 1.25)).toBeLessThan(0.15);
+    expect(levelMipBias(2.6, 0.75)).toBe(1);
+    expect(levelMipBias(2, 1)).toBeCloseTo(0.42, 2);
     expect(levelMipBias(4, 0.25)).toBe(1);
   });
 });
