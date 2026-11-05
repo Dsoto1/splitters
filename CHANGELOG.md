@@ -8,6 +8,22 @@ made only on a commit that passed CI on a check branch.
 
 ## Unreleased
 
+**No flicker on props** (owner's report on Flatpack Depot, 2026-11-05: "significant flickering", "flicker when I look
+around", on an Android phone; docs/LOOK.md, "No flicker: props")
+- **Rugs, shelves, crates and boxes no longer fight the floor**: many props have flat faces in the floor's own plane
+  (a rug whose cloth is its base, the double-sided bottoms of shelving, crates and freezers); the level is now drawn a
+  hair behind whatever lies in its planes (a depth bias), so the prop always shows, at any range and on a phone. On
+  every map: 4,915 such places over the 89 maps (298 on Flatpack Depot).
+- **Props stacked flush on props** (a box on a crate, shelves back to back, rail lengths end over end: 754 places, 58
+  on Flatpack Depot) are drawn a few millimetres apart, in the game and in MapMaker. Drawn only: collision is unchanged.
+- **Glass no longer pops**: windows seen through other windows (the showroom over the warehouse) stayed hidden or
+  showed depending on which glass was drawn first; glass now blends in any order.
+- **Phones: speckled floors twinkle less when you turn** (terrazzo, gravel, carpet): at the phone's render scale each
+  drawn pixel is shown 3-4 screen pixels wide, so the level's textures are taken a touch softer there (none on a
+  desktop at its usual scale).
+- Team tools: the z-fighting audit now checks props against the level and against each other on every map (none left);
+  the props' contact faces are measured from the models (`tools/content/prop-contacts.mjs`, in `pnpm content:check`).
+
 **Palms face the right way** (owner's report, 2026-11-05)
 - **Hands no longer hold guns back to front**: on some characters the game read the back of the hand as the palm, so the shooting hand held the grip palm out and the support hand lay palm down on the handguard (the new Hyena Warrior, Honest Abe and others). Which side of a hand is the palm now comes from the hand's own joints (a right hand and a left hand are mirror images: the knuckles across the fingers say which side the palm is), in third person, first person, Character Select and on creatures.
 - **Snikkit's hands** are three quarters of their old size (they were longer than his forearms) and sit deeper on the grip; the **Hyena Warrior's** left paw now closes round the handguard.

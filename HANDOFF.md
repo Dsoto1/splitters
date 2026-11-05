@@ -26,6 +26,34 @@ gets overloaded above that: local e2e times out and flakes). Prune landed worktr
 - Earlier the same day: content scalability steps 2–6, perf toolset, flaky e2e fixes, Runway Nine airliner, map
   reworks batches 2–3, character fixes rounds 2–3 (see the entries below and CHANGELOG).
 
+### Flatpack Depot flicker (`wip/flatpack`, agent, 2026-11-05; CI on `check/flatpack`)
+Owner: "The ikea map has significant flickering" / "flicker when I look around, could be shader or something"
+(Android phone, Low graphics, Performance render scale; screenshot of the Showroom corridor). docs/LOOK.md,
+"No flicker: props" and "No flicker: texture shimmer".
+- Causes found and fixed (every map):
+  1. **Props in the level's planes** (z-fighting): Quaternius Rug's cloth is its base (y = 0, facing up); Kenney
+     factory/shop/sci-fi props have double-sided bases and backs (open shelving, crates, freezers). Fix: the level's
+     materials carry a depth bias (`LEVEL_DEPTH_BIAS`, mapMeshes.ts `levelDepthBias`, copied onto the merged level
+     material). 4,915 places over 89 maps, 298 on Flatpack.
+  2. **Props flush on props**: `propFlushLifts` (shared/src/map/propFaces.ts) draws the later prop 4 mm off (max 11 mm
+     on any map), game view and MapMaker view (cached per prop set). 754 pairs, 58 on Flatpack; 0 left.
+     Contact faces: `tools/content/prop-contacts.mjs` → `propContacts.generated.ts` (content:check, content:rebuild;
+     imported only from the match/MapMaker code via `@tiletrigger/shared/propContacts`: menu bundle unchanged).
+  3. **Glass sorting**: glass wrote depth, so a nearer 32 m glass chunk drawn first hid panes behind it until the sort
+     flipped; `disableDepthWrite` on the glass material.
+  4. **Texture shimmer on phones** (reproduced: Chromium at 900×415 CSS, DPR 2.6, touch, Low, Performance): speckled
+     terrazzo twinkles when turning 0.2°. The merged level's lookups take a mip bias on magnified low-res views
+     (`levelMipBias`: ~0.6 on a phone at Performance, ~0 on a desktop); the normal-map lookup no longer sits in a branch
+     (undefined derivatives on some mobile GPUs).
+- Looked at, not changed: shader precision (Babylon declares highp; our plugins add no mediump), depth precision
+  (Chrome gives depth24 with the stencil we ask for; the bias is in depth steps so it holds on a 16-bit buffer too),
+  shadows (Low has none: not the phone's cause; no acne seen on Medium in the container), LOD popping (props on this
+  map have no LOD levels).
+- Not reproducible in the container: SwiftShader's float depth draws exact ties steadily, so causes 1-2 looked steady
+  here; the audit is the proof. Owner to check on the phone (the Showroom rugs, the market hall shelving, the speckled
+  floors while turning) and on the M1 (warehouse racks and windows over the warehouse, Medium/High).
+- Screenshots: session scratchpad `flatpack/` (before/after, phone emulation and Medium).
+
 ### Drive intake of 2026-11-05 (`wip/intake-1105`, agent; step 1 on `check/intake-1105`, step 2 next)
 Downloads in `/home/user/meshy-drive/intake-2026-11-05/` (raw, never committed); the agent linked the ones it uses
 into a scratch downloads dir (any dir works: the importers find files by `source.file` / `glb` name). Owner's rules:
