@@ -26,6 +26,62 @@ gets overloaded above that: local e2e times out and flakes). Prune landed worktr
 - Earlier the same day: content scalability steps 2–6, perf toolset, flaky e2e fixes, Runway Nine airliner, map
   reworks batches 2–3, character fixes rounds 2–3 (see the entries below and CHANGELOG).
 
+### Queued: Drive intake of 2026-11-05 (owner: "get them queued for import"; not started)
+The owner's Drive folder (gdown folder id 18MaKefMCWARf1Y3gAjhZuxTto86vGAYl, 152 files) was compared with content/,
+docs/ and HANDOFF: everything else in it is already imported or handled (FX zips: the fx pass; ammo_rifle and WWII
+ammo crate: the pickup models). New, never referenced anywhere. Downloaded to `/home/user/meshy-drive/intake-2026-11-05/`
+(raw, never committed):
+- **Rigged and animated characters:** "hobo bozo clown" (Mixamo, 2026-11-04), "Tactical T-Pose Soldier" (Mixamo,
+  2026-11-03), "umpire rigged" (the two files with that name are byte-identical: one model).
+- **18 Mixamo baseball animations** (FBX, in `anims/`): Bunt, Catcher, Hit ×3, Idle ×2, Milling Idle, Pitching ×2,
+  Step In, Step Out, Step Up To Bat, Strike, Umpire, Walk In, Walk Out, Batter On Deck.
+- **Static models with no rig:**
+  - from 2026-11-01: Skeleton Soldier, Soldier Prepared, "a world war 2 american…", "Low poly 3D game char…",
+    "Futuristic Cyberpunk…";
+  - from 2026-11-03: "futuristic baseball b…" (image-to-3D).
+- **Vehicle:** "A tank from World War…" (2026-11-01), a candidate model for the tank mount (`vehicles/tank.glb`).
+
+Owner's answers (2026-11-05):
+- Replace the tank with the WWII tank.
+- Import only models that already have rigs: the clown, the Tactical Soldier and the umpire. The owner vets and rigs
+  everything else in Meshy first; never take in an unrigged model.
+- Don't use the baseball animations.
+
+- The owner re-rigged six existing characters with Mixamo skeletons that have finger chains: The Dapper, Croakley,
+  CRT Robot, Freaky Frida, Field Medic Automaton and Stealth Operative. The downloads are in the same folder.
+  They're added to the same intake, to be rebuilt with before/after grip scores.
+- Later the same day the owner added seven more Mixamo rigs:
+  - Beanie Alien, Alien Biker, WWII Infantry and Grunt '68 ("Realistic T Pose"): re-rigs of existing characters.
+  - Gnoll warrior (maybe Hyena Warrior), Iron Warden (maybe Iron Knight, or new) and "T Pose on Green Screen" (maybe
+    CRT Robot, or new): the agent confirms each by rendering it beside the shipped character.
+  - The intake lands in steps: new characters and the tank first, then the re-rigs.
+- Owner mapping (2026-11-05, final):
+  - **Re-rigs:**
+    - Iron Warden → Iron Knight; Gnoll warrior → Hyena Warrior; "T Pose on Green Screen" → CRT Robot.
+    - Monkey → Big Bab; Uniformed Worker → Customs Agent Zhao; Desert Sentinel → Desert Ranger.
+    - Elderly Man → Grandpa Chains; Old medieval king → Old King Halvard; Hazmat → Hazmat Joe; Regal Monarch →
+      King Aldric.
+    - Plus the Dapper, Croakley, Frida, Field Medic Automaton, Stealth Operative, Beanie Alien, Alien Biker,
+      WWII Infantry and Grunt '68.
+  - **Replacements** (same name and id, new model): Tattered Circus Nightmare → Giggles; Bear Warrior → Barnaby
+    Bruin.
+  - **New characters:** Patches (clown), Tactical Soldier, Umpire, Panda, "The Butcher" (the Painter file), an old
+    man in his 90s, Frost Viking, an ancient Chinese soldier.
+  - **Retire:** Briggs and Hollis.
+  - **Never use:** Alfred Neubauer, the 6 unrigged statics, the baseball animations.
+- **Download format the owner was asked to use from now on:**
+  - Meshy rig with the Mixamo-style skeleton, fingers included;
+  - GLB with "Rigged Character" on: rest pose, no animations (we ignore the clips);
+  - upright T-pose or A-pose, nothing in the hands.
+
+The import is in progress on `wip/intake-1105`.
+Earlier open questions, kept for the record:
+- Which files are the owner's own Meshy generations (Owned) and which are Meshy Community (CC0)? For CC0, record the
+  author and post URL.
+- Rigging the static ones uses Meshy credits (needs approval) or our own pipeline.
+- What the baseball animations are for: an umpire NPC, emotes, or a mode.
+- Whether the WWII tank replaces the tank model.
+
 ### In flight
 - **Market Town perf on the M1 Pro, branch `wip/perf-market`** (agent, 2026-11-05; from main d29e6a8; not merged).
   Owner's capture (high, 44 players): 23 ms frames with few in view, 38-45 ms with 20-40; characters (clips + aim)
