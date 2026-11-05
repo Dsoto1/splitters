@@ -20,6 +20,7 @@ import { fitFirstPersonArms } from '../game/firstPersonArms.ts';
 import { FirstPersonBodyRig, fitFirstPersonBody } from '../game/firstPersonBody.ts';
 import { DEFAULT_FOV } from '../game/view.ts';
 import { auditGrip } from './gripAudit.ts';
+import { setPalmRule, skinHandFrame } from '../game/handProbe.ts';
 import type { CharacterInstance } from '../content/characters.ts';
 import type { WeaponHold } from '@tiletrigger/shared';
 
@@ -382,6 +383,37 @@ export async function openGripSheet(engine: AbstractEngine): Promise<void> {
       scene.onAfterAnimationsObservable.remove(e);
       return { frames: count, animMs: anim / Math.max(1, count), afterMs: after / Math.max(1, count), animatables: scene.animatables.length };
     },
+    /**
+     * Which way the posed character's palms were read (handProbe.skinHandFrame): per hand, the cue that decided and
+     * each cue's vote (+ agrees), and `rig`: the rig's own reading in the pose as drawn (the thumb's side of the
+     * knuckles; + agrees). Null for a hand without a frame of its own.
+     */
+    palms: () => {
+      const ch = current?.anim.ch;
+      if (!ch) return null;
+      const out: Record<string, unknown> = {};
+      for (const side of ['l', 'r'] as const) {
+        const f = skinHandFrame(ch.meshes, (n) => ch.joints.get(n), side, ch.hands[side]?.palmSide);
+        const j = (n: string) => ch.joints.get(`${n}_${side}`);
+        const [hand, knuckle, index, pinky, thumb] = [j('hand'), j('middle_01'), j('index_01'), j('pinky_01'), j('thumb_02')];
+        let rig: number | null = null;
+        if (f && hand && knuckle && index && pinky && thumb) {
+          for (const n of [hand, knuckle, index, pinky, thumb]) n.computeWorldMatrix(true);
+          const wrist = hand.getAbsolutePosition();
+          const fwd = knuckle.getAbsolutePosition().subtract(wrist).normalize();
+          const across = index.getAbsolutePosition().subtract(pinky.getAbsolutePosition()).normalize();
+          const t = thumb.getAbsolutePosition().subtract(wrist);
+          const side_ = t.subtract(fwd.scale(Vector3.Dot(t, fwd))).subtract(across.scale(Vector3.Dot(t, across)));
+          const palm = Vector3.TransformNormal(f.palm, hand.getWorldMatrix()).normalize();
+          rig = Math.round(Vector3.Dot(side_.normalize(), palm) * 100) / 100;
+        }
+        const own = (current?.anim as unknown as { arms: { [k: string]: { frame?: { palm: Vector3 } } } | null }).arms?.[side]?.frame;
+        out[side] = f ? { by: f.by, votes: f.votes, rig, fingers: ch.hands[side]?.fingers ?? 'rig', used: own ? Math.round(Vector3.Dot(own.palm, f.palm) * 100) / 100 : null } : null;
+      }
+      return out;
+    },
+    /** Before/after: hands built from now on read their palms by `rule` (`joints`, the default, or `old`). */
+    palmRule: (rule: 'joints' | 'old') => setPalmRule(rule),
     /** World positions of the posed character's joints (third person), by name. */
     joints: (): Record<string, [number, number, number]> =>
       Object.fromEntries(

@@ -365,7 +365,26 @@ Your own view shows your look's arms holding the viewmodel:
 joint as the rig's does (the dapper's lay a quarter turn round), so each measured hand's own frame is read off its
 skin (`handProbe.skinHandFrame`) and the hand is turned onto the gun by it (`gripHand`). `__grips.drawn()` and, in a
 match, `__cs.view.gripReport()` measure the drawn skin: model metres from each hand's skin to its point on the gun,
-`aheadR` (fingers along the barrel) and `sideR` (flat against the grip's side); the `characters` e2e checks both.
+`aheadR` (fingers along the barrel), `sideR` (the shooting palm in against the grip's side: 1; its back there, the
+palm facing out: -1) and `palmL` (the support palm up into a long gun's handguard, or up and in round a pistol's
+shooting hand: 1; palm down or out: negative); the `characters` e2e checks them.
+
+**Which side is the palm** (2026-11-05). A hand's flat (its thinnest way) has two sides; `skinHandFrame` takes the
+palm's from the hand's joints, the first cue that speaks clearly:
+1. **Handedness** (`knuckles`): fingers ahead, index knuckle on the thumb's side of the little finger's (ring or
+   middle where there's no little finger), a right hand's palm is on one side of them and a left's on the other
+   (worked in the mesh's own glTF space, which is right-handed; the import mirrors the world). On a download's own
+   fingers these are its own knuckles; on re-fitted fingers they were placed by `hands.mjs` from its palm side.
+2. **Curl** (`curl`): the finger joints bend toward the palm (only where they bend by more than about 6° a link).
+3. **Thumb** (`thumb`): the thumb's tip sits on the palm's side of the flat.
+4. **Measured** (`measured`): the import's palm side (`extras.hand.palmSide`).
+Before, the sign came from the thumb's first joint against the wrist joint, nearly level with the flat on most hands:
+on some (the Gnoll, Hyena Warrior's model) it picked the back, and the grip turn put the shooting palm out from the
+grip and the support palm down (owner, 2026-11-05). `drawnHand` reads the drawn palm the same way (handedness from
+the drawn knuckles), so the measures are signed. `__grips.palms()` lists each posed hand's cues (`by`, `votes`, and
+`rig`: the rig's thumb-side reading in the drawn pose), `__grips.palmRule('old')` builds the next hands by the old
+rule (a before/after), and the grip audit flags `palm` (`sideR` under 0.25 or `palmL` under 0, third or first
+person; `PALMS=old` audits by the old rule).
 
 To fit a new weapon, read the grip, support and butt positions off a side view
 of the model, then check them in `?mode=characters`.
@@ -864,7 +883,8 @@ the Spin Gun, the shotgun and the Spear in the Character Select pose, from the s
 measures each hold as drawn (`__grips.audit()`, `tools/gripAudit.ts`: finger
 weights per hand, fingertips against the grip with the hands open and closed
 (the curl test), elbow bend against the arm's own skin, the gun against the
-head and shoulders, arms across the midline, stretched skin edges) and writes
+head and shoulders, arms across the midline, stretched skin edges, which way
+each drawn palm faces: the `palm` flag, see "Which side is the palm") and writes
 `audit.json`, a ranked `summary.md` and contact sheets (`sheet-<n>.png`,
 `<id>.png`). Judge a gun "at the face" from the side: front views foreshorten
 a rifle pointed at the camera. `ONLY=<ids>`, `NO_SHOTS=1`, `NO_FP=1`,

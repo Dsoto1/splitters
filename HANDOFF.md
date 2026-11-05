@@ -384,6 +384,75 @@ up. The new Gnoll (Hyena Warrior) in the intake-2 sheets shows it.
 - **Owner's decisions:** keep the Hyena (Gnoll) and Snikkit (Goblin Mischief) and fix their hands with this;
   Bill is retired. Do the pistol-hold tweak after this.
 
+### Agent queue order (2026-11-05)
+1. Small environment follow-ups (below).
+2. Shingle Point asset refresh (owner: "start when it is a good time"). It doesn't need set pieces.
+3. Set pieces.
+4. Then the maps (MAP 21, Whiteout Station rebuild, colosseum, and the rest).
+
+The pistol-hold tweak follows the palm fix.
+
+### Queued (owner, 2026-11-05): small environment follow-ups (next free agent)
+- **Tall grass:** keep it as it is on Coldwater Gulch and Shingle Point (0.7–1.4 m clumps).
+- **Pebbles bigger:**
+  - make `env.rock.pebbles` read at play distance;
+  - add a larger variant, or raise the base size, so Sunstone Crag's swapped stones are no longer faint;
+  - redo Sunstone Crag's pebbles with MapMaker's Replace all if needed;
+  - they still don't collide.
+- **Red meadow flower:**
+  - add a red variant to `env.flower.meadow` (the generator, plus a new leaf-atlas cell if needed);
+  - turn Serene City's one formerly-red flower back to red with Replace all or the inspector variant.
+<!-- palms -->
+### Palms the right way round (`wip/palms`, agent, 2026-11-05; from main 2c8f3e21, main merged in at ce8a893a)
+**Cause (confirmed):** `skinHandFrame` signed the hand's flat by the thumb's FIRST joint against the wrist joint, which
+sits nearly level with the flat; on 34 of 100 looks (the Gnoll, Honest Abe, Scamp, Salamander Warlord, Patches,
+Tactical Soldier, Space Marine, Gorgle, ...; own-finger and re-fitted hands alike, in-house rigs too) it picked the
+back of the hand. `gripHand` then turned the shooting palm OUT (drawn `sideR` -0.8..-1.0) and `cupHand` the support
+palm DOWN (`palmL` -0.7..-1.0), third person, first person and Character Select alike. The audit missed it
+(`sideR` was `Math.abs`), and the curl test then often scored such hands well (the back of the hand on the gun with
+the fingers bent "toward the gun", i.e. backwards). Creatures (Imp, Puglin) were not affected.
+- **Fix** (handProbe.ts): the palm's side comes from the hand's joints, first cue that speaks: handedness (index vs
+  little-finger knuckles across the fingers: right palm = across x along, left = along x across, in the mesh's
+  right-handed glTF space), the fingers' bend, the thumb's tip, the import's `palmSide`; the old rule last. Checked
+  against the rig's own hands (Ranger: agrees 0.95/0.90 with the rig's thumb reading) and a unit test
+  (`packages/client/test/handProbe.test.ts`). `drawnHand` signs the drawn flat the same way: `sideR` (shooting palm
+  in: +1) and new `palmL` (support palm up / round the shooting hand: +1) are signed.
+- **Tools:** grip audit flag `palm` (`sideR` < 0.25 or `palmL` < 0, third or first person; weight 3), `PALMS=old`
+  audits by the old rule; `__grips.palms()` (each hand's cues and votes), `__grips.palmRule('old')`; summary.md has a
+  palms column. e2e `characters`: the drawn-hand checks need `palmL` >= 0, and the Gnoll and Abe (rifle, pistol;
+  third and full-body first person) need `sideR` >= 0.6 and `palmL` >= 0.3.
+- **Audit (rifle + pistol + shotgun, 100 looks; before = same build with `PALMS=old`):** total 483 -> 384, flagged
+  83 -> 75, `palm` 38 -> 4. Without the palm flag 369 -> 372: fp 19 -> 8 and off 17 -> 11 better; back 18 -> 24 and
+  flat 51 -> 56 worse, nearly all the curl test on long-gun SUPPORT hands: a palm-up hand under the handguard curls
+  its fingers up round it, away from the support point at the guard's underside (the test measures to that point; to
+  the guard's line would suit it better: not changed). Tried and dropped: fingers curl toward the frame's palm instead
+  of "toward the gun" (Space Marine's shooting hand then curled off the grip).
+- **Tuned after the fix:** Gnoll `fixes.hands.l.curl 1` (its left paw was a rigid fist; rebuilt from the download):
+  13 -> 6 (flat: right paw's curl test, spikes: body cloth). Snikkit `fixes.hands.scale 0.75` (31 cm hands, rebuilt)
+  + `fixes.grip` (gripLong [-0.03, 0.015, -0.03], curlR 0.7, curlL 0.3, supportPistol [0, 0.02, -0.04]): 12 -> 0
+  (his palms were never flipped). Space Marine and Honest Abe: round 3's support offsets were tuned on flipped hands,
+  re-tuned (5 -> 3, 3 -> 3: palm -> flat).
+- **Still `palm`:** Boglurker (rigid frog hand 19-21 cm off the grip, first person palm out; was broken before),
+  Brass Hare (hands buried in huge cuffs; the drawn flat is the cuff's; same before), Shiba (shooting palm 0.22,
+  lying more under than beside the grip; same before), Rattles (pistol support hand on edge, -0.04; same before).
+- **Candidates for the next hands round** (new flags, mostly the support curl test): Pharaoh 3 -> 6 (back, spikes),
+  Gorgle, Vanguard, Croakley, Big Bab, Desert Ranger, Stealth Operative, Tactical Soldier (+back); Masked Figure,
+  Anoobys, Greyfang, Kenji, Seetah, WWII Infantry (+flat); Goblin Warlord (+off). Grips round 3's per-look support
+  offsets (`supportLong`, `rollL`) were all tuned on whatever way the hand was read then: worth a re-tune pass.
+- **Intake-2 verdicts:** "own fingers often score off/back" was this bug in part (own-finger Meshy hands were among
+  the flipped). Not re-decided: the keep-old looks (Frida, WWII Infantry, Grunt '68, Desert Ranger, Big Bab, Grandpa
+  Chains, Hazmat Joe) ship their OLD builds, and own/fit was chosen between builds no longer shipped: re-deciding
+  needs those alternatives rebuilt and re-audited (not done). The shipped builds after the fix: Frida, Grandpa Chains,
+  Hazmat 0; Grunt '68 3 -> 0, WWII Infantry 3 -> 3, Desert Ranger 5 -> 3, Big Bab 6 -> 6, Stealth Operative (fit)
+  3 -> 3, Beanie Alien (own) 3 -> 0, Tactical Soldier (own) 7 -> 3. No verdict clearly changes on this evidence.
+- **Checks:** typecheck clean; content:check OK (hitboxes and provenance regenerated for the rebuilt two); bundle
+  budget 2471 kB / 692 kB gzip; local e2e (`CI=1`) characters, characters2, characters3, visual PASS; local
+  test:changed ran everything (shared content changed) and only long bot/match simulations timed out under machine
+  load (load 25-33); **CI run 42092260434 on `check/palms` (7badaf91) green**. Not on main: the coordinator lands it.
+- Evidence: agent scratchpad `palms/` (summary/summary.md ranked, `summary/<id>-before-after.png`, `fp/` first and
+  third person before/after, `close/`, audits `before/`, `after/`, `after-final/`; tools in `palms/tools/`).
+<!-- /palms -->
+
 ### Open bug (found 2026-11-05): explosion debris can fall through the world
 On the env + intake merge (`check/env-land2`), physicsfx counted 32 debris bodies where it expected 10, with the
 fastest moving at about 60 m/s, on both attempts.
@@ -395,9 +464,35 @@ fastest moving at about 60 m/s, on both attempts.
   colours.
 - **Still to find:** why explosion debris doesn't collide with the ground in the effects world.
 
+### New map briefs to discuss with the owner (received 2026-11-05; not started)
+- `docs/map-briefs/MAP_02_The_Spillway.md`: a hydroelectric dam in a gorge; battlefield scale, 32–64 players.
+- `docs/map-briefs/MAP_03_Frostbite_Station.md`: an arctic research station; 8–16 players.
+  - **Owner (2026-11-05): rebuild Whiteout Station (the Snow Outpost demo map) from this brief.** Keep its id and
+    map file, and rebuild its layout to MAP 03's identity.
+- `docs/map-briefs/MAP_21_Omaha_Beach_Assault.md`: a fortified beach and cliffs; massive battlefield, 64–96 players,
+  asymmetric assault.
+  - Its reference is the Shingle Point image.
+  - **Owner (2026-11-05): build MAP 21 as a NEW map from scratch** with our tools and assets (MapMaker, set pieces,
+    style packs, the environment). Keep Shingle Point as its own map **and** give it the asset refresh, so the owner
+    can compare the two side by side.
+- `docs/map-briefs/MAP_04_Verdant_Protocol.md`: an overgrown jungle compound; 16–32 players.
+  - Compare with Vinefall Sanctum, the Jungle Ruins demo, and Jungle Steps.
+
+Each brief has its reference image beside it. The owner approves the concept before any placement work; follow
+AGENT_BUILD_CONTRACT.md.
+
 ### Owner's map notes for later (2026-11-05; not started)
 - **No Man's Field:** asset refresh. It still uses Kenney kits; move it to our generated environment and props.
 - **Rockfall Canyon** (`maps/canyon.json`): asset and foliage refresh, onto our generated environment, rocks and plants.
+- **Shingle Point** (`maps/shingle_point.json`, the beach landing): an asset refresh. The owner also suggests a
+  layout rework from the reference `docs/map-briefs/shingle_point_reference.jpg`:
+  - a long beach with surf, landing craft and steel hedgehogs, under a cliff line;
+  - the cliff has a central grand staircase plus side stairs and ramps up its face;
+  - four large concrete casemates/bunkers along the cliff top, with cave mouths into the cliff;
+  - a seawall/terrace level;
+  - a village with stone houses, a central round fort and walled terraces behind.
+
+  Keep what works today (the assault from the waterline, seawall ladders and gaps, blowable weak sections).
 - **Step Temple:** its menu card shot should be a grounded, eye-level view, not aerial.
 - **Sandfall Colosseum, a full rebuild ("this is your moment to shine").** Owner's brief:
   - **Layout:** replicate the layout of the owner's game **Flavius Rule (classic)**. Get reference material from the
@@ -451,6 +546,26 @@ Owner request (2026-11-05): show the real buildable area.
   as a distinct outline inside it. The area outside the bounds should read as "scenery zone", not as an error.
 
 Also proposed: note pins, templates, mirror for team maps, a card-shot camera, and snap-to-surface/randomise for props.
+
+**Build area: done on `wip/grid` (agent, 2026-11-05); `check/grid` run 42093090058 green at 01ab568b (all shards: shared changed). Not on main yet.**
+- Shared: `editor/buildArea.ts` (`buildLimitRect`, `playableRect` = bounds else terrain extent, `buildZone`,
+  `insideBuildLimit`, `buildLimitReason`); `MAX_TILE_CELL` / `MAX_TILE_LEVEL` in the schema replace the literal
+  256 / 16; checkPlacement's refusal now says "past the build limit…". Test: `packages/shared/test/buildArea.test.ts`.
+- Client: `editor/buildAreaVisuals.ts` (owned by EditorView as `view.area`): local grid round the camera's look point
+  on the edited level (radius 12–40 cells with camera distance, fade, majors every 4, rebuilt only when the centre
+  moves 4 cells / radius / level changes); playable boundary (orange, + x-ray copy in rendering group 1); build limit
+  (white dashed + level-span posts + "BUILD LIMIT" labels); scenery band (hatched orange, 24 m, fading) and labels.
+  Top bar `#ed-grid-full` (Full grid). Camera clamp is now the build limit + 120 m, 600 m up. Status bar
+  (`#ed-target`) names the scenery zone / past the limit under the pointer. Photo mode hides all of it (the old
+  bounds outline was not hidden in thumbnails before).
+- Outlines, band and labels lie on the terrain where it rises above the edited level (`max(level, ground)`); labels
+  (rendering group 1, no fog) read from the usual south-facing view; the grid itself stays on the level plane (tiles
+  sit there), so on hilly terrain it shows only where the ground is below the level, as before.
+- e2e: editorux "The build area" block. Docs: BUILDING_KIT "Where you can build". `mapmaker.png` baseline
+  regenerated (the starter map's grid now fades out round the look point).
+- Not done / open: the grid isn't draped on terrain; the top bar at 960 px wide already overflowed by ~76 px before
+  this (Full grid adds ~32 px; only 1280 is checked); the camera may now fly 600 m up and out to the limit, which
+  draws the whole map (fine on desktop, not measured on weak GPUs).
 
 Waiting for the owner to mark which ones. This becomes the "MapMaker overhaul" in the agreed queue.
 
