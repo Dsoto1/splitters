@@ -180,6 +180,23 @@ This work is on `wip/env-p1b`. Phase 2 (more species) still needs the owner's go
 - **Resume:** `git fetch && git checkout wip/env-p1b`; `node tools/content/environment.mjs --check`; envlab at
   `?envlab` (views rock-close via the camera, rocks, cliffs, plants).
 
+### Owner decisions, 2026-11-05 (later)
+- **Environment:**
+  - grass density: the owner will test on the M1 first;
+  - replace pebbles and eelgrass with our own;
+  - retire the Kenney fern and bush once ours conceal the same way;
+  - update hand-placed Kenney foliage on maps now, through a MapMaker "Replace all" operation.
+
+  This work is on `wip/env-p1c`.
+- **Characters:**
+  - "T Pose on Green Screen" is a new character, "Bill", not the CRT Robot;
+  - narrow the tank's box to fit the model;
+  - make the goblins small;
+  - most of this intake is Meshy Community CC0, not owned, so the owner owes authors and post URLs;
+  - keep Meshy's finger weights when a download has finger chains (my call; the owner said "your call").
+
+  This work is on `wip/intake-2`.
+
 ### In flight
 - **Market Town perf on the M1 Pro, branch `wip/perf-market`** (agent, 2026-11-05; from main d29e6a8; not merged).
   Owner's capture (high, 44 players): 23 ms frames with few in view, 38-45 ms with 20-40; characters (clips + aim)
