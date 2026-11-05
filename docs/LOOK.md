@@ -89,6 +89,19 @@ Not seen in the container: SwiftShader's float depth buffer draws an exact tie t
 spots looked steady here; a phone's or a desktop GPU's 24-bit buffer breaks the tie differently pixel by pixel and
 frame by frame (the flicker).
 
+## No flicker: glass and texture shimmer
+
+- **Glass** writes no depth (glassVisuals.ts `glassMaterial`). Panes are drawn in 32 m chunks sorted by distance; with
+  depth writes, a nearer chunk drawn first hid the panes behind it until the order flipped as you moved (windows seen
+  through windows popping). Now every pane blends in any order (one tint: the same colour either way).
+- **Texture shimmer on phones** (`levelMipBias`, levelMerge.ts). A phone draws at 0.75 px per CSS pixel on a 2.5-3x
+  screen, so each drawn pixel is shown 3-4 screen pixels wide; a speckled floor (terrazzo, gravel, carpet) whose
+  specks are about a drawn pixel twinkles as you turn, mipmaps or not. The merged level's colour and normal lookups
+  take a mip bias of half a level per doubling of that magnification past 1.5x (about 0.6 on a phone at Performance,
+  none on a desktop at its usual scale, at most 1): a touch softer, steady. Set when the level is built (a render scale
+  changed mid-match applies from the next map). The normal-map lookup is taken on every pixel and then chosen (it sat
+  in a branch: undefined mip level on some phone GPUs). WebGL2 (the merged level); WebGPU draws the level unmerged.
+
 ### Depth buffer
 
 WebGL2 keeps reverse depth on, though it buys little there: the canvas's depth buffer is 24-bit fixed point and
