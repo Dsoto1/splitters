@@ -104,6 +104,9 @@ export const WHOLE_BODY_LOOKS: readonly CharacterLook[] = [
   { id: 'core.emeraldrobot', name: 'Emerald Robot', body: 'male', head: '', parts: ['meshy_emeraldrobot'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_emeraldrobot_fparms', grip: { gripLong: [-0.06, 0, -0.03], supportPistol: [0, 0.02, -0.08], curlR: 1.2 } }, group: 'creatures', nameTheme: 'robot' },
   { id: 'core.spacemarine', name: 'Space Marine', body: 'male', head: '', parts: ['meshy_spacemarine'], hair: [], colorways: [], skin: null, hairColor: null, size: 'small', whole: { arms: 'meshy_spacemarine_fparms', hold: { forward: 0.06, down: 0.1, out: 0.08 }, grip: { gripLong: [-0.06, 0, -0.045], supportLong: [0.06, -0.02, 0], supportPistol: [0, 0.02, -0.1], curlR: 1.6, curlL: 1.2 } }, group: 'soldiers', nameTheme: 'soldier' },
   { id: 'core.skeletonbiker', name: 'Spiked Skeleton Biker', body: 'male', head: '', parts: ['meshy_skeletonbiker'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_skeletonbiker_fparms' }, group: 'horror', nameTheme: 'undead' },
+  { id: 'core.hoboclown', name: 'Patches', body: 'male', head: '', parts: ['meshy_hoboclown'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_hoboclown_fparms' }, group: 'folk', nameTheme: 'townsfolk' },
+  { id: 'core.tacticalsoldier', name: 'Tactical Soldier', body: 'male', head: '', parts: ['meshy_tacticalsoldier'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_tacticalsoldier_fparms' }, group: 'soldiers', nameTheme: 'soldier' },
+  { id: 'core.umpire', name: 'Umpire', body: 'male', head: '', parts: ['meshy_umpire'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_umpire_fparms' }, group: 'folk', nameTheme: 'townsfolk' },
 ];
 
 /** Whole-body characters made for NPCs only (`use: npc`): not on the roster; NPC_ROLE_SPECS can name them. */
@@ -211,4 +214,7 @@ export const WHOLE_BODY_BIOS: Readonly<Record<string, string>> = {
   'core.emeraldrobot': 'Polished to a mirror shine. Every scratch is a story, and it remembers every one of them.',
   'core.spacemarine': 'Short, green and fully kitted out. Passed every fitness test by standing on a crate.',
   'core.skeletonbiker': 'Died in a wreck in 1979. Kept riding anyway.',
+  'core.hoboclown': 'Twenty years of birthday parties, three of them paid. Today he is working for tips.',
+  'core.tacticalsoldier': 'Plate carrier, six mags, one plan. The plan is the six mags.',
+  'core.umpire': 'Has never once been wrong. Ask him.',
 };

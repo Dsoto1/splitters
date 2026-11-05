@@ -1,0 +1,35 @@
+{
+  "id": "meshy_hoboclown",
+  "kind": "character",
+  "use": "player",
+  "order": 103,
+  "name": "Patches",
+  "look": "core.hoboclown",
+  "group": "folk",
+  "nameTheme": "townsfolk",
+  "bio": "Twenty years of birthday parties, three of them paid. Today he is working for tips.",
+  "body": "male",
+  "notes": "Drive intake of 2026-11-05 (\"hobo bozo clown tpose\", 2026-11-04; the owner's own Meshy model, rigged and animated on Meshy: an \"All Animations\" export with Mixamo joint names, read as Meshy's; its Walking and Running clips and finger joints are not used: the rig's clips and the shared clip set drive it, hands.mjs fits the hands). White gloves. Display name a placeholder for the owner (\"Bozo\" was suggested; Bozo the Clown is a trademark, so the roster says Patches until the owner picks).",
+  "source": {
+    "license": "owned",
+    "author": "the owner, on their Meshy subscription",
+    "date": "2026-11-04",
+    "url": null,
+    "file": "^Meshy_AI_hobo_bozo_clown_tpose_\\d+_animated_mixamo_All_animation\\.glb$"
+  },
+  "finish": {
+    "metallic": 0.02,
+    "roughness": 0.7
+  },
+  "firstPerson": {
+    "arms": "own"
+  },
+  "fixes": {
+    "triangles": 11000,
+    "headShare": 0.16,
+    "handsShare": 0.1,
+    "normalSize": 512,
+    "lod": 0.25,
+    "feet": true
+  }
+}

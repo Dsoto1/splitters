@@ -1,0 +1,35 @@
+{
+  "id": "meshy_tacticalsoldier",
+  "kind": "character",
+  "use": "player",
+  "order": 104,
+  "name": "Tactical Soldier",
+  "look": "core.tacticalsoldier",
+  "group": "soldiers",
+  "nameTheme": "soldier",
+  "bio": "Plate carrier, six mags, one plan. The plan is the six mags.",
+  "body": "male",
+  "notes": "Drive intake of 2026-11-05 (\"Tactical T-Pose Soldier\", 2026-11-03; the owner's own Meshy model, rigged and animated on Meshy: an \"All Animations\" export with Mixamo joint names, read as Meshy's; its Walking and Running clips and finger joints are not used: the rig's clips and the shared clip set drive it, hands.mjs fits the hands). Display name a placeholder for the owner.",
+  "source": {
+    "license": "owned",
+    "author": "the owner, on their Meshy subscription",
+    "date": "2026-11-03",
+    "url": null,
+    "file": "^Meshy_AI_Tactical_T_Pose_Soldier_\\d+_animated_mixamo_All_animation\\.glb$"
+  },
+  "finish": {
+    "metallic": 0.05,
+    "roughness": 0.75
+  },
+  "firstPerson": {
+    "arms": "own"
+  },
+  "fixes": {
+    "triangles": 11000,
+    "headShare": 0.16,
+    "handsShare": 0.1,
+    "normalSize": 1024,
+    "lod": 0.25,
+    "feet": true
+  }
+}
