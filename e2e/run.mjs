@@ -846,6 +846,64 @@ async function editoruxFlow(browser) {
   check((await page.evaluate(() => window.__editor.level)) === 1, 'Page Up still changes level');
   await page.keyboard.press('PageDown');
 
+  // The build area (owner, 2026-11-05): the grid stays local, round where the camera looks; the build limit and the
+  // playable boundary always show, with the scenery zone outside the boundary; a room there places; one past the
+  // build limit is refused, saying so; top bar Full grid covers the whole build area.
+  const area = () => page.evaluate(() => {
+    const s = window.__editor.view.scene;
+    const on = (n) => s.meshes.some((m) => m.name === n && m.isEnabled());
+    const g = s.meshes.find((m) => m.name === 'grid');
+    g?.refreshBoundingInfo();
+    return { reach: Math.round(g?.getBoundingInfo().boundingBox.extendSizeWorld.x ?? 0), gridOn: !!g?.isEnabled(), limit: on('buildLimit'), bounds: on('bounds'), band: on('sceneryBand') };
+  });
+  await settle();
+  const a0 = await area();
+  check(a0.gridOn && a0.limit && a0.reach > 40 && a0.reach < 400, `a local grid and the build limit are drawn (${JSON.stringify(a0)})`);
+  const boundsBefore = await page.evaluate(() => window.__editor.doc.bounds);
+  await page.evaluate((before) => window.__editor.run('Boundary', { kind: 'setBounds', before, after: { min: [-40, -40], max: [40, 40], style: 'invisible', height: 8 } }), boundsBefore);
+  await settle();
+  const a1 = await area();
+  check(a1.bounds && a1.band && a1.limit, `with a boundary: its outline and the scenery zone outside it (${JSON.stringify(a1)})`);
+  const placeAt = async (x, z) => {
+    await page.evaluate(([x, z]) => window.__editor.view.focus({ x, y: 0, z }), [x, z]);
+    await page.waitForFunction(([x, z]) => {
+      const p = window.__editor.view.project({ x, y: 0, z });
+      return Math.abs(p.x - innerWidth / 2) < innerWidth / 4 && Math.abs(p.y - innerHeight / 2) < innerHeight / 4;
+    }, [x, z], { timeout: T(10000) }).catch(() => {});
+    const p = await at(x, 0, z);
+    await page.mouse.move(p.x, p.y);
+    await settle();
+    const target = await page.textContent('#ed-target');
+    await page.mouse.click(p.x, p.y);
+    await settle();
+    return target;
+  };
+  await clickTool(page, '[data-tool="tile:core.room"]');
+  const areaTiles = (await doc()).classicStructure.tiles.length;
+  const sceneryNote = await placeAt(64, -64);
+  check((await doc()).classicStructure.tiles.some((t) => t.x === 8 && t.y === -8), 'a room in the scenery zone (outside the boundary) places');
+  check(/Scenery zone/.test(sceneryNote ?? ''), `hovering there says it is the scenery zone (${sceneryNote})`);
+  const beyondNote = await placeAt(2072, 0);
+  const limitRefusal = (await page.textContent('#ed-toast')) ?? '';
+  check((await doc()).classicStructure.tiles.length === areaTiles + 1 && /build limit/.test(limitRefusal), `a room past the build limit is refused, naming it (${limitRefusal})`);
+  check(/Past the build limit/.test(beyondNote ?? ''), `hovering past it says so (${beyondNote})`);
+  await page.click('#ed-grid-full');
+  await settle();
+  const a2 = await area();
+  check(a2.gridOn && a2.reach > 2000 && (await page.getAttribute('#ed-grid-full', 'aria-pressed')) === 'true', `Full grid covers the whole build area (${JSON.stringify(a2)})`);
+  await page.click('#ed-grid-full');
+  await settle();
+  check((await area()).reach < 400, 'and off again it is local');
+  await page.click('#ed-grid');
+  await settle();
+  const a3 = await area();
+  check(!a3.gridOn && a3.limit && a3.bounds, `Grid off hides the grid, not the boundary or the build limit (${JSON.stringify(a3)})`);
+  await page.click('#ed-grid');
+  await page.keyboard.press('Control+KeyZ');
+  await page.keyboard.press('Control+KeyZ');
+  check((await doc()).classicStructure.tiles.length === areaTiles && JSON.stringify((await doc()).bounds) === JSON.stringify(boundsBefore), 'undo takes the room and the boundary back out');
+  await page.keyboard.press('Escape');
+
   // A floor over a piece two levels tall (the owner's case, 2026-11-05): the Triumphal Arch holds its cell on Level 1
   // too, so a room there is refused, saying what to do; a Platform there becomes the arch's own floor, and the arch's
   // inspector ticks it on and off.

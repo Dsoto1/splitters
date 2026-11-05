@@ -27,6 +27,12 @@ docs/PERF_96.md, "Performance round 2")
 - **Cheaper bookkeeping**: stopping a clip and removing a mesh no longer search the scene's 8,000 running animations;
   each frame only the meshes switched on are looked at (about a third of a big match's 3,300); the level's and props'
   materials are frozen once settled.
+**MapMaker: see where you can build** (the owner's request, 2026-11-05)
+- **The grid follows you**: instead of a fixed patch round the centre of the map, the level grid covers the cells round where the camera looks, fades out at its edge and draws every 4th line stronger; it widens as you fly higher.
+- **Two outlines, always shown**: the **playable boundary** (orange: the map's boundary, or its terrain's edge when it has none) and the **build limit** (white, dashed: 256 cells, about 2 km, from the centre and 16 levels up or down), where placement stops. Both show through hills and buildings.
+- **The scenery zone**: between the two, a hatched band just outside the boundary and a label ("Scenery zone · building here is fine") mark it, since scenery there blends the map into the world round it. The status bar names the zone under the pointer.
+- **Full grid** (top bar, next to Grid) shows the grid over the whole build area on demand.
+- A piece refused at the edge now says it is **past the build limit**; the camera can fly out that far.
 
 **MapMaker: floors over tall pieces** (the owner's report, 2026-11-05)
 - **A floor or ceiling over a piece that stands two or more levels tall**: such a piece (Triumphal Arch, Hypostyle Hall, Temple Pylon, Tall Room, Arena Seating, City Wall…) holds its cell on its upper levels too, so nothing could be placed there. Now a **Platform** placed on that cell becomes the piece's own floor there, or select the piece and tick **Floor on Level N** under *Upper floors* in the inspector (its whole footprint). A full floor slab you can stand and build on; what rises through it (columns, arches) stays. Not on stairs, ramps and towers (their upper level is the way up) or model buildings. Map format v26 (`upperFloors` on tiles; older maps load as they were).

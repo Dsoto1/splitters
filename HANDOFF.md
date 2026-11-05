@@ -547,6 +547,26 @@ Owner request (2026-11-05): show the real buildable area.
 
 Also proposed: note pins, templates, mirror for team maps, a card-shot camera, and snap-to-surface/randomise for props.
 
+**Build area: done on `wip/grid` (agent, 2026-11-05); `check/grid` run 42093090058 green at 01ab568b (all shards: shared changed). Not on main yet.**
+- Shared: `editor/buildArea.ts` (`buildLimitRect`, `playableRect` = bounds else terrain extent, `buildZone`,
+  `insideBuildLimit`, `buildLimitReason`); `MAX_TILE_CELL` / `MAX_TILE_LEVEL` in the schema replace the literal
+  256 / 16; checkPlacement's refusal now says "past the build limit…". Test: `packages/shared/test/buildArea.test.ts`.
+- Client: `editor/buildAreaVisuals.ts` (owned by EditorView as `view.area`): local grid round the camera's look point
+  on the edited level (radius 12–40 cells with camera distance, fade, majors every 4, rebuilt only when the centre
+  moves 4 cells / radius / level changes); playable boundary (orange, + x-ray copy in rendering group 1); build limit
+  (white dashed + level-span posts + "BUILD LIMIT" labels); scenery band (hatched orange, 24 m, fading) and labels.
+  Top bar `#ed-grid-full` (Full grid). Camera clamp is now the build limit + 120 m, 600 m up. Status bar
+  (`#ed-target`) names the scenery zone / past the limit under the pointer. Photo mode hides all of it (the old
+  bounds outline was not hidden in thumbnails before).
+- Outlines, band and labels lie on the terrain where it rises above the edited level (`max(level, ground)`); labels
+  (rendering group 1, no fog) read from the usual south-facing view; the grid itself stays on the level plane (tiles
+  sit there), so on hilly terrain it shows only where the ground is below the level, as before.
+- e2e: editorux "The build area" block. Docs: BUILDING_KIT "Where you can build". `mapmaker.png` baseline
+  regenerated (the starter map's grid now fades out round the look point).
+- Not done / open: the grid isn't draped on terrain; the top bar at 960 px wide already overflowed by ~76 px before
+  this (Full grid adds ~32 px; only 1280 is checked); the camera may now fly 600 m up and out to the limit, which
+  draws the whole map (fine on desktop, not measured on weak GPUs).
+
 Waiting for the owner to mark which ones. This becomes the "MapMaker overhaul" in the agreed queue.
 
 ### Queued (owner-approved, 2026-11-05): kit-prop generators
