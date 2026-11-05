@@ -322,6 +322,17 @@ up. The new Gnoll (Hyena Warrior) in the intake-2 sheets shows it.
 - **Owner's decisions:** keep the Hyena (Gnoll) and Snikkit (Goblin Mischief) and fix their hands with this;
   Bill is retired. Do the pistol-hold tweak after this.
 
+### Open bug (found 2026-11-05): explosion debris can fall through the world
+On the env + intake merge (`check/env-land2`), physicsfx counted 32 debris bodies where it expected 10, with the
+fastest moving at about 60 m/s, on both attempts.
+- 22 extra is exactly one explosion's debris (view.ts `explosion()`: 16 + 6).
+- 60 m/s matches about 3 s of free fall at g = 20. So those chunks were falling through the world rather than
+  landing.
+- Likely source: the test's 500-damage mass blast destroying a vehicle or turret near the spawn on Rockfall Canyon.
+- The test now checks only its own burst (`check/env-land3`), and its message lists the older chunks and their
+  colours.
+- **Still to find:** why explosion debris doesn't collide with the ground in the effects world.
+
 ### Owner's map notes for later (2026-11-05; not started)
 - **No Man's Field:** asset refresh. It still uses Kenney kits; move it to our generated environment and props.
 - **Rockfall Canyon** (`maps/canyon.json`): asset and foliage refresh, onto our generated environment, rocks and plants.
