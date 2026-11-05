@@ -326,6 +326,18 @@ hands move up more into the gun. Looks as if their fingers are just pinching the
   Coldwater Gulch / Shingle Point, as the Kenney patches stood; smaller would need the Scale field per piece or a
   re-run of Replace all from the old map with Keep scale); a red meadow-flower variant and palette
   pictures for the species are open.
+### Performance round 2 (`wip/perf-2`, agent, 2026-11-05; from main 2c8f3e21, origin/main merged; check run on `check/perf-2`)
+Status: in progress. Details and numbers: docs/PERF_96.md, "Performance round 2".
+- **Done (code)**: static shadow cache (`game/shadowCache.ts`: static casters drawn only when a cascade moves past its
+  margin, every ~30 frames, or when they change; doors and gates join once still for 60 frames; WebGL2 depth blit);
+  level draw merging (`levelMerge.ts`, `MapStyler.merge`: per-style level and terrain meshes merged over array
+  textures, WebGL2); animation LOD round 2 (`animLod.ts`: 20/12/8 Hz, `coarse` detail past 35 m with the arms' last
+  full grip kept; creatures' clips on the same LOD); cheaper clip stops and node disposals (`animPatches.ts`); live
+  mesh candidates and frozen static materials (`meshSelection.ts`). A/B on one build:
+  `?perfoff=shadowcache,levelmerge,meshsel,animlod2`.
+- **Next**: finish the measurements, docs, CI green on `check/perf-2`, owner re-record on the M1.
+- **Resume**: check out `wip/perf-2`; the probe is a scratchpad script (docs/PERF_96.md says how it is set up).
+
 ### Queued (owner-approved, 2026-11-05): performance round 2 (next free agent slot)
 **Owner's second M1 Pro recording** (build 4e77fab; Market Town, TDM, 49 players, high, 60 fps cap). Files in the
 session scratchpad `perf2/`: the perf JSON and the trace.
