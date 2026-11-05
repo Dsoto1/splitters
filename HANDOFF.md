@@ -363,6 +363,13 @@ The owner asked what MapMaker could use, by comparison with the Far Cry and Time
 6. Interface: mode tabs, collapsible panels, an outliner with hide/lock, favourites/recents, a shortcut overlay, and a
    guided first-time tour.
 
+Owner request (2026-11-05): show the real buildable area.
+- Today the editor grid is a fixed ±12 cells around the origin (`GRID_EXTENT` in client editor/editorView.ts), while
+  placement allows ±256 cells and ±16 levels (`checkPlacement`).
+- Draw the grid over the whole usable area: the map bounds if set, else the terrain's extent. Make every 4th line a
+  stronger major line, fade the grid with distance, and outline the build limit.
+- The owner sees this as a quick win; do it first in the MapMaker work.
+
 Also proposed: note pins, templates, mirror for team maps, a card-shot camera, and snap-to-surface/randomise for props.
 
 Waiting for the owner to mark which ones. This becomes the "MapMaker overhaul" in the agreed queue.
