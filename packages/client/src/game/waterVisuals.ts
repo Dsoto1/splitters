@@ -24,6 +24,7 @@ import '@babylonjs/core/Meshes/thinInstanceMesh';
 import '@babylonjs/core/Rendering/depthRendererSceneComponent';
 import { terrainHeightAt, type Liquid, type MapDocument, type Vec3, type WaterEntity, type WorldBox } from '@tiletrigger/shared';
 import { loadGraphicsQuality, type GraphicsQuality } from './atmosphere.ts';
+import { wholeSceneDepth } from './sceneDepth.ts';
 
 /**
  * Better liquids. Water (and swamp, and tinted water) is one small shader:
@@ -217,6 +218,8 @@ export class WaterVisuals {
   private mirror: MirrorTexture | null = null;
   private mirrorY = 0;
   private depth: DepthRenderer | null = null;
+  /** The bodies drawn with the scene depth, and how far round each the depth matters (m). */
+  private readonly bodies: { mesh: Mesh; below: number; above: number; side: number }[] = [];
   private readonly observers: Observer<unknown>[] = [];
   private readonly start = performance.now();
   readonly fx: WaterFx;
@@ -282,6 +285,13 @@ export class WaterVisuals {
     });
     // Transparent, sorted with the other see-through things; never in the shadow map.
     mesh.receiveShadows = false;
+    // What the scene depth has to hold for it: from its floor (and the banks) to a wader's head over its top.
+    const body = { mesh, below: h + 1, above: 2.5, side: 2 };
+    this.bodies.push(body);
+    mesh.onDisposeObservable.addOnce(() => {
+      const k = this.bodies.indexOf(body);
+      if (k >= 0) this.bodies.splice(k, 1);
+    });
     return { mesh, material };
   }
 
@@ -419,7 +429,47 @@ export class WaterVisuals {
     } catch {
       this.depth = null;
     }
+    if (this.depth) this.depthNearWater(this.depth);
     return this.depth;
+  }
+
+  /**
+   * The water only reads the scene depth where it is drawn: what lies under its surface (the bed, the banks, a pier,
+   * someone wading). So the depth map draws only what is in or round a body of water (its bounds), not the whole view
+   * again (a third of a high-quality frame's draws on a map with a stream: Market Town 300 of 950). When the height
+   * fog shares the same depth map (a misty map, SkyEffects), it needs the whole view and gets it.
+   */
+  private depthNearWater(depth: DepthRenderer): void {
+    const map = depth.getDepthMap();
+    const kept: AbstractMesh[] = [];
+    const zones: { min: Vector3; max: Vector3 }[] = [];
+    let frame = -1;
+    map.getCustomRenderList = (_layer, list, length) => {
+      if (!list || wholeSceneDepth(depth) || !this.bodies.length) return null;
+      const f = this.scene.getFrameId();
+      if (f === frame) return kept;
+      frame = f;
+      zones.length = 0;
+      for (const b of this.bodies) {
+        if (b.mesh.isDisposed() || !b.mesh.isEnabled()) continue;
+        const bb = b.mesh.getBoundingInfo().boundingBox;
+        zones.push({ min: bb.minimumWorld.subtract(new Vector3(b.side, b.below, b.side)), max: bb.maximumWorld.add(new Vector3(b.side, b.above, b.side)) });
+      }
+      kept.length = 0;
+      for (let i = 0; i < length; i++) {
+        const m = list[i]!;
+        const bb = m.getBoundingInfo().boundingBox;
+        const lo = bb.minimumWorld;
+        const hi = bb.maximumWorld;
+        for (const z of zones) {
+          if (hi.x >= z.min.x && lo.x <= z.max.x && hi.y >= z.min.y && lo.y <= z.max.y && hi.z >= z.min.z && lo.z <= z.max.z) {
+            kept.push(m);
+            break;
+          }
+        }
+      }
+      return kept;
+    };
   }
 
   /**

@@ -8,6 +8,13 @@ made only on a commit that passed CI on a check branch.
 
 ## Unreleased
 
+**Busy fights run smoother** (docs/PERF_96.md, "Market Town on an M1 Pro")
+- **Far characters cost less, even when frames are slow**: characters past 15 m animate every 2nd frame, past 35 m every 3rd and past 70 m every 4th (on top of the 30 / 15 / 10 Hz steps they had), in every match rather than only big ones, so a busy 25-40 fps fight no longer animates every character every frame; past 15 m their fingers keep the grip of their last full close. Nearby characters are unchanged.
+- **Shots and hits in a firefight are cheap**: another player's repeated shots and hit flinches restart their clip instead of rebuilding it on every joint; past 35 m their recoil twitch is left out.
+- **Shadows draw a third as many things**: the level, placed props and the border cast their shadows through a few merged meshes per area instead of one per material in every shadow cascade; pickups and held guns cast only near you, as small clutter does. Shadows look the same.
+- **High-quality water** only redraws what is in or round it for its soft shore, instead of the whole view a second time.
+- **Fewer respawn hitches**: at most one new character is built after each frame, and a body that has sunk away is kept and reused for the next player of that look instead of building a new one. Blood splats draw in one go.
+
 **No more texture flicker**
 - **Map surfaces stop flickering**: where two pieces' faces lay in the same plane (a floor slab's edge under the wall over it, wall runs meeting at corners, trim and facades flush with walls, floors over floors, a block level with a tile, the joints of curved walls) they fought for the same pixels and shimmered at grazing angles and range. Maps are now built so only one face draws there, by a fixed priority (floors on top, walls over slab edges, trim and style-pack pieces over what they dress), and hidden faces are dropped. Nothing else about the look changes, except that floor slab edges no longer show as dark bands at random cells on outside walls. Collision is unchanged. A test checks every map in maps/ for overlaps left (none).
 - **MapMaker**: a warning when a block's face lies in the same plane as another piece's in a different look (only one shows), and **Overlaps** in the top bar highlights those places.

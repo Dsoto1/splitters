@@ -85,6 +85,7 @@ import { BloodVisuals, bloodPreference } from './bloodVisuals.ts';
 import { PosedBody, RAGDOLL_PREWARM, Ragdoll, type DeadBody } from './ragdoll.ts';
 import { fitBudget, tierFor, type RagdollTier } from './ragdollBudget.ts';
 import { Atmosphere } from './atmosphere.ts';
+import { castSmall } from './shadowFlags.ts';
 import { ImpactVisuals } from './impactVisuals.ts';
 import { ThrowArc } from './throwArc.ts';
 import { createStarFlash, kickFlash } from './muzzleVisuals.ts';
@@ -108,6 +109,7 @@ import { CityVisuals } from './cityVisuals.ts';
 import { SkyEffects } from './skyEffects.ts';
 import { CharacterLibrary, setCharacterLodCrowd, setCharacterLodZoom, type CharacterInstance } from '../content/characters.ts';
 import { CharacterAnimator, type OneShot } from './characterAnimator.ts';
+import { ANIM_LOD_FAR, ANIM_LOD_NEAR, SHOT_OVERLAY_REACH, animStep } from './animLod.ts';
 import { fitFirstPersonArms } from './firstPersonArms.ts';
 import { FirstPersonBodyRig } from './firstPersonBody.ts';
 import { loadFirstPersonMode, loadGraphicsQuality, type FirstPersonMode } from './graphicsSettings.ts';
@@ -228,19 +230,22 @@ const DEATH_START_MS = 4;
 /** The way an avatar faces (its yaw; characters face +Z at yaw 0), for its ragdoll to tell front from back. */
 const facingOf = (a: Avatar): Vec3 => ({ x: Math.sin(a.root.rotation.y), y: 0, z: Math.cos(a.root.rotation.y) });
 
+/**
+ * Characters kept for reuse per look (spec) when their avatar goes (a body that sank away, one past MAX_CORPSES, a player
+ * who left): the next avatar of that look (a respawn) takes one at once instead of building a new one (10-25 ms each,
+ * just after a frame: a busy match's respawns were most of its hitches' unexplained time).
+ */
+const BODY_POOL_PER_LOOK = 2;
+/** Frames longer than this (ms: a CPU-rendered page) let more than one character be built after them (one per 16 ms). */
+const BUILD_CATCH_UP_MS = 250;
 /** Ragdoll parts parked in the effects world's pool when the map is built (a standard body's, this many times). */
 const RAGDOLL_PREWARM_BODIES = 12;
 /**
- * Crowd animation LOD: with more than this many remote characters, ones in
- * view past ANIM_LOD_NEAR metres are animated (clips sampled, bones, aim and
- * grip) at 15 Hz and past ANIM_LOD_FAR at 10 Hz instead of every frame (their
- * meshes already drop to the low-detail copy past LOD_DISTANCE).
+ * Crowds: with more than this many remote characters, characters out of view sleep (no clips, aim or grip), held guns
+ * and team markers are GPU instances, low detail comes sooner and far ones cast no shadow. The animation LOD
+ * (animLod.ts: rate and detail by distance) applies in every match.
  */
 const ANIM_LOD_CROWD = 24;
-/** Crowds: characters nearer than this (m) animate every frame; between it and ANIM_LOD_NEAR at 30 Hz (every 2nd frame at 60 fps). */
-const ANIM_LOD_FULL = 15;
-const ANIM_LOD_NEAR = 35;
-const ANIM_LOD_FAR = 70;
 /** Crowds: characters further than this (m) cast no shadow (a crowd's far shadows are a draw each for a few pixels). */
 const CROWD_SHADOW_REACH = 30;
 /**
@@ -250,9 +255,9 @@ const CROWD_SHADOW_REACH = 30;
 export const SHADOW_CHARACTERS = 12;
 const SHADOW_ALWAYS = 10;
 
-/** How often (ms between evaluations, 0 every frame) a crowd's character in view at `dist` m animates. */
+/** How often (ms between evaluations, 0 every frame) a character in view at `dist` m animates at 60 fps (animLod.ts). */
 export function animStepMs(dist: number): number {
-  return dist > ANIM_LOD_FAR ? 100 : dist > ANIM_LOD_NEAR ? 1000 / 15 : dist > ANIM_LOD_FULL ? 1000 / 30 : 0;
+  return animStep(dist).ms;
 }
 /** Crowds: a character is drawn while a sphere this big (m) round its middle touches the view (it covers the gun and most of a shadow). */
 const CULL_RADIUS = 2.5;
@@ -302,6 +307,8 @@ export class GameView {
   private readonly avatars = new Map<number, Avatar>();
   /** More remote players than ANIM_LOD_CROWD (the last updateAvatars): big-match savings apply. */
   private crowd = false;
+  /** updateAvatars calls so far: the animation LOD's frame count (animLod.ts). */
+  private avatarFrame = 0;
   private readonly pickups = new Map<string, PickupVisual>();
   /** Weapons the fallen dropped (snapshot `dw`), by drop ID: drawn lying where they fell. */
   private readonly drops = new Map<number, { root: TransformNode; item: string }>();
@@ -383,14 +390,17 @@ export class GameView {
     this.scenario = new ScenarioVisuals(this.scene);
     this.zoneVisuals = new ZoneVisuals(this.scene);
     this.characters = new CharacterLibrary(this.scene, { atlas: true });
-    // Characters are built one per 16 ms (one a frame at 60 fps, more when frames are long): the host adding
-    // a dozen bots, or a full match's first wave, built them all in one long frame, a stall on every computer.
+    // Characters are built one a frame: the host adding a dozen bots, or a full match's first wave, built them all
+    // in one long frame, a stall on every computer. A build (10-25 ms) runs just after the frame, outside its measured
+    // spans (the "outside" time of a recording's hitches), so a slow frame no longer lets two or three through at once
+    // (one per 16 ms it took, before); only a CPU-rendered page's very long frames (tests) still catch up that way.
     const turns: (() => void)[] = [];
     let lastTurn = performance.now();
     this.characters.turn = () => new Promise((go) => turns.push(go));
     this.scene.onBeforeRenderObservable.add(() => {
       const now = performance.now();
-      for (let n = Math.max(1, Math.floor((now - lastTurn) / 16)); n > 0 && turns.length; n--) {
+      const dt = now - lastTurn;
+      for (let n = dt < BUILD_CATCH_UP_MS ? 1 : Math.floor(dt / 16); n > 0 && turns.length; n--) {
         turns.shift()!();
         if (perfProbe.on) perfProbe.n[COUNT.built]!++;
       }
@@ -631,11 +641,15 @@ export class GameView {
    * hit reaction on the upper body (characterAnimator flinch).
    */
   flinchPlayer(slot: number, dir: Vec3, zone: number, strength: number): void {
-    const anim = this.avatars.get(slot)?.anim;
-    if (!(anim instanceof CharacterAnimator)) return;
+    const a = this.avatars.get(slot);
+    const anim = a?.anim;
+    if (!a || !(anim instanceof CharacterAnimator)) return;
     const k = Math.min(1, strength / 2);
     anim.flinch(zone, dir, 0.35 + 0.65 * k);
-    if (strength >= 1.6) anim.trigger(zone === 1 ? 'hit_head' : 'hit');
+    // The hit clip over the flinch only where it shows (as remote shots' recoil, SHOT_OVERLAY_REACH).
+    const eye = this.scene.activeCamera?.globalPosition;
+    const near = !eye || Math.hypot(a.root.position.x - eye.x, a.root.position.z - eye.z) <= SHOT_OVERLAY_REACH;
+    if (strength >= 1.6 && near) anim.trigger(zone === 1 ? 'hit_head' : 'hit');
   }
 
   cameraPosition(): Vec3 {
@@ -1517,11 +1531,11 @@ export class GameView {
    */
   updateAvatars(poses: readonly RemotePose[], localSlot: number, spec: (slot: number) => AvatarSpec, celebrate = false, allyColor: (slot: number) => string | null = () => null, seated: ReadonlySet<number> = new Set(), sitting: ReadonlyMap<number, { yaw: number; legDrop: number; straddle?: number }> = new Map()): void {
     const now = performance.now();
+    this.avatarFrame++;
     const crowd = poses.length > ANIM_LOD_CROWD;
     this.crowd = crowd;
     // Crowds draw characters' low-detail meshes sooner.
     setCharacterLodCrowd(crowd);
-    const cam = crowd ? this.scene.activeCamera?.globalPosition : undefined;
     const planes = crowd && this.scene.activeCamera ? Frustum.GetPlanes(this.scene.activeCamera.getTransformationMatrix()) : null;
     // Shadows: the nearest SHADOW_CHARACTERS live characters in view cast (squared distance of the last that does).
     const eye = this.scene.activeCamera?.globalPosition;
@@ -1676,23 +1690,23 @@ export class GameView {
         // Riders stand (or sit) still in their seats, however fast the vehicle goes.
         const sit = sitting.get(p.slot);
         const speed = seated.has(p.slot) ? 0 : Math.hypot(a.vel.x, a.vel.z);
-        // Far characters in a crowd animate every few frames, with the time saved up (a death always plays at once).
-        const far = crowd && cam && p.alive ? Math.hypot(p.x - cam.x, p.z - cam.z) : 0;
+        // Far characters animate every few frames, with the time saved up (a death always plays at once).
+        const far = eye && p.alive ? Math.hypot(p.x - eye.x, p.z - eye.z) : 0;
         a.animDt = (a.animDt ?? 0) + dt;
         let run: boolean;
         let stepped: boolean;
         if (a.anim instanceof CharacterAnimator && !a.culled) {
-          // Characters in view: past ANIM_LOD_FULL their clips, bones and aim are evaluated at 30 Hz, past
-          // ANIM_LOD_NEAR at 15 Hz, past ANIM_LOD_FAR at 10 Hz (on each one's own phase), and the state machine
-          // runs with them.
-          const stepMs = animStepMs(far);
-          run = a.anim.stepAt(now, stepMs, (p.slot * 37) % 100);
-          stepped = stepMs > 0;
+          // Characters in view: past ANIM_LOD_FULL their clips, bones and aim are evaluated at 30 Hz (and at most
+          // every 2nd frame), past ANIM_LOD_NEAR at 15 Hz (every 3rd), past ANIM_LOD_FAR at 10 Hz (every 4th), on each
+          // one's own phase, with the fingers' pose kept from the last full close; the state machine runs with them.
+          const step = animStep(far);
+          run = a.anim.stepAt(now, step, this.avatarFrame, (p.slot * 37) % 100);
+          stepped = step.frames > 1;
           if (run && perfProbe.on) perfProbe.n[COUNT.animated]!++;
         } else {
           // Out of view (asleep) characters, and creatures: the state machine every few frames.
           const every = a.culled ? 8 : far > ANIM_LOD_FAR ? 4 : far > ANIM_LOD_NEAR ? 2 : 1;
-          if (a.anim instanceof CharacterAnimator) a.anim.stepAt(now, 0);
+          if (a.anim instanceof CharacterAnimator) a.anim.stepAt(now);
           a.animFrame = ((a.animFrame ?? 0) + 1) % every;
           run = a.animFrame === 0;
           stepped = every > 1;
@@ -1777,7 +1791,12 @@ export class GameView {
 
   /** Play an upper-body action on a remote avatar (shooting, melee). */
   avatarAction(slot: number, action: OneShot): void {
-    this.avatars.get(slot)?.anim?.trigger(action);
+    const a = this.avatars.get(slot);
+    if (!a?.anim) return;
+    // A far shot's recoil twitch is a pixel or two: left out (each shot restarts a clip on every joint of the arms).
+    const eye = this.scene.activeCamera?.globalPosition;
+    if (action === 'shoot' && eye && Math.hypot(a.root.position.x - eye.x, a.root.position.z - eye.z) > SHOT_OVERLAY_REACH) return;
+    a.anim.trigger(action);
   }
 
   /**
@@ -1900,7 +1919,7 @@ export class GameView {
     a.root.position.set(p.x, p.y, p.z);
     a.root.rotation.set(0, yaw, 0);
     const speed = Math.hypot(fp.vel.x, fp.vel.z);
-    anim.stepAt(now, 0);
+    anim.stepAt(now);
     anim.update(dt, {
       speed,
       moveAngle: speed > 0.3 ? angleDelta(yaw, Math.atan2(fp.vel.x, fp.vel.z)) : 0,
@@ -1945,6 +1964,8 @@ export class GameView {
     // Crowds: everyone's copy of a gun is a GPU instance of one mesh (one draw per gun model and part, not per player).
     void this.models.instantiate(def.view.model, `held_${slot}`, this.crowd).then((node) => {
       if (a.weaponSlot !== slot || a.root.isDisposed()) return node.dispose();
+      // A held gun's shadow is a speck past a few metres: it casts only near the camera.
+      castSmall(node);
       // The muzzle is the front of the gun along its forward axis, measured before it's put in a hand.
       const { min, max } = node.getHierarchyBoundingVectors(true);
       const at = def.view.muzzleAt;
@@ -2019,6 +2040,16 @@ export class GameView {
         a.weaponSlot = -1;
         if (spec.armed && slotNow >= 0) this.setAvatarWeapon(a, slotNow);
       });
+      return a;
+    }
+    const kept = this.bodyPool.get(specKey)?.pop();
+    if (kept) {
+      // A body of this look kept from an avatar that went: back in play at once (it was fitted and sized for this spec).
+      kept.ch.root.parent = root;
+      kept.ch.root.setEnabled(true);
+      kept.setDormant(false);
+      a.anim = kept;
+      placeholder.setEnabled(false);
       return a;
     }
     void this.characters.create(spec, `char_${slot}`).then((ch) => {
@@ -2112,10 +2143,27 @@ export class GameView {
       this.remoteRigs--;
     }
     a.ragdoll?.dispose();
+    if (a.anim instanceof CharacterAnimator && this.keepBody(a.specKey, a.anim)) a.anim = undefined;
     a.anim?.dispose();
     a.weaponNode?.dispose();
     this.dropCanopy(a);
     a.root.dispose(false, true);
+  }
+
+  /** Characters kept for the next avatar of their look (BODY_POOL_PER_LOOK), by spec key. */
+  private readonly bodyPool = new Map<string, CharacterAnimator[]>();
+
+  /** Keep a going avatar's character for reuse (taken off the avatar, hidden, its clips paused); false: pool full. */
+  private keepBody(key: string, anim: CharacterAnimator): boolean {
+    if (this.scene.isDisposed || anim.firstPerson || anim.ch.root.isDisposed()) return false;
+    let list = this.bodyPool.get(key);
+    if (!list) this.bodyPool.set(key, (list = []));
+    if (list.length >= BODY_POOL_PER_LOOK) return false;
+    anim.standBy();
+    anim.ch.root.parent = null;
+    anim.ch.root.setEnabled(false);
+    list.push(anim);
+    return true;
   }
 
   // ---------------------------------------------------------------- pickups
@@ -3113,6 +3161,8 @@ export class GameView {
 
   dispose(): void {
     setCharacterLodCrowd(false);
+    for (const list of this.bodyPool.values()) for (const anim of list) anim.dispose();
+    this.bodyPool.clear();
     this.atmosphere.dispose();
     this.blood.dispose();
     this.impacts.dispose();
