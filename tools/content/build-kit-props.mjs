@@ -51,6 +51,15 @@ const COLOURS = {
   white: '#e8e4da',
   char: '#241e1a',
   ember: '#c4541c',
+  // Beach defences and landing craft (Shingle Point's asset refresh).
+  hullGrey: '#5c6359',
+  hullDark: '#40463f',
+  rustDeep: '#583624',
+  rustLight: '#8e5a36',
+  woodGrey: '#77705f',
+  paintGrey: '#6a726c',
+  twine: '#7c6a44',
+  rubber: '#2a2826',
 };
 
 // ---------------------------------------------------------------- geometry
@@ -277,6 +286,124 @@ const disc = (x, y, z, r, colour = 'iron') => place(cylinder(colour, r, -0.04, 0
 /** A stick of dynamite along X with its fuse. */
 const stick = (x, y, z, ry = 0, rz = 0) => [place(cylinder('red', 0.035, -0.11, 0.11, 8), { at: [x, y, z], rz: Math.PI / 2 + rz, ry }), place(cylinder('fuse', 0.006, 0, 0.08, 4), { at: [x + Math.cos(ry) * 0.11, y, z - Math.sin(ry) * 0.11], rz: -Math.PI / 3 })];
 
+// ---------------------------------------------------------------- beach defences and landing craft
+// Shingle Point's asset refresh (2026-11-05): its landing craft, their wrecks and its steel hedgehogs were built from
+// free blocks. These pieces take their place and keep their collision: `collide: "model"` (the GLB carries its own
+// boxes in the node's extras, in the frame it is modelled in, normalised with it by prepare-props.mjs).
+
+/** A box given by its corners. */
+const slab = (colour, x0, y0, z0, x1, y1, z1) => box(colour, [x1 - x0, y1 - y0, z1 - z0], [(x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2]);
+
+/** A small deterministic random sequence (the same pieces every build). */
+function seq(seed) {
+  let s = seed >>> 0;
+  return () => {
+    s = (s * 1664525 + 1013904223) >>> 0;
+    return s / 4294967296;
+  };
+}
+
+/** Parts plus the collision boxes [x0, y0, z0, x1, y1, z1] they carry (collide "model"). */
+const withCollision = (parts, boxes) => Object.assign(parts, { collision: boxes });
+
+/**
+ * A landing craft (an LCVP's steel well, ramp raised), +Z toward the bow. The collision is the blocks the map used:
+ * the ramp 5.8 × `bowH` × 0.4 at z 0, the two hull sides 0.4 thick from z -9.8 to -2.0 at x ±2.5..2.9 (heights `sideH`,
+ * -x then +x), open between ramp and sides (the way out) and at the stern; `step`: the bow skid in front of the ramp.
+ * Everything drawn stays inside those boxes (a few centimetres of strakes and ribs aside), so the boxes are the bounds.
+ */
+function landingCraft({ bowH, sideH, step, wreck }) {
+  const hull = wreck ? 'rust' : 'hullGrey';
+  const dark = wreck ? 'rustDeep' : 'hullDark';
+  const rnd = seq(wreck ? 71 : 29);
+  const out = [];
+  // The ramp: the outer plate, ribs and stiffeners behind it, cheeks at its edges, a lip on top, hinge drums at its foot.
+  out.push(slab(hull, -2.78, 0, 0.06, 2.78, bowH - 0.1, 0.2), slab(dark, -2.9, bowH - 0.1, -0.2, 2.9, bowH, 0.2));
+  out.push(slab(dark, -2.9, 0, -0.2, -2.78, bowH - 0.1, 0.2), slab(dark, 2.78, 0, -0.2, 2.9, bowH - 0.1, 0.2));
+  for (let i = 0; i < 6; i++) {
+    const x = -2.3 + i * 0.92;
+    out.push(slab(dark, x - 0.05, 0.12, -0.2, x + 0.05, bowH - 0.1, 0.06));
+  }
+  for (let y = 0.95; y < bowH - 0.4; y += 1.0) out.push(slab(dark, -2.78, y - 0.05, -0.16, 2.78, y + 0.05, 0.06));
+  for (const x of [-1.7, 1.7]) out.push(place(cylinder('steelDark', 0.14, -0.45, 0.45, 10), { at: [x, 0.22, -0.02], rz: Math.PI / 2 }));
+  // Weathering on the ramp's face: a darker band at the foot, rust running down from the lip.
+  out.push(slab(dark, -2.78, 0, 0.2, 2.78, 0.5 + rnd() * 0.2, 0.205));
+  for (let i = 0; i < 7; i++) {
+    const x = -2.5 + rnd() * 5;
+    const len = 0.6 + rnd() * (bowH * 0.45);
+    out.push(slab(wreck ? 'rustLight' : 'rust', x - 0.04 - rnd() * 0.05, bowH - 0.1 - len, 0.2, x + 0.04, bowH - 0.1, 0.206));
+  }
+  // The hull sides: plating, a gunwale cap, frames inside, a rubbing strake and a dark boot-top outside, end posts.
+  for (const [k, h] of [[-1, sideH[0]], [1, sideH[1]]]) {
+    const [xa, xb] = k < 0 ? [-2.9, -2.5] : [2.5, 2.9];
+    const inner = k < 0 ? xb : xa;
+    const outer = k < 0 ? xa : xb;
+    // A wreck's top edge is torn: lower here and there (a few centimetres, never above its box).
+    const segs = 12;
+    for (let i = 0; i < segs; i++) {
+      const z0 = -9.8 + (i * 7.8) / segs;
+      const z1 = -9.8 + ((i + 1) * 7.8) / segs;
+      const top = wreck ? h - 0.08 - (rnd() < 0.45 ? rnd() * 0.22 : 0) : h - 0.08;
+      out.push(slab(hull, xa, 0, z0, xb, top, z1));
+      if (!wreck || top > h - 0.1) out.push(slab(dark, xa, top, z0, xb, h, z1));
+    }
+    for (let z = -9.3; z < -2.2; z += 0.9) out.push(slab(dark, inner - k * 0.07, 0.1, z - 0.04, inner, h - 0.12, z + 0.04));
+    out.push(slab(dark, outer, h * 0.64 - 0.07, -9.8, outer + k * 0.05, h * 0.64 + 0.05, -2.0));
+    out.push(slab(dark, outer, 0, -9.8, outer + k * 0.006, 0.55, -2.0));
+    out.push(slab(dark, xa, 0, -2.14, xb, h - 0.08, -2.0), slab(dark, xa, 0, -9.8, xb, h - 0.08, -9.66));
+    for (let i = 0; i < 6; i++) {
+      const z = -9.4 + rnd() * 7;
+      const len = 0.5 + rnd() * h * 0.5;
+      out.push(slab(wreck ? 'rustLight' : 'rust', outer, h - 0.1 - len, z - 0.05, outer + k * 0.008, h - 0.1, z + 0.03 + rnd() * 0.05));
+    }
+  }
+  // The well's floor (under the sand where a craft is beached; seen where the tide has scoured round it).
+  out.push(slab(dark, -2.5, 0, -9.8, 2.5, 0.06, -0.2));
+  if (step) {
+    // The bow skid under the raised ramp: a heavy steel shoe, a tread plate on top, a rope fender along its nose,
+    // braced back to the ramp's foot.
+    out.push(slab(dark, -2.3, 0, 0.45, 2.3, 1.05, 1.35), slab('steelDark', -2.3, 1.05, 0.45, 2.3, 1.17, 1.35));
+    out.push(place(cylinder('rubber', 0.1, -2.2, 2.2, 10), { at: [0, 0.78, 1.24], rz: Math.PI / 2 }));
+    for (const x of [-1.8, 1.8]) out.push(slab('steelDark', x - 0.08, 0.15, 0.2, x + 0.08, 0.85, 0.45));
+    // Gun rings over the stern quarters.
+    for (const k of [-1, 1]) out.push(place(ring('steelDark', 0.32, 0.03, 16, 4), { at: [k * 2.7, sideH[k < 0 ? 0 : 1] + 0.03, -8.9], rx: Math.PI / 2 }));
+  } else {
+    // A wreck: scorch streaks up the ramp and a buckled plate hanging inside the well.
+    for (let i = 0; i < 5; i++) {
+      const x = -1.6 + i * 0.45 + rnd() * 0.2;
+      out.push(slab('char', x - 0.03 - rnd() * 0.06, 0.3 + rnd() * 0.3, 0.2, x + 0.03, 0.9 + rnd() * bowH * 0.5, 0.204));
+    }
+    out.push(place(slab(dark, -0.9, -0.9, -0.03, 0.9, 0.9, 0.03), { at: [1.2, 1.2, -6.5], ry: 0.5, rx: 0.4 }));
+  }
+  const boxes = [
+    [-2.9, 0, -0.2, 2.9, bowH, 0.2],
+    [-2.9, 0, -9.8, -2.5, sideH[0], -2.0],
+    [2.5, 0, -9.8, 2.9, sideH[1], -2.0],
+  ];
+  if (step) boxes.push([-2.3, 0, 0.45, 2.3, 1.17, 1.35]);
+  return withCollision(out, boxes);
+}
+
+/**
+ * An angle iron (L section, legs `leg`, `t` thick) from a to b, turned `roll` about its own length. Used for the
+ * Czech hedgehog's three beams.
+ */
+function angleIron(colour, a, b, leg, t, roll) {
+  const d = [b[0] - a[0], b[1] - a[1], b[2] - a[2]];
+  const len = Math.hypot(...d);
+  const ry = Math.atan2(d[0], d[2]);
+  const rx = -Math.atan2(d[1], Math.hypot(d[0], d[2]));
+  const o = -leg / 3;
+  const legs = [box(colour, [leg, t, len], [o + leg / 2, o + t / 2, 0]), box(colour, [t, leg, len], [o + t / 2, o + leg / 2, 0])];
+  return legs.map((p) => place(place(p, { rz: roll }), { at: [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2, (a[2] + b[2]) / 2], rx, ry }));
+}
+
+/** Square timbers: a balk `w` square and `len` long along Z at (x, y, z) (y its underside), end grain lighter. */
+function timber(w, len, [x, y, z], ry = 0, colour = 'woodGrey') {
+  const out = [box(colour, [w, w, len - 0.04], [0, w / 2, 0]), box('woodLight', [w - 0.03, w - 0.03, 0.02], [0, w / 2, len / 2 - 0.01]), box('woodLight', [w - 0.03, w - 0.03, 0.02], [0, w / 2, -len / 2 + 0.01])];
+  return out.map((p) => place(p, { at: [x, y, z], ry }));
+}
+
 const PIECES = {
   // ------------------------------------------------ 01 Military Compound
   sandbag_wall: () => bagRows(2.48, 4, 2),
@@ -364,6 +491,121 @@ const PIECES = {
         out.push(place(box((i + j) % 2 ? 'net' : 'netLight', [1.0, 0.04, 1.0]), { at: [x, 2.55 - sag, z], rx: (j - 2) * 0.06, rz: (2 - i) * 0.06 }));
       }
     }
+    return out;
+  },
+  // ------------------------------------------------ beach defences and landing craft (01 Military Compound)
+  // The landing craft the assault comes ashore in: ramp up, sides 2.97 m, the bow skid in front of the ramp.
+  landing_craft: () => landingCraft({ bowH: 3.87, sideH: [2.97, 2.97], step: true, wreck: false }),
+  // A wrecked one, rusted and torn, sunk in the sand at any depth: ramp 3.69 m, one side 0.2 m higher, the other
+  // 0.5 m lower (the shape of the map's six hulks; how deep it sits is how tall it stands).
+  landing_craft_wreck: () => landingCraft({ bowH: 3.69, sideH: [3.19, 3.89], step: false, wreck: true }),
+  hedgehog_beach: () => {
+    // A Czech hedgehog as the beaches had them: three rolled-steel angles 2.5 m long, square to each other, riveted
+    // through gussets where they cross and stood on three of their ends (about 1.5 m tall). Collision: each beam as
+    // six short boxes along it, so shots and players pass between the beams.
+    const L = 2.5;
+    const h = 1 / Math.sqrt(3);
+    const s = Math.sqrt(2 / 3);
+    const cy = (L / 2) * h + 0.04;
+    const out = [];
+    const boxes = [];
+    for (let i = 0; i < 3; i++) {
+      const t = (i * 2 * Math.PI) / 3 + 0.3;
+      const d = [s * Math.cos(t), h, s * Math.sin(t)];
+      const a = [(-d[0] * L) / 2, cy - (d[1] * L) / 2, (-d[2] * L) / 2];
+      const b = [(d[0] * L) / 2, cy + (d[1] * L) / 2, (d[2] * L) / 2];
+      out.push(...angleIron(i === 1 ? 'rustDeep' : 'rust', a, b, 0.16, 0.022, i * 2.1 + 0.6));
+      out.push(place(box('rustDeep', [0.26, 0.03, 0.26]), { at: [a[0], 0.015, a[2]], ry: t }));
+      const at = (u) => [a[0] + (b[0] - a[0]) * u, a[1] + (b[1] - a[1]) * u, a[2] + (b[2] - a[2]) * u];
+      for (let k = 0; k < 6; k++) {
+        const [p, q] = [at(k / 6), at((k + 1) / 6)];
+        const r = 0.08;
+        boxes.push([Math.min(p[0], q[0]) - r, Math.max(0, Math.min(p[1], q[1]) - r), Math.min(p[2], q[2]) - r, Math.max(p[0], q[0]) + r, Math.max(p[1], q[1]) + r, Math.max(p[2], q[2]) + r]);
+      }
+    }
+    out.push(place(box('steelDark', [0.34, 0.34, 0.03]), { at: [0, cy, 0], rx: 0.6, ry: 0.4 }), place(box('steelDark', [0.3, 0.3, 0.03]), { at: [0, cy, 0], rx: -0.5, ry: 2.2 }));
+    for (let i = 0; i < 6; i++) out.push(place(cylinder('iron', 0.025, -0.04, 0.04, 6), { at: [Math.cos(i) * 0.1, cy + Math.sin(i * 1.7) * 0.1, Math.sin(i) * 0.1], rx: i }));
+    return withCollision(out, boxes);
+  },
+  sandbag_stack: () => {
+    // A square stack of bags, each course crossing the one below (about 1.05 m square and 1 m high): cover that
+    // shooting wears down (breakable).
+    const out = [];
+    for (let r = 0; r < 5; r++)
+      for (let i = 0; i < 2; i++)
+        for (let j = 0; j < 3; j++) {
+          const u = (i - 0.5) * 0.52;
+          const v = (j - 1) * 0.34;
+          const [x, z, ry] = r % 2 ? [v, u, Math.PI / 2] : [u, v, 0];
+          out.push(sandbag(x, r * 0.2, z, ry + (((i + j + r) % 3) - 1) * 0.04, 0.52, (i + j + r) % 3 === 0 ? 'burlapDark' : 'burlap'));
+        }
+    return out;
+  },
+  timber_baulk: () => {
+    // A squared beach-obstacle timber lying in the sand (0.5 m square, 1.8 m long), strapped and bolted, sea-greyed.
+    const out = timber(0.5, 1.8, [0, 0, 0]);
+    for (const z of [-0.55, 0.55]) out.push(slab('iron', -0.26, 0, z - 0.04, 0.26, 0.51, z + 0.04), place(cylinder('iron', 0.035, 0.5, 0.53, 8), { at: [0, 0, z + 0.12] }));
+    return out;
+  },
+  timber_stack: () => {
+    // Beach-obstacle timbers stacked as a crib (2.4 × 1 × 1.3 m): four along, two bearers across, three on top.
+    const out = [];
+    for (const [i, z] of [-0.495, -0.165, 0.165, 0.495].entries()) out.push(...timber(0.32, 2.4 - (i % 2) * 0.12, [(i % 2) * 0.05, 0, z], Math.PI / 2, i % 2 ? 'woodDark' : 'woodGrey'));
+    for (const x of [-0.95, 0.95]) out.push(...timber(0.32, 1.32, [x, 0.32, 0], 0, 'woodDark'));
+    for (const [i, z] of [-0.34, 0, 0.34].entries()) out.push(...timber(0.32, 2.3 - i * 0.1, [-0.04 + i * 0.03, 0.64, z], Math.PI / 2, i === 1 ? 'woodDark' : 'woodGrey'));
+    out.push(slab('iron', -0.6, 0, -0.66, -0.54, 0.97, 0.66), slab('iron', 0.54, 0, -0.66, 0.6, 0.97, 0.66));
+    return out;
+  },
+  dory: () => {
+    // A double-ended wooden boat (2.8 m, 1.5 m beam) beached on its keel: painted outside, bare wood inside, two
+    // thwarts and an oar. Breakable, like the rowing boat it stands in for.
+    const out = [];
+    const N = 10;
+    const L = 1.4;
+    const st = Array.from({ length: N + 1 }, (_, i) => {
+      const x = -L + (2 * L * i) / N;
+      const f = Math.abs(x / L);
+      const w = Math.max(0.03, 0.75 * (1 - f ** 2.4) ** 0.55);
+      return { x, w, wb: Math.max(0.02, w * 0.5), top: 0.6 + 0.1 * f * f, bot: 0.14 * f * f };
+    });
+    const quad = (colour, a, b, c, d, hint) => {
+      const u = [b[0] - a[0], b[1] - a[1], b[2] - a[2]];
+      const v = [d[0] - a[0], d[1] - a[1], d[2] - a[2]];
+      let n = [u[1] * v[2] - u[2] * v[1], u[2] * v[0] - u[0] * v[2], u[0] * v[1] - u[1] * v[0]];
+      const l = Math.hypot(...n) || 1;
+      n = n.map((k) => k / l);
+      const flip = n[0] * hint[0] + n[1] * hint[1] + n[2] * hint[2] < 0;
+      const pts = flip ? [a, d, c, b] : [a, b, c, d];
+      const nn = flip ? n.map((k) => -k) : n;
+      return part(colour, pts.flat(), [nn, nn, nn, nn].flat(), [0, 1, 2, 0, 2, 3]);
+    };
+    for (let i = 0; i < N; i++) {
+      const [p, q] = [st[i], st[i + 1]];
+      for (const k of [-1, 1]) {
+        // Outside (two strakes: the lap line between them), inside an inch in.
+        const mid = (s) => [s.x, s.bot + (s.top - s.bot) * 0.5, k * (s.wb + (s.w - s.wb) * 0.55)];
+        out.push(quad('paintGrey', [p.x, p.bot, k * p.wb], [q.x, q.bot, k * q.wb], mid(q), mid(p), [0, -0.3, k]));
+        out.push(quad('paintGrey', mid(p), mid(q), [q.x, q.top, k * q.w], [p.x, p.top, k * p.w], [0, 0, k]));
+        const inn = (s, y, w) => [s.x, y, k * Math.max(0.01, w - 0.035)];
+        out.push(quad('wood', inn(p, p.bot + 0.04, p.wb), inn(q, q.bot + 0.04, q.wb), inn(q, q.top, q.w), inn(p, p.top, p.w), [0, 0.3, -k]));
+        out.push(beam('woodDark', [p.x, p.top, k * p.w], [q.x, q.top, k * q.w], 0.05));
+        out.push(beam('woodDark', mid(p), mid(q), 0.025));
+      }
+      out.push(quad('paintGrey', [p.x, p.bot, -p.wb], [q.x, q.bot, -q.wb], [q.x, q.bot, q.wb], [p.x, p.bot, p.wb], [0, -1, 0]));
+      out.push(quad('wood', [p.x, p.bot + 0.04, -p.wb + 0.03], [q.x, q.bot + 0.04, -q.wb + 0.03], [q.x, q.bot + 0.04, q.wb - 0.03], [p.x, p.bot + 0.04, p.wb - 0.03], [0, 1, 0]));
+    }
+    out.push(beam('woodDark', [-L - 0.02, 0.72, 0], [-L + 0.25, 0.0, 0], 0.07), beam('woodDark', [L + 0.02, 0.72, 0], [L - 0.25, 0.0, 0], 0.07));
+    for (const x of [-0.45, 0.4]) {
+      const w = st[Math.round(((x + L) / (2 * L)) * N)].w;
+      out.push(slab('woodDark', x - 0.12, 0.4, -w + 0.06, x + 0.12, 0.45, w - 0.06));
+    }
+    out.push(beam('woodLight', [-1.0, 0.2, -0.25], [0.95, 0.42, 0.32], 0.05), place(box('woodLight', [0.4, 0.02, 0.13]), { at: [1.05, 0.44, 0.35], ry: -0.28 }));
+    return out;
+  },
+  straw_bale: () => {
+    // A square bale of straw (1.3 × 0.75 × 0.9 m), two twine bands round it. Breakable.
+    const out = [place(bag('straw', [0.65, 0.375, 0.45], 0.16, 12, 8), { at: [0, 0.375, 0] })];
+    for (const x of [-0.33, 0.33]) out.push(place(bag('twine', [0.02, 0.379, 0.454], 0.16, 6, 8), { at: [x, 0.375, 0] }));
     return out;
   },
   // ------------------------------------------------ 02 Frontier Dust
@@ -508,7 +750,10 @@ for (const [name, build] of Object.entries(PIECES)) {
   node.setMesh(mesh);
   // One primitive per colour.
   const byColour = new Map();
-  for (const p of build()) {
+  const parts = build();
+  // Pieces with their own collision (collide "model") carry the boxes in the node's extras, in this frame.
+  if (parts.collision) node.setExtras({ collision: parts.collision.map((b) => b.map((v) => Math.round(v * 1000) / 1000)) });
+  for (const p of parts) {
     const list = byColour.get(p.colour) ?? [];
     list.push(p);
     byColour.set(p.colour, list);
