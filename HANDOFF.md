@@ -197,6 +197,17 @@ This work is on `wip/env-p1b`. Phase 2 (more species) still needs the owner's go
 
   This work is on `wip/intake-2`.
 
+### Queued (owner, 2026-11-05): first-person pistol hold
+"The first person view when holding a pistol could be adjusted. Either the gun moves back more into the hands or the
+hands move up more into the gun. Looks as if their fingers are just pinching the grip."
+- First person `gripExternal` (characterAnimator.ts) IKs the palms onto the viewmodel's grip and support points.
+  The pistol's hold points and viewOffset are in content/weapons (view.hold).
+- Seat the pistol's grip deep in the palm, web of the thumb high on the backstrap, fingers wrapped, support hand
+  cupping. Do this for every pistol-class weapon.
+- Check with the `aheadR`/`sideR` measures and the characters e2e, with before/after first-person shots across
+  several characters, including Meshy rigs with Meshy's finger weights once intake-2 lands.
+- Start it once a slot frees. It touches the hands, so after intake-2 step 2a.
+
 ### In flight
 - **Market Town perf on the M1 Pro, branch `wip/perf-market`** (agent, 2026-11-05; from main d29e6a8; not merged).
   Owner's capture (high, 44 players): 23 ms frames with few in view, 38-45 ms with 20-40; characters (clips + aim)
