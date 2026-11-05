@@ -230,6 +230,25 @@ hands move up more into the gun. Looks as if their fingers are just pinching the
   several characters, including Meshy rigs with Meshy's finger weights once intake-2 lands.
 - Start it once a slot frees. It touches the hands, so after intake-2 step 2a.
 
+### Owner's map notes for later (2026-11-05; not started)
+- **No Man's Field:** asset refresh. It still uses Kenney kits; move it to our generated environment and props.
+- **Step Temple:** its menu card shot should be a grounded, eye-level view, not aerial.
+- **Sandfall Colosseum, a full rebuild ("this is your moment to shine").** Owner's brief:
+  - **Layout:** replicate the layout of the owner's game **Flavius Rule (classic)**. Get reference material from the
+    owner before starting: screenshots, a top-down plan, or a description.
+  - **Feel:** epic and grand, far more immersive than today's map.
+  - **The arena:** use mostly the assets we have today (Imperial Arena pack, Roman pieces), with a better layout and a
+    much grander scale. The colosseum stands 6–8 storeys tall if possible.
+  - **Under the stands:** a tunnel network that circles the arena. It branches to the animal cages and the gladiators'
+    quarters: rest, recovery, imprisonment.
+  - **Around it:** a Roman village whose main square leads to the arena entrance.
+  - **Backdrop:** a volcano in the distance.
+  - **How:** built in MapMaker (CLAUDE.md "Maps"), with in-house detail. Anything MapMaker lacks goes into MapMaker
+    as a piece, e.g. set pieces like the arena arcade bay, vomitorium, tunnel junction, cage block and village
+    insula, plus a volcano backdrop. Follow docs/map-briefs/AGENT_BUILD_CONTRACT.md: playable footprint, routes,
+    spawns, budgets, bots, and NOT TESTED where it applies.
+  - **Timing:** a natural first big use of set pieces (agreed queue item 3), so after those exist.
+
 ### Queued (owner-approved, 2026-11-05): community maps
 Plan in docs/COMMUNITY_MAPS.md:
 - local saving is unlimited;
