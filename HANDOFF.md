@@ -423,6 +423,17 @@ The owner's small environment follow-ups. Tall grass kept as it is (no change).
 - **Screenshots** (session scratchpad `env4/`): `sunstone_crag-before-{1..4}` (main), `-asset-*` (new pebbles, map
   still sand), `-after-*` (grey) at eye height, 5 m and 12 m; `serene_city-red-1`; `envlab-after-{plants,ground,small,mid}`;
   `palette-environment.png` (the new atlas row).
+- **Checks:** typecheck; test:changed (1658 passed; npc "Outpost Siege" and pads "eagle_spires" timed out under load
+  17 and passed when rerun alone); content:rebuild + content:check; build; bundle budget (692.6 kB gzip of 840);
+  validate-map on both maps (0 issues). Local e2e (ports 4971/4972; editor, offline, online, maps, environment, visual,
+  scenery) on a container at load 13–18: offline, online, environment PASS, visual's envlab baseline holds (1.7 %
+  differ, 10 % allowed, so no new baseline); editor (dropship / random pickup timing), scenery, maps (both maps'
+  tour: "no match", setInputFiles timeout) and visual's arena ("scene never got ready") failed on timeouts. CI
+  `check/env-p1d` run 42119067704 at 357a368c (main 8722f6ca merged in): **green**, full suite (unit, 15 e2e shards,
+  the two maps' browser tour, perf).
+- **Not tested:** the GPU cost of bigger pebbles (60 vs 55 triangles a cluster, more pixels) on the M1; how the
+  bigger brush-grown pebbles look across every snow / gravel / sand map (seen in envlab and on Sunstone Crag only).
+- **Resume:** `git fetch && git checkout wip/env-p1d`; land with the train once the owner has seen the screenshots.
 <!-- palms -->
 ### Palms the right way round (`wip/palms`, agent, 2026-11-05; from main 2c8f3e21, main merged in at ce8a893a)
 **Cause (confirmed):** `skinHandFrame` signed the hand's flat by the thumb's FIRST joint against the wrist joint, which
