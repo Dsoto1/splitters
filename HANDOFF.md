@@ -394,9 +394,28 @@ fastest moving at about 60 m/s, on both attempts.
   colours.
 - **Still to find:** why explosion debris doesn't collide with the ground in the effects world.
 
+### New map briefs to discuss with the owner (received 2026-11-05; not started)
+- `docs/map-briefs/MAP_02_The_Spillway.md`: a hydroelectric dam in a gorge; battlefield scale, 32–64 players.
+- `docs/map-briefs/MAP_03_Frostbite_Station.md`: an arctic research station; 8–16 players.
+  - Overlaps Whiteout Station, the Snow Outpost demo map: decide whether to keep both or replace.
+- `docs/map-briefs/MAP_04_Verdant_Protocol.md`: an overgrown jungle compound; 16–32 players.
+  - Compare with Vinefall Sanctum, the Jungle Ruins demo, and Jungle Steps.
+
+Each brief has its reference image beside it. The owner approves the concept before any placement work; follow
+AGENT_BUILD_CONTRACT.md.
+
 ### Owner's map notes for later (2026-11-05; not started)
 - **No Man's Field:** asset refresh. It still uses Kenney kits; move it to our generated environment and props.
 - **Rockfall Canyon** (`maps/canyon.json`): asset and foliage refresh, onto our generated environment, rocks and plants.
+- **Shingle Point** (`maps/shingle_point.json`, the beach landing): an asset refresh. The owner also suggests a
+  layout rework from the reference `docs/map-briefs/shingle_point_reference.jpg`:
+  - a long beach with surf, landing craft and steel hedgehogs, under a cliff line;
+  - the cliff has a central grand staircase plus side stairs and ramps up its face;
+  - four large concrete casemates/bunkers along the cliff top, with cave mouths into the cliff;
+  - a seawall/terrace level;
+  - a village with stone houses, a central round fort and walled terraces behind.
+
+  Keep what works today (the assault from the waterline, seawall ladders and gaps, blowable weak sections).
 - **Step Temple:** its menu card shot should be a grounded, eye-level view, not aerial.
 - **Sandfall Colosseum, a full rebuild ("this is your moment to shine").** Owner's brief:
   - **Layout:** replicate the layout of the owner's game **Flavius Rule (classic)**. Get reference material from the
