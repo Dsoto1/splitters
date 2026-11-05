@@ -377,6 +377,9 @@ export class GameView {
   /** Shadows, tone mapping and post effects (Options → Graphics). */
   readonly atmosphere: Atmosphere;
   private readonly brass: StandardMaterial;
+  /** The level's draw merge in progress (buildMap), and its outcome: draws before and after (null: not merged). */
+  private levelMerge: Promise<{ before: number; after: number } | null> | null = null;
+  levelDraws: { before: number; after: number } | null = null;
 
   constructor(engine: AbstractEngine) {
     // Cheaper clip stops and node disposals with thousands of animations running (animPatches.ts).
@@ -474,6 +477,16 @@ export class GameView {
     this.ziplines = mapZiplines(doc.entities);
     const styler = new MapStyler(this.scene);
     styler.build(doc, boxes);
+    // The level's per-style meshes merged across styles over array textures (levelMerge.ts; WebGL2): the loading gate
+    // (prewarm) waits for it, so its shader is built before play.
+    const engine = this.scene.getEngine() as { isWebGPU?: boolean; webGLVersion?: number };
+    if (perfOn('levelmerge') && !engine.isWebGPU && (engine.webGLVersion ?? 1) >= 2) {
+      this.levelMerge = styler.merge().catch((e: unknown) => {
+        console.warn('level merge skipped:', e);
+        return null;
+      });
+      void this.levelMerge.then((r) => (this.levelDraws = r));
+    }
     buildRoadMeshes(this.scene, doc, styler);
     // Paths (MapMaker's roads, streets and trails), on the ground as played (loadMap laid them in).
     buildPathMeshes(this.scene, doc, doc.terrain, styler);
@@ -548,6 +561,8 @@ export class GameView {
    */
   async prewarm(specs: readonly AvatarSpec[]): Promise<number> {
     const t0 = performance.now();
+    // The merged level first (its textures load in a moment; its shader is then built with everyone else's).
+    if (this.levelMerge) await Promise.race([this.levelMerge, new Promise((r) => setTimeout(r, 15000))]);
     const ready = () => (this.scene.isDisposed ? Promise.resolve() : Promise.race([this.scene.whenReadyAsync(), new Promise((r) => setTimeout(r, 8000))]));
     // The effects first (they don't wait for the characters' files), ended as soon as their shaders are built.
     let effects = 0;
