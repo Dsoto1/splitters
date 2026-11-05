@@ -836,3 +836,130 @@ fight and a 10 s trace. Expect characters (clips + aim) and shadow + depth maps 
 `animated` well under the characters in view, shadow casters about half (300 instead of 600), draws about a
 third fewer. If hitches still show large `outside`, record once more on render scale "sharp" (fewer pixels):
 if `outside` falls, it is the GPU.
+
+## Performance round 2 (5 Nov 2026, `wip/perf-2`)
+
+**Owner's second recording** (M1 Pro, Chrome 156, WebGL2, high, render scale auto, 60 fps cap; Market Town TDM,
+49 players, build 4e77fab after round 1): 20.3 ms frames on average in the trace (~49 fps), 26-32 ms in big fights,
+3 hitches over 50 ms in 49 s. CPU-bound: per frame render 16.4 ms (characters' clips + aim 4.6, shadow + depth maps
+3.8, mesh evaluation 3.0, the rest mostly issuing ~700 draws), characters' update 1.4, ragdolls + effects 1.2.
+Target: 4-6 ms off.
+
+### What it was
+
+1. **Static shadows drawn every frame.** Round 1 merged the static casters into shadow proxies, but every cascade
+   still drew them every frame (~150 of ~290 shadow draws), with doors and ladder gates (not frozen, so not merged)
+   another ~55.
+2. **The level was 34 meshes (58 draws with roads, paths and the border)**, one per surface style (material and
+   tint), drawn again in the water's reflection (38 draws) and its depth map.
+3. **Babylon walked every mesh twice a frame**: 3,300 in a 48-player match, about half switched off (pooled sparks,
+   chips, dust and blood drops, parked effect sources, characters kept for reuse) and 97 shadow proxies no camera
+   draws. That was most of "mesh evaluation".
+4. **Clip stops and node disposals scanned 8,000 running animations**: AnimationGroup.stop looks each of its ~70
+   joint animations up in the scene's list (an indexOf each), and every disposed mesh (effect emitters every few
+   frames) asked the scene to stop its animations (a walk over the list). In a CPU profile of the scenario below, the
+   stops alone were a third of the frame's JS.
+5. **Animation LOD**: the 15-35 m band still stepped at 30 Hz and the far bands worked out the full arm IK, hand
+   turns and stock fitting; creatures' clips ran every frame (only their state machine stepped).
+
+### What changed
+
+- **Static shadow cache** (`game/shadowCache.ts`, Atmosphere): each cascade's square is made a margin bigger than its
+  view slice needs (25 / 15 / 12 % of its radius, near to far) and kept while the slice still fits inside it. The
+  static casters (shadow proxies, and doors, gates or anything plain that has stood still 60 frames) are drawn into
+  a cascade only when it moves, the sun turns, the static set changes, or every ~30 frames (staggered by cascade);
+  their depth is then copied aside (a WebGL2 depth blit per layer) and every other frame the cascade starts from that
+  copy, with only the moving casters drawn on top. A cascade that moves lands on the same texel grid (stabilised
+  cascades), so static shadows don't swim. A caster that moves leaves the cached set at once (all cascades redraw).
+  Medium graphics: the single box moves only when the camera's wanted box is 6 m away. WebGPU and WebGL1: as before.
+  Off with `?perfoff=shadowcache`.
+- **Level draw merging** (`levelMerge.ts`, `MapStyler.merge`, every map): the level's and terrain's per-style meshes
+  (opaque, not glowing) are merged into one mesh per texture size and 128 m square over shared array textures (colour
+  and normal-map layers); each vertex carries its surface's layers, tint, specular colour and power, and a material
+  plugin (`LevelArrayPlugin`) takes those few inputs from the vertex instead of the material. Everything else is
+  StandardMaterial's own lighting, so the look is the same (CI's visual baselines: arena 1.0 %, canyon 0.4 % of pixels
+  differ, within their noise). Collision never used these meshes. Upper-storey floors (format v26) merge like any
+  slab (unit test). The loading gate waits for it (its textures load in a moment). WebGL2 only; `?perfoff=levelmerge`.
+- **Live mesh candidates** (`game/meshSelection.ts`): once a frame, Babylon's two walks see only the meshes switched
+  on, less frozen ones no camera draws (layer mask 0: the shadow proxies). Market Town: ~830 instead of 3,300.
+- **Static materials frozen** (same file): the materials only the level and the props use, once their meshes have
+  been in the scene 2 s; a new mesh drawn with one thaws it. Safe because every map light is in the clustered
+  container (each mesh sees the same lights) and nothing changes those materials after they are made.
+  Both: `?perfoff=meshsel`.
+- **Animation LOD, round 2** (`animLod.ts`): 20 Hz / every 3rd frame at 15-35 m (was 30 Hz / 2nd), 12 Hz / 4th at
+  35-70 m (was 15 / 3rd), 8 Hz / 5th beyond (was 10 / 4th). Past 35 m (`coarse`, a character ~40 px tall) the arms
+  take back the last full grip's pose relative to the shoulders (the spine still bends for the aim), the gun rides in
+  the right hand as that grip held it and the fingers keep their last close; every 4th coarse evaluation works the
+  grip out in full (stance and pitch). Nearer than 15 m nothing changed (no pops close up).
+  **Creatures** (`creatureAnimator.ts`) now step their clips and bones by the same distances, and not at all out of
+  view. `?perfoff=animlod2` gives round 1's steps.
+- **Cheaper clip stops and disposals** (`game/animPatches.ts`): a group's stop disposes its animations without the
+  per-joint lookup (the group's own sweep removes them, as before); a node nothing ever animated skips the scene's
+  stop walk when it is disposed. Not switchable.
+
+### Measured
+
+Round 1's scenario and probe (a scratchpad script: `?offline=market_town&gamemode=core.tdm&bots=44&test=1&god=1`,
+graphics high, render scale auto, 640 × 360, SwiftShader; the player pinned at (4, 0, -34) looking north, 43 bots on
+fixed points 5-60 m ahead, two in three running small circles; 10 / 14 / 20 characters at < 15 / 15-35 / 35-70 m).
+One build, run back to back with everything on and with `?perfoff=shadowcache,levelmerge,meshsel,animlod2`, twice
+each (on, off, on, off), on a 4-core box shared with two other agents (load 12-17). SwiftShader frames take seconds,
+so the frame spans (5 frames a run) are noise; the counts are exact, and the CPU costs come from in-page
+micro-benchmarks on the live scene (the render loop paused, each part run in batches, the fastest batch kept).
+The clip-stop and disposal patches are in both columns (not switchable).
+
+| Per frame, 43 characters in view | off (round 1) | on (round 2) |
+|---|---|---|
+| all draws | 692, 697 | 441, 513 (-31 %) |
+| render-target draws (shadow, water depth, reflection, the rest) | 411, 410 | 197, 220 (-49 %) |
+| shadow casters drawn | 278, 279 | 126, 150 (-51 %) |
+| level draws in the main pass / in the reflection | 58 / 38 | 39 / 17 |
+| water depth-map draws | 49, 47 | 36, 35 |
+| characters animated (clips evaluated) | 22.6, 22.6 | 17.8, 20.2 (-16 %) |
+| mesh candidates Babylon walks (twice) | 3,283, 3,303 | 826, 810 |
+| active-mesh evaluation, micro, ms | 11.4, 9.5 | 3.4, 1.9 (-75 %) |
+| main camera's draws, micro, ms (draws) | 10.0, 10.1 (174, 183) | 9.3, 5.2 (147, 147) (-27 %) |
+| shadow map pass, micro, ms (draws) | 6.0, 8.0 (278, 285) | 7.5, 7.7 (128, 106) |
+| shadow + depth maps, frame span, ms | 35.5, 28.7 | 26.7, 20.7 (-26 %) |
+
+The shadow pass's micro time did not fall here although its draws halved: on SwiftShader the per-layer depth copy is
+done on the CPU too (three 2048 × 2048 layers); on the M1 it is a GPU blit (about 50 MB of bandwidth a frame, well
+under a millisecond of GPU time) and the CPU cost follows the draws. In the measuring window (camera still) no
+cascade redrew its static casters; in the micro-benchmarks 45-53 of ~400 layer renders did (the every-30-frames
+refresh). A CPU profile of round 1's build in this scenario put clip stops (AnimationGroup.stop's lookups) at a third
+of the frame's JS; they no longer show.
+
+**Look**: CI's visual baselines pass unchanged (arena 1.0 %, canyon 0.4 % of pixels differ; allowed 8 / 10 %);
+the zfight audit is untouched (the merge changes no faces).
+
+### Projected on the M1 Pro
+
+From the owner's 20.3 ms trace frame, scaling each part by what it measured here:
+
+| Part | round 1 (M1) | round 2 (projected) |
+|---|---|---|
+| mesh evaluation | 3.0 | ~0.8-1.0 |
+| shadow + depth maps | 3.8 | ~2.0-2.3 |
+| issuing the main pass (~5 ms of the rest of render) | ~5 | ~3.7-4.0 |
+| characters (clips + aim) | 4.6 | ~3.4-3.8 |
+| characters (update), net in (clip stops) | 1.8 | ~1.5 |
+| ragdolls, effects, hud, post | 2.0 | ~1.9 |
+| **frame** | **20.3** | **~14-15.5** |
+
+So the average frame should sit at the 60 fps cap on the M1, with big fights around 19-23 ms (from 26-32). Not
+measured there: see below.
+
+### For the owner to re-record on the M1 Pro
+
+The same as last time: Market Town, TDM, 44 players, high, render scale auto, 60 fps cap, a 25 s recording through
+a big fight and a 10 s trace. Expect mesh evaluation about a third of before, shadow + depth maps a little over half,
+draws about a third fewer (~450-500), shadow casters about half (~120-150), `animated` a few lower. If a part didn't
+fall, the same match with `?perfoff=<that part>` (shadowcache, levelmerge, meshsel, animlod2) in the address gives
+the comparison on the same build.
+
+### Next
+
+- Doors re-set by their logic every frame were recomputed (and so not cached) in the measurement: they are now judged
+  by their matrix (`shadowCache.ts`, after the measurement; ~27 shadow draws on Market Town).
+- Roads, paths and the border's ground use the styler's materials but are not merged (their own meshes).
+- Effects still dispose Godot VFX emitters when done (a mesh removal each); pooling them is next for "effects".
