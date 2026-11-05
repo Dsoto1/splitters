@@ -359,4 +359,15 @@ describe('Replace all <prop> with <prop or species>', () => {
       expect(cmd.kind === 'updateEntities' && cmd.after.length, `${from} → ${to}`).toBe(0);
     }
   });
+
+  it('keeps the longest side across the ground and turns each piece a quarter when asked (a hedge long in z for one long in x)', () => {
+    const d: MapDocument = { ...newMapDocument('Hedges'), entities: [prop('p1', 'prop.hedge_large', 1, { solid: true, yaw: 1.571 }), prop('p2', 'prop.hedge_large', 1, { solid: true, yaw: 3 })] };
+    const cmd = replacePropsCommand(d, 'prop.hedge_large', 'prop.ge_hedge_wall', 'length', 1);
+    const [a, b] = applyCommand(d, cmd).entities as PropEntity[];
+    // Tall Hedge 1.467 × 2.2 × 3.667 (long in z), Box Hedge 3.272 × 2.2 × 1.36 (long in x): 3.667 / 3.272 = 1.12.
+    expect([a!.model, a!.scale, a!.yaw, a!.solid]).toEqual(['prop.ge_hedge_wall', 1.12, -3.1414, true]);
+    // Past π it comes back round (1.571 + π/2 − 2π above; 3 + π/2 − 2π here).
+    expect(b!.yaw).toBe(-1.7124);
+    expect(replacePropsCommand(d, 'prop.hedge_large', 'prop.ge_hedge_wall', 'height', 0).kind === 'updateEntities' && (replacePropsCommand(d, 'prop.hedge_large', 'prop.ge_hedge_wall').after[0] as PropEntity).yaw).toBe(1.571);
+  });
 });
