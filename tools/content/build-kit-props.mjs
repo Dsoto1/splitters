@@ -55,11 +55,9 @@ const COLOURS = {
   hullGrey: '#5c6359',
   hullDark: '#40463f',
   rustDeep: '#583624',
-  rustLight: '#8e5a36',
   woodGrey: '#77705f',
   paintGrey: '#6a726c',
   twine: '#7c6a44',
-  rubber: '#2a2826',
 };
 
 // ---------------------------------------------------------------- geometry
@@ -313,8 +311,11 @@ const withCollision = (parts, boxes) => Object.assign(parts, { collision: boxes 
  * Everything drawn stays inside those boxes (a few centimetres of strakes and ribs aside), so the boxes are the bounds.
  */
 function landingCraft({ bowH, sideH, step, wreck }) {
+  // Few materials (each is one draw for every copy on a map): the craft hull, dark and rust; a wreck rust and dark rust.
   const hull = wreck ? 'rust' : 'hullGrey';
   const dark = wreck ? 'rustDeep' : 'hullDark';
+  const streak = wreck ? 'rustDeep' : 'rust';
+  const metal = dark;
   const rnd = seq(wreck ? 71 : 29);
   const out = [];
   // The ramp: the outer plate, ribs and stiffeners behind it, cheeks at its edges, a lip on top, hinge drums at its foot.
@@ -325,13 +326,13 @@ function landingCraft({ bowH, sideH, step, wreck }) {
     out.push(slab(dark, x - 0.05, 0.12, -0.2, x + 0.05, bowH - 0.1, 0.06));
   }
   for (let y = 0.95; y < bowH - 0.4; y += 1.0) out.push(slab(dark, -2.78, y - 0.05, -0.16, 2.78, y + 0.05, 0.06));
-  for (const x of [-1.7, 1.7]) out.push(place(cylinder('steelDark', 0.14, -0.45, 0.45, 10), { at: [x, 0.22, -0.02], rz: Math.PI / 2 }));
+  for (const x of [-1.7, 1.7]) out.push(place(cylinder(metal, 0.14, -0.45, 0.45, 10), { at: [x, 0.22, -0.02], rz: Math.PI / 2 }));
   // Weathering on the ramp's face: a darker band at the foot, rust running down from the lip.
   out.push(slab(dark, -2.78, 0, 0.2, 2.78, 0.5 + rnd() * 0.2, 0.205));
   for (let i = 0; i < 7; i++) {
     const x = -2.5 + rnd() * 5;
     const len = 0.6 + rnd() * (bowH * 0.45);
-    out.push(slab(wreck ? 'rustLight' : 'rust', x - 0.04 - rnd() * 0.05, bowH - 0.1 - len, 0.2, x + 0.04, bowH - 0.1, 0.206));
+    out.push(slab(streak, x - 0.04 - rnd() * 0.05, bowH - 0.1 - len, 0.2, x + 0.04, bowH - 0.1, 0.206));
   }
   // The hull sides: plating, a gunwale cap, frames inside, a rubbing strake and a dark boot-top outside, end posts.
   for (const [k, h] of [[-1, sideH[0]], [1, sideH[1]]]) {
@@ -354,7 +355,7 @@ function landingCraft({ bowH, sideH, step, wreck }) {
     for (let i = 0; i < 6; i++) {
       const z = -9.4 + rnd() * 7;
       const len = 0.5 + rnd() * h * 0.5;
-      out.push(slab(wreck ? 'rustLight' : 'rust', outer, h - 0.1 - len, z - 0.05, outer + k * 0.008, h - 0.1, z + 0.03 + rnd() * 0.05));
+      out.push(slab(streak, outer, h - 0.1 - len, z - 0.05, outer + k * 0.008, h - 0.1, z + 0.03 + rnd() * 0.05));
     }
   }
   // The well's floor (under the sand where a craft is beached; seen where the tide has scoured round it).
@@ -362,16 +363,16 @@ function landingCraft({ bowH, sideH, step, wreck }) {
   if (step) {
     // The bow skid under the raised ramp: a heavy steel shoe, a tread plate on top, a rope fender along its nose,
     // braced back to the ramp's foot.
-    out.push(slab(dark, -2.3, 0, 0.45, 2.3, 1.05, 1.35), slab('steelDark', -2.3, 1.05, 0.45, 2.3, 1.17, 1.35));
-    out.push(place(cylinder('rubber', 0.1, -2.2, 2.2, 10), { at: [0, 0.78, 1.24], rz: Math.PI / 2 }));
-    for (const x of [-1.8, 1.8]) out.push(slab('steelDark', x - 0.08, 0.15, 0.2, x + 0.08, 0.85, 0.45));
+    out.push(slab(dark, -2.3, 0, 0.45, 2.3, 1.05, 1.35), slab(hull, -2.3, 1.05, 0.45, 2.3, 1.17, 1.35));
+    out.push(place(cylinder(dark, 0.1, -2.2, 2.2, 10), { at: [0, 0.78, 1.24], rz: Math.PI / 2 }));
+    for (const x of [-1.8, 1.8]) out.push(slab(metal, x - 0.08, 0.15, 0.2, x + 0.08, 0.85, 0.45));
     // Gun rings over the stern quarters.
-    for (const k of [-1, 1]) out.push(place(ring('steelDark', 0.32, 0.03, 16, 4), { at: [k * 2.7, sideH[k < 0 ? 0 : 1] + 0.03, -8.9], rx: Math.PI / 2 }));
+    for (const k of [-1, 1]) out.push(place(ring(metal, 0.32, 0.03, 16, 4), { at: [k * 2.7, sideH[k < 0 ? 0 : 1] + 0.03, -8.9], rx: Math.PI / 2 }));
   } else {
     // A wreck: scorch streaks up the ramp and a buckled plate hanging inside the well.
     for (let i = 0; i < 5; i++) {
       const x = -1.6 + i * 0.45 + rnd() * 0.2;
-      out.push(slab('char', x - 0.03 - rnd() * 0.06, 0.3 + rnd() * 0.3, 0.2, x + 0.03, 0.9 + rnd() * bowH * 0.5, 0.204));
+      out.push(slab(dark, x - 0.03 - rnd() * 0.06, 0.3 + rnd() * 0.3, 0.2, x + 0.03, 0.9 + rnd() * bowH * 0.5, 0.204));
     }
     out.push(place(slab(dark, -0.9, -0.9, -0.03, 0.9, 0.9, 0.03), { at: [1.2, 1.2, -6.5], ry: 0.5, rx: 0.4 }));
   }
@@ -398,9 +399,9 @@ function angleIron(colour, a, b, leg, t, roll) {
   return legs.map((p) => place(place(p, { rz: roll }), { at: [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2, (a[2] + b[2]) / 2], rx, ry }));
 }
 
-/** Square timbers: a balk `w` square and `len` long along Z at (x, y, z) (y its underside), end grain lighter. */
+/** Square timbers: a balk `w` square and `len` long along Z at (x, y, z) (y its underside). */
 function timber(w, len, [x, y, z], ry = 0, colour = 'woodGrey') {
-  const out = [box(colour, [w, w, len - 0.04], [0, w / 2, 0]), box('woodLight', [w - 0.03, w - 0.03, 0.02], [0, w / 2, len / 2 - 0.01]), box('woodLight', [w - 0.03, w - 0.03, 0.02], [0, w / 2, -len / 2 + 0.01])];
+  const out = [box(colour, [w, w, len], [0, w / 2, 0])];
   return out.map((p) => place(p, { at: [x, y, z], ry }));
 }
 
@@ -523,8 +524,8 @@ const PIECES = {
         boxes.push([Math.min(p[0], q[0]) - r, Math.max(0, Math.min(p[1], q[1]) - r), Math.min(p[2], q[2]) - r, Math.max(p[0], q[0]) + r, Math.max(p[1], q[1]) + r, Math.max(p[2], q[2]) + r]);
       }
     }
-    out.push(place(box('steelDark', [0.34, 0.34, 0.03]), { at: [0, cy, 0], rx: 0.6, ry: 0.4 }), place(box('steelDark', [0.3, 0.3, 0.03]), { at: [0, cy, 0], rx: -0.5, ry: 2.2 }));
-    for (let i = 0; i < 6; i++) out.push(place(cylinder('iron', 0.025, -0.04, 0.04, 6), { at: [Math.cos(i) * 0.1, cy + Math.sin(i * 1.7) * 0.1, Math.sin(i) * 0.1], rx: i }));
+    out.push(place(box('rustDeep', [0.34, 0.34, 0.03]), { at: [0, cy, 0], rx: 0.6, ry: 0.4 }), place(box('rustDeep', [0.3, 0.3, 0.03]), { at: [0, cy, 0], rx: -0.5, ry: 2.2 }));
+    for (let i = 0; i < 6; i++) out.push(place(cylinder('rustDeep', 0.025, -0.04, 0.04, 6), { at: [Math.cos(i) * 0.1, cy + Math.sin(i * 1.7) * 0.1, Math.sin(i) * 0.1], rx: i }));
     return withCollision(out, boxes);
   },
   sandbag_stack: () => {
@@ -537,7 +538,7 @@ const PIECES = {
           const u = (i - 0.5) * 0.52;
           const v = (j - 1) * 0.34;
           const [x, z, ry] = r % 2 ? [v, u, Math.PI / 2] : [u, v, 0];
-          out.push(sandbag(x, r * 0.2, z, ry + (((i + j + r) % 3) - 1) * 0.04, 0.52, (i + j + r) % 3 === 0 ? 'burlapDark' : 'burlap'));
+          out.push(sandbag(x, r * 0.2, z, ry + (((i + j + r) % 3) - 1) * 0.04, 0.52));
         }
     return out;
   },
@@ -550,10 +551,10 @@ const PIECES = {
   timber_stack: () => {
     // Beach-obstacle timbers stacked as a crib (2.4 × 1 × 1.3 m): four along, two bearers across, three on top.
     const out = [];
-    for (const [i, z] of [-0.495, -0.165, 0.165, 0.495].entries()) out.push(...timber(0.32, 2.4 - (i % 2) * 0.12, [(i % 2) * 0.05, 0, z], Math.PI / 2, i % 2 ? 'woodDark' : 'woodGrey'));
+    for (const [i, z] of [-0.495, -0.165, 0.165, 0.495].entries()) out.push(...timber(0.32, 2.4 - (i % 2) * 0.12, [(i % 2) * 0.05, 0, z], Math.PI / 2));
     for (const x of [-0.95, 0.95]) out.push(...timber(0.32, 1.32, [x, 0.32, 0], 0, 'woodDark'));
     for (const [i, z] of [-0.34, 0, 0.34].entries()) out.push(...timber(0.32, 2.3 - i * 0.1, [-0.04 + i * 0.03, 0.64, z], Math.PI / 2, i === 1 ? 'woodDark' : 'woodGrey'));
-    out.push(slab('iron', -0.6, 0, -0.66, -0.54, 0.97, 0.66), slab('iron', 0.54, 0, -0.66, 0.6, 0.97, 0.66));
+    out.push(slab('woodDark', -0.6, 0, -0.66, -0.54, 0.97, 0.66), slab('woodDark', 0.54, 0, -0.66, 0.6, 0.97, 0.66));
     return out;
   },
   dory: () => {
@@ -599,7 +600,7 @@ const PIECES = {
       const w = st[Math.round(((x + L) / (2 * L)) * N)].w;
       out.push(slab('woodDark', x - 0.12, 0.4, -w + 0.06, x + 0.12, 0.45, w - 0.06));
     }
-    out.push(beam('woodLight', [-1.0, 0.2, -0.25], [0.95, 0.42, 0.32], 0.05), place(box('woodLight', [0.4, 0.02, 0.13]), { at: [1.05, 0.44, 0.35], ry: -0.28 }));
+    out.push(beam('wood', [-1.0, 0.2, -0.25], [0.95, 0.42, 0.32], 0.05), place(box('wood', [0.4, 0.02, 0.13]), { at: [1.05, 0.44, 0.35], ry: -0.28 }));
     return out;
   },
   straw_bale: () => {

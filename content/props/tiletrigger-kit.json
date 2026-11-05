@@ -208,7 +208,7 @@
       "category": "Coastal Harbor",
       "scale": 1,
       "collide": "box",
-      "surface": "thin_wood",
+      "surface": "dirt",
       "breakable": {
         "health": 60,
         "debris": "#8a5a32"

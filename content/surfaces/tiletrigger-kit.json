@@ -3,12 +3,12 @@
   "default": "none",
   "skip": ["sandbag_wall", "sandbag_wall_low", "sandbag_corner", "sandbag_nest", "hesco_wall", "hedgehog", "dragon_tooth", "ammo_crate", "ammo_stack", "fuel_drum", "burn_barrel", "razor_wire", "camo_net", "mine_cart", "ore_cart", "dynamite_crate", "dynamite_bundle", "hitching_post", "water_trough", "wagon_wheel", "wanted_board", "outhouse", "rail_buffer", "mine_frame", "tumbleweed", "covered_wagon", "wind_pump"],
   "props": {
-    "landing_craft": {"default": "painted_metal", "materials": {"rust": "metal", "steelDark": "metal", "rubber": "plastic"}},
-    "landing_craft_wreck": {"default": "metal", "materials": {"char": "none"}},
+    "landing_craft": {"default": "painted_metal", "materials": {"rust": "metal"}},
+    "landing_craft_wreck": {"default": "metal"},
     "hedgehog_beach": {"default": "metal"},
     "sandbag_stack": {"default": "fabric"},
     "timber_baulk": {"default": "wood", "materials": {"iron": "metal"}},
-    "timber_stack": {"default": "wood", "materials": {"iron": "metal"}},
+    "timber_stack": {"default": "wood"},
     "dory": {"default": "wood", "materials": {"paintGrey": "painted_wood"}},
     "straw_bale": {"default": "fabric"}
   }
