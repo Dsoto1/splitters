@@ -1,0 +1,35 @@
+{
+  "id": "meshy_goblinwarlord",
+  "kind": "character",
+  "use": "player",
+  "order": 111,
+  "name": "Goblin Warlord",
+  "look": "core.goblinwarlord",
+  "group": "legends",
+  "nameTheme": "goblin",
+  "bio": "Rules the warren by fear, spite and a very large knife.",
+  "body": "male",
+  "notes": "Drive intake of 2026-11-05 (\"Goblin Warlord villain\", rigged and animated on Meshy (Mixamo joint names read as Meshy's; finger chains, where it has them, folded into the hands and refitted by hands.mjs; its clips not used)). A green goblin in spiked leather armour and a tattered cloak hung with skulls (the owner's \"fantasy\": Knights & Legends). Standard size: a warlord, not a little goblin (the owner may prefer small, as goblins usually are). Not Snikkit (Goblin Mischief replaces Snikkit). Display name a placeholder for the owner. Licence recorded as owned (no metadata says otherwise); the owner to confirm, and if it is a Meshy community model, switch to CC0 with its author and post URL.",
+  "source": {
+    "license": "owned",
+    "author": "the owner, on their Meshy subscription",
+    "date": "2026-11-05",
+    "url": null,
+    "file": "^Meshy_AI_Goblin_Warlord_villain_\\d+_animated_mixamo_All_animation\\.glb$"
+  },
+  "finish": {
+    "metallic": 0.05,
+    "roughness": 0.7
+  },
+  "firstPerson": {
+    "arms": "own"
+  },
+  "fixes": {
+    "triangles": 11000,
+    "headShare": 0.16,
+    "handsShare": 0.1,
+    "normalSize": 1024,
+    "lod": 0.25,
+    "feet": true
+  }
+}

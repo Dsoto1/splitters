@@ -1,0 +1,35 @@
+{
+  "id": "meshy_maskedfigure",
+  "kind": "character",
+  "use": "player",
+  "order": 112,
+  "name": "The Masked Figure",
+  "look": "core.maskedfigure",
+  "group": "horror",
+  "nameTheme": "spooky",
+  "bio": "Nobody has seen his face. Nobody wants to.",
+  "body": "male",
+  "notes": "Drive intake of 2026-11-05 (\"The Masked Figure\", rigged and animated on Meshy (Mixamo joint names read as Meshy's; finger chains, where it has them, folded into the hands and refitted by hands.mjs; its clips not used)). A man in a sack mask, a stained work shirt and trousers (Undead & Horror). Standard size. Rigged in an A-pose. Display name a placeholder for the owner. Licence recorded as owned (no metadata says otherwise); the owner to confirm, and if it is a Meshy community model, switch to CC0 with its author and post URL.",
+  "source": {
+    "license": "owned",
+    "author": "the owner, on their Meshy subscription",
+    "date": "2026-11-05",
+    "url": null,
+    "file": "^Meshy_AI_The_Masked_Figure_\\d+_animated_mixamo_All_animation\\.glb$"
+  },
+  "finish": {
+    "metallic": 0,
+    "roughness": 0.8
+  },
+  "firstPerson": {
+    "arms": "own"
+  },
+  "fixes": {
+    "triangles": 11000,
+    "headShare": 0.16,
+    "handsShare": 0.1,
+    "normalSize": 1024,
+    "lod": 0.25,
+    "feet": true
+  }
+}

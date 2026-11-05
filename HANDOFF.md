@@ -45,7 +45,10 @@ fingers included; GLB with "Rigged Character" on (rest pose, no animations); upr
   - **Old Timer** `meshy_oldtimer` (folk, standard; "An old man in his 90s"), rebaked 122k -> 14k tris;
   - **Imperial Guard** `meshy_imperialguard` (legends, standard; "A fit ancient Chinese male soldier"), rebaked
     165k -> 14k tris;
-  - **Frost Viking** `meshy_frostviking` (legends, large), 10.2k tris (the owner's "fantasy": Knights & Legends).
+  - **Frost Viking** `meshy_frostviking` (legends, large), 10.2k tris (the owner's "fantasy": Knights & Legends);
+  - **Goblin Warlord** `meshy_goblinwarlord` (legends, standard: a warlord; owner may prefer small), 10.4k tris;
+  - **The Masked Figure** `meshy_maskedfigure` (horror, standard; A-pose rig), 11k tris.
+  - Portraits captured for all ten (capture-portraits.mjs with the look ids; CI's "none drawn live" check needs them).
   - All owned (meshy-owned). The last five: no metadata says otherwise, but some names follow Meshy community
     naming: owner to confirm (CC0 would need author + post URL). "Alfred Neubauer": not used (owner).
 - **Tank:** `content/guns.json` `vehicles/tank_wwii.glb` (hero tier, 18.9k tris + 5.6k LOD from 45 m, 1536 px colour,
@@ -74,7 +77,7 @@ fingers included; GLB with "Rigged Character" on (rest pose, no animations); upr
   hands). Not tuned: candidates for the next hands round (fixes.hands scale/curl, fixes.grip). All animate in
   Character Select and in play (no T-pose or freeze seen: screenshots in the agent's scratchpad `chars-shots/`).
 
-**Replacements (own step):** Tattered Circus Nightmare replaces Giggles (`meshy_giggles`, keeps name/id/size small),
+**Replacements (own step):** Goblin Mischief replaces Snikkit (`meshy_snikkit`?, keep name/id/size), Tattered Circus Nightmare replaces Giggles (`meshy_giggles`, keeps name/id/size small),
 Bear Warrior replaces Barnaby Bruin (`meshy_barnaby`), Gnoll warrior replaces Hyena Warrior (`meshy_hyena`), all with
 new portraits. **Re-rigs, more:** Desert Sentinel -> Desert Ranger, Grandpa Chains, Old King Halvard, Hazmat Joe,
 King Aldric (side-by-sides in the agent's scratchpad `match/pairs*.png`).
@@ -86,7 +89,7 @@ before/after, keep the old build where the new is worse. Matches (by render, the
   T Pose"), Big Bab ("T Pose Monkey" 20261105; Scamp unchanged), Agent Zhao ("Uniformed Worker in a T Pose"), Iron
   Knight ("Iron Warden", owner), Hyena Warrior ("Gnoll warrior", owner: replaces the model, keeps the name).
 - **Flags:** "T Pose on Green Screen" renders as a photoreal middle-aged man in a shirt and jeans, nothing like CRT
-  Robot (scratch `match/pairs2.png`): show the owner before using it for the robot. Iron Warden and Gnoll are visibly
+  Robot (scratch `match/pairs2.png`); owner later confirmed it IS the CRT Robot's new rig: build both CRT candidates, compare: show the owner before using it for the robot. Iron Warden and Gnoll are visibly
   different models from the Iron Knight and Hyena Warrior (new portraits needed if adopted).
 - Skeletons: Dapper, CRT Robot (20261101), Frida and Alien Biker have 24 joints (no finger chains); the others have
   fingers (Croakley no index finger). **The importer does not use a download's finger chains**: they fold into the

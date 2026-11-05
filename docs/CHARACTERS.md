@@ -97,9 +97,9 @@ every built-in look names exactly one, and a unit test
 | Group (`id`) | Who |
 |---|---|
 | Soldiers (`soldiers`) | Modern and sci-fi military, agents, pilots, hazmat, astronauts: Agent Zhao, Bulwark, Capt. Nova, Commando, Desert Ranger, Dust Trooper, Flt. Lt. Ember, Frost, Grunt '68, Hazmat, Medic, Operative, Scout, Sentinel, Sgt. Pruitt, Space Marine, Tactical Soldier, Trooper (NPC skin), Vanguard, Warden |
-| Knights & Legends (`legends`) | Medieval, royalty, monks, wizards, mythic and historical warriors: Anubis, Ashwalker, Brother Ansel, Elder Tomo, Frost Viking, Grizzelda, Imperial Guard, Iron Knight, King Aldric, Lancer Mei, Linktifa, Merrow the Wise, Old King Halvard, Ser Brannock, Shade, Sir Galloway, Thornweaver |
+| Knights & Legends (`legends`) | Medieval, royalty, monks, wizards, mythic and historical warriors: Anubis, Ashwalker, Brother Ansel, Elder Tomo, Frost Viking, Goblin Warlord, Grizzelda, Imperial Guard, Iron Knight, King Aldric, Lancer Mei, Linktifa, Merrow the Wise, Old King Halvard, Ser Brannock, Shade, Sir Galloway, Thornweaver |
 | Everyday Folk (`folk`) | Ordinary people: Big Bogdan, Biker Gang Girl, Brawler, Cap'n Barnacle, Chef Basile, The Butcher, Dale, Drifter, Dusty Colt, Engineer, Farmhand, Grandpa Chains, Hector, Huntress, Old Timer, Pathfinder, Patches, Saint Nick, Sprout, The Dapper, Tracker, Umpire, Uncle Bao, Wayfarer |
-| Undead & Horror (`horror`) | Bonejack, Count Bonesworth, Fearsome Undead, Giggles, Gorgle, Groaner, Lurcher (queued), Punkin, Rattles, Rotter, Shambler, Spiked Skeleton Biker |
+| Undead & Horror (`horror`) | Bonejack, Count Bonesworth, Fearsome Undead, Giggles, Gorgle, Groaner, Lurcher (queued), The Masked Figure, Punkin, Rattles, Rotter, Shambler, Spiked Skeleton Biker |
 | Animals (`animals`) | Bamboo, Bandit, Barnaby Bruin (queued), Big Bab, Biscuit, Brass Hare, Croakley, Greyfang, Hyena Warrior, Scamp, Shiba, Teddy, Wealthy Otter |
 | Creatures & Machines (`creatures`) | Aliens, goblins, reptiles, robots, monsters: Boglurker, Botboy, Emerald Robot, Goblin, Imp and Puglin (NPC skins), Ivory Rustwalker, Ricochet, Salamander Warlord, Snikkit, T-350, The Hollow Visitor, The Visitor |
 
