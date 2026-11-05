@@ -8,6 +8,11 @@ made only on a commit that passed CI on a check branch.
 
 ## Unreleased
 
+**Palms face the right way** (owner's report, 2026-11-05)
+- **Hands no longer hold guns back to front**: on some characters the game read the back of the hand as the palm, so the shooting hand held the grip palm out and the support hand lay palm down on the handguard (the new Hyena Warrior, Honest Abe and others). Which side of a hand is the palm now comes from the hand's own joints (a right hand and a left hand are mirror images: the knuckles across the fingers say which side the palm is), in third person, first person, Character Select and on creatures.
+- **Snikkit's hands** are three quarters of their old size (they were longer than his forearms) and sit deeper on the grip; the **Hyena Warrior's** left paw now closes round the handguard.
+- Team tools: the grip audit flags palms facing the wrong way (`palm`), `__grips.palms()` shows how each palm was read, and the characters test checks that shooting palms face in and support palms face up.
+
 **MapMaker: floors over tall pieces** (the owner's report, 2026-11-05)
 - **A floor or ceiling over a piece that stands two or more levels tall**: such a piece (Triumphal Arch, Hypostyle Hall, Temple Pylon, Tall Room, Arena Seating, City Wall…) holds its cell on its upper levels too, so nothing could be placed there. Now a **Platform** placed on that cell becomes the piece's own floor there, or select the piece and tick **Floor on Level N** under *Upper floors* in the inspector (its whole footprint). A full floor slab you can stand and build on; what rises through it (columns, arches) stays. Not on stairs, ramps and towers (their upper level is the way up) or model buildings. Map format v26 (`upperFloors` on tiles; older maps load as they were).
 - **Refusals say what to do**: "Can't place" now names the piece and level in the way and what to do instead (a free cell, another level, move or delete it, or the floor above as above), instead of "overlaps another tile".
