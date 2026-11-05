@@ -231,6 +231,11 @@ Also proposed: note pins, templates, mirror for team maps, a card-shot camera, a
 
 Waiting for the owner to mark which ones. This becomes the "MapMaker overhaul" in the agreed queue.
 
+### Queued (owner-approved, 2026-11-05): kit-prop generators
+docs/PROCEDURAL_ENVIRONMENT.md Phase 6, after Environment Phase 2. Generated families replace most of the simple
+man-made props: crates and barrels first, then fences and walls, then containers. Characters, weapons, vehicles and
+hero props stay authored.
+
 ### Plan (proposed to the owner, 2026-11-05): retire the old nature models after the environment passes
 About 120 nature props today:
 - Kenney Nature Kit: 55
