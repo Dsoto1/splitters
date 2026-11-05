@@ -2,19 +2,24 @@
 // same plane, and the audit over every map in maps/ (coplanar overlaps left: none).
 import { readdirSync, readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { SLIVER, axisFaces, boxQuat, buildMapDecor, buildMapGeometry, coplanarIssues, coplanarOverlaps, coplanarSpots, loadMap, quatRotate, visibleFaces, type MapEntity, type RenderFace, type WorldBox } from '../src/index.ts';
+import { FLUSH_LIFT, PROP_FLUSH, SLIVER, axisFaces, propCoplanar, propFlushLifts, boxQuat, buildMapDecor, buildMapGeometry, coplanarIssues, coplanarOverlaps, coplanarSpots, loadMap, quatRotate, visibleFaces, type MapEntity, type RenderFace, type WorldBox } from '../src/index.ts';
 import { makeMap } from './helpers.ts';
+import { PROP_CONTACTS } from '../src/content/propContacts.generated.ts';
 
 const MAPS = new URL('../../../maps/', import.meta.url);
 const ids = readdirSync(MAPS)
   .filter((f) => f.endsWith('.json'))
   .map((f) => f.slice(0, -5))
   .sort();
-const drawnBoxes = (id: string): WorldBox[] => {
+const loadedMap = (id: string) => {
   const loaded = loadMap(readFileSync(new URL(`${id}.json`, MAPS), 'utf8'));
   if (!loaded.ok) throw new Error(`${id} failed to load`);
+  return loaded.map;
+};
+const drawnBoxes = (id: string): WorldBox[] => {
+  const map = loadedMap(id);
   // What the game draws (session.ts → view.buildMap → MapStyler.build): geometry and trim.
-  return [...buildMapGeometry(loaded.map), ...buildMapDecor(loaded.map)];
+  return [...buildMapGeometry(map), ...buildMapDecor(map)];
 };
 
 const box = (min: [number, number, number], max: [number, number, number], kind: WorldBox['kind'] = 'wall', extra: Partial<WorldBox> = {}): WorldBox => ({ min, max, kind, sourceId: 't', ...extra });
@@ -200,6 +205,83 @@ describe('z-fighting audit over maps/', () => {
       left.slice(0, 5).map((o) => `${boxes[o.a]!.kind} ${boxes[o.a]!.sourceId} / ${boxes[o.b]!.kind} ${boxes[o.b]!.sourceId} at ${o.center.map((v) => v.toFixed(2))} (${o.area.toFixed(3)} m²)`),
       `${left.length} coplanar overlaps (thinner than ${SLIVER} m don't count)`,
     ).toEqual([]);
+  });
+});
+
+// Props (docs/LOOK.md, "No flicker: props"): a prop's contact faces (its model's flat faces in the planes of its
+// bounding box: tools/content/prop-contacts.mjs) in the plane of a level face or another prop's, seen from the same side.
+// Against the level, the level's depth bias draws the prop (client test levelMerge.test.ts checks every level material
+// carries it); between props, the later one is drawn FLUSH_LIFT apart (propFlushLifts). Goal: none left, no allow-list.
+describe('props and z-fighting', () => {
+  const prop = (id: string, model: string, position: [number, number, number], yaw = 0): MapEntity => ({ id, kind: 'prop', model, position, yaw, scale: 1, solid: false, tint: null });
+  const floorMap = (props: MapEntity[]) => {
+    const map = makeMap([]);
+    return { ...map, entities: [...map.entities, ...props] };
+  };
+  const slab = [box([-10, -0.5, -10], [10, 0, 10], 'floor')];
+
+  it("a rug whose cloth lies on its base fights the floor; one 2 cm thick, or a chair's downward base, doesn't", () => {
+    const map = floorMap([prop('rug', 'prop.hm_rug', [0, 0, 0]), prop('thick', 'prop.rug', [4, 0, 0]), prop('chair', 'prop.armchair', [-4, 0, 0])]);
+    const { level, props } = propCoplanar(map, PROP_CONTACTS, slab, visibleFaces(slab));
+    expect(new Set(level.map((o) => o.a))).toEqual(new Set(['rug']));
+    expect(level[0]!.normal).toEqual([0, 1, 0]);
+    expect(props).toEqual([]);
+    // A hair above the floor is still in its plane on a phone's depth buffer; a centimetre isn't.
+    expect(propCoplanar(floorMap([prop('rug', 'prop.hm_rug', [0, PROP_FLUSH / 2, 0])]), PROP_CONTACTS, slab, visibleFaces(slab)).level).toHaveLength(1);
+    expect(propCoplanar(floorMap([prop('rug', 'prop.hm_rug', [0, 0.01, 0])]), PROP_CONTACTS, slab, visibleFaces(slab)).level).toEqual([]);
+  });
+
+  it('double-sided bases fight what they stand on; the prop on top is drawn a hair higher, and the pair is clear', () => {
+    // A small crate (double-sided faces) on a large one, flush.
+    const map = floorMap([prop('big', 'prop.crate_large', [0, 0, 0]), prop('small', 'prop.crate_small', [0, 1.1, 0])]);
+    const before = propCoplanar(map, PROP_CONTACTS, slab, []);
+    expect(before.props.length).toBeGreaterThan(0);
+    const lifts = propFlushLifts(map, PROP_CONTACTS, slab);
+    expect([...lifts.keys()]).toEqual(['small']);
+    expect(lifts.get('small')![1]).toBeCloseTo(FLUSH_LIFT, 9);
+    expect(propCoplanar(map, PROP_CONTACTS, slab, [], lifts).props).toEqual([]);
+  });
+
+  it('a chain of overlapping pieces alternates (no lift piles up), and a prop inside another clears on every axis', () => {
+    const chain = floorMap([0, 1, 2, 3, 4].map((i) => prop(`c${i}`, 'prop.crate_large', [0.9 * i, 0, 0])));
+    const lifts = propFlushLifts(chain, PROP_CONTACTS, slab);
+    expect(propCoplanar(chain, PROP_CONTACTS, slab, [], lifts).props).toEqual([]);
+    expect(Math.max(...[...lifts.values()].map((v) => Math.hypot(...v)))).toBeLessThanOrEqual(2 * FLUSH_LIFT + 1e-9);
+    const twins = floorMap([prop('a', 'prop.metal_crate', [0, 0, 0]), prop('b', 'prop.metal_crate', [0, 0, 0])]);
+    const t = propFlushLifts(twins, PROP_CONTACTS, slab);
+    expect(propCoplanar(twins, PROP_CONTACTS, slab, [], t).props).toEqual([]);
+  });
+
+  it('turned props are placed in their turn (a quarter turn takes the back to -x)', () => {
+    // Shelf end: a double-sided back panel on its -z side, 0.381 m behind its centre. Turned a quarter (local +z goes to
+    // +x), the back lies at x = -0.381: against a wall's face there.
+    const map = floorMap([prop('s', 'prop.shelf_end', [0, 0, 0], Math.PI / 2)]);
+    const wall = [box([-1, 0, -5], [-0.381, 3, 5], 'wall')];
+    const { level } = propCoplanar(map, PROP_CONTACTS, wall, visibleFaces(wall));
+    expect(level.some((o) => Math.abs(o.normal[0] - 1) < 1e-9 && o.area > 1)).toBe(true);
+    // Unturned, the back faces -z: nothing on that wall's face (its base still meets the wall's underside).
+    expect(propCoplanar(floorMap([prop('s', 'prop.shelf_end', [0, 0, 0])]), PROP_CONTACTS, wall, visibleFaces(wall)).level.filter((o) => o.normal[0] !== 0)).toEqual([]);
+  });
+});
+
+const propTotals = { level: 0, props: 0, lifted: 0 };
+describe('props z-fighting audit over maps/', () => {
+  it.each(ids)('%s: props flush with props are drawn apart, none left fighting', { timeout: 60_000 }, (id) => {
+    const map = loadedMap(id);
+    const boxes = [...buildMapGeometry(map), ...buildMapDecor(map)];
+    const raw = propCoplanar(map, PROP_CONTACTS, boxes, visibleFaces(boxes));
+    const lifts = propFlushLifts(map, PROP_CONTACTS, boxes);
+    const left = propCoplanar(map, PROP_CONTACTS, boxes, [], lifts).props;
+    propTotals.level += raw.level.length;
+    propTotals.props += raw.props.length;
+    propTotals.lifted += lifts.size;
+    expect(left.slice(0, 5).map((o) => `${o.a} / ${o.b} at ${o.center.map((v) => v.toFixed(2))} (${o.area.toFixed(3)} m²)`), `${left.length} prop pairs still flush`).toEqual([]);
+    // Every lift stays a hair: never a visible gap.
+    for (const v of lifts.values()) expect(Math.hypot(...v)).toBeLessThan(4 * FLUSH_LIFT);
+  });
+
+  it('totals (props drawn by the level depth bias, prop pairs drawn apart)', () => {
+    console.log(`props on the level, coplanar: ${propTotals.level} (drawn over it by the depth bias); prop pairs flush: ${propTotals.props} (${propTotals.lifted} props drawn apart)`);
   });
 });
 

@@ -106,3 +106,27 @@ describe('level draw merging on a built level', () => {
     scene.dispose();
   });
 });
+
+describe('level depth bias (docs/LOOK.md, "No flicker: props")', () => {
+  it('draws every level material a hair behind what lies in its planes (props flush on floors and walls win)', async () => {
+    const { NullEngine } = await import('@babylonjs/core/Engines/nullEngine');
+    const { Scene } = await import('@babylonjs/core/scene');
+    const { MapStyler } = await import('../src/mapMeshes.ts');
+    const { LEVEL_DEPTH_BIAS, buildMapGeometry } = await import('@tiletrigger/shared');
+    const { makeMap } = await import('../../shared/test/helpers.ts');
+    const scene = new Scene(new NullEngine());
+    const doc = makeMap([{ id: 't_arch', tile: 'imperial.triumphal_arch', x: 2, y: 3, z: 0, rotation: 0 as const }], [[16, 4, 24]]);
+    const styler = new MapStyler(scene);
+    styler.build(doc, buildMapGeometry(doc));
+    const sources = styler.mergeSources();
+    expect(sources.length).toBeGreaterThan(0);
+    expect(LEVEL_DEPTH_BIAS.factor).toBeGreaterThan(0);
+    expect(LEVEL_DEPTH_BIAS.units).toBeGreaterThan(0);
+    for (const s of sources) {
+      expect(s.mesh.material?.zOffset).toBe(LEVEL_DEPTH_BIAS.factor);
+      expect(s.mesh.material?.zOffsetUnits).toBe(LEVEL_DEPTH_BIAS.units);
+    }
+    expect(styler.surfaceMaterial(doc, 'core.concrete', null).zOffset).toBe(LEVEL_DEPTH_BIAS.factor);
+    scene.dispose();
+  });
+});

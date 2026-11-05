@@ -13,6 +13,7 @@
 //              tools/content/vehicles.mjs            mounts.generated.ts from content/vehicles/*.json
 //              tools/content/npcs.mjs                npcRoles.generated.ts and codes.lock.json (npcRoles) from content/npcs.json
 //              tools/content/hitboxes.mjs            hitboxes.generated.ts: hit shapes measured from the character and creature models
+//              tools/content/prop-contacts.mjs       propContacts.generated.ts: props' flat faces in their bounding-box planes (z-fighting)
 //              tools/content/pickups.mjs             pickups.generated.ts from content/pickups.json
 //              tools/content/materials.mjs           materials.generated.ts from content/materials.json
 //              tools/content/surface-types.mjs       surfaceTypes.generated.ts from content/surface-types.json and the props' `surface`
@@ -81,6 +82,8 @@ node('tools/content/tiles.mjs');
 node('tools/content/environment.mjs');
 // Hit shapes measured from the character models (after the looks: it reads them).
 node('tools/content/hitboxes.mjs');
+// Props' contact faces, measured from the built prop models (after prepare-props).
+node('tools/content/prop-contacts.mjs');
 
 step('palette atlas');
 let pending = all;
