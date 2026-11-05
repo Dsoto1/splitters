@@ -1,5 +1,5 @@
 {
-  "$comment": "Boulders (tools/content/env/rock.mjs). lods: triangle targets for meshoptimizer from the detailed surface. Collision: the hull before displacement (stone). See broadleaf.json for the fields.",
+  "$comment": "Boulders and pebbles (tools/content/env/rock.mjs). Pebbles (category rock): a cluster of small faceted stones, decoration only (no collision, no concealment), grown by the terrain's plants brush on stone, gravel, snow and sand (packages/client/src/foliage.ts) and placeable as a prop; one level of detail. Boulder lods: triangle targets for meshoptimizer from the detailed surface. Collision: the hull before displacement (stone). See broadleaf.json for the fields.",
   "family": "rock",
   "species": [
     {
@@ -21,6 +21,23 @@
       "variants": [
         { "index": 0, "name": "bare", "look": { "rock": "#7c776e", "band": "#a39b8c", "strataFreq": 12, "hue": 0.1 } },
         { "index": 1, "name": "moss", "look": { "rock": "#7a766f", "band": "#9d9688", "strataFreq": 12, "hue": 0.08, "cover": "#4f5e33", "coverFrom": 0.4 } }
+      ]
+    },
+    {
+      "id": "env.rock.pebbles",
+      "displayName": "Pebbles",
+      "category": "rock",
+      "assetVersion": 1,
+      "notes": { "1": "First version: replaces Kenney's stones in the plants brush, the scatter brushes and the palette (owner, 2026-11-05)." },
+      "nominalHeight": 0.13,
+      "nav": "none",
+      "role": "decorative",
+      "placement": { "maxSlopeDegrees": 45, "minSpacing": 0.6, "scale": [0.6, 1.5] },
+      "generator": { "kind": "pebbles", "seed": 21, "radius": 0.36, "stones": [6, 7], "size": [0.1, 0.36], "flat": [0.6, 0.9], "points": 7, "crease": 30, "uvScale": 0.6 },
+      "lods": [{ "distance": 0 }],
+      "variants": [
+        { "index": 0, "name": "grey", "look": { "rock": "#7a766e", "band": "#948d80", "strataFreq": 30, "hue": 0.1 } },
+        { "index": 1, "name": "sand", "look": { "rock": "#a08868", "band": "#b8a07c", "strataFreq": 30, "hue": 0.12 } }
       ]
     }
   ]
