@@ -308,6 +308,20 @@ Targets, aiming for 4–6 ms off:
 
 Measure relatively in the container, keep the CI perf budgets, then ask the owner to re-record on the M1.
 
+### Queued next (owner, 2026-11-05): hand palm orientation (before the pistol-hold tweak)
+The owner noticed that rigged hands come out with the right palm facing outward and the left palm down instead of
+up. The new Gnoll (Hyena Warrior) in the intake-2 sheets shows it.
+- **Likely cause:** `skinHandFrame` (client game/handProbe.ts) takes the palm normal from the hand mesh's thinnest
+  direction, whose sign is arbitrary, and chooses the thumb's side. On some rigs that picks the back of the hand, so
+  the grip turn rotates the hand 180° about its fingers.
+- **The audit misses it:** `gripReport`'s `sideR` uses `Math.abs`, so palm-in and palm-out score the same.
+- **Fix:**
+  - derive the palm side from the finger joints' bend direction;
+  - make the audit sign-aware: the right palm faces the grip, the left palm faces up into the handguard;
+  - re-audit every look, with third-person, first-person and Character Select before/after sheets.
+- **Owner's decisions:** keep the Hyena (Gnoll) and Snikkit (Goblin Mischief) and fix their hands with this;
+  Bill is retired. Do the pistol-hold tweak after this.
+
 ### Owner's map notes for later (2026-11-05; not started)
 - **No Man's Field:** asset refresh. It still uses Kenney kits; move it to our generated environment and props.
 - **Rockfall Canyon** (`maps/canyon.json`): asset and foliage refresh, onto our generated environment, rocks and plants.
