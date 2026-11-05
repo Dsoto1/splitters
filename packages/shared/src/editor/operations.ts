@@ -1,5 +1,5 @@
-import { SIDE_DIRS, coreCatalog, type EdgeStyle, type Side, type TileCatalog } from '../map/catalog.ts';
-import { buildOccupancy, cellKey, edgeKey, localSide, rotateXZ } from '../map/geometry.ts';
+import { SIDE_DIRS, coreCatalog, type EdgeStyle, type Side, type TileCatalog, type TileDefinition } from '../map/catalog.ts';
+import { buildOccupancy, canAddFloor, cellKey, cellSlab, edgeKey, localCellKey, localSide, rotateXZ, type CellOccupant } from '../map/geometry.ts';
 import type { SurfaceSlot } from '../map/materials.ts';
 import { emptyLogic } from '../map/logic.ts';
 import { DESTRUCTIBLE_SPECS, TRAP_SPECS } from '../sim/scenarioDefs.ts';
@@ -7,6 +7,7 @@ import { ELECTRIC_FENCE } from '../map/border.ts';
 import { MAP_FORMAT, MAP_FORMAT_VERSION, type MapDocument, type MapEntity, type Rotation, type SurfaceStyle, type TilePlacement, type TrapKind, type BlockBehaviour, type Liquid, type LightFixture, type EncounterEntrance, type GlassKind } from '../map/schema.ts';
 import { applyCommand, newId, type EditCommand } from './commands.ts';
 import { getProp } from '../content/props.ts';
+import { envVariant, getEnvSpecies } from '../content/environment.ts';
 import { DEFAULT_TEAMS, mapTeams } from '../sim/npc.ts';
 import { FLOAT_TOLERANCE, floatingProps, settledPropY, supportBoxes, supportUnder, terrainUnderFloors } from '../map/settle.ts';
 
@@ -30,27 +31,93 @@ export function placementCells(p: Pick<TilePlacement, 'tile' | 'x' | 'y' | 'z' |
   });
 }
 
-/** Check that placements fit: known tiles, inside grid bounds, and no overlap with tiles not being replaced. */
+/** Display name of a level, as MapMaker's level bar shows it: Ground, Level 1, Basement… */
+export function levelName(level: number): string {
+  if (level === 0) return 'Ground';
+  if (level > 0) return `Level ${level}`;
+  return level === -1 ? 'Basement' : `Basement ${-level}`;
+}
+
+/**
+ * Check that placements fit: known tiles, inside grid bounds, and no overlap with tiles not being replaced. A refusal
+ * says what is in the way and what to do instead (MapMaker shows it as is).
+ */
 export function checkPlacement(doc: MapDocument, placements: readonly TilePlacement[], ignoreIds: readonly string[] = [], catalog: TileCatalog = coreCatalog): PlacementCheck {
   const ignore = new Set([...ignoreIds, ...placements.map((p) => p.id)]);
   const others: MapDocument = { ...doc, classicStructure: { ...doc.classicStructure, tiles: doc.classicStructure.tiles.filter((t) => !ignore.has(t.id)) } };
   const { cells } = buildOccupancy(others, catalog);
   const claimed = new Map<string, string>();
   const conflicts = new Set<string>();
+  let first: CellOccupant | undefined;
+  let firstZ = 0;
   for (const p of placements) {
     const pc = placementCells(p, catalog);
     if (!pc) return { ok: false, reason: `unknown tile ${p.tile}`, conflicts: [] };
     for (const [x, y, z] of pc) {
-      if (Math.abs(x) > 256 || Math.abs(y) > 256 || Math.abs(z) > 16) return { ok: false, reason: 'outside the build area', conflicts: [] };
+      if (Math.abs(x) > 256 || Math.abs(y) > 256 || Math.abs(z) > 16) return { ok: false, reason: 'outside the build area: keep within 256 cells of the centre and 16 levels up or down', conflicts: [] };
       const key = cellKey(x, y, z);
       const hit = cells.get(key);
-      if (hit) conflicts.add(hit.placement.id);
+      if (hit) {
+        conflicts.add(hit.placement.id);
+        if (!first) [first, firstZ] = [hit, z];
+      }
       const mine = claimed.get(key);
       if (mine && mine !== p.id) conflicts.add(mine);
       claimed.set(key, p.id);
     }
   }
-  return conflicts.size ? { ok: false, reason: 'overlaps another tile', conflicts: [...conflicts] } : { ok: true };
+  if (!conflicts.size) return { ok: true };
+  return { ok: false, reason: first ? overlapReason(first, firstZ) : 'overlaps another of the pieces being placed: spread them out', conflicts: [...conflicts] };
+}
+
+/** Why a cell can't take a new tile, and what to do instead. */
+function overlapReason(occ: CellOccupant, z: number): string {
+  const name = occ.def.displayName;
+  const storeys = new Set(occ.def.cells.map((c) => c[2])).size;
+  const level = levelName(z);
+  if (canAddFloor(occ.def, occ.local)) {
+    if (cellSlab(occ)) return `overlaps ${name}: ${level} here is its upper storey, and it has a floor there already (stand things on it, or pick a free cell)`;
+    return `overlaps ${name}: ${level} here is its upper storey (it stands ${storeys} levels tall). To put a floor there, place a Platform on it (it becomes the ${name}'s floor), or select the ${name} and tick “Floor on ${level}”`;
+  }
+  if (storeys > 1 && occ.level > 0) return `overlaps ${name}: ${level} here is part of it (it stands ${storeys} levels tall). Pick a free cell or another level, or move the ${name}`;
+  return `overlaps ${name} on ${level}: pick a free cell or another level, or move or delete the ${name} first`;
+}
+
+/** The piece whose own upper storey is at a grid cell, if it can take a floor there (see `canAddFloor`). */
+export function upperFloorAt(doc: MapDocument, x: number, y: number, z: number, catalog: TileCatalog = coreCatalog): { placement: TilePlacement; key: string; has: boolean } | null {
+  const occ = buildOccupancy(doc, catalog).cells.get(cellKey(x, y, z));
+  if (!occ || !canAddFloor(occ.def, occ.local)) return null;
+  return { placement: occ.placement, key: localCellKey(occ.local), has: cellSlab(occ) };
+}
+
+/** A piece's upper storeys that can take a floor, by level (local dz), with how many of that level's cells have one. */
+export function upperFloorLevels(t: TilePlacement, catalog: TileCatalog = coreCatalog): { dz: number; keys: string[]; on: number }[] {
+  const def = catalog.get(t.tile);
+  if (!def) return [];
+  const byLevel = new Map<number, string[]>();
+  for (const c of def.cells) if (canAddFloor(def, c)) byLevel.set(c[2], [...(byLevel.get(c[2]) ?? []), localCellKey(c)]);
+  const have = new Set(t.upperFloors ?? []);
+  return [...byLevel].sort((a, b) => a[0] - b[0]).map(([dz, keys]) => ({ dz, keys, on: keys.filter((k) => have.has(k)).length }));
+}
+
+/** A piece with floors added (`on`) or taken out of the given cells of its own (tile-local keys). */
+export function setUpperFloorsCommand(doc: MapDocument, t: TilePlacement, keys: readonly string[], on: boolean, catalog: TileCatalog = coreCatalog): EditCommand | { error: string } {
+  const def = catalog.get(t.tile);
+  if (!def) return { error: `unknown tile ${t.tile}` };
+  const next = new Set(t.upperFloors ?? []);
+  for (const k of keys) {
+    if (!canAddFloor(def, k.split(',').map(Number))) return { error: `${def.displayName} can't take a floor there` };
+    if (on) next.add(k);
+    else next.delete(k);
+  }
+  const { upperFloors: _old, ...rest } = t;
+  const after: TilePlacement = next.size ? { ...rest, upperFloors: [...next].sort() } : rest;
+  return { kind: 'updateTiles', before: [t], after: [after] };
+}
+
+/** Floor-only pieces (Platform): one cell, a floor, no walls and nothing built on it. Placed into a piece's empty upper storey, they become its floor. */
+export function isBareFloor(def: TileDefinition | undefined): boolean {
+  return !!def && def.cells.length === 1 && def.floors.length === 1 && def.floors[0] === def.cells[0]![2] && !def.solids?.length && !def.extraFloors?.length && !def.model && def.edgeDefault === 'open' && !def.edgeDefaults;
 }
 
 /** The tile occupying a grid cell, if any. */
@@ -58,10 +125,21 @@ export function tileAt(doc: MapDocument, x: number, y: number, z: number, catalo
   return buildOccupancy(doc, catalog).cells.get(cellKey(x, y, z))?.placement;
 }
 
-export function placeTileCommand(doc: MapDocument, tile: string, x: number, y: number, z: number, rotation: Rotation, catalog: TileCatalog = coreCatalog): { command: EditCommand; placement: TilePlacement } | { error: string } {
+/**
+ * Place a tile. A floor-only piece (Platform) on a cell that is another piece's empty upper storey gives that piece
+ * a floor there instead (`floorOf`: the piece, as it was), since one cell holds one piece.
+ */
+export function placeTileCommand(doc: MapDocument, tile: string, x: number, y: number, z: number, rotation: Rotation, catalog: TileCatalog = coreCatalog): { command: EditCommand; placement: TilePlacement; floorOf?: undefined } | { command: EditCommand; floorOf: TilePlacement; placement?: undefined } | { error: string } {
   const placement: TilePlacement = { id: newId('tile'), tile, x, y, z, rotation };
   const check = checkPlacement(doc, [placement], [], catalog);
-  if (!check.ok) return { error: check.reason };
+  if (!check.ok) {
+    const host = isBareFloor(catalog.get(tile)) ? upperFloorAt(doc, x, y, z, catalog) : null;
+    if (host && !host.has) {
+      const command = setUpperFloorsCommand(doc, host.placement, [host.key], true, catalog);
+      if (!('error' in command)) return { command, floorOf: host.placement };
+    }
+    return { error: check.reason };
+  }
   return { command: { kind: 'addTiles', tiles: [placement] }, placement };
 }
 
@@ -345,6 +423,55 @@ export function settlePropsCommand(doc: MapDocument, ids?: readonly string[]): E
     if (!near && !floating.has(e.id)) continue;
     before.push(e);
     after.push({ ...e, position: [e.position[0], y, e.position[2]] });
+  }
+  return { kind: 'updateEntities', before, after };
+}
+
+/**
+ * How MapMaker's "Replace all" sizes each new piece: `height` keeps how tall the old one stood (scale × old height /
+ * new height, so a fern that hid a crouching player still does), `scale` keeps the scale number as it was.
+ */
+export type ReplaceSize = 'height' | 'scale';
+
+/** A placeable model: a prop id, or an environment species with an optional variant (`env.<id>#<n>`). */
+export function parseModelChoice(choice: string): { model: string; variant: number | undefined } {
+  const [model, v] = choice.split('#') as [string, string | undefined];
+  const variant = v === undefined ? undefined : Number(v);
+  return { model, variant: getEnvSpecies(model) && variant ? variant : undefined };
+}
+
+/** How tall a model stands at scale 1 (an environment species: its variant's bounds; a prop: its size). */
+function modelHeight(model: string, variant: number | undefined): number | undefined {
+  const species = getEnvSpecies(model);
+  if (species) return envVariant(species, variant).size[1];
+  return getProp(model)?.size[1];
+}
+
+/**
+ * "Replace all <prop> with <prop or species>": every prop placed as `from` becomes `to` (`env.<id>#<n>` picks a
+ * variant), keeping its ID, position, facing, name, solid flag and tint; its scale per `size`, rounded to 0.01 and
+ * held to the inspector's 0.25–4; one bedded into the terrain is bedded again under its new footprint (settle.ts
+ * settledPropY), so a wider plant does not float on a slope. One undo step. Nothing to do (no such props, or `to` is unknown): an empty update.
+ */
+export function replacePropsCommand(doc: MapDocument, from: string, to: string, size: ReplaceSize = 'height'): EditCommand {
+  const before: MapEntity[] = [];
+  const after: MapEntity[] = [];
+  const target = parseModelChoice(to);
+  const newHeight = modelHeight(target.model, target.variant);
+  if (!newHeight || target.model === from) return { kind: 'updateEntities', before, after };
+  for (const e of doc.entities) {
+    if (e.kind !== 'prop' || e.model !== from) continue;
+    const oldHeight = modelHeight(e.model, e.variant);
+    const ratio = size === 'height' && oldHeight ? oldHeight / newHeight : 1;
+    const scale = Math.round(Math.max(0.25, Math.min(4, e.scale * ratio)) * 100) / 100;
+    const { variant: _old, ...rest } = e;
+    const next = { ...rest, model: target.model, scale, ...(target.variant !== undefined ? { variant: target.variant } : {}) };
+    // One bedded into the terrain (MapMaker's settling, scatter) stays bedded under its new footprint.
+    const t = doc.terrain;
+    const was = t ? settledPropY(t, e) : null;
+    const now = t && was !== null && Math.abs(was - e.position[1]) <= 0.02 ? settledPropY(t, next) : null;
+    before.push(e);
+    after.push(now === null ? next : { ...next, position: [e.position[0], now, e.position[2]] });
   }
   return { kind: 'updateEntities', before, after };
 }

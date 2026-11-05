@@ -1,0 +1,23 @@
+{
+  "$comment": "Water plants (tools/content/env/plants.mjs eelgrassMesh). Ground cover: decorative only (no collision, no concealment), grown by the terrain's plants brush in shallow water (packages/client/src/foliage.ts) and placeable as a prop. Long narrow ribbons in vertex colour (env.grass), swaying more than grass. One level of detail.",
+  "family": "water",
+  "species": [
+    {
+      "id": "env.water.eelgrass",
+      "displayName": "Eelgrass",
+      "category": "groundcover",
+      "assetVersion": 1,
+      "notes": { "1": "First version: replaces the Meshy community eelgrass in the plants brush, the water plants scatter brush and the palette (owner, 2026-11-05)." },
+      "nominalHeight": 0.75,
+      "nav": "none",
+      "role": "decorative",
+      "placement": { "maxSlopeDegrees": 30, "minSpacing": 0.4, "scale": [0.8, 1.3] },
+      "generator": { "kind": "eelgrass", "seed": 17, "height": 0.75, "width": 0.028, "spread": 0.06, "blades": [7, 8] },
+      "lods": [{ "distance": 0 }],
+      "variants": [
+        { "index": 0, "name": "green", "look": { "root": "#2c4220", "tip": "#5c7a32", "alt": "#6a8a3a" } },
+        { "index": 1, "name": "olive", "look": { "root": "#3a3e22", "tip": "#7d7a3c", "alt": "#8a8444" } }
+      ]
+    }
+  ]
+}

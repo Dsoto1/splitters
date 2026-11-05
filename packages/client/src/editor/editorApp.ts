@@ -11,6 +11,12 @@ import {
   addSpawnCommand,
   buildMapGeometry,
   checkPlacement,
+  levelName,
+  placeTileCommand,
+  setUpperFloorsCommand,
+  upperFloorLevels,
+  upperFloorAt,
+  isBareFloor,
   coreCatalog,
   deleteCommand,
   duplicateCommand,
@@ -19,6 +25,8 @@ import {
   moveCommand,
   moveEntitiesCommand,
   settlePropsCommand,
+  replacePropsCommand,
+  type ReplaceSize,
   settledPropY,
   newId,
   newMapDocument,
@@ -242,7 +250,7 @@ import { RouteTool } from './routeTool.ts';
 import { ModelThumbnails } from '../frontend/modelThumbs.ts';
 import { Palette } from './palette.ts';
 import { PaletteAtlas } from './paletteAtlas.ts';
-import { GROUND_COVER_SPECIES, NATURE_PROP_CATEGORIES, PROP_GROUPS, RETIRED_PROPS, propGroup, scenarioGroup } from './paletteCatalog.ts';
+import { GROUND_COVER_IDS, GROUND_COVER_SPECIES, NATURE_PROP_CATEGORIES, PROP_GROUPS, REPLACEMENTS, RETIRED_PROPS, propGroup, scenarioGroup } from './paletteCatalog.ts';
 import { envRendererOn } from '../environment/envFlag.ts';
 import { thumbnailSection, type ThumbHost } from './makerThumb.ts';
 import { libraryThumb } from './libraryThumbs.ts';
@@ -429,13 +437,6 @@ function toolKey(tool: Tool): string {
     default:
       return tool.kind;
   }
-}
-
-/** Display name of a level: Ground, Level 1, Basement… */
-export function levelName(level: number): string {
-  if (level === 0) return 'Ground';
-  if (level > 0) return `Level ${level}`;
-  return level === -1 ? 'Basement' : `Basement ${-level}`;
 }
 
 /** Toolbar icons (24×24, drawn in the button's text colour). */
@@ -1000,11 +1001,16 @@ export class EditorApp {
   private placeAtHover(): void {
     if (this.tool.kind === 'tile' && this.hoverCell) {
       const [x, y, z] = this.hoverCell;
-      const placement = { id: newId('tile'), tile: this.tool.tile, x, y, z, rotation: this.rotation };
-      const check = checkPlacement(this.doc, [placement]);
-      if (!check.ok) return this.toast(`Can't place: ${check.reason}`, true);
+      const placed = placeTileCommand(this.doc, this.tool.tile, x, y, z, this.rotation);
+      if ('error' in placed) return this.toast(`Can't place: ${placed.error}`, true);
+      if (placed.floorOf) {
+        // A Platform on another piece's empty upper storey: that piece's own floor there (one cell, one piece).
+        const host = coreCatalog.get(placed.floorOf.tile)?.displayName ?? placed.floorOf.tile;
+        if (this.run(`Floor on ${levelName(z)} of ${host}`, placed.command)) this.toast(`${host}: a floor on ${levelName(z)} here (part of the ${host}: untick “Floor on ${levelName(z)}” in its inspector to take it out)`);
+        return;
+      }
       const name = coreCatalog.get(this.tool.tile)?.displayName ?? this.tool.tile;
-      this.run(`Place ${name}`, { kind: 'addTiles', tiles: [placement] });
+      this.run(`Place ${name}`, placed.command);
     } else if (this.tool.kind === 'spawn' && this.hoverPoint) {
       const p = this.placeSpot()!;
       const { command, id } = addSpawnCommand(p, this.spawnYaw);
@@ -1643,7 +1649,10 @@ export class EditorApp {
     const cell = this.hoverCell ? ([this.hoverCell[0], this.hoverCell[1], this.level] as [number, number, number]) : null;
     this.view.setHoverCell(this.doc, this.tool.kind === 'tile' || this.tool.kind === 'spawn' || this.tool.kind === 'pickup' || this.tool.kind === 'scenario' || this.tool.kind === 'npc' ? cell : null);
     if (this.tool.kind === 'tile' && cell) {
-      const ok = checkPlacement(this.doc, [{ id: '__ghost', tile: this.tool.tile, x: cell[0], y: cell[1], z: cell[2], rotation: this.rotation }]).ok;
+      // A Platform over another piece's empty upper storey becomes its floor: that's fine too.
+      const ok =
+        checkPlacement(this.doc, [{ id: '__ghost', tile: this.tool.tile, x: cell[0], y: cell[1], z: cell[2], rotation: this.rotation }]).ok ||
+        (isBareFloor(coreCatalog.get(this.tool.tile)) && upperFloorAt(this.doc, cell[0], cell[1], cell[2])?.has === false);
       this.view.setGhost(this.doc, this.tool.tile, cell, this.rotation, ok);
     } else {
       this.view.setGhost(this.doc, null, null, 0, true);
@@ -2990,14 +2999,14 @@ export class EditorApp {
     for (const cat of NATURE_PROP_CATEGORIES) {
       const grid = this.palette.group($('ed-nature'), `nature:${cat}`, cat);
       for (const def of CORE_PROPS.filter((d) => d.category === cat && !RETIRED_PROPS.has(d.id))) this.propButton(grid, def, 'nature');
-      // Our own ground cover (the plants brush's grass, flowers and fern) in place of the retired Kenney pieces: no picture yet.
-      if (cat === 'Plants & Flowers') for (const id of GROUND_COVER_SPECIES) this.propButton(grid, getProp(id)!, 'nature environment procedural grass flowers fern ground cover', false);
+      // Our own species (the plants brush's grass, flowers, fern, shrub, eelgrass and pebbles) in place of the retired pieces: no picture yet.
+      for (const id of GROUND_COVER_SPECIES[cat] ?? []) this.propButton(grid, getProp(id)!, 'nature environment procedural grass flowers fern shrub bush eelgrass pebbles stones ground cover', false);
     }
     // The procedural environment's species (Phase 1 preview, docs/PROCEDURAL_ENVIRONMENT_AUDIT.md §10): with ?env=1 only,
     // no palette picture yet (their pictures join the atlas when they ship).
     if (envRendererOn()) {
       const grid = this.palette.group($('ed-nature'), 'nature:environment', 'Environment (preview)', { note: 'Procedural species: trees, shrub, grass, boulder, cliff · variants in the inspector' });
-      for (const s of ENV_SPECIES) if (!GROUND_COVER_SPECIES.includes(s.id)) this.propButton(grid, getProp(s.id)!, 'nature environment procedural preview', false);
+      for (const s of ENV_SPECIES) if (!GROUND_COVER_IDS.includes(s.id)) this.propButton(grid, getProp(s.id)!, 'nature environment procedural preview', false);
     }
   }
 
@@ -3370,6 +3379,7 @@ export class EditorApp {
         }
       } else el.append(small('Use the Walls & Openings tool (O) to change any side of this piece.'));
       if (def?.configurable) this.roomOptionsPanel(el, t);
+      this.upperFloorsPanel(el, t);
       if (def && dressable(def)) this.dressPanel(el, t);
       const h3 = document.createElement('h3');
       h3.textContent = 'Surfaces';
@@ -3408,6 +3418,51 @@ export class EditorApp {
       settle.title = 'Bed the selected props into the terrain under them (no floating corners on slopes)';
       el.append(settle);
     }
+  }
+
+  /**
+   * "Replace all": every prop placed as `model` becomes another prop or an environment species' variant, keeping each
+   * one's position, facing, name and tint, and its height (or its scale number); one undo step (replacePropsCommand).
+   * A retired piece offers the species that replaced it first (REPLACEMENTS).
+   */
+  private replaceAllSection(el: HTMLElement, model: string): void {
+    const count = this.doc.entities.filter((x) => x.kind === 'prop' && x.model === model).length;
+    const name = getProp(model)?.displayName ?? model;
+    const head = document.createElement('h3');
+    head.textContent = `Replace all ${count} ${name}`;
+    el.append(head);
+    const target = document.createElement('select');
+    target.id = 'ed-replace-with';
+    const suggested = REPLACEMENTS[model];
+    const species = document.createElement('optgroup');
+    species.label = 'Our species';
+    for (const s of ENV_SPECIES)
+      for (const v of s.variants) {
+        const value = v.index ? `${s.id}#${v.index}` : s.id;
+        if (value !== model) species.append(new Option(`${s.displayName} (${v.name})`, value, false, value === suggested));
+      }
+    target.append(species);
+    for (const category of PROP_CATEGORIES) {
+      const group = document.createElement('optgroup');
+      group.label = category;
+      for (const def of CORE_PROPS.filter((d) => d.category === category && d.id !== model && !RETIRED_PROPS.has(d.id))) group.append(new Option(def.displayName, def.id, false, def.id === suggested));
+      if (group.children.length) target.append(group);
+    }
+    el.append(row('With', target));
+    const size = document.createElement('select');
+    size.id = 'ed-replace-size';
+    size.append(new Option('Keep height', 'height', true, true), new Option('Keep scale', 'scale'));
+    el.append(row('Size', size));
+    const go = button(`Replace all ${count}`, () => {
+      const cmd = replacePropsCommand(this.doc, model, target.value, size.value as ReplaceSize);
+      const n = cmd.kind === 'updateEntities' ? cmd.after.length : 0;
+      if (!n) return this.toast('Nothing to replace');
+      const label = target.selectedOptions[0]?.textContent ?? target.value;
+      if (this.run(`Replace all ${name}`, cmd)) this.toast(`Replaced ${n} ${name} with ${label}`);
+    });
+    go.id = 'ed-replace-all';
+    go.title = 'Every one of this prop on the map, in one undo step';
+    el.append(go);
   }
 
   /** "Draw route": edit a mover's or plane's points on the map with the Paths tool's hands (the Route tool). */
@@ -3507,6 +3562,7 @@ export class EditorApp {
         tint.addEventListener('change', () => update('Tint prop', { tint: tint.value.toLowerCase() === '#ffffff' ? null : tint.value.toLowerCase() }));
         el.append(row('Tint', tint));
         if (!getProp(e.model)?.collision && !species) el.append(small('This prop never blocks (decoration).'));
+        this.replaceAllSection(el, e.model);
         break;
       }
       case 'pickup': {
@@ -4126,6 +4182,31 @@ export class EditorApp {
       return;
     }
     if (this.run('Dress all rooms', { kind: 'addEntities', entities: added })) this.toast(`Dressed ${rooms} room${rooms > 1 ? 's' : ''} (${added.length} props)`);
+  }
+
+  /**
+   * Floors in a tall piece's own upper storeys (`upperFloors`): one tick per storey that has none, over the whole
+   * footprint. A cell holds one piece, so this is how a floor (the ceiling of the storey below) goes in over a piece
+   * that stands more than one level tall; a Platform placed on such a cell ticks it for that cell alone.
+   */
+  private upperFloorsPanel(el: HTMLElement, t: TilePlacement): void {
+    const levels = upperFloorLevels(t);
+    if (!levels.length) return;
+    const head = document.createElement('h3');
+    head.textContent = 'Upper floors';
+    el.append(head);
+    for (const { dz, keys, on } of levels) {
+      const box = document.createElement('input');
+      box.type = 'checkbox';
+      box.className = 'ed-upper-floor';
+      box.dataset.level = String(t.z + dz);
+      box.checked = on === keys.length;
+      box.indeterminate = on > 0 && on < keys.length;
+      const name = levelName(t.z + dz);
+      box.addEventListener('change', () => this.run(`${box.checked ? 'Floor on' : 'No floor on'} ${name}`, setUpperFloorsCommand(this.doc, t, keys, box.checked)));
+      el.append(row(`Floor on ${name}`, box));
+    }
+    el.append(small('A full floor across the piece at that level: the ceiling below and a floor to build on. Things that rise through it (columns, arches) still stand.'));
   }
 
   /** One surface slot in the tile inspector: material (or theme default) and tint. */

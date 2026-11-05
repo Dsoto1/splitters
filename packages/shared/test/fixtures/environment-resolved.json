@@ -2461,6 +2461,37 @@
    }
   ]
  },
+ "env.fern.bracken@2": {
+  "surface": "foliage",
+  "nav": "none",
+  "role": "cover",
+  "conceals": {
+   "radius": 0.363,
+   "height": 0.555
+  },
+  "variants": [
+   {
+    "index": 0,
+    "name": "summer",
+    "size": [
+     0.726,
+     0.555,
+     0.748
+    ],
+    "shapes": []
+   },
+   {
+    "index": 1,
+    "name": "autumn",
+    "size": [
+     0.726,
+     0.555,
+     0.748
+    ],
+    "shapes": []
+   }
+  ]
+ },
  "env.flower.meadow@1": {
   "surface": "foliage",
   "nav": "none",
@@ -3255,6 +3286,34 @@
    }
   ]
  },
+ "env.rock.pebbles@1": {
+  "surface": "rock",
+  "nav": "none",
+  "role": "decorative",
+  "conceals": null,
+  "variants": [
+   {
+    "index": 0,
+    "name": "grey",
+    "size": [
+     0.832,
+     0.125,
+     0.956
+    ],
+    "shapes": []
+   },
+   {
+    "index": 1,
+    "name": "sand",
+    "size": [
+     0.832,
+     0.125,
+     0.956
+    ],
+    "shapes": []
+   }
+  ]
+ },
  "env.shrub.broadleaf@1": {
   "surface": "foliage",
   "nav": "none",
@@ -3281,6 +3340,34 @@
      2.316,
      1.463,
      2.33
+    ],
+    "shapes": []
+   }
+  ]
+ },
+ "env.water.eelgrass@1": {
+  "surface": "foliage",
+  "nav": "none",
+  "role": "decorative",
+  "conceals": null,
+  "variants": [
+   {
+    "index": 0,
+    "name": "green",
+    "size": [
+     0.289,
+     0.659,
+     0.532
+    ],
+    "shapes": []
+   },
+   {
+    "index": 1,
+    "name": "olive",
+    "size": [
+     0.289,
+     0.659,
+     0.532
     ],
     "shapes": []
    }

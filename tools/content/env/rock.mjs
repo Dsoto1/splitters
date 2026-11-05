@@ -424,6 +424,66 @@ export function boulderShapes(hull) {
   return [{ kind: 'hull', points: hull.points, blocks: 'all', surface: 'rock' }];
 }
 
+// ---------------------------------------------------------------- pebbles
+
+/**
+ * A pebble cluster (env.rock.pebbles): `stones` small rounded stones, each the convex hull of a jittered waist ring,
+ * a smaller ring above and a crown (`ring`: points per ring), the largest near the middle, the rest round it, sunk to
+ * the waist; faces below grade are dropped. Smooth-shaded within `crease` and coloured like the boulder (strata,
+ * patches, `look`). Decoration only: no collision. { rock: Mesh }.
+ */
+export function pebblesMesh(seed, g, look) {
+  const r = rng(seed);
+  const n = r.int(g.stones[0], g.stones[1]);
+  const placed = [];
+  const P = [];
+  const I = [];
+  for (let k = 0; k < n; k++) {
+    // Sizes fall off from the first (largest) stone.
+    const s = g.size[1] - (g.size[1] - g.size[0]) * (k / Math.max(1, n - 1)) * r.range(0.7, 1);
+    let c = [0, 0];
+    for (let t = 0; t < 24; t++) {
+      const a = r.next() * Math.PI * 2;
+      const d = k === 0 ? r.range(0, g.radius * 0.2) : r.range(g.radius * 0.25, g.radius);
+      c = [Math.cos(a) * d, Math.sin(a) * d];
+      if (placed.every(([x, z, q]) => Math.hypot(x - c[0], z - c[1]) > (q + s) * 0.42)) break;
+    }
+    placed.push([c[0], c[1], s]);
+    const flat = r.range(g.flat[0], g.flat[1]);
+    const long = r.range(1, 1.35);
+    const turn = r.next() * Math.PI;
+    // A water-worn pebble: a jittered ring round its waist, a smaller ring above, a crown point (a rounded dome,
+    // not a shard); everything under the waist is in the ground.
+    const local = [];
+    const ring = (n, rad, y, jit) => {
+      const a0 = r.next() * Math.PI * 2;
+      for (let i = 0; i < n; i++) {
+        const a = a0 + (i / n) * Math.PI * 2 + r.jitter(jit);
+        const k = rad * (1 + r.jitter(0.12));
+        local.push([Math.cos(a) * k, y + r.jitter(0.06), Math.sin(a) * k]);
+      }
+    };
+    ring(g.ring[0], 1, -0.1, 0.25);
+    ring(g.ring[1], 0.68, 0.5, 0.35);
+    local.push([r.jitter(0.15), 0.82 + r.jitter(0.06), r.jitter(0.15)]);
+    local.push([0, -0.5, 0]);
+    const pts = local.map(([u, v, w]) => {
+      const x = (u * s * long) / 2;
+      const z = (w * s) / 2;
+      return [x * Math.cos(turn) - z * Math.sin(turn), (v * s * flat) / 2, x * Math.sin(turn) + z * Math.cos(turn)];
+    });
+    // The waist ring a hair under the ground.
+    const waist = Math.max(...pts.slice(0, g.ring[0]).map((p) => p[1]));
+    const lift = -waist - 0.006;
+    const o = P.length;
+    for (const p of pts) P.push([p[0] + c[0], p[1] + lift, p[2] + c[1]]);
+    for (const f of convexHull(pts)) if (f.some((i) => P[o + i][1] > 0.004)) I.push(o + f[0], o + f[1], o + f[2]);
+  }
+  const top = Math.max(...P.map((p) => p[1]));
+  const colour = rockColour(seed, look, top);
+  return { rock: creasedMesh(P, I, colour, g.uvScale, [0, 0], g.crease ?? 30) };
+}
+
 // ---------------------------------------------------------------- cliff
 
 /**

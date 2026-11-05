@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 20,
+  "formatVersion": 25,
   "metadata": {
     "id": "serpent_gorge",
     "name": "Serpent Gorge",
@@ -6248,9 +6248,9 @@
         34
       ],
       "kind": "prop",
-      "model": "prop.fern",
+      "model": "env.fern.bracken",
       "yaw": 0.5199999999999996,
-      "scale": 1.2,
+      "scale": 1.95,
       "solid": false,
       "tint": null
     },
@@ -6318,9 +6318,9 @@
         54.5
       ],
       "kind": "prop",
-      "model": "prop.fern",
+      "model": "env.fern.bracken",
       "yaw": 2.7399999999999984,
-      "scale": 1.2,
+      "scale": 1.95,
       "solid": false,
       "tint": null
     },
@@ -6388,9 +6388,9 @@
         94
       ],
       "kind": "prop",
-      "model": "prop.fern",
+      "model": "env.fern.bracken",
       "yaw": 4.96,
-      "scale": 1.2,
+      "scale": 1.95,
       "solid": false,
       "tint": null
     },
@@ -6458,9 +6458,9 @@
         94
       ],
       "kind": "prop",
-      "model": "prop.fern",
+      "model": "env.fern.bracken",
       "yaw": 0.8999999999999959,
-      "scale": 1.2,
+      "scale": 1.95,
       "solid": false,
       "tint": null
     },
@@ -51418,7 +51418,6 @@
     "style": "invisible",
     "height": 60
   },
-  "track": null,
   "backdrop": {
     "sky": "misty",
     "scenery": "forest",

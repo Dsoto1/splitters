@@ -208,9 +208,9 @@ describe('ziplines', () => {
   });
 
   it('format v25: the Zipline palette entry makes a valid line; old maps load; the validator checks length, slope, clearance and reach', () => {
-    expect(MAP_FORMAT_VERSION).toBe(25);
+    expect(MAP_FORMAT_VERSION).toBeGreaterThanOrEqual(25);
     const v24 = { ...towers([]), formatVersion: 24 };
-    expect(migrateMapDocument(v24).doc.formatVersion).toBe(25);
+    expect(migrateMapDocument(v24).doc.formatVersion).toBe(MAP_FORMAT_VERSION);
     expect(loadMap(v24).ok).toBe(true);
     const placed = newScenarioEntity('zipline', [-14, 4, 0], EAST) as ZiplineEntity;
     expect(placed.kind).toBe('zipline');

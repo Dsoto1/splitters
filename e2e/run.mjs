@@ -846,6 +846,52 @@ async function editoruxFlow(browser) {
   check((await page.evaluate(() => window.__editor.level)) === 1, 'Page Up still changes level');
   await page.keyboard.press('PageDown');
 
+  // A floor over a piece two levels tall (the owner's case, 2026-11-05): the Triumphal Arch holds its cell on Level 1
+  // too, so a room there is refused, saying what to do; a Platform there becomes the arch's own floor, and the arch's
+  // inspector ticks it on and off.
+  await page.evaluate(() => window.__editor.view.focus({ x: -40, y: 0, z: -24 }));
+  // The camera glides there: wait until the spot is on screen.
+  await page.waitForFunction(() => {
+    const p = window.__editor.view.project({ x: -40, y: 0, z: -24 });
+    return Math.abs(p.x - innerWidth / 2) < innerWidth / 4 && Math.abs(p.y - innerHeight / 2) < innerHeight / 4;
+  }, null, { timeout: T(10000) }).catch(() => {});
+  // The hover cell follows the pointer once a frame: let it catch up before clicking.
+  const clickCell = async (x, y, z) => {
+    const p = await at(x, y, z);
+    await page.mouse.move(p.x, p.y);
+    await settle();
+    await page.mouse.click(p.x, p.y);
+    await settle();
+  };
+  await page.evaluate(() => window.__editor.setTool({ kind: 'tile', tile: 'imperial.triumphal_arch' }));
+  await clickCell(-40, 0, -24);
+  const archId = (await doc()).classicStructure.tiles.find((t) => t.tile === 'imperial.triumphal_arch' && t.x === -5 && t.y === -3)?.id;
+  check(!!archId, 'places a Triumphal Arch');
+  await page.click('#ed-level-up');
+  await settle();
+  await clickTool(page, '[data-tool="tile:core.room"]');
+  await clickCell(-40, 4, -24);
+  const refusal = (await page.textContent('#ed-toast')) ?? '';
+  check(/Triumphal Arch/.test(refusal) && /place a Platform/.test(refusal) && /Floor on Level 1/.test(refusal), `a room over it on Level 1 is refused, saying how to put a floor in (${refusal})`);
+  const platforms = (await doc()).classicStructure.tiles.filter((t) => t.tile === 'core.platform').length;
+  await clickTool(page, '[data-tool="tile:core.platform"]');
+  await clickCell(-40, 4, -24);
+  d = await doc();
+  check(JSON.stringify(d.classicStructure.tiles.find((t) => t.id === archId)?.upperFloors) === '["0,0,1"]' && d.classicStructure.tiles.filter((t) => t.tile === 'core.platform').length === platforms, 'a Platform there becomes the arch’s floor on Level 1');
+  await page.mouse.move(10, 400);
+  await shot('upper-floor');
+  await page.evaluate((id) => window.__editor.setSelection({ tiles: [id], entities: [] }), archId);
+  await settle();
+  const tick = await page.evaluate(() => ({ box: document.querySelector('#ed-inspector .ed-upper-floor[data-level="1"]')?.checked ?? null, text: document.getElementById('ed-inspector').textContent }));
+  check(tick.box === true && tick.text.includes('Floor on Level 1'), `the arch's inspector shows "Floor on Level 1" ticked (${tick.box})`);
+  await page.click('#ed-inspector .ed-upper-floor[data-level="1"]');
+  check(!(await doc()).classicStructure.tiles.find((t) => t.id === archId)?.upperFloors, 'unticking it takes the floor out');
+  await page.evaluate(() => document.activeElement?.blur());
+  await page.keyboard.press('Control+KeyZ');
+  check(JSON.stringify((await doc()).classicStructure.tiles.find((t) => t.id === archId)?.upperFloors) === '["0,0,1"]', 'and undo puts it back');
+  await page.keyboard.press('Escape');
+  await page.keyboard.press('PageDown');
+
   // Terrain: scattered plants and rocks are bedded into the ground, a little below level 0; Erase must still reach them.
   await page.click('#ed-env-btn');
   check((await page.getAttribute('#ed-env-btn', 'class')).includes('on') && (await page.isVisible('#ed-pal-tabs [data-ws="environment"][data-pane="paint"]')), 'the Environment workspace shows its own sub-tabs');
@@ -1947,20 +1993,28 @@ async function physicsfxFlow(browser) {
   check(mass > 0 && down && massStats.awakeBodies <= 300, `a mass casualty (${mass} killed by one blast) goes down without stalling: ${(Date.now() - t0) / 1000} s, ${JSON.stringify(massStats)}${notDown.length ? ` not down: ${JSON.stringify(notDown)}` : ''}`);
   // Debris chunks are real bodies: they land and rest on the ground (once the effects world is up).
   await page.waitForFunction(() => !!window.__cs.view.physics, null, { timeout: T(3000) }).catch(() => {});
+  // Only this burst's chunks are checked: the mass blast above can set off more (a vehicle in the blast burns and blows
+  // up some seconds later, its chunks still flying when a slow runner gets here).
   await page.evaluate(() => {
     const me = window.__match.slots[window.__cs.slot];
     const f = window.__cs.view.camera.getForwardRay(1).direction;
+    window.__debrisBefore = new Set(window.__cs.view.debrisBodies.map((d) => d.body));
     window.__cs.view.debris({ x: me.move.pos.x + f.x * 3, y: me.move.pos.y + 1.5, z: me.move.pos.z + f.z * 3 }, '#8a5d33', 0.8);
   });
-  await page.waitForFunction(() => window.__cs.view.debrisBodies.length > 0, null, { timeout: T(2000) }).catch(() => {});
+  await page.waitForFunction(() => window.__cs.view.debrisBodies.some((d) => !window.__debrisBefore.has(d.body)), null, { timeout: T(2000) }).catch(() => {});
   // Headless frame rates are low, so run three seconds of physics at once rather than waiting on the frames.
   const chunks = await page.evaluate(() => {
     const view = window.__cs.view;
     for (let i = 0; i < 180; i++) view.physics.step(1 / 60);
-    return view.debrisBodies.map((d) => ({ y: d.body.translation().y, v: Math.hypot(...Object.values(d.body.linvel())) }));
+    return view.debrisBodies.filter((d) => !window.__debrisBefore.has(d.body)).map((d) => ({ y: d.body.translation().y, v: Math.hypot(...Object.values(d.body.linvel())) }));
+  });
+  const older = await page.evaluate(() => {
+    const old = window.__cs.view.debrisBodies.filter((d) => window.__debrisBefore.has(d.body));
+    const colours = [...new Set(old.map((d) => d.mesh.material?.diffuseColor?.toHexString?.() ?? d.mesh.material?.albedoColor?.toHexString?.() ?? '?'))];
+    return old.length ? `${old.length} (${colours.join(', ')}, fastest ${Math.max(...old.map((d) => Math.hypot(...Object.values(d.body.linvel())))).toFixed(1)} m/s)` : 0;
   });
   await page.waitForTimeout(300); // wait-ok: the optional screenshot below shows the settled debris
-  check(chunks.length === 10 && chunks.every((c) => c.v < 1.5), `debris chunks land and come to rest (${chunks.length}, fastest ${Math.max(...chunks.map((c) => c.v)).toFixed(2)} m/s)`);
+  check(chunks.length === 10 && chunks.every((c) => c.v < 1.5), `debris chunks land and come to rest (${chunks.length}, fastest ${Math.max(...chunks.map((c) => c.v)).toFixed(2)} m/s; ${older} older chunks still about)`);
   if (process.env.E2E_SHOTS) await page.screenshot({ path: `${process.env.E2E_SHOTS}/physicsfx-debris.png` });
   // Destructibles are thin instances shared by every copy (one draw per shape): one darkens as it takes damage and is gone once broken.
   const batches = () => window.__cs.view.scene.meshes.filter((m) => m.name.startsWith('sc_destructibles_'));

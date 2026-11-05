@@ -209,6 +209,9 @@ export const RETIRED_LOOKS: Readonly<Record<string, string>> = {
   // the closest soldier kept.
   'core.tposesoldier1': 'core.wwiisoldier', // Hollis
   'core.tposesoldier2': 'core.grunt68', // Briggs
+  // Owner, 2026-11-05: Bill off the roster (files and manifests kept). Hyena Warrior (Gnoll) and Snikkit (Goblin
+  // Mischief) stay; their hands get the palm-orientation fix first.
+  'core.bill': 'core.dale',
 };
 
 /**
