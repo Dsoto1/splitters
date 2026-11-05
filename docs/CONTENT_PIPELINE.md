@@ -586,13 +586,26 @@ shrubs, grass, boulders and cliff faces generated in code from seeds, owned, not
 - **Ground cover the plants brush grows** (owner, 2026-11-05: our own grass replaces Kenney's): `env.grass.clump`
   (summer, dry), `env.flower.meadow` (white daisy, yellow buttercup, purple clover: basal leaves and stems in vertex
   colour, a flower-head card per stem from the leaves atlas' `flower.*` cells) and `env.fern.bracken` (summer,
-  autumn: fronds as bent `fern.0` cards). Decorative only (ground cover is checked to be: no collision, nav or
-  concealment). `packages/client/src/foliage.ts` grows them at every plants level in every match and in MapMaker, no
-  flag needed: grass and tall grass → the clump (2.2 a Kenney patch's count), flowers → the meadow flowers, low
-  plants → the fern, bushes → `env.shrub.broadleaf` at its lighter level (100 triangles); pebbles and eelgrass are
-  still pack props. MapMaker offers the three in Nature → Plants & Flowers (no palette picture yet) and the
-  "Flowers & grass" scatter brush plants them; Kenney's grass, flowers and low plant are retired from the palette
-  (`editor/paletteCatalog.ts` `RETIRED_PROPS`), still loaded and drawn where maps place them.
+  autumn: fronds as bent `fern.0` cards), then (owner, 2026-11-05, items 2a and 3a) `env.rock.pebbles` (category
+  `rock`: 6–7 small faceted convex stones sunk a quarter into the ground, grey and sand, 55 triangles, rock surface)
+  and `env.water.eelgrass` (7–8 long ribbons in a seeded S, green and olive, 49 triangles). Ground cover and small
+  rocks are checked to have no collision or nav; they are decoration (role `decorative`, no concealment) except the
+  fern, which conceals (role `cover`; assetVersion 2): its cylinder comes from its bounds like any bush, so at the
+  Kenney fern's 0.9 m (scale 1.62) it hides a crouching player (`packages/shared/test/conceal.test.ts` proves the
+  replacements hide players in the same stances, and from bots, as the Kenney fern and small bush did).
+  `packages/client/src/foliage.ts` grows them at every plants level in every match and in MapMaker, no flag needed:
+  grass and tall grass → the clump (2.2 a Kenney patch's count), flowers → the meadow flowers, low plants → the
+  fern, bushes → `env.shrub.broadleaf` at its lighter level (100 triangles), pebbles → `env.rock.pebbles` (the sand
+  variant on sand), shallow water → `env.water.eelgrass`. MapMaker offers them, and the shrub, in Nature → Plants &
+  Flowers / Rocks & Wood (no palette picture yet) and the scatter brushes plant them; Kenney's grass, flowers, low
+  plant, fern, small bush and stones and the Meshy eelgrass are retired from the palette (`editor/paletteCatalog.ts`
+  `RETIRED_PROPS`), still loaded and drawn where maps place them.
+- **Swapping placed pieces:** MapMaker's prop inspector has **Replace all N <prop>** (`replacePropsCommand`,
+  shared/src/editor/operations.ts): every prop of that model becomes the chosen prop or species variant, keeping ID,
+  position, facing, name, solid and tint; "Keep height" (default) scales it to the old piece's height (concealment
+  follows), "Keep scale" keeps the number; a prop bedded into the terrain is bedded again under its new footprint;
+  one undo step. A retired piece suggests its replacement (`REPLACEMENTS`). The nine maps that placed Kenney grass,
+  ferns, flowers, low plants or stones by hand were updated with it (HANDOFF, Environment Phase 1c).
 - **Rock:** boulders are a convex hull cut by 8–12 fracture planes (the collision hull), then, on the visual surface
   only and only inward of the hull: bedding grooves, corner chips (never at the six corners that set the bounds) and a
   little edge wear; vertex colour from strata, curvature (cavities dark, worn edges pale), patchy moss and hue patches.

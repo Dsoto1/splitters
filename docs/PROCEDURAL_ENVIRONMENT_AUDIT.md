@@ -562,23 +562,23 @@ Rules:
 | stump | `env.deadwood.stump` | cut | wood box |  |
 | stump_cut | `env.deadwood.stump` | cut | wood box |  |
 | stump_old | `env.deadwood.stump` | old | wood box |  |
-| fern | `env.fern.fern` | summer | none (conceal volume) | conceals |
+| fern | `env.fern.fern` (done early, Phase 1c: `env.fern.bracken`, height kept) | summer | none (conceal volume) | conceals |
 | mn_fern | `env.fern.fern` | forest | none |  |
 | nt_fern_wide | `env.fern.fern` | wide | none (conceal volume) | conceals |
 | jg_giant_fern | `env.fern.giant` |  | none |  |
 | jt_plant_cluster | `env.fern.giant` | cluster | none |  |
 | grass_leafy | `env.grass.clump` | leafy | none |  |
 | grass_patch | `env.grass.clump` | summer | none |  |
-| grass_tuft | `env.grass.clump` | dry | none |  |
-| grass_tall | `env.grass.clump_tall` | summer | none |  |
-| flower_purple | `env.grass.wildflowers` | purple | none |  |
-| flower_red | `env.grass.wildflowers` | red | none |  |
-| flower_yellow | `env.grass.wildflowers` | yellow | none |  |
+| grass_tuft | `env.grass.clump` (done early, Phase 1c: summer) | dry | none |  |
+| grass_tall | `env.grass.clump_tall` (Phase 1c: `env.grass.clump`, height kept) | summer | none |  |
+| flower_purple | `env.grass.wildflowers` (Phase 1c: `env.flower.meadow`) | purple | none |  |
+| flower_red | `env.grass.wildflowers` (Phase 1c: `env.flower.meadow`, white: no red variant yet) | red | none |  |
+| flower_yellow | `env.grass.wildflowers` (Phase 1c: `env.flower.meadow`) | yellow | none |  |
 | nt_wildflowers | `env.grass.wildflowers` | mixed | none |  |
 | hanging_moss | `env.groundcover.hanging_moss` |  | none |  |
 | mushroom_tall | `env.groundcover.mushrooms` | tall | none |  |
 | mushrooms | `env.groundcover.mushrooms` | cluster | none |  |
-| plant_low | `env.groundcover.scrub` | dry | none |  |
+| plant_low | `env.groundcover.scrub` (Phase 1c: `env.fern.bracken`, which conceals) | dry | none |  |
 | jg_vine_curtain | `env.groundcover.vine_curtain` |  | none |  |
 | boulder_jagged | `env.rock.boulder_angular` |  | stone hull boxes |  |
 | mc_cave_rocks_a | `env.rock.boulder_angular` | cave | stone hull boxes |  |
@@ -591,7 +591,7 @@ Rules:
 | nt_boulder | `env.rock.boulder_rounded` |  | stone hull boxes |  |
 | nt_boulder_moss | `env.rock.boulder_rounded` | moss | stone hull boxes |  |
 | nt_boulder_snow | `env.rock.boulder_rounded` | snow | stone hull boxes |  |
-| stones | `env.rock.pebbles` |  | none | no collider (as now) |
+| stones | `env.rock.pebbles` (done, Phase 1c: scale kept) | grey / sand | none | no collider (as now) |
 | nt_rock_moss | `env.rock.rock` | moss | stone hull boxes |  |
 | nt_rock_snow | `env.rock.rock` | snow | stone hull boxes |  |
 | rock_medium | `env.rock.rock` | medium | stone hull boxes |  |
@@ -609,7 +609,7 @@ Rules:
 | bush | `env.shrub.broadleaf` | summer | none (conceal volume) | conceals |
 | bush_large | `env.shrub.broadleaf` | large | none (conceal volume) | conceals |
 | bush_leafy | `env.shrub.broadleaf` | leafy | none (conceal volume) | conceals |
-| bush_small | `env.shrub.broadleaf` | small | none (conceal volume) | conceals |
+| bush_small | `env.shrub.broadleaf` (Phase 1c: retired from the palette; no map placed it) | small | none (conceal volume) | conceals |
 | mn_shrub | `env.shrub.broadleaf` | forest | none |  |
 | nt_bush_leafy | `env.shrub.broadleaf` | leafy | none (conceal volume) | conceals |
 | nt_bush_snow | `env.shrub.broadleaf` | snow | none (conceal volume) | conceals |
@@ -629,7 +629,7 @@ Rules:
 | palm_tall | `env.tropical.palm` | straight | trunk capsule(s), crown none |  |
 | lily | `env.water.lily` |  | none |  |
 | eg_papyrus | `env.water.reeds` | papyrus | none |  |
-| mn_eelgrass | `env.water.reeds` | eelgrass | none |  |
+| mn_eelgrass | `env.water.reeds` (done, Phase 1c, as its own species `env.water.eelgrass`: green / olive) | eelgrass | none |  |
 
 That is 48 species in 14 families (plus 6 kept props) for all 143 ids. The 6 Phase 1 species are
 `env.broadleaf.oak`, `env.conifer.pine_tall`, `env.shrub.broadleaf`, `env.grass.clump`, `env.rock.boulder_angular`
