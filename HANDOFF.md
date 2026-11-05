@@ -131,7 +131,7 @@ palette atlas step of `pnpm content:rebuild` needs a temp copy of build-palette-
 
 <!-- intake-2 -->
 ### Intake step 2 (`wip/intake-2`, agent, 2026-11-05; from main 4d511dd2; in progress)
-**Step 2a (finger option, Bill, tank box, goblins small, licence): built, local checks running; not yet on a check branch.**
+**Step 2a (finger option, Bill, tank box, goblins small, licence): f7d456e0 on `check/intake-2a`, CI run 42034304208 green. Local: typecheck, content:check, bundle budget pass; test:changed pass (host and pads tests timed out under load, pass alone); e2e characters, coverage, visual PASS; vehicles: the buggy chase-camera "not in a wall" check failed locally (CI-timeouts run), green on CI.**
 - `fixes.fingers` (`own` default / `fit`): a rigged download with whole finger chains keeps Meshy's finger joints and
   weights (prepare-meshy-characters.mjs FINGERS / checkOwnFingers; hands.mjs `keep`: measured only; rehand-built keeps
   them). Falls back to the re-fit with no or part chains, a failed check, or `fit` in the manifest. docs/CHARACTERS.md,
@@ -146,9 +146,7 @@ palette atlas step of `pnpm content:rebuild` needs a temp copy of build-palette-
 - Goblin Warlord `size: small` (Goblin, Goblina, Snikkit already small). Hit shapes and stats follow the size class.
 - Licence: the ten step-1 characters and Bill recorded as CC0 "Meshy Community (CC0 per the owner; author pending
   from the owner)", url null; licence file and docs/ASSET_SOURCES.md updated.
-- **Resume:** downloads linked in the agent scratchpad `intake2/dl`; audits in `intake2/audit-*`. Next: finish checks
-  (test:changed, e2e characters/vehicles/coverage/visual), push `check/intake-2a`, then step 2b (re-rigs with
-  `.cache/s/rerig.py`-style manifest edits; the before scores are in `intake2/audit-before`).
+- **Resume (2b in progress):** manifests edited with `.cache/s/rerig.py` (scratch, worktree-local), all 22 re-rigs and replacements being built (`ONLY=... prepare-meshy-characters.mjs <scratchpad intake2/dl>`); before scores in `intake2/audit-before`. Next: audit after, keep-old decisions, portraits (Iron Knight, Hyena Warrior, Giggles, Barnaby Bruin, Snikkit), `check/intake-2b`.
 <!-- /intake-2 -->
 
 ### Owner review of Environment Phase 1 (2026-11-05)
