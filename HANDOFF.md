@@ -366,8 +366,12 @@ The owner asked what MapMaker could use, by comparison with the Far Cry and Time
 Owner request (2026-11-05): show the real buildable area.
 - Today the editor grid is a fixed ±12 cells around the origin (`GRID_EXTENT` in client editor/editorView.ts), while
   placement allows ±256 cells and ±16 levels (`checkPlacement`).
-- Draw the grid over the whole usable area: the map bounds if set, else the terrain's extent. Make every 4th line a
-  stronger major line, fade the grid with distance, and outline the build limit.
+- **Owner's refinement:** "I don't think I need to always see the entire space; the border would be more helpful."
+  So the grid stays local around the cursor and the work area; it may follow the camera or cursor and fade out.
+  What matters is two clear outlines, always visible:
+  - the **playable boundary** (map bounds);
+  - the **build limit**: where placement stops, on the ground and at the level being edited.
+- A toggle may show the full-area grid on demand.
 - The owner sees this as a quick win; do it first in the MapMaker work. It goes to the next free agent.
 - **Building outside the playable bounds is intended (owner).** Scenery beyond the boundary blends the playable
   space into the outer world cheaply, so don't discourage it. Show the full build area, with the playable bounds
