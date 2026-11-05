@@ -175,7 +175,8 @@ function checkCoverage(boxes: readonly WorldBox[], faces: readonly RenderFace[],
 
 describe('visibleFaces on real maps', () => {
   // Plain tiles, turned (St John's stands at an angle), tilted roofs (Saltmarsh Harbor), the biggest map.
-  it.each(['phase0_arena', 'st_johns', 'saltmarsh_harbor', 'norman_shores'])('%s: every open face point draws once, hidden ones not at all', (id) => {
+  // Norman Shores takes ~10 s alone and over 20 s on a busy CI runner: a generous timeout.
+  it.each(['phase0_arena', 'st_johns', 'saltmarsh_harbor', 'norman_shores'])('%s: every open face point draws once, hidden ones not at all', { timeout: 90_000 }, (id) => {
     const boxes = drawnBoxes(id);
     checkCoverage(boxes, visibleFaces(boxes), 1500);
   });
