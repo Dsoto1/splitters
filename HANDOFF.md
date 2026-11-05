@@ -253,7 +253,25 @@ hands move up more into the gun. Looks as if their fingers are just pinching the
   - **Pitfall:** two clicks on the MapMaker canvas within ~0.5 s are a double-click, which changed a wall edge (open →
     window) on Serpent Gorge in one run; the driver now waits 1 s between clicks; compare each export with
     `env3/tools/compare.mjs` before taking it.
-- **Next / resume:** `git fetch && git checkout wip/env-p1c`; CI on `check/env-p1c` (status below); owner to look at
+- **Pebbles look:** first cut (random-point hulls) read as slate shards in envlab; now rounded (a waist ring, a
+  smaller ring, a crown; 5 stones, 55 tris, 0.83 x 0.13 x 0.96 m); Sunstone Crag was re-done with them.
+- **Checks:** typecheck clean; content:rebuild (provenance for the four GLBs) + content:check OK; build OK; bundle
+  budget OK (690.7 kB gzip of 840); validate-map 0 issues on all nine maps; unit tests touched (conceal, editor,
+  physicsfx, environmentData, foliage, backdrop, palette, unifiedPaths, tools environment) pass. `pnpm test:changed`
+  (all units, the box at load 8-10 with another agent): 1570 passed, 9 failed: unifiedPaths "finds the shipped race
+  maps" (real: Serene City's export migrated `track` to `paths`; threshold now 4) and 8 load timeouts (bigMatch,
+  botai, npc x2, pads x2, scenario, spectate) that pass on CI. e2e here (temp runner, ports 4971/4972):
+  environment PASS, visual PASS (no baseline changed: envlab 1.2 % off its baseline, under 10 %), editor failed
+  locally on the airdrop "jump off the map" check (load; it passes on CI). CI `check/env-p1c`: run 42048938686 at
+  26c988a2 green (full suite: units, build, 16 e2e shards, perf budget and mass; the first attempt failed only in
+  the handoff flow's successor-score check, a known flake, and its rerun passed); run 42043777362 at 13e980d4 failed
+  on the unifiedPaths count, fixed.
+- **Screenshots** (session scratchpad `env3/`): `<map>-before-<n>.png` / `<map>-after-<n>.png` at eye height for
+  backwoods, primeval_park, sunstone_crag, shingle_point (pairs stacked in `pair-*.png`); envlab
+  `envlab-ground.png` / `envlab-before-ground.png` (new pebbles and eelgrass / Kenney stones and Meshy eelgrass),
+  `envlab-small.png` / `envlab-before-small.png`. Driver and helpers in `env3/tools/` (maker, finalize, compare,
+  shots, envlab).
+- **Next / resume:** `git fetch && git checkout wip/env-p1c`; land 26c988a2 (only HANDOFF changed after it); owner to look at
   the screenshots (scratchpad `env3/`) and decide on grass sizes (tall grass kept its height: 0.7–1.4 m clumps on
   Coldwater Gulch / Shingle Point, as the Kenney patches stood; smaller would need the Scale field per piece or a
   re-run of Replace all from the old map with Keep scale); a red meadow-flower variant and palette
