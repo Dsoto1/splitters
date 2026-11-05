@@ -372,6 +372,17 @@ up. The new Gnoll (Hyena Warrior) in the intake-2 sheets shows it.
 - **Owner's decisions:** keep the Hyena (Gnoll) and Snikkit (Goblin Mischief) and fix their hands with this;
   Bill is retired. Do the pistol-hold tweak after this.
 
+### Open bug (found 2026-11-05): explosion debris can fall through the world
+On the env + intake merge (`check/env-land2`), physicsfx counted 32 debris bodies where it expected 10, with the
+fastest moving at about 60 m/s, on both attempts.
+- 22 extra is exactly one explosion's debris (view.ts `explosion()`: 16 + 6).
+- 60 m/s matches about 3 s of free fall at g = 20. So those chunks were falling through the world rather than
+  landing.
+- Likely source: the test's 500-damage mass blast destroying a vehicle or turret near the spawn on Rockfall Canyon.
+- The test now checks only its own burst (`check/env-land3`), and its message lists the older chunks and their
+  colours.
+- **Still to find:** why explosion debris doesn't collide with the ground in the effects world.
+
 ### Owner's map notes for later (2026-11-05; not started)
 - **No Man's Field:** asset refresh. It still uses Kenney kits; move it to our generated environment and props.
 - **Rockfall Canyon** (`maps/canyon.json`): asset and foliage refresh, onto our generated environment, rocks and plants.
@@ -412,6 +423,20 @@ The owner asked what MapMaker could use, by comparison with the Far Cry and Time
 5. Time of day and weather.
 6. Interface: mode tabs, collapsible panels, an outliner with hide/lock, favourites/recents, a shortcut overlay, and a
    guided first-time tour.
+
+Owner request (2026-11-05): show the real buildable area.
+- Today the editor grid is a fixed ±12 cells around the origin (`GRID_EXTENT` in client editor/editorView.ts), while
+  placement allows ±256 cells and ±16 levels (`checkPlacement`).
+- **Owner's refinement:** "I don't think I need to always see the entire space; the border would be more helpful."
+  So the grid stays local around the cursor and the work area; it may follow the camera or cursor and fade out.
+  What matters is two clear outlines, always visible:
+  - the **playable boundary** (map bounds);
+  - the **build limit**: where placement stops, on the ground and at the level being edited.
+- A toggle may show the full-area grid on demand.
+- The owner sees this as a quick win; do it first in the MapMaker work. It goes to the next free agent.
+- **Building outside the playable bounds is intended (owner).** Scenery beyond the boundary blends the playable
+  space into the outer world cheaply, so don't discourage it. Show the full build area, with the playable bounds
+  as a distinct outline inside it. The area outside the bounds should read as "scenery zone", not as an error.
 
 Also proposed: note pins, templates, mirror for team maps, a card-shot camera, and snap-to-surface/randomise for props.
 
