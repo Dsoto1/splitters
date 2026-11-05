@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 25,
+  "formatVersion": 26,
   "metadata": {
     "id": "sunstone_crag",
     "name": "Sunstone Crag",
@@ -15989,8 +15989,7 @@
       "yaw": 5.627,
       "scale": 1.49,
       "solid": false,
-      "tint": null,
-      "variant": 1
+      "tint": null
     },
     {
       "id": "prop_850",
@@ -16004,8 +16003,7 @@
       "yaw": 8.768,
       "scale": 1.49,
       "solid": false,
-      "tint": null,
-      "variant": 1
+      "tint": null
     },
     {
       "id": "prop_851",
@@ -16019,8 +16017,7 @@
       "yaw": 2.766,
       "scale": 1.32,
       "solid": false,
-      "tint": null,
-      "variant": 1
+      "tint": null
     },
     {
       "id": "prop_852",
@@ -16034,8 +16031,7 @@
       "yaw": 5.907,
       "scale": 1.32,
       "solid": false,
-      "tint": null,
-      "variant": 1
+      "tint": null
     },
     {
       "id": "prop_853",
@@ -16133,8 +16129,8 @@
       "yaw": 0.438,
       "scale": 0.92,
       "solid": false,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_860",
@@ -16148,8 +16144,8 @@
       "yaw": 3.579,
       "scale": 0.92,
       "solid": false,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_861",
@@ -16639,8 +16635,8 @@
       "yaw": 6.028,
       "scale": 0.95,
       "solid": false,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_896",
@@ -16654,8 +16650,8 @@
       "yaw": 9.17,
       "scale": 0.95,
       "solid": false,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_897",
@@ -17229,8 +17225,7 @@
       "yaw": 4.573,
       "scale": 1.5,
       "solid": false,
-      "tint": null,
-      "variant": 1
+      "tint": null
     },
     {
       "id": "prop_938",
@@ -17244,8 +17239,7 @@
       "yaw": 7.714,
       "scale": 1.5,
       "solid": false,
-      "tint": null,
-      "variant": 1
+      "tint": null
     },
     {
       "id": "prop_939",
@@ -17259,8 +17253,7 @@
       "yaw": 3.965,
       "scale": 1.29,
       "solid": false,
-      "tint": null,
-      "variant": 1
+      "tint": null
     },
     {
       "id": "prop_940",
@@ -17274,8 +17267,7 @@
       "yaw": 7.106,
       "scale": 1.29,
       "solid": false,
-      "tint": null,
-      "variant": 1
+      "tint": null
     },
     {
       "id": "prop_941",
@@ -17401,8 +17393,7 @@
       "yaw": 2.202,
       "scale": 1.04,
       "solid": false,
-      "tint": null,
-      "variant": 1
+      "tint": null
     },
     {
       "id": "prop_950",
@@ -17416,8 +17407,7 @@
       "yaw": 5.344,
       "scale": 1.04,
       "solid": false,
-      "tint": null,
-      "variant": 1
+      "tint": null
     },
     {
       "id": "prop_951",
@@ -17487,8 +17477,8 @@
       "yaw": 1.731,
       "scale": 1.16,
       "solid": false,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_956",
@@ -17502,8 +17492,8 @@
       "yaw": 4.873,
       "scale": 1.16,
       "solid": false,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_957",
@@ -17517,8 +17507,7 @@
       "yaw": 4.112,
       "scale": 1.21,
       "solid": false,
-      "tint": null,
-      "variant": 1
+      "tint": null
     },
     {
       "id": "prop_958",
@@ -17532,8 +17521,7 @@
       "yaw": 7.253,
       "scale": 1.21,
       "solid": false,
-      "tint": null,
-      "variant": 1
+      "tint": null
     },
     {
       "id": "prop_959",
@@ -17659,8 +17647,8 @@
       "yaw": 2.334,
       "scale": 1.27,
       "solid": false,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_968",
@@ -17674,8 +17662,8 @@
       "yaw": 5.476,
       "scale": 1.27,
       "solid": false,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_969",
@@ -17745,8 +17733,7 @@
       "yaw": 2.728,
       "scale": 1.12,
       "solid": false,
-      "tint": null,
-      "variant": 1
+      "tint": null
     },
     {
       "id": "prop_974",
@@ -17760,8 +17747,7 @@
       "yaw": 5.87,
       "scale": 1.12,
       "solid": false,
-      "tint": null,
-      "variant": 1
+      "tint": null
     },
     {
       "id": "prop_975",
@@ -17775,8 +17761,7 @@
       "yaw": 4.138,
       "scale": 1.94,
       "solid": false,
-      "tint": null,
-      "variant": 1
+      "tint": null
     },
     {
       "id": "prop_976",
@@ -17790,8 +17775,7 @@
       "yaw": 7.28,
       "scale": 1.94,
       "solid": false,
-      "tint": null,
-      "variant": 1
+      "tint": null
     },
     {
       "id": "prop_977",
@@ -17861,8 +17845,7 @@
       "yaw": 0.853,
       "scale": 1.93,
       "solid": false,
-      "tint": null,
-      "variant": 1
+      "tint": null
     },
     {
       "id": "prop_982",
@@ -17876,8 +17859,7 @@
       "yaw": 3.995,
       "scale": 1.93,
       "solid": false,
-      "tint": null,
-      "variant": 1
+      "tint": null
     },
     {
       "id": "prop_983",
@@ -17919,8 +17901,8 @@
       "yaw": 5.127,
       "scale": 1.02,
       "solid": false,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_986",
@@ -17934,8 +17916,8 @@
       "yaw": 8.269,
       "scale": 1.02,
       "solid": false,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_987",
@@ -18313,8 +18295,8 @@
       "yaw": 4.047,
       "scale": 1.17,
       "solid": false,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_1014",
@@ -18328,8 +18310,8 @@
       "yaw": 7.189,
       "scale": 1.17,
       "solid": false,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_1015",
@@ -18567,8 +18549,7 @@
       "yaw": 0.192,
       "scale": 1.64,
       "solid": false,
-      "tint": null,
-      "variant": 1
+      "tint": null
     },
     {
       "id": "prop_1032",
@@ -18582,8 +18563,7 @@
       "yaw": 3.333,
       "scale": 1.64,
       "solid": false,
-      "tint": null,
-      "variant": 1
+      "tint": null
     },
     {
       "id": "prop_1033",
@@ -18625,8 +18605,7 @@
       "yaw": 4.624,
       "scale": 1.56,
       "solid": false,
-      "tint": null,
-      "variant": 1
+      "tint": null
     },
     {
       "id": "prop_1036",
@@ -18640,8 +18619,7 @@
       "yaw": 7.766,
       "scale": 1.56,
       "solid": false,
-      "tint": null,
-      "variant": 1
+      "tint": null
     },
     {
       "id": "prop_1037",
@@ -18767,8 +18745,7 @@
       "yaw": 3.068,
       "scale": 1.4,
       "solid": false,
-      "tint": null,
-      "variant": 1
+      "tint": null
     },
     {
       "id": "prop_1046",
@@ -18782,8 +18759,7 @@
       "yaw": 6.209,
       "scale": 1.4,
       "solid": false,
-      "tint": null,
-      "variant": 1
+      "tint": null
     },
     {
       "id": "prop_1047",
@@ -18881,8 +18857,7 @@
       "yaw": 2.327,
       "scale": 1.61,
       "solid": false,
-      "tint": null,
-      "variant": 1
+      "tint": null
     },
     {
       "id": "prop_1054",
@@ -18896,8 +18871,7 @@
       "yaw": 5.469,
       "scale": 1.61,
       "solid": false,
-      "tint": null,
-      "variant": 1
+      "tint": null
     },
     {
       "id": "prop_1055",
@@ -19023,8 +18997,7 @@
       "yaw": 5.532,
       "scale": 1.32,
       "solid": false,
-      "tint": null,
-      "variant": 1
+      "tint": null
     },
     {
       "id": "prop_1064",
@@ -19038,8 +19011,7 @@
       "yaw": 8.673,
       "scale": 1.32,
       "solid": false,
-      "tint": null,
-      "variant": 1
+      "tint": null
     },
     {
       "id": "prop_1065",
@@ -19081,8 +19053,7 @@
       "yaw": 2.535,
       "scale": 1.52,
       "solid": false,
-      "tint": null,
-      "variant": 1
+      "tint": null
     },
     {
       "id": "prop_1068",
@@ -19096,8 +19067,7 @@
       "yaw": 5.677,
       "scale": 1.52,
       "solid": false,
-      "tint": null,
-      "variant": 1
+      "tint": null
     },
     {
       "id": "prop_1069",
@@ -19111,8 +19081,7 @@
       "yaw": 0.54,
       "scale": 1.9,
       "solid": false,
-      "tint": null,
-      "variant": 1
+      "tint": null
     },
     {
       "id": "prop_1070",
@@ -19126,8 +19095,7 @@
       "yaw": 3.682,
       "scale": 1.9,
       "solid": false,
-      "tint": null,
-      "variant": 1
+      "tint": null
     },
     {
       "id": "prop_1071",
@@ -19169,8 +19137,7 @@
       "yaw": 5.025,
       "scale": 1.68,
       "solid": false,
-      "tint": null,
-      "variant": 1
+      "tint": null
     },
     {
       "id": "prop_1074",
@@ -19184,8 +19151,7 @@
       "yaw": 8.167,
       "scale": 1.68,
       "solid": false,
-      "tint": null,
-      "variant": 1
+      "tint": null
     },
     {
       "id": "prop_1075",
@@ -19451,8 +19417,8 @@
       "yaw": 1.761,
       "scale": 1.12,
       "solid": false,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_1094",
@@ -19466,8 +19432,8 @@
       "yaw": 4.903,
       "scale": 1.12,
       "solid": false,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_1095",
@@ -19649,8 +19615,8 @@
       "yaw": 6.209,
       "scale": 1.34,
       "solid": false,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_1108",
@@ -19664,8 +19630,8 @@
       "yaw": 9.351,
       "scale": 1.34,
       "solid": false,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_1109",
@@ -19707,8 +19673,7 @@
       "yaw": 1.86,
       "scale": 1.44,
       "solid": false,
-      "tint": null,
-      "variant": 1
+      "tint": null
     },
     {
       "id": "prop_1112",
@@ -19722,8 +19687,7 @@
       "yaw": 5.001,
       "scale": 1.44,
       "solid": false,
-      "tint": null,
-      "variant": 1
+      "tint": null
     },
     {
       "id": "prop_1113",
@@ -19849,8 +19813,8 @@
       "yaw": 1.727,
       "scale": 0.94,
       "solid": false,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_1122",
@@ -19864,8 +19828,8 @@
       "yaw": 4.869,
       "scale": 0.94,
       "solid": false,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_1123",

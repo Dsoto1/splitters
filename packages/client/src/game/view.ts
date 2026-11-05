@@ -76,9 +76,12 @@ import {
   type Zipline,
   suspensionOf,
   hungPropLift,
+  propFlushLifts,
   getProp,
   type Stance,
 } from '@tiletrigger/shared';
+// The props' contact faces (docs/LOOK.md, "No flicker: props"): with the match code, never in the menu's bundle.
+import { PROP_CONTACTS } from '@tiletrigger/shared/propContacts';
 import type { AbstractMesh } from '@babylonjs/core/Meshes/abstractMesh';
 import type { Material } from '@babylonjs/core/Materials/material';
 import { BloodVisuals, bloodPreference } from './bloodVisuals.ts';
@@ -117,7 +120,8 @@ import { installAnimationPatches, trackAnimatedTargets } from './animPatches.ts'
 import { freezeStaticMaterials, selectLiveCandidates } from './meshSelection.ts';
 import { fitFirstPersonArms } from './firstPersonArms.ts';
 import { FirstPersonBodyRig } from './firstPersonBody.ts';
-import { loadFirstPersonMode, loadGraphicsQuality, type FirstPersonMode } from './graphicsSettings.ts';
+import { loadFirstPersonMode, loadGraphicsQuality, loadRenderScale, renderRatio, type FirstPersonMode } from './graphicsSettings.ts';
+import { levelMipBias } from '../levelMerge.ts';
 import { CreatureLibrary, fitPlayerSkin, type AvatarSpec } from '../content/creatures.ts';
 import { BodyHitbox, hitboxForSpec } from './hitboxOverlay.ts';
 import { CreatureAnimator } from './creatureAnimator.ts';
@@ -494,7 +498,8 @@ export class GameView {
     // (prewarm) waits for it, so its shader is built before play.
     const engine = this.scene.getEngine() as { isWebGPU?: boolean; webGLVersion?: number };
     if (perfOn('levelmerge') && !engine.isWebGPU && (engine.webGLVersion ?? 1) >= 2) {
-      this.levelMerge = styler.merge().catch((e: unknown) => {
+      // Phones show a small drawing magnified: their level textures a touch softer, so speckled floors don't twinkle.
+      this.levelMerge = styler.merge('map', levelMipBias(window.devicePixelRatio || 1, renderRatio(loadRenderScale()))).catch((e: unknown) => {
         console.warn('level merge skipped:', e);
         return null;
       });
@@ -536,11 +541,15 @@ export class GameView {
       void this.environment.setPlacements(env, doc.terrain);
     }
     const drawnAsEnv = new Set(env.map((e) => e.id));
+    // Props flush on other props (a box on a crate, rail lengths laid end over end) are drawn a hair apart: no flicker.
+    const flush = propFlushLifts(doc, PROP_CONTACTS, boxes);
     doc.entities.forEach((e, i) => {
       if (e.kind !== 'prop' || drawnAsEnv.has(e.id)) return;
       const node = createPropNode(this.scene, this.models, e, `prop_${e.id}`, !carried.has(e.id), true, doc.terrain);
       // A chandelier (and other hung props) is drawn with its top against the ceiling over it.
       if (!carried.has(e.id)) node.position.y += hungPropLift(boxes, e);
+      const lift = flush.get(e.id);
+      if (lift) node.position.addInPlaceFromFloats(lift[0], lift[1], lift[2]);
       this.props.set(i, node);
       const flame = getProp(e.model)?.flame;
       if (flame) this.propFlames.add(e.id, node, flame, e.scale, carried.has(e.id));

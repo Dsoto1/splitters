@@ -630,7 +630,7 @@ else {
 
 // The data tables (weapons, vehicles, NPC roles, pickups, materials, surface types, tiles) and the measured hit shapes
 // (hitboxes): their content checks, and the generated files and codes lock up to date.
-for (const gen of ['weapons', 'vehicles', 'npcs', 'pickups', 'materials', 'surface-types', 'tiles', 'hitboxes', 'environment']) {
+for (const gen of ['weapons', 'vehicles', 'npcs', 'pickups', 'materials', 'surface-types', 'tiles', 'hitboxes', 'environment', 'prop-contacts']) {
   if (!check) break;
   try {
     execFileSync(process.execPath, [join(ROOT, `tools/content/${gen}.mjs`), '--check'], { cwd: ROOT, stdio: 'inherit' });

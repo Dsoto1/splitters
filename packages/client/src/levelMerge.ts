@@ -27,6 +27,18 @@ import { Constants } from '@babylonjs/core/Engines/constants';
  * WebGL2 only (array textures in GLSL); elsewhere the level stays one mesh per style.
  */
 
+/**
+ * Mip bias for the level's textures on a view drawn small and shown magnified (docs/LOOK.md, "No flicker: texture
+ * shimmer"). A phone draws at 0.75 px per CSS pixel on a 2.5-3x screen: each drawn pixel is shown 3-4 device pixels
+ * wide, so a speckled floor (terrazzo, gravel, carpet) whose specks are a drawn pixel across twinkles as you turn,
+ * mipmaps or not. A mip level per doubling of that magnification past 1.5x (about 0.1 on a desktop at its usual scale,
+ * a whole level on a phone at Performance), at most 1: a touch softer, steady.
+ */
+export function levelMipBias(devicePixelRatio: number, renderRatio: number): number {
+  const shown = devicePixelRatio / Math.max(renderRatio, 0.05);
+  return shown <= 1.5 ? 0 : Math.min(1, Math.round(Math.log2(shown / 1.5) * 100) / 100);
+}
+
 /** Merged level meshes are cut into squares this big (m): the whole level in view is a few draws, and far parts cull. */
 export const MERGE_CHUNK = 128;
 
@@ -58,6 +70,8 @@ export class LevelArrayPlugin extends MaterialPluginBase {
     material: Material,
     private readonly colors: BaseTexture,
     private readonly normals: BaseTexture | null,
+    /** Mip level bias of the surface lookups (`levelMipBias`): blurrier, steadier textures on a magnified low-res view. */
+    private readonly mipBias = 0,
   ) {
     super(material, 'LevelArray', 200, { LEVELARRAY: false }, true, true);
   }
@@ -93,6 +107,7 @@ export class LevelArrayPlugin extends MaterialPluginBase {
   }
 
   override getCustomCode(shaderType: string): Record<string, string> | null {
+    const bias = this.mipBias > 0 ? `,${this.mipBias.toFixed(2)}` : '';
     if (shaderType === 'vertex') {
       return {
         CUSTOM_VERTEX_DEFINITIONS: 'attribute vec4 levelA;\nattribute vec4 levelB;\nvarying vec4 vLevelA;\nvarying vec4 vLevelB;',
@@ -104,10 +119,12 @@ export class LevelArrayPlugin extends MaterialPluginBase {
       // Tint: the per-style material's diffuse colour.
       '!vec3 diffuseColor=vDiffuseColor\\.rgb;': 'vec3 diffuseColor=vLevelA.rgb;',
       // Colour texel from the surface's layer.
-      '!baseColor=TEXRD\\(diffuseSampler,vDiffuseUV\\+uvOffset\\);': 'baseColor=texture(levelColors,vec3(vDiffuseUV+uvOffset,vLevelA.w));',
-      // Normal-map texel from the surface's layer (a surface without one stays flat).
+      '!baseColor=TEXRD\\(diffuseSampler,vDiffuseUV\\+uvOffset\\);': `baseColor=texture(levelColors,vec3(vDiffuseUV+uvOffset,vLevelA.w)${bias});`,
+      // Normal-map texel from the surface's layer (a surface without one stays flat). Sampled on every pixel, then
+      // chosen: a texture lookup inside a branch that differs between neighbouring pixels picks its mip level from
+      // undefined derivatives (GLSL ES 3.0), which some phone GPUs show as sparkling.
       '!normalW=perturbNormal\\(TBN,TEXRD\\(bumpSampler,vBumpUV\\+uvOffset\\)\\.xyz,vBumpInfos\\.y\\);':
-        'normalW=perturbNormal(TBN,vLevelB.x<-0.5?vec3(0.5,0.5,1.0):texture(levelNormals,vec3(vBumpUV+uvOffset,vLevelB.x)).xyz,vBumpInfos.y);',
+        `normalW=perturbNormal(TBN,mix(texture(levelNormals,vec3(vBumpUV+uvOffset,max(vLevelB.x,0.0))${bias}).xyz,vec3(0.5,0.5,1.0),step(vLevelB.x,-0.5)),vBumpInfos.y);`,
       // Specular colour and power.
       '!float glossiness=vSpecularColor\\.a;vec3 specularColor=vSpecularColor\\.rgb;': 'float glossiness=vLevelB.z;vec3 specularColor=vec3(vLevelB.y);',
     };
@@ -234,7 +251,7 @@ function arrayTexture(scene: Scene, layers: Uint8Array[], size: number, name: st
  * meshes (named `${name}_merged_…`, frozen, not pickable), or null when nothing was merged. The caller disposes the
  * sources it no longer needs.
  */
-export async function mergeLevel(scene: Scene, sources: readonly MergeSource[], name = 'map'): Promise<{ meshes: Mesh[]; merged: Mesh[] } | null> {
+export async function mergeLevel(scene: Scene, sources: readonly MergeSource[], name = 'map', mipBias = 0): Promise<{ meshes: Mesh[]; merged: Mesh[] } | null> {
   if (sources.length < 2) return null;
   const groups = planLayers(sources);
   const out: Mesh[] = [];
@@ -256,9 +273,13 @@ export async function mergeLevel(scene: Scene, sources: readonly MergeSource[], 
       mat.invertNormalMapY = true;
     }
     mat.diffuseColor = Color3.White();
+    // The per-style materials' depth bias (mapMeshes.ts levelDepthBias: drawn a hair behind what lies in its planes).
+    const first = group.sources[0]!.mesh.material;
+    mat.zOffset = first?.zOffset ?? 0;
+    mat.zOffsetUnits = first?.zOffsetUnits ?? 0;
     // Any non-black specular keeps the specular term in the shader; each vertex brings its own colour and power.
     mat.specularColor = new Color3(0.1, 0.1, 0.1);
-    new LevelArrayPlugin(mat, colorArray, normalArray);
+    new LevelArrayPlugin(mat, colorArray, normalArray, mipBias);
     for (const [key, c] of mergeGeometry(group, readWorld)) {
       if (!c.indices.length) continue;
       const mesh = new Mesh(`${name}_merged_${size}_${key}`, scene);

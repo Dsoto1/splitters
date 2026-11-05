@@ -32,7 +32,7 @@ import { ENV_RENDER } from '../content/environment.generated.ts';
 const BEFORE_X = 90;
 
 /**
- * The lineup, one entry per piece: [species, variant index, the old prop it replaces, x, z]. Trees at the back,
+ * The lineup, one entry per piece: [species, variant index, the old prop it replaces ('' for none), x, z]. Trees at the back,
  * shrubs, boulders and grass in front, a cliff wall behind; the "before" set has the old pieces in the same places.
  */
 const LINEUP: [string, number, string, number, number][] = [
@@ -47,7 +47,8 @@ const LINEUP: [string, number, string, number, number][] = [
   ['env.grass.clump', 0, 'prop.grass_tall', -7.5, -5],
   ['env.grass.clump', 1, 'prop.grass_patch', -6.2, -5],
   // The plants brush's flowers and fern (foliage.ts), in front of the grass.
-  ['env.flower.meadow', 0, 'prop.flower_red', -6.4, -6.6],
+  ['env.flower.meadow', 0, '', -7.4, -6.9],
+  ['env.flower.meadow', 3, 'prop.flower_red', -6.4, -6.6],
   ['env.flower.meadow', 1, 'prop.flower_yellow', -5.4, -6.9],
   ['env.flower.meadow', 2, 'prop.flower_purple', -4.4, -6.6],
   ['env.fern.bracken', 0, 'prop.fern', -2.9, -6.4],
@@ -128,9 +129,9 @@ export async function openEnvLab(engine: AbstractEngine, canvas: HTMLCanvasEleme
   const ent = (id: string, model: string, pos: [number, number, number], variant?: number, yaw = 0, scale = 1): PropEntity => ({ id, kind: 'prop', model, position: pos, yaw, scale, solid: true, tint: null, ...(variant !== undefined ? { variant } : {}) }) as PropEntity;
   for (const [i, [model, variant, old, x, z]] of LINEUP.entries()) {
     if (model === 'env.flower.meadow') {
-      // A few plants of each colour; the old flower as one piece.
+      // A few plants of each colour; the old flower as one piece (Kenney had no white one).
       for (let k = 0; k < 5; k++) entities.push(ent(`flower_${i}_${k}`, model, [x + ((k % 3) - 1) * 0.3, 0, z + Math.floor(k / 3) * 0.32 + (k % 2) * 0.08], variant, k * 2.1, 0.9 + (k % 3) * 0.12));
-      oldEntities.push(ent(`old_${i}`, old, [x + BEFORE_X, 0, z]));
+      if (old) oldEntities.push(ent(`old_${i}`, old, [x + BEFORE_X, 0, z]));
       continue;
     }
     if (model === 'env.water.eelgrass') {

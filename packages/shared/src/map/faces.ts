@@ -461,6 +461,9 @@ const bounds2 = (p: readonly P2[]): [number, number, number, number] => {
   return [x0, y0, x1, y1];
 };
 
+/** The plane and convex-polygon helpers above, for the props' contact audit (propFaces.ts). */
+export const planeGeometry = { planeOf, to2, to3, intersect, area2, width, bounds2 };
+
 /** Bucket key of a face's plane: its normal and offset, rounded. */
 const planeKey = (n: readonly number[], d: number) => `${Math.round(n[0]! * 1e5)},${Math.round(n[1]! * 1e5)},${Math.round(n[2]! * 1e5)}:${Math.round(d / EPS)}`;
 

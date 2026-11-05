@@ -47,6 +47,42 @@ later). Not a layout rework.
   spots (owner's M1 note: the static scene's draws/meshes are the bottleneck here; must not add any), screenshots,
   merge main (68663142, flicker fix), checks, `check/shingle`.
 
+### Flatpack Depot flicker (`wip/flatpack`, agent, 2026-11-05; CI on `check/flatpack`)
+Owner: "The ikea map has significant flickering" / "flicker when I look around, could be shader or something"
+(Android phone, Low graphics, Performance render scale; screenshot of the Showroom corridor). docs/LOOK.md,
+"No flicker: props" and "No flicker: texture shimmer".
+- Causes found and fixed (every map):
+  1. **Props in the level's planes** (z-fighting): Quaternius Rug's cloth is its base (y = 0, facing up); Kenney
+     factory/shop/sci-fi props have double-sided bases and backs (open shelving, crates, freezers). Fix: the level's
+     materials carry a depth bias (`LEVEL_DEPTH_BIAS`, mapMeshes.ts `levelDepthBias`, copied onto the merged level
+     material). 4,915 places over 89 maps, 298 on Flatpack.
+  2. **Props flush on props**: `propFlushLifts` (shared/src/map/propFaces.ts) draws the later prop 4 mm off (max 11 mm
+     on any map), game view and MapMaker view (cached per prop set). 754 pairs, 58 on Flatpack; 0 left.
+     Contact faces: `tools/content/prop-contacts.mjs` → `propContacts.generated.ts` (content:check, content:rebuild;
+     imported only from the match/MapMaker code via `@tiletrigger/shared/propContacts`: menu bundle unchanged).
+  3. **Glass sorting**: glass wrote depth, so a nearer 32 m glass chunk drawn first hid panes behind it until the sort
+     flipped; `disableDepthWrite` on the glass material.
+  4. **Texture shimmer on phones** (reproduced: Chromium at 900×415 CSS, DPR 2.6, touch, Low, Performance): speckled
+     terrazzo twinkles when turning 0.2°. The merged level's lookups take a mip bias on magnified low-res views
+     (`levelMipBias`: a whole mip level on a phone at Performance, ~0.1 on a desktop; the first try, 0.6, cut the floor's twinkle only 14 %); the normal-map lookup no longer sits in a branch
+     (undefined derivatives on some mobile GPUs).
+- Looked at, not changed: shader precision (Babylon declares highp; our plugins add no mediump), depth precision
+  (Chrome gives depth24 with the stencil we ask for; the bias is in depth steps so it holds on a 16-bit buffer too),
+  shadows (Low has none: not the phone's cause; no acne seen on Medium in the container), LOD popping (props on this
+  map have no LOD levels).
+- Not reproducible in the container: SwiftShader's float depth draws exact ties steadily, so causes 1-2 looked steady
+  here; the audit is the proof. Owner to check on the phone (the Showroom rugs, the market hall shelving, the speckled
+  floors while turning) and on the M1 (warehouse racks and windows over the warehouse, Medium/High).
+- Phone emulation, terrazzo region of the owner's spot, mean frame-to-frame change turning 0.23°: 42 → 32 (-24 %).
+  Desktop Medium shots before/after differ in <0.5 % of pixels (glass, shadows); visual baselines unchanged.
+- Checks: typecheck, content:check, bundle 692.6 kB gzip (unchanged: contacts table loads with the match code),
+  zfight/levelMerge/foliage/glass tests; local test:changed and e2e visual/mobile had only load timeouts (machine at
+  load 10-14). CI: `check/flatpack` run 42122718849 green at 49adda8f (full suite). Not landed: land when wanted.
+- Side question (Temple Terrace "cracks", MapMaker): no geometric gaps (tops sampled every 5 cm over 2×2 terraces);
+  the lines are the facade's moss dressing (moss cap strips, vines); the owner confirmed in play. A foliage test now
+  checks no plants grow under or through placed tiles.
+- Screenshots: session scratchpad `flatpack/` (before/after, phone emulation and Medium).
+
 ### Drive intake of 2026-11-05 (`wip/intake-1105`, agent; step 1 on `check/intake-1105`, step 2 next)
 Downloads in `/home/user/meshy-drive/intake-2026-11-05/` (raw, never committed); the agent linked the ones it uses
 into a scratch downloads dir (any dir works: the importers find files by `source.file` / `glb` name). Owner's rules:
@@ -419,16 +455,42 @@ up. The new Gnoll (Hyena Warrior) in the intake-2 sheets shows it.
 
 The pistol-hold tweak follows the palm fix.
 
-### Queued (owner, 2026-11-05): small environment follow-ups (next free agent)
-- **Tall grass:** keep it as it is on Coldwater Gulch and Shingle Point (0.7–1.4 m clumps).
-- **Pebbles bigger:**
-  - make `env.rock.pebbles` read at play distance;
-  - add a larger variant, or raise the base size, so Sunstone Crag's swapped stones are no longer faint;
-  - redo Sunstone Crag's pebbles with MapMaker's Replace all if needed;
-  - they still don't collide.
-- **Red meadow flower:**
-  - add a red variant to `env.flower.meadow` (the generator, plus a new leaf-atlas cell if needed);
-  - turn Serene City's one formerly-red flower back to red with Replace all or the inspector variant.
+### Environment Phase 1d: bigger pebbles, red meadow flower, Nature pictures (`wip/env-p1d`, agent, 2026-11-05; from main 9cd28e63, main dfdfe792 merged in; pushed, not merged)
+The owner's small environment follow-ups. Tall grass kept as it is (no change).
+- **Pebbles bigger:** `env.rock.pebbles` assetVersion 2 (content/environment/rock.json; same generator kind `pebbles`):
+  4 stones (0.2–0.58 m), rounder and higher (`flat` 0.9–1.25, `ring` [7, 4]), 60 triangles (budget `rock: [64]`),
+  1.24 × 0.32 × 1.09 m at scale 1 (was 0.83 × 0.13 × 0.96; the Kenney stones were 0.76 × 0.40 × 0.76). Raised the
+  base size rather than adding a variant: variants share one size (`envPropDefinition` and Replace all's Keep height
+  read variant 0), and the brush's pebbles were just as faint. Still nav none, no shapes, decorative.
+  `placement.minSpacing` 0.6 → 0.9, nominalHeight 0.32. Fixture `env.rock.pebbles@2`.
+- **Sunstone Crag:** the 36 clusters (Kenney stones, scale kept, 1.04–1.94) are now 0.33–0.62 m high; set from sand to
+  **grey** (the Kenney stones were grey; sand on the dark sand still read faint at 12 m) with MapMaker's inspector
+  Variant list, one piece at a time (23 selected by clicking, 13 directly), driven without ?test=1 by the scratchpad
+  driver `env4/tools/variant.mjs`; Replace all can't do it (same model is a no-op in `replacePropsCommand`).
+- **Red meadow flower:** `env.flower.meadow` assetVersion 2, variant 3 `red` (a poppy: the buttercup card `flower.1`
+  tinted `#d0261c`, its eye darker). No new atlas cell: `leaves.webp` and every existing GLB byte-identical; new
+  `env/flower.meadow.red.glb`. Fixture `env.flower.meadow@2`. Serene City's `prop_391` (Kenney red, then white) →
+  variant 3 via the inspector (selected directly: no click hit it). envlab lineup: red beside the Kenney red flower,
+  white with no "before" piece (`''`).
+- **Palette pictures:** the Nature tab's species (`GROUND_COVER_SPECIES`: grass, meadow flowers, fern, shrub, eelgrass,
+  pebbles) are in `pictureKeys` (their first variant's file) and a new `environment` atlas (`atlasGroup`: any
+  `prop:env.*`); palette-items.ts reads `env/` files from public/. The `?env=1` preview group still has no pictures.
+- Both maps exported by MapMaker, release stamp dropped (`env4/tools/finalize.mjs`); the export also carries what
+  loading does (format 25 → 26, key order), as in 1c. `validate-map`: 0 issues on both.
+- **Screenshots** (session scratchpad `env4/`): `sunstone_crag-before-{1..4}` (main), `-asset-*` (new pebbles, map
+  still sand), `-after-*` (grey) at eye height, 5 m and 12 m; `serene_city-red-1`; `envlab-after-{plants,ground,small,mid}`;
+  `palette-environment.png` (the new atlas row).
+- **Checks:** typecheck; test:changed (1658 passed; npc "Outpost Siege" and pads "eagle_spires" timed out under load
+  17 and passed when rerun alone); content:rebuild + content:check; build; bundle budget (692.6 kB gzip of 840);
+  validate-map on both maps (0 issues). Local e2e (ports 4971/4972; editor, offline, online, maps, environment, visual,
+  scenery) on a container at load 13–18: offline, online, environment PASS, visual's envlab baseline holds (1.7 %
+  differ, 10 % allowed, so no new baseline); editor (dropship / random pickup timing), scenery, maps (both maps'
+  tour: "no match", setInputFiles timeout) and visual's arena ("scene never got ready") failed on timeouts. CI
+  `check/env-p1d` run 42119067704 at 357a368c (main 8722f6ca merged in): **green**, full suite (unit, 15 e2e shards,
+  the two maps' browser tour, perf).
+- **Not tested:** the GPU cost of bigger pebbles (60 vs 55 triangles a cluster, more pixels) on the M1; how the
+  bigger brush-grown pebbles look across every snow / gravel / sand map (seen in envlab and on Sunstone Crag only).
+- **Resume:** `git fetch && git checkout wip/env-p1d`; land with the train once the owner has seen the screenshots.
 <!-- palms -->
 ### Palms the right way round (`wip/palms`, agent, 2026-11-05; from main 2c8f3e21, main merged in at ce8a893a)
 **Cause (confirmed):** `skinHandFrame` signed the hand's flat by the thumb's FIRST joint against the wrist joint, which
@@ -508,8 +570,29 @@ fastest moving at about 60 m/s, on both attempts.
 Each brief has its reference image beside it. The owner approves the concept before any placement work; follow
 AGENT_BUILD_CONTRACT.md.
 
+### Queued: performance round 3 (owner's Shingle Point M1 recording, 2026-11-05; files in session scratchpad perf3/)
+**The recording:** build 76a4b03, M1 Pro, high, 49 players.
+- Averages about 20.5 ms. It holds 60 fps only in quiet views (390 draws, 185 meshes).
+- In the main views: 700–870 draws and 850–1,090 active meshes.
+- Per frame: render about 17 ms, of which:
+  - mesh evaluation 3.5 ms
+  - shadow and depth maps 4.4 ms
+  - about 6.5 ms issuing draws
+  - clips and aim 2.8 ms (round 2 worked there)
+- One hitch at 55 s compiled 8 new shaders mid-match (75–83 ms frames).
+- HUD costs 0.7 ms, against 0.1 ms on Market Town.
+
+**Targets:**
+1. Static prop merging and instancing on big open maps: chunked merging of static props and decorations, like levelMerge.
+2. Shadow cache effectiveness on large outdoor maps.
+3. Shader warm-up so no shaders compile mid-match. Find which material first appeared at 55 s.
+4. HUD cost: why 0.7 ms here (minimap or markers with 49 players?).
+
 ### Owner's map notes for later (2026-11-05; not started)
 - **No Man's Field:** asset refresh. It still uses Kenney kits; move it to our generated environment and props.
+- **Border forest backdrop** (owner's note, 2026-11-05): maps' surrounding forest still uses the old blocky tree
+  models (owner's screenshot on a temple test map). Swap it to our generated oak and pine, which is Environment
+  Phase 4 work. No rush.
 - **Rockfall Canyon** (`maps/canyon.json`): asset and foliage refresh, onto our generated environment, rocks and plants.
 - **Shingle Point** (`maps/shingle_point.json`, the beach landing): an asset refresh. The owner also suggests a
   layout rework from the reference `docs/map-briefs/shingle_point_reference.jpg`:
