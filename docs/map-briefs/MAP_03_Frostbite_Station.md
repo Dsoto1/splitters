@@ -47,3 +47,6 @@ and believable site organization, not through decorative labels.
 - [ ] User approves image before any detailed placement work.
 
 Not started: to be discussed with the owner (received 2026-11-05).
+
+**Owner's decision (2026-11-05):** rebuild Whiteout Station (`maps/whiteout_station.json`, the Snow Outpost demo map)
+from this brief, keeping its id.

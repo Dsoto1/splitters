@@ -397,11 +397,14 @@ fastest moving at about 60 m/s, on both attempts.
 ### New map briefs to discuss with the owner (received 2026-11-05; not started)
 - `docs/map-briefs/MAP_02_The_Spillway.md`: a hydroelectric dam in a gorge; battlefield scale, 32–64 players.
 - `docs/map-briefs/MAP_03_Frostbite_Station.md`: an arctic research station; 8–16 players.
-  - Overlaps Whiteout Station, the Snow Outpost demo map: decide whether to keep both or replace.
+  - **Owner (2026-11-05): rebuild Whiteout Station (the Snow Outpost demo map) from this brief.** Keep its id and
+    map file, and rebuild its layout to MAP 03's identity.
 - `docs/map-briefs/MAP_21_Omaha_Beach_Assault.md`: a fortified beach and cliffs; massive battlefield, 64–96 players,
   asymmetric assault.
   - Its reference is the Shingle Point image.
-  - Ask the owner whether this is the Shingle Point rework or a new map.
+  - **Owner (2026-11-05): build MAP 21 as a NEW map from scratch** with our tools and assets (MapMaker, set pieces,
+    style packs, the environment). Keep Shingle Point as its own map **and** give it the asset refresh, so the owner
+    can compare the two side by side.
 - `docs/map-briefs/MAP_04_Verdant_Protocol.md`: an overgrown jungle compound; 16–32 players.
   - Compare with Vinefall Sanctum, the Jungle Ruins demo, and Jungle Steps.
 

@@ -55,3 +55,6 @@ It shows:
 Not started. Open question for the owner: is this the Shingle Point rework (its beach-assault map today), or a
 separate new map? Shingle Point plays smaller today; this brief is 64–96 players, and asymmetric assault may need
 custom rules.
+
+**Owner's decision (2026-11-05):** build this as a NEW map from scratch with our own tools and assets. Shingle Point stays
+as it is and gets its asset refresh, so the owner can compare the two.
