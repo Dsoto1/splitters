@@ -137,6 +137,8 @@ const UPPER_BODY = [
 ];
 /** Actions during which the hands leave the grip (the weapon goes with the right hand). */
 const HANDS_OFF: ReadonlySet<OneShot> = new Set(['reload', 'melee', 'melee_heavy', 'throw', 'interact', 'hit', 'hit_head', 'jab']);
+/** Overlays a fight plays again and again: their clips stay started between plays (see trigger). */
+const KEPT_OVERLAYS: ReadonlySet<OneShot> = new Set(['shoot', 'hit', 'hit_head']);
 /** Limb joints (arms, hands, legs, feet): a cheap ragdoll leaves them to a limp pose. */
 const LIMB = /^(clavicle|upperarm|lowerarm|hand|index|middle|ring|pinky|thumb|thigh|calf|foot|ball)_/;
 /** A hit flinch: how long it lasts (s), how fast it peaks (s), and how far each body part goes at full strength (radians). */
@@ -303,7 +305,7 @@ export class CharacterAnimator {
   static skinProbe: ((t0: number) => void) | null = null;
   private readonly weights = new Map<Clip, number>();
   private current: Clip = 'aim_idle';
-  private overlay: { clip: AnimationGroup; until: number } | null = null;
+  private overlay: { clip: AnimationGroup; until: number; kept: boolean } | null = null;
   private dead = false;
   private readonly observer: Observer<Scene>;
   private pitch = 0;
@@ -361,6 +363,7 @@ export class CharacterAnimator {
     const [r, l] = [arm('r'), arm('l')];
     this.arms = r && l ? { r, l } : null;
     this.skelRoot = ch.joints.get('root');
+    this.rootHome = this.skelRoot?.position.clone() ?? null;
     this.pelvis = ch.joints.get('pelvis');
     for (const c of LOOPS) this.weights.set(c, 0);
     for (const c of ['walk', 'run', 'sprint', 'jump_air'] as const) {
@@ -588,8 +591,7 @@ export class CharacterAnimator {
     if (this.aimUpper) this.aimUpper.weight = this.lying || !this.armed ? 0 : Math.max(0, 1 - (this.weights.get('dance') ?? 0) - this.clipUpper);
 
     if (this.overlay && performance.now() > this.overlay.until) {
-      this.overlay.clip.stop();
-      this.overlay = null;
+      this.endOverlay();
       this.handsOff = false;
     }
     // Hands on the weapon unless an action needs them; long guns turn the shoulders into the stock.
@@ -969,19 +971,34 @@ export class CharacterAnimator {
     const g = this.ch.clips.get(action === 'hit_head' && !this.ch.clips.has('hit_head') ? 'hit' : action === 'jab' && !this.ch.clips.has('jab') ? 'melee' : (action as Clip));
     if (!g) return;
     const speed = action === 'shoot' ? 1.6 : 1.2;
-    if (this.overlay?.clip === g && g.isPlaying && g.speedRatio === speed) {
-      // The same action again while it still plays (an automatic weapon's next shot): back to its start. Stopping and
-      // starting a group makes and frees an animation per joint (some 70), the biggest cost of a firefight's shots.
+    if (this.overlay && this.overlay.clip !== g) this.endOverlay();
+    // Shots and hits (a firefight's many overlays) keep their clip started, paused at weight 0 between plays: starting
+    // a group makes an animation per joint (some 70) and stopping it frees them, the biggest cost of a fight's events.
+    const kept = KEPT_OVERLAYS.has(action);
+    if (kept && g.isStarted) {
+      g.speedRatio = speed;
       g.goToFrame(g.from);
+      if (!g.isPlaying) g.play(true);
     } else {
-      this.overlay?.clip.stop();
+      if (g.isStarted) g.stop();
       g.mask = this.mask;
-      g.weight = OVERLAY_WEIGHT;
-      g.start(false, speed);
+      g.start(kept, speed);
     }
+    g.weight = OVERLAY_WEIGHT;
     const seconds = (g.to - g.from) / 60 / speed;
-    this.overlay = { clip: g, until: performance.now() + Math.max(0.15, seconds) * 1000 };
+    this.overlay = { clip: g, until: performance.now() + Math.max(0.15, seconds) * 1000, kept };
     this.handsOff = HANDS_OFF.has(action);
+  }
+
+  /** The overlay is done: a kept clip pauses at weight 0 (ready for the next shot), others stop. */
+  private endOverlay(): void {
+    const o = this.overlay;
+    this.overlay = null;
+    if (!o) return;
+    if (o.kept) {
+      o.clip.weight = 0;
+      o.clip.pause();
+    } else o.clip.stop();
   }
 
   private play(clip: Clip, weight: number): void {
@@ -1059,6 +1076,21 @@ export class CharacterAnimator {
 
   /** Each skeleton's own update, past the gate (freezePose). */
   private readonly prepareSkins: (() => void)[] = [];
+
+  /** The skeleton root joint's own place (a ragdoll moves it with the pelvis). */
+  private readonly rootHome: Vector3 | null;
+
+  /**
+   * Ready to stand again in another avatar (GameView keeps bodies for reuse): the pose thawed, the skeleton root
+   * back where it belongs, the hands empty and the clips asleep until it is shown. It revives on its first update.
+   */
+  standBy(): void {
+    this.hold(null);
+    this.thawPose();
+    if (this.rootHome) this.skelRoot?.position.copyFrom(this.rootHome);
+    this.setDormant(true);
+    for (const m of this.ch.meshes) m.visibility = 1;
+  }
 
   thawPose(): void {
     if (!this.frozenPose) return;

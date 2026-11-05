@@ -226,6 +226,14 @@ const DEATH_START_MS = 4;
 /** The way an avatar faces (its yaw; characters face +Z at yaw 0), for its ragdoll to tell front from back. */
 const facingOf = (a: Avatar): Vec3 => ({ x: Math.sin(a.root.rotation.y), y: 0, z: Math.cos(a.root.rotation.y) });
 
+/**
+ * Characters kept for reuse per look (spec) when their avatar goes (a body that sank away, one past MAX_CORPSES, a player
+ * who left): the next avatar of that look (a respawn) takes one at once instead of building a new one (10-25 ms each,
+ * just after a frame: a busy match's respawns were most of its hitches' unexplained time).
+ */
+const BODY_POOL_PER_LOOK = 2;
+/** Frames longer than this (ms: a CPU-rendered page) let more than one character be built after them (one per 16 ms). */
+const BUILD_CATCH_UP_MS = 250;
 /** Ragdoll parts parked in the effects world's pool when the map is built (a standard body's, this many times). */
 const RAGDOLL_PREWARM_BODIES = 12;
 /**
@@ -376,14 +384,17 @@ export class GameView {
     this.scenario = new ScenarioVisuals(this.scene);
     this.zoneVisuals = new ZoneVisuals(this.scene);
     this.characters = new CharacterLibrary(this.scene, { atlas: true });
-    // Characters are built one per 16 ms (one a frame at 60 fps, more when frames are long): the host adding
-    // a dozen bots, or a full match's first wave, built them all in one long frame, a stall on every computer.
+    // Characters are built one a frame: the host adding a dozen bots, or a full match's first wave, built them all
+    // in one long frame, a stall on every computer. A build (10-25 ms) runs just after the frame, outside its measured
+    // spans (the "outside" time of a recording's hitches), so a slow frame no longer lets two or three through at once
+    // (one per 16 ms it took, before); only a CPU-rendered page's very long frames (tests) still catch up that way.
     const turns: (() => void)[] = [];
     let lastTurn = performance.now();
     this.characters.turn = () => new Promise((go) => turns.push(go));
     this.scene.onBeforeRenderObservable.add(() => {
       const now = performance.now();
-      for (let n = Math.max(1, Math.floor((now - lastTurn) / 16)); n > 0 && turns.length; n--) {
+      const dt = now - lastTurn;
+      for (let n = dt < BUILD_CATCH_UP_MS ? 1 : Math.floor(dt / 16); n > 0 && turns.length; n--) {
         turns.shift()!();
         if (perfProbe.on) perfProbe.n[COUNT.built]!++;
       }
@@ -617,11 +628,15 @@ export class GameView {
    * hit reaction on the upper body (characterAnimator flinch).
    */
   flinchPlayer(slot: number, dir: Vec3, zone: number, strength: number): void {
-    const anim = this.avatars.get(slot)?.anim;
-    if (!(anim instanceof CharacterAnimator)) return;
+    const a = this.avatars.get(slot);
+    const anim = a?.anim;
+    if (!a || !(anim instanceof CharacterAnimator)) return;
     const k = Math.min(1, strength / 2);
     anim.flinch(zone, dir, 0.35 + 0.65 * k);
-    if (strength >= 1.6) anim.trigger(zone === 1 ? 'hit_head' : 'hit');
+    // The hit clip over the flinch only where it shows (as remote shots' recoil, SHOT_OVERLAY_REACH).
+    const eye = this.scene.activeCamera?.globalPosition;
+    const near = !eye || Math.hypot(a.root.position.x - eye.x, a.root.position.z - eye.z) <= SHOT_OVERLAY_REACH;
+    if (strength >= 1.6 && near) anim.trigger(zone === 1 ? 'hit_head' : 'hit');
   }
 
   cameraPosition(): Vec3 {
@@ -2013,6 +2028,16 @@ export class GameView {
       });
       return a;
     }
+    const kept = this.bodyPool.get(specKey)?.pop();
+    if (kept) {
+      // A body of this look kept from an avatar that went: back in play at once (it was fitted and sized for this spec).
+      kept.ch.root.parent = root;
+      kept.ch.root.setEnabled(true);
+      kept.setDormant(false);
+      a.anim = kept;
+      placeholder.setEnabled(false);
+      return a;
+    }
     void this.characters.create(spec, `char_${slot}`).then((ch) => {
       if (root.isDisposed()) return ch.dispose();
       ch.root.parent = root;
@@ -2104,10 +2129,27 @@ export class GameView {
       this.remoteRigs--;
     }
     a.ragdoll?.dispose();
+    if (a.anim instanceof CharacterAnimator && this.keepBody(a.specKey, a.anim)) a.anim = undefined;
     a.anim?.dispose();
     a.weaponNode?.dispose();
     this.dropCanopy(a);
     a.root.dispose(false, true);
+  }
+
+  /** Characters kept for the next avatar of their look (BODY_POOL_PER_LOOK), by spec key. */
+  private readonly bodyPool = new Map<string, CharacterAnimator[]>();
+
+  /** Keep a going avatar's character for reuse (taken off the avatar, hidden, its clips paused); false: pool full. */
+  private keepBody(key: string, anim: CharacterAnimator): boolean {
+    if (this.scene.isDisposed || anim.firstPerson || anim.ch.root.isDisposed()) return false;
+    let list = this.bodyPool.get(key);
+    if (!list) this.bodyPool.set(key, (list = []));
+    if (list.length >= BODY_POOL_PER_LOOK) return false;
+    anim.standBy();
+    anim.ch.root.parent = null;
+    anim.ch.root.setEnabled(false);
+    list.push(anim);
+    return true;
   }
 
   // ---------------------------------------------------------------- pickups
@@ -3105,6 +3147,8 @@ export class GameView {
 
   dispose(): void {
     setCharacterLodCrowd(false);
+    for (const list of this.bodyPool.values()) for (const anim of list) anim.dispose();
+    this.bodyPool.clear();
     this.atmosphere.dispose();
     this.blood.dispose();
     this.impacts.dispose();
