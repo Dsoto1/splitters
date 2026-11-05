@@ -197,16 +197,56 @@ This work is on `wip/env-p1b`. Phase 2 (more species) still needs the owner's go
 
   This work is on `wip/intake-2`.
 
-### Queued (owner, 2026-11-05): first-person pistol hold
-"The first person view when holding a pistol could be adjusted. Either the gun moves back more into the hands or the
-hands move up more into the gun. Looks as if their fingers are just pinching the grip."
-- First person `gripExternal` (characterAnimator.ts) IKs the palms onto the viewmodel's grip and support points.
-  The pistol's hold points and viewOffset are in content/weapons (view.hold).
-- Seat the pistol's grip deep in the palm, web of the thumb high on the backstrap, fingers wrapped, support hand
-  cupping. Do this for every pistol-class weapon.
-- Check with the `aheadR`/`sideR` measures and the characters e2e, with before/after first-person shots across
-  several characters, including Meshy rigs with Meshy's finger weights once intake-2 lands.
-- Start it once a slot frees. It touches the hands, so after intake-2 step 2a.
+### Environment Phase 1c: pebbles, eelgrass, concealing fern, Replace all, maps updated (`wip/env-p1c`, agent, 2026-11-05; from main 4d511dd2, rebased on 4e77fabc; pushed, not merged)
+- **Done:**
+  - **Species:** `env.rock.pebbles` (category `rock`, generator kind `pebbles` in `env/rock.mjs`: 6–7 faceted convex
+    stones sunk a quarter, grey / sand, 55 tris; budget `rock: [64]`) and `env.water.eelgrass` (new family file
+    `content/environment/water.json`, kind `eelgrass` in `env/plants.mjs`: 7–8 S-curved ribbons, green / olive, 49
+    tris). Existing GLBs byte-identical. Fixture entries `env.rock.pebbles@1`, `env.water.eelgrass@1`.
+  - **Fern conceals:** `env.fern.bracken` assetVersion 2, `conceals: true`, role `cover` (cylinder r 0.363, h 0.555 at
+    scale 1, from its bounds; shape unchanged; fixture `@2`). The generator's rule now: ground cover / small rocks have
+    nav none; role cover iff they conceal; rocks never conceal.
+  - **Proof** (`packages/shared/test/conceal.test.ts`, "our fern and shrub hide players as the Kenney fern and small
+    bush did"): on what Replace all makes (height kept), standing / crouched / prone at the middle and just inside the
+    Kenney piece's radius, hidden exactly when the Kenney piece hid them (fern ×1, ×1.3, autumn ×0.85; small bush ×1,
+    autumn ×1.3); fern hides crouch + prone, small-bush-sized shrub prone only, as before; a bot 10 m away holds fire
+    at a crouched (fern) / prone (shrub) player and fires once they stand, the same as with the Kenney piece, and does
+    fire in the open (control). Then `prop.fern` and `prop.bush_small` were retired.
+  - **Brushes / palette:** foliage.ts pebbles → `env.rock.pebbles` (`#1` on sand), shallow water →
+    `env.water.eelgrass` (1 in 4 olive); scatter: Rocks / Desert pebbles, Water plants eelgrass, Jungle and
+    Undergrowth the fern, Bushes the shrub. `RETIRED_PROPS` += grass_tuft, fern, bush_small, stones, mn_eelgrass;
+    `GROUND_COVER_SPECIES` is per category (Plants & Flowers: grass, flowers, fern, shrub, eelgrass; Rocks & Wood:
+    pebbles); `REPLACEMENTS` (suggested species per retired piece).
+  - **MapMaker Replace all** (prop inspector, `replaceAllSection`; `replacePropsCommand` in shared
+    editor/operations.ts): target select (`#ed-replace-with`: species variants, then non-retired props), size
+    (`#ed-replace-size`: Keep height (default) / Keep scale), button `#ed-replace-all`; one undo step; keeps ID,
+    position, yaw, name, solid, tint; scale × old height / new height, rounded 0.01, 0.25–4; a prop bedded on the
+    terrain is re-bedded under its new footprint (without this a wider fern floated 0.31 m on Jungle Steps). Tests:
+    shared editor.test.ts, physicsfx.test.ts.
+  - **Maps** (driven in MapMaker without ?test=1 by the scratchpad driver `env3/tools/maker.mjs`: Import file, click a
+    piece with Select (direct selection when no click hit it: Shingle Point's grass, Serene City's red and yellow
+    flower), Replace all, undo/redo check, Export; `finalize.mjs` drops
+    `metadata.release`). Hand-placed Kenney foliage before (all now 0):
+    - backwoods: grass_tall 46, fern 28, flower_yellow 6, flower_purple 5 → clump, bracken, meadow #1 / #2 (height);
+    - coldwater_gulch: grass_tall 97 → clump; shingle_point: grass_tall 96 → clump; st_johns: grass_tall 3 → clump;
+    - jungle_steps: grass_tuft 8 → clump, fern 12 → bracken; serpent_gorge: fern 4 → bracken;
+    - primeval_park: fern 62, plant_low 52 → bracken;
+    - serene_city: flower_purple 2, flower_red 1 (→ white: no red variant), flower_yellow 1 → meadow;
+    - sunstone_crag: stones 36 → pebbles sand (Keep scale: by height they would be 3 m wide), plant_low 18 → bracken
+      autumn.
+    Export also carries what loading does anyway (format 25 migration: `track` → `paths`, terrain kept under floors
+    on Primeval Park and Sunstone Crag, key order): no gameplay change. Metadata otherwise unchanged. Not touched:
+    `test_coverage` (keeps mn_eelgrass as its Meshy-pack sample), other Kenney bushes (`bush`, `bush_large`,
+    `bush_leafy`: Phase 4). New gameplay: crouch/prone in the replaced ferns hides you as before; the 70 replaced low
+    plants (Primeval Park 52, Sunstone Crag 18) now hide a prone player (they never concealed).
+  - **Pitfall:** two clicks on the MapMaker canvas within ~0.5 s are a double-click, which changed a wall edge (open →
+    window) on Serpent Gorge in one run; the driver now waits 1 s between clicks; compare each export with
+    `env3/tools/compare.mjs` before taking it.
+- **Next / resume:** `git fetch && git checkout wip/env-p1c`; CI on `check/env-p1c` (status below); owner to look at
+  the screenshots (scratchpad `env3/`) and decide on grass sizes (tall grass kept its height: 0.7–1.4 m clumps on
+  Coldwater Gulch / Shingle Point, as the Kenney patches stood; smaller would need the Scale field per piece or a
+  re-run of Replace all from the old map with Keep scale); a red meadow-flower variant and palette
+  pictures for the species are open.
 
 ### In flight
 - **Market Town perf on the M1 Pro, branch `wip/perf-market`** (agent, 2026-11-05; from main d29e6a8; not merged).
