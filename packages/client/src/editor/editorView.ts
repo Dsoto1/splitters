@@ -7,6 +7,7 @@ import { Color3, Color4 } from '@babylonjs/core/Maths/math.color';
 import { HemisphericLight } from '@babylonjs/core/Lights/hemisphericLight';
 import { DirectionalLight } from '@babylonjs/core/Lights/directionalLight';
 import { Mesh } from '@babylonjs/core/Meshes/mesh';
+import { VertexData } from '@babylonjs/core/Meshes/mesh.vertexData';
 // Side-effect import: registers scene.createPickingRay.
 import { Ray } from '@babylonjs/core/Culling/ray';
 import { CreateBox } from '@babylonjs/core/Meshes/Builders/boxBuilder';
@@ -16,7 +17,7 @@ import { Material } from '@babylonjs/core/Materials/material';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import type { LinesMesh } from '@babylonjs/core/Meshes/linesMesh';
 import type { MapDocument, MapEntity, PropEntity, Rotation, TerrainData, Vec3, WorldBox } from '@tiletrigger/shared';
-import { DESTRUCTIBLE_SPECS, MAX_TEAMS, MOUNT_DEFS, mountTint, PLAYER, buildMapDecor, buildMapGeometry, dynamicBlockIds, getProp, mapLiquids, terrainHeightAt, yawXZ, mapFactions, mapTeams, placementCells, viewDirection, terrainUnderFloors, withPathsLaid, hungPropLift, rebedShift } from '@tiletrigger/shared';
+import { DESTRUCTIBLE_SPECS, MAX_TEAMS, MOUNT_DEFS, mountTint, PLAYER, buildMapDecor, buildMapGeometry, dynamicBlockIds, getProp, mapLiquids, terrainHeightAt, yawXZ, mapFactions, mapTeams, placementCells, viewDirection, terrainUnderFloors, withPathsLaid, hungPropLift, rebedShift, visibleFaces } from '@tiletrigger/shared';
 import { ScenarioVisuals, placeScenarioNode } from '../game/scenarioVisuals.ts';
 import { applyWorldGrade } from '../game/graphicsSettings.ts';
 import { MapStyler, boxVertexData } from '../mapMeshes.ts';
@@ -277,8 +278,10 @@ export class EditorView {
     const boxKey = `${boxesFingerprint(drawn)}|${theme}`;
     if (boxKey !== this.builtBoxes) {
       this.builtBoxes = boxKey;
-      this.mapMeshes = this.styler.buildBoxes(visible, drawn.filter(onLevel), 'edmap');
-      this.dimMeshes = this.dimStyler.buildBoxes(visible, drawn.filter((b) => !onLevel(b)), 'edmapdim');
+      // Faces clipped against every level (a wall's top still gives way to the floor above it), then drawn in two sets.
+      const faces = visibleFaces(drawn);
+      this.mapMeshes = this.styler.buildBoxes(visible, drawn, 'edmap', faces.filter((f) => onLevel(drawn[f.box]!)));
+      this.dimMeshes = this.dimStyler.buildBoxes(visible, drawn, 'edmapdim', faces.filter((f) => !onLevel(drawn[f.box]!)));
       for (const m of this.dimMeshes) m.visibility = 0.4;
       this.applyTileLayer();
     }
@@ -378,6 +381,42 @@ export class EditorView {
     this.grid?.setEnabled(on);
   }
 
+  private overlaps?: Mesh;
+
+  /**
+   * Top bar Overlaps: highlight coplanar overlaps (faces of two pieces in the same plane, where only
+   * one look draws) in magenta, lifted a little off the face and drawn over everything. Null hides it.
+   */
+  setOverlaps(spots: readonly { corners: readonly (readonly number[])[]; normal: readonly number[] }[] | null): void {
+    this.overlaps?.dispose();
+    this.overlaps = undefined;
+    if (!spots) return;
+    const positions: number[] = [];
+    const indices: number[] = [];
+    for (const s of spots) {
+      const base = positions.length / 3;
+      for (const c of s.corners) positions.push(c[0]! + s.normal[0]! * 0.02, c[1]! + s.normal[1]! * 0.02, c[2]! + s.normal[2]! * 0.02);
+      for (let k = 1; k < s.corners.length - 1; k++) indices.push(base, base + k, base + k + 1);
+    }
+    const mesh = new Mesh('edOverlaps', this.scene);
+    const vd = new VertexData();
+    vd.positions = positions;
+    vd.indices = indices;
+    vd.applyToMesh(mesh);
+    const mat = new StandardMaterial('edOverlapsMat', this.scene);
+    mat.diffuseColor = Color3.Black();
+    mat.emissiveColor = Color3.FromHexString('#ff2bd6');
+    mat.specularColor = Color3.Black();
+    mat.disableLighting = true;
+    mat.backFaceCulling = false;
+    mat.alpha = 0.6;
+    mesh.material = mat;
+    // Over the level, so a spot behind a wall still shows where it is.
+    mesh.renderingGroupId = 1;
+    mesh.isPickable = false;
+    this.overlaps = mesh;
+  }
+
   /** What photoMode hid, to bring back. */
   private photoHidden: TransformNode[] = [];
 
@@ -390,7 +429,7 @@ export class EditorView {
     for (const n of this.photoHidden) n.setEnabled(true);
     this.photoHidden = [];
     if (!on) return;
-    const aids: (TransformNode | undefined)[] = [this.trace?.mesh, this.grid, this.brushRing, this.gizmo, this.hover, this.ghost, this.faceHighlight, this.propGhost?.node, ...this.outlines, ...this.pickBoxes];
+    const aids: (TransformNode | undefined)[] = [this.trace?.mesh, this.grid, this.overlaps, this.brushRing, this.gizmo, this.hover, this.ghost, this.faceHighlight, this.propGhost?.node, ...this.outlines, ...this.pickBoxes];
     for (const m of this.markers.values()) aids.push(m.ring, m.key === 'spawn' ? m.node : undefined);
     for (const n of aids) {
       if (!n || !n.isEnabled(false)) continue;

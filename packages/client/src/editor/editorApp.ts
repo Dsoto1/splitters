@@ -80,6 +80,9 @@ import {
   tileAt,
   updateTileCommand,
   validateMap,
+  coplanarIssues,
+  coplanarSpots,
+  type CoplanarSpot,
   type EditCommand,
   type MapDocument,
   type TilePlacement,
@@ -587,6 +590,11 @@ export class EditorApp {
   private savedRevision = 0;
   private autosaveTimer?: number;
   private navTimer?: number;
+  /** Coplanar overlaps (geometry.coplanar), worked out a moment after each edit like navigation. */
+  private zIssues: ValidationIssue[] = [];
+  private zSpots: CoplanarSpot[] = [];
+  private zTimer?: number;
+  private overlapsOn = false;
   private navToken = 0;
   private toastTimer?: number;
   private active = false;
@@ -3153,6 +3161,13 @@ export class EditorApp {
       $('ed-grid').setAttribute('aria-pressed', String(on));
       this.view.setGridVisible(on);
     });
+    // Overlaps: highlight where two pieces' faces share a plane (the geometry.coplanar warning's places).
+    $('ed-overlaps').addEventListener('click', () => {
+      this.overlapsOn = !this.overlapsOn;
+      $('ed-overlaps').classList.toggle('on', this.overlapsOn);
+      $('ed-overlaps').setAttribute('aria-pressed', String(this.overlapsOn));
+      this.view.setOverlaps(this.overlapsOn ? this.zSpots : null);
+    });
     $<HTMLSelectElement>('ed-snap').addEventListener('change', (e) => (this.snapMode = (e.target as HTMLSelectElement).value as typeof this.snapMode));
     const theme = $<HTMLSelectElement>('ed-theme');
     for (const t of coreThemes.all()) theme.append(new Option(t.displayName, t.id));
@@ -4178,6 +4193,7 @@ export class EditorApp {
       this.renderIssues();
       return;
     }
+    this.scheduleOverlaps();
     this.navTimer = window.setTimeout(async () => {
       const { NavWorld, initNavigation, validateNavigation } = await import('@tiletrigger/shared/match');
       await initNavigation();
@@ -4197,9 +4213,26 @@ export class EditorApp {
     }, 400);
   }
 
+  /** Coplanar overlaps of the map as it is now (its warning and the Overlaps highlight), a moment after the last edit. */
+  private scheduleOverlaps(): void {
+    clearTimeout(this.zTimer);
+    const doc = this.doc;
+    this.zTimer = window.setTimeout(() => {
+      if (doc !== this.doc) return;
+      try {
+        this.zSpots = coplanarSpots(doc);
+      } catch {
+        this.zSpots = [];
+      }
+      this.zIssues = coplanarIssues(doc, this.zSpots);
+      if (this.overlapsOn) this.view.setOverlaps(this.zSpots);
+      this.renderIssues();
+    }, 450);
+  }
+
   private allIssues(): ValidationIssue[] {
     const order = { error: 0, warning: 1, suggestion: 2 } as const;
-    return [...this.issues, ...this.navIssues].sort((a, b) => order[a.severity] - order[b.severity]);
+    return [...this.issues, ...this.navIssues, ...this.zIssues].sort((a, b) => order[a.severity] - order[b.severity]);
   }
 
   private renderIssues(): void {

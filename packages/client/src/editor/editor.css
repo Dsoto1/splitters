@@ -339,9 +339,9 @@ button.danger { border-color: rgba(231, 76, 60, 0.6); color: #ff8a7a; }
 }
 
 /* Top bar icon buttons (file actions, grid). */
-#ed-top .ed-file button, #ed-grid { display: flex; align-items: center; gap: 5px; }
-#ed-top .ed-file svg, #ed-grid svg { width: 16px; height: 16px; flex: none; }
-#ed-grid.on { color: var(--cyan); border-color: rgba(0, 209, 255, 0.5); }
+#ed-top .ed-file button, #ed-grid, #ed-overlaps { display: flex; align-items: center; gap: 5px; }
+#ed-top .ed-file svg, #ed-grid svg, #ed-overlaps svg { width: 16px; height: 16px; flex: none; }
+#ed-grid.on, #ed-overlaps.on { color: var(--cyan); border-color: rgba(0, 209, 255, 0.5); }
 #ed-snap { padding: 4px 5px; font-size: 12px; }
 @media (max-width: 1400px) {
   #ed-top .ed-file button { padding: 5px 6px; }
@@ -525,7 +525,7 @@ button.danger { border-color: rgba(231, 76, 60, 0.6); color: #ff8a7a; }
 #ed-top.fit-3 #ed-name { width: 96px; }
 #ed-top.fit-3 #ed-snap { max-width: 84px; }
 #ed-top.fit-4 #ed-skill { display: none; }
-#ed-top.fit-4 #ed-grid { padding: 5px; }
+#ed-top.fit-4 #ed-grid, #ed-top.fit-4 #ed-overlaps { padding: 5px; }
 #ed-top.fit-4 #ed-theme { max-width: 84px; }
 #ed-tr-edit .ed-tr-swap { display: flex; align-items: flex-end; gap: 6px; margin: 6px 0; }
 #ed-tr-edit .ed-tr-swap label { flex: 1; margin: 0; }

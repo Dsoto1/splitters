@@ -8,6 +8,11 @@ made only on a commit that passed CI on a check branch.
 
 ## Unreleased
 
+**No more texture flicker**
+- **Map surfaces stop flickering**: where two pieces' faces lay in the same plane (a floor slab's edge under the wall over it, wall runs meeting at corners, trim and facades flush with walls, floors over floors, a block level with a tile, the joints of curved walls) they fought for the same pixels and shimmered at grazing angles and range. Maps are now built so only one face draws there, by a fixed priority (floors on top, walls over slab edges, trim and style-pack pieces over what they dress), and hidden faces are dropped. Nothing else about the look changes, except that floor slab edges no longer show as dark bands at random cells on outside walls. Collision is unchanged. A test checks every map in maps/ for overlaps left (none).
+- **MapMaker**: a warning when a block's face lies in the same plane as another piece's in a different look (only one shows), and **Overlaps** in the top bar highlights those places.
+- **WebGPU** (`?renderer=webgpu`) gets a float depth buffer with reverse depth, for precise depth at any range.
+
 **Procedural environment, Phase 1 (preview, behind `?env=1`)**
 - **Six generated species to review**: an oak, a tall pine, a broadleaf shrub, a grass clump, an angular boulder and a cliff face, each with a material variant (autumn oak and shrub, snow pine and cliff, mossy boulder, dry grass). They are generated in code from seeds by `pnpm content:environment` (owned; no downloads, no AI): branching trunks and limbs with root flare and leaf-cluster cards, whorled pines with needle sprays, fractured boulders with worn edges and strata, cliff panels that butt seamlessly; levels of detail and a two-card stand-in for the distance; one shared bark, rock and leaf picture set.
 - **Collision that matches what you see**: a tree's trunk stops everything (heavy wood, full cover) and its thick limbs stop shots and sight overhead, but rounds pass through its crown; boulders collide as their own shape, cliffs as their face; shrubs hide you from bots as bushes do and stop nothing; grass is decoration only. Bots walk round trunks, boulders and cliffs, not through them, and straight through grass. The same colliders on every host and client.
