@@ -9,7 +9,7 @@
   "nameTheme": "soldier",
   "bio": "Carries three days of rations and eats them all on the flight in. Still first off the ramp.",
   "body": "male",
-  "notes": "A Meshy community model, CC0 per the owner (from the owner's Drive folder, 2026-11-01, second batch; the community model's name as the download names it): a textured GLB in a T-pose, not rigged (no skin), so it is rigged here from T-pose landmarks found on the mesh (landmarks.mjs). A bearded soldier in an olive field jacket with webbing and a holster.",
+  "notes": "A Meshy community model, CC0 per the owner (from the owner's Drive folder, 2026-11-01, second batch; the community model's name as the download names it): a textured GLB in a T-pose, not rigged (no skin), so it is rigged here from T-pose landmarks found on the mesh (landmarks.mjs). A bearded soldier in an olive field jacket with webbing and a holster. Retired 2026-11-05 (owner: \"Remove Briggs and Hollis\"): off the roster, files kept; a saved choice plays WWII Infantry (RETIRED_LOOKS in looks.ts).",
   "source": {
     "license": "CC0",
     "author": "Meshy community (author not recorded; CC0 per the owner)",

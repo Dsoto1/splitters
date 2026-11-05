@@ -205,6 +205,10 @@ export const RETIRED_LOOKS: Readonly<Record<string, string>> = {
   // hands can't be fixed. The otter NPC role keeps its model (NPC_KEPT_LOOKS).
   'core.otter': 'core.brasshare',
   'core.shade': 'core.mei',
+  // Owner, 2026-11-05 ("Remove Briggs and Hollis"): off the roster (files and manifests kept); a saved choice plays
+  // the closest soldier kept.
+  'core.tposesoldier1': 'core.wwiisoldier', // Hollis
+  'core.tposesoldier2': 'core.grunt68', // Briggs
 };
 
 /**

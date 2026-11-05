@@ -11,6 +11,7 @@ made only on a commit that passed CI on a check branch.
 **Three new characters and a new tank** (the owner's Meshy models, 2026-11-05)
 - **Five new characters**: **Patches** (a hobo clown, Everyday Folk), **Tactical Soldier** (Soldiers), **Umpire** (Everyday Folk), **The Butcher** (Everyday Folk) and **Bamboo** (a large panda, Animals) join the roster: the shared clips, their own first-person arms, a far copy and their own hit shapes. Names are placeholders for the owner.
 - **The Tank is a WWII tank now**: the owner's Meshy model replaces the Quaternius tank (kept as the fallback if it fails to load), 6.2 m long with a 1.2 m gun barrel, 19k triangles with a 5.6k far copy from 45 m and a baked normal map. Its turret turns and its barrel pitches with the cannon gunner's aim (the roof gun no longer moves it). Same collision box, health, handling and weapons; the driver now stands at the front left of the deck and both gunners on the turret roof.
+- **Briggs and Hollis leave the roster** (owner's call; files kept): a saved choice of either plays Grunt '68 or WWII Infantry.
 - Vehicles now draw their far copy (a lower level of detail) past its distance; before, vehicle models stayed at full detail at any range.
 
 **No more texture flicker**

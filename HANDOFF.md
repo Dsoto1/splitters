@@ -60,7 +60,10 @@ fingers included; GLB with "Rigged Character" on (rest pose, no animations); upr
 - Vehicles now draw their LOD (ModelLibrary.attachLods: per part, parented beside it so paint/char/fade reach it).
   Before, mounts (plain copies) never used their guns.json `lod`.
 - e2e: coverage flow checks the tank's parts, their LODs and that a manned cannon seat's aim swings the barrel right
-  and up. Local run of that check didn't complete (the e2e preview server went away mid-flow on the loaded machine).
+  and up (through `window.__sim`: the match runs in a worker). Local: coverage PASS, vehicles PASS.
+- **Briggs and Hollis retired** (owner, "Remove Briggs and Hollis"): RETIRED_LOOKS `core.tposesoldier2` -> Grunt '68,
+  `core.tposesoldier1` -> WWII Infantry; manifests, files and portraits kept (as Otter/Shade). No bot set, map,
+  preset or the coverage map named them.
 - Grip audit (rifle, pistol, shotgun; lower is better): Patches 7 (back, off, fp), Tactical Soldier 7 (flat, off,
   fp), Umpire 3 (flat), Bamboo and The Butcher: see the step's report. Hands look on the gun in the sheets; not tuned.
 
