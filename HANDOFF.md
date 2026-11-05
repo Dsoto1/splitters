@@ -26,7 +26,7 @@ gets overloaded above that: local e2e times out and flakes). Prune landed worktr
 - Earlier the same day: content scalability steps 2–6, perf toolset, flaky e2e fixes, Runway Nine airliner, map
   reworks batches 2–3, character fixes rounds 2–3 (see the entries below and CHANGELOG).
 
-### Drive intake of 2026-11-05 (`wip/intake-1105`, agent; step 1 on `check/intake-1105`, step 2 next)
+### Drive intake of 2026-11-05 (`wip/intake-1105`, agent; step 1 green on `check/intake-1105` at d6209fce, step 2 next)
 Downloads in `/home/user/meshy-drive/intake-2026-11-05/` (raw, never committed); the agent linked the ones it uses
 into a scratch downloads dir (any dir works: the importers find files by `source.file` / `glb` name). Owner's rules:
 rigged models only (the six static ones wait for the owner's Meshy rigs), no baseball animations (`anims/` untouched),
@@ -96,7 +96,9 @@ new portraits. **Re-rigs, more:** Desert Sentinel -> Desert Ranger, Grandpa Chai
 King Aldric (side-by-sides in the agent's scratchpad `match/pairs*.png`).
 
 - CI: run 41960435500 failed only on "every built-in character's portrait is shipped" (fixed: portraits captured);
-  run 41962428581 (835115c3) hit a GitHub API 500 in `plan` and was re-run.
+  run 41962428581 (835115c3) hit a GitHub API 500 in `plan`, then a race-flow flake. After merging main a03e40c6
+  (animation LOD, body reuse, Environment Phase 1) and `pnpm content:rebuild` (no changes): **run 41964547948 on
+  d6209fce green** (27 jobs); local characters flow PASS (103 looks). Ready to fast-forward main to d6209fce.
 
 **Step 2 (re-rigs and replacements; not started on disk):** suggested split: 2a the six first re-rigs (Dapper,
 Croakley, CRT Robot, Frida, Medic Automaton, Stealth Operative), 2b the next ten, 2c the three replacements
