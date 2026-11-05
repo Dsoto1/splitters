@@ -51,6 +51,7 @@ const LINEUP: [string, number, string, number, number][] = [
   ['env.flower.meadow', 1, 'prop.flower_yellow', -5.4, -6.9],
   ['env.flower.meadow', 2, 'prop.flower_purple', -4.4, -6.6],
   ['env.fern.bracken', 0, 'prop.fern', -2.9, -6.4],
+  ['env.fern.bracken', 1, 'prop.plant_low', -1.5, -6.7],
 ];
 
 const EYE = 1.7;

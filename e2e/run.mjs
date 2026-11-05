@@ -8,7 +8,7 @@
 // invulnerable player): see packages/client/src/testMode.ts. Wait on conditions, not fixed sleeps
 // (tools/ci/lint-e2e-waits.mjs).
 import { spawn } from 'node:child_process';
-import { appendFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { appendFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { setTimeout as sleep } from 'node:timers/promises';
@@ -3558,7 +3558,10 @@ async function environmentFlow(browser) {
   const s0 = await stats();
   check(s0.copies >= 90 && s0.drawnBatches > 0 && s0.perLevel[0] > 0, `it draws every species as thin-instance batches (${JSON.stringify(s0)})`);
   const species = await page.evaluate(() => [...new Set(window.__envlab.scene.meshes.filter((m) => /^env_[a-z]/.test(m.name) && !m.name.startsWith('env_tpl') && m.isEnabled() && m.thinInstanceCount > 0).map((m) => m.name.split('_l')[0]))].sort());
-  check(species.length === 12, `every species and variant is drawn (${species.join(', ')})`);
+  // Every variant of every species in content/environment/ (the lab's lineup has them all).
+  const envDir = new URL('../content/environment/', import.meta.url);
+  const variants = readdirSync(envDir).filter((f) => f.endsWith('.json')).reduce((n, f) => n + JSON.parse(readFileSync(new URL(f, envDir), 'utf8')).species.reduce((k, s) => k + s.variants.length, 0), 0);
+  check(species.length === variants, `every species and variant is drawn (${species.length} of ${variants}: ${species.join(', ')})`);
   // Level of detail forced: every copy at that level (or its species' last).
   for (const lod of [1, 2, 3]) {
     await page.evaluate((lod) => window.__envlab.set({ lod }), lod);
