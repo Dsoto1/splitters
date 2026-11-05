@@ -45,6 +45,8 @@ export interface EnvStats {
   copies: number;
   /** Copies drawn at each level (nearest first; the last is the stand-in where there is one). */
   perLevel: number[];
+  /** Copies by their species' lightest level (a forced level stops there: grass has one level, shrubs three). */
+  lastLevel: number[];
   triangles: number;
 }
 
@@ -208,6 +210,7 @@ export class EnvironmentVisuals {
   /** Counts for diagnostics (F3, client-perf.mjs groups meshes named env_*). */
   stats(): EnvStats {
     const perLevel: number[] = [];
+    const lastLevel: number[] = [];
     let batches = 0;
     let drawn = 0;
     let copies = 0;
@@ -215,6 +218,8 @@ export class EnvironmentVisuals {
     for (const g of this.groups) {
       const m = this.loaded.get(g.file)!;
       copies += g.copies.length;
+      const last = m.levels.length - 1;
+      lastLevel[last] = (lastLevel[last] ?? 0) + g.copies.length;
       for (const c of g.copies) {
         if (c.level < 0) continue;
         perLevel[c.level] = (perLevel[c.level] ?? 0) + 1;
@@ -225,7 +230,7 @@ export class EnvironmentVisuals {
         drawn += b.meshes.filter((x) => x.isEnabled() && x.isVisible).length;
       }
     }
-    return { batches, drawnBatches: drawn, copies, perLevel: [...perLevel].map((v) => v ?? 0), triangles };
+    return { batches, drawnBatches: drawn, copies, perLevel: [...perLevel].map((v) => v ?? 0), lastLevel: [...lastLevel].map((v) => v ?? 0), triangles };
   }
 
   private clearBatches(): void {

@@ -3515,7 +3515,8 @@ async function environmentFlow(browser) {
   for (const lod of [1, 2, 3]) {
     await page.evaluate((lod) => window.__envlab.set({ lod }), lod);
     const s = await stats();
-    check(s.perLevel.slice(0, lod).every((n) => !n) && s.perLevel.reduce((a, b) => a + (b ?? 0), 0) === s.copies, `level ${lod} forced: no copy nearer than it (${s.perLevel.join(' / ')})`);
+    // Below the forced level only species whose lightest level that is (grass has one level, shrubs three).
+    check(s.perLevel.slice(0, lod).every((n, i) => n === (s.lastLevel[i] ?? 0)) && s.perLevel.reduce((a, b) => a + (b ?? 0), 0) === s.copies, `level ${lod} forced: no copy nearer than it but species with fewer levels (${s.perLevel.join(' / ')}; lightest levels ${s.lastLevel.join(' / ')})`);
   }
   await page.evaluate(() => window.__envlab.set({ lod: null, wireframe: true, colliders: true, tier: 'low' }));
   const lines = await page.evaluate(() => window.__envlab.scene.getMeshByName('env_colliders')?.getTotalVertices() ?? 0);
