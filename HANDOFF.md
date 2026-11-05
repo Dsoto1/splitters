@@ -32,8 +32,8 @@ docs/ and HANDOFF: everything else in it is already imported or handled (FX zips
 ammo crate: the pickup models). New, never referenced anywhere. Downloaded to `/home/user/meshy-drive/intake-2026-11-05/`
 (raw, never committed):
 - **Rigged and animated characters:** "hobo bozo clown" (Mixamo, 2026-11-04), "Tactical T-Pose Soldier" (Mixamo,
-  2026-11-03), "umpire rigged" (two files with the same name).
-- **17 Mixamo baseball animations** (FBX, in `anims/`): Bunt, Catcher, Hit ×3, Idle ×2, Milling Idle, Pitching ×2,
+  2026-11-03), "umpire rigged" (the two files with that name are byte-identical: one model).
+- **18 Mixamo baseball animations** (FBX, in `anims/`): Bunt, Catcher, Hit ×3, Idle ×2, Milling Idle, Pitching ×2,
   Step In, Step Out, Step Up To Bat, Strike, Umpire, Walk In, Walk Out, Batter On Deck.
 - **Static models with no rig:**
   - from 2026-11-01: Skeleton Soldier, Soldier Prepared, "a world war 2 american…", "Low poly 3D game char…",
