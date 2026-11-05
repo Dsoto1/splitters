@@ -23,6 +23,7 @@ import {
   mapFactions,
   placeNpcCommand,
   relation,
+  replacePropsCommand,
   type EditCommand,
   type MapDocument,
 } from '../src/index.ts';
@@ -322,5 +323,38 @@ describe('NPC palette', () => {
     const doc = { ...newMapDocument('NPCs'), factions: [{ id: 'syndicate', name: 'Syndicate', color: '#d04a3a', relations: {} }, MILITIA_FACTION] };
     const r = unwrap(placeNpcCommand(doc, 'militia', [0, 0, 0], 0));
     expect(r.command.kind).toBe('addEntities');
+  });
+});
+
+describe('Replace all <prop> with <prop or species>', () => {
+  const prop = (id: string, model: string, scale: number, extra: Record<string, unknown> = {}) => ({ id, kind: 'prop' as const, model, position: [Number(id.slice(1)), 0.2, 3] as [number, number, number], yaw: 0.7, scale, solid: false, tint: null, ...extra });
+  const doc = (): MapDocument => ({ ...newMapDocument('Replace'), entities: [prop('p1', 'prop.fern', 1), prop('p2', 'prop.fern', 1.3, { name: 'Big fern', tint: '#88aa66' }), prop('p3', 'prop.grass_tall', 1), prop('p4', 'env.fern.bracken', 1, { variant: 1 })] });
+
+  it('swaps every one of that prop, keeping ID, position, facing, name and tint, its height kept by default; one undo step', () => {
+    const h = new EditHistory(doc());
+    const cmd = replacePropsCommand(h.doc, 'prop.fern', 'env.fern.bracken#1');
+    expect(cmd.kind === 'updateEntities' && cmd.after.length).toBe(2);
+    h.execute('Replace all', cmd);
+    const [a, b, c, d] = h.doc.entities as ReturnType<typeof prop>[];
+    // Kenney fern 0.9 m, bracken 0.555 m: scale × 1.62.
+    expect([a!.model, a!.variant, a!.scale, a!.position, a!.yaw]).toEqual(['env.fern.bracken', 1, 1.62, [1, 0.2, 3], 0.7]);
+    expect([b!.id, b!.scale, b!.name, b!.tint]).toEqual(['p2', 2.11, 'Big fern', '#88aa66']);
+    // Others untouched.
+    expect(c).toEqual(doc().entities[2]);
+    expect(d).toEqual(doc().entities[3]);
+    h.undo();
+    expect(h.doc.entities).toEqual(doc().entities);
+  });
+
+  it('keeps the scale number when asked; variant 0 and props carry no variant; nothing to replace is an empty step', () => {
+    const d = doc();
+    const kept = applyCommand(d, replacePropsCommand(d, 'prop.grass_tall', 'env.grass.clump', 'scale')).entities[2] as ReturnType<typeof prop>;
+    expect([kept.model, kept.scale, 'variant' in kept]).toEqual(['env.grass.clump', 1, false]);
+    const back = applyCommand(d, replacePropsCommand(d, 'env.fern.bracken', 'prop.plant_low')).entities[3] as ReturnType<typeof prop>;
+    expect([back.model, 'variant' in back]).toEqual(['prop.plant_low', false]);
+    for (const [from, to] of [['prop.crate', 'env.grass.clump'], ['prop.fern', 'prop.no_such_thing'], ['prop.fern', 'prop.fern']]) {
+      const cmd = replacePropsCommand(d, from!, to!);
+      expect(cmd.kind === 'updateEntities' && cmd.after.length, `${from} → ${to}`).toBe(0);
+    }
   });
 });

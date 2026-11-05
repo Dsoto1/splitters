@@ -15,10 +15,10 @@ import { loadEnvModel, partMesh } from './environment/envModels.ts';
 /** The generated grass clump, one in six the dry variant. */
 const ENV_GRASS = ['env.grass.clump', 'env.grass.clump', 'env.grass.clump', 'env.grass.clump', 'env.grass.clump', 'env.grass.clump#1'] as const;
 /**
- * Plants by the job they do: carpet grass, taller tufts, flowers, low plants, bushes, and pebbles on bare ground.
- * Grass, flowers, low plants and bushes are the generated environment species (tools/content/environment.mjs:
- * `env.<id>`, `#n` a variant), in every match and in MapMaker (the owner, 2026-11-05: our own grass replaces Kenney's;
- * the Kenney flowers, ferns and bushes the brush grew are retired from it). Pebbles and eelgrass are still pack props.
+ * Plants by the job they do: carpet grass, taller tufts, flowers, low plants, bushes, pebbles on bare ground and
+ * eelgrass in shallow water. All are the generated environment species (tools/content/environment.mjs: `env.<id>`,
+ * `#n` a variant), in every match and in MapMaker (the owner, 2026-11-05: our own grass replaces Kenney's; the Kenney
+ * flowers, ferns, bushes and stones and the Meshy eelgrass the brush grew are retired from it).
  */
 const KINDS = {
   grass: ENV_GRASS,
@@ -26,10 +26,12 @@ const KINDS = {
   flower: ['env.flower.meadow', 'env.flower.meadow#1', 'env.flower.meadow#2'],
   shrub: ['env.fern.bracken', 'env.fern.bracken', 'env.fern.bracken', 'env.fern.bracken#1'],
   bush: ['env.shrub.broadleaf', 'env.shrub.broadleaf', 'env.shrub.broadleaf', 'env.shrub.broadleaf#1'],
-  pebbles: ['prop.stones'],
-  /** Eelgrass in shallow water (see WATER_DEPTH). */
-  reed: ['prop.mn_eelgrass'],
+  /** Grey pebbles (sand grows the sandy ones: SAND_PEBBLES). */
+  pebbles: ['env.rock.pebbles'],
+  /** Eelgrass in shallow water (see WATER_DEPTH), one in four the olive variant. */
+  reed: ['env.water.eelgrass', 'env.water.eelgrass', 'env.water.eelgrass', 'env.water.eelgrass#1'],
 } as const;
+const SAND_PEBBLES = ['env.rock.pebbles#1'] as const;
 type Kind = keyof typeof KINDS;
 /** How many more generated clumps grow than Kenney patches did (a clump is a few blades): about four a 2 m cell at full cover. */
 const ENV_GRASS_DENSITY = 2.2;
@@ -385,7 +387,7 @@ export function place(t: TerrainData, boxes: readonly WorldBox[], seed: string, 
         const x = t.origin[0] + (c + rand()) * t.spacing;
         const z = t.origin[1] + (r + rand()) * t.spacing;
         const y = terrainHeightAt(t, x, z);
-        const models: readonly string[] = KINDS[kind];
+        const models: readonly string[] = kind === 'pebbles' && material === 'sand' ? SAND_PEBBLES : KINDS[kind];
         const model = models[Math.floor(rand() * models.length)]!;
         const yaw = rand() * Math.PI * 2;
         // Kept low (ankle to shin height; bushes to the waist) so plants never hide a player.

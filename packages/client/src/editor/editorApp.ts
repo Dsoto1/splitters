@@ -242,7 +242,7 @@ import { RouteTool } from './routeTool.ts';
 import { ModelThumbnails } from '../frontend/modelThumbs.ts';
 import { Palette } from './palette.ts';
 import { PaletteAtlas } from './paletteAtlas.ts';
-import { GROUND_COVER_SPECIES, NATURE_PROP_CATEGORIES, PROP_GROUPS, RETIRED_PROPS, propGroup, scenarioGroup } from './paletteCatalog.ts';
+import { GROUND_COVER_IDS, GROUND_COVER_SPECIES, NATURE_PROP_CATEGORIES, PROP_GROUPS, RETIRED_PROPS, propGroup, scenarioGroup } from './paletteCatalog.ts';
 import { envRendererOn } from '../environment/envFlag.ts';
 import { thumbnailSection, type ThumbHost } from './makerThumb.ts';
 import { libraryThumb } from './libraryThumbs.ts';
@@ -2990,14 +2990,14 @@ export class EditorApp {
     for (const cat of NATURE_PROP_CATEGORIES) {
       const grid = this.palette.group($('ed-nature'), `nature:${cat}`, cat);
       for (const def of CORE_PROPS.filter((d) => d.category === cat && !RETIRED_PROPS.has(d.id))) this.propButton(grid, def, 'nature');
-      // Our own ground cover (the plants brush's grass, flowers and fern) in place of the retired Kenney pieces: no picture yet.
-      if (cat === 'Plants & Flowers') for (const id of GROUND_COVER_SPECIES) this.propButton(grid, getProp(id)!, 'nature environment procedural grass flowers fern ground cover', false);
+      // Our own species (the plants brush's grass, flowers, fern, shrub, eelgrass and pebbles) in place of the retired pieces: no picture yet.
+      for (const id of GROUND_COVER_SPECIES[cat] ?? []) this.propButton(grid, getProp(id)!, 'nature environment procedural grass flowers fern shrub bush eelgrass pebbles stones ground cover', false);
     }
     // The procedural environment's species (Phase 1 preview, docs/PROCEDURAL_ENVIRONMENT_AUDIT.md §10): with ?env=1 only,
     // no palette picture yet (their pictures join the atlas when they ship).
     if (envRendererOn()) {
       const grid = this.palette.group($('ed-nature'), 'nature:environment', 'Environment (preview)', { note: 'Procedural species: trees, shrub, grass, boulder, cliff · variants in the inspector' });
-      for (const s of ENV_SPECIES) if (!GROUND_COVER_SPECIES.includes(s.id)) this.propButton(grid, getProp(s.id)!, 'nature environment procedural preview', false);
+      for (const s of ENV_SPECIES) if (!GROUND_COVER_IDS.includes(s.id)) this.propButton(grid, getProp(s.id)!, 'nature environment procedural preview', false);
     }
   }
 
