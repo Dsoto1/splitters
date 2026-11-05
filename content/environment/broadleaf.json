@@ -1,0 +1,51 @@
+{
+  "$comment": "Broadleaf trees (tools/content/env/tree.mjs). generator: the tree's structure (one seed = one structure); lods: per level of detail, where it starts (m) and how it is built; variants: material variants sharing the structure (and so the collision). assetVersion: bump it (with a note) whenever a shape or the size changes: that is a gameplay change.",
+  "family": "broadleaf",
+  "species": [
+    {
+      "id": "env.broadleaf.oak",
+      "displayName": "Oak",
+      "category": "tree",
+      "assetVersion": 1,
+      "notes": { "1": "First version (Phase 1 slice)." },
+      "nominalHeight": 8,
+      "nav": "obstacle",
+      "role": "cover",
+      "placement": { "maxSlopeDegrees": 30, "minSpacing": 4, "scale": [0.8, 1.25] },
+      "generator": {
+        "kind": "broadleaf",
+        "seed": 1,
+        "height": 8,
+        "lean": [2, 7],
+        "crownBase": [0.3, 0.38],
+        "lobes": [2, 3],
+        "crownRadius": 3.6,
+        "clumpScale": 0.55,
+        "clumpCut": -0.05,
+        "scaffold": [3, 5],
+        "limbElevation": [30, 55],
+        "attractors": 900,
+        "segment": 0.3,
+        "influence": 2.6,
+        "kill": 0.45,
+        "tropism": 0.12,
+        "tipRadius": 0.01,
+        "pipe": 2.0,
+        "trunkRadius": 0.3,
+        "cardSize": 0.95,
+        "minShapeRadius": 0.25,
+        "limbShapeRadius": 0.15
+      },
+      "lods": [
+        { "distance": 0, "minRadius": 0.016, "barkBudget": 1250, "sides": [[0.15, 8], [0.07, 6], [0.035, 4], [0, 3]], "step": 1, "cards": 760, "cardScale": 1 },
+        { "distance": 30, "minRadius": 0.04, "barkBudget": 380, "sides": [[0.15, 6], [0.07, 4], [0, 3]], "step": 2, "cards": 255, "cardScale": 1.6 },
+        { "distance": 70, "minRadius": 0.09, "barkBudget": 110, "sides": [[0.15, 4], [0, 3]], "step": 3, "stepBelow": 1, "cards": 70, "cardScale": 2.6 }
+      ],
+      "impostor": { "distance": 140, "size": 256 },
+      "variants": [
+        { "index": 0, "name": "summer", "look": { "bark": "#5a4e42", "leaves": ["#4f6e2c", "#5d7a31", "#47652a"], "jitter": 0.12 } },
+        { "index": 1, "name": "autumn", "look": { "bark": "#5a4e42", "leaves": ["#b0702a", "#c08a32", "#9a5426", "#8a7a2c"], "jitter": 0.14 } }
+      ]
+    }
+  ]
+}

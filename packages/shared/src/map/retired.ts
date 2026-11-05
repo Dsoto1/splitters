@@ -16,6 +16,8 @@ export const RETIRED_MAPS: ReadonlySet<string> = new Set([
   'blackout',
   'cedar_lane',
   'glacier_line',
+  // The procedural environment's Phase 1 showcase (docs/PROCEDURAL_ENVIRONMENT_AUDIT.md §10): play tests and perf runs only.
+  'env_showcase',
 ]);
 
 export const isRetiredMap = (id: string): boolean => RETIRED_MAPS.has(id);

@@ -87,6 +87,7 @@ import {
   PLAYER,
   getProp,
   mapTerrainMesh,
+  environmentShapes,
   mountDamageState,
   rulesForTravel,
   travelNotice,
@@ -1490,7 +1491,7 @@ export class GameSession {
         if (msg.rules.mode === 'core.race') this.raceHud = new RaceHud(this.hud, this.view, loaded.map, () => this.slot);
         this.sfx.setMap(loaded.map);
         this.sfx.joined();
-        const physics = new PhysicsWorld(geometry, mapTerrainMesh(loaded.map));
+        const physics = new PhysicsWorld(geometry, mapTerrainMesh(loaded.map), environmentShapes(loaded.map));
         this.local = new LocalPlayer(physics);
         this.local.pads = mapPads(loaded.map.entities);
         this.local.ladders = mapLadders(loaded.map.entities);

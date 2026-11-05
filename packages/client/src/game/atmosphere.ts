@@ -2,6 +2,7 @@ import type { Scene } from '@babylonjs/core/scene';
 import type { Camera } from '@babylonjs/core/Cameras/camera';
 import type { AbstractMesh } from '@babylonjs/core/Meshes/abstractMesh';
 import type { TransformNode } from '@babylonjs/core/Meshes/transformNode';
+import type { RenderTargetTexture } from '@babylonjs/core/Materials/Textures/renderTargetTexture';
 import type { DirectionalLight } from '@babylonjs/core/Lights/directionalLight';
 import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import { ShadowGenerator } from '@babylonjs/core/Lights/Shadows/shadowGenerator';
@@ -14,6 +15,8 @@ import '@babylonjs/core/Lights/Shadows/shadowGeneratorSceneComponent';
 import '@babylonjs/core/Rendering/geometryBufferRendererSceneComponent';
 import '@babylonjs/core/PostProcesses/RenderPipeline/postProcessRenderPipelineManagerSceneComponent';
 import { applyWorldGrade, loadGraphicsQuality, type GraphicsQuality } from './graphicsSettings.ts';
+import { buildShadowProxies, proxyable } from './shadowProxy.ts';
+import { underSmall } from './shadowFlags.ts';
 
 export * from './graphicsSettings.ts';
 
@@ -32,6 +35,8 @@ const MIN_TEXELS = 6;
  */
 /** Small clutter props (propVisuals.ts `isSmallProp`) cast shadows only within this many metres of the camera. */
 export const SMALL_CASTER_REACH = 15;
+/** Static casters are merged into shadow proxies once none has come for this long (ms): the level and props load in bursts. */
+const STATIC_SETTLE_MS = 500;
 
 export class Atmosphere {
   private shadows: ShadowGenerator | null = null;
@@ -199,6 +204,63 @@ export class Atmosphere {
   /** Meshes the shadow map drew in the last frame (the performance overlay shows it). */
   casterCount = 0;
 
+  /**
+   * Static casters wait here a moment (the level and the props stream in over a few frames) and then cast through
+   * merged proxies (shadowProxy.ts), one batch at a time.
+   */
+  private staticQueue: AbstractMesh[] = [];
+  private staticAt = 0;
+  private readonly batches: { sources: AbstractMesh[]; proxies: AbstractMesh[]; dirty: boolean }[] = [];
+  private batchCount = 0;
+
+  /** Static casters queued for half a second without a new one: merge them into a batch of proxies. */
+  private flushStatic(now: number): void {
+    for (const b of this.batches) if (b.dirty) this.rebuild(b);
+    if (!this.staticQueue.length || now - this.staticAt < STATIC_SETTLE_MS) return;
+    const b = { sources: this.staticQueue.splice(0).filter((m) => !m.isDisposed()), proxies: [] as AbstractMesh[], dirty: false };
+    this.batches.push(b);
+    this.rebuild(b);
+  }
+
+  /** (Re)build a batch's proxies: its sources still there and still static; those that no longer are cast on their own. */
+  private rebuild(b: { sources: AbstractMesh[]; proxies: AbstractMesh[]; dirty: boolean }): void {
+    const map = this.shadows?.getShadowMap();
+    if (!map?.renderList) return;
+    b.dirty = false;
+    for (const p of b.proxies) p.dispose();
+    const keep = b.sources.filter((m) => !m.isDisposed());
+    const { proxies, sources } = buildShadowProxies(this.scene, keep, String(this.batchCount++));
+    const merged = new Set(sources);
+    for (const m of keep) {
+      if (merged.has(m)) continue;
+      // No longer static (moved, hidden): back in the list on its own.
+      if (m.metadata && (m.metadata as { shadowProxied?: boolean }).shadowProxied) (m.metadata as { shadowProxied?: boolean }).shadowProxied = false;
+      if (!map.renderList.includes(m)) addCaster(map, m);
+    }
+    for (const m of sources) {
+      if (!b.sources.includes(m)) continue;
+      m.metadata = { ...(m.metadata as object | null), shadowProxied: true };
+      // A merged mesh that goes away takes its triangles out of the batch.
+      if (!this.watched.has(m)) {
+        this.watched.add(m);
+        m.onDisposeObservable.addOnce(() => {
+          this.watched.delete(m);
+          for (const x of this.batches) if (x.sources.includes(m)) x.dirty = true;
+        });
+      }
+    }
+    b.sources = sources;
+    for (const p of proxies) addCaster(map, p);
+    b.proxies = proxies;
+  }
+
+  private readonly watched = new Set<AbstractMesh>();
+
+  /** Shadow proxies in use, and how many meshes they stand in for (tests and the perf probe). */
+  get proxyStats(): { proxies: number; sources: number } {
+    return { proxies: this.batches.reduce((n, b) => n + b.proxies.length, 0), sources: this.batches.reduce((n, b) => n + b.sources.length, 0) };
+  }
+
   /** Is this mesh part of the world that should cast and catch shadows? */
   private worldly(m: AbstractMesh): boolean {
     if (m.isDisposed() || m.getTotalVertices() === 0) return false;
@@ -215,7 +277,9 @@ export class Atmosphere {
   }
 
   private sortPending(): void {
-    if (!this.pending.length || !this.shadows) return;
+    if (!this.shadows) return;
+    this.flushStatic(performance.now());
+    if (!this.pending.length) return;
     const map = this.shadows.getShadowMap();
     if (!map) return;
     for (const m of this.pending.splice(0)) {
@@ -229,12 +293,15 @@ export class Atmosphere {
       if (m.name.startsWith('foliage')) continue;
       // Parts whose shadow falls inside their own body (a character's eyes): a draw for nothing.
       if ((m.metadata as { castsNoShadow?: boolean } | null)?.castsNoShadow) continue;
-      map.renderList?.push(m);
-      m.onDisposeObservable.addOnce(() => {
-        const list = map.renderList;
-        const i = list?.indexOf(m) ?? -1;
-        if (list && i >= 0) list.splice(i, 1);
-      });
+      // Small things placed under a node that says so (a pickup, a held gun) cast only near the camera, as clutter does.
+      if (underSmall(m)) m.metadata = { ...(m.metadata as object | null), smallCaster: true };
+      // Static geometry (not small clutter, which casts only near the camera) casts through merged proxies.
+      if (!(m.metadata as { smallCaster?: boolean } | null)?.smallCaster && proxyable(m)) {
+        this.staticQueue.push(m);
+        this.staticAt = performance.now();
+        continue;
+      }
+      addCaster(map, m);
     }
   }
 
@@ -253,10 +320,21 @@ export class Atmosphere {
 
   dispose(): void {
     for (const o of this.observers) o.remove();
+    for (const b of this.batches) for (const p of b.proxies) p.dispose();
     this.pipeline?.dispose();
     this.ssao?.dispose();
     this.shadows?.dispose();
   }
+}
+
+/** Into a shadow map's list, and out of it again when the mesh goes. */
+function addCaster(map: RenderTargetTexture, m: AbstractMesh): void {
+  map.renderList?.push(m);
+  m.onDisposeObservable.addOnce(() => {
+    const list = map.renderList;
+    const i = list?.indexOf(m) ?? -1;
+    if (list && i >= 0) list.splice(i, 1);
+  });
 }
 
 /** Whether a node is one of `roots` or below one. */

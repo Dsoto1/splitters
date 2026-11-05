@@ -1,4 +1,5 @@
 import { CORE_PROPS, PROP_CATEGORIES } from './props.generated.ts';
+import { envPropDefinition, isEnvModel } from './environment.ts';
 
 export type PropCategory = (typeof PROP_CATEGORIES)[number];
 
@@ -47,4 +48,5 @@ export interface PropFlame {
 export { CORE_PROPS, PROP_CATEGORIES };
 
 let byId: Map<string, PropDefinition> | undefined; // built on first use (as in serverRules.ts)
-export const getProp = (id: string): PropDefinition | undefined => (byId ??= new Map(CORE_PROPS.map((p) => [p.id, p]))).get(id);
+/** A catalogue prop, or the PropDefinition view of an environment species (`env.*`, content/environment.ts). */
+export const getProp = (id: string): PropDefinition | undefined => (byId ??= new Map(CORE_PROPS.map((p) => [p.id, p]))).get(id) ?? (isEnvModel(id) ? envPropDefinition(id) : undefined);

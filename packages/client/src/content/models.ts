@@ -40,10 +40,13 @@ export class ModelLibrary {
       this.containers.set(path, p);
     }
     if (!p) {
-      p = LoadAssetContainerAsync(versioned(/^(props|creatures|city|packs)\//.test(path) ? `${import.meta.env.BASE_URL}${path}` : `${MODEL_BASE}${path}`), this.scene, GLB).then((c) => {
+      p = LoadAssetContainerAsync(versioned(/^(props|creatures|city|packs|env)\//.test(path) ? `${import.meta.env.BASE_URL}${path}` : `${MODEL_BASE}${path}`), this.scene, GLB).then(async (c) => {
         this.lods.set(path, takeLods(c));
         // Kit props carry their surfaces (tools/content/surfaces.mjs): shared detail maps on their materials.
         if (path.startsWith('props/')) applyPropSurfaces(c, this.scene);
+        // Environment species drawn as props (MapMaker, and the game without ?env=1) take the environment's
+        // materials: the shared bark, rock and leaf pictures. Loaded on demand, so the menu never carries them.
+        if (path.startsWith('env/')) (await import('../environment/envMaterials.ts')).applyEnvMaterials(c, this.scene);
         return c;
       });
       // Models from pack downloads (content/guns.json) fall back to the ones they replaced.

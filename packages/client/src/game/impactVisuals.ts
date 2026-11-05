@@ -8,7 +8,7 @@ import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import { DynamicTexture } from '@babylonjs/core/Materials/Textures/dynamicTexture';
 import { Color3, Color4 } from '@babylonjs/core/Maths/math.color';
 import { Matrix, Quaternion, Vector3 } from '@babylonjs/core/Maths/math.vector';
-import type { EffectsWorld, Vec3, WorldBox } from '@tiletrigger/shared';
+import type { EffectsWorld, SurfaceTypeId, Vec3, WorldBox } from '@tiletrigger/shared';
 import { MeshPool } from './meshPool.ts';
 
 /** How fast drawn rounds fly (m/s): slow enough to see leave the muzzle and land, fast enough to feel like bullets. */
@@ -250,7 +250,7 @@ export class ImpactVisuals {
   }
 
   /** Where a shot ending at `to` (coming from `from`) hits the level, if it does: point and surface normal. */
-  surfaceHit(from: Vec3, to: Vec3): { point: Vec3; normal: Vec3; box?: WorldBox } | null {
+  surfaceHit(from: Vec3, to: Vec3): { point: Vec3; normal: Vec3; box?: WorldBox; surface?: SurfaceTypeId } | null {
     const world = this.physics();
     if (!world) return null;
     const d = { x: to.x - from.x, y: to.y - from.y, z: to.z - from.z };
@@ -260,7 +260,7 @@ export class ImpactVisuals {
     const hit = world.raycast(from, dir, len + 0.15);
     // Shots that ran out of range in the open, or stopped on something dynamic, leave no hole.
     if (!hit || Math.abs(hit.dist - len) > 0.35) return null;
-    return { point: { x: from.x + dir.x * hit.dist, y: from.y + dir.y * hit.dist, z: from.z + dir.z * hit.dist }, normal: hit.normal, ...(hit.box ? { box: hit.box } : {}) };
+    return { point: { x: from.x + dir.x * hit.dist, y: from.y + dir.y * hit.dist, z: from.z + dir.z * hit.dist }, normal: hit.normal, ...(hit.box ? { box: hit.box } : {}), ...(hit.surface ? { surface: hit.surface } : {}) };
   }
 
   /**

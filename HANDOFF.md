@@ -130,6 +130,25 @@ palette atlas step of `pnpm content:rebuild` needs a temp copy of build-palette-
 `executablePath: '/opt/pw-browsers/chromium'` (delete it after), like e2e/run.mjs.
 
 ### In flight
+- **Market Town perf on the M1 Pro, branch `wip/perf-market`** (agent, 2026-11-05; from main d29e6a8; not merged).
+  Owner's capture (high, 44 players): 23 ms frames with few in view, 38-45 ms with 20-40; characters (clips + aim)
+  8.5 ms and shadow + depth maps 6.6 ms a frame. Write-up with causes and numbers: docs/PERF_96.md "Market Town on
+  an M1 Pro". Done:
+  - Animation LOD by frames as well as time, in every match (`game/animLod.ts`); fingers cached past 15 m
+    (`CharacterAnimator.curl`); shot/hit overlay clips kept started (`KEPT_OVERLAYS`), none past 35 m.
+  - Shadow proxies (`game/shadowProxy.ts`, Atmosphere batches static casters after 0.5 s); pickups and held guns
+    cast within 15 m (`shadowFlags.ts`); water's scene depth only round water (`sceneDepth.ts`, WaterVisuals).
+  - Blood splats instanced; one character build a frame (`BUILD_CATCH_UP_MS`); bodies reused per look
+    (`GameView.keepBody`, `CharacterAnimator.standBy`, `BODY_POOL_PER_LOOK` 2).
+  - Probe (scratchpad only, `probe/mt.mjs`: Market Town, fixed placement, perf split + draws by pass/kind + CPU
+    profile / Chrome trace): rebuild it from PERF_96's description if needed.
+  - CI: `check/perf-market` run 41961274052 green at c684c02 (full suite: unit, build, 13 e2e shards incl. visual,
+    perf budget and mass). Local: typecheck, test:changed (17), content:check, bundle 681.8 → 682.6 kB gzip (budget
+    840), e2e offline + characters PASS (ports 4971/4972).
+  - Next / resume: owner re-records on the M1 (PERF_96 "For the owner to re-record"); land when green. Open:
+    creatures' Babylon clips are not gated by the LOD (only their state machine is stepped); scenario doors and
+    the ladder gate are a mesh per bar (55 shadow draws on Market Town); the level's 58 materials are 58 main-pass
+    draws (a per-pack atlas would cut them).
 - Picked up by the claude/launcher-ui-map-cards account (2026-11-04): `wip/env-phase1` (Environment Phase 1
   vertical slice, queue item 1, in flight) and `wip/zfight` (texture flicker fix, item 2: landed on main).
 - Surface types landed last (f61f2cf): `content/surface-types.json` (23 types), optional `surface` on props
@@ -208,6 +227,68 @@ palette atlas step of `pnpm content:rebuild` needs a temp copy of build-palette-
   replacement models); the grade alone is subtle.
 - Retire rather than delete; models not in T-pose get retired (Otter, Shade).
 - Meshy credits need approval each time; Meshy Community models are CC0 (Terms §3.3) — record author and post URL.
+
+### Environment Phase 1: the vertical slice (`wip/env-phase1`, agent, 2026-11-04; in progress, pushed, not merged; from main b1423beb)
+Plan: docs/PROCEDURAL_ENVIRONMENT_AUDIT.md §10 and "Owner decisions". Status is kept here at every push.
+- **Generator** (owned, seeded, no Math.random): `content/environment.json` + `content/environment/<family>.json`
+  (six species, two material variants each) → `pnpm content:environment` (`--check` rebuilds in memory,
+  byte-identical; run by content:check/rebuild) → `packages/client/public/env/*.glb` (LODs + crossed-card stand-in),
+  shared pictures (bark, rock, leaves atlas), `content/environment.lock.json`, both `environment.generated.ts`.
+  Code `tools/content/env/*.mjs`. Docs: CONTENT_PIPELINE.md "Environment species".
+- **Shared/sim:** `content/environment.ts` (lookups, PropDefinition view: `getProp('env.…')` has no box),
+  `environmentSchema.ts` (zod), `map/environment.ts` (world shapes, nav prisms, hash), `PhysicsWorld(boxes, terrain,
+  shapes)` (capsules/hulls/trimeshes; `blocks: 'shots'` limbs in a new group: shots + sight only), `shapeAt` →
+  surface → ballistic class in `Match.materialAt`; nav gets the shapes' triangles; shrubs conceal from species data;
+  `PropEntity.variant` (optional, no format bump). Client prediction, MapMaker nav check and the effects world get
+  the same shapes.
+- **Client:** `src/environment/` (renderer behind `?env=1`: thin instances per species-variant/LOD/part/64 m sector,
+  per-copy LOD with hysteresis, wind MaterialPlugin GLSL+WGSL, tiers), foliage grows env grass under `?env=1`,
+  ModelLibrary draws `env/` GLBs as props otherwise. `?envlab` (src/tools/envLab.ts). MapMaker with `?env=1`:
+  Environment (preview) palette group, env scatter sets, Variant in the inspector.
+- **Tests:** tools/content/test/environment.test.mjs, shared environmentData/environmentCollision tests (+ fixture
+  `environment-resolved.json`), e2e flow `environment`, webgpu flow extended to envlab, visual scene `envlab`.
+- **Resumed 2026-11-05** (second agent, after a container restart): merged origin/main (texture flicker fix; only
+  CHANGELOG conflicted), provenance refreshed for the regenerated cliff GLBs (content:check was red), env_showcase in
+  `RETIRED_MAPS`, `envForest` brush spacing 3.8 → 3 m (2,000 trees fit in the 200 m square only that dense),
+  `tools/perf/client-perf.mjs` takes `PERF_QUERY=env=1` and prints the environment renderer's stats.
+- **Showcase map done:** `maps/env_showcase.json`, made in MapMaker (`?mode=editor&env=1`) by a Playwright driver in
+  the agent scratchpad (`showcase/maker.mjs`, passes `pass1..7.mjs`, checkpoints as JSON loaded back through MapMaker's
+  Import): 240 m terrain, 9 spawns and 2 small health in a central clearing, 30 cliff panels (15 along z = 96 facing
+  south, 15 along x = 96 facing west), 94 shrubs round the clearing, 401 boulders, 2,001 trees (oak, autumn oak, pine;
+  scatter brushes), the clearing and cliff feet cleared with the brushes' right-click, "thick grass" painted over the
+  square (Terrain → plants brush): ~46 k generated clumps inside the 200 m square with `?env=1` (62 k on the map).
+  Hand edits after Export: `metadata.id` = env_showcase and the export's release stamp left out (as the other maps).
+  validate-map: one warning, budget.props (2,526 props > 1,500: the §10 counts are over the budget by design).
+- **Perf** (§10 target; `tools/perf/client-perf.mjs`, medium, 960×540, `PERF_BOTS=2`, 40 s turning at the spawn,
+  SwiftShader on this shared container at load 10–20, so counts not frame rates; two interleaved runs each):
+  Backwoods 471 / 465 draws, 1.93 / 2.02 M triangles, 945 / 883 shadow casters, 467 / 465 materials; env_showcase
+  with `?env=1` 398 / 418 draws, 1.80 / 1.97 M triangles, 403 / 402 casters, 268 / 273 materials (2,526 copies in
+  ~230 batches; per level ~85 / 600 / 1,665 / 175). Under the baseline in each pair, but triangles only by 3–7 %:
+  the grass (0.49 M in view) is the largest share. The same map without the flag (species as prop nodes): 2,052
+  active meshes, 6.60 M triangles, 3,840 casters.
+- **Pitfalls:** MapMaker under `?test=1` seeds its id generator per page load: a map imported in a new page gets
+  "ID … already exists" on the first new pieces (drive MapMaker without test=1). Pushing from this shallow clone
+  failed with "missing necessary objects" after a GitHub hiccup (the remote ACKed commits it could not use);
+  `git -c push.negotiate=false push …` works.
+- **Checks (2026-11-05):** `node tools/content/environment.mjs --check` OK; `pnpm typecheck` clean; `pnpm content:check`
+  OK; `pnpm test:changed` (all units) 1628 passed, 2 failed then fixed or passed alone (select.test wanted an
+  e2e/timings.json entry for `environment`; pads.test eagle_spires is a load timeout, passes alone);
+  `validate-map maps/env_showcase.json` one warning (budget.props); bundle budget OK (menu first JS 682.6 kB gzip;
+  env code in its own chunks). E2E (`CI=1`, ports 4951/4952): environment PASS (after fixing its forced-level check:
+  grass has one level, shrubs three, so they stop short of a forced level 3), visual PASS (envlab baseline written,
+  `e2e/baselines/envlab.png`), editor PASS; webgpu fails here in 1 s on its first page.evaluate (before any env
+  code; this container's browser) — CI runs it. CI on check/env-phase1: run 41958757185 failed only on zfight.test's
+  Norman Shores timeout (20 s; now 90 s); run 41961338160 on 4e9f19db is **green** (full suite, every e2e shard).
+- **Screenshots for the owner** (agent scratchpad `env/`): `envlab-<view>.png` and `envlab-before-<view>.png` for
+  lineup, trees, small, plants, rocks, cliffs (the before set is the Kenney/Quaternius pieces in the same places),
+  `envlab-lod-row.png`, `envlab-overview.png`; the showcase in play with `?env=1` on high:
+  `showcase-env-high-{clearing,forest-edge,forest,north-cliffs,east-cliffs}.png`.
+- **Next:** owner reviews the screenshots (Phase 1 gate), then land: 4e9f19db is green (fast-forward `main` or a train;
+  only HANDOFF changed after it); then Phase 2.
+- **Not done from §10:** `dedicatedhost` on env_showcase comparing host and browser collider hashes (the unit test
+  environmentCollision covers both load paths); impact sounds per surface (no sounds yet).
+- **Resume:** `git fetch && git checkout wip/env-phase1`; `node tools/content/environment.mjs --check`.
+
 
 ## Earlier start notes (session of 2026-10-30 afternoon)
 

@@ -552,6 +552,40 @@ purpose.
 The Workbench shows **Surface types** (name, class, decal, debris, sound, footstep; id read-only) and a surface and
 ballistic column on **Materials**.
 
+### Environment species (procedural, Phase 1)
+
+The procedural environment (docs/PROCEDURAL_ENVIRONMENT.md, plan in PROCEDURAL_ENVIRONMENT_AUDIT.md §9–10): trees,
+shrubs, grass, boulders and cliff faces generated in code from seeds, owned, nothing downloaded or AI-made.
+
+- **Sources:** `content/environment.json` (generator version, the pack's provenance, picture seeds, budgets per
+  category and level of detail) and `content/environment/<family>.json` (species: id `env.<family>.<species>`,
+  category, `assetVersion` with a note per version, nav, role, conceals, placement rules, the generator's settings and
+  seed, levels of detail, the far stand-in, material variants with their colours).
+- **Build:** `pnpm content:environment` (`node tools/content/environment.mjs`; `content:rebuild` and `content:check`
+  run it). Code in `tools/content/env/`: `rng.mjs` (the only randomness: seeded; `Math.random` is banned by the test),
+  `noise.mjs`, `textures.mjs` (bark, rock, leaves atlas), `tree.mjs`, `conifer.mjs`, `plants.mjs`, `rock.mjs`,
+  `branches.mjs`, `impostor.mjs` (software rasteriser for the far cards), `mesh.mjs` (GLB writer).
+- **Outputs:** `packages/client/public/env/<family>.<species>.<variant>.glb` (level 0 plain; lighter levels with glTF
+  extras `{ lod, distance }`, the crossed-card stand-in `{ crossed }`), `env/bark.webp`, `bark_n.webp`, `rock.webp`,
+  `rock_n.webp`, `leaves.webp`; `content/environment.lock.json` (sha, bytes, triangles per level, generator and asset
+  versions, the atlas cards' alpha coverage); `packages/shared/src/content/environment.generated.ts` (gameplay only:
+  size, collision shapes, surface, nav, conceals, placement) and `packages/client/src/content/environment.generated.ts`
+  (files, level distances, pictures). Vertex colours carry species and season, so material variants share pictures.
+- **Checks:** `--check` rebuilds in memory and fails unless every file is byte-identical; budgets per level and per
+  file; leaf cards cover ≥ 55 % of their rectangles; `tools/content/test/environment.test.mjs` (built twice, budgets,
+  cliff seams, coverage, no Math.random); `packages/shared/test/environmentData.test.ts` (schema, surfaces, and
+  `fixtures/environment-resolved.json`, which pins every species' shapes and size by assetVersion: a change to them
+  needs an assetVersion bump, a note and a fixture entry, on purpose: it is a gameplay change).
+- **Maps:** species are props (`model: 'env.…'`, optional `variant`); `getProp` gives a view of them with no box: their
+  shapes collide (`map/environment.ts` → physics capsules, hulls, meshes; nav triangles; `shapeAt` → surface).
+- **Showcase:** `maps/env_showcase.json` (made in MapMaker with `?env=1`; in `RETIRED_MAPS`, never offered): the §10
+  stress target, 2,001 trees, 401 boulders, 30 cliff panels, 94 shrubs and ~46 k grass clumps (thick grass painted
+  over the 200 m square). Play it with `?offline=env_showcase&env=1`; compare with
+  `PERF_QUERY=env=1 node tools/perf/client-perf.mjs env_showcase` against `node tools/perf/client-perf.mjs backwoods`
+  (`PERF_BOTS=2`, medium, same turn at the spawn). It has 2,526 props, over the 1,500-prop budget on purpose.
+- **Adding a species** (Phase 2+): a new entry in its family file (or a new family file and generator kind), budgets
+  for its category, run the build, add its fixture entry, check it in `?envlab`. No simulation code changes.
+
 ### Tiles and edge styles
 
 The core building kit is data (docs/CONTENT_SCALABILITY.md step 7, scope "core kit"): what a tile occupies, where its

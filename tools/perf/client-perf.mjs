@@ -4,7 +4,8 @@
 // Usage: pnpm build && node tools/perf/client-perf.mjs [map ...]
 //   PERF_BOTS=96 (players in all, split over two teams), PERF_MODE=core.tdm,
 //   PERF_GRAPHICS=low|medium|high (default medium), PERF_SECONDS=10,
-//   PERF_PORT=4295, PERF_GPU=1 (use the machine's GPU instead of SwiftShader).
+//   PERF_PORT=4295, PERF_GPU=1 (use the machine's GPU instead of SwiftShader),
+//   PERF_QUERY=env=1 (more URL parameters, e.g. the procedural environment renderer).
 // SwiftShader renders on the CPU, so its frame rate is far below a real GPU's;
 // compare runs on the same machine, and lean on draw calls, meshes and triangles.
 import { spawn } from 'node:child_process';
@@ -19,6 +20,7 @@ const MODE = process.env.PERF_MODE ?? 'core.tdm';
 const GRAPHICS = process.env.PERF_GRAPHICS ?? 'medium';
 const SECONDS = Number(process.env.PERF_SECONDS ?? 10);
 const CLIENT = `http://localhost:${PORT}`;
+const QUERY = process.env.PERF_QUERY ? `&${process.env.PERF_QUERY}` : '';
 
 const preview = spawn('pnpm', ['--filter', '@tiletrigger/client', 'exec', 'vite', 'preview', '--port', PORT, '--strictPort'], { stdio: 'ignore', detached: true });
 const stop = () => {
@@ -49,7 +51,7 @@ for (const id of maps) {
   const page = await ctx.newPage();
   const errors = [];
   page.on('pageerror', (e) => errors.push(e.message));
-  await page.goto(`${CLIENT}/?offline=${id}&gamemode=${MODE}&bots=${BOTS}`);
+  await page.goto(`${CLIENT}/?offline=${id}&gamemode=${MODE}&bots=${BOTS}${QUERY}`);
   let ok = false;
   for (let i = 0; i < 60 && !ok; i++) {
     ok = await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() === 'playing', null, { timeout: 10000 }).then(() => true, () => false);
@@ -138,11 +140,14 @@ for (const id of maps) {
       bots: window.__match?.combatants().length ?? 0,
       top,
       plants,
+      // The procedural environment renderer (?env=1): its copies, batches and levels of detail at the end.
+      env: window.__cs.view.environment?.stats() ?? null,
     };
   }, SECONDS);
   const row = `| ${id} | ${GRAPHICS} | ${stats.bots} | ${stats.fps.toFixed(1)} | ${stats.draws.toFixed(0)} | ${stats.activeMeshes.toFixed(0)} / ${stats.meshes} | ${(stats.triangles / 1e6).toFixed(2)} M | ${stats.lights} (+${stats.clustered} clustered) | ${stats.casters} | ${stats.materials} | ${loadavg()[0].toFixed(1)} |`;
   console.log(row, errors.length ? `errors: ${errors.join('; ')}` : '');
   console.log(`  plants: ${stats.plants.meshes} draw calls, ${stats.plants.instances} instances, ${(stats.plants.tris / 1e6).toFixed(2)} M triangles in view`);
+  if (stats.env) console.log(`  environment: ${stats.env.copies} copies, ${stats.env.drawnBatches} of ${stats.env.batches} batches drawn, per level ${stats.env.perLevel.join(' / ')}`);
   if (process.env.PERF_DEBUG) console.log(`  biggest: ${stats.top.join(' | ')}`);
   rows.push(row);
   await ctx.close();

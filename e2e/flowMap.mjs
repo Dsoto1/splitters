@@ -22,7 +22,7 @@ export const COVERAGE_MAP = 'test_coverage';
 export const FLOWS = [
   'editor', 'editorux', 'offline', 'mobile', 'vault', 'outpost', 'sandgate', 'citadel', 'canyon', 'scenery', 'setpieces', 'physicsfx',
   'teams', 'ctf', 'forts', 'arsenal', 'vehicles', 'race', 'zombies', 'classes', 'coverage', ...MAP_FLOWS,
-  'designer', ...CHARACTER_FLOWS, 'online', 'hostgame', 'hostcontrols', 'lobby', 'handoff', 'dedicatedhost', 'hostpage', 'webgpu', 'visual',
+  'designer', ...CHARACTER_FLOWS, 'online', 'hostgame', 'hostcontrols', 'lobby', 'handoff', 'dedicatedhost', 'hostpage', 'webgpu', 'visual', 'environment',
 ];
 
 /** Maps that have a flow of their own, so the tour leaves them out. */
@@ -53,6 +53,7 @@ const MAP_USERS = {
   atomic_court: ['hostcontrols'],
   void_yard: ['hostcontrols'],
   [COVERAGE_MAP]: ['coverage'],
+  env_showcase: ['environment'],
 };
 
 /**
@@ -111,6 +112,8 @@ const RULES = [
   [/^content\/skies(\.lock)?\.json$/, [...MAP_FLOWS, 'scenery', 'setpieces', 'canyon', 'visual'], ['shared']],
   [/^content\/city(\.lock)?\.json$/, [...MAP_FLOWS, 'vault', 'outpost', 'sandgate', 'citadel', 'canyon', 'scenery', 'setpieces'], ['client', 'shared']],
   [/^content\/sounds\.json$/, ['offline'], ['client']],
+  // The procedural environment's species (tools/content/environment.mjs builds them): the lab, WebGPU, the baseline.
+  [/^content\/environment(\/|\.json$|\.lock\.json$)/, ['environment', 'webgpu', 'visual'], ['client', 'content', 'shared']],
   [/^(content|assets-src)\//, FULL, UNIT_ALL],
   [/^packages\/client\/(public|index\.html|vite\.config\.ts|package\.json|tsconfig\.json)/, FULL, ['client']],
   [/^packages\/client\/src\/(main|engine|assetUrl|renamedStorage|style)\./, FULL, ['client']],
@@ -129,6 +132,8 @@ const RULES = [
   [/^packages\/client\/src\/tools\/characterViewer/, [...CHARACTER_FLOWS], ['client']],
   // Your own body and arms in first person, and where hands are drawn on guns (the grip checks).
   [/^packages\/client\/src\/game\/(firstPersonBody|firstPersonArms|handProbe)\.ts$/, [...CHARACTER_FLOWS, 'offline', 'arsenal', 'visual'], ['client']],
+  // The procedural environment (renderer behind ?env=1, materials, the lab).
+  [/^packages\/client\/src\/(environment\/|tools\/envLab\.ts$)/, ['environment', 'webgpu', 'scenery', 'visual'], ['client']],
   [/^packages\/client\/src\/tools\//, NONE, ['client']],
   [/^packages\/client\/src\/frontend\//, ['offline', 'mobile', 'teams', 'lobby', 'hostgame', 'hostcontrols', 'dedicatedhost', 'designer', ...CHARACTER_FLOWS, 'editor', 'webgpu', 'visual'], ['client']],
   [/^packages\/client\/src\/hostPage\.ts$/, ['hostpage'], ['client']],

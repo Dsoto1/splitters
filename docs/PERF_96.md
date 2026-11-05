@@ -712,3 +712,127 @@ on that machine is the new toolset (docs/PERF_TOOLS.md). Changes, measured on th
   all GPU instances merged per material with frozen matrices.
 - Not done: merging far characters' draws (each has its own skeleton: needs baked animation textures).
 - The loading gate builds every character look's and effect's shaders (GameView.prewarm, programs kept).
+
+## Market Town on an M1 Pro (5 Nov 2026, `wip/perf-market`)
+
+**Owner's capture** (Apple M1 Pro, Chrome 156, WebGL2, high, render scale auto, 60 fps cap, 1920 × 958 at DPR 2;
+Market Town TDM, 44 players with 48 bots, local match, 0.7.0 d29e6a8; 25 s recording and two 10 s traces):
+23 ms frames (43 fps) with up to ten characters in view, 38-45 ms (22-26 fps) with 20-40; 19 hitches over
+50 ms. Per frame in the traces (~26 ms): characters (clips + aim) 8.1-9.6 ms, shadow + depth maps 6.6-7.0,
+mesh evaluation 2.9-3.4, characters (update) 1.7-1.9, ragdolls + effects physics 1.0-1.4. In the recording
+`animated` was about the characters in view every second (41 of 41 in the worst hitch, 34 ms of clips), shadow
+casters 580-620 every frame and draws 950-1,400.
+
+### What it was
+
+1. **The animation LOD gave up exactly when it was needed.** The crowd LOD (on at 44 players) stepped far
+   characters at 30 / 15 / 10 Hz by time. At 25-40 fps a frame is 25-40 ms, so a 30 Hz character was due every
+   frame and a 15 Hz one every other: the LOD saved nothing in a busy fight. On top of that each evaluation is
+   Babylon's clips **and** our after-clip work, and a CPU profile of the scenario below put three quarters of the
+   span in the after-clip part, half of that in `closeHand` (24 finger joints a frame, each a forced world
+   matrix, a decomposition and a slerp).
+2. **Every shot and hit rebuilt an animation group.** A remote shot or a hit flinch stopped the overlay clip and
+   started it again: `AnimationGroup.start` makes an animatable and runtime animation per joint (about 70) and
+   `stop` frees them. In the scenario this was the largest JS cost of all (onMessage → trigger 415 ms in a 20 s
+   profile, against 181 ms for all the after-clip work) and the garbage behind the minor GCs.
+3. **The shadow map drew the static level once per material per cascade.** Medieval pack tiles are box-built and
+   merged per material, as every pack's are, but each surface carries its own library material: Market Town's
+   level is 64 meshes over the whole map, so all 64 went into each of the three cascades (185 draws a frame), and
+   the untinted props (instances merged per material, as everywhere) another 207. Pickups' shapes and the held
+   guns of the 12 casting characters added 100 more.
+4. **High-quality water redrew the whole view for its depth.** Market Town's stream turns on the scene depth
+   renderer (soft shores, foam on waders), which drew every active mesh a second time: 300 of the 960
+   render-target draws.
+5. **Hitches' "outside" time** (see below): character builds after the frame, minor GCs, and on this box the GPU.
+
+Medieval pack tiles and props are merged and instanced like every other pack's (box tiles per material, props
+as instances of models merged per material); the main pass's 58 level draws are its 58 materials, and nothing
+in the kit needed changing for the draw count. What did change is how they reach the shadow map (3 below).
+
+### What changed
+
+- **Animation LOD by frames as well as time, in every match** (`game/animLod.ts`, `StepClock`): past 15 m a
+  character animates at most every 2nd frame (and 30 Hz), past 35 m every 3rd (15 Hz), past 70 m every 4th
+  (10 Hz), on its own phase. At 60 fps the time step decides, as before; at 25 fps it is 12.5, 8 and 6 Hz instead
+  of every frame. Small matches get it too (they had none). Off-screen sleeping, gun instances and the other
+  crowd savings stay crowd-only.
+- **Fingers kept past 15 m** (`AnimStep.detail`, `CharacterAnimator.curl`): the last full close of the same grip
+  and weight is put back (24 quaternion copies) instead of closing again. Aim, arm IK and the gun in the hands
+  are worked out at every distance, so hands stay on the gun.
+- **Overlay clips kept**: shot and hit clips stay started, paused at weight 0 between plays, and a new shot goes
+  back to the start (`KEPT_OVERLAYS`); remote recoil twitches and hit clips past 35 m are left out
+  (`SHOT_OVERLAY_REACH`; the procedural flinch stays).
+- **Shadow proxies** (`game/shadowProxy.ts`, Atmosphere): every static, opaque mesh (frozen world matrix, no alpha
+  test, skin, morph or LOD levels: the level per material, terrain, roads, untinted props' instances, the border's
+  static thin instances) is held back from the shadow list for half a second as it loads, then its triangles are
+  merged in world space into one mesh per 48 m square and culling mode, drawn only into the shadow map (layer
+  mask 0). Each cascade draws only the squares it covers. The originals still draw and catch shadows. A merged
+  mesh that goes away rebuilds its batch. Small clutter keeps casting near the camera only.
+- **Pickups and held guns cast within 15 m only** (`castSmall`, `shadowFlags.ts`), as small clutter does.
+- **Water's scene depth only round water** (`WaterVisuals.depthNearWater`): the depth map draws the meshes whose
+  bounds meet a body of water (its floor and banks, up to a wader's head), unless the height fog shares it
+  (misty maps on high: `markWholeSceneDepth`).
+- **Blood splats are GPU instances** of one disc faded by instance colour (one draw; 45-50 a busy frame before).
+- **One character build a frame** on real GPUs (a 40 ms frame let two or three through before), and **bodies are
+  reused**: a going avatar's character (a body that sank away, one past MAX_CORPSES, a player who left) is kept,
+  two per look, and the next avatar of that look takes it (`GameView.keepBody`, `CharacterAnimator.standBy`).
+
+### Measured
+
+Same scenario for every build (scratchpad probe, not in the repo: `?offline=market_town&gamemode=core.tdm&bots=44&test=1&god=1`,
+graphics high, render scale auto, 640 × 360, SwiftShader; the player pinned at (4, 0, -34) looking north up the
+high street, 43 bots held on fixed points 5-60 m ahead, two in three running small circles; 30 s of frames
+after they arrive). The 4-core box was shared with another agent's jobs (load 10-22), and SwiftShader frames take
+seconds, so compare relative numbers and counts, not milliseconds with the owner's.
+
+Before = main d29e6a8 (the owner's build), after = this branch, run back to back at box load 5-7:
+
+| Per frame, 44 characters in view (10 / 14 / 20 at < 15 / 15-35 / 35-70 m) | before | after |
+|---|---|---|
+| characters animated (clips evaluated) | 43 | 22.5 |
+| characters (clips + aim), ms | 38.5 | 18.0 (-53 %) |
+| of which per evaluation, ms | 0.90 | 0.80 |
+| skinning, ms | 5.7 | 2.8 |
+| shadow + depth maps (all render targets), ms | 26.8 | 12.7 (-53 %) |
+| shadow casters drawn (all cascades) | 613 | 287 |
+| render-target draws: shadow / water depth / mirror and the rest | 964: ~615 / 267 / 83 | 420: ~290 / 48 / 83 |
+| shadow draws of the level / props / held guns / pickups | 185 / 207 / 81 / 26 | merged: ~60 proxy draws / 0 / 24 / near only |
+| main-pass draws (blood splats in it) | 315 (50) | 279 (1) |
+| all draws | 1,278 | 698 (-45 %) |
+| mesh evaluation, ms | 11.7 | 8.5 |
+| scene.render() JS, ms | 102.6 | 59.7 |
+| frames a second (SwiftShader) | 0.37 | 0.65 |
+
+Earlier, at load 10-20, the animation change alone took clips + aim from 81 to 24 ms and evaluations from 42 to 22
+a frame, and the shadow work casters from 607 to 307. A CPU profile of the before build over 20 s of the scenario:
+remote shots and hit flinches 415 ms (AnimationGroup start/stop), the after-clip aim and grip 181 ms (closeHand
+85 of it), Babylon's own clip evaluation and blending about 60 ms. Building a character after a respawn: 15-25 ms
+plus 3-6 ms for its animator (eight looks, in the page); a held gun 0.5 ms.
+
+For the owner's ~26 ms frames that means, roughly: clips + aim 8.5 → about 4 ms, shadow + depth maps 6.6 → about
+3 ms, fewer draws in the main pass and the evaluation; on the M1 that should put the few-in-view frames near the
+60 fps cap and the busy ones around 25-30 ms. Not measured there: see below.
+
+### Hitches: the "outside" time
+
+The recorder's `outside` is the frame's time not covered by its own spans (sim, messages, game JS, render). A
+Chrome trace of the scenario (12 s, devtools.timeline + v8.gc + gpu) shows what runs on the page's thread between
+frames: worker messages (40-100 ms tasks here; counted in `net`), minor GCs (four scavenges of 18-83 ms in 19 s on
+this box), a timer task, and **character builds**: `characters.create` resolves inside the frame's
+onBeforeRender (its turn) but runs right after the frame's callback, so its 15-25 ms here (plus 3-6 ms for the
+animator; measured in the page for eight looks) fall outside every span. No shader program was built mid-match
+in the owner's recording (shadersNew 0 at every hitch). Everything else between frames here is waiting for the GPU
+process (SwiftShader: 3.4-3.9 s gaps, the main thread busy 0.4-0.5 s of each).
+
+So on the M1 the remaining outside time should be: respawn builds (now one a frame, and mostly taken from the
+body pool once bodies start sinking away, after the first 33 s), GC (less garbage per shot and per finger now),
+and GPU time on high (SSAO at half size with 16 samples, 4× MSAA, three PCF cascades at 2400 × 1200). Not
+measurable here: re-record to confirm (below).
+
+### For the owner to re-record on the M1 Pro
+
+The same: Market Town, TDM, 44 players, high, render scale auto, 60 fps cap, a 25 s recording through a big
+fight and a 10 s trace. Expect characters (clips + aim) and shadow + depth maps each about half of before,
+`animated` well under the characters in view, shadow casters about half (300 instead of 600), draws about a
+third fewer. If hitches still show large `outside`, record once more on render scale "sharp" (fewer pixels):
+if `outside` falls, it is the GPU.

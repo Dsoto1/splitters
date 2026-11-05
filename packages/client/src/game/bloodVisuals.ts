@@ -27,7 +27,7 @@ interface Drop {
 }
 
 interface Splat {
-  mesh: Mesh;
+  mesh: InstancedMesh;
   born: number;
 }
 
@@ -57,8 +57,12 @@ export class BloodVisuals {
   /** Mist: GPU instances of one sphere, faded by their instance colour's alpha (one draw for them all). */
   private readonly mistBase: Mesh;
   private readonly mistPool: MeshPool<InstancedMesh>;
-  /** Splats are unit discs, scaled to their size. */
-  private readonly splatPool: MeshPool<Mesh>;
+  /**
+   * Splats: GPU instances of one unit disc, scaled to their size and faded by their instance colour's alpha (one draw
+   * for them all; each was a mesh and a draw of its own, 50 in a busy fight's frame).
+   */
+  private readonly splatBase: Mesh;
+  private readonly splatPool: MeshPool<InstancedMesh>;
   private readonly splatMat: StandardMaterial;
   private readonly dropMat: StandardMaterial;
   private readonly mistMat: StandardMaterial;
@@ -104,13 +108,22 @@ export class BloodVisuals {
       m.instancedBuffers.color = new Color4(1, 1, 1, 1);
       return m;
     }, MAX_MIST);
+    this.splatBase = CreateDisc('bloodSplatBase', { radius: 1, tessellation: 9 }, scene);
+    this.splatBase.material = this.splatMat;
+    this.splatBase.isPickable = false;
+    // Flat on a surface: it catches shadows but casts none.
+    this.splatBase.metadata = { castsNoShadow: true };
+    this.splatBase.registerInstancedBuffer('color', 4);
+    this.splatBase.instancedBuffers.color = new Color4(1, 1, 1, 1);
+    this.splatBase.hasVertexAlpha = true;
+    this.splatBase.scaling.setAll(0);
+    this.splatBase.alwaysSelectAsActiveMesh = true;
     this.splatPool = new MeshPool(() => {
-      const m = CreateDisc('bloodSplat', { radius: 1, tessellation: 9 }, scene);
-      m.material = this.splatMat;
+      const m = this.splatBase.createInstance('bloodSplat');
       m.isPickable = false;
-      // Flat on a surface: it catches shadows but casts none.
       m.metadata = { castsNoShadow: true };
       m.rotationQuaternion = new Quaternion();
+      m.instancedBuffers.color = new Color4(1, 1, 1, 1);
       return m;
     }, 140);
     this.setLook(DEFAULT_BLOOD.color, DEFAULT_BLOOD.amount);
@@ -123,7 +136,7 @@ export class BloodVisuals {
     this.splatPool.warm((m) => m.scaling.set(0.3, 0.25, 0.3));
     this.splatPool.warm((m) => {
       m.scaling.set(0.3, 0.25, 0.3);
-      m.visibility = 0.5;
+      (m.instancedBuffers.color as Color4).a = 0.5;
     });
   }
 
@@ -183,7 +196,7 @@ export class BloodVisuals {
   private splat(at: Vector3, normal: Vec3, radius: number): void {
     const n = new Vector3(normal.x, normal.y, normal.z).normalize();
     const disc = this.splatPool.take();
-    disc.visibility = 1;
+    (disc.instancedBuffers.color as Color4).a = 1;
     disc.position.copyFrom(at.add(n.scale(0.015)));
     // Discs face -Z; turn them to face out of the surface, with a random twist.
     const q = new Quaternion();
@@ -228,7 +241,7 @@ export class BloodVisuals {
         this.splatPool.give(s.mesh);
         return false;
       }
-      s.mesh.visibility = age > SPLAT_STAY ? 1 - (age - SPLAT_STAY) / SPLAT_FADE : 1;
+      (s.mesh.instancedBuffers.color as Color4).a = age > SPLAT_STAY ? 1 - (age - SPLAT_STAY) / SPLAT_FADE : 1;
       return true;
     });
   }
@@ -239,6 +252,7 @@ export class BloodVisuals {
     for (const m of this.mist) m.mesh.dispose();
     for (const p of [this.dropPool, this.mistPool, this.splatPool]) p.dispose();
     this.mistBase.dispose();
+    this.splatBase.dispose();
     this.dropBase.dispose();
     for (const m of [this.dropMat, this.splatMat, this.mistMat]) m.dispose();
   }
