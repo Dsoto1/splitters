@@ -58,6 +58,37 @@ every open face point draws exactly once. MapMaker warns (`geometry.coplanar`) w
 the same plane as another piece's in a different look (only one shows), and **Overlaps** in its top bar highlights
 those places.
 
+## No flicker: props (`propFaces.ts`, the level's depth bias)
+
+The owner's report on Flatpack Depot (2026-11-05, "significant flickering", on an Android phone) was mostly props:
+many models have flat faces lying in the planes of their own bounding box, so placed on a floor, against a wall or on
+another prop they share a plane with what they touch. Where both faces can be seen from the same side they fight:
+- a rug whose cloth is its base (the Quaternius Rug lies at y = 0 facing up: exactly in the floor's plane);
+- double-sided bases and backs (most Kenney factory, shop and sci-fi props: open shelving's bottom board, crates, the
+  freezers' backs): seen from above, a double-sided base is in the floor's plane;
+- props stacked flush on props (a box on a crate, shelves back to back, rail lengths laid end over end).
+The faces are measured from the built models (`tools/content/prop-contacts.mjs` → `propContacts.generated.ts`, part
+of `pnpm content:check` and `content:rebuild`): for each of the six planes of a prop's bounding box, its triangles in
+that plane, by which way they face (or both, for a double-sided material).
+
+- **Props against the level**: every level material (the per-style ones, the merged level and terrain) carries a small
+  depth bias (`LEVEL_DEPTH_BIAS`: polygon offset factor 1, units 2): the level draws a hair behind anything lying in
+  its planes, so the prop always wins. The bias is in depth-buffer steps, so it holds at any range and on any depth
+  buffer (a phone's too); a slope factor of 1 is about one pixel's depth, nothing shows through a wall. Level faces
+  never share a plane with each other (visibleFaces above), so it changes nothing else; decals (bullet holes, blood,
+  roads) keep their own negative offsets and only gain margin.
+- **Props against props**: `propFlushLifts` draws the later prop of each flush pair FLUSH_LIFT (4 mm) away from the
+  other along the shared plane's normal (onto, or into itself), alternating along chains so lifts never pile up (the
+  most on any map: 11 mm). Drawn only, in the game and in MapMaker (worked out again when props change): collision, the
+  map file and the server never see it.
+- The audit (`packages/shared/test/zfight.test.ts`) runs both over every map: props in a level plane (4,915 over the 89
+  maps, 298 on Flatpack Depot) are drawn by the bias (a client test checks every level material has it); prop pairs
+  flush (754, 58 on Flatpack Depot) all clear after the lifts: none left, no allow-list.
+
+Not seen in the container: SwiftShader's float depth buffer draws an exact tie the same way every frame, so these
+spots looked steady here; a phone's or a desktop GPU's 24-bit buffer breaks the tie differently pixel by pixel and
+frame by frame (the flicker).
+
 ### Depth buffer
 
 WebGL2 keeps reverse depth on, though it buys little there: the canvas's depth buffer is 24-bit fixed point and

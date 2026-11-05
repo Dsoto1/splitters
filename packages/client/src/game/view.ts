@@ -120,7 +120,8 @@ import { installAnimationPatches, trackAnimatedTargets } from './animPatches.ts'
 import { freezeStaticMaterials, selectLiveCandidates } from './meshSelection.ts';
 import { fitFirstPersonArms } from './firstPersonArms.ts';
 import { FirstPersonBodyRig } from './firstPersonBody.ts';
-import { loadFirstPersonMode, loadGraphicsQuality, type FirstPersonMode } from './graphicsSettings.ts';
+import { loadFirstPersonMode, loadGraphicsQuality, loadRenderScale, renderRatio, type FirstPersonMode } from './graphicsSettings.ts';
+import { levelMipBias } from '../levelMerge.ts';
 import { CreatureLibrary, fitPlayerSkin, type AvatarSpec } from '../content/creatures.ts';
 import { BodyHitbox, hitboxForSpec } from './hitboxOverlay.ts';
 import { CreatureAnimator } from './creatureAnimator.ts';
@@ -497,7 +498,8 @@ export class GameView {
     // (prewarm) waits for it, so its shader is built before play.
     const engine = this.scene.getEngine() as { isWebGPU?: boolean; webGLVersion?: number };
     if (perfOn('levelmerge') && !engine.isWebGPU && (engine.webGLVersion ?? 1) >= 2) {
-      this.levelMerge = styler.merge().catch((e: unknown) => {
+      // Phones show a small drawing magnified: their level textures a touch softer, so speckled floors don't twinkle.
+      this.levelMerge = styler.merge('map', levelMipBias(window.devicePixelRatio || 1, renderRatio(loadRenderScale()))).catch((e: unknown) => {
         console.warn('level merge skipped:', e);
         return null;
       });

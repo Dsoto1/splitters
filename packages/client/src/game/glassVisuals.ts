@@ -55,6 +55,11 @@ export function glassMaterial(scene: Scene, tint: string = GLASS.tint): Standard
   m.useSpecularOverAlpha = true;
   m.useReflectionOverAlpha = true;
   m.backFaceCulling = false;
+  // See-through, so it writes no depth: panes are drawn chunk by chunk, sorted by the chunk's distance, and with depth
+  // writes a nearer chunk drawn first hid the panes behind it until the order flipped as you moved (windows behind
+  // windows popping in and out: Flatpack Depot's showroom over the warehouse). Without, every pane blends, in any
+  // order (one tint: the same result), and what is behind glass still shows through it.
+  m.disableDepthWrite = true;
   // Babylon adds the Fresnel opacity on top: about nothing face on ("right"), most of the way to opaque edge on ("left").
   m.opacityFresnelParameters = new FresnelParameters({ leftColor: new Color3(0.48, 0.48, 0.48), rightColor: new Color3(0.0, 0.0, 0.0), bias: 0, power: 2.6 });
   const sky = skyReflection(scene);

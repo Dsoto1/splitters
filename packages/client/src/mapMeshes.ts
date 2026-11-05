@@ -252,10 +252,10 @@ export class MapStyler {
    * style become a few meshes over shared array textures, and the per-style meshes, and the materials and textures
    * nothing else uses, go. Resolves with how many draws the level was and is (null: nothing merged, all left as built).
    */
-  async merge(name = 'map'): Promise<{ before: number; after: number; merged: string[] } | null> {
+  async merge(name = 'map', mipBias = 0): Promise<{ before: number; after: number; merged: string[] } | null> {
     const all = [...this.meshes, ...this.terrainMeshes].filter((m) => !m.isDisposed());
     const sources = this.mergeSources();
-    const result = await mergeLevel(this.scene, sources, name);
+    const result = await mergeLevel(this.scene, sources, name, mipBias);
     if (!result || this.scene.isDisposed) return null;
     const names = result.merged.map((m) => m.name);
     // The merged styles' meshes go (a style alone at its texture size stays as it was).
