@@ -379,6 +379,34 @@ Plan:
    that pack's refresh.
 
 ### In flight
+- **Floors over tall pieces, branch `wip/ceiling`** (agent, 2026-11-05; from main 4e77fabc; runs on `check/ceiling`).
+  Owner's screenshot (live, TDM): "notice the blue edge? … tried to place another tile above where i am now, but it
+  said i could not overlap tiles. I would like to add a ceiling/floor here". Later: the blue doesn't matter, it only
+  marks the level (Level 1) where they want a floor, over "the set piece I am on".
+  - The spot: not a map in `maps/`. The blue is the Sands of Egypt theme's underside (`core.lapis`) under Level-1
+    floors; only Pharaoh's Reach and Sunken Kingdom use that theme and neither has grass terrain. Grass + cacti, stones
+    and rock spires = a MapMaker map of the owner's (new-map grass terrain, Desert scrub scatter) with Egypt-theme
+    pieces (the walkway looks like the Sphinx Avenue's paving and plinth). So the exact piece is unknown; any piece two
+    or more levels tall refuses a tile on its upper storey (one cell, one piece).
+  - Blue edge: dropped at the owner's word (not a bug: lapis is that theme's ceiling paint; not a flicker-fix regression
+    by reading, not compared in a browser).
+  - Done: `TilePlacement.upperFloors` (format v26, tile-local "dx,dy,dz"): a full floor slab in a tall piece's own
+    upper storey (`geometry.ts` `canAddFloor`/`cellSlab`; not bottom storeys, Vertical pieces or model buildings).
+    MapMaker: a **Platform placed on such a cell becomes that piece's floor** (`placeTileCommand` → `floorOf`, green
+    ghost), and the inspector's **Upper floors → Floor on Level N** ticks a whole storey. `checkPlacement` refusals now
+    name the piece and level and say what to do. Docs: BUILDING_KIT "Floors over tall pieces", CHANGELOG.
+  - Tests: `packages/shared/test/upperFloors.test.ts` (incl. no coplanar overlaps for every eligible piece with all
+    its floors, two rotations); editor.test.ts messages; e2e editorux "A floor over a piece two levels tall".
+  - Demo (scratchpad only): a stand-in spot (Egypt theme, grass, a Tall Room open on three sides under Level-1 floors);
+    in play it looks like the owner's shot (the cacti, stones and red spires are the theme's dunes backdrop). MapMaker:
+    a room there is refused with the new message, a Platform makes the floor, the inspector shows it ticked.
+  - Checks: typecheck, content:check, build, bundle 690.7 kB gzip (budget 840); unit upperFloors + editor + zipline
+    pass (test:changed under load 13-18 timed out on 14 sim/bench tests that pass alone or on CI); e2e editorux PASS
+    (ports 4961/4962); editor and visual failed locally only on load timeouts (random pickup drawn, jump-off hint,
+    canyon scene not ready in time; canyon 0.1 % differ) and passed on CI. CI: `check/ceiling` run 42053469134 green at 6cd5f392 (full suite, 13 e2e shards, perf).
+  - Next / resume: land it (fast-forward `main` to the green commit, or a train). Owner: tell us which piece the
+    screenshot stands on if the new way doesn't cover it. Open: per-cell floors are only by Platform (the inspector ticks
+    a whole storey); Vertical pieces never take one (by design: their upper storey is the way up).
 - **Market Town perf on the M1 Pro, branch `wip/perf-market`** (agent, 2026-11-05; from main d29e6a8; not merged).
   Owner's capture (high, 44 players): 23 ms frames with few in view, 38-45 ms with 20-40; characters (clips + aim)
   8.5 ms and shadow + depth maps 6.6 ms a frame. Write-up with causes and numbers: docs/PERF_96.md "Market Town on

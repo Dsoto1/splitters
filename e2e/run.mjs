@@ -846,6 +846,52 @@ async function editoruxFlow(browser) {
   check((await page.evaluate(() => window.__editor.level)) === 1, 'Page Up still changes level');
   await page.keyboard.press('PageDown');
 
+  // A floor over a piece two levels tall (the owner's case, 2026-11-05): the Triumphal Arch holds its cell on Level 1
+  // too, so a room there is refused, saying what to do; a Platform there becomes the arch's own floor, and the arch's
+  // inspector ticks it on and off.
+  await page.evaluate(() => window.__editor.view.focus({ x: -40, y: 0, z: -24 }));
+  // The camera glides there: wait until the spot is on screen.
+  await page.waitForFunction(() => {
+    const p = window.__editor.view.project({ x: -40, y: 0, z: -24 });
+    return Math.abs(p.x - innerWidth / 2) < innerWidth / 4 && Math.abs(p.y - innerHeight / 2) < innerHeight / 4;
+  }, null, { timeout: T(10000) }).catch(() => {});
+  // The hover cell follows the pointer once a frame: let it catch up before clicking.
+  const clickCell = async (x, y, z) => {
+    const p = await at(x, y, z);
+    await page.mouse.move(p.x, p.y);
+    await settle();
+    await page.mouse.click(p.x, p.y);
+    await settle();
+  };
+  await page.evaluate(() => window.__editor.setTool({ kind: 'tile', tile: 'imperial.triumphal_arch' }));
+  await clickCell(-40, 0, -24);
+  const archId = (await doc()).classicStructure.tiles.find((t) => t.tile === 'imperial.triumphal_arch' && t.x === -5 && t.y === -3)?.id;
+  check(!!archId, 'places a Triumphal Arch');
+  await page.click('#ed-level-up');
+  await settle();
+  await clickTool(page, '[data-tool="tile:core.room"]');
+  await clickCell(-40, 4, -24);
+  const refusal = (await page.textContent('#ed-toast')) ?? '';
+  check(/Triumphal Arch/.test(refusal) && /place a Platform/.test(refusal) && /Floor on Level 1/.test(refusal), `a room over it on Level 1 is refused, saying how to put a floor in (${refusal})`);
+  const platforms = (await doc()).classicStructure.tiles.filter((t) => t.tile === 'core.platform').length;
+  await clickTool(page, '[data-tool="tile:core.platform"]');
+  await clickCell(-40, 4, -24);
+  d = await doc();
+  check(JSON.stringify(d.classicStructure.tiles.find((t) => t.id === archId)?.upperFloors) === '["0,0,1"]' && d.classicStructure.tiles.filter((t) => t.tile === 'core.platform').length === platforms, 'a Platform there becomes the arch’s floor on Level 1');
+  await page.mouse.move(10, 400);
+  await shot('upper-floor');
+  await page.evaluate((id) => window.__editor.setSelection({ tiles: [id], entities: [] }), archId);
+  await settle();
+  const tick = await page.evaluate(() => ({ box: document.querySelector('#ed-inspector .ed-upper-floor[data-level="1"]')?.checked ?? null, text: document.getElementById('ed-inspector').textContent }));
+  check(tick.box === true && tick.text.includes('Floor on Level 1'), `the arch's inspector shows "Floor on Level 1" ticked (${tick.box})`);
+  await page.click('#ed-inspector .ed-upper-floor[data-level="1"]');
+  check(!(await doc()).classicStructure.tiles.find((t) => t.id === archId)?.upperFloors, 'unticking it takes the floor out');
+  await page.evaluate(() => document.activeElement?.blur());
+  await page.keyboard.press('Control+KeyZ');
+  check(JSON.stringify((await doc()).classicStructure.tiles.find((t) => t.id === archId)?.upperFloors) === '["0,0,1"]', 'and undo puts it back');
+  await page.keyboard.press('Escape');
+  await page.keyboard.press('PageDown');
+
   // Terrain: scattered plants and rocks are bedded into the ground, a little below level 0; Erase must still reach them.
   await page.click('#ed-env-btn');
   check((await page.getAttribute('#ed-env-btn', 'class')).includes('on') && (await page.isVisible('#ed-pal-tabs [data-ws="environment"][data-pane="paint"]')), 'the Environment workspace shows its own sub-tabs');
