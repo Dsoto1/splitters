@@ -197,7 +197,18 @@ This work is on `wip/env-p1b`. Phase 2 (more species) still needs the owner's go
 
   This work is on `wip/intake-2`.
 
-### Environment Phase 1c: pebbles, eelgrass, concealing fern, Replace all, maps updated (`wip/env-p1c`, agent, 2026-11-05; from main 4d511dd2, rebased on 4e77fabc; pushed, not merged)
+### Queued (owner, 2026-11-05): first-person pistol hold
+"The first person view when holding a pistol could be adjusted. Either the gun moves back more into the hands or the
+hands move up more into the gun. Looks as if their fingers are just pinching the grip."
+- First person `gripExternal` (characterAnimator.ts) IKs the palms onto the viewmodel's grip and support points.
+  The pistol's hold points and viewOffset are in content/weapons (view.hold).
+- Seat the pistol's grip deep in the palm, web of the thumb high on the backstrap, fingers wrapped, support hand
+  cupping. Do this for every pistol-class weapon.
+- Check with the `aheadR`/`sideR` measures and the characters e2e, with before/after first-person shots across
+  several characters, including Meshy rigs with Meshy's finger weights once intake-2 lands.
+- Start it once a slot frees. It touches the hands, so after intake-2 step 2a.
+
+### Environment Phase 1c: pebbles, eelgrass, concealing fern, Replace all, maps updated (`wip/env-p1c`, agent, 2026-11-05; from main 4d511dd2, main baf26064 merged in; pushed, not merged)
 - **Done:**
   - **Species:** `env.rock.pebbles` (category `rock`, generator kind `pebbles` in `env/rock.mjs`: 6–7 faceted convex
     stones sunk a quarter, grey / sand, 55 tris; budget `rock: [64]`) and `env.water.eelgrass` (new family file
