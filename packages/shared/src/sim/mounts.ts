@@ -145,6 +145,15 @@ export interface MountDef {
    * Absent: a seated head height above the driver's seat, a little forward (see cockpitEye).
    */
   cockpitEye?: [number, number, number];
+  /**
+   * A vehicle whose model turns its own gun (the Tank): the model's `turret` part turns with seat `seat`'s aim (yaw,
+   * within the seat's arc) and its `barrel` part pitches with it, drawn within `pitch` ([lowest, highest] rad; default
+   * the aim's own range). The vehicle's `aimYaw` / `aimPitch` are that seat's alone (other gunners don't turn it).
+   * Built by content/guns.json `parts`.
+   */
+  turret?: { seat: number; pitch?: [number, number] };
+  /** A model drawn instead when `model` fails to load (the one it replaced: the Tank's Quaternius model). */
+  fallback?: string;
   /** One line for MapMaker. */
   blurb: string;
 }

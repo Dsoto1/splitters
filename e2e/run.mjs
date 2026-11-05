@@ -3378,6 +3378,42 @@ async function coverageFlow(browser) {
     // The match also runs the transport plane and the dropship as mounts.
     const want = { pickups: count('pickup'), mounts: count('mount') + count('airplane'), ziplines: count('zipline') };
     check(got.pickups >= want.pickups && got.mounts === want.mounts && got.ziplines === want.ziplines, `every pickup, vehicle, turret and zipline is in the match (${JSON.stringify(got)} of ${JSON.stringify(want)})`);
+    // The Tank turns its own gun (content/guns.json `parts`, MountDef.turret): its model's turret and barrel are parts,
+    // each with its own lower level of detail, and a manned cannon seat's aim turns the turret and pitches the barrel.
+    const parts = () =>
+      page.evaluate(() => {
+        const at = window.__match.mounts.findIndex((m) => m.def.id === 'tank');
+        const root = at >= 0 && window.__cs.view.scene.transformNodes.find((n) => n.name === `mount_${window.__match.mounts[at].index}`);
+        const turret = root && root.getChildTransformNodes(false, (n) => n.name.endsWith('_model_turret'))[0];
+        if (!turret) return null;
+        const barrel = turret.getChildTransformNodes(false, (n) => n.name.endsWith('_model_barrel'))[0];
+        const lods = root.getChildMeshes(false).filter((m) => !m.isBlocked && m.getLODLevels?.().length).map((m) => m.name.replace(/^.*_model_/, ''));
+        const e = (n) => n?.rotationQuaternion?.toEulerAngles() ?? { x: 0, y: 0 };
+        return { at, barrel: !!barrel, lods: lods.sort(), yaw: e(turret).y, pitch: e(barrel).x };
+      });
+    const tank0 = await page.waitForFunction(() => window.__cs.view.scene.transformNodes.some((n) => n.name.endsWith('_model_turret')), null, { timeout: T(30000) }).then(parts, () => null);
+    check(!!tank0?.barrel && ['barrel_body', 'hull', 'turret_body'].every((p) => tank0.lods.includes(p)), `the Tank's model has a turret and a barrel, each part with its own lower level of detail (${JSON.stringify(tank0)})`);
+    if (tank0) {
+      // A gunner in the cannon seat (the seat taken by a stand-in) aiming right and up: the turret and barrel follow.
+      await page.evaluate((at) => {
+        const m = window.__match.mounts[at];
+        m.seats[1] = window.__cs.slot;
+        window.__tankAim = setInterval(() => ((m.aimYaw = m.yaw + 0.5), (m.aimPitch = 0.3)), 20);
+      }, tank0.at);
+      const aimed = await page.waitForFunction(() => {
+        const at = window.__match.mounts.findIndex((m) => m.def.id === 'tank');
+        const root = window.__cs.view.scene.transformNodes.find((n) => n.name === `mount_${window.__match.mounts[at].index}`);
+        const turret = root.getChildTransformNodes(false, (n) => n.name.endsWith('_model_turret'))[0];
+        const barrel = turret.getChildTransformNodes(false, (n) => n.name.endsWith('_model_barrel'))[0];
+        return Math.abs(Math.abs(turret.rotationQuaternion.toEulerAngles().y) - 0.5) < 0.05 && Math.abs(Math.abs(barrel.rotationQuaternion.toEulerAngles().x) - 0.3) < 0.05;
+      }, null, { timeout: T(15000) }).then(() => true, () => false);
+      const tank1 = await parts();
+      await page.evaluate((at) => {
+        clearInterval(window.__tankAim);
+        window.__match.mounts[at].seats[1] = null;
+      }, tank0.at);
+      check(aimed, `a manned cannon seat's aim turns the Tank's turret and pitches its barrel (turret ${tank1?.yaw.toFixed(2)}, barrel ${tank1?.pitch.toFixed(2)} rad)`);
+    }
   }
   check(errors.length === 0, `no page errors on the coverage map (${errors.join('; ')})`);
   await page.context().close();

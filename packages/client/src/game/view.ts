@@ -16,7 +16,7 @@ import { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import { CreateBox } from '@babylonjs/core/Meshes/Builders/boxBuilder';
 import { CreateCapsule } from '@babylonjs/core/Meshes/Builders/capsuleBuilder';
 import { CreateSphere } from '@babylonjs/core/Meshes/Builders/sphereBuilder';
-import { createMountNode, mountGun, setMountGlow, wheelsOf } from './mountVisuals.ts';
+import { createMountNode, mountGun, mountTurret, setMountGlow, wheelsOf } from './mountVisuals.ts';
 import { CockpitInterior, type CockpitDrive } from './cockpitInterior.ts';
 import { createViewCamera, poseCamera } from './cameraPose.ts';
 import { createCanopy, placeCanopy, releaseCanopy } from './canopyVisuals.ts';
@@ -94,6 +94,8 @@ import { buildPathMeshes } from '../pathMeshes.ts';
 /** Seconds a physics debris chunk lies around before shrinking away. */
 const DEBRIS_LIFE = 6;
 const SHAKE_MS = 650;
+/** How fast a vehicle's drawn turret and barrel follow their gunner's aim (rad/s; View.turnTurret). */
+const TURRET_TURN = 2.5;
 import { MapStyler } from '../mapMeshes.ts';
 import { buildRoadMeshes } from '../roadMeshes.ts';
 import { ModelLibrary } from '../content/models.ts';
@@ -2534,7 +2536,7 @@ export class GameView {
       if (m.def.kind !== 'vehicle') {
         const gun = mountGun(node);
         if (gun) gun.rotation.y = m.shown.aimYaw - m.shown.yaw;
-      }
+      } else if (m.def.turret && m.alive) this.turnTurret(m, node);
       if (m.def.glow) this.arcSentryGlow(m, node, now);
     }
     let drive: CockpitDrive | null = null;
@@ -2544,6 +2546,39 @@ export class GameView {
     }
     this.cockpitInterior.update(cockpit?.m.index ?? null, cockpit?.node ?? null, cockpit?.m.def ?? null, drive);
   }
+
+  /** Each turning-gun vehicle's drawn turret yaw and barrel pitch (radians, in the vehicle's frame), by mount index. */
+  private readonly turretAims = new Map<number, { yaw: number; pitch: number }>();
+
+  /**
+   * A vehicle that turns its own gun (MountDef.turret, the Tank): the turret follows its seat's aim about the upright,
+   * within the seat's arc, and the barrel its pitch within `turret.pitch`; with nobody in that seat both ease back to
+   * straight ahead. Eased (TURRET_TURN rad/s), so snapshot steps don't jerk it.
+   */
+  private turnTurret(m: ClientMount, node: TransformNode): void {
+    const parts = mountTurret(node);
+    if (!parts) return;
+    const spec = m.def.turret!;
+    const seat = m.def.seats[spec.seat];
+    const manned = (m.seats[spec.seat] ?? -1) >= 0;
+    const arc = seat?.arc ?? Math.PI;
+    const rel = Math.atan2(Math.sin(m.shown.aimYaw - m.shown.yaw - (seat?.facing ?? 0)), Math.cos(m.shown.aimYaw - m.shown.yaw - (seat?.facing ?? 0)));
+    const [lo, hi] = spec.pitch ?? [-0.5, 0.75];
+    const want = manned ? { yaw: (seat?.facing ?? 0) + Math.max(-arc, Math.min(arc, rel)), pitch: Math.max(lo, Math.min(hi, m.shown.aimPitch)) } : { yaw: 0, pitch: 0 };
+    let aim = this.turretAims.get(m.index);
+    if (!aim) this.turretAims.set(m.index, (aim = { ...want }));
+    const now = performance.now();
+    const dt = Math.min(0.1, (now - (this.turretAt.get(m.index) ?? now)) / 1000);
+    this.turretAt.set(m.index, now);
+    const step = TURRET_TURN * dt;
+    aim.yaw += Math.max(-step, Math.min(step, want.yaw - aim.yaw));
+    aim.pitch += Math.max(-step, Math.min(step, want.pitch - aim.pitch));
+    // The parts sit inside the glTF import's mirrored root (x flipped): a turn about the upright reads the other way
+    // round there, a pitch about x the same way; + pitch (up) is a turn of the barrel's nose up, -x in Babylon's frame.
+    parts.turret.rotationQuaternion = Quaternion.RotationAxis(Vector3.Up(), -aim.yaw);
+    if (parts.barrel) parts.barrel.rotationQuaternion = Quaternion.RotationAxis(Vector3.Right(), -aim.pitch);
+  }
+  private readonly turretAt = new Map<number, number>();
 
   /** Arc sentries' charge orbs (over the gun, where their arc starts), by mount index: the plain sphere stands in when the pack's ball can't play. */
   private readonly chargeOrbs = new Map<number, Mesh>();

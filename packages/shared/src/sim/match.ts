@@ -2514,7 +2514,8 @@ export class Match {
           c.yaw = centre + Math.max(-seat.arc, Math.min(seat.arc, d));
         }
         c.pitch = Math.max(-0.5, Math.min(0.75, c.pitch));
-        if (seat.weapon) {
+        // A vehicle that turns its own gun (MountDef.turret) is aimed by that seat alone (the roof gun doesn't turn it).
+        if (seat.weapon && (m.def.turret === undefined || m.def.turret.seat === c.mount!.seat)) {
           m.aimYaw = c.yaw;
           m.aimPitch = c.pitch;
         }

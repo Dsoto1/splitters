@@ -47,7 +47,7 @@ export function schemas() {
   const mount = obj({
     id: str, 'order?': int, displayName: str, kind: en(['turret', 'sentry', 'vehicle']), model: str, health: num, half: vec3, seats: arr(seat),
     enterRadius: num, respawnSeconds: num, blast: obj({ radius: num, damage: num }), 'vehicle?': vehicle, 'sentry?': sentry, 'glow?': str,
-    'airplane?': bool, 'rideHeight?': num, 'wheels?': obj({ model: str, at: arr(vec3, 1) }), 'cockpitEye?': vec3, blurb: str, 'notes?': notes,
+    'airplane?': bool, 'rideHeight?': num, 'wheels?': obj({ model: str, at: arr(vec3, 1) }), 'cockpitEye?': vec3, 'turret?': obj({ seat: int, 'pitch?': tup(2) }), 'fallback?': str, blurb: str, 'notes?': notes,
   });
   return { mount, seat };
 }
@@ -102,8 +102,10 @@ export function build(content, root = ROOT) {
     const name = file.replace(/^.*\//, '').replace(/\.json$/, '');
     if (d.id !== name) problems.push(`${file}: id must be ${name} (the file name)`);
     if (!/^[a-z][a-z0-9_]*$/.test(d.id)) problems.push(`${file}: id must be lower case letters, digits and _`);
-    for (const m of [d.model, d.wheels?.model]) if (m && !modelExists(m)) problems.push(`${file}: model ${m} not found under packages/client/public/models`);
+    for (const m of [d.model, d.wheels?.model, d.fallback]) if (m && !modelExists(m)) problems.push(`${file}: model ${m} not found under packages/client/public/models`);
     if (d.glow !== undefined && !isHex(d.glow)) problems.push(`${file}: glow must be a colour like #8f7bff`);
+    if (d.turret && !d.seats[d.turret.seat]?.weapon) problems.push(`${file}: turret.seat must be a seat with a mounted weapon (its aim turns the model's turret and barrel)`);
+    if (d.turret?.pitch && !(d.turret.pitch[0] <= 0 && d.turret.pitch[1] >= 0)) problems.push(`${file}: turret.pitch is [lowest, highest] drawn barrel pitch (rad), lowest ≤ 0 ≤ highest`);
     if (d.health <= 0) problems.push(`${file}: health must be above 0`);
     if (d.half.some((h) => h <= 0)) problems.push(`${file}: half sizes must be above 0`);
     if (d.respawnSeconds < 0 || d.enterRadius < 0 || d.blast.radius < 0 || d.blast.damage < 0) problems.push(`${file}: respawnSeconds, enterRadius and blast can't be negative`);

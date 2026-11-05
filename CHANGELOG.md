@@ -8,6 +8,11 @@ made only on a commit that passed CI on a check branch.
 
 ## Unreleased
 
+**Three new characters and a new tank** (the owner's Meshy models, 2026-11-05)
+- **Patches** (a hobo clown, Everyday Folk), **Tactical Soldier** (Soldiers) and **Umpire** (Everyday Folk) join the roster: standard size, the shared clips, their own first-person arms, a far copy and their own hit shapes. Names are placeholders for the owner.
+- **The Tank is a WWII tank now**: the owner's Meshy model replaces the Quaternius tank (kept as the fallback if it fails to load), 6.2 m long with a 1.2 m gun barrel, 19k triangles with a 5.6k far copy from 45 m and a baked normal map. Its turret turns and its barrel pitches with the cannon gunner's aim (the roof gun no longer moves it). Same collision box, health, handling and weapons; the driver now stands at the front left of the deck and both gunners on the turret roof.
+- Vehicles now draw their far copy (a lower level of detail) past its distance; before, vehicle models stayed at full detail at any range.
+
 **No more texture flicker**
 - **Map surfaces stop flickering**: where two pieces' faces lay in the same plane (a floor slab's edge under the wall over it, wall runs meeting at corners, trim and facades flush with walls, floors over floors, a block level with a tile, the joints of curved walls) they fought for the same pixels and shimmered at grazing angles and range. Maps are now built so only one face draws there, by a fixed priority (floors on top, walls over slab edges, trim and style-pack pieces over what they dress), and hidden faces are dropped. Nothing else about the look changes, except that floor slab edges no longer show as dark bands at random cells on outside walls. Collision is unchanged. A test checks every map in maps/ for overlaps left (none).
 - **MapMaker**: a warning when a block's face lies in the same plane as another piece's in a different look (only one shows), and **Overlaps** in the top bar highlights those places.

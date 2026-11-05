@@ -51,7 +51,7 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { Logger, NodeIO, getBounds } from '@gltf-transform/core';
 import { ALL_EXTENSIONS } from '@gltf-transform/extensions';
-import { clearNodeTransform, dedup, flatten, prune, quantize, weld } from '@gltf-transform/functions';
+import { clearNodeTransform, compactPrimitive, dedup, flatten, prune, quantize, weld } from '@gltf-transform/functions';
 import sharp from 'sharp';
 import { fbxToDocument } from './fbx.mjs';
 import { MESHY_QUANTIZE, markings, meshyDocument, normalJpeg, paintOut } from './meshy-mesh.mjs';
@@ -231,6 +231,110 @@ function boxToSource([min, max], place) {
 }
 
 /**
+ * `parts` (a vehicle whose turret and gun turn): the built mesh, and its lower level of detail, cut into named parts
+ * that the game turns on their own. Each part is `{ name, box: [[x, y, z] min, [x, y, z] max], pivot: [x, y, z],
+ * parent? }` in the built model's frame (metres, +Z forward, centred as built: the ground is the bottom of the
+ * bounds); a triangle goes to the last part whose box holds its centre (list a child after its parent), else it stays
+ * on the body (`hull`). Each part is a node `<name>` at its pivot (under its parent part's node, or the model's)
+ * holding a mesh node `<name>_body` (and `<name>_body_lod`); the body is `hull` (and `hull_lod`). The parts share
+ * the body's material and maps. A turret that turns uncovers the deck under it: `cap: { y, colour: [u, v] }` on a part
+ * lays a flat disc of that part's footprint over the hull's opening at height `y`, textured from one texel of the
+ * colour map (the deck's paint).
+ */
+function splitParts(doc, holder, parts) {
+  const root = doc.getRoot();
+  const buffer = root.listBuffers()[0];
+  const meshNodes = holder.listChildren().filter((n) => n.getMesh());
+  const full = meshNodes.find((n) => !n.getExtras()?.lod);
+  const lods = meshNodes.filter((n) => n.getExtras()?.lod);
+  const inside = (box, c) => c.every((v, k) => v >= box[0][k] && v <= box[1][k]);
+  const nodes = new Map();
+  for (const part of parts) {
+    const parent = part.parent ? nodes.get(part.parent) : null;
+    if (part.parent && !parent) throw new Error(`parts: ${part.name}'s parent ${part.parent} must come first`);
+    const node = doc.createNode(part.name).setTranslation(parent ? part.pivot.map((v, k) => v - parent.pivot[k]) : part.pivot);
+    (parent ? parent.node : holder).addChild(node);
+    nodes.set(part.name, { node, pivot: part.pivot, part });
+  }
+  /** One source mesh node cut into the parts (`suffix`: '' for full detail, '_lod' for the lower level). */
+  const cut = (src, suffix) => {
+    const prim = src.getMesh().listPrimitives()[0];
+    const P = prim.getAttribute('POSITION').getArray();
+    const idx = prim.getIndices().getArray();
+    const sets = parts.map(() => []);
+    const hull = [];
+    for (let i = 0; i < idx.length; i += 3) {
+      const c = [0, 1, 2].map((k) => (P[idx[i] * 3 + k] + P[idx[i + 1] * 3 + k] + P[idx[i + 2] * 3 + k]) / 3);
+      let at = -1;
+      for (let p = parts.length - 1; p >= 0 && at < 0; p--) if (inside(parts[p].box, c)) at = p;
+      (at < 0 ? hull : sets[at]).push(idx[i], idx[i + 1], idx[i + 2]);
+    }
+    const piece = (name, tris, pivot, extras) => {
+      const p = doc.createPrimitive().setMaterial(prim.getMaterial()).setMode(prim.getMode());
+      for (const sem of prim.listSemantics()) p.setAttribute(sem, prim.getAttribute(sem).clone());
+      p.setIndices(prim.getIndices().clone().setArray(new Uint32Array(tris)));
+      compactPrimitive(p);
+      if (pivot) {
+        const pos = p.getAttribute('POSITION');
+        const a = pos.getArray().slice();
+        for (let i = 0; i < a.length; i += 3) for (let k = 0; k < 3; k++) a[i + k] -= pivot[k];
+        pos.setArray(a);
+      }
+      const node = doc.createNode(name).setMesh(doc.createMesh(name).addPrimitive(p));
+      if (extras) node.setExtras(extras);
+      return node;
+    };
+    const extras = src.getExtras()?.lod ? src.getExtras() : null;
+    const hullNode = piece(`hull${suffix}`, hull, null, extras);
+    holder.addChild(hullNode);
+    parts.forEach((part, i) => {
+      if (!sets[i].length) throw new Error(`parts: no triangles in ${part.name}'s box`);
+      nodes.get(part.name).node.addChild(piece(`${part.name}_body${suffix}`, sets[i], part.pivot, extras));
+      console.log(`  part ${part.name}${suffix}: ${sets[i].length / 3} triangles`);
+    });
+    console.log(`  part hull${suffix}: ${hull.length / 3} triangles`);
+    for (const part of parts) if (part.cap) addCap(part, hullNode.getMesh().listPrimitives()[0]);
+    src.dispose();
+  };
+  /**
+   * The deck under a turning part: a flat disc (24 sides) filling the part's footprint at `cap.y`, added to the hull's
+   * own primitive (one mesh per part, so each level of detail finds its part by name).
+   */
+  const addCap = (part, prim) => {
+    const [[x0, , z0], [x1, , z1]] = part.box;
+    const r = part.cap.radius ?? [(x1 - x0) / 2, (z1 - z0) / 2];
+    const [cx, cz] = [part.pivot[0], part.pivot[2]];
+    const n = 24;
+    const add = { POSITION: [cx, part.cap.y, cz], NORMAL: [0, 1, 0], TEXCOORD_0: [...part.cap.colour], TANGENT: [1, 0, 0, 1] };
+    for (let i = 0; i < n; i++) {
+      add.POSITION.push(cx + r[0] * Math.cos((2 * Math.PI * i) / n), part.cap.y, cz + r[1] * Math.sin((2 * Math.PI * i) / n));
+      add.NORMAL.push(0, 1, 0);
+      add.TEXCOORD_0.push(...part.cap.colour);
+      add.TANGENT.push(1, 0, 0, 1);
+    }
+    const base = prim.getAttribute('POSITION').getCount();
+    for (const sem of prim.listSemantics()) {
+      if (!add[sem]) throw new Error(`parts: cap can't fill the hull's ${sem}`);
+      const a = prim.getAttribute(sem);
+      const old = a.getArray();
+      const out = new old.constructor(old.length + add[sem].length);
+      out.set(old);
+      out.set(add[sem], old.length);
+      a.setArray(out);
+    }
+    const idx = prim.getIndices().getArray();
+    const tris = [];
+    for (let i = 0; i < n; i++) tris.push(base, base + 1 + ((i + 1) % n), base + 1 + i);
+    const out = new Uint32Array(idx.length + tris.length);
+    out.set(idx);
+    out.set(tris, idx.length);
+    prim.getIndices().setArray(out);
+  };
+  cut(full, '');
+  for (const lod of lods) cut(lod, '_lod');
+}
+
+/**
  * Build one model. `place` (a body's placement, returned by its own build) puts an `interior` in exactly the body's
  * frame: the same yaw, scale, centring and base shift, so the two line up to the vertex. Returns the placement used.
  */
@@ -288,6 +392,7 @@ async function build(src, entry, pack, place = null) {
   scene.addChild(holder);
   // An interior says which part of the body it stands in for (`box`, in its glTF extras).
   if (place && entry.box) holder.setExtras({ cockpit: { box: entry.box } });
+  if (entry.parts) splitParts(doc, holder, entry.parts);
   for (const mat of doc.getRoot().listMaterials()) {
     mat.setMetallicFactor(0).setRoughnessFactor(entry.roughness ?? 0.85).setMetallicRoughnessTexture(null).setOcclusionTexture(null).setEmissiveTexture(null);
     for (const ext of mat.listExtensions()) ext.dispose();

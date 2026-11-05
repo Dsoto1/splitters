@@ -24,6 +24,8 @@ export function createMountNode(scene: Scene, models: ModelLibrary, model: strin
   void models.instantiate(def.model, `${name}_model`).then((node) => {
     if (root.isDisposed()) return node.dispose();
     node.parent = body;
+    // Its lower levels of detail (content/guns.json `lod`), per part, before the paint goes on.
+    models.attachLods(def.model, `${name}_model`, node);
     const { min } = node.getHierarchyBoundingVectors(true);
     const ride = def.rideHeight ?? (def.vehicle?.hover ? 0.35 : 0);
     node.position.y -= min.y - root.position.y - ride;
@@ -156,6 +158,17 @@ export function setMountGlow(root: TransformNode, glow: string, level: number): 
   const c = Color3.FromHexString(glow).scale(k);
   for (const m of list) m.emissiveColor = c;
   return k;
+}
+
+/**
+ * A vehicle's own turning gun (MountDef.turret; content/guns.json `parts`): the model's `turret` node (turns about
+ * its upright with the seat's aim) and `barrel` node (pitches), or null while the model loads or when it has none (the
+ * fallback model). They sit inside the glTF import's mirrored root, so View.turnTurret sets them in the model's own frame.
+ */
+export function mountTurret(root: TransformNode): { turret: TransformNode; barrel: TransformNode | null } | null {
+  const turret = root.getChildTransformNodes(false, (n) => n.name.endsWith('_model_turret'))[0];
+  if (!turret) return null;
+  return { turret, barrel: turret.getChildTransformNodes(false, (n) => n.name.endsWith('_model_barrel'))[0] ?? null };
 }
 
 /** The part of a mount that turns with the gunner's aim (turrets), or null. */

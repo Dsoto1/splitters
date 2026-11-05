@@ -370,7 +370,14 @@ in JSON, the behaviour in code (driving, suspension, flying, sentry aim and the 
    rider's `legDrop` is the floor under the cushion and `straddle` (radians) turns the thighs out either side of a
    saddle (the snowmobile).
 4. **Model:** `model` (and `wheels.model`) must exist under `packages/client/public/models` (content/models.json or
-   guns.json builds it). The palette picture comes from `pnpm content:rebuild`.
+   guns.json builds it). The palette picture comes from `pnpm content:rebuild`. `fallback` names the model drawn if
+   `model` fails to load (the one it replaced: the Tank's Quaternius model). A guns.json `lod` level is drawn on
+   vehicles too, per part (ModelLibrary.attachLods).
+   **A gun that turns on a vehicle** (the Tank): build the model in parts (guns.json `parts`, prepare-guns.mjs
+   `splitParts`: boxes in the built frame cut it into `hull`, `turret` and `barrel` on pivot nodes, with a `cap` disc
+   closing the deck under a turning turret), and give the mount `turret: { seat, pitch }`: that seat's aim turns the
+   turret within its `arc` and pitches the barrel within `pitch` (drawing only; shots leave from the gunner's eye as on
+   every mounted weapon). Measure the boxes and pivots on a first build without `parts`.
 5. **Generate and check:** `pnpm content:vehicles` (`node tools/content/vehicles.mjs`) checks the schema (an unknown
    field is an error), the weapons, the models, the seats by kind and the order, and writes
    `packages/shared/src/content/mounts.generated.ts`; `--check` only verifies it is up to date.

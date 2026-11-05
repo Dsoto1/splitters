@@ -12,9 +12,12 @@ import '@babylonjs/core/Meshes/instancedMesh';
 import { LoadAssetContainerAsync } from '@babylonjs/core/Loading/sceneLoader';
 // Side-effect import: registers the glTF 2.0 loader plugin.
 import './gltf.ts';
-import { MODEL_FALLBACKS } from '@tiletrigger/shared';
+import { MODEL_FALLBACKS, MOUNT_DEFS } from '@tiletrigger/shared';
 import { GLB, versioned } from '../assetUrl.ts';
 import { applyPropSurfaces } from './propSurfaces.ts';
+
+/** Mount models (content/vehicles `fallback`) fall back to the ones they replaced when they fail to load. */
+const MOUNT_MODEL_FALLBACKS: Readonly<Record<string, string>> = Object.fromEntries(Object.values(MOUNT_DEFS).flatMap((d) => (d.fallback ? [[d.model, d.fallback]] : [])));
 
 /** Base URL of built content (packages/client/public/models). */
 export const MODEL_BASE = `${import.meta.env.BASE_URL}models/`;
@@ -44,7 +47,7 @@ export class ModelLibrary {
         return c;
       });
       // Models from pack downloads (content/guns.json) fall back to the ones they replaced.
-      const fallback = MODEL_FALLBACKS[path];
+      const fallback = MODEL_FALLBACKS[path] ?? MOUNT_MODEL_FALLBACKS[path];
       if (fallback) p = p.catch(() => this.load(fallback));
       this.containers.set(path, p);
     }
@@ -194,6 +197,33 @@ export class ModelLibrary {
   }
 
   /**
+   * Give a plain copy of a model (`instantiate` without `instanced`: a vehicle) its lower levels of detail: each mesh
+   * whose level names it (LodLevel.owner) gets its own level meshes, parented beside it so the copy's paint, charring
+   * and hiding reach them too (a level is drawn in its mesh's place, with its mesh's transform). Returns how many were
+   * attached. `name` is the name the copy was made with.
+   */
+  attachLods(path: string, name: string, root: TransformNode): number {
+    const levels = (this.lods.get(path) ?? []).filter((l) => !l.billboard && l.owner);
+    let n = 0;
+    for (const mesh of root.getChildMeshes(false)) {
+      if (!(mesh instanceof Mesh) || !mesh.getTotalVertices()) continue;
+      let i = 0;
+      for (const l of levels) {
+        if (mesh.name !== `${name}_${l.owner!.name}`) continue;
+        const lod = new Mesh(`${mesh.name}_lod${++i}`, this.scene);
+        l.owner!.data.applyToMesh(lod, false);
+        lod.material = mesh.material;
+        lod.sideOrientation = mesh.sideOrientation;
+        lod.isPickable = false;
+        lod.parent = mesh.parent;
+        mesh.addLODLevel(l.distance, lod);
+        n++;
+      }
+    }
+    return n;
+  }
+
+  /**
    * A new copy of the model under its own root node. With `instanced`, its
    * meshes are GPU instances of the first copy (one draw call for all of
    * them; materials can't then differ per copy).
@@ -215,6 +245,12 @@ export class ModelLibrary {
 /** A lower level of detail of a model: its geometry in the model's space, where it takes over, and its material. */
 export interface LodLevel {
   data: VertexData;
+  /**
+   * The full-detail mesh it stands in for (its node's name without `_lod`, when the model has one by that name) and
+   * the level's geometry in that mesh's own space: a model of several parts that move (a tank's turret) gives each
+   * part its own level (ModelLibrary.attachLods).
+   */
+  owner?: { name: string; data: VertexData };
   /** Camera distance (m) from which this level is drawn. */
   distance: number;
   material: Material | null;
@@ -235,10 +271,20 @@ function takeLods(container: AssetContainer): LodLevel[] {
     container.meshes.splice(container.meshes.indexOf(m), 1);
     if (m.getTotalVertices()) {
       m.computeWorldMatrix(true);
+      const local = VertexData.ExtractFromMesh(m, true, true);
       const data = VertexData.ExtractFromMesh(m, true, true);
       // Into the model's space, like the merged full-detail mesh (the import mirrors the model).
       data.transform(m.getWorldMatrix());
-      levels.push({ lod: extras.lod, data, distance: extras.distance ?? 50, material: m.material, sideOrientation: m.sideOrientation, billboard: !!extras.billboard });
+      // And into its own full-detail mesh's space, when there is one by its name (`<name>_lod`).
+      const ownerName = m.name.endsWith('_lod') ? m.name.slice(0, -4) : null;
+      const ownerMesh = ownerName ? container.meshes.find((o): o is Mesh => o instanceof Mesh && o.name === ownerName && o.getTotalVertices() > 0) : undefined;
+      let owner: LodLevel['owner'];
+      if (ownerMesh && ownerName) {
+        ownerMesh.computeWorldMatrix(true);
+        local.transform(m.getWorldMatrix().multiply(ownerMesh.getWorldMatrix().clone().invert()));
+        owner = { name: ownerName, data: local };
+      }
+      levels.push({ lod: extras.lod, data, distance: extras.distance ?? 50, material: m.material, sideOrientation: m.sideOrientation, billboard: !!extras.billboard, ...(owner ? { owner } : {}) });
     }
     m.parent = null;
     m.dispose(false, false);
