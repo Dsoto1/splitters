@@ -372,6 +372,14 @@ up. The new Gnoll (Hyena Warrior) in the intake-2 sheets shows it.
 - **Owner's decisions:** keep the Hyena (Gnoll) and Snikkit (Goblin Mischief) and fix their hands with this;
   Bill is retired. Do the pistol-hold tweak after this.
 
+### Agent queue order (2026-11-05)
+1. Small environment follow-ups (below).
+2. Shingle Point asset refresh (owner: "start when it is a good time"). It doesn't need set pieces.
+3. Set pieces.
+4. Then the maps (MAP 21, Whiteout Station rebuild, colosseum, and the rest).
+
+The pistol-hold tweak follows the palm fix.
+
 ### Queued (owner, 2026-11-05): small environment follow-ups (next free agent)
 - **Tall grass:** keep it as it is on Coldwater Gulch and Shingle Point (0.7–1.4 m clumps).
 - **Pebbles bigger:**
