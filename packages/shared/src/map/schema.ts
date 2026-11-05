@@ -137,6 +137,11 @@ export const GLASS_KIND_LABELS: Record<GlassKind, string> = { breakable: 'Breaka
 
 export const Rotation = z.union([z.literal(0), z.literal(1), z.literal(2), z.literal(3)]);
 
+/** The build limit (MapMaker draws it): tiles stand within this many cells of the centre, across and along. */
+export const MAX_TILE_CELL = 256;
+/** ...and this many levels up or down. */
+export const MAX_TILE_LEVEL = 16;
+
 /**
  * A Classic Grid tile placement. Grid X/Y run along world X/Z; Z is the floor
  * level. Rotation is in clockwise quarter turns. This is the compatibility
@@ -145,9 +150,9 @@ export const Rotation = z.union([z.literal(0), z.literal(1), z.literal(2), z.lit
 export const TilePlacement = z.object({
   id: StableId,
   tile: ContentId,
-  x: z.number().int().min(-256).max(256),
-  y: z.number().int().min(-256).max(256),
-  z: z.number().int().min(-16).max(16),
+  x: z.number().int().min(-MAX_TILE_CELL).max(MAX_TILE_CELL),
+  y: z.number().int().min(-MAX_TILE_CELL).max(MAX_TILE_CELL),
+  z: z.number().int().min(-MAX_TILE_LEVEL).max(MAX_TILE_LEVEL),
   rotation: Rotation.default(0),
   surfaces: TileSurfaces.optional(),
   /** Per-side wall choices (window, archway, half wall, no wall…); absent sides are `auto`. */

@@ -3,17 +3,18 @@
  * animated (its clips sampled, bones, aim and grip worked out) and how much of the after-clip work it gets, by its
  * distance from the camera. Pure, so it is tested on its own (client/test/animLod.test.ts).
  *
- * The rate is the slower of two rules: a time step (30 Hz at 15-35 m, 15 Hz at 35-70 m, 10 Hz beyond) and a frame
- * step (every 2nd, 3rd, 4th frame). At 60 fps the time step decides, as before; on a slow frame (25-40 fps, a busy
- * fight on a laptop) the time step alone was due every frame, so the LOD saved nothing just when it was needed most,
- * and the frame step keeps the saving.
+ * The rate is the slower of two rules: a time step (20 Hz at 15-35 m, 12 Hz at 35-70 m, 8 Hz beyond) and a frame
+ * step (every 3rd, 4th, 5th frame). On a slow frame (25-40 fps, a busy fight on a laptop) the time step alone was due
+ * every frame, so the LOD saved nothing just when it was needed most, and the frame step keeps the saving.
+ * Round 2 (docs/PERF_96.md, "Performance round 2") stepped each band less often (round 1: 30 / 15 / 10 Hz, every 2nd,
+ * 3rd, 4th frame; `animStep(d, false)`) and left the aim and grip refinement out past ANIM_LOD_NEAR (`coarse`).
  */
 
 /** Nearer than this (m): every frame, full detail. */
 export const ANIM_LOD_FULL = 15;
-/** 15 Hz past this (m). */
+/** 12 Hz past this (m), and the coarse after-clip detail. */
 export const ANIM_LOD_NEAR = 35;
-/** 10 Hz past this (m). */
+/** 8 Hz past this (m). */
 export const ANIM_LOD_FAR = 70;
 
 export interface AnimStep {
@@ -24,19 +25,27 @@ export interface AnimStep {
   /**
    * After-clip detail: `full` closes each hand's fingers on the gun afresh every evaluation; `cached` puts back the
    * finger pose of the last full close of the same grip (the fingers barely move on a held gun, and past ANIM_LOD_FULL
-   * a finger is a pixel or two). Everything else (aim, arm IK, the gun in the hands) is worked out at every distance.
+   * a finger is a pixel or two); the aim, arm IK and the gun in the hands are worked out as near. `coarse` (past
+   * ANIM_LOD_NEAR, where a character is some 40 pixels tall) keeps the aim pitch on the spine but leaves out the
+   * refinement: no arm IK or measured hand turns, no stock fitting against the chest or head, no stride warp; the gun
+   * rides in the right hand as the last full grip held it, and the fingers keep their last full close.
    */
-  detail: 'full' | 'cached';
+  detail: 'full' | 'cached' | 'coarse';
 }
 
 /** Every frame, full detail (near characters, your own body, a death). */
 export const EVERY_FRAME: AnimStep = { ms: 0, frames: 1, detail: 'full' };
-const MID: AnimStep = { ms: 1000 / 30, frames: 2, detail: 'cached' };
-const FAR: AnimStep = { ms: 1000 / 15, frames: 3, detail: 'cached' };
-const FARTHEST: AnimStep = { ms: 100, frames: 4, detail: 'cached' };
+const MID: AnimStep = { ms: 1000 / 20, frames: 3, detail: 'cached' };
+const FAR: AnimStep = { ms: 1000 / 12, frames: 4, detail: 'coarse' };
+const FARTHEST: AnimStep = { ms: 125, frames: 5, detail: 'coarse' };
+/** Round 1's steps (`?perfoff=animlod2`, for measuring against). */
+const MID_1: AnimStep = { ms: 1000 / 30, frames: 2, detail: 'cached' };
+const FAR_1: AnimStep = { ms: 1000 / 15, frames: 3, detail: 'cached' };
+const FARTHEST_1: AnimStep = { ms: 100, frames: 4, detail: 'cached' };
 
-/** How a character in view at `dist` m (from the camera, across the ground) is animated. */
-export function animStep(dist: number): AnimStep {
+/** How a character in view at `dist` m (from the camera, across the ground) is animated (`round2` false: round 1's steps). */
+export function animStep(dist: number, round2 = true): AnimStep {
+  if (!round2) return dist > ANIM_LOD_FAR ? FARTHEST_1 : dist > ANIM_LOD_NEAR ? FAR_1 : dist > ANIM_LOD_FULL ? MID_1 : EVERY_FRAME;
   return dist > ANIM_LOD_FAR ? FARTHEST : dist > ANIM_LOD_NEAR ? FAR : dist > ANIM_LOD_FULL ? MID : EVERY_FRAME;
 }
 

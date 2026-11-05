@@ -42,9 +42,10 @@
     },
     "grip": {
       "gripLong": [-0.045, 0, -0.03],
-      "supportLong": [-0.02, 0.04, 0],
+      "supportLong": [0, 0.03, 0.03],
       "supportPistol": [0, 0.06, -0.06],
-      "curlR": 0.8
+      "curlR": 0.6,
+      "curlL": 0.6
     }
   }
 }

@@ -8,6 +8,7 @@ import { Texture } from '@babylonjs/core/Materials/Textures/texture';
 import { TERRAIN_MATERIALS, TERRAIN_SURFACES, axisFaces, buildMapDecor, boxQuat, quatRotate, coreMaterials, coreThemes, vertexY, yawXZ, faceSlot, resolveSurface, styleKey, type MapDocument, type MaterialDefinition, type ResolvedStyle, type TerrainMaterial, type RenderFace, type TilePlacement, type WorldBox, visibleFaces } from '@tiletrigger/shared';
 import { materialPixels, patternSize } from './materials/patterns.ts';
 import { versioned } from './assetUrl.ts';
+import { jpegPixels, mergeLevel, type MergeSource } from './levelMerge.ts';
 
 /** Faces of a box: corners (clockwise from outside), outward normal, and the same before any turn (texture coordinates are laid out on those). */
 type Face = [corners: number[][], normal: readonly [number, number, number], flat: number[][], flatNormal: readonly [number, number, number]];
@@ -95,6 +96,8 @@ export class MapStyler {
   private readonly images: Map<string, Texture>;
   private meshes: Mesh[] = [];
   private terrainMeshes: Mesh[] = [];
+  /** The surface style each level and terrain mesh is drawn in (for merging, levelMerge.ts). */
+  private readonly styleOf = new Map<Mesh, ResolvedStyle>();
 
   /** `share`: reuse another styler's textures and materials (a second mesh set in the same scene, e.g. MapMaker's ghosted levels). */
   constructor(
@@ -140,6 +143,7 @@ export class MapStyler {
       mesh.material = this.material(g.style);
       mesh.isPickable = false;
       mesh.freezeWorldMatrix();
+      this.styleOf.set(mesh, g.style);
       return mesh;
     });
     return this.meshes;
@@ -226,7 +230,78 @@ export class MapStyler {
       mesh.material = this.material(style);
       mesh.isPickable = false;
       mesh.freezeWorldMatrix();
+      this.styleOf.set(mesh, style);
       this.terrainMeshes.push(mesh);
+    }
+  }
+
+  /**
+   * Level draw merging (levelMerge.ts, WebGL2): the level's and terrain's per-style meshes of every opaque, non-glowing
+   * style become a few meshes over shared array textures, and the per-style meshes, and the materials and textures
+   * nothing else uses, go. Resolves with how many draws the level was and is (null: nothing merged, all left as built).
+   */
+  async merge(name = 'map'): Promise<{ before: number; after: number; merged: string[] } | null> {
+    const all = [...this.meshes, ...this.terrainMeshes].filter((m) => !m.isDisposed());
+    const sources = this.mergeSources();
+    const result = await mergeLevel(this.scene, sources, name);
+    if (!result || this.scene.isDisposed) return null;
+    const names = result.merged.map((m) => m.name);
+    // The merged styles' meshes go (a style alone at its texture size stays as it was).
+    for (const m of result.merged) {
+      this.styleOf.delete(m);
+      m.dispose();
+    }
+    this.meshes = [...this.meshes.filter((m) => !m.isDisposed()), ...result.meshes];
+    this.terrainMeshes = this.terrainMeshes.filter((m) => !m.isDisposed());
+    this.dropUnused();
+    return { before: all.length, after: this.meshes.length + this.terrainMeshes.length, merged: names };
+  }
+
+  /** The level's and terrain's per-style meshes that can merge (opaque, not glowing), with their surfaces' textures. */
+  mergeSources(): MergeSource[] {
+    const all = [...this.meshes, ...this.terrainMeshes].filter((m) => !m.isDisposed());
+    const sources: MergeSource[] = [];
+    for (const mesh of all) {
+      const style = this.styleOf.get(mesh);
+      if (!style) continue;
+      const def = style.material;
+      if (def.emissive) continue;
+      const tint = style.tint ? Color3.FromHexString(style.tint) : Color3.White();
+      const specular = def.shine * 0.6;
+      const power = 16 + def.shine * 96;
+      if (def.texture) {
+        const id = def.texture;
+        const url = (map: string) => versioned(`${import.meta.env.BASE_URL}textures/${id}_${map}.jpg`);
+        sources.push({ mesh, key: `img:${id}`, size: 512, color: () => jpegPixels(url('color'), 512), normal: () => jpegPixels(url('normal'), 512), tint, specular, power });
+      } else {
+        const size = patternSize(def);
+        sources.push({ mesh, key: `pat:${def.id}`, size, color: async () => materialPixels(def, size), normal: null, tint, specular, power });
+      }
+    }
+    return sources;
+  }
+
+  /** Materials and textures of this styler that nothing draws with any more (after a merge): freed, and made again if asked for. */
+  private dropUnused(): void {
+    const used = new Set<unknown>();
+    for (const [key, mat] of this.materials) {
+      if (mat.getBindedMeshes().length) {
+        for (const t of mat.getActiveTextures()) used.add(t);
+        continue;
+      }
+      mat.dispose(false, false);
+      this.materials.delete(key);
+    }
+    for (const mat of this.scene.materials) for (const t of mat.getActiveTextures()) used.add(t);
+    for (const [key, t] of this.images) {
+      if (used.has(t)) continue;
+      t.dispose();
+      this.images.delete(key);
+    }
+    for (const [key, t] of this.textures) {
+      if (used.has(t)) continue;
+      t.dispose();
+      this.textures.delete(key);
     }
   }
 

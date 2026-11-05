@@ -9,7 +9,7 @@ import type { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import type { AbstractMesh } from '@babylonjs/core/Meshes/abstractMesh';
 import type { GripTune, ModelPoint, WeaponHold } from '@tiletrigger/shared';
 import type { CharacterInstance, Clip } from '../content/characters.ts';
-import { gripReport, skinHandFrame } from './handProbe.ts';
+import { gripReport, skinHandFrame, type PalmCues } from './handProbe.ts';
 import { EVERY_FRAME, StepClock, type AnimStep } from './animLod.ts';
 import { TorsoSurface, armReach, reachAlong } from './torsoSurface.ts';
 import { GAIT, GAIT_CLIPS, clipCycleRate, clipGaitWeights, clipUpperWeights, gaitCycleRate, gaitWeights, matchClipPhase, matchPhase, strideWarp, type ClipLoop, type GaitClip } from './gait.ts';
@@ -139,6 +139,8 @@ const UPPER_BODY = [
 const HANDS_OFF: ReadonlySet<OneShot> = new Set(['reload', 'melee', 'melee_heavy', 'throw', 'interact', 'hit', 'hit_head', 'jab']);
 /** Overlays a fight plays again and again: their clips stay started between plays (see trigger). */
 const KEPT_OVERLAYS: ReadonlySet<OneShot> = new Set(['shoot', 'hit', 'hit_head']);
+/** At the coarse detail (far off), every this many evaluations the grip is worked out in full (stance and pitch change it). */
+const COARSE_FULL_EVERY = 4;
 /** Limb joints (arms, hands, legs, feet): a cheap ragdoll leaves them to a limp pose. */
 const LIMB = /^(clavicle|upperarm|lowerarm|hand|index|middle|ring|pinky|thumb|thigh|calf|foot|ball)_/;
 /** A hit flinch: how long it lasts (s), how fast it peaks (s), and how far each body part goes at full strength (radians). */
@@ -241,7 +243,7 @@ interface Arm {
    * which way its palm faces. A Meshy hand needn't sit on its joint as the rig's hand does (the dapper's palm
    * faced away from the grip in the clips' hold), so it is turned onto the grip by this frame (gripHand).
    */
-  frame?: { along: Vector3; palm: Vector3 };
+  frame?: { along: Vector3; palm: Vector3 } & Partial<PalmCues>;
   /** Knuckles used to build the hand's frame. */
   index: TransformNode;
   pinky: TransformNode;
@@ -250,7 +252,7 @@ interface Arm {
 }
 
 /** A character's animation gate: while `skip` is set its clips are not evaluated (see CharacterAnimator.stepAt). */
-interface AnimGate {
+export interface AnimGate {
   skip: boolean;
 }
 
@@ -280,7 +282,7 @@ export function worldTurn(parent: TransformNode, axisWorld: Vector3, angle: numb
   return Quaternion.RotationAxis(turnAxis, m.determinant() < 0 ? -angle : angle);
 }
 
-function patchAnimatables(): void {
+export function patchAnimatables(): void {
   if (gatePatched) return;
   gatePatched = true;
   const proto = Animatable.prototype as unknown as { _animate(delay: number): boolean; target: { _animGate?: AnimGate } | null };
@@ -354,7 +356,7 @@ export class CharacterAnimator {
       if (measured) {
         const gripOffset = Math.max(MIN_GRIP_OFFSET, GRIP_RADIUS_MEASURED + (measured.thickness - REF_HAND_THICKNESS) / 2);
         // The hand's own frame, read off its skin (its measured palm side is the rig's, which a Meshy hand needn't match).
-        const frame = skinHandFrame(ch.meshes, hand, ch.joints.get(`thumb_01_${side}`) ?? thumb, side) ?? undefined;
+        const frame = skinHandFrame(ch.meshes, (n) => ch.joints.get(n), side, measured.palmSide) ?? undefined;
         return { upper, lower, hand, palm: new Vector3(...measured.palm), gripOffset, curl: measured.curl, span: measured.length, fingers, index, pinky, knuckle, thumb, ...(frame ? { frame } : {}) };
       }
       // The rig's own hands: the palm sits a little over halfway from the wrist to the middle knuckle.
@@ -432,6 +434,7 @@ export class CharacterAnimator {
     this.grip = weapon ? grip : null;
     this.external = null;
     this.inHand.valid = false;
+    this.armPose = null;
     this.unplaced = false;
     if (weapon) {
       weapon.parent = this.ch.root;
@@ -1262,7 +1265,8 @@ export class CharacterAnimator {
     const up = Vector3.Up();
     // The hips (and with them the legs) turn toward the motion; the spine above turns back by as
     // much (less the long gun's blade), so the shoulders stay square to the aim. Turns are about world axes (worldTurn).
-    this.warpStride();
+    // Far off (animation LOD's coarse detail) the stride isn't warped: a few pixels of leg.
+    if (this.detail !== 'coarse') this.warpStride();
     const hipTurn = this.twist;
     const hips = this.pelvis;
     const hipsParent = hips?.parent as TransformNode | null | undefined;
@@ -1311,6 +1315,37 @@ export class CharacterAnimator {
    * the hands elsewhere, the weapon rides in the right hand.
    */
   private placeWeapon(root: TransformNode, rootRot: Quaternion, weapon: TransformNode, grip: WeaponHold, arms: { r: Arm; l: Arm }, space: SkeletonSpace): void {
+    // Far off (animation LOD's coarse detail, past ANIM_LOD_NEAR): no arm IK, hand turns or stock fitting. The arms take
+    // back the pose of the last full grip relative to the shoulders (which the spine has already bent for the aim), the
+    // gun rides in the right hand as that grip held it and the fingers keep their last close. A full grip is worked out
+    // when there is none of this weapon yet, and every COARSE_FULL_EVERY evaluations to follow stance and pitch.
+    const armsKept = this.armPose;
+    if (
+      this.detail === 'coarse' &&
+      armsKept?.grip === grip &&
+      this.inHand.valid &&
+      this.ik >= 0.999 &&
+      grip.style !== 'melee' &&
+      ++this.coarseRun % COARSE_FULL_EVERY !== 0
+    ) {
+      armsKept.joints.forEach((j, i) => {
+        const q = armsKept.rots[i];
+        if (q) j.rotationQuaternion = q.clone();
+      });
+      this.keepFingers(arms.r);
+      if (grip.support) this.keepFingers(arms.l);
+      const hand = handFrame(arms.r);
+      const scaleC = root.absoluteScaling.x;
+      const rotC = hand.rot.multiply(this.inHand.rot);
+      const atC = hand.pos.add(this.inHand.pos.scale(scaleC).applyRotationQuaternion(hand.rot));
+      weapon.position.copyFrom(Vector3.TransformCoordinates(atC, root.getWorldMatrix().clone().invert()));
+      weapon.rotationQuaternion = Quaternion.Inverse(rootRot).multiply(rotC);
+      if (this.unplaced) {
+        this.unplaced = false;
+        weapon.setEnabled(true);
+      }
+      return;
+    }
     const scale = root.absoluteScaling.x;
     const aim = rootRot.multiply(Quaternion.RotationAxis(Vector3.Up(), this.aimYaw)).multiply(Quaternion.RotationAxis(Vector3.Right(), -this.pitch));
     const point = (origin: Vector3, rot: Quaternion, p: ModelPoint) => origin.add(new Vector3(p[0], p[1], p[2]).scale(scale).applyRotationQuaternion(rot));
@@ -1442,6 +1477,15 @@ export class CharacterAnimator {
       this.inHand.valid = true;
     }
     if (!gripped) this.curl(space, arms.r, 1);
+    // The arms' pose of this full grip, for the coarse detail far off.
+    if (gripped && w >= 0.999) {
+      const joints = [arms.r.upper, arms.r.lower, arms.r.hand, ...(support ? [arms.l.upper, arms.l.lower, arms.l.hand] : [])];
+      const kept = this.armPose?.joints.length === joints.length ? this.armPose : { grip, joints, rots: joints.map(() => new Quaternion()) };
+      kept.grip = grip;
+      kept.joints = joints;
+      joints.forEach((j, i) => kept.rots[i]!.copyFrom(j.rotationQuaternion ?? Quaternion.Identity()));
+      this.armPose = kept;
+    }
     const carried = { rot: hand.rot.multiply(this.inHand.rot), pos: hand.pos.add(this.inHand.pos.scale(scale).applyRotationQuaternion(hand.rot)) };
     const at = gripped ? Vector3.Lerp(carried.pos, gripped.pos, w) : carried.pos;
     const rot = gripped ? Quaternion.Slerp(carried.rot, gripped.rot, w) : carried.rot;
@@ -1455,6 +1499,11 @@ export class CharacterAnimator {
     }
   }
 
+  /** The arms' joints as the last full grip left them (animation LOD's `coarse` detail), for this grip. */
+  private armPose: { grip: WeaponHold; joints: TransformNode[]; rots: Quaternion[] } | null = null;
+  /** Coarse evaluations so far (every COARSE_FULL_EVERY-th works the grip out in full). */
+  private coarseRun = 0;
+
   /** Each hand's fingers as the last full close left them (animation LOD's `cached` detail), for this grip and weight. */
   private readonly fingerPose = new Map<Arm, { grip: WeaponHold | null; weight: number; rots: Quaternion[] }>();
 
@@ -1463,9 +1512,22 @@ export class CharacterAnimator {
    * last full close of the same grip and weight gave them: about 40 joint matrices and decompositions a hand saved,
    * for a finger pose that doesn't change on a held gun.
    */
+  /** Coarse detail: the fingers' last full close of this grip put back (whatever its weight), if there is one. */
+  private keepFingers(arm: Arm): void {
+    const kept = this.fingerPose.get(arm);
+    if (!kept || kept.grip !== this.grip) return;
+    let i = 0;
+    for (const chain of arm.fingers) {
+      for (const joint of chain) {
+        const q = kept.rots[i++];
+        if (q) joint.rotationQuaternion = q.clone();
+      }
+    }
+  }
+
   private curl(space: SkeletonSpace, arm: Arm, weight: number, onto?: () => Vector3): void {
     const kept = this.fingerPose.get(arm);
-    if (this.detail === 'cached' && kept && kept.grip === this.grip && Math.abs(kept.weight - weight) < 1e-3) {
+    if (this.detail !== 'full' && kept && kept.grip === this.grip && Math.abs(kept.weight - weight) < 1e-3) {
       let i = 0;
       for (const chain of arm.fingers) {
         for (const joint of chain) {
@@ -1934,7 +1996,7 @@ export function armsFrom(joints: Map<string, TransformNode>, meshes: readonly Ab
     if (!upper || !lower || !hand || !knuckle || !index || !thumb) return null;
     const pinky = get('pinky_01') ?? get('ring_01') ?? knuckle;
     const fingers = ['index', 'middle', 'ring', 'pinky'].map((f) => [1, 2, 3].map((j) => joints.get(`${f}_0${j}_${side}`)).filter((n): n is TransformNode => !!n)).filter((c) => c.length > 0);
-    const frame = skinHandFrame(meshes, hand, get('thumb_01') ?? thumb, side) ?? undefined;
+    const frame = skinHandFrame(meshes, (n) => joints.get(n), side) ?? undefined;
     return { upper, lower, hand, palm: knuckle.position.scale(0.6), gripOffset: GRIP_RADIUS, curl: 1, span: knuckle.position.length() * RIG_SPAN, fingers, index, pinky, knuckle, thumb, ...(frame ? { frame } : {}) };
   };
   const [r, l] = [arm('r'), arm('l')];

@@ -326,6 +326,18 @@ hands move up more into the gun. Looks as if their fingers are just pinching the
   Coldwater Gulch / Shingle Point, as the Kenney patches stood; smaller would need the Scale field per piece or a
   re-run of Replace all from the old map with Keep scale); a red meadow-flower variant and palette
   pictures for the species are open.
+### Performance round 2 (`wip/perf-2`, agent, 2026-11-05; from main 2c8f3e21, origin/main merged; check run on `check/perf-2`)
+Status: in progress. Details and numbers: docs/PERF_96.md, "Performance round 2".
+- **Done (code)**: static shadow cache (`game/shadowCache.ts`: static casters drawn only when a cascade moves past its
+  margin, every ~30 frames, or when they change; doors and gates join once still for 60 frames; WebGL2 depth blit);
+  level draw merging (`levelMerge.ts`, `MapStyler.merge`: per-style level and terrain meshes merged over array
+  textures, WebGL2); animation LOD round 2 (`animLod.ts`: 20/12/8 Hz, `coarse` detail past 35 m with the arms' last
+  full grip kept; creatures' clips on the same LOD); cheaper clip stops and node disposals (`animPatches.ts`); live
+  mesh candidates and frozen static materials (`meshSelection.ts`). A/B on one build:
+  `?perfoff=shadowcache,levelmerge,meshsel,animlod2`.
+- **Next**: finish the measurements, docs, CI green on `check/perf-2`, owner re-record on the M1.
+- **Resume**: check out `wip/perf-2`; the probe is a scratchpad script (docs/PERF_96.md says how it is set up).
+
 ### Queued (owner-approved, 2026-11-05): performance round 2 (next free agent slot)
 **Owner's second M1 Pro recording** (build 4e77fab; Market Town, TDM, 49 players, high, 60 fps cap). Files in the
 session scratchpad `perf2/`: the perf JSON and the trace.
@@ -390,6 +402,56 @@ The pistol-hold tweak follows the palm fix.
 - **Red meadow flower:**
   - add a red variant to `env.flower.meadow` (the generator, plus a new leaf-atlas cell if needed);
   - turn Serene City's one formerly-red flower back to red with Replace all or the inspector variant.
+<!-- palms -->
+### Palms the right way round (`wip/palms`, agent, 2026-11-05; from main 2c8f3e21, main merged in at ce8a893a)
+**Cause (confirmed):** `skinHandFrame` signed the hand's flat by the thumb's FIRST joint against the wrist joint, which
+sits nearly level with the flat; on 34 of 100 looks (the Gnoll, Honest Abe, Scamp, Salamander Warlord, Patches,
+Tactical Soldier, Space Marine, Gorgle, ...; own-finger and re-fitted hands alike, in-house rigs too) it picked the
+back of the hand. `gripHand` then turned the shooting palm OUT (drawn `sideR` -0.8..-1.0) and `cupHand` the support
+palm DOWN (`palmL` -0.7..-1.0), third person, first person and Character Select alike. The audit missed it
+(`sideR` was `Math.abs`), and the curl test then often scored such hands well (the back of the hand on the gun with
+the fingers bent "toward the gun", i.e. backwards). Creatures (Imp, Puglin) were not affected.
+- **Fix** (handProbe.ts): the palm's side comes from the hand's joints, first cue that speaks: handedness (index vs
+  little-finger knuckles across the fingers: right palm = across x along, left = along x across, in the mesh's
+  right-handed glTF space), the fingers' bend, the thumb's tip, the import's `palmSide`; the old rule last. Checked
+  against the rig's own hands (Ranger: agrees 0.95/0.90 with the rig's thumb reading) and a unit test
+  (`packages/client/test/handProbe.test.ts`). `drawnHand` signs the drawn flat the same way: `sideR` (shooting palm
+  in: +1) and new `palmL` (support palm up / round the shooting hand: +1) are signed.
+- **Tools:** grip audit flag `palm` (`sideR` < 0.25 or `palmL` < 0, third or first person; weight 3), `PALMS=old`
+  audits by the old rule; `__grips.palms()` (each hand's cues and votes), `__grips.palmRule('old')`; summary.md has a
+  palms column. e2e `characters`: the drawn-hand checks need `palmL` >= 0, and the Gnoll and Abe (rifle, pistol;
+  third and full-body first person) need `sideR` >= 0.6 and `palmL` >= 0.3.
+- **Audit (rifle + pistol + shotgun, 100 looks; before = same build with `PALMS=old`):** total 483 -> 384, flagged
+  83 -> 75, `palm` 38 -> 4. Without the palm flag 369 -> 372: fp 19 -> 8 and off 17 -> 11 better; back 18 -> 24 and
+  flat 51 -> 56 worse, nearly all the curl test on long-gun SUPPORT hands: a palm-up hand under the handguard curls
+  its fingers up round it, away from the support point at the guard's underside (the test measures to that point; to
+  the guard's line would suit it better: not changed). Tried and dropped: fingers curl toward the frame's palm instead
+  of "toward the gun" (Space Marine's shooting hand then curled off the grip).
+- **Tuned after the fix:** Gnoll `fixes.hands.l.curl 1` (its left paw was a rigid fist; rebuilt from the download):
+  13 -> 6 (flat: right paw's curl test, spikes: body cloth). Snikkit `fixes.hands.scale 0.75` (31 cm hands, rebuilt)
+  + `fixes.grip` (gripLong [-0.03, 0.015, -0.03], curlR 0.7, curlL 0.3, supportPistol [0, 0.02, -0.04]): 12 -> 0
+  (his palms were never flipped). Space Marine and Honest Abe: round 3's support offsets were tuned on flipped hands,
+  re-tuned (5 -> 3, 3 -> 3: palm -> flat).
+- **Still `palm`:** Boglurker (rigid frog hand 19-21 cm off the grip, first person palm out; was broken before),
+  Brass Hare (hands buried in huge cuffs; the drawn flat is the cuff's; same before), Shiba (shooting palm 0.22,
+  lying more under than beside the grip; same before), Rattles (pistol support hand on edge, -0.04; same before).
+- **Candidates for the next hands round** (new flags, mostly the support curl test): Pharaoh 3 -> 6 (back, spikes),
+  Gorgle, Vanguard, Croakley, Big Bab, Desert Ranger, Stealth Operative, Tactical Soldier (+back); Masked Figure,
+  Anoobys, Greyfang, Kenji, Seetah, WWII Infantry (+flat); Goblin Warlord (+off). Grips round 3's per-look support
+  offsets (`supportLong`, `rollL`) were all tuned on whatever way the hand was read then: worth a re-tune pass.
+- **Intake-2 verdicts:** "own fingers often score off/back" was this bug in part (own-finger Meshy hands were among
+  the flipped). Not re-decided: the keep-old looks (Frida, WWII Infantry, Grunt '68, Desert Ranger, Big Bab, Grandpa
+  Chains, Hazmat Joe) ship their OLD builds, and own/fit was chosen between builds no longer shipped: re-deciding
+  needs those alternatives rebuilt and re-audited (not done). The shipped builds after the fix: Frida, Grandpa Chains,
+  Hazmat 0; Grunt '68 3 -> 0, WWII Infantry 3 -> 3, Desert Ranger 5 -> 3, Big Bab 6 -> 6, Stealth Operative (fit)
+  3 -> 3, Beanie Alien (own) 3 -> 0, Tactical Soldier (own) 7 -> 3. No verdict clearly changes on this evidence.
+- **Checks:** typecheck clean; content:check OK (hitboxes and provenance regenerated for the rebuilt two); bundle
+  budget 2471 kB / 692 kB gzip; local e2e (`CI=1`) characters, characters2, characters3, visual PASS; local
+  test:changed ran everything (shared content changed) and only long bot/match simulations timed out under machine
+  load (load 25-33); **CI run 42092260434 on `check/palms` (7badaf91) green**. Not on main: the coordinator lands it.
+- Evidence: agent scratchpad `palms/` (summary/summary.md ranked, `summary/<id>-before-after.png`, `fp/` first and
+  third person before/after, `close/`, audits `before/`, `after/`, `after-final/`; tools in `palms/tools/`).
+<!-- /palms -->
 
 ### Open bug (found 2026-11-05): explosion debris can fall through the world
 On the env + intake merge (`check/env-land2`), physicsfx counted 32 debris bodies where it expected 10, with the
@@ -484,6 +546,26 @@ Owner request (2026-11-05): show the real buildable area.
   as a distinct outline inside it. The area outside the bounds should read as "scenery zone", not as an error.
 
 Also proposed: note pins, templates, mirror for team maps, a card-shot camera, and snap-to-surface/randomise for props.
+
+**Build area: done on `wip/grid` (agent, 2026-11-05); `check/grid` run 42093090058 green at 01ab568b (all shards: shared changed). Not on main yet.**
+- Shared: `editor/buildArea.ts` (`buildLimitRect`, `playableRect` = bounds else terrain extent, `buildZone`,
+  `insideBuildLimit`, `buildLimitReason`); `MAX_TILE_CELL` / `MAX_TILE_LEVEL` in the schema replace the literal
+  256 / 16; checkPlacement's refusal now says "past the build limit…". Test: `packages/shared/test/buildArea.test.ts`.
+- Client: `editor/buildAreaVisuals.ts` (owned by EditorView as `view.area`): local grid round the camera's look point
+  on the edited level (radius 12–40 cells with camera distance, fade, majors every 4, rebuilt only when the centre
+  moves 4 cells / radius / level changes); playable boundary (orange, + x-ray copy in rendering group 1); build limit
+  (white dashed + level-span posts + "BUILD LIMIT" labels); scenery band (hatched orange, 24 m, fading) and labels.
+  Top bar `#ed-grid-full` (Full grid). Camera clamp is now the build limit + 120 m, 600 m up. Status bar
+  (`#ed-target`) names the scenery zone / past the limit under the pointer. Photo mode hides all of it (the old
+  bounds outline was not hidden in thumbnails before).
+- Outlines, band and labels lie on the terrain where it rises above the edited level (`max(level, ground)`); labels
+  (rendering group 1, no fog) read from the usual south-facing view; the grid itself stays on the level plane (tiles
+  sit there), so on hilly terrain it shows only where the ground is below the level, as before.
+- e2e: editorux "The build area" block. Docs: BUILDING_KIT "Where you can build". `mapmaker.png` baseline
+  regenerated (the starter map's grid now fades out round the look point).
+- Not done / open: the grid isn't draped on terrain; the top bar at 960 px wide already overflowed by ~76 px before
+  this (Full grid adds ~32 px; only 1280 is checked); the camera may now fly 600 m up and out to the limit, which
+  draws the whole map (fine on desktop, not measured on weak GPUs).
 
 Waiting for the owner to mark which ones. This becomes the "MapMaker overhaul" in the agreed queue.
 

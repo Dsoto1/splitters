@@ -846,6 +846,64 @@ async function editoruxFlow(browser) {
   check((await page.evaluate(() => window.__editor.level)) === 1, 'Page Up still changes level');
   await page.keyboard.press('PageDown');
 
+  // The build area (owner, 2026-11-05): the grid stays local, round where the camera looks; the build limit and the
+  // playable boundary always show, with the scenery zone outside the boundary; a room there places; one past the
+  // build limit is refused, saying so; top bar Full grid covers the whole build area.
+  const area = () => page.evaluate(() => {
+    const s = window.__editor.view.scene;
+    const on = (n) => s.meshes.some((m) => m.name === n && m.isEnabled());
+    const g = s.meshes.find((m) => m.name === 'grid');
+    g?.refreshBoundingInfo();
+    return { reach: Math.round(g?.getBoundingInfo().boundingBox.extendSizeWorld.x ?? 0), gridOn: !!g?.isEnabled(), limit: on('buildLimit'), bounds: on('bounds'), band: on('sceneryBand') };
+  });
+  await settle();
+  const a0 = await area();
+  check(a0.gridOn && a0.limit && a0.reach > 40 && a0.reach < 400, `a local grid and the build limit are drawn (${JSON.stringify(a0)})`);
+  const boundsBefore = await page.evaluate(() => window.__editor.doc.bounds);
+  await page.evaluate((before) => window.__editor.run('Boundary', { kind: 'setBounds', before, after: { min: [-40, -40], max: [40, 40], style: 'invisible', height: 8 } }), boundsBefore);
+  await settle();
+  const a1 = await area();
+  check(a1.bounds && a1.band && a1.limit, `with a boundary: its outline and the scenery zone outside it (${JSON.stringify(a1)})`);
+  const placeAt = async (x, z) => {
+    await page.evaluate(([x, z]) => window.__editor.view.focus({ x, y: 0, z }), [x, z]);
+    await page.waitForFunction(([x, z]) => {
+      const p = window.__editor.view.project({ x, y: 0, z });
+      return Math.abs(p.x - innerWidth / 2) < innerWidth / 4 && Math.abs(p.y - innerHeight / 2) < innerHeight / 4;
+    }, [x, z], { timeout: T(10000) }).catch(() => {});
+    const p = await at(x, 0, z);
+    await page.mouse.move(p.x, p.y);
+    await settle();
+    const target = await page.textContent('#ed-target');
+    await page.mouse.click(p.x, p.y);
+    await settle();
+    return target;
+  };
+  await clickTool(page, '[data-tool="tile:core.room"]');
+  const areaTiles = (await doc()).classicStructure.tiles.length;
+  const sceneryNote = await placeAt(64, -64);
+  check((await doc()).classicStructure.tiles.some((t) => t.x === 8 && t.y === -8), 'a room in the scenery zone (outside the boundary) places');
+  check(/Scenery zone/.test(sceneryNote ?? ''), `hovering there says it is the scenery zone (${sceneryNote})`);
+  const beyondNote = await placeAt(2072, 0);
+  const limitRefusal = (await page.textContent('#ed-toast')) ?? '';
+  check((await doc()).classicStructure.tiles.length === areaTiles + 1 && /build limit/.test(limitRefusal), `a room past the build limit is refused, naming it (${limitRefusal})`);
+  check(/Past the build limit/.test(beyondNote ?? ''), `hovering past it says so (${beyondNote})`);
+  await page.click('#ed-grid-full');
+  await settle();
+  const a2 = await area();
+  check(a2.gridOn && a2.reach > 2000 && (await page.getAttribute('#ed-grid-full', 'aria-pressed')) === 'true', `Full grid covers the whole build area (${JSON.stringify(a2)})`);
+  await page.click('#ed-grid-full');
+  await settle();
+  check((await area()).reach < 400, 'and off again it is local');
+  await page.click('#ed-grid');
+  await settle();
+  const a3 = await area();
+  check(!a3.gridOn && a3.limit && a3.bounds, `Grid off hides the grid, not the boundary or the build limit (${JSON.stringify(a3)})`);
+  await page.click('#ed-grid');
+  await page.keyboard.press('Control+KeyZ');
+  await page.keyboard.press('Control+KeyZ');
+  check((await doc()).classicStructure.tiles.length === areaTiles && JSON.stringify((await doc()).bounds) === JSON.stringify(boundsBefore), 'undo takes the room and the boundary back out');
+  await page.keyboard.press('Escape');
+
   // A floor over a piece two levels tall (the owner's case, 2026-11-05): the Triumphal Arch holds its cell on Level 1
   // too, so a room there is refused, saying what to do; a Platform there becomes the arch's own floor, and the arch's
   // inspector ticks it on and off.
@@ -1573,8 +1631,10 @@ async function canyonFlow(browser) {
   // The game: terrain meshes per ground material, and players stand on the ground.
   await page.goto(`${CLIENT}/?offline=canyon`);
   await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown', null, { timeout: T(60000) });
-  await page.waitForFunction(() => window.__cs.view.scene.meshes.filter((m) => m.name.includes('_terrain_')).length >= 5, null, { timeout: T(15000) }).catch(() => {});
-  const grounds = await page.evaluate(() => window.__cs.view.scene.meshes.filter((m) => m.name.includes('_terrain_')).map((m) => m.name.split('_terrain_')[1]));
+  // Each ground material is its own mesh, or (WebGL2) merged with the level over array textures (levelMerge.ts): by name.
+  const terrainNames = () => [...window.__cs.view.scene.meshes.map((m) => m.name), ...(window.__cs.view.levelDraws?.merged ?? [])].filter((n) => n.includes('_terrain_'));
+  await page.waitForFunction(`(${terrainNames})().length >= 5`, null, { timeout: T(15000) }).catch(() => {});
+  const grounds = await page.evaluate(`(${terrainNames})().map((n) => n.split('_terrain_')[1])`);
   check(grounds.length >= 5 && grounds.includes('grass') && grounds.includes('stone'), `canyon terrain is drawn in its ground materials (${grounds.join(', ')})`);
   const y = await page.evaluate(() => window.__cs.local.eye.y);
   check(y > 0.5 && y < 3, `the player stands on the ground at a base (eye ${y.toFixed(2)} m)`);
@@ -3953,9 +4013,11 @@ async function drawnHands(page) {
   // The palm checks above measure the joints. Where the hands are DRAWN (each hand's skin through its skeleton,
   // handProbe.ts): on the grip, the shooting hand's fingers along the barrel and its flat against the grip's side.
   // A Meshy hand sits on its joint its own way: the dapper's palm faced the camera and its edge the grip in every
-  // view while the joint checks passed (owner, live 2026-10-31).
-  const badHand = (d, far = 0.09) => !d || d.r === null || d.r > far || d.aheadR < 0.6 || d.sideR < 0.6;
-  const fmtHand = (d) => (d ? `${(d.r * 100).toFixed(0)} cm, along ${d.aheadR.toFixed(2)}, flat ${d.sideR.toFixed(2)}` : 'none');
+  // view while the joint checks passed (owner, live 2026-10-31). The palm's side counts (`sideR` 1: the shooting palm
+  // in against the grip; -1: its back there, palm out), and the support palm faces up, not down (`palmL`): some hands
+  // were read back to front and turned onto the gun that way (owner, 2026-11-05).
+  const badHand = (d, far = 0.09) => !d || d.r === null || d.r > far || d.aheadR < 0.6 || d.sideR < 0.6 || (d.palmL !== null && d.palmL < 0);
+  const fmtHand = (d) => (d ? `${(d.r * 100).toFixed(0)} cm, along ${d.aheadR.toFixed(2)}, palm in ${d.sideR.toFixed(2)}, support palm ${d.palmL === null ? '-' : d.palmL.toFixed(2)}` : 'none');
   const drawnMisses = [];
   for (const look of ['core.dapper', 'core.biscuit', 'core.ranger', 'core.galloway']) {
     for (const weapon of ['core.pistol', 'core.rifle', 'core.grapple']) {
@@ -3970,7 +4032,20 @@ async function drawnHands(page) {
       }
     }
   }
-  check(drawnMisses.length === 0, `hands are drawn on the grip, fingers along the gun, flat to its side (${drawnMisses.join('; ') || 'all'})`);
+  check(drawnMisses.length === 0, `hands are drawn on the grip, fingers along the gun, the shooting palm in against its side and the support palm up (${drawnMisses.join('; ') || 'all'})`);
+  // Hands whose palms were read back to front (the thumb's first joint said the back of the hand): the Gnoll's paws
+  // and Honest Abe's hands were turned onto the gun palm out (shooting) and palm down (support), owner 2026-11-05.
+  const flipped = [];
+  for (const look of ['core.hyena', 'core.abe']) {
+    for (const weapon of ['core.rifle', 'core.pistol']) {
+      for (const view of ['third', 'body']) {
+        await page.evaluate(([l, w, v]) => window.__grips.pose(l, w, v), [look, weapon, view]);
+        const d = await page.evaluate(() => window.__grips.drawn());
+        if (!d || d.sideR < 0.6 || d.palmL === null || d.palmL < 0.3) flipped.push(`${look} ${weapon} ${view}: ${fmtHand(d)}`);
+      }
+    }
+  }
+  check(flipped.length === 0, `palms read the right way round: shooting palm in, support palm up (${flipped.join('; ') || 'the Gnoll and Honest Abe, rifle and pistol, third and first person'})`);
   // The Spear (a 2 m model held a third of the way back): the shooting hand drawn on the shaft, fingers along it,
   // in every view.
   const spearMisses = [];
@@ -3992,8 +4067,8 @@ async function gripsInPlay(browser) {
   const page = await (await browser.newContext({ viewport: { width: 960, height: 540 } })).newPage();
   const errors = [];
   page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
-  const badHand = (d) => !d || d.r === null || d.r > 0.09 || d.aheadR < 0.6 || d.sideR < 0.6;
-  const fmt = (d) => (d ? `${d.mode ?? ''} ${(d.r * 100).toFixed(0)} cm, along ${d.aheadR.toFixed(2)}, flat ${d.sideR.toFixed(2)}` : 'no hands on a gun');
+  const badHand = (d) => !d || d.r === null || d.r > 0.09 || d.aheadR < 0.6 || d.sideR < 0.6 || (d.palmL !== null && d.palmL < 0);
+  const fmt = (d) => (d ? `${d.mode ?? ''} ${(d.r * 100).toFixed(0)} cm, along ${d.aheadR.toFixed(2)}, palm in ${d.sideR.toFixed(2)}, support palm ${d.palmL === null ? '-' : d.palmL.toFixed(2)}` : 'no hands on a gun');
   // Your own hands, measured once the switch has settled (a few tries: the gun comes up over a quarter second).
   const own = async () => {
     let d = null;
