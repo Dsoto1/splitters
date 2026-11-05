@@ -72,3 +72,37 @@ describe('level draw merging', () => {
     expect(other.indices).toEqual([0, 1, 2, 0, 2, 3]);
   });
 });
+
+describe('level draw merging on a built level', () => {
+  it("keeps every triangle of the level's styles, upper-storey floors (format v26) included", async () => {
+    const { NullEngine } = await import('@babylonjs/core/Engines/nullEngine');
+    const { Scene } = await import('@babylonjs/core/scene');
+    const { MapStyler } = await import('../src/mapMeshes.ts');
+    const { buildMapGeometry } = await import('@tiletrigger/shared');
+    const { makeMap } = await import('../../shared/test/helpers.ts');
+    const scene = new Scene(new NullEngine());
+    const arch = { id: 't_arch', tile: 'imperial.triumphal_arch', x: 2, y: 3, z: 0, rotation: 0 as const };
+    const plain = makeMap([arch], [[16, 4, 24]]);
+    const floored = makeMap([{ ...arch, upperFloors: ['0,0,1'] }], [[16, 4, 24]]);
+    const tris = (doc: typeof plain) => {
+      const styler = new MapStyler(scene);
+      styler.build(doc, buildMapGeometry(doc));
+      const sources = styler.mergeSources();
+      const before = sources.reduce((n, s) => n + s.mesh.getTotalIndices() / 3, 0);
+      let after = 0;
+      for (const group of planLayers(sources).values()) {
+        const chunks = mergeGeometry(group, (m) => ({ positions: m.getVerticesData('position')!, normals: m.getVerticesData('normal')!, uvs: m.getVerticesData('uv')!, indices: m.getIndices()! }));
+        for (const c of chunks.values()) after += c.indices.length / 3;
+      }
+      return { before, after, sources: sources.length };
+    };
+    const a = tris(plain);
+    const b = tris(floored);
+    expect(a.sources).toBeGreaterThan(0);
+    expect(a.after).toBe(a.before);
+    expect(b.after).toBe(b.before);
+    // The added floor's slab is in the merge.
+    expect(b.before).toBeGreaterThan(a.before);
+    scene.dispose();
+  });
+});

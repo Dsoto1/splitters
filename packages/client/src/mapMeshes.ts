@@ -242,6 +242,23 @@ export class MapStyler {
    */
   async merge(name = 'map'): Promise<{ before: number; after: number } | null> {
     const all = [...this.meshes, ...this.terrainMeshes].filter((m) => !m.isDisposed());
+    const sources = this.mergeSources();
+    const result = await mergeLevel(this.scene, sources, name);
+    if (!result || this.scene.isDisposed) return null;
+    // The merged styles' meshes go (a style alone at its texture size stays as it was).
+    for (const m of result.merged) {
+      this.styleOf.delete(m);
+      m.dispose();
+    }
+    this.meshes = [...this.meshes.filter((m) => !m.isDisposed()), ...result.meshes];
+    this.terrainMeshes = this.terrainMeshes.filter((m) => !m.isDisposed());
+    this.dropUnused();
+    return { before: all.length, after: this.meshes.length + this.terrainMeshes.length };
+  }
+
+  /** The level's and terrain's per-style meshes that can merge (opaque, not glowing), with their surfaces' textures. */
+  mergeSources(): MergeSource[] {
+    const all = [...this.meshes, ...this.terrainMeshes].filter((m) => !m.isDisposed());
     const sources: MergeSource[] = [];
     for (const mesh of all) {
       const style = this.styleOf.get(mesh);
@@ -260,17 +277,7 @@ export class MapStyler {
         sources.push({ mesh, key: `pat:${def.id}`, size, color: async () => materialPixels(def, size), normal: null, tint, specular, power });
       }
     }
-    const result = await mergeLevel(this.scene, sources, name);
-    if (!result || this.scene.isDisposed) return null;
-    // The merged styles' meshes go (a style alone at its texture size stays as it was).
-    for (const m of result.merged) {
-      this.styleOf.delete(m);
-      m.dispose();
-    }
-    this.meshes = [...this.meshes.filter((m) => !m.isDisposed()), ...result.meshes];
-    this.terrainMeshes = this.terrainMeshes.filter((m) => !m.isDisposed());
-    this.dropUnused();
-    return { before: all.length, after: this.meshes.length + this.terrainMeshes.length };
+    return sources;
   }
 
   /** Materials and textures of this styler that nothing draws with any more (after a merge): freed, and made again if asked for. */
