@@ -55,6 +55,20 @@ Owner's answers (2026-11-05):
   - Gnoll warrior (maybe Hyena Warrior), Iron Warden (maybe Iron Knight, or new) and "T Pose on Green Screen" (maybe
     CRT Robot, or new): the agent confirms each by rendering it beside the shipped character.
   - The intake lands in steps: new characters and the tank first, then the re-rigs.
+- Owner mapping (2026-11-05, final):
+  - **Re-rigs:**
+    - Iron Warden → Iron Knight; Gnoll warrior → Hyena Warrior; "T Pose on Green Screen" → CRT Robot.
+    - Monkey → Big Bab; Uniformed Worker → Customs Agent Zhao; Desert Sentinel → Desert Ranger.
+    - Elderly Man → Grandpa Chains; Old medieval king → Old King Halvard; Hazmat → Hazmat Joe; Regal Monarch →
+      King Aldric.
+    - Plus the Dapper, Croakley, Frida, Field Medic Automaton, Stealth Operative, Beanie Alien, Alien Biker,
+      WWII Infantry and Grunt '68.
+  - **Replacements** (same name and id, new model): Tattered Circus Nightmare → Giggles; Bear Warrior → Barnaby
+    Bruin.
+  - **New characters:** Patches (clown), Tactical Soldier, Umpire, Panda, "The Butcher" (the Painter file), an old
+    man in his 90s, Frost Viking, an ancient Chinese soldier.
+  - **Retire:** Briggs and Hollis.
+  - **Never use:** Alfred Neubauer, the 6 unrigged statics, the baseball animations.
 - **Download format the owner was asked to use from now on:**
   - Meshy rig with the Mixamo-style skeleton, fingers included;
   - GLB with "Rigged Character" on: rest pose, no animations (we ignore the clips);
