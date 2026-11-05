@@ -14,6 +14,7 @@ import {
   newTerrain,
   propFootprint,
   propTilts,
+  replacePropsCommand,
   scatterProps,
   serializeMap,
   settlePropsCommand,
@@ -103,6 +104,24 @@ describe('props on slopes', () => {
     const moved = history.doc.entities.find((e) => e.id === 'log')!;
     expect(moved.position[1]).toBeCloseTo(settledPropY(t, moved as PropEntity)!, 5);
     expect(moved.position[1]).toBeGreaterThan(0.5);
+  });
+
+  it('Replace all keeps a bedded prop bedded under its new footprint; one standing above the ground stays put', () => {
+    const map = hillMap();
+    const t = map.terrain!;
+    const bedded = prop('a', 'prop.fern', 8, 0, 0);
+    bedded.position[1] = settledPropY(t, bedded)!;
+    const raised = prop('b', 'prop.fern', -8, 0, 0);
+    raised.position[1] = settledPropY(t, raised)! + 1.2;
+    map.entities.push(bedded, raised);
+    const cmd = replacePropsCommand(map, 'prop.fern', 'env.fern.bracken');
+    const after = cmd.kind === 'updateEntities' ? (cmd.after as PropEntity[]) : [];
+    const a = after.find((e) => e.id === 'a')!;
+    // The bracken at the fern's height is wider: bedded to the lowest ground under its own footprint.
+    expect(a.position[1]).toBe(settledPropY(t, a));
+    expect(a.position[1]).toBeLessThan(bedded.position[1]);
+    expect(after.find((e) => e.id === 'b')!.position).toEqual(raised.position);
+    expect(floatingProps({ ...map, entities: [a] })).toEqual([]);
   });
 
   it('scatters plants bedded into the slope', () => {

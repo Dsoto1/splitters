@@ -61410,13 +61410,13 @@
       "id": "prop_3329",
       "position": [
         194,
-        -8.18,
+        -8.17,
         -130.882
       ],
       "kind": "prop",
-      "model": "prop.grass_tall",
+      "model": "env.grass.clump",
       "yaw": 5.1,
-      "scale": 0.93,
+      "scale": 1.55,
       "solid": true,
       "tint": null
     },
@@ -61438,13 +61438,13 @@
       "id": "prop_3331",
       "position": [
         194,
-        -8.127,
+        -8.11,
         -121.186
       ],
       "kind": "prop",
-      "model": "prop.grass_tall",
+      "model": "env.grass.clump",
       "yaw": 4.97,
-      "scale": 1.08,
+      "scale": 1.8,
       "solid": true,
       "tint": null
     },
@@ -61522,13 +61522,13 @@
       "id": "prop_3351",
       "position": [
         194,
-        1.561,
+        1.57,
         136.407
       ],
       "kind": "prop",
-      "model": "prop.grass_tall",
+      "model": "env.grass.clump",
       "yaw": 4.04,
-      "scale": 1,
+      "scale": 1.67,
       "solid": true,
       "tint": null
     },
@@ -66783,12 +66783,12 @@
     },
     {
       "id": "prop_4q1062m0wn",
-      "kind": "prop",
       "position": [
         -110,
         -0.68,
         1.2
       ],
+      "kind": "prop",
       "model": "prop.lantern_post",
       "yaw": 0,
       "scale": 1,
@@ -66797,12 +66797,12 @@
     },
     {
       "id": "prop_fmdjzllxyz",
-      "kind": "prop",
       "position": [
         -86,
         0.68,
         1.6
       ],
+      "kind": "prop",
       "model": "prop.lantern_post",
       "yaw": 0,
       "scale": 1,
@@ -66811,12 +66811,12 @@
     },
     {
       "id": "prop_148s84mud0",
-      "kind": "prop",
       "position": [
         -134.3,
         -1.12,
         36
       ],
+      "kind": "prop",
       "model": "prop.lantern_post",
       "yaw": 0,
       "scale": 1,
@@ -66825,12 +66825,12 @@
     },
     {
       "id": "prop_2cqzqhkrbl",
-      "kind": "prop",
       "position": [
         -134,
         -1.12,
         -40
       ],
+      "kind": "prop",
       "model": "prop.lantern_post",
       "yaw": 0,
       "scale": 1,
@@ -66839,12 +66839,12 @@
     },
     {
       "id": "prop_vhdg7v8tol",
-      "kind": "prop",
       "position": [
         104.6,
         -0.01,
         -25
       ],
+      "kind": "prop",
       "model": "prop.lantern_post",
       "yaw": 0,
       "scale": 1,
@@ -66853,12 +66853,12 @@
     },
     {
       "id": "prop_34lpnb9flt",
-      "kind": "prop",
       "position": [
         157.4,
         -0.43,
         -24
       ],
+      "kind": "prop",
       "model": "prop.lantern_post",
       "yaw": 0,
       "scale": 1,
@@ -66867,12 +66867,12 @@
     },
     {
       "id": "prop_dhn0keb53x",
-      "kind": "prop",
       "position": [
         -100,
         -0.58,
         4.5
       ],
+      "kind": "prop",
       "model": "prop.hedge",
       "yaw": 1.571,
       "scale": 1,
@@ -66881,12 +66881,12 @@
     },
     {
       "id": "prop_3ssx3p0wtr",
-      "kind": "prop",
       "position": [
         -82,
         0.64,
         -7.2
       ],
+      "kind": "prop",
       "model": "prop.hedge",
       "yaw": 1.344,
       "scale": 1,
@@ -105610,22 +105610,6 @@
     "style": "invisible",
     "height": 8
   },
-  "backdrop": {
-    "sky": "clear",
-    "scenery": "forest",
-    "ground": "grass",
-    "haze": 0.4,
-    "mist": 0.2
-  },
-  "physics": null,
-  "blood": null,
-  "teamSetup": {
-    "sizes": [
-      12,
-      12
-    ]
-  },
-  "dependencies": [],
   "paths": [
     {
       "id": "osm_21644223_0",
@@ -107474,5 +107458,21 @@
       "style": "cobble",
       "lay": true
     }
-  ]
+  ],
+  "backdrop": {
+    "sky": "clear",
+    "scenery": "forest",
+    "ground": "grass",
+    "haze": 0.4,
+    "mist": 0.2
+  },
+  "physics": null,
+  "blood": null,
+  "teamSetup": {
+    "sizes": [
+      12,
+      12
+    ]
+  },
+  "dependencies": []
 }

@@ -1,4 +1,4 @@
-// Small plants: broadleaf shrubs (env.shrub.*) and grass clumps (env.grass.*).
+// Small plants: broadleaf shrubs (env.shrub.*), grass clumps (env.grass.*), meadow flowers, ferns and eelgrass.
 //
 // Shrub: 4–7 short stems from one root, two orders of side shoots, leaf-cluster cards packed toward a squashed,
 // noisy ellipsoid. No collision; it conceals (bots spot someone inside only up close), sized from its bounds.
@@ -230,6 +230,54 @@ export function grassMesh(seed, g, look) {
       ids.push([m.vertex(add(pts[k], mul(side, -half)), nrm, [0, 1 - t], c, wind), m.vertex(add(pts[k], mul(side, half)), nrm, [1, 1 - t], c, wind)]);
     }
     const tipId = m.vertex(pts[segs], nrm, [0.5, 0], tint, [1, 0]);
+    for (let k = 0; k + 1 < segs; k++) m.quad(ids[k][0], ids[k][1], ids[k + 1][1], ids[k + 1][0]);
+    m.tri(ids[segs - 1][0], ids[segs - 1][1], tipId);
+  }
+  return { grass: m };
+}
+
+/**
+ * Eelgrass (env.water.eelgrass): 6–8 long, narrow ribbons from one root, each four segments (a point at the tip),
+ * rising, leaning out and swinging back in a seeded S so the clump reads as soft water plants, twisted a little along
+ * their length. Vertex colour only (env.grass), strong sway. Decoration only. { grass: Mesh }.
+ */
+export function eelgrassMesh(seed, g, look) {
+  const r = rng(seed);
+  const m = new Mesh();
+  const [root, tip] = [toLinear(look.root), toLinear(look.tip)];
+  const alt = look.alt ? toLinear(look.alt) : tip;
+  const n = r.int(g.blades[0], g.blades[1]);
+  const segs = 4;
+  for (let b = 0; b < n; b++) {
+    const a = (b / n) * Math.PI * 2 + r.jitter(0.6);
+    const out = [Math.cos(a), 0, Math.sin(a)];
+    const base = mul(out, r.range(0, g.spread));
+    const h = g.height * r.range(0.55, 1.05);
+    const lean = r.range(0.1, 0.35);
+    const swing = r.range(0.06, 0.16) * (r.chance(0.5) ? 1 : -1);
+    const flat = norm(cross([0, 1, 0], out));
+    const twist = r.jitter(0.9);
+    const w = g.width * r.range(0.8, 1.2);
+    const tint = r.chance(0.4) ? alt : tip;
+    const pts = [];
+    for (let k = 0; k <= segs; k++) {
+      const t = k / segs;
+      // Out with height, then a sideways S (a sine over the length) so no two ribbons are straight lines.
+      const side = Math.sin(t * Math.PI * 1.5) * swing * h;
+      pts.push(add(add(base, mul(out, lean * h * t * t)), add(mul(flat, side), [0, h * t * (1 - 0.25 * lean * t), 0])));
+    }
+    const ids = [];
+    for (let k = 0; k < segs; k++) {
+      const t = k / segs;
+      const rollT = twist * t;
+      const side = norm(add(mul(flat, Math.cos(rollT)), mul(out, Math.sin(rollT))));
+      const nrm = norm(add(mul(cross(side, norm(sub(pts[k + 1], pts[k]))), 0.4), [0, 1, 0]));
+      const half = (w / 2) * (1 - t * 0.45);
+      const c = root.map((v, i) => v + (tint[i] - v) * Math.min(1, t * 1.2));
+      const wind = [t * t * 1.3, 0];
+      ids.push([m.vertex(add(pts[k], mul(side, -half)), nrm, [0, 1 - t], c, wind), m.vertex(add(pts[k], mul(side, half)), nrm, [1, 1 - t], c, wind)]);
+    }
+    const tipId = m.vertex(pts[segs], [0, 1, 0], [0.5, 0], tint, [1.3, 0]);
     for (let k = 0; k + 1 < segs; k++) m.quad(ids[k][0], ids[k][1], ids[k + 1][1], ids[k + 1][0]);
     m.tri(ids[segs - 1][0], ids[segs - 1][1], tipId);
   }

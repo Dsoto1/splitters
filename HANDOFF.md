@@ -276,6 +276,56 @@ hands move up more into the gun. Looks as if their fingers are just pinching the
   several characters, including Meshy rigs with Meshy's finger weights once intake-2 lands.
 - Start it once a slot frees. It touches the hands, so after intake-2 step 2a.
 
+### Environment Phase 1c: pebbles, eelgrass, concealing fern, Replace all, maps updated (`wip/env-p1c`, agent, 2026-11-05; from main 4d511dd2, main baf26064 merged in; pushed, not merged)
+- **Done:**
+  - **Species:** `env.rock.pebbles` (category `rock`, generator kind `pebbles` in `env/rock.mjs`: 6–7 faceted convex
+    stones sunk a quarter, grey / sand, 55 tris; budget `rock: [64]`) and `env.water.eelgrass` (new family file
+    `content/environment/water.json`, kind `eelgrass` in `env/plants.mjs`: 7–8 S-curved ribbons, green / olive, 49
+    tris). Existing GLBs byte-identical. Fixture entries `env.rock.pebbles@1`, `env.water.eelgrass@1`.
+  - **Fern conceals:** `env.fern.bracken` assetVersion 2, `conceals: true`, role `cover` (cylinder r 0.363, h 0.555 at
+    scale 1, from its bounds; shape unchanged; fixture `@2`). The generator's rule now: ground cover / small rocks have
+    nav none; role cover iff they conceal; rocks never conceal.
+  - **Proof** (`packages/shared/test/conceal.test.ts`, "our fern and shrub hide players as the Kenney fern and small
+    bush did"): on what Replace all makes (height kept), standing / crouched / prone at the middle and just inside the
+    Kenney piece's radius, hidden exactly when the Kenney piece hid them (fern ×1, ×1.3, autumn ×0.85; small bush ×1,
+    autumn ×1.3); fern hides crouch + prone, small-bush-sized shrub prone only, as before; a bot 10 m away holds fire
+    at a crouched (fern) / prone (shrub) player and fires once they stand, the same as with the Kenney piece, and does
+    fire in the open (control). Then `prop.fern` and `prop.bush_small` were retired.
+  - **Brushes / palette:** foliage.ts pebbles → `env.rock.pebbles` (`#1` on sand), shallow water →
+    `env.water.eelgrass` (1 in 4 olive); scatter: Rocks / Desert pebbles, Water plants eelgrass, Jungle and
+    Undergrowth the fern, Bushes the shrub. `RETIRED_PROPS` += grass_tuft, fern, bush_small, stones, mn_eelgrass;
+    `GROUND_COVER_SPECIES` is per category (Plants & Flowers: grass, flowers, fern, shrub, eelgrass; Rocks & Wood:
+    pebbles); `REPLACEMENTS` (suggested species per retired piece).
+  - **MapMaker Replace all** (prop inspector, `replaceAllSection`; `replacePropsCommand` in shared
+    editor/operations.ts): target select (`#ed-replace-with`: species variants, then non-retired props), size
+    (`#ed-replace-size`: Keep height (default) / Keep scale), button `#ed-replace-all`; one undo step; keeps ID,
+    position, yaw, name, solid, tint; scale × old height / new height, rounded 0.01, 0.25–4; a prop bedded on the
+    terrain is re-bedded under its new footprint (without this a wider fern floated 0.31 m on Jungle Steps). Tests:
+    shared editor.test.ts, physicsfx.test.ts.
+  - **Maps** (driven in MapMaker without ?test=1 by the scratchpad driver `env3/tools/maker.mjs`: Import file, click a
+    piece with Select (direct selection when no click hit it: Shingle Point's grass, Serene City's red and yellow
+    flower), Replace all, undo/redo check, Export; `finalize.mjs` drops
+    `metadata.release`). Hand-placed Kenney foliage before (all now 0):
+    - backwoods: grass_tall 46, fern 28, flower_yellow 6, flower_purple 5 → clump, bracken, meadow #1 / #2 (height);
+    - coldwater_gulch: grass_tall 97 → clump; shingle_point: grass_tall 96 → clump; st_johns: grass_tall 3 → clump;
+    - jungle_steps: grass_tuft 8 → clump, fern 12 → bracken; serpent_gorge: fern 4 → bracken;
+    - primeval_park: fern 62, plant_low 52 → bracken;
+    - serene_city: flower_purple 2, flower_red 1 (→ white: no red variant), flower_yellow 1 → meadow;
+    - sunstone_crag: stones 36 → pebbles sand (Keep scale: by height they would be 3 m wide), plant_low 18 → bracken
+      autumn.
+    Export also carries what loading does anyway (format 25 migration: `track` → `paths`, terrain kept under floors
+    on Primeval Park and Sunstone Crag, key order): no gameplay change. Metadata otherwise unchanged. Not touched:
+    `test_coverage` (keeps mn_eelgrass as its Meshy-pack sample), other Kenney bushes (`bush`, `bush_large`,
+    `bush_leafy`: Phase 4). New gameplay: crouch/prone in the replaced ferns hides you as before; the 70 replaced low
+    plants (Primeval Park 52, Sunstone Crag 18) now hide a prone player (they never concealed).
+  - **Pitfall:** two clicks on the MapMaker canvas within ~0.5 s are a double-click, which changed a wall edge (open →
+    window) on Serpent Gorge in one run; the driver now waits 1 s between clicks; compare each export with
+    `env3/tools/compare.mjs` before taking it.
+- **Next / resume:** `git fetch && git checkout wip/env-p1c`; CI on `check/env-p1c` (status below); owner to look at
+  the screenshots (scratchpad `env3/`) and decide on grass sizes (tall grass kept its height: 0.7–1.4 m clumps on
+  Coldwater Gulch / Shingle Point, as the Kenney patches stood; smaller would need the Scale field per piece or a
+  re-run of Replace all from the old map with Keep scale); a red meadow-flower variant and palette
+  pictures for the species are open.
 ### Queued (owner-approved, 2026-11-05): performance round 2 (next free agent slot)
 **Owner's second M1 Pro recording** (build 4e77fab; Market Town, TDM, 49 players, high, 60 fps cap). Files in the
 session scratchpad `perf2/`: the perf JSON and the trace.
@@ -322,6 +372,25 @@ up. The new Gnoll (Hyena Warrior) in the intake-2 sheets shows it.
 - **Owner's decisions:** keep the Hyena (Gnoll) and Snikkit (Goblin Mischief) and fix their hands with this;
   Bill is retired. Do the pistol-hold tweak after this.
 
+### Agent queue order (2026-11-05)
+1. Small environment follow-ups (below).
+2. Shingle Point asset refresh (owner: "start when it is a good time"). It doesn't need set pieces.
+3. Set pieces.
+4. Then the maps (MAP 21, Whiteout Station rebuild, colosseum, and the rest).
+
+The pistol-hold tweak follows the palm fix.
+
+### Queued (owner, 2026-11-05): small environment follow-ups (next free agent)
+- **Tall grass:** keep it as it is on Coldwater Gulch and Shingle Point (0.7–1.4 m clumps).
+- **Pebbles bigger:**
+  - make `env.rock.pebbles` read at play distance;
+  - add a larger variant, or raise the base size, so Sunstone Crag's swapped stones are no longer faint;
+  - redo Sunstone Crag's pebbles with MapMaker's Replace all if needed;
+  - they still don't collide.
+- **Red meadow flower:**
+  - add a red variant to `env.flower.meadow` (the generator, plus a new leaf-atlas cell if needed);
+  - turn Serene City's one formerly-red flower back to red with Replace all or the inspector variant.
+
 ### Open bug (found 2026-11-05): explosion debris can fall through the world
 On the env + intake merge (`check/env-land2`), physicsfx counted 32 debris bodies where it expected 10, with the
 fastest moving at about 60 m/s, on both attempts.
@@ -333,9 +402,35 @@ fastest moving at about 60 m/s, on both attempts.
   colours.
 - **Still to find:** why explosion debris doesn't collide with the ground in the effects world.
 
+### New map briefs to discuss with the owner (received 2026-11-05; not started)
+- `docs/map-briefs/MAP_02_The_Spillway.md`: a hydroelectric dam in a gorge; battlefield scale, 32–64 players.
+- `docs/map-briefs/MAP_03_Frostbite_Station.md`: an arctic research station; 8–16 players.
+  - **Owner (2026-11-05): rebuild Whiteout Station (the Snow Outpost demo map) from this brief.** Keep its id and
+    map file, and rebuild its layout to MAP 03's identity.
+- `docs/map-briefs/MAP_21_Omaha_Beach_Assault.md`: a fortified beach and cliffs; massive battlefield, 64–96 players,
+  asymmetric assault.
+  - Its reference is the Shingle Point image.
+  - **Owner (2026-11-05): build MAP 21 as a NEW map from scratch** with our tools and assets (MapMaker, set pieces,
+    style packs, the environment). Keep Shingle Point as its own map **and** give it the asset refresh, so the owner
+    can compare the two side by side.
+- `docs/map-briefs/MAP_04_Verdant_Protocol.md`: an overgrown jungle compound; 16–32 players.
+  - Compare with Vinefall Sanctum, the Jungle Ruins demo, and Jungle Steps.
+
+Each brief has its reference image beside it. The owner approves the concept before any placement work; follow
+AGENT_BUILD_CONTRACT.md.
+
 ### Owner's map notes for later (2026-11-05; not started)
 - **No Man's Field:** asset refresh. It still uses Kenney kits; move it to our generated environment and props.
 - **Rockfall Canyon** (`maps/canyon.json`): asset and foliage refresh, onto our generated environment, rocks and plants.
+- **Shingle Point** (`maps/shingle_point.json`, the beach landing): an asset refresh. The owner also suggests a
+  layout rework from the reference `docs/map-briefs/shingle_point_reference.jpg`:
+  - a long beach with surf, landing craft and steel hedgehogs, under a cliff line;
+  - the cliff has a central grand staircase plus side stairs and ramps up its face;
+  - four large concrete casemates/bunkers along the cliff top, with cave mouths into the cliff;
+  - a seawall/terrace level;
+  - a village with stone houses, a central round fort and walled terraces behind.
+
+  Keep what works today (the assault from the waterline, seawall ladders and gaps, blowable weak sections).
 - **Step Temple:** its menu card shot should be a grounded, eye-level view, not aerial.
 - **Sandfall Colosseum, a full rebuild ("this is your moment to shine").** Owner's brief:
   - **Layout:** replicate the layout of the owner's game **Flavius Rule (classic)**. Get reference material from the

@@ -8,6 +8,7 @@ import { MAP_FORMAT, MAP_FORMAT_VERSION, type MapDocument, type MapEntity, type 
 import { applyCommand, newId, type EditCommand } from './commands.ts';
 import { buildLimitReason, insideBuildLimit } from './buildArea.ts';
 import { getProp } from '../content/props.ts';
+import { envVariant, getEnvSpecies } from '../content/environment.ts';
 import { DEFAULT_TEAMS, mapTeams } from '../sim/npc.ts';
 import { FLOAT_TOLERANCE, floatingProps, settledPropY, supportBoxes, supportUnder, terrainUnderFloors } from '../map/settle.ts';
 
@@ -423,6 +424,55 @@ export function settlePropsCommand(doc: MapDocument, ids?: readonly string[]): E
     if (!near && !floating.has(e.id)) continue;
     before.push(e);
     after.push({ ...e, position: [e.position[0], y, e.position[2]] });
+  }
+  return { kind: 'updateEntities', before, after };
+}
+
+/**
+ * How MapMaker's "Replace all" sizes each new piece: `height` keeps how tall the old one stood (scale × old height /
+ * new height, so a fern that hid a crouching player still does), `scale` keeps the scale number as it was.
+ */
+export type ReplaceSize = 'height' | 'scale';
+
+/** A placeable model: a prop id, or an environment species with an optional variant (`env.<id>#<n>`). */
+export function parseModelChoice(choice: string): { model: string; variant: number | undefined } {
+  const [model, v] = choice.split('#') as [string, string | undefined];
+  const variant = v === undefined ? undefined : Number(v);
+  return { model, variant: getEnvSpecies(model) && variant ? variant : undefined };
+}
+
+/** How tall a model stands at scale 1 (an environment species: its variant's bounds; a prop: its size). */
+function modelHeight(model: string, variant: number | undefined): number | undefined {
+  const species = getEnvSpecies(model);
+  if (species) return envVariant(species, variant).size[1];
+  return getProp(model)?.size[1];
+}
+
+/**
+ * "Replace all <prop> with <prop or species>": every prop placed as `from` becomes `to` (`env.<id>#<n>` picks a
+ * variant), keeping its ID, position, facing, name, solid flag and tint; its scale per `size`, rounded to 0.01 and
+ * held to the inspector's 0.25–4; one bedded into the terrain is bedded again under its new footprint (settle.ts
+ * settledPropY), so a wider plant does not float on a slope. One undo step. Nothing to do (no such props, or `to` is unknown): an empty update.
+ */
+export function replacePropsCommand(doc: MapDocument, from: string, to: string, size: ReplaceSize = 'height'): EditCommand {
+  const before: MapEntity[] = [];
+  const after: MapEntity[] = [];
+  const target = parseModelChoice(to);
+  const newHeight = modelHeight(target.model, target.variant);
+  if (!newHeight || target.model === from) return { kind: 'updateEntities', before, after };
+  for (const e of doc.entities) {
+    if (e.kind !== 'prop' || e.model !== from) continue;
+    const oldHeight = modelHeight(e.model, e.variant);
+    const ratio = size === 'height' && oldHeight ? oldHeight / newHeight : 1;
+    const scale = Math.round(Math.max(0.25, Math.min(4, e.scale * ratio)) * 100) / 100;
+    const { variant: _old, ...rest } = e;
+    const next = { ...rest, model: target.model, scale, ...(target.variant !== undefined ? { variant: target.variant } : {}) };
+    // One bedded into the terrain (MapMaker's settling, scatter) stays bedded under its new footprint.
+    const t = doc.terrain;
+    const was = t ? settledPropY(t, e) : null;
+    const now = t && was !== null && Math.abs(was - e.position[1]) <= 0.02 ? settledPropY(t, next) : null;
+    before.push(e);
+    after.push(now === null ? next : { ...next, position: [e.position[0], now, e.position[2]] });
   }
   return { kind: 'updateEntities', before, after };
 }

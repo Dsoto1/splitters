@@ -23,8 +23,8 @@ import { writeModel } from './env/mesh.mjs';
 import { crossedImpostor } from './env/impostor.mjs';
 import { broadleafMesh, broadleafShapes, broadleafSkeleton } from './env/tree.mjs';
 import { coniferMesh, coniferShapes, coniferSkeleton } from './env/conifer.mjs';
-import { fernMesh, flowerMesh, grassMesh, shrubMesh, shrubSkeleton } from './env/plants.mjs';
-import { boulderHull, boulderMesh, boulderShapes, boulderSurface, cliffMesh, cliffShapes } from './env/rock.mjs';
+import { eelgrassMesh, fernMesh, flowerMesh, grassMesh, shrubMesh, shrubSkeleton } from './env/plants.mjs';
+import { boulderHull, boulderMesh, boulderShapes, boulderSurface, cliffMesh, cliffShapes, pebblesMesh } from './env/rock.mjs';
 
 export const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const MANIFEST = 'content/environment.json';
@@ -35,7 +35,7 @@ const SHARED = 'packages/shared/src/content/environment.generated.ts';
 const CLIENT = 'packages/client/src/content/environment.generated.ts';
 
 export const CATEGORIES = ['tree', 'plant', 'groundcover', 'rock', 'boulder', 'cliff'];
-const KINDS = { broadleaf: 'tree', conifer: 'tree', shrub: 'plant', grass: 'groundcover', flower: 'groundcover', fern: 'groundcover', boulder: 'boulder', cliff: 'cliff' };
+const KINDS = { broadleaf: 'tree', conifer: 'tree', shrub: 'plant', grass: 'groundcover', flower: 'groundcover', fern: 'groundcover', eelgrass: 'groundcover', pebbles: 'rock', boulder: 'boulder', cliff: 'cliff' };
 const { num, int, str, bool, en, tup, arr, obj, map } = shape;
 const ID = /^env\.[a-z][a-z0-9_]*\.[a-z][a-z0-9_]*$/;
 const mm = (v) => Math.round(v * 1000) / 1000;
@@ -87,7 +87,9 @@ export function validate(content, root = ROOT) {
       if (new Set(names).size !== names.length || names.some((n) => !/^[a-z][a-z0-9_]*$/.test(n))) problems.push(`${where}: variant names must be distinct lower-case words`);
       if (s.lods[0].distance !== 0 || s.lods.some((l, j) => j && l.distance <= s.lods[j - 1].distance)) problems.push(`${where}: lods must start at 0 m and increase`);
       if (s.impostor && s.impostor.distance <= s.lods[s.lods.length - 1].distance) problems.push(`${where}: impostor must start beyond the last level`);
-      if (s.category === 'groundcover' && (s.role !== 'decorative' || s.nav !== 'none' || s.conceals)) problems.push(`${where}: ground cover is decorative only (role decorative, nav none, no conceals)`);
+      // Ground cover and small rocks never collide or steer bots; ground cover that hides a player (a fern) is cover, the rest decoration.
+      if ((s.category === 'groundcover' || s.category === 'rock') && (s.nav !== 'none' || s.role !== (s.conceals ? 'cover' : 'decorative'))) problems.push(`${where}: ${s.category === 'rock' ? 'small rocks' : 'ground cover'} have nav none and role ${s.conceals ? 'cover (it conceals)' : 'decorative'}`);
+      if (s.category === 'rock' && s.conceals) problems.push(`${where}: small rocks do not conceal`);
       species.push({ ...s, family: data.family, file });
     }
   }
@@ -148,6 +150,10 @@ export async function build(content, species) {
         }
         case 'fern':
           return [{ distance: 0, parts: [{ material: 'env.leaf', mesh: fernMesh(g.seed, g, look, atlas).fronds }] }];
+        case 'eelgrass':
+          return [{ distance: 0, parts: [{ material: 'env.grass', mesh: eelgrassMesh(g.seed, g, look).grass }] }];
+        case 'pebbles':
+          return [{ distance: 0, parts: [{ material: 'env.rock', mesh: pebblesMesh(g.seed, g, look).rock }] }];
         case 'boulder':
           return s.lods.map((l) => ({ distance: l.distance, parts: [{ material: 'env.rock', mesh: boulderMesh(g.seed, g, structure.surface, l.triangles, look).rock }] }));
         case 'cliff':

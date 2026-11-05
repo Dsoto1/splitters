@@ -27,6 +27,8 @@ import {
   moveCommand,
   moveEntitiesCommand,
   settlePropsCommand,
+  replacePropsCommand,
+  type ReplaceSize,
   settledPropY,
   newId,
   newMapDocument,
@@ -250,7 +252,7 @@ import { RouteTool } from './routeTool.ts';
 import { ModelThumbnails } from '../frontend/modelThumbs.ts';
 import { Palette } from './palette.ts';
 import { PaletteAtlas } from './paletteAtlas.ts';
-import { GROUND_COVER_SPECIES, NATURE_PROP_CATEGORIES, PROP_GROUPS, RETIRED_PROPS, propGroup, scenarioGroup } from './paletteCatalog.ts';
+import { GROUND_COVER_IDS, GROUND_COVER_SPECIES, NATURE_PROP_CATEGORIES, PROP_GROUPS, REPLACEMENTS, RETIRED_PROPS, propGroup, scenarioGroup } from './paletteCatalog.ts';
 import { envRendererOn } from '../environment/envFlag.ts';
 import { thumbnailSection, type ThumbHost } from './makerThumb.ts';
 import { libraryThumb } from './libraryThumbs.ts';
@@ -3009,14 +3011,14 @@ export class EditorApp {
     for (const cat of NATURE_PROP_CATEGORIES) {
       const grid = this.palette.group($('ed-nature'), `nature:${cat}`, cat);
       for (const def of CORE_PROPS.filter((d) => d.category === cat && !RETIRED_PROPS.has(d.id))) this.propButton(grid, def, 'nature');
-      // Our own ground cover (the plants brush's grass, flowers and fern) in place of the retired Kenney pieces: no picture yet.
-      if (cat === 'Plants & Flowers') for (const id of GROUND_COVER_SPECIES) this.propButton(grid, getProp(id)!, 'nature environment procedural grass flowers fern ground cover', false);
+      // Our own species (the plants brush's grass, flowers, fern, shrub, eelgrass and pebbles) in place of the retired pieces: no picture yet.
+      for (const id of GROUND_COVER_SPECIES[cat] ?? []) this.propButton(grid, getProp(id)!, 'nature environment procedural grass flowers fern shrub bush eelgrass pebbles stones ground cover', false);
     }
     // The procedural environment's species (Phase 1 preview, docs/PROCEDURAL_ENVIRONMENT_AUDIT.md §10): with ?env=1 only,
     // no palette picture yet (their pictures join the atlas when they ship).
     if (envRendererOn()) {
       const grid = this.palette.group($('ed-nature'), 'nature:environment', 'Environment (preview)', { note: 'Procedural species: trees, shrub, grass, boulder, cliff · variants in the inspector' });
-      for (const s of ENV_SPECIES) if (!GROUND_COVER_SPECIES.includes(s.id)) this.propButton(grid, getProp(s.id)!, 'nature environment procedural preview', false);
+      for (const s of ENV_SPECIES) if (!GROUND_COVER_IDS.includes(s.id)) this.propButton(grid, getProp(s.id)!, 'nature environment procedural preview', false);
     }
   }
 
@@ -3441,6 +3443,51 @@ export class EditorApp {
     }
   }
 
+  /**
+   * "Replace all": every prop placed as `model` becomes another prop or an environment species' variant, keeping each
+   * one's position, facing, name and tint, and its height (or its scale number); one undo step (replacePropsCommand).
+   * A retired piece offers the species that replaced it first (REPLACEMENTS).
+   */
+  private replaceAllSection(el: HTMLElement, model: string): void {
+    const count = this.doc.entities.filter((x) => x.kind === 'prop' && x.model === model).length;
+    const name = getProp(model)?.displayName ?? model;
+    const head = document.createElement('h3');
+    head.textContent = `Replace all ${count} ${name}`;
+    el.append(head);
+    const target = document.createElement('select');
+    target.id = 'ed-replace-with';
+    const suggested = REPLACEMENTS[model];
+    const species = document.createElement('optgroup');
+    species.label = 'Our species';
+    for (const s of ENV_SPECIES)
+      for (const v of s.variants) {
+        const value = v.index ? `${s.id}#${v.index}` : s.id;
+        if (value !== model) species.append(new Option(`${s.displayName} (${v.name})`, value, false, value === suggested));
+      }
+    target.append(species);
+    for (const category of PROP_CATEGORIES) {
+      const group = document.createElement('optgroup');
+      group.label = category;
+      for (const def of CORE_PROPS.filter((d) => d.category === category && d.id !== model && !RETIRED_PROPS.has(d.id))) group.append(new Option(def.displayName, def.id, false, def.id === suggested));
+      if (group.children.length) target.append(group);
+    }
+    el.append(row('With', target));
+    const size = document.createElement('select');
+    size.id = 'ed-replace-size';
+    size.append(new Option('Keep height', 'height', true, true), new Option('Keep scale', 'scale'));
+    el.append(row('Size', size));
+    const go = button(`Replace all ${count}`, () => {
+      const cmd = replacePropsCommand(this.doc, model, target.value, size.value as ReplaceSize);
+      const n = cmd.kind === 'updateEntities' ? cmd.after.length : 0;
+      if (!n) return this.toast('Nothing to replace');
+      const label = target.selectedOptions[0]?.textContent ?? target.value;
+      if (this.run(`Replace all ${name}`, cmd)) this.toast(`Replaced ${n} ${name} with ${label}`);
+    });
+    go.id = 'ed-replace-all';
+    go.title = 'Every one of this prop on the map, in one undo step';
+    el.append(go);
+  }
+
   /** "Draw route": edit a mover's or plane's points on the map with the Paths tool's hands (the Route tool). */
   private drawRouteButton(id: string): HTMLButtonElement {
     const b = button('Draw route on the map', () => {
@@ -3538,6 +3585,7 @@ export class EditorApp {
         tint.addEventListener('change', () => update('Tint prop', { tint: tint.value.toLowerCase() === '#ffffff' ? null : tint.value.toLowerCase() }));
         el.append(row('Tint', tint));
         if (!getProp(e.model)?.collision && !species) el.append(small('This prop never blocks (decoration).'));
+        this.replaceAllSection(el, e.model);
         break;
       }
       case 'pickup': {

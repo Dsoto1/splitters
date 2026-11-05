@@ -1,16 +1,17 @@
 {
-  "$comment": "Ferns (tools/content/env/plants.mjs fernMesh). Ground cover: decorative only (no collision, no concealment), grown by the terrain's plants brush (packages/client/src/foliage.ts) and placeable as a prop. 5–7 fronds, each the leaves atlas' frond picture on a card bent along an arch (env.leaf, alpha-tested). One level of detail.",
+  "$comment": "Ferns (tools/content/env/plants.mjs fernMesh). Ground cover with no collision that conceals like a bush (sim/match.ts `hides`: radius half the smaller footprint side, the full height; at the 0.9 m of the Kenney fern it replaces, scale 1.62, it hides a crouched player), grown by the terrain's plants brush (packages/client/src/foliage.ts) and placeable as a prop. 5–7 fronds, each the leaves atlas' frond picture on a card bent along an arch (env.leaf, alpha-tested). One level of detail.",
   "family": "fern",
   "species": [
     {
       "id": "env.fern.bracken",
       "displayName": "Bracken Fern",
       "category": "groundcover",
-      "assetVersion": 1,
-      "notes": { "1": "First version: replaces the Kenney ferns, low plants and small bushes the plants brush grew (owner, 2026-11-05)." },
+      "assetVersion": 2,
+      "notes": { "1": "First version: replaces the Kenney ferns, low plants and small bushes the plants brush grew (owner, 2026-11-05).", "2": "Conceals (owner, 2026-11-05: it replaces the Kenney fern, which hid players from bots): a cylinder from its bounds, the rule bushes follow, so its role is cover. Shape and size unchanged." },
       "nominalHeight": 0.55,
       "nav": "none",
-      "role": "decorative",
+      "role": "cover",
+      "conceals": true,
       "placement": { "maxSlopeDegrees": 45, "minSpacing": 0.6, "scale": [0.7, 1.3] },
       "generator": { "kind": "fern", "seed": 13, "height": 0.55, "length": 0.66, "fronds": [5, 7] },
       "lods": [{ "distance": 0 }],
