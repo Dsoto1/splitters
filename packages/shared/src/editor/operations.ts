@@ -6,6 +6,7 @@ import { DESTRUCTIBLE_SPECS, TRAP_SPECS } from '../sim/scenarioDefs.ts';
 import { ELECTRIC_FENCE } from '../map/border.ts';
 import { MAP_FORMAT, MAP_FORMAT_VERSION, type MapDocument, type MapEntity, type Rotation, type SurfaceStyle, type TilePlacement, type TrapKind, type BlockBehaviour, type Liquid, type LightFixture, type EncounterEntrance, type GlassKind } from '../map/schema.ts';
 import { applyCommand, newId, type EditCommand } from './commands.ts';
+import { buildLimitReason, insideBuildLimit } from './buildArea.ts';
 import { getProp } from '../content/props.ts';
 import { DEFAULT_TEAMS, mapTeams } from '../sim/npc.ts';
 import { FLOAT_TOLERANCE, floatingProps, settledPropY, supportBoxes, supportUnder, terrainUnderFloors } from '../map/settle.ts';
@@ -53,7 +54,7 @@ export function checkPlacement(doc: MapDocument, placements: readonly TilePlacem
     const pc = placementCells(p, catalog);
     if (!pc) return { ok: false, reason: `unknown tile ${p.tile}`, conflicts: [] };
     for (const [x, y, z] of pc) {
-      if (Math.abs(x) > 256 || Math.abs(y) > 256 || Math.abs(z) > 16) return { ok: false, reason: 'outside the build area: keep within 256 cells of the centre and 16 levels up or down', conflicts: [] };
+      if (!insideBuildLimit(x, y, z)) return { ok: false, reason: buildLimitReason(doc, z), conflicts: [] };
       const key = cellKey(x, y, z);
       const hit = cells.get(key);
       if (hit) {
