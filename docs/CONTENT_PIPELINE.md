@@ -584,10 +584,12 @@ shrubs, grass, boulders and cliff faces generated in code from seeds, owned, not
   `PERF_QUERY=env=1 node tools/perf/client-perf.mjs env_showcase` against `node tools/perf/client-perf.mjs backwoods`
   (`PERF_BOTS=2`, medium, same turn at the spawn). Its 2,526 species placements are within the environment budget (docs/MAP_BUDGETS.md): it validates clean.
 - **Ground cover the plants brush grows** (owner, 2026-11-05: our own grass replaces Kenney's): `env.grass.clump`
-  (summer, dry), `env.flower.meadow` (white daisy, yellow buttercup, purple clover: basal leaves and stems in vertex
-  colour, a flower-head card per stem from the leaves atlas' `flower.*` cells) and `env.fern.bracken` (summer,
+  (summer, dry), `env.flower.meadow` (white daisy, yellow buttercup, purple clover, red poppy (assetVersion 2: the buttercup card
+  in red, no new atlas cell): basal leaves and stems in vertex colour, a flower-head card per stem from the leaves
+  atlas' `flower.*` cells) and `env.fern.bracken` (summer,
   autumn: fronds as bent `fern.0` cards), then (owner, 2026-11-05, items 2a and 3a) `env.rock.pebbles` (category
-  `rock`: 6–7 small faceted convex stones sunk a quarter into the ground, grey and sand, 55 triangles, rock surface)
+  `rock`: four rounded convex stones up to 0.58 m across, bedded to their waist, grey and sand, 60 triangles, rock
+  surface; assetVersion 2 made them bigger (1.24 × 0.32 m at scale 1, was 0.83 × 0.13) so they read at play distance)
   and `env.water.eelgrass` (7–8 long ribbons in a seeded S, green and olive, 49 triangles). Ground cover and small
   rocks are checked to have no collision or nav; they are decoration (role `decorative`, no concealment) except the
   fern, which conceals (role `cover`; assetVersion 2): its cylinder comes from its bounds like any bush, so at the
@@ -597,7 +599,7 @@ shrubs, grass, boulders and cliff faces generated in code from seeds, owned, not
   grass and tall grass → the clump (2.2 a Kenney patch's count), flowers → the meadow flowers, low plants → the
   fern, bushes → `env.shrub.broadleaf` at its lighter level (100 triangles), pebbles → `env.rock.pebbles` (the sand
   variant on sand), shallow water → `env.water.eelgrass`. MapMaker offers them, and the shrub, in Nature → Plants &
-  Flowers / Rocks & Wood (no palette picture yet) and the scatter brushes plant them; Kenney's grass, flowers, low
+  Flowers / Rocks & Wood (pictured from their first variant, in the `environment` palette atlas) and the scatter brushes plant them; Kenney's grass, flowers, low
   plant, fern, small bush and stones and the Meshy eelgrass are retired from the palette (`editor/paletteCatalog.ts`
   `RETIRED_PROPS`), still loaded and drawn where maps place them.
 - **Swapping placed pieces:** MapMaker's prop inspector has **Replace all N <prop>** (`replacePropsCommand`,
