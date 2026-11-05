@@ -198,6 +198,25 @@ This work is on `wip/env-p1b`. Phase 2 (more species) still needs the owner's go
   This work is on `wip/intake-2`.
 
 ### In flight
+- **Floors over tall pieces, branch `wip/ceiling`** (agent, 2026-11-05; from main 4e77fabc; runs on `check/ceiling`).
+  Owner's screenshot (live, TDM): "notice the blue edge? … tried to place another tile above where i am now, but it
+  said i could not overlap tiles. I would like to add a ceiling/floor here". Later: the blue doesn't matter, it only
+  marks the level (Level 1) where they want a floor, over "the set piece I am on".
+  - The spot: not a map in `maps/`. The blue is the Sands of Egypt theme's underside (`core.lapis`) under Level-1
+    floors; only Pharaoh's Reach and Sunken Kingdom use that theme and neither has grass terrain. Grass + cacti, stones
+    and rock spires = a MapMaker map of the owner's (new-map grass terrain, Desert scrub scatter) with Egypt-theme
+    pieces (the walkway looks like the Sphinx Avenue's paving and plinth). So the exact piece is unknown; any piece two
+    or more levels tall refuses a tile on its upper storey (one cell, one piece).
+  - Blue edge: dropped at the owner's word (not a bug: lapis is that theme's ceiling paint; not a flicker-fix regression
+    by reading, not compared in a browser).
+  - Done: `TilePlacement.upperFloors` (format v26, tile-local "dx,dy,dz"): a full floor slab in a tall piece's own
+    upper storey (`geometry.ts` `canAddFloor`/`cellSlab`; not bottom storeys, Vertical pieces or model buildings).
+    MapMaker: a **Platform placed on such a cell becomes that piece's floor** (`placeTileCommand` → `floorOf`, green
+    ghost), and the inspector's **Upper floors → Floor on Level N** ticks a whole storey. `checkPlacement` refusals now
+    name the piece and level and say what to do. Docs: BUILDING_KIT "Floors over tall pieces", CHANGELOG.
+  - Tests: `packages/shared/test/upperFloors.test.ts` (incl. no coplanar overlaps for every eligible piece with all
+    its floors, two rotations); editor.test.ts messages; e2e editorux "A floor over a piece two levels tall".
+  - Demo (scratchpad only): a stand-in spot (Egypt theme, grass, a Tall Room open on three sides under Level-1 floors).
 - **Market Town perf on the M1 Pro, branch `wip/perf-market`** (agent, 2026-11-05; from main d29e6a8; not merged).
   Owner's capture (high, 44 players): 23 ms frames with few in view, 38-45 ms with 20-40; characters (clips + aim)
   8.5 ms and shadow + depth maps 6.6 ms a frame. Write-up with causes and numbers: docs/PERF_96.md "Market Town on
