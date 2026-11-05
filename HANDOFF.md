@@ -415,6 +415,10 @@ the fingers bent "toward the gun", i.e. backwards). Creatures (Imp, Puglin) were
   needs those alternatives rebuilt and re-audited (not done). The shipped builds after the fix: Frida, Grandpa Chains,
   Hazmat 0; Grunt '68 3 -> 0, WWII Infantry 3 -> 3, Desert Ranger 5 -> 3, Big Bab 6 -> 6, Stealth Operative (fit)
   3 -> 3, Beanie Alien (own) 3 -> 0, Tactical Soldier (own) 7 -> 3. No verdict clearly changes on this evidence.
+- **Checks:** typecheck clean; content:check OK (hitboxes and provenance regenerated for the rebuilt two); bundle
+  budget 2471 kB / 692 kB gzip; local e2e (`CI=1`) characters, characters2, characters3, visual PASS; local
+  test:changed ran everything (shared content changed) and only long bot/match simulations timed out under machine
+  load (load 25-33); **CI run 42092260434 on `check/palms` (7badaf91) green**. Not on main: the coordinator lands it.
 - Evidence: agent scratchpad `palms/` (summary/summary.md ranked, `summary/<id>-before-after.png`, `fp/` first and
   third person before/after, `close/`, audits `before/`, `after/`, `after-final/`; tools in `palms/tools/`).
 <!-- /palms -->
