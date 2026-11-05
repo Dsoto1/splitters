@@ -148,7 +148,7 @@ palette atlas step of `pnpm content:rebuild` needs a temp copy of build-palette-
   packages/shared/test/tankBox.test.ts (walking into the side or front stops at the hull, get in from beside, get out clear).
 - Goblin Warlord `size: small` (Goblin, Goblina, Snikkit were already). Hit shapes, health and speed follow the class.
 
-**Step 2b (re-rigs and replacements): on `wip/intake-2`, check branch `check/intake-2b`.** Grip scores (lower is
+**Step 2b (re-rigs and replacements): e69a8f6b on `check/intake-2b`, CI run 42046872621 green (run 42045527179 failed on a manifest test that named the Iron Knight's old Meshy task IDs; fixed). Not on main: the coordinator lands it.** Grip scores (lower is
 better; before = main's build; "own" = Meshy's fingers, "fit" = re-fitted):
 | Character | before | new (own, or no chains) | new (fit) | shipped |
 |---|---|---|---|---|
@@ -180,6 +180,7 @@ better; before = main's build; "own" = Meshy's fingers, "fit" = re-fitted):
 - Sizes, stats and hit boxes unchanged (heights are normalised; no size class changed). Giggles and Snikkit stay small.
 - The old grip/hands/skin tuning was dropped on the five new models (it fitted the old ones); kept on same-model re-rigs.
 - Portraits re-captured for every shipped re-rig and new model.
+- Local checks: typecheck, content:check, bundle budget (2468 kB, 691 kB gzip) pass; tool and look unit tests pass; e2e characters, coverage and visual PASS; vehicles fails locally on the buggy's chase-camera checks (also on 2a, which CI passed; this container's software GL), green on CI.
 
 **Licence: author and post URL pending from the owner** (recorded "Meshy Community (CC0 per the owner)", url null;
 assets-src/meshy-community-characters/License.txt, docs/ASSET_SOURCES.md): Patches ("hobo bozo clown tpose"),
