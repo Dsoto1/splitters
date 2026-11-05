@@ -125,7 +125,17 @@ Plan: docs/PROCEDURAL_ENVIRONMENT_AUDIT.md §10 and "Owner decisions". Status is
   Environment (preview) palette group, env scatter sets, Variant in the inspector.
 - **Tests:** tools/content/test/environment.test.mjs, shared environmentData/environmentCollision tests (+ fixture
   `environment-resolved.json`), e2e flow `environment`, webgpu flow extended to envlab, visual scene `envlab`.
-- **Next / resume:** see the report at the end of this section once the slice is finished.
+- **Resumed 2026-11-05** (second agent, after a container restart): merged origin/main (texture flicker fix; only
+  CHANGELOG conflicted), provenance refreshed for the regenerated cliff GLBs (content:check was red), env_showcase in
+  `RETIRED_MAPS`, `envForest` brush spacing 3.8 → 3 m (2,000 trees fit in the 200 m square only that dense),
+  `tools/perf/client-perf.mjs` takes `PERF_QUERY=env=1` and prints the environment renderer's stats.
+- **Showcase map** (in progress): made in MapMaker by a Playwright driver in the agent scratchpad (`showcase/maker.mjs`,
+  passes `pass1..3.mjs`, checkpoints as JSON loaded back through MapMaker's Import): 240 m terrain, 9 spawns in a
+  central clearing, 30 cliff panels (15 along z = 96 facing south, 15 along x = 96 facing west), shrubs round the
+  clearing, 400 boulders, 2,000 trees (scatter brushes), the clearing and cliff feet cleared with the brushes'
+  right-click.
+- **Pitfall:** pushing from this shallow clone failed with "missing necessary objects" after a GitHub hiccup (the
+  remote ACKed commits it could not use); `git -c push.negotiate=false push …` works.
 - **Resume:** `git fetch && git checkout wip/env-phase1`; `node tools/content/environment.mjs --check`.
 
 
