@@ -395,7 +395,7 @@ for each character?"
 The brief is in the session scratchpad, `briefs/perf-4.md`.
 
 <!-- match-setup-2 -->
-### Match Setup follow-ups: one Host online, Save for next match, co-op sizes, score and time follow the size (`wip/match-setup-2`, agents, 2026-11-06; main 2acb8f23 merged in; CI on `check/match-setup-2` at 9d41d790: run 42307136197, pending; not landed)
+### Match Setup follow-ups: one Host online, Save for next match, co-op sizes, score and time follow the size (`wip/match-setup-2`, agents, 2026-11-06; main 2acb8f23 merged in; green on `check/match-setup-2` at 9d41d790, run 42307136197; not landed)
 The owner's answers to the redesign's questions (1. Host online lists the match from both places; 2. Spectate keeps
 following the Offline / Host online switch; 3. "save for next match" back in the Host tab; 4. co-op size presets capped
 at the map's size) and the request that the default score and time scale with players + bots ("24v24 in a 40 pt
@@ -438,7 +438,9 @@ its Offline / Host online switch (test mode has none: it can't host).
 - **Local e2e** (this machine at about 3× CI's flow times, `CI=1` waits): `lobby` passed; `teams` passed every check
   but the old `setupLimitsFlow` one, which passed after the fix (run alone); `hostcontrols` passed up to its Host game
   part, whose friend checks (the friend's page loading, rejoining the host's new map, the rotation) passed in one run
-  of three: load (the machine was shared with two other agents).
+  of three: load (the machine was shared with two other agents). On CI (run 42307136197, the full suite: every unit
+  job, the bots check, 16 e2e shards) all three passed first time; the one retry was `designer` (a custom look's
+  first-person arms), which this branch doesn't touch.
 
 **The curve** (docs/BOTS.md, "Score and time", has the tables): Team Deathmatch a point per player on a team per minute
 of the time limit, the time 10 minutes up to 6 a side, 15 up to 16, 20 above (4v4 40/10, 8v8 120/15, 12v12 180/15,
