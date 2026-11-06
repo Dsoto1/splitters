@@ -65,6 +65,8 @@ export interface CombatantView {
   concealed?: boolean;
   /** Riding a zipline (the line carries them; they can't steer). */
   riding?: boolean;
+  /** On a ladder (off the navmesh: no route starts there). */
+  climbing?: boolean;
   /** Body size (BODY_SIZES scale: small 0.78, large 1.18; absent = 1): eye, aim point and hit body scale with it. */
   size?: number;
   /** Its measured hit shapes and their scale before `size` (sim/hitbox.ts): bots aim at the real head and chest. */
@@ -1391,6 +1393,14 @@ export class BotBrain {
     }
     // Wanted to go somewhere and had no route there.
     if (this.pathMiss && moveYaw === null) doing = 'noPath';
+    // On a ladder with nowhere to go (a new goal mid-climb: a ladder is off the navmesh, so no route starts there):
+    // carry on along it, up while facing it, down otherwise, and plan again off it. Before, bots hung on Fernwood
+    // Moon's vine ladders for minutes, every goal they picked having no route.
+    if (me.climbing && moveYaw === null && !backOff && !strafe && !target) {
+      moveYaw = this.yaw;
+      moveScale = 1;
+      if (doing === 'noPath') doing = 'goal';
+    }
 
     // No line on the target from here (clearShot): up from a crouch or prone; already standing, step aside
     // (and give up a cover spot it can't shoot from).
@@ -1602,7 +1612,9 @@ export class BotBrain {
       }
     }
     this.doing = doing;
-    if (this.checkStuck(view, this.meantToMove) || this.jumpNext) {
+    // (Not off a ladder in mid-air: letting go halfway up a tall one is a fall that hurts. Standing at its top or
+    // foot, a hop is what gets you on or off it.)
+    if ((this.checkStuck(view, this.meantToMove) && (!me.climbing || me.grounded)) || this.jumpNext) {
       buttons |= BUTTON_JUMP;
       this.jumpNext = false;
     }

@@ -5692,7 +5692,7 @@ export class Match {
  * reads polymorphic.
  */
 function toView(c: Combatant, concealed = false): CombatantView {
-  return { slot: c.slot, pos: c.move.pos, yaw: c.yaw, pitch: c.pitch, health: c.health, armor: c.armor, alive: c.alive, stance: stanceOf(c.move), human: c.kind === 'human', mounted: !!c.mount, grounded: c.move.grounded, object: false, concealed, riding: c.move.zip !== undefined, size: c.size, box: hitboxOf(c), hitScale: c.hitScale };
+  return { slot: c.slot, pos: c.move.pos, yaw: c.yaw, pitch: c.pitch, health: c.health, armor: c.armor, alive: c.alive, stance: stanceOf(c.move), human: c.kind === 'human', mounted: !!c.mount, grounded: c.move.grounded, object: false, concealed, riding: c.move.zip !== undefined, climbing: !!c.move.climb, size: c.size, box: hitboxOf(c), hitScale: c.hitScale };
 }
 
 /** Refill a view made by toView for this tick. */
@@ -5710,6 +5710,7 @@ function fillView(v: CombatantView, c: Combatant, concealed: boolean): void {
   v.grounded = c.move.grounded;
   v.concealed = concealed;
   v.riding = c.move.zip !== undefined;
+  v.climbing = !!c.move.climb;
   v.size = c.size;
   v.box = hitboxOf(c);
   v.hitScale = c.hitScale;

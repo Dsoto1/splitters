@@ -121,7 +121,8 @@ function suiteMaps(): string[] {
 async function main(): Promise<void> {
   const compare = opt('compare');
   if (compare) {
-    const [a, b] = compare.split(',').map((ps) => ps.split('+').flatMap((p) => JSON.parse(readFileSync(here(p), 'utf8')) as MatchRow[]));
+    // (Several files a side, joined with +: a later one's match of the same map and seed replaces an earlier one's.)
+    const [a, b] = compare.split(',').map((ps) => [...new Map(ps.split('+').flatMap((p) => JSON.parse(readFileSync(here(p), 'utf8')) as MatchRow[]).map((m) => [`${m.map}|${m.mode}|${m.seed}`, m] as const)).values()]);
     printCompare(a!, b!);
     return;
   }
