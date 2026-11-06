@@ -66,7 +66,7 @@ was replaced.
 - **File:** `Meshy_AI_Fishy_Fred_20261106_animated_mixamo_All_animation.glb`, Drive id
   `1B0ssiBuvghCSbT0zDi2DQcHaVbOupnEQ`.
 - **What it is:** a fish.
-- **Licence:** Meshy Community CC0, unless the owner says they made it.
+- **Licence:** Meshy Community CC0. The owner confirmed on 2026-11-06: "I did not make fishy fred, community."
 - **Name:** "Fishy Fred", the file's name, until the owner names it.
 - **Measured:**
   - 5.0k triangles.

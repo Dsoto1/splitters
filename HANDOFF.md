@@ -153,8 +153,21 @@ of this work. I'll be trying to generate brand new ones going forward and we can
 list."
 - The running list, with measurements and what to check, is `docs/IMPORT_LIST.md`.
 - **Cool Hands Rex** is Meshy, owned: the owner made it.
-- **Fishy Fred** (the file's name) is Meshy Community CC0 unless the owner says they made it.
+- **Fishy Fred** (the file's name) is Meshy Community CC0. The owner confirmed: "I did not make fishy fred, community."
 - Both are Mixamo rigs, already downloaded to `/home/user/meshy-drive/intake-2026-11-06b/`. Never commit them.
+
+**Artlist (owner's question, 2026-11-06):** "Are we able to leverage my artlist sub for sound effects and catchphrases
+for each character?"
+- Not yet.
+- Artlist's own help center says apps, software, games and their end users need an **Enterprise** licence. Its
+  Personal, Pro and Max plans cover video.
+- Its AI voice page says paid-plan output is yours to use commercially, but it doesn't name games.
+- The repo is public, so also ask whether licensed audio may sit in a public repository.
+- Waiting on a written yes from Artlist, or on the owner's plan being Enterprise. No Artlist audio until then.
+- If the answer is no, catchphrases could come from:
+  - lines the owner or friends record (owned);
+  - a voice service whose terms name games (needs the owner's approval);
+  - a local open-source text-to-speech with permissively licensed voices.
 
 ### Queued (owner, 2026-11-06): performance round 4, crowds. Right after the Match Setup follow-ups, ahead of Roulette
 **The owner:**
