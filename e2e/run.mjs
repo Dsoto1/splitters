@@ -5428,7 +5428,9 @@ async function hostcontrolsFlow(browser) {
   const restartFeed = await page.waitForFunction(() => /restarted the match/.test(document.getElementById('feed').textContent ?? ''), null, { timeout: T(5000) }).then(() => true, () => false);
   const pendingNow = await page.evaluate(() => window.__cs.host()?.pending);
   check(applied && restartFeed && !Object.keys(pendingNow ?? {}).length, `Apply & restart starts the match over with the new score limit (${JSON.stringify({ score: await sim(page, (m) => m.rules.scoreLimit), restartFeed, pending: pendingNow })})`);
-  // Its countdown first: End match ends a match in play.
+  // Its countdown first: End match ends a match in play. The match's own phase first: the page can still show the
+  // phase from before the restart for a moment on a loaded machine, then its countdown.
+  await simWait(page, (m) => m.phase === 'playing', null, T(30000));
   await page.waitForFunction(playing, null, { timeout: T(30000) }).catch(() => {});
   // Save for next match (owner, 2026-11-06): the changed rule waits for the next match; this one carries on.
   await sim(page, (m) => void (m.combatants().find((c) => c.kind === 'human').kills = 3));
