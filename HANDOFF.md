@@ -271,7 +271,7 @@ All data on the standard grid: no map format change, nothing in `packages/client
 <!-- /setpieces-3 -->
 
 <!-- intake-1106 -->
-### Intake of 2026-11-06: astronauts, crocodile, tortoise; Meshy provenance audit (`wip/intake-1106`, agent, 2026-11-06; from main bc6037a1, main d06af94a merged in; CI on `check/intake-1106`, see the end of this section; not landed)
+### Intake of 2026-11-06: astronauts, crocodile, tortoise; Meshy provenance audit (`wip/intake-1106`, agent, 2026-11-06; from main bc6037a1, main d06af94a merged in; green on `check/intake-1106`, run 42265419110 at bad67c03, see the end of this section; not landed)
 The owner: "I have 3 new astronaut models, replace the light blue one for captain nova, add the 2 new ones. The
 boglurker can be replaced by the alligator. Retire bamboo, add the new turtle." Downloads in
 `/home/user/meshy-drive/intake-2026-11-06/` (raw, never committed), linked in the agent scratchpad `i1106/dl`; each
@@ -281,7 +281,7 @@ file). All five are Mixamo-skeleton Meshy rigs; their two clips are not used. Re
 
 | Character (manifest / look) | Group, size, bot theme | Download | Built (body + far copy; colour and normal map 1024 px) | Hands |
 |---|---|---|---|---|
-| Capt. Nova `meshy_nova` / `core.nova` (same name, look, size) | soldiers, standard, soldier | "A full body portrait of a tall slender", 107k tris, whole finger chains | rebaked 14,000 + 3,500, 1.04 MB; arms 1,954 | `fingers: fit` (the download's own fingers scored 7 and stood a finger up off the support hand; fit 6 and closed); grip tuned |
+| Capt. Nova `meshy_nova` / `core.nova` (same name, look, size) | soldiers, standard, soldier | "A full body portrait of a tall slender", 107k tris, whole finger chains | rebaked 14,000 + 3,500, 1.04 MB; arms 1,954 | `fingers: fit` (the download's own fingers scored 7 and stood a finger up off the support hand; own with `hands.together 1` scored 5, no spikes, but its support index still stood over the handguard and the pistol's support fingers splayed; fit 6 closes round both: kept, close-ups `i1106/close/nova-*-owntog-vs-fit.png`); grip tuned |
 | Boglurker `meshy_toad` / `core.boglurker` (same name, look, size) | creatures, large, frog | "A humanoid crocodile wearing a heavy", 25.6k, no index fingers | careful cut 13,000 + 3,250, 1.05 MB; arms 2,367 | rigid claws (measured a fist) skinned as mittens: `hands { scale 0.75, curl 1 }` (27.5 -> 20.8 cm); grip tuned; `centre` (below) |
 | **Spacewalker** `meshy_astronaut` / `core.astronaut` (new; name a placeholder) | soldiers, standard, soldier | "Astronaut", 10.4k, thumb and middle chains only | whole download 10,406 + 2,601, 1.35 MB; arms 806 | re-fitted; its gloves are low-poly cones that folded into shards closed at 0.87: `hands.curl 0.6`, `skin { knuckle 0.2, joints 0.15 }`; grip tuned |
 | **Starfarer** `meshy_darkastronaut` / `core.darkastronaut` (new; placeholder) | soldiers, standard, soldier | "a meticulously detailed astronaut with a", 167k, no finger joints | rebaked 13,998 + 3,496, 0.99 MB; arms 1,441 | `fingers: fit` (no chains, as the Umpire); grip tuned |
@@ -364,8 +364,14 @@ owner saying they made them; any the owner made goes back to owned: manifest `so
 yourself, and post URLs for the rest if you have them (CC BY 4.0 posts would need a credit); the airliner; the US flag
 on Spacewalker; whether Shellback should be large (2.12 m, 115 health; chosen for its heavy build) or standard.
 
-**Checks:** see the CI line below; locally `pnpm typecheck`, `pnpm content:check`, the character and style-pack unit
-tests, the e2e `characters` flows.
+**Checks:** CI run 42265419110 green at bad67c03 (every job: unit, maps, build, 12 e2e shards, perf). Locally:
+`pnpm typecheck` clean; `pnpm content:check` OK; the character-manifest, hitbox, style-pack, look-group, bot-theme and
+coverage-map tests pass; the e2e `characters` (358 s), `characters2` (260 s) and `characters3` (202 s) flows PASS
+(ports 4981/4982). `pnpm test:changed` on this loaded box (load 13 on 4 cores): 1908 passed, 8 failed, all of them
+time-outs (botai, two npc play-throughs, sandgate, two pads maps, host) bar the air drop, whose test is fixed
+(`airplane.test.ts`: each bot checked as it lands; Nova's new hit shapes changed the bots' choices and the first two
+down knifed each other before the last landed); CI passes every one of them. After that run only the intake queue's
+licence fields and docs changed (979bd80c and later).
 <!-- /intake-1106 -->
 
 <!-- shingle -->
