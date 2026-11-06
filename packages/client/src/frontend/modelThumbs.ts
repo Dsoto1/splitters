@@ -116,7 +116,10 @@ export class ModelThumbnails {
     const meshes = this.styler.build(doc, buildMapGeometry(doc), 'thumbmap');
     const nodes = await Promise.all(
       models.map(async (m, i) => {
-        const node = await this.models.instantiate(m.file, `thumbmodel${i}`).catch(() => null);
+        const node = await this.models.instantiate(m.file, `thumbmodel${i}`).catch((e: unknown) => {
+          console.warn(`set piece picture: ${m.file} didn't load (${(e as Error)?.message ?? e})`);
+          return null;
+        });
         if (!node) return null;
         node.position.set(m.position[0], m.position[1], m.position[2]);
         node.rotation.y = m.yaw;
@@ -126,7 +129,7 @@ export class ModelThumbnails {
       }),
     );
     try {
-      return await this.renderMeshes([...meshes, ...nodes.flatMap((n) => n?.getChildMeshes() ?? [])], 'piece', size);
+      return await this.renderMeshes([...meshes, ...nodes.flatMap((n) => n?.getChildMeshes() ?? [])], 'piece', size, 30000);
     } finally {
       for (const m of meshes) m.setEnabled(false);
       for (const n of nodes) n?.dispose();
@@ -157,7 +160,7 @@ export class ModelThumbnails {
     }
   }
 
-  private async renderMeshes(meshes: AbstractMesh[], view: AnyThumbView, size: number): Promise<string> {
+  private async renderMeshes(meshes: AbstractMesh[], view: AnyThumbView, size: number, readyMs = 8000): Promise<string> {
     const { dir: d } = VIEWS[view];
     const W = view === 'side' ? VIEWS.side.width : size;
     const H = view === 'side' ? VIEWS.side.height : size;
@@ -180,7 +183,7 @@ export class ModelThumbnails {
       const half = view === 'side' ? Math.atan(Math.tan(0.3) * aspect) : 0.3;
       this.camera.position.copyFrom(centre.add(dir.scale((radius / Math.tan(half)) * 1.05)));
       this.camera.setTarget(centre);
-      const deadline = performance.now() + 8000;
+      const deadline = performance.now() + readyMs;
       while (!meshes.every((m) => m.isReady(true)) && performance.now() < deadline) {
         this.scene.render();
         await new Promise((r) => setTimeout(r, 30));
