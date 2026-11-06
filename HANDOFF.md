@@ -829,7 +829,7 @@ fastest moving at about 60 m/s, on both attempts.
 Each brief has its reference image beside it. The owner approves the concept before any placement work; follow
 AGENT_BUILD_CONTRACT.md.
 
-### Performance round 3: DONE on `wip/perf-3` (agent, 2026-11-06; code green on `check/perf-3` at 7f2d17ba, run 42179017177; docs/PERF_96.md, "Performance round 3")
+### Performance round 3: DONE on `wip/perf-3` (agent, 2026-11-06; green on `check/perf-3` at c8ca5aa4 with main merged in, run 42181705004; docs/PERF_96.md, "Performance round 3")
 Ready to land (with the far-enemies fix above in it). Not on main: fast-forward main to the green check commit.
 **What it is:** prop batches (models with 8+ copies on the map: `PROP_BATCH_MIN`), still decorations merged, the fog
 reading the ambient occlusion's pre-pass depth, blood as thin instances, guns (also as your own first-person copy),
