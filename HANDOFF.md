@@ -27,7 +27,7 @@ gets overloaded above that: local e2e times out and flakes). Prune landed worktr
   reworks batches 2–3, character fixes rounds 2–3 (see the entries below and CHANGELOG).
 
 <!-- setpieces -->
-### Set pieces, part 1: data, expansion, first content (`wip/setpieces`, agents, 2026-11-06; from main 774a28ce, main 463c2477 merged in; CI on `check/setpieces`)
+### Set pieces, part 1: data, expansion, first content (`wip/setpieces`, agents, 2026-11-06; from main 774a28ce, main e18a175e merged in; green on `check/setpieces` at 09af09cd, run 42211217797; not landed)
 Plan and what it settled: docs/SET_PIECES_PLAN.md ("As built: part 1"); how to add a piece: docs/CONTENT_PIPELINE.md,
 "Set pieces". Part 2 (MapMaker: the Set pieces palette tab, ghost placing, select/inspector, Explode, Save selection,
 local library, St. John's placements, e2e in editorux) starts from this branch and only wires UI to the shared API.
@@ -77,7 +77,7 @@ local library, St. John's placements, e2e in editorux) starts from this branch a
   as `propOpenings.test.ts` does for props: about 50,000 rays straight through every point of each opening its own
   walls leave open (the tiles' and edges' collision: none is shut), a player walking through each from the room
   beyond, and a bot's path through each.
-- **Screenshots** (session scratchpad `shots/out3/`, built game via MapMaker → TEST, Medium, 1280 × 720): the
+- **Screenshots** (session scratchpad `shots/out4/`, built game via MapMaker → TEST, Medium, 1280 × 720): the
   carriageway from the street and the courtyard, standing free (outer voussoirs), its vault and ribs, a side door;
   the wide carriageway outside and in; the skybridges from the street, inside and underneath; medieval and harbour
   versions; an overview.
