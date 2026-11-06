@@ -545,7 +545,10 @@ MapMaker's validator run it on the navmesh as the match builds it, `sim/mapNav.t
 - **A trap**: a patch bots get into from where they spawn (falling, a one-way link, a jump pad) that doesn't route to
   the main area, and that the bots' own hop off a cut-off patch (`NavWorld.escapes`: a step or hop of up to 1.1 m
   within 8 m) doesn't get out of either. One with a fall out is a ledge with no way down (the drop links below fix
-  those); one without is a pit nobody gets out of: the map's to fix.
+  those); one without is a pit nobody gets out of: the map's to fix. The hop's ways across are the place samples
+  near the patch (7 m apart), those joined both ways to the goal's ground first (not a walkway whose way on is a drop
+  link at its far end), then, when they give none, the goal's own ground nearest the patch (a sump or gully a couple
+  of metres from any sample).
 - **Cut off**: a spawn point that doesn't route to the main area (`nav.disconnected`), an objective (flag base, hill,
   bomb site, hostage, rescue zone) some team's spawn points don't route to, a pickup no spawn point routes to
   (`nav.<kind>_unreachable`). "Routes to" is as bots get there: to the place, or to within a step off the navmesh of
@@ -561,14 +564,34 @@ Generation bugs it found, fixed in code:
 - **Floors inside solid boxes.** Recast rasterizes surfaces, not volumes: inside a closed box at least a body's height
   tall, the floor reads as open ground. Eagle Spires' two spires (stacked 2 m rock blocks) had a patch inside every
   block, 7,000 m² in all; falls and goals snapped onto them, and the audit saw traps there. A ground polygon with no
-  room to stand at its middle now gets flags 0 at build (`NavWorld.disableInsideSolid`), which every search and
-  nearest-polygon lookup leaves out.
+  room to stand over its surface at its middle and at most points part way to its corners now gets flags 0 at build
+  (`NavWorld.disableInsideSolid`), which every search and nearest-polygon lookup leaves out. The surface is the
+  detail mesh's height there (kept within the polygon's corners' heights: a sliver's detail mesh can read metres off),
+  not the corners' average: on terrain that is often half a metre or more under a rise, and the first version of the
+  check took thousands of square metres of open hillside out of every route (Frost Basin 17,550 m², Sunstone Crag
+  23,400, Iron Maw 16,000, Coldwater Gulch 15,300, Sandgate 15,000; with it, the audit's errors on the official maps
+  went from 148 to 36).
 - **Ledges with no way down** (Eagle Spires' cliff ledges, roofs and scaffolds bots fall or pad onto, Bunker Cross's
   base roofs): one-way **ledge-drop links**, brought forward from Phase C, generated at load (`audit.ts` `trapExits`,
   `NavWorld.build` `drops`): from each patch that doesn't route to the main area, up to three falls onto ground that
-  does (lowest first, 4 m apart), then again from patches those now lead out of. Within fall damage: with it on, only
-  drops that cost at most about 30 health (8.3 m at normal gravity, `DROP_HURTS_UP_TO`); with it off, any drop onto the
-  navmesh. Not into lava or deep water. A map without such patches gets none, and its navmesh is the same as before.
+  does (lowest first, 4 m apart), then again from patches those now lead out of. A long patch (a walkway along a pool,
+  a gallery: its open edges over 48 m round) gets one per 16 m of them, 8 m apart, up to 12 (Capitol Mall's pool rim
+  sent its bots 30 m to its one drop at the far end). A fall that lands on ground too steep to stand on (Frost
+  Basin's ice ridge, a rock's flank) goes on to the navmesh at the slope's foot it slides to (within 8 m, downhill all
+  the way, nothing in the way; the audit's own falls into places stop where they land). Within fall damage: with it
+  on, only drops that cost at most about 30 health (8.3 m at normal gravity, `DROP_HURTS_UP_TO`); with it off, any drop
+  onto the navmesh. Not into lava or deep water. A map without such patches gets none, and its navmesh is the same as
+  before.
+
+**Navmesh clearance: 0.8 m, kept.** The code meant 0.6 m from walls and edges (the body's 0.4 and 0.2, so
+corner-cutting bots don't snag door frames) and built 0.8 (`Math.ceil((0.4 + 0.2) / 0.2)` is four cells: in floating
+point the quotient is 3.0000000000000004). Every tile's stairs, towers and doorways were built and tested against 0.8,
+and 0.6 is worse there: Recast breaks the narrow switchback flights of the Desert, Jungle, Medieval and Snow watch
+towers and the Desert outside stair into scraps it drops (nine of the tile packs' reach tests fail; the towers' sniper
+perches on Qasr Medina, Market Town, Whiteout Station and Vinefall Sanctum were cut off). 0.6 opens doorways and steps
+1.2–1.6 m wide (M4 Outpost's uplink dais), and on the CTF suite (two seeds of 180 s, 88 matches) it gave more flag
+takes and captures but more frozen time and failed searches (table in BOT_AI_PLAN.md, "Phase A, measured"): not
+better or equal, so 0.8 stays (`NAV_RADIUS_CELLS`, its comment says why). Narrow passages are Phase C's.
 
 ## Never standing still on a failed route (Phase A)
 
@@ -585,9 +608,12 @@ A failed search used to back the bot off 0.2 s, doubling to 4 s, standing still 
   got; the bot walks it and asks again. With doors shut to it and no button to open them, as near the goal as it gets
   this side of them (it waits there, keeping watch, for the door or a button to be ready).
 - **Goals of its own are only picked where a route gets**: roam goals and lane waypoints (`pickAdvanceGoal`,
-  `orderTarget`), pickups (one out of reach is dropped for 90 s and the next best taken), and the director's regions,
-  squad lanes and campers' and snipers' vantage spots, which come from the main area's places
-  (`NavWorld.mainPlaces`).
+  `orderTarget`), pickups (one out of reach is dropped for 90 s and the next best taken; one a route reaches but none
+  comes back from, on a perch a jump pad throws you onto or in a pit, isn't taken at all: Skyward's and Sky Islands'
+  perches), and the director's regions, squad lanes and campers' and snipers' vantage spots, which come from the main
+  area's places (`NavWorld.mainPlaces`).
+- **A hop off a cut-off patch keeps going** when a fight starts or the goal changes in mid-hop (before, the new
+  route's stand-in on the patch pulled the bot back down: Capitol Mall's pool, 14 s instead of 1.4).
 - **No route requests in the air** (out of the plane, under a canopy, a jump pad's flight): none can start there.
   Eagle Spires' plane drop made 860 of its 1,507 failed searches in a minute.
 - **Buttons** (Primeval Park, a bot stood 218 s at the fence power): a button on cooldown isn't offered (pressed, it
@@ -623,13 +649,18 @@ round times; Fort Wars pieces built.
   all modes (`all`) and per map where it matters (`core.ctf/eagle_spires`). Each measure is a most (failed searches,
   idle, frozen, stuck recoveries a bot-minute, spawn deaths, think ms) or a least (captures, takes, hill time,
   coverage, going to the goal); `METRICS` in bot-report.ts says which. A worse number fails.
-- `pnpm bot-report --check` plays the file's `check` list (a few maps, one seed, short matches: about a minute and
-  a half on a CI runner) and holds it to `checkLimits`. CI runs it (the `bots` job) when a change touches the bots,
-  navigation, the sim or its modes, or the scorecard itself (`e2e/flowMap.mjs` `BOT_PATHS`; the plan's `bots`
-  output), and the release waits on it.
-- **Nightly** (and from Run workflow) CI plays the full suite (`--suite=all`, two seeds of three minutes, 14 shards)
-  and the `bots-scorecard` job holds it to `limits` (`--judge=a.json+b.json…`), with the report (every match's rows,
-  the scorecard) and every map's nav picture with its failed searches as the `bots-report` artifact.
+- `pnpm bot-report --check` plays the file's `check` list (Diamond Park and Eagle Spires CTF, Shingle Point King of
+  the Hill, Fernwood Moon TDM; one seed, 90 s each: about a minute and a half on a CI runner) and holds it to
+  `checkLimits`. CI runs it (the `bots` job, under `stop-on-failure.sh` like the other gating jobs) when a change
+  touches the bots, navigation, the sim or its modes, the scorecard itself or one of the maps the check plays
+  (`e2e/flowMap.mjs` `BOT_PATHS`, `BOT_CHECK_MAPS`; the plan's `bots` output, so `green_base` and the docs-only skip
+  apply to it as to the rest), and the release waits on it.
+- **Nightly** (and from Run workflow) CI plays the full suite (`--suite=all`: 199 map and mode pairs, two seeds of
+  three minutes, 14 shards of about 28 matches) and the `bots-scorecard` job holds it to `limits`
+  (`--judge=a.json+b.json…`), with the report (every match's rows, the scorecard, `pnpm nav-audit`'s output for every
+  map) and every map's nav picture (the maps the suite played drawn again with their failed searches) as the
+  `bots-report` artifact. The nightly shards don't stop when another job fails (a flaky browser flow doesn't cost the
+  night's scorecard; the run reads failure all the same).
 - The sim is deterministic by seed, so a run's numbers are the same every time on the same code; only bot thinking
   and tick times vary with the machine.
 
