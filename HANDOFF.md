@@ -550,7 +550,7 @@ The first two are likely Fogbound or another map using the Quaternius ruins.
 - Investigate the third screenshot separately: puffs in mid-air near distant trees could be env tree limbs that block
   shots, or legitimate ground hits.
 
-### CTF bots and idle bots (`wip/bots-idle`, agent, 2026-11-06; from main 39056920, main 5b167034 merged in; in progress)
+### CTF bots and idle bots (`wip/bots-idle`, agent, 2026-11-06; from main 39056920, main 5b167034 merged in; green on `check/bots-idle`, ready to land)
 Fixes the two reports below (CTF bots don't go for the flag; Diamond Park dugout; Fernwood Moon bots not moving).
 
 **How to resume:** branch `wip/bots-idle` (pushed after every step). Measure with `pnpm bot-report` (new:
@@ -605,9 +605,18 @@ export): `bots-idle/tools/maker-*.mjs`, `finalize.mjs` (needs the client's dev s
   group pushes); Eagle Spires (bots that fall off the mesas' scaffolds and cliffs onto ledges with no route down:
   drops are never routes; with fall damage off, a drop-down link would do).
 
-**Next:** the final suite (`final-ctf-*.json`, running) against the baseline into docs/BOTS.md, CHANGELOG,
-docs/BOT_AI_PLAN.md "First measurements"; TDM/KOTH/Bomb regression and `pnpm bench:96:clump` with the final code;
-checks (typecheck, test:changed, build, e2e ctf/offline/maps on the changed maps); `check/bots-idle` CI.
+**Measured** (docs/BOTS.md "Capture the Flag" has every map; scratchpad `final2-ctf-*.json` against
+`before-ctf-*.json`): CTF suite captures 21 → 145, matches with a capture 17 → 55 of 88, maps with a capture 13 → 31,
+flag takes 77 → 906, idle out of a fight 17.9 → 5.6 %, 10 s+ idle spells 19 → 2.7 a match, kills 22.9 → 35.1 a
+minute; TDM, KOTH and Bomb idle down, kills level or up; `pnpm bench:96:clump` bot thinking 1.46–2.04 → 1.54–2.12 ms.
+
+**Checks:** `pnpm typecheck`; the changed unit tests locally (botCtf, modes, nav, airplane, botRoles, botai,
+spectate, sandgate, npc, match, terrainFloors, forts); CI on `check/bots-idle`: run 42169677264 green on 9b548458
+(its `handoff` e2e flow failed once on CI's load and passed on the re-run), run 42174642880 green on e9bf9611 (the
+final code; later commits are docs only).
+
+**Next:** land on main (fast-forward to the green commit, or the docs commit after it). Then Phase A
+(docs/BOT_AI_PLAN.md), starting from "Found, left" above.
 
 ### Queued FIRST (owner bug report, 2026-11-05 late): CTF bots don't go for the flag
 **Owner:** "CTF: no bots are actually going for the flag, most just hang out and do little. We should only have

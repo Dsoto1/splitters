@@ -34,6 +34,11 @@ still")
   its rear door. **Sandfall Colosseum**: a spawn point inside the stand's steps moved out of them. MapMaker and
   validate-map warn about rules on one event that undo each other, and about spawn points inside something solid.
 - Team tools: `pnpm bot-report` (what every bot did and why it stood still, per map; before/after compare).
+- Measured over every CTF map (44 maps, two five-minute matches each): captures 21 → 145, matches with a capture
+  17 → 55 of 88, maps with a capture 13 → 31, flag takes 77 → 906; bots standing still out of a fight 17.9 → 5.6 %
+  of their time, idle spells of 10 s and more 19 → 2.7 a match. Diamond Park: 0.5 → 1.5 captures and 2.5 → 19.5
+  flag takes a match, idle 32.9 → 3.1 %. Team Deathmatch on Fernwood Moon: idle 23.0 → 7.6 %. Bot thinking at 96
+  bots stays within its 2.5 ms a tick.
 
 **Rounds go through arches, windows and holes** (owner's report, 2026-11-06: bullet holes in empty air inside a stone
 arch and a ruined wall's window on Fogbound, and under a giant root on Fernwood Moon, with puffs in the air by the trees)

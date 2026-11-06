@@ -381,6 +381,93 @@ every map that offers CTF, two seeds of five minutes each (numbers at the end of
   steers for it under the canopy (`BotBrain`, `CombatantView.chute`).
 - **Defenders keep watch** round their flag (radius 9 m) toward the enemy's side (see "Standing still").
 
+**Measured** (`pnpm bot-report --suite=ctf --seeds=1,2 --seconds=300`: every map that offers CTF, 44 maps, two
+five-minute matches each, the map's own team sizes, all bots; before: main 39056920 with the measuring only; after:
+`wip/bots-idle` e9bf9611, with main 5b167034's prop openings merged in):
+
+| Suite, 88 matches | Before | After |
+|---|---|---|
+| Captures | 21 (0.24 a match) | 145 (1.65 a match) |
+| Matches with a capture | 17 | 55 |
+| Maps with a capture | 13 of 44 | 31 of 44 |
+| Flag takes | 77 | 906 |
+| Idle out of a fight (of alive time) | 17.9 % | 5.6 % |
+| Frozen (out of a fight, not even turning) | 2.9 % | 0.9 % |
+| Going to the goal (of goal time) | 15.9 % | 27.8 % |
+| Idle spells of 10 s and more, a match | 19.0 | 2.7 |
+| Longest idle spell | 300 s | 218 s (Primeval Park, a bot at a button) |
+| Stuck recoveries, a match | 283 | 229 |
+| No-route searches, a match | 545 | 614 |
+| Kills a minute | 22.9 | 35.1 |
+
+Per map (two matches each; seed noise is large at two matches):
+
+| Map | captures a match | flag takes a match | idle out of a fight % | stuck recoveries a match | kills a minute |
+|---|---|---|---|---|---|
+| apex_ring | 1.5 → **4.0** | 2.0 → 9.0 | 10.0 → 2.9 | 146 → 124 | 17.2 → 25.0 |
+| bunker_cross | 0.5 → **5.0** | 0.5 → 9.5 | 9.4 → 3.8 | 100 → 329 | 16.1 → 23.4 |
+| capitol_mall | 0.0 → **0.0** | 0.0 → 0.0 | 27.4 → 9.0 | 469 → 367 | 33.7 → 46.8 |
+| cinder_foundry | 0.0 → **0.0** | 0.0 → 7.0 | 15.9 → 4.7 | 84 → 108 | 21.7 → 26.5 |
+| coldwater_gulch | 0.0 → **0.0** | 0.0 → 1.0 | 31.2 → 8.7 | 242 → 154 | 13.1 → 22.0 |
+| diamond_park | 0.5 → **1.5** | 2.5 → 19.5 | 32.9 → 3.1 | 219 → 278 | 15.1 → 52.4 |
+| dune_harbor | 0.0 → **0.0** | 0.0 → 1.0 | 23.0 → 7.4 | 458 → 302 | 28.6 → 41.2 |
+| dustwater | 0.0 → **3.5** | 0.0 → 14.5 | 11.1 → 3.0 | 127 → 110 | 16.4 → 31.9 |
+| eagle_spires | 0.5 → **0.0** | 2.5 → 5.5 | 18.6 → 10.8 | 144 → 172 | 20.8 → 18.9 |
+| fernwood_moon | 0.0 → **1.0** | 0.0 → 2.0 | 28.2 → 6.9 | 900 → 352 | 31.4 → 50.7 |
+| flatpack_depot | 1.0 → **4.5** | 1.5 → 12.5 | 10.5 → 1.7 | 138 → 173 | 20.5 → 34.7 |
+| fogbound | 0.0 → **0.5** | 2.0 → 7.5 | 16.8 → 4.8 | 175 → 217 | 15.7 → 24.2 |
+| fort_meadow | 0.0 → **0.0** | 0.0 → 0.5 | 3.9 → 0.8 | 6 → 10 | 35.2 → 38.1 |
+| glacier_line | 0.5 → **1.5** | 1.5 → 11.5 | 11.3 → 1.4 | 129 → 181 | 29.9 → 46.6 |
+| grand_marquee | 0.0 → **4.5** | 2.0 → 25.5 | 3.1 → 2.7 | 100 → 254 | 20.7 → 28.1 |
+| iron_compound | 0.0 → **1.0** | 0.0 → 11.0 | 86.5 → 5.6 | 2068 → 297 | 0.0 → 30.1 |
+| iron_maw | 0.0 → **0.5** | 0.0 → 1.0 | 24.2 → 5.8 | 308 → 131 | 28.3 → 43.2 |
+| iron_tide | 0.0 → **0.0** | 2.5 → 20.5 | 15.2 → 4.7 | 802 → 386 | 20.4 → 30.9 |
+| ironhold_prison | 0.0 → **2.0** | 0.5 → 12.5 | 9.0 → 9.6 | 148 → 148 | 22.7 → 32.5 |
+| maple_court | 0.0 → **2.0** | 0.0 → 14.0 | 13.9 → 3.6 | 118 → 182 | 18.5 → 27.0 |
+| market_town | 0.0 → **2.5** | 0.0 → 14.5 | 8.6 → 2.7 | 99 → 168 | 38.2 → 52.8 |
+| neon_galleria | 0.0 → **1.5** | 0.0 → 12.5 | 11.3 → 1.8 | 103 → 144 | 16.2 → 30.3 |
+| no_mans_field | 0.0 → **1.0** | 0.0 → 3.5 | 10.4 → 7.2 | 230 → 288 | 19.2 → 29.5 |
+| norman_shores | 0.0 → **0.0** | 0.0 → 3.0 | 24.2 → 10.3 | 96 → 114 | 16.2 → 19.3 |
+| obsidian_orb | 1.0 → **5.0** | 3.5 → 10.5 | 17.1 → 12.2 | 524 → 238 | 32.6 → 59.2 |
+| pantry_raid | 0.0 → **0.0** | 0.0 → 0.0 | 5.8 → 2.2 | 52 → 71 | 22.8 → 32.6 |
+| pharaohs_reach | 0.0 → **2.5** | 0.0 → 12.0 | 10.1 → 3.3 | 54 → 188 | 18.6 → 25.0 |
+| primeval_park | 0.0 → **0.0** | 0.0 → 0.0 | 30.2 → 12.9 | 172 → 94 | 17.4 → 27.9 |
+| qasr_medina | 0.0 → **3.0** | 0.0 → 23.0 | 8.5 → 3.3 | 161 → 186 | 28.1 → 47.6 |
+| rail_stockyard | 0.5 → **3.0** | 0.5 → 13.5 | 8.1 → 2.9 | 73 → 196 | 14.6 → 23.1 |
+| riot_junction | 0.0 → **1.0** | 0.0 → 23.5 | 20.2 → 2.3 | 588 → 354 | 30.3 → 47.9 |
+| runway_nine | 1.5 → **1.5** | 3.0 → 23.5 | 2.1 → 2.4 | 164 → 254 | 32.3 → 39.6 |
+| saltmarsh_harbor | 0.0 → **0.0** | 0.0 → 2.0 | 22.0 → 4.6 | 657 → 614 | 22.7 → 39.0 |
+| sandfall_colosseum | 0.5 → **4.5** | 1.5 → 21.0 | 9.3 → 9.0 | 246 → 266 | 21.8 → 28.4 |
+| serene_city | 0.5 → **4.0** | 1.5 → 43.0 | 7.2 → 4.7 | 260 → 236 | 36.3 → 59.0 |
+| serpent_gorge | 0.0 → **2.5** | 1.0 → 10.0 | 6.5 → 4.3 | 258 → 396 | 20.8 → 33.2 |
+| st_johns | 0.0 → **0.5** | 0.0 → 2.5 | 23.9 → 7.6 | 52 → 77 | 22.2 → 31.0 |
+| starhaven | 0.5 → **3.0** | 2.5 → 9.0 | 19.8 → 12.7 | 552 → 546 | 19.2 → 26.5 |
+| sunken_kingdom | 0.0 → **2.0** | 0.5 → 15.5 | 17.3 → 1.4 | 190 → 188 | 33.6 → 46.7 |
+| sunstone_crag | 0.0 → **0.5** | 0.5 → 5.0 | 24.6 → 6.0 | 356 → 186 | 28.9 → 35.4 |
+| twin_spires | 0.0 → **0.0** | 0.0 → 0.0 | 11.9 → 3.8 | 62 → 103 | 23.6 → 33.4 |
+| underdrain | 0.0 → **0.0** | 0.0 → 0.0 | 33.0 → 14.4 | 209 → 106 | 11.3 → 21.6 |
+| vinefall_sanctum | 1.5 → **2.5** | 6.5 → 12.5 | 9.2 → 6.7 | 186 → 407 | 22.4 → 31.3 |
+| whiteout_station | 0.0 → **0.5** | 0.0 → 7.5 | 13.6 → 2.7 | 238 → 387 | 32.3 → 49.4 |
+
+Still without a capture: Capitol Mall (249 m between the flags), Coldwater Gulch, Dune Harbor, Eagle Spires, Fort
+Meadow (a midfield brawl), Saltmarsh Harbor, Twin Spires, Cinder Foundry, Iron Tide, Norman Shores, Pantry Raid,
+Primeval Park, Underdrain. Most have flag takes now and lose the carrier on the way home; Capitol Mall, Twin Spires,
+Pantry Raid, Primeval Park and Underdrain have none: the attackers die on the way (group pushes are
+BOT_AI_PLAN.md Phase B). Eagle Spires still strands bots on ledges of its mesas' cliffs and scaffolds (no route
+down: a drop is never a route), Primeval Park has bots standing at a button that doesn't open their way (up to
+218 s).
+
+Other modes, same code (two matches of four minutes each unless one is shown): Team Deathmatch on Fernwood Moon
+idle out of a fight 23.0 → 7.6 %, frozen 11.9 → 0.6 %, kills 29.5 → 33.1 a minute; Riot Junction 9.4 → 4.5 %,
+stuck recoveries 471 → 185, kills 28.8 → 27.4; Frost Basin 12.6 → 4.4 %, frozen 9.3 → 1.3 %, kills 10.5 → 13.3.
+King of the Hill (one match): Diamond Park 3.9 → 2.1 %, kills 26.8 → 31.3; Iron Maw 10.4 → 6.0 %, stuck
+recoveries 309 → 63. Bomb on Diamond Park: 25.9 → 10.2 %, frozen 10.7 → 0.1 %, kills 7.9 → 10.4.
+
+Cost (`pnpm bench:96:clump`, 96 bots, Team Deathmatch, before and after run side by side on a loaded 4-core box,
+load 9.5): bot thinking 1.46–2.04 ms a tick before, 1.54–2.12 after (Norman Shores spread 1.96 → 2.12, clumped
+2.04 → 2.07; Frost Basin 1.89 → 2.11 and 1.83 → 1.72; Riot Junction 1.48 → 1.54 and 1.46 → 1.63), within the
+2.5 ms budget. (An earlier pair at load 15 read 1.46–2.14 and 1.67–2.54.)
+
 ## Standing still (November 2026)
 
 Owner's report (Fernwood Moon, free camera): "why would some bots not be moving at all?" A bot now stands still

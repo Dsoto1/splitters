@@ -65,7 +65,37 @@ Diamond Park CTF, 24 bots, 180 s, seed 1 (`pnpm bot-report`, `wip/bots-idle` 094
 | Stuck recoveries | 88 |
 | Longest idle spell | 100 s (five attackers by (15, 0, -16)) |
 
-The current fix's before and after numbers go here when it lands.
+The `wip/bots-idle` fix (e9bf9611), before and after, Diamond Park CTF, two matches of 300 s (seeds 1, 2):
+
+| Measure | Before | After |
+|---|---|---|
+| Captures / flag takes, a match | 0.5 / 2.5 | 1.5 / 19.5 |
+| Idle out of a fight, of alive time | 32.9 % | 3.1 % |
+| Frozen (not even turning) | 20.4 % | 0.5 % |
+| No-route searches, a match | 4,888 | 9 |
+| Idle spells of 10 s and more, a match | 57.5 | 3.5 |
+| Kills a minute | 15.1 | 52.4 |
+
+The whole CTF suite (44 maps, two matches of 300 s each; docs/BOTS.md, "Capture the Flag", has every map):
+
+| Measure | Before | After |
+|---|---|---|
+| Captures in 88 matches (matches with one) | 21 (17) | 145 (55) |
+| Maps with a capture | 13 of 44 | 31 of 44 |
+| Flag takes | 77 | 906 |
+| Idle out of a fight / frozen | 17.9 % / 2.9 % | 5.6 % / 0.9 % |
+| Idle spells of 10 s and more, a match | 19.0 | 2.7 |
+| Stuck recoveries / no-route searches, a match | 283 / 545 | 229 / 614 |
+| Kills a minute | 22.9 | 35.1 |
+| Fernwood Moon: captures, idle out of a fight | 0, 28.2 % | 1 a match, 6.9 % |
+| Sunken Kingdom: captures, idle out of a fight | 0, 17.3 % | 2 a match, 1.4 % |
+| Team Deathmatch, Fernwood Moon: idle out of a fight, frozen | 23.0 %, 11.9 % | 7.6 %, 0.6 % |
+| `pnpm bench:96:clump`, bot thinking a tick | 1.46–2.04 ms | 1.54–2.12 ms |
+
+Left for Phase A (found on the way): the navmesh keeps 0.8 m from walls, not the 0.6 m its comment means (a
+floating-point round-up); 26 spawn points on 18 maps inside collision (`spawn.blocked`); drops are never routes
+(Eagle Spires' cliff ledges); a bot can stand at a button that doesn't open its way (Primeval Park, 218 s); 13 maps
+still without a capture (most lose the carrier on the way home: Phase B).
 
 ## Rules that frame the design
 - **One sim.** Bots run in the shared sim (`packages/shared`). It is the same code on the dedicated server and in a
