@@ -27,7 +27,7 @@ gets overloaded above that: local e2e times out and flakes). Prune landed worktr
   reworks batches 2–3, character fixes rounds 2–3 (see the entries below and CHANGELOG).
 
 <!-- bots-a -->
-### Bot AI Phase A: navigation audit, never stand still, scorecard (`wip/bots-a`, agents, 2026-11-06; main b2c58e2e, bc6037a1 and da59209d merged in; green on `check/bots-a` at ec075ed7, run 42268596652; not landed)
+### Bot AI Phase A: navigation audit, never stand still, scorecard (`wip/bots-a`, agents, 2026-11-06; main b2c58e2e, bc6037a1, da59209d and c0b74376 merged in; green on `check/bots-a` at c9ab150a, run 42273882962; not landed)
 docs/BOT_AI_PLAN.md (Phase A done; the before/after tables under "Phase A, measured"), docs/BOTS.md ("Navigation
 audit", "Never standing still on a failed route", "Scorecard"). Earlier agents did most of it and were stopped; the
 last one finished it.
