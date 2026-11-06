@@ -144,7 +144,7 @@ describe('z-fighting audit over every set piece', () => {
       const boxes = [...buildMapGeometry(map), ...buildMapDecor(map)];
       expect(coplanarOverlaps(boxes, { faces: visibleFaces(boxes) })).toEqual([]);
     }
-    const bridge = played(mapOf([room('bldg_a', 0, -1, 1, { options: { facade: 'gothic_stone' } }), room('bldg_b', 0, 2, 1, { options: { facade: 'gothic_stone' } }), room('bldg_a0', 0, -1), room('bldg_b0', 0, 2)], [{ id: 'bridge_1', piece: 'setpiece.skybridge_2', x: 0, y: 0, z: 1 }]));
+    const bridge = played(mapOf([room('bldg_a', 0, -1, 1, { options: { facade: 'collegiate_stone' } }), room('bldg_b', 0, 2, 1, { options: { facade: 'gothic_stone' } }), room('bldg_a0', 0, -1), room('bldg_b0', 0, 2)], [{ id: 'bridge_1', piece: 'setpiece.skybridge_2', x: 0, y: 0, z: 1 }]));
     const boxes = [...buildMapGeometry(bridge), ...buildMapDecor(bridge)];
     expect(coplanarOverlaps(boxes, { faces: visibleFaces(boxes) })).toEqual([]);
   });

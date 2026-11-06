@@ -166,7 +166,7 @@ export type Corner = (typeof CORNERS)[number];
  * window frames, or tarred lap boards (11 Coastal Harbor); insulated steel panels, or
  * snow-capped concrete (12 Snow Outpost).
  */
-export const FACADES = ['none', 'brick', 'storefront', 'plaster', 'hull', 'glass', 'neon', 'concrete', 'corrugated', 'false_front', 'adobe', 'gothic_stone', 'manor_brick', 'temple', 'overgrown', 'clapboard', 'suburban_brick', 'roman', 'egyptian', 'timber_frame', 'village_plaster', 'prefab', 'snow_bunker', 'desert_ashlar', 'desert_plaster', 'harbour_render', 'tarred_timber'] as const;
+export const FACADES = ['none', 'brick', 'storefront', 'plaster', 'hull', 'glass', 'neon', 'concrete', 'corrugated', 'false_front', 'adobe', 'gothic_stone', 'collegiate_stone', 'manor_brick', 'temple', 'overgrown', 'clapboard', 'suburban_brick', 'roman', 'egyptian', 'timber_frame', 'village_plaster', 'prefab', 'snow_bunker', 'desert_ashlar', 'desert_plaster', 'harbour_render', 'tarred_timber'] as const;
 export type Facade = (typeof FACADES)[number];
 export const FACADE_LABELS: Record<Facade, string> = {
   none: 'None',
@@ -182,6 +182,7 @@ export const FACADE_LABELS: Record<Facade, string> = {
   false_front: 'Frontier false front',
   adobe: 'Adobe',
   gothic_stone: 'Gothic stone',
+  collegiate_stone: 'Collegiate stone',
   manor_brick: 'Victorian brick',
   temple: 'Temple stone',
   overgrown: 'Overgrown rock',

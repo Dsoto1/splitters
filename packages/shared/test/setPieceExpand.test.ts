@@ -274,7 +274,7 @@ describe('set pieces: every shipped piece in each turn, mirror and role pack', (
     expect(passage.surfaces).toEqual({ floor: { material: 'core.road_setts', tint: null }, walls: stone, solids: stone, trim: { material: 'core.stone_trim', tint: '#d8d3c6' } });
     expect(passage.options).toEqual({ ceiling: 'vault' });
     const above = map.classicStructure.tiles.find((t) => t.id === 'sp_piece_1_1')!;
-    expect(above.options).toEqual({ ceiling: 'roof', facade: 'gothic_stone' });
+    expect(above.options).toEqual({ ceiling: 'roof', facade: 'collegiate_stone' });
     expect(above.glass).toEqual({ '0,0,0:N': 'breakable', '0,0,0:S': 'breakable' });
     const doors = map.entities.filter((e) => e.kind === 'door');
     expect(doors.map((d) => d.kind === 'door' && d.style)).toEqual(['oak', 'oak']);

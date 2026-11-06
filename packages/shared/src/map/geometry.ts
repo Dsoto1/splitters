@@ -1233,7 +1233,7 @@ export function buildFacades(map: MapDocument, catalog: TileCatalog = coreCatalo
 
 // ---------------------------------------------------------------- Style Pack facades
 
-type PackFacade = 'concrete' | 'corrugated' | 'false_front' | 'adobe' | 'gothic_stone' | 'manor_brick' | 'temple' | 'overgrown' | 'clapboard' | 'suburban_brick' | 'roman' | 'egyptian' | 'timber_frame' | 'village_plaster' | 'prefab' | 'snow_bunker' | 'desert_ashlar' | 'desert_plaster' | 'harbour_render' | 'tarred_timber';
+type PackFacade = 'concrete' | 'corrugated' | 'false_front' | 'adobe' | 'gothic_stone' | 'collegiate_stone' | 'manor_brick' | 'temple' | 'overgrown' | 'clapboard' | 'suburban_brick' | 'roman' | 'egyptian' | 'timber_frame' | 'village_plaster' | 'prefab' | 'snow_bunker' | 'desert_ashlar' | 'desert_plaster' | 'harbour_render' | 'tarred_timber';
 /**
  * Style Pack facades, built from boxes in library materials: the cladding
  * (`skin`) on every outside wall, `depth` proud of it, and what each adds:
@@ -1248,6 +1248,8 @@ const PACK_FACADES: Record<PackFacade, { skin: string; tint: string | null; dept
   adobe: { skin: 'core.pbr_adobe', tint: null, depth: 0.16 },
   // 05 Gothic Estate, 06 Jungle Ruins, 08 Suburban Chaos.
   gothic_stone: { skin: 'core.pbr_castle_stone', tint: '#9a9aa4', depth: 0.14 },
+  // Collegiate Gothic (the set pieces' look for St. John's): grey lannonstone laid as rubble ashlar, dressed limestone.
+  collegiate_stone: { skin: 'core.cobble', tint: '#d9d5cb', depth: 0.14 },
   manor_brick: { skin: 'core.pbr_brick_red', tint: '#a07c70', depth: 0.1 },
   temple: { skin: 'core.pbr_castle_stone', tint: '#d8d8b8', depth: 0.16 },
   overgrown: { skin: 'core.pbr_jungle_rock', tint: null, depth: 0.16 },
@@ -1340,22 +1342,25 @@ function packFacadeBoxes(map: MapDocument, cells: Map<string, CellOccupant>): Wo
             }
           } else if (!roofed && full) add(side, -half, half, top, top + 0.2, out0 - 0.06, TILE_DIMENSIONS.wallThickness, 'core.pbr_charred_wood');
           break;
-        case 'gothic_stone': {
-          // A dark stone plinth, buttresses at the ends of each wall, a string course, hood moulds over
-          // the openings and a battlemented parapet with pinnacles over the buttresses.
-          if (ground) add(side, -half, half, 0, 0.6, out0 - 0.1, -base, 'core.pbr_flagstone', '#8a8a90');
+        case 'gothic_stone':
+        case 'collegiate_stone': {
+          // A stone plinth, buttresses at the ends of each wall, a string course, hood moulds over the openings and a
+          // battlemented parapet with pinnacles over the buttresses: dark flagstone dressing on Gothic stone, dressed
+          // limestone on Collegiate stone.
+          const [dressing, plinthTint, courseTint] = facade === 'collegiate_stone' ? ['core.stone_trim', '#c4bfb2', '#d8d3c6'] : ['core.pbr_flagstone', '#8a8a90', '#a0a0a8'];
+          if (ground) add(side, -half, half, 0, 0.6, out0 - 0.1, -base, dressing, plinthTint);
           if (full) for (const u of [-half + 0.45, half - 0.45]) {
             add(side, u - 0.32, u + 0.32, 0, levelHeight * 0.6, out0 - 0.55, out0, look.skin, look.tint);
             add(side, u - 0.26, u + 0.26, levelHeight * 0.6, levelHeight, out0 - 0.3, out0, look.skin, look.tint);
           }
-          if (full) add(side, -half, half, levelHeight - 0.62, levelHeight - 0.5, out0 - 0.1, out0, 'core.pbr_flagstone', '#a0a0a8');
-          for (const o of facadeOpenings(segs)) if (o.top < levelHeight - 0.4) add(side, o.u0 - 0.2, o.u1 + 0.2, o.top, o.top + 0.16, out0 - 0.12, out0, 'core.pbr_flagstone', '#a0a0a8');
+          if (full) add(side, -half, half, levelHeight - 0.62, levelHeight - 0.5, out0 - 0.1, out0, dressing, courseTint);
+          for (const o of facadeOpenings(segs)) if (o.top < levelHeight - 0.4) add(side, o.u0 - 0.2, o.u1 + 0.2, o.top, o.top + 0.16, out0 - 0.12, out0, dressing, courseTint);
           if (!roofed && full) {
             add(side, -half, half, top, top + 0.3, out0 - 0.08, TILE_DIMENSIONS.wallThickness, look.skin, look.tint);
             for (let u = -half + 1.2; u < half - 0.9; u += 1.2) add(side, u - 0.3, u + 0.3, top + 0.3, top + 0.75, out0 - 0.08, 0, look.skin, look.tint);
             for (const u of [-half + 0.45, half - 0.45]) {
               add(side, u - 0.22, u + 0.22, top, top + 1.3, out0 - 0.3, out0, look.skin, look.tint);
-              add(side, u - 0.12, u + 0.12, top + 1.3, top + 1.7, out0 - 0.2, out0 - 0.1, 'core.pbr_flagstone', '#a0a0a8');
+              add(side, u - 0.12, u + 0.12, top + 1.3, top + 1.7, out0 - 0.2, out0 - 0.1, dressing, courseTint);
             }
           }
           break;
