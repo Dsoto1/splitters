@@ -1,0 +1,38 @@
+{
+  "id": "meshy_astronaut",
+  "kind": "character",
+  "use": "player",
+  "order": 114,
+  "name": "Spacewalker",
+  "look": "core.astronaut",
+  "group": "soldiers",
+  "nameTheme": "soldier",
+  "bio": "Six hours outside the airlock without a scratch. Six seconds down here and somebody's shooting.",
+  "body": "male",
+  "notes": "Drive intake of 2026-11-06 (\"Astronaut\", rigged and animated on Meshy: Mixamo joint names read as Meshy's; thumb and middle finger chains only, so the fingers are re-fitted by hands.mjs; its two clips are not used). A white spacesuit with a gold visor and a backpack, in a T-pose; a 10.4k-triangle download, kept whole. Display name a placeholder for the owner. Licence: Meshy Community, CC0 per the owner (2026-11-06); post URL pending from the owner.",
+  "source": {
+    "license": "CC0",
+    "author": "Meshy Community (CC0 per the owner)",
+    "community": {
+      "model": "Astronaut"
+    },
+    "date": "2026-11-06",
+    "url": null,
+    "file": "^Meshy_AI_Astronaut_\\d+_animated_mixamo_All_animation\\.glb$"
+  },
+  "finish": {
+    "metallic": 0.05,
+    "roughness": 0.7
+  },
+  "firstPerson": {
+    "arms": "own"
+  },
+  "fixes": {
+    "triangles": 11000,
+    "headShare": 0.16,
+    "handsShare": 0.1,
+    "normalSize": 1024,
+    "lod": 0.25,
+    "feet": true
+  }
+}

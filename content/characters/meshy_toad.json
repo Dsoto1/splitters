@@ -10,65 +10,30 @@
   "bio": "Crawled out of the marsh for the noise and stayed for the shooting. Smells exactly as you fear.",
   "size": "large",
   "body": "male",
-  "notes": "Hunched (`lean`); cloth hangs below its hips.",
+  "notes": "Its model replaced 2026-11-06 (Drive intake of 2026-11-06, the owner: \"The boglurker can be replaced by the alligator\") by \"A humanoid crocodile wearing a heavy\" (as Meshy names the download): a broad crocodile in iron pauldrons, bracers and greaves with a long tail; rigged and animated on Meshy (Mixamo joint names read as Meshy's; finger chains without an index finger, so the fingers are re-fitted by hands.mjs; the tail's and the snout's extra joints ride the hips and the head; its two clips are not used). Same name, look ID and size (large); the Boglurker NPC role keeps the look. The model it replaced (\"Boglurker the toad\", an unrigged FBX rigged here from landmarks) is no longer shipped. Licence: Meshy Community, CC0 per the owner (2026-11-06); post URL pending from the owner.",
   "source": {
-    "license": "owned",
-    "author": "the owner, on their Meshy subscription",
-    "date": "2026-03-25",
+    "license": "CC0",
+    "author": "Meshy Community (CC0 per the owner)",
+    "community": {
+      "model": "A humanoid crocodile wearing a heavy"
+    },
+    "date": "2026-11-06",
     "url": null,
-    "file": "^Meshy_AI_Boglurker_the_toad_.*_texture\\.fbx$"
+    "file": "^Meshy_AI_A_humanoid_crocodile_wearing_a_heavy_\\d+_animated_mixamo_All_animation\\.glb$"
   },
   "finish": {
-    "metallic": 0,
+    "metallic": 0.1,
     "roughness": 0.7
   },
   "firstPerson": {
     "arms": "own"
   },
   "fixes": {
-    "triangles": 11000,
-    "lean": {
-      "Spine01": 4,
-      "Spine": 6,
-      "neck": 14
-    },
-    "cloth": true,
+    "triangles": 13000,
+    "headShare": 0.16,
+    "handsShare": 0.1,
+    "normalSize": 1024,
+    "lod": 0.25,
     "feet": true
-  },
-  "landmarks": {
-    "spine": [
-      [0, 0.46, -0.07],
-      [0, 0.54, -0.08],
-      [0, 0.62, -0.07],
-      [0, 0.7, -0.07],
-      [0, 0.77, -0.03],
-      [0, 0.8, 0],
-      [0, 0.97, 0.05]
-    ],
-    "L": [
-      [0.06, 0.74, -0.03],
-      [0.17, 0.74, -0.01],
-      [0.3, 0.533, 0.03],
-      [0.325, 0.4, 0.05],
-      [0.342, 0.308, 0.05],
-      [0.09, 0.44, -0.06],
-      [0.167, 0.267, 0.06],
-      [0.2, 0.08, -0.12],
-      [0.21, 0.025, 0],
-      [0.22, 0.02, 0.07]
-    ],
-    "R": [
-      [-0.06, 0.74, -0.03],
-      [-0.17, 0.74, -0.01],
-      [-0.295, 0.533, 0.03],
-      [-0.33, 0.408, 0.05],
-      [-0.355, 0.35, 0.05],
-      [-0.09, 0.44, -0.06],
-      [-0.15, 0.267, 0.06],
-      [-0.183, 0.08, -0.12],
-      [-0.2, 0.025, 0],
-      [-0.21, 0.02, 0.07]
-    ]
-  },
-  "hitbox": { "head": { "r": 0.23 } }
+  }
 }

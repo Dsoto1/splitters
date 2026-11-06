@@ -1,0 +1,39 @@
+{
+  "id": "meshy_darkastronaut",
+  "kind": "character",
+  "use": "player",
+  "order": 115,
+  "name": "Starfarer",
+  "look": "core.darkastronaut",
+  "group": "soldiers",
+  "nameTheme": "soldier",
+  "bio": "Came back from the far side of the Moon with a new suit, a purple glow and no explanation.",
+  "body": "male",
+  "notes": "Drive intake of 2026-11-06 (\"a meticulously detailed astronaut with a\", as Meshy names the download; rigged and animated on Meshy: Mixamo joint names read as Meshy's; its two clips are not used). A dark teal and violet armoured spacesuit with glowing magenta strips and a black visor. No finger joints (32-joint rig: its extra hand joints ride the hands), so the fingers are re-fitted from the mesh (`fingers: fit`). 167k triangles: rebaked. Display name a placeholder for the owner. Licence: Meshy Community, CC0 per the owner (2026-11-06); post URL pending from the owner.",
+  "source": {
+    "license": "CC0",
+    "author": "Meshy Community (CC0 per the owner)",
+    "community": {
+      "model": "a meticulously detailed astronaut with a"
+    },
+    "date": "2026-11-06",
+    "url": null,
+    "file": "^Meshy_AI_a_meticulously_detailed_astronaut_with_a_\\d+_animated_mixamo_All_animation\\.glb$"
+  },
+  "finish": {
+    "metallic": 0.15,
+    "roughness": 0.55
+  },
+  "firstPerson": {
+    "arms": "own"
+  },
+  "fixes": {
+    "triangles": 14000,
+    "surface": "rebake",
+    "headShare": 0.16,
+    "normalSize": 1024,
+    "lod": 0.25,
+    "feet": true,
+    "fingers": "fit"
+  }
+}
