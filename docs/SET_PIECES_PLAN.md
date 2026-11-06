@@ -223,7 +223,10 @@ edge, levels from the sand): Podium bay at (0, 0) rising to 8 m; a Grand Arcade 
 two further on (16 to 24 m); the facade's Grand Arcades up the outermost cell, the Attic on top. Six storeys: podium,
 two tiers, six arcades under them, three up the facade and the attic (13 placements a line); repeat the line along the
 sides (MapMaker's duplicate). Grand Arcades set their arches on the part: two of them side by side would otherwise
-meet with doorways (ports meeting make a doorway; a tile's default edge only shows on a side nothing meets).
+meet with doorways (ports meeting make a doorway; a tile's default edge only shows on a side nothing meets). The
+board's stands are straight, two sections a side, with dark towers over the gates at the four corners, so the bays
+run straight and the corners are Stair Towers (8 levels). The Round Arcade tiles (one storey of 3.2 m arches on a
+quarter circle) don't fit that plan; they suit the village (a curved portico round its square).
 
 ### New kit (any map; MapMaker offers it now)
 - **Edge styles:** Round arch (`arch_round`: 3.2 m, a semicircle springing at 1.4 m to 3 m, just under a vaulted
