@@ -12,9 +12,10 @@ import { Matrix, Vector3 } from '@babylonjs/core/Maths/math.vector';
  * casters (characters, held guns, doors, pickups, debris) are drawn on top.
  *
  * A cascade's square stays put (its matrices are kept) while the part of the view it serves still fits inside it: each
- * square is made CASCADE_MARGIN bigger than the view slice needs, and it moves (and its static casters are drawn again)
- * when the slice's centre has moved further than that margin, when the sun turns, when the static casters change, and
- * at least every REFRESH_FRAMES frames. The squares are snapped to their texels (stabilised cascades), so a square that
+ * square is centred on the camera (round 3: on the view slice's centroid it swung round as the view turned) and made
+ * CASCADE_MARGIN bigger than the view slice needs, and it moves (and its static casters are drawn again) when the camera
+ * has walked further than that margin, when the sun turns, when the static casters change, and at least every
+ * REFRESH_FRAMES frames. The squares are snapped to their texels (stabilised cascades), so a square that
  * moves lands on the same texel grid: static shadows don't swim when it does.
  *
  * WebGL2 only (the copy is a depth blit between framebuffers); elsewhere the shadow map draws everything every frame as
@@ -23,8 +24,12 @@ import { Matrix, Vector3 } from '@babylonjs/core/Maths/math.vector';
 
 /** Each cascade's square is this much bigger (of its radius) than its view slice needs: room to move before a redraw. */
 export const CASCADE_MARGIN = [0.25, 0.15, 0.12] as const;
-/** A cascade's static casters are drawn again at least this often (frames), staggered by cascade. */
-export const REFRESH_FRAMES = 30;
+/**
+ * A cascade's static casters are drawn again at least this often (frames), staggered by cascade: a safety net only
+ * (every change to them invalidates the cache, a moved caster leaves it at once), so rarely (round 3: it was 30, a
+ * cascade's whole static draw every tenth frame on average).
+ */
+export const REFRESH_FRAMES = 240;
 /** Medium graphics' single box (half-size 45 m) moves when the camera's wanted box is this far (m) from the drawn one. */
 export const BOX_SLACK = 6;
 /** A caster that can move (a door, a gate, a lift) joins the cached ones after standing still this many frames. */
@@ -44,6 +49,20 @@ export interface CascadeSphere {
  */
 export function cascadeHolds(cached: CascadeSphere, fresh: CascadeSphere): boolean {
   return Math.hypot(fresh.x - cached.x, fresh.y - cached.y, fresh.z - cached.z) + fresh.r <= cached.r + 1e-6;
+}
+
+/**
+ * The radius of a cascade's square centred on the camera (`eye`) that holds its whole view slice (`corners`, world):
+ * the farthest corner's distance, rounded up to 1/16 m as Babylon rounds its own. Babylon centres a stabilised cascade
+ * on its slice's centroid, which swings round the camera as the view turns (the far slice's by tens of metres for a
+ * few degrees), so outdoors every turn moved the far cascades past their margin and drew their static casters again.
+ * Round the camera the square doesn't move as you turn, only as you walk; with the game's wide view it is about a
+ * tenth bigger than the centroid's (shadows a tenth coarser).
+ */
+export function centredSlice(eye: { x: number; y: number; z: number }, corners: readonly { x: number; y: number; z: number }[]): number {
+  let r = 0;
+  for (const c of corners) r = Math.max(r, Math.hypot(c.x - eye.x, c.y - eye.y, c.z - eye.z));
+  return Math.ceil(r * 16) / 16;
 }
 
 /** Whether cascade `layer` is due its every-REFRESH_FRAMES redraw at frame `frame` (spread over frames by cascade). */
@@ -80,6 +99,10 @@ interface CsmInternals {
   _transformMatricesAsArray: Float32Array;
   _lightDirection: Vector3;
   _currentLayer: number;
+  /** Each cascade's view slice: its 8 corners (world). */
+  _frustumCornersWorldSpace: Vector3[][];
+  _getCamera(): { globalPosition: Vector3 } | null;
+  stabilizeCascades: boolean;
   numCascades: number;
 }
 
@@ -359,10 +382,18 @@ export class ShadowCache {
     });
     const csm = this.csm;
     if (csm) {
-      // Grow each cascade's square by its margin, as it is worked out.
+      // Each cascade's square round the camera (centredSlice), grown by its margin, as it is worked out.
       const frustum = csm._computeCascadeFrustum.bind(csm);
       csm._computeCascadeFrustum = (i: number) => {
         frustum(i);
+        const eye = csm.stabilizeCascades ? csm._getCamera()?.globalPosition : null;
+        const corners = csm._frustumCornersWorldSpace[i];
+        if (eye && corners?.length) {
+          const r = centredSlice(eye, corners);
+          csm._frustumCenter[i]!.copyFrom(eye);
+          csm._cascadeMaxExtents[i]!.setAll(r);
+          csm._cascadeMinExtents[i]!.setAll(-r);
+        }
         const k = 1 + (CASCADE_MARGIN[i] ?? CASCADE_MARGIN[CASCADE_MARGIN.length - 1]!);
         csm._cascadeMinExtents[i]!.scaleInPlace(k);
         csm._cascadeMaxExtents[i]!.scaleInPlace(k);
