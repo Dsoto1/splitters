@@ -556,6 +556,74 @@ The first two are likely Fogbound or another map using the Quaternius ruins.
 - Investigate the third screenshot separately: puffs in mid-air near distant trees could be env tree limbs that block
   shots, or legitimate ground hits.
 
+### CTF bots and idle bots (`wip/bots-idle`, agent, 2026-11-06; from main 39056920, main 5b167034 merged in; green on `check/bots-idle`, ready to land)
+Fixes the two reports below (CTF bots don't go for the flag; Diamond Park dugout; Fernwood Moon bots not moving).
+
+**How to resume:** branch `wip/bots-idle` (pushed after every step). Measure with `pnpm bot-report` (new:
+`packages/server/src/tools/bot-report.ts`; per map and bot: idle time by reason, idle spells with positions, goal
+time, CTF roles and flag runs, no-route searches, stuck recoveries; `--suite=ctf`, `--shard=k/n`, `--json`,
+`--compare=a.json,b.json`). Baseline (main + measuring only, d1a8ec97) and after-runs are in the session
+scratchpad `bots-idle/` (`before-ctf-*.json`; `after-ctf-*.json` is the 02:52 code; `final-ctf-*.json` the final
+code, 64df0c80+; the baseline code is exported to `bots-idle/base`). MapMaker driver scripts (inspector, Logic panel,
+export): `bots-idle/tools/maker-*.mjs`, `finalize.mjs` (needs the client's dev server, e.g. port 4963).
+
+**Done (committed):**
+- Measuring: `BotBrain.doing` / `meantToMove` / `pathFailures`, `pnpm bot-report`.
+- Causes found (CTF suite baseline, 44 maps × 2 seeds × 300 s): 17 of 88 matches had a capture (21 captures); bots
+  out of a fight stood still 3–33 % (Iron Compound 86 %); "station" (holding a goal, spinning in place) 5–24 %; no
+  route 29 % on Diamond Park (its dugouts were navmesh islands with 3 spawns each), 17 % Fogbound, 13 % Eagle Spires;
+  attackers went after noises 20–50 m off (22–29 % of their time); Iron Compound's gate rules cancelled on one press;
+  Fernwood's Garrison spawned in its bunker with only the enemy's blast door on its route.
+- Fixes: CTF roles (`CtfBotPlan`: 2 defenders, 3 on teams of 12+, escorts, flags in trouble), goals kept to
+  (`OrderGoal.push/run/watch`), fight on the move, lanes, sprinting; escapes off cut-off navmesh patches
+  (`NavWorld.partAt/escapes`, `planEscape`); routes round doors shut to the bot (`markOpenings`, `findPath(…, shut)`);
+  press plans dropped once the door opens; vehicles out of reach left alone; keeping watch on station
+  (`keepWatch`), posts shift and peek, lift waits look about. Iron Compound's gate (Logic panel) and Fernwood's
+  reactor core (+0.5 m, inspector) fixed in MapMaker. `logic.undoes` warning (validate-map, MapMaker; also flags
+  Glacier Line's alert console, left).
+- Later fixes: lane waypoints and keep-watch places only on the goal's navmesh part; escapes up to 8 m (Capitol
+  Mall's reflecting pool); unreachable goals gone to as near as a route gets (`NavWorld.reachToward`) and watched from
+  there, asking again as the back-off allows (a route to a watch place no longer clears the goal's back-off: 30 000
+  failed searches a match on Eagle Spires before; asking only every 4 s stranded Obsidian Orb's bots on its reactor
+  platform); sidestep after stuck loops (Fernwood's parked dropship); boarding within 0.95 × enter radius; no-route
+  back-off only near where it failed; ladder climbs finished (Fernwood's vines: 230 s); lift patience 6 s, then a
+  way off lifts (`LIFT_FLAG`); carriers home with their flag away keep watch (Serene City: 143 s on the base); a flag
+  dropped into lava goes home (rule change, players too; Cinder Foundry: 28 takes, no capture); plane bots come
+  down where their role sends them, open the canopy at once and steer it (Eagle Spires' attackers landed on the
+  mesa cliffs); Diamond Park's dugout roofs +0.4 m in MapMaker (validate-map 113 warnings → 0: the roof ran 1.6 m
+  over the side walls' tops at the dugout ends); Sandfall's spawn_269 out of the stand's steps (MapMaker) and a
+  `spawn.blocked` warning (validate-map, MapMaker).
+- Tests: `botCtf.test.ts` (roles, captures on Diamond Park and Sunken Kingdom, dugout, pool, bunker, keeping watch),
+  `scenario.test.ts` (logic.undoes), `modes.test.ts` (flag in lava), `nav.test.ts` (spawn.blocked).
+
+**Found, left (for Phase A or the maps):**
+- The navmesh keeps 0.8 m from walls, not the 0.6 m its comment means: `Math.ceil((0.4 + 0.2) / 0.2)` is 4 cells
+  ((0.4 + 0.2) / 0.2 is 3.0000000000000004). Changing it moves every map's navmesh; Phase A.
+- `spawn.blocked` (the spawn point's middle inside a collider) on 26 spawn points, 18 maps: canyon spawn_113,
+  citadel spawn_w9sdjfv9q9, dune_harbor spawn_644, flatpack_depot spawn_659, halcyon_station spawn_096/104/106,
+  hollowmere_manor spawn_120, iron_compound spawn_207/213/218, ironhold_prison spawn_744, jungle_steps spawn_073/077,
+  m3_vault g_spawn_011, neon_spire spawn_694/697/711, riot_junction spawn_805, serpent_gorge spawn_196,
+  silo_complex spawn_099, starhaven spawn_203, sunken_kingdom spawn_0418, verdant_ziggurat spawn_120/123. Most are
+  against or a little in a wall and the body is pushed out (Iron Compound's spawn_213 walks off fine); fix them in
+  MapMaker when touching those maps.
+- Maps with few or no captures: Capitol Mall (249 m between flags), Fort Meadow (a midfield brawl, 65 % of the time
+  fighting), Twin Spires, Pantry Raid, Underdrain, Primeval Park (no takes: attackers die on the way; Phase B's
+  group pushes); Eagle Spires (bots that fall off the mesas' scaffolds and cliffs onto ledges with no route down:
+  drops are never routes; with fall damage off, a drop-down link would do).
+
+**Measured** (docs/BOTS.md "Capture the Flag" has every map; scratchpad `final2-ctf-*.json` against
+`before-ctf-*.json`): CTF suite captures 21 → 145, matches with a capture 17 → 55 of 88, maps with a capture 13 → 31,
+flag takes 77 → 906, idle out of a fight 17.9 → 5.6 %, 10 s+ idle spells 19 → 2.7 a match, kills 22.9 → 35.1 a
+minute; TDM, KOTH and Bomb idle down, kills level or up; `pnpm bench:96:clump` bot thinking 1.46–2.04 → 1.54–2.12 ms.
+
+**Checks:** `pnpm typecheck`; the changed unit tests locally (botCtf, modes, nav, airplane, botRoles, botai,
+spectate, sandgate, npc, match, terrainFloors, forts); CI on `check/bots-idle`: run 42169677264 green on 9b548458
+(its `handoff` e2e flow failed once on CI's load and passed on the re-run), run 42174642880 green on e9bf9611 (the
+final code; later commits are docs only).
+
+**Next:** land on main (fast-forward to the green commit, or the docs commit after it). Then Phase A
+(docs/BOT_AI_PLAN.md), starting from "Found, left" above.
+
 ### Queued FIRST (owner bug report, 2026-11-05 late): CTF bots don't go for the flag
 **Owner:** "CTF: no bots are actually going for the flag, most just hang out and do little. We should only have
 like 2–3 bots protect a flag, and the rest go out there and try to get the other team's."

@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 25,
+  "formatVersion": 26,
   "metadata": {
     "id": "iron_compound",
     "name": "Iron Compound",
@@ -2876,12 +2876,12 @@
     },
     {
       "id": "prop_t12017lhsb",
-      "kind": "prop",
       "position": [
         42,
         0,
         20
       ],
+      "kind": "prop",
       "model": "prop.cargo_crate_stack",
       "yaw": 0,
       "scale": 1,
@@ -2890,12 +2890,12 @@
     },
     {
       "id": "prop_dw45vr3jc3",
-      "kind": "prop",
       "position": [
         20.5,
         0,
         24
       ],
+      "kind": "prop",
       "model": "prop.hesco_wall",
       "yaw": 1.571,
       "scale": 1,
@@ -2911,30 +2911,35 @@
     "rules": [
       {
         "id": "rule_btn_gate_open",
-        "name": "btn_gate: open the gate",
+        "name": "btn_gate: open or close the gate",
         "enabled": true,
         "once": false,
         "when": {
           "event": "button_pressed",
           "target": "btn_gate"
         },
-        "if": [
-          {
-            "type": "door",
-            "target": "gate_main",
-            "op": "==",
-            "value": 0,
-            "state": "closed"
-          }
-        ],
+        "if": [],
         "do": [
           {
-            "type": "door_open",
+            "type": "door_toggle",
             "target": "gate_main",
             "value": 0,
             "text": "",
             "state": ""
-          },
+          }
+        ]
+      },
+      {
+        "id": "rule_x3lw552e9d",
+        "name": "Main gate opening: alarms",
+        "enabled": true,
+        "once": false,
+        "when": {
+          "event": "door_opened",
+          "target": "gate_main"
+        },
+        "if": [],
+        "do": [
           {
             "type": "light_on",
             "target": "alarm_w",
@@ -2967,30 +2972,15 @@
       },
       {
         "id": "rule_btn_gate_shut",
-        "name": "btn_gate: close the gate",
+        "name": "Main gate closing: alarms off",
         "enabled": true,
         "once": false,
         "when": {
-          "event": "button_pressed",
-          "target": "btn_gate"
+          "event": "door_closed",
+          "target": "gate_main"
         },
-        "if": [
-          {
-            "type": "door",
-            "target": "gate_main",
-            "op": "==",
-            "value": 0,
-            "state": "open"
-          }
-        ],
+        "if": [],
         "do": [
-          {
-            "type": "door_close",
-            "target": "gate_main",
-            "value": 0,
-            "text": "",
-            "state": ""
-          },
           {
             "type": "light_off",
             "target": "alarm_w",
@@ -3016,106 +3006,21 @@
       },
       {
         "id": "rule_btn_gate_out_open",
-        "name": "btn_gate_out: open the gate",
+        "name": "btn_gate_out: open or close the gate",
         "enabled": true,
         "once": false,
         "when": {
           "event": "button_pressed",
           "target": "btn_gate_out"
         },
-        "if": [
-          {
-            "type": "door",
-            "target": "gate_main",
-            "op": "==",
-            "value": 0,
-            "state": "closed"
-          }
-        ],
+        "if": [],
         "do": [
           {
-            "type": "door_open",
+            "type": "door_toggle",
             "target": "gate_main",
             "value": 0,
             "text": "",
             "state": ""
-          },
-          {
-            "type": "light_on",
-            "target": "alarm_w",
-            "value": 0,
-            "text": "",
-            "state": ""
-          },
-          {
-            "type": "light_on",
-            "target": "alarm_e",
-            "value": 0,
-            "text": "",
-            "state": ""
-          },
-          {
-            "type": "sound",
-            "target": null,
-            "value": 0,
-            "text": "",
-            "state": "alarm"
-          },
-          {
-            "type": "message",
-            "target": null,
-            "value": 3,
-            "text": "The main gate is opening!",
-            "state": ""
-          }
-        ]
-      },
-      {
-        "id": "rule_btn_gate_out_shut",
-        "name": "btn_gate_out: close the gate",
-        "enabled": true,
-        "once": false,
-        "when": {
-          "event": "button_pressed",
-          "target": "btn_gate_out"
-        },
-        "if": [
-          {
-            "type": "door",
-            "target": "gate_main",
-            "op": "==",
-            "value": 0,
-            "state": "open"
-          }
-        ],
-        "do": [
-          {
-            "type": "door_close",
-            "target": "gate_main",
-            "value": 0,
-            "text": "",
-            "state": ""
-          },
-          {
-            "type": "light_off",
-            "target": "alarm_w",
-            "value": 0,
-            "text": "",
-            "state": ""
-          },
-          {
-            "type": "light_off",
-            "target": "alarm_e",
-            "value": 0,
-            "text": "",
-            "state": ""
-          },
-          {
-            "type": "sound",
-            "target": null,
-            "value": 0,
-            "text": "",
-            "state": "buzzer"
           }
         ]
       }

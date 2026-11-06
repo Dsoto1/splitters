@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 25,
+  "formatVersion": 26,
   "metadata": {
     "id": "sandfall_colosseum",
     "name": "Sandfall Colosseum",
@@ -3234,7 +3234,7 @@
     {
       "id": "spawn_269",
       "position": [
-        -16,
+        -14.5,
         0,
         0
       ],
@@ -3736,12 +3736,12 @@
     },
     {
       "id": "prop_dmxokrxrmg",
-      "kind": "prop",
       "position": [
         -36,
         0,
         -4
       ],
+      "kind": "prop",
       "model": "prop.im_training_post",
       "yaw": 1.571,
       "scale": 1,
@@ -3750,12 +3750,12 @@
     },
     {
       "id": "prop_jo92buckom",
-      "kind": "prop",
       "position": [
         -36,
         0,
         2
       ],
+      "kind": "prop",
       "model": "prop.im_training_post",
       "yaw": 1.571,
       "scale": 1,
@@ -3764,12 +3764,12 @@
     },
     {
       "id": "prop_1b7vb2ebxt",
-      "kind": "prop",
       "position": [
         -36,
         0,
         8
       ],
+      "kind": "prop",
       "model": "prop.im_training_post",
       "yaw": 1.571,
       "scale": 1,
@@ -3778,12 +3778,12 @@
     },
     {
       "id": "prop_ddrdoryh7l",
-      "kind": "prop",
       "position": [
         -39,
         0,
         14
       ],
+      "kind": "prop",
       "model": "prop.im_weapon_rack",
       "yaw": 1.571,
       "scale": 1,
@@ -3792,12 +3792,12 @@
     },
     {
       "id": "prop_w42hr4qujz",
-      "kind": "prop",
       "position": [
         -30,
         0,
         22
       ],
+      "kind": "prop",
       "model": "prop.im_stakes",
       "yaw": 0,
       "scale": 1,
@@ -3806,12 +3806,12 @@
     },
     {
       "id": "prop_6ctcqgmocs",
-      "kind": "prop",
       "position": [
         -34,
         0,
         28
       ],
+      "kind": "prop",
       "model": "prop.sv_tent",
       "yaw": 0,
       "scale": 1,
@@ -3820,12 +3820,12 @@
     },
     {
       "id": "prop_6ac1tuagd0",
-      "kind": "prop",
       "position": [
         -34,
         0,
         -24
       ],
+      "kind": "prop",
       "model": "prop.sv_tent",
       "yaw": 3.142,
       "scale": 1,
@@ -3834,12 +3834,12 @@
     },
     {
       "id": "prop_zpwk35dqcp",
-      "kind": "prop",
       "position": [
         -30,
         0,
         -12
       ],
+      "kind": "prop",
       "model": "prop.im_bench",
       "yaw": 1.571,
       "scale": 1,
@@ -3848,12 +3848,12 @@
     },
     {
       "id": "prop_5ts8ky0uqr",
-      "kind": "prop",
       "position": [
         -36,
         0,
         -14
       ],
+      "kind": "prop",
       "model": "prop.lion_head_fountain",
       "yaw": 1.571,
       "scale": 1,
@@ -3862,12 +3862,12 @@
     },
     {
       "id": "prop_t7qf6k4zjn",
-      "kind": "prop",
       "position": [
         90,
         0,
         -4
       ],
+      "kind": "prop",
       "model": "prop.rustic_market_stall",
       "yaw": -1.571,
       "scale": 1,
@@ -3876,12 +3876,12 @@
     },
     {
       "id": "prop_2jqidvnp6y",
-      "kind": "prop",
       "position": [
         90,
         0,
         22
       ],
+      "kind": "prop",
       "model": "prop.mv_market_stall",
       "yaw": -1.571,
       "scale": 1,
@@ -3890,12 +3890,12 @@
     },
     {
       "id": "prop_05ldagivf5",
-      "kind": "prop",
       "position": [
         92,
         0,
         9
       ],
+      "kind": "prop",
       "model": "prop.eagle_fountain",
       "yaw": -1.571,
       "scale": 1,
@@ -3904,12 +3904,12 @@
     },
     {
       "id": "prop_mfl0mwrrnn",
-      "kind": "prop",
       "position": [
         88,
         0,
         30
       ],
+      "kind": "prop",
       "model": "prop.im_amphorae",
       "yaw": 0,
       "scale": 1,
@@ -3918,12 +3918,12 @@
     },
     {
       "id": "prop_x0rc1yotvd",
-      "kind": "prop",
       "position": [
         -4,
         0,
         44
       ],
+      "kind": "prop",
       "model": "prop.nt_pine_tall",
       "yaw": 0,
       "scale": 1.1,
@@ -3932,12 +3932,12 @@
     },
     {
       "id": "prop_ypl82jhglz",
-      "kind": "prop",
       "position": [
         -4,
         0,
         -28
       ],
+      "kind": "prop",
       "model": "prop.nt_pine_tall",
       "yaw": 0,
       "scale": 1.1,
@@ -3946,12 +3946,12 @@
     },
     {
       "id": "prop_7nlyaxevjz",
-      "kind": "prop",
       "position": [
         8,
         0,
         44
       ],
+      "kind": "prop",
       "model": "prop.nt_pine_tall",
       "yaw": 0,
       "scale": 1.1,
@@ -3960,12 +3960,12 @@
     },
     {
       "id": "prop_amleo2l0kj",
-      "kind": "prop",
       "position": [
         8,
         0,
         -28
       ],
+      "kind": "prop",
       "model": "prop.nt_pine_tall",
       "yaw": 0,
       "scale": 1.1,
@@ -3974,12 +3974,12 @@
     },
     {
       "id": "prop_w9sdjfv9q9",
-      "kind": "prop",
       "position": [
         24,
         0,
         44
       ],
+      "kind": "prop",
       "model": "prop.nt_pine_tall",
       "yaw": 0,
       "scale": 1.1,
@@ -3988,12 +3988,12 @@
     },
     {
       "id": "prop_odkmv3mx3b",
-      "kind": "prop",
       "position": [
         24,
         0,
         -28
       ],
+      "kind": "prop",
       "model": "prop.nt_pine_tall",
       "yaw": 0,
       "scale": 1.1,
@@ -4002,12 +4002,12 @@
     },
     {
       "id": "prop_x9abza46ly",
-      "kind": "prop",
       "position": [
         36,
         0,
         44
       ],
+      "kind": "prop",
       "model": "prop.nt_pine_tall",
       "yaw": 0,
       "scale": 1.1,
@@ -4016,12 +4016,12 @@
     },
     {
       "id": "prop_e2hxfyh75y",
-      "kind": "prop",
       "position": [
         36,
         0,
         -28
       ],
+      "kind": "prop",
       "model": "prop.nt_pine_tall",
       "yaw": 0,
       "scale": 1.1,
@@ -4030,12 +4030,12 @@
     },
     {
       "id": "prop_q1y59c4csi",
-      "kind": "prop",
       "position": [
         2,
         0,
         44
       ],
+      "kind": "prop",
       "model": "prop.im_bust",
       "yaw": 0,
       "scale": 1,
@@ -4044,12 +4044,12 @@
     },
     {
       "id": "prop_gp7msgjmhm",
-      "kind": "prop",
       "position": [
         2,
         0,
         -28
       ],
+      "kind": "prop",
       "model": "prop.im_bust",
       "yaw": 3.142,
       "scale": 1,
@@ -4058,12 +4058,12 @@
     },
     {
       "id": "prop_26cjl0x171",
-      "kind": "prop",
       "position": [
         30,
         0,
         44
       ],
+      "kind": "prop",
       "model": "prop.im_bust",
       "yaw": 0,
       "scale": 1,
@@ -4072,12 +4072,12 @@
     },
     {
       "id": "prop_epqtnvm8q3",
-      "kind": "prop",
       "position": [
         30,
         0,
         -28
       ],
+      "kind": "prop",
       "model": "prop.im_bust",
       "yaw": 3.142,
       "scale": 1,
@@ -4086,12 +4086,12 @@
     },
     {
       "id": "prop_xo4odrco3m",
-      "kind": "prop",
       "position": [
         4,
         0,
         14
       ],
+      "kind": "prop",
       "model": "prop.rn_column_broken",
       "yaw": 0.349,
       "scale": 1,
@@ -4100,12 +4100,12 @@
     },
     {
       "id": "prop_kkfpi0eazr",
-      "kind": "prop",
       "position": [
         28,
         0,
         2
       ],
+      "kind": "prop",
       "model": "prop.rn_column_broken",
       "yaw": -2.793,
       "scale": 1,
@@ -4114,12 +4114,12 @@
     },
     {
       "id": "prop_y07fpt0nwn",
-      "kind": "prop",
       "position": [
         12,
         0,
         1
       ],
+      "kind": "prop",
       "model": "prop.rn_column_broken",
       "yaw": 0,
       "scale": 1,
@@ -4128,12 +4128,12 @@
     },
     {
       "id": "prop_0af7pnzsw8",
-      "kind": "prop",
       "position": [
         20,
         0,
         15
       ],
+      "kind": "prop",
       "model": "prop.rn_column_broken",
       "yaw": 3.142,
       "scale": 1,

@@ -2,7 +2,8 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { beforeAll, describe, expect, it } from 'vitest';
 import { NavWorld, initNavigation, validateNavigation } from '../src/nav/index.ts';
-import { buildMapGeometry, loadMap, mapTerrainMesh } from '../src/index.ts';
+import { buildMapGeometry, initPhysics, loadMap, mapTerrainMesh } from '../src/index.ts';
+import { PhysicsWorld } from '../src/sim/physics.ts';
 import { loadArena, makeMap } from './helpers.ts';
 
 beforeAll(() => initNavigation());
@@ -39,6 +40,19 @@ describe('navigation', () => {
     const nav = NavWorld.build(buildMapGeometry(map));
     expect(nav.findPath({ x: 0, y: 0, z: 0 }, { x: 24, y: 0, z: 0 })).toBeNull();
     expect(validateNavigation(map, nav).map((i) => [i.code, i.targetId])).toEqual([['nav.disconnected', 'spawn_1']]);
+    nav.destroy();
+  });
+
+  it('warns about a spawn point inside something solid (whoever spawns there is stuck in it)', async () => {
+    // (Sandfall Colosseum's spawn_269 stood inside the stand's steps: a bot spawned there stood all match.)
+    await initPhysics();
+    const map = makeMap([{ id: 'room_a', tile: 'core.room', x: 0, y: 0, z: 0, rotation: 0 }], [[0, 0, 0], [3, 0, 0]]);
+    map.entities.push({ id: 'crate', kind: 'block', position: [3, 0, 0], size: [2, 2, 2], yaw: 0, material: null, behaviour: 'solid', trigger: 'step', delaySeconds: 0.8, respawnSeconds: null, health: 100 } as (typeof map.entities)[number]);
+    const geometry = buildMapGeometry(map);
+    const physics = new PhysicsWorld(geometry, null);
+    const nav = NavWorld.build(geometry);
+    expect(validateNavigation(map, nav, physics).filter((i) => i.code === 'spawn.blocked').map((i) => i.targetId)).toEqual(['spawn_1']);
+    physics.free();
     nav.destroy();
   });
 });

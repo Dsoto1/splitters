@@ -327,7 +327,219 @@ boulders (`prop_490`–`prop_493`) 190 → 7. `test/botClearShot.test.ts`: a pla
 (head and shoulders show) drew 93 rounds, 92 into the wall, before; now most
 rounds hit.
 
+## Capture the Flag (November 2026)
+
+Owner's reports: "CTF: no bots are actually going for the flag, most just hang out and do little. We should only
+have like 2–3 bots protect a flag and the rest are just going out there and trying to get the other team's";
+Diamond Park, "most of the team hung out in the tunnel/dugout area". Measured with `pnpm bot-report` (below) over
+every map that offers CTF, two seeds of five minutes each (numbers at the end of this section).
+
+**What was wrong:**
+- *Roles.* Every fourth bot of a team defended and every fourth escorted; teams of 12 and 16 had 3 and 4 defenders
+  standing at their flag, spinning slowly in place ("station": 5–24 % of all bot time on the big maps).
+- *The goal didn't stay in charge.* An attacker heading for the flag dropped it for any noise within 45 m (60 m for
+  explosions) for up to 10 s, chased enemies that slipped out of sight for up to 8 s, took cover from anyone at 11 m
+  and more, and stopped to trade shots at range. On Diamond Park attackers spent 22 % of their time going after
+  noises and 9 % going to the flag. They never sprinted to it.
+- *No captures once there.* A carrier ignored everything beyond 4 m and ran the shortest way home at 85 % speed,
+  never sprinting; fresh respawns at the enemy's base, most of them within 15 m of its flag on the smaller maps,
+  killed it within seconds.
+- *Stuck where the navmesh is cut off* (see "Standing still").
+- *Waiting carriers, lost flags, the plane.* A carrier home with its own flag away (no capture until it's back)
+  stood on its base like a statue (Serene City: 143 s). A flag dropped into lava stayed there: nobody can touch it and
+  live, so on Cinder Foundry one carrier after another took it and died in the pit (28 takes and drops in a match, no
+  capture). Out of the transport plane the whole planeload, defenders too, jumped over the enemy flag and waited for
+  the automatic opener (28 m over whatever is below): on Eagle Spires that left the attackers below the enemy mesa's
+  top, on its cliffs, sliding down them for half a minute.
+- Measured before: 17 of 88 matches had a capture (21 captures); Diamond Park 0.5 captures and 2.5 flag takes a
+  match.
+
+**Now** (`sim/modes/ctfBots.ts`, `CtfBotPlan`, worked out by the mode a few times a second, not per bot):
+- **Roles** (owner): a team's Player Bots defend 3 strong on a team of 12 or more, 2 on a smaller one (1 on a team
+  of two or three; a team of bots alone keeps an attacker), picked by who suits it (campers and snipers first, then
+  the careful and unaggressive; rushers and roamers last). Everyone else attacks.
+- **Situations first:** the carrier runs home; our flag dropped: the defenders and anyone within 22 m go and touch
+  it; our flag carried off: the defenders and anyone within 22 m chase the carrier, and once our own carrier is home
+  waiting on it, every attacker but its escorts too; enemies within 16 m of our flag at home: the defenders close
+  in. A teammate carrying the enemy flag: the three attackers nearest it escort it (within 4 m), the rest come along
+  further back (10 m).
+- **Goals kept to** (`OrderGoal.push`, bots/brain.ts): an attacker, escort or responder turns aside only for a noise
+  or an enemy that slipped away within 12 m (`PUSH_NOTICE`), takes cover only when hurt, low on ammo or reloading
+  (not just for being shot at), leaves cover a second after losing sight of its enemy (2.5–5.5 s otherwise), and
+  fights on the move: an enemy further than 9 m is shot at on the way, not stopped for. A far flag (50 m and more)
+  is gone to by a lane of the bot's own (left, right or straight, once per goal and life, on the goal's own part of
+  the navmesh), so a team's attackers don't all meet the enemy's head-on in one corridor. It sprints when the goal
+  is more than 15 m off. A bot with only a sidearm (CTF starts with knife and pistol) grabs a gun within its detour
+  (8–20 m by its objective priority) on the way.
+- **Carriers run** (`OrderGoal.run`): they sprint home, never take cover or retreat, notice enemies within 15 m
+  (`CARRIER_AWARENESS`, was 4) and shoot those within 12 m on the move. Home with their own flag away, they keep watch
+  round the base (within 6 m, facing where their flag is) until it's back, then step onto the base and capture.
+- **A flag dropped into lava goes home at once**, as one lost over the void does (`CtfMode.drop`; acid, which you can
+  wade through, doesn't count). This is a rule change for players too.
+- **Out of the plane** (`Match.planeBot`): a bot comes down where the mode sends it (a defender by its own flag), once
+  play has begun and roles are handed out; it opens its canopy straight away when well above where it is going, and
+  steers for it under the canopy (`BotBrain`, `CombatantView.chute`).
+- **Defenders keep watch** round their flag (radius 9 m) toward the enemy's side (see "Standing still").
+
+**Measured** (`pnpm bot-report --suite=ctf --seeds=1,2 --seconds=300`: every map that offers CTF, 44 maps, two
+five-minute matches each, the map's own team sizes, all bots; before: main 39056920 with the measuring only; after:
+`wip/bots-idle` e9bf9611, with main 5b167034's prop openings merged in):
+
+| Suite, 88 matches | Before | After |
+|---|---|---|
+| Captures | 21 (0.24 a match) | 145 (1.65 a match) |
+| Matches with a capture | 17 | 55 |
+| Maps with a capture | 13 of 44 | 31 of 44 |
+| Flag takes | 77 | 906 |
+| Idle out of a fight (of alive time) | 17.9 % | 5.6 % |
+| Frozen (out of a fight, not even turning) | 2.9 % | 0.9 % |
+| Going to the goal (of goal time) | 15.9 % | 27.8 % |
+| Idle spells of 10 s and more, a match | 19.0 | 2.7 |
+| Longest idle spell | 300 s | 218 s (Primeval Park, a bot at a button) |
+| Stuck recoveries, a match | 283 | 229 |
+| No-route searches, a match | 545 | 614 |
+| Kills a minute | 22.9 | 35.1 |
+
+Per map (two matches each; seed noise is large at two matches):
+
+| Map | captures a match | flag takes a match | idle out of a fight % | stuck recoveries a match | kills a minute |
+|---|---|---|---|---|---|
+| apex_ring | 1.5 → **4.0** | 2.0 → 9.0 | 10.0 → 2.9 | 146 → 124 | 17.2 → 25.0 |
+| bunker_cross | 0.5 → **5.0** | 0.5 → 9.5 | 9.4 → 3.8 | 100 → 329 | 16.1 → 23.4 |
+| capitol_mall | 0.0 → **0.0** | 0.0 → 0.0 | 27.4 → 9.0 | 469 → 367 | 33.7 → 46.8 |
+| cinder_foundry | 0.0 → **0.0** | 0.0 → 7.0 | 15.9 → 4.7 | 84 → 108 | 21.7 → 26.5 |
+| coldwater_gulch | 0.0 → **0.0** | 0.0 → 1.0 | 31.2 → 8.7 | 242 → 154 | 13.1 → 22.0 |
+| diamond_park | 0.5 → **1.5** | 2.5 → 19.5 | 32.9 → 3.1 | 219 → 278 | 15.1 → 52.4 |
+| dune_harbor | 0.0 → **0.0** | 0.0 → 1.0 | 23.0 → 7.4 | 458 → 302 | 28.6 → 41.2 |
+| dustwater | 0.0 → **3.5** | 0.0 → 14.5 | 11.1 → 3.0 | 127 → 110 | 16.4 → 31.9 |
+| eagle_spires | 0.5 → **0.0** | 2.5 → 5.5 | 18.6 → 10.8 | 144 → 172 | 20.8 → 18.9 |
+| fernwood_moon | 0.0 → **1.0** | 0.0 → 2.0 | 28.2 → 6.9 | 900 → 352 | 31.4 → 50.7 |
+| flatpack_depot | 1.0 → **4.5** | 1.5 → 12.5 | 10.5 → 1.7 | 138 → 173 | 20.5 → 34.7 |
+| fogbound | 0.0 → **0.5** | 2.0 → 7.5 | 16.8 → 4.8 | 175 → 217 | 15.7 → 24.2 |
+| fort_meadow | 0.0 → **0.0** | 0.0 → 0.5 | 3.9 → 0.8 | 6 → 10 | 35.2 → 38.1 |
+| glacier_line | 0.5 → **1.5** | 1.5 → 11.5 | 11.3 → 1.4 | 129 → 181 | 29.9 → 46.6 |
+| grand_marquee | 0.0 → **4.5** | 2.0 → 25.5 | 3.1 → 2.7 | 100 → 254 | 20.7 → 28.1 |
+| iron_compound | 0.0 → **1.0** | 0.0 → 11.0 | 86.5 → 5.6 | 2068 → 297 | 0.0 → 30.1 |
+| iron_maw | 0.0 → **0.5** | 0.0 → 1.0 | 24.2 → 5.8 | 308 → 131 | 28.3 → 43.2 |
+| iron_tide | 0.0 → **0.0** | 2.5 → 20.5 | 15.2 → 4.7 | 802 → 386 | 20.4 → 30.9 |
+| ironhold_prison | 0.0 → **2.0** | 0.5 → 12.5 | 9.0 → 9.6 | 148 → 148 | 22.7 → 32.5 |
+| maple_court | 0.0 → **2.0** | 0.0 → 14.0 | 13.9 → 3.6 | 118 → 182 | 18.5 → 27.0 |
+| market_town | 0.0 → **2.5** | 0.0 → 14.5 | 8.6 → 2.7 | 99 → 168 | 38.2 → 52.8 |
+| neon_galleria | 0.0 → **1.5** | 0.0 → 12.5 | 11.3 → 1.8 | 103 → 144 | 16.2 → 30.3 |
+| no_mans_field | 0.0 → **1.0** | 0.0 → 3.5 | 10.4 → 7.2 | 230 → 288 | 19.2 → 29.5 |
+| norman_shores | 0.0 → **0.0** | 0.0 → 3.0 | 24.2 → 10.3 | 96 → 114 | 16.2 → 19.3 |
+| obsidian_orb | 1.0 → **5.0** | 3.5 → 10.5 | 17.1 → 12.2 | 524 → 238 | 32.6 → 59.2 |
+| pantry_raid | 0.0 → **0.0** | 0.0 → 0.0 | 5.8 → 2.2 | 52 → 71 | 22.8 → 32.6 |
+| pharaohs_reach | 0.0 → **2.5** | 0.0 → 12.0 | 10.1 → 3.3 | 54 → 188 | 18.6 → 25.0 |
+| primeval_park | 0.0 → **0.0** | 0.0 → 0.0 | 30.2 → 12.9 | 172 → 94 | 17.4 → 27.9 |
+| qasr_medina | 0.0 → **3.0** | 0.0 → 23.0 | 8.5 → 3.3 | 161 → 186 | 28.1 → 47.6 |
+| rail_stockyard | 0.5 → **3.0** | 0.5 → 13.5 | 8.1 → 2.9 | 73 → 196 | 14.6 → 23.1 |
+| riot_junction | 0.0 → **1.0** | 0.0 → 23.5 | 20.2 → 2.3 | 588 → 354 | 30.3 → 47.9 |
+| runway_nine | 1.5 → **1.5** | 3.0 → 23.5 | 2.1 → 2.4 | 164 → 254 | 32.3 → 39.6 |
+| saltmarsh_harbor | 0.0 → **0.0** | 0.0 → 2.0 | 22.0 → 4.6 | 657 → 614 | 22.7 → 39.0 |
+| sandfall_colosseum | 0.5 → **4.5** | 1.5 → 21.0 | 9.3 → 9.0 | 246 → 266 | 21.8 → 28.4 |
+| serene_city | 0.5 → **4.0** | 1.5 → 43.0 | 7.2 → 4.7 | 260 → 236 | 36.3 → 59.0 |
+| serpent_gorge | 0.0 → **2.5** | 1.0 → 10.0 | 6.5 → 4.3 | 258 → 396 | 20.8 → 33.2 |
+| st_johns | 0.0 → **0.5** | 0.0 → 2.5 | 23.9 → 7.6 | 52 → 77 | 22.2 → 31.0 |
+| starhaven | 0.5 → **3.0** | 2.5 → 9.0 | 19.8 → 12.7 | 552 → 546 | 19.2 → 26.5 |
+| sunken_kingdom | 0.0 → **2.0** | 0.5 → 15.5 | 17.3 → 1.4 | 190 → 188 | 33.6 → 46.7 |
+| sunstone_crag | 0.0 → **0.5** | 0.5 → 5.0 | 24.6 → 6.0 | 356 → 186 | 28.9 → 35.4 |
+| twin_spires | 0.0 → **0.0** | 0.0 → 0.0 | 11.9 → 3.8 | 62 → 103 | 23.6 → 33.4 |
+| underdrain | 0.0 → **0.0** | 0.0 → 0.0 | 33.0 → 14.4 | 209 → 106 | 11.3 → 21.6 |
+| vinefall_sanctum | 1.5 → **2.5** | 6.5 → 12.5 | 9.2 → 6.7 | 186 → 407 | 22.4 → 31.3 |
+| whiteout_station | 0.0 → **0.5** | 0.0 → 7.5 | 13.6 → 2.7 | 238 → 387 | 32.3 → 49.4 |
+
+Still without a capture: Capitol Mall (249 m between the flags), Coldwater Gulch, Dune Harbor, Eagle Spires, Fort
+Meadow (a midfield brawl), Saltmarsh Harbor, Twin Spires, Cinder Foundry, Iron Tide, Norman Shores, Pantry Raid,
+Primeval Park, Underdrain. Most have flag takes now and lose the carrier on the way home; Capitol Mall, Twin Spires,
+Pantry Raid, Primeval Park and Underdrain have none: the attackers die on the way (group pushes are
+BOT_AI_PLAN.md Phase B). Eagle Spires still strands bots on ledges of its mesas' cliffs and scaffolds (no route
+down: a drop is never a route), Primeval Park has bots standing at a button that doesn't open their way (up to
+218 s).
+
+Other modes, same code (two matches of four minutes each unless one is shown): Team Deathmatch on Fernwood Moon
+idle out of a fight 23.0 → 7.6 %, frozen 11.9 → 0.6 %, kills 29.5 → 33.1 a minute; Riot Junction 9.4 → 4.5 %,
+stuck recoveries 471 → 185, kills 28.8 → 27.4; Frost Basin 12.6 → 4.4 %, frozen 9.3 → 1.3 %, kills 10.5 → 13.3.
+King of the Hill (one match): Diamond Park 3.9 → 2.1 %, kills 26.8 → 31.3; Iron Maw 10.4 → 6.0 %, stuck
+recoveries 309 → 63. Bomb on Diamond Park: 25.9 → 10.2 %, frozen 10.7 → 0.1 %, kills 7.9 → 10.4.
+
+Cost (`pnpm bench:96:clump`, 96 bots, Team Deathmatch, before and after run side by side on a loaded 4-core box,
+load 9.5): bot thinking 1.46–2.04 ms a tick before, 1.54–2.12 after (Norman Shores spread 1.96 → 2.12, clumped
+2.04 → 2.07; Frost Basin 1.89 → 2.11 and 1.83 → 1.72; Riot Junction 1.48 → 1.54 and 1.46 → 1.63), within the
+2.5 ms budget. (An earlier pair at load 15 read 1.46–2.14 and 1.67–2.54.)
+
+## Standing still (November 2026)
+
+Owner's report (Fernwood Moon, free camera): "why would some bots not be moving at all?" A bot now stands still
+only when it holds a spot on purpose, and then it looks alive. Measured over the CTF suite and Team Deathmatch;
+the causes, each fixed where it starts:
+
+- **Cut-off patches of navmesh.** The navmesh keeps 0.8 m from walls and steps 0.3 m. (0.8, not the 0.6 its
+  comment means, body radius 0.4 + 0.2: (0.4 + 0.2) / 0.2 is 3.0000000000000004 in floating point and rounds up to
+  four 0.2 m cells. Left as it is: every map's navmesh and the bots' corner clearance depend on it; BOT_AI_PLAN.md
+  Phase A.) A low roof over a step, a narrow strip or a pool's rim leave patches players walk off that have no route
+  out: Diamond Park's two dugouts (three of each team's spawn points in each: bots spawning there stood until killed,
+  and teammates spawned beside them), Capitol Mall's reflecting pool. The dugouts were the map's: their roofs ran
+  1.6 m over the side walls' tops at the dugout ends, so a standing player (1.8 m) couldn't walk under them there,
+  and the only standing way out, the 1.2 m strip in front of the roof, is narrower than the navmesh needs (1.6 m).
+  The roofs are 0.4 m higher now (MapMaker; validate-map's 113 warnings on the map are gone). `NavWorld` now labels
+  the navmesh's connected parts once (about 15 ms on a big map; a search across parts answers at once instead of
+  exploring everything reachable), and `escapes()` finds, for a point on a smaller part than its goal's, up to three
+  places within 14 m on the goal's part that a straight step or hop of up to 8 m reaches (nothing in the way at
+  knee or head height, rising at most 1.1 m). The bot walks to its patch's edge and crosses, hopping when held up
+  (`planEscape`); a crossing not made in 8 s is left alone for 30 s.
+- **A goal no route reaches** (a flag on a ledge, something on a roof, a carrier in the air): the bot goes as near
+  as a route gets (`NavWorld.reachToward`, Detour's partial route, cached per part and goal) and keeps watch there
+  facing it, rather than standing with "no route" until the flag goes home. The route is asked for again as the
+  no-route back-off allows (0.2 s doubling to 4 s, from about the same place), and each time the bot also looks for a
+  way off a cut-off patch, a button that opens the way and a lead nearer: Obsidian Orb's bots stranded on its
+  reactor platform get off it so. (A route to a watch place used to clear the goal's back-off, and the watch was
+  dropped every tick: Eagle Spires' attackers stood below the mesas asking 30 000 times a match. A version that
+  watched for 4 s between asks took none of Obsidian Orb's flags in two matches, against 5 a match.)
+- **Spawned inside something solid.** Sandfall Colosseum's spawn_269 stood inside the stand's steps: a bot spawned
+  there stood all match (300 s). Moved in MapMaker; validate-map and MapMaker now warn (`spawn.blocked`: the spawn
+  point's middle is inside a collider). 26 spawn points on 18 maps are inside collision by that check, most against
+  or in a wall the body is pushed out of (HANDOFF lists them).
+- **Doors shut to the bot.** A route through a door no button opens for the bot's team emptied its path: Fernwood
+  Moon's Garrison spawns inside its bunker, and the shortest way out is the blast door only the attackers open; its
+  own rear door was a few steps away. Doors and path-blocking walls are now navmesh flags (`markOpenings`, the
+  polygons under each), and such a route is asked for again keeping out of the shut ones (`findPath(…, shut)`).
+  Fernwood's reactor core was moved 0.5 m (MapMaker) so the strip behind it, in front of the rear door, is 1.9 m
+  wide, not 1.4: wider than the 1.6 m the navmesh needs.
+- **Doors that flap.** Several bots heading for one shut door each set off to press its button, and kept the plan
+  after the first opened it: a toggle button shut it again. A press plan is dropped once its door no longer blocks.
+  (Iron Compound's gate was also broken for players: its two rules on one press, "open if shut" and "shut if open",
+  both ran, since rules run in order. Fixed in MapMaker; validate-map and MapMaker now warn, `logic.undoes`.)
+- **Stuck on the same spot** (a dropship parked on the route, the corner of Fernwood's landing pad): after three
+  stuck recoveries in 10 s within 4 m, the bot takes a few steps to one side (3–5 m, on a short route) before going
+  on (`planSidestep`); before, a bot sent somewhere had nothing to give up and walked into the obstacle for minutes.
+  Vehicles: a plan to get in that runs out leaves that vehicle alone for 30 s, and bots press E within the match's
+  whole enter radius (a big hull kept them from getting within 80 % of it).
+- **Holding a spot looks alive** (`keepWatch`): a bot on station (a defender by its flag, an escort, a bot told to
+  hold, a squad member waiting on its squad's next goal, a bot waiting near a goal it can't reach) walks to another
+  place round the spot every 2.5–11 s (in sight of its middle, toward where the enemy comes from, on the spot's own
+  part of the navmesh), watches that way with a slow sweep and a glance over its shoulder every 7 s, turns to a
+  threat it knows of, and crouches and stands again. Campers on a vantage post shift a step to one side and back and
+  stand up to look over their cover; snipers lying on their scope only sweep. Bots waiting for or riding a lift look
+  about instead of at the shaft.
+- **Lanes and places checked.** Lane waypoints and keep-watch places are taken only on the goal's own part of the
+  navmesh (a sample on a roof sent bots nowhere), and a failed search backs off only near where it failed (one made
+  on a moving lift said nothing about the lift's top).
+
+`BotBrain.doing` says what a bot did on its last think and so why it stood still when it did; `pnpm bot-report`
+reads it.
+
 ## Measuring
+
+`pnpm bot-report` (`packages/server/src/tools/bot-report.ts`) plays headless matches of Player Bots (added as the
+server adds them: as their characters, normal skill) and reports per map and per bot: time by what each bot was
+doing, moving or standing (`BotBrain.doing`); idle time (moved under 0.5 m in a second, alive, on foot) by reason,
+with "stuck(...)" when it meant to move and didn't; idle spells of 3 s and more, with where they happened; "frozen"
+time (out of a fight, not even turning); time going to the mode's goal and at it; for CTF each bot's role, flag
+takes, captures, returns and drops, and every flag run (when, how long, how it ended); no-route searches, stuck
+recoveries, kills and tick cost. `--suite=ctf` plays every map that offers CTF, `--shard=k/n` splits a suite over
+processes, `--json=file` keeps the rows and `--compare=before.json,after.json` (several files joined with `+`)
+prints the two side by side, per map. `--spells` lists the longest idle spells, `--bots` every bot.
 
 `pnpm bench` prints, per map, a behaviour line next to the CPU ones:
 

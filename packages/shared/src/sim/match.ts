@@ -766,6 +766,10 @@ export class Match {
       },
       emit: (ev) => this.pendingEvents.push(ev),
     });
+    // Doors and walls that block paths, and lift rides, as navmesh flags: a bot's route can keep out of the ones shut
+    // to it, and off a lift it's tired of waiting for.
+    this.nav.markOpenings(this.scenario.openings());
+    this.nav.markLifts(liftLinks(map));
     this.encounters = new Encounters(map, {
       get tick() {
         return match.tick;
@@ -807,6 +811,10 @@ export class Match {
           groundBelow: (p) => {
             const hit = this.physics.raycastHit(p, { x: 0, y: -1, z: 0 }, 8);
             return hit ? p.y - hit.dist : null;
+          },
+          deadly: (p) => {
+            const l = this.liquids.length ? liquidAt(this.liquids, { x: p.x, y: p.y + 0.3, z: p.z }) : null;
+            return !!l && LIQUID_SPECS[l.liquid].dps >= 30;
           },
           path: (a, b) => this.nav.findPath(a, b),
           explode: (at, radius, damage, by) => {
@@ -1045,6 +1053,8 @@ export class Match {
     const old = this.nav;
     this.nav = NavWorld.build([...this.geometry, ...propBoxes(this.map, true), ...blockBoxes(this.map, true), ...extra], this.navExtra(), [...navLinks(this.map.entities, this.physics, this.phys.gravity), ...liftLinks(this.map)]);
     old.destroy();
+    this.nav.markOpenings(this.scenario.openings());
+    this.nav.markLifts(liftLinks(this.map));
     this.nav.places();
     this.sight.clear();
     return true;
@@ -1900,6 +1910,8 @@ export class Match {
     // Team-only doors block other teams; buttons a bot may press can open the doors in its way.
     const blockersBy = new Map<string | null, ReturnType<Scenario['blockers']>>();
     const blockersFor = (team: string | null) => blockersBy.get(team) ?? blockersBy.set(team, this.scenario.blockers(team)).get(team)!;
+    const shutBy = new Map<string | null, number>();
+    const shutFor = (team: string | null) => shutBy.get(team) ?? shutBy.set(team, this.scenario.openingsShut(team)).get(team)!;
     const buttonsBy = new Map<string | null, ReturnType<Scenario['doorButtons']>>();
     const doorButtonsFor = (team: string | null) => buttonsBy.get(team) ?? buttonsBy.set(team, this.scenario.doorButtons(team)).get(team)!;
     const lifts = this.scenario.liftViews();
@@ -2009,6 +2021,7 @@ export class Match {
         held: c.current,
         reloading: c.reloadTicks > 0,
         blockers: blockersFor(c.faction),
+        shut: shutFor(c.faction),
         doorButtons: doorButtonsFor(c.faction),
         ...(lifts.length ? { lifts } : {}),
         ...(portals.length ? { portals } : {}),
@@ -4003,15 +4016,21 @@ export class Match {
     if (!m?.route) return;
     input.buttons &= ~(BUTTON_USE | BUTTON_JUMP);
     const drops = this.dropPlanFor(m);
+    // Stay aboard through the countdown (and pick where to come down once play has begun: the mode has handed out
+    // its roles by then, on play's first tick).
+    if (this.phase !== 'playing' || this.routeTick(m) < 1) return;
     let plan = this.planeDrops.get(c.slot);
     if (!plan) {
-      const target = dropTarget(this.map, c.faction, this.rng(), this.rules.mode);
+      const objective = dropTarget(this.map, c.faction, this.rng(), this.rules.mode);
+      // Where the mode sends it, when it does (a CTF defender comes down by its own flag, not the enemy's: before,
+      // the whole planeload jumped over the enemy flag and the defenders walked home from there), else its side's
+      // objective or base.
+      const goal = this.mode?.botGoal(c, [])?.pos;
+      const target = goal ? { ...goal } : objective;
       // The good stretch nearest its target where it lands on ground it can walk on from.
       const at = botDropIndex(drops, m.route, target, dropOffsets(m.route, m.def.half[2])[1], this.rng());
       this.planeDrops.set(c.slot, (plan = { target, ...(at >= 0 ? { at } : {}) }));
     }
-    // Stay aboard through the countdown.
-    if (this.phase !== 'playing') return;
     if (!canDrop(drops, m.route, this.routeTick(m))) return;
     if (plan.at !== undefined) {
       if (dropIndex(drops, m.route, this.routeTick(m)) === plan.at) input.buttons |= BUTTON_USE;
@@ -5686,7 +5705,7 @@ export class Match {
  * reads polymorphic.
  */
 function toView(c: Combatant, concealed = false): CombatantView {
-  return { slot: c.slot, pos: c.move.pos, yaw: c.yaw, pitch: c.pitch, health: c.health, armor: c.armor, alive: c.alive, stance: stanceOf(c.move), human: c.kind === 'human', mounted: !!c.mount, grounded: c.move.grounded, object: false, concealed, riding: c.move.zip !== undefined, size: c.size, box: hitboxOf(c), hitScale: c.hitScale };
+  return { slot: c.slot, pos: c.move.pos, yaw: c.yaw, pitch: c.pitch, health: c.health, armor: c.armor, alive: c.alive, stance: stanceOf(c.move), human: c.kind === 'human', mounted: !!c.mount, grounded: c.move.grounded, object: false, concealed, riding: c.move.zip !== undefined, climbing: !!c.move.climb, chute: !!c.move.chute, size: c.size, box: hitboxOf(c), hitScale: c.hitScale };
 }
 
 /** Refill a view made by toView for this tick. */
@@ -5704,6 +5723,8 @@ function fillView(v: CombatantView, c: Combatant, concealed: boolean): void {
   v.grounded = c.move.grounded;
   v.concealed = concealed;
   v.riding = c.move.zip !== undefined;
+  v.climbing = !!c.move.climb;
+  v.chute = !!c.move.chute;
   v.size = c.size;
   v.box = hitboxOf(c);
   v.hitScale = c.hitScale;
