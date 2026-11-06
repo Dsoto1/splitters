@@ -692,6 +692,11 @@ export class GameView {
     );
     const held = await Promise.all(gunCopies);
     if (this.scene.isDisposed) return 0;
+    // Drawn every frame wherever the stage is: in front of the camera while the loading screen is up, and far below
+    // the map (out of sight) once the game shows, so their main-pass programs are built either way (a slow machine or
+    // a first visit still downloading finishes this after the start; parked, they were never drawn and the first gun
+    // in your hands built its own mid-match).
+    for (const m of stage.getChildMeshes()) m.alwaysSelectAsActiveMesh = true;
     // Three frames: the atmosphere sorts new meshes into the shadow map a frame later (their shaders differ).
     await this.afterFrames(3, 2000);
     await ready();
