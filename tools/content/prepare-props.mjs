@@ -362,6 +362,7 @@ function voxelProp(p, tris, glb) {
   const hit = voxelCache.props[p.id];
   if (hit?.key === key) return hit.boxes;
   const fit = voxelCollision(tris, opts);
+  if (!fit.boxes.length) throw new Error(`${p.id}: collide "voxel" but its model gives no collision boxes`);
   if (fit.boxes.length > opts.budget) console.warn(`  ${p.id}: voxel collision has ${fit.boxes.length} boxes, over its budget of ${opts.budget} (pnpm content:check fails)`);
   if (fit.openings.length) console.warn(`  ${p.id}: voxel collision still fills an opening (${JSON.stringify(fit.openings[0])})`);
   voxelCache.props[p.id] = { key, boxes: fit.boxes };
