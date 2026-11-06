@@ -669,11 +669,13 @@ A failed search used to back the bot off 0.2 s, doubling to 4 s, standing still 
   other now and then; the playbook is Phase B's.
 - **No route requests from a ladder** off the navmesh (as none in the air): a bot whose goal changes mid-climb carries
   on along it and asks off it. Fernwood Moon's vine ladder made hundreds of failed searches a match.
-- **At a button, it looks at the button and presses** (`pressReach`): in reach, the look along its route no longer
-  turns it level again every tick (the two turns cancelled, so a bot under a console's button never faced it), and it
-  stands on the floor in front of the button where its route ends, not at the button's own height. Serene City's thaw
-  console held eight bots for minutes once teammates stopped shoving each other about it (idle out of a fight 18.7 %
-  of the match; 3.8 % now, as before). Aiming at someone, it fights first.
+- **At a button, it looks at the button and presses** (`pressReach`): in reach, the turn to the button is the tick's
+  only turn, from where the bot looked as the tick began, and it doesn't run. The look along its route, or running for
+  its goal (an escort, a carrier's team), turned it level again every tick: the turns cancelled, and a bot under a
+  console's button never faced it. It stands on the floor in front of the button where its route ends, not at the
+  button's own height. Serene City's thaw console held eight bots for minutes once teammates stopped shoving each
+  other about it (idle out of a fight 18.7 % of the match; CTF, two matches of 300 s, with both fixes: 3.1 %, no idle
+  spell of 10 s; Iron Compound 15.5 → 9.9 %, its frozen time 11.4 → 5.2 %). Aiming at someone, it fights first.
 - **A pickup it stands at and doesn't get is given up** (`refused`, 90 s like one it can't reach): within pickup reach
   of an item still lying there, the match offered it and it wasn't taken (a dropped spear the bot already has, its
   ammo full), and the next pickup check sent the bot straight back to it. Sandfall Colosseum, CTF, two matches of 300
@@ -728,7 +730,9 @@ round times; Fort Wars pieces built.
   (`--judge=a.json+b.json…`), with the report (every match's rows, the scorecard, `pnpm nav-audit`'s output for every
   map) and every map's nav picture (the maps the suite played drawn again with their failed searches) as the
   `bots-report` artifact. The nightly shards don't stop when another job fails (a flaky browser flow doesn't cost the
-  night's scorecard; the run reads failure all the same).
+  night's scorecard; the run reads failure all the same). First run from Run workflow on `wip/bots-a` (run
+  42264736565): 398 matches on 77 maps, the shards 3 to 9 minutes each and the judge with every map's picture 2,
+  every limit held.
 - The sim is deterministic by seed, so a run's numbers are the same every time on the same code; only bot thinking
   and tick times vary with the machine.
 
