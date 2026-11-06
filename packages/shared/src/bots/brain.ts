@@ -868,7 +868,11 @@ export class BotBrain {
       const far = horizontalDistance(me, g.pos) > LANE_FROM;
       const r = this.routeRng();
       const side = r < 0.35 ? -1 : r < 0.7 ? 1 : 0;
-      lane = this.lane = { goal: { ...g.pos }, via: far && side ? laneWaypoint(view.nav.places(), me, g.pos, side) : null };
+      let via = far && side ? laneWaypoint(view.nav.places(), me, g.pos, side) : null;
+      // On the goal's own part of the navmesh only (the samples cover roofs and pools a route never reaches: a bot
+      // sent by one of those stood where it was, Capitol Mall).
+      if (via && view.nav.partAt(via)?.id !== view.nav.partAt(g.pos)?.id) via = null;
+      lane = this.lane = { goal: { ...g.pos }, via };
     }
     const via = lane.via;
     // Near it, or already nearer the goal than it is: on to the goal.
@@ -1272,6 +1276,8 @@ export class BotBrain {
         if (horizontalDistance(me.pos, g.pos) > g.radius || Math.abs(me.pos.y - g.pos.y) > 2) {
           const to = this.orderTarget(view, g);
           moveYaw = this.followPathTo(view, to, moving);
+          // No way by its lane after all: straight for the goal.
+          if (moveYaw === null && this.pathMiss && this.lane?.via) this.lane.via = null;
           moveScale = this.careful() && !g.push ? 0.8 : 1;
           // An objective a way off: run for it (a carrier always), as players do.
           if (g.push && (g.run || horizontalDistance(me.pos, to) > 15)) sprint = true;

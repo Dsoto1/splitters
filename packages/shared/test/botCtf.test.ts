@@ -141,6 +141,21 @@ describe('no standing about where the navmesh is cut off or a door is shut', () 
     expect(out).toBeLessThan(TICK_RATE * 12);
   }, 60_000);
 
+  it("Capitol Mall: a bot that ends up in the reflecting pool climbs out over its rim (a patch the rim cuts off)", () => {
+    const match = ctfMatch('capitol_mall', 1, [1, 1]);
+    match.step();
+    const bot = match.combatants()[0]!;
+    bot.move = { pos: { x: -77, y: -0.75, z: 2 }, velY: 0, grounded: true };
+    let out = -1;
+    for (let t = 0; t < TICK_RATE * 20 && out < 0; t++) {
+      match.step();
+      if (bot.alive && bot.move.pos.y > -0.3 && Math.abs(bot.move.pos.z) > 7) out = t;
+    }
+    match.destroy();
+    expect(out).toBeGreaterThanOrEqual(0);
+    expect(out).toBeLessThan(TICK_RATE * 12);
+  }, 60_000);
+
   it("Fernwood Moon: the Garrison's bots spawned in their bunker leave by their own rear door (the blast door is the enemy's)", () => {
     const match = ctfMatch('fernwood_moon', 1, [1, 1]);
     match.step();

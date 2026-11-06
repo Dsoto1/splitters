@@ -37,6 +37,11 @@ const MAX_PATH_POLYS = 8192;
 const MAX_CORNERS = 1024;
 /** How far round a cut-off bot to look for walkable places that do route to its goal (m). */
 const ESCAPE_REACH = 14;
+/**
+ * The longest straight crossing off a cut-off patch (m): the patch's edge to a place sampled every 7 m, so a
+ * crossing of a couple of metres (out of a reflecting pool over its rim) can measure 6 m or so.
+ */
+const ESCAPE_GAP = 8;
 
 /** A way off a cut-off patch of navmesh (NavWorld.escapes): where to cross from (null: from where you stand) and the place across. */
 export interface NavEscape {
@@ -368,7 +373,7 @@ export class NavWorld {
       if (on && !edge) continue;
       const at = edge ?? from;
       const rise = p.y - at.y;
-      if (hypot(p.x - at.x, p.z - at.z) > 4 || rise > 1 || rise < -4 || !clear(at, p)) continue;
+      if (hypot(p.x - at.x, p.z - at.z) > ESCAPE_GAP || rise > 1.1 || rise < -4 || !clear(at, p)) continue;
       out.push({ edge, across: { ...p } });
       if (out.length >= 3) break;
     }
