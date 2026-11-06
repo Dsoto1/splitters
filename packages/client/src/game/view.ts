@@ -661,8 +661,8 @@ export class GameView {
       stage.rotation.y = Math.atan2(f.x, f.z) + Math.PI;
     });
     const spot = (n: TransformNode, i: number, row: number) => n.position.set(((i % 8) - 3.5) * 0.9, 0, row + Math.floor(i / 8) * 1.2);
-    const gunCopies = guns.flatMap((path, i) =>
-      [true, false].map((instanced, k) =>
+    const gunCopies = guns.flatMap((path, i) => [
+      ...[true, false].map((instanced, k) =>
         // As a crowd's hands and the pickups hold them (merged instances), and as a copy of its own.
         (instanced ? this.models.instantiateWhole(path, `prewarm_gun_${i}_${k}`) : this.models.instantiate(path, `prewarm_gun_${i}_${k}`)).then(
           (node) => {
@@ -675,7 +675,24 @@ export class GameView {
           () => undefined,
         ),
       ),
-    );
+      // And as your own first-person gun: under the view root, drawn over the world and catching no shadows (another
+      // program than a copy in the world; the first gun of a kind in your hands built its own mid-match).
+      this.models.instantiate(path, `prewarm_gun_${i}_view`).then(
+        (node) => {
+          if (stage.isDisposed()) return void node.dispose();
+          node.parent = this.viewRoot;
+          node.position.set(0, -10000, 0);
+          for (const m of node.getChildMeshes()) m.renderingGroupId = 1;
+          return node;
+        },
+        () => undefined,
+      ),
+    ]);
+    // A shot's tracer (a line: its own shader, first built by the first tracer drawn in view).
+    const tracer = CreateLines('prewarm_tracer', { points: [new Vector3(0, 1, 0), new Vector3(0, 1.5, 3)] }, this.scene);
+    tracer.color = Color3.White();
+    tracer.isPickable = false;
+    tracer.parent = stage;
     const made = await Promise.all(
       specs.slice(0, 32).map((spec, i) =>
         this.characters.create(spec, `prewarm_${i}`).then(
@@ -696,7 +713,7 @@ export class GameView {
     // the map (out of sight) once the game shows, so their main-pass programs are built either way (a slow machine or
     // a first visit still downloading finishes this after the start; parked, they were never drawn and the first gun
     // in your hands built its own mid-match).
-    for (const m of stage.getChildMeshes()) m.alwaysSelectAsActiveMesh = true;
+    for (const m of [...stage.getChildMeshes(), ...held.flatMap((g) => g?.getChildMeshes() ?? [])]) m.alwaysSelectAsActiveMesh = true;
     // Three frames: the atmosphere sorts new meshes into the shadow map a frame later (their shaders differ). Once the
     // game shows nothing waits on this, so a slow machine gets its three frames however long they take (a hidden tab
     // draws none: the cap).
