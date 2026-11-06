@@ -233,11 +233,18 @@ describe('set pieces in MapMaker: ports facing walls, and mirror', () => {
   const westDoor = (doc: MapDocument, p: SetPiecePlacement) => portsOf(doc, p).find((s) => s.side === 'W' && s.z === 0)!;
   const roomSide = (doc: MapDocument, style: EdgeStyle) => applyCommand(doc, ok(setEdgeCommand(doc, { cell: [1, 1, 0], side: 'E' }, style)));
 
-  it('every port of a piece in the open is clear; its own parts never count', () => {
+  it('every port of a piece in the open is clear; its own parts never count; its own wall closes an automatic side', () => {
     const { doc, placement } = place(base(), 'setpiece.carriageway_1', 2, 1, 0);
     const states = portsOf(doc, placement);
     expect(states.map((s) => `${s.side}${s.z}:${s.kind}`)).toEqual(['N0:opening', 'S0:opening', 'W0:door', 'E0:door', 'W1:door', 'E1:door']);
     expect(states.every((s) => s.blockedBy === null)).toBe(true);
+    // The room over the arch leaves its sides to the automatic wall: with nothing built against them they are walls.
+    expect(states.map((s) => s.closed)).toEqual([false, false, false, false, true, true]);
+    // A room against it on Level 1 meets those ports: a doorway (open), and its wall in the way is a warning again.
+    const upstairs = applyCommand(doc, ok(placeTileCommand(doc, 'core.room', 1, 1, 1, 0)).command);
+    expect(portsOf(upstairs, placement).find((s) => s.side === 'W' && s.z === 1)).toMatchObject({ closed: false, blockedBy: null });
+    // Without its own parts in the boxes (a ghost not yet placed), every port counts as open.
+    expect(setPiecePortStates(placement, library.pieces.get(placement.piece)!, []).every((s) => !s.closed && !s.blockedBy)).toBe(true);
   });
 
   it('a room built against a door: its side a doorway (ports meeting) is clear; a wall, a window or a half wall is not', () => {

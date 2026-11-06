@@ -59,11 +59,11 @@ interface EntityMarker {
 /** A set piece as MapMaker outlines it (placing or selected): the grid cells it claims and its ports. */
 export interface PieceOutline {
   cells: readonly (readonly [number, number, number])[];
-  ports: readonly { x: number; y: number; z: number; side: Side; kind: 'door' | 'opening'; blocked: boolean }[];
+  ports: readonly { x: number; y: number; z: number; side: Side; kind: 'door' | 'opening'; closed: boolean; blocked: boolean }[];
 }
 
-/** Port marker colours: a doorway, an opening, and one that faces a wall. */
-const PORT_COLOURS = { door: new Color4(0.31, 0.7, 1, 1), opening: new Color4(0.35, 0.84, 0.55, 1), blocked: new Color4(1, 0.35, 0.31, 1) } as const;
+/** Port marker colours: a doorway, an opening, one that faces a wall, and one the piece's own wall shuts. */
+const PORT_COLOURS = { door: new Color4(0.31, 0.7, 1, 1), opening: new Color4(0.35, 0.84, 0.55, 1), blocked: new Color4(1, 0.35, 0.31, 1), closed: new Color4(0.55, 0.58, 0.62, 0.7) } as const;
 
 /**
  * Editor scene: the map (with floor isolation), active-level grid, ghost
@@ -811,7 +811,8 @@ export class EditorView {
 
   /**
    * A set piece's ports as marks on its outline: a doorway's frame standing in the side (2 × 2.4 m) and an arrow on the
-   * floor pointing out, blue for a door, green for an opening, red where a wall stands in the way; drawn over the map.
+   * floor pointing out, blue for a door, green for an opening, red (crossed) where a wall stands in the way, grey where
+   * the piece's own wall shuts it (nothing meets it there); drawn over the map.
    */
   private portMarks(doc: MapDocument, ports: PieceOutline['ports'], name: string): Mesh {
     const { cellSize, levelHeight } = doc.classicStructure;
@@ -828,7 +829,7 @@ export class EditorView {
       const az = dx ? 1 : 0;
       const w = p.kind === 'door' ? 1 : 1.6;
       const at = (u: number, h: number, out = 0) => new Vector3(cx + ax * u + dx * out, y + h, cz + az * u + dz * out);
-      const c = p.blocked ? PORT_COLOURS.blocked : PORT_COLOURS[p.kind];
+      const c = p.blocked ? PORT_COLOURS.blocked : p.closed ? PORT_COLOURS.closed : PORT_COLOURS[p.kind];
       const frame = [at(-w, 0), at(-w, 2.4), at(w, 2.4), at(w, 0)];
       const arrow = [
         [at(0, 0, -1.2), at(0, 0, 1.4)],

@@ -2,12 +2,13 @@
 // kit tile, a tile of every style pack, every wall style and both glass kinds, a prop of every prop pack, a pickup of
 // every kind, every vehicle and turret, every MapMaker scenario piece (doors, logic, movers, traps, liquids, lights,
 // NPC squads and spawners, portals, ladders, ziplines, air drops), every entity kind, the markers of every game mode,
-// terrain, roads, a race track, an AI route and a logic rule. New content fails this test until it is added to the
-// map (in MapMaker: open maps/test_coverage.json, place it, save, export over the file). The browser flows that only
-// need "a map with everything" (e2e coverage flow) use it; it is a test map (metadata.testOnly): no list offers it.
+// terrain, roads, a race track, an AI route, a logic rule and every shipped set piece. New content fails this test
+// until it is added to the map (in MapMaker: open maps/test_coverage.json, place it, save, export over the file). The
+// browser flows that only need "a map with everything" (e2e coverage flow) use it; it is a test map
+// (metadata.testOnly): no list offers it.
 import { readdirSync, readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { CORE_ITEMS, EDGE_STYLES, GLASS_KINDS, MOUNT_MODELS, MapEntity, STYLE_PACKS, coreCatalog, loadMap, playableModes, raceTrack, type MapDocument } from '../src/index.ts';
+import { CORE_ITEMS, EDGE_STYLES, GLASS_KINDS, MOUNT_MODELS, MapEntity, STYLE_PACKS, builtInSetPieces, coreCatalog, loadMap, playableModes, raceTrack, type MapDocument } from '../src/index.ts';
 import { KIT_TILES } from '../src/content/kitTiles.generated.ts';
 import { SCENARIO_PALETTE, newScenarioEntities } from '../src/editor/operations.ts';
 
@@ -70,6 +71,16 @@ describe('the coverage map', () => {
     expect(missing(kinds, new Set(map.entities.map((e) => e.kind)))).toEqual([]);
     const pieces = SCENARIO_PALETTE.map((p) => p.key).filter((key) => !newScenarioEntities(key, [0, 0, 0], 0).some((e) => signatures.has(signature(e as unknown as Record<string, unknown>))));
     expect(pieces).toEqual([]);
+  });
+
+  it('has one of every shipped set piece (placed in MapMaker), each expanding into its parts as played', () => {
+    const placements = (raw.setPieces ?? []) as { id: string; piece: string }[];
+    const placed = new Set(placements.map((p) => p.piece));
+    expect(missing([...builtInSetPieces().pieces.keys()], placed)).toEqual([]);
+    // As played (loadMap) the placements are their parts: no set pieces left, every placement's parts in the map.
+    expect(map.setPieces).toBeUndefined();
+    const parts = new Set([...map.classicStructure.tiles, ...map.entities].map((x) => x.id.replace(/_\d+$/, '')));
+    expect(placements.filter((p) => !parts.has(`sp_${p.id}`)).map((p) => p.piece)).toEqual([]);
   });
 
   it('has the markers of every game mode, terrain, roads, a race track, an AI route and logic', () => {

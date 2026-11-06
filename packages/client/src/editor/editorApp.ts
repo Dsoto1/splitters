@@ -811,8 +811,23 @@ export class EditorApp {
   private pieceOutline(p: SetPiecePlacement): PieceOutline | null {
     const def = this.pieceDef(p.piece);
     if (!def) return null;
-    const ports = setPiecePortStates(p, def, this.mapBoxes()).map((s) => ({ x: s.x, y: s.y, z: s.z, side: s.side, kind: s.kind, blocked: !!s.blockedBy }));
+    const ports = setPiecePortStates(p, def, this.mapBoxes()).map((s) => ({ x: s.x, y: s.y, z: s.z, side: s.side, kind: s.kind, closed: s.closed, blocked: !!s.blockedBy }));
     return { cells: setPieceFootprint(p, def), ports };
+  }
+
+  /**
+   * A placement's own collision as it would be built where it stands (its sides resolved against the tiles round it:
+   * a port that meets one becomes a doorway), for the ghost's ports: the piece and its neighbours alone, not the map.
+   */
+  private ownBoxes(p: SetPiecePlacement, def: SetPieceDefinition): WorldBox[] {
+    const view = this.viewDoc;
+    const parts = setPieceParts(p, def, view.classicStructure.theme, this.setPieceLib);
+    const near = new Set<string>();
+    for (const [x, y, z] of setPieceFootprint(p, def)) for (const [dx, dy] of [[0, 0], [1, 0], [-1, 0], [0, 1], [0, -1]] as const) near.add(`${x + dx},${y + dy},${z}`);
+    const neighbours = view.classicStructure.tiles.filter((t) => (placementCells(t) ?? []).some(([x, y, z]) => near.has(`${x},${y},${z}`)));
+    const alone: MapDocument = { ...view, terrain: null, bounds: null, classicStructure: { ...view.classicStructure, tiles: [...parts.tiles, ...neighbours] }, entities: parts.entities.filter((e) => e.kind === 'block') };
+    const mine = new Set([...parts.tiles.map((t) => t.id), ...parts.entities.map((e) => e.id)]);
+    return buildMapGeometry(alone).filter((b) => mine.has(b.sourceId));
   }
 
   private selPieces(): string[] {
@@ -1796,7 +1811,8 @@ export class EditorApp {
       if (hit && ray) ground = { at: hit, distance: Math.hypot(hit.x - ray.origin.x, hit.y - ray.origin.y, hit.z - ray.origin.z) };
       if (hit && this.tool.kind === 'terrain') this.terrainHover = hit;
       // Spawns, pickups and props stand on the ground where it is nearer than the level plane.
-      if (hit && ray && this.tool.kind !== 'tile' && this.tool.kind !== 'terrain') {
+      // (Tiles and set pieces go on the grid: the level being edited, not the ground.)
+      if (hit && ray && this.tool.kind !== 'tile' && this.tool.kind !== 'setpiece' && this.tool.kind !== 'terrain') {
         const dist = (p: Vec3) => Math.hypot(p.x - ray.origin.x, p.y - ray.origin.y, p.z - ray.origin.z);
         if (!this.hoverPoint || dist(hit) < dist(this.hoverPoint)) {
           this.hoverPoint = hit;
@@ -2022,7 +2038,10 @@ export class EditorApp {
     const look = this.lookFor();
     const placement: SetPiecePlacement = { id: 'ghost_piece', piece: t.piece, x: cell[0], y: cell[1], z: this.level, rotation: this.rotation, mirror: this.pieceMirror, ...(look ? { pack: look } : {}) };
     const check = checkSetPiecePlacement(this.doc, [placement], [], coreCatalog, this.placeLib);
-    const ports = setPiecePortStates(placement, def, this.mapBoxes());
+    // Its ports against the map, and against its own walls as they'd be built here (worked out once per cell).
+    const at = `${t.piece}:${this.rotation}:${this.pieceMirror}:${cell.join(',')}:${this.history.revision}:${this.myPiecesRev}`;
+    if (this.ghostPorts?.at !== at) this.ghostPorts = { at, states: setPiecePortStates(placement, def, [...this.mapBoxes(), ...this.ownBoxes(placement, def)]) };
+    const ports = this.ghostPorts.states;
     this.pieceHover = { def, placement, ok: check.ok, reason: check.ok ? '' : check.reason, blocked: ports.filter((s) => s.blockedBy).length };
     const theme = this.doc.classicStructure.theme;
     // Built once per piece, turn, mirror and look (at the grid's origin) and moved with the pointer.
@@ -2030,9 +2049,12 @@ export class EditorApp {
     const atOrigin = { ...placement, x: 0, y: 0, z: 0 };
     this.view.setPieceGhost(this.doc, key, () => setPieceParts(atOrigin, def, theme, this.setPieceLib), [cell[0], cell[1], this.level], check.ok, {
       cells: setPieceFootprint(placement, def),
-      ports: ports.map((s) => ({ x: s.x, y: s.y, z: s.z, side: s.side, kind: s.kind, blocked: !!s.blockedBy })),
+      ports: ports.map((s) => ({ x: s.x, y: s.y, z: s.z, side: s.side, kind: s.kind, closed: s.closed, blocked: !!s.blockedBy })),
     });
   }
+
+  /** The ghost's ports, and the cell, turn and document version they were worked out for. */
+  private ghostPorts: { at: string; states: ReturnType<typeof setPiecePortStates> } | null = null;
 
   private updateDrag(): void {
     const d = this.drag;
@@ -3960,9 +3982,14 @@ export class EditorApp {
     list.className = 'ed-sp-ports';
     for (const s of states) {
       const li = document.createElement('li');
-      li.className = s.blockedBy ? 'warning' : 'ok';
+      li.className = s.blockedBy ? 'warning' : s.closed ? 'closed' : 'ok';
       const name = this.portName(s);
-      li.textContent = s.blockedBy ? `⚠ ${name[0]!.toUpperCase()}${name.slice(1)} faces a wall: ${this.blockerName(s.blockedBy)}. Open it (Walls tool, or cut the block), or move the piece` : `${name[0]!.toUpperCase()}${name.slice(1)}: clear`;
+      const Name = `${name[0]!.toUpperCase()}${name.slice(1)}`;
+      li.textContent = s.blockedBy
+        ? `⚠ ${Name} faces a wall: ${this.blockerName(s.blockedBy)}. Open it (Walls tool, or cut the block), or move the piece`
+        : s.closed
+          ? `${Name}: walled (nothing meets it; a room built against it with a doorway opens it)`
+          : `${Name}: clear`;
       list.append(li);
     }
     if (states.length) el.append(list);

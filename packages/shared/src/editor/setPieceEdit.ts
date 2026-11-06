@@ -286,13 +286,18 @@ export function setPieceMirrorRefusal(def: SetPieceDefinition, catalog: TileCata
   return `${def.displayName} can't be mirrored: ${tile ?? "its parts aren't a mirror image of themselves (the piece says mirror: none)"}. Turn it (R) instead`;
 }
 
-/** A port of a placement on the map, and what is built in its way just outside it (`blockedBy`: that box's source id, or null). */
+/**
+ * A port of a placement on the map: `closed` when the piece's own wall shuts it as built (a side left to the automatic
+ * wall, with nothing built against it that meets it), else `blockedBy`, what is built in its way just outside it (that
+ * box's source id), or null when the way through is clear.
+ */
 export interface SetPiecePortState {
   x: number;
   y: number;
   z: number;
   side: Side;
   kind: 'door' | 'opening';
+  closed: boolean;
   blockedBy: string | null;
 }
 
@@ -322,8 +327,10 @@ function insideBox(b: WorldBox, x: number, y: number, z: number): boolean {
 /**
  * Each port of a placement (setPiecePorts) and whether it faces a wall: something solid built just outside it (a
  * tile's wall or window, a free block, a raised floor), which MapMaker warns about on the ghost and the selected piece.
- * `boxes`: the map's collision as played (buildMapGeometry of the map with its set pieces expanded), with or without
- * this placement's own parts (they are skipped); trim, props and the map's edge barriers don't count.
+ * A port the piece's own wall shuts (`closed`: a side left to the automatic wall, built as a wall because nothing
+ * meets it) is no way through, so nothing outside it is in the way. `boxes`: the map's collision as played
+ * (buildMapGeometry of the map with its set pieces expanded), this placement's own parts among them (they tell whether
+ * a port is closed; without them every port counts as open); trim, props and the map's edge barriers don't count.
  */
 export function setPiecePortStates(
   p: Pick<SetPiecePlacement, 'id' | 'x' | 'y' | 'z' | 'rotation' | 'mirror'>,
@@ -333,19 +340,27 @@ export function setPiecePortStates(
   const { cellSize, levelHeight } = SET_PIECE_GRID;
   const own = `sp_${p.id}_`;
   const isOwn = (id: string) => id.startsWith(own) && /^\d+$/.test(id.slice(own.length));
-  const solid = boxes.filter((b) => b.kind !== 'trim' && b.kind !== 'barrier' && b.kind !== 'prop' && !isOwn(b.sourceId));
+  const walls = boxes.filter((b) => b.kind !== 'trim' && b.kind !== 'barrier' && b.kind !== 'prop');
+  const mine = walls.filter((b) => isOwn(b.sourceId));
+  const others = walls.filter((b) => !isOwn(b.sourceId));
   return setPiecePorts(p, def).map((port) => {
     const [dx, dy] = SIDE_DIRS[port.side];
-    const out = cellSize / 2 + PORT_PROBE.out;
     const floor = port.z * levelHeight;
-    let blockedBy: string | null = null;
-    for (const u of PORT_PROBE.across) {
-      // Across the side: east-west for a north or south side, north-south for an east or west one.
-      const x = port.x * cellSize + dx * out + (dy ? u : 0);
-      const z = port.y * cellSize + dy * out + (dx ? u : 0);
-      for (const h of PORT_PROBE.heights) blockedBy ??= solid.find((b) => insideBox(b, x, floor + h, z))?.sourceId ?? null;
-      if (blockedBy) break;
-    }
-    return { ...port, blockedBy };
+    /** What stands in the port `v` metres out from the side (in: negative), across its middle at waist to chest height. */
+    const probe = (v: number, list: readonly WorldBox[]): string | null => {
+      const out = cellSize / 2 + v;
+      for (const u of PORT_PROBE.across) {
+        // Across the side: east-west for a north or south side, north-south for an east or west one.
+        const x = port.x * cellSize + dx * out + (dy ? u : 0);
+        const z = port.y * cellSize + dy * out + (dx ? u : 0);
+        for (const h of PORT_PROBE.heights) {
+          const hit = list.find((b) => insideBox(b, x, floor + h, z));
+          if (hit) return hit.sourceId;
+        }
+      }
+      return null;
+    };
+    const closed = !!probe(-PORT_PROBE.out, mine);
+    return { ...port, closed, blockedBy: closed ? null : probe(PORT_PROBE.out, others) };
   });
 }
