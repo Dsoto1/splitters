@@ -383,6 +383,8 @@ export class BotBrain {
   private hopAt = -Infinity;
   /** The way it takes to a far objective (orderTarget): the goal it was picked for and the waypoint (null: straight). */
   private lane: { goal: Vec3; via: Vec3 | null } | null = null;
+  /** A few steps aside after getting stuck on the same spot again and again (planSidestep). */
+  private sidestep: { pos: Vec3; until: number } | null = null;
 
   private seq = 0;
   private readonly rng: () => number;
@@ -418,8 +420,8 @@ export class BotBrain {
   private roamGoal: Vec3 | null = null;
   private via: Vec3 | null = null;
   private lastPathTick = -Infinity;
-  /** The last goal no path led to, and until when not to ask again (doubling with each failure in a row). */
-  private noPath: { goal: Vec3; until: number } | null = null;
+  /** The last goal no path led to, from where, and until when not to ask again (doubling with each failure in a row). */
+  private noPath: { goal: Vec3; from: Vec3; until: number } | null = null;
   private pathFails = 0;
   private strafeDir = 1;
   private nextStrafeFlip = 0;
@@ -607,6 +609,7 @@ export class BotBrain {
     this.watch = null;
     this.escape = null;
     this.lane = null;
+    this.sidestep = null;
   }
 
   /** It killed someone: a sniper moves on to another spot soon after (they know where the shot came from). */
@@ -1595,7 +1598,8 @@ export class BotBrain {
     // Getting in: use when close enough to the planned mount.
     if (this.state === 'mount' && this.mountPlan) {
       const m = view.mounts?.find((x) => x.index === this.mountPlan!.index);
-      if (m && horizontalDistance(me.pos, m.pos) <= m.enterRadius * (this.mountPlan.ride ? 0.85 : 0.8) && Math.abs(m.pos.y - me.pos.y) < 2.3 && tick - this.lastUseTick > 20) {
+      // (The match lets you in within the whole enter radius; a big hull can keep you from getting much nearer.)
+      if (m && horizontalDistance(me.pos, m.pos) <= m.enterRadius * 0.95 && Math.abs(m.pos.y - me.pos.y) < 2.3 && tick - this.lastUseTick > 20) {
         buttons |= BUTTON_USE;
         this.lastUseTick = tick;
       }
@@ -1794,7 +1798,13 @@ export class BotBrain {
     const t = tick + this.slot * 41;
     const glance = t % (TICK_RATE * 7) < TICK_RATE * 0.8 ? Math.PI * 0.7 * (this.slot % 2 ? 1 : -1) : 0;
     this.turnToward(look + Math.sin(t / 50) * 0.7 + glance, Math.sin(t / 90) * 0.05);
-    const moveYaw = horizontalDistance(me, w.spot) > 0.5 ? this.followPathTo(view, w.spot, false) : null;
+    let moveYaw = horizontalDistance(me, w.spot) > 0.5 ? this.followPathTo(view, w.spot, false) : null;
+    // No way to that place after all: another next time, and no standing about waiting for a route meanwhile.
+    if (moveYaw === null && this.pathMiss) {
+      w.until = tick;
+      this.pathMiss = false;
+      moveYaw = null;
+    }
     // Crouched now and then (careful bots longer), standing up again to look over things.
     const period = TICK_RATE * (4 + (this.slot % 3));
     const down = t % period < period * (this.careful() ? 0.55 : 0.3);
@@ -1806,6 +1816,7 @@ export class BotBrain {
     const hold = (this.methodical ? 6 : this.arena ? 2.5 : 4) + this.routeRng() * 5;
     const facing = g.watch ? Math.atan2(g.watch.x - g.pos.x, g.watch.z - g.pos.z) : null;
     let spot: Vec3 = { ...g.pos };
+    let part: number | null | undefined;
     if (g.radius >= 1.5) {
       for (let i = 0; i < 3; i++) {
         // Toward the way the enemy comes when there is one, else anywhere round it.
@@ -1814,6 +1825,9 @@ export class BotBrain {
         const p = view.nav.closestPoint({ x: g.pos.x + Math.sin(a) * r, y: g.pos.y + 0.5, z: g.pos.z + Math.cos(a) * r }, { x: 1.5, y: 2, z: 1.5 });
         if (!p || horizontalDistance(p, g.pos) > g.radius || Math.abs(p.y - g.pos.y) > 2) continue;
         if (prev && horizontalDistance(p, prev.spot) < 1.5) continue;
+        // On the goal's own part of the navmesh (a ledge or a roof in sight of it is no place to walk to).
+        if (part === undefined) part = view.nav.partAt(g.pos)?.id ?? null;
+        if (view.nav.partAt(p)?.id !== part) continue;
         if (!view.physics.lineOfSight({ x: g.pos.x, y: g.pos.y + 1.2, z: g.pos.z }, { x: p.x, y: p.y + 1.2, z: p.z })) continue;
         spot = p;
         break;
@@ -2689,6 +2703,13 @@ export class BotBrain {
     if (this.pressPlan) {
       goal = this.pressPlan.stand;
       movingGoal = false;
+    } else if (this.sidestep) {
+      // Stepping aside round something the navmesh doesn't know of (planSidestep): there first.
+      if (view.tick >= this.sidestep.until || horizontalDistance(me.pos, this.sidestep.pos) < 0.8) this.sidestep = null;
+      else {
+        goal = this.sidestep.pos;
+        movingGoal = false;
+      }
     }
     // Made it across off a cut-off patch: ask for the route again straight away.
     const esc = this.escape;
@@ -2707,11 +2728,13 @@ export class BotBrain {
       this.goal = { ...goal };
       // No way there a moment ago: don't search again every few ticks, back off (0.2 s, doubling up to 4 s).
       const np = this.noPath;
-      const backedOff = !!np && view.tick < np.until && horizontalDistance(np.goal, goal) < 2 && Math.abs(np.goal.y - goal.y) < 1.5;
+      // (Only from about where it failed: one that failed on a moving lift, or before crossing off a cut-off patch,
+      // says nothing about here.)
+      const backedOff = !!np && view.tick < np.until && horizontalDistance(np.goal, goal) < 2 && Math.abs(np.goal.y - goal.y) < 1.5 && horizontalDistance(np.from, me.pos) < 2 && Math.abs(np.from.y - me.pos.y) < 1.5;
       const found = backedOff ? null : view.nav.findPath(me.pos, goal);
       if (!backedOff) {
         this.pathFails = found ? 0 : Math.min(this.pathFails + 1, 6);
-        this.noPath = found ? null : { goal: { ...goal }, until: view.tick + Math.min(TICK_RATE * 4, 6 << this.pathFails) };
+        this.noPath = found ? null : { goal: { ...goal }, from: { ...me.pos }, until: view.tick + Math.min(TICK_RATE * 4, 6 << this.pathFails) };
         if (!found) this.pathFailures++;
       }
       this.path = found ?? [];
@@ -2807,6 +2830,32 @@ export class BotBrain {
     if (!esc || horizontalDistance(esc.across, pick.across) > 0.5) this.escape = { across: { ...pick.across }, goal: { ...goal }, until: tick + TICK_RATE * 8 };
     const lead = pick.edge && horizontalDistance(me, pick.edge) > 0.6 ? view.nav.findPath(me, pick.edge) : null;
     this.path = lead ? [...lead, { ...pick.across }] : [{ ...me }, { ...pick.across }];
+  }
+
+  /**
+   * Stuck on the same spot again and again: somewhere 3–5 m to one side of the way it was going (walkable, and a
+   * route there that isn't the way it was stuck), to walk to before carrying on. A few nav lookups, only then.
+   */
+  private planSidestep(view: BotWorldView): void {
+    const me = view.self.pos;
+    const corner = this.path[this.pathIndex] ?? this.goal;
+    const ahead = corner ? Math.atan2(corner.x - me.x, corner.z - me.z) : this.yaw;
+    const first = this.routeRng() < 0.5 ? 1 : -1;
+    for (const side of [first, -first]) {
+      for (const turn of [0.5, 0.75]) {
+        const a = ahead + side * Math.PI * turn;
+        const d = 3 + this.routeRng() * 2;
+        const p = view.nav.closestPoint({ x: me.x + Math.sin(a) * d, y: me.y + 0.5, z: me.z + Math.cos(a) * d }, { x: 1, y: 2, z: 1 });
+        if (!p || horizontalDistance(p, me) < 2 || Math.abs(p.y - me.y) > 1.5) continue;
+        const route = view.nav.findPath(me, p);
+        if (!route || pathLength(route) > d * 2.5) continue;
+        this.sidestep = { pos: p, until: view.tick + TICK_RATE * 4 };
+        this.path = [];
+        this.goal = null;
+        this.lastPathTick = -Infinity;
+        return;
+      }
+    }
   }
 
   /** The portal surface to walk into when the path's next leg is a portal link (from in front of one portal to out of the other). */
@@ -2958,6 +3007,10 @@ export class BotBrain {
     if (log.length >= 3 && log.every((l) => hypot(l.x - pos.x, l.z - pos.z) < 4)) {
       log.length = 0;
       this.stuckLoops++;
+      // Sent somewhere (a mode goal: nothing to give up), or after anything else: a few steps aside first, round
+      // what's in the way that the navmesh doesn't know of (a vehicle parked on the route, a crowd in a doorway).
+      // Before, a bot walking into a parked dropship on Fernwood Moon jumped and walked into it again for minutes.
+      this.planSidestep(view);
       if (this.roamGoal) this.avoid = { pos: { ...this.roamGoal }, until: view.tick + TICK_RATE * 20 };
       // A pickup it was after: off its list for a good while (the 2 s pickup check would send it straight back).
       if (this.roamGoal) this.losePickup(view, this.roamGoal);
