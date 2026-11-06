@@ -56,6 +56,7 @@ import {
   FX_CLOAK,
   FX_JET,
   CHUTE_GLIDER,
+  CHUTE_PARACHUTE,
   floatSurface,
   liquidAt,
   mapLiquids,
@@ -693,6 +694,14 @@ export class GameView {
     tracer.color = Color3.White();
     tracer.isPickable = false;
     tracer.parent = stage;
+    // A parachute and a glider (fabric, and rigging lines in their own colours: made on the first jump), kept for the
+    // first ones in play.
+    const canopies = [CHUTE_PARACHUTE, CHUTE_GLIDER].map((kind, i) => {
+      const node = createCanopy(this.scene, `prewarm_canopy_${kind}`, kind);
+      node.parent = stage;
+      node.position.set((i - 0.5) * 6, 0, 9);
+      return { node, kind };
+    });
     const made = await Promise.all(
       specs.slice(0, 32).map((spec, i) =>
         this.characters.create(spec, `prewarm_${i}`).then(
@@ -720,6 +729,11 @@ export class GameView {
     await this.afterFrames(3, 2000);
     await ready();
     place.remove();
+    for (const c of canopies) {
+      c.node.parent = null;
+      for (const m of c.node.getChildMeshes()) m.alwaysSelectAsActiveMesh = false;
+      releaseCanopy(this.scene, c.node, c.kind);
+    }
     for (const ch of made) ch?.dispose();
     for (const g of held) g?.dispose();
     stage.dispose();
