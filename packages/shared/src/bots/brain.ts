@@ -1,7 +1,7 @@
 import type { LookHitbox } from '../sim/hitbox.ts';
 import { angleDelta, clamp, createRng, distance, horizontalDistance, lookAngles, type Vec3, hypot } from '../math.ts';
 import type { NavWorld } from '../nav/index.ts';
-import { PLAYER, STANCES, TICK_DT, TICK_RATE, type Stance } from '../sim/constants.ts';
+import { LIFT_FLAG, PLAYER, STANCES, TICK_DT, TICK_RATE, type Stance } from '../sim/constants.ts';
 import type { ItemDefinition, ItemEffect } from '../sim/items.ts';
 import { BUTTON_ALT, BUTTON_CROUCH, BUTTON_FIRE, BUTTON_MELEE, BUTTON_JUMP, BUTTON_PRONE, BUTTON_RELOAD, BUTTON_SPRINT, BUTTON_THROW, BUTTON_USE, BUTTON_ZOOM, type PlayerInput } from '../sim/movement.ts';
 import { THROWABLE_DEFS, getWeapon, weaponCode, type AltFire, type ThrowableKind, type WeaponDefinition } from '../sim/weapons.ts';
@@ -277,6 +277,8 @@ const LAUNCHER_DETOUR = 30;
 const PUSH_NOTICE = 12;
 /** An objective at least this far off is gone to by a lane of the bot's own (orderTarget). */
 const LANE_FROM = 50;
+/** Seconds a bot waits at a lift for the platform before it looks for another way (liftWait). */
+const LIFT_PATIENCE = 6;
 const VEHICLE_MEMORY = 12;
 /** Score bonus (weaponScore) for an anti-vehicle weapon against a target in a vehicle; melee is worse than useless. */
 const ANTI_VEHICLE_BONUS = 1.2;
@@ -387,6 +389,9 @@ export class BotBrain {
   private lane: { goal: Vec3; via: Vec3 | null } | null = null;
   /** A few steps aside after getting stuck on the same spot again and again (planSidestep). */
   private sidestep: { pos: Vec3; until: number } | null = null;
+  /** Waiting for a lift since (-1: not waiting), and until when routes keep off lifts after waiting too long. */
+  private liftWaitSince = -1;
+  private offLiftsUntil = -Infinity;
 
   private seq = 0;
   private readonly rng: () => number;
@@ -2754,7 +2759,9 @@ export class BotBrain {
       // (Only from about where it failed: one that failed on a moving lift, or before crossing off a cut-off patch,
       // says nothing about here.)
       const backedOff = !!np && view.tick < np.until && horizontalDistance(np.goal, goal) < 2 && Math.abs(np.goal.y - goal.y) < 1.5 && horizontalDistance(np.from, me.pos) < 2 && Math.abs(np.from.y - me.pos.y) < 1.5;
-      const found = backedOff ? null : view.nav.findPath(me.pos, goal);
+      // Tired of waiting for a lift: a way that keeps off lifts if there is one (else the lift after all).
+      const offLifts = view.tick < this.offLiftsUntil ? LIFT_FLAG : 0;
+      const found = backedOff ? null : ((offLifts && view.nav.findPath(me.pos, goal, offLifts)) || view.nav.findPath(me.pos, goal));
       if (!backedOff) {
         this.pathFails = found ? 0 : Math.min(this.pathFails + 1, 6);
         this.noPath = found ? null : { goal: { ...goal }, from: { ...me.pos }, until: view.tick + Math.min(TICK_RATE * 4, 6 << this.pathFails) };
@@ -2928,10 +2935,20 @@ export class BotBrain {
         const aboard = horizontalDistance(me, l.top) < l.half + 0.2 && Math.abs(me.y - l.top.y) < 0.3;
         if (aboard && Math.abs(me.y - l.end.y) > 0.5) return true;
       } else if (near(corner, l.start)) {
-        // Walking up to it: wait back from the edge while the platform is away.
-        if (Math.abs(l.top.y - l.start.y) > 0.3 && horizontalDistance(me, l.start) < 2.5) return true;
+        // Walking up to it: wait back from the edge while the platform is away. Waited a good while (a queue at a
+        // small platform: Fernwood Moon's north lift held bots 20–90 s): another way, if there is one, for a while.
+        if (Math.abs(l.top.y - l.start.y) > 0.3 && horizontalDistance(me, l.start) < 2.5) {
+          if (this.liftWaitSince < 0) this.liftWaitSince = view.tick;
+          if (view.tick - this.liftWaitSince < TICK_RATE * LIFT_PATIENCE) return true;
+          this.liftWaitSince = -1;
+          this.offLiftsUntil = view.tick + TICK_RATE * 20;
+          this.path = [];
+          this.lastPathTick = -Infinity;
+          return false;
+        }
       }
     }
+    this.liftWaitSince = -1;
     return false;
   }
 

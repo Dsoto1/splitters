@@ -766,8 +766,10 @@ export class Match {
       },
       emit: (ev) => this.pendingEvents.push(ev),
     });
-    // Doors and walls that block paths as navmesh flags: a bot's route can keep out of the ones shut to it.
+    // Doors and walls that block paths, and lift rides, as navmesh flags: a bot's route can keep out of the ones shut
+    // to it, and off a lift it's tired of waiting for.
     this.nav.markOpenings(this.scenario.openings());
+    this.nav.markLifts(liftLinks(map));
     this.encounters = new Encounters(map, {
       get tick() {
         return match.tick;
@@ -1048,6 +1050,7 @@ export class Match {
     this.nav = NavWorld.build([...this.geometry, ...propBoxes(this.map, true), ...blockBoxes(this.map, true), ...extra], this.navExtra(), [...navLinks(this.map.entities, this.physics, this.phys.gravity), ...liftLinks(this.map)]);
     old.destroy();
     this.nav.markOpenings(this.scenario.openings());
+    this.nav.markLifts(liftLinks(this.map));
     this.nav.places();
     this.sight.clear();
     return true;

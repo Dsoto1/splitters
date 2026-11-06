@@ -4,7 +4,7 @@ import { boxesToTriangles, type WorldBox } from '../map/geometry.ts';
 import type { MapDocument } from '../map/schema.ts';
 import type { ValidationIssue } from '../map/validate.ts';
 import type { Vec3 } from '../math.ts';
-import { OPENING_BITS, PLAYER } from '../sim/constants.ts';
+import { LIFT_FLAG, OPENING_BITS, PLAYER } from '../sim/constants.ts';
 import { trackGeometry } from '../map/track.ts';
 import { mapPortals, portalEntry, PORTAL_EXIT } from '../sim/portals.ts';
 import { mapZiplines, ziplineClearanceIssues, ziplineLinks } from '../sim/zipline.ts';
@@ -303,6 +303,30 @@ export class NavWorld {
       }
     });
     // Routes found before are still right for the routes that don't keep out of anything; failures with a mask are new.
+    this.noRoute.clear();
+  }
+
+  /**
+   * Lift rides as navmesh flags: the off-mesh links whose ends are a lift's two stops (Match: liftLinks) get
+   * LIFT_FLAG, so a route can be asked to keep off lifts. Once, at match start.
+   */
+  markLifts(lifts: readonly { start: Vec3; end: Vec3 }[]): void {
+    if (!lifts.length) return;
+    const mesh = this.navMesh;
+    const tile = mesh.getMaxTiles() === 1 ? mesh.getTile(0) : null;
+    const header = tile?.header();
+    if (!tile || !header) return;
+    const base = mesh.getPolyRefBase(tile);
+    const near = (x: number, y: number, z: number, p: Vec3) => hypot(x - p.x, z - p.z) < 3 && Math.abs(y - p.y) < 1.5;
+    for (let i = 0; i < header.offMeshConCount(); i++) {
+      const con = tile.offMeshCons(i);
+      const a = [con.pos(0), con.pos(1), con.pos(2)] as const;
+      const b = [con.pos(3), con.pos(4), con.pos(5)] as const;
+      if (!lifts.some((l) => near(a[0], a[1], a[2], l.start) && near(b[0], b[1], b[2], l.end))) continue;
+      const ref = base + con.poly();
+      const f = mesh.getPolyFlags(ref);
+      mesh.setPolyFlags(ref, (f.flags || 1) | LIFT_FLAG);
+    }
     this.noRoute.clear();
   }
 
