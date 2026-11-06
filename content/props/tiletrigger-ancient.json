@@ -15,7 +15,7 @@
       "name": "Ionic Column",
       "category": "Imperial Arena",
       "height": 6.0,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "im_brazier",
@@ -185,7 +185,7 @@
       "name": "Obelisk",
       "category": "Sands of Egypt",
       "height": 9.0,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "eg_sphinx",
@@ -237,7 +237,7 @@
       "name": "Papyrus Column",
       "category": "Sands of Egypt",
       "height": 7.0,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "eg_felucca",

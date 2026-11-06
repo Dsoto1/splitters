@@ -910,7 +910,7 @@
       "src": "Modular/Walls/Corner Post A.fbx",
       "name": "Wild West Corner Post A",
       "category": "Wild West",
-      "collide": "box",
+      "collide": "voxel",
       "scale": 0.016
     },
     {

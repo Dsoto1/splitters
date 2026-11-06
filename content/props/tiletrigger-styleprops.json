@@ -192,7 +192,7 @@
       "name": "Carved Pillar",
       "category": "Jungle Ruins",
       "height": 4.05,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "jg_altar_stone",

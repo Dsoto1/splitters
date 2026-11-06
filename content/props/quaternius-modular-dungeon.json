@@ -92,7 +92,7 @@
       "name": "Dungeon Pillar",
       "category": "Dungeon",
       "height": 4,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "dg_crate",

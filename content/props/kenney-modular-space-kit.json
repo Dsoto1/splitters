@@ -61,7 +61,7 @@
       "name": "Station Column",
       "category": "Orbital Station",
       "scale": 0.94,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "os_wall_panel",

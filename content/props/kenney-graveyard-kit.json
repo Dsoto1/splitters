@@ -91,7 +91,7 @@
       "name": "Stone Pillar",
       "category": "Gothic",
       "height": 3.0,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "obelisk",
@@ -99,7 +99,7 @@
       "name": "Obelisk",
       "category": "Gothic",
       "height": 3.2,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "cross_column",
@@ -107,7 +107,7 @@
       "name": "Cross Column",
       "category": "Gothic",
       "height": 2.6,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "iron_fence",

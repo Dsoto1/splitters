@@ -165,14 +165,14 @@
       "src": "Modular_Mine_Set.glb#^Cave_Pillar_A$",
       "name": "Cave Pillar",
       "category": "Mines & Caves",
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "mc_cave_pillar_wide",
       "src": "Modular_Mine_Set.glb#^Cave_Pillar_C$",
       "name": "Wide Cave Pillar",
       "category": "Mines & Caves",
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "mc_cave_ledge",

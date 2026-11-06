@@ -431,28 +431,28 @@
       "src": "Modular Dungeon Pieces/GLB format/pillar_01.glb",
       "name": "Dungeon Pillar 01",
       "category": "Dark Dungeon",
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "sd_pillar_02",
       "src": "Modular Dungeon Pieces/GLB format/pillar_02.glb",
       "name": "Dungeon Pillar 02",
       "category": "Dark Dungeon",
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "sd_pillar_large_01",
       "src": "Modular Dungeon Pieces/GLB format/pillar_large_01.glb",
       "name": "Dungeon Pillar Large 01",
       "category": "Dark Dungeon",
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "sd_pillar_large_02",
       "src": "Modular Dungeon Pieces/GLB format/pillar_large_02.glb",
       "name": "Dungeon Pillar Large 02",
       "category": "Dark Dungeon",
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "sd_stairs_large_01",

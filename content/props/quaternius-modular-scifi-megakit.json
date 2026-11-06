@@ -261,7 +261,7 @@
       "name": "Wall Pillar",
       "category": "Sci-Fi Base",
       "scale": 1,
-      "collide": "box",
+      "collide": "voxel",
       "yaw": -90
     },
     {
@@ -278,7 +278,7 @@
       "name": "Great Column (10 m)",
       "category": "Sci-Fi Base",
       "scale": 1,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "sf_beam",
@@ -314,7 +314,7 @@
       "name": "Round Column",
       "category": "Sci-Fi Base",
       "scale": 1,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "sf_column",
@@ -322,7 +322,7 @@
       "name": "Column",
       "category": "Sci-Fi Base",
       "scale": 1,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "sf_low_wall_band",

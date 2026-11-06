@@ -94,7 +94,7 @@
       "name": "Elevated Pillar",
       "category": "Neon Megacity",
       "height": 10,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "nc_power_pole",

@@ -145,7 +145,7 @@
       "name": "Sandstone Column",
       "category": "Desert City",
       "height": 3.62,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "dc_ornate_arch",

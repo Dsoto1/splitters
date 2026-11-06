@@ -56,7 +56,7 @@
       "name": "Round Column",
       "category": "Ruins",
       "height": 5,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "rn_column_square",
@@ -64,7 +64,7 @@
       "name": "Square Column",
       "category": "Ruins",
       "height": 5,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "rn_column_broken",

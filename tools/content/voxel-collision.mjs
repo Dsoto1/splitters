@@ -838,3 +838,119 @@ export function filledOpenings(tris, boxes, { pixel = AUDIT_PIXEL, min = MIN_OPE
   }
   return out.sort((a, b) => b.area - a.area);
 }
+
+/**
+ * Directions the slack audit looks along (degrees round y, from +x toward +z): along x, along z and both diagonals.
+ * Rounds come from every side, and a square box round a round shaft stands furthest off it at 45°.
+ */
+export const SLACK_ANGLES = [0, 45, 90, 135];
+/** Air at least this wide (metres) beside a prop's model, inside its collision, is slack that matters for play. */
+export const SLACK_WIDTH = 0.15;
+/** A prop carries slack when, seen along one of SLACK_ANGLES, such air runs over at least this share of its height. */
+export const SLACK_SHARE = 0.3;
+
+/** cos and sin of `deg` degrees, exact at multiples of 90°. */
+function turn(deg) {
+  const r = (deg * Math.PI) / 180;
+  const snap = (v) => (Math.abs(v) < 1e-12 ? 0 : Math.abs(Math.abs(v) - 1) < 1e-12 ? Math.sign(v) : v);
+  return [snap(Math.cos(r)), snap(Math.sin(r))];
+}
+
+/**
+ * The slack of a prop's collision (`boxes`, the triangles' frame) seen along `angle` (degrees round y from +x): the plane
+ * across the lines is cut into `pixel` squares, `across` the horizontal axis in it and y up. A line that crosses the
+ * collision, misses every triangle of the model and is reached from beside the prop without crossing the model (the
+ * slack of filledOpenings, never an opening) is slack: rounds aimed along it, past the model, stop in the air. Returns
+ * { dir, across (unit vectors), rows (rows of squares the collision covers), runs: [{ y, from, to }] }, each row's widest
+ * run of slack (metres: its middle's height, its ends along `across`).
+ */
+export function slackRuns(tris, boxes, angle, { pixel = AUDIT_PIXEL } = {}) {
+  const [c, s] = turn(angle);
+  const dir = [c, 0, s];
+  const across = [-s, 0, c];
+  const u = (p) => p[0] * across[0] + p[2] * across[2];
+  const flat = tris.map((t) => t.map((p) => [u(p), p[1]]));
+  const shadows = boxes.map((b) => {
+    const us = [u([b[0], 0, b[2]]), u([b[3], 0, b[2]]), u([b[0], 0, b[5]]), u([b[3], 0, b[5]])];
+    return [Math.min(...us), b[1], Math.max(...us), b[4]];
+  });
+  const runs = [];
+  if (!boxes.length) return { dir, across, rows: 0, runs };
+  let [U0, V0, U1, V1] = [Infinity, Infinity, -Infinity, -Infinity];
+  for (const t of flat)
+    for (const [pu, pv] of t) [U0, V0, U1, V1] = [Math.min(U0, pu), Math.min(V0, pv), Math.max(U1, pu), Math.max(V1, pv)];
+  for (const b of shadows) [U0, V0, U1, V1] = [Math.min(U0, b[0]), Math.min(V0, b[1]), Math.max(U1, b[2]), Math.max(V1, b[3])];
+  const W = Math.max(1, Math.ceil((U1 - U0) / pixel));
+  const H = Math.max(1, Math.ceil((V1 - V0) / pixel));
+  // Squares whose middle is inside a box's shadow: lines that cross the collision.
+  const mask = new Uint8Array(W * H);
+  for (const b of shadows)
+    for (let y = Math.max(0, Math.floor((b[1] - V0) / pixel)); y < Math.min(H, Math.ceil((b[3] - V0) / pixel)); y++)
+      for (let x = Math.max(0, Math.floor((b[0] - U0) / pixel)); x < Math.min(W, Math.ceil((b[2] - U0) / pixel)); x++) {
+        const cu = U0 + (x + 0.5) * pixel;
+        const cv = V0 + (y + 0.5) * pixel;
+        if (cu > b[0] && cu < b[2] && cv > b[1] && cv < b[3]) mask[y * W + x] = 1;
+      }
+  // Squares any triangle's shadow touches: the model's.
+  const model = new Uint8Array(W * H);
+  const h = pixel / 2;
+  for (const [a, b, q] of flat) {
+    const x0 = Math.max(0, Math.floor((Math.min(a[0], b[0], q[0]) - U0) / pixel));
+    const x1 = Math.min(W - 1, Math.floor((Math.max(a[0], b[0], q[0]) - U0) / pixel));
+    const y0 = Math.max(0, Math.floor((Math.min(a[1], b[1], q[1]) - V0) / pixel));
+    const y1 = Math.min(H - 1, Math.floor((Math.max(a[1], b[1], q[1]) - V0) / pixel));
+    for (let y = y0; y <= y1; y++)
+      for (let x = x0; x <= x1; x++) if (!model[y * W + x] && triPixel(U0 + (x + 0.5) * pixel, V0 + (y + 0.5) * pixel, h, a, b, q, 0, 1)) model[y * W + x] = 1;
+  }
+  // Reached from either side without crossing the model (filledOpenings: the ground closes the bottom, the sky doesn't
+  // open the top).
+  const outer = new Uint8Array(W * H);
+  const reach = [];
+  for (let p = 0; p < W * H; p++) {
+    const x = p % W;
+    if (!model[p] && (x === 0 || x === W - 1)) {
+      outer[p] = 1;
+      reach.push(p);
+    }
+  }
+  while (reach.length) {
+    const p = reach.pop();
+    const x = p % W;
+    for (const q of [x + 1 < W ? p + 1 : -1, x > 0 ? p - 1 : -1, p + W < W * H ? p + W : -1, p - W]) {
+      if (q < 0 || outer[q] || model[q]) continue;
+      outer[q] = 1;
+      reach.push(q);
+    }
+  }
+  let rows = 0;
+  for (let y = 0; y < H; y++) {
+    let covered = false;
+    let [best, from, run] = [0, 0, 0];
+    for (let x = 0; x < W; x++) {
+      const p = y * W + x;
+      if (mask[p]) covered = true;
+      run = mask[p] && !model[p] && outer[p] ? run + 1 : 0;
+      if (run > best) [best, from] = [run, x - run + 1];
+    }
+    if (covered) rows++;
+    if (best) runs.push({ y: round(V0 + (y + 0.5) * pixel), from: round(U0 + from * pixel), to: round(U0 + (from + best) * pixel) });
+  }
+  return { dir, across, rows, runs };
+}
+
+/**
+ * How much slack a prop's collision carries (slackRuns, along each of `angles`): for the direction where it is most,
+ * `share` of the rows the collision covers whose widest run is at least `width` (SLACK_WIDTH), `angle`, and `width` the
+ * widest run seen along it (metres) at height `y`. The prop carries slack when `share` is SLACK_SHARE or more.
+ */
+export function propSlack(tris, boxes, { pixel = AUDIT_PIXEL, angles = SLACK_ANGLES, width = SLACK_WIDTH } = {}) {
+  let worst = { share: 0, angle: angles[0], width: 0, y: 0 };
+  for (const angle of angles) {
+    const { rows, runs } = slackRuns(tris, boxes, angle, { pixel });
+    const wide = runs.filter((r) => r.to - r.from >= width - 1e-6);
+    const widest = runs.reduce((w, r) => (r.to - r.from > w.to - w.from + 1e-9 ? r : w), { y: 0, from: 0, to: 0 });
+    const share = rows ? round(wide.length / rows) : 0;
+    if (share > worst.share || (share === worst.share && widest.to - widest.from > worst.width + 1e-9)) worst = { share, angle, width: round(widest.to - widest.from), y: widest.y };
+  }
+  return worst;
+}

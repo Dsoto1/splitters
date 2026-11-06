@@ -48,7 +48,7 @@
       "name": "Stone Obelisk",
       "category": "Jungle Ruins",
       "height": 5.05,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "jt_temple_spire",
@@ -156,7 +156,7 @@
       "name": "Collapsed Column",
       "category": "Jungle Ruins",
       "height": 0.94,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "jt_broken_column",
@@ -164,7 +164,7 @@
       "name": "Broken Column",
       "category": "Jungle Ruins",
       "height": 2.95,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "jt_sarcophagus",

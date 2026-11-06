@@ -40,7 +40,7 @@
       "name": "Column",
       "category": "Medieval",
       "height": 3.4,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "wood_support",
