@@ -100,10 +100,12 @@ Bomb plants (0.5 → 0.3 a match) a little down on the samples, and ten CTF maps
 <!-- /bots-a -->
 
 <!-- setpieces -->
-### Set pieces, part 2: MapMaker (`wip/setpieces-2`, agent, 2026-11-06; from `wip/setpieces-3`, main da59209d merged in; CI on `check/setpieces-2`)
+### Set pieces, part 2: MapMaker (`wip/setpieces-2`, agents, 2026-11-06; from `wip/setpieces-3`, main adad4de7 merged in; CI on `check/setpieces-2`: see below; not landed)
 What was built: docs/SET_PIECES_PLAN.md, "As built: part 2" and "St. John's (as built)"; how to use it:
 docs/BUILDING_KIT.md, "Set pieces". MapMaker places, selects, themes, explodes and saves set pieces; the coverage map
-has all 39; St. John's has the Argonne Gate carriageway (with an east tower) and a DeKoven-Smythe skybridge.
+has all 39; St. John's has the Argonne Gate carriageway (with an east tower) and a DeKoven-Smythe skybridge. The first
+agent built the MapMaker side and the coverage map and was stopped by an interrupt before St. John's was saved; the
+second placed St. John's (from the start, in MapMaker) and finished.
 - **Where the code is:** `packages/client/src/editor/editorApp.ts` (the set piece tool and ghost, picking a part as its
   placement, the box select, the tab and its panel, the inspector, Explode, the save dialog, My set pieces),
   `editorView.ts` (the piece ghost, outlines, port marks), `paletteCatalog.ts` (the `setpieces` pane, families,
@@ -118,15 +120,38 @@ has all 39; St. John's has the Argonne Gate carriageway (with an east tower) and
   `coverageMap.test.ts` (every set piece); client `setPieceLibrary.test.ts`; e2e editorux `editorSetPieceChecks` (the
   tab, ghost and refusal, turn and mirror, select as one, move and undo, explode and undo, box select, save, export
   and import, the ports warning) and the coverage flow's set piece count.
+- **St. John's, proof** (the exported file): validate-map OK (0 issues); z-fight audit 0; MapMaker's overlaps 69 spots
+  before and after, none new; the navigation audit no traps and no findings (two new islands: the closed rooms over
+  the arch and in the tower); spawns (41), objectives, logic and modes unchanged; bots sent each way in a match walk
+  Exeter Street to the drill field through the passage and back, into Knight by its new door and back, through the
+  east tower, and DeKoven's first floor to Smythe's over the bridge and back. Screenshots (street, drill field,
+  inside, before and after) are in the session scratchpad, `sp2b/shots/`.
 - **Pitfalls:** MapMaker's document keeps the placements: draw, pick and check `viewDoc` (expanded), and map a part
   id to its placement with `expansion.partOf`. Driving MapMaker with Playwright on a big map: click palette cards by
-  mouse position and wait for the tool (Playwright's own click can wait forever on a busy page), and run long
-  drivers against `vite preview`, not the dev server (it reloads when a source file changes).
-- **For the owner:** the other pack facades (concrete, corrugated, manor brick, clapboard, roman, desert, harbour,
-  snow, timber frame...) still draw their ground band across doorways (visual only): stopping them at doorways, as
-  the stone ones now do, changes those packs' look, so it waits for a yes. St. John's gate east tower (two storeys,
-  Welles's stone, a door onto the drill field) and the skybridge's site (DeKoven to Smythe over Church Street) are
-  the agent's choices, per the plan.
+  mouse position and wait for the tool (Playwright's own click can wait forever on a busy page), run long drivers
+  against `vite preview`, not the dev server (it reloads when a source file changes), keep the window 1280 px wide or
+  more (narrower, the inspector folds away), and point the view at the sky while editing through the inspector (on
+  St. John's, software rendering of the campus was most of the time). Screenshots with the view's photo camera
+  (`view.photoCamera()`, as capture-map-shots.mjs does) come out on Medium graphics: on High every view drew the
+  player's own picture. **Every MapMaker edit lowers the ground under every level floor and never raises it back**
+  (`withTerrainUnderFloors`, older than set pieces): a big floor moved field by field lowers the ground under each
+  place it passes. A copy of Welles's 56 m slab, squared up and then moved before it was cut down to the tower's
+  paving, lowered Knight's whole front by 0.7 m on the first try (thrown away): size and place a copied floor first
+  and square it up last (turned floors are never lowered under).
+- **For the owner:**
+  - The other pack facades (concrete, corrugated, manor brick, clapboard, roman, desert, harbour, snow, timber
+    frame...) still draw their ground band across doorways (visual only): stopping them at doorways, as the stone ones
+    now do, changes those packs' look, so it waits for a yes.
+  - St. John's: the gate's east tower (two storeys, Welles's stone, a door onto the drill field, a window on Exeter
+    Street) and the skybridge's site (DeKoven to Smythe over Church Street, the one pair of halls that face each other
+    at a span a skybridge takes, with short block links to each hall's first floor) are the agents' choices, per the
+    plan.
+  - King of the Hill: Church Street's hill (`hill_2938`, radius 5 m) is on the street by the bridge's south end, and a
+    hill counts anyone up to 3.5 m over its floor (4.04 m there); the bridge's own floor is at 4.0 m, so a floor at
+    4.25 m now runs through the bridge (level with the links' steps) and nobody inside holds the hill. Moving the hill
+    a few metres instead would be the other way; it was left where it was (objectives unchanged).
+  - MapMaker's ground lowering (the pitfall above) is a candidate for the MapMaker overhaul: lower the ground only
+    under what an edit moved and put it back when a floor moves away, or work it out on load only.
 
 ### Set pieces, part 1: data, expansion, first content (`wip/setpieces`, agents, 2026-11-06; from main 774a28ce, main e18a175e merged in; green on `check/setpieces` at 09af09cd, run 42211217797; not landed)
 Plan and what it settled: docs/SET_PIECES_PLAN.md ("As built: part 1"); how to add a piece: docs/CONTENT_PIPELINE.md,
