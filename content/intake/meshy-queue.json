@@ -72,8 +72,8 @@
       "kind": "vehicle",
       "use": "vehicle-part",
       "url": "https://www.meshy.ai/s/wpwiGq",
-      "license": "owned (owner's Meshy account)",
-      "note": "the owner's wheel for the buggy (replaces the jeep)"
+      "license": "CC0 (Meshy community, per the owner, 2026-11-06: \"I did not make any, they are Meshy community\"; recorded as owned until then)",
+      "note": "the wheel for the buggy (replaces the jeep)"
     },
     {
       "id": "meshy_buggy",
@@ -81,8 +81,8 @@
       "kind": "vehicle",
       "use": "vehicle",
       "url": "https://www.meshy.ai/s/hHUmqb",
-      "license": "owned (owner's Meshy account)",
-      "note": "the owner's buggy body, without wheels (replaces the jeep)"
+      "license": "CC0 (Meshy community, per the owner, 2026-11-06: \"I did not make any, they are Meshy community\"; recorded as owned until then)",
+      "note": "the buggy body, without wheels (replaces the jeep)"
     },
     {
       "id": "meshy_prism_cat",

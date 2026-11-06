@@ -2,7 +2,7 @@ import { join } from 'node:path';
 import { NodeIO } from '@gltf-transform/core';
 import { describe, expect, it } from 'vitest';
 import { fitHands, rigHand } from '../hands.mjs';
-import { bodySkin, fingerSkin, fixBodySkin } from '../skinfix.mjs';
+import { bindRigid, bodySkin, fingerSkin, fixBodySkin } from '../skinfix.mjs';
 
 // The real rig: its joints at rest, world space.
 const add = (a, b) => [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
@@ -131,5 +131,45 @@ describe('a look\'s own skin weights (fixes.skin)', () => {
     // The hand vertex is fitHands' business.
     expect(of(4)).toEqual({ hand_r: expect.closeTo(0.9, 5), thigh_l: expect.closeTo(0.1, 5) });
     expect(bodySkin({ tips: 0.2 })).toBeNull();
+  });
+
+  it('`rigid`: a hard part held whole by one joint in the download\'s pose; the skin round it eased; a part of the excepted joint left', () => {
+    // Source joints (a download's) and the rig joint each goes to.
+    const rigOf = ['pelvis', 'spine_02', 'spine_03', 'neck_01', 'Head'];
+    // A download 1 m tall (the first two points); a pack's box behind the back at half height, eased over 0.05.
+    const pts = [
+      [0, 0, 0],
+      [0, 1, 0],
+      [0, 0.5, -0.15], // in the pack
+      [0.15, 0.45, -0.12], // in the pack's second box
+      [0, 0.5, -0.07], // 0.03 in front of the box: eased
+      [0, 0.5, 0.1], // the chest's front: left alone
+      [0, 0.55, -0.15], // in the box, but the helmet's (held most by the head): left alone
+    ];
+    const n = pts.length;
+    const Jv = new Uint16Array(n * 4);
+    const Wv = new Float32Array(n * 4);
+    for (let v = 0; v < n; v++) {
+      Jv.set([1, 3, 0, 0], v * 4); // half spine_02, half neck_01: pulled two ways
+      Wv.set([0.5, 0.5, 0, 0], v * 4);
+    }
+    Jv.set([4, 3, 0, 0], 6 * 4);
+    Wv.set([0.75, 0.25, 0, 0], 6 * 4);
+    const report = bindRigid({ count: n, at: (v) => pts[v], J: Jv, W: Wv, rigOf, regions: [{ joint: 'spine_03', box: [[-0.2, 0.4, -0.2, 0.2, 0.6, -0.1], [0.1, 0.4, -0.2, 0.3, 0.5, -0.1]], blend: 0.05, except: '^Head$' }] });
+    expect(report).toEqual([{ joint: 'spine_03', bound: 2, eased: 1 }]);
+    const of = (v) => Object.fromEntries([0, 1, 2, 3].filter((k) => Wv[v * 4 + k] > 1e-6).map((k) => [rigOf[Jv[v * 4 + k]], Wv[v * 4 + k]]));
+    expect(of(2)).toEqual({ spine_03: 1 });
+    expect(of(3)).toEqual({ spine_03: 1 });
+    const eased = of(4);
+    // 0.6 of the way out: smoothstep 0.648, so 0.352 on the chest and the rest shared as before.
+    expect(eased.spine_03).toBeCloseTo(0.352, 3);
+    expect(eased.spine_02).toBeCloseTo(0.324, 3);
+    expect(eased.neck_01).toBeCloseTo(0.324, 3);
+    expect(of(5)).toEqual({ spine_02: 0.5, neck_01: 0.5 });
+    expect(of(6)).toEqual({ Head: 0.75, neck_01: 0.25 });
+    // A joint the download lacks says so; the body and finger parts of fixes.skin leave `rigid` to the build.
+    expect(() => bindRigid({ count: 1, at: () => [0, 0, 0], J: new Uint16Array(4), W: new Float32Array([1, 0, 0, 0]), rigOf, regions: [{ joint: 'thigh_l', box: [0, 0, 0, 1, 1, 1] }] })).toThrow(/no joint for thigh_l/);
+    expect(bodySkin({ rigid: [{ joint: 'spine_03', box: [0, 0, 0, 1, 1, 1] }] })).toBeNull();
+    expect(fingerSkin({ rigid: [{ joint: 'spine_03', box: [0, 0, 0, 1, 1, 1] }] })).toEqual({});
   });
 });

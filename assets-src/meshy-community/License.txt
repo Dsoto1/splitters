@@ -111,6 +111,26 @@ Props (built by tools/content/prepare-props.mjs from the textured GLB downloads)
 - "Rock Pile" (remeshed FBX, file dated 2026-05-20; pack
   meshy-community-rock-pile)  -> prop rock_pile.
 
+Recorded as owned until the owner said, later on 2026-11-06: "I did not make
+any, they are Meshy community." The audit of that morning had kept them owned
+for the records below; the owner's word settles them as Meshy Community, CC0
+per the owner, post URLs pending from the owner:
+
+- The airliner shell (prop airliner_shell, pack meshy-community-airliner,
+  renamed from meshy-owned-airliner): the refined GLB of 2026-11-04, Meshy
+  preview and refine tasks 01a1a451-1dda-77ed-82ec-810c24ac1e9a and
+  01a1a451-ee8d-72d3-99ea-48063cd52abe on record, built by
+  tools/content/prepare-props.mjs: cut to a hero prop's budget, the small red
+  mark on the engine nacelles painted out, the cabin doors cut open
+  (tools/content/fuselage-profile.mjs).
+- "Tactical Off-Road Beast" (2026-10-29, the share link the owner gave,
+  https://www.meshy.ai/s/hHUmqb)  -> vehicles/offroad_buggy.glb (the buggy)
+- "Rugged Off-Road Tire" (2026-10-29, the share link the owner gave,
+  https://www.meshy.ai/s/wpwiGq)  -> vehicles/offroad_tire.glb (the buggy's
+  wheels)
+  Both are in pack meshy-community-arsenal in content/guns.json (moved from
+  meshy-owned-guns), built by tools/content/prepare-guns.mjs.
+
 Gear (pack meshy-community-gear in content/gear.json, built by
 tools/content/prepare-gear.mjs from the textured GLB downloads of 2026-10-29):
 "Military Helmet", "Steel Helmet", "Helmet Mk 2", "Aviator helmet" and "Viking

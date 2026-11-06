@@ -8,40 +8,23 @@ taken from any pack) and ship as part of it.
 The owner's rule (2026-11-06): Meshy models from the owner's Drive are Meshy
 Community CC0 unless the owner says they made them. Only models the owner says
 they made, or that we generate through the Meshy API with the owner's
-approval, are owned. The provenance audit of 2026-11-06 kept these, each for
-the reason given; everything else that was recorded here came from the Drive
-and is now listed in assets-src/meshy-community/License.txt and
-assets-src/meshy-community-characters/License.txt (HANDOFF.md, "Intake of
-2026-11-06", has the full list for the owner to confirm).
+approval, are owned. The provenance audit of 2026-11-06 kept four groups here,
+each for a reason on record; the owner then said of three of them, the same day:
+"I did not make any, they are Meshy community." The airliner shell, the buggy
+and its tire, and the Alien Biker are listed in
+assets-src/meshy-community/License.txt and
+assets-src/meshy-community-characters/License.txt now. What stays:
 
 - The mining machines (props mining_excavator and mining_haul_truck, pack
   meshy-owned-mining, for Iron Maw): generated on 2026-10-30 with Meshy's
   text-to-3D through our Meshy API on the owner's subscription, at the owner's
   request (preview tasks 01a18e38-f0e4-7577-8f3c-ea46f6cdd3a2 and
   01a18e38-f9bb-722c-9547-d9ad2cbce10e, with their refine tasks), built by
-  tools/content/prepare-props.mjs from the textured GLB downloads.
-- The airliner shell (prop airliner_shell, pack meshy-owned-airliner): the
-  refined GLB of 2026-11-04 (Meshy preview task
-  01a1a451-1dda-77ed-82ec-810c24ac1e9a, refine task
-  01a1a451-ee8d-72d3-99ea-48063cd52abe: a text-to-3D generation on the
-  owner's subscription, both tasks created 2026-11-04 02:09 UTC while the
-  airliner was being made; the map notes of 01:32 UTC that day say the model
-  needed the owner's go-ahead on Meshy credits), built by
-  tools/content/prepare-props.mjs: cut to a hero prop's budget, the small red
-  mark on the engine nacelles painted out, the cabin doors cut open. The owner
-  to confirm.
-- The buggy and its tire (models vehicles/offroad_buggy.glb and
-  vehicles/offroad_tire.glb, pack meshy-owned-guns in content/guns.json): the
-  owner's own models, given as share links from the owner's Meshy account
-  (meshy.ai/s/hHUmqb, meshy.ai/s/wpwiGq) in the intake queue of 2026-10-29
-  ("owned (owner's Meshy account)"), built by tools/content/prepare-guns.mjs.
-- The Alien Biker (character meshy_alienbiker, pack meshy-owned): "stylized
-  alien biker", from the owner's Drive (2026-11-01), confirmed by the owner as
-  their own model (2026-11-01); rebuilt from its re-rigged download on
-  2026-11-05 by tools/content/prepare-meshy-characters.mjs.
+  tools/content/prepare-props.mjs from the textured GLB downloads. We made
+  them through the API with the owner's approval, so they were never the
+  owner's own downloads: they stay owned.
 
-Each character's download file name (or Meshy task IDs) is recorded in
-content/meshy.lock.json, the props' in content/props.lock.json and the
-vehicles' in content/guns.lock.json. The raw downloads are not kept in the repo.
+Their download file names are recorded in content/props.lock.json. The raw
+downloads are not kept in the repo.
 
 Provenance: Meshy, owned.

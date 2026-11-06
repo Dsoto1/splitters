@@ -213,8 +213,11 @@ export const RETIRED_LOOKS: Readonly<Record<string, string>> = {
   // Mischief) stay; their hands get the palm-orientation fix first.
   'core.bill': 'core.dale',
   // Owner, 2026-11-06 ("Retire bamboo, add the new turtle"): Bamboo off the roster (files, manifest and portrait
-  // kept); saved choices and bot sets play the tortoise, the large animal that came in with it.
+  // kept); saved choices and bot sets play the tortoise, the animal that came in with it.
   'core.panda': 'core.tortoise',
+  // Owner, 2026-11-06 (after the intake that gave it the light-blue astronaut): Capt. Nova off the roster (files,
+  // manifest and portrait kept); saved choices and bot sets play Spacewalker, the nearest astronaut.
+  'core.nova': 'core.astronaut',
 };
 
 /**

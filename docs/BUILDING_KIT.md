@@ -1032,8 +1032,8 @@ from it as drawn).
 
 ## Airliner (shell and cabin kit)
 
-MapMaker category **Airliner Cabin**. The **Airliner (Widebody Shell)** (`prop.airliner_shell`) is the owner's
-Meshy widebody (white livery, 68.4 m long, 59.9 m span, 21.6 m to the fin tip: a real widebody grown about a sixth so
+MapMaker category **Airliner Cabin**. The **Airliner (Widebody Shell)** (`prop.airliner_shell`) is a Meshy
+Community widebody (CC0) (white livery, 68.4 m long, 59.9 m span, 21.6 m to the fin tip: a real widebody grown about a sixth so
 a two-aisle cabin fits). Its doors are cut open (L1/R1, L2/R2, the over-wing exits, the rear doors), and it collides
 as boxes: wings, engines, the fin and stabilisers, the gear, and the body as hollow bands round the cabin with gaps at
 the doors, so the cabin kit goes inside it. Alone it is an empty hull you can walk into; with the kit it is a plane.

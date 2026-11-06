@@ -2,7 +2,11 @@
 // shared weighting leaves (docs/CHARACTERS.md, "A look's own skin weights"). Opt-in per look: a look without
 // `fixes.skin` is weighted exactly as before.
 //
-// Two parts:
+// Three parts:
+// - hard parts bound whole to one joint (`rigid`, `bindRigid` below), in the download's own pose before the build turns
+//   its arms out to the rig's T-pose (prepare-meshy-characters.mjs `pose`): a back pack the download's rig held partly
+//   by the arms, the neck and the head came out of that turn already pulled out of shape, and bent with them in play
+//   (Starfarer's). Only a build from the download applies it (rehand-built.mjs keeps what the file has);
 // - the fingers, weighted by hands.mjs `fitHands` with the look's options (`tips`, `knuckle`, `joints`, `lanes`,
 //   `fingers`, each for both hands or under `l` / `r`); fitHands shares the hand's weights out afresh every run, so
 //   these are applied on every build and rehand alike;
@@ -25,6 +29,78 @@ export function fingerSkin(skin) {
   if (!skin) return {};
   const pick = (o) => Object.fromEntries(Object.entries(o ?? {}).filter(([k]) => ['tips', 'knuckle', 'joints', 'lanes', 'fingers'].includes(k)));
   return { ...pick(skin), ...(skin.l ? { l: pick(skin.l) } : {}), ...(skin.r ? { r: pick(skin.r) } : {}) };
+}
+
+/**
+ * `fixes.skin.rigid`: hard parts bound whole to one joint, on a download's skin in its own pose. Each region is
+ * `{ joint, box, blend?, except? }`:
+ * - `joint`: the rig joint the part rides (`spine_03`, the chest);
+ * - `box`: one box `[x0, y0, z0, x1, y1, z1]` or a list of them, in shares of the download's height in its own pose,
+ *   feet at y = 0, x and z from its origin, +x its left and +z its front (the manifest's `landmarks` frame): every
+ *   vertex inside is held by `joint` alone;
+ * - `blend` (a share of the height, 0.03 unless set): outside the boxes, a vertex this close eases from its own
+ *   weights to `joint` (smoothstep by its distance), so the skin round the part has no hard edge;
+ * - `except`: a pattern of rig joints; a vertex held most by one is left as it is (the helmet's back where a pack's
+ *   tank sits against it: `^Head$`).
+ * `at(v)` is vertex v's place in the download's pose; `J`/`W` (four per vertex, the download's joint indices) are
+ * changed in place; `rigOf[j]` is source joint j's rig joint. Returns { bound, eased } per region.
+ */
+export function bindRigid({ count, at, J, W, rigOf, regions }) {
+  const pos = new Float64Array(count * 3);
+  let low = Infinity;
+  let high = -Infinity;
+  for (let v = 0; v < count; v++) {
+    const p = at(v);
+    pos[v * 3] = p[0];
+    pos[v * 3 + 1] = p[1];
+    pos[v * 3 + 2] = p[2];
+    low = Math.min(low, p[1]);
+    high = Math.max(high, p[1]);
+  }
+  const H = high - low;
+  const report = [];
+  for (const region of regions) {
+    const target = rigOf.indexOf(region.joint);
+    if (target < 0) throw new Error(`fixes.skin.rigid: the download has no joint for ${region.joint}`);
+    const boxes = (Array.isArray(region.box[0]) ? region.box : [region.box]).map((b) => [b[0] * H, low + b[1] * H, b[2] * H, b[3] * H, low + b[4] * H, b[5] * H]);
+    const blend = (region.blend ?? 0.03) * H;
+    const except = region.except ? new RegExp(region.except) : null;
+    // Distance from a point to the nearest box (0 inside one).
+    const away = (x, y, z) => {
+      let best = Infinity;
+      for (const b of boxes) {
+        const dx = Math.max(b[0] - x, 0, x - b[3]);
+        const dy = Math.max(b[1] - y, 0, y - b[4]);
+        const dz = Math.max(b[2] - z, 0, z - b[5]);
+        best = Math.min(best, Math.hypot(dx, dy, dz));
+      }
+      return best;
+    };
+    let bound = 0;
+    let eased = 0;
+    for (let v = 0; v < count; v++) {
+      const d = away(pos[v * 3], pos[v * 3 + 1], pos[v * 3 + 2]);
+      if (d >= blend && d > 0) continue;
+      let own = 0;
+      for (let q = 1; q < 4; q++) if (W[v * 4 + q] > W[v * 4 + own]) own = q;
+      if (except && except.test(rigOf[J[v * 4 + own]] ?? '')) continue;
+      // Inside: the joint alone. Within the blend: eased toward it.
+      const k = d <= 0 ? 1 : 1 - ((t) => t * t * (3 - 2 * t))(d / blend);
+      const acc = new Map();
+      for (let q = 0; q < 4; q++) if (W[v * 4 + q] > 0) acc.set(J[v * 4 + q], (acc.get(J[v * 4 + q]) ?? 0) + W[v * 4 + q] * (1 - k));
+      acc.set(target, (acc.get(target) ?? 0) + k);
+      const top = [...acc].filter(([, w]) => w > 1e-6).sort((a, b) => b[1] - a[1]).slice(0, 4);
+      const sum = top.reduce((s, [, w]) => s + w, 0);
+      for (let q = 0; q < 4; q++) {
+        J[v * 4 + q] = top[q]?.[0] ?? 0;
+        W[v * 4 + q] = top[q] ? top[q][1] / sum : 0;
+      }
+      if (d <= 0) bound++;
+      else eased++;
+    }
+    report.push({ joint: region.joint, bound, eased });
+  }
+  return report;
 }
 
 /** The body part of a look's `fixes.skin`, or null when it has none. */

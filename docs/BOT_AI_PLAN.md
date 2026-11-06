@@ -263,10 +263,27 @@ against 1.34–2.57.)
 3. **Playbooks per mode:** CTF, King of the Hill, Bomb, Hostage, Elimination, Forts, co-op and zombies, the vehicle
    modes.
    - Where possible they are data: role shares, staging distances, timings.
+4. **Route variety** (moved up from Phase C, owner, 2026-11-06).
+   - **The owner, playtesting CTF after Phase A:** "Many maps focus them into one direction or path. Very few 'recon'
+     teams, or groups that take a different route."
+   - **Why:** today every bot takes the shortest route, so a whole team takes the same lane.
+   - **Several distinct routes per trip.** Find the shortest, then search again with its corridor made costly, giving
+     two or three corridors that really differ. Cache them per map for the common trips: spawn → objective, base →
+     flag.
+   - **The director spreads its groups across them:** a main push, flankers on the other routes, and a **recon pair**
+     that goes ahead on a side route and reports what it sees to the team. With the roles from item 2.
+   - **Crowd cost:** a corridor already carrying many teammates' routes costs more to the next bot planning a route,
+     so loose bots spread out by themselves.
+   - **Death cost:** where teammates died in the last minute costs more, so a team stops feeding the same choke.
+     Updated once a second per side.
+   - **Measure it in the scorecard:** how many distinct corridors each team uses on the way to the objective, and the
+     share on the busiest one, per map. Maps with only one way through (a single bridge) are listed, not failed.
 
 **Done when:**
 - the scorecard shows regular captures on every CTF map, hills contested and held, bombs planted and defused, and
   hostages rescued;
+- on maps with more than one way to the objective, each team uses at least two routes, and no single corridor
+  carries most of a team;
 - the owner playtests it.
 
 ## Phase C: navigation depth
@@ -279,8 +296,8 @@ against 1.34–2.57.)
 3. **Crowds:** bots steer round each other in tunnels, doorways and on stairs, using local avoidance on the existing
    spatial grid. This should cut stuck recoveries.
 4. **Smarter routes:**
-   - area costs that prefer cover and avoid spots where teammates died recently, updated once a second per side;
-   - several route choices for flanks;
+   - area costs that prefer cover (avoiding spots where teammates died, and choosing among several routes, moved
+     to Phase B item 4);
    - a cache for common trips (spawn → objective);
    - a per-tick search budget for 48 v 48 and the huge maps.
 

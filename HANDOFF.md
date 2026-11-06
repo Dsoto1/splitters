@@ -558,6 +558,68 @@ down knifed each other before the last landed); CI passes every one of them. Aft
 licence fields and docs changed (979bd80c and later).
 <!-- /intake-1106 -->
 
+<!-- intake-1106b -->
+### Intake 11-06 follow-up: Shellback standard, Capt. Nova retired, Starfarer's pack, four licences (`wip/intake-1106b`, agent, 2026-11-06; from main a07cb65b; green on `check/intake-1106b` at 518838fa, run 42283524919 (full suite: unit, maps, build, check, perf, 11 e2e shards); not landed)
+The owner's answers on the 11-06 intake (below, "Owner's answers on the 11-06 intake"). Scratch: the agent scratchpad
+`i1106b/` (tools, shots, frames).
+- **Shellback** (`meshy_tortoise`): large → standard (`size` left out). Rebuilt from the download: byte-identical,
+  since size isn't part of the build, only of the generated look. Character Select draws it at 1.79 m (was 2.11),
+  100 health, speed ×1 (was 115, ×0.94). The portrait was recaptured and is unchanged: the renderer builds every
+  portrait body at 1.8 m, so `zoom 1.25` still frames the head in the shell's dome. Hit shapes: the measured table is
+  at 1.8 m and unchanged, and the audit passes (top 0.02, bottom −0.08, head 0.04, 89% inside). In play they scale
+  ×1.0 now instead of ×1.18 (`shots/hitboxes-tortoise-{before,after}.png`). Grip audit: unchanged (`audit-after/`: score 7, spikes fp off, rifle drawn R/L 0.02/0.19 m, the same numbers as the intake's final audit). Shots:
+  `shots/shellback-before-after.png` (Character Select, third and first person).
+- **Capt. Nova retired:** `RETIRED_LOOKS['core.nova'] = 'core.astronaut'` (Spacewalker). Manifest, files, portrait
+  and bot profile are kept, as for the other retired looks. The Knights vs Space Crew set's Capt. Orion is a
+  Spacewalker now; no map or other preset named Nova. Tests that used Nova as a plain soldier use Spacewalker.
+  `botSet.test.ts` now checks that a set naming a retired look plays its replacement, and that no shipped set names a
+  retired look. Looks an NPC role keeps are left out of that check: `classic_mix`'s Nub names `core.goblin` (retired
+  2026-11-03, kept for the goblin NPC role), so Nub plays Grizzelda. **Owner:** keep that, or name another look?
+- **Starfarer's pack** (`meshy_darkastronaut`). What pulled it, measured over the rig's clips (`tools/packpull.mjs`;
+  heat maps `pack/heat-all.png`): the download's rig spread the pack over spine_03 (30% of its weight), neck_01 (19),
+  spine_02 (14), each clavicle (12), and spine_01, Head, pelvis and the upper arms.
+  - The tank on top rode the neck and head: it tipped when aiming up or down and when running.
+  - The box's upper sides rode the clavicles and upper arms: they sheared with the arms.
+  - The bottom rode spine_02, spine_01 and the pelvis: it bent in a crouch.
+  - The arms' share had also flared the lower corners when the build turned the arms out to the T-pose. So the bind
+    pose itself had a skirt, shown as a ring of lights round the waist when crouched.
+
+  The fix is a new manifest option, `fixes.skin.rigid` (skinfix.mjs `bindRigid`; docs/CHARACTERS.md, "A look's own
+  skin weights"). It works in the download's own pose, in `pose()` before the T-pose turn: boxes in the landmarks
+  frame, every vertex inside held by one joint, a `blend` band round them, an `except` pattern. Starfarer binds the
+  pack box and the tank to spine_03, blend 0.025, except `^Head$`: 1315 vertices bound, 377 eased. The body options
+  (`hops`, `clamp`, `smooth`) can't do this: they apply to the whole body, keep the neck and clavicle shares that pull
+  hardest, and can't undo the flare already in the bind pose.
+
+  Stretch over the rig's clips (`tools/packstretch.mjs`): the pack's own edges went from p95 1.3–1.6 and max 2.0–3.6
+  per clip to 1.00 (rigid). Where the pack meets moving skin, the stretch now gathers in two places:
+  - the tank's front against the helmet's back: 4–8 mm edges, up to about 14×;
+  - the pack's bottom against the lumbar plate in a crouch: up to about 9×.
+
+  In the frames these read as a crease between the two teal shells and as a dark lower back under the pack; neither
+  shows as a tear. A wider blend (0.05) would also ease the backs of the upper arms, so it stays at 0.025. The hands
+  are unchanged (same build log). Hit shapes were re-measured: torso r 0.20 → 0.21, as the pack no longer flares.
+  Grip audit: score 3 as before, the hands and their numbers the same; 1–2 new stretched edges at spine_03 in the Character Select hold (the junctions above), the worst edge still the left forearm's 12.3×.
+
+  Frames come from the game's own animator (the character viewer, stepped 16 ms a frame): `pack/frames-before.png`
+  and `frames-after1.png`. Side by side: `pack/cmp1-aim.png`, `cmp1-run.png`, `cmp1-turn-crouch.png`, and close-ups
+  `cmp1-close.png` and `cmp1-crouchclose.png`.
+- **Licences:** the owner, "I did not make any, they are Meshy community." Relabelled as Meshy Community CC0 the same
+  way as the audit's:
+  - the airliner shell: pack `meshy-owned-airliner` renamed `meshy-community-airliner`; its task IDs stay on record;
+    palette atlas regrouped offline; fuselage-profile.mjs points at the new file;
+  - the buggy and tire: into `meshy-community-arsenal`, with the owner's share links as their `url`;
+    `meshy-owned-guns` removed;
+  - the Alien Biker: manifest CC0, community model "stylized alien biker"; the lock relabelled without a rebuild;
+    `character-manifests.test.mjs` expects community now, and checks the owned path on a copy.
+
+  The mining machines stay owned. Updated: the licence files (`assets-src/meshy-owned`, `meshy-community`,
+  `meshy-community-characters`), ASSET_SOURCES, CONTENT_PIPELINE, BUILDING_KIT, VEHICLES and the intake queue's
+  buggy and wheel. content:check is green, including the check that each character's lock pack matches its
+  manifest's licence.
+- **Checks:** CHECKS_PENDING
+<!-- /intake-1106b -->
+
 <!-- shingle -->
 ### Shingle Point asset refresh (`wip/shingle`, agents, 2026-11-05/06; main 5b167034 merged in; green on `check/shingle`)
 Owner's decision: same layout and gameplay, every dated asset replaced, so it compares fairly with MAP 21 (a new map,
@@ -1440,6 +1502,7 @@ variant for MAP 21.
   where the fighting starts, not a scripted arrival.
 
 ### Owner's answers on the 11-06 intake (2026-11-06), for the follow-up
+**Done on `wip/intake-1106b`:** see "Intake 11-06 follow-up" near the top.
 - **Retire Capt. Nova** (owner, later the same day). Add `core.nova` to `RETIRED_LOOKS`, pointing at Spacewalker
   (`core.astronaut`, the nearest astronaut). Keep the files.
 - **Starfarer's back pack is "distorted a little".** Find the joints pulling the pack and fix its skin (fixes.skin:

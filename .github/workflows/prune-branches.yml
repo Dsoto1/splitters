@@ -1,9 +1,9 @@
 name: Prune branches
 
 # Deletes the work branches that have landed (owner, 2026-11-06: "run after each landing"): every wip/ and check/
-# branch whose commits are all in main. It runs after each push to main (a landing), and from the Actions tab
+# branch whose commits are all in main, or whose changes main already has. It runs after each push to main (a landing), and from the Actions tab
 # (Run workflow; tick "Only list them" to see what it would delete). It never touches main, claude/ session
-# branches, release/ branches or tags, and never a branch with a commit main doesn't have, so no work is lost.
+# branches, release/ branches or tags, and never a branch with a change main doesn't have, so no work is lost.
 # Agents can't delete branches themselves (their GitHub access only creates and moves them); this does it for them.
 on:
   push:
@@ -39,6 +39,14 @@ jobs:
           git fetch --prune --quiet origin '+refs/heads/*:refs/remotes/origin/*'
           # Work branches whose every commit is in main: their work has landed.
           mapfile -t landed < <(git for-each-ref --merged origin/main --format='%(refname:lstrip=3)' refs/remotes/origin/wip refs/remotes/origin/check)
+          # …and those whose changes main already has (a CI candidate replaced by a newer one, a branch landed through
+          # another merge): merging one into main would change nothing.
+          main_tree=$(git rev-parse 'origin/main^{tree}')
+          while read -r b; do
+            if t=$(git merge-tree --write-tree --no-messages origin/main "origin/$b" 2>/dev/null) && [ "${t%%$'\n'*}" = "$main_tree" ]; then
+              landed+=("$b")
+            fi
+          done < <(git for-each-ref --no-merged origin/main --format='%(refname:lstrip=3)' refs/remotes/origin/wip refs/remotes/origin/check)
           {
             echo "### Landed work branches: ${#landed[@]}"
             if [ "$DRY_RUN" = true ]; then echo "Only listing them (nothing deleted)."; fi

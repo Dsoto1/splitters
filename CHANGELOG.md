@@ -125,20 +125,30 @@ Change map are all still there.
   prop (Meshy community, CC0), in the Military Compound and Coastal Harbor packs.
 
 **Astronauts, a crocodile and a tortoise** (the owner's models of 2026-11-06)
-- **Capt. Nova** is the light-blue astronaut now: a slender spacesuit in pale blue over a black bodysuit, with a dark
-  visor and a backpack. Same name, same place on the roster; saved choices and bot sets keep her.
+- **Capt. Nova** got the light-blue astronaut (a slender spacesuit in pale blue over a black bodysuit, with a dark
+  visor and a backpack), then was retired the same day (below).
 - **Boglurker** is a crocodile now, in iron pauldrons, bracers and greaves, with a long tail. Still large, still a
   creature, and still the Boglurker the NPC squads bring.
 - **New:** **Spacewalker**, a white spacesuit with a gold visor (Soldiers), **Starfarer**, a dark teal and violet suit
-  with glowing magenta strips (Soldiers), and **Shellback**, a large humanoid tortoise (Animals). The names are
-  placeholders until the owner names them.
+  with glowing magenta strips (Soldiers), and **Shellback**, a humanoid tortoise (Animals). The owner kept the names.
 - **Bamboo is retired:** a saved choice of Bamboo, or a bot set naming it, plays Shellback.
 - The crocodile's and the tortoise's claws close round the grips; every new hand is tuned on the rifle, the pistol and
   the shotgun. The crocodile stands over its own feet (its long tail had put its body 0.4 m ahead of them).
 - **Licences:** Meshy models from the owner's Drive are recorded as Meshy Community CC0 unless the owner made them
   (owner, 2026-11-06). The provenance audit that day moved the Drive models recorded as owned (characters, weapons and
-  turrets, props, helmets) to community CC0; only the mining machines, the airliner, the buggy and its tire, and the
-  Alien Biker stay owned. Nothing in the game changes.
+  turrets, props, helmets) to community CC0; only the mining machines stay owned (below). Nothing in the game changes.
+
+**The owner's answers on the new characters** (2026-11-06)
+- **Capt. Nova is retired:** a saved choice of her, or a bot set naming her, plays Spacewalker, the nearest astronaut.
+  The Knights vs Space Crew bot set's Capt. Orion is a Spacewalker now.
+- **Shellback is standard size** ("should be smaller, not that big at all"): 1.80 m tall, 100 health and normal
+  speed (it came in large: 2.12 m, 115 health, 0.94 speed). Its hit shapes and Character Select's model shrink with it.
+- **Starfarer's back pack keeps its shape:** the pack and the tank on top are held whole by the chest. Before, they
+  bent with the head, arms and spine. The tank tipped when Starfarer looked up or down or ran, the box sheared with the
+  arms, and its bottom flared into a skirt round the waist when crouching.
+- **Licences:** the airliner shell, the buggy and its tire, and the Alien Biker are Meshy Community CC0 too. The owner:
+  "I did not make any, they are Meshy community." The mining machines stay owned, because we generated them through
+  the Meshy API with the owner's approval. Nothing in the game changes.
 
 ## 0.8.0 (2026-11-06)
 
