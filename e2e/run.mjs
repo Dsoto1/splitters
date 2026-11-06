@@ -3896,7 +3896,10 @@ async function webgpuFlow() {
  * drawn; part 2 grips in a real match (gripsInPlay).
  */
 async function charactersFlow(browser, part = 0) {
-  if (part === 2) return gripsInPlay(browser);
+  if (part === 2) {
+    await gripsInPlay(browser);
+    return farBodies(browser);
+  }
   const page = await (await browser.newContext({ viewport: { width: 960, height: 540 } })).newPage();
   const errors = [];
   page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
@@ -4055,6 +4058,227 @@ async function drawnHands(page) {
     if (badHand(d, 0.05)) spearMisses.push(`${view}: ${fmtHand(d)}`);
   }
   check(spearMisses.length === 0, `the Spear's hand is drawn on its shaft, fingers along it (${spearMisses.join('; ') || 'all within 5 cm'})`);
+}
+
+/**
+ * Every character past its low-detail switch draws its whole body (owner, 2026-11-06: "I see enemy in distance not
+ * fully there, only feet"). Over `frames` frames, each character in view (alive, not ragdolled) past its parts'
+ * low-detail distance: every part's level of detail (getLOD) is the mesh the main pass draws, and its drawn body
+ * (that level's vertices skinned as the GPU skins them, through its own skeleton) is numbers throughout and stands
+ * near its full height (a standing or running body: the player's height times its size). Returns how many characters
+ * were checked and the first frame each failed on.
+ */
+async function wholeBodies(page, frames) {
+  return page.evaluate(
+    async ([frames, fullHeight]) => {
+      const v = window.__cs.view;
+      const sc = v.scene;
+      const cam = v.camera;
+      const proto = Object.getPrototypeOf(sc.meshes.find((m) => m.getClassName() === 'Mesh'));
+      const render0 = proto.render;
+      let main = false;
+      const drawn = new Set();
+      proto.render = function (...a) {
+        if (main) drawn.add(this);
+        return render0.apply(this, a);
+      };
+      const o1 = sc.onBeforeDrawPhaseObservable.add(() => {
+        main = sc.activeCamera === cam;
+        drawn.clear();
+      });
+      const o2 = sc.onAfterDrawPhaseObservable.add(() => (main = false));
+      /** A level's vertices as drawn: through its skeleton's matrices and its world matrix (heights; non-numbers counted). */
+      const skinned = (mesh) => {
+        const pos = mesh.getVerticesData('position');
+        const bi = mesh.getVerticesData('matricesIndices');
+        const bw = mesh.getVerticesData('matricesWeights');
+        const mats = mesh.skeleton?.getTransformMatrices(mesh);
+        const wm = mesh.getWorldMatrix().m;
+        let lo = Infinity;
+        let hi = -Infinity;
+        let bad = 0;
+        for (let i = 0; i < pos.length / 3; i += 3) {
+          let p = [pos[i * 3], pos[i * 3 + 1], pos[i * 3 + 2]];
+          if (mats && bi && bw) {
+            const acc = [0, 0, 0];
+            for (let k = 0; k < 4; k++) {
+              const w = bw[i * 4 + k];
+              if (!w) continue;
+              const o = bi[i * 4 + k] * 16;
+              for (let c = 0; c < 3; c++) acc[c] += w * (mats[o + c] * p[0] + mats[o + 4 + c] * p[1] + mats[o + 8 + c] * p[2] + mats[o + 12 + c]);
+            }
+            p = acc;
+          }
+          const y = wm[1] * p[0] + wm[5] * p[1] + wm[9] * p[2] + wm[13];
+          if (!Number.isFinite(y)) {
+            bad++;
+            continue;
+          }
+          lo = Math.min(lo, y);
+          hi = Math.max(hi, y);
+        }
+        return { lo, hi, bad };
+      };
+      const checked = new Set();
+      const failed = new Map();
+      await new Promise((resolve) => {
+        let n = 0;
+        const o3 = sc.onAfterRenderObservable.add(() => {
+          const eye = cam.globalPosition;
+          for (const [slot, a] of v.avatars) {
+            const ch = a.anim?.ch;
+            if (!ch || a.hiddenSelf || a.culled || a.ragdoll || !a.wasAlive || !a.root.isEnabled()) continue;
+            const parts = ch.meshes.filter((m) => !m.isDisposed() && !m.isBlocked && m.getTotalVertices() > 0 && m.isEnabled() && m.isVisible);
+            const lods = parts.flatMap((m) => m.getLODLevels?.() ?? []);
+            const dist = Math.hypot(a.root.position.x - eye.x, a.root.position.z - eye.z);
+            if (!lods.length || dist < Math.max(...lods.map((l) => l.distanceOrScreenCoverage)) + 1) continue;
+            checked.add(slot);
+            let lo = Infinity;
+            let hi = -Infinity;
+            let bad = 0;
+            const off = [];
+            for (const m of parts) {
+              const level = m.getLOD(cam);
+              if (!level || !drawn.has(level)) {
+                off.push(`${m.name}: ${level ? `${level.name} not drawn` : 'no level'}`);
+                continue;
+              }
+              const b = skinned(level);
+              lo = Math.min(lo, b.lo);
+              hi = Math.max(hi, b.hi);
+              bad += b.bad;
+            }
+            const spec = JSON.parse(a.specKey);
+            const height = hi > lo ? hi - lo : 0;
+            const want = fullHeight * (spec.size ?? 1);
+            if ((off.length || bad || height < want * 0.75) && !failed.has(slot)) {
+              failed.set(slot, { slot, look: spec.look, dist: Math.round(dist), frame: n, height: +height.toFixed(2), want: +want.toFixed(2), nonNumbers: bad, off });
+            }
+          }
+          if (++n >= frames) {
+            sc.onAfterRenderObservable.remove(o3);
+            resolve();
+          }
+        });
+      });
+      proto.render = render0;
+      sc.onBeforeDrawPhaseObservable.remove(o1);
+      sc.onAfterDrawPhaseObservable.remove(o2);
+      return { checked: checked.size, failed: [...failed.values()] };
+    },
+    [frames, 1.8],
+  );
+}
+
+/**
+ * Far characters drawn whole in a crowd's fight (owner, 2026-11-06: far enemies drawn as feet only). A crowd (26
+ * bots: out of view its characters sleep, and wake when seen again), ten bots running small circles 16-34 m ahead
+ * (past the crowd's low-detail switch, within reach of the shot and hit clips), each in a fight first: a shot and a
+ * hit, the clips a fight keeps paused at weight 0 between plays. Then the view turns away (they sleep) and back (they
+ * wake: those clips, restarted at weight 0, turned the blend of the upper body into NaN), and every character past its
+ * low-detail switch must draw its whole body for a dozen frames.
+ */
+async function farBodies(browser) {
+  const page = await (await browser.newContext({ viewport: { width: 960, height: 540 } })).newPage();
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
+  await page.goto(`${CLIENT}/?offline=canyon&gamemode=core.deathmatch&bots=26&test=1&god=1`);
+  await page.waitForFunction(() => window.__cs?.local?.alive && window.__cs.phase() === 'playing', null, { timeout: T(120000) });
+  await page.click('#resume').catch(() => {});
+  await simWait(page, (m) => m.combatants().filter((c) => c.kind === 'bot' && c.alive).length >= 20, null, T(30000));
+  await holdBots(page);
+  // Open ground from where you are: the first way with a clear eye-high sight line 36 m out and ground under the spots.
+  const setup = await sim(page, (m, me) => {
+    const p = me.move.pos;
+    const ground = (x, z) => {
+      const d = m.physics.raycastWorld({ x, y: p.y + 6, z }, { x: 0, y: -1, z: 0 }, 14);
+      return d === null ? null : p.y + 6 - d;
+    };
+    for (let k = 0; k < 16; k++) {
+      const yaw = (k / 16) * Math.PI * 2;
+      const at = (r, side = 0) => ({ x: p.x + Math.sin(yaw) * r + Math.cos(yaw) * side, z: p.z + Math.cos(yaw) * r - Math.sin(yaw) * side });
+      const far = at(36);
+      if (!m.physics.lineOfSight({ x: p.x, y: p.y + 1.6, z: p.z }, { x: far.x, y: p.y + 1.6, z: far.z })) continue;
+      const spots = [];
+      for (let i = 0; i < 10; i++) {
+        const q = at(16 + i * 2, ((i % 5) - 2) * 3);
+        const g = ground(q.x, q.z);
+        if (g === null || Math.abs(g - p.y) > 2.5) break;
+        spots.push({ x: q.x, y: g + 0.05, z: q.z });
+      }
+      if (spots.length < 10) continue;
+      const bots = m.combatants().filter((c) => c.kind === 'bot' && c.alive).slice(0, 10);
+      const held = bots.map((c, i) => [c, spots[i], i]);
+      clearInterval(globalThis.__farHold);
+      // Each runs a small circle where it stands (about running speed; standing still while __farStand), and stays alive.
+      globalThis.__farStand = false;
+      globalThis.__farHold = setInterval(() => {
+        const t = performance.now() / 1000;
+        for (const [c, s, i] of held) {
+          if (!c.alive) continue;
+          const a = globalThis.__farStand ? i : t * 2.6 + i;
+          c.move = { ...c.move, pos: { x: s.x + Math.cos(a) * 2, y: s.y, z: s.z + Math.sin(a) * 2 }, velY: 0, grounded: true };
+          c.health = Math.max(c.health, 100);
+        }
+      }, 5);
+      return { yaw, slots: bots.map((c) => c.slot) };
+    }
+    return null;
+  });
+  if (!setup) {
+    check(false, 'far bodies: found open ground 36 m out for the crowd');
+    await page.context().close();
+    return;
+  }
+  await page.evaluate((yaw) => {
+    window.__cs.input.yaw = yaw;
+    window.__cs.input.pitch = -0.05;
+  }, setup.yaw);
+  // Their characters loaded, in view and running there.
+  const running = () =>
+    page.evaluate((slots) => {
+      const v = window.__cs.view;
+      return slots.filter((s) => {
+        const a = v.avatars.get(s);
+        return !!a?.anim?.ch && !a.culled && a.anim.current === 'run';
+      }).length;
+    }, setup.slots);
+  await until(async () => (await running()) >= 8, T(120000));
+  // A fight: a shot and a hit on each (the clips kept paused at weight 0 between plays), until both are over.
+  await page.evaluate((slots) => {
+    const v = window.__cs.view;
+    for (const s of slots) {
+      v.avatarAction(s, 'shoot');
+      v.flinchPlayer(s, { x: 1, y: 0, z: 0 }, 0, 2);
+    }
+  }, setup.slots);
+  await page.waitForFunction((slots) => slots.every((s) => !window.__cs.view.avatars.get(s)?.anim?.overlay), setup.slots, { timeout: T(20000) }).catch(() => {});
+  // A pause and off again, as fighters stop and go: their running clips start again after the fight's (later in the
+  // engine's order), and at full run the aim pose's upper-body clip is at weight 0.
+  const gait = (want) =>
+    page.evaluate(
+      ([slots, want]) =>
+        slots.filter((s) => {
+          const anim = window.__cs.view.avatars.get(s)?.anim;
+          return !!anim && (want === 'stand' ? anim.current !== 'run' && anim.clipUpper < 0.001 : anim.current === 'run' && anim.clipUpper > 0.999);
+        }).length,
+      [setup.slots, want],
+    );
+  await sim(page, () => (globalThis.__farStand = true));
+  await until(async () => (await gait('stand')) >= 8, T(30000));
+  await sim(page, () => (globalThis.__farStand = false));
+  await until(async () => (await gait('run')) >= 8, T(30000));
+  // Away (out of view a crowd's characters sleep) and back (they wake).
+  await page.evaluate((yaw) => (window.__cs.input.yaw = yaw + Math.PI), setup.yaw);
+  await page.waitForFunction((slots) => slots.every((s) => window.__cs.view.avatars.get(s)?.culled !== false), setup.slots, { timeout: T(30000) }).catch(() => {});
+  const slept = await page.evaluate((slots) => slots.filter((s) => window.__cs.view.avatars.get(s)?.anim?.dormant).length, setup.slots);
+  await page.evaluate((yaw) => (window.__cs.input.yaw = yaw), setup.yaw);
+  await page.waitForFunction((slots) => slots.filter((s) => window.__cs.view.avatars.get(s)?.culled === false).length >= 8, setup.slots, { timeout: T(30000) }).catch(() => {});
+  const r = await wholeBodies(page, 12);
+  const broken = r.failed.map((f) => `${f.look} at ${f.dist} m, frame ${f.frame}: ${f.height} of ${f.want} m drawn${f.nonNumbers ? `, ${f.nonNumbers} vertices not numbers` : ''}${f.off.length ? `, ${f.off.join(', ')}` : ''}`);
+  check(slept >= 8 && r.checked >= 6 && r.failed.length === 0, `far characters draw their whole bodies after a fight, asleep out of view and awake again (${r.checked} checked past the low-detail switch, ${slept} slept; broken: ${broken.join('; ') || 'none'})`);
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  await page.context().close();
 }
 
 /**
