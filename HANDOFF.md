@@ -147,6 +147,39 @@ white Ionic columns.
 
 The brief is in the session scratchpad, `briefs/slack-pass.md`.
 
+### Queued (owner, 2026-11-06): audio pass 2: weapons, reloads, vehicles. Starts once the sound source is settled
+**The owner:** "By sound effects, we also need to update some/if not most of the weapon sounds too, reload, vehicle
+noises, etc."
+
+**What we have** (docs/AUDIO.md: 90 sounds):
+- All 26 fire sounds are in-house synthesiser placeholders.
+- Reloads are two generic Kenney clicks (`reload.start`, `reload.end`). Other players' reloads are silent: snapshots
+  don't carry them.
+- Vehicles have **no engine sounds at all**, only crash and explosion sounds.
+- One footstep sound for every surface.
+
+**Scope:**
+- **Recorded gunshots per weapon family,** with a near layer and a far tail.
+- **Reloads per weapon class,** timed to the reload animations:
+  - magazine out and in, then the bolt or charging handle;
+  - shells for shotguns;
+  - the cylinder for revolvers.
+  - Remote reloads audible.
+- **Vehicles:**
+  - engine loops that follow speed for each mount type: wheeled, tracked, hover, air;
+  - skids, entering and leaving, turret traverse, mounted guns.
+  - Looping voices are new work in `AudioSystem`.
+- **Later, separate items:** per-surface footsteps, ambience.
+
+**Sources** (docs/ASSET_SOURCES.md):
+- **Artlist:** not for the game on a standard plan. Waiting on Artlist's written answer (see above).
+- **Recommended: the Sonniss GDC bundles.** They are free, professional, licensed for games and need no credit. Their
+  licence is not CC0, so the owner must approve them as a source. Treat their output like purchased assets: processed
+  files only, raw files never committed.
+- **Freesound CC0** for gaps.
+- The container can't reach Sonniss or Freesound today. Either the agent asks for those hosts on the environment card,
+  or the owner puts the chosen files in the Drive.
+
 ### Queued (owner, 2026-11-06): import list, batch 1: Cool Hands Rex and Fishy Fred. After the work in flight
 **The owner:** "There is a fish and t-rex (call him 'Cool Hands Rex', I made him in meshy) model to add for after all
 of this work. I'll be trying to generate brand new ones going forward and we can just begin working on a new import
