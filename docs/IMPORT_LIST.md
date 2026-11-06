@@ -101,15 +101,12 @@ was replaced.
 - Countdown Sphere → sticky;
 - Globe → frag (the 3DModelsCC0 frag as the realistic alternative);
 - "just a grenade" (blue swirl) → vortex;
-- **Sunburst → a new Flashbang**;
+- Sunburst → cluster bomb;
 - Toxic Splash → gas;
-- **the 3DModelsCC0 smoke grenade → a new Smoke grenade**, with the sci-fi canister as its Sci-fi set look.
+- **the 3DModelsCC0 smoke grenade → a new Smoke grenade**, with the sci-fi canister as its Sci-fi set look. The smoke
+  blocks sight for players and bots; bots use it when they push.
 
-Flashbang and smoke are new throwables:
-- the flash whites out players and bots who see it, by angle and distance;
-- the smoke blocks sight for players and bots.
-
-Bots use both when they push (Bot AI Phase B).
+**No flashbang** (owner: "I don't want to give people seizures").
 
 **Sharper textures:**
 - The weapon in your hands gets 2048 / 1024 / 512 colour maps by graphics setting, instead of today's 512 for
