@@ -81,6 +81,14 @@ describe('character manifests', () => {
     expect(gp({ curlR: 2 })).toMatch(/fixes.grip.curlR/);
     expect(gp({ supportLong: [0, 0.3, 0] })).toMatch(/fixes.grip.supportLong/);
     expect(gp({ rollL: 'a' })).toMatch(/fixes.grip.rollL/);
+    // Hard parts bound whole to one joint in the download's own pose (fixes.skin.rigid: Starfarer's back pack).
+    const pack = { joint: 'spine_03', box: [[-0.1, 0.6, -0.15, 0.1, 0.8, -0.04]], blend: 0.025, except: '^Head$' };
+    const rigid = (r) => manifestProblems({ ...good, fixes: { ...good.fixes, skin: { rigid: r } } }, 'meshy_cat.json').join('\n');
+    expect(rigid([pack])).toBe('');
+    expect(rigid([{ joint: 'spine_03', box: [-0.1, 0.6, -0.15, 0.1, 0.8, -0.04] }])).toBe('');
+    for (const bad of [[], [{ ...pack, joint: 'spine_09' }], [{ ...pack, box: [0.1, 0.6, -0.15, -0.1, 0.8, -0.04] }], [{ ...pack, box: [[0, 0, 0]] }], [{ ...pack, blend: 0.5 }], [{ ...pack, except: '(' }], [{ ...pack, wings: true }], pack]) expect(rigid(bad), JSON.stringify(bad)).toMatch(/fixes.skin.rigid/);
+    const starfarer = buildSpec(list.find((m) => m.id === 'meshy_darkastronaut'));
+    expect(starfarer.skin.rigid[0]).toMatchObject({ joint: 'spine_03', except: '^Head$' });
   });
 
   it('move with the default clip set, name another, or opt out with a reason', () => {

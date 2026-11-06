@@ -39,6 +39,8 @@ const USES = new Set(['player', 'npc', 'player+npc', 'npc+player']);
 const FIXES = new Set(['triangles', 'surface', 'seamWeld', 'lean', 'cloth', 'tail', 'feet', 'centre', 'scrubBlue', 'hands', 'armCloth', 'skinClean', 'handsShare', 'headShare', 'lod', 'normalSize', 'hold', 'grip', 'skin', 'fingers']);
 /** How a character gets about: left out, it walks on the rig's clips; `roll`, it has no legs (a ball, a wheel) and rolls. */
 const LOCOMOTION = new Set(['roll']);
+/** The rig's body joints (no fingers): what a hard part can ride (`fixes.skin.rigid`). */
+export const RIG_BODY_JOINTS = ['pelvis', 'spine_01', 'spine_02', 'spine_03', 'neck_01', 'Head', ...['l', 'r'].flatMap((s) => ['clavicle', 'upperarm', 'lowerarm', 'hand', 'thigh', 'calf', 'foot', 'ball'].map((j) => `${j}_${s}`))];
 /** The clips a clip set (`clipsFrom`, tools/content/clip-set.mjs) can hold, as the game asks for them (characterAnimator.ts). */
 export const CLIP_SET_CLIPS = ['clip_walk', 'clip_run', 'clip_shoot_fwd', 'clip_shoot_run', 'clip_shoot_back'];
 /** The clip set looks move with unless they name another or opt out: DEFAULT_CLIP_SET in packages/shared/src/content/looks.ts (a test keeps them equal). */
@@ -211,7 +213,25 @@ export function manifestProblems(m, file = `${m?.id}.json`) {
     // This look's own skin weights (tools/content/skinfix.mjs; docs/CHARACTERS.md, "A look's own skin weights").
     const k = x.skin;
     const FINGER = ['tips', 'knuckle', 'joints', 'lanes', 'fingers'];
-    need(typeof k === 'object' && k !== null && Object.keys(k).every((q) => [...FINGER, 'hops', 'clamp', 'smooth', 'wrist', 'l', 'r'].includes(q)), `fixes.skin: { ${FINGER.join(', ')}, hops, clamp, smooth, wrist; or l / r for one hand's fingers }`);
+    need(typeof k === 'object' && k !== null && Object.keys(k).every((q) => [...FINGER, 'hops', 'clamp', 'smooth', 'wrist', 'rigid', 'l', 'r'].includes(q)), `fixes.skin: { ${FINGER.join(', ')}, hops, clamp, smooth, wrist, rigid; or l / r for one hand's fingers }`);
+    if (k?.rigid !== undefined) {
+      // Hard parts bound whole to one joint in the download's own pose (skinfix.mjs `bindRigid`).
+      const box = (b) => Array.isArray(b) && b.length === 6 && b.every((v) => typeof v === 'number' && Math.abs(v) <= 1.5) && b[0] < b[3] && b[1] < b[4] && b[2] < b[5];
+      const regex = (s) => {
+        try {
+          return typeof s === 'string' && !!new RegExp(s);
+        } catch {
+          return false;
+        }
+      };
+      const ok = Array.isArray(k.rigid) && k.rigid.length >= 1 && k.rigid.length <= 4 && k.rigid.every((r) =>
+        r && typeof r === 'object' && Object.keys(r).every((q) => ['joint', 'box', 'blend', 'except'].includes(q)) &&
+        RIG_BODY_JOINTS.includes(r.joint) &&
+        (box(r.box) || (Array.isArray(r.box) && r.box.length >= 1 && r.box.length <= 8 && r.box.every(box))) &&
+        (r.blend === undefined || (typeof r.blend === 'number' && r.blend >= 0 && r.blend <= 0.1)) &&
+        (r.except === undefined || regex(r.except)));
+      need(ok, `fixes.skin.rigid: [{ joint: one of ${RIG_BODY_JOINTS.join(', ')}; box: [x0, y0, z0, x1, y1, z1] or a list of up to 8 (shares of the download's height in its own pose, feet at 0, +x its left, +z its front; each low < high); blend: 0–0.1 (a share of the height); except: "<regex of joint names>" }] (1–4 regions)`);
+    }
     for (const side of [k, k?.l, k?.r].filter(Boolean)) {
       if (side !== k) need(Object.keys(side).every((q) => FINGER.includes(q)), `fixes.skin.l / r: { ${FINGER.join(', ')} }`);
       need(side.tips === undefined || (typeof side.tips === 'number' && side.tips > 0 && side.tips <= 0.5), 'fixes.skin.tips: 0–0.5 (strays past the knuckles up to this share of the hand past its tips are fingers)');
