@@ -50,6 +50,7 @@ const OPEN_SIDED = [
   'setpiece.cage_block',
   'setpiece.cage_lift',
   'setpiece.cliff_stair_grand',
+  'setpiece.landing_craft_beached',
   ...['bend', 'end', 'jog', 'junction', 'straight'].flatMap((s) => [`setpiece.trench_${s}`, `setpiece.trench_${s}_sandbag`]),
   'setpiece.tunnel_bend',
   'setpiece.tunnel_cross',
@@ -336,6 +337,7 @@ describe('every port of every piece, in every turn and mirror, is a way through'
    * tunnels, hatches) have their own in setPieces3.test.ts.
    */
   const walled = [...library.pieces.values()].filter((def) => {
+    if (!def.ports.length) return false;
     const { map, ports } = withNeighbours(def.id, 0, false);
     const { cells } = buildOccupancy(map);
     return ports.every((port) => resolveEdge(cells, port.x, port.y, port.z, port.side) !== 'none');

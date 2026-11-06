@@ -56,12 +56,16 @@ export const STYLE_PACKS: readonly StylePack[] = [
       'military.barracks', 'military.guard_tower', 'military.pillbox', 'military.vehicle_shed', 'core.bunker', 'core.warehouse',
       'military.wall', 'military.wall_corner', 'military.gate',
       'military.trench', 'military.trench_corner', 'military.trench_t', 'military.trench_cross', 'military.trench_end', 'military.trench_steps', 'military.trench_dugout',
+      // Sunken trenches (set pieces part 3): sunk 1.5 m, their floors carve the terrain.
+      'core.trench_sunk', 'core.trench_sunk_corner', 'core.trench_sunk_t', 'core.trench_sunk_end', 'core.stairs_grand',
       'military.gantry', 'core.catwalk', 'core.platform_rail', 'military.helipad', 'core.yard',
     ],
     props: /* @__PURE__ */ props(
       'sandbag_wall', 'sandbag_wall_low', 'sandbag_corner', 'sandbag_nest', 'sandbag_stack', 'hesco_wall', 'hedgehog', 'hedgehog_beach', 'dragon_tooth', 'razor_wire', 'camo_net',
       // Beach landings (Shingle Point's refresh): built in code like the sandbags.
       'landing_craft', 'landing_craft_wreck', 'timber_baulk', 'timber_stack',
+      // The owner's Drive landing craft (Meshy community, CC0 per owner, 2026-11-06): beached, ramp down; static.
+      'lcvp_beached',
       // The owner's Meshy barriers and parked vehicles (Drive, 2026-10-31).
       'jersey_barrier_hazard', 'hazard_block_barrier', 'plastic_road_barrier', 'vehicle_raider_buggy', 'vehicle_armored_truck',
       'jersey_barrier', 'jersey_barrier_striped', 'jersey_barrier_broken', 'road_barrier', 'concrete_block', 'brick_rubble',
@@ -118,6 +122,8 @@ export const STYLE_PACKS: readonly StylePack[] = [
       'imperial.seating', 'imperial.seating_corner', 'imperial.gate', 'imperial.emperor_box', 'imperial.arena_hatch',
       'imperial.arcade', 'imperial.arcade_stair', 'imperial.colonnade', 'imperial.triumphal_arch', 'imperial.aqueduct', 'imperial.forum', 'imperial.temple',
       'imperial.tunnel', 'imperial.hypogeum', 'imperial.hypogeum_lift',
+      // The Sandfall Colosseum rebuild's kit (set pieces part 3).
+      'core.cavea', 'core.cavea_vomitorium', 'core.gallery_grand', 'core.tunnel_vault', 'core.tunnel_vault_bend', 'core.tunnel_vault_t', 'core.tunnel_vault_cross', 'core.hatch_corner',
       'core.yard', 'core.corridor_clear', 'core.corner', 'core.junction_t', 'core.stairwell', 'core.plaza',
     ],
     props: /* @__PURE__ */ props(
@@ -487,6 +493,7 @@ export const STYLE_PACKS: readonly StylePack[] = [
     ],
     props: /* @__PURE__ */ props(
       'hb_bollard', 'hb_capstan', 'hb_lobster_pots', 'hb_buoy', 'hb_marker_buoy', 'hb_net_rack', 'hb_fish_stall', 'hb_fish_crates', 'hb_fishing_boat',
+      'lcvp_beached',
       'hb_anchor', 'hb_rope_coil', 'hb_lamp_post', 'hb_life_ring', 'hb_net_pile', 'hb_gull', 'hb_tide_board', 'hb_dolphin', 'hb_fenders',
       // The owner's Meshy pieces: a market stall and fountains for the harbour square.
       'rustic_market_stall', 'eagle_fountain', 'lion_head_fountain', 'town_fountain',

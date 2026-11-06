@@ -269,6 +269,26 @@ describe('the cliff stairs: up a cliff for many players', () => {
   });
 });
 
+// ------------------------------------------------------------------ MAP 21: the beached landing craft
+
+describe('the beached landing craft: static cover to fight from', () => {
+  it('players walk up its ramp into the well; shots pass over its sides; nothing moves it', () => {
+    const map = played(mapOf([], [{ id: 'craft', piece: 'setpiece.landing_craft_beached', x: 0, y: 0, z: 0, pack: 'military' }], 'core.military', true));
+    const physics = physicsOf(map);
+    // Its ramp is down to the north (the craft centred at 4, 4 and 10.7 m long), the well behind it.
+    const end = walk(physics, { x: 4, y: 0.05, z: 12.5 }, SOUTH, 150);
+    expect(end.pos.z, 'up the ramp and into the well').toBeLessThan(7);
+    // Over the gunwales, 2.6 m up, a shot crosses the craft; at 1 m it stops on the hull's side.
+    const over = physics.raycastHit({ x: -6, y: 2.6, z: 4 }, { x: 1, y: 0, z: 0 }, 20);
+    expect(over === null || over.dist > 19.9).toBe(true);
+    const side = physics.raycastHit({ x: -6, y: 1, z: 4 }, { x: 1, y: 0, z: 0 }, 20);
+    expect(side!.dist).toBeLessThan(9);
+    // Static: a prop, no mover carries it.
+    expect(map.entities.some((e) => e.kind === 'prop' && e.model === 'prop.lcvp_beached')).toBe(true);
+    expect(map.entities.filter((e) => e.kind === 'mover')).toEqual([]);
+  });
+});
+
 // ------------------------------------------------------------------ Colosseum: the stands
 
 /** One bay line of the stands, the arena to the south: the podium bay, two arcades under the upper tier, a vomitorium tier, the facade's arcades and the attic; then a bay either side so the rows continue. */

@@ -694,6 +694,25 @@ export const SET_PIECE_DEFS: readonly SetPieceDefinitionInput[] = [
       { kind: 'light', position: [8, 3.3, 8], fixture: 'chandelier', color: '#ffd9a0', intensity: 0.8, range: 8 },
     ],
   },
+  // design: The craft is 10.7 m long and 3.3 m wide (sized to an LCVP), collides as voxels (its well, ramp and gunwales as modelled: walk up the ramp into the well, shoot over the sides).
+  {
+    id: 'setpiece.landing_craft_beached',
+    displayName: 'Beached Landing Craft',
+    family: 'landing',
+    category: 'Beach',
+    blurb: 'A landing craft run up on the sand, its ramp down (local north) and its well open: cover to fight from and through, beach obstacles and spilled crates round it. It never moves.',
+    packs: ['military', 'harbor'],
+    footprint: { cells: [[0, 0], [1, 0], [0, 1], [1, 1]], levels: [0, 0] },
+    mirror: 'free',
+    parts: [
+      { kind: 'prop', model: 'prop.lcvp_beached', position: [4, 0, 4], yaw: 0, scale: 1 },
+      { kind: 'prop', model: 'prop.hedgehog_beach', position: [-2.2, 0, -1.4], yaw: 0.5, scale: 1 },
+      { kind: 'prop', model: 'prop.hedgehog_beach', position: [10.4, 0, 0.6], yaw: 1.2, scale: 1 },
+      { kind: 'prop', model: 'prop.ww2_ammo_crate', position: [6.6, 0, 10.6], yaw: 0.35, scale: 1 },
+      { kind: 'prop', model: 'prop.ww2_ammo_crate', position: [1.4, 0, 10.9], yaw: -0.6, scale: 1 },
+      { kind: 'prop', model: 'prop.timber_baulk', position: [9.6, 0, 9.4], yaw: 1.1, scale: 1 },
+    ],
+  },
   {
     id: 'setpiece.skybridge_2',
     displayName: 'Skybridge (2 cells)',
