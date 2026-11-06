@@ -1,10 +1,10 @@
 {
   "pack": {
-    "title": "Tile Trigger originals (made with Meshy): a widebody airliner",
-    "creator": "Meshy, owned (text-to-3D on the owner's Meshy subscription, 2026-11-04: preview and refine tasks on record)",
-    "url": "https://www.meshy.ai",
-    "license": "Owned",
-    "licenseFile": "assets-src/meshy-owned/License.txt",
+    "title": "Meshy community models: a widebody airliner (refined GLB download of 2026-11-04)",
+    "creator": "Meshy community, CC0 (per owner)",
+    "url": "https://www.meshy.ai (community page URL pending from the owner)",
+    "license": "CC0-1.0",
+    "licenseFile": "assets-src/meshy-community/License.txt",
     "retrieved": "2026-11-04",
     "download": "airliner-2026-11-04",
     "meshy": true,
@@ -51,7 +51,7 @@
       ],
       "budget": "hero",
       "source": {
-        "model": "Widebody airliner, white livery (owner's Meshy: preview task 01a1a451-1dda-77ed-82ec-810c24ac1e9a, refine 01a1a451-ee8d-72d3-99ea-48063cd52abe)",
+        "model": "Widebody airliner, white livery (Meshy Community; the Meshy preview and refine tasks 01a1a451-1dda-77ed-82ec-810c24ac1e9a and 01a1a451-ee8d-72d3-99ea-48063cd52abe on record)",
         "date": "2026-11-04"
       },
       "cut": [

@@ -7,7 +7,7 @@
 // and shuttered windows. No pack and no generative AI service is involved:
 // the code is the source. (The forge, hay cart and tarp tent are simple
 // in-house versions; Meshy hero versions wait for the owner. The well, mv_well,
-// is the owner's Meshy wishing well now: pack meshy-owned-landmarks.)
+// is a Meshy Community wishing well now: pack meshy-community-landmarks.)
 //
 //   node tools/content/prepare-medieval.mjs
 //

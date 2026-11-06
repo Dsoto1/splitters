@@ -9,8 +9,8 @@
 // spike row, chain and rope rails, a temple altar and an overgrown beam. No
 // pack and no generative AI service is involved: the code is the source. (The
 // crane and the zipline post are simple in-house versions; Meshy hero versions
-// wait for the owner. The large statue, jt_statue_large, is the owner's Meshy
-// statue now: pack meshy-owned-landmarks.) The pack's first seventeen props
+// wait for the owner. The large statue, jt_statue_large, is a Meshy Community
+// statue now: pack meshy-community-landmarks.) The pack's first seventeen props
 // (jg_*) stay in tools/content/build-style-props.mjs, unchanged.
 //
 //   node tools/content/prepare-jungle.mjs

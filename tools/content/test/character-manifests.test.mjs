@@ -13,11 +13,15 @@ describe('character manifests', () => {
 
   it('turn into what the prepare tool builds', () => {
     // A model from the owner's Drive is Meshy Community CC0 unless the owner says they made it (2026-11-06): the Goblin
-    // was recorded as owned until the audit of that day; the Alien Biker, which the owner confirmed as theirs, stays owned.
+    // was recorded as owned until the audit of that day, the Alien Biker until the owner said it was community too
+    // (the same day). Only a model the owner made, or one we generate through the Meshy API, is owned.
     const goblin = buildSpec(list.find((m) => m.id === 'meshy_goblin'));
     expect(goblin.pack).toBe('meshy-community-characters');
     expect(goblin.community).toEqual({ model: 'Goblin', date: '2026-10-26' });
-    expect(buildSpec(list.find((m) => m.id === 'meshy_alienbiker')).pack).toBe('meshy-owned');
+    const biker = list.find((m) => m.id === 'meshy_alienbiker');
+    expect(buildSpec(biker).pack).toBe('meshy-community-characters');
+    expect(buildSpec(biker).community).toEqual({ model: 'stylized alien biker', date: '2026-11-01' });
+    expect(buildSpec({ ...biker, source: { license: 'owned', author: 'the owner', date: '2026-11-01', url: null, file: biker.source.file } }).pack).toBe('meshy-owned');
     expect(goblin.file.test('Meshy_AI_Goblin_1026113732_texture.fbx')).toBe(true);
     expect(goblin.joints.LeftHandTip).toEqual([0.258, 0.317, 0.2]);
     expect(goblin.joints.head_end).toEqual([0, 0.95, 0.14]);

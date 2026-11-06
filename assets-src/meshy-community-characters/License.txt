@@ -137,6 +137,12 @@ goes back to owned). Name as on the download, the date recorded for it:
 - "Wealthy Otter" (file dated 2026-03-07)  -> character meshy_otter (look Wealthy Otter, retired; the otter NPC role keeps it)
 - "Salamander Warlord" (file dated 2026-04-21)  -> character meshy_salamander (look Salamander Warlord)
 
+Recorded as the owner's own model from 2026-11-01 until the owner said, later on
+2026-11-06: "I did not make any, they are Meshy community." Meshy Community,
+CC0 per the owner; post URL pending from the owner:
+
+- "stylized alien biker" (2026-11-01; rebuilt 2026-11-05 from the re-rigged download "stylized alien biker rigged")  -> character meshy_alienbiker (look Alien Biker)
+
 Looked at and not used (they closely resemble real people, so they fail the
 likeness screen):
 

@@ -66,9 +66,9 @@ and Car Kit, a Meshy Community snowmobile, Quaternius' Ultimate Spaceships and T
   long sled on 2026-11-04; its riders sit astride (`straddle` on the seats). The tank is Quaternius' Tank Pack (CC0) desert tank. The speeder (Striker), hauler (Dispatcher), skyfighter
   (Spitfire) and dropship (Imperial) are from Quaternius' Ultimate
   Spaceships (CC0), trimmed by `tools/content/prepare-ships.mjs`.
-  The buggy is the owner's own Meshy model (Tactical Off-Road Beast, owned;
+  The buggy is a Meshy Community model (Tactical Off-Road Beast, CC0 per the owner;
   `content/guns.json`, built by `prepare-guns.mjs`, 6.8k triangles, 768 px map):
-  a long tube-frame buggy with a roof gun whose hubs are bare, so the owner's
+  a long tube-frame buggy with a roof gun whose hubs are bare, so the Meshy Community
   Rugged Off-Road Tire (`vehicles/offroad_tire.glb`, 676 triangles) is drawn at
   each hub from the def's `wheels` (`mountVisuals.ts`), and the body rides
   0.24 m up (`rideHeight`) on them. The tires roll with the buggy's speed,
