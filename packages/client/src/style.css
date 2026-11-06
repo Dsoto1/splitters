@@ -376,7 +376,8 @@ button.cta:hover { background: #ffc46e; }
 .switch input:checked + .switch-track { border-color: var(--cyan); background: rgba(0, 209, 255, 0.32); }
 .switch input:checked + .switch-track::after { transform: translateX(14px); background: var(--cyan); }
 .switch input:focus-visible + .switch-track { outline: 2px solid var(--cyan); outline-offset: 2px; }
-.team-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 8px; }
+/* Teams share the width (two teams: half each), so who's on a team sits beside its size. */
+.team-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 8px; }
 .team-card { --team: var(--cyan); display: flex; flex-direction: column; gap: 6px; padding: 7px 8px 8px; min-width: 0; background: var(--surface-1); border: 1px solid var(--line); border-top: 3px solid var(--team); border-radius: 3px; }
 .team-card.mine { box-shadow: inset 0 0 0 1px var(--team); }
 .team-card.drop { background: var(--surface-3); border-color: var(--cyan); }
@@ -457,7 +458,7 @@ button.cta:hover { background: #ffc46e; }
   .sec-head { padding: 8px 2px; }
   .setup-facts { font-size: 12px; }
   .setup .row { grid-template-columns: minmax(84px, 120px) minmax(0, 1fr); gap: 6px; font-size: 11px; }
-  .team-cards { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+  .team-cards { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
   .fit-item { grid-template-columns: minmax(0, 1fr) auto; }
   .fit-item .fit-topic { grid-column: 1 / -1; }
 }
@@ -1034,7 +1035,7 @@ img.wicon.large { height: 26px; margin: 0 6px 0 0; }
 .host-controls .row.off > *:last-child { pointer-events: none; }
 .host-controls .tabs .tab { padding: 4px 9px; font-size: 12px; }
 .host-controls .team-editor { margin: 2px 0; }
-.host-controls .team-cards { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
+.host-controls .team-cards { grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); }
 .host-controls .setup-hint { font-size: 12px; }
 .host-controls .hc-pending { margin: 0; padding: 5px 8px; color: var(--orange); border-left: 2px solid var(--orange); background: rgba(255, 179, 71, 0.08); font-size: 13px; }
 .host-controls .hc-row { display: flex; align-items: center; gap: 8px; margin: 0; }
