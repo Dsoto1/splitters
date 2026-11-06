@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 25,
+  "formatVersion": 27,
   "metadata": {
     "id": "st_johns",
     "name": "St. John's",
@@ -19,7 +19,15 @@
       "core.ctf",
       "core.koth",
       "core.elim"
-    ]
+    ],
+    "release": {
+      "mapId": "m_bmryel7a2zcvyy7c",
+      "versionId": "v_jf63axweq3gonuol",
+      "revision": 1,
+      "contentHash": "sha256:e7ba15a376848cdf8c43f4ba0c1f4331a4637b797a4101195b1d0bee42885569",
+      "schemaVersion": 27,
+      "releasedAt": "2026-11-06T23:11:44.618Z"
+    }
   },
   "classicStructure": {
     "cellSize": 8,
@@ -56240,7 +56248,7 @@
       "kind": "prop",
       "model": "prop.hm_dresser",
       "yaw": 3.17861,
-      "scale": 0.8,
+      "scale": 1,
       "solid": true,
       "tint": null
     },
@@ -56268,7 +56276,7 @@
       "kind": "prop",
       "model": "prop.hm_dresser",
       "yaw": 0.03701,
-      "scale": 0.8,
+      "scale": 1,
       "solid": true,
       "tint": null
     },
@@ -56296,7 +56304,7 @@
       "kind": "prop",
       "model": "prop.hm_dresser",
       "yaw": 3.17861,
-      "scale": 0.8,
+      "scale": 1,
       "solid": true,
       "tint": null
     },
@@ -56324,7 +56332,7 @@
       "kind": "prop",
       "model": "prop.hm_dresser",
       "yaw": 0.03701,
-      "scale": 0.8,
+      "scale": 1,
       "solid": true,
       "tint": null
     },
@@ -56352,7 +56360,7 @@
       "kind": "prop",
       "model": "prop.hm_dresser",
       "yaw": 3.17861,
-      "scale": 0.8,
+      "scale": 1,
       "solid": true,
       "tint": null
     },
@@ -56380,7 +56388,7 @@
       "kind": "prop",
       "model": "prop.hm_dresser",
       "yaw": 0.03701,
-      "scale": 0.8,
+      "scale": 1,
       "solid": true,
       "tint": null
     },
@@ -56408,7 +56416,7 @@
       "kind": "prop",
       "model": "prop.hm_dresser",
       "yaw": 3.17861,
-      "scale": 0.8,
+      "scale": 1,
       "solid": true,
       "tint": null
     },
@@ -56436,7 +56444,7 @@
       "kind": "prop",
       "model": "prop.hm_dresser",
       "yaw": 0.03701,
-      "scale": 0.8,
+      "scale": 1,
       "solid": true,
       "tint": null
     },
@@ -56464,7 +56472,7 @@
       "kind": "prop",
       "model": "prop.hm_dresser",
       "yaw": 3.17861,
-      "scale": 0.8,
+      "scale": 1,
       "solid": true,
       "tint": null
     },
@@ -56520,7 +56528,7 @@
       "kind": "prop",
       "model": "prop.hm_dresser",
       "yaw": -1.53379,
-      "scale": 0.8,
+      "scale": 1,
       "solid": true,
       "tint": null
     },
@@ -56548,7 +56556,7 @@
       "kind": "prop",
       "model": "prop.hm_dresser",
       "yaw": -1.53379,
-      "scale": 0.8,
+      "scale": 1,
       "solid": true,
       "tint": null
     },
@@ -56576,7 +56584,7 @@
       "kind": "prop",
       "model": "prop.hm_dresser",
       "yaw": 1.60781,
-      "scale": 0.8,
+      "scale": 1,
       "solid": true,
       "tint": null
     },
@@ -56604,7 +56612,7 @@
       "kind": "prop",
       "model": "prop.hm_dresser",
       "yaw": -1.53379,
-      "scale": 0.8,
+      "scale": 1,
       "solid": true,
       "tint": null
     },
@@ -56646,7 +56654,7 @@
       "kind": "prop",
       "model": "prop.hm_dresser",
       "yaw": -1.53379,
-      "scale": 0.8,
+      "scale": 1,
       "solid": true,
       "tint": null
     },
@@ -56674,7 +56682,7 @@
       "kind": "prop",
       "model": "prop.hm_dresser",
       "yaw": -1.53379,
-      "scale": 0.8,
+      "scale": 1,
       "solid": true,
       "tint": null
     },
@@ -56702,7 +56710,7 @@
       "kind": "prop",
       "model": "prop.hm_dresser",
       "yaw": 1.60781,
-      "scale": 0.8,
+      "scale": 1,
       "solid": true,
       "tint": null
     },
@@ -56730,7 +56738,7 @@
       "kind": "prop",
       "model": "prop.hm_dresser",
       "yaw": -1.53379,
-      "scale": 0.8,
+      "scale": 1,
       "solid": true,
       "tint": null
     },
@@ -56786,7 +56794,7 @@
       "kind": "prop",
       "model": "prop.hm_dresser",
       "yaw": -1.53379,
-      "scale": 0.8,
+      "scale": 1,
       "solid": true,
       "tint": null
     },
@@ -56814,7 +56822,7 @@
       "kind": "prop",
       "model": "prop.hm_dresser",
       "yaw": -1.53379,
-      "scale": 0.8,
+      "scale": 1,
       "solid": true,
       "tint": null
     },
@@ -56842,7 +56850,7 @@
       "kind": "prop",
       "model": "prop.hm_dresser",
       "yaw": 1.60781,
-      "scale": 0.8,
+      "scale": 1,
       "solid": true,
       "tint": null
     },
@@ -56870,7 +56878,7 @@
       "kind": "prop",
       "model": "prop.hm_dresser",
       "yaw": -1.53379,
-      "scale": 0.8,
+      "scale": 1,
       "solid": true,
       "tint": null
     },
@@ -57850,7 +57858,7 @@
       "kind": "prop",
       "model": "prop.hm_dresser",
       "yaw": 1.59523,
-      "scale": 0.8,
+      "scale": 1,
       "solid": true,
       "tint": null
     },
@@ -57878,7 +57886,7 @@
       "kind": "prop",
       "model": "prop.hm_dresser",
       "yaw": -1.54637,
-      "scale": 0.8,
+      "scale": 1,
       "solid": true,
       "tint": null
     },
@@ -57906,7 +57914,7 @@
       "kind": "prop",
       "model": "prop.hm_dresser",
       "yaw": 1.59523,
-      "scale": 0.8,
+      "scale": 1,
       "solid": true,
       "tint": null
     },
@@ -57934,7 +57942,7 @@
       "kind": "prop",
       "model": "prop.hm_dresser",
       "yaw": -1.54637,
-      "scale": 0.8,
+      "scale": 1,
       "solid": true,
       "tint": null
     },
@@ -57962,7 +57970,7 @@
       "kind": "prop",
       "model": "prop.hm_dresser",
       "yaw": 1.59523,
-      "scale": 0.8,
+      "scale": 1,
       "solid": true,
       "tint": null
     },
@@ -57990,7 +57998,7 @@
       "kind": "prop",
       "model": "prop.hm_dresser",
       "yaw": -1.54637,
-      "scale": 0.8,
+      "scale": 1,
       "solid": true,
       "tint": null
     },
@@ -58018,7 +58026,7 @@
       "kind": "prop",
       "model": "prop.hm_dresser",
       "yaw": 1.59523,
-      "scale": 0.8,
+      "scale": 1,
       "solid": true,
       "tint": null
     },
@@ -58046,7 +58054,7 @@
       "kind": "prop",
       "model": "prop.hm_dresser",
       "yaw": -1.54637,
-      "scale": 0.8,
+      "scale": 1,
       "solid": true,
       "tint": null
     },
@@ -58074,7 +58082,7 @@
       "kind": "prop",
       "model": "prop.hm_dresser",
       "yaw": -1.54637,
-      "scale": 0.8,
+      "scale": 1,
       "solid": true,
       "tint": null
     },
@@ -58116,7 +58124,7 @@
       "kind": "prop",
       "model": "prop.hm_dresser",
       "yaw": 1.59523,
-      "scale": 0.8,
+      "scale": 1,
       "solid": true,
       "tint": null
     },
@@ -58144,7 +58152,7 @@
       "kind": "prop",
       "model": "prop.hm_dresser",
       "yaw": -1.54637,
-      "scale": 0.8,
+      "scale": 1,
       "solid": true,
       "tint": null
     },
@@ -58172,7 +58180,7 @@
       "kind": "prop",
       "model": "prop.hm_dresser",
       "yaw": 1.59523,
-      "scale": 0.8,
+      "scale": 1,
       "solid": true,
       "tint": null
     },
@@ -58200,7 +58208,7 @@
       "kind": "prop",
       "model": "prop.hm_dresser",
       "yaw": -1.54637,
-      "scale": 0.8,
+      "scale": 1,
       "solid": true,
       "tint": null
     },
@@ -58228,7 +58236,7 @@
       "kind": "prop",
       "model": "prop.hm_dresser",
       "yaw": 1.59523,
-      "scale": 0.8,
+      "scale": 1,
       "solid": true,
       "tint": null
     },
@@ -58256,7 +58264,7 @@
       "kind": "prop",
       "model": "prop.hm_dresser",
       "yaw": -1.54637,
-      "scale": 0.8,
+      "scale": 1,
       "solid": true,
       "tint": null
     },
@@ -58284,7 +58292,7 @@
       "kind": "prop",
       "model": "prop.hm_dresser",
       "yaw": 1.59523,
-      "scale": 0.8,
+      "scale": 1,
       "solid": true,
       "tint": null
     },
@@ -58312,7 +58320,7 @@
       "kind": "prop",
       "model": "prop.hm_dresser",
       "yaw": -1.54637,
-      "scale": 0.8,
+      "scale": 1,
       "solid": true,
       "tint": null
     },
@@ -58340,7 +58348,7 @@
       "kind": "prop",
       "model": "prop.hm_dresser",
       "yaw": 1.59523,
-      "scale": 0.8,
+      "scale": 1,
       "solid": true,
       "tint": null
     },
@@ -58368,7 +58376,7 @@
       "kind": "prop",
       "model": "prop.hm_dresser",
       "yaw": -1.54637,
-      "scale": 0.8,
+      "scale": 1,
       "solid": true,
       "tint": null
     },
@@ -58410,7 +58418,7 @@
       "kind": "prop",
       "model": "prop.hm_dresser",
       "yaw": 1.59523,
-      "scale": 0.8,
+      "scale": 1,
       "solid": true,
       "tint": null
     },
@@ -58438,7 +58446,7 @@
       "kind": "prop",
       "model": "prop.hm_dresser",
       "yaw": -1.54637,
-      "scale": 0.8,
+      "scale": 1,
       "solid": true,
       "tint": null
     },
@@ -58466,7 +58474,7 @@
       "kind": "prop",
       "model": "prop.hm_dresser",
       "yaw": 1.59523,
-      "scale": 0.8,
+      "scale": 1,
       "solid": true,
       "tint": null
     },
@@ -58494,7 +58502,7 @@
       "kind": "prop",
       "model": "prop.hm_dresser",
       "yaw": -1.54637,
-      "scale": 0.8,
+      "scale": 1,
       "solid": true,
       "tint": null
     },
@@ -58522,7 +58530,7 @@
       "kind": "prop",
       "model": "prop.hm_dresser",
       "yaw": 1.59523,
-      "scale": 0.8,
+      "scale": 1,
       "solid": true,
       "tint": null
     },
@@ -58550,7 +58558,7 @@
       "kind": "prop",
       "model": "prop.hm_dresser",
       "yaw": -1.54637,
-      "scale": 0.8,
+      "scale": 1,
       "solid": true,
       "tint": null
     },
@@ -58578,7 +58586,7 @@
       "kind": "prop",
       "model": "prop.hm_dresser",
       "yaw": 1.59523,
-      "scale": 0.8,
+      "scale": 1,
       "solid": true,
       "tint": null
     },
@@ -58606,7 +58614,7 @@
       "kind": "prop",
       "model": "prop.hm_dresser",
       "yaw": -1.54637,
-      "scale": 0.8,
+      "scale": 1,
       "solid": true,
       "tint": null
     },
@@ -58634,7 +58642,7 @@
       "kind": "prop",
       "model": "prop.hm_dresser",
       "yaw": 1.59523,
-      "scale": 0.8,
+      "scale": 1,
       "solid": true,
       "tint": null
     },
@@ -58662,7 +58670,7 @@
       "kind": "prop",
       "model": "prop.hm_dresser",
       "yaw": -1.54637,
-      "scale": 0.8,
+      "scale": 1,
       "solid": true,
       "tint": null
     },
@@ -59334,7 +59342,7 @@
       "kind": "prop",
       "model": "prop.hm_dresser",
       "yaw": 0.00873,
-      "scale": 0.8,
+      "scale": 1,
       "solid": true,
       "tint": null
     },
@@ -59362,7 +59370,7 @@
       "kind": "prop",
       "model": "prop.hm_dresser",
       "yaw": 3.15033,
-      "scale": 0.8,
+      "scale": 1,
       "solid": true,
       "tint": null
     },
@@ -59390,7 +59398,7 @@
       "kind": "prop",
       "model": "prop.hm_dresser",
       "yaw": 0.00873,
-      "scale": 0.8,
+      "scale": 1,
       "solid": true,
       "tint": null
     },
@@ -59418,7 +59426,7 @@
       "kind": "prop",
       "model": "prop.hm_dresser",
       "yaw": 0.00873,
-      "scale": 0.8,
+      "scale": 1,
       "solid": true,
       "tint": null
     },
@@ -59446,7 +59454,7 @@
       "kind": "prop",
       "model": "prop.hm_dresser",
       "yaw": 3.15033,
-      "scale": 0.8,
+      "scale": 1,
       "solid": true,
       "tint": null
     },
@@ -66352,7 +66360,7 @@
       "kind": "prop",
       "model": "prop.hm_dresser",
       "yaw": 0.00873,
-      "scale": 0.8,
+      "scale": 1,
       "solid": true,
       "tint": null
     },
@@ -66380,7 +66388,7 @@
       "kind": "prop",
       "model": "prop.hm_dresser",
       "yaw": 3.15033,
-      "scale": 0.8,
+      "scale": 1,
       "solid": true,
       "tint": null
     },
@@ -66408,7 +66416,7 @@
       "kind": "prop",
       "model": "prop.hm_dresser",
       "yaw": 0.00873,
-      "scale": 0.8,
+      "scale": 1,
       "solid": true,
       "tint": null
     },
@@ -66436,7 +66444,7 @@
       "kind": "prop",
       "model": "prop.hm_dresser",
       "yaw": 0.00873,
-      "scale": 0.8,
+      "scale": 1,
       "solid": true,
       "tint": null
     },
@@ -66464,7 +66472,7 @@
       "kind": "prop",
       "model": "prop.hm_dresser",
       "yaw": 3.15033,
-      "scale": 0.8,
+      "scale": 1,
       "solid": true,
       "tint": null
     },
@@ -66506,7 +66514,7 @@
       "kind": "prop",
       "model": "prop.hm_dresser",
       "yaw": 0.00873,
-      "scale": 0.8,
+      "scale": 1,
       "solid": true,
       "tint": null
     },
@@ -66534,7 +66542,7 @@
       "kind": "prop",
       "model": "prop.hm_dresser",
       "yaw": 3.15033,
-      "scale": 0.8,
+      "scale": 1,
       "solid": true,
       "tint": null
     },
@@ -66562,7 +66570,7 @@
       "kind": "prop",
       "model": "prop.hm_dresser",
       "yaw": 0.00873,
-      "scale": 0.8,
+      "scale": 1,
       "solid": true,
       "tint": null
     },
@@ -66590,7 +66598,7 @@
       "kind": "prop",
       "model": "prop.hm_dresser",
       "yaw": 0.00873,
-      "scale": 0.8,
+      "scale": 1,
       "solid": true,
       "tint": null
     },
@@ -66618,7 +66626,7 @@
       "kind": "prop",
       "model": "prop.hm_dresser",
       "yaw": 3.15033,
-      "scale": 0.8,
+      "scale": 1,
       "solid": true,
       "tint": null
     },

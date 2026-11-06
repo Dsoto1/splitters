@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 20,
+  "formatVersion": 27,
   "metadata": {
     "id": "grand_marquee",
     "name": "Grand Marquee",
@@ -19,7 +19,15 @@
       "core.koth",
       "core.deathmatch",
       "core.zombies"
-    ]
+    ],
+    "release": {
+      "mapId": "m_e6dqdikseiiwt3s5",
+      "versionId": "v_vpns7jten2qpy3rp",
+      "revision": 1,
+      "contentHash": "sha256:5ea027f29c1b48350fc1b3607923133000cb2e64a6e92d22f7d927bc8314b0da",
+      "schemaVersion": 27,
+      "releasedAt": "2026-11-06T22:56:49.840Z"
+    }
   },
   "classicStructure": {
     "cellSize": 8,
@@ -12969,9 +12977,9 @@
     {
       "id": "prop_602",
       "position": [
-        -34.68,
+        -34.55,
         0,
-        34.64
+        34.503
       ],
       "kind": "prop",
       "model": "prop.hm_armchair",
@@ -15160,7 +15168,7 @@
       "kind": "prop",
       "model": "prop.bench",
       "yaw": 1.5707963267948966,
-      "scale": 1.5,
+      "scale": 1,
       "solid": false,
       "tint": null
     },
@@ -15174,7 +15182,7 @@
       "kind": "prop",
       "model": "prop.bench",
       "yaw": -1.5707963267948966,
-      "scale": 1.5,
+      "scale": 1,
       "solid": false,
       "tint": null
     },
@@ -17219,7 +17227,6 @@
     "style": "invisible",
     "height": 30
   },
-  "track": null,
   "backdrop": {
     "sky": "night",
     "scenery": "city",

@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 25,
+  "formatVersion": 27,
   "metadata": {
     "id": "gallows_yard",
     "name": "Gallows Yard",
@@ -16,7 +16,15 @@
     "supportedModes": [
       "core.tdm",
       "core.deathmatch"
-    ]
+    ],
+    "release": {
+      "mapId": "m_rtc6tbk7czp3baxw",
+      "versionId": "v_eqqhz7efprqf7jn6",
+      "revision": 1,
+      "contentHash": "sha256:c041418d8e4d603d3d2c93826965ddd2d8808dd10a7a61cad9988a7bba9d90ad",
+      "schemaVersion": 27,
+      "releasedAt": "2026-11-06T22:54:43.750Z"
+    }
   },
   "classicStructure": {
     "cellSize": 8,
@@ -2569,9 +2577,9 @@
     {
       "id": "prop_212",
       "position": [
-        3.26,
+        3.098,
         0,
-        11.35
+        11.294
       ],
       "kind": "prop",
       "model": "prop.bench",
@@ -2695,9 +2703,9 @@
     {
       "id": "prop_221",
       "position": [
-        67.26,
+        67.098,
         0,
-        11.35
+        11.294
       ],
       "kind": "prop",
       "model": "prop.bench",
@@ -2778,12 +2786,12 @@
     },
     {
       "id": "prop_dmxokrxrmg",
-      "kind": "prop",
       "position": [
         32,
         4,
         17.5
       ],
+      "kind": "prop",
       "model": "prop.ww_gallows",
       "yaw": 1.571,
       "scale": 1,
@@ -2792,12 +2800,12 @@
     },
     {
       "id": "prop_jo92buckom",
-      "kind": "prop",
       "position": [
         28,
         0,
         4.5
       ],
+      "kind": "prop",
       "model": "prop.ge_sarcophagus",
       "yaw": 1.571,
       "scale": 1,
@@ -2806,12 +2814,12 @@
     },
     {
       "id": "prop_1b7vb2ebxt",
-      "kind": "prop",
       "position": [
         36,
         0,
         27.5
       ],
+      "kind": "prop",
       "model": "prop.ge_sarcophagus",
       "yaw": -1.571,
       "scale": 1,
