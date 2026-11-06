@@ -839,8 +839,9 @@ that a 0.5 m square fits in are a filled **opening**: the check fails unless the
 `voxel` (or `frame`/`openings`) or says why in `fills` (nine do: five long stair flights kept solid
 underneath, hand-built collision of the airliner and its stairs, the bucket-wheel excavator's
 lattice, one city block). Lines reached from either side (over a car's bonnet, beside a stump's
-roots) are **slack**, listed with `--slack`, not failed. The check also fails on a voxel prop over its budget or not rebuilt, and a
-trunk column the build would now put elsewhere. `packages/shared/test/fixtures/prop-openings.json`
+roots) are **slack**, listed with `--slack`, not failed. Gaps narrower than 0.5 m (bars and fence rails:
+`iron_fence`, `dg_arch_bars`, the `lf_*` gates) are neither, so a `box` still stops rounds between them. The check
+also fails on a voxel prop over its budget or not rebuilt, and a trunk column the build would now put elsewhere. `packages/shared/test/fixtures/prop-openings.json`
 records every prop this changed (lines through what its old collision filled, points of its model
 its new one holds) and a digest of every other prop's collision; after a deliberate collision
 change, `node tools/content/prop-openings.mjs --fixture <git ref before>` rewrites it.

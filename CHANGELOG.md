@@ -11,7 +11,8 @@ made only on a commit that passed CI on a check branch.
 **Rounds go through arches, windows and holes** (owner's report, 2026-11-06: bullet holes in empty air inside a stone
 arch and a ruined wall's window on Fogbound, and under a giant root on Fernwood Moon, with puffs in the air by the trees)
 - **Openings are open**: arches, windows, holes, doorways, gates, the space under tables, beds, bridges, stalls and
-  balconies, the inside of tents and boats and the gaps in fences no longer stop rounds or players. 129 props now collide with
+  balconies, the inside of tents and boats and the wide gaps in fences (0.5 m and up: bars closer than that still stop
+  rounds) no longer stop rounds or players. 129 props now collide with
   boxes that follow their model in 3D (voxel collision: the Quaternius ruins' arches and walls, the dungeon arch, the
   giant root, the Wild West balconies, gallows and wagons, the sci-fi trusses and frames, the skytrain, the armoured
   truck, the gantry crane, the fence gates, the hedge gate, the drawbridge, tables, bunks, stalls, siege engines and
@@ -30,7 +31,7 @@ arch and a ruined wall's window on Fogbound, and under a giant root on Fernwood 
   shape too; a shot anywhere on one still damages it.
 - Still filled, with the reason written down: under the long open stair flights (solid so they climb reliably), the
   airliner's and its boarding stairs' hand-built collision, the bucket-wheel excavator's lattice and one narrow gap
-  under a city block.
+  under a city block. Glazed windows stop rounds on their glass, as before.
 - Team tools: `collide: "voxel"` for props (docs/CONTENT_PIPELINE.md, "Prop collision"), with a box budget per prop;
   `pnpm content:check` now fails on a prop whose collision fills an opening without saying why
   (`tools/content/prop-openings.mjs`, which also lists the slack round props' outlines with `--slack`); a fixture test
