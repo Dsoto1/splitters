@@ -403,9 +403,12 @@ the causes, each fixed where it starts:
   (`planEscape`); a crossing not made in 8 s is left alone for 30 s.
 - **A goal no route reaches** (a flag on a ledge, something on a roof, a carrier in the air): the bot goes as near
   as a route gets (`NavWorld.reachToward`, Detour's partial route, cached per part and goal) and keeps watch there
-  facing it, asking for a route again every 4 s (`outOfReach`), rather than standing with "no route" until the flag
-  goes home. (A first version asked every few ticks, the goal's route and the watch place's taking turns and wiping
-  each other: Eagle Spires' attackers stood below the mesas asking 30 000 times a match.)
+  facing it, rather than standing with "no route" until the flag goes home. The route is asked for again as the
+  no-route back-off allows (0.2 s doubling to 4 s, from about the same place), and each time the bot also looks for a
+  way off a cut-off patch, a button that opens the way and a lead nearer: Obsidian Orb's bots stranded on its
+  reactor platform get off it so. (A route to a watch place used to clear the goal's back-off, and the watch was
+  dropped every tick: Eagle Spires' attackers stood below the mesas asking 30 000 times a match. A version that
+  watched for 4 s between asks took none of Obsidian Orb's flags in two matches, against 5 a match.)
 - **Spawned inside something solid.** Sandfall Colosseum's spawn_269 stood inside the stand's steps: a bot spawned
   there stood all match (300 s). Moved in MapMaker; validate-map and MapMaker now warn (`spawn.blocked`: the spawn
   point's middle is inside a collider). 26 spawn points on 18 maps are inside collision by that check, most against

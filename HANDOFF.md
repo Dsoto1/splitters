@@ -576,9 +576,10 @@ export): `bots-idle/tools/maker-*.mjs`, `finalize.mjs` (needs the client's dev s
   reactor core (+0.5 m, inspector) fixed in MapMaker. `logic.undoes` warning (validate-map, MapMaker; also flags
   Glacier Line's alert console, left).
 - Later fixes: lane waypoints and keep-watch places only on the goal's navmesh part; escapes up to 8 m (Capitol
-  Mall's reflecting pool); unreachable goals gone to as near as a route gets (`NavWorld.reachToward`), the route asked
-  for every 4 s (`outOfReach`; a first version asked every few ticks, 30 000 failed searches a match on Eagle
-  Spires); sidestep after stuck loops (Fernwood's parked dropship); boarding within 0.95 × enter radius; no-route
+  Mall's reflecting pool); unreachable goals gone to as near as a route gets (`NavWorld.reachToward`) and watched from
+  there, asking again as the back-off allows (a route to a watch place no longer clears the goal's back-off: 30 000
+  failed searches a match on Eagle Spires before; asking only every 4 s stranded Obsidian Orb's bots on its reactor
+  platform); sidestep after stuck loops (Fernwood's parked dropship); boarding within 0.95 × enter radius; no-route
   back-off only near where it failed; ladder climbs finished (Fernwood's vines: 230 s); lift patience 6 s, then a
   way off lifts (`LIFT_FLAG`); carriers home with their flag away keep watch (Serene City: 143 s on the base); a flag
   dropped into lava goes home (rule change, players too; Cinder Foundry: 28 takes, no capture); plane bots come
