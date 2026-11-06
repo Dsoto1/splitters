@@ -495,11 +495,13 @@ export function voxelBoxes(tris, { cell = VOXEL_CELL, air = VOXEL_AIR, hug = VOX
       for (let k = 0; k < 3; k++) {
         if (open(b, k, -1)) box[k] = Math.max(box[k], ext[k]);
         if (open(b, k, 1)) box[k + 3] = Math.min(box[k + 3], ext[k + 3]);
-        // Never thinner than the model inside (or than minThickness round a single plane of it), within the cubes.
-        const thick = ext[k + 3] - ext[k] < PLANE ? minThickness : MIN_BOX;
+        // Never thinner than the model inside (within the cubes), nor than minThickness round a single plane of it
+        // (a kit wall with one face: centred on it, as a box prop's thickened box was).
+        const plane = ext[k + 3] - ext[k] < PLANE;
+        const thick = plane ? minThickness : MIN_BOX;
         if (box[k + 3] - box[k] < thick) {
-          const want = Math.min(thick, was[k + 3] - was[k]);
-          const mid = Math.min(Math.max((ext[k] + ext[k + 3]) / 2, was[k] + want / 2), was[k + 3] - want / 2);
+          const want = plane ? thick : Math.min(thick, was[k + 3] - was[k]);
+          const mid = plane ? (ext[k] + ext[k + 3]) / 2 : Math.min(Math.max((ext[k] + ext[k + 3]) / 2, was[k] + want / 2), was[k + 3] - want / 2);
           box[k] = mid - want / 2;
           box[k + 3] = mid + want / 2;
         }
@@ -791,12 +793,13 @@ export function filledOpenings(tris, boxes, { pixel = AUDIT_PIXEL, min = MIN_OPE
       seen[s] = 1;
       stack.push(s);
       let [n, best, xa, xb, ya, yb] = [0, 0, W, -1, H, -1];
+      let bestAt = s;
       while (stack.length) {
         const p = stack.pop();
         const x = p % W;
         const y = (p - x) / W;
         n++;
-        best = Math.max(best, sq[p]);
+        if (sq[p] > best || (sq[p] === best && p < bestAt)) [best, bestAt] = [sq[p], p];
         xa = Math.min(xa, x);
         xb = Math.max(xb, x);
         ya = Math.min(ya, y);
@@ -817,11 +820,16 @@ export function filledOpenings(tris, boxes, { pixel = AUDIT_PIXEL, min = MIN_OPE
         }
       }
       if (best * pixel + 1e-9 < min) continue;
+      // The middle of its largest square (always in it, unlike the middle of its bounds).
+      const bx = bestAt % W;
+      const by = (bestAt - bx) / W;
+      const inner = [round(U0 + (bx + 1 - best / 2) * pixel), round(V0 + (by + 1 - best / 2) * pixel)];
       out.push({
         axis: axis === 0 ? 'x' : 'z',
         size: [round((xb - xa + 1) * pixel), round((yb - ya + 1) * pixel)],
         square: round(best * pixel),
         at: [round(U0 + ((xa + xb + 1) / 2) * pixel), round(V0 + ((ya + yb + 1) / 2) * pixel)],
+        inner,
         area: round(n * pixel * pixel),
         ...(mask[s] === 2 ? { slack: true } : {}),
       });
