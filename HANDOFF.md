@@ -271,7 +271,7 @@ All data on the standard grid: no map format change, nothing in `packages/client
 <!-- /setpieces-3 -->
 
 <!-- intake-1106 -->
-### Intake of 2026-11-06: astronauts, crocodile, tortoise; Meshy provenance audit (`wip/intake-1106`, agent, 2026-11-06; from main bc6037a1, main d06af94a merged in; green on `check/intake-1106`, run 42265419110 at bad67c03, see the end of this section; not landed)
+### Intake of 2026-11-06: astronauts, crocodile, tortoise; Meshy provenance audit (`wip/intake-1106`, agent, 2026-11-06; from main bc6037a1, main d06af94a merged in; green on `check/intake-1106` at 8b547fe2, run 42268803252 (and run 42265419110 at bad67c03); not landed)
 The owner: "I have 3 new astronaut models, replace the light blue one for captain nova, add the 2 new ones. The
 boglurker can be replaced by the alligator. Retire bamboo, add the new turtle." Downloads in
 `/home/user/meshy-drive/intake-2026-11-06/` (raw, never committed), linked in the agent scratchpad `i1106/dl`; each
@@ -364,7 +364,7 @@ owner saying they made them; any the owner made goes back to owned: manifest `so
 yourself, and post URLs for the rest if you have them (CC BY 4.0 posts would need a credit); the airliner; the US flag
 on Spacewalker; whether Shellback should be large (2.12 m, 115 health; chosen for its heavy build) or standard.
 
-**Checks:** CI run 42265419110 green at bad67c03 (every job: unit, maps, build, 12 e2e shards, perf). Locally:
+**Checks:** CI green: run 42265419110 at bad67c03 and run 42268803252 at 8b547fe2 (every job: unit, maps, build, 12 e2e shards, perf). Locally:
 `pnpm typecheck` clean; `pnpm content:check` OK; the character-manifest, hitbox, style-pack, look-group, bot-theme and
 coverage-map tests pass; the e2e `characters` (358 s), `characters2` (260 s) and `characters3` (202 s) flows PASS
 (ports 4981/4982). `pnpm test:changed` on this loaded box (load 13 on 4 cores): 1908 passed, 8 failed, all of them
