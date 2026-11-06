@@ -150,6 +150,36 @@ are right for the campus. The shallow vault stays. Skybridges keep the pack's fa
   facade) are an override away (`overrides.roles.facade: "none"`); which should be the default?
 <!-- /setpieces -->
 
+### Queued (owner, 2026-11-06): performance round 4, crowds. Right after the Match Setup follow-ups, ahead of Roulette
+**The owner:**
+- "Focus round 4 on crowds."
+- "32v32 would be max I want to shoot for without dedicated host."
+- "Push dedicated hosts to 64v64 if at all possible."
+- Running characters look choppy at a distance (fewer animation frames). Push the reduced-rate distance out.
+
+**Scope:**
+- Animation that doesn't look choppy and costs less: screen-size bands, smoothing between samples, shared or cheaper
+  evaluation.
+- The M1 recording's three hitches: start-of-match shaders, the mass-death spike, GC frames.
+- The browser cap raised to 32v32 (`BROWSER_MAX_PLAYERS` 48 → 64) once measured.
+- 64v64 on dedicated hosts (`MAX_PLAYER_SLOTS` 96 → 128) only if the measurements hold; otherwise a precise report.
+- The handoff e2e flake.
+
+The brief is in the session scratchpad, `briefs/perf-4.md`.
+
+### Queued (owner, 2026-11-06): Match Setup follow-ups, NEXT FREE SLOT (before Roulette)
+**Owner's answers to the redesign's questions:**
+1. Host online lists the match publicly from both places.
+2. Spectate keeps following the Offline/Host online switch.
+3. Bring back "save for next match" in the Host tab.
+4. Cap co-op size presets at the map's recommended size.
+
+**New:** default score and time scale with players + bots. The owner: "24v24 in a 40 pt match means on average 1 kill
+per; 24v24 plays ok with 500 points, but also 15–20 min."
+
+The brief is in the session scratchpad, `briefs/match-setup-followups.md`. It has a curve fitted to measured kill rates
+and anchored at 4v4 ≈ 40 points / 10 min and 24v24 ≈ 500 points / 15–20 min.
+
 <!-- match-setup -->
 ### Match Setup redesign, the Host tab, Spectate before the start (`wip/match-setup`, agents, 2026-11-06; main bc6037a1 merged in; green on `check/match-setup` at c32bbf20, run 42242658709; not landed)
 The owner's report and approved design are in the queued section below ("Queued … Match Setup redesign"); the brief is
@@ -267,6 +297,110 @@ All data on the standard grid: no map format change, nothing in `packages/client
 - The map builds themselves (MAP 21, the colosseum) in MapMaker from these pieces, after part 2.
 - Owner: compare the landing craft with Shingle Point's kit Landing Craft; send the community page URL for it.
 <!-- /setpieces-3 -->
+
+<!-- intake-1106 -->
+### Intake of 2026-11-06: astronauts, crocodile, tortoise; Meshy provenance audit (`wip/intake-1106`, agent, 2026-11-06; from main bc6037a1, main d06af94a merged in; green on `check/intake-1106` at 8b547fe2, run 42268803252 (and run 42265419110 at bad67c03); not landed)
+The owner: "I have 3 new astronaut models, replace the light blue one for captain nova, add the 2 new ones. The
+boglurker can be replaced by the alligator. Retire bamboo, add the new turtle." Downloads in
+`/home/user/meshy-drive/intake-2026-11-06/` (raw, never committed), linked in the agent scratchpad `i1106/dl`; each
+built with `ONLY=<id> node tools/content/prepare-meshy-characters.mjs <dir>` (an unchanged manifest rebuilds the same
+file). All five are Mixamo-skeleton Meshy rigs; their two clips are not used. Rendered and checked by eye first
+(`i1106/shots/raw-*.png`): the light-blue one is the slender female suit (#88a8d8), so it is Capt. Nova.
+
+| Character (manifest / look) | Group, size, bot theme | Download | Built (body + far copy; colour and normal map 1024 px) | Hands |
+|---|---|---|---|---|
+| Capt. Nova `meshy_nova` / `core.nova` (same name, look, size) | soldiers, standard, soldier | "A full body portrait of a tall slender", 107k tris, whole finger chains | rebaked 14,000 + 3,500, 1.04 MB; arms 1,954 | `fingers: fit` (the download's own fingers scored 7 and stood a finger up off the support hand; own with `hands.together 1` scored 5, no spikes, but its support index still stood over the handguard and the pistol's support fingers splayed; fit 6 closes round both: kept, close-ups `i1106/close/nova-*-owntog-vs-fit.png`); grip tuned |
+| Boglurker `meshy_toad` / `core.boglurker` (same name, look, size) | creatures, large, frog | "A humanoid crocodile wearing a heavy", 25.6k, no index fingers | careful cut 13,000 + 3,250, 1.05 MB; arms 2,367 | rigid claws (measured a fist) skinned as mittens: `hands { scale 0.75, curl 1 }` (27.5 -> 20.8 cm); grip tuned; `centre` (below) |
+| **Spacewalker** `meshy_astronaut` / `core.astronaut` (new; name a placeholder) | soldiers, standard, soldier | "Astronaut", 10.4k, thumb and middle chains only | whole download 10,406 + 2,601, 1.35 MB; arms 806 | re-fitted; its gloves are low-poly cones that folded into shards closed at 0.87: `hands.curl 0.6`, `skin { knuckle 0.2, joints 0.15 }`; grip tuned |
+| **Starfarer** `meshy_darkastronaut` / `core.darkastronaut` (new; placeholder) | soldiers, standard, soldier | "a meticulously detailed astronaut with a", 167k, no finger joints | rebaked 13,998 + 3,496, 0.99 MB; arms 1,441 | `fingers: fit` (no chains, as the Umpire); grip tuned |
+| **Shellback** `meshy_tortoise` / `core.tortoise` (new; placeholder) | animals, large (a broad, heavy body; takes Bamboo's place), critter | "The object resembles a humanoid tortoise", 199k, no index fingers | rebaked 14,000 + 3,500, 0.85 MB; arms 1,441 | rigid claws as mittens: `hands { scale 0.75, curl 1 }` (27.7 -> 20.7 cm); grip tuned |
+
+- **Bamboo retired:** `RETIRED_LOOKS['core.panda'] = 'core.tortoise'` (saved choices and bot sets play Shellback);
+  manifest, files and portrait kept. No map, bot set or preset named it.
+- **Grips** (`fixes.grip`, from live candidates in `?mode=grips`, scratch `i1106/tools/search.mjs`): Nova, Spacewalker,
+  Starfarer `supportLong [0, 0.02, 0.03]`, `supportPistol [-0.01, 0.03, -0.03]` and `gripLong [-0.03, 0.02, -0.03]`
+  (Spacewalker `-0.045`), Nova `rollR -0.3` (palm in 0.75 -> 0.90); crocodile `gripLong [-0.045, 0.03, -0.03]`,
+  tortoise `[-0.045, 0.02, -0.03]`, both `supportPistol [-0.01, 0.03, -0.03]`. Hold offsets did nothing for the
+  tortoise's support hand: its arms are short against its shell (the long-gun support hand stays ~0.19 m back).
+- **Grip audit** (rifle, pistol, shotgun; lower is better; before = main's build; shooting hand R and support hand L
+  distance to their points on the rifle, m):
+
+  | Character | before (main) | first build | final | rifle R / L, first -> final |
+  |---|---|---|---|---|
+  | Capt. Nova | 3 back (old model; R 0.03, L 0.21) | 7 flat off fp (own fingers) | 6 flat spikes | 0.07 / 0.06 -> 0.03 / 0.02 |
+  | Boglurker | 18 flat open back off spikes palm fp (old toad; R 0.19) | 9 flat open off fp | 8 back spikes fp | 0.14 / 0.11 -> 0.02 / 0.06 |
+  | Spacewalker | new | 3 flat | 3 flat | 0.05 / 0.21 -> 0.03 / 0.18 |
+  | Starfarer | new | 3 spikes | 3 spikes | 0.06 / 0.19 -> 0.03 / 0.15 |
+  | Shellback | new | 12 flat open off spikes fp | 7 spikes fp off | 0.12 / 0.17 -> 0.02 / 0.19 |
+
+  What's left: the mitten claws stretch a few finger edges (spikes on middle_01/02); Starfarer one 12x edge at the
+  left forearm and Nova one 9x edge (short edges, no tear seen); the tortoise's pistol support hand 0.16 m off (short
+  arms); Spacewalker's rifle curl gain 0.006 (`flat`; a softer curl was the price of no shards). Audits:
+  `i1106/audit-before`, `audit-1` (first build), `audit-final`; close-ups `i1106/close/`.
+- **`fixes.centre`** (new, prepare-meshy-characters.mjs `pose`): the body moved over the origin by its hips. Meshy
+  centres a download's box, so the crocodile's tail stood its body 0.39 m ahead of the origin the game moves and
+  collides it by (Character Select drew it nearer the camera, head out of frame; its hit shapes sat 0.4 m ahead).
+  **Bandit 0.48 m, Scamp 0.35 m and Greyfang 0.26 m stand ahead the same way** (scratch `i1106/tools/pelvis.mjs`
+  measures every built body): candidates once their downloads are at hand (Bandit's "too big" note may be this).
+- **`fixes.scrubBlue` within boxes:** `{ "color", "within": [[u0, v0, u1, v1]] }` repaints blue only inside boxes of the
+  download's colour map. The Spacewalker's shoulder carried a NASA-style mission patch (blue disc, red swoosh): its
+  blue is painted the suit's white; the US flag on the other shoulder is kept. Owner to say if the flag should go too.
+- **Portraits** captured for all five (`capture-portraits.mjs` with the look ids; a temp copy with
+  `executablePath: '/opt/pw-browsers/chromium'`). `PORTRAIT_VIEWS`: Nova's old collar view dropped (the default
+  frames the new helmet), Boglurker's kept (the crocodile's snout fits it), Shellback `zoom 1.25`.
+- **Screenshots** (agent scratchpad `i1106/screens/`): `select-<look>.png` in Character Select; `play-<look>-fp-rifle`,
+  `fp-pistol`, `tp-rifle`, `tp-pistol` in an offline match on Canyon. Character Select's hero: the crocodile aims with
+  its head behind its raised arm, and the tortoise's head is behind its shell from that camera (drag to turn).
+
+**Provenance audit (owner's rule, 2026-11-06: "all Community CC0 and should be treated as such unless I let you know I
+created them in Meshy").** Every `meshy-owned` entry checked against the repo's records (manifests, locks, licence
+files, HANDOFF and git history, the intake queue, the Meshy task IDs' own timestamps). **Kept owned, with the reason:**
+- mining machines (`props/mining_excavator.glb`, `mining_haul_truck.glb`): text-to-3D through our Meshy API on the
+  owner's subscription, approved 2026-10-30 (commit 7d217715; task records in the session scratchpad `meshy/`);
+- airliner shell (`props/airliner_shell.glb`): Meshy preview and refine tasks created 2026-11-04 02:09 UTC while the
+  airliner was being made (the map notes of 01:32 that day: it needed the owner's go-ahead on credits). Either we or
+  the owner generated it on the owner's account; **owner to confirm**;
+- buggy and its tire (`models/vehicles/offroad_buggy.glb`, `offroad_tire.glb`): the owner's own share links
+  (meshy.ai/s/hHUmqb, /s/wpwiGq) in the owner's intake queue of 2026-10-29, "owned (owner's Meshy account)";
+- Alien Biker (`characters/meshy_alienbiker*.glb`): "the owner's own model (owned; confirmed by the owner 2026-11-01)".
+
+**Relabelled Meshy Community CC0** (author and post URL pending; came from the Drive or meshystuff, no record of the
+owner saying they made them; any the owner made goes back to owned: manifest `source.license`, or the pack file):
+- Characters (15, 30 files): Shaka Mpande `meshy_ashwalker`, Bonejack, Thornweaver, Uncle Bao (these four rigged by
+  our Meshy rigging API; the rig task IDs stay), The Dapper (its current "dapper man rigged" model; the first one,
+  generated through our API on 2026-10-25, is gone), Freaky Frida, Scary Larry, Rusty Mech (probably a rig of the
+  community "White Rusty Mech" behind Ivory Rustwalker, post 019f3ef0-…: owner to confirm), Seetah J. Chloth, Rourke,
+  Slugger-9, Coffee Brown, Goblin, Wealthy Otter, Salamander Warlord. Capt. Nova's and Boglurker's old owned models
+  (Nova's was API-generated 2026-10-25) are replaced and gone.
+- Weapons, turrets, medkit, tank (14; new pack `meshy-community-arsenal` in content/guns.json): Tommy Gun, Rotary
+  Gatling Gun, military sniper rifle, Steampunk Battle Axe, Freeze Gun, Mystical Glue Gun, Futuristic Blaster,
+  Plastic Toy Machine Gun (tripod MG), Large Sentry Gun, Ornate handgun, the WWII tank, and three the owner's own
+  queue of 2026-10-29 had listed as **CC0 community posts**, now with their post URLs in the provenance: Neon Flux
+  (posts/Neon-Flux-Assault-Rifle-019fea29-…), Frontier Rifle (posts/019e91b5-…), Medkit (3d-models/Medkit-019bce42-…).
+- Props (50): packs renamed `meshy-owned-{cargo,street,landmarks,drive-1031,rock-pile}` -> `meshy-community-*` (13
+  crates and containers, 15 street props, 13 landmark stalls/wells/statues/fountains/crane, 8 barriers and parked
+  vehicles, the Rock Pile); the palette atlases regrouped offline (no picture re-rendered).
+- Gear (5 helmets): pack `meshy-owned-gear` -> `meshy-community-gear`.
+- Pipeline for it: `prepare-meshy-characters.mjs` (and `prepare-gear.mjs`) give a file kept as built its manifest's
+  pack, so a licence change needs no download (`node tools/content/prepare-meshy-characters.mjs <empty dir>`);
+  `content:check` fails when a character's lock pack and its manifest's licence disagree; a `content/guns.json` entry
+  may carry its own post `url` (lock and provenance). Licence files: `assets-src/meshy-owned/License.txt` (what stays,
+  why), `assets-src/meshy-community/License.txt` and `assets-src/meshy-community-characters/License.txt` (each model),
+  docs/ASSET_SOURCES.md.
+
+**For the owner:** names for Spacewalker, Starfarer and Shellback; which of the relabelled models (above) you made
+yourself, and post URLs for the rest if you have them (CC BY 4.0 posts would need a credit); the airliner; the US flag
+on Spacewalker; whether Shellback should be large (2.12 m, 115 health; chosen for its heavy build) or standard.
+
+**Checks:** CI green: run 42265419110 at bad67c03 and run 42268803252 at 8b547fe2 (every job: unit, maps, build, 12 e2e shards, perf). Locally:
+`pnpm typecheck` clean; `pnpm content:check` OK; the character-manifest, hitbox, style-pack, look-group, bot-theme and
+coverage-map tests pass; the e2e `characters` (358 s), `characters2` (260 s) and `characters3` (202 s) flows PASS
+(ports 4981/4982). `pnpm test:changed` on this loaded box (load 13 on 4 cores): 1908 passed, 8 failed, all of them
+time-outs (botai, two npc play-throughs, sandgate, two pads maps, host) bar the air drop, whose test is fixed
+(`airplane.test.ts`: each bot checked as it lands; Nova's new hit shapes changed the bots' choices and the first two
+down knifed each other before the last landed); CI passes every one of them. After that run only the intake queue's
+licence fields and docs changed (979bd80c and later).
+<!-- /intake-1106 -->
 
 <!-- shingle -->
 ### Shingle Point asset refresh (`wip/shingle`, agents, 2026-11-05/06; main 5b167034 merged in; green on `check/shingle`)
@@ -1149,7 +1283,17 @@ variant for MAP 21.
   semi-traditional arena-style FPS match, so the landing craft is static dressing and cover. MAP 21's beach is
   where the fighting starts, not a scripted arrival.
 
+### Owner's answers on the 11-06 intake (2026-11-06), for the follow-up
+- **Names stay:** Spacewalker, Starfarer, Shellback.
+- **Keep the US flag** on Spacewalker.
+- **Shellback smaller:** "should be smaller, not that big at all". Large → standard: rebuild, portrait, grip re-check.
+- **"I did not make any, they are Meshy community."** Relabel the airliner shell, the buggy and its tire, and the Alien
+  Biker as Meshy Community CC0. The mining machines stay owned: we generated them through the Meshy API with the
+  owner's approval, 2026-10-30, so they weren't the owner's own downloads.
+
 ### Queued (owner, 2026-11-06): character intake, astronauts, crocodile and tortoise. NEXT FREE SLOT ("when able")
+
+### Done (owner, 2026-11-06): character intake, astronauts, crocodile and tortoise: see "Intake of 2026-11-06" above (`wip/intake-1106`)
 **Licence (owner, 2026-11-06):** "all Community CC0 and should be treated as such unless I let you know I created them in
 Meshy." That covers these five, the landing craft, and every Drive model before them (CLAUDE.md "Content rules"). The
 intake also audits `content/provenance.json`. Entries recorded as `meshy-owned` that came from the Drive, and weren't

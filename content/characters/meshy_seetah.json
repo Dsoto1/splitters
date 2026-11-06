@@ -9,10 +9,13 @@
   "nameTheme": "cat",
   "bio": "Fastest cat alive, for about four seconds a day. The rest is a very long nap with excellent aim.",
   "body": "male",
-  "notes": "Drive, 2026-11-01 (\"rigged cheetah sloth\", All Animations; via the lead). The owner's cheetah/sloth hybrid. A rigged Meshy download (10.4k triangles, 4096 px maps; Mixamo joint names read as Meshy's; its two clips are not used: the hands are fitted by hands.mjs). The owner's own model (owned).",
+  "notes": "Drive, 2026-11-01 (\"rigged cheetah sloth\", All Animations; via the lead). The owner's cheetah/sloth hybrid. A rigged Meshy download (10.4k triangles, 4096 px maps; Mixamo joint names read as Meshy's; its two clips are not used: the hands are fitted by hands.mjs). The owner's own model (owned). Licence (the owner's rule, 2026-11-06: models from the owner's Drive are Meshy Community CC0 unless the owner says they made them): recorded as Meshy Community, CC0 per the owner; it was recorded as owned before, with no record of the owner saying they made it (provenance audit, HANDOFF.md \"Intake of 2026-11-06\"). Post URL pending; if the owner made it, it goes back to owned.",
   "source": {
-    "license": "owned",
-    "author": "the owner, on their Meshy subscription",
+    "license": "CC0",
+    "author": "Meshy Community (CC0 per the owner)",
+    "community": {
+      "model": "rigged cheetah sloth"
+    },
     "date": "2026-11-01",
     "url": null,
     "file": "^Meshy_AI_rigged_cheetah_sloth_All_Animations\\.glb$"

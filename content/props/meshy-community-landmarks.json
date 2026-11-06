@@ -1,10 +1,10 @@
 {
   "pack": {
-    "title": "Tile Trigger originals (made with Meshy): market stalls, wells, statues, fountains and a crane",
-    "creator": "Meshy, owned (generated on the owner's Meshy subscription)",
-    "url": "https://www.meshy.ai",
-    "license": "Owned",
-    "licenseFile": "assets-src/meshy-owned/License.txt",
+    "title": "Meshy community models (market stalls, wells, statues, fountains and a crane, textured GLB downloads of 2026-10-31)",
+    "creator": "Meshy community, CC0 (per owner)",
+    "url": "https://www.meshy.ai (community page URL pending from the owner)",
+    "license": "CC0-1.0",
+    "licenseFile": "assets-src/meshy-community/License.txt",
     "retrieved": "2026-10-31",
     "download": "owned_landmarks",
     "meshy": true,
@@ -24,7 +24,7 @@
       "triangles": 14000,
       "maxError": 0.03,
       "source": {
-        "model": "Medieval Market Stall (owner's Meshy)",
+        "model": "Medieval Market Stall",
         "date": "2026-10-31"
       },
       "budget": "hero",
@@ -40,7 +40,7 @@
       "triangles": 12000,
       "maxError": 0.03,
       "source": {
-        "model": "Rustic Market Stall (owner's Meshy)",
+        "model": "Rustic Market Stall",
         "date": "2026-10-31"
       },
       "budget": "hero",
@@ -56,7 +56,7 @@
       "triangles": 9000,
       "maxError": 0.02,
       "source": {
-        "model": "Fire Statue (owner's Meshy)",
+        "model": "Fire Statue",
         "date": "2026-10-31"
       },
       "budget": "hero",
@@ -76,7 +76,7 @@
       "triangles": 16000,
       "maxError": 0.02,
       "source": {
-        "model": "Spear Statue (owner's Meshy)",
+        "model": "Spear Statue",
         "date": "2026-10-31"
       },
       "budget": "hero",
@@ -96,7 +96,7 @@
       "triangles": 16000,
       "maxError": 0.02,
       "source": {
-        "model": "Monk Statue (owner's Meshy)",
+        "model": "Monk Statue",
         "date": "2026-10-31"
       },
       "budget": "hero",
@@ -116,7 +116,7 @@
       "triangles": 18000,
       "maxError": 0.03,
       "source": {
-        "model": "Fountain (owner's Meshy)",
+        "model": "Fountain",
         "date": "2026-10-31"
       },
       "budget": "hero",
@@ -136,7 +136,7 @@
       "triangles": 16000,
       "maxError": 0.03,
       "source": {
-        "model": "Lion Head Fountain (owner's Meshy)",
+        "model": "Lion Head Fountain",
         "date": "2026-10-31"
       },
       "budget": "hero",
@@ -156,7 +156,7 @@
       "triangles": 18000,
       "maxError": 0.03,
       "source": {
-        "model": "Eagle Stone Fountain (owner's Meshy)",
+        "model": "Eagle Stone Fountain",
         "date": "2026-10-31"
       },
       "budget": "hero",
@@ -176,7 +176,7 @@
       "triangles": 12000,
       "maxError": 0.03,
       "source": {
-        "model": "Wishing Well (owner's Meshy)",
+        "model": "Wishing Well",
         "date": "2026-10-31"
       },
       "budget": "hero",
@@ -193,7 +193,7 @@
       "triangles": 12000,
       "maxError": 0.03,
       "source": {
-        "model": "Market Stall (owner's Meshy)",
+        "model": "Market Stall",
         "date": "2026-10-31"
       },
       "budget": "hero",
@@ -210,7 +210,7 @@
       "triangles": 12000,
       "maxError": 0.03,
       "source": {
-        "model": "Wishing Well (owner's Meshy)",
+        "model": "Wishing Well",
         "date": "2026-10-31"
       },
       "budget": "hero",
@@ -229,7 +229,7 @@
       "triangles": 18000,
       "maxError": 0.03,
       "source": {
-        "model": "Crawler Crane (owner's Meshy)",
+        "model": "Crawler Crane",
         "date": "2026-10-31"
       },
       "budget": "hero",
@@ -250,7 +250,7 @@
       "triangles": 16000,
       "maxError": 0.02,
       "source": {
-        "model": "Mayan Statue (owner's Meshy)",
+        "model": "Mayan Statue",
         "date": "2026-10-31"
       },
       "budget": "hero",

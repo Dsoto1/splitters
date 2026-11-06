@@ -10,10 +10,13 @@
   "bio": "Gutter-born, bandage-wrapped and grinning. Steals the kill, then the loot, then your seat.",
   "body": "male",
   "size": "small",
-  "notes": "Hunched, head hung in front of the chest: sat up by `lean` (degrees back per spine joint; the head keeps facing ahead). Its rags are hundreds of small texture islands, so `seamWeld` simplifies across the seams where the texture matches. Cloth hangs below its hips.",
+  "notes": "Hunched, head hung in front of the chest: sat up by `lean` (degrees back per spine joint; the head keeps facing ahead). Its rags are hundreds of small texture islands, so `seamWeld` simplifies across the seams where the texture matches. Cloth hangs below its hips. Licence (the owner's rule, 2026-11-06: models from the owner's Drive are Meshy Community CC0 unless the owner says they made them): recorded as Meshy Community, CC0 per the owner; it was recorded as owned before, with no record of the owner saying they made it (provenance audit, HANDOFF.md \"Intake of 2026-11-06\"). Post URL pending; if the owner made it, it goes back to owned.",
   "source": {
-    "license": "owned",
-    "author": "the owner, on their Meshy subscription",
+    "license": "CC0",
+    "author": "Meshy Community (CC0 per the owner)",
+    "community": {
+      "model": "Goblin"
+    },
     "date": "2026-10-26",
     "url": null,
     "file": "^Meshy_AI_Goblin_.*_texture\\.fbx$"

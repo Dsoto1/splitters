@@ -119,19 +119,22 @@ async function prepare(entry) {
 
 mkdirSync(OUT, { recursive: true });
 const files = [];
+/** An entry's provenance pack: its own `pack`, else the manifest's first (its only one, as of 2026-11-06). */
+const packOf = (entry) => entry.pack ?? Object.keys(manifest.packs)[0];
 for (const entry of manifest.models) {
   const file = `gear/${entry.id}.glb`;
   const path = join(ROOT, 'packages/client/public', file);
   if (!downloads || (only && only !== entry.id) || !existsSync(join(downloads, entry.src))) {
     const old = built.get(file);
     if (!old || !existsSync(path)) throw new Error(`${file}: not built yet (needs --downloads with ${entry.src})`);
-    files.push(old);
+    // Kept as built, with its pack as the manifest gives it now (a relabelled licence needs no rebuild).
+    files.push({ ...old, source: packOf(entry) });
     continue;
   }
   console.log(`${entry.id}: ${entry.src}`);
   const { glb, sourceTriangles, triangles } = await prepare(entry);
   writeFileSync(path, glb);
-  const record = { file, source: entry.pack ?? 'meshy-owned-gear', src: entry.src, title: entry.title, sourceTriangles, triangles, bytes: glb.length, sha256: sha(glb) };
+  const record = { file, source: packOf(entry), src: entry.src, title: entry.title, sourceTriangles, triangles, bytes: glb.length, sha256: sha(glb) };
   console.log(`  ${triangles} triangles (from ${sourceTriangles}), ${(glb.length / 1024).toFixed(0)} KB`);
   files.push(record);
 }

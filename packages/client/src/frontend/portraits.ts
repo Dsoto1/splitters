@@ -34,14 +34,14 @@ export interface PortraitView {
 
 /** Looks whose face the default view hides or leaves off centre (tools/content/capture-portraits.mjs ships them). */
 const PORTRAIT_VIEWS: Record<string, PortraitView> = {
-  // Capt. Nova's suit has a collar piece in front of her chin: look past it from her right.
-  'core.nova': { from: [-0.55, 0.12, 0.65], aim: [-0.08, 0.04, 0.05] },
   // The Roster Board's thumbnail flags (owner, 2026-11-01): faces cut off, low in the frame or hidden.
   // Bandit's ears and snout ran off the frame: wider, from a little below, so the snout shows past his paws.
   'core.bandit': { from: [0.1, -0.1, 1], aim: [0, -0.03, 0], zoom: 1.5 },
-  // Wide heads (a toad, a frog) filled the frame edge to edge.
+  // Wide heads and long snouts (Boglurker's crocodile, a frog) filled the frame edge to edge.
   'core.boglurker': { aim: [0, 0.02, 0], zoom: 1.45 },
   'core.croakley': { zoom: 1.4 },
+  // The tortoise's head is small against its shell: wider, so the shell's dome frames it.
+  'core.tortoise': { zoom: 1.25 },
   // Sir Galloway's visor: from a little below, into the helmet.
   'core.galloway': { from: [0.26, -0.2, 1], zoom: 0.9 },
   // Grizzelda's hat brim hid her face from above: from below, the aim down onto her face.

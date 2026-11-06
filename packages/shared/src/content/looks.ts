@@ -212,6 +212,9 @@ export const RETIRED_LOOKS: Readonly<Record<string, string>> = {
   // Owner, 2026-11-05: Bill off the roster (files and manifests kept). Hyena Warrior (Gnoll) and Snikkit (Goblin
   // Mischief) stay; their hands get the palm-orientation fix first.
   'core.bill': 'core.dale',
+  // Owner, 2026-11-06 ("Retire bamboo, add the new turtle"): Bamboo off the roster (files, manifest and portrait
+  // kept); saved choices and bot sets play the tortoise, the large animal that came in with it.
+  'core.panda': 'core.tortoise',
 };
 
 /**

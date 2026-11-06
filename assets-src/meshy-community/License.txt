@@ -49,6 +49,74 @@ tools/content/meshy-mesh.mjs turns the textured FBX downloads into the shipped
 files. The raw downloads (FBX, PNG) are not kept in the repo;
 content/guns.lock.json and content/props.lock.json check the built files.
 
+Recorded as owned until 2026-11-06 (the owner's rule that day: Meshy models from
+the owner's Drive are Meshy Community CC0 unless the owner says they made them;
+CC0 needs no credit, so the author is optional, and a post URL is kept where
+known as proof of the licence). These came from the owner's Drive or the
+owner's meshystuff repo with no record of the owner saying they made them, so
+they are recorded as Meshy Community, CC0 per the owner; post URLs pending from
+the owner unless given. If the owner made any of them, it goes back to owned
+(assets-src/meshy-owned/License.txt). HANDOFF.md, "Intake of 2026-11-06", lists
+them for the owner.
+
+Weapons, turrets, the medkit and the WWII tank (pack meshy-community-arsenal in
+content/guns.json, built by tools/content/prepare-guns.mjs from the textured GLB
+downloads, name as on the download and its date):
+
+- "Tommy Gun" (2026-10-29)  -> guns/tommy_gun.glb (the Submachine Gun)
+- "Rotary Gatling Gun" (2026-10-29)  -> guns/gatling_gun.glb (the Spin Gun)
+- "military sniper rifle" (2026-10-29)  -> guns/sniper_rifle.glb (the Sniper Rifle)
+- "Steampunk Battle Axe" (2026-10-29)  -> guns/battle_axe.glb (the Battle Axe)
+- "Freeze Gun" (2026-10-29)  -> guns/freeze_gun.glb (the Freeze Ray)
+- "Mystical Glue Gun" (2026-10-29)  -> guns/glue_gun.glb (the Goo Gun)
+- "Futuristic Blaster To…" (2026-10-29)  -> guns/futuristic_blaster.glb (the Plasma Rifle)
+- "Neon Flux Assault Rifle" (2026-10-29,
+  https://www.meshy.ai/posts/Neon-Flux-Assault-Rifle-019fea29-2673-7933-9787-ea0f947aac90,
+  CC0 in the owner's intake queue of 2026-10-29)  -> guns/neon_flux.glb (the Burst Rifle)
+- "rifle" (2026-10-29; the queue's "Frontier Rifle",
+  https://www.meshy.ai/posts/019e91b5-bda3-7714-91a6-870f1f0db2d3, CC0 in the
+  owner's intake queue of 2026-10-29)  -> guns/frontier_rifle.glb (the Marksman Rifle)
+- "Ornate Hand Holding G…" (2026-10-29)  -> guns/ornate_pistol.glb (the Pulse Pistol)
+- "Plastic Toy Machine Gun" (2026-10-29)  -> guns/tripod_mg.glb (the Heavy MG Turret)
+- "Large Sentry Gun" (2026-10-29)  -> guns/sentry_turret.glb (the Sentry Gun)
+- "Medkit" (2026-10-29, https://www.meshy.ai/3d-models/Medkit-019bce42-7689-7057-b9bc-5b320b629cd5,
+  CC0 in the owner's intake queue of 2026-10-29)  -> guns/medkit.glb (health pickups, the Medkit and Medi-Beam)
+- "A tank from World War…" (2026-11-01)  -> vehicles/tank_wwii.glb (the Tank)
+
+Props (built by tools/content/prepare-props.mjs from the textured GLB downloads):
+
+- Crates and cargo (pack meshy-community-cargo, downloads of 2026-10-29/30):
+  cargo_army_crate, cargo_wooden_crate, cargo_wooden_crate_cube,
+  cargo_wooden_crate_low, cargo_crate_stack, cargo_scifi_crate,
+  cargo_container_old_rusty, cargo_container_rusty_blue,
+  cargo_container_rusty_red, cargo_container_red, cargo_container,
+  cargo_gantry_crane, cargo_ibc_tank.
+- Barrels, bins and street props (pack meshy-community-street, downloads of
+  2026-10-29/30): street_barrel, street_blue_barrel, street_post_barrel,
+  street_rusty_barrel, street_rusty_barrel_2, street_rusty_barrel_3,
+  street_trash_can, street_trash_can_classic, street_city_trash,
+  street_trash_pile, street_trash_pile_low, street_dumpster, street_fuel_can,
+  street_panel, street_historic_building.
+- Market stalls, wells, statues, fountains and a crane (pack
+  meshy-community-landmarks, the owner's uploads of 2026-10-31): mv_market_stall,
+  rustic_market_stall, temple_fire_statue, temple_spear_statue,
+  temple_monk_statue, town_fountain, lion_head_fountain, eagle_fountain,
+  mv_well and dc_well (one download), dc_market_stall, dc_crane,
+  jt_statue_large.
+- Barriers, a smithy bench, a tiled well, ruin stairs and two parked vehicles
+  (pack meshy-community-drive-1031, downloads of 2026-10-30/31):
+  temple_ruin_stair, smithy_workbench, jersey_barrier_hazard,
+  plastic_road_barrier, hazard_block_barrier, tiled_well,
+  vehicle_raider_buggy, vehicle_armored_truck.
+- "Rock Pile" (remeshed FBX, file dated 2026-05-20; pack
+  meshy-community-rock-pile)  -> prop rock_pile.
+
+Gear (pack meshy-community-gear in content/gear.json, built by
+tools/content/prepare-gear.mjs from the textured GLB downloads of 2026-10-29):
+"Military Helmet", "Steel Helmet", "Helmet Mk 2", "Aviator helmet" and "Viking
+Helmet"  -> gear/military_helmet.glb, steel_helmet.glb, mk2_helmet.glb,
+aviator_helmet.glb, viking_helmet.glb.
+
 Nature (pack meshy-community-nature in content/props.json, built by
 tools/content/nature.mjs through tools/content/prepare-props.mjs):
 

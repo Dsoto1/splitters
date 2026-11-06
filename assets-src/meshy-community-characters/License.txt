@@ -89,7 +89,7 @@ from the owner for every one (HANDOFF.md, "Drive intake of 2026-11-05"):
 - "hobo bozo clown tpose" (downloaded 2026-11-04)  -> character meshy_hoboclown (look Patches)
 - "Tactical T Pose Soldier" (downloaded 2026-11-03)  -> character meshy_tacticalsoldier (look Tactical Soldier)
 - "umpire rigged" (downloaded 2026-11-02)  -> character meshy_umpire (look Umpire)
-- "Open Arms Panda" (downloaded 2026-11-05)  -> character meshy_panda (look Bamboo)
+- "Open Arms Panda" (downloaded 2026-11-05)  -> character meshy_panda (look Bamboo; retired 2026-11-06, its files kept: saved choices play Shellback)
 - "Painter in a T Pose" (downloaded 2026-11-05)  -> character meshy_butcher (look The Butcher)
 - "An old man in his 90s presented in a" (downloaded 2026-11-05)  -> character meshy_oldtimer (look Old Timer)
 - "A fit ancient Chinese male soldier from" (downloaded 2026-11-05)  -> character meshy_imperialguard (look Imperial Guard)
@@ -103,6 +103,39 @@ from the owner for every one (HANDOFF.md, "Drive intake of 2026-11-05"):
 - "Tattered Circus Nightmare" (downloaded 2026-11-05)  -> character meshy_giggles (look Giggles), its new model (intake step 2b; the model it replaced is no longer shipped)
 - "Bear Warrior" (downloaded 2026-11-05)  -> character meshy_barnaby (look Barnaby Bruin), its new model (intake step 2b; the model it replaced is no longer shipped)
 - "Goblin Mischief" (downloaded 2026-11-05)  -> character meshy_snikkit (look Snikkit), its new model (intake step 2b; the model it replaced is no longer shipped)
+
+Drive intake of 2026-11-06: models rigged and animated on Meshy ("All
+Animations" GLBs with the Mixamo skeleton), rebuilt on the game's rig. The
+owner's rule (2026-11-06): Meshy models from the owner's Drive are Meshy
+Community CC0 unless the owner says they made them; CC0 needs no credit, so the
+author is optional; post URLs pending from the owner:
+
+- "A full body portrait of a tall slender" (downloaded 2026-11-06)  -> character meshy_nova (look Capt. Nova), its new model (the light-blue astronaut; the model it replaced is no longer shipped)
+- "A humanoid crocodile wearing a heavy" (downloaded 2026-11-06)  -> character meshy_toad (look Boglurker), its new model (the model it replaced is no longer shipped)
+- "Astronaut" (downloaded 2026-11-06)  -> character meshy_astronaut (look Spacewalker, a placeholder name); a NASA-style mission patch on its shoulder painted out at build time (`fixes.scrubBlue` within its box)
+- "a meticulously detailed astronaut with a" (downloaded 2026-11-06)  -> character meshy_darkastronaut (look Starfarer, a placeholder name)
+- "The object resembles a humanoid tortoise" (downloaded 2026-11-06)  -> character meshy_tortoise (look Shellback, a placeholder name)
+
+Recorded as owned until 2026-11-06 and relabelled by that day's provenance
+audit under the same rule (they came from the owner's Drive or meshystuff repo,
+with no record of the owner saying they made them; if the owner made any, it
+goes back to owned). Name as on the download, the date recorded for it:
+
+- "a black tribal man wi" (2026-10-29; rigged through Meshy's rigging API)  -> character meshy_ashwalker (look Shaka Mpande)
+- "The object is a reali" (2026-10-29; rigged through Meshy's rigging API)  -> character meshy_bonejack (look Bonejack)
+- "Tribal Warrior Charac" (2026-10-29; rigged through Meshy's rigging API)  -> character meshy_thornweaver (look Thornweaver)
+- "Arms Outstretched for" (2026-10-29; rigged through Meshy's rigging API)  -> character meshy_uncle_bao (look Uncle Bao)
+- "dapper man rigged" (2026-11-01)  -> character meshy_dapper (look The Dapper); the model it replaced (generated through our Meshy API on 2026-10-25) is no longer shipped
+- "freaky frida lowpoly" (2026-11-01)  -> character meshy_frida (look Freaky Frida)
+- "scary larry rigged" (2026-11-01)  -> character meshy_larry (look Scary Larry)
+- "white rusty mech rigg" (2026-11-01)  -> character meshy_rustymech (look Rusty Mech); probably a rig of the community "White Rusty Mech" (https://www.meshy.ai/posts/019f3ef0-e612-7dfa-97cf-358fe2f357ab, the model of Ivory Rustwalker): the owner to confirm
+- "rigged cheetah sloth" (2026-11-01)  -> character meshy_seetah (look Seetah J. Chloth)
+- "Realistic stylized ma" (2026-11-01)  -> character meshy_rourke (look Rourke)
+- "robotic baseball play" (2026-11-01)  -> character meshy_slugger (look Slugger-9, retired; files kept)
+- "stylized vintage pro" (2026-11-01)  -> character meshy_vintagepro (look Coffee Brown)
+- "Goblin" (2026-10-26)  -> character meshy_goblin (look Goblin, retired; the goblin NPC role keeps it)
+- "Wealthy Otter" (file dated 2026-03-07)  -> character meshy_otter (look Wealthy Otter, retired; the otter NPC role keeps it)
+- "Salamander Warlord" (file dated 2026-04-21)  -> character meshy_salamander (look Salamander Warlord)
 
 Looked at and not used (they closely resemble real people, so they fail the
 likeness screen):

@@ -137,7 +137,8 @@ export async function signIn(): Promise<void> {
 /**
  * On /auth/callback: check the state, exchange the code for tokens, and put
  * the address back to where sign-in started. Resolves with a message for the
- * menu (null when this isn't the callback page).
+ * menu's status line, which is for problems only (red): null when it worked
+ * (the profile corner shows you signed in) or when this isn't the callback page.
  */
 export async function handleAuthCallback(): Promise<string | null> {
   if (location.pathname !== CALLBACK_PATH) return null;
@@ -164,8 +165,8 @@ export async function handleAuthCallback(): Promise<string | null> {
     if (!body.id_token || !body.access_token) return 'Sign-in failed: no tokens';
     memory = { idToken: body.id_token, accessToken: body.access_token, expiresAt: Date.now() + Math.min(body.expires_in ?? 3600, 86_400) * 1000 };
     session.set(TOKENS_KEY, JSON.stringify(memory));
-    // Never the account's own name (that comes from Google): players see their username (Profile).
-    return 'Signed in';
+    // Never the account's own name (that comes from Google): players see their username (Profile corner).
+    return null;
   } catch {
     return "Sign-in failed: couldn't reach the login service";
   }

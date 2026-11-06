@@ -476,7 +476,12 @@ function pose(skel, verts, ual, c) {
   let [low, high] = [Infinity, -Infinity];
   for (let v = 1; v < pos.length; v += 3) [low, high] = [Math.min(low, pos[v]), Math.max(high, pos[v])];
   const k = HEIGHT / (high - low);
-  const fit = (p) => [p[0] * k, (p[1] - low) * k, p[2] * k];
+  // `fixes.centre`: the body moved over its own origin by its hips. Meshy centres a download's box, so a long tail
+  // behind left the body standing that far ahead of the origin the game moves and collides it by (the crocodile's
+  // hips 0.39 m ahead at 1.8 m; Character Select drew it nearer the camera than everyone else, head out of frame).
+  const hips = c.centre ? posed[index.get('Hips')] : null;
+  const fit = (p) => [(p[0] - (hips?.[0] ?? 0)) * k, (p[1] - low) * k, (p[2] - (hips?.[2] ?? 0)) * k];
+  if (hips) console.log(`  centred over its hips: moved ${(-hips[0] * k).toFixed(3)} m across, ${(-hips[2] * k).toFixed(3)} m front to back`);
   for (let v = 0; v < pos.length; v += 3) pos.set(fit([pos[v], pos[v + 1], pos[v + 2]]), v);
   let out = { pos, nrm, uv: verts.uv, J, W, indices: verts.indices };
   if (clean) {
@@ -797,14 +802,28 @@ function slimArms(src, major) {
   return { pos, drop };
 }
 
-/** Recolour strongly blue pixels to `hex` (badges and insignia painted on by the generator), or leave the image as it is. */
-async function scrub(image, hex) {
-  if (!hex) return Buffer.from(image);
+/**
+ * `fixes.scrubBlue`: recolour strongly blue pixels (badges and insignia painted on by the generator) to a colour, or
+ * leave the image as it is. `spec` is the colour (#rrggbb: every such pixel), or `{ color, within }` to repaint only
+ * those inside `within`'s boxes ([u0, v0, u1, v1], shares of the map's width and height, in the download's own layout),
+ * so a badge goes and a blue part beside it stays (the Spacewalker's mission patch went; the flag on its other
+ * shoulder stayed).
+ */
+async function scrub(image, spec) {
+  if (!spec) return Buffer.from(image);
+  const { color, within } = typeof spec === 'string' ? { color: spec, within: null } : spec;
   const { data, info } = await sharp(Buffer.from(image)).removeAlpha().raw().toBuffer({ resolveWithObject: true });
-  const to = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16));
-  for (let i = 0; i < data.length; i += 3) {
+  const to = [1, 3, 5].map((i) => parseInt(color.slice(i, i + 2), 16));
+  const boxes = within?.map(([u0, v0, u1, v1]) => [u0 * info.width, v0 * info.height, u1 * info.width, v1 * info.height]);
+  for (let i = 0, p = 0; i < data.length; i += 3, p++) {
     const [r, g, b] = [data[i], data[i + 1], data[i + 2]];
-    if (b > r + 35 && b > g + 15) data.set(to, i);
+    if (!(b > r + 35 && b > g + 15)) continue;
+    if (boxes) {
+      const x = p % info.width;
+      const y = Math.floor(p / info.width);
+      if (!boxes.some(([x0, y0, x1, y1]) => x >= x0 && x < x1 && y >= y0 && y < y1)) continue;
+    }
+    data.set(to, i);
   }
   return sharp(data, { raw: { width: info.width, height: info.height, channels: 3 } }).png().toBuffer();
 }
@@ -1123,9 +1142,20 @@ const rigDoc = await io.read(join(OUT, 'rig.glb'));
 const rigCache = new Map();
 const ual = new Map(rigDoc.getRoot().listSkins()[0].listJoints().map((j) => [j.getName(), worldRest(j, rigCache)]));
 
+/**
+ * A kept file's lock entry with its provenance as the manifest gives it now: the licence's pack and, for a community
+ * model, its name and date as on the download. The built files don't carry the licence, so a licence change (a model
+ * recorded as owned that is a community one, or the other way round) needs no rebuild: run this without downloads.
+ */
+function provenance(f, c) {
+  const { role, id, source, meshy, model, date, ...rest } = f;
+  return { role, id, source: c.pack, ...(meshy ? { meshy } : {}), ...(c.community ?? {}), ...rest };
+}
+
 /** Keep a character whose download isn't in the downloads dir as built (its files must still match the lock). */
-function keepAsBuilt(id) {
-  const was = oldLock.files.filter((f) => f.id === id || f.id === `${id}_fparms` || f.id === `${id}_clips`);
+function keepAsBuilt(c) {
+  const id = c.id;
+  const was = oldLock.files.filter((f) => f.id === id || f.id === `${id}_fparms` || f.id === `${id}_clips`).map((f) => provenance(f, c));
   if (!was.length && only && !only.includes(id)) {
     console.log(`${id.padEnd(28)} not built yet (not in ONLY)`);
     return;
@@ -1210,7 +1240,7 @@ const fparms = (c, src, ratio = 0.8, loose = false) => build(c, src, `${c.id}_fp
 for (const c of SPECS) {
   const found = only && !only.includes(c.id) ? null : findDownload(c);
   if (!found) {
-    keepAsBuilt(c.id);
+    keepAsBuilt(c);
     continue;
   }
   if (found.rigged) {

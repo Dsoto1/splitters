@@ -1,0 +1,44 @@
+{
+  "id": "meshy_tortoise",
+  "kind": "character",
+  "use": "player",
+  "order": 116,
+  "name": "Shellback",
+  "look": "core.tortoise",
+  "group": "animals",
+  "nameTheme": "critter",
+  "bio": "Slow to anger, slower to move, and nobody has ever knocked him over.",
+  "body": "male",
+  "size": "large",
+  "notes": "Drive intake of 2026-11-06 (\"The object resembles a humanoid tortoise\", as Meshy names the download; the owner's \"new turtle\"; rigged and animated on Meshy: Mixamo joint names read as Meshy's; finger chains without an index finger, so the fingers are re-fitted by hands.mjs; the tail's extra joints ride the hips; its two clips are not used). A humanoid tortoise with a high domed shell, a long neck and a short tail. Large: a broad, heavy body (it takes Bamboo's place: saved choices of Bamboo play it). 199k triangles: rebaked. Display name a placeholder for the owner. Licence: Meshy Community, CC0 per the owner (2026-11-06); post URL pending from the owner.",
+  "source": {
+    "license": "CC0",
+    "author": "Meshy Community (CC0 per the owner)",
+    "community": {
+      "model": "The object resembles a humanoid tortoise"
+    },
+    "date": "2026-11-06",
+    "url": null,
+    "file": "^Meshy_AI_The_object_resembles_a_humanoid_tortoise_\\d+_animated_mixamo_All_animation\\.glb$"
+  },
+  "finish": {
+    "metallic": 0,
+    "roughness": 0.75
+  },
+  "firstPerson": {
+    "arms": "own"
+  },
+  "fixes": {
+    "triangles": 14000,
+    "surface": "rebake",
+    "headShare": 0.16,
+    "normalSize": 1024,
+    "lod": 0.25,
+    "feet": true,
+    "hands": { "scale": 0.75, "curl": 1 },
+    "grip": {
+      "gripLong": [-0.045, 0.02, -0.03],
+      "supportPistol": [-0.01, 0.03, -0.03]
+    }
+  }
+}
