@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { RAGDOLL_BUDGET, TIER_BODIES, fitBudget, tierFor, type MovingRagdoll } from '../src/game/ragdollBudget.ts';
+import { RAGDOLL_BUDGET, TIER_BODIES, fitBudget, screenShare, tierFor, type MovingRagdoll } from '../src/game/ragdollBudget.ts';
 
 describe('ragdoll tiers', () => {
   it('a full ragdoll near or in view, a cheap one far in view, laid down out of view', () => {
@@ -10,6 +10,21 @@ describe('ragdoll tiers', () => {
     expect(TIER_BODIES.full).toBe(10);
     expect(TIER_BODIES.cheap).toBe(3);
     expect(TIER_BODIES.posed).toBe(0);
+  });
+
+  it('in view, the tier follows the body\'s size on screen: a scope keeps far bodies full', () => {
+    const fov = 1.35;
+    // The usual field of view: full to about 34 m, as by distance.
+    expect(tierFor(25, true, screenShare(25, fov))).toBe('full');
+    expect(tierFor(50, true, screenShare(50, fov))).toBe('cheap');
+    // Through a 4x scope a body 80 m off stands as tall as one 20 m off: full physics.
+    const scoped = 2 * Math.atan(Math.tan(fov / 2) / 4);
+    expect(tierFor(80, true, screenShare(80, scoped))).toBe('full');
+    // Near is always full, out of view laid down; small in view still gets physics (it reacts to the blast).
+    expect(tierFor(8, false, 0)).toBe('full');
+    expect(tierFor(40, false, 1)).toBe('posed');
+    expect(tierFor(150, true, screenShare(150, fov))).toBe('cheap');
+    expect(RAGDOLL_BUDGET.startsPerFrame).toBeGreaterThan(0);
   });
 
   it('fits within the budget of awake bodies: the farthest ragdoll drops a tier first', () => {

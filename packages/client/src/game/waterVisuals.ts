@@ -609,6 +609,8 @@ export class WaterFx {
   private ringBuf = new Float32Array(MAX_RINGS * 16);
   private dropBuf = new Float32Array(MAX_DROPS * 16);
   private observer: Observer<Scene> | null = null;
+  /** Until then (ms) each kind draws one copy out of sight while it has none: the loading gate's warm-up (warm). */
+  private warmUntil = 0;
   /** Bodies and projectiles last frame: where they were and whether they were in a liquid. */
   private readonly bodies = new Map<number, { y: number; x: number; z: number; ripple: number; inside: boolean }>();
   private readonly shells = new Map<number, { p: Vec3; inside: boolean }>();
@@ -657,6 +659,17 @@ export class WaterFx {
   private surfaceAt(p: Vec3): { top: number; liquid: Liquid } | null {
     for (const l of this.liquids) if (p.x >= l.min.x && p.x <= l.max.x && p.z >= l.min.z && p.z <= l.max.z && p.y <= l.max.y + 0.05 && p.y >= l.min.y - 0.5) return { top: l.max.y, liquid: l.liquid };
     return null;
+  }
+
+  /**
+   * The loading gate's warm-up (GameView.prewarm): on a map with water, the rings and drops are made now and each
+   * draws one copy out of sight for `ms`, so their thin-instanced shaders are built before play (the first splash
+   * built the drops' mid-match: round 3 of docs/PERF_96.md).
+   */
+  warm(ms: number): void {
+    if (!this.liquids.length) return;
+    this.ensure();
+    this.warmUntil = performance.now() + ms;
   }
 
   /** A splash at a point on a surface: a ring (or two) and droplets thrown up. */
@@ -766,6 +779,9 @@ export class WaterFx {
       Matrix.ComposeToRef(new Vector3(s, 1, s), Quaternion.Identity(), new Vector3(r.at.x, r.at.y, r.at.z), m);
       m.copyToArray(this.ringBuf, n++ * 16);
     }
+    // Warming up: one copy far below the map (scaled to nothing) while there are none.
+    const parked = now < this.warmUntil;
+    if (parked && !n) Matrix.ComposeToRef(Vector3.ZeroReadOnly, Quaternion.Identity(), new Vector3(0, -10000, 0), m).copyToArray(this.ringBuf, n++ * 16);
     if (this.ringMesh) {
       this.ringMesh.thinInstanceCount = n;
       if (n) this.ringMesh.thinInstanceBufferUpdated('matrix');
@@ -782,6 +798,7 @@ export class WaterFx {
       Matrix.ComposeToRef(new Vector3(s, s * 1.6, s), Quaternion.Identity(), new Vector3(d.p.x, d.p.y, d.p.z), m);
       m.copyToArray(this.dropBuf, n++ * 16);
     }
+    if (parked && !n) Matrix.ComposeToRef(Vector3.ZeroReadOnly, Quaternion.Identity(), new Vector3(0, -10000, 0), m).copyToArray(this.dropBuf, n++ * 16);
     if (this.dropMesh) {
       this.dropMesh.thinInstanceCount = n;
       if (n) this.dropMesh.thinInstanceBufferUpdated('matrix');

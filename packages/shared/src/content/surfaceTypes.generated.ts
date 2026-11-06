@@ -136,5 +136,13 @@ export const PROP_SURFACES: Readonly<Record<string, SurfaceTypeId>> = {
   'prop.nt_log_snow': 'bark',
   'prop.eg_palm': 'bark',
   'prop.jt_tree_trunk': 'bark',
+  'prop.landing_craft': 'metal',
+  'prop.landing_craft_wreck': 'metal',
+  'prop.hedgehog_beach': 'metal',
+  'prop.sandbag_stack': 'dirt',
+  'prop.timber_baulk': 'bark',
+  'prop.timber_stack': 'bark',
+  'prop.dory': 'dirt',
+  'prop.straw_bale': 'dirt',
   'prop.jg_bamboo': 'bark',
 };

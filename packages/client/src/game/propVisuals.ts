@@ -7,6 +7,7 @@ import type { StandardMaterial } from '@babylonjs/core/Materials/standardMateria
 import type { Material } from '@babylonjs/core/Materials/material';
 import { envModelFile, getProp, groundNormal, propTilts, terrainHeightAt, type PropEntity, type TerrainData } from '@tiletrigger/shared';
 import type { ModelLibrary } from '../content/models.ts';
+import type { PropBatches } from './propBatches.ts';
 
 /**
  * A placed prop: its model (loaded in the background) under a root that takes
@@ -14,9 +15,10 @@ import type { ModelLibrary } from '../content/models.ts';
  * the materials; untinted ones share them. Props never move, so their world
  * matrices are frozen once the model is in. In the game (`instanced`)
  * untinted props are GPU instances of their model merged per material, so big
- * maps stay cheap to draw. Take one down with `disposePropNode`.
+ * maps stay cheap to draw; with `batches`, static ones are thin instances in their square's batch instead (the
+ * root stays, with no meshes under it). Take one down with `disposePropNode`.
  */
-export function createPropNode(scene: Scene, models: ModelLibrary, e: PropEntity, name: string, frozen = true, instanced = false, terrain: TerrainData | null = null): TransformNode {
+export function createPropNode(scene: Scene, models: ModelLibrary, e: PropEntity, name: string, frozen = true, instanced = false, terrain: TerrainData | null = null, batches: PropBatches | null = null): TransformNode {
   const root = new TransformNode(name, scene);
   root.position.set(e.position[0], e.position[1], e.position[2]);
   root.scaling.setAll(e.scale);
@@ -27,8 +29,11 @@ export function createPropNode(scene: Scene, models: ModelLibrary, e: PropEntity
   // Untinted copies of the same prop share one draw call per material (their parts merged); tinted ones need their own materials.
   // An environment species draws its variant's file (summer, autumn, snow…).
   const file = envModelFile(e.model, e.variant) ?? def.file;
-  const model = instanced && !e.tint ? models.instantiateStatic(file, `${name}_model`) : models.instantiate(file, `${name}_model`, false);
+  // The game's static props (not breakable, not carried): copies in their square's batch (propBatches.ts), tint and all.
+  const batched = batches && frozen && !def.breakable ? batches.add(file, root, small, e.tint ?? null) : Promise.resolve(false);
+  const model = batched.then((ok) => (ok ? null : instanced && !e.tint ? models.instantiateStatic(file, `${name}_model`) : models.instantiate(file, `${name}_model`, false)));
   void model.then((node) => {
+    if (!node) return;
     if (root.isDisposed()) return node.dispose();
     node.parent = root;
     for (const m of node.getChildMeshes()) {

@@ -26,6 +26,63 @@ gets overloaded above that: local e2e times out and flakes). Prune landed worktr
 - Earlier the same day: content scalability steps 2–6, perf toolset, flaky e2e fixes, Runway Nine airliner, map
   reworks batches 2–3, character fixes rounds 2–3 (see the entries below and CHANGELOG).
 
+<!-- shingle -->
+### Shingle Point asset refresh (`wip/shingle`, agents, 2026-11-05/06; main 5b167034 merged in; green on `check/shingle`)
+Owner's decision: same layout and gameplay, every dated asset replaced, so it compares fairly with MAP 21 (a new map,
+later). Not a layout rework. **Ready to land:** CI run 42175700068 green on `check/shingle` at c214e94f (unit, build,
+check, perf budget and mass, all 11 e2e shards with Shingle Point's map tour); main has not moved since, so `main` can
+be fast-forwarded to it once the owner is happy with the open items at the end of this section.
+- **The map** (`maps/shingle_point.json`) was edited in MapMaker only, driven from the session scratchpad
+  (`shingle2/tools/maker.mjs`): Import, the theme picker, Replace all, the block Material and prop Variant fields,
+  MapMaker's own Delete and "Place <piece>" commands (the ones its Delete key and palette run) for the block groups,
+  Export. The UI path for the 56 groups took ~90 s a group on the loaded box, the commands ~1 s.
+  - theme Bunker → Military Compound (no hazard stripes); the MG nests' 12 canvas blocks → Burlap (same ballistics);
+  - 56 block groups → kit pieces where their blocks stood: 46 Czech hedgehogs, 4 landing craft, 6 wrecks;
+  - 24 Replace alls (Keep height unless noted): Tall Hedge → Box Hedge (Keep length, +90°); Leafy Bush, Large Bush →
+    Broadleaf Shrub; Wildflowers → Meadow Flowers (yellow); Wheat → Grass Clump (dry); Boulder, Small Rock, Kenney
+    Boulder → Angular Boulder; Bushy Tree, Round Tree, Oak, Broadleaf Tree → Oak; Log → Timber Baulk; Big Log →
+    Timber Stack; Rowing Boat → Wooden Dory; Barrier → Sandbag Stack; Large Crate → Wooden Crate; Metal Crate → Army
+    Crate; Lantern Post → Harbour Lamp Post; Rubble → Pebbles; Hay Bale → Straw Bale (Keep scale); Cart → Hay Cart
+    (Keep scale); Woodpile → Timber Baulk (Keep length, +90°: it keeps its breakability); Crumbling Wall → Drystone
+    Wall Half (CC0 Loafbrr);
+  - one variant per species (4 autumn oaks summer, 4 moss boulders bare): a variant is a model of its own, a draw.
+- **Cheaper pieces:** the 8 beach pieces, the Box Hedge and the Hay Cart are one material each, their colours
+  painted per vertex (`build-kit-props.mjs`: one material per surface for a piece with surfaces, and those pieces
+  now have one surface each; `pieces.mjs` `paint`: opt-in per piece, every other piece byte-identical): one GPU
+  instance and one draw a copy (the hedge was 2 a copy, the hay cart 5, the craft 3).
+- **Proof** (scratchpad `shingle2/tools/zz_shingle_proof.test.ts`, not committed; results `shingle2/proof.json`):
+  spawns, pickups, mounts, ladders, pads, bomb sites, hills, lights, water, tiles, terrain, logic, bounds, backdrop
+  identical; the other 46 blocks identical (canvas → burlap); every replaced prop keeps id, x, z, facing (or a quarter
+  turn), solid, tint and name; breakables the same (logs and woodpiles → 11 timber baulks at 60 HP: the woodpiles were
+  40); 38 concealing plants before and after; craft and wreck boxes within 1 cm of their blocks; nav 1248/1248
+  spawn-to-objective paths both (mean 144.4 → 144.8 m); the seawall's 3 gaps and 5 ladders reach the bluff both
+  (lengths within 0.5 m); the weak sections are the same blocks. Sightlines blocked: beach → crest 92.8 % → 93.0 %
+  crouched, 92.3 % both standing; across the beach within 30 m 21.3 % → 27.9 % crouched (the hedgehogs' three beams),
+  6.9 % → 7.0 % standing; village 39.1 % → 39.9 %. validate-map 0 issues; maps e2e flow on it passes.
+- **Bots** (headless, 24 bots, 150 s, seeds 1, 2, 3 and the bench's 42): kills and objectives alike (bomb round won by
+  the garrison both; KOTH 7 → 8 hill holds). Stuck recoveries, mean before → after: bomb 467 → 204, TDM 108 → 87,
+  KOTH 134 → 274. Same spots on both maps (`shingle2/tools/stuck.mts`): the feet of the seawall ladders at x −30, 2
+  and 100 (bots that don't catch the ladder), the HQ and the MG nest by hill 1; KOTH now sends more bots up the
+  ladders. The push test (`botPush.test.ts`, tactical TDM, seeds 1-5): assault progress 0.24 → 0.28 on average,
+  garrison 0.34 → 0.33; its seed 1 gives 0.243 now (0.252 before), so its bar is 0.22 (the fault it guards was 0.19).
+- **Performance** (same spots, same base, both builds side by side; high graphics, SwiftShader, 640 × 360; scratchpad
+  `shingle2/timing/`): draws 3,697 → 3,586 summed over 10 spots (−3 %; overview 764 → 725, beach 580 → 568, cliff 456
+  → 431, village 263 → 238; up only looking at a landing craft, 109 → 125: the craft, a hedgehog and a wreck in each
+  shadow cascade); active meshes 5,096 → 4,259 (−16 %; −5 % without the pooled effect meshes); render call time
+  (scene.render() before the GPU, the draw-issue side) 378 → 354 ms (−6 %); triangles +26 % (our oaks, boulders,
+  hedges and crates are detailed), shadow casters +6 to +13 a view, so SwiftShader's whole frame +16 %. All meshes
+  after loading 1,757 → 1,722. Model downloads 848 → 1,575 KB (the oak 315 KB, the two Meshy crates 410 KB); map file
+  733 → 681 KB. perf-3 (prop batches) not on main yet: measure again when it lands.
+- **Screenshots** (session scratchpad, 1280 × 720, high, eye level; same spots): `shingle2/before/` and
+  `shingle2/after/`, `<n>-<spot>-before|after.png`: beach waterline, landing craft, beach east, seawall, cliff,
+  bunkers, casemate, village, orchard, overview.
+- **Kept, for the owner:** the 14 Kenney furniture pieces in the two houses, the HQ and the casemate (all breakable,
+  40-100 HP; none of our furniture is, so a swap takes that cover away), the HQ's Quaternius radio, the 3 Quaternius
+  ruined walls on the seawall top (approved pack). MapMaker's Export stamps `metadata.release` and has no control to
+  leave it out, so the map keeps one (the only shipped map that does; suite listings compare content hashes, which
+  skip it). No `thumbnailCamera`: MapMaker's only camera control is Set thumbnail, which also stores a picture in the
+  map (the card-shot camera is MapMaker overhaul Phase 3 item 8), so the menu card shot still shows the old look.
+
 ### Flatpack Depot flicker (`wip/flatpack`, agent, 2026-11-05; CI on `check/flatpack`)
 Owner: "The ikea map has significant flickering" / "flicker when I look around, could be shader or something"
 (Android phone, Low graphics, Performance render scale; screenshot of the Showroom corridor). docs/LOOK.md,
@@ -475,19 +532,25 @@ All three in-flight agents stopped. Their work is pushed:
 
 Resume each from its branch, after merging main.
 
-### Queued FIRST (owner bug report, 2026-11-06): far enemies render as feet only
-**Owner:** "I see enemy in distance not fully there, only feet." Screenshot: session scratchpad
-`perf3/far-enemy-feet-only.jpg`.
-
-**Suspects:**
-- The character LOD: `<name>_lod` meshes added via `addLODLevel(18 m)` in client content/characters.ts. Past 18 m
-  only parts without a low copy (feet or boots) show.
-- Round 1 body reuse leaving the `_lod` meshes disabled, dormant or detached.
-- Round 2's `selectLiveCandidates` and frozen materials or bounding info.
-- AnimGate skipping `skeleton.prepare`, so the LOD skin collapses.
-
-**Likely a regression** from performance rounds 1–2. Fix it with an e2e check that a character past LOD distance
-draws its whole body.
+### Far enemies as feet only: FIXED (agent, 2026-11-06; on its own: `wip/far-bodies` 36dab498, green on `check/far-bodies` run 42154611523, ready to land; also in `wip/perf-3` as b1a32722)
+**Cause** (reproduced in a real match, production build): Babylon's weighted clip blend (`ProcessLateAnimationBindings
+ForQuaternions`) blends a joint's clips pairwise in the scene's animatable order, its first step a slerp by
+w2 / (w1 + w2). A clip at weight 0 is left out from its second frame at 0 ("actively paused"), but on its first frame it
+still joins. Round 1 kept a fight's shot and hit clips started, paused at weight 0 between plays; `setDormant(false)`
+(a crowd's character coming back into view, and a reused body standing again) restarted every paused group, those
+included. After a stop-and-go (running clips restart later in the order) the two fresh zeros came first: 0 / 0, a NaN
+rotation on every UPPER_BODY joint, so the upper body's vertices weren't drawn (legs and hips only: 0.6-0.9 m of a
+1.8 m body). Far characters (animated every 3rd-5th frame) kept the pose, and `aimShoulders` measured on such a frame
+kept a running body's upper half gone until it next stood still. Not the LOD meshes, body reuse's meshes, meshsel,
+frozen materials or the gate (checked: every look's `_lod` covers the body; 67 Meshy looks have a separate `_lod` skin
+with the same joints, which is fine).
+**Fix** (characterAnimator.ts): waking restarts only what sleep paused (`slept`); `patchAnimatables` leaves a
+weight-0, non-additive runtime animation out of the late-binding blend (Babylon's own intent); `aimShoulders` and the
+coarse arm pose keep only finite values. **Tests**: `client/test/animBlend.test.ts` (fails without the patch);
+e2e `characters3` → `farBodies` (27-player canyon match, ten bots running circles 16-34 m out, a shot and a hit each,
+stop-and-go, turn away and back; `wholeBodies` checks each part's LOD is the mesh drawn and the drawn, GPU-skinned
+body is finite and ≥ 75 % of 1.8 m × size). On the old build it failed (8 of 11 broken, 473-1,249 NaN vertices each);
+with the fix it passes. Owner to confirm on the M1 (any map, 49 players, turn around in a fight).
 
 ### Openings fix (`wip/openings`, agent, 2026-11-06; CI on `check/openings`)
 Status: green on `check/openings`: CI run 42160424451 on 73b46f93, every job (docs-only commits since); ready to
@@ -861,7 +924,39 @@ fastest moving at about 60 m/s, on both attempts.
 Each brief has its reference image beside it. The owner approves the concept before any placement work; follow
 AGENT_BUILD_CONTRACT.md.
 
-### Queued: performance round 3 (owner's Shingle Point M1 recording, 2026-11-05; files in session scratchpad perf3/)
+### Performance round 3: DONE on `wip/perf-3` (agent, 2026-11-06; green on `check/perf-3` at c8ca5aa4 with main merged in, run 42181705004; docs/PERF_96.md, "Performance round 3")
+Ready to land (with the far-enemies fix above in it). Not on main: fast-forward main to the green check commit.
+**What it is:** prop batches (models with 8+ copies on the map: `PROP_BATCH_MIN`), still decorations merged, the fog
+reading the ambient occlusion's pre-pass depth, blood as thin instances, guns (also as your own first-person copy),
+characters, a tracer, a parachute and a glider warmed while the loading screen is up (out of sight when the warm-up
+runs past the gate), water's splash drops warmed,
+ragdoll tiers by screen size with staggered starts and a faster rest, the minimap from a bitmap window, shadow
+cascades centred on the camera (safety refresh every 240 frames), a blast's push kept for every body it killed however
+late its body starts, a crowd's held guns and the pickups' models one instance each of the model merged into one
+multi-material mesh (`ModelLibrary.instantiateWhole`), crowd team markers as thin instances.
+**Measured** (SwiftShader counts per frame at the owner's hitch spot, 44-45 characters in view; scratchpad `p3a/`):
+Shingle Point draws 1,034 -> 489, active meshes 1,308 -> 468, render-target draws 535 -> 142; Market Town meshes
+513 -> 297, draws 444 -> 435. Shadow cache turning a full circle: 30 of 72 layer renders redrew -> 3. Mass blast on
+Market Town (31 killed): round 2 23 of 30 bodies dropped where they stood on this slow box, round 3 all 31 thrown up.
+Shader tours after the warm-up (seven, fixing as they went: water's splash drops, your own first-person guns, the
+first tracer and a canopy's rigging lines were built mid-match): the last built none.
+**Projected on the M1 Pro:** Shingle Point ~15 ms average (22.2 recorded), ~17 in its busiest second (26.5); Market
+Town ~19 (20.9).
+**For the owner to re-record on the M1 Pro:** Shingle Point and Market Town as last time (TDM, 49 players, high, auto,
+60 fps cap, the beach at (-39, -76) on Shingle Point, a rocket into a crowd on Market Town, a 10 s trace each). Expect
+Shingle Point main views at 350-470 draws and 300-410 meshes, renderShadow ~1.5-2 ms, renderCull ~1.5, HUD ~0.2,
+`shadersNew` 0 after the start; Market Town ~300 meshes and every body of a mass death thrown.
+**Not tested:** anything on a real GPU (all numbers are SwiftShader counts and projections); the fog's look over the
+pre-pass depth on the M1 (CI's visual baselines pass); the cascades' squares are ~12 % bigger (shadows that much
+coarser), not looked at on the M1; a phone (lower graphics: no pre-pass, and the cascades' change is high graphics
+only; the rest applies; not run on one); WebGPU (no pre-pass and no shadow cache there, as before).
+**Next:** single-material held weapons (content: they are 3-5 materials each, a draw per material per weapon model);
+pickups as thin instances (35-55 meshes); breakable props batched while intact (~40 on Shingle Point).
+**How to resume:** branch `wip/perf-3`; probes in the session scratchpad `p3a/` (`probe.mjs <dist> <label>` with
+`PROBE_EVAL=<script>`: `census.js`, `tour.js` (with `PROBE_WAIT_PREWARM=1`), `shadowquick.js`, `minimapab.js`,
+`combo.js`; `blast2.mjs <dist> <label>` for the mass blast).
+
+#### The brief (owner's Shingle Point M1 recording, 2026-11-05; files in session scratchpad perf3/)
 **The recording:** build 76a4b03, M1 Pro, high, 49 players.
 - Averages about 20.5 ms. It holds 60 fps only in quiet views (390 draws, 185 meshes).
 - In the main views: 700–870 draws and 850–1,090 active meshes.
@@ -885,7 +980,8 @@ AGENT_BUILD_CONTRACT.md.
   models (owner's screenshot on a temple test map). Swap it to our generated oak and pine, which is Environment
   Phase 4 work. No rush.
 - **Rockfall Canyon** (`maps/canyon.json`): asset and foliage refresh, onto our generated environment, rocks and plants.
-- **Shingle Point** (`maps/shingle_point.json`, the beach landing): an asset refresh. The owner also suggests a
+- **Shingle Point** (`maps/shingle_point.json`, the beach landing): an asset refresh (done on `wip/shingle`: the
+  section at the top). The owner also suggests a
   layout rework from the reference `docs/map-briefs/shingle_point_reference.jpg`:
   - a long beach with surf, landing craft and steel hedgehogs, under a cliff line;
   - the cliff has a central grand staircase plus side stairs and ramps up its face;

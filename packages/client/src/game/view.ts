@@ -56,6 +56,7 @@ import {
   FX_CLOAK,
   FX_JET,
   CHUTE_GLIDER,
+  CHUTE_PARACHUTE,
   floatSurface,
   liquidAt,
   mapLiquids,
@@ -86,8 +87,9 @@ import type { AbstractMesh } from '@babylonjs/core/Meshes/abstractMesh';
 import type { Material } from '@babylonjs/core/Materials/material';
 import { BloodVisuals, bloodPreference } from './bloodVisuals.ts';
 import { PosedBody, RAGDOLL_PREWARM, Ragdoll, type DeadBody } from './ragdoll.ts';
-import { fitBudget, tierFor, type RagdollTier } from './ragdollBudget.ts';
-import { Atmosphere } from './atmosphere.ts';
+import { RAGDOLL_BUDGET, fitBudget, screenShare, tierFor, type RagdollTier } from './ragdollBudget.ts';
+import { Atmosphere, SMALL_CASTER_REACH } from './atmosphere.ts';
+import { PROP_BATCH_MIN, PropBatches } from './propBatches.ts';
 import { castSmall } from './shadowFlags.ts';
 import { ImpactVisuals } from './impactVisuals.ts';
 import { ThrowArc } from './throwArc.ts';
@@ -170,8 +172,11 @@ interface Avatar {
   /** Soldiers and players get a character, creature NPCs their own animator. */
   anim?: CharacterAnimator | CreatureAnimator;
   specKey: string;
-  /** Team-colour marker over a teammate's head (Team Deathmatch). */
-  tag?: { mesh: AbstractMesh; color: string };
+  /**
+   * Team-colour marker over a teammate's head (Team Deathmatch): its own disc, or in crowds a plain node where the
+   * disc goes, drawn through its colour's thin instances (GameView.drawTags).
+   */
+  tag?: { node: TransformNode; color: string };
   last?: { x: number; y: number; z: number; t: number };
   vel: { x: number; z: number };
   /** Status-effect shell (burning, poisoned, frozen…), made on first need. */
@@ -188,6 +193,9 @@ interface Avatar {
   /** A body that died without a ragdoll (a creature) falls to the ground under gravity. */
   fall?: { y: number; vy: number; ground: number };
   wasAlive?: boolean;
+  /** When this view first saw it dead (ms, and the scene's frame; its body may start a few frames later: deathsToStart). */
+  diedAt?: number;
+  diedFrame?: number;
   /** The held weapon and its muzzle in the weapon's own space (for tracers and flashes). */
   muzzle?: { node: TransformNode; local: Vector3 };
   /** Muzzle flash shown until this time. */
@@ -236,6 +244,19 @@ export function bodiesPreference(): BodiesSetting {
 const MAX_CORPSES = 32;
 /** Time (ms) a frame may spend starting dead bodies before further fresh deaths wait for the next frame (at least one starts). */
 const DEATH_START_MS = 4;
+/**
+ * A push (a hit, a blast) is used by a death this view saw within this long of it (ms), however many frames later its
+ * body starts (a blast's starts are spread over frames: on a slow frame rate the last used to start after the push
+ * had gone, and dropped where it stood instead of flying).
+ */
+const PUSH_KEEP_MS = 1200;
+/**
+ * Or within this many frames of it: the push comes with the snapshot and the death is drawn a moment later (the view
+ * draws a little behind the snapshots), which on a page drawing a frame a second is past PUSH_KEEP_MS.
+ */
+const PUSH_KEEP_FRAMES = 3;
+/** An enemy's marker colour (a downward triangle; allies get a diamond). */
+const isEnemyTag = (color: string): boolean => color.toLowerCase() === '#ff3b3b';
 /** The way an avatar faces (its yaw; characters face +Z at yaw 0), for its ragdoll to tell front from back. */
 const facingOf = (a: Avatar): Vec3 => ({ x: Math.sin(a.root.rotation.y), y: 0, z: Math.cos(a.root.rotation.y) });
 
@@ -382,6 +403,8 @@ export class GameView {
   /** Shadows, tone mapping and post effects (Options → Graphics). */
   readonly atmosphere: Atmosphere;
   private readonly brass: StandardMaterial;
+  /** The map's static props, batched (buildMap; null with `?perfoff=propbatch`). */
+  propBatches: PropBatches | null = null;
   /** The level's draw merge in progress (buildMap), and its outcome: draws before and after (null: not merged). */
   private levelMerge: Promise<{ before: number; after: number; merged: string[] } | null> | null = null;
   /** Level meshes before and after the merge, and the per-style meshes merged (by name; tests). */
@@ -543,9 +566,19 @@ export class GameView {
     const drawnAsEnv = new Set(env.map((e) => e.id));
     // Props flush on other props (a box on a crate, rail lengths laid end over end) are drawn a hair apart: no flicker.
     const flush = propFlushLifts(doc, PROP_CONTACTS, boxes);
+    // Static props as thin instances per model, material and square (propBatches.ts), not a node of instances each.
+    // A batch reads a prop's matrix once its model is in (never in this loop), so the hung and flush lifts below are in it.
+    this.propBatches?.dispose();
+    this.propBatches = perfOn('propbatch') ? new PropBatches(this.scene, (path) => this.models.staticSources(path), SMALL_CASTER_REACH) : null;
+    const batches = this.propBatches;
+    // Only models with enough copies on the map (PROP_BATCH_MIN) are batched.
+    const copies = new Map<string, number>();
+    const modelKey = (e: PropEntity) => `${e.model}|${e.variant ?? ''}`;
+    for (const e of doc.entities) if (e.kind === 'prop' && !drawnAsEnv.has(e.id) && !carried.has(e.id)) copies.set(modelKey(e), (copies.get(modelKey(e)) ?? 0) + 1);
     doc.entities.forEach((e, i) => {
       if (e.kind !== 'prop' || drawnAsEnv.has(e.id)) return;
-      const node = createPropNode(this.scene, this.models, e, `prop_${e.id}`, !carried.has(e.id), true, doc.terrain);
+      const batch = batches && (copies.get(modelKey(e)) ?? 0) >= PROP_BATCH_MIN ? batches : null;
+      const node = createPropNode(this.scene, this.models, e, `prop_${e.id}`, !carried.has(e.id), true, doc.terrain, batch);
       // A chandelier (and other hung props) is drawn with its top against the ceiling over it.
       if (!carried.has(e.id)) node.position.y += hungPropLift(boxes, e);
       const lift = flush.get(e.id);
@@ -581,11 +614,18 @@ export class GameView {
    * constructor) keeps those programs when the samples go, so the first sight of a model or an effect mid-match
    * doesn't stall on a shader build. Resolves with how many shader programs were built by then.
    */
-  async prewarm(specs: readonly AvatarSpec[]): Promise<number> {
+  async prewarm(specs: readonly AvatarSpec[], guns: readonly string[] = [], veiled: () => boolean = () => false): Promise<number> {
     const t0 = performance.now();
     // The merged level first (its textures load in a moment; its shader is then built with everyone else's).
     if (this.levelMerge) await Promise.race([this.levelMerge, new Promise((r) => setTimeout(r, 15000))]);
+    // And the prop batches: their models in, their meshes made (the next frame), so their shaders are built below.
+    if (this.propBatches) {
+      await Promise.race([this.propBatches.settled(), new Promise((r) => setTimeout(r, 15000))]);
+      await this.afterFrames(2, 1500);
+    }
     const ready = () => (this.scene.isDisposed ? Promise.resolve() : Promise.race([this.scene.whenReadyAsync(), new Promise((r) => setTimeout(r, 8000))]));
+    // Water's splash rings and drops (made on the first splash) draw a copy out of sight meanwhile.
+    this.scenario.liquids.fx.warm(4000);
     // The effects first (they don't wait for the characters' files), ended as soon as their shaders are built.
     let effects = 0;
     try {
@@ -604,15 +644,71 @@ export class GameView {
       // Effects that didn't load stay as they were (their first play builds them).
     }
     if (this.scene.isDisposed) return 0;
-    // Then a character of each look, out of sight.
+    // Then a character of each look and every gun the match can hold (a crowd's GPU instance and a plain copy: the
+    // view model, a small match's held gun). While the loading screen is up they stand in front of the camera, so
+    // every pass that will draw them in play draws them now (the main pass and its pre-pass outputs, the shadow
+    // cascades, water's depth), each variant built: out of sight only the materials' own checks ran, and the first
+    // gun or body seen in a shadow or in the depth map built its programs mid-match (round 3 of docs/PERF_96.md).
+    // Once the game shows (a slow machine finishes this in the background) they are parked out of sight.
     const stage = new TransformNode('prewarm', this.scene);
     stage.position.set(0, -10000, 0);
+    const place = this.scene.onBeforeRenderObservable.add(() => {
+      const cam = this.scene.activeCamera;
+      if (!cam || !veiled()) return void stage.position.set(0, -10000, 0);
+      const f = cam.getDirection(Vector3.Forward());
+      const flat = Math.hypot(f.x, f.z) || 1;
+      const c = cam.globalPosition;
+      stage.position.set(c.x + (f.x / flat) * 7, c.y - 1.6, c.z + (f.z / flat) * 7);
+      stage.rotation.y = Math.atan2(f.x, f.z) + Math.PI;
+    });
+    const spot = (n: TransformNode, i: number, row: number) => n.position.set(((i % 8) - 3.5) * 0.9, 0, row + Math.floor(i / 8) * 1.2);
+    const gunCopies = guns.flatMap((path, i) => [
+      ...[true, false].map((instanced, k) =>
+        // As a crowd's hands and the pickups hold them (merged instances), and as a copy of its own.
+        (instanced ? this.models.instantiateWhole(path, `prewarm_gun_${i}_${k}`) : this.models.instantiate(path, `prewarm_gun_${i}_${k}`)).then(
+          (node) => {
+            if (stage.isDisposed()) return void node.dispose();
+            node.parent = stage;
+            spot(node, i * 2 + k, 4.5);
+            node.position.y = 1.2;
+            return node;
+          },
+          () => undefined,
+        ),
+      ),
+      // And as your own first-person gun: under the view root, drawn over the world and catching no shadows (another
+      // program than a copy in the world; the first gun of a kind in your hands built its own mid-match).
+      this.models.instantiate(path, `prewarm_gun_${i}_view`).then(
+        (node) => {
+          if (stage.isDisposed()) return void node.dispose();
+          node.parent = this.viewRoot;
+          node.position.set(0, -10000, 0);
+          for (const m of node.getChildMeshes()) m.renderingGroupId = 1;
+          return node;
+        },
+        () => undefined,
+      ),
+    ]);
+    // A shot's tracer (a line: its own shader, first built by the first tracer drawn in view).
+    const tracer = CreateLines('prewarm_tracer', { points: [new Vector3(0, 1, 0), new Vector3(0, 1.5, 3)] }, this.scene);
+    tracer.color = Color3.White();
+    tracer.isPickable = false;
+    tracer.parent = stage;
+    // A parachute and a glider (fabric, and rigging lines in their own colours: made on the first jump), kept for the
+    // first ones in play.
+    const canopies = [CHUTE_PARACHUTE, CHUTE_GLIDER].map((kind, i) => {
+      const node = createCanopy(this.scene, `prewarm_canopy_${kind}`, kind);
+      node.parent = stage;
+      node.position.set((i - 0.5) * 6, 0, 9);
+      return { node, kind };
+    });
     const made = await Promise.all(
       specs.slice(0, 32).map((spec, i) =>
         this.characters.create(spec, `prewarm_${i}`).then(
           (ch) => {
             if (stage.isDisposed()) return void ch.dispose();
             ch.root.parent = stage;
+            spot(ch.root, i, 0);
             for (const g of ch.clips.values()) g.stop();
             return ch;
           },
@@ -620,18 +716,33 @@ export class GameView {
         ),
       ),
     );
+    const held = await Promise.all(gunCopies);
     if (this.scene.isDisposed) return 0;
-    // Two frames: the atmosphere sorts new meshes into the shadow map a frame later (their shaders differ).
-    await this.afterFrames(2, 1500);
+    // Drawn every frame wherever the stage is: in front of the camera while the loading screen is up, and far below
+    // the map (out of sight) once the game shows, so their main-pass programs are built either way (a slow machine or
+    // a first visit still downloading finishes this after the start; parked, they were never drawn and the first gun
+    // in your hands built its own mid-match).
+    for (const m of [...stage.getChildMeshes(), ...held.flatMap((g) => g?.getChildMeshes() ?? [])]) m.alwaysSelectAsActiveMesh = true;
+    // Three frames: the atmosphere sorts new meshes into the shadow map a frame later (their shaders differ). Capped
+    // at 2 s even once the game shows: drawing the whole stage (and the effects above) out of sight for as long as a
+    // slow machine's frames took made its first seconds of play stall (CI's hosted match dropped a friend's page).
+    await this.afterFrames(3, 2000);
     await ready();
+    place.remove();
+    for (const c of canopies) {
+      c.node.parent = null;
+      for (const m of c.node.getChildMeshes()) m.alwaysSelectAsActiveMesh = false;
+      releaseCanopy(this.scene, c.node, c.kind);
+    }
     for (const ch of made) ch?.dispose();
+    for (const g of held) g?.dispose();
     stage.dispose();
-    this.prewarmed = { ms: Math.round(performance.now() - t0), shaders: this.shaderCount(), characters: made.filter(Boolean).length, effects };
+    this.prewarmed = { ms: Math.round(performance.now() - t0), shaders: this.shaderCount(), characters: made.filter(Boolean).length, effects, guns: held.filter(Boolean).length };
     return this.prewarmed.shaders;
   }
 
   /** What the loading gate's warm-up did (tests and perf96): how long it took, shader programs by then, samples. */
-  prewarmed: { ms: number; shaders: number; characters: number; effects: number } | null = null;
+  prewarmed: { ms: number; shaders: number; characters: number; effects: number; guns: number } | null = null;
 
   /** After `n` rendered frames (or `ms` at most: a hidden tab renders none). */
   private afterFrames(n: number, ms: number): Promise<void> {
@@ -653,7 +764,7 @@ export class GameView {
   private physics: EffectsWorld | null = null;
   readonly blood: BloodVisuals;
   /** How hard each recently hit player was pushed (shots and blasts), for the ragdoll's throw. */
-  private readonly pushes = new Map<number, { v: Vec3; t: number }>();
+  private readonly pushes = new Map<number, { v: Vec3; t: number; f: number }>();
   private lastFrame = performance.now();
   private debrisBodies: { mesh: Mesh; body: ReturnType<EffectsWorld['addBody']>; born: number; shared?: boolean }[] = [];
   readonly impacts: ImpactVisuals;
@@ -674,7 +785,7 @@ export class GameView {
     const sum = { x: keep.x + v.x, y: keep.y + v.y, z: keep.z + v.z };
     const flat = Math.hypot(sum.x, sum.z);
     const k = flat > max ? max / flat : 1;
-    this.pushes.set(slot, { v: { x: sum.x * k, y: Math.min(sum.y, max * 0.9), z: sum.z * k }, t: now });
+    this.pushes.set(slot, { v: { x: sum.x * k, y: Math.min(sum.y, max * 0.9), z: sum.z * k }, t: now, f: this.scene.getFrameId() });
     const anim = this.avatars.get(slot)?.anim;
     if (anim instanceof CreatureAnimator) anim.flinch();
   }
@@ -738,7 +849,12 @@ export class GameView {
     const root = a.anim?.skeletonRoot;
     if (!(a.anim instanceof CharacterAnimator) || !root || !this.physics) return;
     const push = this.pushes.get(slot);
-    const fresh = push && performance.now() - push.t < 600 ? push.v : { x: 0, y: 0, z: 0 };
+    // A blast's push goes with every body it killed, however many frames later the body starts (PUSH_KEEP_MS).
+    const died = a.diedAt ?? performance.now();
+    const diedFrame = a.diedFrame ?? this.scene.getFrameId();
+    const kept = !!push && (Math.abs(died - push.t) < PUSH_KEEP_MS || Math.abs(diedFrame - push.f) <= PUSH_KEEP_FRAMES);
+    const fresh = kept ? push.v : { x: 0, y: 0, z: 0 };
+    this.deathPush.set(slot, Math.round(Math.hypot(fresh.x, fresh.y, fresh.z) * 10) / 10);
     const v = { x: a.vel.x * 0.6 + fresh.x, y: 0.5 + fresh.y, z: a.vel.z * 0.6 + fresh.z };
     const p = a.root.position;
     const cam = this.scene.activeCamera?.globalPosition;
@@ -746,7 +862,9 @@ export class GameView {
     const view = planes ?? (this.scene.activeCamera ? Frustum.GetPlanes(this.scene.activeCamera.getTransformationMatrix()) : null);
     const seen = !view || inView(view, p.x, p.y + 0.9, p.z, CULL_RADIUS);
     const moving = this.movingRagdolls();
-    const fit = fitBudget(tierFor(dist, seen), dist, moving.map((m) => ({ tier: m.body.tier, dist: m.dist })));
+    // Full physics for bodies near or big on screen (a scope makes far ones big), cheap for small ones in view.
+    const fov = (this.scene.activeCamera as { fov?: number } | null)?.fov ?? DEFAULT_FOV;
+    const fit = fitBudget(tierFor(dist, seen, screenShare(dist, fov)), dist, moving.map((m) => ({ tier: m.body.tier, dist: m.dist })));
     for (const i of fit.drop) this.dropTier(moving[i]!.a);
     this.ragdollTiers[fit.tier]++;
     this.lastDeath = { slot, tier: fit.tier, dist: Math.round(dist * 10) / 10, seen };
@@ -761,8 +879,24 @@ export class GameView {
     }
   }
 
+  /** The fresh deaths that may start their bodies this frame: the nearest RAGDOLL_BUDGET.startsPerFrame. */
+  private deathsToStart(poses: readonly RemotePose[], eye: Vector3 | undefined): Set<number> {
+    const fresh: [number, number][] = [];
+    for (const p of poses) {
+      if (p.alive) continue;
+      const a = this.avatars.get(p.slot);
+      if (!a?.wasAlive || !(a.anim instanceof CharacterAnimator) || a.ragdoll) continue;
+      fresh.push([p.slot, eye ? (p.x - eye.x) ** 2 + (p.z - eye.z) ** 2 : 0]);
+    }
+    if (fresh.length > RAGDOLL_BUDGET.startsPerFrame) fresh.sort((x, y) => x[1] - y[1]);
+    return new Set(fresh.slice(0, RAGDOLL_BUDGET.startsPerFrame).map((f) => f[0]));
+  }
+
   /** The last death's tier, distance from the camera and whether it was in view (tests). */
   lastDeath: { slot: number; tier: RagdollTier; dist: number; seen: boolean } | null = null;
+
+  /** The push (m/s) each player's last body started with (tests: a blast's dead fly with it). */
+  readonly deathPush = new Map<number, number>();
 
   /** Deaths so far by the tier they got (tests and the perf check read these). */
   readonly ragdollTiers: Record<RagdollTier, number> = { full: 0, cheap: 0, posed: 0 };
@@ -892,7 +1026,7 @@ export class GameView {
     this.avatars.delete(slot);
     this.atmosphere.shadowless.delete(a.root);
     this.lyingDead.add(slot);
-    a.tag?.mesh.dispose(false, !a.tag.mesh.isAnInstance);
+    a.tag?.node.dispose(false, a.tag.node instanceof MeshClass);
     a.tag = undefined;
     a.aura?.setEnabled(false);
     a.jet?.setEnabled(false);
@@ -1596,6 +1730,9 @@ export class GameView {
     const seen = new Set<number>();
     let deathMs = 0;
     let deathsStarted = 0;
+    // Fresh deaths start their bodies nearest first, RAGDOLL_BUDGET.startsPerFrame a frame at most (and DEATH_START_MS
+    // of work): a blast that kills thirty spreads its starts over a few frames, the ones you see best first.
+    const starting = this.deathsToStart(poses, eye);
     for (const p of poses) {
       if (p.slot === localSlot) {
         // Your own body in first person: kept loaded but not drawn (and not animated), so switching to
@@ -1677,10 +1814,15 @@ export class GameView {
         continue;
       }
       // A fresh death hands the body to a ragdoll (when the effects world and the skeleton are ready).
+      if (p.alive) a.diedAt = a.diedFrame = undefined;
+      else if (a.wasAlive && a.diedAt === undefined) {
+        a.diedAt = now;
+        a.diedFrame = this.scene.getFrameId();
+      }
       if (a.wasAlive && !p.alive && a.anim && this.physics && !a.ragdoll) {
         // A blast that kills twenty doesn't start twenty bodies in one frame: past a few milliseconds of
         // starting them, the rest hold their pose a frame or two and start on the next ones.
-        if (deathsStarted > 0 && deathMs > DEATH_START_MS) continue;
+        if ((deathsStarted > 0 && deathMs > DEATH_START_MS) || !starting.has(p.slot)) continue;
         deathsStarted++;
         const t0 = performance.now();
         this.startRagdoll(p.slot, a, planes);
@@ -1842,6 +1984,7 @@ export class GameView {
         this.avatars.delete(slot);
       }
     }
+    this.drawTags();
   }
 
   /** Play an upper-body action on a remote avatar (shooting, melee). */
@@ -2016,8 +2159,10 @@ export class GameView {
     // Unarmed (hostages, zombies): nothing in hand.
     const def = slot > 0 && !a.unarmed ? weaponByCode(slot) : undefined;
     if (!def) return;
-    // Crowds: everyone's copy of a gun is a GPU instance of one mesh (one draw per gun model and part, not per player).
-    void this.models.instantiate(def.view.model, `held_${slot}`, this.crowd).then((node) => {
+    // Crowds: everyone's copy of a gun is a GPU instance of the model merged into one mesh (one draw per gun model and
+    // material, not per player, and one mesh per gun for the scene to look at, not one per part: round 3 of
+    // docs/PERF_96.md).
+    void (this.crowd ? this.models.instantiateWhole(def.view.model, `held_${slot}`) : this.models.instantiate(def.view.model, `held_${slot}`)).then((node) => {
       if (a.weaponSlot !== slot || a.root.isDisposed()) return node.dispose();
       // A held gun's shadow is a speck past a few metres: it casts only near the camera.
       castSmall(node);
@@ -2146,24 +2291,29 @@ export class GameView {
 
   private setTag(a: Avatar, color: string | null): void {
     if (a.tag && a.tag.color !== color) {
-      a.tag.mesh.dispose(false, !a.tag.mesh.isAnInstance);
+      a.tag.node.dispose(false, a.tag.node instanceof MeshClass);
       a.tag = undefined;
     }
     if (!color || a.tag) return;
-    // Crowds: every marker of a colour is a GPU instance of one disc (one draw per colour, not per player).
-    const mesh = this.crowd ? this.tagSource(color).createInstance(`${a.root.name}_tag`) : this.tagDisc(`${a.root.name}_tag`, color);
-    mesh.billboardMode = MeshClass.BILLBOARDMODE_ALL;
-    mesh.parent = a.root;
-    mesh.position.y = PLAYER.height + 0.35;
-    mesh.isPickable = false;
-    a.tag = { mesh, color };
+    // Crowds: a plain node where the disc goes; every marker of a colour is a thin instance of one disc, placed there
+    // each frame (drawTags): one draw per colour and no mesh per player for the scene to look at.
+    const node = this.crowd ? new TransformNode(`${a.root.name}_tag`, this.scene) : this.tagDisc(`${a.root.name}_tag`, color);
+    if (this.crowd) {
+      this.tagBatch(color);
+      if (isEnemyTag(color)) node.rotation.z = -Math.PI / 2;
+    }
+    node.billboardMode = MeshClass.BILLBOARDMODE_ALL;
+    node.parent = a.root;
+    node.position.y = PLAYER.height + 0.35;
+    if (node instanceof MeshClass) node.isPickable = false;
+    a.tag = { node, color };
   }
 
   /** A marker disc in a team colour. Allies: a diamond; enemies (red by default): a downward triangle, so the two read apart at a glance. */
-  private tagDisc(name: string, color: string): Mesh {
-    const enemy = color.toLowerCase() === '#ff3b3b';
+  private tagDisc(name: string, color: string, turned = true): Mesh {
+    const enemy = isEnemyTag(color);
     const mesh = CreateDisc(name, { radius: enemy ? 0.13 : 0.11, tessellation: enemy ? 3 : 4 }, this.scene);
-    if (enemy) mesh.rotation.z = -Math.PI / 2;
+    if (enemy && turned) mesh.rotation.z = -Math.PI / 2;
     const mat = new StandardMaterial(`${name}mat`, this.scene);
     mat.emissiveColor = Color3.FromHexString(color);
     mat.disableLighting = true;
@@ -2171,19 +2321,54 @@ export class GameView {
     return mesh;
   }
 
-  private readonly tagSources = new Map<string, Mesh>();
+  /** Per colour, the disc every crowd marker of that colour is a thin instance of, and their matrices. */
+  private readonly tagBatches = new Map<string, { mesh: Mesh; matrices: Float32Array; count: number }>();
 
-  /** The shared disc a colour's crowd markers are instances of (parked out of sight; only its instances draw). */
-  private tagSource(color: string): Mesh {
-    let src = this.tagSources.get(color);
-    if (!src) {
-      src = this.tagDisc(`tag_${color}`, color);
-      src.isPickable = false;
-      src.position.y = -10000;
-      src.freezeWorldMatrix();
-      this.tagSources.set(color, src);
+  private tagBatch(color: string): { mesh: Mesh; matrices: Float32Array; count: number } {
+    let b = this.tagBatches.get(color);
+    if (!b) {
+      // At the world's origin (its thin instances carry each marker's whole matrix, turned and placed by its node).
+      const mesh = this.tagDisc(`tag_${color}`, color, false);
+      mesh.isPickable = false;
+      mesh.freezeWorldMatrix();
+      // A handful of small discs: drawn without a bounds test (they move every frame), and they cast no shadow.
+      mesh.alwaysSelectAsActiveMesh = true;
+      mesh.metadata = { castsNoShadow: true };
+      const matrices = new Float32Array(16 * 16);
+      mesh.thinInstanceSetBuffer('matrix', matrices, 16, false);
+      mesh.setEnabled(false);
+      this.tagBatches.set(color, (b = { mesh, matrices, count: 0 }));
     }
-    return src;
+    return b;
+  }
+
+  /**
+   * Each frame after the avatars: every crowd marker drawn where its node is, as its own disc was (hidden with its
+   * body, and while its player is see-through, as instances were; never your own).
+   */
+  private drawTags(): void {
+    if (!this.tagBatches.size) return;
+    for (const b of this.tagBatches.values()) b.count = 0;
+    for (const a of this.avatars.values()) {
+      const t = a.tag;
+      if (!t || t.node instanceof MeshClass || a.hiddenSelf || (a.shown ?? 1) !== 1 || !t.node.isEnabled()) continue;
+      const b = this.tagBatches.get(t.color);
+      if (!b) continue;
+      if (b.matrices.length < (b.count + 1) * 16) {
+        const more = new Float32Array(b.matrices.length * 2);
+        more.set(b.matrices);
+        b.matrices = more;
+        b.mesh.thinInstanceSetBuffer('matrix', b.matrices, 16, false);
+      }
+      t.node.computeWorldMatrix(true).copyToArray(b.matrices, 16 * b.count++);
+    }
+    for (const b of this.tagBatches.values()) {
+      // Kept at its last count while none show: an empty thin-instanced mesh would check its shaders as a plain one.
+      b.mesh.setEnabled(b.count > 0);
+      if (!b.count) continue;
+      b.mesh.thinInstanceCount = b.count;
+      b.mesh.thinInstanceBufferUpdated('matrix');
+    }
   }
 
   private disposeAvatar(a: Avatar): void {
@@ -3234,6 +3419,9 @@ export class GameView {
 
   render(): void {
     const now = performance.now();
+    // Prop batches' levels of detail (and small props' near shadows) follow the camera.
+    const cam = this.scene.activeCamera;
+    if (this.propBatches && cam) this.propBatches.update(cam.globalPosition);
     this.effects = this.effects.filter((fx) => {
       const f = (now - fx.born) / fx.ttl;
       if (f >= 1) {
@@ -3252,6 +3440,7 @@ export class GameView {
     for (const list of this.bodyPool.values()) for (const anim of list) anim.dispose();
     this.bodyPool.clear();
     this.atmosphere.dispose();
+    this.propBatches?.dispose();
     this.blood.dispose();
     this.impacts.dispose();
     this.environment?.dispose();

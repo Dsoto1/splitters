@@ -1,5 +1,5 @@
 {
-  "$comment": "Resolved ballistic class (server) and impact effect (client word list) of every library material and prop, taken on origin/main e5932fb before the surface types job. Never regenerated: packages/shared/test/surfaceTypes.test.ts compares today against it and lists the intended differences.",
+  "$comment": "Resolved ballistic class (server) and impact effect (client word list) of every library material and prop, taken on origin/main e5932fb before the surface types job. Never regenerated: packages/shared/test/surfaceTypes.test.ts compares today against it and lists the intended differences. A prop added since is entered as it came (Shingle Point's beach pieces, 2026-11-06).",
   "materials": {
     "core.proto_floor": {"ballistic":"concrete","effect":"stone"},
     "core.proto_wall": {"ballistic":"concrete","effect":"stone"},
@@ -821,6 +821,14 @@
     "prop.burn_barrel": {"ballistic":"thin_metal","effect":"metal"},
     "prop.razor_wire": {"ballistic":"concrete","effect":"stone"},
     "prop.camo_net": {"ballistic":"concrete","effect":"stone"},
+    "prop.landing_craft": {"ballistic":"metal","effect":"metal"},
+    "prop.landing_craft_wreck": {"ballistic":"metal","effect":"metal"},
+    "prop.hedgehog_beach": {"ballistic":"metal","effect":"metal"},
+    "prop.sandbag_stack": {"ballistic":"soil","effect":"dirt"},
+    "prop.timber_baulk": {"ballistic":"heavy_wood","effect":"wood"},
+    "prop.timber_stack": {"ballistic":"heavy_wood","effect":"wood"},
+    "prop.dory": {"ballistic":"soil","effect":"dirt"},
+    "prop.straw_bale": {"ballistic":"soil","effect":"dirt"},
     "prop.mine_cart": {"ballistic":"thin_metal","effect":"metal"},
     "prop.ore_cart": {"ballistic":"thin_metal","effect":"metal"},
     "prop.dynamite_crate": {"ballistic":"thin_wood","effect":"wood"},
