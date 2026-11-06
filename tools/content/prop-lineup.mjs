@@ -11,7 +11,8 @@
 // The out dir must be outside the repo (default: <tmp>/tiletrigger-prop-lineup). Every pack with furniture or everyday
 // props (chairs, stools, sofas, benches, tables, desks, counters, beds, shelves, cabinets, doors, toilets, sinks,
 // fridges, lamps, kitchen and office pieces) by default; PACKS=<pack ids> for some packs, ONLY=<prop ids> for some
-// props (one sheet, "only"). PER_ROW=<n> props a row (default 5). CHROMIUM=<path> uses that browser build.
+// props (one sheet, "only"). PER_ROW=<n> props a row (default 5). SCALE=<factor> draws every prop that much bigger (a
+// "game size" furniture factor to show the owner; the catalogue is unchanged). CHROMIUM=<path> uses that browser build.
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join, relative, resolve } from 'node:path';
@@ -26,6 +27,7 @@ const base = process.argv[2] ?? 'http://localhost:4860';
 const out = resolve(process.argv[3] ?? join(tmpdir(), 'tiletrigger-prop-lineup'));
 if (!relative(ROOT, out).startsWith('..')) throw new Error(`lineup sheets go outside the repo, not ${out}`);
 const PER_ROW = Number(process.env.PER_ROW ?? 5);
+const SCALE = Number(process.env.SCALE ?? 1);
 
 const manifest = loadPropManifest();
 const only = process.env.ONLY?.split(',').filter(Boolean);
@@ -67,7 +69,7 @@ for (const [pack, props] of byPack) {
   for (const row of rows) {
     const ids = row.map((p) => `prop.${p.id}`);
     for (const [col, view] of ['eye', 'side'].entries()) {
-      await page.evaluate(([ids, view]) => window.__lineup.show(ids, view), [ids, view]);
+      await page.evaluate(([ids, view, scale]) => window.__lineup.show(ids, view, ids.map(() => scale)), [ids, view, SCALE]);
       const shot = await page.screenshot({ type: 'png' });
       tiles.push({ input: await sharp(shot).resize(TILE.width, TILE.height).png().toBuffer(), left: col * TILE.width, top: top + LABEL });
       tiles.push({ input: text(view === 'eye' ? "From a standing player's eye (1.6 m, the game's field of view)" : 'From the side (true elevation)', TILE.width, LABEL, 14, 500), left: col * TILE.width, top });
@@ -75,7 +77,7 @@ for (const [pack, props] of byPack) {
     top += LABEL + TILE.height;
   }
   const title = pack === 'only' ? 'Lineup' : (manifest.packs[pack]?.title ?? pack);
-  tiles.push({ input: text(`${title} (${pack}): ${props.length} props beside a small, a standard and a large character`, 2 * TILE.width, LABEL * 2, 22, 700), left: 0, top: 0 });
+  tiles.push({ input: text(`${title} (${pack}): ${props.length} props beside a small, a standard and a large character${SCALE !== 1 ? `, every prop ×${SCALE}` : ''}`, 2 * TILE.width, LABEL * 2, 22, 700), left: 0, top: 0 });
   const file = join(out, `${pack}.png`);
   await sharp({ create: { width: 2 * TILE.width, height: top, channels: 3, background: '#15181d' } }).composite(tiles).png().toFile(file);
   index[pack] = props.map((p) => p.id);

@@ -224,6 +224,12 @@ such."
 - **A single "game size" factor** (e.g. +10 %) only with the owner's OK, from before and after pictures.
 - **The brief:** session scratchpad `briefs/prop-scale.md`. The same agent does the slack pass first: one agent, two
   landings.
+- **In progress** (`wip/prop-scale`, agent, 2026-11-06; on main 04660a1e): the lineup team tool (`?mode=lineup`,
+  `packages/client/src/tools/propLineup.ts`; `node tools/content/prop-lineup.mjs <url> <out dir>` draws a sheet per
+  pack, from a standing player's eye and from the side; `SCALE=1.1` draws a furniture factor); the measuring tool
+  (`node tools/content/prop-sizes.mjs`: each piece's seat, top or height against its reference,
+  `tools/content/furniture.mjs`); `prepare-props.mjs` scales a prop kept as built (its pack needs a download) to a
+  new `height`. Before sheets: session scratchpad `scale/lineup-before/`; in-map before shots `scale/maps/`.
 
 <!-- prop-slack -->
 ### Prop slack pass: columns, the slack audit, 391 props to voxel (`wip/prop-slack`, agent, 2026-11-06; rebased on main e63ffc6f; green on `check/prop-slack` at a3198d27, run 42300775716; ready to land)
