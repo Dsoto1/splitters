@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 24,
+  "formatVersion": 26,
   "metadata": {
     "id": "market_town",
     "name": "Market Town",
@@ -18,7 +18,15 @@
       "core.tdm",
       "core.ctf",
       "core.koth"
-    ]
+    ],
+    "release": {
+      "mapId": "m_d3ml2watxrhzzmt6",
+      "versionId": "v_fgmrwsqj3d5in7oc",
+      "revision": 1,
+      "contentHash": "sha256:0900f6494155162106e38d82635cdf18184293185222d7f47a4154f935c252ba",
+      "schemaVersion": 26,
+      "releasedAt": "2026-11-06T12:14:07.016Z"
+    }
   },
   "classicStructure": {
     "cellSize": 8,
@@ -1598,460 +1606,460 @@
   "entities": [
     {
       "id": "spawn_001",
-      "kind": "spawn",
       "position": [
         -36,
         0,
         -66
       ],
+      "kind": "spawn",
       "yaw": 0,
       "faction": "embers"
     },
     {
       "id": "spawn_002",
-      "kind": "spawn",
       "position": [
         -28,
         0,
         -70
       ],
+      "kind": "spawn",
       "yaw": 0,
       "faction": "embers"
     },
     {
       "id": "spawn_003",
-      "kind": "spawn",
       "position": [
         -20,
         0,
         -64
       ],
+      "kind": "spawn",
       "yaw": 0,
       "faction": "embers"
     },
     {
       "id": "spawn_004",
-      "kind": "spawn",
       "position": [
         -12,
         0,
         -72
       ],
+      "kind": "spawn",
       "yaw": 0,
       "faction": "embers"
     },
     {
       "id": "spawn_005",
-      "kind": "spawn",
       "position": [
         -4,
         0,
         -66
       ],
+      "kind": "spawn",
       "yaw": 0,
       "faction": "embers"
     },
     {
       "id": "spawn_006",
-      "kind": "spawn",
       "position": [
         4,
         0,
         -70
       ],
+      "kind": "spawn",
       "yaw": 0,
       "faction": "embers"
     },
     {
       "id": "spawn_007",
-      "kind": "spawn",
       "position": [
         12,
         0,
         -64
       ],
+      "kind": "spawn",
       "yaw": 0,
       "faction": "embers"
     },
     {
       "id": "spawn_008",
-      "kind": "spawn",
       "position": [
         20,
         0,
         -72
       ],
+      "kind": "spawn",
       "yaw": 0,
       "faction": "embers"
     },
     {
       "id": "spawn_009",
-      "kind": "spawn",
       "position": [
         28,
         0,
         -66
       ],
+      "kind": "spawn",
       "yaw": 0,
       "faction": "embers"
     },
     {
       "id": "spawn_010",
-      "kind": "spawn",
       "position": [
         36,
         0,
         -70
       ],
+      "kind": "spawn",
       "yaw": 0,
       "faction": "embers"
     },
     {
       "id": "spawn_011",
-      "kind": "spawn",
       "position": [
         -44,
         0,
         -60
       ],
+      "kind": "spawn",
       "yaw": 0,
       "faction": "embers"
     },
     {
       "id": "spawn_012",
-      "kind": "spawn",
       "position": [
         44,
         0,
         -60
       ],
+      "kind": "spawn",
       "yaw": 0,
       "faction": "embers"
     },
     {
       "id": "spawn_013",
-      "kind": "spawn",
       "position": [
         -30,
         0,
         52
       ],
+      "kind": "spawn",
       "yaw": 3.141592653589793,
       "faction": "tide"
     },
     {
       "id": "spawn_014",
-      "kind": "spawn",
       "position": [
         -28,
         0,
         58
       ],
+      "kind": "spawn",
       "yaw": 3.141592653589793,
       "faction": "tide"
     },
     {
       "id": "spawn_015",
-      "kind": "spawn",
       "position": [
         -20,
         0,
         50
       ],
+      "kind": "spawn",
       "yaw": 3.141592653589793,
       "faction": "tide"
     },
     {
       "id": "spawn_016",
-      "kind": "spawn",
       "position": [
         -12,
         0,
         58
       ],
+      "kind": "spawn",
       "yaw": 3.141592653589793,
       "faction": "tide"
     },
     {
       "id": "spawn_017",
-      "kind": "spawn",
       "position": [
         12,
         0,
         58
       ],
+      "kind": "spawn",
       "yaw": 3.141592653589793,
       "faction": "tide"
     },
     {
       "id": "spawn_018",
-      "kind": "spawn",
       "position": [
         20,
         0,
         50
       ],
+      "kind": "spawn",
       "yaw": 3.141592653589793,
       "faction": "tide"
     },
     {
       "id": "spawn_019",
-      "kind": "spawn",
       "position": [
         28,
         0,
         58
       ],
+      "kind": "spawn",
       "yaw": 3.141592653589793,
       "faction": "tide"
     },
     {
       "id": "spawn_020",
-      "kind": "spawn",
       "position": [
         36,
         0,
         52
       ],
+      "kind": "spawn",
       "yaw": 3.141592653589793,
       "faction": "tide"
     },
     {
       "id": "spawn_021",
-      "kind": "spawn",
       "position": [
         -48,
         0,
         40
       ],
+      "kind": "spawn",
       "yaw": 3.141592653589793,
       "faction": "tide"
     },
     {
       "id": "spawn_022",
-      "kind": "spawn",
       "position": [
         44,
         0,
         44
       ],
+      "kind": "spawn",
       "yaw": 3.141592653589793,
       "faction": "tide"
     },
     {
       "id": "spawn_023",
-      "kind": "spawn",
       "position": [
         -12,
         0,
         44
       ],
+      "kind": "spawn",
       "yaw": 3.141592653589793,
       "faction": "tide"
     },
     {
       "id": "spawn_024",
-      "kind": "spawn",
       "position": [
         12,
         0,
         44
       ],
+      "kind": "spawn",
       "yaw": 3.141592653589793,
       "faction": "tide"
     },
     {
       "id": "spawn_025",
-      "kind": "spawn",
       "position": [
         -40,
         0,
         -14
       ],
+      "kind": "spawn",
       "yaw": 0,
       "faction": null
     },
     {
       "id": "spawn_026",
-      "kind": "spawn",
       "position": [
         40,
         0,
         -14
       ],
+      "kind": "spawn",
       "yaw": 0,
       "faction": null
     },
     {
       "id": "spawn_027",
-      "kind": "spawn",
       "position": [
         -28,
         0,
         10
       ],
+      "kind": "spawn",
       "yaw": 1.6,
       "faction": null
     },
     {
       "id": "spawn_028",
-      "kind": "spawn",
       "position": [
         28,
         0,
         12
       ],
+      "kind": "spawn",
       "yaw": -1.6,
       "faction": null
     },
     {
       "id": "spawn_029",
-      "kind": "spawn",
       "position": [
-        -44,
+        -44.03,
         0,
-        28
+        27.9
       ],
+      "kind": "spawn",
       "yaw": 0,
       "faction": null
     },
     {
       "id": "spawn_030",
-      "kind": "spawn",
       "position": [
-        44,
+        43.97,
         0,
-        20
+        19.9
       ],
+      "kind": "spawn",
       "yaw": 3.1,
       "faction": null
     },
     {
       "id": "spawn_031",
-      "kind": "spawn",
       "position": [
         -12,
         0,
         -30
       ],
+      "kind": "spawn",
       "yaw": 0,
       "faction": null
     },
     {
       "id": "spawn_032",
-      "kind": "spawn",
       "position": [
         16,
         0,
         -30
       ],
+      "kind": "spawn",
       "yaw": 0,
       "faction": null
     },
     {
       "id": "spawn_033",
-      "kind": "spawn",
       "position": [
-        -20,
+        -20.03,
         0,
-        28
+        27.9
       ],
+      "kind": "spawn",
       "yaw": 3.1,
       "faction": null
     },
     {
       "id": "spawn_034",
-      "kind": "spawn",
       "position": [
-        20,
+        20.15,
         0,
         36
       ],
+      "kind": "spawn",
       "yaw": 3.1,
       "faction": null
     },
     {
       "id": "spawn_035",
-      "kind": "spawn",
       "position": [
         -36,
         0,
         -30
       ],
+      "kind": "spawn",
       "yaw": 0.8,
       "faction": null
     },
     {
       "id": "spawn_036",
-      "kind": "spawn",
       "position": [
         36,
         0,
         -30
       ],
+      "kind": "spawn",
       "yaw": -0.8,
       "faction": null
     },
     {
       "id": "flag_embers",
-      "kind": "flag",
       "position": [
         -12,
         0,
         -68
       ],
+      "kind": "flag",
       "yaw": 0,
       "team": "embers"
     },
     {
       "id": "flag_tide",
-      "kind": "flag",
       "position": [
         12,
         0,
         56
       ],
+      "kind": "flag",
       "yaw": 3.141592653589793,
       "team": "tide"
     },
     {
       "id": "hill_square",
-      "kind": "hill",
       "position": [
         -4,
         0,
         9
       ],
+      "kind": "hill",
       "radius": 5
     },
     {
       "id": "hill_bridge",
-      "kind": "hill",
       "position": [
         0,
         1,
         -24
       ],
+      "kind": "hill",
       "radius": 4
     },
     {
       "id": "hill_hall",
-      "kind": "hill",
       "position": [
         6,
         4,
         8
       ],
+      "kind": "hill",
       "radius": 4
     },
     {
       "id": "water_stream",
-      "kind": "water",
       "position": [
         0,
         -2,
         -24.15
       ],
+      "kind": "water",
       "size": [
         104,
         0.8,
@@ -2062,44 +2070,44 @@
     },
     {
       "id": "door_f4eutv4d8u",
-      "kind": "door",
       "position": [
         0,
         0,
         -50.5
       ],
+      "kind": "door",
       "yaw": 0,
+      "style": "portcullis",
       "startOpen": true,
       "locked": false,
-      "auto": false,
-      "style": "portcullis"
+      "auto": false
     },
     {
       "id": "ladder_gate",
-      "kind": "ladder",
       "position": [
         1.85,
         4,
         -45.6
       ],
+      "kind": "ladder",
       "yaw": 1.5707963267948966,
       "height": 4,
       "width": 0.9
     },
     {
       "id": "block_9g8hhmbb36",
-      "kind": "block",
       "position": [
         -49,
         0,
         -48
       ],
-      "yaw": 0,
+      "kind": "block",
       "size": [
         2.4,
         1.2,
         0.15
       ],
+      "yaw": 0,
       "material": "core.wattle",
       "tint": null,
       "behaviour": "breakable",
@@ -2110,18 +2118,18 @@
     },
     {
       "id": "block_3yyz0ja8jn",
-      "kind": "block",
       "position": [
         49,
         0,
         -48
       ],
-      "yaw": 0,
+      "kind": "block",
       "size": [
         2.4,
         1.2,
         0.15
       ],
+      "yaw": 0,
       "material": "core.wattle",
       "tint": null,
       "behaviour": "breakable",
@@ -2132,288 +2140,288 @@
     },
     {
       "id": "pickup_037",
-      "kind": "pickup",
-      "item": "core.weapon_marksman",
       "position": [
         40,
         7,
         -42.6
       ],
+      "kind": "pickup",
+      "item": "core.weapon_marksman",
       "respawnSeconds": null
     },
     {
       "id": "pickup_038",
-      "kind": "pickup",
-      "item": "core.weapon_sniper",
       "position": [
         -2,
         8,
         -49
       ],
+      "kind": "pickup",
+      "item": "core.weapon_sniper",
       "respawnSeconds": null
     },
     {
       "id": "pickup_039",
-      "kind": "pickup",
-      "item": "core.weapon_marksman",
       "position": [
         -24,
         4,
         -49.5
       ],
+      "kind": "pickup",
+      "item": "core.weapon_marksman",
       "respawnSeconds": null
     },
     {
       "id": "pickup_040",
-      "kind": "pickup",
-      "item": "core.weapon_battle_axe",
       "position": [
         -40,
         0,
         -42.5
       ],
+      "kind": "pickup",
+      "item": "core.weapon_battle_axe",
       "respawnSeconds": null
     },
     {
       "id": "pickup_041",
-      "kind": "pickup",
-      "item": "core.weapon_shotgun",
       "position": [
         -14,
         4,
         16
       ],
+      "kind": "pickup",
+      "item": "core.weapon_shotgun",
       "respawnSeconds": null
     },
     {
       "id": "pickup_042",
-      "kind": "pickup",
-      "item": "core.weapon_sawed_off",
       "position": [
         -18,
         0,
         -17
       ],
+      "kind": "pickup",
+      "item": "core.weapon_sawed_off",
       "respawnSeconds": null
     },
     {
       "id": "pickup_043",
-      "kind": "pickup",
-      "item": "core.weapon_hand_cannon",
       "position": [
         30,
         0,
         -1
       ],
+      "kind": "pickup",
+      "item": "core.weapon_hand_cannon",
       "respawnSeconds": null
     },
     {
       "id": "pickup_044",
-      "kind": "pickup",
-      "item": "core.weapon_spear",
       "position": [
         -10,
         0,
         10
       ],
+      "kind": "pickup",
+      "item": "core.weapon_spear",
       "respawnSeconds": null
     },
     {
       "id": "pickup_045",
-      "kind": "pickup",
-      "item": "core.weapon_rifle",
       "position": [
         -30,
         0,
         -60
       ],
+      "kind": "pickup",
+      "item": "core.weapon_rifle",
       "respawnSeconds": null
     },
     {
       "id": "pickup_046",
-      "kind": "pickup",
-      "item": "core.weapon_rifle",
       "position": [
         30,
         0,
         50
       ],
+      "kind": "pickup",
+      "item": "core.weapon_rifle",
       "respawnSeconds": null
     },
     {
       "id": "pickup_047",
-      "kind": "pickup",
-      "item": "core.weapon_smg",
       "position": [
         30,
         0,
         -60
       ],
+      "kind": "pickup",
+      "item": "core.weapon_smg",
       "respawnSeconds": null
     },
     {
       "id": "pickup_048",
-      "kind": "pickup",
-      "item": "core.weapon_smg",
       "position": [
         -30,
         0,
         50
       ],
+      "kind": "pickup",
+      "item": "core.weapon_smg",
       "respawnSeconds": null
     },
     {
       "id": "pickup_049",
-      "kind": "pickup",
-      "item": "core.incendiaries",
       "position": [
         0,
         4,
         32
       ],
+      "kind": "pickup",
+      "item": "core.incendiaries",
       "respawnSeconds": null
     },
     {
       "id": "pickup_050",
-      "kind": "pickup",
-      "item": "core.grenades",
       "position": [
         -36,
         0,
         4
       ],
+      "kind": "pickup",
+      "item": "core.grenades",
       "respawnSeconds": null
     },
     {
       "id": "pickup_051",
-      "kind": "pickup",
-      "item": "core.grenades",
       "position": [
         36,
         0,
         -12
       ],
+      "kind": "pickup",
+      "item": "core.grenades",
       "respawnSeconds": null
     },
     {
       "id": "pickup_052",
-      "kind": "pickup",
-      "item": "core.sheep",
       "position": [
         0,
         0,
         38
       ],
+      "kind": "pickup",
+      "item": "core.sheep",
       "respawnSeconds": null
     },
     {
       "id": "pickup_053",
-      "kind": "pickup",
-      "item": "core.armor_large",
       "position": [
         6,
         4,
         8
       ],
+      "kind": "pickup",
+      "item": "core.armor_large",
       "respawnSeconds": null
     },
     {
       "id": "pickup_054",
-      "kind": "pickup",
-      "item": "core.armor_small",
       "position": [
         -44,
         0,
         -24
       ],
+      "kind": "pickup",
+      "item": "core.armor_small",
       "respawnSeconds": null
     },
     {
       "id": "pickup_055",
-      "kind": "pickup",
-      "item": "core.armor_small",
       "position": [
         44,
         0,
         -24
       ],
+      "kind": "pickup",
+      "item": "core.armor_small",
       "respawnSeconds": null
     },
     {
       "id": "pickup_056",
-      "kind": "pickup",
-      "item": "core.health_large",
       "position": [
         -4,
         0,
         -34
       ],
+      "kind": "pickup",
+      "item": "core.health_large",
       "respawnSeconds": null
     },
     {
       "id": "pickup_057",
-      "kind": "pickup",
-      "item": "core.health_large",
       "position": [
         4,
         0,
         26
       ],
+      "kind": "pickup",
+      "item": "core.health_large",
       "respawnSeconds": null
     },
     {
       "id": "pickup_058",
-      "kind": "pickup",
-      "item": "core.health_small",
       "position": [
         -24,
         0,
         6
       ],
+      "kind": "pickup",
+      "item": "core.health_small",
       "respawnSeconds": null
     },
     {
       "id": "pickup_059",
-      "kind": "pickup",
-      "item": "core.health_small",
       "position": [
         24,
         0,
         30
       ],
+      "kind": "pickup",
+      "item": "core.health_small",
       "respawnSeconds": null
     },
     {
       "id": "pickup_060",
-      "kind": "pickup",
-      "item": "core.health_small",
       "position": [
         -12,
         0,
         -12
       ],
+      "kind": "pickup",
+      "item": "core.health_small",
       "respawnSeconds": null
     },
     {
       "id": "pickup_061",
-      "kind": "pickup",
-      "item": "core.health_small",
       "position": [
         16,
         0,
         -12
       ],
+      "kind": "pickup",
+      "item": "core.health_small",
       "respawnSeconds": null
     },
     {
       "id": "prop_062",
-      "kind": "prop",
-      "model": "prop.town_fountain",
       "position": [
         -4,
         0.5,
         4
       ],
+      "kind": "prop",
+      "model": "prop.town_fountain",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -2421,13 +2429,13 @@
     },
     {
       "id": "prop_063",
-      "kind": "prop",
-      "model": "prop.stall",
       "position": [
         -10,
         0,
         -1
       ],
+      "kind": "prop",
+      "model": "prop.stall",
       "yaw": 1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -2435,13 +2443,13 @@
     },
     {
       "id": "prop_064",
-      "kind": "prop",
-      "model": "prop.stall_green",
       "position": [
         -10,
         0,
         9
       ],
+      "kind": "prop",
+      "model": "prop.stall_green",
       "yaw": 1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -2449,13 +2457,13 @@
     },
     {
       "id": "prop_065",
-      "kind": "prop",
-      "model": "prop.mv_awning",
       "position": [
         1,
         0,
         10
       ],
+      "kind": "prop",
+      "model": "prop.mv_awning",
       "yaw": 3.141592653589793,
       "scale": 1,
       "solid": true,
@@ -2463,13 +2471,13 @@
     },
     {
       "id": "prop_066",
-      "kind": "prop",
-      "model": "prop.mv_pavilion",
       "position": [
         -9,
         0,
         15
       ],
+      "kind": "prop",
+      "model": "prop.mv_pavilion",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -2477,13 +2485,13 @@
     },
     {
       "id": "prop_067",
-      "kind": "prop",
-      "model": "prop.stall_bench",
       "position": [
         -6,
         0,
         -2
       ],
+      "kind": "prop",
+      "model": "prop.stall_bench",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -2491,13 +2499,13 @@
     },
     {
       "id": "prop_068",
-      "kind": "prop",
-      "model": "prop.mv_market_cross",
       "position": [
         -16,
         0,
         40
       ],
+      "kind": "prop",
+      "model": "prop.mv_market_cross",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -2505,13 +2513,13 @@
     },
     {
       "id": "prop_069",
-      "kind": "prop",
-      "model": "prop.mv_sacks",
       "position": [
         6.5,
         0,
         -2
       ],
+      "kind": "prop",
+      "model": "prop.mv_sacks",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -2519,13 +2527,13 @@
     },
     {
       "id": "prop_070",
-      "kind": "prop",
-      "model": "prop.crate_large",
       "position": [
         9.5,
         0,
         9
       ],
+      "kind": "prop",
+      "model": "prop.crate_large",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -2533,13 +2541,13 @@
     },
     {
       "id": "prop_071",
-      "kind": "prop",
-      "model": "prop.barrel",
       "position": [
         6.5,
         0,
         12
       ],
+      "kind": "prop",
+      "model": "prop.barrel",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -2547,13 +2555,13 @@
     },
     {
       "id": "prop_072",
-      "kind": "prop",
-      "model": "prop.mv_tarp_crates",
       "position": [
         9.5,
         0,
         1
       ],
+      "kind": "prop",
+      "model": "prop.mv_tarp_crates",
       "yaw": 1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -2561,13 +2569,13 @@
     },
     {
       "id": "prop_073",
-      "kind": "prop",
-      "model": "prop.cart",
       "position": [
         -14,
         0,
         -6
       ],
+      "kind": "prop",
+      "model": "prop.cart",
       "yaw": 0.4,
       "scale": 1,
       "solid": true,
@@ -2575,13 +2583,13 @@
     },
     {
       "id": "prop_074",
-      "kind": "prop",
-      "model": "prop.anvil",
       "position": [
         -40,
         0,
         -40
       ],
+      "kind": "prop",
+      "model": "prop.anvil",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -2589,13 +2597,13 @@
     },
     {
       "id": "prop_075",
-      "kind": "prop",
-      "model": "prop.mv_hay_cart",
       "position": [
         -30,
         0,
         -44
       ],
+      "kind": "prop",
+      "model": "prop.mv_hay_cart",
       "yaw": 0.6,
       "scale": 1,
       "solid": true,
@@ -2603,13 +2611,13 @@
     },
     {
       "id": "prop_076",
-      "kind": "prop",
-      "model": "prop.hay_bale",
       "position": [
         -26,
         0,
         -40
       ],
+      "kind": "prop",
+      "model": "prop.hay_bale",
       "yaw": 0.2,
       "scale": 1,
       "solid": true,
@@ -2617,13 +2625,13 @@
     },
     {
       "id": "prop_077",
-      "kind": "prop",
-      "model": "prop.hay_bale",
       "position": [
         -27,
         0,
         -38.5
       ],
+      "kind": "prop",
+      "model": "prop.hay_bale",
       "yaw": 1.1,
       "scale": 1,
       "solid": true,
@@ -2631,13 +2639,13 @@
     },
     {
       "id": "prop_078",
-      "kind": "prop",
-      "model": "prop.mv_workbench",
       "position": [
         -44,
         0,
         -45
       ],
+      "kind": "prop",
+      "model": "prop.mv_workbench",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -2645,13 +2653,13 @@
     },
     {
       "id": "prop_079",
-      "kind": "prop",
-      "model": "prop.woodpile",
       "position": [
         -36,
         0,
         -46
       ],
+      "kind": "prop",
+      "model": "prop.woodpile",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -2659,13 +2667,13 @@
     },
     {
       "id": "prop_080",
-      "kind": "prop",
-      "model": "prop.mv_well",
       "position": [
         -40,
         0,
         8
       ],
+      "kind": "prop",
+      "model": "prop.mv_well",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -2673,13 +2681,13 @@
     },
     {
       "id": "prop_081",
-      "kind": "prop",
-      "model": "prop.bucket",
       "position": [
         -38.5,
         0,
         9.5
       ],
+      "kind": "prop",
+      "model": "prop.bucket",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -2687,13 +2695,13 @@
     },
     {
       "id": "prop_082",
-      "kind": "prop",
-      "model": "prop.mv_tarp_tent",
       "position": [
         -22,
         0,
         -72
       ],
+      "kind": "prop",
+      "model": "prop.mv_tarp_tent",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -2701,13 +2709,13 @@
     },
     {
       "id": "prop_083",
-      "kind": "prop",
-      "model": "prop.mv_tarp_tent",
       "position": [
         27,
         0,
         -72
       ],
+      "kind": "prop",
+      "model": "prop.mv_tarp_tent",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -2715,13 +2723,13 @@
     },
     {
       "id": "prop_084",
-      "kind": "prop",
-      "model": "prop.dg_woodfire",
       "position": [
         0,
         0,
         -74
       ],
+      "kind": "prop",
+      "model": "prop.dg_woodfire",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -2729,13 +2737,13 @@
     },
     {
       "id": "prop_085",
-      "kind": "prop",
-      "model": "prop.cart_high",
       "position": [
         40,
         0,
         -74
       ],
+      "kind": "prop",
+      "model": "prop.cart_high",
       "yaw": 0.3,
       "scale": 1,
       "solid": true,
@@ -2743,13 +2751,13 @@
     },
     {
       "id": "prop_086",
-      "kind": "prop",
-      "model": "prop.mv_spiked_fence",
       "position": [
         -12,
         0,
         -55
       ],
+      "kind": "prop",
+      "model": "prop.mv_spiked_fence",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -2757,13 +2765,13 @@
     },
     {
       "id": "prop_087",
-      "kind": "prop",
-      "model": "prop.mv_spiked_fence",
       "position": [
         12,
         0,
         -55
       ],
+      "kind": "prop",
+      "model": "prop.mv_spiked_fence",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -2771,13 +2779,13 @@
     },
     {
       "id": "prop_088",
-      "kind": "prop",
-      "model": "prop.banner_long",
       "position": [
         -5,
         0,
         -52.6
       ],
+      "kind": "prop",
+      "model": "prop.banner_long",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -2785,13 +2793,13 @@
     },
     {
       "id": "prop_089",
-      "kind": "prop",
-      "model": "prop.banner_long",
       "position": [
         5,
         0,
         -52.6
       ],
+      "kind": "prop",
+      "model": "prop.banner_long",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -2799,13 +2807,13 @@
     },
     {
       "id": "prop_090",
-      "kind": "prop",
-      "model": "prop.mv_bell",
       "position": [
         0,
         11.6,
         49
       ],
+      "kind": "prop",
+      "model": "prop.mv_bell",
       "yaw": 0,
       "scale": 1,
       "solid": false,
@@ -2813,13 +2821,13 @@
     },
     {
       "id": "prop_091",
-      "kind": "prop",
-      "model": "prop.lantern_post",
       "position": [
         5,
         0,
         -14
       ],
+      "kind": "prop",
+      "model": "prop.lantern_post",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -2827,13 +2835,13 @@
     },
     {
       "id": "prop_092",
-      "kind": "prop",
-      "model": "prop.lantern_post",
       "position": [
         -5,
         0,
         20
       ],
+      "kind": "prop",
+      "model": "prop.lantern_post",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -2841,13 +2849,13 @@
     },
     {
       "id": "prop_093",
-      "kind": "prop",
-      "model": "prop.lantern_post",
       "position": [
         5,
         0,
         36
       ],
+      "kind": "prop",
+      "model": "prop.lantern_post",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -2855,13 +2863,13 @@
     },
     {
       "id": "prop_094",
-      "kind": "prop",
-      "model": "prop.lantern_post",
       "position": [
         -5,
         0,
         -36
       ],
+      "kind": "prop",
+      "model": "prop.lantern_post",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -2869,13 +2877,13 @@
     },
     {
       "id": "prop_095",
-      "kind": "prop",
-      "model": "prop.mv_shop_sign",
       "position": [
         -21,
         0,
         -44.2
       ],
+      "kind": "prop",
+      "model": "prop.mv_shop_sign",
       "yaw": 3.141592653589793,
       "scale": 1,
       "solid": false,
@@ -2883,13 +2891,13 @@
     },
     {
       "id": "prop_096",
-      "kind": "prop",
-      "model": "prop.mv_shop_sign",
       "position": [
         19,
         0,
         -20.2
       ],
+      "kind": "prop",
+      "model": "prop.mv_shop_sign",
       "yaw": 3.141592653589793,
       "scale": 1,
       "solid": false,
@@ -2897,13 +2905,13 @@
     },
     {
       "id": "prop_097",
-      "kind": "prop",
-      "model": "prop.mv_shop_sign",
       "position": [
         -29,
         0,
         -4.2
       ],
+      "kind": "prop",
+      "model": "prop.mv_shop_sign",
       "yaw": 3.141592653589793,
       "scale": 1,
       "solid": false,
@@ -2911,13 +2919,13 @@
     },
     {
       "id": "prop_098",
-      "kind": "prop",
-      "model": "prop.barrel",
       "position": [
         -12.5,
         0,
         -22
       ],
+      "kind": "prop",
+      "model": "prop.barrel",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -2925,13 +2933,13 @@
     },
     {
       "id": "prop_099",
-      "kind": "prop",
-      "model": "prop.barrel_open",
       "position": [
         12,
         0,
         -36
       ],
+      "kind": "prop",
+      "model": "prop.barrel_open",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -2939,13 +2947,13 @@
     },
     {
       "id": "prop_100",
-      "kind": "prop",
-      "model": "prop.crate_small",
       "position": [
         13,
         0,
         -37.5
       ],
+      "kind": "prop",
+      "model": "prop.crate_small",
       "yaw": 0.4,
       "scale": 1,
       "solid": true,
@@ -2953,13 +2961,13 @@
     },
     {
       "id": "prop_101",
-      "kind": "prop",
-      "model": "prop.mv_wattle_fence",
       "position": [
         -28,
         0,
         60
       ],
+      "kind": "prop",
+      "model": "prop.mv_wattle_fence",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -2967,13 +2975,13 @@
     },
     {
       "id": "prop_102",
-      "kind": "prop",
-      "model": "prop.mv_wattle_fence",
       "position": [
         28,
         0,
         60
       ],
+      "kind": "prop",
+      "model": "prop.mv_wattle_fence",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -2981,13 +2989,13 @@
     },
     {
       "id": "prop_103",
-      "kind": "prop",
-      "model": "prop.lf_wooden_fence_closed",
       "position": [
         -48,
         0,
         34
       ],
+      "kind": "prop",
+      "model": "prop.lf_wooden_fence_closed",
       "yaw": 1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -2995,13 +3003,13 @@
     },
     {
       "id": "prop_104",
-      "kind": "prop",
-      "model": "prop.nt_common_tree",
       "position": [
         -47,
         0,
         57
       ],
+      "kind": "prop",
+      "model": "prop.nt_common_tree",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -3009,13 +3017,13 @@
     },
     {
       "id": "prop_105",
-      "kind": "prop",
-      "model": "prop.nt_common_tree_2",
       "position": [
         40,
         0,
         54
       ],
+      "kind": "prop",
+      "model": "prop.nt_common_tree_2",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -3023,13 +3031,13 @@
     },
     {
       "id": "prop_106",
-      "kind": "prop",
-      "model": "prop.nt_common_tree_2",
       "position": [
         -22,
         0,
         52
       ],
+      "kind": "prop",
+      "model": "prop.nt_common_tree_2",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -3037,13 +3045,13 @@
     },
     {
       "id": "prop_107",
-      "kind": "prop",
-      "model": "prop.nt_common_tree",
       "position": [
         24,
         0,
         44
       ],
+      "kind": "prop",
+      "model": "prop.nt_common_tree",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -3051,13 +3059,13 @@
     },
     {
       "id": "prop_108",
-      "kind": "prop",
-      "model": "prop.nt_common_tree",
       "position": [
         -46,
         0,
         -72
       ],
+      "kind": "prop",
+      "model": "prop.nt_common_tree",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -3065,13 +3073,13 @@
     },
     {
       "id": "prop_109",
-      "kind": "prop",
-      "model": "prop.nt_common_tree_2",
       "position": [
         46,
         0,
         -64
       ],
+      "kind": "prop",
+      "model": "prop.nt_common_tree_2",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -3079,13 +3087,13 @@
     },
     {
       "id": "prop_110",
-      "kind": "prop",
-      "model": "prop.nt_common_tree",
       "position": [
         -46,
         0,
         -12
       ],
+      "kind": "prop",
+      "model": "prop.nt_common_tree",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -3093,13 +3101,13 @@
     },
     {
       "id": "prop_111",
-      "kind": "prop",
-      "model": "prop.nt_common_tree",
       "position": [
         46,
         0,
         28
       ],
+      "kind": "prop",
+      "model": "prop.nt_common_tree",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -3107,13 +3115,13 @@
     },
     {
       "id": "prop_112",
-      "kind": "prop",
-      "model": "prop.banner_red",
       "position": [
         -12,
         0,
         30
       ],
+      "kind": "prop",
+      "model": "prop.banner_red",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -3121,13 +3129,13 @@
     },
     {
       "id": "prop_113",
-      "kind": "prop",
-      "model": "prop.banner_green",
       "position": [
         12,
         0,
         30
       ],
+      "kind": "prop",
+      "model": "prop.banner_green",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -3135,13 +3143,13 @@
     },
     {
       "id": "prop_114",
-      "kind": "prop",
-      "model": "prop.mv_planter",
       "position": [
         -22,
         0,
         -12.1
       ],
+      "kind": "prop",
+      "model": "prop.mv_planter",
       "yaw": 0,
       "scale": 1,
       "solid": false,
@@ -3149,13 +3157,13 @@
     },
     {
       "id": "prop_115",
-      "kind": "prop",
-      "model": "prop.mv_planter",
       "position": [
         26,
         0,
         3.9
       ],
+      "kind": "prop",
+      "model": "prop.mv_planter",
       "yaw": 0,
       "scale": 1,
       "solid": false,
@@ -3163,12 +3171,12 @@
     },
     {
       "id": "light_kn1clvd1rd",
-      "kind": "light",
       "position": [
         -3,
         9,
         -51
       ],
+      "kind": "light",
       "yaw": 0,
       "color": "#ff9a3c",
       "intensity": 1.4,
@@ -3178,12 +3186,12 @@
     },
     {
       "id": "light_g55b7b4mis",
-      "kind": "light",
       "position": [
         3,
         9,
         -51
       ],
+      "kind": "light",
       "yaw": 0,
       "color": "#ff9a3c",
       "intensity": 1.4,
@@ -3193,12 +3201,12 @@
     },
     {
       "id": "light_tqh3svl42r",
-      "kind": "light",
       "position": [
         -40,
         2,
         -38
       ],
+      "kind": "light",
       "yaw": 0,
       "color": "#ff9a3c",
       "intensity": 1.4,
@@ -3208,12 +3216,12 @@
     },
     {
       "id": "light_qyfwi3698o",
-      "kind": "light",
       "position": [
         -4,
         3,
         4
       ],
+      "kind": "light",
       "yaw": 0,
       "color": "#ff9a3c",
       "intensity": 1.4,
@@ -3223,12 +3231,12 @@
     },
     {
       "id": "light_aa2nbqpmsu",
-      "kind": "light",
       "position": [
         8,
         3,
         4
       ],
+      "kind": "light",
       "yaw": 0,
       "color": "#ff9a3c",
       "intensity": 1.4,
@@ -3257,12 +3265,6 @@
     "style": "invisible",
     "height": 16
   },
-  "teamSetup": {
-    "sizes": [
-      12,
-      12
-    ]
-  },
   "backdrop": {
     "sky": "cloudy",
     "scenery": "hills",
@@ -3270,7 +3272,13 @@
     "haze": 0.45,
     "border": "forest"
   },
-  "blood": null,
   "physics": null,
+  "blood": null,
+  "teamSetup": {
+    "sizes": [
+      12,
+      12
+    ]
+  },
   "dependencies": []
 }

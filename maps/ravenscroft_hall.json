@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 20,
+  "formatVersion": 26,
   "metadata": {
     "id": "ravenscroft_hall",
     "name": "Ravenscroft Hall",
@@ -16,7 +16,15 @@
     "supportedModes": [
       "core.deathmatch",
       "core.tdm"
-    ]
+    ],
+    "release": {
+      "mapId": "m_h4iqy7wdte3s52lb",
+      "versionId": "v_zwrdujkpqluj5nr6",
+      "revision": 1,
+      "contentHash": "sha256:a03795121273099bbbb79f74d63da7a0092534954fc2091a961fc841e7302ad2",
+      "schemaVersion": 26,
+      "releasedAt": "2026-11-06T12:18:52.174Z"
+    }
   },
   "classicStructure": {
     "cellSize": 8,
@@ -1866,9 +1874,9 @@
     {
       "id": "spawn_120",
       "position": [
-        10,
+        9.74,
         0,
-        -2
+        -2.15
       ],
       "kind": "spawn",
       "yaw": 3.141592653589793,
@@ -1899,9 +1907,9 @@
     {
       "id": "spawn_123",
       "position": [
-        -14,
+        -13.97,
         0,
-        12
+        12.1
       ],
       "kind": "spawn",
       "yaw": 3.141592653589793,
@@ -2342,7 +2350,6 @@
     "style": "invisible",
     "height": 8
   },
-  "track": null,
   "backdrop": {
     "sky": "storm",
     "scenery": "forest",
