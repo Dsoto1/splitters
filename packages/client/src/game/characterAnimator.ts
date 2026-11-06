@@ -3,6 +3,7 @@ import type { Observer } from '@babylonjs/core/Misc/observable';
 import type { AnimationGroup } from '@babylonjs/core/Animations/animationGroup';
 import { AnimationGroupMask, AnimationGroupMaskMode } from '@babylonjs/core/Animations/animationGroupMask';
 import { Animatable } from '@babylonjs/core/Animations/animatable';
+import { RuntimeAnimation } from '@babylonjs/core/Animations/runtimeAnimation';
 import type { Skeleton } from '@babylonjs/core/Bones/skeleton';
 import { Matrix, Quaternion, Vector3 } from '@babylonjs/core/Maths/math.vector';
 import type { TransformNode } from '@babylonjs/core/Meshes/transformNode';
@@ -282,6 +283,11 @@ export function worldTurn(parent: TransformNode, axisWorld: Vector3, angle: numb
   return Quaternion.RotationAxis(turnAxis, m.determinant() < 0 ? -angle : angle);
 }
 
+/** A rotation that is numbers throughout (absent counts as fine). */
+function finiteQuat(q: Quaternion | null | undefined): boolean {
+  return !q || (Number.isFinite(q.x) && Number.isFinite(q.y) && Number.isFinite(q.z) && Number.isFinite(q.w));
+}
+
 export function patchAnimatables(): void {
   if (gatePatched) return;
   gatePatched = true;
@@ -290,6 +296,18 @@ export function patchAnimatables(): void {
   proto._animate = function (this: typeof proto, delay: number): boolean {
     if (this.target?._animGate?.skip) return true;
     return animate.call(this, delay);
+  };
+  // Weighted clips on a joint are blended in the order they started, pairwise from the first two: its first step is a
+  // slerp by w2 / (w1 + w2). Babylon leaves a clip at weight 0 out from its second frame at 0 ("actively paused"), but
+  // on its first frame it still joins the blend. Two such clips first in the order (a fight's kept shot and hit
+  // clips, paused at weight 0 and restarted as a crowd's character comes back into view or a kept body stands again)
+  // made that 0 / 0: a NaN rotation on every upper-body joint, so far enemies were drawn as legs only (owner,
+  // 2026-11-06). A clip at weight 0 adds nothing to the blend: it is left out on that first frame too.
+  const runtime = RuntimeAnimation.prototype as unknown as { _registerTargetForLateAnimationBinding(r: RuntimeAnimation, original: unknown): void };
+  const register = runtime._registerTargetForLateAnimationBinding;
+  runtime._registerTargetForLateAnimationBinding = function (this: RuntimeAnimation, r: RuntimeAnimation, original: unknown): void {
+    if (r.weight === 0 && !r.isAdditive) return;
+    register.call(this, r, original);
   };
 }
 
@@ -603,7 +621,7 @@ export class CharacterAnimator {
     const bladeTarget = this.grip?.style === 'long' && !s.celebrate ? LONG_GUN_BLADE * this.ik : 0;
     this.blade += (bladeTarget - this.blade) * Math.min(1, dt * 8);
     // Clips the state machine started while asleep wait too.
-    if (this.dormant) for (const g of this.groups()) if (g.isPlaying) g.pause();
+    if (this.dormant) for (const g of this.groups()) this.sleep(g);
   }
 
   /** 0..1: how far the gait has faded from the run into the sprint. */
@@ -850,7 +868,8 @@ export class CharacterAnimator {
     if (this.clipUpper <= 0.001) {
       if (this.current === 'aim_idle' && (this.weights.get('aim_idle') ?? 0) > 0.99 && Math.abs(hipTurn) < 1e-3 && !this.overlay) {
         const y = this.shoulderYaw(rootRot);
-        if (y !== null) this.aimShoulders = y;
+        // Kept for the clip-held upper body from now on: only a measurement that is a number.
+        if (y !== null && Number.isFinite(y)) this.aimShoulders = y;
       }
       return 0;
     }
@@ -882,10 +901,23 @@ export class CharacterAnimator {
   setDormant(on: boolean): void {
     if (on === this.dormant) return;
     this.dormant = on;
-    for (const g of this.groups()) {
-      if (on && g.isPlaying) g.pause();
-      else if (!on && g.isStarted && !g.isPlaying) g.restart();
+    if (on) {
+      for (const g of this.groups()) this.sleep(g);
+      return;
     }
+    // Only what sleep paused plays on: the shot and hit clips a fight keeps paused at weight 0 (trigger) stay paused
+    // until their next play (restarted at weight 0 they joined the blend and broke it: see patchAnimatables).
+    for (const g of this.slept) if (g.isStarted && !g.isPlaying) g.restart();
+    this.slept.clear();
+  }
+
+  /** The clips asleep (setDormant) paused, to play on when it wakes. */
+  private readonly slept = new Set<AnimationGroup>();
+
+  private sleep(g: AnimationGroup): void {
+    if (!g.isPlaying) return;
+    g.pause();
+    this.slept.add(g);
   }
 
   private groups(): Set<AnimationGroup> {
@@ -1477,9 +1509,11 @@ export class CharacterAnimator {
       this.inHand.valid = true;
     }
     if (!gripped) this.curl(space, arms.r, 1);
-    // The arms' pose of this full grip, for the coarse detail far off.
-    if (gripped && w >= 0.999) {
-      const joints = [arms.r.upper, arms.r.lower, arms.r.hand, ...(support ? [arms.l.upper, arms.l.lower, arms.l.hand] : [])];
+    // The arms' pose of this full grip, for the coarse detail far off (never a pose that isn't numbers: it is put back
+    // on every coarse evaluation after).
+    const armJoints = [arms.r.upper, arms.r.lower, arms.r.hand, ...(support ? [arms.l.upper, arms.l.lower, arms.l.hand] : [])];
+    if (gripped && w >= 0.999 && armJoints.every((j) => finiteQuat(j.rotationQuaternion))) {
+      const joints = armJoints;
       const kept = this.armPose?.joints.length === joints.length ? this.armPose : { grip, joints, rots: joints.map(() => new Quaternion()) };
       kept.grip = grip;
       kept.joints = joints;

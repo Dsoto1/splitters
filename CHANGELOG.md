@@ -8,6 +8,46 @@ made only on a commit that passed CI on a check branch.
 
 ## Unreleased
 
+**Far enemies drawn whole again** (owner's report, 2026-11-06: "I see enemy in distance not fully there, only feet")
+- **Characters no longer lose their upper body**: after a fight, a character that left your view and came back (in a
+  big match characters out of view sleep and wake when seen again) or a body reused for a respawn could be drawn as
+  legs only, mostly far off and running. The shot and hit clips a fight keeps ready (paused, at no weight) were
+  started again on waking; the engine's clip blending then divided zero by zero for the upper body's joints, and a
+  far character, animated only every few frames, kept that pose (and the aim measurement it spoiled kept a running
+  body's upper half gone until it next stood still). Waking now restarts only what sleep paused, a clip at no weight
+  never joins a blend, and the animator never keeps a measurement that isn't a number.
+- Team tools: a unit test of the blend, and the characters test now checks, in a 27-player match after a fight and a
+  turn away and back, that every character past its low-detail switch draws each part's low-detail mesh and its whole
+  body (drawn bounds near its full height, every vertex a number).
+
+**Performance round 3: big open maps** (the owner's Shingle Point recording on an M1 Pro, 2026-11-05;
+docs/PERF_96.md, "Performance round 3")
+- **Big maps draw about half as much**: in a 49-player fight on Shingle Point's beach the frame now makes about 490 draws
+  and looks at about 470 meshes (from 1,030 and 1,310); Market Town looks at about 300 meshes (from 510).
+- **Props drawn in batches**: on maps with many copies of a prop (Shingle Point's trees, grass, flowers, crates), a
+  model's copies are drawn in batches per 128 m square instead of one by one, with the same tints, levels of detail
+  and shadows. Props that break or ride a mover are drawn as before; collision is unchanged.
+- **Ladders, jump pads and bomb sites** are merged per square (Shingle Point's six ladders were 86 draws a frame).
+- **Fog no longer draws the view twice**: on high graphics it reads the depth the ambient occlusion already writes
+  (about 400 draws a frame fewer on Shingle Point).
+- **Shadows kept while you look around**: the shadow cascades now stay put as you turn (they are centred on you) and
+  are drawn again only after you have walked a few metres (a full turn drew them again 30 times in 24 frames; now 3).
+- **Big matches**: a held gun and a pickup's model are one mesh each (they were three to five), team markers are drawn
+  together per colour, blood splats as one batch.
+- **No shader builds mid-match**: the guns and characters of the match are drawn once in view while the loading screen
+  is up (out of sight if the game starts first), so every pass that will draw them builds its shaders then; so are
+  your own first-person copy of each gun, a shot's tracer, parachutes and gliders, and water's splash drops (the
+  owner's 55 s hitch on Shingle Point built 8 shader programs mid-fight).
+- **HUD**: the minimap draws only the part of the map around you, from a ready image, and only when something on it
+  moved (Shingle Point's minimap was most of the HUD's 0.7 ms).
+- **Mass casualties**: a big blast's bodies start a few per frame (nearest first), small far bodies get the light
+  ragdoll and bodies that have landed stop being simulated sooner. **Every body a blast kills flies with it**: when
+  the starts were spread over several frames on a slow frame rate, the last bodies lost the blast's push and dropped
+  where they stood (23 of 30 in a test on a slow machine; now none).
+- Team tools: `?perfoff=propbatch,fogprepass` for comparisons; the physics test checks that every body a blast kills in
+  view is thrown out and up (with screenshots before and after); unit tests for props keeping their flush and hung
+  lifts in batches and for the one-mesh copies.
+
 **Shingle Point: new assets, same battle** (owner, 2026-11-05: an asset refresh, layout and gameplay kept)
 - **Landing craft, wrecks and hedgehogs** are real pieces now instead of grey blocks: four landing craft at the
   waterline, six rusted wrecks sunk in the sand and 46 Czech hedgehogs of riveted steel angles. The craft and wrecks
