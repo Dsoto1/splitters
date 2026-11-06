@@ -207,6 +207,10 @@ export class NavWorld {
       }
     }
     this.placeCache = [...best.entries()].sort((x, y) => x[0] - y[0]).map(([, v]) => v.p);
+    // The navmesh's parts and the places' parts too: worked out here, at setup (the match asks for the places
+    // when bots join), rather than in a tick (about 15 ms and 10–30 ms on a big map).
+    this.partsNow();
+    this.placePartsNow();
     return this.placeCache;
   }
 
@@ -317,8 +321,19 @@ export class NavWorld {
     return { id, size: id >= 0 ? this.partsNow().size[id]! : 0 };
   }
 
-  /** The part each of places() is on (-1: none), worked out on first use. */
+  /** The part each of places() is on (-1: none). */
   private placeParts: Int32Array | null = null;
+
+  private placePartsNow(): Int32Array {
+    if (this.placeParts) return this.placeParts;
+    const places = this.placeCache ?? this.places();
+    const parts = new Int32Array(places.length);
+    places.forEach((p, i) => {
+      const r = this.query.findNearestPoly(p, { halfExtents: { x: 0.5, y: 1, z: 0.5 } });
+      parts[i] = r.success && r.nearestRef ? this.part(r.nearestRef) : -1;
+    });
+    return (this.placeParts = parts);
+  }
 
   private readonly escapeCache = new Map<string, readonly NavEscape[]>();
 
@@ -350,18 +365,11 @@ export class NavWorld {
     const known = this.escapeCache.get(key);
     if (known) return known;
     const places = this.places();
-    if (!this.placeParts) {
-      const parts = new Int32Array(places.length);
-      places.forEach((p, i) => {
-        const r = this.query.findNearestPoly(p, { halfExtents: { x: 0.5, y: 1, z: 0.5 } });
-        parts[i] = r.success && r.nearestRef ? this.part(r.nearestRef) : -1;
-      });
-      this.placeParts = parts;
-    }
+    const placeParts = this.placePartsNow();
     const near: { p: Vec3; d: number }[] = [];
     for (let i = 0; i < places.length; i++) {
       const p = places[i]!;
-      if (this.placeParts[i] !== target || Math.abs(p.y - from.y) > 5) continue;
+      if (placeParts[i] !== target || Math.abs(p.y - from.y) > 5) continue;
       const d = hypot(p.x - from.x, p.z - from.z);
       if (d < ESCAPE_REACH) near.push({ p, d });
     }
