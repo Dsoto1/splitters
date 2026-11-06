@@ -1,9 +1,10 @@
 /**
  * Switches for measuring a performance change against the code without it, on the same build (docs/PERF_96.md,
- * "Performance round 2"): `?perfoff=shadowcache,levelmerge,meshsel,animlod2` turns those savings off for the page.
+ * "Performance round 2"): `?perfoff=shadowcache,levelmerge,meshsel,animlod2` turns those savings off for the page
+ * (round 3 adds `propbatch` and `fogprepass`).
  * Players never set it; everything is on by default.
  */
-export type PerfSwitch = 'shadowcache' | 'levelmerge' | 'meshsel' | 'animlod2';
+export type PerfSwitch = 'shadowcache' | 'levelmerge' | 'meshsel' | 'animlod2' | 'propbatch' | 'fogprepass';
 
 let off: Set<string> | null = null;
 

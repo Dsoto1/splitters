@@ -85,6 +85,8 @@ export class Ragdoll {
   /** The effects world's step count at death: age is simulated time, so a slow frame doesn't cut a fall short. */
   private born: number;
   private settled = false;
+  /** The effects world's step count since the body has lain still on the ground (-1: moving). */
+  private restSince = -1;
   /** No longer simulated: the bodies went back to the pool and the pose stays as it is. */
   frozen = false;
 
@@ -225,11 +227,11 @@ export class Ragdoll {
       const t = this.parts[0]?.body.translation();
       return !t || !!this.world.raycast({ x: t.x, y: t.y, z: t.z }, { x: 0, y: -1, z: 0 }, 0.75);
     };
-    if (!this.settled && age > 0.9 && speed < 0.8 && onGround()) {
+    if (!this.settled && age > 0.6 && speed < 0.8 && onGround()) {
       this.settled = true;
       for (const p of this.parts) {
-        p.body.setLinearDamping(2.2);
-        p.body.setAngularDamping(5);
+        p.body.setLinearDamping(3);
+        p.body.setAngularDamping(7);
       }
     } else if (this.settled && speed > 1.6) {
       // Picking up speed again (it slowed at the top of a slope and went on down it): fresh-fall damping, so the
@@ -242,8 +244,16 @@ export class Ragdoll {
     }
     // Its time runs out only once it has slowed: a body still tumbling down a slope rolls on (to maxSeconds at most).
     const still = speed < RAGDOLL_BUDGET.stillSpeed && onGround();
+    // Landed and lying still a moment: it is down, frozen now (the limbs have stopped too: none faster than a crawl).
+    const resting = this.settled && speed < RAGDOLL_BUDGET.restSpeed && this.parts.every((p) => {
+      const v = p.body.linvel();
+      return Math.hypot(v.x, v.y, v.z) < RAGDOLL_BUDGET.restSpeed * 2;
+    });
+    if (!resting) this.restSince = -1;
+    else if (this.restSince < 0) this.restSince = this.world.steps;
+    const rested = this.restSince >= 0 && (this.world.steps - this.restSince) / 60 >= RAGDOLL_BUDGET.restSeconds;
     const time = this.tier === 'full' ? RAGDOLL_BUDGET.fullSeconds : RAGDOLL_BUDGET.cheapSeconds;
-    if (this.parts.every((p) => p.body.isSleeping()) || (age > time && still) || age > RAGDOLL_BUDGET.maxSeconds) {
+    if (this.parts.every((p) => p.body.isSleeping()) || rested || (age > time && still) || age > RAGDOLL_BUDGET.maxSeconds) {
       this.freeze();
       return true;
     }
@@ -264,6 +274,7 @@ export class Ragdoll {
     if (this.frozen) return;
     this.born = this.world.steps;
     this.settled = false;
+    this.restSince = -1;
     for (const p of this.parts) {
       p.body.setLinearDamping(0.6);
       p.body.setAngularDamping(1.6);

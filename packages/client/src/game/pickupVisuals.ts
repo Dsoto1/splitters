@@ -61,11 +61,13 @@ export function createPickupVisual(scene: Scene, models: ModelLibrary, itemId: s
     m.isPickable = false;
     return m;
   };
+  // In the game, a model's copies are GPU instances of it merged into one mesh (ModelLibrary.instantiateWhole).
+  const copy = (path: string, part: string) => (instanced ? models.instantiateWhole(path, `${name}_${part}`) : models.instantiate(path, `${name}_${part}`));
   const fx = item?.effect;
   if (!fx) {
     part(CreateBox(`${name}_unknown`, { size: 0.4 }, scene), mat(scene, '#ff00ff', 0.5));
   } else if (fx.kind === 'weapon') {
-    void models.instantiate(getWeapon(fx.weapon).view.model, `${name}_gun`, instanced).then((model) => {
+    void copy(getWeapon(fx.weapon).view.model, 'gun').then((model) => {
       if (root.isDisposed()) return model.dispose();
       model.parent = root;
       model.rotation.y = Math.PI / 2;
@@ -83,15 +85,15 @@ export function createPickupVisual(scene: Scene, models: ModelLibrary, itemId: s
       model.parent = root;
       model.scaling.setAll(s);
     };
-    if (large) void models.instantiate(HEALTH_LARGE_MODEL, `${name}_hp`, instanced).then(attach(1), () => models.instantiate(HEALTH_MODEL, `${name}_hp`, instanced).then(attach(1.6)));
-    else void models.instantiate(HEALTH_MODEL, `${name}_hp`, instanced).then(attach(1.25));
+    if (large) void copy(HEALTH_LARGE_MODEL, 'hp').then(attach(1), () => copy(HEALTH_MODEL, 'hp').then(attach(1.6)));
+    else void copy(HEALTH_MODEL, 'hp').then(attach(1.25));
     part(CreateCylinder(`${name}_ring`, { diameter: 0.7, height: 0.03, tessellation: 24 }, scene), mat(scene, '#3fbf5a', 0.5)).position.y = -0.4;
   } else if (fx.kind === 'armor') {
     const s = fx.amount >= 50 ? 1.25 : 1;
     part(CreateCylinder(`${name}_ar`, { diameter: 0.6 * s, height: 0.12, tessellation: 6 }, scene), mat(scene, '#3c8dff', 0.35)).rotation.x = Math.PI / 2;
   } else if (fx.kind === 'ammo' && fx.ammo === 'rifle') {
     // Rifle rounds: the ammo box model (the striped box in code when it can't load).
-    void models.instantiate(AMMO_RIFLE_MODEL, `${name}_ammo`, instanced).then(
+    void copy(AMMO_RIFLE_MODEL, 'ammo').then(
       (model) => {
         if (root.isDisposed()) return model.dispose();
         model.parent = root;

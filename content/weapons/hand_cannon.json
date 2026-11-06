@@ -25,11 +25,7 @@
     "model": "weapons/hand_cannon.glb",
     "viewOffset": [0.2, -0.18, 0.42],
     "tracer": "#ffd08a",
-    "hold": {
-      "style": "pistol",
-      "grip": [0, -0.03, -0.11560000000000002],
-      "support": [-0.02, -0.04, -0.10200000000000001]
-    },
+    "hold": { "style": "pistol", "grip": [0, -0.03, -0.144], "support": [-0.02, -0.04, -0.134], "rake": 15 },
     "sound": "fire.heavy"
   },
   "notes": { "group": "The extended arsenal: every one fires differently. 2: sidearms." }

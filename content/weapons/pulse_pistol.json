@@ -24,7 +24,7 @@
     "model": "guns/ornate_pistol.glb",
     "viewOffset": [0.2, -0.18, 0.42],
     "tracer": "#c69bff",
-    "hold": { "style": "pistol", "grip": [0, -0.05, -0.115], "support": [-0.02, -0.06, -0.105] },
+    "hold": { "style": "pistol", "grip": [0, -0.045, -0.102], "support": [-0.02, -0.055, -0.092], "rake": 17 },
     "fallback": "weapons/pulse_pistol.glb",
     "sound": "fire.pulse",
     "beam": true

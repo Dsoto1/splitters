@@ -97,6 +97,11 @@ export function placeScenarioNode(node: TransformNode, e: MapEntity): void {
     node.rotation.y = e.yaw;
   }
 }
+/** Scenario kinds whose visual never changes once built when it has no `update` (merged in the game: mergeStill). */
+const STILL_KINDS: ReadonlySet<string> = new Set(['ladder', 'pad', 'bombsite', 'rescue', 'zipline']);
+/** Static decorations are merged per square of this many metres. */
+const STILL_SECTOR = 64;
+
 export const isScenarioEntity = (e: MapEntity): e is Extract<MapEntity, { kind: Kind }> => (SCENARIO_KINDS as readonly string[]).includes(e.kind);
 
 interface Visual {
@@ -161,6 +166,7 @@ export class ScenarioVisuals {
     const targets = map && !this.opts.editor ? logicTargets(map.logic) : null;
     this.fixedLights = new Set(targets ? entities.filter((e) => e.kind === 'light' && !targets.has(e.id) && !e.off && !e.blink).map((e) => e.id) : []);
     const fixtures: Mesh[] = [];
+    const still: Mesh[] = [];
     // Glass blocks a mover carries move with it, so they are drawn one by one (block()); every other pane is instanced.
     this.carriedBlocks = new Set(map ? map.entities.flatMap((e) => (e.kind === 'mover' ? e.blocks : [])) : []);
     if (map) this.glass.build(map, { windowsOnly: !!this.opts.editor, skip: this.carriedBlocks });
@@ -174,9 +180,12 @@ export class ScenarioVisuals {
       placeScenarioNode(v.root, e);
       for (const m of v.root.getChildMeshes()) m.isPickable = false;
       if (this.fixedLights.has(e.id)) for (const m of v.root.getChildMeshes()) if (m instanceof Mesh && !m.skeleton) fixtures.push(m);
+      // Decorations nothing ever changes (a ladder's rails and rungs, a jump pad, a bomb site's ring): merged below.
+      if (!this.opts.editor && !v.update && !v.batch && STILL_KINDS.has(e.kind)) for (const m of v.root.getChildMeshes()) if (m instanceof Mesh) still.push(m);
       this.visuals.set(i, v);
     });
     this.mergeFixtures(fixtures);
+    this.mergeStill(still);
     this.batchDestructibles([...this.visuals.values()].filter((v) => v.batch));
   }
 
@@ -271,6 +280,41 @@ export class ScenarioVisuals {
   /** Lights nothing changes (see build). */
   private fixedLights = new Set<string>();
   private merged: Mesh[] = [];
+
+  /**
+   * Static decorations (STILL_KINDS without anything to animate) are many small meshes each: a ladder is two rails and
+   * a rung every 30 cm (Shingle Point's six ladders were 86 meshes and 86 draws a frame), a bomb site a ring of posts.
+   * In the game their plain meshes are merged in world space per material and STILL_SECTOR square (each square culled
+   * on its own); billboards, skinned and instanced parts stay as they are. Nothing collides with these meshes.
+   */
+  private mergeStill(meshes: Mesh[]): void {
+    const groups = new Map<string, Mesh[]>();
+    for (const m of meshes) {
+      if (m.isDisposed() || m.skeleton || m.morphTargetManager || m.hasInstances || m.hasThinInstances || m.billboardMode !== Mesh.BILLBOARDMODE_NONE || !m.getTotalVertices()) continue;
+      const c = m.computeWorldMatrix(true).getTranslation();
+      const key = `${m.material?.uniqueId ?? -1}|${Math.floor(c.x / STILL_SECTOR)}:${Math.floor(c.z / STILL_SECTOR)}`;
+      let list = groups.get(key);
+      if (!list) groups.set(key, (list = []));
+      list.push(m);
+    }
+    for (const list of groups.values()) {
+      if (list.length < 2) continue;
+      const mat = list[0]!.material;
+      let one: Mesh | null = null;
+      try {
+        one = Mesh.MergeMeshes(list, false, true);
+      } catch {
+        // Meshes that can't be merged (different vertex layouts) stay as they are.
+      }
+      if (!one) continue;
+      for (const m of list) m.dispose();
+      one.name = `sc_still_${mat?.name ?? 'plain'}`;
+      one.material = mat;
+      one.isPickable = false;
+      one.freezeWorldMatrix();
+      this.merged.push(one);
+    }
+  }
 
   /**
    * Light fixtures are a few small meshes each (a panel and its rim, a shade and

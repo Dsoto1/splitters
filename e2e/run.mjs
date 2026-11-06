@@ -1896,8 +1896,9 @@ async function physicsfxFlow(browser) {
   }
   if (process.env.E2E_SHOTS) await page.screenshot({ path: `${process.env.E2E_SHOTS}/physicsfx-ragdoll.png` });
   // The sampling above stops once the body is down: give the blood time to land.
-  await page.waitForFunction(() => window.__cs.view.scene.meshes.some((m) => m.name === 'bloodSplat' && m.isEnabled()), null, { timeout: T(2500) }).catch(() => {});
-  const dead = await page.evaluate(() => ({ splats: window.__cs.view.scene.meshes.filter((m) => m.name === 'bloodSplat' && m.isEnabled()).length }));
+  // Splats are thin instances of one disc (bloodVisuals.ts): count them.
+  await page.waitForFunction(() => window.__cs.view.blood.splatCount > 0, null, { timeout: T(2500) }).catch(() => {});
+  const dead = await page.evaluate(() => ({ splats: window.__cs.view.blood.splatCount }));
   check(ragdolled && fell() > 0.5, `the killed bot drops as a ragdoll (${ragdolled ? 'ragdoll' : 'no ragdoll'}, head ${track.map((y) => y.toFixed(2)).join(' → ')})`);
   check(dead.splats > 0, `blood splats where it fell (${dead.splats})`);
   // A body that has come to rest (its capsules back in the pool) is a ragdoll again when a round hits it,
@@ -2013,8 +2014,10 @@ async function physicsfxFlow(browser) {
   // (Where it lands depends on the bot: it steers in the air, and a wall can stop it.)
   check(!!thrown && thrown.velY > 6 && thrown.push > 4 && rose, `a blast throws a bot up and out (${JSON.stringify(thrown)}, up ${rose ? '> 1 m' : 'no'}, out ${out.toFixed(1)} m)`);
   // A mass casualty: one blast kills everyone around a point in front of you, and nothing stalls: every body
-  // goes down a ragdoll or laid down, within the budget of awake ragdoll bodies.
-  const mass = await page.evaluate(() => {
+  // goes down a ragdoll or laid down, within the budget of awake ragdoll bodies. Every body reacts to it as before
+  // the performance work spread their starts over frames and settled them sooner: each one in view is thrown out and
+  // up by it (screenshots before and after: physicsfx-blast-before.png, physicsfx-blast-after.png).
+  const ring = await page.evaluate(() => {
     const m = window.__match;
     const me = m.slots[window.__cs.slot];
     const f = window.__cs.view.camera.getForwardRay(1).direction;
@@ -2022,19 +2025,75 @@ async function physicsfxFlow(browser) {
     const at = { x: me.move.pos.x + (f.x / len) * 10, y: me.move.pos.y, z: me.move.pos.z + (f.z / len) * 10 };
     // Only bots the view has drawn alive (one that respawned since the last drawn frame has no body to drop yet).
     const victims = m.combatants().filter((c) => c !== me && c.alive && !c.mount && window.__cs.view.avatars.get(c.slot)?.wasAlive);
-    victims.forEach((c, i) => {
+    const spots = victims.map((c, i) => {
       const a = (i / victims.length) * Math.PI * 2;
-      c.move = { ...c.move, pos: { x: at.x + Math.cos(a) * 2, y: at.y + 0.2, z: at.z + Math.sin(a) * 2 }, velY: 0, grounded: false };
-      c.health = 1;
-      c.armor = 0;
+      return { x: at.x + Math.cos(a) * 2, y: at.y + 0.2, z: at.z + Math.sin(a) * 2 };
+    });
+    // Held on the ring until the view draws them there (a blast throws what the view sees near it): standing still,
+    // firing nothing and kept alive (side by side in a team match they shot each other, and the dead respawned
+    // far off before the blast).
+    for (const c of victims) {
+      if (!c.bot || c.queue.held) continue;
+      c.queue.push = (...inputs) => Array.prototype.push.apply(c.queue, inputs.map((i) => ({ ...i, forward: 0, right: 0, buttons: 0 })));
+      c.queue.massHeld = true;
+    }
+    clearInterval(window.__massHold);
+    window.__massHold = setInterval(() => victims.forEach((c, i) => {
+      if (!c.alive) return;
+      c.move = { ...c.move, pos: { ...spots[i] }, velY: 0, grounded: true };
+      c.health = Math.max(c.health, 100);
+    }), 5);
+    window.__massSpots = spots;
+    window.__massVictims = victims;
+    window.__massAt = at;
+    return { at, slots: victims.map((c) => c.slot), spots };
+  });
+  await page
+    .waitForFunction(({ slots, spots }) => slots.every((s, i) => { const a = window.__cs.view.avatars.get(s); return !!a && Math.hypot(a.root.position.x - spots[i].x, a.root.position.z - spots[i].z) < 0.3; }), ring, { timeout: T(15000) })
+    .catch(() => {});
+  await page.screenshot({ path: `${ARTIFACTS}/physicsfx-blast-before.png` });
+  const mass = await page.evaluate(() => {
+    const m = window.__match;
+    const v = window.__cs.view;
+    const at = window.__massAt;
+    const victims = window.__massVictims;
+    clearInterval(window.__massHold);
+    // Where each body's hips are as the blast goes off, and how high they get as it flies (sampled every frame; the
+    // same body followed when it becomes a corpse, never the player's next life).
+    const pelvisOf = (a) => {
+      const j = a?.anim?.ch?.joints.get('pelvis');
+      if (!j) return null;
+      j.computeWorldMatrix(true);
+      const p = j.getAbsolutePosition();
+      return { x: p.x, y: p.y, z: p.z };
+    };
+    const pelvis = (s) => pelvisOf(v.avatars.get(s));
+    // The bodies the blast goes off among: alive, drawn on the ring, their characters in.
+    const spots = window.__massSpots;
+    const onRing = victims.filter((c, i) => {
+      const a = v.avatars.get(c.slot);
+      return c.alive && !!a && Math.hypot(a.root.position.x - spots[i].x, a.root.position.z - spots[i].z) < 0.5 && !!pelvis(c.slot);
+    });
+    window.__massTrack = new Map(onRing.map((c) => [c.slot, { a: v.avatars.get(c.slot), from: pelvis(c.slot), top: -Infinity, to: null, frames: 0, started: -1, ys: [] }]));
+    window.__massTrackObs = v.scene.onAfterRenderObservable.add(() => {
+      for (const t of window.__massTrack.values()) {
+        const p = pelvisOf(t.a);
+        if (!p) continue;
+        if (t.started < 0 && t.a.ragdoll) t.started = t.frames;
+        t.frames++;
+        t.top = Math.max(t.top, p.y);
+        t.to = p;
+        if (t.ys.length < 16) t.ys.push(+p.y.toFixed(2));
+      }
     });
     window.__massSlots = victims.map((c) => c.slot);
     m.pendingEvents.push({ e: 'explode', s: -1, p: [at.x, at.y + 0.5, at.z], r: 6 });
     m.splash({ x: at.x, y: at.y + 0.5, z: at.z }, 6, 500, 400, null, 'core.rockets', 1, 12);
     for (const c of victims) if (c.alive) m.kill(c, null, 'core.rockets');
-    // Held dead while the bodies are counted (a slow runner can take longer than the respawn time).
+    // Held dead while the bodies are counted (a slow runner can take longer than the respawn time; their inputs stay
+    // held too: a bot asks to respawn at once).
     for (const c of victims) c.respawnTick = m.tick + 60 * 120;
-    return victims.length;
+    return { killed: victims.length, onRing: window.__massTrack.size };
   });
   const t0 = Date.now();
   // Each body counts once it has become a corpse (on a 1 fps CI page the first can sink away before the last lands).
@@ -2048,9 +2107,36 @@ async function physicsfxFlow(browser) {
   }, null, { timeout: T(10000), polling: 50 }).then(() => true, () => false);
   await frames(page, 10);
   const massStats = await page.evaluate(() => window.__cs.view.ragdollStats());
-  await page.evaluate(() => { const m = window.__match; for (const s of window.__massSlots) if (m.slots[s]) m.slots[s].respawnTick = m.tick; });
+  // Every body in view thrown by the blast: its hips carried out from the blast's centre and up (a body that only
+  // dropped where it stood, or was laid down without its flight, moves neither).
+  const flung = await page.evaluate(() => {
+    const v = window.__cs.view;
+    v.scene.onAfterRenderObservable.remove(window.__massTrackObs);
+    const at = window.__massAt;
+    const out = [];
+    for (const [s, t] of window.__massTrack) {
+      if (!t.from || !t.to) continue;
+      const outward = Math.hypot(t.to.x - at.x, t.to.z - at.z) - Math.hypot(t.from.x - at.x, t.from.z - at.z);
+      out.push({ s, tier: t.a.ragdoll?.tier ?? 'none', push: v.deathPush?.get(s) ?? null, outward: +outward.toFixed(2), rose: +(t.top - t.from.y).toFixed(2), started: t.started, ys: [+t.from.y.toFixed(2), ...t.ys] });
+    }
+    return out;
+  });
+  await page.screenshot({ path: `${ARTIFACTS}/physicsfx-blast-after.png` });
+  await page.evaluate(() => {
+    const m = window.__match;
+    for (const s of window.__massSlots) {
+      const c = m.slots[s];
+      if (!c) continue;
+      c.respawnTick = m.tick;
+      if (!c.queue?.massHeld) continue;
+      delete c.queue.push;
+      delete c.queue.massHeld;
+    }
+  });
   const notDown = down ? [] : await page.evaluate(() => window.__massSlots.filter((s) => !window.__massDown.has(s)).map((s) => { const a = window.__cs.view.avatars.get(s); const b = window.__match.slots[s]; return { s, avatar: !!a, anim: !!a?.anim, fall: a?.fall ?? null, alive: b?.alive }; }));
-  check(mass > 0 && down && massStats.awakeBodies <= 300, `a mass casualty (${mass} killed by one blast) goes down without stalling: ${(Date.now() - t0) / 1000} s, ${JSON.stringify(massStats)}${notDown.length ? ` not down: ${JSON.stringify(notDown)}` : ''}`);
+  check(mass.killed > 0 && down && massStats.awakeBodies <= 300, `a mass casualty (${mass.killed} killed by one blast) goes down without stalling: ${(Date.now() - t0) / 1000} s, ${JSON.stringify(massStats)}${notDown.length ? ` not down: ${JSON.stringify(notDown)}` : ''}`);
+  const still = flung.filter((b) => b.tier === 'posed' || b.outward < 1 || b.rose < 0.3);
+  check(mass.onRing >= Math.max(1, mass.killed - 1) && flung.length === mass.onRing && still.length === 0, `every body the blast killed in view is thrown out and up by it (${flung.length} of ${mass.killed} tracked; ${still.length ? `not thrown: ${JSON.stringify(still)}` : `out ${Math.min(...flung.map((b) => b.outward))}-${Math.max(...flung.map((b) => b.outward))} m, up ${Math.min(...flung.map((b) => b.rose))}-${Math.max(...flung.map((b) => b.rose))} m`})`);
   // Debris chunks are real bodies: they land and rest on the ground (once the effects world is up).
   await page.waitForFunction(() => !!window.__cs.view.physics, null, { timeout: T(3000) }).catch(() => {});
   // Only this burst's chunks are checked: the mass blast above can set off more (a vehicle in the blast burns and blows
@@ -3896,7 +3982,10 @@ async function webgpuFlow() {
  * drawn; part 2 grips in a real match (gripsInPlay).
  */
 async function charactersFlow(browser, part = 0) {
-  if (part === 2) return gripsInPlay(browser);
+  if (part === 2) {
+    await gripsInPlay(browser);
+    return farBodies(browser);
+  }
   const page = await (await browser.newContext({ viewport: { width: 960, height: 540 } })).newPage();
   const errors = [];
   page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
@@ -4055,6 +4144,230 @@ async function drawnHands(page) {
     if (badHand(d, 0.05)) spearMisses.push(`${view}: ${fmtHand(d)}`);
   }
   check(spearMisses.length === 0, `the Spear's hand is drawn on its shaft, fingers along it (${spearMisses.join('; ') || 'all within 5 cm'})`);
+}
+
+/**
+ * Every character past its low-detail switch draws its whole body (owner, 2026-11-06: "I see enemy in distance not
+ * fully there, only feet"). Over `frames` frames, each character in view (alive, not ragdolled) past its parts'
+ * low-detail distance: every part's level of detail (getLOD) is the mesh the main pass draws, and its drawn body
+ * (that level's vertices skinned as the GPU skins them, through its own skeleton) is numbers throughout; those in
+ * `upright` (slots known to stand or run: riders sit, others may crouch) also stand near their full height (the
+ * player's height times their size). Returns how many characters were checked and the first frame each failed on.
+ */
+async function wholeBodies(page, frames, upright = []) {
+  return page.evaluate(
+    async ([frames, fullHeight, upright]) => {
+      const v = window.__cs.view;
+      const sc = v.scene;
+      const cam = v.camera;
+      const proto = Object.getPrototypeOf(sc.meshes.find((m) => m.getClassName() === 'Mesh'));
+      const render0 = proto.render;
+      let main = false;
+      const drawn = new Set();
+      proto.render = function (...a) {
+        if (main) drawn.add(this);
+        return render0.apply(this, a);
+      };
+      const o1 = sc.onBeforeDrawPhaseObservable.add(() => {
+        main = sc.activeCamera === cam;
+        drawn.clear();
+      });
+      const o2 = sc.onAfterDrawPhaseObservable.add(() => (main = false));
+      /** A level's vertices as drawn: through its skeleton's matrices and its world matrix (heights; non-numbers counted). */
+      const skinned = (mesh) => {
+        const pos = mesh.getVerticesData('position');
+        const bi = mesh.getVerticesData('matricesIndices');
+        const bw = mesh.getVerticesData('matricesWeights');
+        const mats = mesh.skeleton?.getTransformMatrices(mesh);
+        const wm = mesh.getWorldMatrix().m;
+        let lo = Infinity;
+        let hi = -Infinity;
+        let bad = 0;
+        for (let i = 0; i < pos.length / 3; i += 3) {
+          let p = [pos[i * 3], pos[i * 3 + 1], pos[i * 3 + 2]];
+          if (mats && bi && bw) {
+            const acc = [0, 0, 0];
+            for (let k = 0; k < 4; k++) {
+              const w = bw[i * 4 + k];
+              if (!w) continue;
+              const o = bi[i * 4 + k] * 16;
+              for (let c = 0; c < 3; c++) acc[c] += w * (mats[o + c] * p[0] + mats[o + 4 + c] * p[1] + mats[o + 8 + c] * p[2] + mats[o + 12 + c]);
+            }
+            p = acc;
+          }
+          const y = wm[1] * p[0] + wm[5] * p[1] + wm[9] * p[2] + wm[13];
+          if (!Number.isFinite(y)) {
+            bad++;
+            continue;
+          }
+          lo = Math.min(lo, y);
+          hi = Math.max(hi, y);
+        }
+        return { lo, hi, bad };
+      };
+      const checked = new Set();
+      const seen = new Set();
+      const failed = new Map();
+      await new Promise((resolve) => {
+        let n = 0;
+        const o3 = sc.onAfterRenderObservable.add(() => {
+          const eye = cam.globalPosition;
+          for (const [slot, a] of v.avatars) {
+            const ch = a.anim?.ch;
+            if (!ch || a.hiddenSelf || a.culled || a.ragdoll || !a.wasAlive || !a.root.isEnabled()) continue;
+            seen.add(slot);
+            const parts = ch.meshes.filter((m) => !m.isDisposed() && !m.isBlocked && m.getTotalVertices() > 0 && m.isEnabled() && m.isVisible);
+            const lods = parts.flatMap((m) => m.getLODLevels?.() ?? []);
+            const dist = Math.hypot(a.root.position.x - eye.x, a.root.position.z - eye.z);
+            if (!lods.length || dist < Math.max(...lods.map((l) => l.distanceOrScreenCoverage)) + 1) continue;
+            checked.add(slot);
+            let lo = Infinity;
+            let hi = -Infinity;
+            let bad = 0;
+            const off = [];
+            for (const m of parts) {
+              const level = m.getLOD(cam);
+              if (!level || !drawn.has(level)) {
+                off.push(`${m.name}: ${level ? `${level.name} not drawn` : 'no level'}`);
+                continue;
+              }
+              const b = skinned(level);
+              lo = Math.min(lo, b.lo);
+              hi = Math.max(hi, b.hi);
+              bad += b.bad;
+            }
+            const spec = JSON.parse(a.specKey);
+            const height = hi > lo ? hi - lo : 0;
+            const want = fullHeight * (spec.size ?? 1);
+            if ((off.length || bad || (upright.includes(slot) && height < want * 0.75)) && !failed.has(slot)) {
+              failed.set(slot, { slot, look: spec.look, dist: Math.round(dist), frame: n, height: +height.toFixed(2), want: +want.toFixed(2), nonNumbers: bad, off });
+            }
+          }
+          if (++n >= frames) {
+            sc.onAfterRenderObservable.remove(o3);
+            resolve();
+          }
+        });
+      });
+      proto.render = render0;
+      sc.onBeforeDrawPhaseObservable.remove(o1);
+      sc.onAfterDrawPhaseObservable.remove(o2);
+      return { checked: checked.size, seen: seen.size, failed: [...failed.values()] };
+    },
+    [frames, 1.8, upright],
+  );
+}
+
+/**
+ * Far characters drawn whole in a crowd's fight (owner, 2026-11-06: far enemies drawn as feet only). A crowd (26
+ * bots: out of view its characters sleep, and wake when seen again), ten bots running small circles 16-34 m ahead
+ * (past the crowd's low-detail switch, within reach of the shot and hit clips), each in a fight first: a shot and a
+ * hit, the clips a fight keeps paused at weight 0 between plays. Then the view turns away (they sleep) and back (they
+ * wake: those clips, restarted at weight 0, turned the blend of the upper body into NaN), and every character past its
+ * low-detail switch must draw its whole body for a dozen frames.
+ */
+async function farBodies(browser) {
+  const page = await (await browser.newContext({ viewport: { width: 960, height: 540 } })).newPage();
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
+  await page.goto(`${CLIENT}/?offline=canyon&gamemode=core.deathmatch&bots=26&test=1&god=1`);
+  await page.waitForFunction(() => window.__cs?.local?.alive && window.__cs.phase() === 'playing', null, { timeout: T(120000) });
+  await page.click('#resume').catch(() => {});
+  await simWait(page, (m) => m.combatants().filter((c) => c.kind === 'bot' && c.alive).length >= 20, null, T(30000));
+  await holdBots(page);
+  // Open ground from where you are: the first way with a clear eye-high sight line 36 m out and ground under the spots.
+  const setup = await sim(page, (m, me) => {
+    const p = me.move.pos;
+    const ground = (x, z) => {
+      const d = m.physics.raycastWorld({ x, y: p.y + 6, z }, { x: 0, y: -1, z: 0 }, 14);
+      return d === null ? null : p.y + 6 - d;
+    };
+    for (let k = 0; k < 16; k++) {
+      const yaw = (k / 16) * Math.PI * 2;
+      const at = (r, side = 0) => ({ x: p.x + Math.sin(yaw) * r + Math.cos(yaw) * side, z: p.z + Math.cos(yaw) * r - Math.sin(yaw) * side });
+      const far = at(36);
+      if (!m.physics.lineOfSight({ x: p.x, y: p.y + 1.6, z: p.z }, { x: far.x, y: p.y + 1.6, z: far.z })) continue;
+      const spots = [];
+      for (let i = 0; i < 10; i++) {
+        const q = at(16 + i * 2, ((i % 5) - 2) * 3);
+        const g = ground(q.x, q.z);
+        if (g === null || Math.abs(g - p.y) > 2.5) break;
+        spots.push({ x: q.x, y: g + 0.05, z: q.z });
+      }
+      if (spots.length < 10) continue;
+      const bots = m.combatants().filter((c) => c.kind === 'bot' && c.alive).slice(0, 10);
+      const held = bots.map((c, i) => [c, spots[i], i]);
+      clearInterval(globalThis.__farHold);
+      // Each runs a small circle where it stands (about running speed; standing still while __farStand), and stays alive.
+      globalThis.__farStand = false;
+      globalThis.__farHold = setInterval(() => {
+        const t = performance.now() / 1000;
+        for (const [c, s, i] of held) {
+          if (!c.alive) continue;
+          const a = globalThis.__farStand ? i : t * 2.6 + i;
+          c.move = { ...c.move, pos: { x: s.x + Math.cos(a) * 2, y: s.y, z: s.z + Math.sin(a) * 2 }, velY: 0, grounded: true };
+          c.health = Math.max(c.health, 100);
+        }
+      }, 5);
+      return { yaw, slots: bots.map((c) => c.slot) };
+    }
+    return null;
+  });
+  if (!setup) {
+    check(false, 'far bodies: found open ground 36 m out for the crowd');
+    await page.context().close();
+    return;
+  }
+  await page.evaluate((yaw) => {
+    window.__cs.input.yaw = yaw;
+    window.__cs.input.pitch = -0.05;
+  }, setup.yaw);
+  // Their characters loaded, in view and running there.
+  const running = () =>
+    page.evaluate((slots) => {
+      const v = window.__cs.view;
+      return slots.filter((s) => {
+        const a = v.avatars.get(s);
+        return !!a?.anim?.ch && !a.culled && a.anim.current === 'run';
+      }).length;
+    }, setup.slots);
+  await until(async () => (await running()) >= 8, T(120000));
+  // A fight: a shot and a hit on each (the clips kept paused at weight 0 between plays), until both are over.
+  await page.evaluate((slots) => {
+    const v = window.__cs.view;
+    for (const s of slots) {
+      v.avatarAction(s, 'shoot');
+      v.flinchPlayer(s, { x: 1, y: 0, z: 0 }, 0, 2);
+    }
+  }, setup.slots);
+  await page.waitForFunction((slots) => slots.every((s) => !window.__cs.view.avatars.get(s)?.anim?.overlay), setup.slots, { timeout: T(20000) }).catch(() => {});
+  // A pause and off again, as fighters stop and go: their running clips start again after the fight's (later in the
+  // engine's order), and at full run the aim pose's upper-body clip is at weight 0.
+  const gait = (want) =>
+    page.evaluate(
+      ([slots, want]) =>
+        slots.filter((s) => {
+          const anim = window.__cs.view.avatars.get(s)?.anim;
+          return !!anim && (want === 'stand' ? anim.current !== 'run' && anim.clipUpper < 0.001 : anim.current === 'run' && anim.clipUpper > 0.999);
+        }).length,
+      [setup.slots, want],
+    );
+  await sim(page, () => (globalThis.__farStand = true));
+  await until(async () => (await gait('stand')) >= 8, T(30000));
+  await sim(page, () => (globalThis.__farStand = false));
+  await until(async () => (await gait('run')) >= 8, T(30000));
+  // Away (out of view a crowd's characters sleep) and back (they wake).
+  await page.evaluate((yaw) => (window.__cs.input.yaw = yaw + Math.PI), setup.yaw);
+  await page.waitForFunction((slots) => slots.every((s) => window.__cs.view.avatars.get(s)?.culled !== false), setup.slots, { timeout: T(30000) }).catch(() => {});
+  const slept = await page.evaluate((slots) => slots.filter((s) => window.__cs.view.avatars.get(s)?.anim?.dormant).length, setup.slots);
+  await page.evaluate((yaw) => (window.__cs.input.yaw = yaw), setup.yaw);
+  await page.waitForFunction((slots) => slots.filter((s) => window.__cs.view.avatars.get(s)?.culled === false).length >= 8, setup.slots, { timeout: T(60000) }).catch(() => {});
+  const back = await page.evaluate((slots) => slots.filter((s) => window.__cs.view.avatars.get(s)?.culled === false).length, setup.slots);
+  const r = await wholeBodies(page, 12, setup.slots);
+  const broken = r.failed.map((f) => `${f.look} at ${f.dist} m, frame ${f.frame}: ${f.height} of ${f.want} m drawn${f.nonNumbers ? `, ${f.nonNumbers} vertices not numbers` : ''}${f.off.length ? `, ${f.off.join(', ')}` : ''}`);
+  check(slept >= 8 && back >= 8 && r.checked >= 6 && r.failed.length === 0, `far characters draw their whole bodies after a fight, asleep out of view and awake again (${slept} slept, ${back} back in view, ${r.checked} checked past the low-detail switch of ${r.seen} seen; broken: ${broken.join('; ') || 'none'})`);
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  await page.context().close();
 }
 
 /**

@@ -11,7 +11,7 @@ import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import { CORE_LOOKS, PLAYER, armsLookFor, getWeapon } from '@tiletrigger/shared';
 import { CharacterLibrary } from '../content/characters.ts';
 import { ModelLibrary } from '../content/models.ts';
-import { CharacterAnimator, setCurlShare, type MotionState } from '../game/characterAnimator.ts';
+import { CharacterAnimator, PISTOL, setCurlShare, setPistolTune, type MotionState } from '../game/characterAnimator.ts';
 import { CreatureAnimator } from '../game/creatureAnimator.ts';
 import { CreatureLibrary, fitPlayerSkin } from '../content/creatures.ts';
 import type { CreatureModel } from '@tiletrigger/shared';
@@ -311,6 +311,12 @@ export async function openGripSheet(engine: AbstractEngine): Promise<void> {
     curl: async (share: number) => {
       setCurlShare(share);
       await settle(4);
+    },
+    /** The first-person pistol hold, changed live (characterAnimator PISTOL; to tune it), and redrawn. Returns it. */
+    pistol: async (tune: Partial<typeof PISTOL> = {}) => {
+      const now = { ...setPistolTune(tune) };
+      await settle(4);
+      return now;
     },
     /**
      * Full-body first person (`pose(look, weapon, 'body')`): the view's pitch (radians, the game's: + looks up), and the

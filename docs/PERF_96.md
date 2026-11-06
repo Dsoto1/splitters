@@ -963,3 +963,207 @@ the comparison on the same build.
   by their matrix (`shadowCache.ts`, after the measurement; ~27 shadow draws on Market Town).
 - Roads, paths and the border's ground use the styler's materials but are not merged (their own meshes).
 - Effects still dispose Godot VFX emitters when done (a mesh removal each); pooling them is next for "effects".
+
+## Performance round 3: big open maps (6 Nov 2026, `wip/perf-3`)
+
+**Owner's recording** (M1 Pro, Chrome, WebGL2, high, 49 players; Shingle Point, build 76a4b03 after round 2):
+22.2 ms frames on average (20.5 in the trace), 60 fps only in quiet views (390 draws, 185 meshes). In the main views
+700-980 draws and 850-1,130 active meshes; per frame the main pass 8.8 ms (11.5 in the busiest second), mesh
+evaluation 3.1, shadow and depth maps 4.2, characters 4.3 (clips and aim 2.8). One hitch at 55 s built 8 shader
+programs (75-83 ms frames), and the HUD cost 0.7 ms (0.1 on Market Town). Market Town's recording (round 2 build): a
+mass death at 27 s (31 ragdolls, 50-55 skinned bodies) took the characters' span to 26 ms.
+
+### What it was
+
+1. **Every placed prop was a mesh Babylon looked at every frame.** Round 2 made a prop's copies GPU instances of its
+   model merged per material (one draw per model and material), but each copy was still an instance in the active
+   list: frustum test, level of detail, its matrix copied into the instance buffer. Shingle Point's 446 props were
+   631 of the 1,308 active meshes at the owner's hitch spot (SwiftShader probe, 44 characters in view).
+2. **The fog drew the whole view a second time** for its depth (the scene depth renderer): ~300-400 of a frame's
+   ~1,000 draws on Shingle Point, on top of the shadow cascades. High graphics' ambient occlusion already writes
+   the view's depth in the main pass (Babylon's pre-pass).
+3. **Decorations of many small meshes**: a ladder is two rails and a rung every 30 cm; Shingle Point's six ladders
+   were 86 meshes and 86 draws.
+4. **Outdoors the shadow cache moved with the view, not with you**: Babylon centres a stabilised cascade on its view
+   slice's centroid, which swings round the camera as you turn (the far slice's by tens of metres for a few degrees),
+   so every turn moved the far cascades past their margin and drew their static casters again; on top of that the
+   safety refresh redrew each cascade every 30 frames.
+5. **Crowds' held guns and team markers**: a held gun was an instance per part of its model (2-5 parts), a marker an
+   instance each: at the hitch spot 145 and 44 of the active meshes.
+6. **Market Town gained nothing from batching**: its 54 props are 36 models, five copies at most of any one, and
+   batches split a model's copies by square and level of detail (twice the prop draws there, no fewer meshes).
+7. **Shaders first used mid-match**: the loading gate built each look's and effect's shaders out of sight, but a
+   variant a gun or a body only needs in a pass that draws it in play (the shadow cascades, a depth map, instances),
+   your own first-person gun's (drawn over the world, catching no shadows), a shot's tracer and water's splash drops
+   were each built the first time they were seen.
+8. **The minimap drew the whole map's plan every frame** (Shingle Point: 1,210 x 1,470 pixels, turned and scaled
+   under a round clip) to show a 260-pixel window of it.
+9. **Mass casualties**: a 31-kill blast started its bodies 4 ms of work a frame at most, so on a slow frame rate the
+   last started seconds later, after their push had expired (PUSH_KEEP_MS, 1.2 s from the blast): they dropped where
+   they stood. Settled bodies were simulated until their full time ran out.
+
+### What changed
+
+- **Prop batches** (`game/propBatches.ts`): a map's static props (not breakable, not carried by movers) of a model
+  with at least 8 copies on the map (`PROP_BATCH_MIN`) are thin instances of one mesh per model, material and 128 m
+  square: one mesh to look at and one draw per model, material and square (Shingle Point: 13 models, 376 of its 446
+  props; Market Town: none). Tints ride in the instance colour; each copy picks its level of detail by its distance
+  (hysteresis), and a batch's buffer is rebuilt only when a copy changes level; batches without levels merge into the shadow
+  proxies as the instances did, and small clutter casts only near the camera through a shadow-only batch. The map's
+  flush and hung lifts (`propFlushLifts`, `hungPropLift`) are in the matrices drawn (unit test). Collision never used
+  these meshes. Breakable props and props on movers stay instances. `?perfoff=propbatch`.
+- **Still decorations merged** (`scenarioVisuals.ts`, `mergeStill`): ladders, jump pads, bomb sites, rescue zones and
+  ziplines without anything to animate, per material and 64 m square.
+- **The fog reads the pre-pass depth** (`skyEffects.ts`) where high graphics' ambient occlusion writes it; without
+  the pre-pass (WebGPU, lower graphics) it draws its own depth as before. `?perfoff=fogprepass`.
+- **Shadow cascades centred on the camera** (`shadowCache.ts`, `centredSlice`): each cascade's square is centred on
+  you with the radius that holds its whole view slice (about a tenth bigger than the centroid's square), so turning
+  never moves it; it moves (and its static casters are drawn again) only after you walk past its margin (25 / 15 /
+  12 % of its radius: about 3.3, 6.2 and 28 m), when the sun turns or the static set changes. The safety refresh is
+  now every 240 frames (was 30).
+- **Crowds: one mesh per held gun, markers as thin instances** (`view.ts`, `pickupVisuals.ts`, `models.ts`): a
+  crowd's held guns and the pickups' models are each one instance of the model merged into one mesh with a part per
+  material (`ModelLibrary.instantiateWhole`; the weapons are 3-5 parts of a material each): the same draws, one mesh
+  per copy for the scene to look at. Every team marker of a colour is a thin instance of one disc, placed each frame
+  where its own disc went (hidden with its body, and while its player is see-through, as before).
+- **Blood splats as thin instances** (`bloodVisuals.ts`).
+- **Warm-up in view** (`GameView.prewarm`): while the loading screen is up, a character of each look and every gun
+  the match can hold (as a crowd's merged instance and as a copy of its own) stand in front of the camera, so every
+  pass that draws them in play builds its variant then, with a tracer line, a parachute and a glider (kept for the
+  first ones in play); each gun's first-person copy (under the view root: drawn over the world, no shadows) is drawn
+  out of sight meanwhile. A warm-up that runs past the gate (a slow machine, a first visit still downloading) draws
+  them all far below the map instead, out of sight but drawn (three frames, 2 s at most: longer stalled a slow page's
+  first seconds of play). Water's splash rings and drops (made on the first splash) draw a copy out of sight too
+  (`WaterFx.warm`).
+- **Minimap** (`minimap.ts`): drawn from an image bitmap of the plan, only the window round you, and not at all
+  when nothing moved by a pixel.
+- **Mass casualties** (`ragdollBudget.ts`, `ragdoll.ts`, `view.ts`): at most 6 bodies start a frame (nearest and
+  biggest on screen first; the rest hold their pose a frame or two); a body in view is a full ragdoll while it stands
+  at least 3.3 % of the view's height (about 34 m off, further through a scope), cheap below; a body that has landed
+  and lain still 0.35 s is frozen at once (was: its full 4 s, or 2.5 s cheap). **Every body still flies with the
+  blast**: a body's push now counts from when the view saw it die (and a few frames' grace on a slow page), so the
+  last of a big blast's staggered starts no longer drops where it stood.
+
+### Measured
+
+Round 2's probe (a scratchpad script; production build, graphics high, render scale auto, 640 x 360, SwiftShader,
+`?test=1&god=1`): **Shingle Point** TDM with 48 bots, the player pinned at the owner's hitch spot (-39, 0, -76) looking
+north, 40 bots held on fixed points 5-60 m ahead (two in three running small circles): 44-45 characters in view (8-10 /
+14 / 18-19 / 4 at < 15 / 15-35 / 35-70 / > 70 m). **Market Town** TDM with 44 bots, round 2's scenario at (4, 0, -34).
+Round 2 is the build from before round 3 (main at 5 Nov 22:38), round 3 the final build of `wip/perf-3`. The box was
+shared with two other agents (load 15-35): SwiftShader frame times are noise here, the counts per frame are exact.
+
+| Per frame | Shingle Point, round 2 | round 3 | Market Town, round 2 | round 3 |
+|---|---|---|---|---|
+| all draws | 1,034 | **489 (-53 %)** | 444 | 435 (-2 %) |
+| render-target draws (shadow cascades, depth, reflection) | 535 | 142 | 193 | 194 |
+| main pass draws | 499 | 347 | 251 | 241 |
+| active meshes | 1,308 | **468 (-64 %)** | 513 | **297 (-42 %)** |
+| of them props | 630 | 154 | 70 | 70 (not batched) |
+| of them characters (bodies, held guns, markers) | 233 | 92 | 248 | 92 |
+| of them ladders / blood splats | 86 / 57 | merged / 1 | 0 / 50 | 0 / 1 |
+| shadow casters | 116 | 117 | 120 | 123 |
+| main pass triangles | 2.86 M | 1.57 M | 2.28 M | 2.00 M |
+
+On Shingle Point the fog's own depth pass was 402 of round 2's draws; the main pass's prop draws went from 64 to 96
+(batches are per square and level of detail) for 476 fewer prop meshes.
+
+**Shadow cache** (Shingle Point, in-page: turning a full circle in 15-degree steps, one frame each, then walking a
+straight line a metre a frame; layer renders that drew their static casters again, of all layer renders):
+
+| | before (round 3 without this change) | now |
+|---|---|---|
+| turning a full circle (24 frames) | 30 of 72 (far cascades every other frame) | 3 of 72 (one change to the cached set) |
+| walking 30 m (30 frames) | 21 of 93 | 16 of 90 |
+| cascade half-sizes, near to far | 14.8 / 41.5 / 227 m | 16.6 / 47.7 / 258 m |
+
+Walking a 20 m circle at 4 m/s while the view swings 40 degrees either side: 12 of 270 layer renders over 90 frames,
+6 of them because a vehicle stood still a second and moved again.
+
+**Shader warm-up** (Shingle Point; a tour after the loading gate's warm-up has finished: eight spawn points looking all
+round, every gun the bots held given, fired and aimed, a blast killing four in view, third person, your own death;
+every shader program built from then on counted, with the mesh that asked for it):
+
+| Tour (each with the fixes above it) | programs built mid-match | which |
+|---|---|---|
+| round 3 at the start of this pass, 2 guns given | 1 | water's splash drops (the first splash, on the beach) |
+| water warmed; 9 guns | 2 | the rifle's and the launcher's first-person copies |
+| the warm-up's copies drawn out of sight after the start; 10 guns | 1 | the shotgun's first-person copy |
+| its frames out of sight not capped at 2 s; 8 guns | 2 | the first tracer line in view; the rocket launcher's first-person copy |
+| a first-person copy of each gun and a tracer in the warm-up; 11 guns | **0** | none |
+| the frames out of sight capped at 2 s again (see below); 10 guns | 1 | the first canopy's rigging lines (a parachute or glider in view) |
+| a parachute and a glider in the warm-up (the final build); 8 guns | **0** | none |
+
+Your own gun is drawn over the world and catches no shadows: a program of its own, which the warm-up's copies in the
+world never built (the first gun of a kind in your hands built it); a tracer is a line, with a shader of its own, and
+a canopy's rigging lines another (coloured).
+Under SwiftShader the warm-up takes 2-6 minutes and runs on long past the gate (which waits 8 s for it): its copies
+were parked out of sight undrawn, then drawn there in frames capped at 2 s, too few here. Waiting for the frames
+instead (the fourth and fifth tours) made the first seconds of play on a slow page heavy enough that CI's hosted-match
+flow dropped a friend's page (silent for 20 s), so the cap stayed. On a desktop GPU those frames take milliseconds;
+the warm-up can still run past the gate on a first visit while the character files download, and then builds the
+rest out of sight in the first seconds of play.
+
+**HUD**: the minimap's frame (in-page micro-benchmark, SwiftShader's canvas): Shingle Point (plan 1,210 x 1,470)
+1.02-1.16 ms moving, 0.29 ms still, before; 0.32 ms moving and 0.003-0.007 ms still now. Market Town (650 x 830)
+0.56-0.62 and 0.27-0.29 before, 0.31 and 0.003 now. The rest of the HUD's frame is under 0.01 ms.
+
+**Mass casualty** (Market Town, 31 bots held still on rings 2-6 m round a point 12 m ahead, one blast of 7 m kills
+them all; every body's hips followed until it lies still):
+
+| | round 2 | round 3 |
+|---|---|---|
+| bodies thrown up (hips rose 0.3 m or more) | 5 of 30 | **31 of 31** (0.7-27 m, median 2.4) |
+| carried out at least 1 m | 7 of 30 | 28 of 31 (median 7.4 m; three bounced back off walls) |
+| dropped where they stood (neither) | 23 of 30 | 0 |
+| starts a frame (first 20 frames) | 0-3 | 0-3 |
+| ragdoll work, worst frame / all frames (SwiftShader) | 776 / 6,178 ms | 843 / 5,885 ms |
+
+On this box the bodies started 1-3 a frame either way (4 ms of starts a frame), over 15-20 frames of a second or more
+each: in round 2 every body that started more than 1.2 s after the blast had lost its push. On an M1 Pro the starts
+most likely took a few frames, so it looked right there before too; it now holds at any frame rate. Screenshots before, during
+and after: scratchpad `p3a/blast/before` and `p3a/blast/after` (`0-before.png`, `f01`-`f45`, `z-end.png`). The
+physicsfx e2e flow checks it now, with `physicsfx-blast-before.png` and `physicsfx-blast-after.png` among its
+artifacts: every body the blast kills in view is thrown out at least 1 m and up at least 0.3 m (locally: 8 of 8,
+out 5.7-8.0 m, up 2.7-3.1 m).
+
+### Projected on the M1 Pro
+
+From the owner's recordings (per-second averages of the round 2 build), scaling each part by what its count did here
+(mesh evaluation by the active meshes, the shadow and depth maps by their draws, issuing the main pass by its draws;
+characters, effects and the rest as they were):
+
+| Part (ms) | Shingle Point, average | Shingle Point, busiest second | Market Town, average |
+|---|---|---|---|
+| frame (recorded) | 22.2 | 26.5 (980 draws, 1,130 meshes, 39 characters) | 20.9 |
+| main pass (renderScene) | 8.8 → ~6.1 | 11.5 → ~8.1 | 7.1 → ~6.8 |
+| mesh evaluation (renderCull) | 3.1 → ~1.3 | 3.8 → ~1.5 | 2.4 → ~1.4 |
+| shadow and depth maps (renderShadow) | 4.2 → ~1.5 | 5.0 → ~1.8 | 3.9 → ~3.7 (fewer redraws turning) |
+| HUD | 0.65 → ~0.2 | 0.5 → ~0.15 | 0.1 |
+| characters, effects, ragdolls, the rest | 5.4 | 5.6 | 7.4 → ~7.1 (bodies rest sooner) |
+| **frame (projected)** | **~15** | **~17** | **~19** |
+
+So Shingle Point should hold the 60 fps cap in most views and stay near 55-60 fps in its busiest (draws there ~460,
+meshes ~400, from 980 and 1,130); Market Town gains about 2 ms (round 2 merged its level and its props were instances
+already; its cost is the characters). A mass death's frame is still the characters' clips and aim (15-16 ms with 40-46 bodies in
+view in the owner's Market Town recording): the starts are spread over frames and bodies stop simulating sooner, but
+that part is not measured here. Not measured on the M1.
+
+### For the owner to re-record on the M1 Pro
+
+The same as last time, on both maps: TDM, 49 players, high, render scale auto, 60 fps cap, a 25-70 s recording with a
+10 s trace; on Shingle Point the same route (the beach at (-39, -76) where the 55 s hitch was), on Market Town a big
+fight with a rocket into a crowd. Expect on Shingle Point main views at 350-470 draws and 300-410 meshes (from
+700-980 and 850-1,130), renderShadow about 1.5-2 ms, renderCull about 1.5, HUD about 0.15-0.2 and `shadersNew` 0 after
+the start; on Market Town meshes about 300 (from 470) and every body of a mass death thrown. If a part didn't fall,
+the same match with `?perfoff=propbatch` or `?perfoff=fogprepass` gives the comparison on the same build.
+
+### Next
+
+- Held weapons are 3-5 materials each: a crowd's guns are now one mesh per copy, but still a draw per material per
+  weapon model, and each casts per material near the camera. Single-material weapon models (an atlas in the content
+  pipeline) would cut both.
+- Pickups' shapes and models as thin instances (35-55 meshes on these maps), breakable props batched while intact
+  (about 40 on Shingle Point).
+- The cascades' squares are about a tenth bigger than before (centred on the camera): shadows a tenth coarser. Not
+  seen in CI's visual baselines; worth a look on the M1.

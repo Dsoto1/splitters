@@ -369,6 +369,44 @@ hands move up more into the gun. Looks as if their fingers are just pinching the
   several characters, including Meshy rigs with Meshy's finger weights once intake-2 lands.
 - Start it once a slot frees. It touches the hands, so after intake-2 step 2a.
 
+<!-- pistol -->
+### First-person pistol hold (`wip/pistol`, agent, 2026-11-05/06; from main 68663142, main 49c6ace7 merged in; CI on `check/pistol`)
+Owner: "The first person view when holding a pistol could be adjusted. Either the gun moves back more into the hands
+or the hands move up more into the gun. Looks as if their fingers are just pinching the grip."
+**Causes (measured):** in first person each hand's palm point went on the grip's middle, so the shooting hand rode
+2-3 cm low and its knuckles stood ahead of the front strap; its knuckle line leaned about 20° off the grip (the
+fingers curl about that line, so they closed up across the trigger guard instead of round the grip); the full curl
+on top of the clips' bend folded them back into the palm; the support hand kept the clip's hold beside the grip, palm
+up, thumb straight up. Two guns were held by the wrong spot altogether (the Machine Pistol by the end of its wire
+stock, 11 cm behind its grip; the Freeze Ray inside its trigger guard) and four by the edge of their grips.
+- **Fix** (`gripPlaced` in characterAnimator.ts, both first-person views; `PISTOL` holds the numbers):
+  - each hand turned about its palm so its knuckle line runs down the grip at its rake (`alignKnuckles`; the support
+    hand's 18° further, canted forward round the shooting hand);
+  - each hand set by its knuckles, not its palm point (`seated`): the shooting knuckles 2 cm ahead of the grip point,
+    just behind the front strap (a hand over 9 cm from wrist to knuckles further round, so its palm stays on the
+    backstrap); the support knuckles 1.5 cm ahead of and 1 cm below the support point, its palm 1.1 cm further in;
+  - the fingers close until the middle fingertip is round the grip's far side, no further (`closeHand`'s `wrap`
+    plane; the support hand's round onto the shooting hand's side);
+  - the thumbs laid along the frame, straightened most of the way (`pointThumb`; the clips' thumbs stood up);
+  - content: every pistol-class gun's points re-read off a gridded side view (Machine Pistol, Freeze Ray, Hand Cannon,
+    Flare Gun, Grapple, Gilded and Pulse Pistol moved; the Machine Pistol also 4 cm nearer the eye) and a new
+    `view.hold.rake` (the grip's lean: Flare Gun and Grapple 34°, Freeze Ray 20°, Revolver 18°, Pulse Pistol 17°,
+    Hand Cannon 15°, Machine Pistol 10°, Gilded 7°, else 12°; tools/content/weapons.mjs, shared `WeaponHold`).
+  - third person: the gun sits in the hand by the middle of its width (`knuckleLine`: a measured palm point sits
+    toward a finger); the hand turns are the clips' as before. The moved points change third person too (onto the
+    real grips: better on every look checked).
+  - dropped: a foregrip hold for the Machine Pistol (out of reach in third person); the earlier WIP's
+    "nearest point" close (left the fingertips inside the grip).
+- **Measures** (full-body first person, 10 looks x 10 guns, `measures.md`): TBD
+- **Grip audit** (rifle, pistol, shotgun; before = main): TBD
+- **Checks:** TBD
+- **Left for the owner / round 5:** big hands still swallow a pistol in first person (Frost Viking, Goblin Warlord,
+  Goblin, Bamboo: hands 25-28 cm against a gun's 18 cm grip); the Knight's gauntlet doesn't close (curl 0.5).
+- Tools and shots: agent scratchpad `pistol/` (`t2/probe.mjs` shots + joints, `t2/measures.py`, `t2/section.mjs`
+  grip cross-sections, `t2/side.mjs` gridded side views, `t2/e2echeck.mjs` the characters flow's grip checks;
+  `final-before/`, `final-after/`, sheets in `sheets/`).
+<!-- /pistol -->
+
 ### Environment Phase 1c: pebbles, eelgrass, concealing fern, Replace all, maps updated (`wip/env-p1c`, agent, 2026-11-05; from main 4d511dd2, main baf26064 merged in; pushed, not merged)
 - **Done:**
   - **Species:** `env.rock.pebbles` (category `rock`, generator kind `pebbles` in `env/rock.mjs`: 6–7 faceted convex
@@ -494,19 +532,25 @@ All three in-flight agents stopped. Their work is pushed:
 
 Resume each from its branch, after merging main.
 
-### Queued FIRST (owner bug report, 2026-11-06): far enemies render as feet only
-**Owner:** "I see enemy in distance not fully there, only feet." Screenshot: session scratchpad
-`perf3/far-enemy-feet-only.jpg`.
-
-**Suspects:**
-- The character LOD: `<name>_lod` meshes added via `addLODLevel(18 m)` in client content/characters.ts. Past 18 m
-  only parts without a low copy (feet or boots) show.
-- Round 1 body reuse leaving the `_lod` meshes disabled, dormant or detached.
-- Round 2's `selectLiveCandidates` and frozen materials or bounding info.
-- AnimGate skipping `skeleton.prepare`, so the LOD skin collapses.
-
-**Likely a regression** from performance rounds 1–2. Fix it with an e2e check that a character past LOD distance
-draws its whole body.
+### Far enemies as feet only: FIXED (agent, 2026-11-06; on its own: `wip/far-bodies` 36dab498, green on `check/far-bodies` run 42154611523, ready to land; also in `wip/perf-3` as b1a32722)
+**Cause** (reproduced in a real match, production build): Babylon's weighted clip blend (`ProcessLateAnimationBindings
+ForQuaternions`) blends a joint's clips pairwise in the scene's animatable order, its first step a slerp by
+w2 / (w1 + w2). A clip at weight 0 is left out from its second frame at 0 ("actively paused"), but on its first frame it
+still joins. Round 1 kept a fight's shot and hit clips started, paused at weight 0 between plays; `setDormant(false)`
+(a crowd's character coming back into view, and a reused body standing again) restarted every paused group, those
+included. After a stop-and-go (running clips restart later in the order) the two fresh zeros came first: 0 / 0, a NaN
+rotation on every UPPER_BODY joint, so the upper body's vertices weren't drawn (legs and hips only: 0.6-0.9 m of a
+1.8 m body). Far characters (animated every 3rd-5th frame) kept the pose, and `aimShoulders` measured on such a frame
+kept a running body's upper half gone until it next stood still. Not the LOD meshes, body reuse's meshes, meshsel,
+frozen materials or the gate (checked: every look's `_lod` covers the body; 67 Meshy looks have a separate `_lod` skin
+with the same joints, which is fine).
+**Fix** (characterAnimator.ts): waking restarts only what sleep paused (`slept`); `patchAnimatables` leaves a
+weight-0, non-additive runtime animation out of the late-binding blend (Babylon's own intent); `aimShoulders` and the
+coarse arm pose keep only finite values. **Tests**: `client/test/animBlend.test.ts` (fails without the patch);
+e2e `characters3` → `farBodies` (27-player canyon match, ten bots running circles 16-34 m out, a shot and a hit each,
+stop-and-go, turn away and back; `wholeBodies` checks each part's LOD is the mesh drawn and the drawn, GPU-skinned
+body is finite and ≥ 75 % of 1.8 m × size). On the old build it failed (8 of 11 broken, 473-1,249 NaN vertices each);
+with the fix it passes. Owner to confirm on the M1 (any map, 49 players, turn around in a fight).
 
 ### Openings fix (`wip/openings`, agent, 2026-11-06; CI on `check/openings`)
 Status: green on `check/openings`: CI run 42160424451 on 73b46f93, every job (docs-only commits since); ready to
@@ -880,7 +924,39 @@ fastest moving at about 60 m/s, on both attempts.
 Each brief has its reference image beside it. The owner approves the concept before any placement work; follow
 AGENT_BUILD_CONTRACT.md.
 
-### Queued: performance round 3 (owner's Shingle Point M1 recording, 2026-11-05; files in session scratchpad perf3/)
+### Performance round 3: DONE on `wip/perf-3` (agent, 2026-11-06; green on `check/perf-3` at c8ca5aa4 with main merged in, run 42181705004; docs/PERF_96.md, "Performance round 3")
+Ready to land (with the far-enemies fix above in it). Not on main: fast-forward main to the green check commit.
+**What it is:** prop batches (models with 8+ copies on the map: `PROP_BATCH_MIN`), still decorations merged, the fog
+reading the ambient occlusion's pre-pass depth, blood as thin instances, guns (also as your own first-person copy),
+characters, a tracer, a parachute and a glider warmed while the loading screen is up (out of sight when the warm-up
+runs past the gate), water's splash drops warmed,
+ragdoll tiers by screen size with staggered starts and a faster rest, the minimap from a bitmap window, shadow
+cascades centred on the camera (safety refresh every 240 frames), a blast's push kept for every body it killed however
+late its body starts, a crowd's held guns and the pickups' models one instance each of the model merged into one
+multi-material mesh (`ModelLibrary.instantiateWhole`), crowd team markers as thin instances.
+**Measured** (SwiftShader counts per frame at the owner's hitch spot, 44-45 characters in view; scratchpad `p3a/`):
+Shingle Point draws 1,034 -> 489, active meshes 1,308 -> 468, render-target draws 535 -> 142; Market Town meshes
+513 -> 297, draws 444 -> 435. Shadow cache turning a full circle: 30 of 72 layer renders redrew -> 3. Mass blast on
+Market Town (31 killed): round 2 23 of 30 bodies dropped where they stood on this slow box, round 3 all 31 thrown up.
+Shader tours after the warm-up (seven, fixing as they went: water's splash drops, your own first-person guns, the
+first tracer and a canopy's rigging lines were built mid-match): the last built none.
+**Projected on the M1 Pro:** Shingle Point ~15 ms average (22.2 recorded), ~17 in its busiest second (26.5); Market
+Town ~19 (20.9).
+**For the owner to re-record on the M1 Pro:** Shingle Point and Market Town as last time (TDM, 49 players, high, auto,
+60 fps cap, the beach at (-39, -76) on Shingle Point, a rocket into a crowd on Market Town, a 10 s trace each). Expect
+Shingle Point main views at 350-470 draws and 300-410 meshes, renderShadow ~1.5-2 ms, renderCull ~1.5, HUD ~0.2,
+`shadersNew` 0 after the start; Market Town ~300 meshes and every body of a mass death thrown.
+**Not tested:** anything on a real GPU (all numbers are SwiftShader counts and projections); the fog's look over the
+pre-pass depth on the M1 (CI's visual baselines pass); the cascades' squares are ~12 % bigger (shadows that much
+coarser), not looked at on the M1; a phone (lower graphics: no pre-pass, and the cascades' change is high graphics
+only; the rest applies; not run on one); WebGPU (no pre-pass and no shadow cache there, as before).
+**Next:** single-material held weapons (content: they are 3-5 materials each, a draw per material per weapon model);
+pickups as thin instances (35-55 meshes); breakable props batched while intact (~40 on Shingle Point).
+**How to resume:** branch `wip/perf-3`; probes in the session scratchpad `p3a/` (`probe.mjs <dist> <label>` with
+`PROBE_EVAL=<script>`: `census.js`, `tour.js` (with `PROBE_WAIT_PREWARM=1`), `shadowquick.js`, `minimapab.js`,
+`combo.js`; `blast2.mjs <dist> <label>` for the mass blast).
+
+#### The brief (owner's Shingle Point M1 recording, 2026-11-05; files in session scratchpad perf3/)
 **The recording:** build 76a4b03, M1 Pro, high, 49 players.
 - Averages about 20.5 ms. It holds 60 fps only in quiet views (390 draws, 185 meshes).
 - In the main views: 700–870 draws and 850–1,090 active meshes.

@@ -300,7 +300,7 @@ style and points on the model, in model space (+Z barrel, +Y up):
 
 | Style | Weapon placement | Hands |
 |---|---|---|
-| `pistol` | Points along the aim, its `grip` in the right palm where the clip puts it | Left palm IK'd to `support` |
+| `pistol` | Points along the aim, its `grip` in the right hand where the clip puts it (at the palm, by the middle of the hand's width) | Left palm IK'd to `support` |
 | `long` | Points along the aim, its `shoulder` point (the butt) in the right shoulder pocket; the shoulders turn into the stock | Right palm IK'd to `grip`, left to `support` |
 | `melee` | Carried in the right hand | — |
 
@@ -320,6 +320,16 @@ How the hands close on the weapon:
   wraps the grip instead of sinking into it or hovering beside it. The fingers
   close as far as the hand allows (`curl`: 0 for a fist or gauntlet that is
   already closed).
+- **A pistol's grip** (`style: pistol`): `grip` is the middle of the grip about
+  2 cm below the trigger guard and about 3 cm behind the front strap (the hand's
+  knuckles go 2 cm ahead of it in first person: just behind the front strap, so
+  the fingers bend there and wrap round); `support` is 2 cm left of it, 1 cm
+  lower and 1 cm ahead (every pistol-class gun the same: the support hand goes
+  round the shooting hand); `rake` is the grip's lean back from upright in
+  degrees, its foot further back (12 unless set: the Flare Gun's and Grapple's
+  34, the Freeze Ray's handle 20). Read them off a side view of the model with a
+  grid (the hold's points sat in the trigger guard on the Freeze Ray and at the
+  end of the wire stock on the Machine Pistol until 2026-11-06).
 
 ### Full-body first person (default)
 
@@ -360,6 +370,23 @@ Your own view shows your look's arms holding the viewmodel:
 - **Whole-body characters** (the Meshy characters, `content/characters`) wear their own forearms and hands in first person: `<id>_fparms.glb`, cut from the same model (the elbow half of each forearm dropped, sleeves pulled in towards the bone, hands a little smaller so a gauntlet doesn't fill the view), on the character's own fitted skeleton. A manifest can choose a universal arms part instead (`firstPerson: { arms: "ranger_arms_m", skin, cloth, trim }`): a base-body arms part on the shared rig, sleeves dyed and hands tinted to match.
 - **Placement:** they hang from the camera at the character's own size, the body a little behind the eyes. While a gun is held, the shoulder joints are set from the view, not from the character's build (a hunched cat's would sit in front of the eyes): beside and below the eye (`FP_SHOULDER` in characterAnimator.ts), so the forearms rise from the bottom of the screen. A shoulder comes forward toward its point on the gun as far as the arm needs to keep a natural bend (only the off-screen shoulder region stretches); the support hand first slides back along the handguard (no nearer the grip than 12 cm) before the shoulder comes further. A hand with nothing to hold (a knife) hangs out of view.
 - **Grip:** the gun keeps its tuned viewmodel placement, with bob, recoil and the reload dip. `gripExternal` IKs the palms onto its grip and support points with the same solver as third person; on a long gun the support hand is turned to cup the handguard from below (palm up, fingers round its far side). `window.__grips.miss()` in `?mode=grips` says how far each palm ended from its point (the `characters` e2e flow checks large guns).
+- **A pistol in first person** (both views; `PISTOL` in characterAnimator.ts, owner 2026-11-05: "looks as if their
+  fingers are just pinching the grip"): the grip sits deep in the shooting hand, the web of the thumb high on the
+  backstrap, the fingers round the grip, the support hand round the shooting hand.
+  - Each hand is turned about its palm so its knuckle line (index to little finger) runs down the grip at the gun's
+    `rake` (the support hand's 18° further, canted forward), so the fingers close round the grip rather than up
+    across it; the shooting palm faces in against the grip, the support palm in against the shooting fingers.
+  - Each hand is set by its knuckles, not its palm point: the middle of the shooting hand's knuckle line goes 2 cm
+    ahead of `grip` (a hand longer than 9 cm from wrist to knuckles goes further round, so its palm stays on the
+    backstrap), the support hand's 1.5 cm ahead of and 1 cm below `support`, its palm 1.1 cm further in (first
+    person only: `support` is third person's too). Set by the palm point, the knuckles stood 2-3 cm ahead of the
+    front strap and the fingers closed round the trigger guard.
+  - The fingers close until the middle fingertip is round on the grip's far side, no further (the shooting hand's
+    past 2.2 cm left of the grip's middle, the support hand's past 1.5 cm right of it); a full close on
+    top of the clips' bend folded them back into the palm.
+  - The thumbs lie along the frame (each straightened most of the way, the support thumb forward along the left side).
+  - Tune it live on the grip page: `__grips.pistol({ knuckles: [right, up, ahead], wrap, supportShift, ... })` (model
+    m, the gun's axes; returns the whole tune), then `__grips.pose(...)`. Third person keeps the clips' hold.
 
 **Where hands are drawn:** `gripMiss` and `__grips.miss()` measure the joints. A Meshy hand needn't sit on its
 joint as the rig's does (the dapper's lay a quarter turn round), so each measured hand's own frame is read off its
@@ -367,7 +394,9 @@ skin (`handProbe.skinHandFrame`) and the hand is turned onto the gun by it (`gri
 match, `__cs.view.gripReport()` measure the drawn skin: model metres from each hand's skin to its point on the gun,
 `aheadR` (fingers along the barrel), `sideR` (the shooting palm in against the grip's side: 1; its back there, the
 palm facing out: -1) and `palmL` (the support palm up into a long gun's handguard, or up and in round a pistol's
-shooting hand: 1; palm down or out: negative); the `characters` e2e checks them.
+shooting hand: 1; palm down or out: negative); the `characters` e2e checks them. `atR` / `atL` say where each drawn
+hand's skin centre is from its point in the gun's axes (right, up, ahead) and `wrapR` the share of the shooting hand's
+skin past the grip's middle on its far side (the fingers round the grip).
 
 **Which side is the palm** (2026-11-05). A hand's flat (its thinnest way) has two sides; `skinHandFrame` takes the
 palm's from the hand's joints, the first cue that speaks clearly:
