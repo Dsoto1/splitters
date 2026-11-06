@@ -1,11 +1,12 @@
-import { BOT_CAST_CHOICES, CHARACTER_GROUPS, DEFAULT_TEAMS, MAX_PLAYER_SLOTS, MAX_TEAMS, MAX_TEAM_SIZE, botCastLabel, changeTeamCount, evenTeams, peopleAndBots, setTeamSize, type GameMode, type PlayerCap, type TeamChange } from '@tiletrigger/shared';
+import { BOT_CAST_CHOICES, CHARACTER_GROUPS, DEFAULT_TEAMS, MAX_PLAYER_SLOTS, MAX_TEAMS, MAX_TEAM_SIZE, botCastLabel, changeTeamCount, evenTeams, peopleAndBots, setTeamSize, type FitItem, type FitTopic, type GameMode, type PlayerCap, type SetupFit, type SizePreset, type TeamChange } from '@tiletrigger/shared';
 
 /**
  * Match setup controls shared by Play → match setup and the host's pause
  * menu (Host tab), so a change mid-match looks and works like one before it:
  * steppers you can type into, choice tabs whose unavailable options are
- * greyed with the reason, setting rows (marked when they wait for a restart),
- * folds, setup notes and the team editor.
+ * greyed with the reason, setting rows and fields (marked when they wait for
+ * a restart), sections that open and close, the size presets, the fit
+ * indicator, the Offline / Host online switch and the team editor.
  */
 
 export const el = <K extends keyof HTMLElementTagNameMap>(tag: K, props: Partial<HTMLElementTagNameMap[K]> & { class?: string } = {}, ...children: (Node | string)[]): HTMLElementTagNameMap[K] => {
@@ -30,6 +31,17 @@ function why(e: HTMLElement, reason: string | null | undefined): void {
   if (!reason) return;
   e.dataset.tip = reason;
   e.title = reason;
+}
+
+/**
+ * A button that can't be pressed here, with the reason: greyed and inert, but still focusable and hoverable
+ * (a disabled button gets no hover or focus, so its tooltip would never show).
+ */
+export function inert(b: HTMLElement, reason: string | null | undefined): void {
+  if (!reason) return;
+  b.classList.add('off');
+  b.setAttribute('aria-disabled', 'true');
+  why(b, reason);
 }
 
 export interface StepperOptions {
@@ -94,6 +106,26 @@ export function choice<T extends string>(options: readonly ChoiceOption<T>[], va
   return box;
 }
 
+/**
+ * A switch between two or three ways (Offline | Host online): segments that read as one control, the one on
+ * lit. A segment that can't be picked here stays visible, greyed, with the reason on hover and focus.
+ */
+export function segmented<T extends string>(options: readonly (readonly [value: T, label: string, disabled?: string | null, id?: string, tip?: string])[], value: T, onChange: (v: T) => void, o: { id: string; label: string }): HTMLElement {
+  const box = el('div', { class: 'seg-switch', id: o.id, role: 'radiogroup' });
+  box.setAttribute('aria-label', o.label);
+  for (const [v, label, off, id, tip] of options) {
+    const b = el('button', { type: 'button', class: `seg-opt${v === value ? ' on' : ''}`, textContent: label, ...(id ? { id } : {}) });
+    b.dataset.value = v;
+    b.setAttribute('role', 'radio');
+    b.setAttribute('aria-checked', String(v === value));
+    if (tip) b.dataset.tip = tip;
+    inert(b, off ? `${tip ? `${tip}\n\n` : ''}${off}` : null);
+    b.addEventListener('click', () => !off && v !== value && onChange(v));
+    box.append(b);
+  }
+  return box;
+}
+
 export interface RowOptions {
   /** Takes effect when the match restarts (mid-match). */
   restart?: boolean;
@@ -103,14 +135,26 @@ export interface RowOptions {
   disabled?: string | null;
 }
 
+/** The small marks after a setting's name: it waits for a restart, or changes the match now. */
+function whenTags(o: RowOptions): HTMLElement[] {
+  const tags: HTMLElement[] = [];
+  if (o.restart) tags.push(el('span', { class: 'when-tag restart', textContent: '⟳ Restart', title: 'Applies when the match restarts (Apply & restart)' }));
+  if (o.live) tags.push(el('span', { class: 'when-tag live', textContent: 'Live', title: 'Changes right away, mid-match' }));
+  return tags;
+}
+
 /** A setting: its name with an (i), a restart / live tag when it applies, then the control. */
 export function settingRow(label: string, tip: string | null, control: HTMLElement, o: RowOptions = {}): HTMLElement {
-  const tags: HTMLElement[] = [];
-  if (o.restart) tags.push(el('span', { class: 'when-tag restart', textContent: 'On restart', title: 'Takes effect when the match restarts' }));
-  if (o.live) tags.push(el('span', { class: 'when-tag live', textContent: 'Live', title: 'Changes right away, mid-match' }));
-  const row = el('div', { class: `row${o.disabled ? ' off' : ''}` }, el('span', { class: 'row-label' }, label, ...(tip ? [infoTip(tip)] : []), ...tags), control);
+  const row = el('div', { class: `row${o.disabled ? ' off' : ''}` }, el('span', { class: 'row-label' }, label, ...(tip ? [infoTip(tip)] : []), ...whenTags(o)), control);
   why(row, o.disabled);
   return row;
+}
+
+/** One of the essentials (score, time, the mode's own key setting): its name over its control, a few across. */
+export function field(label: string, tip: string | null, control: HTMLElement, o: RowOptions = {}): HTMLElement {
+  const box = el('div', { class: `field${o.disabled ? ' off' : ''}` }, el('span', { class: 'field-label' }, label, ...(tip ? [infoTip(tip)] : []), ...whenTags(o)), control);
+  why(box, o.disabled);
+  return box;
 }
 
 /** A section folded away until opened; `badge`: a short state ("2 changed", "standard"). */
@@ -120,6 +164,85 @@ export function fold(o: { id: string; title: string; badge?: string; open: boole
   d.addEventListener('toggle', () => o.onToggle(d.open));
   d.append(el('summary', {}, el('span', { textContent: o.title }), ...(o.badge ? [el('small', { textContent: o.badge })] : []), ...(o.extra ?? [])), ...children);
   return d;
+}
+
+/**
+ * A section of the setup under the essentials (Players & teams, Bots, Advanced rules): its header (the title,
+ * a line saying what it's set to, a caret) opens and closes it. `tag`: a mark after the title (Live).
+ */
+export function section(o: { id: string; title: string; summary?: (Node | string)[]; open: boolean; onToggle: () => void; tag?: HTMLElement | null; warn?: boolean }, ...children: HTMLElement[]): HTMLElement {
+  const head = el(
+    'button',
+    { type: 'button', class: 'sec-head', id: `${o.id}-head` },
+    el('h4', { textContent: o.title }),
+    ...(o.tag ? [o.tag] : []),
+    el('span', { class: `sec-sum${o.warn ? ' warn' : ''}` }, ...(o.summary ?? [])),
+    el('span', { class: 'sec-caret', textContent: '▸' }),
+  );
+  head.setAttribute('aria-expanded', String(o.open));
+  head.addEventListener('click', o.onToggle);
+  const sec = el('section', { class: `setup-sec${o.open ? ' open' : ''}`, id: o.id }, head);
+  if (o.open) sec.append(el('div', { class: 'sec-body', id: `${o.id}-body` }, ...children));
+  return sec;
+}
+
+/**
+ * The size presets worked out for this map, mode and device (Duel, Small, Map's pick, Big battle, Max), the one
+ * the setup is on lit; changed from all of them, a Custom chip says so (with what it is: `custom`).
+ */
+export function sizeChips(presets: readonly SizePreset[], on: SizePreset | null, custom: string, onPick: (p: SizePreset) => void, id: string): HTMLElement {
+  const box = el('div', { class: 'size-chips', id, role: 'group' });
+  box.setAttribute('aria-label', 'Size presets');
+  for (const p of presets) {
+    const b = el('button', { type: 'button', class: `size-chip${p === on ? ' on' : ''}` }, el('b', { textContent: p.label }), el('small', { textContent: p.value }));
+    b.dataset.preset = p.id;
+    b.dataset.tip = p.tip;
+    b.setAttribute('aria-pressed', String(p === on));
+    b.addEventListener('click', () => onPick(p));
+    box.append(b);
+  }
+  if (!on) {
+    const c = el('span', { class: 'size-chip custom on', id: `${id}-custom` }, el('b', { textContent: 'Custom' }), el('small', { textContent: custom }));
+    c.dataset.tip = 'Changed from the presets: any of them puts it back.';
+    box.append(c);
+  }
+  return box;
+}
+
+/** The fit check's topics, as its details name them. */
+export const FIT_TOPICS: Record<FitTopic, string> = { device: 'This device', grid: 'Grid', size: 'Map size', spawns: 'Spawns', teams: 'Teams', performance: 'Performance' };
+
+/** The fit indicator: one chip, green Fits, amber Crowded or red Problem; it shows or hides the details. */
+export function fitChip(fit: SetupFit, open: boolean, onToggle: () => void, id: string): HTMLButtonElement {
+  const b = el('button', { type: 'button', class: `fit-chip ${fit.level}${open ? ' open' : ''}`, id }, el('i', { class: 'fit-dot' }), el('span', { textContent: fit.label }), el('span', { class: 'fit-caret', textContent: '▾' }));
+  b.dataset.level = fit.level;
+  b.setAttribute('aria-expanded', String(open));
+  b.title = open ? 'Hide the details' : 'How this setup fits the map and this device: spawn points, the map\'s recommended size, performance';
+  b.addEventListener('click', onToggle);
+  return b;
+}
+
+/**
+ * The fit check's details, a line per topic: what it found, marked by how much it matters (a red problem, an
+ * amber warning, a hint, a tick), and a suggestion's button that acts ("Use 12v12"). `extra`: a control to
+ * show with a topic's line (Graphics with performance).
+ */
+export function fitList(items: readonly FitItem[], onFix: (fix: NonNullable<FitItem['fix']>) => void, id: string, extra: Partial<Record<FitTopic, HTMLElement>> = {}): HTMLElement {
+  const list = el('ul', { class: 'fit-list', id });
+  for (const it of items) {
+    const li = el('li', { class: `fit-item ${it.level}` }, el('b', { class: 'fit-topic', textContent: FIT_TOPICS[it.topic] }), el('span', { class: 'fit-text', textContent: it.text }));
+    li.dataset.topic = it.topic;
+    if (it.fix) {
+      const fix = it.fix;
+      const b = el('button', { type: 'button', class: 'fit-fix', id: `${id}-fix-${it.topic}`, textContent: fix.label });
+      b.addEventListener('click', () => onFix(fix));
+      li.append(b);
+    }
+    const x = extra[it.topic];
+    if (x) li.append(x);
+    list.append(li);
+  }
+  return list;
 }
 
 /** The team palette: every default team colour (the map's own sides add theirs). */

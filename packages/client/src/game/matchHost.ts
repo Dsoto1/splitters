@@ -60,6 +60,8 @@ export interface LocalMatchOptions {
   selfKey?: string;
   /** Most players the host may set (the page's deviceMaxPlayers: a phone hosts fewer); default BROWSER_MAX_PLAYERS. */
   maxPlayers?: number;
+  /** This browser's player starts as a spectator (Match setup → Spectate): a bot plays the place; J joins the game. */
+  spectate?: boolean;
 }
 
 /** The game browser listing of a hosted match, for the successor to carry on (net/handoff.ts): its name only. */
@@ -226,6 +228,9 @@ export class MatchHost {
     const control = new HostControl(match, bots, fill, 'Host', Math.max(this.opts.maxPlayers ?? BROWSER_MAX_PLAYERS, fill));
     Object.assign(this, { match, me, mod, control, bots });
     if (!cp) bots.rebalance(control.fill);
+    // Spectate from the start: out of play before the welcome, so the page opens on the spectator camera (and the
+    // start gate counts the spectator, once loaded, like a player).
+    if (!cp && this.opts.spectate) bots.spectate(me.slot, control.fill);
     this.onMatch?.(match, me, mod);
 
     this.sink.local({ t: 'welcome', protocol: PROTOCOL_VERSION, slot: me.slot, maxSlots: MAX_PLAYER_SLOTS, tickRate: TICK_RATE, snapshotInterval: SNAPSHOT_INTERVAL_TICKS, map: this.map, rules, sc: match.scenario.fullState(), spectate: 1 });
