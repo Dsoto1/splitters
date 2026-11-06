@@ -16,8 +16,13 @@ owner asked what to call it and what would make it more robust and entertaining.
 - **Ship it in two steps:**
   1. A one-click **party preset**, "Lunar Roulette", and the variants frame in the Match Setup redesign. It's built
      from today's settings: Low gravity, Character stats, and Random characters, which already gives everyone a random
-     character each life.
+     character each life. **Built** (`wip/match-setup`, 2026-11-06): `shared/src/sim/setupVariants.ts`.
   2. **This mode, queued after the Match Setup redesign:** the new mechanics, plugged into its variants frame.
+     - A variant is an entry in `SETUP_VARIANTS` (id, label, tip, the modes it's offered in, the `MatchSetup` fields it
+       `sets`, what it `clears`, `conflicts` and `needs`, and why it's `unavailable` on a map); Match setup draws a chip
+       for each, so Earned rerolls, Swap on kill, Jackpot rolls, Streak pick and Signature loadouts need the setting
+       each sets (a `MatchSetup` field and its rule) and an entry, no UI.
+     - Lunar Roulette then points at the mode: in `PARTY_PRESETS`, `mode: { ffa: 'core.roulette' }, variants: ['lunar']`.
 
 ## The mode: Roulette
 **Core (always on)**

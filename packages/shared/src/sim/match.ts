@@ -642,9 +642,11 @@ export class Match {
     readonly rules: MatchRules = DEFAULT_DEATHMATCH_RULES,
     readonly seed = 1,
     /**
-     * `startGate`: hold the start until every human has loaded (`ready`), at
-     * most START_WAIT_SECONDS, then count down; every later round counts down
-     * too. Off (play at once) for headless matches and tests.
+     * `startGate`: hold the start until every person has loaded (`ready`:
+     * players and spectators alike, so a match only spectators watch starts
+     * once they have), at most START_WAIT_SECONDS, then count down; every
+     * later round counts down too. Off (play at once) for headless matches
+     * and tests.
      */
     private readonly opts: { startGate?: boolean } = {},
   ) {
@@ -1604,7 +1606,10 @@ export class Match {
     const c = this.slots[slot];
     // A spectator leaving (or removed): the slot kept for them is free again.
     if (!c) {
-      if (this.spectators.delete(slot)) this.activity.delete(slot);
+      if (this.spectators.delete(slot)) {
+        this.activity.delete(slot);
+        this.readySlots.delete(slot);
+      }
       return;
     }
     this.activity.delete(slot);
@@ -1632,8 +1637,11 @@ export class Match {
     const c = this.slots[slot];
     if (!c || c.kind !== 'human') return false;
     const s: Spectator = { name: c.name, look: c.look, kills: c.kills, deaths: c.deaths, selfKills: c.selfKills, objective: c.objective, since: this.tick, ...(c.account ? { account: true } : {}) };
+    // Their client stays loaded: a spectator counts for the start gate as a player does.
+    const loaded = this.readySlots.has(slot);
     this.remove(slot);
     this.spectators.set(slot, s);
+    if (loaded) this.readySlots.add(slot);
     // Watching counts as being there (camera input: noteActivity); the clock starts now.
     this.activity.set(slot, { tick: this.tick, yaw: NaN, pitch: NaN });
     return true;
@@ -1788,8 +1796,10 @@ export class Match {
       }
       // Bots waiting for their spawn wave take their places during the wait.
       this.spawnDue();
-      const humans = this.combatants().filter((c) => c.kind === 'human');
-      if (this.phase === 'waiting' && ((humans.length > 0 && humans.every((c) => this.readySlots.has(c.slot))) || this.tick >= this.phaseEndTick)) this.startCountdown();
+      // Everyone who must have loaded first: the people playing and the spectators (a match only spectators
+      // watch, bots against bots, starts as soon as they have loaded); nobody there yet: the wait runs out.
+      const people = [...this.combatants().filter((c) => c.kind === 'human').map((c) => c.slot), ...this.spectators.keys()];
+      if (this.phase === 'waiting' && ((people.length > 0 && people.every((slot) => this.readySlots.has(slot))) || this.tick >= this.phaseEndTick)) this.startCountdown();
       else if (this.phase === 'countdown' && this.tick >= this.phaseEndTick) this.beginPlay();
     } else {
       const prof = simProfile.on;
@@ -5407,7 +5417,7 @@ export class Match {
     return { kills: c.kills, deaths: c.deaths, weapons: [...c.weapons.values()].map((w): [string, number, number] => [w.def.id, w.mag, w.reserve]) };
   }
 
-  /** Humans whose client has loaded everything (start gate). */
+  /** People (players and spectators) whose client has loaded everything (start gate). */
   private readonly readySlots = new Set<number>();
 
   /** A client finished loading. Late joiners just play; the first ones start the countdown. */

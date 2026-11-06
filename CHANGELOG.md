@@ -36,6 +36,69 @@ docs/BOTS.md, "Navigation audit", "Never standing still on a failed route", "Sco
   in CI when the bots, navigation, the sim or a map it plays change, and the full scorecard runs nightly with its
   report and every map's nav picture.
 
+**Match setup, redesigned** (the owner's report and the approved design, 2026-11-06)
+- **What matters most is always on top**, with no steps to go through: the game mode, its variants, what wins (score
+  and time) and the mode's own key setting (flag return, the hill timer, laps, Fort Wars' build and combat phases).
+- **Presets that scale with the map:** Duel, Small, Map's pick (the map's own layout), Big battle and Max, worked out
+  from the map's size, its spawn points, the mode and what this computer (or phone) runs. Any change makes it Custom.
+  The fixed shapes are still there under More layouts.
+- **Party presets**, one click each: **Lunar Roulette** (low gravity, a new random character every life, stats and
+  all; Team Deathmatch on a map with teams) and **Spear Fight**.
+- **Variants:** on/off chips under the modes: Lunar, Roulette bodies, Classes, Spears only, Discs only (greyed, with
+  the reason, where they can't be used). A variant shows as on however its settings were set.
+- **People apart from bots:** "You + 47 bots · 24v24", and each team reads "You + 23 bots". Adding a bot grows its
+  team (a team of 10 takes an eleventh instead of snapping back), **Even teams** keeps them matched, and a limit says
+  whose it is ("24 per team is this computer's limit").
+- **One fit indicator** instead of the yellow notes: Fits, Crowded or Problem. Click it for the spawn points, the map's
+  recommended size and performance, with buttons that act ("Use 12v12"). A real problem stays in view, in red.
+- **Advanced rules in one line** ("9 changed · Low gravity · Tactical bots +7"), its chips and Reset inside it.
+- **A foot that never scrolls away:** Offline / Host online beside **Start match** (Enter does what the switch says),
+  saved setups in a small menu, and **Spectate**.
+- Small screens and phones open one section at a time; a desktop as many as you like. It fits from a phone sideways
+  (900 × 415) to 2560 wide. A setup saved on a computer and opened on a phone plays what the phone runs, and says so.
+
+**Spectate before the start works** (owner's report, 2026-11-06): a spectator who has loaded counts for the start, so
+a match only spectators watch (bots against bots) begins at once instead of waiting out the 30 s for a player who
+isn't there. Match setup's new **Spectate** starts a match that way, straight into the spectator camera.
+
+**The pause menu's Host tab, made like Match setup:** what wins, players and teams (presets for the map, Even teams,
+people apart from bots, the fit indicator), bots and rules, every setting that needs a restart marked. One foot:
+**Resume** (Esc too), **Apply** named by what it does (Apply now, or Apply & restart), what it changes, the
+Offline / Host online switch and **Leave match**. The join code, invite link, listing, players and kicks, rotation and
+Change map are all still there.
+
+**Set pieces, part 3: pieces for the beach assault and the colosseum** (owner-approved, docs/SET_PIECES_PLAN.md)
+- **For MAP 21 (Military Compound look):** the Gun Casemate and the Cliff Casemate (a gun port to the sea, and rooms
+  in a loop: two ways in, no dead ends); trench runs sunk into the ground (straight, bend, junction, end, and a jog
+  round a traverse; fire steps, duckboards, timber or sandbag walls; crouch in the trench and you're hidden); the
+  Grand Cliff Stair and the Cliff Stair Tower; a landing craft beached with its ramp down, which never moves: cover to
+  fight from, up the ramp and into its well.
+- **For the Sandfall Colosseum rebuild (Imperial Arena look):** arena bays (podium, upper tier, vomitorium), the
+  Grand Arcade and the attic, stacking six storeys high; hypogeum tunnels with hatches and ladders up to the sand;
+  cage blocks with barred gates and a lift-cage riser; three insulae with shops and flats; stair towers of 4, 6 and 8
+  levels.
+- **New building pieces for every map:** the Round arch, Grand arch (two storeys), Embrasure and Barred gate wall
+  styles; Sunken Trench tiles that carve their own slot in the ground; the Grand Flight (two cells wide), Seating Tier
+  and Vomitorium, Vaulted Tunnel, Grand Gallery and Corner Hatch; a Sandbags material; the Landing Craft (Beached)
+  prop (Meshy community, CC0), in the Military Compound and Coastal Harbor packs.
+
+## 0.8.0 (2026-11-06)
+
+Highlights:
+- **Bots play the objective.** CTF bots go for the flag: captures over the 44-map CTF suite went from 21 to 145, and
+  bots no longer stand about.
+- **Shots pass through arches, windows and holes.** 207 props got collision built from their real shape.
+- **Smoother big matches.** On an M1 Pro, Shingle Point went from 21.8 to 17.3 ms a frame and Market Town from 22.1
+  to 17.6 ms. Every body in a mass blast is thrown.
+- **Looks right.** No texture or prop flicker, far enemies are drawn whole, and a less toy-like world: our own grass,
+  flowers, rocks, pebbles and ferns.
+- **Characters.** Eleven new characters and a WWII tank, pistols held deep in the hand, re-tuned hands, and a HUD
+  portrait that follows Random characters.
+- **Maps and MapMaker.**
+  - Shingle Point has new assets.
+  - Set pieces arrive: a Collegiate Gothic carriageway and an enclosed skybridge.
+  - MapMaker shows where you can build, and lets you put floors over tall pieces.
+
 **Hands round 5: support hands, big hands, the Knight's gauntlets, the Spear** (owner-approved, 2026-11-06)
 - **The Spear, the Medkit and the Medi-Beam in first person**: the hand closes round the shaft and the handle again.
   The new pistol hold (below) had turned and closed them as a raked pistol grip, their fingers sticking straight out

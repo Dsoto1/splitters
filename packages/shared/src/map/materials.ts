@@ -116,6 +116,8 @@ export const PATTERN_IDS = [
   'roots',
   /** Style Pack 06: palm thatch: overlapping rows of long straw strands. */
   'thatch',
+  /** Set pieces part 3 (trench revetment, parapets): courses of burlap sandbags in stretcher bond, each a rounded pillow. */
+  'sandbags',
 ] as const;
 export type PatternId = (typeof PATTERN_IDS)[number];
 
