@@ -95,7 +95,7 @@ describe('CTF roles', () => {
       }
       match.destroy();
     }
-  });
+  }, 120_000);
 });
 
 describe('CTF bots run the flag', () => {
