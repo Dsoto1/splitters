@@ -452,7 +452,8 @@ Resume each from its branch, after merging main.
 draws its whole body.
 
 ### Openings fix (`wip/openings`, agent, 2026-11-06; CI on `check/openings`)
-Status: built and tested locally, being checked (see the end of this section). The queued report below is what it fixes.
+Status: green on `check/openings` (CI run 42156808605, commit cb52f4d0, every job; HANDOFF-only commits since), ready
+to land. The report below is what it fixes.
 - **Done:**
   - `collide: "voxel"` (tools/content/voxel-collision.mjs): 3D collision from the model (0.1 m cubes, flood fill from
     the sides and above, exact cover, merges that never fill air in sight, faces pulled in to the model), with a box
@@ -489,8 +490,10 @@ Status: built and tested locally, being checked (see the end of this section). T
   - Prop collision boxes on those maps: 14,811 to 32,241 (busiest: Backwoods, St John's ~1,500); navmesh builds
     +10-25 % on the busiest maps, shot raycasts +20-40 % in a random test (machine loaded: noisy). Not benched with
     96 bots.
-  - Screenshots (scratchpad `openings/after/`): rounds through Fogbound's arch fly 93-103 m (before: stopped on the
-    invisible box), through the holed wall 15.8 m; a player walks through the arch; collision drawn over the scene.
+  - Screenshots (scratchpad `openings/after/`, before-* on the old build, after-* on this one): rounds through
+    Fogbound's arch fly 93-100 m (before: all stopped 3.7-4.0 m away, on the invisible box face at z 8.7), rounds at
+    its pillars stop on the stone; through the holed wall 15.8-90 m (before: 3.7-4.3 m, on the box face); a player
+    walks through the arch (z 6 to 11.2; before: stopped at 8.25); prop collision drawn over the scene.
   - `botRiders.test.ts` keeps its buggy repaired on its blind drive: the drive's path drifted and went over Iron Maw's
     pit edge (crash damage, riders rightly out).
 - **Resume:** `git checkout wip/openings`, `pnpm install`, `node tools/content/prepare-props.mjs` (voxelises into
