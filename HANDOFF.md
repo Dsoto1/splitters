@@ -1091,6 +1091,16 @@ the fingers bent "toward the gun", i.e. backwards). Creatures (Imp, Puglin) were
   third person before/after, `close/`, audits `before/`, `after/`, `after-final/`; tools in `palms/tools/`).
 <!-- /palms -->
 
+### Flaky e2e (seen 2026-11-06): `handoff` (host handoff between three browsers)
+It failed on CI twice in one job on the HUD portrait train (run 42215908322) and once on `check/bots-idle`. Each time it
+passed on a re-run, and the changes involved didn't touch hosting.
+- **Signature:** "the successor's checkpoint carries the other friend's score" fails. The host logs "closing Bo's link:
+  silent 20 s" and Bo "the host's link went (closed)", after Bo's page "fell 1.3–2.0 s behind its match".
+- **Likely:** a page starved on a loaded CI runner goes silent for 20 s, and the host drops it before the checkpoint.
+- **To do:** root-cause it, don't just re-run it. The flake may also be a real bug for slow machines, where a friend's
+  page stalls and the host cuts them off. Candidates: a longer silence limit while a page is catching up, or keep-alive
+  pings from the worker. Queue with the next hosting or perf task.
+
 ### Open bug (found 2026-11-05): explosion debris can fall through the world
 On the env + intake merge (`check/env-land2`), physicsfx counted 32 debris bodies where it expected 10, with the
 fastest moving at about 60 m/s, on both attempts.
