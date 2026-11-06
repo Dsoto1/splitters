@@ -1593,7 +1593,11 @@ export class CharacterAnimator {
     // and the fingers closed round the trigger guard: the owner's "pinch"), its palm still off the grip's middle by
     // half the grip and half the hand.
     let gripAt = palmOnGrip(arms.r, point(grip.grip), scale);
-    if (pistol) gripAt = seated(arms.r, gripAt, off(grip.grip, PISTOL.knuckles));
+    // (A big hand's knuckles go further round the grip, so its palm stays on the backstrap rather than behind the gun.)
+    if (pistol) {
+      const lead = Math.max(0, handLength(arms.r) / unit - PISTOL.handRef) * PISTOL.handLead;
+      gripAt = seated(arms.r, gripAt, off(grip.grip, [PISTOL.knuckles[0]!, PISTOL.knuckles[1]!, PISTOL.knuckles[2]! + lead]));
+    }
     // A support hand round the shooting hand presses on its fingers from the grip's left (PISTOL.supportShift: the
     // support point is third person's too) and is set by its knuckles, at the front of the grip below the shooting
     // hand's.
@@ -1676,13 +1680,13 @@ export class CharacterAnimator {
     const down = Vector3.TransformNormal(new Vector3(0, -1, 0), world).normalize();
     solveArm(space, arms.r, gripAt, pos(arms.r.upper).add(outward.scale(0.35 * scale)).add(down.scale(0.3 * scale)), w);
     // A pistol's fingers close round its grip to its far side, no further; the thumb lies along the frame.
-    closeHand(space, arms.r, w, point(grip.grip), pistol ? off(grip.grip, PISTOL.wrap) : undefined);
+    closeHand(space, arms.r, w, point(grip.grip), pistol ? { at: off(grip.grip, PISTOL.wrap), out: gun.right.scale(-1) } : undefined);
     if (pistol) pointThumb(space, arms.r, gunDir(gun, PISTOL.thumbR), w);
     if (supportAt && grip.support) {
       solveArm(space, arms.l, supportAt, pos(arms.l.upper).subtract(outward.scale(0.1 * scale)).add(down.scale(0.4 * scale)), w);
       // A pistol's support fingers close round the front of the shooting hand's, no further, its thumb forward along
       // the frame.
-      const cupAt = pistol ? off(grip.support, PISTOL.supportWrap) : undefined;
+      const cupAt = pistol ? { at: off(grip.support, PISTOL.supportWrap), out: gun.right } : undefined;
       closeHand(space, arms.l, cupAt ? w : w * supportCurl(grip), supportAt.add(palmSideWorld(arms.l).scale(arms.l.gripOffset * scale)), cupAt);
       if (pistol) pointThumb(space, arms.l, gunDir(gun, PISTOL.thumbL), w);
     } else if (this.fp) {
@@ -1793,12 +1797,16 @@ const CUP_BACK = 0.22;
 export const PISTOL = {
   /** Where the middle of the shooting hand's knuckle line goes from the grip point (on the front strap: right, up, ahead). */
   knuckles: [0, 0, 0.02] as number[],
+  /** A hand longer than this from its wrist to its knuckles (as drawn)... */
+  handRef: 0.09,
+  /** ...has its knuckles this share of the difference further ahead (round the grip). */
+  handLead: 0.6,
   /** A grip's rake (degrees back from upright, its foot further back) where the gun's hold gives none. */
   rake: 12,
   /** The support hand's knuckle line leans this much (degrees) further than the grip (its fingers run down and forward round the shooting hand's). */
   supportCant: 18,
-  /** The shooting middle fingertip closes toward this point from the grip point (round the grip to its far side), no further. */
-  wrap: [-0.025, 0, 0] as number[],
+  /** The shooting fingers close round the grip until the middle fingertip is past this far side (from the grip point; a plane square to the gun's right), no further. */
+  wrap: [-0.022, 0, 0] as number[],
   /** The shooting thumb's way (gun axes; [] leaves it as the clip has it). */
   thumbR: [0, -0.1, 1] as number[],
   /** The support hand's fingers' and palm's ways (gun axes). */
@@ -1807,9 +1815,9 @@ export const PISTOL = {
   /** The support point moved by this in first person (the content's is third person's too). */
   supportShift: [0.011, 0, 0] as number[],
   /** Where the middle of the support hand's knuckle line goes from the support point. */
-  supportKnuckles: [0, -0.01, 0.025] as number[],
-  /** The support middle fingertip closes toward this point from the support point (round the front of the shooting hand). */
-  supportWrap: [0.025, -0.01, 0.03] as number[],
+  supportKnuckles: [0, -0.01, 0.015] as number[],
+  /** The support fingers close round the front of the shooting hand's until the middle fingertip is past this (from the support point; a plane square to the gun's right). */
+  supportWrap: [0.035, 0, 0] as number[],
   /** How far a laid thumb's joints are straightened (1: straight on from the joint before). */
   thumbStraight: 0.8,
   /** The support thumb's way (gun axes; [] leaves it as the clip has it). */
@@ -1856,6 +1864,14 @@ function pointThumb(space: SkeletonSpace, arm: Arm, dir: Vector3, weight: number
 /** The grip page's live tune of the first-person pistol hold (`__grips.pistol`). */
 export function setPistolTune(tune: Partial<typeof PISTOL>): typeof PISTOL {
   return Object.assign(PISTOL, tune);
+}
+
+/** How far (world) a hand's knuckle line is from its wrist joint, as posed (0 without fingers). */
+function handLength(arm: Arm): number {
+  const k = knuckleCentre(arm);
+  if (!k) return 0;
+  arm.hand.computeWorldMatrix(true);
+  return Vector3.Distance(k, arm.hand.getAbsolutePosition());
 }
 
 /** The middle of a hand's knuckle line (world): its finger chains' first joints, averaged. Null without fingers. */
@@ -2134,7 +2150,7 @@ export function setCurlShare(share: number): void {
  * shooting hands curled their fingers up off the grip: an open palm on the gun); closing onto the gun is right
  * either way.
  */
-function closeHand(space: SkeletonSpace, arm: Arm, weight: number, onto?: Vector3, wrap?: Vector3): void {
+function closeHand(space: SkeletonSpace, arm: Arm, weight: number, onto?: Vector3, wrap?: { at: Vector3; out: Vector3 }): void {
   // A measured hand closes as far as it was found able to (not at all if it is rigid or already a fist).
   weight *= arm.curl * curlShare;
   if (weight <= 0) return;
@@ -2149,27 +2165,37 @@ function closeHand(space: SkeletonSpace, arm: Arm, weight: number, onto?: Vector
   const middle = arm.fingers[1] ?? arm.fingers[0];
   const curl = [0.9, 1.1, 0.7];
   if (wrap && middle && middle.length >= 2) {
-    // Round a thin grip (a pistol's, first person): close only as far as brings the middle fingertip nearest `wrap`
-    // (on the grip's far side), whichever way. The clips' hold already bends the fingers, and the full close on top
-    // folded them past a pistol's grip back into the palm (the fingertips on the near side again: a pinch).
-    const target = space.point(wrap);
+    // Round a thin grip (a pistol's, first person): close only until the middle fingertip is round on the grip's far
+    // side (past the plane `wrap`: through `at`, facing `out`), whichever way, or as near as it gets. The clips' hold
+    // already bends the fingers, and the full close on top folded them past a pistol's grip back into the palm (the
+    // fingertips on the near side again: a pinch); closing toward a point instead left the tips inside the grip, the
+    // fingers rising as they close round it.
+    const at = space.point(wrap.at);
+    const out = space.point(wrap.at.add(wrap.out)).subtract(at).normalize();
     const joints = middle.map((j) => space.pos(j));
     const last = joints[joints.length - 1]!.subtract(joints[joints.length - 2]!);
     const chain = [...joints, joints[joints.length - 1]!.add(last.scale(0.8))];
-    const tipAt = (s: number, t: number) => {
+    const past = (s: number, t: number) => {
       const p = chain.map((v) => v.clone());
       for (let i = 0; i < Math.min(curl.length, p.length - 1); i++) {
         const q = Quaternion.RotationAxis(across, s * curl[i]! * t);
         for (let k = i + 1; k < p.length; k++) p[k] = p[i]!.add(p[k]!.subtract(p[i]!).applyRotationQuaternion(q));
       }
-      return p[p.length - 1]!;
+      return Vector3.Dot(p[p.length - 1]!.subtract(at), out);
     };
-    let best = { d: Vector3.Distance(chain[chain.length - 1]!, target), s: sign, t: 0 };
-    for (const s of [1, -1]) {
-      for (let step = 1; step <= 10; step++) {
-        const t = (weight * step) / 10;
-        const d = Vector3.Distance(tipAt(s, t), target);
-        if (d < best.d - 1e-4) best = { d, s, t };
+    let best = { d: past(sign, 0), s: sign, t: 0 };
+    if (best.d < 0) {
+      for (const s of [1, -1]) {
+        for (let step = 1; step <= 20; step++) {
+          const t = (weight * step) / 20;
+          const d = past(s, t);
+          // The least close that reaches the far side; else the one that comes nearest it.
+          if (d >= 0) {
+            if (best.d < 0 || t < best.t) best = { d, s, t };
+            break;
+          }
+          if (best.d < 0 && d > best.d + 1e-4) best = { d, s, t };
+        }
       }
     }
     sign = best.s;
