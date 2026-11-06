@@ -1,8 +1,11 @@
 import { createRng, horizontalDistance, type Vec3 } from '../math.ts';
 import { TICK_RATE } from '../sim/constants.ts';
+import type { Corridor, Trip } from '../nav/corridors.ts';
+import type { OrderGoal } from './brain.ts';
 import { laneWaypoint } from './explore.ts';
 import { hasTag, type BotProfile, type BotStyle } from './profile.ts';
 import { RegionMap, type RegionLayout } from './regions.ts';
+import { TeamBrain, type PricedTrip, type PushStats, type SideBrief, type TeamJob } from './teamBrain.ts';
 import type { VantageBoard } from './vantage.ts';
 
 /**
@@ -29,6 +32,8 @@ export interface ClusterView {
   lagging: boolean;
   /** How far apart members keep (m): grunts close, the rest looser. */
   spacing: number;
+  /** Its way to the goal: a corridor of the side's trip to the enemy (route variety), or null (`via`, or straight). */
+  route: Corridor | null;
 }
 
 /** What a bot reads of the match's planning (the same object every tick, updated in place). */
@@ -41,6 +46,10 @@ export interface BotPlan {
   vantage: VantageBoard | null;
   /** The enemy's side of the map (team modes), for pushing forward; null otherwise. */
   towards: readonly Vec3[] | null;
+  /** The team brain's job for it (teamBrain.ts: its group, corridor and staging, or a cut-off point); null: none. */
+  job: TeamJob | null;
+  /** The side's common trips, each corridor priced (crowd, deaths, sightings): a loose bot takes the cheapest. */
+  trips: readonly PricedTrip[];
 }
 
 /** One member as the match reports it to the director. */
@@ -56,6 +65,12 @@ export interface DirectorMember {
   /** Leads the team (rules.leaders): leads its squad too. */
   teamLeader: boolean;
   profile: BotProfile;
+  /** The mode's goal for it now (null: none), the corridor it walks, whether a person ordered it, whether it rides or mans something, what it saw lately. */
+  goal?: OrderGoal | null;
+  corridor?: Corridor | null;
+  ordered?: boolean;
+  mounted?: boolean;
+  seen?: Vec3 | null;
 }
 
 /** Squads only in matches this big (players), and only from this many free bots on a side. */
@@ -127,6 +142,8 @@ export class BotDirector {
   private readonly plans = new Map<number, BotPlan>();
   private readonly sides = new Map<string, RegionMap>();
   private readonly clusters = new Map<string, Cluster[]>();
+  /** Each side's team brain (teamBrain.ts). */
+  private readonly brains = new Map<string, TeamBrain>();
   private readonly rng: () => number;
   private nextId = 1;
   vantage: VantageBoard | null = null;
@@ -142,8 +159,25 @@ export class BotDirector {
   /** The bot's plan (created on first use; the same object for the whole match). */
   planFor(slot: number): BotPlan {
     let p = this.plans.get(slot);
-    if (!p) this.plans.set(slot, (p = { role: 'squad', cluster: null, regions: null, vantage: this.vantage, towards: null }));
+    if (!p) this.plans.set(slot, (p = { role: 'squad', cluster: null, regions: null, vantage: this.vantage, towards: null, job: null, trips: NO_TRIPS }));
     return p;
+  }
+
+  /** A side's team brain (made on first use). */
+  brainFor(side: string): TeamBrain {
+    let b = this.brains.get(side);
+    if (!b) this.brains.set(side, (b = new TeamBrain()));
+    return b;
+  }
+
+  /** Someone on `side` died here: the team brain prices the corridors near it up for a minute. */
+  noteDeath(side: string, pos: Vec3, tick: number): void {
+    this.brainFor(side).death(pos, tick);
+  }
+
+  /** A side's group pushes so far (measuring: bot-report). */
+  pushStats(side: string): PushStats | null {
+    return this.brains.get(side)?.stats ?? null;
   }
 
   setRole(slot: number, role: BotRole): void {
@@ -173,15 +207,26 @@ export class BotDirector {
    * (`everyone`), then squads from its free bots. `alert` tells a squad member
    * where its busy leader's enemy is.
    */
-  update(tick: number, side: string, everyone: readonly Vec3[], members: readonly DirectorMember[], towards: readonly Vec3[] | null, squads: boolean, alert: (slot: number, at: Vec3) => void): void {
+  update(tick: number, side: string, everyone: readonly Vec3[], members: readonly DirectorMember[], towards: readonly Vec3[] | null, squads: boolean, alert: (slot: number, at: Vec3) => void, brief: SideBrief | null = null, trips: readonly Trip[] = [], allTrips: readonly Trip[] = trips): void {
     const regions = this.regionsFor(side);
     regions.update(everyone, tick);
     for (const m of members) if (m.enemyAt) regions.contact(m.enemyAt, tick + TICK_RATE * 20);
+    // The team brain: prices, groups and pushes, interceptors (a person's orders win: those bots are left out).
+    const brain = this.brainFor(side);
+    const jobs = brain.update(
+      tick,
+      members.map((m) => ({ slot: m.slot, pos: m.pos, profile: m.profile, goal: m.goal ?? null, corridor: m.corridor ?? null, ordered: !!m.ordered, mounted: !!m.mounted, seen: m.seen ?? null })),
+      brief,
+      trips,
+      allTrips,
+    );
     for (const m of members) {
       const plan = this.planFor(m.slot);
       plan.regions = regions;
       plan.towards = towards;
       plan.vantage = this.vantage;
+      plan.job = jobs.get(m.slot) ?? null;
+      plan.trips = brain.trips;
     }
     let list = this.clusters.get(side);
     if (!list) this.clusters.set(side, (list = []));
@@ -239,7 +284,7 @@ export class BotDirector {
       const group = [m, ...near.slice(0, maxSize - 1)];
       const leader = group.slice().sort((a, b) => leadScore(b) - leadScore(a) || a.slot - b.slot)[0]!;
       const c: Cluster = {
-        view: { id: this.nextId++, leader: leader.slot, leaderPos: { ...leader.pos }, goal: null, via: null, size: group.length, leaderBusy: false, lagging: false, spacing: 3 },
+        view: { id: this.nextId++, leader: leader.slot, leaderPos: { ...leader.pos }, goal: null, via: null, size: group.length, leaderBusy: false, lagging: false, spacing: 3, route: null },
         members: group.map((g) => g.slot),
         goalUntil: 0,
         region: -1,
@@ -286,9 +331,12 @@ export class BotDirector {
           c.goalUntil = tick + Math.round(TICK_RATE * (20 + this.rng() * 15));
           c.goalDist = horizontalDistance(leader.pos, pick.pos);
           regions.claim(pick.region, c.goalUntil);
-          // Squads spread over the routes: each takes a different side of the straight line (and some the middle).
+          // Squads spread over the routes: toward the enemy's side, the cheapest corridor of the side's trip there that
+          // no other squad is on (route variety: crowd, deaths, sightings); elsewhere each takes a different side of
+          // the straight line (and some the middle).
+          v.route = toEnemy ? squadRoute(brain.trips, pick.pos, list, c) : null;
           const l = ((c.view.id + lane++) % 3) - 1;
-          v.via = l === 0 ? null : laneWaypoint(this.places, leader.pos, pick.pos, l);
+          v.via = v.route || l === 0 ? null : laneWaypoint(this.places, leader.pos, pick.pos, l);
         }
       }
       for (const s of c.members) {
@@ -318,6 +366,36 @@ export class BotDirector {
   squads(side: string): { leader: number; members: readonly number[]; goal: Vec3 | null }[] {
     return (this.clusters.get(side) ?? []).map((c) => ({ leader: c.view.leader, members: c.members, goal: c.view.goal }));
   }
+}
+
+const NO_TRIPS: readonly PricedTrip[] = [];
+
+/**
+ * A squad's corridor toward a goal on the enemy's side: of the side's trip ending nearest it (within 40 m), the
+ * cheapest corridor (crowd, deaths and sightings priced in), one another squad is on counting double.
+ */
+function squadRoute(trips: readonly PricedTrip[], goal: Vec3, squads: readonly Cluster[], self: Cluster): Corridor | null {
+  let best: PricedTrip | null = null;
+  let bestD = 40;
+  for (const t of trips) {
+    const d = horizontalDistance(t.trip.to, goal);
+    if (d < bestD && t.trip.corridors.length) {
+      bestD = d;
+      best = t;
+    }
+  }
+  if (!best) return null;
+  let pick = -1;
+  let low = Infinity;
+  best.trip.corridors.forEach((c, k) => {
+    const taken = squads.some((o) => o !== self && o.view.route === c);
+    const cost = best!.cost[k]! * (taken ? 2 : 1);
+    if (cost < low) {
+      low = cost;
+      pick = k;
+    }
+  });
+  return pick >= 0 ? best.trip.corridors[pick]! : null;
 }
 
 /** Who leads a squad: the team's leader always; a coward only when nobody else is in it. */

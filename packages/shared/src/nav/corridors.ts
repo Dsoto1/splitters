@@ -20,8 +20,11 @@ import type { NavGraph, NavWorld } from './index.ts';
 export interface Corridor {
   /** Waypoints, start to goal, about SPACING m apart (on the navmesh). */
   readonly points: readonly Vec3[];
-  /** The route itself (shared edges' midpoints), start to goal: dense enough to measure who walks it. */
+  /** How far along the route each waypoint is (m). */
+  readonly pointsAt: readonly number[];
+  /** The route itself (shared edges' midpoints), start to goal, a point every LINE_STEP m: to measure who walks it. */
   readonly line: readonly Vec3[];
+  readonly lineAt: readonly number[];
   /** Length of the route (m). */
   readonly length: number;
   /** Share of it (between the ends) within SAME_WIDTH of an earlier corridor of the trip (0 for the first). */
@@ -50,8 +53,9 @@ const EXTRA = 30;
 /** Within this of either end (m, or END_SHARE of the trip's straight distance if more) every way meets: no penalty there, and it isn't counted as shared. */
 const END_ZONE = 14;
 const END_SHARE = 0.15;
-/** Waypoints this far apart (m). */
+/** Waypoints this far apart (m), and the route's measuring points. */
 export const SPACING = 12;
+export const LINE_STEP = 4;
 const MAX_CORRIDORS = 3;
 
 /** The polygon graph with costs, per navmesh graph (made once). */
@@ -216,6 +220,13 @@ function routeOf(p: Prepared, polys: readonly number[], from: Vec3, to: Vec3): V
   return line;
 }
 
+/** How far along a list of points each one is (m, across). */
+function alongOf(pts: readonly Vec3[]): number[] {
+  const out: number[] = [0];
+  for (let i = 1; i < pts.length; i++) out.push(out[i - 1]! + hypot(pts[i]!.x - pts[i - 1]!.x, pts[i]!.z - pts[i - 1]!.z));
+  return out;
+}
+
 function lengthOf(line: readonly Vec3[]): number {
   let len = 0;
   for (let i = 1; i < line.length; i++) len += hypot(line[i]!.x - line[i - 1]!.x, line[i]!.z - line[i - 1]!.z) + Math.abs(line[i]!.y - line[i - 1]!.y) * 0.5;
@@ -340,7 +351,9 @@ function corridorsBetween(p: Prepared, s: number, t: number, from: Vec3, to: Vec
       // Not genuinely different, or a long way round: no more corridors for this trip (the next would be worse).
       if (share > MAX_SHARED || length > out[0]!.length * MAX_STRETCH + EXTRA) break;
     }
-    out.push({ points: resample(line, SPACING), line: resample(line, 4), length, shared: k ? share : 0 });
+    const points = resample(line, SPACING);
+    const measure = resample(line, LINE_STEP);
+    out.push({ points, pointsAt: alongOf(points), line: measure, lineAt: alongOf(measure), length, shared: k ? share : 0 });
     for (const q of dense) found.add(q);
     // The ground near it costs more for the next search (not near the ends: every way meets there).
     const c = p.centre;

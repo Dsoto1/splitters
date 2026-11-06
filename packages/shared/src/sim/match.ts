@@ -1,11 +1,12 @@
 import type RAPIER from '@dimforge/rapier3d-compat';
 import { simProfile } from './profile.ts';
-import { BotBrain, type BotWorldView, type CombatantView, type InventoryView, type MountView, type NoiseView, type PickupView, type SeatView } from '../bots/brain.ts';
+import { BotBrain, type BotWorldView, type CombatantView, type InventoryView, type MountView, type NoiseView, type OrderGoal, type PickupView, type SeatView } from '../bots/brain.ts';
 import { BOT_DIFFICULTIES, CORE_BOT_PROFILES, profileFor, type BotDifficulty, type BotProfile, type BotStyle } from '../bots/profile.ts';
 import { botSetInUse, mapBotSet, type BotEntry, type BotSet } from './botSet.ts';
 import { SightCache } from '../bots/sight.ts';
 import { ViewGrid } from '../bots/grid.ts';
 import { BotDirector, CLUSTER_MIN_PLAYERS, assignRoles, type DirectorMember } from '../bots/director.ts';
+import type { TeamBrain } from '../bots/teamBrain.ts';
 import { regionLayout } from '../bots/regions.ts';
 import { VantageBoard, vantageFor } from '../bots/vantage.ts';
 import { buildMapGeometry, mapKillY, mapTerrainMesh, type WorldBox } from '../map/geometry.ts';
@@ -2126,6 +2127,11 @@ export class Match {
   /** The bots' common trips with their corridors (botTrips); null until asked for, and again once the navmesh changes. */
   private trips: (BotTripSpec & { trip: Trip })[] | null = null;
 
+  /** A side's team brain (bots/teamBrain.ts: its groups, pushes and prices), for measuring and tests; null before the first bot. */
+  teamBrain(side: string): TeamBrain | null {
+    return this.director?.brainFor(side) ?? null;
+  }
+
   /** A Player Bot's role this match (director.ts: squad, camper, sniper, lone wolf), for measuring; null without one. */
   botRole(slot: number): string | null {
     return this.director?.roleOf(slot) ?? null;
@@ -2189,8 +2195,12 @@ export class Match {
     const teams = this.teams;
     if (!d || !teams) return;
     const squads = actors.length >= CLUSTER_MIN_PLAYERS && !this.mode && this.rules.mode !== 'core.coop' && this.rules.mode !== 'core.zombies';
+    const trips = this.botTrips();
+    const all = trips.map((x) => x.trip);
     teams.forEach((t, i) => {
       if ((this.tick + i * 29) % TICK_RATE !== 0) return;
+      // What the mode says about the side (its attackers' objective, an enemy to cut off) for the team brain.
+      const brief = this.mode?.botBrief?.(t.id) ?? null;
       const everyone: Vec3[] = [];
       const members: DirectorMember[] = [];
       for (const c of actors) {
@@ -2199,6 +2209,7 @@ export class Match {
         if (!c.bot || c.npc || c.kind !== 'bot') continue;
         const fighting = c.bot.target !== null;
         const seen = c.bot.lastSeen;
+        const ordered = !!c.order && this.tick <= c.order.until;
         members.push({
           slot: c.slot,
           pos: c.move.pos,
@@ -2207,11 +2218,24 @@ export class Match {
           free: !c.mount && !c.order && !c.botSet?.squad && d.planFor(c.slot).role === 'squad',
           teamLeader: this.isLeader(c),
           profile: c.bot.profile,
+          // (The mode's goal only when the mode briefs the side: the team brain's groups are made of its attackers.)
+          goal: brief && !ordered ? (this.mode?.botGoal(c, []) ?? null) : null,
+          corridor: c.bot.corridor,
+          ordered: ordered || !!c.botSet?.squad,
+          mounted: !!c.mount,
+          seen: seen && this.tick - seen.tick < TICK_RATE * 1.5 ? seen.pos : null,
         });
       }
       const towards = this.spawnPoints.filter((s) => s.team !== null && s.team !== t.id && !s.generated).map((s) => s.pos);
-      d.update(this.tick, t.id, everyone, members, towards.length ? towards : null, squads, (slot, at) => this.slots[slot]?.bot?.alert(at, this.tick));
+      const own = trips.filter((x) => x.team === t.id).map((x) => x.trip);
+      d.update(this.tick, t.id, everyone, members, towards.length ? towards : null, squads, (slot, at) => this.slots[slot]?.bot?.alert(at, this.tick), brief, own, all);
     });
+  }
+
+  /** The team brain's own goal for a bot (an interceptor's cut-off point), if it has one. */
+  private jobGoal(c: Combatant): { pos: Vec3; radius: number } | null {
+    if (c.kind !== 'bot' || !this.director) return null;
+    return this.director.planFor(c.slot).job?.goal ?? null;
   }
 
   /** Where a bot is told to go (squad orders, teammates' orders, co-op and mode goals), or null to roam. */
@@ -2222,6 +2246,9 @@ export class Match {
     if (order) return order;
     const squad = this.squadGoal(c);
     if (squad !== undefined) return squad;
+    // The team brain's job for it (an interceptor cutting off our flag's carrier), over the mode's goal.
+    const job = this.jobGoal(c);
+    if (job) return job;
     const goal = zombies ? this.holdOutGoal(c, hostiles) : coop ? this.coopGoal(c, hostiles) : this.classGoal(c, this.mode?.botGoal(c, hostiles) ?? null);
     // A squad's leader: its followers go where it goes.
     if (c.botSet?.squad) this.leadGoals.set(c.slot, goal);
@@ -2503,16 +2530,17 @@ export class Match {
     this.pendingEvents.push({ e: 'leader', a: 'down', s: victim.slot, team, ...(n ? { n } : {}) });
   }
 
-  private teammateOrder(c: Combatant): { pos: Vec3; radius: number } | null {
+  private teammateOrder(c: Combatant): OrderGoal | null {
     const o = c.order;
     if (!o || this.tick > o.until) return null;
-    if (o.kind === 'hold') return { pos: o.pos, radius: 3 };
+    // (A person's order: it wins over pickups, noises and chases in the bot's choices; it still fights what it sees.)
+    if (o.kind === 'hold') return { pos: o.pos, radius: 3, order: true };
     const leader = this.actor(o.leader);
     if (!leader?.alive) {
       c.order = undefined;
       return null;
     }
-    return { pos: leader.move.pos, radius: 4 };
+    return { pos: leader.move.pos, radius: 4, order: true };
   }
 
   private applyInputs(c: Combatant): void {
@@ -4927,6 +4955,8 @@ export class Match {
       return;
     }
     victim.deaths++;
+    // The team brain prices the corridors near where a teammate fell up for a minute (route variety: death cost).
+    if (this.teams && victim.faction) this.director?.noteDeath(victim.faction, victim.move.pos, this.tick);
     // Zombies: the fallen sit out the rest of the wave.
     victim.respawnTick = this.zombies ? Infinity : this.tick + this.rules.respawnDelayTicks;
     // Suicides (falls, own grenades, traps) are just a death, counted for stats.

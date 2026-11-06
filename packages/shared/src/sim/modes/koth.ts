@@ -2,6 +2,7 @@ import { horizontalDistance, type Vec3 } from '../../math.ts';
 import type { ModeSnapshot } from '../../protocol.ts';
 import { TICK_RATE } from '../constants.ts';
 import type { Combatant } from '../match.ts';
+import type { SideBrief } from '../../bots/teamBrain.ts';
 import { teamHome, type BotGoal, type BotTripSpec, type ModeHost, type ModeLogic } from './types.ts';
 
 export interface HillRt {
@@ -114,9 +115,22 @@ export class KothMode implements ModeLogic {
     return out;
   }
 
-  /** Everyone heads for the hill and spreads out on it. */
+  /**
+   * The team brain's brief: everyone goes for the hill; while the other team holds it, they gather first and retake it
+   * together (a group push), otherwise straight in.
+   */
+  botBrief(team: string): SideBrief | null {
+    const theirs = this.holder !== null && this.holder !== 'contested' && this.holder !== team;
+    return { attack: { pos: { ...this.hill.pos }, stage: theirs }, intercept: null };
+  }
+
+  /**
+   * Everyone heads for the hill and spreads out on it, keeping to it (bots/brain.ts OrderGoal.push: on the way, a noise
+   * or an enemy that slipped away doesn't draw them off; they fight on the move). Before, a bot on the hill went after
+   * any gunfire it heard, and the hill emptied (held 29 % of the time on the Phase A sample).
+   */
   botGoal(c: Combatant): BotGoal | null {
     const h = this.hill;
-    return { pos: h.pos, radius: Math.max(1, h.radius * 0.6 - (c.slot % 3)) };
+    return { pos: h.pos, radius: Math.max(1, h.radius * 0.6 - (c.slot % 3)), push: true };
   }
 }

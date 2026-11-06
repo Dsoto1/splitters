@@ -3,6 +3,7 @@ import { FLAG_CARRIED, FLAG_DROPPED, FLAG_HOME, type FlagAction, type ModeSnapsh
 import { TICK_RATE } from '../constants.ts';
 import type { Combatant } from '../match.ts';
 import { CtfBotPlan, ctfBotAwareness, ctfBotGoal, ctfBotTookFlag } from './ctfBots.ts';
+import type { SideBrief } from '../../bots/teamBrain.ts';
 import type { BotGoal, BotTripSpec, ModeHost, ModeLogic } from './types.ts';
 
 /** Touching a flag: within this many metres of it (horizontally), and close in height. */
@@ -165,6 +166,20 @@ export class CtfMode implements ModeLogic {
 
   botGoal(c: Combatant): BotGoal | null {
     return ctfBotGoal(c, this.flags, this.botPlan);
+  }
+
+  /**
+   * The team brain's brief: the attackers go for the enemy's flag, gathering first and going together while it's at
+   * home (a group push; a flag lying out in the open they just run for), and nobody while a teammate carries it (they
+   * escort); with our flag carried off, its carrier is the one to cut off on its way home.
+   */
+  botBrief(team: string): SideBrief | null {
+    const own = this.flagOf(team);
+    const enemy = this.flags.find((f) => f.team !== team);
+    if (!own || !enemy) return null;
+    const attack = enemy.state === FLAG_CARRIED ? null : { pos: { ...enemy.pos }, stage: enemy.state === FLAG_HOME };
+    const carrier = own.state === FLAG_CARRIED && own.carrier !== null ? own.carrier : null;
+    return { attack, intercept: carrier !== null ? { pos: { ...own.pos }, to: { ...enemy.base }, slot: carrier } : null };
   }
 
   /** Each team's way from its own flag to the enemy's (its attackers' trip, and the way an enemy carrier runs home with its flag). */

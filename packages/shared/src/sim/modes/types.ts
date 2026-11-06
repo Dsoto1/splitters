@@ -1,4 +1,5 @@
 import type { OrderGoal } from '../../bots/brain.ts';
+import type { SideBrief } from '../../bots/teamBrain.ts';
 import type { WorldBox } from '../../map/geometry.ts';
 import type { Faction, MapDocument } from '../../map/schema.ts';
 import type { Vec3 } from '../../math.ts';
@@ -120,4 +121,6 @@ export interface ModeLogic {
   botInput?(c: Combatant, input: PlayerInput): void;
   /** The trips the mode's bots make again and again (base to flag, spawn to hill...), for their corridors. */
   botTrips?(): readonly BotTripSpec[];
+  /** What a side's team brain needs to know, once a second (bots/teamBrain.ts SideBrief): its attackers' objective, an enemy to cut off. */
+  botBrief?(team: string): SideBrief | null;
 }
