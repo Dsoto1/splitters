@@ -8,6 +8,26 @@ made only on a commit that passed CI on a check branch.
 
 ## Unreleased
 
+**Bots: a navigation audit, no standing still on a failed route, a scorecard** (docs/BOT_AI_PLAN.md Phase A;
+docs/BOTS.md, "Navigation audit", "Never standing still on a failed route", "Scorecard")
+- **Navigation audit** of every map, from every polygon of the bots' navmesh: traps (places bots fall or jump-pad into
+  and can't walk out of), spawn points, objectives and pickups cut off, with a picture per map (`pnpm nav-audit`).
+  Errors on the official maps, warnings in MapMaker; the findings left on official maps are listed for the owner.
+- **Bots get down off ledges**: one-way drop links off ledges, roofs, scaffolds and cliff shelves that have no other
+  way down, generated at load (within fall damage: with it on, only drops that cost at most about 30 health).
+- **Fixed in the navmesh's generation**: floors Recast found inside solid boxes (Eagle Spires' spires had one in every
+  rock block) are left out; the navmesh keeps 0.6 m from walls, as meant, not 0.8 (a rounding error closed doorways
+  and stairwells under 1.6 m to bots).
+- **No bot stands still on a failed route**: a goal no route reaches is swapped for the nearest place a route does
+  (a flag on a ledge, a pickup on a crate: the last step straight to it), a bot knocked off the navmesh walks back
+  onto it, long searches walk the part they found, and bots pick only goals they can get to. Buttons on cooldown
+  aren't pressed again and again (Primeval Park: a bot stood 218 s at one).
+- **Spawn points inside something solid moved out of it** in MapMaker on 17 maps, and are now an error on the
+  official maps.
+- **Scorecard**: `pnpm bot-report` over every mode (`--suite=all`), with limits in a checked-in file; `--check` runs
+  in CI when the bots, navigation or the sim change, and the full scorecard runs nightly with its report and the nav
+  pictures.
+
 **Shingle Point: new assets, same battle** (owner, 2026-11-05: an asset refresh, layout and gameplay kept)
 - **Landing craft, wrecks and hedgehogs** are real pieces now instead of grey blocks: four landing craft at the
   waterline, six rusted wrecks sunk in the sand and 46 Czech hedgehogs of riveted steel angles. The craft and wrecks

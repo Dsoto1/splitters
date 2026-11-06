@@ -1,4 +1,4 @@
-import { getNavMeshPositionsAndIndices, init as initRecast, NavMeshQuery, QueryFilter, type NavMesh } from 'recast-navigation';
+import { createNavMeshData, freeCompactHeightfield, freeContourSet, freeHeightfield, freePolyMesh, freePolyMeshDetail, getNavMeshPositionsAndIndices, init as initRecast, NavMesh, NavMeshCreateParams, NavMeshQuery, QueryFilter } from 'recast-navigation';
 import { generateSoloNavMesh } from 'recast-navigation/generators';
 import { boxesToTriangles, type WorldBox } from '../map/geometry.ts';
 import type { MapDocument } from '../map/schema.ts';
@@ -72,6 +72,64 @@ export interface NavGraph {
   flags: Uint16Array;
 }
 
+/** Recast's settings for the bots' navmesh (NavWorld.build). */
+const RECAST_CONFIG = {
+  cs: CELL,
+  ch: CELL_HEIGHT,
+  walkableSlopeAngle: PLAYER.maxSlopeDegrees,
+  walkableHeight: Math.ceil(PLAYER.height / CELL_HEIGHT),
+  // Round, not floor: 0.3 / 0.05 is 5.999… in floating point, which would reject 0.25 m steps at some heights.
+  walkableClimb: Math.round(PLAYER.maxStepHeight / CELL_HEIGHT),
+  // Extra clearance beyond the capsule radius so corner-cutting bots do not snag door frames.
+  // 0.6 m, three cells. (Math.ceil gave four, 0.8 m: (0.4 + 0.2) / 0.2 is 3.0000000000000004 in floating point.
+  // That closed doorways and stairwells under 1.6 m wide to bots, and left a metre-wide strip by every wall.)
+  walkableRadius: NAV_RADIUS_CELLS,
+  maxEdgeLen: 12 / CELL,
+  maxSimplificationError: 1.3,
+  minRegionArea: 8,
+  mergeRegionArea: 20,
+  maxVertsPerPoly: 6,
+  detailSampleDist: 6,
+  detailSampleMaxError: 1,
+} as const;
+
+const offMesh = (l: { start: Vec3; end: Vec3 }) => ({ startPosition: l.start, endPosition: l.end, radius: 0.8, bidirectional: false });
+
+type Intermediates = ReturnType<typeof generateSoloNavMesh>['intermediates'];
+
+/**
+ * A navmesh of the first build's polygons with `links` in: Detour's tile data made again from Recast's polygon and
+ * detail meshes, as generateSoloNavMesh's last step makes it (its polygons' areas and flags are already set).
+ */
+function withLinks(inter: Intermediates, links: readonly { start: Vec3; end: Vec3 }[]): NavMesh {
+  const polyMesh = inter.polyMesh;
+  const detail = inter.polyMeshDetail;
+  if (!polyMesh || !detail) throw new Error('navmesh generation kept no polygon mesh');
+  const params = new NavMeshCreateParams();
+  params.setPolyMeshCreateParams(polyMesh);
+  params.setPolyMeshDetailCreateParams(detail);
+  params.setWalkableHeight(RECAST_CONFIG.walkableHeight * CELL_HEIGHT);
+  params.setWalkableRadius(RECAST_CONFIG.walkableRadius * CELL);
+  params.setWalkableClimb(RECAST_CONFIG.walkableClimb * CELL_HEIGHT);
+  params.setCellSize(CELL);
+  params.setCellHeight(CELL_HEIGHT);
+  params.setBuildBvTree(true);
+  params.setOffMeshConnections(links.map(offMesh));
+  const data = createNavMeshData(params);
+  if (!data.success) throw new Error('navmesh generation failed: Detour data with the links');
+  const navMesh = new NavMesh();
+  if (!navMesh.initSolo(data.navMeshData)) throw new Error('navmesh generation failed: Detour navmesh with the links');
+  return navMesh;
+}
+
+function freeIntermediates(inter: Intermediates): void {
+  if (inter.heightfield) freeHeightfield(inter.heightfield);
+  if (inter.compactHeightfield) freeCompactHeightfield(inter.compactHeightfield);
+  if (inter.contourSet) freeContourSet(inter.contourSet);
+  if (inter.polyMesh) freePolyMesh(inter.polyMesh);
+  if (inter.polyMeshDetail) freePolyMeshDetail(inter.polyMeshDetail);
+}
+
 /** A way off a cut-off patch of navmesh (NavWorld.escapes): where to cross from (null: from where you stand) and the place across. */
 export interface NavEscape {
   edge: Vec3 | null;
@@ -109,47 +167,43 @@ export class NavWorld {
       const offset = box.positions.length / 3;
       for (let i = 0; i < extra.indices.length; i++) indices[box.indices.length + i] = extra.indices[i]! + offset;
     }
-    const result = generateSoloNavMesh(positions, indices, {
-      cs: CELL,
-      ch: CELL_HEIGHT,
-      walkableSlopeAngle: PLAYER.maxSlopeDegrees,
-      walkableHeight: Math.ceil(PLAYER.height / CELL_HEIGHT),
-      // Round, not floor: 0.3 / 0.05 is 5.999… in floating point, which would reject 0.25 m steps at some heights.
-      walkableClimb: Math.round(PLAYER.maxStepHeight / CELL_HEIGHT),
-      // Extra clearance beyond the capsule radius so corner-cutting bots do not snag door frames.
-      // 0.6 m, three cells. (Math.ceil gave four, 0.8 m: (0.4 + 0.2) / 0.2 is 3.0000000000000004 in floating point.
-      // That closed doorways and stairwells under 1.6 m wide to bots, and left a metre-wide strip by every wall.)
-      walkableRadius: NAV_RADIUS_CELLS,
-      maxEdgeLen: 12 / CELL,
-      maxSimplificationError: 1.3,
-      minRegionArea: 8,
-      mergeRegionArea: 20,
-      maxVertsPerPoly: 6,
-      detailSampleDist: 6,
-      detailSampleMaxError: 1,
-      offMeshConnections: (snapped ? links : []).map((l) => ({ startPosition: l.start, endPosition: l.end, radius: 0.8, bidirectional: false })),
-    });
+    // Links go in only after the navmesh is first built (they are snapped to it), so a build with links keeps Recast's
+    // polygon mesh and makes only Detour's tile data again with them (the same polygons: no second voxelisation, which
+    // took as long again as the first).
+    const relink = !snapped && (links.length > 0 || !!drops);
+    const result = generateSoloNavMesh(positions, indices, { ...RECAST_CONFIG, offMeshConnections: (snapped ? links : []).map(offMesh) }, relink);
     if (!result.success) throw new Error(`navmesh generation failed: ${result.error}`);
-    const world = new NavWorld(result.navMesh, new NavMeshQuery(result.navMesh, { maxNodes: MAX_NODES }));
-    if (drops) {
-      world.spawnSeeds = drops.spawns;
-      world.disableInsideSolid(drops.physics, drops.solids);
+    const inter = result.intermediates;
+    try {
+      const world = new NavWorld(result.navMesh, new NavMeshQuery(result.navMesh, { maxNodes: MAX_NODES }));
+      if (drops) {
+        world.spawnSeeds = drops.spawns;
+        world.disableInsideSolid(drops.physics, drops.solids);
+      }
+      if (!relink) return world;
+      // Jump links must start and end on the mesh: snap them to it, then build again with the links in.
+      const onMesh = links.flatMap((l) => {
+        // Lift links say how far to look (level with the platform's stop, so the far end isn't snapped back onto the platform below).
+        const start = world.closestPoint(l.start, l.reach ?? { x: 1.5, y: 2, z: 1.5 });
+        const end = world.closestPoint(l.end, l.reach ?? { x: 2.5, y: 3, z: 2.5 });
+        return start && end ? [{ start, end }] : [];
+      });
+      // Ways down off patches that have none (on the mesh already: an edge of the patch, a polygon below).
+      const exits = drops ? trapExits(world, drops.physics, drops.spawns, onMesh, drops) : [];
+      if (!onMesh.length && !exits.length) return world;
+      const all = [...onMesh, ...exits];
+      const navMesh = withLinks(inter, all);
+      world.destroy();
+      const built = new NavWorld(navMesh, new NavMeshQuery(navMesh, { maxNodes: MAX_NODES }));
+      if (drops) {
+        built.spawnSeeds = drops.spawns;
+        built.disableInsideSolid(drops.physics, drops.solids);
+      }
+      built.drops = exits.length;
+      return built;
+    } finally {
+      if (relink) freeIntermediates(inter);
     }
-    if (snapped || (!links.length && !drops)) return world;
-    // Jump links must start and end on the mesh: snap them to it, then build again with the links in.
-    const onMesh = links.flatMap((l) => {
-      // Lift links say how far to look (level with the platform's stop, so the far end isn't snapped back onto the platform below).
-      const start = world.closestPoint(l.start, l.reach ?? { x: 1.5, y: 2, z: 1.5 });
-      const end = world.closestPoint(l.end, l.reach ?? { x: 2.5, y: 3, z: 2.5 });
-      return start && end ? [{ start, end }] : [];
-    });
-    // Ways down off patches that have none (on the mesh already: an edge of the patch, a polygon below).
-    const exits = drops ? trapExits(world, drops.physics, drops.spawns, onMesh, drops) : [];
-    if (!links.length && !exits.length) return world;
-    world.destroy();
-    const built = NavWorld.build(boxes, extra, [...onMesh, ...exits], true, drops);
-    built.drops = exits.length;
-    return built;
   }
 
   /** Ledge-drop links the build added (NavWorld.build `drops`). */
@@ -403,6 +457,8 @@ export class NavWorld {
           if (!r.success || !r.nearestRef || !r.isOverPoly || marked.has(r.nearestRef)) continue;
           marked.add(r.nearestRef);
           const f = this.navMesh.getPolyFlags(r.nearestRef);
+          // (Never one left out as inside something solid: flags 0, disableInsideSolid.)
+          if (this.insideSolid && f.flags === 0) continue;
           this.navMesh.setPolyFlags(r.nearestRef, (f.flags || 1) | bit);
         }
       }

@@ -109,6 +109,9 @@ still without a capture (most lose the carrier on the way home: Phase B).
   `pnpm bench:96:clump`.
 
 ## Phase A: navigation audit, never stand still, the scorecard
+**Done** (`wip/bots-a`, 2026-11-06; docs/BOTS.md, "Navigation audit", "Never standing still on a failed route" and
+"Scorecard"; the before/after table is under "Phase A, measured" below).
+
 Starts right after `wip/bots-idle` lands, alongside set pieces.
 
 1. **The scorecard:** `pnpm bot-report` over every mode and its maps, several seeds.

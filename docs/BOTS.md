@@ -529,6 +529,72 @@ the causes, each fixed where it starts:
 `BotBrain.doing` says what a bot did on its last think and so why it stood still when it did; `pnpm bot-report`
 reads it.
 
+## Navigation audit (November 2026, BOT_AI_PLAN.md Phase A)
+
+What bots can get to and out of, worked out from every polygon of the navmesh, not just from the first spawn point
+(`nav/audit.ts` `auditNavigation`; `pnpm nav-audit [maps] [--pictures=dir]`; validate-map, the all-maps test and
+MapMaker's validator run it on the navmesh as the match builds it, `sim/mapNav.ts`):
+
+- **Routes** are the navmesh's links between polygons, one way: walking, and the off-mesh links (jump pads, ladders,
+  portals, ziplines, lifts, ledge drops). **Falls** are where a body walks off the walkable ground onto lower ground,
+  traced against the level (nothing in the way at step, knee and head height, then down; landings in lava or deep
+  water left out: a bot there swims or drowns, it doesn't walk). Falls are how bots end up somewhere without a route
+  there (knocked, pushed, a missed step); they aren't routes.
+- **The main area**: the component of routes (polygons that all route to each other) the most spawn points reach and
+  are reached from (both ways: a team's base bots jump-pad up into and can't route down from isn't it).
+- **A trap**: a patch bots get into from where they spawn (falling, a one-way link, a jump pad) that doesn't route to
+  the main area, and that the bots' own hop off a cut-off patch (`NavWorld.escapes`: a step or hop of up to 1.1 m
+  within 8 m) doesn't get out of either. One with a fall out is a ledge with no way down (the drop links below fix
+  those); one without is a pit nobody gets out of: the map's to fix.
+- **Cut off**: a spawn point that doesn't route to the main area (`nav.disconnected`), an objective (flag base, hill,
+  bomb site, hostage, rescue zone) some team's spawn points don't route to, a pickup no spawn point routes to
+  (`nav.<kind>_unreachable`). "Routes to" is as bots get there: to the place, or to within a step off the navmesh of
+  it (a pickup on a crate, a flag on a prop; below).
+- **Severity**: errors on the official maps (maps/: validate-map and the all-maps test fail), warnings for creators
+  in MapMaker. Findings left on official maps for the owner are listed with why in `nav/auditKnown.ts` (warnings).
+- **Pictures** (`pnpm nav-audit --pictures=dir`; the nightly scorecard's artifact, with where searches failed): the
+  navmesh top-down, the main area shaded by height, one-way areas teal, traps red, islands (patches nobody gets to:
+  roofs, prop tops) purple, links yellow, drop links orange, spawn points green, objectives yellow, pickups cyan,
+  failed searches magenta.
+
+Generation bugs it found, fixed in code:
+- **Floors inside solid boxes.** Recast rasterizes surfaces, not volumes: inside a closed box at least a body's height
+  tall, the floor reads as open ground. Eagle Spires' two spires (stacked 2 m rock blocks) had a patch inside every
+  block, 7,000 m² in all; falls and goals snapped onto them, and the audit saw traps there. A ground polygon with no
+  room to stand at its middle now gets flags 0 at build (`NavWorld.disableInsideSolid`), which every search and
+  nearest-polygon lookup leaves out.
+- **Ledges with no way down** (Eagle Spires' cliff ledges, roofs and scaffolds bots fall or pad onto, Bunker Cross's
+  base roofs): one-way **ledge-drop links**, brought forward from Phase C, generated at load (`audit.ts` `trapExits`,
+  `NavWorld.build` `drops`): from each patch that doesn't route to the main area, up to three falls onto ground that
+  does (lowest first, 4 m apart), then again from patches those now lead out of. Within fall damage: with it on, only
+  drops that cost at most about 30 health (8.3 m at normal gravity, `DROP_HURTS_UP_TO`); with it off, any drop onto the
+  navmesh. Not into lava or deep water. A map without such patches gets none, and its navmesh is the same as before.
+
+## Never standing still on a failed route (Phase A)
+
+A failed search used to back the bot off 0.2 s, doubling to 4 s, standing still meanwhile (`followPathNow`). Now:
+- **A goal no route reaches** (exact: `NavWorld.routable` knows each polygon's component of routes and what routes
+  from it reach, so there is no search for what can't be reached) is swapped for a **stand-in**, the place nearest it
+  a route from the bot does reach (`NavWorld.standIn`; a flag on a ledge: below it; a carrier in the air: under it),
+  remembered per component of routes and goal for the match. Within a step off the navmesh of the goal (2.2 m, in
+  the clear: a pickup on a crate, a flag on a prop) the bot walks the last bit straight there. At a stand-in a bot
+  sent somewhere keeps watch facing the goal, asking again each second (`outOfReach`).
+- **A bot off the navmesh** (knocked onto a narrow ledge or a cliff face, spawned badly) walks to the nearest polygon
+  first, level or below, up to 60 m down (`NavWorld.wayOnto`).
+- **Detour's partial route**: a search that runs out of nodes on a very long way gives back the corridor as far as it
+  got; the bot walks it and asks again. With doors shut to it and no button to open them, as near the goal as it gets
+  this side of them (it waits there, keeping watch, for the door or a button to be ready).
+- **Goals of its own are only picked where a route gets**: roam goals and lane waypoints (`pickAdvanceGoal`,
+  `orderTarget`), pickups (one out of reach is dropped for 90 s and the next best taken), and the director's regions,
+  squad lanes and campers' and snipers' vantage spots, which come from the main area's places
+  (`NavWorld.mainPlaces`).
+- **No route requests in the air** (out of the plane, under a canopy, a jump pad's flight): none can start there.
+  Eagle Spires' plane drop made 860 of its 1,507 failed searches in a minute.
+- **Buttons** (Primeval Park, a bot stood 218 s at the fence power): a button on cooldown isn't offered (pressed, it
+  does nothing; the fence power has 45 s between presses), a bot presses from anywhere within reach (2.2 m eye to
+  face, as players do; three bots at one button kept each other off the one spot in front of it), and a door still
+  shut 3 s after its button was pressed is left alone 30 s.
+
 ## Measuring
 
 `pnpm bot-report` (`packages/server/src/tools/bot-report.ts`) plays headless matches of Player Bots (added as the
@@ -540,6 +606,32 @@ takes, captures, returns and drops, and every flag run (when, how long, how it e
 recoveries, kills and tick cost. `--suite=ctf` plays every map that offers CTF, `--shard=k/n` splits a suite over
 processes, `--json=file` keeps the rows and `--compare=before.json,after.json` (several files joined with `+`)
 prints the two side by side, per map. `--spells` lists the longest idle spells, `--bots` every bot.
+
+### Scorecard (Phase A)
+
+`pnpm bot-report` is also the bots' scorecard. Per match it records, besides the above: route searches and the share
+that found no way (bot route requests, `BotBrain.pathSearches` / `pathFailures`, and every navmesh path query from
+any caller), with where they failed (from and toward: the nav pictures draw them); no-route idle; stand-ins; map
+coverage a minute and spread; spawn deaths (within 3 s of spawning); kills a minute; bot thinking a tick (the
+match's bot pipeline, wall clock); and per mode: CTF takes, captures and returns; King of the Hill time held (one
+team alone on the hill) and contested; Bomb plants and defuses; Hostage rescues; Elimination (and Bomb and Hostage)
+round times; Fort Wars pieces built.
+
+- `--suite=<mode>` plays the maps that list the mode (ctf, koth, bomb, hostage, elim, forts, tdm); `--suite=all`
+  every scorecard mode on its maps.
+- **Limits** live in `packages/server/src/tools/bot-limits.json`, like the perf budgets: per mode (`core.ctf`), for
+  all modes (`all`) and per map where it matters (`core.ctf/eagle_spires`). Each measure is a most (failed searches,
+  idle, frozen, stuck recoveries a bot-minute, spawn deaths, think ms) or a least (captures, takes, hill time,
+  coverage, going to the goal); `METRICS` in bot-report.ts says which. A worse number fails.
+- `pnpm bot-report --check` plays the file's `check` list (a few maps, one seed, short matches: about a minute and
+  a half on a CI runner) and holds it to `checkLimits`. CI runs it (the `bots` job) when a change touches the bots,
+  navigation, the sim or its modes, or the scorecard itself (`e2e/flowMap.mjs` `BOT_PATHS`; the plan's `bots`
+  output), and the release waits on it.
+- **Nightly** (and from Run workflow) CI plays the full suite (`--suite=all`, two seeds of three minutes, 14 shards)
+  and the `bots-scorecard` job holds it to `limits` (`--judge=a.json+b.json…`), with the report (every match's rows,
+  the scorecard) and every map's nav picture with its failed searches as the `bots-report` artifact.
+- The sim is deterministic by seed, so a run's numbers are the same every time on the same code; only bot thinking
+  and tick times vary with the machine.
 
 `pnpm bench` prints, per map, a behaviour line next to the CPU ones:
 

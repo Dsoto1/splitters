@@ -123,6 +123,8 @@ export interface MatchRow {
   pieces?: number;
   /** Failed route searches, where (at most FAIL_SPOTS a match, spread over it). */
   fails?: FailSpot[];
+  /** Where stuck recoveries happened most: "x,y,z doing" (4 m cells) and how many. */
+  stuckAt?: [string, number][];
   bots: BotRow[];
 }
 
@@ -263,6 +265,8 @@ function play(map: MapDocument, mode: GameMode, seed: number, seconds: number): 
   const fails: FailSpot[] = [];
   let failsSeen = 0;
   const lastFails = new Map<number, number>();
+  const lastStuck = new Map<number, number>();
+  const stuckAt = new Map<string, number>();
   const behaviour = new Behaviour(match);
   const out: MatchRow = { map: map.metadata.id, mode, seed, seconds, players: total, takes: 0, captures: 0, returns: 0, drops: 0, firstTake: null, firstCapture: null, runs, kills: 0, objective: {}, tickMs: 0, tickP95: 0, bots: [] };
   const tickMs: number[] = [];
@@ -341,6 +345,13 @@ function play(map: MapDocument, mode: GameMode, seed: number, seconds: number): 
     for (const c of bots) {
       const r = rec.get(c.slot)!;
       const b = c.bot!;
+      // Stuck recoveries since the last sample: where (and what the bot was doing).
+      const stuckNow = b.stuckCount - (lastStuck.get(c.slot) ?? 0);
+      if (stuckNow > 0) {
+        lastStuck.set(c.slot, b.stuckCount);
+        const key = `${Math.round(c.move.pos.x / 4) * 4},${Math.round(c.move.pos.y)},${Math.round(c.move.pos.z / 4) * 4} ${b.doing}`;
+        stuckAt.set(key, (stuckAt.get(key) ?? 0) + stuckNow);
+      }
       // Failed searches since the last sample: where the last of them was (from, toward). Past FAIL_SPOTS, every third
       // one overwrites an older one in turn (deterministic), so late ones show too.
       const failed = b.pathFailures - (lastFails.get(c.slot) ?? 0);
@@ -437,6 +448,8 @@ function play(map: MapDocument, mode: GameMode, seed: number, seconds: number): 
   if (rounds.length || match.mode?.constructor.name.match(/Elim|Bomb|Hostage/)) out.rounds = rounds;
   if (forts) out.pieces = pieceIds.size;
   out.fails = fails;
+  // Where stuck recoveries happen most (4 m cells, with what the bots were doing): the top 12.
+  out.stuckAt = [...stuckAt].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])).slice(0, 12);
   match.destroy();
   return out;
 }
@@ -489,6 +502,7 @@ function printMatch(m: MatchRow): void {
   console.log(`idle spells: ${spells.length} of 3 s+, ${long.length} of 10 s+ (${[...byWhy].sort((a, b) => b[1] - a[1]).map(([k, v]) => `${k} ${v}`).join(', ') || 'none'}), longest ${Math.max(0, ...spells.map((s) => s.seconds)).toFixed(0)} s`);
   if (showSpells) {
     for (const s of spells.sort((a, b) => b.seconds - a.seconds).slice(0, 20)) console.log(`  ${s.bot.name} (${s.bot.look}, ${s.bot.role}) ${s.seconds.toFixed(0)} s from ${s.start} s: ${s.reason} at (${s.at.join(', ')})`);
+    if (m.stuckAt?.length) console.log(`stuck recoveries, where (4 m cells) and doing what: ${m.stuckAt.map(([k, v]) => `${k} ${v}`).join(', ')}`);
   }
   if (showBots) {
     for (const r of m.bots) console.log(`  ${r.slot} ${r.name} ${r.look} ${r.team} ${r.role}: alive ${r.alive.toFixed(0)} s, idle ${pct(r.idle, r.alive)} (calm ${pct(r.idleCalm, r.alive)}, frozen ${pct(r.frozen, r.alive)}), to goal ${pct(r.towardGoal, r.goalTime)}, at goal ${pct(r.atGoal, r.goalTime)}, takes ${r.takes} caps ${r.captures} returns ${r.returns}, kills ${r.kills} deaths ${r.deaths}, stuck ${r.stuck}, searches ${r.searches}, no-route ${r.pathFailures} | ${Object.entries(r.why).sort((a, b) => b[1] - a[1]).slice(0, 4).map(([k, v]) => `${k} ${v.toFixed(0)}s`).join(', ')}`);

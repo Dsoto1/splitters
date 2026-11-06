@@ -37,10 +37,11 @@ export function checkMaps(part: number): void {
       expect(map.metadata.id).toBe(id);
       expect(loaded.issues.filter((i) => i.severity === 'error')).toEqual([]);
 
-      // Geometry, physics and the navmesh as the match builds them, and the navigation audit (pnpm validate-map; an
-      // official map: no traps, nothing cut off, no spawn point inside something solid, unless known: auditKnown.ts).
+      // Geometry, physics and the navmesh as the match builds them (drop links in), and the navigation audit, as
+      // pnpm validate-map does (an official map: no traps, nothing cut off, no spawn point inside something solid,
+      // unless known: auditKnown.ts).
       expect(buildMapGeometry(map).length + (map.terrain ? 1 : 0)).toBeGreaterThan(0);
-      const { issues: navIssues } = validateMapNavigation(map, true);
+      const navIssues = validateMapNavigation(map, true).issues;
       expect(navIssues.filter((i) => i.severity === 'error').map((i) => `${i.code}: ${i.message}`)).toEqual([]);
       // Every spawn point is on walkable ground.
       expect(navIssues.filter((i) => i.code === 'nav.spawn_off_mesh').map((i) => i.message)).toEqual([]);
