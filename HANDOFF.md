@@ -872,7 +872,16 @@ with `pnpm bench:96:clump` before and after; bot thinking at 96 bots stays withi
 
 ### Owner-approved order after the current agents (2026-11-05 late; owner set effort to max: "hoping for some great work")
 0. **Bot AI Phase A** (above) as soon as `wip/bots-idle` lands; **Phase B** before item 3 (MAP 21).
-1. **Set pieces:** plan in docs/SET_PIECES_PLAN.md. Part 1 (data, expansion, first content) on `wip/setpieces` (section above); part 2 (MapMaker) starts from it.
+1. **Set pieces:** plan in docs/SET_PIECES_PLAN.md. Part 1 (data, expansion, carriageway, skybridge) on
+   `wip/setpieces` (its section near the top: what landed, the API, notes for parts 2 and 3). Then, by owner decision (2026-11-06, "go with your suggestion for part 3"):
+   - **Part 2**, after part 1: the MapMaker UI on `wip/setpieces-2` (tab, ghost, Explode, Save selection, library),
+     the St. John's placements and retirements.
+   - **Part 3**, in the hands-round-5 slot, alongside part 2: the showpiece pieces on `wip/setpieces-3`.
+     - MAP 21: casemate, trench run, cliff stair (sea wall and command bunker if time).
+     - Colosseum: arena arcade bay, vomitorium, tunnel junction, cage block, insula (stair tower if time).
+     - It decides how the colosseum's 4 m board squares work, since every map and tile is on 8 m cells today.
+     - The brief is in the session scratchpad, `briefs/setpieces-3.md`.
+   - Then MAP 21 and the colosseum, after parts 2 and 3 and Bot AI Phase B.
 2. **Hands round 5,** in parallel; small. Give it to the pistol-hold agent as a follow-on once its pistol work lands.
    It covers:
    - re-tuning the support hands the palm fix changed (Pharaoh, Gorgle, Vanguard, Croakley, Big Bab, Desert Ranger,
