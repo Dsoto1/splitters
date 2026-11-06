@@ -113,8 +113,8 @@ local library, St. John's placements, e2e in editorux) starts from this branch a
 **Open questions for the owner**
 - Collegiate Gothic: St. John's own stones (Grey Stone Blocks #d9d5cb walls, Dressed Stone #d8d3c6 trim) and a new
   Collegiate stone facade, rather than Gothic Estate's dark Mossy Castle Stone: right for the campus?
-- The vault is shallow (0.39 m rise under a 4 m level's floor): ribs make it read; a taller passage would need the
-  piece to span two levels. Keep it?
+- The vault is shallow (a 0.27 m rise, from over the door heads to under a 4 m level's floor): its ribs make it read;
+  a taller passage would need the piece to span two levels. Keep it?
 - Skybridges wear their pack's facade (Collegiate: battlements and pinnacles along the bridge). Plainer bridges (no
   facade) are an override away (`overrides.roles.facade: "none"`); which should be the default?
 <!-- /setpieces -->
