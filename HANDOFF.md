@@ -761,24 +761,37 @@ fastest moving at about 60 m/s, on both attempts.
 Each brief has its reference image beside it. The owner approves the concept before any placement work; follow
 AGENT_BUILD_CONTRACT.md.
 
-### Performance round 3: IN PROGRESS on `wip/perf-3` (agent, 2026-11-06; resume notes first, the brief below)
-**Done (pushed to `wip/perf-3`):** the far-enemies fix above; prop batches, still decorations merged, fog reads the
-pre-pass depth, blood as thin instances, guns and characters warmed in view while the loading screen is up, ragdoll
-tiers by screen size, staggered starts and faster rest, minimap from a bitmap window (the previous agent, bf4fbdb6);
-shadow cascades centred on the camera (turning no longer redraws them) with the safety refresh every 240 frames
-(6087d2cd); a blast's push now goes with every body it killed however late its body starts (diedAt, and a few frames'
-grace on a slow page), with a physicsfx check that every body in view is thrown out and up (screenshots before and
-after); crowd held guns and pickup models as merged instances (one mesh per gun, not one per part) and crowd team
-markers as thin instances (4c6cc566, WIP: being measured).
-**Measured so far** (SwiftShader, Shingle Point at the owner's hitch spot, 44 characters in view): round 2 build 1,034
-draws and 1,308 active meshes a frame; round 3 540 and 612 (props 631 -> 123 meshes, the fog's own depth pass of ~300
-draws gone, ladders 86 -> merged). Shadow cache walking and turning: 12 of 270 layer renders redrew their static
-casters, half of them because a vehicle moved.
-**Next:** rebuild, re-measure (census: held guns were 145 of the meshes, markers 44), shader tour after the warm-up
-(scratchpad `p3a/tour.js`), Market Town before/after, blast before/after (`p3a/blast2.mjs` on the round 2 build in
-scratchpad `r3w/dist-before` and the new one), PERF_96.md section, CHANGELOG, checks, `check/perf-3` CI.
-**How to resume:** check out `wip/perf-3`, merge origin/main, `pnpm build`; probes in the session scratchpad `p3a/`
-(`probe.mjs <dist> <label>` with `PROBE_EVAL=<script>`; `census.js`, `tour.js`, `shadowab.js`, `minimapab.js`).
+### Performance round 3: DONE on `wip/perf-3` (agent, 2026-11-06; code green on `check/perf-3` at 7f2d17ba, run 42179017177; docs/PERF_96.md, "Performance round 3")
+Ready to land (with the far-enemies fix above in it). Not on main: fast-forward main to the green check commit.
+**What it is:** prop batches (models with 8+ copies on the map: `PROP_BATCH_MIN`), still decorations merged, the fog
+reading the ambient occlusion's pre-pass depth, blood as thin instances, guns (also as your own first-person copy),
+characters, a tracer, a parachute and a glider warmed while the loading screen is up (out of sight when the warm-up
+runs past the gate), water's splash drops warmed,
+ragdoll tiers by screen size with staggered starts and a faster rest, the minimap from a bitmap window, shadow
+cascades centred on the camera (safety refresh every 240 frames), a blast's push kept for every body it killed however
+late its body starts, a crowd's held guns and the pickups' models one instance each of the model merged into one
+multi-material mesh (`ModelLibrary.instantiateWhole`), crowd team markers as thin instances.
+**Measured** (SwiftShader counts per frame at the owner's hitch spot, 44-45 characters in view; scratchpad `p3a/`):
+Shingle Point draws 1,034 -> 489, active meshes 1,308 -> 468, render-target draws 535 -> 142; Market Town meshes
+513 -> 297, draws 444 -> 435. Shadow cache turning a full circle: 30 of 72 layer renders redrew -> 3. Mass blast on
+Market Town (31 killed): round 2 23 of 30 bodies dropped where they stood on this slow box, round 3 all 31 thrown up.
+Shader tours after the warm-up (seven, fixing as they went: water's splash drops, your own first-person guns, the
+first tracer and a canopy's rigging lines were built mid-match): the last built none.
+**Projected on the M1 Pro:** Shingle Point ~15 ms average (22.2 recorded), ~17 in its busiest second (26.5); Market
+Town ~19 (20.9).
+**For the owner to re-record on the M1 Pro:** Shingle Point and Market Town as last time (TDM, 49 players, high, auto,
+60 fps cap, the beach at (-39, -76) on Shingle Point, a rocket into a crowd on Market Town, a 10 s trace each). Expect
+Shingle Point main views at 350-470 draws and 300-410 meshes, renderShadow ~1.5-2 ms, renderCull ~1.5, HUD ~0.2,
+`shadersNew` 0 after the start; Market Town ~300 meshes and every body of a mass death thrown.
+**Not tested:** anything on a real GPU (all numbers are SwiftShader counts and projections); the fog's look over the
+pre-pass depth on the M1 (CI's visual baselines pass); the cascades' squares are ~12 % bigger (shadows that much
+coarser), not looked at on the M1; a phone (lower graphics: no pre-pass, and the cascades' change is high graphics
+only; the rest applies; not run on one); WebGPU (no pre-pass and no shadow cache there, as before).
+**Next:** single-material held weapons (content: they are 3-5 materials each, a draw per material per weapon model);
+pickups as thin instances (35-55 meshes); breakable props batched while intact (~40 on Shingle Point).
+**How to resume:** branch `wip/perf-3`; probes in the session scratchpad `p3a/` (`probe.mjs <dist> <label>` with
+`PROBE_EVAL=<script>`: `census.js`, `tour.js` (with `PROBE_WAIT_PREWARM=1`), `shadowquick.js`, `minimapab.js`,
+`combo.js`; `blast2.mjs <dist> <label>` for the mass blast).
 
 #### The brief (owner's Shingle Point M1 recording, 2026-11-05; files in session scratchpad perf3/)
 **The recording:** build 76a4b03, M1 Pro, high, 49 players.
