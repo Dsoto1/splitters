@@ -117,7 +117,7 @@
       "name": "Wash Basin",
       "category": "Household",
       "collide": "voxel",
-      "height": 0.85
+      "height": 0.95
     },
     {
       "id": "hh_toilet",

@@ -303,7 +303,7 @@
     {"file":"props/hedgehog_beach.glb","source":"tiletrigger-kit","src":"hedgehog_beach.glb","triangles":276,"surfaces":["metal"],"bytes":17836,"sha256":"6f6f08d1ec4dbeab"},
     {"file":"props/hesco_wall.glb","source":"tiletrigger-kit","src":"hesco_wall.glb","triangles":240,"bytes":14484,"sha256":"0a946b1be07bccb5"},
     {"file":"props/hh_armchair.glb","source":"lowpolyassets-household-items","src":"Sofas/Sofa C.fbx","triangles":800,"bytes":30660,"sha256":"7a086ade9a741c9d","size":[1.115,0.543,0.815]},
-    {"file":"props/hh_basin.glb","source":"lowpolyassets-household-items","src":"Bathroom/Sink.fbx","triangles":1248,"bytes":48668,"sha256":"9ddcb5a2e78c936e","size":[0.498,0.85,0.325]},
+    {"file":"props/hh_basin.glb","source":"lowpolyassets-household-items","src":"Bathroom/Sink.fbx","triangles":1248,"bytes":48672,"sha256":"5ad887ec642c9055","size":[0.556,0.95,0.363]},
     {"file":"props/hh_bath.glb","source":"lowpolyassets-household-items","src":"Bathroom/Bath.fbx","triangles":1200,"bytes":46928,"sha256":"c1cba53b11ea0795","size":[1.412,0.78,0.781]},
     {"file":"props/hh_bed_double.glb","source":"lowpolyassets-household-items","src":"Beds/Bed Double.fbx","triangles":1134,"bytes":46832,"sha256":"0632a7d080df52e8","size":[1.719,0.714,2.22]},
     {"file":"props/hh_bed_single.glb","source":"lowpolyassets-household-items","src":"Beds/Bed Single.fbx","triangles":946,"bytes":39712,"sha256":"149e114509318754","size":[0.992,0.714,2.22]},
