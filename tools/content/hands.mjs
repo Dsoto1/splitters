@@ -20,6 +20,9 @@
 // A hand whose download brought its own finger chains and weights (`fixes.fingers: own`, `keep` below) is measured
 // only: its joints and weights stay the download's.
 // Manifest overrides (`fixes.hands`: palm, curl, scale, wrist, or per side under l / r) cover the odd model.
+// `together` (0-1) is written on the hand for the game: as the hand closes its fingers come in toward the middle
+// finger by that share of their spread (a download's own fingers can be fanned wide: Frost Viking's 23 degrees from
+// index to little finger closed into a claw round the grip).
 // A look's own finger weighting (`fixes.skin`, skinfix.mjs: tips, knuckle, joints, lanes, fingers) changes how the
 // fingers are weighted, for that look only; without it every hand is weighted as before.
 
@@ -369,7 +372,7 @@ export function fitHands({ meshes, jointNames, world, rig, overrides = {}, skin 
     if (keep.includes(s)) {
       // The download's own fingers (`fixes.fingers: own`): its finger joints and weights stay as they came; only the
       // measurements (palm, frame, size, curl) are taken for the game.
-      data[s] = { palm: hand.palm.map(round), dir: along.map(round), across: across.map(round), palmSide: palmSide.map(round), length: round(u1), width: round(width), thickness: round(thickness), curl, fingers: 'own' };
+      data[s] = { palm: hand.palm.map(round), dir: along.map(round), across: across.map(round), palmSide: palmSide.map(round), length: round(u1), width: round(width), thickness: round(thickness), curl, fingers: 'own', ...(o.together ? { together: o.together } : {}) };
       log(`hand_${s}: ${pts.length} vertices, ${(span * 100).toFixed(1)} cm long, ${(width * 100).toFixed(1)} wide, ${(thickness * 100).toFixed(1)} thick${hand.turned ? ', turned on its joint' : ''}: own fingers (the download's joints and weights), curl ${curl}`);
       continue;
     }
@@ -488,6 +491,7 @@ export function fitHands({ meshes, jointNames, world, rig, overrides = {}, skin 
       thickness: round(thickness),
       curl,
       fingers: mode,
+      ...(o.together ? { together: o.together } : {}),
     };
     log(`hand_${s}: ${pts.length} vertices${loose ? ' (some taken from the forearm)' : ''}, ${(span * 100).toFixed(1)} cm long, ${(width * 100).toFixed(1)} wide, ${(thickness * 100).toFixed(1)} thick${hand.turned ? ', turned on its joint' : ''}${hand.cuff !== undefined ? ', a cuff at the wrist left out' : ''}: ${mode}${mode === 'none' ? ' (already closed)' : `, curl ${curl}, ${weighted} vertices on the fingers`}`);
   }
