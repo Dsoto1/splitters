@@ -426,6 +426,131 @@ up. The new Gnoll (Hyena Warrior) in the intake-2 sheets shows it.
 - **Owner's decisions:** keep the Hyena (Gnoll) and Snikkit (Goblin Mischief) and fix their hands with this;
   Bill is retired. Do the pistol-hold tweak after this.
 
+### Container restart, 2026-11-06 00:30 UTC: three agents stopped (work saved)
+All three in-flight agents stopped. Their work is pushed:
+- `wip/perf-3` bf4fbdb6: prop batches, still decorations merged, blood instancing, warm-up of guns and characters,
+  ragdoll tiers by screen size and staggered starts, minimap from a bitmap. Not yet measured; no CI.
+- `wip/shingle` d70bbfd1: beach kit pieces and Replace all improvements. The map swap is part-way; its temporary
+  helpers are saved in the scratchpad `shingle-saved/`.
+- `wip/pistol` 57dda85f: WIP first-person pistol hold (finger close limited by wrap, hand placed by the middle of its
+  width, support hands turned).
+
+Resume each from its branch, after merging main.
+
+### Queued FIRST (owner bug report, 2026-11-06): far enemies render as feet only
+**Owner:** "I see enemy in distance not fully there, only feet." Screenshot: session scratchpad
+`perf3/far-enemy-feet-only.jpg`.
+
+**Suspects:**
+- The character LOD: `<name>_lod` meshes added via `addLODLevel(18 m)` in client content/characters.ts. Past 18 m
+  only parts without a low copy (feet or boots) show.
+- Round 1 body reuse leaving the `_lod` meshes disabled, dormant or detached.
+- Round 2's `selectLiveCandidates` and frozen materials or bounding info.
+- AnimGate skipping `skeleton.prepare`, so the LOD skin collapses.
+
+**Likely a regression** from performance rounds 1–2. Fix it with an e2e check that a character past LOD distance
+draws its whole body.
+
+### Queued FIRST (owner bug report, 2026-11-06): bullets stop in the air inside arches, windows and holes
+The owner's screenshots, in the session scratchpad `openings/` (30.jpg, 31.jpg, 32.jpg), show bullet holes in empty
+air inside openings:
+- a big stone round arch;
+- a ruined wall's window;
+- possibly a giant root arch on a dusky forest map.
+
+The first two are likely Fogbound or another map using the Quaternius ruins.
+
+**Cause (found):** `collide: "shell"` (tools/content/prepare-props.mjs `shellBoxes`) is a 2.5D heightfield.
+- The model is rasterised onto a top-down 0.4 m grid, and each covered cell becomes a column from y = 0 up to the
+  highest geometry above it.
+- Anything with an overhang gets filled solid: arches, windows, holes, lintels, bridges, root arches.
+- That blocks bullets, and players too.
+- **Affected:**
+  - `rn_arch_round`, `rn_arch_gothic`, `rn_wall_hole`, `rn_wall_broken`, `rn_wall_arch_ivy`, `rn_window_bars`,
+    `dg_arch` and the other "shell" props with openings (56 props use shell);
+  - "box" props with openings, e.g. `sf_wall_window`, `hp_wall_window`, the `lf_*` gates and fences, and
+    `os_bulkhead_window`.
+
+**Fix:**
+- Add a true 3D voxel collision mode:
+  - rasterise triangles into a 3D grid, about 0.2–0.3 m;
+  - fill solid only between a column's surfaces, inside closed volumes;
+  - merge greedily into few boxes.
+
+  Then openings stay open for both shots and movement.
+- Use it for every prop with a pass-through opening, found by an audit comparing the 3D voxel volume against today's
+  collision, and flag any opening at least 0.5 m across.
+- Movement and shots share these colliders (the physics world). Check bot nav through the newly open arches, check
+  cover, and keep collider counts within the perf budgets: keep the box count lean and use compound shapes.
+- Investigate the third screenshot separately: puffs in mid-air near distant trees could be env tree limbs that block
+  shots, or legitimate ground hits.
+
+### Queued FIRST (owner bug report, 2026-11-05 late): CTF bots don't go for the flag
+**Owner:** "CTF: no bots are actually going for the flag, most just hang out and do little. We should only have
+like 2–3 bots protect a flag, and the rest go out there and try to get the other team's."
+
+**Code today:** `sim/modes/ctfBots.ts`.
+- **Standing roles, by team order:** attack, defend, attack, escort. That gives about ¼ defenders; escorts also go
+  for the enemy flag.
+- **Situational overrides:** carrier, dropped flag, carried flag.
+- **Goal handling:** `Match.botGoal` hands the goal to the brain as `orderGoal`, but "the brain only follows the goal
+  while roaming". The bot director's squad plans (`director.planFor`), roaming, explore, posts and pickups compete
+  with it.
+- **Known:** on Sunken Kingdom, with flags 190 m apart, bots never captured.
+
+**Do:**
+- Measure first in headless CTF sims, over several seeds and maps (Sunken Kingdom, Iron Maw, the CTF suite):
+  - time each bot spends moving toward its CTF goal versus idling, holding or roaming;
+  - flag touches, pickups, captures and returns per match;
+  - path failures.
+- Find why attackers "hang out". Suspects:
+  - the director or squad plans overriding the CTF goal;
+  - hold, post or explore states;
+  - noPath back-off on long routes;
+  - the goal radius;
+  - defenders and escorts clumping.
+- **Owner's role split:** 2–3 defenders per team (2 for small teams, 3 for 12+), all others attack, a carrier gets
+  escorts, and anyone near their own flag in trouble responds.
+- Bots must actually run the flag: pick it up, carry it home, capture.
+- Prove it with captures per match before and after; the target is regular captures on every CTF map.
+- **Owner's repro (2026-11-06): Diamond Park CTF.** Most of the team hung out in the tunnel/dugout area.
+  - Flags are at (24, 0, -32) "away" and (-32, 0, 24) "home".
+  - The map has sunken dugouts, player tunnels to the clubhouses, a lower bowl, an upper deck and a concourse.
+  - Start the investigation here: are bots stuck on navigation in the tunnels and dugouts, held by posts or cover,
+    or failing their path to the flag?
+- **Widened (owner, 2026-11-06): "why would some bots not be moving at all?"** This goes beyond CTF.
+  - Screenshot: session scratchpad `openings/idle-bots-fernwood.jpg`, taken in free camera on Fernwood Moon. Two
+    bots stand still: Bamboo by the Garrison shield bunker, and a bot at the corner of the landing pad (a raised
+    slab).
+  - Measure idle time per bot in every mode, with the reason for each idle spell:
+    - hold, post or cover;
+    - stuck on geometry such as a raised slab edge;
+    - noPath back-off;
+    - waiting on a lift, rope lift or ladder;
+    - squad wait;
+    - out of view and coasting.
+  - Fix each cause. A bot should only stand still when it's deliberately holding a spot, and then it should look
+    alive: scanning, shifting, peeking.
+  - Also confirm it isn't a free-camera rendering effect. Animation LOD and dormant/culled state use
+    `scene.activeCamera`, so free cam should be fine, but check that bots near the free camera animate and move.
+
+
+
+### Owner-approved order after the current agents (2026-11-05 late; owner set effort to max: "hoping for some great work")
+1. **Set pieces:** plan in docs/SET_PIECES_PLAN.md. Next free slot.
+2. **Hands round 5,** in parallel; small. Give it to the pistol-hold agent as a follow-on once its pistol work lands.
+   It covers:
+   - re-tuning the support hands the palm fix changed (Pharaoh, Gorgle, Vanguard, Croakley, Big Bab, Desert Ranger,
+     Stealth Op, Tactical Soldier, Masked Figure, Anoobys, Greyfang, Kenji, Seetah, WWII Infantry, Goblin Warlord);
+   - Frost Viking and Bamboo holds;
+   - the Knight's gauntlet;
+   - the Spin Gun and Spear audit.
+3. **MAP 21 (Omaha beach assault) and the Sandfall Colosseum rebuild:** the showpiece maps, built with set pieces.
+4. **Environment Phase 2:** more species; the border forest moves to our trees.
+5. **Core / experimental tiers** with quality gates, in the Control Center Workbench.
+
+The MapMaker overhaul and community maps follow, once the owner marks the MapMaker list.
+
 ### Agent queue order (2026-11-05)
 1. Small environment follow-ups (below).
 2. Shingle Point asset refresh (owner: "start when it is a good time"). It doesn't need set pieces.
