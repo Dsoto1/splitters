@@ -4121,6 +4121,7 @@ async function wholeBodies(page, frames) {
         return { lo, hi, bad };
       };
       const checked = new Set();
+      const seen = new Set();
       const failed = new Map();
       await new Promise((resolve) => {
         let n = 0;
@@ -4129,6 +4130,7 @@ async function wholeBodies(page, frames) {
           for (const [slot, a] of v.avatars) {
             const ch = a.anim?.ch;
             if (!ch || a.hiddenSelf || a.culled || a.ragdoll || !a.wasAlive || !a.root.isEnabled()) continue;
+            seen.add(slot);
             const parts = ch.meshes.filter((m) => !m.isDisposed() && !m.isBlocked && m.getTotalVertices() > 0 && m.isEnabled() && m.isVisible);
             const lods = parts.flatMap((m) => m.getLODLevels?.() ?? []);
             const dist = Math.hypot(a.root.position.x - eye.x, a.root.position.z - eye.z);
@@ -4165,7 +4167,7 @@ async function wholeBodies(page, frames) {
       proto.render = render0;
       sc.onBeforeDrawPhaseObservable.remove(o1);
       sc.onAfterDrawPhaseObservable.remove(o2);
-      return { checked: checked.size, failed: [...failed.values()] };
+      return { checked: checked.size, seen: seen.size, failed: [...failed.values()] };
     },
     [frames, 1.8],
   );
@@ -4274,10 +4276,11 @@ async function farBodies(browser) {
   await page.waitForFunction((slots) => slots.every((s) => window.__cs.view.avatars.get(s)?.culled !== false), setup.slots, { timeout: T(30000) }).catch(() => {});
   const slept = await page.evaluate((slots) => slots.filter((s) => window.__cs.view.avatars.get(s)?.anim?.dormant).length, setup.slots);
   await page.evaluate((yaw) => (window.__cs.input.yaw = yaw), setup.yaw);
-  await page.waitForFunction((slots) => slots.filter((s) => window.__cs.view.avatars.get(s)?.culled === false).length >= 8, setup.slots, { timeout: T(30000) }).catch(() => {});
+  await page.waitForFunction((slots) => slots.filter((s) => window.__cs.view.avatars.get(s)?.culled === false).length >= 8, setup.slots, { timeout: T(60000) }).catch(() => {});
+  const back = await page.evaluate((slots) => slots.filter((s) => window.__cs.view.avatars.get(s)?.culled === false).length, setup.slots);
   const r = await wholeBodies(page, 12);
   const broken = r.failed.map((f) => `${f.look} at ${f.dist} m, frame ${f.frame}: ${f.height} of ${f.want} m drawn${f.nonNumbers ? `, ${f.nonNumbers} vertices not numbers` : ''}${f.off.length ? `, ${f.off.join(', ')}` : ''}`);
-  check(slept >= 8 && r.checked >= 6 && r.failed.length === 0, `far characters draw their whole bodies after a fight, asleep out of view and awake again (${r.checked} checked past the low-detail switch, ${slept} slept; broken: ${broken.join('; ') || 'none'})`);
+  check(slept >= 8 && back >= 8 && r.checked >= 6 && r.failed.length === 0, `far characters draw their whole bodies after a fight, asleep out of view and awake again (${slept} slept, ${back} back in view, ${r.checked} checked past the low-detail switch of ${r.seen} seen; broken: ${broken.join('; ') || 'none'})`);
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await page.context().close();
 }

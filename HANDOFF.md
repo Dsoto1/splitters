@@ -437,19 +437,25 @@ All three in-flight agents stopped. Their work is pushed:
 
 Resume each from its branch, after merging main.
 
-### Queued FIRST (owner bug report, 2026-11-06): far enemies render as feet only
-**Owner:** "I see enemy in distance not fully there, only feet." Screenshot: session scratchpad
-`perf3/far-enemy-feet-only.jpg`.
-
-**Suspects:**
-- The character LOD: `<name>_lod` meshes added via `addLODLevel(18 m)` in client content/characters.ts. Past 18 m
-  only parts without a low copy (feet or boots) show.
-- Round 1 body reuse leaving the `_lod` meshes disabled, dormant or detached.
-- Round 2's `selectLiveCandidates` and frozen materials or bounding info.
-- AnimGate skipping `skeleton.prepare`, so the LOD skin collapses.
-
-**Likely a regression** from performance rounds 1–2. Fix it with an e2e check that a character past LOD distance
-draws its whole body.
+### Far enemies as feet only: FIXED on `wip/perf-3` (agent, 2026-11-06; commit b1a32722, CI pending on `check/perf-3`)
+**Cause** (reproduced in a real match, production build): Babylon's weighted clip blend (`ProcessLateAnimationBindings
+ForQuaternions`) blends a joint's clips pairwise in the scene's animatable order, its first step a slerp by
+w2 / (w1 + w2). A clip at weight 0 is left out from its second frame at 0 ("actively paused"), but on its first frame it
+still joins. Round 1 kept a fight's shot and hit clips started, paused at weight 0 between plays; `setDormant(false)`
+(a crowd's character coming back into view, and a reused body standing again) restarted every paused group, those
+included. After a stop-and-go (running clips restart later in the order) the two fresh zeros came first: 0 / 0, a NaN
+rotation on every UPPER_BODY joint, so the upper body's vertices weren't drawn (legs and hips only: 0.6-0.9 m of a
+1.8 m body). Far characters (animated every 3rd-5th frame) kept the pose, and `aimShoulders` measured on such a frame
+kept a running body's upper half gone until it next stood still. Not the LOD meshes, body reuse's meshes, meshsel,
+frozen materials or the gate (checked: every look's `_lod` covers the body; 67 Meshy looks have a separate `_lod` skin
+with the same joints, which is fine).
+**Fix** (characterAnimator.ts): waking restarts only what sleep paused (`slept`); `patchAnimatables` leaves a
+weight-0, non-additive runtime animation out of the late-binding blend (Babylon's own intent); `aimShoulders` and the
+coarse arm pose keep only finite values. **Tests**: `client/test/animBlend.test.ts` (fails without the patch);
+e2e `characters3` → `farBodies` (27-player canyon match, ten bots running circles 16-34 m out, a shot and a hit each,
+stop-and-go, turn away and back; `wholeBodies` checks each part's LOD is the mesh drawn and the drawn, GPU-skinned
+body is finite and ≥ 75 % of 1.8 m × size). On the old build it failed (8 of 11 broken, 473-1,249 NaN vertices each);
+with the fix it passes. Owner to confirm on the M1 (any map, 49 players, turn around in a fight).
 
 ### Queued FIRST (owner bug report, 2026-11-06): bullets stop in the air inside arches, windows and holes
 The owner's screenshots, in the session scratchpad `openings/` (30.jpg, 31.jpg, 32.jpg), show bullet holes in empty
