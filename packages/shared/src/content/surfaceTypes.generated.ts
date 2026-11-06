@@ -94,6 +94,7 @@ export const PROP_SURFACES: Readonly<Record<string, SurfaceTypeId>> = {
   'prop.rock_flat': 'rock',
   'prop.stump': 'bark',
   'prop.rock_mossy_spire': 'rock',
+  'prop.lcvp_beached': 'metal',
   'prop.mn_oak': 'bark',
   'prop.mn_birch': 'bark',
   'prop.mn_fir': 'bark',

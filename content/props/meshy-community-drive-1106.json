@@ -21,6 +21,7 @@
       "yaw": 90,
       "height": 2.2,
       "collide": "voxel",
+      "surface": "metal",
       "triangles": 16000,
       "maxError": 0.02,
       "dropHidden": true,
