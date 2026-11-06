@@ -862,7 +862,8 @@ export class BotBrain {
   private orderTarget(view: BotWorldView, g: OrderGoal): Vec3 {
     const me = view.self.pos;
     let lane = this.lane;
-    if (!g.push || g.detour === 0) return g.pos;
+    // (Only for a spot to get to, a flag: not for following someone, nor for a carrier running home the short way.)
+    if (!g.push || g.detour === 0 || g.radius >= 1) return g.pos;
     if (!lane || horizontalDistance(lane.goal, g.pos) > 8) {
       const far = horizontalDistance(me, g.pos) > LANE_FROM;
       const r = this.routeRng();
