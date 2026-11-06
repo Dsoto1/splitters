@@ -506,11 +506,23 @@ scratchpad `bots-idle/` (`before-ctf-*.json`, `after-ctf-*.json`; the baseline c
   (`NavWorld.partAt/escapes`, `planEscape`); routes round doors shut to the bot (`markOpenings`, `findPath(…, shut)`);
   press plans dropped once the door opens; vehicles out of reach left alone; keeping watch on station
   (`keepWatch`), posts shift and peek, lift waits look about. Iron Compound's gate (Logic panel) and Fernwood's
-  reactor core (+0.5 m, inspector) fixed in MapMaker. `logic.undoes` warning (validate-map, MapMaker).
-- Tests: `botCtf.test.ts` (roles, captures, dugout, bunker, keeping watch), `scenario.test.ts` (logic.undoes).
+  reactor core (+0.5 m, inspector) fixed in MapMaker (driver scripts: scratchpad `bots-idle/tools/maker-*.mjs`,
+  `finalize.mjs`). `logic.undoes` warning (validate-map, MapMaker; also flags Glacier Line's alert console, left).
+- Later fixes: lane waypoints and keep-watch places only on the goal's navmesh part (unreachable samples stranded
+  bots on Capitol Mall, Bunker Cross); escapes up to 8 m (Capitol Mall's reflecting pool); unreachable goals (a flag
+  in Cinder Foundry's pit) gone to as near as a route gets (`NavWorld.reachToward`); sidestep after stuck loops
+  (Fernwood's parked dropship); boarding within 0.95 × enter radius; no-route back-off only near where it failed;
+  bots on a ladder with no route finish the climb (Fernwood's vines: 230 s); lift patience 6 s, then a way off lifts
+  (`LIFT_FLAG`; Fernwood's north lift queues of 20–90 s).
+- Measured so far: Fernwood TDM idle out of a fight 15.9/28.8 % → 6.1/5.9 %, frozen 5.2/15.8 % → 0.3/0.4 %; CTF
+  (first 20 maps of a stale run) captures 9 → 60. Fort Meadow CTF: no takes before or after (a midfield brawl,
+  65 % of the time fighting: Phase B's group pushes).
+- Tests: `botCtf.test.ts` (roles, captures, dugout, pool, bunker, keeping watch), `scenario.test.ts` (logic.undoes).
 
-**Next:** after-suite numbers into docs/BOTS.md, CHANGELOG, docs/BOT_AI_PLAN.md "First measurements"; TDM Fernwood
-before/after (and other modes for regressions); `pnpm bench:96:clump` before/after; checks; `check/bots-idle` CI.
+**Next:** the final after-suite (restarted 02:52 with the final code, `after-ctf-*.json`) into docs/BOTS.md,
+CHANGELOG, docs/BOT_AI_PLAN.md "First measurements"; KOTH/Bomb regression (`before-/after-koth|bomb.json`);
+`pnpm bench:96:clump` before/after; checks (typecheck, test:changed, build, e2e ctf/offline/maps on fernwood_moon,
+iron_compound); `check/bots-idle` CI.
 
 ### Queued FIRST (owner bug report, 2026-11-05 late): CTF bots don't go for the flag
 **Owner:** "CTF: no bots are actually going for the flag, most just hang out and do little. We should only have
