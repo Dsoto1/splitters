@@ -99,6 +99,24 @@ describe('static prop batches', () => {
     expect(full[0]!.thinInstanceCount).toBe(2);
   });
 
+  it('keeps the lifts the map applies after placing (a box flush on a crate, a hung chandelier) in the copy drawn', async () => {
+    const s = scene();
+    const src = sources(s, 'box');
+    // The model is already loaded (the library's promise settled): the copy still joins only after the caller's loop.
+    const batches = new PropBatches(s, () => Promise.resolve(src), 15);
+    const root = placed(s, 'onCrate', 4, 6);
+    const joined = batches.add('box', root, false, null);
+    // GameView.buildMap lifts flush and hung props right after createPropNode, in the same loop.
+    root.position.addInPlaceFromFloats(0.002, 0.004, -0.001);
+    root.position.y += 0.5;
+    expect(await joined).toBe(true);
+    batches.update(new Vector3(0, 2, 0));
+    const at = Vector3.TransformCoordinates(Vector3.Zero(), batchMeshes(s)[0]!.thinInstanceGetWorldMatrices()[0]!);
+    expect(at.x).toBeCloseTo(4.002, 5);
+    expect(at.y).toBeCloseTo(0.504, 5);
+    expect(at.z).toBeCloseTo(5.999, 5);
+  });
+
   it('small clutter casts only near the camera, through a shadow-only batch', async () => {
     const s = scene();
     const src = sources(s, 'grass');
