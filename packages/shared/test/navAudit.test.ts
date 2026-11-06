@@ -1,7 +1,7 @@
 // The navigation audit (nav/audit.ts), ledge-drop links, polygons inside solid boxes, stand-ins and the way onto the
 // navmesh (docs/BOTS.md, "Navigation audit").
 import { beforeAll, describe, expect, it } from 'vitest';
-import { buildMapGeometry, initPhysics, type MapDocument } from '../src/index.ts';
+import { applyBrush, buildMapGeometry, initPhysics, newTerrain, terrainHeightAt, type MapDocument } from '../src/index.ts';
 import { NavWorld, auditNavigation, dropOptions, initNavigation, mapNavigation, validateMapNavigation } from '../src/match.ts';
 import { makeMap } from './helpers.ts';
 
@@ -30,6 +30,23 @@ describe('navigation audit', () => {
     expect(inside === null || Math.max(Math.abs(inside.point.x - 10), Math.abs(inside.point.z - 10)) >= 2.5).toBe(true);
     // Its top is still walkable (a roof of its own, nobody gets onto: an island, not a trap).
     expect(built.nav.nearestPoly({ x: 10, y: 2.6, z: 10 }, { x: 0.5, y: 0.5, z: 0.5 })).not.toBeNull();
+    built.physics.free();
+    built.nav.destroy();
+  });
+
+  it('keeps open hillside: a polygon is judged at its surface (the detail mesh), not its corners’ average height', () => {
+    // A 64 m terrain with a 6 m hill, its top levelled and a knoll on it: polygons over the rim whose corners average
+    // well under the ground at their middle (the first check left out most of Frost Basin's and Iron Maw's slopes as
+    // "inside" the ground; here two polygons).
+    let t = newTerrain(64, 2);
+    t = applyBrush(t, { brush: 'raise', x: 0, z: 0, radius: 18, strength: 6 });
+    t = applyBrush(t, { brush: 'flatten', x: 0, z: 0, radius: 10.8, strength: 1, target: 4.2 });
+    t = applyBrush(t, { brush: 'raise', x: 9, z: -5.4, radius: 7.2, strength: 2.4 });
+    const map: MapDocument = { ...makeMap([], [[-24, 0, -24]]), terrain: t };
+    const built = mapNavigation(map);
+    expect(built.nav.insideSolid).toBe(0);
+    // The hilltop routes from the spawn.
+    expect(built.nav.findPath({ x: -24, y: 0, z: -24 }, { x: 0, y: terrainHeightAt(t, 0, 0)!, z: 0 })).not.toBeNull();
     built.physics.free();
     built.nav.destroy();
   });

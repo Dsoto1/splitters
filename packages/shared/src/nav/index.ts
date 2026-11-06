@@ -215,20 +215,37 @@ export class NavWorld {
    * Recast rasterizes surfaces, not volumes: inside a closed box at least a body's height tall (a stack of 2 m rock
    * blocks, a thick wall) the floor reads as open ground, and the navmesh gets patches inside solid rock (Eagle
    * Spires' spires: one at every block, 2 m apart, 7,000 m² in all). Falls and goals snapped onto them, and the audit
-   * saw traps there. Each ground polygon with no room to stand at its middle (the level, or one of `solids`, in the
-   * way) gets flags 0, which every route search and nearest-polygon lookup leaves out. At build, before anything else
-   * reads the navmesh.
+   * saw traps there. Each ground polygon with no room to stand over its surface at its middle and at most of the
+   * points part way to its corners (the level, or one of `solids`, in the way) gets flags 0, which every route search
+   * and nearest-polygon lookup leaves out. The surface is the detail mesh's (Detour's height on the polygon), not its
+   * corners' average: on terrain that is often half a metre or more off (a hollow, a rise), and the check found
+   * thousands of square metres of open hillside "inside" the ground (Frost Basin 17,000 m², Iron Maw 14,000 m²).
+   * At build, before anything else reads the navmesh.
    */
   disableInsideSolid(physics: PhysicsWorld, solids: readonly WorldBox[] = []): number {
     const g = this.graph();
     const { centre } = polyShapes(g);
+    const half = { x: 0.2, y: 0.6, z: 0.2 };
+    // No room to stand at a point of polygon i (its surface there, then a body's height up from a step over it).
+    const blocked = (i: number, x: number, z: number): boolean => {
+      const h = this.query.getPolyHeight(g.base + i, { x, y: centre[i * 3 + 1]!, z });
+      const c = { x, y: (h.success ? h.height : centre[i * 3 + 1]!) + 1, z };
+      return !physics.boxClear(c, half) || solids.some((b) => !b.yaw && c.x + half.x > b.min[0] && c.x - half.x < b.max[0] && c.y + half.y > b.min[1] && c.y - half.y < b.max[1] && c.z + half.z > b.min[2] && c.z - half.z < b.max[2]);
+    };
     let n = 0;
     for (let i = 0; i < g.count; i++) {
       if (g.type[i] !== 0) continue;
-      const c = { x: centre[i * 3]!, y: centre[i * 3 + 1]! + 1, z: centre[i * 3 + 2]! };
-      const half = { x: 0.2, y: 0.6, z: 0.2 };
-      const solid = !physics.boxClear(c, half) || solids.some((b) => !b.yaw && c.x + half.x > b.min[0] && c.x - half.x < b.max[0] && c.y + half.y > b.min[1] && c.y - half.y < b.max[1] && c.z + half.z > b.min[2] && c.z - half.z < b.max[2]);
-      if (!solid) continue;
+      const cx = centre[i * 3]!;
+      const cz = centre[i * 3 + 2]!;
+      if (!blocked(i, cx, cz)) continue;
+      // Inside something, not just a post at its middle: most points part way to its corners blocked too.
+      let inner = 0;
+      let out = 0;
+      for (let k = g.vstart[i]!; k < g.vstart[i + 1]!; k++) {
+        if (blocked(i, cx + (g.vxyz[k * 3]! - cx) * 0.6, cz + (g.vxyz[k * 3 + 2]! - cz) * 0.6)) out++;
+        inner++;
+      }
+      if (out * 2 <= inner) continue;
       this.navMesh.setPolyFlags(g.base + i, 0);
       g.flags[i] = 0;
       n++;
