@@ -1,5 +1,5 @@
 import { beforeAll, describe, expect, it } from 'vitest';
-import { DEFAULT_RULES, initPhysics, parseClientMessage, rulesForTravel, type GameMode } from '../src/index.ts';
+import { DEFAULT_RULES, initPhysics, parseClientMessage, rulesForTravel, suggestedLimits, type GameMode } from '../src/index.ts';
 import { BotFiller, HostControl, Match, initNavigation } from '../src/match.ts';
 import { makeMap } from './helpers.ts';
 
@@ -93,7 +93,8 @@ describe('host controls mid-match', () => {
     expect(ffa.rules).toMatchObject({ mode: 'core.deathmatch', scoreLimit: 30, botStyle: 'arena', bodySizes: false });
     const tdm = rulesForTravel({ ...DEFAULT_RULES['core.deathmatch'], scoreLimit: 30 }, map, 10, 'core.tdm');
     expect(tdm.rules.mode).toBe('core.tdm');
-    expect(tdm.rules.scoreLimit).toBe(DEFAULT_RULES['core.tdm'].scoreLimit);
+    // A new mode: its score and time as suggested for the players (5v5), not its standard ones.
+    expect(tdm.rules).toMatchObject({ scoreLimit: suggestedLimits('core.tdm', 10, [5, 5]).scoreLimit, timeLimitSeconds: suggestedLimits('core.tdm', 10, [5, 5]).minutes * 60 });
     expect(tdm.rules.teamSizes).toEqual([5, 5]);
     expect(tdm.fill).toBe(10);
     // A mode the map can't run falls back to the current one.

@@ -161,9 +161,10 @@ describe('presets that scale with the map', () => {
     expect(values(sizePresets('core.deathmatch', map, desk))).toBe('2 players 8 players 12 players 32 players 48 players');
     // The Arcade's own starting count for the map is its pick.
     expect(sizePresets('core.deathmatch', map, { ...desk, pickPlayers: 10 }).find((p) => p.id === 'pick')!.players).toBe(10);
+    // A squad stops at the map's own size (its layout, 12v12: 24 in all), not at what the device runs.
     const squad = sizePresets('core.coop', map, desk);
-    expect(squad.map((p) => p.label).join()).toBe("Solo,Duo,Map's pick,Big squad,Max");
-    expect(values(squad)).toBe('you alone you + 1 squad of 12 squad of 24 squad of 48');
+    expect(squad.map((p) => p.label).join()).toBe("Solo,Duo,Map's pick,Max");
+    expect(values(squad)).toBe('you alone you + 1 squad of 12 squad of 24');
     const race = sizePresets('core.race', track(), desk);
     expect(race.map((p) => `${p.label} ${p.value}`).join(', ')).toBe("Duel 2 racers, Small 4 racers, Map's pick 8 racers");
   });
@@ -267,7 +268,8 @@ describe('variants', () => {
     expect(s).toMatchObject(old);
     expect(on(s)).toEqual(['roulette']);
     expect(rulesFromSetup(s, map).rules).toMatchObject({ teamSizes: [24, 24], gravity: 0.4, fallDamage: true, randomCharacters: true, lethality: 'tactical' });
-    expect(Object.keys(setVariant(s, 'lunar', true)).sort()).toEqual([...Object.keys(old)].sort());
+    // (normalizeSetup marks whether its score and time follow the size; a variant adds nothing beyond that.)
+    expect(Object.keys(setVariant(s, 'lunar', true)).sort()).toEqual([...Object.keys(old), 'scoreAuto', 'timeAuto'].sort());
   });
 });
 
