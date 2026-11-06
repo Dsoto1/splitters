@@ -804,6 +804,20 @@ setups compatible; the menu bundle budget) and proof (screenshots at 4 sizes inc
 **Slots:** the first running agent to finish hands its slot to this. Its own follow-on (Phase B, set pieces part 2
 or 3) takes the next slot that frees.
 
+**Added by the owner, 2026-11-06:**
+- A **variants** frame under the mode chips: data-driven on/off chips per mode, built from today's settings first.
+- **Party presets.** The first is **Lunar Roulette**: low gravity, character stats and a random character each life.
+
+**Then, in the same slot after the redesign lands: the Roulette mode** (docs/ROULETTE_MODE_PLAN.md).
+- **Core:** character swapping each life, from a fair shuffle deck.
+- **Standard:** signature loadouts, jackpot rolls, and a streak pick (choose your next character from 3).
+- **Variants:**
+  - Lunar: gravity storms and air-kill bonus.
+  - Earned rerolls. There are no free death-screen rerolls (owner).
+  - Swap on kill.
+  - Variety bonus.
+  - Teams.
+
 ### Queued (owner-approved, 2026-11-06): bot AI, logic and navigation (docs/BOT_AI_PLAN.md)
 The owner asked for a plan for bot logic and navigation as a whole, and approved this order:
 - **Phase A** (navigation audit from every walkable area, never stand still on a failed route, the bot scorecard with
