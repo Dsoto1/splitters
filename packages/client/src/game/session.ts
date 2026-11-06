@@ -613,9 +613,11 @@ export class GameSession {
       void this.showHostInfo(hostBtn, hostInfo, this.peerHost.code);
     } else if (opts.autoHost && opts.hostable && opts.transport instanceof LocalTransport) void this.startHosting(hostBtn, hostInfo);
     this.hostPanel = this.makeHostPanel();
-    // Offline by default: nothing listens until the player goes online (or hosts with a code).
-    $('go-online').addEventListener('click', () => this.confirmGoOnline(), { signal });
-    $('go-offline').addEventListener('click', () => this.goOffline(), { signal });
+    // Offline by default: nothing listens until the player goes online (or hosts with a code). The Host tab's foot
+    // switches between the two: Host online lists the match when there's a hub to list it on (after a confirm: it
+    // restarts), else opens a join code; Offline disconnects friends and takes the listing down.
+    $('go-online').addEventListener('click', () => (this.peerHost ? undefined : hubSetting() ? this.confirmGoOnline() : void this.startHosting(hostBtn, hostInfo)), { signal });
+    $('go-offline').addEventListener('click', () => this.peerHost && this.goOffline(), { signal });
     // Public: the hosted match shows up in everyone's game browser (needs a community hub).
     const pub = $('host-public');
     const listBox = $('host-list') as HTMLInputElement;
@@ -1045,10 +1047,16 @@ export class GameSession {
     const goOff = $('go-offline') as HTMLButtonElement;
     const note = $('online-note');
     const listed = online && ($('host-list') as HTMLInputElement).checked && !!this.advertiser;
-    // Online already: the "List in the game browser" box below lists or unlists it.
-    goOn.hidden = !can || online || !hubSetting();
-    goOn.disabled = !this.listable;
-    goOff.hidden = !can || !online;
+    // The Host tab's foot: Offline | Host online, the one in effect lit. Online, the "List in the game browser" box lists or unlists it.
+    $('pause-online-switch').hidden = !can;
+    goOn.classList.toggle('on', online);
+    goOff.classList.toggle('on', !online);
+    goOn.setAttribute('aria-checked', String(online));
+    goOff.setAttribute('aria-checked', String(!online));
+    goOn.title = hubSetting() ? 'Host online: the match restarts and is listed in the game browser; friends also join with the code, taking bots\' places' : 'Host online: a join code and invite link for friends, who take bots\' places';
+    const line = $('online-state-line');
+    line.hidden = !can;
+    line.textContent = online ? `${listed ? 'Online and listed' : 'Online, code only'}: friends join with the code or the invite link, taking bots' places.` : 'Offline: only you and your bots. Host online (at the bottom) lets friends join.';
     note.hidden = !can || !this.community || !hubSetting();
     note.textContent = this.community ? 'Not one of our own maps: it is listed as a "Community map".' : '';
     ($('host-list') as HTMLInputElement).disabled = !this.listable;
@@ -1117,6 +1125,8 @@ export class GameSession {
             if (error) panel.setStatus(error, true);
           } else net?.sendCommand({ t: 'host', cmd });
         },
+        // The foot's Resume: as the Match tab's (it asks for the mouse back).
+        resume: () => ($('resume') as HTMLButtonElement).click(),
         ...((local ? this.opts.hostable : net) && this.opts.mapPicker ? { changeMap: () => this.openMapPicker() } : {}),
         ...(net ? { login: (token: string) => net.sendCommand({ t: 'admin', token }) } : {}),
         // The map rotation: kept by this browser (not in a playlist, whose wins move it on), or by the server (when it has one).
@@ -1126,6 +1136,9 @@ export class GameSession {
     );
     panel.root.hidden = true;
     $(net ? 'pause-admin-slot' : 'pause-host-slot').append(panel.root);
+    // Its foot (Resume, Apply) leads the pause menu's foot while the Host tab is open.
+    $('pause-host-foot').prepend(panel.foot);
+    panel.setMap(this.map);
     if (local) this.showRotation(panel);
     // The Host tab's Online block sits at the top of the panel's first column.
     const online = document.getElementById('pause-online-box');
@@ -1354,6 +1367,24 @@ export class GameSession {
     return players.filter((p) => !p.bot && p.slot !== this.slot).map((p) => ({ slot: p.slot, name: p.name }));
   }
 
+  /** The match's teams' IDs in order (team modes), for counting the people on each. */
+  private teamIds: string[] | null = null;
+
+  /** People on each team besides you, and your team (team modes; spectators are on none): the Host tab's teams read "You + 6 bots". */
+  private teamPeople(players: readonly RosterEntry[]): { others: number[]; you: number | null } | null {
+    const ids = this.teamIds;
+    if (!ids) return null;
+    const others = ids.map(() => 0);
+    let you: number | null = null;
+    for (const p of players) {
+      const i = p.bot || p.sp || p.team === null ? -1 : ids.indexOf(p.team);
+      if (i < 0) continue;
+      if (p.slot === this.slot) you = i;
+      else others[i]!++;
+    }
+    return { others, you };
+  }
+
   /** A won co-op map in a local match: after a moment for the results, go on to the next map of the chain. */
   private chainOn(next: string | undefined): void {
     const local = this.opts.transport;
@@ -1478,9 +1509,10 @@ export class GameSession {
           this.dedicatedPanel = true;
           this.hostPanel.remove();
           this.hostPanel = this.makeHostPanel(true);
-          if (this.lastRoster) this.hostPanel.setPeople(this.peopleIn(this.lastRoster));
+          if (this.lastRoster) this.hostPanel.setPeople(this.peopleIn(this.lastRoster), this.teamPeople(this.lastRoster));
         }
         const teams = isTeamMode(msg.rules.mode) ? matchTeams(loaded.map, msg.rules) : null;
+        this.teamIds = teams?.map((t) => t.id) ?? null;
         this.hud.setTeams(teams);
         this.hud.setBoardMode(msg.rules.mode);
         this.hud.setModeLabel(msg.rules.mode === 'core.coop' ? 'Co-op Mission' : (MODE_LABELS[msg.rules.mode] ?? 'Deathmatch'));
@@ -1495,6 +1527,7 @@ export class GameSession {
         void this.opts.portrait?.then((src) => this.portraitLook === null && this.hud.setPortrait(src), () => undefined);
         const geometry = buildMapGeometry(loaded.map);
         this.map = loaded.map;
+        this.hostPanel.setMap(loaded.map);
         this.view.buildMap(loaded.map, geometry);
         if (teams && (msg.rules.mode === 'core.ctf' || msg.rules.mode === 'core.forts' || msg.rules.mode === 'core.koth' || msg.rules.mode === 'core.elim' || msg.rules.mode === 'core.bomb' || msg.rules.mode === 'core.hostage')) this.modeHud = new ModeHud(this.hud, this.view, loaded.map, teams, msg.rules.mode, () => this.slot);
         if (msg.rules.mode === 'core.race') this.raceHud = new RaceHud(this.hud, this.view, loaded.map, () => this.slot);
@@ -1540,7 +1573,7 @@ export class GameSession {
       case 'roster':
         this.hud.setRoster(msg.players);
         this.lastRoster = msg.players;
-        this.hostPanel.setPeople(this.peopleIn(msg.players));
+        this.hostPanel.setPeople(this.peopleIn(msg.players), this.teamPeople(msg.players));
         if (this.peerHost) this.updateOnline();
         if ((msg.players.find((p) => p.slot === this.slot)?.sp === 1) !== this.spectator) this.spectatorChanged(!this.spectator);
         this.looks = new Map(msg.players.map((p) => [p.slot, p.look]));

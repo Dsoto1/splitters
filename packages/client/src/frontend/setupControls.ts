@@ -338,7 +338,7 @@ export function teamEditor(o: TeamEditorOptions): HTMLElement {
           }),
         ]
       : []),
-    el('span', { class: 'team-total', id: `${o.id}-team-total`, textContent: `${s.sizes.join('v')} · ${peopleAndBots(humans, total - humans)}` }),
+    el('span', { class: 'team-total', id: `${o.id}-team-total`, textContent: `${s.sizes.join('v')} · ${s.you !== null || !humans ? peopleAndBots(humans, total - humans) : `${humans} ${humans === 1 ? 'player' : 'players'} + ${total - humans} bots`}` }),
   );
   const cards = el('div', { class: 'team-cards', id: `${o.id}-team-cards` });
   s.sizes.forEach((size, i) => {
@@ -386,7 +386,8 @@ export function teamEditor(o: TeamEditorOptions): HTMLElement {
     plus.setAttribute('aria-label', `One more bot on ${teamName}`);
     minus.dataset.tip = even ? 'One bot fewer on every team' : 'One bot fewer: the team shrinks';
     plus.dataset.tip = even ? 'One more bot on every team' : 'One more bot: the team grows';
-    const who = el('span', { class: 'team-who', id: `${o.id}-team-who-${i}`, textContent: peopleAndBots(mine, bots) });
+    // Who's on it: "You + 23 bots", "2 players + 22 bots", "24 bots" (people mid-match, you among them or not).
+    const who = el('span', { class: 'team-who', id: `${o.id}-team-who-${i}`, textContent: s.you === i || !mine ? peopleAndBots(mine, bots) : `${mine} ${mine === 1 ? 'player' : 'players'}${bots ? ` + ${bots} bot${bots === 1 ? '' : 's'}` : ''}` });
     // Roster: you, people, then a pip per bot (drag one to another team).
     const roster = el('div', { class: 'roster' });
     if (s.you === i && o.youLabel) {

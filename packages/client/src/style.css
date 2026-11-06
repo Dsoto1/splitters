@@ -595,8 +595,29 @@ html.touch .char-spin .spin-label kbd { display: none; }
 #pause .pause-row output { min-width: 44px; text-align: right; }
 #pause .pause-scores { font-size: 13px; }
 #pause .pause-scores:empty { display: none; }
-#pause .pause-foot { display: flex; align-items: center; gap: 10px; margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--line); }
-#pause .pause-foot .pause-hints { flex: 1; min-width: 0; flex-wrap: wrap; gap: 4px 6px; }
+#pause .pause-foot { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--line); }
+/* The Host tab's foot (hostPanel.ts drawFoot), first in the pause menu's foot: Resume, Apply (named by what it does), what it changes, Offline / Host online. */
+#pause .pause-host-foot { display: flex; flex: 1 1 auto; flex-wrap: wrap; align-items: center; gap: 8px; min-width: 0; }
+#pause .hc-foot { display: flex; flex: 1 1 auto; flex-wrap: wrap; align-items: center; gap: 8px; min-width: 0; }
+#pause .hc-foot #hc-resume { min-width: 120px; padding: 10px 18px; font-size: 15px; }
+#pause .hc-foot .hc-apply { padding: 10px 16px; font-size: 14px; color: var(--cyan); border-color: rgba(0, 209, 255, 0.55); background: rgba(0, 209, 255, 0.1); }
+#pause .hc-foot .hc-apply.restart { color: var(--orange); border-color: rgba(255, 179, 71, 0.6); background: rgba(255, 179, 71, 0.1); }
+#pause .hc-foot .hc-apply.armed { color: #ff8a7a; border-color: rgba(231, 76, 60, 0.7); background: rgba(231, 76, 60, 0.16); }
+#pause .hc-foot .hc-apply:disabled { color: var(--muted); border-color: var(--line); background: transparent; opacity: 0.6; cursor: default; }
+#pause .hc-changes { flex: 0 1 auto; min-width: 0; max-width: 420px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; color: var(--muted); font: 500 13px var(--font-body); }
+#pause .hc-foot .hc-status { flex-basis: 100%; margin: 0; }
+#pause .hc-foot .hc-status:empty { display: none; }
+#pause .hc-foot .hc-status.error { color: #ff8a6b; }
+#pause .pause-host-foot .seg-switch { margin-left: auto; }
+/* A short window (a phone sideways): on the Host tab its foot's Resume does what the key hints would, so they make room. */
+@media (max-height: 520px) {
+  #pause:has(#pause-host-foot:not([hidden])) .pause-hints { display: none; }
+}
+/* Running the match, the Host tab is its panel: no fold heading over it. */
+#pause-host-slot .host-controls > summary { display: none; }
+#pause .host-controls .hc-fit-line { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+#pause .host-controls .field-grid { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
+#pause .pause-foot .pause-hints { flex: 1 1 330px; min-width: 0; flex-wrap: wrap; gap: 4px 6px; }
 #pause .hint { color: var(--muted); font-size: 12px; }
 #pause .perf-report-text { width: 100%; box-sizing: border-box; font: 11px/1.4 ui-monospace, Menlo, Consolas, monospace; color: var(--muted); resize: vertical; }
 #pause button:focus-visible, #pause input:focus-visible, #pause select:focus-visible, #pause summary:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
@@ -612,6 +633,8 @@ html.touch .char-spin .spin-label kbd { display: none; }
 #pause .pause-group, #pause .hc-card { display: flex; flex-direction: column; gap: 6px; min-width: 0; box-sizing: border-box; margin: 0 0 12px; padding: 10px 12px; break-inside: avoid; background: rgba(0, 0, 0, 0.22); border: 1px solid var(--line); border-radius: 4px; }
 #pause .pause-group > .pause-h, #pause .hc-card-title { display: flex; align-items: center; gap: 8px; margin: 0 0 2px; font: 700 11px var(--font-display); letter-spacing: 0.14em; color: var(--muted); text-transform: uppercase; }
 #pause .hc-card-title .when-tag { margin-left: auto; }
+#pause .hc-card-title .hc-tags { display: inline-flex; align-items: center; gap: 8px; margin-left: auto; }
+#pause .hc-card-title .hc-tags .when-tag { margin-left: 0; }
 #pause .pause-sec[data-sec='settings'] > .hint { margin: 0; }
 /* Nothing to show online (no hub here, or not yours to host): no empty card either. */
 #pause .pause-online-box:not(:has(.pause-online > :not([hidden]))) { display: none; }
@@ -1021,7 +1044,6 @@ img.wicon.large { height: 26px; margin: 0 6px 0 0; }
 .host-controls .stepper b { min-width: 52px; text-align: center; font: 700 16px var(--font-display); }
 .host-controls select { background: rgba(0, 0, 0, 0.3); color: inherit; border: 1px solid rgba(255, 255, 255, 0.15); padding: 4px; max-width: 100%; }
 .host-controls .tabs { flex-wrap: wrap; }
-#pause .host-controls .hc-apply { width: 100%; margin-top: 4px; }
 .host-controls .hc-actions { display: flex; gap: 6px; }
 .host-controls .hc-actions button { flex: 1; }
 /* Restart and End undo everyone's match: set apart under a thin red rule. */

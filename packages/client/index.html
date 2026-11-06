@@ -115,8 +115,7 @@
             <div id="pause-online-box" class="pause-online-box hc-card">
               <h4 class="pause-h hc-card-title"><span>Online</span></h4>
               <div class="pause-online">
-                <button id="go-online" class="primary" hidden title="Restart this match and list it in the game browser">Go online</button>
-                <button id="go-offline" hidden title="Disconnect friends and stop listing this match">Go offline</button>
+                <p class="hint" id="online-state-line" hidden></p>
                 <p class="hint" id="online-note" hidden></p>
                 <!-- Online: the join code and invite link come first, where they fit on small screens. -->
                 <div id="host-info" hidden></div>
@@ -160,6 +159,13 @@
           </section>
         </div>
         <footer class="pause-foot">
+          <!-- The Host tab's foot: Resume and Apply (hostPanel.ts), and where the match runs. -->
+          <div id="pause-host-foot" class="pause-host-foot" hidden>
+            <div id="pause-online-switch" class="seg-switch" role="radiogroup" aria-label="Where the match runs" hidden>
+              <button id="go-offline" class="seg-opt" type="button" role="radio" title="Offline: just you and your bots. Friends are told and disconnected, and the listing goes; the match carries on">Offline</button>
+              <button id="go-online" class="seg-opt" type="button" role="radio" title="Host online: a join code and invite link for friends, who take bots' places">Host online</button>
+            </div>
+          </div>
           <div class="hintbar pause-hints" id="pause-hints"></div>
           <button id="exitmatch" class="danger">Leave</button>
         </footer>
