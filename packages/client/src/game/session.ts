@@ -573,8 +573,8 @@ export class GameSession {
       {
         resume: () => {
           lock();
-          // The browser may refuse the mouse right after Esc: Resume (click) always works.
-          ($('resume') as HTMLButtonElement).focus();
+          // The browser may refuse the mouse right after Esc: Resume (click) always works (the Host tab has its own, in its foot).
+          ((this.pauseMenu.tab === 'host' ? document.getElementById('hc-resume') : null) ?? $('resume')).focus();
         },
         overlay: () => document.getElementById('bm-pick-wrap') ?? document.getElementById('bot-manager') ?? document.getElementById('leave-confirm') ?? document.getElementById('online-confirm') ?? this.mapPicker,
         opened: () => this.drawPause(true),

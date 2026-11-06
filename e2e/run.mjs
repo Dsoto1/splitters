@@ -5243,7 +5243,7 @@ async function hostcontrolsFlow(browser) {
     const next = open();
     const onHost = { label: document.querySelector('#pause-back .back-label').textContent, foot: !document.getElementById('pause-host-foot').hidden };
     window.dispatchEvent(new KeyboardEvent('keydown', { code: 'Escape', key: 'Escape', bubbles: true }));
-    // Resuming asks for the mouse (a headless page never gets it, so the menu stays) and hands the keyboard to Resume.
+    // Resuming asks for the mouse (a headless page never gets it, so the menu stays) and hands the keyboard to the foot's Resume.
     const resumed = { tab: open(), focus: document.activeElement?.id };
     document.querySelector('#pause [data-tab="settings"]').click();
     const label = document.querySelector('#pause-back .back-label').textContent;
@@ -5257,7 +5257,7 @@ async function hostcontrolsFlow(browser) {
     document.getElementById('pause-hint-back').click();
     return { next, onHost, resumed, label, footGone, back, held, top: document.querySelector('#pause-back .back-label').textContent, after: open() };
   });
-  check(clicks.next === 'host' && clicks.onHost.label === 'Resume' && clicks.onHost.foot && clicks.resumed.focus === 'resume' && clicks.footGone, `the Host tab has its own foot, and Esc there resumes (${JSON.stringify({ onHost: clicks.onHost, resumed: clicks.resumed, footGone: clicks.footGone })})`);
+  check(clicks.next === 'host' && clicks.onHost.label === 'Resume' && clicks.onHost.foot && clicks.resumed.tab === 'host' && clicks.resumed.focus === 'hc-resume' && clicks.footGone, `the Host tab has its own foot, and Esc there resumes (${JSON.stringify({ onHost: clicks.onHost, resumed: clicks.resumed, footGone: clicks.footGone })})`);
   check(clicks.label === 'Back' && clicks.back === 'match' && clicks.held === 'settings' && clicks.after === 'match' && clicks.top === 'Resume', `the pause menu's Back button and footer hints work by click; a repeating Esc does nothing (${JSON.stringify(clicks)})`);
   const fits = await page.evaluate(() => {
     const r = document.querySelector('#pause .pause-card').getBoundingClientRect();
