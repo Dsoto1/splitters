@@ -50,10 +50,18 @@ after 20 s.
 [player]. 24v24 plays ok with 500 points, but also 15–20 min"): Match setup suggests the score and time for the
 players and bots, and they follow every size change until you set them yourself. Yours then stay, marked **Custom**,
 with **Back to suggested** one click away. The suggestions are fitted to how fast bots score on real maps
-(`pnpm bot-report`, which now prints each match's team scores): Team Deathmatch @@TDM@@; Deathmatch @@DM@@; Capture
-the Flag keeps 3 captures with 10, 15 or 20 minutes by team size; King of the Hill's hill seconds go with the time (12
-a minute). Rounds modes, co-op and Zombies are as before. Saved setups keep working: a score or time you set stays;
-the old defaults (40 points, 10 minutes) follow the size. Scores can now go up to 5,000 (they stopped at 1,000).
+(`pnpm bot-report`, which now prints each match's team scores and its top bot's kills; checked again with the Phase A
+bots), so a match is usually won near its time limit, not in two minutes (docs/BOTS.md, "Score and time"):
+- **Team Deathmatch**: a point for each player on a team per minute of the time limit, which is 10 minutes up to 6 a
+  side, 15 up to 16 and 20 above: 4v4 40 points in 10 minutes, 8v8 120 in 15, 12v12 180 in 15, 24v24 500 in 20.
+- **Deathmatch**: the leader's kills grow gently with the players (12 × √players), in 10 minutes: 15 for 2 players,
+  35 for 8, 50 for 16, 70 for 32.
+- **Capture the Flag** keeps 3 captures, with 10, 15 or 20 minutes by team size; **King of the Hill**'s hill seconds
+  go with the time (12 a minute: 120 in 10 minutes, 180 in 15, 240 in 20).
+- Rounds modes, co-op and Zombies are as before.
+
+Saved setups keep working: a score or time you set stays; the old defaults (40 points, 10 minutes) follow the size.
+Scores can now go up to 5,000 (they stopped at 1,000).
 
 **Host online means the same everywhere** (owner, 2026-11-06): Match setup's Host online now starts the match online
 **and listed** in the game browser, as the pause menu's does (with a community hub; without one, a join code). The
