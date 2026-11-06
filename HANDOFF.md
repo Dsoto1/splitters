@@ -287,6 +287,27 @@ before the stone. The brief: session scratchpad `briefs/slack-pass.md`.
     clear would tighten round props; it would change every voxel prop's collision.
   - Natural rocks keep their two tiers (`isRock`): voxelised, the boulders alone would add over 10,000 boxes to the maps.
 
+### Queued (owner, 2026-11-06): "Reduce flashing", a seizure-safety setting. A small job, the next small slot
+**Why:** the owner dropped the planned flashbang ("I don't want to give people seizures").
+
+**What already flickers:**
+- lightning from the arc weapons, electric fences and arc turrets (Binbun's Electric FX crackle);
+- big explosions flaring near the camera;
+- any strobing light in the maps.
+
+**The setting:**
+- **Accessibility → "Reduce flashing", on by default:**
+  - lightning keeps a steady glow instead of crackling;
+  - full-screen brightness jumps (an explosion right in front of you, a muzzle flash in the dark) are capped and
+    eased in over a few frames;
+  - strobing lights hold steady.
+- **A check in CI:**
+  - an e2e flow records frames of the brightest moments: arc fights, a blast close up, the fence;
+  - it fails if any part bigger than about a quarter of the screen changes brightness more than three times a second
+    by a large amount, or turns saturated red. That is the usual photosensitivity guideline (WCAG 2.3.1, "three
+    flashes or below threshold").
+- **No new effect may add** a full-screen flash or white-out. CLAUDE.md gets the rule when this lands.
+
 ### Queued (owner-approved, 2026-11-06): weapon sets. After the Match Setup follow-ups, alongside Bot AI Phase B
 **The owner:** bots mostly use pistols. "I have never once seen the sheep weapon, hardly see swarm launcher or gravity
 weapon." They want weapon sets as map defaults, with a host setting.
