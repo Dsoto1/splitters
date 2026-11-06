@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 25,
+  "formatVersion": 26,
   "metadata": {
     "id": "citadel",
     "name": "Citadel",
@@ -3902,18 +3902,18 @@
     },
     {
       "id": "block_5ts8ky0uqr",
-      "kind": "block",
       "position": [
         16,
         -0.4,
         -4.7
       ],
-      "yaw": 0,
+      "kind": "block",
       "size": [
         5,
         0.2,
         1.2
       ],
+      "yaw": 0,
       "material": "core.cobblestones",
       "tint": null,
       "behaviour": "solid",
@@ -3924,12 +3924,12 @@
     },
     {
       "id": "prop_t7qf6k4zjn",
-      "kind": "prop",
       "position": [
         12,
         -4,
         -28
       ],
+      "kind": "prop",
       "model": "prop.town_fountain",
       "yaw": 0,
       "scale": 1,
@@ -3938,12 +3938,12 @@
     },
     {
       "id": "prop_2jqidvnp6y",
-      "kind": "prop",
       "position": [
         6.5,
         -4,
         -22.5
       ],
+      "kind": "prop",
       "model": "prop.mv_market_stall",
       "yaw": 1.571,
       "scale": 1,
@@ -3952,12 +3952,12 @@
     },
     {
       "id": "prop_05ldagivf5",
-      "kind": "prop",
       "position": [
         17.5,
         -4,
         -22.5
       ],
+      "kind": "prop",
       "model": "prop.rustic_market_stall",
       "yaw": -1.571,
       "scale": 1,
@@ -3966,12 +3966,12 @@
     },
     {
       "id": "prop_mfl0mwrrnn",
-      "kind": "prop",
       "position": [
         6,
         -4,
         -33.5
       ],
+      "kind": "prop",
       "model": "prop.mv_hay_cart",
       "yaw": 0.524,
       "scale": 1,
@@ -3980,12 +3980,12 @@
     },
     {
       "id": "prop_x0rc1yotvd",
-      "kind": "prop",
       "position": [
         0,
         -4,
         -30
       ],
+      "kind": "prop",
       "model": "prop.anvil",
       "yaw": 0,
       "scale": 1,
@@ -3994,78 +3994,78 @@
     },
     {
       "id": "spawn_ypl82jhglz",
-      "kind": "spawn",
       "position": [
         4,
         -4,
         -26
       ],
+      "kind": "spawn",
       "yaw": 3.142,
       "faction": null
     },
     {
       "id": "spawn_7nlyaxevjz",
-      "kind": "spawn",
       "position": [
         20,
         -4,
         -26
       ],
+      "kind": "spawn",
       "yaw": 3.142,
       "faction": null
     },
     {
       "id": "spawn_amleo2l0kj",
-      "kind": "spawn",
       "position": [
         10,
         -4,
         -34
       ],
+      "kind": "spawn",
       "yaw": 0,
       "faction": null
     },
     {
       "id": "spawn_w9sdjfv9q9",
-      "kind": "spawn",
       "position": [
-        14,
+        14.67,
         -4,
-        -18
+        -19.62
       ],
+      "kind": "spawn",
       "yaw": 0,
       "faction": null
     },
     {
       "id": "pickup_odkmv3mx3b",
-      "kind": "pickup",
       "position": [
         12,
         -4,
         -24
       ],
+      "kind": "pickup",
       "item": "core.health_large",
       "respawnSeconds": null
     },
     {
       "id": "pickup_x9abza46ly",
-      "kind": "pickup",
       "position": [
         24,
         -4,
         -32
       ],
+      "kind": "pickup",
       "item": "core.weapon_marksman",
       "respawnSeconds": null
     },
     {
       "id": "pickup_e2hxfyh75y",
-      "kind": "pickup",
       "position": [
         22,
         -4,
         -25
       ],
+      "kind": "pickup",
       "item": "core.ammo_sniper",
       "respawnSeconds": null
     }

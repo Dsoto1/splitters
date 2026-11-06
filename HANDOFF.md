@@ -26,6 +26,79 @@ gets overloaded above that: local e2e times out and flakes). Prune landed worktr
 - Earlier the same day: content scalability steps 2–6, perf toolset, flaky e2e fixes, Runway Nine airliner, map
   reworks batches 2–3, character fixes rounds 2–3 (see the entries below and CHANGELOG).
 
+<!-- bots-a -->
+### Bot AI Phase A: navigation audit, never stand still, scorecard (`wip/bots-a`, agents, 2026-11-06; main b2c58e2e, bc6037a1, da59209d and c0b74376 merged in; green on `check/bots-a` at c9ab150a, run 42273882962; not landed)
+docs/BOT_AI_PLAN.md (Phase A done; the before/after tables under "Phase A, measured"), docs/BOTS.md ("Navigation
+audit", "Never standing still on a failed route", "Scorecard"). Earlier agents did most of it and were stopped; the
+last one finished it.
+
+**Run it:** `pnpm nav-audit [maps] [--pictures=dir]` (every map's audit and picture); `pnpm bot-report --check` (the
+quick scorecard CI runs, held to `packages/server/src/tools/bot-limits.json`); `pnpm bot-report --suite=all
+--seeds=1,2 --seconds=180 --shard=k/n --json=…` then `--judge=a.json+b.json --pictures=dir --summary=file.md` (the
+nightly: the `bots-nightly` and `bots-scorecard` jobs in ci.yml; the `bots-report` artifact holds the report and every
+map's picture). Scratch tools (a spot's ground and navmesh, the boxes round it, falls into a trap, hops out of one,
+pads, every bot near a spot over a match's time window, one bot's way through a match, where spawns land, the
+MapMaker driver, A/B scripts): session scratchpad `phaseA2/tools/`.
+
+**Done when, met:** no official map has an audit error (15 findings on 9 maps are listed in `nav/auditKnown.ts` with
+why, as warnings: the owner's list below); on the CTF suite failed searches 0.03 % (under 2 %) and no-route idle 0.05 %
+(under 1 %); the scorecard runs nightly (the full scorecard ran from Run workflow on `wip/bots-a`, run 42264736565: 398
+matches on 77 maps, every limit held).
+
+**What's in it** (newest work last):
+- The audit (`nav/audit.ts`), from every polygon: traps, islands, spawn points, objectives and pickups cut off; errors
+  on official maps (validate-map, the all-maps test), warnings in MapMaker. Ledge-drop links off patches with no way
+  down. Navmesh polygons inside solid boxes left out. Stand-ins for goals no route reaches, the last step off the
+  navmesh, a way onto it, no route requests in the air or on a ladder, buttons, pickups only where routes come back.
+- The last round: falls need room for a standing body (rails and lattices; Bunker Cross's yard was no trap); landings
+  aren't snapped through walls (Rail Stockyard); jump pads land on the scenario's solids (a ray callback: movement is
+  in the menu's first JS and must not import map geometry, which cost 166 kB gzip and failed the bundle budget); hops
+  go by one-way routes (St John's), onto safe ground from the main area (M4 Outpost's dais), up to 1.4 m with a tucked
+  jump (Undergate Transit, Sunken Kingdom); teammates push aside, never back, out of a fight, and not at ladders (the
+  owner's Shingle Point report); a bot at a button looks at it and presses (Serene City's thaw console: the look along
+  the route turned it level every tick); squadmates spawn beside a teammate only on walkable ground (Dune Harbor);
+  the nightly judge loads the WASM before drawing pictures (it threw).
+- Maps (MapMaker): Dune Harbor's consoles 1.2 m shorter; spawn points out of solid on 25 maps (earlier); ten maps
+  exported at format 26 on this branch imported and exported again (main's format 27 made their release stamps read
+  "changed"); Rockfall Canyon's e2e picture taken again (its seeded spawn moved 0.5 m out of a solid).
+
+**Numbers** (BOT_AI_PLAN.md, "Phase A, measured"): CTF suite, 88 matches: failed searches 1.67 → 0.03 %, no-route idle
+0.16 → 0.05 %, idle out of a fight 5.6 → 4.8 %, frozen 0.9 → 0.6 %, stuck recoveries 2.37 → 2.24 a bot-minute, idle
+spells of 10 s and more 2.7 → 1.4 a match, maps with a capture 31 → 34 of 44, captures 145 → 138 (149 and 151 at the two
+commits before the last two fixes: two matches a map is a small sample). Every other mode's failed searches to 0 (Team
+Deathmatch 39.7 %, Elimination 27.2 % before). `pnpm bench:96:clump`, bot thinking a tick: base 1.13–1.90 ms against
+branch 1.24–2.01 (means 1.48 and 1.54; clumped the same, spread a tenth more), within the 2.5 ms guard.
+
+**Left, found on the way:** Iron Compound's gantry MG turret (`mount_148`) stands in the 1.6 m walkway with 0.8 m beside
+it and bots walk into it (a mount's body isn't on the navmesh: Phase C); a dropship landing by Dune Harbor's sunken room
+leaves its riders under the street floor, where nothing gets them out (seen in the Bomb and Hostage samples, modes the
+map doesn't list); Shingle Point's HQ (bomb site B: six defenders keeping watch in one small room trip over each other:
+Phase B's playbook); Norman Shores' bots in the shallows (off the navmesh, no way onto it level or below); Iron Tide's
+crumbling wall by its west jump pad (`block_341`: bots stuck at it for minutes in one match); hills held (32 → 29 %) and
+Bomb plants (0.5 → 0.3 a match) a little down on the samples, and ten CTF maps still without a capture: Phase B.
+
+**For the owner** (each would be a MapMaker fix; players get stuck in all but the first two too):
+1. Skyward: the four pad perches are one-way by design ("fall off and you are gone"), but two spawn points
+   (`spawn_035`, `spawn_036`) are on the towers: whoever spawns there can't leave. A pad back down, or move them?
+2. Sky Islands: the sky platform (double damage), pad up, no way back (as designed?).
+3. Grand Marquee: the marquee top over the street; the street pad throws you up and nothing gets you down (1.6 m
+   sign panels, the terrace 2.9 m up). A gap in a side panel or a ladder?
+4. Obsidian Orb: the reactor core (`prop_087`, scale 4) fills the "bottomless" shaft up to 3.8 m under the bridges:
+   a fall off a retracting bridge lands on it and stays there. Core not solid, or lower it? And a 0.4 m ledge
+   (`block_082`) runs along the shaft's north wall at -5.6 m: falls land on it and nothing gets off it (913 of the
+   CTF suite's 915 failed searches, 1.4 % of the map's, are bots on that ledge asking for a way off).
+5. Reactor: off the roof's south-west corner at (37, 4, 50) you drop 4.3 m into the yard outside the walls and can't
+   get back in. A railing on that corner?
+6. Serpent Gorge: the gorge floor along the river (falls through the gallery's openings, banks too steep to climb)
+   and slivers by the crypt's walls. Steps or a ladder out?
+7. Erosion: the corner pads that throw you back up from the lower deck stand on 3 m pillars meeting the deck only at
+   a corner (players step across, bots can't). Pillars that share an edge with the deck?
+8. M4 Outpost: the uplink room's dais leaves 1.5-2 m gaps the navmesh (0.8 m from walls) can't pass; bots hop onto
+   the dais but not round it to the armour behind it or the north corridor. Wider gaps?
+9. Iron Compound: the MG turret on the gantry by the stairs (`mount_148`) leaves 0.8 m of walkway beside it; bots
+   coming back along the gantry walk into it. Move it off the walkway's middle?
+<!-- /bots-a -->
+
 <!-- setpieces -->
 ### Set pieces, part 1: data, expansion, first content (`wip/setpieces`, agents, 2026-11-06; from main 774a28ce, main e18a175e merged in; green on `check/setpieces` at 09af09cd, run 42211217797; not landed)
 Plan and what it settled: docs/SET_PIECES_PLAN.md ("As built: part 1"); how to add a piece: docs/CONTENT_PIPELINE.md,
@@ -1420,9 +1493,7 @@ or 3) takes the next slot that frees.
 ### Queued (owner-approved, 2026-11-06): bot AI, logic and navigation (docs/BOT_AI_PLAN.md)
 The owner asked for a plan for bot logic and navigation as a whole, and approved this order:
 - **Phase A** (navigation audit from every walkable area, never stand still on a failed route, the bot scorecard with
-  limits in nightly CI): right after `wip/bots-idle` lands, alongside set pieces.
-  - It builds on that branch's `pnpm bot-report`.
-  - Give it to the bots-idle agent as a follow-on if it's still running.
+  limits in nightly CI): **done on `wip/bots-a`** (its section near the top, "Bot AI Phase A"; not landed).
 - **Phase B** (scored choices instead of competing states, a team brain per mode, mode playbooks): next, **before
   MAP 21**.
 - **Then Fireteams** (owner-approved 2026-11-06, docs/FIRETEAMS_PLAN.md), right after Phase B.
@@ -1439,7 +1510,8 @@ The owner asked for a plan for bot logic and navigation as a whole, and approved
 with `pnpm bench:96:clump` before and after; bot thinking at 96 bots stays within 2.5 ms a tick (today 1.0–1.8).
 
 ### Owner-approved order after the current agents (2026-11-05 late; owner set effort to max: "hoping for some great work")
-0. **Bot AI Phase A** (above) as soon as `wip/bots-idle` lands; **Phase B** before item 3 (MAP 21).
+0. **Bot AI Phase A** (above): done on `wip/bots-a` (section "Bot AI Phase A" near the top; land it); **Phase B**
+   before item 3 (MAP 21).
 1. **Set pieces:** plan in docs/SET_PIECES_PLAN.md. Part 1 (data, expansion, carriageway, skybridge) on
    `wip/setpieces` (its section near the top: what landed, the API, notes for parts 2 and 3). Then, by owner decision (2026-11-06, "go with your suggestion for part 3"):
    - **Part 2**, after part 1: the MapMaker UI on `wip/setpieces-2` (tab, ghost, Explode, Save selection, library),

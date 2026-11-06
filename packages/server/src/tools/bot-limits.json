@@ -1,0 +1,24 @@
+{
+  "about": "Bot scorecard limits (docs/BOTS.md, Scorecard). `pnpm bot-report --check` plays `check` and holds it to `checkLimits`; the nightly full suite (`pnpm bot-report --suite=all`, then `--judge`) is held to `limits`. Keys: all, a mode (core.ctf), or a mode and a map (core.ctf/diamond_park). Each measure is the most it may be (failed searches, idle, frozen, stuck, spawn deaths, think ms) or the least (captures, takes, hill time, coverage, kills); bot-report.ts METRICS says which. Set 2026-11-06 (wip/bots-a) from the check (failed searches 0.04 %, no-route idle 0, idle out of a fight 3.8 %, stuck 1.07 a bot-minute; flag takes 1.5 a match, hill held 60 %) and the CTF suite, with room for changes that only shuffle a seeded match. A worse number fails: raise a limit only with the reason in the commit.",
+  "check": {
+    "seconds": 90,
+    "seed": 1,
+    "matches": [["diamond_park", "core.ctf"], ["eagle_spires", "core.ctf"], ["shingle_point", "core.koth"], ["fernwood_moon", "core.tdm"]]
+  },
+  "checkLimits": {
+    "all": { "failedSearches": 0.02, "noRouteIdle": 0.01, "idleCalm": 0.09, "frozen": 0.02, "stuckPerBotMin": 2.5, "spells10": 1.5, "longestIdle": 45, "spawnDeaths": 0.08 },
+    "core.ctf": { "takes": 0.5 },
+    "core.koth": { "hillTaken": 0.3 },
+    "core.tdm": { "killsPerMin": 10 }
+  },
+  "limits": {
+    "all": { "failedSearches": 0.03, "noRouteIdle": 0.01, "frozen": 0.02, "spawnDeaths": 0.08 },
+    "core.ctf": { "failedSearches": 0.02, "noRouteIdle": 0.01, "idleCalm": 0.08, "stuckPerBotMin": 3.5, "spells10": 2, "captures": 0.5, "takes": 3 },
+    "core.koth": { "idleCalm": 0.08, "hillTaken": 0.25 },
+    "core.bomb": { "idleCalm": 0.12, "plants": 0.2 },
+    "core.hostage": { "idleCalm": 0.12 },
+    "core.elim": { "roundSeconds": 120 },
+    "core.forts": { "pieces": 20 },
+    "core.tdm": { "idleCalm": 0.1, "killsPerMin": 8 }
+  }
+}

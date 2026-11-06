@@ -56,6 +56,7 @@ const lines = [
   `E2E flows (${sel.flows.length}): ${sel.flows.join(', ') || 'none'}${sel.maps.length ? ` (map tour of ${sel.maps.join(', ')} only)` : ''}`,
   `Browser map tour: ${tour ? 'yes (all parts)' : sel.maps.length ? `the changed maps (${sel.maps.join(', ')})` : 'no (nightly, v* tags and Run workflow)'}`,
   `Perf budget check: ${sel.perf ? 'yes' : 'no'}`,
+  `Bot scorecard check (pnpm bot-report --check): ${sel.bots ? 'yes' : 'no'}`,
   ...matrix.map((s) => `  shard ${s.index}/${s.of} (~${Math.round(s.seconds / 60)} min): ${s.flows}`),
 ];
 console.log(lines.join('\n'));
@@ -72,6 +73,8 @@ if (flag('--github')) {
     // The unit-test jobs' matrix: [{ name, args }] (vitest arguments).
     unit_jobs: JSON.stringify(units),
     perf: String(sel.perf),
+    // The bot scorecard's quick check (pnpm bot-report --check): a change to the bots, navigation, the sim or its modes.
+    bots: String(sel.bots),
     docs_only: String(sel.docsOnly),
   };
   if (out) appendFileSync(out, Object.entries(kv).map(([k, v]) => `${k}=${v}\n`).join(''));

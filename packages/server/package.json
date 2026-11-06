@@ -19,6 +19,7 @@
     "validate-map": "tsx src/tools/validate-map.ts",
     "spawn-points": "tsx src/tools/spawn-points.ts",
     "bot-report": "tsx src/tools/bot-report.ts",
+    "nav-audit": "tsx src/tools/nav-audit.ts",
     "typecheck": "tsc -p .",
     "hub": "tsx src/hub.ts"
   },

@@ -429,6 +429,16 @@ export class PhysicsWorld {
   }
 
   /**
+   * Distance along a normalised ray to the first thing a body walks into or stands on (the level, terrain, glass,
+   * force fields: what moves collide with), or null within maxDist. The navigation audit's falls and drop links.
+   */
+  moveRay(origin: Vec3, dir: Vec3, maxDist: number): number | null {
+    if (this.dirty) this.commit();
+    const hit = this.world.castRay(this.rayFrom(origin, dir), maxDist, true, undefined, MOVE_QUERY);
+    return hit ? hit.timeOfImpact : null;
+  }
+
+  /**
    * Straight down from `origin` to the first thing a vehicle stands on (map geometry, terrain, glass, other
    * mounts), leaving out `skip` (the vehicle's own box): the distance, or null within maxDist. Suspension rays.
    */

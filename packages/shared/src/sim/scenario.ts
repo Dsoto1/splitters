@@ -1215,7 +1215,9 @@ export class Scenario {
     for (const rule of this.map.logic.rules) {
       if (!rule.enabled || this.spentRules.has(rule.id) || rule.when.event !== 'button_pressed' || !rule.when.target) continue;
       const b = this.buttons.get(this.entityIndex(rule.when.target, 'button') ?? -1);
-      if (!b || !b.enabled || (b.e.once && b.used) || !teamAllows(b.e.team, team)) continue;
+      // (Not one cooling down: pressed now it does nothing. Primeval Park's fence power, 45 s between presses, had bots
+      // standing at it pressing every 3 s, one for 218 s.)
+      if (!b || !b.enabled || (b.e.once && b.used) || this.host.tick < b.readyAt || !teamAllows(b.e.team, team)) continue;
       for (const a of rule.do) {
         if (a.type !== 'door_open' && a.type !== 'door_toggle' && a.type !== 'door_unlock') continue;
         const d = this.doors.get(this.entityIndex(a.target, 'door') ?? -1);

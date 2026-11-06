@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 15,
+  "formatVersion": 26,
   "metadata": {
     "id": "m3_vault",
     "name": "The Vault",
@@ -570,7 +570,7 @@
       "position": [
         -10,
         0,
-        -2
+        -1
       ],
       "kind": "spawn",
       "yaw": 1.5707963267948966,

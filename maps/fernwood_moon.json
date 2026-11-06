@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 26,
+  "formatVersion": 27,
   "metadata": {
     "id": "fernwood_moon",
     "name": "Fernwood Moon",
@@ -19,7 +19,15 @@
       "core.ctf",
       "core.koth",
       "core.deathmatch"
-    ]
+    ],
+    "release": {
+      "mapId": "m_kb5g35wcgjqiapzs",
+      "versionId": "v_seenvuugpkkkcw2p",
+      "revision": 2,
+      "contentHash": "sha256:ac6b17452dbdf85441424597366be5107381a1c510b61928712368765f6b03b5",
+      "schemaVersion": 27,
+      "releasedAt": "2026-11-06T15:54:05.190Z"
+    }
   },
   "classicStructure": {
     "cellSize": 8,
@@ -21974,9 +21982,9 @@
     {
       "id": "spawn_1112",
       "position": [
-        -90,
+        -89.75,
         0,
-        -40
+        -39.97
       ],
       "kind": "spawn",
       "yaw": 0,

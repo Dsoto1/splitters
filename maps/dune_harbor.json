@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 25,
+  "formatVersion": 27,
   "metadata": {
     "id": "dune_harbor",
     "name": "Dune Harbor",
@@ -20,7 +20,15 @@
       "core.ctf",
       "core.koth",
       "core.deathmatch"
-    ]
+    ],
+    "release": {
+      "mapId": "m_wzyesomkb7yphzin",
+      "versionId": "v_ul72cdw4t2zvl3k4",
+      "revision": 1,
+      "contentHash": "sha256:b02aea81f60dc89055b9abec63240dc2047870092d9dd2d4a1cf76538cb6bc27",
+      "schemaVersion": 27,
+      "releasedAt": "2026-11-06T14:42:11.690Z"
+    }
   },
   "classicStructure": {
     "cellSize": 8,
@@ -7661,13 +7669,13 @@
       "position": [
         21.4,
         -2.8,
-        90
+        89.4
       ],
       "kind": "block",
       "size": [
         2.4,
         1.1,
-        6.4
+        5.2
       ],
       "yaw": 0,
       "material": "core.pbr_white_panel",
@@ -7683,13 +7691,13 @@
       "position": [
         26.6,
         -2.8,
-        90
+        89.4
       ],
       "kind": "block",
       "size": [
         2.4,
         1.1,
-        6.4
+        5.2
       ],
       "yaw": 0,
       "material": "core.pbr_white_panel",
@@ -8708,7 +8716,7 @@
       "position": [
         16,
         0,
-        -20
+        -19.25
       ],
       "kind": "spawn",
       "yaw": 0,
@@ -10443,12 +10451,12 @@
     },
     {
       "id": "prop_c21s6extmy",
-      "kind": "prop",
       "position": [
         19.5,
         0,
         -12
       ],
+      "kind": "prop",
       "model": "prop.tiled_well",
       "yaw": 0,
       "scale": 1,
@@ -10457,12 +10465,12 @@
     },
     {
       "id": "prop_mv1hjyr2b3",
-      "kind": "prop",
       "position": [
         -66,
         -0.49,
         8
       ],
+      "kind": "prop",
       "model": "prop.vehicle_raider_buggy",
       "yaw": 0.524,
       "scale": 1,
@@ -10471,12 +10479,12 @@
     },
     {
       "id": "prop_dy2f5b95fu",
-      "kind": "prop",
       "position": [
         66,
         -0.49,
         -8
       ],
+      "kind": "prop",
       "model": "prop.vehicle_raider_buggy",
       "yaw": -2.618,
       "scale": 1,
@@ -10485,12 +10493,12 @@
     },
     {
       "id": "prop_5hcaxh24b1",
-      "kind": "prop",
       "position": [
         16,
         0,
         -20
       ],
+      "kind": "prop",
       "model": "prop.dc_rug_rack",
       "yaw": 0,
       "scale": 1,
