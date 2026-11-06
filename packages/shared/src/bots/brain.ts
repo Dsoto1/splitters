@@ -2535,10 +2535,15 @@ export class BotBrain {
     return null;
   }
 
-  /** Whether a route gets the bot within reach of picking up what's at `pos` (on a crate it can't climb: beside it, close enough). */
+  /**
+   * Whether a route gets the bot within reach of picking up what's at `pos` (on a crate it can't climb: beside it, close
+   * enough), and back: not one in a trap seen from the main area (a perch a jump pad throws you onto with no way down,
+   * Skyward's and Sky Islands'; a pit), where the bot would stand for the rest of its life.
+   */
   private collectable(view: BotWorldView, pos: Vec3): boolean {
     const si = view.nav.standIn(view.self.pos, pos);
     // (Off the navmesh: no telling from here; the route's own checks see to it.)
+    if (si?.exact && !view.nav.inMain(pos) && view.nav.inMain(view.self.pos)) return false;
     return !si || si.exact || (horizontalDistance(si.pos, pos) < STEP_OFF && Math.abs(si.pos.y - pos.y) < 1.4);
   }
 
