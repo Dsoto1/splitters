@@ -4065,13 +4065,13 @@ async function drawnHands(page) {
  * Every character past its low-detail switch draws its whole body (owner, 2026-11-06: "I see enemy in distance not
  * fully there, only feet"). Over `frames` frames, each character in view (alive, not ragdolled) past its parts'
  * low-detail distance: every part's level of detail (getLOD) is the mesh the main pass draws, and its drawn body
- * (that level's vertices skinned as the GPU skins them, through its own skeleton) is numbers throughout and stands
- * near its full height (a standing or running body: the player's height times its size). Returns how many characters
- * were checked and the first frame each failed on.
+ * (that level's vertices skinned as the GPU skins them, through its own skeleton) is numbers throughout; those in
+ * `upright` (slots known to stand or run: riders sit, others may crouch) also stand near their full height (the
+ * player's height times their size). Returns how many characters were checked and the first frame each failed on.
  */
-async function wholeBodies(page, frames) {
+async function wholeBodies(page, frames, upright = []) {
   return page.evaluate(
-    async ([frames, fullHeight]) => {
+    async ([frames, fullHeight, upright]) => {
       const v = window.__cs.view;
       const sc = v.scene;
       const cam = v.camera;
@@ -4154,7 +4154,7 @@ async function wholeBodies(page, frames) {
             const spec = JSON.parse(a.specKey);
             const height = hi > lo ? hi - lo : 0;
             const want = fullHeight * (spec.size ?? 1);
-            if ((off.length || bad || height < want * 0.75) && !failed.has(slot)) {
+            if ((off.length || bad || (upright.includes(slot) && height < want * 0.75)) && !failed.has(slot)) {
               failed.set(slot, { slot, look: spec.look, dist: Math.round(dist), frame: n, height: +height.toFixed(2), want: +want.toFixed(2), nonNumbers: bad, off });
             }
           }
@@ -4169,7 +4169,7 @@ async function wholeBodies(page, frames) {
       sc.onAfterDrawPhaseObservable.remove(o2);
       return { checked: checked.size, seen: seen.size, failed: [...failed.values()] };
     },
-    [frames, 1.8],
+    [frames, 1.8, upright],
   );
 }
 
@@ -4278,7 +4278,7 @@ async function farBodies(browser) {
   await page.evaluate((yaw) => (window.__cs.input.yaw = yaw), setup.yaw);
   await page.waitForFunction((slots) => slots.filter((s) => window.__cs.view.avatars.get(s)?.culled === false).length >= 8, setup.slots, { timeout: T(60000) }).catch(() => {});
   const back = await page.evaluate((slots) => slots.filter((s) => window.__cs.view.avatars.get(s)?.culled === false).length, setup.slots);
-  const r = await wholeBodies(page, 12);
+  const r = await wholeBodies(page, 12, setup.slots);
   const broken = r.failed.map((f) => `${f.look} at ${f.dist} m, frame ${f.frame}: ${f.height} of ${f.want} m drawn${f.nonNumbers ? `, ${f.nonNumbers} vertices not numbers` : ''}${f.off.length ? `, ${f.off.join(', ')}` : ''}`);
   check(slept >= 8 && back >= 8 && r.checked >= 6 && r.failed.length === 0, `far characters draw their whole bodies after a fight, asleep out of view and awake again (${slept} slept, ${back} back in view, ${r.checked} checked past the low-detail switch of ${r.seen} seen; broken: ${broken.join('; ') || 'none'})`);
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
