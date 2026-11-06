@@ -525,32 +525,49 @@ export const niceScore = (v: number): number => {
   return Math.max(step, Math.min(SCORE_LIMIT_MAX, Math.round(v / step) * step));
 };
 
-/** Minutes a team match suggests by players a side: 10 up to 6, 15 up to 16, 20 beyond. */
+/** Minutes a team match suggests by players a side: 10 up to 6, 15 up to 16, 20 beyond (owner, 2026-11-06). */
 export const teamMinutes = (perTeam: number): number => (perTeam <= 6 ? 10 : perTeam <= 16 ? 15 : 20);
+
+/**
+ * Team Deathmatch: points a team's score limit asks of each of its players per minute of the time limit. Bots
+ * score about 1.2 (the leading team's points per player per minute, the middle of 5–7 maps at each size from 1v1
+ * to 24v24: docs/BOTS.md, "Score and time"), so the score falls due near the time limit: on the middle map at
+ * 70–100% of it, on a crowded little arena sooner, and a sprawling map runs out of time first.
+ */
+export const TDM_POINTS_PER_PLAYER_MINUTE = 1;
+
+/**
+ * Deathmatch: the leader's kills a match suggests, per square root of the players (10 minutes). The leader's kill
+ * rate grows about as √players (1.8 a minute with 2 players, 3.8 with 8, 5–7 with 16–32), so the score grows
+ * gently: 15 for 2 players, 35 for 8, 50 for 16, 70 for 32.
+ */
+export const DM_KILLS_PER_ROOT_PLAYER = 12;
 
 /** King of the Hill: hill seconds to win per minute of the match (120 in 10 minutes, as before). */
 export const HILL_SECONDS_PER_MINUTE = 12;
 
 /**
  * The score limit and time a match suggests for its size: `players` in all (you and bots), and in team modes the
- * `teams` (each team's players: the largest leads the score). Fitted to bot matches' scoring rates (pnpm
- * bot-report; docs/BOTS.md, "Score and time"), anchored on the owner's 4v4 ≈ 40 points in 10 minutes and
- * 24v24 ≈ 500 in 15–20, so the score is usually reached near the time limit rather than in two minutes:
- * - Team Deathmatch: a team of n scores about n × (8 + n / 2) (4v4 40, 8v8 100, 12v12 170, 16v16 260, 24v24 500,
- *   48v48 1,500); 10 minutes up to 6 a side, 15 up to 16, 20 beyond.
- * - Deathmatch: the leader's kills, gently up with the players; the time likewise.
+ * `teams` (each team's players: the largest leads the score). Fitted to how fast bots score (pnpm bot-report,
+ * 2026-11-06; docs/BOTS.md, "Score and time"), so the score is usually reached near the time limit rather than in
+ * two minutes, and it meets the owner's anchors (4v4 about 40 points in 10 minutes, 24v24 about 500 in 15–20):
+ * - Team Deathmatch: a point per player per minute of the time limit (a team of n, `teamMinutes`: n × minutes):
+ *   1v1 10, 4v4 40, 6v6 60 (10 min); 8v8 120, 12v12 180, 16v16 240 (15 min); 24v24 500, 48v48 950 (20 min).
+ * - Deathmatch: the leader's kills, gently up with the players (12 × √players), 10 minutes.
  * - Capture the Flag: the mode's captures (3), the time with the teams' size.
- * - King of the Hill: the time with the teams' size, hill seconds with the time.
+ * - King of the Hill: the time with the teams' size, hill seconds with the time (12 a minute).
  * - Everything else: the mode's own score, 10 minutes (as a setup always started).
  */
 export function suggestedLimits(mode: GameMode, players: number, teams?: readonly number[]): MatchLimits {
   const all = Math.max(1, Math.round(players));
   const perTeam = Math.max(1, ...(teams?.length ? teams : [Math.ceil(all / 2)]));
   switch (mode) {
-    case 'core.tdm':
-      return { scoreLimit: niceScore(perTeam * (8 + perTeam / 2)), minutes: teamMinutes(perTeam) };
+    case 'core.tdm': {
+      const minutes = teamMinutes(perTeam);
+      return { scoreLimit: niceScore(perTeam * minutes * TDM_POINTS_PER_PLAYER_MINUTE), minutes };
+    }
     case 'core.deathmatch':
-      return { scoreLimit: niceScore(Math.max(15, 10 + all * 0.6)), minutes: all <= 16 ? 10 : 15 };
+      return { scoreLimit: niceScore(DM_KILLS_PER_ROOT_PLAYER * Math.sqrt(all)), minutes: 10 };
     case 'core.ctf':
       return { scoreLimit: DEFAULT_RULES[mode].scoreLimit, minutes: teamMinutes(perTeam) };
     case 'core.koth': {

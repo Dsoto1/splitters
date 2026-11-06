@@ -4,6 +4,7 @@ import {
   SCORE_LIMIT_MAX,
   applyParty,
   initPhysics,
+  limitsScale,
   niceScore,
   normalizeSetup,
   parseClientMessage,
@@ -49,6 +50,46 @@ function yard(): MapDocument {
 }
 
 const setup = (over: Partial<MatchSetup> = {}): MatchSetup => ({ map: 'st_johns', mode: 'core.tdm', bots: 11, skill: 'normal', scoreLimit: 40, minutes: 10, scoreAuto: true, timeAuto: true, ...over });
+
+describe('the suggested score and time per mode (fitted to bot-report scoring rates: docs/BOTS.md, "Score and time")', () => {
+  const tdm = (n: number) => suggestedLimits('core.tdm', 2 * n, [n, n]);
+
+  it('Team Deathmatch: a point per player per minute of the time limit, meeting the owner’s anchors', () => {
+    const table = (ns: number[]) => ns.map((n) => `${n}v${n} ${tdm(n).scoreLimit}/${tdm(n).minutes}`).join(', ');
+    expect(table([1, 2, 4, 6])).toBe('1v1 10/10, 2v2 20/10, 4v4 40/10, 6v6 60/10');
+    expect(table([7, 8, 12, 16])).toBe('7v7 110/15, 8v8 120/15, 12v12 180/15, 16v16 240/15');
+    expect(table([17, 24, 32, 48])).toBe('17v17 350/20, 24v24 500/20, 32v32 650/20, 48v48 950/20');
+    // The owner's anchors (2026-11-06): 4v4 about 40 points in 10 minutes; 24v24 about 500 in 15–20.
+    expect(tdm(4)).toEqual({ scoreLimit: 40, minutes: 10 });
+    expect(tdm(24)).toEqual({ scoreLimit: 500, minutes: 20 });
+    // It only grows with the teams.
+    for (let n = 2; n <= 48; n++) expect(tdm(n).scoreLimit).toBeGreaterThanOrEqual(tdm(n - 1).scoreLimit);
+    // Uneven or many teams: the largest team leads the score.
+    expect(suggestedLimits('core.tdm', 24, [2, 2, 2, 2, 2, 2, 12])).toEqual(tdm(12));
+    expect(suggestedLimits('core.tdm', 16, [4, 4, 4, 4])).toEqual(tdm(4));
+    // Without the teams, two even ones.
+    expect(suggestedLimits('core.tdm', 48)).toEqual(tdm(24));
+  });
+
+  it('Deathmatch: the leader’s kills, gently up with the players (12 × √players), 10 minutes', () => {
+    expect([1, 2, 4, 8, 12, 16, 32, 48].map((n) => suggestedLimits('core.deathmatch', n).scoreLimit)).toEqual([10, 15, 25, 35, 40, 50, 70, 80]);
+    for (const n of [2, 12, 48]) expect(suggestedLimits('core.deathmatch', n).minutes).toBe(10);
+  });
+
+  it('Capture the Flag keeps its 3 captures and King of the Hill 12 hill seconds a minute; their time grows with the teams', () => {
+    expect([4, 8, 16, 24].map((n) => suggestedLimits('core.ctf', 2 * n, [n, n]))).toEqual([3, 3, 3, 3].map((s, i) => ({ scoreLimit: s, minutes: [10, 15, 15, 20][i] })));
+    expect([4, 8, 16, 24].map((n) => suggestedLimits('core.koth', 2 * n, [n, n]))).toEqual([{ scoreLimit: 120, minutes: 10 }, { scoreLimit: 180, minutes: 15 }, { scoreLimit: 180, minutes: 15 }, { scoreLimit: 240, minutes: 20 }]);
+  });
+
+  it('rounds, missions, Fort Wars, Disc Arena and races keep their own score and the usual 10 minutes', () => {
+    const own: GameMode[] = ['core.elim', 'core.bomb', 'core.hostage', 'core.coop', 'core.zombies', 'core.forts', 'core.discs', 'core.race'];
+    for (const mode of own) {
+      expect(limitsScale(mode)).toBe(false);
+      for (const n of [8, 48]) expect(suggestedLimits(mode, n, [n / 2, n / 2])).toEqual({ scoreLimit: DEFAULT_RULES[mode].scoreLimit, minutes: 10 });
+    }
+    expect((['core.tdm', 'core.deathmatch', 'core.ctf', 'core.koth'] as GameMode[]).every(limitsScale)).toBe(true);
+  });
+});
 
 describe('score steps', () => {
   it('step by 5, 10, 50 and 100 as scores grow, and round a worked-out score to its step', () => {

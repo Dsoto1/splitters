@@ -2364,7 +2364,7 @@ async function teamsFlow(browser) {
  */
 async function setupLimitsFlow(browser) {
   // The curve's values for St. John's presets (Small 4v4, Map's pick 12v12, Max 24v24): points and minutes.
-  const EXPECT = { '4v4': [40, 10], '12v12': [170, 15], '24v24': [500, 20] };
+  const EXPECT = { '4v4': [40, 10], '12v12': [180, 15], '24v24': [500, 20] };
   const errors = [];
   const page = await (await browser.newContext({ viewport: { width: 1280, height: 720 } })).newPage();
   page.on('pageerror', (e) => errors.push(e.message));
