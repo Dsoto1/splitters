@@ -5328,11 +5328,12 @@ async function hostcontrolsFlow(browser) {
   await page.evaluate(() => document.getElementById('hc-score-plus').click());
   const asks = await page.evaluate(() => ({ apply: document.getElementById('hc-apply').textContent, changes: document.getElementById('hc-changes').textContent, marked: !!document.getElementById('hc-score')?.closest('.field')?.querySelector('.when-tag.restart') }));
   check(asks.apply === 'Apply & restart' && asks.changes === 'score 16 (restart)' && asks.marked, `a change that needs a restart is marked, and Apply says it restarts (${JSON.stringify(asks)})`);
-  const before = await sim(page, (m) => m.tick);
   await page.evaluate(() => document.getElementById('hc-apply').click());
-  const applied = await simWait(page, (m, _me, t) => m.rules.scoreLimit === 16 && m.tick < t, before, T(10000));
+  // (A restart plays the rules waiting for it: the score limit changes only then.)
+  const applied = await simWait(page, (m) => m.rules.scoreLimit === 16, null, T(10000));
+  const restartFeed = await page.waitForFunction(() => /restarted the match/.test(document.getElementById('feed').textContent ?? ''), null, { timeout: T(5000) }).then(() => true, () => false);
   const pendingNow = await page.evaluate(() => window.__cs.host()?.pending);
-  check(applied && !Object.keys(pendingNow ?? {}).length, `Apply & restart starts the match over with the new score limit (${JSON.stringify({ score: await sim(page, (m) => m.rules.scoreLimit), pending: pendingNow })})`);
+  check(applied && restartFeed && !Object.keys(pendingNow ?? {}).length, `Apply & restart starts the match over with the new score limit (${JSON.stringify({ score: await sim(page, (m) => m.rules.scoreLimit), restartFeed, pending: pendingNow })})`);
   // Ending or restarting everyone's match takes a second click.
   const once = await page.evaluate(() => {
     const b = document.getElementById('hc-end');
