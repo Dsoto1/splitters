@@ -8,6 +8,8 @@ made only on a commit that passed CI on a check branch.
 
 ## Unreleased
 
+**Four maps retired** (owner, 2026-11-06): Obsidian Orb, Reactor, Serpent Gorge and Iron Compound are out of the menus, playlists, rotations and the host's map picker (their files stay for tests).
+
 **Hosting: a friend whose game freezes for a moment keeps their place.** A friend on a slow machine can freeze for up
 to half a minute while joining. While that happens, their connection is still up. The host used to drop them after 20 s
 of silence. Now it checks the connection itself, and gives a friend whose connection is up 60 s. A dead link still goes

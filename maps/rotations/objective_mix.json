@@ -8,7 +8,6 @@
     { "map": "cinder_foundry", "mode": "core.koth" },
     { "map": "dune_harbor", "mode": "core.bomb" },
     { "map": "glasswork_office", "mode": "core.hostage" },
-    { "map": "iron_compound", "mode": "core.ctf" },
     { "map": "eagle_spires", "mode": "core.elim" },
     { "map": "starhaven", "mode": "core.bomb" },
     { "map": "neon_spire", "mode": "core.koth" }
