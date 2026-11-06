@@ -16,6 +16,8 @@ export type { LocalMatchOptions } from './matchHost.ts';
 export type SimThread = 'worker' | 'main';
 
 const SIM_KEY = 'tiletrigger.sim';
+/** How often the page tells the match which friends' links are up (MatchHost.linkUp). */
+const LINK_UP_EVERY_MS = 2000;
 
 /**
  * The page's thread instead of a worker: browsers without module workers, `?sim=main`,
@@ -100,6 +102,8 @@ export class LocalTransport implements Transport {
   private nextLink = 1;
   /** Friends were sent `travel`: give it time to arrive before their links close. */
   private departing = false;
+  /** Every few seconds: which friends' links are up (the match gives a stalled friend longer: MatchHost.linkUp). */
+  private upTimer?: number;
   private evals = new Map<number, { resolve: (v: unknown) => void; reject: (e: Error) => void }>();
   private nextEval = 1;
   private onVisibility?: () => void;
@@ -375,6 +379,9 @@ export class LocalTransport implements Transport {
     const id = this.nextLink++;
     this.links.set(id, { link, slot: null });
     this.toHost({ k: 'open', id, ...(link.zip ? { zip: true } : {}) });
+    this.upTimer ??= window.setInterval(() => {
+      for (const [lid, r] of this.links) if (r.link.connected?.()) this.toHost({ k: 'up', id: lid });
+    }, LINK_UP_EVERY_MS);
     // A signed-in friend's hello carries an account ticket for our join code: check it here (the match trusts the
     // page), and hold their messages until it's checked, so the match knows their username before it lets them in.
     let held: string[] | null = null;
@@ -426,6 +433,8 @@ export class LocalTransport implements Transport {
     else if (this.saidBye && links.length) window.setTimeout(() => links.forEach((l) => l.close()), 1000);
     else links.forEach((l) => l.close());
     if (typeof window.removeEventListener === 'function') window.removeEventListener('pagehide', this.onPageHide);
+    window.clearInterval(this.upTimer);
+    this.upTimer = undefined;
     this.links.clear();
     this.toHost({ k: 'stop' });
     this.stopped = true;

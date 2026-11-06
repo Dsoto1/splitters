@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 20,
+  "formatVersion": 27,
   "metadata": {
     "id": "cedar_lane",
     "name": "Cedar Lane",
@@ -17,7 +17,15 @@
       "core.deathmatch",
       "core.tdm",
       "core.koth"
-    ]
+    ],
+    "release": {
+      "mapId": "m_7esvtm4kykw23mm2",
+      "versionId": "v_pw2xnyehod6rlteu",
+      "revision": 2,
+      "contentHash": "sha256:117b40c901d7706e57129165eb5aa3ab7aed9e616d0b212eb41ae5f8da3213e0",
+      "schemaVersion": 27,
+      "releasedAt": "2026-11-06T15:52:38.727Z"
+    }
   },
   "classicStructure": {
     "cellSize": 8,
@@ -1766,9 +1774,9 @@
     {
       "id": "spawn_120",
       "position": [
-        9,
+        9.13,
         0,
-        -9
+        -8.78
       ],
       "kind": "spawn",
       "yaw": -1.5707963267948966,
@@ -1832,7 +1840,7 @@
     {
       "id": "spawn_126",
       "position": [
-        -12,
+        -11.85,
         0,
         -4
       ],
@@ -2218,7 +2226,6 @@
     "style": "invisible",
     "height": 8
   },
-  "track": null,
   "backdrop": {
     "sky": "clear",
     "scenery": "hills",

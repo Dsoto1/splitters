@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 25,
+  "formatVersion": 27,
   "metadata": {
     "id": "step_temple",
     "name": "Step Temple",
@@ -16,7 +16,15 @@
     "supportedModes": [
       "core.deathmatch",
       "core.tdm"
-    ]
+    ],
+    "release": {
+      "mapId": "m_ohrgwqhp5taoboee",
+      "versionId": "v_47sm2qdptqr5mz2c",
+      "revision": 2,
+      "contentHash": "sha256:fc623762a7a931571beeeff50e0ac0e9b7617c4a8c75ca8f104e5626730d29f3",
+      "schemaVersion": 27,
+      "releasedAt": "2026-11-06T15:59:49.243Z"
+    }
   },
   "classicStructure": {
     "cellSize": 8,
@@ -7121,34 +7129,34 @@
     },
     {
       "id": "pickup_dmxokrxrmg",
-      "kind": "pickup",
       "position": [
         40,
         4.2,
         24
       ],
+      "kind": "pickup",
       "item": "core.armor_small",
       "respawnSeconds": null
     },
     {
       "id": "pickup_jo92buckom",
-      "kind": "pickup",
       "position": [
         -8,
         4.2,
         8
       ],
+      "kind": "pickup",
       "item": "core.armor_small",
       "respawnSeconds": null
     },
     {
       "id": "light_ddrdoryh7l",
-      "kind": "light",
       "position": [
         29,
         4,
         -11
       ],
+      "kind": "light",
       "yaw": 0,
       "color": "#ff9a3c",
       "intensity": 1.4,
@@ -7158,12 +7166,12 @@
     },
     {
       "id": "light_6ctcqgmocs",
-      "kind": "light",
       "position": [
         35,
         4,
         -11
       ],
+      "kind": "light",
       "yaw": 0,
       "color": "#ff9a3c",
       "intensity": 1.4,
@@ -7173,12 +7181,12 @@
     },
     {
       "id": "prop_6ac1tuagd0",
-      "kind": "prop",
       "position": [
         42.7,
         0,
         -11.2
       ],
+      "kind": "prop",
       "model": "prop.temple_fire_statue",
       "yaw": 1.571,
       "scale": 1,
@@ -7187,12 +7195,12 @@
     },
     {
       "id": "prop_zpwk35dqcp",
-      "kind": "prop",
       "position": [
         42.7,
         0,
         -4.8
       ],
+      "kind": "prop",
       "model": "prop.temple_fire_statue",
       "yaw": 1.571,
       "scale": 1,
@@ -7201,12 +7209,12 @@
     },
     {
       "id": "prop_5ts8ky0uqr",
-      "kind": "prop",
       "position": [
         27.6,
         4.3,
         -4.25
       ],
+      "kind": "prop",
       "model": "prop.jt_banner_red",
       "yaw": 3.142,
       "scale": 1,
@@ -7215,12 +7223,12 @@
     },
     {
       "id": "prop_t7qf6k4zjn",
-      "kind": "prop",
       "position": [
         36.4,
         4.3,
         -4.25
       ],
+      "kind": "prop",
       "model": "prop.jt_banner_red",
       "yaw": 3.142,
       "scale": 1,
@@ -7229,18 +7237,18 @@
     },
     {
       "id": "block_05ldagivf5",
-      "kind": "block",
       "position": [
         44.6,
         -0.4,
         -8
       ],
-      "yaw": 0,
+      "kind": "block",
       "size": [
         1.2,
         0.2,
         8
       ],
+      "yaw": 0,
       "material": "core.mossy_stone",
       "tint": null,
       "behaviour": "solid",
@@ -7251,12 +7259,12 @@
     },
     {
       "id": "prop_mfl0mwrrnn",
-      "kind": "prop",
       "position": [
         21,
         -1.65,
         -13
       ],
+      "kind": "prop",
       "model": "prop.jg_monstera",
       "yaw": 0,
       "scale": 1,
@@ -7265,12 +7273,12 @@
     },
     {
       "id": "prop_x0rc1yotvd",
-      "kind": "prop",
       "position": [
         26,
         -0.43,
         -13.2
       ],
+      "kind": "prop",
       "model": "prop.jt_plant_cluster",
       "yaw": 0,
       "scale": 1,
@@ -7279,12 +7287,12 @@
     },
     {
       "id": "prop_ypl82jhglz",
-      "kind": "prop",
       "position": [
         33,
         -0.33,
         -13.2
       ],
+      "kind": "prop",
       "model": "prop.jt_plant_cluster",
       "yaw": 0,
       "scale": 1,
@@ -7293,12 +7301,12 @@
     },
     {
       "id": "prop_7nlyaxevjz",
-      "kind": "prop",
       "position": [
         39,
         -0.34,
         -13
       ],
+      "kind": "prop",
       "model": "prop.jg_monstera",
       "yaw": 0,
       "scale": 1,
@@ -7307,29 +7315,29 @@
     },
     {
       "id": "spawn_amleo2l0kj",
-      "kind": "spawn",
       "position": [
-        42.6,
+        43.1,
         0,
         -8
       ],
+      "kind": "spawn",
       "yaw": -1.571,
       "faction": null
     },
     {
       "id": "block_odkmv3mx3b",
-      "kind": "block",
       "position": [
         9.5,
         0,
         9.5
       ],
-      "yaw": 0.785,
+      "kind": "block",
       "size": [
         2.6,
         1.1,
         0.8
       ],
+      "yaw": 0.785,
       "material": "core.carved_stone",
       "tint": null,
       "behaviour": "solid",
@@ -7340,12 +7348,12 @@
     },
     {
       "id": "light_e2hxfyh75y",
-      "kind": "light",
       "position": [
         43,
         4,
         29
       ],
+      "kind": "light",
       "yaw": 0,
       "color": "#ff9a3c",
       "intensity": 1.4,
@@ -7355,12 +7363,12 @@
     },
     {
       "id": "light_gp7msgjmhm",
-      "kind": "light",
       "position": [
         43,
         4,
         35
       ],
+      "kind": "light",
       "yaw": 0,
       "color": "#ff9a3c",
       "intensity": 1.4,
@@ -7370,12 +7378,12 @@
     },
     {
       "id": "prop_26cjl0x171",
-      "kind": "prop",
       "position": [
         43.2,
         0,
         42.7
       ],
+      "kind": "prop",
       "model": "prop.temple_fire_statue",
       "yaw": 0,
       "scale": 1,
@@ -7384,12 +7392,12 @@
     },
     {
       "id": "prop_epqtnvm8q3",
-      "kind": "prop",
       "position": [
         36.8,
         0,
         42.7
       ],
+      "kind": "prop",
       "model": "prop.temple_fire_statue",
       "yaw": 0,
       "scale": 1,
@@ -7398,12 +7406,12 @@
     },
     {
       "id": "prop_xo4odrco3m",
-      "kind": "prop",
       "position": [
         36.25,
         4.3,
         27.6
       ],
+      "kind": "prop",
       "model": "prop.jt_banner_red",
       "yaw": 1.571,
       "scale": 1,
@@ -7412,12 +7420,12 @@
     },
     {
       "id": "prop_kkfpi0eazr",
-      "kind": "prop",
       "position": [
         36.25,
         4.3,
         36.4
       ],
+      "kind": "prop",
       "model": "prop.jt_banner_red",
       "yaw": 1.571,
       "scale": 1,
@@ -7426,18 +7434,18 @@
     },
     {
       "id": "block_0af7pnzsw8",
-      "kind": "block",
       "position": [
         40,
         -0.4,
         44.6
       ],
-      "yaw": -1.571,
+      "kind": "block",
       "size": [
         1.2,
         0.2,
         8
       ],
+      "yaw": -1.571,
       "material": "core.mossy_stone",
       "tint": null,
       "behaviour": "solid",
@@ -7448,12 +7456,12 @@
     },
     {
       "id": "prop_xvlpf0046m",
-      "kind": "prop",
       "position": [
         45,
         -1.79,
         21
       ],
+      "kind": "prop",
       "model": "prop.jg_monstera",
       "yaw": -1.571,
       "scale": 1,
@@ -7462,12 +7470,12 @@
     },
     {
       "id": "prop_obwnq2ue59",
-      "kind": "prop",
       "position": [
         45.2,
         -0.44,
         26
       ],
+      "kind": "prop",
       "model": "prop.jt_plant_cluster",
       "yaw": -1.571,
       "scale": 1,
@@ -7476,12 +7484,12 @@
     },
     {
       "id": "prop_tjjq2xgvb7",
-      "kind": "prop",
       "position": [
         45.2,
         -0.39,
         33
       ],
+      "kind": "prop",
       "model": "prop.jt_plant_cluster",
       "yaw": -1.571,
       "scale": 1,
@@ -7490,12 +7498,12 @@
     },
     {
       "id": "prop_7e9xd33y98",
-      "kind": "prop",
       "position": [
         45,
         -0.18,
         39
       ],
+      "kind": "prop",
       "model": "prop.jg_monstera",
       "yaw": -1.571,
       "scale": 1,
@@ -7504,29 +7512,29 @@
     },
     {
       "id": "spawn_u5uhixt8oj",
-      "kind": "spawn",
       "position": [
-        40,
+        40.19,
         0,
-        42.6
+        43.06
       ],
+      "kind": "spawn",
       "yaw": 3.142,
       "faction": null
     },
     {
       "id": "block_9w07a2nv37",
-      "kind": "block",
       "position": [
         22.5,
         0,
         9.5
       ],
-      "yaw": -0.785,
+      "kind": "block",
       "size": [
         2.6,
         1.1,
         0.8
       ],
+      "yaw": -0.785,
       "material": "core.carved_stone",
       "tint": null,
       "behaviour": "solid",
@@ -7537,12 +7545,12 @@
     },
     {
       "id": "light_mc5vpcweqh",
-      "kind": "light",
       "position": [
         3,
         4,
         43
       ],
+      "kind": "light",
       "yaw": 0,
       "color": "#ff9a3c",
       "intensity": 1.4,
@@ -7552,12 +7560,12 @@
     },
     {
       "id": "light_6lmfgc3cff",
-      "kind": "light",
       "position": [
         -3,
         4,
         43
       ],
+      "kind": "light",
       "yaw": 0,
       "color": "#ff9a3c",
       "intensity": 1.4,
@@ -7567,12 +7575,12 @@
     },
     {
       "id": "prop_0w3jql50ed",
-      "kind": "prop",
       "position": [
         -10.7,
         0,
         43.2
       ],
+      "kind": "prop",
       "model": "prop.temple_fire_statue",
       "yaw": -1.571,
       "scale": 1,
@@ -7581,12 +7589,12 @@
     },
     {
       "id": "prop_7z14fgs7s3",
-      "kind": "prop",
       "position": [
         -10.7,
         0,
         36.8
       ],
+      "kind": "prop",
       "model": "prop.temple_fire_statue",
       "yaw": -1.571,
       "scale": 1,
@@ -7595,12 +7603,12 @@
     },
     {
       "id": "prop_89yclntz5q",
-      "kind": "prop",
       "position": [
         4.4,
         4.3,
         36.25
       ],
+      "kind": "prop",
       "model": "prop.jt_banner_red",
       "yaw": 0,
       "scale": 1,
@@ -7609,12 +7617,12 @@
     },
     {
       "id": "prop_je74016k41",
-      "kind": "prop",
       "position": [
         -4.4,
         4.3,
         36.25
       ],
+      "kind": "prop",
       "model": "prop.jt_banner_red",
       "yaw": 0,
       "scale": 1,
@@ -7623,18 +7631,18 @@
     },
     {
       "id": "block_ekrqxstr16",
-      "kind": "block",
       "position": [
         -12.6,
         -0.4,
         40
       ],
-      "yaw": 3.142,
+      "kind": "block",
       "size": [
         1.2,
         0.2,
         8
       ],
+      "yaw": 3.142,
       "material": "core.mossy_stone",
       "tint": null,
       "behaviour": "solid",
@@ -7645,12 +7653,12 @@
     },
     {
       "id": "prop_3n235pv1oz",
-      "kind": "prop",
       "position": [
         11,
         -1.66,
         45
       ],
+      "kind": "prop",
       "model": "prop.jg_monstera",
       "yaw": 3.142,
       "scale": 1,
@@ -7659,12 +7667,12 @@
     },
     {
       "id": "prop_83reavktfo",
-      "kind": "prop",
       "position": [
         6,
         -0.52,
         45.2
       ],
+      "kind": "prop",
       "model": "prop.jt_plant_cluster",
       "yaw": 3.142,
       "scale": 1,
@@ -7673,12 +7681,12 @@
     },
     {
       "id": "prop_6zlwkdt8y3",
-      "kind": "prop",
       "position": [
         -1,
         -0.43,
         45.2
       ],
+      "kind": "prop",
       "model": "prop.jt_plant_cluster",
       "yaw": 3.142,
       "scale": 1,
@@ -7687,12 +7695,12 @@
     },
     {
       "id": "prop_jrtyepj7rp",
-      "kind": "prop",
       "position": [
         -7,
         -0.43,
         45
       ],
+      "kind": "prop",
       "model": "prop.jg_monstera",
       "yaw": 3.142,
       "scale": 1,
@@ -7701,29 +7709,29 @@
     },
     {
       "id": "spawn_inq9aipltk",
-      "kind": "spawn",
       "position": [
-        -10.6,
+        -11.05,
         0,
-        40
+        40.06
       ],
+      "kind": "spawn",
       "yaw": 1.571,
       "faction": null
     },
     {
       "id": "block_zlsiuwh1ug",
-      "kind": "block",
       "position": [
         22.5,
         0,
         22.5
       ],
-      "yaw": -2.356,
+      "kind": "block",
       "size": [
         2.6,
         1.1,
         0.8
       ],
+      "yaw": -2.356,
       "material": "core.carved_stone",
       "tint": null,
       "behaviour": "solid",
@@ -7734,12 +7742,12 @@
     },
     {
       "id": "light_7uar2m0i99",
-      "kind": "light",
       "position": [
         -11,
         4,
         3
       ],
+      "kind": "light",
       "yaw": 0,
       "color": "#ff9a3c",
       "intensity": 1.4,
@@ -7749,12 +7757,12 @@
     },
     {
       "id": "light_azewwg7z21",
-      "kind": "light",
       "position": [
         -11,
         4,
         -3
       ],
+      "kind": "light",
       "yaw": 0,
       "color": "#ff9a3c",
       "intensity": 1.4,
@@ -7764,12 +7772,12 @@
     },
     {
       "id": "prop_9ub9w6ja6r",
-      "kind": "prop",
       "position": [
         -11.2,
         0,
         -10.7
       ],
+      "kind": "prop",
       "model": "prop.temple_fire_statue",
       "yaw": 3.142,
       "scale": 1,
@@ -7778,12 +7786,12 @@
     },
     {
       "id": "prop_coehsj8kjp",
-      "kind": "prop",
       "position": [
         -4.8,
         0,
         -10.7
       ],
+      "kind": "prop",
       "model": "prop.temple_fire_statue",
       "yaw": 3.142,
       "scale": 1,
@@ -7792,12 +7800,12 @@
     },
     {
       "id": "prop_thl0nkfedj",
-      "kind": "prop",
       "position": [
         -4.25,
         4.3,
         4.4
       ],
+      "kind": "prop",
       "model": "prop.jt_banner_red",
       "yaw": -1.571,
       "scale": 1,
@@ -7806,12 +7814,12 @@
     },
     {
       "id": "prop_8np7bt897v",
-      "kind": "prop",
       "position": [
         -4.25,
         4.3,
         -4.4
       ],
+      "kind": "prop",
       "model": "prop.jt_banner_red",
       "yaw": -1.571,
       "scale": 1,
@@ -7820,18 +7828,18 @@
     },
     {
       "id": "block_5pn91n9pz2",
-      "kind": "block",
       "position": [
         -8,
         -0.4,
         -12.6
       ],
-      "yaw": 1.571,
+      "kind": "block",
       "size": [
         1.2,
         0.2,
         8
       ],
+      "yaw": 1.571,
       "material": "core.mossy_stone",
       "tint": null,
       "behaviour": "solid",
@@ -7842,12 +7850,12 @@
     },
     {
       "id": "prop_xe5g9lehu1",
-      "kind": "prop",
       "position": [
         -13,
         -1.79,
         11
       ],
+      "kind": "prop",
       "model": "prop.jg_monstera",
       "yaw": 1.571,
       "scale": 1,
@@ -7856,12 +7864,12 @@
     },
     {
       "id": "prop_uzvhpr479j",
-      "kind": "prop",
       "position": [
         -13.2,
         -0.43,
         6
       ],
+      "kind": "prop",
       "model": "prop.jt_plant_cluster",
       "yaw": 1.571,
       "scale": 1,
@@ -7870,12 +7878,12 @@
     },
     {
       "id": "prop_soabhlvmd7",
-      "kind": "prop",
       "position": [
         -13.2,
         -0.05,
         -1
       ],
+      "kind": "prop",
       "model": "prop.jt_plant_cluster",
       "yaw": 1.571,
       "scale": 1,
@@ -7884,12 +7892,12 @@
     },
     {
       "id": "prop_m8jm44lcxl",
-      "kind": "prop",
       "position": [
         -13,
         2.17,
         -7
       ],
+      "kind": "prop",
       "model": "prop.jg_monstera",
       "yaw": 1.571,
       "scale": 1,
@@ -7898,29 +7906,29 @@
     },
     {
       "id": "spawn_ok7o5ywlld",
-      "kind": "spawn",
       "position": [
-        -8,
+        -8.06,
         0,
-        -10.6
+        -11.05
       ],
+      "kind": "spawn",
       "yaw": 0,
       "faction": null
     },
     {
       "id": "block_xar0tlzf5u",
-      "kind": "block",
       "position": [
         9.5,
         0,
         22.5
       ],
-      "yaw": 2.356,
+      "kind": "block",
       "size": [
         2.6,
         1.1,
         0.8
       ],
+      "yaw": 2.356,
       "material": "core.carved_stone",
       "tint": null,
       "behaviour": "solid",

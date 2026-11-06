@@ -4,6 +4,8 @@ export * from './sim/match.ts';
 export * from './sim/hostControl.ts';
 export * from './bots/brain.ts';
 export * from './nav/index.ts';
+export * from './nav/audit.ts';
+export * from './sim/mapNav.ts';
 export * from './sim/encounters.ts';
 export * from './sim/modes/index.ts';
 export * from './sim/profile.ts';

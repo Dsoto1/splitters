@@ -8,7 +8,7 @@ import { ViewGrid } from '../bots/grid.ts';
 import { BotDirector, CLUSTER_MIN_PLAYERS, assignRoles, type DirectorMember } from '../bots/director.ts';
 import { regionLayout } from '../bots/regions.ts';
 import { VantageBoard, vantageFor } from '../bots/vantage.ts';
-import { blockBoxes, buildMapGeometry, mapKillY, mapTerrainMesh, propBoxes, type WorldBox } from '../map/geometry.ts';
+import { buildMapGeometry, mapKillY, mapTerrainMesh, type WorldBox } from '../map/geometry.ts';
 import { EncounterEntity as EncounterSchema, NPC_ROLES, PLAYERS_FACTION, type EncounterEntity, type Faction, type MapDocument, type NpcRole, type PickupEntity } from '../map/schema.ts';
 import { add, createRng, distance, dot, horizontalDistance, lookAngles, normalize, scale, sub, viewDirection, type Vec3, hypot } from '../math.ts';
 import {
@@ -17,7 +17,8 @@ import {
 } from './mounts.ts';
 import { airRoute, botDropIndex, canDrop, dropArea, dropIndex, dropOffsets, dropPlan, dropStretchEnds, dropTarget, routePose, shouldJump, ticksToRouteEnd, type AirRoute, type DropPlan } from './airplane.ts';
 import { CHUTE, heightAboveGround } from './parachute.ts';
-import { NavWorld } from '../nav/index.ts';
+import type { NavWorld } from '../nav/index.ts';
+import { buildMapNav } from './mapNav.ts';
 import {
   POWERUP_DAMAGE_BIT,
   POWERUP_SPEED_BIT,
@@ -54,10 +55,10 @@ import { bodyHeightOf, eyeHeightOf, stanceOf } from './movement.ts';
 import { thirdPersonAim, type RayQuery } from './thirdPerson.ts';
 import { getProp } from '../content/props.ts';
 import { getEnvSpecies } from '../content/environment.ts';
-import { environmentNavTriangles, environmentShapes, joinTriangles, type EnvWorldShape } from '../map/environment.ts';
+import { environmentShapes, type EnvWorldShape } from '../map/environment.ts';
 import { SURFACE_TYPES } from './surfaceTypes.ts';
 import { ZIP, leaveZipline, mapZiplines, oneHanded, ziplineLinks, type Zipline } from './zipline.ts';
-import { BUTTON_THIRD_PERSON, BUTTON_STEER_LOOK, BUTTON_ALT, BUTTON_MELEE, BUTTON_JUMP, BUTTON_CROUCH, BUTTON_PRONE, BUTTON_SPRINT, EMOTE_DANCE, PING, QUICK_MESSAGES, SAY_FOLLOW, SAY_HOLD, BUTTON_RESPAWN, BUTTON_FIRE, BUTTON_RELOAD, BUTTON_ZOOM, BUTTON_THROW, BUTTON_USE, applyPads, mapLadders, mapPads, navLinks,
+import { BUTTON_THIRD_PERSON, BUTTON_STEER_LOOK, BUTTON_ALT, BUTTON_MELEE, BUTTON_JUMP, BUTTON_CROUCH, BUTTON_PRONE, BUTTON_SPRINT, EMOTE_DANCE, PING, QUICK_MESSAGES, SAY_FOLLOW, SAY_HOLD, BUTTON_RESPAWN, BUTTON_FIRE, BUTTON_RELOAD, BUTTON_ZOOM, BUTTON_THROW, BUTTON_USE, applyPads, mapLadders, mapPads,
   padLandings, sanitizeInput, stepMovement, gravityAt, mapGravityZones, type GravityZone, type JumpPad, type Ladder, type MoveEnv, type MoveState, type PlayerInput } from './movement.ts';
 import { PhysicsWorld, type GroundHeight } from './physics.ts';
 import { newSuspension, stepSuspension, suspensionOf, suspensionSnapshot, type SuspensionSetup, type SuspensionState } from './suspension.ts';
@@ -656,7 +657,7 @@ export class Match {
     this.physics = new PhysicsWorld(this.geometry, mapTerrainMesh(map), this.envShapes);
     this.sight = new SightCache(this.physics);
     // Bots plan around breakable props too (they are scenario colliders, not static geometry).
-    this.nav = NavWorld.build([...this.geometry, ...propBoxes(map, true), ...blockBoxes(map, true)], this.navExtra(), [...navLinks(map.entities, this.physics, this.phys.gravity), ...liftLinks(map)]);
+    this.nav = buildMapNav(map, this.geometry, this.physics, this.envShapes, this.phys);
     this.rng = createRng(seed);
     this.spawnPoints = map.entities
       .filter((e) => e.kind === 'spawn')
@@ -1053,7 +1054,7 @@ export class Match {
     const area = xs.length ? (Math.max(...xs) - Math.min(...xs)) * (Math.max(...zs) - Math.min(...zs)) : 0;
     if (area > NAV_REBUILD_MAX_AREA) return false;
     const old = this.nav;
-    this.nav = NavWorld.build([...this.geometry, ...propBoxes(this.map, true), ...blockBoxes(this.map, true), ...extra], this.navExtra(), [...navLinks(this.map.entities, this.physics, this.phys.gravity), ...liftLinks(this.map)]);
+    this.nav = buildMapNav(this.map, this.geometry, this.physics, this.envShapes, this.phys, extra);
     old.destroy();
     this.nav.markOpenings(this.scenario.openings());
     this.nav.markLifts(liftLinks(this.map));
@@ -2131,7 +2132,8 @@ export class Match {
     const bots = this.combatants().filter((c) => c.kind === 'bot' && c.bot);
     if (!bots.length || bots.length === this.rolesFor) return;
     this.rolesFor = bots.length;
-    const places = this.nav.places();
+    // (The main area's places: regions, lanes and vantage spots a route gets to, not roofs and pits.)
+    const places = this.nav.mainPlaces();
     this.director ??= new BotDirector(this.seed, regionLayout(places), places);
     const roles = assignRoles(
       bots.map((c) => ({ slot: c.slot, profile: c.bot!.profile })),
@@ -3606,11 +3608,6 @@ export class Match {
     const back = this.physics.raycastHit(start, scale(u, -1), probe - 0.005);
     if (!back || back.dist <= 0.001) return null;
     return add(start, scale(u, -back.dist));
-  }
-
-  /** Navigation's extra triangles: the terrain and the environment's movement-blocking shapes (map/environment.ts). */
-  private navExtra(): { positions: Float32Array; indices: Uint32Array } | null {
-    return joinTriangles(mapTerrainMesh(this.map), environmentNavTriangles(this.envShapes));
   }
 
   /** What a collider is made of, ballistically (gunplay.ts). */
@@ -5613,6 +5610,13 @@ export class Match {
     const mates = this.combatants().filter((o) => o !== c && o.alive && !o.mount && o.faction === c.faction && o.move.grounded && this.tick - (o.hurtAt ?? -Infinity) > TICK_RATE * 4 && !enemies.some((e) => distance(e.move.pos, o.move.pos) < 20));
     if (!mates.length) return null;
     const mate = mates[Math.floor(this.rng() * mates.length)]!;
+    // Only beside a teammate on walkable ground (the navmesh), and onto it: one stuck where nobody walks drew every
+    // squadmate spawning after it in with it (Dune Harbor: a rider thrown under a street's floor, four bots a round).
+    const walkable = (p: Vec3): boolean => {
+      const q = this.nav.closestPoint({ x: p.x, y: p.y + 0.5, z: p.z }, { x: 0.6, y: 1.2, z: 0.6 });
+      return !!q && Math.abs(q.y - p.y) < 1;
+    };
+    if (!walkable(mate.move.pos)) return null;
     for (const a of [Math.PI, Math.PI / 2, -Math.PI / 2, 0, (3 * Math.PI) / 4, (-3 * Math.PI) / 4]) {
       const yaw = mate.yaw + a;
       const pos = { x: mate.move.pos.x + Math.sin(yaw) * 1.4, y: mate.move.pos.y, z: mate.move.pos.z + Math.cos(yaw) * 1.4 };
@@ -5621,7 +5625,9 @@ export class Match {
       const floor = this.physics.raycastWorld({ x: pos.x, y: pos.y + 0.5, z: pos.z }, { x: 0, y: -1, z: 0 }, 1.5);
       if (floor === null) continue;
       if (!this.physics.lineOfSight({ x: mate.move.pos.x, y: mate.move.pos.y + 1, z: mate.move.pos.z }, { x: pos.x, y: pos.y + 1, z: pos.z })) continue;
-      return { pos: { x: pos.x, y: pos.y + 0.5 - floor, z: pos.z }, yaw: mate.yaw };
+      const at = { x: pos.x, y: pos.y + 0.5 - floor, z: pos.z };
+      if (!walkable(at)) continue;
+      return { pos: at, yaw: mate.yaw };
     }
     return null;
   }

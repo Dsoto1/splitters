@@ -2,7 +2,7 @@ import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { BROWSER_HOST_MAX_GUESTS, DEFAULT_RULES, PROTOCOL_VERSION, type ServerMessage } from '@tiletrigger/shared';
 import { makeMap } from '../../shared/test/helpers.ts';
 import { LocalTransport, type RemoteLink } from '../src/game/localTransport.ts';
-import { MAX_CATCH_UP_TICKS, simWake } from '../src/game/matchHost.ts';
+import { MAX_CATCH_UP_TICKS, silentLimit, simWake } from '../src/game/matchHost.ts';
 
 // The browser match runs on timers and reads the tab's visibility: enough of a window for it.
 beforeAll(() => {
@@ -304,4 +304,18 @@ describe('host controls in a browser match (offline, Host game)', () => {
       clock.mockRestore();
     }
   }, 60_000);
+});
+
+describe('silent friends (MatchHost.watchAway)', () => {
+  it('a loaded friend silent with its connection up has a stalled page: it gets 60 s, not 20', () => {
+    const now = 100_000;
+    // Still loading the match: a slow machine building the map can't answer meanwhile.
+    expect(silentLimit({ loaded: false }, now)).toBe(60_000);
+    // Loaded, and nothing says the connection is up: a dead link.
+    expect(silentLimit({ loaded: true }, now)).toBe(20_000);
+    // Loaded, and the page saw the connection up just now: a stalled page (CI's handoff flow: 25-30 s).
+    expect(silentLimit({ loaded: true, upAt: now - 1000 }, now)).toBe(60_000);
+    // The page's word is stale (the connection went down, or the page stopped saying so): a dead link again.
+    expect(silentLimit({ loaded: true, upAt: now - 10_000 }, now)).toBe(20_000);
+  });
 });

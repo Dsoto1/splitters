@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 25,
+  "formatVersion": 26,
   "metadata": {
     "id": "jungle_steps",
     "name": "Jungle Steps",
@@ -675,7 +675,7 @@
       "position": [
         14,
         0,
-        -1
+        0
       ],
       "kind": "spawn",
       "yaw": 0,
@@ -717,9 +717,9 @@
     {
       "id": "spawn_077",
       "position": [
-        7,
+        7.53,
         0,
-        10
+        10.53
       ],
       "kind": "spawn",
       "yaw": 0.3,
