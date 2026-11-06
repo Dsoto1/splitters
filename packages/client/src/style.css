@@ -618,7 +618,8 @@ html.touch .char-spin .spin-label kbd { display: none; }
 #pause .hc-foot .hc-status { flex-basis: 100%; margin: 0; }
 #pause .hc-foot .hc-status:empty { display: none; }
 #pause .hc-foot .hc-status.error { color: #ff8a6b; }
-#pause .pause-host-foot .seg-switch { margin-left: auto; }
+/* Offline / Host online, pushed right (only the foot's own switch: Restart now | Next match stays beside Apply). */
+#pause .pause-host-foot > .seg-switch { margin-left: auto; }
 /* A short window (a phone sideways): on the Host tab its foot's Resume does what the key hints would, so they make room. */
 @media (max-height: 520px) {
   #pause:has(#pause-host-foot:not([hidden])) .pause-hints { display: none; }
