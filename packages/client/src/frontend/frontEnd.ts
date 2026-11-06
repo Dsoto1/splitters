@@ -234,7 +234,7 @@ export type ArcadeSetup = MatchSetup;
 export interface FrontEndHooks {
   openEditor(): void;
   openDesigner(look: string): void;
-  /** `host`: open a join code for friends as soon as the match starts (Match setup's Host online). */
+  /** `host`: online from the start (Match setup's Host online, the Host tab's Host online without its restart): listed in the game browser when there's a hub, and a join code. */
   /** `botSet`: the host's own bots (Bots → Edit bots…). `spectate`: join it watching (Match setup → Spectate). */
   playLocal(map: MapDocument, rules: MatchRules, bots: number, skill: ArcadeSetup['skill'], host?: boolean, botSet?: BotSet | null, spectate?: boolean): void;
   playOnline(server: string, name: string): void;
@@ -752,7 +752,7 @@ export class FrontEnd {
   private readonly browse = loadBrowsePrefs();
   /** Even teams: a bot added or taken away changes every team alike (shown on while the teams are the same size). */
   private evenTeams = true;
-  /** Start match plays offline, or hosts the match online: a join code, and friends who join take bots' places. */
+  /** Start match plays offline, or hosts the match online: listed in the game browser (with a hub) and a join code; friends who join take bots' places. */
   private hostOnline = false;
   /** Why the last change to the players stopped short (a limit), shown until the next change. */
   private stopped: string | null = null;
@@ -1531,8 +1531,9 @@ export class FrontEnd {
   }
 
   /**
-   * Start the match as the switch says (Offline, or Host online: a join code for friends). `spectate`: you
-   * join it watching (a bot plays your place; J joins the game).
+   * Start the match as the switch says (Offline, or Host online: listed in the game browser when there's a community
+   * hub, and a join code for friends: the Host tab's Host online). `spectate`: you join it watching (a bot plays your
+   * place; J joins the game).
    */
   private start(o: { spectate?: boolean } = {}): void {
     const m = this.currentMap();

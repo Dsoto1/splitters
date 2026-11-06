@@ -1429,6 +1429,11 @@ export class GameSession {
       return;
     }
     if (this.advertiser) return;
+    // Listed under your name: wait for the roster that says it (a match hosted from the start lists as it loads).
+    if (!this.lastRoster) {
+      status.textContent = 'Listing as the match starts…';
+      return;
+    }
     const me = this.hud.name(this.slot);
     const show = () => (status.textContent = this.advertiser?.error ? `Not listed: ${this.advertiser.error}` : 'Listed: anyone can join from Online → Game browser.');
     this.advertiser = new LobbyAdvertiser(
@@ -1588,7 +1593,11 @@ export class GameSession {
         this.hud.setRoster(msg.players);
         this.lastRoster = msg.players;
         this.hostPanel.setPeople(this.peopleIn(msg.players), this.teamPeople(msg.players));
-        if (this.peerHost) this.updateOnline();
+        if (this.peerHost) {
+          // Hosting from the start: the listing waited for your name (updateListing).
+          if (!this.advertiser) this.updateListing();
+          this.updateOnline();
+        }
         if ((msg.players.find((p) => p.slot === this.slot)?.sp === 1) !== this.spectator) this.spectatorChanged(!this.spectator);
         this.looks = new Map(msg.players.map((p) => [p.slot, p.look]));
         this.view.setLocalLook(this.looks.get(this.slot));

@@ -8,6 +8,28 @@ made only on a commit that passed CI on a check branch.
 
 ## Unreleased
 
+**Score and time follow the match's size** (owner, 2026-11-06: "24v24 in a 40 pt match means on average 1 kill per
+[player]. 24v24 plays ok with 500 points, but also 15–20 min"): Match setup suggests the score and time for the
+players and bots, and they follow every size change until you set them yourself. Yours then stay, marked **Custom**,
+with **Back to suggested** one click away. The suggestions are fitted to how fast bots score on real maps
+(`pnpm bot-report`, which now prints each match's team scores): Team Deathmatch @@TDM@@; Deathmatch @@DM@@; Capture
+the Flag keeps 3 captures with 10, 15 or 20 minutes by team size; King of the Hill's hill seconds go with the time (12
+a minute). Rounds modes, co-op and Zombies are as before. Saved setups keep working: a score or time you set stays;
+the old defaults (40 points, 10 minutes) follow the size. Scores can now go up to 5,000 (they stopped at 1,000).
+
+**Host online means the same everywhere** (owner, 2026-11-06): Match setup's Host online now starts the match online
+**and listed** in the game browser, as the pause menu's does (with a community hub; without one, a join code). The
+join code still shows. Spectate follows the switch: offline you watch the bots, online you watch while friends play.
+
+**Save for next match** (owner, 2026-11-06): in the pause menu's Host tab, when you change a rule that needs a new
+match (score, time, respawn, friendly fire), choose **Restart now** or **Next match** beside Apply. Next match keeps
+the rules for the next match (after this one's scoreboard, or Restart, Change map or the rotation) and this one
+carries on; the foot says which will happen. The Host tab also shows the suggested score and time for the players
+being set, with **Use suggested**.
+
+**Co-op sizes stop at the map's size** (owner, 2026-11-06): co-op and Zombies' size presets go up to what the map is
+made for (its team layout, or its recommended most), not a Big squad of 24 or Max of 48 beyond it.
+
 **Signing in doesn't flash a red line** (owner, 2026-11-06): after Google sign-in the menu no longer shows "Signed in" in the red status line bottom left (the profile corner top right shows it); sign-in problems still show there.
 
 **Match setup, redesigned** (the owner's report and the approved design, 2026-11-06)
