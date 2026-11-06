@@ -1003,6 +1003,19 @@ variant for MAP 21.
   semi-traditional arena-style FPS match, so the landing craft is static dressing and cover. MAP 21's beach is
   where the fighting starts, not a scripted arrival.
 
+### Queued (owner, 2026-11-06): character intake, astronauts, crocodile and tortoise. NEXT FREE SLOT ("when able")
+The owner: "I have 3 new astronaut models, replace the light blue one for captain nova, add the 2 new ones. The
+boglurker can be replaced by the alligator. Retire bamboo, add the new turtle."
+
+The downloads are in `/home/user/meshy-drive/intake-2026-11-06/`; never commit them. They are 5 Mixamo-skeleton rigs:
+- **Light-blue astronaut** (107k tris) replaces Capt. Nova (`core.nova`).
+- **White astronaut** (10k tris): new.
+- **Dark astronaut** (167k tris, no finger joints): new.
+- **Humanoid crocodile** (26k tris) replaces Boglurker (`core.boglurker`).
+- **Humanoid tortoise** (199k tris): new. Bamboo (`core.panda`) is retired, mapped to the tortoise, with files kept.
+
+The brief is in the session scratchpad, `briefs/intake-1106.md`.
+
 ### Queued (owner-approved, 2026-11-06): Match Setup redesign, NEXT FREE SLOT (ahead of the follow-ons)
 **Owner's report** (screenshot: St. John's TDM 24v24, desktop):
 - The setup sidebar's text doesn't display properly. For example, "The map suggests 12v12." is crushed into a narrow
