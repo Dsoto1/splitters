@@ -2,7 +2,7 @@ import { horizontalDistance, type Vec3 } from '../../math.ts';
 import type { ModeSnapshot } from '../../protocol.ts';
 import { TICK_RATE } from '../constants.ts';
 import type { Combatant } from '../match.ts';
-import type { BotGoal, ModeHost, ModeLogic } from './types.ts';
+import { teamHome, type BotGoal, type BotTripSpec, type ModeHost, type ModeLogic } from './types.ts';
 
 export interface HillRt {
   /** Index of its map entity. */
@@ -102,6 +102,16 @@ export class KothMode implements ModeLogic {
 
   blocksVehicle(): boolean {
     return false;
+  }
+
+  /** Each team's way from its spawn to every hill. */
+  botTrips(): readonly BotTripSpec[] {
+    const out: BotTripSpec[] = [];
+    for (const t of this.host.teams) {
+      const home = teamHome(this.host.spawnPoints, t.id);
+      if (home) for (const h of this.hills) if (h.index >= 0) out.push({ team: t.id, from: home, to: { ...h.pos }, kind: 'attack' });
+    }
+    return out;
   }
 
   /** Everyone heads for the hill and spreads out on it. */

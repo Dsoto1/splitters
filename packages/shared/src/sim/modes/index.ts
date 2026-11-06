@@ -7,7 +7,8 @@ import { FortsMode } from './forts.ts';
 import { KothMode } from './koth.ts';
 import type { ModeHost, ModeLogic } from './types.ts';
 
-export type { BotGoal, ModeHost, ModeLogic } from './types.ts';
+export type { BotGoal, BotTripSpec, ModeHost, ModeLogic } from './types.ts';
+export { teamHome } from './types.ts';
 export { CtfMode, FLAG_CAPTURE_RADIUS, FLAG_CARRIER_SPEED, FLAG_TOUCH_RADIUS, type FlagRt } from './ctf.ts';
 export { CARRIER_AWARENESS, CtfBotPlan, ctfBotAwareness, ctfBotGoal, ctfDefenders, ctfRoleOf, type CtfRole } from './ctfBots.ts';
 export { KothMode, onHill, type HillRt } from './koth.ts';

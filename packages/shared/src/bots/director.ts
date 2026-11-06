@@ -150,6 +150,11 @@ export class BotDirector {
     this.planFor(slot).role = role;
   }
 
+  /** A bot's role, if it has a plan (measuring: bot-report). */
+  roleOf(slot: number): BotRole | null {
+    return this.plans.get(slot)?.role ?? null;
+  }
+
   /** A side's region knowledge. */
   regionsFor(side: string): RegionMap {
     let r = this.sides.get(side);

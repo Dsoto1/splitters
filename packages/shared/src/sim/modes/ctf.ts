@@ -3,7 +3,7 @@ import { FLAG_CARRIED, FLAG_DROPPED, FLAG_HOME, type FlagAction, type ModeSnapsh
 import { TICK_RATE } from '../constants.ts';
 import type { Combatant } from '../match.ts';
 import { CtfBotPlan, ctfBotAwareness, ctfBotGoal, ctfBotTookFlag } from './ctfBots.ts';
-import type { BotGoal, ModeHost, ModeLogic } from './types.ts';
+import type { BotGoal, BotTripSpec, ModeHost, ModeLogic } from './types.ts';
 
 /** Touching a flag: within this many metres of it (horizontally), and close in height. */
 export const FLAG_TOUCH_RADIUS = 1.3;
@@ -165,6 +165,16 @@ export class CtfMode implements ModeLogic {
 
   botGoal(c: Combatant): BotGoal | null {
     return ctfBotGoal(c, this.flags, this.botPlan);
+  }
+
+  /** Each team's way from its own flag to the enemy's (its attackers' trip, and the way an enemy carrier runs home with its flag). */
+  botTrips(): readonly BotTripSpec[] {
+    const [a, b] = this.flags;
+    if (!a || !b) return [];
+    return [
+      { team: a.team, from: { ...a.base }, to: { ...b.base }, kind: 'attack' },
+      { team: b.team, from: { ...b.base }, to: { ...a.base }, kind: 'attack' },
+    ];
   }
 
   // ---------------------------------------------------------------- flag moves

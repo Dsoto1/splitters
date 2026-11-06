@@ -70,6 +70,8 @@ import type { CheckpointPlayer, MatchCheckpoint } from '../net/handoff.ts';
 import { CLASS_DEFS, ClassPlay, classFromSay, classIndex, classesInPlay, type ClassState } from './classes.ts';
 import { ARENA_DISC, DISC_KNOCK_CREDIT_SECONDS, DISC_SPAWN_GUARD_SECONDS, DISC_POWERS, DISC_POWER_SHOTS, discThrows, dodgeDisc, keepOnDeck, splitVelocities, type DiscPower } from './discs.ts';
 import { createMode, type ModeLogic } from './modes/index.ts';
+import { teamHome, type BotTripSpec } from './modes/types.ts';
+import { findCorridors, type Trip } from '../nav/corridors.ts';
 import { Scenario, teamAllows } from './scenario.ts';
 import { liftLinks } from './movers.ts';
 import { IMPROMPTU_MIN_PLAYERS, WAVE_MIN_PLAYERS, centroid, generateSpawns, pickSpawn, spawnShortfall, spawnsPerTick, type SpawnSpot } from './spawns.ts';
@@ -1060,6 +1062,8 @@ export class Match {
     this.nav.markLifts(liftLinks(this.map));
     this.nav.places();
     this.sight.clear();
+    // (The trips' corridors again, on the new navmesh, the next time they are asked for.)
+    this.trips = null;
     return true;
   }
 
@@ -2119,6 +2123,32 @@ export class Match {
 
   /** Squads, roles and each side's map knowledge for Player Bots (bots/director.ts); made with the first bot. */
   private director: BotDirector | null = null;
+  /** The bots' common trips with their corridors (botTrips); null until asked for, and again once the navmesh changes. */
+  private trips: (BotTripSpec & { trip: Trip })[] | null = null;
+
+  /** A Player Bot's role this match (director.ts: squad, camper, sniper, lone wolf), for measuring; null without one. */
+  botRole(slot: number): string | null {
+    return this.director?.roleOf(slot) ?? null;
+  }
+
+  /**
+   * The trips a team's bots make again and again (the mode's: base to flag, spawn to hill...; without a mode, each
+   * team's spawn to the other's) and two or three corridors for each (nav/corridors.ts: a few ms each, kept per
+   * navmesh), worked out the first time they are asked for (at setup: refreshRoles) and again once the navmesh is
+   * rebuilt (Fort Wars). The team brain spreads its groups over them; the scorecard measures who walks which.
+   */
+  botTrips(): readonly (BotTripSpec & { trip: Trip })[] {
+    if (this.trips) return this.trips;
+    let specs: readonly BotTripSpec[] = this.mode?.botTrips?.() ?? [];
+    if (!this.mode && this.teams && this.teams.length === 2) {
+      const [a, b] = this.teams;
+      const ha = teamHome(this.spawnPoints, a!.id);
+      const hb = teamHome(this.spawnPoints, b!.id);
+      if (ha && hb) specs = [{ team: a!.id, from: ha, to: hb, kind: 'attack' }, { team: b!.id, from: hb, to: ha, kind: 'attack' }];
+    }
+    this.nav.mainPlaces();
+    return (this.trips = specs.map((s) => ({ ...s, trip: findCorridors(this.nav, s.from, s.to) })));
+  }
   /** Player Bots the roles were last handed out for (-1: hand them out again). */
   private rolesFor = -1;
 
@@ -2141,6 +2171,8 @@ export class Match {
       this.seed,
     );
     for (const [slot, role] of roles) this.director.setRole(slot, role);
+    // The common trips' corridors, here at setup rather than in a tick (a few ms each).
+    this.botTrips();
     if (!this.director.vantage && [...roles.values()].some((r) => r === 'camper' || r === 'sniper')) {
       this.director.vantage = new VantageBoard(vantageFor(places, (o, d, max) => this.physics.raycastWorld(o, d, max)));
       for (const c of bots) this.director.planFor(c.slot).vantage = this.director.vantage;

@@ -2,7 +2,7 @@ import { horizontalDistance } from '../../math.ts';
 import type { ModeSnapshot } from '../../protocol.ts';
 import { TICK_RATE } from '../constants.ts';
 import type { Combatant } from '../match.ts';
-import type { BotGoal, ModeHost, ModeLogic } from './types.ts';
+import { teamHome, type BotGoal, type BotTripSpec, type ModeHost, type ModeLogic } from './types.ts';
 
 /** Pause between Elimination rounds. */
 export const ELIM_BREAK_SECONDS = 3;
@@ -113,6 +113,18 @@ export class ElimMode implements ModeLogic {
 
   blocksVehicle(): boolean {
     return false;
+  }
+
+  /** Each team's way from its spawn to the other's (two teams). */
+  botTrips(): readonly BotTripSpec[] {
+    const [a, b] = this.host.teams;
+    const ha = a ? teamHome(this.host.spawnPoints, a.id) : null;
+    const hb = b ? teamHome(this.host.spawnPoints, b.id) : null;
+    if (!a || !b || !ha || !hb) return [];
+    return [
+      { team: a.id, from: ha, to: hb, kind: 'attack' },
+      { team: b.id, from: hb, to: ha, kind: 'attack' },
+    ];
   }
 
   /** Roam as in Team Deathmatch at first; once a round drags on, hunt the nearest enemy left standing. */

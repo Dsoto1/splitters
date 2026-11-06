@@ -3,7 +3,7 @@ import { horizontalDistance, type Vec3, hypot } from '../../math.ts';
 import { BOMB_CARRIED, BOMB_DEFUSED, BOMB_DROPPED, BOMB_EXPLODED, BOMB_PLANTED, type ModeSnapshot } from '../../protocol.ts';
 import { TICK_RATE } from '../constants.ts';
 import type { Combatant } from '../match.ts';
-import type { BotGoal, ModeHost, ModeLogic } from './types.ts';
+import { teamHome, type BotGoal, type BotTripSpec, type ModeHost, type ModeLogic } from './types.ts';
 
 /** Seconds to plant (attackers, inside a site) and to defuse (defenders, at the bomb). */
 export const BOMB_PLANT_SECONDS = 3;
@@ -273,6 +273,17 @@ export class BombMode implements ModeLogic {
 
   blocksVehicle(c: Combatant): boolean {
     return this.carrier === c.slot;
+  }
+
+  /** Each side's way from its spawn to every site (the attackers to plant, the defenders to hold it). */
+  botTrips(): readonly BotTripSpec[] {
+    const out: BotTripSpec[] = [];
+    for (const team of [this.attackers, this.defenders]) {
+      const home = teamHome(this.host.spawnPoints, team);
+      if (!home) continue;
+      for (const [, e] of this.sites()) out.push({ team, from: home, to: { x: e.position[0], y: e.position[1], z: e.position[2] }, kind: team === this.attackers ? 'attack' : 'defend' });
+    }
+    return out;
   }
 
   /**
