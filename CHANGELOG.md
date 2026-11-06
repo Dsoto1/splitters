@@ -8,6 +8,23 @@ made only on a commit that passed CI on a check branch.
 
 ## Unreleased
 
+## 0.8.0 (2026-11-06)
+
+Highlights:
+- **Bots play the objective.** CTF bots go for the flag: captures over the 44-map CTF suite went from 21 to 145, and
+  bots no longer stand about.
+- **Shots pass through arches, windows and holes.** 207 props got collision built from their real shape.
+- **Smoother big matches.** On an M1 Pro, Shingle Point went from 21.8 to 17.3 ms a frame and Market Town from 22.1
+  to 17.6 ms. Every body in a mass blast is thrown.
+- **Looks right.** No texture or prop flicker, far enemies are drawn whole, and a less toy-like world: our own grass,
+  flowers, rocks, pebbles and ferns.
+- **Characters.** Eleven new characters and a WWII tank, pistols held deep in the hand, re-tuned hands, and a HUD
+  portrait that follows Random characters.
+- **Maps and MapMaker.**
+  - Shingle Point has new assets.
+  - Set pieces arrive: a Collegiate Gothic carriageway and an enclosed skybridge.
+  - MapMaker shows where you can build, and lets you put floors over tall pieces.
+
 **Hands round 5: support hands, big hands, the Knight's gauntlets, the Spear** (owner-approved, 2026-11-06)
 - **The Spear, the Medkit and the Medi-Beam in first person**: the hand closes round the shaft and the handle again.
   The new pistol hold (below) had turned and closed them as a raked pistol grip, their fingers sticking straight out
