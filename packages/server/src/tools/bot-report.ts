@@ -82,6 +82,8 @@ interface MatchRow {
   /** Each flag run: when taken, how long it lasted, how it ended, by whom. */
   runs: { t: number; seconds: number; end: 'capture' | 'drop' | 'open'; slot: number; from: number }[];
   kills: number;
+  /** Other modes' objective events by kind and action ("hill hold", "bomb plant", "elim win"...). */
+  objective: Record<string, number>;
   tickMs: number;
   tickP95: number;
   bots: BotRow[];
@@ -172,7 +174,7 @@ function play(map: MapDocument, seed: number): MatchRow {
   const lastGoalD = new Map<number, { x: number; z: number; d: number }>();
   const runs: MatchRow['runs'] = [];
   const openRun = new Map<string, MatchRow['runs'][number]>();
-  const out: MatchRow = { map: map.metadata.id, mode, seed, seconds, players: total, takes: 0, captures: 0, returns: 0, drops: 0, firstTake: null, firstCapture: null, runs, kills: 0, tickMs: 0, tickP95: 0, bots: [] };
+  const out: MatchRow = { map: map.metadata.id, mode, seed, seconds, players: total, takes: 0, captures: 0, returns: 0, drops: 0, firstTake: null, firstCapture: null, runs, kills: 0, objective: {}, tickMs: 0, tickP95: 0, bots: [] };
   const tickMs: number[] = [];
   const closeSpell = (slot: number) => {
     const s = open.get(slot);
@@ -196,6 +198,10 @@ function play(map: MapDocument, seed: number): MatchRow {
         if (v) v.deaths++;
         const killer = e.killer === null || e.killer === undefined ? undefined : rec.get(e.killer);
         if (killer && e.killer !== e.victim) killer.kills++;
+      }
+      if (e.e === 'hill' || e.e === 'bomb' || e.e === 'elim' || e.e === 'hostage') {
+        const k = `${e.e} ${e.a}`;
+        out.objective[k] = (out.objective[k] ?? 0) + 1;
       }
       if (e.e !== 'flag') continue;
       const r = e.s === null ? undefined : rec.get(e.s);
@@ -324,6 +330,7 @@ function printMatch(m: MatchRow): void {
     const runs = m.runs.map((r) => `${r.t.toFixed(0)}s:${r.end}${r.end === 'open' ? '' : `@${r.seconds}s`}(${r.from}m)`).join(' ');
     console.log(`flags: captures ${m.captures} | takes ${m.takes} | drops ${m.drops} | returns ${m.returns} | first take ${m.firstTake?.toFixed(0) ?? '-'} s, first capture ${m.firstCapture?.toFixed(0) ?? '-'} s | runs ${runs || 'none'}`);
   }
+  if (m.objective && Object.keys(m.objective).length) console.log(`objective: ${Object.entries(m.objective).map(([k, v]) => `${k} ${v}`).join(' | ')}`);
   console.log(`time: idle ${pct(sum(m.bots, (r) => r.idle), alive)} (out of a fight ${pct(sum(m.bots, (r) => r.idleCalm), alive)}, frozen ${pct(sum(m.bots, (r) => r.frozen), alive)}) | going to the goal ${pct(sum(m.bots, (r) => r.towardGoal), goalT)} of goal time, at it ${pct(sum(m.bots, (r) => r.atGoal), goalT)} | kills ${m.kills} (${((m.kills / m.seconds) * 60).toFixed(1)}/min) | stuck recoveries ${sum(m.bots, (r) => r.stuck)} (loops ${sum(m.bots, (r) => r.loops)}) | no-route searches ${sum(m.bots, (r) => r.pathFailures)}`);
   const why = new Map<string, number>();
   for (const r of m.bots) for (const [k, v] of Object.entries(r.why)) why.set(k, (why.get(k) ?? 0) + v);
