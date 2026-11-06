@@ -17,7 +17,7 @@
       "name": "Shipping Container (Red)",
       "category": "Industrial",
       "height": 2.6,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "shipping_container_blue",
@@ -25,7 +25,7 @@
       "name": "Shipping Container (Blue)",
       "category": "Industrial",
       "height": 2.6,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "shipping_container_green",
@@ -33,7 +33,7 @@
       "name": "Shipping Container (Green)",
       "category": "Industrial",
       "height": 2.6,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "fuel_tank",
@@ -41,7 +41,7 @@
       "name": "Fuel Tank",
       "category": "Industrial",
       "height": 2.2,
-      "collide": "box",
+      "collide": "voxel",
       "breakable": {
         "health": 150,
         "debris": "#c8a040",
@@ -58,7 +58,7 @@
       "name": "Storage Tank",
       "category": "Industrial",
       "height": 4.0,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "steel_water_tower",

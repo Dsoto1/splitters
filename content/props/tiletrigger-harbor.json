@@ -15,7 +15,7 @@
       "name": "Mooring Bollard",
       "category": "Coastal Harbor",
       "height": 0.68,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "hb_capstan",
@@ -23,7 +23,7 @@
       "name": "Capstan",
       "category": "Coastal Harbor",
       "height": 0.95,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "hb_lobster_pots",
@@ -31,7 +31,7 @@
       "name": "Lobster Pots",
       "category": "Coastal Harbor",
       "height": 0.87,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "hb_buoy",
@@ -39,7 +39,7 @@
       "name": "Mooring Buoy",
       "category": "Coastal Harbor",
       "height": 1.07,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "hb_marker_buoy",
@@ -71,7 +71,7 @@
       "name": "Fish Boxes",
       "category": "Coastal Harbor",
       "height": 0.86,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "hb_fishing_boat",
@@ -87,7 +87,7 @@
       "name": "Anchor",
       "category": "Coastal Harbor",
       "height": 2.25,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "hb_rope_coil",
@@ -143,7 +143,7 @@
       "name": "Mooring Dolphin",
       "category": "Coastal Harbor",
       "height": 4.7,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "hb_fenders",

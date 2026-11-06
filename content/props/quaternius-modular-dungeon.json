@@ -32,7 +32,7 @@
       "name": "Barred Arch",
       "category": "Dungeon",
       "height": 4,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "dg_coin_bag",
@@ -56,7 +56,7 @@
       "name": "Dungeon Barrel",
       "category": "Dungeon",
       "height": 1.1,
-      "collide": "box",
+      "collide": "voxel",
       "breakable": {
         "health": 40,
         "debris": "#7a5a3a"
@@ -92,7 +92,7 @@
       "name": "Dungeon Pillar",
       "category": "Dungeon",
       "height": 4,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "dg_crate",
@@ -112,7 +112,7 @@
       "name": "Pedestal",
       "category": "Dungeon",
       "height": 1.1,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "dg_skull",
@@ -136,7 +136,7 @@
       "name": "Horse Statue",
       "category": "Dungeon",
       "height": 2.4,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "dg_sword_mount",
@@ -152,7 +152,7 @@
       "name": "Long Table",
       "category": "Dungeon",
       "height": 0.85,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "dg_table_small",
@@ -160,7 +160,7 @@
       "name": "Small Table",
       "category": "Dungeon",
       "height": 0.8,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "dg_wall_torch",
@@ -178,6 +178,7 @@
       "category": "Dungeon",
       "height": 0.9,
       "collide": "box",
+      "fills": "Round, under a metre across: its box stands off it only diagonally (up to 0.35 m at 45°), and voxel boxes give this same box.",
       "breakable": {
         "health": 20,
         "debris": "#7a5a3a"
@@ -189,7 +190,7 @@
       "name": "Wood Fire",
       "category": "Dungeon",
       "height": 0.6,
-      "collide": "box",
+      "collide": "voxel",
       "flame": {"fx": "campfire", "at": [0, 0.1, 0], "size": 0.5, "hide": ["Fire"]}
     },
     {
@@ -198,7 +199,7 @@
       "name": "Iron Fence",
       "category": "Dungeon",
       "height": 1.6,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "dg_stairs",

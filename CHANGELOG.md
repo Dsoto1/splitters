@@ -8,6 +8,20 @@ made only on a commit that passed CI on a check branch.
 
 ## Unreleased
 
+**Props collide as what you see: the slack pass** (owner's bug report, Capitol Mall: "These pillars are blocking my
+bullets"; docs/CONTENT_PIPELINE.md, "Prop collision")
+- **Columns**: the white Ionic column collided as one box as wide as its plinth and capital all the way up, so rounds
+  aimed just past its round shaft stopped in the air (0.37 m beside it along the colonnade, 0.73 m at 45°, at Capitol
+  Mall's size). It collides as its shaft now, and so do 27 more columns, pillars, obelisks and posts (the papyrus,
+  round ruin, sci-fi, sandstone, dungeon and Kenney columns among them).
+- **The slack audit**: a prop's collision is measured against its model along x, z and both diagonals. Air 0.15 m or
+  wider beside the model over 30 % or more of its height is slack; `pnpm content:check` fails a box prop that carries
+  it unless it says why. 363 more props (statues, vehicles, furniture, machines, fences) collide as their shape now;
+  18 round or thin ones keep their box, which is already their best fit.
+- In play: rounds beside a column fly on, rounds at it stop on the stone, players stand right against it and cover
+  behind it still holds (tested in the sim at the column's two sizes). Prop collision boxes on the maps in play went
+  from 31,682 to 58,638 (Iron Maw, the busiest, 3,281); map load and shot costs stayed within the noise.
+
 **Bots: a navigation audit, no standing still on a failed route, a scorecard** (docs/BOT_AI_PLAN.md Phase A;
 docs/BOTS.md, "Navigation audit", "Never standing still on a failed route", "Scorecard")
 - **Navigation audit** of every map, from every polygon of the bots' navmesh: traps (places bots fall or jump-pad into

@@ -25,7 +25,7 @@
       "src": "oildrum.fbx",
       "name": "Oil Drum",
       "category": "Vehicles",
-      "collide": "box",
+      "collide": "voxel",
       "scale": 0.01
     },
     {
@@ -43,6 +43,7 @@
       "name": "Spare Wheel",
       "category": "Vehicles",
       "collide": "box",
+      "fills": "Round, under a metre across: its box stands off it only diagonally (up to 0.15 m at 45°), and voxel boxes give this same box.",
       "scale": 0.01
     },
     {
@@ -50,7 +51,7 @@
       "src": "airgun.fbx",
       "name": "Air Pump",
       "category": "Vehicles",
-      "collide": "box",
+      "collide": "voxel",
       "scale": 0.01
     },
     {

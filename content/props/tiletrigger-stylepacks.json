@@ -23,7 +23,7 @@
       "name": "Reactor Core",
       "category": "Orbital Station",
       "height": 7.8,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "os_field_emitter",
@@ -31,7 +31,7 @@
       "name": "Field Emitter",
       "category": "Orbital Station",
       "height": 3.3,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "os_cryo_pod",
@@ -39,7 +39,7 @@
       "name": "Cryo Pod",
       "category": "Orbital Station",
       "height": 2.35,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "os_holo_globe",
@@ -47,7 +47,7 @@
       "name": "Holo Globe",
       "category": "Orbital Station",
       "height": 2.25,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "os_cargo_crate",
@@ -88,7 +88,7 @@
       "name": "Holo Kiosk",
       "category": "Neon Megacity",
       "height": 2.65,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "nc_food_stall",

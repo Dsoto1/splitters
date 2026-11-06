@@ -5,19 +5,27 @@
 // `voxel` (or `frame` / `openings`), or says in its entry why its collision fills the opening (`fills`: a stair
 // flight solid underneath so players and bots walk up it, a lattice too fine for its box budget).
 //
+// The slack audit: collision that stands off the model beside it (the white Ionic columns' boxes, as wide as their
+// plinths and capitals all the way up: rounds aimed just past the shaft stopped in the air, owner's bug of 2026-11-06)
+// is slack (voxel-collision.mjs propSlack): seen along x, z or a diagonal, air SLACK_WIDTH or wider beside the model over
+// SLACK_SHARE or more of its height. A `box` prop carrying slack collides as `voxel` (or `trunk`, a pole), or says why
+// in `fills`. Natural rocks keep their two rounded tiers (map/geometry.ts propBoxes) and aren't checked.
+//
 //   node tools/content/prop-openings.mjs           the list: each prop whose collision fills an opening (id, collide
 //                                                   mode, the opening's size, the maps placing it solid) and each
 //                                                   `fills` prop with its reason
 //   node tools/content/prop-openings.mjs --json    the same as JSON
 //   node tools/content/prop-openings.mjs --check   fail (pnpm content:check runs this) on a prop that fills an opening
-//                                                   without a `fills` reason, a stale `fills`, a voxel prop over its
-//                                                   box budget or not rebuilt, a trunk column off its trunk
-//   node tools/content/prop-openings.mjs --slack   props whose collision holds air round their outline (not an
-//                                                   opening: the box round a stump's roots, over a car's bonnet)
+//                                                   or a `box` prop that carries slack, without a `fills` reason; a
+//                                                   stale `fills`, a voxel prop over its box budget or not rebuilt, a
+//                                                   trunk column off its trunk
+//   node tools/content/prop-openings.mjs --slack   every prop whose collision carries slack, whatever its collide mode
+//                                                   (how much of its height, how wide, seen along what, the maps)
 //   node tools/content/prop-openings.mjs --fixture <git ref>
-//                                                   rewrite packages/shared/test/fixtures/prop-openings.json against
-//                                                   the props as they were at that ref (those whose collision changed,
-//                                                   and digests of the rest): after a deliberate collision change
+//                                                   update packages/shared/test/fixtures/prop-openings.json: props
+//                                                   whose collision differs from that ref are entered against it (and
+//                                                   those the fixture already lists kept against what they were
+//                                                   before), digests of the rest: after a deliberate collision change
 //   ONLY=<id>,… limits it to those props.
 
 import { execFileSync } from 'node:child_process';
@@ -28,7 +36,7 @@ import { fileURLToPath } from 'node:url';
 import { NodeIO } from '@gltf-transform/core';
 import { ALL_EXTENSIONS } from '@gltf-transform/extensions';
 import { loadPropManifest } from './props-manifest.mjs';
-import { filledOpenings, MIN_OPENING, sceneTriangles, trunkBoxes, voxelBudget } from './voxel-collision.mjs';
+import { filledOpenings, propSlack, sceneTriangles, SLACK_SHARE, SLACK_WIDTH, slackRuns, SLACK_ANGLES, trunkBoxes, voxelBudget } from './voxel-collision.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const TABLE = join(ROOT, 'packages/shared/src/content/props.generated.ts');
@@ -42,7 +50,13 @@ export function propTable(path = TABLE) {
 }
 
 /** Natural rocks collide as two tiers (map/geometry.ts propBoxes): the same here. */
-const isRock = (def) => def.category === 'Rocks & Wood' && /rock|boulder|stone|cliff/.test(def.id);
+export const isRock = (def) => def.category === 'Rocks & Wood' && /rock|boulder|stone|cliff/.test(def.id);
+
+/** Where slack was seen from: one of SLACK_ANGLES, in words. */
+export const seenAlong = (angle) => ({ 0: 'along x', 45: 'diagonally (x and z)', 90: 'along z', 135: 'diagonally (x and -z)' })[angle] ?? `at ${angle}°`;
+
+/** "a 4.6 m column of air 0.28 m wide…": a prop's slack (propSlack) in words. */
+export const slackWords = (s) => `air ${SLACK_WIDTH} m or wider beside its model over ${Math.round(s.share * 100)} % of its height, seen ${seenAlong(s.angle)} (up to ${s.width} m, at ${s.y} m)`;
 
 /** A prop's collision as the game builds it (map/geometry.ts propBoxes), in its own space as drawn: boxes, or null. */
 export function gameBoxes(def) {
@@ -81,7 +95,10 @@ export function placements() {
   return out;
 }
 
-/** The audit: { rows (props whose collision fills an opening, or that say why it does), problems }. */
+/**
+ * The audit: { rows (props whose collision fills an opening, carries slack, or that say why), problems }. `slack`: every
+ * prop's slack is measured (the `--slack` list), not only that of `box` props and props with `fills` (the check).
+ */
 export async function audit({ only = null, slack = false } = {}) {
   const manifest = loadPropManifest();
   const entries = new Map(manifest.props.map((p) => [`prop.${p.id}`, p]));
@@ -97,9 +114,12 @@ export async function audit({ only = null, slack = false } = {}) {
       continue;
     }
     const tris = await drawnTriangles(def.file);
-    const all = filledOpenings(tris, boxes, { slack });
-    const openings = all.filter((o) => !o.slack);
+    const openings = filledOpenings(tris, boxes);
     const mode = p.collide ?? 'box';
+    // Slack: `box` props are held to it (natural rocks keep their two tiers); props with `fills` say why they carry it.
+    const held = mode === 'box' && !isRock(def);
+    const loose = slack || held || p.fills ? propSlack(tris, boxes) : null;
+    const carries = !!loose && loose.share >= SLACK_SHARE;
     if (mode === 'voxel') {
       if (!def.boxes) problems.push(`${p.id}: collide "voxel" but props.generated.ts has no boxes for it (run node tools/content/prepare-props.mjs)`);
       else if (def.boxes.length > voxelBudget(p)) problems.push(`${p.id}: ${def.boxes.length} collision boxes, over its budget of ${voxelBudget(p)} (set a coarser voxelCell or a bigger voxelAir, or a voxelBudget with a reason)`);
@@ -111,9 +131,9 @@ export async function audit({ only = null, slack = false } = {}) {
       if (!same(want, def.boxes ?? null)) problems.push(`${p.id}: its trunk column is not where the trunk is (run node tools/content/prepare-props.mjs)`);
     }
     if (openings.length && !p.fills) problems.push(`${p.id}: its collision (${mode}) fills an opening ${openings[0].size.join(' × ')} m (along ${openings[0].axis}): collide "voxel", or say why in "fills"`);
-    if (!openings.length && p.fills) problems.push(`${p.id}: "fills" but its collision fills no opening now (drop it)`);
-    const loose = all.filter((o) => o.slack);
-    if (openings.length || p.fills || loose.length) rows.push({ id: p.id, collide: mode, boxes: boxes.length, openings, ...(loose.length ? { slack: loose } : {}), ...(p.fills ? { fills: p.fills } : {}), maps: used[def.id] ?? {} });
+    if (held && carries && !p.fills) problems.push(`${p.id}: its box holds ${slackWords(loose)}: collide "voxel" (or "trunk" for a pole), or say why in "fills"`);
+    if (!openings.length && !carries && p.fills) problems.push(`${p.id}: "fills" but its collision fills no opening and carries no slack now (drop it)`);
+    if (openings.length || p.fills || carries) rows.push({ id: p.id, collide: mode, boxes: boxes.length, openings, ...(carries ? { slack: loose } : {}), ...(p.fills ? { fills: p.fills } : {}), maps: used[def.id] ?? {} });
   }
   return { rows, problems };
 }
@@ -139,11 +159,17 @@ export const collisionDigest = (def) => createHash('sha256').update(JSON.stringi
 const FIXTURE = join(ROOT, 'packages/shared/test/fixtures/prop-openings.json');
 const r3 = (v) => Math.round(v * 1000) / 1000;
 
+/** Most probes through an old collision's slack, per direction it was seen along (the lowest, middle and highest). */
+const SLACK_PROBES = 3;
+
 /**
  * The fixture of packages/shared/test/propOpenings.test.ts: every prop whose collision differs from the table at
  * `ref` (git: props.generated.ts and content/props as they were), with its collide mode then and now, its boxes then, probes
- * (straight lines through what its old collision filled, now clear) and points of its model its new collision holds;
- * and a digest of every other prop's collision (unchanged).
+ * (straight lines through what its old collision filled, now clear: openings, slack a MIN_OPENING square fits in, and
+ * lines through the middle of its slack runs along x, z and the diagonals) and points of its model its new collision
+ * holds; and a digest of every other prop's collision (unchanged). The fixture is cumulative: a prop it lists already
+ * stays as it is while its collision is the same as at `ref`, and is entered again against its own `before` (what it
+ * was before every change the fixture records) when it changed since.
  */
 async function writeFixture(ref) {
   // The table and the collide modes at `ref` (git), and now.
@@ -157,17 +183,20 @@ async function writeFixture(ref) {
     for (const p of JSON.parse(git('show', `${ref}:content/props/${f}`)).props ?? []) oldModes.set(`prop.${p.id}`, p.collide ?? 'box');
   const entries = new Map(loadPropManifest().props.map((p) => [`prop.${p.id}`, p]));
   const modes = new Map([...entries].map(([id, p]) => [id, p.collide ?? 'box']));
+  const listed = JSON.parse(readFileSync(FIXTURE, 'utf8'));
   const changed = {};
   const unchanged = {};
   for (const def of propTable()) {
     const old = before.get(def.id);
-    if (!old) continue;
-    if (collisionDigest(old) === collisionDigest(def)) {
-      unchanged[def.id] = collisionDigest(def);
+    const kept = listed.changed[def.id];
+    if (!old && !kept) continue;
+    if (old && collisionDigest(old) === collisionDigest(def)) {
+      if (kept) changed[def.id] = kept;
+      else unchanged[def.id] = collisionDigest(def);
       continue;
     }
     const tris = await drawnTriangles(def.file);
-    const oldBoxes = gameBoxes(old) ?? [];
+    const oldBoxes = kept ? kept.before : (gameBoxes(old) ?? []);
     const now = gameBoxes(def) ?? [];
     const blocks = (boxes, o, d, len) => boxes.some((b) => {
       let t0 = 0;
@@ -198,6 +227,25 @@ async function writeFixture(ref) {
         continue;
       }
       probes.push([...origin, ...dir, len].map(r3));
+    }
+    // And through the middle of the old collision's slack runs (SLACK_WIDTH or wider) along each direction the slack
+    // audit looks: the lowest, middle and highest of those the new collision leaves clear, by a hair (a line along a
+    // box's face is open or shut by rounding).
+    const reach = Math.hypot(...[0, 2].map((k) => Math.max(Math.abs(lo[k]), Math.abs(hi[k]))));
+    const grow = (boxes, m) => boxes.map((b) => b.map((v, k) => v + (k < 3 ? -m : m)));
+    for (const angle of SLACK_ANGLES) {
+      const { dir, across, runs } = slackRuns(tris, oldBoxes, angle);
+      const clear = [];
+      for (const r of runs) {
+        if (r.to - r.from < SLACK_WIDTH - 1e-6) continue;
+        const m = (r.from + r.to) / 2;
+        const origin = [m * across[0] - reach * dir[0], r.y, m * across[2] - reach * dir[2]];
+        const probe = [...origin, ...dir, 2 * reach].map(r3);
+        const [o, d, len] = [probe.slice(0, 3), probe.slice(3, 6), probe[6]];
+        if (blocks(grow(oldBoxes, -0.01), o, d, len) && !blocks(grow(now, 0.01), o, d, len)) clear.push(probe);
+      }
+      const pick = clear.length <= SLACK_PROBES ? clear : [0, Math.floor((clear.length - 1) / 2), clear.length - 1].map((i) => clear[i]);
+      probes.push(...pick);
     }
     // Points of the model the new collision holds: the middles of its largest faces (for a trunk column, the trunk's
     // middle low down, as the column only stands for the trunk).
@@ -231,7 +279,7 @@ async function writeFixture(ref) {
         .map(([, , t]) => [0, 1, 2].map((k) => r3((t[0][k] + t[1][k] + t[2][k]) / 3)));
     }
     changed[def.id] = {
-      from: oldModes.get(def.id),
+      from: kept?.from ?? oldModes.get(def.id),
       to: modes.get(def.id),
       boxes: [oldBoxes.length, now.length],
       before: oldBoxes.map((b) => b.map(r3)),
@@ -240,7 +288,7 @@ async function writeFixture(ref) {
     };
   }
   const out = {
-    $comment: 'Props whose collision changed with voxel collision and trunk columns (tools/content/prop-openings.mjs --fixture <git ref before>): probes through what their old collision filled stay clear, points of their model stay inside it, and every other prop keeps its collision (digest). packages/shared/test/propOpenings.test.ts.',
+    $comment: 'Props whose collision changed with voxel collision and trunk columns (the openings pass), and with the slack pass (box props whose box stood off their model, 2026-11-06): tools/content/prop-openings.mjs --fixture <git ref before> enters each prop whose collision changed since that ref and keeps the rest. Probes through what their old collision filled stay clear, points of their model stay inside it, and every other prop keeps its collision (digest). packages/shared/test/propOpenings.test.ts. A voxel prop new since is entered against the box it would collide as (the beached landing craft, 2026-11-06).',
     changed,
     unchanged,
   };
@@ -262,10 +310,10 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const maps = (r) => Object.entries(r.maps).map(([m, n]) => (n > 1 ? `${m} ×${n}` : m)).join(', ') || 'no map';
   if (process.argv.includes('--json')) console.log(JSON.stringify(rows, null, 1));
   else if (slack) {
-    // Not openings: air round the outline inside the collision (the box round a stump's roots, over a car's bonnet).
-    const loose = rows.filter((r) => r.slack).sort((a, b) => b.slack[0].square - a.slack[0].square);
-    for (const r of loose) console.log(`${r.id.padEnd(30)} ${r.collide.padEnd(8)} ${r.slack[0].size.join(' × ')} m along ${r.slack[0].axis} (a ${r.slack[0].square} m square)  ${maps(r)}`);
-    console.log(`${loose.length} props have slack a ${MIN_OPENING} m square fits in`);
+    // Not openings: air beside the model inside the collision (a column's box beside its shaft, over a car's bonnet).
+    const loose = rows.filter((r) => r.slack).sort((a, b) => b.slack.share - a.slack.share || b.slack.width - a.slack.width || (a.id < b.id ? -1 : 1));
+    for (const r of loose) console.log(`${r.id.padEnd(30)} ${r.collide.padEnd(8)} ${String(Math.round(r.slack.share * 100)).padStart(3)} % of its height, up to ${r.slack.width} m, seen ${seenAlong(r.slack.angle)}${r.fills ? ' (fills)' : ''}  ${maps(r)}`);
+    console.log(`${loose.length} props carry slack (air ${SLACK_WIDTH} m or wider beside the model over ${SLACK_SHARE * 100} % or more of its height, seen along x, z or a diagonal)`);
   } else if (!process.argv.includes('--check')) {
     for (const r of rows.filter((r) => r.openings.length || r.fills)) {
       const o = r.openings[0];
@@ -276,5 +324,5 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   if (problems.length) {
     for (const p of problems) console.error(`ERROR ${p}`);
     if (process.argv.includes('--check')) process.exit(1);
-  } else if (process.argv.includes('--check')) console.log(`prop openings: ${rows.filter((r) => r.openings.length).length} props fill an opening, every one says why`);
+  } else if (process.argv.includes('--check')) console.log(`prop openings: ${rows.filter((r) => r.openings.length).length} props fill an opening and ${rows.filter((r) => r.slack && r.collide === 'box').length} box props carry slack, every one says why`);
 }

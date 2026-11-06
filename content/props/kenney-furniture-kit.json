@@ -52,7 +52,7 @@
       "name": "Round Table",
       "category": "Furniture",
       "height": 0.8,
-      "collide": "box",
+      "collide": "voxel",
       "breakable": {
         "health": 40,
         "debris": "#8a5a32"
@@ -76,7 +76,7 @@
       "name": "Chair",
       "category": "Furniture",
       "height": 0.95,
-      "collide": "box",
+      "collide": "voxel",
       "breakable": {
         "health": 20,
         "debris": "#8a5a32"
@@ -88,7 +88,7 @@
       "name": "Cushioned Chair",
       "category": "Furniture",
       "height": 0.95,
-      "collide": "box",
+      "collide": "voxel",
       "breakable": {
         "health": 20,
         "debris": "#8a5a32"
@@ -112,7 +112,7 @@
       "name": "Corner Desk",
       "category": "Furniture",
       "height": 0.8,
-      "collide": "box",
+      "collide": "voxel",
       "breakable": {
         "health": 60,
         "debris": "#8a5a32"
@@ -124,7 +124,7 @@
       "name": "Office Chair",
       "category": "Furniture",
       "height": 1.0,
-      "collide": "box",
+      "collide": "voxel",
       "breakable": {
         "health": 20,
         "debris": "#3a3a3a"
@@ -172,7 +172,7 @@
       "name": "Long Sofa",
       "category": "Furniture",
       "height": 0.85,
-      "collide": "box",
+      "collide": "voxel",
       "breakable": {
         "health": 70,
         "debris": "#7a6a8a"
@@ -196,7 +196,7 @@
       "name": "Double Bed",
       "category": "Furniture",
       "height": 0.65,
-      "collide": "box",
+      "collide": "voxel",
       "breakable": {
         "health": 70,
         "debris": "#7a6a8a"
@@ -300,7 +300,7 @@
       "name": "Toilet",
       "category": "Furniture",
       "height": 0.8,
-      "collide": "box",
+      "collide": "voxel",
       "breakable": {
         "health": 40,
         "debris": "#c8c8d0"
@@ -325,6 +325,7 @@
       "category": "Furniture",
       "height": 0.45,
       "collide": "box",
+      "fills": "Small: the air beside its legs under the seat is 0.15 m wide at most, and voxel boxes give this same box.",
       "breakable": {
         "health": 30,
         "debris": "#8a5a32"
@@ -360,7 +361,7 @@
       "name": "Potted Plant",
       "category": "Decor",
       "height": 1.1,
-      "collide": "box",
+      "collide": "voxel",
       "breakable": {
         "health": 15,
         "debris": "#b06a40"

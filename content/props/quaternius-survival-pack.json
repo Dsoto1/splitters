@@ -24,7 +24,7 @@
       "name": "Campfire",
       "category": "Survival",
       "height": 0.9,
-      "collide": "box",
+      "collide": "voxel",
       "flame": {"fx": "campfire", "at": [0.02, 0.05, -0.02], "size": 0.85, "hide": ["Fire"]}
     },
     {
@@ -33,7 +33,7 @@
       "name": "Campfire (out)",
       "category": "Survival",
       "height": 0.4,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "sv_beartrap",
@@ -69,7 +69,7 @@
       "name": "Propane Tank",
       "category": "Survival",
       "height": 1.2,
-      "collide": "box",
+      "collide": "voxel",
       "breakable": {
         "health": 30,
         "debris": "#7a5a3a"
@@ -89,7 +89,7 @@
       "name": "Raft",
       "category": "Survival",
       "height": 0.5,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "sv_tent",
@@ -105,7 +105,7 @@
       "name": "Metal Trash Can",
       "category": "Survival",
       "height": 1.0,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "sv_torch_stand",

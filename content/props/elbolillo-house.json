@@ -19,7 +19,7 @@
       "src": "House.fbx#^Mower$",
       "name": "Lawn Mower",
       "category": "Garage & Garden",
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "hs_tool_cabinet",
@@ -54,7 +54,7 @@
       "src": "House.fbx#^trash_can(_cover)?$",
       "name": "Wheelie Bin",
       "category": "Garage & Garden",
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "hs_wardrobe",

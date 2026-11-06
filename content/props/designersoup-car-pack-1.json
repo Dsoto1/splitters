@@ -17,7 +17,7 @@
       "src": "Beatall.fbx",
       "name": "Beetle Car",
       "category": "Vehicles",
-      "collide": "box",
+      "collide": "voxel",
       "scale": 0.01,
       "yaw": 90,
       "simplify": 0.85
@@ -27,7 +27,7 @@
       "src": "Landyroamer.fbx",
       "name": "Offroader",
       "category": "Vehicles",
-      "collide": "box",
+      "collide": "voxel",
       "scale": 0.01,
       "yaw": 90,
       "simplify": 0.65
@@ -37,7 +37,7 @@
       "src": "Toyoyo Highlight.fbx",
       "name": "Desert Pickup",
       "category": "Vehicles",
-      "collide": "box",
+      "collide": "voxel",
       "scale": 0.01,
       "yaw": 90,
       "simplify": 0.6
@@ -47,7 +47,7 @@
       "src": "Tristar Racer.fbx",
       "name": "Sports Racer",
       "category": "Vehicles",
-      "collide": "box",
+      "collide": "voxel",
       "scale": 0.01,
       "yaw": 90
     }

@@ -48,7 +48,7 @@
       "name": "Tall Vase",
       "category": "Desert City",
       "height": 1.1,
-      "collide": "box",
+      "collide": "voxel",
       "breakable": {
         "health": 25,
         "debris": "#b86a3e"
@@ -60,7 +60,7 @@
       "name": "Water Jars",
       "category": "Desert City",
       "height": 0.75,
-      "collide": "box",
+      "collide": "voxel",
       "breakable": {
         "health": 30,
         "debris": "#b86a3e"
@@ -121,7 +121,7 @@
       "name": "Spice Baskets",
       "category": "Desert City",
       "height": 0.772,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "dc_cushions",
@@ -145,7 +145,7 @@
       "name": "Sandstone Column",
       "category": "Desert City",
       "height": 3.62,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "dc_ornate_arch",
@@ -161,7 +161,7 @@
       "name": "Plaster Dome",
       "category": "Desert City",
       "height": 3.19,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "dc_dome_blue",
@@ -169,7 +169,7 @@
       "name": "Blue Tiled Dome",
       "category": "Desert City",
       "height": 3.19,
-      "collide": "box"
+      "collide": "voxel"
     }
   ]
 }

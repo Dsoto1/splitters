@@ -45,7 +45,7 @@
       "name": "Power Unit",
       "category": "Orbital Station",
       "height": 1.1,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "os_transmitter",
@@ -53,7 +53,7 @@
       "name": "Transmitter",
       "category": "Orbital Station",
       "height": 1.5,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "os_truss",
@@ -93,7 +93,7 @@
       "name": "Corner Console",
       "category": "Orbital Station",
       "height": 1.0,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "os_terminal",
@@ -101,7 +101,7 @@
       "name": "Desk Terminal",
       "category": "Orbital Station",
       "height": 0.9,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "os_canister_rack",
@@ -109,7 +109,7 @@
       "name": "Canister Rack",
       "category": "Orbital Station",
       "height": 1.2,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "nc_monorail_track",

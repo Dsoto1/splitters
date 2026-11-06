@@ -15,7 +15,7 @@
       "name": "Satellite Dish",
       "category": "Snow Outpost",
       "height": 3.73,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "so_antenna_mast",
@@ -31,7 +31,7 @@
       "name": "Diesel Heater",
       "category": "Snow Outpost",
       "height": 1.5,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "so_generator",
@@ -39,7 +39,7 @@
       "name": "Diesel Generator",
       "category": "Snow Outpost",
       "height": 2.52,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "so_snowmobile",
@@ -47,7 +47,7 @@
       "name": "Snowmobile",
       "category": "Snow Outpost",
       "height": 1.24,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "so_tarp_crates",
@@ -55,7 +55,7 @@
       "name": "Crates under a Tarp",
       "category": "Snow Outpost",
       "height": 1.66,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "so_lamp_post",
@@ -79,7 +79,7 @@
       "name": "Chain-link Fence",
       "category": "Snow Outpost",
       "height": 2.36,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "so_snow_fence",
@@ -87,7 +87,7 @@
       "name": "Snow Fence",
       "category": "Snow Outpost",
       "height": 1.5,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "so_pipe_run",
@@ -103,7 +103,7 @@
       "name": "Oil Drums",
       "category": "Snow Outpost",
       "height": 0.94,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "so_radio_console",
@@ -119,7 +119,7 @@
       "name": "Ski Rack",
       "category": "Snow Outpost",
       "height": 1.87,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "so_supply_sled",
@@ -127,7 +127,7 @@
       "name": "Supply Sled",
       "category": "Snow Outpost",
       "height": 1.15,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "so_snow_pile",
@@ -135,7 +135,7 @@
       "name": "Snow Pile",
       "category": "Snow Outpost",
       "height": 1.35,
-      "collide": "box"
+      "collide": "voxel"
     }
   ]
 }

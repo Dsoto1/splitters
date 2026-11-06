@@ -47,7 +47,7 @@
       "name": "Wingback Chair",
       "category": "Gothic Estate",
       "height": 1.25,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "ge_grand_piano",
@@ -108,7 +108,7 @@
       "name": "Weeping Angel",
       "category": "Gothic Estate",
       "height": 2.79,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "ge_headstone_tall",
@@ -116,7 +116,7 @@
       "name": "Tall Headstone",
       "category": "Gothic Estate",
       "height": 1.82,
-      "collide": "box",
+      "collide": "voxel",
       "breakable": {
         "health": 90,
         "debris": "#8a8680"
@@ -128,7 +128,7 @@
       "name": "Wrought-Iron Railing",
       "category": "Gothic Estate",
       "height": 1.87,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "ge_iron_gate",
@@ -144,7 +144,7 @@
       "name": "Box Hedge",
       "category": "Gothic Estate",
       "height": 2.2,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "ge_hedge_arch",
@@ -176,7 +176,7 @@
       "name": "Colossal Head",
       "category": "Jungle Ruins",
       "height": 3.25,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "jg_serpent_statue",
@@ -184,7 +184,7 @@
       "name": "Serpent Head",
       "category": "Jungle Ruins",
       "height": 2.94,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "jg_carved_pillar",
@@ -192,7 +192,7 @@
       "name": "Carved Pillar",
       "category": "Jungle Ruins",
       "height": 4.05,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "jg_altar_stone",
@@ -200,7 +200,7 @@
       "name": "Altar Stone",
       "category": "Jungle Ruins",
       "height": 1.25,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "jg_stele",
@@ -208,7 +208,7 @@
       "name": "Carved Stele",
       "category": "Jungle Ruins",
       "height": 3.6,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "jg_vine_curtain",
@@ -298,7 +298,7 @@
       "name": "Fallen Blocks",
       "category": "Jungle Ruins",
       "height": 1.2,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "jg_gold_idol",
@@ -306,7 +306,7 @@
       "name": "Golden Idol",
       "category": "Jungle Ruins",
       "height": 1.62,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "sb_microwave",
@@ -390,7 +390,7 @@
       "name": "Flat-Screen TV",
       "category": "Suburban Chaos",
       "height": 1.3,
-      "collide": "box",
+      "collide": "voxel",
       "breakable": {
         "health": 15,
         "debris": "#2a2c30"
@@ -426,7 +426,7 @@
       "name": "Lawnmower",
       "category": "Suburban Chaos",
       "height": 0.98,
-      "collide": "box",
+      "collide": "voxel",
       "breakable": {
         "health": 25,
         "debris": "#c0302a",
@@ -499,7 +499,7 @@
       "name": "Petrol Pump",
       "category": "Suburban Chaos",
       "height": 1.95,
-      "collide": "box",
+      "collide": "voxel",
       "breakable": {
         "health": 60,
         "debris": "#c0302a",
@@ -516,7 +516,7 @@
       "name": "Family Car",
       "category": "Suburban Chaos",
       "height": 1.35,
-      "collide": "box",
+      "collide": "voxel",
       "breakable": {
         "health": 250,
         "debris": "#7a1e22",
@@ -541,7 +541,7 @@
       "name": "Sun Lounger",
       "category": "Suburban Chaos",
       "height": 0.87,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "sb_fire_hydrant",

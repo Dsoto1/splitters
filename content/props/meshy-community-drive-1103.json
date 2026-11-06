@@ -19,7 +19,7 @@
       "name": "WWII Ammo Crate",
       "category": "Crates & Barrels",
       "height": 0.9,
-      "collide": "box",
+      "collide": "voxel",
       "triangles": 4000,
       "maxError": 0.03,
       "breakable": {

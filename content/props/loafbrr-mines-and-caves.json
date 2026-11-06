@@ -95,7 +95,7 @@
       "src": "Modular_Mine_Set.glb#^Wall_Mines_A$",
       "name": "Mine Wall",
       "category": "Mines & Caves",
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "mc_mine_entrance",
@@ -116,7 +116,7 @@
       "src": "Modular_Mine_Set.glb#^Wall_Caves_A$",
       "name": "Cave Wall",
       "category": "Mines & Caves",
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "mc_cave_entrance",
@@ -130,63 +130,63 @@
       "src": "Modular_Mine_Set.glb#^Cave_Wall_Rocks_A$",
       "name": "Cave Rock Wall",
       "category": "Mines & Caves",
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "mc_cave_rocks_a",
       "src": "Modular_Mine_Set.glb#^Cave_Rocks_A$",
       "name": "Cave Rocks A",
       "category": "Mines & Caves",
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "mc_cave_rocks_b",
       "src": "Modular_Mine_Set.glb#^Cave_Rocks_B$",
       "name": "Cave Rocks B",
       "category": "Mines & Caves",
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "mc_cave_rocks_c",
       "src": "Modular_Mine_Set.glb#^Cave_Rocks_C$",
       "name": "Cave Rocks C",
       "category": "Mines & Caves",
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "mc_cave_rocks_d",
       "src": "Modular_Mine_Set.glb#^Cave_Rocks_D$",
       "name": "Cave Rocks D",
       "category": "Mines & Caves",
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "mc_cave_pillar",
       "src": "Modular_Mine_Set.glb#^Cave_Pillar_A$",
       "name": "Cave Pillar",
       "category": "Mines & Caves",
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "mc_cave_pillar_wide",
       "src": "Modular_Mine_Set.glb#^Cave_Pillar_C$",
       "name": "Wide Cave Pillar",
       "category": "Mines & Caves",
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "mc_cave_ledge",
       "src": "Modular_Mine_Set.glb#^Cave_Platform_G$",
       "name": "Cave Ledge",
       "category": "Mines & Caves",
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "mc_mound",
       "src": "Modular_Mine_Set.glb#^Ground_Mound_A$",
       "name": "Spoil Mound",
       "category": "Mines & Caves",
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "mc_plank_wall",

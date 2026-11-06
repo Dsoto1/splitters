@@ -52,7 +52,7 @@
       "name": "Fire Statue",
       "category": "Jungle Ruins",
       "height": 3.0,
-      "collide": "box",
+      "collide": "voxel",
       "triangles": 9000,
       "maxError": 0.02,
       "source": {
@@ -72,7 +72,7 @@
       "name": "Spear Guardian Statue",
       "category": "Jungle Ruins",
       "height": 3.5,
-      "collide": "box",
+      "collide": "voxel",
       "triangles": 16000,
       "maxError": 0.02,
       "source": {
@@ -92,7 +92,7 @@
       "name": "Monk Statue",
       "category": "Jungle Ruins",
       "height": 3.0,
-      "collide": "box",
+      "collide": "voxel",
       "triangles": 16000,
       "maxError": 0.02,
       "source": {
@@ -112,7 +112,7 @@
       "name": "Tiered Fountain",
       "category": "Town & Market",
       "height": 2.0,
-      "collide": "box",
+      "collide": "voxel",
       "triangles": 18000,
       "maxError": 0.03,
       "source": {
@@ -132,7 +132,7 @@
       "name": "Lion Head Fountain",
       "category": "Town & Market",
       "height": 2.0,
-      "collide": "box",
+      "collide": "voxel",
       "triangles": 16000,
       "maxError": 0.03,
       "source": {
@@ -152,7 +152,7 @@
       "name": "Eagle Stone Fountain",
       "category": "Town & Market",
       "height": 2.6,
-      "collide": "box",
+      "collide": "voxel",
       "triangles": 18000,
       "maxError": 0.03,
       "source": {
@@ -172,7 +172,7 @@
       "name": "Wishing Well",
       "category": "Medieval Village",
       "height": 2.2,
-      "collide": "box",
+      "collide": "voxel",
       "triangles": 12000,
       "maxError": 0.03,
       "source": {
@@ -206,7 +206,7 @@
       "name": "Wishing Well",
       "category": "Desert City",
       "height": 2.2,
-      "collide": "box",
+      "collide": "voxel",
       "triangles": 12000,
       "maxError": 0.03,
       "source": {
@@ -246,7 +246,7 @@
       "name": "Temple Guardian (Large)",
       "category": "Jungle Ruins",
       "height": 4.0,
-      "collide": "box",
+      "collide": "voxel",
       "triangles": 16000,
       "maxError": 0.02,
       "source": {

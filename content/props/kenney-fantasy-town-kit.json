@@ -15,7 +15,7 @@
       "name": "Fountain",
       "category": "Town & Market",
       "height": 2.2,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "fountain_square",
@@ -23,7 +23,7 @@
       "name": "Square Fountain",
       "category": "Town & Market",
       "height": 2.2,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "stall",
@@ -63,7 +63,7 @@
       "name": "Hay Cart",
       "category": "Town & Market",
       "height": 2.2,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "windmill",
@@ -71,7 +71,7 @@
       "name": "Windmill",
       "category": "Town & Market",
       "height": 11.0,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "watermill",
@@ -88,7 +88,7 @@
       "name": "Water Wheel",
       "category": "Town & Market",
       "height": 4.0,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "lantern_post",
@@ -120,7 +120,7 @@
       "name": "Tall Hedge",
       "category": "Town & Market",
       "height": 2.2,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "hedge",
@@ -128,7 +128,7 @@
       "name": "Hedge",
       "category": "Town & Market",
       "height": 1.2,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "hedge_gate",

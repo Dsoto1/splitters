@@ -19,14 +19,15 @@
       "src": "Clutter/Barrel A.fbx",
       "name": "Barrel A",
       "category": "Wild West",
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "ww_barrel_b",
       "src": "Clutter/Barrel B.fbx",
       "name": "Barrel B",
       "category": "Wild West",
-      "collide": "box"
+      "collide": "box",
+      "fills": "Round, under a metre across: its box stands off it only diagonally (up to 0.2 m at 45°), and voxel boxes give this same box."
     },
     {
       "id": "ww_bottle_a",
@@ -61,7 +62,7 @@
       "src": "Clutter/Bucket.fbx",
       "name": "Bucket",
       "category": "Wild West",
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "ww_carpet",
@@ -75,7 +76,7 @@
       "src": "Clutter/Chair.fbx",
       "name": "Chair",
       "category": "Wild West",
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "ww_crate",
@@ -187,14 +188,14 @@
       "src": "Clutter/Table A.fbx",
       "name": "Table A",
       "category": "Wild West",
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "ww_table_b",
       "src": "Clutter/Table B.fbx",
       "name": "Table B",
       "category": "Wild West",
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "ww_trough_a",
@@ -222,14 +223,14 @@
       "src": "Clutter/Wheel B.fbx",
       "name": "Wheel B",
       "category": "Wild West",
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "ww_bar",
       "src": "Miscellaneous/Bar.fbx",
       "name": "Bar",
       "category": "Wild West",
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "ww_gallows",
@@ -243,21 +244,21 @@
       "src": "Miscellaneous/Rail.fbx",
       "name": "Rail",
       "category": "Wild West",
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "ww_water_tank",
       "src": "Miscellaneous/Water Tank.fbx",
       "name": "Water Tank",
       "category": "Wild West",
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "ww_windmill",
       "src": "Miscellaneous/Windmill.fbx",
       "name": "Windmill",
       "category": "Wild West",
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "ww_balcony_a",
@@ -370,7 +371,7 @@
       "src": "Modular/Doors/Door B.fbx",
       "name": "Wild West Door B",
       "category": "Wild West",
-      "collide": "box",
+      "collide": "voxel",
       "scale": 0.016,
       "yaw": 90
     },
@@ -404,7 +405,7 @@
       "src": "Modular/Floor & Roof/Floor C.fbx",
       "name": "Wild West Floor C",
       "category": "Wild West",
-      "collide": "box",
+      "collide": "voxel",
       "scale": 0.016
     },
     {
@@ -412,7 +413,7 @@
       "src": "Modular/Floor & Roof/Floor D.fbx",
       "name": "Wild West Floor D",
       "category": "Wild West",
-      "collide": "box",
+      "collide": "voxel",
       "scale": 0.016
     },
     {
@@ -420,7 +421,7 @@
       "src": "Modular/Floor & Roof/Floor E.fbx",
       "name": "Wild West Floor E",
       "category": "Wild West",
-      "collide": "box",
+      "collide": "voxel",
       "scale": 0.016
     },
     {
@@ -444,7 +445,7 @@
       "src": "Modular/Floor & Roof/Foundation C.fbx",
       "name": "Wild West Foundation C",
       "category": "Wild West",
-      "collide": "box",
+      "collide": "voxel",
       "scale": 0.016
     },
     {
@@ -468,7 +469,7 @@
       "src": "Modular/Floor & Roof/Foundation F.fbx",
       "name": "Wild West Foundation F",
       "category": "Wild West",
-      "collide": "box",
+      "collide": "voxel",
       "scale": 0.016
     },
     {
@@ -484,7 +485,7 @@
       "src": "Modular/Floor & Roof/Roof B.fbx",
       "name": "Wild West Roof B",
       "category": "Wild West",
-      "collide": "box",
+      "collide": "voxel",
       "scale": 0.016
     },
     {
@@ -492,7 +493,7 @@
       "src": "Modular/Floor & Roof/Roof C.fbx",
       "name": "Wild West Roof C",
       "category": "Wild West",
-      "collide": "box",
+      "collide": "voxel",
       "scale": 0.016
     },
     {
@@ -500,7 +501,7 @@
       "src": "Modular/Floor & Roof/Roof D.fbx",
       "name": "Wild West Roof D",
       "category": "Wild West",
-      "collide": "box",
+      "collide": "voxel",
       "scale": 0.016
     },
     {
@@ -508,7 +509,7 @@
       "src": "Modular/Floor & Roof/Roof E.fbx",
       "name": "Wild West Roof E",
       "category": "Wild West",
-      "collide": "box",
+      "collide": "voxel",
       "scale": 0.016
     },
     {
@@ -524,7 +525,7 @@
       "src": "Modular/Floor & Roof/Small Foundation B.fbx",
       "name": "Wild West Small Foundation B",
       "category": "Wild West",
-      "collide": "box",
+      "collide": "voxel",
       "scale": 0.016
     },
     {
@@ -532,7 +533,7 @@
       "src": "Modular/Floor & Roof/Small Foundation C.fbx",
       "name": "Wild West Small Foundation C",
       "category": "Wild West",
-      "collide": "box",
+      "collide": "voxel",
       "scale": 0.016
     },
     {
@@ -910,7 +911,7 @@
       "src": "Modular/Walls/Corner Post A.fbx",
       "name": "Wild West Corner Post A",
       "category": "Wild West",
-      "collide": "box",
+      "collide": "voxel",
       "scale": 0.016
     },
     {
@@ -1088,7 +1089,7 @@
       "src": "Modular/Walls/Triangle Wall A.fbx",
       "name": "Wild West Triangle Wall A",
       "category": "Wild West",
-      "collide": "box",
+      "collide": "voxel",
       "scale": 0.016,
       "yaw": 90
     },
@@ -1097,7 +1098,7 @@
       "src": "Modular/Walls/Triangle Wall B.fbx",
       "name": "Wild West Triangle Wall B",
       "category": "Wild West",
-      "collide": "box",
+      "collide": "voxel",
       "scale": 0.016,
       "yaw": 90
     },
@@ -1219,28 +1220,28 @@
       "src": "Nature/Cactus A.fbx",
       "name": "Cactus A",
       "category": "Wild West",
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "ww_cactus_b",
       "src": "Nature/Cactus B.fbx",
       "name": "Cactus B",
       "category": "Wild West",
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "ww_cactus_c",
       "src": "Nature/Cactus C.fbx",
       "name": "Cactus C",
       "category": "Wild West",
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "ww_cactus_d",
       "src": "Nature/Cactus D.fbx",
       "name": "Cactus D",
       "category": "Wild West",
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "ww_tumbleweed",
@@ -1254,14 +1255,14 @@
       "src": "Transportation/Cart A.fbx",
       "name": "Cart A",
       "category": "Wild West",
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "ww_cart_b",
       "src": "Transportation/Cart B.fbx",
       "name": "Cart B",
       "category": "Wild West",
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "ww_cart_c",
