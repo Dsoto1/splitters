@@ -163,6 +163,8 @@ describe('Save for next match', () => {
 
   it('keeps changed rules for the next match: this one carries on, the next round plays them', () => {
     const { match, control } = start();
+    let told = 0;
+    control.onNextRules = () => told++;
     expect(control.apply({ c: 'rules', rules: { scoreLimit: 60, timeLimitSeconds: 900 } }).notice).toBe('Host changed the rules for the next match');
     expect(match.rules).toMatchObject({ scoreLimit: 40, timeLimitSeconds: 600 });
     expect(control.state().pending).toEqual({ scoreLimit: 60, timeLimitSeconds: 900 });
@@ -174,6 +176,8 @@ describe('Save for next match', () => {
     expect(match.rules).toMatchObject({ scoreLimit: 60, timeLimitSeconds: 900 });
     expect(control.state().pending).toEqual({});
     expect(match.timeLeftSeconds()).toBe(900);
+    // The host is told once, to send everyone the rules in play (HUDs) and its panel the settings.
+    expect(told).toBe(1);
   });
 
   it('Restart match plays them at once (Apply & restart); a rule set back to what plays cancels it', () => {

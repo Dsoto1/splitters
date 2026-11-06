@@ -397,6 +397,13 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
   const refreshAdmins = () => {
     for (const c of clients) if (c.admin && c.slot !== null) hostState(c);
   };
+  /** A new round began with the rules saved for the next match (Save for next match): everyone's HUD and the admins' panels follow. */
+  const watchNextRules = (c: InstanceType<typeof HostControl>) =>
+    (c.onNextRules = () => {
+      broadcast({ t: 'rules', rules: match.rules });
+      refreshAdmins();
+    });
+  watchNextRules(control);
   const notice = (text: string) => {
     console.log(`[admin] ${text}`);
     broadcast({ t: 'notice', text });
@@ -763,6 +770,7 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
     nextPending = new Set();
     bots = new BotFiller(match, bots.skill, { takeBack: opts.botTakeBack, botSet: bots.hostSet });
     control = new HostControl(match, bots, next.fill, 'Admin');
+    watchNextRules(control);
     bots.rebalance(control.fill);
     // A map the owner published since is picked up from here on.
     lookup.forget();

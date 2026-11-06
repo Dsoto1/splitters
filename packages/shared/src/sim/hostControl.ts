@@ -40,12 +40,16 @@ export class HostControl {
     return withPending(this.match.rules, this.pending);
   }
 
+  /** Told when the rules saved for the next match have gone into play (a new round began with them): the host tells everyone. */
+  onNextRules?: () => void;
+
   /** The changes saved for the next match go into play (a new round is starting). */
   private playPending(): void {
     if (!Object.keys(this.pending).length) return;
     const p = this.pending;
     this.match.setRules({ ...p, ...(p.friendlyFire === 'off' ? { friendlyFire: undefined } : {}) });
     this.pending = {};
+    this.onNextRules?.();
   }
 
   state(): HostState {

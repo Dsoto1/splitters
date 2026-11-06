@@ -226,6 +226,8 @@ export class MatchHost {
     if (test?.god) me.invulnerable = true;
     // Load tests (?bots=96) start past the browser's cap; the host can't raise it further. A phone hosts fewer (opts.maxPlayers).
     const control = new HostControl(match, bots, fill, 'Host', Math.max(this.opts.maxPlayers ?? BROWSER_MAX_PLAYERS, fill));
+    // The rules saved for the next match went into play as a new round began (Save for next match): everyone follows.
+    control.onNextRules = () => this.rulesChanged();
     Object.assign(this, { match, me, mod, control, bots });
     if (!cp) bots.rebalance(control.fill);
     // Spectate from the start: out of play before the welcome, so the page opens on the spectator camera (and the
@@ -469,10 +471,21 @@ export class MatchHost {
     const r = c.apply(cmd);
     if (r.error) return r.error;
     if (r.notice) this.announce({ t: 'notice', text: r.notice });
+    // A restart with new rules, or a rule that applies at once: everyone's HUD (score limit, clock) follows.
+    if (cmd.c === 'restart' || cmd.c === 'rules') this.announce({ t: 'rules', rules: c.match.rules });
     this.announce({ t: 'roster', players: c.match.roster() });
     this.announce({ t: 'host', state: c.state() });
     this.sendFacts();
     return null;
+  }
+
+  /** The rules in play changed by themselves (a new round began with the ones saved for it): everyone's HUD, and the host's panel, follow. */
+  private rulesChanged(): void {
+    const c = this.control;
+    if (!c || this.stopped) return;
+    this.announce({ t: 'rules', rules: c.match.rules });
+    this.announce({ t: 'host', state: c.state() });
+    this.sendFacts();
   }
 
   /** Go offline: every friend is told why and disconnected, and bots take their places again. */
