@@ -382,9 +382,29 @@ export class NavWorld {
     return out;
   }
 
+  private readonly reachCache = new Map<string, Vec3 | null>();
+
+  /**
+   * The nearest point to `b` that a route from `a` gets to, when `b` itself can't be reached (a flag dropped into
+   * a pit, a goal on a roof): Detour's partial route ends at the polygon nearest it. The same for every start on
+   * one part of the navmesh, so cached per part and goal polygon: one search however many bots ask.
+   */
+  reachToward(a: Vec3, b: Vec3): Vec3 | null {
+    const ext = { x: 2, y: 3, z: 2 };
+    const s = this.query.findNearestPoly(a, { halfExtents: ext });
+    const e = this.query.findNearestPoly(b, { halfExtents: { x: 4, y: 8, z: 4 } });
+    if (!s.success || !s.nearestRef || !e.success || !e.nearestRef) return null;
+    const key = `${this.part(s.nearestRef)}>${e.nearestRef}`;
+    if (this.reachCache.has(key)) return this.reachCache.get(key)!;
+    const p = this.nearestReach(s.nearestRef, s.nearestPoint, b, { x: 4, y: 8, z: 4 });
+    if (this.reachCache.size >= 1024) this.reachCache.clear();
+    this.reachCache.set(key, p);
+    return p;
+  }
+
   /** The point of the start polygon's patch nearest `to` (on another part: Detour's partial route ends at the polygon nearest it). */
-  private nearestReach(startRef: number, start: Vec3, to: Vec3): Vec3 | null {
-    const e = this.query.findNearestPoly(to, { halfExtents: { x: 1, y: 2, z: 1 } });
+  private nearestReach(startRef: number, start: Vec3, to: Vec3, reach: Vec3 = { x: 1, y: 2, z: 1 }): Vec3 | null {
+    const e = this.query.findNearestPoly(to, { halfExtents: reach });
     if (!e.success || !e.nearestRef) return null;
     const r = this.query.findPath(startRef, e.nearestRef, start, e.nearestPoint, { maxPathPolys: MAX_PATH_POLYS });
     const n = r.polys.size;

@@ -1281,6 +1281,17 @@ export class BotBrain {
           moveYaw = this.followPathTo(view, to, moving);
           // No way by its lane after all: straight for the goal.
           if (moveYaw === null && this.pathMiss && this.lane?.via) this.lane.via = null;
+          else if (moveYaw === null && this.pathMiss) {
+            // As near as a route gets to a goal it can't reach (followPathNow went there): keep watch here, facing it,
+            // until it comes within reach (a dropped flag goes home) or the goal changes.
+            const r = this.keepWatch(view, { pos: view.nav.reachToward(me.pos, g.pos) ?? me.pos, radius: 3, watch: g.pos });
+            moveYaw = r.moveYaw;
+            moveScale = r.moveScale;
+            stance = r.stance;
+            lookDone = true;
+            doing = 'station';
+            this.pathMiss = false;
+          }
           moveScale = this.careful() && !g.push ? 0.8 : 1;
           // An objective a way off: run for it (a carrier always), as players do.
           if (g.push && (g.run || horizontalDistance(me.pos, to) > 15)) sprint = true;
@@ -2738,9 +2749,19 @@ export class BotBrain {
         if (!found) this.pathFailures++;
       }
       this.path = found ?? [];
-      // No route: cut off on a patch of navmesh players walk off? Then off it first.
+      // No route: cut off on a patch of navmesh players walk off? Then off it first. Else (the goal is what can't be
+      // reached: a flag dropped into a pit, something on a roof) as near it as a route gets, rather than standing.
       if (found) this.escape = null;
-      else if (horizontalDistance(me.pos, goal) > 1.5) this.planEscape(view, goal);
+      else if (horizontalDistance(me.pos, goal) > 1.5) {
+        this.planEscape(view, goal);
+        if (!this.escape) {
+          const near = view.nav.reachToward(me.pos, goal);
+          if (near && horizontalDistance(me.pos, near) > 1.2 && horizontalDistance(near, goal) < horizontalDistance(me.pos, goal) - 1) {
+            const lead = view.nav.findPath(me.pos, near);
+            if (lead) this.path = lead;
+          }
+        }
+      }
       const door = this.pathBlocked(view);
       if (door) {
         this.path = [];
