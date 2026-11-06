@@ -6,6 +6,8 @@ import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import { Color3 } from '@babylonjs/core/Maths/math.color';
 import { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import { VertexData } from '@babylonjs/core/Meshes/mesh.vertexData';
+import { SubMesh } from '@babylonjs/core/Meshes/subMesh';
+import { MultiMaterial } from '@babylonjs/core/Materials/multiMaterial';
 import type { Material } from '@babylonjs/core/Materials/material';
 import '@babylonjs/core/Meshes/meshLODLevel';
 import '@babylonjs/core/Meshes/instancedMesh';
@@ -102,6 +104,66 @@ export class ModelLibrary {
       this.merged.set(path, p);
     }
     return p;
+  }
+
+  private readonly whole = new Map<string, Promise<Mesh | null>>();
+
+  /**
+   * A static copy of a model as ONE GPU instance: of the model merged into a single mesh with a part per material
+   * (a multi-material), where `instantiateStatic` makes an instance per material. The draws are the same (one per
+   * material for every copy); the scene looks at one mesh per copy instead of three to five (a crowd's held guns
+   * and the pickups' models: round 3 of docs/PERF_96.md). Models that can't be merged are copied as
+   * `instantiateStatic` does.
+   */
+  async instantiateWhole(path: string, name: string): Promise<TransformNode> {
+    let p = this.whole.get(path);
+    if (!p) {
+      p = this.mergeWhole(path).catch(() => null);
+      this.whole.set(path, p);
+    }
+    const src = await p;
+    if (!src) return this.instantiateStatic(path, name);
+    const root = new TransformNode(name, this.scene);
+    const inst = src.createInstance(`${name}_${src.name}`);
+    // An instance starts at its source's place (parked far below): it sits at the model's origin instead.
+    inst.position.setAll(0);
+    inst.parent = root;
+    inst.isPickable = false;
+    return root;
+  }
+
+  /** The static sources (one per material) as one mesh with a sub-mesh each, parked out of sight; one source as it is. */
+  private async mergeWhole(path: string): Promise<Mesh | null> {
+    const sources = await this.staticSources(path);
+    if (!sources?.length) return null;
+    if (sources.length === 1) return sources[0]!;
+    if (new Set(sources.map((m) => m.sideOrientation)).size > 1) return null;
+    const datas = sources.map((m) => VertexData.ExtractFromMesh(m, true, true));
+    // Each part's size, before the merge (it merges into the first part's data).
+    const sizes = datas.map((d) => [(d.positions?.length ?? 0) / 3, d.indices?.length ?? 0] as const);
+    const total = sizes.reduce((n, [v]) => n + v, 0);
+    const merged = datas[0]!.merge(datas.slice(1), total > 65535, false, false, true);
+    const mesh = new Mesh(`whole_${path}`, this.scene);
+    merged.applyToMesh(mesh, false);
+    // A part per material, in the order the parts were merged (each part's vertices and indices follow the last's).
+    mesh.subMeshes = [];
+    let v0 = 0;
+    let i0 = 0;
+    sizes.forEach(([vc, ic], k) => {
+      new SubMesh(k, v0, vc, i0, ic, mesh);
+      v0 += vc;
+      i0 += ic;
+    });
+    const multi = new MultiMaterial(`whole_${path}_mat`, this.scene);
+    multi.subMaterials = sources.map((m) => m.material);
+    mesh.material = multi;
+    mesh.sideOrientation = sources[0]!.sideOrientation;
+    mesh.hasVertexAlpha = sources.some((m) => m.hasVertexAlpha);
+    mesh.isPickable = false;
+    // Parked out of sight: only its instances draw.
+    mesh.position.y = -10000;
+    mesh.freezeWorldMatrix();
+    return mesh;
   }
 
   /** The model's meshes merged per material (in the model's own space), parked out of sight as instance sources. */

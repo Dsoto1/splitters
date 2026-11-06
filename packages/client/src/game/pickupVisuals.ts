@@ -61,8 +61,8 @@ export function createPickupVisual(scene: Scene, models: ModelLibrary, itemId: s
     m.isPickable = false;
     return m;
   };
-  // In the game, a model's copies are GPU instances of it merged into one mesh per material (ModelLibrary.instantiateStatic).
-  const copy = (path: string, part: string) => (instanced ? models.instantiateStatic(path, `${name}_${part}`) : models.instantiate(path, `${name}_${part}`));
+  // In the game, a model's copies are GPU instances of it merged into one mesh (ModelLibrary.instantiateWhole).
+  const copy = (path: string, part: string) => (instanced ? models.instantiateWhole(path, `${name}_${part}`) : models.instantiate(path, `${name}_${part}`));
   const fx = item?.effect;
   if (!fx) {
     part(CreateBox(`${name}_unknown`, { size: 0.4 }, scene), mat(scene, '#ff00ff', 0.5));

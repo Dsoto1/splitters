@@ -29,6 +29,12 @@ import '@babylonjs/core/Meshes/thinInstanceMesh';
 
 /** Batches are per model, material and square of this many metres (culled per square). */
 export const PROP_SECTOR = 128;
+/**
+ * A model is batched only when the map has at least this many copies of it. Fewer copies draw as GPU instances: one
+ * draw per material for all of them, where batches split them by square and level of detail (Market Town's 54 props,
+ * five copies at most of any model, came out at twice the draws and no fewer meshes).
+ */
+export const PROP_BATCH_MIN = 8;
 /** A copy changes level only once it is this share past the boundary (no flicker at the edge). */
 const HYSTERESIS = 0.1;
 

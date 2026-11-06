@@ -437,7 +437,7 @@ All three in-flight agents stopped. Their work is pushed:
 
 Resume each from its branch, after merging main.
 
-### Far enemies as feet only: FIXED on `wip/perf-3` (agent, 2026-11-06; commit b1a32722, CI pending on `check/perf-3`)
+### Far enemies as feet only: FIXED (agent, 2026-11-06; on its own: `wip/far-bodies` 36dab498, green on `check/far-bodies` run 42154611523, ready to land; also in `wip/perf-3` as b1a32722)
 **Cause** (reproduced in a real match, production build): Babylon's weighted clip blend (`ProcessLateAnimationBindings
 ForQuaternions`) blends a joint's clips pairwise in the scene's animatable order, its first step a slerp by
 w2 / (w1 + w2). A clip at weight 0 is left out from its second frame at 0 ("actively paused"), but on its first frame it

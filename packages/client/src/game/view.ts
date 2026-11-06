@@ -88,7 +88,7 @@ import { BloodVisuals, bloodPreference } from './bloodVisuals.ts';
 import { PosedBody, RAGDOLL_PREWARM, Ragdoll, type DeadBody } from './ragdoll.ts';
 import { RAGDOLL_BUDGET, fitBudget, screenShare, tierFor, type RagdollTier } from './ragdollBudget.ts';
 import { Atmosphere, SMALL_CASTER_REACH } from './atmosphere.ts';
-import { PropBatches } from './propBatches.ts';
+import { PROP_BATCH_MIN, PropBatches } from './propBatches.ts';
 import { castSmall } from './shadowFlags.ts';
 import { ImpactVisuals } from './impactVisuals.ts';
 import { ThrowArc } from './throwArc.ts';
@@ -570,9 +570,14 @@ export class GameView {
     this.propBatches?.dispose();
     this.propBatches = perfOn('propbatch') ? new PropBatches(this.scene, (path) => this.models.staticSources(path), SMALL_CASTER_REACH) : null;
     const batches = this.propBatches;
+    // Only models with enough copies on the map (PROP_BATCH_MIN) are batched.
+    const copies = new Map<string, number>();
+    const modelKey = (e: PropEntity) => `${e.model}|${e.variant ?? ''}`;
+    for (const e of doc.entities) if (e.kind === 'prop' && !drawnAsEnv.has(e.id) && !carried.has(e.id)) copies.set(modelKey(e), (copies.get(modelKey(e)) ?? 0) + 1);
     doc.entities.forEach((e, i) => {
       if (e.kind !== 'prop' || drawnAsEnv.has(e.id)) return;
-      const node = createPropNode(this.scene, this.models, e, `prop_${e.id}`, !carried.has(e.id), true, doc.terrain, batches);
+      const batch = batches && (copies.get(modelKey(e)) ?? 0) >= PROP_BATCH_MIN ? batches : null;
+      const node = createPropNode(this.scene, this.models, e, `prop_${e.id}`, !carried.has(e.id), true, doc.terrain, batch);
       // A chandelier (and other hung props) is drawn with its top against the ceiling over it.
       if (!carried.has(e.id)) node.position.y += hungPropLift(boxes, e);
       const lift = flush.get(e.id);
@@ -659,7 +664,7 @@ export class GameView {
     const gunCopies = guns.flatMap((path, i) =>
       [true, false].map((instanced, k) =>
         // As a crowd's hands and the pickups hold them (merged instances), and as a copy of its own.
-        (instanced ? this.models.instantiateStatic(path, `prewarm_gun_${i}_${k}`) : this.models.instantiate(path, `prewarm_gun_${i}_${k}`)).then(
+        (instanced ? this.models.instantiateWhole(path, `prewarm_gun_${i}_${k}`) : this.models.instantiate(path, `prewarm_gun_${i}_${k}`)).then(
           (node) => {
             if (stage.isDisposed()) return void node.dispose();
             node.parent = stage;
@@ -2116,10 +2121,10 @@ export class GameView {
     // Unarmed (hostages, zombies): nothing in hand.
     const def = slot > 0 && !a.unarmed ? weaponByCode(slot) : undefined;
     if (!def) return;
-    // Crowds: everyone's copy of a gun is a GPU instance of the model merged into one mesh per material (one draw per
-    // gun model, not per player, and one mesh per gun for the scene to look at, not one per part: round 3 of
+    // Crowds: everyone's copy of a gun is a GPU instance of the model merged into one mesh (one draw per gun model and
+    // material, not per player, and one mesh per gun for the scene to look at, not one per part: round 3 of
     // docs/PERF_96.md).
-    void (this.crowd ? this.models.instantiateStatic(def.view.model, `held_${slot}`) : this.models.instantiate(def.view.model, `held_${slot}`)).then((node) => {
+    void (this.crowd ? this.models.instantiateWhole(def.view.model, `held_${slot}`) : this.models.instantiate(def.view.model, `held_${slot}`)).then((node) => {
       if (a.weaponSlot !== slot || a.root.isDisposed()) return node.dispose();
       // A held gun's shadow is a speck past a few metres: it casts only near the camera.
       castSmall(node);
