@@ -8,6 +8,8 @@ made only on a commit that passed CI on a check branch.
 
 ## Unreleased
 
+**The HUD portrait follows your body** (owner's report, 2026-11-06: playing the hooded figure with Random characters on, the portrait bottom left still showed the panda picked in the menu): with Random characters, each new life's character now shows in the HUD portrait.
+
 **Pistols sit deep in the hand** (owner's report, 2026-11-05: "Looks as if their fingers are just pinching the grip")
 - **First person, every pistol-class gun, every character** (full body and arms only): the shooting hand takes the
   grip deep in the palm, the web of the thumb high on the backstrap, the fingers wrapped round to the grip's far side
