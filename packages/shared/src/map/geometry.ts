@@ -139,6 +139,68 @@ export function boxBounds(b: Pick<WorldBox, 'min' | 'max' | 'yaw' | 'pitch' | 'r
   return { min: [Math.min(...xs), b.min[1], Math.min(...zs)], max: [Math.max(...xs), b.max[1], Math.max(...zs)] };
 }
 
+type XYZ = { x: number; y: number; z: number };
+
+/** World-axis bounds of each box of a list (min xyz, max xyz), worked out once per list. */
+const boundsOf = new WeakMap<readonly WorldBox[], Float64Array>();
+function listBounds(boxes: readonly WorldBox[]): Float64Array {
+  let out = boundsOf.get(boxes);
+  if (out) return out;
+  out = new Float64Array(boxes.length * 6);
+  boxes.forEach((b, i) => {
+    const { min, max } = b.yaw || b.pitch || b.roll ? boxBounds(b) : b;
+    out!.set([min[0], min[1], min[2], max[0], max[1], max[2]], i * 6);
+  });
+  boundsOf.set(boxes, out);
+  return out;
+}
+
+/**
+ * Distance along a normalised ray to the first of `boxes` it enters from outside (a turned or tilted box counts as
+ * its world-axis bounds), or null within maxDist. For solids a PhysicsWorld doesn't hold when the navmesh is built:
+ * the scenario's breakable props and moving or breaking blocks (the navigation audit's falls and drop links, jump
+ * pads' landings).
+ */
+export function boxesRay(boxes: readonly WorldBox[], o: XYZ, d: XYZ, maxDist: number): number | null {
+  if (!boxes.length) return null;
+  const bb = listBounds(boxes);
+  let best: number | null = null;
+  for (let i = 0; i < boxes.length; i++) {
+    let t0 = 0;
+    let t1 = best ?? maxDist;
+    let hit = true;
+    for (let a = 0; a < 3 && hit; a++) {
+      const oa = a === 0 ? o.x : a === 1 ? o.y : o.z;
+      const da = a === 0 ? d.x : a === 1 ? d.y : d.z;
+      const lo = bb[i * 6 + a]!;
+      const hi = bb[i * 6 + 3 + a]!;
+      if (Math.abs(da) < 1e-9) {
+        if (oa < lo || oa > hi) hit = false;
+        continue;
+      }
+      let ta = (lo - oa) / da;
+      let tb = (hi - oa) / da;
+      if (ta > tb) [ta, tb] = [tb, ta];
+      t0 = Math.max(t0, ta);
+      t1 = Math.min(t1, tb);
+      if (t0 > t1) hit = false;
+    }
+    if (hit && (best === null || t0 < best)) best = t0;
+  }
+  return best;
+}
+
+/** Whether any of `boxes` (a turned or tilted one as its world-axis bounds) overlaps the upright box at `c` with half-size `half`. */
+export function boxesOverlap(boxes: readonly WorldBox[], c: XYZ, half: XYZ): boolean {
+  if (!boxes.length) return false;
+  const bb = listBounds(boxes);
+  for (let i = 0; i < boxes.length; i++) {
+    const k = i * 6;
+    if (c.x + half.x > bb[k]! && c.x - half.x < bb[k + 3]! && c.y + half.y > bb[k + 1]! && c.y - half.y < bb[k + 4]! && c.z + half.z > bb[k + 2]! && c.z - half.z < bb[k + 5]!) return true;
+  }
+  return false;
+}
+
 export interface CellOccupant {
   placement: TilePlacement;
   def: TileDefinition;

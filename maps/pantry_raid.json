@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 20,
+  "formatVersion": 27,
   "metadata": {
     "id": "pantry_raid",
     "name": "Pantry Raid",
@@ -17,7 +17,15 @@
       "core.tdm",
       "core.ctf",
       "core.deathmatch"
-    ]
+    ],
+    "release": {
+      "mapId": "m_vx3sswecmzrnbp7e",
+      "versionId": "v_lqsp6lgmoyuzgy7a",
+      "revision": 2,
+      "contentHash": "sha256:d3d1978e80a7b72c83b61e88faffd5be0608f47665d2701d64dcc4ba90123e64",
+      "schemaVersion": 27,
+      "releasedAt": "2026-11-06T15:57:47.136Z"
+    }
   },
   "classicStructure": {
     "cellSize": 8,
@@ -7828,9 +7836,9 @@
     {
       "id": "spawn_354",
       "position": [
-        94,
+        93.68,
         12,
-        54.4
+        54.72
       ],
       "kind": "spawn",
       "yaw": 3.141592653589793,
@@ -8721,7 +8729,6 @@
     "style": "invisible",
     "height": 60
   },
-  "track": null,
   "backdrop": {
     "sky": "clear",
     "scenery": "none",

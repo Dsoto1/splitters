@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 20,
+  "formatVersion": 26,
   "metadata": {
     "id": "halcyon_station",
     "name": "Halcyon Station",
@@ -1526,9 +1526,9 @@
     {
       "id": "spawn_096",
       "position": [
-        -9,
+        -8.54,
         0,
-        -27
+        -26.81
       ],
       "kind": "spawn",
       "yaw": 0,
@@ -1614,7 +1614,7 @@
     {
       "id": "spawn_104",
       "position": [
-        -9,
+        -8.5,
         0,
         17
       ],
@@ -1638,7 +1638,7 @@
       "position": [
         17,
         0,
-        -9
+        -8.5
       ],
       "kind": "spawn",
       "yaw": 0,
@@ -2470,7 +2470,6 @@
     "style": "invisible",
     "height": 8
   },
-  "track": null,
   "backdrop": {
     "sky": "space",
     "scenery": "none",

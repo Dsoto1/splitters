@@ -150,12 +150,28 @@ interface Remote {
   heardAt: number;
   /** The friend has loaded the match (`ready`): until then a slow machine building the map may go quiet longer. */
   loaded?: boolean;
+  /** When the page last saw this link's connection up (ms; linkUp): silent with the connection up is a stalled page. */
+  upAt?: number;
 }
 
 /** A friend's link that sends nothing this long is closed; their place is kept for them (AWAY.holdSeconds) to reconnect. */
 const FRIEND_SILENT_MS = 20_000;
 /** …and one still loading the match (no `ready` yet: a slow machine building a big map can't answer meanwhile). */
 const FRIEND_LOADING_SILENT_MS = 60_000;
+/**
+ * …and a loaded one whose connection is still up (the page says so every few seconds): its page has stalled, it
+ * isn't gone. A slow machine joining a match can freeze for half a minute building shaders (seen on CI: the
+ * `handoff` flow's second friend, 25–30 s), and dropping it there cost it its place in the host's checkpoint.
+ */
+const FRIEND_STALLED_SILENT_MS = 60_000;
+/** The page's last word that a link is up counts for this long (it checks every 2 s). */
+const LINK_UP_FRESH_MS = 6_000;
+
+/** How long a friend's link may say nothing before it is closed: loading, stalled with the connection up, or silent. */
+export function silentLimit(r: { loaded?: boolean; upAt?: number }, now: number): number {
+  if (!r.loaded) return FRIEND_LOADING_SILENT_MS;
+  return r.upAt !== undefined && now - r.upAt < LINK_UP_FRESH_MS ? FRIEND_STALLED_SILENT_MS : FRIEND_SILENT_MS;
+}
 /** Friends' joins per minute, in all: a burst of joins (many tabs at once) is refused. */
 const FRIEND_JOINS_PER_MINUTE = 12;
 /** Host handoff: a ready successor keeps the role at least this long (seconds) before a better connection takes it over. */
@@ -377,8 +393,9 @@ export class MatchHost {
     this.lastWatch = now;
     for (const r of friends) {
       if (slept) r.heardAt = now;
-      else if (now - r.heardAt > (r.loaded ? FRIEND_SILENT_MS : FRIEND_LOADING_SILENT_MS)) {
-        console.warn(`closing ${this.match?.slots[r.slot]?.name ?? 'a friend'}'s link: silent ${((now - r.heardAt) / 1000).toFixed(0)} s${r.loaded ? '' : ' (loading)'}`);
+      else if (now - r.heardAt > silentLimit(r, now)) {
+        const up = r.upAt !== undefined && now - r.upAt < LINK_UP_FRESH_MS;
+        console.warn(`closing ${this.match?.slots[r.slot]?.name ?? 'a friend'}'s link: silent ${((now - r.heardAt) / 1000).toFixed(0)} s${r.loaded ? '' : ' (loading)'}${up ? ' (connection up)' : ''}`);
         this.sink.close(r.id, 0);
         this.closed(r.id);
       }
@@ -584,6 +601,12 @@ export class MatchHost {
   }
 
   /** A friend's link closed: a bot plays their place, kept a while for them to reconnect (or, with no key, takes it over). */
+  /** The page saw this friend's connection up (every few seconds): a silent friend with it up gets longer (FRIEND_STALLED_SILENT_MS). */
+  linkUp(id: number): void {
+    const r = this.remotes.get(id);
+    if (r) r.upAt = Date.now();
+  }
+
   closed(id: number): void {
     const r = this.remotes.get(id);
     if (!r) return;
@@ -829,6 +852,8 @@ export type ToSimHost =
   /** The page checked a friend's account ticket (ticketCheck.ts) before passing their hello on. */
   | { k: 'verified'; id: number; sub: string; name?: string }
   | { k: 'closed'; id: number }
+  /** The friend's connection is up (the page checks every few seconds), whether or not its page is saying anything. */
+  | { k: 'up'; id: number }
   | { k: 'hidden'; v: boolean }
   /** The game browser listing changed (host handoff carries it to the successor). */
   | { k: 'listing'; listing: HostListing | null }
@@ -907,6 +932,8 @@ export function dispatchToHost(host: MatchHost, m: Exclude<ToSimHost, { k: 'star
       return host.verified(m.id, m.sub, m.name);
     case 'closed':
       return host.closed(m.id);
+    case 'up':
+      return host.linkUp(m.id);
     case 'hidden':
       return host.setHidden(m.v);
     case 'listing':

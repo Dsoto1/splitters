@@ -26,6 +26,79 @@ gets overloaded above that: local e2e times out and flakes). Prune landed worktr
 - Earlier the same day: content scalability steps 2–6, perf toolset, flaky e2e fixes, Runway Nine airliner, map
   reworks batches 2–3, character fixes rounds 2–3 (see the entries below and CHANGELOG).
 
+<!-- bots-a -->
+### Bot AI Phase A: navigation audit, never stand still, scorecard (`wip/bots-a`, agents, 2026-11-06; main b2c58e2e, bc6037a1, da59209d and c0b74376 merged in; green on `check/bots-a` at c9ab150a, run 42273882962; not landed)
+docs/BOT_AI_PLAN.md (Phase A done; the before/after tables under "Phase A, measured"), docs/BOTS.md ("Navigation
+audit", "Never standing still on a failed route", "Scorecard"). Earlier agents did most of it and were stopped; the
+last one finished it.
+
+**Run it:** `pnpm nav-audit [maps] [--pictures=dir]` (every map's audit and picture); `pnpm bot-report --check` (the
+quick scorecard CI runs, held to `packages/server/src/tools/bot-limits.json`); `pnpm bot-report --suite=all
+--seeds=1,2 --seconds=180 --shard=k/n --json=…` then `--judge=a.json+b.json --pictures=dir --summary=file.md` (the
+nightly: the `bots-nightly` and `bots-scorecard` jobs in ci.yml; the `bots-report` artifact holds the report and every
+map's picture). Scratch tools (a spot's ground and navmesh, the boxes round it, falls into a trap, hops out of one,
+pads, every bot near a spot over a match's time window, one bot's way through a match, where spawns land, the
+MapMaker driver, A/B scripts): session scratchpad `phaseA2/tools/`.
+
+**Done when, met:** no official map has an audit error (15 findings on 9 maps are listed in `nav/auditKnown.ts` with
+why, as warnings: the owner's list below); on the CTF suite failed searches 0.03 % (under 2 %) and no-route idle 0.05 %
+(under 1 %); the scorecard runs nightly (the full scorecard ran from Run workflow on `wip/bots-a`, run 42264736565: 398
+matches on 77 maps, every limit held).
+
+**What's in it** (newest work last):
+- The audit (`nav/audit.ts`), from every polygon: traps, islands, spawn points, objectives and pickups cut off; errors
+  on official maps (validate-map, the all-maps test), warnings in MapMaker. Ledge-drop links off patches with no way
+  down. Navmesh polygons inside solid boxes left out. Stand-ins for goals no route reaches, the last step off the
+  navmesh, a way onto it, no route requests in the air or on a ladder, buttons, pickups only where routes come back.
+- The last round: falls need room for a standing body (rails and lattices; Bunker Cross's yard was no trap); landings
+  aren't snapped through walls (Rail Stockyard); jump pads land on the scenario's solids (a ray callback: movement is
+  in the menu's first JS and must not import map geometry, which cost 166 kB gzip and failed the bundle budget); hops
+  go by one-way routes (St John's), onto safe ground from the main area (M4 Outpost's dais), up to 1.4 m with a tucked
+  jump (Undergate Transit, Sunken Kingdom); teammates push aside, never back, out of a fight, and not at ladders (the
+  owner's Shingle Point report); a bot at a button looks at it and presses (Serene City's thaw console: the look along
+  the route turned it level every tick); squadmates spawn beside a teammate only on walkable ground (Dune Harbor);
+  the nightly judge loads the WASM before drawing pictures (it threw).
+- Maps (MapMaker): Dune Harbor's consoles 1.2 m shorter; spawn points out of solid on 25 maps (earlier); ten maps
+  exported at format 26 on this branch imported and exported again (main's format 27 made their release stamps read
+  "changed"); Rockfall Canyon's e2e picture taken again (its seeded spawn moved 0.5 m out of a solid).
+
+**Numbers** (BOT_AI_PLAN.md, "Phase A, measured"): CTF suite, 88 matches: failed searches 1.67 → 0.03 %, no-route idle
+0.16 → 0.05 %, idle out of a fight 5.6 → 4.8 %, frozen 0.9 → 0.6 %, stuck recoveries 2.37 → 2.24 a bot-minute, idle
+spells of 10 s and more 2.7 → 1.4 a match, maps with a capture 31 → 34 of 44, captures 145 → 138 (149 and 151 at the two
+commits before the last two fixes: two matches a map is a small sample). Every other mode's failed searches to 0 (Team
+Deathmatch 39.7 %, Elimination 27.2 % before). `pnpm bench:96:clump`, bot thinking a tick: base 1.13–1.90 ms against
+branch 1.24–2.01 (means 1.48 and 1.54; clumped the same, spread a tenth more), within the 2.5 ms guard.
+
+**Left, found on the way:** Iron Compound's gantry MG turret (`mount_148`) stands in the 1.6 m walkway with 0.8 m beside
+it and bots walk into it (a mount's body isn't on the navmesh: Phase C); a dropship landing by Dune Harbor's sunken room
+leaves its riders under the street floor, where nothing gets them out (seen in the Bomb and Hostage samples, modes the
+map doesn't list); Shingle Point's HQ (bomb site B: six defenders keeping watch in one small room trip over each other:
+Phase B's playbook); Norman Shores' bots in the shallows (off the navmesh, no way onto it level or below); Iron Tide's
+crumbling wall by its west jump pad (`block_341`: bots stuck at it for minutes in one match); hills held (32 → 29 %) and
+Bomb plants (0.5 → 0.3 a match) a little down on the samples, and ten CTF maps still without a capture: Phase B.
+
+**For the owner** (each would be a MapMaker fix; players get stuck in all but the first two too):
+1. Skyward: the four pad perches are one-way by design ("fall off and you are gone"), but two spawn points
+   (`spawn_035`, `spawn_036`) are on the towers: whoever spawns there can't leave. A pad back down, or move them?
+2. Sky Islands: the sky platform (double damage), pad up, no way back (as designed?).
+3. Grand Marquee: the marquee top over the street; the street pad throws you up and nothing gets you down (1.6 m
+   sign panels, the terrace 2.9 m up). A gap in a side panel or a ladder?
+4. Obsidian Orb: the reactor core (`prop_087`, scale 4) fills the "bottomless" shaft up to 3.8 m under the bridges:
+   a fall off a retracting bridge lands on it and stays there. Core not solid, or lower it? And a 0.4 m ledge
+   (`block_082`) runs along the shaft's north wall at -5.6 m: falls land on it and nothing gets off it (913 of the
+   CTF suite's 915 failed searches, 1.4 % of the map's, are bots on that ledge asking for a way off).
+5. Reactor: off the roof's south-west corner at (37, 4, 50) you drop 4.3 m into the yard outside the walls and can't
+   get back in. A railing on that corner?
+6. Serpent Gorge: the gorge floor along the river (falls through the gallery's openings, banks too steep to climb)
+   and slivers by the crypt's walls. Steps or a ladder out?
+7. Erosion: the corner pads that throw you back up from the lower deck stand on 3 m pillars meeting the deck only at
+   a corner (players step across, bots can't). Pillars that share an edge with the deck?
+8. M4 Outpost: the uplink room's dais leaves 1.5-2 m gaps the navmesh (0.8 m from walls) can't pass; bots hop onto
+   the dais but not round it to the armour behind it or the north corridor. Wider gaps?
+9. Iron Compound: the MG turret on the gantry by the stairs (`mount_148`) leaves 0.8 m of walkway beside it; bots
+   coming back along the gantry walk into it. Move it off the walkway's middle?
+<!-- /bots-a -->
+
 <!-- setpieces -->
 ### Set pieces, part 2: MapMaker (`wip/setpieces-2`, agent, 2026-11-06; from `wip/setpieces-3`, main da59209d merged in; CI on `check/setpieces-2`)
 What was built: docs/SET_PIECES_PLAN.md, "As built: part 2" and "St. John's (as built)"; how to use it:
@@ -149,6 +222,117 @@ are right for the campus. The shallow vault stays. Skybridges keep the pack's fa
 - Skybridges wear their pack's facade (Collegiate: battlements and pinnacles along the bridge). Plainer bridges (no
   facade) are an override away (`overrides.roles.facade: "none"`); which should be the default?
 <!-- /setpieces -->
+
+### Landed 2026-11-06 evening: main = 157eb996 (train `check/train-20261106-195916`, run 42284421328, green)
+- **Bot AI Phase A**: navigation audit, no standing still on a failed route, scorecard (`wip/bots-a`).
+- **Four maps retired**: Obsidian Orb, Reactor, Serpent Gorge and Iron Compound (`wip/retire-maps-1106`).
+- **The hosting fix**: a stalled friend whose connection is up gets 60 s (`wip/handoff-silent`). See "Fixed: the
+  `handoff` e2e failure" below.
+
+### Branch clean-up (owner, 2026-11-06: "yes go ahead")
+- **The repo had 292 branches; 261 were merged into main.** Eighteen old unmerged ones (27 Oct to 6 Nov) are to be
+  kept as `archive/<branch>` tags and then deleted.
+- **This session's GitHub access can't delete branches or push tags** (HTTP 403 on both). The owner runs the
+  commands from Cloud Shell.
+- **In zsh, write `${b}` inside strings:** `"$b:refs/..."` reads `:r` as a modifier.
+- A "Prune branches" Actions workflow is offered for the future; waiting on the owner.
+
+### Queued (owner, 2026-11-06): prop scale pass, "some of them are tiny, like chairs". Part B of the prop pass, after the slack pass
+**The owner:** "Can we scale the props to the normal human character size? Some of them are tiny, like chairs and
+such."
+- **The catalogue looks real-world by total height:** chairs 0.95 m, tables 0.8 m. But stylised models put small, low
+  seats under tall backs (Kenney's chair is 0.40 m wide). The eye judges the seat, the table top and the door opening.
+- **Maps already compensate in places:** the Kenney bench at a mean scale of 1.93 over 69 placements, the dresser at
+  0.84 over 65.
+- **Plan:**
+  - a lineup of every furniture prop beside a 1.8 m character (and a small and a large one) first;
+  - functional reference sizes (seat 0.46 m, table top 0.76 m, counter 0.92 m, door 2.1 m and so on);
+  - the catalogue fixed to them;
+  - placements fixed in MapMaker: compensating scales back to 1, props resting on resized ones kept on them.
+- **A single "game size" factor** (e.g. +10 %) only with the owner's OK, from before and after pictures.
+- **The brief:** session scratchpad `briefs/prop-scale.md`. The same agent does the slack pass first: one agent, two
+  landings.
+
+### Queued (owner bug report, 2026-11-06): prop slack pass, "these pillars are blocking my bullets". NEXT FREE SLOT (ahead of Bot AI Phase B)
+**The owner:** "These pillars are blocking my bullets..capital mall uses them". Their screenshot shows Capitol Mall's
+white Ionic columns.
+
+**Cause:**
+- `prop.im_column_ionic` (68 on Capitol Mall) uses `collide: "box"`.
+- That box is as wide as the plinth and the capital, all the way up.
+- So there is about 0.2–0.3 m of invisible wall on each side of the round shaft. It stops rounds and players alike.
+- About 40 more columns, pillars and posts in `content/props/*.json` also use `box`, among them `eg_column_papyrus`,
+  `rn_column_round`, `sf_column_round`, `dc_column`, Kenney's `column` and the loafbrr fence posts and columns.
+
+**Scope:**
+- Round and tapered columns move to `voxel`, or to `trunk` where one pole is right.
+- A `--slack` pass over every `box` prop, with a threshold that matters for play. The threshold is documented.
+- `content:check` fails a new prop over the threshold unless it says why, as the openings audit does.
+- Real-sim tests:
+  - rounds beside the shaft fly past;
+  - rounds at the shaft hit;
+  - a player can stand against the shaft;
+  - cover behind it still holds.
+- validate-map on the affected maps, and `pnpm bot-report --check`.
+- Before and after shots of the Capitol Mall colonnade.
+
+The brief is in the session scratchpad, `briefs/slack-pass.md`.
+
+### Queued (owner, 2026-11-06): audio pass 2: weapons, reloads, vehicles. Starts once the sound source is settled
+**The owner:** "By sound effects, we also need to update some/if not most of the weapon sounds too, reload, vehicle
+noises, etc."
+
+**What we have** (docs/AUDIO.md: 90 sounds):
+- All 26 fire sounds are in-house synthesiser placeholders.
+- Reloads are two generic Kenney clicks (`reload.start`, `reload.end`). Other players' reloads are silent: snapshots
+  don't carry them.
+- Vehicles have **no engine sounds at all**, only crash and explosion sounds.
+- One footstep sound for every surface.
+
+**Scope:**
+- **Recorded gunshots per weapon family,** with a near layer and a far tail.
+- **Reloads per weapon class,** timed to the reload animations:
+  - magazine out and in, then the bolt or charging handle;
+  - shells for shotguns;
+  - the cylinder for revolvers.
+  - Remote reloads audible.
+- **Vehicles:**
+  - engine loops that follow speed for each mount type: wheeled, tracked, hover, air;
+  - skids, entering and leaving, turret traverse, mounted guns.
+  - Looping voices are new work in `AudioSystem`.
+- **Later, separate items:** per-surface footsteps, ambience.
+
+**Sources** (docs/ASSET_SOURCES.md):
+- **Artlist:** not for the game on a standard plan. Waiting on Artlist's written answer (see above).
+- **Decided (owner, 2026-11-06): "yes use sonniss and freesound."** CLAUDE.md "Content rules" has the rule.
+- **The Sonniss GDC bundles:** they are free, professional, licensed for games and need no credit. Their
+  licence is not CC0, so the owner must approve them as a source. Treat their output like purchased assets: processed
+  files only, raw files never committed.
+- **Freesound CC0** for gaps.
+- The container can't reach Sonniss or Freesound today. Either the agent asks for those hosts on the environment card,
+  or the owner puts the chosen files in the Drive.
+
+### Queued (owner, 2026-11-06): import list, batch 1: Cool Hands Rex and Fishy Fred. After the work in flight
+**The owner:** "There is a fish and t-rex (call him 'Cool Hands Rex', I made him in meshy) model to add for after all
+of this work. I'll be trying to generate brand new ones going forward and we can just begin working on a new import
+list."
+- The running list, with measurements and what to check, is `docs/IMPORT_LIST.md`.
+- **Cool Hands Rex** is Meshy, owned: the owner made it.
+- **Fishy Fred** (the file's name) is Meshy Community CC0. The owner confirmed: "I did not make fishy fred, community."
+- Both are Mixamo rigs, already downloaded to `/home/user/meshy-drive/intake-2026-11-06b/`. Never commit them.
+
+**Artlist (owner's question, 2026-11-06):** "Are we able to leverage my artlist sub for sound effects and catchphrases
+for each character?"
+- Not yet.
+- Artlist's own help center says apps, software, games and their end users need an **Enterprise** licence. Its
+  Personal, Pro and Max plans cover video.
+- Its AI voice page says paid-plan output is yours to use commercially, but it doesn't name games.
+- The repo is public, so also ask whether licensed audio may sit in a public repository.
+- Waiting on a written yes from Artlist, or on the owner's plan being Enterprise. No Artlist audio until then.
+- If the answer is no, catchphrases could come from:
+  - lines the owner or friends record (owned);
+  - a voice service whose terms name games (needs the owner's approval);
+  - a local open-source text-to-speech with permissively licensed voices.
 
 ### Queued (owner, 2026-11-06): performance round 4, crowds. Right after the Match Setup follow-ups, ahead of Roulette
 **The owner:**
@@ -1368,9 +1552,7 @@ or 3) takes the next slot that frees.
 ### Queued (owner-approved, 2026-11-06): bot AI, logic and navigation (docs/BOT_AI_PLAN.md)
 The owner asked for a plan for bot logic and navigation as a whole, and approved this order:
 - **Phase A** (navigation audit from every walkable area, never stand still on a failed route, the bot scorecard with
-  limits in nightly CI): right after `wip/bots-idle` lands, alongside set pieces.
-  - It builds on that branch's `pnpm bot-report`.
-  - Give it to the bots-idle agent as a follow-on if it's still running.
+  limits in nightly CI): **done on `wip/bots-a`** (its section near the top, "Bot AI Phase A"; not landed).
 - **Phase B** (scored choices instead of competing states, a team brain per mode, mode playbooks): next, **before
   MAP 21**.
 - **Then Fireteams** (owner-approved 2026-11-06, docs/FIRETEAMS_PLAN.md), right after Phase B.
@@ -1387,7 +1569,8 @@ The owner asked for a plan for bot logic and navigation as a whole, and approved
 with `pnpm bench:96:clump` before and after; bot thinking at 96 bots stays within 2.5 ms a tick (today 1.0–1.8).
 
 ### Owner-approved order after the current agents (2026-11-05 late; owner set effort to max: "hoping for some great work")
-0. **Bot AI Phase A** (above) as soon as `wip/bots-idle` lands; **Phase B** before item 3 (MAP 21).
+0. **Bot AI Phase A** (above): done on `wip/bots-a` (section "Bot AI Phase A" near the top; land it); **Phase B**
+   before item 3 (MAP 21).
 1. **Set pieces:** plan in docs/SET_PIECES_PLAN.md. Part 1 (data, expansion, carriageway, skybridge) on
    `wip/setpieces` (its section near the top: what landed, the API, notes for parts 2 and 3). Then, by owner decision (2026-11-06, "go with your suggestion for part 3"):
    - **Part 2**, after part 1: the MapMaker UI on `wip/setpieces-2` (tab, ghost, Explode, Save selection, library),
@@ -1505,6 +1688,30 @@ the fingers bent "toward the gun", i.e. backwards). Creatures (Imp, Puglin) were
 - Evidence: agent scratchpad `palms/` (summary/summary.md ranked, `summary/<id>-before-after.png`, `fp/` first and
   third person before/after, `close/`, audits `before/`, `after/`, `after-final/`; tools in `palms/tools/`).
 <!-- /palms -->
+
+### Fixed (2026-11-06): the `handoff` e2e failure, a friend dropped while their page was frozen (`wip/handoff-silent`)
+**What happened:**
+- It passed on the intake train at 18:23, then failed 6 attempts out of 6 between 19:20 and 19:39:
+  - Phase A, run 42278207178, twice;
+  - the map retirement, run 42279553000.
+- Neither change touches hosting.
+- Each time, the second friend (Bo) froze for 25–30 s soon after joining. Its 1 s pings stopped. Bo noticed the
+  host's close 3–9 s late, then "fell behind; snapshots merged".
+- The host closes a *loaded* friend's link after 20 s of silence (`FRIEND_SILENT_MS`). Bo was dropped, and the
+  successor's checkpoint lost Bo's score.
+
+**The fix:**
+- `RemoteLink.connected()`, from the PeerJS link's `RTCPeerConnection`, tells whether the connection itself is up.
+  WebRTC runs on the browser's own threads, so the connection stays up while the page is frozen.
+- The host page reports which links are up every 2 s (`{ k: 'up' }` → `MatchHost.linkUp`).
+- A loaded friend who is silent while their connection is up gets 60 s (`FRIEND_STALLED_SILENT_MS`). A link not seen
+  up within 6 s still goes after 20 s.
+- The warning says "(connection up)" when that was the case.
+- Unit test: `localHost.test.ts`, "silent friends".
+
+**Still open, for performance round 4:** why a joining friend's page freezes for half a minute on CI. Probably the
+shader builds left over after the warm-up's cap, on a GPU process the three pages share. Round 4's item 2 already
+covers the start-of-match shader stalls.
 
 ### Flaky e2e (seen 2026-11-06): `handoff` (host handoff between three browsers)
 It failed on CI twice in one job on the HUD portrait train (run 42215908322) and once on `check/bots-idle`. Each time it

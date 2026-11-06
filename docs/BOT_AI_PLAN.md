@@ -109,6 +109,9 @@ still without a capture (most lose the carrier on the way home: Phase B).
   `pnpm bench:96:clump`.
 
 ## Phase A: navigation audit, never stand still, the scorecard
+**Done** (`wip/bots-a`, 2026-11-06; docs/BOTS.md, "Navigation audit", "Never standing still on a failed route" and
+"Scorecard"; the before/after table is under "Phase A, measured" below).
+
 Starts right after `wip/bots-idle` lands, alongside set pieces.
 
 1. **The scorecard:** `pnpm bot-report` over every mode and its maps, several seeds.
@@ -146,6 +149,93 @@ Starts right after `wip/bots-idle` lands, alongside set pieces.
 - no official map has a cut-off objective or a trap;
 - on the CTF suite, failed searches are under 2 % and no-route idle is under 1 %;
 - the scorecard runs nightly.
+
+**Met:** no official map has an audit error; the 15 findings left on 9 maps (11 traps, two spawn points, two pickups)
+are listed for the owner in `nav/auditKnown.ts`, each with why and what would fix it (docs/BOTS.md, "Where the official
+maps stand"). On the CTF suite, failed searches 0.03 % and no-route idle 0.05 %. The full scorecard ran from Run
+workflow on `wip/bots-a` (run 42264736565: 398 matches on 77 maps, every limit held) and runs nightly.
+
+### Phase A, measured
+Before: main as Phase A began (`wip/bots-idle` landed). After: `wip/bots-a` at ec075ed7. The same matches both times
+(`pnpm bot-report … --json`, then `--compare` and `--judge`): the CTF suite (44 maps, two matches of 300 s each) and a
+sample of every other mode (two seeds of 180 s each; Forts 240 s). The sim is deterministic by seed; thinking times
+depend on the machine (a shared one, its load 2 to 13 on 4 cores).
+
+| CTF suite, 88 matches | Before | After |
+|---|---|---|
+| Failed searches, of every route search | 1.67 % (614 a match) | 0.03 % (10 a match) |
+| No-route idle, of alive time | 0.16 % | 0.05 % |
+| Idle out of a fight / frozen | 5.6 % / 0.9 % | 4.8 % / 0.6 % |
+| Stuck recoveries a bot-minute | 2.37 | 2.24 |
+| Idle spells of 10 s and more, a match | 2.7 | 1.4 |
+| Captures (matches with one; maps with one) | 145 (55; 31 of 44) | 138 (56; 34 of 44) |
+| Flag takes, returns | 906, 380 | 836, 346 |
+| Kills a minute | 35.1 | 35.3 |
+| Bot thinking a tick | 0.67 ms | 0.52 ms |
+
+Captures move by ten or so between runs of nearly the same code (149 and 151 at the two commits before the last two
+fixes): two matches a map is a small sample. The failed searches left are Obsidian Orb's, bots fallen onto a 0.4 m
+ledge in its reactor shaft that nothing gets off (for the owner). Worse on a few maps: Iron Compound (its gantry
+turret, below) and Iron Tide (in one of its two matches, bots stuck for minutes at a crumbling wall, `block_341`, by
+its west jump pad). The fixes for Serene City's console and Sandfall Colosseum's dropped spear are in the numbers.
+
+The other modes:
+
+| Mode, matches | Failed searches | No-route idle | Idle out of a fight | Stuck a bot-minute | Objective |
+|---|---|---|---|---|---|
+| King of the Hill, 16 | 9.42 → 0.00 % | 1.13 → 0.01 % | 5.0 → 3.6 % | 1.36 → 1.24 | hill held 32.4 → 28.9 % |
+| Bomb, 12 | 3.37 → 0.00 % | 0.01 → 0.00 % | 9.1 → 8.9 % | 1.61 → 2.02 | plants 0.5 → 0.3 a match |
+| Hostage, 8 | 3.37 → 0.00 % | 0.29 → 0.02 % | 8.7 → 10.3 % | 1.65 → 2.36 | rescues 0.1 → 0.3 a match |
+| Elimination, 16 | 27.16 → 0.00 % | 0.32 → 0.00 % | 3.3 → 2.7 % | 1.23 → 1.21 | rounds 38 → 36 s |
+| Forts, 4 | 0.08 → 0.00 % | 0 → 0 % | 27.6 → 33.4 % | 4.82 → 2.84 | pieces built 74 → 75 a match |
+| Team Deathmatch, 16 | 39.67 → 0.00 % | 1.22 → 0.45 % | 6.1 → 4.9 % | 1.53 → 1.24 | - |
+
+Idle out of a fight counts holding a station: Forts' and some hills' guards, who teammates no longer shove about. Bomb
+and Hostage's sample plays Dune Harbor, which lists neither: a dropship landing beside its sunken room leaves its
+riders under the street floor (below). Team Deathmatch's no-route idle is Norman Shores': bots in the shallows, off the
+navmesh, with no way onto it level or below.
+
+**The navigation audit** (`pnpm nav-audit`, 90 maps): before the ledge-drop links and the inside-solid fix, 148 errors
+on the official maps; with them, 28 errors and 21 traps on 14 maps; now 0 errors, 11 traps and 15 findings in all on 9
+maps.
+
+**Navmesh clearance, 0.8 m against 0.6 m** (the CTF suite, one seed of 180 s, the 32 maps both runs finished; the rest
+of the branch the same):
+
+| | 0.8 m (kept) | 0.6 m |
+|---|---|---|
+| Captures (matches with one) | 20 (15) | 20 (14) |
+| Failed searches / no-route idle | 0.13 % / 0.06 % | 0.17 % / 0.07 % |
+| Idle out of a fight / frozen | 6.0 % / 0.7 % | 5.5 % / 0.7 % |
+| Stuck recoveries a bot-minute | 3.08 | 2.54 |
+
+0.6 also breaks the tiles' narrow switchback stairs (nine of the tile packs' reach tests fail), so 0.8 stays.
+
+**Shingle Point** (the owner's playtest), teammates pushing aside instead of back, the rest of the branch the same:
+
+| | Before | After |
+|---|---|---|
+| King of the Hill, three seeds of 180 s: stuck recoveries a bot-minute | 1.31 | 0.80 |
+| King of the Hill: idle out of a fight | 4.0 % | 3.7 % |
+| Bomb, two seeds: stuck recoveries a bot-minute | 1.41 | 0.46 |
+| Five CTF maps, eleven matches: stuck recoveries a bot-minute, captures | 2.31, 5 | 2.01, 8 |
+
+**`pnpm bench:96:clump`** (96 bots; Norman Shores, Frost Basin and Riot Junction, spread and clumped, 30 s each), bot
+thinking a tick, before and after taken in turn: base 1.13–1.90 ms (mean 1.48), branch 1.24–2.01 ms (mean 1.54), two
+rounds each at load 2.4–3.7: clumped the same (1.45 → 1.43), spread a tenth more (1.51 → 1.66: bots that keep moving),
+the whole sim tick 3.3–6.1 ms both. Within the 2.5 ms guard. (A first pair at load 6–9 on the same machine: 1.33–2.38
+against 1.34–2.57.)
+
+**Left, found on the way:**
+- Iron Compound's gantry MG turret (`mount_148`) stands in the 1.6 m walkway with 0.8 m beside it, and bots coming
+  back along the walkway walk into it: a mount's body isn't on the navmesh (Phase C, moving obstacles).
+- A dropship landing beside Dune Harbor's sunken room leaves its riders under the street floor, where nothing gets
+  them out (vehicles).
+- Norman Shores: bots in the shallows are off the navmesh, with no way onto it level or below (wading up a beach).
+- Hills held 32.4 → 28.9 % and Bomb plants 0.5 → 0.3 a match on the samples, and a few CTF maps still without a
+  capture: the playbooks are Phase B's. So are six defenders keeping watch in Shingle Point's HQ (bomb site B).
+- The owner's list in HANDOFF ("Bot AI Phase A"): the 15 audit findings, Obsidian Orb's shaft ledge, Iron Compound's
+  turret.
 
 ## Phase B: bot logic (before MAP 21)
 1. **Scored choices.**

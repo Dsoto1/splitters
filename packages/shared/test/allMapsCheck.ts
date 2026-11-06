@@ -6,8 +6,8 @@
 // Split over ALL_MAPS_PARTS files (allMaps1..N.test.ts) so vitest runs them side by side. ALL_MAPS=id1,id2 checks only those maps.
 import { readdirSync, readFileSync } from 'node:fs';
 import { beforeAll, describe, expect, it } from 'vitest';
-import { BOT_DIFFICULTIES, CORE_BOT_PROFILES, PhysicsWorld, blockBoxes, buildMapGeometry, initPhysics, liftLinks, loadMap, mapTerrainMesh, navLinks, propBoxes, rulesForMap } from '../src/index.ts';
-import { Match, NavWorld, initNavigation, validateNavigation } from '../src/match.ts';
+import { BOT_DIFFICULTIES, CORE_BOT_PROFILES, buildMapGeometry, initPhysics, loadMap, rulesForMap } from '../src/index.ts';
+import { Match, initNavigation, validateMapNavigation } from '../src/match.ts';
 
 const MAPS = new URL('../../../maps/', import.meta.url);
 const only = process.env.ALL_MAPS?.split(',').filter(Boolean);
@@ -37,15 +37,12 @@ export function checkMaps(part: number): void {
       expect(map.metadata.id).toBe(id);
       expect(loaded.issues.filter((i) => i.severity === 'error')).toEqual([]);
 
-      // Geometry, physics and the navmesh as MapMaker's validator builds them (pnpm validate-map).
-      const geometry = buildMapGeometry(map);
-      expect(geometry.length + (map.terrain ? 1 : 0)).toBeGreaterThan(0);
-      const physics = new PhysicsWorld(geometry, mapTerrainMesh(map));
-      const nav = NavWorld.build([...geometry, ...propBoxes(map, true), ...blockBoxes(map, true)], mapTerrainMesh(map), [...navLinks(map.entities, physics), ...liftLinks(map)]);
-      const navIssues = validateNavigation(map, nav, physics);
-      physics.free();
-      nav.destroy();
-      expect(navIssues.filter((i) => i.severity === 'error')).toEqual([]);
+      // Geometry, physics and the navmesh as the match builds them (drop links in), and the navigation audit, as
+      // pnpm validate-map does (an official map: no traps, nothing cut off, no spawn point inside something solid,
+      // unless known: auditKnown.ts).
+      expect(buildMapGeometry(map).length + (map.terrain ? 1 : 0)).toBeGreaterThan(0);
+      const navIssues = validateMapNavigation(map, true).issues;
+      expect(navIssues.filter((i) => i.severity === 'error').map((i) => `${i.code}: ${i.message}`)).toEqual([]);
       // Every spawn point is on walkable ground.
       expect(navIssues.filter((i) => i.code === 'nav.spawn_off_mesh').map((i) => i.message)).toEqual([]);
 

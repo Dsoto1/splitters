@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 19,
+  "formatVersion": 26,
   "metadata": {
     "id": "canyon",
     "name": "Rockfall Canyon",
@@ -1469,9 +1469,9 @@
     {
       "id": "spawn_113",
       "position": [
-        1,
+        0.54,
         0,
-        -82
+        -82.19
       ],
       "kind": "spawn",
       "yaw": 0,
@@ -31688,7 +31688,6 @@
     "foliage": []
   },
   "bounds": null,
-  "track": null,
   "backdrop": {
     "sky": "clear",
     "scenery": "mesas",

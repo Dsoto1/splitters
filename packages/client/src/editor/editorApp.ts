@@ -189,11 +189,8 @@ import {
   TERRAIN_SURFACES,
   terrainMaterialFor,
   applyBrush,
-  PhysicsWorld,
   initPhysics,
   mapPads,
-  navLinks,
-  liftLinks,
   padLandings,
   fitBounds,
   CORE_WEAPONS,
@@ -213,10 +210,6 @@ import {
   PLAYER,
   TEAM_PRESETS,
   teamLayoutLabel,
-  mapTerrainMesh,
-  environmentShapes,
-  environmentNavTriangles,
-  joinTriangles,
   type BoundaryStyle,
   newTerrain,
   paintSlopes,
@@ -5295,17 +5288,14 @@ export class EditorApp {
     }
     this.scheduleOverlaps();
     this.navTimer = window.setTimeout(async () => {
-      const { NavWorld, initNavigation, validateNavigation } = await import('@tiletrigger/shared/match');
+      const { initNavigation, validateMapNavigation } = await import('@tiletrigger/shared/match');
       await initNavigation();
       if (token !== this.navToken) return;
       try {
-        const geometry = buildMapGeometry(doc);
         await initPhysics();
-        const physics = new PhysicsWorld(geometry, mapTerrainMesh(doc), environmentShapes(doc));
-        const nav = NavWorld.build(geometry, joinTriangles(mapTerrainMesh(doc), environmentNavTriangles(environmentShapes(doc))), [...navLinks(doc.entities, physics), ...liftLinks(doc)]);
-        this.navIssues = validateNavigation(doc, nav, physics);
-        physics.free();
-        nav.destroy();
+        // The navmesh as the match builds it, and the navigation audit (traps, spawn points, objectives and pickups
+        // cut off): warnings for creators (errors only on the official maps' own checks).
+        this.navIssues = validateMapNavigation(doc, false).issues;
       } catch (e) {
         this.navIssues = [{ severity: 'warning', code: 'nav.failed', message: `navigation could not be generated: ${(e as Error).message}` }];
       }

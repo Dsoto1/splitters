@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 25,
+  "formatVersion": 26,
   "metadata": {
     "id": "serpent_gorge",
     "name": "Serpent Gorge",
@@ -4982,9 +4982,9 @@
     {
       "id": "spawn_196",
       "position": [
-        52,
+        51.54,
         0,
-        62
+        61.81
       ],
       "kind": "spawn",
       "yaw": 3.141592653589793,

@@ -133,6 +133,12 @@ function linkFor(conn: DataConnection): RemoteLink {
       conn.on('error', cb);
     },
     close: () => conn.close(),
+    // The browser's own network threads keep the connection up while the friend's page is busy.
+    connected: () => {
+      const pc = conn.peerConnection as RTCPeerConnection | undefined;
+      const state = pc?.connectionState ?? pc?.iceConnectionState;
+      return conn.open && (state === 'connected' || state === 'completed');
+    },
   };
 }
 
