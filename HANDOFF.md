@@ -454,6 +454,11 @@ like 2–3 bots protect a flag, and the rest go out there and try to get the oth
   escorts, and anyone near their own flag in trouble responds.
 - Bots must actually run the flag: pick it up, carry it home, capture.
 - Prove it with captures per match before and after; the target is regular captures on every CTF map.
+- **Owner's repro (2026-11-06): Diamond Park CTF.** Most of the team hung out in the tunnel/dugout area.
+  - Flags are at (24, 0, -32) "away" and (-32, 0, 24) "home".
+  - The map has sunken dugouts, player tunnels to the clubhouses, a lower bowl, an upper deck and a concourse.
+  - Start the investigation here: are bots stuck on navigation in the tunnels and dugouts, held by posts or cover,
+    or failing their path to the flag?
 
 
 
