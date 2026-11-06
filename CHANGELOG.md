@@ -39,6 +39,23 @@ people apart from bots, the fit indicator), bots and rules, every setting that n
 Offline / Host online switch and **Leave match**. The join code, invite link, listing, players and kicks, rotation and
 Change map are all still there.
 
+**Set pieces, part 2: MapMaker** (owner-approved, docs/SET_PIECES_PLAN.md; how to use it: docs/BUILDING_KIT.md, "Set
+pieces")
+- **A Set pieces tab** (Build): every set piece with its picture, grouped by family, found by search, narrowed to the
+  Style Pack you pick.
+- **Place a whole piece in one click:** a see-through ghost of it follows the pointer in its real materials, green
+  where it fits and red where it doesn't, and it says why. R turns it, M mirrors it (a piece that can't be mirrored
+  says why). Its look follows the map's theme, the Style Pack you pick, or any look you choose.
+- **One piece, one click:** clicking any part of a placed piece selects all of it; it moves, turns, mirrors,
+  duplicates and deletes as one, with undo. The inspector shows its look, mirror and place, its doors and openings,
+  and changes a material or leaves a part out for that piece alone.
+- **Doors and openings shown:** the ghost and the selected piece mark where they connect, in red where a wall is in
+  the way, with a warning that says which wall.
+- **Explode to tiles** turns a piece into ordinary tiles, blocks and props to edit one by one; one undo brings it back.
+- **Make your own:** drag a box over tiles, blocks and props to select them, then **Save as set piece**. Your pieces
+  are kept in this browser next to your maps, place in any map (the map carries them), and export and import as
+  files. The owner can export one to ship with the game.
+
 **Set pieces, part 3: pieces for the beach assault and the colosseum** (owner-approved, docs/SET_PIECES_PLAN.md)
 - **For MAP 21 (Military Compound look):** the Gun Casemate and the Cliff Casemate (a gun port to the sea, and rooms
   in a loop: two ways in, no dead ends); trench runs sunk into the ground (straight, bend, junction, end, and a jog

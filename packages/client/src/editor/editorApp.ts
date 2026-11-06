@@ -1004,7 +1004,7 @@ export class EditorApp {
     }
     try {
       // Terrain never shows through a floor: lowered under any the edit puts over it, in the same undo step.
-      this.history.execute(label, withTerrainUnderFloors(this.doc, cmd));
+      this.history.execute(label, withTerrainUnderFloors(this.doc, cmd, this.setPieceLib));
       return true;
     } catch (e) {
       this.toast(`Can't ${label.toLowerCase()}: ${(e as Error).message}`, true);
@@ -5330,11 +5330,12 @@ export class EditorApp {
   /** Coplanar overlaps of the map as it is now (its warning and the Overlaps highlight), a moment after the last edit. */
   private scheduleOverlaps(): void {
     clearTimeout(this.zTimer);
-    const doc = this.viewDoc;
+    const { map: doc, partOf } = this.expansion;
     this.zTimer = window.setTimeout(() => {
       if (doc !== this.viewDoc) return;
       try {
-        this.zSpots = coplanarSpots(doc);
+        // A set piece's parts against each other are the piece's own business (the author can't move a part).
+        this.zSpots = coplanarSpots(doc, undefined, partOf);
       } catch {
         this.zSpots = [];
       }

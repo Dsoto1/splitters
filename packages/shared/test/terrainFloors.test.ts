@@ -1,6 +1,6 @@
 import { readFileSync, readdirSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { FLOOR_REACH, applyCommand, buildMapGeometry, loadMap, newMapDocument, newTerrain, terrainUnderFloors, vertexY, withTerrainUnderFloors, type MapDocument, type TerrainData } from '../src/index.ts';
+import { FLOOR_REACH, applyCommand, buildMapGeometry, invertCommand, loadMap, newMapDocument, newTerrain, placeSetPieceCommand, terrainUnderFloors, vertexY, withTerrainUnderFloors, type MapDocument, type TerrainData } from '../src/index.ts';
 
 /** A one-room map on flat terrain at height `y` (metres). */
 function roomOn(y: number): MapDocument {
@@ -51,6 +51,26 @@ describe('terrain under floors', () => {
     // An edit that moves no floor passes through untouched.
     const meta = { kind: 'setMetadata' as const, before: {}, after: { name: 'x' } };
     expect(withTerrainUnderFloors(after, meta)).toBe(meta);
+  });
+
+  it('placing a set piece carves the terrain under its floors in the same undo step: what MapMaker exports is what loads', () => {
+    const doc = newMapDocument('Trench');
+    const t = newTerrain(48);
+    t.heights.fill(0);
+    const before: MapDocument = { ...doc, terrain: t, classicStructure: { ...doc.classicStructure, tiles: [] } };
+    const placed = placeSetPieceCommand(before, 'setpiece.trench_straight', 0, 0, 0, 0);
+    if ('error' in placed) throw new Error(placed.error);
+    const cmd = withTerrainUnderFloors(before, placed.command);
+    expect(cmd.kind).toBe('batch');
+    const after = applyCommand(before, cmd);
+    // The sunk channel took the ground down with it.
+    expect(Math.min(...after.terrain!.heights)).toBeLessThan(-100);
+    // Loading the saved map changes nothing more (no "changed since it was exported" on reload).
+    const r = loadMap(JSON.stringify(after), undefined, { forEditing: true });
+    expect(r.ok).toBe(true);
+    if (r.ok) expect(r.map.terrain!.heights).toEqual(after.terrain!.heights);
+    // Undo takes the carve back with the piece.
+    expect(applyCommand(after, invertCommand(cmd)).terrain!.heights).toEqual(t.heights);
   });
 
   it('every shipped map loads with no terrain through a floor', () => {

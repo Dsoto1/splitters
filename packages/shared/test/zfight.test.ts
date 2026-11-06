@@ -2,7 +2,7 @@
 // same plane, and the audit over every map in maps/ (coplanar overlaps left: none).
 import { readdirSync, readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { FLUSH_LIFT, PROP_FLUSH, SLIVER, axisFaces, propCoplanar, propFlushLifts, boxQuat, buildMapDecor, buildMapGeometry, coplanarIssues, coplanarOverlaps, coplanarSpots, loadMap, quatRotate, visibleFaces, type MapEntity, type RenderFace, type WorldBox } from '../src/index.ts';
+import { FLUSH_LIFT, PROP_FLUSH, SLIVER, axisFaces, propCoplanar, propFlushLifts, boxQuat, buildMapDecor, buildMapGeometry, builtInSetPieces, coplanarIssues, coplanarOverlaps, coplanarSpots, expandSetPieces, loadMap, quatRotate, visibleFaces, type MapDocument, type MapEntity, type RenderFace, type WorldBox } from '../src/index.ts';
 import { makeMap } from './helpers.ts';
 import { PROP_CONTACTS } from '../src/content/propContacts.generated.ts';
 
@@ -307,5 +307,25 @@ describe('coplanar spots (MapMaker warning and Overlaps highlight)', () => {
   it('nothing to say when the faces look the same, or nothing lines up', () => {
     expect(coplanarIssues(withBlocks([block('b1', [0, 0, 0], [4, 1, 4], 'core.concrete'), block('b2', [2, 0, 0], [4, 1, 2], 'core.concrete')]))).toEqual([]);
     expect(coplanarIssues(withBlocks([block('b1', [0, 0, 0], [4, 1, 4], 'core.concrete'), block('b2', [2, 0.1, 0], [4, 1.2, 2], 'core.sandstone')]))).toEqual([]);
+  });
+
+  it("a set piece's parts against each other are one piece (nothing the author can move); a block flush with a part is a spot", () => {
+    const map: MapDocument = { ...makeMap([]), setPieces: [{ id: 'setpiece_a', piece: 'setpiece.insula', x: 0, y: 0, z: 0, rotation: 0, mirror: false }] };
+    const ex = expandSetPieces(map, builtInSetPieces());
+    const inside = coplanarSpots(ex.map);
+    // The insula's floors meet its stairwell's in a different look: spots, until its parts count as one piece.
+    expect(inside.length).toBeGreaterThan(0);
+    expect(coplanarSpots(ex.map, undefined, ex.partOf)).toEqual([]);
+    const s = inside[0]!;
+    const axis = s.normal.findIndex((v) => Math.abs(v) > 0.5);
+    const size: [number, number, number] = [0.5, 0.5, 0.5];
+    const at = [...s.center] as [number, number, number];
+    // A small block whose face lies in the spot's plane, beside the part's face (blocks stand on their base).
+    at[axis] = at[axis]! - (s.normal[axis]! > 0 ? 0.25 : -0.25);
+    if (axis === 1) at[1] -= 0.25;
+    const withBlock = { ...ex.map, entities: [...ex.map.entities, block('b1', at, size, 'core.sandstone')] };
+    const spots = coplanarSpots(withBlock, undefined, ex.partOf);
+    expect(spots.length).toBeGreaterThan(0);
+    expect(spots.every((p) => p.ids.includes('b1'))).toBe(true);
   });
 });

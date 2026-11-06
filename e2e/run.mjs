@@ -4035,8 +4035,8 @@ async function coverageFlow(browser) {
   await ed.waitForFunction(() => window.__editor, null, { timeout: T(30000) });
   await ed.setInputFiles('#ed-import-file', path.pathname);
   const opened = await ed.waitForFunction((want) => window.__editor.doc.metadata.id === want && Array.isArray(window.__editor.issues), file.metadata.id, { timeout: T(60000) }).then(() => true, () => false);
-  const r = opened ? await ed.evaluate(() => ({ errors: window.__editor.issues.filter((i) => i.severity === 'error').map((i) => i.message), entities: window.__editor.doc.entities.length, tiles: window.__editor.doc.classicStructure.tiles.length, testOnly: !!window.__editor.doc.metadata.testOnly })) : null;
-  check(!!r && !r.errors.length && r.entities === file.entities.length && r.tiles === file.classicStructure.tiles.length && r.testOnly, `the coverage map opens in MapMaker whole, marked as a test map (${JSON.stringify(r)})`);
+  const r = opened ? await ed.evaluate(() => ({ errors: window.__editor.issues.filter((i) => i.severity === 'error').map((i) => i.message), entities: window.__editor.doc.entities.length, tiles: window.__editor.doc.classicStructure.tiles.length, setPieces: window.__editor.doc.setPieces?.length ?? 0, testOnly: !!window.__editor.doc.metadata.testOnly })) : null;
+  check(!!r && !r.errors.length && r.entities === file.entities.length && r.tiles === file.classicStructure.tiles.length && r.setPieces === (file.setPieces?.length ?? 0) && r.testOnly, `the coverage map opens in MapMaker whole (its set pieces kept as placements), marked as a test map (${JSON.stringify(r)})`);
   // Map properties show it as a test map.
   if (opened) await ed.evaluate(() => window.__editor.setSelection({ tiles: [], entities: [] }));
   const box = opened && (await ed.evaluate(() => document.getElementById('ed-prop-testonly')?.checked ?? null));
