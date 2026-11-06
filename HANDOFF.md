@@ -1058,6 +1058,24 @@ variant for MAP 21.
   semi-traditional arena-style FPS match, so the landing craft is static dressing and cover. MAP 21's beach is
   where the fighting starts, not a scripted arrival.
 
+### Queued (owner, 2026-11-06): character intake, astronauts, crocodile and tortoise. NEXT FREE SLOT ("when able")
+**Licence (owner, 2026-11-06):** "all Community CC0 and should be treated as such unless I let you know I created them in
+Meshy." That covers these five, the landing craft, and every Drive model before them (CLAUDE.md "Content rules"). The
+intake also audits `content/provenance.json`. Entries recorded as `meshy-owned` that came from the Drive, and weren't
+generated through our Meshy API, become community CC0 with author and URL pending. It lists them for the owner.
+
+The owner: "I have 3 new astronaut models, replace the light blue one for captain nova, add the 2 new ones. The
+boglurker can be replaced by the alligator. Retire bamboo, add the new turtle."
+
+The downloads are in `/home/user/meshy-drive/intake-2026-11-06/`; never commit them. They are 5 Mixamo-skeleton rigs:
+- **Light-blue astronaut** (107k tris) replaces Capt. Nova (`core.nova`).
+- **White astronaut** (10k tris): new.
+- **Dark astronaut** (167k tris, no finger joints): new.
+- **Humanoid crocodile** (26k tris) replaces Boglurker (`core.boglurker`).
+- **Humanoid tortoise** (199k tris): new. Bamboo (`core.panda`) is retired, mapped to the tortoise, with files kept.
+
+The brief is in the session scratchpad, `briefs/intake-1106.md`.
+
 ### Queued (owner-approved, 2026-11-06): Match Setup redesign, NEXT FREE SLOT (ahead of the follow-ons)
 **Done on `wip/match-setup`** (with the Host tab and Spectate before the start, added the same day): see its section
 near the top ("Match Setup redesign, the Host tab, Spectate before the start"). What follows is the request as queued.
