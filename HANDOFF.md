@@ -1284,6 +1284,10 @@ variant for MAP 21.
   where the fighting starts, not a scripted arrival.
 
 ### Owner's answers on the 11-06 intake (2026-11-06), for the follow-up
+- **Retire Capt. Nova** (owner, later the same day). Add `core.nova` to `RETIRED_LOOKS`, pointing at Spacewalker
+  (`core.astronaut`, the nearest astronaut). Keep the files.
+- **Starfarer's back pack is "distorted a little".** Find the joints pulling the pack and fix its skin (fixes.skin:
+  clamp/smooth, or the pack rigid to the spine). Show it before and after, in motion.
 - **Names stay:** Spacewalker, Starfarer, Shellback.
 - **Keep the US flag** on Spacewalker.
 - **Shellback smaller:** "should be smaller, not that big at all". Large → standard: rebuild, portrait, grip re-check.
