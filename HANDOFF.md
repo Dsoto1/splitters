@@ -313,22 +313,41 @@ hands move up more into the gun. Looks as if their fingers are just pinching the
 - Start it once a slot frees. It touches the hands, so after intake-2 step 2a.
 
 <!-- pistol -->
-### First-person pistol hold (`wip/pistol`, agent, 2026-11-05; from main 68663142; in progress, WIP pushed)
-**Cause (seen, measured):** in first person the shooting palm went ON the grip point (a third of the way down the
-grip, toward its front), so the knuckles stood 2-3 cm ahead of the front strap, around the trigger guard; the full
-finger close on top of the clips' own bend folded the fingers past a thin pistol grip back into the palm; a
-measured palm point sits up to 3 cm toward the index or the little finger (Tactical Soldier's hand rode 3.6 cm low);
-the rig's support hand kept the clip's hold beside the grip, and the measured ones lay palm up with straight fingers
-ahead of the grip (the owner's "pinch").
-- **WIP (first person only so far):** gripReport has `atR`/`atL` (drawn hand centre from its point, gun axes:
-  right, up, ahead) and `wrapR` (share of the shooting hand's skin past the grip's middle); `closeHand` takes a
-  wrap target and closes only as far as brings the middle fingertip nearest it (pistol: the grip's far side;
-  support: up round the front of the shooting hand); the shooting hand is set on the grip by the middle of its width
-  (`skinHandFrame` `centre`, the rig's middle knuckle), not its palm point; every pistol support hand is turned in
-  first person (rigs too). Hold points in content/weapons not changed yet (being tuned live: grip about 1 cm up and
-  3.5 cm back, support under the butt).
-- Tools and shots: agent scratchpad `pistol/` (`tools/iter.mjs` live hold override + close views, `tools/shots.mjs`
-  before/after, `before/` from the main build).
+### First-person pistol hold (`wip/pistol`, agent, 2026-11-05/06; from main 68663142, main 49c6ace7 merged in; CI on `check/pistol`)
+Owner: "The first person view when holding a pistol could be adjusted. Either the gun moves back more into the hands
+or the hands move up more into the gun. Looks as if their fingers are just pinching the grip."
+**Causes (measured):** in first person each hand's palm point went on the grip's middle, so the shooting hand rode
+2-3 cm low and its knuckles stood ahead of the front strap; its knuckle line leaned about 20° off the grip (the
+fingers curl about that line, so they closed up across the trigger guard instead of round the grip); the full curl
+on top of the clips' bend folded them back into the palm; the support hand kept the clip's hold beside the grip, palm
+up, thumb straight up. Two guns were held by the wrong spot altogether (the Machine Pistol by the end of its wire
+stock, 11 cm behind its grip; the Freeze Ray inside its trigger guard) and four by the edge of their grips.
+- **Fix** (`gripPlaced` in characterAnimator.ts, both first-person views; `PISTOL` holds the numbers):
+  - each hand turned about its palm so its knuckle line runs down the grip at its rake (`alignKnuckles`; the support
+    hand's 18° further, canted forward round the shooting hand);
+  - each hand set by its knuckles, not its palm point (`seated`): the shooting knuckles 2 cm ahead of the grip point,
+    just behind the front strap (a hand over 9 cm from wrist to knuckles further round, so its palm stays on the
+    backstrap); the support knuckles 1.5 cm ahead of and 1 cm below the support point, its palm 1.1 cm further in;
+  - the fingers close until the middle fingertip is round the grip's far side, no further (`closeHand`'s `wrap`
+    plane; the support hand's round onto the shooting hand's side);
+  - the thumbs laid along the frame, straightened most of the way (`pointThumb`; the clips' thumbs stood up);
+  - content: every pistol-class gun's points re-read off a gridded side view (Machine Pistol, Freeze Ray, Hand Cannon,
+    Flare Gun, Grapple, Gilded and Pulse Pistol moved; the Machine Pistol also 4 cm nearer the eye) and a new
+    `view.hold.rake` (the grip's lean: Flare Gun and Grapple 34°, Freeze Ray 20°, Revolver 18°, Pulse Pistol 17°,
+    Hand Cannon 15°, Machine Pistol 10°, Gilded 7°, else 12°; tools/content/weapons.mjs, shared `WeaponHold`).
+  - third person: the gun sits in the hand by the middle of its width (`knuckleLine`: a measured palm point sits
+    toward a finger); the hand turns are the clips' as before. The moved points change third person too (onto the
+    real grips: better on every look checked).
+  - dropped: a foregrip hold for the Machine Pistol (out of reach in third person); the earlier WIP's
+    "nearest point" close (left the fingertips inside the grip).
+- **Measures** (full-body first person, 10 looks x 10 guns, `measures.md`): TBD
+- **Grip audit** (rifle, pistol, shotgun; before = main): TBD
+- **Checks:** TBD
+- **Left for the owner / round 5:** big hands still swallow a pistol in first person (Frost Viking, Goblin Warlord,
+  Goblin, Bamboo: hands 25-28 cm against a gun's 18 cm grip); the Knight's gauntlet doesn't close (curl 0.5).
+- Tools and shots: agent scratchpad `pistol/` (`t2/probe.mjs` shots + joints, `t2/measures.py`, `t2/section.mjs`
+  grip cross-sections, `t2/side.mjs` gridded side views, `t2/e2echeck.mjs` the characters flow's grip checks;
+  `final-before/`, `final-after/`, sheets in `sheets/`).
 <!-- /pistol -->
 
 ### Environment Phase 1c: pebbles, eelgrass, concealing fern, Replace all, maps updated (`wip/env-p1c`, agent, 2026-11-05; from main 4d511dd2, main baf26064 merged in; pushed, not merged)

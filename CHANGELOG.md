@@ -8,6 +8,23 @@ made only on a commit that passed CI on a check branch.
 
 ## Unreleased
 
+**Pistols sit deep in the hand** (owner's report, 2026-11-05: "Looks as if their fingers are just pinching the grip")
+- **First person, every pistol-class gun, every character** (full body and arms only): the shooting hand takes the
+  grip deep in the palm, the web of the thumb high on the backstrap, the fingers wrapped round to the grip's far side
+  and the index finger at the trigger; the support hand wraps round the shooting hand's fingers, its thumb forward
+  along the frame. Before, each hand's palm went on the middle of the grip, so the knuckles stood 2-3 cm ahead of the
+  front strap and the fingers closed round the trigger guard, and the support hand lay beside the grip, thumb up.
+- **Guns held by the wrong spot**: the Machine Pistol was held by the end of its wire stock, 11 cm behind its grip, and
+  the Freeze Ray inside its trigger guard; the Hand Cannon by its grip's front edge, the Flare Gun and the Grapple by
+  the foot of their raked grips. Each is now held on its own grip, in first and third person (the Gilded and Pulse
+  Pistols' points re-read too; the Machine Pistol sits 4 cm nearer the eye, so the hands are where the other
+  pistols' are).
+- **Third person**: a pistol sits by the middle of the hand's width (a Meshy hand's palm point can sit well toward a
+  finger).
+- Team tools: `view.hold.rake` (a pistol grip's lean, which the hands' knuckles follow); `__grips.pistol(...)` tunes the
+  first-person hold live on the grip page; `__grips.drawn()` also says where each hand sits on the gun (`atR`, `atL`)
+  and how far the shooting fingers wrap round the grip (`wrapR`).
+
 **CTF bots go for the flag; no bots standing about** (owner's reports, 2026-11-05/06: "no bots are actually going
 for the flag, most just hang out and do little"; Diamond Park, "most of the team hung out in the tunnel/dugout
 area"; Fernwood Moon, "why would some bots not be moving at all?"; docs/BOTS.md, "Capture the Flag" and "Standing
