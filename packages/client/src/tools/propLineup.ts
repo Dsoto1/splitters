@@ -47,11 +47,11 @@ export async function openPropLineup(engine: AbstractEngine): Promise<void> {
   gm.diffuseColor = new Color3(0.55, 0.57, 0.6);
   gm.specularColor = new Color3(0, 0, 0);
   ground.material = gm;
-  // A 0.5 m grid on the floor.
+  // A 1 m grid on the floor.
   const lines: Vector3[][] = [];
-  for (let i = -40; i <= 160; i++) lines.push([new Vector3(i * 0.5, 0.002, -6), new Vector3(i * 0.5, 0.002, 6)]);
-  for (let j = -12; j <= 12; j++) lines.push([new Vector3(-20, 0.002, j * 0.5), new Vector3(80, 0.002, j * 0.5)]);
-  CreateLineSystem('grid', { lines }, scene).color = new Color3(0.45, 0.47, 0.5);
+  for (let i = -20; i <= 80; i++) lines.push([new Vector3(i, 0.002, -6), new Vector3(i, 0.002, 6)]);
+  for (let j = -6; j <= 6; j++) lines.push([new Vector3(-20, 0.002, j), new Vector3(80, 0.002, j)]);
+  CreateLineSystem('grid', { lines }, scene).color = new Color3(0.5, 0.52, 0.55);
 
   const camera = new FreeCamera('lineup_cam', new Vector3(0, PLAYER.eyeHeight, 6), scene);
   camera.minZ = 0.05;
@@ -136,12 +136,14 @@ export async function openPropLineup(engine: AbstractEngine): Promise<void> {
     guides = [];
     labels = [];
     const side = view === 'side';
-    // The characters, then the ruler, then the props, each `GAP` from the last.
+    // Left to right as the camera sees them (it stands at -z looking along +z, so everything is turned to face it):
+    // the characters, then the ruler, then the props, each `GAP` from the last.
+    const facing = Math.PI + (side ? Math.PI / 2 : 0);
     let x = 0;
     for (const p of people) {
       const w = 0.55 * BODY_SIZES[p.size].scale;
       p.root.position.set(x + w / 2, 0, 0);
-      p.root.rotation.y = side ? Math.PI / 2 : 0;
+      p.root.rotation.y = facing;
       label(`${BODY_SIZES[p.size].label}\n${(PLAYER.height * BODY_SIZES[p.size].scale).toFixed(2)} m`, new Vector3(x + w / 2, -0.04, 0), 'white-space:pre');
       x += w + GAP * 0.6;
     }
@@ -158,7 +160,7 @@ export async function openPropLineup(engine: AbstractEngine): Promise<void> {
       const across = (side ? def.size[2] : def.size[0]) * s;
       const node = await models.instantiateStatic(def.file, `lineup_prop_${i}`);
       node.scaling.setAll(s);
-      node.rotation.y = side ? Math.PI / 2 : 0;
+      node.rotation.y = facing;
       node.position.set(x + across / 2, 0, 0);
       shown.push(node);
       placed.push({ id, at: x + across / 2, size: def.size.map((v) => v * s) });
@@ -166,11 +168,11 @@ export async function openPropLineup(engine: AbstractEngine): Promise<void> {
       x += across + GAP;
     }
     // Guides across the row at the reference heights, a hair behind the props' middles.
-    const guideLines = GUIDES.map(([y]) => [new Vector3(-0.2, y, -0.01), new Vector3(x, y, -0.01)]);
+    const guideLines = GUIDES.map(([y]) => [new Vector3(-0.2, y, 0.01), new Vector3(x, y, 0.01)]);
     const g = CreateLineSystem('lineup_guides', { lines: guideLines }, scene);
     g.color = new Color3(0.1, 0.35, 0.75);
     guides.push(g);
-    for (const [y, text] of GUIDES) label(text, new Vector3(x - GAP / 2, y, -0.01), 'transform:translate(4px,-50%);color:#1a4fb0;font-weight:500');
+    for (const [y, text] of GUIDES) label(text, new Vector3(x - GAP / 2, y, 0.01), 'transform:translate(4px,-50%);color:#1a4fb0;font-weight:500');
     // The camera: from a standing player's eye, the game's field of view, back far enough for the row; or a true elevation.
     const width = x;
     if (side) {
@@ -182,7 +184,7 @@ export async function openPropLineup(engine: AbstractEngine): Promise<void> {
       camera.orthoRight = half;
       camera.orthoTop = tall;
       camera.orthoBottom = -tall;
-      camera.position.set(width / 2, tall - 0.35, 30);
+      camera.position.set(width / 2, tall - 0.35, -30);
       camera.setTarget(new Vector3(width / 2, tall - 0.35, 0));
     } else {
       camera.mode = Camera.PERSPECTIVE_CAMERA;
@@ -190,7 +192,7 @@ export async function openPropLineup(engine: AbstractEngine): Promise<void> {
       const aspect = engine.getRenderWidth() / engine.getRenderHeight();
       const hfov = 2 * Math.atan(Math.tan(DEFAULT_FOV / 2) * aspect);
       const back = Math.max(3, (width / 2 + 0.4) / Math.tan(hfov / 2));
-      camera.position.set(width / 2, PLAYER.eyeHeight, back);
+      camera.position.set(width / 2, PLAYER.eyeHeight, -back);
       camera.setTarget(new Vector3(width / 2, PLAYER.eyeHeight, 0));
     }
     await settle(8);
