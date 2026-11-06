@@ -493,6 +493,12 @@ export interface TileSpec extends Omit<TileDefinition, 'cells' | 'ports' | 'soli
 
 /** The boxes one part builds (local frame), from the shared kit's builders. */
 function kitPart(p: KitPart, spec: TileSpec): LocalBox[] {
+  // A part's own library material goes on every box it builds (a box, a timber flight), not only on plain boxes.
+  const dressed = kitPartBoxes(p, spec);
+  return p.surface && !('box' in p) ? dressed.map((b) => ({ ...b, surface: p.surface })) : dressed;
+}
+
+function kitPartBoxes(p: KitPart, spec: TileSpec): LocalBox[] {
   const turns = (t: Pair): [number, number] => [t[0] * HALF_PI, t[1] * HALF_PI];
   let out: LocalBox[];
   if ('box' in p) {
