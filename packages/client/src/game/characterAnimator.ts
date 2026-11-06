@@ -1363,7 +1363,7 @@ export class CharacterAnimator {
       gripHand(space, arms.r, aimM, 'grip', this.ik);
       if (grip.support && arms.l.frame) {
         if (grip.style === 'long') cupHand(space, arms.l, aimM, this.ik);
-        else gripHand(space, arms.l, aimM, hasForegrip(grip) ? 'fore' : 'support', this.ik);
+        else gripHand(space, arms.l, aimM, 'support', this.ik);
       }
       // This look's own turn of each hand about its fingers (the look's `whole.grip`): a hand whose measured frame
       // leaves it standing on its edge on the gun.
@@ -1571,17 +1571,16 @@ export class CharacterAnimator {
     // In first person the shooting hand is turned onto the grip whatever its rig: the clips' hold is made for a
     // body aiming level, and the view's gun points where you look (a rig's hand looking down lay across the grip).
     gripHand(space, arms.r, world, 'grip', w, true);
-    // ...and a pistol's support hand, whatever its rig: it wraps the shooting hand, or holds a foregrip.
-    const fore = hasForegrip(grip);
+    // ...and a pistol's support hand, whatever its rig: it wraps the shooting hand.
     const pistol = grip.style === 'pistol';
-    if (pistol && grip.support) gripHand(space, arms.l, world, fore ? 'fore' : 'cup', w, true);
+    if (pistol && grip.support) gripHand(space, arms.l, world, 'cup', w, true);
     const gun = gunAxes(world);
     // A pistol's hands are turned about their palms so their knuckle lines run down the grip, raked as it is (the
     // fingers close square to it, round the grip instead of up across it); the support hand's a little more, canted
     // forward round the shooting hand's.
     if (pistol) {
       alignKnuckles(space, arms.r, rakedLine(gun, grip.rake ?? PISTOL.rake), w);
-      if (grip.support && !fore) alignKnuckles(space, arms.l, rakedLine(gun, (grip.rake ?? PISTOL.rake) + PISTOL.supportCant), w);
+      if (grip.support) alignKnuckles(space, arms.l, rakedLine(gun, (grip.rake ?? PISTOL.rake) + PISTOL.supportCant), w);
     }
     // The hands' turn on the gun, kept while the shoulders move below (a collarbone's roll would carry it off).
     const handsOn = { r: space.rot(arms.r.hand), l: space.rot(arms.l.hand) };
@@ -1597,11 +1596,10 @@ export class CharacterAnimator {
     if (pistol) gripAt = seated(arms.r, gripAt, off(grip.grip, PISTOL.knuckles));
     // A support hand round the shooting hand presses on its fingers from the grip's left (PISTOL.supportShift: the
     // support point is third person's too) and is set by its knuckles, at the front of the grip below the shooting
-    // hand's; a foregrip runs up the support hand's knuckle line as the grip does the shooting hand's.
-    const cups = pistol && !fore && !!grip.support;
+    // hand's.
+    const cups = pistol && !!grip.support;
     let supportAt = grip.support ? palmOnGrip(arms.l, cups ? off(grip.support, PISTOL.supportShift) : point(grip.support), scale, grip.style === 'long') : null;
-    if (fore && supportAt) supportAt.subtractInPlace(knuckleLine(arms.l));
-    else if (cups && supportAt && grip.support) supportAt = seated(arms.l, supportAt, off(grip.support, PISTOL.supportKnuckles));
+    if (cups && supportAt && grip.support) supportAt = seated(arms.l, supportAt, off(grip.support, PISTOL.supportKnuckles));
     const view = this.ch.root.parent as TransformNode | null;
     if (this.fp) {
       // Full body: each shoulder starts from its own place on the body and comes forward toward the gun only as
@@ -1620,7 +1618,6 @@ export class CharacterAnimator {
         while (back < room && Vector3.Distance(s, supportAt) > reachL) {
           back = Math.min(room, back + 0.01);
           supportAt = palmOnGrip(arms.l, point([grip.support[0], grip.support[1], grip.support[2] - back]), scale, grip.style === 'long');
-          if (fore) supportAt.subtractInPlace(knuckleLine(arms.l));
         }
       }
       // Shoulders come forward by rolling the collarbone first (a shrug toward the gun bends the skin as a body
@@ -1668,7 +1665,6 @@ export class CharacterAnimator {
         while (back < room && Vector3.Distance(s, supportAt) > reachL) {
           back = Math.min(room, back + 0.01);
           supportAt = palmOnGrip(arms.l, point([grip.support[0], grip.support[1], grip.support[2] - back]), scale, grip.style === 'long');
-          if (fore) supportAt.subtractInPlace(knuckleLine(arms.l));
         }
       }
       placeShoulder(arms.r, anchor(1), gripAt, shift);
@@ -1685,10 +1681,10 @@ export class CharacterAnimator {
     if (supportAt && grip.support) {
       solveArm(space, arms.l, supportAt, pos(arms.l.upper).subtract(outward.scale(0.1 * scale)).add(down.scale(0.4 * scale)), w);
       // A pistol's support fingers close round the front of the shooting hand's, no further, its thumb forward along
-      // the frame. (A foregrip's: round to its far side, as the shooting hand's.)
-      const cupAt = !pistol ? undefined : fore ? off(grip.support, PISTOL.foreWrap) : off(grip.support, PISTOL.supportWrap);
+      // the frame.
+      const cupAt = pistol ? off(grip.support, PISTOL.supportWrap) : undefined;
       closeHand(space, arms.l, cupAt ? w : w * supportCurl(grip), supportAt.add(palmSideWorld(arms.l).scale(arms.l.gripOffset * scale)), cupAt);
-      if (pistol && !fore) pointThumb(space, arms.l, gunDir(gun, PISTOL.thumbL), w);
+      if (pistol) pointThumb(space, arms.l, gunDir(gun, PISTOL.thumbL), w);
     } else if (this.fp) {
       // Full body, one-handed (a knife, an axe): the free arm hangs at your side instead of holding the aim pose up in view.
       const s = pos(arms.l.upper);
@@ -1791,14 +1787,6 @@ const RIG_SPAN = 1.9;
  * fingers reach across under it and close up its far side instead of standing out past it.
  */
 const CUP_BACK = 0.22;
-/** A pistol whose support point is this far (model m) or more ahead of its grip holds it on a foregrip (the Machine Pistol's). */
-const PISTOL_FOREGRIP = 0.08;
-
-/** The support hand of this pistol holds a foregrip ahead of the trigger rather than cupping the shooting hand. */
-function hasForegrip(grip: WeaponHold): boolean {
-  return grip.style === 'pistol' && !!grip.support && grip.support[2] - grip.grip[2] >= PISTOL_FOREGRIP;
-}
-
 /**
  * The first-person pistol hold (model m, the gun's axes). The grip page changes it live (`__grips.pistol`) to tune it.
  */
@@ -1826,8 +1814,6 @@ export const PISTOL = {
   thumbStraight: 0.8,
   /** The support thumb's way (gun axes; [] leaves it as the clip has it). */
   thumbL: [0.2, 0, 1] as number[],
-  /** A foregrip's support fingertip closes toward this point from the support point. */
-  foreWrap: [0.015, 0, 0] as number[],
 };
 
 /** Down a grip raked back `degrees` from upright (its foot further back), in the world: a hand's knuckle line, index to little finger. */
@@ -2009,7 +1995,7 @@ function turnHand(space: SkeletonSpace, arm: Arm, fingers: Vector3, palm: Vector
  * under and to the left of it, palm up and in, fingers round the front of the shooting hand. A rig's own hand
  * keeps the clip's hold, which was made for it, unless `rigHands` (first person). `weapon`: the gun's world matrix.
  */
-function gripHand(space: SkeletonSpace, arm: Arm, weapon: Matrix, role: 'grip' | 'support' | 'cup' | 'fore', weight: number, rigHands = false): void {
+function gripHand(space: SkeletonSpace, arm: Arm, weapon: Matrix, role: 'grip' | 'support' | 'cup', weight: number, rigHands = false): void {
   if ((!arm.frame && !rigHands) || weight <= 0) return;
   const { up, ahead, right } = gunAxes(weapon);
   if (role === 'grip') turnHand(space, arm, ahead.scale(0.9).subtract(up.scale(0.35)), right.scale(-1), weight);
@@ -2017,8 +2003,6 @@ function gripHand(space: SkeletonSpace, arm: Arm, weapon: Matrix, role: 'grip' |
   // forward to close round the front of the shooting hand's; palm up with the fingers straight out ahead, they stood
   // in front of the grip: the owner's "pinch").
   else if (role === 'cup') turnHand(space, arm, gunDir({ up, ahead, right }, PISTOL.supportFingers), gunDir({ up, ahead, right }, PISTOL.supportPalm), weight);
-  // A pistol's foregrip (the Machine Pistol's) is held as the grip is, from its left: palm in, fingers forward round it.
-  else if (role === 'fore') turnHand(space, arm, ahead.scale(0.9).subtract(up.scale(0.35)), right, weight);
   else turnHand(space, arm, ahead.scale(0.7).add(right.scale(0.6)).subtract(up.scale(0.1)), right.scale(0.3).add(up.scale(0.95)), weight);
 }
 
@@ -2244,7 +2228,7 @@ export function holdWith(space: SkeletonSpace, arms: HoldingArms, weapon: Transf
   const supportPoint = grip.support ? shift(grip.support, grip.style === 'long' ? tune?.supportLong : tune?.supportPistol) : undefined;
   gripHand(space, arms.r, world, 'grip', weight, true);
   if (grip.support && grip.style === 'long') cupHand(space, arms.l, world, weight);
-  else if (grip.support) gripHand(space, arms.l, world, hasForegrip(grip) ? 'fore' : 'support', weight, true);
+  else if (grip.support) gripHand(space, arms.l, world, 'support', weight, true);
   if (tune?.rollR) rollHand(space, arms.r, tune.rollR, weight);
   if (tune?.rollL && grip.support) rollHand(space, arms.l, tune.rollL, weight);
   const gripAt = palmOnGrip(arms.r, point(gripPoint), scale);

@@ -509,7 +509,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     },
   },
   // group: The extended arsenal: every one fires differently. 2: sidearms.
-  // hold: On its own pistol grip, the support hand on the foregrip (the hold's points sat at the end of the wire stock, 11 cm behind the grip); 4 cm nearer the eye than the pistols, so the hands sit where theirs do.
+  // hold: Both hands on its pistol grip (the hold's points sat at the end of the wire stock, 11 cm behind the grip; a support hand on the foregrip, 15 cm further ahead, is out of reach in third person); 4 cm nearer the eye than the pistols, so the hands sit where theirs do.
   'core.machine_pistol': {
     id: 'core.machine_pistol',
     displayName: 'Machine Pistol',
@@ -535,7 +535,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
       model: 'weapons/machine_pistol.glb',
       viewOffset: [0.2, -0.18, 0.38],
       tracer: '#ffe9a8',
-      hold: { style: 'pistol', grip: [0, -0.03, -0.024], support: [0, -0.006, 0.131], rake: 10 },
+      hold: { style: 'pistol', grip: [0, -0.03, -0.024], support: [-0.02, -0.04, -0.014], rake: 10 },
       sound: 'fire.smg',
     },
   },
