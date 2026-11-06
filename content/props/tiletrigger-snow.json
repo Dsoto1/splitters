@@ -23,7 +23,7 @@
       "name": "Antenna Mast",
       "category": "Snow Outpost",
       "height": 7.4,
-      "collide": "trunk"
+      "collide": "voxel"
     },
     {
       "id": "so_heater",
@@ -95,7 +95,7 @@
       "name": "Insulated Pipe Run",
       "category": "Snow Outpost",
       "height": 1.45,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "so_drums",
@@ -111,7 +111,7 @@
       "name": "Radio Console",
       "category": "Snow Outpost",
       "height": 1.5,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "so_ski_rack",

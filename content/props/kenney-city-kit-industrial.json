@@ -66,7 +66,7 @@
       "name": "Steel Water Tower",
       "category": "Industrial",
       "height": 11.0,
-      "collide": "box"
+      "collide": "voxel"
     }
   ]
 }

@@ -16,7 +16,7 @@
       "name": "Gothic Arch",
       "category": "Ruins",
       "height": 5,
-      "collide": "shell"
+      "collide": "voxel"
     },
     {
       "id": "rn_arch_round",
@@ -24,7 +24,7 @@
       "name": "Round Arch",
       "category": "Ruins",
       "height": 5,
-      "collide": "shell"
+      "collide": "voxel"
     },
     {
       "id": "rn_bookcase",
@@ -141,7 +141,7 @@
       "name": "Broken Wall",
       "category": "Ruins",
       "height": 4,
-      "collide": "shell"
+      "collide": "voxel"
     },
     {
       "id": "rn_wall_arch_ivy",
@@ -149,7 +149,7 @@
       "name": "Ivy Arch Wall",
       "category": "Ruins",
       "height": 4,
-      "collide": "shell"
+      "collide": "voxel"
     },
     {
       "id": "rn_wall_hole",
@@ -157,7 +157,7 @@
       "name": "Holed Wall",
       "category": "Ruins",
       "height": 4,
-      "collide": "shell"
+      "collide": "voxel"
     },
     {
       "id": "rn_wall_half",

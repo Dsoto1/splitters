@@ -22,6 +22,7 @@
       "yaw": 90,
       "scale": 36,
       "collide": "boxes",
+      "fills": "its collision (fuselage-profile.mjs) carries the cabin floor at 3.4-3.9 m and boxes round the landing gear: the cabin kit's sections placed inside draw the floor, so the shell's model alone shows a gap there",
       "triangles": 19500,
       "maxError": 0.004,
       "dropHidden": true,

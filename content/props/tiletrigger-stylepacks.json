@@ -80,7 +80,7 @@
       "name": "Rooftop Water Tank",
       "category": "Neon Megacity",
       "height": 4.0,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "nc_holo_kiosk",
@@ -96,7 +96,7 @@
       "name": "Noodle Stall",
       "category": "Neon Megacity",
       "height": 2.55,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "nc_antenna",

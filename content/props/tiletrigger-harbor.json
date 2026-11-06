@@ -55,7 +55,7 @@
       "name": "Net Drying Rack",
       "category": "Coastal Harbor",
       "height": 2.2,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "hb_fish_stall",
@@ -63,7 +63,7 @@
       "name": "Fish Stall",
       "category": "Coastal Harbor",
       "height": 2.32,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "hb_fish_crates",
@@ -79,7 +79,7 @@
       "name": "Fishing Boat",
       "category": "Coastal Harbor",
       "height": 6.36,
-      "collide": "shell"
+      "collide": "voxel"
     },
     {
       "id": "hb_anchor",
@@ -135,7 +135,7 @@
       "name": "Tide Board",
       "category": "Coastal Harbor",
       "height": 2.0,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "hb_dolphin",

@@ -268,7 +268,7 @@
       "src": "table.fbx",
       "name": "Hospital Table",
       "category": "Hospital",
-      "collide": "box",
+      "collide": "voxel",
       "height": 0.78,
       "bands": [
         [

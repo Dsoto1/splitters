@@ -56,7 +56,7 @@
       "name": "Bunk Bed",
       "category": "Home",
       "height": 1.8,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "hm_bed_king",
@@ -216,7 +216,7 @@
       "name": "Large Shelf",
       "category": "Home",
       "height": 2.0,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "hm_stool",
@@ -232,7 +232,7 @@
       "name": "Round Table",
       "category": "Home",
       "height": 0.78,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "hm_side_table",

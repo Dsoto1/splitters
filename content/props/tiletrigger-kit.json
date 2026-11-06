@@ -195,7 +195,7 @@
       "name": "Hitching Post",
       "category": "Frontier",
       "height": 1.1,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "water_trough",
@@ -223,7 +223,7 @@
       "name": "Wanted Board",
       "category": "Frontier",
       "height": 2.1,
-      "collide": "trunk"
+      "collide": "voxel"
     },
     {
       "id": "outhouse",
@@ -243,7 +243,7 @@
       "name": "Buffer Stop",
       "category": "Frontier",
       "height": 1.24,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "mine_frame",
@@ -251,7 +251,7 @@
       "name": "Mine Timber Frame",
       "category": "Frontier",
       "height": 3.55,
-      "collide": "frame"
+      "collide": "voxel"
     },
     {
       "id": "tumbleweed",
@@ -267,7 +267,7 @@
       "name": "Covered Wagon",
       "category": "Frontier",
       "height": 2.37,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "wind_pump",
@@ -275,7 +275,8 @@
       "name": "Wind Pump",
       "category": "Frontier",
       "height": 9.26,
-      "collide": "trunk"
+      "collide": "voxel",
+      "voxelBudget": 56
     }
   ]
 }

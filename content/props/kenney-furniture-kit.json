@@ -208,7 +208,7 @@
       "name": "Bunk Bed",
       "category": "Furniture",
       "height": 1.7,
-      "collide": "box",
+      "collide": "voxel",
       "breakable": {
         "health": 70,
         "debris": "#8a5a32"

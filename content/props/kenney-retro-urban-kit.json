@@ -49,7 +49,7 @@
       "name": "Road Barrier (Retro Urban)",
       "category": "Military",
       "height": 1.05,
-      "collide": "box",
+      "collide": "voxel",
       "breakable": {
         "health": 40,
         "debris": "#d8b020"
