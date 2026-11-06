@@ -84,6 +84,10 @@ interface MatchRow {
   kills: number;
   /** Other modes' objective events by kind and action ("hill hold", "bomb plant", "elim win"...). */
   objective: Record<string, number>;
+  /** Team modes: each team's score at the end (kills, hill seconds, captures: what a score limit counts). */
+  teams?: Record<string, number>;
+  /** The most kills any one bot made (free-for-all: the leader's score). */
+  top?: number;
   tickMs: number;
   tickP95: number;
   bots: BotRow[];
@@ -309,6 +313,9 @@ function play(map: MapDocument, seed: number): MatchRow {
   const sorted = [...tickMs].sort((x, y) => x - y);
   out.tickMs = tickMs.reduce((x, y) => x + y, 0) / tickMs.length;
   out.tickP95 = sorted[Math.floor(sorted.length * 0.95)]!;
+  // What a score limit would count: the teams' scores, and free-for-all's leader (matchSetup.ts suggestedLimits is fitted to these).
+  if (match.teams) out.teams = Object.fromEntries(match.teamScores());
+  out.top = Math.max(0, ...bots.map((c) => c.kills));
   match.destroy();
   return out;
 }
@@ -332,6 +339,10 @@ function printMatch(m: MatchRow): void {
     console.log(`flags: captures ${m.captures} | takes ${m.takes} | drops ${m.drops} | returns ${m.returns} | first take ${m.firstTake?.toFixed(0) ?? '-'} s, first capture ${m.firstCapture?.toFixed(0) ?? '-'} s | runs ${runs || 'none'}`);
   }
   if (m.objective && Object.keys(m.objective).length) console.log(`objective: ${Object.entries(m.objective).map(([k, v]) => `${k} ${v}`).join(' | ')}`);
+  const perMin = (n: number) => ((n / m.seconds) * 60).toFixed(1);
+  const teams = Object.entries(m.teams ?? {});
+  const lead = Math.max(0, ...teams.map(([, v]) => v));
+  console.log(`scores: ${teams.length ? `${teams.map(([k, v]) => `${k} ${v}`).join(' · ')} (leading team ${perMin(lead)}/min) | ` : ''}top bot ${m.top ?? 0} kills (${perMin(m.top ?? 0)}/min)`);
   console.log(`time: idle ${pct(sum(m.bots, (r) => r.idle), alive)} (out of a fight ${pct(sum(m.bots, (r) => r.idleCalm), alive)}, frozen ${pct(sum(m.bots, (r) => r.frozen), alive)}) | going to the goal ${pct(sum(m.bots, (r) => r.towardGoal), goalT)} of goal time, at it ${pct(sum(m.bots, (r) => r.atGoal), goalT)} | kills ${m.kills} (${((m.kills / m.seconds) * 60).toFixed(1)}/min) | stuck recoveries ${sum(m.bots, (r) => r.stuck)} (loops ${sum(m.bots, (r) => r.loops)}) | no-route searches ${sum(m.bots, (r) => r.pathFailures)}`);
   const why = new Map<string, number>();
   for (const r of m.bots) for (const [k, v] of Object.entries(r.why)) why.set(k, (why.get(k) ?? 0) + v);
