@@ -235,6 +235,8 @@ interface Arm {
   gripOffset: number;
   /** How far the fingers close on a grip (1: the full curl; 0: a rigid or already closed hand). */
   curl: number;
+  /** The share of the fingers' spread they close as the hand closes (a measured hand's `together`; none: 0). */
+  together?: number;
   /** The hand's length, wrist to fingertips (model m). */
   span: number;
   /** Finger chains (index, middle, ring, pinky), knuckle first, for closing the hand. */
@@ -378,7 +380,7 @@ export class CharacterAnimator {
         const gripOffset = Math.max(MIN_GRIP_OFFSET, GRIP_RADIUS_MEASURED + (measured.thickness - REF_HAND_THICKNESS) / 2);
         // The hand's own frame, read off its skin (its measured palm side is the rig's, which a Meshy hand needn't match).
         const frame = skinHandFrame(ch.meshes, (n) => ch.joints.get(n), side, measured.palmSide) ?? undefined;
-        return { upper, lower, hand, palm: new Vector3(...measured.palm), gripOffset, curl: measured.curl, span: measured.length, fingers, thumbs, index, pinky, knuckle, thumb, ...(frame ? { frame } : {}) };
+        return { upper, lower, hand, palm: new Vector3(...measured.palm), gripOffset, curl: measured.curl, ...(measured.together ? { together: measured.together } : {}), span: measured.length, fingers, thumbs, index, pinky, knuckle, thumb, ...(frame ? { frame } : {}) };
       }
       // The rig's own hands: the palm sits a little over halfway from the wrist to the middle knuckle.
       return { upper, lower, hand, palm: knuckle.position.scale(0.6), gripOffset: GRIP_RADIUS, curl: 1, span: knuckle.position.length() * RIG_SPAN, fingers, thumbs, index, pinky, knuckle, thumb };
@@ -1605,9 +1607,12 @@ export class CharacterAnimator {
     // In first person the shooting hand is turned onto the grip whatever its rig: the clips' hold is made for a
     // body aiming level, and the view's gun points where you look (a rig's hand looking down lay across the grip).
     gripHand(space, arms.r, world, 'grip', w, true);
-    // ...and a pistol's support hand, whatever its rig: it wraps the shooting hand.
-    const pistol = grip.style === 'pistol';
-    if (pistol && grip.support) gripHand(space, arms.l, world, 'cup', w, true);
+    // ...and a pistol's support hand, whatever its rig: it wraps the shooting hand. (The pistol hold below is a
+    // two-handed one, for a gun's pistol grip: a one-handed hold, the Spear's shaft or the Medkit's handle, keeps the
+    // close it had before it; turned and closed as a raked grip, their fingers stood straight off the shaft and the
+    // handle, 2026-11-06.)
+    const pistol = grip.style === 'pistol' && !!grip.support;
+    if (pistol) gripHand(space, arms.l, world, 'cup', w, true);
     const gun = gunAxes(world);
     // A pistol's hands are turned about their palms so their knuckle lines run down the grip, raked as it is (the
     // fingers close square to it, round the grip instead of up across it); the support hand's a little more, canted
@@ -2193,6 +2198,8 @@ function closeHand(space: SkeletonSpace, arm: Arm, weight: number, onto?: Vector
   const across = space.pos(arm.index).subtract(space.pos(arm.pinky)).normalize();
   const towardThumb = space.pos(arm.thumb).subtract(wrist);
   const palmSide = towardThumb.subtract(forward.scale(Vector3.Dot(towardThumb, forward))).subtract(across.scale(Vector3.Dot(towardThumb, across)));
+  // A fanned hand's fingers come in toward its middle finger as it closes (`together`, its own share).
+  if (arm.together) gather(space, arm, forward, across, arm.together * Math.min(1, weight));
   // Rotating about `across` by +angle must move the fingers toward the palm side...
   let sign = Vector3.Dot(forward.applyRotationQuaternion(Quaternion.RotationAxis(across, 0.5)), palmSide) > 0 ? 1 : -1;
   // ...or toward the gun: the middle finger's tip swung both ways about its knuckle, the nearer to the point wins.
@@ -2247,6 +2254,33 @@ function closeHand(space: SkeletonSpace, arm: Arm, weight: number, onto?: Vector
       const q = Quaternion.RotationAxis(across, sign * curl[i]! * weight);
       space.setRot(joint, q.multiply(space.rot(joint)), 1);
     });
+  }
+}
+
+/**
+ * Turn a hand's fingers in toward its middle finger, about the palm's normal, by `share` of each one's spread (in the
+ * palm's plane): a download's own fingers can be fanned wide (Frost Viking's), and closed as they lie they stood apart
+ * round the grip like a claw. `forward` and `across` (skeleton space) are the hand's (closeHand's).
+ */
+function gather(space: SkeletonSpace, arm: Arm, forward: Vector3, across: Vector3, share: number): void {
+  const middle = arm.fingers[1];
+  if (!middle || middle.length < 2 || share <= 0) return;
+  const n = Vector3.Cross(forward, across);
+  if (n.lengthSquared() < 1e-10) return;
+  n.normalize();
+  const inPlane = (v: Vector3) => v.subtract(n.scale(Vector3.Dot(v, n)));
+  const way = (chain: TransformNode[]) => inPlane(space.pos(chain[1]!).subtract(space.pos(chain[0]!)));
+  const m = way(middle);
+  if (m.lengthSquared() < 1e-12) return;
+  m.normalize();
+  for (const chain of arm.fingers) {
+    if (chain === middle || chain.length < 2) continue;
+    const d = way(chain);
+    if (d.lengthSquared() < 1e-12) continue;
+    d.normalize();
+    // The signed angle from this finger to the middle one about the palm's normal.
+    const angle = Math.atan2(Vector3.Dot(Vector3.Cross(d, m), n), Vector3.Dot(d, m));
+    space.setRot(chain[0]!, Quaternion.RotationAxis(n, angle * share).multiply(space.rot(chain[0]!)), 1);
   }
 }
 

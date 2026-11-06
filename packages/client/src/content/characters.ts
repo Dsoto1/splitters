@@ -151,6 +151,8 @@ export interface HandData {
   curl: number;
   /** How the fingers were weighted: split, as one (mitten), not at all (a fist), or the download's own (`fixes.fingers`). */
   fingers: 'split' | 'mitten' | 'none' | 'own';
+  /** The share of the fingers' spread they close as the hand closes, toward the middle finger (`fixes.hands.together`; none: 0). */
+  together?: number;
 }
 
 export interface CharacterSpec {

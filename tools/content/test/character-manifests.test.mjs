@@ -53,6 +53,9 @@ describe('character manifests', () => {
     // A hand bent as one, whatever gaps are found.
     expect(manifestProblems({ ...good, fixes: { ...good.fixes, hands: { r: { mitten: true, curl: 1.2 } } } }, 'meshy_cat.json')).toEqual([]);
     expect(manifestProblems({ ...good, fixes: { ...good.fixes, hands: { mitten: 'yes' } } }, 'meshy_cat.json').join('\n')).toMatch(/fixes.hands.mitten/);
+    // A fanned hand's fingers brought together as it closes (a share, 0-1).
+    expect(manifestProblems({ ...good, fixes: { ...good.fixes, hands: { scale: 0.8, together: 1, r: { curl: 0.6 } } } }, 'meshy_cat.json')).toEqual([]);
+    expect(manifestProblems({ ...good, fixes: { ...good.fixes, hands: { together: 2 } } }, 'meshy_cat.json').join('\n')).toMatch(/fixes.hands.together/);
     // This look's own hands and arms on a gun (GripTune), written into its generated look.
     const grip = { elbowDown: 0.3, supportPistol: [0, 0.04, -0.08], curlL: 1.4, rollR: 0.4 };
     expect(manifestProblems({ ...good, fixes: { ...good.fixes, grip } }, 'meshy_cat.json')).toEqual([]);

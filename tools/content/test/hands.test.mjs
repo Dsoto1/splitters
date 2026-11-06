@@ -87,6 +87,26 @@ describe('hands', () => {
     expect(Array.from(mesh.W)).toEqual(Array.from(before.W));
   });
 
+  it("scales a download's own hand with its finger and thumb joints, about the wrist, and writes `together` for the game", () => {
+    const mesh = handMesh([palm, ...fingers]);
+    const { moved, data } = fitHands({ meshes: [mesh], jointNames, world: new Map(rig), rig, keep: ['r'], overrides: { scale: 0.8, together: 1 } });
+    expect(data.r.fingers).toBe('own');
+    expect(data.r.length).toBeCloseTo(0.16, 1);
+    expect(data.r.together).toBe(1);
+    // Every finger and thumb joint of that hand moved to 0.8 of its distance from the wrist, the same way (left where
+    // the download had them, the fingers curled about points past the shrunk knuckles); nothing of the other hand.
+    const local = (p) => qrot([-H.q[0], -H.q[1], -H.q[2], H.q[3]], add(p, scale(H.t, -1)));
+    for (const name of [...FINGERS.map((f) => `${f}_01_r`), 'middle_03_r', 'thumb_02_r']) {
+      expect(moved.has(name), name).toBe(true);
+      const was = local(rig.get(name).t);
+      const now = local(moved.get(name));
+      for (let k = 0; k < 3; k++) expect(now[k]).toBeCloseTo(was[k] * 0.8, 5);
+    }
+    expect([...moved.keys()].some((n) => n.endsWith('_l'))).toBe(false);
+    // Unscaled, nothing moves (as before).
+    expect([...fitHands({ meshes: [handMesh([palm, ...fingers])], jointNames, world: new Map(rig), rig, keep: ['r'], overrides: { together: 0.5 } }).moved.keys()]).toEqual([]);
+  });
+
   it('bends a split hand as a mitten when the manifest says so', () => {
     const mesh = handMesh([palm, ...fingers]);
     const { data } = fit(mesh, { r: { mitten: true, curl: 1.2 } });
