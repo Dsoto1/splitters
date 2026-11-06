@@ -27,9 +27,11 @@ gets overloaded above that: local e2e times out and flakes). Prune landed worktr
   reworks batches 2–3, character fixes rounds 2–3 (see the entries below and CHANGELOG).
 
 <!-- shingle -->
-### Shingle Point asset refresh (`wip/shingle`, agents, 2026-11-05/06; main 5b167034 merged in; CI on `check/shingle`)
+### Shingle Point asset refresh (`wip/shingle`, agents, 2026-11-05/06; main 5b167034 merged in; green on `check/shingle`)
 Owner's decision: same layout and gameplay, every dated asset replaced, so it compares fairly with MAP 21 (a new map,
-later). Not a layout rework.
+later). Not a layout rework. **Ready to land:** CI run 42175700068 green on `check/shingle` at c214e94f (unit, build,
+check, perf budget and mass, all 11 e2e shards with Shingle Point's map tour); main has not moved since, so `main` can
+be fast-forwarded to it once the owner is happy with the open items at the end of this section.
 - **The map** (`maps/shingle_point.json`) was edited in MapMaker only, driven from the session scratchpad
   (`shingle2/tools/maker.mjs`): Import, the theme picker, Replace all, the block Material and prop Variant fields,
   MapMaker's own Delete and "Place <piece>" commands (the ones its Delete key and palette run) for the block groups,
