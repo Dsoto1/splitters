@@ -122,6 +122,40 @@ are right for the campus. The shallow vault stays. Skybridges keep the pack's fa
   facade) are an override away (`overrides.roles.facade: "none"`); which should be the default?
 <!-- /setpieces -->
 
+### Queued (owner bug report, 2026-11-06): prop slack pass, "these pillars are blocking my bullets". NEXT FREE SLOT (ahead of Bot AI Phase B)
+**The owner:** "These pillars are blocking my bullets..capital mall uses them". Their screenshot shows Capitol Mall's
+white Ionic columns.
+
+**Cause:**
+- `prop.im_column_ionic` (68 on Capitol Mall) uses `collide: "box"`.
+- That box is as wide as the plinth and the capital, all the way up.
+- So there is about 0.2–0.3 m of invisible wall on each side of the round shaft. It stops rounds and players alike.
+- About 40 more columns, pillars and posts in `content/props/*.json` also use `box`, among them `eg_column_papyrus`,
+  `rn_column_round`, `sf_column_round`, `dc_column`, Kenney's `column` and the loafbrr fence posts and columns.
+
+**Scope:**
+- Round and tapered columns move to `voxel`, or to `trunk` where one pole is right.
+- A `--slack` pass over every `box` prop, with a threshold that matters for play. The threshold is documented.
+- `content:check` fails a new prop over the threshold unless it says why, as the openings audit does.
+- Real-sim tests:
+  - rounds beside the shaft fly past;
+  - rounds at the shaft hit;
+  - a player can stand against the shaft;
+  - cover behind it still holds.
+- validate-map on the affected maps, and `pnpm bot-report --check`.
+- Before and after shots of the Capitol Mall colonnade.
+
+The brief is in the session scratchpad, `briefs/slack-pass.md`.
+
+### Queued (owner, 2026-11-06): import list, batch 1: Cool Hands Rex and Fishy Fred. After the work in flight
+**The owner:** "There is a fish and t-rex (call him 'Cool Hands Rex', I made him in meshy) model to add for after all
+of this work. I'll be trying to generate brand new ones going forward and we can just begin working on a new import
+list."
+- The running list, with measurements and what to check, is `docs/IMPORT_LIST.md`.
+- **Cool Hands Rex** is Meshy, owned: the owner made it.
+- **Fishy Fred** (the file's name) is Meshy Community CC0 unless the owner says they made it.
+- Both are Mixamo rigs, already downloaded to `/home/user/meshy-drive/intake-2026-11-06b/`. Never commit them.
+
 ### Queued (owner, 2026-11-06): performance round 4, crowds. Right after the Match Setup follow-ups, ahead of Roulette
 **The owner:**
 - "Focus round 4 on crowds."
