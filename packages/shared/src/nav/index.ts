@@ -396,12 +396,14 @@ export class NavWorld {
     this.placeCache = [...best.entries()].sort((x, y) => x[0] - y[0]).map(([, v]) => v.p);
     // (Not on polygons left out as inside something solid: disableInsideSolid.)
     if (this.insideSolid) this.placeCache = this.placeCache.filter((p) => !!this.query.findNearestPoly(p, { halfExtents: { x: 0.5, y: 1, z: 0.5 } }).nearestRef);
-    // The navmesh's parts and the places' parts too: worked out here, at setup (the match asks for the places
+    // The navmesh's parts and the places' polygons too: worked out here, at setup (the match asks for the places
     // when bots join), rather than in a tick (about 15 ms and 10–30 ms on a big map).
     this.partsNow();
-    this.placePartsNow();
-    // Route reachability too (routable, standIn: the graph and its components, a few ms).
+    this.placePolysNow();
+    // Route reachability too (routable, standIn, escapes: the graph, its components and what routes to the main
+    // area, a few ms).
     this.routesNow();
+    this.toMainNow();
     return this.placeCache;
   }
 
@@ -622,22 +624,46 @@ export class NavWorld {
   }
 
   private toMainCache: Uint8Array | null = null;
+  private reverseCache: { start: Int32Array; to: Int32Array } | null = null;
+  private readonly reachTo = new Map<number, Uint8Array>();
 
-  /** Polygons that route to the main area. */
-  private toMainNow(): Uint8Array {
-    if (this.toMainCache) return this.toMainCache;
+  /** The routes' edges reversed (CSR), made once. */
+  private reverseNow(): { start: Int32Array; to: Int32Array } {
+    if (this.reverseCache) return this.reverseCache;
     const r = this.routesNow();
     const n = r.comp.length;
-    // Reverse the edges once.
     const deg = new Int32Array(n + 1);
     for (let k = 0; k < r.to.length; k++) deg[r.to[k]! + 1]!++;
     for (let i = 0; i < n; i++) deg[i + 1]! += deg[i]!;
     const fill = deg.slice(0, n);
     const to = new Int32Array(r.to.length);
     for (let a = 0; a < n; a++) for (let k = r.start[a]!; k < r.start[a + 1]!; k++) to[fill[r.to[k]!]!++] = a;
+    return (this.reverseCache = { start: deg, to });
+  }
+
+  /** Polygons that route to the main area. */
+  private toMainNow(): Uint8Array {
+    if (this.toMainCache) return this.toMainCache;
+    const r = this.routesNow();
+    const n = r.comp.length;
     const seeds: number[] = [];
     for (let i = 0; i < n; i++) if (r.comp[i] === r.main) seeds.push(i);
-    return (this.toMainCache = reachSet(deg, to, n, seeds));
+    const back = this.reverseNow();
+    return (this.toMainCache = reachSet(back.start, back.to, n, seeds));
+  }
+
+  /** Polygons that route to polygon `i` (to its component; cached per component, at most 256 kept). */
+  private routesTo(i: number): Uint8Array {
+    const r = this.routesNow();
+    const c = r.comp[i]!;
+    if (c === r.main) return this.toMainNow();
+    let seen = this.reachTo.get(c);
+    if (seen) return seen;
+    const back = this.reverseNow();
+    seen = reachSet(back.start, back.to, r.comp.length, [i]);
+    if (this.reachTo.size >= 256) this.reachTo.clear();
+    this.reachTo.set(c, seen);
+    return seen;
   }
 
   /** Whether `p` (on or near the navmesh) routes to the main area and is routed to from it. */
@@ -773,18 +799,19 @@ export class NavWorld {
     return { id, size: id >= 0 ? this.partsNow().size[id]! : 0 };
   }
 
-  /** The part each of places() is on (-1: none). */
-  private placeParts: Int32Array | null = null;
+  /** The polygon (graph index) each of places() is on (-1: none). */
+  private placePolys: Int32Array | null = null;
 
-  private placePartsNow(): Int32Array {
-    if (this.placeParts) return this.placeParts;
+  private placePolysNow(): Int32Array {
+    if (this.placePolys) return this.placePolys;
     const places = this.placeCache ?? this.places();
-    const parts = new Int32Array(places.length);
+    const base = this.graph().base;
+    const polys = new Int32Array(places.length);
     places.forEach((p, i) => {
       const r = this.query.findNearestPoly(p, { halfExtents: { x: 0.5, y: 1, z: 0.5 } });
-      parts[i] = r.success && r.nearestRef ? this.part(r.nearestRef) : -1;
+      polys[i] = r.success && r.nearestRef ? r.nearestRef - base : -1;
     });
-    return (this.placeParts = parts);
+    return (this.placePolys = polys);
   }
 
   private readonly escapeCache = new Map<string, readonly NavEscape[]>();
@@ -810,19 +837,31 @@ export class NavWorld {
     const s = this.query.findNearestPoly(from, { halfExtents: ext });
     const on = s.success && !!s.nearestRef;
     const sizes = this.partsNow().size;
+    const base = this.graph().base;
+    const goalIdx = e.nearestRef - base;
+    // Ground that routes to the goal (routes go one way: falls, ledge drops and one-way links count as they go).
+    const toGoal = this.routesTo(goalIdx);
     if (on) {
+      const i = s.nearestRef - base;
+      // A route there: nothing to escape.
+      if (toGoal[i]) return NO_ESCAPE;
+      // Off a patch that doesn't route to the main area (a pit, a court a curb too high for the navmesh shuts in:
+      // St John's), toward any ground that routes to the goal, even where a one-way link joins the two (parts count
+      // links both ways). Elsewhere only off a smaller part toward a bigger one (a goal on a smaller part than the
+      // bot's is what's cut off: no hopping down into a pit after it).
       const mine = this.part(s.nearestRef);
-      if (mine === target || mine < 0 || sizes[mine]! >= sizes[target]!) return NO_ESCAPE;
+      if (this.toMainNow()[i] && (mine === target || mine < 0 || sizes[mine]! >= sizes[target]!)) return NO_ESCAPE;
     }
-    const key = on ? `${s.nearestRef}>${target}` : `${Math.round(from.x)},${Math.round(from.y)},${Math.round(from.z)}>${target}`;
+    const goalComp = this.routesNow().comp[goalIdx]!;
+    const key = on ? `${s.nearestRef}>${goalComp}` : `${Math.round(from.x)},${Math.round(from.y)},${Math.round(from.z)}>${goalComp}`;
     const known = this.escapeCache.get(key);
     if (known) return known;
     const places = this.places();
-    const placeParts = this.placePartsNow();
+    const placePolys = this.placePolysNow();
     const near: { p: Vec3; d: number }[] = [];
     for (let i = 0; i < places.length; i++) {
       const p = places[i]!;
-      if (placeParts[i] !== target || Math.abs(p.y - from.y) > 5) continue;
+      if (placePolys[i]! < 0 || !toGoal[placePolys[i]!] || Math.abs(p.y - from.y) > 5) continue;
       const d = hypot(p.x - from.x, p.z - from.z);
       if (d < ESCAPE_REACH) near.push({ p, d });
     }
@@ -844,10 +883,9 @@ export class NavWorld {
     // Places routes from the goal's own ground lead back to first (both ways joined: not a ledge whose way on is a drop
     // link far off; Capitol Mall's pool's rim walkway goes to its far end), then the rest.
     const routes = this.routesNow();
-    const goalComp = routes.comp[e.nearestRef - this.graph().base];
     const joined = (p: Vec3) => {
       const h = this.query.findNearestPoly(p, { halfExtents: { x: 0.5, y: 1, z: 0.5 } });
-      return h.success && !!h.nearestRef && routes.comp[h.nearestRef - this.graph().base] === goalComp;
+      return h.success && !!h.nearestRef && routes.comp[h.nearestRef - base] === goalComp;
     };
     for (const pass of [true, false]) {
       for (const { p } of near) {
@@ -861,7 +899,7 @@ export class NavWorld {
       const q = this.query.queryPolygons(from, { x: ESCAPE_REACH, y: 5, z: ESCAPE_REACH }, { maxPolys: 512 });
       const ground: { p: Vec3; d: number }[] = [];
       for (const ref of q.success ? q.polyRefs : []) {
-        if (this.part(ref) !== target) continue;
+        if (!toGoal[ref - base]) continue;
         const c = this.query.closestPointOnPoly(ref, from);
         if (!c.success || Math.abs(c.closestPoint.y - from.y) > 5) continue;
         const p = { x: c.closestPoint.x, y: c.closestPoint.y, z: c.closestPoint.z };

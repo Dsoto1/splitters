@@ -45,12 +45,15 @@ export function dropOptions(map: MapDocument, physics: PhysicsWorld, geometry: r
  * portals, ziplines, lifts) and ledge-drop links off patches that have no other way down.
  */
 export function buildMapNav(map: MapDocument, geometry: readonly WorldBox[], physics: PhysicsWorld, envShapes: readonly EnvWorldShape[], phys: { gravity: number; fallDamage: boolean }, extra: readonly WorldBox[] = []): NavWorld {
+  const drops = dropOptions(map, physics, geometry, phys);
+  const solids = drops.solids ?? [];
   return NavWorld.build(
-    [...geometry, ...propBoxes(map, true), ...blockBoxes(map, true), ...extra],
+    [...geometry, ...solids, ...extra],
     joinTriangles(mapTerrainMesh(map), environmentNavTriangles(envShapes)),
-    [...navLinks(map.entities, physics, phys.gravity), ...liftLinks(map)],
+    // (Jump pads' flights come down on the scenario's solids too, as the navmesh has them.)
+    [...navLinks(map.entities, physics, phys.gravity, extra.length ? [...solids, ...extra] : solids), ...liftLinks(map)],
     false,
-    dropOptions(map, physics, geometry, phys),
+    drops,
   );
 }
 

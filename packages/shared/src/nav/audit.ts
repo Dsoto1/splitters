@@ -1,4 +1,4 @@
-import type { WorldBox } from '../map/geometry.ts';
+import { boxesOverlap, boxesRay, type WorldBox } from '../map/geometry.ts';
 import type { MapDocument } from '../map/schema.ts';
 import type { ValidationIssue } from '../map/validate.ts';
 import { hypot, type Vec3 } from '../math.ts';
@@ -66,44 +66,6 @@ export interface FallOptions {
   solids?: readonly WorldBox[];
   /** Ground under deep liquid (over a body's chest): a landing there is a swim, not a fall onto somewhere to walk. */
   underLiquid?: (p: Vec3) => boolean;
-}
-
-/** Distance along a normalised ray to the first of `boxes` it enters (from outside), or null within maxDist. */
-function boxesRay(boxes: readonly WorldBox[], o: Vec3, d: Vec3, maxDist: number): number | null {
-  let best: number | null = null;
-  for (const b of boxes) {
-    let lo = b.min;
-    let hi = b.max;
-    if (b.yaw || b.pitch || b.roll) {
-      // The upright box round a turned one.
-      const cx = (b.min[0] + b.max[0]) / 2;
-      const cz = (b.min[2] + b.max[2]) / 2;
-      const r = hypot(b.max[0] - b.min[0], b.max[2] - b.min[2]) / 2;
-      const h = b.pitch || b.roll ? hypot(b.max[1] - b.min[1], r * 2) / 2 : (b.max[1] - b.min[1]) / 2;
-      const cy = (b.min[1] + b.max[1]) / 2;
-      lo = [cx - r, cy - h, cz - r];
-      hi = [cx + r, cy + h, cz + r];
-    }
-    let t0 = 0;
-    let t1 = maxDist;
-    let hit = true;
-    for (let a = 0; a < 3 && hit; a++) {
-      const oa = a === 0 ? o.x : a === 1 ? o.y : o.z;
-      const da = a === 0 ? d.x : a === 1 ? d.y : d.z;
-      if (Math.abs(da) < 1e-9) {
-        if (oa < lo[a]! || oa > hi[a]!) hit = false;
-        continue;
-      }
-      let ta = (lo[a]! - oa) / da;
-      let tb = (hi[a]! - oa) / da;
-      if (ta > tb) [ta, tb] = [tb, ta];
-      t0 = Math.max(t0, ta);
-      t1 = Math.min(t1, tb);
-      if (t0 > t1) hit = false;
-    }
-    if (hit && (best === null || t0 < best)) best = t0;
-  }
-  return best;
 }
 
 /** The first thing a body walks into or stands on along a ray: the level (physics) or one of the extra solids. */
@@ -206,6 +168,18 @@ export function fallsFrom(nav: NavWorld, physics: PhysicsWorld, poly: number, op
   return out;
 }
 
+/** A standing body, from over a step to its head (m above its feet), and its radius less a graze. */
+const BODY_FROM = PLAYER.maxStepHeight + 0.1;
+const BODY_HALF = { x: PLAYER.radius - 0.05, y: (PLAYER.height - BODY_FROM) / 2, z: PLAYER.radius - 0.05 };
+/** How far apart (m) the walk off an edge is checked for room for the body. */
+const BODY_STEP = 0.25;
+
+/** Whether a standing body fits with its feet at `feet` (nothing of the level or the extra solids in it, over a step's height). */
+function bodyFits(physics: PhysicsWorld, solids: readonly WorldBox[] | undefined, feet: Vec3): boolean {
+  const c = { x: feet.x, y: feet.y + BODY_FROM + BODY_HALF.y, z: feet.z };
+  return physics.boxClear(c, BODY_HALF) && !(solids?.length && boxesOverlap(solids, c, BODY_HALF));
+}
+
 /** Walking off the edge at `at` toward (nx, nz): where the body lands (feet), or null (a wall or railing, ground at the same height, a deadly or too-high drop). */
 function traceFall(physics: PhysicsWorld, at: Vec3, nx: number, nz: number, opts: FallOptions): Vec3 | null {
   const dir = { x: nx, y: 0, z: nz };
@@ -229,9 +203,25 @@ function traceFall(physics: PhysicsWorld, at: Vec3, nx: number, nz: number, opts
     if (at.y - y > opts.maxDrop) return null;
     const land = { x, y, z };
     if (opts.deadly?.(land) || opts.underLiquid?.(land)) return null;
-    return land;
+    return bodyGetsOff(physics, at, nx, nz, d, opts) ? land : null;
   }
   return null;
+}
+
+/**
+ * Whether a standing body walking from `at` toward (nx, nz) gets off the edge before `d` m: room for it at every step
+ * to the edge and just past it. Rails, bars and lattices the rays at step, knee and head height slip between stop it
+ * (Bunker Cross's galleries: rails 0.1, 1.5 and 2.9 m over the floor, nothing a body gets through).
+ */
+function bodyGetsOff(physics: PhysicsWorld, at: Vec3, nx: number, nz: number, d: number, opts: FallOptions): boolean {
+  for (let s = BODY_STEP; s <= d + 1e-6; s += BODY_STEP) {
+    const x = at.x + nx * s;
+    const z = at.z + nz * s;
+    const ground = moveRay(physics, opts.solids, { x, y: at.y + 0.5, z }, DOWN, 0.5 + FALL_MIN);
+    if (!bodyFits(physics, opts.solids, { x, y: ground === null ? at.y : Math.max(at.y, at.y + 0.5 - ground), z })) return false;
+    if (ground === null) return true; // Past the edge: the body falls from here.
+  }
+  return true;
 }
 
 /** How far from where a body lands on ground too steep to stand on it slides to the navmesh at the slope's foot (m), at most, and how far down. */

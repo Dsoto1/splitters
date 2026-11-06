@@ -40,7 +40,8 @@ for (const id of ids) {
   const phys = { gravity: map.physics?.gravity ?? 1, fallDamage: map.physics?.fallDamage ?? false };
   const t1 = performance.now();
   const drops = dropOptions(map, physics, geometry, phys);
-  const nav = NavWorld.build([...geometry, ...propBoxes(map, true), ...blockBoxes(map, true)], joinTriangles(mapTerrainMesh(map), environmentNavTriangles(envShapes)), [...navLinks(map.entities, physics, phys.gravity), ...liftLinks(map)], false, noDrops ? null : drops);
+  const solids = [...propBoxes(map, true), ...blockBoxes(map, true)];
+  const nav = NavWorld.build([...geometry, ...solids], joinTriangles(mapTerrainMesh(map), environmentNavTriangles(envShapes)), [...navLinks(map.entities, physics, phys.gravity, solids), ...liftLinks(map)], false, noDrops ? null : drops);
   const t2 = performance.now();
   const audit = auditNavigation(map, nav, physics, { ...drops, official: path.startsWith(mapsDir) });
   const t3 = performance.now();
