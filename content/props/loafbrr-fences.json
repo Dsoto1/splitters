@@ -250,7 +250,7 @@
       "src": "metal_fence/metal_fence_gate_with_gate.glb",
       "name": "Metal Fence Gate",
       "category": "Fences & Walls",
-      "collide": "box",
+      "collide": "voxel",
       "flatten": true
     },
     {
@@ -274,7 +274,7 @@
       "src": "metal_fence/metalfence_gate_only_sides.glb",
       "name": "Metal Fence Gate Posts",
       "category": "Fences & Walls",
-      "collide": "box",
+      "collide": "voxel",
       "flatten": true
     },
     {
@@ -543,7 +543,7 @@
       "src": "white_picket_fence/white_picket_fence_gate_poles.glb",
       "name": "Picket Gate Posts",
       "category": "Fences & Walls",
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "lf_picket_fence_open_left",

@@ -802,6 +802,7 @@
       "name": "Wild West Big Staircase A",
       "category": "Wild West",
       "collide": "stairs",
+      "fills": "a long open flight: its collision stays solid under the steps (collide \"stairs\") so players and bots walk up it reliably; voxel collision would leave only the treads",
       "climbs": "auto",
       "scale": 0.016
     },

@@ -715,9 +715,10 @@ export const MIN_OPENING = 0.5;
 /**
  * Openings a prop's collision fills: straight lines through the prop along x or along z that miss every triangle of
  * its model but cross its collision (`boxes`, the same frame), grouped into openings (connected in the plane across
- * the lines). An opening is closed in by the model, or by the model and the ground: a window, a hole, an arch, the
- * space under a table or a bridge; space round the outline (over a car's bonnet, beside a statue's arm, which the
- * lines reach from the sides or from above) is `slack` instead, counted only with `slack: true`. Each: `axis` the
+ * the lines). An opening has the model on both sides of it (the ground and the sky may close it below and above): a
+ * window, a hole, an arch, a gateway between posts, the space under a table or a bridge; space round the outline
+ * that lines reach from either side (over a car's bonnet, beside a statue's arm) is `slack` instead, counted only
+ * with `slack: true`. Each: `axis` the
  * lines run along, `size` [across, up] of its bounds and `square` the side of the largest square that fits in it
  * (metres), `at` [across, up] its middle, `area` (m²), and `slack` when it is that. Only those a `min` square fits in.
  */
@@ -756,13 +757,13 @@ export function filledOpenings(tris, boxes, { pixel = AUDIT_PIXEL, min = MIN_OPE
         for (let x = x0; x <= x1; x++) if (!model[y * W + x] && triPixel(U0 + (x + 0.5) * pixel, V0 + (y + 0.5) * pixel, h, a, b, c, u, v)) model[y * W + x] = 1;
     }
     for (let p = 0; p < W * H; p++) if (model[p]) mask[p] = 0;
-    // Slack: what lines from the sides or from above reach without crossing the model (the ground closes the bottom).
+    // Slack: what lines from either side reach without crossing the model. The ground closes the bottom, and the sky
+    // doesn't open the top: the gap between a gate's posts, the dip in a broken wall's top are openings.
     const outer = new Uint8Array(W * H);
     const reach = [];
     for (let p = 0; p < W * H; p++) {
       const x = p % W;
-      const y = (p - x) / W;
-      if (!model[p] && (x === 0 || x === W - 1 || y === H - 1)) {
+      if (!model[p] && (x === 0 || x === W - 1)) {
         outer[p] = 1;
         reach.push(p);
       }

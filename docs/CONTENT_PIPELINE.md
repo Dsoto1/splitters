@@ -833,13 +833,13 @@ and stops where neither holds (where a broadleaf tree forks, where a pole ends).
 
 **The openings audit** (`node tools/content/prop-openings.mjs`, in `pnpm content:check`): every prop's
 collision against its model, as straight lines along x and z that miss the model but cross the
-collision. Lines closed in by the model, or the model and the ground (a window, a hole, an arch, a
-doorway, under a table or a bridge), that a 0.5 m square fits in are a filled **opening**: the check
-fails unless the prop collides as `voxel` (or `frame`/`openings`) or says why in `fills` (seven do:
-long stair flights kept solid underneath, hand-built collision of the airliner and its stairs, the
-bucket-wheel excavator's lattice, one city block). Lines reached from the sides or above (over a
-car's bonnet, beside a stump's roots) are **slack**, listed with `--slack` (131 `box` props have
-0.5 m of it), not failed. The check also fails on a voxel prop over its budget or not rebuilt, and a
+collision. Lines with the model on both sides of them (the ground and the sky may close them below
+and above: a window, a hole, an arch, a doorway, a gateway between posts, under a table or a bridge)
+that a 0.5 m square fits in are a filled **opening**: the check fails unless the prop collides as
+`voxel` (or `frame`/`openings`) or says why in `fills` (nine do: five long stair flights kept solid
+underneath, hand-built collision of the airliner and its stairs, the bucket-wheel excavator's
+lattice, one city block). Lines reached from either side (over a car's bonnet, beside a stump's
+roots) are **slack**, listed with `--slack`, not failed. The check also fails on a voxel prop over its budget or not rebuilt, and a
 trunk column the build would now put elsewhere. `packages/shared/test/fixtures/prop-openings.json`
 records every prop this changed (lines through what its old collision filled, points of its model
 its new one holds) and a digest of every other prop's collision; after a deliberate collision

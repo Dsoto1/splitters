@@ -253,7 +253,7 @@
       "name": "Reed Boat",
       "category": "Sands of Egypt",
       "height": 1.43,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "eg_palm",

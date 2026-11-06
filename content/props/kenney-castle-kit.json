@@ -79,7 +79,7 @@
       "name": "Drawbridge",
       "category": "Castle & Siege",
       "height": 1.2,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "portcullis",
@@ -103,7 +103,7 @@
       "name": "Ballista",
       "category": "Castle & Siege",
       "height": 2.0,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "battering_ram",

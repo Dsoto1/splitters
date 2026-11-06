@@ -136,7 +136,7 @@
       "name": "Hedge Gate",
       "category": "Town & Market",
       "height": 1.4,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "town_fence",
@@ -161,6 +161,7 @@
       "category": "Town & Market",
       "height": 2.0,
       "collide": "stairs",
+      "fills": "a long open flight: its collision stays solid under the steps (collide \"stairs\") so players and bots walk up it reliably; voxel collision would leave only the treads",
       "climbs": "+x"
     },
     {
