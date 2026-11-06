@@ -1084,6 +1084,217 @@ async function editoruxFlow(browser) {
   await shot('1280');
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await page.context().close();
+  await editorSetPieceChecks(browser);
+}
+
+/**
+ * MapMaker's set pieces (docs/SET_PIECES_PLAN.md, "As built: part 2"): the Set pieces tab, placing with the ghost (and
+ * its refusal, with the reason), turning and mirroring (and a piece that can't be), selecting one as one, moving it and
+ * undoing, Explode and undo, Save selection as set piece with Export and Import, and a port facing a wall. Not the
+ * `setpieces` flow (Sky Islands' crumbling stones and trapdoors). Screenshots go to E2E_SHOTS when set.
+ */
+async function editorSetPieceChecks(browser) {
+  const page = await (await browser.newContext({ viewport: { width: 1400, height: 820 }, acceptDownloads: true })).newPage();
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
+  page.on('dialog', (d) => d.accept());
+  const shot = (name) => (process.env.E2E_SHOTS ? page.screenshot({ path: `${process.env.E2E_SHOTS}/setpieces-${name}.png` }).catch(() => {}) : Promise.resolve());
+  await page.goto(`${CLIENT}/?mode=editor&test=1`);
+  await page.waitForFunction(() => window.__editor, null, { timeout: T(60000) });
+  await page.evaluate(() => localStorage.removeItem('cs.setpieces'));
+  await newMap(page);
+  await page.evaluate(() => window.__editor.view.focus({ x: 12, y: 0, z: 8 }));
+  const settle = () => frames(page, 3);
+  await settle();
+  const at = (x, y, z) => page.evaluate(([x, y, z]) => window.__editor.view.project({ x, y, z }), [x, y, z]);
+  const hover = async (x, y, z) => {
+    const p = await at(x, y, z);
+    await page.mouse.move(p.x, p.y);
+    await settle();
+    return p;
+  };
+  const doc = () => page.evaluate(() => window.__editor.doc);
+  const ghost = () => page.evaluate(() => {
+    const g = window.__editor.pieceHover;
+    const node = window.__editor.view.scene.getTransformNodeByName('pieceGhost');
+    const meshes = node?.getChildMeshes() ?? [];
+    return g && { ok: g.ok, reason: g.reason, blocked: g.blocked, at: [g.placement.x, g.placement.y, g.placement.z], rotation: g.placement.rotation, mirror: g.placement.mirror, pack: g.placement.pack ?? null, shown: !!node?.isEnabled() && meshes.length > 0, seeThrough: meshes.length > 0 && meshes.every((m) => m.visibility < 1 && !m.isPickable), tip: document.getElementById('ed-tip').className, tipText: document.getElementById('ed-tip').textContent };
+  });
+
+  // The tab: every shipped piece, grouped by family, pictured from the set pieces' atlas; search finds them by name.
+  await page.click('#ed-pal-tabs [data-pane="setpieces"]');
+  await page.waitForFunction(() => document.querySelector('#ed-setpieces .thumb.atlas .spr'), null, { timeout: T(30000) }).catch(() => {});
+  const tab = await page.evaluate(() => ({
+    cards: document.querySelectorAll('#ed-setpieces .sp-btn[data-tool^="setpiece:setpiece."]').length,
+    shipped: window.__editor.setPieceLib.pieces.size,
+    groups: [...document.querySelectorAll('#ed-setpieces .ed-group .ttl')].map((t) => t.textContent),
+    atlas: document.querySelector('#ed-setpieces .thumb.atlas')?.dataset.atlas,
+  }));
+  check(tab.cards === tab.shipped && tab.groups.includes('Carriageways') && tab.groups.includes('Skybridges') && tab.groups.includes('My set pieces') && tab.atlas === 'setpieces', `the Set pieces tab shows every shipped piece by family, pictured from its atlas (${JSON.stringify(tab)})`);
+  await shot('tab');
+  await page.fill('#ed-search', 'skybrige');
+  await page.waitForFunction(() => !!document.querySelector('#ed-pal-results [data-pick="setpiece:setpiece.skybridge_2"]'), null, { timeout: T(5000) }).catch(() => {});
+  check(await page.evaluate(() => !!document.querySelector('#ed-pal-results [data-pick="setpiece:setpiece.skybridge_2"]')), 'search finds set pieces by name (a typo too)');
+  await page.fill('#ed-search', '');
+  await page.press('#ed-search', 'Escape');
+  // The Style Pack picker narrows the tab to the pack's pieces, and its look re-themes the ghost.
+  await page.selectOption('#ed-pack', 'military');
+  await clickTool(page, '[data-tool="setpiece:setpiece.skybridge_2"]');
+  await hover(32, 0, 32);
+  const military = await page.evaluate(() => ({ gate: document.querySelector('#ed-setpieces [data-tool="setpiece:setpiece.carriageway_1"]').hidden, bridge: document.querySelector('#ed-setpieces [data-tool="setpiece:setpiece.skybridge_2"]').hidden, look: document.getElementById('ed-sp-look')?.value }));
+  const themed = await ghost();
+  check(military.gate && !military.bridge && military.look === 'military' && themed?.pack === 'military', `the Military Compound pack shows its pieces and themes the ghost (${JSON.stringify(military)}, ghost look ${themed?.pack})`);
+  await shot('pack');
+  await page.selectOption('#ed-pack', '');
+
+  // Place: a see-through ghost of the whole piece, green; a click places it, as one placement, selected.
+  await clickTool(page, '[data-tool="setpiece:setpiece.carriageway_1"]');
+  await page.evaluate(() => window.__editor.view.focus({ x: 12, y: 0, z: 8 }));
+  await settle();
+  await hover(16, 0, 8);
+  const g0 = await ghost();
+  check(g0?.ok && g0.shown && g0.seeThrough && JSON.stringify(g0.at) === '[2,1,0]' && /tone-place/.test(g0.tip), `the set piece tool shows the whole piece, see-through and green, at the pointer (${JSON.stringify(g0)})`);
+  await shot('ghost');
+  await page.mouse.click((await at(16, 0, 8)).x, (await at(16, 0, 8)).y);
+  await settle();
+  let d = await doc();
+  const gate = d.setPieces?.[0];
+  check(d.setPieces?.length === 1 && gate.piece === 'setpiece.carriageway_1' && gate.x === 2 && gate.y === 1 && gate.z === 0 && JSON.stringify(await page.evaluate(() => window.__editor.selection.setPieces)) === JSON.stringify([gate.id]), `a click places the carriageway as one placement, selected (${JSON.stringify(d.setPieces)})`);
+  // Red where it can't go, with the reason, and a click there places nothing.
+  await hover(16, 0, 8.5);
+  const red = await ghost();
+  check(red && !red.ok && /tone-bad/.test(red.tip) && /overlaps the Carriageway set piece/.test(red.tipText) && /can't go here/.test(await page.textContent('#ed-target')), `over another piece the ghost is red and says why (${red?.reason})`);
+  await shot('ghost-red');
+  await page.mouse.click((await at(16, 0, 8.5)).x, (await at(16, 0, 8.5)).y);
+  check((await doc()).setPieces.length === 1 && /Can't place Carriageway/.test(await page.textContent('#ed-toast')), 'a click there places nothing and says why');
+  // R turns it and M mirrors it, as the ghost shows; a piece that can't be mirrored says why and greys M out.
+  await page.keyboard.press('KeyR');
+  await page.keyboard.press('KeyM');
+  // Two cells north of the first: a free spot, on screen.
+  await hover(16, 0, 24);
+  const turned = await ghost();
+  check(turned?.ok && turned.rotation === 1 && turned.mirror === true && (await page.textContent('#ed-sp-mirror')).includes('Mirrored'), `R turns the ghost and M mirrors it (${JSON.stringify(turned && { ok: turned.ok, at: turned.at, rotation: turned.rotation, mirror: turned.mirror, reason: turned.reason })})`);
+  await page.mouse.click((await at(16, 0, 24)).x, (await at(16, 0, 24)).y);
+  d = await doc();
+  check(d.setPieces.length === 2 && d.setPieces[1].rotation === 1 && d.setPieces[1].mirror === true, 'it is placed as the ghost showed: turned and mirrored');
+  if (d.setPieces.length === 2) await page.keyboard.press('Control+KeyZ');
+  await page.keyboard.press('KeyM');
+  await page.keyboard.press('KeyR');
+  await page.keyboard.press('KeyR');
+  await page.keyboard.press('KeyR');
+  await clickTool(page, '[data-tool="setpiece:setpiece.trench_bend"]');
+  await page.keyboard.press('KeyM');
+  const refused = await page.evaluate(() => ({ mirror: window.__editor.pieceMirror, disabled: document.getElementById('ed-sp-mirror').disabled, why: document.getElementById('ed-sp-mirror').title, toast: document.getElementById('ed-toast').textContent }));
+  check(!refused.mirror && refused.disabled && /isn't its own mirror image/.test(refused.why) && /can't be mirrored/.test(refused.toast), `M can't mirror the Trench Bend, and says why (${refused.why})`);
+  await shot('mirror-refused');
+
+  // Select: a click on any of its parts selects the placement as one; it drags a cell east; undo puts it back.
+  await page.keyboard.press('Escape');
+  await page.keyboard.press('Escape');
+  await hover(16, 0.1, 8);
+  await page.mouse.click((await at(16, 0.1, 8)).x, (await at(16, 0.1, 8)).y);
+  await settle();
+  const sel = await page.evaluate(() => window.__editor.selection);
+  check(JSON.stringify(sel) === JSON.stringify({ tiles: [], entities: [], setPieces: [gate.id] }) && (await page.textContent('#ed-inspector h2')) === 'Carriageway', `a click on its passage selects the carriageway as one (${JSON.stringify(sel)})`);
+  const insp = await page.evaluate(() => ({ look: !!document.getElementById('ed-sp-insp-look'), mirror: !!document.getElementById('ed-sp-insp-mirror'), roles: document.querySelectorAll('#ed-inspector select[data-role]').length, parts: document.querySelectorAll('#ed-inspector .ed-sp-parts input').length, ports: document.querySelectorAll('#ed-inspector .ed-sp-ports li').length }));
+  check(insp.look && insp.mirror && insp.roles > 0 && insp.parts > 0 && insp.ports === 6, `the inspector shows its look, mirror, ports and overrides (${JSON.stringify(insp)})`);
+  await shot('selected');
+  const from = await at(16, 0.1, 8);
+  const to = await at(24, 0.1, 8);
+  await page.mouse.move(from.x, from.y);
+  await page.mouse.down();
+  await page.mouse.move((from.x + to.x) / 2, (from.y + to.y) / 2, { steps: 4 });
+  await page.mouse.move(to.x, to.y, { steps: 4 });
+  await settle();
+  await page.mouse.up();
+  await settle();
+  const moved = (await doc()).setPieces[0];
+  await page.keyboard.press('Control+KeyZ');
+  const back = (await doc()).setPieces[0];
+  check(moved.x === 3 && moved.y === 1 && back.x === 2 && back.y === 1, `dragging it moves it a cell; one undo puts it back (${moved.x},${moved.y} → ${back.x},${back.y})`);
+  // An override: hide a part (the inspector's parts list), in one undo step.
+  await page.click('#ed-inspector .ed-sp-parts input[data-part="2"]');
+  check(JSON.stringify((await doc()).setPieces[0].overrides) === '{"hide":[2]}', 'unticking a part hides it on this placement');
+  await page.keyboard.press('Control+KeyZ');
+
+  // Explode to tiles: its parts become ordinary pieces, selected; one undo brings the set piece back.
+  await page.evaluate((id) => window.__editor.setSelection({ tiles: [], entities: [], setPieces: [id] }), gate.id);
+  await settle();
+  const counts = (m) => ({ pieces: m.setPieces?.length ?? 0, tiles: m.classicStructure.tiles.length, entities: m.entities.length });
+  const before = counts(await doc());
+  await page.click('#ed-sp-explode');
+  await settle();
+  const exploded = counts(await doc());
+  const exSel = await page.evaluate(() => window.__editor.selection);
+  await shot('exploded');
+  await page.keyboard.press('Control+KeyZ');
+  const unexploded = counts(await doc());
+  check(exploded.pieces === 0 && exploded.tiles > before.tiles && exSel.tiles.every((id) => id.startsWith(`sp_${gate.id}_`)) && exSel.tiles.length + exSel.entities.length === exploded.tiles + exploded.entities - before.tiles - before.entities && JSON.stringify(unexploded) === JSON.stringify(before), `Explode to tiles makes its parts ordinary pieces, selected; one undo puts it back (${JSON.stringify({ before, exploded, unexploded })})`);
+
+  // Save selection as set piece: a box drag over the starter room; named; in My set pieces; exported, deleted, imported.
+  await page.evaluate(() => window.__editor.setSelection({ tiles: [], entities: [] }));
+  await page.evaluate(() => window.__editor.view.focus({ x: 0, y: 0, z: 0 }));
+  await settle();
+  const a = await at(-6, 0, -6);
+  const b = await at(6, 0, 6);
+  await page.mouse.move(Math.min(a.x, b.x) - 20, Math.min(a.y, b.y) - 20);
+  await page.mouse.down();
+  await page.mouse.move(Math.max(a.x, b.x) + 20, Math.max(a.y, b.y) + 20, { steps: 6 });
+  const box = await page.evaluate(() => !document.getElementById('ed-marquee').hidden);
+  await shot('box-select');
+  await page.mouse.up();
+  await settle();
+  const boxed = await page.evaluate(() => window.__editor.selection);
+  check(box && boxed.tiles.length === 1, `dragging a box on empty ground selects what is in it (${JSON.stringify(boxed)})`);
+  await page.click('#ed-insp-save-piece');
+  await page.fill('#ed-sp-save-name', 'Guard Room');
+  await page.waitForFunction(() => /1 tile/.test(document.getElementById('ed-sp-save-summary').textContent), null, { timeout: T(5000) }).catch(() => {});
+  await shot('save-dialog');
+  await page.click('#ed-sp-save-ok');
+  const lib = () => page.evaluate(() => JSON.parse(localStorage.getItem('cs.setpieces') ?? '[]').map((s) => s.def.id));
+  check(JSON.stringify(await lib()) === '["local.guard_room"]' && (await page.isVisible('#ed-setpieces [data-tool="setpiece:local.guard_room"]')), 'Save as set piece keeps it in your library, in My set pieces');
+  await clickTool(page, '[data-tool="setpiece:local.guard_room"]');
+  const [download] = await Promise.all([page.waitForEvent('download', { timeout: T(10000) }), page.click('#ed-sp-export')]);
+  const file = join(mkdtempSync(join(tmpdir(), 'tt-piece-')), download.suggestedFilename());
+  await download.saveAs(file);
+  const exported = JSON.parse(readFileSync(file, 'utf8'));
+  await page.click('#ed-sp-delete');
+  const deleted = await lib();
+  await page.setInputFiles('#ed-sp-import-file', file);
+  await page.waitForFunction(() => (localStorage.getItem('cs.setpieces') ?? '').includes('local.guard_room'), null, { timeout: T(10000) }).catch(() => {});
+  check(exported.id === 'local.guard_room' && deleted.length === 0 && JSON.stringify(await lib()) === '["local.guard_room"]', `Export writes it as a file, and Import brings it back (${download.suggestedFilename()})`);
+  // Placed, the map carries its definition (it plays anywhere).
+  await clickTool(page, '[data-tool="setpiece:local.guard_room"]');
+  await page.evaluate(() => window.__editor.view.focus({ x: 32, y: 0, z: 24 }));
+  await settle();
+  await hover(32, 0, 24);
+  await page.mouse.click((await at(32, 0, 24)).x, (await at(32, 0, 24)).y);
+  d = await doc();
+  check(d.setPieces.some((p) => p.piece === 'local.guard_room') && d.setPieceDefs?.some((x) => x.id === 'local.guard_room'), 'your piece places like any other, and the map carries its definition');
+
+  // Ports: a room with a solid wall against the carriageway's west door: a warning, and the port red on its outline.
+  await page.evaluate(() => {
+    window.__editor.setTool({ kind: 'tile', tile: 'core.room' });
+    window.__editor.view.focus({ x: 12, y: 0, z: 8 });
+  });
+  await settle();
+  await hover(8, 0, 8);
+  await page.mouse.click((await at(8, 0, 8)).x, (await at(8, 0, 8)).y);
+  await page.evaluate(() => window.__editor.setEdge({ cell: [1, 1, 0], side: 'E' }, 'wall', null));
+  await page.evaluate((id) => {
+    window.__editor.setTool({ kind: 'select' });
+    window.__editor.setSelection({ tiles: [], entities: [], setPieces: [id] });
+  }, gate.id);
+  await settle();
+  const ports = await page.evaluate(() => ({
+    warn: [...document.querySelectorAll('#ed-inspector .ed-sp-ports li.warning')].map((li) => li.textContent),
+    issue: [...document.querySelectorAll('#ed-issues li')].map((li) => li.textContent).find((t) => /faces a wall/.test(t)) ?? null,
+    red: window.__editor.selectedPieceOutlines().flatMap((o) => o.ports).filter((p) => p.blocked).length,
+  }));
+  check(ports.warn.length === 1 && /west side \(Ground\) faces a wall: the Room's wall/.test(ports.warn[0]) && !!ports.issue && ports.red === 1, `a door facing a wall is warned about, and red on the outline (${JSON.stringify(ports)})`);
+  await shot('ports');
+  check(errors.length === 0, `no page errors with set pieces (${errors.join('; ')})`);
+  await page.context().close();
 }
 
 async function offlineFlow(browser) {
