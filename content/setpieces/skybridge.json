@@ -1,0 +1,81 @@
+{
+  "$comment": "Skybridge family: an enclosed bridge between two buildings' upper floors, 2, 3 or 4 cells long (docs/SET_PIECES_PLAN.md). Windows down both long sides (their glass from the role pack), a roof, a floor deck and nothing underneath, a door at each end meeting the buildings (its ports are at its own level: place it on the level of those floors, 1 or 2). Parts as in carriageway.json; parts are only ever added at the end. Edit, then run `node tools/content/setpieces.mjs`.",
+  "family": "skybridge",
+  "pieces": [
+    {
+      "id": "setpiece.skybridge_2",
+      "displayName": "Skybridge (2 cells)",
+      "category": "Bridges",
+      "blurb": "An enclosed bridge 2 cells long between two buildings' upper floors: windows down both sides, a roof, a door at each end, nothing underneath (streets pass below). Place it on level 1 or 2.",
+      "packs": ["collegiate", "gothic", "military", "neon", "snow", "suburban", "harbor", "orbital"],
+      "footprint": { "cells": [[0,0],[0,1]], "levels": [0,0] },
+      "mirror": "free",
+      "roles": { "glass": "breakable" },
+      "ports": [
+        { "side": "S", "cell": [0,0], "level": 0, "kind": "door" },
+        { "side": "N", "cell": [0,1], "level": 0, "kind": "door" }
+      ],
+      "parts": [
+        { "kind": "tile", "tile": "core.room", "x": 0, "y": 0, "z": 0, "rotation": 0, "edges": { "0,0,0:E": "windows", "0,0,0:W": "windows", "0,0,0:S": "door", "0,0,0:N": "open" }, "glass": { "0,0,0:E": { "role": "glass" }, "0,0,0:W": { "role": "glass" } }, "surfaces": { "floor": { "role": "floor" }, "walls": { "role": "stone" }, "solids": { "role": "wood" }, "underside": { "role": "stone" }, "trim": { "role": "trim" }, "roof": { "role": "roof" } }, "options": { "ceiling": "roof", "facade": { "role": "facade" } } },
+        { "kind": "tile", "tile": "core.room", "x": 0, "y": 1, "z": 0, "rotation": 0, "edges": { "0,0,0:E": "windows", "0,0,0:W": "windows", "0,0,0:S": "open", "0,0,0:N": "door" }, "glass": { "0,0,0:E": { "role": "glass" }, "0,0,0:W": { "role": "glass" } }, "surfaces": { "floor": { "role": "floor" }, "walls": { "role": "stone" }, "solids": { "role": "wood" }, "underside": { "role": "stone" }, "trim": { "role": "trim" }, "roof": { "role": "roof" } }, "options": { "ceiling": "roof", "facade": { "role": "facade" } } },
+        { "kind": "door", "name": "South door", "position": [0,0,-4], "yaw": 0, "style": { "role": "door" }, "auto": true },
+        { "kind": "door", "name": "North door", "position": [0,0,12], "yaw": 0, "style": { "role": "door" }, "auto": true },
+        { "kind": "light", "position": [0,3.3,0], "fixture": "ceiling", "color": "#fff1d6", "intensity": 1, "range": 10 },
+        { "kind": "light", "position": [0,3.3,8], "fixture": "ceiling", "color": "#fff1d6", "intensity": 1, "range": 10 }
+      ],
+      "markers": [{ "name": "end_doors", "kind": "doorPair", "parts": [2,3] }]
+    },
+    {
+      "id": "setpiece.skybridge_3",
+      "displayName": "Skybridge (3 cells)",
+      "category": "Bridges",
+      "blurb": "An enclosed bridge 3 cells long between two buildings' upper floors: windows down both sides, a roof, a door at each end, nothing underneath (streets pass below). Place it on level 1 or 2.",
+      "packs": ["collegiate", "gothic", "military", "neon", "snow", "suburban", "harbor", "orbital"],
+      "footprint": { "cells": [[0,0],[0,1],[0,2]], "levels": [0,0] },
+      "mirror": "free",
+      "roles": { "glass": "breakable" },
+      "ports": [
+        { "side": "S", "cell": [0,0], "level": 0, "kind": "door" },
+        { "side": "N", "cell": [0,2], "level": 0, "kind": "door" }
+      ],
+      "parts": [
+        { "kind": "tile", "tile": "core.room", "x": 0, "y": 0, "z": 0, "rotation": 0, "edges": { "0,0,0:E": "windows", "0,0,0:W": "windows", "0,0,0:S": "door", "0,0,0:N": "open" }, "glass": { "0,0,0:E": { "role": "glass" }, "0,0,0:W": { "role": "glass" } }, "surfaces": { "floor": { "role": "floor" }, "walls": { "role": "stone" }, "solids": { "role": "wood" }, "underside": { "role": "stone" }, "trim": { "role": "trim" }, "roof": { "role": "roof" } }, "options": { "ceiling": "roof", "facade": { "role": "facade" } } },
+        { "kind": "tile", "tile": "core.room", "x": 0, "y": 1, "z": 0, "rotation": 0, "edges": { "0,0,0:E": "windows", "0,0,0:W": "windows", "0,0,0:S": "open", "0,0,0:N": "open" }, "glass": { "0,0,0:E": { "role": "glass" }, "0,0,0:W": { "role": "glass" } }, "surfaces": { "floor": { "role": "floor" }, "walls": { "role": "stone" }, "solids": { "role": "wood" }, "underside": { "role": "stone" }, "trim": { "role": "trim" }, "roof": { "role": "roof" } }, "options": { "ceiling": "roof", "facade": { "role": "facade" } } },
+        { "kind": "tile", "tile": "core.room", "x": 0, "y": 2, "z": 0, "rotation": 0, "edges": { "0,0,0:E": "windows", "0,0,0:W": "windows", "0,0,0:S": "open", "0,0,0:N": "door" }, "glass": { "0,0,0:E": { "role": "glass" }, "0,0,0:W": { "role": "glass" } }, "surfaces": { "floor": { "role": "floor" }, "walls": { "role": "stone" }, "solids": { "role": "wood" }, "underside": { "role": "stone" }, "trim": { "role": "trim" }, "roof": { "role": "roof" } }, "options": { "ceiling": "roof", "facade": { "role": "facade" } } },
+        { "kind": "door", "name": "South door", "position": [0,0,-4], "yaw": 0, "style": { "role": "door" }, "auto": true },
+        { "kind": "door", "name": "North door", "position": [0,0,20], "yaw": 0, "style": { "role": "door" }, "auto": true },
+        { "kind": "light", "position": [0,3.3,0], "fixture": "ceiling", "color": "#fff1d6", "intensity": 1, "range": 10 },
+        { "kind": "light", "position": [0,3.3,8], "fixture": "ceiling", "color": "#fff1d6", "intensity": 1, "range": 10 },
+        { "kind": "light", "position": [0,3.3,16], "fixture": "ceiling", "color": "#fff1d6", "intensity": 1, "range": 10 }
+      ],
+      "markers": [{ "name": "end_doors", "kind": "doorPair", "parts": [3,4] }]
+    },
+    {
+      "id": "setpiece.skybridge_4",
+      "displayName": "Skybridge (4 cells)",
+      "category": "Bridges",
+      "blurb": "An enclosed bridge 4 cells long between two buildings' upper floors: windows down both sides, a roof, a door at each end, nothing underneath (streets pass below). Place it on level 1 or 2.",
+      "packs": ["collegiate", "gothic", "military", "neon", "snow", "suburban", "harbor", "orbital"],
+      "footprint": { "cells": [[0,0],[0,1],[0,2],[0,3]], "levels": [0,0] },
+      "mirror": "free",
+      "roles": { "glass": "breakable" },
+      "ports": [
+        { "side": "S", "cell": [0,0], "level": 0, "kind": "door" },
+        { "side": "N", "cell": [0,3], "level": 0, "kind": "door" }
+      ],
+      "parts": [
+        { "kind": "tile", "tile": "core.room", "x": 0, "y": 0, "z": 0, "rotation": 0, "edges": { "0,0,0:E": "windows", "0,0,0:W": "windows", "0,0,0:S": "door", "0,0,0:N": "open" }, "glass": { "0,0,0:E": { "role": "glass" }, "0,0,0:W": { "role": "glass" } }, "surfaces": { "floor": { "role": "floor" }, "walls": { "role": "stone" }, "solids": { "role": "wood" }, "underside": { "role": "stone" }, "trim": { "role": "trim" }, "roof": { "role": "roof" } }, "options": { "ceiling": "roof", "facade": { "role": "facade" } } },
+        { "kind": "tile", "tile": "core.room", "x": 0, "y": 1, "z": 0, "rotation": 0, "edges": { "0,0,0:E": "windows", "0,0,0:W": "windows", "0,0,0:S": "open", "0,0,0:N": "open" }, "glass": { "0,0,0:E": { "role": "glass" }, "0,0,0:W": { "role": "glass" } }, "surfaces": { "floor": { "role": "floor" }, "walls": { "role": "stone" }, "solids": { "role": "wood" }, "underside": { "role": "stone" }, "trim": { "role": "trim" }, "roof": { "role": "roof" } }, "options": { "ceiling": "roof", "facade": { "role": "facade" } } },
+        { "kind": "tile", "tile": "core.room", "x": 0, "y": 2, "z": 0, "rotation": 0, "edges": { "0,0,0:E": "windows", "0,0,0:W": "windows", "0,0,0:S": "open", "0,0,0:N": "open" }, "glass": { "0,0,0:E": { "role": "glass" }, "0,0,0:W": { "role": "glass" } }, "surfaces": { "floor": { "role": "floor" }, "walls": { "role": "stone" }, "solids": { "role": "wood" }, "underside": { "role": "stone" }, "trim": { "role": "trim" }, "roof": { "role": "roof" } }, "options": { "ceiling": "roof", "facade": { "role": "facade" } } },
+        { "kind": "tile", "tile": "core.room", "x": 0, "y": 3, "z": 0, "rotation": 0, "edges": { "0,0,0:E": "windows", "0,0,0:W": "windows", "0,0,0:S": "open", "0,0,0:N": "door" }, "glass": { "0,0,0:E": { "role": "glass" }, "0,0,0:W": { "role": "glass" } }, "surfaces": { "floor": { "role": "floor" }, "walls": { "role": "stone" }, "solids": { "role": "wood" }, "underside": { "role": "stone" }, "trim": { "role": "trim" }, "roof": { "role": "roof" } }, "options": { "ceiling": "roof", "facade": { "role": "facade" } } },
+        { "kind": "door", "name": "South door", "position": [0,0,-4], "yaw": 0, "style": { "role": "door" }, "auto": true },
+        { "kind": "door", "name": "North door", "position": [0,0,28], "yaw": 0, "style": { "role": "door" }, "auto": true },
+        { "kind": "light", "position": [0,3.3,0], "fixture": "ceiling", "color": "#fff1d6", "intensity": 1, "range": 10 },
+        { "kind": "light", "position": [0,3.3,8], "fixture": "ceiling", "color": "#fff1d6", "intensity": 1, "range": 10 },
+        { "kind": "light", "position": [0,3.3,16], "fixture": "ceiling", "color": "#fff1d6", "intensity": 1, "range": 10 },
+        { "kind": "light", "position": [0,3.3,24], "fixture": "ceiling", "color": "#fff1d6", "intensity": 1, "range": 10 }
+      ],
+      "markers": [{ "name": "end_doors", "kind": "doorPair", "parts": [4,5] }]
+    }
+  ]
+}
