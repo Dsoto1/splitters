@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 19,
+  "formatVersion": 26,
   "metadata": {
     "id": "flatpack_depot",
     "name": "Flatpack Depot",
@@ -15226,7 +15226,7 @@
       "position": [
         0,
         0,
-        66
+        67
       ],
       "kind": "spawn",
       "yaw": 3.141592653589793,
@@ -23804,7 +23804,6 @@
     "style": "invisible",
     "height": 24
   },
-  "track": null,
   "backdrop": {
     "sky": "dusk",
     "scenery": "city",

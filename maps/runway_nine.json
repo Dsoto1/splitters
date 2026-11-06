@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 25,
+  "formatVersion": 27,
   "metadata": {
     "id": "runway_nine",
     "name": "Runway Nine",
@@ -21,7 +21,15 @@
       "core.ctf",
       "core.koth",
       "core.elim"
-    ]
+    ],
+    "release": {
+      "mapId": "m_5x4zlanrxgtdua3l",
+      "versionId": "v_hpewgzv2csdsykre",
+      "revision": 2,
+      "contentHash": "sha256:89133f7b0c717f78eab6a96c778230af55618685a93413259310c5f7a2d5f314",
+      "schemaVersion": 27,
+      "releasedAt": "2026-11-06T15:58:23.342Z"
+    }
   },
   "classicStructure": {
     "cellSize": 8,
@@ -7584,9 +7592,9 @@
     {
       "id": "spawn_889",
       "position": [
-        -1,
+        -1.06,
         6.79,
-        6
+        6.08
       ],
       "kind": "spawn",
       "yaw": 0,
@@ -12851,18 +12859,18 @@
     },
     {
       "id": "block_iauzfr3fch",
-      "kind": "block",
       "position": [
         -16,
         5.098,
         29.41
       ],
-      "yaw": 0,
+      "kind": "block",
       "size": [
         3,
         0.3,
         13.41
       ],
+      "yaw": 0,
       "material": "core.pbr_carpet",
       "tint": null,
       "behaviour": "solid",
@@ -12874,18 +12882,18 @@
     },
     {
       "id": "block_kw33qu1gqn",
-      "kind": "block",
       "position": [
         -17.6,
         5.395,
         29.44
       ],
-      "yaw": 0,
+      "kind": "block",
       "size": [
         0.2,
         1.1,
         13.41
       ],
+      "yaw": 0,
       "material": "core.pbr_corrugated",
       "tint": null,
       "behaviour": "solid",
@@ -12897,18 +12905,18 @@
     },
     {
       "id": "block_ojz23qijgm",
-      "kind": "block",
       "position": [
         -17.6,
         6.495,
         29.44
       ],
-      "yaw": 0,
+      "kind": "block",
       "size": [
         0.1,
         1.2,
         13.41
       ],
+      "yaw": 0,
       "material": "core.pbr_steel",
       "tint": null,
       "behaviour": "solid",
@@ -12916,23 +12924,23 @@
       "delaySeconds": 0.8,
       "respawnSeconds": 8,
       "health": 120,
-      "glass": "breakable",
-      "pitch": -0.20943951023931953
+      "pitch": -0.20943951023931953,
+      "glass": "breakable"
     },
     {
       "id": "block_mlv601oq74",
-      "kind": "block",
       "position": [
         -14.4,
         5.395,
         29.44
       ],
-      "yaw": 0,
+      "kind": "block",
       "size": [
         0.2,
         1.1,
         13.41
       ],
+      "yaw": 0,
       "material": "core.pbr_corrugated",
       "tint": null,
       "behaviour": "solid",
@@ -12944,18 +12952,18 @@
     },
     {
       "id": "block_ni3gjqh3vh",
-      "kind": "block",
       "position": [
         -14.4,
         6.495,
         29.44
       ],
-      "yaw": 0,
+      "kind": "block",
       "size": [
         0.1,
         1.2,
         13.41
       ],
+      "yaw": 0,
       "material": "core.pbr_steel",
       "tint": null,
       "behaviour": "solid",
@@ -12963,23 +12971,23 @@
       "delaySeconds": 0.8,
       "respawnSeconds": 8,
       "health": 120,
-      "glass": "breakable",
-      "pitch": -0.20943951023931953
+      "pitch": -0.20943951023931953,
+      "glass": "breakable"
     },
     {
       "id": "block_t379na7rox",
-      "kind": "block",
       "position": [
         -16,
         7.895,
         29.44
       ],
-      "yaw": 0,
+      "kind": "block",
       "size": [
         3.6,
         0.2,
         13.41
       ],
+      "yaw": 0,
       "material": "core.pbr_corrugated",
       "tint": null,
       "behaviour": "solid",
@@ -12991,18 +12999,18 @@
     },
     {
       "id": "block_gyqxj0on48",
-      "kind": "block",
       "position": [
         -16,
         6.49,
         20.7
       ],
-      "yaw": 0,
+      "kind": "block",
       "size": [
         4,
         0.3,
         4.6
       ],
+      "yaw": 0,
       "material": "core.pbr_carpet",
       "tint": null,
       "behaviour": "solid",
@@ -13013,18 +13021,18 @@
     },
     {
       "id": "block_16hefueawp",
-      "kind": "block",
       "position": [
         -18.1,
         6.79,
         20.7
       ],
-      "yaw": 0,
+      "kind": "block",
       "size": [
         0.2,
         2.6,
         4.6
       ],
+      "yaw": 0,
       "material": "core.pbr_corrugated",
       "tint": null,
       "behaviour": "solid",
@@ -13035,18 +13043,18 @@
     },
     {
       "id": "block_hu2ybwf4r8",
-      "kind": "block",
       "position": [
         -16,
         6.79,
         18.3
       ],
-      "yaw": 0,
+      "kind": "block",
       "size": [
         4.2,
         2.6,
         0.2
       ],
+      "yaw": 0,
       "material": "core.pbr_corrugated",
       "tint": null,
       "behaviour": "solid",
@@ -13057,18 +13065,18 @@
     },
     {
       "id": "block_meg0tbap5h",
-      "kind": "block",
       "position": [
         -16,
         9.39,
         20.7
       ],
-      "yaw": 0,
+      "kind": "block",
       "size": [
         4.4,
         0.2,
         5
       ],
+      "yaw": 0,
       "material": "core.pbr_corrugated",
       "tint": null,
       "behaviour": "solid",
@@ -13079,18 +13087,18 @@
     },
     {
       "id": "block_kvqbxg7by0",
-      "kind": "block",
       "position": [
         -8.475,
         6.49,
         20.5
       ],
-      "yaw": 0,
+      "kind": "block",
       "size": [
         11.05,
         0.3,
         3
       ],
+      "yaw": 0,
       "material": "core.pbr_carpet",
       "tint": null,
       "behaviour": "solid",
@@ -13101,18 +13109,18 @@
     },
     {
       "id": "block_5edl6d3vsh",
-      "kind": "block",
       "position": [
         -8.6,
         6.79,
         18.9
       ],
-      "yaw": 0,
+      "kind": "block",
       "size": [
         10.8,
         1.1,
         0.2
       ],
+      "yaw": 0,
       "material": "core.pbr_corrugated",
       "tint": null,
       "behaviour": "solid",
@@ -13123,18 +13131,18 @@
     },
     {
       "id": "block_0ny7jnis2j",
-      "kind": "block",
       "position": [
         -8.6,
         7.89,
         18.9
       ],
-      "yaw": 0,
+      "kind": "block",
       "size": [
         10.8,
         1.2,
         0.1
       ],
+      "yaw": 0,
       "material": "core.pbr_steel",
       "tint": null,
       "behaviour": "solid",
@@ -13146,18 +13154,18 @@
     },
     {
       "id": "block_n992g45vtw",
-      "kind": "block",
       "position": [
         -8.6,
         6.79,
         22.1
       ],
-      "yaw": 0,
+      "kind": "block",
       "size": [
         10.8,
         1.1,
         0.2
       ],
+      "yaw": 0,
       "material": "core.pbr_corrugated",
       "tint": null,
       "behaviour": "solid",
@@ -13168,18 +13176,18 @@
     },
     {
       "id": "block_ophcllwqog",
-      "kind": "block",
       "position": [
         -8.6,
         7.89,
         22.1
       ],
-      "yaw": 0,
+      "kind": "block",
       "size": [
         10.8,
         1.2,
         0.1
       ],
+      "yaw": 0,
       "material": "core.pbr_steel",
       "tint": null,
       "behaviour": "solid",
@@ -13191,18 +13199,18 @@
     },
     {
       "id": "block_v04is0nxnl",
-      "kind": "block",
       "position": [
         -8.7,
         9.39,
         20.5
       ],
-      "yaw": 0,
+      "kind": "block",
       "size": [
         11,
         0.2,
         3.6
       ],
+      "yaw": 0,
       "material": "core.pbr_corrugated",
       "tint": null,
       "behaviour": "solid",
@@ -13213,18 +13221,18 @@
     },
     {
       "id": "block_3a4753tawl",
-      "kind": "block",
       "position": [
         -3.2,
         6.79,
         18.85
       ],
-      "yaw": 0,
+      "kind": "block",
       "size": [
         0.6,
         2.6,
         0.3
       ],
+      "yaw": 0,
       "material": "core.paint_matte",
       "tint": null,
       "behaviour": "solid",
@@ -13235,18 +13243,18 @@
     },
     {
       "id": "block_bfhksl3umy",
-      "kind": "block",
       "position": [
         -3.2,
         6.79,
         22.15
       ],
-      "yaw": 0,
+      "kind": "block",
       "size": [
         0.6,
         2.6,
         0.3
       ],
+      "yaw": 0,
       "material": "core.paint_matte",
       "tint": null,
       "behaviour": "solid",
@@ -13257,18 +13265,18 @@
     },
     {
       "id": "block_fs93aey2dq",
-      "kind": "block",
       "position": [
         -3.2,
         9.09,
         20.5
       ],
-      "yaw": 0,
+      "kind": "block",
       "size": [
         0.6,
         0.3,
         3.6
       ],
+      "yaw": 0,
       "material": "core.paint_matte",
       "tint": null,
       "behaviour": "solid",
@@ -13279,18 +13287,18 @@
     },
     {
       "id": "block_ri28lo47e3",
-      "kind": "block",
       "position": [
         -16,
         0,
         20.7
       ],
-      "yaw": 0,
+      "kind": "block",
       "size": [
         1,
         6.49,
         1
       ],
+      "yaw": 0,
       "material": "core.pbr_steel",
       "tint": null,
       "behaviour": "solid",
@@ -13301,18 +13309,18 @@
     },
     {
       "id": "block_qo0uz7zeai",
-      "kind": "block",
       "position": [
         -16,
         0,
         29.4
       ],
-      "yaw": 0,
+      "kind": "block",
       "size": [
         1,
         5.1,
         1
       ],
+      "yaw": 0,
       "material": "core.pbr_steel",
       "tint": null,
       "behaviour": "solid",
@@ -13323,18 +13331,18 @@
     },
     {
       "id": "block_y5tcd3wcbd",
-      "kind": "block",
       "position": [
         -9,
         0,
         20.5
       ],
-      "yaw": 0,
+      "kind": "block",
       "size": [
         1.2,
         6.49,
         1.2
       ],
+      "yaw": 0,
       "material": "core.pbr_steel",
       "tint": null,
       "behaviour": "solid",
@@ -13345,12 +13353,12 @@
     },
     {
       "id": "prop_wutevhllu8",
-      "kind": "prop",
       "position": [
         -9.335,
         0,
         -26.85
       ],
+      "kind": "prop",
       "model": "prop.ac_boarding_stairs",
       "yaw": 1.571,
       "scale": 1,
@@ -13359,12 +13367,12 @@
     },
     {
       "id": "prop_99hgtor7wa",
-      "kind": "prop",
       "position": [
         10.135,
         0,
         20.5
       ],
+      "kind": "prop",
       "model": "prop.ac_boarding_stairs",
       "yaw": -1.571,
       "scale": 1,
@@ -13373,36 +13381,36 @@
     },
     {
       "id": "ladder_uup1kipd3m",
-      "kind": "ladder",
       "position": [
         -13.7,
         0,
         -8.9
       ],
+      "kind": "ladder",
       "yaw": 3.142,
       "height": 6.4,
       "width": 0.9
     },
     {
       "id": "ladder_n0uyosxe9o",
-      "kind": "ladder",
       "position": [
         13.7,
         0,
         -8.9
       ],
+      "kind": "ladder",
       "yaw": 3.142,
       "height": 6.4,
       "width": 0.9
     },
     {
       "id": "light_n07lcz2agj",
-      "kind": "light",
       "position": [
         0,
         8.6,
         25.6
       ],
+      "kind": "light",
       "yaw": 0,
       "color": "#fff2dc",
       "intensity": 1.2,
@@ -13411,12 +13419,12 @@
     },
     {
       "id": "light_2hingx5zli",
-      "kind": "light",
       "position": [
         0,
         9.1,
         20.6
       ],
+      "kind": "light",
       "yaw": 0,
       "color": "#fff2dc",
       "intensity": 1.5,
@@ -13425,12 +13433,12 @@
     },
     {
       "id": "light_cppzhmj1z9",
-      "kind": "light",
       "position": [
         0,
         9.1,
         15.6
       ],
+      "kind": "light",
       "yaw": 0,
       "color": "#fff2dc",
       "intensity": 1.5,
@@ -13439,12 +13447,12 @@
     },
     {
       "id": "light_5kzlg46ssl",
-      "kind": "light",
       "position": [
         0,
         9.1,
         9.6
       ],
+      "kind": "light",
       "yaw": 0,
       "color": "#fff2dc",
       "intensity": 1.5,
@@ -13453,12 +13461,12 @@
     },
     {
       "id": "light_47cbrtpqw8",
-      "kind": "light",
       "position": [
         0,
         9.1,
         3.6
       ],
+      "kind": "light",
       "yaw": 0,
       "color": "#fff2dc",
       "intensity": 1.5,
@@ -13467,12 +13475,12 @@
     },
     {
       "id": "light_oia4v10s6k",
-      "kind": "light",
       "position": [
         0,
         9.1,
         -2.4
       ],
+      "kind": "light",
       "yaw": 0,
       "color": "#fff2dc",
       "intensity": 1.5,
@@ -13481,12 +13489,12 @@
     },
     {
       "id": "light_xgevla1gtw",
-      "kind": "light",
       "position": [
         0,
         9.1,
         -8.4
       ],
+      "kind": "light",
       "yaw": 0,
       "color": "#fff2dc",
       "intensity": 1.5,
@@ -13495,12 +13503,12 @@
     },
     {
       "id": "light_s2wv6a6emc",
-      "kind": "light",
       "position": [
         0,
         9.1,
         -14.4
       ],
+      "kind": "light",
       "yaw": 0,
       "color": "#fff2dc",
       "intensity": 1.5,
@@ -13509,12 +13517,12 @@
     },
     {
       "id": "light_1su7zhtxd9",
-      "kind": "light",
       "position": [
         0,
         9.1,
         -20.4
       ],
+      "kind": "light",
       "yaw": 0,
       "color": "#fff2dc",
       "intensity": 1.5,
@@ -13523,12 +13531,12 @@
     },
     {
       "id": "light_o1m3ehk131",
-      "kind": "light",
       "position": [
         0,
         9.1,
         -25.9
       ],
+      "kind": "light",
       "yaw": 0,
       "color": "#fff2dc",
       "intensity": 1.5,
@@ -13537,12 +13545,12 @@
     },
     {
       "id": "light_jc6nv3i088",
-      "kind": "light",
       "position": [
         -16,
         8.6,
         29
       ],
+      "kind": "light",
       "yaw": 0,
       "color": "#fff2dc",
       "intensity": 1.2,
@@ -13551,12 +13559,12 @@
     },
     {
       "id": "light_9jqitzliky",
-      "kind": "light",
       "position": [
         -16,
         9,
         20.7
       ],
+      "kind": "light",
       "yaw": 0,
       "color": "#fff2dc",
       "intensity": 1.2,
@@ -13565,12 +13573,12 @@
     },
     {
       "id": "light_ae6c0g6rtt",
-      "kind": "light",
       "position": [
         -8.5,
         9,
         20.5
       ],
+      "kind": "light",
       "yaw": 0,
       "color": "#fff2dc",
       "intensity": 1.2,
@@ -13579,12 +13587,12 @@
     },
     {
       "id": "prop_rn7j1ayixd",
-      "kind": "prop",
       "position": [
         0,
         0,
         13
       ],
+      "kind": "prop",
       "model": "prop.cargo_container",
       "yaw": 1.571,
       "scale": 1,
@@ -13593,12 +13601,12 @@
     },
     {
       "id": "prop_669zcim8q9",
-      "kind": "prop",
       "position": [
         -9,
         0,
         26.5
       ],
+      "kind": "prop",
       "model": "prop.jersey_barrier_hazard",
       "yaw": 0,
       "scale": 1,
@@ -13607,12 +13615,12 @@
     },
     {
       "id": "prop_62xxwfl5oh",
-      "kind": "prop",
       "position": [
         -6.9,
         0,
         26.5
       ],
+      "kind": "prop",
       "model": "prop.jersey_barrier_hazard",
       "yaw": 0,
       "scale": 1,
@@ -13621,12 +13629,12 @@
     },
     {
       "id": "prop_c93grj7hcl",
-      "kind": "prop",
       "position": [
         8.5,
         0,
         26
       ],
+      "kind": "prop",
       "model": "prop.cargo_ibc_tank",
       "yaw": 0,
       "scale": 1,
@@ -13635,12 +13643,12 @@
     },
     {
       "id": "prop_sf8gbqummv",
-      "kind": "prop",
       "position": [
         9.7,
         0,
         26.3
       ],
+      "kind": "prop",
       "model": "prop.cargo_ibc_tank",
       "yaw": 0,
       "scale": 1,
@@ -13649,12 +13657,12 @@
     },
     {
       "id": "prop_izk1qhb33h",
-      "kind": "prop",
       "position": [
         7.2,
         0,
         24.4
       ],
+      "kind": "prop",
       "model": "prop.cargo_crate_stack",
       "yaw": 0.262,
       "scale": 1,
@@ -13663,12 +13671,12 @@
     },
     {
       "id": "prop_so0a2yzkbs",
-      "kind": "prop",
       "position": [
         -9,
         0,
         -10
       ],
+      "kind": "prop",
       "model": "prop.cargo_crate_stack",
       "yaw": 0.524,
       "scale": 1,
@@ -13677,12 +13685,12 @@
     },
     {
       "id": "prop_wdgxj3pcaj",
-      "kind": "prop",
       "position": [
         -7.4,
         0,
         -11.6
       ],
+      "kind": "prop",
       "model": "prop.cargo_ibc_tank",
       "yaw": 0,
       "scale": 1,
@@ -13691,12 +13699,12 @@
     },
     {
       "id": "prop_yjy7fbd1vg",
-      "kind": "prop",
       "position": [
         -19,
         0,
         -14
       ],
+      "kind": "prop",
       "model": "prop.cargo_scifi_crate",
       "yaw": 0.349,
       "scale": 1,
@@ -13705,12 +13713,12 @@
     },
     {
       "id": "prop_s7gddjycim",
-      "kind": "prop",
       "position": [
         18,
         0,
         -6
       ],
+      "kind": "prop",
       "model": "prop.cargo_container",
       "yaw": 0,
       "scale": 1,
@@ -13719,12 +13727,12 @@
     },
     {
       "id": "prop_i91o7xgm6m",
-      "kind": "prop",
       "position": [
         9,
         0,
         -12
       ],
+      "kind": "prop",
       "model": "prop.jersey_barrier_hazard",
       "yaw": 1.571,
       "scale": 1,
@@ -13733,12 +13741,12 @@
     },
     {
       "id": "prop_i9x3mqcej6",
-      "kind": "prop",
       "position": [
         -12,
         0,
         -40
       ],
+      "kind": "prop",
       "model": "prop.cargo_container",
       "yaw": 1.571,
       "scale": 1,
@@ -13747,12 +13755,12 @@
     },
     {
       "id": "prop_fbp6fqg8ln",
-      "kind": "prop",
       "position": [
         12,
         0,
         -44
       ],
+      "kind": "prop",
       "model": "prop.cargo_container",
       "yaw": 1.571,
       "scale": 1,
@@ -13761,12 +13769,12 @@
     },
     {
       "id": "prop_qzg0iole91",
-      "kind": "prop",
       "position": [
         0,
         0,
         -44
       ],
+      "kind": "prop",
       "model": "prop.hazard_block_barrier",
       "yaw": 0,
       "scale": 1,
@@ -13775,12 +13783,12 @@
     },
     {
       "id": "prop_rq9gut7t88",
-      "kind": "prop",
       "position": [
         -4,
         0,
         -46
       ],
+      "kind": "prop",
       "model": "prop.hazard_block_barrier",
       "yaw": 0.524,
       "scale": 1,
@@ -13789,12 +13797,12 @@
     },
     {
       "id": "prop_ym4vvc6tx2",
-      "kind": "prop",
       "position": [
         -11.5,
         0,
         -24.4
       ],
+      "kind": "prop",
       "model": "prop.street_post_barrel",
       "yaw": 0,
       "scale": 1,
@@ -13803,12 +13811,12 @@
     },
     {
       "id": "prop_p3gzz37z0p",
-      "kind": "prop",
       "position": [
         -12.3,
         0,
         -24
       ],
+      "kind": "prop",
       "model": "prop.street_post_barrel",
       "yaw": 0,
       "scale": 1,
@@ -13817,12 +13825,12 @@
     },
     {
       "id": "prop_gm6t8m5mt5",
-      "kind": "prop",
       "position": [
         12.6,
         0,
         23
       ],
+      "kind": "prop",
       "model": "prop.street_post_barrel",
       "yaw": 0,
       "scale": 1,
@@ -13831,12 +13839,12 @@
     },
     {
       "id": "prop_7omujq2b52",
-      "kind": "prop",
       "position": [
         -22,
         0,
         14
       ],
+      "kind": "prop",
       "model": "prop.plastic_road_barrier",
       "yaw": 1.571,
       "scale": 1,
@@ -13845,12 +13853,12 @@
     },
     {
       "id": "prop_jx1cztdj4w",
-      "kind": "prop",
       "position": [
         -22,
         0,
         9
       ],
+      "kind": "prop",
       "model": "prop.plastic_road_barrier",
       "yaw": 1.571,
       "scale": 1,

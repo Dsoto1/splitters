@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 24,
+  "formatVersion": 27,
   "metadata": {
     "id": "saltmarsh_harbor",
     "name": "Saltmarsh Harbor",
@@ -18,7 +18,15 @@
       "core.tdm",
       "core.ctf",
       "core.koth"
-    ]
+    ],
+    "release": {
+      "mapId": "m_qxyvyiqpuk3bopv2",
+      "versionId": "v_nmxnjetp6vapb55m",
+      "revision": 2,
+      "contentHash": "sha256:3f9a456fa053201093783829b29e9fe7cc0961eb175b3cbab031edcbe7d9fd4f",
+      "schemaVersion": 27,
+      "releasedAt": "2026-11-06T15:59:14.575Z"
+    }
   },
   "classicStructure": {
     "cellSize": 8,
@@ -1310,12 +1318,12 @@
   "entities": [
     {
       "id": "water_harbour",
-      "kind": "water",
       "position": [
         -10,
         -4,
         26
       ],
+      "kind": "water",
       "size": [
         84,
         2.5,
@@ -1326,12 +1334,12 @@
     },
     {
       "id": "water_steps",
-      "kind": "water",
       "position": [
         14,
         -4,
         -1.2
       ],
+      "kind": "water",
       "size": [
         12,
         2.5,
@@ -1342,545 +1350,545 @@
     },
     {
       "id": "spawn_001",
-      "kind": "spawn",
       "position": [
         -48,
         0,
         -49
       ],
+      "kind": "spawn",
       "yaw": 0.7853981633974483,
       "faction": "embers"
     },
     {
       "id": "spawn_002",
-      "kind": "spawn",
       "position": [
         -40,
         0,
         -49
       ],
+      "kind": "spawn",
       "yaw": 0.7853981633974483,
       "faction": "embers"
     },
     {
       "id": "spawn_003",
-      "kind": "spawn",
       "position": [
         -32,
         0,
         -49
       ],
+      "kind": "spawn",
       "yaw": 0.7853981633974483,
       "faction": "embers"
     },
     {
       "id": "spawn_004",
-      "kind": "spawn",
       "position": [
         -24,
         0,
         -49
       ],
+      "kind": "spawn",
       "yaw": 0.7853981633974483,
       "faction": "embers"
     },
     {
       "id": "spawn_005",
-      "kind": "spawn",
       "position": [
         -48,
         0,
         -32
       ],
+      "kind": "spawn",
       "yaw": 0.7853981633974483,
       "faction": "embers"
     },
     {
       "id": "spawn_006",
-      "kind": "spawn",
       "position": [
         -41,
         0,
         -31
       ],
+      "kind": "spawn",
       "yaw": 0.7853981633974483,
       "faction": "embers"
     },
     {
       "id": "spawn_007",
-      "kind": "spawn",
       "position": [
         -24,
         0,
         -30
       ],
+      "kind": "spawn",
       "yaw": 0.7853981633974483,
       "faction": "embers"
     },
     {
       "id": "spawn_008",
-      "kind": "spawn",
       "position": [
         -16,
         0,
         -40
       ],
+      "kind": "spawn",
       "yaw": 0.7853981633974483,
       "faction": "embers"
     },
     {
       "id": "spawn_009",
-      "kind": "spawn",
       "position": [
         -30,
         0,
         -16
       ],
+      "kind": "spawn",
       "yaw": 0.7853981633974483,
       "faction": "embers"
     },
     {
       "id": "spawn_010",
-      "kind": "spawn",
       "position": [
         -34,
         0,
         -13
       ],
+      "kind": "spawn",
       "yaw": 0.7853981633974483,
       "faction": "embers"
     },
     {
       "id": "spawn_011",
-      "kind": "spawn",
       "position": [
         -48,
         0,
         -14
       ],
+      "kind": "spawn",
       "yaw": 0.7853981633974483,
       "faction": "embers"
     },
     {
       "id": "spawn_012",
-      "kind": "spawn",
       "position": [
         -44,
         0,
         -8
       ],
+      "kind": "spawn",
       "yaw": 0.7853981633974483,
       "faction": "embers"
     },
     {
       "id": "spawn_013",
-      "kind": "spawn",
       "position": [
         38,
         0,
         -2
       ],
+      "kind": "spawn",
       "yaw": -2.356194490192345,
       "faction": "tide"
     },
     {
       "id": "spawn_014",
-      "kind": "spawn",
       "position": [
         46,
         0,
         2
       ],
+      "kind": "spawn",
       "yaw": -2.356194490192345,
       "faction": "tide"
     },
     {
       "id": "spawn_015",
-      "kind": "spawn",
       "position": [
         50,
         0,
         -4
       ],
+      "kind": "spawn",
       "yaw": -2.356194490192345,
       "faction": "tide"
     },
     {
       "id": "spawn_016",
-      "kind": "spawn",
       "position": [
         38,
         0,
         16
       ],
+      "kind": "spawn",
       "yaw": -2.356194490192345,
       "faction": "tide"
     },
     {
       "id": "spawn_017",
-      "kind": "spawn",
       "position": [
         46,
         0,
         14
       ],
+      "kind": "spawn",
       "yaw": -2.356194490192345,
       "faction": "tide"
     },
     {
       "id": "spawn_018",
-      "kind": "spawn",
       "position": [
         50,
         0,
         18
       ],
+      "kind": "spawn",
       "yaw": -2.356194490192345,
       "faction": "tide"
     },
     {
       "id": "spawn_019",
-      "kind": "spawn",
       "position": [
         46,
         0,
         24
       ],
+      "kind": "spawn",
       "yaw": -2.356194490192345,
       "faction": "tide"
     },
     {
       "id": "spawn_020",
-      "kind": "spawn",
       "position": [
-        50,
+        49.97,
         0,
-        28
+        27.9
       ],
+      "kind": "spawn",
       "yaw": -2.356194490192345,
       "faction": "tide"
     },
     {
       "id": "spawn_021",
-      "kind": "spawn",
       "position": [
         38,
         0,
         47
       ],
+      "kind": "spawn",
       "yaw": -2.356194490192345,
       "faction": "tide"
     },
     {
       "id": "spawn_022",
-      "kind": "spawn",
       "position": [
         46,
         0,
         47
       ],
+      "kind": "spawn",
       "yaw": -2.356194490192345,
       "faction": "tide"
     },
     {
       "id": "spawn_023",
-      "kind": "spawn",
       "position": [
         50,
         0,
         50
       ],
+      "kind": "spawn",
       "yaw": -2.356194490192345,
       "faction": "tide"
     },
     {
       "id": "spawn_024",
-      "kind": "spawn",
       "position": [
         38,
         0,
         41
       ],
+      "kind": "spawn",
       "yaw": -2.356194490192345,
       "faction": "tide"
     },
     {
       "id": "spawn_025",
-      "kind": "spawn",
       "position": [
         -8,
         0,
         -48
       ],
+      "kind": "spawn",
       "yaw": 0,
       "faction": null
     },
     {
       "id": "spawn_026",
-      "kind": "spawn",
       "position": [
         8,
         0,
         -50
       ],
+      "kind": "spawn",
       "yaw": 0,
       "faction": null
     },
     {
       "id": "spawn_027",
-      "kind": "spawn",
       "position": [
         24,
         0,
         -48
       ],
+      "kind": "spawn",
       "yaw": 0,
       "faction": null
     },
     {
       "id": "spawn_028",
-      "kind": "spawn",
       "position": [
         -12,
         0,
         -30
       ],
+      "kind": "spawn",
       "yaw": 0.5,
       "faction": null
     },
     {
       "id": "spawn_029",
-      "kind": "spawn",
       "position": [
         6,
         0,
         -22
       ],
+      "kind": "spawn",
       "yaw": 0,
       "faction": null
     },
     {
       "id": "spawn_030",
-      "kind": "spawn",
       "position": [
         26,
         0,
         -14
       ],
+      "kind": "spawn",
       "yaw": -1,
       "faction": null
     },
     {
       "id": "spawn_031",
-      "kind": "spawn",
       "position": [
         -44,
         0,
         10
       ],
+      "kind": "spawn",
       "yaw": 1.6,
       "faction": null
     },
     {
       "id": "spawn_032",
-      "kind": "spawn",
       "position": [
         -48,
         0,
         24
       ],
+      "kind": "spawn",
       "yaw": 1.6,
       "faction": null
     },
     {
       "id": "spawn_033",
-      "kind": "spawn",
       "position": [
         -1,
         0,
         -8
       ],
+      "kind": "spawn",
       "yaw": 0,
       "faction": null
     },
     {
       "id": "spawn_034",
-      "kind": "spawn",
       "position": [
         -40,
         0,
         -2
       ],
+      "kind": "spawn",
       "yaw": 1.2,
       "faction": null
     },
     {
       "id": "spawn_035",
-      "kind": "spawn",
       "position": [
         28,
         0,
         -42
       ],
+      "kind": "spawn",
       "yaw": -0.8,
       "faction": null
     },
     {
       "id": "spawn_036",
-      "kind": "spawn",
       "position": [
         -8,
         0,
         -20
       ],
+      "kind": "spawn",
       "yaw": 0,
       "faction": null
     },
     {
       "id": "flag_embers",
-      "kind": "flag",
       "position": [
         -36,
         0,
         -48
       ],
+      "kind": "flag",
       "yaw": 0.7853981633974483,
       "team": "embers"
     },
     {
       "id": "flag_tide",
-      "kind": "flag",
       "position": [
         42,
         0,
         46
       ],
+      "kind": "flag",
       "yaw": -2.356194490192345,
       "team": "tide"
     },
     {
       "id": "hill_pier",
-      "kind": "hill",
       "position": [
         0,
         0,
         40
       ],
+      "kind": "hill",
       "radius": 5
     },
     {
       "id": "hill_market",
-      "kind": "hill",
       "position": [
         -20,
         0,
         -8
       ],
+      "kind": "hill",
       "radius": 5
     },
     {
       "id": "hill_mole",
-      "kind": "hill",
       "position": [
         46,
         0,
         8
       ],
+      "kind": "hill",
       "radius": 4
     },
     {
       "id": "ladder_037",
-      "kind": "ladder",
       "position": [
         -16,
         -4,
         0.05
       ],
+      "kind": "ladder",
       "yaw": 0,
       "height": 4,
       "width": 0.9
     },
     {
       "id": "ladder_038",
-      "kind": "ladder",
       "position": [
         -8,
         -4,
         0.05
       ],
+      "kind": "ladder",
       "yaw": 0,
       "height": 4,
       "width": 0.9
     },
     {
       "id": "ladder_039",
-      "kind": "ladder",
       "position": [
         24,
         -4,
         0.05
       ],
+      "kind": "ladder",
       "yaw": 0,
       "height": 4,
       "width": 0.9
     },
     {
       "id": "ladder_040",
-      "kind": "ladder",
       "position": [
         31.95,
         -4,
         8
       ],
+      "kind": "ladder",
       "yaw": -1.5707963267948966,
       "height": 4,
       "width": 0.9
     },
     {
       "id": "ladder_041",
-      "kind": "ladder",
       "position": [
         31.95,
         -4,
         16
       ],
+      "kind": "ladder",
       "yaw": -1.5707963267948966,
       "height": 4,
       "width": 0.9
     },
     {
       "id": "ladder_042",
-      "kind": "ladder",
       "position": [
         31.95,
         -4,
         24
       ],
+      "kind": "ladder",
       "yaw": -1.5707963267948966,
       "height": 4,
       "width": 0.9
     },
     {
       "id": "ladder_043",
-      "kind": "ladder",
       "position": [
         41.6,
         0,
         26.25
       ],
+      "kind": "ladder",
       "yaw": 0,
       "height": 6,
       "width": 0.9
     },
     {
       "id": "boat_embers_1",
-      "kind": "mount",
-      "model": "hover_bike",
       "position": [
         -32,
         -1.8,
         10
       ],
+      "kind": "mount",
+      "model": "hover_bike",
       "yaw": 0,
       "faction": "embers",
       "respawnSeconds": null,
@@ -1888,13 +1896,13 @@
     },
     {
       "id": "boat_embers_2",
-      "kind": "mount",
-      "model": "hover_bike",
       "position": [
         -30,
         -1.8,
         22
       ],
+      "kind": "mount",
+      "model": "hover_bike",
       "yaw": 0.6,
       "faction": "embers",
       "respawnSeconds": null,
@@ -1902,13 +1910,13 @@
     },
     {
       "id": "boat_tide_1",
-      "kind": "mount",
-      "model": "hover_bike",
       "position": [
         26,
         -1.8,
         12
       ],
+      "kind": "mount",
+      "model": "hover_bike",
       "yaw": -1.5707963267948966,
       "faction": "tide",
       "respawnSeconds": null,
@@ -1916,13 +1924,13 @@
     },
     {
       "id": "boat_tide_2",
-      "kind": "mount",
-      "model": "hover_bike",
       "position": [
         26,
         -1.8,
         26
       ],
+      "kind": "mount",
+      "model": "hover_bike",
       "yaw": -1.5707963267948966,
       "faction": "tide",
       "respawnSeconds": null,
@@ -1930,266 +1938,266 @@
     },
     {
       "id": "pickup_044",
-      "kind": "pickup",
-      "item": "core.weapon_sniper",
       "position": [
         42.5,
         6,
         21.5
       ],
+      "kind": "pickup",
+      "item": "core.weapon_sniper",
       "respawnSeconds": null
     },
     {
       "id": "pickup_045",
-      "kind": "pickup",
-      "item": "core.weapon_marksman",
       "position": [
         -24,
         10.5,
         37.7
       ],
+      "kind": "pickup",
+      "item": "core.weapon_marksman",
       "respawnSeconds": null
     },
     {
       "id": "pickup_046",
-      "kind": "pickup",
-      "item": "core.weapon_rockets",
       "position": [
         0,
         0,
         42
       ],
+      "kind": "pickup",
+      "item": "core.weapon_rockets",
       "respawnSeconds": null
     },
     {
       "id": "pickup_047",
-      "kind": "pickup",
-      "item": "core.weapon_lmg",
       "position": [
         24,
         4,
         -33.5
       ],
+      "kind": "pickup",
+      "item": "core.weapon_lmg",
       "respawnSeconds": null
     },
     {
       "id": "pickup_048",
-      "kind": "pickup",
-      "item": "core.weapon_shotgun",
       "position": [
         -20,
         0,
         -8
       ],
+      "kind": "pickup",
+      "item": "core.weapon_shotgun",
       "respawnSeconds": null
     },
     {
       "id": "pickup_049",
-      "kind": "pickup",
-      "item": "core.weapon_flare_gun",
       "position": [
         46,
         4,
         5.5
       ],
+      "kind": "pickup",
+      "item": "core.weapon_flare_gun",
       "respawnSeconds": null
     },
     {
       "id": "pickup_050",
-      "kind": "pickup",
-      "item": "core.weapon_hand_cannon",
       "position": [
         -40,
         4,
         -25.5
       ],
+      "kind": "pickup",
+      "item": "core.weapon_hand_cannon",
       "respawnSeconds": null
     },
     {
       "id": "pickup_051",
-      "kind": "pickup",
-      "item": "core.weapon_rifle",
       "position": [
         -44,
         0,
         -47
       ],
+      "kind": "pickup",
+      "item": "core.weapon_rifle",
       "respawnSeconds": null
     },
     {
       "id": "pickup_052",
-      "kind": "pickup",
-      "item": "core.weapon_rifle",
       "position": [
         44,
         0,
         38
       ],
+      "kind": "pickup",
+      "item": "core.weapon_rifle",
       "respawnSeconds": null
     },
     {
       "id": "pickup_053",
-      "kind": "pickup",
-      "item": "core.weapon_smg",
       "position": [
         -28,
         0,
         -26
       ],
+      "kind": "pickup",
+      "item": "core.weapon_smg",
       "respawnSeconds": null
     },
     {
       "id": "pickup_054",
-      "kind": "pickup",
-      "item": "core.weapon_smg",
       "position": [
         50,
         0,
         10
       ],
+      "kind": "pickup",
+      "item": "core.weapon_smg",
       "respawnSeconds": null
     },
     {
       "id": "pickup_055",
-      "kind": "pickup",
-      "item": "core.grenades",
       "position": [
         0,
         0,
         -14
       ],
+      "kind": "pickup",
+      "item": "core.grenades",
       "respawnSeconds": null
     },
     {
       "id": "pickup_056",
-      "kind": "pickup",
-      "item": "core.grenades",
       "position": [
         -16,
         0,
         -2
       ],
+      "kind": "pickup",
+      "item": "core.grenades",
       "respawnSeconds": null
     },
     {
       "id": "pickup_057",
-      "kind": "pickup",
-      "item": "core.grenades",
       "position": [
         28,
         0,
         -2
       ],
+      "kind": "pickup",
+      "item": "core.grenades",
       "respawnSeconds": null
     },
     {
       "id": "pickup_058",
-      "kind": "pickup",
-      "item": "core.armor_large",
       "position": [
         0,
         0,
         20
       ],
+      "kind": "pickup",
+      "item": "core.armor_large",
       "respawnSeconds": null
     },
     {
       "id": "pickup_059",
-      "kind": "pickup",
-      "item": "core.armor_small",
       "position": [
         -44,
         0,
         4
       ],
+      "kind": "pickup",
+      "item": "core.armor_small",
       "respawnSeconds": null
     },
     {
       "id": "pickup_060",
-      "kind": "pickup",
-      "item": "core.armor_small",
       "position": [
         37,
         0,
         46
       ],
+      "kind": "pickup",
+      "item": "core.armor_small",
       "respawnSeconds": null
     },
     {
       "id": "pickup_061",
-      "kind": "pickup",
-      "item": "core.health_large",
       "position": [
         6,
         0,
         -30
       ],
+      "kind": "pickup",
+      "item": "core.health_large",
       "respawnSeconds": null
     },
     {
       "id": "pickup_062",
-      "kind": "pickup",
-      "item": "core.health_large",
       "position": [
         -42,
         0,
         -2
       ],
+      "kind": "pickup",
+      "item": "core.health_large",
       "respawnSeconds": null
     },
     {
       "id": "pickup_063",
-      "kind": "pickup",
-      "item": "core.health_small",
       "position": [
         -8,
         0,
         -14
       ],
+      "kind": "pickup",
+      "item": "core.health_small",
       "respawnSeconds": null
     },
     {
       "id": "pickup_064",
-      "kind": "pickup",
-      "item": "core.health_small",
       "position": [
         24,
         0,
         -16
       ],
+      "kind": "pickup",
+      "item": "core.health_small",
       "respawnSeconds": null
     },
     {
       "id": "pickup_065",
-      "kind": "pickup",
-      "item": "core.health_small",
       "position": [
         -2,
         0,
         38
       ],
+      "kind": "pickup",
+      "item": "core.health_small",
       "respawnSeconds": null
     },
     {
       "id": "pickup_066",
-      "kind": "pickup",
-      "item": "core.health_small",
       "position": [
         18,
         0,
         39.5
       ],
+      "kind": "pickup",
+      "item": "core.health_small",
       "respawnSeconds": null
     },
     {
       "id": "prop_067",
-      "kind": "prop",
-      "model": "prop.hb_fishing_boat",
       "position": [
         -12,
         -1.8,
         14
       ],
+      "kind": "prop",
+      "model": "prop.hb_fishing_boat",
       "yaw": 0.05,
       "scale": 1,
       "solid": true,
@@ -2197,13 +2205,13 @@
     },
     {
       "id": "prop_068",
-      "kind": "prop",
-      "model": "prop.hb_fishing_boat",
       "position": [
         12,
         -1.8,
         24
       ],
+      "kind": "prop",
+      "model": "prop.hb_fishing_boat",
       "yaw": 3.241592653589793,
       "scale": 1,
       "solid": true,
@@ -2211,13 +2219,13 @@
     },
     {
       "id": "prop_069",
-      "kind": "prop",
-      "model": "prop.hb_fishing_boat",
       "position": [
         22,
         -1.8,
         34
       ],
+      "kind": "prop",
+      "model": "prop.hb_fishing_boat",
       "yaw": 1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -2225,13 +2233,13 @@
     },
     {
       "id": "prop_070",
-      "kind": "prop",
-      "model": "prop.rowboat",
       "position": [
         -8,
         -1.6,
         6
       ],
+      "kind": "prop",
+      "model": "prop.rowboat",
       "yaw": 0.4,
       "scale": 1,
       "solid": true,
@@ -2239,13 +2247,13 @@
     },
     {
       "id": "prop_071",
-      "kind": "prop",
-      "model": "prop.rowboat",
       "position": [
         -48,
         0,
         10
       ],
+      "kind": "prop",
+      "model": "prop.rowboat",
       "yaw": 1.3,
       "scale": 1,
       "solid": true,
@@ -2253,13 +2261,13 @@
     },
     {
       "id": "prop_072",
-      "kind": "prop",
-      "model": "prop.rowboat",
       "position": [
         -48,
         0,
         20
       ],
+      "kind": "prop",
+      "model": "prop.rowboat",
       "yaw": 1.7,
       "scale": 1,
       "solid": true,
@@ -2267,13 +2275,13 @@
     },
     {
       "id": "prop_073",
-      "kind": "prop",
-      "model": "prop.hb_buoy",
       "position": [
         -16,
         -2,
         30
       ],
+      "kind": "prop",
+      "model": "prop.hb_buoy",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -2281,13 +2289,13 @@
     },
     {
       "id": "prop_074",
-      "kind": "prop",
-      "model": "prop.hb_buoy",
       "position": [
         8,
         -2,
         12
       ],
+      "kind": "prop",
+      "model": "prop.hb_buoy",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -2295,13 +2303,13 @@
     },
     {
       "id": "prop_075",
-      "kind": "prop",
-      "model": "prop.hb_buoy",
       "position": [
         16,
         -2,
         18
       ],
+      "kind": "prop",
+      "model": "prop.hb_buoy",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -2309,13 +2317,13 @@
     },
     {
       "id": "prop_076",
-      "kind": "prop",
-      "model": "prop.hb_marker_buoy",
       "position": [
         -40,
         -2.1,
         46
       ],
+      "kind": "prop",
+      "model": "prop.hb_marker_buoy",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -2323,13 +2331,13 @@
     },
     {
       "id": "prop_077",
-      "kind": "prop",
-      "model": "prop.hb_marker_buoy",
       "position": [
         -48,
         -2.1,
         36
       ],
+      "kind": "prop",
+      "model": "prop.hb_marker_buoy",
       "yaw": 0.4,
       "scale": 1,
       "solid": true,
@@ -2337,13 +2345,13 @@
     },
     {
       "id": "prop_078",
-      "kind": "prop",
-      "model": "prop.hb_dolphin",
       "position": [
         6,
         -4,
         30
       ],
+      "kind": "prop",
+      "model": "prop.hb_dolphin",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -2351,13 +2359,13 @@
     },
     {
       "id": "prop_079",
-      "kind": "prop",
-      "model": "prop.hb_dolphin",
       "position": [
         -16,
         -4,
         22
       ],
+      "kind": "prop",
+      "model": "prop.hb_dolphin",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -2365,13 +2373,13 @@
     },
     {
       "id": "prop_080",
-      "kind": "prop",
-      "model": "prop.hb_fenders",
       "position": [
         -12,
         -1.4,
         0.15
       ],
+      "kind": "prop",
+      "model": "prop.hb_fenders",
       "yaw": 0,
       "scale": 1,
       "solid": false,
@@ -2379,13 +2387,13 @@
     },
     {
       "id": "prop_081",
-      "kind": "prop",
-      "model": "prop.hb_fenders",
       "position": [
         4,
         -1.4,
         0.15
       ],
+      "kind": "prop",
+      "model": "prop.hb_fenders",
       "yaw": 0,
       "scale": 1,
       "solid": false,
@@ -2393,13 +2401,13 @@
     },
     {
       "id": "prop_082",
-      "kind": "prop",
-      "model": "prop.hb_fenders",
       "position": [
         31.85,
         -1.4,
         16
       ],
+      "kind": "prop",
+      "model": "prop.hb_fenders",
       "yaw": -1.5707963267948966,
       "scale": 1,
       "solid": false,
@@ -2407,13 +2415,13 @@
     },
     {
       "id": "prop_083",
-      "kind": "prop",
-      "model": "prop.hb_lobster_pots",
       "position": [
         -28,
         0,
         -2.6
       ],
+      "kind": "prop",
+      "model": "prop.hb_lobster_pots",
       "yaw": 0.3,
       "scale": 1,
       "solid": true,
@@ -2421,13 +2429,13 @@
     },
     {
       "id": "prop_084",
-      "kind": "prop",
-      "model": "prop.hb_lobster_pots",
       "position": [
         40,
         0,
         41
       ],
+      "kind": "prop",
+      "model": "prop.hb_lobster_pots",
       "yaw": 0.4,
       "scale": 1,
       "solid": true,
@@ -2435,13 +2443,13 @@
     },
     {
       "id": "prop_085",
-      "kind": "prop",
-      "model": "prop.hb_net_rack",
       "position": [
         -44,
         0,
         -18
       ],
+      "kind": "prop",
+      "model": "prop.hb_net_rack",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -2449,13 +2457,13 @@
     },
     {
       "id": "prop_086",
-      "kind": "prop",
-      "model": "prop.hb_net_pile",
       "position": [
         -36,
         0,
         -18
       ],
+      "kind": "prop",
+      "model": "prop.hb_net_pile",
       "yaw": 0.6,
       "scale": 1,
       "solid": false,
@@ -2463,13 +2471,13 @@
     },
     {
       "id": "prop_087",
-      "kind": "prop",
-      "model": "prop.hb_net_pile",
       "position": [
         30,
         0,
         -6
       ],
+      "kind": "prop",
+      "model": "prop.hb_net_pile",
       "yaw": 2.2,
       "scale": 1,
       "solid": false,
@@ -2477,13 +2485,13 @@
     },
     {
       "id": "prop_088",
-      "kind": "prop",
-      "model": "prop.hb_rope_coil",
       "position": [
         -2,
         0,
         -1.5
       ],
+      "kind": "prop",
+      "model": "prop.hb_rope_coil",
       "yaw": 0,
       "scale": 1,
       "solid": false,
@@ -2491,13 +2499,13 @@
     },
     {
       "id": "prop_089",
-      "kind": "prop",
-      "model": "prop.hb_rope_coil",
       "position": [
         34,
         0,
         20
       ],
+      "kind": "prop",
+      "model": "prop.hb_rope_coil",
       "yaw": 0,
       "scale": 1,
       "solid": false,
@@ -2505,13 +2513,13 @@
     },
     {
       "id": "prop_090",
-      "kind": "prop",
-      "model": "prop.hb_anchor",
       "position": [
         -6,
         0,
         -3
       ],
+      "kind": "prop",
+      "model": "prop.hb_anchor",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -2519,13 +2527,13 @@
     },
     {
       "id": "prop_091",
-      "kind": "prop",
-      "model": "prop.hb_capstan",
       "position": [
         -38,
         0,
         -2.4
       ],
+      "kind": "prop",
+      "model": "prop.hb_capstan",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -2533,13 +2541,13 @@
     },
     {
       "id": "prop_092",
-      "kind": "prop",
-      "model": "prop.hb_tide_board",
       "position": [
         1.2,
         0,
         -2.2
       ],
+      "kind": "prop",
+      "model": "prop.hb_tide_board",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -2547,13 +2555,13 @@
     },
     {
       "id": "prop_093",
-      "kind": "prop",
-      "model": "prop.hb_life_ring",
       "position": [
         -17,
         0,
         -1.2
       ],
+      "kind": "prop",
+      "model": "prop.hb_life_ring",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -2561,13 +2569,13 @@
     },
     {
       "id": "prop_094",
-      "kind": "prop",
-      "model": "prop.hb_life_ring",
       "position": [
         34,
         0,
         8
       ],
+      "kind": "prop",
+      "model": "prop.hb_life_ring",
       "yaw": -1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -2575,13 +2583,13 @@
     },
     {
       "id": "prop_095",
-      "kind": "prop",
-      "model": "prop.hb_fish_stall",
       "position": [
         -26,
         0,
         -16
       ],
+      "kind": "prop",
+      "model": "prop.hb_fish_stall",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -2589,13 +2597,13 @@
     },
     {
       "id": "prop_096",
-      "kind": "prop",
-      "model": "prop.hb_fish_stall",
       "position": [
         -14,
         0,
         -16
       ],
+      "kind": "prop",
+      "model": "prop.hb_fish_stall",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -2603,13 +2611,13 @@
     },
     {
       "id": "prop_097",
-      "kind": "prop",
-      "model": "prop.hb_fish_crates",
       "position": [
         -26.5,
         0,
         -8
       ],
+      "kind": "prop",
+      "model": "prop.hb_fish_crates",
       "yaw": 0.2,
       "scale": 1,
       "solid": true,
@@ -2617,13 +2625,13 @@
     },
     {
       "id": "prop_098",
-      "kind": "prop",
-      "model": "prop.hb_fish_crates",
       "position": [
         -9.5,
         0,
         -10
       ],
+      "kind": "prop",
+      "model": "prop.hb_fish_crates",
       "yaw": 1.2,
       "scale": 1,
       "solid": true,
@@ -2631,13 +2639,13 @@
     },
     {
       "id": "prop_099",
-      "kind": "prop",
-      "model": "prop.hb_fish_crates",
       "position": [
         50,
         0,
         21.5
       ],
+      "kind": "prop",
+      "model": "prop.hb_fish_crates",
       "yaw": 0.5,
       "scale": 1,
       "solid": true,
@@ -2645,13 +2653,13 @@
     },
     {
       "id": "prop_100",
-      "kind": "prop",
-      "model": "prop.hb_lamp_post",
       "position": [
         -30,
         0,
         -4.5
       ],
+      "kind": "prop",
+      "model": "prop.hb_lamp_post",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -2659,13 +2667,13 @@
     },
     {
       "id": "prop_101",
-      "kind": "prop",
-      "model": "prop.hb_lamp_post",
       "position": [
         -4,
         0,
         -4.5
       ],
+      "kind": "prop",
+      "model": "prop.hb_lamp_post",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -2673,13 +2681,13 @@
     },
     {
       "id": "prop_102",
-      "kind": "prop",
-      "model": "prop.hb_lamp_post",
       "position": [
         22,
         0,
         -4.5
       ],
+      "kind": "prop",
+      "model": "prop.hb_lamp_post",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -2687,13 +2695,13 @@
     },
     {
       "id": "prop_103",
-      "kind": "prop",
-      "model": "prop.hb_lamp_post",
       "position": [
         35,
         0,
         10
       ],
+      "kind": "prop",
+      "model": "prop.hb_lamp_post",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -2701,13 +2709,13 @@
     },
     {
       "id": "prop_104",
-      "kind": "prop",
-      "model": "prop.hb_lamp_post",
       "position": [
         35,
         0,
         34
       ],
+      "kind": "prop",
+      "model": "prop.hb_lamp_post",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -2715,13 +2723,13 @@
     },
     {
       "id": "prop_105",
-      "kind": "prop",
-      "model": "prop.hb_lamp_post",
       "position": [
         -46,
         0,
         -6
       ],
+      "kind": "prop",
+      "model": "prop.hb_lamp_post",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -2729,13 +2737,13 @@
     },
     {
       "id": "prop_106",
-      "kind": "prop",
-      "model": "prop.cargo_container_rusty_blue",
       "position": [
         48,
         0,
         20
       ],
+      "kind": "prop",
+      "model": "prop.cargo_container_rusty_blue",
       "yaw": 1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -2743,13 +2751,13 @@
     },
     {
       "id": "prop_107",
-      "kind": "prop",
-      "model": "prop.cargo_wooden_crate",
       "position": [
         50,
         0,
         14
       ],
+      "kind": "prop",
+      "model": "prop.cargo_wooden_crate",
       "yaw": 0.3,
       "scale": 1,
       "solid": true,
@@ -2757,13 +2765,13 @@
     },
     {
       "id": "prop_108",
-      "kind": "prop",
-      "model": "prop.pallet",
       "position": [
         30,
         0,
         -2.5
       ],
+      "kind": "prop",
+      "model": "prop.pallet",
       "yaw": 0.2,
       "scale": 1,
       "solid": true,
@@ -2771,13 +2779,13 @@
     },
     {
       "id": "prop_109",
-      "kind": "prop",
-      "model": "prop.barrel",
       "position": [
         31,
         0,
         -1.5
       ],
+      "kind": "prop",
+      "model": "prop.barrel",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -2785,13 +2793,13 @@
     },
     {
       "id": "prop_110",
-      "kind": "prop",
-      "model": "prop.barrel_open",
       "position": [
         29.2,
         0,
         -1.2
       ],
+      "kind": "prop",
+      "model": "prop.barrel_open",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -2799,13 +2807,13 @@
     },
     {
       "id": "prop_111",
-      "kind": "prop",
-      "model": "prop.crate_large",
       "position": [
         18,
         0,
         -18
       ],
+      "kind": "prop",
+      "model": "prop.crate_large",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -2813,13 +2821,13 @@
     },
     {
       "id": "prop_112",
-      "kind": "prop",
-      "model": "prop.crate_small",
       "position": [
         19.5,
         0,
         -16
       ],
+      "kind": "prop",
+      "model": "prop.crate_small",
       "yaw": 0.4,
       "scale": 1,
       "solid": true,
@@ -2827,13 +2835,13 @@
     },
     {
       "id": "prop_113",
-      "kind": "prop",
-      "model": "prop.mv_sacks",
       "position": [
         6,
         0,
         -18
       ],
+      "kind": "prop",
+      "model": "prop.mv_sacks",
       "yaw": 0.2,
       "scale": 1,
       "solid": true,
@@ -2841,13 +2849,13 @@
     },
     {
       "id": "prop_114",
-      "kind": "prop",
-      "model": "prop.hb_gull",
       "position": [
         -24,
         13.1,
         41.5
       ],
+      "kind": "prop",
+      "model": "prop.hb_gull",
       "yaw": 0.7,
       "scale": 1,
       "solid": false,
@@ -2855,13 +2863,13 @@
     },
     {
       "id": "prop_115",
-      "kind": "prop",
-      "model": "prop.hb_gull",
       "position": [
         44,
         11.2,
         32
       ],
+      "kind": "prop",
+      "model": "prop.hb_gull",
       "yaw": 2,
       "scale": 1,
       "solid": false,
@@ -2869,13 +2877,13 @@
     },
     {
       "id": "prop_116",
-      "kind": "prop",
-      "model": "prop.hb_gull",
       "position": [
         -3.2,
         0.66,
         40
       ],
+      "kind": "prop",
+      "model": "prop.hb_gull",
       "yaw": 1,
       "scale": 1,
       "solid": false,
@@ -2883,13 +2891,13 @@
     },
     {
       "id": "prop_117",
-      "kind": "prop",
-      "model": "prop.hb_gull",
       "position": [
         -13.4,
         0.66,
         -1
       ],
+      "kind": "prop",
+      "model": "prop.hb_gull",
       "yaw": 2.6,
       "scale": 1,
       "solid": false,
@@ -2897,13 +2905,13 @@
     },
     {
       "id": "prop_118",
-      "kind": "prop",
-      "model": "prop.hb_gull",
       "position": [
         20,
         11.2,
         -32
       ],
+      "kind": "prop",
+      "model": "prop.hb_gull",
       "yaw": 0.3,
       "scale": 1,
       "solid": false,
@@ -2911,12 +2919,12 @@
     },
     {
       "id": "light_lantern",
-      "kind": "light",
       "position": [
         -24,
         14,
         40
       ],
+      "kind": "light",
       "yaw": 0,
       "color": "#ffd27a",
       "intensity": 1.6,
@@ -2925,12 +2933,12 @@
     },
     {
       "id": "light_blu1v9us8f",
-      "kind": "light",
       "position": [
         -30,
         4.2,
         -4.5
       ],
+      "kind": "light",
       "yaw": 0,
       "color": "#ffe2a0",
       "intensity": 1,
@@ -2939,12 +2947,12 @@
     },
     {
       "id": "light_km54j0dpw1",
-      "kind": "light",
       "position": [
         22,
         4.2,
         -4.5
       ],
+      "kind": "light",
       "yaw": 0,
       "color": "#ffe2a0",
       "intensity": 1,
@@ -2953,12 +2961,12 @@
     },
     {
       "id": "light_a8b38d3b2r",
-      "kind": "light",
       "position": [
         35,
         4.2,
         34
       ],
+      "kind": "light",
       "yaw": 0,
       "color": "#ffe2a0",
       "intensity": 1,
@@ -2986,12 +2994,6 @@
     "style": "invisible",
     "height": 22
   },
-  "teamSetup": {
-    "sizes": [
-      12,
-      12
-    ]
-  },
   "backdrop": {
     "sky": "overcast",
     "scenery": "ocean",
@@ -3000,7 +3002,13 @@
     "mist": 0.2,
     "border": "water"
   },
-  "blood": null,
   "physics": null,
+  "blood": null,
+  "teamSetup": {
+    "sizes": [
+      12,
+      12
+    ]
+  },
   "dependencies": []
 }

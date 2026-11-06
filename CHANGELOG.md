@@ -8,6 +8,37 @@ made only on a commit that passed CI on a check branch.
 
 ## Unreleased
 
+**Bots: a navigation audit, no standing still on a failed route, a scorecard** (docs/BOT_AI_PLAN.md Phase A;
+docs/BOTS.md, "Navigation audit", "Never standing still on a failed route", "Scorecard")
+- **Navigation audit** of every map, from every polygon of the bots' navmesh: traps (places bots fall or jump-pad into
+  and can't walk out of), spawn points, objectives and pickups cut off, with a picture per map (`pnpm nav-audit`).
+  Errors on the official maps, warnings in MapMaker. No official map has an error left: the 15 findings left on 9 maps
+  are listed for the owner with why and what would fix each (Skyward's and Sky Islands' pad perches, Grand Marquee's
+  marquee top, Obsidian Orb's reactor core, Reactor's yard, Serpent Gorge's gorge floor, Erosion's lower deck, M4
+  Outpost's uplink room).
+- **Bots get down off ledges**: one-way drop links off ledges, roofs, scaffolds and cliff shelves that have no other
+  way down, generated at load (within fall damage: with it on, only drops that cost at most about 30 health).
+- **Bots get up out of pits**: a bot cut off from where it is going hops across to ground that routes there, up a
+  ledge of up to 1.4 m with its legs tucked up as players do (Undergate Transit's track beds, St John's court), and
+  over a step or gap the navmesh is too cautious for (M4 Outpost's uplink dais).
+- **Fixed in the navmesh's generation**: floors Recast found inside solid boxes (Eagle Spires' spires had one in every
+  rock block) are left out; jump pads land on crumbling and breakable blocks as players do. The navmesh still keeps
+  0.8 m from walls: 0.6 broke the tiles' narrow stairs and wasn't better for bots.
+- **No bot stands still on a failed route**: a goal no route reaches is swapped for the nearest place a route does
+  (a flag on a ledge, a pickup on a crate: the last step straight to it), a bot knocked off the navmesh walks back
+  onto it, long searches walk the part they found, and bots pick only goals they can get to. Buttons on cooldown
+  aren't pressed again and again (Primeval Park: a bot stood 218 s at one), and a bot at a console's button looks up
+  at it and presses (they stood under Serene City's thaw console looking level). A bot gives up on a pickup it
+  stands at and doesn't get (five bots stood round a dropped spear they already had on Sandfall Colosseum), and
+  nobody spawns beside a teammate stuck where nobody walks (Dune Harbor: under a street floor).
+- **Shingle Point** (owner's playtest): bots no longer push each other off the seawall ladders or back and forth in
+  the MG nest by hill 1 (teammates steer each other aside, never back, and not at all at a ladder).
+- **Spawn points inside something solid moved out of it** in MapMaker on 25 maps, and are now an error on the
+  official maps. Dune Harbor's consoles are 1.2 m shorter, so the aisle between them opens wide enough for bots.
+- **Scorecard**: `pnpm bot-report` over every mode (`--suite=all`), with limits in a checked-in file; `--check` runs
+  in CI when the bots, navigation, the sim or a map it plays change, and the full scorecard runs nightly with its
+  report and every map's nav picture.
+
 **Signing in doesn't flash a red line** (owner, 2026-11-06): after Google sign-in the menu no longer shows "Signed in" in the red status line bottom left (the profile corner top right shows it); sign-in problems still show there.
 
 **Match setup, redesigned** (the owner's report and the approved design, 2026-11-06)

@@ -498,7 +498,14 @@ export function applyPads(pads: readonly JumpPad[], state: MoveState): MoveState
  * link from the pad to its landing). Traces the flight with gravity and
  * returns the first floor hit on the way down; pads that never land are left out.
  */
-export function padLandings(pads: readonly JumpPad[], physics: PhysicsWorld, gravity = 1, zones: readonly GravityZone[] = []): { start: Vec3; end: Vec3 }[] {
+/**
+ * Something else a body comes down on, besides `physics`: the distance down a ray to it, or null (the scenario's solids
+ * when the navmesh is built: sim/mapNav.ts). Kept a callback so movement, which the menu loads, needn't import the map
+ * geometry code.
+ */
+export type ExtraRay = (origin: Vec3, dir: Vec3, maxDist: number) => number | null;
+
+export function padLandings(pads: readonly JumpPad[], physics: PhysicsWorld, gravity = 1, zones: readonly GravityZone[] = [], extra?: ExtraRay): { start: Vec3; end: Vec3 }[] {
   const out: { start: Vec3; end: Vec3 }[] = [];
   for (const p of pads) {
     let pos = { x: p.pos.x, y: p.pos.y + 0.9, z: p.pos.z };
@@ -512,7 +519,12 @@ export function padLandings(pads: readonly JumpPad[], physics: PhysicsWorld, gra
       vx *= AIR_PUSH_DECAY;
       vz *= AIR_PUSH_DECAY;
       if (vy < 0) {
-        const down = physics.raycastWorld({ x: next.x, y: next.y, z: next.z }, { x: 0, y: -1, z: 0 }, 1.0 + Math.abs(vy * TICK_DT));
+        const reach = 1.0 + Math.abs(vy * TICK_DT);
+        const world = physics.raycastWorld({ x: next.x, y: next.y, z: next.z }, { x: 0, y: -1, z: 0 }, reach);
+        // The scenario's solids too (crumbling and breakable blocks, breakable props): they are there when the match
+        // starts, and the navmesh is built with them (Erosion's corner pads throw you back up onto its crumbling decks).
+        const more = extra ? extra(next, { x: 0, y: -1, z: 0 }, world ?? reach) : null;
+        const down = more !== null && (world === null || more < world) ? more : world;
         if (down !== null) {
           out.push({ start: { ...p.pos }, end: { x: next.x, y: next.y - down, z: next.z } });
           break;
@@ -525,6 +537,6 @@ export function padLandings(pads: readonly JumpPad[], physics: PhysicsWorld, gra
 }
 
 /** Every one-way navmesh link a map needs for bots: jump pad flights, ladders up and down, portal pairs both ways and zipline rides. */
-export function navLinks(entities: Parameters<typeof mapPads>[0] & Parameters<typeof mapLadders>[0] & Parameters<typeof mapGravityZones>[0] & Parameters<typeof mapPortals>[0] & Parameters<typeof mapZiplines>[0], physics: PhysicsWorld, gravity = 1): { start: Vec3; end: Vec3; reach?: Vec3 }[] {
-  return [...padLandings(mapPads(entities), physics, gravity, mapGravityZones(entities)), ...ladderLinks(mapLadders(entities)), ...portalLinks(mapPortals(entities)), ...ziplineLinks(mapZiplines(entities), physics)];
+export function navLinks(entities: Parameters<typeof mapPads>[0] & Parameters<typeof mapLadders>[0] & Parameters<typeof mapGravityZones>[0] & Parameters<typeof mapPortals>[0] & Parameters<typeof mapZiplines>[0], physics: PhysicsWorld, gravity = 1, extra?: ExtraRay): { start: Vec3; end: Vec3; reach?: Vec3 }[] {
+  return [...padLandings(mapPads(entities), physics, gravity, mapGravityZones(entities), extra), ...ladderLinks(mapLadders(entities)), ...portalLinks(mapPortals(entities)), ...ziplineLinks(mapZiplines(entities), physics)];
 }
