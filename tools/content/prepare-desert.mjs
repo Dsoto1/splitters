@@ -6,8 +6,8 @@
 // baskets, floor cushions round a brass tray, a rug rack, a column and an
 // ornate arch. No pack and no generative AI service is involved: the code is
 // the source. (The pack's market stall, well and crane, dc_market_stall,
-// dc_well and dc_crane, are the owner's Meshy models now: content/props/meshy-owned-landmarks.json,
-// pack meshy-owned-landmarks.)
+// dc_well and dc_crane, are Meshy Community models now: content/props/meshy-community-landmarks.json,
+// pack meshy-community-landmarks.)
 //
 //   node tools/content/prepare-desert.mjs
 //

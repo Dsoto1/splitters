@@ -1,6 +1,6 @@
-// The airliner shell's cross-section, measured from the owner's Meshy download, for the in-house cabin kit
+// The airliner shell's cross-section, measured from its Meshy download (Meshy Community, CC0), for the in-house cabin kit
 // (tools/content/prepare-cabin.mjs): the kit's fuselage sections are modelled from these rings so they sit just
-// inside the shell (content/props/meshy-owned-airliner.json, prop `airliner_shell`).
+// inside the shell (content/props/meshy-community-airliner.json, prop `airliner_shell`).
 //
 //   node tools/content/fuselage-profile.mjs <downloads dir>
 //
@@ -18,7 +18,7 @@ import { NodeIO, getBounds } from '@gltf-transform/core';
 import { ALL_EXTENSIONS } from '@gltf-transform/extensions';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
-/** The shell's scale (content/props/meshy-owned-airliner.json `scale`): the download is 1.9 units long. */
+/** The shell's scale (content/props/meshy-community-airliner.json `scale`): the download is 1.9 units long. */
 export const SCALE = 36;
 const RAYS = 48;
 const STEP = 0.3;
@@ -46,7 +46,7 @@ export const navSpan = ([f, a]) => {
   const [c, h] = [(f + a) / 2, Math.max((f - a) / 2, NAV_GAP / 2)];
   return [Math.round((c + h) * 1000) / 1000, Math.round((c - h) * 1000) / 1000];
 };
-const AIRLINER = join(ROOT, 'content/props/meshy-owned-airliner.json');
+const AIRLINER = join(ROOT, 'content/props/meshy-community-airliner.json');
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const dir = process.argv[2];
@@ -129,7 +129,7 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
 }
 
 /**
- * The shell's collision and openings, written into its entry in content/props/meshy-owned-airliner.json (`cut` and
+ * The shell's collision and openings, written into its entry in content/props/meshy-community-airliner.json (`cut` and
  * `boxes`, the game's frame): the body as bands round the cabin, hollow above the floor so the cabin kit fits inside
  * (each band's inner face no further in than the kit's panels, its outer face on the skin), solid below the floor
  * and over the ceiling, with gaps at the openings; and whatever stands out of the body (wings, engines, the tail's

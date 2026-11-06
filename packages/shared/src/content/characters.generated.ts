@@ -117,7 +117,7 @@ export const WHOLE_BODY_LOOKS: readonly CharacterLook[] = [
   { id: 'core.bill', name: 'Bill', body: 'male', head: '', parts: ['meshy_bill'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_bill_fparms' }, group: 'folk', nameTheme: 'townsfolk' },
   { id: 'core.astronaut', name: 'Spacewalker', body: 'male', head: '', parts: ['meshy_astronaut'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_astronaut_fparms', grip: { gripLong: [-0.045, 0.02, -0.03], supportLong: [0, 0.02, 0.03], supportPistol: [-0.01, 0.03, -0.03] } }, group: 'soldiers', nameTheme: 'soldier' },
   { id: 'core.darkastronaut', name: 'Starfarer', body: 'male', head: '', parts: ['meshy_darkastronaut'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_darkastronaut_fparms', grip: { gripLong: [-0.03, 0.02, -0.03], supportLong: [0, 0.02, 0.03], supportPistol: [-0.01, 0.03, -0.03] } }, group: 'soldiers', nameTheme: 'soldier' },
-  { id: 'core.tortoise', name: 'Shellback', body: 'male', head: '', parts: ['meshy_tortoise'], hair: [], colorways: [], skin: null, hairColor: null, size: 'large', whole: { arms: 'meshy_tortoise_fparms', grip: { gripLong: [-0.045, 0.02, -0.03], supportPistol: [-0.01, 0.03, -0.03] } }, group: 'animals', nameTheme: 'critter' },
+  { id: 'core.tortoise', name: 'Shellback', body: 'male', head: '', parts: ['meshy_tortoise'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_tortoise_fparms', grip: { gripLong: [-0.045, 0.02, -0.03], supportPistol: [-0.01, 0.03, -0.03] } }, group: 'animals', nameTheme: 'critter' },
 ];
 
 /** Whole-body characters made for NPCs only (`use: npc`): not on the roster; NPC_ROLE_SPECS can name them. */

@@ -185,7 +185,7 @@ describe('bot characters: soldiers only', () => {
     expect(validBotCast(['soldiers', 'nope', 'pirate', 'soldiers', 7])).toEqual(['soldiers', 'pirate']);
     expect(validBotCast('soldiers')).toEqual([]);
     expect(castLooks(['nope']).length).toBe(CORE_LOOKS.length);
-    expect(castAllows(['soldiers'], 'core.nova')).toBe(true);
+    expect(castAllows(['soldiers'], 'core.astronaut')).toBe(true);
     expect(castAllows(['soldiers'], 'core.scamp')).toBe(false);
     expect(castAllows(['monkey'], 'core.bigbab')).toBe(true);
     expect(castAllows([], 'core.scamp')).toBe(true);
@@ -223,6 +223,6 @@ describe('bot characters: soldiers only', () => {
     expect('botCast' in applyCommand(next, { kind: 'setBotCast', before: ['soldiers'], after: null })).toBe(false);
     expect(validateMap({ ...map, botCast: ['soldiers', 'dinosaurs'] }).some((i) => i.code === 'bots.cast_unknown')).toBe(true);
     expect(validateMap({ ...map, botCast: ['soldiers'] }).some((i) => i.code === 'bots.cast_unknown')).toBe(false);
-    expect(lookGroup('core.nova')).toBe('soldiers');
+    expect(lookGroup('core.astronaut')).toBe('soldiers');
   });
 });

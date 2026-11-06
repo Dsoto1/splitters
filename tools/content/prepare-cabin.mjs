@@ -1,5 +1,5 @@
 // The airliner cabin kit (MapMaker category "Airliner Cabin"): fuselage sections that snap end to end inside the
-// owner's Meshy airliner shell (`airliner_shell`, content/props/meshy-owned-airliner.json), and the fittings that go
+// Meshy Community airliner shell (`airliner_shell`, content/props/meshy-community-airliner.json), and the fittings that go
 // in them, modelled here in code from plain geometry (tools/content/pieces.mjs). No pack and no generative AI
 // service made them: the code is the source. The sections follow the shell's own cross-section, measured by
 // tools/content/fuselage-profile.mjs into assets-src/tiletrigger-cabin/fuselage.json, a few centimetres inside it.

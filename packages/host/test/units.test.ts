@@ -204,7 +204,7 @@ describe('server console commands', () => {
     expect(runMatchCommand('botset', ['add', 'Sir Clank', 'Iron Knight', 'hard', '2'], 'add "Sir Clank" "Iron Knight" hard 2', t)).toMatch(/3\. Sir Clank, core\.knight, hard, -, 2/);
     expect(runMatchCommand('botset', ['remove', '1'], 'remove 1', t)).not.toMatch(/Ann/);
     expect(runMatchCommand('botset', ['random'], 'random', t)).toMatch(/random bots fill the rest/);
-    expect(runMatchCommand('botset', ['list'], 'list Zed, zombie; Yo, core.nova, easy', t)).toMatch(/1\. Zed, npc:zombie\n 2\. Yo, core\.nova, easy/);
+    expect(runMatchCommand('botset', ['list'], 'list Zed, zombie; Yo, core.astronaut, easy', t)).toMatch(/1\. Zed, npc:zombie\n 2\. Yo, core\.astronaut, easy/);
     expect(runMatchCommand('botset', ['clear'], 'clear', t)).toMatch(/Random bots/);
     expect(sent.at(-1)).toEqual({ c: 'bots', botSet: null });
     expect(complete('botset p', [], [], ['duo'])).toEqual([['preset'], 'p']);

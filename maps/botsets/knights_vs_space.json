@@ -11,7 +11,7 @@
     { "name": "Ser Rowan", "look": "core.knight", "team": 0, "squad": "Rearguard" },
     { "name": "Longbow", "look": "core.ranger", "style": "tactical", "team": 0, "squad": "Rearguard" },
     { "name": "Fletcher", "look": "core.ranger", "style": "tactical", "team": 0, "squad": "Rearguard" },
-    { "name": "Capt. Orion", "look": "core.nova", "skill": "hard", "team": 1, "squad": "Bridge" },
+    { "name": "Capt. Orion", "look": "core.astronaut", "skill": "hard", "team": 1, "squad": "Bridge" },
     { "name": "Zorp", "look": "core.visitor", "team": 1, "squad": "Bridge" },
     { "name": "Ace Vega", "look": "core.ember", "style": "arena", "team": 1, "squad": "Bridge" },
     { "name": "Glorp", "look": "core.visitor", "team": 1, "squad": "Away team" },

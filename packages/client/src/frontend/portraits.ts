@@ -40,7 +40,8 @@ const PORTRAIT_VIEWS: Record<string, PortraitView> = {
   // Wide heads and long snouts (Boglurker's crocodile, a frog) filled the frame edge to edge.
   'core.boglurker': { aim: [0, 0.02, 0], zoom: 1.45 },
   'core.croakley': { zoom: 1.4 },
-  // The tortoise's head is small against its shell: wider, so the shell's dome frames it.
+  // The tortoise's head is small against its shell: wider, so the shell's dome frames it (any size: a portrait body is
+  // built at 1.8 m, so Shellback's move from large to standard, 2026-11-06, left the picture as it was).
   'core.tortoise': { zoom: 1.25 },
   // Sir Galloway's visor: from a little below, into the helmet.
   'core.galloway': { from: [0.26, -0.2, 1], zoom: 0.9 },
