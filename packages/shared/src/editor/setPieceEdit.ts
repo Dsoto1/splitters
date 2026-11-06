@@ -220,9 +220,16 @@ export function setPieceFromSelection(
     if (options) part.options = { ...options, ...(options.facade && pack?.roles.facade === options.facade ? { facade: { role: 'facade' as const } } : {}) };
     parts.push(part);
   }
+  const tileCells = new Set(cells);
   for (const e of entities) {
     const position: [number, number, number] = [round6(e.position[0] - ax * cellSize), round6(e.position[1] - az * levelHeight), round6(e.position[2] - ay * cellSize)];
-    const cellOf = (px: number, py: number, pz: number) => claim(Math.round(px / cellSize), Math.round(pz / cellSize), Math.floor((py + 0.01) / levelHeight));
+    // A point on the line between two cells (a door in a doorway) belongs to the one the tiles hold, if either.
+    const cellOf = (px: number, py: number, pz: number) => {
+      const near = (v: number) => [...new Set([Math.floor((v + cellSize / 2 + 1e-6) / cellSize), Math.floor((v + cellSize / 2 - 1e-6) / cellSize)])];
+      const choices = near(px).flatMap((x) => near(pz).map((y) => [x, y] as const));
+      const [x, y] = choices.find(([cx, cy]) => tileCells.has(`${cx},${cy}`)) ?? choices[0]!;
+      claim(x, y, Math.floor((py + 0.01) / levelHeight));
+    };
     const { id: _id, ...rest } = e;
     void _id;
     if (e.kind === 'block') {

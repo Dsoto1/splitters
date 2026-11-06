@@ -103,7 +103,13 @@ export function loadMap(json: string | unknown, catalog: TileCatalog = coreCatal
 export function validateMap(map: MapDocument, catalog: TileCatalog = coreCatalog, library: SetPieceLibrary = builtInSetPieces()): ValidationIssue[] {
   if (map.setPieces === undefined && map.setPieceDefs === undefined) return validateExpanded(map, map, catalog);
   const ex = expandSetPieces(map, library, catalog);
-  const issues: ValidationIssue[] = [...ex.issues, ...setPieceOverlapIssues(map, ex, buildOccupancy(map, catalog).cells)];
+  const issues: ValidationIssue[] = [];
+  const taken = new Set([...map.classicStructure.tiles.map((t) => t.id), ...map.entities.map((e) => e.id)]);
+  for (const p of map.setPieces ?? []) {
+    if (taken.has(p.id)) issues.push({ severity: 'error', code: 'id.duplicate', message: `duplicate ID "${p.id}"`, targetId: p.id });
+    taken.add(p.id);
+  }
+  issues.push(...ex.issues, ...setPieceOverlapIssues(map, ex, buildOccupancy(map, catalog).cells));
   for (const def of map.setPieceDefs ?? []) for (const p of checkSetPieceDefinition(def, { packs: library.packs, catalog })) issues.push({ severity: 'warning', code: 'setpiece.def', message: `the map's set piece ${def.id}: ${p}` });
   for (const i of validateExpanded(ex.map, map, catalog)) {
     const placement = i.targetId ? ex.partOf.get(i.targetId) : undefined;

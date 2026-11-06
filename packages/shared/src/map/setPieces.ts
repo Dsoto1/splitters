@@ -24,9 +24,10 @@ import { cellKey, rotateSide, rotateXZ } from './geometry.ts';
 import {
   MAX_TILE_CELL,
   MAX_TILE_LEVEL,
+  MapEntity,
   SetPieceDefinition,
+  TilePlacement,
   type MapDocument,
-  type MapEntity,
   type Rotation,
   type SetPieceMaterialRole,
   type SetPiecePart,
@@ -34,7 +35,6 @@ import {
   type SetPieceRoleValues,
   type SetPieceRoleValuesInput,
   type SurfaceStyle,
-  type TilePlacement,
 } from './schema.ts';
 import type { ValidationIssue } from './validate.ts';
 
@@ -254,8 +254,9 @@ export function setPieceParts(p: SetPiecePlacement, def: SetPieceDefinition, the
   def.parts.forEach((part, i) => {
     if (hidden.has(i)) return;
     const id = setPiecePartId(p.id, i);
-    if (part.kind === 'tile') tiles.push(placeTilePart(p, def, part, id, material, glass, (v) => (typeof v === 'string' ? v : roleValue('facade', p, def, pack)), catalog));
-    else entities.push(placeEntityPart(p, def, part, id, material, glass, (v) => (typeof v === 'string' ? v : roleValue('door', p, def, pack))));
+    // Through the map schema: each part as a map file would hold it (its fields in the schema's order).
+    if (part.kind === 'tile') tiles.push(TilePlacement.parse(placeTilePart(p, def, part, id, material, glass, (v) => (typeof v === 'string' ? v : roleValue('facade', p, def, pack)), catalog)));
+    else entities.push(MapEntity.parse(placeEntityPart(p, def, part, id, material, glass, (v) => (typeof v === 'string' ? v : roleValue('door', p, def, pack)))));
   });
   return { tiles, entities };
 }
