@@ -288,8 +288,10 @@ sides, the Roman facade on the stair towers (`overrides.roles.facade: "none"`).
 - Pieces with `mirror: "none"` (bends, ends, jogs, stairs, towers, insulae, hatch and lift risers): turn them instead.
 - Footprints claim every level from their least to their greatest for every cell (the trench pieces claim level -1
   too); the stands stack because each piece's levels stop where the next begins.
-- `maps/test_coverage.json` should get one of each new piece through the palette, and `coverageMap.test.ts` require
-  them (as noted for part 1's pieces).
+- `maps/test_coverage.json` has part 3's kit (placed in MapMaker: the 13 new tiles in the empty rows at grid y -3
+  and -15, the four new wall styles on a Room and the Grand Gallery, the Landing Craft (Beached) prop at (40, 0, 60)),
+  so its test passes. It should still get one of each set piece through the new palette, and `coverageMap.test.ts`
+  require them (as noted for part 1's pieces).
 - `setPiecePlay.test.ts`'s every-port test now covers every piece whose ports are walled doorways or arches and
   names the open-sided ones; `setPieces3.test.ts` proves those (trenches, the grand stair, the stands, tunnels, hatches,
   cages).

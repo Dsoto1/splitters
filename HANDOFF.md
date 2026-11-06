@@ -122,6 +122,62 @@ are right for the campus. The shallow vault stays. Skybridges keep the pack's fa
   facade) are an override away (`overrides.roles.facade: "none"`); which should be the default?
 <!-- /setpieces -->
 
+<!-- setpieces-3 -->
+### Set pieces, part 3: the showpiece maps' pieces (`wip/setpieces-3`, agent, 2026-11-06; from main b2c58e2e, main bc6037a1 merged in; CI on `check/setpieces-3`; not landed)
+What was built and decided: docs/SET_PIECES_PLAN.md, "As built: part 3" (the 4 m decision, the sunk trench, the
+pieces, budgets per piece, notes for part 2, what is left); the new kit in docs/BUILDING_KIT.md ("The showpiece kit").
+All data on the standard grid: no map format change, nothing in `packages/client/src/editor/*`.
+- **The 4 m question: the mix, no format change.** The colosseum is built on the standard 8 m / 4 m grid, a board
+  square being half a cell (every square's centre on a cell centre, a side's middle or a cell corner): tiles where an
+  8 m module fits (stands, tunnels, cages, insulae, the floor), free parts on the 4 m lattice for the pillars,
+  medallions and zones, and the hatch risers in two variants (cell-centred; corner-centred from four Corner Hatch
+  tiles). The sand: 7 cells (56 m), the 52 m board centred on a cell, a 2 m margin; its hatches (±12 m) fall on cell
+  corners. MAP 21 stays on the 8 m grid.
+- **Trenches are sunk 1.5 m and carve their own slot:** their buried floors pull the terrain down under them
+  (settle.ts `terrainUnderFloors`, on load and every MapMaker edit). Place them on level 0 over ground at level 0;
+  they need terrain (flat maps keep the Military Compound's raised trenches). Head under the parapet standing in the
+  channel, eyes over it on the fire step, hidden crouched.
+- **34 pieces, eight families** (`content/setpieces/`): Gun Casemate and Cliff Casemate (`casemate.json`); Trench,
+  Bend, Junction, End, Jog, each timber or `_sandbag` (`trench.json`); Grand Cliff Stair, Cliff Stair Tower
+  (`cliffstair.json`); Arena Bay (Podium), (Upper Tier), (Vomitorium), Grand Arcade, Arena Attic (`arena.json`);
+  Hypogeum Tunnel, Bend, Junction, Crossing, Hatch Riser, Hatch Riser (Corner), Cage Block, Lift-Cage Riser
+  (`hypogeum.json`); Insula, Insula (Corner), Insula (Tall) (`insula.json`); Stair Tower (4, 6, 8 levels)
+  (`stairtower.json`); Beached Landing Craft (`landing.json`).
+- **New kit (any map):** wall styles Round arch, Grand arch (two storeys), Embrasure, Barred gate; tiles Sunken
+  Trench (+ Bend, Junction, End), Grand Flight, Seating Tier (+ Vomitorium), Vaulted Tunnel (+ Bend, Junction,
+  Crossing), Grand Gallery, Corner Hatch (Military Compound and Imperial Arena style packs); the Sandbags material
+  (procedural paint, `patterns.ts` `sandbagPaint`). Shared code, small: `map/catalog.ts` `kitPart` (a kit part's
+  `surface` now dresses every box its builder makes, the timber steps; tiles.mjs allows it), `map/materials.ts` (the
+  `sandbags` pattern id), `editor/stylePacks.ts` (the new tiles and the prop in their packs).
+- **Landing craft** (the owner's Drive model): prop **Landing Craft (Beached)** (`prop.lcvp_beached`, pack
+  `meshy-community-drive-1106`: Meshy community, CC0 per owner, community page URL pending; hero tier, 16k triangles,
+  a 4k LOD from 40 m, baked normal map, 1.0 MB, `collide: "voxel"`: walk up the ramp into the well, shoot over the
+  gunwales). In the Military Compound and Coastal Harbor style packs, and the static Beached Landing Craft set piece
+  (ramp down, hedgehogs, crates). **Not swapped into Shingle Point:** the owner compares it with the kit Landing Craft.
+- **Tests:** `packages/shared/test/setPieces3.test.ts` (18: trenches carved, walked, bot paths, crouched cover and the
+  fire step's sightline; casemate embrasure shots, its loop and two ways in; cliff stairs walked and pathed; the
+  landing craft's ramp, well and gunwales; the stands' bot route and vomitorium; hypogeum ladders, bars and corner
+  hatches; insula storeys and flats; stair towers; expansion equals exploded). `setPiecePlay.test.ts`: the every-port
+  test covers every piece whose ports are walled doorways or arches and names the open-sided ones (`OPEN_SIDED`);
+  the z-fight test only mirrors `mirror: "free"` pieces. Fixtures regenerated (tiles, materials). Coverage map: the 13
+  tiles, the four wall styles and the prop placed in MapMaker (driver: Playwright on the built client, Import, the
+  palette, R, clicks, the inspector's wall pickers, Export).
+- **Screenshots** (session scratchpad, built game, MapMaker → TEST): `shots/m21b/` (casemates, trenches, cliff
+  stairs, eye level and overview; `shots/m21/` is before the fixes from looking at them), `shots/lcvp/` (the beached
+  landing craft: ramp, overview, side, from the well, stern), `shots/colo/` (stands, arcades, hypogeum, cages,
+  insulae, stair towers).
+- **Budgets:** per piece in the plan. A full colosseum of these pieces (24 bay lines of six storeys, four 8-level
+  corner towers, the hypogeum, 15 insulae) is about 800 tiles, 200 blocks and 190 lights (inside MAP_BUDGETS) but
+  about 25,000 collision and 30,000 trim boxes, several times any shipped map (St. John's 3,915): the map build should
+  measure load and frame time early and drop what it can (the attic, a storey of arcades round the far sides, the
+  stair towers' facade).
+
+**Left for later, and for the owner**
+- MAP 21's **sea wall section (with its breach)** and **command bunker**: not built (the Gun Casemate is the pattern).
+- The map builds themselves (MAP 21, the colosseum) in MapMaker from these pieces, after part 2.
+- Owner: compare the landing craft with Shingle Point's kit Landing Craft; send the community page URL for it.
+<!-- /setpieces-3 -->
+
 <!-- shingle -->
 ### Shingle Point asset refresh (`wip/shingle`, agents, 2026-11-05/06; main 5b167034 merged in; green on `check/shingle`)
 Owner's decision: same layout and gameplay, every dated asset replaced, so it compares fairly with MAP 21 (a new map,

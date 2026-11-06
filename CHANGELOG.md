@@ -29,6 +29,21 @@ made only on a commit that passed CI on a check branch.
 
 **The HUD portrait follows your body** (owner's report, 2026-11-06: playing the hooded figure with Random characters on, the portrait bottom left still showed the panda picked in the menu): with Random characters, each new life's character now shows in the HUD portrait.
 
+**Set pieces, part 3: pieces for the beach assault and the colosseum** (owner-approved, docs/SET_PIECES_PLAN.md)
+- **For MAP 21 (Military Compound look):** the Gun Casemate and the Cliff Casemate (a gun port to the sea, and rooms
+  in a loop: two ways in, no dead ends); trench runs sunk into the ground (straight, bend, junction, end, and a jog
+  round a traverse; fire steps, duckboards, timber or sandbag walls; crouch in the trench and you're hidden); the
+  Grand Cliff Stair and the Cliff Stair Tower; a landing craft beached with its ramp down, which never moves: cover to
+  fight from, up the ramp and into its well.
+- **For the Sandfall Colosseum rebuild (Imperial Arena look):** arena bays (podium, upper tier, vomitorium), the
+  Grand Arcade and the attic, stacking six storeys high; hypogeum tunnels with hatches and ladders up to the sand;
+  cage blocks with barred gates and a lift-cage riser; three insulae with shops and flats; stair towers of 4, 6 and 8
+  levels.
+- **New building pieces for every map:** the Round arch, Grand arch (two storeys), Embrasure and Barred gate wall
+  styles; Sunken Trench tiles that carve their own slot in the ground; the Grand Flight (two cells wide), Seating Tier
+  and Vomitorium, Vaulted Tunnel, Grand Gallery and Corner Hatch; a Sandbags material; the Landing Craft (Beached)
+  prop (Meshy community, CC0), in the Military Compound and Coastal Harbor packs.
+
 **Set pieces, part 1: placed as one, made of the ordinary pieces** (owner-approved plan, docs/SET_PIECES_PLAN.md)
 - **Maps can hold set pieces** (map format 27, `setPieces`): a carriageway or a skybridge placed as one, turned and
   mirrored, themed by a role pack. It is stored as one entry and becomes its parts (ordinary tiles, blocks, doors and
