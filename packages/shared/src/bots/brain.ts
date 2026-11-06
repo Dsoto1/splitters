@@ -184,6 +184,8 @@ export interface OrderGoal {
   push?: boolean;
   /** How far (m) it goes out of its way for something (a noise, an enemy that slipped away, a gun); default by personality. */
   detour?: number;
+  /** Run for it (a flag carrier): sprint there and never stop, not for cover, a retreat or a fight (it shoots only at enemies right on it). */
+  run?: boolean;
   /** Holding it (CTF defenders): where the enemy comes from, to watch while it moves between spots round it. */
   watch?: Vec3 | null;
 }
@@ -267,6 +269,10 @@ const PICKUP_GIVE_UP_SECONDS = 90;
 const RIDE_REACH = 25;
 /** Enemy vehicles: how far (m, plus height) a bot goes for a rocket or grenade launcher once one has been seen lately (VEHICLE_MEMORY s). */
 const LAUNCHER_DETOUR = 30;
+/** On the way to an objective (OrderGoal.push): noises and enemies that slipped away only this close are worth turning aside for (m). */
+const PUSH_NOTICE = 12;
+/** An objective at least this far off is gone to by a lane of the bot's own (orderTarget). */
+const LANE_FROM = 50;
 const VEHICLE_MEMORY = 12;
 /** Score bonus (weaponScore) for an anti-vehicle weapon against a target in a vehicle; melee is worse than useless. */
 const ANTI_VEHICLE_BONUS = 1.2;
@@ -373,6 +379,8 @@ export class BotBrain {
   private readonly failedCrossings: { at: Vec3; until: number }[] = [];
   /** Last hop on a crossing. */
   private hopAt = -Infinity;
+  /** The way it takes to a far objective (orderTarget): the goal it was picked for and the waypoint (null: straight). */
+  private lane: { goal: Vec3; via: Vec3 | null } | null = null;
 
   private seq = 0;
   private readonly rng: () => number;
@@ -483,7 +491,7 @@ export class BotBrain {
   /** The vehicle bearing down (mount index), when it was first noticed, and whether this bot reacts to it at all this time. */
   private roadkill: { index: number; since: number; notice: boolean } | null = null;
   /** Going to press a button that opens a door in the way. */
-  private pressPlan: { stand: Vec3; face: Vec3; until: number } | null = null;
+  private pressPlan: { stand: Vec3; face: Vec3; until: number; door: Aabb } | null = null;
   private pressedAt = -Infinity;
   /** Waiting for or riding a lift: stand still this tick. */
   private holdStill = false;
@@ -596,6 +604,7 @@ export class BotBrain {
     this.regrouping = false;
     this.watch = null;
     this.escape = null;
+    this.lane = null;
   }
 
   /** It killed someone: a sniper moves on to another spot soon after (they know where the shot came from). */
@@ -655,7 +664,13 @@ export class BotBrain {
       return this.thinkMounted(view, seq, target, ctx);
     }
     this.useLatch = false;
-    if (this.mountPlan && view.tick >= this.mountPlan.until) this.mountPlan = null;
+    if (this.mountPlan && view.tick >= this.mountPlan.until) {
+      // Didn't get in in time (no way to it, stuck on the way, someone else took it): leave that one alone a while,
+      // as one it got stuck driving (the next check sent it straight back: Coldwater Gulch's bots spent 5 % of the
+      // match walking into a vehicle they couldn't reach).
+      if (!this.mountPlan.ride) this.avoidMounts.set(this.mountPlan.index, view.tick + TICK_RATE * STUCK_AVOID_SECONDS);
+      this.mountPlan = null;
+    }
 
     if ((view.tick + this.slot) % DECIDE_TICKS === 0) this.decide(view, target);
     // Whatever the last decision was, it needs what it was about.
@@ -810,11 +825,35 @@ export class BotBrain {
     return goal.detour ?? 20 - (this.profile.objectivePriority / 100) * 12;
   }
 
-  /** `p` isn't worth leaving the way to `goal` for: not close (10 m) and more than the detour budget out of the way. */
-  private offTheWay(me: Vec3, p: Vec3, goal: OrderGoal): boolean {
-    const d = horizontalDistance(me, p);
-    if (d < 10) return false;
-    return d + horizontalDistance(p, goal.pos) - horizontalDistance(me, goal.pos) > this.detourFor(goal);
+  /**
+   * `p` (a noise, where an enemy slipped out of sight) isn't worth leaving the way to `goal` for: further than
+   * PUSH_NOTICE. Measured (Diamond Park CTF): attackers allowed anything on their way spent 29 % of their time going
+   * to noises 20–50 m off in the fight between them and the flag, and none got to it. Heading on to the goal takes
+   * them past it anyway; what they see, they fight.
+   */
+  private offTheWay(me: Vec3, p: Vec3): boolean {
+    return horizontalDistance(me, p) > PUSH_NOTICE;
+  }
+
+  /**
+   * Where to head for an objective goal: far off, by a way of its own first (left, right or straight, picked once
+   * per goal and life from its route stream), so a team's attackers spread over the map's routes instead of all
+   * meeting the enemy's head-on in one corridor; then the goal itself.
+   */
+  private orderTarget(view: BotWorldView, g: OrderGoal): Vec3 {
+    const me = view.self.pos;
+    let lane = this.lane;
+    if (!g.push || g.detour === 0) return g.pos;
+    if (!lane || horizontalDistance(lane.goal, g.pos) > 8) {
+      const far = horizontalDistance(me, g.pos) > LANE_FROM;
+      const r = this.routeRng();
+      const side = r < 0.35 ? -1 : r < 0.7 ? 1 : 0;
+      lane = this.lane = { goal: { ...g.pos }, via: far && side ? laneWaypoint(view.nav.places(), me, g.pos, side) : null };
+    }
+    const via = lane.via;
+    // Near it, or already nearer the goal than it is: on to the goal.
+    if (via && (horizontalDistance(me, via) < 6 || horizontalDistance(me, g.pos) < horizontalDistance(via, g.pos))) lane.via = null;
+    return lane.via ?? g.pos;
   }
 
   private get berserker(): boolean {
@@ -867,7 +906,7 @@ export class BotBrain {
     const holding = this.posted(me.pos);
     const goal = view.orderGoal;
     const push = !!goal?.push;
-    const stayPut = (p: Vec3) => (!!this.post && horizontalDistance(me.pos, p) > 10) || (push && this.offTheWay(me.pos, p, goal!));
+    const stayPut = (p: Vec3) => (!!this.post && horizontalDistance(me.pos, p) > 10) || (push && this.offTheWay(me.pos, p));
 
     // Enemy vehicles about: out of the way of one bearing down.
     this.watchTraffic(view);
@@ -875,7 +914,7 @@ export class BotBrain {
 
     // A lift from a teammate is worth taking even when hurt or with someone about.
     if (this.mountPlan && (this.mountPlan.ride || (!hurt && (!target || horizontalDistance(me.pos, target.pos) > 10)))) this.state = 'mount';
-    else if (target && hurt && !this.berserker) this.state = 'retreat';
+    else if (target && hurt && !this.berserker && !goal?.run) this.state = 'retreat';
     else if (!underFire && !armedForVehicles && this.fetchLauncher(view, target)) {
       // An enemy vehicle about and nothing that hurts it: a launcher close by first.
       this.state = 'advance';
@@ -912,12 +951,12 @@ export class BotBrain {
     // An enemy vehicle it has nothing to hurt with: cover (any bot that thinks at all).
     const outgunned = !!target && this.targetMount?.kind === 'vehicle' && !armedForVehicles;
     const coverChance = Math.max(this.arena ? this.tactical * 0.4 : 0.15 + this.tactical * 1.7 + (this.methodical ? 0.3 : 0), outgunned ? 0.4 + this.tactical * 0.6 : 0);
-    if (threat && !this.berserker && !holding && this.rng() < coverChance) {
+    if (threat && !this.berserker && !holding && !goal?.run && this.rng() < coverChance) {
       const dist = horizontalDistance(me.pos, threat);
       const held = this.heldWeapon(view);
       const lowAmmo = !!held && held.def.magazine > 0 && held.mag <= Math.ceil(held.def.magazine * 0.25);
-      // (On the way to an objective, not just for a fight at range: it fights on the move instead.)
-      const wantCover = underFire || hurt || lowAmmo || !!view.reloading || (dist > 11 && !push) || this.state === 'retreat' || outgunned;
+      // (On the way to an objective, not for a fight at range or only for being shot at: it fights on the move instead.)
+      const wantCover = (underFire && !push) || hurt || lowAmmo || !!view.reloading || (dist > 11 && !push) || this.state === 'retreat' || outgunned;
       const threatEye = { x: threat.x, y: threat.y + PLAYER.eyeHeight, z: threat.z };
       if (this.cover && (horizontalDistance(this.cover.threat, threatEye) > 4 || (tick % 30 < DECIDE_TICKS && !stillCovered(view.physics, this.cover.pos, threatEye, me.size ?? 1)))) {
         // Threat moved round our cover: find another.
@@ -963,6 +1002,15 @@ export class BotBrain {
     const tick = view.tick;
     this.holdStill = false;
     if (this.pressPlan && tick >= this.pressPlan.until) this.pressPlan = null;
+    // The door it was going to open is open now (someone else pressed): leave the button alone. A button that
+    // toggles its door would shut it again, and with a team trying to get through it flapped open and shut while
+    // they crowded the button (Iron Compound's main gate: 55 % of the bots' time).
+    if (this.pressPlan && !view.blockers?.some((b) => sameBox(b, this.pressPlan!.door))) {
+      this.pressPlan = null;
+      this.path = [];
+      this.goal = null;
+      this.lastPathTick = -Infinity;
+    }
     let moveYaw: number | null = null;
     let moveScale = 1;
     let backOff = false;
@@ -1100,15 +1148,17 @@ export class BotBrain {
           }
           // On the way to an objective (owner: CTF attackers "hang out"): carry on toward it, shooting as it goes,
           // rather than stopping to trade shots at range. Up close it's a fight like any other.
+          // A flag carrier runs whatever the range, sprinting past anyone not right on it.
           const g = view.orderGoal;
-          if (g?.push && dist > 9 && (horizontalDistance(me.pos, g.pos) > g.radius + 0.5 || Math.abs(me.pos.y - g.pos.y) > 2)) {
-            const go = this.followPathTo(view, g.pos, false);
+          if (g?.push && (dist > 9 || g.run) && (horizontalDistance(me.pos, g.pos) > g.radius + 0.5 || Math.abs(me.pos.y - g.pos.y) > 2)) {
+            const go = this.followPathTo(view, this.orderTarget(view, g), false);
             if (go !== null) {
               moveYaw = go;
               moveScale = 0.85;
               backOff = false;
               strafe = false;
               stance = 0;
+              if (g.run && dist > 6) sprint = true;
             }
           }
         }
@@ -1199,8 +1249,11 @@ export class BotBrain {
         lo.y = g.pos.y;
         lo.z = g.pos.z;
         if (horizontalDistance(me.pos, g.pos) > g.radius || Math.abs(me.pos.y - g.pos.y) > 2) {
-          moveYaw = this.followPathTo(view, g.pos, moving);
+          const to = this.orderTarget(view, g);
+          moveYaw = this.followPathTo(view, to, moving);
           moveScale = this.careful() && !g.push ? 0.8 : 1;
+          // An objective a way off: run for it (a carrier always), as players do.
+          if (g.push && (g.run || horizontalDistance(me.pos, to) > 15)) sprint = true;
           doing = 'goal';
           this.watch = null;
         } else {
@@ -1365,6 +1418,12 @@ export class BotBrain {
       if (tick < this.scanUntil) {
         this.turnToward(this.scanYaw + Math.sin((this.scanUntil - tick) / 14) * 1.6, 0);
         if (moveYaw === null) doing = 'scan';
+      } else if (this.holdStill) {
+        // Waiting for a lift, or riding it: look about (a sweep and a glance back now and then), not at the shaft.
+        const corner = this.path[this.pathIndex];
+        const t = tick + this.slot * 41;
+        const base = corner ? Math.atan2(corner.x - me.pos.x, corner.z - me.pos.z) : this.yaw;
+        this.turnToward(base + Math.sin(t / 45) * 1.1 + (t % (TICK_RATE * 6) < TICK_RATE ? Math.PI * 0.8 : 0), 0);
       } else if (this.state === 'chase' && this.lastKnown && horizontalDistance(me.pos, this.lastKnown.pos) < 30 && this.canSee(view, ctx.eye, this.lastKnown.pos)) {
         // Keep the gun on where they were while closing in.
         this.lookAt(view, this.lastKnown.pos, 1.2);
@@ -2759,9 +2818,8 @@ export class BotBrain {
 
   /** The path is shut by a door some button opens: go and press it (if it can be reached). */
   private planPress(view: BotWorldView, door: Aabb): void {
-    const same = (a: Aabb, b: Aabb) => Math.abs(a.min.x - b.min.x) + Math.abs(a.min.z - b.min.z) + Math.abs(a.max.x - b.max.x) + Math.abs(a.max.z - b.max.z) + Math.abs(a.min.y - b.min.y) < 0.05;
     const me = view.self.pos;
-    const options = (view.doorButtons ?? []).filter((d) => same(d.door, door)).sort((a, b) => horizontalDistance(me, a.stand) - horizontalDistance(me, b.stand));
+    const options = (view.doorButtons ?? []).filter((d) => sameBox(d.door, door)).sort((a, b) => horizontalDistance(me, a.stand) - horizontalDistance(me, b.stand));
     for (const o of options) {
       const path = view.nav.findPath(me, o.stand);
       if (!path) continue;
@@ -2770,7 +2828,7 @@ export class BotBrain {
       const blocked = this.pathBlocked(view);
       this.path = saved;
       if (blocked) continue;
-      this.pressPlan = { stand: o.stand, face: o.face, until: view.tick + TICK_RATE * 20 };
+      this.pressPlan = { stand: o.stand, face: o.face, until: view.tick + TICK_RATE * 20, door };
       this.path = path;
       this.goal = { ...o.stand };
       return;
@@ -2881,6 +2939,9 @@ export class BotBrain {
 }
 
 const key = (p: Vec3): string => `${Math.round(p.x)},${Math.round(p.y)},${Math.round(p.z)}`;
+
+/** The same door (or wall): boxes that match to a couple of centimetres. */
+const sameBox = (a: Aabb, b: Aabb): boolean => Math.abs(a.min.x - b.min.x) + Math.abs(a.min.z - b.min.z) + Math.abs(a.max.x - b.max.x) + Math.abs(a.max.z - b.max.z) + Math.abs(a.min.y - b.min.y) < 0.05;
 
 export interface WeaponChoiceContext {
   /** Distance to the target (or to where it was last seen). */

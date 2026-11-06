@@ -45,8 +45,8 @@ const THREAT_RANGE = 16;
 const ESCORTS = 3;
 /** Defenders keep watch within this of their flag (m). */
 const DEFEND_RADIUS = 9;
-/** Carriers run for home and only fight what is right on top of them. */
-export const CARRIER_AWARENESS = 4;
+/** Carriers run for home and only notice enemies this close (they shoot back at them on the run). */
+export const CARRIER_AWARENESS = 10;
 
 /** How many of a team's Player Bots defend: 3 on a team of 12 or more players, 2 on a smaller one (1 on a team of two or three). */
 export function ctfDefenders(teamSize: number): number {
@@ -145,7 +145,7 @@ export function ctfBotGoal(c: Combatant, flags: readonly FlagRt[], plan: CtfBotP
   const role = plan.roles.get(c.slot) ?? 'attack';
   const near = (p: Vec3) => horizontalDistance(c.move.pos, p) < RESPOND_RANGE;
   // The carrier: home, nothing on the way worth stopping for.
-  if (enemy.carrier === c.slot) return { pos: own.base, radius: 0.6, push: true, detour: 0 };
+  if (enemy.carrier === c.slot) return { pos: own.base, radius: 0.6, push: true, detour: 0, run: true };
   // Our flag dropped: whoever is close (and the defenders) goes and touches it.
   if (own.state === FLAG_DROPPED && (role === 'defend' || near(own.pos))) return { pos: own.pos, radius: 0.5, push: true };
   if (own.state === FLAG_CARRIED) {
