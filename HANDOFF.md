@@ -1151,6 +1151,14 @@ variant for MAP 21.
   semi-traditional arena-style FPS match, so the landing craft is static dressing and cover. MAP 21's beach is
   where the fighting starts, not a scripted arrival.
 
+### Owner's answers on the 11-06 intake (2026-11-06), for the follow-up
+- **Names stay:** Spacewalker, Starfarer, Shellback.
+- **Keep the US flag** on Spacewalker.
+- **Shellback smaller:** "should be smaller, not that big at all". Large → standard: rebuild, portrait, grip re-check.
+- **"I did not make any, they are Meshy community."** Relabel the airliner shell, the buggy and its tire, and the Alien
+  Biker as Meshy Community CC0. The mining machines stay owned: we generated them through the Meshy API with the
+  owner's approval, 2026-10-30, so they weren't the owner's own downloads.
+
 ### Queued (owner, 2026-11-06): character intake, astronauts, crocodile and tortoise. NEXT FREE SLOT ("when able")
 **Licence (owner, 2026-11-06):** "all Community CC0 and should be treated as such unless I let you know I created them in
 Meshy." That covers these five, the landing craft, and every Drive model before them (CLAUDE.md "Content rules"). The
