@@ -11,9 +11,9 @@
 //      with no bottom face stays solid inside) through cubes no triangle touches is open; the rest is solid (the
 //      surface and every space it closes in);
 //   3. the solid cubes are covered exactly by boxes (greedy, the fewest of several sweep orders), then boxes are
-//      merged two at a time, cheapest first, while a merge fills at most `air` m³ of open space and fills no cube
-//      that a straight line along x, y or z through the whole model passes without touching it (a merge never
-//      closes a window, an arch or the gap between two posts);
+//      merged two at a time, cheapest first, while a merge fills at most `air` m³ of open space and none of it in
+//      sight: no cube a straight line from outside reaches (along x or z either way, or down from above) more than
+//      VOXEL_HUG from the model (a merge never closes a window, an arch, a niche or the gap between two posts);
 //   4. each box face with open space all across it is pulled in to the model inside the box, so faces sit on the
 //      model (bullet holes on the stone, not a cube in front of it). A box is never thinner than the model inside
 //      it, nor than `minThickness` round a single plane of the model (a kit wall with one face).

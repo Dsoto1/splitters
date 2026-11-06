@@ -8,6 +8,32 @@ made only on a commit that passed CI on a check branch.
 
 ## Unreleased
 
+**Rounds go through arches, windows and holes** (owner's report, 2026-11-06: bullet holes in empty air inside a stone
+arch and a ruined wall's window on Fogbound, and under a giant root on Fernwood Moon, with puffs in the air by the trees)
+- **Openings are open**: arches, windows, holes, doorways, gates, the space under tables, beds, bridges, stalls and
+  balconies, the inside of tents and the gaps in fences no longer stop rounds or players. 120 props now collide with
+  boxes that follow their model in 3D (voxel collision: the Quaternius ruins' arches and walls, the dungeon arch, the
+  giant root, the Wild West balconies, gallows and wagons, the sci-fi trusses and frames, the skytrain, the armoured
+  truck, the gantry crane, tables, bunks, stalls, siege engines and more); their stone, wood and metal still stop
+  rounds as before (same materials, same thickness for penetration), and cover behind their solid parts still works.
+  Players walk through arches and doorways tall enough, and bots path through them.
+- **Trees and poles collide where their trunk is**: their column stood in the middle of their footprint, which a
+  crown or an arm to one side moves off the trunk (birches 1.5 m off, the broadleaf trees 0.6 m, street lights 0.9 m),
+  so rounds stopped in the air beside the tree and you could walk through the trunk. The column now stands on the
+  trunk, as thick as it, follows a palm's or a leaning trunk's curve, and stops where a broadleaf tree forks
+  (47 trees and poles). This was the Fernwood Moon screenshot: its broadleaf trees and pines.
+- **No walls of air over corner pieces**: corner and stair-corner pieces, railings, sandbag nests, rock spires and the
+  pediment no longer stand an invisible wall at their tallest height over their lower parts (28 props).
+- **Breakable props with openings** (tents, fences, barriers, pipes, machines with windows) collide as their own
+  shape too; a shot anywhere on one still damages it.
+- Kept as they were, with the reason written down: long open stair flights (solid underneath so they climb
+  reliably), the airliner's and its boarding stairs' hand-built collision, the bucket-wheel excavator's lattice and
+  one city block.
+- Team tools: `collide: "voxel"` for props (docs/CONTENT_PIPELINE.md, "Prop collision"), with a box budget per prop;
+  `pnpm content:check` now fails on a prop whose collision fills an opening without saying why
+  (`tools/content/prop-openings.mjs`, which also lists the slack round props' outlines with `--slack`); a fixture test
+  lists every prop whose collision changed.
+
 **No flicker on props** (owner's report on Flatpack Depot, 2026-11-05: "significant flickering", "flicker when I look
 around", on an Android phone; docs/LOOK.md, "No flicker: props")
 - **Rugs, shelves, crates and boxes no longer fight the floor**: many props have flat faces in the floor's own plane

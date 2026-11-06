@@ -451,6 +451,31 @@ Resume each from its branch, after merging main.
 **Likely a regression** from performance rounds 1–2. Fix it with an e2e check that a character past LOD distance
 draws its whole body.
 
+### Openings fix (`wip/openings`, agent, 2026-11-06; CI on `check/openings`)
+Status: built and tested locally, being checked (see the end of this section). The queued report below is what it fixes.
+- **Done:**
+  - `collide: "voxel"` (tools/content/voxel-collision.mjs): 3D collision from the model (0.1 m cubes, flood fill from
+    the sides and above, exact cover, merges that never fill air in sight, faces pulled in to the model), with a box
+    budget per prop (48; hero 160; `voxelBudget`) and a coarsening ladder. 120 props use it (89 were `box`, 20
+    `shell`, 5 `frame`, 5 `trunk` with no single trunk, 1 `openings`).
+  - Trunk columns on the real trunk (`trunkBoxes`), as thick as it, following leans, stopping where broadleaf trees
+    fork: 47 trees and poles changed (Meshy birches were 1.5 m off; this was screenshot 32).
+  - `shell` merges only cells of one height (no walls of air at the tallest cell): 28 props tightened.
+  - Breakable props collide as their `boxes` (ScenarioBodies `parts`).
+  - Openings audit `tools/content/prop-openings.mjs` in `pnpm content:check` (`fills` reasons for the 7 kept);
+    `--slack` lists air round outlines (131 `box` props: not changed); fixture
+    `packages/shared/test/fixtures/prop-openings.json` + `propOpenings.test.ts` (every changed prop, probes, points of
+    the model, digests of the rest; shots, walking, nav and cover in play); `tools/content/test/voxel-collision.test.mjs`.
+  - docs/CONTENT_PIPELINE.md "Prop collision"; CHANGELOG.
+- **Screenshot 32** (Fernwood Moon, under `jg_giant_root` prop_602, scale 1.6): no `env.*` species on that map, and
+  bushes have no collider, so not limbs or foliage. Rays cast from under the root with the old table: 352 of 1,261
+  prop hits landed in open air more than 25 cm from the model, mostly on trunk columns standing off the trunk
+  (nt_common_tree 0.58 m off, nt_pine_*), tents and stumps; with the new table 185 of 1,244, the rest mostly `box`
+  slack (nt_stump_moss, nt_log_moss). Script: session scratchpad `openings/work/fernwood.mts`.
+- **Resume:** `git checkout wip/openings`, `pnpm install`, `node tools/content/prepare-props.mjs` (voxelises into
+  node_modules/.cache, ~1 min cold), `node tools/content/prop-openings.mjs --check`, then the checks in CLAUDE.md.
+  Scratch scripts (renders, audits, screenshots) in the session scratchpad `openings/work/`.
+
 ### Queued FIRST (owner bug report, 2026-11-06): bullets stop in the air inside arches, windows and holes
 The owner's screenshots, in the session scratchpad `openings/` (30.jpg, 31.jpg, 32.jpg), show bullet holes in empty
 air inside openings:
