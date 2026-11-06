@@ -387,6 +387,9 @@ Your own view shows your look's arms holding the viewmodel:
   - The thumbs lie along the frame (each straightened most of the way, the support thumb forward along the left side).
   - Tune it live on the grip page: `__grips.pistol({ knuckles: [right, up, ahead], wrap, supportShift, ... })` (model
     m, the gun's axes; returns the whole tune), then `__grips.pose(...)`. Third person keeps the clips' hold.
+  - Only a two-handed pistol grip (a `support` point) is held this way. A one-handed `pistol`-style hold, the Spear's
+    shaft or the Medkit's and Medi-Beam's handle, keeps the close it had before (turned and closed as a raked grip,
+    their fingers stood straight off the shaft and the handle; the grip audit's Spear and Spin Gun pass, 2026-11-06).
 
 **Where hands are drawn:** `gripMiss` and `__grips.miss()` measure the joints. A Meshy hand needn't sit on its
 joint as the rig's does (the dapper's lay a quarter turn round), so each measured hand's own frame is read off its
@@ -796,7 +799,8 @@ and four fingers, three joints each; the `…4` end markers optional):
 - the rig's finger joints go onto the download's (`thumb_01`…`pinky_04_leaf`, rig orientations kept, so the clips and
   the game's curl mean the same), and each finger joint's weights go to its rig joint (an end marker's onto `…_03`);
 - `hands.mjs` measures the hand only (palm, frame, size, curl: `extras.hand`, `fingers: 'own'`); nothing is moved or
-  re-weighted (`fixes.hands.scale` still applies; `fixes.skin`'s finger options don't);
+  re-weighted (`fixes.hands.scale` still applies, and moves the finger and thumb joints with the skin about the wrist;
+  `fixes.skin`'s finger options don't);
 - the first-person arms shrink the hand about its joint, and the finger joints with it;
 - a check before the build falls back to the re-fit for a side where a finger mostly holds fewer than 6 vertices or a
   finger's chain runs back into the hand (the log says which);
@@ -890,9 +894,22 @@ wrist), `wrist` (true: the skin past the wrist joint rides the hand alone, none
 of it eased into the forearm; Biscuit's stubby paws folded at the wrist when the
 hand turned hard onto a gun pointed at the ground), `mitten` (true: the fingers bend
 together even where gaps were found; a thumb or fold read as a gap crumpled a split
-hand into shards: Honest Abe's and Virtua Soldier's right hands), for both hands or one (`l`, `r`). A rigid gauntlet
-(`fingers: none`, curl 0) given a `curl` is skinned as a mitten that closes on the grip: the Knight has
-`fixes.hands.curl: 1` (rehanded with rehand-built.mjs).
+hand into shards: Honest Abe's and Virtua Soldier's right hands), `together` (0–1, written on the hand for the game:
+as the hand closes, its fingers come in toward the middle finger by that share of their spread, in every view; a
+download's own fingers can be fanned wide, and closed as they lay they stood apart round the grip like a claw: Frost
+Viking's 23 degrees from index to little finger, the Goblin Warlord's 20), for both hands or one (`l`, `r`). A rigid
+gauntlet (`fingers: none`, curl 0) given a `curl` is skinned as a mitten that closes on the grip. The Iron Knight's
+gauntlets (own fingers since its Iron Warden model) measure thick for their length, which caps the curl at 0.5; it has
+`fixes.hands.curl: 1` (2026-11-06: they close round the grip in both views).
+
+**Hand size against a gun.** A hand much bigger than a grip swallows it, worst in first person (Frost Viking's and the
+Goblin Warlord's own hands were 24-28 cm long and 19-21 cm wide, splayed). `fixes.hands.scale` shrinks one at import
+(prepare-meshy-characters.mjs, from the download; rehand-built leaves the scale out, as a built hand was scaled
+already): about 20 cm long suits a 1.8 m body (Frost Viking 0.8; the Goblin Warlord right 0.75, left 0.85, its hands
+were uneven). A hand with the download's own fingers keeps its finger and thumb joints in step: they are scaled about
+the wrist with the skin (left where the download had them, the fingers curled about points past the shrunk knuckles,
+a claw that folded its low-poly fingers into shards). A smaller hand closed fully can fold into shards too: soften it
+with `curl` (Frost Viking's right 0.6, left 0.75).
 
 `node tools/content/rehand-built.mjs` (`ONLY=<ids>`) does the same to
 characters already built, from their shipped files, when the downloads
