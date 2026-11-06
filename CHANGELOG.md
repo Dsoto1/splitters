@@ -54,6 +54,22 @@ Change map are all still there.
   and Vomitorium, Vaulted Tunnel, Grand Gallery and Corner Hatch; a Sandbags material; the Landing Craft (Beached)
   prop (Meshy community, CC0), in the Military Compound and Coastal Harbor packs.
 
+**Astronauts, a crocodile and a tortoise** (the owner's models of 2026-11-06)
+- **Capt. Nova** is the light-blue astronaut now: a slender spacesuit in pale blue over a black bodysuit, with a dark
+  visor and a backpack. Same name, same place on the roster; saved choices and bot sets keep her.
+- **Boglurker** is a crocodile now, in iron pauldrons, bracers and greaves, with a long tail. Still large, still a
+  creature, and still the Boglurker the NPC squads bring.
+- **New:** **Spacewalker**, a white spacesuit with a gold visor (Soldiers), **Starfarer**, a dark teal and violet suit
+  with glowing magenta strips (Soldiers), and **Shellback**, a large humanoid tortoise (Animals). The names are
+  placeholders until the owner names them.
+- **Bamboo is retired:** a saved choice of Bamboo, or a bot set naming it, plays Shellback.
+- The crocodile's and the tortoise's claws close round the grips; every new hand is tuned on the rifle, the pistol and
+  the shotgun. The crocodile stands over its own feet (its long tail had put its body 0.4 m ahead of them).
+- **Licences:** Meshy models from the owner's Drive are recorded as Meshy Community CC0 unless the owner made them
+  (owner, 2026-11-06). The provenance audit that day moved the Drive models recorded as owned (characters, weapons and
+  turrets, props, helmets) to community CC0; only the mining machines, the airliner, the buggy and its tire, and the
+  Alien Biker stay owned. Nothing in the game changes.
+
 ## 0.8.0 (2026-11-06)
 
 Highlights:
