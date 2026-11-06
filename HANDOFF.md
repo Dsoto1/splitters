@@ -375,7 +375,7 @@ licence fields and docs changed (979bd80c and later).
 <!-- /intake-1106 -->
 
 <!-- intake-1106b -->
-### Intake 11-06 follow-up: Shellback standard, Capt. Nova retired, Starfarer's pack, four licences (`wip/intake-1106b`, agent, 2026-11-06; from main a07cb65b; CI on `check/intake-1106b`: CI_PENDING; not landed)
+### Intake 11-06 follow-up: Shellback standard, Capt. Nova retired, Starfarer's pack, four licences (`wip/intake-1106b`, agent, 2026-11-06; from main a07cb65b; green on `check/intake-1106b` at 518838fa, run 42283524919 (full suite: unit, maps, build, check, perf, 11 e2e shards); not landed)
 The owner's answers on the 11-06 intake (below, "Owner's answers on the 11-06 intake"). Scratch: the agent scratchpad
 `i1106b/` (tools, shots, frames).
 - **Shellback** (`meshy_tortoise`): large → standard (`size` left out). Rebuilt from the download: byte-identical,
@@ -383,7 +383,7 @@ The owner's answers on the 11-06 intake (below, "Owner's answers on the 11-06 in
   100 health, speed ×1 (was 115, ×0.94). The portrait was recaptured and is unchanged: the renderer builds every
   portrait body at 1.8 m, so `zoom 1.25` still frames the head in the shell's dome. Hit shapes: the measured table is
   at 1.8 m and unchanged, and the audit passes (top 0.02, bottom −0.08, head 0.04, 89% inside). In play they scale
-  ×1.0 now instead of ×1.18 (`shots/hitboxes-tortoise-{before,after}.png`). Grip audit: GRIP_TORTOISE. Shots:
+  ×1.0 now instead of ×1.18 (`shots/hitboxes-tortoise-{before,after}.png`). Grip audit: unchanged (`audit-after/`: score 7, spikes fp off, rifle drawn R/L 0.02/0.19 m, the same numbers as the intake's final audit). Shots:
   `shots/shellback-before-after.png` (Character Select, third and first person).
 - **Capt. Nova retired:** `RETIRED_LOOKS['core.nova'] = 'core.astronaut'` (Spacewalker). Manifest, files, portrait
   and bot profile are kept, as for the other retired looks. The Knights vs Space Crew set's Capt. Orion is a
@@ -415,7 +415,7 @@ The owner's answers on the 11-06 intake (below, "Owner's answers on the 11-06 in
   In the frames these read as a crease between the two teal shells and as a dark lower back under the pack; neither
   shows as a tear. A wider blend (0.05) would also ease the backs of the upper arms, so it stays at 0.025. The hands
   are unchanged (same build log). Hit shapes were re-measured: torso r 0.20 → 0.21, as the pack no longer flares.
-  Grip audit: GRIP_DARK.
+  Grip audit: score 3 as before, the hands and their numbers the same; 1–2 new stretched edges at spine_03 in the Character Select hold (the junctions above), the worst edge still the left forearm's 12.3×.
 
   Frames come from the game's own animator (the character viewer, stepped 16 ms a frame): `pack/frames-before.png`
   and `frames-after1.png`. Side by side: `pack/cmp1-aim.png`, `cmp1-run.png`, `cmp1-turn-crouch.png`, and close-ups
