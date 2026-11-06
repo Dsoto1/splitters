@@ -250,6 +250,19 @@ white Ionic columns.
 
 The brief is in the session scratchpad, `briefs/slack-pass.md`.
 
+### Queued (owner-approved, 2026-11-06): weapon sets. After the Match Setup follow-ups, alongside Bot AI Phase B
+**The owner:** bots mostly use pistols. "I have never once seen the sheep weapon, hardly see swarm launcher or gravity
+weapon." They want weapon sets as map defaults, with a host setting.
+- **The plan:** docs/WEAPON_SETS_PLAN.md.
+- **Sets:** Standard, Military, Sci-fi, Medieval, Chaos, Mixed bag. Owner: "set list is fine".
+- **Military** spawns with knife, pistol and an assault rifle (owner: "pistol and a main gun"); sniper-role bots get
+  a marksman rifle. Each set has its own spawn loadout.
+- **Pickups** roll within the set, by category.
+- **Defaults and override:** each map has a default set in MapMaker's Map properties (the owner confirms a theme
+  table for official maps). The host overrides it in Match Setup and the Host tab.
+- **Bot AI Phase B gains:** snipers who play like snipers (item 5) and a cover-to-cover advance (item 6).
+  **Phase C** starts with parkour links (roofs and ledges for snipers and flankers). See docs/BOT_AI_PLAN.md.
+
 ### Queued (owner, 2026-11-06): audio pass 2: weapons, reloads, vehicles. Starts once the sound source is settled
 **The owner:** "By sound effects, we also need to update some/if not most of the weapon sounds too, reload, vehicle
 noises, etc."
