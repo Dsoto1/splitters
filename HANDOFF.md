@@ -490,8 +490,9 @@ to land. The report below is what it fixes.
   - Prop collision boxes on those maps: 14,811 to 32,241 (busiest: Backwoods, St John's ~1,500); navmesh builds
     +10-25 % on the busiest maps, shot raycasts +20-40 % in a random test (machine loaded: noisy). CI's 96-bot
     Frost Basin bench and perf jobs pass; not compared before and after on a quiet machine. Locally, `pnpm
-    test:changed` on a machine shared with two other agents: 12 bot, nav and host tests timed out (they pass on CI),
-    and propOpenings read a props table regenerated mid-run (alone: 22 of 22 pass).
+    test:changed` on a machine shared with two other agents: 11 bot, nav and host tests timed out and the 96-bot
+    bench took 49 ms a tick (limit 30; all pass on CI), and propOpenings read a props table regenerated mid-run
+    (alone: 22 of 22 pass).
   - Screenshots (scratchpad `openings/after/`, before-* on the old build, after-* on this one): rounds through
     Fogbound's arch fly 93-100 m (before: all stopped 3.7-4.0 m away, on the invisible box face at z 8.7), rounds at
     its pillars stop on the stone; through the holed wall 15.8-90 m (before: 3.7-4.3 m, on the box face); a player
