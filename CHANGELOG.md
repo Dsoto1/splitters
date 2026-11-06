@@ -8,6 +8,37 @@ made only on a commit that passed CI on a check branch.
 
 ## Unreleased
 
+**Match setup, redesigned** (the owner's report and the approved design, 2026-11-06)
+- **What matters most is always on top**, with no steps to go through: the game mode, its variants, what wins (score
+  and time) and the mode's own key setting (flag return, the hill timer, laps, Fort Wars' build and combat phases).
+- **Presets that scale with the map:** Duel, Small, Map's pick (the map's own layout), Big battle and Max, worked out
+  from the map's size, its spawn points, the mode and what this computer (or phone) runs. Any change makes it Custom.
+  The fixed shapes are still there under More layouts.
+- **Party presets**, one click each: **Lunar Roulette** (low gravity, a new random character every life, stats and
+  all; Team Deathmatch on a map with teams) and **Spear Fight**.
+- **Variants:** on/off chips under the modes: Lunar, Roulette bodies, Classes, Spears only, Discs only (greyed, with
+  the reason, where they can't be used). A variant shows as on however its settings were set.
+- **People apart from bots:** "You + 47 bots · 24v24", and each team reads "You + 23 bots". Adding a bot grows its
+  team (a team of 10 takes an eleventh instead of snapping back), **Even teams** keeps them matched, and a limit says
+  whose it is ("24 per team is this computer's limit").
+- **One fit indicator** instead of the yellow notes: Fits, Crowded or Problem. Click it for the spawn points, the map's
+  recommended size and performance, with buttons that act ("Use 12v12"). A real problem stays in view, in red.
+- **Advanced rules in one line** ("9 changed · Low gravity · Tactical bots +7"), its chips and Reset inside it.
+- **A foot that never scrolls away:** Offline / Host online beside **Start match** (Enter does what the switch says),
+  saved setups in a small menu, and **Spectate**.
+- Small screens and phones open one section at a time; a desktop as many as you like. It fits from a phone sideways
+  (900 × 415) to 2560 wide. A setup saved on a computer and opened on a phone plays what the phone runs, and says so.
+
+**Spectate before the start works** (owner's report, 2026-11-06): a spectator who has loaded counts for the start, so
+a match only spectators watch (bots against bots) begins at once instead of waiting out the 30 s for a player who
+isn't there. Match setup's new **Spectate** starts a match that way, straight into the spectator camera.
+
+**The pause menu's Host tab, made like Match setup:** what wins, players and teams (presets for the map, Even teams,
+people apart from bots, the fit indicator), bots and rules, every setting that needs a restart marked. One foot:
+**Resume** (Esc too), **Apply** named by what it does (Apply now, or Apply & restart), what it changes, the
+Offline / Host online switch and **Leave match**. The join code, invite link, listing, players and kicks, rotation and
+Change map are all still there.
+
 **Hands round 5: support hands, big hands, the Knight's gauntlets, the Spear** (owner-approved, 2026-11-06)
 - **The Spear, the Medkit and the Medi-Beam in first person**: the hand closes round the shaft and the handle again.
   The new pistol hold (below) had turned and closed them as a raked pistol grip, their fingers sticking straight out
