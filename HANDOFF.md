@@ -958,6 +958,12 @@ The owner asked for a plan for bot logic and navigation as a whole, and approved
   - Give it to the bots-idle agent as a follow-on if it's still running.
 - **Phase B** (scored choices instead of competing states, a team brain per mode, mode playbooks): next, **before
   MAP 21**.
+- **Then Fireteams** (owner-approved 2026-11-06, docs/FIRETEAMS_PLAN.md), right after Phase B.
+  - Every human leads their own fixed bot squad of 4–6, and no human joins another's.
+  - Bot-led squads fill the rest of each team.
+  - An order wheel (follow, hold, go there, attack that, defend, regroup, spread or tight), formations and
+    bounding, respawn on the leader, a squad HUD.
+  - It's a variant for every team mode in Match Setup's variants row.
 - **Phases C and D** after:
   - C: drop/jump links, moving obstacles, crowd steering, smarter routes;
   - D: memory, holds that look alive, human-like skill tiers, an in-game bot debug view, bot hints in MapMaker.
