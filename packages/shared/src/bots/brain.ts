@@ -2881,6 +2881,8 @@ export class BotBrain {
     // goal meanwhile. (Before, every replan in the air was a failed search: 860 of Eagle Spires' 1,507 in a minute.)
     const replan = (goalMoved && view.tick - this.lastPathTick >= 2) || ((stale || exhausted) && view.tick - this.lastPathTick >= 6);
     if (replan && me.grounded === false && !me.climbing && !view.nav.closestPoint(me.pos)) {
+      // (Still where it is going: a canopy steers for it.)
+      this.goal = { ...goal };
       if (!this.path.length) this.pathMiss = true;
     } else if (replan) {
       this.goal = { ...goal };
