@@ -11,11 +11,16 @@ import { getProp } from '../content/props.ts';
 import { envVariant, getEnvSpecies } from '../content/environment.ts';
 import { DEFAULT_TEAMS, mapTeams } from '../sim/npc.ts';
 import { FLOAT_TOLERANCE, floatingProps, settledPropY, supportBoxes, supportUnder, terrainUnderFloors } from '../map/settle.ts';
+import { piecesFor, setPieceCells, setPieceFootprint, setPieceMirrorProblem, type SetPieceLibrary } from '../map/setPieces.ts';
+import { builtInSetPieces } from '../map/setPieceLibrary.ts';
+import type { SetPiecePlacement } from '../map/schema.ts';
 
 /** Editor-level selection: stable IDs only, never object references or indices. */
 export interface Selection {
   tiles: string[];
   entities: string[];
+  /** Set-piece placements (v27), each selected as one. Absent: none. */
+  setPieces?: string[];
 }
 
 export const emptySelection = (): Selection => ({ tiles: [], entities: [] });
@@ -40,35 +45,76 @@ export function levelName(level: number): string {
 }
 
 /**
- * Check that placements fit: known tiles, inside grid bounds, and no overlap with tiles not being replaced. A refusal
- * says what is in the way and what to do instead (MapMaker shows it as is).
+ * Check that placements fit: known tiles, inside grid bounds, and no overlap with tiles not being replaced or with a
+ * set piece's footprint. A refusal says what is in the way and what to do instead (MapMaker shows it as is).
  */
-export function checkPlacement(doc: MapDocument, placements: readonly TilePlacement[], ignoreIds: readonly string[] = [], catalog: TileCatalog = coreCatalog): PlacementCheck {
-  const ignore = new Set([...ignoreIds, ...placements.map((p) => p.id)]);
+export function checkPlacement(doc: MapDocument, placements: readonly TilePlacement[], ignoreIds: readonly string[] = [], catalog: TileCatalog = coreCatalog, library: SetPieceLibrary = builtInSetPieces()): PlacementCheck {
+  return checkLayout(doc, { tiles: placements }, ignoreIds, catalog, library);
+}
+
+/**
+ * Tiles and set pieces placed or moved together: each one's cells on the grid (a set piece's whole footprint, every
+ * level of it), against the tiles and set pieces staying where they are (all but these and `ignoreIds`) and against
+ * each other. Tiles and set pieces both hold their cells alone.
+ */
+export function checkLayout(doc: MapDocument, moving: { tiles?: readonly TilePlacement[]; setPieces?: readonly SetPiecePlacement[] }, ignoreIds: readonly string[] = [], catalog: TileCatalog = coreCatalog, library: SetPieceLibrary = builtInSetPieces()): PlacementCheck {
+  const tiles = moving.tiles ?? [];
+  const placements = moving.setPieces ?? [];
+  const ignore = new Set([...ignoreIds, ...tiles.map((p) => p.id), ...placements.map((p) => p.id)]);
   const others: MapDocument = { ...doc, classicStructure: { ...doc.classicStructure, tiles: doc.classicStructure.tiles.filter((t) => !ignore.has(t.id)) } };
   const { cells } = buildOccupancy(others, catalog);
+  const pieces = piecesFor(doc, library);
+  const held = doc.setPieces?.length ? setPieceCells(doc, pieces, ignore) : new Map<string, SetPiecePlacement>();
   const claimed = new Map<string, string>();
   const conflicts = new Set<string>();
-  let first: CellOccupant | undefined;
-  let firstZ = 0;
-  for (const p of placements) {
+  let first: { occ: CellOccupant; z: number; byPiece: boolean } | undefined;
+  let inside: { p: SetPiecePlacement; z: number; byPiece: boolean } | undefined;
+  const claim = (id: string, x: number, y: number, z: number, byPiece: boolean): PlacementCheck | null => {
+    if (!insideBuildLimit(x, y, z)) return { ok: false, reason: buildLimitReason(doc, z), conflicts: [] };
+    const key = cellKey(x, y, z);
+    const hit = cells.get(key);
+    if (hit) {
+      conflicts.add(hit.placement.id);
+      first ??= { occ: hit, z, byPiece };
+    }
+    const piece = held.get(key);
+    if (piece) {
+      conflicts.add(piece.id);
+      inside ??= { p: piece, z, byPiece };
+    }
+    const mine = claimed.get(key);
+    if (mine && mine !== id) conflicts.add(mine);
+    claimed.set(key, id);
+    return null;
+  };
+  for (const p of tiles) {
     const pc = placementCells(p, catalog);
     if (!pc) return { ok: false, reason: `unknown tile ${p.tile}`, conflicts: [] };
     for (const [x, y, z] of pc) {
-      if (!insideBuildLimit(x, y, z)) return { ok: false, reason: buildLimitReason(doc, z), conflicts: [] };
-      const key = cellKey(x, y, z);
-      const hit = cells.get(key);
-      if (hit) {
-        conflicts.add(hit.placement.id);
-        if (!first) [first, firstZ] = [hit, z];
-      }
-      const mine = claimed.get(key);
-      if (mine && mine !== p.id) conflicts.add(mine);
-      claimed.set(key, p.id);
+      const refused = claim(p.id, x, y, z, false);
+      if (refused) return refused;
+    }
+  }
+  for (const p of placements) {
+    const def = pieces.get(p.piece);
+    if (!def) return { ok: false, reason: `unknown set piece ${p.piece}`, conflicts: [] };
+    if (p.mirror && (def.mirror === 'none' || setPieceMirrorProblem(def, catalog))) return { ok: false, reason: `${def.displayName} can't be mirrored: place it unmirrored`, conflicts: [] };
+    for (const [x, y, z] of setPieceFootprint(p, def)) {
+      const refused = claim(p.id, x, y, z, true);
+      if (refused) return refused;
     }
   }
   if (!conflicts.size) return { ok: true };
-  return { ok: false, reason: first ? overlapReason(first, firstZ) : 'overlaps another of the pieces being placed: spread them out', conflicts: [...conflicts] };
+  const name = (p: SetPiecePlacement) => pieces.get(p.piece)?.displayName ?? p.piece;
+  let reason = 'overlaps another of the pieces being placed: spread them out';
+  if (first) reason = first.byPiece ? `its footprint overlaps ${first.occ.def.displayName} on ${levelName(first.z)}: pick a free spot, or move or delete the ${first.occ.def.displayName} first` : overlapReason(first.occ, first.z);
+  else if (inside) {
+    const n = name(inside.p);
+    reason = inside.byPiece
+      ? `its footprint overlaps the ${n} set piece on ${levelName(inside.z)}: pick a free spot, or move the ${n}`
+      : `inside the ${n} set piece on ${levelName(inside.z)} (it holds every cell of its footprint): pick a free cell or another level, move the ${n}, or explode it into its parts to build into it`;
+  }
+  return { ok: false, reason, conflicts: [...conflicts] };
 }
 
 /** Why a cell can't take a new tile, and what to do instead. */
@@ -144,14 +190,15 @@ export function placeTileCommand(doc: MapDocument, tile: string, x: number, y: n
   return { command: { kind: 'addTiles', tiles: [placement] }, placement };
 }
 
-function selected(doc: MapDocument, sel: Selection): { tiles: TilePlacement[]; entities: MapEntity[] } {
+function selected(doc: MapDocument, sel: Selection): { tiles: TilePlacement[]; entities: MapEntity[]; setPieces: SetPiecePlacement[] } {
   const t = new Set(sel.tiles);
   const e = new Set(sel.entities);
-  return { tiles: doc.classicStructure.tiles.filter((x) => t.has(x.id)), entities: doc.entities.filter((x) => e.has(x.id)) };
+  const p = new Set(sel.setPieces ?? []);
+  return { tiles: doc.classicStructure.tiles.filter((x) => t.has(x.id)), entities: doc.entities.filter((x) => e.has(x.id)), setPieces: (doc.setPieces ?? []).filter((x) => p.has(x.id)) };
 }
 
 export function deleteCommand(doc: MapDocument, sel: Selection): EditCommand {
-  const { tiles, entities } = selected(doc, sel);
+  const { tiles, entities, setPieces } = selected(doc, sel);
   // A mover left carrying a deleted block drops it from its list; one left carrying nothing goes too.
   const gone = new Set(entities.map((e) => e.id));
   const before: MapEntity[] = [];
@@ -168,7 +215,7 @@ export function deleteCommand(doc: MapDocument, sel: Selection): EditCommand {
       after.push({ ...m, blocks, props: props.length ? props : undefined });
     }
   }
-  return { kind: 'batch', commands: [{ kind: 'removeTiles', tiles }, { kind: 'removeEntities', entities: [...entities, ...emptied] }, { kind: 'updateEntities', before, after }] };
+  return { kind: 'batch', commands: [{ kind: 'removeTiles', tiles }, { kind: 'removeEntities', entities: [...entities, ...emptied] }, { kind: 'updateEntities', before, after }, { kind: 'removeSetPieces', setPieces }] };
 }
 
 /**
@@ -193,11 +240,12 @@ export function withMoverGroups(doc: MapDocument, ids: readonly string[]): strin
 }
 
 /** Move selected tiles by whole cells and entities by the same world offset. */
-export function moveCommand(doc: MapDocument, sel: Selection, dx: number, dy: number, dz: number, catalog: TileCatalog = coreCatalog): EditCommand | { error: string } {
-  const { tiles, entities } = selected(doc, sel);
+export function moveCommand(doc: MapDocument, sel: Selection, dx: number, dy: number, dz: number, catalog: TileCatalog = coreCatalog, library: SetPieceLibrary = builtInSetPieces()): EditCommand | { error: string } {
+  const { tiles, entities, setPieces } = selected(doc, sel);
   const { cellSize, levelHeight } = doc.classicStructure;
   const moved = tiles.map((t) => ({ ...t, x: t.x + dx, y: t.y + dy, z: t.z + dz }));
-  const check = checkPlacement(doc, moved, [], catalog);
+  const movedPieces = setPieces.map((p) => ({ ...p, x: p.x + dx, y: p.y + dy, z: p.z + dz }));
+  const check = checkLayout(doc, { tiles: moved, setPieces: movedPieces }, [], catalog, library);
   if (!check.ok) return { error: check.reason };
   const movedEntities = entities.map((e) => ({ ...e, position: [e.position[0] + dx * cellSize, e.position[1] + dz * levelHeight, e.position[2] + dy * cellSize] as [number, number, number] }));
   return {
@@ -205,6 +253,7 @@ export function moveCommand(doc: MapDocument, sel: Selection, dx: number, dy: nu
     commands: [
       { kind: 'updateTiles', before: tiles, after: moved },
       { kind: 'updateEntities', before: entities, after: movedEntities },
+      { kind: 'updateSetPieces', before: setPieces, after: movedPieces },
     ],
   };
 }
@@ -227,9 +276,11 @@ export function yawStep(kind: MapEntity['kind'] | 'tile', fine = false): number 
  * as one about its centre (routes, being offsets, turn with their marker): a quarter turn, or with `fine` the finer step when nothing in it is
  * tied to the grid (tiles, zones, liquids).
  */
-export function rotateCommand(doc: MapDocument, sel: Selection, catalog: TileCatalog = coreCatalog, opts: { fine?: boolean } = {}): EditCommand | { error: string } {
-  const { tiles, entities } = selected(doc, sel);
-  if (!tiles.length && !entities.length) return { error: 'nothing selected' };
+export function rotateCommand(doc: MapDocument, sel: Selection, catalog: TileCatalog = coreCatalog, opts: { fine?: boolean; library?: SetPieceLibrary } = {}): EditCommand | { error: string } {
+  const { tiles: selTiles, entities, setPieces } = selected(doc, sel);
+  if (!selTiles.length && !entities.length && !setPieces.length) return { error: 'nothing selected' };
+  // Set pieces turn like tiles: about a cell, by quarter turns (each about its anchor when it turns alone).
+  const tiles = [...selTiles, ...setPieces.map((p) => ({ id: p.id, tile: '', x: p.x, y: p.y, z: p.z, rotation: p.rotation }) as TilePlacement)];
   const { cellSize } = doc.classicStructure;
   const ids = new Set(entities.map((e) => e.id));
   const movers = entities.filter((m): m is Extract<MapEntity, { kind: 'mover' }> => m.kind === 'mover' && [...m.blocks, ...(m.props ?? [])].every((id) => ids.has(id)));
@@ -275,11 +326,13 @@ export function rotateCommand(doc: MapDocument, sel: Selection, catalog: TileCat
     return [r3(pivot[0] + ox), r3(pivot[1] + oz)];
   };
 
-  const rotated = tiles.map((t) => {
-    const [x, z] = about(t.x * cellSize, t.y * cellSize);
-    return { ...t, x: Math.round(x / cellSize), y: Math.round(z / cellSize), rotation: ((t.rotation + quarters) % 4) as Rotation };
-  });
-  const check = checkPlacement(doc, rotated, [], catalog);
+  const turn4 = (x: number, y: number, rotation: number) => {
+    const [wx, wz] = about(x * cellSize, y * cellSize);
+    return { x: Math.round(wx / cellSize), y: Math.round(wz / cellSize), rotation: ((rotation + quarters) % 4) as Rotation };
+  };
+  const rotated = selTiles.map((t) => ({ ...t, ...turn4(t.x, t.y, t.rotation) }));
+  const turnedPieces = setPieces.map((p) => ({ ...p, ...turn4(p.x, p.y, p.rotation) }));
+  const check = checkLayout(doc, { tiles: rotated, setPieces: turnedPieces }, [], catalog, opts.library);
   if (!check.ok) return { error: check.reason };
 
   const turned = entities.map((e): MapEntity => {
@@ -295,20 +348,23 @@ export function rotateCommand(doc: MapDocument, sel: Selection, catalog: TileCat
   return {
     kind: 'batch',
     commands: [
-      { kind: 'updateTiles', before: tiles, after: rotated },
+      { kind: 'updateTiles', before: selTiles, after: rotated },
       { kind: 'updateEntities', before: entities, after: turned },
+      { kind: 'updateSetPieces', before: setPieces, after: turnedPieces },
     ],
   };
 }
 
 /** Copy the selection to the first free offset east of it. Returns the new selection. */
-export function duplicateCommand(doc: MapDocument, sel: Selection, catalog: TileCatalog = coreCatalog): { command: EditCommand; selection: Selection } | { error: string } {
-  const { tiles, entities } = selected(doc, sel);
-  if (!tiles.length && !entities.length) return { error: 'nothing selected' };
+export function duplicateCommand(doc: MapDocument, sel: Selection, catalog: TileCatalog = coreCatalog, library: SetPieceLibrary = builtInSetPieces()): { command: EditCommand; selection: Selection } | { error: string } {
+  const { tiles, entities, setPieces } = selected(doc, sel);
+  if (!tiles.length && !entities.length && !setPieces.length) return { error: 'nothing selected' };
   const { cellSize } = doc.classicStructure;
   for (let dx = 1; dx <= 32; dx++) {
     const copies = tiles.map((t) => ({ ...t, id: newId('tile'), x: t.x + dx }));
-    if (!checkPlacement(doc, copies, [], catalog).ok) continue;
+    const pieceCopies = setPieces.map((p) => ({ ...p, id: newId('setpiece'), x: p.x + dx }));
+    // Copies of every piece and placement together, as moved: they keep clear of all that stays (originals included).
+    if (!checkLayout({ ...doc, classicStructure: doc.classicStructure }, { tiles: copies, setPieces: pieceCopies }, [], catalog, library).ok) continue;
     // Copies refer to each other: a copied mover carries the copied blocks, a copied portal pair links its copies.
     const idMap = new Map(entities.map((e) => [e.id, newId(e.kind)]));
     const pairs = new Map<string, string>();
@@ -323,8 +379,8 @@ export function duplicateCommand(doc: MapDocument, sel: Selection, catalog: Tile
       return copy;
     });
     return {
-      command: { kind: 'batch', commands: [{ kind: 'addTiles', tiles: copies }, { kind: 'addEntities', entities: entityCopies }] },
-      selection: { tiles: copies.map((c) => c.id), entities: entityCopies.map((c) => c.id) },
+      command: { kind: 'batch', commands: [{ kind: 'addTiles', tiles: copies }, { kind: 'addEntities', entities: entityCopies }, { kind: 'addSetPieces', setPieces: pieceCopies }] },
+      selection: { tiles: copies.map((c) => c.id), entities: entityCopies.map((c) => c.id), ...(pieceCopies.length ? { setPieces: pieceCopies.map((c) => c.id) } : {}) },
     };
   }
   return { error: 'no free space to duplicate into' };

@@ -84,7 +84,8 @@ function schemas(root, materials) {
   const segment = obj({ u: pair, y: pair, 't?': num, 'repeat?': repeat });
   const trimPiece = obj({
     'base?': pair, 'cornice?': pair, 'frame?': obj({ half: num, top: num }), 'window?': obj({ u: tup(2), y: tup(2) }),
-    'u?': pair, 'y?': pair, 'depth?': num, 'repeat?': repeat,
+    'arch?': obj({ u: tup(2), y: tup(2), count: int, band: num, 'key?': num, 'depth?': num }),
+    'u?': pair, 'y?': pair, 'depth?': num, 'repeat?': repeat, 'outside?': bool,
   });
   const edge = obj({
     id: str, label: str, 'rule?': en(['auto', 'open']), 'segments?': arr(segment), 'trim?': arr(trimPiece), 'trimFrom?': num,
@@ -106,6 +107,7 @@ function schemas(root, materials) {
     arcade: obj({ centre: at2, r: num, turns: at2, bays: int, 'height?': num }),
     roundRoom: obj({ centre: at2, r: num, door: num, window: num }),
     discStrips: obj({ centre: at2, r: num, strips: int, width: num, y: at2 }),
+    vault: obj({ axis: en(['x', 'z']), span: at2, along: at2, spring: num, crown: num, 'pieces?': int, 't?': num }),
     block: obj({ across: num, height: num }),
   };
   const part = obj({
@@ -242,19 +244,28 @@ export function build(content, root = ROOT) {
     });
     const trim = (e.trim ?? []).map((t, j) => {
       const path = `trim[${j}]`;
-      const kinds = ['base', 'cornice', 'frame', 'window', 'u'].filter((k) => t[k] !== undefined);
+      const kinds = ['base', 'cornice', 'frame', 'window', 'arch', 'u'].filter((k) => t[k] !== undefined);
       if (kinds.length !== 1) {
-        problems.push(`${where}: ${path}: one of base, cornice, frame, window, or a box (u, y, depth)`);
+        problems.push(`${where}: ${path}: one of base, cornice, frame, window, arch, or a box (u, y, depth)`);
         return {};
       }
+      if (t.outside && !t.arch && !t.u) problems.push(`${where}: ${path}: outside goes on an arch or a trim box`);
       if (t.base) return { base: pair(t.base, uValue, `${path}.base`) };
       if (t.cornice) return { cornice: pair(t.cornice, uValue, `${path}.cornice`) };
       if (t.frame) return { frame: t.frame };
       if (t.window) return { window: t.window };
+      if (t.arch) {
+        const a = t.arch;
+        if (!(a.u[0] < a.u[1])) problems.push(`${where}: ${path}.arch.u: the springing points [u0, u1] with u0 < u1`);
+        if (!(a.y[0] < a.y[1])) problems.push(`${where}: ${path}.arch.y: [springing, crown] with the crown higher`);
+        if (!(a.count >= 1) || !(a.band > 0)) problems.push(`${where}: ${path}.arch: count at least 1 and band (the voussoirs' depth, m) above 0`);
+        if (a.y[1] - a.y[0] > (a.u[1] - a.u[0]) / 2) problems.push(`${where}: ${path}.arch: a segmental arch rises at most half its span`);
+        return { arch: a, ...(t.outside ? { outside: true } : {}) };
+      }
       if (t.y === undefined || t.depth === undefined) problems.push(`${where}: ${path}: a trim box needs u, y and depth`);
       const r = rep(t.repeat, `${path}.repeat`);
       if (r && t.u.some((x) => typeof x !== 'number')) problems.push(`${where}: ${path}.u: offsets from the repeat are metres`);
-      return { u: r ? t.u : pair(t.u, uValue, `${path}.u`), y: pair(t.y ?? [0, 0], yValue, `${path}.y`), depth: t.depth, ...(r ? { repeat: r } : {}) };
+      return { u: r ? t.u : pair(t.u, uValue, `${path}.u`), y: pair(t.y ?? [0, 0], yValue, `${path}.y`), depth: t.depth, ...(r ? { repeat: r } : {}), ...(t.outside ? { outside: true } : {}) };
     });
     if (e.glass && !e.openings?.length) problems.push(`${where}: glass needs "openings" (the window openings it fills)`);
     for (const [j, o] of (e.openings ?? []).entries()) if (!(o[0] < o[1] && o[2] < o[3])) problems.push(`${where}: openings[${j}]: [u0, u1, y0, y1] with u0 < u1 and y0 < y1`);
@@ -330,6 +341,7 @@ export function build(content, root = ROOT) {
         if ((p.yaw !== undefined || p.surface) && !p.box) problems.push(`${where}: ${field}[${j}]: yaw and surface go on a box`);
         if (p.surface?.tint !== undefined && !/^#[0-9a-f]{6}$/.test(p.surface.tint)) problems.push(`${where}: ${field}[${j}]: surface.tint is a #rrggbb colour (lower case)`);
         if (p.block && !t.footprint) problems.push(`${where}: ${field}[${j}]: a block is centred on a footprint`);
+        if (p.vault && !(p.vault.span[0] < p.vault.span[1] && p.vault.along[0] < p.vault.along[1] && p.vault.spring < p.vault.crown)) problems.push(`${where}: ${field}[${j}]: a vault spans [a0, a1] across and [b0, b1] along (each a0 < a1), its crown over its springing`);
       }
     }
     const { notes: tn, $comment: _c, ...spec } = t;

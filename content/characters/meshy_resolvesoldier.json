@@ -33,6 +33,11 @@
     "armCloth": true,
     "hands": {
       "scale": 0.85
+    },
+    "grip": {
+      "gripLong": [-0.03, 0.02, -0.03],
+      "supportLong": [0, 0.02, 0.03],
+      "rollL": -0.3
     }
   },
   "landmarks": {

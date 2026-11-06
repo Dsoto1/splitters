@@ -395,6 +395,41 @@ function arcade(cx: number, cz: number, r: number, a0: number, a1: number, bays:
   return out;
 }
 
+/**
+ * A shallow segmental barrel vault (a passage's ceiling): `pieces` strips running along `axis` (from along[0] to
+ * along[1]) side by side across it (from span[0] to span[1]), their undersides on the circle through the springing
+ * line (`spring` high at both edges) and the crown (`crown` high in the middle), each `t` thick and tilted to follow it
+ * (rolled for a vault along z, pitched for one along x). Each strip touches the circle at its middle and meets its
+ * neighbours at its lower edge, so from below the vault is closed; only the strips collide (the space over them is
+ * shut in by the floor or roof above and the walls at its ends).
+ */
+export function vault(axis: 'x' | 'z', span: readonly [number, number], along: readonly [number, number], spring: number, crown: number, pieces = 12, t = 0.2, kind: LocalBox['kind'] = 'wall'): LocalBox[] {
+  const c = (span[1] - span[0]) / 2;
+  const mid = (span[0] + span[1]) / 2;
+  const rise = crown - spring;
+  if (!(c > 0 && rise > 0 && pieces >= 1 && along[1] > along[0])) return [];
+  const r = (c * c + rise * rise) / (2 * rise);
+  const centre = crown - r;
+  const sweep = Math.asin(Math.min(1, c / r));
+  const step = (2 * sweep) / pieces;
+  // Tangent strips: half of one is r·tan(step/2) long, so neighbours' lower edges meet at the polygon's corners.
+  const halfLen = r * Math.tan(step / 2);
+  const out: LocalBox[] = [];
+  for (let i = 0; i < pieces; i++) {
+    const a = -sweep + (i + 0.5) * step;
+    const u = mid + (r + t / 2) * Math.sin(a);
+    const y = centre + (r + t / 2) * Math.cos(a);
+    // The +u end of the strip rises where the curve does (right of the crown it falls: a > 0, tilt < 0).
+    const tilt = -a;
+    out.push(
+      axis === 'z'
+        ? { min: [u - halfLen, y - t / 2, along[0]], max: [u + halfLen, y + t / 2, along[1]], ...(tilt ? { roll: tilt } : {}), kind }
+        : { min: [along[0], y - t / 2, u - halfLen], max: [along[1], y + t / 2, u + halfLen], ...(tilt ? { pitch: tilt } : {}), kind },
+    );
+  }
+  return out;
+}
+
 const HALF_PI = Math.PI / 2;
 
 /**
@@ -439,6 +474,7 @@ export type KitPart = { kind?: NonNullable<LocalBox['kind']>; yaw?: number; surf
   | { arcade: { centre: Pair; r: number; turns: Pair; bays: number; height?: number } }
   | { roundRoom: { centre: Pair; r: number; door: number; window: number } }
   | { discStrips: { centre: Pair; r: number; strips: number; width: number; y: Pair } }
+  | { vault: { axis: 'x' | 'z'; span: Pair; along: Pair; spring: number; crown: number; pieces?: number; t?: number } }
   | { block: { across: number; height: number } }
 );
 
@@ -493,6 +529,10 @@ function kitPart(p: KitPart, spec: TileSpec): LocalBox[] {
   } else if ('roundRoom' in p) {
     const a = p.roundRoom;
     out = roundRoom(a.centre[0], a.centre[1], a.r, a.door, a.window);
+  } else if ('vault' in p) {
+    const v = p.vault;
+    // A vault is wall (it takes the walls' paint) unless the part says otherwise.
+    return vault(v.axis, v.span, v.along, v.spring, v.crown, v.pieces ?? 12, v.t ?? 0.2, p.kind ?? 'wall');
   } else if ('discStrips' in p) {
     // A half-disc floor in strips (z from the centre outward), each as wide as the circle there.
     const { centre: [cx, cz], r, strips, width, y } = p.discStrips;

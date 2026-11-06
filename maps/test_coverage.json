@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 25,
+  "formatVersion": 27,
   "metadata": {
     "id": "test_coverage",
     "name": "Coverage Test",
@@ -16,7 +16,15 @@
     "supportedModes": [
       "core.deathmatch"
     ],
-    "testOnly": true
+    "testOnly": true,
+    "release": {
+      "mapId": "m_sil6g62hvmfh7nmx",
+      "versionId": "v_n4c23dcpeqtvlnul",
+      "revision": 1,
+      "contentHash": "sha256:27ec45828cabb774bb1a7db7c4236f3e4a73928d7c0ad61833ae5f001f11a305",
+      "schemaVersion": 27,
+      "releasedAt": "2026-11-06T11:22:44.311Z"
+    }
   },
   "classicStructure": {
     "cellSize": 8,
@@ -455,7 +463,10 @@
         "x": 15,
         "y": -7,
         "z": 0,
-        "rotation": 0
+        "rotation": 0,
+        "edges": {
+          "0,0,0:N": "arch_segmental"
+        }
       },
       {
         "id": "tile_m3ycx2qx0p",
@@ -56245,11 +56256,6 @@
     "foliage": []
   },
   "bounds": null,
-  "backdrop": null,
-  "physics": null,
-  "blood": null,
-  "teamSetup": null,
-  "dependencies": [],
   "paths": [
     {
       "id": "path_bi9y69ohv2",
@@ -56363,5 +56369,10 @@
         "pit": null
       }
     }
-  ]
+  ],
+  "backdrop": null,
+  "physics": null,
+  "blood": null,
+  "teamSetup": null,
+  "dependencies": []
 }
