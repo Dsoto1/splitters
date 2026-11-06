@@ -33,6 +33,11 @@ export interface RemoteLink {
   onMessage(cb: (text: string) => void): void;
   onClose(cb: () => void): void;
   close(): void;
+  /**
+   * Whether the connection itself is up (WebRTC says connected). It can be up while the friend's page says nothing:
+   * that page has stalled (a long frame on a slow machine), its link isn't dead.
+   */
+  connected?(): boolean;
 }
 
 /**

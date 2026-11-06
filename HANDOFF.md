@@ -1558,6 +1558,30 @@ the fingers bent "toward the gun", i.e. backwards). Creatures (Imp, Puglin) were
   third person before/after, `close/`, audits `before/`, `after/`, `after-final/`; tools in `palms/tools/`).
 <!-- /palms -->
 
+### Fixed (2026-11-06): the `handoff` e2e failure, a friend dropped while their page was frozen (`wip/handoff-silent`)
+**What happened:**
+- It passed on the intake train at 18:23, then failed 6 attempts out of 6 between 19:20 and 19:39:
+  - Phase A, run 42278207178, twice;
+  - the map retirement, run 42279553000.
+- Neither change touches hosting.
+- Each time, the second friend (Bo) froze for 25–30 s soon after joining. Its 1 s pings stopped. Bo noticed the
+  host's close 3–9 s late, then "fell behind; snapshots merged".
+- The host closes a *loaded* friend's link after 20 s of silence (`FRIEND_SILENT_MS`). Bo was dropped, and the
+  successor's checkpoint lost Bo's score.
+
+**The fix:**
+- `RemoteLink.connected()`, from the PeerJS link's `RTCPeerConnection`, tells whether the connection itself is up.
+  WebRTC runs on the browser's own threads, so the connection stays up while the page is frozen.
+- The host page reports which links are up every 2 s (`{ k: 'up' }` → `MatchHost.linkUp`).
+- A loaded friend who is silent while their connection is up gets 60 s (`FRIEND_STALLED_SILENT_MS`). A link not seen
+  up within 6 s still goes after 20 s.
+- The warning says "(connection up)" when that was the case.
+- Unit test: `localHost.test.ts`, "silent friends".
+
+**Still open, for performance round 4:** why a joining friend's page freezes for half a minute on CI. Probably the
+shader builds left over after the warm-up's cap, on a GPU process the three pages share. Round 4's item 2 already
+covers the start-of-match shader stalls.
+
 ### Flaky e2e (seen 2026-11-06): `handoff` (host handoff between three browsers)
 It failed on CI twice in one job on the HUD portrait train (run 42215908322) and once on `check/bots-idle`. Each time it
 passed on a re-run, and the changes involved didn't touch hosting.
