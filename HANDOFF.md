@@ -102,6 +102,14 @@ local library, St. John's placements, e2e in editorux) starts from this branch a
 - The existing e2e flow called `setpieces` is Sky Islands' crumbling stones and trapdoors, not these: name the new
   editorux checks so they aren't confused with it.
 
+**Notes for part 3** (the showpiece pieces, `wip/setpieces-3`)
+- Pieces are built for the standard grid (`SET_PIECE_GRID`: 8 m cells, 4 m levels): a map on another grid refuses its
+  placements (`setpiece.grid`). The colosseum's 4 m board squares need a decision there: free parts (blocks, props)
+  can sit anywhere in a piece's frame already; tiles can't.
+- New pieces go in `content/setpieces/<family>.json` (docs/CONTENT_PIPELINE.md, "Set pieces"); the every-turn,
+  every-pack, z-fight and every-port tests pick them up. Kit pieces a piece needs (an edge style, a room option) go
+  into the kit for every map, as `arch_segmental`, `vault` and `collegiate_stone` did.
+
 **Open questions for the owner**
 - Collegiate Gothic: St. John's own stones (Grey Stone Blocks #d9d5cb walls, Dressed Stone #d8d3c6 trim) and a new
   Collegiate stone facade, rather than Gothic Estate's dark Mossy Castle Stone: right for the campus?
