@@ -1,5 +1,7 @@
 import type { MapDocument } from '../map/schema.ts';
+import type { HostRulesPatch } from '../protocol.ts';
 import { MAX_PLAYER_SLOTS } from './constants.ts';
+import { limitsScale, suggestedLimits } from './matchSetup.ts';
 import { MODE_LABELS, isTeamMode, mapCanRun, rulesForMap, rulesForMode, type GameMode, type MatchRules } from './rules.ts';
 
 /** Rules that aren't about the map or the mode: they stay as the host set them when the map changes. */
@@ -17,7 +19,9 @@ export const teamsLabel = (teams: number, size: number): string => Array.from({ 
  * The host changes map mid-match: the rules for `map` in `mode` (else the
  * current mode where the map runs it, else the map's own), keeping the host's
  * own settings, and the players to fill (team modes: every team at
- * `teamSize`; otherwise the same count as now).
+ * `teamSize`; otherwise the same count as now). A new mode's score limit and
+ * time are the ones suggested for the players (suggestedLimits), not its
+ * standard ones; the same mode keeps the host's.
  */
 export function rulesForTravel(prev: MatchRules, map: MapDocument, fill: number, mode?: GameMode, teamSize?: number | null): { rules: MatchRules; fill: number } {
   const want = mode && mapCanRun(map, mode) ? mode : mapCanRun(map, prev.mode) ? prev.mode : null;
@@ -27,14 +31,34 @@ export function rulesForTravel(prev: MatchRules, map: MapDocument, fill: number,
     if (prev[k] !== undefined) out[k] = prev[k];
   };
   for (const k of KEPT) put(k);
-  if (base.mode === prev.mode) for (const k of SAME_MODE) put(k);
+  const sameMode = base.mode === prev.mode;
+  if (sameMode) for (const k of SAME_MODE) put(k);
   if (prev.leaders && isTeamMode(base.mode)) out.leaders = prev.leaders;
   if (classesClash(out)) delete out.classes;
   const teams = teamCount(out);
-  if (!teams) return { rules: out, fill: Math.max(1, Math.min(MAX_PLAYER_SLOTS, fill)) };
-  const size = Math.max(1, Math.min(Math.floor(MAX_PLAYER_SLOTS / teams), teamSize ?? Math.max(1, Math.round(fill / teams))));
-  out.teamSizes = Array.from({ length: teams }, () => size);
-  return { rules: out, fill: size * teams };
+  let players = Math.max(1, Math.min(MAX_PLAYER_SLOTS, fill));
+  if (teams) {
+    const size = Math.max(1, Math.min(Math.floor(MAX_PLAYER_SLOTS / teams), teamSize ?? Math.max(1, Math.round(fill / teams))));
+    out.teamSizes = Array.from({ length: teams }, () => size);
+    players = size * teams;
+  }
+  if (!sameMode && limitsScale(base.mode)) {
+    const s = suggestedLimits(base.mode, players, out.teamSizes);
+    out.scoreLimit = s.scoreLimit;
+    out.timeLimitSeconds = s.minutes * 60;
+  }
+  return { rules: out, fill: players };
+}
+
+/**
+ * The rules the next match plays: `rules` with the host's changes saved for it (HostControl's pending ones: Save
+ * for next match), as a map change or the rotation's next map takes them on.
+ */
+export function withPending(rules: MatchRules, pending: HostRulesPatch | null | undefined): MatchRules {
+  if (!pending || !Object.keys(pending).length) return rules;
+  const out: MatchRules = { ...rules, ...pending };
+  if (pending.friendlyFire === 'off') delete out.friendlyFire;
+  return out;
 }
 
 /** Classes don't mix with spears or discs only. */

@@ -14,6 +14,7 @@ import {
   mapCanRun,
   MODE_LABELS,
   MAX_PLAYER_SLOTS,
+  SCORE_LIMIT_MAX,
   PROTOCOL_VERSION,
   SNAPSHOT_INTERVAL_TICKS,
   TICK_RATE,
@@ -414,7 +415,8 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
       const m = suiteMap(cmd.map);
       if (!m) return `"${cmd.map}" is not a map of our suite`;
       if (travel) return 'Already changing map';
-      const next = rulesForTravel(match.rules, m, control.fill, cmd.mode, control.state().teamSize);
+      // The next match: the rules waiting for it (Save for next match) go along.
+      const next = rulesForTravel(control.nextRules(), m, control.fill, cmd.mode, control.state().teamSize);
       travel = { atTick: match.tick + HOST_TRAVEL_TICKS, map: m, rules: next.rules, index: playIndex, carry: { score: false, loadout: false }, fill: next.fill };
       notice(travelNotice(m.metadata.name, next.rules.mode));
       return null;
@@ -454,7 +456,7 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
       const r = cmd.rules;
       const mode = match.rules.mode;
       const put = (key: string, v: unknown) => (serverRules = setServerRule(serverRules, key, v, { mode }));
-      if (r.scoreLimit !== undefined) put('score', Math.max(0, Math.min(1000, Math.round(r.scoreLimit))));
+      if (r.scoreLimit !== undefined) put('score', Math.max(0, Math.min(SCORE_LIMIT_MAX, Math.round(r.scoreLimit))));
       if (r.timeLimitSeconds !== undefined) put('time', Math.max(0, Math.min(120, Math.round(r.timeLimitSeconds / 60))));
       if (r.respawnDelayTicks !== undefined) put('respawn', Math.max(0, Math.min(30, Math.round(r.respawnDelayTicks / TICK_RATE))));
       if (r.friendlyFire !== undefined) put('ff', r.friendlyFire);
@@ -721,7 +723,7 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
    * players carry over (rulesForTravel), scores and weapons don't. Returns the rules it will play.
    */
   const travelTo = (m: MapDocument, mode: GameMode, atTick: number): MatchRules => {
-    const next = rulesForTravel(match.rules, m, control.fill, mode, control.state().teamSize);
+    const next = rulesForTravel(control.nextRules(), m, control.fill, mode, control.state().teamSize);
     travel = { atTick, map: m, rules: next.rules, index: playIndex, carry: { score: false, loadout: false }, fill: next.fill };
     return next.rules;
   };

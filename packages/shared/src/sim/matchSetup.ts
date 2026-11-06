@@ -2,7 +2,7 @@ import type { MapDocument, SpawnEntity } from '../map/schema.ts';
 import { raceTrack } from '../map/track.ts';
 import { BROWSER_MAX_PLAYERS, MAX_PLAYER_SLOTS, TICK_RATE } from './constants.ts';
 import { MAX_TEAMS, mapTeams } from './npc.ts';
-import { DEFAULT_RULES, GAME_MODES, MODE_LABELS, isGameMode, isTeamMode, mapCanRun, type GameMode, type MatchRules } from './rules.ts';
+import { DEFAULT_RULES, GAME_MODES, MODE_LABELS, SCORE_LIMIT_MAX, isGameMode, isTeamMode, mapCanRun, type GameMode, type MatchRules } from './rules.ts';
 import { IMPROMPTU_MIN_PLAYERS } from './spawns.ts';
 import { botSetInUse, validateBotSet, type BotSet } from './botSet.ts';
 import { validBotCast } from '../content/botThemes.ts';
@@ -21,6 +21,14 @@ export interface MatchSetup {
   skill: 'easy' | 'normal' | 'hard';
   scoreLimit: number;
   minutes: number;
+  /**
+   * The score limit (scoreAuto) and the time (timeAuto) follow the match's size, players and bots
+   * (suggestedLimits), while true; false once the host sets them by hand (theirs stays, marked Custom, until
+   * "Back to suggested"). Absent (a setup saved before suggestions, until normalizeSetup reads it, or one built in
+   * code): scoreLimit and minutes play as they are.
+   */
+  scoreAuto?: boolean;
+  timeAuto?: boolean;
   /** Team modes: players per team, 2–8 teams (two-team modes use the first two); bots fill every team. */
   teams?: number[];
   /** Team names and colours by team order (empty entries: the map's). */
@@ -402,6 +410,12 @@ export const mapPickTeams = (map: MapDocument, mode: GameMode, cap: number): num
 export const mapPickPlayers = (rec: { max: number }): number => clampInt(Math.min(12, rec.max), 4, 12);
 
 /**
+ * The most a squad (co-op, Zombies) is offered on a map: its recommended size, from its team layout (every team's
+ * players in all) or else its recommended most, and at most what this device runs (`cap`).
+ */
+export const squadRoom = (map: MapDocument, cap: number): number => clampInt(map.teamSetup ? sum(map.teamSetup.sizes) : map.metadata.recommendedPlayers.max, 1, Math.max(1, cap));
+
+/**
  * The size presets for a mode on a map: Duel, Small, Map's pick, Big battle and Max (free-for-all the same in
  * players; a squad's Solo, Duo, Map's pick, Big squad and Max; a race's Duel, Small, Map's pick and Full grid).
  * Small is the fewest the map is made for (at least two a side); Map's pick its own layout; Big battle as many
@@ -439,11 +453,14 @@ export function sizePresets(mode: GameMode, map: MapDocument, o: PresetOptions):
     const grid = raceGrid(mode, map);
     const pick = clampInt(family === 'race' ? Math.min(rec.max, grid ?? rec.max) : (o.pickPlayers ?? mapPickPlayers(rec)), 1, cap.max);
     if (family === 'squad') {
+      // No squad beyond what the map is made for (owner, 2026-11-06): its team layout in all, else its recommended most.
+      const room = squadRoom(map, cap.max);
+      const most = map.teamSetup ? `its team layout's ${room}` : `${room}`;
       add('duel', 'Solo', 1, 'Just you against the map.');
-      add('small', 'Duo', 2, 'You and one bot squadmate.');
-      add('pick', "Map's pick", pick, `The squad the map is made for (up to ${rec.max}).`);
-      add('big', 'Big squad', pick * 2, 'Twice the squad the map is made for.');
-      add('max', 'Max', cap.max, `The most ${device} runs: ${cap.max}.`);
+      add('small', 'Duo', Math.min(2, room), 'You and one bot squadmate.');
+      add('pick', "Map's pick", Math.min(pick, room), `The squad the map is made for (up to ${room}).`);
+      add('big', 'Big squad', Math.min(pick * 2, room), "Twice the map's own squad, as far as the map is made for.");
+      add('max', 'Max', room, room < squadRoom(map, BROWSER_MAX_PLAYERS) ? `The most ${device} runs: ${room}.` : `The most the map is made for: ${most}.`);
     } else {
       add('duel', 'Duel', 2, 'One on one: you against a bot (or a friend who joins).');
       add('small', 'Small', Math.min(Math.max(4, Math.min(rec.min, pick - 2)), pick - 1), `A small match: the fewest this map is made for (${rec.min}).`);
@@ -483,6 +500,91 @@ export function matchingPreset(setup: MatchSetup, map: MapDocument, presets: rea
 
 /** What a preset sets in a setup: the team sizes, or the bots besides you. */
 export const presetPatch = (p: SizePreset): Pick<MatchSetup, 'teams'> | Pick<MatchSetup, 'bots'> => (p.teams ? { teams: [...p.teams] } : { bots: Math.max(0, (p.players ?? 1) - 1) });
+
+// ------------------------------------------------------------------ score and time
+
+/** A match's score limit and its length in minutes (0: no limit). */
+export interface MatchLimits {
+  scoreLimit: number;
+  minutes: number;
+}
+
+/**
+ * Modes whose score limit and time follow the match's size: Team Deathmatch and Deathmatch (kills), Capture the
+ * Flag (the time: captures stay) and King of the Hill (hill seconds with the time). Rounds modes (Elimination,
+ * Bomb, Hostage Rescue), co-op and Zombies, Fort Wars, Disc Arena and races keep their own.
+ */
+export const limitsScale = (mode: GameMode): boolean => mode === 'core.tdm' || mode === 'core.deathmatch' || mode === 'core.ctf' || mode === 'core.koth';
+
+/** How far a score steps from `v` (a stepper's − and +), and what a worked-out score rounds to: 5 under 50, 10 under 300, 50 under 1,000, then 100. */
+export const scoreStep = (v: number): number => (v < 50 ? 5 : v < 300 ? 10 : v < 1000 ? 50 : 100);
+
+/** A worked-out score rounded to its step, so it reads well (480 → 500, 96 → 100, 43 → 45). */
+export const niceScore = (v: number): number => {
+  const step = scoreStep(v);
+  return Math.max(step, Math.min(SCORE_LIMIT_MAX, Math.round(v / step) * step));
+};
+
+/** Minutes a team match suggests by players a side: 10 up to 6, 15 up to 16, 20 beyond. */
+export const teamMinutes = (perTeam: number): number => (perTeam <= 6 ? 10 : perTeam <= 16 ? 15 : 20);
+
+/** King of the Hill: hill seconds to win per minute of the match (120 in 10 minutes, as before). */
+export const HILL_SECONDS_PER_MINUTE = 12;
+
+/**
+ * The score limit and time a match suggests for its size: `players` in all (you and bots), and in team modes the
+ * `teams` (each team's players: the largest leads the score). Fitted to bot matches' scoring rates (pnpm
+ * bot-report; docs/BOTS.md, "Score and time"), anchored on the owner's 4v4 ≈ 40 points in 10 minutes and
+ * 24v24 ≈ 500 in 15–20, so the score is usually reached near the time limit rather than in two minutes:
+ * - Team Deathmatch: a team of n scores about n × (8 + n / 2) (4v4 40, 8v8 100, 12v12 170, 16v16 260, 24v24 500,
+ *   48v48 1,500); 10 minutes up to 6 a side, 15 up to 16, 20 beyond.
+ * - Deathmatch: the leader's kills, gently up with the players; the time likewise.
+ * - Capture the Flag: the mode's captures (3), the time with the teams' size.
+ * - King of the Hill: the time with the teams' size, hill seconds with the time.
+ * - Everything else: the mode's own score, 10 minutes (as a setup always started).
+ */
+export function suggestedLimits(mode: GameMode, players: number, teams?: readonly number[]): MatchLimits {
+  const all = Math.max(1, Math.round(players));
+  const perTeam = Math.max(1, ...(teams?.length ? teams : [Math.ceil(all / 2)]));
+  switch (mode) {
+    case 'core.tdm':
+      return { scoreLimit: niceScore(perTeam * (8 + perTeam / 2)), minutes: teamMinutes(perTeam) };
+    case 'core.deathmatch':
+      return { scoreLimit: niceScore(Math.max(15, 10 + all * 0.6)), minutes: all <= 16 ? 10 : 15 };
+    case 'core.ctf':
+      return { scoreLimit: DEFAULT_RULES[mode].scoreLimit, minutes: teamMinutes(perTeam) };
+    case 'core.koth': {
+      const minutes = teamMinutes(perTeam);
+      return { scoreLimit: minutes * HILL_SECONDS_PER_MINUTE, minutes };
+    }
+    default:
+      return { scoreLimit: DEFAULT_RULES[mode].scoreLimit, minutes: 10 };
+  }
+}
+
+/** A setup's score limit and time as it plays, the suggestion for its size, and which follow it (the rest are the host's own: Custom). */
+export interface SetupLimits extends MatchLimits {
+  suggested: MatchLimits;
+  auto: { score: boolean; time: boolean };
+}
+
+/**
+ * The score limit and time a setup plays here (`cap`: as setupTeams, so a setup saved on a bigger computer
+ * suggests for what it plays on a phone): the suggestion for its size where it follows it (scoreAuto, timeAuto),
+ * else its own.
+ */
+export function setupLimits(setup: MatchSetup, map: MapDocument, cap = BROWSER_MAX_PLAYERS): SetupLimits {
+  const teams = isTeamMode(setup.mode) ? setupTeams(setup, map, cap) : undefined;
+  const suggested = suggestedLimits(setup.mode, teams ? sum(teams) : setupPlayers(setup, map, cap), teams);
+  const auto = { score: setup.scoreAuto === true, time: setup.timeAuto === true };
+  return { scoreLimit: auto.score ? suggested.scoreLimit : setup.scoreLimit, minutes: auto.time ? suggested.minutes : setup.minutes, suggested, auto };
+}
+
+/** The setup with its stored score limit and time made what it plays (the suggestion where it follows it), for saving. */
+export function withSetupLimits(setup: MatchSetup, map: MapDocument, cap = BROWSER_MAX_PLAYERS): MatchSetup {
+  const l = setupLimits(setup, map, cap);
+  return l.scoreLimit === setup.scoreLimit && l.minutes === setup.minutes ? setup : { ...setup, scoreLimit: l.scoreLimit, minutes: l.minutes };
+}
 
 // ------------------------------------------------------------------ fit
 
@@ -576,13 +678,15 @@ export function setupFit(setup: MatchSetup, map: MapDocument, o: { deviceMax: nu
 /**
  * The rules and player count (you and bots) a setup plays with. Team modes
  * take its team layout (validated), names, colours and assignment;
- * co-op and Zombies keep their own score and time rules. `cap`: the most
- * players (as setupTeams).
+ * co-op and Zombies keep their own score and time rules. The score limit and
+ * time are the suggestion for the size where the setup follows it
+ * (setupLimits). `cap`: the most players (as setupTeams).
  */
 export function rulesFromSetup(setup: MatchSetup, map: MapDocument, cap = BROWSER_MAX_PLAYERS): { rules: MatchRules; fill: number } {
   const s = setup;
   const base = DEFAULT_RULES[s.mode];
-  const rules: MatchRules = isCoopMode(s.mode) ? { ...base } : { ...base, scoreLimit: s.scoreLimit, timeLimitSeconds: s.minutes * 60 };
+  const limits = isCoopMode(s.mode) ? null : setupLimits(s, map, cap);
+  const rules: MatchRules = limits ? { ...base, scoreLimit: limits.scoreLimit, timeLimitSeconds: limits.minutes * 60 } : { ...base };
   if (s.sizes === false) rules.bodySizes = false;
   if (s.stats === false) rules.characterStats = false;
   if (s.randomChars) rules.randomCharacters = true;
@@ -653,8 +757,13 @@ export function normalizeSetup(raw: unknown, modes?: readonly GameMode[]): Match
   const out = { ...(o as unknown as MatchSetup), mode };
   out.bots = Math.round(num(o.bots, 0, BROWSER_MAX_PLAYERS - 1, 3));
   out.skill = o.skill === 'easy' || o.skill === 'hard' ? o.skill : 'normal';
-  out.scoreLimit = Math.round(num(o.scoreLimit, 0, 1000, DEFAULT_RULES[mode].scoreLimit));
+  out.scoreLimit = Math.round(num(o.scoreLimit, 0, SCORE_LIMIT_MAX, DEFAULT_RULES[mode].scoreLimit));
   out.minutes = num(o.minutes, 0, 120, 10);
+  // Score and time follow the size unless set by hand. A setup saved before suggestions set them by hand where they
+  // differ from what every setup started with (the mode's standard score, 10 minutes); a score for a mode the map
+  // can't play here means nothing, so it follows too.
+  out.scoreAuto = o.mode !== mode || (typeof o.scoreAuto === 'boolean' ? o.scoreAuto : out.scoreLimit === DEFAULT_RULES[mode].scoreLimit);
+  out.timeAuto = typeof o.timeAuto === 'boolean' ? o.timeAuto : out.minutes === 10;
   if (o.teams !== undefined) {
     if (Array.isArray(o.teams)) out.teams = validateTeamSizes(o.teams, 'core.tdm', undefined, BROWSER_MAX_PLAYERS).sizes;
     else delete out.teams;

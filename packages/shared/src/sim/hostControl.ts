@@ -3,7 +3,8 @@ import type { HostRulesPatch, HostState, MatchCommand } from '../protocol.ts';
 import { botSetLabel, sameBotSet, validateBotSet } from './botSet.ts';
 import { botCastLabel, validBotCast } from '../content/botThemes.ts';
 import { MAX_PLAYER_SLOTS } from './constants.ts';
-import { teamCount, teamsLabel } from './hostRules.ts';
+import { SCORE_LIMIT_MAX, type MatchRules } from './rules.ts';
+import { teamCount, teamsLabel, withPending } from './hostRules.ts';
 import { validateTeamSizes } from './matchSetup.ts';
 import type { BotFiller, Match } from './match.ts';
 
@@ -26,10 +27,26 @@ export class HostControl {
     private readonly title: HostTitle = 'Host',
     /** Most players the host may set (a browser keeps to BROWSER_MAX_PLAYERS; dedicated hosts MAX_PLAYER_SLOTS). */
     readonly max = MAX_PLAYER_SLOTS,
-  ) {}
+  ) {
+    // The next match (after the scoreboard, or Restart match) plays the rules saved for it.
+    match.beforeRound = () => this.playPending();
+  }
 
-  /** Rules changed mid-match that wait for the next restart. */
+  /** Rules changed mid-match that wait for the next match (Save for next match; Apply & restart plays them at once). */
   private pending: HostRulesPatch = {};
+
+  /** The rules the next match plays: these now, with the changes waiting for it (a map change and the rotation take them on). */
+  nextRules(): MatchRules {
+    return withPending(this.match.rules, this.pending);
+  }
+
+  /** The changes saved for the next match go into play (a new round is starting). */
+  private playPending(): void {
+    if (!Object.keys(this.pending).length) return;
+    const p = this.pending;
+    this.match.setRules({ ...p, ...(p.friendlyFire === 'off' ? { friendlyFire: undefined } : {}) });
+    this.pending = {};
+  }
 
   state(): HostState {
     const r = this.match.rules;
@@ -65,7 +82,7 @@ export class HostControl {
     if (cmd.c === 'rules') {
       const p: HostRulesPatch = {};
       const r = cmd.rules;
-      if (r.scoreLimit !== undefined) p.scoreLimit = Math.max(0, Math.min(1000, Math.round(r.scoreLimit)));
+      if (r.scoreLimit !== undefined) p.scoreLimit = Math.max(0, Math.min(SCORE_LIMIT_MAX, Math.round(r.scoreLimit)));
       if (r.timeLimitSeconds !== undefined) p.timeLimitSeconds = Math.max(0, Math.min(7200, Math.round(r.timeLimitSeconds)));
       if (r.respawnDelayTicks !== undefined) p.respawnDelayTicks = Math.max(0, Math.min(1800, Math.round(r.respawnDelayTicks)));
       if (r.friendlyFire !== undefined) p.friendlyFire = r.friendlyFire;
@@ -85,15 +102,11 @@ export class HostControl {
       // Back to what's playing now: nothing waits.
       const now = this.match.rules;
       for (const k of Object.keys(this.pending) as (keyof HostRulesPatch)[]) if ((k === 'friendlyFire' ? (now.friendlyFire ?? 'off') : now[k]) === this.pending[k]) delete this.pending[k];
-      if (Object.keys(p).length) return { notice: `${mixed ? `${mixed}; ` : ''}${who} changed the rules for the next restart` };
+      if (Object.keys(p).length) return { notice: `${mixed ? `${mixed}; ` : ''}${who} changed the rules for the next match` };
       return mixed ? { notice: mixed } : {};
     }
     if (cmd.c === 'restart') {
-      if (Object.keys(this.pending).length) {
-        const p = this.pending;
-        this.match.setRules({ ...p, ...(p.friendlyFire === 'off' ? { friendlyFire: undefined } : {}) });
-        this.pending = {};
-      }
+      // (The new round puts the rules waiting for it in play: playPending.)
       this.bots.rebalance(this.fill);
       this.match.restartMatch();
       return { notice: `${who} restarted the match` };

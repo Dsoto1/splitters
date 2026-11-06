@@ -3,7 +3,7 @@ import { isMapId } from '../sim/playlist.ts';
 import { ROTATION_MAX } from '../sim/rotation.ts';
 import { validateBotSet } from '../sim/botSet.ts';
 import { validBotCast } from '../content/botThemes.ts';
-import { isGameMode, type GameMode } from '../sim/rules.ts';
+import { SCORE_LIMIT_MAX, isGameMode, type GameMode } from '../sim/rules.ts';
 import type { PlayerInput } from '../sim/movement.ts';
 
 /**
@@ -107,7 +107,7 @@ function parseHostCommand(raw: unknown): HostCommand | null {
       const p = r as Record<string, unknown>;
       const rules: HostRulesPatch = {};
       if (p.scoreLimit !== undefined) {
-        if (!count(p.scoreLimit)) return null;
+        if (!(typeof p.scoreLimit === 'number' && Number.isInteger(p.scoreLimit) && p.scoreLimit >= 0 && p.scoreLimit <= SCORE_LIMIT_MAX)) return null;
         rules.scoreLimit = p.scoreLimit;
       }
       if (p.timeLimitSeconds !== undefined) {
