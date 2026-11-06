@@ -278,26 +278,53 @@ against 1.34–2.57.)
      Updated once a second per side.
    - **Measure it in the scorecard:** how many distinct corridors each team uses on the way to the objective, and the
      share on the busiest one, per map. Maps with only one way through (a single bridge) are listed, not failed.
+5. **Snipers who play like snipers** (owner, 2026-11-06).
+   - **The owner:** "Bots on both sides taking those sniper roles/personalities seriously, camping in tucked away high
+     spots … to take calculated shots, some even moving locations after, acting like real snipers."
+   - **Today:** the sniper role (about 10 % of bots) only plays while the bot carries a scoped gun, and few maps place
+     one. It rarely switches on.
+   - **Get the gun.** A sniper-role bot spawns with the weapon set's scoped gun (docs/WEAPON_SETS_PLAN.md), or goes
+     for a scoped pickup first.
+   - **Calculated shots.** It waits for a good shot: a target that is still, unaware or lined up, and a high hit
+     chance at the range. It doesn't give its spot away on a poor one.
+   - **Relocates like a sniper:** after a shot or two, or when it is spotted or shot at, not only after a kill. The
+     next spot is somewhere else, and not back the way it came.
+   - **Spots:** high, tucked away, a wall or roof edge behind, a long view down a lane the enemy uses. The roofs and
+     ledges only parkour reaches come with Phase C item 1.
+6. **Cover-to-cover advance** (owner, 2026-11-06).
+   - **The owner:** "We don't have nearly enough taking cover and using it to progressively advance through a map or
+     objective. I generally see many rushing towards one another (which would make more sense if it was arena style)."
+   - **Bounding moves.** A group moves cover to cover toward the objective along its route. One half covers (watching
+     or suppressing the threat) while the other moves, then they swap.
+   - **Peek and shoot** from cover instead of running at each other. Stay in cover while reloading or hurt.
+   - **Route costs that prefer cover** (moved up from Phase C item 4).
+   - **By bot style:** Tactical leans hardest on it, Mixed in between, Arena keeps the rush.
+   - **Measured:** time in cover while a fight is on, and how far an advance gets per minute without losing half the
+     group.
 
 **Done when:**
 - the scorecard shows regular captures on every CTF map, hills contested and held, bombs planted and defused, and
   hostages rescued;
 - on maps with more than one way to the objective, each team uses at least two routes, and no single corridor
   carries most of a team;
+- sniper-role bots get scoped kills from vantage spots on maps with long sightlines, and move between shots;
+- in Tactical and Mixed, bots spend clearly more of a fight in cover, and push objectives in bounds;
 - the owner playtests it.
 
-## Phase C: navigation depth
-1. **Links for every move a player can make,** generated at load from the geometry and checked against the real
+## Phase C: navigation depth (straight after Phase B; item 1 first)
+1. **Parkour first** (owner, 2026-11-06: snipers "trying different 'parkour' to get where others don't normally go
+   (roofs, etc)"). Links for every move a player can make, generated at load from the geometry and checked against the real
    movement code (`sim/movement.ts`): ledge drops (one-way), gap jumps, jumps up onto a ledge within reach, and rope
-   lifts. A move players don't have (vaults, mantles) needs the movement first.
+   lifts. A move players don't have (vaults, mantles) needs the movement first. Vantage spots then include the roofs
+   and ledges only these moves reach, for snipers, and flankers use them as routes.
 2. **Moving obstacles change the routes:** doors, breakable and crumbling blocks, trapdoors, movers, Forts builds.
    - Use a tiled navmesh with obstacles (Detour's tile cache), or route costs.
    - Rebuild a few tiles at a time, within a budget.
 3. **Crowds:** bots steer round each other in tunnels, doorways and on stairs, using local avoidance on the existing
    spatial grid. This should cut stuck recoveries.
 4. **Smarter routes:**
-   - area costs that prefer cover (avoiding spots where teammates died, and choosing among several routes, moved
-     to Phase B item 4);
+   - (area costs that prefer cover moved to Phase B item 6; avoiding spots where teammates died, and choosing among
+     several routes, to Phase B item 4);
    - a cache for common trips (spawn → objective);
    - a per-tick search budget for 48 v 48 and the huge maps.
 
