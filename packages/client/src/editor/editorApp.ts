@@ -4209,7 +4209,7 @@ export class EditorApp {
       for (const t of coreThemes.all()) theme.append(new Option(t.displayName, t.id, false, t.id === doc.classicStructure.theme));
       theme.addEventListener('change', () => this.run('Change theme', setThemeCommand(this.doc, theme.value)));
       el.append(row('Theme', theme));
-      const occupied = doc.classicStructure.tiles.flatMap((t) => placementCells(t) ?? []);
+      const occupied = [...doc.classicStructure.tiles.flatMap((t) => placementCells(t) ?? []), ...[...this.expansion.footprints.values()].flat()];
       if (occupied.length) {
         const span = (i: 0 | 1 | 2) => Math.max(...occupied.map((c) => c[i])) - Math.min(...occupied.map((c) => c[i])) + 1;
         el.append(row('Size', text(`${span(0)} × ${span(1)} cells · ${span(2)} level${span(2) === 1 ? '' : 's'}`)));
