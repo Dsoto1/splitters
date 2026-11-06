@@ -123,10 +123,13 @@ are right for the campus. The shallow vault stays. Skybridges keep the pack's fa
 <!-- /setpieces -->
 
 <!-- match-setup -->
-### Match Setup redesign, the Host tab, Spectate before the start (`wip/match-setup`, agents, 2026-11-06; main b2c58e2e merged in; CI: see the end of this section; not landed)
+### Match Setup redesign, the Host tab, Spectate before the start (`wip/match-setup`, agents, 2026-11-06; main bc6037a1 merged in; green on `check/match-setup` at c32bbf20, run 42242658709; not landed)
 The owner's report and approved design are in the queued section below ("Queued … Match Setup redesign"); the brief is
 the session scratchpad's `briefs/match-setup.md`. Screenshots before and after (1280 × 720, 1920 × 1080, 2000 × 1100, a
-phone sideways at 900 × 415): the session scratchpad's `shots-ms/before/` and `shots-ms/after/`.
+phone sideways at 900 × 415; after also 2560 × 1440, the fit details open and the setup scrolled to the bottom): the
+session scratchpad's `shots-ms/before/`, `shots-ms/after/` and `shots-ms/after-host/` (the Host tab).
+- **CI:** green at c32bbf20 (run 42242658709, second attempt: the first stopped on `packages/host/test/host.test.ts`'s
+  kick-and-ban wait, which passed on the same shared code in the two runs before and on the re-run: a flaky wait).
 - **Shared** (`packages/shared/src/sim/matchSetup.ts`, `setupVariants.ts`; tests `setupPlan.test.ts`): people apart
   from bots (`setupSummary`, `peopleAndBots`, `setupPeople`, `setupYourTeam`); team changes that grow and shrink with
   bots and stop at a cap with a message (`changeTeamBots`, `setTeamSize`, `evenTeams`, `changeTeamCount`,
