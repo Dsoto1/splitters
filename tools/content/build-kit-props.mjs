@@ -10,13 +10,19 @@
 // textures), which tools/content/prepare-props.mjs then normalises like any
 // other pack. Everything is deterministic: the same code writes the same bytes.
 
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { Document, NodeIO } from '@gltf-transform/core';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const OUT = join(ROOT, 'assets-src/tiletrigger-kit');
+/**
+ * The pieces with real surfaces (content/surfaces/tiletrigger-kit.json `props`: Shingle Point's beach pieces) are
+ * written with one material per surface, their colours as vertex colours on it: each copy on a map is then one GPU
+ * instance and one draw per surface, not one per colour (a beach of 46 hedgehogs). The rest stay one per colour.
+ */
+const SURFACES = JSON.parse(readFileSync(join(ROOT, 'content/surfaces/tiletrigger-kit.json'), 'utf8'));
 
 // ---------------------------------------------------------------- palette
 
@@ -749,33 +755,47 @@ for (const [name, build] of Object.entries(PIECES)) {
   scene.addChild(node);
   const mesh = doc.createMesh(name);
   node.setMesh(mesh);
-  // One primitive per colour.
-  const byColour = new Map();
+  // One primitive per colour; a piece with surfaces, one per surface (its colours as vertex colours).
+  const rules = SURFACES.props?.[name];
+  const groupOf = (colour) => (rules ? (rules.materials?.[colour] ?? rules.default) : colour);
+  const byGroup = new Map();
   const parts = build();
   // Pieces with their own collision (collide "model") carry the boxes in the node's extras, in this frame.
   if (parts.collision) node.setExtras({ collision: parts.collision.map((b) => b.map((v) => Math.round(v * 1000) / 1000)) });
   for (const p of parts) {
-    const list = byColour.get(p.colour) ?? [];
+    const list = byGroup.get(groupOf(p.colour)) ?? [];
     list.push(p);
-    byColour.set(p.colour, list);
+    byGroup.set(groupOf(p.colour), list);
   }
-  for (const [colour, parts] of [...byColour.entries()].sort((a, b) => a[0].localeCompare(b[0]))) {
+  const groups = [...byGroup.values()].map((parts) => {
+    // Named after its colour with the most triangles: the surfaces map reads a material's name (surfaces.mjs).
+    const tris = new Map();
+    for (const p of parts) tris.set(p.colour, (tris.get(p.colour) ?? 0) + p.indices.length);
+    const colour = [...tris].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))[0][0];
+    return { colour, parts, painted: tris.size > 1 };
+  });
+  for (const { colour, parts, painted } of groups.sort((a, b) => a.colour.localeCompare(b.colour))) {
     const pos = [];
     const nor = [];
+    const col = [];
     const idx = [];
     for (const p of parts) {
       const base = pos.length / 3;
       pos.push(...p.positions);
       nor.push(...p.normals);
+      // Linear colour in bytes (a quarter of the floats' size; flat colours need no more).
+      if (painted) for (let i = 0; i < p.positions.length / 3; i++) col.push(...linear(COLOURS[p.colour]).map((v) => Math.round(v * 255)), 255);
       idx.push(...p.indices.map((i) => i + base));
     }
-    const material = doc.createMaterial(colour).setBaseColorFactor([...linear(COLOURS[colour]), 1]).setRoughnessFactor(0.85).setMetallicFactor(/steel|iron|wire|mesh/.test(colour) ? 0.4 : 0);
+    // Painted with vertex colours: a white material, so each part shows its own colour as it is.
+    const material = doc.createMaterial(colour).setBaseColorFactor(painted ? [1, 1, 1, 1] : [...linear(COLOURS[colour]), 1]).setRoughnessFactor(0.85).setMetallicFactor(/steel|iron|wire|mesh/.test(colour) ? 0.4 : 0);
     const prim = doc
       .createPrimitive()
       .setMaterial(material)
       .setAttribute('POSITION', doc.createAccessor().setType('VEC3').setArray(new Float32Array(pos.map((v) => Math.round(v * 10000) / 10000))))
       .setAttribute('NORMAL', doc.createAccessor().setType('VEC3').setArray(new Float32Array(nor.map((v) => Math.round(v * 10000) / 10000))))
       .setIndices(doc.createAccessor().setType('SCALAR').setArray(new Uint32Array(idx)));
+    if (painted) prim.setAttribute('COLOR_0', doc.createAccessor().setType('VEC4').setArray(new Uint8Array(col)).setNormalized(true));
     mesh.addPrimitive(prim);
   }
   doc.getRoot().getAsset().generator = 'tiletrigger build-kit-props';
