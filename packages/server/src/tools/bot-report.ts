@@ -107,6 +107,9 @@ export interface MatchRow {
   tickP95: number;
   /** Bot thinking a tick (ms, the match's bot pipeline, wall clock). */
   thinkMs?: number;
+  /** Navmesh path queries in the match (every caller), and those that found no way. */
+  navQueries?: number;
+  navFails?: number;
   /** Map coverage a minute (share of 21 m regions some bot stood in), spread (0..1), deaths within 3 s of spawning. */
   coverage?: number;
   spread?: number;
@@ -423,6 +426,9 @@ function play(map: MapDocument, mode: GameMode, seed: number, seconds: number): 
   out.tickMs = tickMs.reduce((x, y) => x + y, 0) / tickMs.length;
   out.tickP95 = sorted[Math.floor(sorted.length * 0.95)]!;
   out.thinkMs = (simProfile.ms.get('bots') ?? 0) / tickMs.length;
+  // Every navmesh path query (bots' routes, presses, sidesteps, lanes, modes...), and those that found no way.
+  out.navQueries = simProfile.n.get('nav') ?? 0;
+  out.navFails = simProfile.n.get('navFail') ?? 0;
   out.coverage = behaviour.coverage(seconds);
   out.spread = behaviour.spread();
   out.spawnDeaths = behaviour.spawnDeaths;

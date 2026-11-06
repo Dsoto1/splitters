@@ -2,7 +2,7 @@ import type { LookHitbox } from '../sim/hitbox.ts';
 import { angleDelta, clamp, createRng, distance, horizontalDistance, lookAngles, type Vec3, hypot } from '../math.ts';
 import type { NavWorld } from '../nav/index.ts';
 import { LIFT_FLAG, PLAYER, STANCES, TICK_DT, TICK_RATE, type Stance } from '../sim/constants.ts';
-import type { ItemDefinition, ItemEffect } from '../sim/items.ts';
+import { PICKUP_RADIUS, type ItemDefinition, type ItemEffect } from '../sim/items.ts';
 import { BUTTON_ALT, BUTTON_CROUCH, BUTTON_FIRE, BUTTON_MELEE, BUTTON_JUMP, BUTTON_PRONE, BUTTON_RELOAD, BUTTON_SPRINT, BUTTON_THROW, BUTTON_USE, BUTTON_ZOOM, type PlayerInput } from '../sim/movement.ts';
 import { THROWABLE_DEFS, getWeapon, weaponCode, type AltFire, type ThrowableKind, type WeaponDefinition } from '../sim/weapons.ts';
 import type { PhysicsWorld } from '../sim/physics.ts';
@@ -377,6 +377,13 @@ export class BotBrain {
   pathSearches = 0;
   /** The last search that found no way (measuring: the scorecard's failed-search spots): from where, to where. */
   lastNoRoute: { goal: Vec3; from: Vec3 } | null = null;
+  /** Route requests for a goal no route reaches, answered with a stand-in as near it as a route gets (measuring). */
+  standIns = 0;
+  /**
+   * The goal it last asked for can't be reached from where it is (NavWorld.standIn): where it heads instead, as
+   * near the goal as a route gets. Null when the route is to the goal itself.
+   */
+  private standIn: Vec3 | null = null;
   /** The last followPathTo found no route (or was backing off asking again) rather than arriving. */
   private pathMiss = false;
   /** The pickup it last set out for (the same object as roamGoal while it still goes for it). */
@@ -895,10 +902,10 @@ export class BotBrain {
       const far = horizontalDistance(me, g.pos) > LANE_FROM;
       const r = this.routeRng();
       const side = r < 0.35 ? -1 : r < 0.7 ? 1 : 0;
-      let via = far && side ? laneWaypoint(view.nav.places(), me, g.pos, side) : null;
-      // On the goal's own part of the navmesh only (the samples cover roofs and pools a route never reaches: a bot
-      // sent by one of those stood where it was, Capitol Mall).
-      if (via && view.nav.partAt(via)?.id !== view.nav.partAt(g.pos)?.id) via = null;
+      let via = far && side ? laneWaypoint(view.nav.mainPlaces(), me, g.pos, side) : null;
+      // Only a waypoint routes get to from here and on from to the goal (the samples cover roofs and pools a route
+      // never reaches: a bot sent by one of those stood where it was, Capitol Mall).
+      if (via && (!view.nav.reachable(me, via) || !view.nav.reachable(via, g.pos))) via = null;
       lane = this.lane = { goal: { ...g.pos }, via };
     }
     const via = lane.via;
@@ -1301,6 +1308,19 @@ export class BotBrain {
         lo.y = g.pos.y;
         lo.z = g.pos.z;
         if (horizontalDistance(me.pos, g.pos) > g.radius || Math.abs(me.pos.y - g.pos.y) > 2) {
+          // A goal no route reaches from the main area (a flag dropped on a ledge, a carrier on a roof): keep watch as
+          // near it as a route gets, facing it, until it comes within reach, rather than walking to and fro.
+          const near = this.outOfReach(view, g.pos);
+          if (near) {
+            this.watch = this.watch && horizontalDistance(this.watch.spot, near) < 3.5 ? this.watch : null;
+            const r = this.keepWatch(view, { pos: near, radius: 3, watch: g.pos });
+            moveYaw = r.moveYaw;
+            moveScale = r.moveScale;
+            stance = r.stance;
+            lookDone = true;
+            doing = 'station';
+            break;
+          }
           const to = this.orderTarget(view, g);
           moveYaw = this.followPathTo(view, to, moving);
           // No way by its lane after all: straight for the goal.
@@ -1315,7 +1335,7 @@ export class BotBrain {
             // Eagle Spires' attackers stood below the mesas asking 30 000 times a match.)
             this.pathMiss = false;
             this.watch = null;
-            const r = this.keepWatch(view, { pos: view.nav.reachToward(me.pos, g.pos) ?? me.pos, radius: 3, watch: g.pos });
+            const r = this.keepWatch(view, { pos: this.standIn ?? view.nav.reachToward(me.pos, g.pos) ?? me.pos, radius: 3, watch: g.pos });
             moveYaw = r.moveYaw;
             moveScale = r.moveScale;
             stance = r.stance;
@@ -1880,6 +1900,25 @@ export class BotBrain {
     const down = t % period < period * (this.careful() ? 0.55 : 0.3);
     // (Never in the air: crouching under a canopy cuts it away.)
     return { moveYaw, moveScale: 0.5, stance: moveYaw === null && down && view.self.grounded !== false ? 1 : 0 };
+  }
+
+  /** The last outOfReach answer: for which goal, until when, and the stand-in (null: reachable). */
+  private reachMemo: { goal: Vec3; until: number; near: Vec3 | null } | null = null;
+
+  /**
+   * A goal no route reaches from where the bot is, which is in the main area (nothing to get off first): the place
+   * as near it as a route gets (NavWorld.standIn, known per component of routes and goal for the match). Null when
+   * a route reaches it, or the bot is off the main area (followPathTo's escapes and stand-ins see to that). Asked at
+   * most every second for the same goal.
+   */
+  private outOfReach(view: BotWorldView, goal: Vec3): Vec3 | null {
+    const m = this.reachMemo;
+    if (m && view.tick < m.until && horizontalDistance(m.goal, goal) < 1.5 && Math.abs(m.goal.y - goal.y) < 1.5) return m.near;
+    const me = view.self.pos;
+    const si = view.self.grounded !== false && view.nav.inMain(me) ? view.nav.standIn(me, goal) : null;
+    const near = si && !si.exact && (horizontalDistance(si.pos, goal) > 0.5 || Math.abs(si.pos.y - goal.y) > 1.5) ? si.pos : null;
+    this.reachMemo = { goal: { ...goal }, until: view.tick + TICK_RATE, near };
+    return near;
   }
 
   /** The next place to keep watch from: inside the area, on its floor, in sight of its middle, not where it just was. */
@@ -2475,6 +2514,23 @@ export class BotBrain {
    * bot's item greed, discounted by distance.
    */
   private pickupGoal(view: BotWorldView, only?: 'health' | 'weapon', within = Infinity, weapons?: (def: WeaponDefinition) => boolean): Vec3 | null {
+    for (let tries = 0; tries < 3; tries++) {
+      const pick = this.bestPickup(view, only, within, weapons);
+      // One no route gets within reach of (on a crate, on a ledge): left alone for a good while, and the next best.
+      if (!pick || this.collectable(view, pick)) return pick;
+      this.losePickup(view, pick);
+    }
+    return null;
+  }
+
+  /** Whether a route gets the bot within reach of picking up what's at `pos` (on a crate it can't climb: beside it, close enough). */
+  private collectable(view: BotWorldView, pos: Vec3): boolean {
+    const si = view.nav.standIn(view.self.pos, pos);
+    // (Off the navmesh: no telling from here; the route's own checks see to it.)
+    return !si || si.exact || (horizontalDistance(si.pos, pos) < PICKUP_RADIUS - 0.1 && Math.abs(si.pos.y - pos.y) < 1.4);
+  }
+
+  private bestPickup(view: BotWorldView, only?: 'health' | 'weapon', within = Infinity, weapons?: (def: WeaponDefinition) => boolean): Vec3 | null {
     const me = view.self;
     let best: { pos: Vec3; score: number } | null = null;
     const owned = new Map(view.inventory.map((w) => [w.def.id, w]));
@@ -2523,9 +2579,21 @@ export class BotBrain {
    * hasn't checked lately.
    */
   private pickAdvanceGoal(view: BotWorldView): void {
+    // Only somewhere a route gets to from here (a region's spot on a roof, an enemy spawn up a one-way drop: another
+    // pick), and a lane waypoint only if a route gets to it too. (Before, such goals were searched for, failed and
+    // were dropped a think later, or stood at.)
+    const me = view.self.pos;
+    for (let tries = 0; tries < 3; tries++) {
+      this.pickAdvanceGoalNow(view);
+      if (!this.roamGoal || view.nav.reachable(me, this.roamGoal)) break;
+    }
+    if (this.via && !view.nav.reachable(me, this.via)) this.via = null;
+  }
+
+  private pickAdvanceGoalNow(view: BotWorldView): void {
     const me = view.self;
     const pts = view.spawnPoints;
-    const places = view.nav.places();
+    const places = view.nav.mainPlaces();
     this.via = null;
     const plan = view.plan;
     if (plan?.regions && !view.orderGoal) {
@@ -2792,10 +2860,17 @@ export class BotBrain {
       this.lastPathTick = -Infinity;
     }
     const goalMoved = this.goal === null || horizontalDistance(this.goal, goal) > 2 || Math.abs(this.goal.y - goal.y) > 1.5;
-    const stale = movingGoal && view.tick - this.lastPathTick > PATH_REFRESH_TICKS;
+    // (Heading for a stand-in: whether the goal itself has come within reach is asked again every second.)
+    const stale = (movingGoal && view.tick - this.lastPathTick > PATH_REFRESH_TICKS) || (!!this.standIn && view.tick - this.lastPathTick > TICK_RATE);
     // Ran out of corners without arriving (e.g. pushed off the path): replan, throttled.
-    const exhausted = this.pathIndex >= this.path.length && horizontalDistance(me.pos, goal) > 1;
-    if ((goalMoved && view.tick - this.lastPathTick >= 2) || ((stale || exhausted) && view.tick - this.lastPathTick >= 6)) {
+    const exhausted = this.pathIndex >= this.path.length && horizontalDistance(me.pos, this.standIn ?? goal) > 1;
+    // In the air off the navmesh (out of the plane, under a canopy, a jump pad's flight): no route starts there, so none
+    // is asked for until it lands; a route it is following (the pad's) carries on, and a canopy steers straight for the
+    // goal meanwhile. (Before, every replan in the air was a failed search: 860 of Eagle Spires' 1,507 in a minute.)
+    const replan = (goalMoved && view.tick - this.lastPathTick >= 2) || ((stale || exhausted) && view.tick - this.lastPathTick >= 6);
+    if (replan && me.grounded === false && !me.climbing && !view.nav.closestPoint(me.pos)) {
+      if (!this.path.length) this.pathMiss = true;
+    } else if (replan) {
       this.goal = { ...goal };
       // No way there a moment ago: don't search again every few ticks, back off (0.2 s, doubling up to 4 s).
       const np = this.noPath;
@@ -2804,10 +2879,23 @@ export class BotBrain {
       const backedOff = !!np && view.tick < np.until && horizontalDistance(np.goal, goal) < 2 && Math.abs(np.goal.y - goal.y) < 1.5 && horizontalDistance(np.from, me.pos) < 2 && Math.abs(np.from.y - me.pos.y) < 1.5;
       // Tired of waiting for a lift: a way that keeps off lifts if there is one (else the lift after all).
       const offLifts = view.tick < this.offLiftsUntil ? LIFT_FLAG : 0;
-      const found = backedOff ? null : ((offLifts && view.nav.findPath(me.pos, goal, offLifts)) || view.nav.findPath(me.pos, goal));
-      if (!backedOff) {
+      // Off the navmesh (knocked or fallen onto ground it doesn't cover, a narrow ledge, spawned badly): no route starts
+      // there. The nearest place on it first, level or below, straight there (before, it asked for routes that couldn't
+      // start, and stood).
+      const onto = backedOff || me.grounded === false || me.climbing ? null : view.nav.wayOnto(me.pos);
+      // A goal no route reaches from here (a flag on a ledge or a roof, a pickup on a crate, a carrier in the air): as
+      // near it as a route does get instead, no search for the goal itself. Known per component of routes and goal for
+      // the match (NavWorld.standIn: a lookup, the second time).
+      const si = backedOff || onto ? null : view.nav.standIn(me.pos, goal);
+      this.standIn = si && !si.exact && (horizontalDistance(si.pos, goal) > 0.5 || Math.abs(si.pos.y - goal.y) > 1.5) ? si.pos : null;
+      const to = this.standIn ?? goal;
+      let found: Vec3[] | null = null;
+      if (onto) found = [{ ...me.pos }, onto];
+      else if (!backedOff) found = (offLifts && view.nav.findPath(me.pos, to, offLifts)) || view.nav.findPath(me.pos, to, 0, true);
+      if (!backedOff && !onto) {
         this.pathFails = found ? 0 : Math.min(this.pathFails + 1, 6);
         this.pathSearches++;
+        if (this.standIn) this.standIns++;
         // (A route somewhere else, a place to keep watch from on the way, leaves the back-off for the goal alone.)
         if (!found) this.noPath = { goal: { ...goal }, from: { ...me.pos }, until: view.tick + Math.min(TICK_RATE * 4, 6 << this.pathFails) };
         else if (np && horizontalDistance(np.goal, goal) < 2 && Math.abs(np.goal.y - goal.y) < 1.5) this.noPath = null;
@@ -2817,19 +2905,13 @@ export class BotBrain {
         }
       }
       this.path = found ?? [];
-      // No route: cut off on a patch of navmesh players walk off? Then off it first. Else (the goal is what can't be
-      // reached: a flag dropped into a pit, something on a roof) as near it as a route gets, rather than standing.
+      // No route to the goal: cut off on a patch of navmesh players walk off (a step or a hop from the goal's part)?
+      // Then off it first. Else as near the goal as a route gets (the stand-in), rather than standing.
       // (Not while falling or under a canopy: no route starts in the air, and it lands soon enough.)
-      if (found) this.escape = null;
-      else if (horizontalDistance(me.pos, goal) > 1.5 && (me.grounded !== false || me.climbing)) {
+      if (found && !this.standIn) this.escape = null;
+      else if (!onto && horizontalDistance(me.pos, goal) > 1.5 && (me.grounded !== false || me.climbing)) {
         this.planEscape(view, goal);
-        if (!this.escape) {
-          const near = view.nav.reachToward(me.pos, goal);
-          if (near && horizontalDistance(me.pos, near) > 1.2 && horizontalDistance(near, goal) < horizontalDistance(me.pos, goal) - 1) {
-            const lead = view.nav.findPath(me.pos, near);
-            if (lead) this.path = lead;
-          }
-        }
+        if (this.escape) this.standIn = null;
       }
       const door = this.pathBlocked(view);
       if (door) {
@@ -2868,6 +2950,11 @@ export class BotBrain {
     }
     const corner = this.path[this.pathIndex];
     if (!corner) {
+      // As near a goal no route reaches as it gets (the stand-in): the callers keep watch there, or go for another goal.
+      if (this.standIn) {
+        this.pathMiss = true;
+        return null;
+      }
       if (horizontalDistance(me.pos, goal) < 0.5) return null;
       if (this.path.length === 0) {
         this.pathMiss = true;

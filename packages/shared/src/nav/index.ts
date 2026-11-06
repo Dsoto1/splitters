@@ -12,6 +12,13 @@ import type { PhysicsWorld } from '../sim/physics.ts';
 import type { Aabb } from '../sim/scenarioDefs.ts';
 import { simProfile } from '../sim/profile.ts';
 import { hypot } from '../math.ts';
+import { auditNavigation, polyShapes, reachSet, routeComponents, trapExits, type AuditOptions, type FallOptions } from './audit.ts';
+
+/** Ledge-drop links at build (NavWorld.build `drops`): the level to trace falls against, and the spawn points that say where the main area is. */
+export interface DropOptions extends FallOptions {
+  physics: PhysicsWorld;
+  spawns: readonly Vec3[];
+}
 
 let initPromise: Promise<void> | undefined;
 
@@ -43,6 +50,26 @@ const ESCAPE_REACH = 14;
  */
 const ESCAPE_GAP = 8;
 
+/**
+ * The navmesh as a graph (NavWorld.graph): polygons by index (Detour's ref = base + index), ground ones (type 0) and
+ * off-mesh links (type 1, two corners: start and end).
+ */
+export interface NavGraph {
+  count: number;
+  base: number;
+  type: Uint8Array;
+  /** Polygon i's corners are vxyz[vstart[i] * 3 …] up to vstart[i + 1] (a convex polygon; for a link, its start and end). */
+  vstart: Int32Array;
+  vxyz: Float32Array;
+  /** Bit j: polygon i's edge from corner j to j + 1 has no neighbour (the walkable ground ends there). */
+  open: Uint8Array;
+  /** Detour's links, one way: polygon i's go to links[linkStart[i] … linkStart[i + 1]]. */
+  linkStart: Int32Array;
+  links: Int32Array;
+  /** Each polygon's flags (openings, lifts: markOpenings, markLifts). */
+  flags: Uint16Array;
+}
+
 /** A way off a cut-off patch of navmesh (NavWorld.escapes): where to cross from (null: from where you stand) and the place across. */
 export interface NavEscape {
   edge: Vec3 | null;
@@ -60,8 +87,13 @@ export class NavWorld {
     private readonly query: NavMeshQuery,
   ) {}
 
-  /** `extra` adds triangle geometry (terrain) to the boxes; `links` are one-way jumps (jump pads) bots can take. */
-  static build(boxes: readonly WorldBox[], extra: { positions: Float32Array; indices: Uint32Array } | null = null, links: readonly { start: Vec3; end: Vec3; reach?: Vec3 }[] = [], snapped = false): NavWorld {
+  /**
+   * `extra` adds triangle geometry (terrain) to the boxes; `links` are one-way jumps (jump pads) bots can take.
+   * `drops`: one-way ledge-drop links off the patches of navmesh that have no route to the main area (a ledge, a
+   * scaffold, a roof bots land on), as many as they need (audit.ts trapExits; a map without such patches gets none,
+   * and its navmesh is the same as without).
+   */
+  static build(boxes: readonly WorldBox[], extra: { positions: Float32Array; indices: Uint32Array } | null = null, links: readonly { start: Vec3; end: Vec3; reach?: Vec3 }[] = [], snapped = false, drops: DropOptions | null = null): NavWorld {
     // The ground round a built map is for players to stand on, not somewhere bots go.
     const box = boxesToTriangles(boxes.filter((b) => b.sourceId !== 'ground'));
     let positions = box.positions;
@@ -95,7 +127,11 @@ export class NavWorld {
     });
     if (!result.success) throw new Error(`navmesh generation failed: ${result.error}`);
     const world = new NavWorld(result.navMesh, new NavMeshQuery(result.navMesh, { maxNodes: MAX_NODES }));
-    if (!links.length || snapped) return world;
+    if (drops) {
+      world.spawnSeeds = drops.spawns;
+      world.disableInsideSolid(drops.physics, drops.solids);
+    }
+    if (snapped || (!links.length && !drops)) return world;
     // Jump links must start and end on the mesh: snap them to it, then build again with the links in.
     const onMesh = links.flatMap((l) => {
       // Lift links say how far to look (level with the platform's stop, so the far end isn't snapped back onto the platform below).
@@ -103,8 +139,44 @@ export class NavWorld {
       const end = world.closestPoint(l.end, l.reach ?? { x: 2.5, y: 3, z: 2.5 });
       return start && end ? [{ start, end }] : [];
     });
+    // Ways down off patches that have none (on the mesh already: an edge of the patch, a polygon below).
+    const exits = drops ? trapExits(world, drops.physics, drops.spawns, onMesh, drops) : [];
+    if (!links.length && !exits.length) return world;
     world.destroy();
-    return NavWorld.build(boxes, extra, onMesh, true);
+    const built = NavWorld.build(boxes, extra, [...onMesh, ...exits], true, drops);
+    built.drops = exits.length;
+    return built;
+  }
+
+  /** Ledge-drop links the build added (NavWorld.build `drops`). */
+  drops = 0;
+  /** Polygons the build found inside something solid and left out (disableInsideSolid). */
+  insideSolid = 0;
+
+  /**
+   * Recast rasterizes surfaces, not volumes: inside a closed box at least a body's height tall (a stack of 2 m rock
+   * blocks, a thick wall) the floor reads as open ground, and the navmesh gets patches inside solid rock (Eagle
+   * Spires' spires: one at every block, 2 m apart, 7,000 m² in all). Falls and goals snapped onto them, and the audit
+   * saw traps there. Each ground polygon with no room to stand at its middle (the level, or one of `solids`, in the
+   * way) gets flags 0, which every route search and nearest-polygon lookup leaves out. At build, before anything else
+   * reads the navmesh.
+   */
+  disableInsideSolid(physics: PhysicsWorld, solids: readonly WorldBox[] = []): number {
+    const g = this.graph();
+    const { centre } = polyShapes(g);
+    let n = 0;
+    for (let i = 0; i < g.count; i++) {
+      if (g.type[i] !== 0) continue;
+      const c = { x: centre[i * 3]!, y: centre[i * 3 + 1]! + 1, z: centre[i * 3 + 2]! };
+      const half = { x: 0.2, y: 0.6, z: 0.2 };
+      const solid = !physics.boxClear(c, half) || solids.some((b) => !b.yaw && c.x + half.x > b.min[0] && c.x - half.x < b.max[0] && c.y + half.y > b.min[1] && c.y - half.y < b.max[1] && c.z + half.z > b.min[2] && c.z - half.z < b.max[2]);
+      if (!solid) continue;
+      this.navMesh.setPolyFlags(g.base + i, 0);
+      g.flags[i] = 0;
+      n++;
+    }
+    this.insideSolid = n;
+    return n;
   }
 
   /** Nearest point on the navmesh, or null if nothing walkable is close. */
@@ -117,10 +189,10 @@ export class NavWorld {
    * Straight-path corners from a to b, or null if b is unreachable from a. `shut`: openings (markOpenings' flag
    * bits) the route must keep out of, such as doors shut to the bot's team that no button opens for it.
    */
-  findPath(a: Vec3, b: Vec3, shut = 0): Vec3[] | null {
-    if (!simProfile.on) return this.findPathNow(a, b, shut);
+  findPath(a: Vec3, b: Vec3, shut = 0, partial = false): Vec3[] | null {
+    if (!simProfile.on) return this.findPathNow(a, b, shut, partial);
     const t0 = performance.now();
-    const r = this.findPathNow(a, b, shut);
+    const r = this.findPathNow(a, b, shut, partial);
     simProfile.add('nav', performance.now() - t0);
     simProfile.count('nav');
     if (!r) simProfile.count('navFail');
@@ -137,7 +209,11 @@ export class NavWorld {
    */
   private readonly noRoute = new Set<string>();
 
-  private findPathNow(a: Vec3, b: Vec3, shut = 0): Vec3[] | null {
+  /**
+   * `partial`: a route that exists but that the search ran out of nodes on (a very long way over a big map) comes
+   * back as far as the search got, Detour's partial route: walk it, and ask again from its end.
+   */
+  private findPathNow(a: Vec3, b: Vec3, shut = 0, partial = false): Vec3[] | null {
     const ext = { x: 2, y: 3, z: 2 };
     const s = this.query.findNearestPoly(a, { halfExtents: ext });
     const e = this.query.findNearestPoly(b, { halfExtents: ext });
@@ -149,6 +225,12 @@ export class NavWorld {
       if (simProfile.on) simProfile.count('navSearchFail');
       return null;
     }
+    // One part, and still no route (one-way links: down off a ledge by its drop link, never back up): no search either.
+    const base = this.graph().base;
+    if (!this.routable(s.nearestRef - base, e.nearestRef - base)) {
+      if (simProfile.on) simProfile.count('navSearchFail');
+      return null;
+    }
     const failKey = `${s.nearestRef}:${e.nearestRef}:${shut}`;
     if (this.noRoute.has(failKey)) return null;
     const r = this.query.findPath(s.nearestRef, e.nearestRef, start, end, shut ? { maxPathPolys: MAX_PATH_POLYS, filter: this.filterFor(shut) } : { maxPathPolys: MAX_PATH_POLYS });
@@ -156,6 +238,20 @@ export class NavWorld {
     // A partial path (destination unreachable, or the search ran out of nodes) ends short of the goal.
     const whole = r.success && n > 0 && r.polys.get(n - 1) === e.nearestRef;
     if (simProfile.on) simProfile.count(whole ? 'navSearch' : 'navSearchFail');
+    if (!whole && partial && !shut && r.success && n > 1) {
+      // Routable (above), so the search ran out of nodes: the corridor as far as it got.
+      const c = this.query.closestPointOnPoly(r.polys.get(n - 1), end);
+      const sp = c.success ? this.query.findStraightPath(start, c.closestPoint, r.polys, { maxStraightPathPoints: MAX_CORNERS }) : null;
+      r.polys.destroy();
+      const out: Vec3[] = [];
+      if (sp?.success) for (let i = 0; i < sp.straightPathCount; i++) out.push({ x: sp.straightPath.get(i * 3), y: sp.straightPath.get(i * 3 + 1), z: sp.straightPath.get(i * 3 + 2) });
+      if (sp) {
+        sp.straightPath.destroy();
+        sp.straightPathFlags.destroy();
+        sp.straightPathRefs.destroy();
+      }
+      return out.length > 1 ? out : null;
+    }
     if (!whole) {
       r.polys.destroy();
       if (this.noRoute.size >= 4096) this.noRoute.clear();
@@ -207,10 +303,14 @@ export class NavWorld {
       }
     }
     this.placeCache = [...best.entries()].sort((x, y) => x[0] - y[0]).map(([, v]) => v.p);
+    // (Not on polygons left out as inside something solid: disableInsideSolid.)
+    if (this.insideSolid) this.placeCache = this.placeCache.filter((p) => !!this.query.findNearestPoly(p, { halfExtents: { x: 0.5, y: 1, z: 0.5 } }).nearestRef);
     // The navmesh's parts and the places' parts too: worked out here, at setup (the match asks for the places
     // when bots join), rather than in a tick (about 15 ms and 10–30 ms on a big map).
     this.partsNow();
     this.placePartsNow();
+    // Route reachability too (routable, standIn: the graph and its components, a few ms).
+    this.routesNow();
     return this.placeCache;
   }
 
@@ -328,6 +428,241 @@ export class NavWorld {
       mesh.setPolyFlags(ref, (f.flags || 1) | LIFT_FLAG);
     }
     this.noRoute.clear();
+  }
+
+  private graphCache: NavGraph | null = null;
+
+  /**
+   * The navmesh as a graph (the navigation audit, nav/audit.ts; drop links at build): every polygon's corners, its
+   * edges with no neighbour (where the walkable ground ends: a wall, a ledge, a step too high), and Detour's own
+   * links between polygons, one way (an off-mesh link is a polygon of its own, entered from its start's polygon
+   * and left to its end's). Read once, on first use, from the navmesh's single tile (empty for any other).
+   */
+  graph(): NavGraph {
+    if (this.graphCache) return this.graphCache;
+    const mesh = this.navMesh;
+    const tile = mesh.getMaxTiles() === 1 ? mesh.getTile(0) : null;
+    const header = tile?.header();
+    const n = header?.polyCount() ?? 0;
+    const empty: NavGraph = { count: 0, base: 0, type: new Uint8Array(0), vstart: new Int32Array(1), vxyz: new Float32Array(0), open: new Uint8Array(0), linkStart: new Int32Array(1), links: new Int32Array(0), flags: new Uint16Array(0) };
+    if (!tile || !header || !n) return (this.graphCache = empty);
+    const base = mesh.getPolyRefBase(tile);
+    const tileVerts = header.vertCount();
+    const tv = new Float32Array(tileVerts * 3);
+    for (let i = 0; i < tv.length; i++) tv[i] = tile.verts(i);
+    const type = new Uint8Array(n);
+    const flags = new Uint16Array(n);
+    const vstart = new Int32Array(n + 1);
+    const open = new Uint8Array(n);
+    const coords: number[] = [];
+    const linkStart = new Int32Array(n + 1);
+    const links: number[] = [];
+    for (let i = 0; i < n; i++) {
+      const poly = tile.polys(i);
+      type[i] = poly.getType();
+      flags[i] = poly.flags();
+      const vc = poly.vertCount();
+      vstart[i] = coords.length / 3;
+      let bits = 0;
+      for (let j = 0; j < vc; j++) {
+        const v = poly.verts(j) * 3;
+        coords.push(tv[v]!, tv[v + 1]!, tv[v + 2]!);
+        if (type[i] === 0 && poly.neis(j) === 0) bits |= 1 << j;
+      }
+      open[i] = bits;
+      linkStart[i] = links.length;
+      // DT_NULL_LINK ends a polygon's links (bounded, in case of a bad list).
+      for (let l = poly.firstLink(), k = 0; l !== 0xffffffff && l >= 0 && k < 64; k++) {
+        const link = tile.links(l);
+        const j = link.ref() - base;
+        if (j >= 0 && j < n && j !== i) links.push(j);
+        l = link.next();
+      }
+    }
+    vstart[n] = coords.length / 3;
+    linkStart[n] = links.length;
+    return (this.graphCache = { count: n, base, type, vstart, vxyz: Float32Array.from(coords), open, linkStart, links: Int32Array.from(links), flags });
+  }
+
+  /**
+   * Route reachability, exact (one-way links count one way): each polygon's component of routes (polygons that all
+   * route to each other), the biggest one, and what routes from it reach. Worked out once, on first use (a few ms).
+   */
+  private routesCache: { comp: Int32Array; main: number; fromMain: Uint8Array; start: Int32Array; to: Int32Array } | null = null;
+  /** What routes reach from each component asked about (by component; the main one is routesCache.fromMain). */
+  private readonly reachFrom = new Map<number, Uint8Array>();
+
+  private routesNow(): { comp: Int32Array; main: number; fromMain: Uint8Array; start: Int32Array; to: Int32Array } {
+    if (this.routesCache) return this.routesCache;
+    const g = this.graph();
+    const seeds = this.spawnSeeds.flatMap((p) => {
+      const r = this.query.findNearestPoly(p, { halfExtents: { x: 1, y: 1, z: 1 } });
+      return r.success && r.nearestRef ? [r.nearestRef - g.base] : [];
+    });
+    const r = routeComponents(g, seeds);
+    return (this.routesCache = r);
+  }
+
+  /** Spawn points (the build's `drops.spawns`): they say which component of routes is the main area. */
+  spawnSeeds: readonly Vec3[] = [];
+
+  private mainPlacesCache: Vec3[] | null = null;
+
+  /**
+   * places() in the main area: those routes from it reach and that route back to it (not a roof nobody gets onto,
+   * a pit nobody gets out of): where bots pick goals, squads regions, campers and snipers their spots.
+   */
+  mainPlaces(): readonly Vec3[] {
+    if (this.mainPlacesCache) return this.mainPlacesCache;
+    const places = this.places();
+    const r = this.routesNow();
+    if (r.main < 0) return (this.mainPlacesCache = [...places]);
+    const toMain = this.toMainNow();
+    const out: Vec3[] = [];
+    for (const p of places) {
+      const hit = this.query.findNearestPoly(p, { halfExtents: { x: 0.5, y: 1, z: 0.5 } });
+      const i = hit.success && hit.nearestRef ? hit.nearestRef - this.graph().base : -1;
+      if (i >= 0 && r.fromMain[i] && toMain[i]) out.push(p);
+    }
+    // (A navmesh with no main area to speak of: every place.)
+    return (this.mainPlacesCache = out.length ? out : [...places]);
+  }
+
+  private toMainCache: Uint8Array | null = null;
+
+  /** Polygons that route to the main area. */
+  private toMainNow(): Uint8Array {
+    if (this.toMainCache) return this.toMainCache;
+    const r = this.routesNow();
+    const n = r.comp.length;
+    // Reverse the edges once.
+    const deg = new Int32Array(n + 1);
+    for (let k = 0; k < r.to.length; k++) deg[r.to[k]! + 1]!++;
+    for (let i = 0; i < n; i++) deg[i + 1]! += deg[i]!;
+    const fill = deg.slice(0, n);
+    const to = new Int32Array(r.to.length);
+    for (let a = 0; a < n; a++) for (let k = r.start[a]!; k < r.start[a + 1]!; k++) to[fill[r.to[k]!]!++] = a;
+    const seeds: number[] = [];
+    for (let i = 0; i < n; i++) if (r.comp[i] === r.main) seeds.push(i);
+    return (this.toMainCache = reachSet(deg, to, n, seeds));
+  }
+
+  /** Whether `p` (on or near the navmesh) routes to the main area and is routed to from it. */
+  inMain(p: Vec3): boolean {
+    const s = this.nearestPoly(p);
+    if (!s) return false;
+    const r = this.routesNow();
+    return r.fromMain[s.index] === 1 && this.toMainNow()[s.index] === 1;
+  }
+
+  /** What routes from polygon `i`'s component reach (cached per component; at most 256 kept). */
+  private reachOf(i: number): Uint8Array {
+    const r = this.routesNow();
+    const c = r.comp[i]!;
+    if (c === r.main) return r.fromMain;
+    let seen = this.reachFrom.get(c);
+    if (seen) return seen;
+    seen = reachSet(r.start, r.to, r.comp.length, [i]);
+    if (this.reachFrom.size >= 256) this.reachFrom.clear();
+    this.reachFrom.set(c, seen);
+    return seen;
+  }
+
+  /** Whether a route can exist from polygon `a` to polygon `b` (graph indices): no search, a lookup. */
+  routable(a: number, b: number): boolean {
+    const r = this.routesNow();
+    if (a < 0 || b < 0 || a >= r.comp.length || b >= r.comp.length) return false;
+    return r.comp[a] === r.comp[b] || this.reachOf(a)[b] === 1;
+  }
+
+  /** Whether a route can exist from `a` to `b` (each on or near the navmesh; false off it). */
+  reachable(a: Vec3, b: Vec3): boolean {
+    const s = this.nearestPoly(a);
+    const e = this.nearestPoly(b);
+    return !!s && !!e && this.routable(s.index, e.index);
+  }
+
+  private readonly standInCache = new Map<string, Vec3 | null>();
+
+  /**
+   * Where to head for `goal` from `from`: the goal itself when a route reaches it (exact), else the place nearest it
+   * that a route from `from` does reach (a flag on a ledge: below it; a pickup on a crate: beside it; a goal on a
+   * roof: under it), remembered per component of routes and goal polygon for the match (no search for it ever
+   * again). Null when `from` is off the navmesh, or nothing routes anywhere from there.
+   */
+  standIn(from: Vec3, goal: Vec3): { pos: Vec3; exact: boolean } | null {
+    const s = this.nearestPoly(from);
+    if (!s) return null;
+    const e = this.nearestPoly(goal);
+    if (e && this.routable(s.index, e.index)) return { pos: goal, exact: true };
+    const r = this.routesNow();
+    const key = `${r.comp[s.index]}>${e ? e.index : `${Math.round(goal.x)},${Math.round(goal.y)},${Math.round(goal.z)}`}`;
+    let pos = this.standInCache.get(key);
+    if (pos === undefined) {
+      pos = this.nearestRoutable(s.index, goal);
+      if (this.standInCache.size >= 2048) this.standInCache.clear();
+      this.standInCache.set(key, pos);
+    }
+    return pos ? { pos, exact: false } : null;
+  }
+
+  /** The point nearest `goal` (height counts double) on a polygon routes from polygon `from` reach. */
+  private nearestRoutable(from: number, goal: Vec3): Vec3 | null {
+    const g = this.graph();
+    const seen = this.reachOf(from);
+    const comp = this.routesNow().comp;
+    const { centre } = polyShapes(g);
+    // The few nearest by their middles, then the nearest point on each of those.
+    const best: { i: number; d: number }[] = [];
+    for (let i = 0; i < g.count; i++) {
+      if (g.type[i] !== 0 || !(seen[i] || comp[i] === comp[from])) continue;
+      const d = hypot(centre[i * 3]! - goal.x, centre[i * 3 + 2]! - goal.z) + Math.abs(centre[i * 3 + 1]! - goal.y) * 2;
+      if (best.length < 6 || d < best[best.length - 1]!.d) {
+        best.push({ i, d });
+        best.sort((a, b) => a.d - b.d || a.i - b.i);
+        if (best.length > 6) best.pop();
+      }
+    }
+    let out: Vec3 | null = null;
+    let outD = Infinity;
+    for (const { i } of best) {
+      const c = this.query.closestPointOnPoly(g.base + i, goal);
+      if (!c.success) continue;
+      const p = c.closestPoint;
+      const d = hypot(p.x - goal.x, p.z - goal.z) + Math.abs(p.y - goal.y) * 2;
+      if (d < outD) {
+        outD = d;
+        out = { x: p.x, y: p.y, z: p.z };
+      }
+    }
+    return out;
+  }
+
+  /**
+   * Off the navmesh (pushed or fallen onto ground it doesn't cover, a narrow ledge, spawned badly): the nearest place
+   * on it to walk to, level or below (a body can step or drop down, not climb), within a few metres; null when
+   * `p` is on the navmesh (or nothing is near).
+   */
+  wayOnto(p: Vec3): Vec3 | null {
+    if (this.query.findNearestPoly(p, { halfExtents: { x: 2, y: 3, z: 2 } }).nearestRef) return null;
+    // Close by first; then further and further down (a cliff face or a ledge high over the ground: off it, down).
+    for (const [r, down] of [
+      [6, 6],
+      [12, 30],
+      [24, 60],
+    ] as const) {
+      const hit = this.query.findNearestPoly({ x: p.x, y: p.y - down / 2 + 0.3, z: p.z }, { halfExtents: { x: r, y: down / 2 + 0.3, z: r } });
+      if (hit.success && hit.nearestRef && hit.nearestPoint.y < p.y + 0.6) return { ...hit.nearestPoint };
+    }
+    return null;
+  }
+
+  /** The polygon (index into graph()) nearest `p` within `halfExtents`, and the nearest point on it; null off the navmesh. */
+  nearestPoly(p: Vec3, halfExtents: Vec3 = { x: 2, y: 3, z: 2 }): { index: number; point: Vec3; over: boolean } | null {
+    const r = this.query.findNearestPoly(p, { halfExtents });
+    if (!r.success || !r.nearestRef) return null;
+    const index = r.nearestRef - this.graph().base;
+    return { index, point: { ...r.nearestPoint }, over: r.isOverPoly };
   }
 
   /** The part of the navmesh a polygon is in (-1 when unknown: then every polygon counts as one part). */
@@ -459,12 +794,15 @@ export class NavWorld {
 /**
  * Navigation checks for the validator: every spawn must be on the navmesh and
  * all spawns must reach each other, otherwise bots (and players) get stranded.
- */
-/**
+ *
  * With `physics` (the level's colliders) ziplines are checked too: cable and riders clear of the level, ground to grab
- * them from and to land on, and both ends on ground the navmesh reaches.
+ * them from and to land on, and both ends on ground the navmesh reaches; and spawn points inside something solid.
+ * With `audit` (the map's fall rules: sim/mapNav.ts dropOptions) the navigation audit (audit.ts) replaces the
+ * reachability checks from the first spawn: traps, spawn points, objectives and pickups cut off, from every polygon.
+ * `official` (maps/: validate-map, the all-maps test) makes its findings and blocked spawn points errors; creators in
+ * MapMaker get warnings.
  */
-export function validateNavigation(map: MapDocument, nav: NavWorld, physics?: PhysicsWorld): ValidationIssue[] {
+export function validateNavigation(map: MapDocument, nav: NavWorld, physics?: PhysicsWorld, audit?: AuditOptions): ValidationIssue[] {
   const issues: ValidationIssue[] = [];
   const spawns = map.entities.filter((e) => e.kind === 'spawn');
   const onMesh = spawns.filter((s) => {
@@ -476,7 +814,8 @@ export function validateNavigation(map: MapDocument, nav: NavWorld, physics?: Ph
     return true;
   });
   const [first, ...rest] = onMesh;
-  if (first) {
+  if (physics && audit) issues.push(...(audit.done ?? auditNavigation(map, nav, physics, audit)).issues);
+  else if (first) {
     const from = { x: first.position[0], y: first.position[1], z: first.position[2] };
     for (const s of rest) {
       if (!nav.findPath(from, { x: s.position[0], y: s.position[1], z: s.position[2] })) {
@@ -511,7 +850,7 @@ export function validateNavigation(map: MapDocument, nav: NavWorld, physics?: Ph
     // Colosseum's spawn_269 stood in the stand's steps: a bot spawned there stood all match.)
     for (const s of spawns) {
       if (!physics.boxClear({ x: s.position[0], y: s.position[1] + 1, z: s.position[2] }, { x: 0.25, y: 0.5, z: 0.25 })) {
-        issues.push({ severity: 'warning', code: 'spawn.blocked', message: `spawn ${s.id} is inside something solid: whoever spawns there can't move`, targetId: s.id });
+        issues.push({ severity: audit?.official ? 'error' : 'warning', code: 'spawn.blocked', message: `spawn ${s.id} is inside something solid: whoever spawns there can't move`, targetId: s.id });
       }
     }
     issues.push(...ziplineClearanceIssues(map.entities, physics));
