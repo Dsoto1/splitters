@@ -123,7 +123,7 @@ are right for the campus. The shallow vault stays. Skybridges keep the pack's fa
 <!-- /setpieces -->
 
 <!-- setpieces-3 -->
-### Set pieces, part 3: the showpiece maps' pieces (`wip/setpieces-3`, agent, 2026-11-06; from main b2c58e2e, main bc6037a1 merged in; CI on `check/setpieces-3`; not landed)
+### Set pieces, part 3: the showpiece maps' pieces (`wip/setpieces-3`, agent, 2026-11-06; from main b2c58e2e, main bc6037a1 merged in; green on `check/setpieces-3` at 40e27910, run 42243955187; not landed)
 What was built and decided: docs/SET_PIECES_PLAN.md, "As built: part 3" (the 4 m decision, the sunk trench, the
 pieces, budgets per piece, notes for part 2, what is left); the new kit in docs/BUILDING_KIT.md ("The showpiece kit").
 All data on the standard grid: no map format change, nothing in `packages/client/src/editor/*`.
@@ -152,14 +152,18 @@ All data on the standard grid: no map format change, nothing in `packages/client
 - **Landing craft** (the owner's Drive model): prop **Landing Craft (Beached)** (`prop.lcvp_beached`, pack
   `meshy-community-drive-1106`: Meshy community, CC0 per owner, community page URL pending; hero tier, 16k triangles,
   a 4k LOD from 40 m, baked normal map, 1.0 MB, `collide: "voxel"`: walk up the ramp into the well, shoot over the
-  gunwales). In the Military Compound and Coastal Harbor style packs, and the static Beached Landing Craft set piece
+  gunwales; `surface: "metal"`, as the kit Landing Craft). In the Military Compound and Coastal Harbor style packs, and
+  the static Beached Landing Craft set piece
   (ramp down, hedgehogs, crates). **Not swapped into Shingle Point:** the owner compares it with the kit Landing Craft.
 - **Tests:** `packages/shared/test/setPieces3.test.ts` (18: trenches carved, walked, bot paths, crouched cover and the
   fire step's sightline; casemate embrasure shots, its loop and two ways in; cliff stairs walked and pathed; the
   landing craft's ramp, well and gunwales; the stands' bot route and vomitorium; hypogeum ladders, bars and corner
   hatches; insula storeys and flats; stair towers; expansion equals exploded). `setPiecePlay.test.ts`: the every-port
   test covers every piece whose ports are walled doorways or arches and names the open-sided ones (`OPEN_SIDED`);
-  the z-fight test only mirrors `mirror: "free"` pieces. Fixtures regenerated (tiles, materials). Coverage map: the 13
+  the z-fight test only mirrors `mirror: "free"` pieces. Fixtures: tiles and materials regenerated; the surface
+  classes fixture takes Sandbags (soil) and the craft (metal) as they came; the prop openings fixture lists the craft
+  as a voxel prop against the box it would collide as (the `--fixture` tool skips props new since its ref, so that
+  entry was made by the tool's own steps for the one prop). Coverage map: the 13
   tiles, the four wall styles and the prop placed in MapMaker (driver: Playwright on the built client, Import, the
   palette, R, clicks, the inspector's wall pickers, Export).
 - **Screenshots** (session scratchpad, built game, MapMaker → TEST): `shots/m21b/` (casemates, trenches, cliff
