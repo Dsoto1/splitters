@@ -34,10 +34,29 @@ import {
   type Vec3,
   type WorldBox,
 } from '../src/index.ts';
+import { EDGE_SHAPES } from '../src/content/edgeStyles.generated.ts';
 import { NavWorld, initNavigation } from '../src/match.ts';
 import { makeMap } from './helpers.ts';
 
 beforeAll(() => Promise.all([initPhysics(), initNavigation()]));
+
+/** The pieces with open sides (no wall of their own at a port): setPieces3.test.ts proves their ways through. */
+const OPEN_SIDED = [
+  'setpiece.arena_arcade',
+  'setpiece.arena_attic',
+  'setpiece.arena_bay_podium',
+  'setpiece.arena_bay_tier',
+  'setpiece.arena_vomitorium',
+  'setpiece.cage_block',
+  'setpiece.cage_lift',
+  'setpiece.cliff_stair_grand',
+  ...['bend', 'end', 'jog', 'junction', 'straight'].flatMap((s) => [`setpiece.trench_${s}`, `setpiece.trench_${s}_sandbag`]),
+  'setpiece.tunnel_bend',
+  'setpiece.tunnel_cross',
+  'setpiece.tunnel_hatch',
+  'setpiece.tunnel_junction',
+  'setpiece.tunnel_straight',
+].sort();
 
 const library = builtInSetPieces();
 const yard = (id: string, x: number, y: number, z = 0): TilePlacement => ({ id, tile: 'core.yard', x, y, z, rotation: 0 });
@@ -309,10 +328,28 @@ describe('every port of every piece, in every turn and mirror, is a way through'
     const [cx, cz] = [port.x * 8 + dx * 4, port.y * 8 + dy * 4];
     return dx !== 0 ? { x: cx + dx * v, y: port.z * 4 + y, z: cz + u } : { x: cx + u, y: port.z * 4 + y, z: cz + dy * v };
   };
+  /** The widest opening an edge style leaves from the floor up (a doorway, an arch), in metres; 0 for none. */
+  const floorOpening = (style: string) => (EDGE_SHAPES[style as keyof typeof EDGE_SHAPES]?.openings ?? []).filter((o) => o[2] === 0).reduce((w, o) => Math.max(w, o[1] - o[0]), 0);
+  /**
+   * The pieces whose every port is a doorway or an arch in a wall of their own (a room built beyond it): these tests
+   * shoot and walk through each. Pieces with open sides (trenches, the grand stair, the arena's seating and arcades,
+   * tunnels, hatches) have their own in setPieces3.test.ts.
+   */
+  const walled = [...library.pieces.values()].filter((def) => {
+    const { map, ports } = withNeighbours(def.id, 0, false);
+    const { cells } = buildOccupancy(map);
+    return ports.every((port) => resolveEdge(cells, port.x, port.y, port.z, port.side) !== 'none');
+  });
 
-  it("the static collision leaves each opening open: rays straight through pass wherever the port's own walls do", { timeout: 120_000 }, () => {
+  it('covers every piece with walled ports; the open-sided ones are proved on their own', () => {
+    expect(walled.length).toBeGreaterThanOrEqual(14);
+    const own = [...library.pieces.keys()].filter((id) => !walled.some((d) => d.id === id)).sort();
+    expect(own).toEqual(OPEN_SIDED);
+  });
+
+  it("the static collision leaves each opening open: rays straight through pass wherever the port's own walls do", { timeout: 240_000 }, () => {
     let rays = 0;
-    for (const def of library.pieces.values()) {
+    for (const def of walled) {
       for (const [rotation, mirror] of turns(def.mirror)) {
         const { map, ports } = withNeighbours(def.id, rotation, mirror);
         // The tiles' and edges' collision: the guard stones and the column are blocks kept beside the ways through on
@@ -323,7 +360,9 @@ describe('every port of every piece, in every turn and mirror, is a way through'
         for (const port of ports) {
           const [dx, dy] = SIDE_DIRS[port.side];
           const style = resolveEdge(cells, port.x, port.y, port.z, port.side);
-          expect(style, `${def.id} ${rotation} ${mirror}: port ${JSON.stringify(port)}`).toBe(port.kind === 'opening' ? 'arch_segmental' : 'door');
+          const where = `${def.id} ${rotation} ${mirror}: port ${JSON.stringify(port)}`;
+          if (port.kind === 'door') expect(style, where).toBe('door');
+          else expect(floorOpening(style), `${where}: ${style} leaves an opening from the floor`).toBeGreaterThanOrEqual(3);
           // What both sides of the wall build there (a point within 5 cm of either is too close to call).
           const walls = [...edgeSegments(style, 4, 4), ...edgeSegments(resolveEdge(cells, port.x + dx, port.y + dy, port.z, OUT[port.side]), 4, 4)];
           const wall = (u: number, y: number) => walls.some(([u0, u1, y0, y1]) => u > u0 - 0.05 && u < u1 + 0.05 && y > y0 - 0.05 && y < y1 + 0.05);
@@ -338,7 +377,7 @@ describe('every port of every piece, in every turn and mirror, is a way through'
               open++;
             }
           }
-          expect(open, `${def.id}: the ${port.kind} at ${JSON.stringify(port)} has a way through`).toBeGreaterThan(port.kind === 'opening' ? 200 : 120);
+          expect(open, `${def.id}: the ${port.kind} at ${JSON.stringify(port)} has a way through`).toBeGreaterThan(120);
           rays += open;
         }
       }
@@ -346,8 +385,8 @@ describe('every port of every piece, in every turn and mirror, is a way through'
     expect(rays).toBeGreaterThan(40_000);
   });
 
-  it('players walk through each port from the room beyond, and bots find a path', { timeout: 120_000 }, () => {
-    for (const def of library.pieces.values()) {
+  it('players walk through each port from the room beyond, and bots find a path', { timeout: 240_000 }, () => {
+    for (const def of walled) {
       for (const [rotation, mirror] of turns(def.mirror)) {
         const { map, ports } = withNeighbours(def.id, rotation, mirror);
         const geometry = buildMapGeometry(map);

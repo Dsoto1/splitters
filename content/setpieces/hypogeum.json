@@ -16,7 +16,7 @@
       ],
       "parts": [
         { "kind": "tile", "tile": "core.tunnel_vault", "x": 0, "y": 0, "z": 0, "rotation": 0, "surfaces": { "floor": { "role": "paving" }, "walls": { "role": "stone" } }},
-        { "kind": "light", "position": [-1.77,2,0], "yaw": 1.570796, "fixture": "wall", "color": "#ffb070", "intensity": 1.1, "range": 8 }
+        { "kind": "light", "position": [-1.77,2,0], "yaw": 1.570796, "fixture": "candle", "color": "#ffb070", "intensity": 1.1, "range": 8 }
       ]
     },
     {
@@ -33,7 +33,7 @@
       ],
       "parts": [
         { "kind": "tile", "tile": "core.tunnel_vault_bend", "x": 0, "y": 0, "z": 0, "rotation": 0, "surfaces": { "floor": { "role": "paving" }, "walls": { "role": "stone" } }},
-        { "kind": "light", "position": [-1.77,2,-1], "yaw": 1.570796, "fixture": "wall", "color": "#ffb070", "intensity": 1.1, "range": 8 }
+        { "kind": "light", "position": [-1.77,2,-1], "yaw": 1.570796, "fixture": "candle", "color": "#ffb070", "intensity": 1.1, "range": 8 }
       ]
     },
     {
@@ -51,7 +51,7 @@
       ],
       "parts": [
         { "kind": "tile", "tile": "core.tunnel_vault_t", "x": 0, "y": 0, "z": 0, "rotation": 0, "surfaces": { "floor": { "role": "paving" }, "walls": { "role": "stone" } }},
-        { "kind": "light", "position": [0,2,1.77], "yaw": 3.141593, "fixture": "wall", "color": "#ffb070", "intensity": 1.1, "range": 8 }
+        { "kind": "light", "position": [0,2,1.77], "yaw": 3.141593, "fixture": "candle", "color": "#ffb070", "intensity": 1.1, "range": 8 }
       ]
     },
     {
@@ -70,7 +70,7 @@
       ],
       "parts": [
         { "kind": "tile", "tile": "core.tunnel_vault_cross", "x": 0, "y": 0, "z": 0, "rotation": 0, "surfaces": { "floor": { "role": "paving" }, "walls": { "role": "stone" } }},
-        { "kind": "light", "position": [0,3,0], "fixture": "bulb", "color": "#ffb070", "intensity": 1, "range": 8 }
+        { "kind": "light", "position": [0,3,0], "fixture": "none", "color": "#ffb070", "intensity": 1, "range": 8 }
       ]
     },
     {
@@ -95,7 +95,7 @@
         { "kind": "tile", "tile": "imperial.hypogeum_lift", "x": 0, "y": 0, "z": 0, "rotation": 0, "surfaces": { "floor": { "role": "paving" }, "walls": { "role": "stone" } }},
         { "kind": "tile", "tile": "imperial.arena_hatch", "x": 0, "y": 0, "z": 1, "rotation": 0 },
         { "kind": "ladder", "position": [0,0,1.15], "yaw": 3.141593, "height": 4, "width": 0.9 },
-        { "kind": "light", "position": [3.47,2.2,3], "yaw": -1.570796, "fixture": "wall", "color": "#ffb070", "intensity": 1.1, "range": 8 }
+        { "kind": "light", "position": [3.47,2.2,3], "yaw": -1.570796, "fixture": "candle", "color": "#ffb070", "intensity": 1.1, "range": 8 }
       ]
     },
     {
@@ -123,7 +123,7 @@
         { "kind": "tile", "tile": "core.hatch_corner", "x": 1, "y": 1, "z": 1, "rotation": 2 },
         { "kind": "tile", "tile": "core.hatch_corner", "x": 0, "y": 1, "z": 1, "rotation": 1 },
         { "kind": "ladder", "position": [4,0,2.9], "yaw": 3.141593, "height": 4, "width": 0.9 },
-        { "kind": "light", "position": [4,3,8.5], "fixture": "bulb", "color": "#ffb070", "intensity": 1.1, "range": 10 }
+        { "kind": "light", "position": [4,3,8.5], "fixture": "chandelier", "color": "#ffb070", "intensity": 1.1, "range": 10 }
       ],
       "notes": { "design": "The 4 m question (docs/SET_PIECES_PLAN.md): with the board centred on a cell, its four hatches fall on cell corners; this piece puts its hatch there, the Hatch Riser one at a cell centre." }
     },
@@ -150,8 +150,8 @@
         { "kind": "prop", "model": "prop.straw_bale", "position": [9.8,0,10.4], "yaw": -0.4, "scale": 1 },
         { "kind": "prop", "model": "prop.water_trough", "position": [2.4,0,10.9], "yaw": 0, "scale": 1 },
         { "kind": "prop", "model": "prop.water_trough", "position": [5.6,0,10.9], "yaw": 0, "scale": 1 },
-        { "kind": "light", "position": [0,2.3,-3.47], "yaw": 0, "fixture": "wall", "color": "#ffb070", "intensity": 1.1, "range": 8 },
-        { "kind": "light", "position": [8,2.3,-3.47], "yaw": 0, "fixture": "wall", "color": "#ffb070", "intensity": 1.1, "range": 8 }
+        { "kind": "light", "position": [0,2.3,-3.47], "yaw": 0, "fixture": "candle", "color": "#ffb070", "intensity": 1.1, "range": 8 },
+        { "kind": "light", "position": [8,2.3,-3.47], "yaw": 0, "fixture": "candle", "color": "#ffb070", "intensity": 1.1, "range": 8 }
       ],
       "markers": [{ "name": "pen_gates", "kind": "doorPair", "parts": [4,5] }]
     },
@@ -178,7 +178,7 @@
         { "kind": "tile", "tile": "imperial.arena_hatch", "x": 0, "y": 0, "z": 1, "rotation": 0 },
         { "kind": "prop", "model": "prop.im_lift_cage", "position": [0,0,-0.5], "yaw": 0, "scale": 1 },
         { "kind": "ladder", "position": [0,0,1.15], "yaw": 3.141593, "height": 4, "width": 0.9 },
-        { "kind": "light", "position": [3.47,2.2,3], "yaw": -1.570796, "fixture": "wall", "color": "#ffb070", "intensity": 1.1, "range": 8 }
+        { "kind": "light", "position": [3.47,2.2,3], "yaw": -1.570796, "fixture": "candle", "color": "#ffb070", "intensity": 1.1, "range": 8 }
       ]
     }
   ]

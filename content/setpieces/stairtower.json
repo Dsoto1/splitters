@@ -37,9 +37,9 @@
         { "kind": "tile", "tile": "core.room", "x": 2, "y": 0, "z": 0, "rotation": 0, "edges": { "0,0,0:E": "wall", "0,0,0:N": "arch_round", "0,0,0:S": "arch_round" }, "surfaces": { "floor": { "role": "paving" }, "walls": { "role": "stone" }, "solids": { "role": "stone" }, "trim": { "role": "trim" }, "roof": { "role": "roof" } }, "options": { "facade": { "role": "facade" } }},
         { "kind": "tile", "tile": "core.room", "x": 0, "y": 0, "z": 4, "rotation": 0, "edges": { "0,0,0:N": "window", "0,0,0:S": "window", "0,0,0:W": "wall" }, "surfaces": { "floor": { "role": "paving" }, "walls": { "role": "stone" }, "solids": { "role": "stone" }, "trim": { "role": "trim" }, "roof": { "role": "roof" } }, "options": { "facade": { "role": "facade" }, "ceiling": "roof" } },
         { "kind": "block", "name": "Stair roof", "position": [16,19.5,0], "size": [8,0.5,8], "material": { "role": "roof" } },
-        { "kind": "light", "position": [8,3.3,0], "fixture": "ceiling", "color": "#ffd9a0", "intensity": 0.9, "range": 9 },
-        { "kind": "light", "position": [8,11.3,0], "fixture": "ceiling", "color": "#ffd9a0", "intensity": 0.9, "range": 9 },
-        { "kind": "light", "position": [8,19.3,0], "fixture": "ceiling", "color": "#ffd9a0", "intensity": 0.9, "range": 9 }
+        { "kind": "light", "position": [8,3.3,0], "fixture": "chandelier", "color": "#ffd9a0", "intensity": 0.9, "range": 9 },
+        { "kind": "light", "position": [8,11.3,0], "fixture": "chandelier", "color": "#ffd9a0", "intensity": 0.9, "range": 9 },
+        { "kind": "light", "position": [8,19.3,0], "fixture": "chandelier", "color": "#ffd9a0", "intensity": 0.9, "range": 9 }
       ]
     },
     {
@@ -85,10 +85,10 @@
         { "kind": "tile", "tile": "core.room", "x": 2, "y": 0, "z": 0, "rotation": 0, "edges": { "0,0,0:E": "wall", "0,0,0:N": "arch_round", "0,0,0:S": "arch_round" }, "surfaces": { "floor": { "role": "paving" }, "walls": { "role": "stone" }, "solids": { "role": "stone" }, "trim": { "role": "trim" }, "roof": { "role": "roof" } }, "options": { "facade": { "role": "facade" } }},
         { "kind": "tile", "tile": "core.room", "x": 0, "y": 0, "z": 6, "rotation": 0, "edges": { "0,0,0:N": "window", "0,0,0:S": "window", "0,0,0:W": "wall" }, "surfaces": { "floor": { "role": "paving" }, "walls": { "role": "stone" }, "solids": { "role": "stone" }, "trim": { "role": "trim" }, "roof": { "role": "roof" } }, "options": { "facade": { "role": "facade" }, "ceiling": "roof" } },
         { "kind": "block", "name": "Stair roof", "position": [16,27.5,0], "size": [8,0.5,8], "material": { "role": "roof" } },
-        { "kind": "light", "position": [8,3.3,0], "fixture": "ceiling", "color": "#ffd9a0", "intensity": 0.9, "range": 9 },
-        { "kind": "light", "position": [8,11.3,0], "fixture": "ceiling", "color": "#ffd9a0", "intensity": 0.9, "range": 9 },
-        { "kind": "light", "position": [8,19.3,0], "fixture": "ceiling", "color": "#ffd9a0", "intensity": 0.9, "range": 9 },
-        { "kind": "light", "position": [8,27.3,0], "fixture": "ceiling", "color": "#ffd9a0", "intensity": 0.9, "range": 9 }
+        { "kind": "light", "position": [8,3.3,0], "fixture": "chandelier", "color": "#ffd9a0", "intensity": 0.9, "range": 9 },
+        { "kind": "light", "position": [8,11.3,0], "fixture": "chandelier", "color": "#ffd9a0", "intensity": 0.9, "range": 9 },
+        { "kind": "light", "position": [8,19.3,0], "fixture": "chandelier", "color": "#ffd9a0", "intensity": 0.9, "range": 9 },
+        { "kind": "light", "position": [8,27.3,0], "fixture": "chandelier", "color": "#ffd9a0", "intensity": 0.9, "range": 9 }
       ]
     },
     {
@@ -142,11 +142,11 @@
         { "kind": "tile", "tile": "core.room", "x": 2, "y": 0, "z": 0, "rotation": 0, "edges": { "0,0,0:E": "wall", "0,0,0:N": "arch_round", "0,0,0:S": "arch_round" }, "surfaces": { "floor": { "role": "paving" }, "walls": { "role": "stone" }, "solids": { "role": "stone" }, "trim": { "role": "trim" }, "roof": { "role": "roof" } }, "options": { "facade": { "role": "facade" } }},
         { "kind": "tile", "tile": "core.room", "x": 0, "y": 0, "z": 8, "rotation": 0, "edges": { "0,0,0:N": "window", "0,0,0:S": "window", "0,0,0:W": "wall" }, "surfaces": { "floor": { "role": "paving" }, "walls": { "role": "stone" }, "solids": { "role": "stone" }, "trim": { "role": "trim" }, "roof": { "role": "roof" } }, "options": { "facade": { "role": "facade" }, "ceiling": "roof" } },
         { "kind": "block", "name": "Stair roof", "position": [16,35.5,0], "size": [8,0.5,8], "material": { "role": "roof" } },
-        { "kind": "light", "position": [8,3.3,0], "fixture": "ceiling", "color": "#ffd9a0", "intensity": 0.9, "range": 9 },
-        { "kind": "light", "position": [8,11.3,0], "fixture": "ceiling", "color": "#ffd9a0", "intensity": 0.9, "range": 9 },
-        { "kind": "light", "position": [8,19.3,0], "fixture": "ceiling", "color": "#ffd9a0", "intensity": 0.9, "range": 9 },
-        { "kind": "light", "position": [8,27.3,0], "fixture": "ceiling", "color": "#ffd9a0", "intensity": 0.9, "range": 9 },
-        { "kind": "light", "position": [8,35.3,0], "fixture": "ceiling", "color": "#ffd9a0", "intensity": 0.9, "range": 9 }
+        { "kind": "light", "position": [8,3.3,0], "fixture": "chandelier", "color": "#ffd9a0", "intensity": 0.9, "range": 9 },
+        { "kind": "light", "position": [8,11.3,0], "fixture": "chandelier", "color": "#ffd9a0", "intensity": 0.9, "range": 9 },
+        { "kind": "light", "position": [8,19.3,0], "fixture": "chandelier", "color": "#ffd9a0", "intensity": 0.9, "range": 9 },
+        { "kind": "light", "position": [8,27.3,0], "fixture": "chandelier", "color": "#ffd9a0", "intensity": 0.9, "range": 9 },
+        { "kind": "light", "position": [8,35.3,0], "fixture": "chandelier", "color": "#ffd9a0", "intensity": 0.9, "range": 9 }
       ]
     }
   ]

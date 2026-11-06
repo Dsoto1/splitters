@@ -24,7 +24,7 @@
         { "kind": "tile", "tile": "imperial.seating", "x": 0, "y": 0, "z": 0, "rotation": 0, "edges": { "0,0,0:N": "open" } },
         { "kind": "tile", "tile": "core.room", "x": 0, "y": 1, "z": 0, "rotation": 1, "edges": { "0,0,0:E": "wall", "0,0,0:N": "open", "0,0,0:S": "open", "0,0,0:W": "arch_round" }, "surfaces": { "floor": { "role": "paving" }, "walls": { "role": "stone" }, "solids": { "role": "stone" }, "trim": { "role": "trim" }, "roof": { "role": "roof" } }, "options": { "ceiling": "vault" } },
         { "kind": "tile", "tile": "core.cavea", "x": 0, "y": 1, "z": 1, "rotation": 0, "surfaces": { "floor": { "role": "floor" }, "walls": { "role": "stone" }, "solids": { "role": "stone" }, "trim": { "role": "trim" } }},
-        { "kind": "light", "position": [0,2.3,4.53], "yaw": 0, "fixture": "wall", "color": "#ffd9a0", "intensity": 1, "range": 9 }
+        { "kind": "light", "position": [-2.6,2.3,4.53], "yaw": 0, "fixture": "candle", "color": "#ffd9a0", "intensity": 1, "range": 9 }
       ]
     },
     {
@@ -50,7 +50,7 @@
         { "kind": "tile", "tile": "core.cavea", "x": 0, "y": 0, "z": 0, "rotation": 0, "edges": { "0,0,0:N": "open" }, "surfaces": { "floor": { "role": "floor" }, "walls": { "role": "stone" }, "solids": { "role": "stone" }, "trim": { "role": "trim" } }},
         { "kind": "tile", "tile": "core.room", "x": 0, "y": 1, "z": 0, "rotation": 1, "edges": { "0,0,0:E": "wall", "0,0,0:N": "open", "0,0,0:S": "open", "0,0,0:W": "arch_round" }, "surfaces": { "floor": { "role": "paving" }, "walls": { "role": "stone" }, "solids": { "role": "stone" }, "trim": { "role": "trim" }, "roof": { "role": "roof" } }, "options": { "ceiling": "vault" } },
         { "kind": "tile", "tile": "core.cavea", "x": 0, "y": 1, "z": 1, "rotation": 0, "surfaces": { "floor": { "role": "floor" }, "walls": { "role": "stone" }, "solids": { "role": "stone" }, "trim": { "role": "trim" } }},
-        { "kind": "light", "position": [0,2.3,4.53], "yaw": 0, "fixture": "wall", "color": "#ffd9a0", "intensity": 1, "range": 9 }
+        { "kind": "light", "position": [-2.6,2.3,4.53], "yaw": 0, "fixture": "candle", "color": "#ffd9a0", "intensity": 1, "range": 9 }
       ]
     },
     {
@@ -76,7 +76,7 @@
         { "kind": "tile", "tile": "core.cavea_vomitorium", "x": 0, "y": 0, "z": 0, "rotation": 0, "edges": { "0,0,0:N": "open" }, "surfaces": { "floor": { "role": "floor" }, "walls": { "role": "stone" }, "solids": { "role": "stone" }, "trim": { "role": "trim" } }},
         { "kind": "tile", "tile": "core.room", "x": 0, "y": 1, "z": 0, "rotation": 1, "edges": { "0,0,0:E": "arch_round", "0,0,0:N": "open", "0,0,0:S": "open", "0,0,0:W": "arch_round" }, "surfaces": { "floor": { "role": "paving" }, "walls": { "role": "stone" }, "solids": { "role": "stone" }, "trim": { "role": "trim" }, "roof": { "role": "roof" } }, "options": { "ceiling": "vault" } },
         { "kind": "tile", "tile": "core.cavea", "x": 0, "y": 1, "z": 1, "rotation": 0, "surfaces": { "floor": { "role": "floor" }, "walls": { "role": "stone" }, "solids": { "role": "stone" }, "trim": { "role": "trim" } }},
-        { "kind": "light", "position": [0,2.3,4.53], "yaw": 0, "fixture": "wall", "color": "#ffd9a0", "intensity": 1, "range": 9 }
+        { "kind": "light", "position": [-2.6,2.3,4.53], "yaw": 0, "fixture": "candle", "color": "#ffd9a0", "intensity": 1, "range": 9 }
       ]
     },
     {
@@ -94,7 +94,7 @@
         { "side": "W", "cell": [0,0], "level": 0, "kind": "opening" }
       ],
       "parts": [
-        { "kind": "tile", "tile": "core.gallery_grand", "x": 0, "y": 0, "z": 0, "rotation": 0, "surfaces": { "floor": { "role": "paving" }, "walls": { "role": "stone" }, "solids": { "role": "stone" }, "trim": { "role": "trim" }, "roof": { "role": "roof" } }}
+        { "kind": "tile", "tile": "core.gallery_grand", "x": 0, "y": 0, "z": 0, "rotation": 0, "edges": { "0,0,0:N": "arch_grand", "0,0,0:S": "arch_grand" }, "surfaces": { "floor": { "role": "paving" }, "walls": { "role": "stone" }, "solids": { "role": "stone" }, "trim": { "role": "trim" }, "roof": { "role": "roof" } }}
       ]
     },
     {
@@ -112,7 +112,7 @@
       ],
       "parts": [
         { "kind": "tile", "tile": "core.room", "x": 0, "y": 0, "z": 0, "rotation": 1, "edges": { "0,0,0:E": "open", "0,0,0:N": "open", "0,0,0:S": "open", "0,0,0:W": "window" }, "surfaces": { "floor": { "role": "paving" }, "walls": { "role": "stone" }, "solids": { "role": "stone" }, "trim": { "role": "trim" }, "roof": { "role": "roof" } }, "options": { "ceiling": "roof", "facade": { "role": "facade" } }},
-        { "kind": "light", "position": [0,3.3,0], "fixture": "ceiling", "color": "#fff1d6", "intensity": 0.8, "range": 8 }
+        { "kind": "light", "position": [0,3.3,0], "fixture": "chandelier", "color": "#fff1d6", "intensity": 0.8, "range": 8 }
       ]
     }
   ]
