@@ -226,7 +226,12 @@ such."
   landings.
 
 <!-- prop-slack -->
-### Prop slack pass: columns, the slack audit, 391 props to voxel (`wip/prop-slack`, agent, 2026-11-06; from main 3fc5e197; CI on `check/prop-slack`)
+### Prop slack pass: columns, the slack audit, 391 props to voxel (`wip/prop-slack`, agent, 2026-11-06; rebased on main e63ffc6f; green on `check/prop-slack` at a3198d27, run 42300775716; ready to land)
+**Status:** green, every job (run 42300775716). The run before the rebase (42299124567) failed only perf (budget),
+"frost_basin medium: starting arc took 41.4 ms > 40", with the explosion start at 37 ms in the same pass (about 1 ms
+in every other run, 9 ms on low that run): a hitch on the runner; the rerun passed. Screenshots: session scratchpad
+`slack/shots/colonnade-before-after.jpg` (the sheet) and `slack/shots/{before,after}-*.png`.
+
 **The owner's report** (Capitol Mall): "These pillars are blocking my bullets..capital mall uses them". The white Ionic
 column (`prop.im_column_ionic`, 68 on Capitol Mall at scale 1.333) collided as one box as wide as its plinth and capital
 all the way up: 0.28 m of invisible wall beside the round shaft along x, 0.55 m at 45° (0.37 and 0.73 m at the map's
