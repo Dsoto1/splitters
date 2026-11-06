@@ -122,6 +122,19 @@ are right for the campus. The shallow vault stays. Skybridges keep the pack's fa
   facade) are an override away (`overrides.roles.facade: "none"`); which should be the default?
 <!-- /setpieces -->
 
+### Queued (owner, 2026-11-06): Match Setup follow-ups, NEXT FREE SLOT (before Roulette)
+**Owner's answers to the redesign's questions:**
+1. Host online lists the match publicly from both places.
+2. Spectate keeps following the Offline/Host online switch.
+3. Bring back "save for next match" in the Host tab.
+4. Cap co-op size presets at the map's recommended size.
+
+**New:** default score and time scale with players + bots. The owner: "24v24 in a 40 pt match means on average 1 kill
+per; 24v24 plays ok with 500 points, but also 15–20 min."
+
+The brief is in the session scratchpad, `briefs/match-setup-followups.md`. It has a curve fitted to measured kill rates
+and anchored at 4v4 ≈ 40 points / 10 min and 24v24 ≈ 500 points / 15–20 min.
+
 <!-- match-setup -->
 ### Match Setup redesign, the Host tab, Spectate before the start (`wip/match-setup`, agents, 2026-11-06; main bc6037a1 merged in; green on `check/match-setup` at c32bbf20, run 42242658709; not landed)
 The owner's report and approved design are in the queued section below ("Queued … Match Setup redesign"); the brief is
