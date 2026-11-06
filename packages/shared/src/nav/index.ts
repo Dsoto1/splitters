@@ -232,10 +232,19 @@ export class NavWorld {
     const g = this.graph();
     const { centre } = polyShapes(g);
     const half = { x: 0.2, y: 0.6, z: 0.2 };
-    // No room to stand at a point of polygon i (its surface there, then a body's height up from a step over it).
+    // No room to stand at a point of polygon i (its surface there, then a body's height up from a step over it). The
+    // detail mesh's height, unless it is off the polygon's own corners' range (a sliver's: Whiteout Station's tower
+    // landing read 1.7 m under itself), then the corners' average.
     const blocked = (i: number, x: number, z: number): boolean => {
+      let lo = Infinity;
+      let hi = -Infinity;
+      for (let k = g.vstart[i]!; k < g.vstart[i + 1]!; k++) {
+        lo = Math.min(lo, g.vxyz[k * 3 + 1]!);
+        hi = Math.max(hi, g.vxyz[k * 3 + 1]!);
+      }
       const h = this.query.getPolyHeight(g.base + i, { x, y: centre[i * 3 + 1]!, z });
-      const c = { x, y: (h.success ? h.height : centre[i * 3 + 1]!) + 1, z };
+      const y = h.success && h.height > lo - 0.6 && h.height < hi + 0.6 ? h.height : centre[i * 3 + 1]!;
+      const c = { x, y: y + 1, z };
       return !physics.boxClear(c, half) || solids.some((b) => !b.yaw && c.x + half.x > b.min[0] && c.x - half.x < b.max[0] && c.y + half.y > b.min[1] && c.y - half.y < b.max[1] && c.z + half.z > b.min[2] && c.z - half.z < b.max[2]);
     };
     let n = 0;

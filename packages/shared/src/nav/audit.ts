@@ -259,7 +259,7 @@ function steepAt(physics: PhysicsWorld, opts: FallOptions, p: Vec3): boolean {
  * the slope's foot it slides to, within SLIDE_REACH, downhill all the way (the ground under the line never rises more
  * than a step) and nothing in the way at knee or head height; not lower than `lowest` (the most the drop may be).
  */
-function slideFoot(nav: NavWorld, physics: PhysicsWorld, f: Vec3, lowest: number, opts: FallOptions): { index: number; point: Vec3 } | null {
+function slideFoot(nav: NavWorld, physics: PhysicsWorld, f: Vec3, lowest: number, opts: FallOptions): ReturnType<NavWorld['nearestPoly']> {
   const down = Math.min(SLIDE_DOWN, f.y - lowest);
   if (down < 0.3) return null;
   const hit = nav.nearestPoly({ x: f.x, y: f.y - down / 2, z: f.z }, { x: SLIDE_REACH, y: down / 2 + 0.2, z: SLIDE_REACH });
