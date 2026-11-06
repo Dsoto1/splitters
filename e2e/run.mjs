@@ -5292,9 +5292,6 @@ async function hostcontrolsFlow(browser) {
   });
   check(fits, 'the pause menu fits the window');
   await openPanel(page);
-  // The foot in each of its states (E2E_SHOTS): no changes, Apply now, Apply & restart, Save for next match.
-  const footShot = (name) => (process.env.E2E_SHOTS ? page.screenshot({ path: `${process.env.E2E_SHOTS}/host-foot-${name}.png` }).catch(() => {}) : Promise.resolve());
-  await footShot('none');
   // What wins shows the score and time suggested for the players and bots, following the size being set.
   const suggestedFor = () => page.evaluate(() => document.getElementById('hc-suggest')?.textContent ?? '');
   const before = await suggestedFor();
@@ -5307,7 +5304,6 @@ async function hostcontrolsFlow(browser) {
   check(says.apply === 'Apply now' && says.changes === '+2 bots, hard bots' && says.resume, `Apply says what it will do, beside Resume (${JSON.stringify(says)})`);
   const after6 = await suggestedFor();
   check(/^Suggested for 4 players: \d+ kills, \d+ min\./.test(before) && /^Suggested for 6 players: \d+ kills, \d+ min\./.test(after6), `the Host tab suggests a score and time for the size being set ("${before}" → "${after6}")`);
-  await footShot('apply-now');
   await page.evaluate(() => document.getElementById('hc-apply').click());
   const six = await simWait(page, (m) => m.combatants().length === 6, null, T(5000));
   const feed = await page.evaluate(() => document.getElementById('feed').textContent);
@@ -5364,7 +5360,6 @@ async function hostcontrolsFlow(browser) {
   await page.evaluate(() => document.getElementById('hc-score-plus').click());
   const asks = await page.evaluate(() => ({ apply: document.getElementById('hc-apply').textContent, changes: document.getElementById('hc-changes').textContent, marked: !!document.getElementById('hc-score')?.closest('.field')?.querySelector('.when-tag.restart'), when: document.querySelector('#hc-when .seg-opt.on')?.dataset.value }));
   check(asks.apply === 'Apply & restart' && asks.changes === 'score 16: the match restarts now' && asks.marked && asks.when === 'now', `a change that needs a restart is marked, and Apply says it restarts (${JSON.stringify(asks)})`);
-  await footShot('apply-restart');
   await page.evaluate(() => document.getElementById('hc-apply').click());
   // (A restart plays the rules waiting for it: the score limit changes only then.)
   const applied = await simWait(page, (m) => m.rules.scoreLimit === 16, null, T(10000));
@@ -5382,7 +5377,6 @@ async function hostcontrolsFlow(browser) {
   });
   const saving = await page.evaluate(() => ({ apply: document.getElementById('hc-apply').textContent, changes: document.getElementById('hc-changes').textContent, when: document.querySelector('#hc-when .seg-opt.on')?.dataset.value }));
   check(saving.apply === 'Save for next match' && saving.changes === 'score 17 from the next match' && saving.when === 'next', `Next match: Apply becomes Save for next match, and the foot says when it applies (${JSON.stringify(saving)})`);
-  await footShot('save-next');
   await page.evaluate(() => document.getElementById('hc-apply').click());
   const saved = await page.waitForFunction(() => window.__cs.host()?.pending?.scoreLimit === 17, null, { timeout: T(10000) }).then(() => true, () => false);
   const carriesOn = {
