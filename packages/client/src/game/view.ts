@@ -636,7 +636,7 @@ export class GameView {
         if (end) ends.push(end);
       }
       effects = ends.length;
-      await this.afterFrames(4, 2500);
+      await this.afterFrames(4, veiled() ? 2500 : 30000);
       await ready();
       for (const end of ends) end();
     } catch {
@@ -697,8 +697,10 @@ export class GameView {
     // a first visit still downloading finishes this after the start; parked, they were never drawn and the first gun
     // in your hands built its own mid-match).
     for (const m of stage.getChildMeshes()) m.alwaysSelectAsActiveMesh = true;
-    // Three frames: the atmosphere sorts new meshes into the shadow map a frame later (their shaders differ).
-    await this.afterFrames(3, 2000);
+    // Three frames: the atmosphere sorts new meshes into the shadow map a frame later (their shaders differ). Once the
+    // game shows nothing waits on this, so a slow machine gets its three frames however long they take (a hidden tab
+    // draws none: the cap).
+    await this.afterFrames(3, veiled() ? 2000 : 30000);
     await ready();
     place.remove();
     for (const ch of made) ch?.dispose();
