@@ -97,6 +97,20 @@ was replaced.
 - The rest replace weaker originals; skip the nuclear bomb and the flare gun.
 - **Waiting on the owner** to put `Guns&Explosives.rar` in the Drive. itch.io can't be reached from the dev container.
 
+**Grenades: the owner's picks** (2026-11-06; picture `nadeview/grenades-sheet.jpg` in the session scratchpad):
+- Countdown Sphere → sticky;
+- Globe → frag (the 3DModelsCC0 frag as the realistic alternative);
+- "just a grenade" (blue swirl) → vortex;
+- **Sunburst → a new Flashbang**;
+- Toxic Splash → gas;
+- **the 3DModelsCC0 smoke grenade → a new Smoke grenade**, with the sci-fi canister as its Sci-fi set look.
+
+Flashbang and smoke are new throwables:
+- the flash whites out players and bots who see it, by angle and distance;
+- the smoke blocks sight for players and bots.
+
+Bots use both when they push (Bot AI Phase B).
+
 **Sharper textures:**
 - The weapon in your hands gets 2048 / 1024 / 512 colour maps by graphics setting, instead of today's 512 for
   everything.
