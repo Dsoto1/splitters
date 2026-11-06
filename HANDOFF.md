@@ -195,6 +195,36 @@ are right for the campus. The shallow vault stays. Skybridges keep the pack's fa
   facade) are an override away (`overrides.roles.facade: "none"`); which should be the default?
 <!-- /setpieces -->
 
+### Landed 2026-11-06 evening: main = 157eb996 (train `check/train-20261106-195916`, run 42284421328, green)
+- **Bot AI Phase A**: navigation audit, no standing still on a failed route, scorecard (`wip/bots-a`).
+- **Four maps retired**: Obsidian Orb, Reactor, Serpent Gorge and Iron Compound (`wip/retire-maps-1106`).
+- **The hosting fix**: a stalled friend whose connection is up gets 60 s (`wip/handoff-silent`). See "Fixed: the
+  `handoff` e2e failure" below.
+
+### Branch clean-up (owner, 2026-11-06: "yes go ahead")
+- **The repo had 292 branches; 261 were merged into main.** Eighteen old unmerged ones (27 Oct to 6 Nov) are to be
+  kept as `archive/<branch>` tags and then deleted.
+- **This session's GitHub access can't delete branches or push tags** (HTTP 403 on both). The owner runs the
+  commands from Cloud Shell.
+- **In zsh, write `${b}` inside strings:** `"$b:refs/..."` reads `:r` as a modifier.
+- A "Prune branches" Actions workflow is offered for the future; waiting on the owner.
+
+### Queued (owner, 2026-11-06): prop scale pass, "some of them are tiny, like chairs". Part B of the prop pass, after the slack pass
+**The owner:** "Can we scale the props to the normal human character size? Some of them are tiny, like chairs and
+such."
+- **The catalogue looks real-world by total height:** chairs 0.95 m, tables 0.8 m. But stylised models put small, low
+  seats under tall backs (Kenney's chair is 0.40 m wide). The eye judges the seat, the table top and the door opening.
+- **Maps already compensate in places:** the Kenney bench at a mean scale of 1.93 over 69 placements, the dresser at
+  0.84 over 65.
+- **Plan:**
+  - a lineup of every furniture prop beside a 1.8 m character (and a small and a large one) first;
+  - functional reference sizes (seat 0.46 m, table top 0.76 m, counter 0.92 m, door 2.1 m and so on);
+  - the catalogue fixed to them;
+  - placements fixed in MapMaker: compensating scales back to 1, props resting on resized ones kept on them.
+- **A single "game size" factor** (e.g. +10 %) only with the owner's OK, from before and after pictures.
+- **The brief:** session scratchpad `briefs/prop-scale.md`. The same agent does the slack pass first: one agent, two
+  landings.
+
 ### Queued (owner bug report, 2026-11-06): prop slack pass, "these pillars are blocking my bullets". NEXT FREE SLOT (ahead of Bot AI Phase B)
 **The owner:** "These pillars are blocking my bullets..capital mall uses them". Their screenshot shows Capitol Mall's
 white Ionic columns.
