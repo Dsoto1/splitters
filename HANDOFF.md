@@ -426,6 +426,31 @@ up. The new Gnoll (Hyena Warrior) in the intake-2 sheets shows it.
 - **Owner's decisions:** keep the Hyena (Gnoll) and Snikkit (Goblin Mischief) and fix their hands with this;
   Bill is retired. Do the pistol-hold tweak after this.
 
+### Container restart, 2026-11-06 00:30 UTC: three agents stopped (work saved)
+All three in-flight agents stopped. Their work is pushed:
+- `wip/perf-3` bf4fbdb6: prop batches, still decorations merged, blood instancing, warm-up of guns and characters,
+  ragdoll tiers by screen size and staggered starts, minimap from a bitmap. Not yet measured; no CI.
+- `wip/shingle` d70bbfd1: beach kit pieces and Replace all improvements. The map swap is part-way; its temporary
+  helpers are saved in the scratchpad `shingle-saved/`.
+- `wip/pistol` 57dda85f: WIP first-person pistol hold (finger close limited by wrap, hand placed by the middle of its
+  width, support hands turned).
+
+Resume each from its branch, after merging main.
+
+### Queued FIRST (owner bug report, 2026-11-06): far enemies render as feet only
+**Owner:** "I see enemy in distance not fully there, only feet." Screenshot: session scratchpad
+`perf3/far-enemy-feet-only.jpg`.
+
+**Suspects:**
+- The character LOD: `<name>_lod` meshes added via `addLODLevel(18 m)` in client content/characters.ts. Past 18 m
+  only parts without a low copy (feet or boots) show.
+- Round 1 body reuse leaving the `_lod` meshes disabled, dormant or detached.
+- Round 2's `selectLiveCandidates` and frozen materials or bounding info.
+- AnimGate skipping `skeleton.prepare`, so the LOD skin collapses.
+
+**Likely a regression** from performance rounds 1–2. Fix it with an e2e check that a character past LOD distance
+draws its whole body.
+
 ### Queued FIRST (owner bug report, 2026-11-06): bullets stop in the air inside arches, windows and holes
 The owner's screenshots, in the session scratchpad `openings/` (30.jpg, 31.jpg, 32.jpg), show bullet holes in empty
 air inside openings:
