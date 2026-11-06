@@ -100,7 +100,7 @@ Bomb plants (0.5 → 0.3 a match) a little down on the samples, and ten CTF maps
 <!-- /bots-a -->
 
 <!-- setpieces -->
-### Set pieces, part 2: MapMaker (`wip/setpieces-2`, agents, 2026-11-06; from `wip/setpieces-3`, main adad4de7 merged in; CI on `check/setpieces-2`: see below; not landed)
+### Set pieces, part 2: MapMaker (`wip/setpieces-2`, agents, 2026-11-06; from `wip/setpieces-3`, main dbbc4b78 merged in; CI on `check/setpieces-2`; not landed)
 What was built: docs/SET_PIECES_PLAN.md, "As built: part 2" and "St. John's (as built)"; how to use it:
 docs/BUILDING_KIT.md, "Set pieces". MapMaker places, selects, themes, explodes and saves set pieces; the coverage map
 has all 39; St. John's has the Argonne Gate carriageway (with an east tower) and a DeKoven-Smythe skybridge. The first
