@@ -2,6 +2,7 @@
 // paths to e2e flows (CI's plan job, `pnpm e2e:changed`, `pnpm test:changed`).
 // Safe default: a path no rule names, or one in the shared simulation / infrastructure,
 // runs everything. Docs alone run nothing. Tested in tools/ci/test/select.test.mjs.
+import { readFileSync } from 'node:fs';
 
 /**
  * The browser map tour (every map in a match, then opened in MapMaker) is long: it runs in this many parts ('maps',
@@ -68,6 +69,9 @@ export const DOC_PATTERNS = [/^docs\//, /^[^/]*\.md$/, /^packages\/[^/]+\/[^/]*\
  * measures). The full scorecard runs nightly.
  */
 export const BOT_PATHS = [/^packages\/shared\/src\/(bots|nav|sim)\//, /^packages\/server\/src\/tools\/(bot-report|botMeasures|navPictures)\.ts$/, /^packages\/server\/src\/tools\/bot-limits\.json$/];
+
+/** The maps the quick check plays (bot-limits.json `check`): a change to one of them gets the check too. */
+export const BOT_CHECK_MAPS = new Set(JSON.parse(readFileSync(new URL('../packages/server/src/tools/bot-limits.json', import.meta.url), 'utf8')).check.matches.map(([id]) => id));
 
 /** Whether a repo-relative path is docs only (DOC_PATTERNS). */
 export const isDocPath = (p) => DOC_PATTERNS.some((re) => re.test(p.replace(/^\.\//, '')));
@@ -188,7 +192,7 @@ export function selectForPaths(paths, mapIds = [], { tour = false } = {}) {
   for (const raw of paths) {
     const p = raw.replace(/^\.\//, '');
     if (!p) continue;
-    if (BOT_PATHS.some((re) => re.test(p))) bots = true;
+    if (BOT_PATHS.some((re) => re.test(p)) || BOT_CHECK_MAPS.has(/^maps\/([^/]+)\.json$/.exec(p)?.[1] ?? '')) bots = true;
     // Render-side changes get the draw-call budget check.
     if (/^packages\/client\/src\/(game\/(view|ragdoll|ragdollBudget|ragdollJoints|characterAnimator|propVisuals|scenarioVisuals|cityVisuals|canopyVisuals)\.ts|mapMeshes\.ts|foliage\.ts|backdrop\.ts|content\/|materials\/)|^packages\/shared\/src\/(content|map)\/|^tools\/perf\/|^content\//.test(p)) perf = true;
     const map = /^maps\/([^/]+)\.json$/.exec(p);

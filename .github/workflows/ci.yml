@@ -309,7 +309,8 @@ jobs:
   # The full bot scorecard, nightly and from Run workflow: every scorecard mode on the maps that list it, two seeds of
   # three minutes, in shards (pnpm bot-report --suite=all --shard=k/n); the bots-scorecard job then holds the lot to
   # bot-limits.json's limits and keeps the report and every map's navigation picture (traps, islands, drop links,
-  # where searches failed) as artifacts.
+  # where searches failed) as artifacts. Not stopped by another job's failure (no stop-on-failure.sh): a browser flow
+  # that flakes doesn't cost the night's scorecard; the run reads failure all the same.
   bots-nightly:
     needs: plan
     if: needs.plan.outputs.skip != 'true' && (github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.full))
@@ -337,9 +338,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: |
           mkdir -p bots-out
-          tools/ci/stop-on-failure.sh pnpm bot-report --suite=all --seeds=1,2 --seconds=180 --shard=${{ matrix.shard }}/14 --quiet --json="$PWD/bots-out/shard-${{ matrix.shard }}.json"
-        env:
-          GH_TOKEN: ${{ github.token }}
+          pnpm bot-report --suite=all --seeds=1,2 --seconds=180 --shard=${{ matrix.shard }}/14 --quiet --json="$PWD/bots-out/shard-${{ matrix.shard }}.json"
       - if: always()
         uses: actions/upload-artifact@v4
         with:
@@ -373,6 +372,13 @@ jobs:
           pattern: bots-shard-*
           path: bots-report/matches
           merge-multiple: true
+      # Every map's navigation picture and audit (traps, islands, drop links), then the scorecard: the maps it played get
+      # their pictures again with where searches failed.
+      - name: Navigation audit, every map
+        run: |
+          mkdir -p bots-report
+          pnpm nav-audit --pictures="$PWD/bots-report/nav-pictures" > bots-report/nav-audit.txt
+          tail -n 1 bots-report/nav-audit.txt
       - name: Scorecard (held to the limits), nav pictures
         run: |
           files=$(printf '%s+' "$PWD"/bots-report/matches/*.json)
