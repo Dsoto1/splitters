@@ -604,7 +604,7 @@ with `pnpm bench:96:clump` before and after; bot thinking at 96 bots stays withi
 4. **Environment Phase 2:** more species; the border forest moves to our trees.
 5. **Core / experimental tiers** with quality gates, in the Control Center Workbench.
 
-The MapMaker overhaul and community maps follow, once the owner marks the MapMaker list.
+The MapMaker overhaul (all of the list, owner 2026-11-06: docs/MAPMAKER_OVERHAUL_PLAN.md) and community maps follow.
 
 ### Agent queue order (2026-11-05)
 1. Small environment follow-ups (below).
@@ -790,7 +790,7 @@ Plan in docs/COMMUNITY_MAPS.md:
 
 MULTIPLAYER_DIRECTION §7 is amended to match. Starts after the current work.
 
-### Proposed (not yet approved): MapMaker quality-of-life list
+### Queued (owner-approved 2026-11-06, "all if able"): MapMaker quality-of-life list = the MapMaker overhaul, plan in docs/MAPMAKER_OVERHAUL_PLAN.md
 The owner asked what MapMaker could use, by comparison with the Far Cry and TimeSplitters editors. My picks, in order:
 1. A green/red ghost before placing, with the reason; plus a live budget bar.
 2. "Play from here", and a top-down plan view.
@@ -816,7 +816,7 @@ Owner request (2026-11-05): show the real buildable area.
 
 Also proposed: note pins, templates, mirror for team maps, a card-shot camera, and snap-to-surface/randomise for props.
 
-**Build area: done on `wip/grid` (agent, 2026-11-05); `check/grid` run 42093090058 green at 01ab568b (all shards: shared changed). Not on main yet.**
+**Build area: done and on main (07ccea8d, b7d5d497; `check/grid` run 42093090058 green).**
 - Shared: `editor/buildArea.ts` (`buildLimitRect`, `playableRect` = bounds else terrain extent, `buildZone`,
   `insideBuildLimit`, `buildLimitReason`); `MAX_TILE_CELL` / `MAX_TILE_LEVEL` in the schema replace the literal
   256 / 16; checkPlacement's refusal now says "past the build limit…". Test: `packages/shared/test/buildArea.test.ts`.
@@ -836,7 +836,10 @@ Also proposed: note pins, templates, mirror for team maps, a card-shot camera, a
   this (Full grid adds ~32 px; only 1280 is checked); the camera may now fly 600 m up and out to the limit, which
   draws the whole map (fine on desktop, not measured on weak GPUs).
 
-Waiting for the owner to mark which ones. This becomes the "MapMaker overhaul" in the agreed queue.
+**Owner, 2026-11-06: "all if able"**: every item and the extras. Phased in docs/MAPMAKER_OVERHAUL_PLAN.md (1 feedback while building, 2 interface, 3 workflow, 4 testing the map, 5 time of day and weather, 6 guided tour); after set pieces part 2, in the agreed queue's place.
+Already covered elsewhere: set pieces (item 3, its own queue item, docs/SET_PIECES_PLAN.md); the build area (above);
+bot heatmaps (item 4) partly by docs/BOT_AI_PLAN.md (Phase A failure-spot pictures, Phase D bot debug view and
+bot hints). Today a tile's ghost already turns green or red, but it doesn't say why, and there is no budget bar.
 
 ### Queued (owner-approved, 2026-11-05): kit-prop generators
 docs/PROCEDURAL_ENVIRONMENT.md Phase 6, after Environment Phase 2. Generated families replace most of the simple
