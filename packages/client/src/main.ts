@@ -264,9 +264,9 @@ class App {
       this.front = new FrontEnd($('menu'), maps, {
         openEditor: () => void this.openEditor(),
         openDesigner: (look) => void this.openDesigner(look),
-        playLocal: (map, rules, bots, skill, host, botSet) => {
+        playLocal: (map, rules, bots, skill, host, botSet, spectate) => {
           this.botSet = botSet ?? null;
-          this.playLocal(map, rules, bots, skill, undefined, undefined, host);
+          this.playLocal(map, rules, bots, skill, undefined, undefined, host, false, spectate ? { spectate } : {});
         },
         playOnline: (server, name) => void this.playOnline(server, name),
         playPlaylist: (id, botFill, skill, botSet) => {
@@ -469,13 +469,13 @@ class App {
   /** `hosting`: Host game carried over a map change (the same join code; friends rejoin it). */
   /** `autoHost`: open a join code for friends as soon as the match starts (Play → Host). */
   /** `autoList`: with autoHost, list it in the game browser too (Host this map, after a host left). */
-  /** `extra`: a match handed on from a host that left (its checkpoint), and a line to greet with. */
-  playLocal(map: Parameters<typeof rulesForMap>[0], rules: MatchRules, botFill: number, difficulty: 'easy' | 'normal' | 'hard', carry?: CarryOver, hosting?: Travel['hosting'], autoHost = false, autoList = false, extra: { restore?: MatchCheckpoint; greeting?: string } = {}): void {
+  /** `extra`: a match handed on from a host that left (its checkpoint), a line to greet with, or `spectate`: you join it watching (Match setup → Spectate). */
+  playLocal(map: Parameters<typeof rulesForMap>[0], rules: MatchRules, botFill: number, difficulty: 'easy' | 'normal' | 'hard', carry?: CarryOver, hosting?: Travel['hosting'], autoHost = false, autoList = false, extra: { restore?: MatchCheckpoint; greeting?: string; spectate?: boolean } = {}): void {
     void this.withMatch((m) => this.playLocalWith(m, map, rules, botFill, difficulty, carry, hosting, autoHost, autoList, extra));
   }
 
-  private playLocalWith(m: MatchCode, map: Parameters<typeof rulesForMap>[0], rules: MatchRules, botFill: number, difficulty: 'easy' | 'normal' | 'hard', carry: CarryOver | undefined, hosting: Travel['hosting'], autoHost: boolean, autoList: boolean, extra: { restore?: MatchCheckpoint; greeting?: string }): void {
-    this.startSession(m, new m.LocalTransport(map, { name: this.front!.displayName || 'Player', verified: this.front!.verified, look: this.front!.look, botFill, difficulty, botSet: this.botSet, rules, ...(carry ? { carry } : {}), ...(extra.restore ? { restore: extra.restore } : {}), ...(TEST ? { test: TEST } : {}) }), {
+  private playLocalWith(m: MatchCode, map: Parameters<typeof rulesForMap>[0], rules: MatchRules, botFill: number, difficulty: 'easy' | 'normal' | 'hard', carry: CarryOver | undefined, hosting: Travel['hosting'], autoHost: boolean, autoList: boolean, extra: { restore?: MatchCheckpoint; greeting?: string; spectate?: boolean }): void {
+    this.startSession(m, new m.LocalTransport(map, { name: this.front!.displayName || 'Player', verified: this.front!.verified, look: this.front!.look, botFill, difficulty, botSet: this.botSet, rules, ...(carry ? { carry } : {}), ...(extra.restore ? { restore: extra.restore } : {}), ...(extra.spectate ? { spectate: true } : {}), ...(TEST ? { test: TEST } : {}) }), {
       exitLabel: 'Leave match',
       exitOnF5: false,
       hostable: true,

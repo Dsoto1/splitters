@@ -22,16 +22,33 @@ import {
   TEAM_PRESETS,
   SETUP_PRESETS,
   BIG_MATCH,
-  HUGE_MATCH,
+  PARTY_PRESETS,
+  applyParty,
+  capMessage,
+  getVariant,
   isCoopMode,
   isTwoTeamMode,
+  mapPickTeams,
+  matchingPreset,
   modeOptions,
   normalizeSetup,
+  partyMode,
+  partyOn,
+  partyUnavailable,
+  peopleAndBots,
+  playerCap,
+  presetPatch,
   presetPlayers,
   rulesFromSetup,
-  setupNotes,
+  setVariant,
+  setupFamily,
+  setupFit,
   setupPlayers,
+  setupSummary,
   setupTeams,
+  setupYourTeam,
+  sizePresets,
+  variantStates,
   type MatchSetup,
   type TeamAssign,
   getLook,
@@ -69,7 +86,7 @@ import type { AudioSystem } from '../audio/audio.ts';
 import { listCustomLooks } from '../designer/customLooks.ts';
 import { mapThumbs, thumbPair, type MapThumbs } from './mapThumbs.ts';
 import type { MapMeta } from '../mapIndex.ts';
-import { botCastSelect, choice, fold as foldEl, infoTip, noteList, settingRow, stepper, teamEditor, type ChoiceOption } from './setupControls.ts';
+import { botCastSelect, choice, field, fitChip, fitList, fold as foldEl, inert, infoTip, section, segmented, settingRow, sizeChips, stepper, teamEditor, type ChoiceOption } from './setupControls.ts';
 import { deleteSetup, lastSetup, listSetups, saveSetupAs, setLastSetup } from './savedSetups.ts';
 import type { MenuScene } from './menuScene.ts';
 import { weaponIcon } from './weaponIcons.ts';
@@ -161,9 +178,17 @@ function saveBrowsePrefs(p: MapBrowsePrefs): void {
   }
 }
 
-/** Match setup's steps, in order: the one open is where you are. */
-type SetupStep = 'mode' | 'players' | 'bots' | 'rules' | 'done';
-const STEP_ORDER: readonly SetupStep[] = ['mode', 'players', 'bots', 'done'];
+/** Match setup's sections under the always-shown mode, what wins and the presets (one open at a time on small screens). */
+const SETUP_SECTIONS = ['setup-teams', 'setup-bots', 'setup-advanced'] as const;
+
+/**
+ * Small screens and phones open one setup section at a time (the stylesheet's narrow and short layouts start at
+ * the same sizes); a desktop opens as many as you like.
+ */
+const compactSetup = (): boolean => isTouchDevice() || (typeof matchMedia === 'function' && matchMedia('(max-width: 900px), (max-height: 600px)').matches);
+
+/** Advanced rules' summary names the changes that matter most first ("9 changed · Low gravity · Tactical bots +7"). */
+const RULE_RANK: Record<string, number> = { weapons: 0, gravity: 1, style: 2, lethality: 3, ballistics: 4, randomchars: 5, classes: 6, ff: 7, fall: 8, stats: 9, sizes: 10 };
 
 /** Draw each card's plan once it scrolls into view in `root` (a long list draws only what is seen). */
 function lazyPlans(root: HTMLElement): (card: Element, draw: () => void) => void {
@@ -204,9 +229,9 @@ export type ArcadeSetup = MatchSetup;
 export interface FrontEndHooks {
   openEditor(): void;
   openDesigner(look: string): void;
-  /** `host`: open a join code for friends as soon as the match starts. */
-  /** `botSet`: the host's own bots (Bots step → Edit bots…). */
-  playLocal(map: MapDocument, rules: MatchRules, bots: number, skill: ArcadeSetup['skill'], host?: boolean, botSet?: BotSet | null): void;
+  /** `host`: open a join code for friends as soon as the match starts (Match setup's Host online). */
+  /** `botSet`: the host's own bots (Bots → Edit bots…). `spectate`: join it watching (Match setup → Spectate). */
+  playLocal(map: MapDocument, rules: MatchRules, bots: number, skill: ArcadeSetup['skill'], host?: boolean, botSet?: BotSet | null, spectate?: boolean): void;
   playOnline(server: string, name: string): void;
   /** Play a scenario chain (maps/playlists): its maps in order, each once the one before is won. */
   playPlaylist(id: string, botFill: number, skill: ArcadeSetup['skill'], botSet?: BotSet | null): void;
@@ -705,8 +730,12 @@ export class FrontEnd {
   private setupScroll = 0;
   /** Refreshes the game browser while the Online screen is open. */
   private browserTimer?: number;
-  /** The match setup's folds that are open (by id). */
-  private readonly folds = new Set<string>(['setup-mode']);
+  /**
+   * The match setup's sections and folds that are open (by id). A desktop starts with Players & teams open
+   * (and Advanced rules' Rules, once it's opened); small screens and phones with every section closed, since
+   * they open one at a time.
+   */
+  private readonly folds = new Set<string>(compactSetup() ? ['setup-rules'] : ['setup-teams', 'setup-rules']);
   /** The setup panel, redrawn on every change (the map list stays). */
   private setupPanel: HTMLElement | null = null;
   /** The saved setup loaded last (its name), to show whether the setup still matches it. */
@@ -715,8 +744,16 @@ export class FrontEnd {
   private mapFilter: GameMode | 'all' = 'all';
   private mapQuery = '';
   private readonly browse = loadBrowsePrefs();
-  /** The setup step that's open; the rest show a line each. */
-  private step: SetupStep = 'mode';
+  /** Even teams: a bot added or taken away changes every team alike (shown on while the teams are the same size). */
+  private evenTeams = true;
+  /** Start match plays offline, or hosts the match online: a join code, and friends who join take bots' places. */
+  private hostOnline = false;
+  /** Why the last change to the players stopped short (a limit), shown until the next change. */
+  private stopped: string | null = null;
+  /** The fit check's details are showing. */
+  private fitOpen = false;
+  /** The section just opened (its settings slide in once, not on every redraw). */
+  private justOpened: string | null = null;
 
   private currentMap(): ArcadeMap {
     return this.maps.find((m) => m.key === this.setup.map) ?? this.maps[0]!;
@@ -727,18 +764,63 @@ export class FrontEnd {
     return this.currentMap().load().catch(() => undefined);
   }
 
+  /** The most players this device runs, and how its limit is named ("24 per team is this computer's limit"). */
+  private device(): { max: number; name: string } {
+    return { max: deviceMaxPlayers(), name: isTouchDevice() ? 'this device' : 'this computer' };
+  }
+
   private pickMap(key: string): void {
     const m = this.maps.find((x) => x.key === key);
     if (!m) return;
+    const old = this.currentMap().map;
     const mode = m.modes.includes(this.setup.mode) ? this.setup.mode : m.modes[0]!;
+    // Teams on the old map's own layout (Map's pick) take the new map's own; a layout of your own stays.
+    const theirs = !!old && !!this.setup.teams && this.setup.teams.join() === mapPickTeams(old, this.setup.mode, this.device().max).join();
     this.setup = { ...this.setup, map: key, mode, bots: m.bots, scoreLimit: mode === this.setup.mode ? this.setup.scoreLimit : BASE_RULES[mode].scoreLimit };
+    if (theirs) delete this.setup.teams;
+    this.stopped = null;
   }
 
-  /** Change the setup, remember it and redraw the panel. */
-  private change(f: (s: ArcadeSetup) => void): void {
+  /** Change the setup, remember it and redraw the panel. `stopped`: why the change stopped short of what was asked (a limit). */
+  private change(f: (s: ArcadeSetup) => void, stopped: string | null = null): void {
     f(this.setup);
+    this.stopped = stopped;
     this.saveSetup();
     this.refreshSetup();
+  }
+
+  /** A new setup in place of the old one (a variant, a party preset), remembered and drawn. */
+  private replaceSetup(next: ArcadeSetup): void {
+    this.setup = next;
+    this.change(() => undefined);
+  }
+
+  /** A team layout or player count from a preset or a suggestion: Even teams follows whether its teams are matched. */
+  private applyLayout(patch: Partial<ArcadeSetup>): void {
+    if (patch.teams) this.evenTeams = patch.teams.every((n) => n === patch.teams![0]);
+    this.change((x) => {
+      Object.assign(x, patch);
+      if (patch.teams && x.playerTeam !== undefined && x.playerTeam >= patch.teams.length) x.playerTeam = patch.teams.length - 1;
+    });
+  }
+
+  /** Open or close a section of the setup: small screens keep one open at a time, a desktop as many as you like. */
+  private toggleSection(id: string): void {
+    const opening = !this.folds.has(id);
+    if (opening && compactSetup()) for (const s of SETUP_SECTIONS) this.folds.delete(s);
+    if (opening) this.folds.add(id);
+    else this.folds.delete(id);
+    this.justOpened = opening ? id : null;
+    this.refreshSetup();
+    this.justOpened = null;
+    // Opened: scroll down so its settings show, as far as they fit, never past its head.
+    const body = this.setupPanel?.querySelector<HTMLElement>('.setup-body');
+    const sec = document.getElementById(id);
+    if (!opening || !body || !sec) return;
+    const b = body.getBoundingClientRect();
+    const r = sec.getBoundingClientRect();
+    if (r.bottom > b.bottom) body.scrollTop += Math.max(0, Math.min(r.bottom - b.bottom, r.top - b.top));
+    this.setupScroll = body.scrollTop;
   }
 
   private refreshSetup(): void {
@@ -851,9 +933,8 @@ export class FrontEnd {
           cards.querySelectorAll('.map-card.on').forEach((c) => c.classList.remove('on'));
           card.classList.add('on');
           this.setupScroll = 0;
-          // A new map starts the steps again at its mode (a filtered list already picked one it has).
+          // A filtered list already picked a mode the map has: that one.
           if (this.mapFilter !== 'all' && m.modes.includes(this.mapFilter) && this.setup.mode !== this.mapFilter) this.setMode(this.mapFilter);
-          this.step = this.mapFilter !== 'all' ? 'players' : 'mode';
           this.refreshSetup();
         });
         cards.append(card);
@@ -874,15 +955,13 @@ export class FrontEnd {
     );
   }
 
-  /** Move the setup on from `from` to the next step (skipping ones already behind you). */
-  private nextStep(from: SetupStep): void {
-    const i = STEP_ORDER.indexOf(from);
-    this.step = i < 0 ? 'done' : STEP_ORDER[i + 1] ?? 'done';
-    this.setupScroll = 0;
-    this.refreshSetup();
-  }
-
-  /** The setup panel: map preview, the core settings (mode, players, bots), folded extras, saved setups, Start and Host. */
+  /**
+   * The setup panel. On top, the map (picture, plan, name) with the setup in a line, people apart from bots,
+   * and the fit indicator. Then what matters most, always in view: the mode, its variants, what wins (score,
+   * time) and the mode's own key setting; the size presets worked out for this map and the party presets.
+   * Then the sections (Players & teams, Bots, Advanced rules): several open on a desktop, one at a time on
+   * small screens. The foot never scrolls away: Offline / Host online, saved setups, Spectate and Start match.
+   */
   private fillSetup(panel: HTMLElement): void {
     const current = this.currentMap();
     const map = current.map;
@@ -896,16 +975,22 @@ export class FrontEnd {
       return;
     }
     const s = this.setup;
-    const team = isTeamMode(s.mode);
-    const coop = isCoopMode(s.mode);
-    const two = isTwoTeamMode(s.mode);
-    const forts = s.mode === 'core.forts';
+    const family = setupFamily(s.mode);
+    const team = family === 'teams';
+    const coop = family === 'squad';
     const race = s.mode === 'core.race';
-    const players = setupPlayers(s, map);
+    const forts = s.mode === 'core.forts';
+    const dev = this.device();
+    // What this setup plays here: at most what this device runs (a race: its grid).
+    const cap = playerCap(s.mode, map, dev.max);
+    const players = setupPlayers(s, map, cap.max);
+    const sizes = team ? setupTeams(s, map, cap.max) : [];
+    const pickPlayers = current.bots + 1;
+    const fit = setupFit(s, map, { deviceMax: dev.max, device: dev.name, pickPlayers });
     const fold = (id: string, title: string, badge: string | undefined, ...children: HTMLElement[]) =>
       foldEl({ id, title, badge, open: this.folds.has(id), onToggle: (open) => (open ? this.folds.add(id) : this.folds.delete(id)) }, ...children);
 
-    // ---- header: the map's picture with its top-down plan, name, what it is, how many and how long
+    // ---- header: the map's picture with its top-down plan, name, what it is, who plays and how long, the fit
     const thumbs = mapThumbs(map, !current.group);
     requestAnimationFrame(thumbs.draw);
     // The list is hidden on small screens: there, this picks the map.
@@ -914,18 +999,26 @@ export class FrontEnd {
       this.pickMap(mapSelect.value);
       this.saveSetup();
       this.setupScroll = 0;
-      this.step = 'mode';
       this.go('play');
     });
-    const about = [map.metadata.description, map.metadata.author && !['Tile Trigger', 'ChronoSplit'].includes(map.metadata.author) ? `Map by ${map.metadata.author}` : '', `Made for ${map.metadata.recommendedPlayers.min}–${map.metadata.recommendedPlayers.max} players; ${map.entities.filter((e) => e.kind === 'spawn').length} spawn points.`].filter(Boolean).join('\n\n');
-    const sizes = team ? setupTeams(s, map) : [];
     const rec = map.metadata.recommendedPlayers;
+    const spawnCount = map.entities.filter((e) => e.kind === 'spawn').length;
+    const about = [map.metadata.description, map.metadata.author && !['Tile Trigger', 'ChronoSplit'].includes(map.metadata.author) ? `Map by ${map.metadata.author}` : '', `Made for ${rec.min}–${rec.max} players; ${spawnCount} spawn points.`].filter(Boolean).join('\n\n');
     const length = coop ? (s.mode === 'core.zombies' ? 'Until the last wave' : 'Mission') : forts ? `~${Math.round((s.fortCycles ?? 1) * ((s.fortBuild ?? 2.5) + (s.fortCombat ?? 5)))} min` : race ? `${s.raceLaps ?? raceTrack(map)?.laps ?? 3} laps` : s.minutes ? `~${s.minutes} min` : 'No time limit';
+    const toggleFit = () => {
+      this.fitOpen = !this.fitOpen;
+      this.refreshSetup();
+      // The details open at the top of the setup: bring them into view.
+      if (this.fitOpen) {
+        const b = this.setupPanel?.querySelector<HTMLElement>('.setup-body');
+        if (b) b.scrollTop = this.setupScroll = 0;
+      }
+    };
     const facts = el(
-      'p',
+      'div',
       { class: 'setup-facts', id: 'setup-summary' },
-      el('span', { class: 'fact-players', title: `Made for ${rec.min}–${rec.max} players` }, team ? `${sizes.join('v')} · ${players} players` : `${players} player${players === 1 ? '' : 's'}`),
-      el('span', { class: 'fact-time', title: coop ? 'Ends through the mission' : 'Time limit' }, length),
+      el('span', { class: 'fact-players', title: `Made for ${rec.min}–${rec.max} players. Bots fill every place you don't.` }, setupSummary(s, map, 1, cap.max)),
+      el('span', { class: 'fact-time', title: coop ? 'Ends through the mission' : 'How long it runs' }, length),
     );
     const featured = !current.group && FEATURED_MAPS.includes(current.key);
     const head = el(
@@ -942,48 +1035,123 @@ export class FrontEnd {
         facts,
         mapSelect,
       ),
+      fitChip(fit, this.fitOpen, toggleFit, 'setup-fit'),
     );
 
-    // ---- mode: a tile per mode the map has (an icon and the name), the selected one's line below, the rest greyed with why
+    // ---- the fit check's details: everything when opened; a real problem shows in red either way
+    const fixLayout = (fix: { teams?: number[]; players?: number }) => this.applyLayout(fix.teams ? { teams: [...fix.teams] } : { bots: Math.max(0, (fix.players ?? 1) - 1) });
+    const fitShown = this.fitOpen ? fit.items : fit.items.filter((i) => i.level === 'problem');
+    const graphics = players > BIG_MATCH
+      ? settingRow('Graphics', 'Low: no shadows or post effects, the fastest. Saved for every match (Options has the rest: render scale, frame cap).', choice(GRAPHICS_QUALITIES.map((q): ChoiceOption<GraphicsQuality> => [q, q[0]!.toUpperCase() + q.slice(1)]), loadGraphicsQuality(), (v) => {
+          saveGraphicsQuality(v);
+          this.refreshSetup();
+        }, 'arcade-graphics'))
+      : null;
+    const fitBlock = fitShown.length
+      ? [el('div', { class: `fit-details ${fit.level}`, id: 'setup-fit-details' }, fitList(fitShown, fixLayout, 'setup-fit-list', graphics && this.fitOpen ? { performance: graphics } : {}))]
+      : [];
+
+    // ---- essentials: the mode (a tile per mode the map has; the rest named, greyed, with why), its variants, what wins
     const options = modeOptions(map, current.modes);
     const modeChips = el(
       'div',
       { class: 'mode-pick', id: 'arcade-modes' },
       ...current.modes.map((m) => {
-        const b = el('button', { type: 'button', class: `mode-chip${m === s.mode ? ' on' : ''}` }, modeIcon(m), el('b', { textContent: MODE_LABEL[m] }));
+        const b = el('button', { type: 'button', class: `mode-chip${m === s.mode ? ' on' : ''}`, id: `arcade-mode-${m.replace('core.', '')}` }, modeIcon(m), el('b', { textContent: MODE_LABEL[m] }));
         b.dataset.mode = m;
         b.dataset.tip = MODE_TIPS[m] ?? MODE_LINES[m];
         b.setAttribute('aria-pressed', String(m === s.mode));
-        b.addEventListener('click', () => {
-          // Picking the mode finishes this step: on to the players.
-          this.step = 'players';
-          this.setupScroll = 0;
-          if (m !== s.mode) this.setMode(m);
-          else this.refreshSetup();
-        });
+        b.addEventListener('click', () => m !== this.setup.mode && this.setMode(m));
         return b;
       }),
     );
     const modeLine = el('p', { class: 'setup-hint mode-line', textContent: MODE_LINES[s.mode] });
     const off = options.filter((o) => !o.ok);
-    const unavailable = off.length
-      ? [el('div', { class: 'mode-off' }, el('span', { textContent: 'Not on this map:' }), ...off.map((o) => {
-          const t = el('span', { class: 'mode-tag-off', tabIndex: 0, textContent: MODE_LABEL[o.mode] });
-          t.dataset.tip = o.reason ?? '';
-          t.dataset.mode = o.mode;
-          t.setAttribute('aria-label', `${MODE_LABEL[o.mode]}: ${o.reason}`);
-          return t;
+    // One line: a tag per mode (its reason on hover or focus), every reason on the line's own hover.
+    const offTags = off.map((o) => {
+      const t = el('span', { class: 'mode-tag-off', tabIndex: 0, textContent: MODE_LABEL[o.mode] });
+      t.dataset.tip = o.reason ?? '';
+      t.dataset.mode = o.mode;
+      t.setAttribute('aria-label', `${MODE_LABEL[o.mode]}: ${o.reason}`);
+      return t;
+    });
+    const unavailable = off.length ? [el('div', { class: 'mode-off' }, el('span', { textContent: 'Not on this map:' }), ...offTags)] : [];
+    unavailable[0]?.setAttribute('data-tip', off.map((o) => `${MODE_LABEL[o.mode]}: ${o.reason}`).join('\n'));
+    // Variants: on/off chips drawn from SETUP_VARIANTS (a new variant is data there, not UI here).
+    const states = variantStates(s, map, current.modes);
+    const variants = states.length
+      ? [el('div', { class: 'variant-row', id: 'setup-variants', role: 'group' }, el('span', { class: 'variant-label', textContent: 'Variants' }), ...states.map((v) => {
+          const b = el('button', { type: 'button', class: `variant-chip${v.on ? ' on' : ''}`, id: `setup-variant-${v.variant.id}`, textContent: v.variant.label });
+          b.dataset.variant = v.variant.id;
+          b.dataset.tip = v.variant.tip;
+          b.setAttribute('aria-pressed', String(v.on));
+          inert(b, v.disabled ? `${v.variant.tip}\n\n${v.disabled}` : null);
+          b.addEventListener('click', () => !v.disabled && this.replaceSetup(setVariant(this.setup, v.variant.id, !v.on)));
+          return b;
         }))]
       : [];
+    variants[0]?.setAttribute('aria-label', 'Variants');
+    const scoreRow = SCORE_ROW[s.mode] ?? { label: 'Score limit', step: 5, min: 5, max: 200 };
+    const win: HTMLElement[] = [];
+    if (coop) win.push(el('p', { class: 'setup-hint win-note', textContent: `${MODE_LABEL[s.mode]} ends through the mission, not a score or a clock.` }));
+    else {
+      if (!race) win.push(field(scoreRow.label, 'The match ends when someone reaches this.', stepper({ value: s.scoreLimit, min: scoreRow.min, max: scoreRow.max, step: scoreRow.step, id: 'arcade-score', label: scoreRow.label.toLowerCase(), onChange: (v) => this.change((x) => (x.scoreLimit = v)) })));
+      if (!forts) win.push(field('Time limit', 'When time runs out the highest score (or the race leader) wins. ∞: no limit.', stepper({ value: s.minutes, min: 0, max: 60, id: 'arcade-minutes', fmt: (v) => (v ? `${v} min` : '∞'), onChange: (v) => this.change((x) => (x.minutes = v)) })));
+    }
+    // The mode's own key setting(s), with what wins; the rest of its settings are in Advanced rules.
+    const flagReturn = () => stepper({ value: s.flagReturn ?? 30, min: 5, max: 120, step: 5, id: 'arcade-flag-return', fmt: (v) => `${v} s`, onChange: (v) => this.change((x) => (x.flagReturn = v === 30 ? undefined : v)) });
+    const FLAG_TIP = 'Seconds a dropped flag lies before it goes home on its own.';
+    if (s.mode === 'core.ctf') win.push(field('Flag return', FLAG_TIP, flagReturn()));
+    if (s.mode === 'core.koth') win.push(field('Hill moves', 'Seconds before the hill moves to the next spot.', stepper({ value: s.hill ?? 60, min: 15, max: 300, step: 15, id: 'arcade-hill', fmt: (v) => `${v} s`, onChange: (v) => this.change((x) => (x.hill = v === 60 ? undefined : v)) })));
+    if (race) win.push(field('Laps', 'Laps of the circuit (a point-to-point track is always one run).', stepper({ value: s.raceLaps ?? raceTrack(map)?.laps ?? 3, min: 1, max: 10, id: 'arcade-laps', onChange: (v) => this.change((x) => (x.raceLaps = v)) })));
+    if (forts) {
+      win.push(
+        field('Build phase', 'Minutes to build before the barrier drops.', stepper({ value: s.fortBuild ?? 2.5, min: 1, max: 6, step: 0.5, id: 'arcade-fort-build', fmt: (v) => `${v} min`, onChange: (v) => this.change((x) => (x.fortBuild = v)) })),
+        field('Combat phase', 'Minutes of Capture the Flag after each build phase.', stepper({ value: s.fortCombat ?? 5, min: 2, max: 20, id: 'arcade-fort-combat', fmt: (v) => `${v} min`, onChange: (v) => this.change((x) => (x.fortCombat = v)) })),
+      );
+    }
+    const essentials = el('section', { class: 'setup-essentials', id: 'setup-essentials' }, modeChips, modeLine, ...unavailable, ...variants, el('div', { class: 'field-grid', id: 'setup-win' }, ...win));
 
-    // ---- players: a quick preset, then the teams (or the player count)
-    const quick = this.quickSetup(current);
-    const playerRows: HTMLElement[] = [quick];
+    // ---- presets: sizes worked out for this map and device (any change makes it Custom), then the party bundles
+    const presets = sizePresets(s.mode, map, { teams: team ? sizes.length : undefined, deviceMax: dev.max, device: dev.name, pickPlayers });
+    const onPreset = matchingPreset(s, map, presets, cap.max);
+    const unit = race ? 'racers' : coop ? 'in the squad' : 'players';
+    const sizeRow = sizeChips(presets, onPreset, team ? sizes.join('v') : `${players} ${unit}`, (p) => this.applyLayout(presetPatch(p)), 'setup-sizes');
+    const party = el('div', { class: 'party-chips', id: 'setup-party', role: 'group' }, ...PARTY_PRESETS.map((p) => {
+      const offWhy = partyUnavailable(p, map, current.modes);
+      const on = !offWhy && partyOn(p, s, map, current.modes);
+      const mode = partyMode(p, map, current.modes);
+      const b = el('button', { type: 'button', class: `party-chip${on ? ' on' : ''}`, id: `setup-party-${p.id}` }, el('b', { textContent: p.label }), el('small', { textContent: p.line }));
+      b.dataset.party = p.id;
+      b.dataset.tip = `${mode ? MODE_LABEL[mode] : ''}${p.variants.map((id) => ` · ${getVariant(id)?.label ?? id}`).join('')} · the map's own team layout`;
+      b.setAttribute('aria-pressed', String(on));
+      inert(b, offWhy);
+      b.addEventListener('click', () => {
+        if (offWhy) return;
+        const next = applyParty(p, this.setup, map, current.modes, { deviceMax: dev.max, pickPlayers });
+        if (!next) return;
+        if (next.teams) this.evenTeams = next.teams.every((n) => n === next.teams![0]);
+        this.replaceSetup(next);
+      });
+      return b;
+    }));
+    party.setAttribute('aria-label', 'Party presets');
+    const presetSec = el(
+      'section',
+      { class: 'setup-presets', id: 'setup-presets' },
+      el('div', { class: 'preset-line' }, el('h4', { textContent: 'Size' }), el('span', { class: 'preset-note', textContent: `scales with the map${team ? '' : ` · ${unit === 'in the squad' ? 'squad' : unit}`}` }), this.moreLayouts(current)),
+      sizeRow,
+      el('div', { class: 'preset-line' }, el('h4', { textContent: 'Party presets' })),
+      party,
+    );
+
+    // ---- Players & teams: who plays (people apart from bots), the teams or the count
+    const assign = s.assign ?? 'balanced';
+    const playerRows: HTMLElement[] = [];
     if (team) {
-      const sizes = setupTeams(s, map);
       const sides = mapTeams(map, sizes.length);
-      const assign = s.assign ?? 'balanced';
-      const you = assign === 'fixed' ? Math.min(sizes.length - 1, s.playerTeam ?? 0) : assign === 'balanced' ? 0 : null;
+      const you = setupYourTeam(s, sizes.length);
+      const even = this.evenTeams && sizes.every((n) => n === sizes[0]);
       playerRows.push(
         settingRow(
           'Your team',
@@ -996,10 +1164,14 @@ export class FrontEnd {
         teamEditor({
           id: 'arcade',
           state: { sizes, names: sizes.map((_, i) => s.teamNames?.[i] || sides[i]!.name), colors: sizes.map((_, i) => s.teamColors?.[i] || sides[i]!.color), you },
-          countLocked: two ? `${MODE_LABEL[s.mode]} is always two teams.` : null,
+          countLocked: isTwoTeamMode(s.mode) ? `${MODE_LABEL[s.mode]} is always two teams.` : null,
           youLabel: 'You',
-          maxPlayers: deviceMaxPlayers(),
-          onChange: (next) => this.change((x) => {
+          cap,
+          device: dev.name,
+          mode: s.mode,
+          even: { on: even, onToggle: (on) => (this.evenTeams = on) },
+          stopped: this.stopped,
+          onChange: (next, stopped) => this.change((x) => {
             x.teams = next.sizes;
             // Only names and colours changed from the map's are kept.
             x.teamNames = next.names.map((n, i) => (n && n !== sides[i]?.name ? n : ''));
@@ -1010,21 +1182,36 @@ export class FrontEnd {
               x.assign = 'fixed';
               x.playerTeam = next.you;
             }
-          }),
+          }, stopped),
         }),
+        el('p', { class: 'setup-hint', textContent: "Bots fill every place. Hosting online, friends who join take bots' places." }),
       );
     } else {
-      playerRows.push(settingRow(coop ? 'Squadmates' : 'Bots', coop ? 'Bot squadmates fighting alongside you.' : 'Bots to fill the match. You play too.', stepper({ value: s.bots, min: 0, max: deviceMaxPlayers() - 1, id: 'arcade-bots', label: coop ? 'squadmates' : 'bots', onChange: (v) => this.change((x) => (x.bots = v)) })));
-      playerRows.push(el('p', { class: 'setup-hint', textContent: `You + ${s.bots} bot${s.bots === 1 ? '' : 's'} = ${players} player${players === 1 ? '' : 's'}${coop ? ' on your side' : ''}` }));
+      const word = coop ? 'squadmate' : 'bot';
+      const bots = players - 1;
+      // + goes one past the limit, to say whose limit it is rather than greying out silently.
+      const botStep = stepper({
+        value: bots,
+        min: 0,
+        max: cap.max,
+        id: 'arcade-bots',
+        label: `${word}s`,
+        onChange: (v) => (v > cap.max - 1 ? this.change((x) => (x.bots = cap.max - 1), capMessage(cap, { device: dev.name })) : this.change((x) => (x.bots = v))),
+      });
+      playerRows.push(
+        settingRow(coop ? 'Squadmates' : race ? 'Bot racers' : 'Bots', coop ? 'Bot squadmates fighting alongside you.' : 'Bots to fill the match. You play too.', botStep),
+        el('p', { class: 'setup-hint', id: 'arcade-bots-line', textContent: `${peopleAndBots(1, bots, word)}${coop ? ' on your side' : ''}. Hosting online, friends who join take bots' places.` }),
+        ...(this.stopped ? [el('p', { class: 'cap-note', id: 'arcade-bots-stopped', role: 'status', textContent: this.stopped })] : []),
+      );
     }
     if (s.mode === 'core.coop' && PLAYLISTS.length) {
       playerRows.push(settingRow('Playlist', `Play a chain of co-op maps: win one and you go on to the next${PLAYLISTS.map((p) => `\n\n${p.name} (${p.maps.length} maps): ${p.description}`).join('')}`, choice([['', 'Just this map'], ...PLAYLISTS.map((p): ChoiceOption<string> => [p.id, `${p.name} (${p.maps.length})`])], s.playlist ?? '', (v) => this.change((x) => (x.playlist = v || undefined)))));
     }
-    const notes = setupNotes(s, map);
+    const assignLabel = { balanced: 'Balanced', random: 'Random team', fixed: 'Fixed team' }[assign];
+    const playersSummary = team ? `${sizes.join('v')} · ${assignLabel}` : peopleAndBots(1, players - 1, coop ? 'squadmate' : 'bot');
 
-    // ---- extras, folded: rules, bots, arsenal, the mode's own settings, performance
-    const scoreRow = SCORE_ROW[s.mode] ?? { label: 'Score limit', step: 5, min: 5, max: 200 };
-    const timeRow = settingRow('Time limit', 'When time runs out the highest score (or the race leader) wins. ∞: no limit.', stepper({ value: s.minutes, min: 0, max: 60, id: 'arcade-minutes', fmt: (v) => (v ? `${v} min` : '∞'), onChange: (v) => this.change((x) => (x.minutes = v)) }), { disabled: forts ? 'Fort Wars ends after its last combat phase.' : coop ? 'Co-op and Zombies end through the mission.' : null });
+    // ---- rules: what each changes, for Advanced rules (its summary line, its chips) and Reset
+    const timeRowOff = forts ? 'Fort Wars ends after its last combat phase.' : coop ? 'Co-op and Zombies end through the mission.' : null;
     const noTeams = team ? null : `No teams in ${MODE_LABEL[s.mode]}.`;
     const respawnDefault = Math.round(BASE_RULES[s.mode].respawnDelayTicks / 60);
     const extras: { id: string; label: string; tip: string; changed: boolean; value: string; control: HTMLElement; disabled?: string | null }[] = [
@@ -1050,65 +1237,102 @@ export class FrontEnd {
       { id: 'classes', label: 'Classes', tip: 'Everyone picks one of nine classes (L or , in play; it opens when you join and when you are down): Runner, Rocketeer, Torch, Breacher, Bulwark, Mechanic (G: sentry that heals and restocks), Medic (medi-beam, G: overcharge), Marksman and Shade (G: cloak, backstabs). Limits cap how many on a team play the same class.', changed: !!s.classes && !restricted, value: `Classes${s.classLimit ? ` (max ${s.classLimit})` : ''}`, control: choice([['off', 'Off'], ['on', 'On'], ['1', 'Max 1'], ['2', 'Max 2']], !s.classes ? 'off' : s.classLimit ? String(s.classLimit) : 'on', (v) => this.change((x) => ((x.classes = v !== 'off' || undefined), (x.classLimit = v === '1' || v === '2' ? Number(v) : undefined)))), disabled: restricted ? `Classes don't mix with ${restricted.toLowerCase()}.` : null },
       { id: 'vehicles', label: 'Vehicle damage', tip: "Normal: vehicles smoke, catch fire and blow up. Tough: they take half damage. Off: they can't be destroyed (except by falling off the map). Turrets and sentries always take full damage.", changed: !!s.vehicleDamage, value: `${s.vehicleDamage === 'off' ? 'Indestructible' : 'Tough'} vehicles`, control: choice([['normal', 'Normal'], ['tough', 'Tough'], ['off', 'Off']], s.vehicleDamage ?? 'normal', (v) => this.change((x) => (x.vehicleDamage = v === 'normal' ? undefined : (v as 'tough' | 'off')))), disabled: map.entities.some((e) => e.kind === 'mount') || race ? null : 'This map has no vehicles.' },
     ];
-    const bots: typeof extras = [
+    const botRules: typeof extras = [
       { id: 'cast', label: 'Bot characters', tip: "Which characters random bots play, and so their names: a soldier is \"Sgt. Dunmore\", a monkey \"Coco Bean\" (the first bot in a character is named after it: Scamp). Map default: what the map's maker chose (most maps: all). Your own bots (Edit bots…) keep their names and looks.", changed: s.botCast !== undefined, value: `${botCastLabel(s.botCast)} bots`, control: botCastSelect(s.botCast, map.botCast, (v) => this.change((x) => (x.botCast = v)), 'arcade-cast') },
       { id: 'style', label: 'Bot style', tip: 'Mixed: every character plays its own way. Arena: strafe-jumping, item timing, always moving (Quake). Tactical: careful, cover, held angles (Counter-Strike).', changed: !!s.botStyle, value: `${s.botStyle === 'arena' ? 'Arena' : 'Tactical'} bots`, control: choice([['mixed', 'Mixed'], ['arena', 'Arena'], ['tactical', 'Tactical']], s.botStyle ?? 'mixed', (v) => this.change((x) => (x.botStyle = v === 'mixed' ? undefined : (v as 'arena' | 'tactical'))), 'arcade-style') },
     ];
     const rowOf = (x: (typeof extras)[number]) => settingRow(x.label, x.tip, x.control, { disabled: x.disabled });
     const live = (xs: typeof extras) => xs.filter((x) => x.changed && !x.disabled);
-    const changed = [...live(extras), ...live(arsenal), ...live(bots)];
-    const reset = el('button', { type: 'button', class: 'link', textContent: 'Reset', title: 'Back to the standard rules' });
-    reset.hidden = !changed.length;
-    reset.addEventListener('click', (e) => {
-      e.preventDefault();
-      this.change((x) => {
-        for (const k of ['spears', 'discs', 'mixPickups', 'dropWeapons', 'classes', 'classLimit', 'botStyle', 'botCast', 'gravity', 'fallDamage', 'friendlyFire', 'killstreaks', 'squadSpawn', 'emotes', 'sizes', 'stats', 'randomChars', 'vehicleDamage', 'leaders', 'lethality', 'ballistics', 'respawn'] as const) delete x[k];
-      });
-    });
+    // What matters most first: "9 changed · Low gravity · Tactical bots +7".
+    const changed = [...live(extras), ...live(arsenal), ...live(botRules)].sort((a, b) => (RULE_RANK[a.id] ?? 50) - (RULE_RANK[b.id] ?? 50));
+    const reset = el('button', { type: 'button', class: 'link rule-reset', id: 'setup-reset', textContent: 'Reset', title: 'Back to the standard rules (every variant off)' });
+    reset.addEventListener('click', () => this.change((x) => {
+      for (const k of ['spears', 'discs', 'mixPickups', 'dropWeapons', 'classes', 'classLimit', 'botStyle', 'botCast', 'gravity', 'fallDamage', 'friendlyFire', 'killstreaks', 'squadSpawn', 'emotes', 'sizes', 'stats', 'randomChars', 'vehicleDamage', 'leaders', 'lethality', 'ballistics', 'respawn'] as const) delete x[k];
+    }));
     const count = (xs: typeof extras) => {
       const n = live(xs).length;
       return n ? `${n} changed` : 'standard';
     };
-    const toWin = race
-      ? []
-      : [settingRow(scoreRow.label, coop ? 'Co-op and Zombies end through the mission.' : 'The match ends when someone reaches this.', stepper({ value: s.scoreLimit, min: scoreRow.min, max: scoreRow.max, step: scoreRow.step, id: 'arcade-score', onChange: (v) => this.change((x) => (x.scoreLimit = v)) }), { disabled: coop ? `${MODE_LABEL[s.mode]} ends through the mission, not a score.` : null })];
-    const rulesFold = fold('setup-rules', 'Rules', count(extras), ...toWin, timeRow, ...extras.map(rowOf));
-    rulesFold.querySelector('summary')!.append(reset);
-    const perTeam = team
-      ? [el('p', { class: 'setup-hint', textContent: `Bots per team: ${mapTeams(map, sizes.length).map((t, i) => `${s.teamNames?.[i] || t.name} ${sizes[i]! - ((s.assign === 'fixed' ? Math.min(sizes.length - 1, s.playerTeam ?? 0) : 0) === i && s.assign !== 'random' ? 1 : 0)}`).join(' · ')}${s.assign === 'random' ? ' (one less wherever you land)' : ''}. Move bots by dragging their pips between teams.` })]
-      : [];
     const modeRows: HTMLElement[] = [];
     if (forts) {
       modeRows.push(
-        settingRow('Build phase', 'Minutes to build before the barrier drops.', stepper({ value: s.fortBuild ?? 2.5, min: 1, max: 6, step: 0.5, id: 'arcade-fort-build', fmt: (v) => `${v} min`, onChange: (v) => this.change((x) => (x.fortBuild = v)) })),
-        settingRow('Combat phase', 'Minutes of Capture the Flag after each build phase.', stepper({ value: s.fortCombat ?? 5, min: 2, max: 20, id: 'arcade-fort-combat', fmt: (v) => `${v} min`, onChange: (v) => this.change((x) => (x.fortCombat = v)) })),
         settingRow('Cycles', 'Build-then-fight rounds before the match ends. Pieces stand until they are broken; each build phase you can rebuild with the points they cost.', stepper({ value: s.fortCycles ?? 1, min: 1, max: 5, id: 'arcade-fort-cycles', onChange: (v) => this.change((x) => (x.fortCycles = v)) })),
         settingRow('Build points', "Each team's budget: a block costs 2, a wall 4, a metal wall 8.", stepper({ value: s.fortBudget ?? 420, min: 100, max: 800, step: 20, id: 'arcade-fort-budget', onChange: (v) => this.change((x) => (x.fortBudget = v)) })),
+        settingRow('Flag return', FLAG_TIP, flagReturn()),
       );
     }
-    if (s.mode === 'core.ctf' || forts) modeRows.push(settingRow('Flag return', 'Seconds a dropped flag lies before it goes home on its own.', stepper({ value: s.flagReturn ?? 30, min: 5, max: 120, step: 5, id: 'arcade-flag-return', fmt: (v) => `${v} s`, onChange: (v) => this.change((x) => (x.flagReturn = v === 30 ? undefined : v)) })));
-    if (s.mode === 'core.koth') modeRows.push(settingRow('Hill moves', 'Seconds before the hill moves to the next spot.', stepper({ value: s.hill ?? 60, min: 15, max: 300, step: 15, id: 'arcade-hill', fmt: (v) => `${v} s`, onChange: (v) => this.change((x) => (x.hill = v === 60 ? undefined : v)) })));
     if (race) {
       modeRows.push(
-        settingRow('Laps', 'Laps of the circuit (a point-to-point track is always one run).', stepper({ value: s.raceLaps ?? raceTrack(map)?.laps ?? 3, min: 1, max: 10, id: 'arcade-laps', onChange: (v) => this.change((x) => (x.raceLaps = v)) })),
         settingRow('Vehicle', "What everyone races in. Map: the track's own choice.", choice([['map', 'Map'], ['kart', 'Go-Kart'], ['speeder', 'Speeder'], ['buggy', 'Buggy']], s.raceVehicle ?? 'map', (v) => this.change((x) => (x.raceVehicle = v === 'map' ? undefined : (v as ArcadeSetup['raceVehicle']))))),
         settingRow('Combat', 'Combat race: weapons and vehicle guns are live and the sentries by the track shoot. Clean: nobody can hurt anybody.', choice([['map', 'Map'], ['off', 'Clean'], ['on', 'Combat']], s.raceCombat === undefined ? 'map' : s.raceCombat ? 'on' : 'off', (v) => this.change((x) => (x.raceCombat = v === 'map' ? undefined : v === 'on')))),
       );
     }
-    const perf = players > BIG_MATCH
-      ? [fold('setup-perf', 'Performance', players > HUGE_MATCH ? 'very big match' : 'big match',
-          el('p', { class: 'setup-hint', textContent: `${players} players. Every bot thinks on your computer: past ${BIG_MATCH}, idle bots think every other tick. If it stutters: Low graphics, a lower render scale (Options), fewer bots, or Classes and vehicles off.` }),
-          settingRow('Graphics', 'Low: no shadows or post effects, the fastest. Saved for every match (Options has the rest).', choice(GRAPHICS_QUALITIES.map((q): ChoiceOption<GraphicsQuality> => [q, q[0]!.toUpperCase() + q.slice(1)]), loadGraphicsQuality(), (v) => {
-            saveGraphicsQuality(v);
-            this.refreshSetup();
-          }, 'arcade-graphics')))]
+    // Time limit can't apply here (Fort Wars, co-op): said where it would be.
+    const rulesRows = [...(timeRowOff ? [settingRow('Time limit', null, el('span', { class: 'setup-hint', textContent: timeRowOff }), { disabled: timeRowOff })] : []), ...extras.map(rowOf)];
+    const advSummary = changed.length ? `${changed.length} changed · ${changed.slice(0, 2).map((x) => x.value).join(' · ')}${changed.length > 2 ? ` +${changed.length - 2}` : ''}` : 'Standard';
+    const advanced = [
+      ...(changed.length ? [el('div', { class: 'rule-chips', id: 'setup-rule-chips' }, ...changed.map((x) => el('span', { textContent: x.value })), reset)] : []),
+      ...(modeRows.length ? [fold('setup-mode', `${MODE_LABEL[s.mode]} settings`, 'mode settings', ...modeRows)] : []),
+      fold('setup-rules', 'Rules', count(extras), ...rulesRows),
+      fold('setup-arsenal', 'Weapons, pickups & vehicles', count(arsenal), ...arsenal.map(rowOf)),
+    ];
+
+    // ---- Bots: skill, style, characters, your own bots
+    const skillLabel = { easy: 'Easy', normal: 'Normal', hard: 'Hard' }[s.skill] ?? s.skill;
+    const botsSummary = `${skillLabel} bots${s.botStyle ? ` · ${s.botStyle === 'arena' ? 'Arena' : 'Tactical'}` : ''}${s.botCast !== undefined ? ` · ${botCastLabel(s.botCast)}` : map.botCast?.length ? ` · ${botCastLabel(map.botCast)}` : ''}${s.botSet ? ` · ${s.botSet.name} (${s.botSet.entries.length})` : ''}`;
+    const perTeam = team
+      ? [el('p', { class: 'setup-hint', textContent: `Bots per team: ${mapTeams(map, sizes.length).map((t, i) => `${s.teamNames?.[i] || t.name} ${sizes[i]! - ((s.assign === 'fixed' ? Math.min(sizes.length - 1, s.playerTeam ?? 0) : 0) === i && s.assign !== 'random' ? 1 : 0)}`).join(' · ')}${s.assign === 'random' ? ' (one less wherever you land)' : ''}. Move bots by dragging their pips between teams.` })]
       : [];
 
-    // ---- saved setups
+    const sec = (id: (typeof SETUP_SECTIONS)[number], title: string, summary: string, ...children: HTMLElement[]) =>
+      section({ id, title, summary: [summary], open: this.folds.has(id), opening: this.justOpened === id, onToggle: () => this.toggleSection(id) }, ...children);
+    const body = el(
+      'div',
+      { class: 'setup-body' },
+      ...fitBlock,
+      essentials,
+      presetSec,
+      sec('setup-teams', team ? 'Players & teams' : coop ? 'Squad' : race ? 'Racers' : 'Players', playersSummary, ...playerRows),
+      sec('setup-bots', 'Bots', botsSummary, settingRow('Bot skill', 'Easy bots aim slowly and miss often; hard ones react fast, use cover and lead their shots.', choice([['easy', 'Easy'], ['normal', 'Normal'], ['hard', 'Hard']], s.skill, (v) => this.change((x) => (x.skill = v as ArcadeSetup['skill'])), 'arcade-skill')), ...botRules.map(rowOf), this.botSetRow(map, sizes, players), ...perTeam),
+      sec('setup-advanced', 'Advanced rules', advSummary, ...advanced),
+    );
+    body.addEventListener('scroll', () => (this.setupScroll = body.scrollTop), { passive: true });
+
+    panel.replaceChildren(head, body, this.setupFoot(map, players));
+    // Back where it was (a redraw), once the panel is on the page (the first draw is before the screen is).
+    if (panel.isConnected) body.scrollTop = this.setupScroll;
+    else requestAnimationFrame(() => (body.scrollTop = this.setupScroll));
+  }
+
+  /**
+   * The setup's foot, always in view: where the match runs (Offline, or Host online: a join code for friends,
+   * who take bots' places), saved setups in a small menu, then Spectate and Start match. Enter does what the
+   * switch says.
+   */
+  private setupFoot(map: MapDocument, players: number): HTMLElement {
+    const s = this.setup;
+    const playlist = s.mode === 'core.coop' && !!s.playlist;
+    const hostWhy = playlist ? 'Playlists are played offline: pick "Just this map" to host.' : null;
+    const online = this.hostOnline && !hostWhy;
+    const where = segmented(
+      [
+        ['offline', 'Offline', null, 'arcade-offline', 'Just you and the bots, on this computer.'],
+        ['online', 'Host online', hostWhy, 'arcade-host', "Host the match from this browser: a join code and an invite link for friends, who take bots' places. Esc → Host tab shows them, and can list the match in the game browser."],
+      ],
+      online ? 'online' : 'offline',
+      (v) => {
+        this.hostOnline = v === 'online';
+        this.refreshSetup();
+      },
+      { id: 'arcade-where', label: 'Where the match runs' },
+    );
+
+    // Saved setups: a small menu (load one, delete it, or save this one by name).
     const saved = listSetups();
     const pick = el('select', { id: 'setup-saved-list', title: 'Saved setups' }, el('option', { value: '', textContent: saved.length ? 'Load a saved setup…' : 'No saved setups yet' }), ...saved.map((x) => el('option', { value: x.name, textContent: x.name, selected: x.name === this.setupName })));
     pick.addEventListener('change', () => pick.value && this.loadSaved(pick.value));
     const nameIn = el('input', { id: 'setup-save-name', placeholder: 'Name this setup', maxLength: 40, value: this.setupName ?? '' });
+    nameIn.setAttribute('aria-label', 'Name this setup');
     const save = el('button', { type: 'button', id: 'setup-save', textContent: 'Save' });
     const del = el('button', { type: 'button', id: 'setup-delete', class: 'link', textContent: 'Delete', disabled: !this.setupName || !saved.some((x) => x.name === this.setupName), title: 'Delete the selected saved setup' });
     save.addEventListener('click', () => {
@@ -1127,72 +1351,28 @@ export class FrontEnd {
     });
     const match = saved.find((x) => x.name === this.setupName);
     const same = !!match && JSON.stringify(match.setup) === JSON.stringify(this.setup);
-    const savedFold = fold('setup-saved', 'Saved setups', this.setupName ? `${this.setupName}${same ? '' : ' (changed)'}` : `${saved.length} saved`, el('div', { class: 'saved-row' }, pick, del), el('div', { class: 'saved-row' }, nameIn, save));
-
-    // ---- the steps: the open one shows its settings, the others a line each (click one to go back to it)
-    const RANK: Record<SetupStep, number> = { mode: 0, players: 1, bots: 2, rules: 3, done: 4 };
-    const stepEl = (key: SetupStep, n: number, title: string, summary: (Node | string)[], o: { warn?: boolean; next?: string | null }, ...content: HTMLElement[]) => {
-      const open = this.step === key;
-      const done = !open && key !== 'rules' && RANK[key] < RANK[this.step];
-      const headBtn = el(
-        'button',
-        { type: 'button', class: 'step-head' },
-        el('span', { class: 'step-num', textContent: done ? '✓' : String(n) }),
-        el('h4', { textContent: title }),
-        el('span', { class: `step-sum${o.warn ? ' warn' : ''}` }, ...summary),
-        el('span', { class: 'step-caret', textContent: open ? '▾' : '▸' }),
-      );
-      headBtn.setAttribute('aria-expanded', String(open));
-      headBtn.addEventListener('click', () => {
-        if (open) return this.nextStep(key === 'rules' ? 'bots' : key);
-        this.step = key;
-        this.refreshSetup();
-      });
-      const sec = el('section', { class: `step${open ? ' open' : ''}${done ? ' done' : ''}`, id: `step-${key}` }, headBtn);
-      if (open) {
-        const next = el('button', { type: 'button', class: 'step-next', textContent: o.next ?? 'Done' });
-        next.addEventListener('click', () => this.nextStep(key === 'rules' ? 'bots' : key));
-        sec.append(el('div', { class: 'step-body' }, ...content, el('div', { class: 'step-foot' }, next)));
-      }
-      return sec;
-    };
-    const assignLabel = { balanced: 'Balanced', random: 'Random team', fixed: 'Fixed team' }[s.assign ?? 'balanced'];
-    const playersSummary = team ? `${sizes.join('v')} · ${assignLabel}` : coop ? `You + ${s.bots} squadmate${s.bots === 1 ? '' : 's'}` : `You + ${s.bots} bot${s.bots === 1 ? '' : 's'}`;
-    const skillLabel = { easy: 'Easy', normal: 'Normal', hard: 'Hard' }[s.skill] ?? s.skill;
-    const botsSummary = `${skillLabel} bots${s.botStyle ? ` · ${s.botStyle === 'arena' ? 'Arena' : 'Tactical'}` : ''}${s.botCast !== undefined ? ` · ${botCastLabel(s.botCast)}` : map.botCast?.length ? ` · ${botCastLabel(map.botCast)}` : ''}${s.botSet ? ` · ${s.botSet.name} (${s.botSet.entries.length})` : ''}`;
-    const modeSet = modeRows.length ? [fold('setup-mode', `${MODE_LABEL[s.mode]} settings`, 'mode settings', ...modeRows)] : [];
-    const body = el(
-      'div',
-      { class: 'setup-body' },
-      stepEl('mode', 1, 'Game mode', [modeIcon(s.mode), MODE_LABEL[s.mode]], { next: 'Next: players' }, modeChips, modeLine, ...unavailable),
-      stepEl('players', 2, coop ? 'Squad' : 'Players & teams', [playersSummary], { warn: notes.some((x) => x.level === 'warn'), next: 'Next: bots' }, ...playerRows, ...(notes.length ? [noteList(notes)] : [])),
-      stepEl(
-        'bots',
-        3,
-        'Bots',
-        [botsSummary],
-        { next: 'Done' },
-        settingRow('Bot skill', 'Easy bots aim slowly and miss often; hard ones react fast, use cover and lead their shots.', choice([['easy', 'Easy'], ['normal', 'Normal'], ['hard', 'Hard']], s.skill, (v) => this.change((x) => (x.skill = v as ArcadeSetup['skill'])), 'arcade-skill')),
-        ...bots.map(rowOf),
-        this.botSetRow(map, sizes, players),
-        ...perTeam,
-      ),
-      stepEl('rules', 4, 'Advanced rules', [changed.length ? `${changed.length} changed` : 'Standard'], { next: 'Done' }, ...modeSet, rulesFold, fold('setup-arsenal', 'Weapons, pickups & vehicles', count(arsenal), ...arsenal.map(rowOf)), ...perf),
-      savedFold,
+    const menu = el('details', { class: 'saved-menu', id: 'setup-saved' }) as HTMLDetailsElement;
+    menu.open = this.folds.has('setup-saved');
+    menu.addEventListener('toggle', () => (menu.open ? this.folds.add('setup-saved') : this.folds.delete('setup-saved')));
+    const badge = this.setupName ? `${this.setupName}${same ? '' : ' (changed)'}` : saved.length ? `${saved.length}` : '';
+    menu.append(
+      el('summary', { title: 'Saved setups: load one, or save this one by name' }, el('span', { textContent: 'Saved' }), ...(badge ? [el('small', { textContent: badge })] : [])),
+      el('div', { class: 'saved-pop', role: 'dialog' }, el('h4', { textContent: 'Saved setups' }), el('div', { class: 'saved-row' }, pick, del), el('div', { class: 'saved-row' }, nameIn, save)),
     );
-    requestAnimationFrame(() => (body.scrollTop = this.setupScroll));
-    body.addEventListener('scroll', () => (this.setupScroll = body.scrollTop), { passive: true });
-    const start = el('button', { type: 'button', class: `primary go${this.step === 'done' ? ' ready' : ''}`, id: 'arcade-start', title: 'Start the match offline: you and the bots (Enter)' }, el('span', { textContent: 'Start match' }), el('kbd', { class: 'a', textContent: '↵' }));
+
+    // Spectate: the same match with you watching (a bot plays your place); J joins the game.
+    const nobody = players <= 1 ? 'Add bots first: there would be nobody to watch.' : playlist ? 'Playlists are played, not watched: pick "Just this map" to spectate.' : null;
+    const spectate = el('button', { type: 'button', class: 'go spectate', id: 'arcade-spectate' }, el('span', { textContent: 'Spectate' }));
+    spectate.dataset.tip = `Start the match watching it: you follow players or fly a free camera while ${online ? 'friends and bots play' : 'the bots go at it'} (a bot takes your place). Press J to join the game.`;
+    inert(spectate, nobody);
+    spectate.addEventListener('click', () => !nobody && this.start({ spectate: true }));
+    const start = el('button', { type: 'button', class: 'primary go', id: 'arcade-start', title: online ? "Start the match and host it online: friends join with a code and take bots' places (Enter)" : 'Start the match offline: you and the bots (Enter)' }, el('span', { textContent: 'Start match' }), el('kbd', { class: 'a', textContent: '↵' }));
     start.addEventListener('click', () => this.start());
-    const host = el('button', { type: 'button', class: 'go host', id: 'arcade-host', title: 'Start the match and open a join code so friends can play from their browsers (they take bots\' places). Esc → Host tab shows the code and invite link.' }, el('span', { textContent: 'Host' }));
-    const playlist = s.mode === 'core.coop' && !!s.playlist;
-    host.disabled = playlist;
-    if (playlist) host.title = 'Playlists are played offline; pick "Just this map" to host.';
-    host.addEventListener('click', () => this.start(true));
-    panel.replaceChildren(head, body, el('div', { class: 'setup-foot' }, ...(changed.length ? [el('div', { class: 'rule-chips' }, ...changed.map((x) => el('span', { textContent: x.value })))] : []), el('div', { class: 'go-row' }, host, start)));
+    const note = online ? [el('p', { class: 'foot-note', id: 'arcade-online-note', textContent: "Online: friends join with a code (Esc → Host tab, in the match) and take bots' places." })] : [];
+    return el('div', { class: 'setup-foot' }, el('div', { class: 'foot-row' }, where, menu), el('div', { class: 'go-row' }, spectate, start), ...note);
   }
 
-  /** The Bots step's line about your own bots (a bot set), and Edit bots… (the Bots window). */
+  /** The Bots section's line about your own bots (a bot set), and Edit bots… (the Bots window). */
   private botSetRow(map: MapDocument, sizes: readonly number[], players: number): HTMLElement {
     const s = this.setup;
     const edit = el('button', { type: 'button', id: 'arcade-botset', textContent: s.botSet ? 'Edit bots…' : 'Name your bots…', title: 'Your own bots: names, looks, skill, style, team and squad' });
@@ -1217,18 +1397,19 @@ export class FrontEnd {
   }
 
   /**
-   * The quick presets: the common shapes (1v1 … 48v48, 2v2v2v2, 4×4, FFA 8/16)
-   * and MapMaker's other layouts. Each starts an editable setup; a team
-   * layout moves a free-for-all to Team Deathmatch (and an FFA preset back)
-   * when the map has it. Options that can't work here say why.
+   * More layouts…: every fixed shape (1v1 … 48v48, 2v2v2v2, 4×4, FFA 8/16) and MapMaker's other layouts, beside
+   * the presets worked out for the map. Each starts an editable setup; a team layout moves a free-for-all to
+   * Team Deathmatch (and an FFA one back) when the map has it. Options that can't work here say why.
    */
-  private quickSetup(current: ArcadeMap): HTMLElement {
+  private moreLayouts(current: ArcadeMap): HTMLElement {
     const s = this.setup;
+    const max = deviceMaxPlayers();
     const teamModes = current.modes.filter((m) => isTeamMode(m));
     const anyTeams = teamModes.filter((m) => !isTwoTeamMode(m));
     const ffaModes = current.modes.filter((m) => !isTeamMode(m) && !isCoopMode(m));
-    const select = el('select', { id: 'arcade-teams', title: 'Quick setup: a starting point you can then change' }) as HTMLSelectElement;
-    select.append(new Option('Quick setup…', ''));
+    const select = el('select', { id: 'arcade-teams', class: 'more-layouts', title: 'More layouts: a starting point you can then change' }) as HTMLSelectElement;
+    select.setAttribute('aria-label', 'More layouts');
+    select.append(new Option('More layouts…', ''));
     const teamWhy = (sizes: readonly number[]): string | null => {
       if (isTeamMode(s.mode)) return isTwoTeamMode(s.mode) && sizes.length > 2 ? `${MODE_LABEL[s.mode]} is two teams` : null;
       if (sizes.length > 2 ? !anyTeams.length : !teamModes.length) return 'no team mode on this map';
@@ -1242,20 +1423,24 @@ export class FrontEnd {
     const shown = new Set<string>();
     const teams = el('optgroup', { label: 'Teams' });
     const ffa = el('optgroup', { label: 'Free-for-all' });
-    // Past the browser's cap (24 v 24): a dedicated host's sizes.
+    // Past this device's cap (24 v 24 in a browser, 8 v 8 on a phone): a dedicated host's sizes.
     for (const p of SETUP_PRESETS) {
-      if (presetPlayers(p) > deviceMaxPlayers()) continue;
+      if (presetPlayers(p) > max) continue;
       if (p.sizes) {
         shown.add(p.sizes.join(','));
         add(teams, p.sizes.join(','), p.label, presetPlayers(p), teamWhy(p.sizes));
       } else add(ffa, `ffa:${p.ffa}`, p.label, presetPlayers(p), isTeamMode(s.mode) || isCoopMode(s.mode) ? (ffaModes.length ? null : 'no free-for-all on this map') : null);
     }
     const more = el('optgroup', { label: 'More layouts' });
-    for (const p of TEAM_PRESETS) if (!shown.has(p.join(',')) && p.reduce((a, b) => a + b, 0) <= deviceMaxPlayers()) add(more, p.join(','), teamLayoutLabel(p), p.reduce((a, b) => a + b, 0), teamWhy(p));
+    for (const p of TEAM_PRESETS) if (!shown.has(p.join(',')) && p.reduce((a, b) => a + b, 0) <= max) add(more, p.join(','), teamLayoutLabel(p), p.reduce((a, b) => a + b, 0), teamWhy(p));
     select.append(teams, ffa, more);
     select.addEventListener('change', () => {
       const v = select.value;
       if (!v) return;
+      if (!v.startsWith('ffa:')) {
+        const sizes = v.split(',').map(Number);
+        this.evenTeams = sizes.every((n) => n === sizes[0]);
+      }
       this.change((x) => {
         if (v.startsWith('ffa:')) {
           if (isTeamMode(x.mode) || isCoopMode(x.mode)) {
@@ -1275,7 +1460,7 @@ export class FrontEnd {
         if (x.playerTeam !== undefined && x.playerTeam >= sizes.length) x.playerTeam = sizes.length - 1;
       });
     });
-    return settingRow('Quick setup', 'A starting point: pick one, then change any team, size, name or colour. FFA presets set the bots for a free-for-all.', select);
+    return select;
   }
 
   /** Load a saved setup by name (its map must still exist). */
@@ -1289,10 +1474,14 @@ export class FrontEnd {
     }
     this.setup = setup;
     this.setupName = name;
+    this.stopped = null;
+    // Even teams shows on again for a saved layout whose teams are matched.
+    this.evenTeams = true;
     setLastSetup(name);
     this.saveSetup();
     this.setStatus('');
     this.setupScroll = 0;
+    this.folds.delete('setup-saved');
     this.go('play');
   }
 
@@ -1300,17 +1489,23 @@ export class FrontEnd {
     storage('cs.arcade', JSON.stringify(this.setup));
   }
 
-  /** Start the match (`host`: and open a join code for friends). */
-  private start(host = false): void {
+  /**
+   * Start the match as the switch says (Offline, or Host online: a join code for friends). `spectate`: you
+   * join it watching (a bot plays your place; J joins the game).
+   */
+  private start(o: { spectate?: boolean } = {}): void {
     const m = this.currentMap();
-    if (!m.map) return void m.load().then(() => this.currentMap() === m && this.start(host), () => this.setStatus(`${m.metadata.name} failed to load`));
+    if (!m.map) return void m.load().then(() => this.currentMap() === m && this.start(o), () => this.setStatus(`${m.metadata.name} failed to load`));
     this.saveSetup();
-    const { rules, fill } = rulesFromSetup(this.setup, m.map);
-    // A co-op playlist starts on its own first map; the chain carries on from there.
-    if (this.setup.mode === 'core.coop' && this.setup.playlist && PLAYLISTS.some((p) => p.id === this.setup.playlist)) return this.hooks.playPlaylist(this.setup.playlist, fill, this.setup.skill, this.setup.botSet ?? null);
+    // What fits here: this device's limit (a setup saved on a bigger computer plays smaller on a phone), a race's grid.
+    const { rules, fill } = rulesFromSetup(this.setup, m.map, playerCap(this.setup.mode, m.map, deviceMaxPlayers()).max);
+    const playlist = this.setup.mode === 'core.coop' && !!this.setup.playlist && PLAYLISTS.some((p) => p.id === this.setup.playlist);
+    // A co-op playlist starts on its own first map; the chain carries on from there (played, offline).
+    if (playlist) return o.spectate ? undefined : this.hooks.playPlaylist(this.setup.playlist!, fill, this.setup.skill, this.setup.botSet ?? null);
     // Team modes: bots fill every team to its size and you take a place on one; otherwise the bot filler counts you too.
-    this.hooks.playLocal(m.map, rules, fill, this.setup.skill, host, this.setup.botSet ?? null);
+    this.hooks.playLocal(m.map, rules, fill, this.setup.skill, this.hostOnline, this.setup.botSet ?? null, !!o.spectate);
   }
+
   // ---------------------------------------------------------------- host: change map mid-match
 
   /**
@@ -2211,6 +2406,12 @@ export class FrontEnd {
       // Typing in a box (search, name): the first Esc only leaves the box.
       const t = e.target as HTMLElement | null;
       if (t && (t.tagName === 'TEXTAREA' || (t instanceof HTMLInputElement && !['checkbox', 'radio', 'range', 'button'].includes(t.type)))) return t.blur();
+      // Match setup's saved setups menu, open: Esc closes it (one level per press).
+      const menu = this.screen === 'play' ? this.root.querySelector<HTMLDetailsElement>('#setup-saved[open]') : null;
+      if (menu) {
+        menu.open = false;
+        return menu.querySelector('summary')?.focus();
+      }
       this.back();
     } else if (this.screen === 'home' && (e.key === 'ArrowDown' || e.key === 'ArrowUp')) {
       e.preventDefault();

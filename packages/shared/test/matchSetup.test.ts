@@ -1,5 +1,5 @@
 import { beforeAll, describe, expect, it } from 'vitest';
-import { DEFAULT_RULES, MAX_PLAYER_SLOTS, SETUP_PRESETS, initPhysics, modeOptions, normalizeSetup, parseClientMessage, playableModes, presetPlayers, rulesFromSetup, setupNotes, setupPlayers, setupTeams, validateTeamSizes, type MapDocument, type MatchSetup } from '../src/index.ts';
+import { DEFAULT_RULES, MAX_PLAYER_SLOTS, SETUP_PRESETS, initPhysics, modeOptions, normalizeSetup, parseClientMessage, playableModes, presetPlayers, rulesFromSetup, setupFit, setupPlayers, setupTeams, validateTeamSizes, type MapDocument, type MatchSetup } from '../src/index.ts';
 import { BotFiller, HostControl, Match, initNavigation } from '../src/match.ts';
 import { makeMap } from './helpers.ts';
 
@@ -97,18 +97,20 @@ describe('fits the map', () => {
 
   it('warns (without blocking) about shared spawns, crowding and big matches', () => {
     const map = yard(4);
-    expect(setupNotes(base({ teams: [2, 2] }), map)).toEqual([]);
-    const notes = setupNotes(base({ teams: [24, 24] }), map).map((n) => n.text).join('\n');
+    const fit = (teams: number[]) => setupFit(base({ teams }), map, { deviceMax: 48 });
+    expect(fit([2, 2])).toMatchObject({ level: 'fits', label: 'Fits' });
+    expect(fit([2, 2]).items.every((i) => i.level === 'ok')).toBe(true);
+    const notes = fit([24, 24]).items.map((n) => n.text).join('\n');
     expect(notes).toMatch(/spawns will be shared/);
     expect(notes).toMatch(/made for 2–8 players/);
     expect(notes).toMatch(/big match/);
-    expect(setupNotes(base({ teams: [16, 16] }), map).some((n) => /very big/.test(n.text))).toBe(false);
-    expect(setupNotes(base({ teams: [24, 24] }), map).some((n) => n.level === 'warn' && /very big/.test(n.text))).toBe(true);
+    expect(fit([16, 16]).items.some((n) => /very big/.test(n.text))).toBe(false);
+    expect(fit([24, 24]).items.some((n) => n.level === 'warn' && /very big/.test(n.text))).toBe(true);
     // A browser runs at most 24 v 24 (dedicated hosts 48 v 48): bigger saved layouts shrink to fit.
     expect(setupPlayers(base({ teams: [48, 48] }), map)).toBe(48);
     // Teams beyond the map's own sides use the shared spawns.
     const sided = { ...map, factions: [{ id: 'red', name: 'Red', color: '#ff0000', relations: {} }, { id: 'blue', name: 'Blue', color: '#0000ff', relations: {} }], entities: map.entities.map((e, i) => (e.kind === 'spawn' && i < 2 ? { ...e, faction: i ? 'blue' : 'red' } : e)) } as MapDocument;
-    const three = setupNotes(base({ teams: [1, 1, 1] }), sided).map((n) => n.text).join('\n');
+    const three = setupFit(base({ teams: [1, 1, 1] }), sided, { deviceMax: 48 }).items.map((n) => n.text).join('\n');
     expect(three).toMatch(/Verdant has no spawn points of its own/);
     expect(three).toMatch(/sides are Red and Blue/);
   });

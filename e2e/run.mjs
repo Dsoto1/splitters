@@ -1276,10 +1276,18 @@ async function offlineFlow(browser) {
   const found = await page.$$eval('#map-cards .map-card', (cs) => cs.map((c) => c.dataset.map));
   check(found.includes('sandgate') && found.length < 4, `searching finds the map by name (${found.join(', ')})`);
   await page.fill('#map-search', '');
-  // The setup goes step by step: picking a mode folds it into a line and opens the players.
-  await page.click('#arcade-modes .mode-chip');
-  const steps = await page.evaluate(() => ({ mode: document.getElementById('step-mode')?.className, players: document.getElementById('step-players')?.className }));
-  check(/done/.test(steps.mode ?? '') && /open/.test(steps.players ?? ''), `picking a mode finishes that step and opens the players (${JSON.stringify(steps)})`);
+  // What matters most stays on top: picking a mode keeps the mode chips, its variants and what wins (score, time)
+  // in view, with the size presets worked out for the map; the rest is in sections below.
+  await page.click('#arcade-modes .mode-chip:not(.on)');
+  const top = await page.evaluate(() => {
+    const body = document.querySelector('#match-setup .setup-body').getBoundingClientRect();
+    const seen = (id) => {
+      const r = document.getElementById(id)?.getBoundingClientRect();
+      return !!r && r.height > 0 && r.top >= body.top - 1 && r.bottom <= body.bottom + 1;
+    };
+    return { mode: document.querySelector('#arcade-modes .mode-chip.on')?.dataset.mode, chips: seen('arcade-modes'), win: seen('setup-win'), variants: !!document.getElementById('setup-variants'), sizes: document.querySelectorAll('#setup-sizes .size-chip').length, sections: [...document.querySelectorAll('#match-setup .setup-sec')].map((x) => x.id) };
+  });
+  check(top.chips && top.win && top.variants && top.sizes >= 2 && top.sections.join() === 'setup-teams,setup-bots,setup-advanced', `picking a mode keeps the mode, variants and what wins in view, with the size presets (${JSON.stringify(top)})`);
   await page.setViewportSize({ width: 960, height: 540 });
   await page.goto(`${CLIENT}/?offline`);
   await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown', null, { timeout: T(60000) });
@@ -2307,17 +2315,17 @@ async function teamsFlow(browser) {
   await page.addInitScript(() => localStorage.setItem('cs.arcade', JSON.stringify({ map: 'sandgate', mode: 'core.tdm', bots: 3, skill: 'easy', scoreLimit: 40, minutes: 10 })));
   await page.goto(CLIENT);
   await page.click('#nav-play');
-  await page.click('#step-players .step-head');
+  // More layouts (beside the size presets worked out for the map): any fixed shape.
   await page.selectOption('#arcade-teams', '2,2,2,2,2,2,12');
-  // Bots step → your bots: a built-in set (Knights vs Space Crew: knights on the first team, the space crew on the second).
-  await page.click('#step-bots .step-head');
+  // Bots section → your bots: a built-in set (Knights vs Space Crew: knights on the first team, the space crew on the second).
+  await page.click('#setup-bots-head');
   await page.click('#arcade-botset');
   await page.waitForSelector('#bot-manager', { timeout: T(5000) });
   await page.selectOption('#bm-from', 'p:knights_vs_space');
   const teamCol = await page.evaluate(() => ({ rows: document.querySelectorAll('#bm-table .bm-row:not(.bm-th)').length, team: document.getElementById('bm-team-0')?.selectedOptions[0]?.textContent, team6: document.getElementById('bm-team-6')?.selectedOptions[0]?.textContent }));
   await page.click('#bm-apply');
   const setLine = await page.evaluate(() => document.getElementById('arcade-botset-sum')?.textContent);
-  check(teamCol.rows === 12 && !!teamCol.team && teamCol.team !== teamCol.team6 && /Knights vs Space Crew: 12 bots/.test(setLine ?? ''), `match setup's Bots step takes a built-in set, a team per bot (${JSON.stringify(teamCol)}, ${setLine})`);
+  check(teamCol.rows === 12 && !!teamCol.team && teamCol.team !== teamCol.team6 && /Knights vs Space Crew: 12 bots/.test(setLine ?? ''), `match setup's Bots section takes a built-in set, a team per bot (${JSON.stringify(teamCol)}, ${setLine})`);
   await page.click('#arcade-start');
   await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown', null, { timeout: T(60000) });
   // Every team's table fills in once the roster for all 24 has arrived.
@@ -2343,6 +2351,8 @@ async function teamsFlow(browser) {
   await page.context().close();
   await customSetupFlow(browser);
   await botCastFlow(browser);
+  await setupLayoutFlow(browser);
+  await spectateStartFlow(browser);
 }
 
 /**
@@ -2356,10 +2366,10 @@ async function botCastFlow(browser) {
   await page.addInitScript(() => localStorage.setItem('cs.arcade', JSON.stringify({ map: 'sandgate', mode: 'core.tdm', bots: 3, skill: 'easy', scoreLimit: 40, minutes: 10, teams: [8, 8] })));
   await page.goto(`${CLIENT}/?test=1`);
   await page.click('#nav-play');
-  await page.click('#step-bots .step-head');
+  await page.click('#setup-bots-head');
   await page.waitForSelector('#arcade-cast', { timeout: T(5000) });
   const offered = await page.evaluate(() => [...document.querySelectorAll('#arcade-cast option')].map((o) => o.value));
-  check(offered[0] === 'map' && offered.includes('all') && offered.includes('soldiers') && offered.includes('pirate'), `the Bots step offers bot characters (${offered.length}: ${offered.slice(0, 4).join(', ')}…)`);
+  check(offered[0] === 'map' && offered.includes('all') && offered.includes('soldiers') && offered.includes('pirate'), `the Bots section offers bot characters (${offered.length}: ${offered.slice(0, 4).join(', ')}…)`);
   await page.selectOption('#arcade-cast', 'soldiers');
   await page.click('#arcade-start');
   await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0, null, { timeout: T(60000) });
@@ -2381,10 +2391,179 @@ async function botCastFlow(browser) {
   await page.context().close();
 }
 
+/** The owner's St. John's setup (2026-11-06): Team Deathmatch 24v24 with nine rules changed. */
+const OWNER_SETUP = { map: 'st_johns', mode: 'core.tdm', bots: 11, skill: 'hard', scoreLimit: 40, minutes: 10, teams: [24, 24], squadSpawn: false, killstreaks: false, randomChars: true, gravity: 0.4, fallDamage: true, lethality: 'tactical', ballistics: 'advanced', vehicleDamage: 'tough', botStyle: 'tactical' };
+
+/**
+ * Match setup at the sizes it's made for (1280 × 720, 1920 × 1080, the owner's 2000 × 1100, a phone sideways at
+ * 900 × 415): the mode and what wins show without scrolling, nothing scrolls sideways, and Start stays in view with
+ * the setup scrolled to the bottom and every section opened (a desktop keeps several open, a phone one at a time).
+ * Then, on the owner's setup: people apart from bots, Advanced rules in a line, the fit indicator and its fix, a
+ * variant, a party preset, adding a bot past the limit.
+ */
+async function setupLayoutFlow(browser) {
+  const errors = [];
+  const sizes = [
+    { name: '1280 × 720', viewport: { width: 1280, height: 720 } },
+    { name: '1920 × 1080', viewport: { width: 1920, height: 1080 } },
+    { name: '2000 × 1100', viewport: { width: 2000, height: 1100 } },
+    { name: 'phone 900 × 415', viewport: { width: 900, height: 415 }, hasTouch: true, isMobile: true, touch: true },
+  ];
+  for (const { name, touch, ...opts } of sizes) {
+    const page = await (await browser.newContext(opts)).newPage();
+    page.on('pageerror', (e) => errors.push(`${name}: ${e.message}`));
+    await page.addInitScript((s) => localStorage.setItem('cs.arcade', JSON.stringify(s)), OWNER_SETUP);
+    await page.goto(`${CLIENT}/?test=1${touch ? '&touch=1' : ''}`);
+    await page.waitForFunction(() => window.__front, null, { timeout: T(30000) });
+    await page.evaluate(() => document.getElementById('nav-play').click());
+    await page.waitForSelector('#setup-essentials', { timeout: T(30000) });
+    const essentials = await page.evaluate(() => {
+      const body = document.querySelector('#match-setup .setup-body');
+      body.scrollTop = 0;
+      const b = body.getBoundingClientRect();
+      const seen = (id) => {
+        const r = document.getElementById(id)?.getBoundingClientRect();
+        return !!r && r.height > 0 && r.top >= b.top - 1 && r.bottom <= b.bottom + 1;
+      };
+      return seen('arcade-modes') && seen('setup-win');
+    });
+    // Open every section in turn (a phone closes the one open before).
+    for (const id of ['setup-teams', 'setup-bots', 'setup-advanced']) {
+      if (!(await page.evaluate((i) => document.getElementById(i).classList.contains('open'), id))) await page.evaluate((i) => document.getElementById(`${i}-head`).click(), id);
+    }
+    const state = await page.evaluate(() => {
+      const body = document.querySelector('#match-setup .setup-body');
+      body.scrollTop = body.scrollHeight;
+      const s = document.getElementById('arcade-start').getBoundingClientRect();
+      return { open: [...document.querySelectorAll('#match-setup .setup-sec.open')].map((x) => x.id), start: s.top >= 0 && s.bottom <= innerHeight && s.right <= innerWidth && s.height > 0, sideways: document.documentElement.scrollWidth > innerWidth, scrolled: body.scrollTop };
+    });
+    check(essentials, `${name}: the mode and what wins show without scrolling`);
+    check(state.start && !state.sideways && state.scrolled > 0, `${name}: Start stays in view with the setup scrolled to the bottom, nothing sideways (${JSON.stringify(state)})`);
+    check(touch ? state.open.join() === 'setup-advanced' : state.open.length === 3, `${name}: ${touch ? 'one section open at a time' : 'several sections open at once'} (${state.open.join(', ')})`);
+    await page.context().close();
+  }
+
+  const page = await (await browser.newContext({ viewport: { width: 1280, height: 720 } })).newPage();
+  page.on('pageerror', (e) => errors.push(e.message));
+  await page.addInitScript((s) => {
+    if (sessionStorage.getItem('seeded')) return;
+    localStorage.setItem('cs.arcade', JSON.stringify(s));
+    sessionStorage.setItem('seeded', '1');
+  }, OWNER_SETUP);
+  await page.goto(`${CLIENT}/?test=1`);
+  await page.waitForFunction(() => window.__front, null, { timeout: T(30000) });
+  await page.evaluate(() => document.getElementById('nav-play').click());
+  await page.waitForSelector('#setup-essentials', { timeout: T(30000) });
+  const setup = () => page.evaluate(() => JSON.parse(localStorage.getItem('cs.arcade')));
+  const read = () =>
+    page.evaluate(() => ({
+      who: document.querySelector('#setup-summary .fact-players')?.textContent,
+      fit: document.getElementById('setup-fit')?.dataset.level,
+      advanced: document.querySelector('#setup-advanced-head .sec-sum')?.textContent,
+      chips: document.querySelectorAll('#setup-rule-chips span').length,
+      preset: document.querySelector('#setup-sizes .size-chip.on')?.dataset.preset ?? 'custom',
+      variants: [...document.querySelectorAll('#setup-variants .variant-chip.on')].map((b) => b.dataset.variant),
+    }));
+  const owner = await read();
+  check(owner.who === 'You + 47 bots · 24v24' && owner.preset === 'max', `people apart from bots: the owner's setup reads "${owner.who}", on the Max preset (${owner.preset})`);
+  check(owner.advanced === '9 changed · Low gravity · Tactical bots +7' && owner.chips === 0, `Advanced rules in one line, its chips inside it ("${owner.advanced}", ${owner.chips} chips while closed)`);
+  check(owner.variants.join() === 'roulette', `a variant shows on when its settings are, however set (${owner.variants.join(', ')})`);
+  // The fit indicator: Crowded, its details say why, and the map's own layout is a button.
+  await page.evaluate(() => document.getElementById('setup-fit').click());
+  const details = await page.evaluate(() => [...document.querySelectorAll('#setup-fit-list .fit-item')].map((li) => ({ topic: li.dataset.topic, level: li.className.replace('fit-item ', ''), fix: li.querySelector('.fit-fix')?.textContent ?? null })));
+  const size = details.find((d) => d.topic === 'size');
+  check(owner.fit === 'crowded' && size?.level === 'warn' && size.fix === 'Use 12v12' && details.some((d) => d.topic === 'spawns') && details.some((d) => d.topic === 'performance'), `St. John's at 24v24 is Crowded; its details: spawns, the map's size with "Use 12v12", performance (${JSON.stringify(details)})`);
+  await page.evaluate(() => document.getElementById('setup-fit-list-fix-size').click());
+  const fixed = { teams: (await setup()).teams, ...(await read()) };
+  check(fixed.teams?.join() === '12,12' && fixed.fit === 'fits' && fixed.preset === 'pick' && fixed.who === 'You + 23 bots · 12v12', `"Use 12v12" sets the map's pick, and it fits (${JSON.stringify(fixed)})`);
+  // Adding bots grows the teams (Even teams: both); past the limit it says whose limit it is.
+  await page.evaluate(() => document.querySelector('#setup-sizes [data-preset="max"]').click());
+  await page.evaluate(() => document.getElementById('arcade-team-size-1-plus').click());
+  const capped = { teams: (await setup()).teams, note: await page.evaluate(() => document.getElementById('arcade-team-stopped')?.textContent) };
+  check(capped.teams?.join() === '24,24' && capped.note === "24 per team is this computer's limit.", `a bot past the limit says whose limit it is (${JSON.stringify(capped)})`);
+  await page.evaluate(() => document.getElementById('arcade-team-size-0-minus').click());
+  check((await setup()).teams?.join() === '23,23', 'a bot fewer shrinks every team alike (Even teams)');
+  // A party preset: Lunar Roulette (Team Deathmatch here: the map has teams).
+  await page.evaluate(() => document.getElementById('setup-party-lunar_roulette').click());
+  const party = await setup();
+  const lit = await read();
+  check(party.mode === 'core.tdm' && party.gravity === 0.4 && party.fallDamage === false && party.randomChars === true && party.teams?.join() === '12,12' && lit.variants.join() === 'lunar,roulette', `Lunar Roulette: low gravity, random characters, the map's own layout (${JSON.stringify({ mode: party.mode, gravity: party.gravity, fall: party.fallDamage, random: party.randomChars, teams: party.teams, variants: lit.variants })})`);
+  // Enter starts from anywhere (a section head focused is a button: Enter presses it; the panel itself starts).
+  await page.evaluate(() => document.activeElement?.blur());
+  await page.keyboard.press('Enter');
+  const started = await page.waitForFunction(() => window.__cs?.local, null, { timeout: T(60000) }).then(() => true, () => false);
+  check(started, 'Enter starts the match');
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  await page.context().close();
+}
+
+/**
+ * Spectate before the start (owner, 2026-11-06: "sometimes I just wanna watch the bots go at it"). Match setup's
+ * Spectate starts the match with you watching (a bot plays your place), and it starts as soon as you've loaded:
+ * spectators count for the start gate, so bots against bots don't wait out its 30 s. The pause menu's Spectate,
+ * pressed while the match is still loading, does the same.
+ */
+async function spectateStartFlow(browser) {
+  const errors = [];
+  // Where the match runs: note the ticks it heard you loaded, began the countdown and took you out of play.
+  const hook = (page) =>
+    until(
+      () =>
+        sim(page, (m) => {
+          if (!m.__gate) {
+            m.__gate = {};
+            const ready = m.ready.bind(m);
+            m.ready = (s) => ((m.__gate.ready ??= m.tick), ready(s));
+            const count = m.startCountdown.bind(m);
+            m.startCountdown = () => ((m.__gate.count ??= m.tick), count());
+            const spectate = m.spectate.bind(m);
+            m.spectate = (s) => ((m.__gate.spectate ??= m.tick), spectate(s));
+          }
+          return true;
+        }),
+      T(60000),
+    );
+  const gate = (page) => sim(page, (m, me) => ({ ...m.__gate, phase: m.phase, spectator: m.isSpectator(me.slot), humans: m.combatants().filter((c) => c.kind === 'human').length, bots: m.combatants().filter((c) => c.kind === 'bot').length }));
+  // The countdown starts the tick after you've loaded; a page that took longer than the wait itself proves nothing either way.
+  const startedOnLoad = (g) => g.count !== undefined && g.ready !== undefined && (g.count <= g.ready + 1 || (g.ready >= 1800 && g.count === 1800));
+  // Match setup → Spectate.
+  const page = await (await browser.newContext({ viewport: { width: 1280, height: 720 } })).newPage();
+  page.on('pageerror', (e) => errors.push(e.message));
+  await page.addInitScript(() => localStorage.setItem('cs.arcade', JSON.stringify({ map: 'sandgate', mode: 'core.tdm', bots: 3, skill: 'easy', scoreLimit: 40, minutes: 10, teams: [3, 3] })));
+  await page.goto(`${CLIENT}/?test=1`);
+  await page.waitForFunction(() => window.__front, null, { timeout: T(30000) });
+  await page.click('#nav-play');
+  await page.click('#arcade-spectate');
+  await hook(page);
+  const playing = await page.waitForFunction(() => window.__cs?.spec?.().spectator && window.__cs.phase() === 'playing', null, { timeout: T(120000) }).then(() => true, () => false);
+  const g = await gate(page);
+  const cam = await page.evaluate(() => {
+    const s = window.__cs.spec();
+    return { out: s.out, free: s.free, following: s.following };
+  });
+  check(playing && g.spectator && g.humans === 0 && g.bots === 6 && cam.out, `Match setup's Spectate starts the match watching it: 3v3 bots, you out of play (${JSON.stringify({ ...g, ...cam })})`);
+  check(startedOnLoad(g), `it starts once you've loaded, not after the start gate's 30 s (loaded at tick ${g.ready}, countdown at ${g.count})`);
+  await page.context().close();
+  // The pause menu's Spectate while the match is still loading.
+  const second = await (await browser.newContext({ viewport: { width: 960, height: 540 } })).newPage();
+  // (The button asks for the mouse, as a click on it would; clicked by script there's no user gesture to grant it.)
+  second.on('pageerror', (e) => !/user gesture is required to request Pointer Lock/i.test(e.message) && errors.push(`pause: ${e.message}`));
+  await second.goto(`${CLIENT}/?offline=sandgate&test=1`);
+  await second.waitForFunction(() => window.__cs?.spec && window.__sim?.eval, null, { timeout: T(60000) });
+  await hook(second);
+  await second.evaluate(() => document.getElementById('pause-spectate').click());
+  const watching = await second.waitForFunction(() => window.__cs.spec().spectator && window.__cs.phase() === 'playing', null, { timeout: T(120000) }).then(() => true, () => false);
+  const h = await gate(second);
+  check(watching && h.spectator && h.humans === 0 && h.spectate !== undefined && (h.ready === undefined || h.spectate <= h.ready) && startedOnLoad(h), `Spectate pressed before the start: the match still starts once you've loaded (spectated at tick ${h.spectate}, loaded at ${h.ready}, countdown at ${h.count})`);
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  await second.context().close();
+}
+
 /**
  * Match setup on the smallest window (640 × 360): a custom uneven three-team
- * setup (2v3v5, you on the third team) is saved by name, survives a reload
- * and a change, loads back, and starts with those sizes.
+ * setup (2v3v5, you on the third team; Even teams off) is saved by name in
+ * the foot's saved setups menu, survives a reload and a change, loads back,
+ * and starts with those sizes.
  */
 async function customSetupFlow(browser) {
   const page = await (await browser.newContext({ viewport: { width: 640, height: 360 } })).newPage();
@@ -2398,8 +2577,13 @@ async function customSetupFlow(browser) {
   await page.reload();
   await page.waitForFunction(() => window.__front, null, { timeout: T(30000) });
   await page.click('#nav-play');
-  await page.click('#step-players .step-head');
+  // A small window opens one section at a time, and starts with them all closed.
+  const closed = await page.evaluate(() => [...document.querySelectorAll('#match-setup .setup-sec.open')].length);
+  await page.click('#setup-teams-head');
   await page.waitForSelector('#arcade-team-cards');
+  check(closed === 0, `a small window starts with the setup's sections closed (${closed} open)`);
+  // Uneven teams: Even teams off first (on, every team changes alike).
+  await page.evaluate(() => document.getElementById('arcade-even').click());
   const setSize = (i, v) =>
     page.evaluate(([i, v]) => {
       const input = document.getElementById(`arcade-team-size-${i}`);
@@ -2426,7 +2610,7 @@ async function customSetupFlow(browser) {
   await page.reload();
   await page.waitForFunction(() => window.__front, null, { timeout: T(30000) });
   await page.click('#nav-play');
-  await page.click('#step-players .step-head');
+  await page.click('#setup-teams-head');
   await page.waitForSelector('#arcade-team-cards');
   const remembered = await total();
   check(changed.startsWith('1v1') && remembered.startsWith('1v1'), `the last setup is remembered across a reload (${changed} → ${remembered})`);
@@ -2648,6 +2832,8 @@ async function arsenalFlow(browser) {
   await page.evaluate(() => {
     document.getElementById('host-controls').open = true;
     document.querySelector('#hc-mix [data-value="on"]')?.click();
+    // It applies live: Apply now, in the Host tab's foot.
+    document.getElementById('hc-apply')?.click();
   });
   const mixed = await simWait(page, (m, _me, ids) => ids.every(([id, was]) => {
     const p = m.pickups.find((q) => q.id === id);
@@ -4605,8 +4791,8 @@ async function lobbyFlow(browser) {
   await solo.addInitScript(() => localStorage.setItem('cs.name', 'Solo'));
   await solo.goto(`${CLIENT}/?offline=sandgate&${hub}`, { waitUntil: 'domcontentloaded' });
   await solo.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown', null, { timeout: T(60000) });
-  const offline = await solo.evaluate(() => ({ online: !document.getElementById('go-online').hidden, badge: !!window.__cs.hud.onlineNote }));
-  check(offline.online && !offline.badge, 'an offline match stays offline and offers "Go online"');
+  const offline = await solo.evaluate(() => ({ online: !document.getElementById('pause-online-switch').hidden && document.getElementById('go-offline').classList.contains('on'), badge: !!window.__cs.hud.onlineNote }));
+  check(offline.online && !offline.badge, 'an offline match stays offline, and the Host tab offers Offline / Host online');
   const listedAs = (name) => solo.evaluate((n) => fetch(`http://${new URLSearchParams(location.search).get('hub')}/lobby/games`).then((r) => r.json()).then((d) => !!d.games?.some((g) => g.name === n)), name);
   await sim(solo, (m) => void (m.combatants().find((c) => c.kind === 'human').kills = 5));
   await solo.evaluate(() => {
@@ -4623,8 +4809,8 @@ async function lobbyFlow(browser) {
   check(up && (await listedAs('E2E Go Online')), `the match is online and in the game browser (${badge})`);
   await solo.evaluate(() => document.getElementById('go-offline').click());
   const down = await solo.waitForFunction(() => fetch(`http://${new URLSearchParams(location.search).get('hub')}/lobby/games`).then((r) => r.json()).then((d) => !!d.games && !d.games.some((g) => g.name === 'E2E Go Online')), null, { timeout: T(15000), polling: 1000 }).then(() => true, () => false);
-  const after = await solo.evaluate(() => ({ badge: !!window.__cs.hud.onlineNote, online: !document.getElementById('go-online').hidden }));
-  check(down && !after.badge && after.online, 'Go offline removes the listing and the online line');
+  const after = await solo.evaluate(() => ({ badge: !!window.__cs.hud.onlineNote, online: document.getElementById('go-offline').classList.contains('on') && !document.getElementById('go-online').classList.contains('on') }));
+  check(down && !after.badge && after.online, 'Offline removes the listing and the online line');
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await solo.context().close();
 }
@@ -5050,12 +5236,19 @@ async function hostcontrolsFlow(browser) {
     return { first, settings, back: open(), host: !tab('host').hidden };
   });
   check(menu.first === 'match' && menu.settings === 'settings' && menu.back === 'match' && menu.host, `pause menu tabs: Match first, Esc back to it, a Host tab for the host (${JSON.stringify(menu)})`);
-  // Mouse users never need Esc: the Back button (top left) and the footer's key hints are buttons.
+  // Mouse users never need Esc: the Back button (top left) and the footer's key hints are buttons. From the Host
+  // tab (Resume in its foot) Back resumes, as Esc does; from Settings it goes back to Match.
   const clicks = await page.evaluate(() => {
     const open = () => [...document.querySelectorAll('#pause .pause-sec')].find((x) => !x.hidden)?.dataset.sec;
     document.getElementById('pause-hint-tabs').click();
     const next = open();
+    const onHost = { label: document.querySelector('#pause-back .back-label').textContent, foot: !document.getElementById('pause-host-foot').hidden };
+    window.dispatchEvent(new KeyboardEvent('keydown', { code: 'Escape', key: 'Escape', bubbles: true }));
+    // Resuming asks for the mouse (a headless page never gets it, so the menu stays) and hands the keyboard to the foot's Resume.
+    const resumed = { tab: open(), focus: document.activeElement?.id };
+    document.querySelector('#pause [data-tab="settings"]').click();
     const label = document.querySelector('#pause-back .back-label').textContent;
+    const footGone = document.getElementById('pause-host-foot').hidden;
     document.getElementById('pause-back').click();
     const back = open();
     // A held Esc (key repeat) doesn't go back again and again.
@@ -5063,9 +5256,14 @@ async function hostcontrolsFlow(browser) {
     window.dispatchEvent(new KeyboardEvent('keydown', { code: 'Escape', key: 'Escape', repeat: true, bubbles: true }));
     const held = open();
     document.getElementById('pause-hint-back').click();
-    return { next, label, back, held, top: document.querySelector('#pause-back .back-label').textContent, after: open() };
+    return { next, onHost, resumed, label, footGone, back, held, top: document.querySelector('#pause-back .back-label').textContent, after: open() };
   });
-  check(clicks.next === 'host' && clicks.label === 'Back' && clicks.back === 'match' && clicks.held === 'settings' && clicks.after === 'match' && clicks.top === 'Resume', `the pause menu's Back button and footer hints work by click; a repeating Esc does nothing (${JSON.stringify(clicks)})`);
+  check(clicks.next === 'host' && clicks.onHost.label === 'Resume' && clicks.onHost.foot && clicks.resumed.tab === 'host' && clicks.resumed.focus === 'hc-resume' && clicks.footGone, `the Host tab has its own foot, and Esc there resumes (${JSON.stringify({ onHost: clicks.onHost, resumed: clicks.resumed, footGone: clicks.footGone })})`);
+  check(clicks.label === 'Back' && clicks.back === 'match' && clicks.held === 'settings' && clicks.after === 'match' && clicks.top === 'Resume', `the pause menu's Back button and footer hints work by click; a repeating Esc does nothing (${JSON.stringify(clicks)})`);
+  // Resuming may have had the mouse (a headless page can): back to the pause menu for what follows.
+  await frames(page, 10);
+  await page.evaluate(() => document.pointerLockElement && document.exitPointerLock());
+  await page.waitForFunction(() => !document.pointerLockElement && !document.getElementById('pause').hidden, null, { timeout: T(5000) }).catch(() => {});
   const fits = await page.evaluate(() => {
     const r = document.querySelector('#pause .pause-card').getBoundingClientRect();
     return r.top >= 0 && r.bottom <= innerHeight + 1 && r.right <= innerWidth + 1;
@@ -5077,8 +5275,8 @@ async function hostcontrolsFlow(browser) {
     document.getElementById('hc-players-plus').click();
     document.querySelector('#hc-skill [data-value="hard"]').click();
   });
-  const says = await page.evaluate(() => document.getElementById('hc-apply').textContent);
-  check(says === 'Apply: +2 bots', `Apply says what it will do (${says})`);
+  const says = await page.evaluate(() => ({ apply: document.getElementById('hc-apply').textContent, changes: document.getElementById('hc-changes').textContent, resume: !!document.getElementById('hc-resume') }));
+  check(says.apply === 'Apply now' && says.changes === '+2 bots, hard bots' && says.resume, `Apply says what it will do, beside Resume (${JSON.stringify(says)})`);
   await page.evaluate(() => document.getElementById('hc-apply').click());
   const six = await simWait(page, (m) => m.combatants().length === 6, null, T(5000));
   const feed = await page.evaluate(() => document.getElementById('feed').textContent);
@@ -5131,14 +5329,18 @@ async function hostcontrolsFlow(browser) {
   await page.keyboard.up('Tab');
   const sum = await page.evaluate(() => document.getElementById('hc-bots-sum')?.textContent);
   check(listed && /1 bot \+ random/.test(sum ?? ''), `the scoreboard lists the bot, and the panel says the set (${sum})`);
-  // A rule change waits for the restart (the panel says so), then Restart match plays with it.
-  await page.evaluate(() => {
-    document.getElementById('hc-score-plus').click();
-    document.getElementById('hc-apply-rules').click();
-  });
-  const waiting = await page.waitForFunction(() => window.__cs.host()?.pending?.scoreLimit === 16 && document.getElementById('hc-pending'), null, { timeout: T(5000) }).then(() => true, () => false);
-  const still = await sim(page, (m) => m.rules.scoreLimit);
-  check(waiting && still === 15, `a score limit change waits for the restart (now ${still})`);
+  // A rule that needs a restart is marked so, and Apply says it restarts: Apply & restart plays with it at once.
+  await page.evaluate(() => document.getElementById('hc-score-plus').click());
+  const asks = await page.evaluate(() => ({ apply: document.getElementById('hc-apply').textContent, changes: document.getElementById('hc-changes').textContent, marked: !!document.getElementById('hc-score')?.closest('.field')?.querySelector('.when-tag.restart') }));
+  check(asks.apply === 'Apply & restart' && asks.changes === 'score 16 (restart)' && asks.marked, `a change that needs a restart is marked, and Apply says it restarts (${JSON.stringify(asks)})`);
+  await page.evaluate(() => document.getElementById('hc-apply').click());
+  // (A restart plays the rules waiting for it: the score limit changes only then.)
+  const applied = await simWait(page, (m) => m.rules.scoreLimit === 16, null, T(10000));
+  const restartFeed = await page.waitForFunction(() => /restarted the match/.test(document.getElementById('feed').textContent ?? ''), null, { timeout: T(5000) }).then(() => true, () => false);
+  const pendingNow = await page.evaluate(() => window.__cs.host()?.pending);
+  check(applied && restartFeed && !Object.keys(pendingNow ?? {}).length, `Apply & restart starts the match over with the new score limit (${JSON.stringify({ score: await sim(page, (m) => m.rules.scoreLimit), restartFeed, pending: pendingNow })})`);
+  // Its countdown first: End match ends a match in play.
+  await page.waitForFunction(playing, null, { timeout: T(30000) }).catch(() => {});
   // Ending or restarting everyone's match takes a second click.
   const once = await page.evaluate(() => {
     const b = document.getElementById('hc-end');
@@ -5154,9 +5356,8 @@ async function hostcontrolsFlow(browser) {
     document.getElementById('hc-restart').click();
   });
   const restarted = await page.waitForFunction(() => window.__cs.phase() !== 'intermission', null, { timeout: T(5000) }).then(() => true, () => false);
-  check(restarted, 'Restart match starts it over');
-  const applied = { score: await sim(page, (m) => m.rules.scoreLimit), pending: await page.evaluate(() => window.__cs.host()?.pending) };
-  check(applied.score === 16 && !Object.keys(applied.pending ?? {}).length, `the restart plays with the waiting rule change (${JSON.stringify(applied)})`);
+  const keptScore = await sim(page, (m) => m.rules.scoreLimit);
+  check(restarted && keptScore === 16, `Restart match starts it over, the applied score limit kept (${keptScore})`);
   await pickMap(page, 'atomic_court');
   // The picked map loads on demand (its own chunk), so the announcement can follow a moment later.
   await page.waitForFunction(() => /Changing map to/i.test(document.getElementById('message').textContent), null, { timeout: T(5000) }).catch(() => {});

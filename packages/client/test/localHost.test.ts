@@ -98,6 +98,25 @@ describe('host controls in a browser match (offline, Host game)', () => {
     expect(roster(got)).toHaveLength(4);
   });
 
+  it('Spectate from the start (Match setup): out of play from the welcome on, a bot in the place; it starts once the page has loaded', async () => {
+    const t = new LocalTransport(yard(), { name: 'Host', botFill: 4, difficulty: 'normal', rules: { ...DEFAULT_RULES['core.tdm'], teamSizes: [2, 2] }, spectate: true });
+    open.push(t);
+    const got: ServerMessage[] = [];
+    t.start((m) => got.push(m), () => undefined);
+    await until(() => got.some((m) => m.t === 'roster'));
+    const welcome = got.find((m): m is Extract<ServerMessage, { t: 'welcome' }> => m.t === 'welcome')!;
+    const roster = got.find((m): m is Extract<ServerMessage, { t: 'roster' }> => m.t === 'roster')!.players;
+    expect(roster.find((p) => p.slot === welcome.slot)).toMatchObject({ name: 'Host', sp: 1 });
+    expect(roster.filter((p) => p.bot)).toHaveLength(4);
+    // Bots against bots: the start gate waits for the spectator's page to load, then counts down at once.
+    const match = (globalThis as { __match?: { phase: string } }).__match!;
+    await new Promise((r) => setTimeout(r, 200));
+    expect(match.phase).toBe('waiting');
+    t.sendReady();
+    await until(() => match.phase !== 'waiting', 2000);
+    expect(match.phase).toBe('countdown');
+  });
+
   it('a browser host keeps 48 v 48 with friends in, and takes up to BROWSER_HOST_MAX_GUESTS of them', async () => {
     const t = new LocalTransport(yard(), { name: 'Host', botFill: 96, difficulty: 'normal', rules: { ...DEFAULT_RULES['core.tdm'], teamSizes: [48, 48] } });
     open.push(t);

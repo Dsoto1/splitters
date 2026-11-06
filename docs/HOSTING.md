@@ -316,14 +316,18 @@ want always-on official matches.
   suggests fewer bots or lower graphics; nothing otherwise.
 - An offline match stays
   offline and private: nothing listens or connects until the player chooses.
-  Pause menu → **Go online** (after a confirm) restarts the match on the same
-  map and rules (scores reset, bots back to the host's count), opens a join
-  code and lists it in the game browser; the HUD shows an "Online" badge with
-  players and the code. **Go offline** tells friends "The host took the game
-  offline", disconnects them (bots take their places), removes the listing
-  and closes the code; the match itself carries on (no restart).
-  **Host with code only (not listed)** opens a code without restarting or
-  listing (the "List in the game browser" box can still list it later).
+  Pause menu → Host tab → **Host online** (the Offline / Host online switch in
+  the tab's foot; after a confirm) restarts the match on the same map and
+  rules (scores reset, bots back to the host's count), opens a join code and
+  lists it in the game browser (with no community hub to list on, it just
+  opens a code); the HUD shows an "Online" badge with players and the code.
+  **Offline** tells friends "The host took the game offline", disconnects them
+  (bots take their places), removes the listing and closes the code; the match
+  itself carries on (no restart). **Host with code only (not listed)** (the
+  Host tab's Online card) opens a code without restarting or listing (the
+  "List in the game browser" box can still list it later). Before the match,
+  Match setup's foot has the same switch beside Start match: Host online starts
+  the match with a join code open (not listed).
   Imported and MapMaker maps are listed as a **Community map** (a tag in the
   game browser and on the host's badge), with the map's ID, version and
   content hash; the hub refuses a listing that claims to be one of our maps
@@ -434,11 +438,12 @@ No setting is a ToshiroPlay or AWS credential: the host needs none.
 ### Match settings: the same as a browser host's, and more
 
 Every setting a browser host has (Play → Match setup before the match, the
-pause menu's Match panel during it, the Host tab's listing) is in the
-launcher, the console and the settings, and applies to the running match the
-way the browser host's does: **live** at once, at the **restart** (the pause
-menu's "Apply on restart" rules), or at the **next match** (the rules a
-browser host picks in Match setup before its match starts). For the last two,
+pause menu's Host tab during it, with its listing) is in the launcher, the
+console and the settings, and applies to the running match the way the
+browser host's does: **live** at once, at the **restart** (the Host tab marks
+them ⟳ Restart, and its Apply says "Apply & restart" when one has changed), or
+at the **next match** (the rules a browser host picks in Match setup before
+its match starts). For the last two,
 **Restart match** (launcher: **Restart now with them**, console `restart`)
 plays them now: with Match setup rules waiting it starts a fresh match on the
 same map (everyone comes along, as on a map change). The launcher tags each
@@ -504,7 +509,7 @@ mode playing.
 | Playlist (co-op chain; the browser plays them offline only) | | | `PLAYLIST` | next start |
 | Max players (a browser host: its device's cap) | Players → People at most | `maxplayers <n>` | `MAX_PLAYERS` | live (nobody playing is removed) |
 | Password | neither has one: `VISIBILITY=code` and a `JOIN_CODE` keep a game private | | | |
-| Graphics (Match setup's Performance fold) | the browser's own, not the match's | | | |
+| Graphics (Match setup's fit indicator, in a big match; Options) | the browser's own, not the match's | | | |
 
 Only on the Host Service (extras): **per-map rules** (`rules map <rule> <value>`,
 `RULES.maps`), a **join message** each player gets (`motd <text>`, launcher
@@ -817,8 +822,15 @@ Other settings (environment variables):
 
 ### Host controls
 
-Whoever runs a match changes it mid-match from the pause menu's **Match**
-section:
+Whoever runs a match changes it mid-match from the pause menu's **Host** tab,
+laid out as Match setup is (what wins, players and teams with the size
+presets and the fit indicator, bots, rules) with one foot: **Resume** (Esc
+too), **Apply** named by what it will do (**Apply now** when every change
+applies live; **Apply & restart** when one waits for a restart, each such
+setting marked ⟳ Restart; with other people in the match it asks for a second
+click), what it changes ("+2 bots, hard bots"), the **Offline / Host online**
+switch (a browser host) and **Leave match**. Nothing changes until Apply
+(the Bots… window applies its own set):
 
 | Who | Where the match runs | How a command gets there |
 | --- | --- | --- |
@@ -826,9 +838,9 @@ section:
 | Host game host | the host's browser | straight to the match; friends' `host` messages are refused |
 | Server admin (`ADMIN_TOKEN`) | the dedicated server | `{ t: 'host', cmd }`; the server checks the sender is an admin |
 
-- **Bots.** Free-for-all and co-op: a total-players stepper. Team modes: a
-  per-team size stepper (every team the same size) and presets. Apply
-  rebalances live: new bots spawn normally at spawn points; extra bots go,
+- **Bots.** Free-for-all and co-op: a total-players stepper. Team modes: the
+  team editor (people apart from bots on each team, Even teams) and the size
+  presets worked out for the map. Apply rebalances live: new bots spawn normally at spawn points; extra bots go,
   the worst-scoring first (fewest kills less deaths, as when a player joins),
   from the team most over its size. Bot skill and style apply to every bot at
   once. Everyone's feed and a toast say what changed ("Host set teams to
