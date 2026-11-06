@@ -2,7 +2,7 @@
 // navmesh (docs/BOTS.md, "Navigation audit").
 import { beforeAll, describe, expect, it } from 'vitest';
 import { BOT_DIFFICULTIES, CORE_BOT_PROFILES, DEFAULT_DEATHMATCH_RULES, PhysicsWorld, TICK_RATE, applyBrush, blockBoxes, buildMapGeometry, initPhysics, mapPads, newTerrain, padLandings, terrainHeightAt, type MapDocument } from '../src/index.ts';
-import { Match, NavWorld, auditNavigation, dropOptions, initNavigation, mapNavigation, validateMapNavigation } from '../src/match.ts';
+import { Match, NavWorld, auditNavigation, dropOptions, initNavigation, mapNavigation, solidsRay, validateMapNavigation } from '../src/match.ts';
 import { makeMap } from './helpers.ts';
 
 beforeAll(() => Promise.all([initPhysics(), initNavigation()]));
@@ -150,7 +150,7 @@ describe('navigation audit', () => {
     // The level alone (the scenario adds the deck after the navmesh): the flight comes down on the floor under it.
     const physics = new PhysicsWorld(buildMapGeometry(map), null);
     expect(padLandings(mapPads(map.entities), physics)[0]!.end.y).toBeLessThan(0.5);
-    expect(padLandings(mapPads(map.entities), physics, 1, [], blockBoxes(map, true))[0]!.end.y).toBeCloseTo(3.5, 1);
+    expect(padLandings(mapPads(map.entities), physics, 1, [], solidsRay(blockBoxes(map, true)))[0]!.end.y).toBeCloseTo(3.5, 1);
     physics.free();
     // As the match builds it: a route up onto the deck by the pad.
     const built = mapNavigation(map);

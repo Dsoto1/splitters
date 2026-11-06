@@ -1,4 +1,4 @@
-import { blockBoxes, buildMapGeometry, mapKillY, mapTerrainMesh, propBoxes, type WorldBox } from '../map/geometry.ts';
+import { blockBoxes, boxesRay, buildMapGeometry, mapKillY, mapTerrainMesh, propBoxes, type WorldBox } from '../map/geometry.ts';
 import { environmentNavTriangles, environmentShapes, joinTriangles, type EnvWorldShape } from '../map/environment.ts';
 import type { MapDocument } from '../map/schema.ts';
 import type { Vec3 } from '../math.ts';
@@ -6,7 +6,7 @@ import { NavWorld, validateNavigation, type DropOptions } from '../nav/index.ts'
 import { auditNavigation, type NavAudit } from '../nav/audit.ts';
 import type { ValidationIssue } from '../map/validate.ts';
 import { LIQUID_SPECS, SWIM_DEPTH, liquidAt, mapLiquids } from './liquids.ts';
-import { navLinks } from './movement.ts';
+import { navLinks, type ExtraRay } from './movement.ts';
 import { liftLinks } from './movers.ts';
 import { PhysicsWorld } from './physics.ts';
 import { matchPhysics, type MatchRules } from './rules.ts';
@@ -17,6 +17,9 @@ import { matchPhysics, type MatchRules } from './rules.ts';
  */
 export const DROP_HURTS_UP_TO = 5 + 30 / 9;
 const DROP_FREE = 60;
+
+/** A ray against boxes physics doesn't hold yet (the scenario's solids), for jump pads' landings; none for none. */
+export const solidsRay = (solids: readonly WorldBox[]): ExtraRay | undefined => (solids.length ? (o, d, max) => boxesRay(solids, o, d, max) : undefined);
 
 /** What the navmesh's ledge-drop links need from the match (NavWorld.build `drops`). */
 export function dropOptions(map: MapDocument, physics: PhysicsWorld, geometry: readonly WorldBox[], phys: { gravity: number; fallDamage: boolean }): DropOptions {
@@ -51,7 +54,7 @@ export function buildMapNav(map: MapDocument, geometry: readonly WorldBox[], phy
     [...geometry, ...solids, ...extra],
     joinTriangles(mapTerrainMesh(map), environmentNavTriangles(envShapes)),
     // (Jump pads' flights come down on the scenario's solids too, as the navmesh has them.)
-    [...navLinks(map.entities, physics, phys.gravity, extra.length ? [...solids, ...extra] : solids), ...liftLinks(map)],
+    [...navLinks(map.entities, physics, phys.gravity, solidsRay(extra.length ? [...solids, ...extra] : solids)), ...liftLinks(map)],
     false,
     drops,
   );

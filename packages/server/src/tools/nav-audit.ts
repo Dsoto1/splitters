@@ -2,7 +2,7 @@ import { readFileSync, readdirSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { buildMapGeometry, environmentNavTriangles, environmentShapes, initPhysics, joinTriangles, liftLinks, loadMap, mapTerrainMesh, navLinks, PhysicsWorld, propBoxes, blockBoxes, type MapDocument } from '@tiletrigger/shared';
-import { NavWorld, auditNavigation, dropOptions, initNavigation, polyShapes } from '@tiletrigger/shared/match';
+import { NavWorld, auditNavigation, dropOptions, initNavigation, polyShapes, solidsRay } from '@tiletrigger/shared/match';
 import { drawNavPicture } from './navPictures.ts';
 
 /**
@@ -41,7 +41,7 @@ for (const id of ids) {
   const t1 = performance.now();
   const drops = dropOptions(map, physics, geometry, phys);
   const solids = [...propBoxes(map, true), ...blockBoxes(map, true)];
-  const nav = NavWorld.build([...geometry, ...solids], joinTriangles(mapTerrainMesh(map), environmentNavTriangles(envShapes)), [...navLinks(map.entities, physics, phys.gravity, solids), ...liftLinks(map)], false, noDrops ? null : drops);
+  const nav = NavWorld.build([...geometry, ...solids], joinTriangles(mapTerrainMesh(map), environmentNavTriangles(envShapes)), [...navLinks(map.entities, physics, phys.gravity, solidsRay(solids)), ...liftLinks(map)], false, noDrops ? null : drops);
   const t2 = performance.now();
   const audit = auditNavigation(map, nav, physics, { ...drops, official: path.startsWith(mapsDir) });
   const t3 = performance.now();
