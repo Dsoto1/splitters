@@ -189,7 +189,11 @@ async function main(): Promise<void> {
     const limits = JSON.parse(readFileSync(limitsPath, 'utf8')) as Limits;
     const ok = printScorecard(rows, limits.limits, 'nightly');
     const pictures = opt('pictures');
-    if (pictures) await drawNavPictures(here(pictures), mapsDir, rows);
+    if (pictures) {
+      // (The pictures build each map's navmesh and level physics: both need their WASM first.)
+      await Promise.all([initPhysics(), initNavigation()]);
+      await drawNavPictures(here(pictures), mapsDir, rows);
+    }
     process.exitCode = ok ? 0 : 1;
     return;
   }
