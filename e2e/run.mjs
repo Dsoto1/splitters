@@ -2546,7 +2546,8 @@ async function spectateStartFlow(browser) {
   await page.context().close();
   // The pause menu's Spectate while the match is still loading.
   const second = await (await browser.newContext({ viewport: { width: 960, height: 540 } })).newPage();
-  second.on('pageerror', (e) => errors.push(`pause: ${e.message}`));
+  // (The button asks for the mouse, as a click on it would; clicked by script there's no user gesture to grant it.)
+  second.on('pageerror', (e) => !/user gesture is required to request Pointer Lock/i.test(e.message) && errors.push(`pause: ${e.message}`));
   await second.goto(`${CLIENT}/?offline=sandgate&test=1`);
   await second.waitForFunction(() => window.__cs?.spec && window.__sim?.eval, null, { timeout: T(60000) });
   await hook(second);
