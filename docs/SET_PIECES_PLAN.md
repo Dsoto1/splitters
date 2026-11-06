@@ -236,7 +236,7 @@ spawns, objectives and logic (unchanged), and bots walking each way in a match (
   held the hill from inside (about 10 m² of it). A street tree under it moved 4 m east and was settled on the ground.
 - **Bots** (a match, one bot sent each way as an order goal): Exeter Street to the drill field through the passage and
   back (5.5 s each), the passage into Knight by the new door and back, the passage through the east tower to the drill
-  field, and DeKoven's first floor to Smythe's over the bridge and back (about 9 and 7 s, at 4.27-4.76 m).
+  field, and DeKoven's first floor to Smythe's over the bridge and back (about 10 and 7 s, at 4.27-4.76 m).
 - **Pitfall found on the way (MapMaker):** every edit lowers the ground under every level floor (`withTerrainUnderFloors`)
   and never raises it back, so a big floor moved field by field lowers the ground under each place it passes through.
   A copy of Welles's 56 m ground slab, squared up and then moved before it was cut down to the tower's paving, lowered
