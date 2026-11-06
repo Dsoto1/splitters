@@ -770,6 +770,39 @@ like 2–3 bots protect a flag, and the rest go out there and try to get the oth
 
 
 
+### Owner's M1 re-record after performance round 3 (2026-11-06, app 463c247; files in session scratchpad perf4/)
+Recorded on the M1 Pro: TDM, 49 players, High, auto render scale, 60 fps cap. Steady state skips each match's first 5 s.
+
+| | Shingle Point, round 2 | Shingle Point, round 3 | Market Town, round 2 | Market Town, round 3 |
+|---|---|---|---|---|
+| Average frame | 21.8 ms | 17.3 ms | 22.1 ms | 17.6 ms |
+| p95 / p99 | <30 / <40 ms | <25 / <40 ms | <40 / <50 ms | <25 / <30 ms |
+| Worst second | 34.0 ms (p95 75.9) | 20.7 ms (p95 22.9) | 40.1 ms | 46.6 ms (a mass-death moment, see below) |
+| Draws, max | 980 | 494 | 724 | 589 |
+| Meshes, max | 1,130 | 485 | 613 | 406 |
+| Render / shadows | 8.5 / 4.1 ms | 5.5 / 1.7 ms | 7.0 / 4.0 ms | 4.1 / 2.5 ms |
+| Characters (animation) | 4.2 (2.8) ms | 4.1 (3.0) ms | 6.0 (4.4) ms | 4.8 (3.4) ms |
+
+**Left for performance round 4:**
+1. **New:** about 3 s of stutter at the start of a Shingle Point match on the M1.
+   - 18 hitches in the first 3 s; 52 shaders were built in the first 5 s.
+   - Before round 3 there were none. Market Town shows none.
+   - Suspects:
+     - the batched props' materials (Shingle batches, Market Town doesn't);
+     - the looks that come into view at the first spawn wave;
+     - the warm-up's 2 s cap on that machine.
+2. **Mass deaths on Market Town:** after a rocket killed 7, frames ran 60–140 ms for about 0.6 s.
+   - The time is outside the game's measured work: GPU, driver or GC while bodies start.
+   - The game's trace can't show it. A browser performance profile of a blast, or a local repro, would.
+3. **Sporadic 50–60 ms frames:** every 20–30 s, mostly outside the measured work. GC is likely; cut the per-frame
+   garbage.
+4. **Characters are now the biggest CPU cost:** 4–5 ms, of which animation is 3–3.4 ms, at 40+ in view.
+
+**The owner's amphibious landing craft:** a Meshy model, owned, in the Drive. Downloaded to
+`/home/user/meshy-drive/intake-2026-11-06/`; never commit it. It's 408k triangles, static. The prop import is added to
+set pieces part 3's brief: a hero-budget rebake, about 11 m long, voxel collision, provenance, and a beached-craft
+variant for MAP 21.
+
 ### Queued (owner-approved, 2026-11-06): Match Setup redesign, NEXT FREE SLOT (ahead of the follow-ons)
 **Owner's report** (screenshot: St. John's TDM 24v24, desktop):
 - The setup sidebar's text doesn't display properly. For example, "The map suggests 12v12." is crushed into a narrow
