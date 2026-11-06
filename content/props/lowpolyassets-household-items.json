@@ -116,28 +116,28 @@
       "src": "Bathroom/Sink.fbx",
       "name": "Wash Basin",
       "category": "Household",
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "hh_toilet",
       "src": "Bathroom/Toilet.fbx",
       "name": "Toilet",
       "category": "Household",
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "hh_bed_double",
       "src": "Beds/Bed Double.fbx",
       "name": "Double Bed",
       "category": "Household",
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "hh_bed_single",
       "src": "Beds/Bed Single.fbx",
       "name": "Single Bed",
       "category": "Household",
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "hh_bunk_bed",
@@ -151,21 +151,22 @@
       "src": "Chairs/Chair A.fbx",
       "name": "Dining Chair",
       "category": "Household",
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "hh_stool",
       "src": "Chairs/Chair C.fbx",
       "name": "Bar Stool",
       "category": "Household",
-      "collide": "box"
+      "collide": "box",
+      "fills": "Round, under a metre across: its box stands off it only diagonally (up to 0.2 m at 45°), and voxel boxes give this same box."
     },
     {
       "id": "hh_office_chair",
       "src": "Chairs/Chair E.fbx",
       "name": "Swivel Chair",
       "category": "Household",
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "hh_table",
@@ -193,7 +194,7 @@
       "src": "Tables/Rounded Table B.fbx",
       "name": "Round Table",
       "category": "Household",
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "hh_desk",
@@ -207,14 +208,14 @@
       "src": "Sofas/Sofa A.fbx",
       "name": "Three-Seat Sofa",
       "category": "Household",
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "hh_sofa_small",
       "src": "Sofas/Sofa B.fbx",
       "name": "Two-Seat Sofa",
       "category": "Household",
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "hh_armchair",
@@ -312,7 +313,7 @@
       "src": "Miscellaneous/Plant A.fbx",
       "name": "Pot Plant",
       "category": "Household",
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "hh_bin",

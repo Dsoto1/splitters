@@ -55,7 +55,7 @@ import { buildSpec, jointsFromLandmarks, readManifests } from './character-manif
 import { findLandmarks, landmarkPicture } from './landmarks.mjs';
 import { fbxToDocument } from './fbx.mjs';
 import { fitHands } from './hands.mjs';
-import { bodySkin, fingerSkin, fixBodySkin } from './skinfix.mjs';
+import { bindRigid, bodySkin, fingerSkin, fixBodySkin } from './skinfix.mjs';
 import { keepArmsToArms } from './armweights.mjs';
 import { SIDE_DEPTH, capTears, cleanSkin, tearStretched } from './skinclean.mjs';
 import { addLowDetail } from './character-lod.mjs';
@@ -354,6 +354,16 @@ function pose(skel, verts, ual, c) {
     for (let v = 0; v < count; v++) restN.set(restNrmAt(v), v * 3);
     const changed = cleanSkin({ rig: skel.rig ?? names.map((n) => JOINT_MAP[n]), parent, rest, restAt: (v) => [restPos[v * 3], restPos[v * 3 + 1], restPos[v * 3 + 2]], restNrm: (v) => [restN[v * 3], restN[v * 3 + 1], restN[v * 3 + 2]], count, J, W, indices: verts.indices });
     console.log(`  skin: ${changed} vertices kept to their own limb (weights from far joints dropped)`);
+  }
+  // Hard parts bound whole to one joint (`fixes.skin.rigid`, skinfix.mjs), here in the download's own pose: turning
+  // the arms out below dragged a back pack the arms partly held out of shape in the bind pose itself (Starfarer's).
+  if (c.skin?.rigid) {
+    const at = new Float32Array(count * 3);
+    for (let v = 0; v < count; v++) at.set(restAt(v), v * 3);
+    W = Float32Array.from(W);
+    J = J.slice();
+    const done = bindRigid({ count, at: (v) => [at[v * 3], at[v * 3 + 1], at[v * 3 + 2]], J, W, rigOf: skel.rig ?? names.map((n) => JOINT_MAP[n]), regions: c.skin.rigid });
+    for (const r of done) console.log(`  skin: ${r.bound} vertices bound whole to ${r.joint} (fixes.skin.rigid), ${r.eased} round them eased toward it`);
   }
   // Re-pose: walk the joints parents first, turning the listed bones to the rig's directions.
   const index = new Map(names.map((n, i) => [n, i]));

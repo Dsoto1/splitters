@@ -5443,7 +5443,14 @@ export class Match {
     this.pendingEvents.push({ e: 'round_start' });
   }
 
+  /**
+   * Called as each new round starts (the scoreboard's end, or a restart), before it resets: HostControl puts the
+   * rules the host saved for the next match in play.
+   */
+  beforeRound?: () => void;
+
   private startRound(): void {
+    this.beforeRound?.();
     this.phase = 'playing';
     for (const m of this.mounts) if (m.route) m.routeT0 = this.tick;
     this.phaseEndTick = this.roundEndTick();

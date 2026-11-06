@@ -13,11 +13,15 @@ describe('character manifests', () => {
 
   it('turn into what the prepare tool builds', () => {
     // A model from the owner's Drive is Meshy Community CC0 unless the owner says they made it (2026-11-06): the Goblin
-    // was recorded as owned until the audit of that day; the Alien Biker, which the owner confirmed as theirs, stays owned.
+    // was recorded as owned until the audit of that day, the Alien Biker until the owner said it was community too
+    // (the same day). Only a model the owner made, or one we generate through the Meshy API, is owned.
     const goblin = buildSpec(list.find((m) => m.id === 'meshy_goblin'));
     expect(goblin.pack).toBe('meshy-community-characters');
     expect(goblin.community).toEqual({ model: 'Goblin', date: '2026-10-26' });
-    expect(buildSpec(list.find((m) => m.id === 'meshy_alienbiker')).pack).toBe('meshy-owned');
+    const biker = list.find((m) => m.id === 'meshy_alienbiker');
+    expect(buildSpec(biker).pack).toBe('meshy-community-characters');
+    expect(buildSpec(biker).community).toEqual({ model: 'stylized alien biker', date: '2026-11-01' });
+    expect(buildSpec({ ...biker, source: { license: 'owned', author: 'the owner', date: '2026-11-01', url: null, file: biker.source.file } }).pack).toBe('meshy-owned');
     expect(goblin.file.test('Meshy_AI_Goblin_1026113732_texture.fbx')).toBe(true);
     expect(goblin.joints.LeftHandTip).toEqual([0.258, 0.317, 0.2]);
     expect(goblin.joints.head_end).toEqual([0, 0.95, 0.14]);
@@ -77,6 +81,14 @@ describe('character manifests', () => {
     expect(gp({ curlR: 2 })).toMatch(/fixes.grip.curlR/);
     expect(gp({ supportLong: [0, 0.3, 0] })).toMatch(/fixes.grip.supportLong/);
     expect(gp({ rollL: 'a' })).toMatch(/fixes.grip.rollL/);
+    // Hard parts bound whole to one joint in the download's own pose (fixes.skin.rigid: Starfarer's back pack).
+    const pack = { joint: 'spine_03', box: [[-0.1, 0.6, -0.15, 0.1, 0.8, -0.04]], blend: 0.025, except: '^Head$' };
+    const rigid = (r) => manifestProblems({ ...good, fixes: { ...good.fixes, skin: { rigid: r } } }, 'meshy_cat.json').join('\n');
+    expect(rigid([pack])).toBe('');
+    expect(rigid([{ joint: 'spine_03', box: [-0.1, 0.6, -0.15, 0.1, 0.8, -0.04] }])).toBe('');
+    for (const bad of [[], [{ ...pack, joint: 'spine_09' }], [{ ...pack, box: [0.1, 0.6, -0.15, -0.1, 0.8, -0.04] }], [{ ...pack, box: [[0, 0, 0]] }], [{ ...pack, blend: 0.5 }], [{ ...pack, except: '(' }], [{ ...pack, wings: true }], pack]) expect(rigid(bad), JSON.stringify(bad)).toMatch(/fixes.skin.rigid/);
+    const starfarer = buildSpec(list.find((m) => m.id === 'meshy_darkastronaut'));
+    expect(starfarer.skin.rigid[0]).toMatchObject({ joint: 'spine_03', except: '^Head$' });
   });
 
   it('move with the default clip set, name another, or opt out with a reason', () => {

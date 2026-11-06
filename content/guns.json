@@ -1,5 +1,5 @@
 {
-  "$comment": "Weapon models built by tools/content/prepare-guns.mjs from pack downloads kept out of the repo (see docs/CONTENT_PIPELINE.md). `forward`: the source's barrel axis; `length`: metres along the barrel once built. The weapons keep the models they used before as `fallback` (packages/shared/src/sim/weapons.ts). Meshy community entries (`meshy` packs) name their download folder in `download` and their model in `label` (see prepare-guns.mjs). The owner's own Meshy generations (`meshy-owned-guns`, licence Owned) are textured GLB downloads named in `glb`.",
+  "$comment": "Weapon models built by tools/content/prepare-guns.mjs from pack downloads kept out of the repo (see docs/CONTENT_PIPELINE.md). `forward`: the source's barrel axis; `length`: metres along the barrel once built. The weapons keep the models they used before as `fallback` (packages/shared/src/sim/weapons.ts). Meshy community entries (`meshy` packs) name their download folder in `download` and their model in `label` (see prepare-guns.mjs). Meshy textured GLB downloads (`glb` packs) are named in each entry's `glb`.",
   "packs": {
     "styloo-guns": {
       "title": "Guns Asset Pack",
@@ -63,21 +63,11 @@
       "glb": true
     },
     "meshy-community-arsenal": {
-      "title": "Meshy community models (weapons, turrets, the medkit and the WWII tank; textured GLB downloads)",
+      "title": "Meshy community models (weapons, turrets, the medkit, the WWII tank, the buggy and its tire; textured GLB downloads)",
       "creator": "Meshy community, CC0 (per owner)",
       "url": "https://www.meshy.ai (community page URL pending from the owner)",
       "license": "CC0-1.0",
       "licenseFile": "assets-src/meshy-community/License.txt",
-      "retrieved": "2026-10-30",
-      "meshy": true,
-      "glb": true
-    },
-    "meshy-owned-guns": {
-      "title": "Tile Trigger originals (made with Meshy): the buggy and its tire",
-      "creator": "Meshy, owned (the owner's own models: share links meshy.ai/s/hHUmqb and meshy.ai/s/wpwiGq, intake queue of 2026-10-29)",
-      "url": "https://www.meshy.ai",
-      "license": "Owned",
-      "licenseFile": "assets-src/meshy-owned/License.txt",
       "retrieved": "2026-10-30",
       "meshy": true,
       "glb": true
@@ -475,9 +465,10 @@
     },
     {
       "out": "vehicles/offroad_buggy.glb",
-      "pack": "meshy-owned-guns",
+      "pack": "meshy-community-arsenal",
       "glb": "Meshy_AI_Tactical_Off_Road_Bea_1029195057_texture.glb",
-      "label": "Tactical Off-Road Beast, the buggy (owner's Meshy generation, 2026-10-29)",
+      "label": "Tactical Off-Road Beast, the buggy (Meshy Community download, 2026-10-29)",
+      "url": "https://www.meshy.ai/s/hHUmqb",
       "forward": "-x",
       "length": 4.4,
       "triangles": 40000,
@@ -493,9 +484,10 @@
     },
     {
       "out": "vehicles/offroad_tire.glb",
-      "pack": "meshy-owned-guns",
+      "pack": "meshy-community-arsenal",
       "glb": "Meshy_AI_Rugged_Off_Road_Tire_1029195042_texture.glb",
-      "label": "Rugged Off-Road Tire, the buggy's wheels (owner's Meshy generation, 2026-10-29)",
+      "label": "Rugged Off-Road Tire, the buggy's wheels (Meshy Community download, 2026-10-29)",
+      "url": "https://www.meshy.ai/s/wpwiGq",
       "forward": "+z",
       "length": 0.32,
       "triangles": 4000,

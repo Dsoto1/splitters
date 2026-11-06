@@ -151,21 +151,21 @@
       "src": "low_wooden_fence/wooden_fence_broken.glb",
       "name": "Wooden Fence Broken",
       "category": "Fences & Walls",
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "lf_wooden_fence_broken_b",
       "src": "low_wooden_fence/wooden_fence_broken_alt.glb",
       "name": "Wooden Fence Broken B",
       "category": "Fences & Walls",
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "lf_wooden_fence_broken_c",
       "src": "low_wooden_fence/wooden_fence_broken_alt2.glb",
       "name": "Wooden Fence Broken C",
       "category": "Fences & Walls",
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "lf_wooden_fence_closed",
@@ -179,28 +179,28 @@
       "src": "low_wooden_fence/wooden_fence_oen_crossed.glb",
       "name": "Wooden Fence Open Crossed",
       "category": "Fences & Walls",
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "lf_wooden_fence_open",
       "src": "low_wooden_fence/wooden_fence_open.glb",
       "name": "Wooden Fence Open",
       "category": "Fences & Walls",
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "lf_wooden_fence_open_b",
       "src": "low_wooden_fence/wooden_fence_open_alt.glb",
       "name": "Wooden Fence Open B",
       "category": "Fences & Walls",
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "lf_wooden_fence_pile",
       "src": "low_wooden_fence/wooden_fence_pile.glb",
       "name": "Wooden Fence Pile",
       "category": "Fences & Walls",
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "lf_wooden_fence_post",
@@ -298,7 +298,7 @@
       "src": "plackard_wall/plackard_broken.glb",
       "name": "Concrete Panel Broken",
       "category": "Fences & Walls",
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "lf_plackard_broken_b",
@@ -312,7 +312,7 @@
       "src": "plackard_wall/plackard_broken_slanted.glb",
       "name": "Concrete Panel Broken Slanted",
       "category": "Fences & Walls",
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "lf_plackard_closed",
@@ -410,14 +410,14 @@
       "src": "plackard_wall/plackard_slab_boken.glb",
       "name": "Concrete Slab Broken",
       "category": "Fences & Walls",
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "lf_plackard_slab_broken_b",
       "src": "plackard_wall/plackard_slab_broken_alt.glb",
       "name": "Concrete Slab Broken B",
       "category": "Fences & Walls",
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "lf_plackard_slab_chipped",
@@ -487,7 +487,7 @@
       "src": "plaster_wall/plaster_wall_fenced.glb",
       "name": "Plaster Wall Fenced",
       "category": "Fences & Walls",
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "lf_plaster_wall_half",
@@ -501,7 +501,7 @@
       "src": "plaster_wall/plaster_wall_half_fenced.glb",
       "name": "Plaster Wall Half Fenced",
       "category": "Fences & Walls",
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "lf_plastic_gate_left",
@@ -522,21 +522,22 @@
       "src": "white_picket_fence/white_picket_fence_closed_left.glb",
       "name": "Picket Fence Left",
       "category": "Fences & Walls",
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "lf_picket_fence_right",
       "src": "white_picket_fence/white_picket_fence_closed_right.glb",
       "name": "Picket Fence Right",
       "category": "Fences & Walls",
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "lf_picket_gate",
       "src": "white_picket_fence/white_picket_fence_gate.glb",
       "name": "Picket Gate",
       "category": "Fences & Walls",
-      "collide": "box"
+      "collide": "box",
+      "fills": "A picket panel: its box is the 0.2 m-thick panel thin pieces get (rounds stop on the pickets, not between them); voxel boxes give this same box."
     },
     {
       "id": "lf_picket_gate_posts",
@@ -550,14 +551,15 @@
       "src": "white_picket_fence/white_picket_fence_open_left.glb",
       "name": "Picket Fence Open Left",
       "category": "Fences & Walls",
-      "collide": "box"
+      "collide": "box",
+      "fills": "A picket panel: its box is the 0.2 m-thick panel thin pieces get (rounds stop on the pickets, not between them); voxel boxes give this same box."
     },
     {
       "id": "lf_picket_fence_open_right",
       "src": "white_picket_fence/white_picket_fence_open_right.glb",
       "name": "Picket Fence Open Right",
       "category": "Fences & Walls",
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "lf_picket_post",

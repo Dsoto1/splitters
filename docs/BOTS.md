@@ -607,8 +607,9 @@ legs tucked up) and three of M4 Outpost's five pickups (onto the uplink dais) by
 aisle between two consoles, whose end was 1.3 m from the ramp (MapMaker: the consoles 1.2 m shorter). Listed for the
 owner in `nav/auditKnown.ts`, each with why: Skyward's four pad perches and the two spawn points on its towers and Sky
 Islands' sky platform (one-way by design: "ride the pads up... fall off and you are gone"); Grand Marquee's marquee
-top (the street pad throws you up, nothing gets you down); Obsidian Orb's reactor core (its box rises to 3.8 m under
-the bridges: a fall lands on it, though the map's shaft is "bottomless"); Reactor's yard outside the plant (off a roof
+top (the street pad throws you up, nothing gets you down); Obsidian Orb's reactor shaft (its core's box rose to 3.8 m
+under the bridges; since the slack pass the core collides as its shape, so a fall goes past it to the shaft's floor
+32 m down, above the kill height, though the map's shaft is "bottomless"); Reactor's yard outside the plant (off a roof
 corner, no way back in); Serpent Gorge's gorge floor along the river and slivers by its crypt's walls; Erosion's lower
 deck (its corner pads stand on pillars that meet the deck only at a corner); M4 Outpost's last two pickups (the
 uplink room's 1.5-2 m gaps round the dais, too narrow for the navmesh). The Skyward, Grand Marquee, Obsidian Orb,
@@ -762,3 +763,71 @@ movement environment is one reused object, and the near-miss check every
 shot runs against every bot does scalar maths.
 
 Numbers: PERF_96.md, "Bot behaviour pass".
+
+## Score and time (November 2026)
+
+Match setup suggests a score limit and a time for the match's size (players and bots together) and keeps them in
+step with the size until the host sets them by hand (`suggestedLimits` in `packages/shared/src/sim/matchSetup.ts`,
+tests in `packages/shared/test/matchLimits.test.ts`; HOSTING.md, "Save for next match" and Match setup). They are
+fitted to how fast bots score, so a match is usually won near its time limit, not in two minutes, and they meet the
+owner's anchors (2026-11-06): Team Deathmatch 4v4 about 40 points in 10 minutes, 24v24 about 500 in 15–20.
+
+**The curve:**
+- **Team Deathmatch:** a point for each player on a team per minute of the time limit, rounded to a step (5 under
+  50, 10 under 300, 50 under 1,000, then 100). The time is 10 minutes up to 6 a side, 15 up to 16, 20 above: 1v1 10
+  points, 4v4 40, 6v6 60 (10 minutes); 8v8 120, 12v12 180, 16v16 240 (15); 24v24 500, 32v32 650, 48v48 950 (20).
+  With more than two teams the largest one counts.
+- **Deathmatch:** the leader's kills, 12 × √players, in 10 minutes: 15 for 2 players, 25 for 4, 35 for 8, 40 for 12,
+  50 for 16, 70 for 32, 80 for 48. The leader's kill rate grows about as √players.
+- **Capture the Flag:** 3 captures as before (the leading team takes 0.1–0.5 a minute), the time by team size as in
+  Team Deathmatch.
+- **King of the Hill:** 12 hill seconds a minute of the time: 120 in 10 minutes as before, 180 in 15, 240 in 20 (the
+  leading team holds the hill 5–21 s a minute on the shipped maps: Diamond Park 5–8, St. John's 9–21).
+- Rounds modes (Elimination, Bomb, Hostage Rescue), co-op, Zombies, Fort Wars, Disc Arena and races keep their own.
+
+**Measuring.** `pnpm bot-report` prints each match's team scores and its top bot's kills (the `scores:` line, with
+the leading team's points a minute; `teams` and `top` in `--json` rows). It plays with no score limit or time, so a
+rate is what bots score in an open match. The runs: 10 minutes (CTF 15), `--players=N`, seeds 1 and 2 at small sizes
+and one seed at big ones; a map's rate is the mean of its seeds and a size's the middle (median) of its maps. Seeds of
+one map differ a lot (Diamond Park 24v24 after Phase A: 22.7 and 34.9 points a minute). The scripts and every match's
+rows are in the session scratchpad's `measure/` (before Phase A) and `measure-a/` (after: `run.sh`, `run2.sh`,
+`compare.mjs`, `tables.mjs`).
+
+**Team Deathmatch before Bot AI Phase A** (main a07cb65b, 2026-11-06): the leading team's points a minute, the middle
+of the maps, the same per player on a team, and each map (* retired since).
+
+| Size | Points a minute | A player | Maps |
+|---|---|---|---|
+| 1v1 | 1.4 | 1.40 | Bunker Cross 0.9, Sandgate 0.9, Iron Compound* 1.4, Atomic Court 1.8, Void Yard 2.5 |
+| 2v2 | 3.0 | 1.50 | Bunker Cross 1.8, Iron Compound* 2.9, Sandgate 3.0, Atomic Court 3.8, Void Yard 6.3 |
+| 4v4 | 5.4 | 1.35 | St. John's 1.1, Diamond Park 3.3, Bunker Cross 4.0, Iron Compound* 5.4, Sandgate 6.8, Atomic Court 7.6, Void Yard 15.2 |
+| 6v6 | 11.4 | 1.91 | Bunker Cross 7.0, Iron Compound* 10.4, Sandgate 11.4, Atomic Court 12.0, Void Yard 24.2 |
+| 8v8 | 7.9 | 0.99 | St. John's 3.7, Bunker Cross 5.5, Capitol Mall 6.4, Fernwood Moon 7.9, Diamond Park 8.4, Iron Compound* 11.7, Sandgate 12.8 |
+| 16v16 | 13.9 | 0.87 | Iron Maw 5.7, St. John's 12.3, Diamond Park 13.1, Sunken Kingdom 13.9, Capitol Mall 15.0, Fernwood Moon 17.4, Iron Compound* 22.7 |
+| 24v24 | 30.6 | 1.28 | Iron Maw 13.1, St. John's 22.0, Capitol Mall 29.8, Sunken Kingdom 30.6, Diamond Park 33.6, Fernwood Moon 33.8, Iron Compound* 38.1 |
+| 48v48 | 56.5 | 1.18 | Iron Maw 33.0, Capitol Mall 80.0 |
+
+About 1.3 points per player a minute in the middle, so a point per player a minute falls due at 70–115 % of the time
+limit on the middle map: 4v4 at 7.4 minutes of 10, 8v8 15.2 of 15, 16v16 17.3 of 15 (the time runs out first), 24v24
+16.3 of 20, 48v48 16.8 of 20. A small map at the size it's made for gets there sooner (6v6 on the arenas above: 5.3
+minutes of 10), and a big map with few players runs out of time first (St. John's at 4v4).
+
+**Team Deathmatch after Phase A** (main adad4de7 merged into `wip/match-setup-2`): the same maps, seeds and lengths,
+the retired map left out, plus Diamond Park's second seed at 24v24. No clear change, so the curve stays: at these
+rates the suggestion falls due at 9.4 minutes of 10 (4v4, 40 points), 16.4 of 15 (8v8: the time runs out first, at
+about 110 of 120) and 17.1 of 20 (24v24, 500).
+
+| Size | Points a minute, before → after | A player | Maps |
+|---|---|---|---|
+| 4v4 | 4.0 → 4.3 | 1.01 → 1.06 | Diamond Park 3.3 → 3.2, Bunker Cross 4.0 → 4.3, Sandgate 6.8 → 6.1 |
+| 8v8 | 8.1 → 7.3 | 1.02 → 0.92 | Capitol Mall 6.4 → 4.5, Fernwood Moon 7.9 → 6.5, Diamond Park 8.4 → 8.2, Sandgate 12.8 → 13.5 |
+| 24v24 | 32.1 → 29.3 | 1.34 → 1.22 | Sunken Kingdom 30.6 → 28.6, Diamond Park 33.6 → 28.8 (seeds 22.7, 34.9), Capitol Mall 29.8 → 29.8, Fernwood Moon 33.8 → 31.7 |
+
+**The other modes** (the middle of the maps; after Phase A on the same maps):
+- **Deathmatch**, the top bot's kills a minute. Before: 2 players 1.8, 4 2.6, 8 3.8, 12 4.6, 16 7.0, 32 5.0 (St.
+  John's and Diamond Park: big maps). After, on Sandgate and Citadel: 8 players 4.7 → 4.8, 16 players 7.9 → 8.4.
+- **King of the Hill**, the leading team's hill seconds a minute. Before: 4v4 9.4, 8v8 18.1, 16v16 10.4, 24v24 14.1.
+  After, 8v8: Diamond Park 7.9 → 5.8, St. John's 18.1 → 18.0.
+- **Capture the Flag**, the leading team's captures a minute (15-minute runs). Before: 0.0–0.3 at 4v4 to 16v16 on
+  Diamond Park, St. John's and Iron Compound. After, 8v8: Diamond Park 0.2 → 0.5 (7 captures to 3), St. John's 0.0 →
+  0.1.

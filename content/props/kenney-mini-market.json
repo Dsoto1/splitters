@@ -15,7 +15,7 @@
       "name": "Shop Shelf",
       "category": "Shop",
       "height": 2.0,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "shelf_bags",
@@ -23,7 +23,7 @@
       "name": "Snack Shelf",
       "category": "Shop",
       "height": 2.0,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "shelf_end",
@@ -31,7 +31,7 @@
       "name": "Shelf End",
       "category": "Shop",
       "height": 2.0,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "freezer",
@@ -39,7 +39,7 @@
       "name": "Chest Freezer",
       "category": "Shop",
       "height": 1.0,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "freezers_upright",
@@ -55,7 +55,7 @@
       "name": "Checkout",
       "category": "Shop",
       "height": 1.2,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "shopping_cart",
@@ -63,7 +63,7 @@
       "name": "Shopping Cart",
       "category": "Shop",
       "height": 1.0,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "fruit_display",
@@ -71,7 +71,7 @@
       "name": "Fruit Display",
       "category": "Shop",
       "height": 1.2,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "bread_display",
@@ -79,7 +79,7 @@
       "name": "Bread Display",
       "category": "Shop",
       "height": 1.6,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "bottle_return",
@@ -87,7 +87,7 @@
       "name": "Bottle Return",
       "category": "Shop",
       "height": 2.0,
-      "collide": "box"
+      "collide": "voxel"
     }
   ]
 }

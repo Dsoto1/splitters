@@ -15,7 +15,7 @@
       "name": "Castle Tower",
       "category": "Castle & Siege",
       "height": 9.0,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "castle_tower_round",
@@ -23,7 +23,7 @@
       "name": "Round Tower Base",
       "category": "Castle & Siege",
       "height": 4.0,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "castle_gate",
@@ -111,7 +111,7 @@
       "name": "Battering Ram",
       "category": "Castle & Siege",
       "height": 2.6,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "siege_tower",
@@ -137,7 +137,7 @@
       "name": "Wrecked Catapult",
       "category": "Castle & Siege",
       "height": 1.5,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "banner_long",

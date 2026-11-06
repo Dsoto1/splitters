@@ -103,6 +103,10 @@ export interface MatchRow {
   kills: number;
   /** Other modes' objective events by kind and action ("hill hold", "bomb plant", "elim win"...). */
   objective: Record<string, number>;
+  /** Team modes: each team's score at the end (kills, hill seconds, captures: what a score limit counts). */
+  teams?: Record<string, number>;
+  /** The most kills any one bot made (free-for-all: the leader's score). */
+  top?: number;
   tickMs: number;
   tickP95: number;
   /** Bot thinking a tick (ms, the match's bot pipeline, wall clock). */
@@ -440,6 +444,9 @@ function play(map: MapDocument, mode: GameMode, seed: number, seconds: number): 
   const sorted = [...tickMs].sort((x, y) => x - y);
   out.tickMs = tickMs.reduce((x, y) => x + y, 0) / tickMs.length;
   out.tickP95 = sorted[Math.floor(sorted.length * 0.95)]!;
+  // What a score limit would count: the teams' scores, and free-for-all's leader (matchSetup.ts suggestedLimits is fitted to these).
+  if (match.teams) out.teams = Object.fromEntries(match.teamScores());
+  out.top = Math.max(0, ...bots.map((c) => c.kills));
   out.thinkMs = (simProfile.ms.get('bots') ?? 0) / tickMs.length;
   // Every navmesh path query (bots' routes, presses, sidesteps, lanes, modes...), and those that found no way.
   out.navQueries = simProfile.n.get('nav') ?? 0;
@@ -477,6 +484,10 @@ function printMatch(m: MatchRow): void {
     console.log(`flags: captures ${m.captures} | takes ${m.takes} | drops ${m.drops} | returns ${m.returns} | first take ${m.firstTake?.toFixed(0) ?? '-'} s, first capture ${m.firstCapture?.toFixed(0) ?? '-'} s | runs ${runs || 'none'}`);
   }
   if (m.objective && Object.keys(m.objective).length) console.log(`objective: ${Object.entries(m.objective).map(([k, v]) => `${k} ${v}`).join(' | ')}`);
+  const perMin = (n: number) => ((n / m.seconds) * 60).toFixed(1);
+  const teams = Object.entries(m.teams ?? {});
+  const lead = Math.max(0, ...teams.map(([, v]) => v));
+  console.log(`scores: ${teams.length ? `${teams.map(([k, v]) => `${k} ${v}`).join(' · ')} (leading team ${perMin(lead)}/min) | ` : ''}top bot ${m.top ?? 0} kills (${perMin(m.top ?? 0)}/min)`);
   if (m.hill) console.log(`hill: held ${m.hill.held} s, contested ${m.hill.contested} s, empty ${m.hill.empty} s`);
   if (m.rounds) console.log(`rounds: ${m.rounds.length} finished${m.rounds.length ? `, ${(sum(m.rounds, (r) => r) / m.rounds.length).toFixed(0)} s on average (${m.rounds.join(', ')})` : ''}`);
   if (m.pieces !== undefined) console.log(`forts: ${m.pieces} pieces built`);

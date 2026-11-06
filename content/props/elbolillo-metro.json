@@ -27,7 +27,7 @@
       "src": "Metro.glb#^automatic_ticket_gate$",
       "name": "Ticket Gate",
       "category": "Metro",
-      "collide": "box",
+      "collide": "voxel",
       "yaw": 180
     },
     {
@@ -51,7 +51,7 @@
       "src": "Metro.glb#^trash_can$",
       "name": "Platform Bin",
       "category": "Metro",
-      "collide": "box",
+      "collide": "voxel",
       "yaw": 180
     },
     {
@@ -59,7 +59,7 @@
       "src": "Metro.glb#^Chair$",
       "name": "Platform Seats",
       "category": "Metro",
-      "collide": "box",
+      "collide": "voxel",
       "yaw": 180
     },
     {

@@ -8,6 +8,20 @@ made only on a commit that passed CI on a check branch.
 
 ## Unreleased
 
+**Props collide as what you see: the slack pass** (owner's bug report, Capitol Mall: "These pillars are blocking my
+bullets"; docs/CONTENT_PIPELINE.md, "Prop collision")
+- **Columns**: the white Ionic column collided as one box as wide as its plinth and capital all the way up, so rounds
+  aimed just past its round shaft stopped in the air (0.37 m beside it along the colonnade, 0.73 m at 45°, at Capitol
+  Mall's size). It collides as its shaft now, and so do 27 more columns, pillars, obelisks and posts (the papyrus,
+  round ruin, sci-fi, sandstone, dungeon and Kenney columns among them).
+- **The slack audit**: a prop's collision is measured against its model along x, z and both diagonals. Air 0.15 m or
+  wider beside the model over 30 % or more of its height is slack; `pnpm content:check` fails a box prop that carries
+  it unless it says why. 363 more props (statues, vehicles, furniture, machines, fences) collide as their shape now;
+  18 round or thin ones keep their box, which is already their best fit.
+- In play: rounds beside a column fly on, rounds at it stop on the stone, players stand right against it and cover
+  behind it still holds (tested in the sim at the column's two sizes). Prop collision boxes on the maps in play went
+  from 31,682 to 58,638 (Iron Maw, the busiest, 3,281); map load and shot costs stayed within the noise.
+
 **Bots: a navigation audit, no standing still on a failed route, a scorecard** (docs/BOT_AI_PLAN.md Phase A;
 docs/BOTS.md, "Navigation audit", "Never standing still on a failed route", "Scorecard")
 - **Navigation audit** of every map, from every polygon of the bots' navmesh: traps (places bots fall or jump-pad into
@@ -45,6 +59,36 @@ docs/BOTS.md, "Navigation audit", "Never standing still on a failed route", "Sco
 to half a minute while joining. While that happens, their connection is still up. The host used to drop them after 20 s
 of silence. Now it checks the connection itself, and gives a friend whose connection is up 60 s. A dead link still goes
 after 20 s.
+
+**Score and time follow the match's size** (owner, 2026-11-06: "24v24 in a 40 pt match means on average 1 kill per
+[player]. 24v24 plays ok with 500 points, but also 15–20 min"): Match setup suggests the score and time for the
+players and bots, and they follow every size change until you set them yourself. Yours then stay, marked **Custom**,
+with **Back to suggested** one click away. The suggestions are fitted to how fast bots score on real maps
+(`pnpm bot-report`, which now prints each match's team scores and its top bot's kills; checked again with the Phase A
+bots), so a match is usually won near its time limit, not in two minutes (docs/BOTS.md, "Score and time"):
+- **Team Deathmatch**: a point for each player on a team per minute of the time limit, which is 10 minutes up to 6 a
+  side, 15 up to 16 and 20 above: 4v4 40 points in 10 minutes, 8v8 120 in 15, 12v12 180 in 15, 24v24 500 in 20.
+- **Deathmatch**: the leader's kills grow gently with the players (12 × √players), in 10 minutes: 15 for 2 players,
+  35 for 8, 50 for 16, 70 for 32.
+- **Capture the Flag** keeps 3 captures, with 10, 15 or 20 minutes by team size; **King of the Hill**'s hill seconds
+  go with the time (12 a minute: 120 in 10 minutes, 180 in 15, 240 in 20).
+- Rounds modes, co-op and Zombies are as before.
+
+Saved setups keep working: a score or time you set stays; the old defaults (40 points, 10 minutes) follow the size.
+Scores can now go up to 5,000 (they stopped at 1,000).
+
+**Host online means the same everywhere** (owner, 2026-11-06): Match setup's Host online now starts the match online
+**and listed** in the game browser, as the pause menu's does (with a community hub; without one, a join code). The
+join code still shows. Spectate follows the switch: offline you watch the bots, online you watch while friends play.
+
+**Save for next match** (owner, 2026-11-06): in the pause menu's Host tab, when you change a rule that needs a new
+match (score, time, respawn, friendly fire), choose **Restart now** or **Next match** beside Apply. Next match keeps
+the rules for the next match (after this one's scoreboard, or Restart, Change map or the rotation) and this one
+carries on; the foot says which will happen. The Host tab also shows the suggested score and time for the players
+being set, with **Use suggested**.
+
+**Co-op sizes stop at the map's size** (owner, 2026-11-06): co-op and Zombies' size presets go up to what the map is
+made for (its team layout, or its recommended most), not a Big squad of 24 or Max of 48 beyond it.
 
 **Signing in doesn't flash a red line** (owner, 2026-11-06): after Google sign-in the menu no longer shows "Signed in" in the red status line bottom left (the profile corner top right shows it); sign-in problems still show there.
 
@@ -123,20 +167,30 @@ pieces")
   prop (Meshy community, CC0), in the Military Compound and Coastal Harbor packs.
 
 **Astronauts, a crocodile and a tortoise** (the owner's models of 2026-11-06)
-- **Capt. Nova** is the light-blue astronaut now: a slender spacesuit in pale blue over a black bodysuit, with a dark
-  visor and a backpack. Same name, same place on the roster; saved choices and bot sets keep her.
+- **Capt. Nova** got the light-blue astronaut (a slender spacesuit in pale blue over a black bodysuit, with a dark
+  visor and a backpack), then was retired the same day (below).
 - **Boglurker** is a crocodile now, in iron pauldrons, bracers and greaves, with a long tail. Still large, still a
   creature, and still the Boglurker the NPC squads bring.
 - **New:** **Spacewalker**, a white spacesuit with a gold visor (Soldiers), **Starfarer**, a dark teal and violet suit
-  with glowing magenta strips (Soldiers), and **Shellback**, a large humanoid tortoise (Animals). The names are
-  placeholders until the owner names them.
+  with glowing magenta strips (Soldiers), and **Shellback**, a humanoid tortoise (Animals). The owner kept the names.
 - **Bamboo is retired:** a saved choice of Bamboo, or a bot set naming it, plays Shellback.
 - The crocodile's and the tortoise's claws close round the grips; every new hand is tuned on the rifle, the pistol and
   the shotgun. The crocodile stands over its own feet (its long tail had put its body 0.4 m ahead of them).
 - **Licences:** Meshy models from the owner's Drive are recorded as Meshy Community CC0 unless the owner made them
   (owner, 2026-11-06). The provenance audit that day moved the Drive models recorded as owned (characters, weapons and
-  turrets, props, helmets) to community CC0; only the mining machines, the airliner, the buggy and its tire, and the
-  Alien Biker stay owned. Nothing in the game changes.
+  turrets, props, helmets) to community CC0; only the mining machines stay owned (below). Nothing in the game changes.
+
+**The owner's answers on the new characters** (2026-11-06)
+- **Capt. Nova is retired:** a saved choice of her, or a bot set naming her, plays Spacewalker, the nearest astronaut.
+  The Knights vs Space Crew bot set's Capt. Orion is a Spacewalker now.
+- **Shellback is standard size** ("should be smaller, not that big at all"): 1.80 m tall, 100 health and normal
+  speed (it came in large: 2.12 m, 115 health, 0.94 speed). Its hit shapes and Character Select's model shrink with it.
+- **Starfarer's back pack keeps its shape:** the pack and the tank on top are held whole by the chest. Before, they
+  bent with the head, arms and spine. The tank tipped when Starfarer looked up or down or ran, the box sheared with the
+  arms, and its bottom flared into a skirt round the waist when crouching.
+- **Licences:** the airliner shell, the buggy and its tire, and the Alien Biker are Meshy Community CC0 too. The owner:
+  "I did not make any, they are Meshy community." The mining machines stay owned, because we generated them through
+  the Meshy API with the owner's approval. Nothing in the game changes.
 
 ## 0.8.0 (2026-11-06)
 

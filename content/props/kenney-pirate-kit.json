@@ -39,7 +39,7 @@
       "name": "Powder Keg",
       "category": "Crates & Barrels",
       "height": 0.75,
-      "collide": "box",
+      "collide": "voxel",
       "breakable": {
         "health": 30,
         "debris": "#5a3a24",
@@ -76,7 +76,7 @@
       "name": "Cannon",
       "category": "Pirate & Coast",
       "height": 1.0,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "cannon_mobile",
@@ -84,7 +84,7 @@
       "name": "Field Cannon",
       "category": "Pirate & Coast",
       "height": 1.2,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "cannonballs",
@@ -100,7 +100,7 @@
       "name": "Rowing Boat",
       "category": "Pirate & Coast",
       "height": 0.7,
-      "collide": "box",
+      "collide": "voxel",
       "breakable": {
         "health": 60,
         "debris": "#8a5a32"

@@ -79,5 +79,70 @@ was replaced.
   - **Size class.** Small by build seems likely; decide by eye.
   - **Grip.** Same check as for the Rex: a grip needs an index finger on the trigger.
 
+## Batch 2: weapons and grenades (owner, 2026-11-06). Queued after Bot AI Phase B takes its slot
+**The owner:**
+- "Added a bunch of new weapons, all Meshy community."
+- On the 3DModelsCC0 kit: "Replace our tommy gun with the 3DModelsCC0 one, and bring in those others to replace any
+  one-off originals … not sure we need the nuclear bomb or flare gun."
+- "Retain the fidelity of the texture best we can: sharper, clearer, better resolution."
+
+**Meshy Community CC0, 11 downloads** (raw files in `/home/user/meshy-drive/intake-2026-11-06c/`):
+- **Guns:** BK-220, Plasma Defender, Revolver Rustique, Scrapfire Assault Blaster, a sci-fi fire suppressor, and an
+  unnamed long gun.
+- **Grenades:** "just a grenade", Sunburst, Globe, Toxic Splash, Countdown Sphere.
+- They are 5k to 1.5M triangles, with 2048–4096 textures.
+
+**The 3DModelsCC0 Guns & Explosives pack:**
+- The tommy gun replaces `core.smg`'s model.
+- The rest replace weaker originals; skip the nuclear bomb and the flare gun.
+- **Waiting on the owner** to put `Guns&Explosives.rar` in the Drive. itch.io can't be reached from the dev container.
+
+**Grenades: the owner's picks** (2026-11-06; picture `nadeview/grenades-sheet.jpg` in the session scratchpad):
+- Countdown Sphere → sticky;
+- Globe → frag (the 3DModelsCC0 frag as the realistic alternative);
+- "just a grenade" (blue swirl) → vortex;
+- Sunburst → cluster bomb;
+- Toxic Splash → gas;
+- **the 3DModelsCC0 smoke grenade → a new Smoke grenade**, with the sci-fi canister as its Sci-fi set look. The smoke
+  blocks sight for players and bots; bots use it when they push.
+
+**No flashbang** (owner: "I don't want to give people seizures").
+
+**Sharper textures:**
+- The weapon in your hands gets 2048 / 1024 / 512 colour maps by graphics setting, instead of today's 512 for
+  everything.
+- Other copies (other players' weapons, drops, pickups) stay small.
+- Measured for download and video memory.
+
+The brief is `briefs/weapons-intake.md` in the session scratchpad.
+
+## Wanted: grenade and throwable models (owner, 2026-11-06: "do we have better grenade models?")
+**Today:**
+- Only the **frag** (Styloo's low-poly grenade, `guns/frag.glb`, about 530 triangles) and the **proximity mine**
+  (3DModelsCC0's anti-tank mine) are real models.
+- The rest are shapes built in code (`client/src/game/arsenalVisuals.ts`).
+- Grenade pickups on the ground are coloured balls (`pickupVisuals.ts`).
+
+**Two sources:**
+- **The 3DModelsCC0 Guns & Explosives pack** (CC0, 19 realistic guns and explosives). It was imported on
+  2026-10-28, but only its mine was used: the rest looked too realistic for the game then. We don't keep the raw
+  download, and itch.io can't be reached from the dev container. If the owner puts `Guns&Explosives.rar` in the Drive,
+  check it for grenades.
+- **The owner's own Meshy generations** (Meshy, owned).
+
+**Wanted:**
+- frag;
+- sticky grenade (a light on it);
+- incendiary (a bottle with a rag);
+- gas canister;
+- dynamite (a stick or a bundle with a fuse);
+- holy bomb (a gold orb with a cross);
+- cluster bomb;
+- airstrike flare (a smoke flare);
+- vortex grenade (sci-fi).
+
+**Budget:** each about 3,000 triangles or fewer, one material, real size (a frag is about 10 cm).
+The same model is used in the hand, in flight, and as the pickup on the ground.
+
 ## Done
 Nothing yet.

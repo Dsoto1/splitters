@@ -87,7 +87,7 @@
       "name": "Crate Stack",
       "category": "Crates & Barrels",
       "height": 1.6,
-      "collide": "box",
+      "collide": "voxel",
       "triangles": 4500,
       "maxError": 0.05,
       "source": {
@@ -115,7 +115,7 @@
       "name": "Old Rusty Container",
       "category": "Industrial",
       "height": 2.6,
-      "collide": "box",
+      "collide": "voxel",
       "triangles": 7000,
       "maxError": 0.05,
       "source": {
@@ -163,7 +163,7 @@
       "name": "Red Container (Long)",
       "category": "Industrial",
       "height": 2.6,
-      "collide": "box",
+      "collide": "voxel",
       "triangles": 7000,
       "maxError": 0.05,
       "source": {

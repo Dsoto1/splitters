@@ -14,6 +14,7 @@ import {
   mapCanRun,
   MODE_LABELS,
   MAX_PLAYER_SLOTS,
+  SCORE_LIMIT_MAX,
   PROTOCOL_VERSION,
   SNAPSHOT_INTERVAL_TICKS,
   TICK_RATE,
@@ -329,6 +330,11 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
   const withLeaders = (r: MatchRules): MatchRules => (!managed && opts.leaders ? { ...r, leaders: opts.leaders } : r);
   /** A new match's rules and players: the server's rules over them (when it keeps its own). */
   const forMatch = (r: MatchRules, m: MapDocument, fill: number): { rules: MatchRules; fill: number } => (managed ? applyServerRules(r, serverRules, m, fill) : { rules: withLeaders(r), fill });
+  /**
+   * What a map change starts from: the rules in play, with any saved for the next match (Save for next match). A
+   * server that keeps its own rules has them in RULES already (per mode or per map), which forMatch puts on the next match.
+   */
+  const travelRules = (): MatchRules => (managed ? match.rules : control.nextRules());
   const firstMatch = forMatch(baseRules, map, Math.min(opts.botFill, MAX_PLAYER_SLOTS));
   let match = new Match(map, firstMatch.rules, opts.seed ?? Date.now() % 100000, { startGate: opts.startGate ?? true });
   for (const issue of validateNavigation(map, match.nav, match.physics)) console.warn(`[map] ${issue.severity}: ${issue.message}`);
@@ -396,6 +402,13 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
   const refreshAdmins = () => {
     for (const c of clients) if (c.admin && c.slot !== null) hostState(c);
   };
+  /** A new round began with the rules saved for the next match (Save for next match): everyone's HUD and the admins' panels follow. */
+  const watchNextRules = (c: InstanceType<typeof HostControl>) =>
+    (c.onNextRules = () => {
+      broadcast({ t: 'rules', rules: match.rules });
+      refreshAdmins();
+    });
+  watchNextRules(control);
   const notice = (text: string) => {
     console.log(`[admin] ${text}`);
     broadcast({ t: 'notice', text });
@@ -414,7 +427,7 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
       const m = suiteMap(cmd.map);
       if (!m) return `"${cmd.map}" is not a map of our suite`;
       if (travel) return 'Already changing map';
-      const next = rulesForTravel(match.rules, m, control.fill, cmd.mode, control.state().teamSize);
+      const next = rulesForTravel(travelRules(), m, control.fill, cmd.mode, control.state().teamSize);
       travel = { atTick: match.tick + HOST_TRAVEL_TICKS, map: m, rules: next.rules, index: playIndex, carry: { score: false, loadout: false }, fill: next.fill };
       notice(travelNotice(m.metadata.name, next.rules.mode));
       return null;
@@ -454,7 +467,7 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
       const r = cmd.rules;
       const mode = match.rules.mode;
       const put = (key: string, v: unknown) => (serverRules = setServerRule(serverRules, key, v, { mode }));
-      if (r.scoreLimit !== undefined) put('score', Math.max(0, Math.min(1000, Math.round(r.scoreLimit))));
+      if (r.scoreLimit !== undefined) put('score', Math.max(0, Math.min(SCORE_LIMIT_MAX, Math.round(r.scoreLimit))));
       if (r.timeLimitSeconds !== undefined) put('time', Math.max(0, Math.min(120, Math.round(r.timeLimitSeconds / 60))));
       if (r.respawnDelayTicks !== undefined) put('respawn', Math.max(0, Math.min(30, Math.round(r.respawnDelayTicks / TICK_RATE))));
       if (r.friendlyFire !== undefined) put('ff', r.friendlyFire);
@@ -721,7 +734,7 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
    * players carry over (rulesForTravel), scores and weapons don't. Returns the rules it will play.
    */
   const travelTo = (m: MapDocument, mode: GameMode, atTick: number): MatchRules => {
-    const next = rulesForTravel(match.rules, m, control.fill, mode, control.state().teamSize);
+    const next = rulesForTravel(travelRules(), m, control.fill, mode, control.state().teamSize);
     travel = { atTick, map: m, rules: next.rules, index: playIndex, carry: { score: false, loadout: false }, fill: next.fill };
     return next.rules;
   };
@@ -761,6 +774,7 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
     nextPending = new Set();
     bots = new BotFiller(match, bots.skill, { takeBack: opts.botTakeBack, botSet: bots.hostSet });
     control = new HostControl(match, bots, next.fill, 'Admin');
+    watchNextRules(control);
     bots.rebalance(control.fill);
     // A map the owner published since is picked up from here on.
     lookup.forget();

@@ -110,11 +110,11 @@ owner's rule (2026-11-06): Meshy models from the owner's Drive are Meshy
 Community CC0 unless the owner says they made them; CC0 needs no credit, so the
 author is optional; post URLs pending from the owner:
 
-- "A full body portrait of a tall slender" (downloaded 2026-11-06)  -> character meshy_nova (look Capt. Nova), its new model (the light-blue astronaut; the model it replaced is no longer shipped)
+- "A full body portrait of a tall slender" (downloaded 2026-11-06)  -> character meshy_nova (look Capt. Nova, retired 2026-11-06: its saved choices play Spacewalker; files kept), its new model (the light-blue astronaut; the model it replaced is no longer shipped)
 - "A humanoid crocodile wearing a heavy" (downloaded 2026-11-06)  -> character meshy_toad (look Boglurker), its new model (the model it replaced is no longer shipped)
-- "Astronaut" (downloaded 2026-11-06)  -> character meshy_astronaut (look Spacewalker, a placeholder name); a NASA-style mission patch on its shoulder painted out at build time (`fixes.scrubBlue` within its box)
-- "a meticulously detailed astronaut with a" (downloaded 2026-11-06)  -> character meshy_darkastronaut (look Starfarer, a placeholder name)
-- "The object resembles a humanoid tortoise" (downloaded 2026-11-06)  -> character meshy_tortoise (look Shellback, a placeholder name)
+- "Astronaut" (downloaded 2026-11-06)  -> character meshy_astronaut (look Spacewalker); a NASA-style mission patch on its shoulder painted out at build time (`fixes.scrubBlue` within its box)
+- "a meticulously detailed astronaut with a" (downloaded 2026-11-06)  -> character meshy_darkastronaut (look Starfarer; its back pack held whole by the chest at build time, `fixes.skin.rigid`)
+- "The object resembles a humanoid tortoise" (downloaded 2026-11-06)  -> character meshy_tortoise (look Shellback, standard size)
 
 Recorded as owned until 2026-11-06 and relabelled by that day's provenance
 audit under the same rule (they came from the owner's Drive or meshystuff repo,
@@ -136,6 +136,12 @@ goes back to owned). Name as on the download, the date recorded for it:
 - "Goblin" (2026-10-26)  -> character meshy_goblin (look Goblin, retired; the goblin NPC role keeps it)
 - "Wealthy Otter" (file dated 2026-03-07)  -> character meshy_otter (look Wealthy Otter, retired; the otter NPC role keeps it)
 - "Salamander Warlord" (file dated 2026-04-21)  -> character meshy_salamander (look Salamander Warlord)
+
+Recorded as the owner's own model from 2026-11-01 until the owner said, later on
+2026-11-06: "I did not make any, they are Meshy community." Meshy Community,
+CC0 per the owner; post URL pending from the owner:
+
+- "stylized alien biker" (2026-11-01; rebuilt 2026-11-05 from the re-rigged download "stylized alien biker rigged")  -> character meshy_alienbiker (look Alien Biker)
 
 Looked at and not used (they closely resemble real people, so they fail the
 likeness screen):

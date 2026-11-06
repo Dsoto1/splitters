@@ -50,7 +50,7 @@
       "name": "Concrete Barrier (hazard stripes)",
       "category": "Military",
       "height": 0.9,
-      "collide": "box",
+      "collide": "voxel",
       "triangles": 3000,
       "maxError": 0.05,
       "source": {
@@ -78,7 +78,7 @@
       "name": "Hazard Block Barrier",
       "category": "Military",
       "height": 1,
-      "collide": "box",
+      "collide": "voxel",
       "triangles": 3000,
       "maxError": 0.05,
       "source": {
@@ -92,7 +92,7 @@
       "name": "Tiled Well",
       "category": "Medieval Village",
       "height": 2.3,
-      "collide": "box",
+      "collide": "voxel",
       "triangles": 5500,
       "maxError": 0.03,
       "source": {
@@ -106,7 +106,7 @@
       "name": "Raider Buggy (parked)",
       "category": "Vehicles",
       "height": 2,
-      "collide": "box",
+      "collide": "voxel",
       "triangles": 16000,
       "maxError": 0.03,
       "source": {

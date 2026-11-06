@@ -17,7 +17,7 @@
       "name": "Steam Locomotive",
       "category": "Trains & Rail",
       "height": 4.2,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "diesel",
@@ -25,7 +25,7 @@
       "name": "Diesel Engine",
       "category": "Trains & Rail",
       "height": 4.0,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "tram",
@@ -33,7 +33,7 @@
       "name": "Tram",
       "category": "Trains & Rail",
       "height": 3.8,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "subway_car",
@@ -41,7 +41,7 @@
       "name": "Subway Car",
       "category": "Trains & Rail",
       "height": 3.8,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "container_car_red",
@@ -49,7 +49,7 @@
       "name": "Container Car (Red)",
       "category": "Trains & Rail",
       "height": 3.8,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "container_car_blue",
@@ -57,7 +57,7 @@
       "name": "Container Car (Blue)",
       "category": "Trains & Rail",
       "height": 3.8,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "tank_car",
@@ -65,7 +65,7 @@
       "name": "Tank Car",
       "category": "Trains & Rail",
       "height": 3.8,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "coal_car",
@@ -73,7 +73,7 @@
       "name": "Coal Car",
       "category": "Trains & Rail",
       "height": 2.6,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "lumber_car",
@@ -81,7 +81,7 @@
       "name": "Lumber Car",
       "category": "Trains & Rail",
       "height": 2.6,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "flatbed_car",
@@ -89,7 +89,7 @@
       "name": "Flatbed Car",
       "category": "Trains & Rail",
       "height": 1.4,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "rail_track",
@@ -114,7 +114,7 @@
       "name": "Steam Locomotive (Red)",
       "category": "Trains & Rail",
       "height": 4.3,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "passenger_car",
@@ -122,7 +122,7 @@
       "name": "Passenger Car",
       "category": "Trains & Rail",
       "height": 4.3,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "ore_wagon",
@@ -130,7 +130,7 @@
       "name": "Ore Wagon",
       "category": "Trains & Rail",
       "height": 4.28,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "hopper_wagon",
@@ -138,7 +138,7 @@
       "name": "Hopper Wagon",
       "category": "Trains & Rail",
       "height": 3.37,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "timber_wagon",
@@ -146,7 +146,7 @@
       "name": "Timber Wagon",
       "category": "Trains & Rail",
       "height": 4.1,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "flatbed_wagon",

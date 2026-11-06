@@ -91,10 +91,10 @@ folder can sit directly in it or one level down), and run:
 | Meshy rock pile (`Meshy_AI_Rock_Pile_…_texture_remesh_tri_fbx`, Meshy Community CC0 per the owner: pack `meshy-community-rock-pile`) | `node tools/content/prepare-props.mjs --downloads <dir>` | the `rock_pile` prop (colour map attached by material name, 1024 px JPEG, `dropEmissive`) |
 | Meshy community weapons and props (CC0 per owner; the unzipped `Meshy_AI_ANACONDA_44_…`, `Meshy_AI_Plasma_Annihilator_X_…`, `Meshy_AI_Nebula_Arc_Cannon_…`, `Meshy_AI_Industrial_Control_Panel_…`, `Meshy_AI_Wreckage_…` and `Meshy_AI_Spiky_Dinosaur_…_texture_fbx` folders, each named in its entry's `download`) | `node tools/content/prepare-guns.mjs --downloads <dir>` and `node tools/content/prepare-props.mjs --downloads <dir>` | `public/models/guns/{ironclad_revolver,plasma_spin_gun,arc_cannon_turret}.glb`, `content/guns.lock.json`; the `mp_*` props, `content/props.lock.json` (both through `tools/content/meshy-mesh.mjs`, below) |
 | Meshy community nature models (Meshy community, CC0 per owner; each `Meshy_AI_<name>_…_texture_fbx` zip unzipped into a folder named `meshy-community-nature`) | `node tools/content/prepare-props.mjs --downloads <dir>` | the `mn_*` Nature props, built by `tools/content/nature.mjs` (below) |
-| Meshy weapon, turret, medkit and vehicle downloads from the owner's Drive (textured GLBs `Meshy_AI_<name>_<id>_texture.glb`, named in each entry's `glb`; the download folders may sit side by side, or be linked, one level down) | `node tools/content/prepare-guns.mjs --downloads <dir>` (`ONLY=guns/<file>.glb` for one) | `public/models/guns/*.glb` and `public/models/vehicles/*.glb` of packs `meshy-community-arsenal` (Meshy Community CC0; an entry's `url` names its post when known) and `meshy-owned-guns` (the owner's buggy and tire), `content/guns.lock.json` (then `capture-weapon-icons.mjs` and, for turrets, `build-palette-atlas.mjs`) |
+| Meshy weapon, turret, medkit and vehicle downloads from the owner's Drive (textured GLBs `Meshy_AI_<name>_<id>_texture.glb`, named in each entry's `glb`; the download folders may sit side by side, or be linked, one level down) | `node tools/content/prepare-guns.mjs --downloads <dir>` (`ONLY=guns/<file>.glb` for one) | `public/models/guns/*.glb` and `public/models/vehicles/*.glb` of pack `meshy-community-arsenal` (Meshy Community CC0, the buggy and its tire too; an entry's `url` names its post, or the share link the owner gave, when known), `content/guns.lock.json` (then `capture-weapon-icons.mjs` and, for turrets, `build-palette-atlas.mjs`) |
 | Meshy community pickup and prop downloads of 2026-11-03 (CC0 per owner; `medical_supply.glb`, `ammo_rifle.glb`, `ww2_ammo_crate.glb` in the folder `drive-2026-11-03-pickups`) | `ONLY=pickups/health_large.glb,pickups/ammo_rifle.glb node tools/content/prepare-guns.mjs --downloads <dir>/drive-2026-11-03-pickups`; `ONLY=ww2_ammo_crate node tools/content/prepare-props.mjs --downloads <dir>` (then `build-palette-atlas.mjs`) | `public/models/pickups/{health_large,ammo_rifle}.glb` (pack `meshy-community-pickups`, drawn by `game/pickupVisuals.ts`; pickup models sit in guns.json like the medkit and keep to the small-prop budget, as a map carries many) and `props/ww2_ammo_crate.glb` (pack `meshy-community-drive-1103`) |
 | The owner's Meshy landmark uploads of 2026-10-31 (Meshy Community CC0 per the owner's rule of 2026-11-06; textured GLBs, named in each entry's `src`; the monk statue is the `_stylize.glb` from its zip), all in one folder named `owned_landmarks` | `node tools/content/prepare-props.mjs --downloads <dir>` (`ONLY=<id>,…` for some) | pack `meshy-community-landmarks`: market stalls (`dc_market_stall`, `mv_market_stall`, `rustic_market_stall`), the wishing well (`dc_well` and `mv_well`, one download), the crawler crane `dc_crane`, statues (`jt_statue_large`, `temple_fire_statue`, `temple_spear_statue`, `temple_monk_statue`) and fountains (`town_fountain`, `lion_head_fountain`, `eagle_fountain`); all hero tier |
-| The owner's Meshy airliner of 2026-11-04 (the refined GLB in a folder `airliner-2026-11-04/refined/airliner.glb`; preview task 01a1a451-1dda-77ed-82ec-810c24ac1e9a, refine 01a1a451-ee8d-72d3-99ea-48063cd52abe) | `node tools/content/fuselage-profile.mjs <dir>` (its cross-section for the cabin kit, `assets-src/tiletrigger-cabin/fuselage.json`, and its collision and openings, written into its pack file), then `ONLY=airliner_shell node tools/content/prepare-props.mjs --downloads <dir>` | `props/airliner_shell.glb` (pack `meshy-owned-airliner`, hero tier: 19.7k triangles, a 6.1k one from 120 m, 1.38 MB) |
+| The Meshy airliner of 2026-11-04 (Meshy Community CC0 per the owner, 2026-11-06; the refined GLB in a folder `airliner-2026-11-04/refined/airliner.glb`; preview task 01a1a451-1dda-77ed-82ec-810c24ac1e9a, refine 01a1a451-ee8d-72d3-99ea-48063cd52abe) | `node tools/content/fuselage-profile.mjs <dir>` (its cross-section for the cabin kit, `assets-src/tiletrigger-cabin/fuselage.json`, and its collision and openings, written into its pack file), then `ONLY=airliner_shell node tools/content/prepare-props.mjs --downloads <dir>` | `props/airliner_shell.glb` (pack `meshy-community-airliner`, hero tier: 19.7k triangles, a 6.1k one from 120 m, 1.38 MB) |
 | "Snowmobile" by roygbpjyt (Meshy Community, CC0: Meshy Terms of Use §3.3 "Community License"; the textured GLB `snowmobile.glb` in a folder `snowmobile-cc0-2026-11-04`) | `ONLY=vehicles/snowmobile.glb node tools/content/prepare-guns.mjs --downloads <dir>` | `public/models/vehicles/snowmobile.glb` (pack `meshy-community-snowmobile`, vehicle tier: 20k triangles plus a 5k one from 40 m, 2048 px colour and 1024 px normal map, 1.42 MB), the Snow Sled's model |
 | The amphibious landing craft of 2026-11-06 (Meshy community, CC0 per owner; the textured GLB `Meshy_AI_Amphibious_Landing_Cr_1106110500_texture.glb` in a folder `intake-2026-11-06`) | `ONLY=lcvp_beached node tools/content/prepare-props.mjs --downloads <dir>` (then `build-palette-atlas.mjs`) | `props/lcvp_beached.glb` (pack `meshy-community-drive-1106`, hero tier: 16k triangles, a 4k one from 40 m, a baked normal map, 1.0 MB; collides as voxels), the Landing Craft (Beached): static dressing and cover, in the Beached Landing Craft set piece |
 | Styloo Guns Asset Pack (`Styloo Guns Asset Pack GLTF FBX V1.1`), CC0 Guns & Explosives Pack (the rar's `Guns&Explosives` folder) | `node tools/content/prepare-guns.mjs --downloads <dir>` | `public/models/guns`, `content/guns.lock.json` (see `content/guns.json`) |
@@ -868,7 +868,7 @@ replace it), built by `prepare-props.mjs` from its pack entry's `collide`:
 
 | `collide` | Collision |
 |---|---|
-| `box` (default) | its bounds (kit walls with one face thickened to 0.2 m); natural rocks two rounded tiers |
+| `box` (default) | its bounds (kit walls with one face thickened to 0.2 m); natural rocks two rounded tiers. Only where the box is the shape (crates): bounds that stand off the model fail the slack audit |
 | `none` | none: decoration you walk and shoot through |
 | `trunk` | a column standing on the model's real trunk, as thick as the trunk (0.2–0.5 m) |
 | `voxel` | boxes that follow the model in 3D: arches, windows, holes, doorways and the space under tables, bridges and vehicles stay open |
@@ -908,13 +908,38 @@ and above: a window, a hole, an arch, a doorway, a gateway between posts, under 
 that a 0.5 m square fits in are a filled **opening**: the check fails unless the prop collides as
 `voxel` (or `frame`/`openings`) or says why in `fills` (nine do: five long stair flights kept solid
 underneath, hand-built collision of the airliner and its stairs, the bucket-wheel excavator's
-lattice, one city block). Lines reached from either side (over a car's bonnet, beside a stump's
-roots) are **slack**, listed with `--slack`, not failed. Gaps narrower than 0.5 m (bars and fence rails:
-`iron_fence`, `dg_arch_bars`, the `lf_*` gates) are neither, so a `box` still stops rounds between them. The check
-also fails on a voxel prop over its budget or not rebuilt, and a trunk column the build would now put elsewhere. `packages/shared/test/fixtures/prop-openings.json`
-records every prop this changed (lines through what its old collision filled, points of its model
-its new one holds) and a digest of every other prop's collision; after a deliberate collision
-change, `node tools/content/prop-openings.mjs --fixture <git ref before>` rewrites it.
+lattice, one city block). Lines reached from either side (over a car's bonnet, beside a column's
+shaft) are **slack**: the slack audit below. Gaps narrower than 0.5 m (bars and fence rails) are no
+opening. The check also fails on a voxel prop over its budget or not rebuilt, and a trunk column the
+build would now put elsewhere. `packages/shared/test/fixtures/prop-openings.json` records every prop
+whose collision these passes changed (lines through what its old collision filled, now clear; points
+of its model its new one holds) and a digest of every other prop's collision; after a deliberate
+collision change, `node tools/content/prop-openings.mjs --fixture <git ref before>` enters the props
+changed since that ref (against what they were before) and keeps the earlier entries.
+
+**The slack audit** (owner's bug of 2026-11-06, Capitol Mall: "These pillars are blocking my bullets":
+the white Ionic column's box was as wide as its plinth and capital all the way up, 0.28 m of
+invisible wall beside its round shaft along x and 0.55 m at 45°). `voxel-collision.mjs` `propSlack`
+looks along x, along z and along both diagonals (rounds come from every side, and a square box round
+a round shaft stands furthest off it at 45°): in the plane across each direction, cut into 5 cm
+squares, a line that crosses the collision, misses the model and is reached from beside the prop
+without crossing the model is slack; each row's widest run of it is measured. **A prop carries slack
+when, seen along one of the four directions, air 0.15 m or wider beside its model runs over 30 % or
+more of its collision's height** (`SLACK_WIDTH`, `SLACK_SHARE`): about the width of a head or a
+shoulder at the edge of cover, over enough of the prop that rounds at someone beside it meet it.
+`pnpm content:check` fails a `box` prop that carries slack unless it collides as `voxel` (or `trunk`
+for a pole) or its entry says why in `fills`; natural rocks keep their two rounded tiers (a collision
+model of their own, to climb on) and aren't checked. Props of the other modes are listed, not failed:
+`node tools/content/prop-openings.mjs --slack` lists every prop that carries slack (how much of its
+height, how wide, seen along what, the maps placing it). The pass of 2026-11-06 moved 391 `box` props
+to `voxel` (28 columns, pillars, obelisks and posts first, then the rest: statues, vehicles,
+furniture, machines, fences and the like); 18 keep their box with a `fills` reason, round or thin
+pieces whose voxel collision is that same box (barrels, drums, bins, pots, picket panels: a box
+round a barrel stands off it only at 45°). Prop collision boxes on the 73 maps in play went from
+31,682 to 58,638 (Iron Maw, the busiest, 1,481 to 3,281); physics and navmesh build times and shot
+raycasts on the busiest maps stayed within the noise. Bars and rails as voxel: rounds pass between
+bars where the gap is wider than the 0.1 m the merges may fill beside the model (`dg_arch_bars`), and
+stop on a plate where it is narrower (`iron_fence`'s close bars).
 
 Breakable props collide as their `boxes` too (one collider each in `ScenarioBodies`, all of them the
 prop: a shot anywhere damages it); their bounds still decide blasts, footing and paths.

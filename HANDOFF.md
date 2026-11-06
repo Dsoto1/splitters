@@ -278,30 +278,101 @@ such."
 - **The brief:** session scratchpad `briefs/prop-scale.md`. The same agent does the slack pass first: one agent, two
   landings.
 
-### Queued (owner bug report, 2026-11-06): prop slack pass, "these pillars are blocking my bullets". NEXT FREE SLOT (ahead of Bot AI Phase B)
-**The owner:** "These pillars are blocking my bullets..capital mall uses them". Their screenshot shows Capitol Mall's
-white Ionic columns.
+<!-- prop-slack -->
+### Prop slack pass: columns, the slack audit, 391 props to voxel (`wip/prop-slack`, agent, 2026-11-06; rebased on main e63ffc6f; green on `check/prop-slack` at a3198d27, run 42300775716; ready to land)
+**Status:** green, every job (run 42300775716). The run before the rebase (42299124567) failed only perf (budget),
+"frost_basin medium: starting arc took 41.4 ms > 40", with the explosion start at 37 ms in the same pass (about 1 ms
+in every other run, 9 ms on low that run): a hitch on the runner; the rerun passed. Screenshots: session scratchpad
+`slack/shots/colonnade-before-after.jpg` (the sheet) and `slack/shots/{before,after}-*.png`.
 
-**Cause:**
-- `prop.im_column_ionic` (68 on Capitol Mall) uses `collide: "box"`.
-- That box is as wide as the plinth and the capital, all the way up.
-- So there is about 0.2–0.3 m of invisible wall on each side of the round shaft. It stops rounds and players alike.
-- About 40 more columns, pillars and posts in `content/props/*.json` also use `box`, among them `eg_column_papyrus`,
-  `rn_column_round`, `sf_column_round`, `dc_column`, Kenney's `column` and the loafbrr fence posts and columns.
+**The owner's report** (Capitol Mall): "These pillars are blocking my bullets..capital mall uses them". The white Ionic
+column (`prop.im_column_ionic`, 68 on Capitol Mall at scale 1.333) collided as one box as wide as its plinth and capital
+all the way up: 0.28 m of invisible wall beside the round shaft along x, 0.55 m at 45° (0.37 and 0.73 m at the map's
+scale). Rounds aimed just past the shaft stopped in the air on the box's face; so did rounds at the shaft, 0.37 m
+before the stone. The brief: session scratchpad `briefs/slack-pass.md`.
+- **Done:**
+  - **Columns first** (6c69f1f7): 28 columns, pillars, obelisks and posts `box` → `voxel`: im_column_ionic (7 boxes:
+    plinth, base, a cross round the shaft, capital), eg_column_papyrus 20, rn_column_round 7, rn_column_square 5,
+    sf_column_round 3, sf_column 4, sf_column_astra 13, sf_column_large 18, dc_column 7, Kenney's column 12, pillar 5,
+    cross_column 5, obelisk 5, dg_pillar 4, os_wall_column 11, nc_elevated_pillar 6, jg_carved_pillar 7, eg_obelisk 11,
+    jt_obelisk 8, jt_broken_column 6, jt_collapsed_column 15, sd_pillar_01/02 and large_01/02 11/3/11/3, mc_cave_pillar
+    and _wide 48 each (no map), ww_corner_post_a 3. No box-mode pole was left: lamps, posts and signs were already
+    `trunk` (the openings pass); the loafbrr fence posts and columns fit their boxes.
+  - **The slack audit** (`voxel-collision.mjs` `slackRuns`/`propSlack`, `prop-openings.mjs`): along x, z and both
+    diagonals, in 5 cm squares, lines that cross the collision, miss the model and are reached from beside it. The
+    threshold: **air 0.15 m or wider beside the model over 30 % or more of its height, from some direction**
+    (`SLACK_WIDTH`, `SLACK_SHARE`; about a head or a shoulder at the edge of cover). `content:check` fails a `box` prop
+    over it without a `fills` reason; natural rocks (two rounded tiers) are not checked; `--slack` lists every prop of
+    every mode over it. `fills` now covers slack too (stale only when it fills no opening and carries no slack).
+  - **The pass** (ca070ba6): 363 more `box` props → `voxel` (statues, vehicles, furniture, machines, fences, shelves:
+    every non-rock box prop over the threshold); 18 keep their box with a `fills` reason, round or thin pieces whose
+    voxel collision is that same box (barrels, drums, bins, pots, the urn, the vase, the bar stool, the spare wheel,
+    the broken round column, the two picket panels, Kenney's tiny bench, the slush machine). 391 props changed in all
+    (session scratchpad `slack/changed-props.txt`; before and after per prop: `slack/changed-props-slack.json`). Mean
+    share of height with slack 0.85 → 0.38, mean widest run 1.12 → 0.50 m, boxes 1 → 13.0 a prop.
+  - **Fixture**: `prop-openings.mjs --fixture <ref>` is cumulative now (keeps earlier entries, enters props changed
+    since the ref against what they were) and probes through the old collision's slack runs (x, z, diagonals); 599
+    changed entries. `propSlack.test.ts` (the Ionic column at scale 1 and 1.333, in the sim: rounds beside the shaft
+    along x, z and at 45° fly on, rounds at it stop on its face and hit the column, a player walks up onto the plinth's
+    step or off a deck and stands against the shaft, no way in from eight sides, cover holds crouched and standing, a
+    spot the old box hid is seen, findCover finds a hidden spot; every case fails on the old table). Unit tests of the
+    measure in `tools/content/test/voxel-collision.test.mjs`.
+- **Checked:**
+  - validate-map on all 78 maps that place a changed prop: 71 clean; Glacier Line, Grand Marquee, No Man's Field,
+    Reactor, Serpent Gorge and Shingle Point have the same warnings as with the old table. **Obsidian Orb** (retired)
+    changed: its reactor core (prop_087, scale 4) collides as its shape, so a fall off a bridge goes past it to the
+    shaft's floor 32 m down (four spots round the core's foot, above the kill height) instead of landing on the core's
+    box 3.8 m down. The known finding moved with it (`nav/auditKnown.ts`, docs/BOTS.md); the owner's question in the
+    bots-a list above (item 4) now reads: the shaft's floor under the kill height?
+  - `pnpm bot-report --check`: every limit held (Diamond Park and Eagle Spires CTF, Shingle Point KOTH, Fernwood Moon
+    TDM; no failed searches).
+  - Prop collision boxes on the 73 maps in play: 31,682 → 58,638. Busiest: Iron Maw 1,481 → 3,281, St John's 1,498 →
+    2,358, Shingle Point 1,106 → 2,239, Capitol Mall 1,106 → 2,138; Frost Basin (the CI perf map) 471 → 702.
+    Physics and navmesh build and 20,000 shot raycasts on six of the busiest maps, old table against new on this
+    loaded machine: within the noise (Iron Maw navmesh 3.5-5.8 s both, rays 145-387 ms both).
+  - typecheck; propOpenings, propSlack, navAudit, allMaps (Obsidian Orb, Capitol Mall, Fernwood Moon) and the voxel unit
+    tests locally.
+- **Left (owner's call):**
+  - Voxel boxes are axis-aligned: round shapes keep up to about 0.15-0.25 m of air at 45° (the Ionic shaft's cross,
+    0.11 m), and a single plane gets 0.2 m round it. `--slack` still lists 406 props over the threshold, of every mode:
+    242 voxel (those corners, the planes' thickness, big props on coarse cubes), 60 trunk, 31 shell (the red rock
+    spires), 19 stairs, 16 model, 16 natural rocks, 18 box with `fills`. A merge that also keeps diagonal sight lines
+    clear would tighten round props; it would change every voxel prop's collision.
+  - Natural rocks keep their two tiers (`isRock`): voxelised, the boulders alone would add over 10,000 boxes to the maps.
 
-**Scope:**
-- Round and tapered columns move to `voxel`, or to `trunk` where one pole is right.
-- A `--slack` pass over every `box` prop, with a threshold that matters for play. The threshold is documented.
-- `content:check` fails a new prop over the threshold unless it says why, as the openings audit does.
-- Real-sim tests:
-  - rounds beside the shaft fly past;
-  - rounds at the shaft hit;
-  - a player can stand against the shaft;
-  - cover behind it still holds.
-- validate-map on the affected maps, and `pnpm bot-report --check`.
-- Before and after shots of the Capitol Mall colonnade.
+### Queued (owner, 2026-11-06): "Reduce flashing", a seizure-safety setting. A small job, the next small slot
+**Why:** the owner dropped the planned flashbang ("I don't want to give people seizures").
 
-The brief is in the session scratchpad, `briefs/slack-pass.md`.
+**What already flickers:**
+- lightning from the arc weapons, electric fences and arc turrets (Binbun's Electric FX crackle);
+- big explosions flaring near the camera;
+- any strobing light in the maps.
+
+**The setting:**
+- **Accessibility → "Reduce flashing", on by default:**
+  - lightning keeps a steady glow instead of crackling;
+  - full-screen brightness jumps (an explosion right in front of you, a muzzle flash in the dark) are capped and
+    eased in over a few frames;
+  - strobing lights hold steady.
+- **A check in CI:**
+  - an e2e flow records frames of the brightest moments: arc fights, a blast close up, the fence;
+  - it fails if any part bigger than about a quarter of the screen changes brightness more than three times a second
+    by a large amount, or turns saturated red. That is the usual photosensitivity guideline (WCAG 2.3.1, "three
+    flashes or below threshold").
+- **No new effect may add** a full-screen flash or white-out. CLAUDE.md gets the rule when this lands.
+
+### Queued (owner-approved, 2026-11-06): weapon sets. After the Match Setup follow-ups, alongside Bot AI Phase B
+**The owner:** bots mostly use pistols. "I have never once seen the sheep weapon, hardly see swarm launcher or gravity
+weapon." They want weapon sets as map defaults, with a host setting.
+- **The plan:** docs/WEAPON_SETS_PLAN.md.
+- **Sets:** Standard, Military, Sci-fi, Medieval, Chaos, Mixed bag. Owner: "set list is fine".
+- **Military** spawns with knife, pistol and an assault rifle (owner: "pistol and a main gun"); sniper-role bots get
+  a marksman rifle. Each set has its own spawn loadout.
+- **Pickups** roll within the set, by category.
+- **Defaults and override:** each map has a default set in MapMaker's Map properties (the owner confirms a theme
+  table for official maps). The host overrides it in Match Setup and the Host tab.
+- **Bot AI Phase B gains:** snipers who play like snipers (item 5) and a cover-to-cover advance (item 6).
+  **Phase C** starts with parkour links (roofs and ledges for snipers and flankers). See docs/BOT_AI_PLAN.md.
 
 ### Queued (owner, 2026-11-06): audio pass 2: weapons, reloads, vehicles. Starts once the sound source is settled
 **The owner:** "By sound effects, we also need to update some/if not most of the weapon sounds too, reload, vehicle
@@ -376,18 +447,90 @@ for each character?"
 
 The brief is in the session scratchpad, `briefs/perf-4.md`.
 
-### Queued (owner, 2026-11-06): Match Setup follow-ups, NEXT FREE SLOT (before Roulette)
-**Owner's answers to the redesign's questions:**
-1. Host online lists the match publicly from both places.
-2. Spectate keeps following the Offline/Host online switch.
-3. Bring back "save for next match" in the Host tab.
-4. Cap co-op size presets at the map's recommended size.
+<!-- match-setup-2 -->
+### Match Setup follow-ups: one Host online, Save for next match, co-op sizes, score and time follow the size (`wip/match-setup-2`, agents, 2026-11-06; main 2acb8f23 merged in; green on `check/match-setup-2` at 9d41d790, run 42307136197; not landed)
+The owner's answers to the redesign's questions (1. Host online lists the match from both places; 2. Spectate keeps
+following the Offline / Host online switch; 3. "save for next match" back in the Host tab; 4. co-op size presets capped
+at the map's size) and the request that the default score and time scale with players + bots ("24v24 in a 40 pt
+match means on average 1 kill per; 24v24 plays ok with 500 points, but also 15–20 min"). The brief is the session
+scratchpad's `briefs/match-setup-followups.md`. An earlier agent built it and was stopped by an interrupt; the next
+merged main (Bot AI Phase A, the four retired maps, the intake follow-up, the prop slack pass), checked the curve
+against Phase A's bots, fixed the Host tab foot and two e2e checks, and took the pictures.
 
-**New:** default score and time scale with players + bots. The owner: "24v24 in a 40 pt match means on average 1 kill
-per; 24v24 plays ok with 500 points, but also 15–20 min."
+**Screenshots** (session scratchpad `shots-ms2c/`; `shots.mjs` there makes them from a `vite preview`): Match setup on
+St. John's at 4v4, 12v12 and 24v24 (`setup-4v4.png`, `setup-12v12.png`, `setup-24v24.png`), set by hand
+(`setup-24v24-custom.png`, `setup-12v12-custom.png`: Custom stays at another size) and `setup-12v12-back-to-suggested.png`;
+the Host tab's foot in each Apply state at 1280 × 720 and 1920 × 1080 (`host-foot-<width>-1-no-changes.png`,
+`-2-apply-now`, `-3-apply-restart`, `-4-save-next`, `-5-saved`), in a match started from Match setup, so the foot has
+its Offline / Host online switch (test mode has none: it can't host).
 
-The brief is in the session scratchpad, `briefs/match-setup-followups.md`. It has a curve fitted to measured kill rates
-and anchored at 4v4 ≈ 40 points / 10 min and 24v24 ≈ 500 points / 15–20 min.
+**What's in it:**
+- **Score and time follow the size** (`sim/matchSetup.ts`: `suggestedLimits`, `setupLimits`, `withSetupLimits`,
+  `teamMinutes`, `niceScore` / `scoreStep`, `limitsScale`; `MatchSetup.scoreAuto` / `timeAuto`; `SCORE_LIMIT_MAX` 5,000
+  in rules.ts). Match setup's To win follows every size change until set by hand (a Custom tag, `#setup-limits` under
+  it with `#setup-limits-reset` "Back to suggested"). Saved setups: the old defaults (the mode's standard score, 10
+  minutes) follow the size, anything else stays (`normalizeSetup`). The Host tab's To win shows the suggestion for the
+  size being set (`#hc-suggest`, "Use suggested" `#hc-use-suggested`); a map change to another mode takes that mode's
+  suggestion (`rulesForTravel`).
+- **One Host online** (session.ts `goOnline`): Match setup's Host online lists the match as the pause menu's does (a join
+  code without a hub); a match hosted from the start is listed under the host's name (the listing waits for the roster).
+- **Save for next match** (hostPanel.ts `drawFoot`: `#hc-when`, Restart now | Next match, beside Apply while a ⟳ Restart
+  rule changed; Apply becomes Save for next match). HostControl keeps the rules (`pending`, `nextRules`) and
+  `Match.beforeRound` puts them in play when a new match starts (after the scoreboard, or Restart); map changes and the
+  rotation take them (`withPending`; servers: `travelRules`); the host tells everyone (`onNextRules`). The foot's line
+  says which happens, the Rules card what is saved.
+- **Co-op and Zombies' sizes** stop at the map's (`squadRoom`: its team layout in all, else its recommended most).
+- **bot-report** prints each match's team scores and its top bot's kills (`scores:`; `teams`, `top` in `--json`).
+- **This round's fixes:** the foot's Restart now | Next match switch sat at the far right beside Offline / Host online
+  (a later `margin-left: auto` rule beat its own); only the foot's own switch is pushed right now (style.css,
+  `.pause-host-foot > .seg-switch`). e2e: `setupLimitsFlow` wanted the saved setup rewritten just by opening Match
+  setup (it isn't until something changes; it failed every run), now checked after the first size change;
+  `hostcontrols` waits for the match's own phase to leave the restart's countdown before the page's (on a loaded
+  machine the page still showed "playing" from before the restart, so Save for next match and End match ran in the
+  countdown).
+- **Local e2e** (this machine at about 3× CI's flow times, `CI=1` waits): `lobby` passed; `teams` passed every check
+  but the old `setupLimitsFlow` one, which passed after the fix (run alone); `hostcontrols` passed up to its Host game
+  part, whose friend checks (the friend's page loading, rejoining the host's new map, the rotation) passed in one run
+  of three: load (the machine was shared with two other agents). On CI (run 42307136197, the full suite: every unit
+  job, the bots check, 16 e2e shards) all three passed first time; the one retry was `designer` (a custom look's
+  first-person arms), which this branch doesn't touch.
+
+**The curve** (docs/BOTS.md, "Score and time", has the tables): Team Deathmatch a point per player on a team per minute
+of the time limit, the time 10 minutes up to 6 a side, 15 up to 16, 20 above (4v4 40/10, 8v8 120/15, 12v12 180/15,
+16v16 240/15, 24v24 500/20, 48v48 950/20); Deathmatch 12 × √players kills in 10 minutes (15 for 2, 35 for 8, 50 for
+16, 70 for 32); Capture the Flag 3 captures with the team time; King of the Hill 12 hill seconds a minute of the time
+(120/10, 180/15, 240/20); rounds modes, co-op, Zombies, Fort Wars, Disc Arena and races as before.
+
+**The kill rates behind it** (`pnpm bot-report`, 10-minute matches, no limits; the leading team's points a minute,
+the middle of the maps):
+- Before Phase A (main a07cb65b, 5–7 maps a size): TDM 1v1 1.4, 2v2 3.0, 4v4 5.4, 6v6 11.4, 8v8 7.9, 16v16 13.9,
+  24v24 30.6, 48v48 56.5 (2 maps): about 1.3 a player a minute (0.9–1.5; 1.9 at 6v6 on the small maps). Deathmatch,
+  the top bot's kills a minute: 2 players 1.8, 4 2.6, 8 3.8, 12 4.6, 16 7.0, 32 5.0 (big maps).
+- After Phase A (main adad4de7 merged; the same maps, seeds and lengths, Iron Compound left out): TDM 4v4 4.0 → 4.3
+  (Diamond Park, Bunker Cross, Sandgate), 8v8 8.1 → 7.3 (+ Capitol Mall, Fernwood Moon), 24v24 32.1 → 29.3 (Diamond
+  Park, Capitol Mall, Fernwood Moon, Sunken Kingdom); Deathmatch 8 players 4.7 → 4.8, 16 7.9 → 8.4 (Sandgate,
+  Citadel); King of the Hill 8v8 Diamond Park 7.9 → 5.8, St. John's 18.1 → 18.0 hill seconds a minute; CTF 8v8
+  Diamond Park 0.2 → 0.5 captures a minute, St. John's 0.0 → 0.1. All within a seed's spread (Diamond Park 24v24: 22.7
+  and 34.9), so the curve stays: the suggestion falls due at 9.4 minutes of 10 (4v4), 16.4 of 15 (8v8: time first, at
+  about 110 of 120) and 17.1 of 20 (24v24).
+- Scripts and rows: session scratchpad `measure/` (before) and `measure-a/` (after: `run.sh`, `run2.sh`,
+  `compare.mjs`, `tables.mjs`).
+
+**Tests:** unit `packages/shared/test/matchLimits.test.ts` (the curve per mode, Custom and suggested, old saves, co-op
+caps, Save for next match at the next round, Restart and a map change, scores past 1,000) with the matchSetup,
+setupPlan, serverRules and hostControl tests; e2e `teams` (`setupLimitsFlow`: the suggested score and time follow the
+size), `lobby` (Host online from Match setup lists the match), `hostcontrols` (Save for next match, the suggestion
+line).
+
+**For the owner:**
+- 6v6 on the small maps made for it (Atomic Court, Sandgate, Void Yard) reaches its 60 points in about 5 of its 10
+  minutes; 7v7 jumps to 110 points in 15. Both follow the owner's time steps (10 minutes up to 6 a side); a different
+  step there would be a one-line change (`teamMinutes`).
+- King of the Hill's 12 hill seconds a minute (120 in 10 minutes, as before) is reached at about two thirds of the time
+  on St. John's and not at all on Diamond Park, where bots hold the hill 5–8 s a minute.
+- Capture the Flag keeps 3 captures: after Phase A, Diamond Park's bots made 7 in 15 minutes at 8v8 (3 in about 6
+  minutes), St. John's one each (the time decides).
+<!-- /match-setup-2 -->
 
 <!-- match-setup -->
 ### Match Setup redesign, the Host tab, Spectate before the start (`wip/match-setup`, agents, 2026-11-06; main bc6037a1 merged in; green on `check/match-setup` at c32bbf20, run 42242658709; not landed)
@@ -437,7 +580,8 @@ session scratchpad's `shots-ms/before/`, `shots-ms/after/` and `shots-ms/after-h
   for 2v3v5).
 - **Bundle:** the menu's first JS 702.9 kB gzip (budget 840).
 
-**For the owner to decide**
+**For the owner to decide** (answered 2026-11-06: list from both, keep Spectate, Save for next match back, co-op capped;
+built on `wip/match-setup-2`, "Match Setup follow-ups" above)
 - Pause menu → Host online with a community hub restarts and lists the match (as Go online did); Match setup's Host
   online opens a code only (as Host did). Same word, two behaviours: list from Match setup too, or keep?
 - Spectate follows the switch: offline it's bots only; with Host online you watch while friends play. Keep?
@@ -610,6 +754,68 @@ time-outs (botai, two npc play-throughs, sandgate, two pads maps, host) bar the 
 down knifed each other before the last landed); CI passes every one of them. After that run only the intake queue's
 licence fields and docs changed (979bd80c and later).
 <!-- /intake-1106 -->
+
+<!-- intake-1106b -->
+### Intake 11-06 follow-up: Shellback standard, Capt. Nova retired, Starfarer's pack, four licences (`wip/intake-1106b`, agent, 2026-11-06; from main a07cb65b; green on `check/intake-1106b` at 518838fa, run 42283524919 (full suite: unit, maps, build, check, perf, 11 e2e shards); not landed)
+The owner's answers on the 11-06 intake (below, "Owner's answers on the 11-06 intake"). Scratch: the agent scratchpad
+`i1106b/` (tools, shots, frames).
+- **Shellback** (`meshy_tortoise`): large → standard (`size` left out). Rebuilt from the download: byte-identical,
+  since size isn't part of the build, only of the generated look. Character Select draws it at 1.79 m (was 2.11),
+  100 health, speed ×1 (was 115, ×0.94). The portrait was recaptured and is unchanged: the renderer builds every
+  portrait body at 1.8 m, so `zoom 1.25` still frames the head in the shell's dome. Hit shapes: the measured table is
+  at 1.8 m and unchanged, and the audit passes (top 0.02, bottom −0.08, head 0.04, 89% inside). In play they scale
+  ×1.0 now instead of ×1.18 (`shots/hitboxes-tortoise-{before,after}.png`). Grip audit: unchanged (`audit-after/`: score 7, spikes fp off, rifle drawn R/L 0.02/0.19 m, the same numbers as the intake's final audit). Shots:
+  `shots/shellback-before-after.png` (Character Select, third and first person).
+- **Capt. Nova retired:** `RETIRED_LOOKS['core.nova'] = 'core.astronaut'` (Spacewalker). Manifest, files, portrait
+  and bot profile are kept, as for the other retired looks. The Knights vs Space Crew set's Capt. Orion is a
+  Spacewalker now; no map or other preset named Nova. Tests that used Nova as a plain soldier use Spacewalker.
+  `botSet.test.ts` now checks that a set naming a retired look plays its replacement, and that no shipped set names a
+  retired look. Looks an NPC role keeps are left out of that check: `classic_mix`'s Nub names `core.goblin` (retired
+  2026-11-03, kept for the goblin NPC role), so Nub plays Grizzelda. **Owner:** keep that, or name another look?
+- **Starfarer's pack** (`meshy_darkastronaut`). What pulled it, measured over the rig's clips (`tools/packpull.mjs`;
+  heat maps `pack/heat-all.png`): the download's rig spread the pack over spine_03 (30% of its weight), neck_01 (19),
+  spine_02 (14), each clavicle (12), and spine_01, Head, pelvis and the upper arms.
+  - The tank on top rode the neck and head: it tipped when aiming up or down and when running.
+  - The box's upper sides rode the clavicles and upper arms: they sheared with the arms.
+  - The bottom rode spine_02, spine_01 and the pelvis: it bent in a crouch.
+  - The arms' share had also flared the lower corners when the build turned the arms out to the T-pose. So the bind
+    pose itself had a skirt, shown as a ring of lights round the waist when crouched.
+
+  The fix is a new manifest option, `fixes.skin.rigid` (skinfix.mjs `bindRigid`; docs/CHARACTERS.md, "A look's own
+  skin weights"). It works in the download's own pose, in `pose()` before the T-pose turn: boxes in the landmarks
+  frame, every vertex inside held by one joint, a `blend` band round them, an `except` pattern. Starfarer binds the
+  pack box and the tank to spine_03, blend 0.025, except `^Head$`: 1315 vertices bound, 377 eased. The body options
+  (`hops`, `clamp`, `smooth`) can't do this: they apply to the whole body, keep the neck and clavicle shares that pull
+  hardest, and can't undo the flare already in the bind pose.
+
+  Stretch over the rig's clips (`tools/packstretch.mjs`): the pack's own edges went from p95 1.3–1.6 and max 2.0–3.6
+  per clip to 1.00 (rigid). Where the pack meets moving skin, the stretch now gathers in two places:
+  - the tank's front against the helmet's back: 4–8 mm edges, up to about 14×;
+  - the pack's bottom against the lumbar plate in a crouch: up to about 9×.
+
+  In the frames these read as a crease between the two teal shells and as a dark lower back under the pack; neither
+  shows as a tear. A wider blend (0.05) would also ease the backs of the upper arms, so it stays at 0.025. The hands
+  are unchanged (same build log). Hit shapes were re-measured: torso r 0.20 → 0.21, as the pack no longer flares.
+  Grip audit: score 3 as before, the hands and their numbers the same; 1–2 new stretched edges at spine_03 in the Character Select hold (the junctions above), the worst edge still the left forearm's 12.3×.
+
+  Frames come from the game's own animator (the character viewer, stepped 16 ms a frame): `pack/frames-before.png`
+  and `frames-after1.png`. Side by side: `pack/cmp1-aim.png`, `cmp1-run.png`, `cmp1-turn-crouch.png`, and close-ups
+  `cmp1-close.png` and `cmp1-crouchclose.png`.
+- **Licences:** the owner, "I did not make any, they are Meshy community." Relabelled as Meshy Community CC0 the same
+  way as the audit's:
+  - the airliner shell: pack `meshy-owned-airliner` renamed `meshy-community-airliner`; its task IDs stay on record;
+    palette atlas regrouped offline; fuselage-profile.mjs points at the new file;
+  - the buggy and tire: into `meshy-community-arsenal`, with the owner's share links as their `url`;
+    `meshy-owned-guns` removed;
+  - the Alien Biker: manifest CC0, community model "stylized alien biker"; the lock relabelled without a rebuild;
+    `character-manifests.test.mjs` expects community now, and checks the owned path on a copy.
+
+  The mining machines stay owned. Updated: the licence files (`assets-src/meshy-owned`, `meshy-community`,
+  `meshy-community-characters`), ASSET_SOURCES, CONTENT_PIPELINE, BUILDING_KIT, VEHICLES and the intake queue's
+  buggy and wheel. content:check is green, including the check that each character's lock pack matches its
+  manifest's licence.
+- **Checks:** CHECKS_PENDING
+<!-- /intake-1106b -->
 
 <!-- shingle -->
 ### Shingle Point asset refresh (`wip/shingle`, agents, 2026-11-05/06; main 5b167034 merged in; green on `check/shingle`)
@@ -1493,6 +1699,7 @@ variant for MAP 21.
   where the fighting starts, not a scripted arrival.
 
 ### Owner's answers on the 11-06 intake (2026-11-06), for the follow-up
+**Done on `wip/intake-1106b`:** see "Intake 11-06 follow-up" near the top.
 - **Retire Capt. Nova** (owner, later the same day). Add `core.nova` to `RETIRED_LOOKS`, pointing at Spacewalker
   (`core.astronaut`, the nearest astronaut). Keep the files.
 - **Starfarer's back pack is "distorted a little".** Find the joints pulling the pack and fix its skin (fixes.skin:

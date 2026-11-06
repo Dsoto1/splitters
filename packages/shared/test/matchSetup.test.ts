@@ -160,7 +160,7 @@ describe('team assignment in the match', () => {
     expect(control.apply({ c: 'bots', teamSizes: [4, 1, 6] }).notice).toBe('Host set teams to 4v1v6');
     expect(sizes(match)).toEqual([4, 1, 6]);
     expect(control.fill).toBe(11);
-    expect(control.apply({ c: 'rules', rules: { scoreLimit: 10, friendlyFire: 'on' } }).notice).toMatch(/next restart/);
+    expect(control.apply({ c: 'rules', rules: { scoreLimit: 10, friendlyFire: 'on' } }).notice).toMatch(/next match/);
     expect(match.rules.scoreLimit).toBe(40);
     expect(control.state().pending).toEqual({ scoreLimit: 10, friendlyFire: 'on' });
     control.apply({ c: 'restart' });

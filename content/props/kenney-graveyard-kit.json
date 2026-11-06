@@ -15,7 +15,7 @@
       "name": "Cross Gravestone",
       "category": "Gothic",
       "height": 1.2,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "gravestone_round",
@@ -31,7 +31,7 @@
       "name": "Broken Gravestone",
       "category": "Gothic",
       "height": 0.6,
-      "collide": "box",
+      "collide": "voxel",
       "breakable": {
         "health": 40,
         "debris": "#8a8a88"
@@ -51,7 +51,7 @@
       "name": "Coffin",
       "category": "Gothic",
       "height": 0.6,
-      "collide": "box",
+      "collide": "voxel",
       "breakable": {
         "health": 40,
         "debris": "#5a3a24"
@@ -63,7 +63,7 @@
       "name": "Old Coffin",
       "category": "Gothic",
       "height": 0.6,
-      "collide": "box",
+      "collide": "voxel",
       "breakable": {
         "health": 30,
         "debris": "#5a3a24"
@@ -75,7 +75,7 @@
       "name": "Small Crypt",
       "category": "Gothic",
       "height": 3.2,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "altar",
@@ -83,7 +83,7 @@
       "name": "Stone Altar",
       "category": "Gothic",
       "height": 1.0,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "pillar",
@@ -91,7 +91,7 @@
       "name": "Stone Pillar",
       "category": "Gothic",
       "height": 3.0,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "obelisk",
@@ -99,7 +99,7 @@
       "name": "Obelisk",
       "category": "Gothic",
       "height": 3.2,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "cross_column",
@@ -107,7 +107,7 @@
       "name": "Cross Column",
       "category": "Gothic",
       "height": 2.6,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "iron_fence",
@@ -115,7 +115,7 @@
       "name": "Iron Fence",
       "category": "Gothic",
       "height": 1.6,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "iron_fence_damaged",
@@ -143,7 +143,7 @@
       "name": "Crumbling Wall",
       "category": "Gothic",
       "height": 1.3,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "lightpost",
@@ -184,7 +184,7 @@
       "name": "Fire Basket",
       "category": "Gothic",
       "height": 1.2,
-      "collide": "box",
+      "collide": "voxel",
       "breakable": {
         "health": 30,
         "debris": "#7a8088",
@@ -203,6 +203,7 @@
       "category": "Gothic",
       "height": 0.8,
       "collide": "box",
+      "fills": "Round, under a metre across: its box stands off it only diagonally (up to 0.3 m at 45°), and voxel boxes give this same box.",
       "breakable": {
         "health": 15,
         "debris": "#b06a40"
@@ -238,7 +239,7 @@
       "name": "Stone Bench",
       "category": "Gothic",
       "height": 0.5,
-      "collide": "box",
+      "collide": "voxel",
       "breakable": {
         "health": 80,
         "debris": "#8a8a88"
