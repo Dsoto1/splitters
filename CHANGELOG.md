@@ -96,9 +96,11 @@ pieces")
   are kept in this browser next to your maps, place in any map (the map carries them), and export and import as
   files. The owner can export one to ship with the game.
 - **St. John's gets two set pieces, placed in MapMaker:** the Argonne Gate is now a two-storey castellated carriageway
-  (St. John's stone, Collegiate stone facade, the shallow vault) from Exeter Street to the drill field, with doors
-  into Knight and a new east tower against Welles; and a covered skybridge on the first floor joins DeKoven and Smythe
-  over Church Street, battlements and all. Spawns and objectives are where they were.
+  (St. John's stone, Collegiate stone facade, the shallow vault) from Exeter Street to the drill field, with a door
+  into Knight on one side and, on the other, a new two-storey east tower against Welles with its own door onto the
+  drill field and a window on the street; and a covered skybridge on the first floor joins DeKoven and Smythe over
+  Church Street, battlements and all, its floor high enough that nobody inside it holds the Church Street hill in King
+  of the Hill. Spawns and objectives are where they were.
 - A set piece's own parts no longer count in MapMaker's overlaps warning (only your pieces against it do); placing a
   set piece lowers the ground under its floors at once (a sunk trench's slot), as loading the map does, so an
   exported map loads exactly as it was saved; the Collegiate and Gothic stone plinth stops at doorways instead of

@@ -208,26 +208,40 @@ with undo (part 1's API, plus `editor/setPieceEdit.ts`).
   scenery zone). `coverageMap.test.ts` requires each piece and its parts as played.
 
 ### St. John's (as built)
-Edited in MapMaker (the Set pieces tab and a click for the pieces; Select, Delete, Ctrl+D and the inspector for the
-blocks), checked by validate (clean), the z-fight audit (0), MapMaker's overlaps (no new ones), the bot paths and the
-spawns and objectives (unchanged).
+Edited in MapMaker, driving the real editor (Playwright; the driver is a scratch script, not committed): the Set pieces
+tab and a click on the cell for each piece; Select, the toolbar's Delete, Ctrl+D and the inspector's fields for the
+blocks; Settle on ground for the moved tree; Export for the file. Checked on the exported file: validate-map (clean),
+the z-fight audit (0), MapMaker's overlaps (69 spots before and after, none new), the navigation as the match builds
+it with the audit (no findings; two new islands nobody reaches, the closed rooms over the arch and in the tower),
+spawns, objectives and logic (unchanged), and bots walking each way in a match (below).
 - **The Argonne Gate:** `setpiece.carriageway_1` at cell (1, −10), level 0, unturned, in St. John's pack (Collegiate
   stone facade on the room over the arch; the shallow vault): x 4 to 12, z −84 to −76, a 5 m passage from Exeter Street
-  north to the drill field. The old gate (the Gothic arch prop and the beam over it with its trim and merlons, blocks
-  1734-1744) and two bushes in the passage's way went. Knight's east wall stood 0.4 m into the cell: thinned to 0.6 m
-  on its own west face, a doorway cut where the carriageway's west door is, its old doorway north of it (now behind
-  the carriageway's wall) walled up, its string courses cut back to the face. East of the carriageway, the 6.5 m to
-  Welles's west wall is the gate's **east tower** in Welles's stone: two storeys, its door from the passage's east
-  door, a door north onto the drill field, a floor at 4 m, a roof under the carriageway's parapet and merlons (the
-  carriageway's corner pinnacles stand clear of them); every face of it 2 cm off the carriageway's (no coplanar faces).
+  north to the drill field. The old gate (the Gothic arch prop, the beam over it with its trim and merlons: blocks
+  1734-1736 and 1739-1744) and two bushes in the passage's way went. Knight's east wall stood 0.4 m into the cell:
+  thinned to 0.6 m on its own west face, a doorway cut where the carriageway's west door is, its old doorway north of
+  it (now behind the carriageway's wall) walled up, its string courses cut back to the face. East of the carriageway,
+  the 6.5 m to Welles's west wall is the gate's **east tower** in Welles's stone: two storeys, its door from the
+  passage's east door, a door north onto the drill field, a floor at 4 m, a window on Exeter Street like the
+  carriageway's beside it (1.9 by 1.6 m, its sill at 4.9 m), a roof under the carriageway's parapet and merlons (the
+  carriageway's corner pinnacles stand clear of them); no face of it in the plane of the carriageway's.
 - **The skybridge:** `setpiece.skybridge_2` at cell (6, −2), level 1, unturned: x 44 to 52, z −20 to −4, over Church
   Street between DeKoven's north end and Smythe's south end, the only pair of halls whose upper floors face each
   other along a grid axis at a span the skybridges take (DeKoven−Smythe 24 m; Scott Johnston−Knight is blocked by
   their corner towers, the others don't face each other). The halls' fronts stand 3.5 m (DeKoven) and 4.4 m (Smythe)
   off the bridge's ends, so a short covered link of blocks joins each end to a doorway cut in each hall's first floor
-  (DeKoven at 4.74 m, Smythe at 4.5 m): Welles's stone walls, a slate roof, floors stepping 0.25 m at a time from the
-  bridge's 4.0 m. A street tree under it moved 4 m east. Bots path from DeKoven's first floor over the bridge to
-  Smythe's and back.
+  (DeKoven at 4.74 m, Smythe at 4.5 m): Welles's stone walls, a slate roof, floors stepping 0.25 m at a time down to
+  4.25 m. Inside the bridge a floor at 4.25 m runs its length, level with both links' last steps: King of the Hill
+  counts anyone within a hill's radius and up to 3.5 m over its floor, and Church Street's hill (`hill_2938`, 5 m, on
+  the street by the bridge's south end) reaches 4.04 m, so on the bridge's own 4.0 m floor a player in its south end
+  held the hill from inside (about 10 m² of it). A street tree under it moved 4 m east and was settled on the ground.
+- **Bots** (a match, one bot sent each way as an order goal): Exeter Street to the drill field through the passage and
+  back (5.5 s each), the passage into Knight by the new door and back, the passage through the east tower to the drill
+  field, and DeKoven's first floor to Smythe's over the bridge and back (about 9 and 7 s, at 4.27-4.76 m).
+- **Pitfall found on the way (MapMaker):** every edit lowers the ground under every level floor (`withTerrainUnderFloors`)
+  and never raises it back, so a big floor moved field by field lowers the ground under each place it passes through.
+  A copy of Welles's 56 m ground slab, squared up and then moved before it was cut down to the tower's paving, lowered
+  the ground along Knight's whole front by 0.7 m (a bush left floating). Size and place a copied floor first and
+  square it up last (turned floors are never lowered under), or make it small before moving it.
 
 ## As built: part 3 (the showpiece maps' pieces; 2026-11-06)
 Part 3 is the pieces MAP 21 (Omaha beach assault) and the Sandfall Colosseum rebuild are built from, and the kit they
