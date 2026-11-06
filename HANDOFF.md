@@ -484,9 +484,11 @@ Status: built and tested locally, being checked (see the end of this section). T
     the round arches and the ivy arch walls on Sandfall Colosseum, Serpent Gorge and Sunstone Crag (6.0-7.2 m instead
     of 8.6-10.7 m round); windows and broken-wall gaps above the ground stay "round" (not walkable).
   - `pnpm validate-map` on all 81 maps that place a changed prop: 79 clean; No Man's Field's logic-loop warning and
-    Diamond Park's 113 `nav.disconnected` (spawn_1746 in the dugout) are the same with the old table.
-  - Prop colliders on those maps: 14,811 to 32,453 (busiest: Backwoods, St John's ~1,500); navmesh builds +10-25 %
-    on the busiest maps, shot raycasts +20-40 % in a random test (machine loaded: noisy). Not benched with 96 bots.
+    Diamond Park's 113 `nav.disconnected` (spawn_1746 in the dugout) are the same with the old table. Hollowmere
+    Manor and Pharaoh's Reach (the gates and the reed boat, last to switch) again after: clean.
+  - Prop collision boxes on those maps: 14,811 to 32,241 (busiest: Backwoods, St John's ~1,500); navmesh builds
+    +10-25 % on the busiest maps, shot raycasts +20-40 % in a random test (machine loaded: noisy). Not benched with
+    96 bots.
   - Screenshots (scratchpad `openings/after/`): rounds through Fogbound's arch fly 93-103 m (before: stopped on the
     invisible box), through the holed wall 15.8 m; a player walks through the arch; collision drawn over the scene.
   - `botRiders.test.ts` keeps its buggy repaired on its blind drive: the drive's path drifted and went over Iron Maw's
@@ -497,7 +499,7 @@ Status: built and tested locally, being checked (see the end of this section). T
 - **Follow-ups (owner's call):** slack round `box` props (stumps, logs, dishes, car bonnets; `--slack`) and the
   red rock spires; Diamond Park's dugout spawn cut off from the navmesh (before this change too).
 
-### Queued FIRST (owner bug report, 2026-11-06): bullets stop in the air inside arches, windows and holes
+### Fixed by the openings fix above (owner bug report, 2026-11-06): bullets stop in the air inside arches, windows and holes
 The owner's screenshots, in the session scratchpad `openings/` (30.jpg, 31.jpg, 32.jpg), show bullet holes in empty
 air inside openings:
 - a big stone round arch;
