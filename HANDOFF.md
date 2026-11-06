@@ -493,6 +493,21 @@ like 2–3 bots protect a flag, and the rest go out there and try to get the oth
   - The map has sunken dugouts, player tunnels to the clubhouses, a lower bowl, an upper deck and a concourse.
   - Start the investigation here: are bots stuck on navigation in the tunnels and dugouts, held by posts or cover,
     or failing their path to the flag?
+- **Widened (owner, 2026-11-06): "why would some bots not be moving at all?"** This goes beyond CTF.
+  - Screenshot: session scratchpad `openings/idle-bots-fernwood.jpg`, taken in free camera on Fernwood Moon. Two
+    bots stand still: Bamboo by the Garrison shield bunker, and a bot at the corner of the landing pad (a raised
+    slab).
+  - Measure idle time per bot in every mode, with the reason for each idle spell:
+    - hold, post or cover;
+    - stuck on geometry such as a raised slab edge;
+    - noPath back-off;
+    - waiting on a lift, rope lift or ladder;
+    - squad wait;
+    - out of view and coasting.
+  - Fix each cause. A bot should only stand still when it's deliberately holding a spot, and then it should look
+    alive: scanning, shifting, peeking.
+  - Also confirm it isn't a free-camera rendering effect. Animation LOD and dormant/culled state use
+    `scene.activeCamera`, so free cam should be fine, but check that bots near the free camera animate and move.
 
 
 
