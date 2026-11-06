@@ -488,7 +488,8 @@ Status: cb52f4d0 green on `check/openings` (CI run 42156808605, every job); five
     of 8.6-10.7 m round); windows and broken-wall gaps above the ground stay "round" (not walkable).
   - `pnpm validate-map` on all 81 maps that place a changed prop: 79 clean; No Man's Field's logic-loop warning and
     Diamond Park's 113 `nav.disconnected` (spawn_1746 in the dugout) are the same with the old table. Hollowmere
-    Manor and Pharaoh's Reach (the gates and the reed boat, last to switch) again after: clean.
+    Manor and Pharaoh's Reach (the gates and the reed boat) again after they switched, and the eight maps placing the
+    mossy stump and log, the dishes and the generator after theirs: clean.
   - Prop collision boxes on those maps: 14,811 to 32,936 (busiest: Backwoods, St John's ~1,500); navmesh builds
     +10-25 % on the busiest maps, shot raycasts +20-40 % in a random test (machine loaded: noisy). CI's 96-bot
     Frost Basin bench and perf jobs pass; not compared before and after on a quiet machine. Locally, `pnpm
