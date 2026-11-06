@@ -110,7 +110,10 @@ local library, St. John's placements, e2e in editorux) starts from this branch a
   every-pack, z-fight and every-port tests pick them up. Kit pieces a piece needs (an edge style, a room option) go
   into the kit for every map, as `arch_segmental`, `vault` and `collegiate_stone` did.
 
-**Open questions for the owner**
+**Owner's answers (2026-11-06): 1 yes, 2 keep, 3 keep battlements.** The St. John's stones and the Collegiate stone facade
+are right for the campus. The shallow vault stays. Skybridges keep the pack's facade (battlements) by default.
+
+**Open questions for the owner** (answered above)
 - Collegiate Gothic: St. John's own stones (Grey Stone Blocks #d9d5cb walls, Dressed Stone #d8d3c6 trim) and a new
   Collegiate stone facade, rather than Gothic Estate's dark Mossy Castle Stone: right for the campus?
 - The vault is shallow (a 0.27 m rise, from over the door heads to under a 4 m level's floor): its ribs make it read;
