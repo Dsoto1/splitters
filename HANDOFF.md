@@ -276,7 +276,8 @@ noises, etc."
 
 **Sources** (docs/ASSET_SOURCES.md):
 - **Artlist:** not for the game on a standard plan. Waiting on Artlist's written answer (see above).
-- **Recommended: the Sonniss GDC bundles.** They are free, professional, licensed for games and need no credit. Their
+- **Decided (owner, 2026-11-06): "yes use sonniss and freesound."** CLAUDE.md "Content rules" has the rule.
+- **The Sonniss GDC bundles:** they are free, professional, licensed for games and need no credit. Their
   licence is not CC0, so the owner must approve them as a source. Treat their output like purchased assets: processed
   files only, raw files never committed.
 - **Freesound CC0** for gaps.
