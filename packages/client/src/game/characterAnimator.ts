@@ -1605,9 +1605,12 @@ export class CharacterAnimator {
     // In first person the shooting hand is turned onto the grip whatever its rig: the clips' hold is made for a
     // body aiming level, and the view's gun points where you look (a rig's hand looking down lay across the grip).
     gripHand(space, arms.r, world, 'grip', w, true);
-    // ...and a pistol's support hand, whatever its rig: it wraps the shooting hand.
-    const pistol = grip.style === 'pistol';
-    if (pistol && grip.support) gripHand(space, arms.l, world, 'cup', w, true);
+    // ...and a pistol's support hand, whatever its rig: it wraps the shooting hand. (The pistol hold below is a
+    // two-handed one, for a gun's pistol grip: a one-handed hold, the Spear's shaft or the Medkit's handle, keeps the
+    // close it had before it; turned and closed as a raked grip, their fingers stood straight off the shaft and the
+    // handle, 2026-11-06.)
+    const pistol = grip.style === 'pistol' && !!grip.support;
+    if (pistol) gripHand(space, arms.l, world, 'cup', w, true);
     const gun = gunAxes(world);
     // A pistol's hands are turned about their palms so their knuckle lines run down the grip, raked as it is (the
     // fingers close square to it, round the grip instead of up across it); the support hand's a little more, canted
