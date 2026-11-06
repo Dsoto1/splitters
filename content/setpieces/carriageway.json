@@ -1,0 +1,115 @@
+{
+  "$comment": "Carriageway (pend) family: a vaulted passage under a building, a shallow segmental stone arch at each end, a door into the building on each side and the floor above crossing over the arch (the owner's photo: Collegiate Gothic). A piece is a footprint and parts in its own frame: tiles at cells (x east, y north, z levels) from the anchor cell with their own edges and options; blocks, doors and lights at metres from the anchor cell's centre on its level's floor. `{ \"role\": \"stone\" }` takes a material (or a facade, door style, glass) from the placement's role pack (roles.json). Maps name a piece by its id and its parts by index (sp_<placement>_<index>), so an id never changes and parts are only ever added at the end. docs/CONTENT_PIPELINE.md, \"Set pieces\". Edit, then run `node tools/content/setpieces.mjs`.",
+  "family": "carriageway",
+  "pieces": [
+    {
+      "id": "setpiece.carriageway_1",
+      "displayName": "Carriageway",
+      "category": "Gateways",
+      "blurb": "A vaulted passage one cell wide under a building, a segmental stone arch at each end, a door each side into the buildings it joins and a room over the arch.",
+      "packs": ["collegiate", "gothic", "medieval", "imperial", "desert", "harbor"],
+      "footprint": { "cells": [[0, 0]], "levels": [0, 1] },
+      "mirror": "free",
+      "roles": { "glass": "breakable" },
+      "ports": [
+        { "side": "N", "cell": [0, 0], "level": 0, "kind": "opening" },
+        { "side": "S", "cell": [0, 0], "level": 0, "kind": "opening" },
+        { "side": "W", "cell": [0, 0], "level": 0, "kind": "door" },
+        { "side": "E", "cell": [0, 0], "level": 0, "kind": "door" },
+        { "side": "W", "cell": [0, 0], "level": 1, "kind": "door" },
+        { "side": "E", "cell": [0, 0], "level": 1, "kind": "door" }
+      ],
+      "parts": [
+        {
+          "kind": "tile", "tile": "core.room", "x": 0, "y": 0, "z": 0, "rotation": 0,
+          "edges": { "0,0,0:N": "arch_segmental", "0,0,0:S": "arch_segmental", "0,0,0:E": "door", "0,0,0:W": "door" },
+          "surfaces": { "floor": { "role": "paving" }, "walls": { "role": "stone" }, "solids": { "role": "stone" }, "trim": { "role": "trim" } },
+          "options": { "ceiling": "vault" }
+        },
+        {
+          "kind": "tile", "tile": "core.room", "x": 0, "y": 0, "z": 1, "rotation": 0,
+          "edges": { "0,0,0:N": "windows", "0,0,0:S": "windows" },
+          "glass": { "0,0,0:N": { "role": "glass" }, "0,0,0:S": { "role": "glass" } },
+          "surfaces": { "floor": { "role": "floor" }, "walls": { "role": "stone" }, "solids": { "role": "wood" }, "trim": { "role": "trim" }, "roof": { "role": "roof" } },
+          "options": { "ceiling": "roof", "facade": { "role": "facade" } }
+        },
+        { "kind": "door", "name": "West door", "position": [-4, 0, 0], "yaw": 1.5707963267948966, "style": { "role": "door" }, "auto": true },
+        { "kind": "door", "name": "East door", "position": [4, 0, 0], "yaw": 1.5707963267948966, "style": { "role": "door" }, "auto": true },
+        { "kind": "light", "position": [-3.47, 2.3, 2.5], "yaw": 1.5707963267948966, "fixture": "wall", "color": "#ffd9a0", "intensity": 1.1, "range": 9 },
+        { "kind": "light", "position": [3.47, 2.3, -2.5], "yaw": -1.5707963267948966, "fixture": "wall", "color": "#ffd9a0", "intensity": 1.1, "range": 9 },
+        { "kind": "block", "name": "Guard stone", "position": [-2.3, 0, 3.3], "size": [0.4, 0.7, 0.4], "material": { "role": "stone" } },
+        { "kind": "block", "name": "Guard stone", "position": [2.3, 0, 3.3], "size": [0.4, 0.7, 0.4], "material": { "role": "stone" } },
+        { "kind": "block", "name": "Guard stone", "position": [-2.3, 0, -3.3], "size": [0.4, 0.7, 0.4], "material": { "role": "stone" } },
+        { "kind": "block", "name": "Guard stone", "position": [2.3, 0, -3.3], "size": [0.4, 0.7, 0.4], "material": { "role": "stone" } },
+        { "kind": "light", "position": [0, 7.3, 0], "fixture": "ceiling", "color": "#fff1d6", "intensity": 1, "range": 10 }
+      ],
+      "markers": [{ "name": "passage_doors", "kind": "doorPair", "parts": [2, 3] }]
+    },
+    {
+      "id": "setpiece.carriageway_2",
+      "displayName": "Wide Carriageway",
+      "category": "Gateways",
+      "blurb": "A vaulted passage two cells wide under a building: twin segmental arches at each end on a central pier, a column under the vaults' middle beam, a door each side and two rooms over the arches.",
+      "packs": ["collegiate", "gothic", "medieval", "imperial", "desert", "harbor"],
+      "footprint": { "cells": [[0, 0], [1, 0]], "levels": [0, 1] },
+      "mirror": "free",
+      "roles": { "glass": "breakable" },
+      "ports": [
+        { "side": "N", "cell": [0, 0], "level": 0, "kind": "opening" },
+        { "side": "N", "cell": [1, 0], "level": 0, "kind": "opening" },
+        { "side": "S", "cell": [0, 0], "level": 0, "kind": "opening" },
+        { "side": "S", "cell": [1, 0], "level": 0, "kind": "opening" },
+        { "side": "W", "cell": [0, 0], "level": 0, "kind": "door" },
+        { "side": "E", "cell": [1, 0], "level": 0, "kind": "door" },
+        { "side": "W", "cell": [0, 0], "level": 1, "kind": "door" },
+        { "side": "E", "cell": [1, 0], "level": 1, "kind": "door" }
+      ],
+      "parts": [
+        {
+          "kind": "tile", "tile": "core.room", "x": 0, "y": 0, "z": 0, "rotation": 0,
+          "edges": { "0,0,0:N": "arch_segmental", "0,0,0:S": "arch_segmental", "0,0,0:E": "open", "0,0,0:W": "door" },
+          "surfaces": { "floor": { "role": "paving" }, "walls": { "role": "stone" }, "solids": { "role": "stone" }, "trim": { "role": "trim" } },
+          "options": { "ceiling": "vault" }
+        },
+        {
+          "kind": "tile", "tile": "core.room", "x": 1, "y": 0, "z": 0, "rotation": 0,
+          "edges": { "0,0,0:N": "arch_segmental", "0,0,0:S": "arch_segmental", "0,0,0:E": "door", "0,0,0:W": "open" },
+          "surfaces": { "floor": { "role": "paving" }, "walls": { "role": "stone" }, "solids": { "role": "stone" }, "trim": { "role": "trim" } },
+          "options": { "ceiling": "vault" }
+        },
+        {
+          "kind": "tile", "tile": "core.room", "x": 0, "y": 0, "z": 1, "rotation": 0,
+          "edges": { "0,0,0:N": "windows", "0,0,0:S": "windows", "0,0,0:E": "open" },
+          "glass": { "0,0,0:N": { "role": "glass" }, "0,0,0:S": { "role": "glass" } },
+          "surfaces": { "floor": { "role": "floor" }, "walls": { "role": "stone" }, "solids": { "role": "wood" }, "trim": { "role": "trim" }, "roof": { "role": "roof" } },
+          "options": { "ceiling": "roof", "facade": { "role": "facade" } }
+        },
+        {
+          "kind": "tile", "tile": "core.room", "x": 1, "y": 0, "z": 1, "rotation": 0,
+          "edges": { "0,0,0:N": "windows", "0,0,0:S": "windows", "0,0,0:W": "open" },
+          "glass": { "0,0,0:N": { "role": "glass" }, "0,0,0:S": { "role": "glass" } },
+          "surfaces": { "floor": { "role": "floor" }, "walls": { "role": "stone" }, "solids": { "role": "wood" }, "trim": { "role": "trim" }, "roof": { "role": "roof" } },
+          "options": { "ceiling": "roof", "facade": { "role": "facade" } }
+        },
+        { "kind": "door", "name": "West door", "position": [-4, 0, 0], "yaw": 1.5707963267948966, "style": { "role": "door" }, "auto": true },
+        { "kind": "door", "name": "East door", "position": [12, 0, 0], "yaw": 1.5707963267948966, "style": { "role": "door" }, "auto": true },
+        { "kind": "block", "name": "Column", "position": [4, 0, 0], "size": [0.8, 2.45, 0.8], "material": { "role": "stone" } },
+        { "kind": "light", "position": [-3.47, 2.3, 2.5], "yaw": 1.5707963267948966, "fixture": "wall", "color": "#ffd9a0", "intensity": 1.1, "range": 9 },
+        { "kind": "light", "position": [-3.47, 2.3, -2.5], "yaw": 1.5707963267948966, "fixture": "wall", "color": "#ffd9a0", "intensity": 1.1, "range": 9 },
+        { "kind": "light", "position": [11.47, 2.3, 2.5], "yaw": -1.5707963267948966, "fixture": "wall", "color": "#ffd9a0", "intensity": 1.1, "range": 9 },
+        { "kind": "light", "position": [11.47, 2.3, -2.5], "yaw": -1.5707963267948966, "fixture": "wall", "color": "#ffd9a0", "intensity": 1.1, "range": 9 },
+        { "kind": "block", "name": "Guard stone", "position": [-2.3, 0, 3.3], "size": [0.4, 0.7, 0.4], "material": { "role": "stone" } },
+        { "kind": "block", "name": "Guard stone", "position": [2.3, 0, 3.3], "size": [0.4, 0.7, 0.4], "material": { "role": "stone" } },
+        { "kind": "block", "name": "Guard stone", "position": [5.7, 0, 3.3], "size": [0.4, 0.7, 0.4], "material": { "role": "stone" } },
+        { "kind": "block", "name": "Guard stone", "position": [10.3, 0, 3.3], "size": [0.4, 0.7, 0.4], "material": { "role": "stone" } },
+        { "kind": "block", "name": "Guard stone", "position": [-2.3, 0, -3.3], "size": [0.4, 0.7, 0.4], "material": { "role": "stone" } },
+        { "kind": "block", "name": "Guard stone", "position": [2.3, 0, -3.3], "size": [0.4, 0.7, 0.4], "material": { "role": "stone" } },
+        { "kind": "block", "name": "Guard stone", "position": [5.7, 0, -3.3], "size": [0.4, 0.7, 0.4], "material": { "role": "stone" } },
+        { "kind": "block", "name": "Guard stone", "position": [10.3, 0, -3.3], "size": [0.4, 0.7, 0.4], "material": { "role": "stone" } },
+        { "kind": "light", "position": [0, 7.3, 0], "fixture": "ceiling", "color": "#fff1d6", "intensity": 1, "range": 10 },
+        { "kind": "light", "position": [8, 7.3, 0], "fixture": "ceiling", "color": "#fff1d6", "intensity": 1, "range": 10 }
+      ],
+      "markers": [{ "name": "passage_doors", "kind": "doorPair", "parts": [4, 5] }]
+    }
+  ]
+}

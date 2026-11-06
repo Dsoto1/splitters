@@ -3,7 +3,7 @@
 import type { EdgeShape } from '../map/tileOptions.ts';
 
 /** Every edge style, in MapMaker's order. `auto` and `open` are rules (map/geometry.ts resolveEdge). */
-export const EDGE_STYLES = ['auto', 'wall', 'door', 'wide', 'arch', 'window', 'windows', 'slit', 'half', 'railing', 'high', 'tower', 'fence', 'broken', 'bars', 'shutter', 'open'] as const;
+export const EDGE_STYLES = ['auto', 'wall', 'door', 'wide', 'arch', 'arch_segmental', 'window', 'windows', 'slit', 'half', 'railing', 'high', 'tower', 'fence', 'broken', 'bars', 'shutter', 'open'] as const;
 
 export const EDGE_STYLE_LABELS: Readonly<Record<(typeof EDGE_STYLES)[number], string>> = {
   auto: 'Auto',
@@ -11,6 +11,7 @@ export const EDGE_STYLE_LABELS: Readonly<Record<(typeof EDGE_STYLES)[number], st
   door: 'Doorway',
   wide: 'Wide doorway',
   arch: 'Archway',
+  arch_segmental: 'Segmental arch',
   window: 'Window',
   windows: 'Twin windows',
   slit: 'Firing slit',
@@ -32,6 +33,8 @@ export const EDGE_SHAPES: Readonly<Partial<Record<(typeof EDGE_STYLES)[number], 
   door: { segments: [{ u: [{ half: -1 }, -1.5], y: [0, { height: 1 }] }, { u: [1.5, { half: 1 }], y: [0, { height: 1 }] }, { u: [-1.5, 1.5], y: [{ upTo: 3 }, { height: 1 }] }], trim: [{ base: [{ half: -1 }, -1.66] }, { base: [1.66, { half: 1 }] }, { cornice: [{ half: -1 }, { half: 1 }] }, { frame: { half: 1.5, top: 3 } }], openings: [[-1.5, 1.5, 0, 3]], dressing: { kind: 'door', span: 3 } },
   wide: { segments: [{ u: [{ half: -1 }, -2.5], y: [0, { height: 1 }] }, { u: [2.5, { half: 1 }], y: [0, { height: 1 }] }, { u: [-2.5, 2.5], y: [{ upTo: 3.5 }, { height: 1 }] }], trim: [{ base: [{ half: -1 }, -2.66] }, { base: [2.66, { half: 1 }] }, { cornice: [{ half: -1 }, { half: 1 }] }, { frame: { half: 2.5, top: 3.5 } }], openings: [[-2.5, 2.5, 0, 3.5]], dressing: { kind: 'door', span: 5 } },
   arch: { segments: [{ u: [{ half: -1 }, { half: -1, add: 0.75 }], y: [0, { height: 1 }] }, { u: [{ half: 1, add: -0.75 }, { half: 1 }], y: [0, { height: 1 }] }, { u: [{ half: -1, add: 0.75 }, { half: 1, add: -0.75 }], y: [{ upTo: 3.4 }, { height: 1 }] }], trim: [{ base: [{ half: -1 }, { half: -1, add: 0.75 }] }, { base: [{ half: 1, add: -0.75 }, { half: 1 }] }, { cornice: [{ half: -1 }, { half: 1 }] }, { u: [{ half: -1, add: 0.75 }, { half: 1, add: -0.75 }], y: [3.25, 3.4], depth: 0.08 }], openings: [[-3.25, 3.25, 0, 3.4]], dressing: { kind: 'door', span: 6.5 } },
+  // design: A shallow segmental arch 5 m wide, springing at 2.7 m and rising 0.6 m to its crown at 3.3 m (a carriageway or pend under a building: docs/SET_PIECES_PLAN.md). Its collision steps over the curve and never dips below it (the stone over the opening starts at most 0.14 m above the curve, so no round stops in the air under it); eleven voussoirs and a keystone dress both faces (the outer one where nothing is built beyond the side) and a soffit covers the steps from below. No facade: the arch dresses itself.
+  arch_segmental: { segments: [{ u: [{ half: -1 }, -2.5], y: [0, { height: 1 }] }, { u: [2.5, { half: 1 }], y: [0, { height: 1 }] }, { u: [-2.5, -2.3], y: [{ upTo: 2.8 }, { height: 1 }] }, { u: [-2.3, -2], y: [{ upTo: 2.93 }, { height: 1 }] }, { u: [-2, -1.6], y: [{ upTo: 3.07 }, { height: 1 }] }, { u: [-1.6, -1.1], y: [{ upTo: 3.19 }, { height: 1 }] }, { u: [-1.1, -0.55], y: [{ upTo: 3.28 }, { height: 1 }] }, { u: [-0.55, 0.55], y: [{ upTo: 3.3 }, { height: 1 }] }, { u: [0.55, 1.1], y: [{ upTo: 3.28 }, { height: 1 }] }, { u: [1.1, 1.6], y: [{ upTo: 3.19 }, { height: 1 }] }, { u: [1.6, 2], y: [{ upTo: 3.07 }, { height: 1 }] }, { u: [2, 2.3], y: [{ upTo: 2.93 }, { height: 1 }] }, { u: [2.3, 2.5], y: [{ upTo: 2.8 }, { height: 1 }] }], trim: [{ base: [{ half: -1 }, -2.66] }, { base: [2.66, { half: 1 }] }, { cornice: [{ half: -1 }, { half: 1 }] }, { arch: { u: [-2.5, 2.5], y: [2.7, 3.3], count: 11, band: 0.45, key: 0.25 }, outside: true }], openings: [[-2.5, 2.5, 0, 3.3]], dressing: { kind: 'door', span: 5 } },
   // design: Sill 0.9 m, opening 1.6 m: jump and crouch (legs tucked) to climb through.
   window: { segments: [{ u: [{ half: -1 }, -1.3], y: [0, { height: 1 }] }, { u: [1.3, { half: 1 }], y: [0, { height: 1 }] }, { u: [-1.3, 1.3], y: [0, 0.9] }, { u: [-1.3, 1.3], y: [{ upTo: 2.5 }, { height: 1 }] }], trim: [{ base: [{ half: -1 }, { half: 1 }] }, { cornice: [{ half: -1 }, { half: 1 }] }, { window: { u: [-1.3, 1.3], y: [0.9, 2.5] } }], openings: [[-1.3, 1.3, 0.9, 2.5]], dressing: { kind: 'window', span: 2.6 } },
   windows: { segments: [{ u: [{ half: -1 }, -2.7], y: [0, { height: 1 }] }, { u: [-0.8, 0.8], y: [0, { height: 1 }] }, { u: [2.7, { half: 1 }], y: [0, { height: 1 }] }, { u: [-2.7, -0.8], y: [0, 0.9] }, { u: [0.8, 2.7], y: [0, 0.9] }, { u: [-2.7, -0.8], y: [{ upTo: 2.5 }, { height: 1 }] }, { u: [0.8, 2.7], y: [{ upTo: 2.5 }, { height: 1 }] }], trim: [{ base: [{ half: -1 }, { half: 1 }] }, { cornice: [{ half: -1 }, { half: 1 }] }, { window: { u: [-2.7, -0.8], y: [0.9, 2.5] } }, { window: { u: [0.8, 2.7], y: [0.9, 2.5] } }], openings: [[-2.7, -0.8, 0.9, 2.5], [0.8, 2.7, 0.9, 2.5]], dressing: { kind: 'window', span: 5.4 } },

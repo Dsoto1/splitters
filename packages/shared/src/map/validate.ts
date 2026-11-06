@@ -22,6 +22,9 @@ import { airplaneIssues } from '../sim/airplane.ts';
 import { arcSentryIssues } from '../sim/mounts.ts';
 import { ziplineShapeIssues } from '../sim/zipline.ts';
 import { GLASS_EDGES } from '../sim/glass.ts';
+import { expandSetPieces, setPieceOverlapIssues, type SetPieceLibrary } from './setPieces.ts';
+import { builtInSetPieces } from './setPieceLibrary.ts';
+import { checkSetPieceDefinition } from './setPieceCheck.ts';
 
 export type IssueSeverity = 'error' | 'warning' | 'suggestion';
 
@@ -41,8 +44,12 @@ export type LoadResult =
  * Parse untrusted map JSON: migrate, schema-validate, then run semantic checks.
  * `ok` is false only when the map cannot be used at all (errors); warnings and
  * suggestions ride along with a usable map.
+ *
+ * As played (the default), set pieces are expanded into their parts (map/setPieces.ts) and paths laid into the
+ * ground. `forEditing` (MapMaker) keeps both apart: the placements and the paths stay as they are, so the parts and
+ * the ground follow them. Either way the checks see the expanded map.
  */
-export function loadMap(json: string | unknown, catalog: TileCatalog = coreCatalog, opts: { forEditing?: boolean } = {}): LoadResult {
+export function loadMap(json: string | unknown, catalog: TileCatalog = coreCatalog, opts: { forEditing?: boolean; library?: SetPieceLibrary } = {}): LoadResult {
   let raw: unknown = json;
   // Size first, before any parsing: a map is at most RESOURCE_BUDGETS.mapBytes of JSON wherever it comes from.
   const bytes = typeof json === 'string' ? utf8Length(json) : utf8Length(JSON.stringify(json) ?? '');
@@ -70,22 +77,43 @@ export function loadMap(json: string | unknown, catalog: TileCatalog = coreCatal
       issues: parsed.error.issues.map((i) => ({ severity: 'error', code: 'schema', message: `${i.path.join('.') || '(root)'}: ${i.message}` })),
     };
   }
-  const issues = validateMap(parsed.data, catalog);
+  const library = opts.library ?? builtInSetPieces();
+  const issues = validateMap(parsed.data, catalog, library);
   if (issues.some((i) => i.severity === 'error')) return { ok: false, issues };
-  // As played: paths laid into the ground (paths.ts; MapMaker keeps them apart, `forEditing`, so the ground
-  // follows a path that moves), then terrain kept under every floor (settle.ts terrainUnderFloors).
-  let map = opts.forEditing ? parsed.data : withPathsLaid(parsed.data);
+  // As played: set pieces expanded into their parts, paths laid into the ground (paths.ts; MapMaker keeps both
+  // apart, `forEditing`, so parts and ground follow a piece or a path that moves), then terrain kept under every
+  // floor, the set pieces' floors too (settle.ts terrainUnderFloors).
+  const expanded = expandSetPieces(parsed.data, library, catalog).map;
+  let map = opts.forEditing ? expanded : withPathsLaid(expanded);
   if (map.terrain) {
     const boxes = buildMapGeometry(map, catalog);
     // Props MapMaker bedded on the ground stay bedded on the ground as played (settle.ts rebedProps).
     if (parsed.data.terrain && map.terrain !== parsed.data.terrain) map = rebedProps(map, parsed.data.terrain, map.terrain, boxes);
     map = { ...map, terrain: terrainUnderFloors(map, boxes) };
   }
+  if (opts.forEditing && expanded !== parsed.data) map = { ...parsed.data, terrain: map.terrain };
   return { ok: true, map, issues, migratedFrom: migrated.fromVersion };
 }
 
-/** Semantic validation of a schema-valid map. Navigation reachability lives in nav/ (needs Recast). */
-export function validateMap(map: MapDocument, catalog: TileCatalog = coreCatalog): ValidationIssue[] {
+/**
+ * Semantic validation of a schema-valid map. Navigation reachability lives in nav/ (needs Recast). A map with set
+ * pieces is checked as played: its placements expanded into their parts (whose issues name the placement), their
+ * footprints against the map's tiles and each other, and the map's own set-piece definitions.
+ */
+export function validateMap(map: MapDocument, catalog: TileCatalog = coreCatalog, library: SetPieceLibrary = builtInSetPieces()): ValidationIssue[] {
+  if (map.setPieces === undefined && map.setPieceDefs === undefined) return validateExpanded(map, map, catalog);
+  const ex = expandSetPieces(map, library, catalog);
+  const issues: ValidationIssue[] = [...ex.issues, ...setPieceOverlapIssues(map, ex, buildOccupancy(map, catalog).cells)];
+  for (const def of map.setPieceDefs ?? []) for (const p of checkSetPieceDefinition(def, { packs: library.packs, catalog })) issues.push({ severity: 'warning', code: 'setpiece.def', message: `the map's set piece ${def.id}: ${p}` });
+  for (const i of validateExpanded(ex.map, map, catalog)) {
+    const placement = i.targetId ? ex.partOf.get(i.targetId) : undefined;
+    issues.push(placement ? { ...i, targetId: placement } : i);
+  }
+  return issues;
+}
+
+/** validateMap on a map with no set pieces (or one expanded): `stored` is the map as saved (its release stamp is checked against that). */
+function validateExpanded(map: MapDocument, stored: MapDocument, catalog: TileCatalog): ValidationIssue[] {
   const issues: ValidationIssue[] = [];
 
   const seen = new Set<string>();
@@ -211,7 +239,7 @@ export function validateMap(map: MapDocument, catalog: TileCatalog = coreCatalog
   issues.push(...glassIssues(map, catalog));
   issues.push(...validateScenario(map));
   issues.push(...resourceBudgetIssues(map));
-  if (map.metadata.release && map.metadata.release.contentHash !== mapContentHash(map)) {
+  if (stored.metadata.release && stored.metadata.release.contentHash !== mapContentHash(stored)) {
     issues.push({ severity: 'warning', code: 'release.changed', message: 'changed since it was exported: the next export gives it a new version' });
   }
   issues.push(...validateTrack(map));

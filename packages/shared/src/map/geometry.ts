@@ -1,5 +1,5 @@
 import { PLAYER } from '../sim/constants.ts';
-import { MODEL_FACADES, SIDES, SIDE_DIRS, TILE_DIMENSIONS, coreCatalog, floorInsertBoxes, footprintSize, roomLayoutBoxes, seededRandom, type Corner, type EdgeRepeat, type EdgeShape, type EdgeStyle, type EdgeValue, type Facade, type LocalBox, type Side, type TileCatalog, type TileDefinition } from './catalog.ts';
+import { MODEL_FACADES, SIDES, SIDE_DIRS, TILE_DIMENSIONS, coreCatalog, floorInsertBoxes, footprintSize, roomLayoutBoxes, seededRandom, vault, type Corner, type EdgeArch, type EdgeRepeat, type EdgeShape, type EdgeStyle, type EdgeValue, type Facade, type LocalBox, type Side, type TileCatalog, type TileDefinition } from './catalog.ts';
 import type { MapDocument, MapEntity, TilePlacement } from './schema.ts';
 import { logicTargets } from './logic.ts';
 import { getProp } from '../content/props.ts';
@@ -302,27 +302,118 @@ export function edgeSegments(style: ResolvedEdge, half: number, height: number):
   return out;
 }
 
-/** Visual trim for an edge (inner face only): [u0, u1, y0, y1, depth] standing off the wall face. */
-export function edgeTrim(style: ResolvedEdge, half: number, height: number): [number, number, number, number, number][] {
-  const out: [number, number, number, number, number][] = [];
+/**
+ * One trim box of a side, in the side's own frame: u along it, y up, v in from the cell's boundary (v0 < v1: the wall
+ * itself spans v 0 to its thickness), turned `tilt` radians in the wall's plane about its middle (the +u end rises).
+ */
+export interface SideTrim {
+  u0: number;
+  u1: number;
+  y0: number;
+  y1: number;
+  v0: number;
+  v1: number;
+  tilt?: number;
+  /** On the wall's inner face: how far it stands off it (v1 - v0, as the style gives it). */
+  depth?: number;
+}
+
+/** How thick a segmental arch's soffit is (from the curve up into the wall: it covers the stepped collision above it). */
+const ARCH_SOFFIT = 0.2;
+/** The joint between two voussoirs, along the curve. */
+const ARCH_JOINT = 0.025;
+
+/**
+ * A segmental arch's dressing on one face: its voussoirs (the keystone `key` m taller in the middle of an odd count)
+ * on the circle through the springing points and the crown, each standing off the face from `v0` by its depth, and
+ * (`soffit`) the arch's underside through the wall's thickness `t`, tangent to the curve.
+ */
+function archTrim(a: EdgeArch, v0: number, outward: boolean, soffit: number): SideTrim[] {
+  const [u0, u1] = a.u;
+  const [spring, crown] = a.y;
+  const c = (u1 - u0) / 2;
+  const rise = crown - spring;
+  if (!(c > 0 && rise > 0 && a.count >= 1)) return [];
+  const mid = (u0 + u1) / 2;
+  const r = (c * c + rise * rise) / (2 * rise);
+  const centre = crown - r;
+  const sweep = Math.asin(Math.min(1, c / r));
+  const step = (2 * sweep) / a.count;
+  const halfLen = r * Math.tan(step / 2);
+  const depth = a.depth ?? 0.06;
+  const out: SideTrim[] = [];
+  const piece = (at: number, radius: number, along: number, band: number, va: number, vb: number, depth?: number) => {
+    const u = mid + (radius + band / 2) * Math.sin(at);
+    const y = centre + (radius + band / 2) * Math.cos(at);
+    out.push({ u0: u - along, u1: u + along, y0: y - band / 2, y1: y + band / 2, v0: va, v1: vb, ...(at ? { tilt: -at } : {}), ...(depth !== undefined ? { depth } : {}) });
+  };
+  for (let i = 0; i < a.count; i++) {
+    const at = -sweep + (i + 0.5) * step;
+    const key = a.count % 2 === 1 && i === (a.count - 1) / 2;
+    const band = a.band + (key ? (a.key ?? 0) : 0);
+    const d = key ? depth + 0.04 : depth;
+    piece(at, r, halfLen - ARCH_JOINT / 2, band, outward ? v0 - d : v0, outward ? v0 : v0 + d, outward ? undefined : d);
+    if (soffit > 0) piece(at, r, halfLen, ARCH_SOFFIT, 0, soffit);
+  }
+  return out;
+}
+
+/**
+ * Every trim box of an edge style on one side (map/geometry.ts draws them; they never collide): the pieces on the
+ * wall's inner face, standing off it from `from` (the style's trimFrom, else the wall thickness); an arch's soffit
+ * through the wall; and with `outer`, the pieces marked `outside` once more on the wall's outer face (the cell's
+ * boundary), for a side nothing is built beyond.
+ */
+export function edgeTrimBoxes(style: ResolvedEdge, half: number, height: number, outer = false): SideTrim[] {
+  const shape = shapeOf(style);
+  const from = shape?.trimFrom ?? TILE_DIMENSIONS.wallThickness;
+  const out: SideTrim[] = [];
+  const at = (u0: number, u1: number, y0: number, y1: number, depth: number) => out.push({ u0, u1, y0, y1, v0: from, v1: from + depth, depth });
   const v = (x: EdgeValue) => edgeValue(x, half, height);
-  for (const p of shapeOf(style)?.trim ?? []) {
-    if ('base' in p) out.push([v(p.base[0]), v(p.base[1]), 0, 0.16, 0.04]);
+  for (const p of shape?.trim ?? []) {
+    if ('base' in p) at(v(p.base[0]), v(p.base[1]), 0, 0.16, 0.04);
     else if ('cornice' in p) {
-      if (height >= 3) out.push([v(p.cornice[0]), v(p.cornice[1]), height - 0.2, height, 0.07]);
+      if (height >= 3) at(v(p.cornice[0]), v(p.cornice[1]), height - 0.2, height, 0.07);
     } else if ('frame' in p) {
       const { half: d, top: h } = p.frame;
-      if (height > h + 0.2) out.push([-d - 0.16, -d, 0, h, 0.06], [d, d + 0.16, 0, h, 0.06], [-d - 0.16, d + 0.16, h, h + 0.16, 0.06]);
+      if (height > h + 0.2) {
+        at(-d - 0.16, -d, 0, h, 0.06);
+        at(d, d + 0.16, 0, h, 0.06);
+        at(-d - 0.16, d + 0.16, h, h + 0.16, 0.06);
+      }
     } else if ('window' in p) {
       const [u0, u1] = p.window.u;
       const [y0, y1] = p.window.y;
-      out.push([u0 - 0.08, u1 + 0.08, y0 - 0.08, y0, 0.12], [u0 - 0.1, u1 + 0.1, y1, y1 + 0.12, 0.05], [u0 - 0.1, u0, y0, y1, 0.05], [u1, u1 + 0.1, y0, y1, 0.05]);
-    } else if (p.repeat) {
-      const [o0, o1] = p.u as readonly [number, number];
-      repeatAlong(p.repeat, half, height, (u) => out.push([u + o0, u + o1, v(p.y[0]), v(p.y[1]), p.depth]));
-    } else out.push([v(p.u[0]), v(p.u[1]), v(p.y[0]), v(p.y[1]), p.depth]);
+      at(u0 - 0.08, u1 + 0.08, y0 - 0.08, y0, 0.12);
+      at(u0 - 0.1, u1 + 0.1, y1, y1 + 0.12, 0.05);
+      at(u0 - 0.1, u0, y0, y1, 0.05);
+      at(u1, u1 + 0.1, y0, y1, 0.05);
+    } else if ('arch' in p) {
+      out.push(...archTrim(p.arch, from, false, Math.min(from, TILE_DIMENSIONS.wallThickness)));
+      if (outer && p.outside) out.push(...archTrim(p.arch, 0, true, 0));
+    } else {
+      const pieces: [number, number][] = [];
+      if (p.repeat) {
+        const [o0, o1] = p.u as readonly [number, number];
+        repeatAlong(p.repeat, half, height, (u) => pieces.push([u + o0, u + o1]));
+      } else pieces.push([v(p.u[0]), v(p.u[1])]);
+      for (const [u0, u1] of pieces) {
+        at(u0, u1, v(p.y[0]), v(p.y[1]), p.depth);
+        if (outer && p.outside) out.push({ u0, u1, y0: v(p.y[0]), y1: v(p.y[1]), v0: -p.depth, v1: 0 });
+      }
+    }
   }
   return out;
+}
+
+/**
+ * Visual trim for an edge on its inner face: [u0, u1, y0, y1, depth] standing off the wall face, and a sixth number,
+ * the turn in the wall's plane, for the tilted pieces (an arch's voussoirs). edgeTrimBoxes has every piece.
+ */
+export function edgeTrim(style: ResolvedEdge, half: number, height: number): ([number, number, number, number, number] | [number, number, number, number, number, number])[] {
+  return edgeTrimBoxes(style, half, height)
+    .filter((p) => p.depth !== undefined)
+    .map((p) => (p.tilt ? [p.u0, p.u1, p.y0, p.y1, p.depth!, p.tilt] : [p.u0, p.u1, p.y0, p.y1, p.depth!]));
 }
 
 /** True when both cells on either side of this edge expose a port toward each other. */
@@ -527,10 +618,10 @@ function buildBoxes(map: MapDocument, catalog: TileCatalog, decor: boolean): Wor
     for (const side of SIDES) {
       const style = resolveEdge(cells, gx, gy, gz, side);
       if (decor) {
-        const t = shapeOf(style)?.trimFrom ?? TILE_DIMENSIONS.wallThickness;
-        for (const [u0, u1, y0, y1, depth] of edgeTrim(style, half, levelHeight)) {
-          boxes.push(sideBox(side, cx, cz, half, u0, u1, baseY + y0, baseY + y1, t, t + depth, id, 'trim'));
-        }
+        // Trim marked `outside` dresses the wall's outer face too where nothing is built beyond (an arch from the street).
+        const [dx, dy] = SIDE_DIRS[side];
+        const outer = !cells.has(cellKey(gx + dx, gy + dy, gz));
+        for (const p of edgeTrimBoxes(style, half, levelHeight, outer)) boxes.push(sideTrimBox(side, cx, cz, half, baseY, p, id));
       } else {
         for (const [u0, u1, y0, y1, t] of edgeSegments(style, half, levelHeight)) {
           boxes.push(sideBox(side, cx, cz, half, u0, u1, baseY + y0, baseY + y1, 0, t, id, 'wall'));
@@ -661,6 +752,7 @@ function roomOptionBoxes(map: MapDocument, catalog: TileCatalog, cells: Map<stri
           roof(h, -h, half, h);
         } else roof(-half, -half, half, half);
       }
+      if (o.ceiling === 'vault' && !decor) out.push(...vaultBoxes(cells, x, y, z, def, placement, cellSize, levelHeight));
       if (o.corners && o.corners !== 'square') {
         const y0 = z * levelHeight;
         for (const [a, b, sx, sz] of CELL_CORNERS) {
@@ -674,6 +766,56 @@ function roomOptionBoxes(map: MapDocument, catalog: TileCatalog, cells: Map<stri
     }
   }
   return { boxes: out, noSlabs, ownLayout };
+}
+
+/** A vaulted ceiling's strips: 0.2 m thick, their tops at the underside of the floor or roof above. */
+const VAULT_T = 0.2;
+
+/**
+ * The vaulted ceiling (room option `vault`) of one cell of a room: a shallow segmental barrel vault along the room's
+ * long way (local y when it is at least as deep as wide), springing 0.5 m in from each side at 2.9 m (on a 4 m level)
+ * and rising to 3.29 m, its strips' tops just under the floor or roof above. It stops at the walls across its ends
+ * and runs on through a side with none (into the next vaulted cell). A side that can't carry its springing (no wall,
+ * or one lower or thinner than a standard wall: railings, half walls, fences, bars) gets a beam under it, 0.5 m wide
+ * and 0.45 m deep; two vaulted cells side by side share theirs.
+ */
+function vaultBoxes(cells: Map<string, CellOccupant>, gx: number, gy: number, gz: number, def: TileDefinition, placement: TilePlacement, cellSize: number, levelHeight: number): WorldBox[] {
+  const half = cellSize / 2;
+  const t = TILE_DIMENSIONS.wallThickness;
+  const [w, d] = footprintSize(def);
+  // Along the room's long way, in the world: local y is world z unless the room is turned a quarter (or three).
+  const alongZ = (d >= w) === (placement.rotation % 2 === 0);
+  const [spring0, spring1, end0, end1]: [Side, Side, Side, Side] = alongZ ? ['W', 'E', 'S', 'N'] : ['S', 'N', 'W', 'E'];
+  const segs = (side: Side) => edgeSegments(resolveEdge(cells, gx, gy, gz, side), half, levelHeight);
+  const inset = (side: Side) => Math.max(0, ...segs(side).map((g) => g[4]));
+  const top = levelHeight - TILE_DIMENSIONS.floorThickness;
+  const crown = top - VAULT_T - 0.01;
+  const spring = crown - 0.39;
+  const cx = gx * cellSize;
+  const cz = gy * cellSize;
+  const baseY = gz * levelHeight;
+  // Across the vault (x for a vault along z), and along it between the walls at its ends.
+  const [a0, a1] = alongZ ? [cx, cz] : [cz, cx];
+  const span: [number, number] = [a0 - half + t, a0 + half - t];
+  const along: [number, number] = [a1 - half + inset(end0), a1 + half - inset(end1)];
+  const id = placement.id;
+  const out: WorldBox[] = vault(alongZ ? 'z' : 'x', span, along, baseY + spring, baseY + crown, 12, VAULT_T, 'wall').map((b) => ({
+    min: [...b.min],
+    max: [...b.max],
+    kind: 'wall' as const,
+    sourceId: id,
+    ...(b.pitch ? { pitch: b.pitch } : {}),
+    ...(b.roll ? { roll: b.roll } : {}),
+  }));
+  for (const [side, sign] of [[spring0, -1], [spring1, 1]] as const) {
+    // Carried by a standard wall at least as high as the springing (a doorway's piers and lintel count).
+    if (segs(side).some((g) => g[4] >= t - 0.05 && g[3] >= spring)) continue;
+    const across: [number, number] = sign < 0 ? [a0 - half, a0 - half + t] : [a0 + half - t, a0 + half];
+    const y0 = baseY + spring - 0.45;
+    const y1 = baseY + top;
+    out.push(alongZ ? { min: [across[0], y0, along[0]], max: [across[1], y1, along[1]], kind: 'wall', sourceId: id } : { min: [along[0], y0, across[0]], max: [along[1], y1, across[1]], kind: 'wall', sourceId: id });
+  }
+  return out;
 }
 
 /** One corner treatment at an inside corner (ix, iz), the room lying toward (-sx, -sz). */
@@ -863,6 +1005,13 @@ function sideBox(side: Side, cx: number, cz: number, half: number, u0: number, u
     case 'W':
       return { min: [cx - half + v0, y0, cz + u0], max: [cx - half + v1, y1, cz + u1], kind, sourceId };
   }
+}
+
+/** A trim box on one side of a cell (edgeTrimBoxes): tilted in the wall's plane, it is rolled on a north or south side (u runs along x) and pitched on an east or west one (u along z). */
+function sideTrimBox(side: Side, cx: number, cz: number, half: number, baseY: number, p: SideTrim, sourceId: string): WorldBox {
+  const b = sideBox(side, cx, cz, half, p.u0, p.u1, baseY + p.y0, baseY + p.y1, p.v0, p.v1, sourceId, 'trim');
+  if (!p.tilt) return b;
+  return side === 'N' || side === 'S' ? { ...b, roll: p.tilt } : { ...b, pitch: p.tilt };
 }
 
 function rotateLocalBox(box: LocalBox, rotation: number, cx: number, baseY: number, cz: number, sourceId: string, kind: BoxKind): WorldBox {
