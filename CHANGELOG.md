@@ -12,7 +12,7 @@ made only on a commit that passed CI on a check branch.
 arch and a ruined wall's window on Fogbound, and under a giant root on Fernwood Moon, with puffs in the air by the trees)
 - **Openings are open**: arches, windows, holes, doorways, gates, the space under tables, beds, bridges, stalls and
   balconies, the inside of tents and boats and the wide gaps in fences (0.5 m and up: bars closer than that still stop
-  rounds) no longer stop rounds or players. 129 props now collide with
+  rounds) no longer stop rounds or players. 134 props now collide with
   boxes that follow their model in 3D (voxel collision: the Quaternius ruins' arches and walls, the dungeon arch, the
   giant root, the Wild West balconies, gallows and wagons, the sci-fi trusses and frames, the skytrain, the armoured
   truck, the gantry crane, the fence gates, the hedge gate, the drawbridge, tables, bunks, stalls, siege engines and
@@ -23,7 +23,8 @@ arch and a ruined wall's window on Fogbound, and under a giant root on Fernwood 
   crown or an arm to one side moves off the trunk (birches 1.5 m off, the broadleaf trees 0.6 m, street lights 0.9 m),
   so rounds stopped in the air beside the tree and you could walk through the trunk. The column now stands on the
   trunk, as thick as it, follows a palm's or a leaning trunk's curve, and stops where a broadleaf tree forks
-  (47 trees and poles). This was the Fernwood Moon screenshot: its broadleaf trees and pines.
+  (47 trees and poles). This was the Fernwood Moon screenshot: its broadleaf trees and pines, and the boxes round
+  its mossy stumps and logs (up to 1.2 m off the stump), which now follow their shape too.
 - **No walls of air over corner pieces**: corner and stair-corner pieces, round railings, sandbag nests, the pediment,
   the pyramidion and the burnt-out car no longer stand an invisible wall at their tallest height over their lower
   parts (26 props).

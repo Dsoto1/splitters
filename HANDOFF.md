@@ -452,13 +452,13 @@ Resume each from its branch, after merging main.
 draws its whole body.
 
 ### Openings fix (`wip/openings`, agent, 2026-11-06; CI on `check/openings`)
-Status: green on `check/openings` (CI run 42156808605, commit cb52f4d0, every job; HANDOFF-only commits since), ready
-to land. The report below is what it fixes.
+Status: cb52f4d0 green on `check/openings` (CI run 42156808605, every job); five more props for screenshot 32 since
+(93604116, the mossy stump and log, the dishes, the generator), being checked. The report below is what it fixes.
 - **Done:**
   - `collide: "voxel"` (tools/content/voxel-collision.mjs): 3D collision from the model (0.1 m cubes, flood fill from
     the sides and above, exact cover, merges that never fill air in sight, faces pulled in to the model), with a box
-    budget per prop (48; hero 160; `voxelBudget`) and a coarsening ladder. 129 props use it (98 were `box`, 20
-    `shell`, 5 `frame`, 5 `trunk` with no single trunk, 1 `openings`).
+    budget per prop (48; hero 160; `voxelBudget`) and a coarsening ladder. 134 props use it (103 were `box`, 20
+    `shell`, 5 `frame`, 5 `trunk` with no single trunk, 1 `openings`); 207 props' collision changed in all.
   - Trunk columns on the real trunk (`trunkBoxes`), as thick as it, following leans, stopping where broadleaf trees
     fork: 47 trees and poles changed (Meshy birches were 1.5 m off; this was screenshot 32).
   - `shell` merges only cells of one height (no walls of air at the tallest cell; coarser steps when that's over the
@@ -474,8 +474,10 @@ to land. The report below is what it fixes.
 - **Screenshot 32** (Fernwood Moon, under `jg_giant_root` prop_602, scale 1.6): no `env.*` species on that map, and
   bushes have no collider, so not limbs or foliage. Rays cast from under the root with the old table: 352 of 1,261
   prop hits landed in open air more than 25 cm from the model, mostly on trunk columns standing off the trunk
-  (nt_common_tree 0.58 m off, nt_pine_*), tents and stumps; with the new table 185 of 1,244, the rest mostly `box`
-  slack (nt_stump_moss, nt_log_moss). Script: session scratchpad `openings/work/fernwood.mts`.
+  (nt_common_tree 0.58 m off, nt_pine_*), tents and stumps. With the trunk columns moved, 185 of 1,244, mostly the
+  boxes round the mossy stumps (up to 1.2 m off the model at their scale 1.3-1.8) and logs and the sci-fi dishes; those
+  five props now collide as voxel too, leaving 86 of 1,198 (7 %), nearly all on pine columns inside the crowns, where
+  the trunk thins (0.3-0.85 m off at scale). Script: session scratchpad `openings/work/fernwood.mts`.
 - **Checked:**
   - In play (propOpenings.test.ts): shots through the arches, the holed wall and under the giant root, stopping on the
     stone with the same material and thickness; players walk through five arches and doorways, not through a wall; bots
@@ -487,7 +489,7 @@ to land. The report below is what it fixes.
   - `pnpm validate-map` on all 81 maps that place a changed prop: 79 clean; No Man's Field's logic-loop warning and
     Diamond Park's 113 `nav.disconnected` (spawn_1746 in the dugout) are the same with the old table. Hollowmere
     Manor and Pharaoh's Reach (the gates and the reed boat, last to switch) again after: clean.
-  - Prop collision boxes on those maps: 14,811 to 32,241 (busiest: Backwoods, St John's ~1,500); navmesh builds
+  - Prop collision boxes on those maps: 14,811 to 32,936 (busiest: Backwoods, St John's ~1,500); navmesh builds
     +10-25 % on the busiest maps, shot raycasts +20-40 % in a random test (machine loaded: noisy). CI's 96-bot
     Frost Basin bench and perf jobs pass; not compared before and after on a quiet machine. Locally, `pnpm
     test:changed` on a machine shared with two other agents: 11 bot, nav and host tests timed out and the 96-bot
@@ -502,8 +504,8 @@ to land. The report below is what it fixes.
 - **Resume:** `git checkout wip/openings`, `pnpm install`, `node tools/content/prepare-props.mjs` (voxelises into
   node_modules/.cache, ~1 min cold), `node tools/content/prop-openings.mjs --check`, then the checks in CLAUDE.md.
   Scratch scripts (renders, audits, screenshots) in the session scratchpad `openings/work/`.
-- **Follow-ups (owner's call):** slack round `box` props (stumps, logs, dishes, car bonnets; `--slack`) and the
-  red rock spires; Diamond Park's dugout spawn cut off from the navmesh (before this change too). Bars and fences
+- **Follow-ups (owner's call):** slack round the other `box` props (stumps, logs, dishes, car bonnets: `--slack`;
+  Fernwood Moon's mossy stump and log, the space kit's dishes and generator are done) and the red rock spires; Diamond Park's dugout spawn cut off from the navmesh (before this change too). Bars and fences
   with gaps under 0.5 m keep their box, so rounds still stop between the bars: `iron_fence` (gaps 0.25 × 0.7 m, 48
   placements on Hollowmere Manor and St John's), `dg_arch_bars` (0.3 m), the `lf_*` gates and fences (0.1-0.25 m).
   The windows the report named (`sf_wall_window`, `sf_wall_astra_window`, `hp_wall_window`) have glass panes and
