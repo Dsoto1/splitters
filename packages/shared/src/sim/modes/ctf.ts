@@ -2,7 +2,7 @@ import { horizontalDistance, type Vec3 } from '../../math.ts';
 import { FLAG_CARRIED, FLAG_DROPPED, FLAG_HOME, type FlagAction, type ModeSnapshot } from '../../protocol.ts';
 import { TICK_RATE } from '../constants.ts';
 import type { Combatant } from '../match.ts';
-import { ctfBotAwareness, ctfBotGoal, ctfBotTookFlag } from './ctfBots.ts';
+import { CtfBotPlan, ctfBotAwareness, ctfBotGoal, ctfBotTookFlag } from './ctfBots.ts';
 import type { BotGoal, ModeHost, ModeLogic } from './types.ts';
 
 /** Touching a flag: within this many metres of it (horizontally), and close in height. */
@@ -36,11 +36,14 @@ export interface FlagRt {
  * vehicle while you carry it); bring it to your own base while your flag is
  * there to score. A carrier who dies drops it where they fell; it stays
  * there until a defender touches it (it goes home) or the return timer runs
- * out. The score limit counts captures.
+ * out (dropped over the void or into lava, it goes home at once). The score
+ * limit counts captures.
  */
 export class CtfMode implements ModeLogic {
   readonly flags: FlagRt[];
   readonly captures = new Map<string, number>();
+  /** Roles, escorts and flags in trouble for the Player Bots (ctfBots.ts), refreshed in step(). */
+  readonly botPlan = new CtfBotPlan();
 
   constructor(private readonly host: ModeHost) {
     const teams = host.teams.slice(0, 2);
@@ -75,6 +78,7 @@ export class CtfMode implements ModeLogic {
 
   step(): void {
     const host = this.host;
+    this.botPlan.update(host.tick, host.combatants(), this.flags);
     const byslot = new Map(host.combatants().map((c) => [c.slot, c]));
     for (const f of this.flags) {
       if (f.state === FLAG_CARRIED) {
@@ -160,7 +164,7 @@ export class CtfMode implements ModeLogic {
   }
 
   botGoal(c: Combatant): BotGoal | null {
-    return ctfBotGoal(c, this.host.combatants(), this.flags);
+    return ctfBotGoal(c, this.flags, this.botPlan);
   }
 
   // ---------------------------------------------------------------- flag moves
@@ -190,8 +194,9 @@ export class CtfMode implements ModeLogic {
   private drop(f: FlagRt, at: Vec3, by: number | null): void {
     this.release(f);
     const floor = this.host.groundBelow({ x: at.x, y: at.y + 0.5, z: at.z });
-    // Lost over a drop (or the void): it goes straight home.
-    if (floor === null || floor < this.host.killY + 1) {
+    // Lost over a drop (or the void), or into lava: it goes straight home. (In lava nobody can touch it and live:
+    // Cinder Foundry's lay in its lava pit all match, taken and dropped again by one carrier after another.)
+    if (floor === null || floor < this.host.killY + 1 || this.host.deadly?.({ x: at.x, y: floor, z: at.z })) {
       this.sendHome(f);
       this.event('return', f, null);
       return;

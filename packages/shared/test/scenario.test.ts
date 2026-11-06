@@ -380,6 +380,46 @@ describe('scenario validation', () => {
     // Reference problems are warnings, so TEST still runs.
     expect(loadMap(map).ok).toBe(true);
   });
+
+  it('warns about rules on the same event that undo each other (Iron Compound gate), not ones kept apart by what they test', () => {
+    const cond = (state: string) => ({ type: 'door' as const, target: 'door_1', op: '==' as const, value: 0, state });
+    const pair = [
+      rule({ name: 'open the gate', when: { event: 'button_pressed', target: 'button_1' }, if: [cond('closed')], do: [act('door_open', { target: 'door_1' })] }),
+      rule({ name: 'close the gate', when: { event: 'button_pressed', target: 'button_1' }, if: [cond('open')], do: [act('door_close', { target: 'door_1' })] }),
+    ];
+    const issues = validateMap(twoRooms([door({ auto: false }), button()], { rules: pair })).filter((i) => i.code === 'logic.undoes');
+    expect(issues.map((i) => i.severity)).toEqual(['warning']);
+    expect(issues[0]!.message).toContain('Toggle door');
+    // The engine runs them in order, each IF checked just before: a press opens and shuts the door in one go.
+    const press = (d: Driver) => {
+      d.place(2, -1.6, Math.PI);
+      d.input({ yaw: Math.PI, pitch: -0.2, buttons: BUTTON_USE });
+      d.run(45);
+    };
+    const d = start(twoRooms([door({ auto: false }), button()], { rules: pair }));
+    press(d);
+    expect(d.of('door')).toEqual([
+      { e: 'door', i: 1, open: 1 },
+      { e: 'door', i: 1, open: 0 },
+    ]);
+    expect(d.match.scenario.doorOpen('door_1')).toBe(0);
+    // One Toggle door rule does what was meant, and isn't flagged.
+    const toggle = [rule({ when: { event: 'button_pressed', target: 'button_1' }, do: [act('door_toggle', { target: 'door_1' })] })];
+    expect(validateMap(twoRooms([door({ auto: false }), button()], { rules: toggle })).some((i) => i.code === 'logic.undoes')).toBe(false);
+    const t = start(twoRooms([door({ auto: false }), button()], { rules: toggle }));
+    press(t);
+    expect(t.match.scenario.doorOpen('door_1')).toBe(1);
+    // A timed door (open now, close after a Wait), and rules kept apart by an IF the other doesn't change: no warning.
+    const timed = [
+      rule({ when: { event: 'button_pressed', target: 'button_1' }, do: [act('door_open', { target: 'door_1' })] }),
+      rule({ when: { event: 'button_pressed', target: 'button_1' }, do: [act('wait', { value: 3 }), act('door_close', { target: 'door_1' })] }),
+    ];
+    const apart = [
+      rule({ when: { event: 'button_pressed', target: 'button_1' }, if: [{ type: 'variable', target: 'var_a', op: '==', value: 0, state: '' }], do: [act('door_open', { target: 'door_1' })] }),
+      rule({ when: { event: 'button_pressed', target: 'button_1' }, if: [{ type: 'variable', target: 'var_a', op: '==', value: 1, state: '' }], do: [act('door_close', { target: 'door_1' })] }),
+    ];
+    for (const rules of [timed, apart]) expect(validateMap(twoRooms([door({ auto: false }), button()], { rules, variables: [{ id: 'var_a', name: 'a', initial: 0 }] })).some((i) => i.code === 'logic.undoes')).toBe(false);
+  });
 });
 
 describe('demo map: The Vault', () => {

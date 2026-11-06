@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 20,
+  "formatVersion": 26,
   "metadata": {
     "id": "fernwood_moon",
     "name": "Fernwood Moon",
@@ -10706,7 +10706,7 @@
       "position": [
         -5,
         -0.02,
-        -85.6
+        -85.1
       ],
       "kind": "prop",
       "model": "prop.os_reactor_core",
@@ -59948,7 +59948,6 @@
     "style": "invisible",
     "height": 8
   },
-  "track": null,
   "backdrop": {
     "sky": "dusk",
     "scenery": "forest",

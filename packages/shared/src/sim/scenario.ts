@@ -6,7 +6,7 @@ import { isMapId } from './playlist.ts';
 import { OBJECTIVE_STATES, type CompareOp, type EventType, type LogicAction, type LogicCondition, type ObjectiveState } from '../map/logic.ts';
 import { distance, viewDirection, type Vec3, hypot } from '../math.ts';
 import { TRAP_ACTIVE, TRAP_ENABLED, TRAP_SPENT, TRAP_WARNING, type GameEvent, type ScenarioSnapshot } from '../protocol.ts';
-import { PLAYER, TICK_RATE } from './constants.ts';
+import { OPENING_BITS, PLAYER, TICK_RATE } from './constants.ts';
 import { RESOURCE_BUDGETS } from '../map/budgets.ts';
 import type { PhysicsWorld } from './physics.ts';
 import { rayOBox, windowPanes, type GlassPane } from './glass.ts';
@@ -1147,12 +1147,47 @@ export class Scenario {
     const out: Aabb[] = [];
     for (const d of this.doors.values()) {
       // Just the door's own plane, so goals standing next to a closed door stay reachable.
-      if (d.open < 0.9 && (d.locked || !d.e.auto || !teamAllows(d.e.team, team))) out.push(this.doorPlane(d));
+      if (this.doorShut(d, team)) out.push(this.doorPlane(d));
     }
     for (const d of this.destructibles.values()) {
       if (d.alive && d.b.blocksPaths) out.push(oboxAabb(d.b.box));
     }
     return out;
+  }
+
+  /** A door that stops `team` now: not open, and locked, opened only by logic, or a team door of another side. */
+  private doorShut(d: DoorRt, team: string | null): boolean {
+    return d.open < 0.9 && (d.locked || !d.e.auto || !teamAllows(d.e.team, team));
+  }
+
+  /**
+   * Every opening that can shut a route, in a fixed order (doors, then walls that block paths until broken):
+   * NavWorld.markOpenings gives the first OPENING_BITS of them a navmesh flag each, and openingsShut says which
+   * of those stop a team now, so a bot's route can keep out of them (BotBrain, when no button opens the way).
+   */
+  openings(): Aabb[] {
+    const out: Aabb[] = [];
+    for (const d of this.doors.values()) out.push(this.doorPlane(d));
+    for (const d of this.destructibles.values()) if (d.b.blocksPaths) out.push(oboxAabb(d.b.box));
+    return out;
+  }
+
+  /** Which of openings() stop `team` now, as navmesh flag bits (bit k + 1 for opening k). */
+  openingsShut(team: string | null): number {
+    let mask = 0;
+    let k = 0;
+    for (const d of this.doors.values()) {
+      if (k >= OPENING_BITS) return mask;
+      if (this.doorShut(d, team)) mask |= 1 << (k + 1);
+      k++;
+    }
+    for (const d of this.destructibles.values()) {
+      if (!d.b.blocksPaths) continue;
+      if (k >= OPENING_BITS) return mask;
+      if (d.alive) mask |= 1 << (k + 1);
+      k++;
+    }
+    return mask;
   }
 
   /** Whether a body standing at `pos` (radius `radius`) would be in a door that is not open (spawns keep out of them). */

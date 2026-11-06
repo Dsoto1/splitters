@@ -9,7 +9,7 @@ import type { ModeHost, ModeLogic } from './types.ts';
 
 export type { BotGoal, ModeHost, ModeLogic } from './types.ts';
 export { CtfMode, FLAG_CAPTURE_RADIUS, FLAG_CARRIER_SPEED, FLAG_TOUCH_RADIUS, type FlagRt } from './ctf.ts';
-export { CARRIER_AWARENESS, ctfBotAwareness, ctfBotGoal, ctfRole, type CtfRole } from './ctfBots.ts';
+export { CARRIER_AWARENESS, CtfBotPlan, ctfBotAwareness, ctfBotGoal, ctfDefenders, ctfRoleOf, type CtfRole } from './ctfBots.ts';
 export { KothMode, onHill, type HillRt } from './koth.ts';
 export { ElimMode, ELIM_BREAK_SECONDS, ELIM_ROUND_SECONDS } from './elim.ts';
 export { FortsMode, type FortPieceRt } from './forts.ts';

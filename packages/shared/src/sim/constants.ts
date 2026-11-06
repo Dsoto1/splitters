@@ -19,6 +19,10 @@ export const BROWSER_HOST_MAX_GUESTS = 10;
 export const BROWSER_MAX_PLAYERS = 48;
 
 export const TICK_RATE = 60;
+/** Openings (doors, walls that block paths until broken) a map's navmesh can mark, one flag bit each (bits 1..14; bit 0 is walkable ground). */
+export const OPENING_BITS = 14;
+/** The navmesh flag of lift rides (bit 15): a route asked for without it keeps off lifts (a bot tired of waiting for one). */
+export const LIFT_FLAG = 1 << 15;
 export const TICK_DT = 1 / TICK_RATE;
 /** Server sends a snapshot every N ticks (30 Hz at 60 Hz simulation). */
 export const SNAPSHOT_INTERVAL_TICKS = 2;
