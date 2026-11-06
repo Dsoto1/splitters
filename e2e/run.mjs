@@ -5260,6 +5260,10 @@ async function hostcontrolsFlow(browser) {
   });
   check(clicks.next === 'host' && clicks.onHost.label === 'Resume' && clicks.onHost.foot && clicks.resumed.tab === 'host' && clicks.resumed.focus === 'hc-resume' && clicks.footGone, `the Host tab has its own foot, and Esc there resumes (${JSON.stringify({ onHost: clicks.onHost, resumed: clicks.resumed, footGone: clicks.footGone })})`);
   check(clicks.label === 'Back' && clicks.back === 'match' && clicks.held === 'settings' && clicks.after === 'match' && clicks.top === 'Resume', `the pause menu's Back button and footer hints work by click; a repeating Esc does nothing (${JSON.stringify(clicks)})`);
+  // Resuming may have had the mouse (a headless page can): back to the pause menu for what follows.
+  await frames(page, 10);
+  await page.evaluate(() => document.pointerLockElement && document.exitPointerLock());
+  await page.waitForFunction(() => !document.pointerLockElement && !document.getElementById('pause').hidden, null, { timeout: T(5000) }).catch(() => {});
   const fits = await page.evaluate(() => {
     const r = document.querySelector('#pause .pause-card').getBoundingClientRect();
     return r.top >= 0 && r.bottom <= innerHeight + 1 && r.right <= innerWidth + 1;
