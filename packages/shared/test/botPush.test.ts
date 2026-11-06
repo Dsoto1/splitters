@@ -122,7 +122,10 @@ describe('tactical squads with team leaders push', () => {
       // 23 for the garrison's worst bot with the measured hit shapes (12 on the old capsule).
       expect(side.worstStuck).toBeLessThan(26);
     }
-    expect(assault!.progress).toBeGreaterThan(0.25);
+    // Shingle Point's asset refresh (2026-11-06: three-beam hedgehogs, our oaks and boulders): the assault side at
+    // seed 1 gets 0.243 (0.252 on the map before it, main 5b167034); over seeds 1-5 it averages 0.28 (0.24 before):
+    // within the seeds' spread, which this one seed sits at the edge of. The fault this guards against was 0.19.
+    expect(assault!.progress).toBeGreaterThan(0.22);
     expect(garrison!.progress).toBeGreaterThan(0.3);
     expect(assault!.kills + garrison!.kills).toBeGreaterThan(0);
   }, 180_000);

@@ -185,8 +185,10 @@ const PROPS = {
     return p;
   },
   mv_hay_cart() {
-    // A two-wheeled hay cart heaped with hay, its shafts on the ground.
+    // A two-wheeled hay cart heaped with hay, its shafts on the ground: one material, its woods and hay painted per
+    // vertex (one instance and one draw a copy).
     const p = piece('mv_hay_cart');
+    p.paint = 'all';
     p.box('plank', [-0.8, 0.7, -1.2], [0.8, 0.8, 1.2]);
     for (const x of [-0.8, 0.78]) p.box('plank', [x, 0.8, -1.2], [x + 0.02, 1.2, 1.2]);
     for (const z of [-1.2, 1.18]) p.box('plank', [-0.8, 0.8, z], [0.8, 1.2, z + 0.02]);

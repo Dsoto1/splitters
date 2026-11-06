@@ -423,8 +423,10 @@ const GOTHIC = {
     return p;
   },
   ge_hedge_wall() {
-    // A clipped box hedge, 3 m long and head high.
+    // A clipped box hedge, 3 m long and head high: one material, its two greens painted per vertex (one instance a
+    // copy: Shingle Point lines 50 of them).
     const p = piece('ge_hedge_wall');
+    p.paint = true;
     p.box('hedge', [-1.5, 0, -0.45], [1.5, 2.2, 0.45]);
     const rnd = rng(9);
     for (let i = 0; i < 14; i++) blob(p, i % 2 ? 'hedgeLight' : 'hedge', [-1.35 + (i % 7) * 0.45, 0.5 + Math.floor(i / 7) * 1.1 + rnd() * 0.3, (i % 2 ? 1 : -1) * 0.4], 0.22 + rnd() * 0.08, 0.8);

@@ -59,7 +59,9 @@ export const STYLE_PACKS: readonly StylePack[] = [
       'military.gantry', 'core.catwalk', 'core.platform_rail', 'military.helipad', 'core.yard',
     ],
     props: /* @__PURE__ */ props(
-      'sandbag_wall', 'sandbag_wall_low', 'sandbag_corner', 'sandbag_nest', 'hesco_wall', 'hedgehog', 'dragon_tooth', 'razor_wire', 'camo_net',
+      'sandbag_wall', 'sandbag_wall_low', 'sandbag_corner', 'sandbag_nest', 'sandbag_stack', 'hesco_wall', 'hedgehog', 'hedgehog_beach', 'dragon_tooth', 'razor_wire', 'camo_net',
+      // Beach landings (Shingle Point's refresh): built in code like the sandbags.
+      'landing_craft', 'landing_craft_wreck', 'timber_baulk', 'timber_stack',
       // The owner's Meshy barriers and parked vehicles (Drive, 2026-10-31).
       'jersey_barrier_hazard', 'hazard_block_barrier', 'plastic_road_barrier', 'vehicle_raider_buggy', 'vehicle_armored_truck',
       'jersey_barrier', 'jersey_barrier_striped', 'jersey_barrier_broken', 'road_barrier', 'concrete_block', 'brick_rubble',
@@ -489,7 +491,7 @@ export const STYLE_PACKS: readonly StylePack[] = [
       // The owner's Meshy pieces: a market stall and fountains for the harbour square.
       'rustic_market_stall', 'eagle_fountain', 'lion_head_fountain', 'town_fountain',
       // Already in the game: boats and masts, cargo and crates, barrels, the gantry crane, lamps and rocks.
-      'rowboat', 'eg_felucca', 'mast', 'flag', 'cargo_gantry_crane', 'cargo_container_rusty_blue', 'cargo_container_rusty_red', 'cargo_container_old_rusty', 'cargo_ibc_tank',
+      'rowboat', 'dory', 'eg_felucca', 'mast', 'flag', 'cargo_gantry_crane', 'cargo_container_rusty_blue', 'cargo_container_rusty_red', 'cargo_container_old_rusty', 'cargo_ibc_tank',
       'cargo_wooden_crate', 'cargo_crate_stack', 'cargo_crate', 'crate_small', 'crate_large', 'pallet', 'barrel', 'barrel_open', 'street_barrel', 'street_rusty_barrel', 'fuel_drum',
       'mv_sacks', 'mv_tarp_crates', 'planks_stack', 'woodpile', 'lantern', 'lantern_post', 'lightpost', 'yard_lamp', 'bench',
       'rock_large', 'rock_medium', 'rock_pile', 'boulder_jagged', 'boulder_flat', 'cliff', 'cliff_steps',

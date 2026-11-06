@@ -3474,10 +3474,16 @@ export class EditorApp {
     el.append(row('With', target));
     const size = document.createElement('select');
     size.id = 'ed-replace-size';
-    size.append(new Option('Keep height', 'height', true, true), new Option('Keep scale', 'scale'));
+    size.append(new Option('Keep height', 'height', true, true), new Option('Keep scale', 'scale'), new Option('Keep length', 'length'));
+    size.title = 'Keep length: the longest side across the ground stays as it was (rows of hedges or walls stay closed)';
     el.append(row('Size', size));
+    const turn = document.createElement('select');
+    turn.id = 'ed-replace-turn';
+    turn.title = 'Turn every new piece by this much (for a piece modelled along the other axis)';
+    turn.append(new Option('As placed', '0', true, true), new Option('+90°', '1'), new Option('180°', '2'), new Option('−90°', '3'));
+    el.append(row('Turn', turn));
     const go = button(`Replace all ${count}`, () => {
-      const cmd = replacePropsCommand(this.doc, model, target.value, size.value as ReplaceSize);
+      const cmd = replacePropsCommand(this.doc, model, target.value, size.value as ReplaceSize, Number(turn.value));
       const n = cmd.kind === 'updateEntities' ? cmd.after.length : 0;
       if (!n) return this.toast('Nothing to replace');
       const label = target.selectedOptions[0]?.textContent ?? target.value;

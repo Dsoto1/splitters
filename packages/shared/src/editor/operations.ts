@@ -430,9 +430,10 @@ export function settlePropsCommand(doc: MapDocument, ids?: readonly string[]): E
 
 /**
  * How MapMaker's "Replace all" sizes each new piece: `height` keeps how tall the old one stood (scale × old height /
- * new height, so a fern that hid a crouching player still does), `scale` keeps the scale number as it was.
+ * new height, so a fern that hid a crouching player still does), `scale` keeps the scale number as it was, `length`
+ * keeps its longest side across the ground (a row of hedges or walls stays closed: scale × old longest side / new).
  */
-export type ReplaceSize = 'height' | 'scale';
+export type ReplaceSize = 'height' | 'scale' | 'length';
 
 /** A placeable model: a prop id, or an environment species with an optional variant (`env.<id>#<n>`). */
 export function parseModelChoice(choice: string): { model: string; variant: number | undefined } {
@@ -441,32 +442,46 @@ export function parseModelChoice(choice: string): { model: string; variant: numb
   return { model, variant: getEnvSpecies(model) && variant ? variant : undefined };
 }
 
-/** How tall a model stands at scale 1 (an environment species: its variant's bounds; a prop: its size). */
-function modelHeight(model: string, variant: number | undefined): number | undefined {
+/** A model's size at scale 1 (an environment species: its variant's bounds; a prop: its size). */
+function modelSize(model: string, variant: number | undefined): readonly number[] | undefined {
   const species = getEnvSpecies(model);
-  if (species) return envVariant(species, variant).size[1];
-  return getProp(model)?.size[1];
+  if (species) return envVariant(species, variant).size;
+  return getProp(model)?.size;
+}
+
+/** What `size` keeps, measured on a model at scale 1: its height, or its longest side across the ground. */
+const measure = (size: readonly number[] | undefined, keep: ReplaceSize): number | undefined => (size ? (keep === 'length' ? Math.max(size[0]!, size[2]!) : size[1]) : undefined);
+
+/** A yaw turned by `quarters` quarter turns, kept in (-π, π] and rounded like MapMaker's inspector (4 places). */
+function turnYaw(yaw: number, quarters: number): number {
+  if (!quarters) return yaw;
+  let y = yaw + (quarters * Math.PI) / 2;
+  while (y > Math.PI) y -= 2 * Math.PI;
+  while (y <= -Math.PI) y += 2 * Math.PI;
+  return Math.round(y * 10000) / 10000;
 }
 
 /**
  * "Replace all <prop> with <prop or species>": every prop placed as `from` becomes `to` (`env.<id>#<n>` picks a
  * variant), keeping its ID, position, facing, name, solid flag and tint; its scale per `size`, rounded to 0.01 and
  * held to the inspector's 0.25–4; one bedded into the terrain is bedded again under its new footprint (settle.ts
- * settledPropY), so a wider plant does not float on a slope. One undo step. Nothing to do (no such props, or `to` is unknown): an empty update.
+ * settledPropY), so a wider plant does not float on a slope. `turn` quarter turns are added to each one's facing, for
+ * a piece modelled along the other axis (a hedge long in x replacing one long in z). One undo step. Nothing to do
+ * (no such props, or `to` is unknown): an empty update.
  */
-export function replacePropsCommand(doc: MapDocument, from: string, to: string, size: ReplaceSize = 'height'): EditCommand {
+export function replacePropsCommand(doc: MapDocument, from: string, to: string, size: ReplaceSize = 'height', turn = 0): EditCommand {
   const before: MapEntity[] = [];
   const after: MapEntity[] = [];
   const target = parseModelChoice(to);
-  const newHeight = modelHeight(target.model, target.variant);
-  if (!newHeight || target.model === from) return { kind: 'updateEntities', before, after };
+  const newMeasure = measure(modelSize(target.model, target.variant), size);
+  if (!newMeasure || target.model === from) return { kind: 'updateEntities', before, after };
   for (const e of doc.entities) {
     if (e.kind !== 'prop' || e.model !== from) continue;
-    const oldHeight = modelHeight(e.model, e.variant);
-    const ratio = size === 'height' && oldHeight ? oldHeight / newHeight : 1;
+    const oldMeasure = measure(modelSize(e.model, e.variant), size);
+    const ratio = size !== 'scale' && oldMeasure ? oldMeasure / newMeasure : 1;
     const scale = Math.round(Math.max(0.25, Math.min(4, e.scale * ratio)) * 100) / 100;
     const { variant: _old, ...rest } = e;
-    const next = { ...rest, model: target.model, scale, ...(target.variant !== undefined ? { variant: target.variant } : {}) };
+    const next = { ...rest, model: target.model, scale, yaw: turnYaw(e.yaw, turn), ...(target.variant !== undefined ? { variant: target.variant } : {}) };
     // One bedded into the terrain (MapMaker's settling, scatter) stays bedded under its new footprint.
     const t = doc.terrain;
     const was = t ? settledPropY(t, e) : null;
