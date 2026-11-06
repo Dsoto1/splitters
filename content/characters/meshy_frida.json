@@ -9,10 +9,13 @@
   "nameTheme": "spooky",
   "bio": "Smiles at everyone. Nobody has seen her blink.",
   "body": "female",
-  "notes": "The owner's own Meshy model (Drive folder, 2026-11-01: \"freaky frida lowpoly\"). The download is textured but not rigged (no skin), so it is rigged here from T-pose landmarks found on the mesh (landmarks.mjs). A wide-eyed girl in pigtails, a tactical vest and camouflage shorts. Landmarks: found on the mesh, then the shoulders moved out to the arms' roots (found at the base of the neck, 6% of her height from the middle: the upper arms ran through the chest and took the vest with them, which tore at the shoulder in the hold) and the elbows a little out; `armCloth` keeps the vest's armholes on the body. Intake 2026-11-05 step 2b: its re-rigged download was built and not used (grip audit 0 before, 3 after (no finger chains: re-fitted)); this build kept.",
+  "notes": "The owner's own Meshy model (Drive folder, 2026-11-01: \"freaky frida lowpoly\"). The download is textured but not rigged (no skin), so it is rigged here from T-pose landmarks found on the mesh (landmarks.mjs). A wide-eyed girl in pigtails, a tactical vest and camouflage shorts. Landmarks: found on the mesh, then the shoulders moved out to the arms' roots (found at the base of the neck, 6% of her height from the middle: the upper arms ran through the chest and took the vest with them, which tore at the shoulder in the hold) and the elbows a little out; `armCloth` keeps the vest's armholes on the body. Intake 2026-11-05 step 2b: its re-rigged download was built and not used (grip audit 0 before, 3 after (no finger chains: re-fitted)); this build kept. Licence (the owner's rule, 2026-11-06: models from the owner's Drive are Meshy Community CC0 unless the owner says they made them): recorded as Meshy Community, CC0 per the owner; it was recorded as owned before, with no record of the owner saying they made it (provenance audit, HANDOFF.md \"Intake of 2026-11-06\"). Post URL pending; if the owner made it, it goes back to owned.",
   "source": {
-    "license": "owned",
-    "author": "The owner (Meshy, owner's account)",
+    "license": "CC0",
+    "author": "Meshy Community (CC0 per the owner)",
+    "community": {
+      "model": "freaky frida lowpoly"
+    },
     "date": "2026-11-01",
     "url": null,
     "file": "^Meshy_AI_freaky_frida_lowpoly_\\d+_texture\\.glb$"

@@ -1,10 +1,10 @@
 {
   "pack": {
-    "title": "Tile Trigger originals (made with Meshy): crates and cargo containers",
-    "creator": "Meshy, owned (generated on the owner's Meshy subscription)",
-    "url": "https://www.meshy.ai",
-    "license": "Owned",
-    "licenseFile": "assets-src/meshy-owned/License.txt",
+    "title": "Meshy community models (crates and cargo containers, textured GLB downloads of 2026-10-29/30)",
+    "creator": "Meshy community, CC0 (per owner)",
+    "url": "https://www.meshy.ai (community page URL pending from the owner)",
+    "license": "CC0-1.0",
+    "licenseFile": "assets-src/meshy-community/License.txt",
     "retrieved": "2026-10-30",
     "download": "owned_cargo",
     "meshy": true,
@@ -23,7 +23,7 @@
       "triangles": 4500,
       "maxError": 0.05,
       "source": {
-        "model": "Army Crate (owner's Meshy)",
+        "model": "Army Crate",
         "date": "2026-10-30"
       }
     },
@@ -37,7 +37,7 @@
       "triangles": 4500,
       "maxError": 0.05,
       "source": {
-        "model": "Wooden Crate (owner's Meshy)",
+        "model": "Wooden Crate",
         "date": "2026-10-30"
       },
       "breakable": {
@@ -55,7 +55,7 @@
       "triangles": 4500,
       "maxError": 0.05,
       "source": {
-        "model": "Wooden Crate (Cube) (owner's Meshy)",
+        "model": "Wooden Crate (Cube)",
         "date": "2026-10-30"
       },
       "breakable": {
@@ -73,7 +73,7 @@
       "triangles": 4500,
       "maxError": 0.05,
       "source": {
-        "model": "Low Wooden Crate (owner's Meshy)",
+        "model": "Low Wooden Crate",
         "date": "2026-10-30"
       },
       "breakable": {
@@ -91,7 +91,7 @@
       "triangles": 4500,
       "maxError": 0.05,
       "source": {
-        "model": "Crate Stack (owner's Meshy)",
+        "model": "Crate Stack",
         "date": "2026-10-30"
       }
     },
@@ -105,7 +105,7 @@
       "triangles": 4500,
       "maxError": 0.05,
       "source": {
-        "model": "Sci-Fi Cargo Crate (owner's Meshy)",
+        "model": "Sci-Fi Cargo Crate",
         "date": "2026-10-30"
       }
     },
@@ -119,7 +119,7 @@
       "triangles": 7000,
       "maxError": 0.05,
       "source": {
-        "model": "Old Rusty Container (owner's Meshy)",
+        "model": "Old Rusty Container",
         "date": "2026-10-30"
       },
       "budget": "hero",
@@ -135,7 +135,7 @@
       "triangles": 7000,
       "maxError": 0.05,
       "source": {
-        "model": "Rusty Blue Container (owner's Meshy)",
+        "model": "Rusty Blue Container",
         "date": "2026-10-30"
       },
       "budget": "hero",
@@ -151,7 +151,7 @@
       "triangles": 7000,
       "maxError": 0.05,
       "source": {
-        "model": "Rusty Red Container (owner's Meshy)",
+        "model": "Rusty Red Container",
         "date": "2026-10-30"
       },
       "budget": "hero",
@@ -167,7 +167,7 @@
       "triangles": 7000,
       "maxError": 0.05,
       "source": {
-        "model": "Red Container (Long) (owner's Meshy)",
+        "model": "Red Container (Long)",
         "date": "2026-10-30"
       },
       "budget": "hero",
@@ -183,7 +183,7 @@
       "triangles": 7000,
       "maxError": 0.05,
       "source": {
-        "model": "White Container (owner's Meshy)",
+        "model": "White Container",
         "date": "2026-10-30"
       },
       "budget": "hero",
@@ -199,7 +199,7 @@
       "triangles": 12000,
       "maxError": 0.05,
       "source": {
-        "model": "Yellow Gantry Crane (owner's Meshy)",
+        "model": "Yellow Gantry Crane",
         "date": "2026-10-30"
       },
       "budget": "hero",
@@ -215,7 +215,7 @@
       "triangles": 4500,
       "maxError": 0.15,
       "source": {
-        "model": "IBC Tank (owner's Meshy)",
+        "model": "IBC Tank",
         "date": "2026-10-30"
       }
     }

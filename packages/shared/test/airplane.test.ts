@@ -165,14 +165,22 @@ describe('air drop', () => {
     const bots = [0, 1, 2].map((i) => match.addBot(`bot${i}`, CORE_BOT_PROFILES[i % CORE_BOT_PROFILES.length]!, BOT_DIFFICULTIES.normal)!);
     expect(bots.every((b) => b.mount)).toBe(true);
     const chuted = new Set<number>();
+    // Each bot as it touches down under its canopy: the first to land can start a knife fight while the last is still
+    // in the air (2026-11-06: a new model's hit shapes changed the bots' choices, and one was knifed before the last
+    // landed), and the drop is what this tests.
+    const landed = new Map<number, { alive: boolean; y: number }>();
     for (let i = 0; i < TICK_RATE * 40; i++) {
       match.step();
-      for (const b of bots) if (b.move.chute) chuted.add(b.slot);
-      if (bots.every((b) => !b.mount && b.move.grounded)) break;
+      for (const b of bots) {
+        if (b.move.chute) chuted.add(b.slot);
+        if (chuted.has(b.slot) && !landed.has(b.slot) && !b.mount && !b.move.chute && b.move.grounded) landed.set(b.slot, { alive: b.alive, y: b.move.pos.y });
+      }
+      if (bots.every((b) => landed.has(b.slot))) break;
     }
     expect(bots.every((b) => !b.mount)).toBe(true);
     expect(chuted.size).toBe(bots.length);
-    expect(bots.every((b) => b.alive && b.move.pos.y < 3)).toBe(true);
+    expect(landed.size).toBe(bots.length);
+    expect([...landed.values()].every((l) => l.alive && l.y < 3)).toBe(true);
   });
 });
 

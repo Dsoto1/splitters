@@ -18,7 +18,7 @@ import { Document, NodeIO } from '@gltf-transform/core';
 import { ALL_EXTENSIONS } from '@gltf-transform/extensions';
 import { PNG } from 'pngjs';
 import { objToDocument } from './obj.mjs';
-import { CLIP_SETS_LOCK, isQueued, looksProblems, readClipSets, readManifests } from './character-manifests.mjs';
+import { CLIP_SETS_LOCK, buildSpec, isQueued, looksProblems, readClipSets, readManifests } from './character-manifests.mjs';
 import { checkFxMap } from './vfx-map.mjs';
 import { lockProblems } from './lockfile.mjs';
 import { loadPropManifest } from './props-manifest.mjs';
@@ -313,6 +313,12 @@ try {
   for (const m of characters) if (!meshyLock.files.some((f) => f.id === m.id)) problems.push(`content/characters/${m.id}.json: not built (run node tools/content/prepare-meshy-characters.mjs <downloads> with ONLY=${m.id})`);
   for (const m of characters) if (m.clipsFrom && !meshyLock.files.some((f) => f.id === `${m.id}_clips`)) problems.push(`content/characters/${m.id}.json: its clip set is not built (run node tools/content/prepare-meshy-characters.mjs <downloads> with ONLY=${m.id})`);
   for (const f of meshyLock.files) if (!characters.some((m) => f.id === m.id || f.id === `${m.id}_fparms` || (f.id === `${m.id}_clips` && m.clipsFrom))) problems.push(`${f.file}: no manifest in content/characters`);
+  // Each built file's provenance pack is its manifest's licence's (owned or community). A licence changed in a manifest
+  // reaches the lock without a rebuild: prepare-meshy-characters.mjs gives the characters it keeps their manifest's.
+  for (const m of characters) {
+    const pack = buildSpec(m).pack;
+    for (const f of meshyLock.files) if ((f.id === m.id || f.id === `${m.id}_fparms` || f.id === `${m.id}_clips`) && f.source !== pack) problems.push(`${f.file}: content/meshy.lock.json records pack ${f.source}, its manifest's licence is ${pack}'s (run node tools/content/prepare-meshy-characters.mjs <downloads, or any empty dir>)`);
+  }
   const sets = readClipSets();
   for (const c of sets) if (!clipSetLock.files.some((f) => f.id === `${c.id}_clips`)) problems.push(`content/clip-sets/${c.id}.json: not built (run node tools/content/clip-set.mjs --build <downloads> ${c.id})`);
   for (const f of clipSetLock.files) if (!sets.some((c) => f.id === `${c.id}_clips`)) problems.push(`${f.file}: no definition in content/clip-sets`);
@@ -440,7 +446,8 @@ function checkLocked(lockPath, dir, packFor, budgets, modifications, prepare) {
       source: f.asset ? `${pack.id ?? 'ambientcg'}:${f.asset}` : `${f.source}/${f.src}`,
       title: f.asset ? `${pack.title}: ${f.asset}` : f.title ? `${pack.title}: ${f.title}` : pack.title,
       creator: pack.creator,
-      url: f.asset ? `https://ambientcg.com/view?id=${f.asset}` : pack.url,
+      // A model's own page (its community post, content/guns.json `url`) where one is recorded, else its pack's.
+      url: f.asset ? `https://ambientcg.com/view?id=${f.asset}` : f.url ?? pack.url,
       license: pack.license,
       modifications: typeof modifications === 'function' ? modifications(f, pack) : modifications,
     });

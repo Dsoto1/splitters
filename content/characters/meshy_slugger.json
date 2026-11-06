@@ -9,10 +9,13 @@
   "nameTheme": "robot",
   "bio": "Built for the batting cage. Found out bullets come in faster than fastballs, and liked it.",
   "body": "male",
-  "notes": "From the owner's Drive folder (uploaded 2026-11-01): an unrigged image-to-3D GLB in a T-pose (3.1M triangles, 4096 px maps), rigged here from landmarks. Named here; the owner reviews it on the grip and portrait sheets. A white and navy robot in a batting helmet. The owner's own Meshy model. Landmarks as found on the mesh, mirrored, with the shoulder joint moved out under the shoulder pad (found at the chest); hands measured 19.5-20 cm. Its plating is thousands of small texture islands (12,559 seam vertices kept apart; every texture-safe cut stopped over the budget: 21.3k, 20.8k with seamWeld), so it is built with `surface: rebake` (2026-11-01): the full download cut with its seams closed, laid out afresh and its colour and normal maps painted from the download (docs/CHARACTERS.md).",
+  "notes": "From the owner's Drive folder (uploaded 2026-11-01): an unrigged image-to-3D GLB in a T-pose (3.1M triangles, 4096 px maps), rigged here from landmarks. Named here; the owner reviews it on the grip and portrait sheets. A white and navy robot in a batting helmet. The owner's own Meshy model. Landmarks as found on the mesh, mirrored, with the shoulder joint moved out under the shoulder pad (found at the chest); hands measured 19.5-20 cm. Its plating is thousands of small texture islands (12,559 seam vertices kept apart; every texture-safe cut stopped over the budget: 21.3k, 20.8k with seamWeld), so it is built with `surface: rebake` (2026-11-01): the full download cut with its seams closed, laid out afresh and its colour and normal maps painted from the download (docs/CHARACTERS.md). Licence (the owner's rule, 2026-11-06: models from the owner's Drive are Meshy Community CC0 unless the owner says they made them): recorded as Meshy Community, CC0 per the owner; it was recorded as owned before, with no record of the owner saying they made it (provenance audit, HANDOFF.md \"Intake of 2026-11-06\"). Post URL pending; if the owner made it, it goes back to owned.",
   "source": {
-    "license": "owned",
-    "author": "The owner (Meshy, owner's account)",
+    "license": "CC0",
+    "author": "Meshy Community (CC0 per the owner)",
+    "community": {
+      "model": "robotic baseball play"
+    },
     "date": "2026-11-01",
     "url": null,
     "file": "^Meshy_AI_robotic_baseball_play_\\d+_(image-to-3d-)?texture\\.glb$"

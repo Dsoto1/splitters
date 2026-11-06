@@ -5,11 +5,11 @@ import type { CharacterLook } from './looks.ts';
 /** Whole-body characters (Meshy models rigged onto the game rig by tools/content/prepare-meshy-characters.mjs), in roster order. */
 export const WHOLE_BODY_LOOKS: readonly CharacterLook[] = [
   { id: 'core.knight', name: 'Iron Knight', body: 'male', head: '', parts: ['meshy_knight'], hair: [], colorways: [], skin: null, hairColor: null, size: 'large', whole: { arms: 'meshy_knight_fparms', grip: { gripLong: [-0.03, 0.03, -0.03] } }, group: 'legends', nameTheme: 'knight' },
-  { id: 'core.nova', name: 'Capt. Nova', body: 'female', head: '', parts: ['meshy_nova'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_nova_fparms' }, group: 'soldiers', nameTheme: 'soldier' },
+  { id: 'core.nova', name: 'Capt. Nova', body: 'female', head: '', parts: ['meshy_nova'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_nova_fparms', grip: { gripLong: [-0.03, 0.02, -0.03], supportLong: [0, 0.02, 0.03], supportPistol: [-0.01, 0.03, -0.03], rollR: -0.3 } }, group: 'soldiers', nameTheme: 'soldier' },
   { id: 'core.dapper', name: 'The Dapper', body: 'male', head: '', parts: ['meshy_dapper'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_dapper_fparms' }, group: 'folk', nameTheme: 'gangster' },
   { id: 'core.goblin', name: 'Goblin', body: 'male', head: '', parts: ['meshy_goblin'], hair: [], colorways: [], skin: null, hairColor: null, size: 'small', whole: { arms: 'meshy_goblin_fparms' }, group: 'creatures', nameTheme: 'goblin' },
   { id: 'core.otter', name: 'Wealthy Otter', body: 'male', head: '', parts: ['meshy_otter'], hair: [], colorways: [], skin: null, hairColor: null, size: 'small', whole: { arms: 'meshy_otter_fparms', grip: { gripLong: [-0.06, 0, -0.015], supportLong: [-0.04, 0, 0.06], supportPistol: [0, 0.02, -0.06], curlR: 0.6, rollR: 0.4 } }, group: 'animals', nameTheme: 'critter' },
-  { id: 'core.boglurker', name: 'Boglurker', body: 'male', head: '', parts: ['meshy_toad'], hair: [], colorways: [], skin: null, hairColor: null, size: 'large', whole: { arms: 'meshy_toad_fparms' }, group: 'creatures', nameTheme: 'frog' },
+  { id: 'core.boglurker', name: 'Boglurker', body: 'male', head: '', parts: ['meshy_toad'], hair: [], colorways: [], skin: null, hairColor: null, size: 'large', whole: { arms: 'meshy_toad_fparms', grip: { gripLong: [-0.045, 0.03, -0.03], supportPistol: [-0.01, 0.03, -0.03] } }, group: 'creatures', nameTheme: 'frog' },
   { id: 'core.warlord', name: 'Salamander Warlord', body: 'male', head: '', parts: ['meshy_salamander'], hair: [], colorways: [], skin: null, hairColor: null, size: 'large', whole: { arms: 'meshy_salamander_fparms' }, group: 'creatures', nameTheme: 'frog' },
   { id: 'core.hyena', name: 'Hyena Warrior', body: 'male', head: '', parts: ['meshy_hyena'], hair: [], colorways: [], skin: null, hairColor: null, size: 'large', whole: { arms: 'meshy_hyena_fparms' }, group: 'animals', nameTheme: 'wolf' },
   { id: 'core.elder', name: 'Elder Tomo', body: 'male', head: '', parts: ['meshy_elder'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_elder_fparms' }, group: 'folk', nameTheme: 'ninja' },
@@ -115,6 +115,9 @@ export const WHOLE_BODY_LOOKS: readonly CharacterLook[] = [
   { id: 'core.goblinwarlord', name: 'Goblin Warlord', body: 'male', head: '', parts: ['meshy_goblinwarlord'], hair: [], colorways: [], skin: null, hairColor: null, size: 'small', whole: { arms: 'meshy_goblinwarlord_fparms', grip: { gripLong: [-0.03, 0, -0.03], supportPistol: [-0.01, 0.04, -0.05] } }, group: 'legends', nameTheme: 'goblin' },
   { id: 'core.maskedfigure', name: 'The Masked Figure', body: 'male', head: '', parts: ['meshy_maskedfigure'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_maskedfigure_fparms', grip: { gripLong: [-0.03, 0.02, -0.03], supportLong: [0, 0.02, 0.03], supportPistol: [-0.01, 0.03, -0.03] } }, group: 'horror', nameTheme: 'spooky' },
   { id: 'core.bill', name: 'Bill', body: 'male', head: '', parts: ['meshy_bill'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_bill_fparms' }, group: 'folk', nameTheme: 'townsfolk' },
+  { id: 'core.astronaut', name: 'Spacewalker', body: 'male', head: '', parts: ['meshy_astronaut'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_astronaut_fparms', grip: { gripLong: [-0.045, 0.02, -0.03], supportLong: [0, 0.02, 0.03], supportPistol: [-0.01, 0.03, -0.03] } }, group: 'soldiers', nameTheme: 'soldier' },
+  { id: 'core.darkastronaut', name: 'Starfarer', body: 'male', head: '', parts: ['meshy_darkastronaut'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_darkastronaut_fparms', grip: { gripLong: [-0.03, 0.02, -0.03], supportLong: [0, 0.02, 0.03], supportPistol: [-0.01, 0.03, -0.03] } }, group: 'soldiers', nameTheme: 'soldier' },
+  { id: 'core.tortoise', name: 'Shellback', body: 'male', head: '', parts: ['meshy_tortoise'], hair: [], colorways: [], skin: null, hairColor: null, size: 'large', whole: { arms: 'meshy_tortoise_fparms', grip: { gripLong: [-0.045, 0.02, -0.03], supportPistol: [-0.01, 0.03, -0.03] } }, group: 'animals', nameTheme: 'critter' },
 ];
 
 /** Whole-body characters made for NPCs only (`use: npc`): not on the roster; NPC_ROLE_SPECS can name them. */
@@ -233,4 +236,7 @@ export const WHOLE_BODY_BIOS: Readonly<Record<string, string>> = {
   'core.goblinwarlord': 'Rules the warren by fear, spite and a very large knife.',
   'core.maskedfigure': 'Nobody has seen his face. Nobody wants to.',
   'core.bill': 'Came for the barbecue. Stayed for the firefight.',
+  'core.astronaut': 'Six hours outside the airlock without a scratch. Six seconds down here and somebody\'s shooting.',
+  'core.darkastronaut': 'Came back from the far side of the Moon with a new suit, a purple glow and no explanation.',
+  'core.tortoise': 'Slow to anger, slower to move, and nobody has ever knocked him over.',
 };

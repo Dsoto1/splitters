@@ -1739,7 +1739,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
       sound: 'fire.revolver',
     },
   },
-  // design: Made for the owner's own Meshy model (content/guns.json, pack meshy-owned-guns). The heavy melee weapon: a slow, wide swing that hits hard and shoves, and a black-powder blunderbuss for the second trigger (two loads in the barrel, reloaded one at a time from a reserve of shotgun shells).
+  // design: Made for the Steampunk Battle Axe model (Meshy Community; content/guns.json, pack meshy-community-arsenal). The heavy melee weapon: a slow, wide swing that hits hard and shoves, and a black-powder blunderbuss for the second trigger (two loads in the barrel, reloaded one at a time from a reserve of shotgun shells).
   // ammo: Powder and shot: shotgun shells (shell boxes and the general ammo box top it up), loaded into the barrel by hand.
   // alt: The blunderbuss (docs/ARSENAL.md): a wide, short cone of nine pellets that falls off fast (it never outreaches the Shotgun), two loads, each rammed home in a slow 1.1 s, and a big kick.
   // model: The owner's Steampunk Battle Axe (Meshy, owned): a flintlock blunderbuss with an axe blade under the muzzle, held by its stock with the blade forward. The bore's mouth is the front of the barrel, on top.

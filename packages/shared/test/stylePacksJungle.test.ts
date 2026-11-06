@@ -50,8 +50,8 @@ describe('Style Pack 06 Jungle Ruins (refreshed, Ancient Temple folded in)', () 
     const ours = manifest.props.filter((p) => p.id.startsWith('jt_'));
     expect(ours.length).toBeGreaterThanOrEqual(18);
     for (const p of ours) {
-      // The large statue is the owner's Meshy statue now, under the stand-in's id.
-      expect(p.pack, p.id).toBe(p.id === 'jt_statue_large' ? 'meshy-owned-landmarks' : 'tiletrigger-jungle');
+      // The large statue is a Meshy community statue from the owner's Drive now, under the stand-in's id.
+      expect(p.pack, p.id).toBe(p.id === 'jt_statue_large' ? 'meshy-community-landmarks' : 'tiletrigger-jungle');
       expect(p.category, p.id).toBe('Jungle Ruins');
     }
     // Simple in-house versions of hero pieces; Meshy versions replace them under the same ids (HANDOFF.md).

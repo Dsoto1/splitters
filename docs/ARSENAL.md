@@ -124,8 +124,8 @@ Styloo's Guns Asset Pack (CC0: AK-47, pump shotgun, RPG, frag;
 `content/guns.json`), each keeping its Quaternius model as `view.fallback` in
 case the pack's file is missing. No weapon stats changed with these models.
 
-**The owner's Meshy models** (Meshy, owned; pack `meshy-owned-guns` in
-`content/guns.json`, built from the textured GLB downloads by
+**Meshy models from the owner's Drive** (Meshy Community CC0 per the owner's rule of 2026-11-06, recorded as owned
+before; pack `meshy-community-arsenal` in `content/guns.json`, built from the textured GLB downloads by
 `prepare-guns.mjs`, 3–6k triangles, a 512 px rebaked colour map each). Each
 falls back (`view.fallback`) to a model built from the repo (the Quaternius or
 Kenney one, the knife, or the medkit built in code), and its holds are read off

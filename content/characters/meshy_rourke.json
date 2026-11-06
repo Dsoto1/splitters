@@ -9,10 +9,13 @@
   "nameTheme": "townsfolk",
   "bio": "Hitched a ride into the war zone by mistake. Stayed because the pay beats his last job.",
   "body": "male",
-  "notes": "From the owner's Drive folder (uploaded 2026-10-31, processed 2026-11-01): an unrigged textured GLB in a T-pose, rigged here from landmarks. Named here; the owner reviews it on the grip and portrait sheets. A rugged man in a leather coat over a hoodie, cargo trousers and boots. Licence recorded like the other community T-poses; to confirm with the owner (owned if it is their own generation). Landmarks: spine and legs as found on the mesh, arms measured off its profile (the found ones put the left wrist 4 cm short).",
+  "notes": "From the owner's Drive folder (uploaded 2026-10-31, processed 2026-11-01): an unrigged textured GLB in a T-pose, rigged here from landmarks. Named here; the owner reviews it on the grip and portrait sheets. A rugged man in a leather coat over a hoodie, cargo trousers and boots. Licence recorded like the other community T-poses; to confirm with the owner (owned if it is their own generation). Landmarks: spine and legs as found on the mesh, arms measured off its profile (the found ones put the left wrist 4 cm short). Licence (the owner's rule, 2026-11-06: models from the owner's Drive are Meshy Community CC0 unless the owner says they made them): recorded as Meshy Community, CC0 per the owner; it was recorded as owned before, with no record of the owner saying they made it (provenance audit, HANDOFF.md \"Intake of 2026-11-06\"). Post URL pending; if the owner made it, it goes back to owned.",
   "source": {
-    "license": "owned",
-    "author": "The owner (Meshy, owner's account)",
+    "license": "CC0",
+    "author": "Meshy Community (CC0 per the owner)",
+    "community": {
+      "model": "Realistic stylized ma"
+    },
     "date": "2026-11-01",
     "url": null,
     "file": "^Meshy_AI_Realistic_stylized_ma_\\d+_texture\\.glb$"

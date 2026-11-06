@@ -12,8 +12,12 @@ describe('character manifests', () => {
   });
 
   it('turn into what the prepare tool builds', () => {
+    // A model from the owner's Drive is Meshy Community CC0 unless the owner says they made it (2026-11-06): the Goblin
+    // was recorded as owned until the audit of that day; the Alien Biker, which the owner confirmed as theirs, stays owned.
     const goblin = buildSpec(list.find((m) => m.id === 'meshy_goblin'));
-    expect(goblin.pack).toBe('meshy-owned');
+    expect(goblin.pack).toBe('meshy-community-characters');
+    expect(goblin.community).toEqual({ model: 'Goblin', date: '2026-10-26' });
+    expect(buildSpec(list.find((m) => m.id === 'meshy_alienbiker')).pack).toBe('meshy-owned');
     expect(goblin.file.test('Meshy_AI_Goblin_1026113732_texture.fbx')).toBe(true);
     expect(goblin.joints.LeftHandTip).toEqual([0.258, 0.317, 0.2]);
     expect(goblin.joints.head_end).toEqual([0, 0.95, 0.14]);
@@ -56,6 +60,14 @@ describe('character manifests', () => {
     // A fanned hand's fingers brought together as it closes (a share, 0-1).
     expect(manifestProblems({ ...good, fixes: { ...good.fixes, hands: { scale: 0.8, together: 1, r: { curl: 0.6 } } } }, 'meshy_cat.json')).toEqual([]);
     expect(manifestProblems({ ...good, fixes: { ...good.fixes, hands: { together: 2 } } }, 'meshy_cat.json').join('\n')).toMatch(/fixes.hands.together/);
+    // Blue badges painted out: every one, or only inside boxes of the download's colour map (a flag beside the badge
+    // stays); boxes are the download's layout, so not with a rebake.
+    const scrubbed = (scrubBlue, surface) => manifestProblems({ ...good, fixes: { ...good.fixes, scrubBlue, ...(surface ? { surface } : {}) } }, 'meshy_cat.json');
+    expect(scrubbed('#a8582a')).toEqual([]);
+    expect(scrubbed({ color: '#e6e6e6', within: [[0.635, 0.512, 0.678, 0.559]] })).toEqual([]);
+    for (const bad of ['blue', { color: '#e6e6e6' }, { color: '#e6e6e6', within: [[0.7, 0.5, 0.6, 0.6]] }, { color: '#e6e6e6', within: [[0, 0, 1.2, 1]] }, { color: '#e6e6e6', within: [[0, 0, 1, 1]], edge: 2 }]) expect(scrubbed(bad).join('\n'), JSON.stringify(bad)).toMatch(/fixes.scrubBlue/);
+    expect(scrubbed({ color: '#e6e6e6', within: [[0, 0, 1, 1]] }, 'rebake').join('\n')).toMatch(/fixes.scrubBlue/);
+    expect(buildSpec({ ...good, fixes: { ...good.fixes, scrubBlue: { color: '#e6e6e6', within: [[0, 0, 0.5, 0.5]] } } }).scrubBlue).toEqual({ color: '#e6e6e6', within: [[0, 0, 0.5, 0.5]] });
     // This look's own hands and arms on a gun (GripTune), written into its generated look.
     const grip = { elbowDown: 0.3, supportPistol: [0, 0.04, -0.08], curlL: 1.4, rollR: 0.4 };
     expect(manifestProblems({ ...good, fixes: { ...good.fixes, grip } }, 'meshy_cat.json')).toEqual([]);
