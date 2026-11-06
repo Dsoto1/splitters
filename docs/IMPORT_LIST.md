@@ -79,6 +79,32 @@ was replaced.
   - **Size class.** Small by build seems likely; decide by eye.
   - **Grip.** Same check as for the Rex: a grip needs an index finger on the trigger.
 
+## Batch 2: weapons and grenades (owner, 2026-11-06). Queued after Bot AI Phase B takes its slot
+**The owner:**
+- "Added a bunch of new weapons, all Meshy community."
+- On the 3DModelsCC0 kit: "Replace our tommy gun with the 3DModelsCC0 one, and bring in those others to replace any
+  one-off originals … not sure we need the nuclear bomb or flare gun."
+- "Retain the fidelity of the texture best we can: sharper, clearer, better resolution."
+
+**Meshy Community CC0, 11 downloads** (raw files in `/home/user/meshy-drive/intake-2026-11-06c/`):
+- **Guns:** BK-220, Plasma Defender, Revolver Rustique, Scrapfire Assault Blaster, a sci-fi fire suppressor, and an
+  unnamed long gun.
+- **Grenades:** "just a grenade", Sunburst, Globe, Toxic Splash, Countdown Sphere.
+- They are 5k to 1.5M triangles, with 2048–4096 textures.
+
+**The 3DModelsCC0 Guns & Explosives pack:**
+- The tommy gun replaces `core.smg`'s model.
+- The rest replace weaker originals; skip the nuclear bomb and the flare gun.
+- **Waiting on the owner** to put `Guns&Explosives.rar` in the Drive. itch.io can't be reached from the dev container.
+
+**Sharper textures:**
+- The weapon in your hands gets 2048 / 1024 / 512 colour maps by graphics setting, instead of today's 512 for
+  everything.
+- Other copies (other players' weapons, drops, pickups) stay small.
+- Measured for download and video memory.
+
+The brief is `briefs/weapons-intake.md` in the session scratchpad.
+
 ## Wanted: grenade and throwable models (owner, 2026-11-06: "do we have better grenade models?")
 **Today:**
 - Only the **frag** (Styloo's low-poly grenade, `guns/frag.glb`, about 530 triangles) and the **proximity mine**
