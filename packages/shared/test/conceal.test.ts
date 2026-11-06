@@ -109,6 +109,12 @@ describe('our fern and shrub hide players as the Kenney fern and small bush did'
     ['prop.fern', 'env.fern.bracken#1', 0.85],
     ['prop.bush_small', 'env.shrub.broadleaf', 1],
     ['prop.bush_small', 'env.shrub.broadleaf#1', 1.3],
+    // Shingle Point's bushes (its refresh): the Kenney large bush and the Quaternius leafy bush, at the scales it places.
+    ['prop.bush_large', 'env.shrub.broadleaf', 1],
+    ['prop.nt_bush_leafy', 'env.shrub.broadleaf', 1],
+    ['prop.nt_bush_leafy', 'env.shrub.broadleaf', 1.5],
+    ['prop.nt_bush_leafy', 'env.shrub.broadleaf', 2],
+    ['prop.bush_large', 'env.shrub.broadleaf', 1.1],
   ] as const) {
     it(`${from} ×${scale} → ${to}: hidden in the same stances, at the middle and near the edge`, () => {
       const r = replaced(from, scale, to);

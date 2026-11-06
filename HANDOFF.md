@@ -26,6 +26,63 @@ gets overloaded above that: local e2e times out and flakes). Prune landed worktr
 - Earlier the same day: content scalability steps 2–6, perf toolset, flaky e2e fixes, Runway Nine airliner, map
   reworks batches 2–3, character fixes rounds 2–3 (see the entries below and CHANGELOG).
 
+<!-- shingle -->
+### Shingle Point asset refresh (`wip/shingle`, agents, 2026-11-05/06; main 5b167034 merged in; green on `check/shingle`)
+Owner's decision: same layout and gameplay, every dated asset replaced, so it compares fairly with MAP 21 (a new map,
+later). Not a layout rework. **Ready to land:** CI run 42175700068 green on `check/shingle` at c214e94f (unit, build,
+check, perf budget and mass, all 11 e2e shards with Shingle Point's map tour); main has not moved since, so `main` can
+be fast-forwarded to it once the owner is happy with the open items at the end of this section.
+- **The map** (`maps/shingle_point.json`) was edited in MapMaker only, driven from the session scratchpad
+  (`shingle2/tools/maker.mjs`): Import, the theme picker, Replace all, the block Material and prop Variant fields,
+  MapMaker's own Delete and "Place <piece>" commands (the ones its Delete key and palette run) for the block groups,
+  Export. The UI path for the 56 groups took ~90 s a group on the loaded box, the commands ~1 s.
+  - theme Bunker → Military Compound (no hazard stripes); the MG nests' 12 canvas blocks → Burlap (same ballistics);
+  - 56 block groups → kit pieces where their blocks stood: 46 Czech hedgehogs, 4 landing craft, 6 wrecks;
+  - 24 Replace alls (Keep height unless noted): Tall Hedge → Box Hedge (Keep length, +90°); Leafy Bush, Large Bush →
+    Broadleaf Shrub; Wildflowers → Meadow Flowers (yellow); Wheat → Grass Clump (dry); Boulder, Small Rock, Kenney
+    Boulder → Angular Boulder; Bushy Tree, Round Tree, Oak, Broadleaf Tree → Oak; Log → Timber Baulk; Big Log →
+    Timber Stack; Rowing Boat → Wooden Dory; Barrier → Sandbag Stack; Large Crate → Wooden Crate; Metal Crate → Army
+    Crate; Lantern Post → Harbour Lamp Post; Rubble → Pebbles; Hay Bale → Straw Bale (Keep scale); Cart → Hay Cart
+    (Keep scale); Woodpile → Timber Baulk (Keep length, +90°: it keeps its breakability); Crumbling Wall → Drystone
+    Wall Half (CC0 Loafbrr);
+  - one variant per species (4 autumn oaks summer, 4 moss boulders bare): a variant is a model of its own, a draw.
+- **Cheaper pieces:** the 8 beach pieces, the Box Hedge and the Hay Cart are one material each, their colours
+  painted per vertex (`build-kit-props.mjs`: one material per surface for a piece with surfaces, and those pieces
+  now have one surface each; `pieces.mjs` `paint`: opt-in per piece, every other piece byte-identical): one GPU
+  instance and one draw a copy (the hedge was 2 a copy, the hay cart 5, the craft 3).
+- **Proof** (scratchpad `shingle2/tools/zz_shingle_proof.test.ts`, not committed; results `shingle2/proof.json`):
+  spawns, pickups, mounts, ladders, pads, bomb sites, hills, lights, water, tiles, terrain, logic, bounds, backdrop
+  identical; the other 46 blocks identical (canvas → burlap); every replaced prop keeps id, x, z, facing (or a quarter
+  turn), solid, tint and name; breakables the same (logs and woodpiles → 11 timber baulks at 60 HP: the woodpiles were
+  40); 38 concealing plants before and after; craft and wreck boxes within 1 cm of their blocks; nav 1248/1248
+  spawn-to-objective paths both (mean 144.4 → 144.8 m); the seawall's 3 gaps and 5 ladders reach the bluff both
+  (lengths within 0.5 m); the weak sections are the same blocks. Sightlines blocked: beach → crest 92.8 % → 93.0 %
+  crouched, 92.3 % both standing; across the beach within 30 m 21.3 % → 27.9 % crouched (the hedgehogs' three beams),
+  6.9 % → 7.0 % standing; village 39.1 % → 39.9 %. validate-map 0 issues; maps e2e flow on it passes.
+- **Bots** (headless, 24 bots, 150 s, seeds 1, 2, 3 and the bench's 42): kills and objectives alike (bomb round won by
+  the garrison both; KOTH 7 → 8 hill holds). Stuck recoveries, mean before → after: bomb 467 → 204, TDM 108 → 87,
+  KOTH 134 → 274. Same spots on both maps (`shingle2/tools/stuck.mts`): the feet of the seawall ladders at x −30, 2
+  and 100 (bots that don't catch the ladder), the HQ and the MG nest by hill 1; KOTH now sends more bots up the
+  ladders. The push test (`botPush.test.ts`, tactical TDM, seeds 1-5): assault progress 0.24 → 0.28 on average,
+  garrison 0.34 → 0.33; its seed 1 gives 0.243 now (0.252 before), so its bar is 0.22 (the fault it guards was 0.19).
+- **Performance** (same spots, same base, both builds side by side; high graphics, SwiftShader, 640 × 360; scratchpad
+  `shingle2/timing/`): draws 3,697 → 3,586 summed over 10 spots (−3 %; overview 764 → 725, beach 580 → 568, cliff 456
+  → 431, village 263 → 238; up only looking at a landing craft, 109 → 125: the craft, a hedgehog and a wreck in each
+  shadow cascade); active meshes 5,096 → 4,259 (−16 %; −5 % without the pooled effect meshes); render call time
+  (scene.render() before the GPU, the draw-issue side) 378 → 354 ms (−6 %); triangles +26 % (our oaks, boulders,
+  hedges and crates are detailed), shadow casters +6 to +13 a view, so SwiftShader's whole frame +16 %. All meshes
+  after loading 1,757 → 1,722. Model downloads 848 → 1,575 KB (the oak 315 KB, the two Meshy crates 410 KB); map file
+  733 → 681 KB. perf-3 (prop batches) not on main yet: measure again when it lands.
+- **Screenshots** (session scratchpad, 1280 × 720, high, eye level; same spots): `shingle2/before/` and
+  `shingle2/after/`, `<n>-<spot>-before|after.png`: beach waterline, landing craft, beach east, seawall, cliff,
+  bunkers, casemate, village, orchard, overview.
+- **Kept, for the owner:** the 14 Kenney furniture pieces in the two houses, the HQ and the casemate (all breakable,
+  40-100 HP; none of our furniture is, so a swap takes that cover away), the HQ's Quaternius radio, the 3 Quaternius
+  ruined walls on the seawall top (approved pack). MapMaker's Export stamps `metadata.release` and has no control to
+  leave it out, so the map keeps one (the only shipped map that does; suite listings compare content hashes, which
+  skip it). No `thumbnailCamera`: MapMaker's only camera control is Set thumbnail, which also stores a picture in the
+  map (the card-shot camera is MapMaker overhaul Phase 3 item 8), so the menu card shot still shows the old look.
+
 ### Flatpack Depot flicker (`wip/flatpack`, agent, 2026-11-05; CI on `check/flatpack`)
 Owner: "The ikea map has significant flickering" / "flicker when I look around, could be shader or something"
 (Android phone, Low graphics, Performance render scale; screenshot of the Showroom corridor). docs/LOOK.md,
@@ -847,7 +904,8 @@ AGENT_BUILD_CONTRACT.md.
   models (owner's screenshot on a temple test map). Swap it to our generated oak and pine, which is Environment
   Phase 4 work. No rush.
 - **Rockfall Canyon** (`maps/canyon.json`): asset and foliage refresh, onto our generated environment, rocks and plants.
-- **Shingle Point** (`maps/shingle_point.json`, the beach landing): an asset refresh. The owner also suggests a
+- **Shingle Point** (`maps/shingle_point.json`, the beach landing): an asset refresh (done on `wip/shingle`: the
+  section at the top). The owner also suggests a
   layout rework from the reference `docs/map-briefs/shingle_point_reference.jpg`:
   - a long beach with surf, landing craft and steel hedgehogs, under a cliff line;
   - the cliff has a central grand staircase plus side stairs and ramps up its face;

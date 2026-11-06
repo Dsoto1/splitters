@@ -140,6 +140,94 @@
       "collide": "none"
     },
     {
+      "id": "landing_craft",
+      "src": "landing_craft.glb",
+      "name": "Landing Craft",
+      "category": "Military",
+      "scale": 1,
+      "collide": "model",
+      "surface": "metal"
+    },
+    {
+      "id": "landing_craft_wreck",
+      "src": "landing_craft_wreck.glb",
+      "name": "Landing Craft Wreck",
+      "category": "Military",
+      "scale": 1,
+      "collide": "model",
+      "surface": "metal"
+    },
+    {
+      "id": "hedgehog_beach",
+      "src": "hedgehog_beach.glb",
+      "name": "Czech Hedgehog",
+      "category": "Military",
+      "scale": 1,
+      "collide": "model",
+      "surface": "metal"
+    },
+    {
+      "id": "sandbag_stack",
+      "src": "sandbag_stack.glb",
+      "name": "Sandbag Stack",
+      "category": "Military",
+      "scale": 1,
+      "collide": "box",
+      "surface": "dirt",
+      "breakable": {
+        "health": 120,
+        "debris": "#9a845a"
+      }
+    },
+    {
+      "id": "timber_baulk",
+      "src": "timber_baulk.glb",
+      "name": "Timber Baulk",
+      "category": "Military",
+      "scale": 1,
+      "collide": "box",
+      "surface": "bark",
+      "breakable": {
+        "health": 60,
+        "debris": "#8a5a32"
+      }
+    },
+    {
+      "id": "timber_stack",
+      "src": "timber_stack.glb",
+      "name": "Timber Stack",
+      "category": "Military",
+      "scale": 1,
+      "collide": "box",
+      "surface": "bark"
+    },
+    {
+      "id": "dory",
+      "src": "dory.glb",
+      "name": "Wooden Dory",
+      "category": "Coastal Harbor",
+      "scale": 1,
+      "collide": "box",
+      "surface": "dirt",
+      "breakable": {
+        "health": 60,
+        "debris": "#8a5a32"
+      }
+    },
+    {
+      "id": "straw_bale",
+      "src": "straw_bale.glb",
+      "name": "Straw Bale",
+      "category": "Town & Market",
+      "scale": 1,
+      "collide": "box",
+      "surface": "dirt",
+      "breakable": {
+        "health": 30,
+        "debris": "#d8b860"
+      }
+    },
+    {
       "id": "mine_cart",
       "src": "mine_cart.glb",
       "name": "Mine Cart",
