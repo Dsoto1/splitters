@@ -179,6 +179,8 @@ export interface SessionOptions {
   onReady?: () => void;
   /** Your character's portrait for the HUD (rendered by the menus). */
   portrait?: Promise<string>;
+  /** Any look's portrait (the menus' renderer): the HUD follows your body when Random characters gives you a new one. */
+  portraitOf?: (look: string) => Promise<string>;
   /** Host game across a map change: the join code already open (friends come back to it), and the game browser listing's name when it was listed. */
   hosting?: { peer: HostLink; listing?: string };
   /** Open a join code as soon as the match starts (Play → Host). */
@@ -295,9 +297,15 @@ export class GameSession {
     if (slot === this.slot) {
       this.view.setLocalLook(look);
       if (this.local) this.local.scale = this.sizeOf(slot);
+      // The HUD's portrait is the body you play now, not the one picked in the menu.
+      const want = look;
+      this.portraitLook = want;
+      void this.opts.portraitOf?.(want).then((src) => this.portraitLook === want && this.hud.setPortrait(src), () => undefined);
     }
     this.view.characters.preload({ look });
   }
+  /** The look the HUD portrait is (being) shown for: a late portrait for an earlier body doesn't replace a newer one. */
+  private portraitLook: string | null = null;
 
   /** A player's body scale: their look's size (class, or its own size stat), as the match plays it (Character sizes and stats). */
   private sizeOf(slot: number): number {
@@ -1484,7 +1492,7 @@ export class GameSession {
         this.hud.setMapName(loaded.map.metadata.name);
         this.sfx.myTeam = () => this.hud.team(this.slot)?.id ?? null;
         this.hud.minimap.setMap(loaded.map);
-        void this.opts.portrait?.then((src) => this.hud.setPortrait(src), () => undefined);
+        void this.opts.portrait?.then((src) => this.portraitLook === null && this.hud.setPortrait(src), () => undefined);
         const geometry = buildMapGeometry(loaded.map);
         this.map = loaded.map;
         this.view.buildMap(loaded.map, geometry);
