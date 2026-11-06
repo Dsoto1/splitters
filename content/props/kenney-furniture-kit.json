@@ -123,7 +123,7 @@
       "src": "chairDesk.glb",
       "name": "Office Chair",
       "category": "Furniture",
-      "height": 1.0,
+      "height": 1.26,
       "collide": "voxel",
       "breakable": {
         "health": 20,
@@ -323,7 +323,7 @@
       "src": "bench.glb",
       "name": "Bench",
       "category": "Furniture",
-      "height": 0.45,
+      "height": 0.92,
       "collide": "box",
       "fills": "Small: the air beside its legs under the seat is 0.15 m wide at most, and voxel boxes give this same box.",
       "breakable": {

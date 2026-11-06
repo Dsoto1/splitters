@@ -116,14 +116,16 @@
       "src": "Bathroom/Sink.fbx",
       "name": "Wash Basin",
       "category": "Household",
-      "collide": "voxel"
+      "collide": "voxel",
+      "height": 0.85
     },
     {
       "id": "hh_toilet",
       "src": "Bathroom/Toilet.fbx",
       "name": "Toilet",
       "category": "Household",
-      "collide": "voxel"
+      "collide": "voxel",
+      "height": 0.89
     },
     {
       "id": "hh_bed_double",
@@ -201,7 +203,8 @@
       "src": "Tables/Desk.fbx",
       "name": "Writing Desk",
       "category": "Household",
-      "collide": "voxel"
+      "collide": "voxel",
+      "height": 0.77
     },
     {
       "id": "hh_sofa",
