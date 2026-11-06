@@ -8,6 +8,25 @@ made only on a commit that passed CI on a check branch.
 
 ## Unreleased
 
+**Hands round 5: support hands, big hands, the Knight's gauntlets, the Spear** (owner-approved, 2026-11-06)
+- **The Spear, the Medkit and the Medi-Beam in first person**: the hand closes round the shaft and the handle again.
+  The new pistol hold (below) had turned and closed them as a raked pistol grip, their fingers sticking straight out
+  over the shaft and splayed in the air above the Medkit's handle; it now holds only two-handed pistol grips.
+- **Support hands** on 14 looks (Pharaoh, Gorgle, Luther Vanguard, Croakley, Big Bab, Desert Ranger, Stealth
+  Operative, Tactical Soldier, The Masked Figure, Anoobys, Greyfang, Kenji, Seetah, WWII Infantry): their own grip
+  settings were tuned before the palms were read the right way round (2026-11-05). On a pistol the support hand now
+  wraps round the shooting hand instead of hanging back under the wrist; on a rifle it holds the handguard; where a
+  shooting hand hung off a rifle's grip it sits on it. Gorgle's shooting hand closes on the grip (it was measured a
+  fist and left rigid, an open claw).
+- **Frost Viking and the Goblin Warlord**: hands about 20 cm long (they were 24-28 cm and fanned like claws), their
+  fingers brought together as they close, so a pistol grip shows between them in first person and their fists sit on
+  the grips. **Bamboo** holds a rifle at its chest, not across its snout.
+- **The Iron Knight's gauntlets** close round the grip (they were measured thick and closed only half way) and its
+  fist sits on a rifle's grip.
+- Team tools: `fixes.hands.together` (a fanned hand's fingers come in toward the middle finger as it closes, every
+  view); a hand scaled at import with the download's own fingers takes its finger joints with it; the grip audit
+  curl-tests a rifle's support hand against the handguard's line (`CURL=points`: as before).
+
 **Pistols sit deep in the hand** (owner's report, 2026-11-05: "Looks as if their fingers are just pinching the grip")
 - **First person, every pistol-class gun, every character** (full body and arms only): the shooting hand takes the
   grip deep in the palm, the web of the thumb high on the backstrap, the fingers wrapped round to the grip's far side

@@ -397,15 +397,91 @@ stock, 11 cm behind its grip; the Freeze Ray inside its trigger guard) and four 
     real grips: better on every look checked).
   - dropped: a foregrip hold for the Machine Pistol (out of reach in third person); the earlier WIP's
     "nearest point" close (left the fingertips inside the grip).
-- **Measures** (full-body first person, 10 looks x 10 guns, `measures.md`): TBD
-- **Grip audit** (rifle, pistol, shotgun; before = main): TBD
-- **Checks:** TBD
+- **Measures, grip audit, checks:** not written up before the container restart stopped the agent; the landed state
+  (main 463c2477) is hands round 5's "before" (next section: full audit of every look and weapon). It held the Spear,
+  Medkit and Medi-Beam as pistols in first person (fixed in round 5).
 - **Left for the owner / round 5:** big hands still swallow a pistol in first person (Frost Viking, Goblin Warlord,
-  Goblin, Bamboo: hands 25-28 cm against a gun's 18 cm grip); the Knight's gauntlet doesn't close (curl 0.5).
+  Goblin, Bamboo: hands 25-28 cm against a gun's 18 cm grip); the Knight's gauntlet doesn't close (curl 0.5). Done in
+  hands round 5 (below).
 - Tools and shots: agent scratchpad `pistol/` (`t2/probe.mjs` shots + joints, `t2/measures.py`, `t2/section.mjs`
   grip cross-sections, `t2/side.mjs` gridded side views, `t2/e2echeck.mjs` the characters flow's grip checks;
   `final-before/`, `final-after/`, sheets in `sheets/`).
 <!-- /pistol -->
+
+<!-- hands5 -->
+### Hands round 5 (`wip/hands-5`, agents, 2026-11-06; from main 463c2477; CI on `check/hands-5`)
+Owner-approved scope: re-tune the support hands the palm fix changed; Frost Viking and Bamboo holds; the Knight's
+gauntlet; audit the Spin Gun and the Spear on every character. No Meshy re-rigs, no credits: Frost Viking, the Goblin
+Warlord and the Iron Knight were rebuilt locally from their downloads (`/home/user/meshy-drive/intake-2026-11-05/`,
+`ONLY=<id> node tools/content/prepare-meshy-characters.mjs <dir with links>`; an unchanged manifest rebuilds
+byte-identical, checked), Gorgle's right hand with `rehand-built.mjs` (`SIDES=r`).
+- **Grip audit's curl test** (ec240caf): a long gun's support hand is measured against the handguard's line (palm up
+  under it, its fingers close up round the guard, away from the support point on its underside, which the old test
+  read as a backward curl). `CURL=points` keeps the old rule; audit.json keeps both (`curl`, `curlGuard`).
+- **The Spear, Medkit and Medi-Beam in first person** (found by the Spear audit): the pistol hold (main 463c2477)
+  applied to every `style: pistol` hold, so these one-handed holds were turned and closed as a raked pistol grip: the
+  fingers stood straight over the Spear's shaft and splayed in the air above the Medkit's handle. The pistol hold is
+  now for two-handed pistol grips only (`gripPlaced`: a `support` point); the three are back to their earlier first
+  person exactly (drawn measures identical to the pre-pistol build). Third person keeps the pistol round's change
+  (better: Tactical Soldier's hand 4.4 -> 2.7 cm from the shaft, Frost Viking's 7.5 -> 3.5 cm).
+- **New: `fixes.hands.together`** (0-1; hands.mjs writes it on the hand, the game reads it in every view): as a hand
+  closes, its fingers come in toward the middle finger by that share of their spread (closeHand `gather`, about the
+  palm's normal, before the curl). A download's own fingers keep the download's fan: Frost Viking's 23 degrees from
+  index to little finger, the Goblin Warlord's 20, the Iron Warden (Knight) 30, Tactical Soldier 14; re-fitted
+  fingers are parallel. Unit tests: hands.test.mjs, character-manifests.test.mjs.
+- **Fixed: an own-finger hand's scale** (`fixes.hands.scale` with the download's fingers) shrank the skin about the
+  wrist but left the finger and thumb joints where the download had them, 1-2 cm past their own skin's start: the
+  fingers curled about points in the air past the knuckles. hands.mjs now scales those joints with the skin (no shipped
+  look had both before this round).
+- **Frost Viking** (rebuilt): `fixes.hands { scale 0.8, together 1, r.curl 0.6, l.curl 0.75 }` (hands 24.5-25 cm long
+  and 19-20 cm wide -> about 19.5 x 16; fully closed, its low-poly fingers folded into shards, so the curl is softer),
+  `fixes.grip { gripLong [-0.03, 0.02, -0.03], supportLong [0, 0.05, 0.04], supportPistol [-0.01, 0.05, -0.04] }`.
+- **Goblin Warlord** (rebuilt): `fixes.hands { together 1, r.scale 0.75, l.scale 0.85 }` (28 and 24 cm, uneven),
+  `fixes.grip { gripLong [-0.03, 0, -0.03], supportPistol [-0.01, 0.04, -0.05] }`.
+- **Iron Knight** (rebuilt): `fixes.hands.curl 1` (its gauntlets measure thick for their length, which put the curl at
+  its 0.5 floor; they now close round the grip in both views) and `fixes.grip.gripLong [-0.03, 0.03, -0.03]` (the fist
+  hung under a long gun's grip, 6.9 cm off it -> 2.6). The audit's curl test reads the full close as backward on the
+  rifle's shooting hand (the gauntlet's fingertips curl past the grip's point); by eye it is a fist on the grip.
+- **Bamboo**: `fixes.hold { forward 0.06, down 0.12, out 0.1 }`: the rifle ran across its snout (its head is big and
+  low); now at its chest, face clear (side views in `panda/cmp-hold-*.png`). Its pistol is held at arm's length ahead
+  of the snout (fine from the side).
+- **Support hands re-tuned (14 looks)**: grips round 3's offsets were tuned while some palms were read back to front.
+  The pistol ones (`supportPistol [0, 0.04, -0.08]` and kin) held the support hand 6-8 cm back under the wrist now that
+  its palm faces the right way; `[-0.01, 0.03, -0.03]` puts it round the shooting hand. Long guns: `supportLong
+  [0, 0.02, 0.03]` brings the support hand onto the handguard; `gripLong` seats a shooting hand that hung off the
+  grip. Per look (all `fixes.grip`, third person and Character Select):
+  - Pharaoh: gripLong [-0.03, 0, -0.03], supportPistol [-0.01, 0.03, -0.03].
+  - Gorgle: gripLong [-0.045, 0.015, -0.045], supportPistol as above; and `fixes.hands.r.curl 0.8` (its right hand was
+    measured a fist and left rigid: an open claw on the grip; now a mitten that closes, rehanded `SIDES=r`).
+  - Luther Vanguard: rollL 0.25 dropped (support palm up 0.83 -> 0.93), supportPistol [-0.02, 0.06, -0.08] ->
+    [-0.02, 0.04, -0.04] (support hand on the shooting hand: 6 -> 2 cm).
+  - Croakley: supportLong [0, -0.02, 0.06] -> [0, 0.02, 0.03] (the rifle's backward curl gone); its long frog fingers
+    still stand 14.6 cm from a pistol's grip point (`open`; geometry).
+  - Big Bab, Desert Ranger, Greyfang, Seetah, Stealth Operative, WWII Infantry: supportLong [0, 0.02, 0.03] and
+    supportPistol [-0.01, 0.03, -0.03] (their gripLong and curls kept; Greyfang gripLong [-0.03, 0, -0.03]).
+  - The Masked Figure, Anoobys: gripLong [-0.03, 0.02, -0.03], supportLong and supportPistol as above.
+  - Tactical Soldier: the same plus curlR 0.5 (its own fingers curled back past the grip; palm in 0.73 -> 0.93).
+  - Kenji: gripLong [-0.03, 0.02, -0.03], supportLong as above, rollL -0.3 (support palm up 0.72 -> 0.88).
+- **Spin Gun and Spear audit, every character** (third person in the grip audit; first person measured separately,
+  `h5/fp-before.json`, `fp-after.json`, as the audit skips the Spin Gun's first person): HANDS5_SPIN_SPEAR
+- **Grip audit** (99 looks; rifle, pistol, Spin Gun, shotgun, Spear; before = main 463c2477 with the new curl test):
+  HANDS5_AUDIT
+- **Checks:** HANDS5_CHECKS
+- **Left for the owner:**
+  - **Bamboo in first person**: its forearms (thick fur) rise above a pistol's slide and hide it in full-body first
+    person (the rifle shows). The arms-only view (`firstPerson.body: false`) is no way out: its sleeve pull-in tears the
+    fur cards. Needs thinner forearms on the model, or a first-person option that thins a look's forearm copies.
+  - **Hand geometry, still**: Vanguard, Beanie Alien, Alien Biker, Mummy Bot, Zhao (fingers fold into shards; a rebake
+    or new hands); Frost Viking's and Gorgle's low-poly fingers show shards when closed tight (softened, not gone);
+    Croakley's frog fingers (a pistol's `open`), Brass Hare's cuffs and Boglurker's rigid frog hand (`palm`), Teddy's
+    ball paws (its Spin Gun support paw reads palm-down).
+  - **Grunt '68's long-gun-only support roll** (a new GripTune field; offered in round 4, not done).
+  - **Thick hands in first person** (Biscuit, Grizzelda, Saint Nick, Bamboo, Gorgle): the shooting hand sits 6.5-8 cm
+    off a long gun's grip (the palm rests half the hand's thickness off it); first person reads no per-look grip
+    settings (GripTune is third person and Character Select): a per-look first-person offset would be new.
+  - Licence details for this intake's community models are still pending from the owner (see "Intake step 2").
+- Evidence (agent scratchpad `h5/`): HANDS5_EVIDENCE
+<!-- /hands5 -->
 
 ### Environment Phase 1c: pebbles, eelgrass, concealing fern, Replace all, maps updated (`wip/env-p1c`, agent, 2026-11-05; from main 4d511dd2, main baf26064 merged in; pushed, not merged)
 - **Done:**
@@ -789,7 +865,7 @@ with `pnpm bench:96:clump` before and after; bot thinking at 96 bots stays withi
 0. **Bot AI Phase A** (above) as soon as `wip/bots-idle` lands; **Phase B** before item 3 (MAP 21).
 1. **Set pieces:** plan in docs/SET_PIECES_PLAN.md. Next free slot.
 2. **Hands round 5,** in parallel; small. Give it to the pistol-hold agent as a follow-on once its pistol work lands.
-   It covers:
+   Done on `wip/hands-5` (section "Hands round 5"; CI on `check/hands-5`, not on main). It covered:
    - re-tuning the support hands the palm fix changed (Pharaoh, Gorgle, Vanguard, Croakley, Big Bab, Desert Ranger,
      Stealth Op, Tactical Soldier, Masked Figure, Anoobys, Greyfang, Kenji, Seetah, WWII Infantry, Goblin Warlord);
    - Frost Viking and Bamboo holds;
@@ -1197,8 +1273,9 @@ Plan:
 - Barrels/powder keg were resized to real sizes (barrel 0.95 m, keg 0.75 m): less cover. Keep, or put back?
 - Grade and surface detail strength were tuned on software rendering: owner to look on their M1 Pro (one value each:
   `WORLD_GRADE`, `content/surfaces.json`).
-- Hands round 5 (offered, not yet answered): Grunt '68 long-gun-only hand roll (small); new hand geometry for
-  Vanguard, Beanie Alien, Alien Biker, Mummy Bot, Zhao; Croakley re-rig (pipeline or Meshy credits; Meshy needs approval).
+- Still open after hands round 5 (its "Left for the owner"): Grunt '68 long-gun-only hand roll (small); new hand
+  geometry for Vanguard, Beanie Alien, Alien Biker, Mummy Bot, Zhao; Croakley re-rig (pipeline or Meshy credits; Meshy
+  needs approval); Bamboo's first-person forearms.
 - Surface types: are stumps, logs and cliffs right as trunk/boulder? About 100 more props are misread by the name
   guesser (e.g. wooden `ww_*` buildings stop bullets like concrete; `iron_fence` reads as wood); each fix changes cover,
   so each needs a yes. Terrain still counts as concrete on the server. heavy_wood needs a playtest.
