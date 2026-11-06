@@ -164,6 +164,12 @@ export function destructibleBox(e: Extract<MapEntity, { kind: 'destructible' }>)
 /** Anything that can be shot apart: destructible entities and breakable solid props. */
 export interface Breakable {
   box: OBox;
+  /**
+   * What it collides as when that isn't `box`: a prop whose collision follows its model (its catalogue `boxes`: the
+   * opening in a tent, the gaps in a fence, the window in a machine stay open). `box` still sets where blasts reach
+   * it, what stands on it and how paths go round it.
+   */
+  parts?: readonly OBox[];
   health: number;
   explosiveOnly: boolean;
   blast?: { radius: number; damage: number; edge: number };
@@ -214,6 +220,7 @@ export function breakableOf(e: MapEntity, dynamic?: ReadonlySet<string>): Breaka
     const [w, h, d] = def.collision!.map((v) => (v * e.scale) / 2) as [number, number, number];
     return {
       box: { center: { x: e.position[0], y: e.position[1] + h, z: e.position[2] }, half: { x: w, y: h, z: d }, yaw: e.yaw },
+      ...(def.boxes ? { parts: propParts(e, def.boxes) } : {}),
       health: def.breakable!.health * e.scale,
       explosiveOnly: false,
       ...(def.breakable!.blast ? { blast: def.breakable!.blast } : {}),
@@ -221,6 +228,21 @@ export function breakableOf(e: MapEntity, dynamic?: ReadonlySet<string>): Breaka
     };
   }
   return null;
+}
+
+/** A prop's catalogue boxes (its own space) placed as it stands: turned with it, as map/geometry.ts propBoxes turns them. */
+function propParts(e: Extract<MapEntity, { kind: 'prop' }>, boxes: readonly (readonly [number, number, number, number, number, number])[]): OBox[] {
+  const c = Math.cos(e.yaw);
+  const s = Math.sin(e.yaw);
+  return boxes.map(([x0, y0, z0, x1, y1, z1]) => {
+    const cx = ((x0 + x1) / 2) * e.scale;
+    const cz = ((z0 + z1) / 2) * e.scale;
+    return {
+      center: { x: e.position[0] + cx * c + cz * s, y: e.position[1] + ((y0 + y1) / 2) * e.scale, z: e.position[2] - cx * s + cz * c },
+      half: { x: ((x1 - x0) / 2) * e.scale, y: ((y1 - y0) / 2) * e.scale, z: ((z1 - z0) / 2) * e.scale },
+      yaw: e.yaw,
+    };
+  });
 }
 
 // ---------------------------------------------------------------- zones
@@ -333,7 +355,8 @@ export const trapDamage = (e: Extract<MapEntity, { kind: 'trap' }>): number => e
  */
 export class ScenarioBodies {
   private readonly doors = new Map<number, [RAPIER.Collider, RAPIER.Collider]>();
-  private readonly solids = new Map<number, RAPIER.Collider>();
+  /** Each scenario body's colliders (one, or a breakable prop's `parts`). */
+  private readonly solids = new Map<number, RAPIER.Collider[]>();
   private readonly byHandle = new Map<number, number>();
   private readonly doorOpen = new Map<number, number>();
 
@@ -351,19 +374,21 @@ export class ScenarioBodies {
         for (const c of leaves) this.byHandle.set(c.handle, i);
         this.setDoorOpen(i, e.startOpen ? 1 : 0);
       } else {
-        const box = breakableOf(e, dynamic)?.box;
-        if (!box) return;
-        const c = isGlassBlock(e) ? physics.createGlassBox(box.center, box.half, box.yaw, e.glass === 'reinforced', box.rot) : physics.createBox(box.center, box.half, box.yaw, box.rot, e.kind === 'block' && !!e.field);
-        this.solids.set(i, c);
-        this.byHandle.set(c.handle, i);
-        if (e.kind === 'block' && e.startHidden) physics.setBoxEnabled(c, false);
+        const b = breakableOf(e, dynamic);
+        if (!b) return;
+        const cs = (b.parts ?? [b.box]).map((box) => (isGlassBlock(e) ? physics.createGlassBox(box.center, box.half, box.yaw, e.glass === 'reinforced', box.rot) : physics.createBox(box.center, box.half, box.yaw, box.rot, e.kind === 'block' && !!e.field)));
+        this.solids.set(i, cs);
+        for (const c of cs) {
+          this.byHandle.set(c.handle, i);
+          if (e.kind === 'block' && e.startHidden) physics.setBoxEnabled(c, false);
+        }
       }
     });
     // Glass in windows, after the entities (see windowPaneIndex).
     windowPanes(map).forEach((p, k) => {
       const c = physics.createGlassBox(p.box.center, p.box.half, p.box.yaw, p.kind === 'reinforced');
       const i = windowPaneIndex(map, k);
-      this.solids.set(i, c);
+      this.solids.set(i, [c]);
       this.byHandle.set(c.handle, i);
     });
     physics.commit();
@@ -387,13 +412,13 @@ export class ScenarioBodies {
 
   /** Move a carried block (movers). */
   setTransform(index: number, center: Vec3, rot: Rot): void {
-    const c = this.solids.get(index);
+    // Only blocks ride movers, and a block is one box.
+    const c = this.solids.get(index)?.[0];
     if (c) this.physics.setBoxTransform(c, center, rot);
   }
 
   setSolid(index: number, present: boolean): void {
-    const c = this.solids.get(index);
-    if (c) this.physics.setBoxEnabled(c, present);
+    for (const c of this.solids.get(index) ?? []) this.physics.setBoxEnabled(c, present);
   }
 
   commit(): void {
