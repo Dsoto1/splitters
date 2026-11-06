@@ -827,37 +827,39 @@ export class NavWorld {
    * than legs are: it keeps 0.8 m from walls where a body needs 0.4, and a step under a low roof, a narrow
    * gap or a slab edge a hair over the step height can leave a patch players walk off with no route out of it
    * (Capitol Mall's reflecting pool; Diamond Park's dugouts, three spawn points each, until their roofs were
-   * raised in the map). For a point on a smaller part of
-   * the navmesh than the goal's (or off it altogether), up to three places close by on the goal's part that are
-   * a short step or hop across from the point's patch, nearest first: where to cross from (on the patch; null
-   * when the point is off the navmesh) and the place across. `clear`: a body gets straight across from one to
-   * the other (nothing in the way). Empty when nothing is near enough, or the point isn't cut off (a goal on a
-   * smaller part than the point's is what can't be reached). Cached per polygon and part.
+   * raised in the map). For a point no route from which reaches the goal (or off the navmesh altogether), up to
+   * three places close by that do route to it and are a short step or hop across (up to ESCAPE_RISE up, 8 m
+   * across) from where the point's routes get, nearest first: where to cross from (null when the point is off the
+   * navmesh) and the place across. From ground that routes to the main area, only onto ground that routes back to
+   * it too (onto a dais the navmesh doesn't climb, never down into a pit). `clear`: a body gets straight across
+   * from one to the other (nothing in the way). Empty when nothing is near enough, or a route reaches the goal.
+   * Cached per polygon and the goal's component of routes.
    */
   escapes(from: Vec3, goal: Vec3, clear: (a: Vec3, b: Vec3) => boolean): readonly NavEscape[] {
     const ext = { x: 2, y: 3, z: 2 };
     const e = this.query.findNearestPoly(goal, { halfExtents: ext });
     if (!e.success || !e.nearestRef) return NO_ESCAPE;
-    const target = this.part(e.nearestRef);
-    if (target < 0) return NO_ESCAPE;
+    if (this.part(e.nearestRef) < 0) return NO_ESCAPE;
     const s = this.query.findNearestPoly(from, { halfExtents: ext });
     const on = s.success && !!s.nearestRef;
-    const sizes = this.partsNow().size;
     const base = this.graph().base;
     const goalIdx = e.nearestRef - base;
     // Ground that routes to the goal (routes go one way: falls, ledge drops and one-way links count as they go).
     const toGoal = this.routesTo(goalIdx);
+    const toMain = this.toMainNow();
+    // Where a hop may land: ground that routes to the goal; for a bot that routes to the main area (on it, or on ground
+    // that leads back to it), only such ground that routes back to the main area too: across a gap the navmesh is too
+    // cautious for, onto a dais or a step too high to walk up (M4 Outpost's uplink dais, 1.5 m from the gate's wall),
+    // never down into a pit after a goal. Off a patch that doesn't route to the main area (a pit, a court a curb too
+    // high for the navmesh shuts in: St John's), onto any ground that routes to the goal.
+    let safe = false;
     if (on) {
       const i = s.nearestRef - base;
       // A route there: nothing to escape.
       if (toGoal[i]) return NO_ESCAPE;
-      // Off a patch that doesn't route to the main area (a pit, a court a curb too high for the navmesh shuts in:
-      // St John's), toward any ground that routes to the goal, even where a one-way link joins the two (parts count
-      // links both ways). Elsewhere only off a smaller part toward a bigger one (a goal on a smaller part than the
-      // bot's is what's cut off: no hopping down into a pit after it).
-      const mine = this.part(s.nearestRef);
-      if (this.toMainNow()[i] && (mine === target || mine < 0 || sizes[mine]! >= sizes[target]!)) return NO_ESCAPE;
+      safe = toMain[i] === 1;
     }
+    const landing = (poly: number) => poly >= 0 && toGoal[poly] === 1 && (!safe || toMain[poly] === 1);
     const goalComp = this.routesNow().comp[goalIdx]!;
     const key = on ? `${s.nearestRef}>${goalComp}` : `${Math.round(from.x)},${Math.round(from.y)},${Math.round(from.z)}>${goalComp}`;
     const known = this.escapeCache.get(key);
@@ -867,7 +869,7 @@ export class NavWorld {
     const near: { p: Vec3; d: number }[] = [];
     for (let i = 0; i < places.length; i++) {
       const p = places[i]!;
-      if (placePolys[i]! < 0 || !toGoal[placePolys[i]!] || Math.abs(p.y - from.y) > 5) continue;
+      if (!landing(placePolys[i]!) || Math.abs(p.y - from.y) > 5) continue;
       const d = hypot(p.x - from.x, p.z - from.z);
       if (d < ESCAPE_REACH) near.push({ p, d });
     }
@@ -905,7 +907,7 @@ export class NavWorld {
       const q = this.query.queryPolygons(from, { x: ESCAPE_REACH, y: 5, z: ESCAPE_REACH }, { maxPolys: 512 });
       const ground: { p: Vec3; d: number }[] = [];
       for (const ref of q.success ? q.polyRefs : []) {
-        if (!toGoal[ref - base]) continue;
+        if (!landing(ref - base)) continue;
         const c = this.query.closestPointOnPoly(ref, from);
         if (!c.success || Math.abs(c.closestPoint.y - from.y) > 5) continue;
         const p = { x: c.closestPoint.x, y: c.closestPoint.y, z: c.closestPoint.z };

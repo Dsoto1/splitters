@@ -159,6 +159,9 @@ export function fallsFrom(nav: NavWorld, physics: PhysicsWorld, poly: number, op
       // ground too steep to stand on (a rock's flank, a bank, a ridge's side) with none level with it there (only the
       // ledge it fell off, over it): where the body slides to.
       let hit = nav.nearestPoly({ x: f.x, y: f.y + 0.3, z: f.z }, { x: 1.6, y: 0.8, z: 1.6 });
+      // (Not through a wall: a body in a slot beside a ramp isn't on the floor the other side of the slot's wall,
+      // Rail Stockyard's underpass.)
+      if (hit && !walkable(physics, opts.solids, f, hit.point)) hit = null;
       if (slides && (!hit || hit.point.y > f.y + 0.4) && steepAt(physics, opts, f)) hit = slideFoot(nav, physics, f, at.y - opts.maxDrop, opts) ?? hit;
       if (hit && hit.index === poly) continue;
       const land = hit ? hit.point : f;
@@ -166,6 +169,21 @@ export function fallsFrom(nav: NavWorld, physics: PhysicsWorld, poly: number, op
     }
   }
   return out;
+}
+
+/** Whether nothing stands between two points on the ground at a step's and a knee's height (the level or the extra solids). */
+function walkable(physics: PhysicsWorld, solids: readonly WorldBox[] | undefined, a: Vec3, b: Vec3): boolean {
+  const dx = b.x - a.x;
+  const dz = b.z - a.z;
+  const len = hypot(dx, dz);
+  if (len < 0.05) return true;
+  const dir = { x: dx / len, y: 0, z: dz / len };
+  for (const h of [0.4, 0.9]) {
+    const y = Math.max(a.y, b.y) + h;
+    const d = moveRay(physics, solids, { x: a.x, y, z: a.z }, dir, len);
+    if (d !== null) return false;
+  }
+  return true;
 }
 
 /** A standing body, from over a step to its head (m above its feet), and its radius less a graze. */
@@ -707,10 +725,14 @@ export function auditNavigation(map: MapDocument, nav: NavWorld, physics: Physic
     }
     return null;
   };
+  const by = (si: { pos: Vec3; exact: boolean } | null, goal: Vec3) => !!si && (si.exact || (hypot(si.pos.x - goal.x, si.pos.z - goal.z) < STEP_OFF_REACH && Math.abs(si.pos.y - goal.y) < 1.4));
   const reachedBy = (from: Vec3 | null, goal: Vec3): boolean => {
     if (!from) return false;
     const si = nav.standIn(from, goal);
-    return !!si && (si.exact || (hypot(si.pos.x - goal.x, si.pos.z - goal.z) < STEP_OFF_REACH && Math.abs(si.pos.y - goal.y) < 1.4));
+    if (by(si, goal)) return true;
+    // Or by the bots' hop across from where routes get onto ground that routes there (NavWorld.escapes: a dais the
+    // navmesh doesn't climb, a gap it's too cautious for).
+    return !!si && nav.escapes(si.pos, goal, clear).some((e) => by(nav.standIn(e.across, goal), goal));
   };
   const anyFrom = spawnAt(null);
   for (const e of map.entities) {
