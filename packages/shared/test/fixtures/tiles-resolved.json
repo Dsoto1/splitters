@@ -71,6 +71,19 @@
   "neon.block_n",
   "core.pit",
   "core.drop",
+  "core.trench_sunk",
+  "core.trench_sunk_corner",
+  "core.trench_sunk_t",
+  "core.trench_sunk_end",
+  "core.stairs_grand",
+  "core.cavea",
+  "core.cavea_vomitorium",
+  "core.tunnel_vault",
+  "core.tunnel_vault_bend",
+  "core.tunnel_vault_t",
+  "core.tunnel_vault_cross",
+  "core.gallery_grand",
+  "core.hatch_corner",
   "military.barracks",
   "military.guard_tower",
   "military.pillbox",
@@ -22419,6 +22432,5321 @@
      ]
     }
    ]
+  },
+  {
+   "id": "core.trench_sunk",
+   "category": "Open",
+   "displayName": "Sunken Trench",
+   "blurb": "A trench 1.5 m deep running east–west: revetted walls, a fire step under a sandbag parapet on the south side, duckboards. Its floors carve the terrain",
+   "cells": [
+    [
+     0,
+     0,
+     -1
+    ],
+    [
+     0,
+     0,
+     0
+    ]
+   ],
+   "floors": [],
+   "ports": [
+    {
+     "side": "N",
+     "level": 0
+    },
+    {
+     "side": "E",
+     "level": 0
+    },
+    {
+     "side": "S",
+     "level": 0
+    },
+    {
+     "side": "W",
+     "level": 0
+    }
+   ],
+   "open": true,
+   "edgeDefault": "open",
+   "extraFloors": [
+    {
+     "min": [
+      -4,
+      -1.8,
+      -2
+     ],
+     "max": [
+      4,
+      -1.5,
+      2
+     ],
+     "surface": {
+      "material": "core.pbr_dusty_road",
+      "tint": "#7a6a52"
+     }
+    },
+    {
+     "min": [
+      -4,
+      -0.3,
+      -4
+     ],
+     "max": [
+      4,
+      0,
+      -2
+     ],
+     "surface": {
+      "material": "core.pbr_dusty_road",
+      "tint": "#9a8668"
+     }
+    },
+    {
+     "min": [
+      -4,
+      -0.3,
+      2
+     ],
+     "max": [
+      4,
+      0,
+      4
+     ],
+     "surface": {
+      "material": "core.pbr_dusty_road",
+      "tint": "#9a8668"
+     }
+    },
+    {
+     "min": [
+      -3.7,
+      -2.1,
+      -3.7
+     ],
+     "max": [
+      3.7,
+      -1.8,
+      3.7
+     ],
+     "surface": {
+      "material": "core.pbr_dusty_road",
+      "tint": "#9a8668"
+     }
+    }
+   ],
+   "solids": [
+    {
+     "min": [
+      -4,
+      -1.8,
+      -2.4
+     ],
+     "max": [
+      4,
+      -0.3,
+      -2
+     ],
+     "kind": "wall"
+    },
+    {
+     "min": [
+      -4,
+      -1.8,
+      2
+     ],
+     "max": [
+      4,
+      -0.3,
+      2.4
+     ],
+     "kind": "wall"
+    },
+    {
+     "min": [
+      -3.2,
+      -1.5,
+      -2
+     ],
+     "max": [
+      3.2,
+      -0.75,
+      -1.4
+     ],
+     "surface": {
+      "material": "core.pbr_weathered_planks"
+     }
+    },
+    {
+     "min": [
+      -3.2,
+      -1.5,
+      -1.4
+     ],
+     "max": [
+      3.2,
+      -1,
+      -0.95
+     ],
+     "surface": {
+      "material": "core.pbr_weathered_planks"
+     }
+    },
+    {
+     "min": [
+      -3.2,
+      -1.5,
+      -0.95
+     ],
+     "max": [
+      3.2,
+      -1.25,
+      -0.5
+     ],
+     "surface": {
+      "material": "core.pbr_weathered_planks"
+     }
+    },
+    {
+     "min": [
+      -4,
+      0,
+      -2.8
+     ],
+     "max": [
+      4,
+      0.6,
+      -2
+     ],
+     "surface": {
+      "material": "core.sandbags"
+     }
+    },
+    {
+     "min": [
+      -4,
+      0,
+      2
+     ],
+     "max": [
+      4,
+      0.3,
+      2.8
+     ],
+     "surface": {
+      "material": "core.sandbags"
+     }
+    },
+    {
+     "min": [
+      -4,
+      -1.5,
+      -0.4
+     ],
+     "max": [
+      4,
+      -1.46,
+      1.6
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_weathered_planks"
+     }
+    },
+    {
+     "min": [
+      -3.08,
+      -1.5,
+      -1.99
+     ],
+     "max": [
+      -2.92,
+      -0.32,
+      -1.89
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_charred_wood"
+     }
+    },
+    {
+     "min": [
+      -3.08,
+      -1.5,
+      1.89
+     ],
+     "max": [
+      -2.92,
+      -0.32,
+      1.99
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_charred_wood"
+     }
+    },
+    {
+     "min": [
+      -1.08,
+      -1.5,
+      -1.99
+     ],
+     "max": [
+      -0.92,
+      -0.32,
+      -1.89
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_charred_wood"
+     }
+    },
+    {
+     "min": [
+      -1.08,
+      -1.5,
+      1.89
+     ],
+     "max": [
+      -0.92,
+      -0.32,
+      1.99
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_charred_wood"
+     }
+    },
+    {
+     "min": [
+      0.92,
+      -1.5,
+      -1.99
+     ],
+     "max": [
+      1.08,
+      -0.32,
+      -1.89
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_charred_wood"
+     }
+    },
+    {
+     "min": [
+      0.92,
+      -1.5,
+      1.89
+     ],
+     "max": [
+      1.08,
+      -0.32,
+      1.99
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_charred_wood"
+     }
+    },
+    {
+     "min": [
+      2.92,
+      -1.5,
+      -1.99
+     ],
+     "max": [
+      3.08,
+      -0.32,
+      -1.89
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_charred_wood"
+     }
+    },
+    {
+     "min": [
+      2.92,
+      -1.5,
+      1.89
+     ],
+     "max": [
+      3.08,
+      -0.32,
+      1.99
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_charred_wood"
+     }
+    }
+   ]
+  },
+  {
+   "id": "core.trench_sunk_corner",
+   "category": "Open",
+   "displayName": "Sunken Trench Bend",
+   "blurb": "The sunken trench comes in from the west and turns north; a fire step and parapet all round the outside of the bend",
+   "cells": [
+    [
+     0,
+     0,
+     -1
+    ],
+    [
+     0,
+     0,
+     0
+    ]
+   ],
+   "floors": [],
+   "ports": [
+    {
+     "side": "N",
+     "level": 0
+    },
+    {
+     "side": "E",
+     "level": 0
+    },
+    {
+     "side": "S",
+     "level": 0
+    },
+    {
+     "side": "W",
+     "level": 0
+    }
+   ],
+   "open": true,
+   "edgeDefault": "open",
+   "extraFloors": [
+    {
+     "min": [
+      -4,
+      -1.8,
+      -2
+     ],
+     "max": [
+      2,
+      -1.5,
+      2
+     ],
+     "surface": {
+      "material": "core.pbr_dusty_road",
+      "tint": "#7a6a52"
+     }
+    },
+    {
+     "min": [
+      -2,
+      -1.8,
+      2
+     ],
+     "max": [
+      2,
+      -1.5,
+      4
+     ],
+     "surface": {
+      "material": "core.pbr_dusty_road",
+      "tint": "#7a6a52"
+     }
+    },
+    {
+     "min": [
+      -4,
+      -0.3,
+      -4
+     ],
+     "max": [
+      4,
+      0,
+      -2
+     ],
+     "surface": {
+      "material": "core.pbr_dusty_road",
+      "tint": "#9a8668"
+     }
+    },
+    {
+     "min": [
+      2,
+      -0.3,
+      -2
+     ],
+     "max": [
+      4,
+      0,
+      4
+     ],
+     "surface": {
+      "material": "core.pbr_dusty_road",
+      "tint": "#9a8668"
+     }
+    },
+    {
+     "min": [
+      -4,
+      -0.3,
+      2
+     ],
+     "max": [
+      -2,
+      0,
+      4
+     ],
+     "surface": {
+      "material": "core.pbr_dusty_road",
+      "tint": "#9a8668"
+     }
+    },
+    {
+     "min": [
+      -3.7,
+      -2.1,
+      -3.7
+     ],
+     "max": [
+      3.7,
+      -1.8,
+      3.7
+     ],
+     "surface": {
+      "material": "core.pbr_dusty_road",
+      "tint": "#9a8668"
+     }
+    }
+   ],
+   "solids": [
+    {
+     "min": [
+      -4,
+      -1.8,
+      -2.4
+     ],
+     "max": [
+      2.4,
+      -0.3,
+      -2
+     ],
+     "kind": "wall"
+    },
+    {
+     "min": [
+      2,
+      -1.8,
+      -2
+     ],
+     "max": [
+      2.4,
+      -0.3,
+      4
+     ],
+     "kind": "wall"
+    },
+    {
+     "min": [
+      -4,
+      -1.8,
+      2
+     ],
+     "max": [
+      -2,
+      -0.3,
+      2.4
+     ],
+     "kind": "wall"
+    },
+    {
+     "min": [
+      -2.4,
+      -1.8,
+      2.4
+     ],
+     "max": [
+      -2,
+      -0.3,
+      4
+     ],
+     "kind": "wall"
+    },
+    {
+     "min": [
+      -3.2,
+      -1.5,
+      -2
+     ],
+     "max": [
+      2,
+      -0.75,
+      -1.4
+     ],
+     "surface": {
+      "material": "core.pbr_weathered_planks"
+     }
+    },
+    {
+     "min": [
+      -3.2,
+      -1.5,
+      -1.4
+     ],
+     "max": [
+      2,
+      -1,
+      -0.95
+     ],
+     "surface": {
+      "material": "core.pbr_weathered_planks"
+     }
+    },
+    {
+     "min": [
+      -3.2,
+      -1.5,
+      -0.95
+     ],
+     "max": [
+      2,
+      -1.25,
+      -0.5
+     ],
+     "surface": {
+      "material": "core.pbr_weathered_planks"
+     }
+    },
+    {
+     "min": [
+      1.4,
+      -1.5,
+      -0.5
+     ],
+     "max": [
+      2,
+      -0.75,
+      3.2
+     ],
+     "surface": {
+      "material": "core.pbr_weathered_planks"
+     }
+    },
+    {
+     "min": [
+      0.95,
+      -1.5,
+      -0.5
+     ],
+     "max": [
+      1.4,
+      -1,
+      3.2
+     ],
+     "surface": {
+      "material": "core.pbr_weathered_planks"
+     }
+    },
+    {
+     "min": [
+      0.5,
+      -1.5,
+      -0.5
+     ],
+     "max": [
+      0.95,
+      -1.25,
+      3.2
+     ],
+     "surface": {
+      "material": "core.pbr_weathered_planks"
+     }
+    },
+    {
+     "min": [
+      -4,
+      0,
+      -2.8
+     ],
+     "max": [
+      2.8,
+      0.6,
+      -2
+     ],
+     "surface": {
+      "material": "core.sandbags"
+     }
+    },
+    {
+     "min": [
+      2,
+      0,
+      -2
+     ],
+     "max": [
+      2.8,
+      0.6,
+      4
+     ],
+     "surface": {
+      "material": "core.sandbags"
+     }
+    },
+    {
+     "min": [
+      -4,
+      -1.5,
+      -0.4
+     ],
+     "max": [
+      -1.6,
+      -1.46,
+      1.6
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_weathered_planks"
+     }
+    },
+    {
+     "min": [
+      -1.6,
+      -1.5,
+      -0.4
+     ],
+     "max": [
+      0.5,
+      -1.46,
+      4
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_weathered_planks"
+     }
+    },
+    {
+     "min": [
+      -3.08,
+      -1.5,
+      -1.99
+     ],
+     "max": [
+      -2.92,
+      -0.32,
+      -1.89
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_charred_wood"
+     }
+    },
+    {
+     "min": [
+      -1.08,
+      -1.5,
+      -1.99
+     ],
+     "max": [
+      -0.92,
+      -0.32,
+      -1.89
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_charred_wood"
+     }
+    },
+    {
+     "min": [
+      0.92,
+      -1.5,
+      -1.99
+     ],
+     "max": [
+      1.08,
+      -0.32,
+      -1.89
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_charred_wood"
+     }
+    },
+    {
+     "min": [
+      1.89,
+      -1.5,
+      0.92
+     ],
+     "max": [
+      1.99,
+      -0.32,
+      1.08
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_charred_wood"
+     }
+    },
+    {
+     "min": [
+      1.89,
+      -1.5,
+      2.92
+     ],
+     "max": [
+      1.99,
+      -0.32,
+      3.08
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_charred_wood"
+     }
+    },
+    {
+     "min": [
+      -3.08,
+      -1.5,
+      1.89
+     ],
+     "max": [
+      -2.92,
+      -0.32,
+      1.99
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_charred_wood"
+     }
+    },
+    {
+     "min": [
+      -1.99,
+      -1.5,
+      2.92
+     ],
+     "max": [
+      -1.89,
+      -0.32,
+      3.08
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_charred_wood"
+     }
+    }
+   ]
+  },
+  {
+   "id": "core.trench_sunk_t",
+   "category": "Open",
+   "displayName": "Sunken Trench Junction",
+   "blurb": "The sunken trench runs east–west with a branch north (a communication trench to the rear); fire step and parapet along the south",
+   "cells": [
+    [
+     0,
+     0,
+     -1
+    ],
+    [
+     0,
+     0,
+     0
+    ]
+   ],
+   "floors": [],
+   "ports": [
+    {
+     "side": "N",
+     "level": 0
+    },
+    {
+     "side": "E",
+     "level": 0
+    },
+    {
+     "side": "S",
+     "level": 0
+    },
+    {
+     "side": "W",
+     "level": 0
+    }
+   ],
+   "open": true,
+   "edgeDefault": "open",
+   "extraFloors": [
+    {
+     "min": [
+      -4,
+      -1.8,
+      -2
+     ],
+     "max": [
+      4,
+      -1.5,
+      2
+     ],
+     "surface": {
+      "material": "core.pbr_dusty_road",
+      "tint": "#7a6a52"
+     }
+    },
+    {
+     "min": [
+      -2,
+      -1.8,
+      2
+     ],
+     "max": [
+      2,
+      -1.5,
+      4
+     ],
+     "surface": {
+      "material": "core.pbr_dusty_road",
+      "tint": "#7a6a52"
+     }
+    },
+    {
+     "min": [
+      -4,
+      -0.3,
+      -4
+     ],
+     "max": [
+      4,
+      0,
+      -2
+     ],
+     "surface": {
+      "material": "core.pbr_dusty_road",
+      "tint": "#9a8668"
+     }
+    },
+    {
+     "min": [
+      -4,
+      -0.3,
+      2
+     ],
+     "max": [
+      -2,
+      0,
+      4
+     ],
+     "surface": {
+      "material": "core.pbr_dusty_road",
+      "tint": "#9a8668"
+     }
+    },
+    {
+     "min": [
+      2,
+      -0.3,
+      2
+     ],
+     "max": [
+      4,
+      0,
+      4
+     ],
+     "surface": {
+      "material": "core.pbr_dusty_road",
+      "tint": "#9a8668"
+     }
+    },
+    {
+     "min": [
+      -3.7,
+      -2.1,
+      -3.7
+     ],
+     "max": [
+      3.7,
+      -1.8,
+      3.7
+     ],
+     "surface": {
+      "material": "core.pbr_dusty_road",
+      "tint": "#9a8668"
+     }
+    }
+   ],
+   "solids": [
+    {
+     "min": [
+      -4,
+      -1.8,
+      -2.4
+     ],
+     "max": [
+      4,
+      -0.3,
+      -2
+     ],
+     "kind": "wall"
+    },
+    {
+     "min": [
+      -4,
+      -1.8,
+      2
+     ],
+     "max": [
+      -2,
+      -0.3,
+      2.4
+     ],
+     "kind": "wall"
+    },
+    {
+     "min": [
+      2,
+      -1.8,
+      2
+     ],
+     "max": [
+      4,
+      -0.3,
+      2.4
+     ],
+     "kind": "wall"
+    },
+    {
+     "min": [
+      -2.4,
+      -1.8,
+      2.4
+     ],
+     "max": [
+      -2,
+      -0.3,
+      4
+     ],
+     "kind": "wall"
+    },
+    {
+     "min": [
+      2,
+      -1.8,
+      2.4
+     ],
+     "max": [
+      2.4,
+      -0.3,
+      4
+     ],
+     "kind": "wall"
+    },
+    {
+     "min": [
+      -3.2,
+      -1.5,
+      -2
+     ],
+     "max": [
+      3.2,
+      -0.75,
+      -1.4
+     ],
+     "surface": {
+      "material": "core.pbr_weathered_planks"
+     }
+    },
+    {
+     "min": [
+      -3.2,
+      -1.5,
+      -1.4
+     ],
+     "max": [
+      3.2,
+      -1,
+      -0.95
+     ],
+     "surface": {
+      "material": "core.pbr_weathered_planks"
+     }
+    },
+    {
+     "min": [
+      -3.2,
+      -1.5,
+      -0.95
+     ],
+     "max": [
+      3.2,
+      -1.25,
+      -0.5
+     ],
+     "surface": {
+      "material": "core.pbr_weathered_planks"
+     }
+    },
+    {
+     "min": [
+      -4,
+      0,
+      -2.8
+     ],
+     "max": [
+      4,
+      0.6,
+      -2
+     ],
+     "surface": {
+      "material": "core.sandbags"
+     }
+    },
+    {
+     "min": [
+      -4,
+      -1.5,
+      -0.4
+     ],
+     "max": [
+      4,
+      -1.46,
+      1.6
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_weathered_planks"
+     }
+    },
+    {
+     "min": [
+      -1.6,
+      -1.5,
+      1.6
+     ],
+     "max": [
+      1.6,
+      -1.46,
+      4
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_weathered_planks"
+     }
+    },
+    {
+     "min": [
+      -3.08,
+      -1.5,
+      -1.99
+     ],
+     "max": [
+      -2.92,
+      -0.32,
+      -1.89
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_charred_wood"
+     }
+    },
+    {
+     "min": [
+      -1.08,
+      -1.5,
+      -1.99
+     ],
+     "max": [
+      -0.92,
+      -0.32,
+      -1.89
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_charred_wood"
+     }
+    },
+    {
+     "min": [
+      0.92,
+      -1.5,
+      -1.99
+     ],
+     "max": [
+      1.08,
+      -0.32,
+      -1.89
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_charred_wood"
+     }
+    },
+    {
+     "min": [
+      2.92,
+      -1.5,
+      -1.99
+     ],
+     "max": [
+      3.08,
+      -0.32,
+      -1.89
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_charred_wood"
+     }
+    },
+    {
+     "min": [
+      -3.08,
+      -1.5,
+      1.89
+     ],
+     "max": [
+      -2.92,
+      -0.32,
+      1.99
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_charred_wood"
+     }
+    },
+    {
+     "min": [
+      2.92,
+      -1.5,
+      1.89
+     ],
+     "max": [
+      3.08,
+      -0.32,
+      1.99
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_charred_wood"
+     }
+    },
+    {
+     "min": [
+      -1.99,
+      -1.5,
+      2.92
+     ],
+     "max": [
+      -1.89,
+      -0.32,
+      3.08
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_charred_wood"
+     }
+    },
+    {
+     "min": [
+      1.89,
+      -1.5,
+      2.92
+     ],
+     "max": [
+      1.99,
+      -0.32,
+      3.08
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_charred_wood"
+     }
+    }
+   ]
+  },
+  {
+   "id": "core.trench_sunk_end",
+   "category": "Open",
+   "displayName": "Sunken Trench End",
+   "blurb": "The sunken trench comes in from the west and ends in timber steps up to the ground (east): the way in and out",
+   "cells": [
+    [
+     0,
+     0,
+     -1
+    ],
+    [
+     0,
+     0,
+     0
+    ]
+   ],
+   "floors": [],
+   "ports": [
+    {
+     "side": "N",
+     "level": 0
+    },
+    {
+     "side": "E",
+     "level": 0
+    },
+    {
+     "side": "S",
+     "level": 0
+    },
+    {
+     "side": "W",
+     "level": 0
+    }
+   ],
+   "open": true,
+   "edgeDefault": "open",
+   "extraFloors": [
+    {
+     "min": [
+      -4,
+      -1.8,
+      -2
+     ],
+     "max": [
+      0.5,
+      -1.5,
+      2
+     ],
+     "surface": {
+      "material": "core.pbr_dusty_road",
+      "tint": "#7a6a52"
+     }
+    },
+    {
+     "min": [
+      -4,
+      -0.3,
+      -4
+     ],
+     "max": [
+      4,
+      0,
+      -2
+     ],
+     "surface": {
+      "material": "core.pbr_dusty_road",
+      "tint": "#9a8668"
+     }
+    },
+    {
+     "min": [
+      -4,
+      -0.3,
+      2
+     ],
+     "max": [
+      4,
+      0,
+      4
+     ],
+     "surface": {
+      "material": "core.pbr_dusty_road",
+      "tint": "#9a8668"
+     }
+    },
+    {
+     "min": [
+      3.5,
+      -0.3,
+      -2
+     ],
+     "max": [
+      4,
+      0,
+      2
+     ],
+     "surface": {
+      "material": "core.pbr_dusty_road",
+      "tint": "#9a8668"
+     }
+    },
+    {
+     "min": [
+      -3.7,
+      -2.1,
+      -3.7
+     ],
+     "max": [
+      3.7,
+      -1.8,
+      3.7
+     ],
+     "surface": {
+      "material": "core.pbr_dusty_road",
+      "tint": "#9a8668"
+     }
+    }
+   ],
+   "solids": [
+    {
+     "min": [
+      -4,
+      -1.8,
+      -2.4
+     ],
+     "max": [
+      3.5,
+      -0.3,
+      -2
+     ],
+     "kind": "wall"
+    },
+    {
+     "min": [
+      -4,
+      -1.8,
+      2
+     ],
+     "max": [
+      3.5,
+      -0.3,
+      2.4
+     ],
+     "kind": "wall"
+    },
+    {
+     "min": [
+      0.5,
+      -1.8,
+      -2
+     ],
+     "max": [
+      1,
+      -1.25,
+      2
+     ],
+     "surface": {
+      "material": "core.pbr_weathered_planks"
+     }
+    },
+    {
+     "min": [
+      1,
+      -1.8,
+      -2
+     ],
+     "max": [
+      1.5,
+      -1,
+      2
+     ],
+     "surface": {
+      "material": "core.pbr_weathered_planks"
+     }
+    },
+    {
+     "min": [
+      1.5,
+      -1.8,
+      -2
+     ],
+     "max": [
+      2,
+      -0.75,
+      2
+     ],
+     "surface": {
+      "material": "core.pbr_weathered_planks"
+     }
+    },
+    {
+     "min": [
+      2,
+      -1.8,
+      -2
+     ],
+     "max": [
+      2.5,
+      -0.5,
+      2
+     ],
+     "surface": {
+      "material": "core.pbr_weathered_planks"
+     }
+    },
+    {
+     "min": [
+      2.5,
+      -1.8,
+      -2
+     ],
+     "max": [
+      3,
+      -0.25,
+      2
+     ],
+     "surface": {
+      "material": "core.pbr_weathered_planks"
+     }
+    },
+    {
+     "min": [
+      3,
+      -1.8,
+      -2
+     ],
+     "max": [
+      3.5,
+      0,
+      2
+     ],
+     "surface": {
+      "material": "core.pbr_weathered_planks"
+     }
+    },
+    {
+     "min": [
+      -3.2,
+      -1.5,
+      -2
+     ],
+     "max": [
+      0.5,
+      -0.75,
+      -1.4
+     ],
+     "surface": {
+      "material": "core.pbr_weathered_planks"
+     }
+    },
+    {
+     "min": [
+      -3.2,
+      -1.5,
+      -1.4
+     ],
+     "max": [
+      0.5,
+      -1,
+      -0.95
+     ],
+     "surface": {
+      "material": "core.pbr_weathered_planks"
+     }
+    },
+    {
+     "min": [
+      -3.2,
+      -1.5,
+      -0.95
+     ],
+     "max": [
+      0.5,
+      -1.25,
+      -0.5
+     ],
+     "surface": {
+      "material": "core.pbr_weathered_planks"
+     }
+    },
+    {
+     "min": [
+      -4,
+      0,
+      -2.8
+     ],
+     "max": [
+      2,
+      0.6,
+      -2
+     ],
+     "surface": {
+      "material": "core.sandbags"
+     }
+    },
+    {
+     "min": [
+      -4,
+      -1.5,
+      -0.4
+     ],
+     "max": [
+      0.5,
+      -1.46,
+      1.6
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_weathered_planks"
+     }
+    },
+    {
+     "min": [
+      -3.08,
+      -1.5,
+      -1.99
+     ],
+     "max": [
+      -2.92,
+      -0.32,
+      -1.89
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_charred_wood"
+     }
+    },
+    {
+     "min": [
+      -1.08,
+      -1.5,
+      -1.99
+     ],
+     "max": [
+      -0.92,
+      -0.32,
+      -1.89
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_charred_wood"
+     }
+    },
+    {
+     "min": [
+      -3.08,
+      -1.5,
+      1.89
+     ],
+     "max": [
+      -2.92,
+      -0.32,
+      1.99
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_charred_wood"
+     }
+    },
+    {
+     "min": [
+      -1.08,
+      -1.5,
+      1.89
+     ],
+     "max": [
+      -0.92,
+      -0.32,
+      1.99
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_charred_wood"
+     }
+    }
+   ]
+  },
+  {
+   "id": "core.stairs_grand",
+   "category": "Vertical",
+   "displayName": "Grand Flight",
+   "blurb": "A stair two cells wide climbing one level north (16 steps), a stepped parapet along each side: a grand ascent",
+   "cells": [
+    [
+     0,
+     0,
+     0
+    ],
+    [
+     1,
+     0,
+     0
+    ],
+    [
+     0,
+     0,
+     1
+    ],
+    [
+     1,
+     0,
+     1
+    ]
+   ],
+   "floors": [
+    0
+   ],
+   "ports": [
+    {
+     "side": "S",
+     "level": 0,
+     "cell": [
+      0,
+      0
+     ]
+    },
+    {
+     "side": "S",
+     "level": 0,
+     "cell": [
+      1,
+      0
+     ]
+    },
+    {
+     "side": "N",
+     "level": 1,
+     "cell": [
+      0,
+      0
+     ]
+    },
+    {
+     "side": "N",
+     "level": 1,
+     "cell": [
+      1,
+      0
+     ]
+    }
+   ],
+   "open": true,
+   "edgeDefault": "open",
+   "solids": [
+    {
+     "min": [
+      -3.6,
+      0,
+      -4
+     ],
+     "max": [
+      11.6,
+      0.25,
+      -3.5
+     ]
+    },
+    {
+     "min": [
+      -3.6,
+      0,
+      -3.5
+     ],
+     "max": [
+      11.6,
+      0.5,
+      -3
+     ]
+    },
+    {
+     "min": [
+      -3.6,
+      0,
+      -3
+     ],
+     "max": [
+      11.6,
+      0.75,
+      -2.5
+     ]
+    },
+    {
+     "min": [
+      -3.6,
+      0,
+      -2.5
+     ],
+     "max": [
+      11.6,
+      1,
+      -2
+     ]
+    },
+    {
+     "min": [
+      -3.6,
+      0,
+      -2
+     ],
+     "max": [
+      11.6,
+      1.25,
+      -1.5
+     ]
+    },
+    {
+     "min": [
+      -3.6,
+      0,
+      -1.5
+     ],
+     "max": [
+      11.6,
+      1.5,
+      -1
+     ]
+    },
+    {
+     "min": [
+      -3.6,
+      0,
+      -1
+     ],
+     "max": [
+      11.6,
+      1.75,
+      -0.5
+     ]
+    },
+    {
+     "min": [
+      -3.6,
+      0,
+      -0.5
+     ],
+     "max": [
+      11.6,
+      2,
+      0
+     ]
+    },
+    {
+     "min": [
+      -3.6,
+      0,
+      0
+     ],
+     "max": [
+      11.6,
+      2.25,
+      0.5
+     ]
+    },
+    {
+     "min": [
+      -3.6,
+      0,
+      0.5
+     ],
+     "max": [
+      11.6,
+      2.5,
+      1
+     ]
+    },
+    {
+     "min": [
+      -3.6,
+      0,
+      1
+     ],
+     "max": [
+      11.6,
+      2.75,
+      1.5
+     ]
+    },
+    {
+     "min": [
+      -3.6,
+      0,
+      1.5
+     ],
+     "max": [
+      11.6,
+      3,
+      2
+     ]
+    },
+    {
+     "min": [
+      -3.6,
+      0,
+      2
+     ],
+     "max": [
+      11.6,
+      3.25,
+      2.5
+     ]
+    },
+    {
+     "min": [
+      -3.6,
+      0,
+      2.5
+     ],
+     "max": [
+      11.6,
+      3.5,
+      3
+     ]
+    },
+    {
+     "min": [
+      -3.6,
+      0,
+      3
+     ],
+     "max": [
+      11.6,
+      3.75,
+      3.5
+     ]
+    },
+    {
+     "min": [
+      -3.6,
+      0,
+      3.5
+     ],
+     "max": [
+      11.6,
+      4,
+      4
+     ]
+    },
+    {
+     "min": [
+      -4,
+      0,
+      -4
+     ],
+     "max": [
+      -3.6,
+      1.25,
+      -3.5
+     ],
+     "kind": "wall"
+    },
+    {
+     "min": [
+      11.6,
+      0,
+      -4
+     ],
+     "max": [
+      12,
+      1.25,
+      -3.5
+     ],
+     "kind": "wall"
+    },
+    {
+     "min": [
+      -4,
+      0,
+      -3.5
+     ],
+     "max": [
+      -3.6,
+      1.5,
+      -3
+     ],
+     "kind": "wall"
+    },
+    {
+     "min": [
+      11.6,
+      0,
+      -3.5
+     ],
+     "max": [
+      12,
+      1.5,
+      -3
+     ],
+     "kind": "wall"
+    },
+    {
+     "min": [
+      -4,
+      0,
+      -3
+     ],
+     "max": [
+      -3.6,
+      1.75,
+      -2.5
+     ],
+     "kind": "wall"
+    },
+    {
+     "min": [
+      11.6,
+      0,
+      -3
+     ],
+     "max": [
+      12,
+      1.75,
+      -2.5
+     ],
+     "kind": "wall"
+    },
+    {
+     "min": [
+      -4,
+      0,
+      -2.5
+     ],
+     "max": [
+      -3.6,
+      2,
+      -2
+     ],
+     "kind": "wall"
+    },
+    {
+     "min": [
+      11.6,
+      0,
+      -2.5
+     ],
+     "max": [
+      12,
+      2,
+      -2
+     ],
+     "kind": "wall"
+    },
+    {
+     "min": [
+      -4,
+      0,
+      -2
+     ],
+     "max": [
+      -3.6,
+      2.25,
+      -1.5
+     ],
+     "kind": "wall"
+    },
+    {
+     "min": [
+      11.6,
+      0,
+      -2
+     ],
+     "max": [
+      12,
+      2.25,
+      -1.5
+     ],
+     "kind": "wall"
+    },
+    {
+     "min": [
+      -4,
+      0,
+      -1.5
+     ],
+     "max": [
+      -3.6,
+      2.5,
+      -1
+     ],
+     "kind": "wall"
+    },
+    {
+     "min": [
+      11.6,
+      0,
+      -1.5
+     ],
+     "max": [
+      12,
+      2.5,
+      -1
+     ],
+     "kind": "wall"
+    },
+    {
+     "min": [
+      -4,
+      0,
+      -1
+     ],
+     "max": [
+      -3.6,
+      2.75,
+      -0.5
+     ],
+     "kind": "wall"
+    },
+    {
+     "min": [
+      11.6,
+      0,
+      -1
+     ],
+     "max": [
+      12,
+      2.75,
+      -0.5
+     ],
+     "kind": "wall"
+    },
+    {
+     "min": [
+      -4,
+      0,
+      -0.5
+     ],
+     "max": [
+      -3.6,
+      3,
+      0
+     ],
+     "kind": "wall"
+    },
+    {
+     "min": [
+      11.6,
+      0,
+      -0.5
+     ],
+     "max": [
+      12,
+      3,
+      0
+     ],
+     "kind": "wall"
+    },
+    {
+     "min": [
+      -4,
+      0,
+      0
+     ],
+     "max": [
+      -3.6,
+      3.25,
+      0.5
+     ],
+     "kind": "wall"
+    },
+    {
+     "min": [
+      11.6,
+      0,
+      0
+     ],
+     "max": [
+      12,
+      3.25,
+      0.5
+     ],
+     "kind": "wall"
+    },
+    {
+     "min": [
+      -4,
+      0,
+      0.5
+     ],
+     "max": [
+      -3.6,
+      3.5,
+      1
+     ],
+     "kind": "wall"
+    },
+    {
+     "min": [
+      11.6,
+      0,
+      0.5
+     ],
+     "max": [
+      12,
+      3.5,
+      1
+     ],
+     "kind": "wall"
+    },
+    {
+     "min": [
+      -4,
+      0,
+      1
+     ],
+     "max": [
+      -3.6,
+      3.75,
+      1.5
+     ],
+     "kind": "wall"
+    },
+    {
+     "min": [
+      11.6,
+      0,
+      1
+     ],
+     "max": [
+      12,
+      3.75,
+      1.5
+     ],
+     "kind": "wall"
+    },
+    {
+     "min": [
+      -4,
+      0,
+      1.5
+     ],
+     "max": [
+      -3.6,
+      4,
+      2
+     ],
+     "kind": "wall"
+    },
+    {
+     "min": [
+      11.6,
+      0,
+      1.5
+     ],
+     "max": [
+      12,
+      4,
+      2
+     ],
+     "kind": "wall"
+    },
+    {
+     "min": [
+      -4,
+      0,
+      2
+     ],
+     "max": [
+      -3.6,
+      4.25,
+      2.5
+     ],
+     "kind": "wall"
+    },
+    {
+     "min": [
+      11.6,
+      0,
+      2
+     ],
+     "max": [
+      12,
+      4.25,
+      2.5
+     ],
+     "kind": "wall"
+    },
+    {
+     "min": [
+      -4,
+      0,
+      2.5
+     ],
+     "max": [
+      -3.6,
+      4.5,
+      3
+     ],
+     "kind": "wall"
+    },
+    {
+     "min": [
+      11.6,
+      0,
+      2.5
+     ],
+     "max": [
+      12,
+      4.5,
+      3
+     ],
+     "kind": "wall"
+    },
+    {
+     "min": [
+      -4,
+      0,
+      3
+     ],
+     "max": [
+      -3.6,
+      4.75,
+      3.5
+     ],
+     "kind": "wall"
+    },
+    {
+     "min": [
+      11.6,
+      0,
+      3
+     ],
+     "max": [
+      12,
+      4.75,
+      3.5
+     ],
+     "kind": "wall"
+    },
+    {
+     "min": [
+      -4,
+      0,
+      3.5
+     ],
+     "max": [
+      -3.6,
+      5,
+      4
+     ],
+     "kind": "wall"
+    },
+    {
+     "min": [
+      11.6,
+      0,
+      3.5
+     ],
+     "max": [
+      12,
+      5,
+      4
+     ],
+     "kind": "wall"
+    },
+    {
+     "min": [
+      -3.58,
+      0.19,
+      -4.03
+     ],
+     "max": [
+      11.58,
+      0.265,
+      -3.92
+     ],
+     "kind": "trim"
+    },
+    {
+     "min": [
+      -3.58,
+      0.44,
+      -3.53
+     ],
+     "max": [
+      11.58,
+      0.515,
+      -3.42
+     ],
+     "kind": "trim"
+    },
+    {
+     "min": [
+      -3.58,
+      0.69,
+      -3.03
+     ],
+     "max": [
+      11.58,
+      0.765,
+      -2.92
+     ],
+     "kind": "trim"
+    },
+    {
+     "min": [
+      -3.58,
+      0.94,
+      -2.53
+     ],
+     "max": [
+      11.58,
+      1.015,
+      -2.42
+     ],
+     "kind": "trim"
+    },
+    {
+     "min": [
+      -3.58,
+      1.19,
+      -2.03
+     ],
+     "max": [
+      11.58,
+      1.265,
+      -1.92
+     ],
+     "kind": "trim"
+    },
+    {
+     "min": [
+      -3.58,
+      1.44,
+      -1.53
+     ],
+     "max": [
+      11.58,
+      1.515,
+      -1.42
+     ],
+     "kind": "trim"
+    },
+    {
+     "min": [
+      -3.58,
+      1.69,
+      -1.03
+     ],
+     "max": [
+      11.58,
+      1.765,
+      -0.92
+     ],
+     "kind": "trim"
+    },
+    {
+     "min": [
+      -3.58,
+      1.94,
+      -0.53
+     ],
+     "max": [
+      11.58,
+      2.015,
+      -0.42
+     ],
+     "kind": "trim"
+    },
+    {
+     "min": [
+      -3.58,
+      2.19,
+      -0.03
+     ],
+     "max": [
+      11.58,
+      2.265,
+      0.08
+     ],
+     "kind": "trim"
+    },
+    {
+     "min": [
+      -3.58,
+      2.44,
+      0.47
+     ],
+     "max": [
+      11.58,
+      2.515,
+      0.58
+     ],
+     "kind": "trim"
+    },
+    {
+     "min": [
+      -3.58,
+      2.69,
+      0.97
+     ],
+     "max": [
+      11.58,
+      2.765,
+      1.08
+     ],
+     "kind": "trim"
+    },
+    {
+     "min": [
+      -3.58,
+      2.94,
+      1.47
+     ],
+     "max": [
+      11.58,
+      3.015,
+      1.58
+     ],
+     "kind": "trim"
+    },
+    {
+     "min": [
+      -3.58,
+      3.19,
+      1.97
+     ],
+     "max": [
+      11.58,
+      3.265,
+      2.08
+     ],
+     "kind": "trim"
+    },
+    {
+     "min": [
+      -3.58,
+      3.44,
+      2.47
+     ],
+     "max": [
+      11.58,
+      3.515,
+      2.58
+     ],
+     "kind": "trim"
+    },
+    {
+     "min": [
+      -3.58,
+      3.69,
+      2.97
+     ],
+     "max": [
+      11.58,
+      3.765,
+      3.08
+     ],
+     "kind": "trim"
+    },
+    {
+     "min": [
+      -3.58,
+      3.94,
+      3.47
+     ],
+     "max": [
+      11.58,
+      4.015,
+      3.58
+     ],
+     "kind": "trim"
+    }
+   ]
+  },
+  {
+   "id": "core.cavea",
+   "category": "Vertical",
+   "displayName": "Seating Tier",
+   "blurb": "Eight rows of stone seats rising one level from south (low) to north, an aisle stair up the middle: line an arena's stands with them",
+   "cells": [
+    [
+     0,
+     0,
+     0
+    ],
+    [
+     0,
+     0,
+     1
+    ]
+   ],
+   "floors": [
+    0
+   ],
+   "ports": [
+    {
+     "side": "S",
+     "level": 0
+    },
+    {
+     "side": "E",
+     "level": 0
+    },
+    {
+     "side": "W",
+     "level": 0
+    },
+    {
+     "side": "N",
+     "level": 1
+    },
+    {
+     "side": "E",
+     "level": 1
+    },
+    {
+     "side": "W",
+     "level": 1
+    }
+   ],
+   "open": true,
+   "edgeDefault": "open",
+   "solids": [
+    {
+     "min": [
+      -4,
+      0,
+      -4
+     ],
+     "max": [
+      -1.2,
+      0.5,
+      -3
+     ]
+    },
+    {
+     "min": [
+      -4,
+      0,
+      -3
+     ],
+     "max": [
+      -1.2,
+      1,
+      -2
+     ]
+    },
+    {
+     "min": [
+      -4,
+      0,
+      -2
+     ],
+     "max": [
+      -1.2,
+      1.5,
+      -1
+     ]
+    },
+    {
+     "min": [
+      -4,
+      0,
+      -1
+     ],
+     "max": [
+      -1.2,
+      2,
+      0
+     ]
+    },
+    {
+     "min": [
+      -4,
+      0,
+      0
+     ],
+     "max": [
+      -1.2,
+      2.5,
+      1
+     ]
+    },
+    {
+     "min": [
+      -4,
+      0,
+      1
+     ],
+     "max": [
+      -1.2,
+      3,
+      2
+     ]
+    },
+    {
+     "min": [
+      -4,
+      0,
+      2
+     ],
+     "max": [
+      -1.2,
+      3.5,
+      3
+     ]
+    },
+    {
+     "min": [
+      -4,
+      0,
+      3
+     ],
+     "max": [
+      -1.2,
+      4,
+      4
+     ]
+    },
+    {
+     "min": [
+      -4,
+      0.43,
+      -4
+     ],
+     "max": [
+      -1.22,
+      0.52,
+      -3.9
+     ],
+     "kind": "trim"
+    },
+    {
+     "min": [
+      -4,
+      0.93,
+      -3.04
+     ],
+     "max": [
+      -1.22,
+      1.02,
+      -2.9
+     ],
+     "kind": "trim"
+    },
+    {
+     "min": [
+      -4,
+      1.43,
+      -2.04
+     ],
+     "max": [
+      -1.22,
+      1.52,
+      -1.9
+     ],
+     "kind": "trim"
+    },
+    {
+     "min": [
+      -4,
+      1.93,
+      -1.04
+     ],
+     "max": [
+      -1.22,
+      2.02,
+      -0.9
+     ],
+     "kind": "trim"
+    },
+    {
+     "min": [
+      -4,
+      2.43,
+      -0.04
+     ],
+     "max": [
+      -1.22,
+      2.52,
+      0.1
+     ],
+     "kind": "trim"
+    },
+    {
+     "min": [
+      -4,
+      2.93,
+      0.96
+     ],
+     "max": [
+      -1.22,
+      3.02,
+      1.1
+     ],
+     "kind": "trim"
+    },
+    {
+     "min": [
+      -4,
+      3.43,
+      1.96
+     ],
+     "max": [
+      -1.22,
+      3.52,
+      2.1
+     ],
+     "kind": "trim"
+    },
+    {
+     "min": [
+      -4,
+      3.93,
+      2.96
+     ],
+     "max": [
+      -1.22,
+      4.02,
+      3.1
+     ],
+     "kind": "trim"
+    },
+    {
+     "min": [
+      1.2,
+      0,
+      -4
+     ],
+     "max": [
+      4,
+      0.5,
+      -3
+     ]
+    },
+    {
+     "min": [
+      1.2,
+      0,
+      -3
+     ],
+     "max": [
+      4,
+      1,
+      -2
+     ]
+    },
+    {
+     "min": [
+      1.2,
+      0,
+      -2
+     ],
+     "max": [
+      4,
+      1.5,
+      -1
+     ]
+    },
+    {
+     "min": [
+      1.2,
+      0,
+      -1
+     ],
+     "max": [
+      4,
+      2,
+      0
+     ]
+    },
+    {
+     "min": [
+      1.2,
+      0,
+      0
+     ],
+     "max": [
+      4,
+      2.5,
+      1
+     ]
+    },
+    {
+     "min": [
+      1.2,
+      0,
+      1
+     ],
+     "max": [
+      4,
+      3,
+      2
+     ]
+    },
+    {
+     "min": [
+      1.2,
+      0,
+      2
+     ],
+     "max": [
+      4,
+      3.5,
+      3
+     ]
+    },
+    {
+     "min": [
+      1.2,
+      0,
+      3
+     ],
+     "max": [
+      4,
+      4,
+      4
+     ]
+    },
+    {
+     "min": [
+      1.22,
+      0.43,
+      -4
+     ],
+     "max": [
+      4,
+      0.52,
+      -3.9
+     ],
+     "kind": "trim"
+    },
+    {
+     "min": [
+      1.22,
+      0.93,
+      -3.04
+     ],
+     "max": [
+      4,
+      1.02,
+      -2.9
+     ],
+     "kind": "trim"
+    },
+    {
+     "min": [
+      1.22,
+      1.43,
+      -2.04
+     ],
+     "max": [
+      4,
+      1.52,
+      -1.9
+     ],
+     "kind": "trim"
+    },
+    {
+     "min": [
+      1.22,
+      1.93,
+      -1.04
+     ],
+     "max": [
+      4,
+      2.02,
+      -0.9
+     ],
+     "kind": "trim"
+    },
+    {
+     "min": [
+      1.22,
+      2.43,
+      -0.04
+     ],
+     "max": [
+      4,
+      2.52,
+      0.1
+     ],
+     "kind": "trim"
+    },
+    {
+     "min": [
+      1.22,
+      2.93,
+      0.96
+     ],
+     "max": [
+      4,
+      3.02,
+      1.1
+     ],
+     "kind": "trim"
+    },
+    {
+     "min": [
+      1.22,
+      3.43,
+      1.96
+     ],
+     "max": [
+      4,
+      3.52,
+      2.1
+     ],
+     "kind": "trim"
+    },
+    {
+     "min": [
+      1.22,
+      3.93,
+      2.96
+     ],
+     "max": [
+      4,
+      4.02,
+      3.1
+     ],
+     "kind": "trim"
+    },
+    {
+     "min": [
+      -1.2,
+      0,
+      -4
+     ],
+     "max": [
+      1.2,
+      0.25,
+      -3.5
+     ]
+    },
+    {
+     "min": [
+      -1.2,
+      0,
+      -3.5
+     ],
+     "max": [
+      1.2,
+      0.5,
+      -3
+     ]
+    },
+    {
+     "min": [
+      -1.2,
+      0,
+      -3
+     ],
+     "max": [
+      1.2,
+      0.75,
+      -2.5
+     ]
+    },
+    {
+     "min": [
+      -1.2,
+      0,
+      -2.5
+     ],
+     "max": [
+      1.2,
+      1,
+      -2
+     ]
+    },
+    {
+     "min": [
+      -1.2,
+      0,
+      -2
+     ],
+     "max": [
+      1.2,
+      1.25,
+      -1.5
+     ]
+    },
+    {
+     "min": [
+      -1.2,
+      0,
+      -1.5
+     ],
+     "max": [
+      1.2,
+      1.5,
+      -1
+     ]
+    },
+    {
+     "min": [
+      -1.2,
+      0,
+      -1
+     ],
+     "max": [
+      1.2,
+      1.75,
+      -0.5
+     ]
+    },
+    {
+     "min": [
+      -1.2,
+      0,
+      -0.5
+     ],
+     "max": [
+      1.2,
+      2,
+      0
+     ]
+    },
+    {
+     "min": [
+      -1.2,
+      0,
+      0
+     ],
+     "max": [
+      1.2,
+      2.25,
+      0.5
+     ]
+    },
+    {
+     "min": [
+      -1.2,
+      0,
+      0.5
+     ],
+     "max": [
+      1.2,
+      2.5,
+      1
+     ]
+    },
+    {
+     "min": [
+      -1.2,
+      0,
+      1
+     ],
+     "max": [
+      1.2,
+      2.75,
+      1.5
+     ]
+    },
+    {
+     "min": [
+      -1.2,
+      0,
+      1.5
+     ],
+     "max": [
+      1.2,
+      3,
+      2
+     ]
+    },
+    {
+     "min": [
+      -1.2,
+      0,
+      2
+     ],
+     "max": [
+      1.2,
+      3.25,
+      2.5
+     ]
+    },
+    {
+     "min": [
+      -1.2,
+      0,
+      2.5
+     ],
+     "max": [
+      1.2,
+      3.5,
+      3
+     ]
+    },
+    {
+     "min": [
+      -1.2,
+      0,
+      3
+     ],
+     "max": [
+      1.2,
+      3.75,
+      3.5
+     ]
+    },
+    {
+     "min": [
+      -1.2,
+      0,
+      3.5
+     ],
+     "max": [
+      1.2,
+      4,
+      4
+     ]
+    }
+   ]
+  },
+  {
+   "id": "core.cavea_vomitorium",
+   "category": "Vertical",
+   "displayName": "Seating Tier (Vomitorium)",
+   "blurb": "A seating tier cut by a passage 3.2 m wide from the gallery behind (north) out to the walkway in front, under its top rows, a broad aisle stair either side",
+   "cells": [
+    [
+     0,
+     0,
+     0
+    ],
+    [
+     0,
+     0,
+     1
+    ]
+   ],
+   "floors": [
+    0
+   ],
+   "ports": [
+    {
+     "side": "S",
+     "level": 0
+    },
+    {
+     "side": "E",
+     "level": 0
+    },
+    {
+     "side": "W",
+     "level": 0
+    },
+    {
+     "side": "N",
+     "level": 1
+    },
+    {
+     "side": "E",
+     "level": 1
+    },
+    {
+     "side": "W",
+     "level": 1
+    }
+   ],
+   "open": true,
+   "edgeDefault": "open",
+   "solids": [
+    {
+     "min": [
+      -4,
+      0,
+      -4
+     ],
+     "max": [
+      -1.6,
+      0.25,
+      -3.5
+     ]
+    },
+    {
+     "min": [
+      -4,
+      0,
+      -3.5
+     ],
+     "max": [
+      -1.6,
+      0.5,
+      -3
+     ]
+    },
+    {
+     "min": [
+      -4,
+      0,
+      -3
+     ],
+     "max": [
+      -1.6,
+      0.75,
+      -2.5
+     ]
+    },
+    {
+     "min": [
+      -4,
+      0,
+      -2.5
+     ],
+     "max": [
+      -1.6,
+      1,
+      -2
+     ]
+    },
+    {
+     "min": [
+      -4,
+      0,
+      -2
+     ],
+     "max": [
+      -1.6,
+      1.25,
+      -1.5
+     ]
+    },
+    {
+     "min": [
+      -4,
+      0,
+      -1.5
+     ],
+     "max": [
+      -1.6,
+      1.5,
+      -1
+     ]
+    },
+    {
+     "min": [
+      -4,
+      0,
+      -1
+     ],
+     "max": [
+      -1.6,
+      1.75,
+      -0.5
+     ]
+    },
+    {
+     "min": [
+      -4,
+      0,
+      -0.5
+     ],
+     "max": [
+      -1.6,
+      2,
+      0
+     ]
+    },
+    {
+     "min": [
+      -4,
+      0,
+      0
+     ],
+     "max": [
+      -1.6,
+      2.25,
+      0.5
+     ]
+    },
+    {
+     "min": [
+      -4,
+      0,
+      0.5
+     ],
+     "max": [
+      -1.6,
+      2.5,
+      1
+     ]
+    },
+    {
+     "min": [
+      -4,
+      0,
+      1
+     ],
+     "max": [
+      -1.6,
+      2.75,
+      1.5
+     ]
+    },
+    {
+     "min": [
+      -4,
+      0,
+      1.5
+     ],
+     "max": [
+      -1.6,
+      3,
+      2
+     ]
+    },
+    {
+     "min": [
+      -4,
+      0,
+      2
+     ],
+     "max": [
+      -1.6,
+      3.25,
+      2.5
+     ]
+    },
+    {
+     "min": [
+      -4,
+      0,
+      2.5
+     ],
+     "max": [
+      -1.6,
+      3.5,
+      3
+     ]
+    },
+    {
+     "min": [
+      -4,
+      0,
+      3
+     ],
+     "max": [
+      -1.6,
+      3.75,
+      3.5
+     ]
+    },
+    {
+     "min": [
+      -4,
+      0,
+      3.5
+     ],
+     "max": [
+      -1.6,
+      4,
+      4
+     ]
+    },
+    {
+     "min": [
+      1.6,
+      0,
+      -4
+     ],
+     "max": [
+      4,
+      0.25,
+      -3.5
+     ]
+    },
+    {
+     "min": [
+      1.6,
+      0,
+      -3.5
+     ],
+     "max": [
+      4,
+      0.5,
+      -3
+     ]
+    },
+    {
+     "min": [
+      1.6,
+      0,
+      -3
+     ],
+     "max": [
+      4,
+      0.75,
+      -2.5
+     ]
+    },
+    {
+     "min": [
+      1.6,
+      0,
+      -2.5
+     ],
+     "max": [
+      4,
+      1,
+      -2
+     ]
+    },
+    {
+     "min": [
+      1.6,
+      0,
+      -2
+     ],
+     "max": [
+      4,
+      1.25,
+      -1.5
+     ]
+    },
+    {
+     "min": [
+      1.6,
+      0,
+      -1.5
+     ],
+     "max": [
+      4,
+      1.5,
+      -1
+     ]
+    },
+    {
+     "min": [
+      1.6,
+      0,
+      -1
+     ],
+     "max": [
+      4,
+      1.75,
+      -0.5
+     ]
+    },
+    {
+     "min": [
+      1.6,
+      0,
+      -0.5
+     ],
+     "max": [
+      4,
+      2,
+      0
+     ]
+    },
+    {
+     "min": [
+      1.6,
+      0,
+      0
+     ],
+     "max": [
+      4,
+      2.25,
+      0.5
+     ]
+    },
+    {
+     "min": [
+      1.6,
+      0,
+      0.5
+     ],
+     "max": [
+      4,
+      2.5,
+      1
+     ]
+    },
+    {
+     "min": [
+      1.6,
+      0,
+      1
+     ],
+     "max": [
+      4,
+      2.75,
+      1.5
+     ]
+    },
+    {
+     "min": [
+      1.6,
+      0,
+      1.5
+     ],
+     "max": [
+      4,
+      3,
+      2
+     ]
+    },
+    {
+     "min": [
+      1.6,
+      0,
+      2
+     ],
+     "max": [
+      4,
+      3.25,
+      2.5
+     ]
+    },
+    {
+     "min": [
+      1.6,
+      0,
+      2.5
+     ],
+     "max": [
+      4,
+      3.5,
+      3
+     ]
+    },
+    {
+     "min": [
+      1.6,
+      0,
+      3
+     ],
+     "max": [
+      4,
+      3.75,
+      3.5
+     ]
+    },
+    {
+     "min": [
+      1.6,
+      0,
+      3.5
+     ],
+     "max": [
+      4,
+      4,
+      4
+     ]
+    },
+    {
+     "min": [
+      -1.6,
+      3,
+      2
+     ],
+     "max": [
+      1.6,
+      3.5,
+      3
+     ]
+    },
+    {
+     "min": [
+      -1.6,
+      3,
+      3
+     ],
+     "max": [
+      1.6,
+      4,
+      4
+     ]
+    },
+    {
+     "min": [
+      -1.7,
+      2.86,
+      1.96
+     ],
+     "max": [
+      1.7,
+      3,
+      2.02
+     ],
+     "kind": "trim"
+    }
+   ]
+  },
+  {
+   "id": "core.tunnel_vault",
+   "category": "Corridors",
+   "displayName": "Vaulted Tunnel",
+   "blurb": "A barrel-vaulted passage 3.6 m wide running north–south (a hypogeum, a sewer, a crypt)",
+   "cells": [
+    [
+     0,
+     0,
+     0
+    ]
+   ],
+   "floors": [
+    0
+   ],
+   "ports": [
+    {
+     "side": "N",
+     "level": 0
+    },
+    {
+     "side": "S",
+     "level": 0
+    }
+   ],
+   "edgeDefault": "open",
+   "solids": [
+    {
+     "min": [
+      -4,
+      0,
+      -4
+     ],
+     "max": [
+      -1.8,
+      3.5,
+      4
+     ],
+     "kind": "wall"
+    },
+    {
+     "min": [
+      1.8,
+      0,
+      -4
+     ],
+     "max": [
+      4,
+      3.5,
+      4
+     ],
+     "kind": "wall"
+    },
+    {
+     "min": [
+      -1.9899354700543248,
+      2.3448729554362413,
+      -4
+     ],
+     "max": [
+      -1.5472278913178,
+      2.5448729554362415,
+      4
+     ],
+     "roll": 0.9727551004870513,
+     "kind": "wall"
+    },
+    {
+     "min": [
+      -1.6903435011848167,
+      2.696171335867975,
+      -4
+     ],
+     "max": [
+      -1.2476359224482914,
+      2.896171335867975,
+      4
+     ],
+     "roll": 0.7565873003788177,
+     "kind": "wall"
+    },
+    {
+     "min": [
+      -1.3223747059831696,
+      2.9750348610248443,
+      -4
+     ],
+     "max": [
+      -0.8796671272466444,
+      3.1750348610248444,
+      4
+     ],
+     "roll": 0.540419500270584,
+     "kind": "wall"
+    },
+    {
+     "min": [
+      -0.9031568683969213,
+      3.168483315540712,
+      -4
+     ],
+     "max": [
+      -0.4604492896603962,
+      3.368483315540712,
+      4
+     ],
+     "roll": 0.3242517001623505,
+     "kind": "wall"
+    },
+    {
+     "min": [
+      -0.45220325325385824,
+      3.2675122855165215,
+      -4
+     ],
+     "max": [
+      -0.009495674517333103,
+      3.4675122855165217,
+      4
+     ],
+     "roll": 0.10808390005411683,
+     "kind": "wall"
+    },
+    {
+     "min": [
+      0.009495674517332853,
+      3.2675122855165215,
+      -4
+     ],
+     "max": [
+      0.45220325325385796,
+      3.4675122855165217,
+      4
+     ],
+     "roll": -0.10808390005411672,
+     "kind": "wall"
+    },
+    {
+     "min": [
+      0.4604492896603961,
+      3.168483315540712,
+      -4
+     ],
+     "max": [
+      0.9031568683969212,
+      3.368483315540712,
+      4
+     ],
+     "roll": -0.3242517001623504,
+     "kind": "wall"
+    },
+    {
+     "min": [
+      0.8796671272466444,
+      2.9750348610248443,
+      -4
+     ],
+     "max": [
+      1.3223747059831696,
+      3.1750348610248444,
+      4
+     ],
+     "roll": -0.540419500270584,
+     "kind": "wall"
+    },
+    {
+     "min": [
+      1.247635922448291,
+      2.6961713358679753,
+      -4
+     ],
+     "max": [
+      1.6903435011848162,
+      2.8961713358679755,
+      4
+     ],
+     "roll": -0.7565873003788175,
+     "kind": "wall"
+    },
+    {
+     "min": [
+      1.5472278913178,
+      2.3448729554362413,
+      -4
+     ],
+     "max": [
+      1.9899354700543253,
+      2.5448729554362415,
+      4
+     ],
+     "roll": -0.9727551004870514,
+     "kind": "wall"
+    },
+    {
+     "min": [
+      -0.2,
+      0,
+      -4
+     ],
+     "max": [
+      0.2,
+      0.02,
+      4
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete_dark"
+     }
+    }
+   ]
+  },
+  {
+   "id": "core.tunnel_vault_bend",
+   "category": "Corridors",
+   "displayName": "Vaulted Tunnel Bend",
+   "blurb": "The vaulted passage comes in from the south and turns east",
+   "cells": [
+    [
+     0,
+     0,
+     0
+    ]
+   ],
+   "floors": [
+    0
+   ],
+   "ports": [
+    {
+     "side": "S",
+     "level": 0
+    },
+    {
+     "side": "E",
+     "level": 0
+    }
+   ],
+   "edgeDefault": "open",
+   "solids": [
+    {
+     "min": [
+      -4,
+      0,
+      -4
+     ],
+     "max": [
+      -1.8,
+      3.5,
+      4
+     ],
+     "kind": "wall"
+    },
+    {
+     "min": [
+      -1.8,
+      0,
+      1.8
+     ],
+     "max": [
+      4,
+      3.5,
+      4
+     ],
+     "kind": "wall"
+    },
+    {
+     "min": [
+      1.8,
+      0,
+      -4
+     ],
+     "max": [
+      4,
+      3.5,
+      -1.8
+     ],
+     "kind": "wall"
+    },
+    {
+     "min": [
+      -1.9899354700543248,
+      2.3448729554362413,
+      -4
+     ],
+     "max": [
+      -1.5472278913178,
+      2.5448729554362415,
+      1.8
+     ],
+     "roll": 0.9727551004870513,
+     "kind": "wall"
+    },
+    {
+     "min": [
+      -1.6903435011848167,
+      2.696171335867975,
+      -4
+     ],
+     "max": [
+      -1.2476359224482914,
+      2.896171335867975,
+      1.8
+     ],
+     "roll": 0.7565873003788177,
+     "kind": "wall"
+    },
+    {
+     "min": [
+      -1.3223747059831696,
+      2.9750348610248443,
+      -4
+     ],
+     "max": [
+      -0.8796671272466444,
+      3.1750348610248444,
+      1.8
+     ],
+     "roll": 0.540419500270584,
+     "kind": "wall"
+    },
+    {
+     "min": [
+      -0.9031568683969213,
+      3.168483315540712,
+      -4
+     ],
+     "max": [
+      -0.4604492896603962,
+      3.368483315540712,
+      1.8
+     ],
+     "roll": 0.3242517001623505,
+     "kind": "wall"
+    },
+    {
+     "min": [
+      -0.45220325325385824,
+      3.2675122855165215,
+      -4
+     ],
+     "max": [
+      -0.009495674517333103,
+      3.4675122855165217,
+      1.8
+     ],
+     "roll": 0.10808390005411683,
+     "kind": "wall"
+    },
+    {
+     "min": [
+      0.009495674517332853,
+      3.2675122855165215,
+      -4
+     ],
+     "max": [
+      0.45220325325385796,
+      3.4675122855165217,
+      1.8
+     ],
+     "roll": -0.10808390005411672,
+     "kind": "wall"
+    },
+    {
+     "min": [
+      0.4604492896603961,
+      3.168483315540712,
+      -4
+     ],
+     "max": [
+      0.9031568683969212,
+      3.368483315540712,
+      1.8
+     ],
+     "roll": -0.3242517001623504,
+     "kind": "wall"
+    },
+    {
+     "min": [
+      0.8796671272466444,
+      2.9750348610248443,
+      -4
+     ],
+     "max": [
+      1.3223747059831696,
+      3.1750348610248444,
+      1.8
+     ],
+     "roll": -0.540419500270584,
+     "kind": "wall"
+    },
+    {
+     "min": [
+      1.247635922448291,
+      2.6961713358679753,
+      -4
+     ],
+     "max": [
+      1.6903435011848162,
+      2.8961713358679755,
+      1.8
+     ],
+     "roll": -0.7565873003788175,
+     "kind": "wall"
+    },
+    {
+     "min": [
+      1.5472278913178,
+      2.3448729554362413,
+      -4
+     ],
+     "max": [
+      1.9899354700543253,
+      2.5448729554362415,
+      1.8
+     ],
+     "roll": -0.9727551004870514,
+     "kind": "wall"
+    },
+    {
+     "min": [
+      -1.8,
+      2.3448729554362413,
+      -1.9899354700543248
+     ],
+     "max": [
+      4,
+      2.5448729554362415,
+      -1.5472278913178
+     ],
+     "pitch": 0.9727551004870513,
+     "kind": "wall"
+    },
+    {
+     "min": [
+      -1.8,
+      2.696171335867975,
+      -1.6903435011848167
+     ],
+     "max": [
+      4,
+      2.896171335867975,
+      -1.2476359224482914
+     ],
+     "pitch": 0.7565873003788177,
+     "kind": "wall"
+    },
+    {
+     "min": [
+      -1.8,
+      2.9750348610248443,
+      -1.3223747059831696
+     ],
+     "max": [
+      4,
+      3.1750348610248444,
+      -0.8796671272466444
+     ],
+     "pitch": 0.540419500270584,
+     "kind": "wall"
+    },
+    {
+     "min": [
+      -1.8,
+      3.168483315540712,
+      -0.9031568683969213
+     ],
+     "max": [
+      4,
+      3.368483315540712,
+      -0.4604492896603962
+     ],
+     "pitch": 0.3242517001623505,
+     "kind": "wall"
+    },
+    {
+     "min": [
+      -1.8,
+      3.2675122855165215,
+      -0.45220325325385824
+     ],
+     "max": [
+      4,
+      3.4675122855165217,
+      -0.009495674517333103
+     ],
+     "pitch": 0.10808390005411683,
+     "kind": "wall"
+    },
+    {
+     "min": [
+      -1.8,
+      3.2675122855165215,
+      0.009495674517332853
+     ],
+     "max": [
+      4,
+      3.4675122855165217,
+      0.45220325325385796
+     ],
+     "pitch": -0.10808390005411672,
+     "kind": "wall"
+    },
+    {
+     "min": [
+      -1.8,
+      3.168483315540712,
+      0.4604492896603961
+     ],
+     "max": [
+      4,
+      3.368483315540712,
+      0.9031568683969212
+     ],
+     "pitch": -0.3242517001623504,
+     "kind": "wall"
+    },
+    {
+     "min": [
+      -1.8,
+      2.9750348610248443,
+      0.8796671272466444
+     ],
+     "max": [
+      4,
+      3.1750348610248444,
+      1.3223747059831696
+     ],
+     "pitch": -0.540419500270584,
+     "kind": "wall"
+    },
+    {
+     "min": [
+      -1.8,
+      2.6961713358679753,
+      1.247635922448291
+     ],
+     "max": [
+      4,
+      2.8961713358679755,
+      1.6903435011848162
+     ],
+     "pitch": -0.7565873003788175,
+     "kind": "wall"
+    },
+    {
+     "min": [
+      -1.8,
+      2.3448729554362413,
+      1.5472278913178
+     ],
+     "max": [
+      4,
+      2.5448729554362415,
+      1.9899354700543253
+     ],
+     "pitch": -0.9727551004870514,
+     "kind": "wall"
+    },
+    {
+     "min": [
+      -0.2,
+      0,
+      -4
+     ],
+     "max": [
+      0.2,
+      0.02,
+      0.2
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete_dark"
+     }
+    },
+    {
+     "min": [
+      0.2,
+      0,
+      -0.2
+     ],
+     "max": [
+      4,
+      0.02,
+      0.2
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete_dark"
+     }
+    }
+   ]
+  },
+  {
+   "id": "core.tunnel_vault_t",
+   "category": "Corridors",
+   "displayName": "Vaulted Tunnel Junction",
+   "blurb": "The vaulted passage runs east–west with a branch south",
+   "cells": [
+    [
+     0,
+     0,
+     0
+    ]
+   ],
+   "floors": [
+    0
+   ],
+   "ports": [
+    {
+     "side": "E",
+     "level": 0
+    },
+    {
+     "side": "W",
+     "level": 0
+    },
+    {
+     "side": "S",
+     "level": 0
+    }
+   ],
+   "edgeDefault": "open",
+   "solids": [
+    {
+     "min": [
+      -4,
+      0,
+      1.8
+     ],
+     "max": [
+      4,
+      3.5,
+      4
+     ],
+     "kind": "wall"
+    },
+    {
+     "min": [
+      -4,
+      0,
+      -4
+     ],
+     "max": [
+      -1.8,
+      3.5,
+      -1.8
+     ],
+     "kind": "wall"
+    },
+    {
+     "min": [
+      1.8,
+      0,
+      -4
+     ],
+     "max": [
+      4,
+      3.5,
+      -1.8
+     ],
+     "kind": "wall"
+    },
+    {
+     "min": [
+      -4,
+      2.3448729554362413,
+      -1.9899354700543248
+     ],
+     "max": [
+      4,
+      2.5448729554362415,
+      -1.5472278913178
+     ],
+     "pitch": 0.9727551004870513,
+     "kind": "wall"
+    },
+    {
+     "min": [
+      -4,
+      2.696171335867975,
+      -1.6903435011848167
+     ],
+     "max": [
+      4,
+      2.896171335867975,
+      -1.2476359224482914
+     ],
+     "pitch": 0.7565873003788177,
+     "kind": "wall"
+    },
+    {
+     "min": [
+      -4,
+      2.9750348610248443,
+      -1.3223747059831696
+     ],
+     "max": [
+      4,
+      3.1750348610248444,
+      -0.8796671272466444
+     ],
+     "pitch": 0.540419500270584,
+     "kind": "wall"
+    },
+    {
+     "min": [
+      -4,
+      3.168483315540712,
+      -0.9031568683969213
+     ],
+     "max": [
+      4,
+      3.368483315540712,
+      -0.4604492896603962
+     ],
+     "pitch": 0.3242517001623505,
+     "kind": "wall"
+    },
+    {
+     "min": [
+      -4,
+      3.2675122855165215,
+      -0.45220325325385824
+     ],
+     "max": [
+      4,
+      3.4675122855165217,
+      -0.009495674517333103
+     ],
+     "pitch": 0.10808390005411683,
+     "kind": "wall"
+    },
+    {
+     "min": [
+      -4,
+      3.2675122855165215,
+      0.009495674517332853
+     ],
+     "max": [
+      4,
+      3.4675122855165217,
+      0.45220325325385796
+     ],
+     "pitch": -0.10808390005411672,
+     "kind": "wall"
+    },
+    {
+     "min": [
+      -4,
+      3.168483315540712,
+      0.4604492896603961
+     ],
+     "max": [
+      4,
+      3.368483315540712,
+      0.9031568683969212
+     ],
+     "pitch": -0.3242517001623504,
+     "kind": "wall"
+    },
+    {
+     "min": [
+      -4,
+      2.9750348610248443,
+      0.8796671272466444
+     ],
+     "max": [
+      4,
+      3.1750348610248444,
+      1.3223747059831696
+     ],
+     "pitch": -0.540419500270584,
+     "kind": "wall"
+    },
+    {
+     "min": [
+      -4,
+      2.6961713358679753,
+      1.247635922448291
+     ],
+     "max": [
+      4,
+      2.8961713358679755,
+      1.6903435011848162
+     ],
+     "pitch": -0.7565873003788175,
+     "kind": "wall"
+    },
+    {
+     "min": [
+      -4,
+      2.3448729554362413,
+      1.5472278913178
+     ],
+     "max": [
+      4,
+      2.5448729554362415,
+      1.9899354700543253
+     ],
+     "pitch": -0.9727551004870514,
+     "kind": "wall"
+    },
+    {
+     "min": [
+      -1.9899354700543248,
+      2.3448729554362413,
+      -4
+     ],
+     "max": [
+      -1.5472278913178,
+      2.5448729554362415,
+      1.8
+     ],
+     "roll": 0.9727551004870513,
+     "kind": "wall"
+    },
+    {
+     "min": [
+      -1.6903435011848167,
+      2.696171335867975,
+      -4
+     ],
+     "max": [
+      -1.2476359224482914,
+      2.896171335867975,
+      1.8
+     ],
+     "roll": 0.7565873003788177,
+     "kind": "wall"
+    },
+    {
+     "min": [
+      -1.3223747059831696,
+      2.9750348610248443,
+      -4
+     ],
+     "max": [
+      -0.8796671272466444,
+      3.1750348610248444,
+      1.8
+     ],
+     "roll": 0.540419500270584,
+     "kind": "wall"
+    },
+    {
+     "min": [
+      -0.9031568683969213,
+      3.168483315540712,
+      -4
+     ],
+     "max": [
+      -0.4604492896603962,
+      3.368483315540712,
+      1.8
+     ],
+     "roll": 0.3242517001623505,
+     "kind": "wall"
+    },
+    {
+     "min": [
+      -0.45220325325385824,
+      3.2675122855165215,
+      -4
+     ],
+     "max": [
+      -0.009495674517333103,
+      3.4675122855165217,
+      1.8
+     ],
+     "roll": 0.10808390005411683,
+     "kind": "wall"
+    },
+    {
+     "min": [
+      0.009495674517332853,
+      3.2675122855165215,
+      -4
+     ],
+     "max": [
+      0.45220325325385796,
+      3.4675122855165217,
+      1.8
+     ],
+     "roll": -0.10808390005411672,
+     "kind": "wall"
+    },
+    {
+     "min": [
+      0.4604492896603961,
+      3.168483315540712,
+      -4
+     ],
+     "max": [
+      0.9031568683969212,
+      3.368483315540712,
+      1.8
+     ],
+     "roll": -0.3242517001623504,
+     "kind": "wall"
+    },
+    {
+     "min": [
+      0.8796671272466444,
+      2.9750348610248443,
+      -4
+     ],
+     "max": [
+      1.3223747059831696,
+      3.1750348610248444,
+      1.8
+     ],
+     "roll": -0.540419500270584,
+     "kind": "wall"
+    },
+    {
+     "min": [
+      1.247635922448291,
+      2.6961713358679753,
+      -4
+     ],
+     "max": [
+      1.6903435011848162,
+      2.8961713358679755,
+      1.8
+     ],
+     "roll": -0.7565873003788175,
+     "kind": "wall"
+    },
+    {
+     "min": [
+      1.5472278913178,
+      2.3448729554362413,
+      -4
+     ],
+     "max": [
+      1.9899354700543253,
+      2.5448729554362415,
+      1.8
+     ],
+     "roll": -0.9727551004870514,
+     "kind": "wall"
+    },
+    {
+     "min": [
+      -4,
+      0,
+      -0.2
+     ],
+     "max": [
+      4,
+      0.02,
+      0.2
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete_dark"
+     }
+    },
+    {
+     "min": [
+      -0.2,
+      0,
+      -4
+     ],
+     "max": [
+      0.2,
+      0.02,
+      -0.2
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete_dark"
+     }
+    }
+   ]
+  },
+  {
+   "id": "core.tunnel_vault_cross",
+   "category": "Corridors",
+   "displayName": "Vaulted Tunnel Crossing",
+   "blurb": "Two vaulted passages crossing under a groin vault",
+   "cells": [
+    [
+     0,
+     0,
+     0
+    ]
+   ],
+   "floors": [
+    0
+   ],
+   "ports": [
+    {
+     "side": "N",
+     "level": 0
+    },
+    {
+     "side": "E",
+     "level": 0
+    },
+    {
+     "side": "S",
+     "level": 0
+    },
+    {
+     "side": "W",
+     "level": 0
+    }
+   ],
+   "edgeDefault": "open",
+   "solids": [
+    {
+     "min": [
+      -4,
+      0,
+      -4
+     ],
+     "max": [
+      -1.8,
+      3.5,
+      -1.8
+     ],
+     "kind": "wall"
+    },
+    {
+     "min": [
+      1.8,
+      0,
+      -4
+     ],
+     "max": [
+      4,
+      3.5,
+      -1.8
+     ],
+     "kind": "wall"
+    },
+    {
+     "min": [
+      -4,
+      0,
+      1.8
+     ],
+     "max": [
+      -1.8,
+      3.5,
+      4
+     ],
+     "kind": "wall"
+    },
+    {
+     "min": [
+      1.8,
+      0,
+      1.8
+     ],
+     "max": [
+      4,
+      3.5,
+      4
+     ],
+     "kind": "wall"
+    },
+    {
+     "min": [
+      -4,
+      2.3448729554362413,
+      -1.9899354700543248
+     ],
+     "max": [
+      4,
+      2.5448729554362415,
+      -1.5472278913178
+     ],
+     "pitch": 0.9727551004870513,
+     "kind": "wall"
+    },
+    {
+     "min": [
+      -4,
+      2.696171335867975,
+      -1.6903435011848167
+     ],
+     "max": [
+      4,
+      2.896171335867975,
+      -1.2476359224482914
+     ],
+     "pitch": 0.7565873003788177,
+     "kind": "wall"
+    },
+    {
+     "min": [
+      -4,
+      2.9750348610248443,
+      -1.3223747059831696
+     ],
+     "max": [
+      4,
+      3.1750348610248444,
+      -0.8796671272466444
+     ],
+     "pitch": 0.540419500270584,
+     "kind": "wall"
+    },
+    {
+     "min": [
+      -4,
+      3.168483315540712,
+      -0.9031568683969213
+     ],
+     "max": [
+      4,
+      3.368483315540712,
+      -0.4604492896603962
+     ],
+     "pitch": 0.3242517001623505,
+     "kind": "wall"
+    },
+    {
+     "min": [
+      -4,
+      3.2675122855165215,
+      -0.45220325325385824
+     ],
+     "max": [
+      4,
+      3.4675122855165217,
+      -0.009495674517333103
+     ],
+     "pitch": 0.10808390005411683,
+     "kind": "wall"
+    },
+    {
+     "min": [
+      -4,
+      3.2675122855165215,
+      0.009495674517332853
+     ],
+     "max": [
+      4,
+      3.4675122855165217,
+      0.45220325325385796
+     ],
+     "pitch": -0.10808390005411672,
+     "kind": "wall"
+    },
+    {
+     "min": [
+      -4,
+      3.168483315540712,
+      0.4604492896603961
+     ],
+     "max": [
+      4,
+      3.368483315540712,
+      0.9031568683969212
+     ],
+     "pitch": -0.3242517001623504,
+     "kind": "wall"
+    },
+    {
+     "min": [
+      -4,
+      2.9750348610248443,
+      0.8796671272466444
+     ],
+     "max": [
+      4,
+      3.1750348610248444,
+      1.3223747059831696
+     ],
+     "pitch": -0.540419500270584,
+     "kind": "wall"
+    },
+    {
+     "min": [
+      -4,
+      2.6961713358679753,
+      1.247635922448291
+     ],
+     "max": [
+      4,
+      2.8961713358679755,
+      1.6903435011848162
+     ],
+     "pitch": -0.7565873003788175,
+     "kind": "wall"
+    },
+    {
+     "min": [
+      -4,
+      2.3448729554362413,
+      1.5472278913178
+     ],
+     "max": [
+      4,
+      2.5448729554362415,
+      1.9899354700543253
+     ],
+     "pitch": -0.9727551004870514,
+     "kind": "wall"
+    },
+    {
+     "min": [
+      -1.9899354700543248,
+      2.3448729554362413,
+      -4
+     ],
+     "max": [
+      -1.5472278913178,
+      2.5448729554362415,
+      4
+     ],
+     "roll": 0.9727551004870513,
+     "kind": "wall"
+    },
+    {
+     "min": [
+      -1.6903435011848167,
+      2.696171335867975,
+      -4
+     ],
+     "max": [
+      -1.2476359224482914,
+      2.896171335867975,
+      4
+     ],
+     "roll": 0.7565873003788177,
+     "kind": "wall"
+    },
+    {
+     "min": [
+      -1.3223747059831696,
+      2.9750348610248443,
+      -4
+     ],
+     "max": [
+      -0.8796671272466444,
+      3.1750348610248444,
+      4
+     ],
+     "roll": 0.540419500270584,
+     "kind": "wall"
+    },
+    {
+     "min": [
+      -0.9031568683969213,
+      3.168483315540712,
+      -4
+     ],
+     "max": [
+      -0.4604492896603962,
+      3.368483315540712,
+      4
+     ],
+     "roll": 0.3242517001623505,
+     "kind": "wall"
+    },
+    {
+     "min": [
+      -0.45220325325385824,
+      3.2675122855165215,
+      -4
+     ],
+     "max": [
+      -0.009495674517333103,
+      3.4675122855165217,
+      4
+     ],
+     "roll": 0.10808390005411683,
+     "kind": "wall"
+    },
+    {
+     "min": [
+      0.009495674517332853,
+      3.2675122855165215,
+      -4
+     ],
+     "max": [
+      0.45220325325385796,
+      3.4675122855165217,
+      4
+     ],
+     "roll": -0.10808390005411672,
+     "kind": "wall"
+    },
+    {
+     "min": [
+      0.4604492896603961,
+      3.168483315540712,
+      -4
+     ],
+     "max": [
+      0.9031568683969212,
+      3.368483315540712,
+      4
+     ],
+     "roll": -0.3242517001623504,
+     "kind": "wall"
+    },
+    {
+     "min": [
+      0.8796671272466444,
+      2.9750348610248443,
+      -4
+     ],
+     "max": [
+      1.3223747059831696,
+      3.1750348610248444,
+      4
+     ],
+     "roll": -0.540419500270584,
+     "kind": "wall"
+    },
+    {
+     "min": [
+      1.247635922448291,
+      2.6961713358679753,
+      -4
+     ],
+     "max": [
+      1.6903435011848162,
+      2.8961713358679755,
+      4
+     ],
+     "roll": -0.7565873003788175,
+     "kind": "wall"
+    },
+    {
+     "min": [
+      1.5472278913178,
+      2.3448729554362413,
+      -4
+     ],
+     "max": [
+      1.9899354700543253,
+      2.5448729554362415,
+      4
+     ],
+     "roll": -0.9727551004870514,
+     "kind": "wall"
+    },
+    {
+     "min": [
+      -4,
+      0,
+      -0.2
+     ],
+     "max": [
+      4,
+      0.02,
+      0.2
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete_dark"
+     }
+    },
+    {
+     "min": [
+      -0.2,
+      0,
+      -4
+     ],
+     "max": [
+      0.2,
+      0.02,
+      -0.2
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete_dark"
+     }
+    },
+    {
+     "min": [
+      -0.2,
+      0,
+      0.2
+     ],
+     "max": [
+      0.2,
+      0.02,
+      4
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete_dark"
+     }
+    }
+   ]
+  },
+  {
+   "id": "core.gallery_grand",
+   "category": "Large",
+   "displayName": "Grand Gallery",
+   "blurb": "Two storeys of vaulted gallery running east–west, a grand round arch in each long side: an arena's outer arcade, repeated",
+   "cells": [
+    [
+     0,
+     0,
+     0
+    ],
+    [
+     0,
+     0,
+     1
+    ]
+   ],
+   "floors": [
+    0
+   ],
+   "ports": [
+    {
+     "side": "N",
+     "level": 0
+    },
+    {
+     "side": "E",
+     "level": 0
+    },
+    {
+     "side": "S",
+     "level": 0
+    },
+    {
+     "side": "W",
+     "level": 0
+    }
+   ],
+   "edgeDefaults": {
+    "0,0,0:N": "arch_grand",
+    "0,0,0:S": "arch_grand",
+    "0,0,0:E": "open",
+    "0,0,0:W": "open",
+    "0,0,1:N": "open",
+    "0,0,1:E": "open",
+    "0,0,1:S": "open",
+    "0,0,1:W": "open"
+   },
+   "solids": [
+    {
+     "min": [
+      -4,
+      6.9595731062841475,
+      -3.229335166741579
+     ],
+     "max": [
+      4,
+      7.159573106284147,
+      -2.6906628117568308
+     ],
+     "pitch": 0.22234097839050657,
+     "kind": "wall"
+    },
+    {
+     "min": [
+      -4,
+      7.068503487998266,
+      -2.69777714377784
+     ],
+     "max": [
+      4,
+      7.268503487998266,
+      -2.159104788793092
+     ],
+     "pitch": 0.181915345955869,
+     "kind": "wall"
+    },
+    {
+     "min": [
+      -4,
+      7.15586215624035,
+      -2.162251025908253
+     ],
+     "max": [
+      4,
+      7.35586215624035,
+      -1.6235786709235043
+     ],
+     "pitch": 0.14148971352123144,
+     "kind": "wall"
+    },
+    {
+     "min": [
+      -4,
+      7.221506366141884,
+      -1.6236318677418302
+     ],
+     "max": [
+      4,
+      7.421506366141883,
+      -1.084959512757082
+     ],
+     "pitch": 0.10106408108659387,
+     "kind": "wall"
+    },
+    {
+     "min": [
+      -4,
+      7.265328854459276,
+      -1.0827997779439211
+     ],
+     "max": [
+      4,
+      7.465328854459275,
+      -0.5441274229591726
+     ],
+     "pitch": 0.060638448651956334,
+     "kind": "wall"
+    },
+    {
+     "min": [
+      -4,
+      7.287258014842995,
+      -0.5406384811305398
+     ],
+     "max": [
+      4,
+      7.487258014842994,
+      -0.001966126145791447
+     ],
+     "pitch": 0.02021281621731877,
+     "kind": "wall"
+    },
+    {
+     "min": [
+      -4,
+      7.287258014842995,
+      0.00196612614579178
+     ],
+     "max": [
+      4,
+      7.487258014842994,
+      0.5406384811305402
+     ],
+     "pitch": -0.020212816217318796,
+     "kind": "wall"
+    },
+    {
+     "min": [
+      -4,
+      7.265328854459276,
+      0.5441274229591726
+     ],
+     "max": [
+      4,
+      7.465328854459275,
+      1.0827997779439211
+     ],
+     "pitch": -0.060638448651956334,
+     "kind": "wall"
+    },
+    {
+     "min": [
+      -4,
+      7.221506366141884,
+      1.0849595127570826
+     ],
+     "max": [
+      4,
+      7.421506366141883,
+      1.6236318677418309
+     ],
+     "pitch": -0.10106408108659393,
+     "kind": "wall"
+    },
+    {
+     "min": [
+      -4,
+      7.15586215624035,
+      1.6235786709235047
+     ],
+     "max": [
+      4,
+      7.35586215624035,
+      2.1622510259082532
+     ],
+     "pitch": -0.14148971352123146,
+     "kind": "wall"
+    },
+    {
+     "min": [
+      -4,
+      7.068503487998266,
+      2.159104788793092
+     ],
+     "max": [
+      4,
+      7.268503487998266,
+      2.69777714377784
+     ],
+     "pitch": -0.181915345955869,
+     "kind": "wall"
+    },
+    {
+     "min": [
+      -4,
+      6.9595731062841475,
+      2.690662811756831
+     ],
+     "max": [
+      4,
+      7.159573106284147,
+      3.2293351667415795
+     ],
+     "pitch": -0.2223409783905066,
+     "kind": "wall"
+    }
+   ]
+  },
+  {
+   "id": "core.hatch_corner",
+   "category": "Open",
+   "displayName": "Corner Hatch",
+   "blurb": "Open floor with a quarter of a 3.2 m hatch at its north-east corner: four round one corner make a hatch on the corner (a 4 m board square)",
+   "cells": [
+    [
+     0,
+     0,
+     0
+    ]
+   ],
+   "floors": [],
+   "ports": [
+    {
+     "side": "N",
+     "level": 0
+    },
+    {
+     "side": "E",
+     "level": 0
+    },
+    {
+     "side": "S",
+     "level": 0
+    },
+    {
+     "side": "W",
+     "level": 0
+    }
+   ],
+   "open": true,
+   "edgeDefault": "open",
+   "extraFloors": [
+    {
+     "min": [
+      -4,
+      -0.5,
+      -4
+     ],
+     "max": [
+      4,
+      0,
+      2.4
+     ]
+    },
+    {
+     "min": [
+      -4,
+      -0.5,
+      2.4
+     ],
+     "max": [
+      2.4,
+      0,
+      4
+     ]
+    }
+   ],
+   "solids": [
+    {
+     "min": [
+      2.25,
+      0,
+      2.25
+     ],
+     "max": [
+      4,
+      0.04,
+      2.4
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_weathered_planks"
+     }
+    },
+    {
+     "min": [
+      2.25,
+      0,
+      2.4
+     ],
+     "max": [
+      2.4,
+      0.04,
+      4
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_weathered_planks"
+     }
+    }
+   ]
   }
  ],
  "dimensions": {
@@ -22435,9 +27763,12 @@
    "wide",
    "arch",
    "arch_segmental",
+   "arch_round",
+   "arch_grand",
    "window",
    "windows",
    "slit",
+   "embrasure",
    "half",
    "railing",
    "high",
@@ -22445,6 +27776,7 @@
    "fence",
    "broken",
    "bars",
+   "bars_gate",
    "shutter",
    "open"
   ],
@@ -22455,9 +27787,12 @@
    "wide": "Wide doorway",
    "arch": "Archway",
    "arch_segmental": "Segmental arch",
+   "arch_round": "Round arch",
+   "arch_grand": "Grand arch (2 storeys)",
    "window": "Window",
    "windows": "Twin windows",
    "slit": "Firing slit",
+   "embrasure": "Embrasure",
    "half": "Half wall",
    "railing": "Railing",
    "high": "High wall (2 storeys)",
@@ -22465,6 +27800,7 @@
    "fence": "Tall fence",
    "broken": "Broken wall",
    "bars": "Bars",
+   "bars_gate": "Barred gate",
    "shutter": "Shutter (crouch under)",
    "open": "No wall"
   },
@@ -25004,6 +30340,3361 @@
      []
     ]
    },
+   "arch_round": {
+    "sizes": [
+     {
+      "half": 4,
+      "height": 4,
+      "segments": [
+       [
+        -4,
+        -1.6,
+        0,
+        4,
+        0.5
+       ],
+       [
+        1.6,
+        4,
+        0,
+        4,
+        0.5
+       ],
+       [
+        -1.6,
+        -1.58,
+        1.66,
+        4,
+        0.5
+       ],
+       [
+        -1.58,
+        -1.5,
+        1.96,
+        4,
+        0.5
+       ],
+       [
+        -1.5,
+        -1.39,
+        2.2,
+        4,
+        0.5
+       ],
+       [
+        -1.39,
+        -1.23,
+        2.43,
+        4,
+        0.5
+       ],
+       [
+        -1.23,
+        -1.03,
+        2.63,
+        4,
+        0.5
+       ],
+       [
+        -1.03,
+        -0.8,
+        2.79,
+        4,
+        0.5
+       ],
+       [
+        -0.8,
+        -0.55,
+        2.91,
+        4,
+        0.5
+       ],
+       [
+        -0.55,
+        -0.28,
+        2.98,
+        4,
+        0.5
+       ],
+       [
+        -0.28,
+        0.28,
+        3,
+        4,
+        0.5
+       ],
+       [
+        0.28,
+        0.55,
+        2.98,
+        4,
+        0.5
+       ],
+       [
+        0.55,
+        0.8,
+        2.91,
+        4,
+        0.5
+       ],
+       [
+        0.8,
+        1.03,
+        2.79,
+        4,
+        0.5
+       ],
+       [
+        1.03,
+        1.23,
+        2.63,
+        4,
+        0.5
+       ],
+       [
+        1.23,
+        1.39,
+        2.43,
+        4,
+        0.5
+       ],
+       [
+        1.39,
+        1.5,
+        2.2,
+        4,
+        0.5
+       ],
+       [
+        1.5,
+        1.58,
+        1.96,
+        4,
+        0.5
+       ],
+       [
+        1.58,
+        1.6,
+        1.66,
+        4,
+        0.5
+       ]
+      ],
+      "trim": [
+       [
+        -4,
+        -1.76,
+        0,
+        0.16,
+        0.04
+       ],
+       [
+        1.76,
+        4,
+        0,
+        0.16,
+        0.04
+       ],
+       [
+        -4,
+        4,
+        3.8,
+        4,
+        0.07
+       ],
+       [
+        -2,
+        -1.6,
+        1.25,
+        1.4,
+        0.08
+       ],
+       [
+        1.6,
+        2,
+        1.25,
+        1.4,
+        0.08
+       ],
+       [
+        -1.999223860095224,
+        -1.5641333237358042,
+        1.4561667330274402,
+        1.85616673302744,
+        0.06,
+        1.4279966471761232
+       ],
+       [
+        -1.8548828517143527,
+        -1.419792315354933,
+        1.947747041147564,
+        2.347747041147564,
+        0.06,
+        1.1423973177408984
+       ],
+       [
+        -1.5778944924366112,
+        -1.1428039560771914,
+        2.3787493321583035,
+        2.778749332158304,
+        0.06,
+        0.8567979883056739
+       ],
+       [
+        -1.19069873139463,
+        -0.7556081950352103,
+        2.714256364369259,
+        3.1142563643692593,
+        0.06,
+        0.5711986588704493
+       ],
+       [
+        -0.7246638658150825,
+        -0.2895733294556627,
+        2.927087353880032,
+        3.3270873538800325,
+        0.06,
+        0.2855993294352248
+       ],
+       [
+        -0.2175452681797099,
+        0.2175452681797099,
+        3,
+        3.62,
+        0.1
+       ],
+       [
+        0.28957332945566194,
+        0.7246638658150817,
+        2.9270873538800326,
+        3.327087353880033,
+        0.06,
+        -0.28559932943522437
+       ],
+       [
+        0.7556081950352102,
+        1.19069873139463,
+        2.714256364369259,
+        3.1142563643692593,
+        0.06,
+        -0.5711986588704492
+       ],
+       [
+        1.142803956077191,
+        1.5778944924366107,
+        2.378749332158304,
+        2.7787493321583043,
+        0.06,
+        -0.8567979883056736
+       ],
+       [
+        1.419792315354933,
+        1.8548828517143527,
+        1.947747041147564,
+        2.347747041147564,
+        0.06,
+        -1.1423973177408984
+       ],
+       [
+        1.5641333237358042,
+        1.999223860095224,
+        1.4561667330274408,
+        1.8561667330274407,
+        0.06,
+        -1.4279966471761227
+       ]
+      ]
+     },
+     {
+      "half": 4,
+      "height": 3,
+      "segments": [
+       [
+        -4,
+        -1.6,
+        0,
+        3,
+        0.5
+       ],
+       [
+        1.6,
+        4,
+        0,
+        3,
+        0.5
+       ],
+       [
+        -1.6,
+        -1.58,
+        1.66,
+        3,
+        0.5
+       ],
+       [
+        -1.58,
+        -1.5,
+        1.96,
+        3,
+        0.5
+       ],
+       [
+        -1.5,
+        -1.39,
+        2.2,
+        3,
+        0.5
+       ],
+       [
+        -1.39,
+        -1.23,
+        2.43,
+        3,
+        0.5
+       ],
+       [
+        -1.23,
+        -1.03,
+        2.63,
+        3,
+        0.5
+       ],
+       [
+        -1.03,
+        -0.8,
+        2.79,
+        3,
+        0.5
+       ],
+       [
+        -0.8,
+        -0.55,
+        2.91,
+        3,
+        0.5
+       ],
+       [
+        -0.55,
+        -0.28,
+        2.98,
+        3,
+        0.5
+       ],
+       [
+        -0.28,
+        0.28,
+        3,
+        3,
+        0.5
+       ],
+       [
+        0.28,
+        0.55,
+        2.98,
+        3,
+        0.5
+       ],
+       [
+        0.55,
+        0.8,
+        2.91,
+        3,
+        0.5
+       ],
+       [
+        0.8,
+        1.03,
+        2.79,
+        3,
+        0.5
+       ],
+       [
+        1.03,
+        1.23,
+        2.63,
+        3,
+        0.5
+       ],
+       [
+        1.23,
+        1.39,
+        2.43,
+        3,
+        0.5
+       ],
+       [
+        1.39,
+        1.5,
+        2.2,
+        3,
+        0.5
+       ],
+       [
+        1.5,
+        1.58,
+        1.96,
+        3,
+        0.5
+       ],
+       [
+        1.58,
+        1.6,
+        1.66,
+        3,
+        0.5
+       ]
+      ],
+      "trim": [
+       [
+        -4,
+        -1.76,
+        0,
+        0.16,
+        0.04
+       ],
+       [
+        1.76,
+        4,
+        0,
+        0.16,
+        0.04
+       ],
+       [
+        -4,
+        4,
+        2.8,
+        3,
+        0.07
+       ],
+       [
+        -2,
+        -1.6,
+        1.25,
+        1.4,
+        0.08
+       ],
+       [
+        1.6,
+        2,
+        1.25,
+        1.4,
+        0.08
+       ],
+       [
+        -1.999223860095224,
+        -1.5641333237358042,
+        1.4561667330274402,
+        1.85616673302744,
+        0.06,
+        1.4279966471761232
+       ],
+       [
+        -1.8548828517143527,
+        -1.419792315354933,
+        1.947747041147564,
+        2.347747041147564,
+        0.06,
+        1.1423973177408984
+       ],
+       [
+        -1.5778944924366112,
+        -1.1428039560771914,
+        2.3787493321583035,
+        2.778749332158304,
+        0.06,
+        0.8567979883056739
+       ],
+       [
+        -1.19069873139463,
+        -0.7556081950352103,
+        2.714256364369259,
+        3.1142563643692593,
+        0.06,
+        0.5711986588704493
+       ],
+       [
+        -0.7246638658150825,
+        -0.2895733294556627,
+        2.927087353880032,
+        3.3270873538800325,
+        0.06,
+        0.2855993294352248
+       ],
+       [
+        -0.2175452681797099,
+        0.2175452681797099,
+        3,
+        3.62,
+        0.1
+       ],
+       [
+        0.28957332945566194,
+        0.7246638658150817,
+        2.9270873538800326,
+        3.327087353880033,
+        0.06,
+        -0.28559932943522437
+       ],
+       [
+        0.7556081950352102,
+        1.19069873139463,
+        2.714256364369259,
+        3.1142563643692593,
+        0.06,
+        -0.5711986588704492
+       ],
+       [
+        1.142803956077191,
+        1.5778944924366107,
+        2.378749332158304,
+        2.7787493321583043,
+        0.06,
+        -0.8567979883056736
+       ],
+       [
+        1.419792315354933,
+        1.8548828517143527,
+        1.947747041147564,
+        2.347747041147564,
+        0.06,
+        -1.1423973177408984
+       ],
+       [
+        1.5641333237358042,
+        1.999223860095224,
+        1.4561667330274408,
+        1.8561667330274407,
+        0.06,
+        -1.4279966471761227
+       ]
+      ]
+     },
+     {
+      "half": 4,
+      "height": 8,
+      "segments": [
+       [
+        -4,
+        -1.6,
+        0,
+        8,
+        0.5
+       ],
+       [
+        1.6,
+        4,
+        0,
+        8,
+        0.5
+       ],
+       [
+        -1.6,
+        -1.58,
+        1.66,
+        8,
+        0.5
+       ],
+       [
+        -1.58,
+        -1.5,
+        1.96,
+        8,
+        0.5
+       ],
+       [
+        -1.5,
+        -1.39,
+        2.2,
+        8,
+        0.5
+       ],
+       [
+        -1.39,
+        -1.23,
+        2.43,
+        8,
+        0.5
+       ],
+       [
+        -1.23,
+        -1.03,
+        2.63,
+        8,
+        0.5
+       ],
+       [
+        -1.03,
+        -0.8,
+        2.79,
+        8,
+        0.5
+       ],
+       [
+        -0.8,
+        -0.55,
+        2.91,
+        8,
+        0.5
+       ],
+       [
+        -0.55,
+        -0.28,
+        2.98,
+        8,
+        0.5
+       ],
+       [
+        -0.28,
+        0.28,
+        3,
+        8,
+        0.5
+       ],
+       [
+        0.28,
+        0.55,
+        2.98,
+        8,
+        0.5
+       ],
+       [
+        0.55,
+        0.8,
+        2.91,
+        8,
+        0.5
+       ],
+       [
+        0.8,
+        1.03,
+        2.79,
+        8,
+        0.5
+       ],
+       [
+        1.03,
+        1.23,
+        2.63,
+        8,
+        0.5
+       ],
+       [
+        1.23,
+        1.39,
+        2.43,
+        8,
+        0.5
+       ],
+       [
+        1.39,
+        1.5,
+        2.2,
+        8,
+        0.5
+       ],
+       [
+        1.5,
+        1.58,
+        1.96,
+        8,
+        0.5
+       ],
+       [
+        1.58,
+        1.6,
+        1.66,
+        8,
+        0.5
+       ]
+      ],
+      "trim": [
+       [
+        -4,
+        -1.76,
+        0,
+        0.16,
+        0.04
+       ],
+       [
+        1.76,
+        4,
+        0,
+        0.16,
+        0.04
+       ],
+       [
+        -4,
+        4,
+        7.8,
+        8,
+        0.07
+       ],
+       [
+        -2,
+        -1.6,
+        1.25,
+        1.4,
+        0.08
+       ],
+       [
+        1.6,
+        2,
+        1.25,
+        1.4,
+        0.08
+       ],
+       [
+        -1.999223860095224,
+        -1.5641333237358042,
+        1.4561667330274402,
+        1.85616673302744,
+        0.06,
+        1.4279966471761232
+       ],
+       [
+        -1.8548828517143527,
+        -1.419792315354933,
+        1.947747041147564,
+        2.347747041147564,
+        0.06,
+        1.1423973177408984
+       ],
+       [
+        -1.5778944924366112,
+        -1.1428039560771914,
+        2.3787493321583035,
+        2.778749332158304,
+        0.06,
+        0.8567979883056739
+       ],
+       [
+        -1.19069873139463,
+        -0.7556081950352103,
+        2.714256364369259,
+        3.1142563643692593,
+        0.06,
+        0.5711986588704493
+       ],
+       [
+        -0.7246638658150825,
+        -0.2895733294556627,
+        2.927087353880032,
+        3.3270873538800325,
+        0.06,
+        0.2855993294352248
+       ],
+       [
+        -0.2175452681797099,
+        0.2175452681797099,
+        3,
+        3.62,
+        0.1
+       ],
+       [
+        0.28957332945566194,
+        0.7246638658150817,
+        2.9270873538800326,
+        3.327087353880033,
+        0.06,
+        -0.28559932943522437
+       ],
+       [
+        0.7556081950352102,
+        1.19069873139463,
+        2.714256364369259,
+        3.1142563643692593,
+        0.06,
+        -0.5711986588704492
+       ],
+       [
+        1.142803956077191,
+        1.5778944924366107,
+        2.378749332158304,
+        2.7787493321583043,
+        0.06,
+        -0.8567979883056736
+       ],
+       [
+        1.419792315354933,
+        1.8548828517143527,
+        1.947747041147564,
+        2.347747041147564,
+        0.06,
+        -1.1423973177408984
+       ],
+       [
+        1.5641333237358042,
+        1.999223860095224,
+        1.4561667330274408,
+        1.8561667330274407,
+        0.06,
+        -1.4279966471761227
+       ]
+      ]
+     },
+     {
+      "half": 4,
+      "height": 2.5,
+      "segments": [
+       [
+        -4,
+        -1.6,
+        0,
+        2.5,
+        0.5
+       ],
+       [
+        1.6,
+        4,
+        0,
+        2.5,
+        0.5
+       ],
+       [
+        -1.6,
+        -1.58,
+        1.66,
+        2.5,
+        0.5
+       ],
+       [
+        -1.58,
+        -1.5,
+        1.96,
+        2.5,
+        0.5
+       ],
+       [
+        -1.5,
+        -1.39,
+        2.2,
+        2.5,
+        0.5
+       ],
+       [
+        -1.39,
+        -1.23,
+        2.43,
+        2.5,
+        0.5
+       ],
+       [
+        -1.23,
+        -1.03,
+        2.5,
+        2.5,
+        0.5
+       ],
+       [
+        -1.03,
+        -0.8,
+        2.5,
+        2.5,
+        0.5
+       ],
+       [
+        -0.8,
+        -0.55,
+        2.5,
+        2.5,
+        0.5
+       ],
+       [
+        -0.55,
+        -0.28,
+        2.5,
+        2.5,
+        0.5
+       ],
+       [
+        -0.28,
+        0.28,
+        2.5,
+        2.5,
+        0.5
+       ],
+       [
+        0.28,
+        0.55,
+        2.5,
+        2.5,
+        0.5
+       ],
+       [
+        0.55,
+        0.8,
+        2.5,
+        2.5,
+        0.5
+       ],
+       [
+        0.8,
+        1.03,
+        2.5,
+        2.5,
+        0.5
+       ],
+       [
+        1.03,
+        1.23,
+        2.5,
+        2.5,
+        0.5
+       ],
+       [
+        1.23,
+        1.39,
+        2.43,
+        2.5,
+        0.5
+       ],
+       [
+        1.39,
+        1.5,
+        2.2,
+        2.5,
+        0.5
+       ],
+       [
+        1.5,
+        1.58,
+        1.96,
+        2.5,
+        0.5
+       ],
+       [
+        1.58,
+        1.6,
+        1.66,
+        2.5,
+        0.5
+       ]
+      ],
+      "trim": [
+       [
+        -4,
+        -1.76,
+        0,
+        0.16,
+        0.04
+       ],
+       [
+        1.76,
+        4,
+        0,
+        0.16,
+        0.04
+       ],
+       [
+        -2,
+        -1.6,
+        1.25,
+        1.4,
+        0.08
+       ],
+       [
+        1.6,
+        2,
+        1.25,
+        1.4,
+        0.08
+       ],
+       [
+        -1.999223860095224,
+        -1.5641333237358042,
+        1.4561667330274402,
+        1.85616673302744,
+        0.06,
+        1.4279966471761232
+       ],
+       [
+        -1.8548828517143527,
+        -1.419792315354933,
+        1.947747041147564,
+        2.347747041147564,
+        0.06,
+        1.1423973177408984
+       ],
+       [
+        -1.5778944924366112,
+        -1.1428039560771914,
+        2.3787493321583035,
+        2.778749332158304,
+        0.06,
+        0.8567979883056739
+       ],
+       [
+        -1.19069873139463,
+        -0.7556081950352103,
+        2.714256364369259,
+        3.1142563643692593,
+        0.06,
+        0.5711986588704493
+       ],
+       [
+        -0.7246638658150825,
+        -0.2895733294556627,
+        2.927087353880032,
+        3.3270873538800325,
+        0.06,
+        0.2855993294352248
+       ],
+       [
+        -0.2175452681797099,
+        0.2175452681797099,
+        3,
+        3.62,
+        0.1
+       ],
+       [
+        0.28957332945566194,
+        0.7246638658150817,
+        2.9270873538800326,
+        3.327087353880033,
+        0.06,
+        -0.28559932943522437
+       ],
+       [
+        0.7556081950352102,
+        1.19069873139463,
+        2.714256364369259,
+        3.1142563643692593,
+        0.06,
+        -0.5711986588704492
+       ],
+       [
+        1.142803956077191,
+        1.5778944924366107,
+        2.378749332158304,
+        2.7787493321583043,
+        0.06,
+        -0.8567979883056736
+       ],
+       [
+        1.419792315354933,
+        1.8548828517143527,
+        1.947747041147564,
+        2.347747041147564,
+        0.06,
+        -1.1423973177408984
+       ],
+       [
+        1.5641333237358042,
+        1.999223860095224,
+        1.4561667330274408,
+        1.8561667330274407,
+        0.06,
+        -1.4279966471761227
+       ]
+      ]
+     },
+     {
+      "half": 5,
+      "height": 4.5,
+      "segments": [
+       [
+        -5,
+        -1.6,
+        0,
+        4.5,
+        0.5
+       ],
+       [
+        1.6,
+        5,
+        0,
+        4.5,
+        0.5
+       ],
+       [
+        -1.6,
+        -1.58,
+        1.66,
+        4.5,
+        0.5
+       ],
+       [
+        -1.58,
+        -1.5,
+        1.96,
+        4.5,
+        0.5
+       ],
+       [
+        -1.5,
+        -1.39,
+        2.2,
+        4.5,
+        0.5
+       ],
+       [
+        -1.39,
+        -1.23,
+        2.43,
+        4.5,
+        0.5
+       ],
+       [
+        -1.23,
+        -1.03,
+        2.63,
+        4.5,
+        0.5
+       ],
+       [
+        -1.03,
+        -0.8,
+        2.79,
+        4.5,
+        0.5
+       ],
+       [
+        -0.8,
+        -0.55,
+        2.91,
+        4.5,
+        0.5
+       ],
+       [
+        -0.55,
+        -0.28,
+        2.98,
+        4.5,
+        0.5
+       ],
+       [
+        -0.28,
+        0.28,
+        3,
+        4.5,
+        0.5
+       ],
+       [
+        0.28,
+        0.55,
+        2.98,
+        4.5,
+        0.5
+       ],
+       [
+        0.55,
+        0.8,
+        2.91,
+        4.5,
+        0.5
+       ],
+       [
+        0.8,
+        1.03,
+        2.79,
+        4.5,
+        0.5
+       ],
+       [
+        1.03,
+        1.23,
+        2.63,
+        4.5,
+        0.5
+       ],
+       [
+        1.23,
+        1.39,
+        2.43,
+        4.5,
+        0.5
+       ],
+       [
+        1.39,
+        1.5,
+        2.2,
+        4.5,
+        0.5
+       ],
+       [
+        1.5,
+        1.58,
+        1.96,
+        4.5,
+        0.5
+       ],
+       [
+        1.58,
+        1.6,
+        1.66,
+        4.5,
+        0.5
+       ]
+      ],
+      "trim": [
+       [
+        -5,
+        -1.76,
+        0,
+        0.16,
+        0.04
+       ],
+       [
+        1.76,
+        5,
+        0,
+        0.16,
+        0.04
+       ],
+       [
+        -5,
+        5,
+        4.3,
+        4.5,
+        0.07
+       ],
+       [
+        -2,
+        -1.6,
+        1.25,
+        1.4,
+        0.08
+       ],
+       [
+        1.6,
+        2,
+        1.25,
+        1.4,
+        0.08
+       ],
+       [
+        -1.999223860095224,
+        -1.5641333237358042,
+        1.4561667330274402,
+        1.85616673302744,
+        0.06,
+        1.4279966471761232
+       ],
+       [
+        -1.8548828517143527,
+        -1.419792315354933,
+        1.947747041147564,
+        2.347747041147564,
+        0.06,
+        1.1423973177408984
+       ],
+       [
+        -1.5778944924366112,
+        -1.1428039560771914,
+        2.3787493321583035,
+        2.778749332158304,
+        0.06,
+        0.8567979883056739
+       ],
+       [
+        -1.19069873139463,
+        -0.7556081950352103,
+        2.714256364369259,
+        3.1142563643692593,
+        0.06,
+        0.5711986588704493
+       ],
+       [
+        -0.7246638658150825,
+        -0.2895733294556627,
+        2.927087353880032,
+        3.3270873538800325,
+        0.06,
+        0.2855993294352248
+       ],
+       [
+        -0.2175452681797099,
+        0.2175452681797099,
+        3,
+        3.62,
+        0.1
+       ],
+       [
+        0.28957332945566194,
+        0.7246638658150817,
+        2.9270873538800326,
+        3.327087353880033,
+        0.06,
+        -0.28559932943522437
+       ],
+       [
+        0.7556081950352102,
+        1.19069873139463,
+        2.714256364369259,
+        3.1142563643692593,
+        0.06,
+        -0.5711986588704492
+       ],
+       [
+        1.142803956077191,
+        1.5778944924366107,
+        2.378749332158304,
+        2.7787493321583043,
+        0.06,
+        -0.8567979883056736
+       ],
+       [
+        1.419792315354933,
+        1.8548828517143527,
+        1.947747041147564,
+        2.347747041147564,
+        0.06,
+        -1.1423973177408984
+       ],
+       [
+        1.5641333237358042,
+        1.999223860095224,
+        1.4561667330274408,
+        1.8561667330274407,
+        0.06,
+        -1.4279966471761227
+       ]
+      ]
+     },
+     {
+      "half": 3,
+      "height": 3.6,
+      "segments": [
+       [
+        -3,
+        -1.6,
+        0,
+        3.6,
+        0.5
+       ],
+       [
+        1.6,
+        3,
+        0,
+        3.6,
+        0.5
+       ],
+       [
+        -1.6,
+        -1.58,
+        1.66,
+        3.6,
+        0.5
+       ],
+       [
+        -1.58,
+        -1.5,
+        1.96,
+        3.6,
+        0.5
+       ],
+       [
+        -1.5,
+        -1.39,
+        2.2,
+        3.6,
+        0.5
+       ],
+       [
+        -1.39,
+        -1.23,
+        2.43,
+        3.6,
+        0.5
+       ],
+       [
+        -1.23,
+        -1.03,
+        2.63,
+        3.6,
+        0.5
+       ],
+       [
+        -1.03,
+        -0.8,
+        2.79,
+        3.6,
+        0.5
+       ],
+       [
+        -0.8,
+        -0.55,
+        2.91,
+        3.6,
+        0.5
+       ],
+       [
+        -0.55,
+        -0.28,
+        2.98,
+        3.6,
+        0.5
+       ],
+       [
+        -0.28,
+        0.28,
+        3,
+        3.6,
+        0.5
+       ],
+       [
+        0.28,
+        0.55,
+        2.98,
+        3.6,
+        0.5
+       ],
+       [
+        0.55,
+        0.8,
+        2.91,
+        3.6,
+        0.5
+       ],
+       [
+        0.8,
+        1.03,
+        2.79,
+        3.6,
+        0.5
+       ],
+       [
+        1.03,
+        1.23,
+        2.63,
+        3.6,
+        0.5
+       ],
+       [
+        1.23,
+        1.39,
+        2.43,
+        3.6,
+        0.5
+       ],
+       [
+        1.39,
+        1.5,
+        2.2,
+        3.6,
+        0.5
+       ],
+       [
+        1.5,
+        1.58,
+        1.96,
+        3.6,
+        0.5
+       ],
+       [
+        1.58,
+        1.6,
+        1.66,
+        3.6,
+        0.5
+       ]
+      ],
+      "trim": [
+       [
+        -3,
+        -1.76,
+        0,
+        0.16,
+        0.04
+       ],
+       [
+        1.76,
+        3,
+        0,
+        0.16,
+        0.04
+       ],
+       [
+        -3,
+        3,
+        3.4,
+        3.6,
+        0.07
+       ],
+       [
+        -2,
+        -1.6,
+        1.25,
+        1.4,
+        0.08
+       ],
+       [
+        1.6,
+        2,
+        1.25,
+        1.4,
+        0.08
+       ],
+       [
+        -1.999223860095224,
+        -1.5641333237358042,
+        1.4561667330274402,
+        1.85616673302744,
+        0.06,
+        1.4279966471761232
+       ],
+       [
+        -1.8548828517143527,
+        -1.419792315354933,
+        1.947747041147564,
+        2.347747041147564,
+        0.06,
+        1.1423973177408984
+       ],
+       [
+        -1.5778944924366112,
+        -1.1428039560771914,
+        2.3787493321583035,
+        2.778749332158304,
+        0.06,
+        0.8567979883056739
+       ],
+       [
+        -1.19069873139463,
+        -0.7556081950352103,
+        2.714256364369259,
+        3.1142563643692593,
+        0.06,
+        0.5711986588704493
+       ],
+       [
+        -0.7246638658150825,
+        -0.2895733294556627,
+        2.927087353880032,
+        3.3270873538800325,
+        0.06,
+        0.2855993294352248
+       ],
+       [
+        -0.2175452681797099,
+        0.2175452681797099,
+        3,
+        3.62,
+        0.1
+       ],
+       [
+        0.28957332945566194,
+        0.7246638658150817,
+        2.9270873538800326,
+        3.327087353880033,
+        0.06,
+        -0.28559932943522437
+       ],
+       [
+        0.7556081950352102,
+        1.19069873139463,
+        2.714256364369259,
+        3.1142563643692593,
+        0.06,
+        -0.5711986588704492
+       ],
+       [
+        1.142803956077191,
+        1.5778944924366107,
+        2.378749332158304,
+        2.7787493321583043,
+        0.06,
+        -0.8567979883056736
+       ],
+       [
+        1.419792315354933,
+        1.8548828517143527,
+        1.947747041147564,
+        2.347747041147564,
+        0.06,
+        -1.1423973177408984
+       ],
+       [
+        1.5641333237358042,
+        1.999223860095224,
+        1.4561667330274408,
+        1.8561667330274407,
+        0.06,
+        -1.4279966471761227
+       ]
+      ]
+     }
+    ],
+    "glass": false,
+    "windows": [
+     [],
+     [],
+     [],
+     [],
+     [],
+     []
+    ]
+   },
+   "arch_grand": {
+    "sizes": [
+     {
+      "half": 4,
+      "height": 4,
+      "segments": [
+       [
+        -4,
+        -2.2,
+        0,
+        8,
+        0.8
+       ],
+       [
+        2.2,
+        4,
+        0,
+        8,
+        0.8
+       ],
+       [
+        -2.2,
+        -2.17,
+        4.97,
+        8,
+        0.8
+       ],
+       [
+        -2.17,
+        -2.07,
+        5.35,
+        8,
+        0.8
+       ],
+       [
+        -2.07,
+        -1.91,
+        5.7,
+        8,
+        0.8
+       ],
+       [
+        -1.91,
+        -1.69,
+        6.01,
+        8,
+        0.8
+       ],
+       [
+        -1.69,
+        -1.41,
+        6.29,
+        8,
+        0.8
+       ],
+       [
+        -1.41,
+        -1.1,
+        6.51,
+        8,
+        0.8
+       ],
+       [
+        -1.1,
+        -0.75,
+        6.67,
+        8,
+        0.8
+       ],
+       [
+        -0.75,
+        -0.38,
+        6.77,
+        8,
+        0.8
+       ],
+       [
+        -0.38,
+        0.38,
+        6.8,
+        8,
+        0.8
+       ],
+       [
+        0.38,
+        0.75,
+        6.77,
+        8,
+        0.8
+       ],
+       [
+        0.75,
+        1.1,
+        6.67,
+        8,
+        0.8
+       ],
+       [
+        1.1,
+        1.41,
+        6.51,
+        8,
+        0.8
+       ],
+       [
+        1.41,
+        1.69,
+        6.29,
+        8,
+        0.8
+       ],
+       [
+        1.69,
+        1.91,
+        6.01,
+        8,
+        0.8
+       ],
+       [
+        1.91,
+        2.07,
+        5.7,
+        8,
+        0.8
+       ],
+       [
+        2.07,
+        2.17,
+        5.35,
+        8,
+        0.8
+       ],
+       [
+        2.17,
+        2.2,
+        4.97,
+        8,
+        0.8
+       ]
+      ],
+      "trim": [
+       [
+        -4,
+        -2.36,
+        0,
+        0.16,
+        0.04
+       ],
+       [
+        2.36,
+        4,
+        0,
+        0.16,
+        0.04
+       ],
+       [
+        -2.7,
+        -2.2,
+        4.4,
+        4.6,
+        0.1
+       ],
+       [
+        2.2,
+        2.7,
+        4.4,
+        4.6,
+        0.1
+       ],
+       [
+        -2.7115828264816573,
+        -2.2023261003037105,
+        4.623328283631924,
+        5.173328283631925,
+        0.08,
+        1.4499658401183662
+       ],
+       [
+        -2.568793563735375,
+        -2.0595368375574283,
+        5.202647095430275,
+        5.752647095430276,
+        0.08,
+        1.2083048667653051
+       ],
+       [
+        -2.2915134311757734,
+        -1.7822567049978268,
+        5.73096024815961,
+        6.2809602481596105,
+        0.08,
+        0.9666438934122441
+       ],
+       [
+        -1.8958569422349414,
+        -1.386600216056995,
+        6.177564101723474,
+        6.727564101723475,
+        0.08,
+        0.7249829200591831
+       ],
+       [
+        -1.4048182138973004,
+        -0.8955614877193541,
+        6.516503663491694,
+        7.0665036634916945,
+        0.08,
+        0.48332194670612205
+       ],
+       [
+        -0.8469346322006787,
+        -0.3376779060227323,
+        6.728080998129478,
+        7.278080998129479,
+        0.08,
+        0.24166097335306103
+       ],
+       [
+        -0.2546283630889732,
+        0.2546283630889732,
+        6.8,
+        7.6499999999999995,
+        0.12
+       ],
+       [
+        0.3376779060227323,
+        0.8469346322006787,
+        6.728080998129478,
+        7.278080998129479,
+        0.08,
+        -0.24166097335306103
+       ],
+       [
+        0.8955614877193541,
+        1.4048182138973004,
+        6.516503663491694,
+        7.0665036634916945,
+        0.08,
+        -0.48332194670612205
+       ],
+       [
+        1.3866002160569948,
+        1.8958569422349412,
+        6.177564101723474,
+        6.727564101723475,
+        0.08,
+        -0.7249829200591829
+       ],
+       [
+        1.7822567049978268,
+        2.2915134311757734,
+        5.73096024815961,
+        6.2809602481596105,
+        0.08,
+        -0.9666438934122441
+       ],
+       [
+        2.0595368375574283,
+        2.5687935637353743,
+        5.202647095430275,
+        5.752647095430276,
+        0.08,
+        -1.208304866765305
+       ],
+       [
+        2.2023261003037105,
+        2.7115828264816573,
+        4.623328283631925,
+        5.173328283631926,
+        0.08,
+        -1.4499658401183657
+       ],
+       [
+        -4,
+        -3.6,
+        0,
+        7.2,
+        0.3
+       ],
+       [
+        3.6,
+        4,
+        0,
+        7.2,
+        0.3
+       ],
+       [
+        -4,
+        4,
+        7.2,
+        7.6,
+        0.16
+       ]
+      ]
+     },
+     {
+      "half": 4,
+      "height": 3,
+      "segments": [
+       [
+        -4,
+        -2.2,
+        0,
+        6,
+        0.8
+       ],
+       [
+        2.2,
+        4,
+        0,
+        6,
+        0.8
+       ],
+       [
+        -2.2,
+        -2.17,
+        4.97,
+        6,
+        0.8
+       ],
+       [
+        -2.17,
+        -2.07,
+        5.35,
+        6,
+        0.8
+       ],
+       [
+        -2.07,
+        -1.91,
+        5.7,
+        6,
+        0.8
+       ],
+       [
+        -1.91,
+        -1.69,
+        6.01,
+        6,
+        0.8
+       ],
+       [
+        -1.69,
+        -1.41,
+        6.29,
+        6,
+        0.8
+       ],
+       [
+        -1.41,
+        -1.1,
+        6.51,
+        6,
+        0.8
+       ],
+       [
+        -1.1,
+        -0.75,
+        6.67,
+        6,
+        0.8
+       ],
+       [
+        -0.75,
+        -0.38,
+        6.77,
+        6,
+        0.8
+       ],
+       [
+        -0.38,
+        0.38,
+        6.8,
+        6,
+        0.8
+       ],
+       [
+        0.38,
+        0.75,
+        6.77,
+        6,
+        0.8
+       ],
+       [
+        0.75,
+        1.1,
+        6.67,
+        6,
+        0.8
+       ],
+       [
+        1.1,
+        1.41,
+        6.51,
+        6,
+        0.8
+       ],
+       [
+        1.41,
+        1.69,
+        6.29,
+        6,
+        0.8
+       ],
+       [
+        1.69,
+        1.91,
+        6.01,
+        6,
+        0.8
+       ],
+       [
+        1.91,
+        2.07,
+        5.7,
+        6,
+        0.8
+       ],
+       [
+        2.07,
+        2.17,
+        5.35,
+        6,
+        0.8
+       ],
+       [
+        2.17,
+        2.2,
+        4.97,
+        6,
+        0.8
+       ]
+      ],
+      "trim": [
+       [
+        -4,
+        -2.36,
+        0,
+        0.16,
+        0.04
+       ],
+       [
+        2.36,
+        4,
+        0,
+        0.16,
+        0.04
+       ],
+       [
+        -2.7,
+        -2.2,
+        4.4,
+        4.6,
+        0.1
+       ],
+       [
+        2.2,
+        2.7,
+        4.4,
+        4.6,
+        0.1
+       ],
+       [
+        -2.7115828264816573,
+        -2.2023261003037105,
+        4.623328283631924,
+        5.173328283631925,
+        0.08,
+        1.4499658401183662
+       ],
+       [
+        -2.568793563735375,
+        -2.0595368375574283,
+        5.202647095430275,
+        5.752647095430276,
+        0.08,
+        1.2083048667653051
+       ],
+       [
+        -2.2915134311757734,
+        -1.7822567049978268,
+        5.73096024815961,
+        6.2809602481596105,
+        0.08,
+        0.9666438934122441
+       ],
+       [
+        -1.8958569422349414,
+        -1.386600216056995,
+        6.177564101723474,
+        6.727564101723475,
+        0.08,
+        0.7249829200591831
+       ],
+       [
+        -1.4048182138973004,
+        -0.8955614877193541,
+        6.516503663491694,
+        7.0665036634916945,
+        0.08,
+        0.48332194670612205
+       ],
+       [
+        -0.8469346322006787,
+        -0.3376779060227323,
+        6.728080998129478,
+        7.278080998129479,
+        0.08,
+        0.24166097335306103
+       ],
+       [
+        -0.2546283630889732,
+        0.2546283630889732,
+        6.8,
+        7.6499999999999995,
+        0.12
+       ],
+       [
+        0.3376779060227323,
+        0.8469346322006787,
+        6.728080998129478,
+        7.278080998129479,
+        0.08,
+        -0.24166097335306103
+       ],
+       [
+        0.8955614877193541,
+        1.4048182138973004,
+        6.516503663491694,
+        7.0665036634916945,
+        0.08,
+        -0.48332194670612205
+       ],
+       [
+        1.3866002160569948,
+        1.8958569422349412,
+        6.177564101723474,
+        6.727564101723475,
+        0.08,
+        -0.7249829200591829
+       ],
+       [
+        1.7822567049978268,
+        2.2915134311757734,
+        5.73096024815961,
+        6.2809602481596105,
+        0.08,
+        -0.9666438934122441
+       ],
+       [
+        2.0595368375574283,
+        2.5687935637353743,
+        5.202647095430275,
+        5.752647095430276,
+        0.08,
+        -1.208304866765305
+       ],
+       [
+        2.2023261003037105,
+        2.7115828264816573,
+        4.623328283631925,
+        5.173328283631926,
+        0.08,
+        -1.4499658401183657
+       ],
+       [
+        -4,
+        -3.6,
+        0,
+        7.2,
+        0.3
+       ],
+       [
+        3.6,
+        4,
+        0,
+        7.2,
+        0.3
+       ],
+       [
+        -4,
+        4,
+        7.2,
+        7.6,
+        0.16
+       ]
+      ]
+     },
+     {
+      "half": 4,
+      "height": 8,
+      "segments": [
+       [
+        -4,
+        -2.2,
+        0,
+        16,
+        0.8
+       ],
+       [
+        2.2,
+        4,
+        0,
+        16,
+        0.8
+       ],
+       [
+        -2.2,
+        -2.17,
+        4.97,
+        16,
+        0.8
+       ],
+       [
+        -2.17,
+        -2.07,
+        5.35,
+        16,
+        0.8
+       ],
+       [
+        -2.07,
+        -1.91,
+        5.7,
+        16,
+        0.8
+       ],
+       [
+        -1.91,
+        -1.69,
+        6.01,
+        16,
+        0.8
+       ],
+       [
+        -1.69,
+        -1.41,
+        6.29,
+        16,
+        0.8
+       ],
+       [
+        -1.41,
+        -1.1,
+        6.51,
+        16,
+        0.8
+       ],
+       [
+        -1.1,
+        -0.75,
+        6.67,
+        16,
+        0.8
+       ],
+       [
+        -0.75,
+        -0.38,
+        6.77,
+        16,
+        0.8
+       ],
+       [
+        -0.38,
+        0.38,
+        6.8,
+        16,
+        0.8
+       ],
+       [
+        0.38,
+        0.75,
+        6.77,
+        16,
+        0.8
+       ],
+       [
+        0.75,
+        1.1,
+        6.67,
+        16,
+        0.8
+       ],
+       [
+        1.1,
+        1.41,
+        6.51,
+        16,
+        0.8
+       ],
+       [
+        1.41,
+        1.69,
+        6.29,
+        16,
+        0.8
+       ],
+       [
+        1.69,
+        1.91,
+        6.01,
+        16,
+        0.8
+       ],
+       [
+        1.91,
+        2.07,
+        5.7,
+        16,
+        0.8
+       ],
+       [
+        2.07,
+        2.17,
+        5.35,
+        16,
+        0.8
+       ],
+       [
+        2.17,
+        2.2,
+        4.97,
+        16,
+        0.8
+       ]
+      ],
+      "trim": [
+       [
+        -4,
+        -2.36,
+        0,
+        0.16,
+        0.04
+       ],
+       [
+        2.36,
+        4,
+        0,
+        0.16,
+        0.04
+       ],
+       [
+        -2.7,
+        -2.2,
+        4.4,
+        4.6,
+        0.1
+       ],
+       [
+        2.2,
+        2.7,
+        4.4,
+        4.6,
+        0.1
+       ],
+       [
+        -2.7115828264816573,
+        -2.2023261003037105,
+        4.623328283631924,
+        5.173328283631925,
+        0.08,
+        1.4499658401183662
+       ],
+       [
+        -2.568793563735375,
+        -2.0595368375574283,
+        5.202647095430275,
+        5.752647095430276,
+        0.08,
+        1.2083048667653051
+       ],
+       [
+        -2.2915134311757734,
+        -1.7822567049978268,
+        5.73096024815961,
+        6.2809602481596105,
+        0.08,
+        0.9666438934122441
+       ],
+       [
+        -1.8958569422349414,
+        -1.386600216056995,
+        6.177564101723474,
+        6.727564101723475,
+        0.08,
+        0.7249829200591831
+       ],
+       [
+        -1.4048182138973004,
+        -0.8955614877193541,
+        6.516503663491694,
+        7.0665036634916945,
+        0.08,
+        0.48332194670612205
+       ],
+       [
+        -0.8469346322006787,
+        -0.3376779060227323,
+        6.728080998129478,
+        7.278080998129479,
+        0.08,
+        0.24166097335306103
+       ],
+       [
+        -0.2546283630889732,
+        0.2546283630889732,
+        6.8,
+        7.6499999999999995,
+        0.12
+       ],
+       [
+        0.3376779060227323,
+        0.8469346322006787,
+        6.728080998129478,
+        7.278080998129479,
+        0.08,
+        -0.24166097335306103
+       ],
+       [
+        0.8955614877193541,
+        1.4048182138973004,
+        6.516503663491694,
+        7.0665036634916945,
+        0.08,
+        -0.48332194670612205
+       ],
+       [
+        1.3866002160569948,
+        1.8958569422349412,
+        6.177564101723474,
+        6.727564101723475,
+        0.08,
+        -0.7249829200591829
+       ],
+       [
+        1.7822567049978268,
+        2.2915134311757734,
+        5.73096024815961,
+        6.2809602481596105,
+        0.08,
+        -0.9666438934122441
+       ],
+       [
+        2.0595368375574283,
+        2.5687935637353743,
+        5.202647095430275,
+        5.752647095430276,
+        0.08,
+        -1.208304866765305
+       ],
+       [
+        2.2023261003037105,
+        2.7115828264816573,
+        4.623328283631925,
+        5.173328283631926,
+        0.08,
+        -1.4499658401183657
+       ],
+       [
+        -4,
+        -3.6,
+        0,
+        7.2,
+        0.3
+       ],
+       [
+        3.6,
+        4,
+        0,
+        7.2,
+        0.3
+       ],
+       [
+        -4,
+        4,
+        7.2,
+        7.6,
+        0.16
+       ]
+      ]
+     },
+     {
+      "half": 4,
+      "height": 2.5,
+      "segments": [
+       [
+        -4,
+        -2.2,
+        0,
+        5,
+        0.8
+       ],
+       [
+        2.2,
+        4,
+        0,
+        5,
+        0.8
+       ],
+       [
+        -2.2,
+        -2.17,
+        4.97,
+        5,
+        0.8
+       ],
+       [
+        -2.17,
+        -2.07,
+        5.35,
+        5,
+        0.8
+       ],
+       [
+        -2.07,
+        -1.91,
+        5.7,
+        5,
+        0.8
+       ],
+       [
+        -1.91,
+        -1.69,
+        6.01,
+        5,
+        0.8
+       ],
+       [
+        -1.69,
+        -1.41,
+        6.29,
+        5,
+        0.8
+       ],
+       [
+        -1.41,
+        -1.1,
+        6.51,
+        5,
+        0.8
+       ],
+       [
+        -1.1,
+        -0.75,
+        6.67,
+        5,
+        0.8
+       ],
+       [
+        -0.75,
+        -0.38,
+        6.77,
+        5,
+        0.8
+       ],
+       [
+        -0.38,
+        0.38,
+        6.8,
+        5,
+        0.8
+       ],
+       [
+        0.38,
+        0.75,
+        6.77,
+        5,
+        0.8
+       ],
+       [
+        0.75,
+        1.1,
+        6.67,
+        5,
+        0.8
+       ],
+       [
+        1.1,
+        1.41,
+        6.51,
+        5,
+        0.8
+       ],
+       [
+        1.41,
+        1.69,
+        6.29,
+        5,
+        0.8
+       ],
+       [
+        1.69,
+        1.91,
+        6.01,
+        5,
+        0.8
+       ],
+       [
+        1.91,
+        2.07,
+        5.7,
+        5,
+        0.8
+       ],
+       [
+        2.07,
+        2.17,
+        5.35,
+        5,
+        0.8
+       ],
+       [
+        2.17,
+        2.2,
+        4.97,
+        5,
+        0.8
+       ]
+      ],
+      "trim": [
+       [
+        -4,
+        -2.36,
+        0,
+        0.16,
+        0.04
+       ],
+       [
+        2.36,
+        4,
+        0,
+        0.16,
+        0.04
+       ],
+       [
+        -2.7,
+        -2.2,
+        4.4,
+        4.6,
+        0.1
+       ],
+       [
+        2.2,
+        2.7,
+        4.4,
+        4.6,
+        0.1
+       ],
+       [
+        -2.7115828264816573,
+        -2.2023261003037105,
+        4.623328283631924,
+        5.173328283631925,
+        0.08,
+        1.4499658401183662
+       ],
+       [
+        -2.568793563735375,
+        -2.0595368375574283,
+        5.202647095430275,
+        5.752647095430276,
+        0.08,
+        1.2083048667653051
+       ],
+       [
+        -2.2915134311757734,
+        -1.7822567049978268,
+        5.73096024815961,
+        6.2809602481596105,
+        0.08,
+        0.9666438934122441
+       ],
+       [
+        -1.8958569422349414,
+        -1.386600216056995,
+        6.177564101723474,
+        6.727564101723475,
+        0.08,
+        0.7249829200591831
+       ],
+       [
+        -1.4048182138973004,
+        -0.8955614877193541,
+        6.516503663491694,
+        7.0665036634916945,
+        0.08,
+        0.48332194670612205
+       ],
+       [
+        -0.8469346322006787,
+        -0.3376779060227323,
+        6.728080998129478,
+        7.278080998129479,
+        0.08,
+        0.24166097335306103
+       ],
+       [
+        -0.2546283630889732,
+        0.2546283630889732,
+        6.8,
+        7.6499999999999995,
+        0.12
+       ],
+       [
+        0.3376779060227323,
+        0.8469346322006787,
+        6.728080998129478,
+        7.278080998129479,
+        0.08,
+        -0.24166097335306103
+       ],
+       [
+        0.8955614877193541,
+        1.4048182138973004,
+        6.516503663491694,
+        7.0665036634916945,
+        0.08,
+        -0.48332194670612205
+       ],
+       [
+        1.3866002160569948,
+        1.8958569422349412,
+        6.177564101723474,
+        6.727564101723475,
+        0.08,
+        -0.7249829200591829
+       ],
+       [
+        1.7822567049978268,
+        2.2915134311757734,
+        5.73096024815961,
+        6.2809602481596105,
+        0.08,
+        -0.9666438934122441
+       ],
+       [
+        2.0595368375574283,
+        2.5687935637353743,
+        5.202647095430275,
+        5.752647095430276,
+        0.08,
+        -1.208304866765305
+       ],
+       [
+        2.2023261003037105,
+        2.7115828264816573,
+        4.623328283631925,
+        5.173328283631926,
+        0.08,
+        -1.4499658401183657
+       ],
+       [
+        -4,
+        -3.6,
+        0,
+        7.2,
+        0.3
+       ],
+       [
+        3.6,
+        4,
+        0,
+        7.2,
+        0.3
+       ],
+       [
+        -4,
+        4,
+        7.2,
+        7.6,
+        0.16
+       ]
+      ]
+     },
+     {
+      "half": 5,
+      "height": 4.5,
+      "segments": [
+       [
+        -5,
+        -2.2,
+        0,
+        9,
+        0.8
+       ],
+       [
+        2.2,
+        5,
+        0,
+        9,
+        0.8
+       ],
+       [
+        -2.2,
+        -2.17,
+        4.97,
+        9,
+        0.8
+       ],
+       [
+        -2.17,
+        -2.07,
+        5.35,
+        9,
+        0.8
+       ],
+       [
+        -2.07,
+        -1.91,
+        5.7,
+        9,
+        0.8
+       ],
+       [
+        -1.91,
+        -1.69,
+        6.01,
+        9,
+        0.8
+       ],
+       [
+        -1.69,
+        -1.41,
+        6.29,
+        9,
+        0.8
+       ],
+       [
+        -1.41,
+        -1.1,
+        6.51,
+        9,
+        0.8
+       ],
+       [
+        -1.1,
+        -0.75,
+        6.67,
+        9,
+        0.8
+       ],
+       [
+        -0.75,
+        -0.38,
+        6.77,
+        9,
+        0.8
+       ],
+       [
+        -0.38,
+        0.38,
+        6.8,
+        9,
+        0.8
+       ],
+       [
+        0.38,
+        0.75,
+        6.77,
+        9,
+        0.8
+       ],
+       [
+        0.75,
+        1.1,
+        6.67,
+        9,
+        0.8
+       ],
+       [
+        1.1,
+        1.41,
+        6.51,
+        9,
+        0.8
+       ],
+       [
+        1.41,
+        1.69,
+        6.29,
+        9,
+        0.8
+       ],
+       [
+        1.69,
+        1.91,
+        6.01,
+        9,
+        0.8
+       ],
+       [
+        1.91,
+        2.07,
+        5.7,
+        9,
+        0.8
+       ],
+       [
+        2.07,
+        2.17,
+        5.35,
+        9,
+        0.8
+       ],
+       [
+        2.17,
+        2.2,
+        4.97,
+        9,
+        0.8
+       ]
+      ],
+      "trim": [
+       [
+        -5,
+        -2.36,
+        0,
+        0.16,
+        0.04
+       ],
+       [
+        2.36,
+        5,
+        0,
+        0.16,
+        0.04
+       ],
+       [
+        -2.7,
+        -2.2,
+        4.4,
+        4.6,
+        0.1
+       ],
+       [
+        2.2,
+        2.7,
+        4.4,
+        4.6,
+        0.1
+       ],
+       [
+        -2.7115828264816573,
+        -2.2023261003037105,
+        4.623328283631924,
+        5.173328283631925,
+        0.08,
+        1.4499658401183662
+       ],
+       [
+        -2.568793563735375,
+        -2.0595368375574283,
+        5.202647095430275,
+        5.752647095430276,
+        0.08,
+        1.2083048667653051
+       ],
+       [
+        -2.2915134311757734,
+        -1.7822567049978268,
+        5.73096024815961,
+        6.2809602481596105,
+        0.08,
+        0.9666438934122441
+       ],
+       [
+        -1.8958569422349414,
+        -1.386600216056995,
+        6.177564101723474,
+        6.727564101723475,
+        0.08,
+        0.7249829200591831
+       ],
+       [
+        -1.4048182138973004,
+        -0.8955614877193541,
+        6.516503663491694,
+        7.0665036634916945,
+        0.08,
+        0.48332194670612205
+       ],
+       [
+        -0.8469346322006787,
+        -0.3376779060227323,
+        6.728080998129478,
+        7.278080998129479,
+        0.08,
+        0.24166097335306103
+       ],
+       [
+        -0.2546283630889732,
+        0.2546283630889732,
+        6.8,
+        7.6499999999999995,
+        0.12
+       ],
+       [
+        0.3376779060227323,
+        0.8469346322006787,
+        6.728080998129478,
+        7.278080998129479,
+        0.08,
+        -0.24166097335306103
+       ],
+       [
+        0.8955614877193541,
+        1.4048182138973004,
+        6.516503663491694,
+        7.0665036634916945,
+        0.08,
+        -0.48332194670612205
+       ],
+       [
+        1.3866002160569948,
+        1.8958569422349412,
+        6.177564101723474,
+        6.727564101723475,
+        0.08,
+        -0.7249829200591829
+       ],
+       [
+        1.7822567049978268,
+        2.2915134311757734,
+        5.73096024815961,
+        6.2809602481596105,
+        0.08,
+        -0.9666438934122441
+       ],
+       [
+        2.0595368375574283,
+        2.5687935637353743,
+        5.202647095430275,
+        5.752647095430276,
+        0.08,
+        -1.208304866765305
+       ],
+       [
+        2.2023261003037105,
+        2.7115828264816573,
+        4.623328283631925,
+        5.173328283631926,
+        0.08,
+        -1.4499658401183657
+       ],
+       [
+        -5,
+        -4.6,
+        0,
+        7.2,
+        0.3
+       ],
+       [
+        4.6,
+        5,
+        0,
+        7.2,
+        0.3
+       ],
+       [
+        -5,
+        5,
+        7.2,
+        7.6,
+        0.16
+       ]
+      ]
+     },
+     {
+      "half": 3,
+      "height": 3.6,
+      "segments": [
+       [
+        -3,
+        -2.2,
+        0,
+        7.2,
+        0.8
+       ],
+       [
+        2.2,
+        3,
+        0,
+        7.2,
+        0.8
+       ],
+       [
+        -2.2,
+        -2.17,
+        4.97,
+        7.2,
+        0.8
+       ],
+       [
+        -2.17,
+        -2.07,
+        5.35,
+        7.2,
+        0.8
+       ],
+       [
+        -2.07,
+        -1.91,
+        5.7,
+        7.2,
+        0.8
+       ],
+       [
+        -1.91,
+        -1.69,
+        6.01,
+        7.2,
+        0.8
+       ],
+       [
+        -1.69,
+        -1.41,
+        6.29,
+        7.2,
+        0.8
+       ],
+       [
+        -1.41,
+        -1.1,
+        6.51,
+        7.2,
+        0.8
+       ],
+       [
+        -1.1,
+        -0.75,
+        6.67,
+        7.2,
+        0.8
+       ],
+       [
+        -0.75,
+        -0.38,
+        6.77,
+        7.2,
+        0.8
+       ],
+       [
+        -0.38,
+        0.38,
+        6.8,
+        7.2,
+        0.8
+       ],
+       [
+        0.38,
+        0.75,
+        6.77,
+        7.2,
+        0.8
+       ],
+       [
+        0.75,
+        1.1,
+        6.67,
+        7.2,
+        0.8
+       ],
+       [
+        1.1,
+        1.41,
+        6.51,
+        7.2,
+        0.8
+       ],
+       [
+        1.41,
+        1.69,
+        6.29,
+        7.2,
+        0.8
+       ],
+       [
+        1.69,
+        1.91,
+        6.01,
+        7.2,
+        0.8
+       ],
+       [
+        1.91,
+        2.07,
+        5.7,
+        7.2,
+        0.8
+       ],
+       [
+        2.07,
+        2.17,
+        5.35,
+        7.2,
+        0.8
+       ],
+       [
+        2.17,
+        2.2,
+        4.97,
+        7.2,
+        0.8
+       ]
+      ],
+      "trim": [
+       [
+        -3,
+        -2.36,
+        0,
+        0.16,
+        0.04
+       ],
+       [
+        2.36,
+        3,
+        0,
+        0.16,
+        0.04
+       ],
+       [
+        -2.7,
+        -2.2,
+        4.4,
+        4.6,
+        0.1
+       ],
+       [
+        2.2,
+        2.7,
+        4.4,
+        4.6,
+        0.1
+       ],
+       [
+        -2.7115828264816573,
+        -2.2023261003037105,
+        4.623328283631924,
+        5.173328283631925,
+        0.08,
+        1.4499658401183662
+       ],
+       [
+        -2.568793563735375,
+        -2.0595368375574283,
+        5.202647095430275,
+        5.752647095430276,
+        0.08,
+        1.2083048667653051
+       ],
+       [
+        -2.2915134311757734,
+        -1.7822567049978268,
+        5.73096024815961,
+        6.2809602481596105,
+        0.08,
+        0.9666438934122441
+       ],
+       [
+        -1.8958569422349414,
+        -1.386600216056995,
+        6.177564101723474,
+        6.727564101723475,
+        0.08,
+        0.7249829200591831
+       ],
+       [
+        -1.4048182138973004,
+        -0.8955614877193541,
+        6.516503663491694,
+        7.0665036634916945,
+        0.08,
+        0.48332194670612205
+       ],
+       [
+        -0.8469346322006787,
+        -0.3376779060227323,
+        6.728080998129478,
+        7.278080998129479,
+        0.08,
+        0.24166097335306103
+       ],
+       [
+        -0.2546283630889732,
+        0.2546283630889732,
+        6.8,
+        7.6499999999999995,
+        0.12
+       ],
+       [
+        0.3376779060227323,
+        0.8469346322006787,
+        6.728080998129478,
+        7.278080998129479,
+        0.08,
+        -0.24166097335306103
+       ],
+       [
+        0.8955614877193541,
+        1.4048182138973004,
+        6.516503663491694,
+        7.0665036634916945,
+        0.08,
+        -0.48332194670612205
+       ],
+       [
+        1.3866002160569948,
+        1.8958569422349412,
+        6.177564101723474,
+        6.727564101723475,
+        0.08,
+        -0.7249829200591829
+       ],
+       [
+        1.7822567049978268,
+        2.2915134311757734,
+        5.73096024815961,
+        6.2809602481596105,
+        0.08,
+        -0.9666438934122441
+       ],
+       [
+        2.0595368375574283,
+        2.5687935637353743,
+        5.202647095430275,
+        5.752647095430276,
+        0.08,
+        -1.208304866765305
+       ],
+       [
+        2.2023261003037105,
+        2.7115828264816573,
+        4.623328283631925,
+        5.173328283631926,
+        0.08,
+        -1.4499658401183657
+       ],
+       [
+        -3,
+        -2.6,
+        0,
+        7.2,
+        0.3
+       ],
+       [
+        2.6,
+        3,
+        0,
+        7.2,
+        0.3
+       ],
+       [
+        -3,
+        3,
+        7.2,
+        7.6,
+        0.16
+       ]
+      ]
+     }
+    ],
+    "glass": false,
+    "windows": [
+     [],
+     [],
+     [],
+     [],
+     [],
+     []
+    ]
+   },
    "window": {
     "sizes": [
      {
@@ -26880,6 +35571,606 @@
        1.6
       ]
      ]
+    ]
+   },
+   "embrasure": {
+    "sizes": [
+     {
+      "half": 4,
+      "height": 4,
+      "segments": [
+       [
+        -4,
+        -1.75,
+        0,
+        4,
+        1
+       ],
+       [
+        1.75,
+        4,
+        0,
+        4,
+        1
+       ],
+       [
+        -1.75,
+        1.75,
+        0,
+        0.9,
+        1
+       ],
+       [
+        -1.75,
+        1.75,
+        2,
+        4,
+        1
+       ]
+      ],
+      "trim": [
+       [
+        -4,
+        4,
+        3.8,
+        4,
+        0.07
+       ],
+       [
+        -1.83,
+        1.83,
+        0.8200000000000001,
+        0.9,
+        0.12
+       ],
+       [
+        -1.85,
+        1.85,
+        2,
+        2.12,
+        0.05
+       ],
+       [
+        -1.85,
+        -1.75,
+        0.9,
+        2,
+        0.05
+       ],
+       [
+        1.75,
+        1.85,
+        0.9,
+        2,
+        0.05
+       ],
+       [
+        -2.35,
+        2.35,
+        2,
+        2.3,
+        0.45
+       ],
+       [
+        -2.35,
+        -1.75,
+        0.9,
+        2,
+        0.25
+       ],
+       [
+        1.75,
+        2.35,
+        0.9,
+        2,
+        0.25
+       ],
+       [
+        -2.35,
+        2.35,
+        0.7,
+        0.9,
+        0.25
+       ]
+      ]
+     },
+     {
+      "half": 4,
+      "height": 3,
+      "segments": [
+       [
+        -4,
+        -1.75,
+        0,
+        3,
+        1
+       ],
+       [
+        1.75,
+        4,
+        0,
+        3,
+        1
+       ],
+       [
+        -1.75,
+        1.75,
+        0,
+        0.9,
+        1
+       ],
+       [
+        -1.75,
+        1.75,
+        2,
+        3,
+        1
+       ]
+      ],
+      "trim": [
+       [
+        -4,
+        4,
+        2.8,
+        3,
+        0.07
+       ],
+       [
+        -1.83,
+        1.83,
+        0.8200000000000001,
+        0.9,
+        0.12
+       ],
+       [
+        -1.85,
+        1.85,
+        2,
+        2.12,
+        0.05
+       ],
+       [
+        -1.85,
+        -1.75,
+        0.9,
+        2,
+        0.05
+       ],
+       [
+        1.75,
+        1.85,
+        0.9,
+        2,
+        0.05
+       ],
+       [
+        -2.35,
+        2.35,
+        2,
+        2.3,
+        0.45
+       ],
+       [
+        -2.35,
+        -1.75,
+        0.9,
+        2,
+        0.25
+       ],
+       [
+        1.75,
+        2.35,
+        0.9,
+        2,
+        0.25
+       ],
+       [
+        -2.35,
+        2.35,
+        0.7,
+        0.9,
+        0.25
+       ]
+      ]
+     },
+     {
+      "half": 4,
+      "height": 8,
+      "segments": [
+       [
+        -4,
+        -1.75,
+        0,
+        8,
+        1
+       ],
+       [
+        1.75,
+        4,
+        0,
+        8,
+        1
+       ],
+       [
+        -1.75,
+        1.75,
+        0,
+        0.9,
+        1
+       ],
+       [
+        -1.75,
+        1.75,
+        2,
+        8,
+        1
+       ]
+      ],
+      "trim": [
+       [
+        -4,
+        4,
+        7.8,
+        8,
+        0.07
+       ],
+       [
+        -1.83,
+        1.83,
+        0.8200000000000001,
+        0.9,
+        0.12
+       ],
+       [
+        -1.85,
+        1.85,
+        2,
+        2.12,
+        0.05
+       ],
+       [
+        -1.85,
+        -1.75,
+        0.9,
+        2,
+        0.05
+       ],
+       [
+        1.75,
+        1.85,
+        0.9,
+        2,
+        0.05
+       ],
+       [
+        -2.35,
+        2.35,
+        2,
+        2.3,
+        0.45
+       ],
+       [
+        -2.35,
+        -1.75,
+        0.9,
+        2,
+        0.25
+       ],
+       [
+        1.75,
+        2.35,
+        0.9,
+        2,
+        0.25
+       ],
+       [
+        -2.35,
+        2.35,
+        0.7,
+        0.9,
+        0.25
+       ]
+      ]
+     },
+     {
+      "half": 4,
+      "height": 2.5,
+      "segments": [
+       [
+        -4,
+        -1.75,
+        0,
+        2.5,
+        1
+       ],
+       [
+        1.75,
+        4,
+        0,
+        2.5,
+        1
+       ],
+       [
+        -1.75,
+        1.75,
+        0,
+        0.9,
+        1
+       ],
+       [
+        -1.75,
+        1.75,
+        2,
+        2.5,
+        1
+       ]
+      ],
+      "trim": [
+       [
+        -1.83,
+        1.83,
+        0.8200000000000001,
+        0.9,
+        0.12
+       ],
+       [
+        -1.85,
+        1.85,
+        2,
+        2.12,
+        0.05
+       ],
+       [
+        -1.85,
+        -1.75,
+        0.9,
+        2,
+        0.05
+       ],
+       [
+        1.75,
+        1.85,
+        0.9,
+        2,
+        0.05
+       ],
+       [
+        -2.35,
+        2.35,
+        2,
+        2.3,
+        0.45
+       ],
+       [
+        -2.35,
+        -1.75,
+        0.9,
+        2,
+        0.25
+       ],
+       [
+        1.75,
+        2.35,
+        0.9,
+        2,
+        0.25
+       ],
+       [
+        -2.35,
+        2.35,
+        0.7,
+        0.9,
+        0.25
+       ]
+      ]
+     },
+     {
+      "half": 5,
+      "height": 4.5,
+      "segments": [
+       [
+        -5,
+        -1.75,
+        0,
+        4.5,
+        1
+       ],
+       [
+        1.75,
+        5,
+        0,
+        4.5,
+        1
+       ],
+       [
+        -1.75,
+        1.75,
+        0,
+        0.9,
+        1
+       ],
+       [
+        -1.75,
+        1.75,
+        2,
+        4.5,
+        1
+       ]
+      ],
+      "trim": [
+       [
+        -5,
+        5,
+        4.3,
+        4.5,
+        0.07
+       ],
+       [
+        -1.83,
+        1.83,
+        0.8200000000000001,
+        0.9,
+        0.12
+       ],
+       [
+        -1.85,
+        1.85,
+        2,
+        2.12,
+        0.05
+       ],
+       [
+        -1.85,
+        -1.75,
+        0.9,
+        2,
+        0.05
+       ],
+       [
+        1.75,
+        1.85,
+        0.9,
+        2,
+        0.05
+       ],
+       [
+        -2.35,
+        2.35,
+        2,
+        2.3,
+        0.45
+       ],
+       [
+        -2.35,
+        -1.75,
+        0.9,
+        2,
+        0.25
+       ],
+       [
+        1.75,
+        2.35,
+        0.9,
+        2,
+        0.25
+       ],
+       [
+        -2.35,
+        2.35,
+        0.7,
+        0.9,
+        0.25
+       ]
+      ]
+     },
+     {
+      "half": 3,
+      "height": 3.6,
+      "segments": [
+       [
+        -3,
+        -1.75,
+        0,
+        3.6,
+        1
+       ],
+       [
+        1.75,
+        3,
+        0,
+        3.6,
+        1
+       ],
+       [
+        -1.75,
+        1.75,
+        0,
+        0.9,
+        1
+       ],
+       [
+        -1.75,
+        1.75,
+        2,
+        3.6,
+        1
+       ]
+      ],
+      "trim": [
+       [
+        -3,
+        3,
+        3.4,
+        3.6,
+        0.07
+       ],
+       [
+        -1.83,
+        1.83,
+        0.8200000000000001,
+        0.9,
+        0.12
+       ],
+       [
+        -1.85,
+        1.85,
+        2,
+        2.12,
+        0.05
+       ],
+       [
+        -1.85,
+        -1.75,
+        0.9,
+        2,
+        0.05
+       ],
+       [
+        1.75,
+        1.85,
+        0.9,
+        2,
+        0.05
+       ],
+       [
+        -2.35,
+        2.35,
+        2,
+        2.3,
+        0.45
+       ],
+       [
+        -2.35,
+        -1.75,
+        0.9,
+        2,
+        0.25
+       ],
+       [
+        1.75,
+        2.35,
+        0.9,
+        2,
+        0.25
+       ],
+       [
+        -2.35,
+        2.35,
+        0.7,
+        0.9,
+        0.25
+       ]
+      ]
+     }
+    ],
+    "glass": false,
+    "windows": [
+     [],
+     [],
+     [],
+     [],
+     [],
+     []
     ]
    },
    "half": {
@@ -29943,6 +39234,1398 @@
      []
     ]
    },
+   "bars_gate": {
+    "sizes": [
+     {
+      "half": 4,
+      "height": 4,
+      "segments": [
+       [
+        -3.88,
+        -3.8200000000000003,
+        0,
+        4,
+        0.1
+       ],
+       [
+        -3.58,
+        -3.5200000000000005,
+        0,
+        4,
+        0.1
+       ],
+       [
+        -3.2800000000000002,
+        -3.2200000000000006,
+        0,
+        4,
+        0.1
+       ],
+       [
+        -2.9800000000000004,
+        -2.920000000000001,
+        0,
+        4,
+        0.1
+       ],
+       [
+        -2.6800000000000006,
+        -2.620000000000001,
+        0,
+        4,
+        0.1
+       ],
+       [
+        -2.380000000000001,
+        -2.320000000000001,
+        0,
+        4,
+        0.1
+       ],
+       [
+        -2.080000000000001,
+        -2.0200000000000014,
+        0,
+        4,
+        0.1
+       ],
+       [
+        -1.7800000000000011,
+        -1.720000000000001,
+        0,
+        4,
+        0.1
+       ],
+       [
+        1.72,
+        1.78,
+        0,
+        4,
+        0.1
+       ],
+       [
+        2.02,
+        2.0799999999999996,
+        0,
+        4,
+        0.1
+       ],
+       [
+        2.32,
+        2.3799999999999994,
+        0,
+        4,
+        0.1
+       ],
+       [
+        2.6199999999999997,
+        2.6799999999999993,
+        0,
+        4,
+        0.1
+       ],
+       [
+        2.9199999999999995,
+        2.979999999999999,
+        0,
+        4,
+        0.1
+       ],
+       [
+        3.2199999999999993,
+        3.279999999999999,
+        0,
+        4,
+        0.1
+       ],
+       [
+        3.519999999999999,
+        3.5799999999999987,
+        0,
+        4,
+        0.1
+       ],
+       [
+        3.819999999999999,
+        3.8799999999999986,
+        0,
+        4,
+        0.1
+       ],
+       [
+        -1.6,
+        -1.5,
+        0,
+        4,
+        0.2
+       ],
+       [
+        1.5,
+        1.6,
+        0,
+        4,
+        0.2
+       ],
+       [
+        -1.3800000000000001,
+        -1.32,
+        3.12,
+        4,
+        0.1
+       ],
+       [
+        -1.08,
+        -1.02,
+        3.12,
+        4,
+        0.1
+       ],
+       [
+        -0.78,
+        -0.72,
+        3.12,
+        4,
+        0.1
+       ],
+       [
+        -0.48,
+        -0.42000000000000004,
+        3.12,
+        4,
+        0.1
+       ],
+       [
+        -0.18000000000000002,
+        -0.12000000000000002,
+        3.12,
+        4,
+        0.1
+       ],
+       [
+        0.11999999999999997,
+        0.17999999999999997,
+        3.12,
+        4,
+        0.1
+       ],
+       [
+        0.41999999999999993,
+        0.48,
+        3.12,
+        4,
+        0.1
+       ],
+       [
+        0.72,
+        0.78,
+        3.12,
+        4,
+        0.1
+       ],
+       [
+        1.02,
+        1.08,
+        3.12,
+        4,
+        0.1
+       ],
+       [
+        1.32,
+        1.3800000000000001,
+        3.12,
+        4,
+        0.1
+       ],
+       [
+        -1.5,
+        1.5,
+        3,
+        3.12,
+        0.12
+       ],
+       [
+        -4,
+        -1.6,
+        0,
+        0.12,
+        0.12
+       ],
+       [
+        1.6,
+        4,
+        0,
+        0.12,
+        0.12
+       ],
+       [
+        -4,
+        4,
+        3.85,
+        4,
+        0.12
+       ]
+      ],
+      "trim": []
+     },
+     {
+      "half": 4,
+      "height": 3,
+      "segments": [
+       [
+        -3.88,
+        -3.8200000000000003,
+        0,
+        3,
+        0.1
+       ],
+       [
+        -3.58,
+        -3.5200000000000005,
+        0,
+        3,
+        0.1
+       ],
+       [
+        -3.2800000000000002,
+        -3.2200000000000006,
+        0,
+        3,
+        0.1
+       ],
+       [
+        -2.9800000000000004,
+        -2.920000000000001,
+        0,
+        3,
+        0.1
+       ],
+       [
+        -2.6800000000000006,
+        -2.620000000000001,
+        0,
+        3,
+        0.1
+       ],
+       [
+        -2.380000000000001,
+        -2.320000000000001,
+        0,
+        3,
+        0.1
+       ],
+       [
+        -2.080000000000001,
+        -2.0200000000000014,
+        0,
+        3,
+        0.1
+       ],
+       [
+        -1.7800000000000011,
+        -1.720000000000001,
+        0,
+        3,
+        0.1
+       ],
+       [
+        1.72,
+        1.78,
+        0,
+        3,
+        0.1
+       ],
+       [
+        2.02,
+        2.0799999999999996,
+        0,
+        3,
+        0.1
+       ],
+       [
+        2.32,
+        2.3799999999999994,
+        0,
+        3,
+        0.1
+       ],
+       [
+        2.6199999999999997,
+        2.6799999999999993,
+        0,
+        3,
+        0.1
+       ],
+       [
+        2.9199999999999995,
+        2.979999999999999,
+        0,
+        3,
+        0.1
+       ],
+       [
+        3.2199999999999993,
+        3.279999999999999,
+        0,
+        3,
+        0.1
+       ],
+       [
+        3.519999999999999,
+        3.5799999999999987,
+        0,
+        3,
+        0.1
+       ],
+       [
+        3.819999999999999,
+        3.8799999999999986,
+        0,
+        3,
+        0.1
+       ],
+       [
+        -1.6,
+        -1.5,
+        0,
+        3,
+        0.2
+       ],
+       [
+        1.5,
+        1.6,
+        0,
+        3,
+        0.2
+       ],
+       [
+        -1.3800000000000001,
+        -1.32,
+        3.12,
+        3,
+        0.1
+       ],
+       [
+        -1.08,
+        -1.02,
+        3.12,
+        3,
+        0.1
+       ],
+       [
+        -0.78,
+        -0.72,
+        3.12,
+        3,
+        0.1
+       ],
+       [
+        -0.48,
+        -0.42000000000000004,
+        3.12,
+        3,
+        0.1
+       ],
+       [
+        -0.18000000000000002,
+        -0.12000000000000002,
+        3.12,
+        3,
+        0.1
+       ],
+       [
+        0.11999999999999997,
+        0.17999999999999997,
+        3.12,
+        3,
+        0.1
+       ],
+       [
+        0.41999999999999993,
+        0.48,
+        3.12,
+        3,
+        0.1
+       ],
+       [
+        0.72,
+        0.78,
+        3.12,
+        3,
+        0.1
+       ],
+       [
+        1.02,
+        1.08,
+        3.12,
+        3,
+        0.1
+       ],
+       [
+        1.32,
+        1.3800000000000001,
+        3.12,
+        3,
+        0.1
+       ],
+       [
+        -1.5,
+        1.5,
+        3,
+        3.12,
+        0.12
+       ],
+       [
+        -4,
+        -1.6,
+        0,
+        0.12,
+        0.12
+       ],
+       [
+        1.6,
+        4,
+        0,
+        0.12,
+        0.12
+       ],
+       [
+        -4,
+        4,
+        2.85,
+        3,
+        0.12
+       ]
+      ],
+      "trim": []
+     },
+     {
+      "half": 4,
+      "height": 8,
+      "segments": [
+       [
+        -3.88,
+        -3.8200000000000003,
+        0,
+        8,
+        0.1
+       ],
+       [
+        -3.58,
+        -3.5200000000000005,
+        0,
+        8,
+        0.1
+       ],
+       [
+        -3.2800000000000002,
+        -3.2200000000000006,
+        0,
+        8,
+        0.1
+       ],
+       [
+        -2.9800000000000004,
+        -2.920000000000001,
+        0,
+        8,
+        0.1
+       ],
+       [
+        -2.6800000000000006,
+        -2.620000000000001,
+        0,
+        8,
+        0.1
+       ],
+       [
+        -2.380000000000001,
+        -2.320000000000001,
+        0,
+        8,
+        0.1
+       ],
+       [
+        -2.080000000000001,
+        -2.0200000000000014,
+        0,
+        8,
+        0.1
+       ],
+       [
+        -1.7800000000000011,
+        -1.720000000000001,
+        0,
+        8,
+        0.1
+       ],
+       [
+        1.72,
+        1.78,
+        0,
+        8,
+        0.1
+       ],
+       [
+        2.02,
+        2.0799999999999996,
+        0,
+        8,
+        0.1
+       ],
+       [
+        2.32,
+        2.3799999999999994,
+        0,
+        8,
+        0.1
+       ],
+       [
+        2.6199999999999997,
+        2.6799999999999993,
+        0,
+        8,
+        0.1
+       ],
+       [
+        2.9199999999999995,
+        2.979999999999999,
+        0,
+        8,
+        0.1
+       ],
+       [
+        3.2199999999999993,
+        3.279999999999999,
+        0,
+        8,
+        0.1
+       ],
+       [
+        3.519999999999999,
+        3.5799999999999987,
+        0,
+        8,
+        0.1
+       ],
+       [
+        3.819999999999999,
+        3.8799999999999986,
+        0,
+        8,
+        0.1
+       ],
+       [
+        -1.6,
+        -1.5,
+        0,
+        8,
+        0.2
+       ],
+       [
+        1.5,
+        1.6,
+        0,
+        8,
+        0.2
+       ],
+       [
+        -1.3800000000000001,
+        -1.32,
+        3.12,
+        8,
+        0.1
+       ],
+       [
+        -1.08,
+        -1.02,
+        3.12,
+        8,
+        0.1
+       ],
+       [
+        -0.78,
+        -0.72,
+        3.12,
+        8,
+        0.1
+       ],
+       [
+        -0.48,
+        -0.42000000000000004,
+        3.12,
+        8,
+        0.1
+       ],
+       [
+        -0.18000000000000002,
+        -0.12000000000000002,
+        3.12,
+        8,
+        0.1
+       ],
+       [
+        0.11999999999999997,
+        0.17999999999999997,
+        3.12,
+        8,
+        0.1
+       ],
+       [
+        0.41999999999999993,
+        0.48,
+        3.12,
+        8,
+        0.1
+       ],
+       [
+        0.72,
+        0.78,
+        3.12,
+        8,
+        0.1
+       ],
+       [
+        1.02,
+        1.08,
+        3.12,
+        8,
+        0.1
+       ],
+       [
+        1.32,
+        1.3800000000000001,
+        3.12,
+        8,
+        0.1
+       ],
+       [
+        -1.5,
+        1.5,
+        3,
+        3.12,
+        0.12
+       ],
+       [
+        -4,
+        -1.6,
+        0,
+        0.12,
+        0.12
+       ],
+       [
+        1.6,
+        4,
+        0,
+        0.12,
+        0.12
+       ],
+       [
+        -4,
+        4,
+        7.85,
+        8,
+        0.12
+       ]
+      ],
+      "trim": []
+     },
+     {
+      "half": 4,
+      "height": 2.5,
+      "segments": [
+       [
+        -3.88,
+        -3.8200000000000003,
+        0,
+        2.5,
+        0.1
+       ],
+       [
+        -3.58,
+        -3.5200000000000005,
+        0,
+        2.5,
+        0.1
+       ],
+       [
+        -3.2800000000000002,
+        -3.2200000000000006,
+        0,
+        2.5,
+        0.1
+       ],
+       [
+        -2.9800000000000004,
+        -2.920000000000001,
+        0,
+        2.5,
+        0.1
+       ],
+       [
+        -2.6800000000000006,
+        -2.620000000000001,
+        0,
+        2.5,
+        0.1
+       ],
+       [
+        -2.380000000000001,
+        -2.320000000000001,
+        0,
+        2.5,
+        0.1
+       ],
+       [
+        -2.080000000000001,
+        -2.0200000000000014,
+        0,
+        2.5,
+        0.1
+       ],
+       [
+        -1.7800000000000011,
+        -1.720000000000001,
+        0,
+        2.5,
+        0.1
+       ],
+       [
+        1.72,
+        1.78,
+        0,
+        2.5,
+        0.1
+       ],
+       [
+        2.02,
+        2.0799999999999996,
+        0,
+        2.5,
+        0.1
+       ],
+       [
+        2.32,
+        2.3799999999999994,
+        0,
+        2.5,
+        0.1
+       ],
+       [
+        2.6199999999999997,
+        2.6799999999999993,
+        0,
+        2.5,
+        0.1
+       ],
+       [
+        2.9199999999999995,
+        2.979999999999999,
+        0,
+        2.5,
+        0.1
+       ],
+       [
+        3.2199999999999993,
+        3.279999999999999,
+        0,
+        2.5,
+        0.1
+       ],
+       [
+        3.519999999999999,
+        3.5799999999999987,
+        0,
+        2.5,
+        0.1
+       ],
+       [
+        3.819999999999999,
+        3.8799999999999986,
+        0,
+        2.5,
+        0.1
+       ],
+       [
+        -1.6,
+        -1.5,
+        0,
+        2.5,
+        0.2
+       ],
+       [
+        1.5,
+        1.6,
+        0,
+        2.5,
+        0.2
+       ],
+       [
+        -1.3800000000000001,
+        -1.32,
+        3.12,
+        2.5,
+        0.1
+       ],
+       [
+        -1.08,
+        -1.02,
+        3.12,
+        2.5,
+        0.1
+       ],
+       [
+        -0.78,
+        -0.72,
+        3.12,
+        2.5,
+        0.1
+       ],
+       [
+        -0.48,
+        -0.42000000000000004,
+        3.12,
+        2.5,
+        0.1
+       ],
+       [
+        -0.18000000000000002,
+        -0.12000000000000002,
+        3.12,
+        2.5,
+        0.1
+       ],
+       [
+        0.11999999999999997,
+        0.17999999999999997,
+        3.12,
+        2.5,
+        0.1
+       ],
+       [
+        0.41999999999999993,
+        0.48,
+        3.12,
+        2.5,
+        0.1
+       ],
+       [
+        0.72,
+        0.78,
+        3.12,
+        2.5,
+        0.1
+       ],
+       [
+        1.02,
+        1.08,
+        3.12,
+        2.5,
+        0.1
+       ],
+       [
+        1.32,
+        1.3800000000000001,
+        3.12,
+        2.5,
+        0.1
+       ],
+       [
+        -1.5,
+        1.5,
+        3,
+        3.12,
+        0.12
+       ],
+       [
+        -4,
+        -1.6,
+        0,
+        0.12,
+        0.12
+       ],
+       [
+        1.6,
+        4,
+        0,
+        0.12,
+        0.12
+       ],
+       [
+        -4,
+        4,
+        2.35,
+        2.5,
+        0.12
+       ]
+      ],
+      "trim": []
+     },
+     {
+      "half": 5,
+      "height": 4.5,
+      "segments": [
+       [
+        -4.88,
+        -4.819999999999999,
+        0,
+        4.5,
+        0.1
+       ],
+       [
+        -4.58,
+        -4.52,
+        0,
+        4.5,
+        0.1
+       ],
+       [
+        -4.28,
+        -4.22,
+        0,
+        4.5,
+        0.1
+       ],
+       [
+        -3.98,
+        -3.9200000000000004,
+        0,
+        4.5,
+        0.1
+       ],
+       [
+        -3.68,
+        -3.6200000000000006,
+        0,
+        4.5,
+        0.1
+       ],
+       [
+        -3.3800000000000003,
+        -3.3200000000000007,
+        0,
+        4.5,
+        0.1
+       ],
+       [
+        -3.0800000000000005,
+        -3.020000000000001,
+        0,
+        4.5,
+        0.1
+       ],
+       [
+        -2.7800000000000007,
+        -2.720000000000001,
+        0,
+        4.5,
+        0.1
+       ],
+       [
+        -2.480000000000001,
+        -2.4200000000000013,
+        0,
+        4.5,
+        0.1
+       ],
+       [
+        -2.180000000000001,
+        -2.1200000000000014,
+        0,
+        4.5,
+        0.1
+       ],
+       [
+        -1.8800000000000012,
+        -1.8200000000000012,
+        0,
+        4.5,
+        0.1
+       ],
+       [
+        1.72,
+        1.78,
+        0,
+        4.5,
+        0.1
+       ],
+       [
+        2.02,
+        2.0799999999999996,
+        0,
+        4.5,
+        0.1
+       ],
+       [
+        2.32,
+        2.3799999999999994,
+        0,
+        4.5,
+        0.1
+       ],
+       [
+        2.6199999999999997,
+        2.6799999999999993,
+        0,
+        4.5,
+        0.1
+       ],
+       [
+        2.9199999999999995,
+        2.979999999999999,
+        0,
+        4.5,
+        0.1
+       ],
+       [
+        3.2199999999999993,
+        3.279999999999999,
+        0,
+        4.5,
+        0.1
+       ],
+       [
+        3.519999999999999,
+        3.5799999999999987,
+        0,
+        4.5,
+        0.1
+       ],
+       [
+        3.819999999999999,
+        3.8799999999999986,
+        0,
+        4.5,
+        0.1
+       ],
+       [
+        4.119999999999998,
+        4.179999999999999,
+        0,
+        4.5,
+        0.1
+       ],
+       [
+        4.419999999999998,
+        4.479999999999999,
+        0,
+        4.5,
+        0.1
+       ],
+       [
+        4.719999999999998,
+        4.7799999999999985,
+        0,
+        4.5,
+        0.1
+       ],
+       [
+        -1.6,
+        -1.5,
+        0,
+        4.5,
+        0.2
+       ],
+       [
+        1.5,
+        1.6,
+        0,
+        4.5,
+        0.2
+       ],
+       [
+        -1.3800000000000001,
+        -1.32,
+        3.12,
+        4.5,
+        0.1
+       ],
+       [
+        -1.08,
+        -1.02,
+        3.12,
+        4.5,
+        0.1
+       ],
+       [
+        -0.78,
+        -0.72,
+        3.12,
+        4.5,
+        0.1
+       ],
+       [
+        -0.48,
+        -0.42000000000000004,
+        3.12,
+        4.5,
+        0.1
+       ],
+       [
+        -0.18000000000000002,
+        -0.12000000000000002,
+        3.12,
+        4.5,
+        0.1
+       ],
+       [
+        0.11999999999999997,
+        0.17999999999999997,
+        3.12,
+        4.5,
+        0.1
+       ],
+       [
+        0.41999999999999993,
+        0.48,
+        3.12,
+        4.5,
+        0.1
+       ],
+       [
+        0.72,
+        0.78,
+        3.12,
+        4.5,
+        0.1
+       ],
+       [
+        1.02,
+        1.08,
+        3.12,
+        4.5,
+        0.1
+       ],
+       [
+        1.32,
+        1.3800000000000001,
+        3.12,
+        4.5,
+        0.1
+       ],
+       [
+        -1.5,
+        1.5,
+        3,
+        3.12,
+        0.12
+       ],
+       [
+        -5,
+        -1.6,
+        0,
+        0.12,
+        0.12
+       ],
+       [
+        1.6,
+        5,
+        0,
+        0.12,
+        0.12
+       ],
+       [
+        -5,
+        5,
+        4.35,
+        4.5,
+        0.12
+       ]
+      ],
+      "trim": []
+     },
+     {
+      "half": 3,
+      "height": 3.6,
+      "segments": [
+       [
+        -2.88,
+        -2.8200000000000003,
+        0,
+        3.6,
+        0.1
+       ],
+       [
+        -2.58,
+        -2.5200000000000005,
+        0,
+        3.6,
+        0.1
+       ],
+       [
+        -2.2800000000000002,
+        -2.2200000000000006,
+        0,
+        3.6,
+        0.1
+       ],
+       [
+        -1.9800000000000004,
+        -1.9200000000000004,
+        0,
+        3.6,
+        0.1
+       ],
+       [
+        -1.6800000000000004,
+        -1.6200000000000003,
+        0,
+        3.6,
+        0.1
+       ],
+       [
+        1.72,
+        1.78,
+        0,
+        3.6,
+        0.1
+       ],
+       [
+        2.02,
+        2.0799999999999996,
+        0,
+        3.6,
+        0.1
+       ],
+       [
+        2.32,
+        2.3799999999999994,
+        0,
+        3.6,
+        0.1
+       ],
+       [
+        2.6199999999999997,
+        2.6799999999999993,
+        0,
+        3.6,
+        0.1
+       ],
+       [
+        -1.6,
+        -1.5,
+        0,
+        3.6,
+        0.2
+       ],
+       [
+        1.5,
+        1.6,
+        0,
+        3.6,
+        0.2
+       ],
+       [
+        -1.3800000000000001,
+        -1.32,
+        3.12,
+        3.6,
+        0.1
+       ],
+       [
+        -1.08,
+        -1.02,
+        3.12,
+        3.6,
+        0.1
+       ],
+       [
+        -0.78,
+        -0.72,
+        3.12,
+        3.6,
+        0.1
+       ],
+       [
+        -0.48,
+        -0.42000000000000004,
+        3.12,
+        3.6,
+        0.1
+       ],
+       [
+        -0.18000000000000002,
+        -0.12000000000000002,
+        3.12,
+        3.6,
+        0.1
+       ],
+       [
+        0.11999999999999997,
+        0.17999999999999997,
+        3.12,
+        3.6,
+        0.1
+       ],
+       [
+        0.41999999999999993,
+        0.48,
+        3.12,
+        3.6,
+        0.1
+       ],
+       [
+        0.72,
+        0.78,
+        3.12,
+        3.6,
+        0.1
+       ],
+       [
+        1.02,
+        1.08,
+        3.12,
+        3.6,
+        0.1
+       ],
+       [
+        1.32,
+        1.3800000000000001,
+        3.12,
+        3.6,
+        0.1
+       ],
+       [
+        -1.5,
+        1.5,
+        3,
+        3.12,
+        0.12
+       ],
+       [
+        -3,
+        -1.6,
+        0,
+        0.12,
+        0.12
+       ],
+       [
+        1.6,
+        3,
+        0,
+        0.12,
+        0.12
+       ],
+       [
+        -3,
+        3,
+        3.45,
+        3.6,
+        0.12
+       ]
+      ],
+      "trim": []
+     }
+    ],
+    "glass": false,
+    "windows": [
+     [],
+     [],
+     [],
+     [],
+     [],
+     []
+    ]
+   },
    "shutter": {
     "sizes": [
      {
@@ -30361,11 +41044,11 @@
   }
  },
  "styleMap": {
-  "geometry": "4abf8156d55324ed42f3d1c9",
-  "decor": "34c9d3d0c4b79a9dbe393861",
-  "facades": "6fcecd8bc5a4c6ffceb97373",
-  "panes": "dff943ee3fac20bd00b3935c",
-  "issues": "69cd4ec978ffd481591c86fc",
-  "dressing": "c49af8ba0c755d0ee9edac27"
+  "geometry": "48a6a865b28d3067e424ed80",
+  "decor": "78384d846597e5de9f2c99dc",
+  "facades": "cf7b282f0443408e8a578096",
+  "panes": "a771f4d9ce2465dd2b0acd93",
+  "issues": "c277e34d58382ed196cbba43",
+  "dressing": "1d166f98fc4c69cc98289209"
  }
 }

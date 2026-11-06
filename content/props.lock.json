@@ -513,6 +513,7 @@
     {"file":"props/landing_craft_wreck.glb","source":"tiletrigger-kit","src":"landing_craft_wreck.glb","triangles":1316,"surfaces":["metal"],"bytes":85888,"sha256":"8cb8e45677fe2b19"},
     {"file":"props/lantern.glb","source":"kenney-graveyard-kit","src":"lantern-candle.glb","triangles":224,"surfaces":["painted_metal"],"bytes":25508,"sha256":"d0cf7b3f5b3ad3e6"},
     {"file":"props/lantern_post.glb","source":"kenney-fantasy-town-kit","src":"lantern.glb","triangles":158,"surfaces":["metal"],"bytes":21856,"sha256":"3a199f1d4573d1c6"},
+    {"file":"props/lcvp_beached.glb","source":"meshy-community-drive-1106","budget":"hero","title":"Amphibious Landing Craft (Meshy community, from the owner's Drive: intake of 2026-11-06) (download dated 2026-11-06)","src":"Meshy_AI_Amphibious_Landing_Cr_1106110500_texture.glb","triangles":15979,"lodTriangles":[3994],"normalMap":true,"bytes":1025848,"sha256":"6e5039a7d87c248c","size":[3.279,2.2,10.709]},
     {"file":"props/lever.glb","source":"kenney-factory-kit","src":"lever-double.glb","triangles":118,"surfaces":["metal","painted_metal","wood"],"bytes":26232,"sha256":"8b3cd906e829dcd6"},
     {"file":"props/lever_platform.glb","source":"kenney-platformer-kit","src":"lever.glb","triangles":134,"surfaces":["metal","painted_metal"],"bytes":25536,"sha256":"28bdaeaf3d3e940f"},
     {"file":"props/lf_brick_wall.glb","source":"loafbrr-fences","src":"brick_fence/brick_wall.glb","triangles":44,"bytes":30932,"sha256":"041019da5957d504","size":[4,2.081,0.3]},

@@ -625,7 +625,40 @@ function thatchPaint(u: number, v: number, b: RGB, a: RGB): RGB {
   return shade(c, lap * (0.88 + fbm(u, v, 193) * 0.2));
 }
 
+/**
+ * Sandbags (set pieces part 3: trench revetment and parapets): six courses of burlap bags a repeat, three to a course
+ * in stretcher bond. Each bag is a rounded pillow (lit on its crown, shaded toward its edges), its own shade of the
+ * base, a fine weave over it and a pinched, tied end; the dark joints between bags are the accent.
+ */
+function sandbagPaint(u: number, v: number, b: RGB, a: RGB): RGB {
+  const rows = 6;
+  // Courses sag and wander a little: the joints between them aren't ruled lines.
+  const vv = v * rows + (noise(u, v, 8, 223) - 0.5) * 0.22;
+  const row = Math.floor(vv);
+  const fv = vv - row;
+  const cu = u * 3 + (row % 2) * 0.5 + (hash(row, 0, 211) - 0.5) * 0.1;
+  const bag = Math.floor(cu);
+  const fu = fract(cu);
+  // Each bag its own length and fill: a squashed superellipse, square-ish ends, rounded top and bottom, a lumpy outline.
+  const fat = 0.92 + hash(bag, row, 225) * 0.12;
+  const x = ((fu - 0.5) * 2) / (0.97 + hash(bag, row, 227) * 0.05);
+  const y = ((fv - 0.5) * 2) / fat + (noise(u, v, 16, 229) - 0.5) * 0.18;
+  const r = Math.abs(x) ** 5 + Math.abs(y) ** 2.4;
+  if (r >= 1) return shade(a, 0.5 + fbm(u, v, 213) * 0.3);
+  const crown = Math.sqrt(1 - r);
+  // Light from above: the upper half of each bag a touch brighter, its lower lip in shadow.
+  const light = 0.6 + crown * 0.44 + (y < 0 ? 0.06 : -0.07) * crown;
+  // The tied end (one end of each bag): a pinched, darker gather.
+  const tie = (hash(bag, row, 215) < 0.5 ? x : -x) > 0.8 ? 0.8 + fbm(u * 3, v * 3, 231) * 0.1 : 1;
+  // Folds and creases across the cloth, and its weave.
+  const crease = 1 - Math.max(0, Math.sin((x * 2.3 + y * 0.8 + hash(bag, row, 233) * 6) * Math.PI) - 0.85) * 0.6;
+  const weave = 0.96 + Math.sin(u * 900) * Math.sin(v * 900) * 0.04;
+  const cloth = mix(b, a, 0.1 + hash(bag, row, 217) * 0.26 + fbm(u * 2, v * 2, 219) * 0.16);
+  return shade(cloth, light * tie * crease * weave * (0.9 + fbm(u, v, 221) * 0.16));
+}
+
 const PAINTERS: Record<PatternId, Painter> = {
+  sandbags: sandbagPaint,
   grid: (u, v, b, a) => {
     const e = edgeDist(u, v);
     const mid = Math.min(Math.abs(u - 0.5), Math.abs(v - 0.5));
@@ -830,7 +863,7 @@ const PAINTERS: Record<PatternId, Painter> = {
 const cache = new Map<string, Uint8Array>();
 
 /** Fine patterns (hieroglyphs, mosaics, cobbles, half-timbering, roof tiles, decking, shingle, ice, prefab panels, sandstone ashlar, dome tiles, zellige, rugs, lattices, temple carvings, inlay, roots, slabs) are painted at twice the usual size so their shapes read. */
-const FINE_PATTERNS = new Set<PatternId>(['glyphs', 'glyphs_painted', 'mosaic', 'cobbles', 'timber', 'pantiles', 'decking', 'pebbles', 'ice', 'prefab', 'sandstone_ashlar', 'scales', 'zellige', 'rug', 'lattice', 'fret', 'relief', 'inlay', 'roots', 'slabs']);
+const FINE_PATTERNS = new Set<PatternId>(['glyphs', 'glyphs_painted', 'mosaic', 'cobbles', 'timber', 'pantiles', 'decking', 'pebbles', 'ice', 'prefab', 'sandstone_ashlar', 'scales', 'zellige', 'rug', 'lattice', 'fret', 'relief', 'inlay', 'roots', 'slabs', 'sandbags']);
 export const patternSize = (def: MaterialDefinition): number => (FINE_PATTERNS.has(def.pattern) ? 256 : 128);
 
 /** RGBA pixels for a material's pattern (cached per material). */

@@ -1,11 +1,12 @@
-import { BOT_CAST_CHOICES, CHARACTER_GROUPS, DEFAULT_TEAMS, MAX_PLAYER_SLOTS, MAX_TEAMS, MAX_TEAM_SIZE, botCastLabel, type SetupNote } from '@tiletrigger/shared';
+import { BOT_CAST_CHOICES, CHARACTER_GROUPS, DEFAULT_TEAMS, MAX_PLAYER_SLOTS, MAX_TEAMS, MAX_TEAM_SIZE, botCastLabel, changeTeamCount, evenTeams, peopleAndBots, setTeamSize, type FitItem, type FitTopic, type GameMode, type PlayerCap, type SetupFit, type SizePreset, type TeamChange } from '@tiletrigger/shared';
 
 /**
  * Match setup controls shared by Play → match setup and the host's pause
  * menu (Host tab), so a change mid-match looks and works like one before it:
  * steppers you can type into, choice tabs whose unavailable options are
- * greyed with the reason, setting rows (marked when they wait for a restart),
- * folds, setup notes and the team editor.
+ * greyed with the reason, setting rows and fields (marked when they wait for
+ * a restart), sections that open and close, the size presets, the fit
+ * indicator, the Offline / Host online switch and the team editor.
  */
 
 export const el = <K extends keyof HTMLElementTagNameMap>(tag: K, props: Partial<HTMLElementTagNameMap[K]> & { class?: string } = {}, ...children: (Node | string)[]): HTMLElementTagNameMap[K] => {
@@ -30,6 +31,17 @@ function why(e: HTMLElement, reason: string | null | undefined): void {
   if (!reason) return;
   e.dataset.tip = reason;
   e.title = reason;
+}
+
+/**
+ * A button that can't be pressed here, with the reason: greyed and inert, but still focusable and hoverable
+ * (a disabled button gets no hover or focus, so its tooltip would never show).
+ */
+export function inert(b: HTMLElement, reason: string | null | undefined): void {
+  if (!reason) return;
+  b.classList.add('off');
+  b.setAttribute('aria-disabled', 'true');
+  why(b, reason);
 }
 
 export interface StepperOptions {
@@ -94,6 +106,26 @@ export function choice<T extends string>(options: readonly ChoiceOption<T>[], va
   return box;
 }
 
+/**
+ * A switch between two or three ways (Offline | Host online): segments that read as one control, the one on
+ * lit. A segment that can't be picked here stays visible, greyed, with the reason on hover and focus.
+ */
+export function segmented<T extends string>(options: readonly (readonly [value: T, label: string, disabled?: string | null, id?: string, tip?: string])[], value: T, onChange: (v: T) => void, o: { id: string; label: string }): HTMLElement {
+  const box = el('div', { class: 'seg-switch', id: o.id, role: 'radiogroup' });
+  box.setAttribute('aria-label', o.label);
+  for (const [v, label, off, id, tip] of options) {
+    const b = el('button', { type: 'button', class: `seg-opt${v === value ? ' on' : ''}`, textContent: label, ...(id ? { id } : {}) });
+    b.dataset.value = v;
+    b.setAttribute('role', 'radio');
+    b.setAttribute('aria-checked', String(v === value));
+    if (tip) b.dataset.tip = tip;
+    inert(b, off ? `${tip ? `${tip}\n\n` : ''}${off}` : null);
+    b.addEventListener('click', () => !off && v !== value && onChange(v));
+    box.append(b);
+  }
+  return box;
+}
+
 export interface RowOptions {
   /** Takes effect when the match restarts (mid-match). */
   restart?: boolean;
@@ -103,14 +135,26 @@ export interface RowOptions {
   disabled?: string | null;
 }
 
+/** The small marks after a setting's name: it waits for a restart, or changes the match now. */
+function whenTags(o: RowOptions): HTMLElement[] {
+  const tags: HTMLElement[] = [];
+  if (o.restart) tags.push(el('span', { class: 'when-tag restart', textContent: '⟳ Restart', title: 'Applies when the match restarts (Apply & restart)' }));
+  if (o.live) tags.push(el('span', { class: 'when-tag live', textContent: 'Live', title: 'Changes right away, mid-match' }));
+  return tags;
+}
+
 /** A setting: its name with an (i), a restart / live tag when it applies, then the control. */
 export function settingRow(label: string, tip: string | null, control: HTMLElement, o: RowOptions = {}): HTMLElement {
-  const tags: HTMLElement[] = [];
-  if (o.restart) tags.push(el('span', { class: 'when-tag restart', textContent: 'On restart', title: 'Takes effect when the match restarts' }));
-  if (o.live) tags.push(el('span', { class: 'when-tag live', textContent: 'Live', title: 'Changes right away, mid-match' }));
-  const row = el('div', { class: `row${o.disabled ? ' off' : ''}` }, el('span', { class: 'row-label' }, label, ...(tip ? [infoTip(tip)] : []), ...tags), control);
+  const row = el('div', { class: `row${o.disabled ? ' off' : ''}` }, el('span', { class: 'row-label' }, label, ...(tip ? [infoTip(tip)] : []), ...whenTags(o)), control);
   why(row, o.disabled);
   return row;
+}
+
+/** One of the essentials (score, time, the mode's own key setting): its name over its control, a few across. */
+export function field(label: string, tip: string | null, control: HTMLElement, o: RowOptions = {}): HTMLElement {
+  const box = el('div', { class: `field${o.disabled ? ' off' : ''}` }, el('span', { class: 'field-label' }, label, ...(tip ? [infoTip(tip)] : []), ...whenTags(o)), control);
+  why(box, o.disabled);
+  return box;
 }
 
 /** A section folded away until opened; `badge`: a short state ("2 changed", "standard"). */
@@ -122,10 +166,84 @@ export function fold(o: { id: string; title: string; badge?: string; open: boole
   return d;
 }
 
-/** Setup warnings and hints, each a line (warnings first). */
-export function noteList(notes: readonly SetupNote[], id = 'setup-notes'): HTMLElement {
-  const sorted = [...notes].sort((a, b) => (a.level === b.level ? 0 : a.level === 'warn' ? -1 : 1));
-  return el('ul', { class: 'setup-notes', id }, ...sorted.map((n) => el('li', { class: n.level, textContent: n.text })));
+/**
+ * A section of the setup under the essentials (Players & teams, Bots, Advanced rules): its header (the title,
+ * a line saying what it's set to, a caret) opens and closes it. `tag`: a mark after the title (Live).
+ */
+export function section(o: { id: string; title: string; summary?: (Node | string)[]; open: boolean; onToggle: () => void; tag?: HTMLElement | null; warn?: boolean; opening?: boolean }, ...children: HTMLElement[]): HTMLElement {
+  const head = el(
+    'button',
+    { type: 'button', class: 'sec-head', id: `${o.id}-head` },
+    el('h4', { textContent: o.title }),
+    ...(o.tag ? [o.tag] : []),
+    el('span', { class: `sec-sum${o.warn ? ' warn' : ''}` }, ...(o.summary ?? [])),
+    el('span', { class: 'sec-caret', textContent: '▸' }),
+  );
+  head.setAttribute('aria-expanded', String(o.open));
+  head.addEventListener('click', o.onToggle);
+  // `opening`: just opened, its settings slide in (a redraw of one already open doesn't flash).
+  const sec = el('section', { class: `setup-sec${o.open ? ' open' : ''}${o.open && o.opening ? ' opening' : ''}`, id: o.id }, head);
+  if (o.open) sec.append(el('div', { class: 'sec-body', id: `${o.id}-body` }, ...children));
+  return sec;
+}
+
+/**
+ * The size presets worked out for this map, mode and device (Duel, Small, Map's pick, Big battle, Max), the one
+ * the setup is on lit; changed from all of them, a Custom chip says so (with what it is: `custom`).
+ */
+export function sizeChips(presets: readonly SizePreset[], on: SizePreset | null, custom: string, onPick: (p: SizePreset) => void, id: string): HTMLElement {
+  const box = el('div', { class: 'size-chips', id, role: 'group' });
+  box.setAttribute('aria-label', 'Size presets');
+  for (const p of presets) {
+    const b = el('button', { type: 'button', class: `size-chip${p === on ? ' on' : ''}` }, el('b', { textContent: p.label }), el('small', { textContent: p.value }));
+    b.dataset.preset = p.id;
+    b.dataset.tip = p.tip;
+    b.setAttribute('aria-pressed', String(p === on));
+    b.addEventListener('click', () => onPick(p));
+    box.append(b);
+  }
+  if (!on) {
+    const c = el('span', { class: 'size-chip custom on', id: `${id}-custom` }, el('b', { textContent: 'Custom' }), el('small', { textContent: custom }));
+    c.dataset.tip = 'Changed from the presets: any of them puts it back.';
+    box.append(c);
+  }
+  return box;
+}
+
+/** The fit check's topics, as its details name them. */
+export const FIT_TOPICS: Record<FitTopic, string> = { device: 'This device', grid: 'Grid', size: 'Map size', spawns: 'Spawns', teams: 'Teams', performance: 'Performance' };
+
+/** The fit indicator: one chip, green Fits, amber Crowded or red Problem; it shows or hides the details. */
+export function fitChip(fit: SetupFit, open: boolean, onToggle: () => void, id: string): HTMLButtonElement {
+  const b = el('button', { type: 'button', class: `fit-chip ${fit.level}${open ? ' open' : ''}`, id }, el('i', { class: 'fit-dot' }), el('span', { textContent: fit.label }), el('span', { class: 'fit-caret', textContent: '▾' }));
+  b.dataset.level = fit.level;
+  b.setAttribute('aria-expanded', String(open));
+  b.title = open ? 'Hide the details' : 'How this setup fits the map and this device: spawn points, the map\'s recommended size, performance';
+  b.addEventListener('click', onToggle);
+  return b;
+}
+
+/**
+ * The fit check's details, a line per topic: what it found, marked by how much it matters (a red problem, an
+ * amber warning, a hint, a tick), and a suggestion's button that acts ("Use 12v12"). `extra`: a control to
+ * show with a topic's line (Graphics with performance).
+ */
+export function fitList(items: readonly FitItem[], onFix: (fix: NonNullable<FitItem['fix']>) => void, id: string, extra: Partial<Record<FitTopic, HTMLElement>> = {}): HTMLElement {
+  const list = el('ul', { class: 'fit-list', id });
+  for (const it of items) {
+    const li = el('li', { class: `fit-item ${it.level}` }, el('b', { class: 'fit-topic', textContent: FIT_TOPICS[it.topic] }), el('span', { class: 'fit-text', textContent: it.text }));
+    li.dataset.topic = it.topic;
+    if (it.fix) {
+      const fix = it.fix;
+      const b = el('button', { type: 'button', class: 'fit-fix', id: `${id}-fix-${it.topic}`, textContent: fix.label });
+      b.addEventListener('click', () => onFix(fix));
+      li.append(b);
+    }
+    const x = extra[it.topic];
+    if (x) li.append(x);
+    list.append(li);
+  }
+  return list;
 }
 
 /** The team palette: every default team colour (the map's own sides add theirs). */
@@ -154,56 +272,75 @@ export interface TeamEditorOptions {
   youLabel?: string;
   /** Most players in all (a browser's match: BROWSER_MAX_PLAYERS; a dedicated host's: MAX_PLAYER_SLOTS). */
   maxPlayers?: number;
-  onChange: (next: TeamEditorState) => void;
+  /** The cap and whose it is (overrides maxPlayers): the device's, or a race grid's. */
+  cap?: PlayerCap;
+  /** Whose limit the cap is, in its message: "this computer", "this phone". */
+  device?: string;
+  /** The mode: two-team modes keep two teams. */
+  mode?: GameMode;
+  /** Even teams: its switch, and while it's on every team changes alike. */
+  even?: { on: boolean; onToggle: (on: boolean) => void };
+  /** Why the last change stopped short (a limit), shown under the teams. */
+  stopped?: string | null;
+  /** The new teams, and why the change stopped short of what was asked (null: it didn't). */
+  onChange: (next: TeamEditorState, stopped: string | null) => void;
 }
 
 /** Bot pips drawn per team before "+N". */
 const PIPS = 10;
 
 /**
- * Teams, freely: how many (2–8), and each one's size, name and colour (from
- * the palette). Drag a bot pip to another team to move a bot there, or drag
- * yourself (or press Join) to play on that team; any total up to `maxPlayers`.
+ * Teams, freely: how many (2–8), and each one's people, bots and size, name and colour (from the palette).
+ * Each team reads as who's on it ("You + 23 bots"); its − and + take a bot off or add one, and the team
+ * shrinks or grows with it (a typed size sets the team). Even teams keep every team matched. A change
+ * that hits a limit (the device, a race grid) says so under the teams. Drag a bot pip to another team to
+ * move a bot there, or drag yourself (or press Join) to play on that team.
  */
 export function teamEditor(o: TeamEditorOptions): HTMLElement {
   const s = o.state;
+  const n = s.sizes.length;
   const total = s.sizes.reduce((a, b) => a + b, 0);
-  const cap = o.maxPlayers ?? MAX_PLAYER_SLOTS;
-  const emit = (patch: Partial<TeamEditorState>) => o.onChange({ ...s, sizes: [...s.sizes], names: [...s.names], colors: [...s.colors], ...patch });
-  const setSize = (i: number, v: number) => {
-    const sizes = [...s.sizes];
-    const room = cap - (total - sizes[i]!);
-    sizes[i] = Math.max(1, Math.min(v, room, MAX_TEAM_SIZE));
-    emit({ sizes });
-  };
+  const cap: PlayerCap = o.cap ?? { max: o.maxPlayers ?? MAX_PLAYER_SLOTS, by: 'device' };
+  const even = !!o.even?.on;
+  // People on each team: those already in (mid-match), and you.
+  const people = s.sizes.map((_, i) => (o.people?.[i] ?? 0) + (s.you === i ? 1 : 0));
+  const humans = people.reduce((a, b) => a + b, 0);
+  const opts = { people, cap, even, device: o.device };
+  const emit = (patch: Partial<TeamEditorState>, stopped: string | null = null) => o.onChange({ ...s, sizes: [...s.sizes], names: [...s.names], colors: [...s.colors], ...patch }, stopped);
+  const resize = (r: TeamChange) => emit({ sizes: r.sizes, you: s.you !== null && s.you >= r.sizes.length ? r.sizes.length - 1 : s.you }, r.stopped);
   const moveBot = (from: number, to: number) => {
     if (from === to) return;
     const sizes = [...s.sizes];
-    const floor = Math.max(1, (o.people?.[from] ?? 0) + (s.you === from ? 1 : 0));
-    if (sizes[from]! <= floor || sizes[to]! >= MAX_TEAM_SIZE) return;
+    if (sizes[from]! <= Math.max(1, people[from]!) || sizes[to]! >= MAX_TEAM_SIZE) return;
     sizes[from]!--;
     sizes[to]!++;
     emit({ sizes });
   };
   const count = stepper({
-    value: s.sizes.length,
+    value: n,
     min: 2,
     max: MAX_TEAMS,
     id: `${o.id}-team-count`,
     label: 'teams',
     disabled: o.countLocked,
-    onChange: (n) => {
-      const sizes = s.sizes.slice(0, n);
-      let left = cap - sizes.reduce((a, b) => a + b, 0);
-      while (sizes.length < n) {
-        const add = Math.max(1, Math.min(left, s.sizes[s.sizes.length - 1] ?? 2));
-        sizes.push(add);
-        left -= add;
-      }
-      emit({ sizes, you: s.you !== null && s.you >= n ? n - 1 : s.you });
-    },
+    onChange: (k) => resize(changeTeamCount(s.sizes, k, o.mode ?? 'core.tdm', opts)),
   });
-  const head = el('div', { class: 'team-head' }, el('span', { class: 'row-label', textContent: 'Teams' }), count, el('span', { class: 'team-total', id: `${o.id}-team-total`, textContent: `${s.sizes.join('v')} · ${total} players` }));
+  const head = el(
+    'div',
+    { class: 'team-head' },
+    el('span', { class: 'row-label', textContent: 'Teams' }),
+    count,
+    ...(o.even
+      ? [
+          evenSwitch(`${o.id}-even`, even, (on) => {
+            o.even!.onToggle(on);
+            if (on) resize(evenTeams(s.sizes, opts));
+            else emit({});
+          }),
+        ]
+      : []),
+    el('span', { class: 'team-total', id: `${o.id}-team-total`, textContent: `${s.sizes.join('v')} · ${s.you !== null || !humans ? peopleAndBots(humans, total - humans) : `${humans} ${humans === 1 ? 'player' : 'players'} + ${total - humans} bots`}` }),
+  );
   const cards = el('div', { class: 'team-cards', id: `${o.id}-team-cards` });
   s.sizes.forEach((size, i) => {
     const color = s.colors[i] ?? TEAM_PALETTE[i % TEAM_PALETTE.length]!;
@@ -231,6 +368,7 @@ export function teamEditor(o: TeamEditorOptions): HTMLElement {
       sum.style.pointerEvents = 'none';
       why(swatch, o.namesLocked);
     }
+    const teamName = s.names[i] || `team ${i + 1}`;
     const name = el('input', { class: 'team-name', value: s.names[i] ?? '', maxLength: 24, title: o.namesLocked ?? 'Team name', disabled: !!o.namesLocked, id: `${o.id}-team-name-${i}` });
     name.setAttribute('aria-label', `Team ${i + 1} name`);
     name.addEventListener('change', () => {
@@ -238,9 +376,19 @@ export function teamEditor(o: TeamEditorOptions): HTMLElement {
       names[i] = name.value.trim();
       emit({ names });
     });
-    const people = o.people?.[i] ?? 0;
-    const min = Math.max(1, people + (s.you === i ? 1 : 0));
-    const sizeStep = stepper({ value: size, min, max: Math.min(MAX_TEAM_SIZE, cap - (total - size)), id: `${o.id}-team-size-${i}`, label: `team ${i + 1} size`, onChange: (v) => setSize(i, v) });
+    const mine = people[i]!;
+    const bots = Math.max(0, size - mine);
+    // − and + are a bot less or more (the team shrinks or grows with it); the number is the team's size, and typeable.
+    // + goes up to the largest team: past the cap, setTeamSize stops and says whose limit it is.
+    const floor = even ? Math.max(...people.map((p) => Math.max(1, p))) : Math.max(1, mine);
+    const sizeStep = stepper({ value: size, min: floor, max: MAX_TEAM_SIZE, id: `${o.id}-team-size-${i}`, label: `players on ${teamName}`, onChange: (v) => resize(setTeamSize(s.sizes, i, v, opts)) });
+    const [minus, plus] = [sizeStep.firstElementChild as HTMLElement, sizeStep.lastElementChild as HTMLElement];
+    minus.setAttribute('aria-label', `One bot fewer on ${teamName}`);
+    plus.setAttribute('aria-label', `One more bot on ${teamName}`);
+    minus.dataset.tip = even ? 'One bot fewer on every team' : 'One bot fewer: the team shrinks';
+    plus.dataset.tip = even ? 'One more bot on every team' : 'One more bot: the team grows';
+    // Who's on it: "You + 23 bots", "2 players + 22 bots", "24 bots" (people mid-match, you among them or not).
+    const who = el('span', { class: 'team-who', id: `${o.id}-team-who-${i}`, textContent: s.you === i || !mine ? peopleAndBots(mine, bots) : `${mine} ${mine === 1 ? 'player' : 'players'}${bots ? ` + ${bots} bot${bots === 1 ? '' : 's'}` : ''}` });
     // Roster: you, people, then a pip per bot (drag one to another team).
     const roster = el('div', { class: 'roster' });
     if (s.you === i && o.youLabel) {
@@ -248,15 +396,14 @@ export function teamEditor(o: TeamEditorOptions): HTMLElement {
       me.addEventListener('dragstart', (e) => e.dataTransfer?.setData('text/plain', 'you'));
       roster.append(me);
     }
-    if (people) roster.append(el('span', { class: 'chip people', textContent: `${people} ${people === 1 ? 'person' : 'people'}` }));
-    const bots = Math.max(0, size - people - (s.you === i ? 1 : 0));
+    const others = o.people?.[i] ?? 0;
+    if (others) roster.append(el('span', { class: 'chip people', textContent: `${others} ${others === 1 ? 'person' : 'people'}` }));
     for (let b = 0; b < Math.min(bots, PIPS); b++) {
       const pip = el('span', { class: 'pip', draggable: true, title: 'A bot: drag it to another team' });
       pip.addEventListener('dragstart', (e) => e.dataTransfer?.setData('text/plain', `bot:${i}`));
       roster.append(pip);
     }
     if (bots > PIPS) roster.append(el('span', { class: 'more', textContent: `+${bots - PIPS}` }));
-    roster.append(el('span', { class: 'bots-n', textContent: `${bots} bot${bots === 1 ? '' : 's'}` }));
     card.addEventListener('dragover', (e) => {
       e.preventDefault();
       card.classList.add('drop');
@@ -269,17 +416,26 @@ export function teamEditor(o: TeamEditorOptions): HTMLElement {
       if (what === 'you') emit({ you: i });
       else if (what.startsWith('bot:')) moveBot(Number(what.slice(4)), i);
     });
-    const tail: HTMLElement[] = [];
     if (o.youLabel && s.you !== i) {
       const join = el('button', { type: 'button', class: 'team-join link', textContent: 'Join', title: 'Play on this team' });
       join.dataset.team = String(i);
       join.addEventListener('click', () => emit({ you: i }));
-      tail.push(join);
+      roster.append(join);
     }
-    card.append(el('div', { class: 'team-top' }, swatch, name), el('div', { class: 'team-mid' }, sizeStep, ...tail), roster);
+    card.append(el('div', { class: 'team-top' }, swatch, name), el('div', { class: 'team-mid' }, who, sizeStep), roster);
     cards.append(card);
   });
-  return el('div', { class: 'team-editor' }, head, cards);
+  const note = o.stopped ? [el('p', { class: 'cap-note', id: `${o.id}-team-stopped`, role: 'status', textContent: o.stopped })] : [];
+  return el('div', { class: 'team-editor' }, head, cards, ...note);
+}
+
+/** A labelled on/off switch (a checkbox drawn as a switch), its tooltip saying what it does. */
+export function evenSwitch(id: string, on: boolean, onToggle: (on: boolean) => void, label = 'Even teams', tip = 'Keep every team the same size: a bot added or taken away changes every team alike.'): HTMLElement {
+  const input = el('input', { type: 'checkbox', id, checked: on });
+  input.addEventListener('change', () => onToggle(input.checked));
+  const box = el('label', { class: 'even-switch', htmlFor: id }, el('span', { class: 'switch' }, input, el('span', { class: 'switch-track' })), el('span', { textContent: label }));
+  box.dataset.tip = tip;
+  return box;
 }
 
 /**

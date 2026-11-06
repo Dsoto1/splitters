@@ -122,6 +122,154 @@ are right for the campus. The shallow vault stays. Skybridges keep the pack's fa
   facade) are an override away (`overrides.roles.facade: "none"`); which should be the default?
 <!-- /setpieces -->
 
+### Queued (owner, 2026-11-06): performance round 4, crowds. Right after the Match Setup follow-ups, ahead of Roulette
+**The owner:**
+- "Focus round 4 on crowds."
+- "32v32 would be max I want to shoot for without dedicated host."
+- "Push dedicated hosts to 64v64 if at all possible."
+- Running characters look choppy at a distance (fewer animation frames). Push the reduced-rate distance out.
+
+**Scope:**
+- Animation that doesn't look choppy and costs less: screen-size bands, smoothing between samples, shared or cheaper
+  evaluation.
+- The M1 recording's three hitches: start-of-match shaders, the mass-death spike, GC frames.
+- The browser cap raised to 32v32 (`BROWSER_MAX_PLAYERS` 48 → 64) once measured.
+- 64v64 on dedicated hosts (`MAX_PLAYER_SLOTS` 96 → 128) only if the measurements hold; otherwise a precise report.
+- The handoff e2e flake.
+
+The brief is in the session scratchpad, `briefs/perf-4.md`.
+
+### Queued (owner, 2026-11-06): Match Setup follow-ups, NEXT FREE SLOT (before Roulette)
+**Owner's answers to the redesign's questions:**
+1. Host online lists the match publicly from both places.
+2. Spectate keeps following the Offline/Host online switch.
+3. Bring back "save for next match" in the Host tab.
+4. Cap co-op size presets at the map's recommended size.
+
+**New:** default score and time scale with players + bots. The owner: "24v24 in a 40 pt match means on average 1 kill
+per; 24v24 plays ok with 500 points, but also 15–20 min."
+
+The brief is in the session scratchpad, `briefs/match-setup-followups.md`. It has a curve fitted to measured kill rates
+and anchored at 4v4 ≈ 40 points / 10 min and 24v24 ≈ 500 points / 15–20 min.
+
+<!-- match-setup -->
+### Match Setup redesign, the Host tab, Spectate before the start (`wip/match-setup`, agents, 2026-11-06; main bc6037a1 merged in; green on `check/match-setup` at c32bbf20, run 42242658709; not landed)
+The owner's report and approved design are in the queued section below ("Queued … Match Setup redesign"); the brief is
+the session scratchpad's `briefs/match-setup.md`. Screenshots before and after (1280 × 720, 1920 × 1080, 2000 × 1100, a
+phone sideways at 900 × 415; after also 2560 × 1440, the fit details open and the setup scrolled to the bottom): the
+session scratchpad's `shots-ms/before/`, `shots-ms/after/` and `shots-ms/after-host/` (the Host tab).
+- **CI:** green at c32bbf20 (run 42242658709, second attempt: the first stopped on `packages/host/test/host.test.ts`'s
+  kick-and-ban wait, which passed on the same shared code in the two runs before and on the re-run: a flaky wait).
+- **Shared** (`packages/shared/src/sim/matchSetup.ts`, `setupVariants.ts`; tests `setupPlan.test.ts`): people apart
+  from bots (`setupSummary`, `peopleAndBots`, `setupPeople`, `setupYourTeam`); team changes that grow and shrink with
+  bots and stop at a cap with a message (`changeTeamBots`, `setTeamSize`, `evenTeams`, `changeTeamCount`,
+  `playerCap`, `capMessage`); size presets worked out per map, mode and device (`sizePresets`, `matchingPreset`,
+  `presetPatch`, `mapPickTeams`, `mapPickPlayers`); one fit check (`setupFit`: Fits / Crowded / Problem with items and
+  fixes; `setupNotes` is gone); `setupTeams` / `setupPlayers` / `rulesFromSetup` take a cap (a setup saved on a
+  computer plays 8v8 on a phone and the fit check says so). **Variants** are data (`SETUP_VARIANTS`: id, label, tip,
+  modes, `sets`, `clears`, `conflicts`, `needs`, `unavailable`); on when their settings are, however set; nothing new is
+  stored (saved setups keep their shape). **Party presets** (`PARTY_PRESETS`: Lunar Roulette, Spear Fight; `applyParty`,
+  `partyOn`, `partyUnavailable`). The Roulette mode adds its variants as entries there and re-points Lunar Roulette
+  (`mode: { ffa: 'core.roulette' }, variants: ['lunar']`, comment in the file).
+- **Start gate** (`sim/match.ts` `step`, `spectate`, `remove`): spectators who have loaded count like players, so a
+  match only spectators watch starts once they have (it waited out `START_WAIT_SECONDS` before). Offline matches keep
+  ticking under the pause menu, so the old one did start after 30 s; it only looked stuck. Tests: `startGate.test.ts`
+  (three cases), `client/test/localHost.test.ts` (Spectate from the start).
+- **Match setup** (`frontend/frontEnd.ts` `fillSetup`, `setupFoot`, `moreLayouts`; controls in
+  `frontend/setupControls.ts`: `section`, `field`, `segmented`, `sizeChips`, `fitChip`, `fitList`, `inert`, the team
+  editor with Even teams and "You + 23 bots"; styles in `style.css` "Match setup"). Essentials on top (mode chips,
+  variants, what wins and the mode's key setting), then Size (presets, More layouts… = the old Quick setup) and Party
+  presets, then the sections Players & teams, Bots, Advanced rules (a summary line; the orange chips and Reset inside;
+  Rules, Weapons, the mode's other settings as folds). Graphics moved into the fit details (big matches). The foot:
+  Offline / Host online (`#arcade-offline`, `#arcade-host`), Saved (`#setup-saved` menu: the old IDs inside), Spectate
+  (`#arcade-spectate`), Start (`#arcade-start`). Enter starts as the switch says; Esc closes the saved menu first;
+  small screens (`compactSetup`: touch, ≤ 900 px wide or ≤ 600 px tall) open one section at a time. Spectate goes
+  `hooks.playLocal(…, spectate)` → `LocalMatchOptions.spectate` → `MatchHost.start` spectates you before the welcome.
+- **Host tab** (`game/hostPanel.ts`, `pauseMenu.ts`, `index.html` `#pause-host-foot`, `session.ts`): cards To win
+  (⟳ Restart marks), Players & teams (presets for the map, the team editor with Even teams and people per team from
+  the roster, the fit chip), Bots, Rules, Match, Rotation, Players. Nothing applies until Apply in the foot:
+  `#hc-resume`, `#hc-apply` ("Apply now", or "Apply & restart" when a restart rule changed: it sends bots, rules, then
+  restart; a second click with other people in), `#hc-changes`, the switch (`#go-offline` / `#go-online` keep their
+  IDs: Host online lists after a confirm when there's a hub, else opens a code). Esc on the Host tab resumes. Mixed
+  pickups, weapon drops and bot characters now go through Apply too.
+- **e2e** (`e2e/run.mjs`): the menu check in `offline`; `teams` runs `setupLayoutFlow` (the four sizes: essentials in
+  view, Start in view scrolled to the bottom, several / one section open; the owner's setup: summary, Advanced line,
+  fit and "Use 12v12", caps, a party preset, Enter) and `spectateStartFlow` (Match setup → Spectate, and the pause
+  menu's Spectate while loading: the countdown starts the tick after you've loaded); `hostcontrols` (the foot, Esc,
+  Apply now, Apply & restart), `arsenal` (mix needs Apply), `lobby` (the switch), `customSetupFlow` (Even teams off
+  for 2v3v5).
+- **Bundle:** the menu's first JS 702.9 kB gzip (budget 840).
+
+**For the owner to decide**
+- Pause menu → Host online with a community hub restarts and lists the match (as Go online did); Match setup's Host
+  online opens a code only (as Host did). Same word, two behaviours: list from Match setup too, or keep?
+- Spectate follows the switch: offline it's bots only; with Host online you watch while friends play. Keep?
+- The old "Apply on restart" (keep rules for the next restart without restarting now) is gone: restart rules now
+  restart on Apply. Want a "keep for the next match" option back?
+- Co-op's size presets go up to Big squad 24 and Max 48 (worked out like the other modes): cap them at the map's
+  recommended size?
+<!-- /match-setup -->
+
+<!-- setpieces-3 -->
+### Set pieces, part 3: the showpiece maps' pieces (`wip/setpieces-3`, agent, 2026-11-06; from main b2c58e2e, main bc6037a1 merged in; green on `check/setpieces-3` at 40e27910, run 42243955187; not landed)
+What was built and decided: docs/SET_PIECES_PLAN.md, "As built: part 3" (the 4 m decision, the sunk trench, the
+pieces, budgets per piece, notes for part 2, what is left); the new kit in docs/BUILDING_KIT.md ("The showpiece kit").
+All data on the standard grid: no map format change, nothing in `packages/client/src/editor/*`.
+- **The 4 m question: the mix, no format change.** The colosseum is built on the standard 8 m / 4 m grid, a board
+  square being half a cell (every square's centre on a cell centre, a side's middle or a cell corner): tiles where an
+  8 m module fits (stands, tunnels, cages, insulae, the floor), free parts on the 4 m lattice for the pillars,
+  medallions and zones, and the hatch risers in two variants (cell-centred; corner-centred from four Corner Hatch
+  tiles). The sand: 7 cells (56 m), the 52 m board centred on a cell, a 2 m margin; its hatches (±12 m) fall on cell
+  corners. MAP 21 stays on the 8 m grid.
+- **Trenches are sunk 1.5 m and carve their own slot:** their buried floors pull the terrain down under them
+  (settle.ts `terrainUnderFloors`, on load and every MapMaker edit). Place them on level 0 over ground at level 0;
+  they need terrain (flat maps keep the Military Compound's raised trenches). Head under the parapet standing in the
+  channel, eyes over it on the fire step, hidden crouched.
+- **34 pieces, eight families** (`content/setpieces/`): Gun Casemate and Cliff Casemate (`casemate.json`); Trench,
+  Bend, Junction, End, Jog, each timber or `_sandbag` (`trench.json`); Grand Cliff Stair, Cliff Stair Tower
+  (`cliffstair.json`); Arena Bay (Podium), (Upper Tier), (Vomitorium), Grand Arcade, Arena Attic (`arena.json`);
+  Hypogeum Tunnel, Bend, Junction, Crossing, Hatch Riser, Hatch Riser (Corner), Cage Block, Lift-Cage Riser
+  (`hypogeum.json`); Insula, Insula (Corner), Insula (Tall) (`insula.json`); Stair Tower (4, 6, 8 levels)
+  (`stairtower.json`); Beached Landing Craft (`landing.json`).
+- **New kit (any map):** wall styles Round arch, Grand arch (two storeys), Embrasure, Barred gate; tiles Sunken
+  Trench (+ Bend, Junction, End), Grand Flight, Seating Tier (+ Vomitorium), Vaulted Tunnel (+ Bend, Junction,
+  Crossing), Grand Gallery, Corner Hatch (Military Compound and Imperial Arena style packs); the Sandbags material
+  (procedural paint, `patterns.ts` `sandbagPaint`). Shared code, small: `map/catalog.ts` `kitPart` (a kit part's
+  `surface` now dresses every box its builder makes, the timber steps; tiles.mjs allows it), `map/materials.ts` (the
+  `sandbags` pattern id), `editor/stylePacks.ts` (the new tiles and the prop in their packs).
+- **Landing craft** (the owner's Drive model): prop **Landing Craft (Beached)** (`prop.lcvp_beached`, pack
+  `meshy-community-drive-1106`: Meshy community, CC0 per owner, community page URL pending; hero tier, 16k triangles,
+  a 4k LOD from 40 m, baked normal map, 1.0 MB, `collide: "voxel"`: walk up the ramp into the well, shoot over the
+  gunwales; `surface: "metal"`, as the kit Landing Craft). In the Military Compound and Coastal Harbor style packs, and
+  the static Beached Landing Craft set piece
+  (ramp down, hedgehogs, crates). **Not swapped into Shingle Point:** the owner compares it with the kit Landing Craft.
+- **Tests:** `packages/shared/test/setPieces3.test.ts` (18: trenches carved, walked, bot paths, crouched cover and the
+  fire step's sightline; casemate embrasure shots, its loop and two ways in; cliff stairs walked and pathed; the
+  landing craft's ramp, well and gunwales; the stands' bot route and vomitorium; hypogeum ladders, bars and corner
+  hatches; insula storeys and flats; stair towers; expansion equals exploded). `setPiecePlay.test.ts`: the every-port
+  test covers every piece whose ports are walled doorways or arches and names the open-sided ones (`OPEN_SIDED`);
+  the z-fight test only mirrors `mirror: "free"` pieces. Fixtures: tiles and materials regenerated; the surface
+  classes fixture takes Sandbags (soil) and the craft (metal) as they came; the prop openings fixture lists the craft
+  as a voxel prop against the box it would collide as (the `--fixture` tool skips props new since its ref, so that
+  entry was made by the tool's own steps for the one prop). Coverage map: the 13
+  tiles, the four wall styles and the prop placed in MapMaker (driver: Playwright on the built client, Import, the
+  palette, R, clicks, the inspector's wall pickers, Export).
+- **Screenshots** (session scratchpad, built game, MapMaker → TEST): `shots/m21b/` (casemates, trenches, cliff
+  stairs, eye level and overview; `shots/m21/` is before the fixes from looking at them), `shots/lcvp/` (the beached
+  landing craft: ramp, overview, side, from the well, stern), `shots/colo/` (stands, arcades, hypogeum, cages,
+  insulae, stair towers).
+- **Budgets:** per piece in the plan. A full colosseum of these pieces (24 bay lines of six storeys, four 8-level
+  corner towers, the hypogeum, 15 insulae) is about 800 tiles, 200 blocks and 190 lights (inside MAP_BUDGETS) but
+  about 25,000 collision and 30,000 trim boxes, several times any shipped map (St. John's 3,915): the map build should
+  measure load and frame time early and drop what it can (the attic, a storey of arcades round the far sides, the
+  stair towers' facade).
+
+**Left for later, and for the owner**
+- MAP 21's **sea wall section (with its breach)** and **command bunker**: not built (the Gun Casemate is the pattern).
+- The map builds themselves (MAP 21, the colosseum) in MapMaker from these pieces, after part 2.
+- Owner: compare the landing craft with Shingle Point's kit Landing Craft; send the community page URL for it.
+<!-- /setpieces-3 -->
+
 <!-- shingle -->
 ### Shingle Point asset refresh (`wip/shingle`, agents, 2026-11-05/06; main 5b167034 merged in; green on `check/shingle`)
 Owner's decision: same layout and gameplay, every dated asset replaced, so it compares fairly with MAP 21 (a new map,
@@ -1022,6 +1170,8 @@ The downloads are in `/home/user/meshy-drive/intake-2026-11-06/`; never commit t
 The brief is in the session scratchpad, `briefs/intake-1106.md`.
 
 ### Queued (owner-approved, 2026-11-06): Match Setup redesign, NEXT FREE SLOT (ahead of the follow-ons)
+**Done on `wip/match-setup`** (with the Host tab and Spectate before the start, added the same day): see its section
+near the top ("Match Setup redesign, the Host tab, Spectate before the start"). What follows is the request as queued.
 **Owner's report** (screenshot: St. John's TDM 24v24, desktop):
 - The setup sidebar's text doesn't display properly. For example, "The map suggests 12v12." is crushed into a narrow
   column beside "Next: bots".

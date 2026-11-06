@@ -96,6 +96,7 @@ folder can sit directly in it or one level down), and run:
 | The owner's Meshy landmark uploads of 2026-10-31 (Meshy Community CC0 per the owner's rule of 2026-11-06; textured GLBs, named in each entry's `src`; the monk statue is the `_stylize.glb` from its zip), all in one folder named `owned_landmarks` | `node tools/content/prepare-props.mjs --downloads <dir>` (`ONLY=<id>,…` for some) | pack `meshy-community-landmarks`: market stalls (`dc_market_stall`, `mv_market_stall`, `rustic_market_stall`), the wishing well (`dc_well` and `mv_well`, one download), the crawler crane `dc_crane`, statues (`jt_statue_large`, `temple_fire_statue`, `temple_spear_statue`, `temple_monk_statue`) and fountains (`town_fountain`, `lion_head_fountain`, `eagle_fountain`); all hero tier |
 | The owner's Meshy airliner of 2026-11-04 (the refined GLB in a folder `airliner-2026-11-04/refined/airliner.glb`; preview task 01a1a451-1dda-77ed-82ec-810c24ac1e9a, refine 01a1a451-ee8d-72d3-99ea-48063cd52abe) | `node tools/content/fuselage-profile.mjs <dir>` (its cross-section for the cabin kit, `assets-src/tiletrigger-cabin/fuselage.json`, and its collision and openings, written into its pack file), then `ONLY=airliner_shell node tools/content/prepare-props.mjs --downloads <dir>` | `props/airliner_shell.glb` (pack `meshy-owned-airliner`, hero tier: 19.7k triangles, a 6.1k one from 120 m, 1.38 MB) |
 | "Snowmobile" by roygbpjyt (Meshy Community, CC0: Meshy Terms of Use §3.3 "Community License"; the textured GLB `snowmobile.glb` in a folder `snowmobile-cc0-2026-11-04`) | `ONLY=vehicles/snowmobile.glb node tools/content/prepare-guns.mjs --downloads <dir>` | `public/models/vehicles/snowmobile.glb` (pack `meshy-community-snowmobile`, vehicle tier: 20k triangles plus a 5k one from 40 m, 2048 px colour and 1024 px normal map, 1.42 MB), the Snow Sled's model |
+| The amphibious landing craft of 2026-11-06 (Meshy community, CC0 per owner; the textured GLB `Meshy_AI_Amphibious_Landing_Cr_1106110500_texture.glb` in a folder `intake-2026-11-06`) | `ONLY=lcvp_beached node tools/content/prepare-props.mjs --downloads <dir>` (then `build-palette-atlas.mjs`) | `props/lcvp_beached.glb` (pack `meshy-community-drive-1106`, hero tier: 16k triangles, a 4k one from 40 m, a baked normal map, 1.0 MB; collides as voxels), the Landing Craft (Beached): static dressing and cover, in the Beached Landing Craft set piece |
 | Styloo Guns Asset Pack (`Styloo Guns Asset Pack GLTF FBX V1.1`), CC0 Guns & Explosives Pack (the rar's `Guns&Explosives` folder) | `node tools/content/prepare-guns.mjs --downloads <dir>` | `public/models/guns`, `content/guns.lock.json` (see `content/guns.json`) |
 
 Locomotion clips (walk, run, sprint) come from Library 1: the Standard edition
@@ -640,14 +641,14 @@ stay there and follow the kit in the catalog.
 | `content/tiles/edges.json` `edges` | every edge style in MapMaker's order: `id`, `label`; `auto` and `open` are `rule`s in code; the rest give `segments` (collide: `u` along the side, `y` up, `t` thick, or a `repeat`), `trim` (`base`, `cornice`, `frame`, `window`, `arch` (a segmental arch's voussoirs, keystone and soffit: `u`, `y` springing and crown, `count`, `band`, `key`) or a box with `depth`; `outside`: on the wall's outer face too where nothing is built beyond the side), `trimFrom`, `openings` ([u0, u1, y0, y1]: framed under a facade, glazed when `glass`), `corner`, `facade`, `street`, `openDefault`, `dressing` (`door` / `window` with `span`, or `see-through`), `notes` |
 
 A part names one builder and its numbers (local metres: x east, y up, z north from the first cell's centre and
-floor): `box` [x0, y0, z0, x1, y1, z1] (with `yaw`, `surface`), `flight` (steps of 0.25 m: `axis`, `dir`, `from`,
+floor): `box` [x0, y0, z0, x1, y1, z1] (with `yaw`), `flight` (steps of 0.25 m: `axis`, `dir`, `from`,
 `across`, `steps`, `base`, `run`, `floor`), `descending` (steps down off a raised block), `rail` (1 m railing),
 `columns` (square columns at points), `partition` (a thin interior wall with gaps), `lamp`, `arc`, `arcTrim`,
 `arcade` (curves; `turns` in quarter turns), `roundRoom`, `discStrips` (a half-round floor), `vault` (a segmental
 barrel vault in tilted strips: `axis`, `span`, `along`, `spring`, `crown`), `block` (a model's collision, centred on the
 footprint). `kind` says what paints it: `solid` (default; the theme's solids slot), `wall`,
-`floor`, `trim` (drawn, never collides) or `prop` (collides, invisible: a model is drawn); `surface` gives a box a
-library material of its own. Edge values are metres or `half`, `-half`, `half-0.75`, `-half+0.75`, `height`,
+`floor`, `trim` (drawn, never collides) or `prop` (collides, invisible: a model is drawn); `surface` gives every box
+a part builds (a box, a flight's steps) a library material of its own. Edge values are metres or `half`, `-half`, `half-0.75`, `-half+0.75`, `height`,
 `height*2`, `height-0.15`, `height*2-0.2`, `min(3.5,height)`.
 
 #### How to add a tile or an edge style
@@ -739,8 +740,10 @@ selection in MapMaker), so it plays anywhere.
    `pnpm content:rebuild` runs it after the tiles.
 4. **Test:** `packages/shared/test/setPieceExpand.test.ts` (every turn × mirror × pack; determinism; ids),
    `setPiecePlay.test.ts` (collision, trim and nav from the expansion equal the exploded map's; the z-fighting audit
-   over every piece; shots, players and bots through its arches and doorways) and `setPieceEdit.test.ts` (placement
-   checks, commands, budgets) pick a new piece up; add a case for what is new about it. Look at it in the game (MapMaker
+   over every piece; shots, players and bots through its arches and doorways: a piece whose ports are not all walled
+   doorways or arches, such as a trench, a stand or a tunnel, goes in its `OPEN_SIDED` list and is proved by a test of
+   its own, as in `setPieces3.test.ts`) and `setPieceEdit.test.ts` (placement checks, commands, budgets) pick a new
+   piece up; add a case for what is new about it. Look at it in the game (MapMaker
    → TEST): nothing floating, upside down, flickering or blocking an opening.
 
 The map as played (hand-placed pieces and parts together) holds at most 4096 tiles and 4096 entities and 2 MB of JSON,

@@ -237,8 +237,9 @@ mode-only weapons (arena disc) and mounted guns have none and never roll.
   the pickup holds a weapon of that category, rolled again each time it is
   taken (so it comes back as something new; with more than one in the
   category it never repeats the last). MapMaker shows a weapon of the category.
-- **Mix up weapon pickups** (`MatchRules.mixPickups`: match setup → Arsenal,
-  the pause menu's Host tab, where it applies at once): every weapon pickup not
+- **Mix up weapon pickups** (`MatchRules.mixPickups`: match setup → Advanced
+  rules → Weapons, pickups & vehicles; the pause menu's Host tab, where Apply
+  now applies it at once): every weapon pickup not
   marked **Keep fixed** (`keepFixed`) rolls within the category of the weapon
   placed there. Off by default.
 - Rolls are `rollPickup(seed, pickup id, roll number)` (`sim/pickupRoll.ts`),
@@ -250,8 +251,8 @@ mode-only weapons (arena disc) and mounted guns have none and never roll.
 ## Weapon drops
 
 **Drop weapon on death** (`MatchRules.dropWeapons`, default on: match setup →
-Arsenal, the pause menu's Host tab, where it applies at once and off clears the
-drops lying about): when a player or bot dies (not NPCs), `chooseDrop`
+Advanced rules → Weapons, pickups & vehicles; the pause menu's Host tab, where
+Apply now applies it at once and off clears the drops lying about): when a player or bot dies (not NPCs), `chooseDrop`
 (`sim/drops.ts`) picks the weapon in hand, else the most desirable one, that
 has a pickup item and a category (not a tool, mode-only weapon or mounted gun),
 isn't a fetched-back throw (spear), isn't in the starting loadout (rules or

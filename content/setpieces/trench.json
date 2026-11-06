@@ -1,0 +1,172 @@
+{
+  "$comment": "Trench run (set pieces part 3, MAP 21: docs/SET_PIECES_PLAN.md, \"The trench and the terrain\"): sunken trench segments 1.5 m deep with fire steps, revetted walls (timber, or the _sandbag pieces) and duckboards, made of the Sunken Trench kit tiles. They are sunk, not raised: their floors carve the terrain, so place them on level 0 over ground at level 0 (flatten bumpy ground with the terrain tools first). Chain them into a zigzag: straight fire bays, bends, the jog round a traverse, junctions to the communication trenches, ends with steps out. Parts as in carriageway.json; parts are only ever added at the end. Edit, then run `node tools/content/setpieces.mjs`.",
+  "family": "trench",
+  "pieces": [
+    {
+      "id": "setpiece.trench_straight",
+      "displayName": "Trench",
+      "category": "Trenches",
+      "blurb": "A straight fire bay of sunken trench (east–west): a fire step under the sandbag parapet on the south side, revetted walls, duckboards. Timber revetment.",
+      "packs": ["military", "snow", "harbor", "frontier"],
+      "footprint": { "cells": [[0,0]], "levels": [-1,0] },
+      "mirror": "free",
+      "ports": [
+        { "side": "W", "cell": [0,0], "level": 0, "kind": "opening" },
+        { "side": "E", "cell": [0,0], "level": 0, "kind": "opening" }
+      ],
+      "parts": [
+        { "kind": "tile", "tile": "core.trench_sunk", "x": 0, "y": 0, "z": 0, "rotation": 0, "surfaces": { "walls": { "role": "wood" } }},
+        { "kind": "prop", "model": "prop.ammo_crate", "position": [3.2,-0.75,-1.7], "yaw": 0, "scale": 1 }
+      ]
+    },
+    {
+      "id": "setpiece.trench_straight_sandbag",
+      "displayName": "Trench (Sandbags)",
+      "category": "Trenches",
+      "blurb": "A straight fire bay of sunken trench (east–west): a fire step under the sandbag parapet on the south side, revetted walls, duckboards. Sandbag revetment.",
+      "packs": ["military", "snow", "harbor", "frontier"],
+      "footprint": { "cells": [[0,0]], "levels": [-1,0] },
+      "mirror": "free",
+      "ports": [
+        { "side": "W", "cell": [0,0], "level": 0, "kind": "opening" },
+        { "side": "E", "cell": [0,0], "level": 0, "kind": "opening" }
+      ],
+      "parts": [
+        { "kind": "tile", "tile": "core.trench_sunk", "x": 0, "y": 0, "z": 0, "rotation": 0, "surfaces": { "walls": { "material": "core.sandbags" } }},
+        { "kind": "prop", "model": "prop.ammo_crate", "position": [3.2,-0.75,-1.7], "yaw": 0, "scale": 1 }
+      ]
+    },
+    {
+      "id": "setpiece.trench_bend",
+      "displayName": "Trench Bend",
+      "category": "Trenches",
+      "blurb": "The sunken trench turns from west to north, a fire step and parapet all round the outside of the bend. Timber revetment.",
+      "packs": ["military", "snow", "harbor", "frontier"],
+      "footprint": { "cells": [[0,0]], "levels": [-1,0] },
+      "mirror": "none",
+      "ports": [
+        { "side": "W", "cell": [0,0], "level": 0, "kind": "opening" },
+        { "side": "N", "cell": [0,0], "level": 0, "kind": "opening" }
+      ],
+      "parts": [
+        { "kind": "tile", "tile": "core.trench_sunk_corner", "x": 0, "y": 0, "z": 0, "rotation": 0, "surfaces": { "walls": { "role": "wood" } }}
+      ]
+    },
+    {
+      "id": "setpiece.trench_bend_sandbag",
+      "displayName": "Trench Bend (Sandbags)",
+      "category": "Trenches",
+      "blurb": "The sunken trench turns from west to north, a fire step and parapet all round the outside of the bend. Sandbag revetment.",
+      "packs": ["military", "snow", "harbor", "frontier"],
+      "footprint": { "cells": [[0,0]], "levels": [-1,0] },
+      "mirror": "none",
+      "ports": [
+        { "side": "W", "cell": [0,0], "level": 0, "kind": "opening" },
+        { "side": "N", "cell": [0,0], "level": 0, "kind": "opening" }
+      ],
+      "parts": [
+        { "kind": "tile", "tile": "core.trench_sunk_corner", "x": 0, "y": 0, "z": 0, "rotation": 0, "surfaces": { "walls": { "material": "core.sandbags" } }}
+      ]
+    },
+    {
+      "id": "setpiece.trench_junction",
+      "displayName": "Trench Junction",
+      "category": "Trenches",
+      "blurb": "The sunken trench runs east–west with a communication trench branching north; fire step along the south. Timber revetment.",
+      "packs": ["military", "snow", "harbor", "frontier"],
+      "footprint": { "cells": [[0,0]], "levels": [-1,0] },
+      "mirror": "free",
+      "ports": [
+        { "side": "W", "cell": [0,0], "level": 0, "kind": "opening" },
+        { "side": "E", "cell": [0,0], "level": 0, "kind": "opening" },
+        { "side": "N", "cell": [0,0], "level": 0, "kind": "opening" }
+      ],
+      "parts": [
+        { "kind": "tile", "tile": "core.trench_sunk_t", "x": 0, "y": 0, "z": 0, "rotation": 0, "surfaces": { "walls": { "role": "wood" } }}
+      ]
+    },
+    {
+      "id": "setpiece.trench_junction_sandbag",
+      "displayName": "Trench Junction (Sandbags)",
+      "category": "Trenches",
+      "blurb": "The sunken trench runs east–west with a communication trench branching north; fire step along the south. Sandbag revetment.",
+      "packs": ["military", "snow", "harbor", "frontier"],
+      "footprint": { "cells": [[0,0]], "levels": [-1,0] },
+      "mirror": "free",
+      "ports": [
+        { "side": "W", "cell": [0,0], "level": 0, "kind": "opening" },
+        { "side": "E", "cell": [0,0], "level": 0, "kind": "opening" },
+        { "side": "N", "cell": [0,0], "level": 0, "kind": "opening" }
+      ],
+      "parts": [
+        { "kind": "tile", "tile": "core.trench_sunk_t", "x": 0, "y": 0, "z": 0, "rotation": 0, "surfaces": { "walls": { "material": "core.sandbags" } }}
+      ]
+    },
+    {
+      "id": "setpiece.trench_end",
+      "displayName": "Trench End",
+      "category": "Trenches",
+      "blurb": "The sunken trench ends in timber steps up to the ground (east): the way in and out. Timber revetment.",
+      "packs": ["military", "snow", "harbor", "frontier"],
+      "footprint": { "cells": [[0,0]], "levels": [-1,0] },
+      "mirror": "none",
+      "ports": [
+        { "side": "W", "cell": [0,0], "level": 0, "kind": "opening" }
+      ],
+      "parts": [
+        { "kind": "tile", "tile": "core.trench_sunk_end", "x": 0, "y": 0, "z": 0, "rotation": 0, "surfaces": { "walls": { "role": "wood" } }}
+      ]
+    },
+    {
+      "id": "setpiece.trench_end_sandbag",
+      "displayName": "Trench End (Sandbags)",
+      "category": "Trenches",
+      "blurb": "The sunken trench ends in timber steps up to the ground (east): the way in and out. Sandbag revetment.",
+      "packs": ["military", "snow", "harbor", "frontier"],
+      "footprint": { "cells": [[0,0]], "levels": [-1,0] },
+      "mirror": "none",
+      "ports": [
+        { "side": "W", "cell": [0,0], "level": 0, "kind": "opening" }
+      ],
+      "parts": [
+        { "kind": "tile", "tile": "core.trench_sunk_end", "x": 0, "y": 0, "z": 0, "rotation": 0, "surfaces": { "walls": { "material": "core.sandbags" } }}
+      ]
+    },
+    {
+      "id": "setpiece.trench_jog",
+      "displayName": "Trench Jog",
+      "category": "Trenches",
+      "blurb": "The sunken trench jogs one cell north round a traverse (the ground at the south-east is left as it is): a bend, a bend and a fire bay. Turn it the other way for the next jog. Timber revetment.",
+      "packs": ["military", "snow", "harbor", "frontier"],
+      "footprint": { "cells": [[0,0],[0,1],[1,1]], "levels": [-1,0] },
+      "mirror": "none",
+      "ports": [
+        { "side": "W", "cell": [0,0], "level": 0, "kind": "opening" },
+        { "side": "E", "cell": [1,1], "level": 0, "kind": "opening" }
+      ],
+      "parts": [
+        { "kind": "tile", "tile": "core.trench_sunk_corner", "x": 0, "y": 0, "z": 0, "rotation": 0, "surfaces": { "walls": { "role": "wood" } }},
+        { "kind": "tile", "tile": "core.trench_sunk_corner", "x": 0, "y": 1, "z": 0, "rotation": 2, "surfaces": { "walls": { "role": "wood" } }},
+        { "kind": "tile", "tile": "core.trench_sunk", "x": 1, "y": 1, "z": 0, "rotation": 0, "surfaces": { "walls": { "role": "wood" } }}
+      ]
+    },
+    {
+      "id": "setpiece.trench_jog_sandbag",
+      "displayName": "Trench Jog (Sandbags)",
+      "category": "Trenches",
+      "blurb": "The sunken trench jogs one cell north round a traverse (the ground at the south-east is left as it is): a bend, a bend and a fire bay. Turn it the other way for the next jog. Sandbag revetment.",
+      "packs": ["military", "snow", "harbor", "frontier"],
+      "footprint": { "cells": [[0,0],[0,1],[1,1]], "levels": [-1,0] },
+      "mirror": "none",
+      "ports": [
+        { "side": "W", "cell": [0,0], "level": 0, "kind": "opening" },
+        { "side": "E", "cell": [1,1], "level": 0, "kind": "opening" }
+      ],
+      "parts": [
+        { "kind": "tile", "tile": "core.trench_sunk_corner", "x": 0, "y": 0, "z": 0, "rotation": 0, "surfaces": { "walls": { "material": "core.sandbags" } }},
+        { "kind": "tile", "tile": "core.trench_sunk_corner", "x": 0, "y": 1, "z": 0, "rotation": 2, "surfaces": { "walls": { "material": "core.sandbags" } }},
+        { "kind": "tile", "tile": "core.trench_sunk", "x": 1, "y": 1, "z": 0, "rotation": 0, "surfaces": { "walls": { "material": "core.sandbags" } }}
+      ]
+    }
+  ]
+}

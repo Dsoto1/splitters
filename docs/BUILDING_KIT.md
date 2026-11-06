@@ -8,16 +8,16 @@ matches and the dedicated server alike.
 The core kit's tiles and the edge styles below are data in `content/tiles/` (how to add one:
 docs/CONTENT_PIPELINE.md, "Tiles and edge styles"); the Style Pack tiles further down are drawn in code.
 
-37 tiles in six palette groups. Multi-cell pieces build no walls inside
+50 tiles in six palette groups (and the city and Style Pack pieces). Multi-cell pieces build no walls inside
 themselves; partial floors (balconies, decks, ledges) are painted like floors.
 
 | Group | Pieces |
 |---|---|
 | Rooms | Room, Pillar, Columns, Low Cover, Dais, Raised Ledge (1.5 m), Split-Level (1 m), Sunken Room (1.5 m pit), Tall Room (two storeys) |
-| Large | Long Room (1×2), Large Room (2×2), Great Hall (3×3), Atrium (2×2, two storeys, balcony all round), Plaza (2×2 open) |
-| Corridors | Corridor, Clear, Windowed, Long (1×2), Corner, T, Crossroads, Dead End, Bridge, Catwalk Corner |
-| Vertical | Stairs, Stairwell (switchback, doors on both floors), Long Ramp (2 cells), Open Stairs, Watchtower |
-| Open | Courtyard (+ crates, low wall, ruins), Platform, Platform with railings, Terrace |
+| Large | Long Room (1×2), Large Room (2×2), Great Hall (3×3), Atrium (2×2, two storeys, balcony all round), Plaza (2×2 open), Grand Gallery (two storeys of grand arches) |
+| Corridors | Corridor, Clear, Windowed, Long (1×2), Corner, T, Crossroads, Dead End, Bridge, Catwalk Corner, Vaulted Tunnel (+ Bend, Junction, Crossing) |
+| Vertical | Stairs, Stairwell (switchback, doors on both floors), Long Ramp (2 cells), Open Stairs, Watchtower, Grand Flight (2 cells wide), Seating Tier (+ Vomitorium) |
+| Open | Courtyard (+ crates, low wall, ruins), Platform, Platform with railings, Terrace, Sunken Trench (+ Bend, Junction, End), Corner Hatch |
 | Special | Pit (to the level below, or a fatal fall), Drop Shaft |
 
 Every climbable piece is tested for bot paths in all four rotations
@@ -30,9 +30,15 @@ clear space at both ends.
 Any side of any cell can be built as: Auto, Solid wall, Doorway, Wide doorway,
 Archway, Segmental arch (a shallow stone arch 5 m wide, springing at 2.7 m and
 rising to 3.3 m, voussoirs and a keystone dressing it on both faces: a
-carriageway's ends), Window, Twin windows, Firing slit, Half wall, Railing, High wall,
+carriageway's ends), Round arch (a Roman arch 3.2 m wide, a semicircle springing
+at 1.4 m to 3 m, under a vaulted ceiling's springing), Grand arch (two storeys:
+a 4.4 m arch springing at 4.6 m, piers 0.8 m thick, half columns and an
+entablature outside: the colosseum's arcades), Window, Twin windows, Firing slit,
+Embrasure (a casemate's gun port: a slot 3.5 m by 1.1 m through a 1 m concrete
+wall, a visor and stepped cheeks outside), Half wall, Railing, High wall,
 Towering wall, Tall fence, Broken wall (a ragged hole with rubble), Bars
-(floor-to-ceiling, see and shoot through), Shutter (a wide opening with its
+(floor-to-ceiling, see and shoot through), Barred gate (bars either side of a 3 m
+gateway: hang a Portcullis door in it), Shutter (a wide opening with its
 shutter stuck 1.35 m up: crouch under; bots don't path through it) or No wall.
 Use the **Walls & Openings** tool (O cycles styles; right-click resets) or the
 tile inspector. Choices are stored on the tile in its own frame (they turn with
@@ -95,6 +101,33 @@ the *Training Range* (its glass penetration panel and the water tank's walls are
 breakable glass blocks, back 4 s after they are shot out, and a bulletproof
 panel stands after the tank). The older *Window pane* destructible still works
 for maps that place panes by hand, and is drawn with the same glass.
+
+### The showpiece kit (set pieces part 3)
+
+Pieces made for MAP 21 and the Sandfall Colosseum (docs/SET_PIECES_PLAN.md, "As built: part 3"); any map can use them.
+
+- **Sunken Trench, Bend, Junction, End:** a trench 1.5 m deep that carves the terrain (its floors pull the ground
+  under them down: place it on level 0 over ground at level 0). A 4 m channel, revetted walls (the walls slot: timber
+  or the Sandbags material from a set piece, the theme's walls on their own), duckboards, a fire step 0.75 m up under a
+  0.6 m sandbag parapet (it stops 0.8 m short of the cell's ends), a low parados behind; the Bend has its step and
+  parapet round the outside, the End timber steps up and out. Standing in the channel your head is under the parapet;
+  on the fire step your eyes clear it; crouched you are hidden. Needs terrain: on a flat map use the raised Military
+  Compound trenches.
+- **Grand Flight:** a stair two cells (15.2 m) wide climbing one level, stepped parapets along both sides, nosings on
+  the steps (the trim slot).
+- **Seating Tier** and **Seating Tier (Vomitorium):** eight rows of seats 0.5 m high and 1 m deep rising one level, an
+  aisle stair 2.4 m wide up the middle (rows are ledges to the bots' navmesh: they climb by the aisles); the vomitorium
+  cuts a 3.2 m passage under its top rows from the gallery behind out to the walkway in front, broad stairs either
+  side. Seats in the solids slot, a lip on each row in the trim slot.
+- **Grand Gallery:** two storeys of vaulted gallery, a Grand arch in each long side, its ends and upper storey open,
+  so a row of them is an arcade; stack them for the colosseum's facade. Set the Grand arch on a side two galleries
+  share (ports meeting build a doorway otherwise).
+- **Vaulted Tunnel, Bend, Junction, Crossing:** a 3.6 m passage between masonry under a barrel vault (2.2 m to 3.28 m),
+  groin-vaulted where two cross, a drain down the middle. No walls of their own at their sides: what is built beside
+  them builds its own.
+- **Corner Hatch:** open floor with a quarter of a 3.2 m hatch at its north-east corner: four round a corner open a
+  hatch on it (a 4 m board square on a cell corner).
+- **Sandbags** (material): our own procedural paint, bags 0.6 m by 0.3 m in stretcher bond.
 
 ## Room options (format v16)
 
@@ -831,7 +864,7 @@ still crosses between high points no line joins. Vinefall Sanctum has two gorge 
 The tables are data (how to add one: docs/CONTENT_PIPELINE.md, "Materials and themes"); `map/materials.ts`
 keeps the types, the pattern and category lists and the lookups. Counts below are from when the library began.
 
-28 procedural materials plus 49 scanned sets from ambientCG (CC0), prepared by
+28 procedural materials (Sandbags added since) plus 49 scanned sets from ambientCG (CC0), prepared by
 `node tools/content/prepare-textures.mjs` into `public/textures` (512 px colour,
 normal and emission maps; `--only <ids>` fetches just new sets). 22 themes
 assign a material to each slot (floor, walls, pillars/cover/steps, underside,
