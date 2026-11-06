@@ -144,14 +144,19 @@ export function validateTeamSizes(raw: readonly unknown[] | undefined, mode: Gam
   return { sizes, fixes };
 }
 
-/** The team layout a setup plays on this map: its own, else the map's recommended one, else 4v4 (made valid for the mode). */
-export function setupTeams(setup: Pick<MatchSetup, 'teams' | 'mode'>, map: MapDocument): number[] {
-  return validateTeamSizes(setup.teams, setup.mode, map.teamSetup?.sizes ?? [4, 4], BROWSER_MAX_PLAYERS).sizes;
+/**
+ * The team layout a setup plays on this map: its own, else the map's (its team setup, else its recommended most
+ * split in two: 4v4 for the default 2–8), made valid for the mode and to fit `cap` players (the browser's
+ * limit; the setup screen passes this device's, or a race grid's: playerCap).
+ */
+export function setupTeams(setup: Pick<MatchSetup, 'teams' | 'mode'>, map: MapDocument, cap = BROWSER_MAX_PLAYERS): number[] {
+  const half = Math.max(1, Math.round(map.metadata.recommendedPlayers.max / 2));
+  return validateTeamSizes(setup.teams, setup.mode, map.teamSetup?.sizes ?? [half, half], cap).sizes;
 }
 
-/** Everyone in the match, you and bots included. */
-export function setupPlayers(setup: MatchSetup, map: MapDocument): number {
-  return isTeamMode(setup.mode) ? setupTeams(setup, map).reduce((a, b) => a + b, 0) : Math.min(BROWSER_MAX_PLAYERS, setup.bots + 1);
+/** Everyone in the match, you and bots included (at most `cap`, as setupTeams). */
+export function setupPlayers(setup: MatchSetup, map: MapDocument, cap = BROWSER_MAX_PLAYERS): number {
+  return isTeamMode(setup.mode) ? setupTeams(setup, map, cap).reduce((a, b) => a + b, 0) : Math.max(1, Math.min(cap, setup.bots + 1));
 }
 
 /** Every mode, and whether this map can play it (with the reason when it can't). `offered`: the modes the map lists (playableModes). */
@@ -231,12 +236,12 @@ export function peopleAndBots(people: number, bots: number, word = 'bot'): strin
  * 24v24"; online, with friends in, "3 players + 45 bots · 24v24"; free-for-all "You + 7 bots"; co-op "You + 3
  * squadmates". `people`: everyone who isn't a bot, you included.
  */
-export function setupSummary(setup: MatchSetup, map: MapDocument, people = 1): string {
-  const total = setupPlayers(setup, map);
+export function setupSummary(setup: MatchSetup, map: MapDocument, people = 1, cap = BROWSER_MAX_PLAYERS): string {
+  const total = setupPlayers(setup, map, cap);
   const humans = Math.max(1, Math.min(total, people));
   const family = setupFamily(setup.mode);
   const line = peopleAndBots(humans, total - humans, family === 'squad' ? 'squadmate' : 'bot');
-  return family === 'teams' ? `${line} · ${setupTeams(setup, map).join('v')}` : line;
+  return family === 'teams' ? `${line} · ${setupTeams(setup, map, cap).join('v')}` : line;
 }
 
 // ------------------------------------------------------------------ limits
@@ -390,11 +395,8 @@ export interface PresetOptions {
   pickPlayers?: number;
 }
 
-/** A map's own team layout: its team setup, else its recommended most split in two; made to fit `cap` players. */
-export function mapPickTeams(map: MapDocument, mode: GameMode, cap: number): number[] {
-  const half = Math.max(1, Math.round(map.metadata.recommendedPlayers.max / 2));
-  return validateTeamSizes(map.teamSetup?.sizes ?? [half, half], mode, [half, half], cap).sizes;
-}
+/** A map's own team layout (what a setup with no teams of its own plays): its team setup, else its recommended most split in two; made to fit `cap` players. */
+export const mapPickTeams = (map: MapDocument, mode: GameMode, cap: number): number[] => setupTeams({ mode }, map, cap);
 
 /** A map's own player count for free-for-all and squads: as many as it's made for, 4 to 12. */
 export const mapPickPlayers = (rec: { max: number }): number => clampInt(Math.min(12, rec.max), 4, 12);
@@ -470,12 +472,12 @@ export function sizePresets(mode: GameMode, map: MapDocument, o: PresetOptions):
 }
 
 /** The preset a setup is on right now, or null when it's been changed from all of them (Custom). */
-export function matchingPreset(setup: MatchSetup, map: MapDocument, presets: readonly SizePreset[]): SizePreset | null {
+export function matchingPreset(setup: MatchSetup, map: MapDocument, presets: readonly SizePreset[], cap = BROWSER_MAX_PLAYERS): SizePreset | null {
   if (isTeamMode(setup.mode)) {
-    const sizes = setupTeams(setup, map).join();
+    const sizes = setupTeams(setup, map, cap).join();
     return presets.find((p) => p.teams?.join() === sizes) ?? null;
   }
-  const players = setupPlayers(setup, map);
+  const players = setupPlayers(setup, map, cap);
   return presets.find((p) => p.players === players) ?? null;
 }
 
@@ -515,32 +517,28 @@ export const FIT_LABELS: Record<FitLevel, string> = { fits: 'Fits', crowded: 'Cr
 export function setupFit(setup: MatchSetup, map: MapDocument, o: { deviceMax: number; device?: string; pickPlayers?: number }): SetupFit {
   const items: FitItem[] = [];
   const family = setupFamily(setup.mode);
-  const players = setupPlayers(setup, map);
   const rec = map.metadata.recommendedPlayers;
   const recText = rec.min === rec.max ? `${rec.max}` : `${rec.min}–${rec.max}`;
   const device = o.device ?? 'this computer';
-  const deviceMax = clampInt(o.deviceMax, 2, BROWSER_MAX_PLAYERS);
-  const cap = playerCap(setup.mode, map, deviceMax);
+  const cap = playerCap(setup.mode, map, o.deviceMax);
+  // What it plays with here (this device's limit, a race's grid), and what it asks for.
+  const players = setupPlayers(setup, map, cap.max);
+  const asked = setupPlayers(setup, map);
   const unit = family === 'race' ? 'racers' : 'players';
-  const sizes = family === 'teams' ? setupTeams(setup, map) : [];
-  const evenFix = (most: number): NonNullable<FitItem['fix']> => {
-    if (family !== 'teams') return { label: `Use ${most} ${unit}`, players: most };
-    const per = Math.max(1, Math.floor(most / sizes.length));
-    const teams = sizes.map(() => per);
-    return { label: `Use ${teams.join('v')}`, teams };
-  };
+  const sizes = family === 'teams' ? setupTeams(setup, map, cap.max) : [];
   const pick = family === 'teams' ? mapPickTeams(map, setup.mode, cap.max) : [];
   const pickPlayers = clampInt(family === 'race' ? Math.min(rec.max, raceGrid(setup.mode, map) ?? rec.max) : (o.pickPlayers ?? mapPickPlayers(rec)), 1, cap.max);
   const atPick = family === 'teams' ? sizes.join() === pick.join() : players === pickPlayers;
   const pickFix: NonNullable<FitItem['fix']> = family === 'teams' ? { label: `Use ${pick.join('v')}`, teams: pick } : { label: `Use ${pickPlayers} ${unit}`, players: pickPlayers };
 
-  // A setup made on a bigger computer, opened on a phone, can ask for more than this one runs.
-  if (players > deviceMax) items.push({ topic: 'device', level: 'problem', text: `${players} ${unit} is more than ${device} runs (${deviceMax}).`, fix: evenFix(deviceMax) });
+  // A setup made on a bigger computer, or a race with more racers than places on the grid, plays what fits here.
   const grid = raceGrid(setup.mode, map);
-  if (grid !== null) {
-    if (players > grid) items.push({ topic: 'grid', level: 'problem', text: `${grid} places on the grid: ${players - grid} of the ${players} racers would start on foot.`, fix: { label: `Use ${grid} racers`, players: grid } });
-    else items.push({ topic: 'grid', level: 'ok', text: `${grid} places on the grid: every racer starts in a vehicle.` });
-  }
+  if (asked > players) {
+    const plays = family === 'teams' ? sizes.join('v') : `${players} ${unit}`;
+    items.push(cap.by === 'grid'
+      ? { topic: 'grid', level: 'info', text: `${grid} places on the grid: ${players} race (this setup asks for ${asked}).` }
+      : { topic: 'device', level: 'info', text: `This setup asks for ${asked} ${unit}; ${device} runs ${cap.max}, so it plays ${plays}.` });
+  } else if (grid !== null) items.push({ topic: 'grid', level: 'ok', text: `${grid} places on the grid: every racer starts in a vehicle.` });
   // The map's size, and its own layout when this isn't it.
   const suggest = family === 'teams' && map.teamSetup && !atPick ? ` The map suggests ${pick.join('v')}.` : '';
   if (players > rec.max * 2) items.push({ topic: 'size', level: 'problem', text: `The map is made for ${recText} players: ${players} is far more than it has room for.${suggest}`, ...(atPick ? {} : { fix: pickFix }) });
@@ -578,9 +576,10 @@ export function setupFit(setup: MatchSetup, map: MapDocument, o: { deviceMax: nu
 /**
  * The rules and player count (you and bots) a setup plays with. Team modes
  * take its team layout (validated), names, colours and assignment;
- * co-op and Zombies keep their own score and time rules.
+ * co-op and Zombies keep their own score and time rules. `cap`: the most
+ * players (as setupTeams).
  */
-export function rulesFromSetup(setup: MatchSetup, map: MapDocument): { rules: MatchRules; fill: number } {
+export function rulesFromSetup(setup: MatchSetup, map: MapDocument, cap = BROWSER_MAX_PLAYERS): { rules: MatchRules; fill: number } {
   const s = setup;
   const base = DEFAULT_RULES[s.mode];
   const rules: MatchRules = isCoopMode(s.mode) ? { ...base } : { ...base, scoreLimit: s.scoreLimit, timeLimitSeconds: s.minutes * 60 };
@@ -622,8 +621,8 @@ export function rulesFromSetup(setup: MatchSetup, map: MapDocument): { rules: Ma
     if (s.raceVehicle) rules.raceVehicle = s.raceVehicle;
     if (s.raceCombat !== undefined) rules.raceCombat = s.raceCombat;
   }
-  if (!isTeamMode(s.mode)) return { rules, fill: Math.max(1, Math.min(BROWSER_MAX_PLAYERS, s.bots + 1)) };
-  const sizes = setupTeams(s, map);
+  if (!isTeamMode(s.mode)) return { rules, fill: Math.max(1, Math.min(cap, s.bots + 1)) };
+  const sizes = setupTeams(s, map, cap);
   rules.teamSizes = sizes;
   const names = (s.teamNames ?? []).slice(0, sizes.length).map((n) => (typeof n === 'string' ? n.trim().slice(0, 24) : ''));
   const colors = (s.teamColors ?? []).slice(0, sizes.length).map((c) => (typeof c === 'string' && /^#[0-9a-f]{6}$/i.test(c) ? c : ''));

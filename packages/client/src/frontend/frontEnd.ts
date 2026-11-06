@@ -161,9 +161,20 @@ function saveBrowsePrefs(p: MapBrowsePrefs): void {
   }
 }
 
-/** Match setup's steps, in order: the one open is where you are. */
-type SetupStep = 'mode' | 'players' | 'bots' | 'rules' | 'done';
-const STEP_ORDER: readonly SetupStep[] = ['mode', 'players', 'bots', 'done'];
+/** Match setup's sections under the always-shown mode, rules to win and presets. */
+const SETUP_SECTIONS = ['setup-teams', 'setup-bots', 'setup-advanced'] as const;
+
+/**
+ * Small screens and phones open one setup section at a time (the stylesheet's narrow and short layouts start at
+ * the same sizes); a desktop opens as many as you like.
+ */
+const compactSetup = (): boolean => isTouchDevice() || (typeof matchMedia === 'function' && matchMedia('(max-width: 900px), (max-height: 600px)').matches);
+
+/** Advanced rules' summary names the changes that matter most first ("9 changed · Low gravity · Tactical bots +7"). */
+const RULE_RANK: Record<string, number> = { weapons: 0, gravity: 1, style: 2, lethality: 3, ballistics: 4, randomchars: 5, classes: 6, ff: 7, fall: 8, stats: 9, sizes: 10 };
+
+/** The fit check's topics, as its details name them. */
+const FIT_TOPICS: Record<FitTopic, string> = { device: 'This device', grid: 'Grid', size: 'Map size', spawns: 'Spawns', teams: 'Teams', performance: 'Performance' };
 
 /** Draw each card's plan once it scrolls into view in `root` (a long list draws only what is seen). */
 function lazyPlans(root: HTMLElement): (card: Element, draw: () => void) => void {
@@ -705,8 +716,8 @@ export class FrontEnd {
   private setupScroll = 0;
   /** Refreshes the game browser while the Online screen is open. */
   private browserTimer?: number;
-  /** The match setup's folds that are open (by id). */
-  private readonly folds = new Set<string>(['setup-mode']);
+  /** The match setup's sections and folds that are open (by id): Players & teams to begin with. */
+  private readonly folds = new Set<string>(['setup-teams']);
   /** The setup panel, redrawn on every change (the map list stays). */
   private setupPanel: HTMLElement | null = null;
   /** The saved setup loaded last (its name), to show whether the setup still matches it. */
@@ -715,8 +726,14 @@ export class FrontEnd {
   private mapFilter: GameMode | 'all' = 'all';
   private mapQuery = '';
   private readonly browse = loadBrowsePrefs();
-  /** The setup step that's open; the rest show a line each. */
-  private step: SetupStep = 'mode';
+  /** Even teams: a bot added or taken away changes every team alike (while the teams are the same size). */
+  private evenTeams = true;
+  /** Start match plays offline, or hosts the match online: a join code, and friends who join take bots' places. */
+  private hostOnline = false;
+  /** Why the last change to the players stopped short (a limit), shown until the next change. */
+  private stopped: string | null = null;
+  /** The fit check's details are showing. */
+  private fitOpen = false;
 
   private currentMap(): ArcadeMap {
     return this.maps.find((m) => m.key === this.setup.map) ?? this.maps[0]!;
@@ -727,17 +744,52 @@ export class FrontEnd {
     return this.currentMap().load().catch(() => undefined);
   }
 
+  /** The most players this device runs, and how its limit is named ("24 per team is this computer's limit"). */
+  private device(): { max: number; name: string } {
+    return { max: deviceMaxPlayers(), name: isTouchDevice() ? 'this device' : 'this computer' };
+  }
+
   private pickMap(key: string): void {
     const m = this.maps.find((x) => x.key === key);
     if (!m) return;
+    const old = this.currentMap().map;
     const mode = m.modes.includes(this.setup.mode) ? this.setup.mode : m.modes[0]!;
+    // Teams on the old map's own layout (Map's pick) take the new map's own; a layout of your own stays.
+    const theirs = !!old && !!this.setup.teams && this.setup.teams.join() === mapPickTeams(old, this.setup.mode, this.device().max).join();
     this.setup = { ...this.setup, map: key, mode, bots: m.bots, scoreLimit: mode === this.setup.mode ? this.setup.scoreLimit : BASE_RULES[mode].scoreLimit };
+    if (theirs) delete this.setup.teams;
+    this.stopped = null;
   }
 
-  /** Change the setup, remember it and redraw the panel. */
-  private change(f: (s: ArcadeSetup) => void): void {
+  /** Change the setup, remember it and redraw the panel. `stopped`: why the change stopped short of what was asked (a limit). */
+  private change(f: (s: ArcadeSetup) => void, stopped: string | null = null): void {
     f(this.setup);
+    this.stopped = stopped;
     this.saveSetup();
+    this.refreshSetup();
+  }
+
+  /** A new setup in place of the old one (a variant, a party preset), remembered and drawn. */
+  private replaceSetup(next: ArcadeSetup): void {
+    this.setup = next;
+    this.change(() => undefined);
+  }
+
+  /** A team layout or player count from a preset or a suggestion: Even teams follows whether its teams are matched. */
+  private applyLayout(patch: Partial<ArcadeSetup>): void {
+    if (patch.teams) this.evenTeams = patch.teams.every((n) => n === patch.teams![0]);
+    this.change((x) => {
+      Object.assign(x, patch);
+      if (patch.teams && x.playerTeam !== undefined && x.playerTeam >= patch.teams.length) x.playerTeam = patch.teams.length - 1;
+    });
+  }
+
+  /** Open or close a section of the setup: small screens keep one open at a time, a desktop as many as you like. */
+  private toggleSection(id: string): void {
+    const opening = !this.folds.has(id);
+    if (opening && compactSetup()) for (const s of SETUP_SECTIONS) this.folds.delete(s);
+    if (opening) this.folds.add(id);
+    else this.folds.delete(id);
     this.refreshSetup();
   }
 
@@ -851,9 +903,8 @@ export class FrontEnd {
           cards.querySelectorAll('.map-card.on').forEach((c) => c.classList.remove('on'));
           card.classList.add('on');
           this.setupScroll = 0;
-          // A new map starts the steps again at its mode (a filtered list already picked one it has).
+          // A filtered list already picked a mode the map has: that one.
           if (this.mapFilter !== 'all' && m.modes.includes(this.mapFilter) && this.setup.mode !== this.mapFilter) this.setMode(this.mapFilter);
-          this.step = this.mapFilter !== 'all' ? 'players' : 'mode';
           this.refreshSetup();
         });
         cards.append(card);

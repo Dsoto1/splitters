@@ -200,13 +200,17 @@ describe('the fit indicator', () => {
     expect(tiny.items.find((i) => i.level === 'problem')).toMatchObject({ topic: 'size', fix: { label: 'Use 4v4', teams: [4, 4] } });
   });
 
-  it('racers past the grid and more players than the device runs are problems, with a fix', () => {
+  it('a setup asking for more than the device runs, or the grid holds, plays what fits and says so', () => {
     const race = setupFit(setup({ map: 'track', mode: 'core.race', bots: 15 }), track(), desk);
-    expect(race.level).toBe('problem');
-    expect(race.items.find((i) => i.topic === 'grid')).toMatchObject({ level: 'problem', text: '8 places on the grid: 8 of the 16 racers would start on foot.', fix: { label: 'Use 8 racers', players: 8 } });
-    expect(setupFit(setup({ map: 'track', mode: 'core.race', bots: 7 }), track(), desk).level).toBe('fits');
+    expect(race.items[0]).toEqual({ topic: 'grid', level: 'info', text: '8 places on the grid: 8 race (this setup asks for 16).' });
+    expect(rulesFromSetup(setup({ map: 'track', mode: 'core.race', bots: 15 }), track(), playerCap('core.race', track(), 48).max).fill).toBe(8);
+    expect(setupFit(setup({ map: 'track', mode: 'core.race', bots: 7 }), track(), desk).items[0]).toMatchObject({ topic: 'grid', level: 'ok' });
     const onPhone = setupFit(setup({ teams: [24, 24] }), stJohns(), phone);
-    expect(onPhone.items[0]).toMatchObject({ topic: 'device', level: 'problem', text: '48 players is more than this phone runs (16).', fix: { label: 'Use 8v8', teams: [8, 8] } });
+    expect(onPhone.items[0]).toEqual({ topic: 'device', level: 'info', text: 'This setup asks for 48 players; this phone runs 16, so it plays 8v8.' });
+    expect(onPhone.level).toBe('fits');
+    expect(setupSummary(setup({ teams: [24, 24] }), stJohns(), 1, 16)).toBe('You + 15 bots · 8v8');
+    // With no teams of its own, a phone plays the map's layout made to fit.
+    expect(rulesFromSetup(setup({ map: 'capitol' }), { ...stJohns(), teamSetup: { sizes: [16, 16] } }, 16).rules.teamSizes).toEqual([8, 8]);
   });
 });
 
