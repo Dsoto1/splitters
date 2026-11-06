@@ -35,7 +35,7 @@
       "name": "Dinosaur Statue",
       "category": "Jungle Ruins",
       "height": 2.6,
-      "collide": "shell",
+      "collide": "voxel",
       "triangles": 5000,
       "maxError": 0.03,
       "stone": "#a8a290",

@@ -74,7 +74,7 @@
       "src": "Modular_Mine_Set.glb#^Post_Reinforced_F$",
       "name": "Mine Support Frame",
       "category": "Mines & Caves",
-      "collide": "frame"
+      "collide": "voxel"
     },
     {
       "id": "mc_support_post",

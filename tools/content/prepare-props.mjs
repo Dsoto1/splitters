@@ -272,12 +272,14 @@ function cutOpenings(doc, boxes) {
 
 /** Cell size of the `shell` collision grid (metres). */
 const SHELL_CELL = 0.4;
+/** Cells whose heights differ by more than this (metres) are never one `shell` box. */
+const SHELL_STEP = 0.1;
 
 /**
  * Collision that follows the model's footprint (corners, curved walls and
  * railings): the triangles are rasterised onto a grid seen from above, each
  * covered cell becomes a column as tall as the geometry in it, and runs of
- * cells are merged into as few boxes as possible. `below` (a prop's `shellTop`,
+ * cells of about the same height (SHELL_STEP) are merged into as few boxes as possible. `below` (a prop's `shellTop`,
  * metres) leaves out what is higher than that: a crane's boom passes overhead
  * instead of standing on a wall of columns.
  */
@@ -300,15 +302,34 @@ function shellBoxes(size, tris, below = Infinity) {
       }
   }
   const used = new Uint8Array(nx * nz);
-  const free = (ix, iz) => top[iz * nx + ix] > 0 && !used[iz * nx + ix];
+  // Runs merge only cells of about the same height: one box at the tallest of very different cells stood a wall of
+  // air over the low ones (a boat's deck beside its mast, a stair's lower steps).
+  let lo = 0;
+  let hi = 0;
+  const free = (ix, iz) => top[iz * nx + ix] > 0 && !used[iz * nx + ix] && Math.max(hi, top[iz * nx + ix]) - Math.min(lo, top[iz * nx + ix]) <= SHELL_STEP;
   const boxes = [];
   for (let iz = 0; iz < nz; iz++)
     for (let ix = 0; ix < nx; ix++) {
+      [lo, hi] = [top[iz * nx + ix], top[iz * nx + ix]];
       if (!free(ix, iz)) continue;
       let x1 = ix;
-      while (x1 + 1 < nx && free(x1 + 1, iz)) x1++;
+      while (x1 + 1 < nx && free(x1 + 1, iz)) {
+        x1++;
+        [lo, hi] = [Math.min(lo, top[iz * nx + x1]), Math.max(hi, top[iz * nx + x1])];
+      }
       let z1 = iz;
-      while (z1 + 1 < nz && Array.from({ length: x1 - ix + 1 }, (_, k) => free(ix + k, z1 + 1)).every(Boolean)) z1++;
+      while (z1 + 1 < nz) {
+        let [rl, rh] = [lo, hi];
+        let ok = true;
+        for (let k = ix; k <= x1 && ok; k++) {
+          const t = top[(z1 + 1) * nx + k];
+          if (!(t > 0) || used[(z1 + 1) * nx + k]) ok = false;
+          else [rl, rh] = [Math.min(rl, t), Math.max(rh, t)];
+        }
+        if (!ok || rh - rl > SHELL_STEP) break;
+        z1++;
+        [lo, hi] = [rl, rh];
+      }
       let h = 0;
       for (let z = iz; z <= z1; z++)
         for (let x = ix; x <= x1; x++) {

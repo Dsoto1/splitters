@@ -12,6 +12,8 @@
 //   node tools/content/prop-openings.mjs --check   fail (pnpm content:check runs this) on a prop that fills an opening
 //                                                   without a `fills` reason, a stale `fills`, a voxel prop over its
 //                                                   box budget or not rebuilt, a trunk column off its trunk
+//   node tools/content/prop-openings.mjs --slack   props whose collision holds air round their outline (not an
+//                                                   opening: the box round a stump's roots, over a car's bonnet)
 //   ONLY=<id>,… limits it to those props.
 
 import { readdirSync, readFileSync } from 'node:fs';
@@ -20,7 +22,7 @@ import { fileURLToPath } from 'node:url';
 import { NodeIO } from '@gltf-transform/core';
 import { ALL_EXTENSIONS } from '@gltf-transform/extensions';
 import { loadPropManifest } from './props-manifest.mjs';
-import { filledOpenings, sceneTriangles, trunkBoxes, voxelBudget } from './voxel-collision.mjs';
+import { filledOpenings, MIN_OPENING, sceneTriangles, trunkBoxes, voxelBudget } from './voxel-collision.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const TABLE = join(ROOT, 'packages/shared/src/content/props.generated.ts');
@@ -74,7 +76,7 @@ export function placements() {
 }
 
 /** The audit: { rows (props whose collision fills an opening, or that say why it does), problems }. */
-export async function audit({ only = null } = {}) {
+export async function audit({ only = null, slack = false } = {}) {
   const manifest = loadPropManifest();
   const entries = new Map(manifest.props.map((p) => [`prop.${p.id}`, p]));
   const used = placements();
@@ -89,7 +91,8 @@ export async function audit({ only = null } = {}) {
       continue;
     }
     const tris = await drawnTriangles(def.file);
-    const openings = filledOpenings(tris, boxes);
+    const all = filledOpenings(tris, boxes, { slack });
+    const openings = all.filter((o) => !o.slack);
     const mode = p.collide ?? 'box';
     if (mode === 'voxel') {
       if (!def.boxes) problems.push(`${p.id}: collide "voxel" but props.generated.ts has no boxes for it (run node tools/content/prepare-props.mjs)`);
@@ -103,25 +106,32 @@ export async function audit({ only = null } = {}) {
     }
     if (openings.length && !p.fills) problems.push(`${p.id}: its collision (${mode}) fills an opening ${openings[0].size.join(' × ')} m (along ${openings[0].axis}): collide "voxel", or say why in "fills"`);
     if (!openings.length && p.fills) problems.push(`${p.id}: "fills" but its collision fills no opening now (drop it)`);
-    if (openings.length || p.fills) rows.push({ id: p.id, collide: mode, boxes: boxes.length, openings, ...(p.fills ? { fills: p.fills } : {}), maps: used[def.id] ?? {} });
+    const loose = all.filter((o) => o.slack);
+    if (openings.length || p.fills || loose.length) rows.push({ id: p.id, collide: mode, boxes: boxes.length, openings, ...(loose.length ? { slack: loose } : {}), ...(p.fills ? { fills: p.fills } : {}), maps: used[def.id] ?? {} });
   }
   return { rows, problems };
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const only = process.env.ONLY?.split(',').filter(Boolean) ?? null;
-  const { rows, problems } = await audit({ only });
+  const slack = process.argv.includes('--slack');
+  const { rows, problems } = await audit({ only, slack });
+  const maps = (r) => Object.entries(r.maps).map(([m, n]) => (n > 1 ? `${m} ×${n}` : m)).join(', ') || 'no map';
   if (process.argv.includes('--json')) console.log(JSON.stringify(rows, null, 1));
-  else if (!process.argv.includes('--check')) {
-    for (const r of rows) {
+  else if (slack) {
+    // Not openings: air round the outline inside the collision (the box round a stump's roots, over a car's bonnet).
+    const loose = rows.filter((r) => r.slack).sort((a, b) => b.slack[0].square - a.slack[0].square);
+    for (const r of loose) console.log(`${r.id.padEnd(30)} ${r.collide.padEnd(8)} ${r.slack[0].size.join(' × ')} m along ${r.slack[0].axis} (a ${r.slack[0].square} m square)  ${maps(r)}`);
+    console.log(`${loose.length} props have slack a ${MIN_OPENING} m square fits in`);
+  } else if (!process.argv.includes('--check')) {
+    for (const r of rows.filter((r) => r.openings.length || r.fills)) {
       const o = r.openings[0];
-      const maps = Object.entries(r.maps).map(([m, n]) => (n > 1 ? `${m} ×${n}` : m)).join(', ') || 'no map';
-      console.log(`${r.id.padEnd(30)} ${r.collide.padEnd(8)} ${o ? `${o.size.join(' × ')} m along ${o.axis}` : 'none'.padEnd(10)}  ${maps}${r.fills ? `\n    fills: ${r.fills}` : ''}`);
+      console.log(`${r.id.padEnd(30)} ${r.collide.padEnd(8)} ${o ? `${o.size.join(' × ')} m along ${o.axis}` : 'none'.padEnd(10)}  ${maps(r)}${r.fills ? `\n    fills: ${r.fills}` : ''}`);
     }
-    console.log(`${rows.filter((r) => !r.fills).length} props fill an opening, ${rows.filter((r) => r.fills).length} say why`);
+    console.log(`${rows.filter((r) => r.openings.length && !r.fills).length} props fill an opening, ${rows.filter((r) => r.fills).length} say why`);
   }
   if (problems.length) {
     for (const p of problems) console.error(`ERROR ${p}`);
     if (process.argv.includes('--check')) process.exit(1);
-  } else if (process.argv.includes('--check')) console.log(`prop openings: ${rows.length} props fill an opening, every one says why`);
+  } else if (process.argv.includes('--check')) console.log(`prop openings: ${rows.filter((r) => r.openings.length).length} props fill an opening, every one says why`);
 }

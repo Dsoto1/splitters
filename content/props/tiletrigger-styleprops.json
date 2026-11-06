@@ -136,7 +136,7 @@
       "name": "Wrought-Iron Gates",
       "category": "Gothic Estate",
       "height": 3.34,
-      "collide": "frame"
+      "collide": "voxel"
     },
     {
       "id": "ge_hedge_wall",

@@ -182,7 +182,7 @@
       "name": "Stair Railing, Long (Left)",
       "category": "Sci-Fi Platforms",
       "scale": 1,
-      "collide": "shell",
+      "collide": "voxel",
       "yaw": 180
     },
     {
@@ -191,7 +191,7 @@
       "name": "Stair Railing, Long (Right)",
       "category": "Sci-Fi Platforms",
       "scale": 1,
-      "collide": "shell",
+      "collide": "voxel",
       "yaw": 180
     },
     {
@@ -200,7 +200,7 @@
       "name": "Stair Railing, Short (Left)",
       "category": "Sci-Fi Platforms",
       "scale": 1,
-      "collide": "shell",
+      "collide": "voxel",
       "yaw": 180
     },
     {
@@ -209,7 +209,7 @@
       "name": "Stair Railing, Short (Right)",
       "category": "Sci-Fi Platforms",
       "scale": 1,
-      "collide": "shell",
+      "collide": "voxel",
       "yaw": 180
     },
     {
@@ -860,7 +860,7 @@
       "name": "Stair Rails (1 m)",
       "category": "Sci-Fi Platforms",
       "scale": 1,
-      "collide": "shell",
+      "collide": "voxel",
       "yaw": 180
     },
     {
@@ -869,7 +869,7 @@
       "name": "Stair Rails (2 m)",
       "category": "Sci-Fi Platforms",
       "scale": 1,
-      "collide": "shell",
+      "collide": "voxel",
       "yaw": 180
     },
     {
@@ -878,7 +878,7 @@
       "name": "Wide Stair Rails (2 m)",
       "category": "Sci-Fi Platforms",
       "scale": 1,
-      "collide": "shell",
+      "collide": "voxel",
       "yaw": 180
     },
     {
@@ -887,7 +887,7 @@
       "name": "Wide Stair Rails (3 m)",
       "category": "Sci-Fi Platforms",
       "scale": 1,
-      "collide": "shell",
+      "collide": "voxel",
       "yaw": 180
     },
     {

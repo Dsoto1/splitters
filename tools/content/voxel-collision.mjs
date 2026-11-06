@@ -557,14 +557,18 @@ const TRUNK_MAX_BASE = 1.6;
 const TRUNK_SPREAD = 0.6;
 /** Slices whose centres keep within this of each other share one box, widened to hold them (metres). */
 const TRUNK_RUN = 0.1;
-/** A column within this of the footprint's middle (metres), and this near the top, is the plain column: kept as it was. */
+/** A column whose faces are within this of the plain column's (metres), and this near the top, is kept as it was. */
 const TRUNK_SAME = 0.12;
 const TRUNK_SAME_TOP = 0.3;
+/** The thinnest a trunk column gets (a lamp post's pole), and how far round the trunk's own outline it stands (metres). */
+const TRUNK_MIN = 0.2;
+const TRUNK_MARGIN = 0.03;
 
 /**
- * `collide: "trunk"` (trees, poles, posts, lamps): the column they collide with, `max` wide at most (0.5 m, as the
- * footprint allows), standing on the model's real trunk instead of the middle of its footprint (a crown or an arm
- * to one side moves that middle off the trunk: rounds stopped in the air beside it and players walked through it).
+ * `collide: "trunk"` (trees, poles, posts, lamps): the column they collide with, as thick as the trunk (a margin
+ * round it, TRUNK_MIN at least and `max`, 0.5 m, or the footprint, at most), standing on the model's real trunk
+ * instead of the middle of its footprint (a crown or an arm to one side moves that middle off the trunk: rounds
+ * stopped in the air beside it and players walked through it).
  * The model is cut into TRUNK_SLICE slices: the trunk is the narrowest slice of the bottom 1.5 m, and the column
  * follows it up while its cross-section stays narrow (leaning as it leans), then on straight up while some of the
  * model is inside the column's square or the model closes round it on all four sides (a pine's tiers hide the trunk
@@ -608,23 +612,31 @@ export function trunkBoxes(tris, size, { max = 0.5 } = {}) {
   if (base < 0 || bw > TRUNK_MAX_BASE) return null;
   const clampX = (x) => Math.min(w / 2 - hw, Math.max(-w / 2 + hw, x));
   const clampZ = (z) => Math.min(d / 2 - hd, Math.max(-d / 2 + hd, z));
+  // The column's half-size in a slice: the trunk's own (with a margin), between TRUNK_MIN and the plain column's.
+  const half = (e) => [Math.min(hw, Math.max(TRUNK_MIN / 2, (e[2] - e[0]) / 2 + TRUNK_MARGIN)), Math.min(hd, Math.max(TRUNK_MIN / 2, (e[3] - e[1]) / 2 + TRUNK_MARGIN))];
   const e0 = extent(slices[base]);
   const centre = [clampX((e0[0] + e0[2]) / 2), clampZ((e0[1] + e0[3]) / 2)];
-  // The column's centre in each slice it stands in.
+  const around = (c, r) => [c[0] - r[0], c[1] - r[1], c[0] + r[0], c[1] + r[1]];
+  // The column in each slice it stands in: its centre and half-size.
   const at = new Array(n).fill(null);
-  for (let s = 0; s <= base; s++) at[s] = [...centre];
+  for (let s = 0; s <= base; s++) {
+    const e = extent(slices[s], around(centre, [hw + TRUNK_DRIFT, hd + TRUNK_DRIFT]));
+    at[s] = { c: [...centre], r: e ? half(e) : [hw, hd] };
+  }
   let c = [...centre];
+  let r = at[base].r;
   let s = base + 1;
   for (; s < n; s++) {
     // The model in the column's square (and a lean's worth round it): none, and the trunk has ended or forked.
-    if (!extent(slices[s], [c[0] - hw - TRUNK_DRIFT, c[1] - hd - TRUNK_DRIFT, c[0] + hw + TRUNK_DRIFT, c[1] + hd + TRUNK_DRIFT])) break;
+    if (!extent(slices[s], around(c, [r[0] + TRUNK_DRIFT, r[1] + TRUNK_DRIFT]))) break;
     // The trunk's whole cross-section: within a wider window, clear of its edges (else it is a crown, a tier, an arm).
-    const win = [c[0] - hw - TRUNK_SPREAD, c[1] - hd - TRUNK_SPREAD, c[0] + hw + TRUNK_SPREAD, c[1] + hd + TRUNK_SPREAD];
+    const win = around(c, [hw + TRUNK_SPREAD, hd + TRUNK_SPREAD]);
     const e = extent(slices[s], win);
     if (e[0] <= win[0] + 1e-3 || e[1] <= win[1] + 1e-3 || e[2] >= win[2] - 1e-3 || e[3] >= win[3] - 1e-3) break;
     const m = [(e[0] + e[2]) / 2, (e[1] + e[3]) / 2];
     c = [clampX(c[0] + Math.max(-TRUNK_DRIFT, Math.min(TRUNK_DRIFT, m[0] - c[0]))), clampZ(c[1] + Math.max(-TRUNK_DRIFT, Math.min(TRUNK_DRIFT, m[1] - c[1])))];
-    at[s] = [...c];
+    r = half(e);
+    at[s] = { c: [...c], r };
   }
   // Closed in on all four sides: a ray from the centre along +x, -x, +z and -z meets the model in the slice.
   const meets = (polys, p, dir) => {
@@ -643,31 +655,32 @@ export function trunkBoxes(tris, size, { max = 0.5 } = {}) {
       }
     return false;
   };
+  // On up inside a crown or a pine's tiers (hidden): as thick as the trunk was where it was last seen.
   for (; s < n; s++) {
-    const inside = !!extent(slices[s], [c[0] - hw, c[1] - hd, c[0] + hw, c[1] + hd]);
+    const inside = !!extent(slices[s], around(c, r));
     if (!inside && ![[1, 0], [-1, 0], [0, 1], [0, -1]].every((dir) => meets(slices[s], c, dir))) break;
-    at[s] = [...c];
+    at[s] = { c: [...c], r };
   }
-  // Slices in runs whose centres keep within TRUNK_RUN of each other share a box.
+  // Runs of slices share a box while it stays within TRUNK_RUN of their widest slice.
   const boxes = [];
   for (let i = 0; i < n && at[i]; ) {
     let j = i;
-    let lo = [...at[i]];
-    let hi = [...at[i]];
+    let box = around(at[i].c, at[i].r);
+    let wide = [...at[i].r];
     while (j + 1 < n && at[j + 1]) {
-      const q = at[j + 1];
-      const nlo = [Math.min(lo[0], q[0]), Math.min(lo[1], q[1])];
-      const nhi = [Math.max(hi[0], q[0]), Math.max(hi[1], q[1])];
-      if (nhi[0] - nlo[0] > TRUNK_RUN + 1e-9 || nhi[1] - nlo[1] > TRUNK_RUN + 1e-9) break;
-      [lo, hi] = [nlo, nhi];
+      const q = around(at[j + 1].c, at[j + 1].r);
+      const nb = [Math.min(box[0], q[0]), Math.min(box[1], q[1]), Math.max(box[2], q[2]), Math.max(box[3], q[3])];
+      const nw = [Math.max(wide[0], at[j + 1].r[0]), Math.max(wide[1], at[j + 1].r[1])];
+      if (nb[2] - nb[0] > 2 * nw[0] + TRUNK_RUN + 1e-9 || nb[3] - nb[1] > 2 * nw[1] + TRUNK_RUN + 1e-9) break;
+      [box, wide] = [nb, nw];
       j++;
     }
-    const top = Math.min(h, (j + 1) * TRUNK_SLICE);
-    boxes.push([lo[0] - hw, 0, lo[1] - hd, hi[0] + hw, top, hi[1] + hd].map((v, k) => (k === 1 ? i * TRUNK_SLICE : v)).map(round));
+    boxes.push([box[0], i * TRUNK_SLICE, box[1], box[2], Math.min(h, (j + 1) * TRUNK_SLICE), box[3]].map(round));
     i = j + 1;
   }
-  // Within a hair of the plain column (the footprint's middle, full height): that, unchanged.
-  const near = boxes.every((b) => Math.hypot((b[0] + b[3]) / 2, (b[2] + b[5]) / 2) <= TRUNK_SAME && b[3] - b[0] <= 2 * hw + TRUNK_SAME && b[5] - b[2] <= 2 * hd + TRUNK_SAME);
+  // Within a hair of the plain column (the footprint's middle, full width and height): that, unchanged.
+  const plain = [-hw, -hd, hw, hd];
+  const near = boxes.every((b) => [b[0], b[2], b[3], b[5]].every((v, k) => Math.abs(v - plain[k]) <= TRUNK_SAME));
   if (near && Math.max(...boxes.map((b) => b[4])) >= h - TRUNK_SAME_TOP) return null;
   return boxes;
 }

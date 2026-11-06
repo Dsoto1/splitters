@@ -79,7 +79,7 @@
       "name": "Fishing Boat",
       "category": "Coastal Harbor",
       "height": 6.36,
-      "collide": "shell"
+      "collide": "voxel"
     },
     {
       "id": "hb_anchor",

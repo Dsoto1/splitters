@@ -53,7 +53,7 @@
       "name": "Overhead Sign Gantry",
       "category": "Neon Megacity",
       "height": 6.5,
-      "collide": "frame",
+      "collide": "voxel",
       "yaw": 90
     },
     {
