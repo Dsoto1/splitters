@@ -8,6 +8,68 @@ made only on a commit that passed CI on a check branch.
 
 ## Unreleased
 
+**CTF bots go for the flag; no bots standing about** (owner's reports, 2026-11-05/06: "no bots are actually going
+for the flag, most just hang out and do little"; Diamond Park, "most of the team hung out in the tunnel/dugout
+area"; Fernwood Moon, "why would some bots not be moving at all?"; docs/BOTS.md, "Capture the Flag" and "Standing
+still")
+- **Roles as the owner set them**: 2 defenders a team (3 on teams of 12 or more), everyone else attacks; the
+  attackers nearest a carrier escort it home; anyone near their own flag when it's taken or dropped goes after it.
+- **Attackers keep to the flag**: they no longer run off after noises or enemies that slipped away (unless within
+  12 m), take cover only when hurt, fight on the move, sprint to the flag and spread over the map's routes. Carriers
+  sprint home and shoot back at anyone close, and keep watch round their base while their own flag is away. A bot
+  with only a pistol grabs a gun on its way. Out of the transport plane, bots come down where their role sends them
+  (defenders by their own flag), open the canopy straight away and steer it in (Eagle Spires' attackers landed on the
+  cliffs under the enemy flag).
+- **A flag dropped into lava goes home at once**, as one lost over the void does (rule change, for players too:
+  Cinder Foundry's lay in its lava pit all match, taken and dropped by one carrier after another).
+- **Nobody stuck where they can't get out**: Diamond Park's dugouts (three spawn points a side; bots that spawned
+  there never left: the roofs were too low over the steps at the dugout ends, so the dugouts were cut off from the
+  bots' navmesh; raised 0.4 m in MapMaker), Capitol Mall's reflecting pool, a goal on a ledge, Fernwood Moon's
+  Garrison spawning in its bunker with only the enemy's door on its way, doors that a crowd of bots opened and shut
+  again, a vehicle parked in the way, a ladder left halfway up, a queue at a lift.
+- **Holding a spot looks alive**: defenders, escorts and bots told to hold walk between places round their spot,
+  watch the way the enemy comes, glance about and crouch; campers shift and peek; bots waiting for a lift look about.
+- **Iron Compound's main gate opens again** (its buttons opened and shut it in the same press, for players too;
+  fixed in MapMaker). **Fernwood Moon**: the bunker's reactor core moved half a metre so the Garrison can leave by
+  its rear door. **Sandfall Colosseum**: a spawn point inside the stand's steps moved out of them. MapMaker and
+  validate-map warn about rules on one event that undo each other, and about spawn points inside something solid.
+- Team tools: `pnpm bot-report` (what every bot did and why it stood still, per map; before/after compare).
+- Measured over every CTF map (44 maps, two five-minute matches each): captures 21 → 145, matches with a capture
+  17 → 55 of 88, maps with a capture 13 → 31, flag takes 77 → 906; bots standing still out of a fight 17.9 → 5.6 %
+  of their time, idle spells of 10 s and more 19 → 2.7 a match. Diamond Park: 0.5 → 1.5 captures and 2.5 → 19.5
+  flag takes a match, idle 32.9 → 3.1 %. Team Deathmatch on Fernwood Moon: idle 23.0 → 7.6 %. Bot thinking at 96
+  bots stays within its 2.5 ms a tick.
+
+**Rounds go through arches, windows and holes** (owner's report, 2026-11-06: bullet holes in empty air inside a stone
+arch and a ruined wall's window on Fogbound, and under a giant root on Fernwood Moon, with puffs in the air by the trees)
+- **Openings are open**: arches, windows, holes, doorways, gates, the space under tables, beds, bridges, stalls and
+  balconies, the inside of tents and boats and the wide gaps in fences (0.5 m and up: bars closer than that still stop
+  rounds) no longer stop rounds or players. 134 props now collide with
+  boxes that follow their model in 3D (voxel collision: the Quaternius ruins' arches and walls, the dungeon arch, the
+  giant root, the Wild West balconies, gallows and wagons, the sci-fi trusses and frames, the skytrain, the armoured
+  truck, the gantry crane, the fence gates, the hedge gate, the drawbridge, tables, bunks, stalls, siege engines and
+  more); their stone, wood and metal still stop
+  rounds as before (same materials, same thickness for penetration), and cover behind their solid parts still works.
+  Players walk through arches and doorways tall enough, and bots path through them.
+- **Trees and poles collide where their trunk is**: their column stood in the middle of their footprint, which a
+  crown or an arm to one side moves off the trunk (birches 1.5 m off, the broadleaf trees 0.6 m, street lights 0.9 m),
+  so rounds stopped in the air beside the tree and you could walk through the trunk. The column now stands on the
+  trunk, as thick as it, follows a palm's or a leaning trunk's curve, and stops where a broadleaf tree forks
+  (47 trees and poles). This was the Fernwood Moon screenshot: its broadleaf trees and pines, and the boxes round
+  its mossy stumps and logs (up to 1.2 m off the stump), which now follow their shape too.
+- **No walls of air over corner pieces**: corner and stair-corner pieces, round railings, sandbag nests, the pediment,
+  the pyramidion and the burnt-out car no longer stand an invisible wall at their tallest height over their lower
+  parts (26 props).
+- **Breakable props with openings** (tents, fences, barriers, pipes, machines with windows) collide as their own
+  shape too; a shot anywhere on one still damages it.
+- Still filled, with the reason written down: under the long open stair flights (solid so they climb reliably), the
+  airliner's and its boarding stairs' hand-built collision, the bucket-wheel excavator's lattice and one narrow gap
+  under a city block. Glazed windows stop rounds on their glass, as before.
+- Team tools: `collide: "voxel"` for props (docs/CONTENT_PIPELINE.md, "Prop collision"), with a box budget per prop;
+  `pnpm content:check` now fails on a prop whose collision fills an opening without saying why
+  (`tools/content/prop-openings.mjs`, which also lists the slack round props' outlines with `--slack`); a fixture test
+  lists every prop whose collision changed.
+
 **No flicker on props** (owner's report on Flatpack Depot, 2026-11-05: "significant flickering", "flicker when I look
 around", on an Android phone; docs/LOOK.md, "No flicker: props")
 - **Rugs, shelves, crates and boxes no longer fight the floor**: many props have flat faces in the floor's own plane

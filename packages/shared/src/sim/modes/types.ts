@@ -1,3 +1,4 @@
+import type { OrderGoal } from '../../bots/brain.ts';
 import type { WorldBox } from '../../map/geometry.ts';
 import type { Faction, MapDocument } from '../../map/schema.ts';
 import type { Vec3 } from '../../math.ts';
@@ -28,6 +29,8 @@ export interface ModeHost {
   respawn(c: Combatant): void;
   /** Height of the floor under a point (within a few metres), or null over a drop. */
   groundBelow(p: Vec3): number | null;
+  /** Whether a point is in a liquid that kills within a couple of seconds (lava; not acid, which you can wade through). */
+  deadly?(p: Vec3): boolean;
   /** A walkable route between two points (navmesh), or null. */
   path(a: Vec3, b: Vec3): Vec3[] | null;
   /** A big explosion (Bomb mode), credited to `by`. */
@@ -40,11 +43,8 @@ export interface ModeHost {
   rebuildNav(extra: readonly WorldBox[]): boolean;
 }
 
-/** Where a Player Bot should go when it is not fighting, and how close counts as there. */
-export interface BotGoal {
-  pos: Vec3;
-  radius: number;
-}
+/** Where a Player Bot should go when it is not fighting, how close counts as there, and how it goes about it (bots/brain.ts OrderGoal). */
+export type BotGoal = OrderGoal;
 
 /** An objective mode's rules. Every hook is called only while the round is in play. */
 export interface ModeLogic {

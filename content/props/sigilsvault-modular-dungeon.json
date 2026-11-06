@@ -18,7 +18,7 @@
       "src": "Modular Dungeon Pieces/GLB format/barrel_ceiling_large_01.glb",
       "name": "Dungeon Barrel Ceiling Large 01",
       "category": "Dark Dungeon",
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "sd_barrel_ceiling_large_02",
@@ -39,7 +39,7 @@
       "src": "Modular Dungeon Pieces/GLB format/barrel_ceiling_small_01.glb",
       "name": "Dungeon Barrel Ceiling Small 01",
       "category": "Dark Dungeon",
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "sd_barrel_ceiling_small_02",
@@ -88,7 +88,7 @@
       "src": "Modular Dungeon Pieces/GLB format/door_arched_01_001.glb",
       "name": "Dungeon Door Arched 01",
       "category": "Dark Dungeon",
-      "collide": "openings"
+      "collide": "voxel"
     },
     {
       "id": "sd_flat_ceiling_large_01",
@@ -483,21 +483,21 @@
       "src": "Modular Dungeon Pieces/GLB format/vault_ceiling_large_01.glb",
       "name": "Dungeon Vault Ceiling Large 01",
       "category": "Dark Dungeon",
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "sd_vault_ceiling_large_02",
       "src": "Modular Dungeon Pieces/GLB format/vault_ceiling_large_02.glb",
       "name": "Dungeon Vault Ceiling Large 02",
       "category": "Dark Dungeon",
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "sd_vault_ceiling_large_03",
       "src": "Modular Dungeon Pieces/GLB format/vault_ceiling_large_03.glb",
       "name": "Dungeon Vault Ceiling Large 03",
       "category": "Dark Dungeon",
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "sd_vault_ceiling_large_04",
@@ -525,21 +525,21 @@
       "src": "Modular Dungeon Pieces/GLB format/vault_ceiling_small_01.glb",
       "name": "Dungeon Vault Ceiling Small 01",
       "category": "Dark Dungeon",
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "sd_vault_ceiling_small_02",
       "src": "Modular Dungeon Pieces/GLB format/vault_ceiling_small_02.glb",
       "name": "Dungeon Vault Ceiling Small 02",
       "category": "Dark Dungeon",
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "sd_vault_ceiling_small_03",
       "src": "Modular Dungeon Pieces/GLB format/vault_ceiling_small_03.glb",
       "name": "Dungeon Vault Ceiling Small 03",
       "category": "Dark Dungeon",
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "sd_vault_ceiling_small_04",

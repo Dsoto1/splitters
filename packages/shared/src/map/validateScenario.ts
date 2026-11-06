@@ -1,4 +1,4 @@
-import { ACTION_INFO, CONDITION_INFO, EVENT_INFO, entityFitsTarget, type TargetKind } from './logic.ts';
+import { ACTION_INFO, CONDITION_INFO, EVENT_INFO, entityFitsTarget, type ActionType, type ConditionType, type LogicAction, type LogicRule, type TargetKind } from './logic.ts';
 import { isBreakableProp } from './geometry.ts';
 import { isMapId } from '../sim/playlist.ts';
 import { PLAYERS_FACTION, type MapDocument } from './schema.ts';
@@ -100,6 +100,8 @@ export function validateScenario(map: MapDocument): ValidationIssue[] {
       }
     }
   }
+
+  issues.push(...undoingRules(logic.rules));
 
   for (const o of logic.objectives) {
     if (o.marker && !entities.has(o.marker)) issues.push({ severity: 'warning', code: 'logic.marker', message: `objective "${o.text}" points at a missing object`, targetId: o.id });
@@ -224,6 +226,106 @@ export function validateScenario(map: MapDocument): ValidationIssue[] {
       issues.push({ severity: 'warning', code: 'door.never_opens', message: `door ${e.id} is locked and no rule ever unlocks or opens it`, targetId: e.id });
     } else if (e.kind === 'trap' && e.trap !== 'mine' && e.activation === 'logic' && !used.fired.has(e.id)) {
       issues.push({ severity: 'warning', code: 'trap.never_fires', message: `trap ${e.id} only fires from logic, but no rule fires it`, targetId: e.id });
+    }
+  }
+  return issues;
+}
+
+/** Actions that put a target straight back the way another left it. */
+const UNDOES: Partial<Record<ActionType, ActionType>> = {
+  door_open: 'door_close',
+  door_close: 'door_open',
+  door_lock: 'door_unlock',
+  door_unlock: 'door_lock',
+  enable: 'disable',
+  disable: 'enable',
+  light_on: 'light_off',
+  light_off: 'light_on',
+};
+
+/** What an action changes that a condition can read (actions and conditions on the same thing share a key). */
+const ACTION_STATE: Partial<Record<ActionType, string>> = {
+  door_open: 'door',
+  door_close: 'door',
+  door_toggle: 'door',
+  door_lock: 'door',
+  door_unlock: 'door',
+  enable: 'enabled',
+  disable: 'enabled',
+  light_on: 'light',
+  light_off: 'light',
+  light_toggle: 'light',
+  set_var: 'variable',
+  add_var: 'variable',
+  objective: 'objective',
+  block_drop: 'block',
+  block_restore: 'block',
+  mover_go: 'mover',
+  mover_to: 'mover',
+};
+const CONDITION_STATE: Partial<Record<ConditionType, string>> = { door: 'door', enabled: 'enabled', light: 'light', variable: 'variable', objective: 'objective', block: 'block', mover_at: 'mover' };
+
+/**
+ * Rules on the same event that undo each other. They run one after another,
+ * each checking its IF just before it runs, so a pair like "open the gate if
+ * it's shut" and "shut the gate if it's open" on one button both fire on a
+ * press: the second puts the gate straight back and nothing happens (Iron
+ * Compound's main gate, 2026-11-06). Only what a rule does before any Wait
+ * counts (opening now and closing after a Wait is a timed door). A warning:
+ * one rule with Toggle door, or reacting to "Door opened" / "Door closed",
+ * does what was meant.
+ */
+function undoingRules(rules: readonly LogicRule[]): ValidationIssue[] {
+  const issues: ValidationIssue[] = [];
+  const byEvent = new Map<string, LogicRule[]>();
+  for (const r of rules) {
+    if (!r.enabled) continue;
+    const k = `${r.when.event}|${r.when.target ?? ''}`;
+    const list = byEvent.get(k);
+    if (list) list.push(r);
+    else byEvent.set(k, [r]);
+  }
+  for (const list of byEvent.values()) {
+    if (list.length < 2) continue;
+    // What each rule does straight away (before any Wait): to a target that can be put back, and what it changes
+    // that a later rule's IF might read.
+    const now = list.map((r) => {
+      const out: LogicAction[] = [];
+      for (const a of r.do) {
+        if (a.type === 'wait') break;
+        if (a.target && UNDOES[a.type]) out.push(a);
+      }
+      return out;
+    });
+    const writes = list.map((r) => {
+      const out = new Set<string>();
+      for (const a of r.do) {
+        if (a.type === 'wait') break;
+        const k = a.target ? ACTION_STATE[a.type] : undefined;
+        if (k) out.add(`${k}:${a.target}`);
+      }
+      return out;
+    });
+    for (let j = 1; j < list.length; j++) {
+      // The later rule fires after the earlier one whenever its IF holds then: always without one, and when its IF
+      // reads what the earlier one just changed, because of it. (IFs on other things, like which floor a lift
+      // stopped at, keep such rules apart.)
+      const reads = list[j]!.if.map((c) => (c.target && CONDITION_STATE[c.type] ? `${CONDITION_STATE[c.type]}:${c.target}` : '')).filter(Boolean);
+      for (let i = 0; i < j; i++) {
+        if (reads.length && !reads.some((k) => writes[i]!.has(k))) continue;
+        const b = now[j]!.find((x) => now[i]!.some((a) => a.target === x.target && UNDOES[a.type] === x.type));
+        if (!b) continue;
+        const a = now[i]!.find((x) => x.target === b.target && UNDOES[x.type] === b.type)!;
+        const first = list[i]!.name || list[i]!.id;
+        const second = list[j]!.name || list[j]!.id;
+        issues.push({
+          severity: 'warning',
+          code: 'logic.undoes',
+          message: `rules "${first}" and "${second}" run one after the other on the same event: "${ACTION_INFO[b.type].label}" (${b.target}) undoes "${ACTION_INFO[a.type].label}" straight away, so nothing changes. To switch something back and forth use one rule (Toggle door, Toggle light), or react to "Door opened" / "Door closed"`,
+          targetId: list[j]!.id,
+        });
+        break;
+      }
     }
   }
   return issues;

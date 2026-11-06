@@ -445,7 +445,266 @@ up. The new Gnoll (Hyena Warrior) in the intake-2 sheets shows it.
 - **Owner's decisions:** keep the Hyena (Gnoll) and Snikkit (Goblin Mischief) and fix their hands with this;
   Bill is retired. Do the pistol-hold tweak after this.
 
+### Container restart, 2026-11-06 00:30 UTC: three agents stopped (work saved)
+All three in-flight agents stopped. Their work is pushed:
+- `wip/perf-3` bf4fbdb6: prop batches, still decorations merged, blood instancing, warm-up of guns and characters,
+  ragdoll tiers by screen size and staggered starts, minimap from a bitmap. Not yet measured; no CI.
+- `wip/shingle` d70bbfd1: beach kit pieces and Replace all improvements. The map swap is part-way; its temporary
+  helpers are saved in the scratchpad `shingle-saved/`.
+- `wip/pistol` 57dda85f: WIP first-person pistol hold (finger close limited by wrap, hand placed by the middle of its
+  width, support hands turned).
+
+Resume each from its branch, after merging main.
+
+### Queued FIRST (owner bug report, 2026-11-06): far enemies render as feet only
+**Owner:** "I see enemy in distance not fully there, only feet." Screenshot: session scratchpad
+`perf3/far-enemy-feet-only.jpg`.
+
+**Suspects:**
+- The character LOD: `<name>_lod` meshes added via `addLODLevel(18 m)` in client content/characters.ts. Past 18 m
+  only parts without a low copy (feet or boots) show.
+- Round 1 body reuse leaving the `_lod` meshes disabled, dormant or detached.
+- Round 2's `selectLiveCandidates` and frozen materials or bounding info.
+- AnimGate skipping `skeleton.prepare`, so the LOD skin collapses.
+
+**Likely a regression** from performance rounds 1–2. Fix it with an e2e check that a character past LOD distance
+draws its whole body.
+
+### Openings fix (`wip/openings`, agent, 2026-11-06; CI on `check/openings`)
+Status: green on `check/openings`: CI run 42160424451 on 73b46f93, every job (docs-only commits since); ready to
+land. The report below is what it fixes.
+- **Done:**
+  - `collide: "voxel"` (tools/content/voxel-collision.mjs): 3D collision from the model (0.1 m cubes, flood fill from
+    the sides and above, exact cover, merges that never fill air in sight, faces pulled in to the model), with a box
+    budget per prop (48; hero 160; `voxelBudget`) and a coarsening ladder. 134 props use it (103 were `box`, 20
+    `shell`, 5 `frame`, 5 `trunk` with no single trunk, 1 `openings`); 207 props' collision changed in all.
+  - Trunk columns on the real trunk (`trunkBoxes`), as thick as it, following leans, stopping where broadleaf trees
+    fork: 47 trees and poles changed (Meshy birches were 1.5 m off; this was screenshot 32).
+  - `shell` merges only cells of one height (no walls of air at the tallest cell; coarser steps when that's over the
+    prop's box budget): 26 props tightened. The red rock spires (dustwater ×12) and the excavator only fit their
+    budget with the old merge, so they keep it (slack round the spires stays: `--slack`).
+  - Breakable props collide as their `boxes` (ScenarioBodies `parts`).
+  - Openings audit `tools/content/prop-openings.mjs` in `pnpm content:check` (an opening has the model on both
+    sides: windows, arches, gateways between posts; `fills` reasons for the 9 kept); `--slack` lists air round
+    outlines (`box` props: not changed); fixture
+    `packages/shared/test/fixtures/prop-openings.json` + `propOpenings.test.ts` (every changed prop, probes, points of
+    the model, digests of the rest; shots, walking, nav and cover in play); `tools/content/test/voxel-collision.test.mjs`.
+  - docs/CONTENT_PIPELINE.md "Prop collision"; CHANGELOG.
+- **Screenshot 32** (Fernwood Moon, under `jg_giant_root` prop_602, scale 1.6): no `env.*` species on that map, and
+  bushes have no collider, so not limbs or foliage. Rays cast from under the root with the old table: 352 of 1,261
+  prop hits landed in open air more than 25 cm from the model, mostly on trunk columns standing off the trunk
+  (nt_common_tree 0.58 m off, nt_pine_*), tents and stumps. With the trunk columns moved, 185 of 1,244, mostly the
+  boxes round the mossy stumps (up to 1.2 m off the model at their scale 1.3-1.8) and logs and the sci-fi dishes; those
+  five props now collide as voxel too, leaving 86 of 1,198 (7 %), nearly all on pine columns inside the crowns, where
+  the trunk thins (0.3-0.85 m off at scale). Script: session scratchpad `openings/work/fernwood.mts`.
+- **Checked:**
+  - In play (propOpenings.test.ts): shots through the arches, the holed wall and under the giant root, stopping on the
+    stone with the same material and thickness; players walk through five arches and doorways, not through a wall; bots
+    path through four arches; crouched cover beside the hole holds; a broad tree's old column spot is open, its trunk
+    stops rounds; a breakable tent's boxes are all the tent.
+  - On the maps (old table against new, scratchpad `openings/work/navthrough.mts`): bots now path straight through
+    the round arches and the ivy arch walls on Sandfall Colosseum, Serpent Gorge and Sunstone Crag (6.0-7.2 m instead
+    of 8.6-10.7 m round); windows and broken-wall gaps above the ground stay "round" (not walkable).
+  - `pnpm validate-map` on all 81 maps that place a changed prop: 79 clean; No Man's Field's logic-loop warning and
+    Diamond Park's 113 `nav.disconnected` (spawn_1746 in the dugout) are the same with the old table. Hollowmere
+    Manor and Pharaoh's Reach (the gates and the reed boat) again after they switched, and the eight maps placing the
+    mossy stump and log, the dishes and the generator after theirs: clean.
+  - Prop collision boxes on those maps: 14,811 to 32,936 (busiest: Backwoods, St John's ~1,500); navmesh builds
+    +10-25 % on the busiest maps, shot raycasts +20-40 % in a random test (machine loaded: noisy). CI's 96-bot
+    Frost Basin bench and perf jobs pass; not compared before and after on a quiet machine. Locally, `pnpm
+    test:changed` on a machine shared with two other agents: 11 bot, nav and host tests timed out and the 96-bot
+    bench took 49 ms a tick (limit 30; all pass on CI), and propOpenings read a props table regenerated mid-run
+    (alone: 22 of 22 pass).
+  - Screenshots (scratchpad `openings/after/`, before-* on the old build, after-* on this one): rounds through
+    Fogbound's arch fly 93-100 m (before: all stopped 3.7-4.0 m away, on the invisible box face at z 8.7), rounds at
+    its pillars stop on the stone; through the holed wall 15.8-90 m (before: 3.7-4.3 m, on the box face); a player
+    walks through the arch (z 6 to 11.2; before: stopped at 8.25); prop collision drawn over the scene.
+  - `botRiders.test.ts` keeps its buggy repaired on its blind drive: the drive's path drifted and went over Iron Maw's
+    pit edge (crash damage, riders rightly out).
+  - E2E locally (temp runner copy with the local Chromium): arsenal, coverage and visual pass; the maps flow on ten
+    changed maps (Backwoods, Fernwood Moon, Fogbound, Hollowmere Manor, Iron Maw, Pharaoh's Reach, Sandfall
+    Colosseum, Serpent Gorge, St John's, Sunstone Crag) passes with CI's waits (`CI=1`; with desk waits the loaded
+    machine missed the 60 s match start, the old build too).
+- **Resume:** `git checkout wip/openings`, `pnpm install`, `node tools/content/prepare-props.mjs` (voxelises into
+  node_modules/.cache, ~1 min cold), `node tools/content/prop-openings.mjs --check`, then the checks in CLAUDE.md.
+  Scratch scripts (renders, audits, screenshots) in the session scratchpad `openings/work/`.
+- **Follow-ups (owner's call):** slack round the other `box` props (stumps, logs, dishes, car bonnets: `--slack`;
+  Fernwood Moon's mossy stump and log, the space kit's dishes and generator are done) and the red rock spires; Diamond Park's dugout spawn cut off from the navmesh (before this change too). Bars and fences
+  with gaps under 0.5 m keep their box, so rounds still stop between the bars: `iron_fence` (gaps 0.25 × 0.7 m, 48
+  placements on Hollowmere Manor and St John's), `dg_arch_bars` (0.3 m), the `lf_*` gates and fences (0.1-0.25 m).
+  The windows the report named (`sf_wall_window`, `sf_wall_astra_window`, `hp_wall_window`) have glass panes and
+  `dg_arch_door` a closed door: their boxes stop rounds on the pane or the door, not in the air.
+
+### Fixed by the openings fix above (owner bug report, 2026-11-06): bullets stop in the air inside arches, windows and holes
+The owner's screenshots, in the session scratchpad `openings/` (30.jpg, 31.jpg, 32.jpg), show bullet holes in empty
+air inside openings:
+- a big stone round arch;
+- a ruined wall's window;
+- possibly a giant root arch on a dusky forest map.
+
+The first two are likely Fogbound or another map using the Quaternius ruins.
+
+**Cause (found):** `collide: "shell"` (tools/content/prepare-props.mjs `shellBoxes`) is a 2.5D heightfield.
+- The model is rasterised onto a top-down 0.4 m grid, and each covered cell becomes a column from y = 0 up to the
+  highest geometry above it.
+- Anything with an overhang gets filled solid: arches, windows, holes, lintels, bridges, root arches.
+- That blocks bullets, and players too.
+- **Affected:**
+  - `rn_arch_round`, `rn_arch_gothic`, `rn_wall_hole`, `rn_wall_broken`, `rn_wall_arch_ivy`, `rn_window_bars`,
+    `dg_arch` and the other "shell" props with openings (56 props use shell);
+  - "box" props with openings, e.g. `sf_wall_window`, `hp_wall_window`, the `lf_*` gates and fences, and
+    `os_bulkhead_window`.
+
+**Fix:**
+- Add a true 3D voxel collision mode:
+  - rasterise triangles into a 3D grid, about 0.2–0.3 m;
+  - fill solid only between a column's surfaces, inside closed volumes;
+  - merge greedily into few boxes.
+
+  Then openings stay open for both shots and movement.
+- Use it for every prop with a pass-through opening, found by an audit comparing the 3D voxel volume against today's
+  collision, and flag any opening at least 0.5 m across.
+- Movement and shots share these colliders (the physics world). Check bot nav through the newly open arches, check
+  cover, and keep collider counts within the perf budgets: keep the box count lean and use compound shapes.
+- Investigate the third screenshot separately: puffs in mid-air near distant trees could be env tree limbs that block
+  shots, or legitimate ground hits.
+
+### CTF bots and idle bots (`wip/bots-idle`, agent, 2026-11-06; from main 39056920, main 5b167034 merged in; green on `check/bots-idle`, ready to land)
+Fixes the two reports below (CTF bots don't go for the flag; Diamond Park dugout; Fernwood Moon bots not moving).
+
+**How to resume:** branch `wip/bots-idle` (pushed after every step). Measure with `pnpm bot-report` (new:
+`packages/server/src/tools/bot-report.ts`; per map and bot: idle time by reason, idle spells with positions, goal
+time, CTF roles and flag runs, no-route searches, stuck recoveries; `--suite=ctf`, `--shard=k/n`, `--json`,
+`--compare=a.json,b.json`). Baseline (main + measuring only, d1a8ec97) and after-runs are in the session
+scratchpad `bots-idle/` (`before-ctf-*.json`; `after-ctf-*.json` is the 02:52 code; `final-ctf-*.json` the final
+code, 64df0c80+; the baseline code is exported to `bots-idle/base`). MapMaker driver scripts (inspector, Logic panel,
+export): `bots-idle/tools/maker-*.mjs`, `finalize.mjs` (needs the client's dev server, e.g. port 4963).
+
+**Done (committed):**
+- Measuring: `BotBrain.doing` / `meantToMove` / `pathFailures`, `pnpm bot-report`.
+- Causes found (CTF suite baseline, 44 maps × 2 seeds × 300 s): 17 of 88 matches had a capture (21 captures); bots
+  out of a fight stood still 3–33 % (Iron Compound 86 %); "station" (holding a goal, spinning in place) 5–24 %; no
+  route 29 % on Diamond Park (its dugouts were navmesh islands with 3 spawns each), 17 % Fogbound, 13 % Eagle Spires;
+  attackers went after noises 20–50 m off (22–29 % of their time); Iron Compound's gate rules cancelled on one press;
+  Fernwood's Garrison spawned in its bunker with only the enemy's blast door on its route.
+- Fixes: CTF roles (`CtfBotPlan`: 2 defenders, 3 on teams of 12+, escorts, flags in trouble), goals kept to
+  (`OrderGoal.push/run/watch`), fight on the move, lanes, sprinting; escapes off cut-off navmesh patches
+  (`NavWorld.partAt/escapes`, `planEscape`); routes round doors shut to the bot (`markOpenings`, `findPath(…, shut)`);
+  press plans dropped once the door opens; vehicles out of reach left alone; keeping watch on station
+  (`keepWatch`), posts shift and peek, lift waits look about. Iron Compound's gate (Logic panel) and Fernwood's
+  reactor core (+0.5 m, inspector) fixed in MapMaker. `logic.undoes` warning (validate-map, MapMaker; also flags
+  Glacier Line's alert console, left).
+- Later fixes: lane waypoints and keep-watch places only on the goal's navmesh part; escapes up to 8 m (Capitol
+  Mall's reflecting pool); unreachable goals gone to as near as a route gets (`NavWorld.reachToward`) and watched from
+  there, asking again as the back-off allows (a route to a watch place no longer clears the goal's back-off: 30 000
+  failed searches a match on Eagle Spires before; asking only every 4 s stranded Obsidian Orb's bots on its reactor
+  platform); sidestep after stuck loops (Fernwood's parked dropship); boarding within 0.95 × enter radius; no-route
+  back-off only near where it failed; ladder climbs finished (Fernwood's vines: 230 s); lift patience 6 s, then a
+  way off lifts (`LIFT_FLAG`); carriers home with their flag away keep watch (Serene City: 143 s on the base); a flag
+  dropped into lava goes home (rule change, players too; Cinder Foundry: 28 takes, no capture); plane bots come
+  down where their role sends them, open the canopy at once and steer it (Eagle Spires' attackers landed on the
+  mesa cliffs); Diamond Park's dugout roofs +0.4 m in MapMaker (validate-map 113 warnings → 0: the roof ran 1.6 m
+  over the side walls' tops at the dugout ends); Sandfall's spawn_269 out of the stand's steps (MapMaker) and a
+  `spawn.blocked` warning (validate-map, MapMaker).
+- Tests: `botCtf.test.ts` (roles, captures on Diamond Park and Sunken Kingdom, dugout, pool, bunker, keeping watch),
+  `scenario.test.ts` (logic.undoes), `modes.test.ts` (flag in lava), `nav.test.ts` (spawn.blocked).
+
+**Found, left (for Phase A or the maps):**
+- The navmesh keeps 0.8 m from walls, not the 0.6 m its comment means: `Math.ceil((0.4 + 0.2) / 0.2)` is 4 cells
+  ((0.4 + 0.2) / 0.2 is 3.0000000000000004). Changing it moves every map's navmesh; Phase A.
+- `spawn.blocked` (the spawn point's middle inside a collider) on 26 spawn points, 18 maps: canyon spawn_113,
+  citadel spawn_w9sdjfv9q9, dune_harbor spawn_644, flatpack_depot spawn_659, halcyon_station spawn_096/104/106,
+  hollowmere_manor spawn_120, iron_compound spawn_207/213/218, ironhold_prison spawn_744, jungle_steps spawn_073/077,
+  m3_vault g_spawn_011, neon_spire spawn_694/697/711, riot_junction spawn_805, serpent_gorge spawn_196,
+  silo_complex spawn_099, starhaven spawn_203, sunken_kingdom spawn_0418, verdant_ziggurat spawn_120/123. Most are
+  against or a little in a wall and the body is pushed out (Iron Compound's spawn_213 walks off fine); fix them in
+  MapMaker when touching those maps.
+- Maps with few or no captures: Capitol Mall (249 m between flags), Fort Meadow (a midfield brawl, 65 % of the time
+  fighting), Twin Spires, Pantry Raid, Underdrain, Primeval Park (no takes: attackers die on the way; Phase B's
+  group pushes); Eagle Spires (bots that fall off the mesas' scaffolds and cliffs onto ledges with no route down:
+  drops are never routes; with fall damage off, a drop-down link would do).
+
+**Measured** (docs/BOTS.md "Capture the Flag" has every map; scratchpad `final2-ctf-*.json` against
+`before-ctf-*.json`): CTF suite captures 21 → 145, matches with a capture 17 → 55 of 88, maps with a capture 13 → 31,
+flag takes 77 → 906, idle out of a fight 17.9 → 5.6 %, 10 s+ idle spells 19 → 2.7 a match, kills 22.9 → 35.1 a
+minute; TDM, KOTH and Bomb idle down, kills level or up; `pnpm bench:96:clump` bot thinking 1.46–2.04 → 1.54–2.12 ms.
+
+**Checks:** `pnpm typecheck`; the changed unit tests locally (botCtf, modes, nav, airplane, botRoles, botai,
+spectate, sandgate, npc, match, terrainFloors, forts); CI on `check/bots-idle`: run 42169677264 green on 9b548458
+(its `handoff` e2e flow failed once on CI's load and passed on the re-run), run 42174642880 green on e9bf9611 (the
+final code; later commits are docs only).
+
+**Next:** land on main (fast-forward to the green commit, or the docs commit after it). Then Phase A
+(docs/BOT_AI_PLAN.md), starting from "Found, left" above.
+
+### Queued FIRST (owner bug report, 2026-11-05 late): CTF bots don't go for the flag
+**Owner:** "CTF: no bots are actually going for the flag, most just hang out and do little. We should only have
+like 2–3 bots protect a flag, and the rest go out there and try to get the other team's."
+
+**Code today:** `sim/modes/ctfBots.ts`.
+- **Standing roles, by team order:** attack, defend, attack, escort. That gives about ¼ defenders; escorts also go
+  for the enemy flag.
+- **Situational overrides:** carrier, dropped flag, carried flag.
+- **Goal handling:** `Match.botGoal` hands the goal to the brain as `orderGoal`, but "the brain only follows the goal
+  while roaming". The bot director's squad plans (`director.planFor`), roaming, explore, posts and pickups compete
+  with it.
+- **Known:** on Sunken Kingdom, with flags 190 m apart, bots never captured.
+
+**Do:**
+- Measure first in headless CTF sims, over several seeds and maps (Sunken Kingdom, Iron Maw, the CTF suite):
+  - time each bot spends moving toward its CTF goal versus idling, holding or roaming;
+  - flag touches, pickups, captures and returns per match;
+  - path failures.
+- Find why attackers "hang out". Suspects:
+  - the director or squad plans overriding the CTF goal;
+  - hold, post or explore states;
+  - noPath back-off on long routes;
+  - the goal radius;
+  - defenders and escorts clumping.
+- **Owner's role split:** 2–3 defenders per team (2 for small teams, 3 for 12+), all others attack, a carrier gets
+  escorts, and anyone near their own flag in trouble responds.
+- Bots must actually run the flag: pick it up, carry it home, capture.
+- Prove it with captures per match before and after; the target is regular captures on every CTF map.
+- **Owner's repro (2026-11-06): Diamond Park CTF.** Most of the team hung out in the tunnel/dugout area.
+  - Flags are at (24, 0, -32) "away" and (-32, 0, 24) "home".
+  - The map has sunken dugouts, player tunnels to the clubhouses, a lower bowl, an upper deck and a concourse.
+  - Start the investigation here: are bots stuck on navigation in the tunnels and dugouts, held by posts or cover,
+    or failing their path to the flag?
+- **Widened (owner, 2026-11-06): "why would some bots not be moving at all?"** This goes beyond CTF.
+  - Screenshot: session scratchpad `openings/idle-bots-fernwood.jpg`, taken in free camera on Fernwood Moon. Two
+    bots stand still: Bamboo by the Garrison shield bunker, and a bot at the corner of the landing pad (a raised
+    slab).
+  - Measure idle time per bot in every mode, with the reason for each idle spell:
+    - hold, post or cover;
+    - stuck on geometry such as a raised slab edge;
+    - noPath back-off;
+    - waiting on a lift, rope lift or ladder;
+    - squad wait;
+    - out of view and coasting.
+  - Fix each cause. A bot should only stand still when it's deliberately holding a spot, and then it should look
+    alive: scanning, shifting, peeking.
+  - Also confirm it isn't a free-camera rendering effect. Animation LOD and dormant/culled state use
+    `scene.activeCamera`, so free cam should be fine, but check that bots near the free camera animate and move.
+
+
+
+### Queued (owner-approved, 2026-11-06): bot AI, logic and navigation (docs/BOT_AI_PLAN.md)
+The owner asked for a plan for bot logic and navigation as a whole, and approved this order:
+- **Phase A** (navigation audit from every walkable area, never stand still on a failed route, the bot scorecard with
+  limits in nightly CI): right after `wip/bots-idle` lands, alongside set pieces.
+  - It builds on that branch's `pnpm bot-report`.
+  - Give it to the bots-idle agent as a follow-on if it's still running.
+- **Phase B** (scored choices instead of competing states, a team brain per mode, mode playbooks): next, **before
+  MAP 21**.
+- **Phases C and D** after:
+  - C: drop/jump links, moving obstacles, crowd steering, smarter routes;
+  - D: memory, holds that look alive, human-like skill tiers, an in-game bot debug view, bot hints in MapMaker.
+
+**Performance:** bots run in the sim (the server or the host's match worker), not the render thread. Every phase lands
+with `pnpm bench:96:clump` before and after; bot thinking at 96 bots stays within 2.5 ms a tick (today 1.0–1.8).
+
 ### Owner-approved order after the current agents (2026-11-05 late; owner set effort to max: "hoping for some great work")
+0. **Bot AI Phase A** (above) as soon as `wip/bots-idle` lands; **Phase B** before item 3 (MAP 21).
 1. **Set pieces:** plan in docs/SET_PIECES_PLAN.md. Next free slot.
 2. **Hands round 5,** in parallel; small. Give it to the pistol-hold agent as a follow-on once its pistol work lands.
    It covers:
@@ -458,7 +717,7 @@ up. The new Gnoll (Hyena Warrior) in the intake-2 sheets shows it.
 4. **Environment Phase 2:** more species; the border forest moves to our trees.
 5. **Core / experimental tiers** with quality gates, in the Control Center Workbench.
 
-The MapMaker overhaul and community maps follow, once the owner marks the MapMaker list.
+The MapMaker overhaul (all of the list, owner 2026-11-06: docs/MAPMAKER_OVERHAUL_PLAN.md) and community maps follow.
 
 ### Agent queue order (2026-11-05)
 1. Small environment follow-ups (below).
@@ -644,7 +903,7 @@ Plan in docs/COMMUNITY_MAPS.md:
 
 MULTIPLAYER_DIRECTION §7 is amended to match. Starts after the current work.
 
-### Proposed (not yet approved): MapMaker quality-of-life list
+### Queued (owner-approved 2026-11-06, "all if able"): MapMaker quality-of-life list = the MapMaker overhaul, plan in docs/MAPMAKER_OVERHAUL_PLAN.md
 The owner asked what MapMaker could use, by comparison with the Far Cry and TimeSplitters editors. My picks, in order:
 1. A green/red ghost before placing, with the reason; plus a live budget bar.
 2. "Play from here", and a top-down plan view.
@@ -670,7 +929,7 @@ Owner request (2026-11-05): show the real buildable area.
 
 Also proposed: note pins, templates, mirror for team maps, a card-shot camera, and snap-to-surface/randomise for props.
 
-**Build area: done on `wip/grid` (agent, 2026-11-05); `check/grid` run 42093090058 green at 01ab568b (all shards: shared changed). Not on main yet.**
+**Build area: done and on main (07ccea8d, b7d5d497; `check/grid` run 42093090058 green).**
 - Shared: `editor/buildArea.ts` (`buildLimitRect`, `playableRect` = bounds else terrain extent, `buildZone`,
   `insideBuildLimit`, `buildLimitReason`); `MAX_TILE_CELL` / `MAX_TILE_LEVEL` in the schema replace the literal
   256 / 16; checkPlacement's refusal now says "past the build limit…". Test: `packages/shared/test/buildArea.test.ts`.
@@ -690,7 +949,10 @@ Also proposed: note pins, templates, mirror for team maps, a card-shot camera, a
   this (Full grid adds ~32 px; only 1280 is checked); the camera may now fly 600 m up and out to the limit, which
   draws the whole map (fine on desktop, not measured on weak GPUs).
 
-Waiting for the owner to mark which ones. This becomes the "MapMaker overhaul" in the agreed queue.
+**Owner, 2026-11-06: "all if able"**: every item and the extras. Phased in docs/MAPMAKER_OVERHAUL_PLAN.md (1 feedback while building, 2 interface, 3 workflow, 4 testing the map, 5 time of day and weather, 6 guided tour); after set pieces part 2, in the agreed queue's place.
+Already covered elsewhere: set pieces (item 3, its own queue item, docs/SET_PIECES_PLAN.md); the build area (above);
+bot heatmaps (item 4) partly by docs/BOT_AI_PLAN.md (Phase A failure-spot pictures, Phase D bot debug view and
+bot hints). Today a tile's ghost already turns green or red, but it doesn't say why, and there is no budget bar.
 
 ### Queued (owner-approved, 2026-11-05): kit-prop generators
 docs/PROCEDURAL_ENVIRONMENT.md Phase 6, after Environment Phase 2. Generated families replace most of the simple

@@ -331,7 +331,7 @@
       "category": "Rocks & Wood",
       "surface": "bark",
       "height": 0.8,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "nt_log_large",
@@ -349,7 +349,7 @@
       "category": "Rocks & Wood",
       "surface": "bark",
       "height": 0.7,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "nt_log_snow",

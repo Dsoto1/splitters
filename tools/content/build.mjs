@@ -629,8 +629,9 @@ else {
 }
 
 // The data tables (weapons, vehicles, NPC roles, pickups, materials, surface types, tiles) and the measured hit shapes
-// (hitboxes): their content checks, and the generated files and codes lock up to date.
-for (const gen of ['weapons', 'vehicles', 'npcs', 'pickups', 'materials', 'surface-types', 'tiles', 'hitboxes', 'environment', 'prop-contacts']) {
+// (hitboxes): their content checks, and the generated files and codes lock up to date. prop-openings: no prop's
+// collision fills an opening it doesn't say why it fills (docs/CONTENT_PIPELINE.md, "Prop collision").
+for (const gen of ['weapons', 'vehicles', 'npcs', 'pickups', 'materials', 'surface-types', 'tiles', 'hitboxes', 'environment', 'prop-contacts', 'prop-openings']) {
   if (!check) break;
   try {
     execFileSync(process.execPath, [join(ROOT, `tools/content/${gen}.mjs`), '--check'], { cwd: ROOT, stdio: 'inherit' });
