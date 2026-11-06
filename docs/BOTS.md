@@ -327,7 +327,105 @@ boulders (`prop_490`–`prop_493`) 190 → 7. `test/botClearShot.test.ts`: a pla
 (head and shoulders show) drew 93 rounds, 92 into the wall, before; now most
 rounds hit.
 
+## Capture the Flag (November 2026)
+
+Owner's reports: "CTF: no bots are actually going for the flag, most just hang out and do little. We should only
+have like 2–3 bots protect a flag and the rest are just going out there and trying to get the other team's";
+Diamond Park, "most of the team hung out in the tunnel/dugout area". Measured with `pnpm bot-report` (below) over
+every map that offers CTF, two seeds of five minutes each (numbers at the end of this section).
+
+**What was wrong:**
+- *Roles.* Every fourth bot of a team defended and every fourth escorted; teams of 12 and 16 had 3 and 4 defenders
+  standing at their flag, spinning slowly in place ("station": 5–24 % of all bot time on the big maps).
+- *The goal didn't stay in charge.* An attacker heading for the flag dropped it for any noise within 45 m (60 m for
+  explosions) for up to 10 s, chased enemies that slipped out of sight for up to 8 s, took cover from anyone at 11 m
+  and more, and stopped to trade shots at range. On Diamond Park attackers spent 22 % of their time going after
+  noises and 9 % going to the flag. They never sprinted to it.
+- *No captures once there.* A carrier ignored everything beyond 4 m and ran the shortest way home at 85 % speed,
+  never sprinting; fresh respawns at the enemy's base, most of them within 15 m of its flag on the smaller maps,
+  killed it within seconds.
+- *Stuck where the navmesh is cut off* (see "Standing still").
+- Measured before: 13 of 88 matches had a capture; Diamond Park 0.5 captures and 2.5 flag takes a match.
+
+**Now** (`sim/modes/ctfBots.ts`, `CtfBotPlan`, worked out by the mode a few times a second, not per bot):
+- **Roles** (owner): a team's Player Bots defend 3 strong on a team of 12 or more, 2 on a smaller one (1 on a team
+  of two or three; a team of bots alone keeps an attacker), picked by who suits it (campers and snipers first, then
+  the careful and unaggressive; rushers and roamers last). Everyone else attacks.
+- **Situations first:** the carrier runs home; our flag dropped: the defenders and anyone within 22 m go and touch
+  it; our flag carried off: the defenders and anyone within 22 m chase the carrier, and once our own carrier is home
+  waiting on it, every attacker but its escorts too; enemies within 16 m of our flag at home: the defenders close
+  in. A teammate carrying the enemy flag: the three attackers nearest it escort it (within 4 m), the rest come along
+  further back (10 m).
+- **Goals kept to** (`OrderGoal.push`, bots/brain.ts): an attacker, escort or responder turns aside only for a noise
+  or an enemy that slipped away within 12 m (`PUSH_NOTICE`), takes cover only when hurt, low on ammo or reloading
+  (not just for being shot at), leaves cover a second after losing sight of its enemy (2.5–5.5 s otherwise), and
+  fights on the move: an enemy further than 9 m is shot at on the way, not stopped for. A far flag (50 m and more)
+  is gone to by a lane of the bot's own (left, right or straight, once per goal and life, on the goal's own part of
+  the navmesh), so a team's attackers don't all meet the enemy's head-on in one corridor. It sprints when the goal
+  is more than 15 m off. A bot with only a sidearm (CTF starts with knife and pistol) grabs a gun within its detour
+  (8–20 m by its objective priority) on the way.
+- **Carriers run** (`OrderGoal.run`): they sprint home, never take cover or retreat, notice enemies within 15 m
+  (`CARRIER_AWARENESS`, was 4) and shoot those within 12 m on the move.
+- **Defenders keep watch** round their flag (radius 9 m) toward the enemy's side (see "Standing still").
+
+## Standing still (November 2026)
+
+Owner's report (Fernwood Moon, free camera): "why would some bots not be moving at all?" A bot now stands still
+only when it holds a spot on purpose, and then it looks alive. Measured over the CTF suite and Team Deathmatch;
+the causes, each fixed where it starts:
+
+- **Cut-off patches of navmesh.** The navmesh keeps 0.6 m from walls (body radius 0.4 + 0.2) and steps 0.3 m. A
+  low roof over a step, a narrow strip or a pool's rim leave patches players walk off that have no route out:
+  Diamond Park's two dugouts (14 polygons each, three of each team's spawn points in each: bots spawning there
+  stood until killed, and teammates spawned beside them), Capitol Mall's reflecting pool. `NavWorld` now labels
+  the navmesh's connected parts once (about 15 ms on a big map; a search across parts answers at once instead of
+  exploring everything reachable), and `escapes()` finds, for a point on a smaller part than its goal's, up to three
+  places within 14 m on the goal's part that a straight step or hop of up to 8 m reaches (nothing in the way at
+  knee or head height, rising at most 1.1 m). The bot walks to its patch's edge and crosses, hopping when held up
+  (`planEscape`); a crossing not made in 8 s is left alone for 30 s.
+- **A goal no route reaches** (a flag dropped into Cinder Foundry's pit, something on a roof): the bot goes as near
+  as a route gets (`NavWorld.reachToward`, Detour's partial route, cached per part and goal) and keeps watch there
+  facing it, rather than standing with "no route" until the flag goes home.
+- **Doors shut to the bot.** A route through a door no button opens for the bot's team emptied its path: Fernwood
+  Moon's Garrison spawns inside its bunker, and the shortest way out is the blast door only the attackers open; its
+  own rear door was a few steps away. Doors and path-blocking walls are now navmesh flags (`markOpenings`, the
+  polygons under each), and such a route is asked for again keeping out of the shut ones (`findPath(…, shut)`).
+  Fernwood's reactor core was moved 0.5 m (MapMaker) so the strip behind it, in front of the rear door, is wider
+  than the navmesh's 1.2 m.
+- **Doors that flap.** Several bots heading for one shut door each set off to press its button, and kept the plan
+  after the first opened it: a toggle button shut it again. A press plan is dropped once its door no longer blocks.
+  (Iron Compound's gate was also broken for players: its two rules on one press, "open if shut" and "shut if open",
+  both ran, since rules run in order. Fixed in MapMaker; validate-map and MapMaker now warn, `logic.undoes`.)
+- **Stuck on the same spot** (a dropship parked on the route, the corner of Fernwood's landing pad): after three
+  stuck recoveries in 10 s within 4 m, the bot takes a few steps to one side (3–5 m, on a short route) before going
+  on (`planSidestep`); before, a bot sent somewhere had nothing to give up and walked into the obstacle for minutes.
+  Vehicles: a plan to get in that runs out leaves that vehicle alone for 30 s, and bots press E within the match's
+  whole enter radius (a big hull kept them from getting within 80 % of it).
+- **Holding a spot looks alive** (`keepWatch`): a bot on station (a defender by its flag, an escort, a bot told to
+  hold, a squad member waiting on its squad's next goal, a bot waiting near a goal it can't reach) walks to another
+  place round the spot every 2.5–11 s (in sight of its middle, toward where the enemy comes from, on the spot's own
+  part of the navmesh), watches that way with a slow sweep and a glance over its shoulder every 7 s, turns to a
+  threat it knows of, and crouches and stands again. Campers on a vantage post shift a step to one side and back and
+  stand up to look over their cover; snipers lying on their scope only sweep. Bots waiting for or riding a lift look
+  about instead of at the shaft.
+- **Lanes and places checked.** Lane waypoints and keep-watch places are taken only on the goal's own part of the
+  navmesh (a sample on a roof sent bots nowhere), and a failed search backs off only near where it failed (one made
+  on a moving lift said nothing about the lift's top).
+
+`BotBrain.doing` says what a bot did on its last think and so why it stood still when it did; `pnpm bot-report`
+reads it.
+
 ## Measuring
+
+`pnpm bot-report` (`packages/server/src/tools/bot-report.ts`) plays headless matches of Player Bots (added as the
+server adds them: as their characters, normal skill) and reports per map and per bot: time by what each bot was
+doing, moving or standing (`BotBrain.doing`); idle time (moved under 0.5 m in a second, alive, on foot) by reason,
+with "stuck(...)" when it meant to move and didn't; idle spells of 3 s and more, with where they happened; "frozen"
+time (out of a fight, not even turning); time going to the mode's goal and at it; for CTF each bot's role, flag
+takes, captures, returns and drops, and every flag run (when, how long, how it ended); no-route searches, stuck
+recoveries, kills and tick cost. `--suite=ctf` plays every map that offers CTF, `--shard=k/n` splits a suite over
+processes, `--json=file` keeps the rows and `--compare=before.json,after.json` (several files joined with `+`)
+prints the two side by side, per map. `--spells` lists the longest idle spells, `--bots` every bot.
 
 `pnpm bench` prints, per map, a behaviour line next to the CPU ones:
 
