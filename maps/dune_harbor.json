@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 26,
+  "formatVersion": 27,
   "metadata": {
     "id": "dune_harbor",
     "name": "Dune Harbor",
@@ -20,7 +20,15 @@
       "core.ctf",
       "core.koth",
       "core.deathmatch"
-    ]
+    ],
+    "release": {
+      "mapId": "m_wzyesomkb7yphzin",
+      "versionId": "v_ul72cdw4t2zvl3k4",
+      "revision": 1,
+      "contentHash": "sha256:b02aea81f60dc89055b9abec63240dc2047870092d9dd2d4a1cf76538cb6bc27",
+      "schemaVersion": 27,
+      "releasedAt": "2026-11-06T14:42:11.690Z"
+    }
   },
   "classicStructure": {
     "cellSize": 8,
@@ -7661,13 +7669,13 @@
       "position": [
         21.4,
         -2.8,
-        90
+        89.4
       ],
       "kind": "block",
       "size": [
         2.4,
         1.1,
-        6.4
+        5.2
       ],
       "yaw": 0,
       "material": "core.pbr_white_panel",
@@ -7683,13 +7691,13 @@
       "position": [
         26.6,
         -2.8,
-        90
+        89.4
       ],
       "kind": "block",
       "size": [
         2.4,
         1.1,
-        6.4
+        5.2
       ],
       "yaw": 0,
       "material": "core.pbr_white_panel",
