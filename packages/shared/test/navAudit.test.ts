@@ -1,8 +1,8 @@
 // The navigation audit (nav/audit.ts), ledge-drop links, polygons inside solid boxes, stand-ins and the way onto the
 // navmesh (docs/BOTS.md, "Navigation audit").
 import { beforeAll, describe, expect, it } from 'vitest';
-import { applyBrush, buildMapGeometry, initPhysics, newTerrain, terrainHeightAt, type MapDocument } from '../src/index.ts';
-import { NavWorld, auditNavigation, dropOptions, initNavigation, mapNavigation, validateMapNavigation } from '../src/match.ts';
+import { BOT_DIFFICULTIES, CORE_BOT_PROFILES, DEFAULT_DEATHMATCH_RULES, PhysicsWorld, TICK_RATE, applyBrush, blockBoxes, buildMapGeometry, initPhysics, mapPads, newTerrain, padLandings, terrainHeightAt, type MapDocument } from '../src/index.ts';
+import { Match, NavWorld, auditNavigation, dropOptions, initNavigation, mapNavigation, validateMapNavigation } from '../src/match.ts';
 import { makeMap } from './helpers.ts';
 
 beforeAll(() => Promise.all([initPhysics(), initNavigation()]));
@@ -13,8 +13,17 @@ const yard = (spawns: [number, number, number][]): MapDocument => {
   for (let x = 0; x < 3; x++) for (let z = 0; z < 3; z++) tiles.push({ id: `y${x}${z}`, tile: 'core.yard', x, y: z, z: 0, rotation: 0 });
   return makeMap(tiles, spawns);
 };
-const block = (id: string, center: [number, number], size: [number, number, number], y = 0) =>
-  ({ id, kind: 'block', position: [center[0], y, center[1]], size, yaw: 0, material: null, behaviour: 'solid', trigger: 'step', delaySeconds: 0.8, respawnSeconds: null, health: 100 }) as MapDocument['entities'][number];
+const block = (id: string, center: [number, number], size: [number, number, number], y = 0, behaviour = 'solid') =>
+  ({ id, kind: 'block', position: [center[0], y, center[1]], size, yaw: 0, material: null, behaviour, trigger: 'step', delaySeconds: 0.8, respawnSeconds: null, health: 100 }) as MapDocument['entities'][number];
+/** A plaza `h` m up (spawn points on it) round a 12 m pit down to the yard's floor. */
+const pitMap = (h: number): MapDocument => {
+  const map = yard([
+    [-1, h, 8],
+    [17, h, 8],
+  ]);
+  map.entities.push(block('west', [-1, 8], [6, h, 24]), block('east', [17, 8], [6, h, 24]), block('north', [8, -1], [12, h, 6]), block('south', [8, 17], [12, h, 6]));
+  return map;
+};
 
 describe('navigation audit', () => {
   it('leaves out the floor Recast finds inside a solid box taller than a body (Eagle Spires: one at every rock block)', () => {
@@ -95,12 +104,7 @@ describe('navigation audit', () => {
   });
 
   it('reports a pit bots fall into and nobody gets out of: an error on an official map, a warning in MapMaker', () => {
-    // A plaza 3 m up (spawn points on it) round a 5 m pit down to the yard's floor.
-    const map = yard([
-      [-1, 3, 8],
-      [17, 3, 8],
-    ]);
-    map.entities.push(block('west', [-1, 8], [6, 3, 24]), block('east', [17, 8], [6, 3, 24]), block('north', [8, -1], [12, 3, 6]), block('south', [8, 17], [12, 3, 6]));
+    const map = pitMap(3);
     const official = validateMapNavigation(map, true);
     const trap = official.issues.find((i) => i.code === 'nav.trap');
     expect(trap?.severity).toBe('error');
@@ -108,6 +112,51 @@ describe('navigation audit', () => {
     expect(official.audit.traps.length).toBe(1);
     expect(official.audit.traps[0]!.dropOut).toBeNull();
     expect(validateMapNavigation(map, false).issues.find((i) => i.code === 'nav.trap')?.severity).toBe('warning');
+  });
+
+  it('counts no fall through a railing a standing body can’t pass (Bunker Cross’s galleries: rails the rays slip between)', () => {
+    // The 3 m pit, railed round: rails 0.1, 1.4 and 2.6 m over the plaza, at its edges. Rays at a step's, a knee's and a
+    // head's height pass between them; a body doesn't. Nobody falls in: the pit is no trap (an island).
+    const map = pitMap(3);
+    const rail = (id: string, x: number, z: number, w: number, d: number) => [0.1, 1.4, 2.6].map((h, k) => block(`${id}${k}`, [x, z], [w, 0.1, d], 3 + h));
+    map.entities.push(...rail('rw', 2.05, 8, 0.1, 12), ...rail('re', 13.95, 8, 0.1, 12), ...rail('rn', 8, 2.05, 12, 0.1), ...rail('rs', 8, 13.95, 12, 0.1));
+    const official = validateMapNavigation(map, true);
+    expect(official.issues.filter((i) => i.code === 'nav.trap')).toEqual([]);
+    expect(official.audit.traps).toEqual([]);
+    expect(official.audit.patches.length).toBeGreaterThan(0);
+  });
+
+  it('counts a pit 1.3 m deep as none: bots hop out of it, the legs tucked up (Undergate Transit’s track beds); 1.8 m deep is one', () => {
+    expect(validateMapNavigation(pitMap(1.3), true).issues.filter((i) => i.code === 'nav.trap')).toEqual([]);
+    expect(validateMapNavigation(pitMap(1.8), true).issues.find((i) => i.code === 'nav.trap')?.severity).toBe('error');
+    // And a bot put into the 1.3 m pit does get out (a jump alone clears about 1.1 m).
+    const match = new Match(pitMap(1.3), { ...DEFAULT_DEATHMATCH_RULES, scoreLimit: 0, timeLimitSeconds: 0 }, 2);
+    for (let i = 0; i < 2; i++) match.addBot(`bot${i}`, CORE_BOT_PROFILES[i]!, BOT_DIFFICULTIES.normal, true);
+    match.step();
+    const bot = match.combatants()[0]!;
+    bot.move = { pos: { x: 8, y: 0, z: 8 }, velY: 0, grounded: true };
+    let out = -1;
+    for (let t = 0; t < TICK_RATE * 15 && out < 0; t++) {
+      match.step();
+      if (bot.alive && bot.move.grounded && bot.move.pos.y > 1.2) out = t;
+    }
+    match.destroy();
+    expect(out).toBeGreaterThanOrEqual(0);
+  }, 60_000);
+
+  it('lands a jump pad’s flight on the scenario’s solids, as the navmesh has them (Erosion’s corner pads onto its crumbling decks)', () => {
+    const map = yard([[0, 0, 0]]);
+    map.entities.push(block('deck', [10, 10], [6, 0.5, 6], 3, 'crumble'), { id: 'pad', kind: 'pad', position: [4, 0, 10], yaw: Math.PI / 2, power: 13, push: 7 } as MapDocument['entities'][number]);
+    // The level alone (the scenario adds the deck after the navmesh): the flight comes down on the floor under it.
+    const physics = new PhysicsWorld(buildMapGeometry(map), null);
+    expect(padLandings(mapPads(map.entities), physics)[0]!.end.y).toBeLessThan(0.5);
+    expect(padLandings(mapPads(map.entities), physics, 1, [], blockBoxes(map, true))[0]!.end.y).toBeCloseTo(3.5, 1);
+    physics.free();
+    // As the match builds it: a route up onto the deck by the pad.
+    const built = mapNavigation(map);
+    expect(built.nav.findPath({ x: 1, y: 0, z: 10 }, { x: 10, y: 3.5, z: 10 })).not.toBeNull();
+    built.physics.free();
+    built.nav.destroy();
   });
 
   it('walks a bot off the navmesh onto it: the nearest place, level or below', () => {
