@@ -36,6 +36,8 @@ beforeAll(() => Promise.all([initPhysics(), initNavigation()]));
 const library = builtInSetPieces();
 const yard = (id: string, x: number, y: number, z = 0): TilePlacement => ({ id, tile: 'core.yard', x, y, z, rotation: 0 });
 const room = (id: string, x: number, y: number, z = 0, extra: Partial<TilePlacement> = {}): TilePlacement => ({ id, tile: 'core.room', x, y, z, rotation: 0, ...extra });
+/** A street running east-west (open ground: no walls between streets). */
+const street = (id: string, x: number, y: number): TilePlacement => ({ id, tile: 'core.street', x, y, z: 0, rotation: 1 });
 
 /** A placement as the tests give it: turn and mirror optional. */
 type PieceIn = Omit<SetPiecePlacement, 'mirror' | 'rotation'> & Partial<Pick<SetPiecePlacement, 'mirror' | 'rotation'>>;
@@ -235,8 +237,9 @@ describe('the carriageway: shots, players and bots pass its arches and doorways;
 });
 
 describe('the skybridge: between two buildings on level 1, nothing underneath', () => {
-  /** Rooms at both ends on level 1 (on rooms on the ground), the bridge between them over open ground. */
-  const bridged = (piece: string, cells: number) => mapOf([room('bldg_a', 0, -1, 1), room('bldg_b', 0, cells, 1), room('bldg_a0', 0, -1), room('bldg_b0', 0, cells), yard('under', 0, 0)], [{ id: 'bridge_1', piece, x: 0, y: 0, z: 1 }]);
+  /** Rooms at both ends on level 1 (on rooms on the ground), the bridge between them over a street running east-west. */
+  const bridged = (piece: string, cells: number) =>
+    mapOf([room('bldg_a', 0, -1, 1), room('bldg_b', 0, cells, 1), room('bldg_a0', 0, -1), room('bldg_b0', 0, cells), street('under_w', -1, 0), street('under', 0, 0), street('under_e', 1, 0)], [{ id: 'bridge_1', piece, x: 0, y: 0, z: 1 }]);
 
   it('players walk from one building to the other along it; shots go through its windows and doors; the street passes under it', () => {
     for (const [piece, cells] of [['setpiece.skybridge_2', 2], ['setpiece.skybridge_3', 3], ['setpiece.skybridge_4', 4]] as const) {
@@ -251,9 +254,11 @@ describe('the skybridge: between two buildings on level 1, nothing underneath', 
       // Across, through a window on each side (sill 0.9, head 2.5 over the bridge's floor at 4 m).
       const across = physics.raycastHit({ x: -10, y: 5.7, z: 1.75 }, { x: 1, y: 0, z: 0 }, 20);
       expect(across === null || across.dist > 19, `${piece} windows`).toBe(true);
-      // Under it: the yard is open from its floor to the bridge's underside (3.5 m).
-      const under = physics.raycastHit({ x: -6, y: 2, z: 4 }, { x: 1, y: 0, z: 0 }, 12);
-      expect(under === null || under.dist > 11.9).toBe(true);
+      // Under it: the street runs on under the bridge, open from the road to the bridge's underside; the bridge builds
+      // nothing below its deck.
+      const under = physics.raycastHit({ x: -10, y: 2, z: 0 }, { x: 1, y: 0, z: 0 }, 20);
+      expect(under === null || under.dist > 19.9, `${piece}: the street under it`).toBe(true);
+      expect(buildMapGeometry(map).filter((b) => b.sourceId.startsWith('sp_bridge_1_') && b.min[1] < 3.4)).toEqual([]);
       const nav = NavWorld.build(buildMapGeometry(map));
       const path = nav.findPath({ x: 0, y: 4, z: -8 }, { x: 0, y: 4, z: cells * 8 });
       expect(path && path.at(-1)!.z > cells * 8 - 1, `${piece}: bots path along it`).toBe(true);
