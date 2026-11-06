@@ -1082,6 +1082,9 @@ export class BotBrain {
       this.goal = null;
       this.lastPathTick = -Infinity;
     }
+    // Within reach of the button it's going to press: it looks at the button and nothing else (the look along its route
+    // turned it back level every tick, and it never faced a console's button: Serene City's thaw console, eight bots).
+    const atButton = this.pressPlan !== null && this.pressReach(me, this.pressPlan);
     let moveYaw: number | null = null;
     let moveScale = 1;
     let backOff = false;
@@ -1545,7 +1548,7 @@ export class BotBrain {
 
     if (this.throwPlan || throwNow) doing = 'throw';
 
-    if (!lookDone) {
+    if (!lookDone && !atButton) {
       if (tick < this.scanUntil) {
         this.turnToward(this.scanYaw + Math.sin((this.scanUntil - tick) / 14) * 1.6, 0);
         if (moveYaw === null) doing = 'scan';
@@ -1596,9 +1599,8 @@ export class BotBrain {
     }
     const plan = this.pressPlan;
     if (plan) doing = 'press';
-    // (Within reach of the button: players press from up to 2.2 m, eye to face. Only at the one spot in front of it, a
-    // few bots at one button kept each other off it: Primeval Park's fence power, 38 s.)
-    if (plan && ((horizontalDistance(me.pos, plan.stand) < 0.8 && Math.abs(me.pos.y - plan.stand.y) < 1) || (distance({ x: me.pos.x, y: me.pos.y + PLAYER.eyeHeight, z: me.pos.z }, plan.face) < 1.9 && Math.abs(me.pos.y - plan.stand.y) < 1))) {
+    // (Aiming at someone, it fights first: turning to the button as well, it did neither.)
+    if (plan && !aimedTarget && this.pressReach(me, plan)) {
       forward = 0;
       right = 0;
       const a = lookAngles({ x: me.pos.x, y: me.pos.y + PLAYER.eyeHeight, z: me.pos.z }, plan.face);
@@ -2792,6 +2794,15 @@ export class BotBrain {
     this.turnToward(a.yaw, a.pitch);
   }
 
+  /**
+   * Within reach of the button a press plan is for: players press from up to 2.2 m, eye to face. (Only at the one spot
+   * in front of it, a few bots at one button kept each other off it: Primeval Park's fence power, 38 s.)
+   */
+  private pressReach(me: CombatantView, plan: { stand: Vec3; face: Vec3 }): boolean {
+    if (Math.abs(me.pos.y - plan.stand.y) >= 1) return false;
+    return horizontalDistance(me.pos, plan.stand) < 0.8 || distance({ x: me.pos.x, y: me.pos.y + PLAYER.eyeHeight, z: me.pos.z }, plan.face) < 1.9;
+  }
+
   private turnToward(yaw: number, pitch: number): void {
     const maxStep = this.difficulty.turnRateRadPerSec * TICK_DT;
     this.yaw += clamp(angleDelta(this.yaw, yaw), -maxStep, maxStep);
@@ -3191,9 +3202,14 @@ export class BotBrain {
       const blocked = this.pathBlocked(view);
       this.path = saved;
       if (blocked) continue;
-      this.pressPlan = { stand: o.stand, face: o.face, until: view.tick + TICK_RATE * 20, door };
+      // Stand on the floor in front of it, where the route ends: a button on a console is a metre or more over the
+      // floor, and its own spot's height never came within reach (Serene City's thaw console: eight bots stood under
+      // it, never pressing, 400 s a match).
+      const end = path[path.length - 1];
+      const stand = end && horizontalDistance(end, o.stand) < 1.5 ? { x: o.stand.x, y: end.y, z: o.stand.z } : o.stand;
+      this.pressPlan = { stand, face: o.face, until: view.tick + TICK_RATE * 20, door };
       this.path = path;
-      this.goal = { ...o.stand };
+      this.goal = { ...stand };
       return;
     }
   }
