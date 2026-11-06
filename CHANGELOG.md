@@ -10,13 +10,19 @@ made only on a commit that passed CI on a check branch.
 
 **Shingle Point: new assets, same battle** (owner, 2026-11-05: an asset refresh, layout and gameplay kept)
 - **Landing craft, wrecks and hedgehogs** are real pieces now instead of grey blocks: four landing craft at the
-  waterline, six rusted wrecks sunk in the sand and 46 Czech hedgehogs of riveted steel angles. They block exactly
-  what the blocks did (the craft and wrecks to the centimetre; the hedgehogs as their beams).
+  waterline, six rusted wrecks sunk in the sand and 46 Czech hedgehogs of riveted steel angles. The craft and wrecks
+  block exactly what their blocks did (to the centimetre); a hedgehog blocks as its three beams, so a crouching
+  player finds a little more cover on the beach.
 - **Our own nature and props**: the beach's logs are squared obstacle timbers, the rowing boats wooden dories, the
-  bluff's barriers sandbag stacks, the village's hay bales straw bales; trees are our oaks, bushes our shrubs (they
-  hide you as before), wildflowers and wheat our meadow flowers and dry grass, rocks our boulders; tall hedges, crates,
-  lamp posts, carts and rubble come from our in-house and owned packs. Breakable pieces stay breakable.
+  bluff's barriers sandbag stacks, the village's hay bales straw bales and its woodpiles timbers (they now stop
+  rounds); trees are our oaks, bushes our shrubs (they hide you as before), wildflowers and wheat our meadow flowers
+  and dry grass, rocks our boulders, rubble our pebbles; tall hedges, crates, lamp posts, carts and the crumbling
+  walls come from our in-house, owned and CC0 packs. Breakable pieces stay breakable. The furniture indoors stays for
+  now (it breaks; ours doesn't yet).
 - The bunkers wear the Military Compound look (no more hazard stripes) and the machine-gun nests' walls burlap.
+- **No more draws**: the new pieces, the box hedge and the hay cart are one material each (their colours painted on),
+  so all copies of one share a draw call and each is one instance; over ten views of the map 3 % fewer draw calls and
+  16 % fewer meshes than before.
 - MapMaker's **Replace all** can keep a piece's length (rows of hedges stay closed) and turn the new pieces a quarter.
 
 **Rounds go through arches, windows and holes** (owner's report, 2026-11-06: bullet holes in empty air inside a stone
