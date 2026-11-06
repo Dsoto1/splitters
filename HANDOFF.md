@@ -536,7 +536,23 @@ like 2–3 bots protect a flag, and the rest go out there and try to get the oth
 
 
 
+### Queued (owner-approved, 2026-11-06): bot AI, logic and navigation (docs/BOT_AI_PLAN.md)
+The owner asked for a plan for bot logic and navigation as a whole, and approved this order:
+- **Phase A** (navigation audit from every walkable area, never stand still on a failed route, the bot scorecard with
+  limits in nightly CI): right after `wip/bots-idle` lands, alongside set pieces.
+  - It builds on that branch's `pnpm bot-report`.
+  - Give it to the bots-idle agent as a follow-on if it's still running.
+- **Phase B** (scored choices instead of competing states, a team brain per mode, mode playbooks): next, **before
+  MAP 21**.
+- **Phases C and D** after:
+  - C: drop/jump links, moving obstacles, crowd steering, smarter routes;
+  - D: memory, holds that look alive, human-like skill tiers, an in-game bot debug view, bot hints in MapMaker.
+
+**Performance:** bots run in the sim (the server or the host's match worker), not the render thread. Every phase lands
+with `pnpm bench:96:clump` before and after; bot thinking at 96 bots stays within 2.5 ms a tick (today 1.0–1.8).
+
 ### Owner-approved order after the current agents (2026-11-05 late; owner set effort to max: "hoping for some great work")
+0. **Bot AI Phase A** (above) as soon as `wip/bots-idle` lands; **Phase B** before item 3 (MAP 21).
 1. **Set pieces:** plan in docs/SET_PIECES_PLAN.md. Next free slot.
 2. **Hands round 5,** in parallel; small. Give it to the pistol-hold agent as a follow-on once its pistol work lands.
    It covers:
