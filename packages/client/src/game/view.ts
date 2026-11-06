@@ -171,8 +171,11 @@ interface Avatar {
   /** Soldiers and players get a character, creature NPCs their own animator. */
   anim?: CharacterAnimator | CreatureAnimator;
   specKey: string;
-  /** Team-colour marker over a teammate's head (Team Deathmatch). */
-  tag?: { mesh: AbstractMesh; color: string };
+  /**
+   * Team-colour marker over a teammate's head (Team Deathmatch): its own disc, or in crowds a plain node where the
+   * disc goes, drawn through its colour's thin instances (GameView.drawTags).
+   */
+  tag?: { node: TransformNode; color: string };
   last?: { x: number; y: number; z: number; t: number };
   vel: { x: number; z: number };
   /** Status-effect shell (burning, poisoned, frozen…), made on first need. */
@@ -189,8 +192,9 @@ interface Avatar {
   /** A body that died without a ragdoll (a creature) falls to the ground under gravity. */
   fall?: { y: number; vy: number; ground: number };
   wasAlive?: boolean;
-  /** When this view first saw it dead (ms; its body may start a few frames later: deathsToStart). */
+  /** When this view first saw it dead (ms, and the scene's frame; its body may start a few frames later: deathsToStart). */
   diedAt?: number;
+  diedFrame?: number;
   /** The held weapon and its muzzle in the weapon's own space (for tracers and flashes). */
   muzzle?: { node: TransformNode; local: Vector3 };
   /** Muzzle flash shown until this time. */
@@ -245,6 +249,13 @@ const DEATH_START_MS = 4;
  * had gone, and dropped where it stood instead of flying).
  */
 const PUSH_KEEP_MS = 1200;
+/**
+ * Or within this many frames of it: the push comes with the snapshot and the death is drawn a moment later (the view
+ * draws a little behind the snapshots), which on a page drawing a frame a second is past PUSH_KEEP_MS.
+ */
+const PUSH_KEEP_FRAMES = 3;
+/** An enemy's marker colour (a downward triangle; allies get a diamond). */
+const isEnemyTag = (color: string): boolean => color.toLowerCase() === '#ff3b3b';
 /** The way an avatar faces (its yaw; characters face +Z at yaw 0), for its ragdoll to tell front from back. */
 const facingOf = (a: Avatar): Vec3 => ({ x: Math.sin(a.root.rotation.y), y: 0, z: Math.cos(a.root.rotation.y) });
 
@@ -645,7 +656,8 @@ export class GameView {
     const spot = (n: TransformNode, i: number, row: number) => n.position.set(((i % 8) - 3.5) * 0.9, 0, row + Math.floor(i / 8) * 1.2);
     const gunCopies = guns.flatMap((path, i) =>
       [true, false].map((instanced, k) =>
-        this.models.instantiate(path, `prewarm_gun_${i}_${k}`, instanced).then(
+        // As a crowd's hands and the pickups hold them (merged instances), and as a copy of its own.
+        (instanced ? this.models.instantiateStatic(path, `prewarm_gun_${i}_${k}`) : this.models.instantiate(path, `prewarm_gun_${i}_${k}`)).then(
           (node) => {
             if (stage.isDisposed()) return void node.dispose();
             node.parent = stage;
@@ -707,7 +719,7 @@ export class GameView {
   private physics: EffectsWorld | null = null;
   readonly blood: BloodVisuals;
   /** How hard each recently hit player was pushed (shots and blasts), for the ragdoll's throw. */
-  private readonly pushes = new Map<number, { v: Vec3; t: number }>();
+  private readonly pushes = new Map<number, { v: Vec3; t: number; f: number }>();
   private lastFrame = performance.now();
   private debrisBodies: { mesh: Mesh; body: ReturnType<EffectsWorld['addBody']>; born: number; shared?: boolean }[] = [];
   readonly impacts: ImpactVisuals;
@@ -728,7 +740,7 @@ export class GameView {
     const sum = { x: keep.x + v.x, y: keep.y + v.y, z: keep.z + v.z };
     const flat = Math.hypot(sum.x, sum.z);
     const k = flat > max ? max / flat : 1;
-    this.pushes.set(slot, { v: { x: sum.x * k, y: Math.min(sum.y, max * 0.9), z: sum.z * k }, t: now });
+    this.pushes.set(slot, { v: { x: sum.x * k, y: Math.min(sum.y, max * 0.9), z: sum.z * k }, t: now, f: this.scene.getFrameId() });
     const anim = this.avatars.get(slot)?.anim;
     if (anim instanceof CreatureAnimator) anim.flinch();
   }
@@ -794,7 +806,10 @@ export class GameView {
     const push = this.pushes.get(slot);
     // A blast's push goes with every body it killed, however many frames later the body starts (PUSH_KEEP_MS).
     const died = a.diedAt ?? performance.now();
-    const fresh = push && Math.abs(died - push.t) < PUSH_KEEP_MS ? push.v : { x: 0, y: 0, z: 0 };
+    const diedFrame = a.diedFrame ?? this.scene.getFrameId();
+    const kept = !!push && (Math.abs(died - push.t) < PUSH_KEEP_MS || Math.abs(diedFrame - push.f) <= PUSH_KEEP_FRAMES);
+    const fresh = kept ? push.v : { x: 0, y: 0, z: 0 };
+    this.deathPush.set(slot, Math.round(Math.hypot(fresh.x, fresh.y, fresh.z) * 10) / 10);
     const v = { x: a.vel.x * 0.6 + fresh.x, y: 0.5 + fresh.y, z: a.vel.z * 0.6 + fresh.z };
     const p = a.root.position;
     const cam = this.scene.activeCamera?.globalPosition;
@@ -834,6 +849,9 @@ export class GameView {
 
   /** The last death's tier, distance from the camera and whether it was in view (tests). */
   lastDeath: { slot: number; tier: RagdollTier; dist: number; seen: boolean } | null = null;
+
+  /** The push (m/s) each player's last body started with (tests: a blast's dead fly with it). */
+  readonly deathPush = new Map<number, number>();
 
   /** Deaths so far by the tier they got (tests and the perf check read these). */
   readonly ragdollTiers: Record<RagdollTier, number> = { full: 0, cheap: 0, posed: 0 };
@@ -963,7 +981,7 @@ export class GameView {
     this.avatars.delete(slot);
     this.atmosphere.shadowless.delete(a.root);
     this.lyingDead.add(slot);
-    a.tag?.mesh.dispose(false, !a.tag.mesh.isAnInstance);
+    a.tag?.node.dispose(false, a.tag.node instanceof MeshClass);
     a.tag = undefined;
     a.aura?.setEnabled(false);
     a.jet?.setEnabled(false);
@@ -1751,8 +1769,11 @@ export class GameView {
         continue;
       }
       // A fresh death hands the body to a ragdoll (when the effects world and the skeleton are ready).
-      if (p.alive) a.diedAt = undefined;
-      else if (a.wasAlive) a.diedAt ??= now;
+      if (p.alive) a.diedAt = a.diedFrame = undefined;
+      else if (a.wasAlive && a.diedAt === undefined) {
+        a.diedAt = now;
+        a.diedFrame = this.scene.getFrameId();
+      }
       if (a.wasAlive && !p.alive && a.anim && this.physics && !a.ragdoll) {
         // A blast that kills twenty doesn't start twenty bodies in one frame: past a few milliseconds of
         // starting them, the rest hold their pose a frame or two and start on the next ones.
@@ -1918,6 +1939,7 @@ export class GameView {
         this.avatars.delete(slot);
       }
     }
+    this.drawTags();
   }
 
   /** Play an upper-body action on a remote avatar (shooting, melee). */
@@ -2092,8 +2114,10 @@ export class GameView {
     // Unarmed (hostages, zombies): nothing in hand.
     const def = slot > 0 && !a.unarmed ? weaponByCode(slot) : undefined;
     if (!def) return;
-    // Crowds: everyone's copy of a gun is a GPU instance of one mesh (one draw per gun model and part, not per player).
-    void this.models.instantiate(def.view.model, `held_${slot}`, this.crowd).then((node) => {
+    // Crowds: everyone's copy of a gun is a GPU instance of the model merged into one mesh per material (one draw per
+    // gun model, not per player, and one mesh per gun for the scene to look at, not one per part: round 3 of
+    // docs/PERF_96.md).
+    void (this.crowd ? this.models.instantiateStatic(def.view.model, `held_${slot}`) : this.models.instantiate(def.view.model, `held_${slot}`)).then((node) => {
       if (a.weaponSlot !== slot || a.root.isDisposed()) return node.dispose();
       // A held gun's shadow is a speck past a few metres: it casts only near the camera.
       castSmall(node);
@@ -2222,24 +2246,29 @@ export class GameView {
 
   private setTag(a: Avatar, color: string | null): void {
     if (a.tag && a.tag.color !== color) {
-      a.tag.mesh.dispose(false, !a.tag.mesh.isAnInstance);
+      a.tag.node.dispose(false, a.tag.node instanceof MeshClass);
       a.tag = undefined;
     }
     if (!color || a.tag) return;
-    // Crowds: every marker of a colour is a GPU instance of one disc (one draw per colour, not per player).
-    const mesh = this.crowd ? this.tagSource(color).createInstance(`${a.root.name}_tag`) : this.tagDisc(`${a.root.name}_tag`, color);
-    mesh.billboardMode = MeshClass.BILLBOARDMODE_ALL;
-    mesh.parent = a.root;
-    mesh.position.y = PLAYER.height + 0.35;
-    mesh.isPickable = false;
-    a.tag = { mesh, color };
+    // Crowds: a plain node where the disc goes; every marker of a colour is a thin instance of one disc, placed there
+    // each frame (drawTags): one draw per colour and no mesh per player for the scene to look at.
+    const node = this.crowd ? new TransformNode(`${a.root.name}_tag`, this.scene) : this.tagDisc(`${a.root.name}_tag`, color);
+    if (this.crowd) {
+      this.tagBatch(color);
+      if (isEnemyTag(color)) node.rotation.z = -Math.PI / 2;
+    }
+    node.billboardMode = MeshClass.BILLBOARDMODE_ALL;
+    node.parent = a.root;
+    node.position.y = PLAYER.height + 0.35;
+    if (node instanceof MeshClass) node.isPickable = false;
+    a.tag = { node, color };
   }
 
   /** A marker disc in a team colour. Allies: a diamond; enemies (red by default): a downward triangle, so the two read apart at a glance. */
-  private tagDisc(name: string, color: string): Mesh {
-    const enemy = color.toLowerCase() === '#ff3b3b';
+  private tagDisc(name: string, color: string, turned = true): Mesh {
+    const enemy = isEnemyTag(color);
     const mesh = CreateDisc(name, { radius: enemy ? 0.13 : 0.11, tessellation: enemy ? 3 : 4 }, this.scene);
-    if (enemy) mesh.rotation.z = -Math.PI / 2;
+    if (enemy && turned) mesh.rotation.z = -Math.PI / 2;
     const mat = new StandardMaterial(`${name}mat`, this.scene);
     mat.emissiveColor = Color3.FromHexString(color);
     mat.disableLighting = true;
@@ -2247,19 +2276,54 @@ export class GameView {
     return mesh;
   }
 
-  private readonly tagSources = new Map<string, Mesh>();
+  /** Per colour, the disc every crowd marker of that colour is a thin instance of, and their matrices. */
+  private readonly tagBatches = new Map<string, { mesh: Mesh; matrices: Float32Array; count: number }>();
 
-  /** The shared disc a colour's crowd markers are instances of (parked out of sight; only its instances draw). */
-  private tagSource(color: string): Mesh {
-    let src = this.tagSources.get(color);
-    if (!src) {
-      src = this.tagDisc(`tag_${color}`, color);
-      src.isPickable = false;
-      src.position.y = -10000;
-      src.freezeWorldMatrix();
-      this.tagSources.set(color, src);
+  private tagBatch(color: string): { mesh: Mesh; matrices: Float32Array; count: number } {
+    let b = this.tagBatches.get(color);
+    if (!b) {
+      // At the world's origin (its thin instances carry each marker's whole matrix, turned and placed by its node).
+      const mesh = this.tagDisc(`tag_${color}`, color, false);
+      mesh.isPickable = false;
+      mesh.freezeWorldMatrix();
+      // A handful of small discs: drawn without a bounds test (they move every frame), and they cast no shadow.
+      mesh.alwaysSelectAsActiveMesh = true;
+      mesh.metadata = { castsNoShadow: true };
+      const matrices = new Float32Array(16 * 16);
+      mesh.thinInstanceSetBuffer('matrix', matrices, 16, false);
+      mesh.setEnabled(false);
+      this.tagBatches.set(color, (b = { mesh, matrices, count: 0 }));
     }
-    return src;
+    return b;
+  }
+
+  /**
+   * Each frame after the avatars: every crowd marker drawn where its node is, as its own disc was (hidden with its
+   * body, and while its player is see-through, as instances were; never your own).
+   */
+  private drawTags(): void {
+    if (!this.tagBatches.size) return;
+    for (const b of this.tagBatches.values()) b.count = 0;
+    for (const a of this.avatars.values()) {
+      const t = a.tag;
+      if (!t || t.node instanceof MeshClass || a.hiddenSelf || (a.shown ?? 1) !== 1 || !t.node.isEnabled()) continue;
+      const b = this.tagBatches.get(t.color);
+      if (!b) continue;
+      if (b.matrices.length < (b.count + 1) * 16) {
+        const more = new Float32Array(b.matrices.length * 2);
+        more.set(b.matrices);
+        b.matrices = more;
+        b.mesh.thinInstanceSetBuffer('matrix', b.matrices, 16, false);
+      }
+      t.node.computeWorldMatrix(true).copyToArray(b.matrices, 16 * b.count++);
+    }
+    for (const b of this.tagBatches.values()) {
+      // Kept at its last count while none show: an empty thin-instanced mesh would check its shaders as a plain one.
+      b.mesh.setEnabled(b.count > 0);
+      if (!b.count) continue;
+      b.mesh.thinInstanceCount = b.count;
+      b.mesh.thinInstanceBufferUpdated('matrix');
+    }
   }
 
   private disposeAvatar(a: Avatar): void {

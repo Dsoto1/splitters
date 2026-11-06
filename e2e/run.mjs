@@ -2095,7 +2095,7 @@ async function physicsfxFlow(browser) {
       const body = v.corpses.find((c) => c.slot === s)?.a.ragdoll ?? v.avatars.get(s)?.ragdoll;
       if (!t.from || !t.to) continue;
       const outward = Math.hypot(t.to.x - at.x, t.to.z - at.z) - Math.hypot(t.from.x - at.x, t.from.z - at.z);
-      out.push({ s, tier: body?.tier ?? 'none', outward: +outward.toFixed(2), rose: +(t.top - t.from.y).toFixed(2) });
+      out.push({ s, tier: body?.tier ?? 'none', push: v.deathPush?.get(s) ?? null, outward: +outward.toFixed(2), rose: +(t.top - t.from.y).toFixed(2) });
     }
     return out;
   });
