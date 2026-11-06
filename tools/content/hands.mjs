@@ -371,7 +371,10 @@ export function fitHands({ meshes, jointNames, world, rig, overrides = {}, skin 
     const curl = o.curl ?? (closed ? 0 : round(Math.max(0.5, hand.open) * long));
     if (keep.includes(s)) {
       // The download's own fingers (`fixes.fingers: own`): its finger joints and weights stay as they came; only the
-      // measurements (palm, frame, size, curl) are taken for the game.
+      // measurements (palm, frame, size, curl) are taken for the game. A scaled hand's finger and thumb joints are
+      // scaled about the wrist with its skin (left where they were, the fingers curled about points past the
+      // knuckles: Frost Viking's at 0.8, 2026-11-06).
+      if (o.scale && o.scale !== 1) for (const name of [...n.fingers.flat(), ...n.thumb]) if (world.has(name)) moved.set(name, toWorld(scale(toLocal(world.get(name).t), o.scale)));
       data[s] = { palm: hand.palm.map(round), dir: along.map(round), across: across.map(round), palmSide: palmSide.map(round), length: round(u1), width: round(width), thickness: round(thickness), curl, fingers: 'own', ...(o.together ? { together: o.together } : {}) };
       log(`hand_${s}: ${pts.length} vertices, ${(span * 100).toFixed(1)} cm long, ${(width * 100).toFixed(1)} wide, ${(thickness * 100).toFixed(1)} thick${hand.turned ? ', turned on its joint' : ''}: own fingers (the download's joints and weights), curl ${curl}`);
       continue;

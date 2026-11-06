@@ -35,7 +35,7 @@
     "normalSize": 1024,
     "lod": 0.25,
     "feet": true,
-    "hands": { "scale": 0.8, "together": 1 },
+    "hands": { "scale": 0.8, "together": 1, "r": { "curl": 0.6 }, "l": { "curl": 0.75 } },
     "grip": {
       "gripLong": [-0.03, 0.02, -0.03],
       "supportLong": [0, 0.05, 0.04],
