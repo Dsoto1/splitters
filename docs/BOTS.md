@@ -656,20 +656,19 @@ A failed search used to back the bot off 0.2 s, doubling to 4 s, standing still 
 - **Up a ledge of up to 1.4 m** (`ESCAPE_RISE`): a jump clears about 1.1 m; a hop up a higher ledge tucks the legs up
   in the air (crouch while airborne, as players do, about 1.5 m; `tuckHop`). Undergate Transit's track beds and Sunken
   Kingdom's sunken patch, 1.4 m down, held bots that fell in.
-- **Teammates push aside, not back** (`separate`): on the move, the push from allies close by only steers a bot aside,
-  at most as strongly as its way (0.8), never back; at a ladder's foot and on a ladder, none at all, since everyone
-  goes through that one place (bodies don't block each other). The owner's playtest of Shingle Point (bots stuck at the
-  feet of the seawall ladders, at the MG nest by hill 1, in the HQ): three or four bots at a ladder pushed each other
-  off it for seconds, and two meeting in the MG nest's narrow way pushed each other back and forth. Shingle Point,
-  King of the Hill, three seeds of 180 s: stuck recoveries 1.31 → 1.07 a bot-minute, idle out of a fight 4.0 → 2.8 %;
-  Bomb, two seeds: 1.41 → 0.65. The HQ is bomb site B: six of the defenders guard it (Bomb sends half to each site), and
-  six bots keeping watch in one small room still trip over each other; the playbook is Phase B's.
-- **No route requests in the air** (out of the plane, under a canopy, a jump pad's flight): none can start there.
-  Eagle Spires' plane drop made 860 of its 1,507 failed searches in a minute.
-- **Buttons** (Primeval Park, a bot stood 218 s at the fence power): a button on cooldown isn't offered (pressed, it
-  does nothing; the fence power has 45 s between presses), a bot presses from anywhere within reach (2.2 m eye to
-  face, as players do; three bots at one button kept each other off the one spot in front of it), and a door still
-  shut 3 s after its button was pressed is left alone 30 s.
+- **Teammates push aside, not back** (`separate`): going somewhere out of a fight, the push from allies close by only
+  steers a bot aside, at most as strongly as its way (0.8), never back; at a ladder's foot and on a ladder, none at
+  all, since everyone goes through that one place (bodies don't block each other). In a fight, and round a lift, it
+  stays as it was (spread out, bots die less: capping it in fights too cost a tenth of the CTF flag takes). The owner's
+  playtest of Shingle Point (bots stuck at the feet of the seawall ladders, at the MG nest by hill 1, in the HQ):
+  three or four bots at a ladder pushed each other off it for seconds, and two meeting in the MG nest's narrow way
+  pushed each other back and forth. Shingle Point, King of the Hill, three seeds of 180 s: stuck recoveries 1.31 →
+  0.80 a bot-minute, idle out of a fight 4.0 → 3.7 %; Bomb, two seeds: 1.41 → 0.46. Five CTF maps, eleven matches:
+  2.31 → 2.01, idle spells of 10 s and more 3.5 → 1.0 a match, captures 5 → 8. The HQ is bomb site B: six of the
+  defenders guard it (Bomb sends half to each site), and six bots keeping watch in one small room still trip over each
+  other now and then; the playbook is Phase B's.
+- **No route requests from a ladder** off the navmesh (as none in the air): a bot whose goal changes mid-climb carries
+  on along it and asks off it. Fernwood Moon's vine ladder made hundreds of failed searches a match.
 
 ## Measuring
 

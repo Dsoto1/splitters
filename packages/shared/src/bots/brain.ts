@@ -295,6 +295,8 @@ const DODGE_SPRINT_ETA = 1.2;
 const STEP_OFF = 2.2;
 /** A path corner counts as reached this close (m), or once passed and within PASS_RADIUS. */
 const CORNER_RADIUS = 0.45;
+/** How strongly teammates close by push a bot going somewhere out of a fight aside, at most (the way itself is 1). */
+const SEPARATE_MAX = 0.8;
 const PASS_RADIUS = 1.4;
 
 /** Tactical decisions (cover, grenades, mounts) run at about 10 Hz, staggered. */
@@ -1565,7 +1567,7 @@ export class BotBrain {
     }
     // Going somewhere (or fighting on the move), as opposed to only being nudged aside by a teammate: what stuck checks judge.
     const meaning = moveYaw !== null || backOff || strafe;
-    moveYaw = this.separate(view, moveYaw);
+    moveYaw = this.separate(view, moveYaw, !target && !strafe && !backOff);
 
     let forward = 0;
     let right = 0;
@@ -2817,9 +2819,16 @@ export class BotBrain {
   /**
    * Teammates don't stack up: steer away from allies close by, and step aside when
    * standing on top of one (squads walking one navmesh path would otherwise move as a clump).
+   * Going somewhere out of a fight (`travelling`), the push only steers aside, never back, and at most as strongly as
+   * the way itself: two bots meeting in a narrow way pushed each other back and forth (Shingle Point's MG nest by hill
+   * 1), and bodies don't block each other anyway. (In a fight it stays as it was: spread out, bots die less.) At a
+   * ladder's foot and on it, none: everyone goes through that one place, one after another (three or four bots pushed
+   * each other off Shingle Point's seawall ladders for seconds on end).
    */
-  private separate(view: BotWorldView, moveYaw: number | null): number | null {
+  private separate(view: BotWorldView, moveYaw: number | null, travelling = false): number | null {
     if (!view.allies?.length) return moveYaw;
+    // (Not waiting for or riding a lift: those keep their spacing round the shaft.)
+    if (view.self.climbing || (!this.holdStill && this.atLadder(view.self.pos))) return moveYaw;
     const me = view.self.pos;
     let px = 0;
     let pz = 0;
@@ -2839,9 +2848,30 @@ export class BotBrain {
     }
     if (!px && !pz) return moveYaw;
     if (moveYaw === null) return hypot(px, pz) > 1.4 ? Math.atan2(px, pz) : null;
-    const mx = Math.sin(moveYaw) + px;
-    const mz = Math.cos(moveYaw) + pz;
-    return Math.atan2(mx, mz);
+    const wx = Math.sin(moveYaw);
+    const wz = Math.cos(moveYaw);
+    if (travelling) {
+      const back = px * wx + pz * wz;
+      if (back < 0) {
+        px -= back * wx;
+        pz -= back * wz;
+      }
+      const push = hypot(px, pz);
+      if (push > SEPARATE_MAX) {
+        px *= SEPARATE_MAX / push;
+        pz *= SEPARATE_MAX / push;
+      }
+    }
+    return Math.atan2(wx + px, wz + pz);
+  }
+
+  /** Heading for a ladder's foot (within a few metres) or up or down one: the path's leg there is too steep to walk. */
+  private atLadder(me: Vec3): boolean {
+    const i = this.pathIndex;
+    const c = this.path[i];
+    if (!c) return false;
+    const steep = (a: Vec3 | undefined, b: Vec3 | undefined) => !!a && !!b && Math.abs(b.y - a.y) > 1.5 && Math.abs(b.y - a.y) > horizontalDistance(a, b) * 1.5;
+    return (steep(c, this.path[i + 1]) && horizontalDistance(me, c) < 4) || steep(i > 0 ? this.path[i - 1] : undefined, c);
   }
 
   // ------------------------------------------------------------------ navigation
@@ -2892,7 +2922,9 @@ export class BotBrain {
     // is asked for until it lands; a route it is following (the pad's) carries on, and a canopy steers straight for the
     // goal meanwhile. (Before, every replan in the air was a failed search: 860 of Eagle Spires' 1,507 in a minute.)
     const replan = (goalMoved && view.tick - this.lastPathTick >= 2) || ((stale || exhausted) && view.tick - this.lastPathTick >= 6);
-    if (replan && me.grounded === false && !me.climbing && !view.nav.closestPoint(me.pos)) {
+    // (On a ladder off the navmesh likewise: it carries on along it and plans again off it. Fernwood Moon's vine ladder
+    // made hundreds of failed searches a match from bots on it whose goal changed.)
+    if (replan && (me.grounded === false || me.climbing) && !view.nav.closestPoint(me.pos)) {
       // (Still where it is going: a canopy steers for it.)
       this.goal = { ...goal };
       if (!this.path.length) this.pathMiss = true;
