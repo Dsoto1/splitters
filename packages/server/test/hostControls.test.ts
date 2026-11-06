@@ -217,14 +217,14 @@ describe('host controls on a dedicated server', () => {
     expect((await admin.waitFor('host')).state?.botSet).toMatchObject({ name: 'Duo', fill: 'only' });
     // A friend's set is made valid by the server: the look it doesn't know is random.
     const note = admin.next('notice');
-    admin.send({ t: 'host', cmd: { c: 'bots', botSet: { name: 'Trio', fill: 'only', entries: [{ name: 'Sir Clank', look: 'core.nova' }, { name: 'Zorp' }, { name: 'Newbie', look: 'not.a.look' }] } } });
+    admin.send({ t: 'host', cmd: { c: 'bots', botSet: { name: 'Trio', fill: 'only', entries: [{ name: 'Sir Clank', look: 'core.astronaut' }, { name: 'Zorp' }, { name: 'Newbie', look: 'not.a.look' }] } } });
     expect((await note).text).toBe('Admin set the bots to Trio: 3 bots only');
     const names = () => server!.match.combatants().filter((c) => c.kind === 'bot').map((c) => c.name).sort();
-    // Kept bots change in place at once (Sir Clank is now in Nova's look); the newcomer arrives with the staging.
-    expect(server.match.combatants().find((c) => c.name === 'Sir Clank')?.look).toBe('core.nova');
+    // Kept bots change in place at once (Sir Clank is now in Spacewalker's look); the newcomer arrives with the staging.
+    expect(server.match.combatants().find((c) => c.name === 'Sir Clank')?.look).toBe('core.astronaut');
     for (let i = 0; i < 100 && names().length < 3; i++) await new Promise((r) => setTimeout(r, 20));
     expect(names()).toEqual(['Newbie', 'Sir Clank', 'Zorp']);
-    expect(server.botSet()).toMatchObject({ name: 'Trio', entries: [{ name: 'Sir Clank', look: 'core.nova' }, { name: 'Zorp' }, { name: 'Newbie' }] });
+    expect(server.botSet()).toMatchObject({ name: 'Trio', entries: [{ name: 'Sir Clank', look: 'core.astronaut' }, { name: 'Zorp' }, { name: 'Newbie' }] });
     // A map change keeps the set.
     admin.send({ t: 'host', cmd: { c: 'map', map: 'room_b' } });
     await admin.waitFor('travel');

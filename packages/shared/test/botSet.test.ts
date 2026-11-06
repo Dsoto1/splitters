@@ -1,6 +1,6 @@
 import { readFileSync, readdirSync } from 'node:fs';
 import { beforeAll, describe, expect, it } from 'vitest';
-import { BOT_NAME_MAX, BOT_SET_MAX, DEFAULT_RULES, applyCommand, invertCommand, loadMap, mapBotSet, serializeMap, botSetFromText, botSetToText, initPhysics, parseBotSetPreset, parseClientMessage, presetBotSet, validateBotSet, type BotSet, type GameMode } from '../src/index.ts';
+import { BOT_NAME_MAX, BOT_SET_MAX, DEFAULT_RULES, applyCommand, invertCommand, loadMap, mapBotSet, serializeMap, botSetFromText, botSetToText, initPhysics, parseBotSetPreset, NPC_KEPT_LOOKS, parseClientMessage, presetBotSet, RETIRED_LOOKS, validateBotSet, type BotSet, type GameMode } from '../src/index.ts';
 import { BotFiller, HostControl, Match, initNavigation, type Combatant } from '../src/match.ts';
 import { makeMap } from './helpers.ts';
 
@@ -50,6 +50,8 @@ describe('bot sets: the data', () => {
     expect(validateBotSet('nope')).toBeNull();
     expect(validateBotSet({ entries: 'nope' })).toBeNull();
     expect(validateBotSet({})!.set).toEqual({ name: 'Custom bots', entries: [], fill: 'random' });
+    // A set saved before a look was retired plays the look that replaced it (Capt. Nova: Spacewalker, 2026-11-06).
+    expect(validateBotSet({ entries: [{ name: 'Orion', look: 'core.nova' }] })!.set.entries).toEqual([{ name: 'Orion', look: 'core.astronaut' }]);
   });
 
   it('round-trips through its text form (console, launcher, BOTSET)', () => {
@@ -66,7 +68,11 @@ describe('bot sets: the data', () => {
     const files = readdirSync(dir).filter((f) => f.endsWith('.json'));
     expect(files.length).toBeGreaterThanOrEqual(3);
     for (const f of files) {
-      const p = parseBotSetPreset(JSON.parse(readFileSync(new URL(f, dir), 'utf8')));
+      const raw = JSON.parse(readFileSync(new URL(f, dir), 'utf8'));
+      // A shipped set names the looks it plays: none retired (a retired look moves to its replacement in the file too,
+      // as Capt. Nova's bot did to Spacewalker). Looks an NPC role keeps (the Goblin) are left: their files stay.
+      for (const e of raw.entries) if (!NPC_KEPT_LOOKS.has(e.look)) expect(e.look in RETIRED_LOOKS, `${f}: ${e.name} ${e.look}`).toBe(false);
+      const p = parseBotSetPreset(raw);
       expect(p, f).not.toBeNull();
       expect(`${p!.id}.json`).toBe(f);
       const s = presetBotSet(p!);
@@ -122,7 +128,7 @@ describe('bot sets in a match (BotFiller)', () => {
   });
 
   it('kept bots keep who they are across rebalances: random bots give way first, then the set from its end', () => {
-    const s = set([{ name: 'Keep1', look: 'core.knight' }, { name: 'Keep2', look: 'core.nova' }, { name: 'Keep3' }]);
+    const s = set([{ name: 'Keep1', look: 'core.knight' }, { name: 'Keep2', look: 'core.astronaut' }, { name: 'Keep3' }]);
     const { match, bots, control } = setup('core.deathmatch', 7, s);
     expect(botsOf(match)).toHaveLength(6);
     // The random bots score best: they still give way first.
@@ -165,10 +171,10 @@ describe('bot sets in a match (BotFiller)', () => {
     expect(ace.look).toBe('core.knight');
     expect(ace.bot!.difficulty.id).toBe('hard');
     // Rename and relook in place (same position in the list): the same bot, not a new one.
-    control.apply({ c: 'bots', botSet: set([{ name: 'Ace of Spades', look: 'core.nova' }, { name: 'Bo' }, { name: 'Cy' }], 'only', 'Trio') });
+    control.apply({ c: 'bots', botSet: set([{ name: 'Ace of Spades', look: 'core.astronaut' }, { name: 'Bo' }, { name: 'Cy' }], 'only', 'Trio') });
     const same = match.slots[ace.slot]!;
     expect(same.name).toBe('Ace of Spades');
-    expect(same.look).toBe('core.nova');
+    expect(same.look).toBe('core.astronaut');
     expect(same.bot!.difficulty.id).toBe('normal');
     // Back to random bots: the set's bots play on under random names, and the fill is kept.
     control.apply({ c: 'bots', botSet: null });
