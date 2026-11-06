@@ -770,6 +770,40 @@ like 2–3 bots protect a flag, and the rest go out there and try to get the oth
 
 
 
+### Queued (owner-approved, 2026-11-06): Match Setup redesign, NEXT FREE SLOT (ahead of the follow-ons)
+**Owner's report** (screenshot: St. John's TDM 24v24, desktop):
+- The setup sidebar's text doesn't display properly. For example, "The map suggests 12v12." is crushed into a narrow
+  column beside "Next: bots".
+- It isn't well organised: the most important options (points, time, game mode) should be available at once.
+
+**Owner's asks:**
+- A footer that stays on screen (Start never scrolls away), with Host/Local/Online as a choice beside it, not a rival
+  button.
+- One panel open at a time on small screens; several on desktop.
+- Humans and bots shown separately: "24v24 · 48 players" reads as 48 people.
+- One fit indicator instead of the wall of yellow warnings.
+- The orange rule chips folded into Advanced rules.
+- Presets that adapt rather than an exhaustive list.
+- Teams that grow when you add bots. Today a team size of 10 caps the bots, so adding them snaps back.
+
+**Approved design:**
+1. Mode, score and time (and the mode's key setting) always on top.
+2. Presets computed from the map, its spawns and the device: Duel, Small, Map's pick, Big battle, Max; editing makes
+   it Custom.
+3. Humans + bots = total per team. Adding a bot grows the team. An Even teams toggle. A plain message when a cap stops
+   you.
+4. A fit indicator (Fits / Crowded / Problem). Clicking it shows the details. Suggestions are buttons ("Use 12v12").
+5. Advanced rules on one summary line, with the chips inside.
+6. A sticky footer: Start match plus an Offline / Host online switch, with saved setups in a menu.
+7. Responsive layout.
+8. Keyboard and gamepad focus order.
+
+The brief is in the session scratchpad, `briefs/match-setup.md`: code map, constraints (keep `MatchSetup` and saved
+setups compatible; the menu bundle budget) and proof (screenshots at 4 sizes including a phone, unit and e2e checks).
+
+**Slots:** the first running agent to finish hands its slot to this. Its own follow-on (Phase B, set pieces part 2
+or 3) takes the next slot that frees.
+
 ### Queued (owner-approved, 2026-11-06): bot AI, logic and navigation (docs/BOT_AI_PLAN.md)
 The owner asked for a plan for bot logic and navigation as a whole, and approved this order:
 - **Phase A** (navigation audit from every walkable area, never stand still on a failed route, the bot scorecard with
