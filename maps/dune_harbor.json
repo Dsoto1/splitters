@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 25,
+  "formatVersion": 26,
   "metadata": {
     "id": "dune_harbor",
     "name": "Dune Harbor",
@@ -8708,7 +8708,7 @@
       "position": [
         16,
         0,
-        -20
+        -19.25
       ],
       "kind": "spawn",
       "yaw": 0,
@@ -10443,12 +10443,12 @@
     },
     {
       "id": "prop_c21s6extmy",
-      "kind": "prop",
       "position": [
         19.5,
         0,
         -12
       ],
+      "kind": "prop",
       "model": "prop.tiled_well",
       "yaw": 0,
       "scale": 1,
@@ -10457,12 +10457,12 @@
     },
     {
       "id": "prop_mv1hjyr2b3",
-      "kind": "prop",
       "position": [
         -66,
         -0.49,
         8
       ],
+      "kind": "prop",
       "model": "prop.vehicle_raider_buggy",
       "yaw": 0.524,
       "scale": 1,
@@ -10471,12 +10471,12 @@
     },
     {
       "id": "prop_dy2f5b95fu",
-      "kind": "prop",
       "position": [
         66,
         -0.49,
         -8
       ],
+      "kind": "prop",
       "model": "prop.vehicle_raider_buggy",
       "yaw": -2.618,
       "scale": 1,
@@ -10485,12 +10485,12 @@
     },
     {
       "id": "prop_5hcaxh24b1",
-      "kind": "prop",
       "position": [
         16,
         0,
         -20
       ],
+      "kind": "prop",
       "model": "prop.dc_rug_rack",
       "yaw": 0,
       "scale": 1,

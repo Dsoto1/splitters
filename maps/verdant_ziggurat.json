@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 25,
+  "formatVersion": 26,
   "metadata": {
     "id": "verdant_ziggurat",
     "name": "Verdant Ziggurat",
@@ -2070,9 +2070,9 @@
     {
       "id": "spawn_115",
       "position": [
-        -10,
+        -9.82,
         0,
-        26.5
+        26.68
       ],
       "kind": "spawn",
       "yaw": 3.141592653589793,
@@ -2125,9 +2125,9 @@
     {
       "id": "spawn_120",
       "position": [
-        -5.5,
+        -5.21,
         0,
-        26.5
+        25.81
       ],
       "kind": "spawn",
       "yaw": 3.141592653589793,
@@ -2158,9 +2158,9 @@
     {
       "id": "spawn_123",
       "position": [
+        0.19,
         0,
-        0,
-        -2
+        -2.46
       ],
       "kind": "spawn",
       "yaw": 0,
@@ -3085,12 +3085,12 @@
     },
     {
       "id": "prop_4np7umrgol",
-      "kind": "prop",
       "position": [
         3.8,
         6,
         22
       ],
+      "kind": "prop",
       "model": "prop.temple_monk_statue",
       "yaw": 3.142,
       "scale": 0.8,
@@ -3099,12 +3099,12 @@
     },
     {
       "id": "prop_7bx3655tha",
-      "kind": "prop",
       "position": [
         12.2,
         6,
         22
       ],
+      "kind": "prop",
       "model": "prop.temple_monk_statue",
       "yaw": 3.142,
       "scale": 0.8,
@@ -3113,12 +3113,12 @@
     },
     {
       "id": "prop_n3v86bkc4j",
-      "kind": "prop",
       "position": [
         5.2,
         6,
         11.2
       ],
+      "kind": "prop",
       "model": "prop.jt_banner_red",
       "yaw": 3.142,
       "scale": 1,
@@ -3127,12 +3127,12 @@
     },
     {
       "id": "prop_st8bd02gw4",
-      "kind": "prop",
       "position": [
         10.8,
         6,
         11.2
       ],
+      "kind": "prop",
       "model": "prop.jt_banner_red",
       "yaw": 3.142,
       "scale": 1,
@@ -3141,12 +3141,12 @@
     },
     {
       "id": "prop_miejf7xudn",
-      "kind": "prop",
       "position": [
         -2.6,
         2,
         26.4
       ],
+      "kind": "prop",
       "model": "prop.hanging_moss",
       "yaw": 0,
       "scale": 1,
@@ -3155,12 +3155,12 @@
     },
     {
       "id": "prop_u4y61xf504",
-      "kind": "prop",
       "position": [
         18.6,
         2,
         26.4
       ],
+      "kind": "prop",
       "model": "prop.hanging_moss",
       "yaw": 0,
       "scale": 1,
@@ -3169,12 +3169,12 @@
     },
     {
       "id": "prop_eo5v8jcjg6",
-      "kind": "prop",
       "position": [
         0.5,
         4,
         25.5
       ],
+      "kind": "prop",
       "model": "prop.jg_liana",
       "yaw": 0,
       "scale": 1,
@@ -3183,12 +3183,12 @@
     },
     {
       "id": "prop_4avlgmpksl",
-      "kind": "prop",
       "position": [
         15.5,
         4,
         25.5
       ],
+      "kind": "prop",
       "model": "prop.jg_liana",
       "yaw": 0,
       "scale": 1,
@@ -3197,12 +3197,12 @@
     },
     {
       "id": "prop_yftb1t9gw9",
-      "kind": "prop",
       "position": [
         -3.4,
         2,
         18
       ],
+      "kind": "prop",
       "model": "prop.jt_plant_cluster",
       "yaw": 0,
       "scale": 1,
@@ -3211,12 +3211,12 @@
     },
     {
       "id": "prop_k22sqpe49m",
-      "kind": "prop",
       "position": [
         18.4,
         2,
         12
       ],
+      "kind": "prop",
       "model": "prop.jt_plant_cluster",
       "yaw": 0,
       "scale": 1,
@@ -3225,12 +3225,12 @@
     },
     {
       "id": "prop_efvfoqi6bc",
-      "kind": "prop",
       "position": [
         6.2,
         0.8,
         4.3
       ],
+      "kind": "prop",
       "model": "prop.jt_wall_torch",
       "yaw": 3.142,
       "scale": 1,
@@ -3239,12 +3239,12 @@
     },
     {
       "id": "prop_3x6wz52cmk",
-      "kind": "prop",
       "position": [
         9.8,
         0.8,
         4.3
       ],
+      "kind": "prop",
       "model": "prop.jt_wall_torch",
       "yaw": 3.142,
       "scale": 1,

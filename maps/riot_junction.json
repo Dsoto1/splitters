@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 22,
+  "formatVersion": 26,
   "metadata": {
     "id": "riot_junction",
     "name": "Riot Junction",
@@ -16385,7 +16385,7 @@
       "position": [
         12,
         0,
-        92
+        92.5
       ],
       "kind": "spawn",
       "yaw": 1.5707963267948966,
@@ -25265,7 +25265,6 @@
     "style": "invisible",
     "height": 8
   },
-  "track": null,
   "backdrop": {
     "sky": "night",
     "scenery": "city",

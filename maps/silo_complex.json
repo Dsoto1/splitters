@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 17,
+  "formatVersion": 26,
   "metadata": {
     "id": "silo_complex",
     "name": "Silo Complex",
@@ -1143,9 +1143,9 @@
     {
       "id": "spawn_099",
       "position": [
-        32,
+        32.19,
         0,
-        41.5
+        41.04
       ],
       "kind": "spawn",
       "yaw": -1.5707963267948966,
@@ -1187,9 +1187,9 @@
     {
       "id": "spawn_103",
       "position": [
-        9.5,
+        9.4,
         0,
-        9.5
+        9.27
       ],
       "kind": "spawn",
       "yaw": 0.7853981633974483,
@@ -1198,9 +1198,9 @@
     {
       "id": "spawn_104",
       "position": [
-        30.5,
+        30.6,
         0,
-        30.5
+        30.73
       ],
       "kind": "spawn",
       "yaw": -2.356194490192345,
