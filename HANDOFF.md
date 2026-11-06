@@ -195,6 +195,36 @@ are right for the campus. The shallow vault stays. Skybridges keep the pack's fa
   facade) are an override away (`overrides.roles.facade: "none"`); which should be the default?
 <!-- /setpieces -->
 
+### Queued (owner, 2026-11-06): performance round 4, crowds. Right after the Match Setup follow-ups, ahead of Roulette
+**The owner:**
+- "Focus round 4 on crowds."
+- "32v32 would be max I want to shoot for without dedicated host."
+- "Push dedicated hosts to 64v64 if at all possible."
+- Running characters look choppy at a distance (fewer animation frames). Push the reduced-rate distance out.
+
+**Scope:**
+- Animation that doesn't look choppy and costs less: screen-size bands, smoothing between samples, shared or cheaper
+  evaluation.
+- The M1 recording's three hitches: start-of-match shaders, the mass-death spike, GC frames.
+- The browser cap raised to 32v32 (`BROWSER_MAX_PLAYERS` 48 → 64) once measured.
+- 64v64 on dedicated hosts (`MAX_PLAYER_SLOTS` 96 → 128) only if the measurements hold; otherwise a precise report.
+- The handoff e2e flake.
+
+The brief is in the session scratchpad, `briefs/perf-4.md`.
+
+### Queued (owner, 2026-11-06): Match Setup follow-ups, NEXT FREE SLOT (before Roulette)
+**Owner's answers to the redesign's questions:**
+1. Host online lists the match publicly from both places.
+2. Spectate keeps following the Offline/Host online switch.
+3. Bring back "save for next match" in the Host tab.
+4. Cap co-op size presets at the map's recommended size.
+
+**New:** default score and time scale with players + bots. The owner: "24v24 in a 40 pt match means on average 1 kill
+per; 24v24 plays ok with 500 points, but also 15–20 min."
+
+The brief is in the session scratchpad, `briefs/match-setup-followups.md`. It has a curve fitted to measured kill rates
+and anchored at 4v4 ≈ 40 points / 10 min and 24v24 ≈ 500 points / 15–20 min.
+
 <!-- match-setup -->
 ### Match Setup redesign, the Host tab, Spectate before the start (`wip/match-setup`, agents, 2026-11-06; main bc6037a1 merged in; green on `check/match-setup` at c32bbf20, run 42242658709; not landed)
 The owner's report and approved design are in the queued section below ("Queued … Match Setup redesign"); the brief is
@@ -1193,6 +1223,14 @@ variant for MAP 21.
 - **Owner, 2026-11-06: no moving D-Day boats for now.** Matches have to last well beyond the first landing, as a
   semi-traditional arena-style FPS match, so the landing craft is static dressing and cover. MAP 21's beach is
   where the fighting starts, not a scripted arrival.
+
+### Owner's answers on the 11-06 intake (2026-11-06), for the follow-up
+- **Names stay:** Spacewalker, Starfarer, Shellback.
+- **Keep the US flag** on Spacewalker.
+- **Shellback smaller:** "should be smaller, not that big at all". Large → standard: rebuild, portrait, grip re-check.
+- **"I did not make any, they are Meshy community."** Relabel the airliner shell, the buggy and its tire, and the Alien
+  Biker as Meshy Community CC0. The mining machines stay owned: we generated them through the Meshy API with the
+  owner's approval, 2026-10-30, so they weren't the owner's own downloads.
 
 ### Queued (owner, 2026-11-06): character intake, astronauts, crocodile and tortoise. NEXT FREE SLOT ("when able")
 **Licence (owner, 2026-11-06):** "all Community CC0 and should be treated as such unless I let you know I created them in
