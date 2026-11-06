@@ -28,7 +28,9 @@ docs/BOTS.md, "Navigation audit", "Never standing still on a failed route", "Sco
   (a flag on a ledge, a pickup on a crate: the last step straight to it), a bot knocked off the navmesh walks back
   onto it, long searches walk the part they found, and bots pick only goals they can get to. Buttons on cooldown
   aren't pressed again and again (Primeval Park: a bot stood 218 s at one), and a bot at a console's button looks up
-  at it and presses (they stood under Serene City's thaw console looking level).
+  at it and presses (they stood under Serene City's thaw console looking level). A bot gives up on a pickup it
+  stands at and doesn't get (five bots stood round a dropped spear they already had on Sandfall Colosseum), and
+  nobody spawns beside a teammate stuck where nobody walks (Dune Harbor: under a street floor).
 - **Shingle Point** (owner's playtest): bots no longer push each other off the seawall ladders or back and forth in
   the MG nest by hill 1 (teammates steer each other aside, never back, and not at all at a ladder).
 - **Spawn points inside something solid moved out of it** in MapMaker on 25 maps, and are now an error on the

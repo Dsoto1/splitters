@@ -674,11 +674,20 @@ A failed search used to back the bot off 0.2 s, doubling to 4 s, standing still 
   stands on the floor in front of the button where its route ends, not at the button's own height. Serene City's thaw
   console held eight bots for minutes once teammates stopped shoving each other about it (idle out of a fight 18.7 %
   of the match; 3.8 % now, as before). Aiming at someone, it fights first.
+- **A pickup it stands at and doesn't get is given up** (`refused`, 90 s like one it can't reach): within pickup reach
+  of an item still lying there, the match offered it and it wasn't taken (a dropped spear the bot already has, its
+  ammo full), and the next pickup check sent the bot straight back to it. Sandfall Colosseum, CTF, two matches of 300
+  s: five bots round one dropped spear for half a minute; idle out of a fight 13.3 → 5.1 %, frozen 9.2 → 1.7 %, idle
+  spells of 10 s and more 15.0 → 0.5 a match. Pharaoh's Reach: 6.3 → 1.3 %, 5.1 → 0.1 %, 5.0 → 0.
+- **Spawning beside a teammate only on walkable ground** (`Match.squadSpawnSpot`, the navmesh within a step of both
+  the teammate and the spot): a rider a vehicle left under one of Dune Harbor's street floors drew the squadmates
+  spawning after it in with it, four a round.
 
 Left for Phase C (found on the way): a mount's body isn't on the navmesh. Iron Compound's gantry MG turret
 (`mount_148`) stands in the 1.6 m walkway with 0.8 m beside it, and bots coming back along the walkway walk into it
 (most of Iron Compound's stuck recoveries, there before this round too); a bot's sidestep gets it round, but the
-mode's goal sends it back along the same line.
+mode's goal sends it back along the same line. And a dropship landing beside Dune Harbor's sunken room leaves its
+riders under the street floor, where nothing gets them out (the Bomb and Hostage samples, modes the map doesn't list).
 
 ## Measuring
 

@@ -1192,9 +1192,7 @@ or 3) takes the next slot that frees.
 ### Queued (owner-approved, 2026-11-06): bot AI, logic and navigation (docs/BOT_AI_PLAN.md)
 The owner asked for a plan for bot logic and navigation as a whole, and approved this order:
 - **Phase A** (navigation audit from every walkable area, never stand still on a failed route, the bot scorecard with
-  limits in nightly CI): right after `wip/bots-idle` lands, alongside set pieces.
-  - It builds on that branch's `pnpm bot-report`.
-  - Give it to the bots-idle agent as a follow-on if it's still running.
+  limits in nightly CI): **done on `wip/bots-a`** (its section near the top, "Bot AI Phase A"; not landed).
 - **Phase B** (scored choices instead of competing states, a team brain per mode, mode playbooks): next, **before
   MAP 21**.
 - **Then Fireteams** (owner-approved 2026-11-06, docs/FIRETEAMS_PLAN.md), right after Phase B.
@@ -1211,7 +1209,8 @@ The owner asked for a plan for bot logic and navigation as a whole, and approved
 with `pnpm bench:96:clump` before and after; bot thinking at 96 bots stays within 2.5 ms a tick (today 1.0–1.8).
 
 ### Owner-approved order after the current agents (2026-11-05 late; owner set effort to max: "hoping for some great work")
-0. **Bot AI Phase A** (above) as soon as `wip/bots-idle` lands; **Phase B** before item 3 (MAP 21).
+0. **Bot AI Phase A** (above): done on `wip/bots-a` (section "Bot AI Phase A" near the top; land it); **Phase B**
+   before item 3 (MAP 21).
 1. **Set pieces:** plan in docs/SET_PIECES_PLAN.md. Part 1 (data, expansion, carriageway, skybridge) on
    `wip/setpieces` (its section near the top: what landed, the API, notes for parts 2 and 3). Then, by owner decision (2026-11-06, "go with your suggestion for part 3"):
    - **Part 2**, after part 1: the MapMaker UI on `wip/setpieces-2` (tab, ghost, Explode, Save selection, library),
