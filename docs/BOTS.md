@@ -669,6 +669,16 @@ A failed search used to back the bot off 0.2 s, doubling to 4 s, standing still 
   other now and then; the playbook is Phase B's.
 - **No route requests from a ladder** off the navmesh (as none in the air): a bot whose goal changes mid-climb carries
   on along it and asks off it. Fernwood Moon's vine ladder made hundreds of failed searches a match.
+- **At a button, it looks at the button and presses** (`pressReach`): in reach, the look along its route no longer
+  turns it level again every tick (the two turns cancelled, so a bot under a console's button never faced it), and it
+  stands on the floor in front of the button where its route ends, not at the button's own height. Serene City's thaw
+  console held eight bots for minutes once teammates stopped shoving each other about it (idle out of a fight 18.7 %
+  of the match; 3.8 % now, as before). Aiming at someone, it fights first.
+
+Left for Phase C (found on the way): a mount's body isn't on the navmesh. Iron Compound's gantry MG turret
+(`mount_148`) stands in the 1.6 m walkway with 0.8 m beside it, and bots coming back along the walkway walk into it
+(most of Iron Compound's stuck recoveries, there before this round too); a bot's sidestep gets it round, but the
+mode's goal sends it back along the same line.
 
 ## Measuring
 
