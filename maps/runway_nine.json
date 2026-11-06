@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 26,
+  "formatVersion": 27,
   "metadata": {
     "id": "runway_nine",
     "name": "Runway Nine",
@@ -24,11 +24,11 @@
     ],
     "release": {
       "mapId": "m_5x4zlanrxgtdua3l",
-      "versionId": "v_jenbizo7xdg3f7um",
-      "revision": 1,
-      "contentHash": "sha256:87ec1461895431804946b6642d0c3478db977ac805b94d07e272616a0ebe3af8",
-      "schemaVersion": 26,
-      "releasedAt": "2026-11-06T12:21:39.510Z"
+      "versionId": "v_hpewgzv2csdsykre",
+      "revision": 2,
+      "contentHash": "sha256:89133f7b0c717f78eab6a96c778230af55618685a93413259310c5f7a2d5f314",
+      "schemaVersion": 27,
+      "releasedAt": "2026-11-06T15:58:23.342Z"
     }
   },
   "classicStructure": {

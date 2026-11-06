@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 26,
+  "formatVersion": 27,
   "metadata": {
     "id": "hollowmere_manor",
     "name": "Hollowmere Manor",
@@ -20,11 +20,11 @@
     ],
     "release": {
       "mapId": "m_ccrw2yobc2qzmf5z",
-      "versionId": "v_jyj27oneofyxq2pg",
-      "revision": 1,
-      "contentHash": "sha256:e03cac9004045eeff5c88e8c8c0012ca4548fe8340f2283368f1d15ee18134eb",
-      "schemaVersion": 26,
-      "releasedAt": "2026-11-06T12:36:25.673Z"
+      "versionId": "v_py2k3viz3zfer3uk",
+      "revision": 2,
+      "contentHash": "sha256:557b7702dddfa3cb904a6b3cca083d2acebde364a69aae20cc843a106d853a60",
+      "schemaVersion": 27,
+      "releasedAt": "2026-11-06T15:55:31.660Z"
     }
   },
   "classicStructure": {

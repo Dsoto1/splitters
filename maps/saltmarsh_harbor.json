@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 26,
+  "formatVersion": 27,
   "metadata": {
     "id": "saltmarsh_harbor",
     "name": "Saltmarsh Harbor",
@@ -21,11 +21,11 @@
     ],
     "release": {
       "mapId": "m_qxyvyiqpuk3bopv2",
-      "versionId": "v_ngi4vpg4jmfzftco",
-      "revision": 1,
-      "contentHash": "sha256:fd8b201c777c259ec14f8390fa10e8a0e04868f9d1bb3f4849b42209ac794f4a",
-      "schemaVersion": 26,
-      "releasedAt": "2026-11-06T12:34:36.858Z"
+      "versionId": "v_nmxnjetp6vapb55m",
+      "revision": 2,
+      "contentHash": "sha256:3f9a456fa053201093783829b29e9fe7cc0961eb175b3cbab031edcbe7d9fd4f",
+      "schemaVersion": 27,
+      "releasedAt": "2026-11-06T15:59:14.575Z"
     }
   },
   "classicStructure": {

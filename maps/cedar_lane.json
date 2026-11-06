@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 26,
+  "formatVersion": 27,
   "metadata": {
     "id": "cedar_lane",
     "name": "Cedar Lane",
@@ -20,11 +20,11 @@
     ],
     "release": {
       "mapId": "m_7esvtm4kykw23mm2",
-      "versionId": "v_sz34lzw4yfjbcfcf",
-      "revision": 1,
-      "contentHash": "sha256:9c30140f0b5c6da850a71cd640a4d9d9d599a6c8716b70a9b5f5e8a552ee8b29",
-      "schemaVersion": 26,
-      "releasedAt": "2026-11-06T11:59:29.592Z"
+      "versionId": "v_pw2xnyehod6rlteu",
+      "revision": 2,
+      "contentHash": "sha256:117b40c901d7706e57129165eb5aa3ab7aed9e616d0b212eb41ae5f8da3213e0",
+      "schemaVersion": 27,
+      "releasedAt": "2026-11-06T15:52:38.727Z"
     }
   },
   "classicStructure": {

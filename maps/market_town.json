@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 26,
+  "formatVersion": 27,
   "metadata": {
     "id": "market_town",
     "name": "Market Town",
@@ -21,11 +21,11 @@
     ],
     "release": {
       "mapId": "m_d3ml2watxrhzzmt6",
-      "versionId": "v_fgmrwsqj3d5in7oc",
-      "revision": 1,
-      "contentHash": "sha256:0900f6494155162106e38d82635cdf18184293185222d7f47a4154f935c252ba",
-      "schemaVersion": 26,
-      "releasedAt": "2026-11-06T12:14:07.016Z"
+      "versionId": "v_dyawcll2ljmkbb4y",
+      "revision": 2,
+      "contentHash": "sha256:d8871adbead583528f7ec1b70ca8664e52cb90ff877f616cbecfe21f67010da9",
+      "schemaVersion": 27,
+      "releasedAt": "2026-11-06T15:57:21.095Z"
     }
   },
   "classicStructure": {

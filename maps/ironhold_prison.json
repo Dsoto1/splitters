@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 26,
+  "formatVersion": 27,
   "metadata": {
     "id": "ironhold_prison",
     "name": "Ironhold Prison",
@@ -24,11 +24,11 @@
     ],
     "release": {
       "mapId": "m_hec75nt4d7ttj6ub",
-      "versionId": "v_eu6c3eszybgszxdo",
-      "revision": 1,
-      "contentHash": "sha256:4d4b8097e8467e9591f5db8bf6f62189b47aa9526cd7a46c13fd2de7d0829e3b",
-      "schemaVersion": 26,
-      "releasedAt": "2026-11-06T12:33:26.991Z"
+      "versionId": "v_ze2hxs62pr7vors4",
+      "revision": 2,
+      "contentHash": "sha256:0467ea081215fc799e4484b6008eda900d9a9dd73560093308b582cbc9d977f4",
+      "schemaVersion": 27,
+      "releasedAt": "2026-11-06T15:56:35.975Z"
     }
   },
   "classicStructure": {

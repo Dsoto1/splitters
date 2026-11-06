@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 26,
+  "formatVersion": 27,
   "metadata": {
     "id": "step_temple",
     "name": "Step Temple",
@@ -19,11 +19,11 @@
     ],
     "release": {
       "mapId": "m_ohrgwqhp5taoboee",
-      "versionId": "v_sy6jsmk6vsfcgh4v",
-      "revision": 1,
-      "contentHash": "sha256:6a2f8608ab7a8fdb290c1bdcf27616df84f1eb5715f700e1a79bab6e2e3ee242",
-      "schemaVersion": 26,
-      "releasedAt": "2026-11-06T12:26:11.312Z"
+      "versionId": "v_47sm2qdptqr5mz2c",
+      "revision": 2,
+      "contentHash": "sha256:fc623762a7a931571beeeff50e0ac0e9b7617c4a8c75ca8f104e5626730d29f3",
+      "schemaVersion": 27,
+      "releasedAt": "2026-11-06T15:59:49.243Z"
     }
   },
   "classicStructure": {

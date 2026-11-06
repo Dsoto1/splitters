@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 26,
+  "formatVersion": 27,
   "metadata": {
     "id": "ravenscroft_hall",
     "name": "Ravenscroft Hall",
@@ -19,11 +19,11 @@
     ],
     "release": {
       "mapId": "m_h4iqy7wdte3s52lb",
-      "versionId": "v_zwrdujkpqluj5nr6",
-      "revision": 1,
-      "contentHash": "sha256:a03795121273099bbbb79f74d63da7a0092534954fc2091a961fc841e7302ad2",
-      "schemaVersion": 26,
-      "releasedAt": "2026-11-06T12:18:52.174Z"
+      "versionId": "v_p56if7oj7xbjyfhl",
+      "revision": 2,
+      "contentHash": "sha256:12fbb97dcde30c31806bcf4441fba86941cb24314f1a31c5165eeb3283452b75",
+      "schemaVersion": 27,
+      "releasedAt": "2026-11-06T15:53:23.477Z"
     }
   },
   "classicStructure": {
