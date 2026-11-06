@@ -680,7 +680,26 @@ fastest moving at about 60 m/s, on both attempts.
 Each brief has its reference image beside it. The owner approves the concept before any placement work; follow
 AGENT_BUILD_CONTRACT.md.
 
-### Queued: performance round 3 (owner's Shingle Point M1 recording, 2026-11-05; files in session scratchpad perf3/)
+### Performance round 3: IN PROGRESS on `wip/perf-3` (agent, 2026-11-06; resume notes first, the brief below)
+**Done (pushed to `wip/perf-3`):** the far-enemies fix above; prop batches, still decorations merged, fog reads the
+pre-pass depth, blood as thin instances, guns and characters warmed in view while the loading screen is up, ragdoll
+tiers by screen size, staggered starts and faster rest, minimap from a bitmap window (the previous agent, bf4fbdb6);
+shadow cascades centred on the camera (turning no longer redraws them) with the safety refresh every 240 frames
+(6087d2cd); a blast's push now goes with every body it killed however late its body starts (diedAt, and a few frames'
+grace on a slow page), with a physicsfx check that every body in view is thrown out and up (screenshots before and
+after); crowd held guns and pickup models as merged instances (one mesh per gun, not one per part) and crowd team
+markers as thin instances (4c6cc566, WIP: being measured).
+**Measured so far** (SwiftShader, Shingle Point at the owner's hitch spot, 44 characters in view): round 2 build 1,034
+draws and 1,308 active meshes a frame; round 3 540 and 612 (props 631 -> 123 meshes, the fog's own depth pass of ~300
+draws gone, ladders 86 -> merged). Shadow cache walking and turning: 12 of 270 layer renders redrew their static
+casters, half of them because a vehicle moved.
+**Next:** rebuild, re-measure (census: held guns were 145 of the meshes, markers 44), shader tour after the warm-up
+(scratchpad `p3a/tour.js`), Market Town before/after, blast before/after (`p3a/blast2.mjs` on the round 2 build in
+scratchpad `r3w/dist-before` and the new one), PERF_96.md section, CHANGELOG, checks, `check/perf-3` CI.
+**How to resume:** check out `wip/perf-3`, merge origin/main, `pnpm build`; probes in the session scratchpad `p3a/`
+(`probe.mjs <dist> <label>` with `PROBE_EVAL=<script>`; `census.js`, `tour.js`, `shadowab.js`, `minimapab.js`).
+
+#### The brief (owner's Shingle Point M1 recording, 2026-11-05; files in session scratchpad perf3/)
 **The recording:** build 76a4b03, M1 Pro, high, 49 players.
 - Averages about 20.5 ms. It holds 60 fps only in quiet views (390 draws, 185 meshes).
 - In the main views: 700–870 draws and 850–1,090 active meshes.
