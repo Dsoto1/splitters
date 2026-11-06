@@ -323,18 +323,80 @@ for each character?"
 
 The brief is in the session scratchpad, `briefs/perf-4.md`.
 
-### Queued (owner, 2026-11-06): Match Setup follow-ups, NEXT FREE SLOT (before Roulette)
-**Owner's answers to the redesign's questions:**
-1. Host online lists the match publicly from both places.
-2. Spectate keeps following the Offline/Host online switch.
-3. Bring back "save for next match" in the Host tab.
-4. Cap co-op size presets at the map's recommended size.
+<!-- match-setup-2 -->
+### Match Setup follow-ups: one Host online, Save for next match, co-op sizes, score and time follow the size (`wip/match-setup-2`, agents, 2026-11-06; main 02ec505a merged in; CI on `check/match-setup-2`: pending; not landed)
+The owner's answers to the redesign's questions (1. Host online lists the match from both places; 2. Spectate keeps
+following the Offline / Host online switch; 3. "save for next match" back in the Host tab; 4. co-op size presets capped
+at the map's size) and the request that the default score and time scale with players + bots ("24v24 in a 40 pt
+match means on average 1 kill per; 24v24 plays ok with 500 points, but also 15–20 min"). The brief is the session
+scratchpad's `briefs/match-setup-followups.md`. An earlier agent built it and was stopped by an interrupt; the next
+merged main twice (Bot AI Phase A, the four retired maps, the intake follow-up), checked the curve against Phase A's
+bots, fixed the Host tab foot and took the pictures.
 
-**New:** default score and time scale with players + bots. The owner: "24v24 in a 40 pt match means on average 1 kill
-per; 24v24 plays ok with 500 points, but also 15–20 min."
+**Screenshots** (session scratchpad `shots-ms2c/`; `shots.mjs` there makes them from a `vite preview`): Match setup on
+St. John's at 4v4, 12v12 and 24v24 (`setup-4v4.png`, `setup-12v12.png`, `setup-24v24.png`), set by hand
+(`setup-24v24-custom.png`, `setup-12v12-custom.png`: Custom stays at another size) and `setup-12v12-back-to-suggested.png`;
+the Host tab's foot in each Apply state at 1280 × 720 and 1920 × 1080 (`host-foot-<width>-1-no-changes.png`,
+`-2-apply-now`, `-3-apply-restart`, `-4-save-next`, `-5-saved`), in a match started from Match setup, so the foot has
+its Offline / Host online switch (test mode has none: it can't host).
 
-The brief is in the session scratchpad, `briefs/match-setup-followups.md`. It has a curve fitted to measured kill rates
-and anchored at 4v4 ≈ 40 points / 10 min and 24v24 ≈ 500 points / 15–20 min.
+**What's in it:**
+- **Score and time follow the size** (`sim/matchSetup.ts`: `suggestedLimits`, `setupLimits`, `withSetupLimits`,
+  `teamMinutes`, `niceScore` / `scoreStep`, `limitsScale`; `MatchSetup.scoreAuto` / `timeAuto`; `SCORE_LIMIT_MAX` 5,000
+  in rules.ts). Match setup's To win follows every size change until set by hand (a Custom tag, `#setup-limits` under
+  it with `#setup-limits-reset` "Back to suggested"). Saved setups: the old defaults (the mode's standard score, 10
+  minutes) follow the size, anything else stays (`normalizeSetup`). The Host tab's To win shows the suggestion for the
+  size being set (`#hc-suggest`, "Use suggested" `#hc-use-suggested`); a map change to another mode takes that mode's
+  suggestion (`rulesForTravel`).
+- **One Host online** (session.ts `goOnline`): Match setup's Host online lists the match as the pause menu's does (a join
+  code without a hub); a match hosted from the start is listed under the host's name (the listing waits for the roster).
+- **Save for next match** (hostPanel.ts `drawFoot`: `#hc-when`, Restart now | Next match, beside Apply while a ⟳ Restart
+  rule changed; Apply becomes Save for next match). HostControl keeps the rules (`pending`, `nextRules`) and
+  `Match.beforeRound` puts them in play when a new match starts (after the scoreboard, or Restart); map changes and the
+  rotation take them (`withPending`; servers: `travelRules`); the host tells everyone (`onNextRules`). The foot's line
+  says which happens, the Rules card what is saved.
+- **Co-op and Zombies' sizes** stop at the map's (`squadRoom`: its team layout in all, else its recommended most).
+- **bot-report** prints each match's team scores and its top bot's kills (`scores:`; `teams`, `top` in `--json`).
+- **This round's fix:** the foot's Restart now | Next match switch sat at the far right beside Offline / Host online (a
+  later `margin-left: auto` rule beat its own); only the foot's own switch is pushed right now (style.css,
+  `.pause-host-foot > .seg-switch`).
+
+**The curve** (docs/BOTS.md, "Score and time", has the tables): Team Deathmatch a point per player on a team per minute
+of the time limit, the time 10 minutes up to 6 a side, 15 up to 16, 20 above (4v4 40/10, 8v8 120/15, 12v12 180/15,
+16v16 240/15, 24v24 500/20, 48v48 950/20); Deathmatch 12 × √players kills in 10 minutes (15 for 2, 35 for 8, 50 for
+16, 70 for 32); Capture the Flag 3 captures with the team time; King of the Hill 12 hill seconds a minute of the time
+(120/10, 180/15, 240/20); rounds modes, co-op, Zombies, Fort Wars, Disc Arena and races as before.
+
+**The kill rates behind it** (`pnpm bot-report`, 10-minute matches, no limits; the leading team's points a minute,
+the middle of the maps):
+- Before Phase A (main a07cb65b, 5–7 maps a size): TDM 1v1 1.4, 2v2 3.0, 4v4 5.4, 6v6 11.4, 8v8 7.9, 16v16 13.9,
+  24v24 30.6, 48v48 56.5 (2 maps): about 1.3 a player a minute (0.9–1.5; 1.9 at 6v6 on the small maps). Deathmatch,
+  the top bot's kills a minute: 2 players 1.8, 4 2.6, 8 3.8, 12 4.6, 16 7.0, 32 5.0 (big maps).
+- After Phase A (main adad4de7 merged; the same maps, seeds and lengths, Iron Compound left out): TDM 4v4 4.0 → 4.3
+  (Diamond Park, Bunker Cross, Sandgate), 8v8 8.1 → 7.3 (+ Capitol Mall, Fernwood Moon), 24v24 32.1 → 29.3 (Diamond
+  Park, Capitol Mall, Fernwood Moon, Sunken Kingdom); Deathmatch 8 players 4.7 → 4.8, 16 7.9 → 8.4 (Sandgate,
+  Citadel); King of the Hill 8v8 Diamond Park 7.9 → 5.8, St. John's 18.1 → 18.0 hill seconds a minute; CTF 8v8
+  Diamond Park 0.2 → 0.5 captures a minute, St. John's 0.0 → 0.1. All within a seed's spread (Diamond Park 24v24: 22.7
+  and 34.9), so the curve stays: the suggestion falls due at 9.4 minutes of 10 (4v4), 16.4 of 15 (8v8: time first, at
+  about 110 of 120) and 17.1 of 20 (24v24).
+- Scripts and rows: session scratchpad `measure/` (before) and `measure-a/` (after: `run.sh`, `run2.sh`,
+  `compare.mjs`, `tables.mjs`).
+
+**Tests:** unit `packages/shared/test/matchLimits.test.ts` (the curve per mode, Custom and suggested, old saves, co-op
+caps, Save for next match at the next round, Restart and a map change, scores past 1,000) with the matchSetup,
+setupPlan, serverRules and hostControl tests; e2e `teams` (`setupLimitsFlow`: the suggested score and time follow the
+size), `lobby` (Host online from Match setup lists the match), `hostcontrols` (Save for next match, the suggestion
+line).
+
+**For the owner:**
+- 6v6 on the small maps made for it (Atomic Court, Sandgate, Void Yard) reaches its 60 points in about 5 of its 10
+  minutes; 7v7 jumps to 110 points in 15. Both follow the owner's time steps (10 minutes up to 6 a side); a different
+  step there would be a one-line change (`teamMinutes`).
+- King of the Hill's 12 hill seconds a minute (120 in 10 minutes, as before) is reached at about two thirds of the time
+  on St. John's and not at all on Diamond Park, where bots hold the hill 5–8 s a minute.
+- Capture the Flag keeps 3 captures: after Phase A, Diamond Park's bots made 7 in 15 minutes at 8v8 (3 in about 6
+  minutes), St. John's one each (the time decides).
+<!-- /match-setup-2 -->
 
 <!-- match-setup -->
 ### Match Setup redesign, the Host tab, Spectate before the start (`wip/match-setup`, agents, 2026-11-06; main bc6037a1 merged in; green on `check/match-setup` at c32bbf20, run 42242658709; not landed)
@@ -384,7 +446,8 @@ session scratchpad's `shots-ms/before/`, `shots-ms/after/` and `shots-ms/after-h
   for 2v3v5).
 - **Bundle:** the menu's first JS 702.9 kB gzip (budget 840).
 
-**For the owner to decide**
+**For the owner to decide** (answered 2026-11-06: list from both, keep Spectate, Save for next match back, co-op capped;
+built on `wip/match-setup-2`, "Match Setup follow-ups" above)
 - Pause menu → Host online with a community hub restarts and lists the match (as Go online did); Match setup's Host
   online opens a code only (as Host did). Same word, two behaviours: list from Match setup too, or keep?
 - Spectate follows the switch: offline it's bots only; with Host online you watch while friends play. Keep?
