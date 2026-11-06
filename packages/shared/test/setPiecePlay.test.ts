@@ -37,11 +37,14 @@ const library = builtInSetPieces();
 const yard = (id: string, x: number, y: number, z = 0): TilePlacement => ({ id, tile: 'core.yard', x, y, z, rotation: 0 });
 const room = (id: string, x: number, y: number, z = 0, extra: Partial<TilePlacement> = {}): TilePlacement => ({ id, tile: 'core.room', x, y, z, rotation: 0, ...extra });
 
+/** A placement as the tests give it: turn and mirror optional. */
+type PieceIn = Omit<SetPiecePlacement, 'mirror' | 'rotation'> & Partial<Pick<SetPiecePlacement, 'mirror' | 'rotation'>>;
+
 /** A map of these tiles and set pieces (theme Castle Keep: Collegiate Gothic), spawn on the first tile. */
-function mapOf(tiles: TilePlacement[], pieces: Omit<SetPiecePlacement, 'mirror' | 'rotation'> & Partial<SetPiecePlacement>[] | (Omit<SetPiecePlacement, 'mirror' | 'rotation'> & Partial<SetPiecePlacement>)[], theme = 'core.castle'): MapDocument {
+function mapOf(tiles: TilePlacement[], pieces: PieceIn[], theme = 'core.castle'): MapDocument {
   const t0 = tiles[0]!;
   const map = makeMap(tiles, [[t0.x * 8, t0.z * 4, t0.y * 8]]);
-  return { ...map, classicStructure: { ...map.classicStructure, theme }, setPieces: (pieces as SetPiecePlacement[]).map((p) => ({ rotation: 0, mirror: false, ...p }) as SetPiecePlacement) };
+  return { ...map, classicStructure: { ...map.classicStructure, theme }, setPieces: pieces.map((p) => ({ ...p, rotation: p.rotation ?? 0, mirror: p.mirror ?? false })) };
 }
 
 const played = (doc: MapDocument): MapDocument => {
