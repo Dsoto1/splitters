@@ -607,8 +607,9 @@ legs tucked up) and three of M4 Outpost's five pickups (onto the uplink dais) by
 aisle between two consoles, whose end was 1.3 m from the ramp (MapMaker: the consoles 1.2 m shorter). Listed for the
 owner in `nav/auditKnown.ts`, each with why: Skyward's four pad perches and the two spawn points on its towers and Sky
 Islands' sky platform (one-way by design: "ride the pads up... fall off and you are gone"); Grand Marquee's marquee
-top (the street pad throws you up, nothing gets you down); Obsidian Orb's reactor core (its box rises to 3.8 m under
-the bridges: a fall lands on it, though the map's shaft is "bottomless"); Reactor's yard outside the plant (off a roof
+top (the street pad throws you up, nothing gets you down); Obsidian Orb's reactor shaft (its core's box rose to 3.8 m
+under the bridges; since the slack pass the core collides as its shape, so a fall goes past it to the shaft's floor
+32 m down, above the kill height, though the map's shaft is "bottomless"); Reactor's yard outside the plant (off a roof
 corner, no way back in); Serpent Gorge's gorge floor along the river and slivers by its crypt's walls; Erosion's lower
 deck (its corner pads stand on pillars that meet the deck only at a corner); M4 Outpost's last two pickups (the
 uplink room's 1.5-2 m gaps round the dais, too narrow for the navmesh). The Skyward, Grand Marquee, Obsidian Orb,

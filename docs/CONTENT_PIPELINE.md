@@ -868,7 +868,7 @@ replace it), built by `prepare-props.mjs` from its pack entry's `collide`:
 
 | `collide` | Collision |
 |---|---|
-| `box` (default) | its bounds (kit walls with one face thickened to 0.2 m); natural rocks two rounded tiers |
+| `box` (default) | its bounds (kit walls with one face thickened to 0.2 m); natural rocks two rounded tiers. Only where the box is the shape (crates): bounds that stand off the model fail the slack audit |
 | `none` | none: decoration you walk and shoot through |
 | `trunk` | a column standing on the model's real trunk, as thick as the trunk (0.2–0.5 m) |
 | `voxel` | boxes that follow the model in 3D: arches, windows, holes, doorways and the space under tables, bridges and vehicles stay open |
@@ -908,13 +908,38 @@ and above: a window, a hole, an arch, a doorway, a gateway between posts, under 
 that a 0.5 m square fits in are a filled **opening**: the check fails unless the prop collides as
 `voxel` (or `frame`/`openings`) or says why in `fills` (nine do: five long stair flights kept solid
 underneath, hand-built collision of the airliner and its stairs, the bucket-wheel excavator's
-lattice, one city block). Lines reached from either side (over a car's bonnet, beside a stump's
-roots) are **slack**, listed with `--slack`, not failed. Gaps narrower than 0.5 m (bars and fence rails:
-`iron_fence`, `dg_arch_bars`, the `lf_*` gates) are neither, so a `box` still stops rounds between them. The check
-also fails on a voxel prop over its budget or not rebuilt, and a trunk column the build would now put elsewhere. `packages/shared/test/fixtures/prop-openings.json`
-records every prop this changed (lines through what its old collision filled, points of its model
-its new one holds) and a digest of every other prop's collision; after a deliberate collision
-change, `node tools/content/prop-openings.mjs --fixture <git ref before>` rewrites it.
+lattice, one city block). Lines reached from either side (over a car's bonnet, beside a column's
+shaft) are **slack**: the slack audit below. Gaps narrower than 0.5 m (bars and fence rails) are no
+opening. The check also fails on a voxel prop over its budget or not rebuilt, and a trunk column the
+build would now put elsewhere. `packages/shared/test/fixtures/prop-openings.json` records every prop
+whose collision these passes changed (lines through what its old collision filled, now clear; points
+of its model its new one holds) and a digest of every other prop's collision; after a deliberate
+collision change, `node tools/content/prop-openings.mjs --fixture <git ref before>` enters the props
+changed since that ref (against what they were before) and keeps the earlier entries.
+
+**The slack audit** (owner's bug of 2026-11-06, Capitol Mall: "These pillars are blocking my bullets":
+the white Ionic column's box was as wide as its plinth and capital all the way up, 0.28 m of
+invisible wall beside its round shaft along x and 0.55 m at 45°). `voxel-collision.mjs` `propSlack`
+looks along x, along z and along both diagonals (rounds come from every side, and a square box round
+a round shaft stands furthest off it at 45°): in the plane across each direction, cut into 5 cm
+squares, a line that crosses the collision, misses the model and is reached from beside the prop
+without crossing the model is slack; each row's widest run of it is measured. **A prop carries slack
+when, seen along one of the four directions, air 0.15 m or wider beside its model runs over 30 % or
+more of its collision's height** (`SLACK_WIDTH`, `SLACK_SHARE`): about the width of a head or a
+shoulder at the edge of cover, over enough of the prop that rounds at someone beside it meet it.
+`pnpm content:check` fails a `box` prop that carries slack unless it collides as `voxel` (or `trunk`
+for a pole) or its entry says why in `fills`; natural rocks keep their two rounded tiers (a collision
+model of their own, to climb on) and aren't checked. Props of the other modes are listed, not failed:
+`node tools/content/prop-openings.mjs --slack` lists every prop that carries slack (how much of its
+height, how wide, seen along what, the maps placing it). The pass of 2026-11-06 moved 391 `box` props
+to `voxel` (28 columns, pillars, obelisks and posts first, then the rest: statues, vehicles,
+furniture, machines, fences and the like); 18 keep their box with a `fills` reason, round or thin
+pieces whose voxel collision is that same box (barrels, drums, bins, pots, picket panels: a box
+round a barrel stands off it only at 45°). Prop collision boxes on the 73 maps in play went from
+31,682 to 58,638 (Iron Maw, the busiest, 1,481 to 3,281); physics and navmesh build times and shot
+raycasts on the busiest maps stayed within the noise. Bars and rails as voxel: rounds pass between
+bars where the gap is wider than the 0.1 m the merges may fill beside the model (`dg_arch_bars`), and
+stop on a plate where it is narrower (`iron_fence`'s close bars).
 
 Breakable props collide as their `boxes` too (one collider each in `ScenarioBodies`, all of them the
 prop: a shot anywhere damages it); their bounds still decide blasts, footing and paths.
