@@ -29,6 +29,8 @@ export interface ModeHost {
   respawn(c: Combatant): void;
   /** Height of the floor under a point (within a few metres), or null over a drop. */
   groundBelow(p: Vec3): number | null;
+  /** Whether a point is in a liquid that kills within a couple of seconds (lava; not acid, which you can wade through). */
+  deadly?(p: Vec3): boolean;
   /** A walkable route between two points (navmesh), or null. */
   path(a: Vec3, b: Vec3): Vec3[] | null;
   /** A big explosion (Bomb mode), credited to `by`. */

@@ -131,6 +131,36 @@ describe('Capture the Flag', () => {
     expect(flag.pos.x).toBe(-1);
   });
 
+  it('a carrier who dies in lava: the flag goes home at once (nobody could touch it there and live)', () => {
+    // (Cinder Foundry: a flag in its lava pit was taken and dropped again by one carrier after another all match.)
+    const lava: MapDocument['entities'] = [{ id: 'lava', kind: 'water', position: [6, 0, -1], size: [2, 0.85, 2], liquid: 'lava' } as MapDocument['entities'][number]];
+    const match = new Match(modeMap('core.ctf', [...flagBases, ...lava]), DEFAULT_CTF_RULES);
+    const a = match.addHuman('a')!;
+    const b = match.addHuman('b')!;
+    place(a, 9, 2);
+    place(b, 10, 2);
+    steps(match, 2);
+    const ctf = match.mode as CtfMode;
+    place(b, -1, 0);
+    steps(match, 1);
+    expect(ctf.flagOf(A.id)!.state).toBe(FLAG_CARRIED);
+    place(b, 6, -1);
+    steps(match, 1);
+    kill(match, b);
+    const ev = steps(match, 1);
+    expect(ev).toContainEqual({ e: 'flag', a: 'return', team: A.id, s: null });
+    expect(ctf.flagOf(A.id)!.state).toBe(FLAG_HOME);
+    // Dropped beside the lava, it stays where it fell.
+    const m2 = ctfMatch();
+    place(m2.b, -1, 0);
+    steps(m2.match, 1);
+    place(m2.b, 9, -1);
+    steps(m2.match, 1);
+    kill(m2.match, m2.b);
+    steps(m2.match, 1);
+    expect(m2.ctf.flagOf(A.id)!.state).toBe(FLAG_DROPPED);
+  });
+
   it('a dropped flag goes home on its own after 30 s', () => {
     const { match, b, ctf } = ctfMatch();
     place(b, -1, 0);

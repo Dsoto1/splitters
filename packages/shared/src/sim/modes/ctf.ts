@@ -36,7 +36,8 @@ export interface FlagRt {
  * vehicle while you carry it); bring it to your own base while your flag is
  * there to score. A carrier who dies drops it where they fell; it stays
  * there until a defender touches it (it goes home) or the return timer runs
- * out. The score limit counts captures.
+ * out (dropped over the void or into lava, it goes home at once). The score
+ * limit counts captures.
  */
 export class CtfMode implements ModeLogic {
   readonly flags: FlagRt[];
@@ -193,8 +194,9 @@ export class CtfMode implements ModeLogic {
   private drop(f: FlagRt, at: Vec3, by: number | null): void {
     this.release(f);
     const floor = this.host.groundBelow({ x: at.x, y: at.y + 0.5, z: at.z });
-    // Lost over a drop (or the void): it goes straight home.
-    if (floor === null || floor < this.host.killY + 1) {
+    // Lost over a drop (or the void), or into lava: it goes straight home. (In lava nobody can touch it and live:
+    // Cinder Foundry's lay in its lava pit all match, taken and dropped again by one carrier after another.)
+    if (floor === null || floor < this.host.killY + 1 || this.host.deadly?.({ x: at.x, y: floor, z: at.z })) {
       this.sendHome(f);
       this.event('return', f, null);
       return;
