@@ -115,6 +115,9 @@ export const WHOLE_BODY_LOOKS: readonly CharacterLook[] = [
   { id: 'core.goblinwarlord', name: 'Goblin Warlord', body: 'male', head: '', parts: ['meshy_goblinwarlord'], hair: [], colorways: [], skin: null, hairColor: null, size: 'small', whole: { arms: 'meshy_goblinwarlord_fparms', grip: { gripLong: [-0.03, 0, -0.03], supportPistol: [-0.01, 0.04, -0.05] } }, group: 'legends', nameTheme: 'goblin' },
   { id: 'core.maskedfigure', name: 'The Masked Figure', body: 'male', head: '', parts: ['meshy_maskedfigure'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_maskedfigure_fparms', grip: { gripLong: [-0.03, 0.02, -0.03], supportLong: [0, 0.02, 0.03], supportPistol: [-0.01, 0.03, -0.03] } }, group: 'horror', nameTheme: 'spooky' },
   { id: 'core.bill', name: 'Bill', body: 'male', head: '', parts: ['meshy_bill'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_bill_fparms' }, group: 'folk', nameTheme: 'townsfolk' },
+  { id: 'core.astronaut', name: 'Spacewalker', body: 'male', head: '', parts: ['meshy_astronaut'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_astronaut_fparms' }, group: 'soldiers', nameTheme: 'soldier' },
+  { id: 'core.darkastronaut', name: 'Starfarer', body: 'male', head: '', parts: ['meshy_darkastronaut'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_darkastronaut_fparms' }, group: 'soldiers', nameTheme: 'soldier' },
+  { id: 'core.tortoise', name: 'Shellback', body: 'male', head: '', parts: ['meshy_tortoise'], hair: [], colorways: [], skin: null, hairColor: null, size: 'large', whole: { arms: 'meshy_tortoise_fparms' }, group: 'animals', nameTheme: 'critter' },
 ];
 
 /** Whole-body characters made for NPCs only (`use: npc`): not on the roster; NPC_ROLE_SPECS can name them. */
@@ -233,4 +236,7 @@ export const WHOLE_BODY_BIOS: Readonly<Record<string, string>> = {
   'core.goblinwarlord': 'Rules the warren by fear, spite and a very large knife.',
   'core.maskedfigure': 'Nobody has seen his face. Nobody wants to.',
   'core.bill': 'Came for the barbecue. Stayed for the firefight.',
+  'core.astronaut': 'Six hours outside the airlock without a scratch. Six seconds down here and somebody\'s shooting.',
+  'core.darkastronaut': 'Came back from the far side of the Moon with a new suit, a purple glow and no explanation.',
+  'core.tortoise': 'Slow to anger, slower to move, and nobody has ever knocked him over.',
 };
