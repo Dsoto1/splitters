@@ -426,6 +426,40 @@ up. The new Gnoll (Hyena Warrior) in the intake-2 sheets shows it.
 - **Owner's decisions:** keep the Hyena (Gnoll) and Snikkit (Goblin Mischief) and fix their hands with this;
   Bill is retired. Do the pistol-hold tweak after this.
 
+### Queued FIRST (owner bug report, 2026-11-06): bullets stop in the air inside arches, windows and holes
+The owner's screenshots, in the session scratchpad `openings/` (30.jpg, 31.jpg, 32.jpg), show bullet holes in empty
+air inside openings:
+- a big stone round arch;
+- a ruined wall's window;
+- possibly a giant root arch on a dusky forest map.
+
+The first two are likely Fogbound or another map using the Quaternius ruins.
+
+**Cause (found):** `collide: "shell"` (tools/content/prepare-props.mjs `shellBoxes`) is a 2.5D heightfield.
+- The model is rasterised onto a top-down 0.4 m grid, and each covered cell becomes a column from y = 0 up to the
+  highest geometry above it.
+- Anything with an overhang gets filled solid: arches, windows, holes, lintels, bridges, root arches.
+- That blocks bullets, and players too.
+- **Affected:**
+  - `rn_arch_round`, `rn_arch_gothic`, `rn_wall_hole`, `rn_wall_broken`, `rn_wall_arch_ivy`, `rn_window_bars`,
+    `dg_arch` and the other "shell" props with openings (56 props use shell);
+  - "box" props with openings, e.g. `sf_wall_window`, `hp_wall_window`, the `lf_*` gates and fences, and
+    `os_bulkhead_window`.
+
+**Fix:**
+- Add a true 3D voxel collision mode:
+  - rasterise triangles into a 3D grid, about 0.2–0.3 m;
+  - fill solid only between a column's surfaces, inside closed volumes;
+  - merge greedily into few boxes.
+
+  Then openings stay open for both shots and movement.
+- Use it for every prop with a pass-through opening, found by an audit comparing the 3D voxel volume against today's
+  collision, and flag any opening at least 0.5 m across.
+- Movement and shots share these colliders (the physics world). Check bot nav through the newly open arches, check
+  cover, and keep collider counts within the perf budgets: keep the box count lean and use compound shapes.
+- Investigate the third screenshot separately: puffs in mid-air near distant trees could be env tree limbs that block
+  shots, or legitimate ground hits.
+
 ### Queued FIRST (owner bug report, 2026-11-05 late): CTF bots don't go for the flag
 **Owner:** "CTF: no bots are actually going for the flag, most just hang out and do little. We should only have
 like 2–3 bots protect a flag, and the rest go out there and try to get the other team's."
