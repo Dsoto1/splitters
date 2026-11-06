@@ -1004,6 +1004,11 @@ variant for MAP 21.
   where the fighting starts, not a scripted arrival.
 
 ### Queued (owner, 2026-11-06): character intake, astronauts, crocodile and tortoise. NEXT FREE SLOT ("when able")
+**Licence (owner, 2026-11-06):** "all Community CC0 and should be treated as such unless I let you know I created them in
+Meshy." That covers these five, the landing craft, and every Drive model before them (CLAUDE.md "Content rules"). The
+intake also audits `content/provenance.json`. Entries recorded as `meshy-owned` that came from the Drive, and weren't
+generated through our Meshy API, become community CC0 with author and URL pending. It lists them for the owner.
+
 The owner: "I have 3 new astronaut models, replace the light blue one for captain nova, add the 2 new ones. The
 boglurker can be replaced by the alligator. Retire bamboo, add the new turtle."
 
