@@ -187,10 +187,18 @@ describe('set pieces: budgets count the parts', () => {
     // Over the lights' budget with more of them: warned about, from the parts.
     for (let i = 0; i < 30; i++) doc = applyCommand(doc, ok(placeSetPieceCommand(doc, 'setpiece.skybridge_4', (i % 20) * 2, 12 + Math.floor(i / 20) * 5, 1)).command);
     expect(validateMap(doc).some((i) => i.code === 'budget.lights')).toBe(true);
-    // A map whose set pieces expand past the hard cap is refused (1024 placements, each 19 entities).
+    // A map whose set pieces expand past the hard cap is refused (1024 placements, each 4 tiles and 17 entities).
     const many: SetPiecePlacement[] = Array.from({ length: 1024 }, (_, i) => ({ id: `gate_${i}`, piece: 'setpiece.carriageway_2', x: (i % 32) * 3 - 100, y: Math.floor(i / 32) * 2 - 100, z: 0, rotation: 0, mirror: false }));
     const huge = expandSetPieces({ ...base(), setPieces: many }, library);
     expect(huge.issues.some((i) => i.code === 'budget.setpieces' && i.severity === 'error')).toBe(true);
+    // The cap is on the map as played (what the schema takes again when a joining player loads it): pieces placed by
+    // hand and parts together. 4,090 lights by hand and one wide carriageway (17 entities) is too many; the file alone is not.
+    const lamps = Array.from({ length: 4090 }, (_, i) => ({ id: `lamp_${i}`, kind: 'light' as const, position: [-200 + (i % 64), 2, -200 + Math.floor(i / 64)] as [number, number, number], yaw: 0, fixture: 'none' as const, color: '#ffffff', intensity: 1, range: 4 }));
+    const full: MapDocument = { ...base(), entities: [...base().entities, ...lamps] as MapDocument['entities'], setPieces: [{ id: 'gate_one', piece: 'setpiece.carriageway_2', x: 0, y: 0, z: 0, rotation: 0, mirror: false }] };
+    expect(full.entities.length).toBeLessThanOrEqual(4096);
+    const over = expandSetPieces(full, library).issues.find((i) => i.code === 'budget.setpieces');
+    expect(over?.severity).toBe('error');
+    expect(over?.message).toMatch(/as played the map has 5 tiles and 4108 entities \(its set pieces add 4 and 17\): at most 4096 and 4096/);
   });
 
   it('placement ids are unique among themselves and with tiles and entities', () => {

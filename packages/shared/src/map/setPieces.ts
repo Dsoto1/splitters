@@ -36,6 +36,7 @@ import {
   type SetPieceRoleValuesInput,
   type SurfaceStyle,
 } from './schema.ts';
+import { RESOURCE_BUDGETS } from './budgets.ts';
 import type { ValidationIssue } from './validate.ts';
 
 export type { SetPieceDefinition, SetPiecePlacement };
@@ -61,8 +62,14 @@ export interface SetPieceLibrary {
 
 /** The grid set pieces are built for: their tiles' parts and their entities' metres assume it. */
 export const SET_PIECE_GRID = { cellSize: 8, levelHeight: 4 } as const;
-/** Most parts the expansion adds to a map (a hard load budget: the map is refused past it). */
-export const SET_PIECE_EXPANDED_MAX = { tiles: 8192, entities: 8192 } as const;
+/**
+ * The most a map as played holds, its set pieces' parts included (a hard load budget: the map is refused past it): the
+ * map schema's own caps. The file's caps count what it stores (a set piece is one entry of `setPieces`, at most 1024,
+ * however many parts it has), so the file stays small. The map as played is what the simulation runs (its entity budget,
+ * RESOURCE_BUDGETS.entities) and what a joining player's welcome carries: every client loads it again (loadMap), so it
+ * must itself be a map the schema takes.
+ */
+export const SET_PIECE_PLAYED_MAX = { tiles: 4096, entities: RESOURCE_BUDGETS.entities } as const;
 
 /** The id of a placement's part. */
 export const setPiecePartId = (placementId: string, index: number): string => `sp_${placementId}_${index}`;
@@ -438,8 +445,12 @@ function expand(doc: MapDocument, library: SetPieceLibrary, catalog: TileCatalog
   }
   const allTiles = doc.classicStructure.tiles.length + tiles.length;
   const allEntities = doc.entities.length + entities.length;
-  if (tiles.length > SET_PIECE_EXPANDED_MAX.tiles || entities.length > SET_PIECE_EXPANDED_MAX.entities) {
-    issues.push({ severity: 'error', code: 'budget.setpieces', message: `the set pieces add ${tiles.length} tiles and ${entities.length} entities: at most ${SET_PIECE_EXPANDED_MAX.tiles} and ${SET_PIECE_EXPANDED_MAX.entities} (${allTiles} tiles and ${allEntities} entities in all)` });
+  if (allTiles > SET_PIECE_PLAYED_MAX.tiles || allEntities > SET_PIECE_PLAYED_MAX.entities) {
+    issues.push({
+      severity: 'error',
+      code: 'budget.setpieces',
+      message: `as played the map has ${allTiles} tiles and ${allEntities} entities (its set pieces add ${tiles.length} and ${entities.length}): at most ${SET_PIECE_PLAYED_MAX.tiles} and ${SET_PIECE_PLAYED_MAX.entities}. Remove some set pieces or other pieces`,
+    });
   }
   const map: MapDocument = { ...rest, classicStructure: { ...doc.classicStructure, tiles: [...doc.classicStructure.tiles, ...tiles] }, entities: [...doc.entities, ...entities] };
   return { map, issues, partOf, footprints };

@@ -2,8 +2,10 @@
 // piece in each turn × mirror × role pack; the transform checked against the unturned piece point by point (what
 // collides and what is drawn), with test pieces that turn and mirror everything (multi-cell and tall tiles, edges,
 // glass, upper floors, turned and tilted blocks, props, doors, ladders, lights); determinism; roles, overrides, ids.
+import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import {
+  MAP_FORMAT_VERSION,
   SetPieceDefinition,
   StableId,
   boxBounds,
@@ -15,6 +17,7 @@ import {
   coreCatalog,
   expandSetPieces,
   loadMap,
+  migrateMapDocument,
   mirrorWidth,
   placePoint,
   quatRotate,
@@ -266,7 +269,9 @@ describe('set pieces: every shipped piece in each turn, mirror and role pack', (
     const doc = withPiece({ piece: 'setpiece.carriageway_1', x: 0, y: 0, z: 0, rotation: 0, mirror: false, pack: 'collegiate' });
     const map = expandSetPieces(doc, shipped).map;
     const passage = map.classicStructure.tiles.find((t) => t.id === 'sp_piece_1_0')!;
-    expect(passage.surfaces).toEqual({ floor: { material: 'core.road_setts', tint: null }, walls: { material: 'core.pbr_castle_stone', tint: null }, solids: { material: 'core.pbr_castle_stone', tint: null }, trim: { material: 'core.stone_trim', tint: null } });
+    // St. John's own wall and trim stone (its halls' blocks), granite setts.
+    const stone = { material: 'core.cobble', tint: '#d9d5cb' };
+    expect(passage.surfaces).toEqual({ floor: { material: 'core.road_setts', tint: null }, walls: stone, solids: stone, trim: { material: 'core.stone_trim', tint: '#d8d3c6' } });
     expect(passage.options).toEqual({ ceiling: 'vault' });
     const above = map.classicStructure.tiles.find((t) => t.id === 'sp_piece_1_1')!;
     expect(above.options).toEqual({ ceiling: 'roof', facade: 'gothic_stone' });
@@ -274,7 +279,7 @@ describe('set pieces: every shipped piece in each turn, mirror and role pack', (
     const doors = map.entities.filter((e) => e.kind === 'door');
     expect(doors.map((d) => d.kind === 'door' && d.style)).toEqual(['oak', 'oak']);
     const guard = map.entities.find((e) => e.id === 'sp_piece_1_6')!;
-    expect(guard.kind === 'block' && guard.material).toBe('core.pbr_castle_stone');
+    expect(guard.kind === 'block' && [guard.material, guard.tint]).toEqual(['core.cobble', '#d9d5cb']);
     // St. John's theme (Castle Keep) takes Collegiate Gothic without naming it.
     const castle = expandSetPieces(withPiece({ piece: 'setpiece.carriageway_1', x: 0, y: 0, z: 0, rotation: 0, mirror: false }, 'core.castle'), shipped).map;
     expect(castle.classicStructure.tiles.find((t) => t.id === 'sp_piece_1_0')!.surfaces).toEqual(passage.surfaces);
@@ -325,6 +330,15 @@ describe('set pieces: determinism and ids', () => {
     expect(loadMap(serializeMap(withPiece({ id: 'p'.repeat(49), piece: 'setpiece.skybridge_4', x: 0, y: 0, z: 1, rotation: 0, mirror: false }))).ok).toBe(false);
   });
 
+  it('the map as played loads again as it is (a joining player loads the one the welcome brings)', () => {
+    const doc = withPiece({ piece: 'setpiece.carriageway_2', x: 4, y: 1, z: 0, rotation: 1, mirror: true, pack: 'collegiate' });
+    const a = loadMap(serializeMap(doc));
+    expect(a.ok).toBe(true);
+    if (!a.ok) return;
+    const b = loadMap(JSON.parse(JSON.stringify(a.map)));
+    expect(b.ok && serializeMap(b.map)).toBe(serializeMap(a.map));
+  });
+
   it('MapMaker keeps the placements (forEditing); play gets the parts', () => {
     const doc = withPiece({ piece: 'setpiece.skybridge_2', x: 0, y: 0, z: 1, rotation: 1, mirror: false });
     const edit = loadMap(serializeMap(doc), undefined, { forEditing: true });
@@ -340,5 +354,35 @@ describe('set pieces: determinism and ids', () => {
     expect(validateMap(withPiece({ piece: 'setpiece.skybridge_2', x: 0, y: 0, z: 1, rotation: 0, mirror: false, pack: 'baroque' })).some((i) => i.code === 'setpiece.pack' && i.severity === 'warning')).toBe(true);
     const big = withPiece({ piece: 'setpiece.skybridge_2', x: 0, y: 0, z: 1, rotation: 0, mirror: false });
     expect(validateMap({ ...big, classicStructure: { ...big.classicStructure, cellSize: 6 } }).some((i) => i.code === 'setpiece.grid')).toBe(true);
+  });
+});
+
+describe('format v27', () => {
+  // A v26 map (a copy of maps/iron_compound.json as it was saved at v26: tiles with edges, glass and room options).
+  const v26 = JSON.parse(readFileSync(new URL('./fixtures/iron_compound_v26.json', import.meta.url), 'utf8')) as MapDocument;
+
+  it('a v26 map migrates unchanged: nothing added, it plays as it did', () => {
+    expect(v26.formatVersion).toBe(26);
+    expect(MAP_FORMAT_VERSION).toBe(27);
+    const { doc, fromVersion } = migrateMapDocument(structuredClone(v26));
+    expect(fromVersion).toBe(26);
+    expect(doc).toEqual({ ...v26, formatVersion: 27 });
+    const old = loadMap(structuredClone(v26));
+    const now = loadMap({ ...structuredClone(v26), formatVersion: 27 });
+    expect(old.ok && now.ok).toBe(true);
+    if (!old.ok || !now.ok) return;
+    expect(old.migratedFrom).toBe(26);
+    expect(old.map.setPieces).toBeUndefined();
+    expect(serializeMap(old.map)).toBe(serializeMap(now.map));
+  });
+
+  it('a v27 map with set pieces and a piece of its own saves and loads; MapMaker gets it back as saved', () => {
+    const own: SetPieceDefinitionInput = { ...STAIRS, id: 'local.my_stairs', displayName: 'My stairs' };
+    const doc: MapDocument = { ...withPiece({ piece: 'local.my_stairs', x: 2, y: 2, z: 0, rotation: 2, mirror: false }), setPieceDefs: [SetPieceDefinition.parse(own)] };
+    const edit = loadMap(serializeMap(doc), undefined, { forEditing: true });
+    expect(edit.ok && edit.map).toEqual(doc);
+    const play = loadMap(serializeMap(doc));
+    expect(play.ok && play.map.setPieceDefs).toBeUndefined();
+    expect(play.ok && play.map.classicStructure.tiles.filter((t) => t.id.startsWith('sp_')).map((t) => t.tile)).toEqual(['core.stairs', 'core.room']);
   });
 });

@@ -110,6 +110,9 @@ export function validateMap(map: MapDocument, catalog: TileCatalog = coreCatalog
     taken.add(p.id);
   }
   issues.push(...ex.issues, ...setPieceOverlapIssues(map, ex, buildOccupancy(map, catalog).cells));
+  // The map as played travels in a joining player's welcome and is loaded again there: it must fit the size budget.
+  const played = ex.map === map ? 0 : utf8Length(JSON.stringify(ex.map));
+  if (played > RESOURCE_BUDGETS.mapBytes) issues.push({ severity: 'error', code: 'budget.bytes', message: `as played (its set pieces expanded) the map is ${(played / 1048576).toFixed(1)} MB: at most ${RESOURCE_BUDGETS.mapBytes / 1048576} MB` });
   for (const def of map.setPieceDefs ?? []) for (const p of checkSetPieceDefinition(def, { packs: library.packs, catalog })) issues.push({ severity: 'warning', code: 'setpiece.def', message: `the map's set piece ${def.id}: ${p}` });
   for (const i of validateExpanded(ex.map, map, catalog)) {
     const placement = i.targetId ? ex.partOf.get(i.targetId) : undefined;

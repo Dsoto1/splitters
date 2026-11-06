@@ -6,8 +6,8 @@
       "displayName": "Collegiate Gothic",
       "themes": ["core.castle"],
       "roles": {
-        "stone": { "material": "core.pbr_castle_stone" },
-        "trim": { "material": "core.stone_trim" },
+        "stone": { "material": "core.cobble", "tint": "#d9d5cb" },
+        "trim": { "material": "core.stone_trim", "tint": "#d8d3c6" },
         "floor": { "material": "core.pbr_floorboards" },
         "paving": { "material": "core.road_setts" },
         "roof": { "material": "core.pbr_slate_roof" },
@@ -17,7 +17,7 @@
         "door": "oak",
         "glass": "breakable"
       },
-      "notes": { "design": "St. John's (theme Castle Keep): grey lannonstone walls as the halls are built (Mossy Castle Stone), dressed limestone trim, granite setts under the arches, oak floors, doors and beams, slate roofs, battlements (the Gothic stone facade)." }
+      "notes": { "design": "St. John's (theme Castle Keep), in the materials its halls are built of (maps/st_johns.json: 922 wall blocks of warm grey Grey Stone Blocks, 865 of dressed stone): grey lannonstone walls (dolomite, laid as rubble ashlar), dressed limestone trim, granite setts under the arches, oak floors, doors and beams, slate roofs, battlements (the Gothic stone facade; the Argonne Gate is castellated)." }
     },
     {
       "id": "gothic",
