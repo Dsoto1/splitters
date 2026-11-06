@@ -1,10 +1,8 @@
-import { DEFAULT_TEAMS, botSetLabel, HOST_BOT_SKILLS, HOST_BOT_STYLES, MODE_LABELS, ROTATION_MAX, TICK_RATE, isTeamMode, teamsLabel, type HostCommand, type HostRulesPatch, type HostState, type RotationEntry, type RotationPreset, type RotationState } from '@tiletrigger/shared';
-import { botCastSelect, choice, el, settingRow, stepper, teamEditor } from '../frontend/setupControls.ts';
+import { DEFAULT_TEAMS, botSetLabel, HOST_BOT_SKILLS, HOST_BOT_STYLES, MODE_LABELS, ROTATION_MAX, TICK_RATE, isTeamMode, isTwoTeamMode, mapPickPlayers, matchingPreset, peopleAndBots, setupFit, sizePresets, teamsLabel, type HostCommand, type HostRulesPatch, type HostState, type MapDocument, type MatchSetup, type RotationEntry, type RotationPreset, type RotationState } from '@tiletrigger/shared';
+import { botCastSelect, choice, el, field, fitChip, fitList, settingRow, sizeChips, stepper, teamEditor } from '../frontend/setupControls.ts';
 import { botManager } from '../frontend/botManager.ts';
 import { BOT_SET_PRESETS } from '../playlists.ts';
 
-/** Team sizes a host can jump to in one click (every team the same size). */
-const TEAM_PRESETS = [1, 2, 4, 5, 8, 12, 16, 24, 48];
 const SKILL_LABELS: Record<HostState['skill'], string> = { easy: 'Easy', normal: 'Normal', hard: 'Hard' };
 const STYLE_LABELS: Record<HostState['style'], string> = { mixed: 'Mixed', arena: 'Arena', tactical: 'Tactical' };
 const FF_LABELS = { off: 'Off', half: 'Half', on: 'Full' } as const;
@@ -12,6 +10,8 @@ const FF_LABELS = { off: 'Off', half: 'Half', on: 'Full' } as const;
 export interface HostPanelHooks {
   /** Run a host command (bots, rules, restart, end; a map change goes through `changeMap`). */
   command(cmd: Exclude<HostCommand, { c: 'map' }>): void;
+  /** Back to the game (the foot's Resume, as Esc). */
+  resume?: () => void;
   /** Open the map picker; absent: this match can't change map (MapMaker TEST). */
   changeMap?: () => void;
   /** Log in as the dedicated server's admin; absent: not on a dedicated server. */
@@ -23,39 +23,60 @@ export interface HostPanelHooks {
   rotation?: { add(): void; presets: readonly RotationPreset[] };
 }
 
+/** What the host has changed and not yet applied: the players and bots (live), and the rules. */
 interface Draft {
   fill: number;
   sizes: number[];
   skill: HostState['skill'];
   style: HostState['style'];
-  /** Restart-only rules as they'll be after the restart. */
+  /** Bot characters (null: the map's own); undefined where the host doesn't know them. */
+  cast: string[] | null | undefined;
+  /** Rules as they'll be: the restart-only ones (score, time, respawn, friendly fire) and the two that apply at once. */
   rules: Required<HostRulesPatch> | null;
 }
 
 /** The restart-only rules after any change waiting for the restart. */
 const nextRules = (s: HostState): Required<HostRulesPatch> | null => (s.rules ? { ...s.rules, ...(s.pending ?? {}) } : null);
+/** Rules that apply at once (not at the restart). */
+const LIVE_RULES: readonly (keyof HostRulesPatch)[] = ['mixPickups', 'dropWeapons'];
+const same = (a: readonly unknown[] | null | undefined, b: readonly unknown[] | null | undefined): boolean => (a ?? null) === (b ?? null) || (!!a && !!b && a.length === b.length && a.every((x, i) => x === b[i]));
 
 /**
- * The pause menu's Match section for whoever runs the match (the offline
- * player, the Host game host, a dedicated server's admin), built from the
- * same controls as Play → match setup: players or each team's size, bot
- * skill and style (live: Apply rebalances now), rules that wait for the
- * restart (marked so), Change map, Restart match, End match. On a dedicated
- * server, everyone else sees only a "Server admin" login.
+ * The pause menu's Host tab for whoever runs the match (the offline player, the Host game host, a dedicated
+ * server's admin): the same controls as Play → match setup, live. What wins (score, time), the players and
+ * teams (presets worked out for the map, the team editor, the fit indicator), the bots, the rules, then the
+ * match (change map, restart, end), the rotation and the people (kick, ban). Settings that need a restart
+ * are marked so. Nothing changes until Apply, in the pause menu's foot with Resume: "Apply now" when
+ * everything applies live, "Apply & restart" when something needs the match to start over. On a dedicated
+ * server everyone else sees only a "Server admin" login (in the Match tab).
  */
 export class HostPanel {
   readonly root = el('details', { id: 'host-controls', class: 'host-controls' });
+  /** The Host tab's foot (the pause menu puts it in its own foot): Resume, Apply, what Apply will do, the status. */
+  readonly foot = el('div', { class: 'hc-foot', id: 'hc-foot' });
   private state: HostState | null = null;
   /** Settings being edited, applied together. */
   private draft: Draft | null = null;
   private readonly status = el('p', { class: 'hint hc-status', id: 'hc-status' });
   /** People in the match besides you (kick and ban). */
   private people: { slot: number; name: string }[] = [];
+  /** Team modes: people on each team besides you, and your team (null: spectating, or not known). */
+  private teamPeople: { others: number[]; you: number | null } | null = null;
   private peopleKey = '';
   /** The rotation this browser keeps (offline, Host game); a server's comes in its HostState. */
   private ownRotation: RotationState | null = null;
-  /** Shown at the top of the first column while you run the match (the Host tab's Online block); back in its home otherwise. */
+  /** Shown first while you run the match (the Host tab's Online block); back in its home otherwise. */
   private lead: { node: HTMLElement; home: HTMLElement } | null = null;
+  /** The match's map (presets and the fit check are worked out from it), once known. */
+  private map: MapDocument | null = null;
+  /** Even teams in the team editor (shown on while the teams are matched). */
+  private even = true;
+  /** Why the last change to the teams stopped short (a limit). */
+  private stopped: string | null = null;
+  /** The fit check's details are showing. */
+  private fitOpen = false;
+  /** Apply & restart was pressed once with other people in the match: the next press does it. */
+  private armed: ReturnType<typeof setTimeout> | null = null;
 
   constructor(
     private readonly hooks: HostPanelHooks,
@@ -65,19 +86,46 @@ export class HostPanel {
     this.render();
   }
 
-  /** The match's settings now (null: you don't run it). */
+  /** The match's settings now (null: you don't run it). A change being edited stays where the match hasn't changed it meanwhile. */
   setState(state: HostState | null): void {
+    const prev = this.state;
+    const d = this.draft;
     this.state = state;
-    this.draft = state ? { fill: state.fill, sizes: this.sizesOf(state), skill: state.skill, style: state.style, rules: nextRules(state) } : null;
+    if (!state) this.draft = null;
+    else {
+      const fresh: Draft = { fill: state.fill, sizes: this.sizesOf(state), skill: state.skill, style: state.style, cast: state.cast, rules: nextRules(state) };
+      if (d && prev && prev.map === state.map && prev.mode === state.mode) {
+        if (prev.fill === state.fill && same(this.sizesOf(prev), fresh.sizes) && d.sizes.length === fresh.sizes.length) {
+          fresh.fill = d.fill;
+          fresh.sizes = d.sizes;
+        }
+        if (prev.skill === state.skill) fresh.skill = d.skill;
+        if (prev.style === state.style) fresh.style = d.style;
+        if (same(prev.cast, state.cast)) fresh.cast = d.cast;
+        const was = nextRules(prev);
+        if (d.rules && fresh.rules && was) for (const k of Object.keys(fresh.rules) as (keyof HostRulesPatch)[]) if (was[k] === fresh.rules[k]) (fresh.rules as Record<string, unknown>)[k] = d.rules[k];
+      }
+      this.draft = fresh;
+    }
     this.render();
   }
 
-  /** The roster's people (not bots), you left out: whoever runs the match can kick or ban them. */
-  setPeople(people: { slot: number; name: string }[]): void {
-    const key = people.map((p) => `${p.slot}:${p.name}`).join('|');
+  /** The match's map: the size presets and the fit check are worked out from it. */
+  setMap(map: MapDocument | null): void {
+    this.map = map;
+    if (this.state) this.render();
+  }
+
+  /**
+   * The roster's people (not bots), you left out: whoever runs the match can kick or ban them. `teams`: how
+   * many of them are on each team, and yours (team modes), so each team reads as who's on it.
+   */
+  setPeople(people: { slot: number; name: string }[], teams: { others: number[]; you: number | null } | null = null): void {
+    const key = `${people.map((p) => `${p.slot}:${p.name}`).join('|')}/${teams ? `${teams.others.join()}:${teams.you}` : ''}`;
     if (key === this.peopleKey) return;
     this.peopleKey = key;
     this.people = people;
+    this.teamPeople = teams;
     if (this.state) this.render();
   }
 
@@ -87,7 +135,7 @@ export class HostPanel {
     if (this.state) this.render();
   }
 
-  /** Put `node` (with its listeners) at the top of the first column while you run the match; otherwise it sits first in `home`. */
+  /** Put `node` (with its listeners) first while you run the match; otherwise it sits first in `home`. */
   setLead(node: HTMLElement, home: HTMLElement): void {
     this.lead = { node, home };
     if (this.state) this.render();
@@ -98,6 +146,7 @@ export class HostPanel {
     if (this.lead && this.lead.node.parentElement !== this.lead.home) this.lead.home.prepend(this.lead.node);
     this.lead = null;
     this.root.remove();
+    this.foot.remove();
   }
 
   get controlling(): boolean {
@@ -201,6 +250,67 @@ export class HostPanel {
     return s.sizes?.length === s.teams ? [...s.sizes] : Array.from({ length: s.teams }, () => s.teamSize ?? 1);
   }
 
+  /** The draft as a match setup, for the presets and the fit check (the map's own rules otherwise). */
+  private asSetup(s: HostState, d: Draft): MatchSetup {
+    return { map: s.map, mode: s.mode, bots: Math.max(0, d.fill - 1), skill: d.skill, scoreLimit: d.rules?.scoreLimit ?? 0, minutes: Math.round((d.rules?.timeLimitSeconds ?? 0) / 60), ...(s.teams ? { teams: [...d.sizes] } : {}) };
+  }
+
+  /** What the draft changes: live (now) and at the restart, as short phrases for the foot ("+2 bots", "score 16"). */
+  private changes(s: HostState, d: Draft): { live: string[]; restart: string[]; liveRules: HostRulesPatch; restartRules: HostRulesPatch } {
+    const now = this.sizesOf(s);
+    const live: string[] = [];
+    const total = (sizes: readonly number[], fill: number) => (s.teams ? sizes.reduce((a, b) => a + b, 0) : fill);
+    const delta = total(d.sizes, d.fill) - total(now, s.fill);
+    if (delta) live.push(`${delta > 0 ? '+' : '−'}${Math.abs(delta)} bot${Math.abs(delta) === 1 ? '' : 's'}`);
+    else if (s.teams && !same(d.sizes, now)) live.push(d.sizes.join('v'));
+    if (d.skill !== s.skill) live.push(`${SKILL_LABELS[d.skill].toLowerCase()} bots`);
+    if (d.style !== s.style) live.push(`${STYLE_LABELS[d.style].toLowerCase()} style`);
+    if (d.cast !== undefined && !same(d.cast, s.cast)) live.push('bot characters');
+    const liveRules: HostRulesPatch = {};
+    const restartRules: HostRulesPatch = {};
+    const restart: string[] = [];
+    const want = nextRules(s);
+    const r = d.rules;
+    if (r && want && s.rules) {
+      for (const k of Object.keys(r) as (keyof HostRulesPatch)[]) {
+        if (LIVE_RULES.includes(k)) {
+          if (r[k] !== s.rules[k]) (liveRules as Record<string, unknown>)[k] = r[k];
+        } else if (r[k] !== s.rules[k] || r[k] !== want[k]) (restartRules as Record<string, unknown>)[k] = r[k];
+      }
+      if (liveRules.mixPickups !== undefined) live.push(`mixed pickups ${liveRules.mixPickups ? 'on' : 'off'}`);
+      if (liveRules.dropWeapons !== undefined) live.push(`weapon drops ${liveRules.dropWeapons ? 'on' : 'off'}`);
+      if (restartRules.scoreLimit !== undefined) restart.push(`score ${restartRules.scoreLimit}`);
+      if (restartRules.timeLimitSeconds !== undefined) restart.push(`time ${restartRules.timeLimitSeconds ? `${Math.round(restartRules.timeLimitSeconds / 60)} min` : '∞'}`);
+      if (restartRules.respawnDelayTicks !== undefined) restart.push(`respawn ${Math.round(restartRules.respawnDelayTicks / TICK_RATE)} s`);
+      if (restartRules.friendlyFire !== undefined) restart.push(`friendly fire ${FF_LABELS[restartRules.friendlyFire].toLowerCase()}`);
+    }
+    return { live, restart, liveRules, restartRules };
+  }
+
+  /** Send what the draft changes: the live part now, then the rules, then (when any needs it) the restart. */
+  private apply(): void {
+    const s = this.state;
+    const d = this.draft;
+    if (!s || !d) return;
+    const c = this.changes(s, d);
+    const now = this.sizesOf(s);
+    const cmd: Extract<HostCommand, { c: 'bots' }> = { c: 'bots' };
+    if (s.teams) {
+      if (!same(d.sizes, now)) {
+        // Every team the same size: the plain command older servers know too.
+        if (d.sizes.every((n) => n === d.sizes[0])) cmd.teamSize = d.sizes[0]!;
+        else cmd.teamSizes = [...d.sizes];
+      }
+    } else if (d.fill !== s.fill) cmd.fill = d.fill;
+    if (d.skill !== s.skill) cmd.skill = d.skill;
+    if (d.style !== s.style) cmd.style = d.style;
+    if (d.cast !== undefined && !same(d.cast, s.cast)) cmd.cast = d.cast;
+    if (Object.keys(cmd).length > 1) this.hooks.command(cmd);
+    const rules = { ...c.liveRules, ...c.restartRules };
+    if (Object.keys(rules).length) this.hooks.command({ c: 'rules', rules });
+    if (c.restart.length) this.hooks.command({ c: 'restart' });
+  }
+
   private render(): void {
     const open = this.root.open;
     const s = this.state;
@@ -214,116 +324,132 @@ export class HostPanel {
       login.addEventListener('click', () => token.value.trim() && this.hooks.login?.(token.value.trim()));
       this.root.replaceChildren(el('summary', {}, 'Server admin'), el('p', { class: 'hint', textContent: "The server's ADMIN_TOKEN lets you change bots and map, restart and end the match." }), el('div', { class: 'hc-row' }, token, login), this.status);
       this.root.open = open;
+      this.foot.replaceChildren();
       return;
     }
     const redraw = () => this.render();
-    const rows: HTMLElement[] = [];
     const now = this.sizesOf(s);
-    if (s.teams) {
-      const even = el('select', { id: 'hc-preset', title: 'Every team the same size' });
-      even.append(new Option('All teams…', ''));
-      for (const n of TEAM_PRESETS) if (n * s.teams <= s.max) even.append(new Option(teamsLabel(s.teams, n), String(n)));
-      even.addEventListener('change', () => {
-        if (even.value) d.sizes = d.sizes.map(() => Number(even.value));
-        redraw();
-      });
+    const map = this.map && this.map.metadata.id === s.map ? this.map : null;
+    const coop = s.mode === 'core.coop' || s.mode === 'core.zombies';
+
+    // ---- what wins (restart): score and time, as on Match setup
+    const r = d.rules;
+    const win = r
+      ? [
+          card(
+            'To win',
+            null,
+            el(
+              'div',
+              { class: 'field-grid' },
+              field('Score limit', 'Score that wins (0: none).', stepper({ value: r.scoreLimit, min: 0, max: 1000, id: 'hc-score', label: 'score limit', onChange: (v) => ((r.scoreLimit = v), redraw()) }), { restart: true }),
+              field('Time limit', 'Minutes until the match ends (∞: none).', stepper({ value: Math.round(r.timeLimitSeconds / 60), min: 0, max: 120, id: 'hc-minutes', fmt: (v) => (v ? `${v} min` : '∞'), onChange: (v) => ((r.timeLimitSeconds = v * 60), redraw()) }), { restart: true }),
+            ),
+          ),
+        ]
+      : [];
+
+    // ---- players and teams (live): the presets for this map, the team editor or the count, the fit check
+    const rows: HTMLElement[] = [];
+    const setup = this.asSetup(s, d);
+    const deviceMax = s.max;
+    if (map) {
+      const pickPlayers = mapPickPlayers(map.metadata.recommendedPlayers);
+      // Mid-match the number of teams stays: only presets with as many.
+      const presets = sizePresets(s.mode, map, { teams: s.teams || undefined, deviceMax, device: 'this match', pickPlayers }).filter((p) => !s.teams || p.teams?.length === s.teams);
+      const on = matchingPreset(setup, map, presets, deviceMax);
       rows.push(
-        settingRow('Quick sizes', 'Set every team to one size; then change any team on its own.', even),
+        sizeChips(presets, on, s.teams ? d.sizes.join('v') : `${d.fill} players`, (p) => {
+          if (p.teams) {
+            d.sizes = [...p.teams];
+            this.even = p.teams.every((n) => n === p.teams![0]);
+          } else d.fill = p.players ?? d.fill;
+          this.stopped = null;
+          redraw();
+        }, 'hc-sizes'),
+      );
+    }
+    if (s.teams) {
+      const names = d.sizes.map((_, i) => s.teamNames?.[i] ?? DEFAULT_TEAMS[i]?.name ?? `Team ${i + 1}`);
+      rows.push(
         teamEditor({
           id: 'hc',
-          state: { sizes: d.sizes, names: d.sizes.map((_, i) => s.teamNames?.[i] ?? DEFAULT_TEAMS[i]?.name ?? `Team ${i + 1}`), colors: d.sizes.map((_, i) => s.teamColors?.[i] ?? DEFAULT_TEAMS[i]?.color ?? '#00d1ff'), you: null },
+          state: { sizes: d.sizes, names, colors: d.sizes.map((_, i) => s.teamColors?.[i] ?? DEFAULT_TEAMS[i]?.color ?? '#00d1ff'), you: this.teamPeople?.you ?? null },
+          ...(this.teamPeople ? { people: this.teamPeople.others } : {}),
           countLocked: 'The number of teams is set when the match starts: change it from Play → Match setup, or Change map.',
           namesLocked: 'Names and colours are set when the match starts (Play → Match setup).',
-          maxPlayers: s.max,
-          onChange: (next) => {
+          cap: { max: s.max, by: 'device' },
+          device: 'this match',
+          mode: s.mode,
+          even: { on: this.even && d.sizes.every((n) => n === d.sizes[0]), onToggle: (on) => (this.even = on) },
+          stopped: this.stopped,
+          onChange: (next, stopped) => {
             d.sizes = next.sizes;
+            this.stopped = stopped;
             redraw();
           },
         }),
+        el('p', { class: 'setup-hint', textContent: "Bots join or leave to fit, at once when you Apply. People who join take bots' places. Drag a bot pip to move it to another team." }),
       );
-      rows.push(el('p', { class: 'setup-hint', textContent: 'Team sizes change live: bots join or leave to fit. Drag a bot pip to move it to another team.' }));
     } else {
-      const coop = s.mode === 'core.coop' || s.mode === 'core.zombies';
-      rows.push(settingRow(coop ? 'Squad' : 'Players', coop ? 'You and your bot squadmates.' : 'Everyone in the match, you included; bots fill the rest.', stepper({ value: d.fill, min: 1, max: s.max, id: 'hc-players', label: coop ? 'squad' : 'players', onChange: (v) => ((d.fill = v), redraw()) })));
+      rows.push(
+        settingRow(coop ? 'Squad' : 'Players', coop ? 'You and your bot squadmates.' : 'Everyone in the match, you included; bots fill the rest.', stepper({ value: d.fill, min: 1, max: s.max, id: 'hc-players', label: coop ? 'squad' : 'players', onChange: (v) => ((d.fill = v), redraw()) })),
+        el('p', { class: 'setup-hint', id: 'hc-players-line', textContent: `${peopleAndBots(1 + this.people.length, Math.max(0, d.fill - 1 - this.people.length), coop ? 'squadmate' : 'bot')}. People who join take bots' places.` }),
+      );
     }
-    rows.push(settingRow('Bot skill', 'Easy bots aim slowly and miss often; hard ones react fast, use cover and lead their shots.', choice(HOST_BOT_SKILLS.map((v) => [v, SKILL_LABELS[v]] as const), d.skill, (v) => ((d.skill = v), redraw()), 'hc-skill')));
-    rows.push(settingRow('Bot style', 'Mixed: every character plays its own way. Arena: always moving (Quake). Tactical: careful, cover, held angles (Counter-Strike).', choice(HOST_BOT_STYLES.map((v) => [v, STYLE_LABELS[v]] as const), d.style, (v) => ((d.style = v), redraw()), 'hc-style')));
+    let fitTag: HTMLElement | null = null;
+    if (map) {
+      const fit = setupFit(setup, map, { deviceMax, device: 'this match', pickPlayers: mapPickPlayers(map.metadata.recommendedPlayers) });
+      fitTag = fitChip(fit, this.fitOpen, () => ((this.fitOpen = !this.fitOpen), redraw()), 'hc-fit');
+      const shown = this.fitOpen ? fit.items : fit.items.filter((i) => i.level === 'problem');
+      const fix = (f: { teams?: number[]; players?: number }) => {
+        if (f.teams && f.teams.length === d.sizes.length) d.sizes = [...f.teams];
+        else if (f.players) d.fill = f.players;
+        redraw();
+      };
+      if (shown.length) rows.unshift(fitList(shown, fix, 'hc-fit-list'));
+    }
+    const live = el('span', { class: 'when-tag live', textContent: 'Live', title: 'Changes the match now (Apply)' });
+
+    // ---- bots (live)
+    const botRows: HTMLElement[] = [
+      settingRow('Bot skill', 'Easy bots aim slowly and miss often; hard ones react fast, use cover and lead their shots.', choice(HOST_BOT_SKILLS.map((v) => [v, SKILL_LABELS[v]] as const), d.skill, (v) => ((d.skill = v), redraw()), 'hc-skill')),
+      settingRow('Bot style', 'Mixed: every character plays its own way. Arena: always moving (Quake). Tactical: careful, cover, held angles (Counter-Strike).', choice(HOST_BOT_STYLES.map((v) => [v, STYLE_LABELS[v]] as const), d.style, (v) => ((d.style = v), redraw()), 'hc-style')),
+    ];
     // The host's own bots (names, looks, skills, teams, squads): hosts that know bot sets say so (HostState.botSet).
     if (s.botSet !== undefined) {
-      const open = el('button', { id: 'hc-bots', textContent: 'Bots…', title: 'Your own bots: names, looks, skill, style, team and squad (applies live: bots swap in one at a time)' });
-      open.addEventListener('click', () => this.openBots(s));
-      rows.push(settingRow('Bot set', 'Your own bots by name, look, skill, style, team and squad; random bots fill the rest unless the set says only these.', el('div', { class: 'bot-set-line' }, el('span', { class: 'bot-set-sum', id: 'hc-bots-sum', textContent: `${s.mapBots ? "The map's: " : ''}${botSetLabel(s.botSet)}`, title: `${s.mapBots ? "The map's own bots: " : ''}${botSetLabel(s.botSet)}` }), open)));
+      const bots = el('button', { id: 'hc-bots', textContent: 'Bots…', title: 'Your own bots: names, looks, skill, style, team and squad (the window applies them live: bots swap in one at a time)' });
+      bots.addEventListener('click', () => this.openBots(s));
+      botRows.push(settingRow('Bot set', 'Your own bots by name, look, skill, style, team and squad; random bots fill the rest unless the set says only these.', el('div', { class: 'bot-set-line' }, el('span', { class: 'bot-set-sum', id: 'hc-bots-sum', textContent: `${s.mapBots ? "The map's: " : ''}${botSetLabel(s.botSet)}`, title: `${s.mapBots ? "The map's own bots: " : ''}${botSetLabel(s.botSet)}` }), bots)));
     }
-    // Bot characters: applies at once (random bots out of it change look and name); hosts that know it send HostState.cast.
-    if (s.cast !== undefined) {
-      rows.push(settingRow('Bot characters', "Which characters random bots play, and so their names (a soldier is \"Sgt. Dunmore\"; the first bot in a character takes its name). Map default: the map maker's choice. Applies at once: bots out of it change. Your bot set keeps its own.", botCastSelect(s.cast ?? undefined, s.mapCast, (v) => this.hooks.command({ c: 'bots', cast: v ?? null }), 'hc-cast')));
+    // Bot characters: random bots out of it change look and name; hosts that know it send HostState.cast.
+    if (d.cast !== undefined) {
+      botRows.push(settingRow('Bot characters', "Which characters random bots play, and so their names (a soldier is \"Sgt. Dunmore\"; the first bot in a character takes its name). Map default: the map maker's choice. Random bots out of it change when you Apply. Your bot set keeps its own.", botCastSelect(d.cast ?? undefined, s.mapCast, (v) => ((d.cast = v ?? null), redraw()), 'hc-cast')));
     }
-    // Mix up weapon pickups: applies at once (hosts that know it send it in HostState.rules).
-    if (s.rules?.mixPickups !== undefined) {
-      const mix = s.rules.mixPickups;
-      rows.push(settingRow('Mix up weapon pickups', 'Every weapon pickup not marked "keep fixed" in MapMaker holds a random weapon of the same kind as the one placed there, and a new one each time it comes back. Applies at once.', choice([['off', 'Off'], ['on', 'On']] as const, mix ? 'on' : 'off', (v) => this.hooks.command({ c: 'rules', rules: { mixPickups: v === 'on' } }), 'hc-mix')));
-    }
-    // Drop weapon on death: applies at once too (not in Disc Arena or races, where nothing drops).
-    if (s.rules?.dropWeapons !== undefined && s.mode !== 'core.discs' && s.mode !== 'core.race') {
-      const drop = s.rules.dropWeapons;
-      rows.push(settingRow('Drop weapon on death', "A fallen player's or bot's primary with ammo left lies at the body for 30 s, with exactly that ammo; the rest of what they carried is recycled. Applies at once (off clears the ones lying about).", choice([['on', 'On'], ['off', 'Off']] as const, drop ? 'on' : 'off', (v) => this.hooks.command({ c: 'rules', rules: { dropWeapons: v === 'on' } }), 'hc-drops')));
-    }
-    const liveChanged = d.fill !== s.fill || d.sizes.join() !== now.join() || d.skill !== s.skill || d.style !== s.style;
 
-    // Rules that need the match to start over.
+    // ---- rules: respawn and friendly fire wait for the restart; mixed pickups and weapon drops apply at once
     const ruleRows: HTMLElement[] = [];
-    const want = nextRules(s);
-    const r = d.rules;
     if (r) {
       ruleRows.push(
-        settingRow('Score limit', 'Score that wins (0: none).', stepper({ value: r.scoreLimit, min: 0, max: 1000, id: 'hc-score', label: 'score limit', onChange: (v) => ((r.scoreLimit = v), redraw()) })),
-        settingRow('Time limit', 'Minutes until the match ends (∞: none).', stepper({ value: Math.round(r.timeLimitSeconds / 60), min: 0, max: 120, id: 'hc-minutes', fmt: (v) => (v ? `${v} min` : '∞'), onChange: (v) => ((r.timeLimitSeconds = v * 60), redraw()) })),
-        settingRow('Respawn delay', 'Seconds before players are back in.', stepper({ value: Math.round(r.respawnDelayTicks / TICK_RATE), min: 0, max: 30, id: 'hc-respawn', fmt: (v) => `${v} s`, onChange: (v) => ((r.respawnDelayTicks = v * TICK_RATE), redraw()) })),
-        settingRow('Friendly fire', 'Whether shots and blasts hurt teammates.', choice((['off', 'half', 'on'] as const).map((v) => [v, FF_LABELS[v]] as const), r.friendlyFire, (v) => ((r.friendlyFire = v), redraw()), 'hc-ff', isTeamMode(s.mode) || s.mode === 'core.coop' || s.mode === 'core.zombies' ? null : `No teammates in ${MODE_LABELS[s.mode]}.`)),
+        settingRow('Respawn delay', 'Seconds before players are back in.', stepper({ value: Math.round(r.respawnDelayTicks / TICK_RATE), min: 0, max: 30, id: 'hc-respawn', fmt: (v) => `${v} s`, onChange: (v) => ((r.respawnDelayTicks = v * TICK_RATE), redraw()) }), { restart: true }),
+        settingRow('Friendly fire', 'Whether shots and blasts hurt teammates.', choice((['off', 'half', 'on'] as const).map((v) => [v, FF_LABELS[v]] as const), r.friendlyFire, (v) => ((r.friendlyFire = v), redraw()), 'hc-ff', isTeamMode(s.mode) || coop ? null : `No teammates in ${MODE_LABELS[s.mode]}.`), { restart: true }),
       );
+      // Mix up weapon pickups and drop weapon on death: hosts that know them send them in HostState.rules.
+      if (s.rules?.mixPickups !== undefined) ruleRows.push(settingRow('Mix up weapon pickups', 'Every weapon pickup not marked "keep fixed" in MapMaker holds a random weapon of the same kind as the one placed there, and a new one each time it comes back. Applies at once.', choice([['off', 'Off'], ['on', 'On']] as const, r.mixPickups ? 'on' : 'off', (v) => ((r.mixPickups = v === 'on'), redraw()), 'hc-mix'), { live: true }));
+      if (s.rules?.dropWeapons !== undefined && s.mode !== 'core.discs' && s.mode !== 'core.race') ruleRows.push(settingRow('Drop weapon on death', "A fallen player's or bot's primary with ammo left lies at the body for 30 s, with exactly that ammo; the rest of what they carried is recycled. Applies at once (off clears the ones lying about).", choice([['on', 'On'], ['off', 'Off']] as const, r.dropWeapons ? 'on' : 'off', (v) => ((r.dropWeapons = v === 'on'), redraw()), 'hc-drops'), { live: true }));
     }
-    const rulesChanged = !!r && !!want && (Object.keys(r) as (keyof HostRulesPatch)[]).some((k) => r[k] !== want[k]);
-    // What Apply does to the match, on the button: "Apply: +6 bots".
-    const total = (sizes: readonly number[], fill: number) => (s.teams ? sizes.reduce((a, b) => a + b, 0) : fill);
-    const delta = total(d.sizes, d.fill) - total(now, s.fill);
-    const what = delta > 0 ? `: +${delta} bot${delta === 1 ? '' : 's'}` : delta < 0 ? `: −${-delta} bot${delta === -1 ? '' : 's'}` : '';
-    // Each Apply sits under what it applies: the players and bots now, the rules at the restart.
-    const apply = el('button', { class: 'primary hc-apply', id: 'hc-apply', textContent: `Apply${what}`, disabled: !liveChanged, title: 'Apply the players and bots now (bots join or leave one at a time)' });
-    apply.addEventListener('click', () => {
-      if (!liveChanged) return;
-      const cmd: Extract<HostCommand, { c: 'bots' }> = { c: 'bots' };
-      if (s.teams) {
-        if (d.sizes.join() !== now.join()) {
-          // Every team the same size: the plain command older servers know too.
-          if (d.sizes.every((n) => n === d.sizes[0])) cmd.teamSize = d.sizes[0]!;
-          else cmd.teamSizes = [...d.sizes];
-        }
-      } else if (d.fill !== s.fill) cmd.fill = d.fill;
-      if (d.skill !== s.skill) cmd.skill = d.skill;
-      if (d.style !== s.style) cmd.style = d.style;
-      this.hooks.command(cmd);
-    });
-    const applyRules = el('button', { class: 'primary hc-apply', id: 'hc-apply-rules', textContent: 'Apply on restart', disabled: !rulesChanged, title: 'Keep these rules for the next restart (Restart match plays with them)' });
-    applyRules.addEventListener('click', () => {
-      if (!rulesChanged || !r || !s.rules) return;
-      const patch: HostRulesPatch = {};
-      for (const k of Object.keys(r) as (keyof HostRulesPatch)[]) if (r[k] !== want![k]) (patch as Record<string, unknown>)[k] = r[k];
-      this.hooks.command({ c: 'rules', rules: patch });
-    });
     const pending = s.pending && Object.keys(s.pending).length ? s.pending : null;
-    const waiting = pending
-      ? [el('p', { class: 'hc-pending', id: 'hc-pending', textContent: `Waiting for the restart: ${[pending.scoreLimit !== undefined ? `score ${pending.scoreLimit}` : '', pending.timeLimitSeconds !== undefined ? `time ${pending.timeLimitSeconds ? `${Math.round(pending.timeLimitSeconds / 60)} min` : '∞'}` : '', pending.respawnDelayTicks !== undefined ? `respawn ${Math.round(pending.respawnDelayTicks / TICK_RATE)} s` : '', pending.friendlyFire ? `friendly fire ${FF_LABELS[pending.friendlyFire].toLowerCase()}` : ''].filter(Boolean).join(', ')}. Restart match to play with them.` })]
-      : [];
-    // The match: Change map (routine), then what undoes everyone's match (restart, end), set apart in red.
+    if (pending) ruleRows.push(el('p', { class: 'hc-pending', id: 'hc-pending', textContent: `Waiting for the restart: ${[pending.scoreLimit !== undefined ? `score ${pending.scoreLimit}` : '', pending.timeLimitSeconds !== undefined ? `time ${pending.timeLimitSeconds ? `${Math.round(pending.timeLimitSeconds / 60)} min` : '∞'}` : '', pending.respawnDelayTicks !== undefined ? `respawn ${Math.round(pending.respawnDelayTicks / TICK_RATE)} s` : '', pending.friendlyFire ? `friendly fire ${FF_LABELS[pending.friendlyFire].toLowerCase()}` : ''].filter(Boolean).join(', ')}. Restart match plays with them.` }));
+
+    // ---- the match: Change map (routine), then what undoes everyone's match (restart, end), set apart in red
     const routine: HTMLElement[] = [];
     if (this.hooks.changeMap) {
-      const map = el('button', { id: 'hc-map', textContent: 'Change map…', title: 'Pick another map (and mode): the match starts over there with the same players and bots' });
-      map.addEventListener('click', () => this.hooks.changeMap?.());
-      routine.push(map);
+      const mapBtn = el('button', { id: 'hc-map', textContent: 'Change map…', title: 'Pick another map (and mode): the match starts over there with the same players and bots' });
+      mapBtn.addEventListener('click', () => this.hooks.changeMap?.());
+      routine.push(mapBtn);
     }
     const restart = el('button', { id: 'hc-restart', class: 'danger', textContent: 'Restart match', title: pending ? 'Start over with the waiting rule changes (asks for a second click)' : 'Start the match over on this map (asks for a second click)' });
     confirmTwice(restart, 'Click again to restart', () => this.hooks.command({ c: 'restart' }));
-    const rotation = this.rotationSection(s);
     const end = el('button', { id: 'hc-end', class: 'danger', textContent: 'End match', title: 'End the match now and show the scoreboard (asks for a second click)' });
     confirmTwice(end, 'Click again to end', () => this.hooks.command({ c: 'end' }));
     const matchCard = card('Match', null, ...(routine.length ? [el('div', { class: 'hc-actions' }, ...routine)] : []), el('div', { class: 'hc-actions hc-danger' }, restart, end));
@@ -345,29 +471,63 @@ export class HostPanel {
       : [];
     const label = s.teams ? (now.every((n) => n === now[0]) ? teamsLabel(s.teams, now[0]!) : now.join('v')) : `${s.fill} players`;
     const summary = el('summary', {}, `Match (${this.title.toLowerCase()})`, el('small', { textContent: ` ${label} · ${MODE_LABELS[s.mode]} · ${SKILL_LABELS[s.skill]} bots` }));
-    // Cards in balanced columns (style.css: as many as fit, each card whole): Online, who plays and the
-    // live Apply; the rules and their Apply; the match buttons; the rotation; the people.
-    const live = el('span', { class: 'when-tag live', textContent: 'Live', title: 'Changes the match now, mid-match' });
-    const later = el('span', { class: 'when-tag restart', textContent: '⟳ On restart', title: 'Kept for the next restart: Restart match plays with them' });
+    const teamsTitle = s.teams ? (isTwoTeamMode(s.mode) ? 'Teams' : 'Players & teams') : coop ? 'Squad' : 'Players';
+    // Cards in balanced columns (style.css: as many as fit, each card whole): Online, what wins, who plays,
+    // the bots, the rules, the match buttons, the rotation, the people.
     this.root.replaceChildren(
       summary,
       el(
         'div',
         { class: 'hc-grid' },
         ...(this.lead ? [this.lead.node] : []),
-        card(s.teams ? 'Teams & bots' : 'Players & bots', live, ...rows, apply),
-        ...(ruleRows.length ? [card('Rules', later, ...ruleRows, applyRules, ...waiting)] : []),
+        ...win,
+        card(teamsTitle, fitTag ? el('span', { class: 'hc-tags' }, fitTag, live) : live, ...rows),
+        card('Bots', live.cloneNode(true) as HTMLElement, ...botRows),
+        ...(ruleRows.length ? [card('Rules', null, ...ruleRows)] : []),
         matchCard,
-        ...rotation,
+        ...this.rotationSection(s),
         ...people,
       ),
-      this.status,
     );
     this.root.open = open;
+    this.drawFoot(s, d);
+  }
+
+  /**
+   * The foot, always in view: Resume, then Apply, named by what it will do (Apply now: everything changes
+   * live; Apply & restart: something waits for the match to start over), what it changes, and the status.
+   */
+  private drawFoot(s: HostState, d: Draft): void {
+    const c = this.changes(s, d);
+    const restart = c.restart.length > 0;
+    const any = restart || c.live.length > 0;
+    const resume = el('button', { type: 'button', class: 'primary', id: 'hc-resume', textContent: 'Resume', title: 'Back to the game (Esc)' });
+    resume.addEventListener('click', () => this.hooks.resume?.());
+    const apply = el('button', { type: 'button', class: `hc-apply${restart ? ' restart' : ''}`, id: 'hc-apply', textContent: restart ? 'Apply & restart' : 'Apply now', disabled: !any });
+    apply.title = !any ? 'Change something above first' : restart ? 'Apply these changes and start the match over (scores reset): some rules only change at a restart' : 'Apply these changes now (bots join or leave one at a time)';
+    const others = this.people.length;
+    apply.addEventListener('click', () => {
+      if (!any) return;
+      // A restart undoes everyone's match: with other people in it, the first press asks.
+      if (restart && others && !this.armed) {
+        apply.textContent = 'Click again to restart';
+        apply.classList.add('armed');
+        this.armed = setTimeout(() => {
+          this.armed = null;
+          if (apply.isConnected) this.drawFoot(s, d);
+        }, 3000);
+        return;
+      }
+      if (this.armed) clearTimeout(this.armed);
+      this.armed = null;
+      this.apply();
+    });
+    const what = el('span', { class: 'hc-changes', id: 'hc-changes', textContent: any ? [c.live.join(', '), c.restart.length ? `${c.restart.join(', ')} (restart)` : ''].filter(Boolean).join(' · ') : 'No changes' });
+    this.foot.replaceChildren(resume, apply, what, this.status);
   }
 }
 
-/** A titled card of the Host tab; `tag`: a small badge after the title (Live, On restart). */
+/** A titled card of the Host tab; `tag`: a small badge after the title (Live). */
 function card(title: string, tag: HTMLElement | null, ...children: HTMLElement[]): HTMLElement {
   return el('section', { class: 'hc-card' }, el('h4', { class: 'hc-card-title' }, el('span', { textContent: title }), ...(tag ? [tag] : [])), ...children);
 }

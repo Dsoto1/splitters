@@ -122,6 +122,64 @@ are right for the campus. The shallow vault stays. Skybridges keep the pack's fa
   facade) are an override away (`overrides.roles.facade: "none"`); which should be the default?
 <!-- /setpieces -->
 
+<!-- match-setup -->
+### Match Setup redesign, the Host tab, Spectate before the start (`wip/match-setup`, agents, 2026-11-06; main bc6037a1 merged in; green on `check/match-setup` at c32bbf20, run 42242658709; not landed)
+The owner's report and approved design are in the queued section below ("Queued … Match Setup redesign"); the brief is
+the session scratchpad's `briefs/match-setup.md`. Screenshots before and after (1280 × 720, 1920 × 1080, 2000 × 1100, a
+phone sideways at 900 × 415; after also 2560 × 1440, the fit details open and the setup scrolled to the bottom): the
+session scratchpad's `shots-ms/before/`, `shots-ms/after/` and `shots-ms/after-host/` (the Host tab).
+- **CI:** green at c32bbf20 (run 42242658709, second attempt: the first stopped on `packages/host/test/host.test.ts`'s
+  kick-and-ban wait, which passed on the same shared code in the two runs before and on the re-run: a flaky wait).
+- **Shared** (`packages/shared/src/sim/matchSetup.ts`, `setupVariants.ts`; tests `setupPlan.test.ts`): people apart
+  from bots (`setupSummary`, `peopleAndBots`, `setupPeople`, `setupYourTeam`); team changes that grow and shrink with
+  bots and stop at a cap with a message (`changeTeamBots`, `setTeamSize`, `evenTeams`, `changeTeamCount`,
+  `playerCap`, `capMessage`); size presets worked out per map, mode and device (`sizePresets`, `matchingPreset`,
+  `presetPatch`, `mapPickTeams`, `mapPickPlayers`); one fit check (`setupFit`: Fits / Crowded / Problem with items and
+  fixes; `setupNotes` is gone); `setupTeams` / `setupPlayers` / `rulesFromSetup` take a cap (a setup saved on a
+  computer plays 8v8 on a phone and the fit check says so). **Variants** are data (`SETUP_VARIANTS`: id, label, tip,
+  modes, `sets`, `clears`, `conflicts`, `needs`, `unavailable`); on when their settings are, however set; nothing new is
+  stored (saved setups keep their shape). **Party presets** (`PARTY_PRESETS`: Lunar Roulette, Spear Fight; `applyParty`,
+  `partyOn`, `partyUnavailable`). The Roulette mode adds its variants as entries there and re-points Lunar Roulette
+  (`mode: { ffa: 'core.roulette' }, variants: ['lunar']`, comment in the file).
+- **Start gate** (`sim/match.ts` `step`, `spectate`, `remove`): spectators who have loaded count like players, so a
+  match only spectators watch starts once they have (it waited out `START_WAIT_SECONDS` before). Offline matches keep
+  ticking under the pause menu, so the old one did start after 30 s; it only looked stuck. Tests: `startGate.test.ts`
+  (three cases), `client/test/localHost.test.ts` (Spectate from the start).
+- **Match setup** (`frontend/frontEnd.ts` `fillSetup`, `setupFoot`, `moreLayouts`; controls in
+  `frontend/setupControls.ts`: `section`, `field`, `segmented`, `sizeChips`, `fitChip`, `fitList`, `inert`, the team
+  editor with Even teams and "You + 23 bots"; styles in `style.css` "Match setup"). Essentials on top (mode chips,
+  variants, what wins and the mode's key setting), then Size (presets, More layouts… = the old Quick setup) and Party
+  presets, then the sections Players & teams, Bots, Advanced rules (a summary line; the orange chips and Reset inside;
+  Rules, Weapons, the mode's other settings as folds). Graphics moved into the fit details (big matches). The foot:
+  Offline / Host online (`#arcade-offline`, `#arcade-host`), Saved (`#setup-saved` menu: the old IDs inside), Spectate
+  (`#arcade-spectate`), Start (`#arcade-start`). Enter starts as the switch says; Esc closes the saved menu first;
+  small screens (`compactSetup`: touch, ≤ 900 px wide or ≤ 600 px tall) open one section at a time. Spectate goes
+  `hooks.playLocal(…, spectate)` → `LocalMatchOptions.spectate` → `MatchHost.start` spectates you before the welcome.
+- **Host tab** (`game/hostPanel.ts`, `pauseMenu.ts`, `index.html` `#pause-host-foot`, `session.ts`): cards To win
+  (⟳ Restart marks), Players & teams (presets for the map, the team editor with Even teams and people per team from
+  the roster, the fit chip), Bots, Rules, Match, Rotation, Players. Nothing applies until Apply in the foot:
+  `#hc-resume`, `#hc-apply` ("Apply now", or "Apply & restart" when a restart rule changed: it sends bots, rules, then
+  restart; a second click with other people in), `#hc-changes`, the switch (`#go-offline` / `#go-online` keep their
+  IDs: Host online lists after a confirm when there's a hub, else opens a code). Esc on the Host tab resumes. Mixed
+  pickups, weapon drops and bot characters now go through Apply too.
+- **e2e** (`e2e/run.mjs`): the menu check in `offline`; `teams` runs `setupLayoutFlow` (the four sizes: essentials in
+  view, Start in view scrolled to the bottom, several / one section open; the owner's setup: summary, Advanced line,
+  fit and "Use 12v12", caps, a party preset, Enter) and `spectateStartFlow` (Match setup → Spectate, and the pause
+  menu's Spectate while loading: the countdown starts the tick after you've loaded); `hostcontrols` (the foot, Esc,
+  Apply now, Apply & restart), `arsenal` (mix needs Apply), `lobby` (the switch), `customSetupFlow` (Even teams off
+  for 2v3v5).
+- **Bundle:** the menu's first JS 702.9 kB gzip (budget 840).
+
+**For the owner to decide**
+- Pause menu → Host online with a community hub restarts and lists the match (as Go online did); Match setup's Host
+  online opens a code only (as Host did). Same word, two behaviours: list from Match setup too, or keep?
+- Spectate follows the switch: offline it's bots only; with Host online you watch while friends play. Keep?
+- The old "Apply on restart" (keep rules for the next restart without restarting now) is gone: restart rules now
+  restart on Apply. Want a "keep for the next match" option back?
+- Co-op's size presets go up to Big squad 24 and Max 48 (worked out like the other modes): cap them at the map's
+  recommended size?
+<!-- /match-setup -->
+
 <!-- shingle -->
 ### Shingle Point asset refresh (`wip/shingle`, agents, 2026-11-05/06; main 5b167034 merged in; green on `check/shingle`)
 Owner's decision: same layout and gameplay, every dated asset replaced, so it compares fairly with MAP 21 (a new map,
@@ -1022,6 +1080,8 @@ The downloads are in `/home/user/meshy-drive/intake-2026-11-06/`; never commit t
 The brief is in the session scratchpad, `briefs/intake-1106.md`.
 
 ### Queued (owner-approved, 2026-11-06): Match Setup redesign, NEXT FREE SLOT (ahead of the follow-ons)
+**Done on `wip/match-setup`** (with the Host tab and Spectate before the start, added the same day): see its section
+near the top ("Match Setup redesign, the Host tab, Spectate before the start"). What follows is the request as queued.
 **Owner's report** (screenshot: St. John's TDM 24v24, desktop):
 - The setup sidebar's text doesn't display properly. For example, "The map suggests 12v12." is crushed into a narrow
   column beside "Next: bots".

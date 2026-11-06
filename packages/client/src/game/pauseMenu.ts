@@ -1,7 +1,8 @@
 /**
  * The pause menu's navigation: one level of tabs (Match, Host, Settings),
  * a dialog or picker over them at most. Esc / gamepad B / the Back button
- * (top left) go back one level per press (dialog → tab → Match), then resume.
+ * (top left) go back one level per press (dialog → tab → Match), then resume;
+ * from the Host tab (it has Resume in its foot, beside Apply) they resume.
  * Q / E and LB / RB switch tabs; ↑ / ↓ and the d-pad move the focus, Enter /
  * A presses. The footer's key hints are buttons too (Back, Tabs, Fullscreen),
  * with the controller's glyphs when a controller was used last.
@@ -76,10 +77,11 @@ export class PauseMenu {
 
   /** What Back does from here, on the Back button and the footer's hint. */
   private refresh(): void {
-    const label = this.hooks.overlay() ? 'Back' : this.tab !== 'match' ? 'Back' : (this.hooks.top?.label ?? 'Resume');
+    const overlay = this.hooks.overlay();
+    const label = overlay ? 'Back' : this.tab === 'host' ? 'Resume' : this.tab !== 'match' ? 'Back' : (this.hooks.top?.label ?? 'Resume');
     for (const l of this.backLabels) l.textContent = label;
     const back = document.getElementById('pause-back');
-    if (back) back.title = this.hooks.overlay() ? 'Close the window (Esc)' : this.tab !== 'match' ? 'Back to Match (Esc)' : `${label} (Esc)`;
+    if (back) back.title = overlay ? 'Close the window (Esc)' : this.tab === 'host' ? 'Back to the game (Esc)' : this.tab !== 'match' ? 'Back to Match (Esc)' : `${label} (Esc)`;
     if (this.fullscreenLabel) this.fullscreenLabel.textContent = isFullscreen() ? 'Exit fullscreen' : 'Fullscreen';
   }
 
@@ -102,6 +104,9 @@ export class PauseMenu {
       b.setAttribute('aria-selected', String(on));
     }
     for (const s of document.querySelectorAll<HTMLElement>('#pause .pause-sec')) s.hidden = s.dataset.sec !== tab;
+    // The Host tab's own foot (Resume, Apply, Offline / Host online) shows with it.
+    const foot = document.getElementById('pause-host-foot');
+    if (foot) foot.hidden = tab !== 'host';
     this.refresh();
     this.hooks.opened?.(tab);
   }
@@ -119,7 +124,7 @@ export class PauseMenu {
     return !this.hooks.overlay() && this.tab === 'match';
   }
 
-  /** Esc / B / Back: close the dialog, else back to Match, else resume (or the `top` hook). One level per call. */
+  /** Esc / B / Back: close the dialog, else back to Match (the Host tab: resume), else resume (or the `top` hook). One level per call. */
   back(): void {
     const overlay = this.hooks.overlay();
     if (overlay) {
@@ -129,6 +134,7 @@ export class PauseMenu {
       this.refresh();
       return;
     }
+    if (this.tab === 'host') return this.hooks.resume();
     if (this.tab !== 'match') return this.show('match');
     if (this.hooks.top) return this.hooks.top.act();
     this.hooks.resume();
