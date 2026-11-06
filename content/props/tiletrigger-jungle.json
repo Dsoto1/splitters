@@ -23,7 +23,7 @@
       "name": "Crane and Pulley",
       "category": "Jungle Ruins",
       "height": 4.6,
-      "collide": "trunk"
+      "collide": "voxel"
     },
     {
       "id": "jt_wooden_platform",
@@ -31,7 +31,7 @@
       "name": "Wooden Platform",
       "category": "Jungle Ruins",
       "height": 2.91,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "jt_statue_small",

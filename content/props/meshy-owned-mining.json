@@ -20,6 +20,7 @@
       "category": "Mines & Caves",
       "height": 16,
       "collide": "shell",
+      "fills": "a lattice of booms and a bucket wheel: keeping its gaps open takes over 400 boxes even with 0.5 m cubes (hero budget 160), so it collides as columns over its footprint (shell)",
       "triangles": 14000,
       "maxError": 0.05,
       "source": {
@@ -35,7 +36,7 @@
       "name": "Mining Haul Truck",
       "category": "Mines & Caves",
       "height": 7.4,
-      "collide": "shell",
+      "collide": "voxel",
       "triangles": 14000,
       "maxError": 0.03,
       "source": {

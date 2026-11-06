@@ -47,7 +47,7 @@
       "name": "Wall Doorway",
       "category": "Castle & Siege",
       "height": 4.0,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "castle_wall_corner",
@@ -79,7 +79,7 @@
       "name": "Drawbridge",
       "category": "Castle & Siege",
       "height": 1.2,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "portcullis",
@@ -95,7 +95,7 @@
       "name": "Catapult",
       "category": "Castle & Siege",
       "height": 3.0,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "ballista",
@@ -103,7 +103,7 @@
       "name": "Ballista",
       "category": "Castle & Siege",
       "height": 2.0,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "battering_ram",
@@ -119,7 +119,8 @@
       "name": "Siege Tower",
       "category": "Castle & Siege",
       "height": 9.0,
-      "collide": "box"
+      "collide": "voxel",
+      "voxelBudget": 64
     },
     {
       "id": "trebuchet",
@@ -127,7 +128,8 @@
       "name": "Trebuchet",
       "category": "Castle & Siege",
       "height": 7.0,
-      "collide": "box"
+      "collide": "voxel",
+      "voxelBudget": 88
     },
     {
       "id": "catapult_wrecked",

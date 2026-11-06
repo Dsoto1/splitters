@@ -16,7 +16,7 @@
       "name": "Dungeon Arch",
       "category": "Dungeon",
       "height": 4,
-      "collide": "shell"
+      "collide": "voxel"
     },
     {
       "id": "dg_arch_door",

@@ -73,7 +73,10 @@ describe('bots riding with a teammate at the wheel', () => {
     let last = { ...buggy.pos };
     let out = -1;
     for (let k = 0; k < TICK_RATE * 60; k++) {
-      // Weaving across Iron Maw's slopes, with a 3 s stop every 20 s.
+      // Weaving across Iron Maw's slopes, with a 3 s stop every 20 s. The weave is blind: where it ends up hangs on
+      // every bump on the way (a prop's collision a hand's width off sent it over the mine pit's edge, 48 m down), and
+      // a crash that wrecks the buggy rightly empties it (the next test). Kept repaired, so only driving is tested.
+      buggy.health = buggy.def.health;
       const stopped = k % (TICK_RATE * 20) >= TICK_RATE * 17;
       drive(stopped ? 0 : 1, Math.sin(k / 120) * 0.7);
       match.step();

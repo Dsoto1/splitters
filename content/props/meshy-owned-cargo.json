@@ -195,7 +195,7 @@
       "name": "Yellow Gantry Crane",
       "category": "Industrial",
       "height": 6.0,
-      "collide": "shell",
+      "collide": "voxel",
       "triangles": 12000,
       "maxError": 0.05,
       "source": {

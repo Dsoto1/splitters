@@ -154,7 +154,7 @@
       "name": "Wooden Flatbed",
       "category": "Trains & Rail",
       "height": 3.01,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "railroad",
