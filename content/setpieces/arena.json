@@ -1,0 +1,119 @@
+{
+  "$comment": "The colosseum's stands (set pieces part 3, the Sandfall Colosseum rebuild: docs/SET_PIECES_PLAN.md, \"The stands\"). One cell wide, the arena to the local south; repeat a bay along each side. Each bay is a seating tier with its gallery under it (two storeys); stack the next bay two cells back and two levels up, on Grand Arcades (two storeys of grand arches) under it, and run the arcades up the outside as the facade, the Attic on top. A Vomitorium bay lets the gallery out onto the seats. Parts as in carriageway.json; parts are only ever added at the end. Edit, then run `node tools/content/setpieces.mjs`.",
+  "family": "arena",
+  "pieces": [
+    {
+      "id": "setpiece.arena_bay_podium",
+      "displayName": "Arena Bay (Podium)",
+      "category": "Arena",
+      "blurb": "The lowest bay of the stands: the 2 m podium wall over the sand, its walkway and the first seats, a vaulted gallery behind under the second tier of seats (8 m up at the back).",
+      "packs": ["imperial", "desert"],
+      "footprint": { "cells": [[0,0],[0,1]], "levels": [0,2] },
+      "mirror": "free",
+      "ports": [
+        { "side": "E", "cell": [0,0], "level": 0, "kind": "opening" },
+        { "side": "W", "cell": [0,0], "level": 0, "kind": "opening" },
+        { "side": "E", "cell": [0,1], "level": 0, "kind": "opening" },
+        { "side": "W", "cell": [0,1], "level": 0, "kind": "opening" },
+        { "side": "N", "cell": [0,1], "level": 0, "kind": "opening" },
+        { "side": "E", "cell": [0,1], "level": 1, "kind": "opening" },
+        { "side": "W", "cell": [0,1], "level": 1, "kind": "opening" },
+        { "side": "N", "cell": [0,1], "level": 2, "kind": "opening" }
+      ],
+      "parts": [
+        { "kind": "tile", "tile": "imperial.seating", "x": 0, "y": 0, "z": 0, "rotation": 0, "edges": { "0,0,0:N": "open" } },
+        { "kind": "tile", "tile": "core.room", "x": 0, "y": 1, "z": 0, "rotation": 1, "edges": { "0,0,0:E": "wall", "0,0,0:N": "open", "0,0,0:S": "open", "0,0,0:W": "arch_round" }, "surfaces": { "floor": { "role": "paving" }, "walls": { "role": "stone" }, "solids": { "role": "stone" }, "trim": { "role": "trim" }, "roof": { "role": "roof" } }, "options": { "ceiling": "vault" } },
+        { "kind": "tile", "tile": "core.cavea", "x": 0, "y": 1, "z": 1, "rotation": 0, "surfaces": { "floor": { "role": "floor" }, "walls": { "role": "stone" }, "solids": { "role": "stone" }, "trim": { "role": "trim" } }},
+        { "kind": "light", "position": [0,2.3,4.53], "yaw": 0, "fixture": "wall", "color": "#ffd9a0", "intensity": 1, "range": 9 }
+      ]
+    },
+    {
+      "id": "setpiece.arena_bay_tier",
+      "displayName": "Arena Bay (Upper Tier)",
+      "category": "Arena",
+      "blurb": "A bay of the upper stands: two cells of seats rising two levels, a vaulted gallery under the back half. Place it two cells behind and two levels above the bay in front, on Grand Arcades.",
+      "packs": ["imperial", "desert"],
+      "footprint": { "cells": [[0,0],[0,1]], "levels": [0,2] },
+      "mirror": "free",
+      "ports": [
+        { "side": "S", "cell": [0,0], "level": 0, "kind": "opening" },
+        { "side": "E", "cell": [0,0], "level": 0, "kind": "opening" },
+        { "side": "W", "cell": [0,0], "level": 0, "kind": "opening" },
+        { "side": "E", "cell": [0,1], "level": 0, "kind": "opening" },
+        { "side": "W", "cell": [0,1], "level": 0, "kind": "opening" },
+        { "side": "N", "cell": [0,1], "level": 0, "kind": "opening" },
+        { "side": "E", "cell": [0,1], "level": 1, "kind": "opening" },
+        { "side": "W", "cell": [0,1], "level": 1, "kind": "opening" },
+        { "side": "N", "cell": [0,1], "level": 2, "kind": "opening" }
+      ],
+      "parts": [
+        { "kind": "tile", "tile": "core.cavea", "x": 0, "y": 0, "z": 0, "rotation": 0, "edges": { "0,0,0:N": "open" }, "surfaces": { "floor": { "role": "floor" }, "walls": { "role": "stone" }, "solids": { "role": "stone" }, "trim": { "role": "trim" } }},
+        { "kind": "tile", "tile": "core.room", "x": 0, "y": 1, "z": 0, "rotation": 1, "edges": { "0,0,0:E": "wall", "0,0,0:N": "open", "0,0,0:S": "open", "0,0,0:W": "arch_round" }, "surfaces": { "floor": { "role": "paving" }, "walls": { "role": "stone" }, "solids": { "role": "stone" }, "trim": { "role": "trim" }, "roof": { "role": "roof" } }, "options": { "ceiling": "vault" } },
+        { "kind": "tile", "tile": "core.cavea", "x": 0, "y": 1, "z": 1, "rotation": 0, "surfaces": { "floor": { "role": "floor" }, "walls": { "role": "stone" }, "solids": { "role": "stone" }, "trim": { "role": "trim" } }},
+        { "kind": "light", "position": [0,2.3,4.53], "yaw": 0, "fixture": "wall", "color": "#ffd9a0", "intensity": 1, "range": 9 }
+      ]
+    },
+    {
+      "id": "setpiece.arena_vomitorium",
+      "displayName": "Arena Bay (Vomitorium)",
+      "category": "Arena",
+      "blurb": "An upper-tier bay with a vomitorium: from the gallery a passage runs out under the top rows onto the walkway in front, with aisle stairs either side of its mouth up the seats.",
+      "packs": ["imperial", "desert"],
+      "footprint": { "cells": [[0,0],[0,1]], "levels": [0,2] },
+      "mirror": "free",
+      "ports": [
+        { "side": "S", "cell": [0,0], "level": 0, "kind": "opening" },
+        { "side": "E", "cell": [0,0], "level": 0, "kind": "opening" },
+        { "side": "W", "cell": [0,0], "level": 0, "kind": "opening" },
+        { "side": "E", "cell": [0,1], "level": 0, "kind": "opening" },
+        { "side": "W", "cell": [0,1], "level": 0, "kind": "opening" },
+        { "side": "N", "cell": [0,1], "level": 0, "kind": "opening" },
+        { "side": "E", "cell": [0,1], "level": 1, "kind": "opening" },
+        { "side": "W", "cell": [0,1], "level": 1, "kind": "opening" },
+        { "side": "N", "cell": [0,1], "level": 2, "kind": "opening" }
+      ],
+      "parts": [
+        { "kind": "tile", "tile": "core.cavea_vomitorium", "x": 0, "y": 0, "z": 0, "rotation": 0, "edges": { "0,0,0:N": "open" }, "surfaces": { "floor": { "role": "floor" }, "walls": { "role": "stone" }, "solids": { "role": "stone" }, "trim": { "role": "trim" } }},
+        { "kind": "tile", "tile": "core.room", "x": 0, "y": 1, "z": 0, "rotation": 1, "edges": { "0,0,0:E": "arch_round", "0,0,0:N": "open", "0,0,0:S": "open", "0,0,0:W": "arch_round" }, "surfaces": { "floor": { "role": "paving" }, "walls": { "role": "stone" }, "solids": { "role": "stone" }, "trim": { "role": "trim" }, "roof": { "role": "roof" } }, "options": { "ceiling": "vault" } },
+        { "kind": "tile", "tile": "core.cavea", "x": 0, "y": 1, "z": 1, "rotation": 0, "surfaces": { "floor": { "role": "floor" }, "walls": { "role": "stone" }, "solids": { "role": "stone" }, "trim": { "role": "trim" } }},
+        { "kind": "light", "position": [0,2.3,4.53], "yaw": 0, "fixture": "wall", "color": "#ffd9a0", "intensity": 1, "range": 9 }
+      ]
+    },
+    {
+      "id": "setpiece.arena_arcade",
+      "displayName": "Grand Arcade",
+      "category": "Arena",
+      "blurb": "Two storeys of the colosseum's arcades: a vaulted gallery with a grand round arch in each long side (north and south). Stack them up the outside as the facade, and under the upper tiers of seats.",
+      "packs": ["imperial", "desert"],
+      "footprint": { "cells": [[0,0]], "levels": [0,1] },
+      "mirror": "free",
+      "ports": [
+        { "side": "N", "cell": [0,0], "level": 0, "kind": "opening" },
+        { "side": "S", "cell": [0,0], "level": 0, "kind": "opening" },
+        { "side": "E", "cell": [0,0], "level": 0, "kind": "opening" },
+        { "side": "W", "cell": [0,0], "level": 0, "kind": "opening" }
+      ],
+      "parts": [
+        { "kind": "tile", "tile": "core.gallery_grand", "x": 0, "y": 0, "z": 0, "rotation": 0, "surfaces": { "floor": { "role": "paving" }, "walls": { "role": "stone" }, "solids": { "role": "stone" }, "trim": { "role": "trim" }, "roof": { "role": "roof" } }}
+      ]
+    },
+    {
+      "id": "setpiece.arena_attic",
+      "displayName": "Arena Attic",
+      "category": "Arena",
+      "blurb": "The attic storey that tops the facade: a walkway behind the highest seats (open to the south), small windows in the outer wall, a roof.",
+      "packs": ["imperial", "desert"],
+      "footprint": { "cells": [[0,0]], "levels": [0,0] },
+      "mirror": "free",
+      "ports": [
+        { "side": "S", "cell": [0,0], "level": 0, "kind": "opening" },
+        { "side": "E", "cell": [0,0], "level": 0, "kind": "opening" },
+        { "side": "W", "cell": [0,0], "level": 0, "kind": "opening" }
+      ],
+      "parts": [
+        { "kind": "tile", "tile": "core.room", "x": 0, "y": 0, "z": 0, "rotation": 1, "edges": { "0,0,0:E": "open", "0,0,0:N": "open", "0,0,0:S": "open", "0,0,0:W": "window" }, "surfaces": { "floor": { "role": "paving" }, "walls": { "role": "stone" }, "solids": { "role": "stone" }, "trim": { "role": "trim" }, "roof": { "role": "roof" } }, "options": { "ceiling": "roof", "facade": { "role": "facade" } }},
+        { "kind": "light", "position": [0,3.3,0], "fixture": "ceiling", "color": "#fff1d6", "intensity": 0.8, "range": 8 }
+      ]
+    }
+  ]
+}

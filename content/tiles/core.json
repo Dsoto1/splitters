@@ -1144,7 +1144,7 @@
       "id": "core.trench_sunk_corner",
       "category": "Open",
       "displayName": "Sunken Trench Bend",
-      "blurb": "The sunken trench comes in from the west and turns north; the fire step and parapet on the outside of the bend",
+      "blurb": "The sunken trench comes in from the west and turns north; a fire step and parapet all round the outside of the bend",
       "cells": [[0,0,-1],[0,0,0]],
       "floors": [],
       "ports": [{"allSides":0}],
@@ -1166,10 +1166,13 @@
         {"box":[-4,-1.5,-2,2,-0.75,-1.4],"surface":{"material":"core.pbr_weathered_planks"}},
         {"box":[-4,-1.5,-1.4,2,-1,-0.95],"surface":{"material":"core.pbr_weathered_planks"}},
         {"box":[-4,-1.5,-0.95,2,-1.25,-0.5],"surface":{"material":"core.pbr_weathered_planks"}},
+        {"box":[1.4,-1.5,-0.5,2,-0.75,4],"surface":{"material":"core.pbr_weathered_planks"}},
+        {"box":[0.95,-1.5,-0.5,1.4,-1,4],"surface":{"material":"core.pbr_weathered_planks"}},
+        {"box":[0.5,-1.5,-0.5,0.95,-1.25,4],"surface":{"material":"core.pbr_weathered_planks"}},
         {"box":[-4,0,-2.8,2.8,0.6,-2],"surface":{"material":"core.sandbags"}},
         {"box":[2,0,-2,2.8,0.6,4],"surface":{"material":"core.sandbags"}},
         {"box":[-4,-1.5,-0.4,-1.6,-1.46,1.6],"kind":"trim","surface":{"material":"core.pbr_weathered_planks"}},
-        {"box":[-1.6,-1.5,-0.4,1.6,-1.46,4],"kind":"trim","surface":{"material":"core.pbr_weathered_planks"}},
+        {"box":[-1.6,-1.5,-0.4,0.5,-1.46,4],"kind":"trim","surface":{"material":"core.pbr_weathered_planks"}},
         {"box":[-3.08,-1.5,-1.99,-2.92,-0.32,-1.89],"kind":"trim","surface":{"material":"core.pbr_charred_wood"}},
         {"box":[-1.08,-1.5,-1.99,-0.92,-0.32,-1.89],"kind":"trim","surface":{"material":"core.pbr_charred_wood"}},
         {"box":[0.92,-1.5,-1.99,1.08,-0.32,-1.89],"kind":"trim","surface":{"material":"core.pbr_charred_wood"}},
@@ -1415,7 +1418,7 @@
         {"box":[-4,0,-4,-1.8,3.5,4],"kind":"wall"},
         {"box":[1.8,0,-4,4,3.5,4],"kind":"wall"},
         {"vault":{"axis":"z","span":[-1.8,1.8],"along":[-4,4],"spring":2.2,"crown":3.28,"pieces":10,"t":0.2}},
-        {"box":[-0.2,0,-4,0.2,0.02,4],"kind":"trim"}
+        {"box":[-0.2,0,-4,0.2,0.02,4],"kind":"trim","surface":{"material":"core.pbr_concrete_dark"}}
       ],
       "notes": {
         "design": "Set pieces part 3 (the colosseum's hypogeum, under the arena and the stands): a passage 3.6 m wide between masonry (the walls slot), a barrel vault springing at 2.2 m to its crown at 3.28 m (just under the floor above), junctions groin-vaulted where two vaults cross. No walls of its own on its sides: what is built beside it builds its own."
@@ -1436,8 +1439,8 @@
         {"box":[1.8,0,-4,4,3.5,-1.8],"kind":"wall"},
         {"vault":{"axis":"z","span":[-1.8,1.8],"along":[-4,1.8],"spring":2.2,"crown":3.28,"pieces":10,"t":0.2}},
         {"vault":{"axis":"x","span":[-1.8,1.8],"along":[-1.8,4],"spring":2.2,"crown":3.28,"pieces":10,"t":0.2}},
-        {"box":[-0.2,0,-4,0.2,0.02,0.2],"kind":"trim"},
-        {"box":[0.2,0,-0.2,4,0.02,0.2],"kind":"trim"}
+        {"box":[-0.2,0,-4,0.2,0.02,0.2],"kind":"trim","surface":{"material":"core.pbr_concrete_dark"}},
+        {"box":[0.2,0,-0.2,4,0.02,0.2],"kind":"trim","surface":{"material":"core.pbr_concrete_dark"}}
       ]
     },
     {
@@ -1455,8 +1458,8 @@
         {"box":[1.8,0,-4,4,3.5,-1.8],"kind":"wall"},
         {"vault":{"axis":"x","span":[-1.8,1.8],"along":[-4,4],"spring":2.2,"crown":3.28,"pieces":10,"t":0.2}},
         {"vault":{"axis":"z","span":[-1.8,1.8],"along":[-4,1.8],"spring":2.2,"crown":3.28,"pieces":10,"t":0.2}},
-        {"box":[-4,0,-0.2,4,0.02,0.2],"kind":"trim"},
-        {"box":[-0.2,0,-4,0.2,0.02,-0.2],"kind":"trim"}
+        {"box":[-4,0,-0.2,4,0.02,0.2],"kind":"trim","surface":{"material":"core.pbr_concrete_dark"}},
+        {"box":[-0.2,0,-4,0.2,0.02,-0.2],"kind":"trim","surface":{"material":"core.pbr_concrete_dark"}}
       ]
     },
     {
@@ -1475,9 +1478,9 @@
         {"box":[1.8,0,1.8,4,3.5,4],"kind":"wall"},
         {"vault":{"axis":"x","span":[-1.8,1.8],"along":[-4,4],"spring":2.2,"crown":3.28,"pieces":10,"t":0.2}},
         {"vault":{"axis":"z","span":[-1.8,1.8],"along":[-4,4],"spring":2.2,"crown":3.28,"pieces":10,"t":0.2}},
-        {"box":[-4,0,-0.2,4,0.02,0.2],"kind":"trim"},
-        {"box":[-0.2,0,-4,0.2,0.02,-0.2],"kind":"trim"},
-        {"box":[-0.2,0,0.2,0.2,0.02,4],"kind":"trim"}
+        {"box":[-4,0,-0.2,4,0.02,0.2],"kind":"trim","surface":{"material":"core.pbr_concrete_dark"}},
+        {"box":[-0.2,0,-4,0.2,0.02,-0.2],"kind":"trim","surface":{"material":"core.pbr_concrete_dark"}},
+        {"box":[-0.2,0,0.2,0.2,0.02,4],"kind":"trim","surface":{"material":"core.pbr_concrete_dark"}}
       ]
     },
     {

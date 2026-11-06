@@ -129,7 +129,7 @@ describe('z-fighting audit over every set piece', () => {
     const packs = ['collegiate', 'military', 'medieval', 'orbital'];
     for (const def of library.pieces.values()) {
       for (const rotation of [0, 1, 2, 3] as Rotation[]) {
-        for (const mirror of [false, true]) {
+        for (const mirror of def.mirror === 'free' ? [false, true] : [false]) {
           pieces.push({ id: `piece_${n}`, piece: def.id, x: (n % 8) * 6, y: Math.floor(n / 8) * 6, z: def.id.includes('skybridge') ? 1 : 0, rotation, mirror, pack: packs[n % packs.length] });
           n++;
         }

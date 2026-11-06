@@ -1,0 +1,79 @@
+{
+  "$comment": "Casemate family (set pieces part 3, MAP 21 Omaha beach assault: docs/SET_PIECES_PLAN.md): a concrete gun casemate on the cliff top, its embrasure facing the sea (local south), two ways in and a loop through its rooms so nobody clearing it meets a dead end. Parts as in carriageway.json; parts are only ever added at the end. Edit, then run `node tools/content/setpieces.mjs`.",
+  "family": "casemate",
+  "pieces": [
+    {
+      "id": "setpiece.casemate",
+      "displayName": "Gun Casemate",
+      "category": "Fortifications",
+      "blurb": "A concrete gun casemate 2 × 2 cells: the gun room's embrasure faces south, an ammunition room with a firing slit and a side door, an entrance hall with the rear door, a crew room; the rooms make a loop.",
+      "packs": ["military", "snow", "harbor"],
+      "footprint": { "cells": [[0,0],[1,0],[0,1],[1,1]], "levels": [0,1] },
+      "mirror": "free",
+      "ports": [
+        { "side": "N", "cell": [0,1], "level": 0, "kind": "door" },
+        { "side": "E", "cell": [1,0], "level": 0, "kind": "door" }
+      ],
+      "parts": [
+        { "kind": "tile", "tile": "core.room", "x": 0, "y": 0, "z": 0, "rotation": 0, "edges": { "0,0,0:E": "open", "0,0,0:N": "door", "0,0,0:S": "embrasure", "0,0,0:W": "wall" }, "surfaces": { "floor": { "role": "floor" }, "walls": { "role": "stone" }, "solids": { "role": "stone" }, "trim": { "role": "trim" }, "roof": { "role": "roof" } }, "options": { "ceiling": "roof", "facade": { "role": "facade" } }},
+        { "kind": "tile", "tile": "core.room", "x": 1, "y": 0, "z": 0, "rotation": 0, "edges": { "0,0,0:E": "door", "0,0,0:N": "door", "0,0,0:S": "slit", "0,0,0:W": "open" }, "surfaces": { "floor": { "role": "floor" }, "walls": { "role": "stone" }, "solids": { "role": "stone" }, "trim": { "role": "trim" }, "roof": { "role": "roof" } }, "options": { "ceiling": "roof", "facade": { "role": "facade" } }},
+        { "kind": "tile", "tile": "core.room", "x": 0, "y": 1, "z": 0, "rotation": 0, "edges": { "0,0,0:E": "door", "0,0,0:N": "door", "0,0,0:S": "door", "0,0,0:W": "wall" }, "surfaces": { "floor": { "role": "floor" }, "walls": { "role": "stone" }, "solids": { "role": "stone" }, "trim": { "role": "trim" }, "roof": { "role": "roof" } }, "options": { "ceiling": "roof", "facade": { "role": "facade" } }},
+        { "kind": "tile", "tile": "core.room", "x": 1, "y": 1, "z": 0, "rotation": 0, "edges": { "0,0,0:E": "wall", "0,0,0:N": "wall", "0,0,0:S": "door", "0,0,0:W": "door" }, "surfaces": { "floor": { "role": "floor" }, "walls": { "role": "stone" }, "solids": { "role": "stone" }, "trim": { "role": "trim" }, "roof": { "role": "roof" } }, "options": { "ceiling": "roof", "facade": { "role": "facade" } }},
+        { "kind": "door", "name": "Rear door", "position": [0,0,12], "yaw": 0, "style": { "role": "door" }, "auto": true },
+        { "kind": "door", "name": "Side door", "position": [12,0,0], "yaw": 1.570796, "style": { "role": "door" }, "auto": true },
+        { "kind": "block", "name": "Roof slab", "position": [4,4,4], "size": [16,1,16], "material": { "role": "stone" } },
+        { "kind": "block", "name": "Gun pedestal", "position": [0,0,-1.2], "size": [2.4,0.4,2.4], "material": { "role": "stone" } },
+        { "kind": "block", "name": "Gun breech", "position": [0,0.4,-1.4], "size": [0.7,0.75,1.5], "material": { "role": "metal" } },
+        { "kind": "block", "name": "Gun shield", "position": [0,0.4,-2.4], "size": [2,1.7,0.12], "material": { "role": "metal" } },
+        { "kind": "block", "name": "Gun barrel", "position": [0,1.22,-3.2], "size": [0.24,0.24,1.6], "material": { "role": "metal" } },
+        { "kind": "prop", "model": "prop.ammo_stack", "position": [10.9,0,-2.8], "yaw": 1.570796, "scale": 1 },
+        { "kind": "prop", "model": "prop.ammo_stack", "position": [10.9,0,2.8], "yaw": 1.570796, "scale": 1 },
+        { "kind": "prop", "model": "prop.ammo_crate", "position": [-2.9,0,0.6], "yaw": 1.570796, "scale": 1 },
+        { "kind": "prop", "model": "prop.ammo_crate", "position": [-2.9,0,1.9], "yaw": 1.570796, "scale": 1 },
+        { "kind": "prop", "model": "prop.bunk_bed", "position": [10.7,0,9.4], "yaw": 0, "scale": 1 },
+        { "kind": "prop", "model": "prop.table", "position": [6.4,0,10.6], "yaw": 0, "scale": 1 },
+        { "kind": "light", "position": [-3.47,2.3,-1.2], "yaw": 1.570796, "fixture": "wall", "color": "#ffd9a0", "intensity": 0.9, "range": 8 },
+        { "kind": "light", "position": [8,3.3,0], "fixture": "ceiling", "color": "#fff1d6", "intensity": 0.8, "range": 8 },
+        { "kind": "light", "position": [0,3.3,8], "fixture": "ceiling", "color": "#fff1d6", "intensity": 0.8, "range": 8 },
+        { "kind": "light", "position": [8,3.3,8], "fixture": "ceiling", "color": "#fff1d6", "intensity": 0.8, "range": 8 }
+      ],
+      "markers": [{ "name": "ways_in", "kind": "doorPair", "parts": [4,5] }],
+      "notes": { "design": "Clear it at close quarters: in by the rear door (north) or the side door (east), round the loop gun room - ammunition room - crew room - hall. The embrasure (3.5 m by 1.1 m, sill 0.9 m) and the slit are for shooting, not for getting in. Its roof is 1.5 m of concrete (the rooms' roofs and a slab over them)." }
+    },
+    {
+      "id": "setpiece.casemate_cave",
+      "displayName": "Cliff Casemate",
+      "category": "Fortifications",
+      "blurb": "A casemate set into the cliff: its embrasure looks out through a rock cave mouth (south), a sally port onto the cliff face (west), a hall behind with the rear and side doors. Bury it in the cliff with the terrain tools.",
+      "packs": ["military", "snow", "harbor"],
+      "footprint": { "cells": [[0,0],[0,1],[0,2]], "levels": [0,1] },
+      "mirror": "free",
+      "ports": [
+        { "side": "W", "cell": [0,1], "level": 0, "kind": "door" },
+        { "side": "N", "cell": [0,2], "level": 0, "kind": "door" },
+        { "side": "E", "cell": [0,2], "level": 0, "kind": "door" }
+      ],
+      "parts": [
+        { "kind": "tile", "tile": "core.room", "x": 0, "y": 1, "z": 0, "rotation": 0, "edges": { "0,0,0:E": "wall", "0,0,0:N": "door", "0,0,0:S": "embrasure", "0,0,0:W": "door" }, "surfaces": { "floor": { "role": "floor" }, "walls": { "role": "stone" }, "solids": { "role": "stone" }, "trim": { "role": "trim" }, "roof": { "role": "roof" } }, "options": { "ceiling": "roof" } },
+        { "kind": "tile", "tile": "core.room", "x": 0, "y": 2, "z": 0, "rotation": 0, "edges": { "0,0,0:E": "door", "0,0,0:N": "door", "0,0,0:S": "door", "0,0,0:W": "wall" }, "surfaces": { "floor": { "role": "floor" }, "walls": { "role": "stone" }, "solids": { "role": "stone" }, "trim": { "role": "trim" }, "roof": { "role": "roof" } }, "options": { "ceiling": "roof" } },
+        { "kind": "door", "name": "Sally port", "position": [-4,0,8], "yaw": 1.570796, "style": { "role": "door" }, "auto": true },
+        { "kind": "door", "name": "Rear door", "position": [0,0,20], "yaw": 0, "style": { "role": "door" }, "auto": true },
+        { "kind": "door", "name": "Side door", "position": [4,0,16], "yaw": 1.570796, "style": { "role": "door" }, "auto": true },
+        { "kind": "block", "name": "Gun pedestal", "position": [0,0,6.8], "size": [2.4,0.4,2.4], "material": { "role": "stone" } },
+        { "kind": "block", "name": "Gun breech", "position": [0,0.4,6.6], "size": [0.7,0.75,1.5], "material": { "role": "metal" } },
+        { "kind": "block", "name": "Gun shield", "position": [0,0.4,5.6], "size": [2,1.7,0.12], "material": { "role": "metal" } },
+        { "kind": "block", "name": "Gun barrel", "position": [0,1.22,4.8], "size": [0.24,0.24,1.6], "material": { "role": "metal" } },
+        { "kind": "prop", "model": "prop.mc_cave_entrance", "position": [0,0,3.4], "yaw": 0, "scale": 1 },
+        { "kind": "prop", "model": "prop.mc_cave_rock_wall", "position": [-2.7,0,3], "yaw": 0.15, "scale": 1 },
+        { "kind": "prop", "model": "prop.mc_cave_rock_wall", "position": [2.7,0,3], "yaw": -0.15, "scale": 1 },
+        { "kind": "prop", "model": "prop.mc_cave_rocks_a", "position": [-2.8,0,1.2], "yaw": 0.6, "scale": 1 },
+        { "kind": "prop", "model": "prop.rock_pile", "position": [2.6,0,1], "yaw": 2.1, "scale": 1 },
+        { "kind": "prop", "model": "prop.ammo_crate", "position": [2.9,0,9.5], "yaw": 1.570796, "scale": 1 },
+        { "kind": "prop", "model": "prop.ammo_stack", "position": [1.4,0,18.8], "yaw": 0, "scale": 1 },
+        { "kind": "light", "position": [3.47,2.3,9], "yaw": -1.570796, "fixture": "wall", "color": "#ffd9a0", "intensity": 0.9, "range": 8 },
+        { "kind": "light", "position": [0,3.3,16], "fixture": "ceiling", "color": "#fff1d6", "intensity": 0.8, "range": 8 }
+      ],
+      "notes": { "design": "The cell in front (the anchor) is the cave mouth: no floor of its own, rock round the embrasure, the cliff ledge under it in terrain. The gun room has two ways out (the sally port and the hall), the hall three." }
+    }
+  ]
+}

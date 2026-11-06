@@ -324,6 +324,28 @@
       "notes": { "design": "Floor-to-ceiling bars 0.3 m apart: see and shoot through, nobody squeezes through." }
     },
     {
+      "id": "bars_gate",
+      "label": "Barred gate",
+      "segments": [
+        { "repeat": { "from": "-half+0.15", "below": -1.6, "step": 0.3 }, "u": [-0.03, 0.03], "y": [0, "height"], "t": 0.1 },
+        { "repeat": { "from": 1.75, "below": "half-0.1", "step": 0.3 }, "u": [-0.03, 0.03], "y": [0, "height"], "t": 0.1 },
+        { "u": [-1.6, -1.5], "y": [0, "height"], "t": 0.2 },
+        { "u": [1.5, 1.6], "y": [0, "height"], "t": 0.2 },
+        { "repeat": { "from": -1.35, "through": 1.35, "step": 0.3 }, "u": [-0.03, 0.03], "y": [3.12, "height"], "t": 0.1 },
+        { "u": [-1.5, 1.5], "y": [3, 3.12], "t": 0.12 },
+        { "u": ["-half", -1.6], "y": [0, 0.12], "t": 0.12 },
+        { "u": [1.6, "half"], "y": [0, 0.12], "t": 0.12 },
+        { "u": ["-half", "half"], "y": ["height-0.15", "height"], "t": 0.12 }
+      ],
+      "trim": [
+      ],
+      "openings": [[-1.5, 1.5, 0, 3]],
+      "dressing": { "kind": "door", "span": 3 },
+      "notes": {
+        "design": "Bars 0.3 m apart from floor to ceiling (see and shoot through, nobody squeezes through) either side of a gateway 3 m wide and 3 m high, its posts solid and bars over it: hang a Portcullis door in it (set pieces part 3: the hypogeum's beast pens). Like Bars, rounds pass between the bars; the door, shut, stops them."
+      }
+    },
+    {
       "id": "shutter",
       "label": "Shutter (crouch under)",
       "segments": [

@@ -3,7 +3,7 @@
 import type { EdgeShape } from '../map/tileOptions.ts';
 
 /** Every edge style, in MapMaker's order. `auto` and `open` are rules (map/geometry.ts resolveEdge). */
-export const EDGE_STYLES = ['auto', 'wall', 'door', 'wide', 'arch', 'arch_segmental', 'arch_round', 'arch_grand', 'window', 'windows', 'slit', 'embrasure', 'half', 'railing', 'high', 'tower', 'fence', 'broken', 'bars', 'shutter', 'open'] as const;
+export const EDGE_STYLES = ['auto', 'wall', 'door', 'wide', 'arch', 'arch_segmental', 'arch_round', 'arch_grand', 'window', 'windows', 'slit', 'embrasure', 'half', 'railing', 'high', 'tower', 'fence', 'broken', 'bars', 'bars_gate', 'shutter', 'open'] as const;
 
 export const EDGE_STYLE_LABELS: Readonly<Record<(typeof EDGE_STYLES)[number], string>> = {
   auto: 'Auto',
@@ -25,6 +25,7 @@ export const EDGE_STYLE_LABELS: Readonly<Record<(typeof EDGE_STYLES)[number], st
   fence: 'Tall fence',
   broken: 'Broken wall',
   bars: 'Bars',
+  bars_gate: 'Barred gate',
   shutter: 'Shutter (crouch under)',
   open: 'No wall',
 };
@@ -59,6 +60,8 @@ export const EDGE_SHAPES: Readonly<Partial<Record<(typeof EDGE_STYLES)[number], 
   broken: { segments: [{ u: [{ half: -1 }, -2.2], y: [0, { height: 1 }] }, { u: [1.4, { half: 1 }], y: [0, { height: 1 }] }, { u: [-2.2, -0.6], y: [{ upTo: 2.7 }, { height: 1 }] }, { u: [-0.6, 1.4], y: [{ upTo: 3.2 }, { height: 1 }] }, { u: [-2.2, -1.3], y: [0, 0.45] }], trim: [{ base: [{ half: -1 }, -2.2] }, { base: [1.4, { half: 1 }] }, { cornice: [{ half: -1 }, { half: 1 }] }], dressing: { kind: 'door', span: 4.4 } },
   // design: Floor-to-ceiling bars 0.3 m apart: see and shoot through, nobody squeezes through.
   bars: { segments: [{ u: [-0.03, 0.03], y: [0, { height: 1 }], t: 0.1, repeat: { from: { half: -1, add: 0.15 }, to: { half: 1, add: -0.1 }, step: 0.3 } }, { u: [{ half: -1 }, { half: 1 }], y: [0, 0.12], t: 0.12 }, { u: [{ half: -1 }, { half: 1 }], y: [{ height: 1, add: -0.15 }, { height: 1 }], t: 0.12 }], trim: [], dressing: { kind: 'see-through' } },
+  // design: Bars 0.3 m apart from floor to ceiling (see and shoot through, nobody squeezes through) either side of a gateway 3 m wide and 3 m high, its posts solid and bars over it: hang a Portcullis door in it (set pieces part 3: the hypogeum's beast pens). Like Bars, rounds pass between the bars; the door, shut, stops them.
+  bars_gate: { segments: [{ u: [-0.03, 0.03], y: [0, { height: 1 }], t: 0.1, repeat: { from: { half: -1, add: 0.15 }, to: -1.6, step: 0.3 } }, { u: [-0.03, 0.03], y: [0, { height: 1 }], t: 0.1, repeat: { from: 1.75, to: { half: 1, add: -0.1 }, step: 0.3 } }, { u: [-1.6, -1.5], y: [0, { height: 1 }], t: 0.2 }, { u: [1.5, 1.6], y: [0, { height: 1 }], t: 0.2 }, { u: [-0.03, 0.03], y: [3.12, { height: 1 }], t: 0.1, repeat: { from: -1.35, to: 1.35, through: true, step: 0.3 } }, { u: [-1.5, 1.5], y: [3, 3.12], t: 0.12 }, { u: [{ half: -1 }, -1.6], y: [0, 0.12], t: 0.12 }, { u: [1.6, { half: 1 }], y: [0, 0.12], t: 0.12 }, { u: [{ half: -1 }, { half: 1 }], y: [{ height: 1, add: -0.15 }, { height: 1 }], t: 0.12 }], trim: [], openings: [[-1.5, 1.5, 0, 3]], dressing: { kind: 'door', span: 3 } },
   // design: A wide opening with its roller shutter stuck 1.35 m up: crouch under it (bots don't path through).
   shutter: { segments: [{ u: [{ half: -1 }, -2.5], y: [0, { height: 1 }] }, { u: [2.5, { half: 1 }], y: [0, { height: 1 }] }, { u: [-2.5, 2.5], y: [{ upTo: 3.5 }, { height: 1 }] }, { u: [-2.5, 2.5], y: [1.35, { upTo: 3.5 }], t: 0.12 }], trim: [{ base: [{ half: -1 }, -2.66] }, { base: [2.66, { half: 1 }] }, { cornice: [{ half: -1 }, { half: 1 }] }, { frame: { half: 2.5, top: 3.5 } }], openings: [[-2.5, 2.5, 0, 3.5]], dressing: { kind: 'door', span: 5 } },
 };
