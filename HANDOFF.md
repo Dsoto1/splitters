@@ -497,7 +497,11 @@ Status: built and tested locally, being checked (see the end of this section). T
   node_modules/.cache, ~1 min cold), `node tools/content/prop-openings.mjs --check`, then the checks in CLAUDE.md.
   Scratch scripts (renders, audits, screenshots) in the session scratchpad `openings/work/`.
 - **Follow-ups (owner's call):** slack round `box` props (stumps, logs, dishes, car bonnets; `--slack`) and the
-  red rock spires; Diamond Park's dugout spawn cut off from the navmesh (before this change too).
+  red rock spires; Diamond Park's dugout spawn cut off from the navmesh (before this change too). Bars and fences
+  with gaps under 0.5 m keep their box, so rounds still stop between the bars: `iron_fence` (gaps 0.25 × 0.7 m, 48
+  placements on Hollowmere Manor and St John's), `dg_arch_bars` (0.3 m), the `lf_*` gates and fences (0.1-0.25 m).
+  The windows the report named (`sf_wall_window`, `sf_wall_astra_window`, `hp_wall_window`) have glass panes and
+  `dg_arch_door` a closed door: their boxes stop rounds on the pane or the door, not in the air.
 
 ### Fixed by the openings fix above (owner bug report, 2026-11-06): bullets stop in the air inside arches, windows and holes
 The owner's screenshots, in the session scratchpad `openings/` (30.jpg, 31.jpg, 32.jpg), show bullet holes in empty
