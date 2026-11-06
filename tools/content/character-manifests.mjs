@@ -36,7 +36,7 @@ export const MESHY_TASKS = {
 const PACK = { owned: 'meshy-owned', CC0: 'meshy-community-characters' };
 const KINDS = new Set(['character', 'creature']);
 const USES = new Set(['player', 'npc', 'player+npc', 'npc+player']);
-const FIXES = new Set(['triangles', 'surface', 'seamWeld', 'lean', 'cloth', 'tail', 'feet', 'scrubBlue', 'hands', 'armCloth', 'skinClean', 'handsShare', 'headShare', 'lod', 'normalSize', 'hold', 'grip', 'skin', 'fingers']);
+const FIXES = new Set(['triangles', 'surface', 'seamWeld', 'lean', 'cloth', 'tail', 'feet', 'centre', 'scrubBlue', 'hands', 'armCloth', 'skinClean', 'handsShare', 'headShare', 'lod', 'normalSize', 'hold', 'grip', 'skin', 'fingers']);
 /** How a character gets about: left out, it walks on the rig's clips; `roll`, it has no legs (a ball, a wheel) and rolls. */
 const LOCOMOTION = new Set(['roll']);
 /** The clips a clip set (`clipsFrom`, tools/content/clip-set.mjs) can hold, as the game asks for them (characterAnimator.ts). */
@@ -193,7 +193,7 @@ export function manifestProblems(m, file = `${m?.id}.json`) {
     for (const k of ['curlR', 'curlL']) need(g?.[k] === undefined || (typeof g[k] === 'number' && g[k] >= 0 && g[k] <= NUM[k]), `fixes.grip.${k}: 0–${NUM[k]} (a share of the hand's measured curl)`);
     for (const k of PTS) need(g?.[k] === undefined || (isPoint(g[k]) && g[k].every((v) => Math.abs(v) <= 0.15)), `fixes.grip.${k}: [right, up, ahead] in the gun's frame (m, each −0.15–0.15)`);
   }
-  for (const k of ['seamWeld', 'cloth', 'feet', 'armCloth', 'skinClean']) need(x[k] === undefined || typeof x[k] === 'boolean', `fixes.${k}: true or false`);
+  for (const k of ['seamWeld', 'cloth', 'feet', 'centre', 'armCloth', 'skinClean']) need(x[k] === undefined || typeof x[k] === 'boolean', `fixes.${k}: true or false`);
   if (x.hands !== undefined) {
     const h = x.hands;
     need(typeof h === 'object' && h !== null, 'fixes.hands: { palm, curl, scale }');
@@ -363,6 +363,7 @@ export function buildSpec(m) {
     skinClean: x.skinClean,
     tail: x.tail,
     feet: x.feet,
+    centre: x.centre,
     scrubBlue: x.scrubBlue,
     hands: x.hands,
     skin: x.skin,

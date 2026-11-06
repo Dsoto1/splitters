@@ -476,7 +476,12 @@ function pose(skel, verts, ual, c) {
   let [low, high] = [Infinity, -Infinity];
   for (let v = 1; v < pos.length; v += 3) [low, high] = [Math.min(low, pos[v]), Math.max(high, pos[v])];
   const k = HEIGHT / (high - low);
-  const fit = (p) => [p[0] * k, (p[1] - low) * k, p[2] * k];
+  // `fixes.centre`: the body moved over its own origin by its hips. Meshy centres a download's box, so a long tail
+  // behind left the body standing that far ahead of the origin the game moves and collides it by (the crocodile's
+  // hips 0.39 m ahead at 1.8 m; Character Select drew it nearer the camera than everyone else, head out of frame).
+  const hips = c.centre ? posed[index.get('Hips')] : null;
+  const fit = (p) => [(p[0] - (hips?.[0] ?? 0)) * k, (p[1] - low) * k, (p[2] - (hips?.[2] ?? 0)) * k];
+  if (hips) console.log(`  centred over its hips: moved ${(-hips[0] * k).toFixed(3)} m across, ${(-hips[2] * k).toFixed(3)} m front to back`);
   for (let v = 0; v < pos.length; v += 3) pos.set(fit([pos[v], pos[v + 1], pos[v + 2]]), v);
   let out = { pos, nrm, uv: verts.uv, J, W, indices: verts.indices };
   if (clean) {

@@ -39,6 +39,7 @@
     "grip": {
       "gripLong": [-0.045, 0.03, -0.03],
       "supportPistol": [-0.01, 0.03, -0.03]
-    }
+    },
+    "centre": true
   }
 }

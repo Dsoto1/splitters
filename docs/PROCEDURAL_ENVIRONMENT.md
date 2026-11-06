@@ -158,7 +158,7 @@ Each family includes collision, surface types, LODs, budgets and tests, like the
   2. fences and walls;
   3. containers;
   4. the rest by how often maps use them (count the placements first).
-- **Stays authored** (Meshy, owned or purchased): characters, first-person weapons, vehicles, and hero props and
+- **Stays authored** (Meshy models, owned or community CC0, or purchased): characters, first-person weapons, vehicles, and hero props and
   landmarks (the airliner, excavator, cranes, statues, detailed machinery).
 - **Target:** roughly 60–75% of today's ~1,366 props generated, for one consistent, grounded art style.
 - **Later option:** generate at load instead of at build time, for smaller downloads, measured against load time.
