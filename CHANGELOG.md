@@ -8,6 +8,26 @@ made only on a commit that passed CI on a check branch.
 
 ## Unreleased
 
+**CTF bots go for the flag; no bots standing about** (owner's reports, 2026-11-05/06: "no bots are actually going
+for the flag, most just hang out and do little"; Diamond Park, "most of the team hung out in the tunnel/dugout
+area"; Fernwood Moon, "why would some bots not be moving at all?"; docs/BOTS.md, "Capture the Flag" and "Standing
+still")
+- **Roles as the owner set them**: 2 defenders a team (3 on teams of 12 or more), everyone else attacks; the
+  attackers nearest a carrier escort it home; anyone near their own flag when it's taken or dropped goes after it.
+- **Attackers keep to the flag**: they no longer run off after noises or enemies that slipped away (unless within
+  12 m), take cover only when hurt, fight on the move, sprint to the flag and spread over the map's routes. Carriers
+  sprint home and shoot back at anyone close. A bot with only a pistol grabs a gun on its way.
+- **Nobody stuck where they can't get out**: Diamond Park's dugouts (three spawn points a side; bots that spawned
+  there never left), Capitol Mall's reflecting pool, a flag dropped into Cinder Foundry's pit, Fernwood Moon's
+  Garrison spawning in its bunker with only the enemy's door on its way, doors that a crowd of bots opened and shut
+  again, a vehicle parked in the way, a ladder left halfway up, a queue at a lift.
+- **Holding a spot looks alive**: defenders, escorts and bots told to hold walk between places round their spot,
+  watch the way the enemy comes, glance about and crouch; campers shift and peek; bots waiting for a lift look about.
+- **Iron Compound's main gate opens again** (its buttons opened and shut it in the same press, for players too;
+  fixed in MapMaker). **Fernwood Moon**: the bunker's reactor core moved half a metre so the Garrison can leave by
+  its rear door. MapMaker and validate-map warn about rules on one event that undo each other.
+- Team tools: `pnpm bot-report` (what every bot did and why it stood still, per map; before/after compare).
+
 **No flicker on props** (owner's report on Flatpack Depot, 2026-11-05: "significant flickering", "flicker when I look
 around", on an Android phone; docs/LOOK.md, "No flicker: props")
 - **Rugs, shelves, crates and boxes no longer fight the floor**: many props have flat faces in the floor's own plane
