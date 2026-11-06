@@ -1082,9 +1082,12 @@ export class BotBrain {
       this.goal = null;
       this.lastPathTick = -Infinity;
     }
-    // Within reach of the button it's going to press: it looks at the button and nothing else (the look along its route
-    // turned it back level every tick, and it never faced a console's button: Serene City's thaw console, eight bots).
+    // Within reach of the button it's going to press: it looks at the button and nothing else (the look along its route,
+    // or running for its goal, turned it back level every tick, and it never faced a console's button: Serene City's
+    // thaw console, eight bots). Where it looked when the tick began, for the turn to the button to start from.
     const atButton = this.pressPlan !== null && this.pressReach(me, this.pressPlan);
+    const yaw0 = this.yaw;
+    const pitch0 = this.pitch;
     let moveYaw: number | null = null;
     let moveScale = 1;
     let backOff = false;
@@ -1606,7 +1609,11 @@ export class BotBrain {
     if (plan && !aimedTarget && this.pressReach(me, plan)) {
       forward = 0;
       right = 0;
+      sprint = false;
       const a = lookAngles({ x: me.pos.x, y: me.pos.y + PLAYER.eyeHeight, z: me.pos.z }, plan.face);
+      // (Only this turn this tick: any other, such as running's turn to face its way, would undo it.)
+      this.yaw = yaw0;
+      this.pitch = pitch0;
       this.turnToward(a.yaw, a.pitch);
       if (Math.abs(angleDelta(this.yaw, a.yaw)) < 0.3 && Math.abs(this.pitch - a.pitch) < 0.3) {
         pressNow = true;
