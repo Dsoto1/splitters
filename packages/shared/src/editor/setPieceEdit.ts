@@ -298,10 +298,11 @@ export interface SetPiecePortState {
 
 /**
  * Where MapMaker looks for a wall in a port: 0.25 m beyond the port's side (inside a wall built against it: walls are
- * 0.5 m thick, from a cell's edge in), across its middle and 0.45 m either side, at 1 m and 1.5 m above its floor (a
- * window's sill or a raised floor there blocks the way; the first steps of a stair and a doorway's lintel don't).
+ * 0.5 m thick, from a cell's edge in), across its middle and 0.45 m either side, at 0.5, 1 and 1.5 m above its floor
+ * (a window's sill, a half wall or a raised floor there blocks the way; a stair's first step, 0.25 m, and a doorway's
+ * lintel don't).
  */
-const PORT_PROBE = { out: 0.25, across: [-0.45, 0, 0.45], heights: [1, 1.5] } as const;
+const PORT_PROBE = { out: 0.25, across: [-0.45, 0, 0.45], heights: [0.5, 1, 1.5] } as const;
 
 /** Whether a point is inside a box (turned and tilted boxes too). */
 function insideBox(b: WorldBox, x: number, y: number, z: number): boolean {
