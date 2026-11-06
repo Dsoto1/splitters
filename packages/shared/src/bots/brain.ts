@@ -373,6 +373,10 @@ export class BotBrain {
   meantToMove = false;
   /** Route searches that found no way there (measuring). */
   pathFailures = 0;
+  /** Route searches for where it was going (followPathNow; measuring), found or not. */
+  pathSearches = 0;
+  /** The last search that found no way (measuring: the scorecard's failed-search spots): from where, to where. */
+  lastNoRoute: { goal: Vec3; from: Vec3 } | null = null;
   /** The last followPathTo found no route (or was backing off asking again) rather than arriving. */
   private pathMiss = false;
   /** The pickup it last set out for (the same object as roamGoal while it still goes for it). */
@@ -2803,10 +2807,14 @@ export class BotBrain {
       const found = backedOff ? null : ((offLifts && view.nav.findPath(me.pos, goal, offLifts)) || view.nav.findPath(me.pos, goal));
       if (!backedOff) {
         this.pathFails = found ? 0 : Math.min(this.pathFails + 1, 6);
+        this.pathSearches++;
         // (A route somewhere else, a place to keep watch from on the way, leaves the back-off for the goal alone.)
         if (!found) this.noPath = { goal: { ...goal }, from: { ...me.pos }, until: view.tick + Math.min(TICK_RATE * 4, 6 << this.pathFails) };
         else if (np && horizontalDistance(np.goal, goal) < 2 && Math.abs(np.goal.y - goal.y) < 1.5) this.noPath = null;
-        if (!found) this.pathFailures++;
+        if (!found) {
+          this.pathFailures++;
+          this.lastNoRoute = this.noPath;
+        }
       }
       this.path = found ?? [];
       // No route: cut off on a patch of navmesh players walk off? Then off it first. Else (the goal is what can't be

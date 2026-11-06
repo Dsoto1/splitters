@@ -1,0 +1,14 @@
+{
+  "about": "Bot scorecard limits (docs/BOTS.md, Scorecard). `pnpm bot-report --check` plays `check` and holds it to `checkLimits`; the nightly full suite (`pnpm bot-report --suite=all`, then `--judge`) is held to `limits`. Keys: all, a mode (core.ctf), or a mode and a map (core.ctf/diamond_park). Each measure is the most it may be (failed searches, idle, stuck, think ms) or the least (captures, coverage, going to the goal); bot-report.ts METRICS says which. A worse number fails: raise a limit only with the reason in the commit.",
+  "check": {
+    "seconds": 90,
+    "seed": 1,
+    "matches": [["diamond_park", "core.ctf"], ["eagle_spires", "core.ctf"], ["shingle_point", "core.koth"], ["fernwood_moon", "core.tdm"]]
+  },
+  "checkLimits": {
+    "all": { "failedSearches": 0.5, "noRouteIdle": 0.5 }
+  },
+  "limits": {
+    "all": { "failedSearches": 0.5, "noRouteIdle": 0.5 }
+  }
+}
