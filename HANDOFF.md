@@ -777,7 +777,7 @@ Owner request (2026-11-05): show the real buildable area.
 
 Also proposed: note pins, templates, mirror for team maps, a card-shot camera, and snap-to-surface/randomise for props.
 
-**Build area: done on `wip/grid` (agent, 2026-11-05); `check/grid` run 42093090058 green at 01ab568b (all shards: shared changed). Not on main yet.**
+**Build area: done and on main (07ccea8d, b7d5d497; `check/grid` run 42093090058 green).**
 - Shared: `editor/buildArea.ts` (`buildLimitRect`, `playableRect` = bounds else terrain extent, `buildZone`,
   `insideBuildLimit`, `buildLimitReason`); `MAX_TILE_CELL` / `MAX_TILE_LEVEL` in the schema replace the literal
   256 / 16; checkPlacement's refusal now says "past the build limit…". Test: `packages/shared/test/buildArea.test.ts`.
@@ -798,6 +798,9 @@ Also proposed: note pins, templates, mirror for team maps, a card-shot camera, a
   draws the whole map (fine on desktop, not measured on weak GPUs).
 
 Waiting for the owner to mark which ones. This becomes the "MapMaker overhaul" in the agreed queue.
+Already covered elsewhere: set pieces (item 3, its own queue item, docs/SET_PIECES_PLAN.md); the build area (above);
+bot heatmaps (item 4) partly by docs/BOT_AI_PLAN.md (Phase A failure-spot pictures, Phase D bot debug view and
+bot hints). Today a tile's ghost already turns green or red, but it doesn't say why, and there is no budget bar.
 
 ### Queued (owner-approved, 2026-11-05): kit-prop generators
 docs/PROCEDURAL_ENVIRONMENT.md Phase 6, after Environment Phase 2. Generated families replace most of the simple
