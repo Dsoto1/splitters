@@ -752,6 +752,8 @@ export class FrontEnd {
   private stopped: string | null = null;
   /** The fit check's details are showing. */
   private fitOpen = false;
+  /** The section just opened (its settings slide in once, not on every redraw). */
+  private justOpened: string | null = null;
 
   private currentMap(): ArcadeMap {
     return this.maps.find((m) => m.key === this.setup.map) ?? this.maps[0]!;
@@ -808,7 +810,9 @@ export class FrontEnd {
     if (opening && compactSetup()) for (const s of SETUP_SECTIONS) this.folds.delete(s);
     if (opening) this.folds.add(id);
     else this.folds.delete(id);
+    this.justOpened = opening ? id : null;
     this.refreshSetup();
+    this.justOpened = null;
     // Opened: scroll down so its settings show, as far as they fit, never past its head.
     const body = this.setupPanel?.querySelector<HTMLElement>('.setup-body');
     const sec = document.getElementById(id);
@@ -1281,7 +1285,7 @@ export class FrontEnd {
       : [];
 
     const sec = (id: (typeof SETUP_SECTIONS)[number], title: string, summary: string, ...children: HTMLElement[]) =>
-      section({ id, title, summary: [summary], open: this.folds.has(id), onToggle: () => this.toggleSection(id) }, ...children);
+      section({ id, title, summary: [summary], open: this.folds.has(id), opening: this.justOpened === id, onToggle: () => this.toggleSection(id) }, ...children);
     const body = el(
       'div',
       { class: 'setup-body' },

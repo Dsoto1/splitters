@@ -170,7 +170,7 @@ export function fold(o: { id: string; title: string; badge?: string; open: boole
  * A section of the setup under the essentials (Players & teams, Bots, Advanced rules): its header (the title,
  * a line saying what it's set to, a caret) opens and closes it. `tag`: a mark after the title (Live).
  */
-export function section(o: { id: string; title: string; summary?: (Node | string)[]; open: boolean; onToggle: () => void; tag?: HTMLElement | null; warn?: boolean }, ...children: HTMLElement[]): HTMLElement {
+export function section(o: { id: string; title: string; summary?: (Node | string)[]; open: boolean; onToggle: () => void; tag?: HTMLElement | null; warn?: boolean; opening?: boolean }, ...children: HTMLElement[]): HTMLElement {
   const head = el(
     'button',
     { type: 'button', class: 'sec-head', id: `${o.id}-head` },
@@ -181,7 +181,8 @@ export function section(o: { id: string; title: string; summary?: (Node | string
   );
   head.setAttribute('aria-expanded', String(o.open));
   head.addEventListener('click', o.onToggle);
-  const sec = el('section', { class: `setup-sec${o.open ? ' open' : ''}`, id: o.id }, head);
+  // `opening`: just opened, its settings slide in (a redraw of one already open doesn't flash).
+  const sec = el('section', { class: `setup-sec${o.open ? ' open' : ''}${o.open && o.opening ? ' opening' : ''}`, id: o.id }, head);
   if (o.open) sec.append(el('div', { class: 'sec-body', id: `${o.id}-body` }, ...children));
   return sec;
 }

@@ -291,7 +291,8 @@ button.cta:hover { background: #ffc46e; }
 .sec-sum.warn { color: var(--warning); }
 .sec-caret { flex: none; color: var(--cyan); font-size: 12px; transition: transform 0.15s; }
 .setup-sec.open .sec-caret { transform: rotate(90deg); }
-.sec-body { display: flex; flex-direction: column; gap: 10px; padding: 2px 0 14px; animation: sec-in 0.18s ease-out; }
+.sec-body { display: flex; flex-direction: column; gap: 10px; padding: 2px 0 14px; }
+.setup-sec.opening .sec-body { animation: sec-in 0.18s ease-out; }
 @keyframes sec-in { from { opacity: 0; transform: translateY(-4px); } }
 .setup-facts { margin: 4px 0 0; display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; color: var(--muted); font: 600 13px var(--font-display); letter-spacing: 0.03em; }
 .setup-facts > span::before { display: inline-block; width: 15px; height: 15px; margin-right: 5px; vertical-align: -3px; content: ''; background: currentColor; -webkit-mask: var(--glyph) no-repeat center / contain; mask: var(--glyph) no-repeat center / contain; }
