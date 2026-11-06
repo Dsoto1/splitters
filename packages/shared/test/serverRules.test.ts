@@ -101,7 +101,9 @@ describe('server match rules (RULES): parity with the browser host', () => {
     expect(validateServerRules({ score: 60 }).error).toMatch(/per mode/);
     expect(validateServerRules({ wobble: 1 }).error).toMatch(/unknown rule "wobble"/);
     expect(validateServerRules({ modes: { space: {} } }).error).toMatch(/not a mode/);
-    expect(validateServerRules({ modes: { tdm: { score: 5000 } } }).error).toMatch(/0 to 1000/);
+    // Big matches suggest scores past the old cap of 1,000 (48v48 Team Deathmatch about 1,500): SCORE_LIMIT_MAX.
+    expect(validateServerRules({ modes: { tdm: { score: 1500 } } }).error).toBeUndefined();
+    expect(validateServerRules({ modes: { tdm: { score: 5001 } } }).error).toMatch(/0 to 5000/);
     expect(validateServerRules('not json').error).toMatch(/JSON/);
     expect(parseRuleValue(ruleSpec('time')!, '∞')).toEqual({ ok: true, value: 0 });
     expect(parseRuleValue(ruleSpec('sizes')!, 'all equal')).toEqual({ ok: true, value: false });

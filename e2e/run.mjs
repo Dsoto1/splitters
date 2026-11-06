@@ -2352,7 +2352,67 @@ async function teamsFlow(browser) {
   await customSetupFlow(browser);
   await botCastFlow(browser);
   await setupLayoutFlow(browser);
+  await setupLimitsFlow(browser);
   await spectateStartFlow(browser);
+}
+
+/**
+ * Score and time follow the match's size (owner, 2026-11-06: "24v24 plays ok with 500 points, but also 15–20 min"):
+ * Match setup suggests them for the players and bots (matchSetup.ts suggestedLimits), they follow a size change
+ * until set by hand (Custom, kept through size changes), and "Back to suggested" puts them back. A setup saved
+ * before suggestions, at the old 40 points and 10 minutes, follows the size.
+ */
+async function setupLimitsFlow(browser) {
+  // The curve's values for St. John's presets (Small 4v4, Map's pick 12v12, Max 24v24): points and minutes.
+  const EXPECT = { '4v4': [40, 10], '12v12': [170, 15], '24v24': [500, 20] };
+  const errors = [];
+  const page = await (await browser.newContext({ viewport: { width: 1280, height: 720 } })).newPage();
+  page.on('pageerror', (e) => errors.push(e.message));
+  await page.addInitScript(() => {
+    if (sessionStorage.getItem('seeded')) return;
+    localStorage.setItem('cs.arcade', JSON.stringify({ map: 'st_johns', mode: 'core.tdm', bots: 3, skill: 'normal', scoreLimit: 40, minutes: 10, teams: [4, 4] }));
+    sessionStorage.setItem('seeded', '1');
+  });
+  await page.goto(`${CLIENT}/?test=1`);
+  await page.waitForFunction(() => window.__front, null, { timeout: T(30000) });
+  await page.evaluate(() => document.getElementById('nav-play').click());
+  await page.waitForSelector('#arcade-score', { timeout: T(30000) });
+  const read = () =>
+    page.evaluate(() => ({
+      score: Number(document.getElementById('arcade-score')?.value),
+      time: document.getElementById('arcade-minutes')?.textContent,
+      line: document.getElementById('setup-limits')?.textContent ?? '',
+      custom: document.querySelectorAll('#setup-win .when-tag.custom').length,
+      reset: !!document.getElementById('setup-limits-reset'),
+      fact: document.querySelector('#setup-summary .fact-time')?.textContent,
+      saved: JSON.parse(localStorage.getItem('cs.arcade')),
+    }));
+  const preset = (id) => page.evaluate((p) => document.querySelector(`#setup-sizes [data-preset="${p}"]`).click(), id);
+  const suggests = (r, size) => {
+    const [points, minutes] = EXPECT[size];
+    return r.score === points && r.time === `${minutes} min` && r.fact === `~${minutes} min` && r.line === `Suggested for ${size}: ${points} points, ${minutes} min. They follow the size until you change them.` && r.custom === 0;
+  };
+  const four = await read();
+  check(suggests(four, '4v4') && four.saved.scoreAuto === true && four.saved.timeAuto === true, `a setup saved at the old 40 points and 10 minutes follows the size: 4v4 suggests ${EXPECT['4v4'].join(' points, ')} min (${JSON.stringify({ ...four, saved: undefined })})`);
+  await preset('pick');
+  const twelve = await read();
+  await preset('max');
+  const big = await read();
+  check(suggests(twelve, '12v12') && suggests(big, '24v24') && big.saved.scoreLimit === EXPECT['24v24'][0] && big.saved.minutes === EXPECT['24v24'][1], `the suggested score and time follow the size: 12v12 ${twelve.score}, ${twelve.time}; 24v24 ${big.score}, ${big.time} (${JSON.stringify({ line: big.line, fact: big.fact })})`);
+  // Set by hand: Custom, kept through a size change; Back to suggested follows the size again.
+  await page.evaluate(() => {
+    const i = document.getElementById('arcade-score');
+    i.value = '300';
+    i.dispatchEvent(new Event('change'));
+  });
+  await preset('pick');
+  const custom = await read();
+  check(custom.score === 300 && custom.custom === 1 && custom.reset && /^Custom\. Suggested for 12v12: /.test(custom.line) && custom.saved.scoreAuto === false && custom.time === `${EXPECT['12v12'][1]} min`, `a score set by hand is marked Custom and stays when the size changes; the time still follows (${JSON.stringify({ ...custom, saved: undefined })})`);
+  await page.evaluate(() => document.getElementById('setup-limits-reset').click());
+  const back = await read();
+  check(suggests(back, '12v12') && back.saved.scoreAuto === true && back.saved.scoreLimit === EXPECT['12v12'][0], `Back to suggested puts the score back on the suggestion for the size (${JSON.stringify({ ...back, saved: undefined })})`);
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  await page.context().close();
 }
 
 /**

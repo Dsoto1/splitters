@@ -455,7 +455,7 @@ export function sizePresets(mode: GameMode, map: MapDocument, o: PresetOptions):
     if (family === 'squad') {
       // No squad beyond what the map is made for (owner, 2026-11-06): its team layout in all, else its recommended most.
       const room = squadRoom(map, cap.max);
-      const most = map.teamSetup ? `its team layout's ${room}` : `${room}`;
+      const most = map.teamSetup ? `${room} (its team layout, ${map.teamSetup.sizes.join('v')}, in all)` : `${room}`;
       add('duel', 'Solo', 1, 'Just you against the map.');
       add('small', 'Duo', Math.min(2, room), 'You and one bot squadmate.');
       add('pick', "Map's pick", Math.min(pick, room), `The squad the map is made for (up to ${room}).`);

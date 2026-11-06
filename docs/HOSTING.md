@@ -447,7 +447,9 @@ Every setting a browser host has (Play → Match setup before the match, the
 pause menu's Host tab during it, with its listing) is in the launcher, the
 console and the settings, and applies to the running match the way the
 browser host's does: **live** at once, at the **restart** (the Host tab marks
-them ⟳ Restart, and its Apply says "Apply & restart" when one has changed), or
+them ⟳ Restart, and its Apply says "Apply & restart" when one has changed; they
+also play by themselves from the next round once this match's scoreboard is
+over, as the Host tab's Save for next match does), or
 at the **next match** (the rules a browser host picks in Match setup before
 its match starts). For the last two,
 **Restart match** (launcher: **Restart now with them**, console `restart`)

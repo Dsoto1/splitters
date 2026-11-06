@@ -330,6 +330,11 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
   const withLeaders = (r: MatchRules): MatchRules => (!managed && opts.leaders ? { ...r, leaders: opts.leaders } : r);
   /** A new match's rules and players: the server's rules over them (when it keeps its own). */
   const forMatch = (r: MatchRules, m: MapDocument, fill: number): { rules: MatchRules; fill: number } => (managed ? applyServerRules(r, serverRules, m, fill) : { rules: withLeaders(r), fill });
+  /**
+   * What a map change starts from: the rules in play, with any saved for the next match (Save for next match). A
+   * server that keeps its own rules has them in RULES already (per mode or per map), which forMatch puts on the next match.
+   */
+  const travelRules = (): MatchRules => (managed ? match.rules : control.nextRules());
   const firstMatch = forMatch(baseRules, map, Math.min(opts.botFill, MAX_PLAYER_SLOTS));
   let match = new Match(map, firstMatch.rules, opts.seed ?? Date.now() % 100000, { startGate: opts.startGate ?? true });
   for (const issue of validateNavigation(map, match.nav, match.physics)) console.warn(`[map] ${issue.severity}: ${issue.message}`);
@@ -422,8 +427,7 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
       const m = suiteMap(cmd.map);
       if (!m) return `"${cmd.map}" is not a map of our suite`;
       if (travel) return 'Already changing map';
-      // The next match: the rules waiting for it (Save for next match) go along.
-      const next = rulesForTravel(control.nextRules(), m, control.fill, cmd.mode, control.state().teamSize);
+      const next = rulesForTravel(travelRules(), m, control.fill, cmd.mode, control.state().teamSize);
       travel = { atTick: match.tick + HOST_TRAVEL_TICKS, map: m, rules: next.rules, index: playIndex, carry: { score: false, loadout: false }, fill: next.fill };
       notice(travelNotice(m.metadata.name, next.rules.mode));
       return null;
@@ -730,7 +734,7 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
    * players carry over (rulesForTravel), scores and weapons don't. Returns the rules it will play.
    */
   const travelTo = (m: MapDocument, mode: GameMode, atTick: number): MatchRules => {
-    const next = rulesForTravel(control.nextRules(), m, control.fill, mode, control.state().teamSize);
+    const next = rulesForTravel(travelRules(), m, control.fill, mode, control.state().teamSize);
     travel = { atTick, map: m, rules: next.rules, index: playIndex, carry: { score: false, loadout: false }, fill: next.fill };
     return next.rules;
   };
