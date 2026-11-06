@@ -18,6 +18,11 @@ export const RETIRED_MAPS: ReadonlySet<string> = new Set([
   'glacier_line',
   // The procedural environment's Phase 1 showcase (docs/PROCEDURAL_ENVIRONMENT_AUDIT.md §10): play tests and perf runs only.
   'env_showcase',
+  // Owner, 2026-11-06 (after Bot AI Phase A's navigation audit): out of the game.
+  'obsidian_orb',
+  'reactor',
+  'serpent_gorge',
+  'iron_compound',
 ]);
 
 export const isRetiredMap = (id: string): boolean => RETIRED_MAPS.has(id);

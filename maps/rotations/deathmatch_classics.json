@@ -10,7 +10,6 @@
     { "map": "jade_sanctum", "mode": "core.deathmatch" },
     { "map": "void_yard", "mode": "core.deathmatch" },
     { "map": "gallows_yard", "mode": "core.deathmatch" },
-    { "map": "overhang", "mode": "core.deathmatch" },
-    { "map": "reactor", "mode": "core.deathmatch" }
+    { "map": "overhang", "mode": "core.deathmatch" }
   ]
 }
