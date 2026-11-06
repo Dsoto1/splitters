@@ -752,7 +752,7 @@ function roomOptionBoxes(map: MapDocument, catalog: TileCatalog, cells: Map<stri
           roof(h, -h, half, h);
         } else roof(-half, -half, half, half);
       }
-      if (o.ceiling === 'vault' && !decor) out.push(...vaultBoxes(cells, x, y, z, def, placement, cellSize, levelHeight));
+      if (o.ceiling === 'vault') out.push(...(decor ? vaultRibs : vaultBoxes)(cells, x, y, z, def, placement, cellSize, levelHeight));
       if (o.corners && o.corners !== 'square') {
         const y0 = z * levelHeight;
         for (const [a, b, sx, sz] of CELL_CORNERS) {
@@ -771,49 +771,69 @@ function roomOptionBoxes(map: MapDocument, catalog: TileCatalog, cells: Map<stri
 /** A vaulted ceiling's strips: 0.2 m thick, their tops at the underside of the floor or roof above. */
 const VAULT_T = 0.2;
 
+/** Where one cell's vault runs (vaultBoxes): along world z or x, across `span` and along `along`, springing and crown heights. */
+function vaultFrame(cells: Map<string, CellOccupant>, gx: number, gy: number, gz: number, def: TileDefinition, placement: TilePlacement, cellSize: number, levelHeight: number) {
+  const half = cellSize / 2;
+  const t = TILE_DIMENSIONS.wallThickness;
+  const [w, d] = footprintSize(def);
+  // Along the room's long way, in the world: local y is world z unless the room is turned a quarter (or three).
+  const alongZ = (d >= w) === (placement.rotation % 2 === 0);
+  const sides: [Side, Side, Side, Side] = alongZ ? ['W', 'E', 'S', 'N'] : ['S', 'N', 'W', 'E'];
+  const segs = (side: Side) => edgeSegments(resolveEdge(cells, gx, gy, gz, side), half, levelHeight);
+  const inset = (side: Side) => Math.max(0, ...segs(side).map((g) => g[4]));
+  const top = levelHeight - TILE_DIMENSIONS.floorThickness;
+  const crown = top - VAULT_T - 0.01;
+  const spring = crown - 0.39;
+  // Across the vault (x for a vault along z), and along it between the walls at its ends.
+  const [a0, a1] = alongZ ? [gx * cellSize, gy * cellSize] : [gy * cellSize, gx * cellSize];
+  const span: [number, number] = [a0 - half + t, a0 + half - t];
+  const along: [number, number] = [a1 - half + inset(sides[2]), a1 + half - inset(sides[3])];
+  return { half, t, alongZ, sides, segs, top, crown, spring, a0, a1, span, along, baseY: gz * levelHeight };
+}
+
+/** A vault's local boxes (map/catalog.ts vault) as one placement's world boxes. */
+const vaultWorld = (boxes: readonly LocalBox[], kind: BoxKind, sourceId: string): WorldBox[] =>
+  boxes.map((b) => ({ min: [...b.min], max: [...b.max], kind, sourceId, ...(b.pitch ? { pitch: b.pitch } : {}), ...(b.roll ? { roll: b.roll } : {}) }));
+
 /**
  * The vaulted ceiling (room option `vault`) of one cell of a room: a shallow segmental barrel vault along the room's
  * long way (local y when it is at least as deep as wide), springing 0.5 m in from each side at 2.9 m (on a 4 m level)
  * and rising to 3.29 m, its strips' tops just under the floor or roof above. It stops at the walls across its ends
  * and runs on through a side with none (into the next vaulted cell). A side that can't carry its springing (no wall,
  * or one lower or thinner than a standard wall: railings, half walls, fences, bars) gets a beam under it, 0.5 m wide
- * and 0.45 m deep; two vaulted cells side by side share theirs.
+ * and 0.45 m deep; two vaulted cells side by side share theirs. Its ribs are trim (vaultRibs).
  */
 function vaultBoxes(cells: Map<string, CellOccupant>, gx: number, gy: number, gz: number, def: TileDefinition, placement: TilePlacement, cellSize: number, levelHeight: number): WorldBox[] {
-  const half = cellSize / 2;
-  const t = TILE_DIMENSIONS.wallThickness;
-  const [w, d] = footprintSize(def);
-  // Along the room's long way, in the world: local y is world z unless the room is turned a quarter (or three).
-  const alongZ = (d >= w) === (placement.rotation % 2 === 0);
-  const [spring0, spring1, end0, end1]: [Side, Side, Side, Side] = alongZ ? ['W', 'E', 'S', 'N'] : ['S', 'N', 'W', 'E'];
-  const segs = (side: Side) => edgeSegments(resolveEdge(cells, gx, gy, gz, side), half, levelHeight);
-  const inset = (side: Side) => Math.max(0, ...segs(side).map((g) => g[4]));
-  const top = levelHeight - TILE_DIMENSIONS.floorThickness;
-  const crown = top - VAULT_T - 0.01;
-  const spring = crown - 0.39;
-  const cx = gx * cellSize;
-  const cz = gy * cellSize;
-  const baseY = gz * levelHeight;
-  // Across the vault (x for a vault along z), and along it between the walls at its ends.
-  const [a0, a1] = alongZ ? [cx, cz] : [cz, cx];
-  const span: [number, number] = [a0 - half + t, a0 + half - t];
-  const along: [number, number] = [a1 - half + inset(end0), a1 + half - inset(end1)];
+  const f = vaultFrame(cells, gx, gy, gz, def, placement, cellSize, levelHeight);
+  const { half, t, alongZ, a0, along, baseY } = f;
   const id = placement.id;
-  const out: WorldBox[] = vault(alongZ ? 'z' : 'x', span, along, baseY + spring, baseY + crown, 12, VAULT_T, 'wall').map((b) => ({
-    min: [...b.min],
-    max: [...b.max],
-    kind: 'wall' as const,
-    sourceId: id,
-    ...(b.pitch ? { pitch: b.pitch } : {}),
-    ...(b.roll ? { roll: b.roll } : {}),
-  }));
-  for (const [side, sign] of [[spring0, -1], [spring1, 1]] as const) {
+  const out = vaultWorld(vault(alongZ ? 'z' : 'x', f.span, along, baseY + f.spring, baseY + f.crown, 12, VAULT_T, 'wall'), 'wall', id);
+  for (const [side, sign] of [[f.sides[0], -1], [f.sides[1], 1]] as const) {
     // Carried by a standard wall at least as high as the springing (a doorway's piers and lintel count).
-    if (segs(side).some((g) => g[4] >= t - 0.05 && g[3] >= spring)) continue;
+    if (f.segs(side).some((g) => g[4] >= t - 0.05 && g[3] >= f.spring)) continue;
     const across: [number, number] = sign < 0 ? [a0 - half, a0 - half + t] : [a0 + half - t, a0 + half];
-    const y0 = baseY + spring - 0.45;
-    const y1 = baseY + top;
+    const y0 = baseY + f.spring - 0.45;
+    const y1 = baseY + f.top;
     out.push(alongZ ? { min: [across[0], y0, along[0]], max: [across[1], y1, along[1]], kind: 'wall', sourceId: id } : { min: [along[0], y0, across[0]], max: [along[1], y1, across[1]], kind: 'wall', sourceId: id });
+  }
+  return out;
+}
+
+/** A vault rib: how wide (along the vault), how deep under it, and how far it sinks into it (no face shared with it). */
+const VAULT_RIB = { width: 0.3, depth: 0.1, sink: 0.02 } as const;
+
+/**
+ * The ribs under one cell's vaulted ceiling (trim: drawn, never colliding): two arches of dressed stone across the vault
+ * at the cell's quarter points, following its curve from side to side, so the shallow vault reads as one from any
+ * angle. Each is the vault's own curve lowered by its depth, sunk a little into the vault (no two faces in one plane).
+ */
+function vaultRibs(cells: Map<string, CellOccupant>, gx: number, gy: number, gz: number, def: TileDefinition, placement: TilePlacement, cellSize: number, levelHeight: number): WorldBox[] {
+  const f = vaultFrame(cells, gx, gy, gz, def, placement, cellSize, levelHeight);
+  const { width, depth, sink } = VAULT_RIB;
+  const out: WorldBox[] = [];
+  for (const at of [f.a1 - f.half / 2, f.a1 + f.half / 2]) {
+    if (at - width / 2 < f.along[0] || at + width / 2 > f.along[1]) continue;
+    out.push(...vaultWorld(vault(f.alongZ ? 'z' : 'x', f.span, [at - width / 2, at + width / 2], f.baseY + f.spring - depth, f.baseY + f.crown - depth, 12, depth + sink, 'trim'), 'trim', placement.id));
   }
   return out;
 }
