@@ -770,6 +770,11 @@ function roomOptionBoxes(map: MapDocument, catalog: TileCatalog, cells: Map<stri
 
 /** A vaulted ceiling's strips: 0.2 m thick, their tops at the underside of the floor or roof above. */
 const VAULT_T = 0.2;
+/**
+ * Where a vault springs from its side walls: just over a doorway's head (3 m), so the doors and windows in those walls
+ * stay whole (shots and players pass their whole opening; packages/shared/test/setPiecePlay.test.ts).
+ */
+const VAULT_SPRING = 3.02;
 
 /** Where one cell's vault runs (vaultBoxes): along world z or x, across `span` and along `along`, springing and crown heights. */
 function vaultFrame(cells: Map<string, CellOccupant>, gx: number, gy: number, gz: number, def: TileDefinition, placement: TilePlacement, cellSize: number, levelHeight: number) {
@@ -783,7 +788,7 @@ function vaultFrame(cells: Map<string, CellOccupant>, gx: number, gy: number, gz
   const inset = (side: Side) => Math.max(0, ...segs(side).map((g) => g[4]));
   const top = levelHeight - TILE_DIMENSIONS.floorThickness;
   const crown = top - VAULT_T - 0.01;
-  const spring = crown - 0.39;
+  const spring = Math.min(VAULT_SPRING, crown - 0.1);
   // Across the vault (x for a vault along z), and along it between the walls at its ends.
   const [a0, a1] = alongZ ? [gx * cellSize, gy * cellSize] : [gy * cellSize, gx * cellSize];
   const span: [number, number] = [a0 - half + t, a0 + half - t];
@@ -797,8 +802,8 @@ const vaultWorld = (boxes: readonly LocalBox[], kind: BoxKind, sourceId: string)
 
 /**
  * The vaulted ceiling (room option `vault`) of one cell of a room: a shallow segmental barrel vault along the room's
- * long way (local y when it is at least as deep as wide), springing 0.5 m in from each side at 2.9 m (on a 4 m level)
- * and rising to 3.29 m, its strips' tops just under the floor or roof above. It stops at the walls across its ends
+ * long way (local y when it is at least as deep as wide), springing 0.5 m in from each side just over the doorways'
+ * heads (3.02 m) and rising to 3.29 m on a 4 m level, its strips' tops just under the floor or roof above. It stops at the walls across its ends
  * and runs on through a side with none (into the next vaulted cell). A side that can't carry its springing (no wall,
  * or one lower or thinner than a standard wall: railings, half walls, fences, bars) gets a beam under it, 0.5 m wide
  * and 0.45 m deep; two vaulted cells side by side share theirs. Its ribs are trim (vaultRibs).

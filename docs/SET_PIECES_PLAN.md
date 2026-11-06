@@ -116,7 +116,8 @@ docs/CONTENT_PIPELINE.md, "Set pieces". What the design settled while it was bui
 - **New kit pieces** (usable by any map, not only set pieces): the edge style **`arch_segmental`** (a 5 m shallow
   segmental arch, springing 2.7 m, crown 3.3 m; collision stepped over the curve, never below it; voussoirs and a
   keystone on the inner face, and on the outer face where nothing is built beyond; a soffit) and the room ceiling
-  **`vault`** (a segmental barrel vault along the room, 2.9 m to 3.29 m under a 4 m level's floor, its strips
+  **`vault`** (a segmental barrel vault along the room, springing at 3.02 m just over the doorways' heads and rising to
+  3.29 m under a 4 m level's floor, its strips
   colliding; a beam where a side can't carry it; two dressed-stone ribs a cell, trim only).
 - **First content:** `setpiece.carriageway_1` (one cell wide) and `setpiece.carriageway_2` (two, on a central column),
   each a vaulted passage with a segmental arch at both ends, a door into the building on each side, and a room over

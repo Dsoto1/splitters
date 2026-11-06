@@ -26,6 +26,91 @@ gets overloaded above that: local e2e times out and flakes). Prune landed worktr
 - Earlier the same day: content scalability steps 2–6, perf toolset, flaky e2e fixes, Runway Nine airliner, map
   reworks batches 2–3, character fixes rounds 2–3 (see the entries below and CHANGELOG).
 
+<!-- setpieces -->
+### Set pieces, part 1: data, expansion, first content (`wip/setpieces`, agents, 2026-11-06; from main 774a28ce, main 463c2477 merged in; CI on `check/setpieces`)
+Plan and what it settled: docs/SET_PIECES_PLAN.md ("As built: part 1"); how to add a piece: docs/CONTENT_PIPELINE.md,
+"Set pieces". Part 2 (MapMaker: the Set pieces palette tab, ghost placing, select/inspector, Explode, Save selection,
+local library, St. John's placements, e2e in editorux) starts from this branch and only wires UI to the shared API.
+- **Format v27** (`MAP_FORMAT_VERSION` 27, migration a no-op, v26 fixture `test/fixtures/iron_compound_v26.json`):
+  optional `setPieces` (placements: `id` at most 48 chars, `piece`, `x`, `y`, `z`, `rotation`, `mirror`, `pack?`,
+  `overrides?` with `roles` and `hide`) and `setPieceDefs` (a map's own `local.*` pieces). `loadMap` expands every
+  placement into ordinary tiles and entities (`map/setPieces.ts` `expandSetPieces`: pure, cached per document, ids
+  `sp_<placement>_<index>`) before validation, geometry, collision, nav and the server see the map; `forEditing` keeps
+  the placements (MapMaker draws nothing for them yet: part 2 expands them for its view). Validation sees the expanded
+  map (issues on a part name its placement), footprints can't overlap tiles or each other, ids are unique across
+  placements, tiles and entities.
+- **Budgets:** the file's caps count placements (`setPieces` at most 1024). The map **as played** must fit the
+  schema's own caps (4096 tiles, 4096 entities, 2 MB JSON: `SET_PIECE_PLAYED_MAX`), because the join welcome carries
+  the played map and every client runs `loadMap` on it again (session.ts `welcome`). If maps ever need more, send the
+  stored map in the welcome instead (each client expands it, deterministically) and raise the played budget.
+- **Content** (`content/setpieces/`, `node tools/content/setpieces.mjs`, in `content:check` and `content:rebuild`;
+  generated `content/setPieces.generated.ts`, its own chunk, not in the menu's first JS: bundle 695.1 kB gzip):
+  `setpiece.carriageway_1` and `_2`, `setpiece.skybridge_2`, `_3`, `_4`; 13 role packs in `roles.json`
+  (`collegiate` = Castle Keep's default: St. John's own wall and trim stone, the new **Collegiate stone** facade).
+- **New kit pieces (any map, MapMaker offers them now):** wall style **Segmental arch** (`arch_segmental`, 5 m,
+  springing 2.7, crown 3.3; collision stepped over the curve; voussoirs and keystone, on the outer face too where
+  nothing is beyond); room ceiling **Vaulted ceiling** (`vault`: strips that collide, a beam where a side can't carry
+  it, two dressed-stone rib arches a cell as trim); facade **Collegiate stone** (`collegiate_stone`: Gothic stone's
+  dressing in lannonstone and dressed limestone; Gothic stone unchanged).
+- **Shared API for part 2** (all exported from `@tiletrigger/shared`): `builtInSetPieces()` (library: pieces and
+  packs), `expandSetPieces(doc, library)`, `setPieceParts(placement, def, theme, library)` (one placement's parts, for
+  MapMaker's view and ghost), `setPieceFootprint`, `setPiecePorts` (cells, levels and sides on the map: the outline and
+  port markers), `placementPack`, `piecesFor(doc, library)` (shipped plus the map's own), `setPieceMirrorProblem`,
+  `checkSetPieceDefinition`, `parseSetPiece` (untrusted JSON: a player's library, an import). Editor:
+  `checkSetPiecePlacement` (ghost green/red with a reason), `placeSetPieceCommand`, `updateSetPieceCommand` (pack,
+  overrides), `moveSetPieceCommand`, `rotateSetPieceCommand` (R), `mirrorSetPieceCommand` (M),
+  `deleteSetPieceCommand`, `explodeSetPieceCommand` (one undo step; returns the parts' selection),
+  `addSetPieceDefCommand`, `setPieceFromSelection(doc, selection, anchor, { displayName })` (returns the definition, the
+  pack it matched and any problems). `Selection.setPieces` works in `moveCommand`, `rotateCommand`, `duplicateCommand`
+  and `deleteCommand`; `checkPlacement`/`checkLayout` refuse a tile inside a footprint ("…explode it into its parts to
+  build into it"). `setPieceFromSelection` takes tiles, blocks, props, doors, ladders and lights (placed pieces count as
+  their parts) and the expansion gives ordinary parts back: the overhaul's groups can reuse both.
+- **Tests:** `packages/shared/test/setPieceExpand.test.ts` (every turn × mirror × pack of every piece, the transform
+  point by point against the unturned piece, entities' facing, block rules, mirror symmetry, ports, roles and
+  overrides, determinism, ids, played maps load again, v26 → v27 unchanged, v27 round trip), `setPiecePlay.test.ts`
+  (collision, trim and nav from the expansion equal the exploded map's; z-fight audit 0 over every piece in every turn
+  and mirror and with neighbours; shots and players through every arch and doorway in every turn, stopped by piers
+  and spandrels; bots path through the passages and doorways; skybridges walked, shot through, nothing below),
+  `setPieceEdit.test.ts` (overlap refusals with reasons, commands and undo, explode, save selection round trip,
+  budgets), `roomOptions.test.ts` (the vault), `tools/content/test/setpieces.test.mjs` (the generator's checks).
+  `setPiecePlay.test.ts` also proves every port of every piece, in every turn and mirror, with a room built beyond it,
+  as `propOpenings.test.ts` does for props: about 50,000 rays straight through every point of each opening its own
+  walls leave open (the tiles' and edges' collision: none is shut), a player walking through each from the room
+  beyond, and a bot's path through each.
+- **Screenshots** (session scratchpad `shots/out3/`, built game via MapMaker → TEST, Medium, 1280 × 720): the
+  carriageway from the street and the courtyard, standing free (outer voussoirs), its vault and ribs, a side door;
+  the wide carriageway outside and in; the skybridges from the street, inside and underneath; medieval and harbour
+  versions; an overview.
+- **Retired:** none (no Phase-1 piece truly replaces an old tile); the list for later phases is in the plan.
+- **Coverage map:** `maps/test_coverage.json` got its Segmental arch wall in MapMaker (Import, the wall tool's
+  command on the dais room's north side, Export), so the coverage test passes. Part 2: place one of each set piece in
+  it through the new palette and make `coverageMap.test.ts` require every set piece.
+
+**Notes for part 2**
+- **St. John's** (`maps/st_johns.json`: no tiles; 2,480 blocks, 736 props, halls turned 0.5-2.4°): place pieces on
+  the grid and fit the neighbouring blocks in MapMaker (recommendation and reasons in the plan, "St. John's (part 2)").
+  The Argonne Gate: `setpiece.carriageway_1` at cell (1, −10), unturned (or (1, −11) to bring the south arch to the
+  street front); replace the block-built gate there (the Gothic arch prop at z ≈ −84 and its gatehouse blocks), build
+  the 6.5 m to Welles as the gate's east tower in blocks, cut doorways in Knight's and Welles's walls at the doors. Its
+  theme (Castle Keep) gives it Collegiate Gothic without naming a pack.
+- MapMaker's view must draw placements expanded (`setPieceParts` per placement, or `expandSetPieces(doc).map` for
+  the level) while `doc` keeps them; picking a part selects its placement (`partOf` in the expansion).
+- A vaulted ceiling springs at 3.02 m, just over a doorway's head: doors and windows in the walls it springs from stay
+  whole (the every-port test caught the first version, springing at 2.9 m, 10 cm into the doors), but a taller opening
+  there (a wide doorway, an archway) has the vault across its top. Worth a hint in MapMaker's inspector.
+- A level-1 skybridge over a street meets the street's 5 m lamp posts: leave lampless paving under it (or level 2).
+- The existing e2e flow called `setpieces` is Sky Islands' crumbling stones and trapdoors, not these: name the new
+  editorux checks so they aren't confused with it.
+
+**Open questions for the owner**
+- Collegiate Gothic: St. John's own stones (Grey Stone Blocks #d9d5cb walls, Dressed Stone #d8d3c6 trim) and a new
+  Collegiate stone facade, rather than Gothic Estate's dark Mossy Castle Stone: right for the campus?
+- The vault is shallow (0.39 m rise under a 4 m level's floor): ribs make it read; a taller passage would need the
+  piece to span two levels. Keep it?
+- Skybridges wear their pack's facade (Collegiate: battlements and pinnacles along the bridge). Plainer bridges (no
+  facade) are an override away (`overrides.roles.facade: "none"`); which should be the default?
+<!-- /setpieces -->
+
 <!-- shingle -->
 ### Shingle Point asset refresh (`wip/shingle`, agents, 2026-11-05/06; main 5b167034 merged in; green on `check/shingle`)
 Owner's decision: same layout and gameplay, every dated asset replaced, so it compares fairly with MAP 21 (a new map,
@@ -787,7 +872,7 @@ with `pnpm bench:96:clump` before and after; bot thinking at 96 bots stays withi
 
 ### Owner-approved order after the current agents (2026-11-05 late; owner set effort to max: "hoping for some great work")
 0. **Bot AI Phase A** (above) as soon as `wip/bots-idle` lands; **Phase B** before item 3 (MAP 21).
-1. **Set pieces:** plan in docs/SET_PIECES_PLAN.md. Next free slot.
+1. **Set pieces:** plan in docs/SET_PIECES_PLAN.md. Part 1 (data, expansion, first content) on `wip/setpieces` (section above); part 2 (MapMaker) starts from it.
 2. **Hands round 5,** in parallel; small. Give it to the pistol-hold agent as a follow-on once its pistol work lands.
    It covers:
    - re-tuning the support hands the palm fix changed (Pharaoh, Gorgle, Vanguard, Croakley, Big Bab, Desert Ranger,

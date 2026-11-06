@@ -6,17 +6,22 @@ import { beforeAll, describe, expect, it } from 'vitest';
 import {
   DOOR,
   PhysicsWorld,
+  SIDE_DIRS,
   applyCommand,
   buildMapDecor,
   buildMapGeometry,
+  buildOccupancy,
   builtInSetPieces,
   coplanarOverlaps,
   doorLeaves,
+  edgeSegments,
   emptyInput,
   explodeSetPieceCommand,
   initPhysics,
   loadMap,
+  resolveEdge,
   serializeMap,
+  setPiecePorts,
   stepMovement,
   visibleFaces,
   type MapDocument,
@@ -24,6 +29,7 @@ import {
   type MoveState,
   type Rotation,
   type SetPiecePlacement,
+  type Side,
   type TilePlacement,
   type Vec3,
   type WorldBox,
@@ -272,5 +278,97 @@ describe('the skybridge: between two buildings on level 1, nothing underneath', 
     expect(glass).toEqual(['breakable', 'breakable', 'breakable', 'breakable']);
     const doors = map.entities.filter((e) => e.kind === 'door');
     expect(doors.map((d) => d.position)).toEqual([[0, 4, -4], [0, 4, 12]]);
+  });
+});
+
+// Every way through every piece (as propOpenings.test.ts proves for props): each port, in every turn and mirror, with a
+// room built beyond it so it meets a doorway or the arch, is open in the physics world across all of its opening, and
+// players and bots go through it.
+describe('every port of every piece, in every turn and mirror, is a way through', () => {
+  const OUT: Record<Side, Side> = { N: 'S', E: 'W', S: 'N', W: 'E' };
+  /** Facing (yaw) that walks from beyond a port's side back into the piece. */
+  const INWARD: Record<Side, number> = { N: Math.PI, S: 0, E: -Math.PI / 2, W: Math.PI / 2 };
+  const turns = (mirror: 'free' | 'none') => ([0, 1, 2, 3] as Rotation[]).flatMap((rotation) => (mirror === 'free' ? [false, true] : [false]).map((m) => [rotation, m] as const));
+
+  /** The piece at (0, 0) on its level (a skybridge on level 1), and a room beyond each of its ports, at the port's level. */
+  function withNeighbours(id: string, rotation: Rotation, mirror: boolean) {
+    const def = library.pieces.get(id)!;
+    const p: SetPiecePlacement = { id: 'piece_ports', piece: id, x: 0, y: 0, z: id.startsWith('setpiece.skybridge') ? 1 : 0, rotation, mirror };
+    const ports = setPiecePorts(p, def);
+    const beyond = new Map<string, TilePlacement>();
+    for (const port of ports) {
+      const [dx, dy] = SIDE_DIRS[port.side];
+      const key = `${port.x + dx},${port.y + dy},${port.z}`;
+      if (!beyond.has(key)) beyond.set(key, room(`next_${beyond.size}`, port.x + dx, port.y + dy, port.z));
+    }
+    return { map: played(mapOf([...beyond.values()], [p])), ports };
+  }
+  /** A point on a port's side: `u` along it (world x on a north or south side, z on an east or west one), `v` out of the piece, `y` over its level's floor. */
+  const onSide = (port: { x: number; y: number; z: number; side: Side }, u: number, v: number, y: number): Vec3 => {
+    const [dx, dy] = SIDE_DIRS[port.side];
+    const [cx, cz] = [port.x * 8 + dx * 4, port.y * 8 + dy * 4];
+    return dx !== 0 ? { x: cx + dx * v, y: port.z * 4 + y, z: cz + u } : { x: cx + u, y: port.z * 4 + y, z: cz + dy * v };
+  };
+
+  it("the static collision leaves each opening open: rays straight through pass wherever the port's own walls do", { timeout: 120_000 }, () => {
+    let rays = 0;
+    for (const def of library.pieces.values()) {
+      for (const [rotation, mirror] of turns(def.mirror)) {
+        const { map, ports } = withNeighbours(def.id, rotation, mirror);
+        // The tiles' and edges' collision: the guard stones and the column are blocks kept beside the ways through on
+        // purpose (the walks below go past them).
+        const blocks = new Set(map.entities.filter((e) => e.kind === 'block').map((e) => e.id));
+        const physics = new PhysicsWorld(buildMapGeometry(map).filter((b) => !blocks.has(b.sourceId)));
+        const { cells } = buildOccupancy(map);
+        for (const port of ports) {
+          const [dx, dy] = SIDE_DIRS[port.side];
+          const style = resolveEdge(cells, port.x, port.y, port.z, port.side);
+          expect(style, `${def.id} ${rotation} ${mirror}: port ${JSON.stringify(port)}`).toBe(port.kind === 'opening' ? 'arch_segmental' : 'door');
+          // What both sides of the wall build there (a point within 5 cm of either is too close to call).
+          const walls = [...edgeSegments(style, 4, 4), ...edgeSegments(resolveEdge(cells, port.x + dx, port.y + dy, port.z, OUT[port.side]), 4, 4)];
+          const wall = (u: number, y: number) => walls.some(([u0, u1, y0, y1]) => u > u0 - 0.05 && u < u1 + 0.05 && y > y0 - 0.05 && y < y1 + 0.05);
+          let open = 0;
+          for (let u = -3.875; u < 3.9; u += 0.25) {
+            for (let y = 0.1; y < 3.45; y += 0.15) {
+              if (wall(u, y)) continue;
+              const from = onSide(port, u, -0.75, y);
+              const to = onSide(port, u, 0.75, y);
+              const hit = physics.raycastHit(from, { x: (to.x - from.x) / 1.5, y: 0, z: (to.z - from.z) / 1.5 }, 1.5);
+              expect(hit, `${def.id} turned ${rotation}${mirror ? ' mirrored' : ''}: the ${port.kind} at ${port.x}, ${port.y}, level ${port.z}, side ${port.side}, is shut at u ${u}, ${y.toFixed(2)} m`).toBeNull();
+              open++;
+            }
+          }
+          expect(open, `${def.id}: the ${port.kind} at ${JSON.stringify(port)} has a way through`).toBeGreaterThan(port.kind === 'opening' ? 200 : 120);
+          rays += open;
+        }
+      }
+    }
+    expect(rays).toBeGreaterThan(40_000);
+  });
+
+  it('players walk through each port from the room beyond, and bots find a path', { timeout: 120_000 }, () => {
+    for (const def of library.pieces.values()) {
+      for (const [rotation, mirror] of turns(def.mirror)) {
+        const { map, ports } = withNeighbours(def.id, rotation, mirror);
+        const geometry = buildMapGeometry(map);
+        const physics = new PhysicsWorld(geometry);
+        const nav = NavWorld.build(geometry);
+        for (const port of ports) {
+          const where = `${def.id} turned ${rotation}${mirror ? ' mirrored' : ''}: the ${port.kind} at ${port.x}, ${port.y}, level ${port.z}, side ${port.side}`;
+          // From 2.5 m into the room beyond, straight at the middle of the port, for two seconds.
+          const end = walk(physics, onSide(port, 0, 2.5, 0.02), INWARD[port.side], 120);
+          const inside = (end.pos.x - onSide(port, 0, 0, 0).x) * SIDE_DIRS[port.side][0] + (end.pos.z - onSide(port, 0, 0, 0).z) * SIDE_DIRS[port.side][1];
+          expect(inside, `${where}: walked through`).toBeLessThan(-1.5);
+          expect(Math.abs(end.pos.y - port.z * 4), `${where}: on the floor`).toBeLessThan(0.3);
+          // Bots: from the middle of the room beyond to the middle of the piece's cell.
+          const [dx, dy] = SIDE_DIRS[port.side];
+          const target: Vec3 = { x: port.x * 8, y: port.z * 4, z: port.y * 8 };
+          const path = nav.findPath({ x: (port.x + dx) * 8, y: port.z * 4, z: (port.y + dy) * 8 }, target);
+          expect(path, `${where}: a bot's path`).not.toBeNull();
+          expect(Math.hypot(path!.at(-1)!.x - target.x, path!.at(-1)!.z - target.z), `${where}: the path gets there`).toBeLessThan(1);
+        }
+        nav.destroy();
+      }
+    }
   });
 });

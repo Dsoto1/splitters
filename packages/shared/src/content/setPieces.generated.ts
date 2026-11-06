@@ -68,7 +68,7 @@ export const SET_PIECE_DEFS: readonly SetPieceDefinitionInput[] = [
       { kind: 'tile', tile: 'core.room', x: 1, y: 0, z: 1, rotation: 0, edges: { '0,0,0:N': 'windows', '0,0,0:S': 'windows', '0,0,0:W': 'open' }, glass: { '0,0,0:N': { role: 'glass' }, '0,0,0:S': { role: 'glass' } }, surfaces: { floor: { role: 'floor' }, walls: { role: 'stone' }, solids: { role: 'wood' }, trim: { role: 'trim' }, roof: { role: 'roof' } }, options: { ceiling: 'roof', facade: { role: 'facade' } } },
       { kind: 'door', name: 'West door', position: [-4, 0, 0], yaw: 1.5707963267948966, style: { role: 'door' }, auto: true },
       { kind: 'door', name: 'East door', position: [12, 0, 0], yaw: 1.5707963267948966, style: { role: 'door' }, auto: true },
-      { kind: 'block', name: 'Column', position: [4, 0, 0], size: [0.8, 2.45, 0.8], material: { role: 'stone' } },
+      { kind: 'block', name: 'Column', position: [4, 0, 0], size: [0.8, 2.57, 0.8], material: { role: 'stone' } },
       { kind: 'light', position: [-3.47, 2.3, 2.5], yaw: 1.5707963267948966, fixture: 'wall', color: '#ffd9a0', intensity: 1.1, range: 9 },
       { kind: 'light', position: [-3.47, 2.3, -2.5], yaw: 1.5707963267948966, fixture: 'wall', color: '#ffd9a0', intensity: 1.1, range: 9 },
       { kind: 'light', position: [11.47, 2.3, 2.5], yaw: -1.5707963267948966, fixture: 'wall', color: '#ffd9a0', intensity: 1.1, range: 9 },

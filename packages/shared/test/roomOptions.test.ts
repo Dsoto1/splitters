@@ -121,10 +121,10 @@ describe('room options', () => {
     for (const rotation of [0, 1] as Rotation[]) {
       const map = makeMap([t('a', 'core.room', 0, 0, 0, rotation, { options: { ceiling: 'vault' } })]);
       const solid = tileGeometry(map);
-      // Twelve strips under the roof, springing at 2.9 m and 0.5 m in from the walls, their crown at 3.29 m.
+      // Twelve strips under the roof, springing at 3.02 m (over a doorway's head) 0.5 m in from the walls, their crown at 3.29 m.
       const strips = solid.filter((b) => b.kind === 'wall' && b.min[1] > 2.5 && b.max[1] < 3.51 && Math.max(b.max[0] - b.min[0], b.max[2] - b.min[2]) > 6);
       expect(strips.length).toBe(12);
-      expect(Math.min(...strips.map((b) => b.min[1]))).toBeGreaterThan(2.7);
+      expect(Math.min(...strips.map((b) => b.min[1]))).toBeGreaterThan(2.95);
       expect(solid.filter((b) => b.kind === 'floor' && Math.abs(b.max[1] - 4) < 1e-6).length).toBe(1);
       // Head room under it everywhere a player stands (the room's standard walls carry it: no beams).
       for (const [x, z] of [[0, 0], [3.4, 0], [-3.4, 3.4], [0, -3.4]] as const) expect(insideTurned(solid, [x, 2.6, z])).toBe(false);
