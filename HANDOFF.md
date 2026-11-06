@@ -485,6 +485,33 @@ The first two are likely Fogbound or another map using the Quaternius ruins.
 - Investigate the third screenshot separately: puffs in mid-air near distant trees could be env tree limbs that block
   shots, or legitimate ground hits.
 
+### CTF bots and idle bots (`wip/bots-idle`, agent, 2026-11-06; from main 39056920; in progress)
+Fixes the two reports below (CTF bots don't go for the flag; Diamond Park dugout; Fernwood Moon bots not moving).
+
+**How to resume:** branch `wip/bots-idle` (pushed after every step). Measure with `pnpm bot-report` (new:
+`packages/server/src/tools/bot-report.ts`; per map and bot: idle time by reason, idle spells with positions, goal
+time, CTF roles and flag runs, no-route searches, stuck recoveries; `--suite=ctf`, `--shard=k/n`, `--json`,
+`--compare=a.json,b.json`). Baseline (main + measuring only, d1a8ec97) and after-runs are in the session
+scratchpad `bots-idle/` (`before-ctf-*.json`, `after-ctf-*.json`; the baseline code is exported to `bots-idle/base`).
+
+**Done (committed):**
+- Measuring: `BotBrain.doing` / `meantToMove` / `pathFailures`, `pnpm bot-report`.
+- Causes found (CTF suite baseline, 44 maps × 2 seeds × 300 s): 13 of 88 matches had a capture; bots out of a fight
+  stood still 3–33 % (Iron Compound 86 %); "station" (holding a goal, spinning in place) 5–24 %; no route 29 % on
+  Diamond Park (its dugouts are navmesh islands with 3 spawns each), 17 % Fogbound, 13 % Eagle Spires; attackers
+  went after noises 20–50 m off (22–29 % of their time); Iron Compound's gate rules cancelled on one press;
+  Fernwood's Garrison spawned in its bunker with only the enemy's blast door on its route.
+- Fixes: CTF roles (`CtfBotPlan`: 2 defenders, 3 on teams of 12+, escorts, flags in trouble), goals kept to
+  (`OrderGoal.push/run/watch`), fight on the move, lanes, sprinting; escapes off cut-off navmesh patches
+  (`NavWorld.partAt/escapes`, `planEscape`); routes round doors shut to the bot (`markOpenings`, `findPath(…, shut)`);
+  press plans dropped once the door opens; vehicles out of reach left alone; keeping watch on station
+  (`keepWatch`), posts shift and peek, lift waits look about. Iron Compound's gate (Logic panel) and Fernwood's
+  reactor core (+0.5 m, inspector) fixed in MapMaker. `logic.undoes` warning (validate-map, MapMaker).
+- Tests: `botCtf.test.ts` (roles, captures, dugout, bunker, keeping watch), `scenario.test.ts` (logic.undoes).
+
+**Next:** after-suite numbers into docs/BOTS.md, CHANGELOG, docs/BOT_AI_PLAN.md "First measurements"; TDM Fernwood
+before/after (and other modes for regressions); `pnpm bench:96:clump` before/after; checks; `check/bots-idle` CI.
+
 ### Queued FIRST (owner bug report, 2026-11-05 late): CTF bots don't go for the flag
 **Owner:** "CTF: no bots are actually going for the flag, most just hang out and do little. We should only have
 like 2–3 bots protect a flag, and the rest go out there and try to get the other team's."
