@@ -28,7 +28,9 @@ clear space at both ends.
 ## Walls and openings (edge styles, `content/tiles/edges.json`)
 
 Any side of any cell can be built as: Auto, Solid wall, Doorway, Wide doorway,
-Archway, Window, Twin windows, Firing slit, Half wall, Railing, High wall,
+Archway, Segmental arch (a shallow stone arch 5 m wide, springing at 2.7 m and
+rising to 3.3 m, voussoirs and a keystone dressing it on both faces: a
+carriageway's ends), Window, Twin windows, Firing slit, Half wall, Railing, High wall,
 Towering wall, Tall fence, Broken wall (a ragged hole with rubble), Bars
 (floor-to-ceiling, see and shoot through), Shutter (a wide opening with its
 shutter stuck 1.35 m up: crouch under; bots don't path through it) or No wall.
@@ -108,9 +110,11 @@ sized to the whole footprint and turn with the tile:
 - **Floor**: Standard, Raised centre (0.5 m, a step all round) or Sunken
   centre (a 0.5 m pit with a step down; only where nothing is built below
   and, at ground level, no terrain). Layout pieces in the centre stand on it.
-- **Ceiling**: Open (as before), Roof, Roof with skylight or Beamed roof. A
-  roof is a walkable slab at the top of the walls, left off wherever
-  something is built on top.
+- **Ceiling**: Open (as before), Roof, Roof with skylight, Beamed roof or
+  Vaulted ceiling (a shallow stone barrel vault along the room's long way,
+  springing just over the doorways' heads, with two rib arches a cell; a beam
+  carries it where a side has no wall). A roof is a walkable slab at the top
+  of the walls, left off wherever something is built on top.
 - **Corners**: Square, Posts, Columns, Chamfered or Rounded, wherever two
   solid walls meet (not beside an archway, railing or half wall).
 
@@ -348,7 +352,7 @@ CONTENT_PIPELINE.md and ASSET_SOURCES.md).
 
 | Pack | Themes | Facades (box-built) | Own tiles | Own props | Demo map |
 |---|---|---|---|---|---|
-| 05 Gothic Estate (Victorian horror) | **Gothic Estate** (`core.gothic_estate`: old floorboards, Damask Wallpaper, walnut, dark panels, brass); Gothic Manor, Castle Keep | **Gothic stone** (buttresses, string course, hood moulds, battlements and pinnacles), **Victorian brick** (stone plinth, quoins, sills and lintels, bracketed cornice) | 8 | 19 (category *Gothic Estate*) | Ravenscroft Hall |
+| 05 Gothic Estate (Victorian horror) | **Gothic Estate** (`core.gothic_estate`: old floorboards, Damask Wallpaper, walnut, dark panels, brass); Gothic Manor, Castle Keep | **Gothic stone** (buttresses, string course, hood moulds, battlements and pinnacles), **Victorian brick** (stone plinth, quoins, sills and lintels, bracketed cornice); also **Collegiate stone** (Gothic stone's dressing in grey lannonstone and dressed limestone: the set pieces' Collegiate Gothic for St. John's) | 8 | 19 (category *Gothic Estate*) | Ravenscroft Hall |
 | 06 Jungle Ruins (lost civilisation) | **Jungle Temple** (`core.jungle_temple`: mossy cobbles, mossy castle stone, layered rock), **Ancient Temple** (`core.ancient_temple`, from the refresh); Jungle Ruins, Forest Camp | **Temple stone** (stepped base, glyph frieze, stepped merlons), **Overgrown rock** (moss at foot and top, vines hanging down, never across openings) | 12 + 20 (refresh) | 17 + 26 (refresh; category *Jungle Ruins*) | Vinefall Sanctum (was Verdant Ziggurat; see *06 Jungle Ruins refresh* below) |
 | 08 Suburban Chaos (everyday modern) | **Suburban** (`core.suburban`: oak boards, white plaster, painted clapboard, white trim); Walled Garden, Downtown | **Clapboard siding** (corner boards, brick plinth, shutters, sills and lintels, fascia), **Suburban brick** (the same trim on brick) | 8 | 20 (category *Suburban Chaos*) | Cedar Lane |
 

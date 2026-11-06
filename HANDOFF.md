@@ -26,6 +26,102 @@ gets overloaded above that: local e2e times out and flakes). Prune landed worktr
 - Earlier the same day: content scalability steps 2–6, perf toolset, flaky e2e fixes, Runway Nine airliner, map
   reworks batches 2–3, character fixes rounds 2–3 (see the entries below and CHANGELOG).
 
+<!-- setpieces -->
+### Set pieces, part 1: data, expansion, first content (`wip/setpieces`, agents, 2026-11-06; from main 774a28ce, main e18a175e merged in; green on `check/setpieces` at 09af09cd, run 42211217797; not landed)
+Plan and what it settled: docs/SET_PIECES_PLAN.md ("As built: part 1"); how to add a piece: docs/CONTENT_PIPELINE.md,
+"Set pieces". Part 2 (MapMaker: the Set pieces palette tab, ghost placing, select/inspector, Explode, Save selection,
+local library, St. John's placements, e2e in editorux) starts from this branch and only wires UI to the shared API.
+- **Format v27** (`MAP_FORMAT_VERSION` 27, migration a no-op, v26 fixture `test/fixtures/iron_compound_v26.json`):
+  optional `setPieces` (placements: `id` at most 48 chars, `piece`, `x`, `y`, `z`, `rotation`, `mirror`, `pack?`,
+  `overrides?` with `roles` and `hide`) and `setPieceDefs` (a map's own `local.*` pieces). `loadMap` expands every
+  placement into ordinary tiles and entities (`map/setPieces.ts` `expandSetPieces`: pure, cached per document, ids
+  `sp_<placement>_<index>`) before validation, geometry, collision, nav and the server see the map; `forEditing` keeps
+  the placements (MapMaker draws nothing for them yet: part 2 expands them for its view). Validation sees the expanded
+  map (issues on a part name its placement), footprints can't overlap tiles or each other, ids are unique across
+  placements, tiles and entities.
+- **Budgets:** the file's caps count placements (`setPieces` at most 1024). The map **as played** must fit the
+  schema's own caps (4096 tiles, 4096 entities, 2 MB JSON: `SET_PIECE_PLAYED_MAX`), because the join welcome carries
+  the played map and every client runs `loadMap` on it again (session.ts `welcome`). If maps ever need more, send the
+  stored map in the welcome instead (each client expands it, deterministically) and raise the played budget.
+- **Content** (`content/setpieces/`, `node tools/content/setpieces.mjs`, in `content:check` and `content:rebuild`;
+  generated `content/setPieces.generated.ts`, its own chunk, not in the menu's first JS: bundle 695.1 kB gzip):
+  `setpiece.carriageway_1` and `_2`, `setpiece.skybridge_2`, `_3`, `_4`; 13 role packs in `roles.json`
+  (`collegiate` = Castle Keep's default: St. John's own wall and trim stone, the new **Collegiate stone** facade).
+- **New kit pieces (any map, MapMaker offers them now):** wall style **Segmental arch** (`arch_segmental`, 5 m,
+  springing 2.7, crown 3.3; collision stepped over the curve; voussoirs and keystone, on the outer face too where
+  nothing is beyond); room ceiling **Vaulted ceiling** (`vault`: strips that collide, a beam where a side can't carry
+  it, two dressed-stone rib arches a cell as trim); facade **Collegiate stone** (`collegiate_stone`: Gothic stone's
+  dressing in lannonstone and dressed limestone; Gothic stone unchanged).
+- **Shared API for part 2** (all exported from `@tiletrigger/shared`): `builtInSetPieces()` (library: pieces and
+  packs), `expandSetPieces(doc, library)`, `setPieceParts(placement, def, theme, library)` (one placement's parts, for
+  MapMaker's view and ghost), `setPieceFootprint`, `setPiecePorts` (cells, levels and sides on the map: the outline and
+  port markers), `placementPack`, `piecesFor(doc, library)` (shipped plus the map's own), `setPieceMirrorProblem`,
+  `checkSetPieceDefinition`, `parseSetPiece` (untrusted JSON: a player's library, an import). Editor:
+  `checkSetPiecePlacement` (ghost green/red with a reason), `placeSetPieceCommand`, `updateSetPieceCommand` (pack,
+  overrides), `moveSetPieceCommand`, `rotateSetPieceCommand` (R), `mirrorSetPieceCommand` (M),
+  `deleteSetPieceCommand`, `explodeSetPieceCommand` (one undo step; returns the parts' selection),
+  `addSetPieceDefCommand`, `setPieceFromSelection(doc, selection, anchor, { displayName })` (returns the definition, the
+  pack it matched and any problems). `Selection.setPieces` works in `moveCommand`, `rotateCommand`, `duplicateCommand`
+  and `deleteCommand`; `checkPlacement`/`checkLayout` refuse a tile inside a footprint ("…explode it into its parts to
+  build into it"). `setPieceFromSelection` takes tiles, blocks, props, doors, ladders and lights (placed pieces count as
+  their parts) and the expansion gives ordinary parts back: the overhaul's groups can reuse both.
+- **Tests:** `packages/shared/test/setPieceExpand.test.ts` (every turn × mirror × pack of every piece, the transform
+  point by point against the unturned piece, entities' facing, block rules, mirror symmetry, ports, roles and
+  overrides, determinism, ids, played maps load again, v26 → v27 unchanged, v27 round trip), `setPiecePlay.test.ts`
+  (collision, trim and nav from the expansion equal the exploded map's; z-fight audit 0 over every piece in every turn
+  and mirror and with neighbours; shots and players through every arch and doorway in every turn, stopped by piers
+  and spandrels; bots path through the passages and doorways; skybridges walked, shot through, nothing below),
+  `setPieceEdit.test.ts` (overlap refusals with reasons, commands and undo, explode, save selection round trip,
+  budgets), `roomOptions.test.ts` (the vault), `tools/content/test/setpieces.test.mjs` (the generator's checks).
+  `setPiecePlay.test.ts` also proves every port of every piece, in every turn and mirror, with a room built beyond it,
+  as `propOpenings.test.ts` does for props: about 50,000 rays straight through every point of each opening its own
+  walls leave open (the tiles' and edges' collision: none is shut), a player walking through each from the room
+  beyond, and a bot's path through each.
+- **Screenshots** (session scratchpad `shots/out4/`, built game via MapMaker → TEST, Medium, 1280 × 720): the
+  carriageway from the street and the courtyard, standing free (outer voussoirs), its vault and ribs, a side door;
+  the wide carriageway outside and in; the skybridges from the street, inside and underneath; medieval and harbour
+  versions; an overview.
+- **Retired:** none (no Phase-1 piece truly replaces an old tile); the list for later phases is in the plan.
+- **Coverage map:** `maps/test_coverage.json` got its Segmental arch wall in MapMaker (Import, the wall tool's
+  command on the dais room's north side, Export), so the coverage test passes. Part 2: place one of each set piece in
+  it through the new palette and make `coverageMap.test.ts` require every set piece.
+
+**Notes for part 2**
+- **St. John's** (`maps/st_johns.json`: no tiles; 2,480 blocks, 736 props, halls turned 0.5-2.4°): place pieces on
+  the grid and fit the neighbouring blocks in MapMaker (recommendation and reasons in the plan, "St. John's (part 2)").
+  The Argonne Gate: `setpiece.carriageway_1` at cell (1, −10), unturned (or (1, −11) to bring the south arch to the
+  street front); replace the block-built gate there (the Gothic arch prop at z ≈ −84 and its gatehouse blocks), build
+  the 6.5 m to Welles as the gate's east tower in blocks, cut doorways in Knight's and Welles's walls at the doors. Its
+  theme (Castle Keep) gives it Collegiate Gothic without naming a pack.
+- MapMaker's view must draw placements expanded (`setPieceParts` per placement, or `expandSetPieces(doc).map` for
+  the level) while `doc` keeps them; picking a part selects its placement (`partOf` in the expansion).
+- A vaulted ceiling springs at 3.02 m, just over a doorway's head: doors and windows in the walls it springs from stay
+  whole (the every-port test caught the first version, springing at 2.9 m, 10 cm into the doors), but a taller opening
+  there (a wide doorway, an archway) has the vault across its top. Worth a hint in MapMaker's inspector.
+- A level-1 skybridge over a street meets the street's 5 m lamp posts: leave lampless paving under it (or level 2).
+- The existing e2e flow called `setpieces` is Sky Islands' crumbling stones and trapdoors, not these: name the new
+  editorux checks so they aren't confused with it.
+
+**Notes for part 3** (the showpiece pieces, `wip/setpieces-3`)
+- Pieces are built for the standard grid (`SET_PIECE_GRID`: 8 m cells, 4 m levels): a map on another grid refuses its
+  placements (`setpiece.grid`). The colosseum's 4 m board squares need a decision there: free parts (blocks, props)
+  can sit anywhere in a piece's frame already; tiles can't.
+- New pieces go in `content/setpieces/<family>.json` (docs/CONTENT_PIPELINE.md, "Set pieces"); the every-turn,
+  every-pack, z-fight and every-port tests pick them up. Kit pieces a piece needs (an edge style, a room option) go
+  into the kit for every map, as `arch_segmental`, `vault` and `collegiate_stone` did.
+
+**Owner's answers (2026-11-06): 1 yes, 2 keep, 3 keep battlements.** The St. John's stones and the Collegiate stone facade
+are right for the campus. The shallow vault stays. Skybridges keep the pack's facade (battlements) by default.
+
+**Open questions for the owner** (answered above)
+- Collegiate Gothic: St. John's own stones (Grey Stone Blocks #d9d5cb walls, Dressed Stone #d8d3c6 trim) and a new
+  Collegiate stone facade, rather than Gothic Estate's dark Mossy Castle Stone: right for the campus?
+- The vault is shallow (a 0.27 m rise, from over the door heads to under a 4 m level's floor): its ribs make it read;
+  a taller passage would need the piece to span two levels. Keep it?
+- Skybridges wear their pack's facade (Collegiate: battlements and pinnacles along the bridge). Plainer bridges (no
+  facade) are an override away (`overrides.roles.facade: "none"`); which should be the default?
+<!-- /setpieces -->
+
 <!-- shingle -->
 ### Shingle Point asset refresh (`wip/shingle`, agents, 2026-11-05/06; main 5b167034 merged in; green on `check/shingle`)
 Owner's decision: same layout and gameplay, every dated asset replaced, so it compares fairly with MAP 21 (a new map,
@@ -871,6 +967,90 @@ like 2–3 bots protect a flag, and the rest go out there and try to get the oth
 
 
 
+### Owner's M1 re-record after performance round 3 (2026-11-06, app 463c247; files in session scratchpad perf4/)
+Recorded on the M1 Pro: TDM, 49 players, High, auto render scale, 60 fps cap. Steady state skips each match's first 5 s.
+
+| | Shingle Point, round 2 | Shingle Point, round 3 | Market Town, round 2 | Market Town, round 3 |
+|---|---|---|---|---|
+| Average frame | 21.8 ms | 17.3 ms | 22.1 ms | 17.6 ms |
+| p95 / p99 | <30 / <40 ms | <25 / <40 ms | <40 / <50 ms | <25 / <30 ms |
+| Worst second | 34.0 ms (p95 75.9) | 20.7 ms (p95 22.9) | 40.1 ms | 46.6 ms (a mass-death moment, see below) |
+| Draws, max | 980 | 494 | 724 | 589 |
+| Meshes, max | 1,130 | 485 | 613 | 406 |
+| Render / shadows | 8.5 / 4.1 ms | 5.5 / 1.7 ms | 7.0 / 4.0 ms | 4.1 / 2.5 ms |
+| Characters (animation) | 4.2 (2.8) ms | 4.1 (3.0) ms | 6.0 (4.4) ms | 4.8 (3.4) ms |
+
+**Left for performance round 4:**
+1. **New:** about 3 s of stutter at the start of a Shingle Point match on the M1.
+   - 18 hitches in the first 3 s; 52 shaders were built in the first 5 s.
+   - Before round 3 there were none. Market Town shows none.
+   - Suspects:
+     - the batched props' materials (Shingle batches, Market Town doesn't);
+     - the looks that come into view at the first spawn wave;
+     - the warm-up's 2 s cap on that machine.
+2. **Mass deaths on Market Town:** after a rocket killed 7, frames ran 60–140 ms for about 0.6 s.
+   - The time is outside the game's measured work: GPU, driver or GC while bodies start.
+   - The game's trace can't show it. A browser performance profile of a blast, or a local repro, would.
+3. **Sporadic 50–60 ms frames:** every 20–30 s, mostly outside the measured work. GC is likely; cut the per-frame
+   garbage.
+4. **Characters are now the biggest CPU cost:** 4–5 ms, of which animation is 3–3.4 ms, at 40+ in view.
+
+**The owner's amphibious landing craft:** a Meshy model, owned, in the Drive. Downloaded to
+`/home/user/meshy-drive/intake-2026-11-06/`; never commit it. It's 408k triangles, static. The prop import is added to
+set pieces part 3's brief: a hero-budget rebake, about 11 m long, voxel collision, provenance, and a beached-craft
+variant for MAP 21.
+- **Owner, 2026-11-06: no moving D-Day boats for now.** Matches have to last well beyond the first landing, as a
+  semi-traditional arena-style FPS match, so the landing craft is static dressing and cover. MAP 21's beach is
+  where the fighting starts, not a scripted arrival.
+
+### Queued (owner-approved, 2026-11-06): Match Setup redesign, NEXT FREE SLOT (ahead of the follow-ons)
+**Owner's report** (screenshot: St. John's TDM 24v24, desktop):
+- The setup sidebar's text doesn't display properly. For example, "The map suggests 12v12." is crushed into a narrow
+  column beside "Next: bots".
+- It isn't well organised: the most important options (points, time, game mode) should be available at once.
+
+**Owner's asks:**
+- A footer that stays on screen (Start never scrolls away), with Host/Local/Online as a choice beside it, not a rival
+  button.
+- One panel open at a time on small screens; several on desktop.
+- Humans and bots shown separately: "24v24 · 48 players" reads as 48 people.
+- One fit indicator instead of the wall of yellow warnings.
+- The orange rule chips folded into Advanced rules.
+- Presets that adapt rather than an exhaustive list.
+- Teams that grow when you add bots. Today a team size of 10 caps the bots, so adding them snaps back.
+
+**Approved design:**
+1. Mode, score and time (and the mode's key setting) always on top.
+2. Presets computed from the map, its spawns and the device: Duel, Small, Map's pick, Big battle, Max; editing makes
+   it Custom.
+3. Humans + bots = total per team. Adding a bot grows the team. An Even teams toggle. A plain message when a cap stops
+   you.
+4. A fit indicator (Fits / Crowded / Problem). Clicking it shows the details. Suggestions are buttons ("Use 12v12").
+5. Advanced rules on one summary line, with the chips inside.
+6. A sticky footer: Start match plus an Offline / Host online switch, with saved setups in a menu.
+7. Responsive layout.
+8. Keyboard and gamepad focus order.
+
+The brief is in the session scratchpad, `briefs/match-setup.md`: code map, constraints (keep `MatchSetup` and saved
+setups compatible; the menu bundle budget) and proof (screenshots at 4 sizes including a phone, unit and e2e checks).
+
+**Slots:** the first running agent to finish hands its slot to this. Its own follow-on (Phase B, set pieces part 2
+or 3) takes the next slot that frees.
+
+**Added by the owner, 2026-11-06:**
+- A **variants** frame under the mode chips: data-driven on/off chips per mode, built from today's settings first.
+- **Party presets.** The first is **Lunar Roulette**: low gravity, character stats and a random character each life.
+
+**Then, in the same slot after the redesign lands: the Roulette mode** (docs/ROULETTE_MODE_PLAN.md).
+- **Core:** character swapping each life, from a fair shuffle deck.
+- **Standard:** signature loadouts, jackpot rolls, and a streak pick (choose your next character from 3).
+- **Variants:**
+  - Lunar: gravity storms and air-kill bonus.
+  - Earned rerolls. There are no free death-screen rerolls (owner).
+  - Swap on kill.
+  - Variety bonus.
+  - Teams.
+
 ### Queued (owner-approved, 2026-11-06): bot AI, logic and navigation (docs/BOT_AI_PLAN.md)
 The owner asked for a plan for bot logic and navigation as a whole, and approved this order:
 - **Phase A** (navigation audit from every walkable area, never stand still on a failed route, the bot scorecard with
@@ -879,6 +1059,12 @@ The owner asked for a plan for bot logic and navigation as a whole, and approved
   - Give it to the bots-idle agent as a follow-on if it's still running.
 - **Phase B** (scored choices instead of competing states, a team brain per mode, mode playbooks): next, **before
   MAP 21**.
+- **Then Fireteams** (owner-approved 2026-11-06, docs/FIRETEAMS_PLAN.md), right after Phase B.
+  - Every human leads their own fixed bot squad of 4–6, and no human joins another's.
+  - Bot-led squads fill the rest of each team.
+  - An order wheel (follow, hold, go there, attack that, defend, regroup, spread or tight), formations and
+    bounding, respawn on the leader, a squad HUD.
+  - It's a variant for every team mode in Match Setup's variants row.
 - **Phases C and D** after:
   - C: drop/jump links, moving obstacles, crowd steering, smarter routes;
   - D: memory, holds that look alive, human-like skill tiers, an in-game bot debug view, bot hints in MapMaker.
@@ -888,7 +1074,16 @@ with `pnpm bench:96:clump` before and after; bot thinking at 96 bots stays withi
 
 ### Owner-approved order after the current agents (2026-11-05 late; owner set effort to max: "hoping for some great work")
 0. **Bot AI Phase A** (above) as soon as `wip/bots-idle` lands; **Phase B** before item 3 (MAP 21).
-1. **Set pieces:** plan in docs/SET_PIECES_PLAN.md. Next free slot.
+1. **Set pieces:** plan in docs/SET_PIECES_PLAN.md. Part 1 (data, expansion, carriageway, skybridge) on
+   `wip/setpieces` (its section near the top: what landed, the API, notes for parts 2 and 3). Then, by owner decision (2026-11-06, "go with your suggestion for part 3"):
+   - **Part 2**, after part 1: the MapMaker UI on `wip/setpieces-2` (tab, ghost, Explode, Save selection, library),
+     the St. John's placements and retirements.
+   - **Part 3**, in the hands-round-5 slot, alongside part 2: the showpiece pieces on `wip/setpieces-3`.
+     - MAP 21: casemate, trench run, cliff stair (sea wall and command bunker if time).
+     - Colosseum: arena arcade bay, vomitorium, tunnel junction, cage block, insula (stair tower if time).
+     - It decides how the colosseum's 4 m board squares work, since every map and tile is on 8 m cells today.
+     - The brief is in the session scratchpad, `briefs/setpieces-3.md`.
+   - Then MAP 21 and the colosseum, after parts 2 and 3 and Bot AI Phase B.
 2. **Hands round 5,** in parallel; small. Give it to the pistol-hold agent as a follow-on once its pistol work lands.
    Done on `wip/hands-5` (section "Hands round 5"; CI on `check/hands-5`, not on main). It covered:
    - re-tuning the support hands the palm fix changed (Pharaoh, Gorgle, Vanguard, Croakley, Big Bab, Desert Ranger,
@@ -996,6 +1191,16 @@ the fingers bent "toward the gun", i.e. backwards). Creatures (Imp, Puglin) were
 - Evidence: agent scratchpad `palms/` (summary/summary.md ranked, `summary/<id>-before-after.png`, `fp/` first and
   third person before/after, `close/`, audits `before/`, `after/`, `after-final/`; tools in `palms/tools/`).
 <!-- /palms -->
+
+### Flaky e2e (seen 2026-11-06): `handoff` (host handoff between three browsers)
+It failed on CI twice in one job on the HUD portrait train (run 42215908322) and once on `check/bots-idle`. Each time it
+passed on a re-run, and the changes involved didn't touch hosting.
+- **Signature:** "the successor's checkpoint carries the other friend's score" fails. The host logs "closing Bo's link:
+  silent 20 s" and Bo "the host's link went (closed)", after Bo's page "fell 1.3–2.0 s behind its match".
+- **Likely:** a page starved on a loaded CI runner goes silent for 20 s, and the host drops it before the checkpoint.
+- **To do:** root-cause it, don't just re-run it. The flake may also be a real bug for slow machines, where a friend's
+  page stalls and the host cuts them off. Candidates: a longer silence limit while a page is catching up, or keep-alive
+  pings from the worker. Queue with the next hosting or perf task.
 
 ### Open bug (found 2026-11-05): explosion debris can fall through the world
 On the env + intake merge (`check/env-land2`), physicsfx counted 32 debris bodies where it expected 10, with the

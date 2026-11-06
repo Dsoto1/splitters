@@ -56,6 +56,36 @@
       "dressing": { "kind": "door", "span": 6.5 }
     },
     {
+      "id": "arch_segmental",
+      "label": "Segmental arch",
+      "segments": [
+        { "u": ["-half", -2.5], "y": [0, "height"] },
+        { "u": [2.5, "half"], "y": [0, "height"] },
+        { "u": [-2.5, -2.3], "y": ["min(2.8,height)", "height"] },
+        { "u": [-2.3, -2], "y": ["min(2.93,height)", "height"] },
+        { "u": [-2, -1.6], "y": ["min(3.07,height)", "height"] },
+        { "u": [-1.6, -1.1], "y": ["min(3.19,height)", "height"] },
+        { "u": [-1.1, -0.55], "y": ["min(3.28,height)", "height"] },
+        { "u": [-0.55, 0.55], "y": ["min(3.3,height)", "height"] },
+        { "u": [0.55, 1.1], "y": ["min(3.28,height)", "height"] },
+        { "u": [1.1, 1.6], "y": ["min(3.19,height)", "height"] },
+        { "u": [1.6, 2], "y": ["min(3.07,height)", "height"] },
+        { "u": [2, 2.3], "y": ["min(2.93,height)", "height"] },
+        { "u": [2.3, 2.5], "y": ["min(2.8,height)", "height"] }
+      ],
+      "trim": [
+        { "base": ["-half", -2.66] },
+        { "base": [2.66, "half"] },
+        { "cornice": ["-half", "half"] },
+        { "arch": { "u": [-2.5, 2.5], "y": [2.7, 3.3], "count": 11, "band": 0.45, "key": 0.25 }, "outside": true }
+      ],
+      "openings": [[-2.5, 2.5, 0, 3.3]],
+      "dressing": { "kind": "door", "span": 5 },
+      "notes": {
+        "design": "A shallow segmental arch 5 m wide, springing at 2.7 m and rising 0.6 m to its crown at 3.3 m (a carriageway or pend under a building: docs/SET_PIECES_PLAN.md). Its collision steps over the curve and never dips below it (the stone over the opening starts at most 0.14 m above the curve, so no round stops in the air under it); eleven voussoirs and a keystone dress both faces (the outer one where nothing is built beyond the side) and a soffit covers the steps from below. No facade: the arch dresses itself."
+      }
+    },
+    {
       "id": "window",
       "label": "Window",
       "segments": [
