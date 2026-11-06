@@ -225,30 +225,62 @@ such."
 - **The brief:** session scratchpad `briefs/prop-scale.md`. The same agent does the slack pass first: one agent, two
   landings.
 
-### Queued (owner bug report, 2026-11-06): prop slack pass, "these pillars are blocking my bullets". NEXT FREE SLOT (ahead of Bot AI Phase B)
-**The owner:** "These pillars are blocking my bullets..capital mall uses them". Their screenshot shows Capitol Mall's
-white Ionic columns.
-
-**Cause:**
-- `prop.im_column_ionic` (68 on Capitol Mall) uses `collide: "box"`.
-- That box is as wide as the plinth and the capital, all the way up.
-- So there is about 0.2–0.3 m of invisible wall on each side of the round shaft. It stops rounds and players alike.
-- About 40 more columns, pillars and posts in `content/props/*.json` also use `box`, among them `eg_column_papyrus`,
-  `rn_column_round`, `sf_column_round`, `dc_column`, Kenney's `column` and the loafbrr fence posts and columns.
-
-**Scope:**
-- Round and tapered columns move to `voxel`, or to `trunk` where one pole is right.
-- A `--slack` pass over every `box` prop, with a threshold that matters for play. The threshold is documented.
-- `content:check` fails a new prop over the threshold unless it says why, as the openings audit does.
-- Real-sim tests:
-  - rounds beside the shaft fly past;
-  - rounds at the shaft hit;
-  - a player can stand against the shaft;
-  - cover behind it still holds.
-- validate-map on the affected maps, and `pnpm bot-report --check`.
-- Before and after shots of the Capitol Mall colonnade.
-
-The brief is in the session scratchpad, `briefs/slack-pass.md`.
+<!-- prop-slack -->
+### Prop slack pass: columns, the slack audit, 391 props to voxel (`wip/prop-slack`, agent, 2026-11-06; from main 3fc5e197; CI on `check/prop-slack`)
+**The owner's report** (Capitol Mall): "These pillars are blocking my bullets..capital mall uses them". The white Ionic
+column (`prop.im_column_ionic`, 68 on Capitol Mall at scale 1.333) collided as one box as wide as its plinth and capital
+all the way up: 0.28 m of invisible wall beside the round shaft along x, 0.55 m at 45° (0.37 and 0.73 m at the map's
+scale). Rounds aimed just past the shaft stopped in the air on the box's face; so did rounds at the shaft, 0.37 m
+before the stone. The brief: session scratchpad `briefs/slack-pass.md`.
+- **Done:**
+  - **Columns first** (25ecbc94): 28 columns, pillars, obelisks and posts `box` → `voxel`: im_column_ionic (7 boxes:
+    plinth, base, a cross round the shaft, capital), eg_column_papyrus 20, rn_column_round 7, rn_column_square 5,
+    sf_column_round 3, sf_column 4, sf_column_astra 13, sf_column_large 18, dc_column 7, Kenney's column 12, pillar 5,
+    cross_column 5, obelisk 5, dg_pillar 4, os_wall_column 11, nc_elevated_pillar 6, jg_carved_pillar 7, eg_obelisk 11,
+    jt_obelisk 8, jt_broken_column 6, jt_collapsed_column 15, sd_pillar_01/02 and large_01/02 11/3/11/3, mc_cave_pillar
+    and _wide 48 each (no map), ww_corner_post_a 3. No box-mode pole was left: lamps, posts and signs were already
+    `trunk` (the openings pass); the loafbrr fence posts and columns fit their boxes.
+  - **The slack audit** (`voxel-collision.mjs` `slackRuns`/`propSlack`, `prop-openings.mjs`): along x, z and both
+    diagonals, in 5 cm squares, lines that cross the collision, miss the model and are reached from beside it. The
+    threshold: **air 0.15 m or wider beside the model over 30 % or more of its height, from some direction**
+    (`SLACK_WIDTH`, `SLACK_SHARE`; about a head or a shoulder at the edge of cover). `content:check` fails a `box` prop
+    over it without a `fills` reason; natural rocks (two rounded tiers) are not checked; `--slack` lists every prop of
+    every mode over it. `fills` now covers slack too (stale only when it fills no opening and carries no slack).
+  - **The pass** (fe2950b2): 363 more `box` props → `voxel` (statues, vehicles, furniture, machines, fences, shelves:
+    every non-rock box prop over the threshold); 18 keep their box with a `fills` reason, round or thin pieces whose
+    voxel collision is that same box (barrels, drums, bins, pots, the urn, the vase, the bar stool, the spare wheel,
+    the broken round column, the two picket panels, Kenney's tiny bench, the slush machine). 391 props changed in all
+    (session scratchpad `slack/changed-props.txt`; before and after per prop: `slack/changed-props-slack.json`). Mean
+    share of height with slack 0.85 → 0.38, mean widest run 1.12 → 0.50 m, boxes 1 → 13.0 a prop.
+  - **Fixture**: `prop-openings.mjs --fixture <ref>` is cumulative now (keeps earlier entries, enters props changed
+    since the ref against what they were) and probes through the old collision's slack runs (x, z, diagonals); 599
+    changed entries. `propSlack.test.ts` (the Ionic column at scale 1 and 1.333, in the sim: rounds beside the shaft
+    along x, z and at 45° fly on, rounds at it stop on its face and hit the column, a player walks up onto the plinth's
+    step or off a deck and stands against the shaft, no way in from eight sides, cover holds crouched and standing, a
+    spot the old box hid is seen, findCover finds a hidden spot; every case fails on the old table). Unit tests of the
+    measure in `tools/content/test/voxel-collision.test.mjs`.
+- **Checked:**
+  - validate-map on all 78 maps that place a changed prop: 71 clean; Glacier Line, Grand Marquee, No Man's Field,
+    Reactor, Serpent Gorge and Shingle Point have the same warnings as with the old table. **Obsidian Orb** (retired)
+    changed: its reactor core (prop_087, scale 4) collides as its shape, so a fall off a bridge goes past it to the
+    shaft's floor 32 m down (four spots round the core's foot, above the kill height) instead of landing on the core's
+    box 3.8 m down. The known finding moved with it (`nav/auditKnown.ts`, docs/BOTS.md); the owner's question in the
+    bots-a list above (item 4) now reads: the shaft's floor under the kill height?
+  - `pnpm bot-report --check`: every limit held (Diamond Park and Eagle Spires CTF, Shingle Point KOTH, Fernwood Moon
+    TDM; no failed searches).
+  - Prop collision boxes on the 73 maps in play: 31,682 → 58,638. Busiest: Iron Maw 1,481 → 3,281, St John's 1,498 →
+    2,358, Shingle Point 1,106 → 2,239, Capitol Mall 1,106 → 2,138; Frost Basin (the CI perf map) 471 → 702.
+    Physics and navmesh build and 20,000 shot raycasts on six of the busiest maps, old table against new on this
+    loaded machine: within the noise (Iron Maw navmesh 3.5-5.8 s both, rays 145-387 ms both).
+  - typecheck; propOpenings, propSlack, navAudit, allMaps (Obsidian Orb, Capitol Mall, Fernwood Moon) and the voxel unit
+    tests locally.
+- **Left (owner's call):**
+  - Voxel boxes are axis-aligned: round shapes keep up to about 0.15-0.25 m of air at 45° (the Ionic shaft's cross,
+    0.11 m), and a single plane gets 0.2 m round it. `--slack` still lists 406 props over the threshold, of every mode:
+    242 voxel (those corners, the planes' thickness, big props on coarse cubes), 60 trunk, 31 shell (the red rock
+    spires), 19 stairs, 16 model, 16 natural rocks, 18 box with `fills`. A merge that also keeps diagonal sight lines
+    clear would tighten round props; it would change every voxel prop's collision.
+  - Natural rocks keep their two tiers (`isRock`): voxelised, the boulders alone would add over 10,000 boxes to the maps.
 
 ### Queued (owner-approved, 2026-11-06): weapon sets. After the Match Setup follow-ups, alongside Bot AI Phase B
 **The owner:** bots mostly use pistols. "I have never once seen the sheep weapon, hardly see swarm launcher or gravity
