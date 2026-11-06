@@ -618,6 +618,8 @@ export class GameView {
       await this.afterFrames(2, 1500);
     }
     const ready = () => (this.scene.isDisposed ? Promise.resolve() : Promise.race([this.scene.whenReadyAsync(), new Promise((r) => setTimeout(r, 8000))]));
+    // Water's splash rings and drops (made on the first splash) draw a copy out of sight meanwhile.
+    this.scenario.liquids.fx.warm(4000);
     // The effects first (they don't wait for the characters' files), ended as soon as their shaders are built.
     let effects = 0;
     try {

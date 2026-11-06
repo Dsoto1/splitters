@@ -2058,41 +2058,41 @@ async function physicsfxFlow(browser) {
     const at = window.__massAt;
     const victims = window.__massVictims;
     clearInterval(window.__massHold);
-    // Where each body's hips are as the blast goes off, and how high they get as it flies (sampled every frame).
-    const pelvis = (s) => {
-      const a = v.avatars.get(s) ?? v.corpses.find((c) => c.slot === s)?.a;
+    // Where each body's hips are as the blast goes off, and how high they get as it flies (sampled every frame; the
+    // same body followed when it becomes a corpse, never the player's next life).
+    const pelvisOf = (a) => {
       const j = a?.anim?.ch?.joints.get('pelvis');
       if (!j) return null;
       j.computeWorldMatrix(true);
       const p = j.getAbsolutePosition();
       return { x: p.x, y: p.y, z: p.z };
     };
+    const pelvis = (s) => pelvisOf(v.avatars.get(s));
     // The bodies the blast goes off among: alive, drawn on the ring, their characters in.
     const spots = window.__massSpots;
     const onRing = victims.filter((c, i) => {
       const a = v.avatars.get(c.slot);
       return c.alive && !!a && Math.hypot(a.root.position.x - spots[i].x, a.root.position.z - spots[i].z) < 0.5 && !!pelvis(c.slot);
     });
-    window.__massTrack = new Map(onRing.map((c) => [c.slot, { from: pelvis(c.slot), top: -Infinity, to: null }]));
+    window.__massTrack = new Map(onRing.map((c) => [c.slot, { a: v.avatars.get(c.slot), from: pelvis(c.slot), top: -Infinity, to: null, frames: 0, started: -1, ys: [] }]));
     window.__massTrackObs = v.scene.onAfterRenderObservable.add(() => {
-      for (const [s, t] of window.__massTrack) {
-        const p = pelvis(s);
+      for (const t of window.__massTrack.values()) {
+        const p = pelvisOf(t.a);
         if (!p) continue;
+        if (t.started < 0 && t.a.ragdoll) t.started = t.frames;
+        t.frames++;
         t.top = Math.max(t.top, p.y);
         t.to = p;
+        if (t.ys.length < 16) t.ys.push(+p.y.toFixed(2));
       }
     });
     window.__massSlots = victims.map((c) => c.slot);
     m.pendingEvents.push({ e: 'explode', s: -1, p: [at.x, at.y + 0.5, at.z], r: 6 });
     m.splash({ x: at.x, y: at.y + 0.5, z: at.z }, 6, 500, 400, null, 'core.rockets', 1, 12);
     for (const c of victims) if (c.alive) m.kill(c, null, 'core.rockets');
-    // Held dead while the bodies are counted (a slow runner can take longer than the respawn time); their own inputs back.
-    for (const c of victims) {
-      c.respawnTick = m.tick + 60 * 120;
-      if (!c.queue.massHeld) continue;
-      delete c.queue.push;
-      delete c.queue.massHeld;
-    }
+    // Held dead while the bodies are counted (a slow runner can take longer than the respawn time; their inputs stay
+    // held too: a bot asks to respawn at once).
+    for (const c of victims) c.respawnTick = m.tick + 60 * 120;
     return { killed: victims.length, onRing: window.__massTrack.size };
   });
   const t0 = Date.now();
@@ -2115,15 +2115,24 @@ async function physicsfxFlow(browser) {
     const at = window.__massAt;
     const out = [];
     for (const [s, t] of window.__massTrack) {
-      const body = v.corpses.find((c) => c.slot === s)?.a.ragdoll ?? v.avatars.get(s)?.ragdoll;
       if (!t.from || !t.to) continue;
       const outward = Math.hypot(t.to.x - at.x, t.to.z - at.z) - Math.hypot(t.from.x - at.x, t.from.z - at.z);
-      out.push({ s, tier: body?.tier ?? 'none', push: v.deathPush?.get(s) ?? null, outward: +outward.toFixed(2), rose: +(t.top - t.from.y).toFixed(2) });
+      out.push({ s, tier: t.a.ragdoll?.tier ?? 'none', push: v.deathPush?.get(s) ?? null, outward: +outward.toFixed(2), rose: +(t.top - t.from.y).toFixed(2), started: t.started, ys: [+t.from.y.toFixed(2), ...t.ys] });
     }
     return out;
   });
   await page.screenshot({ path: `${ARTIFACTS}/physicsfx-blast-after.png` });
-  await page.evaluate(() => { const m = window.__match; for (const s of window.__massSlots) if (m.slots[s]) m.slots[s].respawnTick = m.tick; });
+  await page.evaluate(() => {
+    const m = window.__match;
+    for (const s of window.__massSlots) {
+      const c = m.slots[s];
+      if (!c) continue;
+      c.respawnTick = m.tick;
+      if (!c.queue?.massHeld) continue;
+      delete c.queue.push;
+      delete c.queue.massHeld;
+    }
+  });
   const notDown = down ? [] : await page.evaluate(() => window.__massSlots.filter((s) => !window.__massDown.has(s)).map((s) => { const a = window.__cs.view.avatars.get(s); const b = window.__match.slots[s]; return { s, avatar: !!a, anim: !!a?.anim, fall: a?.fall ?? null, alive: b?.alive }; }));
   check(mass.killed > 0 && down && massStats.awakeBodies <= 300, `a mass casualty (${mass.killed} killed by one blast) goes down without stalling: ${(Date.now() - t0) / 1000} s, ${JSON.stringify(massStats)}${notDown.length ? ` not down: ${JSON.stringify(notDown)}` : ''}`);
   const still = flung.filter((b) => b.tier === 'posed' || b.outward < 1 || b.rose < 0.3);
