@@ -2,7 +2,7 @@ import type { LookHitbox } from '../sim/hitbox.ts';
 import { angleDelta, clamp, createRng, distance, horizontalDistance, lookAngles, type Vec3, hypot } from '../math.ts';
 import type { NavWorld } from '../nav/index.ts';
 import { LIFT_FLAG, PLAYER, STANCES, TICK_DT, TICK_RATE, type Stance } from '../sim/constants.ts';
-import type { ItemDefinition, ItemEffect } from '../sim/items.ts';
+import { PICKUP_RADIUS, type ItemDefinition, type ItemEffect } from '../sim/items.ts';
 import { BUTTON_ALT, BUTTON_CROUCH, BUTTON_FIRE, BUTTON_MELEE, BUTTON_JUMP, BUTTON_PRONE, BUTTON_RELOAD, BUTTON_SPRINT, BUTTON_THROW, BUTTON_USE, BUTTON_ZOOM, type PlayerInput } from '../sim/movement.ts';
 import { THROWABLE_DEFS, getWeapon, weaponCode, type AltFire, type ThrowableKind, type WeaponDefinition } from '../sim/weapons.ts';
 import type { PhysicsWorld } from '../sim/physics.ts';
@@ -1440,6 +1440,9 @@ export class BotBrain {
           if (this.squadGoal && this.roamGoal && horizontalDistance(this.roamGoal, this.squadGoal) < 1 && horizontalDistance(me.pos, this.squadGoal) > 3) this.avoid = { pos: { ...this.squadGoal }, until: tick + TICK_RATE * 20 };
           // No way to a pickup it was after (not there yet): the same, or the next pickup check sends it back.
           else if (this.roamGoal && !this.via && horizontalDistance(me.pos, this.roamGoal) > 1.5) this.losePickup(view, this.roamGoal);
+          // At it and it's still there: it won't take (a dropped spear the bot has, its ammo full). The same, or the
+          // next check picks it again (Sandfall Colosseum: five bots round a dropped spear for half a minute).
+          else if (this.roamGoal && this.roamGoal === this.pickupAt && this.refused(view, this.roamGoal)) this.losePickup(view, this.roamGoal);
           this.roamGoal = null;
           this.via = null;
         }
@@ -2589,6 +2592,13 @@ export class BotBrain {
     if (!view.pickups.some((p) => horizontalDistance(p.pos, goal) < 0.5)) return;
     if (this.lostPickups.length >= 8) this.lostPickups.shift();
     this.lostPickups.push({ pos: { ...goal }, until: view.tick + TICK_RATE * PICKUP_GIVE_UP_SECONDS });
+  }
+
+  /** Within pickup reach of an item still lying at `pos`: the match already offered it and it wasn't taken. */
+  private refused(view: BotWorldView, pos: Vec3): boolean {
+    const me = view.self.pos;
+    if (horizontalDistance(me, pos) > PICKUP_RADIUS || Math.abs(me.y - pos.y) > 1.5) return false;
+    return view.pickups.some((p) => p.available && horizontalDistance(p.pos, pos) < 0.5);
   }
 
   /** A pickup at `pos` this bot gave up on (stuck going for it) and still leaves alone. */
