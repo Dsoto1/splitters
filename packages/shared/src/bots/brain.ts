@@ -289,7 +289,7 @@ const DODGE_SECONDS = 0.8;
 const DODGE_SPRINT_ETA = 1.2;
 /**
  * How far (m) past the navmesh's edge a bot steps straight for a goal no route reaches (a pickup on a crate, a flag
- * on a prop): the navmesh keeps 0.6 m clear of things a body walks up to (its radius 0.4 + 0.2), and pickups and
+ * on a prop): the navmesh keeps 0.8 m clear of things a body walks up to (its radius 0.4 + 0.4), and pickups and
  * flags are picked up from about a metre away.
  */
 const STEP_OFF = 2.2;
@@ -2926,6 +2926,11 @@ export class BotBrain {
       else if (!onto && horizontalDistance(me.pos, goal) > 1.5 && (me.grounded !== false || me.climbing)) {
         this.planEscape(view, goal);
         if (this.escape) this.standIn = null;
+      } else if (this.escape && view.tick <= this.escape.until) {
+        // Hopping across off a cut-off patch: on across, not back to the stand-in on the patch (a fight starting in
+        // mid-hop sent Capitol Mall's pool bot back down into the pool, 14 s).
+        this.path = [{ ...me.pos }, { ...this.escape.across }];
+        this.standIn = null;
       }
       const door = this.pathBlocked(view);
       if (door) {

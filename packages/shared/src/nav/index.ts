@@ -30,8 +30,16 @@ export function initNavigation(): Promise<void> {
 
 const CELL = 0.2;
 const CELL_HEIGHT = 0.05;
-/** The navmesh's clearance from walls and edges, in cells: the body's radius and 0.2 m (corner-cutting bots don't snag door frames). */
-export const NAV_RADIUS_CELLS = Number((globalThis as { process?: { env: Record<string, string | undefined> } }).process?.env.NAV_RADIUS_CELLS ?? Math.round((PLAYER.radius + 0.2) / CELL));
+/**
+ * The navmesh's clearance from walls and edges, in cells: 0.8 m, the body's radius and 0.4 m (corner-cutting bots don't
+ * snag door frames). The code once meant 0.6 m (the radius and 0.2: Math.ceil((0.4 + 0.2) / 0.2) is four cells, as
+ * (0.4 + 0.2) / 0.2 is 3.0000000000000004 in floating point), but every tile's stairs, towers and doorways were built
+ * and tested against 0.8, and 0.6 is worse there: Recast splits the narrow switchback flights of the watch towers (Desert,
+ * Jungle, Medieval, Snow) and the Desert outside stair into scraps it drops, so their lookouts (sniper perches on Qasr
+ * Medina, Market Town, Whiteout Station, Vinefall Sanctum) were cut off (the tile packs' reach tests, nine of them, and
+ * the navigation audit); the CTF suite's scorecard was mixed (docs/BOTS.md, "Navmesh clearance").
+ */
+const NAV_RADIUS_CELLS = 4;
 /** Spacing of NavWorld.places(). */
 const PLACE_CELL = 7;
 /**
@@ -80,9 +88,7 @@ const RECAST_CONFIG = {
   walkableHeight: Math.ceil(PLAYER.height / CELL_HEIGHT),
   // Round, not floor: 0.3 / 0.05 is 5.999… in floating point, which would reject 0.25 m steps at some heights.
   walkableClimb: Math.round(PLAYER.maxStepHeight / CELL_HEIGHT),
-  // Extra clearance beyond the capsule radius so corner-cutting bots do not snag door frames.
-  // 0.6 m, three cells. (Math.ceil gave four, 0.8 m: (0.4 + 0.2) / 0.2 is 3.0000000000000004 in floating point.
-  // That closed doorways and stairwells under 1.6 m wide to bots, and left a metre-wide strip by every wall.)
+  // Clearance beyond the capsule radius so corner-cutting bots do not snag door frames (NAV_RADIUS_CELLS: 0.8 m).
   walkableRadius: NAV_RADIUS_CELLS,
   maxEdgeLen: 12 / CELL,
   maxSimplificationError: 1.3,
@@ -826,9 +832,19 @@ export class NavWorld {
       if (hypot(p.x - at.x, p.z - at.z) > ESCAPE_GAP || rise > 1.1 || rise < -4 || !clear(at, p)) return;
       out.push({ edge, across: { ...p } });
     };
-    for (const { p } of near) {
-      if (out.length >= 3 || tried.length >= 12) break;
-      tryAcross(p);
+    // Places routes from the goal's own ground lead back to first (both ways joined: not a ledge whose way on is a drop
+    // link far off; Capitol Mall's pool's rim walkway goes to its far end), then the rest.
+    const routes = this.routesNow();
+    const goalComp = routes.comp[e.nearestRef - this.graph().base];
+    const joined = (p: Vec3) => {
+      const h = this.query.findNearestPoly(p, { halfExtents: { x: 0.5, y: 1, z: 0.5 } });
+      return h.success && !!h.nearestRef && routes.comp[h.nearestRef - this.graph().base] === goalComp;
+    };
+    for (const pass of [true, false]) {
+      for (const { p } of near) {
+        if (out.length >= 3 || tried.length >= 12) break;
+        if (pass === joined(p)) tryAcross(p);
+      }
     }
     // None of them: the goal's part's own ground nearest the point. The places are 7 m apart, and the step or lip out
     // of a sunken sliver can be a couple of metres from ground none of them is on (Underdrain's sump, Fogbound's gullies).

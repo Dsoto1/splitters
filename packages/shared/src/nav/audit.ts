@@ -37,7 +37,11 @@ const CLEAR_AT = [0.35, 0.9, 1.6] as const;
 /** Exits made for a cut-off patch of navmesh (drop links), at most, and how far apart (m). */
 const EXITS_PER_PATCH = 3;
 const EXIT_SPACING = 4;
-const MAX_EXITS = 400;
+/** A long patch (open edges over 3 × EXIT_RIM m round it): one exit per EXIT_RIM m of them, EXIT_SPACING_LONG m apart, up to EXITS_MAX_PER_PATCH. */
+const EXIT_RIM = 16;
+const EXIT_SPACING_LONG = 8;
+const EXITS_MAX_PER_PATCH = 12;
+const MAX_EXITS = 600;
 
 /** A fall off the walkable ground: from polygon `from` (a point on its open edge) a body drops `drop` m onto polygon `to` (-1: onto ground the navmesh doesn't cover). */
 export interface NavFall {
@@ -149,9 +153,11 @@ const DOWN = { x: 0, y: -1, z: 0 };
 
 /**
  * Where a body walking off polygon `poly`'s open edges falls (NavFall, one per sample along each open edge every
- * FALL_SPACING m that has a drop). `near`: only edge samples it says yes to (a bounds check).
+ * FALL_SPACING m that has a drop). `near`: only edge samples it says yes to (a bounds check). `slides`: a landing on
+ * ground too steep to stand on goes on down to where the body slides to (the drop links' ways off a patch, trapExits;
+ * the audit's falls into places stop where they land, as before).
  */
-export function fallsFrom(nav: NavWorld, physics: PhysicsWorld, poly: number, opts: FallOptions, near?: (x: number, y: number, z: number) => boolean): NavFall[] {
+export function fallsFrom(nav: NavWorld, physics: PhysicsWorld, poly: number, opts: FallOptions, near?: (x: number, y: number, z: number) => boolean, slides = false): NavFall[] {
   const g = nav.graph();
   const out: NavFall[] = [];
   if (g.type[poly] !== 0 || !g.open[poly] || disabled(g, poly)) return out;
@@ -187,9 +193,11 @@ export function fallsFrom(nav: NavWorld, physics: PhysicsWorld, poly: number, op
       if (near && !near(at.x, at.y, at.z)) continue;
       const f = traceFall(physics, at, nx, nz, opts);
       if (!f) continue;
-      // Onto a polygon close below where it lands (the navmesh keeps 0.6 m clear of the cliff foot it lands by); on
-      // ground too steep to stand on (a rock's flank, a bank, a ridge's side), where the body slides to.
-      const hit = nav.nearestPoly({ x: f.x, y: f.y + 0.3, z: f.z }, { x: 1.6, y: 0.8, z: 1.6 }) ?? slideFoot(nav, physics, f, at.y - opts.maxDrop, opts);
+      // Onto a polygon close below where it lands (the navmesh keeps 0.8 m clear of the cliff foot it lands by). On
+      // ground too steep to stand on (a rock's flank, a bank, a ridge's side) with none level with it there (only the
+      // ledge it fell off, over it): where the body slides to.
+      let hit = nav.nearestPoly({ x: f.x, y: f.y + 0.3, z: f.z }, { x: 1.6, y: 0.8, z: 1.6 });
+      if (slides && (!hit || hit.point.y > f.y + 0.4) && steepAt(physics, opts, f)) hit = slideFoot(nav, physics, f, at.y - opts.maxDrop, opts) ?? hit;
       if (hit && hit.index === poly) continue;
       const land = hit ? hit.point : f;
       out.push({ from: poly, to: hit ? hit.index : -1, at, land, drop: at.y - land.y });
@@ -227,8 +235,24 @@ function traceFall(physics: PhysicsWorld, at: Vec3, nx: number, nz: number, opts
 }
 
 /** How far from where a body lands on ground too steep to stand on it slides to the navmesh at the slope's foot (m), at most, and how far down. */
-const SLIDE_REACH = 5;
-const SLIDE_DOWN = 8;
+const SLIDE_REACH = 8;
+const SLIDE_DOWN = 12;
+
+/** Whether the ground at `p` (where a fall lands) is too steep to stand on: its slope over 0.8 m, steeper than a body can walk up. */
+function steepAt(physics: PhysicsWorld, opts: FallOptions, p: Vec3): boolean {
+  const y = (dx: number, dz: number): number | null => {
+    const top = p.y + 1.5;
+    const d = moveRay(physics, opts.solids, { x: p.x + dx, y: top, z: p.z + dz }, DOWN, 3);
+    return d === null ? null : top - d;
+  };
+  const xa = y(0.4, 0);
+  const xb = y(-0.4, 0);
+  const za = y(0, 0.4);
+  const zb = y(0, -0.4);
+  if (xa === null || xb === null || za === null || zb === null) return false;
+  const slope = Math.hypot((xa - xb) / 0.8, (za - zb) / 0.8);
+  return slope > Math.tan(((PLAYER.maxSlopeDegrees - 2) * Math.PI) / 180);
+}
 
 /**
  * Landing on ground no navmesh covers (too steep to stand on: Frost Basin's ice ridge, a rock's flank): the navmesh at
@@ -746,6 +770,20 @@ export function trapExits(nav: NavWorld, physics: PhysicsWorld, spawns: readonly
   for (let i = 0; i < n; i++) if (comps.of[i] === main) mainPolys.push(i);
   let toMain = reach(reverseOf(routes, n), n, mainPolys);
   const out: { start: Vec3; end: Vec3 }[] = [];
+  // How long each patch's open edges are: a long one (a walkway along a pool, a gallery) gets more ways down, further
+  // apart, so a bot on it walks a few metres to one rather than to its far end (Capitol Mall's pool rim: 50 m).
+  const rim = new Float64Array(comps.count);
+  for (let i = 0; i < n; i++) {
+    if (g.type[i] !== 0 || !g.open[i]) continue;
+    const a0 = g.vstart[i]!;
+    const vc = g.vstart[i + 1]! - a0;
+    for (let j = 0; j < vc; j++) {
+      if (!(g.open[i]! & (1 << j))) continue;
+      const ia = (a0 + j) * 3;
+      const ib = (a0 + ((j + 1) % vc)) * 3;
+      rim[comps.of[i]!]! += hypot(g.vxyz[ib]! - g.vxyz[ia]!, g.vxyz[ib + 2]! - g.vxyz[ia + 2]!);
+    }
+  }
   // Each polygon's falls, traced once (a patch that gets no exit this round may get one onto a patch that did).
   const traced = new Map<number, NavFall[]>();
   for (let round = 0; round < 16 && out.length < MAX_EXITS; round++) {
@@ -755,7 +793,7 @@ export function trapExits(nav: NavWorld, physics: PhysicsWorld, spawns: readonly
     for (let i = 0; i < n; i++) {
       if (toMain[i] || g.type[i] !== 0 || !g.open[i] || disabled(g, i)) continue;
       let fs = traced.get(i);
-      if (!fs) traced.set(i, (fs = fallsFrom(nav, physics, i, opts)));
+      if (!fs) traced.set(i, (fs = fallsFrom(nav, physics, i, opts, undefined, true)));
       for (const f of fs) {
         if (f.to < 0 || !toMain[f.to]) continue;
         const c = comps.of[i]!;
@@ -767,9 +805,11 @@ export function trapExits(nav: NavWorld, physics: PhysicsWorld, spawns: readonly
       const fs = patchFalls.get(c)!;
       fs.sort((a, b) => a.drop - b.drop || a.at.x - b.at.x || a.at.z - b.at.z);
       const picked: NavFall[] = [];
+      const want = Math.min(EXITS_MAX_PER_PATCH, Math.max(EXITS_PER_PATCH, Math.ceil(rim[c]! / EXIT_RIM)));
+      const spacing = want > EXITS_PER_PATCH ? EXIT_SPACING_LONG : EXIT_SPACING;
       for (const f of fs) {
-        if (picked.length >= EXITS_PER_PATCH || out.length >= MAX_EXITS) break;
-        if (picked.some((p) => hypot(p.at.x - f.at.x, p.at.z - f.at.z) < EXIT_SPACING)) continue;
+        if (picked.length >= want || out.length >= MAX_EXITS) break;
+        if (picked.some((p) => hypot(p.at.x - f.at.x, p.at.z - f.at.z) < spacing)) continue;
         picked.push(f);
         out.push({ start: { ...f.at }, end: { ...f.land } });
         added.push([f.from, f.to]);
