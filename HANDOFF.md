@@ -463,7 +463,17 @@ byte-identical, checked), Gorgle's right hand with `rehand-built.mjs` (`SIDES=r`
   - Tactical Soldier: the same plus curlR 0.5 (its own fingers curled back past the grip; palm in 0.73 -> 0.93).
   - Kenji: gripLong [-0.03, 0.02, -0.03], supportLong as above, rollL -0.3 (support palm up 0.72 -> 0.88).
 - **Spin Gun and Spear audit, every character** (third person in the grip audit; first person measured separately,
-  `h5/fp-before.json`, `fp-after.json`, as the audit skips the Spin Gun's first person): HANDS5_SPIN_SPEAR
+  `h5/fp-before.json`, `fp-after.json`, as the audit skips the Spin Gun's first person): 
+  - Third person: the Spin Gun's flags are the rifle's (shooting hand and skin: spikes 25 looks, off 10, open 6; the same
+    hands as on the rifle); beyond the rifle's only Teddy (its ball paw reads palm-down on the Spin Gun's handle) and
+    Salamander Warlord (stretched skin). The Spear adds nothing beyond the pistol's flags.
+  - First person, before: the Spear, the Medkit and the Medi-Beam held as pistols (above; fixed). After, over 99 looks:
+    hand to the shaft's point median 2.7 -> 4.1 cm, palm in 0.90 -> 0.96, fingers along 0.95 -> 0.97; by the audit's
+    first-person thresholds 4 -> 7 looks flagged (Biscuit, Frost Viking, Bamboo, Saint Nick 6.7-7.2 cm: thick hands
+    just past 6.5; Brass Hare's cuffed hand and Boglurker's frog hand read palm-out, as on their other guns; Teddy's
+    palm and Gorgle's distance cleared). The Spin Gun: 8 -> 7 looks flagged (Gorgle cleared; Frost Viking 8.6 -> 6.9
+    cm, Goblin Warlord 6.5 -> 5.0; the rest are thick shooting hands 6.6-7.9 cm off its grip, as on the rifle: Biscuit,
+    Grizzelda, Saint Nick, Bamboo; Brass Hare, Boglurker).
 - **Grip audit** (99 looks; rifle, pistol, Spin Gun, shotgun, Spear; before = main 463c2477 with the new curl test):
   HANDS5_AUDIT
 - **Checks:** HANDS5_CHECKS
@@ -480,7 +490,21 @@ byte-identical, checked), Gorgle's right hand with `rehand-built.mjs` (`SIDES=r`
     off a long gun's grip (the palm rests half the hand's thickness off it); first person reads no per-look grip
     settings (GripTune is third person and Character Select): a per-look first-person offset would be new.
   - Licence details for this intake's community models are still pending from the owner (see "Intake step 2").
-- Evidence (agent scratchpad `h5/`): HANDS5_EVIDENCE
+- Evidence (agent scratchpad `h5/`, outside the repo):
+  - `sheets/third/<look>-tp.png`: third person before | after, rifle and pistol (framing; support hand from below and
+    from the front; shooting hand), all 18 looks; `sheets/first/<look>-fp.png`: full-body first person before | after,
+    pistol, rifle, shotgun, Spin Gun, Spear (Frost Viking, Goblin Warlord, Knight, Gorgle, Bamboo, Ranger, Tactical
+    Soldier); `sheets/audit/<id>-audit.png`: each changed look's audit row (third person, all five weapons), before over
+    after; `sheets/focus/`: Frost Viking's `together` 0 / 0.7 / 1 and softened curl, the Knight's curl (incl. first
+    person at 1920 px) and gripLong, the Goblin Warlord, Gorgle's hand, Bamboo's hold from the front and the side, the
+    Spear and Medkit in first person before the pistol hold and on main.
+  - `audit-before/`, `audit-after/` (audit.json, summary.md, sheet-*.png, <id>.png); `fp-before.json`, `fp-after.json`
+    (first person, Spin Gun and Spear, every look).
+  - Tools (`h5/tools/`): `search.mjs` (live GripTune / hand candidates on a posed look, the audit's numbers, many at
+    once: `SWEEP=<json>`), `tune.mjs` (candidates with shots), `tppairs.mjs` / `fppairs.mjs` (before | after sheets
+    from two servers), `fpall.mjs` (first person, every look), `compare.py` (two audits), `setgrip.py` (writes a
+    manifest's `fixes.grip`, nothing else touched), `splay.mjs` (finger spread in a GLB), `fingerjoints.mjs` (finger
+    joints against their skin), `handx.mjs` (a GLB's `extras.hand`).
 <!-- /hands5 -->
 
 ### Environment Phase 1c: pebbles, eelgrass, concealing fern, Replace all, maps updated (`wip/env-p1c`, agent, 2026-11-05; from main 4d511dd2, main baf26064 merged in; pushed, not merged)
