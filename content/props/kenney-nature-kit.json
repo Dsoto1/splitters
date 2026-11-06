@@ -427,7 +427,7 @@
       "category": "Rocks & Wood",
       "surface": "bark",
       "height": 1.0,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "stump_cut",
@@ -436,7 +436,7 @@
       "category": "Rocks & Wood",
       "surface": "bark",
       "height": 0.6,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "log_big",
@@ -445,7 +445,7 @@
       "category": "Rocks & Wood",
       "surface": "bark",
       "height": 1.0,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "log_stack",
@@ -454,7 +454,7 @@
       "category": "Rocks & Wood",
       "surface": "bark",
       "height": 1.4,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "campfire_stones",

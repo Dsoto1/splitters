@@ -21,7 +21,7 @@
       "name": "Access Panel",
       "category": "Sci-Fi Base",
       "scale": 1,
-      "collide": "box",
+      "collide": "voxel",
       "yaw": -90
     },
     {
@@ -74,7 +74,7 @@
       "name": "Terminal",
       "category": "Sci-Fi Base",
       "scale": 1,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "sf_crate",
@@ -98,7 +98,7 @@
       "name": "Floor Fan",
       "category": "Sci-Fi Base",
       "scale": 1,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "sf_item_holder",
@@ -106,7 +106,7 @@
       "name": "Item Pedestal",
       "category": "Sci-Fi Base",
       "scale": 1,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "sf_light_corner",
@@ -122,7 +122,7 @@
       "name": "Floor Light",
       "category": "Sci-Fi Base",
       "scale": 1,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "sf_light_small",
@@ -400,7 +400,7 @@
       "name": "Ribbed Wall",
       "category": "Sci-Fi Walls",
       "scale": 1,
-      "collide": "box",
+      "collide": "voxel",
       "yaw": -90
     },
     {
@@ -409,7 +409,7 @@
       "name": "Ribbed Wall, Broken",
       "category": "Sci-Fi Walls",
       "scale": 1,
-      "collide": "box",
+      "collide": "voxel",
       "yaw": -90,
       "simplify": 0.5
     },
@@ -419,7 +419,7 @@
       "name": "Ribbed Wall, Divided",
       "category": "Sci-Fi Walls",
       "scale": 1,
-      "collide": "box",
+      "collide": "voxel",
       "yaw": -90
     },
     {
@@ -437,7 +437,7 @@
       "name": "Flat Panel Wall, Window",
       "category": "Sci-Fi Walls",
       "scale": 1,
-      "collide": "box",
+      "collide": "voxel",
       "yaw": -90
     },
     {
@@ -446,7 +446,7 @@
       "name": "Ribbed Wall, Window",
       "category": "Sci-Fi Walls",
       "scale": 1,
-      "collide": "box",
+      "collide": "voxel",
       "yaw": -90
     },
     {
@@ -455,7 +455,7 @@
       "name": "Banded Wall",
       "category": "Sci-Fi Walls",
       "scale": 1,
-      "collide": "box",
+      "collide": "voxel",
       "yaw": -90
     },
     {
@@ -464,7 +464,7 @@
       "name": "Banded Wall, Broken",
       "category": "Sci-Fi Walls",
       "scale": 1,
-      "collide": "box",
+      "collide": "voxel",
       "yaw": -90
     },
     {
@@ -473,7 +473,7 @@
       "name": "Padded Window Wall",
       "category": "Sci-Fi Walls",
       "scale": 1,
-      "collide": "box",
+      "collide": "voxel",
       "yaw": -90
     },
     {
@@ -485,7 +485,7 @@
       "name": "Ribbed Wall, Full Height",
       "category": "Sci-Fi Walls",
       "scale": 1,
-      "collide": "box",
+      "collide": "voxel",
       "yaw": -90
     },
     {
@@ -497,7 +497,7 @@
       "name": "Window Wall, Full Height",
       "category": "Sci-Fi Walls",
       "scale": 1,
-      "collide": "box",
+      "collide": "voxel",
       "yaw": -90
     },
     {
@@ -509,7 +509,7 @@
       "name": "Banded Wall, Full Height",
       "category": "Sci-Fi Walls",
       "scale": 1,
-      "collide": "box",
+      "collide": "voxel",
       "yaw": -90
     },
     {
@@ -521,7 +521,7 @@
       "name": "Cable Duct Wall, Full Height",
       "category": "Sci-Fi Walls",
       "scale": 1,
-      "collide": "box",
+      "collide": "voxel",
       "yaw": -90
     },
     {
@@ -533,7 +533,7 @@
       "name": "Panelled Wall, Full Height",
       "category": "Sci-Fi Walls",
       "scale": 1,
-      "collide": "box",
+      "collide": "voxel",
       "yaw": -90
     },
     {
@@ -772,7 +772,7 @@
       "name": "Glass Floor, Narrow",
       "category": "Sci-Fi Platforms",
       "scale": 1,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "sf_glass_floor_wide",
@@ -780,7 +780,7 @@
       "name": "Glass Floor",
       "category": "Sci-Fi Platforms",
       "scale": 1,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "sf_stairs_2",

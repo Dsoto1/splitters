@@ -177,7 +177,7 @@
       "name": "Barrel Cactus",
       "category": "Plants & Flowers",
       "height": 1.2,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "nt_cactus_flowers",
@@ -185,7 +185,7 @@
       "name": "Flowering Cactus",
       "category": "Plants & Flowers",
       "height": 1.0,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "nt_bush_leafy",
@@ -322,7 +322,7 @@
       "category": "Rocks & Wood",
       "surface": "bark",
       "height": 0.8,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "nt_stump_moss",
@@ -340,7 +340,7 @@
       "category": "Rocks & Wood",
       "surface": "bark",
       "height": 0.7,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "nt_log_moss",
@@ -358,7 +358,7 @@
       "category": "Rocks & Wood",
       "surface": "bark",
       "height": 0.75,
-      "collide": "box"
+      "collide": "voxel"
     }
   ]
 }

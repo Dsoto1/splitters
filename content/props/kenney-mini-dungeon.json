@@ -15,7 +15,7 @@
       "name": "Oak Barrel",
       "category": "Crates & Barrels",
       "height": 0.9,
-      "collide": "box",
+      "collide": "voxel",
       "breakable": {
         "health": 40,
         "debris": "#8a5a32"
@@ -68,7 +68,7 @@
       "name": "Clay Pot",
       "category": "Medieval",
       "height": 0.6,
-      "collide": "box",
+      "collide": "voxel",
       "breakable": {
         "health": 10,
         "debris": "#b06a40"
@@ -80,7 +80,7 @@
       "name": "Tavern Table",
       "category": "Medieval",
       "height": 0.8,
-      "collide": "box",
+      "collide": "voxel",
       "breakable": {
         "health": 40,
         "debris": "#8a5a32"
@@ -92,7 +92,7 @@
       "name": "Stool",
       "category": "Medieval",
       "height": 0.8,
-      "collide": "box",
+      "collide": "voxel",
       "breakable": {
         "health": 20,
         "debris": "#8a5a32"

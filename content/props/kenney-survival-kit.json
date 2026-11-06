@@ -88,7 +88,7 @@
       "name": "Workbench",
       "category": "Industrial",
       "height": 1.0,
-      "collide": "box",
+      "collide": "voxel",
       "breakable": {
         "health": 60,
         "debris": "#8a5a32"
@@ -100,7 +100,7 @@
       "name": "Anvil",
       "category": "Industrial",
       "height": 0.8,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "metal_panel",
@@ -205,6 +205,7 @@
       "surface": "bark",
       "height": 0.6,
       "collide": "box",
+      "fills": "Round, under a metre across: its box stands off it only diagonally (up to 0.2 m at 45°), and voxel boxes give this same box.",
       "breakable": {
         "health": 60,
         "debris": "#8a5a32"
@@ -216,7 +217,7 @@
       "name": "Woodpile",
       "category": "Rocks & Wood",
       "height": 0.8,
-      "collide": "box",
+      "collide": "voxel",
       "breakable": {
         "health": 40,
         "debris": "#8a5a32"
@@ -228,7 +229,7 @@
       "name": "Plank Stack",
       "category": "Rocks & Wood",
       "height": 0.5,
-      "collide": "box",
+      "collide": "voxel",
       "breakable": {
         "health": 30,
         "debris": "#8a5a32"

@@ -15,7 +15,7 @@
       "name": "Saw Blade",
       "category": "Industrial",
       "height": 1.2,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "spike_block",
@@ -23,7 +23,7 @@
       "name": "Spike Block",
       "category": "Industrial",
       "height": 1.0,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "conveyor_belt",
@@ -47,7 +47,7 @@
       "name": "Big Pipe",
       "category": "Industrial",
       "height": 1.2,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "spring",

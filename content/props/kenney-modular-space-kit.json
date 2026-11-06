@@ -69,7 +69,7 @@
       "name": "Station Wall Section",
       "category": "Orbital Station",
       "scale": 0.94,
-      "collide": "box"
+      "collide": "voxel"
     }
   ]
 }

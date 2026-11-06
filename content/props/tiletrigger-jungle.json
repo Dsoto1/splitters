@@ -40,7 +40,7 @@
       "name": "Temple Guardian (Small)",
       "category": "Jungle Ruins",
       "height": 2.77,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "jt_obelisk",
@@ -56,7 +56,7 @@
       "name": "Temple Spire",
       "category": "Jungle Ruins",
       "height": 4.0,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "jt_fire_bowl",
@@ -132,7 +132,7 @@
       "name": "Stone Planter",
       "category": "Jungle Ruins",
       "height": 2.14,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "jt_pottery",
@@ -140,7 +140,7 @@
       "name": "Temple Pottery",
       "category": "Jungle Ruins",
       "height": 1.04,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "jt_rubble_pile",
@@ -148,7 +148,7 @@
       "name": "Rubble Pile",
       "category": "Jungle Ruins",
       "height": 0.93,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "jt_collapsed_column",
@@ -172,7 +172,7 @@
       "name": "Stone Sarcophagus",
       "category": "Jungle Ruins",
       "height": 1.32,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "jt_spikes",
@@ -180,7 +180,7 @@
       "name": "Spike Row",
       "category": "Jungle Ruins",
       "height": 1.2,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "jt_chain_rail",
@@ -204,7 +204,7 @@
       "name": "Temple Altar",
       "category": "Jungle Ruins",
       "height": 1.83,
-      "collide": "box",
+      "collide": "voxel",
       "flame": {"fx": "brazier", "at": [0, 1.37, 0], "size": 0.47, "hide": ["fire"]}
     },
     {

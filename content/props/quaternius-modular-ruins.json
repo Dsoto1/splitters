@@ -48,7 +48,7 @@
       "name": "Hand Cart",
       "category": "Ruins",
       "height": 1.3,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "rn_column_round",
@@ -72,7 +72,8 @@
       "name": "Broken Column",
       "category": "Ruins",
       "height": 1.6,
-      "collide": "box"
+      "collide": "box",
+      "fills": "Round, under a metre across: its box stands off it only diagonally (up to 0.15 m at 45°), and voxel boxes give this same box."
     },
     {
       "id": "rn_dead_tree",
@@ -97,7 +98,7 @@
       "name": "Urn",
       "category": "Ruins",
       "height": 0.8,
-      "collide": "box",
+      "collide": "voxel",
       "breakable": {
         "health": 25,
         "debris": "#7a5a3a"
@@ -109,7 +110,7 @@
       "name": "Broken Urn",
       "category": "Ruins",
       "height": 0.6,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "rn_statue_fox",
@@ -117,7 +118,7 @@
       "name": "Fox Statue",
       "category": "Ruins",
       "height": 2.2,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "rn_statue_stag",
@@ -125,7 +126,7 @@
       "name": "Stag Statue",
       "category": "Ruins",
       "height": 2.6,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "rn_wall",
@@ -197,7 +198,7 @@
       "name": "Buttress",
       "category": "Ruins",
       "height": 5,
-      "collide": "box"
+      "collide": "voxel"
     }
   ]
 }

@@ -209,7 +209,7 @@
       "src": "bed.fbx",
       "name": "Hospital Bed",
       "category": "Hospital",
-      "collide": "box",
+      "collide": "voxel",
       "height": 0.85,
       "simplify": 0.2,
       "bands": [
@@ -232,7 +232,7 @@
       "src": "bench.fbx",
       "name": "Waiting Bench",
       "category": "Hospital",
-      "collide": "box",
+      "collide": "voxel",
       "height": 0.85,
       "bands": [
         [
@@ -250,7 +250,7 @@
       "src": "chair.fbx",
       "name": "Visitor Chair",
       "category": "Hospital",
-      "collide": "box",
+      "collide": "voxel",
       "height": 1.0,
       "bands": [
         [
@@ -340,7 +340,7 @@
       "src": "wheel_chair.fbx",
       "name": "Wheelchair",
       "category": "Hospital",
-      "collide": "box",
+      "collide": "voxel",
       "height": 0.95,
       "simplify": 0.3,
       "bands": [

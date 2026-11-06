@@ -24,7 +24,7 @@
       "name": "Shower",
       "category": "Home",
       "height": 2.2,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "hm_bathroom_sink",
@@ -32,7 +32,7 @@
       "name": "Bathroom Sink",
       "category": "Home",
       "height": 0.95,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "hm_toilet",
@@ -40,7 +40,7 @@
       "name": "Toilet",
       "category": "Home",
       "height": 0.8,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "hm_washer",
@@ -64,7 +64,7 @@
       "name": "King Bed",
       "category": "Home",
       "height": 1.1,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "hm_bed_single",
@@ -72,7 +72,7 @@
       "name": "Single Bed",
       "category": "Home",
       "height": 0.9,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "hm_bookshelf",
@@ -88,7 +88,7 @@
       "name": "Wooden Chair",
       "category": "Home",
       "height": 0.95,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "hm_chair_office",
@@ -96,7 +96,7 @@
       "name": "Office Chair",
       "category": "Home",
       "height": 1.0,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "hm_couch_l",
@@ -104,7 +104,7 @@
       "name": "Corner Sofa",
       "category": "Home",
       "height": 0.85,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "hm_couch_large",
@@ -152,7 +152,7 @@
       "name": "Fireplace",
       "category": "Home",
       "height": 1.4,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "hm_kitchen_counter",
@@ -240,7 +240,7 @@
       "name": "Side Table",
       "category": "Home",
       "height": 0.6,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "hm_bin_large",
@@ -248,7 +248,8 @@
       "name": "Large Bin",
       "category": "Home",
       "height": 1.0,
-      "collide": "box"
+      "collide": "box",
+      "fills": "Round, under a metre across: its box stands off it only diagonally (up to 0.2 m at 45°), and voxel boxes give this same box."
     },
     {
       "id": "hm_door",

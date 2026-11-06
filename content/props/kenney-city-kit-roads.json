@@ -70,7 +70,7 @@
       "name": "Dumpster",
       "category": "Neon Megacity",
       "height": 1.4,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "nc_road_barrier",
@@ -78,7 +78,7 @@
       "name": "Road Barrier",
       "category": "Neon Megacity",
       "height": 1.1,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "nc_cone",

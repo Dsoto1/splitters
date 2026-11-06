@@ -15,7 +15,7 @@
       "name": "Shipping Box",
       "category": "Crates & Barrels",
       "height": 1.2,
-      "collide": "box",
+      "collide": "voxel",
       "breakable": {
         "health": 60,
         "debris": "#c8a070"
@@ -74,7 +74,7 @@
       "name": "Hopper",
       "category": "Industrial",
       "height": 3.0,
-      "collide": "box",
+      "collide": "voxel",
       "breakable": {
         "health": 200,
         "debris": "#7a8088",
@@ -91,7 +91,7 @@
       "name": "Tall Hopper",
       "category": "Industrial",
       "height": 4.0,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "piston",
@@ -99,7 +99,7 @@
       "name": "Piston",
       "category": "Industrial",
       "height": 2.2,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "scanner",
@@ -152,7 +152,7 @@
       "name": "Lever Panel",
       "category": "Industrial",
       "height": 1.2,
-      "collide": "box",
+      "collide": "voxel",
       "breakable": {
         "health": 40,
         "debris": "#7a8088"
@@ -164,7 +164,7 @@
       "name": "Control Screen",
       "category": "Industrial",
       "height": 1.6,
-      "collide": "box",
+      "collide": "voxel",
       "breakable": {
         "health": 30,
         "debris": "#7a8088"
@@ -196,7 +196,7 @@
       "name": "Giant Cog",
       "category": "Industrial",
       "height": 2.0,
-      "collide": "box"
+      "collide": "voxel"
     }
   ]
 }

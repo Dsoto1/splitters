@@ -41,7 +41,7 @@
       "name": "Broken Barrier",
       "category": "Military",
       "height": 1.0,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "road_barrier",
@@ -105,7 +105,7 @@
       "name": "Supply Truck",
       "category": "Military",
       "height": 3.0,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "flatbed_truck",
@@ -113,7 +113,7 @@
       "name": "Flatbed Truck",
       "category": "Military",
       "height": 3.0,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "dumpster",
@@ -121,7 +121,7 @@
       "name": "Dumpster (Retro Urban)",
       "category": "Industrial",
       "height": 1.5,
-      "collide": "box"
+      "collide": "voxel"
     }
   ]
 }

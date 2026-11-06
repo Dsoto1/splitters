@@ -47,7 +47,8 @@
       "src": "Gas_station_Props.fbx#^ice_slush_machine$",
       "name": "Slush Machine",
       "category": "Gas Station",
-      "collide": "box"
+      "collide": "box",
+      "fills": "Its box stands 0.15 m off its sides at most, and voxel boxes give this same box."
     },
     {
       "id": "gs_coffee_machine",
@@ -68,7 +69,7 @@
       "src": "Gas_station_Props.fbx#^Shelving003$",
       "name": "Shop Shelving",
       "category": "Gas Station",
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "gs_metal_shelf",
@@ -82,7 +83,7 @@
       "src": "Gas_station_Props.fbx#^Trash$",
       "name": "Rubbish Bags",
       "category": "Gas Station",
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "gs_shop_counter",

@@ -23,7 +23,7 @@
       "name": "Bronze Brazier",
       "category": "Imperial Arena",
       "height": 1.73,
-      "collide": "box",
+      "collide": "voxel",
       "flame": {"fx": "brazier", "at": [0, 1.19, 0], "size": 0.55, "hide": ["fire", "flame"]}
     },
     {
@@ -32,7 +32,7 @@
       "name": "Emperor Statue",
       "category": "Imperial Arena",
       "height": 3.27,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "im_amphorae",
@@ -40,7 +40,7 @@
       "name": "Amphorae",
       "category": "Imperial Arena",
       "height": 0.9,
-      "collide": "box",
+      "collide": "voxel",
       "breakable": {
         "health": 30,
         "debris": "#b8603a"
@@ -52,7 +52,7 @@
       "name": "Gladius Rack",
       "category": "Imperial Arena",
       "height": 2.28,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "im_training_post",
@@ -100,7 +100,7 @@
       "name": "Stake Barricade",
       "category": "Imperial Arena",
       "height": 1.25,
-      "collide": "box",
+      "collide": "voxel",
       "breakable": {
         "health": 60,
         "debris": "#7a5232"
@@ -129,7 +129,7 @@
       "name": "Forum Fountain",
       "category": "Imperial Arena",
       "height": 1.75,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "im_velarium",
@@ -145,7 +145,7 @@
       "name": "Marble Bust",
       "category": "Imperial Arena",
       "height": 1.73,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "im_throne",
@@ -153,7 +153,7 @@
       "name": "Imperial Throne",
       "category": "Imperial Arena",
       "height": 1.95,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "im_capitol_dome",
@@ -193,7 +193,7 @@
       "name": "Sphinx",
       "category": "Sands of Egypt",
       "height": 3.35,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "eg_statue_pharaoh",
@@ -201,7 +201,7 @@
       "name": "Seated Pharaoh",
       "category": "Sands of Egypt",
       "height": 5.86,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "eg_anubis",
@@ -209,7 +209,7 @@
       "name": "Anubis Shrine",
       "category": "Sands of Egypt",
       "height": 1.76,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "eg_sarcophagus",
@@ -225,7 +225,7 @@
       "name": "Canopic Jars",
       "category": "Sands of Egypt",
       "height": 0.78,
-      "collide": "box",
+      "collide": "voxel",
       "breakable": {
         "health": 25,
         "debris": "#d8c8a6"
@@ -287,7 +287,7 @@
       "name": "Gilded Chest",
       "category": "Sands of Egypt",
       "height": 0.88,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "eg_stele",
@@ -295,7 +295,7 @@
       "name": "Stele",
       "category": "Sands of Egypt",
       "height": 2.45,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "eg_cat_statue",
@@ -303,7 +303,7 @@
       "name": "Bastet Statue",
       "category": "Sands of Egypt",
       "height": 1.12,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "eg_pyramidion",

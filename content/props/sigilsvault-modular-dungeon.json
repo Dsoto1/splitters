@@ -25,14 +25,14 @@
       "src": "Modular Dungeon Pieces/GLB format/barrel_ceiling_large_02.glb",
       "name": "Dungeon Barrel Ceiling Large 02",
       "category": "Dark Dungeon",
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "sd_barrel_ceiling_large_03",
       "src": "Modular Dungeon Pieces/GLB format/barrel_ceiling_large_03.glb",
       "name": "Dungeon Barrel Ceiling Large 03",
       "category": "Dark Dungeon",
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "sd_barrel_ceiling_small_01",
@@ -46,14 +46,14 @@
       "src": "Modular Dungeon Pieces/GLB format/barrel_ceiling_small_02.glb",
       "name": "Dungeon Barrel Ceiling Small 02",
       "category": "Dark Dungeon",
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "sd_barrel_ceiling_small_03",
       "src": "Modular Dungeon Pieces/GLB format/barrel_ceiling_small_03.glb",
       "name": "Dungeon Barrel Ceiling Small 03",
       "category": "Dark Dungeon",
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "sd_block_large_01",
@@ -504,21 +504,21 @@
       "src": "Modular Dungeon Pieces/GLB format/vault_ceiling_large_04.glb",
       "name": "Dungeon Vault Ceiling Large 04",
       "category": "Dark Dungeon",
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "sd_vault_ceiling_large_05",
       "src": "Modular Dungeon Pieces/GLB format/vault_ceiling_large_05.glb",
       "name": "Dungeon Vault Ceiling Large 05",
       "category": "Dark Dungeon",
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "sd_vault_ceiling_large_06",
       "src": "Modular Dungeon Pieces/GLB format/vault_ceiling_large_06.glb",
       "name": "Dungeon Vault Ceiling Large 06",
       "category": "Dark Dungeon",
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "sd_vault_ceiling_small_01",
@@ -546,21 +546,21 @@
       "src": "Modular Dungeon Pieces/GLB format/vault_ceiling_small_04.glb",
       "name": "Dungeon Vault Ceiling Small 04",
       "category": "Dark Dungeon",
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "sd_vault_ceiling_small_05",
       "src": "Modular Dungeon Pieces/GLB format/vault_ceiling_small_05.glb",
       "name": "Dungeon Vault Ceiling Small 05",
       "category": "Dark Dungeon",
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "sd_vault_ceiling_small_06",
       "src": "Modular Dungeon Pieces/GLB format/vault_ceiling_small_06.glb",
       "name": "Dungeon Vault Ceiling Small 06",
       "category": "Dark Dungeon",
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "sd_wall_large_01",
@@ -574,7 +574,7 @@
       "src": "Modular Dungeon Pieces/GLB format/wall_large_02.glb",
       "name": "Dungeon Wall Large 02",
       "category": "Dark Dungeon",
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "sd_wall_large_03",
@@ -595,14 +595,14 @@
       "src": "Modular Dungeon Pieces/GLB format/wall_large_corner_L_01.glb",
       "name": "Dungeon Wall Large Corner L 01",
       "category": "Dark Dungeon",
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "sd_wall_large_corner_r_01",
       "src": "Modular Dungeon Pieces/GLB format/wall_large_corner_R_01.glb",
       "name": "Dungeon Wall Large Corner R 01",
       "category": "Dark Dungeon",
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "sd_wall_large_half_01",
@@ -637,14 +637,14 @@
       "src": "Modular Dungeon Pieces/GLB format/wall_small_corner_L_01.glb",
       "name": "Dungeon Wall Small Corner L 01",
       "category": "Dark Dungeon",
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "sd_wall_small_corner_r_01",
       "src": "Modular Dungeon Pieces/GLB format/wall_small_corner_R_01.glb",
       "name": "Dungeon Wall Small Corner R 01",
       "category": "Dark Dungeon",
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "sd_wall_small_half_01",
@@ -658,7 +658,7 @@
       "src": "Props/GLB format/Brazier.glb",
       "name": "Brazier",
       "category": "Dark Dungeon",
-      "collide": "box",
+      "collide": "voxel",
       "flame": {"fx": "brazier", "at": [0, 0.98, 0], "size": 0.4}
     },
     {
@@ -694,7 +694,8 @@
       "src": "Props/GLB format/pot.glb",
       "name": "Clay Pot",
       "category": "Dark Dungeon",
-      "collide": "box"
+      "collide": "box",
+      "fills": "Round, under a metre across: its box stands off it only diagonally (up to 0.2 m at 45°), and voxel boxes give this same box."
     }
   ]
 }

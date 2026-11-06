@@ -1,7 +1,7 @@
 // Voxel collision (collide "voxel"), trunk columns (collide "trunk") and the openings audit (tools/content/voxel-collision.mjs)
 // on models built here from boxes: openings stay open, the solid stays covered, the result is the same every time.
 import { describe, expect, it } from 'vitest';
-import { filledOpenings, trunkBoxes, voxelBoxes, voxelCollision, voxelise } from '../voxel-collision.mjs';
+import { filledOpenings, propSlack, SLACK_SHARE, slackRuns, trunkBoxes, voxelBoxes, voxelCollision, voxelise } from '../voxel-collision.mjs';
 
 /** A closed box's 12 triangles (`bottom: false` leaves out its floor, as a wall standing on the ground often does). */
 function box(x0, y0, z0, x1, y1, z1, { bottom = true } = {}) {
@@ -117,6 +117,54 @@ describe('openings audit', () => {
     const loose = filledOpenings(ell, bounds, { slack: true });
     expect(loose.length).toBe(1);
     expect(loose[0].slack).toBe(true);
+  });
+});
+
+/** A closed round shaft (a `sides`-sided prism) of radius `r` standing on (x, z) from y0 to y1. */
+function shaft(x, z, r, y0, y1, sides = 24) {
+  const at = (i, y) => [x + r * Math.cos((2 * Math.PI * i) / sides), y, z + r * Math.sin((2 * Math.PI * i) / sides)];
+  const tris = [];
+  for (let i = 0; i < sides; i++) {
+    tris.push([at(i, y0), at(i + 1, y0), at(i + 1, y1)], [at(i, y0), at(i + 1, y1), at(i, y1)]);
+    tris.push([[x, y0, z], at(i + 1, y0), at(i, y0)], [[x, y1, z], at(i, y1), at(i + 1, y1)]);
+  }
+  return tris;
+}
+
+describe('slack audit', () => {
+  /** The Ionic column, as built: a square plinth 1.2 m, a round shaft 0.78 m across, a capital 1.34 × 0.87 m. */
+  const column = () => [...box(-0.6, 0, -0.6, 0.6, 0.5, 0.6), ...shaft(0, 0, 0.39, 0.5, 5.25), ...box(-0.67, 5.25, -0.435, 0.67, 6, 0.435)];
+  const bounds = [[-0.67, 0, -0.6, 0.67, 6, 0.6]];
+
+  it("finds the air beside a column's shaft in a box as wide as its plinth and capital, most of all at 45°", () => {
+    const tris = column();
+    const s = propSlack(tris, bounds);
+    // Beside the shaft (0.5 m to 5.25 m of 6 m), whichever way: 0.21-0.28 m along x and z, about half a metre at 45°.
+    expect(s.share).toBeGreaterThan(0.7);
+    const diagonal = slackRuns(tris, bounds, 45).runs.find((r) => Math.abs(r.y - 3) < 0.03);
+    expect(diagonal.to - diagonal.from).toBeGreaterThan(0.45);
+    const along = slackRuns(tris, bounds, 0);
+    const mid = along.runs.find((r) => Math.abs(r.y - 3) < 0.03);
+    expect(mid.to - mid.from).toBeCloseTo(0.21, 1);
+    // The plinth fills its rows (no slack there along x: the box is the plinth's 1.2 m in z).
+    expect(along.runs.filter((r) => r.y < 0.45)).toEqual([]);
+  });
+
+  it('finds none round a crate, and voxel boxes leave a round shaft less than the threshold', () => {
+    expect(propSlack(box(-0.5, 0, -0.5, 0.5, 1, 0.5), [[-0.5, 0, -0.5, 0.5, 1, 0.5]]).share).toBe(0);
+    const tris = column();
+    expect(propSlack(tris, voxelBoxes(tris)).share).toBeLessThan(SLACK_SHARE);
+    // A plain round column in a box that fits it: no slack along x or z, but its corners at 45°.
+    const round = shaft(0, 0, 0.5, 0, 5);
+    const fitted = [[-0.5, 0, -0.5, 0.5, 5, 0.5]];
+    expect(slackRuns(round, fitted, 0).runs).toEqual([]);
+    expect(propSlack(round, fitted).share).toBe(1);
+    expect(propSlack(round, voxelBoxes(round)).share).toBeLessThan(SLACK_SHARE);
+  });
+
+  it('counts no opening as slack: the space under an arch is an opening, not slack', () => {
+    const tris = archway();
+    expect(propSlack(tris, [[-2, 0, -0.3, 2, 4, 0.3]], { angles: [0, 90] }).share).toBe(0);
   });
 });
 
