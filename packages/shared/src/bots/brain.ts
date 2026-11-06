@@ -377,6 +377,8 @@ export class BotBrain {
   private pickupAt: Vec3 | null = null;
   /** Keeping watch on station (keepWatch): the place it stands, until when, and the way it faces. */
   private watch: { spot: Vec3; until: number; yaw: number } | null = null;
+  /** An order goal no route reaches: watched from as near as a route gets (anchor) until the route is asked for again. */
+  private outOfReach: { goal: Vec3; anchor: Vec3; until: number } | null = null;
   /** Where its order goal was at the last think (does it move?). */
   private readonly lastOrder: Vec3 = { x: 1e9, y: 0, z: 1e9 };
   /** Getting off a cut-off patch of navmesh (planEscape): the place across, the goal it is for, until when it tries. */
@@ -582,6 +584,7 @@ export class BotBrain {
     this.lastKnown = null;
     this.heard = null;
     this.unreachable = null;
+    this.outOfReach = null;
     this.noPath = null;
     this.pathFails = 0;
     this.headway = null;
@@ -1284,20 +1287,37 @@ export class BotBrain {
         lo.y = g.pos.y;
         lo.z = g.pos.z;
         if (horizontalDistance(me.pos, g.pos) > g.radius || Math.abs(me.pos.y - g.pos.y) > 2) {
-          const to = this.orderTarget(view, g);
-          moveYaw = this.followPathTo(view, to, moving);
-          // No way by its lane after all: straight for the goal.
-          if (moveYaw === null && this.pathMiss && this.lane?.via) this.lane.via = null;
-          else if (moveYaw === null && this.pathMiss && me.grounded !== false) {
-            // As near as a route gets to a goal it can't reach (followPathNow went there): keep watch here, facing it,
-            // until it comes within reach (a dropped flag goes home) or the goal changes.
-            const r = this.keepWatch(view, { pos: view.nav.reachToward(me.pos, g.pos) ?? me.pos, radius: 3, watch: g.pos });
+          // As near as a route gets to a goal it can't reach (followPathNow went there): keep watch there, facing it,
+          // until it comes within reach (a dropped flag goes home) or the goal changes, asking for a route again only
+          // every few seconds. (Before, the route to the goal and the one to the next place to watch from took turns
+          // every few ticks: each wiped the other's, and the bot stood there asking, Eagle Spires' attackers below a
+          // mesa top 26 000 times a match.)
+          const far = this.outOfReach;
+          if (far && tick < far.until && horizontalDistance(far.goal, g.pos) < 2 && Math.abs(far.goal.y - g.pos.y) < 1.5) {
+            const r = this.keepWatch(view, { pos: far.anchor, radius: 3, watch: g.pos });
             moveYaw = r.moveYaw;
             moveScale = r.moveScale;
             stance = r.stance;
             lookDone = true;
             doing = 'station';
+            break;
+          }
+          this.outOfReach = null;
+          const to = this.orderTarget(view, g);
+          moveYaw = this.followPathTo(view, to, moving);
+          // No way by its lane after all: straight for the goal.
+          if (moveYaw === null && this.pathMiss && this.lane?.via) this.lane.via = null;
+          else if (moveYaw === null && this.pathMiss && me.grounded !== false) {
             this.pathMiss = false;
+            this.outOfReach = { goal: { ...g.pos }, anchor: view.nav.reachToward(me.pos, g.pos) ?? { ...me.pos }, until: tick + TICK_RATE * 4 };
+            this.watch = null;
+            const r = this.keepWatch(view, { pos: this.outOfReach.anchor, radius: 3, watch: g.pos });
+            moveYaw = r.moveYaw;
+            moveScale = r.moveScale;
+            stance = r.stance;
+            lookDone = true;
+            doing = 'station';
+            break;
           }
           moveScale = this.careful() && !g.push ? 0.8 : 1;
           // An objective a way off: run for it (a carrier always), as players do.
@@ -2765,7 +2785,9 @@ export class BotBrain {
       const found = backedOff ? null : ((offLifts && view.nav.findPath(me.pos, goal, offLifts)) || view.nav.findPath(me.pos, goal));
       if (!backedOff) {
         this.pathFails = found ? 0 : Math.min(this.pathFails + 1, 6);
-        this.noPath = found ? null : { goal: { ...goal }, from: { ...me.pos }, until: view.tick + Math.min(TICK_RATE * 4, 6 << this.pathFails) };
+        // (A route somewhere else, a place to keep watch from on the way, leaves the back-off for the goal alone.)
+        if (!found) this.noPath = { goal: { ...goal }, from: { ...me.pos }, until: view.tick + Math.min(TICK_RATE * 4, 6 << this.pathFails) };
+        else if (np && horizontalDistance(np.goal, goal) < 2 && Math.abs(np.goal.y - goal.y) < 1.5) this.noPath = null;
         if (!found) this.pathFailures++;
       }
       this.path = found ?? [];

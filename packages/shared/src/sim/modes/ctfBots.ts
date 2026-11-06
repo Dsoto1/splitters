@@ -20,7 +20,7 @@ import type { BotGoal } from './types.ts';
  * carrier escort it home and the rest come along further back.
  *
  * Whatever the role, the situation comes first:
- * - the carrier runs the enemy flag home (and waits there if its own flag is away);
+ * - the carrier runs the enemy flag home (and keeps watch round its base while its own flag is away);
  * - our flag dropped: defenders and anyone close go and touch it (it goes home);
  * - our flag carried off: defenders and anyone close chase the carrier, and once
  *   our own carrier is home waiting on it, every attacker but its escorts too;
@@ -47,6 +47,8 @@ const ESCORTS = 3;
 const DEFEND_RADIUS = 9;
 /** Carriers run for home and only notice enemies this close (they shoot back at them on the run). */
 export const CARRIER_AWARENESS = 15;
+/** A carrier this close to its base while its own flag is away keeps watch round the base until the flag is back. */
+const CARRIER_WAIT = 8;
 
 /** How many of a team's Player Bots defend: 3 on a team of 12 or more players, 2 on a smaller one (1 on a team of two or three). */
 export function ctfDefenders(teamSize: number): number {
@@ -144,8 +146,13 @@ export function ctfBotGoal(c: Combatant, flags: readonly FlagRt[], plan: CtfBotP
   if (!own || !enemy) return null;
   const role = plan.roles.get(c.slot) ?? 'attack';
   const near = (p: Vec3) => horizontalDistance(c.move.pos, p) < RESPOND_RANGE;
-  // The carrier: home, nothing on the way worth stopping for.
-  if (enemy.carrier === c.slot) return { pos: own.base, radius: 0.6, push: true, detour: 0, run: true };
+  if (enemy.carrier === c.slot) {
+    // The carrier home with our own flag away: no capture until it's back, so it keeps watch round the base, toward
+    // our flag, meanwhile (before, it stood on the base like a statue, once for 143 s on Serene City).
+    if (own.state !== FLAG_HOME && horizontalDistance(c.move.pos, own.base) < CARRIER_WAIT) return { pos: own.base, radius: CARRIER_WAIT - 2, push: true, watch: own.pos };
+    // Else home, nothing on the way worth stopping for.
+    return { pos: own.base, radius: 0.6, push: true, detour: 0, run: true };
+  }
   // Our flag dropped: whoever is close (and the defenders) goes and touches it.
   if (own.state === FLAG_DROPPED && (role === 'defend' || near(own.pos))) return { pos: own.pos, radius: 0.5, push: true };
   if (own.state === FLAG_CARRIED) {
