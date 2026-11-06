@@ -475,8 +475,9 @@ byte-identical, checked), Gorgle's right hand with `rehand-built.mjs` (`SIDES=r`
     cm, Goblin Warlord 6.5 -> 5.0; the rest are thick shooting hands 6.6-7.9 cm off its grip, as on the rifle: Biscuit,
     Grizzelda, Saint Nick, Bamboo; Brass Hare, Boglurker).
 - **Grip audit** (99 looks; rifle, pistol, Spin Gun, shotgun, Spear; before = main 463c2477 with the new curl test):
-  HANDS5_AUDIT
-- **Checks:** HANDS5_CHECKS
+  numbers not summarised here: the agent was stopped before writing them up. See the scratchpad's `h5/audit-before/`
+  and `h5/audit-after/` (summary.md in each).
+- **Checks:** CI run 42213705026 green at 351b22d0 (full suite). The commits after it change only docs.
 - **Left for the owner:**
   - **Bamboo in first person**: its forearms (thick fur) rise above a pistol's slide and hide it in full-body first
     person (the rifle shows). The arms-only view (`firstPerson.body: false`) is no way out: its sleeve pull-in tears the
