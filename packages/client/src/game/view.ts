@@ -189,6 +189,8 @@ interface Avatar {
   /** A body that died without a ragdoll (a creature) falls to the ground under gravity. */
   fall?: { y: number; vy: number; ground: number };
   wasAlive?: boolean;
+  /** When this view first saw it dead (ms; its body may start a few frames later: deathsToStart). */
+  diedAt?: number;
   /** The held weapon and its muzzle in the weapon's own space (for tracers and flashes). */
   muzzle?: { node: TransformNode; local: Vector3 };
   /** Muzzle flash shown until this time. */
@@ -237,7 +239,11 @@ export function bodiesPreference(): BodiesSetting {
 const MAX_CORPSES = 32;
 /** Time (ms) a frame may spend starting dead bodies before further fresh deaths wait for the next frame (at least one starts). */
 const DEATH_START_MS = 4;
-/** A push (a hit, a blast) is used by a death that starts its body within this long of it (ms). */
+/**
+ * A push (a hit, a blast) is used by a death this view saw within this long of it (ms), however many frames later its
+ * body starts (a blast's starts are spread over frames: on a slow frame rate the last used to start after the push
+ * had gone, and dropped where it stood instead of flying).
+ */
 const PUSH_KEEP_MS = 1200;
 /** The way an avatar faces (its yaw; characters face +Z at yaw 0), for its ragdoll to tell front from back. */
 const facingOf = (a: Avatar): Vec3 => ({ x: Math.sin(a.root.rotation.y), y: 0, z: Math.cos(a.root.rotation.y) });
@@ -786,8 +792,9 @@ export class GameView {
     const root = a.anim?.skeletonRoot;
     if (!(a.anim instanceof CharacterAnimator) || !root || !this.physics) return;
     const push = this.pushes.get(slot);
-    // A blast's push is kept long enough for every body it killed to start with it (starts are spread over frames).
-    const fresh = push && performance.now() - push.t < PUSH_KEEP_MS ? push.v : { x: 0, y: 0, z: 0 };
+    // A blast's push goes with every body it killed, however many frames later the body starts (PUSH_KEEP_MS).
+    const died = a.diedAt ?? performance.now();
+    const fresh = push && Math.abs(died - push.t) < PUSH_KEEP_MS ? push.v : { x: 0, y: 0, z: 0 };
     const v = { x: a.vel.x * 0.6 + fresh.x, y: 0.5 + fresh.y, z: a.vel.z * 0.6 + fresh.z };
     const p = a.root.position;
     const cam = this.scene.activeCamera?.globalPosition;
@@ -1744,6 +1751,8 @@ export class GameView {
         continue;
       }
       // A fresh death hands the body to a ragdoll (when the effects world and the skeleton are ready).
+      if (p.alive) a.diedAt = undefined;
+      else if (a.wasAlive) a.diedAt ??= now;
       if (a.wasAlive && !p.alive && a.anim && this.physics && !a.ragdoll) {
         // A blast that kills twenty doesn't start twenty bodies in one frame: past a few milliseconds of
         // starting them, the rest hold their pose a frame or two and start on the next ones.

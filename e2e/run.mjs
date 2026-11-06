@@ -2014,8 +2014,10 @@ async function physicsfxFlow(browser) {
   // (Where it lands depends on the bot: it steers in the air, and a wall can stop it.)
   check(!!thrown && thrown.velY > 6 && thrown.push > 4 && rose, `a blast throws a bot up and out (${JSON.stringify(thrown)}, up ${rose ? '> 1 m' : 'no'}, out ${out.toFixed(1)} m)`);
   // A mass casualty: one blast kills everyone around a point in front of you, and nothing stalls: every body
-  // goes down a ragdoll or laid down, within the budget of awake ragdoll bodies.
-  const mass = await page.evaluate(() => {
+  // goes down a ragdoll or laid down, within the budget of awake ragdoll bodies. Every body reacts to it as before
+  // the performance work spread their starts over frames and settled them sooner: each one in view is thrown out and
+  // up by it (screenshots before and after: physicsfx-blast-before.png, physicsfx-blast-after.png).
+  const ring = await page.evaluate(() => {
     const m = window.__match;
     const me = m.slots[window.__cs.slot];
     const f = window.__cs.view.camera.getForwardRay(1).direction;
@@ -2023,11 +2025,44 @@ async function physicsfxFlow(browser) {
     const at = { x: me.move.pos.x + (f.x / len) * 10, y: me.move.pos.y, z: me.move.pos.z + (f.z / len) * 10 };
     // Only bots the view has drawn alive (one that respawned since the last drawn frame has no body to drop yet).
     const victims = m.combatants().filter((c) => c !== me && c.alive && !c.mount && window.__cs.view.avatars.get(c.slot)?.wasAlive);
-    victims.forEach((c, i) => {
+    const spots = victims.map((c, i) => {
       const a = (i / victims.length) * Math.PI * 2;
-      c.move = { ...c.move, pos: { x: at.x + Math.cos(a) * 2, y: at.y + 0.2, z: at.z + Math.sin(a) * 2 }, velY: 0, grounded: false };
-      c.health = 1;
-      c.armor = 0;
+      return { x: at.x + Math.cos(a) * 2, y: at.y + 0.2, z: at.z + Math.sin(a) * 2 };
+    });
+    // Held on the ring until the view draws them there (a blast throws what the view sees near it).
+    clearInterval(window.__massHold);
+    window.__massHold = setInterval(() => victims.forEach((c, i) => c.alive && (c.move = { ...c.move, pos: { ...spots[i] }, velY: 0, grounded: true })), 5);
+    window.__massVictims = victims;
+    window.__massAt = at;
+    return { at, slots: victims.map((c) => c.slot), spots };
+  });
+  await page
+    .waitForFunction(({ slots, spots }) => slots.every((s, i) => { const a = window.__cs.view.avatars.get(s); return !!a && Math.hypot(a.root.position.x - spots[i].x, a.root.position.z - spots[i].z) < 0.3; }), ring, { timeout: T(15000) })
+    .catch(() => {});
+  await page.screenshot({ path: `${ARTIFACTS}/physicsfx-blast-before.png` });
+  const mass = await page.evaluate(() => {
+    const m = window.__match;
+    const v = window.__cs.view;
+    const at = window.__massAt;
+    const victims = window.__massVictims;
+    clearInterval(window.__massHold);
+    // Where each body's hips are as the blast goes off, and how high they get as it flies (sampled every frame).
+    const pelvis = (s) => {
+      const a = v.avatars.get(s) ?? v.corpses.find((c) => c.slot === s)?.a;
+      const j = a?.anim?.ch?.joints.get('pelvis');
+      if (!j) return null;
+      j.computeWorldMatrix(true);
+      const p = j.getAbsolutePosition();
+      return { x: p.x, y: p.y, z: p.z };
+    };
+    window.__massTrack = new Map(victims.map((c) => [c.slot, { from: pelvis(c.slot), top: -Infinity, to: null }]));
+    window.__massTrackObs = v.scene.onAfterRenderObservable.add(() => {
+      for (const [s, t] of window.__massTrack) {
+        const p = pelvis(s);
+        if (!p) continue;
+        t.top = Math.max(t.top, p.y);
+        t.to = p;
+      }
     });
     window.__massSlots = victims.map((c) => c.slot);
     m.pendingEvents.push({ e: 'explode', s: -1, p: [at.x, at.y + 0.5, at.z], r: 6 });
@@ -2049,9 +2084,27 @@ async function physicsfxFlow(browser) {
   }, null, { timeout: T(10000), polling: 50 }).then(() => true, () => false);
   await frames(page, 10);
   const massStats = await page.evaluate(() => window.__cs.view.ragdollStats());
+  // Every body in view thrown by the blast: its hips carried out from the blast's centre and up (a body that only
+  // dropped where it stood, or was laid down without its flight, moves neither).
+  const flung = await page.evaluate(() => {
+    const v = window.__cs.view;
+    v.scene.onAfterRenderObservable.remove(window.__massTrackObs);
+    const at = window.__massAt;
+    const out = [];
+    for (const [s, t] of window.__massTrack) {
+      const body = v.corpses.find((c) => c.slot === s)?.a.ragdoll ?? v.avatars.get(s)?.ragdoll;
+      if (!t.from || !t.to) continue;
+      const outward = Math.hypot(t.to.x - at.x, t.to.z - at.z) - Math.hypot(t.from.x - at.x, t.from.z - at.z);
+      out.push({ s, tier: body?.tier ?? 'none', outward: +outward.toFixed(2), rose: +(t.top - t.from.y).toFixed(2) });
+    }
+    return out;
+  });
+  await page.screenshot({ path: `${ARTIFACTS}/physicsfx-blast-after.png` });
   await page.evaluate(() => { const m = window.__match; for (const s of window.__massSlots) if (m.slots[s]) m.slots[s].respawnTick = m.tick; });
   const notDown = down ? [] : await page.evaluate(() => window.__massSlots.filter((s) => !window.__massDown.has(s)).map((s) => { const a = window.__cs.view.avatars.get(s); const b = window.__match.slots[s]; return { s, avatar: !!a, anim: !!a?.anim, fall: a?.fall ?? null, alive: b?.alive }; }));
   check(mass > 0 && down && massStats.awakeBodies <= 300, `a mass casualty (${mass} killed by one blast) goes down without stalling: ${(Date.now() - t0) / 1000} s, ${JSON.stringify(massStats)}${notDown.length ? ` not down: ${JSON.stringify(notDown)}` : ''}`);
+  const still = flung.filter((b) => b.tier === 'posed' || b.outward < 1 || b.rose < 0.3);
+  check(flung.length >= mass - 1 && still.length === 0, `every body the blast killed in view is thrown out and up by it (${flung.length} tracked; ${still.length ? `not thrown: ${JSON.stringify(still)}` : `out ${Math.min(...flung.map((b) => b.outward))}-${Math.max(...flung.map((b) => b.outward))} m, up ${Math.min(...flung.map((b) => b.rose))}-${Math.max(...flung.map((b) => b.rose))} m`})`);
   // Debris chunks are real bodies: they land and rest on the ground (once the effects world is up).
   await page.waitForFunction(() => !!window.__cs.view.physics, null, { timeout: T(3000) }).catch(() => {});
   // Only this burst's chunks are checked: the mass blast above can set off more (a vehicle in the blast burns and blows
