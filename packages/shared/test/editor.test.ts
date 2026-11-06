@@ -368,6 +368,8 @@ describe('Replace all <prop> with <prop or species>', () => {
     expect([a!.model, a!.scale, a!.yaw, a!.solid]).toEqual(['prop.ge_hedge_wall', 1.12, -3.1414, true]);
     // Past π it comes back round (1.571 + π/2 − 2π above; 3 + π/2 − 2π here).
     expect(b!.yaw).toBe(-1.7124);
-    expect(replacePropsCommand(d, 'prop.hedge_large', 'prop.ge_hedge_wall', 'height', 0).kind === 'updateEntities' && (replacePropsCommand(d, 'prop.hedge_large', 'prop.ge_hedge_wall').after[0] as PropEntity).yaw).toBe(1.571);
+    // No turn asked: each keeps its facing.
+    const kept = replacePropsCommand(d, 'prop.hedge_large', 'prop.ge_hedge_wall', 'height', 0);
+    expect(kept.kind === 'updateEntities' && (kept.after[0] as PropEntity).yaw).toBe(1.571);
   });
 });
