@@ -53,6 +53,7 @@ jobs:
       unit_jobs: ${{ steps.plan.outputs.unit_jobs }}
       timings_run: ${{ steps.timings.outputs.run_id }}
       perf: ${{ steps.plan.outputs.perf }}
+      bots: ${{ steps.plan.outputs.bots }}
       docs_only: ${{ steps.plan.outputs.docs_only }}
     steps:
       - uses: actions/checkout@v4
@@ -277,6 +278,115 @@ jobs:
       - if: env.UNIT == 'all'
         run: pnpm bench 32 30
 
+  # The bot scorecard's quick check (docs/BOTS.md, "Scorecard"): a few maps, one seed, short matches, held to
+  # packages/server/src/tools/bot-limits.json's checkLimits. Only when the change touches the bots, navigation, the sim
+  # or its modes (the plan's bots output: e2e/flowMap.mjs BOT_PATHS). A change that makes bots worse fails here.
+  bots:
+    needs: plan
+    if: needs.plan.outputs.skip != 'true' && needs.plan.outputs.bots == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      # No models or raw assets: the sim and the maps only.
+      - uses: actions/checkout@v4
+        with:
+          filter: blob:none
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /*
+            !/packages/client/public/
+            !/assets-src/
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: tools/ci/stop-on-failure.sh pnpm bot-report --check --summary="$GITHUB_STEP_SUMMARY"
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+  # The full bot scorecard, nightly and from Run workflow: every scorecard mode on the maps that list it, two seeds of
+  # three minutes, in shards (pnpm bot-report --suite=all --shard=k/n); the bots-scorecard job then holds the lot to
+  # bot-limits.json's limits and keeps the report and every map's navigation picture (traps, islands, drop links,
+  # where searches failed) as artifacts.
+  bots-nightly:
+    needs: plan
+    if: needs.plan.outputs.skip != 'true' && (github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.full))
+    runs-on: ubuntu-24.04
+    timeout-minutes: 75
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
+    name: bots nightly (${{ matrix.shard }}/14)
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          filter: blob:none
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /*
+            !/packages/client/public/
+            !/assets-src/
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: |
+          mkdir -p bots-out
+          tools/ci/stop-on-failure.sh pnpm bot-report --suite=all --seeds=1,2 --seconds=180 --shard=${{ matrix.shard }}/14 --quiet --json="$PWD/bots-out/shard-${{ matrix.shard }}.json"
+        env:
+          GH_TOKEN: ${{ github.token }}
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bots-shard-${{ matrix.shard }}
+          path: bots-out
+          retention-days: 3
+          if-no-files-found: ignore
+
+  bots-scorecard:
+    needs: [plan, bots-nightly]
+    if: always() && needs.bots-nightly.result != 'skipped' && needs.bots-nightly.result != 'cancelled'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          filter: blob:none
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /*
+            !/packages/client/public/
+            !/assets-src/
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: bots-shard-*
+          path: bots-report/matches
+          merge-multiple: true
+      - name: Scorecard (held to the limits), nav pictures
+        run: |
+          files=$(printf '%s+' "$PWD"/bots-report/matches/*.json)
+          status=0
+          pnpm bot-report --judge="${files%+}" --pictures="$PWD/bots-report/nav-pictures" --summary="$PWD/bots-report/scorecard.md" || status=$?
+          cat bots-report/scorecard.md >> "$GITHUB_STEP_SUMMARY" || true
+          exit "$status"
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bots-report
+          path: bots-report
+          retention-days: 30
+
   # Unit tests, side by side (the plan's unit_jobs: vitest shards of the packages the change touches, and the
   # headless check of every map, packages/shared/test/allMaps*.test.ts, in jobs of its own).
   unit:
@@ -487,7 +597,7 @@ jobs:
   # a check branch: then that run's package, the very bytes it tested). Signs it with a Sigstore build-provenance
   # attestation (keyless: GitHub's OIDC identity of this workflow; no key to manage), which the box verifies.
   release:
-    needs: [plan, site, check, unit, build, e2e, perf]
+    needs: [plan, site, check, unit, build, e2e, perf, bots]
     if: >-
       always() && github.event_name == 'push' && needs.plan.result == 'success' &&
       (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v') || startsWith(github.ref, 'refs/heads/check/')) &&

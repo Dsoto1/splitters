@@ -2,7 +2,7 @@ import type { LookHitbox } from '../sim/hitbox.ts';
 import { angleDelta, clamp, createRng, distance, horizontalDistance, lookAngles, type Vec3, hypot } from '../math.ts';
 import type { NavWorld } from '../nav/index.ts';
 import { LIFT_FLAG, PLAYER, STANCES, TICK_DT, TICK_RATE, type Stance } from '../sim/constants.ts';
-import { PICKUP_RADIUS, type ItemDefinition, type ItemEffect } from '../sim/items.ts';
+import type { ItemDefinition, ItemEffect } from '../sim/items.ts';
 import { BUTTON_ALT, BUTTON_CROUCH, BUTTON_FIRE, BUTTON_MELEE, BUTTON_JUMP, BUTTON_PRONE, BUTTON_RELOAD, BUTTON_SPRINT, BUTTON_THROW, BUTTON_USE, BUTTON_ZOOM, type PlayerInput } from '../sim/movement.ts';
 import { THROWABLE_DEFS, getWeapon, weaponCode, type AltFire, type ThrowableKind, type WeaponDefinition } from '../sim/weapons.ts';
 import type { PhysicsWorld } from '../sim/physics.ts';
@@ -287,6 +287,12 @@ const ANTI_VEHICLE_BONUS = 1.2;
 /** Stepping out of a vehicle's path: committed for this long (s); sprinting when it is this close (s away). */
 const DODGE_SECONDS = 0.8;
 const DODGE_SPRINT_ETA = 1.2;
+/**
+ * How far (m) past the navmesh's edge a bot steps straight for a goal no route reaches (a pickup on a crate, a flag
+ * on a prop): the navmesh keeps 0.6 m clear of things a body walks up to (its radius 0.4 + 0.2), and pickups and
+ * flags are picked up from about a metre away.
+ */
+const STEP_OFF = 2.2;
 /** A path corner counts as reached this close (m), or once passed and within PASS_RADIUS. */
 const CORNER_RADIUS = 0.45;
 const PASS_RADIUS = 1.4;
@@ -520,6 +526,9 @@ export class BotBrain {
   /** Going to press a button that opens a door in the way. */
   private pressPlan: { stand: Vec3; face: Vec3; until: number; door: Aabb } | null = null;
   private pressedAt = -Infinity;
+  /** The door the last press was for, and doors whose buttons didn't open them for us (left alone a while). */
+  private pressedDoor: Aabb | null = null;
+  private readonly noPress: { door: Aabb; until: number }[] = [];
   /** Waiting for or riding a lift: stand still this tick. */
   private holdStill = false;
   /** Standing where a zipline on the route is grabbed: press E this tick. */
@@ -1583,13 +1592,16 @@ export class BotBrain {
     }
     const plan = this.pressPlan;
     if (plan) doing = 'press';
-    if (plan && horizontalDistance(me.pos, plan.stand) < 0.8 && Math.abs(me.pos.y - plan.stand.y) < 1) {
+    // (Within reach of the button: players press from up to 2.2 m, eye to face. Only at the one spot in front of it, a
+    // few bots at one button kept each other off it: Primeval Park's fence power, 38 s.)
+    if (plan && ((horizontalDistance(me.pos, plan.stand) < 0.8 && Math.abs(me.pos.y - plan.stand.y) < 1) || (distance({ x: me.pos.x, y: me.pos.y + PLAYER.eyeHeight, z: me.pos.z }, plan.face) < 1.9 && Math.abs(me.pos.y - plan.stand.y) < 1))) {
       forward = 0;
       right = 0;
       const a = lookAngles({ x: me.pos.x, y: me.pos.y + PLAYER.eyeHeight, z: me.pos.z }, plan.face);
       this.turnToward(a.yaw, a.pitch);
       if (Math.abs(angleDelta(this.yaw, a.yaw)) < 0.3 && Math.abs(this.pitch - a.pitch) < 0.3) {
         pressNow = true;
+        this.pressedDoor = plan.door;
         this.pressPlan = null;
         this.pressedAt = tick;
         this.path = [];
@@ -2527,7 +2539,7 @@ export class BotBrain {
   private collectable(view: BotWorldView, pos: Vec3): boolean {
     const si = view.nav.standIn(view.self.pos, pos);
     // (Off the navmesh: no telling from here; the route's own checks see to it.)
-    return !si || si.exact || (horizontalDistance(si.pos, pos) < PICKUP_RADIUS - 0.1 && Math.abs(si.pos.y - pos.y) < 1.4);
+    return !si || si.exact || (horizontalDistance(si.pos, pos) < STEP_OFF && Math.abs(si.pos.y - pos.y) < 1.4);
   }
 
   private bestPickup(view: BotWorldView, only?: 'health' | 'weapon', within = Infinity, weapons?: (def: WeaponDefinition) => boolean): Vec3 | null {
@@ -2916,6 +2928,14 @@ export class BotBrain {
       const door = this.pathBlocked(view);
       if (door) {
         this.path = [];
+        // Pressed its button a while ago and it's still shut: that button doesn't open it for us (a rule that waits on
+        // something else, a gate that shut again before we got there). Not again for a good while.
+        const pd = this.pressedDoor;
+        if (pd && sameBox(pd, door) && view.tick - this.pressedAt > TICK_RATE * 3) {
+          this.noPress.push({ door: pd, until: view.tick + TICK_RATE * 30 });
+          if (this.noPress.length > 4) this.noPress.shift();
+          this.pressedDoor = null;
+        }
         if (!this.pressPlan && view.tick - this.pressedAt > TICK_RATE * 3) this.planPress(view, door);
         // No button opens it for us: another way round, keeping out of what's shut to us (Fernwood Moon's Garrison
         // spawned inside its bunker, where the shortest way out is the blast door only the attackers can open: they
@@ -2925,6 +2945,17 @@ export class BotBrain {
           if (round) {
             this.path = round;
             if (this.pathBlocked(view)) this.path = [];
+          }
+          // No way round either (a gate a button opens now and then, on cooldown): as near the goal as it gets this side
+          // of what's shut, to wait there (keeping watch) for it to open or a button to be ready, asking again every
+          // second. Before, it stood at the button, pressing a button that did nothing, every 3 s.
+          if (!this.path.length) {
+            const near = view.nav.findPath(me.pos, goal, view.shut, true);
+            const end = near?.[near.length - 1];
+            if (near && end && horizontalDistance(end, goal) > 1) {
+              this.path = near;
+              this.standIn = end;
+            }
           }
         }
       }
@@ -2951,7 +2982,12 @@ export class BotBrain {
     const corner = this.path[this.pathIndex];
     if (!corner) {
       // As near a goal no route reaches as it gets (the stand-in): the callers keep watch there, or go for another goal.
-      if (this.standIn) {
+      // Unless it's a step off the navmesh away and in the clear (a pickup on a crate, a flag on a prop: the navmesh
+      // keeps clear of their sides, a body needn't): the last bit straight there.
+      const si = this.standIn;
+      if (si) {
+        const dy = goal.y - me.pos.y;
+        if (horizontalDistance(me.pos, goal) > 0.5 && horizontalDistance(si, goal) < STEP_OFF && dy < 1.4 && dy > -2 && view.physics.lineOfSight({ x: me.pos.x, y: me.pos.y + 1.2, z: me.pos.z }, { x: goal.x, y: Math.max(goal.y + 0.3, me.pos.y + 1.2), z: goal.z })) return Math.atan2(goal.x - me.pos.x, goal.z - me.pos.z);
         this.pathMiss = true;
         return null;
       }
@@ -3093,6 +3129,8 @@ export class BotBrain {
   /** The path is shut by a door some button opens: go and press it (if it can be reached). */
   private planPress(view: BotWorldView, door: Aabb): void {
     const me = view.self.pos;
+    for (let i = this.noPress.length - 1; i >= 0; i--) if (this.noPress[i]!.until <= view.tick) this.noPress.splice(i, 1);
+    if (this.noPress.some((n) => sameBox(n.door, door))) return;
     const options = (view.doorButtons ?? []).filter((d) => sameBox(d.door, door)).sort((a, b) => horizontalDistance(me, a.stand) - horizontalDistance(me, b.stand));
     for (const o of options) {
       const path = view.nav.findPath(me, o.stand);

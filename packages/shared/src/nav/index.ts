@@ -30,6 +30,8 @@ export function initNavigation(): Promise<void> {
 
 const CELL = 0.2;
 const CELL_HEIGHT = 0.05;
+/** The navmesh's clearance from walls and edges, in cells: the body's radius and 0.2 m (corner-cutting bots don't snag door frames). */
+export const NAV_RADIUS_CELLS = Number((globalThis as { process?: { env: Record<string, string | undefined> } }).process?.env.NAV_RADIUS_CELLS ?? Math.round((PLAYER.radius + 0.2) / CELL));
 /** Spacing of NavWorld.places(). */
 const PLACE_CELL = 7;
 /**
@@ -115,7 +117,9 @@ export class NavWorld {
       // Round, not floor: 0.3 / 0.05 is 5.999… in floating point, which would reject 0.25 m steps at some heights.
       walkableClimb: Math.round(PLAYER.maxStepHeight / CELL_HEIGHT),
       // Extra clearance beyond the capsule radius so corner-cutting bots do not snag door frames.
-      walkableRadius: Math.ceil((PLAYER.radius + 0.2) / CELL),
+      // 0.6 m, three cells. (Math.ceil gave four, 0.8 m: (0.4 + 0.2) / 0.2 is 3.0000000000000004 in floating point.
+      // That closed doorways and stairwells under 1.6 m wide to bots, and left a metre-wide strip by every wall.)
+      walkableRadius: NAV_RADIUS_CELLS,
       maxEdgeLen: 12 / CELL,
       maxSimplificationError: 1.3,
       minRegionArea: 8,
@@ -232,14 +236,15 @@ export class NavWorld {
       return null;
     }
     const failKey = `${s.nearestRef}:${e.nearestRef}:${shut}`;
-    if (this.noRoute.has(failKey)) return null;
+    if (!partial && this.noRoute.has(failKey)) return null;
     const r = this.query.findPath(s.nearestRef, e.nearestRef, start, end, shut ? { maxPathPolys: MAX_PATH_POLYS, filter: this.filterFor(shut) } : { maxPathPolys: MAX_PATH_POLYS });
     const n = r.polys.size;
     // A partial path (destination unreachable, or the search ran out of nodes) ends short of the goal.
     const whole = r.success && n > 0 && r.polys.get(n - 1) === e.nearestRef;
     if (simProfile.on) simProfile.count(whole ? 'navSearch' : 'navSearchFail');
-    if (!whole && partial && !shut && r.success && n > 1) {
-      // Routable (above), so the search ran out of nodes: the corridor as far as it got.
+    if (!whole && partial && r.success && n > 1) {
+      // The corridor as far as it got: routable (above) and no doors kept out, the search ran out of nodes; with doors
+      // kept out (`shut`), the way to as near the goal as it gets this side of them.
       const c = this.query.closestPointOnPoly(r.polys.get(n - 1), end);
       const sp = c.success ? this.query.findStraightPath(start, c.closestPoint, r.polys, { maxStraightPathPoints: MAX_CORNERS }) : null;
       r.polys.destroy();

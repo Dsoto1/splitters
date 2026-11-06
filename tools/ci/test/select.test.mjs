@@ -58,6 +58,11 @@ describe('change-based selection', () => {
     expect(s.perf).toBe(true);
   });
 
+  it('the bots, navigation, the sim and its modes, and the scorecard itself get the bot scorecard check; nothing else does', () => {
+    for (const p of ['packages/shared/src/bots/brain.ts', 'packages/shared/src/nav/audit.ts', 'packages/shared/src/sim/match.ts', 'packages/shared/src/sim/modes/ctfBots.ts', 'packages/server/src/tools/bot-report.ts', 'packages/server/src/tools/bot-limits.json', 'package.json']) expect(sel(p).bots, p).toBe(true);
+    for (const p of ['docs/BOTS.md', 'packages/client/src/game/view.ts', 'packages/client/src/editor/palette.ts', 'packages/server/src/tools/bench.ts', 'content/props.json', 'maps/diamond_park.json']) expect(sel(p).bots, p).toBe(false);
+  });
+
   it('the match renderer runs every flow that plays a match, and the client unit tests', () => {
     const s = sel('packages/client/src/game/view.ts');
     expect(s.full).toBe(false);

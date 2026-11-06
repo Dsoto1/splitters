@@ -24,6 +24,8 @@ import { knownNavIssue } from './auditKnown.ts';
  *   rescue zone) some team's spawn points can't route to, a pickup no spawn point routes to.
  */
 
+/** How far off the navmesh a bot steps straight for a goal by it (brain.ts STEP_OFF): what counts as reached. */
+const STEP_OFF_REACH = 2.2;
 /** Spacing of the samples along open polygon edges (m). */
 const FALL_SPACING = 1.5;
 /** How far out from the navmesh's edge a body is checked for a drop (m): the navmesh keeps clear of edges, and a body falls once its middle is past one. */
@@ -379,12 +381,17 @@ function mainOf(g: NavGraph, comps: { of: Int32Array; count: number }, spawns: r
       if (e) e.n++;
       else byComp.set(c, { poly: s, n: 1 });
     }
+    // Both ways: the spawn points that get to a component, and those it gets to. (One way only, a team's base that
+    // bots jump-pad up into and can't route down from won over the field: Frost Basin.)
+    const back = reverseOf(edges, g.count);
     const hit = new Uint8Array(comps.count);
     for (const { poly, n } of [...byComp.values()].slice(0, 64)) {
-      const seen = reach(edges, g.count, [poly]);
-      hit.fill(0);
-      for (let i = 0; i < g.count; i++) if (seen[i]) hit[comps.of[i]!] = 1;
-      for (let c = 0; c < comps.count; c++) if (hit[c]) score[c]! += n;
+      for (const e of [edges, back]) {
+        const seen = reach(e, g.count, [poly]);
+        hit.fill(0);
+        for (let i = 0; i < g.count; i++) if (seen[i]) hit[comps.of[i]!] = 1;
+        for (let c = 0; c < comps.count; c++) if (hit[c]) score[c]! += n;
+      }
     }
   }
   let best = -1;
@@ -629,24 +636,38 @@ export function auditNavigation(map: MapDocument, nav: NavWorld, physics: Physic
     const s = severity('nav.disconnected', null, e.id);
     issues.push({ severity: s.severity, code: 'nav.disconnected', message: `spawn ${e.id} is cut off: a bot spawning there can't walk to the rest of the map${s.note}`, targetId: e.id });
   }
-  // Objectives every team's spawns must route to; pickups some spawn routes to.
-  const teamReach = new Map<string, Uint8Array>();
+  // Objectives every team's spawns must route to; pickups some spawn routes to. Reached as bots reach them: a route to
+  // the place itself, or to a place within a step off the navmesh of it (a pickup on a crate, a flag on a prop: the
+  // bots' stand-in and last step, NavWorld.standIn, brain.ts STEP_OFF).
   const teams = [...spawns.byTeam.keys()].filter((t) => t !== '');
-  for (const t of teams) teamReach.set(t, reach(routes, n, [...spawns.byTeam.get(t)!, ...(spawns.byTeam.get('') ?? [])]));
-  const anyReach = reach(routes, n, spawns.all);
+  const spawnAt = (team: string | null): Vec3 | null => {
+    for (const e of map.entities) {
+      if (e.kind !== 'spawn' || (team !== null && ((e as { faction?: string | null }).faction ?? '') !== team)) continue;
+      const i = spawns.at.get(e.id);
+      if (i !== undefined && toMain[i]) return at3(i);
+    }
+    return null;
+  };
+  const reachedBy = (from: Vec3 | null, goal: Vec3): boolean => {
+    if (!from) return false;
+    const si = nav.standIn(from, goal);
+    return !!si && (si.exact || (hypot(si.pos.x - goal.x, si.pos.z - goal.z) < STEP_OFF_REACH && Math.abs(si.pos.y - goal.y) < 1.4));
+  };
+  const anyFrom = spawnAt(null);
   for (const e of map.entities) {
     const what = e.kind === 'pickup' ? 'pickup' : OBJECTIVES[e.kind];
     if (!what) continue;
     const i = polyOf.get(e.id);
+    const goal = { x: e.position[0], y: e.position[1], z: e.position[2] };
     let problem = '';
-    if (i === undefined) problem = 'is not on or by walkable ground';
+    if (i === undefined && !reachedBy(anyFrom, goal)) problem = 'is not on or by walkable ground';
     else if (e.kind === 'pickup' || !teams.length) {
-      if (!anyReach[i]) problem = 'cannot be reached on foot from any spawn point';
+      if (!reachedBy(anyFrom, goal)) problem = 'cannot be reached on foot from any spawn point';
     } else {
-      const without = teams.filter((t) => !teamReach.get(t)![i]);
+      const without = teams.filter((t) => !reachedBy(spawnAt(t) ?? anyFrom, goal));
       if (without.length) problem = `cannot be reached on foot from ${without.join(' and ')}'s spawn points`;
     }
-    if (!problem && i !== undefined && !toMain[i]) problem = "is on a patch bots can't walk out of";
+    if (!problem && i !== undefined && !toMain[i] && !reachedBy(anyFrom, goal)) problem = "is on a patch bots can't walk out of";
     if (!problem) continue;
     const s = severity(`nav.${e.kind}_unreachable`, null, e.id);
     issues.push({ severity: s.severity, code: `nav.${e.kind}_unreachable`, message: `${what} ${e.id} ${problem}${s.note}`, targetId: e.id });
