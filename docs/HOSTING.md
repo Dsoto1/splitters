@@ -852,10 +852,21 @@ the panel its settings). The line beside Apply says which will happen
 ("score 60: the match restarts now", "+2 bots now; score 60 from the next
 match"), and the Rules card what is saved ("Saved for the next match: …").
 
-**To win** shows the score and time suggested for the players and bots being
-set (Match setup's curve, `suggestedLimits`; the kill rates it is fitted to:
-docs/BOTS.md, "Score and time"), with **Use suggested** when they differ; they
-still apply with a new match.
+**To win follows the match's size** (owner, 2026-11-06). In Match setup the
+score and time are the ones suggested for the players and bots, and they change
+with every size change until the host sets them (then they stay, marked
+**Custom**, with **Back to suggested**). A saved setup keeps a score or time set
+by hand; the old defaults (40 points, 10 minutes) follow the size. The curve
+(`suggestedLimits`; the kill rates it is fitted to, before and after Bot AI
+Phase A: docs/BOTS.md, "Score and time"): Team Deathmatch a point per player on
+a team per minute of the time limit, which is 10 minutes up to 6 a side, 15 up
+to 16 and 20 above (4v4 40 points in 10 minutes, 8v8 120 in 15, 24v24 500 in
+20); Deathmatch 12 × √players kills in 10 minutes; Capture the Flag 3 captures
+and King of the Hill 12 hill seconds a minute, with the time by team size; the
+other modes their own. In the Host tab, **To win** shows the suggestion for the
+players and bots being set, with **Use suggested** when they differ; they still
+apply with a new match. A map change to another mode takes that mode's
+suggestion.
 
 | Who | Where the match runs | How a command gets there |
 | --- | --- | --- |

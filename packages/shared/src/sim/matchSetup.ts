@@ -530,9 +530,10 @@ export const teamMinutes = (perTeam: number): number => (perTeam <= 6 ? 10 : per
 
 /**
  * Team Deathmatch: points a team's score limit asks of each of its players per minute of the time limit. Bots
- * score about 1.2 (the leading team's points per player per minute, the middle of 5–7 maps at each size from 1v1
- * to 24v24: docs/BOTS.md, "Score and time"), so the score falls due near the time limit: on the middle map at
- * 70–100% of it, on a crowded little arena sooner, and a sprawling map runs out of time first.
+ * score about 1.3 (the leading team's points per player per minute, the middle of 5–7 maps at each size from 1v1
+ * to 24v24: 0.9 to 1.5, and 1.9 at 6v6 on the small maps made for it; Bot AI Phase A's bots the same within a seed's
+ * spread: docs/BOTS.md, "Score and time"), so the score falls due near the time limit: on the middle map at 70–115%
+ * of it, on a crowded little arena sooner, and a sprawling map runs out of time first.
  */
 export const TDM_POINTS_PER_PLAYER_MINUTE = 1;
 
