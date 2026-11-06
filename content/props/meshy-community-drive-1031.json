@@ -1,10 +1,10 @@
 {
   "pack": {
-    "title": "Tile Trigger originals (made with Meshy): barriers, a smithy bench, a tiled well, ruin stairs and two parked vehicles",
-    "creator": "Meshy, owned (generated on the owner's Meshy subscription)",
-    "url": "https://www.meshy.ai",
-    "license": "Owned",
-    "licenseFile": "assets-src/meshy-owned/License.txt",
+    "title": "Meshy community models (barriers, a smithy bench, a tiled well, ruin stairs and two parked vehicles, textured GLB downloads of 2026-10-30/31)",
+    "creator": "Meshy community, CC0 (per owner)",
+    "url": "https://www.meshy.ai (community page URL pending from the owner)",
+    "license": "CC0-1.0",
+    "licenseFile": "assets-src/meshy-community/License.txt",
     "retrieved": "2026-10-31",
     "download": "owned_drive_1031",
     "meshy": true,
@@ -24,7 +24,7 @@
       "triangles": 9000,
       "maxError": 0.03,
       "source": {
-        "model": "A low polygon ancient stair (owner's Meshy)",
+        "model": "A low polygon ancient stair",
         "date": "2026-10-31"
       },
       "budget": "hero",
@@ -40,7 +40,7 @@
       "triangles": 5500,
       "maxError": 0.03,
       "source": {
-        "model": "Blacksmith's Workbench (owner's Meshy)",
+        "model": "Blacksmith's Workbench",
         "date": "2026-10-31"
       }
     },
@@ -54,7 +54,7 @@
       "triangles": 3000,
       "maxError": 0.05,
       "source": {
-        "model": "Concrete Barrier with hazard stripes (owner's Meshy)",
+        "model": "Concrete Barrier with hazard stripes",
         "date": "2026-10-31"
       }
     },
@@ -68,7 +68,7 @@
       "triangles": 3000,
       "maxError": 0.05,
       "source": {
-        "model": "Construction Barrier (owner's Meshy)",
+        "model": "Construction Barrier",
         "date": "2026-10-31"
       }
     },
@@ -82,7 +82,7 @@
       "triangles": 3000,
       "maxError": 0.05,
       "source": {
-        "model": "Hazard Barrier (owner's Meshy)",
+        "model": "Hazard Barrier",
         "date": "2026-10-31"
       }
     },
@@ -96,7 +96,7 @@
       "triangles": 5500,
       "maxError": 0.03,
       "source": {
-        "model": "Red Tile Roof Well (owner's Meshy)",
+        "model": "Red Tile Roof Well",
         "date": "2026-10-31"
       }
     },
@@ -110,7 +110,7 @@
       "triangles": 16000,
       "maxError": 0.03,
       "source": {
-        "model": "Untitled sci-fi buggy (owner's Meshy)",
+        "model": "Untitled sci-fi buggy",
         "date": "2026-10-31"
       },
       "budget": "hero",
@@ -127,7 +127,7 @@
       "triangles": 16000,
       "maxError": 0.03,
       "source": {
-        "model": "Untitled 8x8 armoured truck (owner's Meshy)",
+        "model": "Untitled 8x8 armoured truck",
         "date": "2026-10-31"
       },
       "budget": "hero",

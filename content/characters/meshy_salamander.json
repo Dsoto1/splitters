@@ -10,10 +10,13 @@
   "bio": "Lord of a sunken fortress, armoured in rust and spite. Expects the arena to kneel.",
   "body": "male",
   "size": "large",
-  "notes": "Cloth hangs below its hips.",
+  "notes": "Cloth hangs below its hips. Licence (the owner's rule, 2026-11-06: models from the owner's Drive are Meshy Community CC0 unless the owner says they made them): recorded as Meshy Community, CC0 per the owner; it was recorded as owned before, with no record of the owner saying they made it (provenance audit, HANDOFF.md \"Intake of 2026-11-06\"). Post URL pending; if the owner made it, it goes back to owned.",
   "source": {
-    "license": "owned",
-    "author": "the owner, on their Meshy subscription",
+    "license": "CC0",
+    "author": "Meshy Community (CC0 per the owner)",
+    "community": {
+      "model": "Salamander Warlord"
+    },
     "date": "2026-04-21",
     "url": null,
     "file": "^Meshy_AI_Salamander_Warlord_.*_texture\\.fbx$"

@@ -42,9 +42,11 @@
 // `tint: { color, warm }` recolours the same way without the emissive map: a painted emblem in another colour
 // (the medical bag's red crosses, green by the owner's call, 2026-11-03).
 //
-// Packs with `glb: true` too (the owner's own Meshy generations, licence Owned) are Meshy's textured GLB
-// downloads instead: each entry names its file in `glb`, found directly in the downloads dir or one folder
-// down (so the owner's download folders can sit side by side in it), and is read the same way.
+// Packs with `glb: true` too (Meshy community downloads from the owner's Drive, and the owner's own models) are
+// Meshy's textured GLB downloads instead: each entry names its file in `glb`, found directly in the downloads dir or
+// one folder down (so the owner's download folders can sit side by side in it), and is read the same way.
+// `url` on an entry: the model's own community post, recorded in the lock and the provenance ledger instead of its
+// pack's page (CC0 needs no credit; the post is the licence's proof).
 import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
@@ -448,7 +450,7 @@ function record(out, entry, pack, made, extra = {}) {
     lodTriangles = was.lodTriangles ?? 0;
     normalMap = !!was.normalMap;
   }
-  lock.files.push({ file, source: entry.pack, ...(entry.budget ? { budget: entry.budget } : {}), src: entry.label ?? entry.file ?? entry.glb, ...extra, triangles, ...(lodTriangles ? { lodTriangles } : {}), ...(normalMap ? { normalMap } : {}), bytes: glb.byteLength, sha256: sha(glb) });
+  lock.files.push({ file, source: entry.pack, ...(entry.budget ? { budget: entry.budget } : {}), src: entry.label ?? entry.file ?? entry.glb, ...(entry.url ? { url: entry.url } : {}), ...extra, triangles, ...(lodTriangles ? { lodTriangles } : {}), ...(normalMap ? { normalMap } : {}), bytes: glb.byteLength, sha256: sha(glb) });
   console.log(`${made ? 'built' : 'kept '} ${file.padEnd(32)} ${String(triangles).padStart(5)} tris ${String(glb.byteLength).padStart(7)} B`);
 }
 

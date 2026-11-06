@@ -9,10 +9,13 @@
   "nameTheme": "townsfolk",
   "bio": "Funk on the stereo, flares on the floor, and a sidearm that never misses a beat.",
   "body": "female",
-  "notes": "Drive batch of 2026-11-01 evening, second drop (\"stylized vintage pro\", rigged): the owner's own model (owned). A rigged Meshy download (\"All Animations\": Mixamo joint names, read as Meshy's; its finger joints and two clips are not used: the hands are fitted by hands.mjs). Its extra shin joints ride the calves. Name from the owner.",
+  "notes": "Drive batch of 2026-11-01 evening, second drop (\"stylized vintage pro\", rigged): the owner's own model (owned). A rigged Meshy download (\"All Animations\": Mixamo joint names, read as Meshy's; its finger joints and two clips are not used: the hands are fitted by hands.mjs). Its extra shin joints ride the calves. Name from the owner. Licence (the owner's rule, 2026-11-06: models from the owner's Drive are Meshy Community CC0 unless the owner says they made them): recorded as Meshy Community, CC0 per the owner; it was recorded as owned before, with no record of the owner saying they made it (provenance audit, HANDOFF.md \"Intake of 2026-11-06\"). Post URL pending; if the owner made it, it goes back to owned.",
   "source": {
-    "license": "owned",
-    "author": "The owner (Meshy, owner's account)",
+    "license": "CC0",
+    "author": "Meshy Community (CC0 per the owner)",
+    "community": {
+      "model": "stylized vintage pro"
+    },
     "date": "2026-11-01",
     "url": null,
     "file": "^Meshy_AI_stylized_vintage_pro__All_Animations\\.glb$"

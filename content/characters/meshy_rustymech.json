@@ -9,10 +9,13 @@
   "nameTheme": "robot",
   "bio": "A white war machine gone to rust. Still runs. Still angry about it.",
   "body": "male",
-  "notes": "The owner's own Meshy model, made and rigged in Meshy (Drive folder, 2026-11-01: \"white rusty mech\", the All Animations GLB; its two clips are not used). Its rig names its joints the Mixamo way (mixamorig:Hips ...), read as Meshy's. A white armoured mech, chipped to rust at the edges. Its texture is baked in thousands of small islands (the careful cut stopped at 28.4k triangles, over the 20k budget), so it is built with `surface: rebake`: cut in its own bind pose with the seams closed, laid out afresh and painted from the full download, each kept vertex keeping Meshy's skin weights.",
+  "notes": "The owner's own Meshy model, made and rigged in Meshy (Drive folder, 2026-11-01: \"white rusty mech\", the All Animations GLB; its two clips are not used). Its rig names its joints the Mixamo way (mixamorig:Hips ...), read as Meshy's. A white armoured mech, chipped to rust at the edges. Its texture is baked in thousands of small islands (the careful cut stopped at 28.4k triangles, over the 20k budget), so it is built with `surface: rebake`: cut in its own bind pose with the seams closed, laid out afresh and painted from the full download, each kept vertex keeping Meshy's skin weights. Licence (the owner's rule, 2026-11-06: models from the owner's Drive are Meshy Community CC0 unless the owner says they made them): recorded as Meshy Community, CC0 per the owner; it was recorded as owned before, with no record of the owner saying they made it (provenance audit, HANDOFF.md \"Intake of 2026-11-06\"). Post URL pending; if the owner made it, it goes back to owned.",
   "source": {
-    "license": "owned",
-    "author": "The owner (Meshy, owner's account)",
+    "license": "CC0",
+    "author": "Meshy Community (CC0 per the owner)",
+    "community": {
+      "model": "white rusty mech rigg"
+    },
     "date": "2026-11-01",
     "url": null,
     "file": "^Meshy_AI_white_rusty_mech_rigg_All_Animations\\.glb$"

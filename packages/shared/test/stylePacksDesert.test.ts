@@ -70,11 +70,11 @@ describe('Style Pack 09 Desert City (in Sands of Egypt\'s place)', () => {
     expect(manifest.packs['tiletrigger-desert']).toMatchObject({ license: 'Owned', url: 'tools/content/prepare-desert.mjs' });
     const ours = manifest.props.filter((p) => p.id.startsWith('dc_'));
     expect(ours.length).toBeGreaterThanOrEqual(16);
-    // The hero stand-ins are the owner's Meshy models now, under the same ids (maps place them unchanged).
+    // The hero stand-ins are Meshy community models from the owner's Drive now, under the same ids (maps place them unchanged).
     const meshy = ['dc_well', 'dc_market_stall', 'dc_crane'];
-    for (const p of ours) expect(p.pack, p.id).toBe(meshy.includes(p.id) ? 'meshy-owned-landmarks' : 'tiletrigger-desert');
+    for (const p of ours) expect(p.pack, p.id).toBe(meshy.includes(p.id) ? 'meshy-community-landmarks' : 'tiletrigger-desert');
     for (const id of meshy) expect(ours.some((p) => p.id === id), id).toBe(true);
-    expect(manifest.packs['meshy-owned-landmarks']).toMatchObject({ license: 'Owned' });
+    expect(manifest.packs['meshy-community-landmarks']).toMatchObject({ license: 'CC0-1.0' });
     expect(read('assets-src/tiletrigger-desert/License.txt')).toMatch(/no generative AI/);
   });
 

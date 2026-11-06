@@ -1,10 +1,10 @@
 {
   "pack": {
-    "title": "Tile Trigger originals (made with Meshy): barrels, bins and street props",
-    "creator": "Meshy, owned (generated on the owner's Meshy subscription)",
-    "url": "https://www.meshy.ai",
-    "license": "Owned",
-    "licenseFile": "assets-src/meshy-owned/License.txt",
+    "title": "Meshy community models (barrels, bins and street props, textured GLB downloads of 2026-10-29/30)",
+    "creator": "Meshy community, CC0 (per owner)",
+    "url": "https://www.meshy.ai (community page URL pending from the owner)",
+    "license": "CC0-1.0",
+    "licenseFile": "assets-src/meshy-community/License.txt",
     "retrieved": "2026-10-30",
     "download": "owned_props2",
     "meshy": true,
@@ -23,7 +23,7 @@
       "triangles": 4500,
       "maxError": 0.1,
       "source": {
-        "model": "Wooden Barrel (owner's Meshy)",
+        "model": "Wooden Barrel",
         "date": "2026-10-30"
       },
       "breakable": {
@@ -41,7 +41,7 @@
       "triangles": 4500,
       "maxError": 0.1,
       "source": {
-        "model": "Blue Barrel (owner's Meshy)",
+        "model": "Blue Barrel",
         "date": "2026-10-30"
       },
       "breakable": {
@@ -59,7 +59,7 @@
       "triangles": 4500,
       "maxError": 0.1,
       "source": {
-        "model": "Yellow Hazard Barrel (owner's Meshy)",
+        "model": "Yellow Hazard Barrel",
         "date": "2026-10-30"
       },
       "breakable": {
@@ -77,7 +77,7 @@
       "triangles": 4500,
       "maxError": 0.1,
       "source": {
-        "model": "Rusty Barrel (owner's Meshy)",
+        "model": "Rusty Barrel",
         "date": "2026-10-30"
       },
       "breakable": {
@@ -95,7 +95,7 @@
       "triangles": 4500,
       "maxError": 0.1,
       "source": {
-        "model": "Rusty Barrel (Dented) (owner's Meshy)",
+        "model": "Rusty Barrel (Dented)",
         "date": "2026-10-30"
       },
       "breakable": {
@@ -113,7 +113,7 @@
       "triangles": 4500,
       "maxError": 0.1,
       "source": {
-        "model": "Rusty Barrel (Old) (owner's Meshy)",
+        "model": "Rusty Barrel (Old)",
         "date": "2026-10-30"
       },
       "breakable": {
@@ -131,7 +131,7 @@
       "triangles": 4500,
       "maxError": 0.1,
       "source": {
-        "model": "Trash Can (owner's Meshy)",
+        "model": "Trash Can",
         "date": "2026-10-30"
       }
     },
@@ -145,7 +145,7 @@
       "triangles": 4500,
       "maxError": 0.1,
       "source": {
-        "model": "Classic Trash Can (owner's Meshy)",
+        "model": "Classic Trash Can",
         "date": "2026-10-30"
       }
     },
@@ -159,7 +159,7 @@
       "triangles": 4500,
       "maxError": 0.1,
       "source": {
-        "model": "Wheelie Bin (owner's Meshy)",
+        "model": "Wheelie Bin",
         "date": "2026-10-30"
       }
     },
@@ -173,7 +173,7 @@
       "triangles": 4500,
       "maxError": 0.1,
       "source": {
-        "model": "Trash Pile (owner's Meshy)",
+        "model": "Trash Pile",
         "date": "2026-10-30"
       }
     },
@@ -187,7 +187,7 @@
       "triangles": 4500,
       "maxError": 0.1,
       "source": {
-        "model": "Low Trash Pile (owner's Meshy)",
+        "model": "Low Trash Pile",
         "date": "2026-10-30"
       }
     },
@@ -201,7 +201,7 @@
       "triangles": 4500,
       "maxError": 0.1,
       "source": {
-        "model": "Urban Dumpster (owner's Meshy)",
+        "model": "Urban Dumpster",
         "date": "2026-10-30"
       }
     },
@@ -215,7 +215,7 @@
       "triangles": 4500,
       "maxError": 0.1,
       "source": {
-        "model": "Fuel Can (owner's Meshy)",
+        "model": "Fuel Can",
         "date": "2026-10-30"
       }
     },
@@ -229,7 +229,7 @@
       "triangles": 4500,
       "maxError": 0.1,
       "source": {
-        "model": "Hanging Shop Sign (owner's Meshy)",
+        "model": "Hanging Shop Sign",
         "date": "2026-10-30"
       }
     },
@@ -244,7 +244,7 @@
       "triangles": 14000,
       "maxError": 0.05,
       "source": {
-        "model": "Historic City Building (owner's Meshy)",
+        "model": "Historic City Building",
         "date": "2026-10-30"
       },
       "budget": "hero",
