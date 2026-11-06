@@ -203,7 +203,10 @@ accepts for our own work:
   facade files to `public/packs` on every run.
 - `node tools/content/build-kit-props.mjs` writes the Military Compound and
   Frontier Dust props (flat colours, a few hundred to 2,700 triangles each) to
-  `assets-src/tiletrigger-kit/`.
+  `assets-src/tiletrigger-kit/`. A piece with real surfaces
+  (`content/surfaces/tiletrigger-kit.json` `props`: the beach-landing pieces) is
+  one material per surface, its colours painted as vertex colours on it, so each
+  copy on a map is one GPU instance and one draw per surface, not per colour.
 - `node tools/content/build-style-props.mjs` writes the Gothic Estate, Jungle
   Ruins and Suburban Chaos props (56 pieces, flat colours, modelled with
   `tools/content/pieces.mjs`) to `assets-src/tiletrigger-styleprops/`.

@@ -153,11 +153,34 @@ export class Piece {
     return this;
   }
 
-  /** Write the piece into `doc` as one mesh (a primitive per material); returns its node. */
+  /**
+   * Write the piece into `doc` as one mesh (a primitive per material); returns its node. A piece with `paint` set
+   * merges the parts whose materials differ only in colour (same metal, roughness, opaque, not glowing; with
+   * `paint: 'all'`, any opaque unlit ones) into one primitive, their colours as vertex colours on a white material
+   * named after the largest: every copy on a map is then one GPU instance and one draw (a row of 50 hedges: 50
+   * instances, not 100).
+   */
   build(doc, buffer, cache = new Map()) {
     const mesh = doc.createMesh(this.name);
+    const groups = new Map();
     for (const [matName, p] of this.parts) {
       if (!p.idx.length) continue;
+      const m = this.mats[matName];
+      // `paint: 'all'`: every opaque, unlit part shares the material of the largest (roughness and metal too).
+      const key = this.paint && !m.emissive && (m.alpha ?? 1) === 1 ? (this.paint === 'all' ? 'paint' : `paint|${m.metal ?? 0}|${m.rough ?? 0.6}`) : `material|${matName}`;
+      const g = groups.get(key) ?? [];
+      g.push(matName);
+      groups.set(key, g);
+    }
+    const painted = new Map();
+    for (const names of groups.values()) if (names.length > 1) for (const n of names) painted.set(n, names);
+    for (const [matName, p] of this.parts) {
+      if (!p.idx.length) continue;
+      const together = painted.get(matName);
+      if (together) {
+        if (together[0] === matName) mesh.addPrimitive(this.paintedPrimitive(doc, buffer, together));
+        continue;
+      }
       const m = this.mats[matName];
       const key = `${matName}|${JSON.stringify(m)}`;
       let mat = cache.get(key);
@@ -177,6 +200,33 @@ export class Piece {
       mesh.addPrimitive(doc.createPrimitive().setAttribute('POSITION', pos).setAttribute('NORMAL', nrm).setIndices(idx).setMaterial(mat));
     }
     return doc.createNode(this.name).setMesh(mesh);
+  }
+
+  /** One primitive for the parts of materials `names` (same but for colour), each part's colour in COLOR_0 (linear bytes). */
+  paintedPrimitive(doc, buffer, names) {
+    const main = names.reduce((a, b) => (this.parts.get(b).idx.length > this.parts.get(a).idx.length ? b : a));
+    const m = this.mats[main];
+    const pos = [];
+    const nrm = [];
+    const col = [];
+    const idx = [];
+    for (const n of names) {
+      const p = this.parts.get(n);
+      const base = pos.length / 3;
+      pos.push(...p.pos);
+      nrm.push(...p.nrm);
+      for (let i = 0; i < p.pos.length / 3; i++) col.push(...this.mats[n].color.map((v) => Math.round(v * 255)), 255);
+      idx.push(...p.idx.map((i) => i + base));
+    }
+    const mat = doc.createMaterial(main).setBaseColorFactor([1, 1, 1, 1]).setMetallicFactor(m.metal ?? 0).setRoughnessFactor(m.rough ?? 0.6);
+    const acc = (type, arr) => doc.createAccessor().setType(type).setArray(arr).setBuffer(buffer);
+    return doc
+      .createPrimitive()
+      .setAttribute('POSITION', acc('VEC3', new Float32Array(pos.map((v) => Math.round(v * 10000) / 10000))))
+      .setAttribute('NORMAL', acc('VEC3', new Float32Array(nrm.map((v) => Math.round(v * 10000) / 10000))))
+      .setAttribute('COLOR_0', acc('VEC4', new Uint8Array(col)).setNormalized(true))
+      .setIndices(acc('SCALAR', pos.length / 3 > 65535 ? new Uint32Array(idx) : new Uint16Array(idx)))
+      .setMaterial(mat);
   }
 }
 
