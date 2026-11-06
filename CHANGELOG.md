@@ -16,16 +16,23 @@ still")
   attackers nearest a carrier escort it home; anyone near their own flag when it's taken or dropped goes after it.
 - **Attackers keep to the flag**: they no longer run off after noises or enemies that slipped away (unless within
   12 m), take cover only when hurt, fight on the move, sprint to the flag and spread over the map's routes. Carriers
-  sprint home and shoot back at anyone close. A bot with only a pistol grabs a gun on its way.
+  sprint home and shoot back at anyone close, and keep watch round their base while their own flag is away. A bot
+  with only a pistol grabs a gun on its way. Out of the transport plane, bots come down where their role sends them
+  (defenders by their own flag), open the canopy straight away and steer it in (Eagle Spires' attackers landed on the
+  cliffs under the enemy flag).
+- **A flag dropped into lava goes home at once**, as one lost over the void does (rule change, for players too:
+  Cinder Foundry's lay in its lava pit all match, taken and dropped by one carrier after another).
 - **Nobody stuck where they can't get out**: Diamond Park's dugouts (three spawn points a side; bots that spawned
-  there never left), Capitol Mall's reflecting pool, a flag dropped into Cinder Foundry's pit, Fernwood Moon's
+  there never left: the roofs were too low over the steps at the dugout ends, so the dugouts were cut off from the
+  bots' navmesh; raised 0.4 m in MapMaker), Capitol Mall's reflecting pool, a goal on a ledge, Fernwood Moon's
   Garrison spawning in its bunker with only the enemy's door on its way, doors that a crowd of bots opened and shut
   again, a vehicle parked in the way, a ladder left halfway up, a queue at a lift.
 - **Holding a spot looks alive**: defenders, escorts and bots told to hold walk between places round their spot,
   watch the way the enemy comes, glance about and crouch; campers shift and peek; bots waiting for a lift look about.
 - **Iron Compound's main gate opens again** (its buttons opened and shut it in the same press, for players too;
   fixed in MapMaker). **Fernwood Moon**: the bunker's reactor core moved half a metre so the Garrison can leave by
-  its rear door. MapMaker and validate-map warn about rules on one event that undo each other.
+  its rear door. **Sandfall Colosseum**: a spawn point inside the stand's steps moved out of them. MapMaker and
+  validate-map warn about rules on one event that undo each other, and about spawn points inside something solid.
 - Team tools: `pnpm bot-report` (what every bot did and why it stood still, per map; before/after compare).
 
 **Rounds go through arches, windows and holes** (owner's report, 2026-11-06: bullet holes in empty air inside a stone

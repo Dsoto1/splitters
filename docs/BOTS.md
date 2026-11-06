@@ -345,7 +345,14 @@ every map that offers CTF, two seeds of five minutes each (numbers at the end of
   never sprinting; fresh respawns at the enemy's base, most of them within 15 m of its flag on the smaller maps,
   killed it within seconds.
 - *Stuck where the navmesh is cut off* (see "Standing still").
-- Measured before: 13 of 88 matches had a capture; Diamond Park 0.5 captures and 2.5 flag takes a match.
+- *Waiting carriers, lost flags, the plane.* A carrier home with its own flag away (no capture until it's back)
+  stood on its base like a statue (Serene City: 143 s). A flag dropped into lava stayed there: nobody can touch it and
+  live, so on Cinder Foundry one carrier after another took it and died in the pit (28 takes and drops in a match, no
+  capture). Out of the transport plane the whole planeload, defenders too, jumped over the enemy flag and waited for
+  the automatic opener (28 m over whatever is below): on Eagle Spires that left the attackers below the enemy mesa's
+  top, on its cliffs, sliding down them for half a minute.
+- Measured before: 17 of 88 matches had a capture (21 captures); Diamond Park 0.5 captures and 2.5 flag takes a
+  match.
 
 **Now** (`sim/modes/ctfBots.ts`, `CtfBotPlan`, worked out by the mode a few times a second, not per bot):
 - **Roles** (owner): a team's Player Bots defend 3 strong on a team of 12 or more, 2 on a smaller one (1 on a team
@@ -365,7 +372,13 @@ every map that offers CTF, two seeds of five minutes each (numbers at the end of
   is more than 15 m off. A bot with only a sidearm (CTF starts with knife and pistol) grabs a gun within its detour
   (8–20 m by its objective priority) on the way.
 - **Carriers run** (`OrderGoal.run`): they sprint home, never take cover or retreat, notice enemies within 15 m
-  (`CARRIER_AWARENESS`, was 4) and shoot those within 12 m on the move.
+  (`CARRIER_AWARENESS`, was 4) and shoot those within 12 m on the move. Home with their own flag away, they keep watch
+  round the base (within 6 m, facing where their flag is) until it's back, then step onto the base and capture.
+- **A flag dropped into lava goes home at once**, as one lost over the void does (`CtfMode.drop`; acid, which you can
+  wade through, doesn't count). This is a rule change for players too.
+- **Out of the plane** (`Match.planeBot`): a bot comes down where the mode sends it (a defender by its own flag), once
+  play has begun and roles are handed out; it opens its canopy straight away when well above where it is going, and
+  steers for it under the canopy (`BotBrain`, `CombatantView.chute`).
 - **Defenders keep watch** round their flag (radius 9 m) toward the enemy's side (see "Standing still").
 
 ## Standing still (November 2026)
@@ -374,24 +387,35 @@ Owner's report (Fernwood Moon, free camera): "why would some bots not be moving 
 only when it holds a spot on purpose, and then it looks alive. Measured over the CTF suite and Team Deathmatch;
 the causes, each fixed where it starts:
 
-- **Cut-off patches of navmesh.** The navmesh keeps 0.6 m from walls (body radius 0.4 + 0.2) and steps 0.3 m. A
-  low roof over a step, a narrow strip or a pool's rim leave patches players walk off that have no route out:
-  Diamond Park's two dugouts (14 polygons each, three of each team's spawn points in each: bots spawning there
-  stood until killed, and teammates spawned beside them), Capitol Mall's reflecting pool. `NavWorld` now labels
+- **Cut-off patches of navmesh.** The navmesh keeps 0.8 m from walls and steps 0.3 m. (0.8, not the 0.6 its
+  comment means, body radius 0.4 + 0.2: (0.4 + 0.2) / 0.2 is 3.0000000000000004 in floating point and rounds up to
+  four 0.2 m cells. Left as it is: every map's navmesh and the bots' corner clearance depend on it; BOT_AI_PLAN.md
+  Phase A.) A low roof over a step, a narrow strip or a pool's rim leave patches players walk off that have no route
+  out: Diamond Park's two dugouts (three of each team's spawn points in each: bots spawning there stood until killed,
+  and teammates spawned beside them), Capitol Mall's reflecting pool. The dugouts were the map's: their roofs ran
+  1.6 m over the side walls' tops at the dugout ends, so a standing player (1.8 m) couldn't walk under them there,
+  and the only standing way out, the 1.2 m strip in front of the roof, is narrower than the navmesh needs (1.6 m).
+  The roofs are 0.4 m higher now (MapMaker; validate-map's 113 warnings on the map are gone). `NavWorld` now labels
   the navmesh's connected parts once (about 15 ms on a big map; a search across parts answers at once instead of
   exploring everything reachable), and `escapes()` finds, for a point on a smaller part than its goal's, up to three
   places within 14 m on the goal's part that a straight step or hop of up to 8 m reaches (nothing in the way at
   knee or head height, rising at most 1.1 m). The bot walks to its patch's edge and crosses, hopping when held up
   (`planEscape`); a crossing not made in 8 s is left alone for 30 s.
-- **A goal no route reaches** (a flag dropped into Cinder Foundry's pit, something on a roof): the bot goes as near
+- **A goal no route reaches** (a flag on a ledge, something on a roof, a carrier in the air): the bot goes as near
   as a route gets (`NavWorld.reachToward`, Detour's partial route, cached per part and goal) and keeps watch there
-  facing it, rather than standing with "no route" until the flag goes home.
+  facing it, asking for a route again every 4 s (`outOfReach`), rather than standing with "no route" until the flag
+  goes home. (A first version asked every few ticks, the goal's route and the watch place's taking turns and wiping
+  each other: Eagle Spires' attackers stood below the mesas asking 30 000 times a match.)
+- **Spawned inside something solid.** Sandfall Colosseum's spawn_269 stood inside the stand's steps: a bot spawned
+  there stood all match (300 s). Moved in MapMaker; validate-map and MapMaker now warn (`spawn.blocked`: the spawn
+  point's middle is inside a collider). 26 spawn points on 18 maps are inside collision by that check, most against
+  or in a wall the body is pushed out of (HANDOFF lists them).
 - **Doors shut to the bot.** A route through a door no button opens for the bot's team emptied its path: Fernwood
   Moon's Garrison spawns inside its bunker, and the shortest way out is the blast door only the attackers open; its
   own rear door was a few steps away. Doors and path-blocking walls are now navmesh flags (`markOpenings`, the
   polygons under each), and such a route is asked for again keeping out of the shut ones (`findPath(…, shut)`).
-  Fernwood's reactor core was moved 0.5 m (MapMaker) so the strip behind it, in front of the rear door, is wider
-  than the navmesh's 1.2 m.
+  Fernwood's reactor core was moved 0.5 m (MapMaker) so the strip behind it, in front of the rear door, is 1.9 m
+  wide, not 1.4: wider than the 1.6 m the navmesh needs.
 - **Doors that flap.** Several bots heading for one shut door each set off to press its button, and kept the plan
   after the first opened it: a toggle button shut it again. A press plan is dropped once its door no longer blocks.
   (Iron Compound's gate was also broken for players: its two rules on one press, "open if shut" and "shut if open",
