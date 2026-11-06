@@ -871,6 +871,24 @@ for (const p of manifest.props) {
       glb = Buffer.from(await io.writeBinary(kept));
       writeFileSync(path, glb);
     }
+    // A new `height` (docs/CONTENT_PIPELINE.md, "Real-world sizes") reaches a prop kept as built too: it is scaled to it
+    // about its foot, as it was centred and stood there when built (a download rebuilds it at that height anyway).
+    // Nature props keep theirs: their levels of detail settle a little under the entry's height.
+    const keptScene = kept.getRoot().listScenes()[0];
+    const kb = getBounds(keptScene);
+    if (p.height && !pack.nature && Math.abs(kb.max[1] - kb.min[1] - p.height) > 0.002) {
+      const f = p.height / (kb.max[1] - kb.min[1]);
+      const node = kept.createNode('height').setScale([f, f, f]).setTranslation([0, kb.min[1] * (1 - f), 0]);
+      for (const child of keptScene.listChildren()) {
+        keptScene.removeChild(child);
+        node.addChild(child);
+      }
+      keptScene.addChild(node);
+      glb = Buffer.from(await io.writeBinary(kept));
+      writeFileSync(path, glb);
+      size = null;
+      console.log(`  ${p.id}: kept as built, scaled ×${f.toFixed(3)} to its height ${p.height} m`);
+    }
   } else {
     ({ glb, size, boxes: modelBoxes } = await normaliseGlb(join(ROOT, 'assets-src', p.pack, p.src), p));
     writeFileSync(path, glb);

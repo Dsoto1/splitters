@@ -870,6 +870,15 @@ else if (params.get('mode') === 'assets') {
     window.addEventListener('resize', () => engine.resize());
     await openCharacterViewer(engine, canvas);
   })();
+} else if (params.get('mode') === 'lineup') {
+  // Team tool: props beside a small, a standard and a large character and a ruler, for tools/content/prop-lineup.mjs.
+  void (async () => {
+    $('menu').hidden = true;
+    const { createEngine } = await import('./engine.ts');
+    const { openPropLineup } = await import('./tools/propLineup.ts');
+    const { engine } = await createEngine($<HTMLCanvasElement>('view'));
+    await openPropLineup(engine);
+  })();
 } else if (params.get('mode') === 'grips') {
   // Team tool: one character holding one weapon at a time, for tools/content/grip-sheet.mjs.
   void (async () => {
