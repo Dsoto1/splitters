@@ -956,6 +956,147 @@ export const GlassSettings = z.object({
 });
 export type GlassSettings = z.infer<typeof GlassSettings>;
 
+// ---------------------------------------------------------------- set pieces (v27)
+
+/**
+ * Set pieces (format v27, docs/SET_PIECES_PLAN.md): multi-cell structures placed as one (a carriageway, a skybridge),
+ * declarative data made of the ordinary map pieces. A definition is a footprint and a list of parts in the piece's own
+ * frame; a placement names one. loadMap expands every placement into its parts (map/setPieces.ts) before geometry,
+ * collision, navigation, validation and the budgets see the map; MapMaker keeps the placements (`forEditing`).
+ */
+
+/**
+ * The material roles a set piece's parts name instead of fixed materials, so the piece re-themes: a role pack
+ * (content/setpieces/roles.json) maps each to a library material, else the map's theme paints it (stone: walls,
+ * trim: trim, floor and paving: floor, roof: roof, wood and metal: solids).
+ */
+export const SET_PIECE_MATERIAL_ROLES = ['stone', 'trim', 'floor', 'paving', 'roof', 'wood', 'metal'] as const;
+export type SetPieceMaterialRole = (typeof SET_PIECE_MATERIAL_ROLES)[number];
+/** And the roles that are a look rather than a material: the facade rooms wear, the doors' style, the windows' glass. */
+export const SET_PIECE_ROLES = [...SET_PIECE_MATERIAL_ROLES, 'facade', 'door', 'glass'] as const;
+export type SetPieceRole = (typeof SET_PIECE_ROLES)[number];
+
+/** What each role is: a material role a library material (and tint), `facade` a facade, `door` a door style, `glass` a glass kind or none. */
+export const SetPieceRoleValues = z.object({
+  stone: SurfaceStyle.optional(),
+  trim: SurfaceStyle.optional(),
+  floor: SurfaceStyle.optional(),
+  paving: SurfaceStyle.optional(),
+  roof: SurfaceStyle.optional(),
+  wood: SurfaceStyle.optional(),
+  metal: SurfaceStyle.optional(),
+  facade: z.enum(FACADES).optional(),
+  door: z.enum(DOOR_STYLES).optional(),
+  glass: z.enum([...GLASS_KINDS, 'none']).optional(),
+});
+export type SetPieceRoleValues = z.infer<typeof SetPieceRoleValues>;
+export type SetPieceRoleValuesInput = z.input<typeof SetPieceRoleValues>;
+
+/** A part's value taken from a role: `{ "role": "stone" }`. */
+const MaterialRef = z.object({ role: z.enum(SET_PIECE_MATERIAL_ROLES) });
+const PartSurface = z.union([SurfaceStyle, MaterialRef]);
+
+/** A tile part: a TilePlacement in the piece's frame (no id), its surfaces, glass and facade fixed or from a role. */
+export const SetPieceTilePart = TilePlacement.omit({ id: true }).extend({
+  kind: z.literal('tile'),
+  x: z.number().int().min(-64).max(64),
+  y: z.number().int().min(-64).max(64),
+  z: z.number().int().min(-16).max(16),
+  surfaces: z
+    .object({ floor: PartSurface.optional(), walls: PartSurface.optional(), solids: PartSurface.optional(), underside: PartSurface.optional(), trim: PartSurface.optional(), roof: PartSurface.optional() })
+    .optional(),
+  glass: z.record(EdgeKey, z.union([z.enum(GLASS_KINDS), z.object({ role: z.literal('glass') })])).optional(),
+  options: z
+    .object({
+      layout: z.enum(ROOM_LAYOUTS).optional(),
+      floor: z.enum(FLOOR_INSERTS).optional(),
+      ceiling: z.enum(CEILINGS).optional(),
+      corners: z.enum(CORNERS).optional(),
+      facade: z.union([z.enum(FACADES), z.object({ role: z.literal('facade') })]).optional(),
+    })
+    .optional(),
+});
+/** Entity parts: a block (its material fixed, from a role, or the theme's), a prop, a door (its style fixed or from a role), a ladder or a light, at a position in the piece's frame. */
+export const SetPieceBlockPart = BlockEntity.omit({ id: true }).extend({
+  material: z.union([ContentId, MaterialRef]).nullable().default(null),
+  glass: z.union([z.enum(GLASS_KINDS), z.object({ role: z.literal('glass') })]).optional(),
+});
+export const SetPieceDoorPart = DoorEntity.omit({ id: true }).extend({ style: z.union([z.enum(DOOR_STYLES), z.object({ role: z.literal('door') })]).optional() });
+export const SetPiecePart = z.discriminatedUnion('kind', [SetPieceTilePart, SetPieceBlockPart, PropEntity.omit({ id: true }), SetPieceDoorPart, LadderEntity.omit({ id: true }), LightEntity.omit({ id: true })]);
+export type SetPiecePart = z.infer<typeof SetPiecePart>;
+/** The kinds of map piece a set piece is made of. */
+export const SET_PIECE_PART_KINDS = ['tile', 'block', 'prop', 'door', 'ladder', 'light'] as const;
+
+/** Where a piece meets what is built round it: a side of one of its cells, on one of its levels, facing out of its footprint. */
+export const SetPiecePort = z.object({
+  side: z.enum(['N', 'E', 'S', 'W']),
+  cell: z.tuple([z.number().int(), z.number().int()]),
+  level: z.number().int(),
+  /** `door`: a doorway; `opening`: open (an arch, a passage's end, open floor). */
+  kind: z.enum(['door', 'opening']),
+});
+export type SetPiecePort = z.infer<typeof SetPiecePort>;
+
+/** A note for logic and MapMaker on some of a piece's parts (inert in play): `doorPair`, two doors that belong together; `spot`, a place (cover, a lookout). */
+export const SetPieceMarker = z.object({
+  name: z.string().regex(/^[a-z0-9_]{1,32}$/),
+  kind: z.enum(['doorPair', 'spot']),
+  parts: z.array(z.number().int().min(0).max(1023)).min(1).max(16),
+});
+export type SetPieceMarker = z.infer<typeof SetPieceMarker>;
+
+/** Set piece ids: `setpiece.<name>` for the shipped ones (content/setpieces/), `local.<name>` for one a map carries. */
+export const SetPieceDefId = z.string().regex(/^(setpiece|local)\.[a-z0-9_]{1,40}$/, 'set piece ids look like "setpiece.name" (shipped) or "local.name" (one a map carries)');
+
+/** A set piece's definition (content/setpieces/<family>.json, or a map's own `setPieceDefs`). */
+export const SetPieceDefinition = z.object({
+  id: SetPieceDefId,
+  displayName: z.string().min(1).max(60),
+  family: z.string().regex(/^[a-z0-9_]{1,32}$/),
+  /** Palette group in MapMaker's Set pieces tab. */
+  category: z.string().min(1).max(40),
+  blurb: z.string().max(240).optional(),
+  /** The role packs it suits (content/setpieces/roles.json): MapMaker offers it with these. */
+  packs: z.array(z.string().regex(/^[a-z0-9_]{2,32}$/)).max(32).default([]),
+  /** What it claims on the grid: these cells (dx, dy) on every level from levels[0] to levels[1] (dz). */
+  footprint: z.object({
+    cells: z.array(z.tuple([z.number().int().min(-32).max(32), z.number().int().min(-32).max(32)])).min(1).max(256),
+    levels: z.tuple([z.number().int().min(-8).max(8), z.number().int().min(-8).max(8)]),
+  }),
+  /** `free`: it can be placed mirrored (east and west swapped); `none`: it can't (an asymmetric tile in it has no mirrored twin). */
+  mirror: z.enum(['free', 'none']).default('free'),
+  /** Its own value for a role no pack gives (else the theme's). */
+  roles: SetPieceRoleValues.optional(),
+  ports: z.array(SetPiecePort).max(256).default([]),
+  parts: z.array(SetPiecePart).min(1).max(1024),
+  markers: z.array(SetPieceMarker).max(64).optional(),
+});
+export type SetPieceDefinition = z.infer<typeof SetPieceDefinition>;
+export type SetPieceDefinitionInput = z.input<typeof SetPieceDefinition>;
+
+/**
+ * A placement's id. Its parts are `sp_<id>_<part index>` (map/setPieces.ts), so it is at most 48 characters: with
+ * at most 1024 parts that keeps every part's id a StableId (64).
+ */
+export const SetPieceId = z.string().regex(/^[A-Za-z0-9_-]{4,48}$/, 'set piece IDs must be 4-48 chars of [A-Za-z0-9_-]');
+
+/** A placed set piece (v27): the piece, its anchor cell and level, its turn (clockwise quarter turns, after the mirror), and how it is themed. */
+export const SetPiecePlacement = z.object({
+  id: SetPieceId,
+  piece: SetPieceDefId,
+  x: z.number().int().min(-MAX_TILE_CELL).max(MAX_TILE_CELL),
+  y: z.number().int().min(-MAX_TILE_CELL).max(MAX_TILE_CELL),
+  z: z.number().int().min(-MAX_TILE_LEVEL).max(MAX_TILE_LEVEL),
+  rotation: Rotation.default(0),
+  /** East and west swapped (in the piece's own frame, before the turn), in place over the same footprint. */
+  mirror: z.boolean().default(false),
+  /** The role pack that themes it (content/setpieces/roles.json); absent: the one for the map's theme, if any. */
+  pack: z.string().regex(/^[a-z0-9_]{2,32}$/).optional(),
+  /** Small per-placement tweaks: a role's value, or parts left out (by index). */
+  overrides: z.object({ roles: SetPieceRoleValues.optional(), hide: z.array(z.number().int().min(0).max(1023)).max(1024).optional() }).optional(),
+});
+export type SetPiecePlacement = z.infer<typeof SetPiecePlacement>;
+
 export const MapDocument = z.object({
   format: z.literal(MAP_FORMAT),
   formatVersion: z.literal(MAP_FORMAT_VERSION),
@@ -993,6 +1134,13 @@ export const MapDocument = z.object({
   botCast: z.array(z.string().min(1).max(24)).max(8).optional(),
   /** Content packs this map needs, beyond the always-present core pack. */
   dependencies: z.array(z.object({ pack: ContentId, version: z.string().max(32) })).max(MAX_MAP_DEPENDENCIES).default([]),
+  /**
+   * Set pieces placed as one (v27): each expands into its parts when the map is loaded for play (map/setPieces.ts).
+   * The entity and tile caps count these placements, not their parts. Absent: none.
+   */
+  setPieces: z.array(SetPiecePlacement).max(1024).optional(),
+  /** Set pieces this map defines itself (v27, `local.*`: saved from a selection in MapMaker), so it plays anywhere. Absent: none. */
+  setPieceDefs: z.array(SetPieceDefinition).max(64).optional(),
 });
 
 export type MapDocument = z.infer<typeof MapDocument>;

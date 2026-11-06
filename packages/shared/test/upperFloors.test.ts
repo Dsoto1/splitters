@@ -133,7 +133,7 @@ describe('the inspector’s Floor on Level N', () => {
     expect(validateMap(doc).filter((i) => i.severity === 'error')).toEqual([]);
     const loaded = loadMap(serializeMap(doc));
     expect(loaded.ok && loaded.map.formatVersion).toBe(MAP_FORMAT_VERSION);
-    expect(MAP_FORMAT_VERSION).toBe(26);
+    expect(MAP_FORMAT_VERSION).toBeGreaterThanOrEqual(26);
     expect(loaded.ok && loaded.map.classicStructure.tiles[0]!.upperFloors).toEqual(['0,0,1']);
     const old = loadMap(JSON.stringify({ ...makeMap([arch()]), formatVersion: 25 }));
     expect(old.ok && old.map.classicStructure.tiles[0]).toEqual(arch());

@@ -1,0 +1,239 @@
+{
+  "$comment": "Set-piece role packs (docs/SET_PIECES_PLAN.md, docs/CONTENT_PIPELINE.md \"Set pieces\"): what each material role a set piece's parts name is in one look, so a piece re-themes. A placement names its pack (`pack`); one that names none takes the pack listing the map's theme under `themes` (a theme belongs to one pack at most), else the theme paints it (stone: walls, trim: trim, floor and paving: floor, roof: roof, wood and metal: solids). Roles: stone, trim, floor, paving, roof, wood, metal (a library material in content/materials.json and an optional tint), facade (a room facade: map/tileOptions.ts FACADES), door (a door style: map/schema.ts DOOR_STYLES), glass (breakable, reinforced or none). `stylePack`: the Style Pack (editor/stylePacks.ts) it goes with. Maps name a pack by its id, so an id never changes. Edit, then run `node tools/content/setpieces.mjs`.",
+  "packs": [
+    {
+      "id": "collegiate",
+      "displayName": "Collegiate Gothic",
+      "themes": ["core.castle"],
+      "roles": {
+        "stone": { "material": "core.cobble", "tint": "#d9d5cb" },
+        "trim": { "material": "core.stone_trim", "tint": "#d8d3c6" },
+        "floor": { "material": "core.pbr_floorboards" },
+        "paving": { "material": "core.road_setts" },
+        "roof": { "material": "core.pbr_slate_roof" },
+        "wood": { "material": "core.oak_beam" },
+        "metal": { "material": "core.pbr_steel", "tint": "#5a5c60" },
+        "facade": "collegiate_stone",
+        "door": "oak",
+        "glass": "breakable"
+      },
+      "notes": { "design": "St. John's (theme Castle Keep), in the materials its halls are built of (maps/st_johns.json: 922 wall blocks of warm grey Grey Stone Blocks, 865 of dressed stone): grey lannonstone walls (dolomite, laid as rubble ashlar), dressed limestone trim, granite setts under the arches, oak floors, doors and beams, slate roofs, battlements (the Collegiate stone facade: lannonstone with a dressed limestone plinth, string course, hood moulds and pinnacles; the Argonne Gate is castellated)." }
+    },
+    {
+      "id": "gothic",
+      "displayName": "Gothic Estate",
+      "stylePack": "gothic",
+      "themes": ["core.gothic_estate", "core.manor"],
+      "roles": {
+        "stone": { "material": "core.pbr_castle_stone", "tint": "#9a9aa4" },
+        "trim": { "material": "core.stone_trim" },
+        "floor": { "material": "core.pbr_floorboards" },
+        "paving": { "material": "core.pbr_mossy_cobble" },
+        "roof": { "material": "core.pbr_slate_roof" },
+        "wood": { "material": "core.dark_wood" },
+        "metal": { "material": "core.brass" },
+        "facade": "gothic_stone",
+        "door": "oak",
+        "glass": "breakable"
+      }
+    },
+    {
+      "id": "medieval",
+      "displayName": "Medieval Village",
+      "stylePack": "medieval",
+      "themes": ["core.medieval"],
+      "roles": {
+        "stone": { "material": "core.pbr_castle_stone", "tint": "#c8c2b0" },
+        "trim": { "material": "core.oak_beam" },
+        "floor": { "material": "core.pbr_floorboards" },
+        "paving": { "material": "core.cobblestones" },
+        "roof": { "material": "core.roof_tiles_red" },
+        "wood": { "material": "core.oak_beam" },
+        "metal": { "material": "core.pbr_steel", "tint": "#5a5c60" },
+        "facade": "timber_frame",
+        "door": "oak",
+        "glass": "none"
+      }
+    },
+    {
+      "id": "imperial",
+      "displayName": "Imperial Arena",
+      "stylePack": "imperial",
+      "themes": ["core.imperial", "core.temple"],
+      "roles": {
+        "stone": { "material": "core.pbr_limestone" },
+        "trim": { "material": "core.pbr_white_marble" },
+        "floor": { "material": "core.pbr_travertine" },
+        "paving": { "material": "core.pbr_travertine", "tint": "#d8c8b0" },
+        "roof": { "material": "core.pbr_roof" },
+        "wood": { "material": "core.pbr_walnut" },
+        "metal": { "material": "core.brass" },
+        "facade": "roman",
+        "door": "oak",
+        "glass": "none"
+      }
+    },
+    {
+      "id": "military",
+      "displayName": "Military Compound",
+      "stylePack": "military",
+      "themes": ["core.military", "core.bunker"],
+      "roles": {
+        "stone": { "material": "core.pbr_bunker_panels" },
+        "trim": { "material": "core.pbr_steel", "tint": "#a8aca8" },
+        "floor": { "material": "core.pbr_concrete_dark", "tint": "#b4b0a6" },
+        "paving": { "material": "core.pbr_concrete" },
+        "roof": { "material": "core.pbr_concrete" },
+        "wood": { "material": "core.crate_wood" },
+        "metal": { "material": "core.pbr_steel" },
+        "facade": "concrete",
+        "door": "blast",
+        "glass": "reinforced"
+      }
+    },
+    {
+      "id": "frontier",
+      "displayName": "Frontier Dust",
+      "stylePack": "frontier",
+      "themes": ["core.frontier", "core.saloon", "core.adobe"],
+      "roles": {
+        "stone": { "material": "core.pbr_weathered_siding" },
+        "trim": { "material": "core.pbr_charred_wood" },
+        "floor": { "material": "core.pbr_weathered_planks" },
+        "paving": { "material": "core.pbr_dusty_road" },
+        "roof": { "material": "core.pbr_weathered_planks" },
+        "wood": { "material": "core.pbr_planks" },
+        "metal": { "material": "core.pbr_rusted_plate" },
+        "facade": "false_front",
+        "door": "saloon",
+        "glass": "breakable"
+      }
+    },
+    {
+      "id": "orbital",
+      "displayName": "Orbital Station",
+      "stylePack": "orbital",
+      "themes": ["core.orbital", "core.station"],
+      "roles": {
+        "stone": { "material": "core.orbital_panel" },
+        "trim": { "material": "core.glow_trim" },
+        "floor": { "material": "core.grate", "tint": "#b8c2cc" },
+        "paving": { "material": "core.pbr_tread_plate" },
+        "roof": { "material": "core.orbital_panel", "tint": "#c8d0d8" },
+        "wood": { "material": "core.pbr_white_panel" },
+        "metal": { "material": "core.pbr_white_panel" },
+        "facade": "hull",
+        "door": "sliding",
+        "glass": "reinforced"
+      }
+    },
+    {
+      "id": "jungle",
+      "displayName": "Jungle Ruins",
+      "stylePack": "jungle",
+      "themes": ["core.jungle_temple", "core.ancient_temple", "core.ruins"],
+      "roles": {
+        "stone": { "material": "core.carved_stone" },
+        "trim": { "material": "core.temple_sandstone" },
+        "floor": { "material": "core.mossy_stone" },
+        "paving": { "material": "core.pbr_mossy_cobble" },
+        "roof": { "material": "core.palm_thatch" },
+        "wood": { "material": "core.mossy_planks" },
+        "metal": { "material": "core.gold_leaf" },
+        "facade": "temple",
+        "door": "oak",
+        "glass": "none"
+      }
+    },
+    {
+      "id": "neon",
+      "displayName": "Neon Megacity",
+      "stylePack": "neon",
+      "themes": ["core.neon_megacity", "core.neon"],
+      "roles": {
+        "stone": { "material": "core.pbr_concrete_dark", "tint": "#8a80a0" },
+        "trim": { "material": "core.neon_tube" },
+        "floor": { "material": "core.pbr_terrazzo" },
+        "paving": { "material": "core.pbr_wet_asphalt" },
+        "roof": { "material": "core.pbr_concrete_dark" },
+        "wood": { "material": "core.pbr_steel" },
+        "metal": { "material": "core.pbr_steel" },
+        "facade": "neon",
+        "door": "sliding",
+        "glass": "reinforced"
+      }
+    },
+    {
+      "id": "suburban",
+      "displayName": "Suburban Chaos",
+      "stylePack": "suburban",
+      "themes": ["core.suburban", "core.garden"],
+      "roles": {
+        "stone": { "material": "core.pbr_brick_red" },
+        "trim": { "material": "core.paint_matte", "tint": "#f4f2ec" },
+        "floor": { "material": "core.oak_planks" },
+        "paving": { "material": "core.pbr_hex_paving" },
+        "roof": { "material": "core.pbr_slate_roof" },
+        "wood": { "material": "core.pbr_clapboard" },
+        "metal": { "material": "core.pbr_steel" },
+        "facade": "suburban_brick",
+        "door": "oak",
+        "glass": "breakable"
+      }
+    },
+    {
+      "id": "desert",
+      "displayName": "Desert City",
+      "stylePack": "desert",
+      "themes": ["core.desert_city", "core.egypt", "core.desert"],
+      "roles": {
+        "stone": { "material": "core.ashlar" },
+        "trim": { "material": "core.sandstone_tiles", "tint": "#e8d8b8" },
+        "floor": { "material": "core.sandstone_tiles" },
+        "paving": { "material": "core.worn_paving" },
+        "roof": { "material": "core.stucco", "tint": "#f2e6cc" },
+        "wood": { "material": "core.cedar" },
+        "metal": { "material": "core.brass" },
+        "facade": "desert_ashlar",
+        "door": "oak",
+        "glass": "none"
+      }
+    },
+    {
+      "id": "harbor",
+      "displayName": "Coastal Harbor",
+      "stylePack": "harbor",
+      "themes": ["core.coastal", "core.harbour"],
+      "roles": {
+        "stone": { "material": "core.quay_granite" },
+        "trim": { "material": "core.harbour_paint" },
+        "floor": { "material": "core.pier_decking" },
+        "paving": { "material": "core.harbour_setts" },
+        "roof": { "material": "core.pbr_slate_roof" },
+        "wood": { "material": "core.tarred_boards" },
+        "metal": { "material": "core.rusty_corrugated" },
+        "facade": "harbour_render",
+        "door": "oak",
+        "glass": "breakable"
+      }
+    },
+    {
+      "id": "snow",
+      "displayName": "Snow Outpost",
+      "stylePack": "snow",
+      "themes": ["core.snow_outpost", "core.arctic"],
+      "roles": {
+        "stone": { "material": "core.prefab_red" },
+        "trim": { "material": "core.prefab_white" },
+        "floor": { "material": "core.steel_grating" },
+        "paving": { "material": "core.packed_snow" },
+        "roof": { "material": "core.snowy_concrete" },
+        "wood": { "material": "core.prefab_white" },
+        "metal": { "material": "core.pbr_steel", "tint": "#b8c0c8" },
+        "facade": "prefab",
+        "door": "blast",
+        "glass": "reinforced"
+      }
+    }
+  ]
+}

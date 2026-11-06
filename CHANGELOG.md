@@ -10,6 +10,23 @@ made only on a commit that passed CI on a check branch.
 
 **The HUD portrait follows your body** (owner's report, 2026-11-06: playing the hooded figure with Random characters on, the portrait bottom left still showed the panda picked in the menu): with Random characters, each new life's character now shows in the HUD portrait.
 
+**Set pieces, part 1: placed as one, made of the ordinary pieces** (owner-approved plan, docs/SET_PIECES_PLAN.md)
+- **Maps can hold set pieces** (map format 27, `setPieces`): a carriageway or a skybridge placed as one, turned and
+  mirrored, themed by a role pack. It is stored as one entry and becomes its parts (ordinary tiles, blocks, doors and
+  lights) when the map loads, so play, the server, bots, collision and the flicker clipping see ordinary pieces. Older
+  maps load as they were. MapMaker's Set pieces tab, placing and Explode come in part 2.
+- **First pieces:** the Carriageway (one cell wide) and the Wide Carriageway (two, on a central column), a vaulted
+  passage under a building with a shallow segmental stone arch at each end, a door into the building on each side and
+  a room over the arch; the Skybridge in 2, 3 and 4 cells, enclosed, with windows down both sides, between two
+  buildings' upper floors and nothing underneath. Shots, players and bots go through every arch and doorway.
+- **New building pieces for every map:** the Segmental arch wall style and the Vaulted ceiling room option (a shallow
+  barrel vault with stone ribs).
+- **Collegiate Gothic** look for St. John's (grey lannonstone, dressed limestone trim, granite setts, oak, slate), and
+  a look for each Style Pack.
+- Team tools: `content/setpieces/` (pieces and role packs) with `node tools/content/setpieces.mjs` in
+  `pnpm content:check` and `pnpm content:rebuild`; the shared commands MapMaker will use (place, move, turn, mirror,
+  delete, explode, save a selection as a piece).
+
 **Pistols sit deep in the hand** (owner's report, 2026-11-05: "Looks as if their fingers are just pinching the grip")
 - **First person, every pistol-class gun, every character** (full body and arms only): the shooting hand takes the
   grip deep in the palm, the web of the thumb high on the backstrap, the fingers wrapped round to the grip's far side
