@@ -117,6 +117,8 @@ export interface BotWorldView {
   reloading?: boolean;
   /** Closed doors bots can't open and intact breakable walls: paths through them are treated as unreachable. */
   blockers?: readonly Aabb[];
+  /** The same as navmesh flags (NavWorld.markOpenings): a route asked for with them keeps out of those openings. */
+  shut?: number;
   /** Traps that are dangerous right now: bots wait at the edge instead of walking in. */
   hazards?: readonly Aabb[];
   /**
@@ -1158,7 +1160,8 @@ export class BotBrain {
               backOff = false;
               strafe = false;
               stance = 0;
-              if (g.run && dist > 6) sprint = true;
+              // (A carrier sprints past anyone not close; close ones it shoots on the move.)
+              if (g.run && dist > 12) sprint = true;
             }
           }
         }
@@ -2695,6 +2698,16 @@ export class BotBrain {
       if (door) {
         this.path = [];
         if (!this.pressPlan && view.tick - this.pressedAt > TICK_RATE * 3) this.planPress(view, door);
+        // No button opens it for us: another way round, keeping out of what's shut to us (Fernwood Moon's Garrison
+        // spawned inside its bunker, where the shortest way out is the blast door only the attackers can open: they
+        // stood there until they died, with their own rear door a few steps away).
+        if (!this.pressPlan && view.shut) {
+          const round = view.nav.findPath(me.pos, goal, view.shut);
+          if (round) {
+            this.path = round;
+            if (this.pathBlocked(view)) this.path = [];
+          }
+        }
       }
       this.pathIndex = this.path.length > 1 ? 1 : 0;
       this.lastPathTick = view.tick;

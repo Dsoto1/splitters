@@ -766,6 +766,8 @@ export class Match {
       },
       emit: (ev) => this.pendingEvents.push(ev),
     });
+    // Doors and walls that block paths as navmesh flags: a bot's route can keep out of the ones shut to it.
+    this.nav.markOpenings(this.scenario.openings());
     this.encounters = new Encounters(map, {
       get tick() {
         return match.tick;
@@ -1045,6 +1047,7 @@ export class Match {
     const old = this.nav;
     this.nav = NavWorld.build([...this.geometry, ...propBoxes(this.map, true), ...blockBoxes(this.map, true), ...extra], this.navExtra(), [...navLinks(this.map.entities, this.physics, this.phys.gravity), ...liftLinks(this.map)]);
     old.destroy();
+    this.nav.markOpenings(this.scenario.openings());
     this.nav.places();
     this.sight.clear();
     return true;
@@ -1900,6 +1903,8 @@ export class Match {
     // Team-only doors block other teams; buttons a bot may press can open the doors in its way.
     const blockersBy = new Map<string | null, ReturnType<Scenario['blockers']>>();
     const blockersFor = (team: string | null) => blockersBy.get(team) ?? blockersBy.set(team, this.scenario.blockers(team)).get(team)!;
+    const shutBy = new Map<string | null, number>();
+    const shutFor = (team: string | null) => shutBy.get(team) ?? shutBy.set(team, this.scenario.openingsShut(team)).get(team)!;
     const buttonsBy = new Map<string | null, ReturnType<Scenario['doorButtons']>>();
     const doorButtonsFor = (team: string | null) => buttonsBy.get(team) ?? buttonsBy.set(team, this.scenario.doorButtons(team)).get(team)!;
     const lifts = this.scenario.liftViews();
@@ -2009,6 +2014,7 @@ export class Match {
         held: c.current,
         reloading: c.reloadTicks > 0,
         blockers: blockersFor(c.faction),
+        shut: shutFor(c.faction),
         doorButtons: doorButtonsFor(c.faction),
         ...(lifts.length ? { lifts } : {}),
         ...(portals.length ? { portals } : {}),

@@ -1,14 +1,15 @@
-import { getNavMeshPositionsAndIndices, init as initRecast, NavMeshQuery, type NavMesh } from 'recast-navigation';
+import { getNavMeshPositionsAndIndices, init as initRecast, NavMeshQuery, QueryFilter, type NavMesh } from 'recast-navigation';
 import { generateSoloNavMesh } from 'recast-navigation/generators';
 import { boxesToTriangles, type WorldBox } from '../map/geometry.ts';
 import type { MapDocument } from '../map/schema.ts';
 import type { ValidationIssue } from '../map/validate.ts';
 import type { Vec3 } from '../math.ts';
-import { PLAYER } from '../sim/constants.ts';
+import { OPENING_BITS, PLAYER } from '../sim/constants.ts';
 import { trackGeometry } from '../map/track.ts';
 import { mapPortals, portalEntry, PORTAL_EXIT } from '../sim/portals.ts';
 import { mapZiplines, ziplineClearanceIssues, ziplineLinks } from '../sim/zipline.ts';
 import type { PhysicsWorld } from '../sim/physics.ts';
+import type { Aabb } from '../sim/scenarioDefs.ts';
 import { simProfile } from '../sim/profile.ts';
 import { hypot } from '../math.ts';
 
@@ -107,11 +108,14 @@ export class NavWorld {
     return r.success && r.polyRef !== 0 ? { ...r.point } : null;
   }
 
-  /** Straight-path corners from a to b, or null if b is unreachable from a. */
-  findPath(a: Vec3, b: Vec3): Vec3[] | null {
-    if (!simProfile.on) return this.findPathNow(a, b);
+  /**
+   * Straight-path corners from a to b, or null if b is unreachable from a. `shut`: openings (markOpenings' flag
+   * bits) the route must keep out of, such as doors shut to the bot's team that no button opens for it.
+   */
+  findPath(a: Vec3, b: Vec3, shut = 0): Vec3[] | null {
+    if (!simProfile.on) return this.findPathNow(a, b, shut);
     const t0 = performance.now();
-    const r = this.findPathNow(a, b);
+    const r = this.findPathNow(a, b, shut);
     simProfile.add('nav', performance.now() - t0);
     simProfile.count('nav');
     if (!r) simProfile.count('navFail');
@@ -128,7 +132,7 @@ export class NavWorld {
    */
   private readonly noRoute = new Set<string>();
 
-  private findPathNow(a: Vec3, b: Vec3): Vec3[] | null {
+  private findPathNow(a: Vec3, b: Vec3, shut = 0): Vec3[] | null {
     const ext = { x: 2, y: 3, z: 2 };
     const s = this.query.findNearestPoly(a, { halfExtents: ext });
     const e = this.query.findNearestPoly(b, { halfExtents: ext });
@@ -140,9 +144,9 @@ export class NavWorld {
       if (simProfile.on) simProfile.count('navSearchFail');
       return null;
     }
-    const failKey = `${s.nearestRef}:${e.nearestRef}`;
+    const failKey = `${s.nearestRef}:${e.nearestRef}:${shut}`;
     if (this.noRoute.has(failKey)) return null;
-    const r = this.query.findPath(s.nearestRef, e.nearestRef, start, end, { maxPathPolys: MAX_PATH_POLYS });
+    const r = this.query.findPath(s.nearestRef, e.nearestRef, start, end, shut ? { maxPathPolys: MAX_PATH_POLYS, filter: this.filterFor(shut) } : { maxPathPolys: MAX_PATH_POLYS });
     const n = r.polys.size;
     // A partial path (destination unreachable, or the search ran out of nodes) ends short of the goal.
     const whole = r.success && n > 0 && r.polys.get(n - 1) === e.nearestRef;
@@ -253,6 +257,46 @@ export class NavWorld {
     return (this.parts = { of, size, base });
   }
 
+  /** Route filters that keep out of shut openings, by mask (a few per match: doors open and shut). */
+  private readonly filters = new Map<number, QueryFilter>();
+
+  private filterFor(shut: number): QueryFilter {
+    let f = this.filters.get(shut);
+    if (!f) {
+      f = new QueryFilter();
+      f.includeFlags = 0xffff;
+      f.excludeFlags = shut;
+      if (this.filters.size >= 64) this.filters.clear();
+      this.filters.set(shut, f);
+    }
+    return f;
+  }
+
+  /**
+   * Openings (doors, walls that block paths until broken: Scenario.openings) as navmesh flags: the polygons
+   * under the first OPENING_BITS of them get bit k + 1 each, so findPath's `shut` can keep a route out of the
+   * ones shut to a bot. Sampled every 0.25 m over each opening's footprint, keeping only polygons the samples
+   * stand over (not ones that merely come near). Once, at match start (and when the navmesh is rebuilt).
+   */
+  markOpenings(boxes: readonly Aabb[]): void {
+    const half = { x: 0.15, y: 0.9, z: 0.15 };
+    boxes.slice(0, OPENING_BITS).forEach((b, k) => {
+      const bit = 1 << (k + 1);
+      const marked = new Set<number>();
+      for (let x = b.min.x; x <= b.max.x + 1e-6; x += 0.25) {
+        for (let z = b.min.z; z <= b.max.z + 1e-6; z += 0.25) {
+          const r = this.query.findNearestPoly({ x, y: b.min.y + 0.3, z }, { halfExtents: half });
+          if (!r.success || !r.nearestRef || !r.isOverPoly || marked.has(r.nearestRef)) continue;
+          marked.add(r.nearestRef);
+          const f = this.navMesh.getPolyFlags(r.nearestRef);
+          this.navMesh.setPolyFlags(r.nearestRef, (f.flags || 1) | bit);
+        }
+      }
+    });
+    // Routes found before are still right for the routes that don't keep out of anything; failures with a mask are new.
+    this.noRoute.clear();
+  }
+
   /** The part of the navmesh a polygon is in (-1 when unknown: then every polygon counts as one part). */
   private part(ref: number): number {
     const p = this.partsNow();
@@ -347,6 +391,8 @@ export class NavWorld {
   }
 
   destroy(): void {
+    for (const f of this.filters.values()) (f as unknown as { raw?: { __destroy__?: () => void } }).raw?.__destroy__?.();
+    this.filters.clear();
     this.query.destroy();
     this.navMesh.destroy();
   }

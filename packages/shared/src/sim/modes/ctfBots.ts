@@ -24,7 +24,7 @@ import type { BotGoal } from './types.ts';
  * - our flag dropped: defenders and anyone close go and touch it (it goes home);
  * - our flag carried off: defenders and anyone close chase the carrier, and once
  *   our own carrier is home waiting on it, every attacker but its escorts too;
- * - enemies at our flag at home: defenders and anyone close close in on it.
+ * - enemies at our flag at home: the defenders close in on them.
  *
  * Goals for attackers, carriers, escorts and responders are ones to keep to
  * (`push`, bots/brain.ts OrderGoal): fighting still comes first, but noises and
@@ -46,7 +46,7 @@ const ESCORTS = 3;
 /** Defenders keep watch within this of their flag (m). */
 const DEFEND_RADIUS = 9;
 /** Carriers run for home and only notice enemies this close (they shoot back at them on the run). */
-export const CARRIER_AWARENESS = 10;
+export const CARRIER_AWARENESS = 15;
 
 /** How many of a team's Player Bots defend: 3 on a team of 12 or more players, 2 on a smaller one (1 on a team of two or three). */
 export function ctfDefenders(teamSize: number): number {
@@ -154,9 +154,9 @@ export function ctfBotGoal(c: Combatant, flags: readonly FlagRt[], plan: CtfBotP
     const waiting = enemy.state === FLAG_CARRIED && horizontalDistance(enemy.pos, own.base) < 12;
     if (role === 'defend' || near(own.pos) || (waiting && !plan.escorts.has(c.slot))) return { pos: own.pos, radius: 1.5, push: true };
   }
-  // Enemies at our flag: defenders and anyone close close in.
+  // Enemies at our flag: the defenders close in (everyone else answers only when the flag is taken or dropped).
   const threat = own.state === FLAG_HOME ? plan.threat.get(own.team) : undefined;
-  if (threat && (role === 'defend' || near(own.base))) return { pos: threat, radius: 2, push: true };
+  if (threat && role === 'defend') return { pos: threat, radius: 2, push: true };
   if (role === 'defend') return { pos: own.base, radius: DEFEND_RADIUS, watch: enemy.base };
   // A teammate has their flag: escort the carrier home, a few close by and the rest further back, watching behind for chasers.
   if (enemy.state === FLAG_CARRIED) return { pos: enemy.pos, radius: plan.escorts.has(c.slot) ? 4 : 10, push: true, watch: enemy.base };
