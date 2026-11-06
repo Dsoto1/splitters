@@ -57,13 +57,31 @@ export interface EdgeSegment {
   t?: number;
   repeat?: EdgeRepeat;
 }
-/** Trim on a side's inner face: a baseboard, a cornice (levels 3 m or more), a door frame (when the level is 0.2 m over its top), a window surround, or a box standing `depth` off the wall. */
+/**
+ * A segmental arch's dressing: `count` voussoirs (an odd count has a keystone `key` m taller in the middle) on the
+ * circle through the springing points (u[0] and u[1] at height y[0]) and the crown (y[1] over the middle), each
+ * `band` m deep and standing `depth` off the wall, and a soffit under the curve through the wall's thickness.
+ */
+export interface EdgeArch {
+  u: readonly [number, number];
+  y: readonly [number, number];
+  count: number;
+  band: number;
+  key?: number;
+  depth?: number;
+}
+/**
+ * Trim on a side's inner face: a baseboard, a cornice (levels 3 m or more), a door frame (when the level is 0.2 m
+ * over its top), a window surround, an arch's voussoirs and soffit, or a box standing `depth` off the wall.
+ * `outside`: drawn on the wall's outer face too, where nothing is built beyond the side (an arch seen from the street).
+ */
 export type EdgeTrim =
   | { base: readonly [EdgeValue, EdgeValue] }
   | { cornice: readonly [EdgeValue, EdgeValue] }
   | { frame: { half: number; top: number } }
   | { window: { u: readonly [number, number]; y: readonly [number, number] } }
-  | { u: readonly [EdgeValue, EdgeValue]; y: readonly [EdgeValue, EdgeValue]; depth: number; repeat?: EdgeRepeat };
+  | { arch: EdgeArch; outside?: boolean }
+  | { u: readonly [EdgeValue, EdgeValue]; y: readonly [EdgeValue, EdgeValue]; depth: number; repeat?: EdgeRepeat; outside?: boolean };
 /** What a built edge style is made of (content/tiles/edges.json). */
 export interface EdgeShape {
   segments: readonly EdgeSegment[];
@@ -109,13 +127,19 @@ export const FLOOR_INSERT_LABELS: Record<FloorInsert, string> = {
   sunken: 'Sunken centre (nothing below)',
 };
 
-export const CEILINGS = ['open', 'roof', 'skylight', 'beams'] as const;
+/**
+ * `vault` (v27): a shallow segmental barrel vault under the ceiling, along the room's long way (a carriageway's
+ * passage, a cloister), with a beam under its springing wherever a side has no wall to carry it; a roof over it where
+ * nothing is built above, as `roof`.
+ */
+export const CEILINGS = ['open', 'roof', 'skylight', 'beams', 'vault'] as const;
 export type Ceiling = (typeof CEILINGS)[number];
 export const CEILING_LABELS: Record<Ceiling, string> = {
   open: 'Open (no roof)',
   roof: 'Roof',
   skylight: 'Roof with skylight',
   beams: 'Beamed roof',
+  vault: 'Vaulted ceiling',
 };
 
 export const CORNERS = ['square', 'posts', 'columns', 'chamfered', 'rounded'] as const;
@@ -142,7 +166,7 @@ export type Corner = (typeof CORNERS)[number];
  * window frames, or tarred lap boards (11 Coastal Harbor); insulated steel panels, or
  * snow-capped concrete (12 Snow Outpost).
  */
-export const FACADES = ['none', 'brick', 'storefront', 'plaster', 'hull', 'glass', 'neon', 'concrete', 'corrugated', 'false_front', 'adobe', 'gothic_stone', 'manor_brick', 'temple', 'overgrown', 'clapboard', 'suburban_brick', 'roman', 'egyptian', 'timber_frame', 'village_plaster', 'prefab', 'snow_bunker', 'desert_ashlar', 'desert_plaster', 'harbour_render', 'tarred_timber'] as const;
+export const FACADES = ['none', 'brick', 'storefront', 'plaster', 'hull', 'glass', 'neon', 'concrete', 'corrugated', 'false_front', 'adobe', 'gothic_stone', 'collegiate_stone', 'manor_brick', 'temple', 'overgrown', 'clapboard', 'suburban_brick', 'roman', 'egyptian', 'timber_frame', 'village_plaster', 'prefab', 'snow_bunker', 'desert_ashlar', 'desert_plaster', 'harbour_render', 'tarred_timber'] as const;
 export type Facade = (typeof FACADES)[number];
 export const FACADE_LABELS: Record<Facade, string> = {
   none: 'None',
@@ -158,6 +182,7 @@ export const FACADE_LABELS: Record<Facade, string> = {
   false_front: 'Frontier false front',
   adobe: 'Adobe',
   gothic_stone: 'Gothic stone',
+  collegiate_stone: 'Collegiate stone',
   manor_brick: 'Victorian brick',
   temple: 'Temple stone',
   overgrown: 'Overgrown rock',

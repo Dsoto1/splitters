@@ -33,7 +33,7 @@
     "feet": true,
     "grip": {
       "gripLong": [-0.06, 0, -0.06],
-      "supportLong": [0, -0.02, 0.06],
+      "supportLong": [0, 0.02, 0.03],
       "supportPistol": [-0.02, 0.04, -0.08],
       "curlL": 1.2,
       "rollL": -0.25

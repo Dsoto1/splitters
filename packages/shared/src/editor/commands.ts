@@ -1,5 +1,5 @@
 import type { ScenarioLogic } from '../map/logic.ts';
-import type { BloodSettings, Faction, GlassSettings, MapBotSet, MapPath, MapPhysics, MapBounds, MapDocument, MapEntity, TeamSetup, TilePlacement } from '../map/schema.ts';
+import type { BloodSettings, Faction, GlassSettings, MapBotSet, MapPath, MapPhysics, MapBounds, MapDocument, MapEntity, SetPieceDefinition, SetPiecePlacement, TeamSetup, TilePlacement } from '../map/schema.ts';
 import type { TerrainData } from '../map/terrain.ts';
 import type { Backdrop } from '../map/backdrop.ts';
 
@@ -34,6 +34,12 @@ export type EditCommand =
   | { kind: 'setGlass'; before: GlassSettings | null; after: GlassSettings | null }
   /** Paths are replaced as a list: one point placed, moved or deleted = one undo step. Null: none. */
   | { kind: 'setPaths'; before: MapPath[] | null; after: MapPath[] | null }
+  /** Set-piece placements (v27; the document has no `setPieces` key once the last one goes). */
+  | { kind: 'addSetPieces'; setPieces: SetPiecePlacement[] }
+  | { kind: 'removeSetPieces'; setPieces: SetPiecePlacement[] }
+  | { kind: 'updateSetPieces'; before: SetPiecePlacement[]; after: SetPiecePlacement[] }
+  /** The map's own set-piece definitions, replaced as a list (null: none, and no `setPieceDefs` key). */
+  | { kind: 'setSetPieceDefs'; before: SetPieceDefinition[] | null; after: SetPieceDefinition[] | null }
   | { kind: 'batch'; commands: EditCommand[] };
 
 export class CommandError extends Error {}
@@ -115,9 +121,25 @@ export function applyCommand(doc: MapDocument, cmd: EditCommand): MapDocument {
       const { paths: _old, ...rest } = doc;
       return cmd.after?.length ? { ...rest, paths: cmd.after } : rest;
     }
+    case 'addSetPieces':
+      return withSetPieces(doc, addUnique(doc.setPieces ?? [], cmd.setPieces));
+    case 'removeSetPieces':
+      return withSetPieces(doc, removeById(doc.setPieces ?? [], cmd.setPieces));
+    case 'updateSetPieces':
+      return withSetPieces(doc, replaceById(doc.setPieces ?? [], cmd.after));
+    case 'setSetPieceDefs': {
+      const { setPieceDefs: _old, ...rest } = doc;
+      return cmd.after?.length ? { ...rest, setPieceDefs: cmd.after } : rest;
+    }
     case 'batch':
       return cmd.commands.reduce(applyCommand, doc);
   }
+}
+
+/** The document with these placements (none: no `setPieces` key, so a map without set pieces saves as before). */
+function withSetPieces(doc: MapDocument, list: SetPiecePlacement[]): MapDocument {
+  const { setPieces: _old, ...rest } = doc;
+  return list.length ? { ...rest, setPieces: list } : rest;
 }
 
 export function invertCommand(cmd: EditCommand): EditCommand {
@@ -162,6 +184,14 @@ export function invertCommand(cmd: EditCommand): EditCommand {
       return { kind: 'setPaths', before: cmd.after, after: cmd.before };
     case 'setBotCast':
       return { kind: 'setBotCast', before: cmd.after, after: cmd.before };
+    case 'addSetPieces':
+      return { kind: 'removeSetPieces', setPieces: cmd.setPieces };
+    case 'removeSetPieces':
+      return { kind: 'addSetPieces', setPieces: cmd.setPieces };
+    case 'updateSetPieces':
+      return { kind: 'updateSetPieces', before: cmd.after, after: cmd.before };
+    case 'setSetPieceDefs':
+      return { kind: 'setSetPieceDefs', before: cmd.after, after: cmd.before };
     case 'batch':
       return { kind: 'batch', commands: cmd.commands.map(invertCommand).reverse() };
   }
@@ -175,8 +205,12 @@ export function isEmptyCommand(cmd: EditCommand): boolean {
     case 'addEntities':
     case 'removeEntities':
       return cmd.entities.length === 0;
+    case 'addSetPieces':
+    case 'removeSetPieces':
+      return cmd.setPieces.length === 0;
     case 'updateTiles':
     case 'updateEntities':
+    case 'updateSetPieces':
       return cmd.after.length === 0;
     case 'setMetadata':
       return Object.keys(cmd.after).length === 0;
@@ -194,6 +228,7 @@ export function isEmptyCommand(cmd: EditCommand): boolean {
     case 'setMapBots':
     case 'setBotCast':
     case 'setPaths':
+    case 'setSetPieceDefs':
       return JSON.stringify(cmd.before) === JSON.stringify(cmd.after);
     case 'batch':
       return cmd.commands.every(isEmptyCommand);

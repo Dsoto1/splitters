@@ -28,6 +28,44 @@ docs/BOTS.md, "Navigation audit", "Never standing still on a failed route", "Sco
   in CI when the bots, navigation or the sim change, and the full scorecard runs nightly with its report and the nav
   pictures.
 
+**Hands round 5: support hands, big hands, the Knight's gauntlets, the Spear** (owner-approved, 2026-11-06)
+- **The Spear, the Medkit and the Medi-Beam in first person**: the hand closes round the shaft and the handle again.
+  The new pistol hold (below) had turned and closed them as a raked pistol grip, their fingers sticking straight out
+  over the shaft and splayed in the air above the Medkit's handle; it now holds only two-handed pistol grips.
+- **Support hands** on 14 looks (Pharaoh, Gorgle, Luther Vanguard, Croakley, Big Bab, Desert Ranger, Stealth
+  Operative, Tactical Soldier, The Masked Figure, Anoobys, Greyfang, Kenji, Seetah, WWII Infantry): their own grip
+  settings were tuned before the palms were read the right way round (2026-11-05). On a pistol the support hand now
+  wraps round the shooting hand instead of hanging back under the wrist; on a rifle it holds the handguard; where a
+  shooting hand hung off a rifle's grip it sits on it. Gorgle's shooting hand closes on the grip (it was measured a
+  fist and left rigid, an open claw).
+- **Frost Viking and the Goblin Warlord**: hands about 20 cm long (they were 24-28 cm and fanned like claws), their
+  fingers brought together as they close, so a pistol grip shows between them in first person and their fists sit on
+  the grips. **Bamboo** holds a rifle at its chest, not across its snout.
+- **The Iron Knight's gauntlets** close round the grip (they were measured thick and closed only half way) and its
+  fist sits on a rifle's grip.
+- Team tools: `fixes.hands.together` (a fanned hand's fingers come in toward the middle finger as it closes, every
+  view); a hand scaled at import with the download's own fingers takes its finger joints with it; the grip audit
+  curl-tests a rifle's support hand against the handguard's line (`CURL=points`: as before).
+
+**The HUD portrait follows your body** (owner's report, 2026-11-06: playing the hooded figure with Random characters on, the portrait bottom left still showed the panda picked in the menu): with Random characters, each new life's character now shows in the HUD portrait.
+
+**Set pieces, part 1: placed as one, made of the ordinary pieces** (owner-approved plan, docs/SET_PIECES_PLAN.md)
+- **Maps can hold set pieces** (map format 27, `setPieces`): a carriageway or a skybridge placed as one, turned and
+  mirrored, themed by a role pack. It is stored as one entry and becomes its parts (ordinary tiles, blocks, doors and
+  lights) when the map loads, so play, the server, bots, collision and the flicker clipping see ordinary pieces. Older
+  maps load as they were. MapMaker's Set pieces tab, placing and Explode come in part 2.
+- **First pieces:** the Carriageway (one cell wide) and the Wide Carriageway (two, on a central column), a vaulted
+  passage under a building with a shallow segmental stone arch at each end, a door into the building on each side and
+  a room over the arch; the Skybridge in 2, 3 and 4 cells, enclosed, with windows down both sides, between two
+  buildings' upper floors and nothing underneath. Shots, players and bots go through every arch and doorway.
+- **New building pieces for every map:** the Segmental arch wall style and the Vaulted ceiling room option (a shallow
+  barrel vault with stone ribs).
+- **Collegiate Gothic** look for St. John's (grey lannonstone, dressed limestone trim, granite setts, oak, slate), and
+  a look for each Style Pack.
+- Team tools: `content/setpieces/` (pieces and role packs) with `node tools/content/setpieces.mjs` in
+  `pnpm content:check` and `pnpm content:rebuild`; the shared commands MapMaker will use (place, move, turn, mirror,
+  delete, explode, save a selection as a piece).
+
 **Pistols sit deep in the hand** (owner's report, 2026-11-05: "Looks as if their fingers are just pinching the grip")
 - **First person, every pistol-class gun, every character** (full body and arms only): the shooting hand takes the
   grip deep in the palm, the web of the thumb high on the backstrap, the fingers wrapped round to the grip's far side

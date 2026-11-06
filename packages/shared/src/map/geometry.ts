@@ -1,5 +1,5 @@
 import { PLAYER } from '../sim/constants.ts';
-import { MODEL_FACADES, SIDES, SIDE_DIRS, TILE_DIMENSIONS, coreCatalog, floorInsertBoxes, footprintSize, roomLayoutBoxes, seededRandom, type Corner, type EdgeRepeat, type EdgeShape, type EdgeStyle, type EdgeValue, type Facade, type LocalBox, type Side, type TileCatalog, type TileDefinition } from './catalog.ts';
+import { MODEL_FACADES, SIDES, SIDE_DIRS, TILE_DIMENSIONS, coreCatalog, floorInsertBoxes, footprintSize, roomLayoutBoxes, seededRandom, vault, type Corner, type EdgeArch, type EdgeRepeat, type EdgeShape, type EdgeStyle, type EdgeValue, type Facade, type LocalBox, type Side, type TileCatalog, type TileDefinition } from './catalog.ts';
 import type { MapDocument, MapEntity, TilePlacement } from './schema.ts';
 import { logicTargets } from './logic.ts';
 import { getProp } from '../content/props.ts';
@@ -302,27 +302,118 @@ export function edgeSegments(style: ResolvedEdge, half: number, height: number):
   return out;
 }
 
-/** Visual trim for an edge (inner face only): [u0, u1, y0, y1, depth] standing off the wall face. */
-export function edgeTrim(style: ResolvedEdge, half: number, height: number): [number, number, number, number, number][] {
-  const out: [number, number, number, number, number][] = [];
+/**
+ * One trim box of a side, in the side's own frame: u along it, y up, v in from the cell's boundary (v0 < v1: the wall
+ * itself spans v 0 to its thickness), turned `tilt` radians in the wall's plane about its middle (the +u end rises).
+ */
+export interface SideTrim {
+  u0: number;
+  u1: number;
+  y0: number;
+  y1: number;
+  v0: number;
+  v1: number;
+  tilt?: number;
+  /** On the wall's inner face: how far it stands off it (v1 - v0, as the style gives it). */
+  depth?: number;
+}
+
+/** How thick a segmental arch's soffit is (from the curve up into the wall: it covers the stepped collision above it). */
+const ARCH_SOFFIT = 0.2;
+/** The joint between two voussoirs, along the curve. */
+const ARCH_JOINT = 0.025;
+
+/**
+ * A segmental arch's dressing on one face: its voussoirs (the keystone `key` m taller in the middle of an odd count)
+ * on the circle through the springing points and the crown, each standing off the face from `v0` by its depth, and
+ * (`soffit`) the arch's underside through the wall's thickness `t`, tangent to the curve.
+ */
+function archTrim(a: EdgeArch, v0: number, outward: boolean, soffit: number): SideTrim[] {
+  const [u0, u1] = a.u;
+  const [spring, crown] = a.y;
+  const c = (u1 - u0) / 2;
+  const rise = crown - spring;
+  if (!(c > 0 && rise > 0 && a.count >= 1)) return [];
+  const mid = (u0 + u1) / 2;
+  const r = (c * c + rise * rise) / (2 * rise);
+  const centre = crown - r;
+  const sweep = Math.asin(Math.min(1, c / r));
+  const step = (2 * sweep) / a.count;
+  const halfLen = r * Math.tan(step / 2);
+  const depth = a.depth ?? 0.06;
+  const out: SideTrim[] = [];
+  const piece = (at: number, radius: number, along: number, band: number, va: number, vb: number, depth?: number) => {
+    const u = mid + (radius + band / 2) * Math.sin(at);
+    const y = centre + (radius + band / 2) * Math.cos(at);
+    out.push({ u0: u - along, u1: u + along, y0: y - band / 2, y1: y + band / 2, v0: va, v1: vb, ...(at ? { tilt: -at } : {}), ...(depth !== undefined ? { depth } : {}) });
+  };
+  for (let i = 0; i < a.count; i++) {
+    const at = -sweep + (i + 0.5) * step;
+    const key = a.count % 2 === 1 && i === (a.count - 1) / 2;
+    const band = a.band + (key ? (a.key ?? 0) : 0);
+    const d = key ? depth + 0.04 : depth;
+    piece(at, r, halfLen - ARCH_JOINT / 2, band, outward ? v0 - d : v0, outward ? v0 : v0 + d, outward ? undefined : d);
+    if (soffit > 0) piece(at, r, halfLen, ARCH_SOFFIT, 0, soffit);
+  }
+  return out;
+}
+
+/**
+ * Every trim box of an edge style on one side (map/geometry.ts draws them; they never collide): the pieces on the
+ * wall's inner face, standing off it from `from` (the style's trimFrom, else the wall thickness); an arch's soffit
+ * through the wall; and with `outer`, the pieces marked `outside` once more on the wall's outer face (the cell's
+ * boundary), for a side nothing is built beyond.
+ */
+export function edgeTrimBoxes(style: ResolvedEdge, half: number, height: number, outer = false): SideTrim[] {
+  const shape = shapeOf(style);
+  const from = shape?.trimFrom ?? TILE_DIMENSIONS.wallThickness;
+  const out: SideTrim[] = [];
+  const at = (u0: number, u1: number, y0: number, y1: number, depth: number) => out.push({ u0, u1, y0, y1, v0: from, v1: from + depth, depth });
   const v = (x: EdgeValue) => edgeValue(x, half, height);
-  for (const p of shapeOf(style)?.trim ?? []) {
-    if ('base' in p) out.push([v(p.base[0]), v(p.base[1]), 0, 0.16, 0.04]);
+  for (const p of shape?.trim ?? []) {
+    if ('base' in p) at(v(p.base[0]), v(p.base[1]), 0, 0.16, 0.04);
     else if ('cornice' in p) {
-      if (height >= 3) out.push([v(p.cornice[0]), v(p.cornice[1]), height - 0.2, height, 0.07]);
+      if (height >= 3) at(v(p.cornice[0]), v(p.cornice[1]), height - 0.2, height, 0.07);
     } else if ('frame' in p) {
       const { half: d, top: h } = p.frame;
-      if (height > h + 0.2) out.push([-d - 0.16, -d, 0, h, 0.06], [d, d + 0.16, 0, h, 0.06], [-d - 0.16, d + 0.16, h, h + 0.16, 0.06]);
+      if (height > h + 0.2) {
+        at(-d - 0.16, -d, 0, h, 0.06);
+        at(d, d + 0.16, 0, h, 0.06);
+        at(-d - 0.16, d + 0.16, h, h + 0.16, 0.06);
+      }
     } else if ('window' in p) {
       const [u0, u1] = p.window.u;
       const [y0, y1] = p.window.y;
-      out.push([u0 - 0.08, u1 + 0.08, y0 - 0.08, y0, 0.12], [u0 - 0.1, u1 + 0.1, y1, y1 + 0.12, 0.05], [u0 - 0.1, u0, y0, y1, 0.05], [u1, u1 + 0.1, y0, y1, 0.05]);
-    } else if (p.repeat) {
-      const [o0, o1] = p.u as readonly [number, number];
-      repeatAlong(p.repeat, half, height, (u) => out.push([u + o0, u + o1, v(p.y[0]), v(p.y[1]), p.depth]));
-    } else out.push([v(p.u[0]), v(p.u[1]), v(p.y[0]), v(p.y[1]), p.depth]);
+      at(u0 - 0.08, u1 + 0.08, y0 - 0.08, y0, 0.12);
+      at(u0 - 0.1, u1 + 0.1, y1, y1 + 0.12, 0.05);
+      at(u0 - 0.1, u0, y0, y1, 0.05);
+      at(u1, u1 + 0.1, y0, y1, 0.05);
+    } else if ('arch' in p) {
+      out.push(...archTrim(p.arch, from, false, Math.min(from, TILE_DIMENSIONS.wallThickness)));
+      if (outer && p.outside) out.push(...archTrim(p.arch, 0, true, 0));
+    } else {
+      const pieces: [number, number][] = [];
+      if (p.repeat) {
+        const [o0, o1] = p.u as readonly [number, number];
+        repeatAlong(p.repeat, half, height, (u) => pieces.push([u + o0, u + o1]));
+      } else pieces.push([v(p.u[0]), v(p.u[1])]);
+      for (const [u0, u1] of pieces) {
+        at(u0, u1, v(p.y[0]), v(p.y[1]), p.depth);
+        if (outer && p.outside) out.push({ u0, u1, y0: v(p.y[0]), y1: v(p.y[1]), v0: -p.depth, v1: 0 });
+      }
+    }
   }
   return out;
+}
+
+/**
+ * Visual trim for an edge on its inner face: [u0, u1, y0, y1, depth] standing off the wall face, and a sixth number,
+ * the turn in the wall's plane, for the tilted pieces (an arch's voussoirs). edgeTrimBoxes has every piece.
+ */
+export function edgeTrim(style: ResolvedEdge, half: number, height: number): ([number, number, number, number, number] | [number, number, number, number, number, number])[] {
+  return edgeTrimBoxes(style, half, height)
+    .filter((p) => p.depth !== undefined)
+    .map((p) => (p.tilt ? [p.u0, p.u1, p.y0, p.y1, p.depth!, p.tilt] : [p.u0, p.u1, p.y0, p.y1, p.depth!]));
 }
 
 /** True when both cells on either side of this edge expose a port toward each other. */
@@ -527,10 +618,10 @@ function buildBoxes(map: MapDocument, catalog: TileCatalog, decor: boolean): Wor
     for (const side of SIDES) {
       const style = resolveEdge(cells, gx, gy, gz, side);
       if (decor) {
-        const t = shapeOf(style)?.trimFrom ?? TILE_DIMENSIONS.wallThickness;
-        for (const [u0, u1, y0, y1, depth] of edgeTrim(style, half, levelHeight)) {
-          boxes.push(sideBox(side, cx, cz, half, u0, u1, baseY + y0, baseY + y1, t, t + depth, id, 'trim'));
-        }
+        // Trim marked `outside` dresses the wall's outer face too where nothing is built beyond (an arch from the street).
+        const [dx, dy] = SIDE_DIRS[side];
+        const outer = !cells.has(cellKey(gx + dx, gy + dy, gz));
+        for (const p of edgeTrimBoxes(style, half, levelHeight, outer)) boxes.push(sideTrimBox(side, cx, cz, half, baseY, p, id));
       } else {
         for (const [u0, u1, y0, y1, t] of edgeSegments(style, half, levelHeight)) {
           boxes.push(sideBox(side, cx, cz, half, u0, u1, baseY + y0, baseY + y1, 0, t, id, 'wall'));
@@ -661,6 +752,7 @@ function roomOptionBoxes(map: MapDocument, catalog: TileCatalog, cells: Map<stri
           roof(h, -h, half, h);
         } else roof(-half, -half, half, half);
       }
+      if (o.ceiling === 'vault') out.push(...(decor ? vaultRibs : vaultBoxes)(cells, x, y, z, def, placement, cellSize, levelHeight));
       if (o.corners && o.corners !== 'square') {
         const y0 = z * levelHeight;
         for (const [a, b, sx, sz] of CELL_CORNERS) {
@@ -674,6 +766,81 @@ function roomOptionBoxes(map: MapDocument, catalog: TileCatalog, cells: Map<stri
     }
   }
   return { boxes: out, noSlabs, ownLayout };
+}
+
+/** A vaulted ceiling's strips: 0.2 m thick, their tops at the underside of the floor or roof above. */
+const VAULT_T = 0.2;
+/**
+ * Where a vault springs from its side walls: just over a doorway's head (3 m), so the doors and windows in those walls
+ * stay whole (shots and players pass their whole opening; packages/shared/test/setPiecePlay.test.ts).
+ */
+const VAULT_SPRING = 3.02;
+
+/** Where one cell's vault runs (vaultBoxes): along world z or x, across `span` and along `along`, springing and crown heights. */
+function vaultFrame(cells: Map<string, CellOccupant>, gx: number, gy: number, gz: number, def: TileDefinition, placement: TilePlacement, cellSize: number, levelHeight: number) {
+  const half = cellSize / 2;
+  const t = TILE_DIMENSIONS.wallThickness;
+  const [w, d] = footprintSize(def);
+  // Along the room's long way, in the world: local y is world z unless the room is turned a quarter (or three).
+  const alongZ = (d >= w) === (placement.rotation % 2 === 0);
+  const sides: [Side, Side, Side, Side] = alongZ ? ['W', 'E', 'S', 'N'] : ['S', 'N', 'W', 'E'];
+  const segs = (side: Side) => edgeSegments(resolveEdge(cells, gx, gy, gz, side), half, levelHeight);
+  const inset = (side: Side) => Math.max(0, ...segs(side).map((g) => g[4]));
+  const top = levelHeight - TILE_DIMENSIONS.floorThickness;
+  const crown = top - VAULT_T - 0.01;
+  const spring = Math.min(VAULT_SPRING, crown - 0.1);
+  // Across the vault (x for a vault along z), and along it between the walls at its ends.
+  const [a0, a1] = alongZ ? [gx * cellSize, gy * cellSize] : [gy * cellSize, gx * cellSize];
+  const span: [number, number] = [a0 - half + t, a0 + half - t];
+  const along: [number, number] = [a1 - half + inset(sides[2]), a1 + half - inset(sides[3])];
+  return { half, t, alongZ, sides, segs, top, crown, spring, a0, a1, span, along, baseY: gz * levelHeight };
+}
+
+/** A vault's local boxes (map/catalog.ts vault) as one placement's world boxes. */
+const vaultWorld = (boxes: readonly LocalBox[], kind: BoxKind, sourceId: string): WorldBox[] =>
+  boxes.map((b) => ({ min: [...b.min], max: [...b.max], kind, sourceId, ...(b.pitch ? { pitch: b.pitch } : {}), ...(b.roll ? { roll: b.roll } : {}) }));
+
+/**
+ * The vaulted ceiling (room option `vault`) of one cell of a room: a shallow segmental barrel vault along the room's
+ * long way (local y when it is at least as deep as wide), springing 0.5 m in from each side just over the doorways'
+ * heads (3.02 m) and rising to 3.29 m on a 4 m level, its strips' tops just under the floor or roof above. It stops at the walls across its ends
+ * and runs on through a side with none (into the next vaulted cell). A side that can't carry its springing (no wall,
+ * or one lower or thinner than a standard wall: railings, half walls, fences, bars) gets a beam under it, 0.5 m wide
+ * and 0.45 m deep; two vaulted cells side by side share theirs. Its ribs are trim (vaultRibs).
+ */
+function vaultBoxes(cells: Map<string, CellOccupant>, gx: number, gy: number, gz: number, def: TileDefinition, placement: TilePlacement, cellSize: number, levelHeight: number): WorldBox[] {
+  const f = vaultFrame(cells, gx, gy, gz, def, placement, cellSize, levelHeight);
+  const { half, t, alongZ, a0, along, baseY } = f;
+  const id = placement.id;
+  const out = vaultWorld(vault(alongZ ? 'z' : 'x', f.span, along, baseY + f.spring, baseY + f.crown, 12, VAULT_T, 'wall'), 'wall', id);
+  for (const [side, sign] of [[f.sides[0], -1], [f.sides[1], 1]] as const) {
+    // Carried by a standard wall at least as high as the springing (a doorway's piers and lintel count).
+    if (f.segs(side).some((g) => g[4] >= t - 0.05 && g[3] >= f.spring)) continue;
+    const across: [number, number] = sign < 0 ? [a0 - half, a0 - half + t] : [a0 + half - t, a0 + half];
+    const y0 = baseY + f.spring - 0.45;
+    const y1 = baseY + f.top;
+    out.push(alongZ ? { min: [across[0], y0, along[0]], max: [across[1], y1, along[1]], kind: 'wall', sourceId: id } : { min: [along[0], y0, across[0]], max: [along[1], y1, across[1]], kind: 'wall', sourceId: id });
+  }
+  return out;
+}
+
+/** A vault rib: how wide (along the vault), how deep under it, and how far it sinks into it (no face shared with it). */
+const VAULT_RIB = { width: 0.3, depth: 0.1, sink: 0.02 } as const;
+
+/**
+ * The ribs under one cell's vaulted ceiling (trim: drawn, never colliding): two arches of dressed stone across the vault
+ * at the cell's quarter points, following its curve from side to side, so the shallow vault reads as one from any
+ * angle. Each is the vault's own curve lowered by its depth, sunk a little into the vault (no two faces in one plane).
+ */
+function vaultRibs(cells: Map<string, CellOccupant>, gx: number, gy: number, gz: number, def: TileDefinition, placement: TilePlacement, cellSize: number, levelHeight: number): WorldBox[] {
+  const f = vaultFrame(cells, gx, gy, gz, def, placement, cellSize, levelHeight);
+  const { width, depth, sink } = VAULT_RIB;
+  const out: WorldBox[] = [];
+  for (const at of [f.a1 - f.half / 2, f.a1 + f.half / 2]) {
+    if (at - width / 2 < f.along[0] || at + width / 2 > f.along[1]) continue;
+    out.push(...vaultWorld(vault(f.alongZ ? 'z' : 'x', f.span, [at - width / 2, at + width / 2], f.baseY + f.spring - depth, f.baseY + f.crown - depth, 12, depth + sink, 'trim'), 'trim', placement.id));
+  }
+  return out;
 }
 
 /** One corner treatment at an inside corner (ix, iz), the room lying toward (-sx, -sz). */
@@ -863,6 +1030,13 @@ function sideBox(side: Side, cx: number, cz: number, half: number, u0: number, u
     case 'W':
       return { min: [cx - half + v0, y0, cz + u0], max: [cx - half + v1, y1, cz + u1], kind, sourceId };
   }
+}
+
+/** A trim box on one side of a cell (edgeTrimBoxes): tilted in the wall's plane, it is rolled on a north or south side (u runs along x) and pitched on an east or west one (u along z). */
+function sideTrimBox(side: Side, cx: number, cz: number, half: number, baseY: number, p: SideTrim, sourceId: string): WorldBox {
+  const b = sideBox(side, cx, cz, half, p.u0, p.u1, baseY + p.y0, baseY + p.y1, p.v0, p.v1, sourceId, 'trim');
+  if (!p.tilt) return b;
+  return side === 'N' || side === 'S' ? { ...b, roll: p.tilt } : { ...b, pitch: p.tilt };
 }
 
 function rotateLocalBox(box: LocalBox, rotation: number, cx: number, baseY: number, cz: number, sourceId: string, kind: BoxKind): WorldBox {
@@ -1064,7 +1238,7 @@ export function buildFacades(map: MapDocument, catalog: TileCatalog = coreCatalo
 
 // ---------------------------------------------------------------- Style Pack facades
 
-type PackFacade = 'concrete' | 'corrugated' | 'false_front' | 'adobe' | 'gothic_stone' | 'manor_brick' | 'temple' | 'overgrown' | 'clapboard' | 'suburban_brick' | 'roman' | 'egyptian' | 'timber_frame' | 'village_plaster' | 'prefab' | 'snow_bunker' | 'desert_ashlar' | 'desert_plaster' | 'harbour_render' | 'tarred_timber';
+type PackFacade = 'concrete' | 'corrugated' | 'false_front' | 'adobe' | 'gothic_stone' | 'collegiate_stone' | 'manor_brick' | 'temple' | 'overgrown' | 'clapboard' | 'suburban_brick' | 'roman' | 'egyptian' | 'timber_frame' | 'village_plaster' | 'prefab' | 'snow_bunker' | 'desert_ashlar' | 'desert_plaster' | 'harbour_render' | 'tarred_timber';
 /**
  * Style Pack facades, built from boxes in library materials: the cladding
  * (`skin`) on every outside wall, `depth` proud of it, and what each adds:
@@ -1079,6 +1253,8 @@ const PACK_FACADES: Record<PackFacade, { skin: string; tint: string | null; dept
   adobe: { skin: 'core.pbr_adobe', tint: null, depth: 0.16 },
   // 05 Gothic Estate, 06 Jungle Ruins, 08 Suburban Chaos.
   gothic_stone: { skin: 'core.pbr_castle_stone', tint: '#9a9aa4', depth: 0.14 },
+  // Collegiate Gothic (the set pieces' look for St. John's): grey lannonstone laid as rubble ashlar, dressed limestone.
+  collegiate_stone: { skin: 'core.cobble', tint: '#d9d5cb', depth: 0.14 },
   manor_brick: { skin: 'core.pbr_brick_red', tint: '#a07c70', depth: 0.1 },
   temple: { skin: 'core.pbr_castle_stone', tint: '#d8d8b8', depth: 0.16 },
   overgrown: { skin: 'core.pbr_jungle_rock', tint: null, depth: 0.16 },
@@ -1171,22 +1347,25 @@ function packFacadeBoxes(map: MapDocument, cells: Map<string, CellOccupant>): Wo
             }
           } else if (!roofed && full) add(side, -half, half, top, top + 0.2, out0 - 0.06, TILE_DIMENSIONS.wallThickness, 'core.pbr_charred_wood');
           break;
-        case 'gothic_stone': {
-          // A dark stone plinth, buttresses at the ends of each wall, a string course, hood moulds over
-          // the openings and a battlemented parapet with pinnacles over the buttresses.
-          if (ground) add(side, -half, half, 0, 0.6, out0 - 0.1, -base, 'core.pbr_flagstone', '#8a8a90');
+        case 'gothic_stone':
+        case 'collegiate_stone': {
+          // A stone plinth, buttresses at the ends of each wall, a string course, hood moulds over the openings and a
+          // battlemented parapet with pinnacles over the buttresses: dark flagstone dressing on Gothic stone, dressed
+          // limestone on Collegiate stone.
+          const [dressing, plinthTint, courseTint] = facade === 'collegiate_stone' ? ['core.stone_trim', '#c4bfb2', '#d8d3c6'] : ['core.pbr_flagstone', '#8a8a90', '#a0a0a8'];
+          if (ground) add(side, -half, half, 0, 0.6, out0 - 0.1, -base, dressing, plinthTint);
           if (full) for (const u of [-half + 0.45, half - 0.45]) {
             add(side, u - 0.32, u + 0.32, 0, levelHeight * 0.6, out0 - 0.55, out0, look.skin, look.tint);
             add(side, u - 0.26, u + 0.26, levelHeight * 0.6, levelHeight, out0 - 0.3, out0, look.skin, look.tint);
           }
-          if (full) add(side, -half, half, levelHeight - 0.62, levelHeight - 0.5, out0 - 0.1, out0, 'core.pbr_flagstone', '#a0a0a8');
-          for (const o of facadeOpenings(segs)) if (o.top < levelHeight - 0.4) add(side, o.u0 - 0.2, o.u1 + 0.2, o.top, o.top + 0.16, out0 - 0.12, out0, 'core.pbr_flagstone', '#a0a0a8');
+          if (full) add(side, -half, half, levelHeight - 0.62, levelHeight - 0.5, out0 - 0.1, out0, dressing, courseTint);
+          for (const o of facadeOpenings(segs)) if (o.top < levelHeight - 0.4) add(side, o.u0 - 0.2, o.u1 + 0.2, o.top, o.top + 0.16, out0 - 0.12, out0, dressing, courseTint);
           if (!roofed && full) {
             add(side, -half, half, top, top + 0.3, out0 - 0.08, TILE_DIMENSIONS.wallThickness, look.skin, look.tint);
             for (let u = -half + 1.2; u < half - 0.9; u += 1.2) add(side, u - 0.3, u + 0.3, top + 0.3, top + 0.75, out0 - 0.08, 0, look.skin, look.tint);
             for (const u of [-half + 0.45, half - 0.45]) {
               add(side, u - 0.22, u + 0.22, top, top + 1.3, out0 - 0.3, out0, look.skin, look.tint);
-              add(side, u - 0.12, u + 0.12, top + 1.3, top + 1.7, out0 - 0.2, out0 - 0.1, 'core.pbr_flagstone', '#a0a0a8');
+              add(side, u - 0.12, u + 0.12, top + 1.3, top + 1.7, out0 - 0.2, out0 - 0.1, dressing, courseTint);
             }
           }
           break;

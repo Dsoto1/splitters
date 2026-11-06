@@ -22,7 +22,10 @@
 //   elbow    an elbow bends against its own skin (the forearm folds toward the upper arm's back: "bent backwards")
 //   flat     a hand's skin barely follows its finger joints, or closing the shooting hand doesn't bring its
 //            fingertips toward the grip (curl test: fingertips open against closed); an open, flat hand on the gun
-//   back     closing the hand moves its fingertips AWAY from the grip (the fingers curl backwards: splayed)
+//   back     closing the hand moves its fingertips AWAY from the grip (the fingers curl backwards: splayed); a long
+//            gun's support hand is measured against the handguard's line (palm up under it, its fingers close up round
+//            the guard, away from the support point on its underside; CURL=points measures to that point, as before
+//            2026-11-06: with RESCORE=1 too, since audit.json keeps both)
 //   open     the drawn fingertips end far from the hand's point on the gun (not closed round it)
 //            (a long gun's support hand slides back along the handguard on short arms, so its distance counts on pistols only)
 //   off      a drawn hand's centre is far from its point on the gun
@@ -124,7 +127,9 @@ export function flagsOf(r) {
       const tips = h?.tipsGuard ?? h?.tips ?? null;
       if (tips !== null && tips > (s === 'r' ? FLAGS.OPEN_R : FLAGS.OPEN_L)) f.add('open');
     }
-    for (const [side, gain] of Object.entries(m.curl ?? {})) {
+    // The curl test: the support hand on a long gun measured against the handguard's line (CURL=points: against its
+    // point, as before 2026-11-06).
+    for (const [side, gain] of Object.entries((process.env.CURL === 'points' ? m.curl : m.curlGuard ?? m.curl) ?? {})) {
       if (gain === null) continue;
       if (gain < -FLAGS.CURL_GAIN) {
         f.add('back');
@@ -223,6 +228,10 @@ if (rescore) {
           const open = await page.evaluate(() => window.__grips.audit());
           await page.evaluate(() => window.__grips.curl(1));
           m.curl = Object.fromEntries(['l', 'r'].map((s) => [s, open?.hands[s]?.tips != null && m.audit?.hands[s]?.tips != null ? Math.round((open.hands[s].tips - m.audit.hands[s].tips) * 1000) / 1000 : null]));
+          // ...and the support hand against the handguard's line: palm up under the handguard, its fingers close up
+          // round the guard, away from the support point on its underside (`curl` read that as a backward curl).
+          const guard = (h) => h?.hands.l?.tipsGuard ?? null;
+          m.curlGuard = { l: guard(open) != null && guard(m.audit) != null ? Math.round((guard(open) - guard(m.audit)) * 1000) / 1000 : m.curl.l, r: m.curl.r };
         }
         for (const [vw, v] of views) {
           if (vw !== w || v === 'hands' || !shots) continue;

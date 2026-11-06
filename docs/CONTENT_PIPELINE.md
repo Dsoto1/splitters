@@ -637,14 +637,15 @@ stay there and follow the kit in the catalog.
 | File | Holds |
 |---|---|
 | `content/tiles/core.json` `tiles` | every kit tile in palette order: `id`, `displayName`, `category` (palette group: `TILE_CATEGORIES`), `blurb`, `cells` or `footprint` ([w, d] or [w, d, levels]), `floors` (levels with a slab), `ports` (`{side, level, cell}`, or `{allSides: level}`, or `{perimeter: [w, d], levels}`), `open`, `edgeDefault`, `edgeDefaults` (`"dx,dy,dz:S"`: style), `configurable` (room options), `model` (`file`, `lift`), `solids` and `extraFloors` (parts), `notes` |
-| `content/tiles/edges.json` `edges` | every edge style in MapMaker's order: `id`, `label`; `auto` and `open` are `rule`s in code; the rest give `segments` (collide: `u` along the side, `y` up, `t` thick, or a `repeat`), `trim` (`base`, `cornice`, `frame`, `window` or a box with `depth`), `trimFrom`, `openings` ([u0, u1, y0, y1]: framed under a facade, glazed when `glass`), `corner`, `facade`, `street`, `openDefault`, `dressing` (`door` / `window` with `span`, or `see-through`), `notes` |
+| `content/tiles/edges.json` `edges` | every edge style in MapMaker's order: `id`, `label`; `auto` and `open` are `rule`s in code; the rest give `segments` (collide: `u` along the side, `y` up, `t` thick, or a `repeat`), `trim` (`base`, `cornice`, `frame`, `window`, `arch` (a segmental arch's voussoirs, keystone and soffit: `u`, `y` springing and crown, `count`, `band`, `key`) or a box with `depth`; `outside`: on the wall's outer face too where nothing is built beyond the side), `trimFrom`, `openings` ([u0, u1, y0, y1]: framed under a facade, glazed when `glass`), `corner`, `facade`, `street`, `openDefault`, `dressing` (`door` / `window` with `span`, or `see-through`), `notes` |
 
 A part names one builder and its numbers (local metres: x east, y up, z north from the first cell's centre and
 floor): `box` [x0, y0, z0, x1, y1, z1] (with `yaw`, `surface`), `flight` (steps of 0.25 m: `axis`, `dir`, `from`,
 `across`, `steps`, `base`, `run`, `floor`), `descending` (steps down off a raised block), `rail` (1 m railing),
 `columns` (square columns at points), `partition` (a thin interior wall with gaps), `lamp`, `arc`, `arcTrim`,
-`arcade` (curves; `turns` in quarter turns), `roundRoom`, `discStrips` (a half-round floor), `block` (a model's
-collision, centred on the footprint). `kind` says what paints it: `solid` (default; the theme's solids slot), `wall`,
+`arcade` (curves; `turns` in quarter turns), `roundRoom`, `discStrips` (a half-round floor), `vault` (a segmental
+barrel vault in tilted strips: `axis`, `span`, `along`, `spring`, `crown`), `block` (a model's collision, centred on the
+footprint). `kind` says what paints it: `solid` (default; the theme's solids slot), `wall`,
 `floor`, `trim` (drawn, never collides) or `prop` (collides, invisible: a model is drawn); `surface` gives a box a
 library material of its own. Edge values are metres or `half`, `-half`, `half-0.75`, `-half+0.75`, `height`,
 `height*2`, `height-0.15`, `height*2-0.2`, `min(3.5,height)`.
@@ -682,6 +683,69 @@ library material of its own. Edge values are metres or `half`, `-half`, `half-0.
 (name, palette group, blurb, floors, open, room options, default edge, model; id, cells, ports and parts read-only:
 edited in the JSON) and **Edge styles** (name, trim offset, the glass / corner / facade / street / open flags, room
 dressing; id, segments, trim and openings read-only) from these files.
+
+### Set pieces
+
+Set pieces (docs/SET_PIECES_PLAN.md) are multi-cell structures placed as one, made of the ordinary map pieces: a
+carriageway through a hall, an enclosed skybridge. They are data: `content/setpieces/<family>.json` (one family a
+file) and `content/setpieces/roles.json` (the role packs), checked and built by `tools/content/setpieces.mjs` into
+`packages/shared/src/content/setPieces.generated.ts` (`SET_PIECE_DEFS`, `SET_PIECE_PACKS`). Only map loading and
+MapMaker read them (`map/setPieceLibrary.ts`, through `loadMap`): the menu's first download leaves them out
+(`node tools/ci/bundle-budget.mjs`).
+
+| File | Holds |
+|---|---|
+| `content/setpieces/<family>.json` | `family` (the file's name) and `pieces`: `id` (`setpiece.<name>`), `displayName`, `category` (MapMaker's Set pieces tab group), `blurb`, `packs` (the role packs it suits), `footprint` (`cells` [dx, dy] and `levels` [dz min, dz max]: what it claims on the grid), `mirror` (`free`, or `none` for a piece with a tile that isn't its own mirror image), `roles` (its own value for a role no pack gives), `ports` (`side`, `cell`, `level`, `kind` `door` or `opening`: where it meets what is built round it, facing out of the footprint), `parts`, `markers` (`doorPair`, `spot`: notes for logic and MapMaker, inert in play), `notes` |
+| `content/setpieces/roles.json` `packs` | `id`, `displayName`, `stylePack` (the Style Pack it goes with), `themes` (maps in these themes take it when a placement names no pack; a theme has one pack at most), `roles`: `stone`, `trim`, `floor`, `paving`, `roof`, `wood`, `metal` (a library material and optional tint), `facade` (a room facade), `door` (a door style), `glass` (`breakable`, `reinforced` or `none`) |
+
+A part is a map piece in the piece's own frame: a **tile** (`kind: "tile"`, `tile`, `x`, `y`, `z` cells from the anchor
+cell, `rotation`, and `edges`, `glass`, `upperFloors` keyed in the tile's own frame, `surfaces`, `options`, as a map's
+tile placement), or a **block**, **prop**, **door**, **ladder** or **light** (`position` in metres from the anchor
+cell's centre on its level's floor, `yaw`, and the entity's own fields). Where re-theming should change a look, a part
+names a role instead of a value: a surface or a block's `material` `{ "role": "stone" }`, a door's `style`
+`{ "role": "door" }`, a room's `facade` `{ "role": "facade" }`, a window's glass `{ "role": "glass" }`. A placement
+takes each role from its overrides, else its pack (its own `pack`, else the pack listing the map's theme), else the
+piece's `roles`; a material role nothing gives leaves the part's surface to the theme (stone: walls, trim: trim, floor
+and paving: floor, roof: roof, wood and metal: solids).
+
+**Placements** (map format v27, `setPieces` on the map: `id`, `piece`, `x`, `y`, `z`, `rotation`, `mirror`, `pack`,
+`overrides` with `roles` and `hide` by part index) expand at load into ordinary tiles and entities
+(`map/setPieces.ts` `expandSetPieces`), with ids `sp_<placement id>_<part index>`: a placement's id is at most 48
+characters, so with at most 1024 parts every part's id stays a StableId (64). The mirror swaps east and west in place
+over the footprint (dx → W − dx, W the footprint's least plus greatest dx), then the turn goes clockwise about the
+anchor cell. Tiles mirror only onto themselves (`tileMirrorAxis`: their cells, ports, default edges and parts are their
+own mirror image), turned the other way with their edge, glass and upper-floor keys mirrored; blocks, props, doors,
+ladders and lights mirror in position and facing (a block's roll too; an untilted block turned a quarter keeps its yaw
+with its width and depth swapped). A map can carry pieces of its own (`setPieceDefs`, ids `local.<name>`: saved from a
+selection in MapMaker), so it plays anywhere.
+
+#### How to add a set piece
+
+1. **The piece:** add it to its family's file (or a new `content/setpieces/<family>.json`). Maps name a piece by id
+   and its parts by index, so **an id never changes and parts are only ever added at the end** (hide one in a
+   placement instead; the generator refuses to lose a piece a map places). Build it from kit tiles, edge styles and
+   room options first: the tile, geometry and collision pipeline stays the one source of truth. A new kind of kit part
+   is code (`map/catalog.ts`, `map/geometry.ts`) and an edge style is `content/tiles/edges.json` ("Tiles and edge
+   styles"), never something only a set piece has.
+2. **Roles:** name roles for what should re-theme; add a role pack to `roles.json` for a new look (an id never
+   changes either: maps name packs).
+3. **Generate and check:** `node tools/content/setpieces.mjs` checks the files' shape (an unknown field is an error),
+   the packs' materials, facades, door styles, themes and Style Packs, ids, families and the pieces and packs maps
+   name; then, with the game's own code (`tools/content/setpieces-check.ts`), each piece against the map schema and
+   `map/setPieceCheck.ts` (tiles, props and materials exist, the footprint covers every part, ports face out of it,
+   markers name its parts, `mirror: "free"` only when every tile mirrors onto itself), and placed in a map in each
+   turn, mirrored and not, in each of its packs and in a theme with none: `validateMap` must find no error in what it
+   expands into. It writes the generated file; `--check` (in `pnpm content:check`) only verifies it is up to date.
+   `pnpm content:rebuild` runs it after the tiles.
+4. **Test:** `packages/shared/test/setPieceExpand.test.ts` (every turn × mirror × pack; determinism; ids),
+   `setPiecePlay.test.ts` (collision, trim and nav from the expansion equal the exploded map's; the z-fighting audit
+   over every piece; shots, players and bots through its arches and doorways) and `setPieceEdit.test.ts` (placement
+   checks, commands, budgets) pick a new piece up; add a case for what is new about it. Look at it in the game (MapMaker
+   → TEST): nothing floating, upside down, flickering or blocking an opening.
+
+The map as played (hand-placed pieces and parts together) holds at most 4096 tiles and 4096 entities and 2 MB of JSON,
+the schema's own caps: it is what a joining player's welcome carries and every client loads it again. The file's caps
+count what it stores (a placement is one entry, at most 1024).
 
 ### Audio
 

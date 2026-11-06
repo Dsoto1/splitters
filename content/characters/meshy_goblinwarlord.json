@@ -34,6 +34,8 @@
     "handsShare": 0.1,
     "normalSize": 1024,
     "lod": 0.25,
-    "feet": true
+    "feet": true,
+    "hands": { "together": 1, "r": { "scale": 0.75 }, "l": { "scale": 0.85 } },
+    "grip": { "gripLong": [-0.03, 0, -0.03], "supportPistol": [-0.01, 0.04, -0.05] }
   }
 }

@@ -59,6 +59,9 @@ export const MIGRATIONS: ReadonlyMap<number, Migration> = new Map<number, Migrat
   [24, (doc) => ({ ...doc })],
   // v25 -> v26: optional `upperFloors` on tiles (floors added in a piece's own upper storeys). Additive.
   [25, (doc) => ({ ...doc })],
+  // v26 -> v27: optional `setPieces` (placements, expanded into their parts on load) and `setPieceDefs`, the room
+  // ceiling `vault`, the wall style `arch_segmental` and the facade `collegiate_stone`. Additive: v26 data is valid as is.
+  [26, (doc) => ({ ...doc })],
 ]);
 
 /** The race track's own settings as they were in v22 (missing = the v22 defaults). */

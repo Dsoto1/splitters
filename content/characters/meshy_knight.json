@@ -33,7 +33,9 @@
     "handsShare": 0.1,
     "normalSize": 1024,
     "lod": 0.25,
-    "feet": true
+    "feet": true,
+    "hands": { "curl": 1 },
+    "grip": { "gripLong": [-0.03, 0.03, -0.03] }
   },
   "notes": "Its model replaced 2026-11-05 (intake step 2b, the owner's mapping) by \"Iron Warden\" (Meshy rig, Mixamo skeleton; its clips not used); it was built from the owner's own model. Licence: Meshy Community, CC0 per the owner; author and post URL pending from the owner."
 }

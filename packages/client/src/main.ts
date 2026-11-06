@@ -776,6 +776,7 @@ class App {
       showStats: params.has('stats'),
       onReady: o.onReady,
       portrait: this.portraits?.get(this.front!.look),
+      portraitOf: this.portraits ? (look: string) => this.portraits!.get(look) : undefined,
       hosting: o.hosting,
       autoHost: !!o.autoHost,
       autoList: !!o.autoList,
