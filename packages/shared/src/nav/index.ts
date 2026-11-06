@@ -363,9 +363,10 @@ export class NavWorld {
 
   /**
    * Ways off a patch of navmesh cut off from `goal` (docs/BOTS.md, "Cut off"). The navmesh is more cautious
-   * than legs are: it keeps 0.2 m further from walls than a body needs, and a step under a low roof, a narrow
+   * than legs are: it keeps 0.8 m from walls where a body needs 0.4, and a step under a low roof, a narrow
    * gap or a slab edge a hair over the step height can leave a patch players walk off with no route out of it
-   * (Diamond Park's dugouts, with three of each team's spawn points in each). For a point on a smaller part of
+   * (Capitol Mall's reflecting pool; Diamond Park's dugouts, three spawn points each, until their roofs were
+   * raised in the map). For a point on a smaller part of
    * the navmesh than the goal's (or off it altogether), up to three places close by on the goal's part that are
    * a short step or hop across from the point's patch, nearest first: where to cross from (on the patch; null
    * when the point is off the navmesh) and the place across. `clear`: a body gets straight across from one to

@@ -127,7 +127,7 @@ describe('CTF bots run the flag', () => {
 });
 
 describe('no standing about where the navmesh is cut off or a door is shut', () => {
-  it("Diamond Park: a bot spawned in a dugout (a patch of navmesh the steps cut off) gets out", () => {
+  it('Diamond Park: a bot spawned in a dugout gets out (its roof was too low over the steps for the navmesh)', () => {
     const match = ctfMatch('diamond_park', 2, [1, 1]);
     match.step();
     const bot = match.combatants().find((c) => c.faction === 'away')!;

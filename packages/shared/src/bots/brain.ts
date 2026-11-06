@@ -67,6 +67,8 @@ export interface CombatantView {
   riding?: boolean;
   /** On a ladder (off the navmesh: no route starts there). */
   climbing?: boolean;
+  /** Under an open canopy (a parachute or glider): no route starts in the air, but it steers. */
+  chute?: boolean;
   /** Body size (BODY_SIZES scale: small 0.78, large 1.18; absent = 1): eye, aim point and hit body scale with it. */
   size?: number;
   /** Its measured hit shapes and their scale before `size` (sim/hitbox.ts): bots aim at the real head and chest. */
@@ -379,6 +381,9 @@ export class BotBrain {
   private watch: { spot: Vec3; until: number; yaw: number } | null = null;
   /** An order goal no route reaches: watched from as near as a route gets (anchor) until the route is asked for again. */
   private outOfReach: { goal: Vec3; anchor: Vec3; until: number } | null = null;
+  /** In a seat at the last think (the transport plane, a flyer), and out of one in the air with no canopy yet. */
+  private seated = false;
+  private bailedOut = false;
   /** Where its order goal was at the last think (does it move?). */
   private readonly lastOrder: Vec3 = { x: 1e9, y: 0, z: 1e9 };
   /** Getting off a cut-off patch of navmesh (planEscape): the place across, the goal it is for, until when it tries. */
@@ -673,6 +678,14 @@ export class BotBrain {
     this.aim.track(ctx, target ? { slot: target.slot, pos: target.pos, stance: target.stance } : null);
     if (simProfile.on) simProfile.add('botAim', performance.now() - ta);
 
+    // Out of a plane (or a flyer) in the air: the canopy opens straight away (act()), not at the automatic opener's
+    // height over whatever is below.
+    if (view.seat) this.seated = true;
+    else if (this.seated) {
+      this.seated = false;
+      this.bailedOut = me.grounded === false;
+    }
+    if (me.grounded !== false || me.chute || me.climbing) this.bailedOut = false;
     if (view.seat) {
       this.doing = 'mounted';
       this.meantToMove = false;
@@ -1425,6 +1438,24 @@ export class BotBrain {
       moveYaw = this.yaw;
       moveScale = 1;
       if (doing === 'noPath') doing = 'goal';
+    }
+    // Under a canopy: no route starts in the air, so it steers straight for where it is going. (Before, it came down
+    // wherever the jump carried it: Eagle Spires' attackers, out of the plane over the enemy's mesa, landed on its
+    // cliffs below the flag and slid down them for half a minute.)
+    if (me.chute && moveYaw === null && !backOff && !strafe) {
+      const to = view.orderGoal?.pos ?? this.goal;
+      if (to && horizontalDistance(me.pos, to) > 1) {
+        moveYaw = Math.atan2(to.x - me.pos.x, to.z - me.pos.z);
+        moveScale = 1;
+        if (doing === 'noPath') doing = 'goal';
+      }
+    }
+    // Just out of the plane, well above where it is going: the canopy straight away (jump, held as a player pulls the
+    // cord), so it has the whole way down to steer in. The automatic opener waited until 28 m over whatever was
+    // below: over a mesa's edge, that was below its top.
+    if (this.bailedOut && me.grounded === false && !me.chute) {
+      const to = view.orderGoal?.pos ?? this.goal;
+      if (!to || me.pos.y - to.y > 12) this.jumpNext = true;
     }
 
     // No line on the target from here (clearShot): up from a crouch or prone; already standing, step aside
@@ -2864,10 +2895,11 @@ export class BotBrain {
 
   /**
    * No route from here to `goal`. Standing on a patch of navmesh cut off from it that players walk off
-   * (NavWorld.escapes: Diamond Park's dugouts, slab edges, low roofs), the bot heads for the edge of the patch
-   * nearest a place close by that does route to the goal, and steps or hops across (act() hops when the
-   * crossing holds it up). Before, it stood where it was until it died: "most of the team hung out in the
-   * dugout". A crossing not made within 8 s is left alone for 30 s and the next one, if any, is tried.
+   * (NavWorld.escapes: Capitol Mall's reflecting pool, slab edges, low roofs), the bot heads for the edge of the
+   * patch nearest a place close by that does route to the goal, and steps or hops across (act() hops when the
+   * crossing holds it up). Before, it stood where it was until it died (Diamond Park's dugouts were such patches,
+   * fixed in the map since: "most of the team hung out in the dugout"). A crossing not made within 8 s is left
+   * alone for 30 s and the next one, if any, is tried.
    */
   private planEscape(view: BotWorldView, goal: Vec3): void {
     const me = view.self.pos;
