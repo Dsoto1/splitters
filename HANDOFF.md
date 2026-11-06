@@ -233,7 +233,7 @@ all the way up: 0.28 m of invisible wall beside the round shaft along x, 0.55 m 
 scale). Rounds aimed just past the shaft stopped in the air on the box's face; so did rounds at the shaft, 0.37 m
 before the stone. The brief: session scratchpad `briefs/slack-pass.md`.
 - **Done:**
-  - **Columns first** (25ecbc94): 28 columns, pillars, obelisks and posts `box` → `voxel`: im_column_ionic (7 boxes:
+  - **Columns first** (6c69f1f7): 28 columns, pillars, obelisks and posts `box` → `voxel`: im_column_ionic (7 boxes:
     plinth, base, a cross round the shaft, capital), eg_column_papyrus 20, rn_column_round 7, rn_column_square 5,
     sf_column_round 3, sf_column 4, sf_column_astra 13, sf_column_large 18, dc_column 7, Kenney's column 12, pillar 5,
     cross_column 5, obelisk 5, dg_pillar 4, os_wall_column 11, nc_elevated_pillar 6, jg_carved_pillar 7, eg_obelisk 11,
@@ -246,7 +246,7 @@ before the stone. The brief: session scratchpad `briefs/slack-pass.md`.
     (`SLACK_WIDTH`, `SLACK_SHARE`; about a head or a shoulder at the edge of cover). `content:check` fails a `box` prop
     over it without a `fills` reason; natural rocks (two rounded tiers) are not checked; `--slack` lists every prop of
     every mode over it. `fills` now covers slack too (stale only when it fills no opening and carries no slack).
-  - **The pass** (fe2950b2): 363 more `box` props → `voxel` (statues, vehicles, furniture, machines, fences, shelves:
+  - **The pass** (ca070ba6): 363 more `box` props → `voxel` (statues, vehicles, furniture, machines, fences, shelves:
     every non-rock box prop over the threshold); 18 keep their box with a `fills` reason, round or thin pieces whose
     voxel collision is that same box (barrels, drums, bins, pots, the urn, the vase, the bar stool, the spare wheel,
     the broken round column, the two picket panels, Kenney's tiny bench, the slush machine). 391 props changed in all
