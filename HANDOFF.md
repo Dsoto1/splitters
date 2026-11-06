@@ -122,6 +122,23 @@ are right for the campus. The shallow vault stays. Skybridges keep the pack's fa
   facade) are an override away (`overrides.roles.facade: "none"`); which should be the default?
 <!-- /setpieces -->
 
+### Queued (owner, 2026-11-06): performance round 4, crowds. Right after the Match Setup follow-ups, ahead of Roulette
+**The owner:**
+- "Focus round 4 on crowds."
+- "32v32 would be max I want to shoot for without dedicated host."
+- "Push dedicated hosts to 64v64 if at all possible."
+- Running characters look choppy at a distance (fewer animation frames). Push the reduced-rate distance out.
+
+**Scope:**
+- Animation that doesn't look choppy and costs less: screen-size bands, smoothing between samples, shared or cheaper
+  evaluation.
+- The M1 recording's three hitches: start-of-match shaders, the mass-death spike, GC frames.
+- The browser cap raised to 32v32 (`BROWSER_MAX_PLAYERS` 48 → 64) once measured.
+- 64v64 on dedicated hosts (`MAX_PLAYER_SLOTS` 96 → 128) only if the measurements hold; otherwise a precise report.
+- The handoff e2e flake.
+
+The brief is in the session scratchpad, `briefs/perf-4.md`.
+
 ### Queued (owner, 2026-11-06): Match Setup follow-ups, NEXT FREE SLOT (before Roulette)
 **Owner's answers to the redesign's questions:**
 1. Host online lists the match publicly from both places.
