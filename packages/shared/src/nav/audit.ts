@@ -636,7 +636,8 @@ export function auditNavigation(map: MapDocument, nav: NavWorld, physics: Physic
     if (p >= 0) patches[p]!.entries.push({ kind: 'spawn', at: { x: e.position[0], y: e.position[1], z: e.position[2] }, id: e.id });
   }
   // A patch bots hop or step out of (NavWorld.escapes, the bots' own way off a cut-off patch: a step or a hop of up to
-  // 1.1 m onto main ground within 8 m, nothing in the way) is no trap: a sunken sliver, a step too high to walk.
+  // 1.4 m, the legs tucked up, onto ground that routes to the main area within 8 m, nothing in the way) is no trap: a
+  // sunken sliver, a step too high to walk, a track bed.
   const clear = (a: Vec3, b: Vec3) => {
     const y = Math.max(a.y, b.y);
     return physics.lineOfSight({ x: a.x, y: y + 0.5, z: a.z }, { x: b.x, y: y + 0.5, z: b.z }) && physics.lineOfSight({ x: a.x, y: y + 1.6, z: a.z }, { x: b.x, y: y + 1.6, z: b.z });

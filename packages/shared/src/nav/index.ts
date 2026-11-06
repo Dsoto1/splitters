@@ -59,6 +59,12 @@ const ESCAPE_REACH = 14;
  * crossing of a couple of metres (out of a reflecting pool over its rim) can measure 6 m or so.
  */
 const ESCAPE_GAP = 8;
+/**
+ * The highest ledge a crossing off a cut-off patch goes up (m): a jump clears about 1.1 m, a jump with the legs tucked
+ * up in the air (crouch while airborne, as players do; brain.ts tuckHop) about 1.5 (Undergate Transit's track beds,
+ * 1.4 m down).
+ */
+export const ESCAPE_RISE = 1.4;
 
 /**
  * The navmesh as a graph (NavWorld.graph): polygons by index (Detour's ref = base + index), ground ones (type 0) and
@@ -877,7 +883,7 @@ export class NavWorld {
       if (on && !edge) return;
       const at = edge ?? from;
       const rise = p.y - at.y;
-      if (hypot(p.x - at.x, p.z - at.z) > ESCAPE_GAP || rise > 1.1 || rise < -4 || !clear(at, p)) return;
+      if (hypot(p.x - at.x, p.z - at.z) > ESCAPE_GAP || rise > ESCAPE_RISE || rise < -4 || !clear(at, p)) return;
       out.push({ edge, across: { ...p } });
     };
     // Places routes from the goal's own ground lead back to first (both ways joined: not a ledge whose way on is a drop

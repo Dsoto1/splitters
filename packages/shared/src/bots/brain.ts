@@ -407,6 +407,8 @@ export class BotBrain {
   private readonly failedCrossings: { at: Vec3; until: number }[] = [];
   /** Last hop on a crossing. */
   private hopAt = -Infinity;
+  /** The hop across (planEscape) is up a ledge higher than a jump clears: the legs tuck up in the air till it lands. */
+  private tuckHop = false;
   /** The way it takes to a far objective (orderTarget): the goal it was picked for and the waypoint (null: straight). */
   private lane: { goal: Vec3; via: Vec3 | null } | null = null;
   /** A few steps aside after getting stuck on the same spot again and again (planSidestep). */
@@ -1688,8 +1690,13 @@ export class BotBrain {
       if (this.meantToMove && me.grounded && this.pathIndex >= this.path.length - 1 && this.speed < 1.5 && tick - this.hopAt > 18) {
         this.jumpNext = true;
         this.hopAt = tick;
+        // A jump clears about 1.1 m; tucking the legs up in the air (as players do) about 1.5 (ESCAPE_RISE).
+        this.tuckHop = this.escape.across.y - me.pos.y > 1;
       }
     }
+    if (me.grounded) {
+      if (tick - this.hopAt > 2) this.tuckHop = false;
+    } else if (this.tuckHop) buttons = (buttons & ~(BUTTON_SPRINT | BUTTON_PRONE)) | BUTTON_CROUCH;
     this.doing = doing;
     // (Not off a ladder in mid-air: letting go halfway up a tall one is a fall that hurts. Standing at its top or
     // foot, a hop is what gets you on or off it.)
