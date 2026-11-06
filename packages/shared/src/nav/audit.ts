@@ -187,10 +187,12 @@ export function fallsFrom(nav: NavWorld, physics: PhysicsWorld, poly: number, op
       if (near && !near(at.x, at.y, at.z)) continue;
       const f = traceFall(physics, at, nx, nz, opts);
       if (!f) continue;
-      // Onto a polygon close below where it lands (the navmesh keeps 0.8 m clear of the cliff foot it lands by).
-      const hit = nav.nearestPoly({ x: f.x, y: f.y + 0.3, z: f.z }, { x: 1.6, y: 0.8, z: 1.6 });
+      // Onto a polygon close below where it lands (the navmesh keeps 0.6 m clear of the cliff foot it lands by); on
+      // ground too steep to stand on (a rock's flank, a bank, a ridge's side), where the body slides to.
+      const hit = nav.nearestPoly({ x: f.x, y: f.y + 0.3, z: f.z }, { x: 1.6, y: 0.8, z: 1.6 }) ?? slideFoot(nav, physics, f, at.y - opts.maxDrop, opts);
       if (hit && hit.index === poly) continue;
-      out.push({ from: poly, to: hit ? hit.index : -1, at, land: hit ? hit.point : f, drop: at.y - f.y });
+      const land = hit ? hit.point : f;
+      out.push({ from: poly, to: hit ? hit.index : -1, at, land, drop: at.y - land.y });
     }
   }
   return out;
@@ -222,6 +224,48 @@ function traceFall(physics: PhysicsWorld, at: Vec3, nx: number, nz: number, opts
     return land;
   }
   return null;
+}
+
+/** How far from where a body lands on ground too steep to stand on it slides to the navmesh at the slope's foot (m), at most, and how far down. */
+const SLIDE_REACH = 5;
+const SLIDE_DOWN = 8;
+
+/**
+ * Landing on ground no navmesh covers (too steep to stand on: Frost Basin's ice ridge, a rock's flank): the navmesh at
+ * the slope's foot it slides to, within SLIDE_REACH, downhill all the way (the ground under the line never rises more
+ * than a step) and nothing in the way at knee or head height; not lower than `lowest` (the most the drop may be).
+ */
+function slideFoot(nav: NavWorld, physics: PhysicsWorld, f: Vec3, lowest: number, opts: FallOptions): { index: number; point: Vec3 } | null {
+  const down = Math.min(SLIDE_DOWN, f.y - lowest);
+  if (down < 0.3) return null;
+  const hit = nav.nearestPoly({ x: f.x, y: f.y - down / 2, z: f.z }, { x: SLIDE_REACH, y: down / 2 + 0.2, z: SLIDE_REACH });
+  if (!hit) return null;
+  const p = hit.point;
+  const d = hypot(p.x - f.x, p.z - f.z);
+  if (p.y > f.y || d > SLIDE_REACH) return null;
+  // The ground every 0.25 m from the landing to the foot: downhill all the way.
+  const n = Math.max(2, Math.ceil(d / 0.25));
+  const ground: Vec3[] = [f];
+  let prev = f.y;
+  for (let k = 1; k <= n; k++) {
+    const x = f.x + ((p.x - f.x) * k) / n;
+    const z = f.z + ((p.z - f.z) * k) / n;
+    const top = prev + 1;
+    const g = moveRay(physics, opts.solids, { x, y: top, z }, DOWN, top - p.y + 1);
+    if (g === null) return null; // A hole on the way down.
+    const y = top - g;
+    if (y > prev + PLAYER.maxStepHeight) return null; // Something in the way.
+    prev = Math.min(prev, y);
+    ground.push({ x, y, z });
+  }
+  // Clear at knee and head height over it, a metre at a time.
+  for (let k = 0; k + 1 < ground.length; k += 4) {
+    const a = ground[k]!;
+    const b = ground[Math.min(ground.length - 1, k + 4)]!;
+    for (const h of [0.9, 1.6]) if (!physics.lineOfSight({ x: a.x, y: a.y + h, z: a.z }, { x: b.x, y: b.y + h, z: b.z })) return null;
+  }
+  if (opts.deadly?.(p) || opts.underLiquid?.(p)) return null;
+  return hit;
 }
 
 /** A ground polygon the build left out (inside something solid: NavWorld.disableInsideSolid). */

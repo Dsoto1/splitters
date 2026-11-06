@@ -78,6 +78,22 @@ describe('navigation audit', () => {
     built.nav.destroy();
   });
 
+  it('gives a knoll with sides too steep to stand on a way down: the body slides to the foot (Frost Basin’s ice ridge)', () => {
+    // A 9 m knoll, its top levelled, a spawn point on it; its flanks are steeper than anyone can stand on, so a fall off
+    // the top lands on no navmesh: the drop link goes to where the body slides to.
+    let t = newTerrain(48, 1);
+    t = applyBrush(t, { brush: 'raise', x: 0, z: 0, radius: 8, strength: 10 });
+    t = applyBrush(t, { brush: 'flatten', x: 0, z: 0, radius: 3, strength: 1, target: terrainHeightAt(t, 0, 0)! - 1 });
+    const top = { x: 0, y: terrainHeightAt(t, 0, 0)!, z: 0 };
+    const map: MapDocument = { ...makeMap([], [[-16, 0, -16], [top.x, top.y, top.z]]), terrain: t };
+    const built = mapNavigation(map);
+    expect(built.nav.drops).toBeGreaterThan(0);
+    expect(built.nav.findPath(top, { x: -16, y: 0, z: -16 })).not.toBeNull();
+    expect(validateMapNavigation(map, true).issues).toEqual([]);
+    built.physics.free();
+    built.nav.destroy();
+  });
+
   it('reports a pit bots fall into and nobody gets out of: an error on an official map, a warning in MapMaker', () => {
     // A plaza 3 m up (spawn points on it) round a 5 m pit down to the yard's floor.
     const map = yard([

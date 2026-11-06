@@ -813,15 +813,41 @@ export class NavWorld {
     }
     near.sort((a, b) => a.d - b.d);
     const out: NavEscape[] = [];
-    for (const { p } of near.slice(0, 12)) {
+    // The nearest dozen places (a metre or more apart) first.
+    const tried: Vec3[] = [];
+    const tryAcross = (p: Vec3): void => {
+      if (tried.some((t) => hypot(t.x - p.x, t.z - p.z) < 1 && Math.abs(t.y - p.y) < 1)) return;
+      tried.push(p);
       // Where the patch comes nearest it (a route that can't get there ends at the closest point it can reach).
       const edge = on ? this.nearestReach(s.nearestRef, s.nearestPoint, p) : null;
-      if (on && !edge) continue;
+      if (on && !edge) return;
       const at = edge ?? from;
       const rise = p.y - at.y;
-      if (hypot(p.x - at.x, p.z - at.z) > ESCAPE_GAP || rise > 1.1 || rise < -4 || !clear(at, p)) continue;
+      if (hypot(p.x - at.x, p.z - at.z) > ESCAPE_GAP || rise > 1.1 || rise < -4 || !clear(at, p)) return;
       out.push({ edge, across: { ...p } });
-      if (out.length >= 3) break;
+    };
+    for (const { p } of near) {
+      if (out.length >= 3 || tried.length >= 12) break;
+      tryAcross(p);
+    }
+    // None of them: the goal's part's own ground nearest the point. The places are 7 m apart, and the step or lip out
+    // of a sunken sliver can be a couple of metres from ground none of them is on (Underdrain's sump, Fogbound's gullies).
+    if (!out.length) {
+      const q = this.query.queryPolygons(from, { x: ESCAPE_REACH, y: 5, z: ESCAPE_REACH }, { maxPolys: 512 });
+      const ground: { p: Vec3; d: number }[] = [];
+      for (const ref of q.success ? q.polyRefs : []) {
+        if (this.part(ref) !== target) continue;
+        const c = this.query.closestPointOnPoly(ref, from);
+        if (!c.success || Math.abs(c.closestPoint.y - from.y) > 5) continue;
+        const p = { x: c.closestPoint.x, y: c.closestPoint.y, z: c.closestPoint.z };
+        const d = hypot(p.x - from.x, p.z - from.z);
+        if (d < ESCAPE_REACH) ground.push({ p, d });
+      }
+      ground.sort((a, b) => a.d - b.d || a.p.x - b.p.x || a.p.z - b.p.z);
+      for (const { p } of ground) {
+        if (out.length >= 3 || tried.length >= 24) break;
+        tryAcross(p);
+      }
     }
     if (this.escapeCache.size >= 2048) this.escapeCache.clear();
     this.escapeCache.set(key, out);
