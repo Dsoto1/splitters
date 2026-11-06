@@ -5603,6 +5603,13 @@ export class Match {
     const mates = this.combatants().filter((o) => o !== c && o.alive && !o.mount && o.faction === c.faction && o.move.grounded && this.tick - (o.hurtAt ?? -Infinity) > TICK_RATE * 4 && !enemies.some((e) => distance(e.move.pos, o.move.pos) < 20));
     if (!mates.length) return null;
     const mate = mates[Math.floor(this.rng() * mates.length)]!;
+    // Only beside a teammate on walkable ground (the navmesh), and onto it: one stuck where nobody walks drew every
+    // squadmate spawning after it in with it (Dune Harbor: a rider thrown under a street's floor, four bots a round).
+    const walkable = (p: Vec3): boolean => {
+      const q = this.nav.closestPoint({ x: p.x, y: p.y + 0.5, z: p.z }, { x: 0.6, y: 1.2, z: 0.6 });
+      return !!q && Math.abs(q.y - p.y) < 1;
+    };
+    if (!walkable(mate.move.pos)) return null;
     for (const a of [Math.PI, Math.PI / 2, -Math.PI / 2, 0, (3 * Math.PI) / 4, (-3 * Math.PI) / 4]) {
       const yaw = mate.yaw + a;
       const pos = { x: mate.move.pos.x + Math.sin(yaw) * 1.4, y: mate.move.pos.y, z: mate.move.pos.z + Math.cos(yaw) * 1.4 };
@@ -5611,7 +5618,9 @@ export class Match {
       const floor = this.physics.raycastWorld({ x: pos.x, y: pos.y + 0.5, z: pos.z }, { x: 0, y: -1, z: 0 }, 1.5);
       if (floor === null) continue;
       if (!this.physics.lineOfSight({ x: mate.move.pos.x, y: mate.move.pos.y + 1, z: mate.move.pos.z }, { x: pos.x, y: pos.y + 1, z: pos.z })) continue;
-      return { pos: { x: pos.x, y: pos.y + 0.5 - floor, z: pos.z }, yaw: mate.yaw };
+      const at = { x: pos.x, y: pos.y + 0.5 - floor, z: pos.z };
+      if (!walkable(at)) continue;
+      return { pos: at, yaw: mate.yaw };
     }
     return null;
   }
