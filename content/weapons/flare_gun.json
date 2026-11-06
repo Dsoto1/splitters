@@ -34,7 +34,7 @@
     "model": "weapons/flare_gun.glb",
     "viewOffset": [0.2, -0.18, 0.42],
     "tracer": "#ff7a3a",
-    "hold": { "style": "pistol", "grip": [0, -0.045, -0.106], "support": [-0.02, -0.055, -0.096] },
+    "hold": { "style": "pistol", "grip": [0, -0.043, -0.068], "support": [-0.02, -0.053, -0.058], "rake": 34 },
     "sound": "fire.flare"
   },
   "notes": { "group": "The extended arsenal: every one fires differently. 2: sidearms." }

@@ -1576,11 +1576,12 @@ export class CharacterAnimator {
     const pistol = grip.style === 'pistol';
     if (pistol && grip.support) gripHand(space, arms.l, world, fore ? 'fore' : 'cup', w, true);
     const gun = gunAxes(world);
-    // A pistol's hands are turned about their palms so their knuckle lines run down the grip (the fingers close square
-    // to it, round the grip instead of up across it).
+    // A pistol's hands are turned about their palms so their knuckle lines run down the grip, raked as it is (the
+    // fingers close square to it, round the grip instead of up across it); the support hand's a little more, canted
+    // forward round the shooting hand's.
     if (pistol) {
-      alignKnuckles(space, arms.r, gunDir(gun, PISTOL.gripLine), w);
-      if (grip.support && !fore) alignKnuckles(space, arms.l, gunDir(gun, PISTOL.supportLine), w);
+      alignKnuckles(space, arms.r, rakedLine(gun, grip.rake ?? PISTOL.rake), w);
+      if (grip.support && !fore) alignKnuckles(space, arms.l, rakedLine(gun, (grip.rake ?? PISTOL.rake) + PISTOL.supportCant), w);
     }
     // The hands' turn on the gun, kept while the shoulders move below (a collarbone's roll would carry it off).
     const handsOn = { r: space.rot(arms.r.hand), l: space.rot(arms.l.hand) };
@@ -1804,10 +1805,10 @@ function hasForegrip(grip: WeaponHold): boolean {
 export const PISTOL = {
   /** Where the middle of the shooting hand's knuckle line goes from the grip point (on the front strap: right, up, ahead). */
   knuckles: [0, 0, 0.02] as number[],
-  /** The shooting hand's knuckle line runs this way (index to little finger: down the grip, raked back at its foot). */
-  gripLine: [0, -0.98, -0.2] as number[],
-  /** ...and the support hand's (canted forward: its fingers run down and forward round the shooting hand's). */
-  supportLine: [0, -0.85, -0.5] as number[],
+  /** A grip's rake (degrees back from upright, its foot further back) where the gun's hold gives none. */
+  rake: 12,
+  /** The support hand's knuckle line leans this much (degrees) further than the grip (its fingers run down and forward round the shooting hand's). */
+  supportCant: 18,
   /** The shooting middle fingertip closes toward this point from the grip point (round the grip to its far side), no further. */
   wrap: [-0.025, 0, 0] as number[],
   /** The shooting thumb's way (gun axes; [] leaves it as the clip has it). */
@@ -1828,6 +1829,12 @@ export const PISTOL = {
   /** A foregrip's support fingertip closes toward this point from the support point. */
   foreWrap: [0.015, 0, 0] as number[],
 };
+
+/** Down a grip raked back `degrees` from upright (its foot further back), in the world: a hand's knuckle line, index to little finger. */
+function rakedLine(gun: { up: Vector3; ahead: Vector3; right: Vector3 }, degrees: number): Vector3 {
+  const a = (degrees * Math.PI) / 180;
+  return gun.up.scale(-Math.cos(a)).subtract(gun.ahead.scale(Math.sin(a))).normalize();
+}
 
 /** A way in the gun's axes (right, up, ahead) in the world, unit; zero for `[]`. */
 function gunDir(gun: { up: Vector3; ahead: Vector3; right: Vector3 }, v: readonly number[]): Vector3 {

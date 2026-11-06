@@ -204,6 +204,11 @@ export interface WeaponHold {
   grip: ModelPoint;
   support?: ModelPoint;
   shoulder?: ModelPoint;
+  /**
+   * A pistol's grip: how far it leans back from upright (degrees, its foot further back; 12 unless set). In first
+   * person the hands' knuckle lines run along it, so the fingers close round the grip, not across it.
+   */
+  rake?: number;
 }
 
 /**

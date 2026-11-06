@@ -25,7 +25,7 @@
     "model": "guns/ironclad_revolver.glb",
     "viewOffset": [0.2, -0.18, 0.42],
     "tracer": "#ffcf7a",
-    "hold": { "style": "pistol", "grip": [0, -0.03, -0.108], "support": [-0.02, -0.04, -0.098] },
+    "hold": { "style": "pistol", "grip": [0, -0.03, -0.108], "support": [-0.02, -0.04, -0.098], "rake": 18 },
     "fallback": "weapons/revolver.glb",
     "sound": "fire.revolver"
   },

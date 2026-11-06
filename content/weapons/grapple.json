@@ -19,7 +19,7 @@
     "model": "weapons/flare_gun.glb",
     "viewOffset": [0.2, -0.18, 0.42],
     "tracer": "#d8d2c0",
-    "hold": { "style": "pistol", "grip": [0, -0.045, -0.106], "support": [-0.02, -0.055, -0.096] },
+    "hold": { "style": "pistol", "grip": [0, -0.043, -0.068], "support": [-0.02, -0.053, -0.058], "rake": 34 },
     "sound": "fire.flare"
   }
 }
