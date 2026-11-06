@@ -8,6 +8,18 @@ made only on a commit that passed CI on a check branch.
 
 ## Unreleased
 
+**Far enemies drawn whole again** (owner's report, 2026-11-06: "I see enemy in distance not fully there, only feet")
+- **Characters no longer lose their upper body**: after a fight, a character that left your view and came back (in a
+  big match characters out of view sleep and wake when seen again) or a body reused for a respawn could be drawn as
+  legs only, mostly far off and running. The shot and hit clips a fight keeps ready (paused, at no weight) were
+  started again on waking; the engine's clip blending then divided zero by zero for the upper body's joints, and a
+  far character, animated only every few frames, kept that pose (and the aim measurement it spoiled kept a running
+  body's upper half gone until it next stood still). Waking now restarts only what sleep paused, a clip at no weight
+  never joins a blend, and the animator never keeps a measurement that isn't a number.
+- Team tools: a unit test of the blend, and the characters test now checks, in a 27-player match after a fight and a
+  turn away and back, that every character past its low-detail switch draws each part's low-detail mesh and its whole
+  body (drawn bounds near its full height, every vertex a number).
+
 **No flicker on props** (owner's report on Flatpack Depot, 2026-11-05: "significant flickering", "flicker when I look
 around", on an Android phone; docs/LOOK.md, "No flicker: props")
 - **Rugs, shelves, crates and boxes no longer fight the floor**: many props have flat faces in the floor's own plane
