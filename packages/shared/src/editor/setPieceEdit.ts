@@ -4,12 +4,12 @@
  * (ordinary, editable tiles and entities, one undo step), and save a selection as a new piece. The generic
  * move/turn/duplicate/delete commands take set pieces in a Selection too (`Selection.setPieces`).
  */
-import { coreCatalog, type Side, type TileCatalog } from '../map/catalog.ts';
-import { rotateSide, rotateXZ, yawXZ } from '../map/geometry.ts';
+import { SIDE_DIRS, coreCatalog, type Side, type TileCatalog } from '../map/catalog.ts';
+import { boxQuat, isTilted, quatRotate, rotateSide, rotateXZ, yawXZ, type WorldBox } from '../map/geometry.ts';
 import { SetPieceDefinition, type MapDocument, type MapEntity, type Rotation, type SetPieceMaterialRole, type SetPiecePart, type SetPiecePlacement, type SurfaceStyle, type TilePlacement } from '../map/schema.ts';
 import { checkSetPieceDefinition } from '../map/setPieceCheck.ts';
 import { builtInSetPieces } from '../map/setPieceLibrary.ts';
-import { ROLE_THEME_SLOT, SET_PIECE_GRID, piecesFor, placementPack, setPieceParts, tileMirrorAxis, type SetPieceLibrary, type SetPieceRolePack } from '../map/setPieces.ts';
+import { ROLE_THEME_SLOT, SET_PIECE_GRID, piecesFor, placementPack, setPieceMirrorProblem, setPieceParts, setPiecePorts, tileMirrorAxis, type SetPieceLibrary, type SetPieceRolePack } from '../map/setPieces.ts';
 import { newId, type EditCommand } from './commands.ts';
 import { checkLayout, type PlacementCheck, type Selection } from './operations.ts';
 
@@ -272,4 +272,79 @@ export function setPieceFromSelection(
   const parsed = SetPieceDefinition.safeParse(raw);
   if (!parsed.success) return { error: `the selection doesn't make a set piece: ${parsed.error.issues.map((i) => `${i.path.join('.')}: ${i.message}`).slice(0, 3).join('; ')}` };
   return { definition: parsed.data, pack: pack?.id ?? null, problems: checkSetPieceDefinition(parsed.data, { packs: library.packs, catalog }) };
+}
+
+// ---------------------------------------------------------------- mirror and ports, as MapMaker shows them
+
+/**
+ * Why a piece can't be placed mirrored (MapMaker greys out M and says this), or null when it can: a tile in it that
+ * isn't its own mirror image (setPieceMirrorProblem), or the piece saying so (`mirror: "none"`).
+ */
+export function setPieceMirrorRefusal(def: SetPieceDefinition, catalog: TileCatalog = coreCatalog): string | null {
+  const tile = setPieceMirrorProblem(def, catalog);
+  if (def.mirror !== 'none') return tile && `${def.displayName} can't be mirrored: ${tile}. Turn it (R) instead`;
+  return `${def.displayName} can't be mirrored: ${tile ?? "its parts aren't a mirror image of themselves (the piece says mirror: none)"}. Turn it (R) instead`;
+}
+
+/** A port of a placement on the map, and what is built in its way just outside it (`blockedBy`: that box's source id, or null). */
+export interface SetPiecePortState {
+  x: number;
+  y: number;
+  z: number;
+  side: Side;
+  kind: 'door' | 'opening';
+  blockedBy: string | null;
+}
+
+/**
+ * Where MapMaker looks for a wall in a port: 0.25 m beyond the port's side (inside a wall built against it: walls are
+ * 0.5 m thick, from a cell's edge in), across its middle and 0.45 m either side, at 1 m and 1.5 m above its floor (a
+ * window's sill or a raised floor there blocks the way; the first steps of a stair and a doorway's lintel don't).
+ */
+const PORT_PROBE = { out: 0.25, across: [-0.45, 0, 0.45], heights: [1, 1.5] } as const;
+
+/** Whether a point is inside a box (turned and tilted boxes too). */
+function insideBox(b: WorldBox, x: number, y: number, z: number): boolean {
+  const cx = (b.min[0] + b.max[0]) / 2;
+  const cy = (b.min[1] + b.max[1]) / 2;
+  const cz = (b.min[2] + b.max[2]) / 2;
+  let lx = x - cx;
+  let ly = y - cy;
+  let lz = z - cz;
+  if (isTilted(b)) {
+    const q = boxQuat(b.yaw, b.pitch, b.roll);
+    [lx, ly, lz] = quatRotate({ x: -q.x, y: -q.y, z: -q.z, w: q.w }, lx, ly, lz);
+  } else if (b.yaw) [lx, lz] = yawXZ(lx, lz, -b.yaw);
+  return Math.abs(lx) <= (b.max[0] - b.min[0]) / 2 && Math.abs(ly) <= (b.max[1] - b.min[1]) / 2 && Math.abs(lz) <= (b.max[2] - b.min[2]) / 2;
+}
+
+/**
+ * Each port of a placement (setPiecePorts) and whether it faces a wall: something solid built just outside it (a
+ * tile's wall or window, a free block, a raised floor), which MapMaker warns about on the ghost and the selected piece.
+ * `boxes`: the map's collision as played (buildMapGeometry of the map with its set pieces expanded), with or without
+ * this placement's own parts (they are skipped); trim, props and the map's edge barriers don't count.
+ */
+export function setPiecePortStates(
+  p: Pick<SetPiecePlacement, 'id' | 'x' | 'y' | 'z' | 'rotation' | 'mirror'>,
+  def: Pick<SetPieceDefinition, 'footprint' | 'ports'>,
+  boxes: readonly WorldBox[],
+): SetPiecePortState[] {
+  const { cellSize, levelHeight } = SET_PIECE_GRID;
+  const own = `sp_${p.id}_`;
+  const isOwn = (id: string) => id.startsWith(own) && /^\d+$/.test(id.slice(own.length));
+  const solid = boxes.filter((b) => b.kind !== 'trim' && b.kind !== 'barrier' && b.kind !== 'prop' && !isOwn(b.sourceId));
+  return setPiecePorts(p, def).map((port) => {
+    const [dx, dy] = SIDE_DIRS[port.side];
+    const out = cellSize / 2 + PORT_PROBE.out;
+    const floor = port.z * levelHeight;
+    let blockedBy: string | null = null;
+    for (const u of PORT_PROBE.across) {
+      // Across the side: east-west for a north or south side, north-south for an east or west one.
+      const x = port.x * cellSize + dx * out + (dy ? u : 0);
+      const z = port.y * cellSize + dy * out + (dx ? u : 0);
+      for (const h of PORT_PROBE.heights) blockedBy ??= solid.find((b) => insideBox(b, x, floor + h, z))?.sourceId ?? null;
+      if (blockedBy) break;
+    }
+    return { ...port, blockedBy };
+  });
 }

@@ -4,7 +4,7 @@
  * atlas each piece's preview lives in. Plain data, no Babylon, so the atlas
  * tool (tools/content/palette-items.ts) and the tests read the same rules.
  */
-import { CORE_PROPS, MOUNT_DEFS, MOUNT_MODELS, coreCatalog, envModelFile, type PropDefinition } from '@tiletrigger/shared';
+import { CORE_PROPS, MOUNT_DEFS, MOUNT_MODELS, builtInSetPieces, coreCatalog, envModelFile, type PropDefinition, type SetPieceDefinition } from '@tiletrigger/shared';
 
 /** Palette categories: each tab has one, with one colour used on the tab, its headings and a thin accent on its pieces. */
 export const PALETTE_CATEGORIES = {
@@ -24,6 +24,7 @@ export type PaletteCategory = keyof typeof PALETTE_CATEGORIES;
 /** Palette pane (the `data-pane` of a tab) → its category. */
 export const PANE_CATEGORY: Readonly<Record<string, PaletteCategory>> = {
   tiles: 'structure',
+  setpieces: 'structure',
   advanced: 'structure',
   props: 'props',
   plants: 'nature',
@@ -122,17 +123,63 @@ export function atlasGroup(key: string, propPack?: string): string {
   if (key.startsWith('tile:')) return `tiles-${key.slice(5).split('.')[0]}`;
   if (key.startsWith('prop:env.')) return 'environment';
   if (key.startsWith('mount:')) return 'vehicles';
+  if (key.startsWith('setpiece:')) return 'setpieces';
   return propPack ? `props-${propPack}` : 'other';
 }
 
-/** Every shipped piece that has a model picture: tiles, props, the Nature tab's generated species and vehicles/turrets, by palette key. */
-export function pictureKeys(): { key: string; tile?: string; file?: string }[] {
+/** Every shipped piece that has a model picture: tiles, props, the Nature tab's generated species, vehicles/turrets and set pieces, by palette key. */
+export function pictureKeys(): { key: string; tile?: string; file?: string; setPiece?: string }[] {
   return [
     ...coreCatalog.all().map((d) => ({ key: `tile:${d.id}`, tile: d.id })),
     ...CORE_PROPS.map((p) => ({ key: `prop:${p.id}`, file: p.file })),
     ...GROUND_COVER_IDS.map((id) => ({ key: `prop:${id}`, file: envModelFile(id)! })),
     ...MOUNT_MODELS.map((m) => ({ key: `mount:${m}`, file: MOUNT_DEFS[m].model })),
+    ...[...builtInSetPieces().pieces.keys()].map((id) => ({ key: `setpiece:${id}`, setPiece: id })),
   ];
+}
+
+/**
+ * The Set pieces tab's groups: one per family (content/setpieces/<family>.json), in this order, then any family not
+ * named here (title-cased), then the player's own pieces (`custom`: saved from a selection, in their library or the map).
+ */
+export const SET_PIECE_FAMILIES: readonly (readonly [family: string, label: string])[] = [
+  ['carriageway', 'Carriageways'],
+  ['skybridge', 'Skybridges'],
+  ['casemate', 'Casemates'],
+  ['trench', 'Trench runs'],
+  ['cliffstair', 'Cliff stairs'],
+  ['stairtower', 'Stair towers'],
+  ['arena', 'Arena stands'],
+  ['hypogeum', 'Hypogeum'],
+  ['insula', 'Insulae'],
+  ['landing', 'Landing craft'],
+];
+
+/** A family's label in the Set pieces tab. */
+export function setPieceFamilyLabel(family: string): string {
+  if (family === 'custom') return 'My set pieces';
+  return SET_PIECE_FAMILIES.find(([f]) => f === family)?.[1] ?? family.replace(/_/g, ' ').replace(/^./, (c) => c.toUpperCase());
+}
+
+/** The order of families in the Set pieces tab (named ones first, then the rest by name, the player's own last). */
+export function setPieceFamilyOrder(family: string): number {
+  const i = SET_PIECE_FAMILIES.findIndex(([f]) => f === family);
+  return family === 'custom' ? 1e6 : i >= 0 ? i : 1e3;
+}
+
+/**
+ * Whether a set piece goes with a Style Pack (the palette's pack picker): one of the role packs it suits is that Style
+ * Pack's look (roles.json `stylePack`, or the same id). A piece that names no pack (the player's own) goes with every one.
+ */
+export function setPieceSuitsStylePack(def: Pick<SetPieceDefinition, 'packs'>, stylePack: string, packs: ReadonlyMap<string, { stylePack?: string }>): boolean {
+  if (!def.packs.length) return true;
+  return def.packs.some((id) => id === stylePack || packs.get(id)?.stylePack === stylePack);
+}
+
+/** The role pack that gives a Style Pack's look to set pieces (the palette's pack picker re-themes them with it), if any. */
+export function stylePackRoles(stylePack: string, packs: ReadonlyMap<string, { id: string; stylePack?: string }>): string | null {
+  for (const p of packs.values()) if (p.stylePack === stylePack) return p.id;
+  return packs.has(stylePack) ? stylePack : null;
 }
 
 /** Scenario palette entries (Objects & Logic tab) by sub-group; game-mode objects, lights and NPC spawners have their own tabs. */

@@ -181,6 +181,14 @@ export class Palette {
     if (!meta.pack && meta.picture) void this.atlas.pack(meta.key).then((p) => p && (entry.fields = searchFields(meta.name, `${meta.tags ?? ''} ${group}`, p)));
   }
 
+  /** Forget a card (the player's own set pieces come and go): it leaves search, favourites and recent until registered again. */
+  unregister(key: string): void {
+    const e = this.entries.get(key);
+    if (!e) return;
+    this.entries.delete(key);
+    e.el.remove();
+  }
+
   /** Tooltip text of a card (set after registering, e.g. a Style Pack's note on a gameplay piece). */
   setTip(el: HTMLElement, tip: string): void {
     el.dataset.tip = tip;

@@ -16,7 +16,7 @@ import { CreateLineSystem } from '@babylonjs/core/Meshes/Builders/linesBuilder';
 import { Material } from '@babylonjs/core/Materials/material';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import type { LinesMesh } from '@babylonjs/core/Meshes/linesMesh';
-import type { MapDocument, MapEntity, PropEntity, Rotation, TerrainData, Vec3, WorldBox } from '@tiletrigger/shared';
+import type { MapDocument, MapEntity, PropEntity, Rotation, Side, TerrainData, TilePlacement, Vec3, WorldBox } from '@tiletrigger/shared';
 import { DESTRUCTIBLE_SPECS, MAX_TEAMS, MOUNT_DEFS, mountTint, PLAYER, buildMapDecor, buildMapGeometry, dynamicBlockIds, getProp, mapLiquids, terrainHeightAt, yawXZ, mapFactions, mapTeams, placementCells, viewDirection, terrainUnderFloors, withPathsLaid, hungPropLift, rebedShift, visibleFaces, propFlushLifts } from '@tiletrigger/shared';
 import { PROP_CONTACTS } from '@tiletrigger/shared/propContacts';
 import { ScenarioVisuals, placeScenarioNode } from '../game/scenarioVisuals.ts';
@@ -32,7 +32,7 @@ import { PICKUP_HOVER, createPickupVisual } from '../game/pickupVisuals.ts';
 import { createPropNode, disposePropNode, orientProp } from '../game/propVisuals.ts';
 import { CityVisuals } from '../game/cityVisuals.ts';
 import { createMountNode } from '../game/mountVisuals.ts';
-import type { TransformNode } from '@babylonjs/core/Meshes/transformNode';
+import { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import { CreateCylinder } from '@babylonjs/core/Meshes/Builders/cylinderBuilder';
 import { CreateGround } from '@babylonjs/core/Meshes/Builders/groundBuilder';
 import { Texture } from '@babylonjs/core/Materials/Textures/texture';
@@ -55,6 +55,15 @@ interface EntityMarker {
   /** Selection outline for pickups. */
   ring?: Mesh;
 }
+
+/** A set piece as MapMaker outlines it (placing or selected): the grid cells it claims and its ports. */
+export interface PieceOutline {
+  cells: readonly (readonly [number, number, number])[];
+  ports: readonly { x: number; y: number; z: number; side: Side; kind: 'door' | 'opening'; blocked: boolean }[];
+}
+
+/** Port marker colours: a doorway, an opening, and one that faces a wall. */
+const PORT_COLOURS = { door: new Color4(0.31, 0.7, 1, 1), opening: new Color4(0.35, 0.84, 0.55, 1), blocked: new Color4(1, 0.35, 0.31, 1) } as const;
 
 /**
  * Editor scene: the map (with floor isolation), active-level grid, ghost
@@ -85,7 +94,14 @@ export class EditorView {
   private readonly models: ModelLibrary;
   private readonly city: CityVisuals;
   private readonly scenario: ScenarioVisuals;
-  private readonly mat: Record<'ghostOk' | 'ghostBad' | 'outline' | 'outlineBad' | 'hover' | 'spawn' | 'spawnSel' | 'visor' | 'face' | 'erase' | 'pick' | 'eraseFill' | 'pickFill', StandardMaterial>;
+  private readonly mat: Record<'ghostOk' | 'ghostBad' | 'outline' | 'outlineBad' | 'pieceOk' | 'hover' | 'spawn' | 'spawnSel' | 'visor' | 'face' | 'erase' | 'pick' | 'eraseFill' | 'pickFill', StandardMaterial>;
+  /** Draws a set piece's ghost (its parts in their real materials, see-through). */
+  private readonly pieceStyler: MapStyler;
+  /** The set piece being placed: its parts under one node, built for a piece, turn, mirror and look, moved cell to cell. */
+  private pieceGhost: { key: string; root: TransformNode; meshes: Mesh[]; nodes: TransformNode[] } | null = null;
+  /** The ghost's footprint and ports (green or red), and what they were drawn for. */
+  private pieceMarks: Mesh[] = [];
+  private pieceMarksKey = '';
   /** Draws the levels other than the one being edited, ghosted. */
   private readonly dimStyler: MapStyler;
   /** Marker root node -> entity id, for picking entities by their meshes. */
@@ -128,6 +144,7 @@ export class EditorView {
     new DirectionalLight('sun', new Vector3(-0.4, -1, 0.3), this.scene).intensity = 0.5;
     this.styler = new MapStyler(this.scene);
     this.dimStyler = new MapStyler(this.scene, this.styler);
+    this.pieceStyler = new MapStyler(this.scene, this.styler);
     this.backdrop = new BackdropVisuals(this.scene, this.styler);
     this.models = new ModelLibrary(this.scene);
     this.city = new CityVisuals(this.models, 'edcity');
@@ -154,6 +171,7 @@ export class EditorView {
       ghostBad: flat('ghostBad', '#ff5a4f', 0.25),
       outline: flat('outline', '#ffb03b', 1, true),
       outlineBad: flat('outlineBad', '#ff5a4f', 1, true),
+      pieceOk: flat('pieceOk', '#58d68d', 1, true),
       hover: flat('hover', '#ffffff', 1, true),
       spawn: flat('spawn', '#4fb3ff'),
       spawnSel: flat('spawnSel', '#ffb03b'),
@@ -400,7 +418,7 @@ export class EditorView {
     for (const n of this.photoHidden) n.setEnabled(true);
     this.photoHidden = [];
     if (!on) return;
-    const aids: (TransformNode | undefined)[] = [this.trace?.mesh, this.area.root, this.overlaps, this.brushRing, this.gizmo, this.hover, this.ghost, this.faceHighlight, this.propGhost?.node, ...this.outlines, ...this.pickBoxes];
+    const aids: (TransformNode | undefined)[] = [this.trace?.mesh, this.area.root, this.overlaps, this.brushRing, this.gizmo, this.hover, this.ghost, this.faceHighlight, this.propGhost?.node, this.pieceGhost?.root, ...this.pieceMarks, ...this.outlines, ...this.pickBoxes];
     for (const m of this.markers.values()) aids.push(m.ring, m.key === 'spawn' ? m.node : undefined);
     for (const n of aids) {
       if (!n || !n.isEnabled(false)) continue;
@@ -653,7 +671,7 @@ export class EditorView {
    * Outline what the pointer would act on: red for the Erase tool, cyan for Select.
    * Tiles get a box per cell; entities a box round their drawn model.
    */
-  setPickHighlight(doc: MapDocument, target: { kind: 'tile' | 'entity'; id: string } | null, style: 'erase' | 'pick', revision: number): void {
+  setPickHighlight(doc: MapDocument, target: { kind: 'tile' | 'entity' | 'setpiece'; id: string } | null, style: 'erase' | 'pick', revision: number, pieceCells: readonly (readonly [number, number, number])[] = []): void {
     const key = target ? `${target.kind}:${target.id}:${style}:${revision}` : '';
     if (key === this.pickKey) return;
     this.pickKey = key;
@@ -672,9 +690,10 @@ export class EditorView {
       }
     };
     const { cellSize, levelHeight } = doc.classicStructure;
-    if (target.kind === 'tile') {
-      const t = doc.classicStructure.tiles.find((x) => x.id === target.id);
-      for (const [x, y, z] of (t && placementCells(t)) ?? []) {
+    if (target.kind === 'tile' || target.kind === 'setpiece') {
+      // A tile's cells, or a set piece's whole footprint (it selects as one).
+      const t = target.kind === 'tile' ? doc.classicStructure.tiles.find((x) => x.id === target.id) : undefined;
+      for (const [x, y, z] of target.kind === 'setpiece' ? pieceCells : ((t && placementCells(t)) ?? [])) {
         const c = new Vector3(x * cellSize, z * levelHeight + levelHeight / 2, y * cellSize);
         const h = new Vector3(cellSize / 2 - 0.05, levelHeight / 2 - 0.05, cellSize / 2 - 0.05);
         add(c.subtract(h), c.add(h));
@@ -771,22 +790,137 @@ export class EditorView {
     this.ghost!.position.set(cell[0] * cellSize, cell[2] * levelHeight + 0.01, cell[1] * cellSize);
   }
 
-  /** Outline every cell of the given tiles, optionally offset (drag preview). */
-  setOutlines(doc: MapDocument, tileIds: readonly string[], offset: [number, number, number] = [0, 0, 0], bad = false): void {
+  /** Outline every cell of the given tiles and set pieces (a piece with its ports), optionally offset (drag preview). */
+  setOutlines(doc: MapDocument, tileIds: readonly string[], offset: [number, number, number] = [0, 0, 0], bad = false, pieces: readonly PieceOutline[] = []): void {
     for (const o of this.outlines) o.dispose();
     this.outlines = [];
     const { cellSize, levelHeight } = doc.classicStructure;
     const ids = new Set(tileIds);
-    for (const t of doc.classicStructure.tiles) {
-      if (!ids.has(t.id)) continue;
-      for (const [x, y, z] of placementCells(t) ?? []) {
-        const box = CreateBox('outline', { width: cellSize - 0.1, depth: cellSize - 0.1, height: levelHeight - 0.1 }, this.scene);
-        box.position.set((x + offset[0]) * cellSize, (z + offset[2]) * levelHeight + levelHeight / 2, (y + offset[1]) * cellSize);
-        box.material = bad ? this.mat.outlineBad : this.mat.outline;
-        box.isPickable = false;
-        this.outlines.push(box);
+    const cells = doc.classicStructure.tiles.filter((t) => ids.has(t.id)).flatMap((t) => placementCells(t) ?? []);
+    for (const p of pieces) cells.push(...p.cells.map((c) => [c[0], c[1], c[2]] as [number, number, number]));
+    for (const [x, y, z] of cells) {
+      const box = CreateBox('outline', { width: cellSize - 0.1, depth: cellSize - 0.1, height: levelHeight - 0.1 }, this.scene);
+      box.position.set((x + offset[0]) * cellSize, (z + offset[2]) * levelHeight + levelHeight / 2, (y + offset[1]) * cellSize);
+      box.material = bad ? this.mat.outlineBad : this.mat.outline;
+      box.isPickable = false;
+      this.outlines.push(box);
+    }
+    const ports = pieces.flatMap((p) => p.ports.map((q) => ({ ...q, x: q.x + offset[0], y: q.y + offset[1], z: q.z + offset[2] })));
+    if (ports.length) this.outlines.push(this.portMarks(doc, ports, 'selPorts'));
+  }
+
+  /**
+   * A set piece's ports as marks on its outline: a doorway's frame standing in the side (2 × 2.4 m) and an arrow on the
+   * floor pointing out, blue for a door, green for an opening, red where a wall stands in the way; drawn over the map.
+   */
+  private portMarks(doc: MapDocument, ports: PieceOutline['ports'], name: string): Mesh {
+    const { cellSize, levelHeight } = doc.classicStructure;
+    const lines: Vector3[][] = [];
+    const colors: Color4[][] = [];
+    const dirs: Record<Side, [number, number]> = { N: [0, 1], E: [1, 0], S: [0, -1], W: [-1, 0] };
+    for (const p of ports) {
+      const [dx, dz] = dirs[p.side];
+      // The side's middle, a hair outside the cell; `a` runs along the side.
+      const cx = p.x * cellSize + (dx * cellSize) / 2;
+      const cz = p.y * cellSize + (dz * cellSize) / 2;
+      const y = p.z * levelHeight + 0.06;
+      const ax = dz ? 1 : 0;
+      const az = dx ? 1 : 0;
+      const w = p.kind === 'door' ? 1 : 1.6;
+      const at = (u: number, h: number, out = 0) => new Vector3(cx + ax * u + dx * out, y + h, cz + az * u + dz * out);
+      const c = p.blocked ? PORT_COLOURS.blocked : PORT_COLOURS[p.kind];
+      const frame = [at(-w, 0), at(-w, 2.4), at(w, 2.4), at(w, 0)];
+      const arrow = [
+        [at(0, 0, -1.2), at(0, 0, 1.4)],
+        [at(-0.6, 0, 0.8), at(0, 0, 1.4), at(0.6, 0, 0.8)],
+      ];
+      for (const l of [frame, ...arrow]) {
+        lines.push(l);
+        colors.push(l.map(() => c));
+      }
+      // A cross where it's blocked.
+      if (p.blocked) for (const l of [[at(-0.7, 0.5, 0.3), at(0.7, 1.9, 0.3)], [at(0.7, 0.5, 0.3), at(-0.7, 1.9, 0.3)]]) {
+        lines.push(l);
+        colors.push(l.map(() => c));
       }
     }
+    const mesh = CreateLineSystem(name, { lines, colors }, this.scene);
+    mesh.isPickable = false;
+    mesh.renderingGroupId = 1;
+    return mesh;
+  }
+
+  /**
+   * The set piece about to be placed, see-through in its real materials (its look: the pack picker re-themes it), at
+   * anchor cell `at`, with its footprint and ports outlined green, or red when it can't go there. `key` names what the
+   * parts were built for (piece, turn, mirror, look, theme): the parts are built once for it, at the grid's origin,
+   * and moved with the pointer; `parts()` gives them (placed at anchor 0, 0, 0). Null `at` hides it.
+   */
+  setPieceGhost(doc: MapDocument, key: string | null, parts: () => { tiles: TilePlacement[]; entities: MapEntity[] }, at: readonly [number, number, number] | null, ok: boolean, outline: PieceOutline | null): void {
+    if (!key || !at) {
+      this.pieceGhost?.root.setEnabled(false);
+      for (const m of this.pieceMarks) m.setEnabled(false);
+      return;
+    }
+    const { cellSize, levelHeight } = doc.classicStructure;
+    if (this.pieceGhost?.key !== key) {
+      this.disposePieceGhost();
+      const { tiles, entities } = parts();
+      const ids = new Set([...tiles.map((t) => t.id), ...entities.map((e) => e.id)]);
+      // Only the piece: its tiles and blocks on an empty map (no terrain, edges or anything else of the map's).
+      const single: MapDocument = { ...doc, terrain: null, bounds: null, classicStructure: { ...doc.classicStructure, tiles }, entities: entities.filter((e) => e.kind === 'block') };
+      const boxes = [...buildMapGeometry(single), ...buildMapDecor(single)].filter((b) => ids.has(b.sourceId));
+      const root = new TransformNode('pieceGhost', this.scene);
+      const meshes = this.pieceStyler.buildBoxes(single, boxes, 'edpiece');
+      for (const m of meshes) {
+        m.unfreezeWorldMatrix();
+        m.parent = root;
+        m.visibility = 0.6;
+        m.isPickable = false;
+      }
+      const teams = mapTeams(doc, MAX_TEAMS);
+      const nodes = entities
+        .filter((e) => e.kind !== 'block')
+        .map((e, i) => {
+          const node = this.entityNode(e, `pieceGhost${i}`, teams);
+          node.parent = root;
+          this.placeEntityNode(node, e, single);
+          seeThrough(node);
+          return node;
+        });
+      this.pieceGhost = { key, root, meshes, nodes };
+    }
+    const g = this.pieceGhost!;
+    g.root.setEnabled(true);
+    g.root.position.set(at[0] * cellSize, at[2] * levelHeight, at[1] * cellSize);
+    const marksKey = JSON.stringify([ok, outline]);
+    if (marksKey !== this.pieceMarksKey) {
+      this.pieceMarksKey = marksKey;
+      for (const m of this.pieceMarks) m.dispose();
+      this.pieceMarks = [];
+      for (const [x, y, z] of outline?.cells ?? []) {
+        const box = CreateBox('pieceCell', { width: cellSize - 0.1, depth: cellSize - 0.1, height: levelHeight - 0.1 }, this.scene);
+        box.position.set(x * cellSize, z * levelHeight + levelHeight / 2, y * cellSize);
+        box.material = ok ? this.mat.pieceOk : this.mat.outlineBad;
+        box.isPickable = false;
+        this.pieceMarks.push(box);
+      }
+      if (outline?.ports.length) this.pieceMarks.push(this.portMarks(doc, outline.ports, 'ghostPorts'));
+    }
+    for (const m of this.pieceMarks) m.setEnabled(true);
+  }
+
+  private disposePieceGhost(): void {
+    const g = this.pieceGhost;
+    if (!g) return;
+    for (const n of g.nodes) disposePropNode(n);
+    // The styler disposes its meshes itself, when it builds the next ghost.
+    for (const m of g.meshes) {
+      m.parent = null;
+      m.setEnabled(false);
+    }
+    g.root.dispose();
+    this.pieceGhost = null;
   }
 
   /** Highlight one face of a box (paint hover); `normal` is in the box's own frame. Null hides it. */
