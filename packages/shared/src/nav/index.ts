@@ -507,6 +507,13 @@ export function validateNavigation(map: MapDocument, nav: NavWorld, physics?: Ph
     }
   }
   if (physics) {
+    // A spawn point inside something solid (a tile's stairs, a wall, a prop): whoever spawns there can't move. (Sandfall
+    // Colosseum's spawn_269 stood in the stand's steps: a bot spawned there stood all match.)
+    for (const s of spawns) {
+      if (!physics.boxClear({ x: s.position[0], y: s.position[1] + 1, z: s.position[2] }, { x: 0.25, y: 0.5, z: 0.25 })) {
+        issues.push({ severity: 'warning', code: 'spawn.blocked', message: `spawn ${s.id} is inside something solid: whoever spawns there can't move`, targetId: s.id });
+      }
+    }
     issues.push(...ziplineClearanceIssues(map.entities, physics));
     // Ziplines: where you grab one and where it drops you must be walkable ground (players and bots get there and away).
     const zips = mapZiplines(map.entities);
