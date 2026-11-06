@@ -21,7 +21,7 @@
       "name": "Satellite Dish",
       "category": "Orbital Station",
       "height": 3.6,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "os_comms_dish",
@@ -29,7 +29,7 @@
       "name": "Comms Dish",
       "category": "Orbital Station",
       "height": 2.4,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "os_generator",
@@ -37,7 +37,7 @@
       "name": "Fusion Generator",
       "category": "Orbital Station",
       "height": 1.8,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "os_power_unit",
