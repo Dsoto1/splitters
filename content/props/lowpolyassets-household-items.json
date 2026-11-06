@@ -144,7 +144,7 @@
       "src": "Beds/Bunk Bed.fbx",
       "name": "Bunk Bed",
       "category": "Household",
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "hh_chair",
@@ -172,7 +172,7 @@
       "src": "Tables/Table A.fbx",
       "name": "Dining Table",
       "category": "Household",
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "hh_table_small",
@@ -200,7 +200,7 @@
       "src": "Tables/Desk.fbx",
       "name": "Writing Desk",
       "category": "Household",
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "hh_sofa",

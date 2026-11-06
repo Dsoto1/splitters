@@ -152,7 +152,7 @@
       "src": "Clutter/Hitching Post.fbx",
       "name": "Hitching Post",
       "category": "Wild West",
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "ww_horseshoe",
@@ -236,7 +236,7 @@
       "src": "Miscellaneous/Gallows.fbx",
       "name": "Gallows",
       "category": "Wild West",
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "ww_rail",
@@ -264,7 +264,7 @@
       "src": "Modular/Balconies/Balcony A.fbx",
       "name": "Wild West Balcony A",
       "category": "Wild West",
-      "collide": "box",
+      "collide": "voxel",
       "scale": 0.016
     },
     {
@@ -272,7 +272,7 @@
       "src": "Modular/Balconies/Balcony B.fbx",
       "name": "Wild West Balcony B",
       "category": "Wild West",
-      "collide": "box",
+      "collide": "voxel",
       "scale": 0.016
     },
     {
@@ -280,7 +280,7 @@
       "src": "Modular/Balconies/Balcony C.fbx",
       "name": "Wild West Balcony C",
       "category": "Wild West",
-      "collide": "box",
+      "collide": "voxel",
       "scale": 0.016
     },
     {
@@ -288,7 +288,7 @@
       "src": "Modular/Balconies/Balcony D.fbx",
       "name": "Wild West Balcony D",
       "category": "Wild West",
-      "collide": "box",
+      "collide": "voxel",
       "scale": 0.016
     },
     {
@@ -296,7 +296,7 @@
       "src": "Modular/Balconies/Balcony E.fbx",
       "name": "Wild West Balcony E",
       "category": "Wild West",
-      "collide": "box",
+      "collide": "voxel",
       "scale": 0.016
     },
     {
@@ -304,7 +304,7 @@
       "src": "Modular/Balconies/Balcony F.fbx",
       "name": "Wild West Balcony F",
       "category": "Wild West",
-      "collide": "box",
+      "collide": "voxel",
       "scale": 0.016
     },
     {
@@ -312,7 +312,7 @@
       "src": "Modular/Balconies/Balcony With Railing A.fbx",
       "name": "Wild West Balcony With Railing A",
       "category": "Wild West",
-      "collide": "box",
+      "collide": "voxel",
       "scale": 0.016
     },
     {
@@ -320,7 +320,7 @@
       "src": "Modular/Balconies/Balcony With Railing B.fbx",
       "name": "Wild West Balcony With Railing B",
       "category": "Wild West",
-      "collide": "box",
+      "collide": "voxel",
       "scale": 0.016
     },
     {
@@ -328,7 +328,7 @@
       "src": "Modular/Balconies/Balcony With Railing C.fbx",
       "name": "Wild West Balcony With Railing C",
       "category": "Wild West",
-      "collide": "box",
+      "collide": "voxel",
       "scale": 0.016
     },
     {
@@ -802,6 +802,7 @@
       "name": "Wild West Big Staircase A",
       "category": "Wild West",
       "collide": "stairs",
+      "fills": "a long open flight: its collision stays solid under the steps (collide \"stairs\") so players and bots walk up it reliably; voxel collision would leave only the treads",
       "climbs": "auto",
       "scale": 0.016
     },
@@ -871,6 +872,7 @@
       "name": "Wild West Stairs B",
       "category": "Wild West",
       "collide": "stairs",
+      "fills": "a long open flight: its collision stays solid under the steps (collide \"stairs\") so players and bots walk up it reliably; voxel collision would leave only the treads",
       "climbs": "auto",
       "scale": 0.016
     },
@@ -880,6 +882,7 @@
       "name": "Wild West Stairs C",
       "category": "Wild West",
       "collide": "stairs",
+      "fills": "a long open flight: its collision stays solid under the steps (collide \"stairs\") so players and bots walk up it reliably; voxel collision would leave only the treads",
       "climbs": "auto",
       "scale": 0.016
     },
@@ -889,6 +892,7 @@
       "name": "Wild West Stairs D",
       "category": "Wild West",
       "collide": "stairs",
+      "fills": "a long open flight: its collision stays solid under the steps (collide \"stairs\") so players and bots walk up it reliably; voxel collision would leave only the treads",
       "climbs": "auto",
       "scale": 0.016
     },
@@ -1264,14 +1268,14 @@
       "src": "Transportation/Cart C.fbx",
       "name": "Cart C",
       "category": "Wild West",
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "ww_stagecoach",
       "src": "Transportation/Stagecoach.fbx",
       "name": "Stagecoach",
       "category": "Wild West",
-      "collide": "box"
+      "collide": "voxel"
     }
   ]
 }

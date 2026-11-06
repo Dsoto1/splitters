@@ -136,7 +136,7 @@
       "name": "Barrier",
       "category": "Sci-Fi",
       "height": 1.1,
-      "collide": "box",
+      "collide": "voxel",
       "breakable": {
         "health": 120,
         "debris": "#7a8088"
@@ -148,7 +148,7 @@
       "name": "High Barrier",
       "category": "Sci-Fi",
       "height": 2.2,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "display_wall",

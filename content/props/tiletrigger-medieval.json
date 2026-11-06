@@ -39,7 +39,7 @@
       "name": "Hay Cart",
       "category": "Medieval Village",
       "height": 1.88,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "mv_forge",
@@ -56,7 +56,7 @@
       "name": "Workbench",
       "category": "Medieval Village",
       "height": 0.98,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "mv_planter",

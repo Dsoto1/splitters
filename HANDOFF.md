@@ -451,7 +451,72 @@ Resume each from its branch, after merging main.
 **Likely a regression** from performance rounds 1–2. Fix it with an e2e check that a character past LOD distance
 draws its whole body.
 
-### Queued FIRST (owner bug report, 2026-11-06): bullets stop in the air inside arches, windows and holes
+### Openings fix (`wip/openings`, agent, 2026-11-06; CI on `check/openings`)
+Status: green on `check/openings`: CI run 42160424451 on 73b46f93, every job (docs-only commits since); ready to
+land. The report below is what it fixes.
+- **Done:**
+  - `collide: "voxel"` (tools/content/voxel-collision.mjs): 3D collision from the model (0.1 m cubes, flood fill from
+    the sides and above, exact cover, merges that never fill air in sight, faces pulled in to the model), with a box
+    budget per prop (48; hero 160; `voxelBudget`) and a coarsening ladder. 134 props use it (103 were `box`, 20
+    `shell`, 5 `frame`, 5 `trunk` with no single trunk, 1 `openings`); 207 props' collision changed in all.
+  - Trunk columns on the real trunk (`trunkBoxes`), as thick as it, following leans, stopping where broadleaf trees
+    fork: 47 trees and poles changed (Meshy birches were 1.5 m off; this was screenshot 32).
+  - `shell` merges only cells of one height (no walls of air at the tallest cell; coarser steps when that's over the
+    prop's box budget): 26 props tightened. The red rock spires (dustwater ×12) and the excavator only fit their
+    budget with the old merge, so they keep it (slack round the spires stays: `--slack`).
+  - Breakable props collide as their `boxes` (ScenarioBodies `parts`).
+  - Openings audit `tools/content/prop-openings.mjs` in `pnpm content:check` (an opening has the model on both
+    sides: windows, arches, gateways between posts; `fills` reasons for the 9 kept); `--slack` lists air round
+    outlines (`box` props: not changed); fixture
+    `packages/shared/test/fixtures/prop-openings.json` + `propOpenings.test.ts` (every changed prop, probes, points of
+    the model, digests of the rest; shots, walking, nav and cover in play); `tools/content/test/voxel-collision.test.mjs`.
+  - docs/CONTENT_PIPELINE.md "Prop collision"; CHANGELOG.
+- **Screenshot 32** (Fernwood Moon, under `jg_giant_root` prop_602, scale 1.6): no `env.*` species on that map, and
+  bushes have no collider, so not limbs or foliage. Rays cast from under the root with the old table: 352 of 1,261
+  prop hits landed in open air more than 25 cm from the model, mostly on trunk columns standing off the trunk
+  (nt_common_tree 0.58 m off, nt_pine_*), tents and stumps. With the trunk columns moved, 185 of 1,244, mostly the
+  boxes round the mossy stumps (up to 1.2 m off the model at their scale 1.3-1.8) and logs and the sci-fi dishes; those
+  five props now collide as voxel too, leaving 86 of 1,198 (7 %), nearly all on pine columns inside the crowns, where
+  the trunk thins (0.3-0.85 m off at scale). Script: session scratchpad `openings/work/fernwood.mts`.
+- **Checked:**
+  - In play (propOpenings.test.ts): shots through the arches, the holed wall and under the giant root, stopping on the
+    stone with the same material and thickness; players walk through five arches and doorways, not through a wall; bots
+    path through four arches; crouched cover beside the hole holds; a broad tree's old column spot is open, its trunk
+    stops rounds; a breakable tent's boxes are all the tent.
+  - On the maps (old table against new, scratchpad `openings/work/navthrough.mts`): bots now path straight through
+    the round arches and the ivy arch walls on Sandfall Colosseum, Serpent Gorge and Sunstone Crag (6.0-7.2 m instead
+    of 8.6-10.7 m round); windows and broken-wall gaps above the ground stay "round" (not walkable).
+  - `pnpm validate-map` on all 81 maps that place a changed prop: 79 clean; No Man's Field's logic-loop warning and
+    Diamond Park's 113 `nav.disconnected` (spawn_1746 in the dugout) are the same with the old table. Hollowmere
+    Manor and Pharaoh's Reach (the gates and the reed boat) again after they switched, and the eight maps placing the
+    mossy stump and log, the dishes and the generator after theirs: clean.
+  - Prop collision boxes on those maps: 14,811 to 32,936 (busiest: Backwoods, St John's ~1,500); navmesh builds
+    +10-25 % on the busiest maps, shot raycasts +20-40 % in a random test (machine loaded: noisy). CI's 96-bot
+    Frost Basin bench and perf jobs pass; not compared before and after on a quiet machine. Locally, `pnpm
+    test:changed` on a machine shared with two other agents: 11 bot, nav and host tests timed out and the 96-bot
+    bench took 49 ms a tick (limit 30; all pass on CI), and propOpenings read a props table regenerated mid-run
+    (alone: 22 of 22 pass).
+  - Screenshots (scratchpad `openings/after/`, before-* on the old build, after-* on this one): rounds through
+    Fogbound's arch fly 93-100 m (before: all stopped 3.7-4.0 m away, on the invisible box face at z 8.7), rounds at
+    its pillars stop on the stone; through the holed wall 15.8-90 m (before: 3.7-4.3 m, on the box face); a player
+    walks through the arch (z 6 to 11.2; before: stopped at 8.25); prop collision drawn over the scene.
+  - `botRiders.test.ts` keeps its buggy repaired on its blind drive: the drive's path drifted and went over Iron Maw's
+    pit edge (crash damage, riders rightly out).
+  - E2E locally (temp runner copy with the local Chromium): arsenal, coverage and visual pass; the maps flow on ten
+    changed maps (Backwoods, Fernwood Moon, Fogbound, Hollowmere Manor, Iron Maw, Pharaoh's Reach, Sandfall
+    Colosseum, Serpent Gorge, St John's, Sunstone Crag) passes with CI's waits (`CI=1`; with desk waits the loaded
+    machine missed the 60 s match start, the old build too).
+- **Resume:** `git checkout wip/openings`, `pnpm install`, `node tools/content/prepare-props.mjs` (voxelises into
+  node_modules/.cache, ~1 min cold), `node tools/content/prop-openings.mjs --check`, then the checks in CLAUDE.md.
+  Scratch scripts (renders, audits, screenshots) in the session scratchpad `openings/work/`.
+- **Follow-ups (owner's call):** slack round the other `box` props (stumps, logs, dishes, car bonnets: `--slack`;
+  Fernwood Moon's mossy stump and log, the space kit's dishes and generator are done) and the red rock spires; Diamond Park's dugout spawn cut off from the navmesh (before this change too). Bars and fences
+  with gaps under 0.5 m keep their box, so rounds still stop between the bars: `iron_fence` (gaps 0.25 × 0.7 m, 48
+  placements on Hollowmere Manor and St John's), `dg_arch_bars` (0.3 m), the `lf_*` gates and fences (0.1-0.25 m).
+  The windows the report named (`sf_wall_window`, `sf_wall_astra_window`, `hp_wall_window`) have glass panes and
+  `dg_arch_door` a closed door: their boxes stop rounds on the pane or the door, not in the air.
+
+### Fixed by the openings fix above (owner bug report, 2026-11-06): bullets stop in the air inside arches, windows and holes
 The owner's screenshots, in the session scratchpad `openings/` (30.jpg, 31.jpg, 32.jpg), show bullet holes in empty
 air inside openings:
 - a big stone round arch;

@@ -57,6 +57,7 @@ import { MESHY_QUANTIZE, markings, meshyDocument, normalJpeg, paintOut } from '.
 import { readLock, writeLock } from './lockfile.mjs';
 import { applySurfaces, isSurfaced, surfaceRules } from './surfaces.mjs';
 import { loadPropManifest } from './props-manifest.mjs';
+import { sceneTriangles, trunkBoxes, voxelBudget, voxelCollision } from './voxel-collision.mjs';
 
 await MeshoptSimplifier.ready;
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
@@ -176,33 +177,6 @@ async function bakeKitMaterials(doc, o) {
 /** Rotation quaternion of `deg` degrees about +Y (kit pieces face other ways than our props). */
 const yawQuat = (deg) => [0, Math.sin((deg * Math.PI) / 360), 0, Math.cos((deg * Math.PI) / 360)];
 
-/** Every triangle in the scene, in scene space, as three [x, y, z] points (for collision analysis). */
-function sceneTriangles(scene) {
-  const tris = [];
-  const visit = (node) => {
-    // Lower levels of detail (nature.mjs) are not the model's shape.
-    if (node.getExtras()?.lod) return;
-    const m = node.getWorldMatrix();
-    const mesh = node.getMesh();
-    if (mesh)
-      for (const prim of mesh.listPrimitives()) {
-        // Element reads, so quantized (normalized) positions come back in model units.
-        const acc = prim.getAttribute('POSITION');
-        const a = new Float32Array(acc.getCount() * 3);
-        for (let i = 0, e = [0, 0, 0]; i < acc.getCount(); i++) a.set(acc.getElement(i, e), i * 3);
-        const at = (i) => {
-          const [x, y, z] = [a[i * 3], a[i * 3 + 1], a[i * 3 + 2]];
-          return [m[0] * x + m[4] * y + m[8] * z + m[12], m[1] * x + m[5] * y + m[9] * z + m[13], m[2] * x + m[6] * y + m[10] * z + m[14]];
-        };
-        const idx = prim.getIndices()?.getArray() ?? Array.from({ length: a.length / 3 }, (_, i) => i);
-        for (let i = 0; i + 2 < idx.length; i += 3) tris.push([at(idx[i]), at(idx[i + 1]), at(idx[i + 2])]);
-      }
-    for (const c of node.listChildren()) visit(c);
-  };
-  for (const n of scene.listChildren()) visit(n);
-  return tris;
-}
-
 /** The inverse of an affine glTF matrix (column-major 4 × 4). */
 function invertAffine(m) {
   const [a, b, c, d, e, f, g, h, i] = [m[0], m[1], m[2], m[4], m[5], m[6], m[8], m[9], m[10]];
@@ -298,16 +272,22 @@ function cutOpenings(doc, boxes) {
 
 /** Cell size of the `shell` collision grid (metres). */
 const SHELL_CELL = 0.4;
+/**
+ * Cells whose heights differ by more than the step (metres) are never one `shell` box: the finest step that keeps the
+ * prop within its box budget (voxelBudget: 48, hero 160), down to any height (Infinity, a box as tall as its
+ * tallest cell) for an outline too ragged for its budget (the bucket-wheel excavator).
+ */
+const SHELL_STEPS = [0.1, 0.25, 0.5, 1, Infinity];
 
 /**
  * Collision that follows the model's footprint (corners, curved walls and
  * railings): the triangles are rasterised onto a grid seen from above, each
  * covered cell becomes a column as tall as the geometry in it, and runs of
- * cells are merged into as few boxes as possible. `below` (a prop's `shellTop`,
+ * cells of about the same height (within `step`) are merged into as few boxes as possible. `below` (a prop's `shellTop`,
  * metres) leaves out what is higher than that: a crane's boom passes overhead
  * instead of standing on a wall of columns.
  */
-function shellBoxes(size, tris, below = Infinity) {
+function shellBoxes(size, tris, below = Infinity, step = SHELL_STEPS[0]) {
   const [w, , d] = size;
   const nx = Math.max(1, Math.ceil(w / SHELL_CELL));
   const nz = Math.max(1, Math.ceil(d / SHELL_CELL));
@@ -326,15 +306,34 @@ function shellBoxes(size, tris, below = Infinity) {
       }
   }
   const used = new Uint8Array(nx * nz);
-  const free = (ix, iz) => top[iz * nx + ix] > 0 && !used[iz * nx + ix];
+  // Runs merge only cells of about the same height: one box at the tallest of very different cells stood a wall of
+  // air over the low ones (a boat's deck beside its mast, a stair's lower steps).
+  let lo = 0;
+  let hi = 0;
+  const free = (ix, iz) => top[iz * nx + ix] > 0 && !used[iz * nx + ix] && Math.max(hi, top[iz * nx + ix]) - Math.min(lo, top[iz * nx + ix]) <= step;
   const boxes = [];
   for (let iz = 0; iz < nz; iz++)
     for (let ix = 0; ix < nx; ix++) {
+      [lo, hi] = [top[iz * nx + ix], top[iz * nx + ix]];
       if (!free(ix, iz)) continue;
       let x1 = ix;
-      while (x1 + 1 < nx && free(x1 + 1, iz)) x1++;
+      while (x1 + 1 < nx && free(x1 + 1, iz)) {
+        x1++;
+        [lo, hi] = [Math.min(lo, top[iz * nx + x1]), Math.max(hi, top[iz * nx + x1])];
+      }
       let z1 = iz;
-      while (z1 + 1 < nz && Array.from({ length: x1 - ix + 1 }, (_, k) => free(ix + k, z1 + 1)).every(Boolean)) z1++;
+      while (z1 + 1 < nz) {
+        let [rl, rh] = [lo, hi];
+        let ok = true;
+        for (let k = ix; k <= x1 && ok; k++) {
+          const t = top[(z1 + 1) * nx + k];
+          if (!(t > 0) || used[(z1 + 1) * nx + k]) ok = false;
+          else [rl, rh] = [Math.min(rl, t), Math.max(rh, t)];
+        }
+        if (!ok || rh - rl > step) break;
+        z1++;
+        [lo, hi] = [rl, rh];
+      }
       let h = 0;
       for (let z = iz; z <= z1; z++)
         for (let x = ix; x <= x1; x++) {
@@ -347,13 +346,43 @@ function shellBoxes(size, tris, below = Infinity) {
 }
 
 /**
+ * `collide: "voxel"` boxes (voxel-collision.mjs), kept between runs in a local cache (node_modules/.cache, never
+ * committed: CI checks, it doesn't rebuild) by the model's bytes, the prop's settings and the module's source, so a
+ * rebuild only voxelises what changed.
+ */
+const VOXEL_CACHE = join(ROOT, 'node_modules/.cache/tiletrigger/voxel-collision.json');
+const voxelSource = createHash('sha256').update(readFileSync(join(ROOT, 'tools/content/voxel-collision.mjs'))).digest('hex').slice(0, 16);
+const voxelCache = (() => {
+  try {
+    const c = JSON.parse(readFileSync(VOXEL_CACHE, 'utf8'));
+    return c.source === voxelSource ? c : { source: voxelSource, props: {} };
+  } catch {
+    return { source: voxelSource, props: {} };
+  }
+})();
+function voxelProp(p, tris, glb) {
+  const opts = { budget: voxelBudget(p), ...(p.voxelCell ? { cell: p.voxelCell } : {}), ...(p.voxelAir ? { air: p.voxelAir } : {}), minThickness: MIN_THICKNESS };
+  const key = createHash('sha256').update(glb).update(JSON.stringify(opts)).digest('hex').slice(0, 24);
+  const hit = voxelCache.props[p.id];
+  if (hit?.key === key) return hit.boxes;
+  const fit = voxelCollision(tris, opts);
+  if (!fit.boxes.length) throw new Error(`${p.id}: collide "voxel" but its model gives no collision boxes`);
+  if (fit.boxes.length > opts.budget) console.warn(`  ${p.id}: voxel collision has ${fit.boxes.length} boxes, over its budget of ${opts.budget} (pnpm content:check fails)`);
+  if (fit.openings.length) console.warn(`  ${p.id}: voxel collision still fills an opening (${JSON.stringify(fit.openings[0])})`);
+  voxelCache.props[p.id] = { key, boxes: fit.boxes };
+  return fit.boxes;
+}
+
+/**
  * Collision as several boxes in the prop's own space, [minX, minY, minZ, maxX, maxY, maxZ]:
  * `stairs` climb toward +Z (or +X with `climbs: "+x"`) in steps a player can walk up (ramps too); `frame`
  * keeps a doorway open between its posts and under its lintel; `openings` keeps
  * every doorway along a wall open (Low Poly Wild West's shop fronts); `shell`
- * follows the footprint (see shellBoxes).
+ * follows the footprint (see shellBoxes); `voxel` follows the model in 3D, so arches, windows, holes and the space
+ * under bridges and tables stay open (voxel-collision.mjs); `trunk` is a column standing on the model's real trunk
+ * (null, the plain `collision` column, when that is the footprint's middle anyway).
  */
-function collisionBoxes(p, size, tris, modelBoxes = null) {
+function collisionBoxes(p, size, tris, modelBoxes = null, glb = null) {
   const [w, h, d] = size;
   // Given in the game's frame: mirrored here so the caller's mirror puts them back.
   if (p.collide === 'boxes') return p.boxes.map(([x0, y0, z0, x1, y1, z1]) => [-x1, y0, z0, -x0, y1, z1].map(round));
@@ -361,7 +390,14 @@ function collisionBoxes(p, size, tris, modelBoxes = null) {
     if (!modelBoxes?.length) throw new Error(`${p.id}: collide "model" but the GLB carries no collision boxes`);
     return modelBoxes.map((b) => b.map(round));
   }
-  if (p.collide === 'shell') return shellBoxes(size, tris, p.shellTop);
+  if (p.collide === 'shell') {
+    for (const step of SHELL_STEPS) {
+      const boxes = shellBoxes(size, tris, p.shellTop, step);
+      if (boxes.length <= voxelBudget(p) || step === Infinity) return boxes;
+    }
+  }
+  if (p.collide === 'voxel') return voxelProp(p, tris, glb);
+  if (p.collide === 'trunk') return trunkBoxes(tris, size);
   const pts = tris.flat();
   if (p.collide === 'stairs') {
     const n = Math.max(1, Math.ceil(h / STEP_RISE));
@@ -859,7 +895,7 @@ for (const p of manifest.props) {
   const thick = (v) => round(Math.max(v, MIN_THICKNESS));
   const collision = p.collide === 'none' ? null : p.collide === 'trunk' ? [Math.min(0.5, size[0]), size[1], Math.min(0.5, size[2])] : gltfKit || converted ? [thick(size[0]), size[1], thick(size[2])] : size;
   // The game draws glTF models mirrored in x (Babylon's import into its left-handed space), so the boxes are too.
-  const boxes = collision ? collisionBoxes(p, size, sceneTriangles(scene), modelBoxes)?.map(([x0, y0, z0, x1, y1, z1]) => [round(-x1), y0, z0, round(-x0), y1, z1]) : null;
+  const boxes = collision ? collisionBoxes(p, size, sceneTriangles(scene), modelBoxes, glb)?.map(([x0, y0, z0, x1, y1, z1]) => [round(-x1), y0, z0, round(-x0), y1, z1]) : null;
   defs.push({ id: `prop.${p.id}`, file, displayName: p.name, category: p.category, size, collision, ...(boxes ? { boxes } : {}), ...(p.breakable && collision ? { breakable: p.breakable } : {}), ...(p.conceals ? { conceals: true } : {}), ...(p.flame ? { flame: propFlame(p) } : {}) });
   lock.files.push({ file, source: p.pack, ...(p.budget ? { budget: p.budget } : {}), ...(p.source ? { title: `${p.source.model} (download dated ${p.source.date})` } : {}), src: Array.isArray(p.src) ? p.src.join(' + ') : p.src, triangles, ...(lodTriangles.length ? { lodTriangles } : {}), ...(pack.meshy && doc.getRoot().listMaterials().some((m) => m.getNormalTexture()) ? { normalMap: true } : {}), ...(surfaced.get(p.id) ? { surfaces: surfaced.get(p.id) } : {}), bytes: glb.byteLength, sha256: createHash('sha256').update(glb).digest('hex').slice(0, 16) , ...(external && !gltfKit ? { size } : {}) });
 }
@@ -884,6 +920,8 @@ const keep = new Set(lock.files.map((f) => f.file));
 for (const f of readdirSync(OUT)) if (!keep.has(`props/${f}`)) rmSync(join(OUT, f), { recursive: true, force: true });
 
 writeLock(LOCK, lock);
+mkdirSync(dirname(VOXEL_CACHE), { recursive: true });
+writeFileSync(VOXEL_CACHE, JSON.stringify({ source: voxelSource, props: Object.fromEntries(Object.entries(voxelCache.props).filter(([id]) => manifest.props.some((p) => p.id === id && p.collide === 'voxel'))) }));
 const categories = [...new Set(manifest.props.map((p) => p.category))];
 writeFileSync(
   join(ROOT, 'packages/shared/src/content/props.generated.ts'),

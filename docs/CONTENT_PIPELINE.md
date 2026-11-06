@@ -226,10 +226,11 @@ take extra fields: `src` may list several pieces merged in kit space (a wall
 and its top), `yaw` turns the piece so it faces +Z, `scale` replaces `height`
 (the kit is already metric), `lift` raises flat pieces off the floor,
 `simplify` decimates heavy pieces, and `collide` adds `stairs` (walkable
-steps toward +Z, at most 0.25 m each), `frame` (a doorway open in the middle)
-and `shell` (boxes following the footprint, for corners and curved railings;
+steps toward +Z, at most 0.25 m each), `frame` (a doorway open in the middle),
+`shell` (boxes following the footprint, for corners and stair corners;
 `shellTop` leaves out what is higher than that many metres, so a crane's boom
-passes overhead), written as `boxes` in the prop definition.
+passes overhead) and `voxel` (boxes following the model in 3D, for anything
+with an opening), written as `boxes` in the prop definition ("Prop collision" below).
 
 Packs with `convert: true` (FBX-only packs and one-scene sets) are read with
 `tools/content/fbx.mjs` (three.js' FBXLoader, world transforms baked in) or as
@@ -788,6 +789,65 @@ Mini Dungeon, Mini Market, Modular Space, Pirate, Platformer, Retro Urban, Space
 Survival and Train kits. Real-world sizes are the props' `height` in their pack files as before (the
 2026-11-04 pass shrank the chunkiest clutter: barrels, the powder keg, bottle, bucket, anvil, lantern,
 candles, shopping cart, fridge); collision follows the built size.
+
+### Prop collision
+
+What a placed prop collides with (shots, players, bots' navigation, cover) is its catalogue collision
+(`props.generated.ts`: `collision`, the box round it, and `boxes`, finer boxes in its own space that
+replace it), built by `prepare-props.mjs` from its pack entry's `collide`:
+
+| `collide` | Collision |
+|---|---|
+| `box` (default) | its bounds (kit walls with one face thickened to 0.2 m); natural rocks two rounded tiers |
+| `none` | none: decoration you walk and shoot through |
+| `trunk` | a column standing on the model's real trunk, as thick as the trunk (0.2–0.5 m) |
+| `voxel` | boxes that follow the model in 3D: arches, windows, holes, doorways and the space under tables, bridges and vehicles stay open |
+| `stairs`, `frame`, `openings` | steps a player walks up; a doorway between posts; every doorway along a wall |
+| `shell` | 2.5D: a column over each 0.4 m cell of the footprint, as high as the model there, cells of one height (within 0.1 m, or the coarser step the box budget allows) merged (corner pieces, round railings, stair corners) |
+| `boxes`, `model` | boxes the pack entry gives, or a code-built model carries |
+
+**Voxel collision** (`tools/content/voxel-collision.mjs`, owner's bug of 2026-11-06: rounds stopped in empty
+air inside arches, windows and holes, because `shell` and `box` fill every overhang): the model's
+triangles are rasterised into 0.1 m cubes; the space reachable from the sides and from above (never
+up from under the ground, so a wall with no floor face stays solid inside) through cubes no triangle
+touches is open, everything else solid. The solid cubes are covered exactly by boxes, then merged
+two at a time, cheapest first, while a merge fills little open space and none of it in sight (no
+cube a straight line from outside reaches along x or z, or down from above, more than 0.1 m from
+the model: no merge closes a window or a niche), and each box face open all across is pulled in to
+the model inside the box, so bullet holes sit on the stone. A single plane of the model (a kit wall
+with one face) gets 0.2 m round it. Each prop keeps to a box budget (48; `budget: "hero"` props 160;
+`voxelBudget` for a prop that needs more, with the reason in the change): when the boxes don't fit,
+the build tries coarser cubes and bigger merges (`VOXEL_LADDER`) and takes the first that fits and
+still leaves every opening open. `voxelCell` and `voxelAir` set where the ladder starts.
+Deterministic; `prepare-props.mjs` keeps the results in `node_modules/.cache/tiletrigger/` by the
+model's bytes and the settings, so a rebuild only voxelises what changed.
+
+**Trunk columns**: a `trunk` prop's column used to stand in the middle of its footprint, which a crown
+or an arm to one side moves off the trunk (Meshy birches 1.5 m off, broadleaf trees 0.6 m, street
+lights 0.9 m): rounds stopped in the air beside the tree and players walked through the trunk. Now
+the model is cut into 0.25 m slices; the column stands on the narrowest slice of the bottom 1.5 m,
+follows the trunk up while its cross-section stays narrow (leaning with it, as thick as it, 0.2 m at
+least), carries on straight up while the model closes round it (inside a pine's tiers or a crown)
+and stops where neither holds (where a broadleaf tree forks, where a pole ends). A column within
+12 cm of the old one is left as it was.
+
+**The openings audit** (`node tools/content/prop-openings.mjs`, in `pnpm content:check`): every prop's
+collision against its model, as straight lines along x and z that miss the model but cross the
+collision. Lines with the model on both sides of them (the ground and the sky may close them below
+and above: a window, a hole, an arch, a doorway, a gateway between posts, under a table or a bridge)
+that a 0.5 m square fits in are a filled **opening**: the check fails unless the prop collides as
+`voxel` (or `frame`/`openings`) or says why in `fills` (nine do: five long stair flights kept solid
+underneath, hand-built collision of the airliner and its stairs, the bucket-wheel excavator's
+lattice, one city block). Lines reached from either side (over a car's bonnet, beside a stump's
+roots) are **slack**, listed with `--slack`, not failed. Gaps narrower than 0.5 m (bars and fence rails:
+`iron_fence`, `dg_arch_bars`, the `lf_*` gates) are neither, so a `box` still stops rounds between them. The check
+also fails on a voxel prop over its budget or not rebuilt, and a trunk column the build would now put elsewhere. `packages/shared/test/fixtures/prop-openings.json`
+records every prop this changed (lines through what its old collision filled, points of its model
+its new one holds) and a digest of every other prop's collision; after a deliberate collision
+change, `node tools/content/prop-openings.mjs --fixture <git ref before>` rewrites it.
+
+Breakable props collide as their `boxes` too (one collider each in `ScenarioBodies`, all of them the
+prop: a shot anywhere damages it); their bounds still decide blasts, footing and paths.
 
 ### Adding a prop pack
 

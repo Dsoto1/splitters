@@ -74,7 +74,7 @@
       "src": "Modular_Mine_Set.glb#^Post_Reinforced_F$",
       "name": "Mine Support Frame",
       "category": "Mines & Caves",
-      "collide": "frame"
+      "collide": "voxel"
     },
     {
       "id": "mc_support_post",
@@ -109,7 +109,7 @@
       "src": "Modular_Mine_Set.glb#^Wall_Mines_Tunnel_Mid$",
       "name": "Mine Tunnel Mouth",
       "category": "Mines & Caves",
-      "collide": "shell"
+      "collide": "voxel"
     },
     {
       "id": "mc_cave_wall",

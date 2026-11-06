@@ -40,7 +40,7 @@
       "name": "Heavy Machine",
       "category": "Industrial",
       "height": 2.2,
-      "collide": "box",
+      "collide": "voxel",
       "breakable": {
         "health": 250,
         "debris": "#7a8088",
@@ -57,7 +57,7 @@
       "name": "Machine (Window)",
       "category": "Industrial",
       "height": 2.0,
-      "collide": "box",
+      "collide": "voxel",
       "breakable": {
         "health": 220,
         "debris": "#7a8088",
@@ -107,7 +107,7 @@
       "name": "Scanner Gate",
       "category": "Industrial",
       "height": 3.0,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "conveyor",
@@ -123,7 +123,7 @@
       "name": "Pipe Valve",
       "category": "Industrial",
       "height": 1.6,
-      "collide": "box",
+      "collide": "voxel",
       "breakable": {
         "health": 60,
         "debris": "#7a8088",
@@ -140,7 +140,7 @@
       "name": "Glass Pipe",
       "category": "Industrial",
       "height": 1.6,
-      "collide": "box",
+      "collide": "voxel",
       "breakable": {
         "health": 20,
         "debris": "#b8e0f0"

@@ -97,7 +97,7 @@
       "name": "Tent",
       "category": "Survival",
       "height": 1.9,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "sv_trashcan_metal",
