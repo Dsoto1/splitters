@@ -802,6 +802,9 @@ Recorded on the M1 Pro: TDM, 49 players, High, auto render scale, 60 fps cap. St
 `/home/user/meshy-drive/intake-2026-11-06/`; never commit it. It's 408k triangles, static. The prop import is added to
 set pieces part 3's brief: a hero-budget rebake, about 11 m long, voxel collision, provenance, and a beached-craft
 variant for MAP 21.
+- **Owner, 2026-11-06: no moving D-Day boats for now.** Matches have to last well beyond the first landing, as a
+  semi-traditional arena-style FPS match, so the landing craft is static dressing and cover. MAP 21's beach is
+  where the fighting starts, not a scripted arrival.
 
 ### Queued (owner-approved, 2026-11-06): Match Setup redesign, NEXT FREE SLOT (ahead of the follow-ons)
 **Owner's report** (screenshot: St. John's TDM 24v24, desktop):
