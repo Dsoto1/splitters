@@ -326,8 +326,14 @@ want always-on official matches.
   itself carries on (no restart). **Host with code only (not listed)** (the
   Host tab's Online card) opens a code without restarting or listing (the
   "List in the game browser" box can still list it later). Before the match,
-  Match setup's foot has the same switch beside Start match: Host online starts
-  the match with a join code open (not listed).
+  Match setup's foot has the same switch beside Start match, and **Host online
+  means the same there** (owner, 2026-11-06; one code path, session.ts
+  `goOnline`): the match starts online and **listed publicly** in the game
+  browser (with no community hub, a join code only), with no restart since it
+  is new; the join code still shows (Host tab, and a HUD line as it opens).
+  "Host this map" (after a host left) does the same. **Spectate** follows the
+  switch too (owner, 2026-11-06): Offline, you watch the bots; Host online, the
+  match is listed and you watch while friends play (J joins).
   Imported and MapMaker maps are listed as a **Community map** (a tag in the
   game browser and on the host's badge), with the map's ID, version and
   content hash; the hub refuses a listing that claims to be one of our maps
@@ -826,11 +832,28 @@ Whoever runs a match changes it mid-match from the pause menu's **Host** tab,
 laid out as Match setup is (what wins, players and teams with the size
 presets and the fit indicator, bots, rules) with one foot: **Resume** (Esc
 too), **Apply** named by what it will do (**Apply now** when every change
-applies live; **Apply & restart** when one waits for a restart, each such
+applies live; **Apply & restart** when one waits for a new match, each such
 setting marked ⟳ Restart; with other people in the match it asks for a second
 click), what it changes ("+2 bots, hard bots"), the **Offline / Host online**
 switch (a browser host) and **Leave match**. Nothing changes until Apply
-(the Bots… window applies its own set):
+(the Bots… window applies its own set).
+
+**Save for next match** (owner, 2026-11-06). While a ⟳ Restart setting has
+changed, a **Restart now | Next match** choice sits beside Apply. Restart now:
+**Apply & restart**, as above. Next match: Apply becomes **Save for next
+match**: the changed rules wait for the next match and this one carries on
+(players and bots still change at once). The next match is the one after this
+one's scoreboard, or Restart match, Change map or the rotation's next map,
+whichever comes first (HostControl's pending rules: `Match.beforeRound` puts
+them in play as a new round starts, and the host sends everyone the rules and
+the panel its settings). The line beside Apply says which will happen
+("score 60: the match restarts now", "+2 bots now; score 60 from the next
+match"), and the Rules card what is saved ("Saved for the next match: …").
+
+**To win** shows the score and time suggested for the players and bots being
+set (Match setup's curve, `suggestedLimits`; the kill rates it is fitted to:
+docs/BOTS.md, "Score and time"), with **Use suggested** when they differ; they
+still apply with a new match.
 
 | Who | Where the match runs | How a command gets there |
 | --- | --- | --- |
