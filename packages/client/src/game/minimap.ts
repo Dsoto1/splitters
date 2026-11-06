@@ -20,6 +20,10 @@ export interface MinimapBlip {
  */
 export class Minimap {
   private plan: HTMLCanvasElement | null = null;
+  /** The plan as an image bitmap once made (immutable, kept on the GPU: drawing it is a texture draw, not a copy). */
+  private planImage: ImageBitmap | null = null;
+  /** What the last draw showed (redrawn only when it would differ). */
+  private last = '';
   private origin = { x: 0, z: 0, h: 0 };
   private readonly g: CanvasRenderingContext2D | null;
 
@@ -55,12 +59,32 @@ export class Minimap {
     g.fillStyle = '#9fb6d8';
     for (const b of boxes) if (b.kind === 'wall' && b.min[1] < 1) fillBox(g, b, px, py);
     this.plan = plan;
+    this.planImage?.close();
+    this.planImage = null;
+    this.last = '';
     this.origin = { x: x0, z: z0, h };
+    // A big open map's plan is a couple of million pixels (Shingle Point 1,210 × 1,470): drawn from a bitmap.
+    if (typeof createImageBitmap === 'function') {
+      void createImageBitmap(plan).then(
+        (bmp) => {
+          if (this.plan === plan) {
+            this.planImage = bmp;
+            this.last = '';
+          } else bmp.close();
+        },
+        () => undefined,
+      );
+    }
   }
 
   update(x: number, z: number, yaw: number, blips: readonly MinimapBlip[]): void {
     const g = this.g;
     if (!g || !this.plan) return;
+    // Nothing moved by a pixel (you stood still, so did the dots): the canvas already shows it.
+    let key = `${Math.round(x * PX_PER_M)},${Math.round(z * PX_PER_M)},${Math.round(yaw * 200)}`;
+    for (const b of blips) key += `|${Math.round(b.x * 2)},${Math.round(b.z * 2)},${b.color}`;
+    if (key === this.last) return;
+    this.last = key;
     const size = this.canvas.width;
     const r = size / 2;
     const scale = r / (RANGE_M * PX_PER_M);
@@ -77,7 +101,14 @@ export class Minimap {
     g.scale(scale, scale);
     const [px, py] = toPlan(x, z);
     g.translate(-px, -py);
-    g.drawImage(this.plan, 0, 0);
+    // Only the plan round you (the view's circle, turned any way), not the whole map's picture with a clip over it.
+    const src = this.planImage ?? this.plan;
+    const reach = Math.ceil(RANGE_M * PX_PER_M * Math.SQRT2) + 2;
+    const sx = Math.max(0, Math.floor(px - reach));
+    const sy = Math.max(0, Math.floor(py - reach));
+    const sw = Math.min(src.width, Math.ceil(px + reach)) - sx;
+    const sh = Math.min(src.height, Math.ceil(py + reach)) - sy;
+    if (sw > 0 && sh > 0) g.drawImage(src, sx, sy, sw, sh, sx, sy, sw, sh);
     for (const b of blips) {
       const [bx, by] = toPlan(b.x, b.z);
       g.fillStyle = b.color;

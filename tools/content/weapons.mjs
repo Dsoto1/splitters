@@ -72,7 +72,7 @@ export function schemas(root = ROOT, families = []) {
     magazine: obj({ type: str, tactical: int, empty: int, out: num, in: num }),
     shell: obj({ type: str, start: int, each: int, end: int }),
   });
-  const hold = obj({ style: en(['pistol', 'long', 'melee']), grip: vec3, 'support?': vec3, 'shoulder?': vec3 });
+  const hold = obj({ style: en(['pistol', 'long', 'melee']), grip: vec3, 'support?': vec3, 'shoulder?': vec3, 'rake?': num });
   const flash = obj({ effect: str, 'scale?': num });
   const view = obj({
     model: str, 'fallback?': str, viewOffset: vec3, tracer: str, 'zoomFov?': num, hold, 'sound?': str, 'beam?': bool,

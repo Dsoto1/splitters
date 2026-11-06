@@ -23,7 +23,7 @@
     "model": "weapons/gilded_pistol.glb",
     "viewOffset": [0.2, -0.18, 0.42],
     "tracer": "#ffe070",
-    "hold": { "style": "pistol", "grip": [0, -0.03, -0.0816], "support": [-0.02, -0.04, -0.072] },
+    "hold": { "style": "pistol", "grip": [0, -0.023, -0.073], "support": [-0.02, -0.033, -0.063], "rake": 7 },
     "sound": "fire.heavy"
   },
   "notes": { "group": "The extended arsenal: every one fires differently. 2: sidearms." }
