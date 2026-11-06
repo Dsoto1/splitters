@@ -2393,12 +2393,14 @@ async function setupLimitsFlow(browser) {
     return r.score === points && r.time === `${minutes} min` && r.fact === `~${minutes} min` && r.line === `Suggested for ${size}: ${points} points, ${minutes} min. They follow the size until you change them.` && r.custom === 0;
   };
   const four = await read();
-  check(suggests(four, '4v4') && four.saved.scoreAuto === true && four.saved.timeAuto === true, `a setup saved at the old 40 points and 10 minutes follows the size: 4v4 suggests ${EXPECT['4v4'].join(' points, ')} min (${JSON.stringify({ ...four, saved: undefined })})`);
+  check(suggests(four, '4v4'), `a setup saved at the old 40 points and 10 minutes follows the size: 4v4 suggests ${EXPECT['4v4'].join(' points, ')} min (${JSON.stringify({ ...four, saved: undefined })})`);
   await preset('pick');
   const twelve = await read();
   await preset('max');
   const big = await read();
-  check(suggests(twelve, '12v12') && suggests(big, '24v24') && big.saved.scoreLimit === EXPECT['24v24'][0] && big.saved.minutes === EXPECT['24v24'][1], `the suggested score and time follow the size: 12v12 ${twelve.score}, ${twelve.time}; 24v24 ${big.score}, ${big.time} (${JSON.stringify({ line: big.line, fact: big.fact })})`);
+  // Opening the setup doesn't write it; the first change saves it with the marks (score and time following the size).
+  const marks = { scoreAuto: twelve.saved.scoreAuto, timeAuto: twelve.saved.timeAuto, score: big.saved.scoreLimit, minutes: big.saved.minutes };
+  check(suggests(twelve, '12v12') && suggests(big, '24v24') && marks.scoreAuto === true && marks.timeAuto === true && marks.score === EXPECT['24v24'][0] && marks.minutes === EXPECT['24v24'][1], `the suggested score and time follow the size, and the setup saves them following it: 12v12 ${twelve.score}, ${twelve.time}; 24v24 ${big.score}, ${big.time} (${JSON.stringify({ line: big.line, fact: big.fact, saved: marks })})`);
   // Set by hand: Custom, kept through a size change; Back to suggested follows the size again.
   await page.evaluate(() => {
     const i = document.getElementById('arcade-score');
