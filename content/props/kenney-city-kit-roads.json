@@ -102,7 +102,7 @@
       "name": "Power Pole",
       "category": "Neon Megacity",
       "height": 9,
-      "collide": "trunk"
+      "collide": "voxel"
     }
   ]
 }

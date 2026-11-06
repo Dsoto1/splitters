@@ -97,9 +97,7 @@ export async function audit({ only = null } = {}) {
     }
     if (mode === 'trunk') {
       // The column the build makes now (prepare-props.mjs, trunkBoxes), in the game's frame.
-      const raw = trunkBoxes(tris.map((t) => t.map(([x, y, z]) => [-x, y, z])), def.size)?.map(([x0, y0, z0, x1, y1, z1]) => [-x1, y0, z0, -x0, y1, z1]);
-      const plain = (b) => b.length === 1 && Math.abs(b[0][1]) < 1e-3 && Math.abs(b[0][4] - def.size[1]) < 2e-3 && Math.abs(b[0][0] + b[0][3]) < 2e-3 && Math.abs(b[0][2] + b[0][5]) < 2e-3;
-      const want = raw && !plain(raw) ? raw : null;
+      const want = trunkBoxes(tris.map((t) => t.map(([x, y, z]) => [-x, y, z])), def.size)?.map(([x0, y0, z0, x1, y1, z1]) => [-x1, y0, z0, -x0, y1, z1]) ?? null;
       const same = (a, b) => (!a && !b) || (!!a && !!b && a.length === b.length && a.every((x, i) => x.every((v, k) => Math.abs(v - b[i][k]) < 2e-3)));
       if (!same(want, def.boxes ?? null)) problems.push(`${p.id}: its trunk column is not where the trunk is (run node tools/content/prepare-props.mjs)`);
     }

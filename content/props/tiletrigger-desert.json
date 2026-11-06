@@ -89,7 +89,7 @@
       "name": "Scaffold",
       "category": "Desert City",
       "height": 4.2,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "dc_awning_window",

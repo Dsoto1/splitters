@@ -366,11 +366,7 @@ function collisionBoxes(p, size, tris, modelBoxes = null, glb = null) {
   }
   if (p.collide === 'shell') return shellBoxes(size, tris, p.shellTop);
   if (p.collide === 'voxel') return voxelProp(p, tris, glb);
-  if (p.collide === 'trunk') {
-    const boxes = trunkBoxes(tris, size);
-    const plain = [-Math.min(0.5, w) / 2, 0, -Math.min(0.5, d) / 2, Math.min(0.5, w) / 2, h, Math.min(0.5, d) / 2].map(round);
-    return boxes && !(boxes.length === 1 && boxes[0].every((v, k) => Math.abs(v - plain[k]) < 0.002)) ? boxes : null;
-  }
+  if (p.collide === 'trunk') return trunkBoxes(tris, size);
   const pts = tris.flat();
   if (p.collide === 'stairs') {
     const n = Math.max(1, Math.ceil(h / STEP_RISE));

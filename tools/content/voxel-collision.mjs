@@ -557,6 +557,9 @@ const TRUNK_MAX_BASE = 1.6;
 const TRUNK_SPREAD = 0.6;
 /** Slices whose centres keep within this of each other share one box, widened to hold them (metres). */
 const TRUNK_RUN = 0.1;
+/** A column within this of the footprint's middle (metres), and this near the top, is the plain column: kept as it was. */
+const TRUNK_SAME = 0.12;
+const TRUNK_SAME_TOP = 0.3;
 
 /**
  * `collide: "trunk"` (trees, poles, posts, lamps): the column they collide with, `max` wide at most (0.5 m, as the
@@ -566,8 +569,8 @@ const TRUNK_RUN = 0.1;
  * follows it up while its cross-section stays narrow (leaning as it leans), then on straight up while some of the
  * model is inside the column's square or the model closes round it on all four sides (a pine's tiers hide the trunk
  * inside them), and stops where neither holds (where a broad tree forks, where a pole ends). Returns boxes
- * [minX, minY, minZ, maxX, maxY, maxZ] (the
- * triangles' frame), or null when the model has no trunk near the ground (keep the plain column).
+ * [minX, minY, minZ, maxX, maxY, maxZ] (the triangles' frame), or null to keep the plain column: the model has no
+ * trunk near the ground, or the column would stand within TRUNK_SAME of it anyway.
  */
 export function trunkBoxes(tris, size, { max = 0.5 } = {}) {
   const [w, h, d] = size;
@@ -663,6 +666,9 @@ export function trunkBoxes(tris, size, { max = 0.5 } = {}) {
     boxes.push([lo[0] - hw, 0, lo[1] - hd, hi[0] + hw, top, hi[1] + hd].map((v, k) => (k === 1 ? i * TRUNK_SLICE : v)).map(round));
     i = j + 1;
   }
+  // Within a hair of the plain column (the footprint's middle, full height): that, unchanged.
+  const near = boxes.every((b) => Math.hypot((b[0] + b[3]) / 2, (b[2] + b[5]) / 2) <= TRUNK_SAME && b[3] - b[0] <= 2 * hw + TRUNK_SAME && b[5] - b[2] <= 2 * hd + TRUNK_SAME);
+  if (near && Math.max(...boxes.map((b) => b[4])) >= h - TRUNK_SAME_TOP) return null;
   return boxes;
 }
 

@@ -19,14 +19,14 @@
       "src": "Gas_station_Props.fbx#^Fuel_pump$",
       "name": "Fuel Pump",
       "category": "Gas Station",
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "gs_fuel_pump_slim",
       "src": "Gas_station_Props.fbx#^(Fuel_pump_|Dispenser)$",
       "name": "Slim Fuel Pump",
       "category": "Gas Station",
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "gs_dumpster",
@@ -75,7 +75,7 @@
       "src": "Gas_station_Props.fbx#^Shelf_Metal$",
       "name": "Stockroom Shelf",
       "category": "Gas Station",
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "gs_trash_bags",
@@ -89,7 +89,7 @@
       "src": "Gas_station_Props.fbx#^Desk$",
       "name": "Shop Counter",
       "category": "Gas Station",
-      "collide": "box"
+      "collide": "voxel"
     }
   ]
 }

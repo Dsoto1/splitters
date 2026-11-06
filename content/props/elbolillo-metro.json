@@ -19,7 +19,7 @@
       "src": "Metro.glb#^(subway_car|seats(\\.\\d+)?|Railing_V(\\.\\d+)?|Door(\\.\\d+)?|Glass\\.\\d+)$",
       "name": "Metro Car",
       "category": "Metro",
-      "collide": "box",
+      "collide": "voxel",
       "scale": 0.75
     },
     {

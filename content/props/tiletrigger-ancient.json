@@ -84,7 +84,7 @@
       "name": "Racing Chariot",
       "category": "Imperial Arena",
       "height": 1.38,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "im_lift_cage",

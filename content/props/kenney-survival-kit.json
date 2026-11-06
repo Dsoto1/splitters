@@ -240,7 +240,7 @@
       "name": "Tent",
       "category": "Medieval",
       "height": 2.2,
-      "collide": "box",
+      "collide": "voxel",
       "breakable": {
         "health": 40,
         "debris": "#c8b890"
@@ -252,7 +252,7 @@
       "name": "Canvas Shelter",
       "category": "Medieval",
       "height": 2.2,
-      "collide": "box",
+      "collide": "voxel",
       "breakable": {
         "health": 40,
         "debris": "#c8b890"
@@ -272,7 +272,7 @@
       "name": "Wooden Fence",
       "category": "Medieval",
       "height": 1.2,
-      "collide": "box",
+      "collide": "voxel",
       "breakable": {
         "health": 40,
         "debris": "#8a5a32"

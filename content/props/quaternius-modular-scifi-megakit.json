@@ -624,7 +624,7 @@
       "name": "Doorway Frame",
       "category": "Sci-Fi Platforms",
       "scale": 1,
-      "collide": "frame"
+      "collide": "voxel"
     },
     {
       "id": "sf_doorway_square",

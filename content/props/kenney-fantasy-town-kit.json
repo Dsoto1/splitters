@@ -31,7 +31,7 @@
       "name": "Market Stall",
       "category": "Town & Market",
       "height": 2.8,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "stall_green",
@@ -39,7 +39,7 @@
       "name": "Green Stall",
       "category": "Town & Market",
       "height": 2.8,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "stall_bench",
@@ -55,7 +55,7 @@
       "name": "Cart",
       "category": "Town & Market",
       "height": 1.6,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "cart_high",
@@ -79,7 +79,8 @@
       "name": "Watermill",
       "category": "Town & Market",
       "height": 6.0,
-      "collide": "box"
+      "collide": "voxel",
+      "voxelBudget": 96
     },
     {
       "id": "water_wheel",

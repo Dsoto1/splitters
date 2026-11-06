@@ -55,7 +55,7 @@
       "name": "Grand Piano",
       "category": "Gothic Estate",
       "height": 1.82,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "ge_portrait",
@@ -83,7 +83,7 @@
       "name": "Four-Poster Bed",
       "category": "Gothic Estate",
       "height": 2.45,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "ge_writing_desk",
@@ -91,7 +91,7 @@
       "name": "Writing Desk",
       "category": "Gothic Estate",
       "height": 1.09,
-      "collide": "box",
+      "collide": "voxel",
       "flame": {"fx": "candle", "at": [0.45, 1.01, -0.1], "size": 0.08, "hide": ["flame"]}
     },
     {
@@ -248,7 +248,7 @@
       "name": "Giant Root",
       "category": "Jungle Ruins",
       "height": 1.49,
-      "collide": "box"
+      "collide": "voxel"
     },
     {
       "id": "jg_banana_plant",
@@ -344,7 +344,7 @@
       "name": "Gas Barbecue",
       "category": "Suburban Chaos",
       "height": 1.35,
-      "collide": "box",
+      "collide": "voxel",
       "breakable": {
         "health": 30,
         "debris": "#c0302a",

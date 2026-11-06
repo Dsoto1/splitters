@@ -135,7 +135,8 @@
       "name": "Boarding Stairs",
       "category": "Airliner Cabin",
       "scale": 1,
-      "collide": "model"
+      "collide": "model",
+      "fills": "its collision (prepare-cabin.mjs) keeps the stair flight solid to the ground so players and bots walk up it; the strip under the flight and the gap in the top rail are filled"
     }
   ]
 }

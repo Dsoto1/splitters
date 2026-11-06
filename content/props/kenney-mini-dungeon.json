@@ -48,7 +48,7 @@
       "name": "Timber Support",
       "category": "Medieval",
       "height": 3.2,
-      "collide": "box",
+      "collide": "voxel",
       "breakable": {
         "health": 120,
         "debris": "#8a5a32"

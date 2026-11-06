@@ -19,7 +19,8 @@
       "name": "Market Stall",
       "category": "Medieval Village",
       "height": 2.9,
-      "collide": "box",
+      "collide": "voxel",
+      "voxelBudget": 60,
       "triangles": 14000,
       "maxError": 0.03,
       "source": {
@@ -35,7 +36,7 @@
       "name": "Rustic Market Stall",
       "category": "Town & Market",
       "height": 2.7,
-      "collide": "box",
+      "collide": "voxel",
       "triangles": 12000,
       "maxError": 0.03,
       "source": {
@@ -188,7 +189,7 @@
       "name": "Market Stall",
       "category": "Desert City",
       "height": 2.8,
-      "collide": "box",
+      "collide": "voxel",
       "triangles": 12000,
       "maxError": 0.03,
       "source": {
