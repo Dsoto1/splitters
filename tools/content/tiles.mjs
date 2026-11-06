@@ -338,7 +338,7 @@ export function build(content, root = ROOT) {
         const named = S.builders.filter((b) => p[b] !== undefined);
         if (named.length !== 1) problems.push(`${where}: ${field}[${j}]: name one builder (${S.builders.join(', ')})`);
         if (p.box && !(p.box[0] <= p.box[3] && p.box[1] <= p.box[4] && p.box[2] <= p.box[5])) problems.push(`${where}: ${field}[${j}]: box is [x0, y0, z0, x1, y1, z1] with each min at most its max`);
-        if ((p.yaw !== undefined || p.surface) && !p.box) problems.push(`${where}: ${field}[${j}]: yaw and surface go on a box`);
+        if (p.yaw !== undefined && !p.box) problems.push(`${where}: ${field}[${j}]: yaw goes on a box`);
         if (p.surface?.tint !== undefined && !/^#[0-9a-f]{6}$/.test(p.surface.tint)) problems.push(`${where}: ${field}[${j}]: surface.tint is a #rrggbb colour (lower case)`);
         if (p.block && !t.footprint) problems.push(`${where}: ${field}[${j}]: a block is centred on a footprint`);
         if (p.vault && !(p.vault.span[0] < p.vault.span[1] && p.vault.along[0] < p.vault.along[1] && p.vault.spring < p.vault.crown)) problems.push(`${where}: ${field}[${j}]: a vault spans [a0, a1] across and [b0, b1] along (each a0 < a1), its crown over its springing`);

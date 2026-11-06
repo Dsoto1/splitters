@@ -99,6 +99,8 @@ export const CORE_MATERIALS: readonly MaterialDefinition[] = [
   { id: 'core.mossy_planks', displayName: 'Mossy Planks', category: 'Wood', pattern: 'planks', base: '#857256', accent: '#4e5a30', scale: 2, shine: 0.05 },
   { id: 'core.temple_sandstone', displayName: 'Temple Sandstone', category: 'Stone', pattern: 'blocks', base: '#c8a878', accent: '#8a7050', scale: 3, shine: 0.05 },
   { id: 'core.palm_thatch', displayName: 'Palm Thatch', category: 'Fabric', pattern: 'thatch', base: '#b89a5a', accent: '#6e5a30', scale: 2, shine: 0.05 },
+  // design: Set pieces part 3 (docs/SET_PIECES_PLAN.md): the sandbag revetment of the sunken trenches and the parapets of MAP 21, our own procedural paint (client/materials/patterns.ts sandbags): six courses of bags 0.6 m long and 0.3 m high in a 1.8 m repeat.
+  { id: 'core.sandbags', displayName: 'Sandbags', category: 'Fabric', pattern: 'sandbags', base: '#c2ad86', accent: '#5a4c3a', scale: 1.8, shine: 0.05 },
   // section: Photographed and scanned sets from ambientCG (CC0, see content/textures.json)
   { id: 'core.pbr_concrete', displayName: 'Smooth Concrete', category: 'Stone', pattern: 'plain', base: '#a8a6a2', accent: '#a8a6a2', scale: 4, shine: 0.08, texture: 'Concrete034' },
   { id: 'core.pbr_concrete_dark', displayName: 'Dark Concrete', category: 'Stone', pattern: 'plain', base: '#6c6964', accent: '#6c6964', scale: 4, shine: 0.08, texture: 'Concrete042A' },

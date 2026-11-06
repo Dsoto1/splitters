@@ -166,6 +166,148 @@ offset and yaw:
 - pieces made only of free parts with a fine offset and yaw are what the MapMaker overhaul's **groups** are for (same
   selection and expansion code, no grid): the tool for yawed, block-only compositions.
 
+## As built: part 3 (the showpiece maps' pieces; 2026-11-06)
+Part 3 is the pieces MAP 21 (Omaha beach assault) and the Sandfall Colosseum rebuild are built from, and the kit they
+needed. It is all data (`content/setpieces/`, `content/tiles/`) on the standard grid, with no change to the map format;
+part 2 (MapMaker) places these pieces like part 1's. How to add a piece: docs/CONTENT_PIPELINE.md, "Set pieces".
+
+### The 4 m question: decided (the mix, no format change)
+The owner set 4 m per board square for the colosseum, but every tile is built for 8 m cells (`TILE_DIMENSIONS`, the
+edge styles, room options, facades and collision all assume it) and set pieces refuse any other grid
+(`setpiece.grid`). A second, 4 m geometry path would break "one source of truth, no special cases". So:
+- **The colosseum is built on the standard 8 m / 4 m grid.** A board square is half a cell: two squares to a cell,
+  every square's centre on the 4 m lattice (a cell centre, the middle of a cell side, or a cell corner).
+- **Tiles where an 8 m module fits:** the stands (arena bays, Grand Arcades, stair towers), the hypogeum's tunnels and
+  cages, the insulae, the arena floor (open ground).
+- **Free parts where it must be 4 m:** the board's pillars (Ionic Column props), the medallions and the zone markings
+  (blocks and props) go straight onto the 4 m lattice; free parts already sit anywhere in a piece's frame or the map.
+- **Pieces that must centre on a board square come in two variants:** centred on a cell (Hatch Riser, Lift-Cage Riser:
+  the Arena Hatch tile) and centred on a cell corner (Hatch Riser (Corner): four Corner Hatch tiles, each a quarter of
+  the 3.2 m hole, turned round the corner they share). With the board centred on a cell, its four hatches (two squares
+  diagonally out from the inner red zone's corners, at ±12 m) all fall on cell corners.
+- **The floor:** 13 squares are 52 m, 6.5 cells. Build the sand 7 cells (56 m) across and lay the 52 m board in it
+  centred on a cell, a 2 m margin of sand to the podium wall all round ("about 52 m"). Its centre square, the four
+  quadrant corners and the gates' corner squares (±24 m) land on cell centres; the hatches on corners.
+- **No format change was needed.** If the map builds want a piece placed half a cell off its grid (a free-part piece
+  at a 4 m offset), the smallest change is an optional placement offset for pieces with no tiles; not needed for any
+  piece here.
+
+### The trench and the terrain: decided (sunk; the trench carves its own slot)
+Trenches are **sunk** 1.5 m, not raised: on load and on every MapMaker edit the terrain under a floor is lowered to
+just under it (settle.ts `terrainUnderFloors`, within 3 m), so the Sunken Trench tiles carve their slot with no
+brushwork. Each is its own ground: earth slabs at the level's floor from the channel to the cell edge, a buried carve
+floor 0.3 m inside the cell edge under all of it (so the terrain under the whole trench goes below the channel, while at
+the cell edge it stays just under the earth slabs and the ground outside meets them without a step or a gully). Place
+them on level 0 over ground at level 0 and flatten bumpy ground there first. They need terrain: on a map without terrain
+the ground is drawn at the lowest floor (under the trench); flat maps keep the Military Compound's raised trenches
+(berms on the ground). Cover: standing in the channel your head is under the 0.6 m sandbag parapet; on the fire step
+(0.75 m up) your eyes clear it by 0.25 m; crouched in the channel you are hidden from all round, crouched on the step
+from the front. Fire steps stop 0.8 m short of a cell's ends so every join has the whole 4 m channel clear (a bay
+turned round, the far side of a bend): bots' paths run on through every join.
+
+### Pieces (34, eight families)
+| Family (file) | Pieces | Notes |
+|---|---|---|
+| Casemate (`casemate.json`) | Gun Casemate (2 × 3), Cliff Casemate (1 × 3) | Embrasure south between flanking walls under a canopy; the gun room, ammunition room (slit, side door), hall (rear door) and crew room make a loop: two ways in, no dead ends. The cliff one looks out through a rock cave mouth (Mines & Caves Cave Entrance, CC0) and has a sally port; bury it in the cliff with the terrain tools. A field gun of blocks behind each embrasure. |
+| Trench run (`trench.json`) | Trench, Bend, Junction, End, Jog (round a traverse), each timber or `_sandbag` | Sunken Trench tiles: fire steps, revetment (the walls slot: the wood role, or Sandbags), duckboards, sandbag parapet and parados. |
+| Cliff stairs (`cliffstair.json`) | Grand Cliff Stair (2 × 4, two levels), Cliff Stair Tower (2 × 1, three levels) | The grand one: two 15.2 m flights, a landing and a terrace with sandbag and barrier cover, stackable at its terrace. The narrow one: a concrete tower of switchback stairwells with firing slits. |
+| Arena stands (`arena.json`) | Arena Bay (Podium), Arena Bay (Upper Tier), Arena Bay (Vomitorium), Grand Arcade, Arena Attic | One cell wide, the arena to the local south. See "The stands" below. |
+| Hypogeum (`hypogeum.json`) | Hypogeum Tunnel, Bend, Junction, Crossing; Hatch Riser; Hatch Riser (Corner); Cage Block; Lift-Cage Riser | Barrel-vaulted tunnels with groin vaults at junctions; ladders up through the hatches (nav links for bots); pens with Barred gate fronts and Portcullis doors. For a cage that rises, hide the cage prop and add a Lift Cage (Scenario palette). |
+| Insulae (`insula.json`) | Insula, Insula (Corner), Insula (Tall) | 3 × 2 cells: shops on the street either side of the entrance passage, a stair hall with a landing on every floor, flats over; tiled roofs (two) or a flat roof (the tall one, four storeys). |
+| Stair towers (`stairtower.json`) | Stair Tower (4, 6 and 8 levels) | 3 × 1: stairwells either side of a hall with a landing on every level and round arches out north and south on each. |
+| Landing craft (`landing.json`) | Beached Landing Craft (2 × 2) | The owner's Drive landing craft (prop Landing Craft (Beached), `prop.lcvp_beached`: Meshy community, CC0 per owner; collides as voxels) run up on the sand with its ramp down (local north), beach obstacles, crates and a baulk round it. Static (owner, 2026-11-06): cover to fight from, up the ramp into the well and over the gunwales. The prop is in the Military Compound and Coastal Harbor style packs. |
+
+**The stands.** A bay is one cell wide along the arena's side. Stack a radial line like this (cells from the arena's
+edge, levels from the sand): Podium bay at (0, 0) rising to 8 m; a Grand Arcade under each cell of the next tier
+(two storeys each); an Upper Tier (or a Vomitorium bay) two cells back and two levels up (8 to 16 m), and the next
+two further on (16 to 24 m); the facade's Grand Arcades up the outermost cell, the Attic on top. Six storeys: podium,
+two tiers, six arcades under them, three up the facade and the attic (13 placements a line); repeat the line along the
+sides (MapMaker's duplicate). Grand Arcades set their arches on the part: two of them side by side would otherwise
+meet with doorways (ports meeting make a doorway; a tile's default edge only shows on a side nothing meets). The
+board's stands are straight, two sections a side, with dark towers over the gates at the four corners, so the bays
+run straight and the corners are Stair Towers (8 levels). The Round Arcade tiles (one storey of 3.2 m arches on a
+quarter circle) don't fit that plan; they suit the village (a curved portico round its square).
+
+### New kit (any map; MapMaker offers it now)
+- **Edge styles:** Round arch (`arch_round`: 3.2 m, a semicircle springing at 1.4 m to 3 m, just under a vaulted
+  ceiling's springing), Grand arch (`arch_grand`: two storeys, 4.4 m, springing 4.6 m, crown 6.8 m, piers 0.8 m,
+  half columns and an entablature outside), Embrasure (`embrasure`: a 3.5 × 1.1 m gun port in a 1 m wall, a visor and
+  stepped cheeks outside), Barred gate (`bars_gate`: bars either side of a 3 m gateway for a Portcullis door).
+- **Material:** Sandbags (`core.sandbags`, our own procedural paint: bags 0.6 × 0.3 m in stretcher bond).
+- **Tiles:** Sunken Trench, Bend, Junction, End; Grand Flight (2 cells wide, one level); Seating Tier and Seating Tier
+  (Vomitorium); Vaulted Tunnel, Bend, Junction, Crossing; Grand Gallery (two storeys); Corner Hatch.
+- **Kit code:** a kit part's own surface now dresses every box its builder makes (timber steps), not only plain boxes.
+
+### Budgets (one piece as expanded; theme of its first pack)
+Tiles, blocks and lights count against MAP_BUDGETS (1,500 tiles, 3,000 blocks, 256 lights, 300 active pieces); the
+boxes are merged into the level's meshes by material (draws stay a few per material), so what they cost is triangles,
+physics shapes and the navmesh build. Shipped maps run 2,700-3,900 collision boxes (St. John's 3,915, Sandfall
+Colosseum 3,087).
+
+| Piece | Pack | Tiles | Blocks | Props | Lights | Doors | Ladders | Collision boxes | Trim boxes | Materials |
+|---|---|---|---|---|---|---|---|---|---|---|
+| Arena Bay (Podium) (`arena_bay_podium`) | imperial | 3 | 0 | 0 | 1 | 0 | 0 | 79 | 82 | 7 |
+| Arena Bay (Upper Tier) (`arena_bay_tier`) | imperial | 3 | 0 | 0 | 1 | 0 | 0 | 99 | 98 | 4 |
+| Arena Bay (Vomitorium) (`arena_vomitorium`) | imperial | 3 | 0 | 0 | 1 | 0 | 0 | 119 | 108 | 4 |
+| Grand Arcade (`arena_arcade`) | imperial | 1 | 0 | 0 | 0 | 0 | 0 | 51 | 102 | 3 |
+| Arena Attic (`arena_attic`) | imperial | 1 | 0 | 0 | 1 | 0 | 0 | 6 | 18 | 6 |
+| Gun Casemate (`casemate`) | military | 4 | 12 | 6 | 4 | 2 | 0 | 56 | 75 | 6 |
+| Cliff Casemate (`casemate_cave`) | military | 2 | 7 | 7 | 2 | 3 | 0 | 40 | 47 | 6 |
+| Grand Cliff Stair (`cliff_stair_grand`) | military | 6 | 3 | 6 | 0 | 0 | 0 | 129 | 40 | 6 |
+| Cliff Stair Tower (`cliff_stair_side`) | military | 5 | 0 | 0 | 2 | 2 | 0 | 133 | 152 | 6 |
+| Hypogeum Tunnel (`tunnel_straight`) | imperial | 1 | 0 | 0 | 1 | 0 | 0 | 13 | 1 | 3 |
+| Hypogeum Tunnel Bend (`tunnel_bend`) | imperial | 1 | 0 | 0 | 1 | 0 | 0 | 24 | 2 | 3 |
+| Hypogeum Tunnel Junction (`tunnel_junction`) | imperial | 1 | 0 | 0 | 1 | 0 | 0 | 24 | 2 | 3 |
+| Hypogeum Tunnel Crossing (`tunnel_cross`) | imperial | 1 | 0 | 0 | 1 | 0 | 0 | 25 | 3 | 3 |
+| Hatch Riser (`tunnel_hatch`) | imperial | 2 | 0 | 0 | 1 | 0 | 1 | 14 | 16 | 4 |
+| Hatch Riser (Corner) (`tunnel_hatch_corner`) | imperial | 5 | 0 | 0 | 1 | 0 | 1 | 24 | 24 | 5 |
+| Cage Block (`cage_block`) | imperial | 4 | 0 | 4 | 2 | 2 | 0 | 132 | 60 | 3 |
+| Lift-Cage Riser (`cage_lift`) | imperial | 2 | 0 | 1 | 1 | 0 | 1 | 15 | 16 | 5 |
+| Insula (`insula`) | imperial | 16 | 11 | 4 | 3 | 1 | 0 | 258 | 557 | 8 |
+| Insula (Corner) (`insula_corner`) | imperial | 16 | 12 | 4 | 3 | 1 | 0 | 267 | 588 | 8 |
+| Insula (Tall) (`insula_tall`) | imperial | 21 | 3 | 4 | 3 | 1 | 0 | 344 | 750 | 8 |
+| Beached Landing Craft (`landing_craft_beached`) | military | 0 | 0 | 6 | 0 | 0 | 0 | 141 | 0 | 1 |
+| Stair Tower (4 levels) (`stair_tower_4`) | imperial | 11 | 1 | 0 | 3 | 0 | 0 | 444 | 780 | 8 |
+| Stair Tower (6 levels) (`stair_tower_6`) | imperial | 15 | 1 | 0 | 4 | 0 | 0 | 614 | 1048 | 8 |
+| Stair Tower (8 levels) (`stair_tower_8`) | imperial | 19 | 1 | 0 | 5 | 0 | 0 | 784 | 1316 | 8 |
+| Trench (`trench_straight`) | military | 1 | 0 | 1 | 0 | 0 | 0 | 11 | 9 | 5 |
+| Trench (Sandbags) (`trench_straight_sandbag`) | military | 1 | 0 | 1 | 0 | 0 | 0 | 11 | 9 | 5 |
+| Trench Bend (`trench_bend`) | military | 1 | 0 | 0 | 0 | 0 | 0 | 18 | 9 | 5 |
+| Trench Bend (Sandbags) (`trench_bend_sandbag`) | military | 1 | 0 | 0 | 0 | 0 | 0 | 18 | 9 | 5 |
+| Trench Junction (`trench_junction`) | military | 1 | 0 | 0 | 0 | 0 | 0 | 15 | 10 | 5 |
+| Trench Junction (Sandbags) (`trench_junction_sandbag`) | military | 1 | 0 | 0 | 0 | 0 | 0 | 15 | 10 | 5 |
+| Trench End (`trench_end`) | military | 1 | 0 | 0 | 0 | 0 | 0 | 17 | 5 | 5 |
+| Trench End (Sandbags) (`trench_end_sandbag`) | military | 1 | 0 | 0 | 0 | 0 | 0 | 17 | 5 | 5 |
+| Trench Jog (`trench_jog`) | military | 3 | 0 | 0 | 0 | 0 | 0 | 47 | 27 | 5 |
+| Trench Jog (Sandbags) (`trench_jog_sandbag`) | military | 3 | 0 | 0 | 0 | 0 | 0 | 47 | 27 | 5 |
+
+A full colosseum of these pieces (24 bay lines of six storeys, four 8-level corner towers, the hypogeum, 15 insulae):
+about 800 tiles, 200 blocks and 190 lights (inside the budgets; lights are the tightest: leave the arcades unlit, as
+they are), and about 25,000 collision and 30,000 trim boxes, several times any shipped map. The map build should
+measure load time and frame time early (PERF_96) and drop what it can: the attic or a storey of arcades round the far
+sides, the Roman facade on the stair towers (`overrides.roles.facade: "none"`).
+
+### Notes for part 2 (MapMaker)
+- Pieces with `mirror: "none"` (bends, ends, jogs, stairs, towers, insulae, hatch and lift risers): turn them instead.
+- Footprints claim every level from their least to their greatest for every cell (the trench pieces claim level -1
+  too); the stands stack because each piece's levels stop where the next begins.
+- `maps/test_coverage.json` has part 3's kit (placed in MapMaker: the 13 new tiles in the empty rows at grid y -3
+  and -15, the four new wall styles on a Room and the Grand Gallery, the Landing Craft (Beached) prop at (40, 0, 60)),
+  so its test passes. It should still get one of each set piece through the new palette, and `coverageMap.test.ts`
+  require them (as noted for part 1's pieces).
+- `setPiecePlay.test.ts`'s every-port test now covers every piece whose ports are walled doorways or arches and
+  names the open-sided ones; `setPieces3.test.ts` proves those (trenches, the grand stair, the stands, tunnels, hatches,
+  cages).
+
+### Left for later, and for the owner
+- **Sea wall section (and its breach) and the command bunker** (MAP 21 landmarks): not built in part 3. The sea wall
+  is a short family (a concrete wall with a walkway and a curved wave lip, a breached variant with a rubble ramp); the
+  command bunker a multi-room casemate (the Gun Casemate's rooms and doors are the pattern).
+- **The landing craft:** the owner's Drive model (Meshy community, CC0 per owner) is the prop Landing Craft (Beached)
+  (`prop.lcvp_beached`, 16k triangles, a 4k LOD from 40 m). It is a possible swap for Shingle Point's kit Landing
+  Craft: the owner compares the two in the maps; nothing is swapped. Its community page URL is still to come from
+  the owner (content provenance says "pending").
+
 ## Phase 1 (this task)
 1. **Schema and expansion** (shared): definitions, the format v27 `setPieces` field, the expansion, overlap checks
    and validation.
@@ -189,5 +331,6 @@ offset and yaw:
    St. John's references are in docs/references/ST_JOHNS.md.
 5. **Retire old big pieces** that a set piece now covers. List each one; keep it loadable; take it out of the palette.
 
-The brainstorm list, plus the pieces MAP 21 and the colosseum need (casemate, trench run, cliff stair, arena arcade
-bay, vomitorium, tunnel junction, cage block, insula), follow in later phases.
+The pieces MAP 21 and the colosseum need (casemate, trench run, cliff stair, arena arcade bay, vomitorium, tunnel
+junction, cage block, insula, stair tower) are done: "As built: part 3" above. The brainstorm list, MAP 21's sea wall
+and command bunker follow in later phases.

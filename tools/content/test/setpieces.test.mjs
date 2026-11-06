@@ -41,7 +41,7 @@ describe('set-piece generator (tools/content/setpieces.mjs)', () => {
     const c = clone(content);
     piece(c, 'setpiece.carriageway_1').id = 'carriageway one';
     piece(c, 'setpiece.skybridge_2').packs.push('baroque');
-    c.families[0].json.extra = true;
+    c.families.find((f) => f.file.endsWith('/carriageway.json')).json.extra = true;
     const p = sp.build(c, ROOT, { skipDeep: true }).problems.join('\n');
     expect(p).toMatch(/id is setpiece\.<name>/);
     expect(p).toMatch(/packs: baroque is not a role pack/);

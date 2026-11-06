@@ -1,0 +1,35 @@
+{
+  "pack": {
+    "title": "Meshy community models (props, textured GLB downloads of 2026-11-06)",
+    "creator": "Meshy community, CC0 (per owner)",
+    "url": "https://www.meshy.ai (community page URL pending from the owner)",
+    "license": "CC0-1.0",
+    "licenseFile": "assets-src/meshy-community/License.txt",
+    "retrieved": "2026-11-06",
+    "download": "intake-2026-11-06",
+    "meshy": true,
+    "convert": true,
+    "textureSize": 1024
+  },
+  "order": 850,
+  "props": [
+    {
+      "id": "lcvp_beached",
+      "src": "Meshy_AI_Amphibious_Landing_Cr_1106110500_texture.glb",
+      "name": "Landing Craft (Beached)",
+      "category": "Military",
+      "yaw": 90,
+      "height": 2.2,
+      "collide": "voxel",
+      "surface": "metal",
+      "triangles": 16000,
+      "maxError": 0.02,
+      "dropHidden": true,
+      "budget": "hero",
+      "source": {
+        "model": "Amphibious Landing Craft (Meshy community, from the owner's Drive: intake of 2026-11-06)",
+        "date": "2026-11-06"
+      }
+    }
+  ]
+}
