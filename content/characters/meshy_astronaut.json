@@ -33,6 +33,14 @@
     "handsShare": 0.1,
     "normalSize": 1024,
     "lod": 0.25,
-    "feet": true
+    "feet": true,
+    "scrubBlue": { "color": "#e6e6e6", "within": [[0.635, 0.512, 0.678, 0.559]] },
+    "hands": { "curl": 0.6 },
+    "skin": { "knuckle": 0.2, "joints": 0.15 },
+    "grip": {
+      "gripLong": [-0.045, 0.02, -0.03],
+      "supportLong": [0, 0.02, 0.03],
+      "supportPistol": [-0.01, 0.03, -0.03]
+    }
   }
 }

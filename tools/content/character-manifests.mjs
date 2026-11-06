@@ -165,7 +165,11 @@ export function manifestProblems(m, file = `${m?.id}.json`) {
   need(x.triangles === undefined || (Number.isInteger(x.triangles) && x.triangles >= 2000 && x.triangles <= 18000), 'fixes.triangles: 2000–18000');
   if (x.lean) for (const [k, v] of Object.entries(x.lean)) need(LEAN_JOINTS.has(k) && typeof v === 'number' && Math.abs(v) <= 45, `fixes.lean.${k}: degrees (−45–45) on ${[...LEAN_JOINTS].join(', ')}`);
   need(x.tail === undefined || (Array.isArray(x.tail) && x.tail.length >= 2 && x.tail.every(isPoint)), 'fixes.tail: two or more points');
-  need(x.scrubBlue === undefined || HEX.test(x.scrubBlue), 'fixes.scrubBlue: #rrggbb');
+  // `scrubBlue`: blue badges repainted, every one (#rrggbb) or only inside boxes of the download's colour map
+  // ({ color, within: [[u0, v0, u1, v1], …] }, shares of its width and height: the download's layout, so not with a rebake).
+  const scrubBox = (b) => Array.isArray(b) && b.length === 4 && b.every((v) => typeof v === 'number' && v >= 0 && v <= 1) && b[0] < b[2] && b[1] < b[3];
+  const sb = x.scrubBlue;
+  need(sb === undefined || (typeof sb === 'string' && HEX.test(sb)) || (sb && typeof sb === 'object' && Object.keys(sb).every((k) => k === 'color' || k === 'within') && HEX.test(sb.color ?? '') && Array.isArray(sb.within) && sb.within.length > 0 && sb.within.every(scrubBox) && x.surface !== 'rebake'), 'fixes.scrubBlue: #rrggbb, or { color: #rrggbb, within: [[u0, v0, u1, v1], …] } (boxes in the download\'s colour map, 0–1; not with surface rebake)');
   need(x.headShare === undefined || (typeof x.headShare === 'number' && x.headShare > 0 && x.headShare <= 0.3), 'fixes.headShare: 0–0.3 (the share of the triangle budget the head keeps; 0.12 unless set)');
   need(x.handsShare === undefined || (typeof x.handsShare === 'number' && x.handsShare > 0 && x.handsShare <= 0.2), 'fixes.handsShare: 0–0.2 (the share of the triangle budget the hands keep)');
   need(x.surface === undefined || x.surface === 'rebake', 'fixes.surface: rebake (the cut mesh laid out afresh and its colour painted from the download) or left out');
