@@ -3,7 +3,7 @@ import { cpus, loadavg } from 'node:os';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { BOT_DIFFICULTIES, CORE_BOT_PROFILES, TICK_RATE, initPhysics, isGameMode, loadMap, mapCanRun, rulesForMode, type GameEvent, type GameMode, type MapDocument } from '@tiletrigger/shared';
-import { CtfMode, Match, ctfRole, initNavigation } from '@tiletrigger/shared/match';
+import { CtfMode, Match, ctfRoleOf, initNavigation } from '@tiletrigger/shared/match';
 
 /**
  * Bot behaviour report (docs/BOTS.md, "Measuring"): plays headless matches
@@ -228,7 +228,6 @@ function play(map: MapDocument, seed: number): MatchRow {
     }
     if (k % SAMPLE) continue;
     const dt = SAMPLE / TICK_RATE;
-    const all = match.combatants();
     for (const c of bots) {
       const r = rec.get(c.slot)!;
       const b = c.bot!;
@@ -245,7 +244,7 @@ function play(map: MapDocument, seed: number): MatchRow {
       h.push({ x: p.x, y: p.y, z: p.z, yaw: c.yaw });
       if (h.length > RING + 1) h.shift();
       const doing: string = b.doing;
-      const role = ctf ? (ctf.flags.some((f) => f.carrier === c.slot) ? 'carrier' : ctfRole(c, all)) : (b.doing === 'mounted' ? 'mounted' : 'free');
+      const role = ctf ? ctfRoleOf(c, ctf.flags, ctf.botPlan) : b.doing === 'mounted' ? 'mounted' : 'free';
       const rm = roles.get(c.slot) ?? roles.set(c.slot, new Map()).get(c.slot)!;
       rm.set(role, (rm.get(role) ?? 0) + dt);
       const full = h.length > RING;
@@ -315,7 +314,7 @@ function angleDiff(a: number, b: number): number {
 }
 
 const pct = (v: number, of: number) => `${((v / Math.max(1e-9, of)) * 100).toFixed(1)}%`;
-const sum = (rs: readonly BotRow[], f: (r: BotRow) => number) => rs.reduce((a, r) => a + f(r), 0);
+const sum = <T>(rs: readonly T[], f: (r: T) => number) => rs.reduce((a, r) => a + f(r), 0);
 
 function printMatch(m: MatchRow): void {
   const alive = sum(m.bots, (r) => r.alive);

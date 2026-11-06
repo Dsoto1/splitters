@@ -1,3 +1,4 @@
+import type { OrderGoal } from '../../bots/brain.ts';
 import type { WorldBox } from '../../map/geometry.ts';
 import type { Faction, MapDocument } from '../../map/schema.ts';
 import type { Vec3 } from '../../math.ts';
@@ -40,11 +41,8 @@ export interface ModeHost {
   rebuildNav(extra: readonly WorldBox[]): boolean;
 }
 
-/** Where a Player Bot should go when it is not fighting, and how close counts as there. */
-export interface BotGoal {
-  pos: Vec3;
-  radius: number;
-}
+/** Where a Player Bot should go when it is not fighting, how close counts as there, and how it goes about it (bots/brain.ts OrderGoal). */
+export type BotGoal = OrderGoal;
 
 /** An objective mode's rules. Every hook is called only while the round is in play. */
 export interface ModeLogic {

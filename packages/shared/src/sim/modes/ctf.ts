@@ -2,7 +2,7 @@ import { horizontalDistance, type Vec3 } from '../../math.ts';
 import { FLAG_CARRIED, FLAG_DROPPED, FLAG_HOME, type FlagAction, type ModeSnapshot } from '../../protocol.ts';
 import { TICK_RATE } from '../constants.ts';
 import type { Combatant } from '../match.ts';
-import { ctfBotAwareness, ctfBotGoal, ctfBotTookFlag } from './ctfBots.ts';
+import { CtfBotPlan, ctfBotAwareness, ctfBotGoal, ctfBotTookFlag } from './ctfBots.ts';
 import type { BotGoal, ModeHost, ModeLogic } from './types.ts';
 
 /** Touching a flag: within this many metres of it (horizontally), and close in height. */
@@ -41,6 +41,8 @@ export interface FlagRt {
 export class CtfMode implements ModeLogic {
   readonly flags: FlagRt[];
   readonly captures = new Map<string, number>();
+  /** Roles, escorts and flags in trouble for the Player Bots (ctfBots.ts), refreshed in step(). */
+  readonly botPlan = new CtfBotPlan();
 
   constructor(private readonly host: ModeHost) {
     const teams = host.teams.slice(0, 2);
@@ -75,6 +77,7 @@ export class CtfMode implements ModeLogic {
 
   step(): void {
     const host = this.host;
+    this.botPlan.update(host.tick, host.combatants(), this.flags);
     const byslot = new Map(host.combatants().map((c) => [c.slot, c]));
     for (const f of this.flags) {
       if (f.state === FLAG_CARRIED) {
@@ -160,7 +163,7 @@ export class CtfMode implements ModeLogic {
   }
 
   botGoal(c: Combatant): BotGoal | null {
-    return ctfBotGoal(c, this.host.combatants(), this.flags);
+    return ctfBotGoal(c, this.flags, this.botPlan);
   }
 
   // ---------------------------------------------------------------- flag moves
