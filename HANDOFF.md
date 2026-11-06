@@ -452,8 +452,8 @@ Resume each from its branch, after merging main.
 draws its whole body.
 
 ### Openings fix (`wip/openings`, agent, 2026-11-06; CI on `check/openings`)
-Status: cb52f4d0 green on `check/openings` (CI run 42156808605, every job); five more props for screenshot 32 since
-(93604116, the mossy stump and log, the dishes, the generator), being checked. The report below is what it fixes.
+Status: green on `check/openings`: CI run 42160424451 on 73b46f93, every job (docs-only commits since); ready to
+land. The report below is what it fixes.
 - **Done:**
   - `collide: "voxel"` (tools/content/voxel-collision.mjs): 3D collision from the model (0.1 m cubes, flood fill from
     the sides and above, exact cover, merges that never fill air in sight, faces pulled in to the model), with a box
@@ -502,6 +502,10 @@ Status: cb52f4d0 green on `check/openings` (CI run 42156808605, every job); five
     walks through the arch (z 6 to 11.2; before: stopped at 8.25); prop collision drawn over the scene.
   - `botRiders.test.ts` keeps its buggy repaired on its blind drive: the drive's path drifted and went over Iron Maw's
     pit edge (crash damage, riders rightly out).
+  - E2E locally (temp runner copy with the local Chromium): arsenal, coverage and visual pass; the maps flow on ten
+    changed maps (Backwoods, Fernwood Moon, Fogbound, Hollowmere Manor, Iron Maw, Pharaoh's Reach, Sandfall
+    Colosseum, Serpent Gorge, St John's, Sunstone Crag) passes with CI's waits (`CI=1`; with desk waits the loaded
+    machine missed the 60 s match start, the old build too).
 - **Resume:** `git checkout wip/openings`, `pnpm install`, `node tools/content/prepare-props.mjs` (voxelises into
   node_modules/.cache, ~1 min cold), `node tools/content/prop-openings.mjs --check`, then the checks in CLAUDE.md.
   Scratch scripts (renders, audits, screenshots) in the session scratchpad `openings/work/`.
