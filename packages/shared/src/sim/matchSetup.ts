@@ -1,4 +1,5 @@
-import type { MapDocument } from '../map/schema.ts';
+import type { MapDocument, SpawnEntity } from '../map/schema.ts';
+import { raceTrack } from '../map/track.ts';
 import { BROWSER_MAX_PLAYERS, MAX_PLAYER_SLOTS, TICK_RATE } from './constants.ts';
 import { MAX_TEAMS, mapTeams } from './npc.ts';
 import { DEFAULT_RULES, GAME_MODES, MODE_LABELS, isGameMode, isTeamMode, mapCanRun, type GameMode, type MatchRules } from './rules.ts';
@@ -182,46 +183,396 @@ export function modeUnavailableReason(map: MapDocument, mode: GameMode): string 
   return `This map wasn't made for ${MODE_LABELS[mode]}.`;
 }
 
-/** A remark on a setup: a warning that doesn't stop the match, or a hint. */
-export interface SetupNote {
-  level: 'warn' | 'info';
-  text: string;
-}
-
 /** Past this many players the setup suggests going easy on the computer; past the second, it warns. */
 export const BIG_MATCH = 32;
 export const HUGE_MATCH = 40;
 
+const sum = (xs: readonly number[]): number => xs.reduce((a, b) => a + b, 0);
+const clampInt = (v: number, lo: number, hi: number): number => Math.max(lo, Math.min(hi, Math.round(v)));
+const spawnsOf = (map: MapDocument): SpawnEntity[] => map.entities.filter((e): e is SpawnEntity => e.kind === 'spawn');
+
+// ------------------------------------------------------------------ people and bots
+
 /**
- * Warnings and hints for a setup on its map (none of them blocks the match):
- * more players than spawn points, past the map's recommended size, teams
- * without spawns of their own, the map's own team names, big-match load.
+ * How a mode's players are set up: teams; free-for-all (Deathmatch, Disc Arena); a squad against the map
+ * (co-op, Zombies); racers on a grid. Presets and the player controls take their form from it.
  */
-export function setupNotes(setup: MatchSetup, map: MapDocument): SetupNote[] {
-  const out: SetupNote[] = [];
-  const players = setupPlayers(setup, map);
-  const spawns = map.entities.filter((e) => e.kind === 'spawn');
-  const team = isTeamMode(setup.mode);
-  if (spawns.length && players > spawns.length && setup.mode !== 'core.race') {
-    const extra = players >= IMPROMPTU_MIN_PLAYERS ? ' The match adds spawn points of its own on open ground.' : '';
-    out.push({ level: 'warn', text: `${players} players, ${spawns.length} spawn points: spawns will be shared, so players may appear close together.${extra}` });
+export type SetupFamily = 'teams' | 'ffa' | 'squad' | 'race';
+export const setupFamily = (mode: GameMode): SetupFamily => (isTeamMode(mode) ? 'teams' : isCoopMode(mode) ? 'squad' : mode === 'core.race' ? 'race' : 'ffa');
+
+/**
+ * The team you play on before the match (by order, from 0): Fixed, the one you picked; Balanced, the first
+ * (offline you are the only person); Random, null (you take a bot's place wherever you land).
+ */
+export function setupYourTeam(setup: Pick<MatchSetup, 'assign' | 'playerTeam'>, teams: number): number | null {
+  if (setup.assign === 'random') return null;
+  if (setup.assign === 'fixed') return Math.max(0, Math.min(teams - 1, Math.round(setup.playerTeam ?? 0)));
+  return 0;
+}
+
+/** People on each team before the match: you on yours, nobody else (bots fill every place; friends who join take bots' places). */
+export function setupPeople(setup: Pick<MatchSetup, 'assign' | 'playerTeam'>, teams: number): number[] {
+  const you = setupYourTeam(setup, teams);
+  return Array.from({ length: teams }, (_, i) => (i === you ? 1 : 0));
+}
+
+/** "1 bot", "23 bots" (`word`: "squadmate"…). */
+export const countOf = (n: number, word: string): string => `${n} ${word}${n === 1 ? '' : 's'}`;
+
+/** People, then bots: "You + 23 bots", "3 players + 9 bots", "24 bots", "You". `people`: you included. */
+export function peopleAndBots(people: number, bots: number, word = 'bot'): string {
+  if (people <= 0) return countOf(bots, word);
+  const who = people === 1 ? 'You' : `${people} players`;
+  return bots > 0 ? `${who} + ${countOf(bots, word)}` : who;
+}
+
+/**
+ * The setup in a line, people apart from bots (a total in players reads as that many people): "You + 47 bots ·
+ * 24v24"; online, with friends in, "3 players + 45 bots · 24v24"; free-for-all "You + 7 bots"; co-op "You + 3
+ * squadmates". `people`: everyone who isn't a bot, you included.
+ */
+export function setupSummary(setup: MatchSetup, map: MapDocument, people = 1): string {
+  const total = setupPlayers(setup, map);
+  const humans = Math.max(1, Math.min(total, people));
+  const family = setupFamily(setup.mode);
+  const line = peopleAndBots(humans, total - humans, family === 'squad' ? 'squadmate' : 'bot');
+  return family === 'teams' ? `${line} · ${setupTeams(setup, map).join('v')}` : line;
+}
+
+// ------------------------------------------------------------------ limits
+
+/** The most players a setup can have here, and whose limit that is: this device's (deviceMaxPlayers), or a race track's grid. */
+export interface PlayerCap {
+  max: number;
+  by: 'device' | 'grid';
+}
+
+/** A race's start grid: how many racers start in a vehicle (null: not a race, or no track). */
+export function raceGrid(mode: GameMode, map: MapDocument): number | null {
+  if (mode !== 'core.race') return null;
+  return raceTrack(map)?.grid ?? null;
+}
+
+/** The cap on players for a mode on a map, given what this device runs (`deviceMax`, you and bots). */
+export function playerCap(mode: GameMode, map: MapDocument, deviceMax: number): PlayerCap {
+  const device = clampInt(deviceMax, 2, BROWSER_MAX_PLAYERS);
+  const grid = raceGrid(mode, map);
+  return grid !== null && grid < device ? { max: Math.max(2, grid), by: 'grid' } : { max: device, by: 'device' };
+}
+
+/**
+ * Why a count stops where it does, in plain words: "24 per team is this computer's limit.", "48 players in all
+ * is this computer's limit.", "8 racers fill this track's grid.". `device`: "this computer", "this phone".
+ */
+export function capMessage(cap: PlayerCap, o: { teams?: number; even?: boolean; device?: string } = {}): string {
+  if (cap.by === 'grid') return `${cap.max} racers fill this track's grid.`;
+  const whose = `${o.device ?? 'this computer'}'s limit`;
+  if (o.teams && o.even) return `${Math.max(1, Math.min(MAX_TEAM_SIZE, Math.floor(cap.max / o.teams)))} per team is ${whose}.`;
+  return `${cap.max} players${o.teams ? ' in all' : ''} is ${whose}.`;
+}
+
+// ------------------------------------------------------------------ changing teams
+
+/** A team layout after a change, and why it stopped short of what was asked (a limit), if it did. */
+export interface TeamChange {
+  sizes: number[];
+  stopped: string | null;
+}
+
+export interface TeamChangeOptions {
+  /** People on each team (you; friends mid-match): a team never shrinks below them, nor below one player. */
+  people: readonly number[];
+  cap: PlayerCap;
+  /** Even teams: every team changes alike, so they stay matched. */
+  even: boolean;
+  /** Whose limit the cap is, for the message ("this computer"). */
+  device?: string;
+}
+
+/** What stops a team shrinking. */
+export const TEAM_FLOOR_NOTE = 'Every team needs at least one player.';
+
+/**
+ * Bots on team `team` up (delta > 0) or down: the team grows or shrinks with them, since bots are what fill a
+ * team (a team of 10 with 9 bots takes an eleventh, it doesn't refuse it). Even teams: every team changes alike.
+ * A change stops at the cap (this device, a race grid), at MAX_TEAM_SIZE or at a team's people, and says why.
+ */
+export function changeTeamBots(sizes: readonly number[], team: number, delta: number, o: TeamChangeOptions): TeamChange {
+  return setTeamSize(sizes, team, (sizes[team] ?? 1) + delta, o);
+}
+
+/** Team `team` to `size` players in all (typed in), as changeTeamBots: even teams all take that size. */
+export function setTeamSize(sizes: readonly number[], team: number, size: number, o: TeamChangeOptions): TeamChange {
+  const n = sizes.length;
+  const cur = sizes[team] ?? 1;
+  const want = Math.round(size);
+  const floor = (i: number) => Math.max(1, o.people[i] ?? 0);
+  const total = sum(sizes);
+  // The most this team can reach: its share of the cap (even), or what the other teams leave.
+  const top = o.even ? Math.min(MAX_TEAM_SIZE, Math.floor(o.cap.max / n)) : Math.min(MAX_TEAM_SIZE, o.cap.max - (total - cur));
+  const bottom = o.even ? Math.max(...sizes.map((_, i) => floor(i))) : floor(team);
+  let next = want;
+  let stopped: string | null = null;
+  if (want > cur && want > top) {
+    // (A setup already over the cap, say one made on a bigger computer, never shrinks on a press of +.)
+    next = Math.max(cur, top);
+    stopped = top >= MAX_TEAM_SIZE ? `${MAX_TEAM_SIZE} is the most one team can have.` : capMessage(o.cap, { teams: n, even: o.even, device: o.device });
+  } else if (want < bottom) {
+    next = bottom;
+    stopped = TEAM_FLOOR_NOTE;
   }
+  return { sizes: o.even ? sizes.map(() => next) : sizes.map((s, i) => (i === team ? next : s)), stopped };
+}
+
+/** Even teams switched on: every team the size of the largest, as far as the cap allows. */
+export function evenTeams(sizes: readonly number[], o: Omit<TeamChangeOptions, 'even'>): TeamChange {
+  const n = sizes.length;
+  const top = Math.max(1, Math.min(MAX_TEAM_SIZE, Math.floor(o.cap.max / n)));
+  const want = Math.max(...sizes);
+  const per = Math.max(...sizes.map((_, i) => Math.max(1, o.people[i] ?? 0)), Math.min(top, want));
+  return { sizes: sizes.map(() => per), stopped: want > top ? capMessage(o.cap, { teams: n, even: true, device: o.device }) : null };
+}
+
+/**
+ * A different number of teams (2–8; two-team modes stay two). A new team comes in at the others' size (even
+ * teams) or the last team's; when that doesn't fit under the cap, even teams all shrink to fit and uneven ones
+ * take what room is left, and the change says so.
+ */
+export function changeTeamCount(sizes: readonly number[], count: number, mode: GameMode, o: TeamChangeOptions): TeamChange {
+  if (isTwoTeamMode(mode)) return { sizes: sizes.slice(0, 2), stopped: count !== 2 ? `${MODE_LABELS[mode]} is always two teams.` : null };
+  const n = clampInt(count, 2, MAX_TEAMS);
+  const over = count > MAX_TEAMS ? `${MAX_TEAMS} teams is the most.` : null;
+  if (o.even) {
+    const per = Math.max(...sizes);
+    const fit = Math.max(1, Math.min(per, MAX_TEAM_SIZE, Math.floor(o.cap.max / n)));
+    return { sizes: Array.from({ length: n }, () => fit), stopped: over ?? (fit < per ? capMessage(o.cap, { teams: n, even: true, device: o.device }) : null) };
+  }
+  const out = sizes.slice(0, n);
+  let left = o.cap.max - sum(out);
+  while (out.length < n) {
+    const add = Math.max(1, Math.min(left, out[out.length - 1] ?? 2));
+    out.push(add);
+    left -= add;
+  }
+  // A new team that found no room: the largest teams give way.
+  const fixed = validateTeamSizes(out, mode, undefined, o.cap.max).sizes;
+  return { sizes: fixed, stopped: over ?? (fixed.join() !== out.join() ? capMessage(o.cap, { teams: n, device: o.device }) : null) };
+}
+
+// ------------------------------------------------------------------ presets
+
+export type SizePresetId = 'duel' | 'small' | 'pick' | 'big' | 'max';
+
+/**
+ * A size preset, worked out from the map (its recommended size, its own team layout, its spawn points), the
+ * mode and what this device runs, rather than picked from a fixed list. Team modes give team sizes, the rest
+ * the players in all, you included.
+ */
+export interface SizePreset {
+  id: SizePresetId;
+  label: string;
+  teams?: number[];
+  players?: number;
+  /** The layout in short: "12v12", "12 players", "squad of 4", "8 racers". */
+  value: string;
+  /** What it is, for its tooltip. */
+  tip: string;
+}
+
+export interface PresetOptions {
+  /** Teams to share the players out over (multi-team modes); two-team modes are always two. */
+  teams?: number;
+  /** Players this device runs (deviceMaxPlayers). */
+  deviceMax: number;
+  /** "this computer", "this phone". */
+  device?: string;
+  /** Free-for-all and squads: the map's own player count (the Arcade's starting bots, plus you). */
+  pickPlayers?: number;
+}
+
+/** A map's own team layout: its team setup, else its recommended most split in two; made to fit `cap` players. */
+export function mapPickTeams(map: MapDocument, mode: GameMode, cap: number): number[] {
+  const half = Math.max(1, Math.round(map.metadata.recommendedPlayers.max / 2));
+  return validateTeamSizes(map.teamSetup?.sizes ?? [half, half], mode, [half, half], cap).sizes;
+}
+
+/** A map's own player count for free-for-all and squads: as many as it's made for, 4 to 12. */
+export const mapPickPlayers = (rec: { max: number }): number => clampInt(Math.min(12, rec.max), 4, 12);
+
+/**
+ * The size presets for a mode on a map: Duel, Small, Map's pick, Big battle and Max (free-for-all the same in
+ * players; a squad's Solo, Duo, Map's pick, Big squad and Max; a race's Duel, Small, Map's pick and Full grid).
+ * Small is the fewest the map is made for (at least two a side); Map's pick its own layout; Big battle as many
+ * as its recommended most and spawn points hold, or half again its pick when they hold no more; Max what this
+ * device runs. Presets that come out the same as another are left out.
+ */
+export function sizePresets(mode: GameMode, map: MapDocument, o: PresetOptions): SizePreset[] {
+  const family = setupFamily(mode);
+  const cap = playerCap(mode, map, o.deviceMax);
   const rec = map.metadata.recommendedPlayers;
-  if (players > rec.max) out.push({ level: 'warn', text: `The map is made for ${rec.min === rec.max ? rec.max : `${rec.min}–${rec.max}`} players; ${players} will be crowded.` });
-  if (team) {
-    const sizes = setupTeams(setup, map);
-    const sides = mapTeams(map, sizes.length);
-    const teamed = spawns.filter((s) => s.kind === 'spawn' && s.faction);
-    if (teamed.length) {
-      const without = sides.flatMap((t, i) => (teamed.some((s) => s.kind === 'spawn' && s.faction === t.id) ? [] : [setup.teamNames?.[i]?.trim() || t.name]));
-      if (without.length) out.push({ level: 'warn', text: `${without.join(', ')} ${without.length === 1 ? 'has' : 'have'} no spawn points of ${without.length === 1 ? 'its' : 'their'} own on this map: ${without.length === 1 ? 'it uses' : 'they use'} the shared spawns.` });
+  const spawns = spawnsOf(map).length;
+  const device = o.device ?? 'this computer';
+  const roomFor = (pick: number) => {
+    // Big battle: what the map is made for and has spawn points for; when that's no more than its pick, half again.
+    const fits = Math.min(rec.max, spawns || rec.max);
+    return fits > pick ? fits : Math.round(pick * 1.5);
+  };
+  const out: SizePreset[] = [];
+  if (family === 'teams') {
+    const n = isTwoTeamMode(mode) ? 2 : clampInt(o.teams ?? 2, 2, MAX_TEAMS);
+    const top = Math.max(1, Math.min(MAX_TEAM_SIZE, Math.floor(cap.max / n)));
+    const even = (per: number) => Array.from({ length: n }, () => clampInt(per, 1, top));
+    const pick = mapPickTeams(map, mode, cap.max);
+    const pickPer = Math.ceil(sum(pick) / n);
+    const add = (id: SizePresetId, label: string, teams: number[], tip: string) => out.push({ id, label, teams, value: teams.join('v'), tip });
+    add('duel', 'Duel', [1, 1], 'One on one: you against a bot (or a friend who joins).');
+    add('small', 'Small', even(Math.min(Math.max(2, Math.ceil(rec.min / n)), Math.max(2, pickPer - 1))), `A small match: the fewest this map is made for (${rec.min}), at least two a side.`);
+    add('pick', "Map's pick", pick, map.teamSetup ? "The map's own team layout: what its maker set it up for." : `What the map is made for: up to ${rec.max} players.`);
+    add('big', 'Big battle', even(Math.max(pickPer + 1, Math.floor(roomFor(sum(pick)) / n))), `As many as the map has room for: its recommended most (${rec.max}) and its ${spawns} spawn points, or half again its own layout.`);
+    add('max', 'Max', even(top), `The most ${device} runs: ${n * top} players.`);
+  } else {
+    const word = family === 'race' ? 'racers' : 'players';
+    const value = (n: number) => (family === 'squad' ? (n === 1 ? 'you alone' : n === 2 ? 'you + 1' : `squad of ${n}`) : `${n} ${word}`);
+    const add = (id: SizePresetId, label: string, players: number, tip: string) => out.push({ id, label, players: clampInt(players, 1, cap.max), value: value(clampInt(players, 1, cap.max)), tip });
+    const grid = raceGrid(mode, map);
+    const pick = clampInt(family === 'race' ? Math.min(rec.max, grid ?? rec.max) : (o.pickPlayers ?? mapPickPlayers(rec)), 1, cap.max);
+    if (family === 'squad') {
+      add('duel', 'Solo', 1, 'Just you against the map.');
+      add('small', 'Duo', 2, 'You and one bot squadmate.');
+      add('pick', "Map's pick", pick, `The squad the map is made for (up to ${rec.max}).`);
+      add('big', 'Big squad', pick * 2, 'Twice the squad the map is made for.');
+      add('max', 'Max', cap.max, `The most ${device} runs: ${cap.max}.`);
+    } else {
+      add('duel', 'Duel', 2, 'One on one: you against a bot (or a friend who joins).');
+      add('small', 'Small', Math.min(Math.max(4, Math.min(rec.min, pick - 2)), pick - 1), `A small match: the fewest this map is made for (${rec.min}).`);
+      add('pick', "Map's pick", pick, family === 'race' ? `What the track is made for: up to ${Math.min(rec.max, grid ?? rec.max)} racers.` : `What the map is made for: up to ${rec.max} players.`);
+      if (family === 'race') add('max', cap.by === 'grid' ? 'Full grid' : 'Max', cap.max, cap.by === 'grid' ? `Every place on the grid: ${cap.max}.` : `The most ${device} runs: ${cap.max}.`);
+      else {
+        add('big', 'Big battle', Math.max(pick + 1, roomFor(pick)), `As many as the map has room for: its recommended most (${rec.max}) and its ${spawns} spawn points, or half again its pick.`);
+        add('max', 'Max', cap.max, `The most ${device} runs: ${cap.max} players.`);
+      }
     }
-    if (map.factions.length >= 2) out.push({ level: 'info', text: `This map's sides are ${map.factions[0]!.name} and ${map.factions[1]!.name} (their bases and spawns); teams beyond them use the shared spawns.` });
-    if (map.teamSetup && map.teamSetup.sizes.join() !== sizes.join()) out.push({ level: 'info', text: `The map suggests ${map.teamSetup.sizes.join('v')}.` });
   }
-  if (players > HUGE_MATCH) out.push({ level: 'warn', text: `${players} players is a very big match: slower computers may stutter. Low graphics (Options) helps; bots think less often past ${BIG_MATCH}.` });
-  else if (players > BIG_MATCH) out.push({ level: 'info', text: `${players} players: a big match. If it stutters, try Low graphics in Options.` });
-  return out;
+  // One button per layout: the map's pick first, then Max over Big battle, Duel over Small; sizes that only go up.
+  const key = (p: SizePreset) => p.teams?.join() ?? String(p.players);
+  const total = (p: SizePreset) => (p.teams ? sum(p.teams) : p.players!);
+  const pick = out.find((p) => p.id === 'pick')!;
+  const max = out.find((p) => p.id === 'max');
+  const duel = out.find((p) => p.id === 'duel')!;
+  return out.filter((p) => {
+    if (p.id === 'pick') return true;
+    if (key(p) === key(pick)) return false;
+    if (p.id === 'small') return key(p) !== key(duel) && total(p) < total(pick) && total(p) > total(duel);
+    if (p.id === 'duel') return total(p) < total(pick);
+    if (p.id === 'big') return !!max && key(p) !== key(max) && total(p) > total(pick) && total(p) < total(max);
+    return total(p) > total(pick);
+  });
+}
+
+/** The preset a setup is on right now, or null when it's been changed from all of them (Custom). */
+export function matchingPreset(setup: MatchSetup, map: MapDocument, presets: readonly SizePreset[]): SizePreset | null {
+  if (isTeamMode(setup.mode)) {
+    const sizes = setupTeams(setup, map).join();
+    return presets.find((p) => p.teams?.join() === sizes) ?? null;
+  }
+  const players = setupPlayers(setup, map);
+  return presets.find((p) => p.players === players) ?? null;
+}
+
+/** What a preset sets in a setup: the team sizes, or the bots besides you. */
+export const presetPatch = (p: SizePreset): Pick<MatchSetup, 'teams'> | Pick<MatchSetup, 'bots'> => (p.teams ? { teams: [...p.teams] } : { bots: Math.max(0, (p.players ?? 1) - 1) });
+
+// ------------------------------------------------------------------ fit
+
+export type FitLevel = 'fits' | 'crowded' | 'problem';
+export type FitTopic = 'device' | 'grid' | 'size' | 'spawns' | 'teams' | 'performance';
+
+/** One line of the fit check: what it found about one thing, how much that matters, and a fix when there is one. */
+export interface FitItem {
+  topic: FitTopic;
+  level: 'ok' | 'info' | 'warn' | 'problem';
+  text: string;
+  /** A suggestion's button: "Use 12v12" (team sizes) or "Use 8 racers" (players in all, you included). */
+  fix?: { label: string; teams?: number[]; players?: number };
+}
+
+export interface SetupFit {
+  level: FitLevel;
+  /** "Fits", "Crowded", "Problem". */
+  label: string;
+  items: FitItem[];
+}
+
+export const FIT_LABELS: Record<FitLevel, string> = { fits: 'Fits', crowded: 'Crowded', problem: 'Problem' };
+
+/**
+ * How well a setup fits its map and this device, as one verdict (Fits, Crowded, Problem) with the details
+ * behind it, in this order: what the device runs, a race's grid, the map's recommended size (and its own
+ * layout, with a button to use it), its spawn points, teams without spawns of their own, how heavy the match
+ * is. Only real problems are red: racers who would start on foot, more players than this device runs, far more
+ * (over twice) than the map is made for. Nothing here stops the match.
+ */
+export function setupFit(setup: MatchSetup, map: MapDocument, o: { deviceMax: number; device?: string; pickPlayers?: number }): SetupFit {
+  const items: FitItem[] = [];
+  const family = setupFamily(setup.mode);
+  const players = setupPlayers(setup, map);
+  const rec = map.metadata.recommendedPlayers;
+  const recText = rec.min === rec.max ? `${rec.max}` : `${rec.min}–${rec.max}`;
+  const device = o.device ?? 'this computer';
+  const deviceMax = clampInt(o.deviceMax, 2, BROWSER_MAX_PLAYERS);
+  const cap = playerCap(setup.mode, map, deviceMax);
+  const unit = family === 'race' ? 'racers' : 'players';
+  const sizes = family === 'teams' ? setupTeams(setup, map) : [];
+  const evenFix = (most: number): NonNullable<FitItem['fix']> => {
+    if (family !== 'teams') return { label: `Use ${most} ${unit}`, players: most };
+    const per = Math.max(1, Math.floor(most / sizes.length));
+    const teams = sizes.map(() => per);
+    return { label: `Use ${teams.join('v')}`, teams };
+  };
+  const pick = family === 'teams' ? mapPickTeams(map, setup.mode, cap.max) : [];
+  const pickPlayers = clampInt(family === 'race' ? Math.min(rec.max, raceGrid(setup.mode, map) ?? rec.max) : (o.pickPlayers ?? mapPickPlayers(rec)), 1, cap.max);
+  const atPick = family === 'teams' ? sizes.join() === pick.join() : players === pickPlayers;
+  const pickFix: NonNullable<FitItem['fix']> = family === 'teams' ? { label: `Use ${pick.join('v')}`, teams: pick } : { label: `Use ${pickPlayers} ${unit}`, players: pickPlayers };
+
+  // A setup made on a bigger computer, opened on a phone, can ask for more than this one runs.
+  if (players > deviceMax) items.push({ topic: 'device', level: 'problem', text: `${players} ${unit} is more than ${device} runs (${deviceMax}).`, fix: evenFix(deviceMax) });
+  const grid = raceGrid(setup.mode, map);
+  if (grid !== null) {
+    if (players > grid) items.push({ topic: 'grid', level: 'problem', text: `${grid} places on the grid: ${players - grid} of the ${players} racers would start on foot.`, fix: { label: `Use ${grid} racers`, players: grid } });
+    else items.push({ topic: 'grid', level: 'ok', text: `${grid} places on the grid: every racer starts in a vehicle.` });
+  }
+  // The map's size, and its own layout when this isn't it.
+  const suggest = family === 'teams' && map.teamSetup && !atPick ? ` The map suggests ${pick.join('v')}.` : '';
+  if (players > rec.max * 2) items.push({ topic: 'size', level: 'problem', text: `The map is made for ${recText} players: ${players} is far more than it has room for.${suggest}`, ...(atPick ? {} : { fix: pickFix }) });
+  else if (players > rec.max) items.push({ topic: 'size', level: 'warn', text: `The map is made for ${recText} players: ${players} will be crowded.${suggest}`, ...(atPick ? {} : { fix: pickFix }) });
+  else if (players < rec.min) items.push({ topic: 'size', level: 'info', text: `The map is made for ${recText} players: ${players} will feel empty.${suggest}`, ...(atPick ? {} : { fix: pickFix }) });
+  else items.push({ topic: 'size', level: suggest ? 'info' : 'ok', text: `The map is made for ${recText} players: ${players} fit.${suggest}`, ...(suggest ? { fix: pickFix } : {}) });
+  // Spawn points: one each, else shared (the match makes more of its own for big matches).
+  const spawns = spawnsOf(map);
+  if (family !== 'race' && spawns.length) {
+    const sided = family === 'teams' ? spawns.filter((s) => s.faction).length : 0;
+    const where = sided ? ` (${sided} on the teams' sides, ${spawns.length - sided} shared)` : '';
+    if (players > spawns.length) {
+      const extra = players >= IMPROMPTU_MIN_PLAYERS ? ' The match adds spawn points of its own on open ground.' : '';
+      items.push({ topic: 'spawns', level: 'warn', text: `${players} players, ${spawns.length} spawn points${where}: spawns will be shared, so players may appear close together.${extra}` });
+    } else items.push({ topic: 'spawns', level: 'ok', text: `${spawns.length} spawn points${where} for ${players} players: one each.` });
+  }
+  if (family === 'teams') {
+    const sides = mapTeams(map, sizes.length);
+    const teamed = spawns.filter((s) => s.faction);
+    if (teamed.length) {
+      const without = sides.flatMap((t, i) => (teamed.some((s) => s.faction === t.id) ? [] : [setup.teamNames?.[i]?.trim() || t.name]));
+      const one = without.length === 1;
+      const pool = teamed.length < spawns.length ? 'the shared spawns' : "the other teams' spawns, away from enemies";
+      if (without.length) items.push({ topic: 'teams', level: 'warn', text: `${without.join(', ')} ${one ? 'has' : 'have'} no spawn points of ${one ? 'its' : 'their'} own on this map: ${one ? 'it uses' : 'they use'} ${pool}.` });
+    }
+    if (map.factions.length >= 2 && sizes.length > 2) items.push({ topic: 'teams', level: 'info', text: `This map's sides are ${map.factions[0]!.name} and ${map.factions[1]!.name} (their bases and spawns); teams beyond them use the shared spawns.` });
+  }
+  if (players > HUGE_MATCH) items.push({ topic: 'performance', level: 'warn', text: `${players} players is a very big match: slower computers may stutter. Low graphics helps; bots think less often past ${BIG_MATCH}.` });
+  else if (players > BIG_MATCH) items.push({ topic: 'performance', level: 'info', text: `${players} players: a big match. If it stutters, try Low graphics.` });
+  else items.push({ topic: 'performance', level: 'ok', text: `${players} ${unit}: light enough for most computers.` });
+  const level: FitLevel = items.some((i) => i.level === 'problem') ? 'problem' : items.some((i) => i.level === 'warn') ? 'crowded' : 'fits';
+  return { level, label: FIT_LABELS[level], items };
 }
 
 /**
