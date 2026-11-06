@@ -100,7 +100,7 @@ every built-in look names exactly one, and a unit test
 | Knights & Legends (`legends`) | Medieval, royalty, monks, wizards, mythic and historical warriors: Anubis, Ashwalker, Brother Ansel, Elder Tomo, Frost Viking, Goblin Warlord, Grizzelda, Imperial Guard, Iron Knight, King Aldric, Lancer Mei, Linktifa, Merrow the Wise, Old King Halvard, Ser Brannock, Shade, Sir Galloway, Thornweaver |
 | Everyday Folk (`folk`) | Ordinary people: Big Bogdan, Biker Gang Girl, Brawler, Cap'n Barnacle, Chef Basile, The Butcher, Dale, Drifter, Dusty Colt, Engineer, Farmhand, Grandpa Chains, Hector, Huntress, Old Timer, Pathfinder, Patches, Saint Nick, Sprout, The Dapper, Tracker, Umpire, Uncle Bao, Wayfarer |
 | Undead & Horror (`horror`) | Bonejack, Count Bonesworth, Fearsome Undead, Giggles, Gorgle, Groaner, Lurcher (queued), The Masked Figure, Punkin, Rattles, Rotter, Shambler, Spiked Skeleton Biker |
-| Animals (`animals`) | Bandit, Barnaby Bruin (queued), Big Bab, Biscuit, Brass Hare, Croakley, Greyfang, Hyena Warrior, Scamp, Shellback, Shiba, Teddy, Wealthy Otter (Bamboo retired 2026-11-06: its saved choices play Shellback) |
+| Animals (`animals`) | Bandit, Barnaby Bruin (queued), Big Bab, Biscuit, Brass Hare, Croakley, Greyfang, Hyena Warrior, Scamp, Shellback (standard size since 2026-11-06; it came in large), Shiba, Teddy, Wealthy Otter (Bamboo retired 2026-11-06: its saved choices play Shellback) |
 | Creatures & Machines (`creatures`) | Aliens, goblins, reptiles, robots, monsters: Boglurker, Botboy, Emerald Robot, Goblin, Imp and Puglin (NPC skins), Ivory Rustwalker, Ricochet, Salamander Warlord, Snikkit, T-350, The Hollow Visitor, The Visitor |
 
 Where a group comes from: a part-built preset has `group` on its entry in
