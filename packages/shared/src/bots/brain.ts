@@ -1288,7 +1288,7 @@ export class BotBrain {
           moveYaw = this.followPathTo(view, to, moving);
           // No way by its lane after all: straight for the goal.
           if (moveYaw === null && this.pathMiss && this.lane?.via) this.lane.via = null;
-          else if (moveYaw === null && this.pathMiss) {
+          else if (moveYaw === null && this.pathMiss && me.grounded !== false) {
             // As near as a route gets to a goal it can't reach (followPathNow went there): keep watch here, facing it,
             // until it comes within reach (a dropped flag goes home) or the goal changes.
             const r = this.keepWatch(view, { pos: view.nav.reachToward(me.pos, g.pos) ?? me.pos, radius: 3, watch: g.pos });
@@ -1309,7 +1309,7 @@ export class BotBrain {
           const r = this.keepWatch(view, g);
           moveYaw = r.moveYaw;
           moveScale = r.moveScale;
-          stance = hasTag(this.profile, 'SNIPER') ? (Math.max(1, r.stance) as Stance) : r.stance;
+          stance = hasTag(this.profile, 'SNIPER') && me.grounded !== false ? (Math.max(1, r.stance) as Stance) : r.stance;
           lookDone = true;
           doing = 'station';
         }
@@ -1836,7 +1836,8 @@ export class BotBrain {
     // Crouched now and then (careful bots longer), standing up again to look over things.
     const period = TICK_RATE * (4 + (this.slot % 3));
     const down = t % period < period * (this.careful() ? 0.55 : 0.3);
-    return { moveYaw, moveScale: 0.5, stance: moveYaw === null && down ? 1 : 0 };
+    // (Never in the air: crouching under a canopy cuts it away.)
+    return { moveYaw, moveScale: 0.5, stance: moveYaw === null && down && view.self.grounded !== false ? 1 : 0 };
   }
 
   /** The next place to keep watch from: inside the area, on its floor, in sight of its middle, not where it just was. */
@@ -2770,8 +2771,9 @@ export class BotBrain {
       this.path = found ?? [];
       // No route: cut off on a patch of navmesh players walk off? Then off it first. Else (the goal is what can't be
       // reached: a flag dropped into a pit, something on a roof) as near it as a route gets, rather than standing.
+      // (Not while falling or under a canopy: no route starts in the air, and it lands soon enough.)
       if (found) this.escape = null;
-      else if (horizontalDistance(me.pos, goal) > 1.5) {
+      else if (horizontalDistance(me.pos, goal) > 1.5 && (me.grounded !== false || me.climbing)) {
         this.planEscape(view, goal);
         if (!this.escape) {
           const near = view.nav.reachToward(me.pos, goal);
