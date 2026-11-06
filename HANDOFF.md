@@ -27,6 +27,34 @@ gets overloaded above that: local e2e times out and flakes). Prune landed worktr
   reworks batches 2–3, character fixes rounds 2–3 (see the entries below and CHANGELOG).
 
 <!-- setpieces -->
+### Set pieces, part 2: MapMaker (`wip/setpieces-2`, agent, 2026-11-06; from `wip/setpieces-3`, main da59209d merged in; CI on `check/setpieces-2`)
+What was built: docs/SET_PIECES_PLAN.md, "As built: part 2" and "St. John's (as built)"; how to use it:
+docs/BUILDING_KIT.md, "Set pieces". MapMaker places, selects, themes, explodes and saves set pieces; the coverage map
+has all 39; St. John's has the Argonne Gate carriageway (with an east tower) and a DeKoven-Smythe skybridge.
+- **Where the code is:** `packages/client/src/editor/editorApp.ts` (the set piece tool and ghost, picking a part as its
+  placement, the box select, the tab and its panel, the inspector, Explode, the save dialog, My set pieces),
+  `editorView.ts` (the piece ghost, outlines, port marks), `paletteCatalog.ts` (the `setpieces` pane, families,
+  Style Pack fit), `storage.ts` (the local library), `frontend/modelThumbs.ts` (the `piece` view for the atlas);
+  shared `editor/setPieceEdit.ts` (`setPieceMirrorRefusal`, `setPiecePortStates`).
+- **Fixed on the way (shared):** `coplanarSpots(map, boxes, partOf)` leaves a set piece's parts against each other
+  out (MapMaker passes the expansion's `partOf`); `withTerrainUnderFloors` counts set pieces' floors (placing a
+  trench carves the ground at once: exports used to change on load); the Gothic/Collegiate stone plinth stops at
+  doorways (`floorRuns`).
+- **Tests:** shared `setPieceEdit.test.ts` (ports, mirror refusal), `zfight.test.ts` (a piece is one piece),
+  `terrainFloors.test.ts` (the carve on placing), `setPieceExpand.test.ts` (the plinth at doorways),
+  `coverageMap.test.ts` (every set piece); client `setPieceLibrary.test.ts`; e2e editorux `editorSetPieceChecks` (the
+  tab, ghost and refusal, turn and mirror, select as one, move and undo, explode and undo, box select, save, export
+  and import, the ports warning) and the coverage flow's set piece count.
+- **Pitfalls:** MapMaker's document keeps the placements: draw, pick and check `viewDoc` (expanded), and map a part
+  id to its placement with `expansion.partOf`. Driving MapMaker with Playwright on a big map: click palette cards by
+  mouse position and wait for the tool (Playwright's own click can wait forever on a busy page), and run long
+  drivers against `vite preview`, not the dev server (it reloads when a source file changes).
+- **For the owner:** the other pack facades (concrete, corrugated, manor brick, clapboard, roman, desert, harbour,
+  snow, timber frame...) still draw their ground band across doorways (visual only): stopping them at doorways, as
+  the stone ones now do, changes those packs' look, so it waits for a yes. St. John's gate east tower (two storeys,
+  Welles's stone, a door onto the drill field) and the skybridge's site (DeKoven to Smythe over Church Street) are
+  the agent's choices, per the plan.
+
 ### Set pieces, part 1: data, expansion, first content (`wip/setpieces`, agents, 2026-11-06; from main 774a28ce, main e18a175e merged in; green on `check/setpieces` at 09af09cd, run 42211217797; not landed)
 Plan and what it settled: docs/SET_PIECES_PLAN.md ("As built: part 1"); how to add a piece: docs/CONTENT_PIPELINE.md,
 "Set pieces". Part 2 (MapMaker: the Set pieces palette tab, ghost placing, select/inspector, Explode, Save selection,

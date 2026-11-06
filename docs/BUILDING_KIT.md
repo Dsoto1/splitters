@@ -157,6 +157,9 @@ lights; in MapMaker it stays one thing you place, select, turn and theme until y
   stands in it** (a tile's wall or window, a block: MapMaker looks just outside the port, at waist to chest height),
   grey where the piece's own wall shuts it (a side left automatic, with nothing built against it). A port in a wall is
   a warning in the inspector and the issues list: open the wall (the Walls tool, or cut the block), or move the piece.
+- **The ground and the overlaps check:** placing or moving a piece lowers the terrain under its floors at once (a
+  sunk trench carves its slot), the same as the map does when it loads. MapMaker's **Overlaps** warning leaves a
+  piece's own parts out: it points only at your blocks flush with a piece in another look.
 - **Explode to tiles** (inspector button, or the right-click menu): the placement becomes its parts, ordinary tiles,
   blocks, props, doors and lights you can edit one by one (they keep their ids, `sp_<placement>_<n>`, and are
   selected); one undo puts the set piece back.

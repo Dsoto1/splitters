@@ -55,6 +55,15 @@ pieces")
 - **Make your own:** drag a box over tiles, blocks and props to select them, then **Save as set piece**. Your pieces
   are kept in this browser next to your maps, place in any map (the map carries them), and export and import as
   files. The owner can export one to ship with the game.
+- **St. John's gets two set pieces, placed in MapMaker:** the Argonne Gate is now a two-storey castellated carriageway
+  (St. John's stone, Collegiate stone facade, the shallow vault) from Exeter Street to the drill field, with doors
+  into Knight and a new east tower against Welles; and a covered skybridge on the first floor joins DeKoven and Smythe
+  over Church Street, battlements and all. Spawns and objectives are where they were.
+- A set piece's own parts no longer count in MapMaker's overlaps warning (only your pieces against it do); placing a
+  set piece lowers the ground under its floors at once (a sunk trench's slot), as loading the map does, so an
+  exported map loads exactly as it was saved; the Collegiate and Gothic stone plinth stops at doorways instead of
+  running across them.
+- The coverage test map has one of every set piece.
 
 **Set pieces, part 3: pieces for the beach assault and the colosseum** (owner-approved, docs/SET_PIECES_PLAN.md)
 - **For MAP 21 (Military Compound look):** the Gun Casemate and the Cliff Casemate (a gun port to the sea, and rooms
