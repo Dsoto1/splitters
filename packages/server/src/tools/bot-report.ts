@@ -25,6 +25,7 @@ import { CtfMode, Match, ctfRole, initNavigation } from '@tiletrigger/shared/mat
  *   pnpm bot-report --suite=ctf --seeds=1,2 --seconds=240 --json=after.json   (every map that offers CTF)
  *   pnpm bot-report fernwood_moon --mode=core.tdm --players=32 --spells        (idle spells listed)
  *   pnpm bot-report --compare=before.json,after.json                          (before and after, per map)
+ *   --shard=k/n plays every n-th map from the k-th (run n processes; --compare takes several files: a+b,c+d).
  * Bots are added as the server adds them (as their characters, normal skill,
  * the match's bot style); --players=N overrides the map's team sizes.
  */
@@ -118,11 +119,13 @@ function suiteMaps(): string[] {
 async function main(): Promise<void> {
   const compare = opt('compare');
   if (compare) {
-    const [a, b] = compare.split(',').map((p) => JSON.parse(readFileSync(here(p), 'utf8')) as MatchRow[]);
+    const [a, b] = compare.split(',').map((ps) => ps.split('+').flatMap((p) => JSON.parse(readFileSync(here(p), 'utf8')) as MatchRow[]));
     printCompare(a!, b!);
     return;
   }
-  const ids = suite ? suiteMaps() : args;
+  // --shard=k/n: every n-th map from the k-th (several processes share a suite).
+  const [k, n] = (opt('shard') ?? '0/1').split('/').map(Number) as [number, number];
+  const ids = (suite ? suiteMaps() : args).filter((_, i) => i % n === k);
   await Promise.all([initPhysics(), initNavigation()]);
   const rows: MatchRow[] = [];
   for (const id of ids) {
@@ -269,7 +272,7 @@ function play(map: MapDocument, seed: number): MatchRow {
         closeSpell(c.slot);
         continue;
       }
-      const reason = b.meantToMove && !FIGHTING.has(doing) ? `stuck(${doing})` : doing;
+      const reason = c.move.climb ? 'ladder' : b.meantToMove && !FIGHTING.has(doing) ? `stuck(${doing})` : doing;
       r.idle += dt;
       r.why[reason] = (r.why[reason] ?? 0) + dt;
       const calm = !FIGHTING.has(doing) && b.target === null;
