@@ -536,23 +536,30 @@ What bots can get to and out of, worked out from every polygon of the navmesh, n
 MapMaker's validator run it on the navmesh as the match builds it, `sim/mapNav.ts`):
 
 - **Routes** are the navmesh's links between polygons, one way: walking, and the off-mesh links (jump pads, ladders,
-  portals, ziplines, lifts, ledge drops). **Falls** are where a body walks off the walkable ground onto lower ground,
-  traced against the level (nothing in the way at step, knee and head height, then down; landings in lava or deep
-  water left out: a bot there swims or drowns, it doesn't walk). Falls are how bots end up somewhere without a route
-  there (knocked, pushed, a missed step); they aren't routes.
+  portals, ziplines, lifts, ledge drops). A jump pad's flight comes down on the scenario's solids too (crumbling and
+  breakable blocks, breakable props: the navmesh is built with them; Erosion's corner pads land on its crumbling
+  decks). **Falls** are where a body walks off the walkable ground onto lower ground, traced against the level:
+  nothing in the way at step, knee and head height, and room for a standing body (0.35 m round, from over a step to
+  its head) all the way to the edge and just past it (rails, bars and lattices the rays slip between stop it: Bunker
+  Cross's galleries have rails 0.1, 1.5 and 2.9 m over the floor, and its outer yard read as a 3,250 m² trap), then
+  down. A landing is the navmesh polygon close below where the body comes down, not one beyond a wall from it (Rail
+  Stockyard's ramp has slots down its sides whose floor is the underpass on the wall's far side). Landings in lava or
+  deep water are left out: a bot there swims or drowns, it doesn't walk. Falls are how bots end up somewhere without
+  a route there (knocked, pushed, a missed step); they aren't routes.
 - **The main area**: the component of routes (polygons that all route to each other) the most spawn points reach and
   are reached from (both ways: a team's base bots jump-pad up into and can't route down from isn't it).
 - **A trap**: a patch bots get into from where they spawn (falling, a one-way link, a jump pad) that doesn't route to
-  the main area, and that the bots' own hop off a cut-off patch (`NavWorld.escapes`: a step or hop of up to 1.1 m
-  within 8 m) doesn't get out of either. One with a fall out is a ledge with no way down (the drop links below fix
-  those); one without is a pit nobody gets out of: the map's to fix. The hop's ways across are the place samples
-  near the patch (7 m apart), those joined both ways to the goal's ground first (not a walkway whose way on is a drop
-  link at its far end), then, when they give none, the goal's own ground nearest the patch (a sump or gully a couple
-  of metres from any sample).
+  the main area, and that the bots' own hop off a cut-off patch (`NavWorld.escapes`: a step or hop up to 1.4 m,
+  within 8 m, onto ground that routes to the main area; below) doesn't get out of either. One with a fall out is a
+  ledge with no way down (the drop links below fix those); one without is a pit nobody gets out of: the map's to
+  fix. The hop's ways across are the place samples near the patch (7 m apart), those joined both ways to the goal's
+  ground first (not a walkway whose way on is a drop link at its far end), then, when they give none, the goal's own
+  ground nearest the patch (a sump or gully a couple of metres from any sample).
 - **Cut off**: a spawn point that doesn't route to the main area (`nav.disconnected`), an objective (flag base, hill,
   bomb site, hostage, rescue zone) some team's spawn points don't route to, a pickup no spawn point routes to
-  (`nav.<kind>_unreachable`). "Routes to" is as bots get there: to the place, or to within a step off the navmesh of
-  it (a pickup on a crate, a flag on a prop; below).
+  (`nav.<kind>_unreachable`). "Routes to" is as bots get there: to the place, to within a step off the navmesh of
+  it (a pickup on a crate, a flag on a prop; below), or by a hop from where routes get onto ground that routes there
+  (M4 Outpost's uplink dais, a 0.75 m step 1.5 m from the gate's wall).
 - **Severity**: errors on the official maps (maps/: validate-map and the all-maps test fail), warnings for creators
   in MapMaker. Findings left on official maps for the owner are listed with why in `nav/auditKnown.ts` (warnings).
 - **Pictures** (`pnpm nav-audit --pictures=dir`; the nightly scorecard's artifact, with where searches failed): the
@@ -582,6 +589,30 @@ Generation bugs it found, fixed in code:
   on, only drops that cost at most about 30 health (8.3 m at normal gravity, `DROP_HURTS_UP_TO`); with it off, any drop
   onto the navmesh. Not into lava or deep water. A map without such patches gets none, and its navmesh is the same as
   before.
+- **Falls that weren't** (above): through rails and lattices a body can't pass (Bunker Cross's outer yard), and onto
+  a floor beyond a wall (Rail Stockyard's two "pits"). Each check runs only for an edge that does drop, so the audit
+  got faster, not slower (the scenario's solid boxes' bounds are worked out once per list: Iron Maw's audit 543 → 264
+  ms).
+
+**Where the official maps stand** (`pnpm nav-audit`, 90 maps; the pictures are the nightly's `bots-report` artifact):
+
+| | Errors | Traps | Maps with findings |
+|---|---|---|---|
+| Start of this round (after the drop links and the inside-solid fix) | 28 | 21 | 14 |
+| Now | 0 (15 findings listed, warnings) | 11 | 9 |
+
+Fixed: Bunker Cross's yard and Rail Stockyard's slots (the audit's falls, above); St John's court (a 0.4 m curb at its
+ramp's foot), Undergate Transit's four track beds and Sunken Kingdom's sunken patch (1.4 m down: bots hop out, the
+legs tucked up) and three of M4 Outpost's five pickups (onto the uplink dais) by the bots' hops (below); Dune Harbor's
+aisle between two consoles, whose end was 1.3 m from the ramp (MapMaker: the consoles 1.2 m shorter). Listed for the
+owner in `nav/auditKnown.ts`, each with why: Skyward's four pad perches and the two spawn points on its towers and Sky
+Islands' sky platform (one-way by design: "ride the pads up... fall off and you are gone"); Grand Marquee's marquee
+top (the street pad throws you up, nothing gets you down); Obsidian Orb's reactor core (its box rises to 3.8 m under
+the bridges: a fall lands on it, though the map's shaft is "bottomless"); Reactor's yard outside the plant (off a roof
+corner, no way back in); Serpent Gorge's gorge floor along the river and slivers by its crypt's walls; Erosion's lower
+deck (its corner pads stand on pillars that meet the deck only at a corner); M4 Outpost's last two pickups (the
+uplink room's 1.5-2 m gaps round the dais, too narrow for the navmesh). The Skyward, Grand Marquee, Obsidian Orb,
+Reactor, Serpent Gorge and Erosion places strand players too; each entry says what would fix it in MapMaker.
 
 **Navmesh clearance: 0.8 m, kept.** The code meant 0.6 m from walls and edges (the body's 0.4 and 0.2, so
 corner-cutting bots don't snag door frames) and built 0.8 (`Math.ceil((0.4 + 0.2) / 0.2)` is four cells: in floating
@@ -589,9 +620,11 @@ point the quotient is 3.0000000000000004). Every tile's stairs, towers and doorw
 and 0.6 is worse there: Recast breaks the narrow switchback flights of the Desert, Jungle, Medieval and Snow watch
 towers and the Desert outside stair into scraps it drops (nine of the tile packs' reach tests fail; the towers' sniper
 perches on Qasr Medina, Market Town, Whiteout Station and Vinefall Sanctum were cut off). 0.6 opens doorways and steps
-1.2–1.6 m wide (M4 Outpost's uplink dais), and on the CTF suite (two seeds of 180 s, 88 matches) it gave more flag
-takes and captures but more frozen time and failed searches (table in BOT_AI_PLAN.md, "Phase A, measured"): not
-better or equal, so 0.8 stays (`NAV_RADIUS_CELLS`, its comment says why). Narrow passages are Phase C's.
+1.2–1.6 m wide (M4 Outpost's uplink dais), and on the CTF suite (one seed of 180 s, the 32 maps both runs finished)
+it gave fewer stuck recoveries (3.08 → 2.54 a bot-minute) and a little less idling, but more failed searches (0.13 →
+0.17 %), fewer matches with a capture (15 → 14) and the same captures (table in BOT_AI_PLAN.md, "Phase A, measured"):
+not better on the measures that count, and worse for the tiles, so 0.8 stays (`NAV_RADIUS_CELLS`, its comment says
+why). Narrow passages are Phase C's; the bots' hops (below) get them over a step or gap the navmesh misses.
 
 ## Never standing still on a failed route (Phase A)
 
@@ -614,6 +647,23 @@ A failed search used to back the bot off 0.2 s, doubling to 4 s, standing still 
   area's places (`NavWorld.mainPlaces`).
 - **A hop off a cut-off patch keeps going** when a fight starts or the goal changes in mid-hop (before, the new
   route's stand-in on the patch pulled the bot back down: Capitol Mall's pool, 14 s instead of 1.4).
+- **Hops go by routes, one way** (`NavWorld.escapes`): a bot no route from which reaches its goal hops onto ground that
+  does route there (routes as they go: drops, falls and one-way links one way). It used to judge by the navmesh's
+  connected parts, which count every link both ways, so a patch a one-way link led into was "joined" to the rest and
+  never hopped off (St John's court: a 0.4 m curb at its ramp's foot). A bot on ground that routes to the main area
+  hops only onto ground that routes back to it too: over a gap or step the navmesh is too cautious for (M4 Outpost's
+  uplink dais, 1.5 m from the gate's wall), never down into a pit after a goal.
+- **Up a ledge of up to 1.4 m** (`ESCAPE_RISE`): a jump clears about 1.1 m; a hop up a higher ledge tucks the legs up
+  in the air (crouch while airborne, as players do, about 1.5 m; `tuckHop`). Undergate Transit's track beds and Sunken
+  Kingdom's sunken patch, 1.4 m down, held bots that fell in.
+- **Teammates push aside, not back** (`separate`): on the move, the push from allies close by only steers a bot aside,
+  at most as strongly as its way (0.8), never back; at a ladder's foot and on a ladder, none at all, since everyone
+  goes through that one place (bodies don't block each other). The owner's playtest of Shingle Point (bots stuck at the
+  feet of the seawall ladders, at the MG nest by hill 1, in the HQ): three or four bots at a ladder pushed each other
+  off it for seconds, and two meeting in the MG nest's narrow way pushed each other back and forth. Shingle Point,
+  King of the Hill, three seeds of 180 s: stuck recoveries 1.31 → 1.07 a bot-minute, idle out of a fight 4.0 → 2.8 %;
+  Bomb, two seeds: 1.41 → 0.65. The HQ is bomb site B: six of the defenders guard it (Bomb sends half to each site), and
+  six bots keeping watch in one small room still trip over each other; the playbook is Phase B's.
 - **No route requests in the air** (out of the plane, under a canopy, a jump pad's flight): none can start there.
   Eagle Spires' plane drop made 860 of its 1,507 failed searches in a minute.
 - **Buttons** (Primeval Park, a bot stood 218 s at the fence power): a button on cooldown isn't offered (pressed, it
