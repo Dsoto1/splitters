@@ -324,8 +324,7 @@
       "name": "Bench",
       "category": "Furniture",
       "height": 0.92,
-      "collide": "box",
-      "fills": "Small: the air beside its legs under the seat is 0.15 m wide at most, and voxel boxes give this same box.",
+      "collide": "voxel",
       "breakable": {
         "health": 30,
         "debris": "#8a5a32"
