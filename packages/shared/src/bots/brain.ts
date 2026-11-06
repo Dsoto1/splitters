@@ -819,7 +819,24 @@ export class BotBrain {
     this.turnToward(spot.yaw + sweep, spot.height > 2 ? -0.08 : 0);
     const scoped = !!this.heldDef(view)?.view.zoomFov;
     const settled = view.tick - this.underFireTick > TICK_RATE * 2;
-    return { moveYaw: d > 0.6 ? Math.atan2(spot.pos.x - me.x, spot.pos.z - me.z) : null, stance: p.kind === 'sniper' && scoped && settled ? 2 : 1, moveScale: 0.5 };
+    const prone = p.kind === 'sniper' && scoped && settled;
+    // Holding it looks alive (owner: "nobody stands like a statue"): a camper shifts a step to one side and back
+    // every few seconds where nothing is in the way, and stands up now and then to look over its cover (a sniper
+    // lying on its scope stays down and only sweeps).
+    const t = tick + this.slot * 37;
+    const cycle = TICK_RATE * 6;
+    let at = spot.pos;
+    let stance: Stance = prone ? 2 : 1;
+    if (!prone && p.kind === 'camp') {
+      if (t % cycle < TICK_RATE * 1.6) {
+        const side = Math.floor(t / cycle) % 2 ? 0.8 : -0.8;
+        const step = { x: spot.pos.x + Math.cos(spot.yaw) * side, y: spot.pos.y, z: spot.pos.z - Math.sin(spot.yaw) * side };
+        if (view.physics.lineOfSight({ x: spot.pos.x, y: spot.pos.y + 0.5, z: spot.pos.z }, { x: step.x, y: step.y + 0.5, z: step.z })) at = step;
+      }
+      if (t % (TICK_RATE * 5) < TICK_RATE) stance = 0;
+    }
+    const da = horizontalDistance(me, at);
+    return { moveYaw: da > (at === spot.pos ? 0.6 : 0.3) ? Math.atan2(at.x - me.x, at.z - me.z) : null, stance, moveScale: 0.5 };
   }
 
   /** How far (m) a bot on its way to `goal` goes out of its way: the goal's say, else by how much it cares for objectives (8–20 m). */
