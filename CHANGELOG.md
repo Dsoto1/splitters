@@ -22,8 +22,9 @@ arch and a ruined wall's window on Fogbound, and under a giant root on Fernwood 
   so rounds stopped in the air beside the tree and you could walk through the trunk. The column now stands on the
   trunk, as thick as it, follows a palm's or a leaning trunk's curve, and stops where a broadleaf tree forks
   (47 trees and poles). This was the Fernwood Moon screenshot: its broadleaf trees and pines.
-- **No walls of air over corner pieces**: corner and stair-corner pieces, railings, sandbag nests, rock spires and the
-  pediment no longer stand an invisible wall at their tallest height over their lower parts (28 props).
+- **No walls of air over corner pieces**: corner and stair-corner pieces, round railings, sandbag nests, the pediment,
+  the pyramidion and the burnt-out car no longer stand an invisible wall at their tallest height over their lower
+  parts (26 props).
 - **Breakable props with openings** (tents, fences, barriers, pipes, machines with windows) collide as their own
   shape too; a shot anywhere on one still damages it.
 - Kept as they were, with the reason written down: long open stair flights (solid underneath so they climb

@@ -272,18 +272,22 @@ function cutOpenings(doc, boxes) {
 
 /** Cell size of the `shell` collision grid (metres). */
 const SHELL_CELL = 0.4;
-/** Cells whose heights differ by more than this (metres) are never one `shell` box. */
-const SHELL_STEP = 0.1;
+/**
+ * Cells whose heights differ by more than the step (metres) are never one `shell` box: the finest step that keeps the
+ * prop within its box budget (voxelBudget: 48, hero 160), down to any height (Infinity, a box as tall as its
+ * tallest cell) for an outline too ragged for its budget (the bucket-wheel excavator).
+ */
+const SHELL_STEPS = [0.1, 0.25, 0.5, 1, Infinity];
 
 /**
  * Collision that follows the model's footprint (corners, curved walls and
  * railings): the triangles are rasterised onto a grid seen from above, each
  * covered cell becomes a column as tall as the geometry in it, and runs of
- * cells of about the same height (SHELL_STEP) are merged into as few boxes as possible. `below` (a prop's `shellTop`,
+ * cells of about the same height (within `step`) are merged into as few boxes as possible. `below` (a prop's `shellTop`,
  * metres) leaves out what is higher than that: a crane's boom passes overhead
  * instead of standing on a wall of columns.
  */
-function shellBoxes(size, tris, below = Infinity) {
+function shellBoxes(size, tris, below = Infinity, step = SHELL_STEPS[0]) {
   const [w, , d] = size;
   const nx = Math.max(1, Math.ceil(w / SHELL_CELL));
   const nz = Math.max(1, Math.ceil(d / SHELL_CELL));
@@ -306,7 +310,7 @@ function shellBoxes(size, tris, below = Infinity) {
   // air over the low ones (a boat's deck beside its mast, a stair's lower steps).
   let lo = 0;
   let hi = 0;
-  const free = (ix, iz) => top[iz * nx + ix] > 0 && !used[iz * nx + ix] && Math.max(hi, top[iz * nx + ix]) - Math.min(lo, top[iz * nx + ix]) <= SHELL_STEP;
+  const free = (ix, iz) => top[iz * nx + ix] > 0 && !used[iz * nx + ix] && Math.max(hi, top[iz * nx + ix]) - Math.min(lo, top[iz * nx + ix]) <= step;
   const boxes = [];
   for (let iz = 0; iz < nz; iz++)
     for (let ix = 0; ix < nx; ix++) {
@@ -326,7 +330,7 @@ function shellBoxes(size, tris, below = Infinity) {
           if (!(t > 0) || used[(z1 + 1) * nx + k]) ok = false;
           else [rl, rh] = [Math.min(rl, t), Math.max(rh, t)];
         }
-        if (!ok || rh - rl > SHELL_STEP) break;
+        if (!ok || rh - rl > step) break;
         z1++;
         [lo, hi] = [rl, rh];
       }
@@ -386,7 +390,12 @@ function collisionBoxes(p, size, tris, modelBoxes = null, glb = null) {
     if (!modelBoxes?.length) throw new Error(`${p.id}: collide "model" but the GLB carries no collision boxes`);
     return modelBoxes.map((b) => b.map(round));
   }
-  if (p.collide === 'shell') return shellBoxes(size, tris, p.shellTop);
+  if (p.collide === 'shell') {
+    for (const step of SHELL_STEPS) {
+      const boxes = shellBoxes(size, tris, p.shellTop, step);
+      if (boxes.length <= voxelBudget(p) || step === Infinity) return boxes;
+    }
+  }
   if (p.collide === 'voxel') return voxelProp(p, tris, glb);
   if (p.collide === 'trunk') return trunkBoxes(tris, size);
   const pts = tris.flat();

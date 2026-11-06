@@ -460,7 +460,9 @@ Status: built and tested locally, being checked (see the end of this section). T
     `shell`, 5 `frame`, 5 `trunk` with no single trunk, 1 `openings`).
   - Trunk columns on the real trunk (`trunkBoxes`), as thick as it, following leans, stopping where broadleaf trees
     fork: 47 trees and poles changed (Meshy birches were 1.5 m off; this was screenshot 32).
-  - `shell` merges only cells of one height (no walls of air at the tallest cell): 28 props tightened.
+  - `shell` merges only cells of one height (no walls of air at the tallest cell; coarser steps when that's over the
+    prop's box budget): 26 props tightened. The red rock spires (dustwater ×12) and the excavator only fit their
+    budget with the old merge, so they keep it (slack round the spires stays: `--slack`).
   - Breakable props collide as their `boxes` (ScenarioBodies `parts`).
   - Openings audit `tools/content/prop-openings.mjs` in `pnpm content:check` (`fills` reasons for the 7 kept);
     `--slack` lists air round outlines (131 `box` props: not changed); fixture

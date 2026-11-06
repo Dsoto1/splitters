@@ -803,7 +803,7 @@ replace it), built by `prepare-props.mjs` from its pack entry's `collide`:
 | `trunk` | a column standing on the model's real trunk, as thick as the trunk (0.2–0.5 m) |
 | `voxel` | boxes that follow the model in 3D: arches, windows, holes, doorways and the space under tables, bridges and vehicles stay open |
 | `stairs`, `frame`, `openings` | steps a player walks up; a doorway between posts; every doorway along a wall |
-| `shell` | 2.5D: a column over each 0.4 m cell of the footprint, as high as the model there (corner pieces, curved railings, stair corners) |
+| `shell` | 2.5D: a column over each 0.4 m cell of the footprint, as high as the model there, cells of one height (within 0.1 m, or the coarser step the box budget allows) merged (corner pieces, round railings, stair corners) |
 | `boxes`, `model` | boxes the pack entry gives, or a code-built model carries |
 
 **Voxel collision** (`tools/content/voxel-collision.mjs`, owner's bug of 2026-11-06: rounds stopped in empty
