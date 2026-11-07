@@ -25,7 +25,8 @@
     "fallback": "guns/tommy_gun.glb",
     "viewOffset": [0.2, -0.2, 0.5],
     "tracer": "#ffe9a8",
-    "hold": { "style": "long", "grip": [0, -0.04, -0.075], "support": [0, 0.06, 0.22], "shoulder": [0, -0.01, -0.41] }
+    "hold": { "style": "long", "grip": [0, -0.005, -0.15], "support": [0, 0.045, 0.17], "shoulder": [0, -0.03, -0.44] },
+    "muzzleAt": [0, 0.072, 0.435]
   },
   "notes": {
     "design": "Benchmark C: very high rate of weak rounds, tight for the first few then widening fast, very fast recovery, snappy reload.",

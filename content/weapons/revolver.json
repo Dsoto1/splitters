@@ -26,7 +26,8 @@
     "held": { "medium": "guns/revolver_rustique.medium.glb", "high": "guns/revolver_rustique.high.glb" },
     "viewOffset": [0.2, -0.18, 0.42],
     "tracer": "#ffcf7a",
-    "hold": { "style": "pistol", "grip": [0, -0.03, -0.108], "support": [-0.02, -0.04, -0.098], "rake": 18 },
+    "hold": { "style": "pistol", "grip": [0, -0.045, -0.115], "support": [-0.02, -0.055, -0.105], "rake": 18 },
+    "muzzleAt": [0, 0.055, 0.145],
     "fallback": "guns/ironclad_revolver.glb",
     "sound": "fire.revolver"
   },

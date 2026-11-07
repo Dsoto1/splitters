@@ -22,9 +22,10 @@
     "model": "guns/grease_gun.glb",
     "held": { "medium": "guns/grease_gun.medium.glb", "high": "guns/grease_gun.high.glb" },
     "fallback": "weapons/machine_pistol.glb",
-    "viewOffset": [0.2, -0.18, 0.38],
+    "viewOffset": [0.2, -0.2, 0.42],
     "tracer": "#ffe9a8",
-    "hold": { "style": "pistol", "grip": [0, -0.03, -0.024], "support": [-0.02, -0.04, -0.014], "rake": 10 },
+    "hold": { "style": "long", "grip": [0, 0.015, -0.175], "support": [0, 0.05, 0.0], "shoulder": [0, 0.03, -0.245] },
+    "muzzleAt": [0, 0.085, 0.245],
     "sound": "fire.smg"
   },
   "notes": {

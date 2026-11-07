@@ -683,10 +683,14 @@
       "length": 1.05
     },
     {
-      "out": "guns/sniper_cc0.glb",
+      "out": "guns/scoped_rifle.glb",
       "pack": "3dmodelscc0-guns-explosives",
       "file": "Sniper/Sniper.fbx",
-      "label": "Sniper (3DModelsCC0 Guns & Explosives)",
+      "label": "Sniper (3DModelsCC0 Guns & Explosives, levelled: posed nose-up in the download): the Marksman Rifle",
+      "noseDown": 9.6,
+      "move": {
+        "Magazine": [0, 2.0, 0]
+      },
       "maps": {
         "base": "Sniper_Base_Color.png",
         "normal": "Sniper_Normal.png",

@@ -18,17 +18,19 @@
   "ammo": "sniper",
   "recoil": { "bloom": 0.01, "maxBloom": 0.03, "recover": 0.0015 },
   "view": {
-    "model": "guns/frontier_rifle.glb",
-    "viewOffset": [0.21, -0.21, 0.52],
+    "model": "guns/scoped_rifle.glb",
+    "held": { "medium": "guns/scoped_rifle.medium.glb", "high": "guns/scoped_rifle.high.glb" },
+    "viewOffset": [0.21, -0.21, 0.62],
     "tracer": "#bfe4ff",
-    "hold": { "style": "long", "grip": [0, -0.08, -0.24], "support": [0, -0.06, 0.08], "shoulder": [0, 0.04, -0.46] },
-    "fallback": "weapons/marksman.glb",
+    "hold": { "style": "long", "grip": [0, -0.025, -0.29], "support": [0, 0.005, 0.07], "shoulder": [0, -0.03, -0.585] },
+    "muzzleAt": [0, 0.052, 0.565],
+    "fallback": "guns/frontier_rifle.glb",
     "zoomFov": 0.7,
     "sound": "fire.sniper"
   },
   "notes": {
     "recoil": "The legacy spread bloom (bloom per shot, cap, recovery per tick). With a family its spread comes from the family's accuracy; `maxBloom` still sets how long bots fire their bursts.",
     "group": "The extended arsenal: every one fires differently. 3: rifles.",
-    "model": "The owner's Frontier Rifle (Meshy, owned; a scoped rifle), the gun-pack rifle as the fallback."
+    "model": "The 3DModelsCC0 scoped bolt-action rifle (the pack's Sniper, CC0; content/guns.json, levelled), replacing the Meshy community Frontier Rifle, now the fallback: a hunting rifle with a scope, apart from the Sniper Rifle's tactical one, for the Military set."
   }
 }

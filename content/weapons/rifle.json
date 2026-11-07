@@ -43,7 +43,8 @@
     "fallback": "guns/ak47.glb",
     "viewOffset": [0.2, -0.2, 0.55],
     "tracer": "#ffd36b",
-    "hold": { "style": "long", "grip": [0, -0.01, -0.165], "support": [0, 0.05, 0.14], "shoulder": [0, 0.02, -0.41] }
+    "hold": { "style": "long", "grip": [0, -0.012, -0.175], "support": [0, 0.048, 0.13], "shoulder": [0, 0.02, -0.43] },
+    "muzzleAt": [0, 0.068, 0.44]
   },
   "notes": {
     "model": "The 3DModelsCC0 AK-47 (CC0; content/guns.json), replacing Styloo's AK-47, now the fallback.",

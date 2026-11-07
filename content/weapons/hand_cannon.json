@@ -27,7 +27,8 @@
     "fallback": "weapons/hand_cannon.glb",
     "viewOffset": [0.2, -0.18, 0.42],
     "tracer": "#ffd08a",
-    "hold": { "style": "pistol", "grip": [0, -0.03, -0.144], "support": [-0.02, -0.04, -0.134], "rake": 15 },
+    "hold": { "style": "pistol", "grip": [0, -0.03, -0.097], "support": [-0.02, -0.04, -0.087], "rake": 8 },
+    "muzzleAt": [0, 0.06, 0.125],
     "sound": "fire.heavy"
   },
   "notes": {

@@ -33,12 +33,8 @@
     "fallback": "weapons/nailgun.glb",
     "viewOffset": [0.21, -0.21, 0.52],
     "tracer": "#d8d8d8",
-    "hold": {
-      "style": "long",
-      "grip": [0, -0.029, -0.126],
-      "support": [0, 0.058, 0.168],
-      "shoulder": [0, -0.002, -0.33]
-    },
+    "hold": { "style": "long", "grip": [0, -0.04, -0.14], "support": [0, 0.0, 0.2], "shoulder": [0, 0.02, -0.345] },
+    "muzzleAt": [0, 0.1, 0.34],
     "sound": "fire.nail"
   },
   "notes": {

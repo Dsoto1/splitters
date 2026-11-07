@@ -531,7 +531,16 @@ async function build(src, entry, pack, place = null) {
   }
   const scene = doc.getRoot().listScenes()[0];
   const forward = place?.forward ?? entry.forward;
-  const root = doc.createNode('model').setRotation(turn(forward));
+  // `noseDown: degrees`: a model posed tilted in its download (the pack's sniper, nose up) levelled about +X after the turn.
+  let rotation = turn(forward);
+  if (entry.noseDown) {
+    const h = (entry.noseDown * Math.PI) / 360;
+    const [px, pw] = [Math.sin(h), Math.cos(h)];
+    const [x, y, z, w] = rotation;
+    // The pitch applied after the turn: q = pitch * turn.
+    rotation = [pw * x + px * w, pw * y - px * z, pw * z + px * y, pw * w - px * x];
+  }
+  const root = doc.createNode('model').setRotation(rotation);
   for (const child of scene.listChildren()) {
     scene.removeChild(child);
     root.addChild(child);

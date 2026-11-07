@@ -25,7 +25,8 @@
     "held": { "medium": "guns/m4a1.medium.glb", "high": "guns/m4a1.high.glb" },
     "viewOffset": [0.21, -0.21, 0.52],
     "tracer": "#ffd36b",
-    "hold": { "style": "long", "grip": [0, -0.06, -0.16], "support": [0, -0.04, 0.13], "shoulder": [0, 0.05, -0.34] },
+    "hold": { "style": "long", "grip": [0, -0.04, -0.195], "support": [0, 0.045, 0.11], "shoulder": [0, 0.02, -0.425] },
+    "muzzleAt": [0, 0.065, 0.43],
     "fallback": "guns/neon_flux.glb",
     "sound": "fire.rifle"
   },

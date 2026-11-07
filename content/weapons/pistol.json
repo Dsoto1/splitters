@@ -25,7 +25,8 @@
     "fallback": "weapons/pistol.glb",
     "viewOffset": [0.2, -0.18, 0.42],
     "tracer": "#ffe08a",
-    "hold": { "style": "pistol", "grip": [0, -0.03, -0.075], "support": [-0.02, -0.04, -0.065] }
+    "hold": { "style": "pistol", "grip": [0, -0.022, -0.083], "support": [-0.02, -0.032, -0.073], "rake": 10 },
+    "muzzleAt": [0, 0.055, 0.1]
   },
   "notes": {
     "model": "The 3DModelsCC0 Makarov (CC0; content/guns.json, its magazine put back in the grip), replacing the flat-colour kit pistol, now the fallback.",
