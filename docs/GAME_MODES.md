@@ -3,6 +3,7 @@
 | Mode | ID | Teams | Score limit counts | Map needs |
 | --- | --- | --- | --- | --- |
 | Deathmatch | `core.deathmatch` | none | kills | spawns |
+| Roulette | `core.roulette` | none (its Teams variant: 2) | kills and bonus points | spawns (any Deathmatch or TDM map) |
 | Team Deathmatch | `core.tdm` | 2–8 | team kills | spawns (team spawns optional) |
 | Capture the Flag | `core.ctf` | 2 | captures (default 3) | a **Flag Base** per team |
 | King of the Hill | `core.koth` | 2–8 | seconds on the hill (default 120) | one or more **Hills** |
@@ -312,6 +313,58 @@ Road tool.
 Sandsweep Circuit is the demo: a 1 km podrace circuit round a desert mesa
 in speeders, a combat race by default, with five sentries on the rocks 31 m
 off the straights (they reach only the near edge of the road).
+
+## Roulette
+
+Free-for-all where everyone plays a new character every life (`sim/roulette.ts`; the plan, owner-approved:
+docs/ROULETTE_MODE_PLAN.md). Plays wherever Deathmatch or Team Deathmatch does. The score counts kills and bonus
+points.
+
+- **The core (always on).** Each player draws from their own shuffled deck of the roster (`RANDOM_LOOK_POOL`: playable,
+  never retired, never NPC skins), seeded by the match seed and the slot: every look once a round, and no look again
+  within 6 deals across the end of one deck and the start of the next (`rouletteDeck`, `NO_REPEAT`). Character stats
+  are on (`characterStats: true` in its rules): size class, hitbox, health, speed. A **spawn card** for 2 s: "You are
+  Big Bab · Large: tougher, slower" and the weapon in hand. **Spawn protection**: 2 s where no other player's hit
+  hurts, ended at once by firing, throwing or a melee strike (`FX_PROTECTED` in the snapshot).
+- **Signature loadouts** (on unless switched off): each character spawns holding its signature weapon:
+  `content/roulette.json` `characters` (103 of the roster), else its group's (`groups`: soldiers a rifle, legends a
+  spear, folk a shotgun, horror a sawed-off, animals an SMG, creatures a laser rifle). A weapon outside the match's set
+  falls back to the set's main gun (`inSetOr`); fixed weapons (spears, discs) give none.
+- **Jackpot rolls** (on unless switched off): a life rolls a **jackpot** 1 in 20 (a steady gold glow at the screen's
+  edges and on the character, an announcer line, the signature's better weapon from `jackpot` and 50 armour) or a
+  **tiny** body 1 in 25 (0.65 of its size, 8 % quicker). **Giant Slayer**: a small character downing a large one
+  scores +1.
+- **Streak pick** (on unless switched off): 3 kills in one life earn a pick: at the next spawn the death screen offers
+  three cards (the next card and the two after; each a jackpot 15 % of the time), 1-3 or a click chooses; a person's
+  respawn waits up to 6 s for the choice (choosing spawns at the usual time), and the first card plays if they don't.
+  The pick is `PlayerInput.say` 180-182, checked by the match (only while down, only with an offer, once).
+- **Variants** (Match Setup's chips, off by default): **Earned rerolls** (a token per 2 kills, 2 at most; R or the
+  button on the death screen spends one for a new next card, or a new pick: `say` 185); **Swap on kill** (you become
+  your victim's character at once, keeping your share of health and your weapons); **Variety bonus** (+1 for a kill as
+  each new character after the first); **Teams** (Team Deathmatch over the players split in two, `rules.roulette` on
+  `core.tdm`, every player outlined in their team's colour: `teamOutlines`); **Lunar** (offered in every mode; its
+  gravity 0.4 and no fall damage, and wherever those hold its extras, `rules.lunar`: +1 for a kill off the ground,
+  every blast throws players about (knockback 10 at least), floaty ragdolls, jump pads 1.3× stronger, and a **gravity
+  storm** every minute: a 3-second warning, then gravity ×0.35, ×2.5, ×0.55 or ×3 in turn for 12 s).
+- **Awards** at the end of the match (on the scoreboard): Shapeshifter (most different characters), Giant Slayer,
+  Moonwalker (most air kills, with Lunar), Unluckiest Roll (the shortest life, and as whom).
+- **Bots** pick and spend sensibly: the jackpot card first, else the body they play best (large for a pusher, small
+  for a flanker); a token on a next card of the wrong size, or rather than waste one at the most. They play to their
+  body (BotBrain.playAs, each life): small bodies roam wide as lone wolves (flank), large ones push (more aggressive,
+  shorter range, keep after their target).
+- **Client:** `game/rouletteHud.ts` (card, glow, pick, reroll, storm warning, awards; nothing flashes: the glow eases in
+  over 0.45 s, 1.2 s and dimmer with Reduce flashing, and passes the `flashing` flow's `jackpot` moment). Each spawn
+  event names the player's next 3 cards (`nx`), loaded at once; the loading gate warms the first ones and the outline
+  and glow shaders (`GameView.auraWarm`).
+- **Events:** `rl` with `a` = `jackpot` / `pick` / `token` / `chose` / `reroll` / `giant` / `air` / `variety` / `swap` /
+  `storm` / `awards`; `spawn` carries `j` (1 jackpot, 2 tiny) and `nx`. Snapshots: `rl` (the storm), `me.rp` (your next
+  card, tokens, the pick on offer).
+- **Settings:** MatchSetup `rlSignature`, `rlJackpots`, `rlPick` (false: off), `rlRerolls`, `rlSwap`, `rlVariety`,
+  `rlTeams`; MatchRules `rouletteSignature`, `rouletteJackpots`, `rouletteStreakPick`, `rouletteRerolls`,
+  `rouletteSwapOnKill`, `rouletteVariety`, `roulette`, `teamOutlines`, `lunar`. The data: `content/roulette.json`
+  (`node tools/content/roulette.mjs` writes `roulette.generated.ts`; `pnpm content:rebuild` runs it).
+- **Quick start:** `?offline=sandgate&gamemode=core.roulette`. Headless: `pnpm bot-report sandgate citadel canyon
+  --mode=core.roulette --seconds=240 [--roulette=lunar,rerolls,swap,variety]`.
 
 ## Breakthrough
 
