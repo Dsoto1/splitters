@@ -2019,6 +2019,14 @@ async function canyonFlow(browser) {
   const typed = await page.evaluate(() => Math.max(...window.__editor.doc.terrain.heights));
   check(typed > 250 && typed <= 315, `Flatten to (m) levels the ground to the typed 3 m (${typed} cm over the terrain's base)`);
   await page.fill('#ed-tr-flatten-y', '');
+  // A game mode's marker (a Breakthrough spawn group) placed on that raised ground stands on it, not at the level's height.
+  await clickTool(page, '[data-tool="scenario:spawn:attack"]');
+  await page.mouse.move(p.x + 3, p.y + 2);
+  await page.mouse.move(p.x, p.y);
+  await page.mouse.click(p.x, p.y);
+  await page.waitForFunction(() => window.__editor.doc.entities.some((e) => e.kind === 'spawn' && e.side === 'attack'), null, { timeout: T(5000) }).catch(() => {});
+  const marker = await page.evaluate(() => window.__editor.doc.entities.find((e) => e.kind === 'spawn' && e.side === 'attack')?.position[1] ?? null);
+  check(marker !== null && marker > 2.5, `an Attackers' Spawn placed on raised ground stands on it (y ${marker})`);
   // An oblong terrain: width and depth (the grid 2.5 m past 320 m).
   await page.click('#ed-tr-remove');
   await page.fill('#ed-tr-new-w', '380');
@@ -2028,8 +2036,9 @@ async function canyonFlow(browser) {
   check(oblong?.cols === 153 && oblong.rows === 129 && oblong.spacing === 2.5, `Create terrain makes a 380 x 320 m terrain at 2.5 m (${JSON.stringify(oblong)})`);
   // Map properties: the modes a map also offers besides its main one.
   await page.keyboard.press('Escape');
-  await page.waitForSelector('#ed-prop-also input[data-mode="core.tdm"]', { timeout: T(5000) });
-  await page.check('#ed-prop-also input[data-mode="core.tdm"]');
+  // (At this width the inspector may be folded away: the box is clicked where it is.)
+  await page.waitForSelector('#ed-prop-also input[data-mode="core.tdm"]', { state: 'attached', timeout: T(5000) });
+  await page.evaluate(() => document.querySelector('#ed-prop-also input[data-mode="core.tdm"]').click());
   const modes = await page.evaluate(() => window.__editor.doc.metadata.supportedModes);
   check(modes.length === 2 && modes[1] === 'core.tdm', `Map properties' Also offered adds Team Deathmatch to the map's modes (${modes.join(', ')})`);
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);

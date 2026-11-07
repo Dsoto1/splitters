@@ -1381,7 +1381,10 @@ export class EditorApp {
   /** Where the Scenario tool puts an object, and its facing: on the level's floor, or in the doorway for doors and the like. */
   private scenarioSpot(key: ScenarioPaletteKey): { p: [number, number, number]; yaw: number } | null {
     if (!this.hoverPoint) return null;
-    const y = this.level * this.doc.classicStructure.levelHeight;
+    // Game modes' markers stand on the ground under the pointer, like spawns and pickups (a Breakthrough spawn group on a
+    // hill went in at the level's height, under the hill); the rest go on the level being edited.
+    const onGround = this.hoverOnTerrain && /^(spawn:|objective:|sector$|flag$|hill$|bombsite$|hostage$|rescue$)/.test(key);
+    const y = onGround ? Math.round(this.hoverPoint.y * 100) / 100 : this.level * this.doc.classicStructure.levelHeight;
     if (snapsToDoorway(key)) {
       const d = snapToDoorway(this.hoverPoint.x, this.hoverPoint.z, this.doc.classicStructure.cellSize);
       return { p: [d.x, y, d.z], yaw: d.yaw };

@@ -8,6 +8,20 @@ made only on a commit that passed CI on a check branch.
 
 ## Unreleased
 
+**Iron Coast (MAP 21), part 1: the beach assault and Breakthrough's showcase** (MapMaker only, from the owner's reference)
+- **A new map, Iron Coast** (`iron_coast`): 380 × 320 m of coast for 24-32 a side (24 v 24 is the Map's pick; 16 to 64
+  players). Landing craft in the surf, a beach of hedgehogs and craters, an irregular cliff (8 m at the grand stair's
+  gatehouse, 12 m west and centre, 16 m on the east headland), seven ways up it, four gun casemates at their own
+  heights, trenches and terraces on the crest, and the village with its round fort. It plays **Breakthrough**: take the
+  beach (the two cliff-foot strongpoints), destroy two of the four guns, hold the fort's command room; and **Team
+  Deathmatch** over the whole map. Military weapons.
+- **MapMaker**: a terrain can be oblong (width and depth, 2.5 m apart past 320 m: up to 400 m each way); the Flatten
+  brush levels to a height you type ("Flatten to (m)"); Map properties' **Also offered** lists the modes a map offers
+  besides its main one; Import and the drafts open an unfinished map (no spawn point yet), listing what's left to fix
+  (it exported, but wouldn't import back).
+- **bot-report** reports Breakthrough: the sectors the attackers took, when each fell, how the round ended and the
+  reinforcements left.
+
 **Small fixes from the owner's play, 2026-11-07**
 - **The Breakthrough Range is an ordinary map**: it was marked as a test map, so no list showed it (and the test hook
   that added it works only on test builds). Now it is in Play and Match Setup (Breakthrough its mode), rotations and
