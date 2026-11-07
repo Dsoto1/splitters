@@ -66,11 +66,11 @@ export class BackdropVisuals {
     this.scene.clearColor = new Color4(horizon.r * dim, horizon.g * dim, horizon.b * dim, 1);
     if (sky.file || sky.id === 'space') this.buildSky(sky, dim);
     // Haze: thin near the action, thick far out, so distant scenery melts into the horizon.
-    if (backdrop.haze > 0 && sky.id !== 'space') {
-      this.scene.fogMode = 2; // Scene.FOGMODE_EXP2
-      this.scene.fogColor = horizon.scale(dim);
-      this.scene.fogDensity = 0.0002 + backdrop.haze * 0.0014;
-    } else this.scene.fogMode = 0;
+    // No haze (space, or a backdrop without it): the fog is still on, at nothing. A smoke cloud or water you step into
+    // thickens it; switching it on there would rebuild every material in view (Babylon's FOG define) in that frame.
+    this.scene.fogMode = 2; // Scene.FOGMODE_EXP2
+    this.scene.fogColor = horizon.scale(dim);
+    this.scene.fogDensity = backdrop.haze > 0 && sky.id !== 'space' ? 0.0002 + backdrop.haze * 0.0014 : 0;
     const rand = seeded(doc.metadata.id);
     this.profile = beltProfile(backdrop, doc.classicStructure.theme);
     if (backdrop.ground !== 'none') {

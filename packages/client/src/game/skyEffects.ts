@@ -127,7 +127,7 @@ export class SkyEffects {
    * every frame (hundreds of draw calls in a city map).
    */
   private foldMist(mist: number, color: Color3): void {
-    if (this.scene.fogMode !== 2) {
+    if (this.scene.fogMode !== 2 || this.scene.fogDensity === 0) {
       this.scene.fogMode = 2; // Scene.FOGMODE_EXP2
       this.scene.fogColor = color;
       this.scene.fogDensity = 0;
