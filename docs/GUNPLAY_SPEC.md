@@ -1763,6 +1763,17 @@ Architecture should permit alternate projectile emitters.
 
 Reuse the same projectile, damage, material, feedback, and ammunition systems rather than creating a separate combat stack.
 
+### Implementation note: tanks (2026-11-07)
+
+The Tank's cannon is an ordinary mounted projectile weapon (`core.tank_cannon`, unchanged: 60 on impact, 150 splash
+over 6 m) with limited ammunition from the vehicle's data (content/vehicles/tank.json, seat `ammo`: 10 shells, one back
+every 15 s, all at an ammo pickup), so a power weapon is balanced by its ammunition (§32). Vehicles name their armour
+in data (`armour`): the Tank's hull is the `armor` surface type (the Armor Plate class, §8: rounds stop and may
+ricochet, nothing penetrates), takes 0.1 of bullet damage, 1.25 of blasts and none from melee: rockets, grenades and
+shells wear it down (about 6 rockets, 5 shells), small arms barely mark it. Its crew is sealed in: no round, blast or
+blade from outside reaches them; they die with the tank. Readability (§2.4): a hit on the hull sparks like armour.
+Numbers and how to change them: docs/CONTENT_PIPELINE.md, "Tanks and armour".
+
 ---
 
 # 49. Things We Explicitly Do Not Want

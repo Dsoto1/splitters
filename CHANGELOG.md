@@ -8,6 +8,13 @@ made only on a commit that passed CI on a check branch.
 
 ## Unreleased
 
+**Tanks play properly** (owner, 2026-11-07): the crew is sealed in (no bullet, blast or blade from outside reaches
+them) and dies with the tank; its armour takes a tenth of bullet damage and 1.25 times blasts (about 6 rockets or 5
+shells kill it); the cannon carries 10 shells, shown in the HUD, one back every 15 s and all at an ammo pickup; alone at
+the wheel you fire the cannon yourself; it turns on the spot. Bots drive tanks, fight from them at a stand-off, keep
+shells for targets worth one, refill at ammo pickups and get out under a quarter of its health. All in the tank's
+vehicle data (Workbench).
+
 **Friendly fire works** (owner, 2026-11-07: turned on, shots still didn't hurt teammates): with it on (Half or Full,
 Match setup or the Host tab), your rounds, pellets, rockets, blades and fire hit a teammate in the way and hurt them
 (half as much on Half), and burns and poison stick; blasts already did. Off (the default), shots pass through

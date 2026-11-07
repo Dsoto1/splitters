@@ -43,6 +43,7 @@ import {
   steer,
   turretFor,
   vehicleFor,
+  routeFits,
   type DriveState,
   type Headway,
   type MountView,
@@ -312,6 +313,8 @@ const SHELL_RESERVE = 0.3;
 const AMMO_DETOUR = 120;
 /** Someone shut in a sealed vehicle (the Tank) is this much less of a target (as if this many times further) to a bot with nothing that hurts vehicles. */
 const SHELTERED_TARGET_SCALE = 3;
+/** A tank whose route to the goal doesn't fit it (routeFits) is left alone this long (s) before it is looked at again. */
+const TANK_NO_FIT_SECONDS = 20;
 /** A pickup a bot got stuck going for is left alone this long (s). */
 const PICKUP_GIVE_UP_SECONDS = 90;
 /** How far (m) a bot goes to hop into a teammate's vehicle. */
@@ -606,7 +609,7 @@ export class BotBrain {
    * At the wheel of a sealed vehicle (a tank; bot-report): drives taken, back-outs (stuck recoveries), drives given up
    * as stuck, bail-outs with it about to blow, and drives to an ammo pickup for shells.
    */
-  readonly tankLog = { drives: 0, backOuts: 0, stuck: 0, bails: 0, resupply: 0 };
+  readonly tankLog = { drives: 0, backOuts: 0, stuck: 0, bails: 0, resupply: 0, stuckAt: [] as [number, number, number][] };
   private tankUnstick = 0;
   private tankResupply = false;
   private readonly skipMount = (m: MountView): boolean => (this.avoidMounts.get(m.index) ?? -Infinity) > this.lastThinkTick;
@@ -2971,6 +2974,12 @@ export class BotBrain {
       const route = view.nav.findPath(v.pos, goal);
       if (!route && !v.floats) return;
       if (route && pathLength(route) > horizontalDistance(v.pos, goal) * 1.5 && !v.floats) return;
+      // A tank only where it fits: the route is for people, and a tank wedges in their passages.
+      if (route && v.sealed && v.half && !routeFits(view.physics, route, Math.min(v.half[0], v.half[2]))) {
+        // (Not a give-up: another goal may give it a route that fits. Looked at again in TANK_NO_FIT_SECONDS.)
+        this.avoidMounts.set(v.index, view.tick + TICK_RATE * TANK_NO_FIT_SECONDS);
+        return;
+      }
       this.roamGoal = { ...goal };
       this.via = null;
       this.mountPlan = { index: v.index, until: view.tick + TICK_RATE * 8, drive: true };
@@ -3088,7 +3097,10 @@ export class BotBrain {
         this.tankUnstick = this.drive.unstick;
         if (resupply && !this.tankResupply) this.tankLog.resupply++;
         this.tankResupply = !!resupply;
-        if (leave && this.drive.stuck && tick - this.mountedSince > TICK_RATE && !this.useLatch) this.tankLog.stuck++;
+        if (leave && this.drive.stuck && tick - this.mountedSince > TICK_RATE && !this.useLatch) {
+          this.tankLog.stuck++;
+          this.tankLog.stuckAt.push([Math.round(m.pos.x), Math.round(m.pos.y), Math.round(m.pos.z)]);
+        }
         else if (leave && aboutToBlow(m) && tick - this.mountedSince > TICK_RATE && !this.useLatch) this.tankLog.bails++;
       }
     } else if (m && m.kind === 'vehicle') {

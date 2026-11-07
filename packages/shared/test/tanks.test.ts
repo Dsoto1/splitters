@@ -26,7 +26,7 @@ import {
   type PlayerInput,
 } from '../src/index.ts';
 import { Match, initNavigation, type Combatant } from '../src/match.ts';
-import { aboutToBlow, type MountView } from '../src/bots/vehicles.ts';
+import { aboutToBlow, routeFits, type MountView } from '../src/bots/vehicles.ts';
 import { makeMap } from './helpers.ts';
 
 beforeAll(() => Promise.all([initPhysics(), initNavigation()]));
@@ -437,6 +437,19 @@ describe('bots in tanks', () => {
     expect(out).toBeLessThan(TICK_RATE * 1.5);
     expect(bot.alive).toBe(true);
     expect(bot.bot!.tankLog.bails).toBe(1);
+  });
+
+  it('takes a tank only along a route it fits: not through a passage a person fits but a tank does not', () => {
+    // A wall across z = 20 with a gap from x = -1.2 to 1.2 (2.4 m: a person's door, not a 2.9 m tank's).
+    const physics = {
+      boxClear: (c: { x: number; z: number }, h: { x: number; z: number }) => !(Math.abs(c.z - 20) < 0.3 + h.z && (c.x - h.x < -1.2 || c.x + h.x > 1.2)),
+    };
+    const through = [{ x: 0, y: 0, z: 0 }, { x: 0, y: 0, z: 40 }];
+    expect(routeFits(physics, through, TANK.half[0])).toBe(false);
+    expect(routeFits(physics, through, 0.5)).toBe(true);
+    // A route that stays short of the wall fits.
+    const round = [{ x: 0, y: 0, z: 0 }, { x: 0, y: 0, z: 10 }, { x: 0, y: 0, z: 12 }];
+    expect(routeFits(physics, round, TANK.half[0])).toBe(true);
   });
 
   it('a bot drives a tank across an open field to the far side without getting stuck', () => {

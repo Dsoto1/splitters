@@ -127,6 +127,34 @@ export function boardingSpot(m: MountView, from: Vec3): Vec3 {
   return { x: m.pos.x + ox * c + oz * s, y: m.pos.y, z: m.pos.z - ox * s + oz * c };
 }
 
+/** Route clearance for a wide vehicle (routeFits): a box this tall (m, half height) centred this high over the route, every this many metres. */
+const FIT_HALF_HEIGHT = 0.5;
+const FIT_LIFT = 1.4;
+const FIT_STEP = 2;
+
+/**
+ * Does a vehicle `halfWidth` m either side of its middle fit along `path` (the navmesh's route, sized for people)? A
+ * box that wide (square, so any heading) is tested every FIT_STEP m from 0.9 to 1.9 m over the route, past the first
+ * `skip` m (where the vehicle itself stands). A tank kept out of passages a person fits through but it doesn't: it
+ * would wedge there (Iron Tide's hangar).
+ */
+export function routeFits(physics: { boxClear(center: Vec3, half: Vec3): boolean }, path: readonly Vec3[], halfWidth: number, skip = 4): boolean {
+  const half = { x: halfWidth, y: FIT_HALF_HEIGHT, z: halfWidth };
+  let along = 0;
+  for (let i = 1; i < path.length; i++) {
+    const a = path[i - 1]!;
+    const b = path[i]!;
+    const len = Math.hypot(b.x - a.x, b.z - a.z);
+    for (let d = 0; d < len; d += FIT_STEP) {
+      if (along + d < skip) continue;
+      const t = d / len;
+      if (!physics.boxClear({ x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t + FIT_LIFT, z: a.z + (b.z - a.z) * t }, half)) return false;
+    }
+    along += len;
+  }
+  return true;
+}
+
 /** The seat a bot is in. */
 export interface SeatView {
   mount: number;
@@ -171,19 +199,27 @@ export function turretFor(mounts: readonly MountView[], from: Vec3, enemy: Vec3,
   return best;
 }
 
+/** Bots take a tank (a sealed vehicle) over another vehicle up to this much (m) further away, and walk this much further to one. */
+export const TANK_PREFERENCE = 15;
+/** And it may add this much more (m) to the trip than another vehicle would. */
+export const TANK_DETOUR = 20;
+
 /** A free vehicle to drive toward `goal` (a long trip), close to `from`; `skip`: ones the bot won't take (it got stuck in them). */
 export function vehicleFor(mounts: readonly MountView[], from: Vec3, goal: Vec3, reach: number, skip?: (m: MountView) => boolean): MountView | null {
   const trip = horizontalDistance(from, goal);
   if (trip < 55) return null;
   let best: MountView | null = null;
-  let bestD = reach;
+  let bestD = Infinity;
   for (const m of mounts) {
     if (!m.alive || m.kind !== 'vehicle' || m.health < 0.5 || m.humanNear || m.hostile || m.burning || m.wedged || skip?.(m)) continue;
     const driver = m.seats.find((s) => s.role === 'driver');
     if (!driver?.free || m.seats.some((s) => !s.free)) continue;
-    const d = horizontalDistance(m.pos, from) + Math.abs(m.pos.y - from.y) * 3;
-    // Worth it only if the vehicle is roughly on the way: getting to it adds little to the trip.
-    if (d + horizontalDistance(m.pos, goal) > trip + 15) continue;
+    const walk = horizontalDistance(m.pos, from) + Math.abs(m.pos.y - from.y) * 3;
+    // Worth it only if the vehicle is roughly on the way: getting to it adds little to the trip (a tank, a little more).
+    if (walk + horizontalDistance(m.pos, goal) > trip + 15 + (m.sealed ? TANK_DETOUR : 0)) continue;
+    // A tank (sealed and armed) is worth more than the rest: taken over another as far as TANK_PREFERENCE m nearer.
+    const d = walk - (m.sealed ? TANK_PREFERENCE : 0);
+    if (walk > reach + (m.sealed ? TANK_PREFERENCE : 0)) continue;
     if (d < bestD) {
       best = m;
       bestD = d;
