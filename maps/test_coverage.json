@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 27,
+  "formatVersion": 28,
   "metadata": {
     "id": "test_coverage",
     "name": "Coverage Test",
@@ -18,11 +18,11 @@
     ],
     "release": {
       "mapId": "m_sil6g62hvmfh7nmx",
-      "versionId": "v_i4nd4y5ipxneljv3",
-      "revision": 4,
-      "contentHash": "sha256:f068426e803cfd9ca50daa220adaa69421202c21545929b865ac4aa6647e5e53",
-      "schemaVersion": 27,
-      "releasedAt": "2026-11-06T18:43:36.215Z"
+      "versionId": "v_r6ssqo54xi64o4ou",
+      "revision": 5,
+      "contentHash": "sha256:64032f10989969efaed044702fe49640df3527eedfbc1c3226350374c0e21552",
+      "schemaVersion": 28,
+      "releasedAt": "2026-11-07T04:31:28.178Z"
     },
     "testOnly": true
   },
@@ -4726,6 +4726,85 @@
       "scale": 1,
       "solid": true,
       "tint": null
+    },
+    {
+      "id": "sector_bmprmiuy48",
+      "kind": "sector",
+      "position": [
+        96,
+        0,
+        62
+      ],
+      "yaw": 0,
+      "order": 1
+    },
+    {
+      "id": "spawn_h7qv856edt",
+      "kind": "spawn",
+      "position": [
+        96,
+        0,
+        56
+      ],
+      "yaw": 0,
+      "faction": null,
+      "sector": 1,
+      "side": "attack"
+    },
+    {
+      "id": "objective_5mtt3atc1b",
+      "kind": "objective",
+      "position": [
+        76,
+        0,
+        70
+      ],
+      "yaw": 0,
+      "objective": "zone",
+      "sector": 1,
+      "label": "A1",
+      "radius": 6
+    },
+    {
+      "id": "objective_3lyo9idcq0",
+      "kind": "objective",
+      "position": [
+        96,
+        0,
+        70
+      ],
+      "yaw": 0,
+      "objective": "target",
+      "sector": 1,
+      "label": "A2",
+      "radius": 2.5
+    },
+    {
+      "id": "objective_fzrgi21uvf",
+      "kind": "objective",
+      "position": [
+        116,
+        0,
+        70
+      ],
+      "yaw": 0,
+      "objective": "final",
+      "sector": 1,
+      "label": "A",
+      "radius": 8
+    },
+    {
+      "id": "spawn_jmnqfdq0nj",
+      "kind": "spawn",
+      "position": [
+        96,
+        0,
+        76
+      ],
+      "yaw": -3.141,
+      "faction": null,
+      "sector": 1,
+      "side": "defend"
     }
   ],
   "factions": [],
@@ -56857,6 +56936,24 @@
       "piece": "setpiece.stair_tower_8",
       "x": 13,
       "y": -28,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false
+    },
+    {
+      "id": "setpiece_b0j8i58i6z",
+      "piece": "setpiece.command_bunker",
+      "x": 16,
+      "y": -35,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false
+    },
+    {
+      "id": "setpiece_ekbu7hwbyi",
+      "piece": "setpiece.cliff_stair_gate",
+      "x": 21,
+      "y": -35,
       "z": 0,
       "rotation": 0,
       "mirror": false
