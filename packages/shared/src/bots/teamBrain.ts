@@ -251,7 +251,9 @@ export class TeamBrain {
   /** Each corridor's price: crowd (members on it), deaths in the last minute and sightings lately near its route. */
   private price(tick: number, members: readonly BrainMember[], trips: readonly Trip[]): void {
     const pb = this.playbook;
-    if (this.tripsFor !== trips) {
+    // (The match hands over a new list each second: the same trips, unless the navmesh was rebuilt.)
+    const known = this.tripsFor;
+    if (!known || known.length !== trips.length || trips.some((t, i) => t !== known[i])) {
       this.tripsFor = trips;
       this.trips.length = 0;
       for (const t of trips) {
@@ -308,17 +310,25 @@ export class TeamBrain {
       g.members = have[kind].map((m) => m.slot);
       for (const m of have[kind]) this.groupOf.set(m.slot, kind);
     }
-    // Corridors: the main push the cheapest now, the flankers the cheapest other, the recon pair what's left (else the
-    // flankers'). Picked again only while nobody of the group is waiting or on its way with a wave, so a push keeps
-    // its way.
-    const order = trip.cost.map((c, k) => [c, k] as const).sort((a, b) => a[0] - b[0] || a[1] - b[1]).map(([, k]) => k);
+    // Corridors: by length and what happened on each lately (teammates' deaths, sightings of the enemy), not by who walks
+    // them (the groups themselves are that crowd: priced by it, the main push and the flankers swapped ways every
+    // second). The main push the cheapest, the flankers the cheapest other, the recon pair what's left (else the
+    // flankers'). A group keeps its corridor while it pushes (members waiting or a wave on its way), and otherwise until
+    // another is clearly cheaper (by a third).
+    const risk = (k: number) => trip.trip.corridors[k]!.length * (1 + trip.deaths[k]! * pb.death + Math.min(trip.seen[k]!, 6) * pb.seen);
+    const order = Array.from({ length: ways }, (_, k) => k).sort((a, b) => risk(a) - risk(b) || a - b);
     const main = this.groups.main;
     const flk = this.groups.flank;
     const rec = this.groups.recon;
-    const settled = (g: Group) => g.corridor >= 0 && g.corridor < ways && (g.waiting.size > 0 || g.sent.size > 0);
-    if (!settled(main)) main.corridor = order[0]!;
-    if (!settled(flk) || flk.corridor === main.corridor) flk.corridor = order.find((k) => k !== main.corridor) ?? main.corridor;
-    rec.corridor = order.find((k) => k !== main.corridor && k !== flk.corridor) ?? flk.corridor;
+    const keep = (g: Group, taken: readonly number[]) => {
+      if (g.corridor < 0 || g.corridor >= ways || taken.includes(g.corridor)) return false;
+      if (g.waiting.size > 0 || g.sent.size > 0) return true;
+      const best = order.find((k) => !taken.includes(k));
+      return best === undefined || risk(g.corridor) <= risk(best) * 1.33;
+    };
+    if (!keep(main, [])) main.corridor = order[0]!;
+    if (!keep(flk, [main.corridor])) flk.corridor = order.find((k) => k !== main.corridor) ?? main.corridor;
+    if (!keep(rec, [main.corridor, flk.corridor])) rec.corridor = order.find((k) => k !== main.corridor && k !== flk.corridor) ?? flk.corridor;
     const living = new Map(attackers.map((m) => [m.slot, m]));
     for (const kind of ['main', 'flank', 'recon'] as const) {
       const g = this.groups[kind];
@@ -391,35 +401,50 @@ export class TeamBrain {
   }
 
   /**
-   * Interceptors: up to `interceptors` members not right on the enemy (those chase it as the mode says), the nearest to
-   * a point `cutAhead` m ahead of it on its way (the corridor of a trip to where it's going it's nearest), get there
-   * instead; past that point (or close to it already), straight at the enemy.
+   * Interceptors (a reaction: our flag carried off): up to `interceptors` members the enemy will run into: ahead of it
+   * on its way home (nearer where it's going than it is), within reach of its route (the corridor, of the trips to
+   * where it's going, that it is nearest), not right on it (those chase it as the mode says), not carrying anything.
+   * Each goes to the point of that route nearest it if that is well ahead of the enemy, else `cutAhead` m ahead of the
+   * enemy, and waits there for it (a goal to keep to); once the enemy is close, straight at it. Bots behind the enemy
+   * don't turn back for it: chasing from behind is the mode's (the defenders and those close by).
    */
   private intercept(cut: { pos: Vec3; to: Vec3; slot: number }, members: readonly BrainMember[], all: readonly Trip[], jobs: Map<number, TeamJob | null>): void {
     const pb = this.playbook;
-    let ahead: Vec3 = { ...cut.to };
-    let best = Infinity;
+    let route: Corridor | null = null;
+    let from = -1;
+    let off = 25;
     for (const t of all) {
       if (horizontalDistance(t.to, cut.to) > 12) continue;
       for (const c of t.corridors) {
-        const at = placeOn(c, cut.pos);
-        if (at.at < 0 || at.off >= best || at.off > 25) continue;
-        best = at.off;
-        let k = at.at;
-        while (k < c.line.length - 1 && c.lineAt[k]! - c.lineAt[at.at]! < pb.cutAhead) k++;
-        ahead = { ...c.line[k]! };
+        const p = placeOn(c, cut.pos);
+        if (p.at >= 0 && p.off < off) {
+          off = p.off;
+          route = c;
+          from = p.at;
+        }
       }
     }
-    const picks = members
-      .filter((m) => !m.ordered && !m.mounted && !m.goal?.run && horizontalDistance(m.pos, cut.pos) > 20)
-      .map((m) => ({ m, d: horizontalDistance(m.pos, ahead) + Math.abs(m.pos.y - ahead.y) * 2 }))
-      .filter((x) => x.d < horizontalDistance(x.m.pos, cut.pos) + 40)
-      .sort((a, b) => a.d - b.d || a.m.slot - b.m.slot)
-      .slice(0, pb.interceptors);
-    for (const { m, d } of picks) {
-      // Close to the cut-off point, or the enemy already nearer its goal than the point is: at the enemy.
-      const at = d < 10 || horizontalDistance(cut.pos, cut.to) < horizontalDistance(ahead, cut.to) ? cut.pos : ahead;
-      jobs.set(m.slot, { group: 'intercept', to: null, route: null, stage: null, goal: { pos: { ...at }, radius: at === cut.pos ? 1.5 : 3, push: true } });
+    if (!route) return;
+    const line = route.line;
+    const at0 = route.lineAt[from]!;
+    let ahead = from;
+    while (ahead < line.length - 1 && route.lineAt[ahead]! - at0 < pb.cutAhead) ahead++;
+    const left = horizontalDistance(cut.pos, cut.to);
+    const picks: { m: BrainMember; pos: Vec3; d: number }[] = [];
+    for (const m of members) {
+      if (m.ordered || m.mounted || m.goal?.run) continue;
+      const near = horizontalDistance(m.pos, cut.pos);
+      if (near < 20 || horizontalDistance(m.pos, cut.to) >= left) continue;
+      const p = placeOn(route, m.pos);
+      if (p.at < 0 || p.off > 40) continue;
+      // Its own nearest point of the route if well ahead of the enemy, else the point cutAhead m ahead of it.
+      const k = route.lineAt[p.at]! - at0 >= 10 ? p.at : ahead;
+      const pos = near < 15 ? cut.pos : line[k]!;
+      picks.push({ m, pos, d: horizontalDistance(m.pos, pos) + Math.abs(m.pos.y - pos.y) * 2 });
+    }
+    picks.sort((a, b) => a.d - b.d || a.m.slot - b.m.slot);
+    for (const { m, pos } of picks.slice(0, pb.interceptors)) {
+      jobs.set(m.slot, { group: 'intercept', to: null, route: null, stage: null, goal: { pos: { ...pos }, radius: pos === cut.pos ? 1.5 : 3, push: true } });
     }
   }
 

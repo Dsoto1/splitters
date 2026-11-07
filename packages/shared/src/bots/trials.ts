@@ -16,8 +16,6 @@ export const BOT_TRIALS = {
   noroamroute: false,
   /** Squads don't take corridors. */
   nosquadroute: false,
-  /** King of the Hill goals without push. */
-  kothnopush: false,
   /** No health and ammo pickups on the way to a goal. */
   nogoalpickup: false,
   /** Bots holding a place chase and investigate at any distance (as main). */

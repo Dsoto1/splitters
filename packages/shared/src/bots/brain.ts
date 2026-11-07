@@ -16,6 +16,7 @@ import { MapMemory, laneWaypoint, pickExploreGoal } from './explore.ts';
 import type { BotPlan } from './director.ts';
 import type { PricedTrip } from './teamBrain.ts';
 import { BOT_TRIALS } from './trials.ts';
+import { GUN_WEIGHT, OPT_CHASE, OPT_COVER, OPT_FIGHT, OPT_GOAL, OPT_NOISE, OPT_PICKUP, OPT_RETREAT, OPTIONS, PUSH_NOTICE, bestChoice, scoreChoices, type ChoiceInput } from './choices.ts';
 import type { VantageBoard, VantageKind } from './vantage.ts';
 import { simProfile } from '../sim/profile.ts';
 import { hasTag, type BotDifficulty, type BotProfile } from './profile.ts';
@@ -282,8 +283,6 @@ const PICKUP_GIVE_UP_SECONDS = 90;
 const RIDE_REACH = 25;
 /** Enemy vehicles: how far (m, plus height) a bot goes for a rocket or grenade launcher once one has been seen lately (VEHICLE_MEMORY s). */
 const LAUNCHER_DETOUR = 30;
-/** On the way to an objective (OrderGoal.push): noises and enemies that slipped away only this close are worth turning aside for (m). */
-const PUSH_NOTICE = 12;
 /** An objective at least this far off is gone to by a lane of the bot's own (orderTarget). */
 const LANE_FROM = 50;
 /**
@@ -312,44 +311,6 @@ const CORNER_RADIUS = 0.45;
 /** How strongly teammates close by push a bot going somewhere out of a fight aside, at most (the way itself is 1). */
 const SEPARATE_MAX = 0.8;
 const PASS_RADIUS = 1.4;
-
-/** Scored choices (BotBrain.choose): the options, and how much more the one chosen last counts (no dithering). */
-const OPT_GOAL = 0;
-const OPT_ROAM = 1;
-const OPT_COVER = 2;
-const OPT_RETREAT = 3;
-const OPT_PICKUP = 4;
-const OPT_CHASE = 5;
-const OPT_NOISE = 6;
-const OPT_FIGHT = 7;
-const OPTIONS = 8;
-const MARGIN = 0.25;
-/** Roaming, with nothing else to do (no objective): anything worth a look beats it. */
-const ROAM_WEIGHT = 0.3;
-/**
- * An enemy that slipped out of sight, and a noise, at least (scored choices): above any goal but a carrier's run and a
- * person's order with the margin on top, so where a bot may leave its goal for one (leaveCost) it does, as it did
- * before scores (measured: attackers that kept to the flag past what happened within PUSH_NOTICE of them took half the
- * flags, Diamond Park, two matches of 300 s: 21 takes a match against 9).
- */
-const CHASE_WEIGHT = 1.6;
-const NOISE_WEIGHT = 1.5;
-/** Holding a place (a defender, a guard): what happens this close to it (m, past its radius) is worth going to look at. */
-const HOLD_NOTICE = 12;
-
-/**
- * How much a bot's objective is worth to it (scored choices): a carrier's run home above everything, a person's order
- * next, then an objective to keep to (CTF attackers, a hill, an interceptor's cut-off point), one to hold (a defender's
- * base), any other goal; a little more for bots that care for objectives.
- */
-function goalWeight(g: OrderGoal, p: BotProfile): number {
-  const care = (p.objectivePriority / 100) * 0.3;
-  if (g.run) return 6;
-  if (g.order) return 2.4;
-  if (g.push) return 1 + care;
-  if (g.watch) return 0.9 + care;
-  return 0.8 + care;
-}
 
 /** Tactical decisions (cover, grenades, mounts) run at about 10 Hz, staggered. */
 const DECIDE_TICKS = 6;
@@ -470,7 +431,7 @@ export class BotBrain {
    * teamBrain.ts), the waypoint it heads for next, the goal it is for, when it last checked where it is along it, and
    * when it last went by it.
    */
-  private route: { c: Corridor; next: number; goal: Vec3; checked: number; used: number } | null = null;
+  private route: { c: Corridor; next: number; goal: Vec3; checked: number; used: number; misses: number; off: boolean } | null = null;
   /** A corridor picked with its roaming goal (toward the enemy's side), for that goal only. */
   private roamRoute: { c: Corridor; goal: Vec3 } | null = null;
   /** A few steps aside after getting stuck on the same spot again and again (planSidestep). */
@@ -635,6 +596,7 @@ export class BotBrain {
     this.routeRng = createRng((seed * 104729 + slot * 7919 + 17) >>> 0);
     this.aim = new AimModel(this.rng, difficulty, profile);
     this.clearCheck = () => this.clearShot();
+    this.choice = { me: { x: 0, y: 0, z: 0 }, goal: null, profile, hurt: false, lowAmmo: false, cover: false, retreating: false, pickup: -Infinity, lost: null, noise: null, posted: false };
   }
 
   /** Enemy currently targeted (actor ID), if any. */
@@ -971,8 +933,10 @@ export class BotBrain {
     const me = view.self.pos;
     const tick = view.tick;
     let r = this.route;
-    if (!r || r.c !== c || horizontalDistance(r.goal, goal) > 8) r = this.route = { c, next: -1, goal: { ...goal }, checked: -Infinity, used: tick };
+    if (!r || r.c !== c || horizontalDistance(r.goal, goal) > 8) r = this.route = { c, next: -1, goal: { ...goal }, checked: -Infinity, used: tick, misses: 0, off: false };
     r.used = tick;
+    // (No route to its waypoints three times over: the corridor is left for this goal, straight there instead.)
+    if (r.off) return goal;
     if (r.next < 0 || tick - r.checked > TICK_RATE * 2) {
       r.checked = tick;
       const at = placeOn(c, me);
@@ -988,6 +952,20 @@ export class BotBrain {
       else break;
     }
     return r.next >= c.points.length - 1 ? goal : c.points[r.next]!;
+  }
+
+  /**
+   * `to`, where it was heading for `goal`, was its corridor's waypoint and no route gets there from here (a ledge, a
+   * shut way): on to the next waypoint; after three, the corridor is left for this goal. False when `to` wasn't one.
+   */
+  private skipWaypoint(to: Vec3, goal: Vec3): boolean {
+    const r = this.route;
+    if (!r || r.off || horizontalDistance(r.goal, goal) > 8 || to === goal) return false;
+    const w = r.c.points[r.next];
+    if (!w || horizontalDistance(w, to) > 0.5) return false;
+    r.next++;
+    if (++r.misses >= 3) r.off = true;
+    return true;
   }
 
   /** The team brain's job for this goal, if the job is for it (its route and staging only apply to their objective). */
@@ -1149,6 +1127,8 @@ export class BotBrain {
   /** The option it chose last (scored choices: OPT_*), and the scores it weighed (debug and tests). */
   private option = -1;
   readonly scores = new Float32Array(OPTIONS);
+  /** The choice's input, refilled each choice (no allocation per think). */
+  private readonly choice: ChoiceInput;
   /** The pickup worth a detour from its objective, worked out about once a second: where, and its score. */
   private pickCand: { pos: Vec3 | null; score: number; tick: number } | null = null;
 
@@ -1174,52 +1154,25 @@ export class BotBrain {
     const me = view.self;
     const tick = view.tick;
     const g = view.orderGoal ?? null;
-    const p = this.profile;
-    const aggr = p.aggression / 100;
-    const sc = this.scores;
-    sc.fill(-Infinity);
-    sc[OPT_GOAL] = g ? goalWeight(g, p) : -Infinity;
-    sc[OPT_ROAM] = g ? -Infinity : ROAM_WEIGHT;
+    const held = this.heldWeapon(view);
+    const lk = this.lastKnown;
+    const hd = this.heard;
+    const c = this.choice;
+    c.me = me.pos;
+    c.goal = g;
+    c.hurt = hurt;
+    c.lowAmmo = !!held && held.def.magazine > 0 && held.mag + held.reserve <= held.def.magazine;
     // Ducked out of sight behind cover: keep up the hide-and-peek rather than charging off (an objective to get to:
     // only a moment).
-    if (this.cover && (underFire || tick - this.lastTargetTick < TICK_RATE * (g?.push ? 1 : 2.5 + (1 - aggr) * 3))) sc[OPT_COVER] = 2.3;
+    c.cover = !!this.cover && (underFire || tick - this.lastTargetTick < TICK_RATE * (g?.push ? 1 : 2.5 + (1 - this.profile.aggression / 100) * 3));
     // Getting away: keep running a moment after losing sight of the threat.
-    if (this.state === 'retreat' && this.lastKnown && tick - this.lastKnown.tick < TICK_RATE * 3) sc[OPT_RETREAT] = 2.2;
-    sc[OPT_PICKUP] = this.pickupScore(view, g, underFire, hurt);
-    const held = this.heldWeapon(view);
-    const lowAmmo = !!held && held.def.magazine > 0 && held.mag + held.reserve <= held.def.magazine;
-    const lk = this.lastKnown;
-    if (lk && !hurt) {
-      // An enemy that slipped out of sight: worth more to persistent bots and the fresher the sighting, less with
-      // little ammo left. Within its window it outweighs any goal it may leave for (leaveCost decides where).
-      const age = (tick - lk.tick) / TICK_RATE;
-      const most = 1 + (p.pursuitPersistence / 100) * 7;
-      const d = horizontalDistance(me.pos, lk.pos);
-      if (age < most && d > 1.5) sc[OPT_CHASE] = CHASE_WEIGHT + (p.pursuitPersistence / 100) * 0.4 + 0.4 * (1 - age / most) - (lowAmmo ? 0.3 : 0) - this.leaveCost(g, d, lk.pos);
-    }
-    const hd = this.heard;
-    if (hd) {
-      // A noise: more to aggressive and curious bots and the fresher it is, less when hurt.
-      const age = (tick - hd.tick) / TICK_RATE;
-      const d = horizontalDistance(me.pos, hd.pos);
-      if (age < 10 && d > 2) sc[OPT_NOISE] = NOISE_WEIGHT + aggr * 0.25 + (p.exploration / 100) * 0.15 + 0.2 * (1 - age / 10) - (hurt ? 0.6 : 0) - this.leaveCost(g, d, hd.pos);
-    }
-    // A camper or sniper on its spot (or on the way to one) leaves it only for something close.
-    if (this.post) {
-      if (lk && horizontalDistance(me.pos, lk.pos) > 10) sc[OPT_CHASE] = -Infinity;
-      if (hd && horizontalDistance(me.pos, hd.pos) > 10) sc[OPT_NOISE] = -Infinity;
-    }
-    const last = this.option;
-    let best = -1;
-    let top = -Infinity;
-    for (let i = 0; i < OPTIONS; i++) {
-      const v = sc[i]! + (i === last && sc[i]! > -Infinity ? MARGIN : 0);
-      if (v > top) {
-        top = v;
-        best = i;
-      }
-    }
-    if (best < 0) best = g ? OPT_GOAL : OPT_ROAM;
+    c.retreating = this.state === 'retreat' && !!lk && tick - lk.tick < TICK_RATE * 3;
+    c.pickup = this.pickupScore(view, g, underFire, hurt);
+    c.lost = lk ? { pos: lk.pos, age: (tick - lk.tick) / TICK_RATE } : null;
+    c.noise = hd ? { pos: hd.pos, age: (tick - hd.tick) / TICK_RATE } : null;
+    c.posted = !!this.post;
+    scoreChoices(c, this.scores);
+    const best = bestChoice(this.scores, this.option, !!g);
     // Done with a chase or a noise (a chase that got there and found nobody looks round first).
     if (this.state === 'chase' && best !== OPT_CHASE) {
       if (lk && horizontalDistance(me.pos, lk.pos) <= 1.5) {
@@ -1256,23 +1209,6 @@ export class BotBrain {
         this.state = this.mountPlan ? 'mount' : g ? 'hold' : 'advance';
         if (this.state === 'advance') this.considerPost(view);
     }
-  }
-
-  /**
-   * How much leaving its objective to go to `at`, `d` m away, costs a bot: nothing without one; a carrier never leaves
-   * its way, a bot under a person's orders only for something within a few steps, one keeping to its way
-   * (OrderGoal.push) only for something within PUSH_NOTICE (measured: attackers allowed anything on their way spent
-   * 29 % of their time going to noises 20-50 m off, and none got to the flag); one holding a place (a defender, a
-   * guard) nothing for what happens close to the place it holds (it goes and looks), more the further from it.
-   */
-  private leaveCost(g: OrderGoal | null, d: number, at: Vec3): number {
-    if (!g) return 0;
-    if (g.run) return Infinity;
-    if (g.order) return d > 10 ? Infinity : 0;
-    if (g.push) return d > PUSH_NOTICE ? Infinity : 0;
-    if (BOT_TRIALS.holdfree) return 0;
-    const off = horizontalDistance(g.pos, at) - g.radius;
-    return Math.min(1.6, Math.max(0, (off - HOLD_NOTICE) / 12));
   }
 
   /** The rule chain scored choices replaced (measuring only: BOT_TRIALS.legacy). */
@@ -1318,7 +1254,7 @@ export class BotBrain {
     const keep = !g || ((!!g.push || !!g.watch) && g.detour !== 0);
     if (keep && bestLoadedDesirability(view.inventory) <= SIDEARM) {
       this.gunNearby = this.pickupGoal(view, 'weapon', g ? Math.min(GUN_DETOUR, this.detourFor(g)) : GUN_DETOUR);
-      if (this.gunNearby) return 2.1;
+      if (this.gunNearby) return GUN_WEIGHT;
     }
     if (!g || g.detour === 0 || BOT_TRIALS.nogoalpickup) return -Infinity;
     const tick = view.tick;
@@ -1635,6 +1571,8 @@ export class BotBrain {
           moveYaw = this.followPathTo(view, to, moving);
           // No way by its lane after all: straight for the goal.
           if (moveYaw === null && this.pathMiss && this.lane?.via) this.lane.via = null;
+          // No way to its corridor's next waypoint: on to the one after (the corridor is left after three).
+          else if (moveYaw === null && this.pathMiss && this.skipWaypoint(to, g.pos)) moveYaw = null;
           else if (moveYaw === null && this.pathMiss && me.grounded !== false) {
             // As near as a route gets to a goal it can't reach (followPathNow went there): keep watch there, facing
             // it, until it comes within reach (a dropped flag goes home) or the goal changes. followPathNow keeps

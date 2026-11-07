@@ -3,7 +3,6 @@ import type { ModeSnapshot } from '../../protocol.ts';
 import { TICK_RATE } from '../constants.ts';
 import type { Combatant } from '../match.ts';
 import type { SideBrief } from '../../bots/teamBrain.ts';
-import { BOT_TRIALS } from '../../bots/trials.ts';
 import { teamHome, type BotGoal, type BotTripSpec, type ModeHost, type ModeLogic } from './types.ts';
 
 export interface HillRt {
@@ -126,12 +125,13 @@ export class KothMode implements ModeLogic {
   }
 
   /**
-   * Everyone heads for the hill and spreads out on it, keeping to it (bots/brain.ts OrderGoal.push: on the way, a noise
-   * or an enemy that slipped away doesn't draw them off; they fight on the move). Before, a bot on the hill went after
-   * any gunfire it heard, and the hill emptied (held 29 % of the time on the Phase A sample).
+   * Everyone heads for the hill and spreads out on it. A goal to hold (bots/brain.ts scored choices: what happens near
+   * the hill draws a bot on it, gunfire further off doesn't), not one to keep to on the way (`push`: such a bot takes
+   * cover only when hurt or reloading). Before scores a bot on the hill went after any gunfire it heard and the hill
+   * emptied: held 26 % of the time on the dev sample (Shingle Point, Diamond Park, Bunker Cross), 40 % with them.
    */
   botGoal(c: Combatant): BotGoal | null {
     const h = this.hill;
-    return { pos: h.pos, radius: Math.max(1, h.radius * 0.6 - (c.slot % 3)), push: !BOT_TRIALS.kothnopush };
+    return { pos: h.pos, radius: Math.max(1, h.radius * 0.6 - (c.slot % 3)) };
   }
 }
