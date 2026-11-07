@@ -121,9 +121,9 @@ floor and nothing ever raised it back).
   away left its dip, a floor moved in steps left one at every step (the 56 m slab on St. John's), a deleted floor
   left its pad. Loading for editing and exporting wrote the carve into the file, so the ground as made under every
   floor that had ever stood anywhere was lost for good. Play never showed it: loading carved the same ground again,
-  which changed nothing. Six shipped maps still have ground that loading carves (Apex Ring, 390 vertices, up to
-  0.32 m; Norman Shores, 82, up to 0.83 m; Blackout, Crossroads, Dead Reel, Dockside Depot, 5 cm), so opening one of
-  them in MapMaker and exporting it changed the file.
+  which changed nothing. Five shipped maps still have ground that loading carves (Apex Ring, 390 vertices, up to
+  0.32 m; Norman Shores, 82, up to 0.83 m; Blackout, Dead Reel, Dockside Depot, 5 cm; Crossroads was the sixth until
+  the prop scale pass re-saved it), so opening one of them in MapMaker and exporting it changed the file.
 - MapMaker's view already drew `terrainUnderFloors(withPathsLaid(viewDoc))`: the carve in the document added nothing
   to what it showed but its permanence.
 
@@ -144,9 +144,9 @@ floor and nothing ever raised it back).
   shown (the ghost too), as loading plays them.
 - **Loading as played changed in one way:** props on the ground are re-bedded on the ground as played (laid and kept
   under floors), not only on the laid ground, and the carve and the re-bed use the geometry as made (the laid map's
-  but for the terrain's edge walls). Over all 90 shipped maps: every map loads byte-identically but Blackout (9 props),
-  Crossroads (14) and Dockside Depot (9), whose files carry ground 5 cm through a floor's edge: those props sit 1-5 cm
-  lower, bedded.
+  but for the terrain's edge walls). Over all 90 shipped maps (main 9dfe3ba1 merged in): every map loads
+  byte-identically but Blackout and Dockside Depot (9 props each), whose files carry ground 5 cm through a floor's
+  edge: those props sit 1-5 cm lower, bedded.
 - **No migration:** the file's `terrain` was always the ground before the carve as far as loading goes (`loadMap`
   lowered every map's), so existing maps load as before and older clients play maps the new MapMaker exports.
 - **Known, intended:** what stands on a floor or on the lowered ground (spawns, pickups, objectives) stays put when the
@@ -182,8 +182,8 @@ floating (validate-map's `prop.floating`) and pickups, spawns and objectives ove
 | Step Temple | a slot 2.2 m deep and 4 m long between the west terrace and the Terrace Stair's west face (x -14..-12, z -2..0; the 11-03 rework) | a plant cluster at its bottom | filled in MapMaker (below) |
 | Fogbound | 4 vertices at carve values (11-03): shell craters (brush falloff; one holds a mud swamp) | - | deliberate, left |
 | St. John's | 595 vertices lowered to carve values by Smooth all (10-31), none under a floor then: smoothing; three gentle lawn hollows (0.1-0.4 m) are flat beds from the 10-30 generation, smoothed | nothing | left |
-| the other 25 maps changed since the carve landed | none | no prop floats | - |
-| the 16 maps with terrain not changed since | the carve never reached their files (six carry ground through a floor edge, lowered on load as always) | - | - |
+| the other 26 maps changed since the carve landed (main's prop scale pass, re-saved in MapMaker, included) | none | no prop floats | - |
+| the 15 maps with terrain not changed since | the carve never reached their files (five carry ground through a floor edge, lowered on load as always) | - | - |
 
 No prop floats on any shipped map as played. Things over the ground with nothing under them: boats on water (Norman
 Shores, Primeval Park), parked vehicles (St. John's), pickups over Sunken Kingdom's flooded courts, Reactor's

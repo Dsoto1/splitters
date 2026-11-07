@@ -17,8 +17,8 @@ made only on a commit that passed CI on a check branch.
   terrain exactly as it was; opening a map and exporting it changes nothing; the map plays as MapMaker shows it. No
   change to the map format: existing maps load as before.
 - Props bedded on the ground beside a floor are played bedded on the ground kept under it, as MapMaker draws them: on
-  Blackout, Crossroads and Dockside Depot (their files have ground 5 cm through a floor's edge) 32 props, mostly trees
-  and lamp posts, sit 1–5 cm lower.
+  Blackout and Dockside Depot (their files have ground 5 cm through a floor's edge) 18 props, mostly trees and lamp
+  posts, sit 1–5 cm lower.
 - Step Temple: the 2.2 m slot the old behaviour cut beside the west terrace stair is filled again (in MapMaker). No
   other shipped map had ground lowered where no floor stands now.
 
