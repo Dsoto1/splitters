@@ -1,6 +1,6 @@
 # MAP 21 — OMAHA-INSPIRED BEACH ASSAULT
 
-**Status:** Proposed visual concept; not approved geometry.
+**Status:** Proposed visual concept; not approved geometry. **Layout and Assault mode proposal (2026-11-07): `MAP_21_layout.md`**, waiting for the owner.
 **Map scale:** Massive battlefield. **Target combatants:** 64–96.
 **Recommended modes:** Asymmetric objective assault (custom rules may be needed), TDM, Co-op.
 
