@@ -45,6 +45,9 @@ function mat(scene: Scene, hex: string, emissive = 0, alpha = 1): StandardMateri
 }
 
 /** Projectile looks this module draws; others are drawn by the view. */
+/** How far a sheep's body sits above its position: its legs (0.24 m, centred 0.28 below the fleece) end at the ground. */
+export const SHEEP_LIFT = 0.4;
+
 export const ARSENAL_LOOKS: ReadonlySet<ProjectileVisual> = new Set(['bubble', 'goo', 'oil', 'flame', 'disc', 'nail', 'flare', 'swarm', 'vortex', 'shard', 'sticky', 'molotov', 'gas', 'bolt', 'holy', 'banana', 'sheep', 'bomblet', 'bomb', 'sandbag', 'spear', 'dynamite']);
 
 export function createArsenalProjectile(scene: Scene, id: number, look: ProjectileVisual): TransformNode {
@@ -173,13 +176,17 @@ export function createArsenalProjectile(scene: Scene, id: number, look: Projecti
       break;
     }
     case 'sheep': {
-      add(CreateSphere(`sheep_${id}`, { diameter: 0.6, segments: 8 }, scene)).material = mat(scene, '#f4f2ea');
+      // The sim keeps a walking sheep's position on the ground (match.ts, walk), so the body stands on its legs above
+      // it: legs from the ground up to the fleece, not sunk half into the sand.
+      const fleece = add(CreateSphere(`sheep_${id}`, { diameter: 0.6, segments: 8 }, scene));
+      fleece.position.y = SHEEP_LIFT;
+      fleece.material = mat(scene, '#f4f2ea');
       const head = add(CreateSphere(`sheepHead_${id}`, { diameter: 0.26, segments: 8 }, scene));
-      head.position.set(0, 0.12, 0.34);
+      head.position.set(0, SHEEP_LIFT + 0.12, 0.34);
       head.material = mat(scene, '#22201e');
       for (const [x, z] of [[-0.15, -0.15], [0.15, -0.15], [-0.15, 0.15], [0.15, 0.15]] as const) {
         const leg = add(CreateCylinder(`sheepLeg_${id}_${x}_${z}`, { diameter: 0.06, height: 0.24, tessellation: 6 }, scene));
-        leg.position.set(x, -0.28, z);
+        leg.position.set(x, SHEEP_LIFT - 0.28, z);
         leg.material = mat(scene, '#22201e');
       }
       break;
