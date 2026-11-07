@@ -1063,16 +1063,37 @@ export class NavWorld {
    * on it to walk to, level or below (a body can step or drop down, not climb), within a few metres; null when
    * `p` is on the navmesh (or nothing is near).
    */
-  wayOnto(p: Vec3): Vec3 | null {
-    if (this.query.findNearestPoly(p, { halfExtents: { x: 2, y: 3, z: 2 } }).nearestRef) return null;
+  wayOnto(p: Vec3, clear?: (a: Vec3, b: Vec3) => boolean): Vec3 | null {
+    const near = this.query.findNearestPoly(p, { halfExtents: { x: 2, y: 3, z: 2 } });
+    if (near.nearestRef) {
+      // On it, or beside it with nothing in the way. A nearest point behind a wall is not a way on (a bot on a sill
+      // outside a building's wall, Capitol Mall's offices: its routes went through the wall, and it stood against it).
+      const q = near.nearestPoint;
+      if (!clear || hypot(q.x - p.x, q.z - p.z) < 0.6 || clear(p, q)) return null;
+    }
     // Close by first; then further and further down (a cliff face or a ledge high over the ground: off it, down).
     for (const [r, down] of [
       [6, 6],
       [12, 30],
       [24, 60],
     ] as const) {
-      const hit = this.query.findNearestPoly({ x: p.x, y: p.y - down / 2 + 0.3, z: p.z }, { halfExtents: { x: r, y: down / 2 + 0.3, z: r } });
-      if (hit.success && hit.nearestRef && hit.nearestPoint.y < p.y + 0.6) return { ...hit.nearestPoint };
+      if (!clear) {
+        const hit = this.query.findNearestPoly({ x: p.x, y: p.y - down / 2 + 0.3, z: p.z }, { halfExtents: { x: r, y: down / 2 + 0.3, z: r } });
+        if (hit.success && hit.nearestRef && hit.nearestPoint.y < p.y + 0.6) return { ...hit.nearestPoint };
+        continue;
+      }
+      // Of the polygons there, the nearest point a body gets to in a straight line (walking, or off an edge and down).
+      const q = this.query.queryPolygons({ x: p.x, y: p.y - down / 2 + 0.3, z: p.z }, { x: r, y: down / 2 + 0.3, z: r }, { maxPolys: 256 });
+      const pts: { q: Vec3; d: number }[] = [];
+      for (const ref of q.success ? q.polyRefs : []) {
+        if (this.insideSolid && this.navMesh.getPolyFlags(ref).flags === 0) continue;
+        const c = this.query.closestPointOnPoly(ref, p);
+        if (!c.success || c.closestPoint.y >= p.y + 0.6) continue;
+        const pt = { x: c.closestPoint.x, y: c.closestPoint.y, z: c.closestPoint.z };
+        pts.push({ q: pt, d: hypot(pt.x - p.x, pt.z - p.z) + (p.y - pt.y) * 0.5 });
+      }
+      pts.sort((a, b) => a.d - b.d || a.q.x - b.q.x || a.q.z - b.q.z);
+      for (const { q: pt } of pts.slice(0, 12)) if (clear(p, pt)) return pt;
     }
     return null;
   }

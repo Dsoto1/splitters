@@ -225,3 +225,28 @@ describe('routes along a corridor, and the search budget', () => {
     built.nav.destroy();
   });
 });
+
+describe('off a sill outside a wall', () => {
+  it('Capitol Mall: a bot on the sill outside an office wall gets off it (its nearest navmesh is behind the wall)', () => {
+    const r = loadMap(readFileSync(new URL('../../../maps/capitol_mall.json', import.meta.url), 'utf8'));
+    if (!r.ok) throw new Error('capitol_mall failed to load');
+    const match = new Match(r.map, undefined, 2);
+    const bot = match.addBot('b', { ...CORE_BOT_PROFILES[0]!, exploration: 0 })!;
+    match.step();
+    const sill = { x: 139.58, y: 4.02, z: 10.61 };
+    // Without a check for what's in the way, the room behind the wall reads as on the navmesh: no way on is looked for.
+    expect(match.nav.wayOnto(sill)).toBeNull();
+    const clear = (a: { x: number; y: number; z: number }, b: { x: number; y: number; z: number }) => [0.5, 1.2].every((h) => match.physics.lineOfSight({ x: a.x, y: Math.max(a.y, b.y) + h, z: a.z }, { x: b.x, y: Math.max(a.y, b.y) + h, z: b.z }));
+    const onto = match.nav.wayOnto(sill, clear);
+    expect(onto).not.toBeNull();
+    expect(onto!.x).toBeLessThan(140);
+    bot.move = { pos: { ...sill }, velY: 0, grounded: true };
+    let off = -1;
+    for (let t = 0; t < TICK_RATE * 15 && off < 0; t++) {
+      match.step();
+      if (bot.alive && match.nav.nearestPoly(bot.move.pos, { x: 0.6, y: 1, z: 0.6 })) off = t;
+    }
+    expect(off).toBeGreaterThanOrEqual(0);
+    match.destroy();
+  });
+});

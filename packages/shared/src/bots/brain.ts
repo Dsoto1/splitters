@@ -3563,7 +3563,7 @@ export class BotBrain {
       // Off the navmesh (knocked or fallen onto ground it doesn't cover, a narrow ledge, spawned badly): no route starts
       // there. The nearest place on it first, level or below, straight there (before, it asked for routes that couldn't
       // start, and stood).
-      const onto = backedOff || me.grounded === false || me.climbing ? null : view.nav.wayOnto(me.pos);
+      const onto = backedOff || me.grounded === false || me.climbing ? null : view.nav.wayOnto(me.pos, this.walkClear(view));
       // A goal no route reaches from here (a flag on a ledge or a roof, a pickup on a crate, a carrier in the air): as
       // near it as a route does get instead, no search for the goal itself. Known per component of routes and goal for
       // the match (NavWorld.standIn: a lookup, the second time).
@@ -3696,6 +3696,18 @@ export class BotBrain {
       return Math.atan2(grab.x - me.pos.x, grab.z - me.pos.z);
     }
     return Math.atan2(corner.x - me.pos.x, corner.z - me.pos.z);
+  }
+
+  /**
+   * Whether a body walks straight from `a` toward `b` (a point on the navmesh near it) with nothing in the way at a
+   * knee's and a chest's height over the higher of the two (going down: off the edge, then falling to it).
+   */
+  private walkClear(view: BotWorldView): (a: Vec3, b: Vec3) => boolean {
+    return (a, b) => {
+      const top = Math.max(a.y, b.y);
+      for (const h of [0.5, 1.2]) if (!view.physics.lineOfSight({ x: a.x, y: top + h, z: a.z }, { x: b.x, y: top + h, z: b.z })) return false;
+      return true;
+    };
   }
 
   /** Flankers, recon, snipers and Arena bots: parkour links cost them no more than walking (NavWorld.findPath `agile`). */
