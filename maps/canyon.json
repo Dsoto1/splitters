@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 26,
+  "formatVersion": 28,
   "metadata": {
     "id": "canyon",
     "name": "Rockfall Canyon",
@@ -16,7 +16,15 @@
     "supportedModes": [
       "core.tdm",
       "core.deathmatch"
-    ]
+    ],
+    "release": {
+      "mapId": "m_vgvzazy4hzj3smmk",
+      "versionId": "v_4ei5jaw5jq357x3e",
+      "revision": 1,
+      "contentHash": "sha256:7ae4c0520f3a30afa20f34c9f68c046c186a55c7b55a4b244201ce4c643b838c",
+      "schemaVersion": 28,
+      "releasedAt": "2026-11-07T10:59:18.532Z"
+    }
   },
   "classicStructure": {
     "cellSize": 8,
@@ -31698,5 +31706,6 @@
   "physics": null,
   "blood": null,
   "teamSetup": null,
-  "dependencies": []
+  "dependencies": [],
+  "weaponSet": "military"
 }

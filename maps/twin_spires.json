@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 17,
+  "formatVersion": 28,
   "metadata": {
     "id": "twin_spires",
     "name": "Twin Spires",
@@ -30,6 +30,14 @@
         4,
         0
       ]
+    },
+    "release": {
+      "mapId": "m_i2jy7vkt55pclgvj",
+      "versionId": "v_6f34udfiol52pm7t",
+      "revision": 1,
+      "contentHash": "sha256:8a157275312e431ff338346fa1d744289a58d8221e7f8b8ed2956d475963ebae",
+      "schemaVersion": 28,
+      "releasedAt": "2026-11-07T11:09:19.805Z"
     }
   },
   "classicStructure": {
@@ -1733,5 +1741,6 @@
       8
     ]
   },
-  "dependencies": []
+  "dependencies": [],
+  "weaponSet": "scifi"
 }

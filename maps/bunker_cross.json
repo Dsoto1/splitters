@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 19,
+  "formatVersion": 28,
   "metadata": {
     "id": "bunker_cross",
     "name": "Bunker Cross",
@@ -18,7 +18,15 @@
       "core.tdm",
       "core.ctf",
       "core.koth"
-    ]
+    ],
+    "release": {
+      "mapId": "m_qyng33h4u3u37xoc",
+      "versionId": "v_sr5fx2jdsehromaj",
+      "revision": 1,
+      "contentHash": "sha256:9f66de6353483870ea61411d5fc27e9ba8c6066a6fd1ccc238b06f3f67397a50",
+      "schemaVersion": 28,
+      "releasedAt": "2026-11-07T10:58:10.582Z"
+    }
   },
   "classicStructure": {
     "cellSize": 8,
@@ -59510,7 +59518,6 @@
     "style": "invisible",
     "height": 8
   },
-  "track": null,
   "backdrop": {
     "sky": "clear",
     "scenery": "mesas",
@@ -59525,5 +59532,6 @@
       8
     ]
   },
-  "dependencies": []
+  "dependencies": [],
+  "weaponSet": "military"
 }

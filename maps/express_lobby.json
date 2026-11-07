@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 25,
+  "formatVersion": 28,
   "metadata": {
     "id": "express_lobby",
     "name": "Express Lobby",
@@ -16,7 +16,15 @@
     "supportedModes": [
       "core.koth",
       "core.tdm"
-    ]
+    ],
+    "release": {
+      "mapId": "m_h7c6ifkxig5oxqr6",
+      "versionId": "v_x5il56u4433vfv6u",
+      "revision": 1,
+      "contentHash": "sha256:3443e6f92604d18e86fcdfd1041e0f4b9badad4fed90bb78f20d1ddb4a9ff881",
+      "schemaVersion": 28,
+      "releasedAt": "2026-11-07T11:08:50.124Z"
+    }
   },
   "classicStructure": {
     "cellSize": 8,
@@ -6820,18 +6828,18 @@
     },
     {
       "id": "block_jo92buckom",
-      "kind": "block",
       "position": [
         9.6,
         7.6,
         0
       ],
-      "yaw": 0,
+      "kind": "block",
       "size": [
         2.4,
         0.4,
         13.2
       ],
+      "yaw": 0,
       "material": "core.steel_grating",
       "tint": null,
       "behaviour": "solid",
@@ -6842,18 +6850,18 @@
     },
     {
       "id": "block_ddrdoryh7l",
-      "kind": "block",
       "position": [
         8.43,
         8,
         0
       ],
-      "yaw": 0,
+      "kind": "block",
       "size": [
         0.06,
         1,
         13.2
       ],
+      "yaw": 0,
       "material": "core.pbr_steel",
       "tint": null,
       "behaviour": "solid",
@@ -6865,18 +6873,18 @@
     },
     {
       "id": "block_6ctcqgmocs",
-      "kind": "block",
       "position": [
         10.77,
         8,
         0
       ],
-      "yaw": 0,
+      "kind": "block",
       "size": [
         0.06,
         1,
         13.2
       ],
+      "yaw": 0,
       "material": "core.pbr_steel",
       "tint": null,
       "behaviour": "solid",
@@ -6888,12 +6896,12 @@
     },
     {
       "id": "light_zpwk35dqcp",
-      "kind": "light",
       "position": [
         9.6,
         11,
         0
       ],
+      "kind": "light",
       "yaw": 0,
       "color": "#e8f4ff",
       "intensity": 1,
@@ -6902,18 +6910,18 @@
     },
     {
       "id": "block_t7qf6k4zjn",
-      "kind": "block",
       "position": [
         -9.6,
         15.6,
         0
       ],
-      "yaw": 0,
+      "kind": "block",
       "size": [
         2.4,
         0.4,
         13.2
       ],
+      "yaw": 0,
       "material": "core.steel_grating",
       "tint": null,
       "behaviour": "solid",
@@ -6924,18 +6932,18 @@
     },
     {
       "id": "block_05ldagivf5",
-      "kind": "block",
       "position": [
         -10.77,
         16,
         0
       ],
-      "yaw": 0,
+      "kind": "block",
       "size": [
         0.06,
         1,
         13.2
       ],
+      "yaw": 0,
       "material": "core.pbr_steel",
       "tint": null,
       "behaviour": "solid",
@@ -6947,18 +6955,18 @@
     },
     {
       "id": "block_x0rc1yotvd",
-      "kind": "block",
       "position": [
         -8.43,
         16,
         0
       ],
-      "yaw": 0,
+      "kind": "block",
       "size": [
         0.06,
         1,
         13.2
       ],
+      "yaw": 0,
       "material": "core.pbr_steel",
       "tint": null,
       "behaviour": "solid",
@@ -6970,12 +6978,12 @@
     },
     {
       "id": "light_7nlyaxevjz",
-      "kind": "light",
       "position": [
         -9.6,
         19,
         0
       ],
+      "kind": "light",
       "yaw": 0,
       "color": "#e8f4ff",
       "intensity": 1,
@@ -6984,18 +6992,18 @@
     },
     {
       "id": "block_w9sdjfv9q9",
-      "kind": "block",
       "position": [
         9.6,
         23.6,
         0
       ],
-      "yaw": 0,
+      "kind": "block",
       "size": [
         2.4,
         0.4,
         13.2
       ],
+      "yaw": 0,
       "material": "core.steel_grating",
       "tint": null,
       "behaviour": "solid",
@@ -7006,18 +7014,18 @@
     },
     {
       "id": "block_x9abza46ly",
-      "kind": "block",
       "position": [
         8.43,
         24,
         0
       ],
-      "yaw": 0,
+      "kind": "block",
       "size": [
         0.06,
         1,
         13.2
       ],
+      "yaw": 0,
       "material": "core.pbr_steel",
       "tint": null,
       "behaviour": "solid",
@@ -7029,18 +7037,18 @@
     },
     {
       "id": "block_q1y59c4csi",
-      "kind": "block",
       "position": [
         10.77,
         24,
         0
       ],
-      "yaw": 0,
+      "kind": "block",
       "size": [
         0.06,
         1,
         13.2
       ],
+      "yaw": 0,
       "material": "core.pbr_steel",
       "tint": null,
       "behaviour": "solid",
@@ -7052,12 +7060,12 @@
     },
     {
       "id": "light_26cjl0x171",
-      "kind": "light",
       "position": [
         9.6,
         27,
         0
       ],
+      "kind": "light",
       "yaw": 0,
       "color": "#e8f4ff",
       "intensity": 1,
@@ -7066,18 +7074,18 @@
     },
     {
       "id": "block_xo4odrco3m",
-      "kind": "block",
       "position": [
         -9.6,
         31.6,
         0
       ],
-      "yaw": 0,
+      "kind": "block",
       "size": [
         2.4,
         0.4,
         13.2
       ],
+      "yaw": 0,
       "material": "core.steel_grating",
       "tint": null,
       "behaviour": "solid",
@@ -7088,18 +7096,18 @@
     },
     {
       "id": "block_y07fpt0nwn",
-      "kind": "block",
       "position": [
         -10.77,
         32,
         0
       ],
-      "yaw": 0,
+      "kind": "block",
       "size": [
         0.06,
         1,
         13.2
       ],
+      "yaw": 0,
       "material": "core.pbr_steel",
       "tint": null,
       "behaviour": "solid",
@@ -7111,18 +7119,18 @@
     },
     {
       "id": "block_xvlpf0046m",
-      "kind": "block",
       "position": [
         -8.43,
         32,
         0
       ],
-      "yaw": 0,
+      "kind": "block",
       "size": [
         0.06,
         1,
         13.2
       ],
+      "yaw": 0,
       "material": "core.pbr_steel",
       "tint": null,
       "behaviour": "solid",
@@ -7134,12 +7142,12 @@
     },
     {
       "id": "light_tjjq2xgvb7",
-      "kind": "light",
       "position": [
         -9.6,
         35,
         0
       ],
+      "kind": "light",
       "yaw": 0,
       "color": "#e8f4ff",
       "intensity": 1,
@@ -7148,18 +7156,18 @@
     },
     {
       "id": "block_u5uhixt8oj",
-      "kind": "block",
       "position": [
         9.6,
         39.6,
         0
       ],
-      "yaw": 0,
+      "kind": "block",
       "size": [
         2.4,
         0.4,
         13.2
       ],
+      "yaw": 0,
       "material": "core.steel_grating",
       "tint": null,
       "behaviour": "solid",
@@ -7170,18 +7178,18 @@
     },
     {
       "id": "block_9w07a2nv37",
-      "kind": "block",
       "position": [
         8.43,
         40,
         0
       ],
-      "yaw": 0,
+      "kind": "block",
       "size": [
         0.06,
         1,
         13.2
       ],
+      "yaw": 0,
       "material": "core.pbr_steel",
       "tint": null,
       "behaviour": "solid",
@@ -7193,18 +7201,18 @@
     },
     {
       "id": "block_mc5vpcweqh",
-      "kind": "block",
       "position": [
         10.77,
         40,
         0
       ],
-      "yaw": 0,
+      "kind": "block",
       "size": [
         0.06,
         1,
         13.2
       ],
+      "yaw": 0,
       "material": "core.pbr_steel",
       "tint": null,
       "behaviour": "solid",
@@ -7216,12 +7224,12 @@
     },
     {
       "id": "light_6lmfgc3cff",
-      "kind": "light",
       "position": [
         9.6,
         43,
         0
       ],
+      "kind": "light",
       "yaw": 0,
       "color": "#e8f4ff",
       "intensity": 1,
@@ -7230,12 +7238,12 @@
     },
     {
       "id": "prop_0w3jql50ed",
-      "kind": "prop",
       "position": [
         13,
         8,
         -8.4
       ],
+      "kind": "prop",
       "model": "prop.potted_plant",
       "yaw": 0,
       "scale": 1,
@@ -7244,12 +7252,12 @@
     },
     {
       "id": "prop_7z14fgs7s3",
-      "kind": "prop",
       "position": [
         -13,
         16,
         8.4
       ],
+      "kind": "prop",
       "model": "prop.potted_plant",
       "yaw": 0,
       "scale": 1,
@@ -7258,12 +7266,12 @@
     },
     {
       "id": "prop_89yclntz5q",
-      "kind": "prop",
       "position": [
         13,
         24,
         -8.4
       ],
+      "kind": "prop",
       "model": "prop.potted_plant",
       "yaw": 0,
       "scale": 1,
@@ -7272,12 +7280,12 @@
     },
     {
       "id": "prop_je74016k41",
-      "kind": "prop",
       "position": [
         -13,
         32,
         8.4
       ],
+      "kind": "prop",
       "model": "prop.potted_plant",
       "yaw": 0,
       "scale": 1,
@@ -7286,12 +7294,12 @@
     },
     {
       "id": "prop_nl8jy5oyw4",
-      "kind": "prop",
       "position": [
         13,
         40,
         -8.4
       ],
+      "kind": "prop",
       "model": "prop.potted_plant",
       "yaw": 0,
       "scale": 1,
@@ -7300,12 +7308,12 @@
     },
     {
       "id": "prop_ekrqxstr16",
-      "kind": "prop",
       "position": [
         -24,
         0,
         -15
       ],
+      "kind": "prop",
       "model": "prop.car_beetle",
       "yaw": 1.571,
       "scale": 1,
@@ -7314,12 +7322,12 @@
     },
     {
       "id": "prop_3n235pv1oz",
-      "kind": "prop",
       "position": [
         24,
         0,
         15
       ],
+      "kind": "prop",
       "model": "prop.car_pickup",
       "yaw": -1.571,
       "scale": 1,
@@ -7328,12 +7336,12 @@
     },
     {
       "id": "prop_83reavktfo",
-      "kind": "prop",
       "position": [
         -26,
         0,
         16
       ],
+      "kind": "prop",
       "model": "prop.car_offroader",
       "yaw": 1.396,
       "scale": 1,
@@ -7342,12 +7350,12 @@
     },
     {
       "id": "prop_6zlwkdt8y3",
-      "kind": "prop",
       "position": [
         26,
         0,
         -16
       ],
+      "kind": "prop",
       "model": "prop.car_beetle",
       "yaw": -1.745,
       "scale": 1,
@@ -7356,12 +7364,12 @@
     },
     {
       "id": "prop_jrtyepj7rp",
-      "kind": "prop",
       "position": [
         -30,
         0,
         2
       ],
+      "kind": "prop",
       "model": "prop.street_dumpster",
       "yaw": 1.571,
       "scale": 1,
@@ -7370,12 +7378,12 @@
     },
     {
       "id": "prop_inq9aipltk",
-      "kind": "prop",
       "position": [
         30,
         0,
         -2
       ],
+      "kind": "prop",
       "model": "prop.street_trash_can_classic",
       "yaw": 0,
       "scale": 1,
@@ -7384,12 +7392,12 @@
     },
     {
       "id": "prop_wi4ho8ca33",
-      "kind": "prop",
       "position": [
         -20,
         0,
         19
       ],
+      "kind": "prop",
       "model": "prop.mt_bench",
       "yaw": 3.142,
       "scale": 1,
@@ -7398,12 +7406,12 @@
     },
     {
       "id": "prop_zlsiuwh1ug",
-      "kind": "prop",
       "position": [
         20,
         0,
         -19
       ],
+      "kind": "prop",
       "model": "prop.mt_bench",
       "yaw": 0,
       "scale": 1,
@@ -7412,12 +7420,12 @@
     },
     {
       "id": "prop_6tweacke6m",
-      "kind": "prop",
       "position": [
         -17,
         0,
         -19
       ],
+      "kind": "prop",
       "model": "prop.street_post_barrel",
       "yaw": 0,
       "scale": 1,
@@ -7426,12 +7434,12 @@
     },
     {
       "id": "prop_7uar2m0i99",
-      "kind": "prop",
       "position": [
         17,
         0,
         19
       ],
+      "kind": "prop",
       "model": "prop.street_post_barrel",
       "yaw": 0,
       "scale": 1,
@@ -7440,12 +7448,12 @@
     },
     {
       "id": "prop_2ee3q5cgbj",
-      "kind": "prop",
       "position": [
         33,
         0,
         10
       ],
+      "kind": "prop",
       "model": "prop.nc_holo_kiosk",
       "yaw": -1.571,
       "scale": 1,
@@ -7454,12 +7462,12 @@
     },
     {
       "id": "prop_azewwg7z21",
-      "kind": "prop",
       "position": [
         -33,
         0,
         -10
       ],
+      "kind": "prop",
       "model": "prop.mt_vending_machine",
       "yaw": 1.571,
       "scale": 1,
@@ -8112,5 +8120,6 @@
       8
     ]
   },
-  "dependencies": []
+  "dependencies": [],
+  "weaponSet": "scifi"
 }

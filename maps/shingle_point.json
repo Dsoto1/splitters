@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 26,
+  "formatVersion": 28,
   "metadata": {
     "id": "shingle_point",
     "name": "Shingle Point",
@@ -20,11 +20,11 @@
     ],
     "release": {
       "mapId": "m_vql6e6ixmth3q6cb",
-      "versionId": "v_zqkvicfblwpp7pfa",
-      "revision": 3,
-      "contentHash": "sha256:3432045b25fa2741ea078dd45f7388d9f1e364c0204a36f3707088b3d303f62b",
-      "schemaVersion": 26,
-      "releasedAt": "2026-11-06T05:32:32.569Z"
+      "versionId": "v_fk5n3fr4njjqcpdr",
+      "revision": 4,
+      "contentHash": "sha256:046f5eabda36fced56d45628318071640b778541b12d969eb0d75cdfd35d5e78",
+      "schemaVersion": 28,
+      "releasedAt": "2026-11-07T10:55:45.122Z"
     }
   },
   "classicStructure": {
@@ -9330,12 +9330,12 @@
     },
     {
       "id": "prop_ubcvwrz71o",
-      "kind": "prop",
       "position": [
         81.59,
         0.82,
         -47.79
       ],
+      "kind": "prop",
       "model": "prop.hedgehog_beach",
       "yaw": 1.077,
       "scale": 1,
@@ -9344,12 +9344,12 @@
     },
     {
       "id": "prop_2k06yhyzmh",
-      "kind": "prop",
       "position": [
         95.44,
         0.25,
         -62.58
       ],
+      "kind": "prop",
       "model": "prop.hedgehog_beach",
       "yaw": 1.826,
       "scale": 1,
@@ -9358,12 +9358,12 @@
     },
     {
       "id": "prop_emyvvhzc2g",
-      "kind": "prop",
       "position": [
         -0.36,
         0.14,
         -67.69
       ],
+      "kind": "prop",
       "model": "prop.hedgehog_beach",
       "yaw": 2.318,
       "scale": 1,
@@ -9372,12 +9372,12 @@
     },
     {
       "id": "prop_xfm7ncfjyl",
-      "kind": "prop",
       "position": [
         -96.22,
         0.07,
         -70.72
       ],
+      "kind": "prop",
       "model": "prop.hedgehog_beach",
       "yaw": 1.389,
       "scale": 1,
@@ -9386,12 +9386,12 @@
     },
     {
       "id": "prop_fraegx2f9u",
-      "kind": "prop",
       "position": [
         39.24,
         0.37,
         -60.24
       ],
+      "kind": "prop",
       "model": "prop.hedgehog_beach",
       "yaw": 2.792,
       "scale": 1,
@@ -9400,12 +9400,12 @@
     },
     {
       "id": "prop_6j3c0lgsex",
-      "kind": "prop",
       "position": [
         24.16,
         0.08,
         -68.38
       ],
+      "kind": "prop",
       "model": "prop.hedgehog_beach",
       "yaw": 1.665,
       "scale": 1,
@@ -9414,12 +9414,12 @@
     },
     {
       "id": "prop_wlk9p61xvi",
-      "kind": "prop",
       "position": [
         97.95,
         0.09,
         -68.81
       ],
+      "kind": "prop",
       "model": "prop.hedgehog_beach",
       "yaw": 1.427,
       "scale": 1,
@@ -9428,12 +9428,12 @@
     },
     {
       "id": "prop_odcl6rii6x",
-      "kind": "prop",
       "position": [
         84.9,
         0.35,
         -59.19
       ],
+      "kind": "prop",
       "model": "prop.hedgehog_beach",
       "yaw": -2.544,
       "scale": 1,
@@ -9442,12 +9442,12 @@
     },
     {
       "id": "prop_a8cmukomee",
-      "kind": "prop",
       "position": [
         -79.7,
         0.27,
         -64.25
       ],
+      "kind": "prop",
       "model": "prop.hedgehog_beach",
       "yaw": 0.812,
       "scale": 1,
@@ -9456,12 +9456,12 @@
     },
     {
       "id": "prop_k3lueku99y",
-      "kind": "prop",
       "position": [
         -11.85,
         0.41,
         -59.27
       ],
+      "kind": "prop",
       "model": "prop.hedgehog_beach",
       "yaw": 1.905,
       "scale": 1,
@@ -9470,12 +9470,12 @@
     },
     {
       "id": "prop_457b0349hz",
-      "kind": "prop",
       "position": [
         104.93,
         0.17,
         -66.7
       ],
+      "kind": "prop",
       "model": "prop.hedgehog_beach",
       "yaw": 2.795,
       "scale": 1,
@@ -9484,12 +9484,12 @@
     },
     {
       "id": "prop_eulzbidvc8",
-      "kind": "prop",
       "position": [
         -27.19,
         0.57,
         -52.98
       ],
+      "kind": "prop",
       "model": "prop.hedgehog_beach",
       "yaw": 1.053,
       "scale": 1,
@@ -9498,12 +9498,12 @@
     },
     {
       "id": "prop_m5xrntgt39",
-      "kind": "prop",
       "position": [
         -42.74,
         0.21,
         -64.02
       ],
+      "kind": "prop",
       "model": "prop.hedgehog_beach",
       "yaw": 1.178,
       "scale": 1,
@@ -9512,12 +9512,12 @@
     },
     {
       "id": "prop_yp53zpl19h",
-      "kind": "prop",
       "position": [
         31.21,
         0.59,
         -52.85
       ],
+      "kind": "prop",
       "model": "prop.hedgehog_beach",
       "yaw": 2.775,
       "scale": 1,
@@ -9526,12 +9526,12 @@
     },
     {
       "id": "prop_etipyf2v2y",
-      "kind": "prop",
       "position": [
         -6.39,
         0.13,
         -68.46
       ],
+      "kind": "prop",
       "model": "prop.hedgehog_beach",
       "yaw": 2.358,
       "scale": 1,
@@ -9540,12 +9540,12 @@
     },
     {
       "id": "prop_d5xxdgp036",
-      "kind": "prop",
       "position": [
         78.53,
         0.11,
         -67.44
       ],
+      "kind": "prop",
       "model": "prop.hedgehog_beach",
       "yaw": 0.844,
       "scale": 1,
@@ -9554,12 +9554,12 @@
     },
     {
       "id": "prop_bugsmyencm",
-      "kind": "prop",
       "position": [
         -66.56,
         0.93,
         -43.27
       ],
+      "kind": "prop",
       "model": "prop.hedgehog_beach",
       "yaw": 1.39,
       "scale": 1,
@@ -9568,12 +9568,12 @@
     },
     {
       "id": "prop_42o0xo6z4m",
-      "kind": "prop",
       "position": [
         -62.07,
         0.02,
         -71.61
       ],
+      "kind": "prop",
       "model": "prop.hedgehog_beach",
       "yaw": -3.074,
       "scale": 1,
@@ -9582,12 +9582,12 @@
     },
     {
       "id": "prop_36sbm0zqc3",
-      "kind": "prop",
       "position": [
         104.9,
         -0.06,
         -75.27
       ],
+      "kind": "prop",
       "model": "prop.hedgehog_beach",
       "yaw": 2.822,
       "scale": 1,
@@ -9596,12 +9596,12 @@
     },
     {
       "id": "prop_4swkaadi6d",
-      "kind": "prop",
       "position": [
         -33.6,
         0.89,
         -43.65
       ],
+      "kind": "prop",
       "model": "prop.hedgehog_beach",
       "yaw": 2.38,
       "scale": 1,
@@ -9610,12 +9610,12 @@
     },
     {
       "id": "prop_e1iah5l40n",
-      "kind": "prop",
       "position": [
         -35.47,
         0,
         -72.84
       ],
+      "kind": "prop",
       "model": "prop.hedgehog_beach",
       "yaw": 2.321,
       "scale": 1,
@@ -9624,12 +9624,12 @@
     },
     {
       "id": "prop_e1x75njhdj",
-      "kind": "prop",
       "position": [
         -45.17,
         -0.01,
         -72.7
       ],
+      "kind": "prop",
       "model": "prop.hedgehog_beach",
       "yaw": -2.427,
       "scale": 1,
@@ -9638,12 +9638,12 @@
     },
     {
       "id": "prop_wf8i00soit",
-      "kind": "prop",
       "position": [
         -53.89,
         1.28,
         -33.1
       ],
+      "kind": "prop",
       "model": "prop.hedgehog_beach",
       "yaw": 2.522,
       "scale": 1,
@@ -9652,12 +9652,12 @@
     },
     {
       "id": "prop_kfe2b562v8",
-      "kind": "prop",
       "position": [
         -82.76,
         -0.01,
         -73.76
       ],
+      "kind": "prop",
       "model": "prop.hedgehog_beach",
       "yaw": 1.141,
       "scale": 1,
@@ -9666,12 +9666,12 @@
     },
     {
       "id": "prop_meurm9ax8z",
-      "kind": "prop",
       "position": [
         -32.78,
         0.21,
         -65.08
       ],
+      "kind": "prop",
       "model": "prop.hedgehog_beach",
       "yaw": -2.567,
       "scale": 1,
@@ -9680,12 +9680,12 @@
     },
     {
       "id": "prop_y4h4iceu9k",
-      "kind": "prop",
       "position": [
         89.89,
         1.21,
         -36.16
       ],
+      "kind": "prop",
       "model": "prop.hedgehog_beach",
       "yaw": 1.302,
       "scale": 1,
@@ -9694,12 +9694,12 @@
     },
     {
       "id": "prop_acfyr6sjug",
-      "kind": "prop",
       "position": [
         47.89,
         0.46,
         -57.09
       ],
+      "kind": "prop",
       "model": "prop.hedgehog_beach",
       "yaw": -2.441,
       "scale": 1,
@@ -9708,12 +9708,12 @@
     },
     {
       "id": "prop_bg8ec7is1a",
-      "kind": "prop",
       "position": [
         91.8,
         0.61,
         -52.68
       ],
+      "kind": "prop",
       "model": "prop.hedgehog_beach",
       "yaw": 1.499,
       "scale": 1,
@@ -9722,12 +9722,12 @@
     },
     {
       "id": "prop_xsmnk4l850",
-      "kind": "prop",
       "position": [
         -75.95,
         0.04,
         -71.51
       ],
+      "kind": "prop",
       "model": "prop.hedgehog_beach",
       "yaw": 1.157,
       "scale": 1,
@@ -9736,12 +9736,12 @@
     },
     {
       "id": "prop_scfy8jc9s9",
-      "kind": "prop",
       "position": [
         100.64,
         0.55,
         -54.09
       ],
+      "kind": "prop",
       "model": "prop.hedgehog_beach",
       "yaw": 1.375,
       "scale": 1,
@@ -9750,12 +9750,12 @@
     },
     {
       "id": "prop_5bnrc1rudm",
-      "kind": "prop",
       "position": [
         -8.52,
         0.72,
         -47.46
       ],
+      "kind": "prop",
       "model": "prop.hedgehog_beach",
       "yaw": -2.934,
       "scale": 1,
@@ -9764,12 +9764,12 @@
     },
     {
       "id": "prop_nh5ar1fnj4",
-      "kind": "prop",
       "position": [
         44.17,
         0.05,
         -71.43
       ],
+      "kind": "prop",
       "model": "prop.hedgehog_beach",
       "yaw": 2.809,
       "scale": 1,
@@ -9778,12 +9778,12 @@
     },
     {
       "id": "prop_y03kzitki9",
-      "kind": "prop",
       "position": [
         -4.12,
         0.35,
         -60.67
       ],
+      "kind": "prop",
       "model": "prop.hedgehog_beach",
       "yaw": 1.912,
       "scale": 1,
@@ -9792,12 +9792,12 @@
     },
     {
       "id": "prop_01vakfo1gx",
-      "kind": "prop",
       "position": [
         12.69,
         -0.07,
         -75.73
       ],
+      "kind": "prop",
       "model": "prop.hedgehog_beach",
       "yaw": -2.375,
       "scale": 1,
@@ -9806,12 +9806,12 @@
     },
     {
       "id": "prop_gnkb0iyp64",
-      "kind": "prop",
       "position": [
         1.04,
         0.52,
         -54.86
       ],
+      "kind": "prop",
       "model": "prop.hedgehog_beach",
       "yaw": 1.857,
       "scale": 1,
@@ -9820,12 +9820,12 @@
     },
     {
       "id": "prop_m3jd9j7csa",
-      "kind": "prop",
       "position": [
         81.76,
         0.52,
         -54.88
       ],
+      "kind": "prop",
       "model": "prop.hedgehog_beach",
       "yaw": 2.059,
       "scale": 1,
@@ -9834,12 +9834,12 @@
     },
     {
       "id": "prop_lc9bcq2c47",
-      "kind": "prop",
       "position": [
         -105.9,
         1.17,
         -36.17
       ],
+      "kind": "prop",
       "model": "prop.hedgehog_beach",
       "yaw": 1.687,
       "scale": 1,
@@ -9848,12 +9848,12 @@
     },
     {
       "id": "prop_xw8j79csv3",
-      "kind": "prop",
       "position": [
         -11.35,
         0.23,
         -65.6
       ],
+      "kind": "prop",
       "model": "prop.hedgehog_beach",
       "yaw": -2.97,
       "scale": 1,
@@ -9862,12 +9862,12 @@
     },
     {
       "id": "prop_25bc98w869",
-      "kind": "prop",
       "position": [
         41.47,
         0.57,
         -52.89
       ],
+      "kind": "prop",
       "model": "prop.hedgehog_beach",
       "yaw": -2.656,
       "scale": 1,
@@ -9876,12 +9876,12 @@
     },
     {
       "id": "prop_w0y1nne6dc",
-      "kind": "prop",
       "position": [
         14.93,
         1.32,
         -31.41
       ],
+      "kind": "prop",
       "model": "prop.hedgehog_beach",
       "yaw": -2.406,
       "scale": 1,
@@ -9890,12 +9890,12 @@
     },
     {
       "id": "prop_58x0q5nas7",
-      "kind": "prop",
       "position": [
         66.73,
         0.21,
         -65.18
       ],
+      "kind": "prop",
       "model": "prop.hedgehog_beach",
       "yaw": 1.177,
       "scale": 1,
@@ -9904,12 +9904,12 @@
     },
     {
       "id": "prop_jo3s5za1gk",
-      "kind": "prop",
       "position": [
         21.26,
         1,
         -42.86
       ],
+      "kind": "prop",
       "model": "prop.hedgehog_beach",
       "yaw": 1.164,
       "scale": 1,
@@ -9918,12 +9918,12 @@
     },
     {
       "id": "prop_bkbldorhwb",
-      "kind": "prop",
       "position": [
         87.77,
         0.02,
         -71.16
       ],
+      "kind": "prop",
       "model": "prop.hedgehog_beach",
       "yaw": 1.383,
       "scale": 1,
@@ -9932,12 +9932,12 @@
     },
     {
       "id": "prop_ga519j6p60",
-      "kind": "prop",
       "position": [
         -40.83,
         0.98,
         -42.75
       ],
+      "kind": "prop",
       "model": "prop.hedgehog_beach",
       "yaw": -2.958,
       "scale": 1,
@@ -9946,12 +9946,12 @@
     },
     {
       "id": "prop_gwv4ak6vs3",
-      "kind": "prop",
       "position": [
         -72.97,
         0.6,
         -52.08
       ],
+      "kind": "prop",
       "model": "prop.hedgehog_beach",
       "yaw": -2.483,
       "scale": 1,
@@ -9960,12 +9960,12 @@
     },
     {
       "id": "prop_pnt1watiq8",
-      "kind": "prop",
       "position": [
         -40.74,
         0.74,
         -49.19
       ],
+      "kind": "prop",
       "model": "prop.hedgehog_beach",
       "yaw": -3.01,
       "scale": 1,
@@ -9974,12 +9974,12 @@
     },
     {
       "id": "prop_tkicyj4tbo",
-      "kind": "prop",
       "position": [
         -75,
         -0.69,
         -84.425
       ],
+      "kind": "prop",
       "model": "prop.landing_craft",
       "yaw": 0,
       "scale": 1,
@@ -9988,12 +9988,12 @@
     },
     {
       "id": "prop_dje3lmonlv",
-      "kind": "prop",
       "position": [
         -25,
         -0.69,
         -84.425
       ],
+      "kind": "prop",
       "model": "prop.landing_craft",
       "yaw": 0,
       "scale": 1,
@@ -10002,12 +10002,12 @@
     },
     {
       "id": "prop_d7jl1omt3j",
-      "kind": "prop",
       "position": [
         25,
         -0.69,
         -84.425
       ],
+      "kind": "prop",
       "model": "prop.landing_craft",
       "yaw": 0,
       "scale": 1,
@@ -10016,12 +10016,12 @@
     },
     {
       "id": "prop_221iz65hu9",
-      "kind": "prop",
       "position": [
         75,
         -0.69,
         -84.425
       ],
+      "kind": "prop",
       "model": "prop.landing_craft",
       "yaw": 0,
       "scale": 1,
@@ -10030,12 +10030,12 @@
     },
     {
       "id": "prop_0p2cmdusns",
-      "kind": "prop",
       "position": [
         -49.995,
         -1.42,
         -55.996
       ],
+      "kind": "prop",
       "model": "prop.landing_craft_wreck",
       "yaw": 0.35,
       "scale": 1,
@@ -10044,12 +10044,12 @@
     },
     {
       "id": "prop_pca0m5vn89",
-      "kind": "prop",
       "position": [
         11.997,
         -1.39,
         -60.998
       ],
+      "kind": "prop",
       "model": "prop.landing_craft_wreck",
       "yaw": -0.25,
       "scale": 1,
@@ -10058,12 +10058,12 @@
     },
     {
       "id": "prop_wosf7iy0w3",
-      "kind": "prop",
       "position": [
         62,
         -1.32,
         -50
       ],
+      "kind": "prop",
       "model": "prop.landing_craft_wreck",
       "yaw": 0.5,
       "scale": 1,
@@ -10072,12 +10072,12 @@
     },
     {
       "id": "prop_t20oa6ofl9",
-      "kind": "prop",
       "position": [
         -90.002,
         -0.97,
         -40.998
       ],
+      "kind": "prop",
       "model": "prop.landing_craft_wreck",
       "yaw": -0.4,
       "scale": 1,
@@ -10086,12 +10086,12 @@
     },
     {
       "id": "prop_7ild1xwhvu",
-      "kind": "prop",
       "position": [
         35.996,
         -0.81,
         -36.993
       ],
+      "kind": "prop",
       "model": "prop.landing_craft_wreck",
       "yaw": 0.12,
       "scale": 1,
@@ -10100,12 +10100,12 @@
     },
     {
       "id": "prop_gnukrqkey9",
-      "kind": "prop",
       "position": [
         -22.001,
         -0.71,
         -35.999
       ],
+      "kind": "prop",
       "model": "prop.landing_craft_wreck",
       "yaw": -0.6,
       "scale": 1,
@@ -60843,5 +60843,6 @@
       12
     ]
   },
-  "dependencies": []
+  "dependencies": [],
+  "weaponSet": "military"
 }

@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 27,
+  "formatVersion": 28,
   "metadata": {
     "id": "capitol_mall",
     "name": "Capitol Mall",
@@ -34,11 +34,11 @@
     },
     "release": {
       "mapId": "m_x4waknbq3l2sv7d5",
-      "versionId": "v_tis3cdowf3dapeqq",
-      "revision": 1,
-      "contentHash": "sha256:5f500c6e9ead094d69820337bb0a2cc399abe1c760c10b377780a2f45266bf17",
-      "schemaVersion": 27,
-      "releasedAt": "2026-11-06T22:48:16.503Z"
+      "versionId": "v_lqyz7uas4xbc5mjb",
+      "revision": 2,
+      "contentHash": "sha256:ae954a6c686cb44969b35a0b05024235708440335da12213180f215201b31940",
+      "schemaVersion": 28,
+      "releasedAt": "2026-11-07T11:06:11.182Z"
     }
   },
   "classicStructure": {
@@ -66852,5 +66852,6 @@
       16
     ]
   },
-  "dependencies": []
+  "dependencies": [],
+  "weaponSet": "military"
 }

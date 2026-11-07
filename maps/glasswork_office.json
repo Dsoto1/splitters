@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 27,
+  "formatVersion": 28,
   "metadata": {
     "id": "glasswork_office",
     "name": "Glasswork Office",
@@ -21,11 +21,11 @@
     ],
     "release": {
       "mapId": "m_eu7kdm7dnuvylmjv",
-      "versionId": "v_wavkvrsdysufpwjt",
-      "revision": 1,
-      "contentHash": "sha256:7acdf32221662ec322f73667bf48a397b1062bfad364bb25f01f0761a97fbda2",
-      "schemaVersion": 27,
-      "releasedAt": "2026-11-06T22:55:42.813Z"
+      "versionId": "v_fjzv7bd2ameur2m4",
+      "revision": 2,
+      "contentHash": "sha256:4b0478620d4b9fef8612c888d8cb749ddaa9b3d291ad0c3e3c43cfba2c5c1922",
+      "schemaVersion": 28,
+      "releasedAt": "2026-11-07T11:03:02.308Z"
     }
   },
   "classicStructure": {
@@ -9623,5 +9623,6 @@
       8
     ]
   },
-  "dependencies": []
+  "dependencies": [],
+  "weaponSet": "military"
 }

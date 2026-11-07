@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 27,
+  "formatVersion": 28,
   "metadata": {
     "id": "dune_harbor",
     "name": "Dune Harbor",
@@ -23,11 +23,11 @@
     ],
     "release": {
       "mapId": "m_wzyesomkb7yphzin",
-      "versionId": "v_ul72cdw4t2zvl3k4",
-      "revision": 1,
-      "contentHash": "sha256:b02aea81f60dc89055b9abec63240dc2047870092d9dd2d4a1cf76538cb6bc27",
-      "schemaVersion": 27,
-      "releasedAt": "2026-11-06T14:42:11.690Z"
+      "versionId": "v_hazhdtqualopmt62",
+      "revision": 2,
+      "contentHash": "sha256:80db51647dfa1847aa59a7cc46db08a3e54fed895b2174177f5f94b646660115",
+      "schemaVersion": 28,
+      "releasedAt": "2026-11-07T11:12:50.138Z"
     }
   },
   "classicStructure": {
@@ -35944,5 +35944,6 @@
       12
     ]
   },
-  "dependencies": []
+  "dependencies": [],
+  "weaponSet": "scifi"
 }

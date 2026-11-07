@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 26,
+  "formatVersion": 28,
   "metadata": {
     "id": "serene_city",
     "name": "Serene City",
@@ -32,6 +32,14 @@
         2.6,
         11.8
       ]
+    },
+    "release": {
+      "mapId": "m_nnk7eout3pg2yn6a",
+      "versionId": "v_lduquty65dwr2x3r",
+      "revision": 1,
+      "contentHash": "sha256:d0da2624b3dd00f10e99302e3a6661ec7e7c2a0324a180e5f3c780c687074337",
+      "schemaVersion": 28,
+      "releasedAt": "2026-11-07T11:11:52.376Z"
     }
   },
   "classicStructure": {
@@ -8231,8 +8239,8 @@
       "yaw": 0,
       "scale": 2.38,
       "solid": false,
-      "tint": null,
-      "variant": 3
+      "variant": 3,
+      "tint": null
     },
     {
       "id": "prop_392",
@@ -12493,5 +12501,6 @@
       12
     ]
   },
-  "dependencies": []
+  "dependencies": [],
+  "weaponSet": "scifi"
 }

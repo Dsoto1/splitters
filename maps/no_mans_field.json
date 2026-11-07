@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 20,
+  "formatVersion": 28,
   "metadata": {
     "id": "no_mans_field",
     "name": "No Man's Field",
@@ -16,7 +16,15 @@
     "supportedModes": [
       "core.ctf",
       "core.tdm"
-    ]
+    ],
+    "release": {
+      "mapId": "m_mgm5cnxuxrns2fab",
+      "versionId": "v_uxzxav5s5whztp7p",
+      "revision": 1,
+      "contentHash": "sha256:1a8b7592f399423d2a3d92837eb3a3019b3b1bb7efbd746bcd7563192915490a",
+      "schemaVersion": 28,
+      "releasedAt": "2026-11-07T10:56:59.765Z"
+    }
   },
   "classicStructure": {
     "cellSize": 8,
@@ -3845,7 +3853,6 @@
     "style": "invisible",
     "height": 8
   },
-  "track": null,
   "backdrop": {
     "sky": "cloudy",
     "scenery": "hills",
@@ -3861,5 +3868,6 @@
       8
     ]
   },
-  "dependencies": []
+  "dependencies": [],
+  "weaponSet": "military"
 }
