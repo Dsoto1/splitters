@@ -260,6 +260,7 @@ const BASE_RULES = DEFAULT_RULES;
 /** The score limit row per mode: its label and stepper (step, min, max). */
 const SCORE_ROW: Partial<Record<GameMode, { label: string; step: number; min: number; max: number }>> = {
   'core.tdm': { label: 'Team score', step: 5, min: 5, max: SCORE_LIMIT_MAX },
+  'core.roulette': { label: 'Points', step: 5, min: 5, max: SCORE_LIMIT_MAX },
   'core.ctf': { label: 'Captures', step: 1, min: 1, max: 20 },
   'core.forts': { label: 'Captures', step: 1, min: 1, max: 20 },
   'core.koth': { label: 'Hill seconds', step: 10, min: 30, max: 600 },
@@ -272,6 +273,7 @@ const SCORE_ROW: Partial<Record<GameMode, { label: string; step: number; min: nu
 /** A short line on each mode, under its name in the mode picker. */
 const MODE_LINES: Record<GameMode, string> = {
   'core.deathmatch': 'Everyone for themselves; most kills wins.',
+  'core.roulette': 'A new character every life; jackpots and picks.',
   'core.tdm': 'Teams score a point per kill.',
   'core.ctf': 'Bring the enemy flag home to score.',
   'core.forts': 'Build a fort, then Capture the Flag.',
@@ -288,6 +290,7 @@ const MODE_LINES: Record<GameMode, string> = {
 /** One line on each mode, for its (i). */
 const MODE_TIPS: Partial<Record<GameMode, string>> = {
   'core.deathmatch': 'Everyone for themselves. Most kills wins.',
+  'core.roulette': "Free-for-all where everyone plays a new character every life, dealt from their own shuffled deck, with that character's stats and signature weapon. Jackpot rolls, a Giant Slayer bonus for a small character downing a large one, and a pick of three after 3 kills in one life. Its chips add rerolls, swap on kill, a variety bonus, Lunar or teams.",
   'core.tdm': 'Teams score a point per kill. First team to the score wins.',
   'core.ctf': "Grab the enemy flag from their base and bring it to yours while your own flag is home.",
   'core.forts': 'Fort Wars: a build phase with a force field between the teams (spend build points on walls, ramps and crates round your flag; LMB place, RMB pick up, R turn), then Capture the Flag over the forts. Explosives smash pieces.',

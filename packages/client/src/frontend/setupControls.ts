@@ -90,6 +90,7 @@ export function stepper(o: StepperOptions): HTMLElement {
 const SCORE_UNITS: Partial<Record<GameMode, string>> = {
   'core.tdm': 'points',
   'core.deathmatch': 'kills',
+  'core.roulette': 'points',
   'core.ctf': 'captures',
   'core.forts': 'captures',
   'core.koth': 'hill seconds',

@@ -47,7 +47,15 @@ function sameShape(a: EffectShape, b: EffectShape): boolean {
   return false;
 }
 
+/** The effects world's gravity (m/s²; a little more than real for snappier debris). */
+const EFFECTS_GRAVITY = 20;
+
 export class EffectsWorld {
+  /** Gravity a multiple of the usual (Lunar's floaty ragdolls, the gravity storm). */
+  setGravityScale(scale: number): void {
+    this.world.gravity = { x: 0, y: -EFFECTS_GRAVITY * Math.max(0.05, scale), z: 0 };
+  }
+
   readonly world: RAPIER.World;
   private acc = 0;
   /** The level box behind each static collider (the terrain has none): what a shot hit, for its impact (stone, metal, wood …). */
@@ -57,7 +65,7 @@ export class EffectsWorld {
   private readonly envSurfaces = new Map<number, SurfaceTypeId>();
 
   constructor(boxes: readonly WorldBox[], terrain: { positions: Float32Array; indices: Uint32Array } | null = null, shapes: readonly EnvWorldShape[] = []) {
-    this.world = new RAPIER.World({ x: 0, y: -20, z: 0 });
+    this.world = new RAPIER.World({ x: 0, y: -EFFECTS_GRAVITY, z: 0 });
     const statics = groups(GROUP_STATIC, GROUP_DEBRIS | GROUP_RAGDOLL | GROUP_STATIC);
     if (terrain) this.world.createCollider(RAPIER.ColliderDesc.trimesh(terrain.positions, terrain.indices).setCollisionGroups(statics));
     // The same environment colliders as the game's physics (sim/physics.ts envColliderDesc), so a round's

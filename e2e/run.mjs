@@ -33,7 +33,7 @@ let failures = 0;
  * own thread instead (localStorage tiletrigger.sim = main), the fallback the game keeps for browsers
  * without workers. Every other flow plays the worker, and reaches the match through `sim()` / `simWait()`.
  */
-const MAIN_THREAD_FLOWS = new Set(['setpieces', 'physicsfx', 'ctf', 'forts', 'breakthrough', 'zombies', 'classes', 'vehicles', 'race', 'flashing', ...MAP_FLOWS]);
+const MAIN_THREAD_FLOWS = new Set(['setpieces', 'physicsfx', 'ctf', 'forts', 'breakthrough', 'roulette', 'zombies', 'classes', 'vehicles', 'race', 'flashing', ...MAP_FLOWS]);
 
 /** Run `fn(match, me, arg)` where the page's match runs (its worker, or the page), and return what it returns. */
 async function sim(page, fn, arg) {
@@ -2879,11 +2879,11 @@ async function setupLayoutFlow(browser) {
   check(capped.teams?.join() === '32,32' && capped.note === "32 per team is this computer's limit.", `a bot past the limit says whose limit it is (${JSON.stringify(capped)})`);
   await page.evaluate(() => document.getElementById('arcade-team-size-0-minus').click());
   check((await setup()).teams?.join() === '31,31', 'a bot fewer shrinks every team alike (Even teams)');
-  // A party preset: Lunar Roulette (Team Deathmatch here: the map has teams).
+  // A party preset: Lunar Roulette (the Roulette mode, Lunar on, its standard features on).
   await page.evaluate(() => document.getElementById('setup-party-lunar_roulette').click());
   const party = await setup();
   const lit = await read();
-  check(party.mode === 'core.tdm' && party.gravity === 0.4 && party.fallDamage === false && party.randomChars === true && party.teams?.join() === '12,12' && lit.variants.join() === 'lunar,roulette', `Lunar Roulette: low gravity, random characters, the map's own layout (${JSON.stringify({ mode: party.mode, gravity: party.gravity, fall: party.fallDamage, random: party.randomChars, teams: party.teams, variants: lit.variants })})`);
+  check(party.mode === 'core.roulette' && party.gravity === 0.4 && party.fallDamage === false && !party.randomChars && lit.variants.join() === 'lunar,signature,jackpots,streakpick', `Lunar Roulette: the Roulette mode in low gravity, the map's own size (${JSON.stringify({ mode: party.mode, gravity: party.gravity, fall: party.fallDamage, random: party.randomChars, bots: party.bots, variants: lit.variants })})`);
   // Enter starts from anywhere (a section head focused is a button: Enter presses it; the panel itself starts).
   await page.evaluate(() => document.activeElement?.blur());
   await page.keyboard.press('Enter');
@@ -3302,6 +3302,137 @@ async function ctfFlow(browser) {
  * take the first sector on their own (the clock run forward, you kept out of it); both sides' spawns move on, the
  * next sector's targets switch on ("two of three"), and a defender left behind the new line is warned, then hurt.
  */
+/**
+ * Roulette (docs/ROULETTE_MODE_PLAN.md; sim/roulette.ts, game/rouletteHud.ts): Match Setup offers the mode and its
+ * variant chips (its standard features on, its variants off); the Lunar Roulette party preset starts the mode with
+ * Lunar on; in the match a new character every life (the spawn card says who), a streak pick of three on the death
+ * screen (a click picks), a jackpot life (its card and glow), and the awards on the scoreboard at the end.
+ */
+async function rouletteFlow(browser) {
+  const page = await (await browser.newContext({ viewport: { width: 1280, height: 720 } })).newPage();
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
+  await page.addInitScript(() => {
+    if (!localStorage.getItem('cs.arcade')) localStorage.setItem('cs.arcade', JSON.stringify({ map: 'sandgate', mode: 'core.deathmatch', bots: 3, skill: 'normal', scoreLimit: 15, minutes: 10, scoreAuto: true, timeAuto: true }));
+  });
+  await page.goto(`${CLIENT}/?test=1&god=1`);
+  await page.waitForFunction(() => window.__front, null, { timeout: T(30000) });
+  await page.evaluate(() => document.getElementById('nav-play').click());
+  await page.waitForSelector('#arcade-mode-roulette', { timeout: T(30000) });
+  await page.evaluate(() => document.getElementById('arcade-mode-roulette').click());
+  await page.waitForSelector('#setup-variant-signature', { timeout: T(10000) });
+  const chips = () =>
+    page.evaluate(() => ({
+      mode: JSON.parse(localStorage.getItem('cs.arcade') ?? '{}').mode,
+      pressed: document.getElementById('arcade-mode-roulette')?.getAttribute('aria-pressed') ?? document.getElementById('arcade-mode-roulette')?.classList.contains('on'),
+      all: [...document.querySelectorAll('#setup-variants .variant-chip')].map((b) => b.dataset.variant),
+      on: [...document.querySelectorAll('#setup-variants .variant-chip.on')].map((b) => b.dataset.variant),
+      line: document.querySelector('.mode-line')?.textContent ?? '',
+    }));
+  const offered = await chips();
+  check(offered.all.join() === 'lunar,signature,jackpots,streakpick,rerolls,swap,variety,rlteams' && offered.on.join() === 'signature,jackpots,streakpick', `Match Setup offers Roulette with its chips: the standard features on, the variants off (${JSON.stringify(offered)})`);
+  // A standard feature switches off and on again; a variant on and off.
+  await page.evaluate(() => document.getElementById('setup-variant-signature').click());
+  await page.evaluate(() => document.getElementById('setup-variant-swap').click());
+  const switched = await chips();
+  await page.evaluate(() => document.getElementById('setup-variant-signature').click());
+  await page.evaluate(() => document.getElementById('setup-variant-swap').click());
+  const back = await chips();
+  check(switched.on.join() === 'jackpots,streakpick,swap' && back.on.join() === 'signature,jackpots,streakpick', `its chips switch (off a standard one, on a variant: ${switched.on.join()}; back: ${back.on.join()})`);
+  if (process.env.E2E_SHOTS) await page.screenshot({ path: `${process.env.E2E_SHOTS}/roulette-setup.png`, timeout: T(60000) }).catch(() => {});
+  // The party preset: Lunar Roulette plays the mode, Lunar on.
+  await page.evaluate(() => document.getElementById('arcade-mode-deathmatch').click());
+  await page.evaluate(() => document.getElementById('setup-party-lunar_roulette').click());
+  const party = await chips();
+  const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('cs.arcade') ?? '{}'));
+  check(party.mode === 'core.roulette' && party.on.join() === 'lunar,signature,jackpots,streakpick' && saved.gravity === 0.4 && saved.fallDamage === false && !saved.randomChars, `Lunar Roulette starts the Roulette mode with Lunar on (${JSON.stringify({ ...party, gravity: saved.gravity, fall: saved.fallDamage })})`);
+  await page.evaluate(() => document.getElementById('arcade-start').click());
+  await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() === 'playing' && window.__match, null, { timeout: T(90000) });
+  const rules = await page.evaluate(() => ({ mode: window.__match.rules.mode, lunar: window.__match.rules.lunar, gravity: window.__match.phys.gravity, roulette: !!window.__match.roulette, label: document.getElementById('mode-label')?.textContent }));
+  check(rules.mode === 'core.roulette' && rules.lunar === true && rules.gravity === 0.4 && rules.roulette && rules.label === 'Roulette', `the match plays Roulette with Lunar's extras (${JSON.stringify(rules)})`);
+  // Pictures with the pause overlay (up in headless runs) hidden.
+  const shoot = async (name) => {
+    if (!process.env.E2E_SHOTS) return;
+    await page.evaluate(() => (document.getElementById('pause').style.visibility = 'hidden'));
+    await frames(page, 5);
+    await page.screenshot({ path: `${process.env.E2E_SHOTS}/${name}.png`, timeout: T(60000) }).catch(() => {});
+  };
+  // Nobody shoots you meanwhile: the bots hold still.
+  await page.evaluate(() => {
+    for (const c of window.__match.combatants()) {
+      if (!c.bot || c.queue.held) continue;
+      c.queue.push = (...inputs) => Array.prototype.push.apply(c.queue, inputs.map((i) => ({ ...i, forward: 0, right: 0, buttons: 0 })));
+      c.queue.held = true;
+    }
+  });
+  const me = () => page.evaluate(() => window.__match.slots[window.__cs.slot]);
+  const life = async () => {
+    const before = await page.evaluate(() => ({ look: window.__match.slots[window.__cs.slot].look, spawns: window.__match.slots[window.__cs.slot].spawns }));
+    await page.evaluate(() => {
+      const m = window.__match;
+      m.kill(m.slots[window.__cs.slot], null, 'core.fall');
+    });
+    await page.waitForFunction((n) => window.__match.slots[window.__cs.slot].alive && window.__match.slots[window.__cs.slot].spawns > n, before.spawns, { timeout: T(30000) });
+    // The spawn card: "You are" and the character's name.
+    const card = await page.waitForFunction(() => !document.getElementById('rl-card')?.hidden && document.querySelector('#rl-card b')?.textContent, null, { timeout: T(15000) }).then(() => page.evaluate(() => ({ name: document.querySelector('#rl-card b')?.textContent, line: document.querySelector('#rl-card span')?.textContent })), () => null);
+    const after = await page.evaluate(() => window.__match.slots[window.__cs.slot].look);
+    return { before: before.look, after, card };
+  };
+  const lives = [await life(), await life()];
+  await shoot('roulette-spawn-card');
+  check(lives.every((l) => l.after !== l.before && !!l.card?.name && /:/.test(l.card?.line ?? '')), `a new character every life, with its spawn card (${JSON.stringify(lives)})`);
+  // A streak pick: three kills in one life, then down: the death screen offers three; a click picks the second.
+  await page.evaluate(() => {
+    const m = window.__match;
+    const mine = m.slots[window.__cs.slot];
+    m.roulette.endProtection(mine);
+    const bots = m.combatants().filter((c) => c.bot);
+    for (let i = 0; i < 3; i++) {
+      const b = bots[i % bots.length];
+      b.alive = true;
+      m.kill(b, mine, 'core.pistol');
+    }
+    m.kill(mine, bots[0], 'core.pistol');
+  });
+  const shown = await page.waitForFunction(() => document.querySelectorAll('#rl-pick .rl-pick-card').length === 3 && !document.getElementById('rl-pick').hidden, null, { timeout: T(20000) }).then(() => true, () => false);
+  const cards = await page.evaluate(() => [...document.querySelectorAll('#rl-pick .rl-pick-card')].map((b) => b.dataset.look));
+  check(shown && new Set(cards).size === 3, `3 kills in one life: the death screen offers a pick of three (${cards.join(', ')})`);
+  await page.waitForFunction(() => [...document.querySelectorAll('#rl-pick img')].every((i) => i.complete), null, { timeout: T(10000) }).catch(() => {});
+  await shoot('roulette-pick');
+  await page.evaluate(() => document.getElementById('rl-pick-1').click());
+  const picked = await page.waitForFunction((want) => window.__match.slots[window.__cs.slot].alive && window.__match.slots[window.__cs.slot].look === want, cards[1], { timeout: T(30000) }).then(() => true, () => false);
+  check(picked && (await page.evaluate(() => window.__match.roulette.stats(window.__cs.slot).picks)) === 1, `a click on the second card plays it at the next spawn (${cards[1]}: ${(await me()).look})`);
+  // A jackpot life (its roll forced for the picture): the card, the glow easing in, the armour.
+  await page.evaluate(() => {
+    const m = window.__match;
+    const dir = m.roulette;
+    const deal = dir.deal.bind(dir);
+    dir.deal = (c) => {
+      const r = deal(c);
+      if (c.slot === window.__cs.slot) {
+        r.roll = 'jackpot';
+        dir.seats.get(c.slot).roll = 'jackpot';
+        dir.deal = deal;
+      }
+      return r;
+    };
+    m.kill(m.slots[window.__cs.slot], null, 'core.fall');
+  });
+  const jackpot = await page.waitForFunction(() => document.getElementById('rl-card')?.classList.contains('jackpot') && !document.getElementById('rl-card').hidden, null, { timeout: T(30000) }).then(() => true, () => false);
+  await page.waitForFunction(() => (window.__cs.roulette()?.glow ?? 0) > 0.3, null, { timeout: T(10000) }).catch(() => {});
+  const glow = await page.evaluate(() => window.__cs.roulette()?.glow ?? 0);
+  await shoot('roulette-jackpot');
+  const armour = await page.evaluate(() => window.__match.slots[window.__cs.slot].armor);
+  check(jackpot && glow > 0 && armour >= 50, `a jackpot life: its card, the glow (${glow}), armour (${armour})`);
+  // The end of the match: the awards on the scoreboard.
+  await page.evaluate(() => window.__match.endMatch());
+  const awards = await page.waitForFunction(() => !document.getElementById('rl-awards')?.hidden && document.querySelectorAll('#rl-awards .rl-award').length > 0, null, { timeout: T(20000) }).then(() => page.evaluate(() => [...document.querySelectorAll('#rl-awards .rl-award b')].map((b) => b.textContent)), () => []);
+  await shoot('roulette-awards');
+  check(awards.includes('Shapeshifter') && awards.includes('Unluckiest Roll'), `the awards at the end of the match (${awards.join(', ')})`);
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  await page.context().close();
+}
+
 async function breakthroughFlow(browser) {
   const page = await (await browser.newContext({ viewport: { width: 1280, height: 720 } })).newPage();
   const errors = [];
@@ -5005,6 +5136,15 @@ async function flashingFlow(browser) {
       look: aim([0, 0, -25.5], [0, 1.2, -29]),
       bots: [],
       fire: true,
+    },
+    {
+      name: 'jackpot',
+      label: "Roulette's jackpot glow (the screen's edges easing to gold, held, then easing out)",
+      weapon: 'core.arc_caster',
+      me: [0, 0, 8],
+      look: aim([0, 0, 8], [0, 0.5, 13]),
+      bots: [],
+      at: { 2: () => page.evaluate(() => window.__cs.jackpotGlow()) },
     },
     {
       name: 'alarm',
@@ -6781,7 +6921,7 @@ try {
   const open = instrumentBrowser(browser);
   // E2E_ONLY=editor,characters runs a subset; E2E_SHARD=2/8 one of CI's parallel groups (balanced by e2e/timings.json;
   // CI's plan job passes each shard's flows in E2E_ONLY itself).
-  const flows = { editor: editorFlow, editorux: editoruxFlow, offline: offlineFlow, mobile: mobileFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, scenery: sceneryFlow, setpieces: setpiecesFlow, physicsfx: physicsfxFlow, teams: teamsFlow, weaponsets: weaponsetsFlow, ctf: ctfFlow, forts: fortsFlow, breakthrough: breakthroughFlow, arsenal: arsenalFlow, vehicles: vehiclesFlow, race: raceFlow, zombies: zombiesFlow, classes: classesFlow, coverage: coverageFlow, ...Object.fromEntries(MAP_FLOWS.map((name, part) => [name, (b) => mapsFlow(b, part)])), designer: designerFlow, ...Object.fromEntries(CHARACTER_FLOWS.map((name, part) => [name, (b) => charactersFlow(b, part)])), online: onlineFlow, hostgame: hostgameFlow, hostcontrols: hostcontrolsFlow, lobby: lobbyFlow, handoff: handoffFlow, dedicatedhost: dedicatedhostFlow, hostpage: hostpageFlow, webgpu: webgpuFlow, visual: visualFlow, environment: environmentFlow, flashing: flashingFlow };
+  const flows = { editor: editorFlow, editorux: editoruxFlow, offline: offlineFlow, mobile: mobileFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, scenery: sceneryFlow, setpieces: setpiecesFlow, physicsfx: physicsfxFlow, teams: teamsFlow, weaponsets: weaponsetsFlow, ctf: ctfFlow, forts: fortsFlow, breakthrough: breakthroughFlow, roulette: rouletteFlow, arsenal: arsenalFlow, vehicles: vehiclesFlow, race: raceFlow, zombies: zombiesFlow, classes: classesFlow, coverage: coverageFlow, ...Object.fromEntries(MAP_FLOWS.map((name, part) => [name, (b) => mapsFlow(b, part)])), designer: designerFlow, ...Object.fromEntries(CHARACTER_FLOWS.map((name, part) => [name, (b) => charactersFlow(b, part)])), online: onlineFlow, hostgame: hostgameFlow, hostcontrols: hostcontrolsFlow, lobby: lobbyFlow, handoff: handoffFlow, dedicatedhost: dedicatedhostFlow, hostpage: hostpageFlow, webgpu: webgpuFlow, visual: visualFlow, environment: environmentFlow, flashing: flashingFlow };
   // e2e/flowMap.mjs (change-based selection, shards) must know every flow, and only those.
   const known = new Set(FLOWS);
   const drift = [...Object.keys(flows).filter((f) => !known.has(f)), ...FLOWS.filter((f) => !(f in flows))];
