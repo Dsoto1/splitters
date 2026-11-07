@@ -18,11 +18,11 @@
     ],
     "release": {
       "mapId": "m_volbp47vkztqi47u",
-      "versionId": "v_dmelwp77vszsirkq",
-      "revision": 1,
-      "contentHash": "sha256:186e6fa4ab35c633b3918528872dd4c27a011a6ef8ef6415a87d87b1b9d2e75a",
+      "versionId": "v_hueufa5lcis5svu2",
+      "revision": 2,
+      "contentHash": "sha256:bca555fa20934a2ebf2b4f558c8e8ed44ce95d9878825ffb9f770519b9129e05",
       "schemaVersion": 29,
-      "releasedAt": "2026-11-07T15:05:04.733Z"
+      "releasedAt": "2026-11-07T15:09:33.943Z"
     }
   },
   "classicStructure": {
@@ -39253,5 +39253,124 @@
   "backdrop": null,
   "blood": null,
   "physics": null,
-  "dependencies": []
+  "dependencies": [],
+  "setPieces": [
+    {
+      "id": "setpiece_l66k0orjna",
+      "piece": "setpiece.casemate",
+      "x": -21,
+      "y": -4,
+      "z": 2,
+      "rotation": 0,
+      "mirror": false
+    },
+    {
+      "id": "setpiece_84afs1481h",
+      "piece": "setpiece.casemate",
+      "x": -8,
+      "y": -3,
+      "z": 3,
+      "rotation": 0,
+      "mirror": false
+    },
+    {
+      "id": "setpiece_67sa00vs46",
+      "piece": "setpiece.casemate",
+      "x": 6,
+      "y": -2,
+      "z": 4,
+      "rotation": 0,
+      "mirror": false
+    },
+    {
+      "id": "setpiece_xq3ale1p7b",
+      "piece": "setpiece.casemate",
+      "x": 20,
+      "y": -3,
+      "z": 4,
+      "rotation": 0,
+      "mirror": false
+    },
+    {
+      "id": "setpiece_wywke9mbby",
+      "piece": "setpiece.cliff_stair_gate",
+      "x": -1,
+      "y": -6,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false
+    },
+    {
+      "id": "setpiece_5umloled9g",
+      "piece": "setpiece.cliff_stair_side",
+      "x": -6,
+      "y": -5,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false
+    },
+    {
+      "id": "setpiece_5l4afazrjg",
+      "piece": "setpiece.casemate_cave",
+      "x": 12,
+      "y": -6,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false
+    },
+    {
+      "id": "setpiece_tj0aj6ztd0",
+      "piece": "setpiece.cliff_stair_side",
+      "x": 12,
+      "y": -3,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false
+    },
+    {
+      "id": "setpiece_rfcudrh978",
+      "piece": "setpiece.command_bunker",
+      "x": -2,
+      "y": 11,
+      "z": 4,
+      "rotation": 0,
+      "mirror": false
+    },
+    {
+      "id": "setpiece_c1qdd8ttop",
+      "piece": "setpiece.landing_craft_beached",
+      "x": -17,
+      "y": -11,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false
+    },
+    {
+      "id": "setpiece_9fa6xkuvwx",
+      "piece": "setpiece.landing_craft_beached",
+      "x": -4,
+      "y": -12,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false
+    },
+    {
+      "id": "setpiece_u43avsyc01",
+      "piece": "setpiece.landing_craft_beached",
+      "x": 6,
+      "y": -12,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false
+    },
+    {
+      "id": "setpiece_oj0xap1md6",
+      "piece": "setpiece.landing_craft_beached",
+      "x": 15,
+      "y": -11,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false
+    }
+  ]
 }
