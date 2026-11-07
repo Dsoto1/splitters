@@ -295,6 +295,16 @@ export function worldTurn(parent: TransformNode, axisWorld: Vector3, angle: numb
   return Quaternion.RotationAxis(turnAxis, m.determinant() < 0 ? -angle : angle);
 }
 
+/**
+ * A kept rotation put back on a joint: copied into the joint's own quaternion (a fresh one only if it has none). A
+ * copy a joint held until its next evaluation, 50-200 ms away for a stepped crowd, outlived the young collections and
+ * filled the old generation (performance round 4's garbage pass).
+ */
+function putRot(joint: TransformNode, q: Quaternion): void {
+  if (joint.rotationQuaternion) joint.rotationQuaternion.copyFrom(q);
+  else joint.rotationQuaternion = q.clone();
+}
+
 /** A rotation that is numbers throughout (absent counts as fine). */
 function finiteQuat(q: Quaternion | null | undefined): boolean {
   return !q || (Number.isFinite(q.x) && Number.isFinite(q.y) && Number.isFinite(q.z) && Number.isFinite(q.w));
@@ -1063,7 +1073,7 @@ export class CharacterAnimator {
   private turnJoint(bone: TransformNode | undefined, axisWorld: Vector3, angle: number): void {
     const parent = bone?.parent as TransformNode | null | undefined;
     if (!bone?.rotationQuaternion || !parent || Math.abs(angle) < 1e-4) return;
-    bone.rotationQuaternion = worldTurn(parent, axisWorld, angle).multiply(bone.rotationQuaternion);
+    worldTurn(parent, axisWorld, angle).multiplyToRef(bone.rotationQuaternion, bone.rotationQuaternion);
   }
 
   /** The flinch and the kick, on top of the pose (afterAnimations). */
@@ -1455,7 +1465,7 @@ export class CharacterAnimator {
     const hips = this.pelvis;
     const hipsParent = hips?.parent as TransformNode | null | undefined;
     if (hips?.rotationQuaternion && hipsParent && Math.abs(hipTurn) > 1e-4) {
-      hips.rotationQuaternion = worldTurn(hipsParent, up, hipTurn).multiply(hips.rotationQuaternion);
+      worldTurn(hipsParent, up, hipTurn).multiplyToRef(hips.rotationQuaternion, hips.rotationQuaternion);
     }
     // An authored clip holding the upper body (a clip set's shooting walks) has its own torso turn, which isn't the aim
     // pose's: the shoulders are brought back to the aim pose's line (measured from it) by as much as the clip holds.
@@ -1475,7 +1485,8 @@ export class CharacterAnimator {
       // about the up axis read through a rotation-only inverse wound the shoulders the same way as the hips (a
       // strafe turned the chest 140 degrees off the aim instead of keeping it square to the gun).
       const q = worldTurn(parent, right, pitch).multiply(worldTurn(parent, up, -twist * share));
-      bone.rotationQuaternion = q.multiply(bone.rotationQuaternion);
+      // In place (the joint keeps its own quaternion: see putRot).
+      q.multiplyToRef(bone.rotationQuaternion, bone.rotationQuaternion);
     }
     this.applySit(right, up);
     this.applyReactions(right, up, rootRot);
@@ -1514,7 +1525,7 @@ export class CharacterAnimator {
     ) {
       armsKept.joints.forEach((j, i) => {
         const q = armsKept.rots[i];
-        if (q) j.rotationQuaternion = q.clone();
+        if (q) putRot(j, q);
       });
       this.keepFingers(arms.r);
       if (grip.support) this.keepFingers(arms.l);
@@ -1707,7 +1718,7 @@ export class CharacterAnimator {
     for (const chain of arm.fingers) {
       for (const joint of chain) {
         const q = kept.rots[i++];
-        if (q) joint.rotationQuaternion = q.clone();
+        if (q) putRot(joint, q);
       }
     }
   }
@@ -1720,7 +1731,7 @@ export class CharacterAnimator {
         for (const joint of chain) {
           const q = kept.rots[i++];
           // A copy (the clips write into the joint's quaternion at their next evaluation; the cache stays apart).
-          if (q) joint.rotationQuaternion = q.clone();
+          if (q) putRot(joint, q);
         }
       }
       return;

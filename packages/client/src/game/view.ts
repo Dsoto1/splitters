@@ -1953,7 +1953,13 @@ export class GameView {
         // Respawn teleports are not motion.
         if (Math.hypot(p.x - a.last.x, p.z - a.last.z) > 4) a.vel = { x: 0, z: 0 };
       }
-      a.last = { x: p.x, y: p.y, z: p.z, t: now };
+      // In place: a crowd's avatars made one of these a frame each (performance round 4's garbage pass).
+      if (a.last) {
+        a.last.x = p.x;
+        a.last.y = p.y;
+        a.last.z = p.z;
+        a.last.t = now;
+      } else a.last = { x: p.x, y: p.y, z: p.z, t: now };
       // Shadows from the nearest few living characters (and anyone within SHADOW_ALWAYS); in crowds none past
       // CROWD_SHADOW_REACH, the dead and dying included (a body far off waiting for its ragdoll cast one before).
       const d2 = eye ? (p.x - eye.x) ** 2 + (p.z - eye.z) ** 2 : 0;
