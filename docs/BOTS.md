@@ -739,6 +739,16 @@ applies the choice).
 - King of the Hill's goal is one to hold (it was pushed, in an earlier try): bots on the hill look into what happens
   near it, not gunfire across the map, and keep taking cover when shot at.
 
+### Hurt bots retreat (measured, Phase C item 0)
+A bot under its self-preservation share of its health (`BotBrain.hurt`: selfPreservation × 0.6 of full health, 0.8 for
+cowards) retreats while it sees an enemy, to health if any is about, else away from the threat (the farthest spawn
+point), and runs on 3 s after losing sight; with nobody in sight its scored choice is its objective again. Nothing
+regenerates, so on maps without health a hurt bot does this until it dies. Seven ways of cutting the retreat short
+(giving up after a few seconds, a life or a fight; fighting from cover instead; never leaving an objective it stands
+in) all made the Breakthrough Range's attack worse, a lot (8 v 8: 5 to 9 breakthroughs in 12 against 11): hurt
+attackers that stay die, and their deaths spend the pool. Kept as it is; the numbers are in BOT_AI_PLAN.md, "Phase C
+item 0, measured".
+
 ## Team brain and route variety (Bot AI Phase B)
 
 **Corridors** (`nav/corridors.ts`; BOT_AI_PLAN.md Phase B item 4): for the trips a mode's bots make again and again

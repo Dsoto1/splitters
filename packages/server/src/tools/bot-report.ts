@@ -1088,6 +1088,19 @@ function printCompare(before: readonly MatchRow[], after: readonly MatchRow[]): 
     return t ? f.map((v) => `${((v / t) * 100).toFixed(0)}`).join('/') : '-';
   };
   console.log(`route choice by how the bots went (on the corridor they followed / off it / their own lane, %): ${follow(before)} → ${follow(after)}`);
+  // Retreating, of alive time (a hurt bot getting away from what it sees: BotBrain's 'retreat').
+  const doingShare = (ms: readonly MatchRow[], what: string) => {
+    let t = 0;
+    let all = 0;
+    for (const m of ms) for (const r of m.bots) {
+      for (const [k, [mv, st]] of Object.entries(r.doing)) {
+        all += mv + st;
+        if (k === what) t += mv + st;
+      }
+    }
+    return all ? ((t / all) * 100).toFixed(1) : '-';
+  };
+  console.log(`retreating ${doingShare(before, 'retreat')} → ${doingShare(after, 'retreat')} % of alive time`);
   // Per mode: each mode's objective and the measures every mode has.
   const modes = [...new Set([...before, ...after].map((m) => m.mode))].sort();
   if (modes.length > 1 || !modes.includes('core.ctf')) {

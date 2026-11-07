@@ -8,6 +8,14 @@ made only on a commit that passed CI on a check branch.
 
 ## Unreleased
 
+**Bot AI Phase C, item 0** (docs/BOT_AI_PLAN.md, "Phase C item 0, measured"):
+- Fixed: a Breakthrough match could stop with an error when a defender sent to fall back to the next sector was on the
+  last one.
+- `pnpm bot-report`: Breakthrough's sectors, when each fell, how the round ended and the reinforcements left; `--compare`
+  shows the share of time bots spend retreating.
+- Hurt bots keep retreating from what they see, as before: seven ways of cutting the retreat short all made
+  Breakthrough's attackers worse (measured; the table is in the plan).
+
 **Performance round 4: crowds, 32 v 32 in a browser, 64 v 64 on a dedicated host** (owner, 2026-11-06: "32v32 would be
 max I want to shoot for without dedicated host … push dedicated hosts to 64v64 if at all possible"; docs/PERF_96.md,
 "Performance round 4")

@@ -950,8 +950,9 @@ export class BreakthroughMode implements ModeLogic {
     const watch = this.attackFrom(sector);
     const posts = this.postsOf(sector);
     const post = (at: readonly Vec3[], radius: number): BotGoal => ({ pos: at[j % at.length]!, radius, watch });
-    if (duty === 'back') {
-      const next = this.sectors[this.active + 1]!;
+    // (Falling back to the next sector: none after the last, where it holds like the rest; reading past the end threw.)
+    const next = duty === 'back' ? this.sectors[this.active + 1] : undefined;
+    if (next) {
       const there = this.postsOf(next).trenches;
       if (there.length) return post(there, 1.5);
       const o = next.objectives[j % next.objectives.length]!;
