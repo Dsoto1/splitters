@@ -75,15 +75,17 @@ MapMaker steps: docs/GAME_MODES.md, "Breakthrough". The pieces: docs/SET_PIECES_
   holding still, determinism by seed), `setPieces4.test.ts`, the coverage map's test (new pieces, the mode); e2e flow
   `breakthrough` (main thread; `?test=1&testmap=test_breakthrough` puts the test map in the Arcade).
 
-**Bots on the Breakthrough Range** (headless matches, bots only, first round; BOTS.md has the details): with Match
-Setup's suggestions, 4 v 4 (8 an attacker, 3 min a sector), eight seeds: the beach, the guns and the fort fell in 7;
-8 v 8 (6, 4 min), six seeds: the beach in 6 (65 s on average), the guns in 4, the fort in 3. At the mode's defaults 4 v
-4 took the beach in 5 of 8, the guns in 4, the fort in 3. Before the playbook (the old `botGoal`, defenders never
+**Bots on the Breakthrough Range** (headless matches, bots only, first round; BOTS.md has the details), with Match
+Setup's suggestions and smoke: 4 v 4 (6 an attacker, 3 min a sector; the owner lowered it from 8, 2026-11-07), eight
+seeds: the beach fell in 4 (106 s on average), the guns in 2, the fort in 2; 8 v 8 (6, 4 min), six seeds: the beach in
+6 (61 s), the guns in 4, the fort in 2. Before smoke, at 8 an attacker, 4 v 4 broke through in 7 of 8 (with smoke at
+8: the beach 6, the guns 5, the fort 4), 8 v 8 in 3 of 6. Before the playbook (the old `botGoal`, defenders never
 defusing) 4 v 4 at the defaults: 6, 3 and 3 of 8; with the playbook but before holding still to plant, 8 v 8 never
 planted (the guns fell in none of six). A second round with the sides swapped (4 v 4, three seeds): both teams broke
 through in two, the one with more time left when its last sector fell winning (442 s against 436, 305 against 271);
 in the third only the second team did, and won. In the e2e flow (you parked, three bot attackers against four) the
-bots took the beach in 76 s. The scratch harness that measured it is not in the repo (bench's Match with bots, the
+bots took the beach in 76 s, 95 s after the main merge with smoke; at the new suggestion its scene took the beach in 8
+of 8 seeds (40-72 s). The scratch harness that measured it is not in the repo (bench's Match with bots, the
 `bt` events); `pnpm bench 8 300 maps/test_breakthrough.json --mode=core.breakthrough` counts the events. For Iron
 Coast's check ("bots take every sector in a scorecard run") `bot-report` needs Breakthrough (sectors taken a match).
 

@@ -818,10 +818,11 @@ and the other vehicle modes: no attack brief) plays by the default. King of the 
   it crosses ("Smoke" above): in a 150 s 8 v 8 match on the Range, 49 screens sent ahead in bounds and 28 thrown by
   hurt bots in the open. (Every other attacker by place first gave it, there, only to bots that never bound.) Tunnel
   groups wait for a map with tunnels (the team brain's staging pushes any held objective as a group). **Measured** on the Breakthrough Range (headless matches, bots only, the first
-  round, Match Setup's suggested reinforcements and sector time): 4 v 4, eight seeds, the beach fell in 7 (96 s on
-  average), the guns in 7 and the fort in 7; 8 v 8, six seeds, the beach in 6 (65 s), the guns in 4, the fort in 3.
-  At the mode's defaults (6 reinforcements an attacker, 4 min a sector) 4 v 4 took the beach in 5 of 8, the guns in 4,
-  the fort in 3. Before the hold-still fix no attacker planted in 8 v 8 (the guns fell in none of six).
+  round, Match Setup's suggested reinforcements and sector time, with smoke): 4 v 4 (6 an attacker, 3 min), eight
+  seeds, the beach fell in 4 (106 s on average), the guns in 2, the fort in 2; 8 v 8 (6, 4 min), six seeds, the beach
+  in 6 (61 s), the guns in 4, the fort in 2. Before smoke (frags for everyone) and at the old small-team suggestion of
+  8: 4 v 4 the beach, the guns and the fort in 7 of 8 (with smoke at 8: 6, 5 and 4), 8 v 8 6, 4 and 3 of 6. Before
+  the hold-still fix no attacker planted in 8 v 8 (the guns fell in none of six).
 
 Bots read their job (`BotPlan.job`: group, corridor and staging spot, or an interceptor's cut-off point) and the side's
 priced trips (`BotPlan.trips`) from objects the director updates in place. `bot-report` prints, per match, each team's
