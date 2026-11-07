@@ -197,10 +197,14 @@ sits, and thins over its last 3 s: 18 s in all. It is only sight:
   out over about two thirds of a second: no flash, no white-out, no flicker), and the sky, which draws without fog,
   fades to the same grey (else the skyline, and anyone against it, showed through); an enemy's marker behind smoke
   isn't drawn. Left as it is: at High the screen-space shading still picks out faint, low-contrast shapes of the
-  scenery past the cloud. On a map without haze (the space maps, maps without a backdrop: 15 of 90) the scene has no
-  fog at all, so the first step into smoke builds every visible material's fog variant (a stall, as going under water
-  does there); smoke reaches those maps only through a placed pickup until the weapon sets hand it out. The fix then:
-  run those maps with fog on at zero density.
+  scenery past the cloud. A map without haze (the space maps: Halcyon Station, Starhaven, Twin Spires and Void Yard,
+  all Sci-fi, where the set hands smoke out, and the retired Creature Lab, Obsidian Orb and Skyward) draws with the
+  scene's fog on at density 0 (`BackdropVisuals.build`), so a cloud, or water, only changes its colour and thickness.
+  With the fog off there, the first step into smoke switched it on, and every material in view was built again with
+  Babylon's FOG define in that frame: on Halcyon Station at Medium, 31 and 38 programs (22 and 31 of them materials
+  already in view), 8.0 and 12.4 s inside WebGL's compile and link calls on the agents' software renderer, and the
+  frames stepping in 4.8 s longer than inside the cloud; with the fog on at nothing, no program and 0.35 s
+  (`ws/stall3.mjs` in the weapon sets session's scratchpad).
 - **Shots, blasts and movement go through it** (they use the physics' own lines).
 - **Bots use it:** a hurt bot caught in the open by an enemy 10-45 m off throws one a few metres toward it, so the
   cloud stands between them while it moves on; bounding cover to cover (Phase B), the moving half sends one ahead

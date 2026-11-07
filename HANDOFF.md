@@ -185,9 +185,10 @@ CI: green at 7e15660f (run 42342142073, everything the branch touched: 36 e2e fl
 - Post URLs for the 11 Meshy downloads, if you have them (CC0 needs no credit; the post is the proof).
 - The pack's flashbang is not imported (your call, over seizure risk); nothing in this work flashes the screen, and
   the smoke eases in and out in a mid grey.
-- Smoke on the 15 maps without haze (the space maps, maps without a backdrop): the first step into a cloud builds
-  every visible material's fog variant, a stall, as going under water does there. No map places smoke yet; before the
-  Sci-fi set hands it out on space maps, run those maps with fog on at zero density (a small job).
+- Smoke on the maps without haze: **done** on `wip/weapon-sets` ("Weapon sets" above). They are 7, not 15: the four
+  live space maps (Halcyon Station, Starhaven, Twin Spires, Void Yard, all Sci-fi) and three retired ones. They draw
+  with the fog on at density 0, so stepping into smoke (or water) builds no shader: on Halcyon Station at Medium,
+  31-38 programs before, none after.
 
 **CI on this branch:** run 42340584990 (f349eecf) failed the `handoff` e2e flow, both attempts: "two friends join the
 hosted match", a friend's link closing under it with no "closing ... link" from the host, pages a second or two behind.
