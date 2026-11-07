@@ -85,6 +85,7 @@ import { installTooltips } from './tooltip.ts';
 import { deviceMaxPlayers, isTouchDevice } from '../touchDevice.ts';
 import { FIRST_PERSON_LABELS, FIRST_PERSON_MODES, FRAME_CAPS, GRAPHICS_QUALITIES, RENDER_SCALES, RENDER_SCALE_LABELS, currentFrameCap, loadFirstPersonMode, loadGraphicsQuality, loadRenderScale, saveFirstPersonMode, saveFrameCap, saveGraphicsQuality, saveRenderScale, type FirstPersonMode, type FrameCap, type GraphicsQuality, type RenderScale } from '../game/graphicsSettings.ts';
 import { loadPerfOverlay, savePerfOverlay } from '../game/perfPrefs.ts';
+import { reduceFlashing, saveReduceFlashing } from '../game/reduceFlashing.ts';
 import { hitboxOverlayAllowed, loadHitboxOverlay, saveHitboxOverlay } from '../game/hitboxPrefs.ts';
 import { fetchGames, hubSetting, saveHub } from '../game/hub.ts';
 import type { AudioSystem } from '../audio/audio.ts';
@@ -2232,6 +2233,10 @@ export class FrontEnd {
     perfOverlay.addEventListener('change', () => savePerfOverlay(perfOverlay.checked));
     const hitboxes = el('input', { type: 'checkbox', checked: loadHitboxOverlay() });
     hitboxes.addEventListener('change', () => saveHitboxOverlay(hitboxes.checked));
+    // Reduce flashing (game/reduceFlashing.ts): on by default; the pause menu has it too.
+    const calmFlashes = el('input', { type: 'checkbox', checked: reduceFlashing() });
+    calmFlashes.id = 'opt-reduce-flashing';
+    calmFlashes.addEventListener('change', () => saveReduceFlashing(calmFlashes.checked));
     const fullscreen = el('button', { type: 'button' });
     bindFullscreenButton(fullscreen);
     const mouse = loadMousePrefs();
@@ -2401,6 +2406,9 @@ export class FrontEnd {
         row('Teammate marker', allySel),
         row('Enemy marker', enemySel, 'Off: only teammates are marked.'),
       ]],
+      ['accessibility', 'Accessibility', [
+        row('Reduce flashing', toggle(calmFlashes), 'On by default. Lightning glows steadily instead of crackling, blasts and muzzle flashes near you are dimmer and fade in, blinking lights pulse gently at most once a second, and taking damage tints the screen edge a dull red that eases in. For players sensitive to flashing light (photosensitive epilepsy). Also in the pause menu (Settings).'),
+      ]],
       ['online', 'Online', [
         el('p', { class: 'opt-note', textContent: "If a friend finds your game but can't connect, your networks block direct connections. A TURN relay passes the game through a server instead: make a free account (e.g. metered.ca → TURN server), paste its address and login here, and invite your friend again. The invite link carries these settings." }),
         row('Relay address', relayUrl),
@@ -2435,7 +2443,7 @@ export class FrontEnd {
 
   /** The section of Options last open (Q / E step through them). */
   private optionsTab = 'general';
-  private static readonly OPTION_TABS = ['general', 'display', 'controls', 'hud', 'online'];
+  private static readonly OPTION_TABS = ['general', 'display', 'controls', 'hud', 'accessibility', 'online'];
 
   // ---------------------------------------------------------------- keyboard
 

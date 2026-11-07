@@ -13,6 +13,7 @@ import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import { DynamicTexture } from '@babylonjs/core/Materials/Textures/dynamicTexture';
 import { CreatePlane } from '@babylonjs/core/Meshes/Builders/planeBuilder';
 import { SMOKE, STATUS_BURN, STATUS_CHILL, STATUS_FROZEN, STATUS_POISON, STATUS_SLOW, ZONE_KINDS, type ProjectileVisual, type SmokeCloud, type Vec3, type ZoneSnapshot } from '@tiletrigger/shared';
+import { indicator } from './reduceFlashing.ts';
 
 /**
  * Looks for the extended arsenal, all built from simple shapes and glowing
@@ -232,8 +233,13 @@ export function animateArsenalProjectile(node: TransformNode, look: ProjectileVi
       along();
       break;
     case 'sticky': {
+      // Blinking (Reduce flashing: a gentle pulse, once a second at most).
       const light = node.getChildMeshes().find((m) => m.name.endsWith('_light'));
-      light?.setEnabled(Math.floor(now / 160) % 2 === 0);
+      if (light) {
+        const blink = indicator(now / 1000, 1000 / 320);
+        light.setEnabled(blink.on);
+        light.visibility = blink.level;
+      }
       break;
     }
     case 'molotov':

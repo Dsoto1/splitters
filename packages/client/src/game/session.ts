@@ -107,6 +107,7 @@ import {
 import { GameplayFxWatch } from './gameplayFxWatch.ts';
 import type { AudioSystem } from '../audio/audio.ts';
 import { BLOOD_PREF_KEY } from './bloodVisuals.ts';
+import { REDUCE_FLASHING_EVENT, reduceFlashing, saveReduceFlashing } from './reduceFlashing.ts';
 import { BULLET_SPEED } from './impactVisuals.ts';
 import { bindFullscreenButton, browserTookEscape, isFullscreen, pageHoldsEscape, toggleFullscreen } from '../fullscreen.ts';
 import { testMode } from '../testMode.ts';
@@ -747,6 +748,11 @@ export class GameSession {
       { signal },
     );
     this.sfx.bloodOn = () => this.view.blood.on;
+    // Reduce flashing (also Options → Accessibility): on unless switched off, applied at once (reduceFlashing.ts).
+    const flashBox = $('reduce-flashing') as HTMLInputElement;
+    flashBox.checked = reduceFlashing();
+    flashBox.addEventListener('change', () => saveReduceFlashing(flashBox.checked), { signal });
+    window.addEventListener(REDUCE_FLASHING_EVENT, () => (flashBox.checked = reduceFlashing()), { signal });
     // A round landing in the level sounds like what it struck (its surface type's sound family: bark knocks, metal rings).
     this.sfx.worldImpact = (from, to) => {
       const struck = this.view.surfaceStruck(from, to);
@@ -1738,7 +1744,7 @@ export class GameSession {
                 if (victim !== null) window.setTimeout(() => this.view.landRound({ eye, to, victim, zone, strength }), Math.max(0, (dist / (ev.v ?? BULLET_SPEED)) * 1000 - 40));
                 return;
               }
-              this.view.shotVisual({ eye, muzzle, to, color, victim, zone, strength, def, ...(ev.v ? { speed: ev.v } : {}) });
+              this.view.shotVisual({ eye, muzzle, to, color, victim, zone, strength, def, slot: ev.s, ...(ev.v ? { speed: ev.v } : {}) });
             });
             // Rounds that went through a surface or glanced off it leave their mark there too.
             for (const p of ev.pn ?? []) this.view.landRound({ eye, to: { x: p[0], y: p[1], z: p[2] }, victim: null, zone: 0, strength });
@@ -1789,7 +1795,9 @@ export class GameSession {
             // An arc sentry's arc is drawn in its own colour.
             const glow = ev.m !== undefined ? this.mounts?.mounts.get(ev.m)?.def.glow : undefined;
             // Lightning by its source (content/vfx.json map.arcs): an arc sentry, an electric fence (no shooter) or a gun.
-            this.view.addArc(ev.pts.map((p) => ({ x: p[0], y: p[1], z: p[2] })), glow, ev.m !== undefined ? 'mount' : ev.s < 0 ? 'fence' : 'default');
+            // With flashing reduced, each source holds one steady beam (keyed by it; a fence's by where it struck).
+            const source = ev.m !== undefined ? 'mount' : ev.s < 0 ? 'fence' : 'default';
+            this.view.addArc(ev.pts.map((p) => ({ x: p[0], y: p[1], z: p[2] })), glow, source, ev.m !== undefined ? `m${ev.m}` : ev.s >= 0 ? `s${ev.s}` : undefined);
           } else if (ev.e === 'explode') {
             this.hurtFrom = { x: ev.p[0], z: ev.p[2], at: performance.now() };
             const at = { x: ev.p[0], y: ev.p[1], z: ev.p[2] };
@@ -2600,6 +2608,7 @@ export class GameSession {
       if (!local) this.view.updateMounts(this.mounts.mounts.values(), this.mannedTurret());
     }
     this.hud.setStatusTint(statusColor(this.local?.alive ? this.localStatus : 0));
+    this.hud.tickHurt();
     const poses = this.interp.sample(now);
     // Splashes and ripples where players and projectiles meet water.
     this.view.scenario.liquids.fx.track(poses, shells);

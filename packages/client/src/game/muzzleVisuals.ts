@@ -67,9 +67,11 @@ export function createStarFlash(scene: Scene, name: string, size: number): Mesh 
   return plane;
 }
 
-/** A new random look for the next flash. */
-export function kickFlash(flash: Mesh, scale: number): void {
+/** A new random look for the next flash; `opacity` scales how strongly it shows (Reduce flashing: dimmer). */
+export function kickFlash(flash: Mesh, scale: number, opacity = 1): void {
   flash.scaling.setAll(scale * (0.75 + Math.random() * 0.5));
-  const tex = (flash.material as StandardMaterial).diffuseTexture as DynamicTexture | null;
+  const mat = flash.material as StandardMaterial;
+  mat.alpha = opacity;
+  const tex = mat.diffuseTexture as DynamicTexture | null;
   if (tex) tex.wAng = Math.random() * Math.PI * 2;
 }
