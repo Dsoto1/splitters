@@ -48,6 +48,8 @@ export interface TeamJob {
   stage: Vec3 | null;
   /** A goal of its own instead of the mode's (an interceptor's cut-off point). */
   goal: OrderGoal | null;
+  /** Bound cover to cover in a fight on the way whatever its style but Arena's (the playbook's `bound` 'all'). */
+  bound: boolean;
 }
 
 /** A side's trip with each corridor's price for the next bot to choose (BotPlan.trips). */
@@ -102,6 +104,11 @@ export interface Playbook {
    * enemy holds; going for one nobody holds, everyone goes straight, a detour costs hill time).
    */
   split: 'always' | 'push' | 'never';
+  /**
+   * Who moves up cover to cover in a fight on the way (BotBrain.boundPhase): by style (Tactical bots from 12 m, Mixed
+   * from 18 m, Arena never), or 'all' bots in a group but Arena's from 12 m (Breakthrough's beach).
+   */
+  bound: 'style' | 'all';
   /** Staging: this share of the route back from the objective, at least / at most (m). */
   stageShare: number;
   stageMin: number;
@@ -131,9 +138,10 @@ export interface Playbook {
 export const DEFAULT_PLAYBOOK: Playbook = {
   recon: 2,
   split: 'always',
+  bound: 'style',
   reconFrom: 6,
   reconFrom1: 4,
-  flank: 0.3,
+  flank: 0.45,
   stretch: 1.35,
   groupsFrom: 3,
   groupsFromLength: 180,
@@ -278,7 +286,7 @@ export class TeamBrain {
       this.waves.length = 0;
     }
     const attackers = attack ? members.filter((m) => !m.ordered && !m.mounted && m.goal && !m.goal.run && horizontalDistance(m.goal.pos, attack.pos) < SAME_GOAL && Math.abs(m.goal.pos.y - attack.pos.y) < 4) : [];
-    if (attack && trip && trip.trip.corridors.length && attackers.length >= pb.groupsFrom && (pb.split === 'always' || (pb.split === 'push' && attack.stage))) this.assign(tick, attackers, attack, trip, jobs);
+    if (attack && trip && trip.trip.corridors.length && attackers.length >= pb.groupsFrom && (pb.split === 'always' || (pb.split === 'push' && attack.stage))) this.assign(tick, attackers, attack, trip, jobs, members);
     else {
       for (const m of attackers) this.groupOf.delete(m.slot);
       for (const g of Object.values(this.groups)) g.members.length = 0;
@@ -330,7 +338,7 @@ export class TeamBrain {
   }
 
   /** Groups for the attackers, their corridors and pushes; each attacker's job. */
-  private assign(tick: number, attackers: readonly BrainMember[], attack: { pos: Vec3; stage: boolean }, trip: PricedTrip, jobs: Map<number, TeamJob | null>): void {
+  private assign(tick: number, attackers: readonly BrainMember[], attack: { pos: Vec3; stage: boolean }, trip: PricedTrip, jobs: Map<number, TeamJob | null>, members: readonly BrainMember[]): void {
     const pb = this.pb;
     // A short trip, or one without two ways near the shortest: no groups, each bot its own lane (one group on one
     // corridor sent a whole team down one way; flankers on a long way round got there late and alone).
@@ -462,10 +470,11 @@ export class TeamBrain {
           }
         }
         if (!waits || g.waiting.has(m.slot)) this.staging.delete(m.slot);
-        jobs.set(m.slot, { group: x.kind, to: { ...to }, route: c, stage: waits ? stage : null, goal: null });
+        jobs.set(m.slot, { group: x.kind, to: { ...to }, route: c, stage: waits ? stage : null, goal: null, bound: pb.bound === 'all' });
       }
     }
-    this.followWaves(tick, attack.pos, living);
+    // (A wave's members who took the flag or escort its carrier aren't attackers any more, but not lost either.)
+    this.followWaves(tick, attack.pos, new Map(members.map((m) => [m.slot, m])));
   }
 
   /** A corridor's staging spot (worked out once per corridor: a few sight lines). */
@@ -539,7 +548,7 @@ export class TeamBrain {
     }
     picks.sort((a, b) => a.d - b.d || a.m.slot - b.m.slot);
     for (const { m, pos } of picks.slice(0, pb.interceptors)) {
-      jobs.set(m.slot, { group: 'intercept', to: null, route: null, stage: null, goal: { pos: { ...pos }, radius: pos === cut.pos ? 1.5 : 3, push: true } });
+      jobs.set(m.slot, { group: 'intercept', to: null, route: null, stage: null, goal: { pos: { ...pos }, radius: pos === cut.pos ? 1.5 : 3, push: true }, bound: false });
     }
   }
 

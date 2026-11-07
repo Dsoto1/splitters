@@ -27,7 +27,7 @@ gets overloaded above that: local e2e times out and flakes). Prune landed worktr
   reworks batches 2–3, character fixes rounds 2–3 (see the entries below and CHANGELOG).
 
 <!-- bots-b -->
-### Bot AI Phase B: bot logic (`wip/bots-b`, agents, 2026-11-07; main 17d0e0a0 merged in; part 1 on `check/bots-b1`; part 2 in progress; not landed)
+### Bot AI Phase B: bot logic (`wip/bots-b`, agents, 2026-11-07; part 1 landed, main 7c40d0b9; part 2 on `check/bots-b2`)
 docs/BOT_AI_PLAN.md (Phase B; "Phase B part 1, measured"), docs/BOTS.md ("Scored choices", "Team brain and route
 variety"). Landing in two parts, each green on its own check branch: part 1 (scored choices, the team brain, route
 variety), part 2 (snipers, cover-to-cover advance, playbooks per mode).
@@ -60,9 +60,33 @@ The nightly scorecard (run 42330601755): CTF captures 0.9 → 1.0 a match (25 of
 40.8 %, plants 0.5 → 0.8, rescues 0.1 → 1.5 a match; Hostage's idle limit raised 12 → 16 % (its guards keep watch at
 their station now).
 
-**Left for part 2 and after:** CTF against a held flag (6 of the dev sample's 12 maps without a capture); the
-busiest way under half; snipers (the scoped gun from spawn, calculated shots, moving after a shot or
-two; work in progress on the branch's scratch, not committed), bounds and cover-preferring routes, the playbooks.
+**Part 2, what's in it:** snipers (`bots/sniper.ts`: a scoped gun first, spots scored for height, a wall behind,
+tucked away and the lanes they cover, seeing through the scope to the gun's reach, calculated shots, two or three
+shots a spot), cover-to-cover advance (`BotBrain.boundPhase`: bounds by style; in cover while reloading or hurt;
+`NavWorld.markExposure`: open ground costs Mixed routes 1.2 times, Tactical 1.45), playbooks per mode
+(`bots/playbooks.ts`, Breakthrough's included: `bound: 'all'` reaches the brain through `TeamJob.bound`), flankers
+45 %, `bot-report`'s style per bot (cover by style in `--compare`) and how each route-choice vote's bot went. Numbers:
+BOT_AI_PLAN.md, "Phase B part 2, measured" (cover in a fight Tactical 24 → 40 %, Mixed 18 → 28 %, Arena as before;
+sniper-role bots' scoped kills 4 → 27 in the sniper sample). The nightly scorecard (run 42339417626): cover in a fight
+33.8 → 36.5 % (CTF 13.7 → 23.6 %), scoped kills 1.8 → 2.6 a match, CTF captures 1.0 → 0.9, hill held 40.8 → 40.1 %,
+plants 0.8 → 0.9, rescues 1.5 → 2.0; limits raised: CTF idle spells of 10 s+ 2 → 2.5 a match (snipers holding spots),
+Bomb idle out of a fight 12 → 14 % (defenders waiting longer at their sites for attackers moving up in bounds).
+
+**Breakthrough** (`wip/breakthrough`, another agent): its mode has `botGoal` only. When it lands, its `botBrief` should
+hand `playbookFor('core.breakthrough').team` with the attack objective (`stage` while the defenders hold it) and its
+`botTrips` the attackers' spawn to each objective; its bot logic reads `playbookFor('core.breakthrough').breakthrough`
+for the defenders' shares (guns, trenches, crest snipers, falling back). Whichever lands first, the other merges main
+and keeps both sides in `modes/types.ts`, `modes/index.ts` and `sim/match.ts`.
+
+**Left after part 2:** CTF against a held flag (bounds slow the attack: Diamond Park's first capture in five minutes
+in 4 of 6 seeds, 6 of 6 in part 1); the busiest way under half (60 % on the long CTF maps: routes that stay on a
+group's corridor, Phase C item 4); snipers' kills from spots (0.3 a match: the scoped gun at spawn with the weapon
+sets, spots over where the enemy goes).
+
+**For the owner to playtest (part 2):** Tactical style (Match Setup) on Sunken Kingdom or Bunker Cross CTF: attackers
+moving up cover to cover, half covering; any style on Twin Spires, Eagle Spires or Diamond Park Team Deathmatch:
+snipers picking up the sniper rifle, taking a high spot, waiting for a shot and moving after two; Arena style: the
+rush as before.
 
 **For the owner to playtest (part 1):** CTF on a long map (Fernwood Moon, Sunken Kingdom, Iron Tide, Capitol Mall):
 the main push, flankers and a recon pair on different ways, a push gathering out of the flag's sight and going in

@@ -2184,6 +2184,11 @@ export class Match {
     this.botTrips();
     if (!this.director.vantage && [...roles.values()].some((r) => r === 'camper' || r === 'sniper')) {
       this.director.vantage = new VantageBoard(vantageFor(places, (o, d, max) => this.physics.raycastWorld(o, d, max)));
+      // Snipers' spots are worth more the better they look down the ways the enemy comes (the trips' corridors).
+      this.director.vantage.lanes(
+        this.botTrips().flatMap((t) => t.trip.corridors.map((c) => c.line)),
+        (a, b) => this.physics.lineOfSight(a, b),
+      );
       for (const c of bots) this.director.planFor(c.slot).vantage = this.director.vantage;
     }
   }
@@ -5252,10 +5257,19 @@ export class Match {
     if (this.mounts.some((m) => m.route && m.airdrop && m.airdrop !== 'off')) this.boardPlane(c);
   }
 
+  /**
+   * The scoped gun a sniper-role Player Bot spawns with (docs/BOT_AI_PLAN.md Phase B item 5): none today, so a sniper
+   * goes for a scoped pickup first (BotBrain.pickupScore). Weapon sets (docs/WEAPON_SETS_PLAN.md) set it from the set
+   * (Military: the marksman rifle; Sci-fi: the railgun).
+   */
+  sniperGun: string | null = null;
+
   /** The starting weapons and grenades (a bot waiting for its spawn wave carries them already). */
   private loadout(c: Combatant): void {
     c.weapons = new Map();
-    for (const id of this.rules.weapons === 'spears' ? ['core.spear'] : this.rules.weapons === 'discs' ? [ARENA_DISC] : this.rules.startingWeapons) {
+    const restricted = this.rules.weapons === 'spears' || this.rules.weapons === 'discs';
+    const sniper = !restricted && this.sniperGun && c.kind === 'bot' && this.director?.roleOf(c.slot) === 'sniper' ? [this.sniperGun] : [];
+    for (const id of this.rules.weapons === 'spears' ? ['core.spear'] : this.rules.weapons === 'discs' ? [ARENA_DISC] : [...this.rules.startingWeapons, ...sniper]) {
       const def = getWeapon(id);
       c.weapons.set(weaponCode(def), { def, mag: def.magazine, reserve: Math.min(def.reserveMax, def.pickupAmmo), alt: def.alt?.ammo === 'own' ? (def.alt.pickup ?? 0) : 0 });
       c.current = weaponCode(def);

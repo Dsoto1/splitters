@@ -24,7 +24,8 @@ export const OPT_PICKUP = 4;
 export const OPT_CHASE = 5;
 export const OPT_NOISE = 6;
 export const OPT_FIGHT = 7;
-export const OPTIONS = 8;
+export const OPT_POST = 8;
+export const OPTIONS = 9;
 
 /** How much more the option chosen last counts (no dithering between two close ones). */
 export const MARGIN = 0.25;
@@ -43,6 +44,13 @@ export const NOISE_WEIGHT = 1.5;
 export const COVER_WEIGHT = 2.9;
 export const GUN_WEIGHT = 2.75;
 export const RETREAT_WEIGHT = 2.6;
+/**
+ * A sniper's spot (Phase B item 5): above roaming and any goal to hold (a CTF defender's flag, a hill: the spot it takes
+ * looks over it), below a chase or a noise close by (on its spot it leaves only for those within POST_NOTICE).
+ */
+export const POST_WEIGHT = 1.35;
+/** A real gun when holding only a sidearm, and a sniper's scoped gun before anything else. */
+export const SCOPE_WEIGHT = 2.8;
 /** On the way to an objective (OrderGoal.push): noises and enemies that slipped away only this close are worth turning aside for (m). */
 export const PUSH_NOTICE = 12;
 /** Holding a place (a defender, a guard): what happens this close to it (m, past its radius) is worth going to look at. */
@@ -66,6 +74,8 @@ export interface ChoiceInput {
   retreating: boolean;
   /** The pickup option's score (GUN_WEIGHT for a real gun with only a sidearm), -Infinity for none. */
   pickup: number;
+  /** A sniper's spot to hold (POST_WEIGHT), -Infinity for none. */
+  post: number;
   /** An enemy that slipped out of sight: where, and how long ago (s). */
   lost: { pos: Vec3; age: number } | null;
   /** A noise worth checking: where, and how long ago (s). */
@@ -114,6 +124,7 @@ export function scoreChoices(i: ChoiceInput, sc: Float32Array): void {
   if (i.cover) sc[OPT_COVER] = COVER_WEIGHT;
   if (i.retreating) sc[OPT_RETREAT] = RETREAT_WEIGHT;
   sc[OPT_PICKUP] = i.pickup;
+  sc[OPT_POST] = i.post;
   const lost = i.lost;
   if (lost && !i.hurt) {
     // An enemy that slipped out of sight: worth more to persistent bots and the fresher the sighting, less with

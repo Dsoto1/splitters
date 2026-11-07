@@ -143,6 +143,19 @@ export class AimModel {
     this.highUntil = until;
   }
 
+  /** The target's speed across the view from `eye` (m/s), as the bot has seen it move. */
+  speedAcross(eye: Vec3, target: Vec3): number {
+    const v = this.velocity(0);
+    const dx = target.x - eye.x;
+    const dz = target.z - eye.z;
+    return Math.abs(v.x * dz - v.z * dx) / Math.max(1, hypot(dx, dz));
+  }
+
+  /** The aim's wander is within about the target's width: a shot a careful person would take. */
+  settledOn(sol: AimSolution): boolean {
+    return hypot(this.errYaw, this.errPitch) < sol.halfAngle * 1.2;
+  }
+
   /** Ticks since the current target was acquired. */
   trackedTicks(tick: number): number {
     return this.trackSlot === null ? 0 : tick - this.acquiredTick;
