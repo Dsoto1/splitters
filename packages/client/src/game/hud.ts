@@ -20,6 +20,7 @@ const HAZARD_DEATHS: Record<string, string> = {
   'core.trap_shock': 'was electrocuted',
   'core.barrel': 'was caught in a barrel blast',
   'core.fall': 'fell',
+  'core.fallback': 'was left behind the line',
   'core.respawn': 'respawned',
   'core.lava': 'melted in lava',
   'core.acid': 'dissolved in acid',
@@ -163,7 +164,7 @@ export class Hud {
 
   /** The match's mode, for the scoreboard: its objective column, and co-op as one list. */
   setBoardMode(mode: string): void {
-    this.objLabel = mode === 'core.ctf' || mode === 'core.forts' ? 'Caps' : mode === 'core.bomb' ? 'Bomb' : mode === 'core.hostage' ? 'Saves' : null;
+    this.objLabel = mode === 'core.ctf' || mode === 'core.forts' ? 'Caps' : mode === 'core.bomb' ? 'Bomb' : mode === 'core.hostage' ? 'Saves' : mode === 'core.breakthrough' ? 'Obj' : null;
     this.coop = mode === 'core.coop' || mode === 'core.zombies';
   }
 

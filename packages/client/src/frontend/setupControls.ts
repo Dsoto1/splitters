@@ -96,6 +96,7 @@ const SCORE_UNITS: Partial<Record<GameMode, string>> = {
   'core.elim': 'rounds',
   'core.bomb': 'rounds',
   'core.hostage': 'rounds',
+  'core.breakthrough': 'reinforcements an attacker',
   'core.discs': 'knock-offs',
 };
 

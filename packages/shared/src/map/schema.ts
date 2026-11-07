@@ -75,7 +75,8 @@ export const MapMetadata = z.object({
   /** Remix lineage; null for original maps. */
   parentId: StableId.nullable().default(null),
   recommendedPlayers: z
-    .object({ min: z.number().int().min(1).max(32), max: z.number().int().min(1).max(32) })
+    // Up to 96 (v28; 32 before): the most a match holds (48 v 48).
+    .object({ min: z.number().int().min(1).max(96), max: z.number().int().min(1).max(96) })
     .default({ min: 2, max: 8 }),
   supportedModes: z.array(ContentId).default(['core.deathmatch']),
   /**
@@ -967,7 +968,8 @@ export const DEFAULT_BLOOD = { color: '#8a0b0b', amount: 'light' } as const;
 
 /** Recommended team layout for team modes: players per team, 2–8 teams (e.g. [2, 2, 2, 12]). */
 export const TeamSetup = z.object({
-  sizes: z.array(z.number().int().min(1).max(16)).min(2).max(8),
+  // Up to 48 a team (v28; 16 before): a large map's own layout (Iron Coast, 24 v 24 and more on dedicated hosts).
+  sizes: z.array(z.number().int().min(1).max(48)).min(2).max(8),
 });
 
 /**

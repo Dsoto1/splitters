@@ -79,6 +79,11 @@ import {
   TRAP_KINDS,
   TRAP_SPECS,
   entityLabel,
+  BREAKTHROUGH_MAX_SECTORS,
+  BREAKTHROUGH_OBJECTIVES,
+  BREAKTHROUGH_OBJECTIVE_LABELS,
+  sectorOrders,
+  type ObjectiveEntity,
   newScenarioEntities,
   MOVER_MODES,
   type MoverMode,
@@ -417,6 +422,12 @@ const SCENARIO_ICONS: Record<ScenarioPaletteKey, string> = {
   hostage: '<circle cx="28" cy="16" r="7" fill="#e8d8a0"/><path d="M18 46V30q0-6 10-6t10 6v16" fill="#e8d8a0"/><path d="M14 34h28" stroke="#3ddc84" stroke-width="3"/>',
   rescue: '<ellipse cx="28" cy="40" rx="22" ry="9" fill="#3ddc84" fill-opacity=".25" stroke="#3ddc84" stroke-width="2"/><path d="M20 30l8-12 8 12M28 18v18" stroke="#3ddc84" stroke-width="3" fill="none"/>',
   bombsite: '<ellipse cx="28" cy="40" rx="22" ry="9" fill="#ff7a2a" fill-opacity=".25" stroke="#ff7a2a" stroke-width="2"/><text x="28" y="32" font-size="26" font-weight="bold" text-anchor="middle" fill="#ff7a2a">A</text>',
+  sector: '<path d="M4 34h48" stroke="#ffd24a" stroke-width="3" stroke-dasharray="6 4"/><path d="M18 26l10-12 10 12M18 18l10-12 10 12" stroke="#ffd24a" stroke-width="3" fill="none"/><text x="28" y="52" font-size="14" font-weight="bold" text-anchor="middle" fill="#ffd24a">1 · 2 · 3</text>',
+  'objective:zone': '<ellipse cx="28" cy="40" rx="22" ry="9" fill="#f2c14e" fill-opacity=".25" stroke="#f2c14e" stroke-width="2"/><path d="M28 34V8" stroke="#c9ccd2" stroke-width="2"/><path d="M28 9h16l-4 6 4 6H28z" fill="#f2c14e"/><text x="14" y="30" font-size="13" font-weight="bold" fill="#f2c14e">A1</text>',
+  'objective:target': '<ellipse cx="28" cy="42" rx="20" ry="7" fill="#ff5a3a" fill-opacity=".25" stroke="#ff5a3a" stroke-width="2"/><rect x="25" y="14" width="6" height="26" fill="#d8b41a"/><path d="M25 20h6M25 28h6M25 36h6" stroke="#1e1e1e" stroke-width="3"/><circle cx="28" cy="11" r="4" fill="#ff5a3a"/><path d="M38 12l8-6M40 18l9 0" stroke="#ff5a3a" stroke-width="2"/>',
+  'objective:final': '<ellipse cx="28" cy="40" rx="22" ry="9" fill="#c38bff" fill-opacity=".25" stroke="#c38bff" stroke-width="2"/><path d="M14 36V22l14-12 14 12v14z" fill="#c38bff" fill-opacity=".6"/><rect x="24" y="26" width="8" height="10" fill="#2a2140"/>',
+  'spawn:attack': '<circle cx="28" cy="18" r="7" fill="#ff8a3a"/><path d="M16 46V32q0-6 12-6t12 6v14" fill="#ff8a3a"/><path d="M40 20l10-6v12z" fill="#ff8a3a"/>',
+  'spawn:defend': '<circle cx="28" cy="18" r="7" fill="#5ab0ff"/><path d="M16 46V32q0-6 12-6t12 6v14" fill="#5ab0ff"/><path d="M42 12l8 3v6q0 6-8 9-8-3-8-9v-6z" fill="#5ab0ff"/>',
   hill: '<ellipse cx="28" cy="38" rx="22" ry="9" fill="#f2f2f2" fill-opacity=".2" stroke="#f2f2f2" stroke-width="2"/><path d="M14 38V26M42 38V26M28 47V35M28 29V17" stroke="#f2f2f2" stroke-width="2"/><path d="M22 14l6-8 6 8z" fill="#f2c14e"/>',
   zipline: '<rect x="7" y="14" width="4" height="38" fill="#7a5532"/><rect x="45" y="30" width="4" height="22" fill="#7a5532"/><path d="M9 16Q28 30 47 32" stroke="#c9ccd0" stroke-width="2" fill="none"/><rect x="24" y="20" width="8" height="5" fill="#3a3f46"/><path d="M28 25v6M23 31h10" stroke="#3a3f46" stroke-width="2.5"/>',
   ladder: '<rect x="17" y="6" width="4" height="44" fill="#9a6b3d"/><rect x="35" y="6" width="4" height="44" fill="#9a6b3d"/><path d="M19 12h18M19 20h18M19 28h18M19 36h18M19 44h18" stroke="#c79a5e" stroke-width="3"/>',
@@ -566,7 +577,10 @@ function pickRadius(e: MapEntity): number {
     case 'hill':
     case 'bombsite':
     case 'rescue':
+    case 'objective':
       return Math.max(1.2, Math.min(4, e.radius));
+    case 'sector':
+      return 2.5;
     case 'hostage':
       return 0.8;
     case 'flag':
@@ -2836,7 +2850,7 @@ export class EditorApp {
     el.append(row('Layout', presets));
     const teams = mapTeams(doc, sizes.length);
     teams.forEach((t, i) => {
-      const input = numberInput(sizes[i] ?? 1, 1, (v) => set('Set team size', sizes.map((s, j) => (j === i ? Math.max(1, Math.min(16, Math.round(v))) : s))));
+      const input = numberInput(sizes[i] ?? 1, 1, (v) => set('Set team size', sizes.map((s, j) => (j === i ? Math.max(1, Math.min(48, Math.round(v))) : s))));
       input.dataset.team = t.id;
       const label = document.createElement('span');
       label.innerHTML = `<span style="color:${t.color}">●</span> ${escapeHtml(t.name)}`;
@@ -4265,11 +4279,11 @@ export class EditorApp {
       }
       const rp = doc.metadata.recommendedPlayers;
       const setPlayers = (min: number, max: number) =>
-        this.run('Set player count', { kind: 'setMetadata', before: { recommendedPlayers: rp }, after: { recommendedPlayers: { min: Math.max(1, Math.min(32, min)), max: Math.max(1, Math.min(32, max)) } } });
+        this.run('Set player count', { kind: 'setMetadata', before: { recommendedPlayers: rp }, after: { recommendedPlayers: { min: Math.max(1, Math.min(96, min)), max: Math.max(1, Math.min(96, max)) } } });
       el.append(row('Min players', numberInput(rp.min, 1, (v) => setPlayers(v, rp.max))), row('Max players', numberInput(rp.max, 1, (v) => setPlayers(rp.min, v))));
       const mode = document.createElement('select');
       const current = doc.metadata.supportedModes[0] ?? 'core.deathmatch';
-      for (const [id, label] of [['core.deathmatch', 'Deathmatch'], ['core.tdm', 'Team Deathmatch'], ['core.ctf', 'Capture the Flag'], ['core.koth', 'King of the Hill'], ['core.elim', 'Elimination'], ['core.coop', 'Co-op mission'], ['core.zombies', 'Zombies'], ['core.discs', 'Disc Arena'], ['core.race', 'Race']] as const) mode.append(new Option(label, id, false, id === current));
+      for (const [id, label] of [['core.deathmatch', 'Deathmatch'], ['core.tdm', 'Team Deathmatch'], ['core.ctf', 'Capture the Flag'], ['core.koth', 'King of the Hill'], ['core.elim', 'Elimination'], ['core.breakthrough', 'Breakthrough'], ['core.coop', 'Co-op mission'], ['core.zombies', 'Zombies'], ['core.discs', 'Disc Arena'], ['core.race', 'Race']] as const) mode.append(new Option(label, id, false, id === current));
       mode.addEventListener('change', () => this.run('Change mode', { kind: 'setMetadata', before: { supportedModes: doc.metadata.supportedModes }, after: { supportedModes: [mode.value] } }));
       const teams = mapTeams(doc);
       const help: Record<string, string> = {
@@ -4279,6 +4293,7 @@ export class EditorApp {
         'core.deathmatch': 'Deathmatch: everyone for themselves. NPC squads fight everyone.',
         'core.ctf': `Capture the Flag: ${teams.slice(0, 2).map((t) => t.name).join(' against ')}. Place a Flag Base (Entities tab) for each team; bring the enemy flag to yours while yours is home. Other modes ignore flag bases.`,
         'core.hostage': 'Hostage Rescue: place Hostages and at least one Rescue Zone; the first team rescues.',
+        'core.breakthrough': 'Breakthrough: the first team attacks through the sectors in order, the second holds each line in turn. Entities tab → Breakthrough: place a Sector for each line (1, 2, 3…, facing the way the attackers push), its objectives (Capture Zones, Destroy Targets, a Final Hold in the last) and an Attackers\' and a Defenders\' Spawn group for each sector.',
         'core.discs': 'Disc Arena: everyone throws bouncing discs that knock players about; knocking someone into the void scores. Build decks over nothing (free blocks), join them with jump pads, add walls to bank discs off, and place power disc pickups.',
         'core.bomb': 'Bomb: place Bomb Sites (A and B) away from both team spawns; the first team attacks.',
         'core.koth': 'King of the Hill: place one or more Hills (Entities tab). The hill moves to the next one every minute; a team scores while it alone stands on it.',
@@ -4289,7 +4304,7 @@ export class EditorApp {
       const extra = playableModes(doc).filter((m) => m !== current && m !== 'core.elim');
       if (extra.length) help[mode.value] = `${help[mode.value] ?? ''} Also playable here: ${extra.map((m) => MODE_LABELS[m]).join(', ')}.`;
       el.append(row('Mode', mode), small(help[mode.value] ?? ''));
-      if (current === 'core.tdm' || current === 'core.koth' || current === 'core.elim') this.renderTeamSetup(el);
+      if (current === 'core.tdm' || current === 'core.koth' || current === 'core.elim' || current === 'core.breakthrough') this.renderTeamSetup(el);
       this.renderMapBots(el);
       const layersHead = document.createElement('h3');
       layersHead.id = 'ed-layers-head';
@@ -5085,6 +5100,68 @@ export class EditorApp {
         const teams = mapTeams(doc, MAX_TEAMS);
         choose('Team', [['', 'Any (shared)'] as const, ...teams.map((t) => [t.id, t.name] as const)], e.faction ?? '', (v) => ({ faction: v || null }));
         el.append(small(isTeamMode(doc.metadata.supportedModes[0] ?? '') ? 'In team modes a team spawns on its own points; shared points are used when a team has none.' : 'Teams only matter in team modes (Team Deathmatch, Capture the Flag, King of the Hill, Elimination).'));
+        // Breakthrough: a spawn group (a sector and a side), or none.
+        const orders = sectorOrders(doc);
+        const group = document.createElement('select');
+        group.id = 'ed-spawn-group';
+        group.append(new Option('None', '', false, e.sector === undefined));
+        for (const n of orders.length ? orders : [1]) {
+          for (const side of ['attack', 'defend'] as const) group.append(new Option(`Sector ${n}: ${side === 'attack' ? 'attackers' : 'defenders'}`, `${n}:${side}`, false, e.sector === n && e.side === side));
+        }
+        group.addEventListener('change', () => {
+          const [n, side] = group.value.split(':');
+          update('Set spawn group', group.value ? { sector: Number(n), side: side as 'attack' | 'defend' } : { sector: undefined, side: undefined });
+        });
+        el.append(row('Breakthrough group', group));
+        el.append(small('Breakthrough: each side spawns at its group for the sector in play, and moves up (attackers) or falls back (defenders) as sectors fall. Other modes use it like any spawn point.'));
+        break;
+      }
+      case 'sector': {
+        const order = numberInput(e.order, 1, (v) => update('Set sector order', { order: Math.round(clamp(v, 1, BREAKTHROUGH_MAX_SECTORS)) }));
+        order.id = 'ed-bt-order';
+        el.append(row('Order', order));
+        const targets = doc.entities.filter((o) => o.kind === 'objective' && o.sector === e.order && o.objective === 'target').length;
+        const need = numberInput(e.need ?? targets, 1, (v) => update('Set targets needed', { need: v >= targets || v < 1 ? undefined : Math.round(v) }));
+        need.id = 'ed-bt-need';
+        el.append(row('Targets to destroy', need));
+        const secs = numberInput(e.seconds ?? 0, 30, (v) => update('Set sector time', { seconds: v < 30 ? undefined : Math.round(clamp(v, 30, 1800)) }));
+        secs.id = 'ed-bt-seconds';
+        el.append(row('Time (s, 0: the match\'s)', secs));
+        const own = doc.entities.filter((o) => o.kind === 'objective' && o.sector === e.order).length;
+        const groups = (['attack', 'defend'] as const).map((side) => doc.entities.filter((o) => o.kind === 'spawn' && o.sector === e.order && o.side === side).length);
+        el.append(small(`Breakthrough: the attackers take the sectors in order (1, 2, 3…). The line runs across the map through this marker, square to its facing (the arrows: the way the attackers push); once the sector before falls, defenders left on the attackers' side of it have 10 s to fall back. It falls when its zones are captured and enough of its targets destroyed (${targets ? `${e.need ?? targets} of ${targets}` : 'none here'}). In it: ${own} objective${own === 1 ? '' : 's'}; ${groups[0]} attackers' and ${groups[1]} defenders' spawn point${groups[1] === 1 ? '' : 's'}.`));
+        break;
+      }
+      case 'objective': {
+        const kind = document.createElement('select');
+        kind.id = 'ed-bt-kind';
+        for (const k of BREAKTHROUGH_OBJECTIVES) kind.append(new Option(BREAKTHROUGH_OBJECTIVE_LABELS[k], k, false, k === e.objective));
+        kind.addEventListener('change', () => update('Set objective kind', { objective: kind.value as ObjectiveEntity['objective'] }));
+        el.append(row('Kind', kind));
+        const orders = sectorOrders(doc);
+        const sector = document.createElement('select');
+        sector.id = 'ed-bt-sector';
+        for (const n of orders.includes(e.sector) ? orders : [...orders, e.sector].sort((a, b) => a - b)) sector.append(new Option(`Sector ${n}`, String(n), false, n === e.sector));
+        sector.addEventListener('change', () => update('Set objective sector', { sector: Number(sector.value) }));
+        el.append(row('Sector', sector));
+        const label = document.createElement('input');
+        label.type = 'text';
+        label.id = 'ed-bt-label';
+        label.maxLength = 3;
+        label.value = e.label;
+        label.addEventListener('change', () => update('Set objective label', { label: label.value.trim().slice(0, 3) || e.label }));
+        el.append(row('Label', label));
+        number(e.objective === 'target' ? 'Reach (m)' : 'Radius (m)', e.radius, 0.5, (v) => ({ radius: clamp(v, 1, 20) }));
+        if (e.objective !== 'target') number('Capture time (s)', e.seconds ?? (e.objective === 'final' ? 40 : 20), 5, (v) => ({ seconds: Math.round(clamp(v, 5, 300)) }));
+        el.append(
+          small(
+            e.objective === 'target'
+              ? 'Breakthrough: attackers plant a charge here (E within reach, then hold still 3 s); it goes off 20 s later unless a defender defuses it (E, hold still 5 s). The sector says how many of its targets must go.'
+              : e.objective === 'final'
+                ? 'Breakthrough: the last stand. A capture zone in the last sector: capturing it ends the round, the attackers winning.'
+                : 'Breakthrough: attackers standing in it alone capture it (more of them quicker); a defender in it holds it (contested), and defenders alone push it back. Once captured it stays so.',
+          ),
+        );
         break;
       }
     }

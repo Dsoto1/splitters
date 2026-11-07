@@ -94,6 +94,10 @@ export interface HostRulesPatch {
   mixPickups?: boolean;
   /** Drop weapon on death (MatchRules.dropWeapons): takes effect at once (off clears the drops lying about). */
   dropWeapons?: boolean;
+  /** Breakthrough (MatchRules): reinforcements per attacker, each sector's seconds, a second round with the sides swapped. */
+  breakthroughPool?: number;
+  breakthroughSectorSeconds?: number;
+  breakthroughSwap?: boolean;
 }
 
 /** The match's host settings, for the pause menu of whoever runs it. */

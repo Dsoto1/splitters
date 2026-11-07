@@ -1102,6 +1102,9 @@ export const nextSectorOrder = (doc?: MapDocument): number => 1 + Math.max(0, ..
 /** Breakthrough: the sector new objectives and spawn groups go in: the highest-ordered there is (1 with none yet). */
 export const latestSector = (doc?: MapDocument): number => Math.max(1, ...(doc?.entities ?? []).flatMap((e) => (e.kind === 'sector' ? [e.order] : [])));
 
+/** Breakthrough: the sector orders a map has, lowest first, each once. */
+export const sectorOrders = (doc: MapDocument): number[] => [...new Set(doc.entities.flatMap((e) => (e.kind === 'sector' ? [e.order] : [])))].sort((a, b) => a - b);
+
 const KIND_LABELS: Record<MapEntity['kind'], string> = { spawn: 'Spawn', pickup: 'Pickup', door: 'Door', button: 'Button', destructible: 'Object', zone: 'Zone', trap: 'Trap', encounter: 'Encounter', prop: 'Prop', mount: 'Vehicle', pad: 'Jump Pad', block: 'Block', water: 'Water', flag: 'Flag Base', hill: 'Hill', ladder: 'Ladder', bombsite: 'Bomb Site', hostage: 'Hostage', rescue: 'Rescue Zone', light: 'Light', airplane: 'Transport Plane', mover: 'Mover', portal: 'Portal', zipline: 'Zipline', sector: 'Sector', objective: 'Objective' };
 
 /** Display name for an entity: its creator name, or "Door 2" style numbering by kind. */

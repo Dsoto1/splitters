@@ -296,6 +296,8 @@ export const DEFAULT_HOSTAGE_RULES: MatchRules = { ...DEFAULT_BOMB_RULES, mode: 
 /** Breakthrough: reinforcements per attacker, and the seconds a sector puts on the clock, unless the match says otherwise. */
 export const BREAKTHROUGH_POOL = 6;
 export const BREAKTHROUGH_SECTOR_SECONDS = 240;
+/** The most reinforcements per attacker a match can set. */
+export const BREAKTHROUGH_POOL_MAX = 40;
 
 /**
  * Breakthrough: the first team attacks through the map's sectors in order, the second holds each line in turn

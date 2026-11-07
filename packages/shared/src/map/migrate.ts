@@ -63,7 +63,8 @@ export const MIGRATIONS: ReadonlyMap<number, Migration> = new Map<number, Migrat
   // ceiling `vault`, the wall style `arch_segmental` and the facade `collegiate_stone`. Additive: v26 data is valid as is.
   [26, (doc) => ({ ...doc })],
   // v27 -> v28: Breakthrough's `sector` and `objective` entity kinds, and a spawn's optional `sector` and `side` (its
-  // spawn group). Additive: v27 data is valid as is.
+  // spawn group); a team setup of up to 48 a team and recommended players up to 96 (large maps). Additive: v27 data
+  // is valid as is.
   [27, (doc) => ({ ...doc })],
 ]);
 

@@ -999,7 +999,7 @@ export function validateNavigation(map: MapDocument, nav: NavWorld, physics?: Ph
     }
     // Pickups bots and players can't walk (or pad) to are wasted; objectives (flag bases, hills, bomb sites,
     // hostages and rescue zones) must be reachable to be played.
-    const what: Partial<Record<MapDocument['entities'][number]['kind'], string>> = { pickup: 'pickup', flag: 'flag base', hill: 'hill', bombsite: 'bomb site', hostage: 'hostage', rescue: 'rescue zone' };
+    const what: Partial<Record<MapDocument['entities'][number]['kind'], string>> = { pickup: 'pickup', flag: 'flag base', hill: 'hill', bombsite: 'bomb site', hostage: 'hostage', rescue: 'rescue zone', objective: 'Breakthrough objective' };
     for (const p of map.entities) {
       if (!what[p.kind]) continue;
       const to = { x: p.position[0], y: p.position[1], z: p.position[2] };

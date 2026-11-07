@@ -3,7 +3,7 @@ import type { HostRulesPatch, HostState, MatchCommand } from '../protocol.ts';
 import { botSetLabel, sameBotSet, validateBotSet } from './botSet.ts';
 import { botCastLabel, validBotCast } from '../content/botThemes.ts';
 import { MAX_PLAYER_SLOTS } from './constants.ts';
-import { SCORE_LIMIT_MAX, type MatchRules } from './rules.ts';
+import { BREAKTHROUGH_POOL, BREAKTHROUGH_POOL_MAX, BREAKTHROUGH_SECTOR_SECONDS, SCORE_LIMIT_MAX, type MatchRules } from './rules.ts';
 import { teamCount, teamsLabel, withPending } from './hostRules.ts';
 import { validateTeamSizes } from './matchSetup.ts';
 import type { BotFiller, Match } from './match.ts';
@@ -68,7 +68,7 @@ export class HostControl {
       teamNames: this.match.teams?.map((t) => t.name) ?? [],
       teamColors: this.match.teams?.map((t) => t.color) ?? [],
       sizes: teams ? Array.from({ length: teams }, (_, i) => sizes[i] ?? Math.max(1, Math.round(this.fill / teams))) : [],
-      rules: { scoreLimit: r.scoreLimit, timeLimitSeconds: r.timeLimitSeconds, friendlyFire: r.friendlyFire ?? 'off', respawnDelayTicks: r.respawnDelayTicks, mixPickups: !!r.mixPickups, dropWeapons: r.dropWeapons !== false },
+      rules: { scoreLimit: r.scoreLimit, timeLimitSeconds: r.timeLimitSeconds, friendlyFire: r.friendlyFire ?? 'off', respawnDelayTicks: r.respawnDelayTicks, mixPickups: !!r.mixPickups, dropWeapons: r.dropWeapons !== false, breakthroughPool: r.breakthroughPool ?? BREAKTHROUGH_POOL, breakthroughSectorSeconds: r.breakthroughSectorSeconds ?? BREAKTHROUGH_SECTOR_SECONDS, breakthroughSwap: !!r.breakthroughSwap },
       pending: { ...this.pending },
       botSet: this.bots.botSet,
       ...(this.bots.botSet && !this.bots.hostSet ? { mapBots: true } : {}),
@@ -90,6 +90,9 @@ export class HostControl {
       if (r.timeLimitSeconds !== undefined) p.timeLimitSeconds = Math.max(0, Math.min(7200, Math.round(r.timeLimitSeconds)));
       if (r.respawnDelayTicks !== undefined) p.respawnDelayTicks = Math.max(0, Math.min(1800, Math.round(r.respawnDelayTicks)));
       if (r.friendlyFire !== undefined) p.friendlyFire = r.friendlyFire;
+      if (r.breakthroughPool !== undefined) p.breakthroughPool = Math.max(1, Math.min(BREAKTHROUGH_POOL_MAX, Math.round(r.breakthroughPool)));
+      if (r.breakthroughSectorSeconds !== undefined) p.breakthroughSectorSeconds = Math.max(60, Math.min(1800, Math.round(r.breakthroughSectorSeconds)));
+      if (r.breakthroughSwap !== undefined) p.breakthroughSwap = r.breakthroughSwap;
       // Mixing up weapon pickups needs no restart: the pickups roll (or go back) at once.
       let mixed: string | undefined;
       if (r.mixPickups !== undefined && r.mixPickups !== !!this.match.rules.mixPickups) {
@@ -105,7 +108,8 @@ export class HostControl {
       this.pending = { ...this.pending, ...p };
       // Back to what's playing now: nothing waits.
       const now = this.match.rules;
-      for (const k of Object.keys(this.pending) as (keyof HostRulesPatch)[]) if ((k === 'friendlyFire' ? (now.friendlyFire ?? 'off') : now[k]) === this.pending[k]) delete this.pending[k];
+      const current = (k: keyof HostRulesPatch) => (k === 'friendlyFire' ? (now.friendlyFire ?? 'off') : k === 'breakthroughPool' ? (now.breakthroughPool ?? BREAKTHROUGH_POOL) : k === 'breakthroughSectorSeconds' ? (now.breakthroughSectorSeconds ?? BREAKTHROUGH_SECTOR_SECONDS) : k === 'breakthroughSwap' ? !!now.breakthroughSwap : now[k]);
+      for (const k of Object.keys(this.pending) as (keyof HostRulesPatch)[]) if (current(k) === this.pending[k]) delete this.pending[k];
       if (Object.keys(p).length) return { notice: `${mixed ? `${mixed}; ` : ''}${who} changed the rules for the next match` };
       return mixed ? { notice: mixed } : {};
     }

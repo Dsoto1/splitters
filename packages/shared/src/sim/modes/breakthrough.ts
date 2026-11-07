@@ -328,7 +328,7 @@ export class BreakthroughMode implements ModeLogic {
       o.state = BT_OBJ_DONE;
       o.action = null;
       host.explode({ x: o.pos.x, y: o.pos.y + 0.6, z: o.pos.z }, BLAST.radius, BLAST.damage, this.player(o.planter) ?? null);
-      host.emit({ e: 'bt', a: 'destroy', i: o.index, s: o.planter, p: [o.pos.x, o.pos.y, o.pos.z] });
+      host.emit({ e: 'bt', a: 'destroy', i: o.index, s: o.planter, team: this.attackers, p: [o.pos.x, o.pos.y, o.pos.z] });
       return;
     }
     const side = planted ? this.defenders : this.attackers;
@@ -344,12 +344,12 @@ export class BreakthroughMode implements ModeLogic {
       if (planted) {
         o.state = BT_OBJ_ACTIVE;
         o.planter = null;
-        host.emit({ e: 'bt', a: 'defuse', i: o.index, s: c.slot });
+        host.emit({ e: 'bt', a: 'defuse', i: o.index, s: c.slot, team: this.attackers });
       } else {
         o.state = BT_OBJ_PLANTED;
         o.planter = c.slot;
         o.blowAt = tick + BT_FUSE_SECONDS * TICK_RATE;
-        host.emit({ e: 'bt', a: 'plant', i: o.index, s: c.slot });
+        host.emit({ e: 'bt', a: 'plant', i: o.index, s: c.slot, team: this.attackers });
       }
       return;
     }
