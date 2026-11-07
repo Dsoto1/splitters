@@ -171,6 +171,12 @@ export interface MatchRow {
   /** The weapon set it played (sim/weaponSets.ts: --set, else the map's default), and the bots' kills by weapon id (not suicides). */
   set?: string;
   weaponKills?: Record<string, number>;
+  /**
+   * Getting into turrets and vehicles (BotBrain.boarding): use pressed beside a planned mount, the presses that didn't
+   * get the bot in, mounts given up on (couldn't reach, couldn't get in, stuck in it), and plans for one it had given
+   * up on before (a bot going back and forth to a vehicle it can't use is many of these).
+   */
+  boarding?: { tries: number; failed: number; gaveUp: number; back: number };
   bots: BotRow[];
 }
 
@@ -610,6 +616,12 @@ function play(map: MapDocument, mode: GameMode, seed: number, seconds: number, s
   if (rounds.length || match.mode?.constructor.name.match(/Elim|Bomb|Hostage/)) out.rounds = rounds;
   if (forts) out.pieces = pieceIds.size;
   out.fails = fails;
+  const boarding = { tries: 0, failed: 0, gaveUp: 0, back: 0 };
+  for (const c of bots) {
+    const b = (c.bot as unknown as { boarding?: typeof boarding } | undefined)?.boarding;
+    if (b) for (const k of Object.keys(boarding) as (keyof typeof boarding)[]) boarding[k] += b[k];
+  }
+  if (boarding.tries || boarding.gaveUp) out.boarding = boarding;
   // Where stuck recoveries happen most (4 m cells, with what the bots were doing): the top 12.
   out.stuckAt = [...stuckAt].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])).slice(0, 12);
   match.destroy();
@@ -693,6 +705,7 @@ function printMatch(m: MatchRow): void {
   if (m.hill) console.log(`hill: held ${m.hill.held} s, contested ${m.hill.contested} s, empty ${m.hill.empty} s`);
   if (m.rounds) console.log(`rounds: ${m.rounds.length} finished${m.rounds.length ? `, ${(sum(m.rounds, (r) => r) / m.rounds.length).toFixed(0)} s on average (${m.rounds.join(', ')})` : ''}`);
   if (m.pieces !== undefined) console.log(`forts: ${m.pieces} pieces built`);
+  if (m.boarding) console.log(`boarding: ${m.boarding.tries} tries, ${m.boarding.failed} failed, ${m.boarding.gaveUp} given up on, ${m.boarding.back} back to one given up on`);
   const searches = sum(m.bots, (r) => r.searches);
   const failures = sum(m.bots, (r) => r.pathFailures);
   console.log(`time: idle ${pct(sum(m.bots, (r) => r.idle), alive)} (out of a fight ${pct(sum(m.bots, (r) => r.idleCalm), alive)}, frozen ${pct(sum(m.bots, (r) => r.frozen), alive)}, no route ${pct(sum(m.bots, (r) => r.why.noPath ?? 0), alive)}) | going to the goal ${pct(sum(m.bots, (r) => r.towardGoal), goalT)} of goal time, at it ${pct(sum(m.bots, (r) => r.atGoal), goalT)} | kills ${m.kills} (${((m.kills / m.seconds) * 60).toFixed(1)}/min) | stuck recoveries ${sum(m.bots, (r) => r.stuck)} (loops ${sum(m.bots, (r) => r.loops)}) | route searches ${searches}, no route ${failures} (${pct(failures, searches)})`);
