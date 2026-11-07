@@ -22,6 +22,7 @@ import {
 import { TICK_RATE } from '../constants.ts';
 import type { Combatant } from '../match.ts';
 import { getMountDef } from '../mounts.ts';
+import { BUTTON_CROUCH, BUTTON_JUMP, BUTTON_PRONE, BUTTON_SPRINT, type PlayerInput } from '../movement.ts';
 import { BREAKTHROUGH_POOL, BREAKTHROUGH_SECTOR_SECONDS } from '../rules.ts';
 import type { SpawnSpot } from '../spawns.ts';
 import { teamHome, type BotGoal, type BotTripSpec, type ModeHost, type ModeLogic } from './types.ts';
@@ -48,7 +49,6 @@ const CREST_SPOTS = 6;
  */
 const FOCUS_GUARD = 15;
 const FOCUS_SECONDS = 20;
-
 /** A defender's duty (the playbook's shares): a gun, the crest, falling back early, a trench or sandbags, the objectives. */
 type Duty = 'gun' | 'crest' | 'back' | 'trench' | 'hold';
 
@@ -855,6 +855,27 @@ export class BreakthroughMode implements ModeLogic {
   }
 
   /**
+   * A bot within reach of a target to plant (an attacker, at one still standing in the sector in play) or to defuse (a
+   * defender, at a burning charge) holds still, crouched, still shooting, until it is done, as a player would: bots
+   * plant and defuse by holding still within reach, and kept to their way (OrderGoal.push) they fight on the move, so
+   * one shot at on the target never planted (none in 8 v 8 matches on the Breakthrough Range).
+   */
+  botInput(c: Combatant, input: PlayerInput): void {
+    const sector = this.sector;
+    if (!sector || !c.alive || c.mount || this.outcome !== BT_ROUND_PLAYING || this.restartAt !== null) return;
+    const side = this.sideOf(c);
+    if (!side) return;
+    for (const o of sector.objectives) {
+      if (o.kind !== 'target' || o.state !== (side === 'attack' ? BT_OBJ_ACTIVE : BT_OBJ_PLANTED)) continue;
+      if ((o.action && o.action.slot !== c.slot) || !inObjective(o, c.move.pos)) continue;
+      input.forward = 0;
+      input.right = 0;
+      input.buttons = (input.buttons & ~(BUTTON_JUMP | BUTTON_SPRINT | BUTTON_PRONE)) | BUTTON_CROUCH;
+      return;
+    }
+  }
+
+  /**
    * Breakthrough's bots, by its playbook (docs/BOTS.md, "Breakthrough's playbook"), each by its place and duty in this
    * tick's plan (`plan`). Attackers: one in three guards a burning charge, the rest go for the side's objective (the
    * brief's: the least defended still to take), which the team brain spreads over the sector's ways in groups that
@@ -877,10 +898,15 @@ export class BreakthroughMode implements ModeLogic {
     const reach = (o: BtObjectiveRt): BotGoal => ({ pos: o.pos, radius: Math.max(0.6, Math.min(1.2, o.radius * 0.4)), push: true });
     if (side === 'attack') {
       const { k } = this.placeOf.get(c.slot) ?? { k: 0 };
-      if (planted.length && k % 3 === 0) return guard(planted[Math.floor(k / 3) % planted.length]!);
+      // Enough charges burning to take the sector: everyone guards them; otherwise one in three does.
+      const destroyed = sector.objectives.filter((o) => o.kind === 'target' && o.state === BT_OBJ_DONE).length;
+      const enough = sector.need > 0 && destroyed + planted.length >= sector.need && sector.objectives.every((o) => o.kind === 'target' || o.state === BT_OBJ_DONE);
+      if (planted.length && (enough || k % 3 === 0)) return guard(planted[(enough ? k : Math.floor(k / 3)) % planted.length]!);
       const o = this.attackFocus() ?? open[k % open.length]!;
       if (o.state === BT_OBJ_PLANTED) return guard(o);
       if (o.kind === 'target') return reach(o);
+      // A zone: kept to all the way in (held once close, as a King of the Hill hill is, the beach fell in 5 of 8 matches
+      // on the Breakthrough Range against 7 of 8).
       return { pos: o.pos, radius: Math.max(1, o.radius * 0.6 - (k % 3) * 0.5), push: true };
     }
     // Left behind the line as it fell (the fall-back warning): run for it, to the nearest of the sector's objectives

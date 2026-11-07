@@ -12,6 +12,9 @@ import {
   BT_OBJ_WAITING,
   BT_ROUND_ATTACKERS,
   BT_ROUND_DEFENDERS,
+  BUTTON_CROUCH,
+  BUTTON_FIRE,
+  BUTTON_SPRINT,
   BUTTON_USE,
   CORE_BOT_PROFILES,
   BOT_DIFFICULTIES,
@@ -489,6 +492,23 @@ describe('Breakthrough', () => {
     match.step();
     expect(mode.behind.has(def[3]!.slot)).toBe(true);
     expect(mode.botGoal(def[3]!)).toMatchObject({ pos: { x: 8, z: 42 }, run: true });
+    // Within reach of a target to plant (or a charge to defuse) a bot holds still, crouched, still shooting; elsewhere
+    // it moves as it thought.
+    const input = () => ({ seq: 1, forward: 1, right: 0.5, yaw: 0, pitch: 0, buttons: BUTTON_FIRE | BUTTON_SPRINT });
+    put(att[1]!, 8.5, 42);
+    put(def[0]!, 0.5, 42);
+    put(def[1]!, 16.5, 42);
+    const held = [att[1]!, def[0]!, def[1]!, att[2]!].map((c) => {
+      const i = input();
+      mode.botInput(c, i);
+      return [i.forward, i.right, !!(i.buttons & BUTTON_CROUCH), !!(i.buttons & BUTTON_FIRE), !!(i.buttons & BUTTON_SPRINT)];
+    });
+    expect(held).toEqual([
+      [0, 0, true, true, false],
+      [0, 0, true, true, false],
+      [1, 0.5, false, true, true],
+      [1, 0.5, false, true, true],
+    ]);
     match.destroy();
   });
 

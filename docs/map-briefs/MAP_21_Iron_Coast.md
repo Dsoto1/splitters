@@ -138,10 +138,14 @@ in MapMaker. What the plan above became:
   a sector early banks the time. A burning charge plays on past zero.
 - **Second round** (a Match Setup choice): sides swapped; more sectors wins, then more time left when the last fell.
 - **Teams:** team setups now go to 48 a side (96 players), so 24–32 a side and more on dedicated servers can be set.
-- **Bots:** basic, through the mode's goal hook as KOTH and Bomb use (no change to the bot brain while Bot AI Phase B
-  works on it): attackers spread over the live objectives, stand in zones, plant and guard charges; defenders defuse,
-  crowd zones being taken and guard the rest, and fall back with the line. The playbook above (bounding from cover,
-  smoke, the seven routes, snipers on the crest) is Phase B's.
+- **Bots** play Phase B's Breakthrough playbook (docs/BOTS.md, "Breakthrough's playbook"; docs/GAME_MODES.md has the
+  details): the attackers take the sector's objectives one at a time, the team brain spreading them over its ways in
+  groups that bound up cover to cover and gather to push a held objective; one in three guards a charge. The
+  defenders man the guns (a quarter), hold the trenches and sandbags (40 %), snipe from the crest (15 %: high ground
+  that sees the objectives) and hold the objectives, by what stands within 60 m of the sector's objectives on their
+  side of its line, so the crest's guns and trenches cover the beach; 30 % fall back early to the next line once the
+  sector is half taken. Not yet: smoke (no smoke grenade until the weapons intake) and tunnels pushed as a group
+  (the team brain's staging does it for any held objective).
 - **The pieces** the map still needed are built: the **Command Bunker** (the round fort) and the **Grand Cliff Stair
   (Gatehouse)** (docs/SET_PIECES_PLAN.md, "As built: part 4").
 - **The test layout:** the Breakthrough Range (`maps/test_breakthrough.json`, a test map made in MapMaker; docs/GAME_MODES.md

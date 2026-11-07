@@ -375,13 +375,27 @@ v28).
   words each event for your side ("Zone A1 captured!" / "Zone A1 lost!",
   "Charge planted on B2! Defuse it", "The beach taken! Push on", "We broke
   through!", "The line held!", "Out of reinforcements: last stand!").
-- **Bots** play it through the mode's goal hook (as KOTH and Bomb, no
-  change to the bot brain): the attackers spread over the live objectives,
-  stand in zones, plant at targets (a bot plants or defuses by holding
-  still within reach) and guard their planted charges; on defence every
-  other bot goes for a burning charge to defuse it, most of the rest crowd
-  a zone being taken, and the others guard their share of the objectives.
-  Their goals move with the sector, so they fall back when it falls.
+- **Bots** play it by Breakthrough's playbook (`bots/playbooks.ts`;
+  docs/BOTS.md, "Breakthrough's playbook"), each by its place among its
+  side's bots (in slot order; the teams alternate slots). The mode briefs
+  the team brain once a second: the attackers' objective is the first in
+  the sector still to take (a group push while the defenders hold it), and
+  the bots' trips are each sector's spawn groups to each of its objectives,
+  so the attackers spread over the sector's ways in groups on any length of
+  trip and bound up cover to cover whatever their style (Arena's aside).
+  They stand in a zone to capture it, hold still at a target to plant (a
+  bot plants or defuses by holding still within reach), and one in three
+  guards a burning charge. The defenders take the playbook's shares of the
+  sector's posts: what stands within 60 m of its objectives on their side
+  of its line (a crest over a beach covers the zones at the cliff's foot).
+  A quarter man its guns (turrets), 15 % snipe from its crest (high ground
+  that sees an objective), and both stay there; 40 % hold its trenches and
+  sandbags and the rest its objectives, and these answer the attack: all
+  but one in three rush a burning charge to defuse it, two in three crowd
+  a zone being taken. Once the sector is more than half taken, or half of
+  them are down, 30 % of them (from the trenches' share) fall back early
+  to the next line. A defender caught behind the line as it falls runs for
+  it. Their goals move with the sector.
 - **Settings** (Match Setup's "what wins", and the host panel):
   *Reinforcements* (1–40 per attacker), *Sector time* (1–15 min), *Second
   round* (one round, or swap sides). The first two follow the match's size
