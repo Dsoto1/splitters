@@ -524,11 +524,12 @@ export const limitsScale = (mode: GameMode): boolean => mode === 'core.tdm' || m
 
 /**
  * Breakthrough's suggestions by players a side (the setup's "score" is reinforcements per attacker, its time each
- * sector's minutes): small teams get a few more lives each (every death counts more), big ones a little less (many
- * deaths add up quickly), and a sector's time grows with the teams (bigger maps, longer pushes): up to 4 a side 8 and
- * 3 min, up to 16 a side 6 and 4 min, beyond 5 and 5 min.
+ * sector's minutes): up to 16 a side 6 reinforcements an attacker, big teams a little less (many deaths add up
+ * quickly), and a sector's time grows with the teams (bigger maps, longer pushes): up to 4 a side 6 and 3 min, up to
+ * 16 a side 6 and 4 min, beyond 5 and 5 min. (Small teams were suggested 8: bot attackers broke through in 7 of 8
+ * matches on the Breakthrough Range; the owner, 2026-11-07: 6.)
  */
-export const breakthroughPoolFor = (perTeam: number): number => (perTeam <= 4 ? 8 : perTeam <= 16 ? 6 : 5);
+export const breakthroughPoolFor = (perTeam: number): number => (perTeam <= 16 ? 6 : 5);
 export const breakthroughMinutesFor = (perTeam: number): number => (perTeam <= 4 ? 3 : perTeam <= 16 ? 4 : 5);
 
 /** How far a score steps from `v` (a stepper's − and +), and what a worked-out score rounds to: 5 under 50, 10 under 300, 50 under 1,000, then 100. */

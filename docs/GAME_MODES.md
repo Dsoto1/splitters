@@ -408,8 +408,9 @@ v28).
 - **Settings** (Match Setup's "what wins", and the host panel):
   *Reinforcements* (1–40 per attacker), *Sector time* (1–15 min), *Second
   round* (one round, or swap sides). The first two follow the match's size
-  until changed: up to 4 a side 8 and 3 min, up to 16 a side 6 and 4 min,
-  bigger 5 and 5 min. `MatchRules.breakthroughPool`,
+  until changed: up to 4 a side 6 and 3 min, up to 16 a side 6 and 4 min,
+  bigger 5 and 5 min (small teams were suggested 8: bot attackers broke
+  through in 7 of 8 matches; the owner, 2026-11-07: 6). `MatchRules.breakthroughPool`,
   `breakthroughSectorSeconds`, `breakthroughSwap`. Match Setup offers the
   mode only on maps with sectors (a map without says why).
 - **Events:** `bt` with `a` = `capture` / `plant` / `defuse` / `destroy` /

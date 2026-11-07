@@ -402,8 +402,11 @@ describe('Breakthrough', () => {
     const room = makeMap([{ id: 'room', tile: 'core.room', x: 0, y: 0, z: 0, rotation: 0 }]);
     expect(modeOptions(range(), playableModes(range())).find((o) => o.mode === 'core.breakthrough')).toEqual({ mode: 'core.breakthrough', ok: true });
     expect(modeOptions(room, playableModes(room)).find((o) => o.mode === 'core.breakthrough')).toMatchObject({ ok: false, reason: expect.stringMatching(/sectors/) });
-    // Small teams get more lives each and shorter sectors; big ones fewer and longer.
-    expect(suggestedLimits('core.breakthrough', 8, [4, 4])).toEqual({ scoreLimit: breakthroughPoolFor(4), minutes: breakthroughMinutesFor(4) });
+    // Small teams get shorter sectors (6 reinforcements an attacker up to 16 a side: 8 for small ones was too many, the
+    // owner, 2026-11-07); big ones fewer reinforcements and longer sectors.
+    expect(suggestedLimits('core.breakthrough', 8, [4, 4])).toEqual({ scoreLimit: 6, minutes: 3 });
+    expect(suggestedLimits('core.breakthrough', 32, [16, 16])).toEqual({ scoreLimit: 6, minutes: 4 });
+    expect(suggestedLimits('core.breakthrough', 64, [32, 32])).toEqual({ scoreLimit: 5, minutes: 5 });
     expect(breakthroughPoolFor(4)).toBeGreaterThan(breakthroughPoolFor(24));
     expect(breakthroughMinutesFor(4)).toBeLessThan(breakthroughMinutesFor(24));
     const setup: MatchSetup = { map: 'range', mode: 'core.breakthrough', bots: 0, skill: 'normal', scoreLimit: 7, minutes: 3, teams: [6, 6, 6], btSwap: true };

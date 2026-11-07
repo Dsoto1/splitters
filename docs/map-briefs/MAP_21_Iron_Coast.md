@@ -132,7 +132,7 @@ in MapMaker. What the plan above became:
   fuse, 5 s to defuse.
 - **Fall-back:** when a sector falls both spawns move to the next groups; defenders left on the attackers' side of the
   new line get a 10 s warning on screen, then lose 20 health a second.
-- **Reinforcements:** 6 per attacker by default (Match Setup suggests 8 for up to 4 a side, 6 up to 16, 5 beyond), the
+- **Reinforcements:** 6 per attacker by default (Match Setup suggests 6 up to 16 a side, 5 beyond), the
   pool topped up by half as much per attacker for each sector taken; defenders unlimited, 1.5× the respawn time.
 - **Time:** each sector puts 4 min on the clock by default (3 for small teams, 5 past 16 a side), carried over: taking
   a sector early banks the time. A burning charge plays on past zero.
