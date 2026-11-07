@@ -43,6 +43,13 @@ describe('terrain', () => {
     const back = loadMap(serializeMap(map));
     expect(back.ok).toBe(true);
     if (back.ok) expect([back.map.terrain!.cols, back.map.terrain!.rows, back.map.terrain!.spacing]).toEqual([153, 129, 2.5]);
+    // Unfinished (no spawn point yet): it doesn't play, but MapMaker's Import and drafts open it with its problems.
+    const bare = serializeMap({ ...map, entities: [] });
+    expect(loadMap(bare).ok).toBe(false);
+    expect(loadMap(bare, undefined, { forEditing: true }).ok).toBe(false);
+    const open = loadMap(bare, undefined, { forEditing: true, openWithErrors: true });
+    expect(open.ok).toBe(true);
+    expect(open.issues.map((i) => i.code)).toContain('spawn.none');
   });
 
   it('brushes raise, lower, flatten, smooth and paint', () => {

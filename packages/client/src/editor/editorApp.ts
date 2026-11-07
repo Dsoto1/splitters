@@ -4198,7 +4198,8 @@ export class EditorApp {
       if (!('map' in r)) return this.toast(`Import failed: ${r.issues[0]?.message ?? 'unknown error'}`, true);
       this.keepDraft();
       this.replaceDocument(r.map);
-      this.toast(`Imported ${r.map.metadata.name}`);
+      const errors = r.issues.filter((i) => i.severity === 'error').length;
+      this.toast(`Imported ${r.map.metadata.name}${errors ? ` (${errors} problem${errors === 1 ? '' : 's'} to fix before it plays: see the list)` : ''}`);
     });
     $('ed-test').addEventListener('click', () => this.test());
     this.setupSidebars();
