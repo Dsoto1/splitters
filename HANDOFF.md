@@ -91,6 +91,60 @@ cheap now, but a 64 v 64 map should spread them out. `pnpm bench 128 60 maps/<ma
 - Character moves are most of a 128-player tick; bot thinking's setup is 0.7-1.6 ms of it (BOT_AI_PLAN Phase B).
 - Not done: shared evaluation for characters on the same clip and phase, fewer bones on far skeletons, impostors.
 
+<!-- intake-rex-fred -->
+### Import list batch 1: Cool Hands Rex and Fishy Fred (`wip/intake-rex-fred`, agent, 2026-11-07; from main dc60bdb5; CI on `check/intake-rex-fred`, see the end of this section; not landed)
+The owner (2026-11-06): "call him 'Cool Hands Rex', i made him in meshy"; "i did not make fishy fred, community".
+Downloads in `/home/user/meshy-drive/intake-2026-11-06b/` (raw, never committed), linked in the agent scratchpad
+`rexfred/dl`; each built with `ONLY=<id> node tools/content/prepare-meshy-characters.mjs <dir>`. Both are Mixamo
+rigs from Meshy; their Running and Walking clips are not used. Scratch: `rexfred/` (tools, shots, audits).
+
+| Character (manifest / look) | Group, size, bot names | Built (body + far copy; colour and normal map 1024 px) | Hands | Licence |
+|---|---|---|---|---|
+| **Cool Hands Rex** `meshy_trex` / `core.trex` (the owner's name) | creatures, large (2.12 m, 115 health), gangster | the whole 10,404-triangle download + 2,600; its two 4096 px maps baked down (colour 1024 px JPEG, a 1024 px normal map); 1.08 MB; arms 1,079 | thumb, middle, ring and little finger chains, no index: re-fitted from the mesh (right hand split into four fingers, left a mitten); no grip offsets needed | Meshy, owned (pack `meshy-owned`) |
+| **Fishy Fred** `meshy_fishyfred` / `core.fishyfred` (the download's name, a placeholder) | animals, small (1.40 m, 85 health), critter (the river names) | the whole 5,000-triangle download + 1,250; its 2048 px map at 1024 px, a 1024 px normal map; 0.55 MB; arms 521 | thumb, middle and little finger chains: re-fitted as mittens; `hands.scale 0.7` (29 -> 21 cm); `grip { gripLong [-0.045, 0.02, -0.03], rollR 0.3 }` | Meshy Community CC0, author and post URL pending (pack `meshy-community-characters`) |
+
+- **The trigger finger.** Neither download has an index finger, so neither keeps its own finger chains (`fingers:
+  own` needs all five); the build re-fits the fingers from the mesh (`hands.mjs`), and the rig's index chain takes the
+  nearest mesh finger: Rex's right hand splits into four, a claw on the trigger; his left and both of Fred's are
+  mittens that close together. No `fixes.fingers` needed.
+- **Rex's extra joints.** The tail (`Bone_015`-`Bone_020`) rides the hips and the jaw and head (`Bone_034`-`Bone_039`,
+  `headfront`) the head, as the crocodile's do. Meshy centred the download's box, so the tail stood the body 0.32 m
+  ahead of its origin: `fixes.centre`. Measured through the rig's clips (scratch `tools/tailcheck.mjs`, the tail's
+  lowest point against the feet's): walk, run, sprint, the shooter set's moving clips, crouch and prone keep the tail
+  0.17-0.48 m above the feet's lowest point; jump landing brings it to the feet's level for a moment; **death and
+  knockback** (lying on the back) put it through the floor, as the crocodile's (Boglurker) already does: a tail with
+  no joints of its own can't bend. Pictures: `rexfred/shots/trex-run-side-1.png`, `screens/play-trex-tp-strafe.png`.
+- **Hit shapes.** Rex's tail is left out on purpose (the rule: tails aren't hittable, docs/CHARACTERS.md "Hitboxes";
+  the torso fit drops vertices far from the spine): the audit reads top 0.02, bottom -0.08, head 0.05, 93% inside
+  (`shots/hitboxes-final.png`).
+- **Fred's skin.** The download's rig held the fish's face on the left collarbone (602 vertices) and the rest of the
+  fish on the head joint; the face would have moved with the left arm. The first build's head sphere was 0.55 m (the
+  whole fish) and failed the hitbox audit (head 0.10 off, 85%). Now `fixes.skin.rigid` binds the fish to `spine_03`
+  (two boxes, the hips spared) and then its face to `Head` (`blend 0.1`), with `smooth` over the spine, hips and head:
+  head sphere 0.30 m on the face, the fish counts as body; audit passes; no stretched edges standing, aiming or running
+  (26 with a first, hard-edged try; crouching leaves 6 small ones at the lower back, like Rex's 7).
+- **Grip audit** (rifle, pistol, shotgun; lower is better; `rexfred/audit-1` first build, `audit-final`):
+
+  | Character | first build | final | rifle drawn R / L, m |
+  |---|---|---|---|
+  | Cool Hands Rex | 0 | 0 | 0.05 / 0.12 (unchanged) |
+  | Fishy Fred | 5 flat off (rifle: the shooting hand behind the grip, closing it gained nothing, -0.001 m) | 0 | 0.07 / 0.21 -> 0.03 / 0.13 |
+
+- **Portraits** captured for both (`capture-portraits.mjs core.trex core.fishyfred`, a temp copy with Chromium's
+  path); `PORTRAIT_VIEWS`: Rex `zoom 1.15` (snout and shades), Fred `aim [0, -0.06, 0], zoom 1.25` (the face low on
+  the fish).
+- **The coverage map's unit test** didn't ask for the new looks (it passes as is), so no MapMaker change.
+- **Screenshots** (agent scratchpad `rexfred/screens/`): `select-<look>.png` in Character Select; `play-<look>-fp-rifle`,
+  `fp-pistol`, `tp-rifle`, `tp-pistol`, `tp-run`, `tp-strafe` in an offline match on Canyon; sheets `sheet-trex.png`,
+  `sheet-fishyfred.png`, `sheet-running.png`. Viewer frames `rexfred/shots/` (`trex-run-*.png`, `fishyfred-run-*-2.png`).
+
+**For the owner:** a name for Fishy Fred, and his Meshy post URL (CC0 needs no credit; the URL is the licence's proof;
+a CC BY post would need a credit). Rex's bots take the gangster names (Slick Vinnie, Knuckles Nolan…): there is no
+dinosaur list; say if you'd like one.
+
+**Checks:** CHECKS_PLACEHOLDER
+<!-- /intake-rex-fred -->
+
 <!-- breakthrough -->
 ### Breakthrough mode, and Iron Coast's fort and gatehouse (`wip/breakthrough`, agents, 2026-11-07; from main 17d0e0a0, main 2c48debf (Bot AI Phase B parts 1 and 2), d3830145 (weapons intake 11-06) and 5087b0b6 (weapon sets) merged in; green on `check/breakthrough` at 647512a5, run 42373473729; not landed)
 The brief: docs/map-briefs/MAP_21_Iron_Coast.md ("Breakthrough mode", and "The mode as built"). Rules, settings, HUD,
@@ -1136,7 +1190,7 @@ noises, etc."
 - The container can't reach Sonniss or Freesound today. Either the agent asks for those hosts on the environment card,
   or the owner puts the chosen files in the Drive.
 
-### Queued (owner, 2026-11-06): import list, batch 1: Cool Hands Rex and Fishy Fred. After the work in flight
+### Done (owner, 2026-11-06): import list, batch 1: Cool Hands Rex and Fishy Fred: see "Import list batch 1" at the top (`wip/intake-rex-fred`)
 **The owner:** "There is a fish and t-rex (call him 'Cool Hands Rex', I made him in meshy) model to add for after all
 of this work. I'll be trying to generate brand new ones going forward and we can just begin working on a new import
 list."

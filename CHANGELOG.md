@@ -8,6 +8,16 @@ made only on a commit that passed CI on a check branch.
 
 ## Unreleased
 
+**Two new characters: Cool Hands Rex and Fishy Fred** (the owner's import list, batch 1; docs/IMPORT_LIST.md)
+- **Cool Hands Rex**, a T-rex in a bomber jacket and shades, the owner's own Meshy model ("i made him in meshy"). Large
+  (2.12 m, 115 health), under Creatures & Machines; his bots take gangster names. His tail rides his hips: it stays off
+  the ground walking, running and crouching, and, like every tail, it can't be shot.
+- **Fishy Fred**, a big fish on striped legs in red sneakers (Meshy Community, CC0). Small (1.40 m, 85 health), under
+  Animals; his bots take the river-critter names. "Fishy Fred" is the download's own name until the owner names him.
+  His head shots are on his face, not the whole fish: the fish counts as his body.
+- Both close their hands round rifle and pistol grips in third and first person (grip audit 0 for both), and have their
+  own portraits.
+
 **Performance round 4: crowds, 32 v 32 in a browser, 64 v 64 on a dedicated host** (owner, 2026-11-06: "32v32 would be
 max I want to shoot for without dedicated host … push dedicated hosts to 64v64 if at all possible"; docs/PERF_96.md,
 "Performance round 4")
