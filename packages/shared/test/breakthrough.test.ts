@@ -441,7 +441,7 @@ describe('Breakthrough', () => {
     match.step();
     expect(mode.botBrief(mode.attackers)!.attack!.stage).toBe(true);
     // Attackers' goals: the brief's objective (one in three guards a burning charge when there is one).
-    expect(att.map((c) => mode.botGoal(c, [])!.pos)).toEqual(att.map(() => ({ x: 2, y: 0, z: 16 })));
+    expect(att.map((c) => mode.botGoal(c)!.pos)).toEqual(att.map(() => ({ x: 2, y: 0, z: 16 })));
     // The beach's posts: the gun, a step behind the sandbags, the platform's deck.
     const beach = mode.sectors[0]!;
     expect(beach.posts.guns).toEqual([{ x: 8, y: 0, z: 20 }]);
@@ -451,7 +451,7 @@ describe('Breakthrough', () => {
     // the sandbags, the last (past the crest's 15 %) holds the objectives. Each watches where the attackers come from.
     def[0]!.move = { pos: { x: 8, y: 0, z: 74 }, velY: 0, grounded: true };
     match.step();
-    const goals = def.map((c) => mode.botGoal(c, [])!);
+    const goals = def.map((c) => mode.botGoal(c)!);
     expect(goals[0]!.pos).toEqual({ x: 8, y: 0, z: 20 });
     expect(goals[1]!.pos).toEqual({ x: 16, y: 0, z: 11.2 });
     expect(goals[2]!.pos).toEqual({ x: 16, y: 0, z: 11.2 });
@@ -460,11 +460,11 @@ describe('Breakthrough', () => {
     // Early fall-back: once the beach is past half taken, the playbook's share (here the first of four) goes to the guns.
     mode.objectives.find((o) => o.label === 'A1')!.state = BT_OBJ_DONE;
     match.step();
-    expect(mode.botGoal(def[0]!, [])!.pos.z).toBe(20);
+    expect(mode.botGoal(def[0]!)!.pos.z).toBe(20);
     mode.objectives.find((o) => o.label === 'A2')!.progress = 0.3;
     match.step();
-    expect(mode.botGoal(def[0]!, [])!.pos.z).toBe(42);
-    expect(mode.botGoal(def[1]!, [])!.pos.z).not.toBe(42);
+    expect(mode.botGoal(def[0]!)!.pos.z).toBe(42);
+    expect(mode.botGoal(def[1]!)!.pos.z).not.toBe(42);
     match.destroy();
   });
 
