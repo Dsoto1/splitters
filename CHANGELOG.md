@@ -39,6 +39,8 @@ distance, and a body kept for the next player of its look stands up fresh.
 - The **Lunar Roulette** party preset now plays the Roulette mode with Lunar on.
 - Bots take picks and reroll tokens sensibly and play to their body: small ones flank, large ones push.
 - Nothing in it flashes: the jackpot glow and the storm's warning ease in and hold, dimmer with Reduce flashing on.
+- The spawn card stays up for 2 s of play even when the game hitches as your new body loads, and goes when you go
+  down or the round ends.
 - `pnpm bot-report <maps> --mode=core.roulette [--roulette=lunar,rerolls,swap,variety]` reports kills by character and
   body size, picks and rerolls.
 

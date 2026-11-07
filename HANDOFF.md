@@ -87,19 +87,8 @@ The workflow is unchanged (CLAUDE.md):
      - with it, TDM: `pnpm bot-report eagle_spires twin_spires riot_junction --mode=core.tdm --seeds=1,2 --seconds=180`;
      - the Range: `pnpm bot-report test_breakthrough --mode=core.breakthrough --players=16 --seeds=1,...,24
        --seconds=900 --json=<out>/bt8.json`.
-4. **Roulette** (`wip/roulette` = `check/roulette` @ 5c210adf), paused for the frozen-corpses hunt.
-   - **Built:**
-     - the whole plan, as built in docs/ROULETTE_MODE_PLAN.md;
-     - signatures in `content/roulette.json` (`tools/content/roulette.mjs`);
-     - streak pick input `say` 180-185;
-     - Lunar Roulette now plays `core.roulette`.
-   - **Its CI (run 42405165063) failed:** look first at flows and unit tests that assume the old Lunar Roulette (Team
-     Deathmatch) or exact `playableModes` lists.
-   - **Next:**
-     - the `roulette` e2e flow with `E2E_SHOTS` (the spawn card, a jackpot, the pick, the awards);
-     - `pnpm bench 48 60 maps/sandgate.json --mode=core.roulette` and `pnpm bench:96:clump`;
-     - its HANDOFF section;
-     - merge main, then land.
+4. **Roulette** (`wip/roulette`, main 0531b29 merged in): CI fixed, landing from `check/roulette` (see "Roulette mode"
+   below for the fix, the pictures and the bench).
 
 **Queued, in the owner's order:**
 1. **Tanks** (owner, 2026-11-07). Bots drive and fire tanks sensibly, and bail out when nearly dead.
@@ -150,6 +139,51 @@ gets overloaded above that: local e2e times out and flakes). Prune landed worktr
 - f5cc70b Capitol Mall domes, roofs; Capitol Dome / Copper Dome / Pediment / Pyramidion props; room Roof surface.
 - Earlier the same day: content scalability steps 2–6, perf toolset, flaky e2e fixes, Runway Nine airliner, map
   reworks batches 2–3, character fixes rounds 2–3 (see the entries below and CHANGELOG).
+
+### Roulette mode (`wip/roulette`, agents, 2026-11-07; main 0531b29 (friendly fire) merged in; landing from `check/roulette`)
+**What it is:** docs/ROULETTE_MODE_PLAN.md ("As built") and docs/GAME_MODES.md, "Roulette". The mode is
+`core.roulette`; Lunar Roulette plays it with Lunar on; balance is data in `content/roulette.json`
+(`tools/content/roulette.mjs`).
+
+**Why run 42405165063 failed:** not the unit tests (all unit and maps shards passed) and not an old-Lunar-Roulette
+assumption. The one real failure was the `roulette` e2e flow (shard 2; shard 11 was only stopped by
+stop-on-failure). On both attempts it never saw two spawn cards: the first life's card (`card: null`) and, on the retry,
+the jackpot card. The only one it saw was the second life's, which the flow holds for its picture. Those cards
+counted their 2 s on the wall clock from the spawn event, so on a slow runner the hitch while the new body was built
+spent the card's time before any frame drew it. A player on a slow machine would miss it the same way.
+**Fix:** `game/cappedTimer.ts` (`CappedTimer`): the card counts 2 s of drawn frames, each frame counting at most
+0.1 s, so a hitch can't use it up unseen (unit test `client/test/cappedTimer.test.ts`). The flow's checks are
+unchanged. The flow's pictures also showed the card staying up over the death screen and the scoreboard: it now
+goes when you go down or the round leaves `playing`.
+
+**Checked locally (CI=1):** typecheck, content:check, `test:changed`; `E2E_ONLY=roulette` passes (330 s). Its
+pictures are `roulette-setup`, `roulette-spawn-card`, `roulette-pick`, `roulette-jackpot` and `roulette-awards` (under
+`E2E_SHOTS`). The jackpot glow is faint in the picture: with Reduce flashing on it peaks at 0.32 opacity, at the
+screen's edges.
+
+**Bench** (a shared 4-core machine at load 13-17, so the numbers are rough; 48 bots, 60 s, Sandgate):
+| mode | tick avg | p95 | p99 | CPU a tick | character moves (full + coarse) | spawn deaths |
+| --- | --- | --- | --- | --- | --- | --- |
+| core.roulette | 5.26 ms | 13.3 | 29.6 | 4.24 ms | 31 + 1 | 211 of 372 (57 %) |
+| core.tdm | 4.10 ms | 10.3 | 18.5 | 4.05 ms | 6 + 39 | 0 of 72 |
+| core.deathmatch | 5.96 ms | 16.1 | 35.7 | 3.72 ms | 31 + 1 | 348 of 490 (71 %) |
+
+Roulette costs what free-for-all Deathmatch costs. Its extra over Team Deathmatch is free-for-all's: everyone fights
+everyone near the spawns, so nearly every move is a full one, and there are 5x the kills. Its 2 s spawn protection
+cuts spawn deaths from Deathmatch's 71 % to 57 %, still high for 48 on Sandgate. `pnpm bench:96:clump` (Team
+Deathmatch, a check that nothing else moved) is in line: tick avg 7.5-10.5 ms over the six runs.
+
+**Not done (as before):** the host checkpoint doesn't carry decks or tokens; dedicated servers have no server rules for
+the variants yet.
+
+**For the owner:**
+- the balance numbers in `content/roulette.json`:
+  - jackpot 5 % a life, tiny 4 %, a pick card a jackpot 15 %;
+  - 50 jackpot armour; tiny 0.65 size and ×1.08 speed;
+  - a pick at 3 kills; a reroll token per 2 kills, 2 at most;
+- the jackpot upgrades, some of them strong (sniper → railgun, rockets → guided, plasma → railgun, goo gun, freeze ray
+  and arc caster → singularity);
+- whether big free-for-all Roulette matches need more spawn protection or spawn spacing.
 
 <!-- small-fixes-1107 -->
 ### Friendly fire (`wip/friendly-fire`, agent, 2026-11-07; from main c8d8cba3; CI on `check/friendly-fire`; not landed)

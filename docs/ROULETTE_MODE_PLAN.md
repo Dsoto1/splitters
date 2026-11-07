@@ -1,5 +1,9 @@
 # Roulette: a character-swapping mode with variants (owner-approved, 2026-11-06)
 
+**Status (2026-11-07):** built, landing on main from `check/roulette` (HANDOFF.md, "Roulette mode": the CI fix, the
+pictures, the bench). Open for the owner: the balance numbers in `content/roulette.json`, and spawn protection or
+spacing for big free-for-all matches (57 % of kills within 3 s of a spawn with 48 bots on Sandgate).
+
 ## The owner's idea
 A mode with low gravity and character stats on, where players get a new character to fight with each life. The
 owner asked what to call it and what would make it more robust and entertaining.
@@ -117,7 +121,10 @@ choices made along the way.
 - **Bots:** picks (jackpot first, then the body they play best), tokens (spent on a next card of the wrong size, or at
   the most); `BotBrain.playAs` each life: small bodies flank (lone wolves, roam wider), large ones push.
 - **Performance:** each spawn event names the player's next 3 cards and the client loads them at once; the loading
-  gate also warms the first cards and the outline and glow shaders (`GameView.auraWarm`).
+  gate also warms the first cards and the outline and glow shaders (`GameView.auraWarm`). Measured with 48 bots on
+  Sandgate: tick avg 5.3 ms against Team Deathmatch's 4.1 and Deathmatch's 6.0 (free-for-all's cost, not Roulette's).
+- **The spawn card's 2 s** are drawn frames' time (`CappedTimer`, at most 0.1 s a frame), so a hitch as a new body
+  is built doesn't use it up unseen; it goes when you go down.
 - **Not done:** the host checkpoint (host handoff) doesn't carry decks or tokens (a successor deals fresh decks);
   dedicated servers have no server rules for the variants yet (`MODE=core.roulette` plays the mode with its standard
   features).
