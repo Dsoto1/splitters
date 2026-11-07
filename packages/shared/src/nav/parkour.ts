@@ -245,7 +245,6 @@ function playThrough(physics: PhysicsWorld, collider: Parameters<typeof stepMove
     s = stepMovement(physics, collider, s, { seq: t, forward: 1, right: 0, yaw: c.yaw, pitch: 0, buttons: c.buttons }, body.speed, TICK_DT, 1, env);
     // (Off the edge: well below where it set off from, not a grounded flag flickering over a seam.)
     if (!s.grounded && s.pos.y < from - 0.4) left = true;
-    if (process.env.PKDEBUG === link.kind) console.log(t, s.pos.x.toFixed(2), s.pos.y.toFixed(2), s.pos.z.toFixed(2), s.grounded, s.stance ?? 0, 'end', link.end.x.toFixed(2), link.end.y.toFixed(2), link.end.z.toFixed(2), 'takeoff', link.takeoff.toFixed(2), link.tuck, parkourAlong(link, s.pos).toFixed(2));
     if ((jumped || left) && s.pos.y < lowest) return false;
     // Down at the end's height, by it (a body landing at a run goes a little past it: the bot walks back, or on).
     if (s.grounded && (jumped || left) && Math.abs(s.pos.y - link.end.y) < 0.6) {

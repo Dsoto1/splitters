@@ -332,16 +332,6 @@ const PASS_RADIUS = 1.4;
 
 /** Tactical decisions (cover, grenades, mounts) run at about 10 Hz, staggered. */
 const DECIDE_TICKS = 6;
-/**
- * A hurt bot's retreat (the hurt-bot retreat fix, BOT_AI_PLAN.md Phase C item 0): health it can get to this close
- * (m) is worth running for; with none, nothing heals it (there's no regeneration), so the retreat gives up after
- * RETREAT_GIVE_UP seconds of it (RETREAT_KEEP for a bot with an objective: it keeps to it), and the bot fights on from
- * cover, as hurt. Running for health that is there gives up only after RETREAT_HEAL.
- */
-const HEAL_REACH = 45;
-const RETREAT_GIVE_UP = 4;
-const RETREAT_KEEP = 2;
-const RETREAT_HEAL = 15;
 /** Visibility of crouched and prone targets at range (they are harder to spot). */
 const STANCE_SIGHT = [1, 0.8, 0.55] as const;
 /**
@@ -538,19 +528,6 @@ export class BotBrain {
   private retreatGoal: { pos: Vec3; until: number } | null = null;
   /** Retreating: sprint away (run) or back off shooting, committed for a moment. */
   private retreatMode: { run: boolean; until: number } | null = null;
-  /**
-   * Ticks spent retreating since it was last well (RETREAT_*: nothing regenerates, so with no health in reach a hurt
-   * bot gives the retreat up after a while and fights on), and the tick of its last decision (to count them).
-   */
-  private retreatTicks = 0;
-  private decidedAt = -1;
-  /**
-   * Hurt, with its retreat given up (nothing heals within reach): it holds cover against what it sees and fights from
-   * there rather than pushing on into it; with nobody in sight it keeps to its objective.
-   */
-  private standHurt = false;
-  /** Whether health it can get to is within HEAL_REACH, worked out about once a second. */
-  private healNear: { tick: number; ok: boolean } | null = null;
   /** Smoothed movement intent in world space (inputs ease in and out rather than snapping). */
   private moveX = 0;
   private moveZ = 0;
@@ -730,10 +707,6 @@ export class BotBrain {
     this.hurtTick = this.underFireTick = -Infinity;
     this.retreatGoal = null;
     this.retreatMode = null;
-    this.retreatTicks = 0;
-    this.decidedAt = -1;
-    this.healNear = null;
-    this.standHurt = false;
     this.link = null;
     this.spacing = 'hold';
     this.strafing = false;
@@ -858,19 +831,6 @@ export class BotBrain {
   /** Low on health by this bot's standards. */
   private hurt(view: BotWorldView): boolean {
     return view.self.health < (this.profile.selfPreservation / 100) * PLAYER.maxHealth * (this.coward ? 0.8 : 0.6);
-  }
-
-  /**
-   * Whether a hurt bot with an enemy in sight still retreats: while running for health within HEAL_REACH (up to
-   * RETREAT_HEAL seconds); with none, nothing heals it, so only for RETREAT_GIVE_UP seconds (RETREAT_KEEP with an
-   * objective), then it fights on, from cover where it finds some (hurt, it wants cover), and keeps its objective.
-   * Before, a hurt bot retreated from every fight it saw for the rest of its life (the Breakthrough Range's attackers).
-   */
-  private mayRetreat(view: BotWorldView, objective: boolean): boolean {
-    const n = this.healNear;
-    if (!n || view.tick - n.tick >= TICK_RATE) this.healNear = { tick: view.tick, ok: this.pickupGoal(view, 'health', HEAL_REACH) !== null };
-    const most = this.healNear!.ok ? RETREAT_HEAL : objective ? RETREAT_KEEP : RETREAT_GIVE_UP;
-    return this.retreatTicks < most * TICK_RATE;
   }
 
   /** COWARD: gives up a fight sooner, and won't take on several at once. */
@@ -1179,10 +1139,6 @@ export class BotBrain {
     const tick = view.tick;
     const hurt = this.hurt(view);
     const underFire = tick - this.underFireTick < TICK_RATE * 1.5 || tick - this.hurtTick < TICK_RATE * 1.5;
-    // The retreat's clock: ticks spent retreating since it was last well.
-    if (!hurt) this.retreatTicks = 0;
-    else if (this.state === 'retreat' && this.decidedAt >= 0) this.retreatTicks += tick - this.decidedAt;
-    this.decidedAt = tick;
     // Flushed off a vantage spot: hurt there, or shot at by someone it can't see. Or its time there is up (mid-fight too:
     // a sniper moves on after a kill).
     const post = this.post;
@@ -1199,7 +1155,7 @@ export class BotBrain {
 
     // A lift from a teammate is worth taking even when hurt or with someone about.
     if (this.mountPlan && (this.mountPlan.ride || (!hurt && (!target || horizontalDistance(me.pos, target.pos) > 10)))) this.state = 'mount';
-    else if (target && hurt && !this.berserker && !goal?.run && this.mayRetreat(view, !!goal)) this.state = 'retreat';
+    else if (target && hurt && !this.berserker && !goal?.run) this.state = 'retreat';
     else if (!underFire && !armedForVehicles && this.fetchLauncher(view, target)) {
       // An enemy vehicle about and nothing that hurts it: a launcher close by first.
       this.state = 'advance';
@@ -1208,8 +1164,6 @@ export class BotBrain {
       this.option = OPT_FIGHT;
     } else this.choose(view, hurt, underFire);
 
-    // Hurt and no longer retreating (nothing heals within reach): cover against what it sees, every time.
-    this.standHurt = hurt && !!target && this.state !== 'retreat' && !this.berserker && !goal?.run;
     // Cover-to-cover advance (Phase B item 6): on the way to an objective, in a fight at range, by style.
     this.bound = this.boundPhase(view, target, goal);
     // Cover: under fire, fighting at range, reloading or hurt, for bots that play tactically.
@@ -1218,7 +1172,7 @@ export class BotBrain {
     // An enemy vehicle it has nothing to hurt with: cover (any bot that thinks at all).
     const outgunned = !!target && this.targetMount?.kind === 'vehicle' && !armedForVehicles;
     const coverChance = Math.max(this.arena ? this.tactical * 0.4 : 0.15 + this.tactical * 1.7 + (this.methodical ? 0.3 : 0), outgunned ? 0.4 + this.tactical * 0.6 : 0);
-    if (threat && !this.berserker && !holding && !goal?.run && (this.bound !== null || this.standHurt || this.rng() < coverChance)) {
+    if (threat && !this.berserker && !holding && !goal?.run && (this.bound !== null || this.rng() < coverChance)) {
       const dist = horizontalDistance(me.pos, threat);
       const held = this.heldWeapon(view);
       const lowAmmo = !!held && held.def.magazine > 0 && held.mag <= Math.ceil(held.def.magazine * 0.25);
@@ -1308,7 +1262,7 @@ export class BotBrain {
     // only a moment).
     c.cover = !!this.cover && (underFire || !!view.reloading || hurt || tick - this.lastTargetTick < TICK_RATE * (g?.push ? 1 : 2.5 + (1 - this.profile.aggression / 100) * 3));
     // Getting away: keep running a moment after losing sight of the threat.
-    c.retreating = this.state === 'retreat' && !!lk && tick - lk.tick < TICK_RATE * 3 && this.mayRetreat(view, !!g);
+    c.retreating = this.state === 'retreat' && !!lk && tick - lk.tick < TICK_RATE * 3;
     c.pickup = this.pickupScore(view, g, underFire, hurt);
     c.lost = lk ? { pos: lk.pos, age: (tick - lk.tick) / TICK_RATE } : null;
     c.noise = hd ? { pos: hd.pos, age: (tick - hd.tick) / TICK_RATE } : null;
@@ -1551,7 +1505,6 @@ export class BotBrain {
           } else if (dist > preferred + (reach ? 1 : 4) || (squadAdvance && dist > 8)) this.spacing = 'close';
           else if (dist < preferred - 4) this.spacing = 'back';
           if (this.outnumbered() && dist < preferred + 6) this.spacing = 'back';
-          if (this.standHurt && this.spacing === 'close') this.spacing = 'hold';
           this.strafing = this.strafing ? dist < 15.5 : dist < 13;
           if (this.spacing === 'close') {
             moveYaw = this.followPathTo(view, t.pos, true);
@@ -1573,8 +1526,7 @@ export class BotBrain {
           // rather than stopping to trade shots at range. Up close it's a fight like any other.
           // A flag carrier runs whatever the range, sprinting past anyone not right on it.
           const g = view.orderGoal;
-          // (Hurt with nothing to heal at: it fights where it is, not on into them.)
-          if (g?.push && this.bound !== 'cover' && !this.standHurt && (dist > 9 || g.run) && (horizontalDistance(me.pos, g.pos) > g.radius + 0.5 || Math.abs(me.pos.y - g.pos.y) > 2)) {
+          if (g?.push && this.bound !== 'cover' && (dist > 9 || g.run) && (horizontalDistance(me.pos, g.pos) > g.radius + 0.5 || Math.abs(me.pos.y - g.pos.y) > 2)) {
             const go = this.followPathTo(view, this.orderTarget(view, g), false);
             if (go !== null) {
               moveYaw = go;
@@ -3628,7 +3580,6 @@ export class BotBrain {
       // Down again: done.
       if (grounded && tick - off > 3) {
         // (Down by its end: made; anywhere else, missed: short, or knocked off it.)
-        if (process.env.PKLOG) console.log(`PK ${this.slot} ${l.kind} ${l.start.x.toFixed(1)},${l.start.y.toFixed(1)},${l.start.z.toFixed(1)} > ${l.end.x.toFixed(1)},${l.end.y.toFixed(1)},${l.end.z.toFixed(1)} at ${me.pos.x.toFixed(1)},${me.pos.y.toFixed(1)},${me.pos.z.toFixed(1)} t${tick} ${this.state}`);
         if (horizontalDistance(me.pos, l.end) < 4.5 && Math.abs(me.pos.y - l.end.y) < 0.8) this.parkourDone[l.kind]++;
         else this.parkourMissed++;
         this.link = null;

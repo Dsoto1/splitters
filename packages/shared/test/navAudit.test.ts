@@ -128,9 +128,12 @@ describe('navigation audit', () => {
     expect(official.audit.patches.length).toBeGreaterThan(0);
   });
 
-  it('counts a pit 1.3 m deep as none: bots hop out of it, the legs tucked up (Undergate Transit’s track beds); 1.8 m deep is one', () => {
+  it('counts a pit 1.3 m deep as none: bots hop out of it, the legs tucked up (Undergate Transit’s track beds); 2.4 m deep is one', () => {
     expect(validateMapNavigation(pitMap(1.3), true).issues.filter((i) => i.code === 'nav.trap')).toEqual([]);
-    expect(validateMapNavigation(pitMap(1.8), true).issues.find((i) => i.code === 'nav.trap')?.severity).toBe('error');
+    // (1.8 m is none either since parkour's jumps up, nav/parkour.ts: a tucked jump every body size makes in the
+    // movement code gets out of it.)
+    expect(validateMapNavigation(pitMap(1.8), true).issues.filter((i) => i.code === 'nav.trap')).toEqual([]);
+    expect(validateMapNavigation(pitMap(2.4), true).issues.find((i) => i.code === 'nav.trap')?.severity).toBe('error');
     // And a bot put into the 1.3 m pit does get out (a jump alone clears about 1.1 m).
     const match = new Match(pitMap(1.3), { ...DEFAULT_DEATHMATCH_RULES, scoreLimit: 0, timeLimitSeconds: 0 }, 2);
     for (let i = 0; i < 2; i++) match.addBot(`bot${i}`, CORE_BOT_PROFILES[i]!, BOT_DIFFICULTIES.normal, true);
