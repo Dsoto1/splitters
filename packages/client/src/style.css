@@ -249,6 +249,8 @@ button.cta:hover { background: #ffc46e; }
 .mode-icon { width: 26px; height: 26px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 .mode-chip .mode-icon { width: 20px; height: 20px; }
 .mode-chip b { min-width: 0; font: 700 12px/1.15 var(--font-display); letter-spacing: 0.04em; text-transform: uppercase; }
+/* One long word (Breakthrough) has nowhere to wrap: a size smaller, so it fits the chip. */
+.mode-chip b.long { font-size: 10.5px; letter-spacing: 0; }
 .mode-chip.on { background: linear-gradient(180deg, rgba(0, 209, 255, 0.26), rgba(0, 209, 255, 0.06)); border-color: var(--cyan); box-shadow: 0 0 0 1px var(--cyan), 0 0 16px rgba(0, 209, 255, 0.2); color: var(--text); }
 .mode-line { margin-top: -2px; }
 .variant-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
@@ -453,6 +455,7 @@ button.cta:hover { background: #ffc46e; }
   .mode-pick { grid-template-columns: repeat(auto-fill, minmax(112px, 1fr)); gap: 4px; }
   .mode-chip { padding: 3px 7px; min-height: 30px; gap: 6px; }
   .mode-chip b { font-size: 11px; letter-spacing: 0.02em; }
+  .mode-chip b.long { font-size: 9.5px; letter-spacing: 0; }
   /* What wins: a name beside its stepper, a row each. */
   .field { flex-direction: row; align-items: center; gap: 8px; }
   .mode-chip .mode-icon { width: 16px; height: 16px; }

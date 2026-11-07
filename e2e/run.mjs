@@ -3123,13 +3123,18 @@ async function breakthroughFlow(browser) {
   await page.goto(`${CLIENT}/?test=1&god=1&testmap=test_breakthrough`);
   await page.waitForFunction(() => window.__front, null, { timeout: T(30000) });
   await page.evaluate(() => document.getElementById('nav-play').click());
-  await page.waitForSelector('#arcade-map', { timeout: T(30000) });
+  await page.waitForSelector('#arcade-map', { state: 'attached', timeout: T(30000) });
   // (The map loads behind the panel: its unavailable modes show once it has.)
   await page.waitForSelector('.mode-tag-off[data-mode="core.breakthrough"]', { timeout: T(30000) }).catch(() => {});
   const off = await page.evaluate(() => document.querySelector('.mode-tag-off[data-mode="core.breakthrough"]')?.dataset.tip ?? null);
   check(/sectors/.test(off ?? ''), `Match Setup greys Breakthrough out on a map without sectors, saying why (${off})`);
   // The map with sectors: Breakthrough is offered, its own settings in "what wins".
-  await page.selectOption('#arcade-map', 'test_breakthrough');
+  // (The setup's map list: picked as its select does, the map browser being the way a player picks.)
+  await page.evaluate(() => {
+    const select = document.getElementById('arcade-map');
+    select.value = 'test_breakthrough';
+    select.dispatchEvent(new Event('change', { bubbles: true }));
+  });
   await page.waitForSelector('#arcade-mode-breakthrough', { timeout: T(10000) });
   await page.evaluate(() => document.getElementById('arcade-mode-breakthrough').click());
   await page.waitForSelector('#arcade-bt-swap', { timeout: T(10000) });
@@ -3166,7 +3171,14 @@ async function breakthroughFlow(browser) {
   check(hud.label === 'Breakthrough' && hud.side === 'attack' && hud.sector === '0' && hud.letters === 'ABC', `the HUD shows your side and the sector strip (${JSON.stringify(hud)})`);
   check(hud.pool > 0 && Math.abs(hud.pool - hud.matchPool) <= 2 && hud.perAttacker === setup.pool, `the HUD shows the attackers' reinforcements, as set up (${hud.pool}; the match ${hud.matchPool}, ${hud.perAttacker} an attacker)`);
   check(hud.objectives === 'A1,A2' && hud.markers === 2 && hud.world >= 2 && hud.blips === 'A1,A2', `the beach's two capture zones are in play: on the HUD, marked, drawn and on the minimap (${JSON.stringify(hud)})`);
-  if (process.env.E2E_SHOTS) await page.screenshot({ path: `${process.env.E2E_SHOTS}/breakthrough-hud.png`, timeout: T(60000) }).catch(() => {});
+  // Pictures: the pause overlay (up in headless runs) hidden.
+  const shoot = async (name) => {
+    if (!process.env.E2E_SHOTS) return;
+    await page.evaluate(() => (document.getElementById('pause').style.visibility = 'hidden'));
+    await frames(page, 5);
+    await page.screenshot({ path: `${process.env.E2E_SHOTS}/${name}.png`, timeout: T(60000) }).catch(() => {});
+  };
+  await shoot('breakthrough-hud');
   // Bots take the beach on their own: run the clock forward (headless frame rates are slow), you parked out of it.
   const took = await page.evaluate(() => {
     const m = window.__match;
@@ -3223,7 +3235,7 @@ async function breakthroughFlow(browser) {
     const warned = await page.waitForFunction(() => !document.getElementById('bt-warning')?.hidden && /Fall back behind the line/.test(document.getElementById('bt-warning')?.textContent ?? ''), null, { timeout: T(15000) }).then(() => true, () => false);
     const warning = await page.evaluate(() => ({ text: document.getElementById('bt-warning')?.textContent, side: document.querySelector('#mode-status .bt-strip')?.dataset.btSide }));
     check(warned && warning.side === 'defend', `left behind the line as a defender, you get the fall-back warning (${JSON.stringify(warning)})`);
-    if (process.env.E2E_SHOTS) await page.screenshot({ path: `${process.env.E2E_SHOTS}/breakthrough-fallback.png`, timeout: T(60000) }).catch(() => {});
+    await shoot('breakthrough-fallback');
     await page.evaluate(() => clearInterval(self.__btHold));
   }
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);

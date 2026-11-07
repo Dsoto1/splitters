@@ -1081,7 +1081,7 @@ export class FrontEnd {
       'div',
       { class: 'mode-pick', id: 'arcade-modes' },
       ...current.modes.map((m) => {
-        const b = el('button', { type: 'button', class: `mode-chip${m === s.mode ? ' on' : ''}`, id: `arcade-mode-${m.replace('core.', '')}` }, modeIcon(m), el('b', { textContent: MODE_LABEL[m] }));
+        const b = el('button', { type: 'button', class: `mode-chip${m === s.mode ? ' on' : ''}`, id: `arcade-mode-${m.replace('core.', '')}` }, modeIcon(m), el('b', { textContent: MODE_LABEL[m], ...(/^\S{12,}$/.test(MODE_LABEL[m]) ? { class: 'long' } : {}) }));
         b.dataset.mode = m;
         b.dataset.tip = MODE_TIPS[m] ?? MODE_LINES[m];
         b.setAttribute('aria-pressed', String(m === s.mode));
