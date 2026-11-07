@@ -66,6 +66,8 @@ export interface CombatantView {
   human?: boolean;
   /** Sitting in a turret or vehicle. */
   mounted?: boolean;
+  /** Shut inside a sealed vehicle (the Tank): bullets can't reach them; only what hurts the vehicle does. */
+  sheltered?: boolean;
   /** On the ground (not jumping or falling). */
   grounded?: boolean;
   /** A machine (a sentry gun), not a person: its own body would block a sight line to its middle. */
@@ -300,6 +302,16 @@ const RIDE_PARKED_SECONDS = 8;
 /** A bot at the wheel gives up (gets out) when the route left hasn't shrunk this much (m) in this long (s). */
 const DRIVE_PROGRESS_SECONDS = 12;
 const DRIVE_MIN_PROGRESS = 10;
+/** A tank (a sealed vehicle) in a fight closes to this far (m), then holds, turning its gun onto the target; closer than TANK_TOO_CLOSE it backs off. */
+const TANK_STANDOFF = 28;
+const TANK_TOO_CLOSE = 10;
+/** Shells (limited mounted ammunition): nobody on foot nearer than this (m: the blast would hurt the tank), and on foot alone only while over this share of the load is left. */
+const SHELL_MIN_RANGE = 10;
+const SHELL_RESERVE = 0.3;
+/** A tank out of shells drives to an ammo pickup up to this far away (m) to refill. */
+const AMMO_DETOUR = 120;
+/** Someone shut in a sealed vehicle (the Tank) is this much less of a target (as if this many times further) to a bot with nothing that hurts vehicles. */
+const SHELTERED_TARGET_SCALE = 3;
 /** A pickup a bot got stuck going for is left alone this long (s). */
 const PICKUP_GIVE_UP_SECONDS = 90;
 /** How far (m) a bot goes to hop into a teammate's vehicle. */
@@ -590,6 +602,13 @@ export class BotBrain {
   private readonly boardFails = new Map<number, number>();
   /** Boardings so far (bot-report): use pressed for a planned mount, those that failed, mounts given up on, and plans for one it had given up on before (`back`). */
   readonly boarding = { tries: 0, failed: 0, gaveUp: 0, back: 0 };
+  /**
+   * At the wheel of a sealed vehicle (a tank; bot-report): drives taken, back-outs (stuck recoveries), drives given up
+   * as stuck, bail-outs with it about to blow, and drives to an ammo pickup for shells.
+   */
+  readonly tankLog = { drives: 0, backOuts: 0, stuck: 0, bails: 0, resupply: 0 };
+  private tankUnstick = 0;
+  private tankResupply = false;
   private readonly skipMount = (m: MountView): boolean => (this.avoidMounts.get(m.index) ?? -Infinity) > this.lastThinkTick;
   /** Riding with a bot at the wheel: is it getting anywhere? */
   private riderHeadway: Headway = { pos: null, tick: 0 };
@@ -2780,6 +2799,11 @@ export class BotBrain {
 
   // ------------------------------------------------------------------ turrets and vehicles
 
+  /** Can hurt a tank's crew (through the tank): something that hurts vehicles, carried or the seat's gun. */
+  private armedVsTanks(view: BotWorldView): boolean {
+    return (!!view.seat?.weapon && antiVehicle(view.seat.weapon) && view.seat.shells !== 0) || this.canHurtVehicles(view);
+  }
+
   /** Carries something that hurts vehicles properly: a launcher with rounds, or a grenade with a big blast. */
   private canHurtVehicles(view: BotWorldView): boolean {
     for (const w of view.inventory) if (antiVehicle(w.def) && w.mag + w.reserve > 0) return true;
@@ -2851,6 +2875,35 @@ export class BotBrain {
       if (!view.physics.lineOfSight(chest, { x: chest.x + Math.sin(yaw) * 3, y: chest.y, z: chest.z + Math.cos(yaw) * 3 })) yaw += Math.PI;
     } else if (this.dodge) yaw = this.dodge.yaw;
     this.dodge = { yaw, until: tick + Math.round(TICK_RATE * DODGE_SECONDS), sprint: hit.eta < DODGE_SPRINT_ETA };
+  }
+
+  /**
+   * Worth a shell (limited mounted ammunition, the Tank's cannon): a vehicle, a turret or a sentry always; someone on
+   * foot only far enough off that the blast spares the tank, and then while there are shells to spare (over
+   * SHELL_RESERVE of the load) or with another enemy beside them. Never with none left.
+   */
+  private worthShell(view: BotWorldView, shells: number, max: number, t: CombatantView): boolean {
+    if (shells <= 0) return false;
+    if (t.mounted || t.object) return true;
+    if (horizontalDistance(view.self.pos, t.pos) < SHELL_MIN_RANGE) return false;
+    if (shells > Math.ceil(max * SHELL_RESERVE)) return true;
+    for (const o of view.others) if (o !== t && o.alive && horizontalDistance(o.pos, t.pos) < 5) return true;
+    return false;
+  }
+
+  /** An ammo pickup that is up, within AMMO_DETOUR of `from` (a tank out of shells drives over it), or null. */
+  private ammoPickupFor(view: BotWorldView, from: Vec3): Vec3 | null {
+    let best: Vec3 | null = null;
+    let bestD = AMMO_DETOUR;
+    for (const p of view.pickups) {
+      if (!p.available || p.item.effect.kind !== 'ammo') continue;
+      const d = horizontalDistance(p.pos, from) + Math.abs(p.pos.y - from.y) * 3;
+      if (d < bestD) {
+        best = p.pos;
+        bestD = d;
+      }
+    }
+    return best;
   }
 
   /** Explosives at an enemy in a vehicle go at the hull (low), not at the head poking out of it. */
@@ -2959,8 +3012,13 @@ export class BotBrain {
     const armed = !!seat.weapon || seat.role === 'passenger';
     const inSeatArc = (p: Vec3) => !m || inArc(m, seat, p) || (!seat.weapon && seat.role === 'passenger');
     let fireAt: CombatantView | undefined = target && armed && inSeatArc(target.pos) ? target : undefined;
+    // Limited shells (the Tank's cannon): only at targets worth one.
+    const worth = !target || seat.shells === undefined || this.worthShell(view, seat.shells, seat.maxShells ?? seat.shells, target);
+    if (!worth) fireAt = undefined;
     if (seat.role === 'driver' && m) {
-      const goal = this.roamGoal ?? view.orderGoal?.pos ?? farthest(view.spawnPoints, m.pos) ?? m.pos;
+      // Out of shells with an ammo pickup up close by: go and drive over it (it refills them all).
+      const resupply = seat.shells === 0 ? this.ammoPickupFor(view, m.pos) : null;
+      const goal = resupply ?? this.roamGoal ?? view.orderGoal?.pos ?? farthest(view.spawnPoints, m.pos) ?? m.pos;
       const left = horizontalDistance(m.pos, goal);
       if (!this.goal || horizontalDistance(this.goal, goal) > 3 || tick - this.lastPathTick > TICK_RATE * 2) {
         this.goal = { ...goal };
@@ -2978,10 +3036,27 @@ export class BotBrain {
       let ctl = steer(this.drive, tick, m, aimPt, left);
       // Its speed hint: off the throttle above it.
       if (guided?.speed && (m.speed ?? 0) > guided.speed) ctl = { ...ctl, forward: Math.min(ctl.forward, 0) };
-      // An armed pilot (forward guns) turns onto targets in front.
-      if (seat.weapon && target && horizontalDistance(m.pos, target.pos) < 45) {
+      // A gun ahead on board: its own (or the empty cannon seat's, driverFires), or a crewmate's in a forward arc.
+      const crewGun = m.seats.some((x, i) => i !== seat.seat && x.weapon && x.arc !== undefined && !x.free && x.by !== view.self.slot);
+      const engaging = !!target && (seat.weapon ? worth : crewGun) && horizontalDistance(m.pos, target.pos) < (m.sealed ? 60 : 45);
+      if (engaging && m.sealed) {
+        // A tank fights at a stand-off: it closes to TANK_STANDOFF, then holds there turning its hull (and so its
+        // gun) onto the target, on the spot if it can pivot. (Holding still isn't stuck: the drive watch restarts.)
+        const d = horizontalDistance(m.pos, target!.pos);
+        if (d > TANK_STANDOFF) ctl = steer(this.drive, tick, m, target!.pos, 30);
+        else {
+          const err = angleDelta(m.yaw, Math.atan2(target!.pos.x - m.pos.x, target!.pos.z - m.pos.z));
+          ctl = { forward: d < TANK_TOO_CLOSE ? -0.4 : Math.abs(err) > 0.5 && !m.pivots ? 0.3 : 0, right: clamp(err * 2.5, -1, 1) };
+          this.drive.slow = 0;
+          this.drive.anchor = null;
+          this.drive.last = { ...m.pos };
+          this.driveLeft = { left: Infinity, tick };
+        }
+        fireAt = seat.weapon && worth && inArc(m, seat, target!.pos) ? target : undefined;
+      } else if (seat.weapon && target && horizontalDistance(m.pos, target.pos) < 45) {
+        // An armed pilot (forward guns) turns onto targets in front.
         ctl = steer(this.drive, tick, m, target.pos, 30);
-        fireAt = inArc(m, seat, target.pos) ? target : undefined;
+        fireAt = worth && inArc(m, seat, target.pos) ? target : undefined;
       }
       forward = ctl.forward;
       right = ctl.right;
@@ -2995,13 +3070,27 @@ export class BotBrain {
       // driver would take them round and round.)
       const routeLeft = this.path.length > 1 ? pathLength(this.path) : left;
       if (tick - this.driveLeft.tick >= TICK_RATE * DRIVE_PROGRESS_SECONDS) {
-        if (!fireAt && routeLeft > this.driveLeft.left - DRIVE_MIN_PROGRESS) this.drive.stuck = true;
+        if (!fireAt && !engaging && routeLeft > this.driveLeft.left - DRIVE_MIN_PROGRESS) this.drive.stuck = true;
         this.driveLeft = { left: routeLeft, tick };
       } else if (this.driveLeft.left === Infinity) this.driveLeft = { left: routeLeft, tick };
-      // Get out: arrived, about to blow (or on fire), stuck for good (a back-out didn't free it), or a fight with no gun.
-      if (left < 14 || aboutToBlow(m) || this.drive.stuck || (target && !seat.weapon && horizontalDistance(m.pos, target.pos) < 22)) leave = true;
+      // Get out: arrived (and not fighting from it), about to blow (or on fire), stuck for good (a back-out didn't free
+      // it), or a fight with no gun (not from a sealed one: inside is the safest place there is).
+      if ((left < 14 && !engaging && !resupply) || aboutToBlow(m) || this.drive.stuck || (target && !seat.weapon && !m.sealed && horizontalDistance(m.pos, target.pos) < 22)) leave = true;
       // Don't climb straight back into the one that got stuck.
       if (this.drive.stuck) this.giveUpOn(m.index, tick);
+      if (m.sealed) {
+        if (tick === this.mountedSince) {
+          this.tankLog.drives++;
+          this.tankUnstick = 0;
+          this.tankResupply = false;
+        }
+        if (this.drive.unstick > this.tankUnstick) this.tankLog.backOuts += this.drive.unstick - this.tankUnstick;
+        this.tankUnstick = this.drive.unstick;
+        if (resupply && !this.tankResupply) this.tankLog.resupply++;
+        this.tankResupply = !!resupply;
+        if (leave && this.drive.stuck && tick - this.mountedSince > TICK_RATE && !this.useLatch) this.tankLog.stuck++;
+        else if (leave && aboutToBlow(m) && tick - this.mountedSince > TICK_RATE && !this.useLatch) this.tankLog.bails++;
+      }
     } else if (m && m.kind === 'vehicle') {
       // Riding along: stay while a teammate drives; get out when they do, when it is about to blow (or on fire),
       // when a bot at the wheel has got it stuck, or when it has sat parked a while with nothing to shoot.
@@ -3240,6 +3329,7 @@ export class BotBrain {
     live.length = 0;
     const held = this.post?.kind === 'sniper' ? this.heldDef(view) : undefined;
     const sight = held && this.sniping(view, held) ? Math.max(SIGHT_RANGE, Math.min(SCOPE_SIGHT, held.botRange[1])) : SIGHT_RANGE;
+    let armedVsTanks: boolean | undefined;
     for (const o of view.others) {
       if (!o.alive) continue;
       const ox = o.pos.x - me.pos.x;
@@ -3262,8 +3352,9 @@ export class BotBrain {
       c.o = o;
       c.dx = dx;
       c.dz = dz;
-      // Stick with the current target unless another is much closer.
-      c.score = d * (o.slot === this.targetSlot ? 0.7 : 1);
+      // Stick with the current target unless another is much closer. Someone shut in a tank only when there's no one
+      // else, unless it has something that hurts vehicles (bullets can't reach them).
+      c.score = d * (o.slot === this.targetSlot ? 0.7 : 1) * (o.sheltered && !(armedVsTanks ??= this.armedVsTanks(view)) ? SHELTERED_TARGET_SCALE : 1);
       c.checked = false;
       live.push(c);
     }

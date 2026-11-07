@@ -93,6 +93,12 @@ export interface MountView {
   half?: readonly [number, number, number];
   /** Wedged where it stands (driven and going nowhere: the match's MountRt.wedged): nobody takes it till it is got out. */
   wedged?: boolean;
+  /** Its crew is shut in (MountArmour.sealed, the Tank): safe inside until it blows, and dead if still in when it does. */
+  sealed?: boolean;
+  /** Get out below this share of health (MountDef.bailHealth); absent: BAIL_HEALTH. */
+  bailHealth?: number;
+  /** Turns on the spot (tracks: the vehicle's `pivot`). */
+  pivots?: boolean;
 }
 
 /** Can a bot at `feet` get into `m` from where it stands (the match's own rule, sim/mounts.ts enterReach)? */
@@ -132,6 +138,9 @@ export interface SeatView {
   facing?: number;
   heat: number;
   overheated: boolean;
+  /** Limited ammunition (SeatDef.ammo: the Tank's shells): rounds aboard, of `maxShells`. Absent: it never runs dry. */
+  shells?: number;
+  maxShells?: number;
 }
 
 /** Is `p` inside a seat's firing arc and range from the mount? */
@@ -282,8 +291,8 @@ export function steer(st: DriveState, tick: number, m: MountView, aim: Vec3, dis
   return { forward, right };
 }
 
-/** About to blow: badly damaged, or on fire. Everyone aboard gets out. */
-export const aboutToBlow = (m: MountView): boolean => m.health < BAIL_HEALTH || !!m.burning;
+/** About to blow: badly damaged (under its bailHealth, else BAIL_HEALTH), or on fire. Everyone aboard gets out. */
+export const aboutToBlow = (m: MountView): boolean => m.health < (m.bailHealth ?? BAIL_HEALTH) || !!m.burning;
 
 /** A headway window (riders watching a bot driver): where the vehicle was when it opened, and when. */
 export interface Headway {

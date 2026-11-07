@@ -34,20 +34,22 @@ const { num, int, str, bool, en, tup, arr, obj, vec3, notes } = shape;
 export function schemas() {
   const seat = obj({
     role: en(['driver', 'gunner', 'passenger']), label: str, offset: vec3, 'weapon?': str, 'arc?': num, 'facing?': num, 'seated?': bool, 'legDrop?': num, 'straddle?': num,
+    'ammo?': obj({ max: int, 'start?': int, refillSeconds: num }), 'driverFires?': bool,
   });
+  const armour = obj({ 'surface?': str, 'sealed?': bool, 'bullets?': num, 'blasts?': num, 'melee?': num });
   const suspension = obj({
     'wheels?': arr(tup(2), 1), 'hub?': num, travel: num, bump: num, freq: num, damping: num, squat: num, lean: num, tumble: num, land: num,
     maxTilt: num, steer: num,
   });
   const vehicle = obj({
     maxSpeed: num, reverseSpeed: num, accel: num, turnRate: num, 'hover?': bool, 'grip?': num, 'mass?': num,
-    'fly?': obj({ climb: num, ceiling: num }), 'draft?': num, 'suspension?': suspension, 'drift?': num,
+    'fly?': obj({ climb: num, ceiling: num }), 'draft?': num, 'suspension?': suspension, 'drift?': num, 'pivot?': num,
   });
   const sentry = obj({ weapon: str, range: num, turnRate: num, 'arc?': obj({ windUpSeconds: num, lockSeconds: num, ventSeconds: num }) });
   const mount = obj({
     id: str, 'order?': int, displayName: str, kind: en(['turret', 'sentry', 'vehicle']), model: str, health: num, half: vec3, seats: arr(seat),
     enterRadius: num, respawnSeconds: num, blast: obj({ radius: num, damage: num }), 'vehicle?': vehicle, 'sentry?': sentry, 'glow?': str,
-    'airplane?': bool, 'rideHeight?': num, 'wheels?': obj({ model: str, at: arr(vec3, 1) }), 'cockpitEye?': vec3, 'turret?': obj({ seat: int, 'pitch?': tup(2) }), 'fallback?': str, blurb: str, 'notes?': notes,
+    'airplane?': bool, 'rideHeight?': num, 'wheels?': obj({ model: str, at: arr(vec3, 1) }), 'cockpitEye?': vec3, 'turret?': obj({ seat: int, 'pitch?': tup(2) }), 'fallback?': str, 'armour?': armour, 'bailHealth?': num, blurb: str, 'notes?': notes,
   });
   return { mount, seat };
 }
@@ -84,6 +86,7 @@ export function build(content, root = ROOT) {
   const slots = weaponSlots(root);
   const sounds = new Set(Object.keys(readJson(root, 'content/sounds.json').sounds));
   for (const s of MOUNT_SOUNDS) if (!sounds.has(s)) problems.push(`content/sounds.json: ${s} is missing (every mount plays it)`);
+  const surfaces = new Set(readJson(root, 'content/surface-types.json').types.map((t) => t.id));
   const procedural = new Set([...readFileSync(join(root, 'packages/client/src/content/models.ts'), 'utf8').matchAll(/path === '(procedural\/[\w-]+)'/g)].map((m) => m[1]));
   const modelExists = (p) => procedural.has(p) || existsSync(join(root, 'packages/client/public/models', p));
   const mountedWeapon = (where, w) => {
@@ -109,6 +112,14 @@ export function build(content, root = ROOT) {
     if (d.health <= 0) problems.push(`${file}: health must be above 0`);
     if (d.half.some((h) => h <= 0)) problems.push(`${file}: half sizes must be above 0`);
     if (d.respawnSeconds < 0 || d.enterRadius < 0 || d.blast.radius < 0 || d.blast.damage < 0) problems.push(`${file}: respawnSeconds, enterRadius and blast can't be negative`);
+    if (d.armour) {
+      const a = d.armour;
+      if (a.surface !== undefined && !surfaces.has(a.surface)) problems.push(`${file}: armour.surface ${a.surface} is not a surface type (content/surface-types.json)`);
+      for (const k of ['bullets', 'blasts', 'melee']) if (a[k] !== undefined && (a[k] < 0 || a[k] > 5)) problems.push(`${file}: armour.${k} is the share of that damage taken, 0 to 5`);
+      if (a.sealed && d.kind !== 'vehicle') problems.push(`${file}: armour.sealed is for vehicles (a crew shut in)`);
+    }
+    if (d.bailHealth !== undefined && (d.bailHealth <= 0 || d.bailHealth >= 1)) problems.push(`${file}: bailHealth is a share of health, above 0 and under 1`);
+    if (d.seats.filter((s) => s.driverFires).length > 1) problems.push(`${file}: only one seat can be driverFires`);
 
     // Seats by kind.
     const roles = d.seats.map((s) => s.role);
@@ -122,6 +133,11 @@ export function build(content, root = ROOT) {
       if (s.legDrop !== undefined && !s.seated) problems.push(`${where}: legDrop is for seated riders`);
       if (s.straddle !== undefined && !s.seated) problems.push(`${where}: straddle is for seated riders`);
       if (s.straddle !== undefined && (s.straddle < 0 || s.straddle > 0.8)) problems.push(`${where}: straddle must be 0 to 0.8 rad`);
+      if (s.ammo && !s.weapon) problems.push(`${where}: ammo is for a mounted weapon`);
+      if (s.ammo && (s.ammo.max < 1 || s.ammo.refillSeconds < 0 || (s.ammo.start !== undefined && (s.ammo.start < 0 || s.ammo.start > s.ammo.max)))) problems.push(`${where}: ammo needs max 1 or more, refillSeconds 0 or more (0: none back over time) and start 0 to max`);
+      if (s.driverFires && (s.role !== 'gunner' || !s.weapon)) problems.push(`${where}: driverFires is for a gunner seat with a weapon`);
+      if (s.driverFires && d.seats.some((x) => x.role === 'driver' && x.weapon)) problems.push(`${where}: driverFires needs a driver without a weapon of their own`);
+      if (s.driverFires && d.kind !== 'vehicle') problems.push(`${where}: driverFires is for vehicles (a driver)`);
     });
     if (d.kind === 'turret') {
       if (!d.seats.length || roles.some((r) => r !== 'gunner')) problems.push(`${file}: a turret has gunner seats only (at least one)`);
