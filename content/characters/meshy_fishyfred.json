@@ -1,0 +1,39 @@
+{
+  "id": "meshy_fishyfred",
+  "kind": "character",
+  "use": "player",
+  "order": 118,
+  "name": "Fishy Fred",
+  "look": "core.fishyfred",
+  "group": "animals",
+  "nameTheme": "critter",
+  "bio": "Walked out of the river in his best red sneakers. Nobody has told him about the smell.",
+  "body": "male",
+  "size": "small",
+  "notes": "Import list batch 1 (docs/IMPORT_LIST.md; \"Fishy Fred\", as Meshy names the download; rigged and animated on Meshy: Mixamo joint names read as Meshy's; finger chains for the thumb, middle and little finger only, no index or ring finger, so the fingers are re-fitted by hands.mjs; its two clips are not used). A big-headed fish on striped legs in red sneakers, a fin down its back and its tail curled up behind its head. Name a placeholder (the download's own) until the owner names it. A 5k-triangle download, kept whole. Small for its short body. Licence: Meshy Community, CC0 per the owner (2026-11-06: \"i did not make fishy fred, community\"); author and post URL pending from the owner.",
+  "source": {
+    "license": "CC0",
+    "author": "Meshy Community (CC0 per the owner)",
+    "community": {
+      "model": "Fishy Fred"
+    },
+    "date": "2026-11-06",
+    "url": null,
+    "file": "^Meshy_AI_Fishy_Fred_\\d+_animated_mixamo_All_animation\\.glb$"
+  },
+  "finish": {
+    "metallic": 0,
+    "roughness": 0.6
+  },
+  "firstPerson": {
+    "arms": "own"
+  },
+  "fixes": {
+    "triangles": 11000,
+    "headShare": 0.16,
+    "handsShare": 0.1,
+    "normalSize": 1024,
+    "lod": 0.25,
+    "feet": true
+  }
+}

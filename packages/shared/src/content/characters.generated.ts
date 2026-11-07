@@ -118,6 +118,8 @@ export const WHOLE_BODY_LOOKS: readonly CharacterLook[] = [
   { id: 'core.astronaut', name: 'Spacewalker', body: 'male', head: '', parts: ['meshy_astronaut'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_astronaut_fparms', grip: { gripLong: [-0.045, 0.02, -0.03], supportLong: [0, 0.02, 0.03], supportPistol: [-0.01, 0.03, -0.03] } }, group: 'soldiers', nameTheme: 'soldier' },
   { id: 'core.darkastronaut', name: 'Starfarer', body: 'male', head: '', parts: ['meshy_darkastronaut'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_darkastronaut_fparms', grip: { gripLong: [-0.03, 0.02, -0.03], supportLong: [0, 0.02, 0.03], supportPistol: [-0.01, 0.03, -0.03] } }, group: 'soldiers', nameTheme: 'soldier' },
   { id: 'core.tortoise', name: 'Shellback', body: 'male', head: '', parts: ['meshy_tortoise'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_tortoise_fparms', grip: { gripLong: [-0.045, 0.02, -0.03], supportPistol: [-0.01, 0.03, -0.03] } }, group: 'animals', nameTheme: 'critter' },
+  { id: 'core.trex', name: 'Cool Hands Rex', body: 'male', head: '', parts: ['meshy_trex'], hair: [], colorways: [], skin: null, hairColor: null, size: 'large', whole: { arms: 'meshy_trex_fparms' }, group: 'creatures', nameTheme: 'gangster' },
+  { id: 'core.fishyfred', name: 'Fishy Fred', body: 'male', head: '', parts: ['meshy_fishyfred'], hair: [], colorways: [], skin: null, hairColor: null, size: 'small', whole: { arms: 'meshy_fishyfred_fparms' }, group: 'animals', nameTheme: 'critter' },
 ];
 
 /** Whole-body characters made for NPCs only (`use: npc`): not on the roster; NPC_ROLE_SPECS can name them. */
@@ -239,4 +241,6 @@ export const WHOLE_BODY_BIOS: Readonly<Record<string, string>> = {
   'core.astronaut': 'Six hours outside the airlock without a scratch. Six seconds down here and somebody\'s shooting.',
   'core.darkastronaut': 'Came back from the far side of the Moon with a new suit, a purple glow and no explanation.',
   'core.tortoise': 'Slow to anger, slower to move, and nobody has ever knocked him over.',
+  'core.trex': 'Shades on, collar up, and the steadiest trigger claw since the Cretaceous.',
+  'core.fishyfred': 'Walked out of the river in his best red sneakers. Nobody has told him about the smell.',
 };
