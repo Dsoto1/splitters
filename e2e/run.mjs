@@ -1999,6 +1999,29 @@ async function canyonFlow(browser) {
   await page.keyboard.press('Control+z');
   const flat = await page.evaluate(() => Math.max(...window.__editor.doc.terrain.heights));
   check(flat === 0, 'undo takes the whole stroke back');
+  // Flatten to a typed height: the ground under the stroke goes to it, wherever the stroke starts.
+  await clickTool(page, '[data-tool="terrain:flatten"]');
+  await page.fill('#ed-tr-flatten-y', '3');
+  await page.mouse.move(p.x, p.y);
+  await page.mouse.down();
+  await page.waitForFunction(() => Math.max(...window.__editor.doc.terrain.heights) > 0 || window.__editor.stroke?.now.heights.some((h) => h > 250), null, { timeout: T(6000) }).catch(() => {});
+  await page.mouse.up();
+  const typed = await page.evaluate(() => Math.max(...window.__editor.doc.terrain.heights));
+  check(typed > 250 && typed <= 315, `Flatten to (m) levels the ground to the typed 3 m (${typed} cm over the terrain's base)`);
+  await page.fill('#ed-tr-flatten-y', '');
+  // An oblong terrain: width and depth (the grid 2.5 m past 320 m).
+  await page.click('#ed-tr-remove');
+  await page.fill('#ed-tr-new-w', '380');
+  await page.fill('#ed-tr-new-d', '320');
+  await page.click('#ed-tr-new');
+  const oblong = await page.evaluate(() => { const t = window.__editor.doc.terrain; return t && { cols: t.cols, rows: t.rows, spacing: t.spacing, label: document.getElementById('ed-tr-size').textContent }; });
+  check(oblong?.cols === 153 && oblong.rows === 129 && oblong.spacing === 2.5, `Create terrain makes a 380 x 320 m terrain at 2.5 m (${JSON.stringify(oblong)})`);
+  // Map properties: the modes a map also offers besides its main one.
+  await page.keyboard.press('Escape');
+  await page.waitForSelector('#ed-prop-also input[data-mode="core.tdm"]', { timeout: T(5000) });
+  await page.check('#ed-prop-also input[data-mode="core.tdm"]');
+  const modes = await page.evaluate(() => window.__editor.doc.metadata.supportedModes);
+  check(modes.length === 2 && modes[1] === 'core.tdm', `Map properties' Also offered adds Team Deathmatch to the map's modes (${modes.join(', ')})`);
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await page.context().close();
 }

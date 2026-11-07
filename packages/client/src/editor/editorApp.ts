@@ -4322,7 +4322,8 @@ export class EditorApp {
       const mode = document.createElement('select');
       const current = doc.metadata.supportedModes[0] ?? 'core.deathmatch';
       for (const [id, label] of [['core.deathmatch', 'Deathmatch'], ['core.tdm', 'Team Deathmatch'], ['core.ctf', 'Capture the Flag'], ['core.koth', 'King of the Hill'], ['core.elim', 'Elimination'], ['core.breakthrough', 'Breakthrough'], ['core.coop', 'Co-op mission'], ['core.zombies', 'Zombies'], ['core.discs', 'Disc Arena'], ['core.race', 'Race']] as const) mode.append(new Option(label, id, false, id === current));
-      mode.addEventListener('change', () => this.run('Change mode', { kind: 'setMetadata', before: { supportedModes: doc.metadata.supportedModes }, after: { supportedModes: [mode.value] } }));
+      // The main mode (the map's pick, what TEST plays) changes; the modes it also offers stay.
+      mode.addEventListener('change', () => this.run('Change mode', { kind: 'setMetadata', before: { supportedModes: doc.metadata.supportedModes }, after: { supportedModes: [mode.value, ...doc.metadata.supportedModes.slice(1).filter((m) => m !== mode.value)] } }));
       const teams = mapTeams(doc);
       const help: Record<string, string> = {
         'core.coop': 'Co-op: all players (and bots) team up against the NPC squads. Logic ends the mission with "players win" or "players lose".',
@@ -4342,6 +4343,28 @@ export class EditorApp {
       const extra = playableModes(doc).filter((m) => m !== current && m !== 'core.elim');
       if (extra.length) help[mode.value] = `${help[mode.value] ?? ''} Also playable here: ${extra.map((m) => MODE_LABELS[m]).join(', ')}.`;
       el.append(row('Mode', mode), small(help[mode.value] ?? ''));
+      // Modes the map offers besides its main one (the rest follow from its pieces: flag bases, hills, sectors...).
+      const also = document.createElement('div');
+      also.id = 'ed-prop-also';
+      also.className = 'ed-layers';
+      for (const [id, label] of [['core.deathmatch', 'Deathmatch'], ['core.tdm', 'Team Deathmatch'], ['core.coop', 'Co-op mission']] as const) {
+        if (id === current) continue;
+        const box = document.createElement('input');
+        box.type = 'checkbox';
+        box.dataset.mode = id;
+        box.checked = doc.metadata.supportedModes.includes(id);
+        box.addEventListener('change', () => {
+          const now = this.doc.metadata.supportedModes;
+          const next = box.checked ? [...now.filter((m) => m !== id), id] : now.filter((m) => m !== id);
+          this.run(box.checked ? `Also offer ${label}` : `Stop offering ${label}`, { kind: 'setMetadata', before: { supportedModes: now }, after: { supportedModes: next.length ? next : [current] } });
+        });
+        const lab = document.createElement('label');
+        lab.append(box, document.createTextNode(label));
+        also.append(lab);
+      }
+      const alsoRow = row('Also offered', also);
+      alsoRow.title = 'Other modes Match Setup offers on this map; the Mode above is its own pick and what TEST plays';
+      el.append(alsoRow);
       if (current === 'core.tdm' || current === 'core.koth' || current === 'core.elim' || current === 'core.breakthrough') this.renderTeamSetup(el);
       this.renderWeaponSet(el);
       this.renderMapBots(el);
