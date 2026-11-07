@@ -70,7 +70,9 @@ import {
   mapGravityZones,
   JET,
   getItem,
-  pickupPool,
+  setPickupPool,
+  setWeaponsInPlay,
+  weaponSetInPlay,
   getMountDef,
   airCraftDef,
   getWeapon,
@@ -1959,12 +1961,17 @@ export class GameSession {
     }
     const models = new Set<string>();
     for (const id of rules.startingWeapons) models.add(getWeapon(id).view.model);
+    // The weapon set's (sim/weaponSets.ts): its spawn weapons, random spawn guns, sniper gun and what its pickups hold.
+    const set = weaponSetInPlay(rules, map);
+    for (const id of set ? (setWeaponsInPlay(set, rules) ?? []) : []) models.add(getWeapon(id).view.model);
     for (const e of map.entities) {
       if (e.kind === 'pickup') {
         const fx = getItem(e.item)?.effect;
-        if (fx?.kind === 'weapon') models.add(getWeapon(fx.weapon).view.model);
-        // Whatever a random (or mixed-up) weapon pickup may roll, so a respawn never loads a model mid-fight.
-        for (const item of pickupPool(e, !!rules.mixPickups) ?? []) if (item.effect.kind === 'weapon') models.add(getWeapon(item.effect.weapon).view.model);
+        // Whatever a random (or mixed-up, or weapon set's) weapon pickup may roll, so a respawn never loads a model
+        // mid-fight; the weapon placed there only while it stays as placed.
+        const pool = setPickupPool(set, e, !!rules.mixPickups);
+        if (fx?.kind === 'weapon' && !pool) models.add(getWeapon(fx.weapon).view.model);
+        for (const item of pool ?? []) if (item.effect.kind === 'weapon') models.add(getWeapon(item.effect.weapon).view.model);
       }
       if (e.kind === 'mount') {
         const def = getMountDef(e.model);
