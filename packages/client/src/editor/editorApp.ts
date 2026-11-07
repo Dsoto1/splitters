@@ -4342,6 +4342,24 @@ export class EditorApp {
       const testRow = row('Test map', testOnly);
       testRow.title = 'A map for the automated tests: hidden from the map lists, templates, rotations and the host picker';
       el.append(testRow);
+      // The map's ID (its file name in maps/: `iron_coast` is maps/iron_coast.json), for a new official or test map.
+      const mapId = document.createElement('input');
+      mapId.type = 'text';
+      mapId.id = 'ed-prop-id';
+      mapId.value = doc.metadata.id;
+      mapId.maxLength = 64;
+      mapId.pattern = '[a-z0-9_]{4,64}';
+      mapId.addEventListener('change', () => {
+        const v = mapId.value.trim();
+        if (!/^[a-z0-9_]{4,64}$/.test(v)) {
+          mapId.value = doc.metadata.id;
+          return this.toast('A map ID is 4 to 64 lowercase letters, digits and underscores (its file name in maps/)', true);
+        }
+        if (v !== this.doc.metadata.id) this.run('Change map ID', { kind: 'setMetadata', before: { id: this.doc.metadata.id }, after: { id: v } });
+      });
+      const idRow = row('Map ID', mapId);
+      idRow.title = "The map's ID: lowercase letters, digits and underscores; an official map's file is maps/<ID>.json. Set it once, before the map is shared: a published or exported map keeps its ID.";
+      el.append(idRow);
 
       const sky = button('Sky, scenery & border…', () => {
         this.setWorkspace('environment');
