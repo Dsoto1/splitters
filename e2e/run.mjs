@@ -2025,16 +2025,33 @@ async function canyonFlow(browser) {
   await page.mouse.move(p.x, p.y);
   await page.mouse.click(p.x, p.y);
   await page.waitForFunction(() => window.__editor.doc.entities.some((e) => e.kind === 'spawn' && e.side === 'attack'), null, { timeout: T(5000) }).catch(() => {});
-  const marker = await page.evaluate(() => window.__editor.doc.entities.find((e) => e.kind === 'spawn' && e.side === 'attack')?.position[1] ?? null);
-  check(marker !== null && marker > 2.5, `an Attackers' Spawn placed on raised ground stands on it (y ${marker})`);
-  // An oblong terrain: width and depth (the grid 2.5 m past 320 m).
-  await page.click('#ed-tr-remove');
+  // (Against the ground under it: the brush works by time, so on a slow runner the stroke may stop short of 3 m.)
+  const marker = await page.evaluate(() => {
+    const e = window.__editor.doc.entities.find((x) => x.kind === 'spawn' && x.side === 'attack');
+    const t = window.__editor.doc.terrain;
+    if (!e || !t) return null;
+    // The terrain's height there (terrainHeightAt: the mesh's triangles).
+    const fx = (e.position[0] - t.origin[0]) / t.spacing;
+    const fz = (e.position[2] - t.origin[1]) / t.spacing;
+    const c = Math.floor(fx);
+    const r = Math.floor(fz);
+    const u = fx - c;
+    const v = fz - r;
+    const y = (cc, rr) => t.baseY + (t.heights[rr * t.cols + cc] ?? 0) / 100;
+    const ground = v >= u ? y(c, r) + (y(c + 1, r + 1) - y(c, r + 1)) * u + (y(c, r + 1) - y(c, r)) * v : y(c, r) + (y(c + 1, r) - y(c, r)) * u + (y(c + 1, r + 1) - y(c + 1, r)) * v;
+    return { y: e.position[1], ground };
+  });
+  check(!!marker && marker.ground > 1 && Math.abs(marker.y - marker.ground) < 0.3, `an Attackers' Spawn placed on raised ground stands on it (${JSON.stringify(marker)})`);
+  // An oblong terrain: width and depth (the grid 2.5 m past 320 m). (Placing the spawn opened its pane: back to Terrain.)
+  await clickTool(page, '#ed-tr-remove');
   await page.fill('#ed-tr-new-w', '380');
   await page.fill('#ed-tr-new-d', '320');
   await page.click('#ed-tr-new');
   const oblong = await page.evaluate(() => { const t = window.__editor.doc.terrain; return t && { cols: t.cols, rows: t.rows, spacing: t.spacing, label: document.getElementById('ed-tr-size').textContent }; });
   check(oblong?.cols === 153 && oblong.rows === 129 && oblong.spacing === 2.5, `Create terrain makes a 380 x 320 m terrain at 2.5 m (${JSON.stringify(oblong)})`);
-  // Map properties: the modes a map also offers besides its main one.
+  // Map properties: the modes a map also offers besides its main one. (Escape leaves the tool, again lets go of the
+  // spawn placed above: nothing selected shows the map's properties.)
+  await page.keyboard.press('Escape');
   await page.keyboard.press('Escape');
   // (At this width the inspector may be folded away: the box is clicked where it is.)
   await page.waitForSelector('#ed-prop-also input[data-mode="core.tdm"]', { state: 'attached', timeout: T(5000) });
