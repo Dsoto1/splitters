@@ -8,6 +8,11 @@ made only on a commit that passed CI on a check branch.
 
 ## Unreleased
 
+**Friendly fire works** (owner, 2026-11-07: turned on, shots still didn't hurt teammates): with it on (Half or Full,
+Match setup or the Host tab), your rounds, pellets, rockets, blades and fire hit a teammate in the way and hurt them
+(half as much on Half), and burns and poison stick; blasts already did. Off (the default), shots pass through
+teammates as before. A team kill still earns nothing.
+
 **Bot AI Phase C, items 1-4** (docs/BOT_AI_PLAN.md, "Phase C items 1-4, measured"; docs/BOTS.md):
 - Bots drop off ledges, jump gaps and jump up onto ledges as players do: links found at load and each checked by
   playing it through the real movement code; flankers, scouts, snipers and Arena bots use them most, and snipers look

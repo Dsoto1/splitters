@@ -27,6 +27,19 @@ gets overloaded above that: local e2e times out and flakes). Prune landed worktr
   reworks batches 2–3, character fixes rounds 2–3 (see the entries below and CHANGELOG).
 
 <!-- small-fixes-1107 -->
+### Friendly fire (`wip/friendly-fire`, agent, 2026-11-07; from main c8d8cba3; CI on `check/friendly-fire`; not landed)
+**Root cause:** the rule reached the match (Match setup's `rulesFromSetup`, the Host tab's `setRules`, hostRules KEPT;
+bots aren't flagged npc) but only `damage()` read it, and every hit test before it left teammates out: `targetsFor`
+(rounds, pellets, ballistic bullets, blades, punches) filtered on `hostile`, a projectile's direct hit skipped allies
+(a rocket flew through and burst beyond), and `applyStatus` dropped burns, poison and slows from allies. Splash
+already sent everyone to `damage()`, so only a blast right beside a teammate hurt.
+**Fix:** `Match.canHurt(a, b)`: an enemy, or anyone not hostile when `rules.friendlyFire` is on (never NPCs, never in
+a race without combat); used by the hit tests and `applyStatus`. Third-person aim (`targetsFor(..., aimOnly)`),
+homing, walkers, mines and bots' targets stay on `hostile`. **Tests:** `shared/test/friendlyFire.test.ts` fires each
+path for real (rifle, shotgun, rockets, knife, flamethrower and its burn) at a teammate and an enemy with the rule
+off, half and full; Breakthrough; a team kill earns nothing (fails without the fix). e2e `teams`
+(`friendlyFireChecks`): Match setup's rule reaches the match; a teammate takes your rounds with it on and none off.
+
 ### Small fixes from the owner's play, 2026-11-07 (`wip/small-fixes-1107`, agent; from main 3647eee9; green on `check/small-fixes-1107` at f79d1ec2, run 42384938315 (the full suite: unit, maps, build, check, bots, perf, 14 e2e shards); not landed)
 Four owner reports, each fixed at the cause with a test (CHANGELOG, "Small fixes from the owner's play").
 
