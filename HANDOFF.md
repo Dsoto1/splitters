@@ -138,8 +138,8 @@ Canyon): `first-high-1.jpg` and `first-high-2.jpg` (all twelve guns in first per
 at Low), `closeup-tiers.jpg` and `closeup-zoom.jpg` (your held copy at High against everyone's copy at Low),
 `third-high.jpg` (over the shoulder), `nades-hold.jpg` (each grenade in your hands), `nades-fly.jpg` (in flight, main's
 code-drawn shapes beside each model), `pickups.jpg` (two of each grenade, the AT mines, the SMG and shotgun, against
-main's coloured balls and discs), `icons.jpg` (the kill-feed icons); `wi/shots/smoke2.jpg` (the cloud from outside
-and inside) and `wi/shots/smoke3/inside-before-after.jpg` (inside it, before and after the sky fades); the grip sheets
+main's coloured balls and discs); `wi/shots/icons.jpg` (the kill-feed icons), `wi/shots/smoke2.jpg` (the cloud from
+outside and inside) and `wi/shots/smoke3/inside-before-after.jpg` (inside it, before and after the sky fades); the grip sheets
 of all twelve guns on the Ranger, third and first person (`wi/gripsheet-after/core.ranger.png` against
 `wi/gripsheet-before/`; halves in `wi/shots/grips/`); the download renders `wi/shots/cc0-guns.jpg`,
 `meshy-guns-q.jpg`, `cc0-explosives.jpg` and `cur-weapons.jpg`; the pack's maps screened for marks,
