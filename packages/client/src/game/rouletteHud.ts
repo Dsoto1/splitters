@@ -149,6 +149,8 @@ export class RouletteHud {
   state(rp: RoulettePrivate | undefined, alive: boolean, phase: MatchPhase): void {
     this.me = rp ?? null;
     const down = !alive && phase === 'playing' && !!rp;
+    // The spawn card is this life's: down, it goes (the death screen has its own next card).
+    if (!alive && !this.hold) this.hideCard();
     const offer = down && rp?.o && (rp.oc ?? -1) < 0 ? rp.o : null;
     const tokens = rp?.t ?? 0;
     this.input.roulettePick = offer ? offer.length : 0;
@@ -229,10 +231,16 @@ export class RouletteHud {
     this.awards.hidden = !show;
     if (phase !== 'intermission' && phase !== 'playing') this.aw = [];
     if (phase !== 'playing') {
+      if (!this.hold) this.hideCard();
       this.storm.hidden = true;
       this.next.hidden = true;
       this.hidePick();
     }
+  }
+
+  private hideCard(): void {
+    this.card.hidden = true;
+    this.cardTime.start(0);
   }
 
   /** Tests (pictures on a slow page): the card and the glow stay as they are while held. */
