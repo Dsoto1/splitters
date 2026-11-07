@@ -3337,7 +3337,8 @@ async function arsenalFlow(browser) {
   const page = await (await browser.newContext({ viewport: { width: 960, height: 540 } })).newPage();
   const errors = [];
   page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
-  await page.goto(`${CLIENT}/?offline=canyon&test=1&god=1`);
+  // Standard weapons (Rockfall Canyon's own default is Military): the mix-up and the drop below are Standard's.
+  await page.goto(`${CLIENT}/?offline=canyon&weapons=standard&test=1&god=1`);
   await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown' && window.__give, null, { timeout: T(60000) });
   // Where you spawned: open ground the melee checks below go back to.
   const home = await sim(page, (m, me) => ({ ...me.move.pos }));
@@ -4473,7 +4474,8 @@ const VISUAL_SCENES = [
   // Outdoors: terrain, sky, foliage.
   // The procedural environment at eye height (the envlab's 'small' view: shrubs, boulders, grass, trees behind).
   { name: 'envlab', url: '/?envlab&test=1&view=small', ready: () => window.__envlab?.ready, share: 0.1 },
-  { name: 'canyon', url: '/?offline=canyon&test=1&god=1&bots=1&name=Tester', ready: () => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() === 'playing' && !document.getElementById('view').classList.contains('veiled'), css: '#pause, #message { display: none !important; }', share: 0.1 },
+  // (Standard weapons, the pistol in hand, as the picture was taken: the map's own default is Military.)
+  { name: 'canyon', url: '/?offline=canyon&weapons=standard&test=1&god=1&bots=1&name=Tester', ready: () => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() === 'playing' && !document.getElementById('view').classList.contains('veiled'), css: '#pause, #message { display: none !important; }', share: 0.1 },
 ];
 
 /**
