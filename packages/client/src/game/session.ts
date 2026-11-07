@@ -440,6 +440,9 @@ export class GameSession {
   private rlTiny = new Set<number>();
   private rlJackpot = new Set<number>();
   private readonly rlUpcoming = new Set<string>();
+  /** Roulette: cards further ahead, loaded once the match has started (the loading gate waits only for the next ones). */
+  private rlLater: string[] | null = [];
+  private readonly rlLoaded = new Set<string>();
   /** Fort Wars: pieces, the build-phase barrier, the Builder's ghost and panel. */
   private forts: FortsClient | null = null;
   /** Race mode's lap counter, places, next-checkpoint marker and countdown. */
@@ -1743,11 +1746,14 @@ export class GameSession {
             // loaded now so a spawn never waits on a download.
             if (ev.j === 2) this.rlTiny.add(ev.s);
             else this.rlTiny.delete(ev.s);
-            for (const look of ev.nx ?? []) {
-              if (this.rlUpcoming.has(look)) continue;
-              this.rlUpcoming.add(look);
+            (ev.nx ?? []).forEach((look, i) => {
+              if (this.rlLoaded.has(look)) return;
+              // The next card now (and in the loading gate's warm-up); the ones after it once the match is under way.
+              if (i > 0 && this.rlLater) return void this.rlLater.push(look);
+              this.rlLoaded.add(look);
+              if (i === 0 && this.rlLater) this.rlUpcoming.add(look);
               void this.view.characters.preload({ look });
-            }
+            });
           }
           if (ev.e === 'spawn' && ev.l) this.relook(ev.s, ev.l);
           else if (ev.e === 'spawn' && this.rouletteHud && ev.s === this.slot && this.local) this.local.scale = this.sizeOf(this.slot);
@@ -2123,6 +2129,13 @@ export class GameSession {
     await Promise.race([all, new Promise((r) => setTimeout(r, 25000))]);
     started = true;
     if (this.closed) return;
+    // Roulette: the cards further ahead, now the match has its files.
+    for (const look of this.rlLater ?? []) {
+      if (this.rlLoaded.has(look)) continue;
+      this.rlLoaded.add(look);
+      void this.view.characters.preload({ look });
+    }
+    this.rlLater = null;
     this.hud.setLoading(null);
     this.opts.transport.sendReady();
   }

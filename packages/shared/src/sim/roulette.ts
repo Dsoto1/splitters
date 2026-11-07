@@ -39,6 +39,8 @@ export const JACKPOT_ARMOR: number = ROULETTE_DATA.jackpotArmor;
 /** A tiny roll's body (a multiple of the character's own size) and speed. */
 export const TINY_SIZE: number = ROULETTE_DATA.tiny.size;
 export const TINY_SPEED: number = ROULETTE_DATA.tiny.speed;
+/** Variety bonus: a point each time the characters a player has scored as reach another this many. */
+export const VARIETY_EVERY = 3;
 /** Spawn protection: seconds, ended early by firing, throwing or a melee strike. */
 export const SPAWN_PROTECT_SECONDS = 2;
 /** The spawn card's seconds on screen (the client's). */
@@ -374,10 +376,11 @@ export class RouletteDirector {
         bonus++;
         this.host.emit({ e: 'rl', a: 'air', s: killer.slot });
       }
-      // Variety bonus: a kill as a character you hadn't scored as yet (the first one is just a kill).
+      // Variety bonus: kills as several different characters, a point each time the characters you have scored as
+      // reach another VARIETY_EVERY (3, 6, 9…).
       if (this.rules.rouletteVariety && !k.scoredAs.has(killer.look)) {
         k.scoredAs.add(killer.look);
-        if (k.scoredAs.size >= 2) {
+        if (k.scoredAs.size % VARIETY_EVERY === 0) {
           bonus++;
           this.host.emit({ e: 'rl', a: 'variety', s: killer.slot, n: k.scoredAs.size });
         }

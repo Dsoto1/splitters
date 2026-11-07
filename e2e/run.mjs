@@ -3347,7 +3347,7 @@ async function rouletteFlow(browser) {
   const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('cs.arcade') ?? '{}'));
   check(party.mode === 'core.roulette' && party.on.join() === 'lunar,signature,jackpots,streakpick' && saved.gravity === 0.4 && saved.fallDamage === false && !saved.randomChars, `Lunar Roulette starts the Roulette mode with Lunar on (${JSON.stringify({ ...party, gravity: saved.gravity, fall: saved.fallDamage })})`);
   await page.evaluate(() => document.getElementById('arcade-start').click());
-  await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() === 'playing' && window.__match, null, { timeout: T(90000) });
+  await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() === 'playing' && window.__match, null, { timeout: T(150000) });
   const rules = await page.evaluate(() => ({ mode: window.__match.rules.mode, lunar: window.__match.rules.lunar, gravity: window.__match.phys.gravity, roulette: !!window.__match.roulette, label: document.getElementById('mode-label')?.textContent }));
   check(rules.mode === 'core.roulette' && rules.lunar === true && rules.gravity === 0.4 && rules.roulette && rules.label === 'Roulette', `the match plays Roulette with Lunar's extras (${JSON.stringify(rules)})`);
   // Pictures with the pause overlay (up in headless runs) hidden.

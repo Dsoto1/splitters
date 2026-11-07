@@ -340,8 +340,8 @@ points.
   The pick is `PlayerInput.say` 180-182, checked by the match (only while down, only with an offer, once).
 - **Variants** (Match Setup's chips, off by default): **Earned rerolls** (a token per 2 kills, 2 at most; R or the
   button on the death screen spends one for a new next card, or a new pick: `say` 185); **Swap on kill** (you become
-  your victim's character at once, keeping your share of health and your weapons); **Variety bonus** (+1 for a kill as
-  each new character after the first); **Teams** (Team Deathmatch over the players split in two, `rules.roulette` on
+  your victim's character at once, keeping your share of health and your weapons); **Variety bonus** (+1 each time the
+  characters you have scored as reach another 3); **Teams** (Team Deathmatch over the players split in two, `rules.roulette` on
   `core.tdm`, every player outlined in their team's colour: `teamOutlines`); **Lunar** (offered in every mode; its
   gravity 0.4 and no fall damage, and wherever those hold its extras, `rules.lunar`: +1 for a kill off the ground,
   every blast throws players about (knockback 10 at least), floaty ragdolls, jump pads 1.3× stronger, and a **gravity

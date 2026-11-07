@@ -107,7 +107,7 @@ export const SETUP_VARIANTS: readonly SetupVariant[] = [
   {
     id: 'variety',
     label: 'Variety bonus',
-    tip: 'A bonus point for each kill as a character you had not scored as yet.',
+    tip: 'Bonus points for kills made as several different characters: a point each time the characters you have scored as reach another 3.',
     modes: ['core.roulette'],
     sets: { rlVariety: true },
   },

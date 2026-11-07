@@ -371,15 +371,20 @@ describe('variants', () => {
     expect(ev.some((e) => e.e === 'rl' && e.a === 'swap' && e.s === a.slot && e.l === 'core.knight')).toBe(true);
   });
 
-  it('Variety bonus: a point for a kill as each new character after the first', () => {
+  it('Variety bonus: a point each time the characters you scored as reach another 3', () => {
     const { match, a, b } = roulette({ rouletteVariety: true, rouletteJackpots: false });
     a.look = 'core.ranger';
     kill(match, b, a);
     kill(match, b, a);
-    expect(a.kills).toBe(2);
     a.look = 'core.dapper';
     kill(match, b, a);
-    expect(a.kills).toBe(4);
+    expect(a.kills).toBe(3);
+    a.look = 'core.dale';
+    kill(match, b, a);
+    expect(a.kills).toBe(5);
+    a.look = 'core.ranger';
+    kill(match, b, a);
+    expect(a.kills).toBe(6);
   });
 
   it('Lunar: a bonus for an air kill, and a gravity storm every minute after a 3-second warning', () => {
