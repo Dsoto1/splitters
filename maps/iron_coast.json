@@ -39249,10 +39249,10 @@
     "foliage": []
   },
   "bounds": null,
-  "teamSetup": null,
   "backdrop": null,
-  "blood": null,
   "physics": null,
+  "blood": null,
+  "teamSetup": null,
   "dependencies": [],
   "setPieces": [
     {
