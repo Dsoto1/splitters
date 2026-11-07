@@ -543,6 +543,8 @@ export class BotBrain {
   private yaw = 0;
   private pitch = 0;
   private stuckCheck: { tick: number; pos: Vec3 } | null = null;
+  /** Ducking under something too low for its body, until then (mustDuck). */
+  private duckUntil = -Infinity;
   private jumpNext = false;
   private lastPos: Vec3 | null = null;
   /** The tick of the previous think (big matches skip some ticks for bots with nobody to fight). */
@@ -724,6 +726,7 @@ export class BotBrain {
     this.hurtTick = this.underFireTick = -Infinity;
     this.retreatGoal = null;
     this.retreatMode = null;
+    this.duckUntil = -Infinity;
     this.link = null;
     this.linkClock = null;
     this.spacing = 'hold';
@@ -2093,6 +2096,13 @@ export class BotBrain {
     }
     if (this.zipPress || me.riding) doing = 'zip';
     this.zipPress = false;
+    // A body taller than the navmesh's (a large look: 2.12 m against 1.8) ducks under what it doesn't stand up under (a
+    // dugout's roof edge, a low doorway), as a player does: before, it walked into it and stood there (Diamond Park's
+    // dugouts: three in five of the map's stuck recoveries were large bots).
+    if (moveYaw !== null && this.mustDuck(view, moveYaw)) {
+      stance = Math.max(stance, 1) as Stance;
+      sprint = false;
+    }
     if (sprint && moveYaw !== null && forward > 0.3) buttons |= BUTTON_SPRINT;
     else if (stance === 2) buttons |= BUTTON_PRONE;
     else if (stance === 1) buttons |= BUTTON_CROUCH;
@@ -3444,6 +3454,32 @@ export class BotBrain {
       }
     }
     return Math.atan2(wx + px, wz + pz);
+  }
+
+  /**
+   * A body taller than the navmesh's standing on its ground: whether there's no room to stand a step ahead along
+   * `moveYaw` (or here) but room to crouch; then it ducks for a moment. Looked at every few ticks (a shape query), only
+   * for bodies over the standard size.
+   */
+  private mustDuck(view: BotWorldView, moveYaw: number): boolean {
+    const me = view.self;
+    const k = me.size ?? 1;
+    if (k <= 1.02 || me.grounded === false) return false;
+    const tick = view.tick;
+    if (tick < this.duckUntil) return true;
+    if ((tick + this.slot) % DECIDE_TICKS !== 0) return false;
+    const r = PLAYER.radius * k;
+    // (A step up ahead counts: the head rises with the feet.)
+    for (const ahead of [0, 0.5, 1]) {
+      for (const up of [0, PLAYER.maxStepHeight - 0.02]) {
+        const at = { x: me.pos.x + Math.sin(moveYaw) * ahead, y: me.pos.y + up, z: me.pos.z + Math.cos(moveYaw) * ahead };
+        if (!view.physics.headroom(at, STANCES[0].height * k, r) && view.physics.headroom(at, STANCES[1].height * k, r)) {
+          this.duckUntil = tick + Math.round(TICK_RATE * 0.6);
+          return true;
+        }
+      }
+    }
+    return false;
   }
 
   /** Heading for a ladder's foot (within a few metres) or up or down one: the path's leg there is too steep to walk. */
