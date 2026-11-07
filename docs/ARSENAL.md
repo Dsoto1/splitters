@@ -118,8 +118,9 @@ need the nuclear bomb or flare gun though"; "We can replace our tommy gun with t
 others to replace any one-off originals we have"; and "we want these weapons to look a little sharper, clearer, better
 resolution". Every model below was rendered and checked by eye first. Each weapon's `view.fallback` stays the model
 built from the repo (always there), as earlier swaps did; the downloads that were replaced stay built in the repo
-(content/guns.json), so going back is a one-line change. Built by `tools/content/prepare-guns.mjs` (content/guns.json: the pack's own PBR maps, `held` copies,
-`pbr`); holds read off gridded side views of each built model (CHARACTERS.md, "Holding weapons").
+(content/guns.json), so going back is a one-line change. Built by `tools/content/prepare-guns.mjs`
+(content/guns.json: the pack's own PBR maps, `held` copies, `pbr`); holds read off gridded side views of each built
+model (CHARACTERS.md, "Holding weapons").
 
 | New model | Source | Weapon | Replaced |
 |---|---|---|---|
