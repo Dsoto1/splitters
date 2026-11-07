@@ -884,6 +884,12 @@ takes, captures, returns and drops, and every flag run (when, how long, how it e
 recoveries, kills and tick cost. `--suite=ctf` plays every map that offers CTF, `--shard=k/n` splits a suite over
 processes, `--json=file` keeps the rows and `--compare=before.json,after.json` (several files joined with `+`)
 prints the two side by side, per map. `--spells` lists the longest idle spells, `--bots` every bot.
+**Breakthrough** (`--mode=core.breakthrough`, or `--suite=breakthrough`: the maps that list it): each match records
+the sectors the attackers took of the map's, the second each fell, how the round ended (broke through, the line held,
+or still playing when `--seconds` ran out) and when, and the attackers' reinforcements at the start and left
+(`breakthrough` in the JSON rows); the match stops once its last round is over. Several seeds print a line per map and
+size: sectors taken on average, matches broken through, and each sector's share of matches taken with its average
+fall time. It is not in the nightly scorecard's suites.
 
 ### Scorecard (Phase A)
 

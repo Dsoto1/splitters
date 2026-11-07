@@ -3,7 +3,7 @@ import { cpus, loadavg } from 'node:os';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { BOT_DIFFICULTIES, CHARACTER_PROFILES, CORE_BOT_PROFILES, CORE_WEAPONS, THROWABLE_DEFS, TICK_RATE, WEAPON_SET_IDS, getWeaponSet, hasTag, initPhysics, isGameMode, isWeaponSetId, loadMap, mapCanRun, matchWeaponSet, rulesForMode, setThrowables, setWeaponIds, throwableWeaponId, type BotProfile, type GameEvent, type GameMode, type MapDocument } from '@tiletrigger/shared';
-import { CtfMode, FortsMode, KothMode, Match, ctfRoleOf, initNavigation, placeOn, simProfile } from '@tiletrigger/shared/match';
+import { BreakthroughMode, CtfMode, FortsMode, KothMode, Match, ctfRoleOf, initNavigation, placeOn, simProfile } from '@tiletrigger/shared/match';
 import { Behaviour } from './botMeasures.ts';
 import { drawNavPictures } from './navPictures.ts';
 
@@ -37,6 +37,10 @@ import { drawNavPictures } from './navPictures.ts';
  *   pnpm bot-report --judge=s0.json+s1.json [--pictures=dir] [--summary=file.md]
  *                                                 (the nightly's results held to bot-limits.json's limits; the nav
  *                                                  pictures with each map's failed searches)
+ *   pnpm bot-report iron_coast --mode=core.breakthrough --players=48 --seeds=1,2 --seconds=900
+ *                                                 (Breakthrough: sectors taken, when each fell, how the round ended and
+ *                                                  the attackers' reinforcements left; a match stops when its last round
+ *                                                  is over)
  *   pnpm bot-report shingle_point halcyon_station --mode=core.tdm --set=military,scifi,chaos  (each match in each
  *                                                 weapon set: kills by weapon per set)
  *   --shard=k/n plays every n-th match of the list from the k-th (run n processes; --compare and --judge take
@@ -156,6 +160,12 @@ export interface MatchRow {
   rounds?: number[];
   /** Fort Wars: pieces built. */
   pieces?: number;
+  /**
+   * Breakthrough (its first round, or both with the sides swapped): sectors taken of the map's, the second each fell,
+   * how the round ended (`attack`: the attackers broke through; `defence`: the line held; `open`: still playing when
+   * the report's time ran out), when, and the attackers' reinforcements at the start and left.
+   */
+  breakthrough?: { sectors: number; of: number; fell: number[]; outcome: 'attack' | 'defence' | 'open'; ended: number | null; poolStart: number; poolLeft: number };
   /** Failed route searches, where (at most FAIL_SPOTS a match, spread over it). */
   fails?: FailSpot[];
   /** Where stuck recoveries happened most: "x,y,z doing" (4 m cells) and how many. */
@@ -309,6 +319,8 @@ function play(map: MapDocument, mode: GameMode, seed: number, seconds: number, s
   const ctf = match.mode instanceof CtfMode ? match.mode : match.mode instanceof FortsMode ? match.mode.ctf : null;
   const koth = match.mode instanceof KothMode ? match.mode : null;
   const forts = match.mode instanceof FortsMode ? match.mode : null;
+  const bt = match.mode instanceof BreakthroughMode ? match.mode : null;
+  const btRow: MatchRow['breakthrough'] = bt ? { sectors: 0, of: bt.sectors.length, fell: [], outcome: 'open', ended: null, poolStart: bt.pool, poolLeft: bt.pool } : undefined;
   const bots = match.combatants().filter((c) => c.bot);
   const rec = new Map<number, BotRow>();
   for (const c of bots) {
@@ -354,11 +366,19 @@ function play(map: MapDocument, mode: GameMode, seed: number, seconds: number, s
   };
   simProfile.reset();
   simProfile.on = true;
+  // Seconds played: all of them, or (Breakthrough) until the last round is over.
+  let played = seconds;
   for (let k = 1; k <= seconds * TICK_RATE; k++) {
+    if (btRow?.ended != null) {
+      played = btRow.ended;
+      break;
+    }
     const t0 = performance.now();
     const events = match.step();
     tickMs.push(performance.now() - t0);
     const t = k / TICK_RATE;
+    if (bt && btRow && btRow.poolStart === 0 && bt.pool > 0) btRow.poolStart = bt.pool;
+    if (bt && btRow) btRow.poolLeft = bt.pool;
     behaviour.events(match, events);
     if (k % TICK_RATE === 0) behaviour.sample(match);
     if (hill && koth) {
@@ -387,7 +407,19 @@ function play(map: MapDocument, mode: GameMode, seed: number, seconds: number, s
         const r = rec.get(e.s);
         if (r && match.actor(e.s)?.bot?.vantage?.arrived) r.postShots!++;
       }
-      if (e.e === 'hill' || e.e === 'bomb' || e.e === 'elim' || e.e === 'hostage') {
+      if (e.e === 'bt' && btRow && bt) {
+        // The pool is dealt when play begins (after the countdown): its first value is the start.
+        if (e.a === 'start' && e.n === 1) btRow.poolStart = bt.pool;
+        if (e.a === 'sector') {
+          btRow.sectors++;
+          btRow.fell.push(Math.round(t));
+        }
+        if (e.a === 'round' && e.n === bt.rounds) {
+          btRow.outcome = e.team === bt.attackers ? 'attack' : 'defence';
+          btRow.ended = Math.round(t);
+        }
+      }
+      if (e.e === 'hill' || e.e === 'bomb' || e.e === 'elim' || e.e === 'hostage' || e.e === 'bt') {
         const k = `${e.e} ${e.a}`;
         out.objective[k] = (out.objective[k] ?? 0) + 1;
       }
@@ -602,7 +634,9 @@ function play(map: MapDocument, mode: GameMode, seed: number, seconds: number, s
   // Every navmesh path query (bots' routes, presses, sidesteps, lanes, modes...), and those that found no way.
   out.navQueries = simProfile.n.get('nav') ?? 0;
   out.navFails = simProfile.n.get('navFail') ?? 0;
-  out.coverage = behaviour.coverage(seconds);
+  out.seconds = played;
+  out.coverage = behaviour.coverage(played);
+  if (btRow) out.breakthrough = btRow;
   out.spread = behaviour.spread();
   out.spawnDeaths = behaviour.spawnDeaths;
   out.deaths = behaviour.deaths;
@@ -614,6 +648,13 @@ function play(map: MapDocument, mode: GameMode, seed: number, seconds: number, s
   out.stuckAt = [...stuckAt].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])).slice(0, 12);
   match.destroy();
   return out;
+}
+
+/** A Breakthrough match in a line: "2 of 3 sectors (A 76 s, B 190 s), the line held at 410 s; reinforcements 48, 3 left". */
+export function breakthroughText(b: NonNullable<MatchRow['breakthrough']>): string {
+  const fell = b.fell.map((t, i) => `${String.fromCharCode(65 + (i % Math.max(1, b.of)))} ${t} s`).join(', ');
+  const end = b.outcome === 'attack' ? `the attack broke through at ${b.ended} s` : b.outcome === 'defence' ? `the line held at ${b.ended} s` : 'still playing';
+  return `${b.sectors} of ${b.of} sectors${fell ? ` (${fell})` : ''}, ${end}; reinforcements ${b.poolStart}, ${b.poolLeft} left`;
 }
 
 function angleDiff(a: number, b: number): number {
@@ -693,6 +734,7 @@ function printMatch(m: MatchRow): void {
   if (m.hill) console.log(`hill: held ${m.hill.held} s, contested ${m.hill.contested} s, empty ${m.hill.empty} s`);
   if (m.rounds) console.log(`rounds: ${m.rounds.length} finished${m.rounds.length ? `, ${(sum(m.rounds, (r) => r) / m.rounds.length).toFixed(0)} s on average (${m.rounds.join(', ')})` : ''}`);
   if (m.pieces !== undefined) console.log(`forts: ${m.pieces} pieces built`);
+  if (m.breakthrough) console.log(`breakthrough: ${breakthroughText(m.breakthrough)}`);
   const searches = sum(m.bots, (r) => r.searches);
   const failures = sum(m.bots, (r) => r.pathFailures);
   console.log(`time: idle ${pct(sum(m.bots, (r) => r.idle), alive)} (out of a fight ${pct(sum(m.bots, (r) => r.idleCalm), alive)}, frozen ${pct(sum(m.bots, (r) => r.frozen), alive)}, no route ${pct(sum(m.bots, (r) => r.why.noPath ?? 0), alive)}) | going to the goal ${pct(sum(m.bots, (r) => r.towardGoal), goalT)} of goal time, at it ${pct(sum(m.bots, (r) => r.atGoal), goalT)} | kills ${m.kills} (${((m.kills / m.seconds) * 60).toFixed(1)}/min) | stuck recoveries ${sum(m.bots, (r) => r.stuck)} (loops ${sum(m.bots, (r) => r.loops)}) | route searches ${searches}, no route ${failures} (${pct(failures, searches)})`);
@@ -985,6 +1027,7 @@ function printMaps(rs: readonly MatchRow[]): void {
       m.rescues !== undefined ? `rescues ${f(m.rescues)}` : '',
       m.roundSeconds !== undefined ? `rounds ${f(m.rounds)} of ${f(m.roundSeconds, 0)} s` : '',
       m.pieces !== undefined ? `pieces ${f(m.pieces, 0)}` : '',
+      breakthroughSummary(ms),
     ].filter(Boolean).join(', ') || '-';
     const s = ms.flatMap((r) => Object.values(r.pushes ?? {}));
     const pushes = s.length ? `${sum(s, (v) => v.started)} (${sum(s, (v) => v.reached)}, ${sum(s, (v) => v.lostHalf)})` : '-';
@@ -1001,6 +1044,22 @@ function printSummary(rs: readonly MatchRow[]): void {
   }
   const sets = weaponSetTable(rs);
   if (sets.length) console.log(`\n${sets.join('\n')}`);
+  const bt = [...new Set(rs.filter((r) => r.breakthrough).map((r) => `${r.map}|${r.players}`))];
+  for (const k of bt) {
+    const ms = rs.filter((r) => r.breakthrough && `${r.map}|${r.players}` === k);
+    console.log(`\nbreakthrough ${ms[0]!.map}, ${ms[0]!.players} bots: ${breakthroughSummary(ms)}`);
+    for (const m of ms) console.log(`  seed ${m.seed}: ${breakthroughText(m.breakthrough!)}`);
+  }
+}
+
+/** Breakthrough over several matches: sectors taken on average, matches broken through, each sector's average fall time. */
+function breakthroughSummary(ms: readonly MatchRow[]): string {
+  const bs = ms.map((m) => m.breakthrough).filter((b): b is NonNullable<MatchRow['breakthrough']> => !!b);
+  if (!bs.length) return '';
+  const of = Math.max(...bs.map((b) => b.of));
+  const fell = Array.from({ length: of }, (_, i) => bs.map((b) => b.fell[i]).filter((t): t is number => t !== undefined));
+  const times = fell.map((ts, i) => (ts.length ? `${String.fromCharCode(65 + i)} ${ts.length}/${bs.length} at ${(ts.reduce((a, b) => a + b, 0) / ts.length).toFixed(0)} s` : `${String.fromCharCode(65 + i)} 0/${bs.length}`));
+  return `sectors ${(bs.reduce((a, b) => a + b.sectors, 0) / bs.length).toFixed(1)} of ${of}, broke through ${bs.filter((b) => b.outcome === 'attack').length}/${bs.length} (${times.join(', ')})`;
 }
 
 function printCompare(before: readonly MatchRow[], after: readonly MatchRow[]): void {
