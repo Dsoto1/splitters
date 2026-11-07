@@ -37,10 +37,10 @@ const environments = new WeakMap<Scene, { tex: DynamicTexture; isDisposed: boole
 function paint(tex: DynamicTexture, scene: Scene): void {
   const hemi = scene.getLightByName('hemi') as HemisphericLight | null;
   const k = Math.max(0.25, Math.min(1.2, hemi?.intensity ?? 0.8));
-  const sky = (hemi?.diffuse ?? new Color3(0.85, 0.88, 0.95)).scale(0.75 * k);
-  const ground = (hemi?.groundColor ?? new Color3(0.5, 0.47, 0.43)).scale(0.35 * k);
-  const horizon = Color3.Lerp(sky, ground, 0.45);
-  const band = sky.scale(1.6);
+  const sky = (hemi?.diffuse ?? new Color3(0.85, 0.88, 0.95)).scale(1.15 * k);
+  const ground = (hemi?.groundColor ?? new Color3(0.5, 0.47, 0.43)).scale(0.5 * k);
+  const horizon = Color3.Lerp(sky, ground, 0.4);
+  const band = sky.scale(1.8);
   const css = (c: Color3) => `rgb(${Math.round(Math.min(1, c.r) * 255)},${Math.round(Math.min(1, c.g) * 255)},${Math.round(Math.min(1, c.b) * 255)})`;
   const ctx = tex.getContext();
   const g = ctx.createLinearGradient(0, 0, 0, 64);

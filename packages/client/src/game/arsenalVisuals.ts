@@ -10,7 +10,8 @@ import { CreateLines } from '@babylonjs/core/Meshes/Builders/linesBuilder';
 import { CreateSphere } from '@babylonjs/core/Meshes/Builders/sphereBuilder';
 import { CreateTorus } from '@babylonjs/core/Meshes/Builders/torusBuilder';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
-import { FresnelParameters } from '@babylonjs/core/Materials/fresnelParameters';
+import { DynamicTexture } from '@babylonjs/core/Materials/Textures/dynamicTexture';
+import { CreatePlane } from '@babylonjs/core/Meshes/Builders/planeBuilder';
 import { SMOKE, STATUS_BURN, STATUS_CHILL, STATUS_FROZEN, STATUS_POISON, STATUS_SLOW, ZONE_KINDS, type ProjectileVisual, type SmokeCloud, type Vec3, type ZoneSnapshot } from '@tiletrigger/shared';
 
 /**
@@ -267,23 +268,55 @@ interface ZoneMesh {
 }
 
 /**
- * A smoke cloud's puffs in a cloud of radius 1 (x, y, z, radius): a big one in the middle and a ring of smaller ones
- * round it and over it, so its outline billows. Scaled each frame to the radius the match sends.
+ * A smoke cloud's puffs in a cloud of radius 1 (x, y, z, size): soft camera-facing cards scattered through it (a
+ * fixed scatter, the same for every cloud), a big one in the middle and more round it, so it reads as one billowing
+ * mass with a ragged edge. Scaled each frame to the radius the match sends.
  */
-const SMOKE_PUFFS: readonly (readonly [number, number, number, number])[] = [
-  [0, 0, 0, 0.74],
-  ...[0, 1, 2, 3, 4, 5].map((i) => {
-    const a = (i / 6) * Math.PI * 2 + 0.4;
-    return [Math.cos(a) * 0.5, i % 2 ? 0.12 : -0.14, Math.sin(a) * 0.5, 0.52] as const;
-  }),
-  [0.18, 0.42, -0.1, 0.46],
-  [-0.22, 0.38, 0.14, 0.42],
-];
+const SMOKE_PUFFS: readonly (readonly [number, number, number, number])[] = (() => {
+  const out: [number, number, number, number][] = [[0, 0, 0, 1.7]];
+  let seed = 7;
+  const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  for (let i = 0; i < 21; i++) {
+    const a = rnd() * Math.PI * 2;
+    const r = 0.2 + 0.55 * Math.sqrt(rnd());
+    out.push([Math.cos(a) * r, (rnd() - 0.4) * 0.6, Math.sin(a) * r, 1.0 + rnd() * 0.6]);
+  }
+  return out;
+})();
+
+/** A soft round puff of smoke (alpha falling off to its edge, a little lumpy): a 64 px picture made once a scene. */
+function smokeTexture(scene: Scene): DynamicTexture {
+  const cached = puffTextures.get(scene);
+  if (cached) return cached;
+  const tex = new DynamicTexture('smokePuff', { width: 64, height: 64 }, scene, true);
+  const ctx = tex.getContext();
+  ctx.clearRect(0, 0, 64, 64);
+  // Overlapping soft blobs: lumps on the edge, a dense middle.
+  let seed = 3;
+  const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  for (let i = 0; i < 14; i++) {
+    const r = i === 0 ? 30 : 10 + rnd() * 12;
+    const a = rnd() * Math.PI * 2;
+    const d = i === 0 ? 0 : 6 + rnd() * 14;
+    const x = 32 + Math.cos(a) * d;
+    const y = 32 + Math.sin(a) * d;
+    const g = ctx.createRadialGradient(x, y, 0, x, y, r);
+    g.addColorStop(0, `rgba(255,255,255,${i === 0 ? 0.8 : 0.45})`);
+    g.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, 64, 64);
+  }
+  tex.hasAlpha = true;
+  tex.update();
+  puffTextures.set(scene, tex);
+  return tex;
+}
+const puffTextures = new WeakMap<Scene, DynamicTexture>();
 
 /**
- * The smoke's material: a steady mid grey (never white: no bright full-screen look when it fills the view), lit
- * like the world with a little of its own light so its shaded side isn't black, its edges see-through (opacity
- * fresnel) so the puffs read as soft. Seen from inside, the scene's fog takes over (View.updateSmokeFog).
+ * The smoke's material: soft puffs in a steady mid grey (never white: no bright full-screen look when one fills the
+ * view), unlit but as bright as the map's light, so it sits in a night map as in a day one. Seen from inside, the
+ * scene's fog takes over (View.updateSmokeFog).
  */
 function smokeMaterial(scene: Scene): StandardMaterial {
   let byKey = materials.get(scene);
@@ -291,12 +324,15 @@ function smokeMaterial(scene: Scene): StandardMaterial {
   let m = byKey.get('smoke');
   if (!m) {
     m = new StandardMaterial('arsenal_smoke', scene);
-    m.diffuseColor = Color3.FromHexString('#8c9095');
-    m.specularColor = Color3.Black();
-    m.emissiveColor = Color3.FromHexString('#8c9095').scale(0.3);
-    m.alpha = 0.9;
+    const hemi = scene.getLightByName('hemi');
+    const light = Math.max(0.35, Math.min(1, hemi?.intensity ?? 0.8));
+    m.disableLighting = true;
+    m.emissiveColor = Color3.FromHexString('#8a8e93').scale(light);
+    m.diffuseTexture = smokeTexture(scene);
+    m.useAlphaFromDiffuseTexture = true;
     m.backFaceCulling = false;
-    m.opacityFresnelParameters = new FresnelParameters({ leftColor: Color3.White(), rightColor: Color3.Black(), power: 1.6, bias: 0.15 });
+    // Drawn over each other in any order without cutting holes (soft cards, nothing behind them to hide).
+    m.disableDepthWrite = true;
     byKey.set('smoke', m);
   }
   return m;
@@ -398,8 +434,9 @@ export class ZoneVisuals {
       }
       case 'smoke': {
         const material = smokeMaterial(scene);
-        for (const [i, [x, y, z, r]] of SMOKE_PUFFS.entries()) {
-          const puff = CreateSphere(`smoke${i}`, { diameter: r * 2, segments: 10 }, scene);
+        for (const [i, [x, y, z, size]] of SMOKE_PUFFS.entries()) {
+          const puff = CreatePlane(`smoke${i}`, { size }, scene);
+          puff.billboardMode = TransformNode.BILLBOARDMODE_ALL;
           // Its middle SMOKE.rise of the radius above the ground it lies on (the root's scale carries the radius).
           puff.position.set(x, y + SMOKE.rise, z);
           puff.material = material;
@@ -462,7 +499,8 @@ export class ZoneVisuals {
       m.root.rotation.y = t * 0.05;
       const thin = Math.max(0, Math.min(1, (m.left ?? 3) / 2.5));
       m.root.getChildMeshes().forEach((c, i) => {
-        c.scaling.setAll(1 + Math.sin(t * 0.6 + i * 1.3) * 0.04);
+        c.scaling.setAll(1 + Math.sin(t * 0.6 + i * 1.3) * 0.05);
+        c.rotation.z = (i % 2 ? 1 : -1) * t * 0.08 + i;
         c.visibility = thin;
       });
       return;
