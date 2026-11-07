@@ -879,6 +879,12 @@ img.wicon.large { height: 26px; margin: 0 6px 0 0; }
 #mode-status .ms.taken { animation: ms-blink 0.8s steps(2) infinite; }
 #mode-status .ms em { font-style: normal; color: #f2f2f2; }
 #mode-status .me { color: #f2c14e; border-color: #f2c14e; }
+/* Breakthrough: the sector strip (taken, in play, to come) and the fall-back warning over the crosshair. */
+#mode-status .bt-sec { display: inline-block; min-width: 16px; padding: 0 3px; font-style: normal; text-align: center; color: #8a93a6; border: 1px solid #3a4256; }
+#mode-status .bt-sec.done { color: #0b0f1a; background: #8a93a6; }
+#mode-status .bt-sec.on { color: #0b0f1a; background: #f2c14e; border-color: #f2c14e; }
+#bt-warning { position: absolute; top: 30%; left: 50%; transform: translateX(-50%); padding: 10px 24px; background: rgba(60, 8, 8, 0.85); border: 2px solid #ff4a3a; color: #ffdad6; font: 700 24px var(--font-display); text-transform: uppercase; letter-spacing: 0.06em; pointer-events: none; }
+#bt-warning.hurting { animation: ms-blink 0.6s steps(2) infinite; }
 @keyframes ms-blink { 50% { opacity: 0.45; } }
 #mode-markers, #ping-markers { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
 .mode-marker { position: absolute; transform: translate(-50%, -100%); text-align: center; font: 700 12px var(--font-display); text-shadow: 0 1px 3px #000; }

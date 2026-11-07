@@ -241,9 +241,11 @@ export function drawMapPlan(canvas: HTMLCanvasElement, map: MapDocument): void {
     const y = py(e.position[2]);
     if (e.kind === 'hill') ring(x, y, e.radius, '#ffd166');
     else if (e.kind === 'rescue') ring(x, y, e.radius, '#2ecc71');
-    else if (e.kind === 'bombsite') {
-      ring(x, y, e.radius, '#ff9f43');
-      g.fillStyle = '#ff9f43';
+    else if (e.kind === 'bombsite' || e.kind === 'objective') {
+      // Bomb sites; Breakthrough's objectives (zones gold, targets red, the final hold violet) with their labels.
+      const color = e.kind === 'bombsite' ? '#ff9f43' : e.objective === 'target' ? '#ff5a3a' : e.objective === 'final' ? '#c38bff' : '#f2c14e';
+      ring(x, y, e.radius, color);
+      g.fillStyle = color;
       g.font = `700 ${Math.round(8 * u)}px sans-serif`;
       g.textAlign = 'center';
       g.textBaseline = 'middle';

@@ -3,7 +3,7 @@
 import type { EdgeShape } from '../map/tileOptions.ts';
 
 /** Every edge style, in MapMaker's order. `auto` and `open` are rules (map/geometry.ts resolveEdge). */
-export const EDGE_STYLES = ['auto', 'wall', 'door', 'wide', 'arch', 'arch_segmental', 'arch_round', 'arch_grand', 'window', 'windows', 'slit', 'embrasure', 'half', 'railing', 'high', 'tower', 'fence', 'broken', 'bars', 'bars_gate', 'shutter', 'open'] as const;
+export const EDGE_STYLES = ['auto', 'wall', 'door', 'wide', 'arch', 'arch_segmental', 'arch_round', 'arch_grand', 'window', 'windows', 'slit', 'embrasure', 'half', 'railing', 'high', 'tower', 'fence', 'broken', 'bars', 'bars_gate', 'shutter', 'gate_arch', 'open'] as const;
 
 export const EDGE_STYLE_LABELS: Readonly<Record<(typeof EDGE_STYLES)[number], string>> = {
   auto: 'Auto',
@@ -27,6 +27,7 @@ export const EDGE_STYLE_LABELS: Readonly<Record<(typeof EDGE_STYLES)[number], st
   bars: 'Bars',
   bars_gate: 'Barred gate',
   shutter: 'Shutter (crouch under)',
+  gate_arch: 'Gate arch (2 storeys)',
   open: 'No wall',
 };
 
@@ -64,6 +65,8 @@ export const EDGE_SHAPES: Readonly<Partial<Record<(typeof EDGE_STYLES)[number], 
   bars_gate: { segments: [{ u: [-0.03, 0.03], y: [0, { height: 1 }], t: 0.1, repeat: { from: { half: -1, add: 0.15 }, to: -1.6, step: 0.3 } }, { u: [-0.03, 0.03], y: [0, { height: 1 }], t: 0.1, repeat: { from: 1.75, to: { half: 1, add: -0.1 }, step: 0.3 } }, { u: [-1.6, -1.5], y: [0, { height: 1 }], t: 0.2 }, { u: [1.5, 1.6], y: [0, { height: 1 }], t: 0.2 }, { u: [-0.03, 0.03], y: [3.12, { height: 1 }], t: 0.1, repeat: { from: -1.35, to: 1.35, through: true, step: 0.3 } }, { u: [-1.5, 1.5], y: [3, 3.12], t: 0.12 }, { u: [{ half: -1 }, -1.6], y: [0, 0.12], t: 0.12 }, { u: [1.6, { half: 1 }], y: [0, 0.12], t: 0.12 }, { u: [{ half: -1 }, { half: 1 }], y: [{ height: 1, add: -0.15 }, { height: 1 }], t: 0.12 }], trim: [], openings: [[-1.5, 1.5, 0, 3]], dressing: { kind: 'door', span: 3 } },
   // design: A wide opening with its roller shutter stuck 1.35 m up: crouch under it (bots don't path through).
   shutter: { segments: [{ u: [{ half: -1 }, -2.5], y: [0, { height: 1 }] }, { u: [2.5, { half: 1 }], y: [0, { height: 1 }] }, { u: [-2.5, 2.5], y: [{ upTo: 3.5 }, { height: 1 }] }, { u: [-2.5, 2.5], y: [1.35, { upTo: 3.5 }], t: 0.12 }], trim: [{ base: [{ half: -1 }, -2.66] }, { base: [2.66, { half: 1 }] }, { cornice: [{ half: -1 }, { half: 1 }] }, { frame: { half: 2.5, top: 3.5 } }], openings: [[-2.5, 2.5, 0, 3.5]], dressing: { kind: 'door', span: 5 } },
+  // design: A fortified gate in one side, two storeys high (MAP 21's gatehouse on the grand stair: docs/SET_PIECES_PLAN.md): a round arch 5 m wide springing at 3.2 m to its crown at 5.7 m through a wall 1.2 m thick, the wall up to the top of the storey above (8 m on 4 m levels) and crenellated over it (merlons 1.1 m wide and 0.9 m high, four a side, the end ones meeting their neighbours' as one). Its collision steps over the curve and never dips below it (10° steps); eleven voussoirs and a keystone, impost blocks and a string course under the battlements dress it. Two side by side make a twin gate on a central pier 3 m wide. No facade: the gate dresses itself.
+  gate_arch: { segments: [{ u: [{ half: -1 }, -2.5], y: [0, { height: 2 }], t: 1.2 }, { u: [2.5, { half: 1 }], y: [0, { height: 2 }], t: 1.2 }, { u: [-2.5, -2.46], y: [3.64, { height: 2 }], t: 1.2 }, { u: [-2.46, -2.35], y: [4.06, { height: 2 }], t: 1.2 }, { u: [-2.35, -2.17], y: [4.45, { height: 2 }], t: 1.2 }, { u: [-2.17, -1.92], y: [4.81, { height: 2 }], t: 1.2 }, { u: [-1.92, -1.61], y: [5.12, { height: 2 }], t: 1.2 }, { u: [-1.61, -1.25], y: [5.37, { height: 2 }], t: 1.2 }, { u: [-1.25, -0.86], y: [5.55, { height: 2 }], t: 1.2 }, { u: [-0.86, -0.43], y: [5.67, { height: 2 }], t: 1.2 }, { u: [-0.43, 0.43], y: [5.7, { height: 2 }], t: 1.2 }, { u: [0.43, 0.86], y: [5.67, { height: 2 }], t: 1.2 }, { u: [0.86, 1.25], y: [5.55, { height: 2 }], t: 1.2 }, { u: [1.25, 1.61], y: [5.37, { height: 2 }], t: 1.2 }, { u: [1.61, 1.92], y: [5.12, { height: 2 }], t: 1.2 }, { u: [1.92, 2.17], y: [4.81, { height: 2 }], t: 1.2 }, { u: [2.17, 2.35], y: [4.45, { height: 2 }], t: 1.2 }, { u: [2.35, 2.46], y: [4.06, { height: 2 }], t: 1.2 }, { u: [2.46, 2.5], y: [3.64, { height: 2 }], t: 1.2 }, { u: [-4, -2.9], y: [{ height: 2 }, { height: 2, add: 0.9 }], t: 1.2 }, { u: [-1.7, -0.6], y: [{ height: 2 }, { height: 2, add: 0.9 }], t: 1.2 }, { u: [0.6, 1.7], y: [{ height: 2 }, { height: 2, add: 0.9 }], t: 1.2 }, { u: [2.9, 4], y: [{ height: 2 }, { height: 2, add: 0.9 }], t: 1.2 }], trim: [{ base: [{ half: -1 }, -2.66] }, { base: [2.66, { half: 1 }] }, { u: [-3, -2.5], y: [3, 3.2], depth: 0.1, outside: true }, { u: [2.5, 3], y: [3, 3.2], depth: 0.1, outside: true }, { arch: { u: [-2.5, 2.5], y: [3.2, 5.7], count: 11, band: 0.5, key: 0.28, depth: 0.08 }, outside: true }, { u: [{ half: -1 }, { half: 1 }], y: [{ height: 2, add: -0.25 }, { height: 2 }], depth: 0.1, outside: true }], openings: [[-2.5, 2.5, 0, 5.7]], dressing: { kind: 'door', span: 5 } },
 };
 
 /** Styles with window openings glass can fill (sim/glass.ts). */
