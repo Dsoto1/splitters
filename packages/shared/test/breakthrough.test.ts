@@ -17,12 +17,18 @@ import {
   BOT_DIFFICULTIES,
   DEFAULT_RULES,
   breakthroughIssues,
+  breakthroughMinutesFor,
+  breakthroughPoolFor,
   initPhysics,
   mapCanRun,
+  modeOptions,
   playableModes,
+  rulesFromSetup,
+  suggestedLimits,
   type GameEvent,
   type MapDocument,
   type MatchRules,
+  type MatchSetup,
 } from '../src/index.ts';
 import { BT_FALLBACK_SECONDS, BT_FUSE_SECONDS, Match, initNavigation, type BreakthroughMode, type Combatant } from '../src/match.ts';
 import { makeMap } from './helpers.ts';
@@ -384,6 +390,24 @@ describe('Breakthrough', () => {
     expect(codes).toContain('error breakthrough.order_gap');
     expect(codes).toContain('error breakthrough.no_objectives');
     expect(breakthroughIssues(makeMap([]))).toEqual([]);
+  });
+
+  it('Match Setup offers it only on maps with sectors; reinforcements, sector time and the second round come from the setup, the suggestions follow the size', () => {
+    const room = makeMap([{ id: 'room', tile: 'core.room', x: 0, y: 0, z: 0, rotation: 0 }]);
+    expect(modeOptions(range(), playableModes(range())).find((o) => o.mode === 'core.breakthrough')).toEqual({ mode: 'core.breakthrough', ok: true });
+    expect(modeOptions(room, playableModes(room)).find((o) => o.mode === 'core.breakthrough')).toMatchObject({ ok: false, reason: expect.stringMatching(/sectors/) });
+    // Small teams get more lives each and shorter sectors; big ones fewer and longer.
+    expect(suggestedLimits('core.breakthrough', 8, [4, 4])).toEqual({ scoreLimit: breakthroughPoolFor(4), minutes: breakthroughMinutesFor(4) });
+    expect(breakthroughPoolFor(4)).toBeGreaterThan(breakthroughPoolFor(24));
+    expect(breakthroughMinutesFor(4)).toBeLessThan(breakthroughMinutesFor(24));
+    const setup: MatchSetup = { map: 'range', mode: 'core.breakthrough', bots: 0, skill: 'normal', scoreLimit: 7, minutes: 3, teams: [6, 6, 6], btSwap: true };
+    const { rules, fill } = rulesFromSetup(setup, range());
+    expect(rules).toMatchObject({ mode: 'core.breakthrough', breakthroughPool: 7, breakthroughSectorSeconds: 180, breakthroughSwap: true, scoreLimit: 0, timeLimitSeconds: 0, teamSizes: [6, 6] });
+    expect(fill).toBe(12);
+    // Following the suggestion: 16 a side.
+    const auto = rulesFromSetup({ ...setup, teams: [16, 16], scoreAuto: true, timeAuto: true, btSwap: false }, range()).rules;
+    expect(auto).toMatchObject({ breakthroughPool: breakthroughPoolFor(16), breakthroughSectorSeconds: breakthroughMinutesFor(16) * 60 });
+    expect(auto.breakthroughSwap).toBeUndefined();
   });
 
   it('is deterministic by seed: the same bots on the same seed play the same match', () => {

@@ -564,6 +564,9 @@ export const STYLE_PACKS: readonly StylePack[] = [
 
 export const getStylePack = (id: string): StylePack | undefined => STYLE_PACKS.find((p) => p.id === id);
 
+/** A game mode's pieces (flag bases, hills, bomb sites, hostages, rescue zones, Breakthrough's sectors, objectives and side spawns): what a mode needs, not a look, so they go with every pack. */
+const MODE_PIECES: ReadonlySet<string> = new Set(['flag', 'hill', 'bombsite', 'hostage', 'rescue', 'sector', 'objective:zone', 'objective:target', 'objective:final', 'spawn:attack', 'spawn:defend']);
+
 /** Whether a MapMaker palette tool (`tile:…`, `prop:…`, `scenario:…`, `mount:…`, `pickup:…`) belongs to a pack. */
 export function stylePackHas(pack: StylePack, tool: string): boolean {
   const i = tool.indexOf(':');
@@ -575,13 +578,13 @@ export function stylePackHas(pack: StylePack, tool: string): boolean {
     case 'prop':
       return pack.props.includes(id);
     case 'scenario':
-      return (pack.gameplay as readonly string[]).includes(id);
+      return MODE_PIECES.has(id) || (pack.gameplay as readonly string[]).includes(id);
     case 'mount':
       return (pack.mounts as readonly string[]).includes(id);
     case 'pickup':
       return pack.pickups.includes(id);
     default:
-      // Walls and openings, spawns, NPCs, terrain brushes, plants and the road go with every pack.
+      // Walls and openings, spawns, NPCs, terrain brushes, plants and the road go with every pack (as game modes' pieces do).
       return true;
   }
 }

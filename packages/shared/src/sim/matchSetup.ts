@@ -194,6 +194,8 @@ export function modeUnavailableReason(map: MapDocument, mode: GameMode): string 
         return 'Needs hill spots, and this map has none.';
       case 'core.race':
         return 'Needs a race track, and this map has none.';
+      case 'core.breakthrough':
+        return 'Needs sectors, with their objectives and both sides’ spawns, and this map has none.';
     }
   }
   if (mode === 'core.coop') return "This map isn't a co-op mission (it has no mission for a squad to play).";
