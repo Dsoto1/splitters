@@ -4,6 +4,9 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import {
   CLASS_DEFS,
+  PARTY_PRESETS,
+  applyParty,
+  presetPatch,
   CORE_BOT_PROFILES,
   CORE_ITEMS,
   DEFAULT_COOP_RULES,
@@ -421,6 +424,14 @@ describe('the map default, the host and saved setups', () => {
     expect(normalizeSetup({ ...base, weaponSet: 'pirates' })).not.toHaveProperty('weaponSet');
     // A setup saved before weapon sets: the map's default.
     expect(normalizeSetup(base)).not.toHaveProperty('weaponSet');
+  });
+
+  it('size presets and party presets keep the setup\'s set', () => {
+    const map = room([], 'military');
+    const base: MatchSetup = { map: 'test_map', mode: 'core.deathmatch', bots: 3, skill: 'normal', scoreLimit: 15, minutes: 10, weaponSet: 'chaos' };
+    const lunar = PARTY_PRESETS.find((p) => p.id === 'lunar_roulette')!;
+    expect(applyParty(lunar, base, map, ['core.deathmatch'], { deviceMax: 16 })?.weaponSet).toBe('chaos');
+    expect({ ...base, ...presetPatch({ id: 'small', label: 'Small', players: 4, value: '4 players', tip: '' }) }.weaponSet).toBe('chaos');
   });
 
   it("the host's set stays through a map change; the map's default follows the map", () => {
