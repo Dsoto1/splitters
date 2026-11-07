@@ -2731,6 +2731,38 @@ pickups as thin instances (35-55 meshes); breakable props batched while intact (
     spawns, budgets, bots, and NOT TESTED where it applies.
   - **Timing:** a natural first big use of set pieces (agreed queue item 3), so after those exist.
 
+### Queued (owner, 2026-11-07): player profiles with career stats. After all the work in flight
+The owner: "a player's profile should list their stats similar to how gran turismo 7 displays their user profiles. It
+could also list any games they are active in, their top 10 most played maps, and list of maps they
+created/popularity, etc. … we can add this after all this is completed".
+
+**Today:**
+- A profile is only a username and region. It is kept by Cognito account in the hub's `profiles.json`
+  (`packages/server/src/profiles.ts`).
+- No match results are recorded anywhere.
+
+**The idea:**
+- **A profile page** in the GT7 style: a header card with name, level and rank, then tiles of numbers. Shown for you
+  and for anyone you click in a lobby or scoreboard.
+- **Career:** matches, wins and win rate, kills, deaths and K/D, accuracy, headshots, time played; favourite weapon,
+  character and mode; best streak.
+- **"Playing now":** the listed server they're in, from the hub's tickets.
+- **Top 10 maps** by time played.
+- **Maps they made:** their community maps, with play counts and Community Pick status. This needs the
+  community-maps plan (docs/COMMUNITY_MAPS.md) first: sharing by hosting, plays counted by the hub.
+
+**The constraint** (MULTIPLAYER_DIRECTION: players' machines compute, AWS only coordinates, small recurring cost):
+- Match results come from whoever hosts.
+- **Trusted:** results from official and dedicated servers count, sent signed with the account tickets.
+- **Not trusted:** a player's own browser host could fake its numbers. Either show those separately ("casual") or
+  count only plays and time there, never kills.
+- **Cost:** about 1 KB per player, kept with the profile on the hub. No new service.
+
+**To decide with the owner when it starts:**
+- which numbers count from player-hosted matches;
+- whether bot kills count;
+- whether profiles are public to everyone or only signed-in players.
+
 ### Queued (owner-approved, 2026-11-05): community maps
 Plan in docs/COMMUNITY_MAPS.md:
 - local saving is unlimited;
