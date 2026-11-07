@@ -64,8 +64,9 @@
 // tiers"). Built from the full download once, then written three times with the maps shrunk per tier:
 // `<out>` (everyone else's copy: drops, pickups, other players' hands, Low; colour `textureSize`, default 512, normal
 // `normalSize`, default 512, metal/roughness 256, with its `lod`), `<name>.medium.glb` (colour 1024, normal 512,
-// metal/roughness 512) and `<name>.high.glb` (colour 2048, normal 1024, metal/roughness 1024), neither with a lower
-// level of detail (your own gun always draws full detail). The weapon names them in `view.held` (content/weapons).
+// metal/roughness 256) and `<name>.high.glb` (colour 2048, normal 1024, metal/roughness 512: measured, a 1024 one
+// cost 4 MB of video memory a gun and showed nothing more), neither with a lower level of detail (your own gun
+// always draws full detail). The weapon names them in `view.held` (content/weapons).
 import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
@@ -126,8 +127,8 @@ async function shrink(tex, size, mime) {
 /** The sizes each copy of a `held` entry ships at (see the header). */
 const HELD_TIERS = [
   { tier: 'world', colour: null, normal: null, metalRough: 256 },
-  { tier: 'medium', colour: 1024, normal: 512, metalRough: 512 },
-  { tier: 'high', colour: 2048, normal: 1024, metalRough: 1024 },
+  { tier: 'medium', colour: 1024, normal: 512, metalRough: 256 },
+  { tier: 'high', colour: 2048, normal: 1024, metalRough: 512 },
 ];
 /** The file a tier of `out` is written to: `guns/x.glb` → `guns/x.high.glb` (the world copy keeps `out`). */
 export const tierFile = (out, tier) => (tier === 'world' ? out : out.replace(/\.glb$/, `.${tier}.glb`));

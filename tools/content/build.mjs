@@ -501,7 +501,7 @@ const gunCount = checkLocked(
   (f, pack) => {
     // A held copy (`tier`: medium, high) is its world copy's entry with sharper maps.
     const entry = gunByFile.get(f.heldOf ?? f.file);
-    const sizes = f.tier === 'high' ? 'colour map 2048 px, normal map 1024, metal/roughness 1024' : f.tier === 'medium' ? 'colour map 1024 px, normal map 512, metal/roughness 512' : null;
+    const sizes = f.tier === 'high' ? 'colour map 2048 px, normal map 1024, metal/roughness 512' : f.tier === 'medium' ? 'colour map 1024 px, normal map 512, metal/roughness 256' : null;
     const finish = entry?.pbr ? 'its own metal and roughness kept (glTF metallicRoughnessTexture), not made matte' : entry?.roughness !== undefined ? `non-metal material, roughness ${entry.roughness}` : 'matte material';
     const shipped = sizes ? `the held copy for ${f.tier === 'high' ? 'High' : 'Medium'} graphics: ${sizes}; no lower level of detail` : `colour map shrunk to ${entry?.textureSize ?? 512} px${entry?.pbr ? ', metal/roughness to 256' : ''}`;
     if (pack.meshy)

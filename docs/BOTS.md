@@ -692,6 +692,18 @@ Left for Phase C (found on the way): a mount's body isn't on the navmesh. Iron C
 mode's goal sends it back along the same line. And a dropship landing beside Dune Harbor's sunken room leaves its
 riders under the street floor, where nothing gets them out (the Bomb and Hostage samples, modes the map doesn't list).
 
+## Smoke (November 2026)
+The Smoke Grenade (docs/ARSENAL.md) hides whoever is behind a cloud. Bots see it as the match does: their sight lines
+(target acquisition, `canSee`) and the match's own (sentries, arc turrets, homing, spawn safety: `Match.sees`) are
+blocked by 1.6 m or more of a cloud (`smokeBlocks`, the clouds in `BotWorldView.smoke`); shots still pass through.
+- **Using it:** a bot carrying smoke, caught in the open (no cover spot) by an enemy 10-45 m off and hurt (under 70
+  health) or shot at, throws it a few metres toward the enemy (`considerSmoke`, then `smokeScreen`), so the cloud
+  stands between them while it carries on; Tactical bots do it more often. Bots never throw smoke as a frag.
+- **Phase B's hook:** `BotBrain.smokeScreen(view, threat)` throws one toward a threat and says whether it could;
+  the cover-to-cover advance can call it before a bound across open ground.
+- **Tests:** `smoke.test.ts` (a bot fires across an open yard and not through a cloud; a hurt bot in the open throws
+  smoke between itself and the enemy).
+
 ## Measuring
 
 `pnpm bot-report` (`packages/server/src/tools/bot-report.ts`) plays headless matches of Player Bots (added as the

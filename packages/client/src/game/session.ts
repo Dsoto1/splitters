@@ -334,6 +334,9 @@ export class GameSession {
   private uav = 0;
   /** H: a camera over your shoulder, to see your own character. */
   private thirdPerson = false;
+  /** What you carried when the kept first-person guns were last trimmed (View.trimViewmodels): the map and its codes. */
+  private carriedInventory: unknown = null;
+  private carried = '';
   /** Third person: your own gun's last turn from the view onto the crosshair point (tests: `__cs.tpAim()`). */
   private tpAim: { yaw: number; pitch: number } | null = null;
   /** Riding: the cockpit or chase camera (H switches while driving, remembered per ground / air). */
@@ -2494,6 +2497,15 @@ export class GameSession {
         }
       }
       this.view.setViewmodel(weapon);
+      // Guns no longer carried free their first-person copies (and a held copy's video memory).
+      if (local.inventory !== this.carriedInventory) {
+        this.carriedInventory = local.inventory;
+        const carried = [...local.inventory.keys()].sort((a, b) => a - b).join(',');
+        if (carried !== this.carried) {
+          this.carried = carried;
+          this.view.trimViewmodels(new Set([...local.inventory.keys()].map((code) => weaponByCode(code)?.id).filter((id): id is string => !!id)));
+        }
+      }
       const reloadFrac = weapon && local.reloadTicks > 0 ? Math.min(1, local.reloadTicks / 10, ((local.reload?.total ?? weapon.reloadTicks) - local.reloadTicks) / 10) : 0;
       this.view.updateViewmodel(dt, { moving, raise: weapon && weapon.raiseTicks ? local.raiseTicks / weapon.raiseTicks : 0, reload: reloadFrac, hidden: zoomed || (this.thirdPerson && !ride), ads: this.adsAmount, speed: this.drawnSpeed });
       this.hud.setScope(zoomed);

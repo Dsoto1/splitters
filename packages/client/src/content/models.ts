@@ -61,6 +61,21 @@ export class ModelLibrary {
     return p;
   }
 
+  /**
+   * Drop a loaded model and free what it holds on the GPU (the sharper held copy of a gun you no longer carry: its
+   * 2048 px maps are most of a held gun's video memory). Its copies must be disposed first; loading it again
+   * fetches it again.
+   */
+  release(path: string): void {
+    const p = this.containers.get(path);
+    if (!p) return;
+    this.containers.delete(path);
+    void p.then(
+      (c) => c.dispose(),
+      () => undefined,
+    );
+  }
+
   private readonly merged = new Map<string, Promise<Mesh[] | null>>();
   /** Lower levels of detail a model carries (tools/content/nature.mjs), taken out of its container by `load`. */
   private readonly lods = new Map<string, LodLevel[]>();

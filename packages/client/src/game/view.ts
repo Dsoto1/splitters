@@ -1502,6 +1502,24 @@ export class GameView {
   /** Which copy of each kept first-person gun is drawn (tests): the model path. */
   readonly viewmodelPaths = new Map<string, string>();
 
+  /**
+   * Guns no longer carried (dropped, or the match changed hands) leave the kept first-person guns, and a sharper held
+   * copy's maps leave the GPU with them: held copies at High are about 30 MB of video memory each, so only the guns
+   * you carry keep theirs (docs/ARSENAL.md, "Texture tiers"). `carried`: weapon ids.
+   */
+  trimViewmodels(carried: ReadonlySet<string>): void {
+    for (const [id, v] of this.viewmodels) {
+      if (carried.has(id) || id === this.viewWeapon) continue;
+      if (this.viewmodel === v.node) this.viewmodel = undefined;
+      v.node.dispose();
+      this.viewmodels.delete(id);
+      const path = this.viewmodelPaths.get(id);
+      this.viewmodelPaths.delete(id);
+      const def = CORE_WEAPONS[id];
+      if (path && def?.view.held && path !== def.view.model) this.models.release(path);
+    }
+  }
+
   // ---------------------------------------------------------------- throw hold
 
   /** Your own throwable in your hands while you line up a throw (setThrowHold). */
