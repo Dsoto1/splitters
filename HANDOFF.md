@@ -2731,7 +2731,7 @@ pickups as thin instances (35-55 meshes); breakable props batched while intact (
     spawns, budgets, bots, and NOT TESTED where it applies.
   - **Timing:** a natural first big use of set pieces (agreed queue item 3), so after those exist.
 
-### Queued (owner, 2026-11-07): player profiles with career stats. After all the work in flight
+### Queued (owner, 2026-11-07): player profiles with career stats. LAST: after everything else queued or on the roadmap
 The owner: "a player's profile should list their stats similar to how gran turismo 7 displays their user profiles. It
 could also list any games they are active in, their top 10 most played maps, and list of maps they
 created/popularity, etc. … we can add this after all this is completed".
