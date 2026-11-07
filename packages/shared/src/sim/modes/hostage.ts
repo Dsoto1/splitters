@@ -3,7 +3,7 @@ import { horizontalDistance, type Vec3, hypot } from '../../math.ts';
 import { HOSTAGE_FOLLOWING, HOSTAGE_RESCUED, HOSTAGE_WAITING, type ModeSnapshot } from '../../protocol.ts';
 import { TICK_DT, TICK_RATE } from '../constants.ts';
 import type { Combatant } from '../match.ts';
-import type { BotGoal, ModeHost, ModeLogic } from './types.ts';
+import { teamHome, type BotGoal, type BotTripSpec, type ModeHost, type ModeLogic } from './types.ts';
 
 export const HOSTAGE_ROUND_SECONDS = 150;
 export const HOSTAGE_BREAK_SECONDS = 4;
@@ -215,6 +215,26 @@ export class HostageMode implements ModeLogic {
 
   blocksVehicle(c: Combatant): boolean {
     return this.hostages.some((h) => h.leader === c.slot);
+  }
+
+  /**
+   * The rescuers' way from their spawn to every hostage and from each hostage to the nearest rescue zone, and the
+   * guards' way to the hostages.
+   */
+  botTrips(): readonly BotTripSpec[] {
+    const out: BotTripSpec[] = [];
+    const zones = this.zones().map((e) => ({ x: e.position[0], y: e.position[1], z: e.position[2] }));
+    for (const team of [this.rescuers, this.guards]) {
+      const home = teamHome(this.host.spawnPoints, team);
+      if (!home) continue;
+      for (const h of this.hostages) out.push({ team, from: home, to: { ...h.home }, kind: team === this.rescuers ? 'attack' : 'defend' });
+    }
+    for (const h of this.hostages) {
+      let best: Vec3 | null = null;
+      for (const z of zones) if (!best || horizontalDistance(z, h.home) < horizontalDistance(best, h.home)) best = z;
+      if (best) out.push({ team: this.rescuers, from: { ...h.home }, to: best, kind: 'carry' });
+    }
+    return out;
   }
 
   /**

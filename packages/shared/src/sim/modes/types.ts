@@ -1,4 +1,5 @@
 import type { OrderGoal } from '../../bots/brain.ts';
+import type { SideBrief } from '../../bots/teamBrain.ts';
 import type { WorldBox } from '../../map/geometry.ts';
 import type { Faction, MapDocument } from '../../map/schema.ts';
 import type { Vec3 } from '../../math.ts';
@@ -49,6 +50,44 @@ export interface ModeHost {
 /** Where a Player Bot should go when it is not fighting, how close counts as there, and how it goes about it (bots/brain.ts OrderGoal). */
 export type BotGoal = OrderGoal;
 
+/**
+ * A trip a team's bots make again and again (docs/BOTS.md, "Route variety"): from its base or spawn to an objective.
+ * The match finds two or three different corridors for each (nav/corridors.ts) once, at setup, and the team brain
+ * spreads its groups over them. `kind`: attackers going for it, defenders going to hold it, or a carrier (a hostage's
+ * leader) taking something home.
+ */
+export interface BotTripSpec {
+  team: string;
+  from: Vec3;
+  to: Vec3;
+  kind: 'attack' | 'defend' | 'carry';
+}
+
+/** A team's home for its trips: its own spawn point nearest the middle of its spawn points (null: it has none of its own). */
+export function teamHome(spawnPoints: readonly { pos: Vec3; team: string | null; generated?: boolean }[], team: string): Vec3 | null {
+  const own = spawnPoints.filter((s) => s.team === team && !s.generated);
+  if (!own.length) return null;
+  let x = 0;
+  let y = 0;
+  let z = 0;
+  for (const s of own) {
+    x += s.pos.x;
+    y += s.pos.y;
+    z += s.pos.z;
+  }
+  const mid = { x: x / own.length, y: y / own.length, z: z / own.length };
+  let best = own[0]!;
+  let bestD = Infinity;
+  for (const s of own) {
+    const d = (s.pos.x - mid.x) ** 2 + (s.pos.z - mid.z) ** 2 + (s.pos.y - mid.y) ** 2 * 4;
+    if (d < bestD) {
+      bestD = d;
+      best = s;
+    }
+  }
+  return { ...best.pos };
+}
+
 /** An objective mode's rules. Every hook is called only while the round is in play. */
 export interface ModeLogic {
   /** Once per tick, after movement and combat. */
@@ -83,6 +122,10 @@ export interface ModeLogic {
   splash?(at: Vec3, radius: number, damage: number, edge: number, attacker: Combatant | null): void;
   /** Adjust a Player Bot's input after it thought (Fort Wars: shoot through enemy walls in the way). */
   botInput?(c: Combatant, input: PlayerInput): void;
+  /** The trips the mode's bots make again and again (base to flag, spawn to hill...), for their corridors. */
+  botTrips?(): readonly BotTripSpec[];
+  /** What a side's team brain needs to know, once a second (bots/teamBrain.ts SideBrief): its attackers' objective, an enemy to cut off. */
+  botBrief?(team: string): SideBrief | null;
   // Optional hooks (Breakthrough).
   /** The spawn points this player may use now (Breakthrough: its side's group for the sector in play); null: the match's usual choice. */
   spawnSpots?(c: Combatant): readonly SpawnSpot[] | null;

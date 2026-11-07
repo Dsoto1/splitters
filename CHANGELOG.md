@@ -38,6 +38,22 @@ made only on a commit that passed CI on a check branch.
 - New kit for any map: the **Fort Ring** and **Fort Ring Gate** tiles (quarters of a round fort's wall) and the
   **Gate arch** wall style.
 
+**Bots: scored choices, a team brain, ways of their own** (docs/BOT_AI_PLAN.md Phase B, part 1; docs/BOTS.md, "Scored
+choices", "Team brain and route variety")
+- **Bots choose by score**: with nobody in sight, a bot weighs its goal, cover, a pickup it needs, an enemy that slipped
+  away and a noise by its personality, health, ammo and distance, and keeps its choice unless another is clearly better.
+  CTF defenders now stay by their flag instead of chasing gunfire across the map; a bot on the hill stays on it; a
+  person's order holds a bot; a carrier never leaves its run; a hurt bot lets a noise go by.
+- **Different ways to the objective**: the two or three genuinely different ways between each mode's places (base to
+  flag, spawn to hill, spawn to site) are worked out at match start. On the long Capture the Flag maps (Fernwood Moon
+  and longer) a team splits its attackers into a main push, flankers and a recon pair, each on its own way; a push on a
+  flag at its base gathers out of the flag's sight and goes in together. Loose bots and squads heading for the enemy
+  take the way that is least crowded and where fewest teammates died lately.
+- Measured on a sample of every mode (33 matches, against before): King of the Hill's hill held 26 → 49 % of the time,
+  Bomb plants 0.5 → 1.5 a match, a hostage rescued (none before), Elimination's round 120 → 70 s, Team Deathmatch's
+  busiest way 54 → 43 % of a team's bots; Capture the Flag a few more captures (20 → 23) from fewer flag takes (176 →
+  127): the defenders hold their flags now, so a take is a real attack.
+
 **MapMaker gives the ground back when a floor moves** (owner: "fix the ground bug")
 - MapMaker used to write the ground it lowers under floors into the map: every edit lowered the terrain under every
   floor and nothing ever raised it back, so a floor moved across a field left a dip at each place it passed and a

@@ -311,6 +311,105 @@ against 1.34–2.57.)
 - in Tactical and Mixed, bots spend clearly more of a fight in cover, and push objectives in bounds;
 - the owner playtests it.
 
+### Phase B part 1, measured (scored choices, team brain, route variety)
+Before: main with Phase B's measuring (route use and route choice in `bot-report`; the bots unchanged). After:
+`wip/bots-b`, part 1. The dev sample: Capture the Flag on 12 maps (Bunker Cross, Diamond Park, Serene City, Twin
+Spires, Capitol Mall, Grand Marquee, Maple Court, Pantry Raid, Iron Tide, Saltmarsh Harbor, Sunken Kingdom, Fernwood
+Moon; seeds 1 and 2), King of the Hill on Shingle Point, Diamond Park and Bunker Cross, Bomb on Serene City and
+Ironhold Prison, Hostage on Serene City, Elimination on Diamond Park, Team Deathmatch on Fernwood Moon and Riot
+Junction; 180 s each, 33 matches, on the maps before main's prop scale pass. Each part was measured on its own
+first: the branch carried switches for them while measuring (with every switch off it replayed main's matches
+exactly); they are gone.
+
+| Dev sample | Before | After |
+|---|---|---|
+| CTF captures (flag takes), 24 matches | 20 (176) | 23 (127) |
+| CTF matches with a capture; maps with one | 12; 7 | 11; 6 |
+| CTF route choice (each bot past a trip's middle, once a life): team trips with two ways taking 15 % or more; the busiest way's share | 88 %; 59 % | 89 %; 60 % |
+| King of the Hill: hill held, contested | 26.3 %, 0.0 % | 48.9 %, 0.6 % |
+| Bomb plants a match | 0.5 | 1.5 |
+| Hostage rescues | 0 | 1 |
+| Elimination round | 120 s | 70 s |
+| Team Deathmatch: idle out of a fight; the busiest way's share; time in cover in a fight | 7.1 %; 54 %; 31.9 % | 6.6 %; 43 %; 36.7 % |
+| Idle out of a fight, CTF | 4.3 % | 5.7 % |
+
+On this sample King of the Hill, Bomb, Hostage and Elimination played the same matches as the scored choices alone
+(the team brain's groups switched off): King of the Hill never splits, and those maps' trips are under 180 m. More
+idle out of a fight in CTF is the defenders keeping watch by their flag (they chased gunfire across the map before).
+
+**Scored choices alone** (the team brain off): CTF captures 23 (129 takes), King of the Hill's hill held 48.9 %, Bomb
+plants 1.5 a match, a hostage rescued, Team Deathmatch idle out of a fight 5.3 %. Fewer takes for as many captures:
+with the defenders staying by their flag, a take is a real attack, and more of them end in a capture (11 → 18 %).
+
+**The team brain, as it went** (CTF captures on the same 24 matches, and matches with one; scored choices in all):
+
+| Variant | CTF captures |
+|---|---|
+| No groups | 23 (11) |
+| Groups on every map, following their corridors point by point (12 m) | 9 (5) |
+| Groups on every map, by one via a corridor | 16 (9) |
+| ...with staging, waves together and interceptors | 15 (6) |
+| Groups only on trips of 110 m and more | 22 (11) |
+| ...without interceptors | 22 (11) |
+| Groups only on trips of 180 m and more | 20 (9) |
+| ...without interceptors (landed) | 23 (11) |
+
+One side with the team brain and the other without, in the same matches (the side alternating by seed): CTF captures
+10 against 12 and takes 71 against 78 (groups on every map); King of the Hill hill seconds 238 against 263, and
+gathering out of the hill's sight to retake it 37 against 170 (so King of the Hill goes straight for the hill). From
+110 m, Diamond Park's attack went in two groups, and its five-minute capture test (seed 1) went without a capture (13
+takes); from 180 m it has one again.
+
+**Interceptors are built and off** (`Playbook.interceptors` 0). On the dev sample they made no difference (22 and 22
+captures at 110 m), but the five-minute capture tests' matches (botCtf.test.ts: Diamond Park 12 v 12, Sunken Kingdom
+16 v 16, on main's maps after the prop scale pass) said otherwise. Three interceptors were the attackers of the side
+whose flag was taken: its attack stopped while they waited on the carrier's way, and carriers rarely got home.
+
+| First capture within five minutes, seeds 1-6 | Diamond Park | Sunken Kingdom |
+|---|---|---|
+| main's bots | 6 of 6 (92-196 s) | 6 of 6 (95-175 s) |
+| part 1, three interceptors | 3 of 6 | 5 of 6 |
+| one interceptor | 5 of 6 | 6 of 6 (119-281 s) |
+| none (landed) | 6 of 6 (80-149 s) | 6 of 6 (76-162 s) |
+| none, and defenders free to chase as before | 5 of 6 | - |
+
+**What it didn't do yet:** CTF captures are only a little up (20 → 23), and half the sample's maps went without one
+(6 of 12, 5 before). With the defenders holding their flags, a take is a real attack, and the attack against a held
+flag (moving up cover to cover, bounds, the playbooks) is part 2's. The busiest way still carries 60 % of a CTF team's
+bots past a trip's middle (the aim: under half).
+
+**The nightly scorecard** (Run workflow: every scorecard mode on the maps that list it, two seeds of 180 s, 398 matches
+on 77 maps; before: run 42312799177 on main with Phase B's measuring; after: run 42330601755 on part 1, which also has
+main's prop scale pass and ground fix):
+
+| Nightly | Before | After |
+|---|---|---|
+| CTF captures, flag takes, returns a match | 0.9, 5.6, 2.1 | 1.0, 4.5, 1.9 |
+| CTF team trips on two routes or more (time); the busiest route | 87 %; 56 % | 87 %; 57 % |
+| CTF route choice: two ways or more; the busiest way | - | 85 %; 61 % |
+| King of the Hill: hill held, contested | 26.3 %, 0.3 % | 40.8 %, 0.4 % |
+| Bomb plants, defuses a match | 0.5, 0.0 | 0.8, 0.0 |
+| Hostage rescues a match | 0.1 | 1.5 |
+| Elimination rounds a match, each | 3.7, 35 s | 3.6, 37 s |
+| Team Deathmatch kills a minute | 21.6 | 21.6 |
+| Idle out of a fight: all; CTF; Hostage | 6.1 %; 5.5 %; 9.6 % | 6.7 %; 6.7 %; 14.0 % |
+| Stuck recoveries a bot-minute, all | 1.80 | 1.73 |
+| Failed searches; no-route idle | 0.00 %; 0.09 % | 0.00 %; 0.08 % |
+| Bot thinking a tick (GitHub's machines, not the same ones) | 0.31 ms | 0.37 ms |
+
+25 of the 44 CTF maps had a capture in their two matches; of the 19 without, 11 are maps of 180 m or more between the
+flags (three minutes is short for a run there). Hostage's idle out of a fight is its guards keeping watch at their
+station (they chased gunfire away from the hostages before): on Iron Tide, station-keeping went from 14 and 8 % of
+the bots' time in its two matches to 21 and 17 %. Its limit (bot-limits.json) went from 12 to 16 % for it; the
+rescues came with it.
+
+**`pnpm bench:96:clump`** (96 bots; Norman Shores, Frost Basin and Riot Junction, spread and clumped, 30 s each), bot
+thinking a tick, before and after taken in turn, two rounds each at load 1.2-1.5: before 1.43-2.58 ms (means 1.87 and
+1.93), after 1.46-2.68 ms (means 1.85 and 1.91). The same on average; Norman Shores spread out, the first of the run, is
+the most both times (2.51 and 2.58 before, 2.68 and 2.65 after: over the 2.5 ms guard before the change too, on this
+machine, which measured Phase A's base at 1.13-1.90). The team brain itself is a few corridors' prices and a group
+assignment once a second a side.
+
 ## Phase C: navigation depth (straight after Phase B; item 1 first)
 1. **Parkour first** (owner, 2026-11-06: snipers "trying different 'parkour' to get where others don't normally go
    (roofs, etc)"). Links for every move a player can make, generated at load from the geometry and checked against the real
