@@ -3212,6 +3212,8 @@ async function breakthroughFlow(browser) {
     const fallback = await page.evaluate(() => {
       const m = window.__match;
       const d = m.combatants().find((c) => m.mode.sideOf(c) === 'defend' && c.alive && c.slot !== window.__cs.slot);
+      // Its 10 s from now (one caught behind the line as the sector fell has already had some of them).
+      m.mode.behind.delete(d.slot);
       // Far from the attackers' spawn and their way to the guns, so only the fall-back hurts it.
       const hold = () => (d.move = { pos: { x: 70, y: 0.2, z: -72 }, velY: 0, grounded: false });
       hold();
@@ -3223,7 +3225,7 @@ async function breakthroughFlow(browser) {
       for (let i = 0; i < 60 * 2 && d.alive; i++) (hold(), m.step());
       return { warned, health, at9, at11: d.alive ? d.health : 0 };
     });
-    check(fallback.warned && fallback.at9 === fallback.health && fallback.at11 < fallback.health, `a defender left behind the new line is warned, then hurt (${JSON.stringify(fallback)})`);
+    check(fallback.warned && fallback.at9 >= fallback.health && fallback.at11 < fallback.at9, `a defender left behind the new line is warned, then hurt (${JSON.stringify(fallback)})`);
     // Your own warning: join the defenders (the HUD told of it as a roster change would), behind the line.
     await page.evaluate(() => {
       const m = window.__match;

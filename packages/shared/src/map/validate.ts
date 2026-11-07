@@ -15,7 +15,7 @@ import { MapDocument, type MapEntity } from './schema.ts';
 import { IMPROMPTU_MIN_PLAYERS, SPAWN_SHARE } from '../sim/spawns.ts';
 import { validateScenario } from './validateScenario.ts';
 import { RESOURCE_BUDGETS, resourceBudgetIssues, utf8Length } from './budgets.ts';
-import { mapContentHash } from './identity.ts';
+import { releaseCurrent } from './identity.ts';
 import { validateTrack } from './track.ts';
 import { airplaneIssues } from '../sim/airplane.ts';
 import { arcSentryIssues } from '../sim/mounts.ts';
@@ -241,7 +241,7 @@ function validateExpanded(map: MapDocument, stored: MapDocument, catalog: TileCa
   issues.push(...glassIssues(map, catalog));
   issues.push(...validateScenario(map));
   issues.push(...resourceBudgetIssues(map));
-  if (stored.metadata.release && stored.metadata.release.contentHash !== mapContentHash(stored)) {
+  if (stored.metadata.release && !releaseCurrent(stored)) {
     issues.push({ severity: 'warning', code: 'release.changed', message: 'changed since it was exported: the next export gives it a new version' });
   }
   issues.push(...validateTrack(map));

@@ -18,11 +18,11 @@
     ],
     "release": {
       "mapId": "m_sil6g62hvmfh7nmx",
-      "versionId": "v_r6ssqo54xi64o4ou",
-      "revision": 5,
-      "contentHash": "sha256:64032f10989969efaed044702fe49640df3527eedfbc1c3226350374c0e21552",
+      "versionId": "v_54htejxn4dkzjz7p",
+      "revision": 6,
+      "contentHash": "sha256:0ea216f1796e054dd30dbc4da9c1d9c5132b021571a75ed7c33c5f6b0bfa1764",
       "schemaVersion": 28,
-      "releasedAt": "2026-11-07T04:31:28.178Z"
+      "releasedAt": "2026-11-07T04:40:33.345Z"
     },
     "testOnly": true
   },
@@ -4729,23 +4729,23 @@
     },
     {
       "id": "sector_bmprmiuy48",
-      "kind": "sector",
       "position": [
         96,
         0,
         62
       ],
+      "kind": "sector",
       "yaw": 0,
       "order": 1
     },
     {
       "id": "spawn_h7qv856edt",
-      "kind": "spawn",
       "position": [
         96,
         0,
         56
       ],
+      "kind": "spawn",
       "yaw": 0,
       "faction": null,
       "sector": 1,
@@ -4753,54 +4753,54 @@
     },
     {
       "id": "objective_5mtt3atc1b",
-      "kind": "objective",
       "position": [
         76,
         0,
         70
       ],
-      "yaw": 0,
+      "kind": "objective",
       "objective": "zone",
+      "yaw": 0,
       "sector": 1,
       "label": "A1",
       "radius": 6
     },
     {
       "id": "objective_3lyo9idcq0",
-      "kind": "objective",
       "position": [
         96,
         0,
         70
       ],
-      "yaw": 0,
+      "kind": "objective",
       "objective": "target",
+      "yaw": 0,
       "sector": 1,
       "label": "A2",
       "radius": 2.5
     },
     {
       "id": "objective_fzrgi21uvf",
-      "kind": "objective",
       "position": [
         116,
         0,
         70
       ],
-      "yaw": 0,
+      "kind": "objective",
       "objective": "final",
+      "yaw": 0,
       "sector": 1,
       "label": "A",
       "radius": 8
     },
     {
       "id": "spawn_jmnqfdq0nj",
-      "kind": "spawn",
       "position": [
         96,
         0,
         76
       ],
+      "kind": "spawn",
       "yaw": -3.141,
       "faction": null,
       "sector": 1,
@@ -56941,19 +56941,19 @@
       "mirror": false
     },
     {
-      "id": "setpiece_b0j8i58i6z",
+      "id": "setpiece_vcxofxa1xe",
       "piece": "setpiece.command_bunker",
       "x": 16,
-      "y": -35,
+      "y": -32,
       "z": 0,
       "rotation": 0,
       "mirror": false
     },
     {
-      "id": "setpiece_ekbu7hwbyi",
+      "id": "setpiece_xnrr357w7s",
       "piece": "setpiece.cliff_stair_gate",
       "x": 21,
-      "y": -35,
+      "y": -32,
       "z": 0,
       "rotation": 0,
       "mirror": false
