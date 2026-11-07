@@ -47,6 +47,17 @@ describe('corridors', () => {
     const mid = first!.line[Math.floor(first!.line.length / 2)]!;
     expect(placeOn(first!, mid).off).toBeLessThan(0.5);
     for (const c of rest) expect(placeOn(c, mid).off).toBeGreaterThan(7);
+    // Each one's via (the point bots go by to take it) is on it, well away from the others, between a fifth and four
+    // fifths of the way.
+    for (const c of trip.corridors) {
+      const via = c.via!;
+      expect(via).not.toBeNull();
+      expect(placeOn(c, via).off).toBeLessThan(0.5);
+      for (const o of trip.corridors) if (o !== c) expect(placeOn(o, via).off).toBeGreaterThan(7);
+      const along = c.lineAt[placeOn(c, via).at]!;
+      expect(along).toBeGreaterThanOrEqual(c.length * 0.15);
+      expect(along).toBeLessThanOrEqual(c.length * 0.85);
+    }
     // The same again (and from the cache: the same object), and the same for a navmesh built again.
     expect(findCorridors(built.nav, a!, b!)).toBe(trip);
     const again = mapNavigation(map);

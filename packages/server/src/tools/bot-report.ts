@@ -217,6 +217,8 @@ async function main(): Promise<void> {
     const rows = readRows(judge);
     const limits = JSON.parse(readFileSync(limitsPath, 'utf8')) as Limits;
     const ok = printScorecard(rows, limits.limits, 'nightly');
+    // Per map, too (the job's log is where a run's numbers can be read back without its artifacts).
+    printMaps(rows);
     const pictures = opt('pictures');
     if (pictures) {
       // (The pictures build each map's navmesh and level physics: both need their WASM first.)
@@ -818,6 +820,30 @@ function printScorecard(rows: readonly MatchRow[], limits: Record<string, Record
   const summary = opt('summary');
   if (summary) writeFileSync(here(summary), `${text}\n`, { flag: 'a' });
   return broken.length === 0;
+}
+
+/** One line per map and mode: its objective and the measures every mode has (the judge's log: every map's numbers). */
+function printMaps(rs: readonly MatchRow[]): void {
+  const f = (v: number | undefined, d = 1, k = 1) => (v === undefined ? '-' : (v * k).toFixed(d));
+  console.log('\n| Map | mode | matches | objective | idle out of a fight % | stuck a bot-min | kills/min | two routes % | busiest route % | cover in fights % | scoped kills (from spots) | pushes (reached, lost half) |');
+  console.log('|---|---|---|---|---|---|---|---|---|---|---|---|');
+  const byKey = new Map<string, MatchRow[]>();
+  for (const r of rs) (byKey.get(`${r.map}|${r.mode}`) ?? byKey.set(`${r.map}|${r.mode}`, []).get(`${r.map}|${r.mode}`)!).push(r);
+  for (const [key, ms] of [...byKey].sort((a, b) => a[0].localeCompare(b[0]))) {
+    const [map, mode] = key.split('|');
+    const m = measure(ms);
+    const obj = [
+      m.captures !== undefined ? `caps ${f(m.captures)} takes ${f(m.takes)}` : '',
+      m.hillHeld !== undefined ? `held ${f(m.hillHeld, 1, 100)}% contested ${f(m.hillContested, 1, 100)}%` : '',
+      m.plants !== undefined ? `plants ${f(m.plants)} defuses ${f(m.defuses)}` : '',
+      m.rescues !== undefined ? `rescues ${f(m.rescues)}` : '',
+      m.roundSeconds !== undefined ? `rounds ${f(m.rounds)} of ${f(m.roundSeconds, 0)} s` : '',
+      m.pieces !== undefined ? `pieces ${f(m.pieces, 0)}` : '',
+    ].filter(Boolean).join(', ') || '-';
+    const s = ms.flatMap((r) => Object.values(r.pushes ?? {}));
+    const pushes = s.length ? `${sum(s, (v) => v.started)} (${sum(s, (v) => v.reached)}, ${sum(s, (v) => v.lostHalf)})` : '-';
+    console.log(`| ${map} | ${mode!.slice(5)} | ${m.n} | ${obj} | ${f(m.calm, 1, 100)} | ${f(m.stuckPerBotMin, 2)} | ${f(m.killsMin)} | ${m.routes2 === undefined ? (m.oneWay ? 'one way' : '-') : f(m.routes2, 0, 100)} | ${f(m.busiest, 0, 100)} | ${f(m.coverFight, 1, 100)} | ${m.scopedKills.toFixed(1)} (${m.postKills.toFixed(1)}) | ${pushes} |`);
+  }
 }
 
 function printSummary(rs: readonly MatchRow[]): void {

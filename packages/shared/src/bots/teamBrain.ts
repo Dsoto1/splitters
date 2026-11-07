@@ -98,6 +98,8 @@ export interface Playbook {
   waitAfterFirst: number;
   /** A wave is over (for the scorecard) after this long (s), once half of it is down, or when it got there. */
   pushMost: number;
+  /** Every group waiting at its staging spot goes as soon as one does (a push from different ways at once). */
+  together: boolean;
   /** Interceptors at most, and how far (m) ahead of the enemy on its way they cut it off. */
   interceptors: number;
   cutAhead: number;
@@ -119,6 +121,7 @@ export const DEFAULT_PLAYBOOK: Playbook = {
   gathered: 0.6,
   waitAfterFirst: 10,
   pushMost: 45,
+  together: true,
   interceptors: 3,
   cutAhead: 30,
   crowd: 0.15,
@@ -188,7 +191,17 @@ export class TeamBrain {
   private attackTo: Vec3 | null = null;
   private tripsFor: readonly Trip[] | null = null;
 
-  constructor(readonly playbook: Playbook = DEFAULT_PLAYBOOK) {}
+  /** Staging spots worked out per corridor (stagePoint: a few sight lines each, once). */
+  private readonly stages = new Map<Corridor, Vec3>();
+
+  /**
+   * `sees`: whether one eye point sees another (the match's physics; without it, staging spots are picked by distance
+   * alone).
+   */
+  constructor(
+    readonly playbook: Playbook = DEFAULT_PLAYBOOK,
+    private readonly sees: ((a: Vec3, b: Vec3) => boolean) | null = null,
+  ) {}
 
   /** A member of the side died here (the death price of the corridors near it). */
   death(pos: Vec3, tick: number): void {
@@ -208,8 +221,9 @@ export class TeamBrain {
       jobs.set(m.slot, null);
       this.lastAlive.set(m.slot, tick);
       if (m.seen) {
-        this.sightings.push({ pos: { ...m.seen }, tick });
-        if (this.sightings.length > MEMORY) this.sightings.shift();
+        // (The recon pair's reports count twice: what it sees ahead on a side route is what the groups behind it need.)
+        for (let k = this.groupOf.get(m.slot) === 'recon' ? 2 : 1; k > 0; k--) this.sightings.push({ pos: { ...m.seen }, tick });
+        while (this.sightings.length > MEMORY) this.sightings.shift();
       }
     }
     for (const [slot, at] of this.lastAlive) {
@@ -330,6 +344,8 @@ export class TeamBrain {
     if (!keep(flk, [main.corridor])) flk.corridor = order.find((k) => k !== main.corridor) ?? main.corridor;
     if (!keep(rec, [main.corridor, flk.corridor])) rec.corridor = order.find((k) => k !== main.corridor && k !== flk.corridor) ?? flk.corridor;
     const living = new Map(attackers.map((m) => [m.slot, m]));
+    // Each group: who is in it alive, its staging spot, who waits there and whether it is ready to go.
+    const state: { g: Group; kind: GroupKind; c: Corridor; ms: BrainMember[]; stageAt: number; ready: boolean }[] = [];
     for (const kind of ['main', 'flank', 'recon'] as const) {
       const g = this.groups[kind];
       const c = trip.trip.corridors[g.corridor] ?? null;
@@ -343,7 +359,11 @@ export class TeamBrain {
       }
       // Waves (an objective to take from the enemy): those coming up from behind gather at the staging spot and go on
       // together. The recon pair goes ahead on its own; a group of one just goes.
-      g.stage = attack.stage && !BOT_TRIALS.nostage && kind !== 'recon' && g.members.length >= 2 ? stagePoint(c, pb) : null;
+      if (attack.stage && !BOT_TRIALS.nostage && kind !== 'recon' && g.members.length >= 2) {
+        let at = this.stages.get(c);
+        if (!at) this.stages.set(c, (at = stagePoint(c, pb, this.sees)));
+        g.stage = at;
+      } else g.stage = null;
       const stage = g.stage;
       const stageAt = (stage ? alongOf(c, stage) : null) ?? 0;
       let behind = 0;
@@ -360,21 +380,29 @@ export class TeamBrain {
           if (!g.waiting.has(m.slot)) g.waiting.set(m.slot, tick);
         } else g.waiting.delete(m.slot);
       }
+      let ready = false;
       if (stage && g.waiting.size) {
         let first = tick;
         for (const at of g.waiting.values()) first = Math.min(first, at);
-        const enough = g.waiting.size >= 2 && g.waiting.size >= Math.ceil(behind * pb.gathered);
-        if (enough || tick - first >= TICK_RATE * pb.waitAfterFirst) {
-          const slots = [...g.waiting.keys()].sort((a, b) => a - b);
-          for (const slot of slots) g.sent.add(slot);
-          g.waiting.clear();
-          this.waves.push({ at: tick, slots, from: meanLeft(slots.map((slot) => living.get(slot)!), c), corridor: c });
-          this.stats.started++;
-        }
+        ready = (g.waiting.size >= 2 && g.waiting.size >= Math.ceil(behind * pb.gathered)) || tick - first >= TICK_RATE * pb.waitAfterFirst;
       }
-      for (const m of ms) {
-        const waits = !!stage && !g.sent.has(m.slot) && (alongOf(c, m.pos) ?? 0) <= stageAt + 5;
-        jobs.set(m.slot, { group: kind, to: { ...trip.trip.to }, route: c, stage: waits ? stage : null, goal: null });
+      state.push({ g, kind, c, ms, stageAt, ready });
+    }
+    // Go: each group when it is ready; with the playbook's `together`, every group waiting at its spot goes as soon as one
+    // is (the main push and the flankers hit at about the same time, from different ways).
+    const all = pb.together && state.some((x) => x.ready);
+    for (const x of state) {
+      const g = x.g;
+      if ((x.ready || (all && g.waiting.size > 0)) && g.waiting.size) {
+        const slots = [...g.waiting.keys()].sort((a, b) => a - b);
+        for (const slot of slots) g.sent.add(slot);
+        g.waiting.clear();
+        this.waves.push({ at: tick, slots, from: meanLeft(slots.map((slot) => living.get(slot)!), x.c), corridor: x.c });
+        this.stats.started++;
+      }
+      for (const m of x.ms) {
+        const waits = !!g.stage && !g.sent.has(m.slot) && (alongOf(x.c, m.pos) ?? 0) <= x.stageAt + 5;
+        jobs.set(m.slot, { group: x.kind, to: { ...trip.trip.to }, route: x.c, stage: waits ? g.stage : null, goal: null });
       }
     }
     this.followWaves(tick, attack.pos, living);
@@ -476,12 +504,30 @@ function nearRoute(c: Corridor, p: Vec3): boolean {
 }
 
 /** The staging spot on a corridor: back from the objective by a share of the route (within the playbook's bounds). */
-function stagePoint(c: Corridor, pb: Playbook): Vec3 {
+function stagePoint(c: Corridor, pb: Playbook, sees: ((a: Vec3, b: Vec3) => boolean) | null): Vec3 {
   const back = Math.min(pb.stageMax, Math.max(pb.stageMin, c.length * pb.stageShare));
   const end = c.lineAt[c.lineAt.length - 1]!;
   let k = c.line.length - 1;
   while (k > 0 && end - c.lineAt[k]! < back) k--;
-  return { ...c.line[k]! };
+  if (!sees) return { ...c.line[k]! };
+  // Out of sight of the objective if a point of the route within the playbook's band does it (nearest the share back
+  // first, never past the route's first half: the gathering is near the fight, not at home).
+  const goal = c.line[c.line.length - 1]!;
+  const eye = (p: Vec3) => ({ x: p.x, y: p.y + 1.5, z: p.z });
+  const from = eye(goal);
+  const lo = Math.max(pb.stageMin, 0);
+  const hi = Math.min(pb.stageMax, end * 0.5);
+  let best = k;
+  let bestD = Infinity;
+  for (let i = 0; i < c.line.length; i++) {
+    const left = end - c.lineAt[i]!;
+    if (left < lo || left > hi) continue;
+    const d = Math.abs(left - back);
+    if (d >= bestD || sees(from, eye(c.line[i]!))) continue;
+    best = i;
+    bestD = d;
+  }
+  return { ...c.line[best]! };
 }
 
 /** The members' mean distance still to go along a corridor (m), of those on it (within 30 m of its route). */

@@ -153,6 +153,8 @@ export class BotDirector {
     seed: number,
     private readonly layout: RegionLayout,
     private readonly places: readonly Vec3[],
+    /** Whether one eye point sees another (the match's physics), for the team brains' staging spots. */
+    private readonly sees: ((a: Vec3, b: Vec3) => boolean) | null = null,
   ) {
     this.rng = createRng((seed * 2246822519 + 3266489917) >>> 0);
   }
@@ -167,7 +169,7 @@ export class BotDirector {
   /** A side's team brain (made on first use). */
   brainFor(side: string): TeamBrain {
     let b = this.brains.get(side);
-    if (!b) this.brains.set(side, (b = new TeamBrain()));
+    if (!b) this.brains.set(side, (b = new TeamBrain(undefined, this.sees)));
     return b;
   }
 

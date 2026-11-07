@@ -2170,7 +2170,7 @@ export class Match {
     this.rolesFor = bots.length;
     // (The main area's places: regions, lanes and vantage spots a route gets to, not roofs and pits.)
     const places = this.nav.mainPlaces();
-    this.director ??= new BotDirector(this.seed, regionLayout(places), places);
+    this.director ??= new BotDirector(this.seed, regionLayout(places), places, (a, b) => this.physics.lineOfSight(a, b));
     const roles = assignRoles(
       bots.map((c) => ({ slot: c.slot, profile: c.bot!.profile })),
       this.rules.botStyle ?? 'mixed',

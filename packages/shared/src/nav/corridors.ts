@@ -29,6 +29,14 @@ export interface Corridor {
   readonly length: number;
   /** Share of it (between the ends) within SAME_WIDTH of an earlier corridor of the trip (0 for the first). */
   readonly shared: number;
+  /**
+   * Where it is furthest from the trip's other corridors (between a fifth and four fifths of the way; on the navmesh):
+   * going by this one point, a bot's own shortest route there and on to the goal is this corridor's way
+   * (BotBrain.viaRoute). Null when the trip has only the one.
+   */
+  readonly via: Vec3 | null;
+  /** How far the via is from the other corridors (m). */
+  readonly viaApart: number;
 }
 
 /** A trip: from, to, and its corridors (the first the shortest; at least one, or none when no route exists). */
@@ -353,7 +361,8 @@ function corridorsBetween(p: Prepared, s: number, t: number, from: Vec3, to: Vec
     }
     const points = resample(line, SPACING);
     const measure = resample(line, LINE_STEP);
-    out.push({ points, pointsAt: alongOf(points), line: measure, lineAt: alongOf(measure), length, shared: k ? share : 0 });
+    const lineAt = alongOf(measure);
+    out.push({ points, pointsAt: alongOf(points), line: measure, lineAt, length, shared: k ? share : 0, via: null, viaApart: 0 });
     for (const q of dense) found.add(q);
     // The ground near it costs more for the next search (not near the ends: every way meets there).
     const c = p.centre;
@@ -365,7 +374,41 @@ function corridorsBetween(p: Prepared, s: number, t: number, from: Vec3, to: Vec
       if (!inEnd(x, y, z) && found.near(x, y, z, CORRIDOR_WIDTH)) mult[i] = 1 + PENALTY;
     }
   }
-  return out;
+  // Each corridor's via: where it is furthest from the others (the shortest one's too: it is shortest from the trip's
+  // start, a flag's base, and bots from the spawns round it often go another corridor's way by themselves).
+  if (out.length < 2) return out;
+  return out.map((c, k) => {
+    const [via, viaApart] = furthestFrom(c.line, c.lineAt, out.filter((_, j) => j !== k));
+    return { ...c, via, viaApart };
+  });
+}
+
+/**
+ * The point of a route (between a fifth and four fifths of the way) furthest from the earlier corridors' routes (on the
+ * same floor: within FLOOR up or down; further apart counts as apart), and how far that is.
+ */
+function furthestFrom(line: readonly Vec3[], lineAt: readonly number[], earlier: readonly Corridor[]): [Vec3 | null, number] {
+  const end = lineAt[lineAt.length - 1] ?? 0;
+  let best: Vec3 | null = null;
+  let bestD = -1;
+  for (let i = 0; i < line.length; i++) {
+    const at = lineAt[i]!;
+    if (at < end * 0.2 || at > end * 0.8) continue;
+    const p = line[i]!;
+    let near = Infinity;
+    for (const c of earlier) {
+      for (const q of c.line) {
+        if (Math.abs(q.y - p.y) > FLOOR) continue;
+        const d = (q.x - p.x) * (q.x - p.x) + (q.z - p.z) * (q.z - p.z);
+        if (d < near) near = d;
+      }
+    }
+    if (near > bestD) {
+      bestD = near;
+      best = p;
+    }
+  }
+  return best ? [{ ...best }, Math.sqrt(bestD)] : [null, 0];
 }
 
 /**

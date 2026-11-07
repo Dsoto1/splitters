@@ -1,7 +1,7 @@
 import type { LookHitbox } from '../sim/hitbox.ts';
 import { angleDelta, clamp, createRng, distance, horizontalDistance, lookAngles, type Vec3, hypot } from '../math.ts';
 import type { NavWorld } from '../nav/index.ts';
-import { placeOn, type Corridor } from '../nav/corridors.ts';
+import type { Corridor } from '../nav/corridors.ts';
 import { LIFT_FLAG, PLAYER, STANCES, TICK_DT, TICK_RATE, type Stance } from '../sim/constants.ts';
 import { PICKUP_RADIUS, type ItemDefinition, type ItemEffect } from '../sim/items.ts';
 import { BUTTON_ALT, BUTTON_CROUCH, BUTTON_FIRE, BUTTON_MELEE, BUTTON_JUMP, BUTTON_PRONE, BUTTON_RELOAD, BUTTON_SPRINT, BUTTON_THROW, BUTTON_USE, BUTTON_ZOOM, type PlayerInput } from '../sim/movement.ts';
@@ -286,11 +286,10 @@ const LAUNCHER_DETOUR = 30;
 /** An objective at least this far off is gone to by a lane of the bot's own (orderTarget). */
 const LANE_FROM = 50;
 /**
- * Route variety (teamBrain.ts): a goal further than this (m) is gone to along a corridor, waypoint by waypoint (on to
- * the next within ROUTE_REACH m of one); a bot gathering for a group push keeps watch within STAGE_RADIUS of the spot.
+ * Route variety (teamBrain.ts): a goal further than this (m) is gone to by a corridor (by its via, viaRoute); a bot
+ * gathering for a group push keeps watch within STAGE_RADIUS of the spot.
  */
 const ROUTE_FROM = 25;
-const ROUTE_REACH = 5;
 const STAGE_RADIUS = 6;
 /** Seconds a bot waits at a lift for the platform before it looks for another way (liftWait). */
 const LIFT_PATIENCE = 6;
@@ -427,11 +426,10 @@ export class BotBrain {
   /** The way it takes to a far objective (orderTarget): the goal it was picked for and the waypoint (null: straight). */
   private lane: { goal: Vec3; via: Vec3 | null } | null = null;
   /**
-   * Route variety: the corridor it walks to a far goal (its group's, its squad's, or the cheapest of its side's trip:
-   * teamBrain.ts), the waypoint it heads for next, the goal it is for, when it last checked where it is along it, and
-   * when it last went by it.
+   * Route variety: the corridor it goes by to a far goal (its group's, its squad's, or the cheapest of its side's trip:
+   * teamBrain.ts), the goal it is for, whether it has been by the corridor's via yet, and when it last went by it.
    */
-  private route: { c: Corridor; next: number; goal: Vec3; checked: number; used: number; misses: number; off: boolean } | null = null;
+  private route: { c: Corridor; goal: Vec3; passed: boolean; used: number } | null = null;
   /** A corridor picked with its roaming goal (toward the enemy's side), for that goal only. */
   private roamRoute: { c: Corridor; goal: Vec3 } | null = null;
   /** A few steps aside after getting stuck on the same spot again and again (planSidestep). */
@@ -924,47 +922,32 @@ export class BotBrain {
   }
 
   /**
-   * Where to head for `goal` along corridor `c` (route variety): the next waypoint ahead of the bot on it (joining it
-   * where the bot is), on once within ROUTE_REACH of each, and the goal itself after the last. Every couple of seconds
-   * it checks where it really is along the corridor (a fight or a shortcut can carry it on past a waypoint). A few
-   * distance checks a think; the search to each waypoint is a short one.
+   * Where to head for `goal` by corridor `c` (route variety): its via (Corridor.via, where it is furthest from the
+   * corridors before it) until the bot has been by it or is nearer the goal than it is, then the goal; the bot's own
+   * routes do the rest, so it goes that corridor's way without following it point by point. (Following its points every
+   * 12 m went wrong on maps with floors: a bot on a deck above a corridor counted as on it, headed for a point on the
+   * ground ahead and stood under a gallery's rail; captures halved on the dev sample.)
    */
-  private alongRoute(view: BotWorldView, c: Corridor, goal: Vec3): Vec3 {
+  private viaRoute(view: BotWorldView, c: Corridor, goal: Vec3): Vec3 {
     const me = view.self.pos;
-    const tick = view.tick;
     let r = this.route;
-    if (!r || r.c !== c || horizontalDistance(r.goal, goal) > 8) r = this.route = { c, next: -1, goal: { ...goal }, checked: -Infinity, used: tick, misses: 0, off: false };
-    r.used = tick;
-    // (No route to its waypoints three times over: the corridor is left for this goal, straight there instead.)
-    if (r.off) return goal;
-    if (r.next < 0 || tick - r.checked > TICK_RATE * 2) {
-      r.checked = tick;
-      const at = placeOn(c, me);
-      const along = at.at < 0 ? 0 : c.lineAt[at.at]!;
-      // The first waypoint a few metres further along than the bot is (never back: a bot pushed back goes on ahead).
-      let k = 0;
-      while (k < c.points.length - 1 && c.pointsAt[k]! < along + 4) k++;
-      if (k > r.next) r.next = k;
+    if (!r || r.c !== c || horizontalDistance(r.goal, goal) > 8) r = this.route = { c, goal: { ...goal }, passed: !c.via, used: view.tick };
+    r.used = view.tick;
+    const via = c.via;
+    if (!via || r.passed) return goal;
+    // Near it, or already nearer the goal than it is: on to the goal.
+    if ((horizontalDistance(me, via) < 6 && Math.abs(me.y - via.y) < 3) || horizontalDistance(me, goal) < horizontalDistance(via, goal)) {
+      r.passed = true;
+      return goal;
     }
-    while (r.next < c.points.length - 1) {
-      const w = c.points[r.next]!;
-      if (horizontalDistance(me, w) < ROUTE_REACH && Math.abs(me.y - w.y) < 2.5) r.next++;
-      else break;
-    }
-    return r.next >= c.points.length - 1 ? goal : c.points[r.next]!;
+    return via;
   }
 
-  /**
-   * `to`, where it was heading for `goal`, was its corridor's waypoint and no route gets there from here (a ledge, a
-   * shut way): on to the next waypoint; after three, the corridor is left for this goal. False when `to` wasn't one.
-   */
-  private skipWaypoint(to: Vec3, goal: Vec3): boolean {
+  /** `to`, where it was heading for `goal`, was its corridor's via and no route gets there from here: straight on. */
+  private skipVia(to: Vec3, goal: Vec3): boolean {
     const r = this.route;
-    if (!r || r.off || horizontalDistance(r.goal, goal) > 8 || to === goal) return false;
-    const w = r.c.points[r.next];
-    if (!w || horizontalDistance(w, to) > 0.5) return false;
-    r.next++;
-    if (++r.misses >= 3) r.off = true;
+    if (!r || r.passed || !r.c.via || horizontalDistance(r.goal, goal) > 8 || horizontalDistance(r.c.via, to) > 0.5) return false;
+    r.passed = true;
     return true;
   }
 
@@ -985,7 +968,7 @@ export class BotBrain {
     const job = this.jobFor(view, g);
     if (job) {
       if (job.stage) return job.stage;
-      return job.route && horizontalDistance(me, g.pos) > ROUTE_FROM ? this.alongRoute(view, job.route, g.pos) : g.pos;
+      return job.route && horizontalDistance(me, g.pos) > ROUTE_FROM ? this.viaRoute(view, job.route, g.pos) : g.pos;
     }
     let lane = this.lane;
     // (Only for a spot to get to, a flag: not for following someone, nor for a carrier running home the short way.)
@@ -1571,8 +1554,8 @@ export class BotBrain {
           moveYaw = this.followPathTo(view, to, moving);
           // No way by its lane after all: straight for the goal.
           if (moveYaw === null && this.pathMiss && this.lane?.via) this.lane.via = null;
-          // No way to its corridor's next waypoint: on to the one after (the corridor is left after three).
-          else if (moveYaw === null && this.pathMiss && this.skipWaypoint(to, g.pos)) moveYaw = null;
+          // No way to its corridor's via: straight for the goal.
+          else if (moveYaw === null && this.pathMiss && this.skipVia(to, g.pos)) moveYaw = null;
           else if (moveYaw === null && this.pathMiss && me.grounded !== false) {
             // As near as a route gets to a goal it can't reach (followPathNow went there): keep watch there, facing
             // it, until it comes within reach (a dropped flag goes home) or the goal changes. followPathNow keeps
@@ -1653,7 +1636,7 @@ export class BotBrain {
         }
         // Toward the enemy's side by a corridor (its squad's, or the cheapest of its side's trip there: route variety).
         const rr = this.roamRoute;
-        if (!this.via && rr && horizontalDistance(rr.goal, goal) < 3 && horizontalDistance(me.pos, goal) > ROUTE_FROM) goal = this.alongRoute(view, rr.c, goal);
+        if (!this.via && rr && horizontalDistance(rr.goal, goal) < 3 && horizontalDistance(me.pos, goal) > ROUTE_FROM) goal = this.viaRoute(view, rr.c, goal);
         // A squad member far from its leader catches up first (regroups); one ahead of it waits.
         const follower = !!cl && cl.leader !== me.slot;
         const fromLeader = cl ? horizontalDistance(me.pos, cl.leaderPos) : 0;
