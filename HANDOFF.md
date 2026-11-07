@@ -267,7 +267,7 @@ are right for the campus. The shallow vault stays. Skybridges keep the pack's fa
 - A "Prune branches" Actions workflow is offered for the future; waiting on the owner.
 
 <!-- prop-scale -->
-### Prop scale pass: furniture at human size (`wip/prop-scale`, agents, 2026-11-06/07; from main 2acb8f23, main 5e85caff merged in; CI on `check/prop-scale`)
+### Prop scale pass: furniture at human size (`wip/prop-scale`, agents, 2026-11-06/07; from main 2acb8f23, main 5e85caff and 372d503f merged in; green on `check/prop-scale` at 61585943, run 42324256688 (full suite: unit, maps, build, check, bots, perf budget and mass, 16 e2e shards); not landed)
 **The owner:** "Can we scale the props to the normal human character size? Some of them are tiny, like chairs and
 such." Then, on the lineup sheets: "yes fix the outliers, show me the 10% sheets." Part B of the prop pass (after the
 slack pass); the brief: session scratchpad `briefs/prop-scale.md`.
