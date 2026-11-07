@@ -17,7 +17,7 @@ import { Material } from '@babylonjs/core/Materials/material';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import type { LinesMesh } from '@babylonjs/core/Meshes/linesMesh';
 import type { MapDocument, MapEntity, PropEntity, Rotation, Side, TerrainData, TilePlacement, Vec3, WorldBox } from '@tiletrigger/shared';
-import { DESTRUCTIBLE_SPECS, MAX_TEAMS, MOUNT_DEFS, mountTint, PLAYER, buildMapDecor, buildMapGeometry, dynamicBlockIds, getProp, mapLiquids, terrainHeightAt, yawXZ, mapFactions, mapTeams, placementCells, viewDirection, terrainUnderFloors, withPathsLaid, hungPropLift, rebedShift, visibleFaces, propFlushLifts } from '@tiletrigger/shared';
+import { DESTRUCTIBLE_SPECS, MAX_TEAMS, MOUNT_DEFS, mountTint, PLAYER, buildMapDecor, buildMapGeometry, dynamicBlockIds, getProp, mapLiquids, terrainHeightAt, yawXZ, mapFactions, mapTeams, placementCells, viewDirection, terrainUnderFloors, withPathsLaid, hungPropLift, rebeddedY, visibleFaces, propFlushLifts } from '@tiletrigger/shared';
 import { PROP_CONTACTS } from '@tiletrigger/shared/propContacts';
 import { ScenarioVisuals, placeScenarioNode } from '../game/scenarioVisuals.ts';
 import { applyWorldGrade } from '../game/graphicsSettings.ts';
@@ -114,14 +114,19 @@ export class EditorView {
   private dimMeshes: Mesh[] = [];
   /** What the meshes were last built from: an edit rebuilds only what it changed (a prop moved: no tile, terrain or road meshes). */
   private builtBoxes = '';
-  private builtTerrain: MapDocument['terrain'] | undefined = undefined;
   private builtTheme = '';
-  private builtPaths: MapDocument['paths'] | null = null;
-  private builtStructure: MapDocument['classicStructure'] | null = null;
   private drawnPaths: MapDocument['paths'] | null = null;
   private drawnTerrain: MapDocument['terrain'] | undefined = undefined;
-  /** The ground as played (paths laid in, kept under floors): what the terrain, plants and roads are drawn on. */
+  /** The document's ground with its paths laid in (paths.ts), worked out again only when the ground or the paths change. */
+  private laid: { from: MapDocument['terrain']; paths: MapDocument['paths']; terrain: MapDocument['terrain'] } | null = null;
+  /** The ground as played (paths laid in, kept under every floor): what the terrain, plants and roads are drawn on. */
   private shownTerrain: MapDocument['terrain'] = null;
+  /** The laid ground `shownTerrain` was kept under the floors from. */
+  private shownLaid: MapDocument['terrain'] = null;
+  /** What the props are re-bedded from (the document's own ground) and against (the map's geometry as made), with each prop's re-bedded base (settle.ts rebeddedY). */
+  private groundMade: MapDocument['terrain'] = null;
+  private groundBoxes: readonly WorldBox[] = [];
+  private rebedCache = new WeakMap<PropEntity, number | null>();
   private pathMeshes: Mesh[] = [];
   /** Routes (paths not drawn in the game), dashed. */
   private guideLines: Mesh[] = [];
@@ -276,11 +281,12 @@ export class EditorView {
   /**
    * Rebuild map meshes. Tiles above the active level are hidden unless showAll;
    * every level but the active one is drawn ghosted, so the floor being edited stands out.
+   * `all`: the whole map's geometry (buildMapGeometry of `doc`), whose floors the ground is kept under.
    */
-  setMap(doc: MapDocument, level: number, showAll: boolean): WorldBox[] {
+  setMap(doc: MapDocument, level: number, showAll: boolean, all: readonly WorldBox[] = buildMapGeometry(doc)): WorldBox[] {
     const visibleTiles = showAll ? doc.classicStructure.tiles : doc.classicStructure.tiles.filter((t) => t.z <= level);
     const visible = { ...doc, classicStructure: { ...doc.classicStructure, tiles: visibleTiles } };
-    const boxes = buildMapGeometry(visible);
+    const boxes = visibleTiles.length === doc.classicStructure.tiles.length ? [...all] : buildMapGeometry(visible);
     const drawn = [...boxes, ...buildMapDecor(visible)];
     const { levelHeight } = doc.classicStructure;
     // Which level a piece belongs to. A floor goes by its top (a level's floor slab hangs half a metre
@@ -307,16 +313,20 @@ export class EditorView {
       for (const m of this.dimMeshes) m.visibility = 0.4;
       this.applyTileLayer();
     }
-    // The ground as played: the paths laid in (paths.ts) and kept under the floors. MapMaker's document
-    // keeps them apart, so a path that moves takes its dip with it.
-    if (doc.terrain !== this.builtTerrain || doc.paths !== this.builtPaths || doc.classicStructure !== this.builtStructure) {
-      this.builtTerrain = doc.terrain;
-      this.builtPaths = doc.paths;
-      this.builtStructure = doc.classicStructure;
-      const laid = withPathsLaid(doc);
-      this.shownTerrain = laid.terrain ? terrainUnderFloors(laid) : null;
-      this.builtTheme = '';
-    }
+    // The ground as played (what loadMap plays, settle.ts withGroundAsPlayed): the paths laid in (paths.ts) and the
+    // terrain kept under every floor (terrainUnderFloors), worked out after every edit from the document's own ground,
+    // which only sculpting changes: a path or a floor that moves takes its dip with it, and the ground comes back.
+    if (doc.terrain !== this.laid?.from || doc.paths !== this.laid.paths) this.laid = { from: doc.terrain, paths: doc.paths, terrain: withPathsLaid(doc).terrain };
+    const laid = this.laid.terrain;
+    const ground = laid ? terrainUnderFloors({ ...doc, terrain: laid }, all) : null;
+    // The floors moved but the ground came out the same: it stays the same terrain (nothing to rebuild).
+    const same = !!ground && ground !== laid && this.shownLaid === laid && !!this.shownTerrain && this.shownTerrain !== laid && sameHeights(ground, this.shownTerrain);
+    if (!same) this.shownTerrain = ground;
+    this.shownLaid = laid;
+    // Props bedded on the document's ground are drawn re-bedded on this one, as the game plays them.
+    if (doc.terrain !== this.groundMade || all !== this.groundBoxes || !same) this.rebedCache = new WeakMap();
+    this.groundMade = doc.terrain;
+    this.groundBoxes = all;
     const shown = this.shownTerrain === doc.terrain ? doc : { ...doc, terrain: this.shownTerrain };
     // Terrain, paths and the road, only when they changed (the terrain alone took most of an edit on big maps).
     if (this.shownTerrain !== this.drawnTerrain || doc.classicStructure.theme !== this.builtTheme) {
@@ -560,15 +570,29 @@ export class EditorView {
   private placeEntityNode(node: TransformNode, e: MapEntity, doc: MapDocument): void {
     node.position.set(e.position[0], e.position[1] + (e.kind === 'pickup' ? PICKUP_HOVER : 0), e.position[2]);
     if (e.kind === 'prop') {
-      orientProp(node, e, doc.terrain);
+      // Shown on the ground as played (paths laid in, kept under floors), as the game re-beds it (settle.ts
+      // rebedProps), and leaning with that ground.
+      const ground = doc.terrain && doc.terrain === this.groundMade ? this.shownTerrain : doc.terrain;
+      const y = this.playedPropY(e, doc);
+      const played = y === null ? e : { ...e, position: [e.position[0], y, e.position[2]] as [number, number, number] };
+      node.position.y = played.position[1];
+      orientProp(node, played, ground);
       node.position.y += hungPropLift(this.scenario.ceilings, e);
       // Flush on another prop: drawn a hair apart, as in the game (no flicker).
       const lift = this.flush.lifts.get(e.id);
       if (lift) node.position.addInPlaceFromFloats(lift[0], lift[1], lift[2]);
-      // Shown on the ground as played (paths laid in), as the game re-beds it (settle.ts rebedProps).
-      if (doc.terrain && this.shownTerrain && this.shownTerrain !== doc.terrain) node.position.y += rebedShift(doc.terrain, this.shownTerrain, e);
     } else if (e.kind === 'mount') node.rotation.y = e.yaw;
     else if (e.kind !== 'pickup') placeScenarioNode(node, e);
+  }
+
+  /** Where the game puts a prop bedded on the document's ground: re-bedded on the ground as played (null: it stays). */
+  private playedPropY(e: PropEntity, doc: MapDocument): number | null {
+    const made = doc.terrain;
+    const ground = this.shownTerrain;
+    if (!made || !ground || made !== this.groundMade || ground === made) return null;
+    let y = this.rebedCache.get(e);
+    if (y === undefined) this.rebedCache.set(e, (y = rebeddedY(made, ground, this.groundBoxes, e)));
+    return y;
   }
 
   /** Previews of what the Scenario and NPC tools would place, by `key`: rebuilt only when it changes. */
@@ -761,7 +785,11 @@ export class EditorView {
     const node = this.propGhost.node;
     node.setEnabled(true);
     const lift = kind === 'spawn' ? PLAYER.height / 2 : kind === 'pickup' ? PICKUP_HOVER : 0;
-    node.position.set(at[0], at[1] + lift, at[2]);
+    // A prop bedded on the document's ground lands where it will be drawn: re-bedded on the ground as shown.
+    const made = this.groundMade;
+    const ground = this.shownTerrain;
+    const y = kind === 'prop' && made && ground && ground !== made ? rebeddedY(made, ground, this.groundBoxes, { id: 'ghost', model, position: at, yaw, scale: 1 }) : null;
+    node.position.set(at[0], (y ?? at[1]) + lift, at[2]);
     node.rotation.y = yaw;
   }
 
@@ -953,7 +981,6 @@ export class EditorView {
   previewTerrain(doc: MapDocument): void {
     this.styler.buildTerrain(doc, 'edmap');
     // Built from a preview: the next setMap rebuilds it from the document.
-    this.builtTerrain = undefined;
     this.drawnTerrain = undefined;
   }
 
@@ -1040,6 +1067,13 @@ function boxesFingerprint(boxes: readonly WorldBox[]): string {
     if (b.surface) str(`${b.surface.material}${b.surface.tint ?? ''}`);
   }
   return `${boxes.length}:${(h1 >>> 0).toString(36)}${(h2 >>> 0).toString(36)}`;
+}
+
+/** Two grounds with the same heights, vertex for vertex. */
+function sameHeights(a: TerrainData, b: TerrainData): boolean {
+  if (a.heights.length !== b.heights.length) return false;
+  for (let i = 0; i < a.heights.length; i++) if (a.heights[i] !== b.heights[i]) return false;
+  return true;
 }
 
 /** See-through copies of materials that are forced opaque (glTF models), which ignore a mesh's visibility; by source. */

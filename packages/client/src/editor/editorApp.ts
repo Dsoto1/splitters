@@ -7,7 +7,8 @@ import {
   botCastLabel,
   castLooks,
   validBotCast,
-  withTerrainUnderFloors,
+  terrainUnderFloors,
+  withPathsLaid,
   addSpawnCommand,
   buildMapGeometry,
   checkPlacement,
@@ -708,8 +709,11 @@ export class EditorApp {
   private brushStrength = 0.5;
   /** Ground point under the pointer for the terrain tool. */
   private terrainHover: Vec3 | null = null;
-  /** Live sculpt: the terrain before the stroke and as it is now (committed as one undo step on release). */
-  private stroke: { before: TerrainData; now: TerrainData; target: number; seed: number } | null = null;
+  /**
+   * Live sculpt: the document's ground before the stroke and as it is now (committed as one undo step on release),
+   * and that ground kept under the floors (what the view shows and the pointer meets while the brush is dragged).
+   */
+  private stroke: { before: TerrainData; now: TerrainData; shown: TerrainData; target: number; seed: number } | null = null;
 
   constructor(private readonly host: EditorHost) {
     this.view = new EditorView(host.engine);
@@ -780,6 +784,21 @@ export class EditorApp {
     const doc = this.viewDoc;
     if (this.boxesFor?.doc !== doc) this.boxesFor = { doc, boxes: buildMapGeometry(doc) };
     return this.boxesFor.boxes;
+  }
+
+  /**
+   * The ground as MapMaker shows it and the pointer meets it: the document's own ground (which MapMaker changes only
+   * by sculpting) with the paths laid in and kept under every floor (EditorView.setMap, as loading plays it), or a
+   * brush stroke's while one is dragged.
+   */
+  private get shownGround(): TerrainData | null {
+    return this.stroke?.shown ?? this.view.ground;
+  }
+
+  /** `terrain` as it would be shown: kept under the map's floors, with the paths laid in first unless `laid` is false (a brush's live preview). */
+  private groundShownFor(terrain: TerrainData, laid = true): TerrainData {
+    const doc = { ...this.viewDoc, terrain };
+    return terrainUnderFloors(laid ? withPathsLaid(doc) : doc, this.mapBoxes())!;
   }
 
   /** The pieces MapMaker can place: the shipped ones and the player's own (their library), with the role packs. */
@@ -917,7 +936,7 @@ export class EditorApp {
     const viewChanged = this.level !== this.renderedLevel || this.showAll !== this.renderedShowAll;
     if (docChanged || viewChanged) {
       // Set pieces drawn as their parts (the document keeps the placements).
-      this.visibleBoxes = this.view.setMap(this.viewDoc, this.level, this.showAll);
+      this.visibleBoxes = this.view.setMap(this.viewDoc, this.level, this.showAll, this.mapBoxes());
       this.renderedLevel = this.level;
       this.renderedShowAll = this.showAll;
       this.updateSelectionVisuals();
@@ -996,8 +1015,9 @@ export class EditorApp {
       return false;
     }
     try {
-      // Terrain never shows through a floor: lowered under any the edit puts over it, in the same undo step.
-      this.history.execute(label, withTerrainUnderFloors(this.doc, cmd, this.setPieceLib));
+      // The document keeps its own ground: MapMaker draws it kept under the floors (EditorView.setMap), as loading
+      // plays it, so a floor an edit moves or deletes gives the ground under it back.
+      this.history.execute(label, cmd);
       return true;
     } catch (e) {
       this.toast(`Can't ${label.toLowerCase()}: ${(e as Error).message}`, true);
@@ -1192,7 +1212,7 @@ export class EditorApp {
 
   /** Standing on the terrain rather than a floor: reachable from any level. */
   private onTerrain(e: MapEntity): boolean {
-    const t = this.doc.terrain;
+    const t = this.shownGround;
     if (!t) return false;
     const y = terrainHeightAt(t, e.position[0], e.position[2]);
     return y !== null && Math.abs(e.position[1] - y) < 1;
@@ -1794,7 +1814,9 @@ export class EditorApp {
     this.ray = this.view.pointerRay(clientX, clientY);
     this.pointerAt = { x: clientX, y: clientY };
     this.hoverPoint = this.view.pickPlane(clientX, clientY, this.level * levelHeight);
-    const t = this.stroke?.now ?? this.doc.terrain;
+    // The ground as shown (kept under the floors), not the document's own: under a floor that stands on a hill, the
+    // ground as made is inside the floor, out of sight.
+    const t = this.shownGround;
     this.terrainHover = null;
     this.hoverOnTerrain = false;
     let ground: { at: Vec3; distance: number } | null = null;
@@ -1941,7 +1963,7 @@ export class EditorApp {
     this.view.setPickHighlight(this.doc, null, 'pick', 0);
     if (this.tool.kind === 'scatter') {
       const p = this.hoverPoint;
-      this.view.setBrushRing(p ? this.doc.terrain : null, p?.x ?? 0, p?.z ?? 0, this.brushRadius, '#6fdc6a');
+      this.view.setBrushRing(p ? this.shownGround : null, p?.x ?? 0, p?.z ?? 0, this.brushRadius, '#6fdc6a');
       $('ed-target').textContent = p ? `${SCATTER_SETS[this.tool.set].label} · radius ${this.brushRadius} m` : '';
       this.view.setFaceHighlight(null, null);
       this.view.setHoverCell(this.doc, null);
@@ -1950,7 +1972,7 @@ export class EditorApp {
     }
     if (this.tool.kind === 'terrain') {
       const h = this.terrainHover;
-      const t = this.stroke?.now ?? this.doc.terrain;
+      const t = this.shownGround;
       const colors: Record<TerrainBrush, string> = { raise: '#ffd34d', lower: '#ff7a4d', smooth: '#7fd8ff', flatten: '#c7a6ff', roughen: '#b8e07a', paint: '#ffffff', foliage: '#6fdc6a' };
       this.view.setBrushRing(h ? t : null, h?.x ?? 0, h?.z ?? 0, this.brushRadius, colors[this.terrainBrush]);
       $('ed-target').textContent = !t ? 'No terrain yet: create one in the Terrain tab' : h ? `${this.terrainBrush === 'paint' ? `Paint ${TERRAIN_MATERIAL_LABELS[this.terrainMaterial]}` : this.terrainBrush === 'foliage' ? `Plants: ${FOLIAGE_LEVELS[this.foliageLevel]}` : this.terrainBrush} · height ${h.y.toFixed(1)} m · radius ${this.brushRadius} m` : '';
@@ -1988,7 +2010,7 @@ export class EditorApp {
       const target = this.paintTarget();
       const g = this.paintGround;
       // On the ground: the ring it paints, as the Terrain tab's Paint brush shows it.
-      this.view.setBrushRing(g ? this.doc.terrain : null, g?.x ?? 0, g?.z ?? 0, this.brushRadius, '#ffb03b');
+      this.view.setBrushRing(g ? this.shownGround : null, g?.x ?? 0, g?.z ?? 0, this.brushRadius, '#ffb03b');
       $('ed-target').textContent = target
         ? `${SURFACE_SLOT_LABELS[target.slot]} · ${coreCatalog.get(target.tile.tile)?.displayName ?? target.tile.tile} · ${resolveSurface(this.doc, target.tile, target.slot).material.displayName}`
         : g
@@ -3045,7 +3067,8 @@ export class EditorApp {
     const t = this.doc.terrain;
     if (!t || !this.terrainHover) return;
     if (invert && (this.terrainBrush === 'raise' || this.terrainBrush === 'lower')) this.terrainBrush = this.terrainBrush === 'raise' ? 'lower' : 'raise';
-    this.stroke = { before: t, now: t, target: this.terrainHover.y, seed: (Math.random() * 1e9) | 0 };
+    // The brush works on the document's own ground; Flatten levels it to the height under the pointer as shown.
+    this.stroke = { before: t, now: t, shown: this.view.ground ?? t, target: this.terrainHover.y, seed: (Math.random() * 1e9) | 0 };
     this.strokeStep(1 / 30);
   }
 
@@ -3057,9 +3080,11 @@ export class EditorApp {
     const rate = this.brushStrength;
     const strength = this.terrainBrush === 'raise' || this.terrainBrush === 'lower' ? rate * 6 * dt : this.terrainBrush === 'roughen' ? rate * 1.5 * dt : Math.min(1, rate * 8 * dt);
     s.now = applyBrush(s.now, { brush: this.terrainBrush, x: h.x, z: h.z, radius: this.brushRadius, strength, target: s.target, material: this.terrainMaterial, level: this.foliageLevel, seed: s.seed });
-    this.view.previewTerrain({ ...this.doc, terrain: s.now });
+    // Shown kept under the floors as it is sculpted (the paths are laid in again on release).
+    s.shown = this.groundShownFor(s.now, false);
+    this.view.previewTerrain({ ...this.viewDoc, terrain: s.shown });
     if (this.terrainBrush !== 'paint' && this.terrainBrush !== 'foliage') {
-      const y = terrainHeightAt(s.now, h.x, h.z);
+      const y = terrainHeightAt(s.shown, h.x, h.z);
       if (y !== null) this.terrainHover = { ...h, y };
     }
     this.updateHover();
@@ -3107,10 +3132,14 @@ export class EditorApp {
     const carried = new Set<MapEntity['kind']>(['spawn', 'pickup', 'prop', 'mount', 'flag', 'hill']);
     const before: MapEntity[] = [];
     const moves: MapEntity[] = [];
+    // Props are bedded on the document's own ground (and drawn and played re-bedded on the ground as shown); the
+    // rest stand on the ground as shown, kept under the floors, so they move as that does.
+    const shownBefore = this.view.ground ?? t;
+    const shownAfter = this.groundShownFor(after);
     for (const e of this.doc.entities) {
       if (!carried.has(e.kind)) continue;
-      const was = terrainHeightAt(t, e.position[0], e.position[2]);
-      const now = terrainHeightAt(after, e.position[0], e.position[2]);
+      const was = terrainHeightAt(e.kind === 'prop' ? t : shownBefore, e.position[0], e.position[2]);
+      const now = terrainHeightAt(e.kind === 'prop' ? after : shownAfter, e.position[0], e.position[2]);
       if (was === null || now === null || Math.abs(now - was) < 0.005) continue;
       const above = e.position[1] - was;
       if (above > 0.3 || above < -1.5) continue;
@@ -5279,8 +5308,10 @@ export class EditorApp {
     this.renderIssues();
     clearTimeout(this.navTimer);
     const token = ++this.navToken;
-    // Navigation and overlaps as played: set pieces expanded into their parts.
-    const doc = this.viewDoc;
+    // Navigation and overlaps as played: set pieces expanded into their parts, on the ground as shown (paths laid in,
+    // kept under the floors).
+    const ground = this.view.ground;
+    const doc = ground && ground !== this.viewDoc.terrain ? { ...this.viewDoc, terrain: ground } : this.viewDoc;
     if (this.issues.some((i) => i.severity === 'error')) {
       this.navIssues = [];
       this.renderIssues();
