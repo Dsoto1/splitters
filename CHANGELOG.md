@@ -8,6 +8,26 @@ made only on a commit that passed CI on a check branch.
 
 ## Unreleased
 
+**Weapon sets: Standard, Military, Sci-fi, Medieval, Chaos and Mixed bag** (owner, 2026-11-06: "I have never once
+seen the sheep weapon, hardly see swarm launcher or gravity weapon … weapon sets for map defaults"; docs/WEAPON_SETS_PLAN.md,
+docs/ARSENAL.md "Weapon sets")
+- **A set decides what you spawn with, what the pickups hold and what drops.** Military: a knife, a pistol and an
+  assault rifle, real-world guns only. Sci-fi: a knife, a pulse pistol and a plasma rifle, energy weapons only.
+  Medieval: a knife and a throwing spear, every weapon pickup a spear or a battle axe. Chaos: a knife, a pistol and a
+  random oddball every life, a sheep to throw. Mixed bag: a knife, a pistol and a random main gun every life, any
+  weapon in any pickup. Standard: as before.
+- **Pickups roll within the set:** a weapon pickup holds one of the set's weapons of its own kind, else of the nearest
+  kind it has (a sniper rifle pickup in Sci-fi is the railgun), a new one each time it comes back; grenade pickups hold
+  the set's grenades (Military frag and mine, Sci-fi sticky and vortex, Medieval incendiary and holy bomb, Chaos sheep,
+  holy bomb and cluster bomb).
+- **Each map has a default set** (MapMaker → Map properties → Weapon set; maps without one play Standard), and the host
+  can pick another: Match setup → Advanced rules → Weapons ("Map default" names the map's own, and the setup's facts
+  show the set in play), the pause menu's Host tab (it applies at once), or a server's `set` rule.
+- **Bots** use the sets' weapons: sniper-role bots spawn with Military's marksman rifle or Sci-fi's railgun, bots throw
+  the sheep (short, so it waddles the rest of the way) and the holy bomb (then run clear of it), and light their oil
+  slicks with the oil slicker's igniter. `bot-report --set=…` and the scorecard list kills by weapon per set.
+- Map format v28 (the map's `weaponSet`); older maps load unchanged and play Standard. Saved setups keep their choice.
+
 **Bots: snipers, cover to cover, playbooks per mode** (docs/BOT_AI_PLAN.md Phase B, part 2; docs/BOTS.md, "Snipers",
 "Cover-to-cover advance", "Team brain and route variety")
 - **Snipers play like snipers**: a sniper-role bot goes for a scoped gun first, then takes a high, tucked-away spot
