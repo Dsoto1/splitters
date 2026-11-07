@@ -3118,12 +3118,14 @@ async function breakthroughFlow(browser) {
   const errors = [];
   page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
   await page.addInitScript(() => {
-    if (!localStorage.getItem('cs.arcade')) localStorage.setItem('cs.arcade', JSON.stringify({ map: 'sandgate', mode: 'core.tdm', bots: 3, skill: 'normal', scoreLimit: 40, minutes: 10, scoreAuto: true, timeAuto: true }));
+    if (!localStorage.getItem('cs.arcade')) localStorage.setItem('cs.arcade', JSON.stringify({ map: 'sandgate', mode: 'core.tdm', bots: 3, skill: 'normal', scoreLimit: 40, minutes: 10, scoreAuto: true, timeAuto: true, teams: [4, 4] }));
   });
   await page.goto(`${CLIENT}/?test=1&god=1&testmap=test_breakthrough`);
   await page.waitForFunction(() => window.__front, null, { timeout: T(30000) });
   await page.evaluate(() => document.getElementById('nav-play').click());
   await page.waitForSelector('#arcade-map', { timeout: T(30000) });
+  // (The map loads behind the panel: its unavailable modes show once it has.)
+  await page.waitForSelector('.mode-tag-off[data-mode="core.breakthrough"]', { timeout: T(30000) }).catch(() => {});
   const off = await page.evaluate(() => document.querySelector('.mode-tag-off[data-mode="core.breakthrough"]')?.dataset.tip ?? null);
   check(/sectors/.test(off ?? ''), `Match Setup greys Breakthrough out on a map without sectors, saying why (${off})`);
   // The map with sectors: Breakthrough is offered, its own settings in "what wins".
@@ -3198,7 +3200,8 @@ async function breakthroughFlow(browser) {
     const fallback = await page.evaluate(() => {
       const m = window.__match;
       const d = m.combatants().find((c) => m.mode.sideOf(c) === 'defend' && c.alive && c.slot !== window.__cs.slot);
-      const hold = () => (d.move = { pos: { x: 24, y: 0.2, z: -30 }, velY: 0, grounded: false });
+      // Far from the attackers' spawn and their way to the guns, so only the fall-back hurts it.
+      const hold = () => (d.move = { pos: { x: 70, y: 0.2, z: -72 }, velY: 0, grounded: false });
       hold();
       m.step();
       const warned = (m.snapshot([]).md?.bf ?? []).some(([s]) => s === d.slot);
@@ -3209,12 +3212,13 @@ async function breakthroughFlow(browser) {
       return { warned, health, at9, at11: d.alive ? d.health : 0 };
     });
     check(fallback.warned && fallback.at9 === fallback.health && fallback.at11 < fallback.health, `a defender left behind the new line is warned, then hurt (${JSON.stringify(fallback)})`);
-    // Your own warning: join the defenders behind the line.
+    // Your own warning: join the defenders (the HUD told of it as a roster change would), behind the line.
     await page.evaluate(() => {
       const m = window.__match;
       const me = m.slots[window.__cs.slot];
       me.faction = m.mode.defenders;
-      self.__btHold = setInterval(() => (me.move = { pos: { x: 0, y: 0.2, z: -30 }, velY: 0, grounded: false }), 50);
+      window.__cs.hud.setRoster(m.roster());
+      self.__btHold = setInterval(() => (me.move = { pos: { x: -60, y: 0.2, z: -66 }, velY: 0, grounded: false }), 50);
     });
     const warned = await page.waitForFunction(() => !document.getElementById('bt-warning')?.hidden && /Fall back behind the line/.test(document.getElementById('bt-warning')?.textContent ?? ''), null, { timeout: T(15000) }).then(() => true, () => false);
     const warning = await page.evaluate(() => ({ text: document.getElementById('bt-warning')?.textContent, side: document.querySelector('#mode-status .bt-strip')?.dataset.btSide }));

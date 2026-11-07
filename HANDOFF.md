@@ -26,6 +26,57 @@ gets overloaded above that: local e2e times out and flakes). Prune landed worktr
 - Earlier the same day: content scalability steps 2–6, perf toolset, flaky e2e fixes, Runway Nine airliner, map
   reworks batches 2–3, character fixes rounds 2–3 (see the entries below and CHANGELOG).
 
+<!-- breakthrough -->
+### Breakthrough mode, and Iron Coast's fort and gatehouse (`wip/breakthrough`, agent, 2026-11-07; from main 17d0e0a0, main 7c40d0b9 (Bot AI Phase B part 1) merged in; CI on `check/breakthrough`; not landed)
+The brief: docs/map-briefs/MAP_21_Iron_Coast.md ("Breakthrough mode", and "The mode as built"). Rules, settings, HUD,
+MapMaker steps: docs/GAME_MODES.md, "Breakthrough". The pieces: docs/SET_PIECES_PLAN.md, "As built: part 4".
+
+**What's in it:**
+- **The mode** (`sim/modes/breakthrough.ts`, `core.breakthrough`): sectors in order; capture zones (KOTH-like,
+  contested), destroy targets (plant 3 s / fuse 20 s / defuse 5 s; a sector's "N of M"), the final hold; spawn groups
+  per sector and side moving on as sectors fall; the 10 s fall-back warning, then 20 hp/s; the attackers' pool
+  (`breakthroughPool` per attacker, half again per attacker for each sector taken); defenders unlimited at 1.5× the
+  respawn delay; the sector clock (`breakthroughSectorSeconds`, a sector's own `seconds`; carried over; a burning
+  charge plays on); an optional second round with the sides swapped (`breakthroughSwap`; sectors, then time left).
+  New ModeHost/ModeLogic hooks: `endRound(winner)`, `hurt`, `spawnSpots`, `spawnBeside`, `clock` (and `spawnPoints` are
+  the match's own spawn spots now, so recent use counts).
+- **Map format v28** (`sector` and `objective` entities, a spawn's `sector` and `side`; v27 migrates unchanged). The
+  release stamps' content hash covers the format version, so stamped maps re-exported later get a new version (as
+  every format bump does). Validation: `map/validateBreakthrough.ts`.
+- **HUD** (`game/modeHud.ts`, `flagVisuals.ts`, `minimap.ts`): side, sector strip, pool, objectives with state, world
+  markers, labelled minimap blips, `#bt-warning`, announcer lines per side. **Match Setup** (frontEnd.ts) and the
+  **host panel**: Reinforcements, Sector time (both follow the size: `breakthroughPoolFor`, `breakthroughMinutesFor`),
+  Second round; offered only on maps with sectors (`modeUnavailableReason` says why not). Team setups go to 48 a side
+  (TeamSetup max), for Iron Coast's 24-32 a side.
+- **MapMaker**: Sector, Capture Zone, Destroy Target, Final Hold, Attackers' Spawn, Defenders' Spawn (Entities →
+  Gameplay → Spawns & Objectives), inspectors (`ed-bt-*`, the spawn's `ed-spawn-group`), the sector line drawn with
+  its arrows and number; game modes' pieces now show under any Style Pack (`stylePackHas`); Map properties' **Map ID**
+  (`#ed-prop-id`: an official or test map's file name, which MapMaker had no way to set).
+- **Bots**: the mode's `botGoal` only (no change to the bot brain or Phase B's files): attackers spread over the live
+  objectives, plant (standing still within reach) and guard; defenders defuse, crowd zones being taken, guard. No
+  `botTrips`/`botBrief` yet (Phase B's hooks landed while this was built): a Breakthrough playbook is Phase B part 2's.
+- **Set pieces**: `setpiece.command_bunker` (fort.json, new family; kit tiles `core.fort_ring`, `core.fort_ring_gate`)
+  and `setpiece.cliff_stair_gate` (cliffstair.json; edge style `gate_arch`); `setPieces4.test.ts`.
+- **Maps** (MapMaker only, driven through its own palette, inspector, Import and Export): the **Breakthrough Range**
+  (`maps/test_breakthrough.json`, testOnly) and the coverage map (one of each new piece, both set pieces).
+- **Tests**: `breakthrough.test.ts` (13: order, zones, targets, N of M, spawns and fall-back, pool, clock, final hold,
+  second round, format v28, validation, Match Setup, determinism by seed), `setPieces4.test.ts`, the coverage map's
+  test (new pieces, the mode); e2e flow `breakthrough` (main thread; `?test=1&testmap=test_breakthrough` puts the test
+  map in the Arcade).
+
+**Bots on the Breakthrough Range** (4v4, default rules, six seeds, first round): the beach fell in 6 of 6 (37-100 s),
+the guns in 4 of 6, the fort once (a full breakthrough at 163 s); the defenders won 3 (reinforcements spent).
+
+**Pitfalls:**
+- Driving MapMaker with Playwright against the dev server: any edit to a file the page imports reloads the page and
+  kills the run (save edits for after).
+- MapMaker in test mode (`?test=1`) hands out seeded ids: import an existing map without it, or new ids can repeat
+  the map's own.
+- Rapier's character controller can stall on one big flat merged floor box at some spots (setPieces4's gate tests
+  check headroom instead of walking every gate): worth a look if a player reports a stuck spot.
+
+<!-- /breakthrough -->
+
 <!-- bots-b -->
 ### Bot AI Phase B: bot logic (`wip/bots-b`, agents, 2026-11-07; main 17d0e0a0 merged in; part 1 on `check/bots-b1`; part 2 in progress; not landed)
 docs/BOT_AI_PLAN.md (Phase B; "Phase B part 1, measured"), docs/BOTS.md ("Scored choices", "Team brain and route
