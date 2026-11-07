@@ -1930,7 +1930,12 @@ export class GameSession {
         break;
       case 'rules':
         // The host restarted with new rules (score limit, time…), or changed a live one.
-        if (this.rules && msg.rules.mode === this.rules.mode) this.rules = msg.rules;
+        if (this.rules && msg.rules.mode === this.rules.mode) {
+          const before = this.map ? weaponSetInPlay(this.rules, this.map)?.id : undefined;
+          this.rules = msg.rules;
+          // Another weapon set: its guns load now, before a pickup or your next life shows one mid-fight.
+          if (this.map && weaponSetInPlay(msg.rules, this.map)?.id !== before) this.loadSetGuns();
+        }
         break;
       case 'pong':
         break;
@@ -2001,6 +2006,14 @@ export class GameSession {
     if (this.closed) return;
     this.hud.setLoading(null);
     this.opts.transport.sendReady();
+  }
+
+  /** The weapon set's guns (a host switched sets mid-match), loaded in the background. */
+  private loadSetGuns(): void {
+    const map = this.map;
+    const rules = this.rules;
+    const set = map && rules ? weaponSetInPlay(rules, map) : null;
+    for (const id of set && rules ? (setWeaponsInPlay(set, rules) ?? []) : []) void this.view.models.load(getWeapon(id).view.model).catch(() => undefined);
   }
 
   /** Everyone on one side against NPCs (co-op missions and Zombies). */
