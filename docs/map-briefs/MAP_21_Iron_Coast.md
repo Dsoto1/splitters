@@ -82,10 +82,10 @@ by its terraces and walls.
 | Hedgehogs, gates, ramps, wrecks | `prop.hedgehog_beach`, kit gates and wrecks |
 | Round gun casemates (B1–B4), each placed and turned as drawn | `setpiece.casemate` |
 | Cave mouths and cliff bunkers | `setpiece.casemate_cave`, with `setpiece.stair_tower_4` for the tunnel's climb |
-| Grand stair, gatehouse and plaza | `setpiece.cliff_stair_grand`, kit walls; **a gatehouse piece** if the kit's arch doesn't read right |
+| Grand stair, gatehouse and plaza | `setpiece.cliff_stair_gate` (the Grand Cliff Stair with its gatehouse, built 2026-11-07), kit walls |
 | Diagonal wooden stairs, the walkway | `setpiece.cliff_stair_side`, kit stairs and railings |
 | Trenches and walls behind the crest | trench pieces (timber and sandbag), kit walls |
-| Round fort | **the command bunker set piece, not built yet** |
+| Round fort | `setpiece.command_bunker` (built 2026-11-07: docs/SET_PIECES_PLAN.md, "As built: part 4") |
 
 ## Breakthrough mode (new, asymmetric)
 No current mode does this. Bomb, CTF, KOTH, Hostage, Elimination and Forts are all symmetric or single-objective. It
@@ -117,6 +117,40 @@ MapMaker. Iron Coast is its showcase: three sectors, built for 24–32 a side.
 
 **Other modes on the map:** Team Deathmatch (the whole map) and co-op (players assault bot defenders), as the brief
 suggests.
+
+### The mode as built (2026-11-07)
+`core.breakthrough` is in the game (docs/GAME_MODES.md, "Breakthrough", has the full rules); the map places its pieces
+in MapMaker. What the plan above became:
+- **Sectors** are MapMaker pieces (Entities → Gameplay → Spawns & Objectives): a **Sector** is a line across the map
+  facing the push, numbered 1, 2, 3… (the HUD calls them A, B, C), with a name ("The beach", "The crest guns", "The
+  village"). Its objectives: **Capture Zone** (A1, A2), **Destroy Target** (B1–B4; the sector's *Targets to destroy*
+  is 2 for "two of four") and **Final Hold** (C: the command bunker's command room, 6 m round its middle fits inside
+  it). Each sector has an **Attackers' Spawn** group (landing craft, then the cliff foot, then the crest) and a
+  **Defenders' Spawn** group (the crest, the fields, the village).
+- **Zones** capture like a King of the Hill zone (20 s for one attacker, up to twice as fast with three), contested by
+  a defender inside, pushed back by defenders alone. **Targets** take a charge: 3 s to plant (E, hold still), a 20 s
+  fuse, 5 s to defuse.
+- **Fall-back:** when a sector falls both spawns move to the next groups; defenders left on the attackers' side of the
+  new line get a 10 s warning on screen, then lose 20 health a second.
+- **Reinforcements:** 6 per attacker by default (Match Setup suggests 6 up to 16 a side, 5 beyond), the
+  pool topped up by half as much per attacker for each sector taken; defenders unlimited, 1.5× the respawn time.
+- **Time:** each sector puts 4 min on the clock by default (3 for small teams, 5 past 16 a side), carried over: taking
+  a sector early banks the time. A burning charge plays on past zero.
+- **Second round** (a Match Setup choice): sides swapped; more sectors wins, then more time left when the last fell.
+- **Teams:** team setups now go to 48 a side (96 players), so 24–32 a side and more on dedicated servers can be set.
+- **Bots** play Phase B's Breakthrough playbook (docs/BOTS.md, "Breakthrough's playbook"; docs/GAME_MODES.md has the
+  details): the attackers take the sector's objectives one at a time, the team brain spreading them over its ways in
+  groups that bound up cover to cover and gather to push a held objective; one in three guards a charge. The
+  defenders man the guns (a quarter), hold the trenches and sandbags (40 %), snipe from the crest (15 %: high ground
+  that sees the objectives) and hold the objectives, by what stands within 60 m of the sector's objectives on their
+  side of its line, so the crest's guns and trenches cover the beach; 30 % fall back early to the next line once the
+  sector is half taken. Attacking bots that move up cover to cover carry smoke grenades and screen the open ground
+  they cross.
+  Not yet: tunnels pushed as a group (the team brain's staging does it for any held objective).
+- **The pieces** the map still needed are built: the **Command Bunker** (the round fort) and the **Grand Cliff Stair
+  (Gatehouse)** (docs/SET_PIECES_PLAN.md, "As built: part 4").
+- **The test layout:** the Breakthrough Range (`maps/test_breakthrough.json`, a test map made in MapMaker; docs/GAME_MODES.md
+  describes it) proved the flow with bots before the map exists.
 
 ## Build order (after approval)
 1. **Before the map:**

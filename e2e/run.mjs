@@ -15,6 +15,8 @@ import { setTimeout as sleep } from 'node:timers/promises';
 import { chromium, devices } from 'playwright';
 import { CHARACTER_FLOWS, COVERAGE_MAP, COVERED_MAPS, FLOWS, MAP_FLOWS, MAP_PARTS } from './flowMap.mjs';
 import { assignShards, loadTimings } from './shards.mjs';
+import { installFrameClock } from './frameClock.mjs';
+import { FLICKER_LIMITS, analyseFrames, frameStats, summary as flickerSummary } from './flicker.mjs';
 
 // E2E_CLIENT_PORT / E2E_SERVER_PORT move the preview and game servers (e.g. when another checkout is testing).
 const CLIENT_PORT = process.env.E2E_CLIENT_PORT ?? '4173';
@@ -31,7 +33,7 @@ let failures = 0;
  * own thread instead (localStorage tiletrigger.sim = main), the fallback the game keeps for browsers
  * without workers. Every other flow plays the worker, and reaches the match through `sim()` / `simWait()`.
  */
-const MAIN_THREAD_FLOWS = new Set(['setpieces', 'physicsfx', 'ctf', 'forts', 'zombies', 'classes', 'vehicles', 'race', ...MAP_FLOWS]);
+const MAIN_THREAD_FLOWS = new Set(['setpieces', 'physicsfx', 'ctf', 'forts', 'breakthrough', 'zombies', 'classes', 'vehicles', 'race', 'flashing', ...MAP_FLOWS]);
 
 /** Run `fn(match, me, arg)` where the page's match runs (its worker, or the page), and return what it returns. */
 async function sim(page, fn, arg) {
@@ -1422,13 +1424,21 @@ async function offlineFlow(browser) {
   await page.waitForSelector('.opt-nav');
   const sections = await page.$$eval('.opt-nav button', (bs) => bs.map((b) => b.dataset.tab));
   const optWidth = await page.$eval('.opt-layout', (e) => e.getBoundingClientRect().width);
-  check(sections.join() === 'general,display,controls,hud,online' && optWidth > 700, `Options has its sections side by side with a wide panel (${sections.join(', ')}; ${Math.round(optWidth)} px)`);
+  check(sections.join() === 'general,display,controls,hud,accessibility,online' && optWidth > 700, `Options has its sections side by side with a wide panel (${sections.join(', ')}; ${Math.round(optWidth)} px)`);
   await page.keyboard.press('e');
   await page.keyboard.press('e');
   check((await page.textContent('.opt-title')) === 'Controls', 'E steps to the next Options section');
   await page.click('.opt-row:has-text("Invert look") .switch');
   check(await page.evaluate(() => Object.values(localStorage).some((v) => /"invertY":true/.test(v))), 'the Invert look switch saves');
   await page.click('.opt-row:has-text("Invert look") .switch');
+  // Accessibility → Reduce flashing (game/reduceFlashing.ts): on for a first visit, and the switch saves.
+  await page.click('.opt-nav [data-tab="accessibility"]');
+  const calmDefault = await page.$eval('#opt-reduce-flashing', (b) => b.checked);
+  await page.click('.opt-row:has-text("Reduce flashing") .switch');
+  const calmOff = await page.evaluate(() => localStorage.getItem('tiletrigger.reduceFlashing'));
+  await page.click('.opt-row:has-text("Reduce flashing") .switch');
+  const calmOn = await page.evaluate(() => localStorage.getItem('tiletrigger.reduceFlashing'));
+  check(calmDefault === true && calmOff === '0' && calmOn === '1', `Accessibility: Reduce flashing is on at first and its switch saves (${JSON.stringify({ calmDefault, calmOff, calmOn })})`);
   await page.keyboard.press('Escape');
   // The main menu: a Characters item (Character Select, and Back returns here: the owner wanted it kept) beside the
   // Profile entry (top right), which shows your character, name and account state and opens Profile (Change character
@@ -3284,6 +3294,148 @@ async function ctfFlow(browser) {
   await page.context().close();
 }
 
+/**
+ * Breakthrough (core.breakthrough) on the Breakthrough Range (maps/test_breakthrough.json, a test map: `testmap=`
+ * adds it to the Arcade in test mode). Match Setup offers the mode on a map with sectors, with its own settings
+ * (reinforcements, sector time, second round), and greys it out on one without, saying why. In the match the HUD
+ * shows your side, the sector strip, the pool and the objectives (marked, drawn in the world, on the minimap); bots
+ * take the first sector on their own (the clock run forward, you kept out of it); both sides' spawns move on, the
+ * next sector's targets switch on ("two of three"), and a defender left behind the new line is warned, then hurt.
+ */
+async function breakthroughFlow(browser) {
+  const page = await (await browser.newContext({ viewport: { width: 1280, height: 720 } })).newPage();
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
+  await page.addInitScript(() => {
+    if (!localStorage.getItem('cs.arcade')) localStorage.setItem('cs.arcade', JSON.stringify({ map: 'sandgate', mode: 'core.tdm', bots: 3, skill: 'normal', scoreLimit: 40, minutes: 10, scoreAuto: true, timeAuto: true, teams: [4, 4] }));
+  });
+  await page.goto(`${CLIENT}/?test=1&god=1&testmap=test_breakthrough`);
+  await page.waitForFunction(() => window.__front, null, { timeout: T(30000) });
+  await page.evaluate(() => document.getElementById('nav-play').click());
+  await page.waitForSelector('#arcade-map', { state: 'attached', timeout: T(30000) });
+  // (The map loads behind the panel: its unavailable modes show once it has.)
+  await page.waitForSelector('.mode-tag-off[data-mode="core.breakthrough"]', { timeout: T(30000) }).catch(() => {});
+  const off = await page.evaluate(() => document.querySelector('.mode-tag-off[data-mode="core.breakthrough"]')?.dataset.tip ?? null);
+  check(/sectors/.test(off ?? ''), `Match Setup greys Breakthrough out on a map without sectors, saying why (${off})`);
+  // The map with sectors: Breakthrough is offered, its own settings in "what wins".
+  // (The setup's map list: picked as its select does, the map browser being the way a player picks.)
+  await page.evaluate(() => {
+    const select = document.getElementById('arcade-map');
+    select.value = 'test_breakthrough';
+    select.dispatchEvent(new Event('change', { bubbles: true }));
+  });
+  await page.waitForSelector('#arcade-mode-breakthrough', { timeout: T(10000) });
+  await page.evaluate(() => document.getElementById('arcade-mode-breakthrough').click());
+  await page.waitForSelector('#arcade-bt-swap', { timeout: T(10000) });
+  const setup = await page.evaluate(() => ({
+    on: document.getElementById('arcade-mode-breakthrough')?.getAttribute('aria-pressed'),
+    fields: [...document.querySelectorAll('#setup-win .field-label')].map((l) => l.firstChild?.textContent),
+    pool: Number(document.getElementById('arcade-score')?.value),
+    minutes: document.getElementById('arcade-minutes')?.textContent,
+    swap: document.querySelector('#arcade-bt-swap .tab.on')?.textContent,
+    length: document.querySelector('#setup-summary .fact-time')?.textContent,
+  }));
+  check(setup.on === 'true' && setup.fields.join() === 'Reinforcements,Sector time,Second round' && setup.pool > 0 && /^\d+ min$/.test(setup.minutes ?? '') && setup.swap === 'One round', `Match Setup offers Breakthrough on a map with sectors, with reinforcements, sector time and a second round (${JSON.stringify(setup)})`);
+  if (process.env.E2E_SHOTS) await page.screenshot({ path: `${process.env.E2E_SHOTS}/breakthrough-setup.png`, timeout: T(60000) }).catch(() => {});
+  await page.evaluate(() => document.getElementById('arcade-start').click());
+  await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown' && window.__match && window.__cs.mode?.state?.bt, null, { timeout: T(90000) });
+  await page.waitForFunction(() => document.getElementById('mode-label')?.textContent === 'Breakthrough' && document.querySelectorAll('#mode-status .bt-obj').length === 2, null, { timeout: T(15000) }).catch(() => {});
+  const hud = await page.evaluate(() => {
+    const m = window.__match;
+    const strip = document.querySelector('#mode-status .bt-strip');
+    return {
+      label: document.getElementById('mode-label')?.textContent,
+      side: strip?.dataset.btSide,
+      sector: strip?.dataset.btSector,
+      letters: [...document.querySelectorAll('#mode-status .bt-sec')].map((s) => s.textContent).join(''),
+      pool: Number(document.querySelector('#mode-status .bt-pool')?.dataset.btPool),
+      matchPool: m.mode.pool,
+      perAttacker: m.rules.breakthroughPool,
+      objectives: [...document.querySelectorAll('#mode-status .bt-obj')].map((o) => o.dataset.btObj).join(),
+      markers: [...document.querySelectorAll('#mode-markers .mode-marker')].filter((x) => x.dataset.id?.startsWith('bt_')).length,
+      world: window.__cs.mode.objectiveCount,
+      blips: window.__cs.mode.minimapBlips().map((b) => b.label).join(),
+    };
+  });
+  check(hud.label === 'Breakthrough' && hud.side === 'attack' && hud.sector === '0' && hud.letters === 'ABC', `the HUD shows your side and the sector strip (${JSON.stringify(hud)})`);
+  check(hud.pool > 0 && Math.abs(hud.pool - hud.matchPool) <= 2 && hud.perAttacker === setup.pool, `the HUD shows the attackers' reinforcements, as set up (${hud.pool}; the match ${hud.matchPool}, ${hud.perAttacker} an attacker)`);
+  check(hud.objectives === 'A1,A2' && hud.markers === 2 && hud.world >= 2 && hud.blips === 'A1,A2', `the beach's two capture zones are in play: on the HUD, marked, drawn and on the minimap (${JSON.stringify(hud)})`);
+  // Pictures: the pause overlay (up in headless runs) hidden.
+  const shoot = async (name) => {
+    if (!process.env.E2E_SHOTS) return;
+    await page.evaluate(() => (document.getElementById('pause').style.visibility = 'hidden'));
+    await frames(page, 5);
+    await page.screenshot({ path: `${process.env.E2E_SHOTS}/${name}.png`, timeout: T(60000) }).catch(() => {});
+  };
+  await shoot('breakthrough-hud');
+  // Bots take the beach on their own: run the clock forward (headless frame rates are slow), you parked out of it.
+  // (The sector's clock is held open for the whole run: with Match Setup's 6 reinforcements an attacker and 3 min, three
+  // bot attackers took the beach in 40-160 s; this checks that they take it, not how fast.)
+  const took = await page.evaluate(() => {
+    const m = window.__match;
+    const me = m.slots[window.__cs.slot];
+    let fell = null;
+    const start = m.tick;
+    m.mode.clockEnd = Math.max(m.mode.clockEnd, m.tick + 60 * 310);
+    for (let i = 0; i < 60 * 300 && m.mode.active === 0 && m.mode.outcome === 0; i++) {
+      me.move = { pos: { x: 74, y: 0.2, z: -74 }, velY: 0, grounded: false };
+      for (const e of m.step()) if (e.e === 'bt' && e.a === 'sector') fell = { seconds: Math.round((m.tick - start) / 60), team: e.team };
+    }
+    return { fell, active: m.mode.active, outcome: m.mode.outcome, attackers: m.mode.attackers, pool: m.mode.pool, clock: Math.round(m.mode.timeLeft) };
+  });
+  check(!!took.fell && took.fell.team === took.attackers && took.active === 1, `bots take the first sector on their own (${JSON.stringify(took)})`);
+  if (took.active === 1) {
+    await page.waitForFunction(() => document.querySelector('#mode-status .bt-strip')?.dataset.btSector === '1' && document.querySelectorAll('#mode-status .bt-obj').length === 3, null, { timeout: T(15000) }).catch(() => {});
+    const next = await page.evaluate(() => {
+      const m = window.__match;
+      const z = (side) => m.combatants().filter((c) => m.mode.sideOf(c) === side).flatMap((c) => (m.mode.spawnSpots(c) ?? []).map((s) => s.pos.z));
+      return {
+        sector: document.querySelector('#mode-status .bt-strip')?.dataset.btSector,
+        objectives: [...document.querySelectorAll('#mode-status .bt-obj')].map((o) => o.dataset.btObj).join(),
+        need: [...document.querySelectorAll('#mode-status .ms')].map((x) => x.textContent).find((t) => /Targets:/.test(t)) ?? null,
+        attack: [Math.min(...z('attack')), Math.max(...z('attack'))].map(Math.round),
+        defend: [Math.min(...z('defend')), Math.max(...z('defend'))].map(Math.round),
+      };
+    });
+    check(next.sector === '1' && next.objectives === 'B1,B2,B3' && /0 of 2 destroyed/.test(next.need ?? ''), `the guns' three targets switch on, two of three to destroy (${JSON.stringify(next)})`);
+    // The guns' line runs at z -8: the attackers now spawn between the beach's line and it, the defenders beyond it.
+    check(next.attack[0] > -52 && next.attack[1] < -8 && next.defend[0] > -8, `both sides' spawns move on to the guns' groups (attackers z ${next.attack}, defenders z ${next.defend})`);
+    // A defender held behind the new line: warned at once, hurt after the 10 s warning.
+    const fallback = await page.evaluate(() => {
+      const m = window.__match;
+      const d = m.combatants().find((c) => m.mode.sideOf(c) === 'defend' && c.alive && c.slot !== window.__cs.slot);
+      // Its 10 s from now (one caught behind the line as the sector fell has already had some of them).
+      m.mode.behind.delete(d.slot);
+      // Far from the attackers' spawn and their way to the guns, so only the fall-back hurts it.
+      const hold = () => (d.move = { pos: { x: 70, y: 0.2, z: -72 }, velY: 0, grounded: false });
+      hold();
+      m.step();
+      const warned = (m.snapshot([]).md?.bf ?? []).some(([s]) => s === d.slot);
+      const health = d.health;
+      for (let i = 0; i < 60 * 9; i++) (hold(), m.step());
+      const at9 = d.health;
+      for (let i = 0; i < 60 * 2 && d.alive; i++) (hold(), m.step());
+      return { warned, health, at9, at11: d.alive ? d.health : 0 };
+    });
+    check(fallback.warned && fallback.at9 >= fallback.health && fallback.at11 < fallback.at9, `a defender left behind the new line is warned, then hurt (${JSON.stringify(fallback)})`);
+    // Your own warning: join the defenders (the HUD told of it as a roster change would), behind the line.
+    await page.evaluate(() => {
+      const m = window.__match;
+      const me = m.slots[window.__cs.slot];
+      me.faction = m.mode.defenders;
+      window.__cs.hud.setRoster(m.roster());
+      self.__btHold = setInterval(() => (me.move = { pos: { x: -60, y: 0.2, z: -66 }, velY: 0, grounded: false }), 50);
+    });
+    const warned = await page.waitForFunction(() => !document.getElementById('bt-warning')?.hidden && /Fall back behind the line/.test(document.getElementById('bt-warning')?.textContent ?? ''), null, { timeout: T(15000) }).then(() => true, () => false);
+    const warning = await page.evaluate(() => ({ text: document.getElementById('bt-warning')?.textContent, side: document.querySelector('#mode-status .bt-strip')?.dataset.btSide }));
+    check(warned && warning.side === 'defend', `left behind the line as a defender, you get the fall-back warning (${JSON.stringify(warning)})`);
+    await shoot('breakthrough-fallback');
+    await page.evaluate(() => clearInterval(self.__btHold));
+  }
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  await page.context().close();
+}
+
 async function fortsFlow(browser) {
   const page = await (await browser.newContext({ viewport: { width: 1280, height: 720 } })).newPage();
   const errors = [];
@@ -4613,6 +4765,290 @@ async function visualFlow(browser) {
     check(pass && errors.length === 0, `${scene.name} looks like its baseline (${same ? `${(share * 100).toFixed(1)} % of pixels differ, ${(scene.share * 100).toFixed(0)} % allowed` : `size ${shot.width}×${shot.height} vs ${base.width}×${base.height}`}${ready ? '' : '; the scene never got ready'})${errors.length ? ` (${errors.join('; ')})` : ''}`);
     await page.context().close();
   }
+}
+
+/**
+ * After each frame drawn, the canvas at `size` with the HUD's hurt tint over it (HTML: drawn here as the HUD draws
+ * it, hud.ts `hurtOverlay`), kept while `window.__flick.on` (the flashing flow). Runs in the page.
+ */
+function installFrameGrab(size) {
+  const view = window.__cs.view;
+  const engine = view.scene.getEngine();
+  const canvas = engine.getRenderingCanvas();
+  const out = document.createElement('canvas');
+  [out.width, out.height] = size;
+  const ctx = out.getContext('2d', { willReadFrequently: true });
+  const grab = (window.__flick = { on: false, frames: [], errors: [] });
+  engine.onEndFrameObservable.add(() => {
+    if (!grab.on) return;
+    try {
+      ctx.globalAlpha = 1;
+      ctx.drawImage(canvas, 0, 0, out.width, out.height);
+      const hurt = window.__cs.hud.hurtOverlay();
+      if (hurt.opacity > 0.002) {
+        ctx.globalAlpha = Math.min(1, hurt.opacity);
+        ctx.drawImage(hurt.image, 0, 0, out.width, out.height);
+        ctx.globalAlpha = 1;
+      }
+      grab.frames.push(ctx.getImageData(0, 0, out.width, out.height).data);
+    } catch (e) {
+      grab.errors.push(String(e));
+    }
+  });
+}
+
+/** The frames grabbed since the last call, as [{ px, w, h }] (RGBA), and the grab's errors. */
+async function takeFrames(page, w, h) {
+  const { data, errors } = await page.evaluate(() => {
+    const grab = window.__flick;
+    const frames = grab.frames;
+    grab.frames = [];
+    const all = new Uint8Array(frames.reduce((n, f) => n + f.length, 0));
+    let at = 0;
+    for (const f of frames) {
+      all.set(f, at);
+      at += f.length;
+    }
+    let text = '';
+    for (let i = 0; i < all.length; i += 0x8000) text += String.fromCharCode.apply(null, all.subarray(i, i + 0x8000));
+    return { data: btoa(text), errors: grab.errors.splice(0) };
+  });
+  const bytes = Buffer.from(data, 'base64');
+  const size = w * h * 4;
+  const frames = [];
+  for (let at = 0; at + size <= bytes.length; at += size) frames.push({ px: bytes.subarray(at, at + size), w, h });
+  return { frames, errors };
+}
+
+/** Every `every`th frame in a grid `cols` wide, as a PNG (the flow's frame strips). */
+async function frameStrip(frames, every = 4, cols = 5) {
+  const { PNG } = await import('pngjs');
+  const picked = frames.filter((_, i) => i % every === 0);
+  if (!picked.length) return null;
+  const { w, h } = picked[0];
+  const rows = Math.ceil(picked.length / cols);
+  const png = new PNG({ width: w * cols + cols - 1, height: h * rows + rows - 1 });
+  png.data.fill(255);
+  picked.forEach((f, k) => {
+    const ox = (k % cols) * (w + 1);
+    const oy = Math.floor(k / cols) * (h + 1);
+    for (let y = 0; y < h; y++) f.px.copy(png.data, ((oy + y) * png.width + ox) * 4, y * w * 4, (y + 1) * w * 4);
+  });
+  return PNG.sync.write(png);
+}
+
+/**
+ * Reduce flashing's flicker check (docs/LOOK.md, "Reduce flashing"; e2e/flicker.mjs: WCAG 2.3.1's general and red
+ * flash thresholds). MapMaker makes a night scene with its own edits: a dark room, a room lit by a red alarm light
+ * blinking four times a second, an Arc Turret and an electric fence. In play, the brightest moments are recorded
+ * frame by frame at 30 frames a second of the page's own time (e2e/frameClock.mjs: however slowly this machine draws,
+ * a recorded second is a second of play): an arc fight up close, the fence zapping bots in front of you, four
+ * grenade blasts in front of the camera, a machine gun firing at a wall in the dark, the alarm light. With the setting
+ * on each moment must stay under the thresholds; the same moments with it off are measured and reported as numbers
+ * only. Frame strips (every 4th frame) and the numbers go to e2e-artifacts/ (flashing-<moment>-<on|off>.png,
+ * flashing.json). E2E_FLASH_MOMENTS=arc,blast records just those.
+ */
+async function flashingFlow(browser) {
+  const FPS = 30;
+  const [W, H] = [160, 90];
+  const RECORD = 2 * FPS;
+  const only = process.env.E2E_FLASH_MOMENTS?.split(',').filter(Boolean);
+  const ctx = await browser.newContext({ viewport: { width: 480, height: 270 }, deviceScaleFactor: 1 });
+  await ctx.addInitScript(installFrameClock);
+  const page = await ctx.newPage();
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
+  await page.goto(`${CLIENT}/?mode=editor&test=1`);
+  await page.waitForFunction(() => window.__editor, null, { timeout: T(30000) });
+  page.once('dialog', (d) => d.accept());
+  await newMap(page, 96);
+  // The scene, as MapMaker edits (one undo step): a night sky, two closed rooms of dark blocks (the second lit by the
+  // alarm light), an Arc Turret and a 12 m electric fence.
+  const made = await page.evaluate(() => {
+    const ed = window.__editor;
+    const block = (id, at, size) => ({ id, kind: 'block', position: at, size, yaw: 0, material: null, tint: '#2a2a2f', behaviour: 'solid', trigger: 'step', delaySeconds: 0.8, respawnSeconds: 8, health: 120 });
+    const room = (name, x, z) => [
+      block(`${name}_n`, [x, 0, z - 5], [10.4, 3.4, 0.4]),
+      block(`${name}_s`, [x, 0, z + 5], [10.4, 3.4, 0.4]),
+      block(`${name}_w`, [x - 5, 0, z], [0.4, 3.4, 10.4]),
+      block(`${name}_e`, [x + 5, 0, z], [0.4, 3.4, 10.4]),
+      block(`${name}_roof`, [x, 3.4, z], [10.4, 0.4, 10.4]),
+    ];
+    const entities = [
+      ...room('dark_room', 0, -24),
+      ...room('alarm_room', 24, -24),
+      { id: 'alarm_light', kind: 'light', position: [24, 3.1, -24], yaw: 0, color: '#ff3020', intensity: 1.6, range: 12, fixture: 'ceiling', blink: 4 },
+      { id: 'arc_turret', kind: 'mount', model: 'sentry_arc', position: [-24, 0, 24], yaw: 0, faction: null, respawnSeconds: null },
+      { id: 'live_fence', kind: 'trap', trap: 'shock', position: [24, 0, 24], yaw: 0, activation: 'always', onSeconds: 2, offSeconds: 2, offsetSeconds: 0, startEnabled: true, damage: null, length: 12 },
+    ];
+    const before = ed.doc.backdrop ?? null;
+    const after = { scenery: 'hills', ground: 'grass', ...(before ?? {}), sky: 'night', haze: 0 };
+    const ok = ed.run('Flicker check scene', { kind: 'batch', commands: [{ kind: 'setBackdrop', before, after }, { kind: 'addEntities', entities }] });
+    return { ok, entities: ed.doc.entities.length, sky: ed.doc.backdrop?.sky };
+  });
+  check(made.ok && made.sky === 'night', `MapMaker makes the check's night scene: two dark rooms (one with a red alarm light blinking 4 times a second), an Arc Turret and an electric fence (${JSON.stringify(made)})`);
+  await page.keyboard.press('F5');
+  const playing = await page.waitForFunction(() => window.__cs?.local && window.__testStartMs, null, { timeout: T(60000) }).then(() => true, () => false);
+  check(playing, 'the scene plays (MapMaker TEST)');
+  if (!playing) return void (await ctx.close());
+  await holdBots(page);
+  // Both guns in hand once, so their models are in before the page's clock stops (models load in real time).
+  for (const id of ['core.lmg', 'core.arc_caster']) {
+    await page.evaluate((w) => window.__give(w), id);
+    await page.waitForFunction((w) => window.__cs.view.viewWeapon === w && !!window.__cs.view.viewmodel, id, { timeout: T(30000) }).catch(() => {});
+  }
+  // The setting as the pause menu's Settings switch changes it (the menu itself stays shut).
+  const setFlashing = (on) =>
+    page.evaluate((on) => {
+      const box = document.getElementById('reduce-flashing');
+      if (box.checked === on) return;
+      box.checked = on;
+      box.dispatchEvent(new Event('change'));
+    }, on);
+  const defaultOn = await page.evaluate(() => document.getElementById('reduce-flashing')?.checked);
+  check(defaultOn === true, `Reduce flashing is on by default (the pause menu's switch: ${defaultOn})`);
+  await page.evaluate(installFrameGrab, [W, H]);
+  await page.evaluate(() => window.__frameClock.freeze());
+  const step = (n) =>
+    page.evaluate(([n, ms]) => {
+      const thrown = [];
+      for (let i = 0; i < n; i++) thrown.push(...window.__frameClock.step(ms));
+      return thrown;
+    }, [n, 1000 / FPS]);
+  const clockErrors = [];
+  // Through the wait for players and the start countdown (nobody fires before play), on the page's clock.
+  for (let i = 0; i < 40 && (await sim(page, (m) => m.phase)) !== 'playing'; i++) clockErrors.push(...(await step(15)));
+  check((await sim(page, (m) => m.phase)) === 'playing', 'the match is in play before the recording starts');
+  /** You, the bots and your aim held where a moment wants them (each tick), never dying, magazines full. */
+  const stage = (mo) =>
+    sim(page, (m, me, mo) => {
+      clearInterval(self.__flashPin);
+      const put = (c, p) => {
+        c.move = { ...c.move, pos: { x: p[0], y: p[1], z: p[2] }, velY: 0, vx: 0, vz: 0, grounded: true };
+      };
+      const bots = m.combatants().filter((c) => c.bot);
+      const pin = () => {
+        put(me, mo.me);
+        me.maxHealth = me.health = 100000;
+        for (const w of me.weapons.values()) if (w.def.magazine) w.mag = w.def.magazine;
+        bots.forEach((b, i) => {
+          b.maxHealth = b.health = 100000;
+          put(b, mo.bots[i] ?? [40 + i * 2, 0, -40]);
+        });
+      };
+      pin();
+      self.__flashPin = setInterval(pin, 1000 / 60);
+    }, { me: mo.me, bots: mo.bots });
+  /** Aim from your eye (1.6 m up) at a point. */
+  const aim = (from, to) => {
+    const d = [to[0] - from[0], to[1] - from[1] - 1.6, to[2] - from[2]];
+    return { yaw: Math.atan2(d[0], d[2]), pitch: Math.atan2(d[1], Math.hypot(d[0], d[2])) };
+  };
+  const blast = (at) => sim(page, (m, _me, at) => m.scenario.host.blast({ x: at[0], y: at[1], z: at[2] }, 4.5, 100, 15, null, 'core.launcher'), at);
+  // The moments (a few metres apart in the scene; 2 s each, setting on then off).
+  const moments = [
+    {
+      name: 'arc',
+      label: 'an arc fight up close (an Arc Turret locked on you 4.5 m off, your Arc Caster on three bots between you)',
+      weapon: 'core.arc_caster',
+      me: [-24, 0, 19.5],
+      look: aim([-24, 0, 19.5], [-24.1, 1.1, 22.6]),
+      bots: [[-25.2, 0, 22.2], [-22.9, 0, 22.5], [-24.1, 0, 22.9]],
+      fire: true,
+      // Locked on you from the first frame (no wind-up), for the whole recording.
+      before: () =>
+        sim(page, (m, me) => {
+          const t = m.mounts.find((x) => x.def.id === 'sentry_arc');
+          if (t) t.arc = { charge: 1000, target: me.slot, lockTicks: 0, vent: 0 };
+        }),
+    },
+    {
+      name: 'fence',
+      label: 'the electric fence (three bots against it 2-4 m in front of you, zapped twice a second each)',
+      weapon: 'core.arc_caster',
+      me: [23.5, 0, 26.5],
+      look: aim([23.5, 0, 26.5], [24, 1.1, 24]),
+      bots: [[22.6, 0, 24.3], [24.4, 0, 24.3], [26, 0, 23.7]],
+    },
+    {
+      name: 'blast',
+      label: 'four grenade blasts 3-5 m in front of the camera in 0.8 s',
+      weapon: 'core.arc_caster',
+      me: [0, 0, 8],
+      look: aim([0, 0, 8], [0, 0.5, 13]),
+      bots: [],
+      at: { 6: () => blast([-1.2, 0.3, 11.5]), 14: () => blast([1, 0.3, 12.5]), 22: () => blast([0, 0.3, 11]), 30: () => blast([-0.4, 0.3, 13]) },
+    },
+    {
+      name: 'muzzle',
+      label: 'a machine gun firing at a wall 3.5 m off in the dark room',
+      weapon: 'core.lmg',
+      me: [0, 0, -25.5],
+      look: aim([0, 0, -25.5], [0, 1.2, -29]),
+      bots: [],
+      fire: true,
+    },
+    {
+      name: 'alarm',
+      label: 'the red alarm light blinking 4 times a second, in its dark room',
+      weapon: 'core.arc_caster',
+      me: [24, 0, -20.5],
+      look: aim([24, 0, -20.5], [24, 1.4, -28]),
+      bots: [],
+    },
+  ];
+  const report = { fps: FPS, frame: [W, H], viewport: [480, 270], limits: FLICKER_LIMITS, moments: {} };
+  for (const mo of moments) {
+    if (only && !only.includes(mo.name)) continue;
+    await page.evaluate(() => (window.__autoInput = { buttons: 0 }));
+    await page.evaluate((w) => window.__give(w), mo.weapon);
+    await stage(mo);
+    await page.evaluate((look) => Object.assign(window.__cs.input, look), mo.look);
+    clockErrors.push(...(await step(15)));
+    const runs = {};
+    for (const on of [true, false]) {
+      await setFlashing(on);
+      await mo.before?.();
+      if (mo.fire) await page.evaluate(() => (window.__autoInput = { buttons: 2 }));
+      // The switch (and the trigger) settle in: a third of a second before the recording.
+      clockErrors.push(...(await step(10)));
+      await page.evaluate(() => {
+        window.__flick.frames = [];
+        window.__flick.on = true;
+      });
+      for (let f = 0; f < RECORD; f++) {
+        await mo.at?.[f]?.();
+        clockErrors.push(...(await step(1)));
+      }
+      await page.evaluate(() => (window.__flick.on = false));
+      if (mo.fire) await page.evaluate(() => (window.__autoInput = { buttons: 0 }));
+      const { frames, errors: grabErrors } = await takeFrames(page, W, H);
+      clockErrors.push(...grabErrors);
+      const r = analyseFrames(frames, FPS);
+      // How much of the picture moved at most between two frames (a change of 0.02 or more): the moment happened.
+      const stats = frames.map((f) => frameStats(f.px, f.w, f.h));
+      let activity = 0;
+      for (let i = 1; i < stats.length; i++) {
+        let moved = 0;
+        for (let k = 0; k < stats[i].L.length; k++) if (Math.abs(stats[i].L[k] - stats[i - 1].L[k]) >= 0.02) moved++;
+        activity = Math.max(activity, moved / stats[i].L.length);
+      }
+      runs[on ? 'on' : 'off'] = { ...r, activity, frames: frames.length };
+      const strip = await frameStrip(frames);
+      if (strip) writeFileSync(`${ARTIFACTS}/flashing-${mo.name}-${on ? 'on' : 'off'}.png`, strip);
+      console.log(`flashing ${mo.name} ${on ? 'on ' : 'off'}: ${flickerSummary(r)}; screen brightness ${Math.min(...r.meanL).toFixed(3)}-${Math.max(...r.meanL).toFixed(3)}`);
+    }
+    const { on, off } = runs;
+    report.moments[mo.name] = Object.fromEntries(
+      Object.entries(runs).map(([k, r]) => [k, { pass: r.pass, reasons: r.reasons, transitionsPerSecond: r.perSecond, flashesPerSecond: r.flashesPerSecond, fieldTransitionsPerSecond: r.fieldPerSecond, transitions: r.transitions.length, maxStep: +r.maxStep.toFixed(4), redTransitionsPerSecond: r.red.perSecond, redFlashes: r.red.onsets.length, maxRedArea: +r.red.maxArea.toFixed(4), activity: +r.activity.toFixed(4), meanL: r.meanL.map((x) => +x.toFixed(4)), change: r.change.map((x) => +x.toFixed(4)) }]),
+    );
+    // (With the setting on a moment may change little from one frame to the next: that is the point.)
+    check(on.frames === RECORD && off.frames === RECORD && off.activity > 0.003, `${mo.name}: the moment was recorded, every frame, and it happened (${on.frames} + ${off.frames} frames; up to ${(off.activity * 100).toFixed(1)} % of the picture changed between two frames with the setting off, ${(on.activity * 100).toFixed(1)} % on)`);
+    check(on.pass, `${mo.label}, Reduce flashing on: ${flickerSummary(on)}${on.reasons.length ? ` (FAILS: ${on.reasons.join('; ')})` : ''}`);
+  }
+  writeFileSync(`${ARTIFACTS}/flashing.json`, JSON.stringify(report));
+  check(clockErrors.length === 0 && errors.length === 0, `no page errors while recording (${[...clockErrors, ...errors].slice(0, 4).join(' | ')})`);
+  await ctx.close();
 }
 
 async function designerFlow(browser) {
@@ -6261,7 +6697,7 @@ try {
   };
   // E2E_ONLY=editor,characters runs a subset; E2E_SHARD=2/8 one of CI's parallel groups (balanced by e2e/timings.json;
   // CI's plan job passes each shard's flows in E2E_ONLY itself).
-  const flows = { editor: editorFlow, editorux: editoruxFlow, offline: offlineFlow, mobile: mobileFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, scenery: sceneryFlow, setpieces: setpiecesFlow, physicsfx: physicsfxFlow, teams: teamsFlow, weaponsets: weaponsetsFlow, ctf: ctfFlow, forts: fortsFlow, arsenal: arsenalFlow, vehicles: vehiclesFlow, race: raceFlow, zombies: zombiesFlow, classes: classesFlow, coverage: coverageFlow, ...Object.fromEntries(MAP_FLOWS.map((name, part) => [name, (b) => mapsFlow(b, part)])), designer: designerFlow, ...Object.fromEntries(CHARACTER_FLOWS.map((name, part) => [name, (b) => charactersFlow(b, part)])), online: onlineFlow, hostgame: hostgameFlow, hostcontrols: hostcontrolsFlow, lobby: lobbyFlow, handoff: handoffFlow, dedicatedhost: dedicatedhostFlow, hostpage: hostpageFlow, webgpu: webgpuFlow, visual: visualFlow, environment: environmentFlow };
+  const flows = { editor: editorFlow, editorux: editoruxFlow, offline: offlineFlow, mobile: mobileFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, scenery: sceneryFlow, setpieces: setpiecesFlow, physicsfx: physicsfxFlow, teams: teamsFlow, weaponsets: weaponsetsFlow, ctf: ctfFlow, forts: fortsFlow, breakthrough: breakthroughFlow, arsenal: arsenalFlow, vehicles: vehiclesFlow, race: raceFlow, zombies: zombiesFlow, classes: classesFlow, coverage: coverageFlow, ...Object.fromEntries(MAP_FLOWS.map((name, part) => [name, (b) => mapsFlow(b, part)])), designer: designerFlow, ...Object.fromEntries(CHARACTER_FLOWS.map((name, part) => [name, (b) => charactersFlow(b, part)])), online: onlineFlow, hostgame: hostgameFlow, hostcontrols: hostcontrolsFlow, lobby: lobbyFlow, handoff: handoffFlow, dedicatedhost: dedicatedhostFlow, hostpage: hostpageFlow, webgpu: webgpuFlow, visual: visualFlow, environment: environmentFlow, flashing: flashingFlow };
   // e2e/flowMap.mjs (change-based selection, shards) must know every flow, and only those.
   const known = new Set(FLOWS);
   const drift = [...Object.keys(flows).filter((f) => !known.has(f)), ...FLOWS.filter((f) => !(f in flows))];

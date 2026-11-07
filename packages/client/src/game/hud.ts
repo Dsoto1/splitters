@@ -4,6 +4,8 @@ import { applyCrosshair, applyHitmarker } from './crosshair.ts';
 import { weaponIcon } from '../frontend/weaponIcons.ts';
 import { Minimap } from './minimap.ts';
 import { ScoreBoard, type BoardData, type BoardRow } from './scoreBoard.ts';
+import { HURT_LOOKS, HurtFade, paintVignette } from './hurtVignette.ts';
+import { reduceFlashing } from './reduceFlashing.ts';
 
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
 
@@ -20,6 +22,7 @@ const HAZARD_DEATHS: Record<string, string> = {
   'core.trap_shock': 'was electrocuted',
   'core.barrel': 'was caught in a barrel blast',
   'core.fall': 'fell',
+  'core.fallback': 'was left behind the line',
   'core.respawn': 'respawned',
   'core.lava': 'melted in lava',
   'core.acid': 'dissolved in acid',
@@ -163,7 +166,7 @@ export class Hud {
 
   /** The match's mode, for the scoreboard: its objective column, and co-op as one list. */
   setBoardMode(mode: string): void {
-    this.objLabel = mode === 'core.ctf' || mode === 'core.forts' ? 'Caps' : mode === 'core.bomb' ? 'Bomb' : mode === 'core.hostage' ? 'Saves' : null;
+    this.objLabel = mode === 'core.ctf' || mode === 'core.forts' ? 'Caps' : mode === 'core.bomb' ? 'Bomb' : mode === 'core.hostage' ? 'Saves' : mode === 'core.breakthrough' ? 'Obj' : null;
     this.coop = mode === 'core.coop' || mode === 'core.zombies';
   }
 
@@ -811,21 +814,45 @@ export class Hud {
   /**
    * You took damage: the screen edge flashes red, with an arc pointing at the
    * attacker when we know where it came from (radians, 0 = straight ahead, + = right).
+   * With Reduce flashing on it is a duller red that eases in and holds under fire (hurtVignette.ts); `tickHurt`
+   * draws it each frame.
    */
   hurt(direction: number | null, amount: number): void {
     const el = document.getElementById('hurt');
     if (!el) return;
     el.style.setProperty('--hurt-dir', `${direction ?? 0}rad`);
     el.classList.toggle('dir', direction !== null);
-    el.style.setProperty('opacity', String(Math.min(1, 0.45 + amount / 40)));
-    el.classList.add('on');
-    clearTimeout(this.hurtTimer);
-    this.hurtTimer = window.setTimeout(() => {
-      el.classList.remove('on');
-      el.style.removeProperty('opacity');
-    }, 90);
+    this.hurtFade.hit(amount, performance.now());
+    this.tickHurt();
   }
-  private hurtTimer = 0;
+  private readonly hurtFade = new HurtFade();
+  /** The vignette's look shown now, and its pictures (made when first shown). */
+  private hurtLook: 'classic' | 'calm' | null = null;
+  private readonly hurtPictures: Partial<Record<'classic' | 'calm', HTMLCanvasElement>> = {};
+
+  private hurtPicture(look: 'classic' | 'calm'): HTMLCanvasElement {
+    return (this.hurtPictures[look] ??= paintVignette(HURT_LOOKS[look]));
+  }
+
+  /** The hurt vignette this frame: its look (Reduce flashing) and how strong it is now. */
+  tickHurt(): void {
+    const el = document.getElementById('hurt');
+    if (!el) return;
+    const look = reduceFlashing() ? 'calm' : 'classic';
+    if (look !== this.hurtLook) {
+      this.hurtLook = look;
+      el.style.backgroundImage = `url(${this.hurtPicture(look).toDataURL()})`;
+    }
+    const level = this.hurtFade.update(performance.now(), look === 'calm');
+    const shown = level > 0.002 ? level.toFixed(3) : '0';
+    if (shown !== this.hurtShown) el.style.opacity = this.hurtShown = shown;
+  }
+  private hurtShown = '';
+
+  /** The hurt vignette as drawn now (the flicker check draws it over its frames). */
+  hurtOverlay(): { image: HTMLCanvasElement; opacity: number } {
+    return { image: this.hurtPicture(this.hurtLook ?? 'classic'), opacity: this.hurtFade.level };
+  }
 
   /** "HEADSHOT" call-out for a kill you made with a head hit. */
   headshot(): void {

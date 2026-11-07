@@ -55,11 +55,12 @@ import {
   fixtureGap,
   type WorldBox,
 } from '@tiletrigger/shared';
-import { createFlagBase, createFlagModel, createHillModel, createBombsiteModel } from './flagVisuals.ts';
+import { BT_COLORS, createBombsiteModel, createFlagBase, createFlagModel, createHillModel, createSectorModel, createTargetModel } from './flagVisuals.ts';
 import { buildFence } from '../borderVisuals.ts';
 import { GlassVisuals, glassMaterial } from './glassVisuals.ts';
 import { WaterVisuals } from './waterVisuals.ts';
 import { loadGraphicsQuality } from './atmosphere.ts';
+import { SAFE_LIGHT, blinkLevel, ease, reduceFlashing } from './reduceFlashing.ts';
 
 /** How each liquid looks: colour, glow, surface and depth opacity, shine and how fast it flows. */
 export const LIQUID_LOOKS: Record<Liquid, { color: string; glow: number; alpha: number; depthAlpha: number; shine: number; flow: number }> = {
@@ -77,7 +78,7 @@ export const LIQUID_LOOKS: Record<Liquid, { color: string; glow: number; alpha: 
  */
 
 type Kind = Exclude<MapEntity['kind'], 'spawn' | 'pickup' | 'prop' | 'mount'>;
-export const SCENARIO_KINDS: readonly Kind[] = ['door', 'button', 'destructible', 'zone', 'trap', 'pad', 'block', 'water', 'flag', 'hill', 'ladder', 'bombsite', 'hostage', 'rescue', 'light', 'mover', 'portal', 'zipline'];
+export const SCENARIO_KINDS: readonly Kind[] = ['door', 'button', 'destructible', 'zone', 'trap', 'pad', 'block', 'water', 'flag', 'hill', 'ladder', 'bombsite', 'hostage', 'rescue', 'light', 'mover', 'portal', 'zipline', 'sector', 'objective'];
 
 /**
  * Place an entity's visual root: at its position, turned to its facing.
@@ -478,6 +479,9 @@ export class ScenarioVisuals {
       case 'hostage':
       case 'rescue':
         return this.objective(name, e);
+      case 'sector':
+      case 'objective':
+        return this.breakthrough(name, e);
       case 'light':
         return this.light(name, e);
       case 'airplane':
@@ -839,21 +843,40 @@ export class ScenarioVisuals {
     // Candles flicker; blinking candles gutter and flare at random (seeded by the light, so each one is its own).
     const candle = e.fixture === 'candle' || e.fixture === 'chandelier';
     const seed = [...e.id].reduce((h, ch) => (h * 31 + ch.charCodeAt(0)) % 997, 7);
+    // Reduce flashing (reduceFlashing.ts): blinking is a gentle pulse at most once a second, a "Flash" flares less,
+    // and the level and colour shown ease toward what's wanted, so a light never jumps from one frame to the next.
+    let shown = -1;
+    const shownColor = new Color3();
+    let shownAt = 0;
     const update = (flags: number, rgb: number, now: number) => {
+      const calm = reduceFlashing();
       const blink = lightBlinkOf(flags);
-      const on = (flags & LIGHT_ON) !== 0 && (candle || !blink || Math.floor((now / 1000) * blink * 2) % 2 === 0);
+      const lit = (flags & LIGHT_ON) !== 0;
       const flash = (flags & LIGHT_FLASH) !== 0;
       const c = new Color3(((rgb >> 16) & 255) / 255, ((rgb >> 8) & 255) / 255, (rgb & 255) / 255);
-      let level = flash ? 2.5 : on ? 1 : 0;
-      if (candle && on && !flash) level *= candleFlicker(now / 1000, blink, seed);
-      if (ownGlow) {
-        ownGlow.emissiveColor = level ? c.scale(1.4 * Math.min(level, 1.6)) : c.scale(0.08);
-        ownGlow.diffuseColor = c;
+      const want = flash ? (calm ? SAFE_LIGHT.flash : 2.5) : !lit ? 0 : candle ? candleFlicker(now / 1000, blink, seed, calm) : blinkLevel(now / 1000, blink, calm);
+      const dt = Math.min(0.1, Math.max(0, (now - shownAt) / 1000));
+      shownAt = now;
+      if (!calm || shown < 0) {
+        shown = want;
+        shownColor.copyFrom(c);
+      } else {
+        shown = ease(shown, want, dt, SAFE_LIGHT.rate);
+        Color3.LerpToRef(shownColor, c, Math.min(1, dt * SAFE_LIGHT.rate), shownColor);
       }
-      if (face) face.mat.emissiveColor = level ? c.scale(Math.min(level, 1.6)) : c.scale(0.06);
+      const level = shown;
+      const col = calm ? shownColor : c;
+      // Off, a fixture keeps a faint glow; eased, the glow never dips below it on the way.
+      const glowK = calm ? Math.max(0.08, 1.4 * Math.min(level, 1.6)) : level ? 1.4 * Math.min(level, 1.6) : 0.08;
+      const faceK = calm ? Math.max(0.06, Math.min(level, 1.6)) : level ? Math.min(level, 1.6) : 0.06;
+      if (ownGlow) {
+        ownGlow.emissiveColor = col.scale(glowK);
+        ownGlow.diffuseColor = col.clone();
+      }
+      if (face) face.mat.emissiveColor = col.scale(faceK);
       if (light) {
-        light.diffuse = c;
-        light.specular = c.scale(0.25);
+        light.diffuse = col.clone();
+        light.specular = col.scale(0.25);
         light.intensity = e.intensity * level;
       }
     };
@@ -950,6 +973,18 @@ export class ScenarioVisuals {
     const root = createFlagBase(this.scene, color, name);
     createFlagModel(this.scene, color, `${name}_flag`).parent = root;
     return { root };
+  }
+
+  /**
+   * Breakthrough's pieces, MapMaker only: a sector's line across the map with its order and the way the attackers
+   * push; an objective's area in its kind's colour with its label (a target with its demolition point). In a match
+   * the mode draws the objectives in play itself (ModeVisuals), and a sector's line is never drawn.
+   */
+  private breakthrough(name: string, e: Extract<MapEntity, { kind: 'sector' | 'objective' }>): Visual {
+    if (!this.opts.editor) return { root: new TransformNode(name, this.scene) };
+    if (e.kind === 'sector') return { root: createSectorModel(this.scene, e.order, name) };
+    if (e.objective === 'target') return { root: createTargetModel(this.scene, e.radius, e.label, name) };
+    return { root: createBombsiteModel(this.scene, e.radius, e.label, name, BT_COLORS[e.objective]) };
   }
 
   /** Materials for free blocks (the map's library materials; set by the game and MapMaker views). */
@@ -1969,8 +2004,10 @@ export class ScenarioVisuals {
       update: (flags, _b, now) => {
         root.setEnabled(!(flags & TRAP_SPENT) && !(flags & TRAP_ACTIVE));
         const period = flags & TRAP_WARNING ? 90 : 900;
-        const on = !!(flags & TRAP_ENABLED) && now % period < period * 0.4;
-        lightMat.emissiveColor = on ? Color3.FromHexString('#ff2a2a') : Color3.Black();
+        // Reduce flashing: a gentle pulse, at most once a second, instead of the blink (fast when it's about to go).
+        const armed = !!(flags & TRAP_ENABLED);
+        const level = !armed ? 0 : reduceFlashing() ? blinkLevel(now / 1000, 1000 / period, true) : now % period < period * 0.4 ? 1 : 0;
+        lightMat.emissiveColor = level ? Color3.FromHexString('#ff2a2a').scale(level) : Color3.Black();
       },
     };
   }
@@ -1988,7 +2025,10 @@ export class ScenarioVisuals {
       update: (flags, _b, now) => {
         const active = !!(flags & TRAP_ACTIVE);
         const warn = !!(flags & TRAP_WARNING);
-        show(active || (warn && now % 120 < 50));
+        // Reduce flashing: the warning shows the beams steady and faint instead of strobing them.
+        const calm = reduceFlashing();
+        show(active || (warn && (calm || now % 120 < 50)));
+        for (const b of beams) b.visibility = calm && warn && !active ? 0.4 : 1;
       },
     };
   }
@@ -1997,8 +2037,10 @@ export class ScenarioVisuals {
 /**
  * Candle light: a gentle flicker round full brightness; with `blink` (per
  * second) it gutters, dropping near dark and flaring back at random moments.
+ * With flashing reduced (`calm`) only a slow, slight sway, and no guttering.
  */
-function candleFlicker(t: number, blink: number, seed: number): number {
+function candleFlicker(t: number, blink: number, seed: number, calm = false): number {
+  if (calm) return 0.93 + 0.04 * Math.sin(t * 1.7 + seed);
   let k = 0.9 + 0.06 * Math.sin(t * 13 + seed) + 0.04 * Math.sin(t * 31 + seed * 2);
   if (blink) {
     const step = Math.floor(t * blink * 3);

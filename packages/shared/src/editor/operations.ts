@@ -4,7 +4,7 @@ import type { SurfaceSlot } from '../map/materials.ts';
 import { emptyLogic } from '../map/logic.ts';
 import { DESTRUCTIBLE_SPECS, TRAP_SPECS } from '../sim/scenarioDefs.ts';
 import { ELECTRIC_FENCE } from '../map/border.ts';
-import { MAP_FORMAT, MAP_FORMAT_VERSION, type MapDocument, type MapEntity, type Rotation, type SurfaceStyle, type TilePlacement, type TrapKind, type BlockBehaviour, type Liquid, type LightFixture, type EncounterEntrance, type GlassKind } from '../map/schema.ts';
+import { BREAKTHROUGH_MAX_SECTORS, MAP_FORMAT, MAP_FORMAT_VERSION, type BreakthroughObjective, type MapDocument, type MapEntity, type Rotation, type SurfaceStyle, type TilePlacement, type TrapKind, type BlockBehaviour, type Liquid, type LightFixture, type EncounterEntrance, type GlassKind } from '../map/schema.ts';
 import { newId, type EditCommand } from './commands.ts';
 import { buildLimitReason, insideBuildLimit } from './buildArea.ts';
 import { getProp } from '../content/props.ts';
@@ -600,6 +600,13 @@ export const SCENARIO_PALETTE = [
   { key: 'hostage', label: 'Hostage', search: 'hostage rescue civilian objective counter strike cs' },
   { key: 'rescue', label: 'Rescue Zone', search: 'rescue zone hostage extraction objective' },
   { key: 'bombsite', label: 'Bomb Site', search: 'bomb site plant defuse objective counter strike cs a b' },
+  // Breakthrough (core.breakthrough): sectors in order, their objectives, and each side's spawn group per sector.
+  { key: 'sector', label: 'Sector', search: 'sector breakthrough line front assault attack defend push order rush conquest frontline' },
+  { key: 'objective:zone', label: 'Capture Zone', search: 'capture zone breakthrough sector objective flag point control hold take' },
+  { key: 'objective:target', label: 'Destroy Target', search: 'destroy target breakthrough sector objective charge plant defuse gun radio mcom demolish blow up' },
+  { key: 'objective:final', label: 'Final Hold', search: 'final hold breakthrough sector objective last capture zone end round command bunker' },
+  { key: 'spawn:attack', label: "Attackers' Spawn", search: 'spawn group attackers breakthrough sector start landing assault team' },
+  { key: 'spawn:defend', label: "Defenders' Spawn", search: 'spawn group defenders breakthrough sector start hold line team' },
   { key: 'crate', label: 'Crate', search: 'crate box destructible break cover' },
   { key: 'barrel', label: 'Explosive Barrel', search: 'barrel explosive destructible red boom' },
   { key: 'wall', label: 'Breakable Wall', search: 'wall breakable destructible breach' },
@@ -887,6 +894,24 @@ export function newScenarioEntity(key: ScenarioPaletteKey, position: [number, nu
       const n = doc?.entities.filter((e) => e.kind === 'bombsite').length ?? 0;
       return { id: newId('site'), kind: 'bombsite', position, label: String.fromCharCode(65 + Math.min(n, 25)), radius: 4 };
     }
+    case 'sector':
+      // The next sector in order, its line through here square to the facing (the way the attackers push).
+      return { id: newId('sector'), kind: 'sector', position, yaw, order: Math.min(BREAKTHROUGH_MAX_SECTORS, nextSectorOrder(doc)) };
+    case 'objective:zone':
+    case 'objective:target':
+    case 'objective:final': {
+      // In the latest sector, labelled by it: A1, A2 in sector 1, B1 in sector 2…; a final hold just by the sector's letter.
+      const objective = key.slice(10) as BreakthroughObjective;
+      const sector = latestSector(doc);
+      const letter = String.fromCharCode(65 + ((sector - 1) % 26));
+      const n = (doc?.entities.filter((e) => e.kind === 'objective' && e.sector === sector && e.objective !== 'final').length ?? 0) + 1;
+      const radius = objective === 'target' ? 2.5 : objective === 'final' ? 8 : 6;
+      return { id: newId('objective'), kind: 'objective', position, yaw, objective, sector, label: objective === 'final' ? letter : `${letter}${Math.min(n, 99)}`, radius };
+    }
+    case 'spawn:attack':
+    case 'spawn:defend':
+      // A spawn point in its side's group for the latest sector.
+      return { id: newId('spawn'), kind: 'spawn', position, yaw, faction: null, sector: latestSector(doc), side: key === 'spawn:attack' ? 'attack' : 'defend' };
     case 'door':
     case 'door_locked':
       return { id: newId('door'), kind: 'door', ...base, startOpen: false, locked: key === 'door_locked', auto: key === 'door' };
@@ -1068,11 +1093,26 @@ export function snapToDoorway(x: number, z: number, cellSize: number): { x: numb
   return Math.hypot(x - ex, z - ez) <= Math.hypot(x - nx, z - nz) ? { x: ex, z: ez, yaw: Math.PI / 2 } : { x: nx, z: nz, yaw: 0 };
 }
 
-const KIND_LABELS: Record<MapEntity['kind'], string> = { spawn: 'Spawn', pickup: 'Pickup', door: 'Door', button: 'Button', destructible: 'Object', zone: 'Zone', trap: 'Trap', encounter: 'Encounter', prop: 'Prop', mount: 'Vehicle', pad: 'Jump Pad', block: 'Block', water: 'Water', flag: 'Flag Base', hill: 'Hill', ladder: 'Ladder', bombsite: 'Bomb Site', hostage: 'Hostage', rescue: 'Rescue Zone', light: 'Light', airplane: 'Transport Plane', mover: 'Mover', portal: 'Portal', zipline: 'Zipline' };
+/** Breakthrough objectives by kind, as MapMaker and the HUD name them. */
+export const BREAKTHROUGH_OBJECTIVE_LABELS: Record<BreakthroughObjective, string> = { zone: 'Capture Zone', target: 'Destroy Target', final: 'Final Hold' };
+
+/** Breakthrough: the order the next sector placed takes (one past the highest there is). */
+export const nextSectorOrder = (doc?: MapDocument): number => 1 + Math.max(0, ...(doc?.entities ?? []).flatMap((e) => (e.kind === 'sector' ? [e.order] : [])));
+
+/** Breakthrough: the sector new objectives and spawn groups go in: the highest-ordered there is (1 with none yet). */
+export const latestSector = (doc?: MapDocument): number => Math.max(1, ...(doc?.entities ?? []).flatMap((e) => (e.kind === 'sector' ? [e.order] : [])));
+
+/** Breakthrough: the sector orders a map has, lowest first, each once. */
+export const sectorOrders = (doc: MapDocument): number[] => [...new Set(doc.entities.flatMap((e) => (e.kind === 'sector' ? [e.order] : [])))].sort((a, b) => a - b);
+
+const KIND_LABELS: Record<MapEntity['kind'], string> = { spawn: 'Spawn', pickup: 'Pickup', door: 'Door', button: 'Button', destructible: 'Object', zone: 'Zone', trap: 'Trap', encounter: 'Encounter', prop: 'Prop', mount: 'Vehicle', pad: 'Jump Pad', block: 'Block', water: 'Water', flag: 'Flag Base', hill: 'Hill', ladder: 'Ladder', bombsite: 'Bomb Site', hostage: 'Hostage', rescue: 'Rescue Zone', light: 'Light', airplane: 'Transport Plane', mover: 'Mover', portal: 'Portal', zipline: 'Zipline', sector: 'Sector', objective: 'Objective' };
 
 /** Display name for an entity: its creator name, or "Door 2" style numbering by kind. */
 export function entityLabel(doc: MapDocument, e: MapEntity): string {
-  if (e.name) return e.name;
+  if (e.name) return e.kind === 'sector' ? `Sector ${e.order}: ${e.name}` : e.name;
+  // Breakthrough pieces go by their order and label: "Sector 2", "Destroy Target B1".
+  if (e.kind === 'sector') return `Sector ${e.order}`;
+  if (e.kind === 'objective') return `${BREAKTHROUGH_OBJECTIVE_LABELS[e.objective]} ${e.label}`;
   let kind = KIND_LABELS[e.kind];
   if (e.kind === 'trap') kind = TRAP_SPECS[e.trap].label;
   if (e.kind === 'destructible') kind = DESTRUCTIBLE_SPECS[e.model].label;

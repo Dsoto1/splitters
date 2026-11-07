@@ -707,8 +707,10 @@ blocked by 1.6 m or more of a cloud (`smokeBlocks`, the clouds in `BotWorldView.
   with no cover round it (it left its cover for one further on, or there is none) throws its smoke a few metres toward
   the enemy first, every time it carries some (no dice), and crosses under it. `BotBrain.smokeScreen(view, threat)`
   throws one toward a threat and says whether it could.
-- **Who carries it:** for now only a bot that picks up Smoke Grenades (`core.smoke_grenades`, placed on a map; random
-  pickups roll only weapons); the Military and Sci-fi weapon sets will hand it out (docs/WEAPON_SETS_PLAN.md).
+- **Who carries it:** a bot that picks up Smoke Grenades (`core.smoke_grenades`, placed on a map; random pickups roll
+  only weapons), and in Breakthrough every attacking bot that moves up cover to cover (its playbook's `smoke`: the mode
+  swaps its frags for smoke as it spawns; Arena bots and berserkers, who never bound, keep frags); the Military and
+  Sci-fi weapon sets will hand it out (docs/WEAPON_SETS_PLAN.md).
 - **Tests:** `smoke.test.ts` (a bot fires across an open yard and not through a cloud; a hurt bot in the open throws
   smoke between itself and the enemy; a Tactical bot bounding toward the enemy's flag across open ground sends smoke
   ahead, an Arena bot, which never bounds, doesn't).
@@ -796,13 +798,31 @@ and the other vehicle modes: no attack brief) plays by the default. King of the 
   straight: split over the ways, the hill was held 33 % of the time on the dev sample against 49 % going straight;
   gathering out of the hill's sight to retake it together, the side doing it held the hill 37 s to the other side's
   170 in the same matches.
-- **Breakthrough's playbook** (the owner's brief for Iron Coast; the mode, `core.breakthrough`, is on its way): the
-  attackers spread over the sector's ways on any length of trip (a main push, flankers and a recon pair), every
-  style but Arena's bounds cover to cover up the beach from 12 m (`bound: 'all'`), a tunnel is pushed as a group
-  (staging at its mouth), and smoke goes before open ground once the weapons have smoke; the defenders' shares: a
-  quarter on the guns, 40 % in the trenches, 15 % sniping from the crest, the rest on the objective, and 30 % of them
-  falling back early to the next line once the sector's capture passes half or half of them are down
-  (`BreakthroughRoles`, for the mode's bot logic to read). Not measured: the mode and its map aren't in yet.
+- **Breakthrough's playbook** (the owner's brief for Iron Coast; the mode is `core.breakthrough`, its bot logic in
+  `sim/modes/breakthrough.ts`): the attackers spread over the sector's ways on any length of trip (a main push,
+  flankers and a recon pair), every style but Arena's bounds cover to cover up the beach from 12 m (`bound: 'all'`),
+  a tunnel is pushed as a group (staging at its mouth), and smoke goes before open ground once the weapons have smoke;
+  the defenders' shares: a quarter on the guns, 40 % in the trenches, 15 % sniping from the crest, the rest on the
+  objective, and 30 % of them falling back early to the next line once the sector's capture passes half or half of
+  them are down (`BreakthroughRoles`). **As wired:** the mode's brief names the attackers' objective (the least
+  defended still to take in the sector in play, kept until taken or planted; `stage` while the defenders hold it) with
+  this playbook's `team`, and its trips are each sector's spawn groups to each of its objectives (both teams' when the
+  sides swap). The defenders' duties go by each bot's place among its side's bots (by slot order: the teams alternate
+  slots, so `slot % 2` picked no defender at all) over the sector's posts: turrets, trench tiles and sandbag walls, and
+  high ground that sees an objective, within 60 m of its objectives on the defenders' side of its line, so the
+  crest's guns and trenches cover a beach's zones. Gunners and crest snipers stay on their posts; the trenches and
+  objectives answer the attack (defusing, crowding a zone being taken); the early fall-back comes from the trenches'
+  share. A bot within reach of a target to plant or a charge to defuse holds still, crouched, until it's done (the
+  mode's `botInput`). Smoke: every attacking bot that bounds (all but Arena bots and berserkers) spawns carrying smoke
+  grenades instead of its frags (the mode's `onSpawn`), so going up the beach the moving half screens the open ground
+  it crosses ("Smoke" above): in a 150 s 8 v 8 match on the Range, 49 screens sent ahead in bounds and 28 thrown by
+  hurt bots in the open. (Every other attacker by place first gave it, there, only to bots that never bound.) Tunnel
+  groups wait for a map with tunnels (the team brain's staging pushes any held objective as a group). **Measured** on the Breakthrough Range (headless matches, bots only, the first
+  round, Match Setup's suggested reinforcements and sector time, with smoke): 4 v 4 (6 an attacker, 3 min), eight
+  seeds, the beach fell in 4 (106 s on average), the guns in 2, the fort in 2; 8 v 8 (6, 4 min), six seeds, the beach
+  in 6 (61 s), the guns in 4, the fort in 2. Before smoke (frags for everyone) and at the old small-team suggestion of
+  8: 4 v 4 the beach, the guns and the fort in 7 of 8 (with smoke at 8: 6, 5 and 4), 8 v 8 6, 4 and 3 of 6. Before
+  the hold-still fix no attacker planted in 8 v 8 (the guns fell in none of six).
 
 Bots read their job (`BotPlan.job`: group, corridor and staging spot, or an interceptor's cut-off point) and the side's
 priced trips (`BotPlan.trips`) from objects the director updates in place. `bot-report` prints, per match, each team's

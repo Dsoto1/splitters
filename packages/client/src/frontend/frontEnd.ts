@@ -1,4 +1,6 @@
 import {
+  BREAKTHROUGH_POOL_MAX,
+  breakthroughSectors,
   CHARACTER_GROUPS,
   CHARACTER_GROUP_LABELS,
   CHARACTER_PROFILES,
@@ -91,6 +93,7 @@ import { installTooltips } from './tooltip.ts';
 import { deviceMaxPlayers, isTouchDevice } from '../touchDevice.ts';
 import { FIRST_PERSON_LABELS, FIRST_PERSON_MODES, FRAME_CAPS, GRAPHICS_QUALITIES, RENDER_SCALES, RENDER_SCALE_LABELS, currentFrameCap, loadFirstPersonMode, loadGraphicsQuality, loadRenderScale, saveFirstPersonMode, saveFrameCap, saveGraphicsQuality, saveRenderScale, type FirstPersonMode, type FrameCap, type GraphicsQuality, type RenderScale } from '../game/graphicsSettings.ts';
 import { loadPerfOverlay, savePerfOverlay } from '../game/perfPrefs.ts';
+import { reduceFlashing, saveReduceFlashing } from '../game/reduceFlashing.ts';
 import { hitboxOverlayAllowed, loadHitboxOverlay, saveHitboxOverlay } from '../game/hitboxPrefs.ts';
 import { fetchGames, hubSetting, saveHub } from '../game/hub.ts';
 import type { AudioSystem } from '../audio/audio.ts';
@@ -263,6 +266,7 @@ const SCORE_ROW: Partial<Record<GameMode, { label: string; step: number; min: nu
   'core.elim': { label: 'Rounds to win', step: 1, min: 1, max: 15 },
   'core.bomb': { label: 'Rounds to win', step: 1, min: 1, max: 15 },
   'core.hostage': { label: 'Rounds to win', step: 1, min: 1, max: 15 },
+  'core.breakthrough': { label: 'Reinforcements', step: 1, min: 1, max: 40 },
   'core.discs': { label: 'Knock-offs', step: 1, min: 3, max: 50 },
 };
 /** A short line on each mode, under its name in the mode picker. */
@@ -275,6 +279,7 @@ const MODE_LINES: Record<GameMode, string> = {
   'core.elim': 'Rounds, no respawns: last team standing.',
   'core.bomb': 'Plant the bomb or defuse it; rounds.',
   'core.hostage': 'Rescue the hostages or guard them; rounds.',
+  'core.breakthrough': 'Attack through the sectors, or hold each line.',
   'core.coop': "Your squad against the map's mission.",
   'core.zombies': 'Hold out against endless zombie waves.',
   'core.discs': 'Knock rivals into the void with discs.',
@@ -290,6 +295,7 @@ const MODE_TIPS: Partial<Record<GameMode, string>> = {
   'core.elim': 'Rounds with no respawns: wipe out the other teams to win the round.',
   'core.bomb': 'Attackers plant the bomb at site A or B (stand still, E); defenders stop them or defuse it. No respawns in a round.',
   'core.hostage': 'Rescuers lead hostages (E beside one) to the exit zone; guards hold them. No respawns in a round.',
+  'core.breakthrough': "Asymmetric: the attackers push through the map's sectors in order (capture its zones, plant charges on its targets), with a limited pool of reinforcements and a clock that grows with every sector taken; the defenders respawn without end and hold each line in turn, falling back as it breaks.",
   'core.coop': 'Work through the mission with bot squadmates against the map\'s enemies.',
   'core.zombies': 'Hold out with your bot squad against endless waves of zombies. Each wave is bigger; the fallen come back when it is beaten.',
   'core.discs': 'Ricochet-style: everyone starts with three bouncing discs and picks them up again where they land, like ammo (any disc will do). A hit knocks you about without hurting; knock someone into the void to score. Power discs (fast, triple, splitting, freeze) lie about the arena.',
@@ -850,6 +856,8 @@ export class FrontEnd {
 
   private setMode(m: GameMode): void {
     this.change((s) => {
+      // Breakthrough's time is each sector's, not the match's: going to or from it, the time follows the suggestion too.
+      if (m === 'core.breakthrough' || s.mode === 'core.breakthrough') s.timeAuto = true;
       s.mode = m;
       // A score set for another mode means nothing in this one: it follows the suggestion again (a time set by hand stays).
       s.scoreLimit = BASE_RULES[m].scoreLimit;
@@ -998,6 +1006,7 @@ export class FrontEnd {
     const coop = family === 'squad';
     const race = s.mode === 'core.race';
     const forts = s.mode === 'core.forts';
+    const breakthrough = s.mode === 'core.breakthrough';
     const dev = this.device();
     // What this setup plays here: at most what this device runs (a race: its grid).
     const cap = playerCap(s.mode, map, dev.max);
@@ -1024,7 +1033,9 @@ export class FrontEnd {
     const rec = map.metadata.recommendedPlayers;
     const spawnCount = map.entities.filter((e) => e.kind === 'spawn').length;
     const about = [map.metadata.description, map.metadata.author && !['Tile Trigger', 'ChronoSplit'].includes(map.metadata.author) ? `Map by ${map.metadata.author}` : '', `Made for ${rec.min}–${rec.max} players; ${spawnCount} spawn points.`].filter(Boolean).join('\n\n');
-    const length = coop ? (s.mode === 'core.zombies' ? 'Until the last wave' : 'Mission') : forts ? `~${Math.round((s.fortCycles ?? 1) * ((s.fortBuild ?? 2.5) + (s.fortCombat ?? 5)))} min` : race ? `${s.raceLaps ?? raceTrack(map)?.laps ?? 3} laps` : lim.minutes ? `~${lim.minutes} min` : 'No time limit';
+    // Breakthrough: up to each sector's time, for each round.
+    const btLength = breakthrough ? Math.max(1, breakthroughSectors(map).length) * lim.minutes * (s.btSwap ? 2 : 1) : 0;
+    const length = coop ? (s.mode === 'core.zombies' ? 'Until the last wave' : 'Mission') : forts ? `~${Math.round((s.fortCycles ?? 1) * ((s.fortBuild ?? 2.5) + (s.fortCombat ?? 5)))} min` : race ? `${s.raceLaps ?? raceTrack(map)?.laps ?? 3} laps` : breakthrough ? `up to ${btLength} min` : lim.minutes ? `~${lim.minutes} min` : 'No time limit';
     const toggleFit = () => {
       this.fitOpen = !this.fitOpen;
       this.refreshSetup();
@@ -1080,7 +1091,7 @@ export class FrontEnd {
       'div',
       { class: 'mode-pick', id: 'arcade-modes' },
       ...current.modes.map((m) => {
-        const b = el('button', { type: 'button', class: `mode-chip${m === s.mode ? ' on' : ''}`, id: `arcade-mode-${m.replace('core.', '')}` }, modeIcon(m), el('b', { textContent: MODE_LABEL[m] }));
+        const b = el('button', { type: 'button', class: `mode-chip${m === s.mode ? ' on' : ''}`, id: `arcade-mode-${m.replace('core.', '')}` }, modeIcon(m), el('b', { textContent: MODE_LABEL[m], ...(/^\S{12,}$/.test(MODE_LABEL[m]) ? { class: 'long' } : {}) }));
         b.dataset.mode = m;
         b.dataset.tip = MODE_TIPS[m] ?? MODE_LINES[m];
         b.setAttribute('aria-pressed', String(m === s.mode));
@@ -1119,7 +1130,14 @@ export class FrontEnd {
     const scoreBy = scoreRow.step === 5 ? scoreStep(lim.scoreLimit) : scoreRow.step;
     const win: HTMLElement[] = [];
     if (coop) win.push(el('p', { class: 'setup-hint win-note', textContent: `${MODE_LABEL[s.mode]} ends through the mission, not a score or a clock.` }));
-    else {
+    else if (breakthrough) {
+      // Breakthrough wins by sectors: the attackers' reinforcements, each sector's time, and a second round with the sides swapped.
+      win.push(
+        field('Reinforcements', "Respawns per attacker: the attackers' pool is this times their team, topped up by half as much for each sector taken; once it's spent, the fallen stay down. Defenders respawn without end. It follows the match's size until you change it.", stepper({ value: lim.scoreLimit, min: 1, max: BREAKTHROUGH_POOL_MAX, id: 'arcade-score', label: 'reinforcements per attacker', onChange: (v) => this.change((x) => ((x.scoreLimit = v), (x.scoreAuto = false))) }), { custom: !lim.auto.score }),
+        field('Sector time', "Minutes each sector puts on the clock (taking one adds the next one's). The defenders win when it runs out. It follows the match's size until you change it.", stepper({ value: lim.minutes, min: 1, max: 15, id: 'arcade-minutes', fmt: (v) => `${v} min`, onChange: (v) => this.change((x) => ((x.minutes = v), (x.timeAuto = false))) }), { custom: !lim.auto.time }),
+        field('Second round', 'A second round with the sides swapped: the team that took more sectors wins, then the one that took its last with more time left.', choice([['off', 'One round'], ['on', 'Swap sides']], s.btSwap ? 'on' : 'off', (v) => this.change((x) => (x.btSwap = v === 'on' || undefined)), 'arcade-bt-swap')),
+      );
+    } else {
       if (!race) win.push(field(scoreRow.label, "The match ends when someone reaches this. It follows the match's size (players and bots) until you change it.", stepper({ value: lim.scoreLimit, min: scoreRow.min, max: scoreRow.max, step: scoreBy, id: 'arcade-score', label: scoreRow.label.toLowerCase(), onChange: (v) => this.change((x) => ((x.scoreLimit = v), (x.scoreAuto = false))) }), { custom: !lim.auto.score }));
       if (!forts) win.push(field('Time limit', "When time runs out the highest score (or the race leader) wins. ∞: no limit. It follows the match's size until you change it.", stepper({ value: lim.minutes, min: 0, max: 60, id: 'arcade-minutes', fmt: (v) => (v ? `${v} min` : '∞'), onChange: (v) => this.change((x) => ((x.minutes = v), (x.timeAuto = false))) }), { custom: !lim.auto.time }));
     }
@@ -2251,6 +2269,10 @@ export class FrontEnd {
     perfOverlay.addEventListener('change', () => savePerfOverlay(perfOverlay.checked));
     const hitboxes = el('input', { type: 'checkbox', checked: loadHitboxOverlay() });
     hitboxes.addEventListener('change', () => saveHitboxOverlay(hitboxes.checked));
+    // Reduce flashing (game/reduceFlashing.ts): on by default; the pause menu has it too.
+    const calmFlashes = el('input', { type: 'checkbox', checked: reduceFlashing() });
+    calmFlashes.id = 'opt-reduce-flashing';
+    calmFlashes.addEventListener('change', () => saveReduceFlashing(calmFlashes.checked));
     const fullscreen = el('button', { type: 'button' });
     bindFullscreenButton(fullscreen);
     const mouse = loadMousePrefs();
@@ -2420,6 +2442,9 @@ export class FrontEnd {
         row('Teammate marker', allySel),
         row('Enemy marker', enemySel, 'Off: only teammates are marked.'),
       ]],
+      ['accessibility', 'Accessibility', [
+        row('Reduce flashing', toggle(calmFlashes), 'On by default. Lightning glows steadily instead of crackling, blasts and muzzle flashes near you are dimmer and fade in, blinking lights pulse gently at most once a second, and taking damage tints the screen edge a dull red that eases in. For players sensitive to flashing light (photosensitive epilepsy). Also in the pause menu (Settings).'),
+      ]],
       ['online', 'Online', [
         el('p', { class: 'opt-note', textContent: "If a friend finds your game but can't connect, your networks block direct connections. A TURN relay passes the game through a server instead: make a free account (e.g. metered.ca → TURN server), paste its address and login here, and invite your friend again. The invite link carries these settings." }),
         row('Relay address', relayUrl),
@@ -2454,7 +2479,7 @@ export class FrontEnd {
 
   /** The section of Options last open (Q / E step through them). */
   private optionsTab = 'general';
-  private static readonly OPTION_TABS = ['general', 'display', 'controls', 'hud', 'online'];
+  private static readonly OPTION_TABS = ['general', 'display', 'controls', 'hud', 'accessibility', 'online'];
 
   // ---------------------------------------------------------------- keyboard
 

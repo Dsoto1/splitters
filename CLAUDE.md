@@ -26,6 +26,9 @@ Session memory: at the end of a session, write `.control-center/session-summary.
 ## Maps
 - Every map, official ones included, is its file in `maps/<id>.json`, made and edited with MapMaker's own tools. No map build scripts and no one-off code for a single map: a piece a map needs goes into MapMaker (palette, inspector, logic) so the owner and players can edit it.
 
+## Accessibility
+- Reduce flashing (Options → Accessibility and the pause menu, on by default; docs/LOOK.md, "Reduce flashing") is a seizure-safety setting. No new effect may add a full-screen flash, a white-out or rapid flicker; effects read `reduceFlashing()` and calm themselves with it on (a steady glow instead of crackle, brightness capped and eased in, blinking at most once a second at low contrast, no large saturated-red flash). New effects must pass the flicker check: the e2e flow `flashing` (`E2E_ONLY=flashing node e2e/run.mjs`; WCAG 2.3.1), and a new kind of bright moment gets a moment in it.
+
 ## Content rules
 - After a merge or a new prop pack, run `pnpm content:rebuild` (props are one file per pack, `content/props/<pack>.json`; it rewrites the generated tables, locks, palette atlases and provenance; docs/CONTENT_PIPELINE.md, "Adding a prop pack").
 - No in-game AI generation: players can't make content through an AI service or connector, and can't upload assets.

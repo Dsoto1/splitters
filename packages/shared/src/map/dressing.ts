@@ -1167,7 +1167,7 @@ export function dressSpace(map: MapDocument, cellList: readonly (readonly [numbe
       blocked.push({ x0: e.position[0] - hx, z0: e.position[2] - hz, x1: e.position[0] + hx, z1: e.position[2] + hz });
     } else if (e.kind !== 'light' && e.kind !== 'water') {
       // Objectives with an area (hills, bomb sites, rescue points, zones): the middle of it stays open floor, and on the lanes.
-      const area = e.kind === 'zone' || e.kind === 'hill' || e.kind === 'rescue' || e.kind === 'bombsite';
+      const area = e.kind === 'zone' || e.kind === 'hill' || e.kind === 'rescue' || e.kind === 'bombsite' || e.kind === 'objective';
       const r = area ? 2.5 : KEEP_CLEAR_RADIUS;
       if (!within(e.position[0], e.position[2], r)) continue;
       keepClear.push({ x: e.position[0], z: e.position[2], r });

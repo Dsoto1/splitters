@@ -362,6 +362,48 @@
       "dressing": { "kind": "door", "span": 5 },
       "notes": { "design": "A wide opening with its roller shutter stuck 1.35 m up: crouch under it (bots don't path through)." }
     },
+    {
+      "id": "gate_arch",
+      "label": "Gate arch (2 storeys)",
+      "segments": [
+        { "u": ["-half", -2.5], "y": [0, "height*2"], "t": 1.2 },
+        { "u": [2.5, "half"], "y": [0, "height*2"], "t": 1.2 },
+        { "u": [-2.5, -2.46], "y": [3.64, "height*2"], "t": 1.2 },
+        { "u": [-2.46, -2.35], "y": [4.06, "height*2"], "t": 1.2 },
+        { "u": [-2.35, -2.17], "y": [4.45, "height*2"], "t": 1.2 },
+        { "u": [-2.17, -1.92], "y": [4.81, "height*2"], "t": 1.2 },
+        { "u": [-1.92, -1.61], "y": [5.12, "height*2"], "t": 1.2 },
+        { "u": [-1.61, -1.25], "y": [5.37, "height*2"], "t": 1.2 },
+        { "u": [-1.25, -0.86], "y": [5.55, "height*2"], "t": 1.2 },
+        { "u": [-0.86, -0.43], "y": [5.67, "height*2"], "t": 1.2 },
+        { "u": [-0.43, 0.43], "y": [5.7, "height*2"], "t": 1.2 },
+        { "u": [0.43, 0.86], "y": [5.67, "height*2"], "t": 1.2 },
+        { "u": [0.86, 1.25], "y": [5.55, "height*2"], "t": 1.2 },
+        { "u": [1.25, 1.61], "y": [5.37, "height*2"], "t": 1.2 },
+        { "u": [1.61, 1.92], "y": [5.12, "height*2"], "t": 1.2 },
+        { "u": [1.92, 2.17], "y": [4.81, "height*2"], "t": 1.2 },
+        { "u": [2.17, 2.35], "y": [4.45, "height*2"], "t": 1.2 },
+        { "u": [2.35, 2.46], "y": [4.06, "height*2"], "t": 1.2 },
+        { "u": [2.46, 2.5], "y": [3.64, "height*2"], "t": 1.2 },
+        { "u": [-4, -2.9], "y": ["height*2", "height*2+0.9"], "t": 1.2 },
+        { "u": [-1.7, -0.6], "y": ["height*2", "height*2+0.9"], "t": 1.2 },
+        { "u": [0.6, 1.7], "y": ["height*2", "height*2+0.9"], "t": 1.2 },
+        { "u": [2.9, 4], "y": ["height*2", "height*2+0.9"], "t": 1.2 }
+      ],
+      "trim": [
+        { "base": ["-half", -2.66] },
+        { "base": [2.66, "half"] },
+        { "u": [-3, -2.5], "y": [3, 3.2], "depth": 0.1, "outside": true },
+        { "u": [2.5, 3], "y": [3, 3.2], "depth": 0.1, "outside": true },
+        { "arch": { "u": [-2.5, 2.5], "y": [3.2, 5.7], "count": 11, "band": 0.5, "key": 0.28, "depth": 0.08 }, "outside": true },
+        { "u": ["-half", "half"], "y": ["height*2-0.25", "height*2"], "depth": 0.1, "outside": true }
+      ],
+      "openings": [[-2.5, 2.5, 0, 5.7]],
+      "dressing": { "kind": "door", "span": 5 },
+      "notes": {
+        "design": "A fortified gate in one side, two storeys high (MAP 21's gatehouse on the grand stair: docs/SET_PIECES_PLAN.md): a round arch 5 m wide springing at 3.2 m to its crown at 5.7 m through a wall 1.2 m thick, the wall up to the top of the storey above (8 m on 4 m levels) and crenellated over it (merlons 1.1 m wide and 0.9 m high, four a side, the end ones meeting their neighbours' as one). Its collision steps over the curve and never dips below it (10° steps); eleven voussoirs and a keystone, impost blocks and a string course under the battlements dress it. Two side by side make a twin gate on a central pier 3 m wide. No facade: the gate dresses itself."
+      }
+    },
     { "id": "open", "label": "No wall", "rule": "open" }
   ]
 }

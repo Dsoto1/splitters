@@ -1205,6 +1205,7 @@ varying vec3 vView;
 varying vec3 vWorld;
 uniform float u_time;
 uniform float u_bright;
+uniform float u_gain;
 uniform vec3 u_sunDir;
 uniform vec3 u_sunColor;
 uniform vec3 u_ambient;
@@ -1221,6 +1222,8 @@ void main(void) {
   // Godot shows these through a tone map with glow; a soft roll-off keeps the hues instead of clipping to white.
   // (Not named c: the shader bodies use that name.)
   vec3 toned = vec3(1.0) - exp(-max(outColor, vec3(0.0)) * u_bright);
+  // Brightness of this play (1, or less where Reduce flashing dims a blast near the camera: GodotVfx gain).
+  toned *= u_gain;
 #ifdef CUT
   if (outAlpha < CUT) discard;
   gl_FragColor = vec4(toned, 1.0);
@@ -1257,7 +1260,7 @@ function registerShaders(): void {
 }
 
 /** Uniform values from the Godot material (and the effect root's shared colours), falling back to the shader's defaults. */
-function materialFor(scene: Scene, mat: Json, root: Json, set: string | undefined, billboardAlign: boolean, key: string, cache: Map<string, ShaderMaterial>): ShaderMaterial | null {
+function materialFor(scene: Scene, mat: Json, root: Json, set: string | undefined, billboardAlign: boolean, key: string, cache: Map<string, ShaderMaterial>, gain = 1): ShaderMaterial | null {
   const portKey = portName(set, String((mat.shader as Json | undefined)?.shader ?? ''));
   if (!portKey) return null;
   const port = PORTS[portKey]!;
@@ -1267,7 +1270,7 @@ function materialFor(scene: Scene, mat: Json, root: Json, set: string | undefine
   registerShaders();
   const billboard = billboardAlign || port.billboard === true || (port.billboardUniform === true && bool(mat['shader_parameter/billboard'], false));
   const defines = [...(billboard ? ['#define BILLBOARD'] : []), ...(port.blend === 'cut' || (port.cut !== undefined && port.blend !== 'add') ? [`#define CUT ${(port.cut ?? 0.5) < 0 ? '-1.0' : (port.cut ?? 0.5).toFixed(3)}`] : []), ...(port.lit ? ['#define WORLD_NORMAL'] : [])];
-  const uniforms = ['world', 'view', 'viewProjection', 'eye', 'u_time', 'u_bright', 'u_sunDir', 'u_sunColor', 'u_ambient', ...Object.keys(port.uniforms).map((k) => `u_${k}`)];
+  const uniforms = ['world', 'view', 'viewProjection', 'eye', 'u_time', 'u_bright', 'u_gain', 'u_sunDir', 'u_sunColor', 'u_ambient', ...Object.keys(port.uniforms).map((k) => `u_${k}`)];
   const m = new ShaderMaterial(`gv_${key}`, scene, { vertex: `gv_${shaderName}`, fragment: `gv_${shaderName}` }, {
     attributes: ['position', 'normal', 'uv', 'pcolor', 'pextra'],
     uniforms,
@@ -1305,6 +1308,7 @@ function materialFor(scene: Scene, mat: Json, root: Json, set: string | undefine
     m.setTexture(s, spec && typeof spec.texture === 'string' ? packTexture(scene, spec.texture) : spec && (spec.type === 'GradientTexture2D' || spec.type === 'GradientTexture1D' || (spec.gradient && !spec.noise)) ? gradientTexture(scene, spec) : noiseTexture(scene, spec));
   }
   m.setFloat('u_bright', 0.55);
+  m.setFloat('u_gain', gain);
   cache.set(key, m);
   return m;
 }
@@ -1740,7 +1744,18 @@ interface Playing {
   level: number;
   want: number;
   minor: boolean;
+  /** Brightness wanted (VfxOptions.gain), reached over `fadeIn` seconds of wall time from the start (`age`). */
+  gain: number;
+  fadeIn: number;
+  age: number;
+  /** The brightness step its pieces are drawn at now (of GAIN_STEPS; GAIN_STEPS: their usual materials). */
+  step: number;
+  /** Its meshes, and their material at a brightness step. */
+  pieces: { meshes: Mesh[]; at: (step: number) => ShaderMaterial | null }[];
 }
+
+/** Brightness steps a dimmed play can be drawn at (each a material of its own, made when first needed). */
+const GAIN_STEPS = 10;
 
 /** Ways to place an effect. */
 export interface VfxPlace {
@@ -1763,6 +1778,13 @@ export interface VfxOptions extends VfxPlace {
   skip?: readonly string[];
   /** Stretch these parts along their Y by `by` (a bolt's tube, made 6 m long, laid between two points). */
   stretch?: { nodes: readonly string[]; by: number };
+  /**
+   * One-shots: how bright (0..1; 1 as the pack made it). Reduce flashing dims a blast near the camera with it
+   * (reduceFlashing.ts blastStrength). Drawn in steps of a tenth, each step its own copy of the materials.
+   */
+  gain?: number;
+  /** One-shots: seconds its brightness takes to come up to `gain` from nothing, instead of popping in. */
+  fadeIn?: number;
 }
 
 /** A lasting effect playing (GodotVfx.start): move it, fade it, stop it. */
@@ -1891,6 +1913,8 @@ export class GodotVfx {
     const anim = (loop ? (fx.animations.open ?? fx.animations.main) : fx.animations.main) ?? Object.values(fx.animations).find((a) => a.length > 0.01);
     const emitters = new Map<string, Emitter>();
     const props: Prop[] = [];
+    const pieces: Playing['pieces'] = [];
+    const dim = !loop && ((opts.gain ?? 1) < 1 || (opts.fadeIn ?? 0) > 0);
     const id = this.serial++;
     const wanted = (name: string) => (!opts.only || opts.only.includes(name)) && !opts.skip?.includes(name);
     const byName = new Map(fx.nodes.map((n) => [String(n.name), n]));
@@ -1916,7 +1940,8 @@ export class GodotVfx {
         const meshSpec = node.draw_pass_1 as Json | undefined;
         const matSpec = node.material_override as Json | undefined;
         if (!meshSpec || !matSpec) continue;
-        const material = materialFor(this.scene, matSpec, fx.root, fx.set, num(node.transform_align, 0) === 1 || num(node.transform_align, 0) === 3, `${pack}/${effect}/${name}`, this.materials);
+        const align = num(node.transform_align, 0) === 1 || num(node.transform_align, 0) === 3;
+        const material = materialFor(this.scene, matSpec, fx.root, fx.set, align, `${pack}/${effect}/${name}`, this.materials);
         if (!material) continue;
         const mesh = pieceOf(this.baseMesh(`${pack}/${effect}/${name}`, meshSpec), `gv_${name}_${id}`);
         mesh.metadata = EFFECT;
@@ -1934,6 +1959,7 @@ export class GodotVfx {
           m2.setEnabled(false);
           e.addPass(m2, material);
         }
+        if (dim) pieces.push({ meshes: e.mesh2 ? [e.mesh, e.mesh2] : [e.mesh], at: (s) => (s >= GAIN_STEPS ? material : materialFor(this.scene, matSpec, fx.root, fx.set, align, `${pack}/${effect}/${name}#g${s}`, this.materials, s / GAIN_STEPS)) });
         emitters.set(name, e);
       } else if (node.type === 'MeshInstance3D') {
         const meshSpec = node.mesh as Json | undefined;
@@ -1944,6 +1970,7 @@ export class GodotVfx {
         const mesh = pieceOf(this.baseMesh(`${pack}/${effect}/${name}`, meshSpec), `gv_${name}_${id}`);
         mesh.metadata = EFFECT;
         mesh.material = material;
+        if (dim) pieces.push({ meshes: [mesh], at: (s) => (s >= GAIN_STEPS ? material : materialFor(this.scene, matSpec, fx.root, fx.set, false, `${pack}/${effect}/${name}#g${s}`, this.materials, s / GAIN_STEPS)) });
         const prop = new Prop(mesh, name, placeOf(node));
         prop.decay = num(matSpec['shader_parameter/effect_decay'], 0);
         props.push(prop);
@@ -1962,9 +1989,23 @@ export class GodotVfx {
       }
     }
     const level = loop ? 0 : 1;
-    const p: Playing = { t: 0, length: anim?.length ?? 1, root, emitters, props, tracks, started, speed: opts.speed ?? 1, loop, stopAt: null, level, want: 1, minor: !!opts.minor };
+    const gain = dim ? Math.max(0, Math.min(1, opts.gain ?? 1)) : 1;
+    const p: Playing = { t: 0, length: anim?.length ?? 1, root, emitters, props, tracks, started, speed: opts.speed ?? 1, loop, stopAt: null, level, want: 1, minor: !!opts.minor, gain, fadeIn: dim ? Math.max(0, opts.fadeIn ?? 0) : 0, age: 0, step: GAIN_STEPS, pieces };
+    if (dim) this.applyGain(p);
     this.playing.push(p);
     return p;
+  }
+
+  /** A dimmed play's pieces drawn at the brightness step its gain (and fade-in) calls for now. */
+  private applyGain(p: Playing): void {
+    const g = p.gain * (p.fadeIn > 0 ? Math.min(1, p.age / p.fadeIn) : 1);
+    const step = Math.max(1, Math.min(GAIN_STEPS, Math.round(g * GAIN_STEPS)));
+    if (step === p.step) return;
+    p.step = step;
+    for (const piece of p.pieces) {
+      const m = piece.at(step);
+      if (m) for (const mesh of piece.meshes) mesh.material = m;
+    }
   }
 
   private baseMesh(key: string, spec: Json): Mesh {
@@ -1992,6 +2033,8 @@ export class GodotVfx {
     this.playing = this.playing.filter((p) => {
       const dt = wall * p.speed;
       p.t += dt;
+      p.age += wall;
+      if (p.pieces.length) this.applyGain(p);
       if (p.loop) {
         // Fade toward what's wanted (out once stopped); the emitters stop putting out particles when told.
         const target = p.stopAt !== null ? 0 : p.want;

@@ -114,7 +114,7 @@ export function drawNavPicture(dir: string, map: MapDocument, nav: NavWorld, aud
       dot(x, y, 3, OUTLINE, set);
       dot(x, y, 2, SPAWN, set);
     } else if (e.kind === 'hill') ring(x, y, Math.max(3, ((e as { radius?: number }).radius ?? 3) * scale), OBJECTIVE, set);
-    else if (e.kind === 'flag' || e.kind === 'bombsite' || e.kind === 'hostage' || e.kind === 'rescue') {
+    else if (e.kind === 'flag' || e.kind === 'bombsite' || e.kind === 'hostage' || e.kind === 'rescue' || e.kind === 'objective') {
       dot(x, y, 4, OUTLINE, set);
       dot(x, y, 3, OBJECTIVE, set);
     }

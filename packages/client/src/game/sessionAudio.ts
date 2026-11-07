@@ -389,6 +389,17 @@ export class SessionAudio {
         else if (ev.a === 'pickup' && ev.s === me) this.audio.play('pickup.powerup');
         else if (ev.a === 'drop') this.audio.play('message');
         break;
+      // Breakthrough (`team`: the attackers, but on a round's end the winners): good or bad news for your side.
+      case 'bt': {
+        const ours = ev.team === this.myTeam();
+        if (ev.a === 'plant') this.audio.play('cue.alarm');
+        else if (ev.a === 'capture' || ev.a === 'destroy' || ev.a === 'defuse') this.audio.play(ours === (ev.a !== 'defuse') ? 'objective.complete' : 'cue.buzzer');
+        else if (ev.a === 'sector') this.audio.play(ours ? 'objective.new' : 'cue.alarm');
+        else if (ev.a === 'round') this.audio.play(ours ? 'announce.win' : 'announce.lose');
+        else if (ev.a === 'start') this.audio.play('announce.fight');
+        else if (ev.a === 'pool' && ours) this.audio.play('cue.alarm');
+        break;
+      }
       case 'elim':
         if (ev.a === 'start') this.audio.play('announce.fight');
         else this.audio.play(ev.team === null ? 'announce.tie' : ev.team === this.myTeam() ? 'announce.win' : 'announce.lose');

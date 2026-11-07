@@ -3,10 +3,10 @@ import { racePath } from '../map/track.ts';
 import { TICK_RATE } from './constants.ts';
 import { mapTeams } from './npc.ts';
 
-export type GameMode = 'core.deathmatch' | 'core.coop' | 'core.tdm' | 'core.ctf' | 'core.koth' | 'core.elim' | 'core.bomb' | 'core.hostage' | 'core.zombies' | 'core.forts' | 'core.discs' | 'core.race';
+export type GameMode = 'core.deathmatch' | 'core.coop' | 'core.tdm' | 'core.ctf' | 'core.koth' | 'core.elim' | 'core.bomb' | 'core.hostage' | 'core.breakthrough' | 'core.zombies' | 'core.forts' | 'core.discs' | 'core.race';
 
 /** Every mode, in menu order. */
-export const GAME_MODES: readonly GameMode[] = ['core.deathmatch', 'core.tdm', 'core.ctf', 'core.koth', 'core.elim', 'core.bomb', 'core.hostage', 'core.forts', 'core.coop', 'core.zombies', 'core.discs', 'core.race'];
+export const GAME_MODES: readonly GameMode[] = ['core.deathmatch', 'core.tdm', 'core.ctf', 'core.koth', 'core.elim', 'core.bomb', 'core.hostage', 'core.breakthrough', 'core.forts', 'core.coop', 'core.zombies', 'core.discs', 'core.race'];
 
 export const MODE_LABELS: Record<GameMode, string> = {
   'core.deathmatch': 'Deathmatch',
@@ -16,6 +16,7 @@ export const MODE_LABELS: Record<GameMode, string> = {
   'core.elim': 'Elimination',
   'core.bomb': 'Bomb',
   'core.hostage': 'Hostage Rescue',
+  'core.breakthrough': 'Breakthrough',
   'core.coop': 'Co-op',
   'core.zombies': 'Zombies',
   'core.forts': 'Fort Wars',
@@ -24,7 +25,10 @@ export const MODE_LABELS: Record<GameMode, string> = {
 };
 
 /** Modes played in teams (factions from mapTeams). */
-export const isTeamMode = (mode: string): boolean => mode === 'core.tdm' || mode === 'core.ctf' || mode === 'core.koth' || mode === 'core.elim' || mode === 'core.bomb' || mode === 'core.hostage' || mode === 'core.forts';
+export const isTeamMode = (mode: string): boolean => mode === 'core.tdm' || mode === 'core.ctf' || mode === 'core.koth' || mode === 'core.elim' || mode === 'core.bomb' || mode === 'core.hostage' || mode === 'core.breakthrough' || mode === 'core.forts';
+
+/** Modes that are always exactly two teams (attack/defend, or one flag each). */
+export const isTwoTeamMode = (mode: string): boolean => mode === 'core.ctf' || mode === 'core.forts' || mode === 'core.bomb' || mode === 'core.hostage' || mode === 'core.breakthrough';
 
 export const isGameMode = (mode: string): mode is GameMode => (GAME_MODES as readonly string[]).includes(mode);
 
@@ -132,6 +136,15 @@ export interface MatchRules {
   fortCombatSeconds?: number;
   fortCycles?: number;
   fortBudget?: number;
+  /**
+   * Breakthrough (sim/modes/breakthrough.ts): the attackers' reinforcements, per attacker (the pool is this times the
+   * attacking team's size, topped up by half as much for each sector taken; default BREAKTHROUGH_POOL), the seconds
+   * each sector puts on the clock (default BREAKTHROUGH_SECTOR_SECONDS; a sector's own `seconds` wins), and whether
+   * a second round is played with the sides swapped (default no).
+   */
+  breakthroughPool?: number;
+  breakthroughSectorSeconds?: number;
+  breakthroughSwap?: boolean;
   /** Race: the vehicle everyone races in (absent: the track's own). */
   raceVehicle?: 'kart' | 'speeder' | 'buggy';
   /** Race: weapons, vehicle guns and sideline sentries on (absent: the track's own setting). */
@@ -286,6 +299,29 @@ export const DEFAULT_BOMB_RULES: MatchRules = {
 /** Hostage Rescue: rounds; the first team brings hostages to a rescue zone, the second guards them. */
 export const DEFAULT_HOSTAGE_RULES: MatchRules = { ...DEFAULT_BOMB_RULES, mode: 'core.hostage' };
 
+/** Breakthrough: reinforcements per attacker, and the seconds a sector puts on the clock, unless the match says otherwise. */
+export const BREAKTHROUGH_POOL = 6;
+export const BREAKTHROUGH_SECTOR_SECONDS = 240;
+/** The most reinforcements per attacker a match can set. */
+export const BREAKTHROUGH_POOL_MAX = 40;
+
+/**
+ * Breakthrough: the first team attacks through the map's sectors in order, the second holds each line in turn
+ * (sim/modes/breakthrough.ts). The mode ends the match itself (the last sector taken, or the attackers out of
+ * reinforcements or time), so there is no score or time limit; the defenders respawn a little slower.
+ */
+export const DEFAULT_BREAKTHROUGH_RULES: MatchRules = {
+  mode: 'core.breakthrough',
+  scoreLimit: 0,
+  timeLimitSeconds: 0,
+  respawnDelayTicks: Math.round(TICK_RATE * 4),
+  startingWeapons: ['core.knife', 'core.pistol', 'core.rifle'],
+  startingGrenades: 2,
+  intermissionTicks: TICK_RATE * 8,
+  breakthroughPool: BREAKTHROUGH_POOL,
+  breakthroughSectorSeconds: BREAKTHROUGH_SECTOR_SECONDS,
+};
+
 /**
  * Fort Wars (SourceForts-style): a build phase with the teams walled apart,
  * each spending build points on pieces round its flag, then Capture the Flag
@@ -343,6 +379,7 @@ export const DEFAULT_RULES: Record<GameMode, MatchRules> = {
   'core.elim': DEFAULT_ELIM_RULES,
   'core.bomb': DEFAULT_BOMB_RULES,
   'core.hostage': DEFAULT_HOSTAGE_RULES,
+  'core.breakthrough': DEFAULT_BREAKTHROUGH_RULES,
   'core.zombies': DEFAULT_ZOMBIES_RULES,
   'core.forts': DEFAULT_FORTS_RULES,
   'core.discs': DEFAULT_DISCS_RULES,
@@ -366,10 +403,14 @@ export const hasBombsites = (map: MapDocument): boolean => map.entities.some((e)
 /** Hostage Rescue needs hostages and somewhere to take them. */
 export const hasHostages = (map: MapDocument): boolean => map.entities.some((e) => e.kind === 'hostage') && map.entities.some((e) => e.kind === 'rescue');
 
+/** Breakthrough needs sectors: at least one, with an objective in it (MapMaker's Breakthrough pieces). */
+export const hasSectors = (map: MapDocument): boolean => map.entities.some((e) => e.kind === 'sector' && map.entities.some((o) => o.kind === 'objective' && o.sector === e.order));
+
 /** Can this map run the mode at all (CTF without flag bases, KOTH without hills or Bomb without sites can't)? */
 export function mapCanRun(map: MapDocument, mode: GameMode): boolean {
   if (mode === 'core.bomb') return hasBombsites(map);
   if (mode === 'core.hostage') return hasHostages(map);
+  if (mode === 'core.breakthrough') return hasSectors(map);
   if (mode === 'core.ctf' || mode === 'core.forts') return hasFlagBases(map);
   if (mode === 'core.koth') return hasHills(map);
   if (mode === 'core.race') return hasTrack(map);
@@ -391,6 +432,7 @@ export function playableModes(map: MapDocument): GameMode[] {
   if (out.includes('core.tdm') && !out.includes('core.elim')) out.push('core.elim');
   if (hasBombsites(map) && !out.includes('core.bomb')) out.push('core.bomb');
   if (hasHostages(map) && !out.includes('core.hostage')) out.push('core.hostage');
+  if (hasSectors(map) && !out.includes('core.breakthrough')) out.push('core.breakthrough');
   if (hasTrack(map) && !out.includes('core.race')) out.push('core.race');
   // Zombies plays anywhere: the horde rises from the map's spawners, spawn points or open floor.
   if (!out.includes('core.zombies')) out.push('core.zombies');
@@ -400,7 +442,7 @@ export function playableModes(map: MapDocument): GameMode[] {
 /** Default rules for a mode on a map (team modes take the map's recommended teams; CTF is always two). */
 export function rulesForMode(map: MapDocument, mode: GameMode): MatchRules {
   const base = DEFAULT_RULES[mode];
-  if (mode === 'core.ctf' || mode === 'core.forts' || mode === 'core.bomb' || mode === 'core.hostage') return { ...base, teamSizes: [...(map.teamSetup?.sizes.slice(0, 2) ?? [8, 8])] };
+  if (isTwoTeamMode(mode)) return { ...base, teamSizes: [...(map.teamSetup?.sizes.slice(0, 2) ?? [8, 8])] };
   if (isTeamMode(mode) && map.teamSetup) return { ...base, teamSizes: [...map.teamSetup.sizes] };
   return base;
 }

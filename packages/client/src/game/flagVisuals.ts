@@ -10,8 +10,9 @@ import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import { DynamicTexture } from '@babylonjs/core/Materials/Textures/dynamicTexture';
 import { CreatePlane } from '@babylonjs/core/Meshes/Builders/planeBuilder';
 import { Mesh as MeshClass } from '@babylonjs/core/Meshes/mesh';
-import { BOMB_CARRIED, BOMB_DROPPED, BOMB_PLANTED, FLAG_CARRIED, FLAG_DROPPED, type Faction, type MapDocument, type ModeSnapshot, type Vec3 } from '@tiletrigger/shared';
+import { BOMB_CARRIED, BOMB_DROPPED, BOMB_PLANTED, BT_IN_BOTH, BT_OBJ_ACTIVE, BT_OBJ_PLANTED, FLAG_CARRIED, FLAG_DROPPED, type Faction, type MapDocument, type ModeSnapshot, type Vec3 } from '@tiletrigger/shared';
 import type { RemotePose } from './interpolation.ts';
+import { blinkLevel, reduceFlashing } from './reduceFlashing.ts';
 
 const materials = new WeakMap<Scene, Map<string, StandardMaterial>>();
 
@@ -81,6 +82,12 @@ export function createHillModel(scene: Scene, radius: number, name: string, colo
 /** A bomb site: an orange area with its letter floating over it. */
 export function createBombsiteModel(scene: Scene, radius: number, label: string, name: string, color = '#ff7a2a'): TransformNode {
   const root = createHillModel(scene, radius, name, color);
+  labelPlane(scene, label, name, color).parent = root;
+  return root;
+}
+
+/** A label floating 2.8 m up, always turned to face you (a bomb site's letter, an objective's name). */
+function labelPlane(scene: Scene, label: string, name: string, color: string): Mesh {
   const tex = new DynamicTexture(`${name}_tex`, { width: 128, height: 128 }, scene, false);
   tex.hasAlpha = true;
   const ctx = tex.getContext() as CanvasRenderingContext2D;
@@ -101,8 +108,49 @@ export function createBombsiteModel(scene: Scene, radius: number, label: string,
   plane.material = m;
   plane.billboardMode = MeshClass.BILLBOARDMODE_Y;
   plane.position.y = 2.8;
-  plane.parent = root;
   plane.isPickable = false;
+  return plane;
+}
+
+/** Breakthrough objectives' colours by kind (a zone gold, a target red, the final hold violet), in the world, the HUD and MapMaker. */
+export const BT_COLORS = { zone: '#f2c14e', target: '#ff5a3a', final: '#c38bff' } as const;
+
+/**
+ * A Breakthrough target: a demolition point (a charge plate on the floor, a striped post with a lamp on it) and its
+ * area, with its label floating over it.
+ */
+export function createTargetModel(scene: Scene, radius: number, label: string, name: string, color: string = BT_COLORS.target): TransformNode {
+  const root = createBombsiteModel(scene, radius, label, name, color);
+  part(CreateBox(`${name}_plate`, { width: 0.9, height: 0.06, depth: 0.9 }, scene), root, mat(scene, '#3a3530')).position.y = 0.03;
+  const post = part(CreateBox(`${name}_post`, { width: 0.16, height: 1.1, depth: 0.16 }, scene), root, mat(scene, '#d8b41a', 0.15));
+  post.position.y = 0.55;
+  for (let k = 0; k < 3; k++) part(CreateBox(`${name}_band${k}`, { width: 0.17, height: 0.12, depth: 0.17 }, scene), root, mat(scene, '#1e1e1e')).position.y = 0.2 + k * 0.32;
+  part(CreateSphere(`${name}_lamp`, { diameter: 0.18, segments: 8 }, scene), root, mat(scene, color, 0.9)).position.y = 1.18;
+  return root;
+}
+
+/** A Breakthrough sector line (MapMaker only): a dashed line across the map with an arrow the way the attackers push, and its order. */
+export function createSectorModel(scene: Scene, order: number, name: string, length = 96): TransformNode {
+  const root = new TransformNode(name, scene);
+  const color = '#ffd24a';
+  const dash = 3;
+  for (let x = -length / 2; x < length / 2; x += dash * 2) {
+    const m = part(CreateBox(`${name}_dash`, { width: dash, height: 0.08, depth: 0.35 }, scene), root, mat(scene, color, 0.8));
+    m.position.set(x + dash / 2, 0.06, 0);
+  }
+  // Chevrons pointing the way the attackers push (+z), every 16 m.
+  for (let x = -length / 2 + 8; x < length / 2; x += 16) {
+    for (const s of [-1, 1]) {
+      const c = part(CreateBox(`${name}_chev`, { width: 1.4, height: 0.08, depth: 0.25 }, scene), root, mat(scene, color, 0.6, 0.85));
+      c.position.set(x + s * 0.5, 0.07, 1.4);
+      c.rotation.y = s * 0.7;
+    }
+  }
+  const pole = part(CreateBox(`${name}_pole`, { width: 0.14, height: 3.2, depth: 0.14 }, scene), root, mat(scene, color, 0.5));
+  pole.position.y = 1.6;
+  const tag = labelPlane(scene, String(order), `${name}_tag`, color);
+  tag.parent = root;
+  tag.position.y = 4;
   return root;
 }
 
@@ -206,14 +254,64 @@ export class ModeVisuals {
         this.bomb.root.rotation.y = pose.yaw;
       } else this.bomb.root.position.set(x, y + 0.12, z);
       const rate = state === BOMB_PLANTED ? Math.max(1.5, 12 - secs * 0.25) : 1;
-      this.bomb.light.setEnabled(Math.sin(t * Math.PI * 2 * rate) > 0);
+      // Reduce flashing: a gentle pulse at most once a second (the HUD's fuse timer tells the time left).
+      if (reduceFlashing()) {
+        this.bomb.light.setEnabled(true);
+        this.bomb.light.visibility = blinkLevel(t, rate, true);
+      } else {
+        this.bomb.light.setEnabled(Math.sin(t * Math.PI * 2 * rate) > 0);
+        this.bomb.light.visibility = 1;
+      }
     } else this.bomb?.root.setEnabled(false);
+    // Breakthrough: the objectives in play (a zone tinted as it is taken, a target with its charge blinking faster as
+    // the fuse burns down); the rest of the map's objectives wait unseen, done ones go.
+    for (const [i, state, progress, extra] of md?.bo ?? []) {
+      const live = state === BT_OBJ_ACTIVE || state === BT_OBJ_PLANTED;
+      let v = this.objectives.get(i);
+      if (!live) {
+        v?.node.setEnabled(false);
+        v?.charge?.root.setEnabled(false);
+        continue;
+      }
+      const e = this.map.entities[i];
+      if (e?.kind !== 'objective') continue;
+      const attackers = this.teams[md?.bt?.[2] ?? 0]?.color ?? '#ff8a3a';
+      const tint = e.objective === 'target' ? (state === BT_OBJ_PLANTED ? '#ff2a2a' : BT_COLORS.target) : extra === BT_IN_BOTH ? '#ffb03b' : progress > 0 ? attackers : BT_COLORS[e.objective];
+      if (!v || v.tint !== tint) {
+        v?.node.dispose(false, false);
+        const name = `btobj_${i}`;
+        const node = e.objective === 'target' ? createTargetModel(this.scene, e.radius, e.label, name, tint) : createBombsiteModel(this.scene, e.radius, e.label, name, tint);
+        node.position.set(e.position[0], e.position[1], e.position[2]);
+        v = { node, tint, charge: v?.charge };
+        this.objectives.set(i, v);
+      }
+      v.node.setEnabled(true);
+      if (e.objective !== 'target') v.node.rotation.y = t * 0.3;
+      if (state === BT_OBJ_PLANTED) {
+        v.charge ??= createBombModel(this.scene);
+        v.charge.root.setEnabled(true);
+        v.charge.root.position.set(e.position[0] + 0.25, e.position[1] + 0.07, e.position[2]);
+        v.charge.light.setEnabled(Math.sin(t * Math.PI * 2 * Math.max(1.5, 12 - extra * 0.4)) > 0);
+      } else v.charge?.root.setEnabled(false);
+    }
   }
 
   private bomb?: { root: TransformNode; light: Mesh };
+  /** Breakthrough objectives drawn so far, by entity index: the model in its tint, and a planted charge. */
+  private readonly objectives = new Map<number, { node: TransformNode; tint: string; charge?: { root: TransformNode; light: Mesh } }>();
+
+  /** Breakthrough objectives drawn and showing (for tests). */
+  get objectiveCount(): number {
+    return [...this.objectives.values()].filter((v) => v.node.isEnabled()).length;
+  }
 
   dispose(): void {
     this.bomb?.root.dispose(false, false);
+    for (const v of this.objectives.values()) {
+      v.node.dispose(false, false);
+      v.charge?.root.dispose(false, false);
+    }
+    this.objectives.clear();
     for (const f of this.flags) {
       f.base.dispose(false, false);
       f.flag.dispose(false, false);
