@@ -1105,7 +1105,8 @@ function printCompare(before: readonly MatchRow[], after: readonly MatchRow[]): 
     return t ? f.map((v) => `${((v / t) * 100).toFixed(0)}`).join('/') : '-';
   };
   console.log(`route choice by how the bots went (on the corridor they followed / off it / their own lane, %): ${follow(before)} → ${follow(after)}`);
-  // Retreating (of alive time) and parkour moves a match (drops, gap jumps, jumps up; given up).
+  // Retreating, of alive time (a hurt bot getting away from what it sees: BotBrain's 'retreat'), and parkour moves a
+  // match (drops, gap jumps, jumps up; missed, given up).
   const doingShare = (ms: readonly MatchRow[], what: string) => {
     let t = 0;
     let all = 0;

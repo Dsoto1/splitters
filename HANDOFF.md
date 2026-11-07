@@ -92,6 +92,29 @@ cheap now, but a 64 v 64 map should spread them out. `pnpm bench 128 60 maps/<ma
 - Not done: shared evaluation for characters on the same clip and phase, fewer bones on far skeletons, impostors.
 
 <!-- breakthrough -->
+<!-- bots-c -->
+### Bot AI Phase C: navigation depth (`wip/bots-c`, agent, 2026-11-07; from main 61652cb9; landing in parts on `check/bots-c`)
+docs/BOT_AI_PLAN.md (Phase C; "Phase C item 0, measured"), docs/BOTS.md ("Hurt bots retreat").
+
+**Item 0, the hurt-bot retreat: kept as it is** (the coordinator agreed, 2026-11-07). The pitfall below ("Bots without
+health pickups") said a hurt bot retreats from every fight for the rest of its life and the Range's attackers suffer.
+Measured with `bot-report` on main, the retreat is what keeps them alive: main broke through at 8 v 8 in 11 of 12 seeds
+(35 of 36 sectors), and every one of seven ways of cutting it short did worse (1 to 9 of 12; kills a minute 33 → 47-52,
+the pool spent by 150-250 s). The table is in BOT_AI_PLAN.md, "Phase C item 0, measured": **don't try these again
+without a new reason.** Main also beats the brief's numbers to beat (4 v 4: 5 of 8 against 2 of 8): those came from a
+scratch harness on an earlier main.
+
+**What item 0 landed:** a Breakthrough crash fix (`BreakthroughMode.botGoal`: a defender with the fall-back duty while
+the last sector is the active one read `sectors[active + 1]`, undefined: a TypeError mid-match; seed 2 of the Range
+at 8 v 8 hit it; the plan is made once a tick, so a sector falling mid-tick leaves the duty stale); `bot-report`'s
+Breakthrough fields (the Iron Coast build's commit 9436ea3a cherry-picked byte-identical, so the two merge cleanly) and
+the retreating share of alive time in `--compare`.
+
+**Run it:** `pnpm bot-report test_breakthrough --mode=core.breakthrough --players=16 --seeds=1,2,3,4,5,6,7,8,9,10,11,12
+--seconds=900 --json=…` (8 v 8; `--players=8 --seconds=600` for 4 v 4), then `--compare=a.json,b.json`. The Range's
+matches are chaotic: six seeds swing by two or three breakthroughs between near-identical builds; use twelve.
+<!-- /bots-c -->
+
 ### Breakthrough mode, and Iron Coast's fort and gatehouse (`wip/breakthrough`, agents, 2026-11-07; from main 17d0e0a0, main 2c48debf (Bot AI Phase B parts 1 and 2), d3830145 (weapons intake 11-06) and 5087b0b6 (weapon sets) merged in; green on `check/breakthrough` at 647512a5, run 42373473729; not landed)
 The brief: docs/map-briefs/MAP_21_Iron_Coast.md ("Breakthrough mode", and "The mode as built"). Rules, settings, HUD,
 MapMaker steps: docs/GAME_MODES.md, "Breakthrough". The pieces: docs/SET_PIECES_PLAN.md, "As built: part 4".
@@ -162,10 +185,11 @@ Coast's check ("bots take every sector in a scorecard run") `bot-report` needs B
   the map's own.
 - Rapier's character controller can stall on one big flat merged floor box at some spots (setPieces4's gate tests
   check headroom instead of walking every gate): worth a look if a player reports a stuck spot.
-- Bots without health pickups: a hurt bot (under its self-preservation share of its health) retreats from every fight
-  it sees for the rest of its life (no regeneration), so on the Range a hurt attacker rarely pushes again. Health
-  pickups by the spawn groups didn't help the attackers (the defenders' were nearer the fighting: the beach fell in 1
-  of 8), so the Range has none; for Phase B: hurt bots with nothing to heal at could keep their objective.
+- Bots without health pickups: a hurt bot (under its self-preservation share of its health) retreats while it sees an
+  enemy (no regeneration), between sightings it goes for its objective again. Health pickups by the spawn groups didn't
+  help the attackers (the defenders' were nearer the fighting: the beach fell in 1 of 8), so the Range has none.
+  Cutting the retreat short was tried seven ways in Bot AI Phase C (item 0): every one made the attack worse (the
+  Phase C section above; BOT_AI_PLAN.md, "Phase C item 0, measured").
 - Slots alternate between two teams (0 one team, 1 the other...): anything picking "every other bot" by `slot % 2`
   picks a whole team or nobody. Breakthrough's bots go by their place among their side's bots.
 
