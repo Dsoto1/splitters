@@ -20,12 +20,15 @@
   "botDesirability": 0.35,
   "botRange": [2, 25],
   "view": {
-    "model": "weapons/pistol.glb",
+    "model": "guns/makarov.glb",
+    "held": { "medium": "guns/makarov.medium.glb", "high": "guns/makarov.high.glb" },
+    "fallback": "weapons/pistol.glb",
     "viewOffset": [0.2, -0.18, 0.42],
     "tracer": "#ffe08a",
     "hold": { "style": "pistol", "grip": [0, -0.03, -0.075], "support": [-0.02, -0.04, -0.065] }
   },
   "notes": {
+    "model": "The 3DModelsCC0 Makarov (CC0; content/guns.json, its magazine put back in the grip), replacing the flat-colour kit pistol, now the fallback.",
     "design": "Benchmark A (service pistol): instant handling, moderate damage and velocity, low recoil, true first shot, fast reload.",
     "fireMode": "One shot per click; holding the trigger doesn't keep firing (the Machine Pistol is the automatic one)."
   }

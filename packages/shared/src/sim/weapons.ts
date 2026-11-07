@@ -20,11 +20,14 @@ export const AMMO_LABELS: Record<AmmoType, string> = {
   chem: 'Chem canisters',
 };
 
-/** How a projectile looks on the client (index sent in snapshots). */
+/**
+ * How a projectile looks on the client (index sent in snapshots: new ones go last). `vortexNade` is the Vortex
+ * Grenade's own look (the Singularity Cannon keeps `vortex`); `smoke` the Smoke Grenade.
+ */
 export const PROJECTILE_VISUALS = [
   'grenade', 'rocket', 'plasma', 'orb', 'frag', 'mine',
   'bubble', 'goo', 'oil', 'flame', 'disc', 'nail', 'flare', 'swarm', 'vortex', 'shard', 'sticky', 'molotov', 'gas', 'bolt',
-  'holy', 'banana', 'sheep', 'bomblet', 'bomb', 'sandbag', 'spear', 'dynamite',
+  'holy', 'banana', 'sheep', 'bomblet', 'bomb', 'sandbag', 'spear', 'dynamite', 'vortexNade', 'smoke',
 ] as const;
 export type ProjectileVisual = (typeof PROJECTILE_VISUALS)[number];
 
@@ -46,9 +49,11 @@ export interface StatusHit {
 /**
  * Ground hazards and fields left behind by impacts: burning ground, toxic
  * clouds, sticky goo, slippery oil (which catches fire from flames and
- * explosions) and singularities that drag players in, then implode.
+ * explosions), singularities that drag players in, then implode, and smoke
+ * that hides what is behind it (SMOKE; harmless; added last: a snapshot sends
+ * the index).
  */
-export const ZONE_KINDS = ['fire', 'toxic', 'goo', 'oil', 'singularity'] as const;
+export const ZONE_KINDS = ['fire', 'toxic', 'goo', 'oil', 'singularity', 'smoke'] as const;
 export type ZoneKind = (typeof ZONE_KINDS)[number];
 /** Whether a player standing at `feet` is inside a zone: puddles are shallow discs, clouds and fields are spheres around the chest. */
 export function zoneContains(kind: ZoneKind, center: Vec3, radius: number, feet: Vec3): boolean {
@@ -63,6 +68,84 @@ export interface ZoneSpec {
   kind: ZoneKind;
   radius: number;
   seconds: number;
+}
+
+/**
+ * A smoke cloud (the Smoke Grenade, `zone.kind` smoke): it billows out from where the grenade lies to its full
+ * `radius` over `growSeconds`, sits there, and thins over the last `fadeSeconds`. Seen through, it hides what is
+ * behind it from players (drawn) and from bots and the match's sight checks (smokeBlocks), but not from bullets:
+ * shots, blasts and movement pass through it. It is a ball squashed to `squash` of its radius up and down, its
+ * middle `rise` of the radius above the ground it burst on.
+ */
+export const SMOKE = {
+  growSeconds: 2.5,
+  fadeSeconds: 3,
+  /** Radius when it bursts, as a share of the full radius. */
+  start: 0.3,
+  /** Radius when it is gone, as a share (it thins out as it shrinks). */
+  end: 0.55,
+  squash: 0.7,
+  rise: 0.45,
+  /** Metres of cloud a sight line must cross to be blocked: inside it, someone this close is still seen. */
+  opaque: 1.6,
+  /** Over the last part of the fade it no longer hides anything (seconds before it is gone). */
+  clearSeconds: 1,
+} as const;
+
+/** A smoke cloud as the sight checks see it: its middle and its radius across (up and down: SMOKE.squash of it). */
+export interface SmokeCloud {
+  x: number;
+  y: number;
+  z: number;
+  radius: number;
+}
+
+/**
+ * How big a smoke cloud is `age` seconds after it burst, out of `life` seconds, at full size `radius` (0 once it
+ * hides nothing: its last SMOKE.clearSeconds). Shared by the match (sight) and the client (drawing).
+ */
+export function smokeRadius(radius: number, age: number, life: number): number {
+  const left = life - age;
+  if (left <= SMOKE.clearSeconds || age < 0) return 0;
+  const grown = SMOKE.start + (1 - SMOKE.start) * Math.sqrt(Math.min(1, age / SMOKE.growSeconds));
+  const fading = Math.max(0, Math.min(1, (SMOKE.fadeSeconds - left) / (SMOKE.fadeSeconds - SMOKE.clearSeconds)));
+  return radius * grown * (1 - (1 - SMOKE.end) * fading);
+}
+
+/**
+ * Whether smoke hides `b` from `a`: the sight line crosses at least SMOKE.opaque metres of one cloud (each cloud a
+ * ball squashed up and down by SMOKE.squash). Two clouds don't add up; a line through two thin edges is still clear.
+ */
+export function smokeBlocks(a: Vec3, b: Vec3, clouds: readonly SmokeCloud[]): boolean {
+  if (!clouds.length) return false;
+  const dx = b.x - a.x;
+  const dy = b.y - a.y;
+  const dz = b.z - a.z;
+  const len = Math.sqrt(dx * dx + dy * dy + dz * dz);
+  if (len < SMOKE.opaque) return false;
+  for (const c of clouds) {
+    if (c.radius <= 0) continue;
+    // In the cloud's own space (squashed back to a ball): the segment's chord through the unit-radius sphere.
+    const sy = 1 / SMOKE.squash;
+    const ox = (a.x - c.x) / c.radius;
+    const oy = ((a.y - c.y) * sy) / c.radius;
+    const oz = (a.z - c.z) / c.radius;
+    const vx = dx / c.radius;
+    const vy = (dy * sy) / c.radius;
+    const vz = dz / c.radius;
+    const A = vx * vx + vy * vy + vz * vz;
+    const B = 2 * (ox * vx + oy * vy + oz * vz);
+    const C = ox * ox + oy * oy + oz * oz - 1;
+    const disc = B * B - 4 * A * C;
+    if (disc <= 0) continue;
+    const root = Math.sqrt(disc);
+    const t0 = Math.max(0, (-B - root) / (2 * A));
+    const t1 = Math.min(1, (-B + root) / (2 * A));
+    if (t1 <= t0) continue;
+    // The chord in world metres (the squash shortens it a little where it runs up and down: counted as drawn).
+    if ((t1 - t0) * len >= SMOKE.opaque) return true;
+  }
+  return false;
 }
 
 export interface ProjectileSpec {
@@ -183,6 +266,12 @@ export interface WeaponPresentation {
   muzzle?: { effect: string; scale?: number };
   /** Where the muzzle is on the model (default: the front of its bounds, a little above the middle). */
   muzzleAt?: ModelPoint;
+  /**
+   * Sharper copies of `model` for the weapon in your own hands, by graphics setting (Medium, High; Low and everyone
+   * else's copy use `model`): the same mesh with bigger maps (tools/content/prepare-guns.mjs `held`), loaded only for
+   * the weapons you hold (docs/ARSENAL.md, "Texture tiers").
+   */
+  held?: { medium: string; high: string };
   /**
    * The second trigger's shot when it isn't the weapon's own (a melee weapon's barrel): its
    * sound and playback rate, its flash, and how much smoke it leaves (0..1.5, a puff cloud).
@@ -350,6 +439,23 @@ export interface ThrowableDefinition {
   max: number;
   throwIntervalTicks: number;
   projectile: ProjectileSpec;
+  /** Its model: in your hand while you line up a throw, in flight, and lying as a pickup (absent: drawn in code). */
+  view?: ThrowableView;
+}
+/** The weapon sets a throwable can look different in (docs/WEAPON_SETS_PLAN.md). */
+export type ThrowableLookSet = 'military' | 'scifi';
+export interface ThrowableView {
+  model: string;
+  /** Drawn instead when `model` fails to load. */
+  fallback?: string;
+  /** Another model in a weapon set (the frag's realistic one in Military, the smoke canister in Sci-fi). */
+  looks?: Partial<Record<ThrowableLookSet, string>>;
+}
+/** A throwable's model in a weapon set (its own when the set gives it no other), or null when it is drawn in code. */
+export function throwableModel(kind: ThrowableKind, set?: string): string | null {
+  const v = THROWABLE_DEFS[kind].view;
+  if (!v) return null;
+  return (set && v.looks?.[set as ThrowableLookSet]) || v.model;
 }
 /** Weapon IDs used for kill credit of thrown equipment. */
 export const throwableWeaponId = (k: ThrowableKind): string => `core.${k}`;
@@ -522,5 +628,8 @@ export function resolveHitscan(origin: Vec3, dir: Vec3, range: number, worldDist
 /** Models a weapon or projectile falls back to when its own fails to load (see WeaponPresentation.fallback). */
 export const MODEL_FALLBACKS: Readonly<Record<string, string>> = {
   ...Object.fromEntries(Object.values(CORE_WEAPONS).flatMap((w) => (w.view.fallback ? [[w.view.model, w.view.fallback]] : []))),
+  // A held copy that fails falls back to everyone's copy of the same model (and that to the weapon's fallback).
+  ...Object.fromEntries(Object.values(CORE_WEAPONS).flatMap((w) => (w.view.held ? [[w.view.held.medium, w.view.model], [w.view.held.high, w.view.model]] : []))),
+  ...Object.fromEntries(Object.values(THROWABLE_DEFS).flatMap((t) => (t.view?.fallback ? [[t.view.model, t.view.fallback]] : []))),
   'guns/frag.glb': 'projectiles/frag.glb',
 };

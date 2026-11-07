@@ -17,7 +17,8 @@
         "selfDamageScale": 0.8,
         "visual": "frag",
         "bounce": 0.45
-      }
+      },
+      "view": { "model": "guns/globe_grenade.glb", "fallback": "guns/frag.glb", "looks": { "military": "guns/frag_m67.glb" } }
     },
     {
       "kind": "mine",
@@ -53,7 +54,8 @@
         "selfDamageScale": 0.8,
         "visual": "sticky",
         "sticky": "any"
-      }
+      },
+      "view": { "model": "guns/countdown_sphere.glb" }
     },
     {
       "kind": "incendiary",
@@ -73,7 +75,8 @@
         "ignites": true,
         "status": { "kind": "burn", "seconds": 4 },
         "zone": { "kind": "fire", "radius": 4, "seconds": 7 }
-      }
+      },
+      "view": { "model": "guns/molotov.glb" }
     },
     {
       "kind": "toxic",
@@ -92,7 +95,8 @@
         "visual": "gas",
         "bounce": 0.4,
         "zone": { "kind": "toxic", "radius": 4.5, "seconds": 9 }
-      }
+      },
+      "view": { "model": "guns/toxic_splash.glb" }
     },
     {
       "kind": "vortex",
@@ -108,10 +112,11 @@
         "splashDamage": 0,
         "splashEdgeDamage": 0,
         "selfDamageScale": 0,
-        "visual": "vortex",
+        "visual": "vortexNade",
         "bounce": 0.3,
         "zone": { "kind": "singularity", "radius": 7, "seconds": 2 }
-      }
+      },
+      "view": { "model": "guns/vortex_grenade.glb" }
     },
     {
       "kind": "holy",
@@ -166,6 +171,7 @@
           }
         }
       },
+      "view": { "model": "guns/sunburst_grenade.glb" },
       "notes": { "group": "Worms-style special." }
     },
     {
@@ -270,6 +276,29 @@
       },
       "notes": {
         "design": "Style Pack 02 Frontier Dust: a lit stick on a long fuse, a big blast that throws people about."
+      }
+    },
+    {
+      "kind": "smoke",
+      "code": 12,
+      "displayName": "Smoke Grenade",
+      "max": 3,
+      "throwIntervalTicks": 45,
+      "projectile": {
+        "speed": 15,
+        "gravity": 14,
+        "fuseSeconds": 1.5,
+        "splashRadius": 0,
+        "splashDamage": 0,
+        "splashEdgeDamage": 0,
+        "selfDamageScale": 0,
+        "visual": "smoke",
+        "bounce": 0.35,
+        "zone": { "kind": "smoke", "radius": 5, "seconds": 18 }
+      },
+      "view": { "model": "guns/smoke_m18.glb", "looks": { "scifi": "guns/smoke_scifi.glb" } },
+      "notes": {
+        "design": "Owner, 2026-11-06: a cloud a few metres across for about 18 s that hides whoever is behind it (players see the cloud; bots and the match's sight checks treat it as opaque) while bullets still go through. Cover to cross open ground. No flash and no white-out: the cloud is grey and eases in."
       }
     }
   ]

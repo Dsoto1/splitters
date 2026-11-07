@@ -22,11 +22,14 @@
   "knockback": 3,
   "recoil": { "bloom": 0.03, "maxBloom": 0.05, "recover": 0.0012 },
   "view": {
-    "model": "weapons/hand_cannon.glb",
+    "model": "guns/bk220.glb",
+    "held": { "medium": "guns/bk220.medium.glb", "high": "guns/bk220.high.glb" },
+    "fallback": "weapons/hand_cannon.glb",
     "viewOffset": [0.2, -0.18, 0.42],
     "tracer": "#ffd08a",
     "hold": { "style": "pistol", "grip": [0, -0.03, -0.144], "support": [-0.02, -0.04, -0.134], "rake": 15 },
     "sound": "fire.heavy"
   },
-  "notes": { "group": "The extended arsenal: every one fires differently. 2: sidearms." }
+  "notes": {
+    "model": "The Meshy community BK 220 (CC0 per the owner; content/guns.json): a heavy semi-automatic pistol (the Heavy Revolver is the revolver), replacing the flat-colour kit revolver, now the fallback.", "group": "The extended arsenal: every one fires differently. 2: sidearms." }
 }

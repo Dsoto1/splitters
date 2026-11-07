@@ -498,7 +498,40 @@ const gunCount = checkLocked(
   'models/guns',
   (f) => gunsManifest.packs[f.source],
   gunsManifest.budgets,
-  (f, pack) => (pack.meshy ? [pack.glb ? "read from Meshy's textured GLB download (base colour map only)" : 'converted to glTF (FBX via three.js FBXLoader)', 'simplified with the texture seams closed, the colour map painted afresh onto new flat charts from the full download (tools/content/meshy-mesh.mjs)', ...(/markings painted out/.test(f.src) ? ['lettering and logos painted out of the colour map'] : []), ...(gunByFile.get(f.file)?.metalDarken !== undefined ? ['bare metal parts (its metal/roughness map) darkened into the colour map'] : []), ...(gunByFile.get(f.file)?.glow ? [`glowing parts recoloured to ${gunByFile.get(f.file).glow.color}, with an emissive map of them`] : []), ...(f.normalMap ? ['normal map baked from the full download onto the cut mesh (its own normal map included; tangents added)'] : []), ...(f.lodTriangles ? ['lower level of detail added'] : []), ...(f.interiorOf ? [`the cockpit of ${f.interiorOf}: cropped to a box in its frame from the same download, cut far less, with colour and normal maps of its own; placed exactly as the body`] : []), /^models\/vehicles\//.test(f.file) ? 'turned so its front faces +Z, centred and scaled' : 'turned so the barrel runs along +Z, centred and scaled', `colour map shrunk to ${gunByFile.get(f.file)?.textureSize ?? 512} px, ${gunByFile.get(f.file)?.roughness !== undefined ? `non-metal material, roughness ${gunByFile.get(f.file).roughness}` : 'matte material'}`] : ['turned so the barrel runs along +Z, centred and scaled', 'colour map shrunk to 512 px, normal map to 256 px, matte material']),
+  (f, pack) => {
+    // A held copy (`tier`: medium, high) is its world copy's entry with sharper maps.
+    const entry = gunByFile.get(f.heldOf ?? f.file);
+    const sizes = f.tier === 'high' ? 'colour map 2048 px, normal map 1024, metal/roughness 1024' : f.tier === 'medium' ? 'colour map 1024 px, normal map 512, metal/roughness 512' : null;
+    const finish = entry?.pbr ? 'its own metal and roughness kept (glTF metallicRoughnessTexture), not made matte' : entry?.roughness !== undefined ? `non-metal material, roughness ${entry.roughness}` : 'matte material';
+    const shipped = sizes ? `the held copy for ${f.tier === 'high' ? 'High' : 'Medium'} graphics: ${sizes}; no lower level of detail` : `colour map shrunk to ${entry?.textureSize ?? 512} px${entry?.pbr ? ', metal/roughness to 256' : ''}`;
+    if (pack.meshy)
+      return [
+        pack.glb ? `read from Meshy's textured GLB download (${entry?.pbr ? 'base colour, normal and metal/roughness maps' : 'base colour map only'})` : 'converted to glTF (FBX via three.js FBXLoader)',
+        'simplified with the texture seams closed, the colour map painted afresh onto new flat charts from the full download (tools/content/meshy-mesh.mjs)',
+        ...(entry?.pbr ? ['metal/roughness map painted into the same charts from the same rays'] : []),
+        ...(/markings painted out/.test(f.src) ? ['lettering and logos painted out of the colour map'] : []),
+        ...(entry?.metalDarken !== undefined ? ['bare metal parts (its metal/roughness map) darkened into the colour map'] : []),
+        ...(entry?.glow ? [`glowing parts recoloured to ${entry.glow.color}, with an emissive map of them`] : []),
+        ...(f.normalMap ? ['normal map baked from the full download onto the cut mesh (its own normal map included; tangents added)'] : []),
+        ...(f.lodTriangles ? ['lower level of detail added'] : []),
+        ...(f.interiorOf ? [`the cockpit of ${f.interiorOf}: cropped to a box in its frame from the same download, cut far less, with colour and normal maps of its own; placed exactly as the body`] : []),
+        /^models\/vehicles\//.test(f.file) ? 'turned so its front faces +Z, centred and scaled' : 'turned so the barrel runs along +Z, centred and scaled',
+        // (Entries from before the texture tiers keep their one line.)
+        ...(entry?.pbr || sizes ? [shipped, finish] : [`${shipped}, ${finish}`]),
+      ];
+    if (entry?.maps || entry?.materials)
+      return [
+        'converted to glTF (FBX via three.js FBXLoader), its objects joined into one mesh',
+        "the pack's own maps put on it: colour, normal (a DirectX map's green channel flipped for glTF), metal and roughness packed into glTF's metallicRoughnessTexture",
+        ...(entry.move ? [`moved back into place: ${Object.keys(entry.move).join(', ')} (laid out beside the model for show in the download)`] : []),
+        ...(f.lodTriangles ? ['lower level of detail added'] : []),
+        entry.height ? 'centred and scaled to its height' : 'turned so the barrel runs along +Z, centred and scaled',
+        shipped,
+        finish,
+        'vertices quantized',
+      ];
+    return ['turned so the barrel runs along +Z, centred and scaled', 'colour map shrunk to 512 px, normal map to 256 px, matte material'];
+  },
   'node tools/content/prepare-guns.mjs --downloads <dir>',
 );
 const vfxManifest = JSON.parse(readFileSync(join(ROOT, 'content/vfx.json'), 'utf8'));

@@ -28,7 +28,9 @@
     "maxBounces": 2
   },
   "view": {
-    "model": "weapons/nailgun.glb",
+    "model": "guns/scrapfire.glb",
+    "held": { "medium": "guns/scrapfire.medium.glb", "high": "guns/scrapfire.high.glb" },
+    "fallback": "weapons/nailgun.glb",
     "viewOffset": [0.21, -0.21, 0.52],
     "tracer": "#d8d8d8",
     "hold": {
@@ -39,5 +41,6 @@
     },
     "sound": "fire.nail"
   },
-  "notes": { "group": "The extended arsenal: every one fires differently. 7: automatics." }
+  "notes": {
+    "model": "The Meshy community Scrapfire Assault Blaster (CC0 per the owner; content/guns.json): a drum-fed scrap-built gun, replacing the flat-colour kit nailgun, now the fallback.", "group": "The extended arsenal: every one fires differently. 7: automatics." }
 }

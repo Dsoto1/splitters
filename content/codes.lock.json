@@ -62,7 +62,8 @@
     "sheep": 8,
     "airstrike": 9,
     "sandbag": 10,
-    "dynamite": 11
+    "dynamite": 11,
+    "smoke": 12
   },
   "classes": {
     "runner": 0,

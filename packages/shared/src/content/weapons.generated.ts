@@ -33,6 +33,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
       hold: { style: 'melee', grip: [0, 0, -0.1] },
     },
   },
+  // model: The 3DModelsCC0 Makarov (CC0; content/guns.json, its magazine put back in the grip), replacing the flat-colour kit pistol, now the fallback.
   // design: Benchmark A (service pistol): instant handling, moderate damage and velocity, low recoil, true first shot, fast reload.
   // fireMode: One shot per click; holding the trigger doesn't keep firing (the Machine Pistol is the automatic one).
   'core.pistol': {
@@ -58,12 +59,15 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     pellets: 1,
     fireIntervalTicks: 10,
     view: {
-      model: 'weapons/pistol.glb',
+      model: 'guns/makarov.glb',
+      held: { medium: 'guns/makarov.medium.glb', high: 'guns/makarov.high.glb' },
+      fallback: 'weapons/pistol.glb',
       viewOffset: [0.2, -0.18, 0.42],
       tracer: '#ffe08a',
       hold: { style: 'pistol', grip: [0, -0.03, -0.075], support: [-0.02, -0.04, -0.065] },
     },
   },
+  // model: The 3DModelsCC0 AK-47 (CC0; content/guns.json), replacing Styloo's AK-47, now the fallback.
   // design: Benchmark D: high velocity, visible long-range travel and drop, predictable vertical climb, a medium-range workhorse.
   'core.rifle': {
     id: 'core.rifle',
@@ -106,13 +110,15 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     pellets: 1,
     raiseTicks: 20,
     view: {
-      model: 'guns/ak47.glb',
-      fallback: 'weapons/rifle.glb',
+      model: 'guns/ak47_cc0.glb',
+      held: { medium: 'guns/ak47_cc0.medium.glb', high: 'guns/ak47_cc0.high.glb' },
+      fallback: 'guns/ak47.glb',
       viewOffset: [0.2, -0.2, 0.55],
       tracer: '#ffd36b',
       hold: { style: 'long', grip: [0, -0.01, -0.165], support: [0, 0.05, 0.14], shoulder: [0, 0.02, -0.41] },
     },
   },
+  // model: The 3DModelsCC0 pump shotgun (CC0; content/guns.json), replacing Styloo's, now the fallback.
   // design: Benchmark shotgun: makes you close in. Ten pellets in a fixed 75 mrad pattern: all of them on a body out to about 5 m (one shot kills), a few at 15 m, a scratch at 25 m (pattern and steep falloff).
   // reload: Shell by shell: each one loaded can be fired straight away.
   'core.shotgun': {
@@ -147,8 +153,9 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     botDesirability: 0.65,
     botRange: [0, 9],
     view: {
-      model: 'guns/shotgun.glb',
-      fallback: 'weapons/shotgun.glb',
+      model: 'guns/shotgun_cc0.glb',
+      held: { medium: 'guns/shotgun_cc0.medium.glb', high: 'guns/shotgun_cc0.high.glb' },
+      fallback: 'guns/shotgun.glb',
       viewOffset: [0.2, -0.2, 0.6],
       tracer: '#ffb38a',
       hold: { style: 'long', grip: [0, 0, -0.18], support: [0, 0.045, 0.22], shoulder: [0, -0.03, -0.46] },
@@ -224,7 +231,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     },
   },
   // design: Benchmark C: very high rate of weak rounds, tight for the first few then widening fast, very fast recovery, snappy reload.
-  // model: The owner's Tommy Gun (Meshy, owned; content/guns.json), the gun-pack SMG as the fallback.
+  // model: The Suomi KP (3DModelsCC0 Guns & Explosives, CC0; content/guns.json), replacing the Meshy community Tommy Gun, now the fallback (owner, 2026-11-06).
   'core.smg': {
     id: 'core.smg',
     displayName: 'Submachine Gun',
@@ -247,8 +254,9 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     botRange: [0, 18],
     pellets: 1,
     view: {
-      model: 'guns/tommy_gun.glb',
-      fallback: 'weapons/smg.glb',
+      model: 'guns/suomi_kp.glb',
+      held: { medium: 'guns/suomi_kp.medium.glb', high: 'guns/suomi_kp.high.glb' },
+      fallback: 'guns/tommy_gun.glb',
       viewOffset: [0.2, -0.2, 0.5],
       tracer: '#ffe9a8',
       hold: { style: 'long', grip: [0, -0.04, -0.075], support: [0, 0.06, 0.22], shoulder: [0, -0.01, -0.41] },
@@ -352,7 +360,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
   },
   // recoil: `kick` is the legacy camera kick folded into family-style kick (identical to what gunplayOf derived from `recoil.kick`). `recoil` is the legacy spread bloom, kept as it was: the family spread model can't reproduce it exactly (docs/CONTENT_SCALABILITY.md, step 4).
   // group: The extended arsenal: every one fires differently. 2: sidearms.
-  // model: The owner's ornate energy handgun (Meshy, owned), the sci-fi kit pistol as the fallback.
+  // model: The Meshy community Plasma Defender (CC0 per the owner; content/guns.json), replacing the Meshy community ornate handgun, now the fallback.
   'core.pulse_pistol': {
     id: 'core.pulse_pistol',
     displayName: 'Pulse Pistol',
@@ -384,15 +392,17 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     },
     pellets: 1,
     view: {
-      model: 'guns/ornate_pistol.glb',
+      model: 'guns/plasma_defender.glb',
+      held: { medium: 'guns/plasma_defender.medium.glb', high: 'guns/plasma_defender.high.glb' },
       viewOffset: [0.2, -0.18, 0.42],
       tracer: '#c69bff',
       hold: { style: 'pistol', grip: [0, -0.045, -0.102], support: [-0.02, -0.055, -0.092], rake: 17 },
-      fallback: 'weapons/pulse_pistol.glb',
+      fallback: 'guns/ornate_pistol.glb',
       sound: 'fire.pulse',
       beam: true,
     },
   },
+  // model: The Meshy community BK 220 (CC0 per the owner; content/guns.json): a heavy semi-automatic pistol (the Heavy Revolver is the revolver), replacing the flat-colour kit revolver, now the fallback.
   // group: The extended arsenal: every one fires differently. 2: sidearms.
   'core.hand_cannon': {
     id: 'core.hand_cannon',
@@ -418,13 +428,16 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     recoil: { bloom: 0.03, maxBloom: 0.05, recover: 0.0012 },
     pellets: 1,
     view: {
-      model: 'weapons/hand_cannon.glb',
+      model: 'guns/bk220.glb',
+      held: { medium: 'guns/bk220.medium.glb', high: 'guns/bk220.high.glb' },
+      fallback: 'weapons/hand_cannon.glb',
       viewOffset: [0.2, -0.18, 0.42],
       tracer: '#ffd08a',
       hold: { style: 'pistol', grip: [0, -0.03, -0.144], support: [-0.02, -0.04, -0.134], rake: 15 },
       sound: 'fire.heavy',
     },
   },
+  // model: The Meshy community gilded flintlock pistol (an unnamed download, CC0 per the owner; content/guns.json): one shot, one kill. The flat-colour kit pistol is the fallback.
   // group: The extended arsenal: every one fires differently. 2: sidearms.
   'core.gilded_pistol': {
     id: 'core.gilded_pistol',
@@ -457,7 +470,9 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     pellets: 1,
     spread: 0,
     view: {
-      model: 'weapons/gilded_pistol.glb',
+      model: 'guns/flintlock.glb',
+      held: { medium: 'guns/flintlock.medium.glb', high: 'guns/flintlock.high.glb' },
+      fallback: 'weapons/gilded_pistol.glb',
       viewOffset: [0.2, -0.18, 0.42],
       tracer: '#ffe070',
       hold: { style: 'pistol', grip: [0, -0.023, -0.073], support: [-0.02, -0.033, -0.063], rake: 7 },
@@ -508,6 +523,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
       sound: 'fire.flare',
     },
   },
+  // model: The 3DModelsCC0 Grease Gun (CC0; content/guns.json), replacing the flat-colour kit machine pistol of the same shape, now the fallback.
   // group: The extended arsenal: every one fires differently. 2: sidearms.
   // hold: Both hands on its pistol grip (the hold's points sat at the end of the wire stock, 11 cm behind the grip; a support hand on the foregrip, 15 cm further ahead, is out of reach in third person); 4 cm nearer the eye than the pistols, so the hands sit where theirs do.
   'core.machine_pistol': {
@@ -532,7 +548,9 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     pellets: 1,
     botDesirability: 0.5,
     view: {
-      model: 'weapons/machine_pistol.glb',
+      model: 'guns/grease_gun.glb',
+      held: { medium: 'guns/grease_gun.medium.glb', high: 'guns/grease_gun.high.glb' },
+      fallback: 'weapons/machine_pistol.glb',
       viewOffset: [0.2, -0.18, 0.38],
       tracer: '#ffe9a8',
       hold: { style: 'pistol', grip: [0, -0.03, -0.024], support: [-0.02, -0.04, -0.014], rake: 10 },
@@ -541,7 +559,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
   },
   // recoil: The legacy spread bloom (bloom per shot, cap, recovery per tick). With a family its spread comes from the family's accuracy; `maxBloom` still sets how long bots fire their bursts.
   // group: The extended arsenal: every one fires differently. 3: rifles.
-  // model: The owner's Neon Flux (Meshy, owned), the gun-pack rifle as the fallback.
+  // model: The 3DModelsCC0 M4A1 (CC0; content/guns.json), replacing the Meshy community Neon Flux, now the fallback: a realistic rifle for the Military set.
   'core.burst_rifle': {
     id: 'core.burst_rifle',
     displayName: 'Burst Rifle',
@@ -566,11 +584,12 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     pellets: 1,
     raiseTicks: 20,
     view: {
-      model: 'guns/neon_flux.glb',
+      model: 'guns/m4a1.glb',
+      held: { medium: 'guns/m4a1.medium.glb', high: 'guns/m4a1.high.glb' },
       viewOffset: [0.21, -0.21, 0.52],
       tracer: '#ffd36b',
       hold: { style: 'long', grip: [0, -0.06, -0.16], support: [0, -0.04, 0.13], shoulder: [0, 0.05, -0.34] },
-      fallback: 'weapons/burst_rifle.glb',
+      fallback: 'guns/neon_flux.glb',
       sound: 'fire.rifle',
     },
   },
@@ -1001,6 +1020,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
       sound: 'fire.smg',
     },
   },
+  // model: The Meshy community Scrapfire Assault Blaster (CC0 per the owner; content/guns.json): a drum-fed scrap-built gun, replacing the flat-colour kit nailgun, now the fallback.
   // group: The extended arsenal: every one fires differently. 7: automatics.
   'core.nailgun': {
     id: 'core.nailgun',
@@ -1035,7 +1055,9 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     range: 120,
     reloadTicks: 80,
     view: {
-      model: 'weapons/nailgun.glb',
+      model: 'guns/scrapfire.glb',
+      held: { medium: 'guns/scrapfire.medium.glb', high: 'guns/scrapfire.high.glb' },
+      fallback: 'weapons/nailgun.glb',
       viewOffset: [0.21, -0.21, 0.52],
       tracer: '#d8d8d8',
       hold: { style: 'long', grip: [0, -0.029, -0.126], support: [0, 0.058, 0.168], shoulder: [0, -0.002, -0.33] },
@@ -1706,7 +1728,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     },
   },
   // design: Weapon of the gunplay pass (docs/GUNPLAY_SPEC.md), benchmark B: every trigger pull is an event. Absurd damage for a handgun (a head shot kills at any range, a body shot takes nine tenths of a life), savage kick, five rounds, a true first shot that only comes back once the last one has settled (fan it and you miss), and a slow, rhythmic round-by-round reload (each cartridge can be fired as soon as it is in).
-  // model: A Meshy community revolver (CC0 per the owner, markings painted out; content/guns.json), held on its own grip.
+  // model: The Meshy community Revolver Rustique (CC0 per the owner; content/guns.json), replacing the Meshy community revolver (2026-01-26 download), now the fallback.
   'core.revolver': {
     id: 'core.revolver',
     displayName: 'Heavy Revolver',
@@ -1731,11 +1753,12 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     knockback: 4,
     pellets: 1,
     view: {
-      model: 'guns/ironclad_revolver.glb',
+      model: 'guns/revolver_rustique.glb',
+      held: { medium: 'guns/revolver_rustique.medium.glb', high: 'guns/revolver_rustique.high.glb' },
       viewOffset: [0.2, -0.18, 0.42],
       tracer: '#ffcf7a',
       hold: { style: 'pistol', grip: [0, -0.03, -0.108], support: [-0.02, -0.04, -0.098], rake: 18 },
-      fallback: 'weapons/revolver.glb',
+      fallback: 'guns/ironclad_revolver.glb',
       sound: 'fire.revolver',
     },
   },
@@ -1798,7 +1821,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
 export const WEAPON_CODES: Readonly<Record<string, number>> = { 'core.knife': 1, 'core.pistol': 2, 'core.rifle': 3, 'core.shotgun': 4, 'core.sniper': 5, 'core.launcher': 6, 'core.smg': 7, 'core.rockets': 8, 'core.plasma': 9, 'core.pulse_pistol': 10, 'core.hand_cannon': 11, 'core.gilded_pistol': 12, 'core.flare_gun': 13, 'core.machine_pistol': 14, 'core.burst_rifle': 15, 'core.laser_rifle': 16, 'core.marksman': 17, 'core.sawed_off': 18, 'core.auto_shotgun': 19, 'core.flak': 20, 'core.railgun': 21, 'core.disc_launcher': 22, 'core.bubble_blaster': 23, 'core.goo_gun': 24, 'core.oil_slicker': 25, 'core.lmg': 26, 'core.nailgun': 27, 'core.swarm': 28, 'core.guided': 29, 'core.singularity': 30, 'core.arc_caster': 31, 'core.flamethrower': 32, 'core.freeze_ray': 33, 'core.mount_mg': 34, 'core.mount_rockets': 35, 'core.tank_cannon': 36, 'core.speeder_guns': 37, 'core.sentry_gun': 38, 'core.sentry_arc': 39, 'core.medkit': 40, 'core.grapple': 41, 'core.spear': 42, 'core.builder': 43, 'core.arena_disc': 44, 'core.blast_rockets': 45, 'core.medi_beam': 46, 'core.revolver': 47, 'core.battle_axe': 48 };
 
 /** Thrown equipment (G), in code order: a snapshot sends the code (its index here). */
-export const THROWABLES = ['frag', 'mine', 'sticky', 'incendiary', 'toxic', 'vortex', 'holy', 'cluster', 'sheep', 'airstrike', 'sandbag', 'dynamite'] as const;
+export const THROWABLES = ['frag', 'mine', 'sticky', 'incendiary', 'toxic', 'vortex', 'holy', 'cluster', 'sheep', 'airstrike', 'sandbag', 'dynamite', 'smoke'] as const;
 export const THROWABLE_DEFS: Readonly<Record<(typeof THROWABLES)[number], ThrowableDefinition>> = {
   frag: {
     kind: 'frag',
@@ -1816,6 +1839,7 @@ export const THROWABLE_DEFS: Readonly<Record<(typeof THROWABLES)[number], Throwa
       visual: 'frag',
       bounce: 0.45,
     },
+    view: { model: 'guns/globe_grenade.glb', fallback: 'guns/frag.glb', looks: { military: 'guns/frag_m67.glb' } },
   },
   mine: {
     kind: 'mine',
@@ -1850,6 +1874,7 @@ export const THROWABLE_DEFS: Readonly<Record<(typeof THROWABLES)[number], Throwa
       visual: 'sticky',
       sticky: 'any',
     },
+    view: { model: 'guns/countdown_sphere.glb' },
   },
   incendiary: {
     kind: 'incendiary',
@@ -1869,6 +1894,7 @@ export const THROWABLE_DEFS: Readonly<Record<(typeof THROWABLES)[number], Throwa
       status: { kind: 'burn', seconds: 4 },
       zone: { kind: 'fire', radius: 4, seconds: 7 },
     },
+    view: { model: 'guns/molotov.glb' },
   },
   toxic: {
     kind: 'toxic',
@@ -1887,6 +1913,7 @@ export const THROWABLE_DEFS: Readonly<Record<(typeof THROWABLES)[number], Throwa
       bounce: 0.4,
       zone: { kind: 'toxic', radius: 4.5, seconds: 9 },
     },
+    view: { model: 'guns/toxic_splash.glb' },
   },
   vortex: {
     kind: 'vortex',
@@ -1901,10 +1928,11 @@ export const THROWABLE_DEFS: Readonly<Record<(typeof THROWABLES)[number], Throwa
       splashDamage: 0,
       splashEdgeDamage: 0,
       selfDamageScale: 0,
-      visual: 'vortex',
+      visual: 'vortexNade',
       bounce: 0.3,
       zone: { kind: 'singularity', radius: 7, seconds: 2 },
     },
+    view: { model: 'guns/vortex_grenade.glb' },
   },
   // group: Worms-style special.
   // design: Heavy, slow fuse, enormous blast: get well clear.
@@ -1959,6 +1987,7 @@ export const THROWABLE_DEFS: Readonly<Record<(typeof THROWABLES)[number], Throwa
         },
       },
     },
+    view: { model: 'guns/sunburst_grenade.glb' },
   },
   // group: Worms-style special.
   // design: Lands, waddles off the way it was thrown, hops over low things, and goes off on the first enemy it bumps into.
@@ -2051,6 +2080,26 @@ export const THROWABLE_DEFS: Readonly<Record<(typeof THROWABLES)[number], Throwa
       bounce: 0.3,
       knockback: 12,
     },
+  },
+  // design: Owner, 2026-11-06: a cloud a few metres across for about 18 s that hides whoever is behind it (players see the cloud; bots and the match's sight checks treat it as opaque) while bullets still go through. Cover to cross open ground. No flash and no white-out: the cloud is grey and eases in.
+  smoke: {
+    kind: 'smoke',
+    displayName: 'Smoke Grenade',
+    max: 3,
+    throwIntervalTicks: 45,
+    projectile: {
+      speed: 15,
+      gravity: 14,
+      fuseSeconds: 1.5,
+      splashRadius: 0,
+      splashDamage: 0,
+      splashEdgeDamage: 0,
+      selfDamageScale: 0,
+      visual: 'smoke',
+      bounce: 0.35,
+      zone: { kind: 'smoke', radius: 5, seconds: 18 },
+    },
+    view: { model: 'guns/smoke_m18.glb', looks: { scifi: 'guns/smoke_scifi.glb' } },
   },
 };
 

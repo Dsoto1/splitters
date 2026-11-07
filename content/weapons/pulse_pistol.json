@@ -21,17 +21,18 @@
   "recoil": { "bloom": 0.004, "maxBloom": 0.02, "recover": 0.0015 },
   "kick": { "pitch": [0.012], "yaw": [0.003, -0.003], "variance": 0.0024000000000000002, "delay": 4, "settle": 8, "rate": 0.1, "visual": 0.18 },
   "view": {
-    "model": "guns/ornate_pistol.glb",
+    "model": "guns/plasma_defender.glb",
+    "held": { "medium": "guns/plasma_defender.medium.glb", "high": "guns/plasma_defender.high.glb" },
     "viewOffset": [0.2, -0.18, 0.42],
     "tracer": "#c69bff",
     "hold": { "style": "pistol", "grip": [0, -0.045, -0.102], "support": [-0.02, -0.055, -0.092], "rake": 17 },
-    "fallback": "weapons/pulse_pistol.glb",
+    "fallback": "guns/ornate_pistol.glb",
     "sound": "fire.pulse",
     "beam": true
   },
   "notes": {
     "recoil": "`kick` is the legacy camera kick folded into family-style kick (identical to what gunplayOf derived from `recoil.kick`). `recoil` is the legacy spread bloom, kept as it was: the family spread model can't reproduce it exactly (docs/CONTENT_SCALABILITY.md, step 4).",
     "group": "The extended arsenal: every one fires differently. 2: sidearms.",
-    "model": "The owner's ornate energy handgun (Meshy, owned), the sci-fi kit pistol as the fallback."
+    "model": "The Meshy community Plasma Defender (CC0 per the owner; content/guns.json), replacing the Meshy community ornate handgun, now the fallback."
   }
 }

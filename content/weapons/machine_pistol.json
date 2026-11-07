@@ -19,13 +19,16 @@
   "ammo": "light",
   "recoil": { "bloom": 0.006, "maxBloom": 0.07, "recover": 0.002 },
   "view": {
-    "model": "weapons/machine_pistol.glb",
+    "model": "guns/grease_gun.glb",
+    "held": { "medium": "guns/grease_gun.medium.glb", "high": "guns/grease_gun.high.glb" },
+    "fallback": "weapons/machine_pistol.glb",
     "viewOffset": [0.2, -0.18, 0.38],
     "tracer": "#ffe9a8",
     "hold": { "style": "pistol", "grip": [0, -0.03, -0.024], "support": [-0.02, -0.04, -0.014], "rake": 10 },
     "sound": "fire.smg"
   },
   "notes": {
+    "model": "The 3DModelsCC0 Grease Gun (CC0; content/guns.json), replacing the flat-colour kit machine pistol of the same shape, now the fallback.",
     "group": "The extended arsenal: every one fires differently. 2: sidearms.",
     "hold": "Both hands on its pistol grip (the hold's points sat at the end of the wire stock, 11 cm behind the grip; a support hand on the foregrip, 15 cm further ahead, is out of reach in third person); 4 cm nearer the eye than the pistols, so the hands sit where theirs do."
   }
