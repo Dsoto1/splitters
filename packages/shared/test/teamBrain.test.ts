@@ -125,7 +125,10 @@ describe('team brain', () => {
       { ...members(1, () => at(10, 0))[0]!, slot: 3, goal: null },
       { ...members(1, () => at(85, 0))[0]!, slot: 4, goal: null, ordered: true },
     ];
-    const jobs = brain.update(0, ms, { attack: null, intercept: { pos: at(40, 0), to: at(100, 0), slot: 99 } }, [short], [short]);
+    // (None by default: a playbook asks for them.)
+    expect(new TeamBrain().update(0, ms, { attack: null, intercept: { pos: at(40, 0), to: at(100, 0), slot: 99 } }, [short], [short]).get(1)).toBeNull();
+    const playbook = { ...DEFAULT_PLAYBOOK, interceptors: 3 };
+    const jobs = brain.update(0, ms, { attack: null, intercept: { pos: at(40, 0), to: at(100, 0), slot: 99 }, playbook }, [short], [short]);
     expect(jobs.get(1)?.group).toBe('intercept');
     expect(jobs.get(2)?.group).toBe('intercept');
     expect(jobs.get(3)).toBeNull();

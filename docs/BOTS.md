@@ -758,17 +758,20 @@ for points on the ground ahead, and captures halved on the dev sample.)
   waiting at its spot goes too, so the main push and the flankers arrive about the same time from different ways. A bot
   already nearer the objective than its spot never falls back to it, one that hasn't got to it in 25 s goes on, and the
   recon pair goes ahead on its own.
-- **Interceptors** (a reaction: our flag carried off): up to three bots the carrier will run into (ahead of it on its
-  way home and within 40 m of its route) wait for it on its route, a goal to keep to, and go straight at it once it's
-  close. Bots behind it leave it to the mode's chasers (the defenders and those within 22 m). The other reactions are
-  the mode's: a carrier gets escorts, defenders close in on an enemy at their flag.
+- **Interceptors** (a reaction: our flag carried off; built, but none by default, `Playbook.interceptors`): that many
+  bots the carrier will run into (ahead of it on its way home and within 40 m of its route) wait for it on its route, a
+  goal to keep to, and go straight at it once it's close; bots behind it leave it to the mode's chasers (the defenders
+  and those within 22 m). Three, in Capture the Flag, were the attackers of the side whose flag was taken: its attack
+  stopped while they waited, and carriers rarely got home (Diamond Park's first capture in 3 of 6 five-minute matches,
+  against 6 of 6 without; one interceptor, 5 of 6). The reactions in play are the mode's: a carrier gets escorts,
+  defenders close in on an enemy at their flag.
 - **A person's orders win**: a bot under orders gets no job, and its order outweighs everything in its choices.
 - **Playbooks** (`Playbook`: group shares, staging distances, timings, prices), per mode through its brief. King of the
   Hill never splits: everyone goes straight for the hill (split over the ways, the hill was held 33 % of the time on the
   dev sample against 49 % going straight; gathering out of the hill's sight to retake it together, the side doing it
   held the hill 37 s to the other side's 170 in the same matches).
 
-Bots read their job (`BotPlan.job`: group, corridor, staging spot, or an interceptor's cut-off point) and the side's
+Bots read their job (`BotPlan.job`: group, corridor and staging spot, or an interceptor's cut-off point) and the side's
 priced trips (`BotPlan.trips`) from objects the director updates in place. `bot-report` prints, per match, each team's
 use of each corridor of its trips (`routes:`, bot-seconds by the nearest corridor) and the group pushes (`pushes`:
 waves set out, got there, lost half first); its rows also keep the route choice (`routes[].cross`: each bot's corridor

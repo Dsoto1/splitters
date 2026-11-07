@@ -114,7 +114,12 @@ export interface Playbook {
   pushMost: number;
   /** Every group waiting at its staging spot goes as soon as one does (a push from different ways at once). */
   together: boolean;
-  /** Interceptors at most, and how far (m) ahead of the enemy on its way they cut it off. */
+  /**
+   * Interceptors at most (none by default), and how far (m) ahead of the enemy on its way they cut it off. Three, in
+   * Capture the Flag, were the attackers of the side whose flag was taken: its attack stopped while they waited on the
+   * carrier's way, and carriers rarely got home (Diamond Park's first capture in 3 of 6 five-minute matches, against 6
+   * of 6 without; one interceptor, 5 of 6).
+   */
   interceptors: number;
   cutAhead: number;
   /** Prices: × (1 + crowd × each teammate on it + deaths × each death on it in the last minute + seen × each sighting there lately). */
@@ -139,7 +144,7 @@ export const DEFAULT_PLAYBOOK: Playbook = {
   waitAfterFirst: 10,
   pushMost: 45,
   together: true,
-  interceptors: 3,
+  interceptors: 0,
   cutAhead: 30,
   crowd: 0.15,
   death: 0.35,
@@ -281,7 +286,7 @@ export class TeamBrain {
 
     // Interceptors: the members best placed to get ahead of the enemy on its way.
     const cut = brief?.intercept ?? null;
-    if (cut) this.intercept(cut, members, all, jobs);
+    if (cut && pb.interceptors > 0) this.intercept(cut, members, all, jobs);
     return jobs;
   }
 

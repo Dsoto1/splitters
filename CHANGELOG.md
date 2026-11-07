@@ -19,12 +19,10 @@ choices", "Team brain and route variety")
   and longer) a team splits its attackers into a main push, flankers and a recon pair, each on its own way; a push on a
   flag at its base gathers out of the flag's sight and goes in together. Loose bots and squads heading for the enemy
   take the way that is least crowded and where fewest teammates died lately.
-- **Reactions**: when the enemy runs off with your flag, up to three bots ahead of the carrier cut it off on its way
-  home.
 - Measured on a sample of every mode (33 matches, against before): King of the Hill's hill held 26 → 49 % of the time,
   Bomb plants 0.5 → 1.5 a match, a hostage rescued (none before), Elimination's round 120 → 70 s, Team Deathmatch's
-  busiest way 54 → 43 % of a team's bots; Capture the Flag as many captures as before (20) from fewer flag takes (176
-  → 141): the defenders hold their flags now, and the attack against a held flag is part 2's.
+  busiest way 54 → 43 % of a team's bots; Capture the Flag a few more captures (20 → 23) from fewer flag takes (176 →
+  127): the defenders hold their flags now, so a take is a real attack.
 
 **MapMaker gives the ground back when a floor moves** (owner: "fix the ground bug")
 - MapMaker used to write the ground it lowers under floors into the map: every edit lowered the terrain under every

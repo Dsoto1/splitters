@@ -40,8 +40,10 @@ variety), part 2 (snipers, cover-to-cover advance, playbooks per mode).
 - Corridors (`nav/corridors.ts`): two or three distinct ways per trip, each with one via (following a corridor's points
   every 12 m stranded bots on maps with floors). The team brain (`bots/teamBrain.ts`, once a second a side): prices
   (crowd, deaths, sightings), groups (main push, flankers, a recon pair) only on trips of 180 m or more with two ways
-  near the shortest (15 CTF maps), staging out of the objective's sight, waves that go together, interceptors ahead of
-  an enemy carrier. King of the Hill never splits. The director hands each bot its job (`BotPlan.job`).
+  near the shortest (15 CTF maps), staging out of the objective's sight, waves that go together. Interceptors ahead
+  of an enemy carrier are built but off (`Playbook.interceptors` 0: three stopped the attack of the side whose flag was
+  taken, and Diamond Park's first capture came in 3 of 6 five-minute matches). King of the Hill never splits. The
+  director hands each bot its job (`BotPlan.job`).
 - `bot-report`: route choice (`routes[].cross`: each bot's way past a trip's middle, once a life), group pushes, every
   map's line in the nightly judge, "two ways" and "busiest way" in the scorecard.
 
@@ -52,15 +54,16 @@ repos/Dsoto1/splitters/actions/jobs/<id>/logs`).
 
 **Numbers** (dev sample, 33 matches, BOT_AI_PLAN.md): King of the Hill's hill held 26.3 → 48.9 %, Bomb plants 0.5 → 1.5 a
 match, hostage rescues 0 → 1, Elimination's round 120 → 70 s, Team Deathmatch's busiest way 54 → 43 %; CTF captures
-20 → 20 from 176 → 141 takes, matches with a capture 12 → 9, route choice two ways 88 → 93 %, busiest way 59 → 58 %.
+20 → 23 from 176 → 127 takes, matches with a capture 12 → 11, route choice two ways 88 → 89 %, busiest way 59 → 60 %.
+Five-minute capture tests' matches, seeds 1-6: first capture in 6 of 6 on Diamond Park and Sunken Kingdom, as main.
 
-**Left for part 2 and after:** CTF against a held flag (carriers die near it: Diamond Park 25 takes, no capture, on the
-dev sample); the busiest way under half; snipers (the scoped gun from spawn, calculated shots, moving after a shot or
+**Left for part 2 and after:** CTF against a held flag (6 of the dev sample's 12 maps without a capture); the
+busiest way under half; snipers (the scoped gun from spawn, calculated shots, moving after a shot or
 two; work in progress on the branch's scratch, not committed), bounds and cover-preferring routes, the playbooks.
 
 **For the owner to playtest (part 1):** CTF on a long map (Fernwood Moon, Sunken Kingdom, Iron Tide, Capitol Mall):
 the main push, flankers and a recon pair on different ways, a push gathering out of the flag's sight and going in
-together, and when your flag is taken, bots ahead of the carrier cutting it off. CTF on Diamond Park or Bunker Cross:
+together. CTF on Diamond Park or Bunker Cross:
 defenders staying by their flag; give a bot an order and it holds. King of the Hill on Shingle Point: bots stay on
 the hill. Bomb on Serene City: plants.
 <!-- /bots-b -->
