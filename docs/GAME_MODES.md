@@ -381,7 +381,8 @@ v28).
   the team brain once a second: the attackers' objective is the least
   defended in the sector still to take (the fewest defenders within 15 m;
   kept until taken or planted, looked at again every 20 s while no attacker
-  is on it), a group push while the defenders hold it; the bots' trips are
+  is on it, when it moves to one with fewer defenders, two fewer if more
+  than 60 m away), a group push while the defenders hold it; the bots' trips are
   each sector's spawn groups to each of its objectives, so the attackers
   spread over the sector's ways in groups on any length of trip and bound
   up cover to cover whatever their style (Arena's aside). They stand in a
