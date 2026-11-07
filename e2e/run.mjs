@@ -1424,13 +1424,21 @@ async function offlineFlow(browser) {
   await page.waitForSelector('.opt-nav');
   const sections = await page.$$eval('.opt-nav button', (bs) => bs.map((b) => b.dataset.tab));
   const optWidth = await page.$eval('.opt-layout', (e) => e.getBoundingClientRect().width);
-  check(sections.join() === 'general,display,controls,hud,online' && optWidth > 700, `Options has its sections side by side with a wide panel (${sections.join(', ')}; ${Math.round(optWidth)} px)`);
+  check(sections.join() === 'general,display,controls,hud,accessibility,online' && optWidth > 700, `Options has its sections side by side with a wide panel (${sections.join(', ')}; ${Math.round(optWidth)} px)`);
   await page.keyboard.press('e');
   await page.keyboard.press('e');
   check((await page.textContent('.opt-title')) === 'Controls', 'E steps to the next Options section');
   await page.click('.opt-row:has-text("Invert look") .switch');
   check(await page.evaluate(() => Object.values(localStorage).some((v) => /"invertY":true/.test(v))), 'the Invert look switch saves');
   await page.click('.opt-row:has-text("Invert look") .switch');
+  // Accessibility → Reduce flashing (game/reduceFlashing.ts): on for a first visit, and the switch saves.
+  await page.click('.opt-nav [data-tab="accessibility"]');
+  const calmDefault = await page.$eval('#opt-reduce-flashing', (b) => b.checked);
+  await page.click('.opt-row:has-text("Reduce flashing") .switch');
+  const calmOff = await page.evaluate(() => localStorage.getItem('tiletrigger.reduceFlashing'));
+  await page.click('.opt-row:has-text("Reduce flashing") .switch');
+  const calmOn = await page.evaluate(() => localStorage.getItem('tiletrigger.reduceFlashing'));
+  check(calmDefault === true && calmOff === '0' && calmOn === '1', `Accessibility: Reduce flashing is on at first and its switch saves (${JSON.stringify({ calmDefault, calmOff, calmOn })})`);
   await page.keyboard.press('Escape');
   // The main menu: a Characters item (Character Select, and Back returns here: the owner wanted it kept) beside the
   // Profile entry (top right), which shows your character, name and account state and opens Profile (Change character
