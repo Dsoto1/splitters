@@ -3016,62 +3016,70 @@ async function customSetupFlow(browser) {
 }
 
 /**
- * Weapon sets (docs/WEAPON_SETS_PLAN.md; sim/weaponSets.ts): Match setup's Weapons choice (Map default, naming the
- * map's own, or any set) and the set in the setup's facts; a Military match spawning you with a knife, a pistol and
- * an assault rifle (bots too), its weapon pickups holding Military weapons; the pause menu's Host tab switching the set
- * at once (pickups now, your next life's loadout); a Chaos match whose spawn gun changes from life to life (each
- * the roll of the seed, the slot and the life, an oddball of the set) with a sheep to throw; and MapMaker's Map
- * properties field, whose set its TEST plays. E2E_SHOTS: the Weapons choice, the Map properties field, a Chaos spawn.
+ * Weapon sets (docs/WEAPON_SETS_PLAN.md; sim/weaponSets.ts). Sandgate's own default is Military (its Map properties):
+ * Match setup names it ("Map default (Military)") and its facts show it; the match spawns you with a knife, a pistol
+ * and an assault rifle (the bots too) and its weapon pickups hold Military weapons; the pause menu's Host tab switches
+ * the set at once (the pickups now, your next life's loadout). Match setup's own choice, Chaos, saved with the setup,
+ * gives a new oddball each life (the roll of the seed, your slot and the life) and a sheep. MapMaker's Map properties
+ * field sets a map's default, and its TEST plays it. E2E_SHOTS: the Weapons choice, a Chaos spawn, the field.
  */
 async function weaponsetsFlow(browser) {
   const shots = process.env.E2E_SHOTS;
   const errors = [];
-  const page = await (await browser.newContext({ viewport: { width: 1280, height: 720 } })).newPage();
+  const ctx = await browser.newContext({ viewport: { width: 1280, height: 720 } });
+  const page = await ctx.newPage();
   page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
-  // Team Deathmatch on Sandgate, 2v2, saved before weapon sets (it names none: the map's default, Standard).
+  // Team Deathmatch on Sandgate, 2v2, saved before weapon sets (it names none: the map's default).
   await page.addInitScript(() => {
     if (sessionStorage.getItem('seeded')) return;
     localStorage.setItem('cs.arcade', JSON.stringify({ map: 'sandgate', mode: 'core.tdm', bots: 3, skill: 'easy', scoreLimit: 40, minutes: 10, teams: [2, 2] }));
     sessionStorage.setItem('seeded', '1');
   });
-  await page.goto(`${CLIENT}/?test=1`);
-  await page.waitForFunction(() => window.__front, null, { timeout: T(30000) });
-  await page.evaluate(() => document.getElementById('nav-play').click());
-  await page.waitForSelector('#setup-advanced-head', { timeout: T(30000) });
-  await page.click('#setup-advanced-head');
-  await page.waitForSelector('#setup-arsenal', { timeout: T(5000) });
-  await page.evaluate(() => {
-    const d = document.getElementById('setup-arsenal');
-    if (!d.open) d.querySelector('summary').click();
-  });
-  await page.waitForSelector('#arcade-weapons', { state: 'visible', timeout: T(5000) });
-  const offered = await page.evaluate(() => ({
-    options: [...document.querySelectorAll('#arcade-weapons option')].map((o) => o.value),
-    first: document.querySelector('#arcade-weapons option')?.textContent,
-    value: document.getElementById('arcade-weapons').value,
-    fact: document.getElementById('setup-weapons-fact')?.textContent ?? null,
-  }));
-  check(offered.options.join() === 'map,standard,military,scifi,medieval,chaos,mixed' && offered.first === 'Map default (Standard)' && offered.value === 'map' && offered.fact === null, `Match setup → Weapons offers the map's default, named, and every set (${JSON.stringify(offered)})`);
-  await page.selectOption('#arcade-weapons', 'military');
-  await page.waitForFunction(() => document.getElementById('setup-weapons-fact')?.textContent === 'Military weapons', null, { timeout: T(5000) }).catch(() => {});
-  const picked = await page.evaluate(() => ({ saved: JSON.parse(localStorage.getItem('cs.arcade')).weaponSet, fact: document.getElementById('setup-weapons-fact')?.textContent, chips: document.getElementById('setup-rule-chips')?.textContent ?? '', value: document.getElementById('arcade-weapons')?.value }));
-  check(picked.saved === 'military' && picked.value === 'military' && picked.fact === 'Military weapons' && /Military weapons/.test(picked.chips), `picking Military saves it with the setup, and the setup says so (${JSON.stringify(picked)})`);
-  if (shots) {
-    // The choice drawn open (a list showing every option) for the picture, then back to a drop-down.
-    await page.evaluate(() => {
-      const s = document.getElementById('arcade-weapons');
-      s.size = s.options.length;
-      s.scrollIntoView({ block: 'center' });
+  /** Play → Match setup, Advanced rules → Weapons, pickups & vehicles open: the Weapon set row in view. */
+  const openWeapons = async (p) => {
+    await p.goto(`${CLIENT}/?test=1`);
+    await p.waitForFunction(() => window.__front, null, { timeout: T(30000) });
+    await p.evaluate(() => document.getElementById('nav-play').click());
+    await p.waitForSelector('#setup-advanced-head', { timeout: T(30000) });
+    await p.click('#setup-advanced-head');
+    await p.waitForSelector('#setup-arsenal', { timeout: T(5000) });
+    await p.evaluate(() => {
+      const d = document.getElementById('setup-arsenal');
+      if (!d.open) d.querySelector('summary').click();
     });
-    await page.screenshot({ path: `${shots}/weapon-sets-setup.png` });
-    await page.evaluate(() => (document.getElementById('arcade-weapons').size = 0));
-  }
+    await p.waitForSelector('#arcade-weapons', { state: 'visible', timeout: T(5000) });
+  };
+  const setupState = (p) =>
+    p.evaluate(() => ({
+      options: [...document.querySelectorAll('#arcade-weapons option')].map((o) => o.value),
+      first: document.querySelector('#arcade-weapons option')?.textContent,
+      value: document.getElementById('arcade-weapons')?.value,
+      fact: document.getElementById('setup-weapons-fact')?.textContent ?? null,
+      chips: document.getElementById('setup-rule-chips')?.textContent ?? '',
+      saved: JSON.parse(localStorage.getItem('cs.arcade') ?? '{}').weaponSet ?? null,
+    }));
+  const started = (p) => p.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown', null, { timeout: T(60000) });
+  /** What you carry now, and the random gun this life rolls (Chaos, Mixed bag). */
+  const myKit = (p) => sim(p, (m, me, a, mod) => ({ set: m.weaponSet?.id, life: me.spawns, weapons: [...me.weapons.values()].map((w) => w.def.id), held: me.weapons.get(me.current)?.def.id, grenade: me.throwable?.kind, rolled: mod.randomGunFor(m.weaponSet, m.seed, me.slot, me.spawns) }));
+  /** Die and come straight back: the new life's loadout. */
+  const respawn = async (p) => {
+    const life = await sim(p, (m, me) => me.spawns ?? 0);
+    await sim(p, (m, me) => {
+      m.kill(me, null, 'core.respawn');
+      me.respawnTick = m.tick;
+    });
+    await simWait(p, (m, me, n) => me.alive && (me.spawns ?? 0) > n, life, T(15000));
+    return myKit(p);
+  };
 
-  // A Military match: a knife, a pistol and an assault rifle in hand; the bots too (a sniper a marksman rifle).
+  // The map's own default: Military.
+  await openWeapons(page);
+  const offered = await setupState(page);
+  check(offered.options.join() === 'map,standard,military,scifi,medieval,chaos,mixed' && offered.first === 'Map default (Military)' && offered.value === 'map' && offered.fact === 'Military weapons' && offered.saved === null, `Match setup → Weapons offers every set and the map's default, named, which the setup's facts show (${JSON.stringify(offered)})`);
   const MILITARY = ['core.rifle', 'core.burst_rifle', 'core.smg', 'core.machine_pistol', 'core.lmg', 'core.shotgun', 'core.auto_shotgun', 'core.sawed_off', 'core.sniper', 'core.marksman', 'core.launcher', 'core.rockets', 'core.pistol', 'core.revolver', 'core.hand_cannon'];
   const SCIFI = ['core.plasma', 'core.laser_rifle', 'core.railgun', 'core.pulse_pistol', 'core.arc_caster', 'core.disc_launcher', 'core.swarm', 'core.guided'];
   await page.click('#arcade-start');
-  await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown', null, { timeout: T(60000) });
+  await started(page);
   const kit = await sim(page, (m, me, ids) => ({
     set: m.weaponSet?.id,
     weapons: [...me.weapons.values()].map((w) => w.def.id),
@@ -3081,7 +3089,7 @@ async function weaponsetsFlow(browser) {
     pickups: m.pickups.filter((p) => p.item.effect.kind === 'weapon').map((p) => p.item.effect.weapon),
     off: m.pickups.filter((p) => p.item.effect.kind === 'weapon' && !ids.includes(p.item.effect.weapon)).map((p) => p.item.id),
   }), MILITARY);
-  check(kit.set === 'military' && kit.weapons.join() === 'core.knife,core.pistol,core.rifle' && kit.held === 'core.rifle' && kit.grenade === 'frag', `a Military match spawns you with a knife, a pistol and an assault rifle in hand, and a frag (${JSON.stringify({ set: kit.set, weapons: kit.weapons, held: kit.held, grenade: kit.grenade })})`);
+  check(kit.set === 'military' && kit.weapons.join() === 'core.knife,core.pistol,core.rifle' && kit.held === 'core.rifle' && kit.grenade === 'frag', `Sandgate's Military match spawns you with a knife, a pistol and an assault rifle in hand, and a frag (${JSON.stringify({ set: kit.set, weapons: kit.weapons, held: kit.held, grenade: kit.grenade })})`);
   check(kit.bots.length === 3 && kit.bots.every((b) => /core\.pistol/.test(b) && /core\.(rifle|marksman)/.test(b)), `the bots spawn with a pistol and an assault rifle too (${kit.bots.join(' | ')})`);
   check(kit.pickups.length > 0 && kit.off.length === 0, `its weapon pickups hold Military weapons (${kit.pickups.join(', ')}; not: ${kit.off.join(', ') || 'none'})`);
   const hud = await page.evaluate(() => ({ n: window.__cs.local.inventory.size, held: window.__cs.local.held }));
@@ -3092,50 +3100,52 @@ async function weaponsetsFlow(browser) {
   await page.evaluate(() => (document.getElementById('host-controls').open = true));
   await page.waitForSelector('#hc-weapons', { state: 'attached', timeout: T(10000) });
   const tab = await page.evaluate(() => ({ value: document.getElementById('hc-weapons').value, first: document.querySelector('#hc-weapons option')?.textContent, n: document.querySelectorAll('#hc-weapons option').length }));
-  check(tab.value === 'military' && tab.first === 'Map default (Standard)' && tab.n === 7, `the Host tab offers the weapon set, Military on (${JSON.stringify(tab)})`);
-  const switchTo = (id) =>
-    page.evaluate((v) => {
-      const s = document.getElementById('hc-weapons');
-      s.value = v;
-      s.dispatchEvent(new Event('change'));
-      document.getElementById('hc-apply')?.click();
-    }, id);
-  await switchTo('scifi');
+  check(tab.value === 'map' && tab.first === 'Map default (Military)' && tab.n === 7, `the Host tab offers the weapon set, on the map's default (${JSON.stringify(tab)})`);
+  await page.evaluate(() => {
+    const s = document.getElementById('hc-weapons');
+    s.value = 'scifi';
+    s.dispatchEvent(new Event('change'));
+    document.getElementById('hc-apply')?.click();
+  });
   const swapped = await simWait(page, (m, _me, ids) => m.weaponSet?.id === 'scifi' && m.pickups.filter((p) => p.item.effect.kind === 'weapon').every((p) => ids.includes(p.item.effect.weapon)), SCIFI, T(10000));
   check(swapped, 'the Host tab switches to Sci-fi at once: every weapon pickup holds a Sci-fi weapon');
-  // The next life: Sci-fi's loadout.
-  const respawn = async () => {
-    const life = await sim(page, (m, me) => me.spawns ?? 0);
-    await sim(page, (m, me) => {
-      m.kill(me, null, 'core.respawn');
-      me.respawnTick = m.tick;
-    });
-    await simWait(page, (m, me, n) => me.alive && (me.spawns ?? 0) > n, life, T(15000));
-    return sim(page, (m, me, a, mod) => ({ life: me.spawns, weapons: [...me.weapons.values()].map((w) => w.def.id), held: me.weapons.get(me.current)?.def.id, grenade: me.throwable?.kind, rolled: mod.randomGunFor(m.weaponSet, m.seed, me.slot, me.spawns), inSet: mod.setHas(m.weaponSet, me.weapons.get(me.current)?.def.id) }));
-  };
-  const sci = await respawn();
+  const sci = await respawn(page);
   check(sci.weapons.join() === 'core.knife,core.pulse_pistol,core.plasma' && sci.grenade === 'sticky', `your next life spawns with Sci-fi's knife, pulse pistol and plasma rifle, and a sticky grenade (${JSON.stringify(sci)})`);
+  await page.close();
 
-  // Chaos: a new oddball each life (the roll of the seed, your slot and the life), and the sheep.
-  await switchTo('chaos');
-  await simWait(page, (m) => m.weaponSet?.id === 'chaos', null, T(10000));
-  const lives = [];
-  for (let i = 0; i < 6; i++) lives.push(await respawn());
-  const mains = await sim(page, (m, _me, _a, mod) => mod.setMainGuns(m.weaponSet).map((w) => w.id));
-  check(lives.every((l) => l.weapons[0] === 'core.knife' && l.weapons[1] === 'core.pistol' && l.weapons.length === 3 && mains.includes(l.held) && l.held === l.rolled && l.grenade === 'sheep'), `Chaos spawns you with a knife, a pistol and the life's oddball, and a sheep (${lives.map((l) => `life ${l.life}: ${l.held}${l.held === l.rolled ? '' : ` (rolled ${l.rolled})`}`).join(', ')})`);
-  check(new Set(lives.map((l) => l.held)).size >= 3, `the spawn gun changes from life to life (${lives.map((l) => l.held.replace('core.', '')).join(', ')})`);
+  // Match setup's own choice, Chaos (the setup saved in this browser; a new page).
+  const page2 = await ctx.newPage();
+  page2.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
+  await openWeapons(page2);
+  await page2.selectOption('#arcade-weapons', 'chaos');
+  await page2.waitForFunction(() => document.getElementById('setup-weapons-fact')?.textContent === 'Chaos weapons', null, { timeout: T(5000) }).catch(() => {});
+  const picked = await setupState(page2);
+  check(picked.saved === 'chaos' && picked.value === 'chaos' && picked.fact === 'Chaos weapons' && /Chaos weapons/.test(picked.chips), `picking Chaos saves it with the setup, and the setup says so (${JSON.stringify(picked)})`);
   if (shots) {
-    // Your own first-person oddball in the picture: the page draws the held gun once the snapshot has it.
-    await page.waitForFunction((code) => window.__cs.local.held === code, await sim(page, (m, me) => me.current), { timeout: T(10000) }).catch(() => {});
-    await page.evaluate(() => {
-      document.getElementById('host-controls').open = false;
-      document.getElementById('pause').hidden = true;
+    // The choice drawn open (a list showing every option) for the picture, then back to a drop-down.
+    await page2.evaluate(() => {
+      const s = document.getElementById('arcade-weapons');
+      s.size = s.options.length;
+      s.scrollIntoView({ block: 'center' });
     });
-    await frames(page, 20);
-    await page.screenshot({ path: `${shots}/weapon-sets-chaos-spawn.png` });
+    await page2.screenshot({ path: `${shots}/weapon-sets-setup.png` });
+    await page2.evaluate(() => (document.getElementById('arcade-weapons').size = 0));
+  }
+  await page2.click('#arcade-start');
+  await started(page2);
+  const lives = [await myKit(page2)];
+  for (let i = 0; i < 5; i++) lives.push(await respawn(page2));
+  const mains = await sim(page2, (m, _me, _a, mod) => mod.setMainGuns(m.weaponSet).map((w) => w.id));
+  check(lives[0].set === 'chaos' && lives.every((l) => l.weapons[0] === 'core.knife' && l.weapons[1] === 'core.pistol' && l.weapons.length === 3 && mains.includes(l.held) && l.held === l.rolled && l.grenade === 'sheep'), `a Chaos match spawns you with a knife, a pistol and the life's oddball, and a sheep (${lives.map((l) => `life ${l.life}: ${l.held}${l.held === l.rolled ? '' : ` (rolled ${l.rolled})`}`).join(', ')})`);
+  check(new Set(lives.map((l) => l.held)).size >= 3, `the spawn gun changes from life to life (${lives.map((l) => l.held?.replace('core.', '')).join(', ')})`);
+  if (shots) {
+    // Your own oddball in the picture: the page draws the held gun once the snapshot has it.
+    await page2.waitForFunction((code) => window.__cs.local.held === code, await sim(page2, (m, me) => me.current), { timeout: T(10000) }).catch(() => {});
+    await frames(page2, 20);
+    await page2.screenshot({ path: `${shots}/weapon-sets-chaos-spawn.png` });
   }
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
-  await page.context().close();
+  await ctx.close();
 
   // MapMaker: Map properties → Weapon set, saved in the map; TEST plays it.
   const ed = await (await browser.newContext({ viewport: { width: 1400, height: 820 } })).newPage();
@@ -3149,9 +3159,10 @@ async function weaponsetsFlow(browser) {
   const field = await ed.evaluate(() => ({ value: document.getElementById('ed-prop-weapons').value, options: [...document.querySelectorAll('#ed-prop-weapons option')].map((o) => o.value), set: window.__editor.doc.weaponSet ?? null }));
   check(field.value === 'standard' && field.options.join() === 'standard,military,scifi,medieval,chaos,mixed' && field.set === null, `MapMaker's Map properties offer a weapon set, Standard by default (${JSON.stringify(field)})`);
   await ed.selectOption('#ed-prop-weapons', 'scifi');
-  await ed.waitForFunction(() => window.__editor.doc.weaponSet === 'scifi', null, { timeout: T(5000) }).catch(() => {});
-  const chosen = await ed.evaluate(() => ({ set: window.__editor.doc.weaponSet, hint: document.getElementById('ed-prop-weapons-hint')?.textContent ?? '' }));
-  check(chosen.set === 'scifi' && /pulse pistol/.test(chosen.hint), `picking Sci-fi sets the map's default (${JSON.stringify(chosen)})`);
+  // (The inspector redraws on MapMaker's next frame: slow under software rendering.)
+  await ed.waitForFunction(() => window.__editor.doc.weaponSet === 'scifi' && /pulse pistol/.test(document.getElementById('ed-prop-weapons-hint')?.textContent ?? ''), null, { timeout: T(15000) }).catch(() => {});
+  const chosen = await ed.evaluate(() => ({ set: window.__editor.doc.weaponSet, value: document.getElementById('ed-prop-weapons')?.value, hint: document.getElementById('ed-prop-weapons-hint')?.textContent ?? '' }));
+  check(chosen.set === 'scifi' && chosen.value === 'scifi' && /pulse pistol/.test(chosen.hint), `picking Sci-fi sets the map's default (${JSON.stringify(chosen)})`);
   if (shots) {
     await ed.evaluate(() => document.getElementById('ed-prop-weapons')?.scrollIntoView({ block: 'center' }));
     await ed.screenshot({ path: `${shots}/weapon-sets-mapmaker.png` });
