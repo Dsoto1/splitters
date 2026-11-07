@@ -2478,6 +2478,87 @@ async function physicsfxFlow(browser) {
   check(mass.killed > 0 && down && massStats.awakeBodies <= 300, `a mass casualty (${mass.killed} killed by one blast) goes down without stalling: ${(Date.now() - t0) / 1000} s, ${JSON.stringify(massStats)}${notDown.length ? ` not down: ${JSON.stringify(notDown)}` : ''}`);
   const still = flung.filter((b) => b.tier === 'posed' || b.outward < 1 || b.rose < 0.3);
   check(mass.onRing >= Math.max(1, mass.killed - 1) && flung.length === mass.onRing && still.length === 0, `every body the blast killed in view is thrown out and up by it (${flung.length} of ${mass.killed} tracked; ${still.length ? `not thrown: ${JSON.stringify(still)}` : `out ${Math.min(...flung.map((b) => b.outward))}-${Math.max(...flung.map((b) => b.outward))} m, up ${Math.min(...flung.map((b) => b.rose))}-${Math.max(...flung.map((b) => b.rose))} m`})`);
+  // A far death (frozen characters, owner 2026-11-07): a character 22 m off is animated in a smoothed band (performance
+  // round 4); killed there, its body must be drawn as its ragdoll lies, not as its last living poses (the smoothing
+  // stayed on after the view stopped stepping it, and the dead stood mid-stride where they died, in the air if they
+  // died there). Each corpse's drawn skin is checked against its bones (the skin matrix each bone's pose makes).
+  const farSlot = await page.evaluate(() => {
+    const m = window.__match;
+    const v = window.__cs.view;
+    const me = m.slots[window.__cs.slot];
+    const bot = m.combatants().find((c) => c !== me && c.alive && !c.mount && v.avatars.get(c.slot)?.anim?.ch);
+    if (!bot) return null;
+    const f = v.camera.getForwardRay(1).direction;
+    const len = Math.hypot(f.x, f.z) || 1;
+    const x = me.move.pos.x + (f.x / len) * 22;
+    const z = me.move.pos.z + (f.z / len) * 22;
+    const hit = v.raycastLevel({ x, y: me.move.pos.y + 30, z }, { x: 0, y: -1, z: 0 }, 80);
+    const spot = { x, y: hit ? me.move.pos.y + 30 - hit.dist + 0.05 : me.move.pos.y, z };
+    if (bot.bot && !bot.queue.massHeld) {
+      bot.queue.push = (...inputs) => Array.prototype.push.apply(bot.queue, inputs.map((i) => ({ ...i, forward: 0, right: 0, buttons: 0 })));
+      bot.queue.massHeld = true;
+    }
+    clearInterval(window.__farHold);
+    window.__farHold = setInterval(() => {
+      if (!bot.alive) return;
+      bot.move = { ...bot.move, pos: { ...spot }, velY: 0, grounded: true };
+      bot.health = Math.max(bot.health, 100);
+    }, 5);
+    window.__farBot = bot;
+    return bot.slot;
+  });
+  // Drawn there and smoothed (its animation stepped below every frame, the frames between blended).
+  const farReady = farSlot !== null && (await page.waitForFunction((s) => {
+    const a = window.__cs.view.avatars.get(s);
+    const at = window.__farBot.move.pos;
+    return !!a?.anim?.smoothing && Math.hypot(a.root.position.x - at.x, a.root.position.z - at.z) < 0.3;
+  }, farSlot, { timeout: T(15000) }).then(() => true, () => false));
+  const farBody = await page.evaluate(async ({ s, frames }) => {
+    const m = window.__match;
+    const v = window.__cs.view;
+    clearInterval(window.__farHold);
+    // How far the drawn skin is from the bones' own pose (the largest difference in any skin matrix).
+    const skinError = (a) => {
+      let worst = 0;
+      for (const mesh of a.anim.ch.meshes) {
+        const sk = mesh.skeleton;
+        const drawn = sk?._transformMatrices;
+        if (!sk || !drawn || sk.needInitialSkinMatrix) continue;
+        sk.bones.forEach((b, i) => {
+          if (b._index === -1) return;
+          const want = b.getAbsoluteInverseBindMatrix().multiply(b.getFinalMatrix()).m;
+          const at = (b._index ?? i) * 16;
+          for (let k = 0; k < 16; k++) worst = Math.max(worst, Math.abs(drawn[at + k] - want[k]));
+        });
+      }
+      return worst;
+    };
+    m.splash({ ...window.__farBot.move.pos, y: window.__farBot.move.pos.y + 0.5 }, 3, 0, 0, null, 'core.rockets', 1, 6);
+    m.kill(window.__farBot, null, 'core.rockets');
+    window.__farBot.respawnTick = m.tick + 60 * 60;
+    const out = { errors: [], smoothing: [], tier: null, frames: 0 };
+    for (let n = 0; n < 400 && out.frames < frames; n++) {
+      await new Promise((r) => requestAnimationFrame(() => setTimeout(r, 0)));
+      const c = v.corpses.find((x) => x.slot === s);
+      if (!c?.a.anim?.ch) continue;
+      out.frames++;
+      out.tier ??= c.a.ragdoll?.tier ?? 'none';
+      out.errors.push(+skinError(c.a).toFixed(3));
+      out.smoothing.push(!!c.a.anim.smoothing);
+    }
+    return out;
+  }, { s: farSlot, frames: 20 });
+  await page.evaluate(() => {
+    const b = window.__farBot;
+    if (!b) return;
+    b.respawnTick = window.__match.tick;
+    if (b.queue?.massHeld) {
+      delete b.queue.push;
+      delete b.queue.massHeld;
+    }
+  });
+  const farWorst = Math.max(0, ...farBody.errors);
+  check(farReady && farBody.frames >= 10 && farWorst < 0.01 && !farBody.smoothing.some(Boolean), `a body that dies 22 m off, its animation smoothed, is drawn as its ragdoll lies, not standing in its last living pose (${farReady ? 'smoothed before' : 'never smoothed'}; ${farBody.tier} ragdoll, ${farBody.frames} frames, skin off its bones by ${farWorst} at most${farBody.smoothing.some(Boolean) ? ', still smoothed' : ''})`);
   // Debris chunks are real bodies: they land and rest on the ground (once the effects world is up).
   await page.waitForFunction(() => !!window.__cs.view.physics, null, { timeout: T(3000) }).catch(() => {});
   // Only this burst's chunks are checked: the mass blast above can set off more (a vehicle in the blast burns and blows
@@ -2687,6 +2768,65 @@ async function teamsFlow(browser) {
   await setupLayoutFlow(browser);
   await setupLimitsFlow(browser);
   await spectateStartFlow(browser);
+  await friendlyFireChecks(browser);
+}
+
+/**
+ * Friendly fire (owner, 2026-11-07: turned on, it did nothing): set in Match setup, it reaches the match, and your
+ * rounds hurt a teammate in front of you; with it off (the default) the same rounds pass through them.
+ */
+async function friendlyFireChecks(browser) {
+  const out = {};
+  for (const ff of ['on', 'off']) {
+    const page = await (await browser.newContext({ viewport: { width: 960, height: 540 } })).newPage();
+    const errors = [];
+    page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
+    await page.addInitScript((on) => localStorage.setItem('cs.arcade', JSON.stringify({ map: 'sandgate', mode: 'core.tdm', bots: 3, skill: 'easy', scoreLimit: 40, minutes: 10, ...(on ? { friendlyFire: 'on' } : {}) })), ff === 'on');
+    await page.goto(CLIENT);
+    await page.click('#nav-play');
+    await page.click('#arcade-start');
+    await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() === 'playing', null, { timeout: T(60000) });
+    // A teammate held 4 m in front of you, three rounds of your gun fired straight at their chest.
+    const shot = await sim(page, (m, me) => {
+      const mate = m.combatants().find((c) => c !== me && c.alive && c.faction === me.faction && !c.mount);
+      if (!mate) return { rule: m.rules.friendlyFire ?? 'off', mate: false, tick: m.tick };
+      const at = { x: me.move.pos.x + Math.sin(me.yaw) * 4, y: me.move.pos.y, z: me.move.pos.z + Math.cos(me.yaw) * 4 };
+      if (mate.bot && !mate.queue.ffHeld) {
+        mate.queue.push = (...inputs) => Array.prototype.push.apply(mate.queue, inputs.map((i) => ({ ...i, forward: 0, right: 0, buttons: 0 })));
+        mate.queue.ffHeld = true;
+      }
+      mate.move = { ...mate.move, pos: at, velY: 0, vx: 0, vz: 0, grounded: true };
+      mate.health = mate.maxHealth;
+      mate.armor = 0;
+      mate.invulnerable = false;
+      globalThis.__ffMate = mate;
+      const eye = { x: me.move.pos.x, y: me.move.pos.y + 1.6, z: me.move.pos.z };
+      const chest = { x: at.x, y: at.y + 1.2, z: at.z };
+      const clear = m.physics.lineOfSight(eye, chest);
+      me.pitch = Math.atan2(chest.y - eye.y, 4);
+      const gun = [...me.weapons.values()].map((w) => w.def).find((d) => d.kind === 'hitscan' && d.damage > 0);
+      for (let i = 0; i < 3; i++) m.fireNow(me, { ...gun, alt: undefined }, 0);
+      return { rule: m.rules.friendlyFire ?? 'off', mate: true, gun: gun?.id, clear, tick: m.tick };
+    });
+    // Ballistic rounds fly a tick or two: a third of a second of match time is plenty.
+    await simWait(page, (m, me, t) => m.tick > t + 20, shot.tick, T(10000));
+    const after = await sim(page, () => {
+      const mate = globalThis.__ffMate;
+      if (!mate) return null;
+      const r = { hurt: mate.maxHealth - (mate.alive ? mate.health : 0) };
+      if (mate.queue?.ffHeld) {
+        delete mate.queue.push;
+        delete mate.queue.ffHeld;
+      }
+      return r;
+    });
+    out[ff] = { ...shot, hurt: after?.hurt ?? null, errors: errors.join('; ') };
+    await page.context().close();
+  }
+  check(out.on.rule === 'on' && out.off.rule === 'off', `Match setup's friendly fire reaches the match (on: ${out.on.rule}, off: ${out.off.rule})`);
+  check(out.on.mate && out.on.clear && out.on.hurt > 0, `friendly fire on: your rounds hurt a teammate in front of you (${JSON.stringify(out.on)})`);
+  check(out.off.mate && out.off.clear && out.off.hurt === 0, `friendly fire off: your rounds pass through a teammate unhurt (${JSON.stringify(out.off)})`);
+  check(!out.on.errors && !out.off.errors, `no page errors in the friendly fire matches (${out.on.errors}${out.off.errors})`);
 }
 
 /**
