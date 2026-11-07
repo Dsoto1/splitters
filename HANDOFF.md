@@ -2758,10 +2758,16 @@ created/popularity, etc. … we can add this after all this is completed".
   count only plays and time there, never kills.
 - **Cost:** about 1 KB per player, kept with the profile on the hub. No new service.
 
-**To decide with the owner when it starts:**
-- which numbers count from player-hosted matches;
-- whether bot kills count;
-- whether profiles are public to everyone or only signed-in players.
+**The owner's answers (2026-11-07):**
+- **Two kinds of stats.**
+  - **Official:** from official and dedicated servers, sent signed. Only these are the profile's real numbers: the
+    career tiles, level and rank.
+  - **Casual:** from matches players host themselves. They don't count; they're shown apart, labelled "Casual".
+  - The owner: "stats from matches they host themselves do not count. we could just track official kills vs casual
+    kills".
+- **Bot kills count separately:** player kills and bot kills are their own numbers, in both Official and Casual.
+- **Public or private:** a signed-in player turns their profile public or private in their profile settings. Private
+  shows only the username to others.
 
 ### Queued (owner-approved, 2026-11-05): community maps
 Plan in docs/COMMUNITY_MAPS.md:
