@@ -413,14 +413,16 @@ describe('Breakthrough', () => {
     expect(auto.breakthroughSwap).toBeUndefined();
   });
 
-  it("bots play its playbook: the team brain's brief and trips, the defenders' posts and early fall-back", () => {
+  it("bots play its playbook: the team brain's brief and trips, the defenders' posts and shares, early fall-back, defusing", () => {
     const map = range();
-    // The beach's own ground (z 0 to 28): a machine gun, a sandbag wall and a raised platform (high ground).
+    // By the beach (zones at z 16): a machine gun, a sandbag wall and a raised platform (high ground).
     map.entities.push({ id: 'gun', kind: 'mount', model: 'turret_mg', position: [8, 0, 20], yaw: Math.PI, faction: null, respawnSeconds: null } as Entity);
     map.entities.push({ id: 'bags', kind: 'prop', model: 'prop.sandbag_wall', position: [16, 0, 10], yaw: 0, scale: 1 } as Entity);
     map.classicStructure.tiles.push({ id: 'deck', tile: 'core.platform', x: 0, y: 2, z: 1, rotation: 0 });
-    const match = new Match(map, { ...DEFAULT_RULES['core.breakthrough'], teamSizes: [4, 4] });
-    const people = Array.from({ length: 8 }, (_, i) => match.addHuman(`p${i}`)!);
+    const match = new Match(map, { ...DEFAULT_RULES['core.breakthrough'], teamSizes: [4, 4] }, 3);
+    for (let i = 0; i < 8; i++) match.addBot(`bot${i}`, CORE_BOT_PROFILES[i % CORE_BOT_PROFILES.length]!, BOT_DIFFICULTIES.normal);
+    const people = match.combatants();
+    for (const c of people) c.invulnerable = true;
     const mode = match.mode as unknown as BreakthroughMode & { botBrief(t: string): SideBrief | null; botTrips(): readonly BotTripSpec[] };
     for (let i = 0; i < 5; i++) match.step();
     const [teamA, teamB] = match.teams!.map((t) => t.id);
@@ -435,9 +437,12 @@ describe('Breakthrough', () => {
     expect(brief.attack).toEqual({ pos: { x: 2, y: 0, z: 16 }, stage: false });
     expect(mode.botBrief(mode.defenders)!.attack).toBeNull();
     const att = people.filter((c) => c.faction === mode.attackers);
+    // (The teams alternate slots: the defenders' are all odd. Their shares go by their place among them.)
     const def = people.filter((c) => c.faction === mode.defenders).sort((a, b) => a.slot - b.slot);
-    for (const c of [...att, ...def]) c.move = { pos: { x: 8, y: 0, z: 74 }, velY: 0, grounded: true };
-    def[0]!.move = { pos: { x: 2, y: 0, z: 16 }, velY: 0, grounded: true };
+    expect(def.every((c) => c.slot % 2 === 1)).toBe(true);
+    const put = (c: Combatant, x: number, z: number) => (c.move = { pos: { x, y: 0, z }, velY: 0, grounded: true });
+    for (const c of people) put(c, 8, 74);
+    put(def[0]!, 2, 16);
     match.step();
     expect(mode.botBrief(mode.attackers)!.attack!.stage).toBe(true);
     // Attackers' goals: the brief's objective (one in three guards a burning charge when there is one).
@@ -447,9 +452,9 @@ describe('Breakthrough', () => {
     expect(beach.posts.guns).toEqual([{ x: 8, y: 0, z: 20 }]);
     expect(beach.posts.trenches).toEqual([{ x: 16, y: 0, z: 11.2 }]);
     expect(beach.posts.crest).toEqual([{ x: 0, y: 4, z: 16 }]);
-    // Defenders by the playbook's shares (by slot, of four: 1/8, 3/8, 5/8, 7/8): a quarter on the gun, the next 40 % at
-    // the sandbags, the last (past the crest's 15 %) holds the objectives. Each watches where the attackers come from.
-    def[0]!.move = { pos: { x: 8, y: 0, z: 74 }, velY: 0, grounded: true };
+    // Defenders by the playbook's shares (of four: 1/8, 3/8, 5/8, 7/8): a quarter on the gun, the next 40 % at the
+    // sandbags, the last (past the crest's 15 %) holds the objectives. Each watches where the attackers come from.
+    put(def[0]!, 8, 74);
     match.step();
     const goals = def.map((c) => mode.botGoal(c)!);
     expect(goals[0]!.pos).toEqual({ x: 8, y: 0, z: 20 });
@@ -457,14 +462,28 @@ describe('Breakthrough', () => {
     expect(goals[2]!.pos).toEqual({ x: 16, y: 0, z: 11.2 });
     expect(goals[3]!.pos.z).toBe(16);
     expect(goals.every((g) => g.watch && g.watch.z === 0)).toBe(true);
-    // Early fall-back: once the beach is past half taken, the playbook's share (here the first of four) goes to the guns.
+    // Early fall-back: once the beach is past half taken, the front of the trenches' share (here the second of four)
+    // goes to the next line; the gunner stays on its gun.
     mode.objectives.find((o) => o.label === 'A1')!.state = BT_OBJ_DONE;
     match.step();
-    expect(mode.botGoal(def[0]!)!.pos.z).toBe(20);
+    expect(mode.botGoal(def[1]!)!.pos.z).toBe(11.2);
     mode.objectives.find((o) => o.label === 'A2')!.progress = 0.3;
     match.step();
-    expect(mode.botGoal(def[0]!)!.pos.z).toBe(42);
-    expect(mode.botGoal(def[1]!)!.pos.z).not.toBe(42);
+    expect(mode.botGoal(def[1]!)!.pos.z).toBe(42);
+    expect(def.filter((c) => c !== def[1]).map((c) => mode.botGoal(c)!.pos.z)).toEqual([20, 11.2, 16]);
+    // The guns: a burning charge draws all but one in three of the defenders off their posts to defuse it.
+    mode.objectives.find((o) => o.label === 'A2')!.state = BT_OBJ_DONE;
+    for (const c of people) put(c, 8, 74);
+    match.step();
+    expect(mode.active).toBe(1);
+    const b1 = mode.objectives.find((o) => o.label === 'B1')!;
+    b1.state = BT_OBJ_PLANTED;
+    b1.blowAt = match.tick + 20 * TICKS;
+    match.step();
+    const rush = def.map((c) => mode.botGoal(c)!);
+    expect(rush.map((g) => g.pos.z === 42 && g.pos.x === 0 && !!g.push)).toEqual([true, true, false, true]);
+    // ...and one in three attackers guards it, the rest go for the next target.
+    expect(att.map((c) => mode.botGoal(c)!.pos.x)).toEqual([0, 8, 8, 0]);
     match.destroy();
   });
 
