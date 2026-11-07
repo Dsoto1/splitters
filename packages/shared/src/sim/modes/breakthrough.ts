@@ -45,12 +45,13 @@ const CREST_APART = 6;
 const CREST_SPOTS = 6;
 /**
  * The attackers' objective is the least defended of the sector's (the fewest defenders within this of it, m), kept
- * until it is taken or planted, and looked at again this often (s) while no attacker is on it yet: it moves to
- * another only with at least FOCUS_MARGIN fewer defenders (a long walk between two objectives isn't thrown away for one).
+ * until it is taken or planted, and looked at again this often (s) while no attacker is on it yet: it moves to one
+ * with fewer defenders, or, more than FOCUS_NEAR away (m), with at least two fewer (a long walk between two
+ * objectives isn't thrown away for one defender).
  */
 const FOCUS_GUARD = 15;
 const FOCUS_SECONDS = 20;
-const FOCUS_MARGIN = 2;
+const FOCUS_NEAR = 60;
 /** A defender's duty (the playbook's shares): a gun, the crest, falling back early, a trench or sandbags, the objectives. */
 type Duty = 'gun' | 'crest' | 'back' | 'trench' | 'hold';
 
@@ -405,8 +406,8 @@ export class BreakthroughMode implements ModeLogic {
   /**
    * The attackers' objective in the sector in play: of those still to take, the least defended (the fewest defenders
    * alive within FOCUS_GUARD of it, then the map's order), kept until it is taken or planted and looked at again every
-   * FOCUS_SECONDS while no attacker is on it (it changes only for one with FOCUS_MARGIN fewer defenders); else a burning
-   * charge.
+   * FOCUS_SECONDS while no attacker is on it (it changes only for one with fewer defenders, two fewer beyond FOCUS_NEAR);
+   * else a burning charge.
    */
   private attackFocus(): BtObjectiveRt | null {
     const s = this.sector;
@@ -428,7 +429,7 @@ export class BreakthroughMode implements ModeLogic {
         fewest = g;
       }
     }
-    if (f && guards(f) - fewest < FOCUS_MARGIN) best = f;
+    if (f && guards(f) - fewest < (horizontalDistance(f.pos, best.pos) > FOCUS_NEAR ? 2 : 1)) best = f;
     this.focus = best;
     this.focusAt = tick;
     return best;
