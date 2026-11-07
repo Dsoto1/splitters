@@ -32,8 +32,8 @@ made only on a commit that passed CI on a check branch.
   defenders man the guns, hold the trenches and sandbags, snipe from high ground over the objectives and hold the
   objectives, some falling back early to the next line, and rush to defuse. A bot at a target holds still, crouched,
   to plant or defuse (they used to fight on the move and seldom planted), and one caught behind the line runs for it.
-  Map format v28: older maps load unchanged, and a map stamped for release keeps its version (a format change alone
-  isn't a change to the map).
+  Map format v29 (after the weapon sets' v28): older maps load unchanged, and a map stamped for release keeps its
+  version (a format change alone isn't a change to the map).
 - **The Breakthrough Range** (test map, made in MapMaker): three sectors to try it on.
 
 **Iron Coast's fort and gatehouse** (docs/SET_PIECES_PLAN.md, "As built: part 4")

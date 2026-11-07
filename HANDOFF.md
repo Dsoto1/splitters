@@ -27,7 +27,7 @@ gets overloaded above that: local e2e times out and flakes). Prune landed worktr
   reworks batches 2–3, character fixes rounds 2–3 (see the entries below and CHANGELOG).
 
 <!-- breakthrough -->
-### Breakthrough mode, and Iron Coast's fort and gatehouse (`wip/breakthrough`, agents, 2026-11-07; from main 17d0e0a0, main 2c48debf (Bot AI Phase B parts 1 and 2) and d3830145 (weapons intake 11-06) merged in; CI on `check/breakthrough` (before the second merge: green at 077efcf4, run 42367283316); not landed)
+### Breakthrough mode, and Iron Coast's fort and gatehouse (`wip/breakthrough`, agents, 2026-11-07; from main 17d0e0a0, main 2c48debf (Bot AI Phase B parts 1 and 2), d3830145 (weapons intake 11-06) and 5087b0b6 (weapon sets) merged in; CI on `check/breakthrough` (before the second merge: green at 077efcf4, run 42367283316); not landed)
 The brief: docs/map-briefs/MAP_21_Iron_Coast.md ("Breakthrough mode", and "The mode as built"). Rules, settings, HUD,
 MapMaker steps: docs/GAME_MODES.md, "Breakthrough". The pieces: docs/SET_PIECES_PLAN.md, "As built: part 4".
 
@@ -40,7 +40,8 @@ MapMaker steps: docs/GAME_MODES.md, "Breakthrough". The pieces: docs/SET_PIECES_
   charge plays on); an optional second round with the sides swapped (`breakthroughSwap`; sectors, then time left).
   New ModeHost/ModeLogic hooks: `endRound(winner)`, `hurt`, `spawnSpots`, `spawnBeside`, `clock` (and `spawnPoints` are
   the match's own spawn spots now, so recent use counts).
-- **Map format v28** (`sector` and `objective` entities, a spawn's `sector` and `side`; v27 migrates unchanged).
+- **Map format v29** (`sector` and `objective` entities, a spawn's `sector` and `side`; v28, the weapon sets' format,
+  migrates unchanged; the Breakthrough Range and the coverage map re-exported through MapMaker at v29, Standard weapons).
   Validation: `map/validateBreakthrough.ts`. A format bump alone no longer changes a stamped map (`releaseCurrent`,
   map/identity.ts: the content hash at the stamp's own format version): the 24 maps stamped at v27 keep their
   versions and identity and show no "changed since it was exported" (CI's demo-map tests caught it).
@@ -71,7 +72,7 @@ MapMaker steps: docs/GAME_MODES.md, "Breakthrough". The pieces: docs/SET_PIECES_
 - **Maps** (MapMaker only, driven through its own palette, inspector, Import and Export): the **Breakthrough Range**
   (`maps/test_breakthrough.json`, testOnly) and the coverage map (one of each new piece, both set pieces).
 - **Tests**: `breakthrough.test.ts` (14: order, zones, targets, N of M, spawns and fall-back, pool, clock, final hold,
-  second round, format v28, validation, Match Setup, the playbook's brief, trips, posts, shares, fall-back, defusing,
+  second round, format v29, validation, Match Setup, the playbook's brief, trips, posts, shares, fall-back, defusing,
   holding still, determinism by seed), `setPieces4.test.ts`, the coverage map's test (new pieces, the mode); e2e flow
   `breakthrough` (main thread; `?test=1&testmap=test_breakthrough` puts the test map in the Arcade).
 
@@ -195,9 +196,8 @@ Weapon set list open: "Map default (Military)" on Sandgate, Chaos picked, its fa
 `weapon-sets-chaos-spawn.png` (a Chaos spawn: the goo gun in hand, a sheep to throw), `weapon-sets-mapmaker.png` (Map
 properties, Weapon set Sci-fi and its line).
 
-**For Breakthrough** (`wip/breakthrough`): both branches bump the map format to v28. Whichever lands second renumbers
-its own migration to the next version (its `MIGRATIONS` entry, `MAP_FORMAT_VERSION`, the schema comment) and re-exports
-the maps it touched through MapMaker; the stamp fix is the same text on both. Iron Coast's default set is **Military**
+**For Breakthrough** (`wip/breakthrough`): done there: Breakthrough's format is v29 after this v28 (its migration
+after this one), and the maps it touched are re-exported through MapMaker; the stamp fix is the same text on both. Iron Coast's default set is **Military**
 (owner): set it in MapMaker's Map properties when the map is built.
 
 **For the owner:**

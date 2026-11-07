@@ -319,7 +319,7 @@ Asymmetric and two teams (`sim/modes/breakthrough.ts`): the attackers push
 through the map's **sectors** in order, the defenders hold each line in
 turn. Made for Iron Coast (docs/map-briefs/MAP_21_Iron_Coast.md: the beach,
 the guns, the village, the fort). Needs sectors with objectives (map format
-v28).
+v29).
 
 - **Sectors.** A sector is a line across the map (MapMaker's **Sector**:
   its order, a name, its facing the way the attack pushes). Only the

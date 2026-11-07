@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 28,
+  "formatVersion": 29,
   "metadata": {
     "id": "test_coverage",
     "name": "Coverage Test",
