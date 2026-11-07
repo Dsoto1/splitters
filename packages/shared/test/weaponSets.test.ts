@@ -3,6 +3,7 @@
 // host's choice, and old maps and saved setups playing Standard.
 import { beforeAll, describe, expect, it } from 'vitest';
 import {
+  CLASS_DEFS,
   CORE_BOT_PROFILES,
   CORE_ITEMS,
   DEFAULT_COOP_RULES,
@@ -390,8 +391,8 @@ describe('in a match', () => {
     expect(weaponSetInPlay({ ...DEFAULT_DEATHMATCH_RULES, weapons: 'discs', weaponSet: 'chaos' }, map)).toBeNull();
     const classes = new Match(map, { ...DEFAULT_TDM_RULES, classes: true, scoreLimit: 0 }, 3);
     const c = classes.addHuman('c')!;
-    expect(carried(c)).not.toContain('core.pistol');
     expect(c.cls).toBeDefined();
+    expect(carried(c)).toEqual([...CLASS_DEFS[c.cls!.id].weapons]);
     expect(setHas(set('chaos'), (classes.pickups[0]!.item.effect as { weapon: string }).weapon)).toBe(true);
   });
 });
