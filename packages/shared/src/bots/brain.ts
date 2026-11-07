@@ -5,7 +5,7 @@ import type { Corridor } from '../nav/corridors.ts';
 import { LIFT_FLAG, PLAYER, STANCES, TICK_DT, TICK_RATE, type Stance } from '../sim/constants.ts';
 import { PICKUP_RADIUS, type ItemDefinition, type ItemEffect } from '../sim/items.ts';
 import { BUTTON_ALT, BUTTON_CROUCH, BUTTON_FIRE, BUTTON_MELEE, BUTTON_JUMP, BUTTON_PRONE, BUTTON_RELOAD, BUTTON_SPRINT, BUTTON_THROW, BUTTON_USE, BUTTON_ZOOM, type PlayerInput } from '../sim/movement.ts';
-import { THROWABLE_DEFS, getWeapon, weaponCode, type AltFire, type ThrowableKind, type WeaponDefinition } from '../sim/weapons.ts';
+import { THROWABLE_DEFS, getWeapon, weaponCode, type AltFire, type ProjectileSpec, type ThrowableKind, type WeaponDefinition } from '../sim/weapons.ts';
 import type { PhysicsWorld } from '../sim/physics.ts';
 import { segmentHitsAabb, type Aabb } from '../sim/scenarioDefs.ts';
 import { AimModel, type AimContext, type AimSolution, type AimTarget } from './aim.ts';
@@ -384,6 +384,12 @@ interface ThrowPlan {
   yaw: number;
   pitch: number;
   until: number;
+  /**
+   * Where it comes down, for a grenade whose blast reaches back to the thrower (the holy bomb's 9 m from a 9 m
+   * throw): once it's thrown, get clear of it before its fuse (`fuse` s) runs out.
+   */
+  clear?: Vec3;
+  fuse?: number;
 }
 
 /**
@@ -1302,7 +1308,7 @@ export class BotBrain {
   private pickupScore(view: BotWorldView, g: OrderGoal | null, underFire: boolean, hurt: boolean): number {
     this.gunNearby = null;
     if (underFire || g?.run || g?.order) return -Infinity;
-    // A sniper without a scoped gun goes for one first (weapon sets will give the role one: Match.sniperGun).
+    // A sniper without a scoped gun goes for one first (in Military and Sci-fi it spawns with one: Match.sniperGun).
     if (view.plan?.role === 'sniper' && !this.hasScope(view) && (!g || holdsPost(g))) {
       this.gunNearby = this.pickupGoal(view, 'weapon', SCOPE_DETOUR, (def) => !!def.view.zoomFov && !def.alt);
       if (this.gunNearby) return SCOPE_WEIGHT;
@@ -1834,6 +1840,9 @@ export class BotBrain {
         wantFire = false;
         if (Math.abs(angleDelta(this.yaw, this.throwPlan.yaw)) < 0.03 && Math.abs(this.pitch - this.throwPlan.pitch) < 0.03) {
           throwNow = true;
+          // A big blast landing close: run from where it comes down until it has gone off.
+          const away = this.throwPlan.clear;
+          if (away) this.dodge = { yaw: Math.atan2(me.pos.x - away.x, me.pos.z - away.z), until: tick + Math.round(TICK_RATE * ((this.throwPlan.fuse ?? 3) + 0.3)), sprint: true };
           this.throwPlan = null;
           this.nextThrow = tick + Math.round(TICK_RATE * (6 + this.rng() * 6));
           // Let it go off before walking in after it.
@@ -1967,6 +1976,10 @@ export class BotBrain {
       const near = !!target && horizontalDistance(me.pos, target.pos) < barrelReach(barrel) + 4;
       if (barrel.reload && !view.reloading && held.reserve > 0 && (held.alt ?? 0) < (barrel.max ?? 1) && (!target || (!near && !loaded))) buttons |= BUTTON_RELOAD;
     }
+    // An oil slicker: puddles round the target first, then its igniter (the second trigger) sets them alight, about
+    // once every three seconds of the fight (its puddles last far longer, so there is always some to light).
+    const igniter = held && held.def.projectile?.zone?.kind === 'oil' && held.def.alt?.projectile?.ignites ? held.def.alt : null;
+    if (igniter && pull && held!.mag >= igniter.cost && (tick + this.slot * 23) % (TICK_RATE * 3) >= TICK_RATE * 2.2) buttons = (buttons & ~BUTTON_FIRE) | BUTTON_ALT;
     // Dry up close: punch or kick (quick melee) rather than click an empty gun.
     if (target && held && held.def.kind !== 'melee' && !held.def.projectile?.disc && held.def.magazine > 0 && held.mag === 0 && held.reserve === 0 && horizontalDistance(me.pos, target.pos) < 2 && (tick + this.slot) % 12 === 0) {
       buttons |= BUTTON_MELEE;
@@ -2541,6 +2554,9 @@ export class BotBrain {
     if (this.rng() > 0.25 + this.tactical * 0.5) return;
     const me = view.self;
     const eye = { x: me.pos.x, y: me.pos.y + STANCES[me.stance ?? 0].eye, z: me.pos.z };
+    // A walker (the sheep) goes its own way: thrown short, it waddles the rest of the way to them.
+    const walking = THROWABLE_DEFS[view.throwable].projectile;
+    if (walking.walker) return this.considerWalker(view, target, eye, walking);
     let at: Vec3 | null = null;
     if (!target && this.lastKnown && tick - this.lastKnown.tick > TICK_RATE * 0.6 && tick - this.lastKnown.tick < TICK_RATE * 5) {
       const d = horizontalDistance(me.pos, this.lastKnown.pos);
@@ -2564,8 +2580,42 @@ export class BotBrain {
       this.nextThrow = tick + TICK_RATE;
       return;
     }
-    // Don't throw if it would land close to ourselves.
-    if (horizontalDistance(sol.impact, me.pos) < spec.splashRadius + 0.5) return;
+    // Don't throw if it would land close to ourselves; a big blast with a long fuse (the holy bomb: its 9 m blast is
+    // as far as it can be thrown) lands at least half its blast away, and the thrower then runs clear of it.
+    const near = horizontalDistance(sol.impact, me.pos);
+    if (near < spec.splashRadius + 0.5) {
+      if (spec.fuseSeconds < 2.5 || near < spec.splashRadius * 0.5) return;
+      this.throwPlan = { yaw: sol.yaw, pitch: sol.pitch, until: tick + TICK_RATE, clear: sol.impact, fuse: spec.fuseSeconds };
+      return;
+    }
+    this.throwPlan = { yaw: sol.yaw, pitch: sol.pitch, until: tick + TICK_RATE };
+  }
+
+  /**
+   * A walker (the sheep: it lands, waddles on the way it was thrown, hops over low things and goes off on the first
+   * enemy it meets) at an enemy in sight, or seen a moment ago, 6-20 m off across open ground: thrown short along the
+   * line to them (its slow throw carries 5-6 m), it walks the rest before its fuse runs out.
+   */
+  private considerWalker(view: BotWorldView, target: CombatantView | undefined, eye: Vec3, spec: ProjectileSpec): void {
+    const tick = view.tick;
+    const me = view.self;
+    const goal = target?.pos ?? (this.lastKnown && tick - this.lastKnown.tick < TICK_RATE * 3 ? this.lastKnown.pos : null);
+    if (!goal || !grenadeWorthIt(view.throwables ?? 0, !!target, this.tactical)) return;
+    const d = horizontalDistance(me.pos, goal);
+    if (d < 6 || d > 20 || Math.abs(goal.y - me.pos.y) > 1.2) return;
+    const reach = Math.min(d - 2, ((spec.speed * spec.speed) / spec.gravity) * 0.8);
+    if (reach < 2.5 || (d - reach) / spec.walker!.speed > spec.fuseSeconds - 1.5) return;
+    const land = { x: me.pos.x + ((goal.x - me.pos.x) / d) * reach, y: me.pos.y, z: me.pos.z + ((goal.z - me.pos.z) / d) * reach };
+    // Open ground the whole way: a knee-high line from where it lands to them (it turns at walls, round nothing).
+    if (!view.physics.lineOfSight({ x: land.x, y: land.y + 0.4, z: land.z }, { x: goal.x, y: goal.y + 0.4, z: goal.z })) {
+      this.nextThrow = tick + TICK_RATE;
+      return;
+    }
+    const sol = solveThrow(view.physics, eye, land, spec, 1.5);
+    if (!sol) {
+      this.nextThrow = tick + TICK_RATE;
+      return;
+    }
     this.throwPlan = { yaw: sol.yaw, pitch: sol.pitch, until: tick + TICK_RATE };
   }
 
