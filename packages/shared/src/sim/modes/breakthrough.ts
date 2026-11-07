@@ -193,6 +193,8 @@ export class BreakthroughMode implements ModeLogic {
   private readonly placeOf = new Map<number, { k: number; n: number }>();
   private readonly duty = new Map<number, { duty: Duty; j: number; a: number }>();
   private planTick = -1;
+  /** The sector the plan was made for: a sector that falls mid-tick plans again (a gun duty kept into a sector with no guns read past an empty list). */
+  private planSector = -1;
   private fallingBack = false;
   private focus: BtObjectiveRt | null = null;
   private focusAt = 0;
@@ -352,8 +354,9 @@ export class BreakthroughMode implements ModeLogic {
    * objectives; -1 for the others).
    */
   private plan(): void {
-    if (this.planTick === this.host.tick) return;
+    if (this.planTick === this.host.tick && this.planSector === this.active) return;
     this.planTick = this.host.tick;
+    this.planSector = this.active;
     this.placeOf.clear();
     this.duty.clear();
     const all = this.host.combatants();
