@@ -263,7 +263,7 @@ are right for the campus. The shallow vault stays. Skybridges keep the pack's fa
 - A "Prune branches" Actions workflow is offered for the future; waiting on the owner.
 
 <!-- prop-scale -->
-### Prop scale pass: furniture at human size (`wip/prop-scale`, agent, 2026-11-06; on main 2acb8f23; CI on `check/prop-scale` next)
+### Prop scale pass: furniture at human size (`wip/prop-scale`, agents, 2026-11-06/07; from main 2acb8f23, main 5e85caff merged in; CI on `check/prop-scale`)
 **The owner:** "Can we scale the props to the normal human character size? Some of them are tiny, like chairs and
 such." Then, on the lineup sheets: "yes fix the outliers, show me the 10% sheets." Part B of the prop pass (after the
 slack pass); the brief: session scratchpad `briefs/prop-scale.md`.
@@ -315,6 +315,20 @@ slack pass); the brief: session scratchpad `briefs/prop-scale.md`.
     props' own bigger footprints (at most 67 m², 0.15 %, Capitol Mall); no room is cut off.
   - A scratch overlap check of every placement against walls and neighbours, old sizes against new: nothing new
     apart from those listed below.
+  - After main 5e85caff was merged (2026-11-07):
+    - `pnpm content:rebuild` changed nothing (no new pictures; content OK); `pnpm typecheck`; validate-map on St.
+      John's: OK (0 issues).
+    - `pnpm test:changed` (183 files, then the 32 that read maps): two failures, both from this branch, fixed in
+      the tests. unifiedPaths: Undergate Transit's re-save made its old race-track field a path (checked against
+      main's file: the same curve, checkpoints, grid and ground), so two maps carry the old field, not three.
+      dressing: a full living room at seed 3 takes 19 different models with the real-size sofas (bound 16; over
+      seeds 1-30 main's tables already gave kitchens 19 and living rooms 18), so the bound is 20.
+    - The e2e smoke on the local build (`pnpm e2e:changed`'s set for a full-suite change: editor, offline, online,
+      maps) with `E2E_MAPS` = the 16 edited maps: all pass. Every one starts a match on solid ground and opens in
+      MapMaker with no errors and nothing lost (Ironhold Prison and Riot Junction, which timed out in the run the
+      restart cut off, included).
+    - `pnpm bot-report --check` (Diamond Park CTF among its 4 matches, with its benches back at ×1): every limit
+      held (11 measures).
 - **For the owner:**
   - **A "game size" factor: DECIDED (owner, 2026-11-07): "Keep real size."** No furniture factor, now or as a
     follow-up; recorded in docs/CONTENT_PIPELINE.md, "Real-world sizes". Why: at ×1.1 seats sit at 0.48-0.50 m
