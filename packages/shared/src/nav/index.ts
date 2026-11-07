@@ -9,7 +9,7 @@ import { trackGeometry } from '../map/track.ts';
 import { mapPortals, portalEntry, PORTAL_EXIT } from '../sim/portals.ts';
 import { mapZiplines, ziplineClearanceIssues, ziplineLinks } from '../sim/zipline.ts';
 import type { PhysicsWorld } from '../sim/physics.ts';
-import type { Aabb } from '../sim/scenarioDefs.ts';
+import type { Aabb, OBox } from '../sim/scenarioDefs.ts';
 import { simProfile } from '../sim/profile.ts';
 import { hypot } from '../math.ts';
 import { auditNavigation, edgesOf, polyShapes, reachSet, routeComponents, trapExits, type AuditOptions, type FallOptions } from './audit.ts';
@@ -23,6 +23,11 @@ export interface DropOptions extends FallOptions {
   gravity?: number;
   /** No parkour links (nav/parkour.ts): the build as before them. */
   noParkour?: boolean;
+  /**
+   * What the scenario adds to the level after the navmesh that a body can't pass while it stands (window panes, door
+   * panels, breakable walls and boards): parkour links are played through with them in the way.
+   */
+  blockers?: readonly OBox[];
 }
 
 let initPromise: Promise<void> | undefined;
@@ -270,6 +275,40 @@ export class NavWorld {
       const k = cellKey(Math.floor(l.start.x / 2), Math.floor(l.start.z / 2));
       (this.parkourCells.get(k) ?? this.parkourCells.set(k, []).get(k)!).push(l);
     }
+  }
+
+  /** Times bots missed each parkour link (landed somewhere else: knocked off it, short). */
+  private readonly linkMisses = new Map<ParkourLink, number>();
+  /** Parkour links switched off in the match (linkFailed). */
+  linksOff = 0;
+
+  /**
+   * A bot gave up on a parkour link (it couldn't start or finish it: something the build didn't have in the way), or
+   * missed it (`gaveUp` false). Given up on, or missed three times, the link is switched off for everyone for the match:
+   * its navmesh polygon's flags to 0 (no route takes it), out of the lookup, and bots plan their routes again.
+   */
+  linkFailed(l: ParkourLink, gaveUp: boolean): void {
+    const misses = (this.linkMisses.get(l) ?? 0) + 1;
+    this.linkMisses.set(l, misses);
+    if (!gaveUp && misses < 3) return;
+    const list = this.parkourCells.get(cellKey(Math.floor(l.start.x / 2), Math.floor(l.start.z / 2)));
+    const at = list?.indexOf(l) ?? -1;
+    if (at < 0) return;
+    list!.splice(at, 1);
+    const mesh = this.navMesh;
+    const tile = mesh.getMaxTiles() === 1 ? mesh.getTile(0) : null;
+    const header = tile?.header();
+    if (!tile || !header) return;
+    const base = mesh.getPolyRefBase(tile);
+    for (let i = 0; i < header.offMeshConCount(); i++) {
+      const con = tile.offMeshCons(i);
+      if (hypot(con.pos(0) - l.start.x, con.pos(2) - l.start.z) > 0.35 || Math.abs(con.pos(1) - l.start.y) > 0.5) continue;
+      if (hypot(con.pos(3) - l.end.x, con.pos(5) - l.end.z) > 0.35 || Math.abs(con.pos(4) - l.end.y) > 0.5) continue;
+      mesh.setPolyFlags(base + con.poly(), 0);
+    }
+    this.linksOff++;
+    this.noRoute.clear();
+    this.goneVersion++;
   }
 
   /** The parkour link a route's leg from `a` to `b` takes (its corners at the link's start and end), or null. */

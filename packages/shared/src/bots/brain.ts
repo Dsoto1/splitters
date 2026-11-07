@@ -458,6 +458,8 @@ export class BotBrain {
   /** Parkour moves it made, by kind, and gave up on (measuring: bot-report). */
   readonly parkourDone: Record<ParkourKind, number> = { drop: 0, gap: 0, up: 0 };
   parkourGaveUp = 0;
+  /** The link it was last on and since when (kept between routes: watchLink). */
+  private linkClock: { l: ParkourLink; since: number; at: number } | null = null;
   /** The navmesh's goneVersion its route was planned against. */
   private goneSeen = 0;
   parkourMissed = 0;
@@ -723,6 +725,7 @@ export class BotBrain {
     this.retreatGoal = null;
     this.retreatMode = null;
     this.link = null;
+    this.linkClock = null;
     this.spacing = 'hold';
     this.strafing = false;
     this.moveX = this.moveZ = 0;
@@ -3675,7 +3678,17 @@ export class BotBrain {
     if (k && k.path === this.path && k.index === this.pathIndex) return;
     const prev = this.pathIndex > 0 ? this.path[this.pathIndex - 1]! : null;
     const l = prev ? view.nav.parkourAt(prev, corner) : null;
-    this.link = l ? { l, path: this.path, index: this.pathIndex, since: view.tick, jumped: -1, left: -1 } : null;
+    // (The same link again on a new route, after a stuck recovery cleared the last and the bot walked back to the link's
+    // start: its clock goes on, so a link the bot can't make is given up in the end. On Qasr Medina one stood at a drop for
+    // minutes, the character controller stalled at the end of a wall top it stood on, re-finding the link every second.)
+    if (!l) {
+      this.link = null;
+      return;
+    }
+    const clock = this.linkClock;
+    const since = clock && clock.l === l && view.tick - clock.at < TICK_RATE * 20 ? clock.since : view.tick;
+    this.linkClock = { l, since, at: view.tick };
+    this.link = { l, path: this.path, index: this.pathIndex, since, jumped: -1, left: -1 };
   }
 
   /**
@@ -3696,7 +3709,10 @@ export class BotBrain {
       if (grounded && tick - off > 3) {
         // (Down by its end: made; anywhere else, missed: short, or knocked off it.)
         if (horizontalDistance(me.pos, l.end) < 4.5 && Math.abs(me.pos.y - l.end.y) < 0.8) this.parkourDone[l.kind]++;
-        else this.parkourMissed++;
+        else {
+          this.parkourMissed++;
+          view.nav.linkFailed(l, false);
+        }
         this.link = null;
         return null;
       }
@@ -3717,9 +3733,11 @@ export class BotBrain {
         }
         return null;
       }
-      // Too long at it without going (held up, out of breath): give up on it; the stuck checks take over.
-      if (tick - k.since > TICK_RATE * 6) {
+      // Too long at it without going (held up: something the build didn't have in the way): give up on it, and the link is
+      // switched off for everyone (NavWorld.linkFailed); the route is planned again without it.
+      if (tick - k.since > TICK_RATE * (l.sprint ? 8 : 4)) {
         this.parkourGaveUp++;
+        view.nav.linkFailed(l, true);
         this.link = null;
         return null;
       }

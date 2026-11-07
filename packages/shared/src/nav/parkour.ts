@@ -3,6 +3,7 @@ import { hypot, type Vec3 } from '../math.ts';
 import { BUTTON_CROUCH, BUTTON_JUMP, BUTTON_SPRINT, stepMovement, type MoveEnv, type MoveState } from '../sim/movement.ts';
 import { PLAYER, TICK_DT } from '../sim/constants.ts';
 import type { PhysicsWorld } from '../sim/physics.ts';
+import type { OBox } from '../sim/scenarioDefs.ts';
 import { components, disabled, edgesOf, fallsFrom, mainOf, polyShapes, reachSet, reverseOf, type FallOptions } from './audit.ts';
 import type { NavGraph, NavWorld } from './index.ts';
 
@@ -272,9 +273,9 @@ function playThrough(physics: PhysicsWorld, collider: Parameters<typeof stepMove
 /** Counts from the last parkourLinks call (debug: candidates, trials and links by kind, ms). */
 export const parkourStats = { cands: {} as Record<string, number>, trials: {} as Record<string, number>, links: {} as Record<string, number>, sims: 0, ticks: 0, findMs: 0, verifyMs: 0 };
 
-export function parkourLinks(nav: NavWorld, physics: PhysicsWorld, opts: FallOptions, gravity = 1, others: readonly (readonly [number, number])[] = [], spawns: readonly Vec3[] = []): ParkourLink[] {
+export function parkourLinks(nav: NavWorld, physics: PhysicsWorld, opts: FallOptions & { blockers?: readonly OBox[] }, gravity = 1, others: readonly (readonly [number, number])[] = [], spawns: readonly Vec3[] = []): ParkourLink[] {
   const g = nav.graph();
-  const key = `${fingerprint(g)}|${gravity}|${opts.maxDrop}|${opts.solids?.length ?? 0}|${others.length}|${spawns.length}`;
+  const key = `${fingerprint(g)}|${gravity}|${opts.maxDrop}|${opts.solids?.length ?? 0}|${opts.blockers?.length ?? 0}|${others.length}|${spawns.length}`;
   const known = cache.get(key);
   if (known) return known;
   const links = parkourLinksNow(nav, g, physics, opts, gravity, others, spawns);
@@ -291,7 +292,7 @@ function fingerprint(g: NavGraph): string {
   return `${g.count}:${g.vxyz.length}:${h >>> 0}`;
 }
 
-function parkourLinksNow(nav: NavWorld, g: NavGraph, physics: PhysicsWorld, opts: FallOptions, gravity: number, others: readonly (readonly [number, number])[], spawns: readonly Vec3[]): ParkourLink[] {
+function parkourLinksNow(nav: NavWorld, g: NavGraph, physics: PhysicsWorld, opts: FallOptions & { blockers?: readonly OBox[] }, gravity: number, others: readonly (readonly [number, number])[], spawns: readonly Vec3[]): ParkourLink[] {
   const n = g.count;
   if (!n) return [];
   const { centre } = polyShapes(g);
@@ -368,6 +369,11 @@ function parkourLinksNow(nav: NavWorld, g: NavGraph, physics: PhysicsWorld, opts
   const ends: [number, number][] = [];
   const kinds: Record<ParkourKind, number> = { drop: 0, gap: 0, up: 0 };
   const collider = physics.createPlayerCollider();
+  // The scenario's blockers (window panes, door panels, breakable walls), in the physics while links are played through
+  // (the scenario adds them after the navmesh: a drop out through a window played without its pane, and bots stood at
+  // the glass, Qasr Medina). Taken out again after.
+  const blockers = (opts.blockers ?? []).map((b) => physics.createBox(b.center, b.half, b.yaw));
+  if (blockers.length) physics.commit();
   let trials = 0;
   const failed: Candidate[] = [];
   try {
@@ -401,6 +407,8 @@ function parkourLinksNow(nav: NavWorld, g: NavGraph, physics: PhysicsWorld, opts
     }
   } finally {
     physics.removeCollider(collider);
+    for (const b of blockers) physics.removeCollider(b);
+    if (blockers.length) physics.commit();
   }
   const kept = safeLinks(g, out, ends, others, spawns.flatMap((p) => {
     const hit = nav.nearestPoly(p, { x: 1, y: 1, z: 1 });

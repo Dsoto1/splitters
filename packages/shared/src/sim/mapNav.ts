@@ -9,6 +9,8 @@ import { LIQUID_SPECS, SWIM_DEPTH, liquidAt, mapLiquids } from './liquids.ts';
 import { navLinks, type ExtraRay } from './movement.ts';
 import { liftLinks } from './movers.ts';
 import { PhysicsWorld } from './physics.ts';
+import { DOOR, destructibleBox, doorway, type OBox } from './scenarioDefs.ts';
+import { windowPanes } from './glass.ts';
 import { matchPhysics, type MatchRules } from './rules.ts';
 
 /**
@@ -17,6 +19,18 @@ import { matchPhysics, type MatchRules } from './rules.ts';
  */
 export const DROP_HURTS_UP_TO = 5 + 30 / 9;
 const DROP_FREE = 60;
+
+/** What the scenario adds that bodies can't pass while it stands: window panes, door panels, breakable walls and boards. */
+function scenarioBlockers(map: MapDocument): OBox[] {
+  const out: OBox[] = windowPanes(map).map((p) => p.box);
+  for (const e of map.entities) {
+    if (e.kind === 'door') {
+      const d = doorway(e);
+      out.push({ ...d, half: { ...d.half, z: DOOR.thickness } });
+    } else if (e.kind === 'destructible') out.push(destructibleBox(e));
+  }
+  return out;
+}
 
 /** A ray against boxes physics doesn't hold yet (the scenario's solids), for jump pads' landings; none for none. */
 export const solidsRay = (solids: readonly WorldBox[]): ExtraRay | undefined => (solids.length ? (o, d, max) => boxesRay(solids, o, d, max) : undefined);
@@ -27,6 +41,7 @@ export function dropOptions(map: MapDocument, physics: PhysicsWorld, geometry: r
   return {
     physics,
     gravity: phys.gravity,
+    blockers: scenarioBlockers(map),
     spawns: map.entities.filter((e) => e.kind === 'spawn').map((e): Vec3 => ({ x: e.position[0], y: e.position[1], z: e.position[2] })),
     maxDrop: phys.fallDamage ? DROP_HURTS_UP_TO / Math.max(0.05, phys.gravity) : DROP_FREE,
     floorY: mapKillY(geometry, map),
