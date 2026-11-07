@@ -11,20 +11,20 @@ describe('snipers', () => {
     expect(goodShot(shot({}))).toBe(true);
     expect(goodShot(shot({ settled: false }))).toBe(false);
     expect(goodShot(shot({ dist: 130 }))).toBe(false);
-    // Lined up 2 s, the aim is as settled as it gets at range.
-    expect(goodShot(shot({ settled: false, tracked: 2.5 }))).toBe(true);
-    // Walking across its view, looking its way: not yet; lined up 3 s, it takes it.
+    // Lined up a second, the aim is as settled as it gets at range.
+    expect(goodShot(shot({ settled: false, tracked: 1.2 }))).toBe(true);
+    // Walking across its view, looking its way: not yet; lined up 1.5 s, it takes it.
     expect(goodShot(shot({ lateral: 2.5, facing: 0.9 }))).toBe(false);
-    expect(goodShot(shot({ lateral: 2.5, facing: 0.9, tracked: 3.5 }))).toBe(true);
+    expect(goodShot(shot({ lateral: 2.5, facing: 0.9, tracked: 1.6 }))).toBe(true);
     // Not looking its way: at once, even moving.
     expect(goodShot(shot({ lateral: 2.5, facing: 0.2 }))).toBe(true);
     // Sprinting across: never.
     expect(goodShot(shot({ lateral: 6, facing: 0.9, tracked: 10 }))).toBe(false);
   });
 
-  it('move on after a shot, or two for the bold, somewhere else and not back the way they came', () => {
-    expect(shotsPerSpot({ ...CORE_BOT_PROFILES[0]!, aggression: 30 })).toBe(1);
-    expect(shotsPerSpot({ ...CORE_BOT_PROFILES[0]!, aggression: 70 })).toBe(2);
+  it('move on after two shots, or three for the bold, somewhere else and not back the way they came', () => {
+    expect(shotsPerSpot({ ...CORE_BOT_PROFILES[0]!, aggression: 30 })).toBe(2);
+    expect(shotsPerSpot({ ...CORE_BOT_PROFILES[0]!, aggression: 70 })).toBe(3);
     const prefer = relocatePrefer(at(0, 0), at(-40, 0));
     expect(prefer(at(5, 5))).toBeLessThan(-1);
     expect(prefer(at(-25, 0))).toBe(-1);

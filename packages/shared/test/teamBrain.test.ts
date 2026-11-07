@@ -40,7 +40,7 @@ describe('team brain', () => {
     const jobs = brain.update(0, members(9), attackBrief(false), [trip], [trip]);
     const groups = brain.groupsNow();
     const size = (k: string) => groups.find((g) => g.kind === k)!.members.length;
-    expect([size('main'), size('flank'), size('recon')]).toEqual([5, 2, 2]);
+    expect([size('main'), size('flank'), size('recon')]).toEqual([4, 3, 2]);
     expect(new Set(groups.map((g) => g.corridor)).size).toBe(3);
     expect(groups.find((g) => g.kind === 'main')!.corridor).toBe(0);
     for (const [, job] of jobs) {

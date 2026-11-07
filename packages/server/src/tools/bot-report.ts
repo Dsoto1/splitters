@@ -162,7 +162,7 @@ export interface MatchRow {
    * its bots between a fifth and four fifths of the way along it, by the corridor they were on (within ROUTE_NEAR m of
    * it), and off them all.
    */
-  routes?: { team: string; to: [number, number, number]; corridors: number; use: number[]; other: number; cross?: number[]; crossOther?: number }[];
+  routes?: { team: string; to: [number, number, number]; corridors: number; use: number[]; other: number; cross?: number[]; crossOther?: number; follow?: [number, number, number] }[];
   /** Group pushes per team (the team brain, bots/teamBrain.ts PushStats): waves set out, got there, lost half first, metres gained and seconds. */
   pushes?: Record<string, { started: number; reached: number; lostHalf: number; metres: number; seconds: number }>;
   bots: BotRow[];
@@ -306,7 +306,7 @@ function play(map: MapDocument, mode: GameMode, seed: number, seconds: number): 
   }
   // Route variety: each team's trips (to an objective) and the bot-seconds on each of their corridors.
   const trips = match.botTrips().filter((t) => t.kind !== 'carry' && t.trip.corridors.length > 0);
-  const routeUse = trips.map((t) => ({ team: t.team, to: [Math.round(t.to.x), Math.round(t.to.y), Math.round(t.to.z)] as [number, number, number], corridors: t.trip.corridors.length, use: t.trip.corridors.map(() => 0), other: 0, cross: t.trip.corridors.map(() => 0), crossOther: 0 }));
+  const routeUse = trips.map((t) => ({ team: t.team, to: [Math.round(t.to.x), Math.round(t.to.y), Math.round(t.to.z)] as [number, number, number], corridors: t.trip.corridors.length, use: t.trip.corridors.map(() => 0), other: 0, cross: t.trip.corridors.map(() => 0), crossOther: 0, follow: [0, 0, 0] as [number, number, number] }));
   // Route choice: per bot and trip, its progress along the trip a second ago, and whether it has voted this life.
   const crossing = new Map<string, { along: number; voted: boolean }>();
   // Vantage spots: where each bot last held one (to count arrivals).
@@ -492,6 +492,10 @@ function play(map: MapDocument, mode: GameMode, seed: number, seconds: number): 
             });
             if (pick >= 0) routeUse[i]!.cross[pick]!++;
             else routeUse[i]!.crossOther++;
+            // How it went: on the corridor it was following (the team brain's or its own pick), off it, or its own lane.
+            const own = (b as unknown as { corridor: unknown }).corridor;
+            const followed = own ? t.trip.corridors.indexOf(own as never) : -2;
+            routeUse[i]!.follow[followed === -2 || followed === -1 ? 2 : followed === pick ? 0 : 1]++;
           }
           if (cs) cs.along = along;
           else crossing.set(key, { along, voted: false });
@@ -950,6 +954,13 @@ function printCompare(before: readonly MatchRow[], after: readonly MatchRow[]): 
   console.log(`route choice (bots past a trip's middle, once a life): two ways or more ${g(ma.ways2, 0)} → ${g(mb.ways2, 0)} % of team trips, busiest way ${g(ma.waysBusiest, 0)} → ${g(mb.waysBusiest, 0)} %`);
   console.log(`routes: team trips on two routes or more ${g(ma.routes2, 0)} → ${g(mb.routes2, 0)} % (of ${ma.tripsMeasured} → ${mb.tripsMeasured} with two ways or more; ${ma.oneWay} → ${mb.oneWay} with one), busiest route ${g(ma.busiest, 0)} → ${g(mb.busiest, 0)} %; time in cover in a fight ${g(ma.coverFight, 1)} → ${g(mb.coverFight, 1)} %; scoped kills ${ma.scopedKills.toFixed(1)} → ${mb.scopedKills.toFixed(1)} a match (from a vantage spot ${ma.postKills.toFixed(1)} → ${mb.postKills.toFixed(1)}); sniper spots ${ma.sniperPosts.toFixed(1)} → ${mb.sniperPosts.toFixed(1)} a match (${ma.snipers.toFixed(1)} → ${mb.snipers.toFixed(1)} snipers), moved on after shots ${ma.sniperMoves.toFixed(1)} → ${mb.sniperMoves.toFixed(1)} a match`);
   console.log(`time in cover in a fight by style: ${STYLES.map((st) => `${st} ${g(ma.coverByStyle[st], 1)} → ${g(mb.coverByStyle[st], 1)} %`).join(', ')}`);
+  const follow = (ms: readonly MatchRow[]) => {
+    const f = [0, 0, 0];
+    for (const m of ms) for (const u of m.routes ?? []) if (u.follow) for (let k = 0; k < 3; k++) f[k]! += u.follow[k]!;
+    const t = f[0]! + f[1]! + f[2]!;
+    return t ? f.map((v) => `${((v / t) * 100).toFixed(0)}`).join('/') : '-';
+  };
+  console.log(`route choice by how the bots went (on the corridor they followed / off it / their own lane, %): ${follow(before)} → ${follow(after)}`);
   // Per mode: each mode's objective and the measures every mode has.
   const modes = [...new Set([...before, ...after].map((m) => m.mode))].sort();
   if (modes.length > 1 || !modes.includes('core.ctf')) {

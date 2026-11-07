@@ -380,25 +380,33 @@ function corridorsBetween(p: Prepared, s: number, t: number, from: Vec3, to: Vec
     }
   }
   // Each corridor's via: where it is furthest from the others (the shortest one's too: it is shortest from the trip's
-  // start, a flag's base, and bots from the spawns round it often go another corridor's way by themselves).
+  // start, a flag's base, and bots from the spawns round it often go another corridor's way by themselves), in its
+  // second half where it is still well apart there (VIA_LATE_APART): a bot heads for the goal its own way from the via,
+  // and from one early on it was back on the shortest way by the trip's middle (on the long CTF maps, the busiest way
+  // past the middle carried 60 % of a team's bots with vias anywhere from a fifth to four fifths along, 56 % from 45 %).
   if (out.length < 2) return out;
   return out.map((c, k) => {
-    const [via, viaApart] = furthestFrom(c.line, c.lineAt, out.filter((_, j) => j !== k));
+    const others = out.filter((_, j) => j !== k);
+    let [via, viaApart] = furthestFrom(c.line, c.lineAt, others, 0.45, 0.8);
+    if (!via || viaApart < VIA_LATE_APART) [via, viaApart] = furthestFrom(c.line, c.lineAt, others, 0.2, 0.8);
     return { ...c, via, viaApart, vias: via ? [via] : [] };
   });
 }
 
+/** A via in a corridor's second half only where it is this far (m) from the other corridors; else anywhere apart. */
+const VIA_LATE_APART = 12;
+
 /**
- * The point of a route (between a fifth and four fifths of the way) furthest from the earlier corridors' routes (on the
- * same floor: within FLOOR up or down; further apart counts as apart), and how far that is.
+ * The point of a route (between `from` and `to` of the way: a fifth and four fifths) furthest from the earlier
+ * corridors' routes (on the same floor: within FLOOR up or down; further apart counts as apart), and how far that is.
  */
-function furthestFrom(line: readonly Vec3[], lineAt: readonly number[], earlier: readonly Corridor[]): [Vec3 | null, number] {
+function furthestFrom(line: readonly Vec3[], lineAt: readonly number[], earlier: readonly Corridor[], from = 0.2, to = 0.8): [Vec3 | null, number] {
   const end = lineAt[lineAt.length - 1] ?? 0;
   let best: Vec3 | null = null;
   let bestD = -1;
   for (let i = 0; i < line.length; i++) {
     const at = lineAt[i]!;
-    if (at < end * 0.2 || at > end * 0.8) continue;
+    if (at < end * from || at > end * to) continue;
     const p = line[i]!;
     let near = Infinity;
     for (const c of earlier) {

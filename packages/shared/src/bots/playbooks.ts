@@ -80,7 +80,7 @@ const STRAIGHT: Playbook = { ...DEFAULT_PLAYBOOK, split: 'never' };
  * are on their way (wip/breakthrough).
  */
 const BREAKTHROUGH: ModePlaybook = {
-  team: { ...DEFAULT_PLAYBOOK, groupsFromLength: 0, flank: 0.35, bound: 'all' },
+  team: { ...DEFAULT_PLAYBOOK, groupsFromLength: 0, bound: 'all' },
   breakthrough: { smoke: true, tunnelGroups: true, guns: 0.25, trenches: 0.4, crestSnipers: 0.15, fallBack: 0.3, fallBackAt: 0.5 },
 };
 

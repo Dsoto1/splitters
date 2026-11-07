@@ -27,17 +27,19 @@ export interface ShotView {
 /** A shot this good it takes at once: settled on a still or unaware target in reach. */
 const STILL = 1.2;
 const UNAWARE = 0.5;
-/** Lined up this long (s), the aim counts as settled however far off the target is (its wander never gets that small). */
-const SETTLE_WAIT = 2;
-/** After this long lined up (s), a settled shot at a target moving across, short of a sprint, is taken anyway. */
-const PATIENCE = 3;
+/**
+ * Lined up this long (s), the aim counts as settled however far off the target is (at 80 m a body is 5 mrad wide,
+ * narrower than a bot's aim ever settles to: measured on Diamond Park, a posted sniper's aim never did).
+ */
+const SETTLE_WAIT = 1;
+/** After this long lined up (s), a shot at a target moving across, short of a sprint, is taken anyway. */
+const PATIENCE = 1.5;
 const SPRINT = 4.8;
 
 /**
  * Calculated shots: a sniper on its spot fires only on a good shot (in reach, the aim settled, and the target still,
  * not looking its way, or lined up a while and not sprinting), and otherwise keeps tracking without firing: a poor shot
- * gives the spot away for nothing. (At 100 m a body is a few milliradians wide, narrower than a bot's aim wanders: lined
- * up SETTLE_WAIT, that's as settled as it gets.)
+ * gives the spot away for nothing. (Lined up SETTLE_WAIT, that's as settled as a bot's aim gets at range.)
  */
 export function goodShot(s: ShotView): boolean {
   if (s.dist > s.reach || (!s.settled && s.tracked < SETTLE_WAIT)) return false;
@@ -45,9 +47,13 @@ export function goodShot(s: ShotView): boolean {
   return s.tracked >= PATIENCE && s.lateral < SPRINT;
 }
 
-/** How many shots a sniper takes from one spot before it moves on: one, or two for the bolder (aggression 60+). */
+/**
+ * How many shots a sniper takes from one spot before it moves on (a kill moves it on too): two, or three for the bolder
+ * (aggression 60+). (One a spot, a sniper's first hit seldom killed and it left before the second: on the sniper
+ * sample, rounds from spots went 10 → 14 and kills from them 1 → 4 with two.)
+ */
 export function shotsPerSpot(p: BotProfile): number {
-  return p.aggression >= 60 ? 2 : 1;
+  return p.aggression >= 60 ? 3 : 2;
 }
 
 /**

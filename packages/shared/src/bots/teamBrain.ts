@@ -141,7 +141,7 @@ export const DEFAULT_PLAYBOOK: Playbook = {
   bound: 'style',
   reconFrom: 6,
   reconFrom1: 4,
-  flank: 0.3,
+  flank: 0.45,
   stretch: 1.35,
   groupsFrom: 3,
   groupsFromLength: 180,
