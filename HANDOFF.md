@@ -27,7 +27,7 @@ gets overloaded above that: local e2e times out and flakes). Prune landed worktr
   reworks batches 2–3, character fixes rounds 2–3 (see the entries below and CHANGELOG).
 
 <!-- small-fixes-1107 -->
-### Small fixes from the owner's play, 2026-11-07 (`wip/small-fixes-1107`, agent; from main 3647eee9; CI on `check/small-fixes-1107`; not landed)
+### Small fixes from the owner's play, 2026-11-07 (`wip/small-fixes-1107`, agent; from main 3647eee9; green on `check/small-fixes-1107` at f79d1ec2, run 42384938315 (the full suite: unit, maps, build, check, bots, perf, 14 e2e shards); not landed)
 Four owner reports, each fixed at the cause with a test (CHANGELOG, "Small fixes from the owner's play").
 
 - **Breakthrough Range is an ordinary map** (`maps/test_breakthrough.json`, id kept): "Test map" unticked in MapMaker's
