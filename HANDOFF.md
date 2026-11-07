@@ -28,30 +28,38 @@ The workflow is unchanged (CLAUDE.md):
      `teams` flow, never run locally.
    - **Next:** if the e2e check fails, look at its setup first (it calls the private `fireNow` at a teammate 4 m
      ahead). Merge main, land.
-2. **Iron Coast** (`wip/iron-coast`; see its own HANDOFF section and the manifest in `docs/map-briefs/`).
+2. **Iron Coast** (`wip/iron-coast` @ 99c48ff4; it builds and the map validates).
    - **Built in MapMaker and exported:**
-     - the terrain;
-     - the set pieces;
-     - the stair routes and cliff-foot strongpoints;
-     - the terraces;
-     - Breakthrough's sectors, objectives and spawn groups;
-     - the sea;
-     - the pickups (Military);
+     - the terrain, 380 x 320 m at 2.5 m;
+     - all 13 set pieces;
+     - the 7 routes and the cliff-foot strongpoints;
+     - landing slabs and the sea;
+     - 30 pickups (Military);
+     - Breakthrough: sectors A (A1, A2), B (B1-B4, 2 of 4) and C, with 6 spawn groups of 16;
+     - Team Deathmatch;
+     - crest trenches, ruins, the B/C walls and 16 village houses;
      - the ground paint.
-   - **Next:**
-     - walk the seven routes;
-     - nav audit;
-     - bot-report at 16 v 16 and 24 v 24;
-     - performance at 24 v 24 and 32 v 32;
-     - the visual pass (golden hour, obstacles, craters, two smoking wrecks under Reduce flashing, landing craft);
-     - `teamSetup` 24 v 24;
-     - land on `check/iron-coast`.
+   - **Measured so far:** every route routes both ways. bot-report 16 v 16 (one seed) took A at 84 s, B at 155 s and
+     C at 289 s.
+   - **Exact next step:** the last export flags spawn `spawn_jclhkikyqj` at (55, 12, 18) as cut off. Move it in the
+     inspector, export, and get validate-map to 0.
+   - **Then:**
+     - the map card picture;
+     - bot runs at 16 v 16 and 24 v 24;
+     - performance at 48 and 64 bots;
+     - typecheck, test:changed and e2e:changed;
+     - `check/iron-coast`, landing as part 1.
+   - **Part 2, the visual pass:** not started. The burning-wreck prop with smoke is saved unfinished on
+     `wip/iron-coast-wreck`; it needs its palette atlas picture and content:check.
+   - **Where the detail is:** driver tricks and the full list are in
+     `docs/map-briefs/iron_coast/MAP_IMPLEMENTATION_MANIFEST.md`, under "Progress".
    - **The brief's essentials:**
      - MapMaker only: drive the real editor with Playwright against `vite preview`, a window at least 1280 px wide,
        click palette cards by mouse position, point the view at the sky while editing through the inspector;
      - follow `docs/map-briefs/MAP_21_reference_annotated.jpg`, not a symmetrical plan;
      - 24 v 24 by default, playable to 32 v 32;
-     - its weapon set is Military.
+     - the Military weapon set;
+     - golden hour; no flashing.
 3. **Bot AI Phase C follow-up** (`wip/bots-c2` @ 2e6949ca; typechecks; nothing on CI yet). BOT_AI_PLAN.md has it under
    "Phase C follow-up".
    - **Ready:**
