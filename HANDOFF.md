@@ -21,13 +21,12 @@ The workflow is unchanged (CLAUDE.md):
 - tell agents a CI failure in `attest-build-provenance` (a transparency-log 500 or 404) is GitHub's signing service: re-run the failed job.
 
 **In flight at the switch** (each branch pushed, tree clean; scratchpad files did not survive the switch):
-1. **Friendly fire** (`wip/friendly-fire` @ 1a347140). Its CI on `check/friendly-fire` (run 42408271804) was running at
-   the switch.
+1. **Friendly fire** (`wip/friendly-fire` @ 318023ed). Green at 1a347140 (run 42408271804, with its new e2e check).
+   - **The switch commit:** main's frozen-corpses fix was merged in (conflicts only in CHANGELOG and HANDOFF;
+     typecheck passes), and `check/friendly-fire` was re-running at 318023ed at the switch.
+   - **Next:** when that run is green, fast-forward main to 318023ed.
    - **Root cause:** every hit test left teammates out before `damage()` read the rule.
-   - **Fix:** `Match.canHurt`. Unit test `shared/test/friendlyFire.test.ts`; e2e `friendlyFireChecks` at the end of the
-     `teams` flow, never run locally.
-   - **Next:** if the e2e check fails, look at its setup first (it calls the private `fireNow` at a teammate 4 m
-     ahead). Merge main, land.
+   - **Fix:** `Match.canHurt`. Unit test `shared/test/friendlyFire.test.ts`; e2e `friendlyFireChecks` in `teams`.
 2. **Iron Coast** (`wip/iron-coast` @ 99c48ff4; it builds and the map validates).
    - **Built in MapMaker and exported:**
      - the terrain, 380 x 320 m at 2.5 m;
