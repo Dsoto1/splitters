@@ -2,8 +2,15 @@ import { horizontalDistance, type Vec3 } from '../../math.ts';
 import type { ModeSnapshot } from '../../protocol.ts';
 import { TICK_RATE } from '../constants.ts';
 import type { Combatant } from '../match.ts';
-import type { SideBrief } from '../../bots/teamBrain.ts';
+import { DEFAULT_PLAYBOOK, type Playbook, type SideBrief } from '../../bots/teamBrain.ts';
 import { teamHome, type BotGoal, type BotTripSpec, type ModeHost, type ModeLogic } from './types.ts';
+
+/**
+ * King of the Hill's playbook (bots/teamBrain.ts): straight for the hill while nobody else holds it (a detour by another
+ * way costs hill time: the hill was held 49 % of the time on the dev sample going straight, 33 % split over the ways);
+ * a hill the other team holds is retaken from two ways at once, each group gathering out of the hill's sight first.
+ */
+export const KOTH_PLAYBOOK: Playbook = { ...DEFAULT_PLAYBOOK, split: 'push', recon: 0, flank: 0.45 };
 
 export interface HillRt {
   /** Index of its map entity. */
@@ -121,7 +128,7 @@ export class KothMode implements ModeLogic {
    */
   botBrief(team: string): SideBrief | null {
     const theirs = this.holder !== null && this.holder !== 'contested' && this.holder !== team;
-    return { attack: { pos: { ...this.hill.pos }, stage: theirs }, intercept: null };
+    return { attack: { pos: { ...this.hill.pos }, stage: theirs }, intercept: null, playbook: KOTH_PLAYBOOK };
   }
 
   /**

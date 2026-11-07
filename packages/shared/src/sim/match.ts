@@ -7,6 +7,7 @@ import { SightCache } from '../bots/sight.ts';
 import { ViewGrid } from '../bots/grid.ts';
 import { BotDirector, CLUSTER_MIN_PLAYERS, assignRoles, type DirectorMember } from '../bots/director.ts';
 import type { TeamBrain } from '../bots/teamBrain.ts';
+import { BOT_TRIALS } from '../bots/trials.ts';
 import { regionLayout } from '../bots/regions.ts';
 import { VantageBoard, vantageFor } from '../bots/vantage.ts';
 import { buildMapGeometry, mapKillY, mapTerrainMesh, type WorldBox } from '../map/geometry.ts';
@@ -2127,6 +2128,12 @@ export class Match {
   /** The bots' common trips with their corridors (botTrips); null until asked for, and again once the navmesh changes. */
   private trips: (BotTripSpec & { trip: Trip })[] | null = null;
 
+  /** The side the team brain plays for when only one does (BOT_TRIALS.half; measuring only): by the seed. */
+  trialSide(): string | null {
+    const t = this.teams;
+    return BOT_TRIALS.half && t?.length ? t[this.seed % 2 === 1 ? 0 : Math.min(1, t.length - 1)]!.id : null;
+  }
+
   /** A side's team brain (bots/teamBrain.ts: its groups, pushes and prices), for measuring and tests; null before the first bot. */
   teamBrain(side: string): TeamBrain | null {
     return this.director?.brainFor(side) ?? null;
@@ -2200,7 +2207,7 @@ export class Match {
     teams.forEach((t, i) => {
       if ((this.tick + i * 29) % TICK_RATE !== 0) return;
       // What the mode says about the side (its attackers' objective, an enemy to cut off) for the team brain.
-      const brief = this.mode?.botBrief?.(t.id) ?? null;
+      const brief = BOT_TRIALS.half && t.id !== this.trialSide() ? null : (this.mode?.botBrief?.(t.id) ?? null);
       const everyone: Vec3[] = [];
       const members: DirectorMember[] = [];
       for (const c of actors) {

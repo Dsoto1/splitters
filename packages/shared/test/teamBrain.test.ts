@@ -78,6 +78,26 @@ describe('team brain', () => {
     expect(jobs.get(ms[3]!)?.stage).toEqual(stage);
   });
 
+  it('a bot keeps the corridor it set out on when its group moves to another, and never falls back to a staging spot it is past', () => {
+    const brain = new TeamBrain();
+    let jobs = brain.update(0, members(9), attackBrief(false), [trip], [trip]);
+    const main = () => brain.groupsNow().find((g) => g.kind === 'main')!;
+    const before = main().corridor;
+    const first = main().members[0]!;
+    expect(jobs.get(first)?.route).toBe(trip.corridors[before]);
+    // Teammates die on the main push's corridor: the group moves, the bots already on their way keep theirs.
+    const dead = trip.corridors[before]!.line[Math.floor(trip.corridors[before]!.line.length / 2)]!;
+    for (let i = 0; i < 4; i++) brain.death(dead, TICK_RATE);
+    jobs = brain.update(TICK_RATE * 2, members(9), attackBrief(false), [trip], [trip]);
+    expect(main().corridor).not.toBe(before);
+    expect(jobs.get(first)?.route).toBe(trip.corridors[before]);
+    // A group push: a bot already 10 m from the objective isn't sent back to stage; one at the start is.
+    jobs = brain.update(TICK_RATE * 3, members(9, (i) => (i === first ? at(92, 0) : at(2, 0))), attackBrief(true), [trip], [trip]);
+    expect(jobs.get(first)?.stage).toBeNull();
+    const other = main().members.find((s) => s !== first)!;
+    expect(jobs.get(other)?.stage).not.toBeNull();
+  });
+
   it("sends the members the enemy carrier will run into to cut it off, not those behind it, and leaves people's orders alone", () => {
     const brain = new TeamBrain();
     // Their carrier on the straight way at x 40, running for (100, 0). Ours: two ahead of it, one behind, one ordered.

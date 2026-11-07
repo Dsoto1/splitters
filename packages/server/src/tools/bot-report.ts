@@ -148,6 +148,8 @@ export interface MatchRow {
   routes?: { team: string; to: [number, number, number]; corridors: number; use: number[]; other: number }[];
   /** Group pushes per team (the team brain, bots/teamBrain.ts PushStats): waves set out, got there, lost half first, metres gained and seconds. */
   pushes?: Record<string, { started: number; reached: number; lostHalf: number; metres: number; seconds: number }>;
+  /** BOTB=half: the side the team brain played for (measuring Phase B; temporary). */
+  trialSide?: string | null;
   bots: BotRow[];
 }
 
@@ -528,6 +530,7 @@ function play(map: MapDocument, mode: GameMode, seed: number, seconds: number): 
     out.bots.push(r);
   }
   out.routes = routeUse.filter((u) => u.other + u.use.reduce((a, b) => a + b, 0) > 0);
+  if (match.trialSide()) out.trialSide = match.trialSide();
   const pushes: NonNullable<MatchRow['pushes']> = {};
   for (const team of new Set(bots.map((c) => c.faction).filter((t): t is string => !!t))) {
     const st = match.teamBrain(team)?.stats;

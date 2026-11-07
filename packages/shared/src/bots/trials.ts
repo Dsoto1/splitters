@@ -20,6 +20,8 @@ export const BOT_TRIALS = {
   nogoalpickup: false,
   /** Bots holding a place chase and investigate at any distance (as main). */
   holdfree: false,
+  /** The team brain's jobs for one side only (seed odd: the first team; even: the second), to compare the two within a match. */
+  half: false,
 };
 
 export type BotTrial = keyof typeof BOT_TRIALS;

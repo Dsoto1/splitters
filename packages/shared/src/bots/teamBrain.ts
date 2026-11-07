@@ -34,6 +34,8 @@ export interface SideBrief {
   attack: { pos: Vec3; stage: boolean } | null;
   /** An enemy to cut off on its way somewhere (our flag's carrier, going home): where it is, where it's going, who. */
   intercept: { pos: Vec3; to: Vec3; slot: number } | null;
+  /** The mode's playbook (its numbers; DEFAULT_PLAYBOOK's when absent). */
+  playbook?: Playbook;
 }
 
 /** The team brain's job for one bot (BotPlan.job), refreshed once a second. */
@@ -88,6 +90,11 @@ export interface Playbook {
   flank: number;
   /** Groups only with this many attackers or more. */
   groupsFrom: number;
+  /**
+   * When the attackers split over the corridors: always, or only for a group push (`attack.stage`: retaking a hill the
+   * enemy holds; going for one nobody holds, everyone goes straight, a detour costs hill time).
+   */
+  split: 'always' | 'push';
   /** Staging: this share of the route back from the objective, at least / at most (m). */
   stageShare: number;
   stageMin: number;
@@ -111,6 +118,7 @@ export interface Playbook {
 
 export const DEFAULT_PLAYBOOK: Playbook = {
   recon: 2,
+  split: 'always',
   reconFrom: 6,
   reconFrom1: 4,
   flank: 0.4,
@@ -179,6 +187,8 @@ export class TeamBrain {
   /** The side's trips with their prices (BotPlan.trips: every member reads the same list). */
   readonly trips: PricedTrip[] = [];
   private readonly groupOf = new Map<number, GroupKind>();
+  /** The corridor (of the attack trip) each attacker set out on: kept until it dies or stops attacking. */
+  private readonly ways = new Map<number, number>();
   private readonly lastAlive = new Map<number, number>();
   private readonly groups: Record<GroupKind, Group> = {
     main: newGroup('main'),
@@ -191,6 +201,8 @@ export class TeamBrain {
   private attackTo: Vec3 | null = null;
   private tripsFor: readonly Trip[] | null = null;
 
+  /** The playbook this update plays by (the mode's, from its brief, or the brain's own). */
+  private pb: Playbook;
   /** Staging spots worked out per corridor (stagePoint: a few sight lines each, once). */
   private readonly stages = new Map<Corridor, Vec3>();
 
@@ -201,7 +213,9 @@ export class TeamBrain {
   constructor(
     readonly playbook: Playbook = DEFAULT_PLAYBOOK,
     private readonly sees: ((a: Vec3, b: Vec3) => boolean) | null = null,
-  ) {}
+  ) {
+    this.pb = playbook;
+  }
 
   /** A member of the side died here (the death price of the corridors near it). */
   death(pos: Vec3, tick: number): void {
@@ -215,7 +229,8 @@ export class TeamBrain {
    * without one: null).
    */
   update(tick: number, members: readonly BrainMember[], brief: SideBrief | null, trips: readonly Trip[], all: readonly Trip[]): Map<number, TeamJob | null> {
-    const pb = this.playbook;
+    this.pb = brief?.playbook ?? this.playbook;
+    const pb = this.pb;
     const jobs = new Map<number, TeamJob | null>();
     for (const m of members) {
       jobs.set(m.slot, null);
@@ -241,10 +256,11 @@ export class TeamBrain {
       // A new objective (the hill moved, the flag dropped somewhere): every group starts over.
       this.attackTo = attack ? { ...attack.pos } : null;
       for (const g of Object.values(this.groups)) resetGroup(g);
+      this.ways.clear();
       this.waves.length = 0;
     }
     const attackers = attack ? members.filter((m) => !m.ordered && !m.mounted && m.goal && !m.goal.run && horizontalDistance(m.goal.pos, attack.pos) < SAME_GOAL && Math.abs(m.goal.pos.y - attack.pos.y) < 4) : [];
-    if (attack && trip && trip.trip.corridors.length && attackers.length >= pb.groupsFrom && !BOT_TRIALS.nojobs) this.assign(tick, attackers, attack, trip, jobs);
+    if (attack && trip && trip.trip.corridors.length && attackers.length >= pb.groupsFrom && (pb.split === 'always' || attack.stage) && !BOT_TRIALS.nojobs) this.assign(tick, attackers, attack, trip, jobs);
     else {
       for (const m of attackers) this.groupOf.delete(m.slot);
       for (const g of Object.values(this.groups)) g.members.length = 0;
@@ -264,7 +280,7 @@ export class TeamBrain {
 
   /** Each corridor's price: crowd (members on it), deaths in the last minute and sightings lately near its route. */
   private price(tick: number, members: readonly BrainMember[], trips: readonly Trip[]): void {
-    const pb = this.playbook;
+    const pb = this.pb;
     // (The match hands over a new list each second: the same trips, unless the navmesh was rebuilt.)
     const known = this.tripsFor;
     if (!known || known.length !== trips.length || trips.some((t, i) => t !== known[i])) {
@@ -297,7 +313,7 @@ export class TeamBrain {
 
   /** Groups for the attackers, their corridors and pushes; each attacker's job. */
   private assign(tick: number, attackers: readonly BrainMember[], attack: { pos: Vec3; stage: boolean }, trip: PricedTrip, jobs: Map<number, TeamJob | null>): void {
-    const pb = this.playbook;
+    const pb = this.pb;
     const ways = trip.trip.corridors.length;
     const n = attackers.length;
     const recon = ways >= 2 ? (n >= pb.reconFrom ? pb.recon : n >= pb.reconFrom1 ? 1 : 0) : 0;
@@ -344,34 +360,33 @@ export class TeamBrain {
     if (!keep(flk, [main.corridor])) flk.corridor = order.find((k) => k !== main.corridor) ?? main.corridor;
     if (!keep(rec, [main.corridor, flk.corridor])) rec.corridor = order.find((k) => k !== main.corridor && k !== flk.corridor) ?? flk.corridor;
     const living = new Map(attackers.map((m) => [m.slot, m]));
-    // Each group: who is in it alive, its staging spot, who waits there and whether it is ready to go.
-    const state: { g: Group; kind: GroupKind; c: Corridor; ms: BrainMember[]; stageAt: number; ready: boolean }[] = [];
+    // Each bot keeps the corridor it set out on until it dies or stops attacking (a group's corridor changes only for
+    // those joining after: swapping a group's way mid-push turned bots 20 m from the flag back for the other way).
+    for (const slot of this.ways.keys()) if (!living.has(slot)) this.ways.delete(slot);
+    const to = trip.trip.to;
+    // Each group: who is in it alive, where each waits, whether it is ready to go.
+    const state: { g: Group; kind: GroupKind; ms: BrainMember[]; ready: boolean }[] = [];
     for (const kind of ['main', 'flank', 'recon'] as const) {
       const g = this.groups[kind];
-      const c = trip.trip.corridors[g.corridor] ?? null;
       // (The dead are out of the wave they went with, and of the waiting: back from their spawn, they gather again.)
       for (const slot of g.sent) if (!living.has(slot)) g.sent.delete(slot);
       for (const slot of g.waiting.keys()) if (!living.has(slot)) g.waiting.delete(slot);
       const ms = g.members.map((slot) => living.get(slot)).filter((m): m is BrainMember => !!m);
-      if (!c || !ms.length) {
+      if (g.corridor < 0 || g.corridor >= ways || !ms.length) {
         resetGroup(g);
         continue;
       }
-      // Waves (an objective to take from the enemy): those coming up from behind gather at the staging spot and go on
-      // together. The recon pair goes ahead on its own; a group of one just goes.
-      if (attack.stage && !BOT_TRIALS.nostage && kind !== 'recon' && g.members.length >= 2) {
-        let at = this.stages.get(c);
-        if (!at) this.stages.set(c, (at = stagePoint(c, pb, this.sees)));
-        g.stage = at;
-      } else g.stage = null;
-      const stage = g.stage;
-      const stageAt = (stage ? alongOf(c, stage) : null) ?? 0;
+      for (const m of ms) if (!this.ways.has(m.slot)) this.ways.set(m.slot, g.corridor);
+      // Waves (an objective to take from the enemy): those coming up from behind gather at their corridor's staging spot
+      // and go on together. The recon pair goes ahead on its own; a group of one just goes.
+      const stages = attack.stage && !BOT_TRIALS.nostage && kind !== 'recon' && g.members.length >= 2;
+      g.stage = stages ? this.stageOn(trip.trip.corridors[g.corridor]!, pb) : null;
       let behind = 0;
       for (const m of ms) {
+        const stage = stages ? this.stageOn(trip.trip.corridors[this.ways.get(m.slot)!]!, pb) : null;
         if (!stage || g.sent.has(m.slot)) continue;
-        const at = alongOf(c, m.pos);
-        // Past the spot already (a wave's survivors, a bot that took its own way): on, never back.
-        if (at !== null && at > stageAt + 5) {
+        // Nearer the objective than the spot already (a wave's survivors, a bot that took its own way): on, never back.
+        if (horizontalDistance(m.pos, to) < horizontalDistance(stage, to) - 5) {
           g.waiting.delete(m.slot);
           continue;
         }
@@ -381,31 +396,41 @@ export class TeamBrain {
         } else g.waiting.delete(m.slot);
       }
       let ready = false;
-      if (stage && g.waiting.size) {
+      if (stages && g.waiting.size) {
         let first = tick;
         for (const at of g.waiting.values()) first = Math.min(first, at);
         ready = (g.waiting.size >= 2 && g.waiting.size >= Math.ceil(behind * pb.gathered)) || tick - first >= TICK_RATE * pb.waitAfterFirst;
       }
-      state.push({ g, kind, c, ms, stageAt, ready });
+      state.push({ g, kind, ms, ready });
     }
     // Go: each group when it is ready; with the playbook's `together`, every group waiting at its spot goes as soon as one
     // is (the main push and the flankers hit at about the same time, from different ways).
     const all = pb.together && state.some((x) => x.ready);
     for (const x of state) {
       const g = x.g;
-      if ((x.ready || (all && g.waiting.size > 0)) && g.waiting.size) {
+      if ((x.ready || all) && g.waiting.size) {
         const slots = [...g.waiting.keys()].sort((a, b) => a - b);
         for (const slot of slots) g.sent.add(slot);
         g.waiting.clear();
-        this.waves.push({ at: tick, slots, from: meanLeft(slots.map((slot) => living.get(slot)!), x.c), corridor: x.c });
+        const c = trip.trip.corridors[this.ways.get(slots[0]!) ?? g.corridor]!;
+        this.waves.push({ at: tick, slots, from: meanLeft(slots.map((slot) => living.get(slot)!), c), corridor: c });
         this.stats.started++;
       }
       for (const m of x.ms) {
-        const waits = !!g.stage && !g.sent.has(m.slot) && (alongOf(x.c, m.pos) ?? 0) <= x.stageAt + 5;
-        jobs.set(m.slot, { group: x.kind, to: { ...trip.trip.to }, route: x.c, stage: waits ? g.stage : null, goal: null });
+        const c = trip.trip.corridors[this.ways.get(m.slot) ?? g.corridor]!;
+        const stage = g.stage ? this.stageOn(c, pb) : null;
+        const waits = !!stage && !g.sent.has(m.slot) && horizontalDistance(m.pos, to) >= horizontalDistance(stage, to) - 5;
+        jobs.set(m.slot, { group: x.kind, to: { ...to }, route: c, stage: waits ? stage : null, goal: null });
       }
     }
     this.followWaves(tick, attack.pos, living);
+  }
+
+  /** A corridor's staging spot (worked out once per corridor: a few sight lines). */
+  private stageOn(c: Corridor, pb: Playbook): Vec3 {
+    let at = this.stages.get(c);
+    if (!at) this.stages.set(c, (at = stagePoint(c, pb, this.sees)));
+    return at;
   }
 
   /**
@@ -413,7 +438,7 @@ export class TeamBrain {
    * who set out first, or ran past PUSH_MOST, is spent. Metres gained along the route and seconds go to the totals.
    */
   private followWaves(tick: number, to: Vec3, living: ReadonlyMap<number, BrainMember>): void {
-    const pb = this.playbook;
+    const pb = this.pb;
     for (let i = this.waves.length - 1; i >= 0; i--) {
       const w = this.waves[i]!;
       const alive = w.slots.map((s) => living.get(s)).filter((m): m is BrainMember => !!m);
@@ -437,7 +462,7 @@ export class TeamBrain {
    * don't turn back for it: chasing from behind is the mode's (the defenders and those close by).
    */
   private intercept(cut: { pos: Vec3; to: Vec3; slot: number }, members: readonly BrainMember[], all: readonly Trip[], jobs: Map<number, TeamJob | null>): void {
-    const pb = this.playbook;
+    const pb = this.pb;
     let route: Corridor | null = null;
     let from = -1;
     let off = 25;
