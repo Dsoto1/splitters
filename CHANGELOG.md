@@ -8,6 +8,22 @@ made only on a commit that passed CI on a check branch.
 
 ## Unreleased
 
+**Bots: snipers, cover to cover, playbooks per mode** (docs/BOT_AI_PLAN.md Phase B, part 2; docs/BOTS.md, "Snipers",
+"Cover-to-cover advance", "Team brain and route variety")
+- **Snipers play like snipers**: a sniper-role bot goes for a scoped gun first, then takes a high, tucked-away spot
+  with a wall behind it that looks down the ways the enemy comes, sees through the scope out to its gun's reach, takes
+  calculated shots (the aim lined up, the target still, unaware or lined up a while, never sprinting across), and moves
+  to another spot after two or three shots, when it's spotted, or after a kill.
+- **Cover to cover**: on their way to an objective, Tactical bots (and Mixed ones in a fight at range) move up in
+  bounds, half covering while half move; bots stay in cover while reloading or hurt; Tactical and Mixed routes keep out
+  of open ground. Arena bots keep the rush. Time in cover in a fight: Tactical 24 → 40 %, Mixed 18 → 28 %, Arena as
+  before.
+- **Playbooks per mode**, as data (bots/playbooks.ts): Capture the Flag's roles and the team brain's numbers per mode,
+  and Breakthrough's (attackers spread over the ways and bounding up the beach, defenders on the guns, in the trenches
+  and on the crest, some falling back early) for its mode to read.
+- Flankers take 45 % of the attackers after the recon pair (were 30 %): on the long CTF maps every team trip uses two
+  ways or more.
+
 **Bots: scored choices, a team brain, ways of their own** (docs/BOT_AI_PLAN.md Phase B, part 1; docs/BOTS.md, "Scored
 choices", "Team brain and route variety")
 - **Bots choose by score**: with nobody in sight, a bot weighs its goal, cover, a pickup it needs, an enemy that slipped

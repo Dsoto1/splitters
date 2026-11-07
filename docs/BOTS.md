@@ -774,7 +774,8 @@ for points on the ground ahead, and captures halved on the dev sample.)
   shares, when to split, staging distances, timings, bounds, prices, interceptors), which the mode hands over in its
   brief, and the mode's own roles (Capture the Flag's defenders by team size, escorts, response and threat ranges, the
   defenders' watch radius, the carrier's; Breakthrough's below). King of the Hill, Bomb, Hostage, Elimination, Team
-  Deathmatch, co-op and zombies never split; Capture the Flag and Forts split on long trips. King of the Hill
+  Deathmatch, co-op and zombies never split; Capture the Flag and Forts split on long trips; a mode without one (Race
+and the other vehicle modes: no attack brief) plays by the default. King of the Hill
   straight: split over the ways, the hill was held 33 % of the time on the dev sample against 49 % going straight;
   gathering out of the hill's sight to retake it together, the side doing it held the hill 37 s to the other side's
   170 in the same matches.

@@ -410,6 +410,86 @@ the most both times (2.51 and 2.58 before, 2.68 and 2.65 after: over the 2.5 ms 
 machine, which measured Phase A's base at 1.13-1.90). The team brain itself is a few corridors' prices and a group
 assignment once a second a side.
 
+### Phase B part 2, measured (snipers, cover-to-cover advance, playbooks)
+Before: part 1 as landed (main 7c40d0b9). After: `wip/bots-b`, part 2. The same maps both times (main's, with the prop
+scale pass and the ground fix). Samples: part 1's dev sample (33 matches); snipers (Team Deathmatch on Eagle Spires,
+Twin Spires, Sunstone Crag, Diamond Park, St John's and Capitol Mall, maps with scoped pickups and long sightlines;
+seeds 1 and 2: 12 matches); every bot Tactical (`--style=tactical`: CTF on Bunker Cross, Serene City, Grand Marquee
+and Sunken Kingdom, Team Deathmatch on Fernwood Moon and Riot Junction, King of the Hill on Shingle Point: 7) and every
+bot Arena (CTF on Bunker Cross and Serene City, Team Deathmatch on Riot Junction: 3); the long CTF maps (Fernwood Moon,
+Sunken Kingdom, Iron Tide, Capitol Mall, Glacier Line, Riot Junction, Primeval Park, Eagle Spires; seed 1: 8);
+Elimination on Diamond Park, St John's, Capitol Mall and Glasswork Office (seeds 1 and 2: 8). 180 s each.
+
+| Dev sample, 33 matches | Before | After |
+|---|---|---|
+| Time in cover in a fight, by style: Tactical; Mixed (neither tag); Arena | 24.3 %; 18.2 %; 19.1 % | 40.0 %; 27.7 %; 19.6 % |
+| Time in cover in a fight: all; CTF | 19.2 %; 14.0 % | 27.3 %; 23.6 % |
+| CTF captures (flag takes); matches with one; maps with one | 26 (155); 12; 6 | 25 (137); 12; 7 |
+| King of the Hill: hill held | 46.1 % | 43.9 % |
+| Bomb plants, defuses a match | 1.5, 0.0 | 2.0, 0.5 |
+| Hostage rescues | 2 | 2 |
+| Team Deathmatch kills a minute | 28.7 | 33.2 |
+| Scoped kills a match; sniper spots taken a match | 1.5; 0.1 | 2.6; 0.6 |
+| Stuck recoveries a bot-minute; idle out of a fight | 2.07; 5.5 % | 1.88; 5.8 % |
+
+| Other samples | Before | After |
+|---|---|---|
+| Snipers (12): the sniper-role bots' spots taken, rounds from them, kills from them | 15, 2, 1 | 33, 17, 3 |
+| Snipers: their scoped kills; spots left after their shots | 4; 0 | 27; 10 |
+| Snipers: every bot's scoped kills a match; Team Deathmatch's busiest way | 6.3; 60 % | 6.5; 49 % |
+| Tactical (7): time in cover in a fight; CTF captures a match | 22.6 %; 2.0 | 36.5 %; 2.5 |
+| Tactical: scoped kills a match (from spots) | 1.1 (0.0) | 3.7 (0.4) |
+| Arena (3): time in cover in a fight; CTF captures a match | 25.4 %; 3.5 | 27.5 %; 3.0 |
+| Long CTF maps (8): time in cover in a fight; captures | 9.6 %; 3 | 18.1 %; 3 |
+| Long CTF maps: group pushes' ground gained (metres a minute of pushing) | 222 | 192 |
+| Long CTF maps: route choice, two ways or more; the busiest way | 93 %; 59 % | 92 %; 60 % |
+| Elimination (8): rounds a match, each | 1.8, 73 s | 1.6, 80 s |
+
+Six more King of the Hill matches (seeds 2 and 3 on the same maps) on an earlier part 2 build held the hill 41.4 and
+41.5 % of the time. Bounds slow a push (ground gained a minute down by an eighth on the long maps) for the cover it
+gains.
+
+**Snipers, as they went** (the sniper sample): spots scored for height, a wall behind, being tucked away and the lanes
+they cover, and a scoped gun first, took the spots taken from 15 to 31 in the 12 matches, but snipers on them fired 7
+rounds: they saw 60 m like everyone (the gun reaches 120). Seeing through the scope out to the gun's reach, they held
+their shots instead (61 s held): at 80 m a body is 5 mrad wide, narrower than a bot's aim ever settles to, so the
+calculated shot waited for nothing. Lined up a second counts as settled now. One shot a spot, the first hit seldom
+killed and the sniper left before the second; two a spot (three for the bold): 14 rounds from spots and 4 kills from
+them, against 10 and 1. Kills from spots stay rare (0.3 a match): what's still missing is the scoped gun at spawn
+(the weapon sets' `Match.sniperGun`: until then a sniper finds one on the map first, if there is one) and spots that
+see where the enemy actually goes in a Team Deathmatch's free-for-all middle.
+
+**The capture tests' matches** (botCtf.test.ts's setup, first capture within five minutes, seeds 1-6):
+
+| | Diamond Park | Sunken Kingdom |
+|---|---|---|
+| Part 1 | 6 of 6 (80-149 s) | 6 of 6 (76-162 s) |
+| Part 2 (landed) | 4 of 6 (90-238 s) | 6 of 6 (95-216 s) |
+| ...with each corridor's via in its second half | - | 4 of 6 |
+| ...bounding lighter (not within 20 m of the objective, covering 40 % of the turn) | 6 of 6 | 3 of 6 |
+
+A CTF attack is slower in bounds; both tests' own seeds capture (Diamond Park seed 1 at 99 s, Sunken Kingdom seed 3
+at 130 s).
+
+**The busiest way** (the coordinator's ask: under half on the long maps). Not there: 59-60 % on the long CTF maps.
+Tried: flankers 45 % of the attackers after the recon pair (were 30 %): two ways or more 87 to 100 % of the team trips
+there, the busiest way 59 to 58 % (kept); each corridor's via in its second half: 60 to 56 %, but Sunken Kingdom's
+captures fell (not kept). Why: a bot takes a corridor by its via and then goes the shortest way to the flag, back on
+the main way by the trip's middle (of the bots passing the middle there, about 15 % were still following a corridor).
+What it would take: route searches that stay on a group's corridor all the way, a per-group cost on the navmesh's
+polygons off it (as the corridors themselves were found), not more vias (several vias a corridor kept groups on their
+way but slowed them: fewer takes). That is Phase C's route cost work (item 4) more than Phase B's.
+
+**`pnpm bench:96:clump`** (96 bots; Norman Shores, Frost Basin and Riot Junction, spread and clumped, 30 s each), bot
+thinking a tick, part 1 and part 2 taken in turn, three rounds each, at load 10-14 on 4 cores (other agents' tests
+running): means 1.96, 2.01 and 2.00 ms against 1.93, 2.15 and 1.92. The worst case, Norman Shores spread out: part 1
+2.82, 2.89 and 2.82 ms, part 2 2.63, 2.73 and 2.65, lower every round but still over the 2.5 ms guard on this machine
+under this load (part 1's own run at load 1.2-1.5 had it at 2.51-2.68). Everything else 1.59-2.15 ms (one 2.91, Frost
+Basin spread out in part 2's second round). Part 2 asks for fewer routes (13,320 searches a dev-sample match against
+17,572: bots that bound or keep their cover re-plan less). The setup outside the bots' own thinking (their views, the
+pickups, goals) is 0.65-0.70 ms of Norman Shores' 2.5-2.9 (a CPU profile: `runBots`' own work a ninth of the bots'
+time): the place to look for the headroom the 64-player browser round needs.
+
 ## Phase C: navigation depth (straight after Phase B; item 1 first)
 1. **Parkour first** (owner, 2026-11-06: snipers "trying different 'parkour' to get where others don't normally go
    (roofs, etc)"). Links for every move a player can make, generated at load from the geometry and checked against the real
