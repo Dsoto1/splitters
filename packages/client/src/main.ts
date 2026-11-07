@@ -266,7 +266,7 @@ class App {
         openDesigner: (look) => void this.openDesigner(look),
         playLocal: (map, rules, bots, skill, host, botSet, spectate) => {
           this.botSet = botSet ?? null;
-          this.playLocal(map, rules, bots, skill, undefined, undefined, host, false, spectate ? { spectate } : {});
+          this.playLocal(map, rules, bots, skill, undefined, undefined, host, spectate ? { spectate } : {});
         },
         playOnline: (server, name) => void this.playOnline(server, name),
         playPlaylist: (id, botFill, skill, botSet) => {
@@ -419,7 +419,7 @@ class App {
     if (old) dropListing(old.id, old.secret);
     this.chain = null;
     const restore: MatchCheckpoint = { ...cp, timeLeft: cp.timeLeft > 0 ? Math.max(1, Math.round(cp.timeLeft - age)) : 0 };
-    this.playLocal(end.map, cp.rules, cp.fill, cp.skill, undefined, { peer: standby, ...(cp.listing ? { listing: cp.listing.name } : {}) }, false, false, { restore, greeting: 'The host left: you host the match now' });
+    this.playLocal(end.map, cp.rules, cp.fill, cp.skill, undefined, { peer: standby, ...(cp.listing ? { listing: cp.listing.name } : {}) }, false, { restore, greeting: 'The host left: you host the match now' });
   }
 
   /** Quick start from a URL (?offline=sandgate, &gamemode=core.ctf): the map's own mode (or the one asked for) and a default bot count; `extra` adds rules (Classes). */
@@ -467,14 +467,16 @@ class App {
   private chain: { playlist: Playlist; index: number; botFill: number; difficulty: 'easy' | 'normal' | 'hard' } | null = null;
 
   /** `hosting`: Host game carried over a map change (the same join code; friends rejoin it). */
-  /** `autoHost`: open a join code for friends as soon as the match starts (Play → Host). */
-  /** `autoList`: with autoHost, list it in the game browser too (Host this map, after a host left). */
+  /**
+   * `autoHost`: online from the start (Match setup's Host online; Host this map, after a host left): a join code for
+   * friends, and listed in the game browser when there's a hub (the Host tab's Host online, without its restart).
+   */
   /** `extra`: a match handed on from a host that left (its checkpoint), a line to greet with, or `spectate`: you join it watching (Match setup → Spectate). */
-  playLocal(map: Parameters<typeof rulesForMap>[0], rules: MatchRules, botFill: number, difficulty: 'easy' | 'normal' | 'hard', carry?: CarryOver, hosting?: Travel['hosting'], autoHost = false, autoList = false, extra: { restore?: MatchCheckpoint; greeting?: string; spectate?: boolean } = {}): void {
-    void this.withMatch((m) => this.playLocalWith(m, map, rules, botFill, difficulty, carry, hosting, autoHost, autoList, extra));
+  playLocal(map: Parameters<typeof rulesForMap>[0], rules: MatchRules, botFill: number, difficulty: 'easy' | 'normal' | 'hard', carry?: CarryOver, hosting?: Travel['hosting'], autoHost = false, extra: { restore?: MatchCheckpoint; greeting?: string; spectate?: boolean } = {}): void {
+    void this.withMatch((m) => this.playLocalWith(m, map, rules, botFill, difficulty, carry, hosting, autoHost, extra));
   }
 
-  private playLocalWith(m: MatchCode, map: Parameters<typeof rulesForMap>[0], rules: MatchRules, botFill: number, difficulty: 'easy' | 'normal' | 'hard', carry: CarryOver | undefined, hosting: Travel['hosting'], autoHost: boolean, autoList: boolean, extra: { restore?: MatchCheckpoint; greeting?: string; spectate?: boolean }): void {
+  private playLocalWith(m: MatchCode, map: Parameters<typeof rulesForMap>[0], rules: MatchRules, botFill: number, difficulty: 'easy' | 'normal' | 'hard', carry: CarryOver | undefined, hosting: Travel['hosting'], autoHost: boolean, extra: { restore?: MatchCheckpoint; greeting?: string; spectate?: boolean }): void {
     this.startSession(m, new m.LocalTransport(map, { name: this.front!.displayName || 'Player', verified: this.front!.verified, look: this.front!.look, botFill, difficulty, botSet: this.botSet, rules, ...(carry ? { carry } : {}), ...(extra.restore ? { restore: extra.restore } : {}), ...(extra.spectate ? { spectate: true } : {}), ...(TEST ? { test: TEST } : {}) }), {
       exitLabel: 'Leave match',
       exitOnF5: false,
@@ -483,7 +485,6 @@ class App {
       hosting,
       autoHost,
       rotation: this.rotationOpts(),
-      autoList,
       ...(extra.greeting ? { greeting: extra.greeting } : {}),
       onExit: (reason, travel) => {
         // The host changed map (or the rotation moved on): the same rules, players and bot skill there (Host game friends follow).
@@ -668,7 +669,7 @@ class App {
           screen.hide();
           this.chain = null;
           // The same map, mode and rules, about as many players; hosted and listed so the others can find it.
-          this.playLocal(end.map, end.rules, end.fill, 'normal', undefined, undefined, true, true);
+          this.playLocal(end.map, end.rules, end.fill, 'normal', undefined, undefined, true);
         },
       },
     ]);
@@ -758,7 +759,7 @@ class App {
     reconnectBanner(null);
   }
 
-  private startSession(m: MatchCode, transport: Transport, o: { exitLabel: string; exitOnF5: boolean; hostable?: boolean; chain?: boolean; hosting?: Travel['hosting']; autoHost?: boolean; autoList?: boolean; greeting?: string; rotation?: SessionOptions['rotation']; onExit: (reason?: string, travel?: Travel, how?: 'lost' | 'rejected', end?: SessionEnd) => void; onReady?: () => void }): GameSession {
+  private startSession(m: MatchCode, transport: Transport, o: { exitLabel: string; exitOnF5: boolean; hostable?: boolean; chain?: boolean; hosting?: Travel['hosting']; autoHost?: boolean; greeting?: string; rotation?: SessionOptions['rotation']; onExit: (reason?: string, travel?: Travel, how?: 'lost' | 'rejected', end?: SessionEnd) => void; onReady?: () => void }): GameSession {
     // A match has its own loading screen (players, map and weapons).
     finishBoot();
     $('menu').hidden = true;
@@ -779,7 +780,6 @@ class App {
       portraitOf: this.portraits ? (look: string) => this.portraits!.get(look) : undefined,
       hosting: o.hosting,
       autoHost: !!o.autoHost,
-      autoList: !!o.autoList,
       ...(o.greeting ? { greeting: o.greeting } : {}),
       mapPicker: this.mapPicker(m),
       ...(o.rotation ? { rotation: o.rotation } : {}),

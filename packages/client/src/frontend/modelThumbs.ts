@@ -9,7 +9,7 @@ import { offscreenCamera, offscreenProjection } from './offscreen.ts';
 import { RenderTargetTexture } from '@babylonjs/core/Materials/Textures/renderTargetTexture';
 import type { AbstractMesh } from '@babylonjs/core/Meshes/abstractMesh';
 import { Vector3 as V3 } from '@babylonjs/core/Maths/math.vector';
-import type { TileDefinition } from '@tiletrigger/shared';
+import type { MapDocument, TileDefinition } from '@tiletrigger/shared';
 import { ModelLibrary } from '../content/models.ts';
 import type { MapStyler } from '../mapMeshes.ts';
 import { loadMapContent } from '../mapContentLoader.ts';
@@ -18,13 +18,23 @@ const SIZE = 96;
 
 /** How to frame a thumbnail: three-quarter (props) or a side-on strip (weapons, barrel to the right). */
 export type ThumbView = 'three-quarter' | 'side';
-export type AnyThumbView = ThumbView | 'tile';
+export type AnyThumbView = ThumbView | 'tile' | 'piece';
 const VIEWS: Record<AnyThumbView, { dir: [number, number, number]; width: number; height: number }> = {
   'three-quarter': { dir: [0.75, 0.6, -1], width: SIZE, height: SIZE },
   // Building pieces: steeper, so you see into rooms over their walls.
   tile: { dir: [0.55, 1.7, -0.9], width: SIZE, height: SIZE },
+  // Set pieces (several cells and storeys): a little less steep, so their fronts read too.
+  piece: { dir: [0.7, 1.15, -1], width: SIZE, height: SIZE },
   side: { dir: [-1, 0.12, 0], width: 128, height: 56 },
 };
+
+/** A model placed in a map thumbnail (a set piece's props): its file, where it stands, its facing and scale. */
+export interface ThumbModel {
+  file: string;
+  position: readonly [number, number, number];
+  yaw: number;
+  scale: number;
+}
 
 /**
  * Small three-quarter thumbnails of our own models (props in the MapMaker),
@@ -80,9 +90,50 @@ export class ModelThumbnails {
     return p;
   }
 
+  /**
+   * A thumbnail of a small map (a set piece in MapMaker's Set pieces tab, its parts expanded): its tiles, blocks and
+   * trim as the game draws them, and `models` (its props) standing in it; cached by `key`.
+   */
+  getMap(key: string, doc: MapDocument, models: readonly ThumbModel[], size = SIZE): Promise<string> {
+    const k = `map:${size}:${key}`;
+    let p = this.cache.get(k);
+    if (!p) {
+      p = (this.queue = this.queue.then(() => this.renderMap(doc, models, size))) as Promise<string>;
+      p.catch(() => this.cache.delete(k));
+      this.cache.set(k, p);
+    }
+    return p;
+  }
+
   /** How many pictures have been rendered here (MapMaker's palette uses its prebuilt atlas instead where it can). */
   get rendered(): number {
     return this.cache.size;
+  }
+
+  private async renderMap(doc: MapDocument, models: readonly ThumbModel[], size: number): Promise<string> {
+    const [{ MapStyler }, { buildMapGeometry }] = await Promise.all([import('../mapMeshes.ts'), loadMapContent()]);
+    this.styler ??= new MapStyler(this.scene);
+    const meshes = this.styler.build(doc, buildMapGeometry(doc), 'thumbmap');
+    const nodes = await Promise.all(
+      models.map(async (m, i) => {
+        const node = await this.models.instantiate(m.file, `thumbmodel${i}`).catch((e: unknown) => {
+          console.warn(`set piece picture: ${m.file} didn't load (${(e as Error)?.message ?? e})`);
+          return null;
+        });
+        if (!node) return null;
+        node.position.set(m.position[0], m.position[1], m.position[2]);
+        node.rotation.y = m.yaw;
+        node.scaling.setAll(m.scale);
+        node.getHierarchyBoundingVectors(true);
+        return node;
+      }),
+    );
+    try {
+      return await this.renderMeshes([...meshes, ...nodes.flatMap((n) => n?.getChildMeshes() ?? [])], 'piece', size, 30000);
+    } finally {
+      for (const m of meshes) m.setEnabled(false);
+      for (const n of nodes) n?.dispose();
+    }
   }
 
   private async renderTile(def: TileDefinition, size: number): Promise<string> {
@@ -109,7 +160,7 @@ export class ModelThumbnails {
     }
   }
 
-  private async renderMeshes(meshes: AbstractMesh[], view: AnyThumbView, size: number): Promise<string> {
+  private async renderMeshes(meshes: AbstractMesh[], view: AnyThumbView, size: number, readyMs = 8000): Promise<string> {
     const { dir: d } = VIEWS[view];
     const W = view === 'side' ? VIEWS.side.width : size;
     const H = view === 'side' ? VIEWS.side.height : size;
@@ -132,7 +183,7 @@ export class ModelThumbnails {
       const half = view === 'side' ? Math.atan(Math.tan(0.3) * aspect) : 0.3;
       this.camera.position.copyFrom(centre.add(dir.scale((radius / Math.tan(half)) * 1.05)));
       this.camera.setTarget(centre);
-      const deadline = performance.now() + 8000;
+      const deadline = performance.now() + readyMs;
       while (!meshes.every((m) => m.isReady(true)) && performance.now() < deadline) {
         this.scene.render();
         await new Promise((r) => setTimeout(r, 30));

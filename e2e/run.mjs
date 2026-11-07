@@ -1084,6 +1084,217 @@ async function editoruxFlow(browser) {
   await shot('1280');
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await page.context().close();
+  await editorSetPieceChecks(browser);
+}
+
+/**
+ * MapMaker's set pieces (docs/SET_PIECES_PLAN.md, "As built: part 2"): the Set pieces tab, placing with the ghost (and
+ * its refusal, with the reason), turning and mirroring (and a piece that can't be), selecting one as one, moving it and
+ * undoing, Explode and undo, Save selection as set piece with Export and Import, and a port facing a wall. Not the
+ * `setpieces` flow (Sky Islands' crumbling stones and trapdoors). Screenshots go to E2E_SHOTS when set.
+ */
+async function editorSetPieceChecks(browser) {
+  const page = await (await browser.newContext({ viewport: { width: 1400, height: 820 }, acceptDownloads: true })).newPage();
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
+  page.on('dialog', (d) => d.accept());
+  const shot = (name) => (process.env.E2E_SHOTS ? page.screenshot({ path: `${process.env.E2E_SHOTS}/setpieces-${name}.png` }).catch(() => {}) : Promise.resolve());
+  await page.goto(`${CLIENT}/?mode=editor&test=1`);
+  await page.waitForFunction(() => window.__editor, null, { timeout: T(60000) });
+  await page.evaluate(() => localStorage.removeItem('cs.setpieces'));
+  await newMap(page);
+  await page.evaluate(() => window.__editor.view.focus({ x: 12, y: 0, z: 8 }));
+  const settle = () => frames(page, 3);
+  await settle();
+  const at = (x, y, z) => page.evaluate(([x, y, z]) => window.__editor.view.project({ x, y, z }), [x, y, z]);
+  const hover = async (x, y, z) => {
+    const p = await at(x, y, z);
+    await page.mouse.move(p.x, p.y);
+    await settle();
+    return p;
+  };
+  const doc = () => page.evaluate(() => window.__editor.doc);
+  const ghost = () => page.evaluate(() => {
+    const g = window.__editor.pieceHover;
+    const node = window.__editor.view.scene.getTransformNodeByName('pieceGhost');
+    const meshes = node?.getChildMeshes() ?? [];
+    return g && { ok: g.ok, reason: g.reason, blocked: g.blocked, at: [g.placement.x, g.placement.y, g.placement.z], rotation: g.placement.rotation, mirror: g.placement.mirror, pack: g.placement.pack ?? null, shown: !!node?.isEnabled() && meshes.length > 0, seeThrough: meshes.length > 0 && meshes.every((m) => m.visibility < 1 && !m.isPickable), tip: document.getElementById('ed-tip').className, tipText: document.getElementById('ed-tip').textContent };
+  });
+
+  // The tab: every shipped piece, grouped by family, pictured from the set pieces' atlas; search finds them by name.
+  await page.click('#ed-pal-tabs [data-pane="setpieces"]');
+  await page.waitForFunction(() => document.querySelector('#ed-setpieces .thumb.atlas .spr'), null, { timeout: T(30000) }).catch(() => {});
+  const tab = await page.evaluate(() => ({
+    cards: document.querySelectorAll('#ed-setpieces .sp-btn[data-tool^="setpiece:setpiece."]').length,
+    shipped: window.__editor.setPieceLib.pieces.size,
+    groups: [...document.querySelectorAll('#ed-setpieces .ed-group .ttl')].map((t) => t.textContent),
+    atlas: document.querySelector('#ed-setpieces .thumb.atlas')?.dataset.atlas,
+  }));
+  check(tab.cards === tab.shipped && tab.groups.includes('Carriageways') && tab.groups.includes('Skybridges') && tab.groups.includes('My set pieces') && tab.atlas === 'setpieces', `the Set pieces tab shows every shipped piece by family, pictured from its atlas (${JSON.stringify(tab)})`);
+  await shot('tab');
+  await page.fill('#ed-search', 'skybrige');
+  await page.waitForFunction(() => !!document.querySelector('#ed-pal-results [data-pick="setpiece:setpiece.skybridge_2"]'), null, { timeout: T(5000) }).catch(() => {});
+  check(await page.evaluate(() => !!document.querySelector('#ed-pal-results [data-pick="setpiece:setpiece.skybridge_2"]')), 'search finds set pieces by name (a typo too)');
+  await page.fill('#ed-search', '');
+  await page.press('#ed-search', 'Escape');
+  // The Style Pack picker narrows the tab to the pack's pieces, and its look re-themes the ghost.
+  await page.selectOption('#ed-pack', 'military');
+  await clickTool(page, '[data-tool="setpiece:setpiece.skybridge_2"]');
+  await hover(32, 0, 32);
+  const military = await page.evaluate(() => ({ gate: document.querySelector('#ed-setpieces [data-tool="setpiece:setpiece.carriageway_1"]').hidden, bridge: document.querySelector('#ed-setpieces [data-tool="setpiece:setpiece.skybridge_2"]').hidden, look: document.getElementById('ed-sp-look')?.value }));
+  const themed = await ghost();
+  check(military.gate && !military.bridge && military.look === 'military' && themed?.pack === 'military', `the Military Compound pack shows its pieces and themes the ghost (${JSON.stringify(military)}, ghost look ${themed?.pack})`);
+  await shot('pack');
+  await page.selectOption('#ed-pack', '');
+
+  // Place: a see-through ghost of the whole piece, green; a click places it, as one placement, selected.
+  await clickTool(page, '[data-tool="setpiece:setpiece.carriageway_1"]');
+  await page.evaluate(() => window.__editor.view.focus({ x: 12, y: 0, z: 8 }));
+  await settle();
+  await hover(16, 0, 8);
+  const g0 = await ghost();
+  check(g0?.ok && g0.shown && g0.seeThrough && JSON.stringify(g0.at) === '[2,1,0]' && /tone-place/.test(g0.tip), `the set piece tool shows the whole piece, see-through and green, at the pointer (${JSON.stringify(g0)})`);
+  await shot('ghost');
+  await page.mouse.click((await at(16, 0, 8)).x, (await at(16, 0, 8)).y);
+  await settle();
+  let d = await doc();
+  const gate = d.setPieces?.[0];
+  check(d.setPieces?.length === 1 && gate.piece === 'setpiece.carriageway_1' && gate.x === 2 && gate.y === 1 && gate.z === 0 && JSON.stringify(await page.evaluate(() => window.__editor.selection.setPieces)) === JSON.stringify([gate.id]), `a click places the carriageway as one placement, selected (${JSON.stringify(d.setPieces)})`);
+  // Red where it can't go, with the reason, and a click there places nothing.
+  await hover(16, 0, 8.5);
+  const red = await ghost();
+  check(red && !red.ok && /tone-bad/.test(red.tip) && /overlaps the Carriageway set piece/.test(red.tipText) && /can't go here/.test(await page.textContent('#ed-target')), `over another piece the ghost is red and says why (${red?.reason})`);
+  await shot('ghost-red');
+  await page.mouse.click((await at(16, 0, 8.5)).x, (await at(16, 0, 8.5)).y);
+  check((await doc()).setPieces.length === 1 && /Can't place Carriageway/.test(await page.textContent('#ed-toast')), 'a click there places nothing and says why');
+  // R turns it and M mirrors it, as the ghost shows; a piece that can't be mirrored says why and greys M out.
+  await page.keyboard.press('KeyR');
+  await page.keyboard.press('KeyM');
+  // Two cells north of the first: a free spot, on screen.
+  await hover(16, 0, 24);
+  const turned = await ghost();
+  check(turned?.ok && turned.rotation === 1 && turned.mirror === true && (await page.textContent('#ed-sp-mirror')).includes('Mirrored'), `R turns the ghost and M mirrors it (${JSON.stringify(turned && { ok: turned.ok, at: turned.at, rotation: turned.rotation, mirror: turned.mirror, reason: turned.reason })})`);
+  await page.mouse.click((await at(16, 0, 24)).x, (await at(16, 0, 24)).y);
+  d = await doc();
+  check(d.setPieces.length === 2 && d.setPieces[1].rotation === 1 && d.setPieces[1].mirror === true, 'it is placed as the ghost showed: turned and mirrored');
+  if (d.setPieces.length === 2) await page.keyboard.press('Control+KeyZ');
+  await page.keyboard.press('KeyM');
+  await page.keyboard.press('KeyR');
+  await page.keyboard.press('KeyR');
+  await page.keyboard.press('KeyR');
+  await clickTool(page, '[data-tool="setpiece:setpiece.trench_bend"]');
+  await page.keyboard.press('KeyM');
+  const refused = await page.evaluate(() => ({ mirror: window.__editor.pieceMirror, disabled: document.getElementById('ed-sp-mirror').disabled, why: document.getElementById('ed-sp-mirror').title, toast: document.getElementById('ed-toast').textContent }));
+  check(!refused.mirror && refused.disabled && /isn't its own mirror image/.test(refused.why) && /can't be mirrored/.test(refused.toast), `M can't mirror the Trench Bend, and says why (${refused.why})`);
+  await shot('mirror-refused');
+
+  // Select: a click on any of its parts selects the placement as one; it drags a cell east; undo puts it back.
+  await page.keyboard.press('Escape');
+  await page.keyboard.press('Escape');
+  await hover(16, 0.1, 8);
+  await page.mouse.click((await at(16, 0.1, 8)).x, (await at(16, 0.1, 8)).y);
+  await settle();
+  const sel = await page.evaluate(() => window.__editor.selection);
+  check(JSON.stringify(sel) === JSON.stringify({ tiles: [], entities: [], setPieces: [gate.id] }) && (await page.textContent('#ed-inspector h2')) === 'Carriageway', `a click on its passage selects the carriageway as one (${JSON.stringify(sel)})`);
+  const insp = await page.evaluate(() => ({ look: !!document.getElementById('ed-sp-insp-look'), mirror: !!document.getElementById('ed-sp-insp-mirror'), roles: document.querySelectorAll('#ed-inspector select[data-role]').length, parts: document.querySelectorAll('#ed-inspector .ed-sp-parts input').length, ports: document.querySelectorAll('#ed-inspector .ed-sp-ports li').length }));
+  check(insp.look && insp.mirror && insp.roles > 0 && insp.parts > 0 && insp.ports === 6, `the inspector shows its look, mirror, ports and overrides (${JSON.stringify(insp)})`);
+  await shot('selected');
+  const from = await at(16, 0.1, 8);
+  const to = await at(24, 0.1, 8);
+  await page.mouse.move(from.x, from.y);
+  await page.mouse.down();
+  await page.mouse.move((from.x + to.x) / 2, (from.y + to.y) / 2, { steps: 4 });
+  await page.mouse.move(to.x, to.y, { steps: 4 });
+  await settle();
+  await page.mouse.up();
+  await settle();
+  const moved = (await doc()).setPieces[0];
+  await page.keyboard.press('Control+KeyZ');
+  const back = (await doc()).setPieces[0];
+  check(moved.x === 3 && moved.y === 1 && back.x === 2 && back.y === 1, `dragging it moves it a cell; one undo puts it back (${moved.x},${moved.y} → ${back.x},${back.y})`);
+  // An override: hide a part (the inspector's parts list), in one undo step.
+  await page.click('#ed-inspector .ed-sp-parts input[data-part="2"]');
+  check(JSON.stringify((await doc()).setPieces[0].overrides) === '{"hide":[2]}', 'unticking a part hides it on this placement');
+  await page.keyboard.press('Control+KeyZ');
+
+  // Explode to tiles: its parts become ordinary pieces, selected; one undo brings the set piece back.
+  await page.evaluate((id) => window.__editor.setSelection({ tiles: [], entities: [], setPieces: [id] }), gate.id);
+  await settle();
+  const counts = (m) => ({ pieces: m.setPieces?.length ?? 0, tiles: m.classicStructure.tiles.length, entities: m.entities.length });
+  const before = counts(await doc());
+  await page.click('#ed-sp-explode');
+  await settle();
+  const exploded = counts(await doc());
+  const exSel = await page.evaluate(() => window.__editor.selection);
+  await shot('exploded');
+  await page.keyboard.press('Control+KeyZ');
+  const unexploded = counts(await doc());
+  check(exploded.pieces === 0 && exploded.tiles > before.tiles && exSel.tiles.every((id) => id.startsWith(`sp_${gate.id}_`)) && exSel.tiles.length + exSel.entities.length === exploded.tiles + exploded.entities - before.tiles - before.entities && JSON.stringify(unexploded) === JSON.stringify(before), `Explode to tiles makes its parts ordinary pieces, selected; one undo puts it back (${JSON.stringify({ before, exploded, unexploded })})`);
+
+  // Save selection as set piece: a box drag over the starter room; named; in My set pieces; exported, deleted, imported.
+  await page.evaluate(() => window.__editor.setSelection({ tiles: [], entities: [] }));
+  await page.evaluate(() => window.__editor.view.focus({ x: 0, y: 0, z: 0 }));
+  await settle();
+  const a = await at(-6, 0, -6);
+  const b = await at(6, 0, 6);
+  await page.mouse.move(Math.min(a.x, b.x) - 20, Math.min(a.y, b.y) - 20);
+  await page.mouse.down();
+  await page.mouse.move(Math.max(a.x, b.x) + 20, Math.max(a.y, b.y) + 20, { steps: 6 });
+  const box = await page.evaluate(() => !document.getElementById('ed-marquee').hidden);
+  await shot('box-select');
+  await page.mouse.up();
+  await settle();
+  const boxed = await page.evaluate(() => window.__editor.selection);
+  check(box && boxed.tiles.length === 1, `dragging a box on empty ground selects what is in it (${JSON.stringify(boxed)})`);
+  await page.click('#ed-insp-save-piece');
+  await page.fill('#ed-sp-save-name', 'Guard Room');
+  await page.waitForFunction(() => /1 tile/.test(document.getElementById('ed-sp-save-summary').textContent), null, { timeout: T(5000) }).catch(() => {});
+  await shot('save-dialog');
+  await page.click('#ed-sp-save-ok');
+  const lib = () => page.evaluate(() => JSON.parse(localStorage.getItem('cs.setpieces') ?? '[]').map((s) => s.def.id));
+  check(JSON.stringify(await lib()) === '["local.guard_room"]' && (await page.isVisible('#ed-setpieces [data-tool="setpiece:local.guard_room"]')), 'Save as set piece keeps it in your library, in My set pieces');
+  await clickTool(page, '[data-tool="setpiece:local.guard_room"]');
+  const [download] = await Promise.all([page.waitForEvent('download', { timeout: T(10000) }), page.click('#ed-sp-export')]);
+  const file = join(mkdtempSync(join(tmpdir(), 'tt-piece-')), download.suggestedFilename());
+  await download.saveAs(file);
+  const exported = JSON.parse(readFileSync(file, 'utf8'));
+  await page.click('#ed-sp-delete');
+  const deleted = await lib();
+  await page.setInputFiles('#ed-sp-import-file', file);
+  await page.waitForFunction(() => (localStorage.getItem('cs.setpieces') ?? '').includes('local.guard_room'), null, { timeout: T(10000) }).catch(() => {});
+  check(exported.id === 'local.guard_room' && deleted.length === 0 && JSON.stringify(await lib()) === '["local.guard_room"]', `Export writes it as a file, and Import brings it back (${download.suggestedFilename()})`);
+  // Placed, the map carries its definition (it plays anywhere).
+  await clickTool(page, '[data-tool="setpiece:local.guard_room"]');
+  await page.evaluate(() => window.__editor.view.focus({ x: 32, y: 0, z: 24 }));
+  await settle();
+  await hover(32, 0, 24);
+  await page.mouse.click((await at(32, 0, 24)).x, (await at(32, 0, 24)).y);
+  d = await doc();
+  check(d.setPieces.some((p) => p.piece === 'local.guard_room') && d.setPieceDefs?.some((x) => x.id === 'local.guard_room'), 'your piece places like any other, and the map carries its definition');
+
+  // Ports: a room with a solid wall against the carriageway's west door: a warning, and the port red on its outline.
+  await page.evaluate(() => {
+    window.__editor.setTool({ kind: 'tile', tile: 'core.room' });
+    window.__editor.view.focus({ x: 12, y: 0, z: 8 });
+  });
+  await settle();
+  await hover(8, 0, 8);
+  await page.mouse.click((await at(8, 0, 8)).x, (await at(8, 0, 8)).y);
+  await page.evaluate(() => window.__editor.setEdge({ cell: [1, 1, 0], side: 'E' }, 'wall', null));
+  await page.evaluate((id) => {
+    window.__editor.setTool({ kind: 'select' });
+    window.__editor.setSelection({ tiles: [], entities: [], setPieces: [id] });
+  }, gate.id);
+  await settle();
+  const ports = await page.evaluate(() => ({
+    warn: [...document.querySelectorAll('#ed-inspector .ed-sp-ports li.warning')].map((li) => li.textContent),
+    issue: [...document.querySelectorAll('#ed-issues li')].map((li) => li.textContent).find((t) => /faces a wall/.test(t)) ?? null,
+    red: window.__editor.selectedPieceOutlines().flatMap((o) => o.ports).filter((p) => p.blocked).length,
+  }));
+  check(ports.warn.length === 1 && /west side \(Ground\) faces a wall: the Room's wall/.test(ports.warn[0]) && !!ports.issue && ports.red === 1, `a door facing a wall is warned about, and red on the outline (${JSON.stringify(ports)})`);
+  await shot('ports');
+  check(errors.length === 0, `no page errors with set pieces (${errors.join('; ')})`);
+  await page.context().close();
 }
 
 async function offlineFlow(browser) {
@@ -2352,7 +2563,69 @@ async function teamsFlow(browser) {
   await customSetupFlow(browser);
   await botCastFlow(browser);
   await setupLayoutFlow(browser);
+  await setupLimitsFlow(browser);
   await spectateStartFlow(browser);
+}
+
+/**
+ * Score and time follow the match's size (owner, 2026-11-06: "24v24 plays ok with 500 points, but also 15–20 min"):
+ * Match setup suggests them for the players and bots (matchSetup.ts suggestedLimits), they follow a size change
+ * until set by hand (Custom, kept through size changes), and "Back to suggested" puts them back. A setup saved
+ * before suggestions, at the old 40 points and 10 minutes, follows the size.
+ */
+async function setupLimitsFlow(browser) {
+  // The curve's values for St. John's presets (Small 4v4, Map's pick 12v12, Max 24v24): points and minutes.
+  const EXPECT = { '4v4': [40, 10], '12v12': [180, 15], '24v24': [500, 20] };
+  const errors = [];
+  const page = await (await browser.newContext({ viewport: { width: 1280, height: 720 } })).newPage();
+  page.on('pageerror', (e) => errors.push(e.message));
+  await page.addInitScript(() => {
+    if (sessionStorage.getItem('seeded')) return;
+    localStorage.setItem('cs.arcade', JSON.stringify({ map: 'st_johns', mode: 'core.tdm', bots: 3, skill: 'normal', scoreLimit: 40, minutes: 10, teams: [4, 4] }));
+    sessionStorage.setItem('seeded', '1');
+  });
+  await page.goto(`${CLIENT}/?test=1`);
+  await page.waitForFunction(() => window.__front, null, { timeout: T(30000) });
+  await page.evaluate(() => document.getElementById('nav-play').click());
+  await page.waitForSelector('#arcade-score', { timeout: T(30000) });
+  const read = () =>
+    page.evaluate(() => ({
+      score: Number(document.getElementById('arcade-score')?.value),
+      time: document.getElementById('arcade-minutes')?.textContent,
+      line: document.getElementById('setup-limits')?.textContent ?? '',
+      custom: document.querySelectorAll('#setup-win .when-tag.custom').length,
+      reset: !!document.getElementById('setup-limits-reset'),
+      fact: document.querySelector('#setup-summary .fact-time')?.textContent,
+      saved: JSON.parse(localStorage.getItem('cs.arcade')),
+    }));
+  const preset = (id) => page.evaluate((p) => document.querySelector(`#setup-sizes [data-preset="${p}"]`).click(), id);
+  const suggests = (r, size) => {
+    const [points, minutes] = EXPECT[size];
+    return r.score === points && r.time === `${minutes} min` && r.fact === `~${minutes} min` && r.line === `Suggested for ${size}: ${points} points, ${minutes} min. They follow the size until you change them.` && r.custom === 0;
+  };
+  const four = await read();
+  check(suggests(four, '4v4'), `a setup saved at the old 40 points and 10 minutes follows the size: 4v4 suggests ${EXPECT['4v4'].join(' points, ')} min (${JSON.stringify({ ...four, saved: undefined })})`);
+  await preset('pick');
+  const twelve = await read();
+  await preset('max');
+  const big = await read();
+  // Opening the setup doesn't write it; the first change saves it with the marks (score and time following the size).
+  const marks = { scoreAuto: twelve.saved.scoreAuto, timeAuto: twelve.saved.timeAuto, score: big.saved.scoreLimit, minutes: big.saved.minutes };
+  check(suggests(twelve, '12v12') && suggests(big, '24v24') && marks.scoreAuto === true && marks.timeAuto === true && marks.score === EXPECT['24v24'][0] && marks.minutes === EXPECT['24v24'][1], `the suggested score and time follow the size, and the setup saves them following it: 12v12 ${twelve.score}, ${twelve.time}; 24v24 ${big.score}, ${big.time} (${JSON.stringify({ line: big.line, fact: big.fact, saved: marks })})`);
+  // Set by hand: Custom, kept through a size change; Back to suggested follows the size again.
+  await page.evaluate(() => {
+    const i = document.getElementById('arcade-score');
+    i.value = '300';
+    i.dispatchEvent(new Event('change'));
+  });
+  await preset('pick');
+  const custom = await read();
+  check(custom.score === 300 && custom.custom === 1 && custom.reset && /^Custom\. Suggested for 12v12: /.test(custom.line) && custom.saved.scoreAuto === false && custom.time === `${EXPECT['12v12'][1]} min`, `a score set by hand is marked Custom and stays when the size changes; the time still follows (${JSON.stringify({ ...custom, saved: undefined })})`);
+  await page.evaluate(() => document.getElementById('setup-limits-reset').click());
+  const back = await read();
+  check(suggests(back, '12v12') && back.saved.scoreAuto === true && back.saved.scoreLimit === EXPECT['12v12'][0], `Back to suggested puts the score back on the suggestion for the size (${JSON.stringify({ ...back, saved: undefined })})`);
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  await page.context().close();
 }
 
 /**
@@ -3824,8 +4097,8 @@ async function coverageFlow(browser) {
   await ed.waitForFunction(() => window.__editor, null, { timeout: T(30000) });
   await ed.setInputFiles('#ed-import-file', path.pathname);
   const opened = await ed.waitForFunction((want) => window.__editor.doc.metadata.id === want && Array.isArray(window.__editor.issues), file.metadata.id, { timeout: T(60000) }).then(() => true, () => false);
-  const r = opened ? await ed.evaluate(() => ({ errors: window.__editor.issues.filter((i) => i.severity === 'error').map((i) => i.message), entities: window.__editor.doc.entities.length, tiles: window.__editor.doc.classicStructure.tiles.length, testOnly: !!window.__editor.doc.metadata.testOnly })) : null;
-  check(!!r && !r.errors.length && r.entities === file.entities.length && r.tiles === file.classicStructure.tiles.length && r.testOnly, `the coverage map opens in MapMaker whole, marked as a test map (${JSON.stringify(r)})`);
+  const r = opened ? await ed.evaluate(() => ({ errors: window.__editor.issues.filter((i) => i.severity === 'error').map((i) => i.message), entities: window.__editor.doc.entities.length, tiles: window.__editor.doc.classicStructure.tiles.length, setPieces: window.__editor.doc.setPieces?.length ?? 0, testOnly: !!window.__editor.doc.metadata.testOnly })) : null;
+  check(!!r && !r.errors.length && r.entities === file.entities.length && r.tiles === file.classicStructure.tiles.length && r.setPieces === (file.setPieces?.length ?? 0) && r.testOnly, `the coverage map opens in MapMaker whole (its set pieces kept as placements), marked as a test map (${JSON.stringify(r)})`);
   // Map properties show it as a test map.
   if (opened) await ed.evaluate(() => window.__editor.setSelection({ tiles: [], entities: [] }));
   const box = opened && (await ed.evaluate(() => document.getElementById('ed-prop-testonly')?.checked ?? null));
@@ -4811,8 +5084,30 @@ async function lobbyFlow(browser) {
   const down = await solo.waitForFunction(() => fetch(`http://${new URLSearchParams(location.search).get('hub')}/lobby/games`).then((r) => r.json()).then((d) => !!d.games && !d.games.some((g) => g.name === 'E2E Go Online')), null, { timeout: T(15000), polling: 1000 }).then(() => true, () => false);
   const after = await solo.evaluate(() => ({ badge: !!window.__cs.hud.onlineNote, online: document.getElementById('go-offline').classList.contains('on') && !document.getElementById('go-online').classList.contains('on') }));
   check(down && !after.badge && after.online, 'Offline removes the listing and the online line');
-  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await solo.context().close();
+
+  // Match setup's Host online is the Host tab's (owner, 2026-11-06): the match starts online, listed in the game
+  // browser, and the join code still shows.
+  const setupHost = await (await browser.newContext({ viewport: { width: 1280, height: 720 } })).newPage();
+  setupHost.on('pageerror', (e) => errors.push(`setup host: ${e.message}`));
+  await setupHost.addInitScript(() => {
+    localStorage.setItem('cs.name', 'Setup Host');
+    localStorage.setItem('cs.arcade', JSON.stringify({ map: 'sandgate', mode: 'core.tdm', bots: 3, skill: 'easy', scoreLimit: 40, minutes: 10, teams: [2, 2] }));
+  });
+  await setupHost.goto(`${CLIENT}/?${hub}`, { waitUntil: 'domcontentloaded' });
+  await setupHost.waitForFunction(() => window.__front, null, { timeout: T(30000) });
+  await setupHost.evaluate(() => document.getElementById('nav-play').click());
+  await setupHost.waitForSelector('#arcade-host', { timeout: T(30000) });
+  await setupHost.evaluate(() => document.getElementById('arcade-host').click());
+  const foot = await setupHost.evaluate(() => ({ on: document.getElementById('arcade-host').classList.contains('on'), note: document.getElementById('arcade-online-note')?.textContent ?? '' }));
+  check(foot.on && /listed in the game browser/.test(foot.note), `Match setup's Host online says the match is listed (${JSON.stringify(foot)})`);
+  await setupHost.evaluate(() => document.getElementById('arcade-start').click());
+  const setupListed = await hubUntil(async () => ((await hubGames(HUB_PORT)) ?? []).some((g) => g.host === 'Setup Host'), T(120000));
+  const online = await setupHost.waitForFunction(() => /^Online · listed/.test(window.__cs?.hud?.onlineNote ?? '') && /[A-Z0-9]{6}/.test(document.querySelector('#host-info .host-code b')?.textContent ?? ''), null, { timeout: T(60000) }).then(() => true, () => false);
+  const setupState = await setupHost.evaluate(() => ({ badge: window.__cs?.hud?.onlineNote ?? '', code: document.querySelector('#host-info .host-code b')?.textContent ?? '', status: document.getElementById('host-public-status')?.textContent ?? '' }));
+  check(setupListed && online, `Host online from Match setup lists the match in the game browser, the join code showing (${JSON.stringify({ ...setupState, games: (await hubGames(HUB_PORT))?.map((g) => [g.name, g.host]) })})`);
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  await setupHost.context().close();
 }
 
 /** A Host Service (packages/host) on a local hub: started as the owner would (`pnpm host`), with its own state folder. */
@@ -5270,6 +5565,9 @@ async function hostcontrolsFlow(browser) {
   });
   check(fits, 'the pause menu fits the window');
   await openPanel(page);
+  // What wins shows the score and time suggested for the players and bots, following the size being set.
+  const suggestedFor = () => page.evaluate(() => document.getElementById('hc-suggest')?.textContent ?? '');
+  const before = await suggestedFor();
   await page.evaluate(() => {
     document.getElementById('hc-players-plus').click();
     document.getElementById('hc-players-plus').click();
@@ -5277,6 +5575,8 @@ async function hostcontrolsFlow(browser) {
   });
   const says = await page.evaluate(() => ({ apply: document.getElementById('hc-apply').textContent, changes: document.getElementById('hc-changes').textContent, resume: !!document.getElementById('hc-resume') }));
   check(says.apply === 'Apply now' && says.changes === '+2 bots, hard bots' && says.resume, `Apply says what it will do, beside Resume (${JSON.stringify(says)})`);
+  const after6 = await suggestedFor();
+  check(/^Suggested for 4 players: \d+ kills, \d+ min\./.test(before) && /^Suggested for 6 players: \d+ kills, \d+ min\./.test(after6), `the Host tab suggests a score and time for the size being set ("${before}" → "${after6}")`);
   await page.evaluate(() => document.getElementById('hc-apply').click());
   const six = await simWait(page, (m) => m.combatants().length === 6, null, T(5000));
   const feed = await page.evaluate(() => document.getElementById('feed').textContent);
@@ -5331,16 +5631,37 @@ async function hostcontrolsFlow(browser) {
   check(listed && /1 bot \+ random/.test(sum ?? ''), `the scoreboard lists the bot, and the panel says the set (${sum})`);
   // A rule that needs a restart is marked so, and Apply says it restarts: Apply & restart plays with it at once.
   await page.evaluate(() => document.getElementById('hc-score-plus').click());
-  const asks = await page.evaluate(() => ({ apply: document.getElementById('hc-apply').textContent, changes: document.getElementById('hc-changes').textContent, marked: !!document.getElementById('hc-score')?.closest('.field')?.querySelector('.when-tag.restart') }));
-  check(asks.apply === 'Apply & restart' && asks.changes === 'score 16 (restart)' && asks.marked, `a change that needs a restart is marked, and Apply says it restarts (${JSON.stringify(asks)})`);
+  const asks = await page.evaluate(() => ({ apply: document.getElementById('hc-apply').textContent, changes: document.getElementById('hc-changes').textContent, marked: !!document.getElementById('hc-score')?.closest('.field')?.querySelector('.when-tag.restart'), when: document.querySelector('#hc-when .seg-opt.on')?.dataset.value }));
+  check(asks.apply === 'Apply & restart' && asks.changes === 'score 16: the match restarts now' && asks.marked && asks.when === 'now', `a change that needs a restart is marked, and Apply says it restarts (${JSON.stringify(asks)})`);
   await page.evaluate(() => document.getElementById('hc-apply').click());
   // (A restart plays the rules waiting for it: the score limit changes only then.)
   const applied = await simWait(page, (m) => m.rules.scoreLimit === 16, null, T(10000));
   const restartFeed = await page.waitForFunction(() => /restarted the match/.test(document.getElementById('feed').textContent ?? ''), null, { timeout: T(5000) }).then(() => true, () => false);
   const pendingNow = await page.evaluate(() => window.__cs.host()?.pending);
   check(applied && restartFeed && !Object.keys(pendingNow ?? {}).length, `Apply & restart starts the match over with the new score limit (${JSON.stringify({ score: await sim(page, (m) => m.rules.scoreLimit), restartFeed, pending: pendingNow })})`);
-  // Its countdown first: End match ends a match in play.
+  // Its countdown first: End match ends a match in play. The match's own phase first: the page can still show the
+  // phase from before the restart for a moment on a loaded machine, then its countdown.
+  await simWait(page, (m) => m.phase === 'playing', null, T(30000));
   await page.waitForFunction(playing, null, { timeout: T(30000) }).catch(() => {});
+  // Save for next match (owner, 2026-11-06): the changed rule waits for the next match; this one carries on.
+  await sim(page, (m) => void (m.combatants().find((c) => c.kind === 'human').kills = 3));
+  await openPanel(page);
+  await page.evaluate(() => {
+    document.getElementById('hc-score-plus').click();
+    document.getElementById('hc-when-next').click();
+  });
+  const saving = await page.evaluate(() => ({ apply: document.getElementById('hc-apply').textContent, changes: document.getElementById('hc-changes').textContent, when: document.querySelector('#hc-when .seg-opt.on')?.dataset.value }));
+  check(saving.apply === 'Save for next match' && saving.changes === 'score 17 from the next match' && saving.when === 'next', `Next match: Apply becomes Save for next match, and the foot says when it applies (${JSON.stringify(saving)})`);
+  await page.evaluate(() => document.getElementById('hc-apply').click());
+  const saved = await page.waitForFunction(() => window.__cs.host()?.pending?.scoreLimit === 17, null, { timeout: T(10000) }).then(() => true, () => false);
+  const carriesOn = {
+    score: await sim(page, (m) => m.rules.scoreLimit),
+    kills: await sim(page, (m) => m.combatants().find((c) => c.kind === 'human').kills),
+    phase: await page.evaluate(() => window.__cs.phase()),
+    line: await page.evaluate(() => document.getElementById('hc-pending')?.textContent ?? ''),
+    foot: await page.evaluate(() => ({ apply: document.getElementById('hc-apply').textContent, disabled: document.getElementById('hc-apply').disabled, changes: document.getElementById('hc-changes').textContent })),
+  };
+  check(saved && carriesOn.score === 16 && carriesOn.kills === 3 && carriesOn.phase === 'playing' && /^Saved for the next match: score 17\./.test(carriesOn.line) && carriesOn.foot.disabled, `Save for next match keeps the rule for the next match and doesn't restart this one (${JSON.stringify(carriesOn)})`);
   // Ending or restarting everyone's match takes a second click.
   const once = await page.evaluate(() => {
     const b = document.getElementById('hc-end');
@@ -5351,13 +5672,20 @@ async function hostcontrolsFlow(browser) {
   await page.evaluate(() => document.getElementById('hc-end').click());
   const ended = await page.waitForFunction(() => window.__cs.phase() === 'intermission', null, { timeout: T(5000) }).then(() => true, () => false);
   check(ended, 'End match goes to the scoreboard');
+  // After the scoreboard the next match starts by itself, with the rule saved for it; the HUD and the Host tab follow.
+  const nextOne = await page.waitForFunction(() => window.__cs.phase() !== 'intermission' && window.__cs.rules()?.scoreLimit === 17 && !Object.keys(window.__cs.host()?.pending ?? {}).length, null, { timeout: T(30000) }).then(() => true, () => false);
+  const nextScore = await sim(page, (m) => m.rules.scoreLimit);
+  check(nextOne && nextScore === 17, `the next match plays the saved score limit, and the page hears so (${JSON.stringify({ match: nextScore, page: await page.evaluate(() => window.__cs.rules()?.scoreLimit), pending: await page.evaluate(() => window.__cs.host()?.pending) })})`);
+  await page.waitForFunction(playing, null, { timeout: T(30000) }).catch(() => {});
+  await endMatch(page);
+  await page.waitForFunction(() => window.__cs.phase() === 'intermission', null, { timeout: T(5000) }).catch(() => {});
   await page.evaluate(() => {
     document.getElementById('hc-restart').click();
     document.getElementById('hc-restart').click();
   });
   const restarted = await page.waitForFunction(() => window.__cs.phase() !== 'intermission', null, { timeout: T(5000) }).then(() => true, () => false);
   const keptScore = await sim(page, (m) => m.rules.scoreLimit);
-  check(restarted && keptScore === 16, `Restart match starts it over, the applied score limit kept (${keptScore})`);
+  check(restarted && keptScore === 17, `Restart match starts it over, the applied score limit kept (${keptScore})`);
   await pickMap(page, 'atomic_court');
   // The picked map loads on demand (its own chunk), so the announcement can follow a moment later.
   await page.waitForFunction(() => /Changing map to/i.test(document.getElementById('message').textContent), null, { timeout: T(5000) }).catch(() => {});

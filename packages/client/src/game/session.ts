@@ -91,6 +91,7 @@ import {
   mountDamageState,
   rulesForTravel,
   travelNotice,
+  withPending,
   nextMapLine,
   validateRotation,
   type GameMode,
@@ -183,10 +184,11 @@ export interface SessionOptions {
   portraitOf?: (look: string) => Promise<string>;
   /** Host game across a map change: the join code already open (friends come back to it), and the game browser listing's name when it was listed. */
   hosting?: { peer: HostLink; listing?: string };
-  /** Open a join code as soon as the match starts (Play → Host). */
+  /**
+   * Host online from the start (Match setup's Host online; Host this map, after a host left): the same as the Host
+   * tab's Host online, without its restart: a join code, and listed in the game browser when there's a hub.
+   */
   autoHost?: boolean;
-  /** With autoHost: list the match in the game browser too (Host this map, after a host left). */
-  autoList?: boolean;
   /** A line to show as the match starts ("Host left: Ann is taking over"). */
   greeting?: string;
   /** The map picker for the host's Change map (pause menu → Match): the front end's map cards. `title`: its heading and button. */
@@ -611,26 +613,29 @@ export class GameSession {
         ($('host-name') as HTMLInputElement).value = opts.hosting.listing;
       }
       void this.showHostInfo(hostBtn, hostInfo, this.peerHost.code);
-    } else if (opts.autoHost && opts.hostable && opts.transport instanceof LocalTransport) void this.startHosting(hostBtn, hostInfo);
+    }
     this.hostPanel = this.makeHostPanel();
     // Offline by default: nothing listens until the player goes online (or hosts with a code). The Host tab's foot
-    // switches between the two: Host online lists the match when there's a hub to list it on (after a confirm: it
-    // restarts), else opens a join code; Offline disconnects friends and takes the listing down.
-    $('go-online').addEventListener('click', () => (this.peerHost ? undefined : hubSetting() ? this.confirmGoOnline() : void this.startHosting(hostBtn, hostInfo)), { signal });
+    // switches between the two: Host online (goOnline, the same as Match setup's) lists the match when there's a hub to
+    // list it on (after a confirm: it restarts), else opens a join code; Offline disconnects friends and takes the
+    // listing down.
+    $('go-online').addEventListener('click', () => (this.peerHost ? undefined : hubSetting() ? this.confirmGoOnline() : void this.goOnline(false)), { signal });
     $('go-offline').addEventListener('click', () => this.peerHost && this.goOffline(), { signal });
     // Public: the hosted match shows up in everyone's game browser (needs a community hub).
     const pub = $('host-public');
     const listBox = $('host-list') as HTMLInputElement;
     const listName = $('host-name') as HTMLInputElement;
     pub.hidden = hostBtn.hidden || !hubSetting();
-    // Listed already (a map change carried the listing), or to be listed as it starts (Host this map).
-    listBox.checked = (!!opts.hosting && opts.hosting.listing !== undefined) || (!!opts.autoList && !!opts.hostable && !this.offlineOnly && !!hubSetting());
+    // Listed already (a map change carried the listing).
+    listBox.checked = !!opts.hosting && opts.hosting.listing !== undefined;
     listName.value = opts.hosting?.listing ?? '';
     // The server name only matters when the match is listed.
     const showName = () => (listName.hidden = !listBox.checked);
     showName();
     listBox.addEventListener('change', () => (showName(), this.updateListing()), { signal });
     listName.addEventListener('change', () => this.updateListing(), { signal });
+    // Online from the start (Match setup's Host online, Host this map): the Host tab's Host online, the match being new.
+    if (!opts.hosting && opts.autoHost) void this.goOnline(false);
     // Mouse sensitivity and invert, saved for next time.
     const sens = $('mouse-sens') as HTMLInputElement;
     const sensVal = $('mouse-sens-val');
@@ -1075,16 +1080,22 @@ export class GameSession {
   /** "Go online": a short confirm, then the match restarts and is listed (and joinable by code). */
   private confirmGoOnline(): void {
     if (!this.listable) return;
-    this.confirmBox('online-confirm', 'Go online?', 'The match restarts on the same map and rules (scores reset) and is listed publicly in the game browser. Friends can also join with the code.', 'Go online', () => void this.goOnline());
+    this.confirmBox('online-confirm', 'Go online?', 'The match restarts on the same map and rules (scores reset) and is listed publicly in the game browser. Friends can also join with the code.', 'Go online', () => void this.goOnline(true));
   }
 
-  private async goOnline(): Promise<void> {
+  /**
+   * Host online, one path wherever it's chosen (the Host tab's switch, Match setup's, Host this map): a join code
+   * for friends (shown in the Host tab), and the match listed publicly in the game browser when there's a community
+   * hub to list it on (a match still loading lists once it has loaded); without a hub, the code only. `restart`: a
+   * match under way starts over first, a fresh one for the public (scores reset, bots back to the host's count); a
+   * match that is just starting is fresh already.
+   */
+  private async goOnline(restart: boolean): Promise<void> {
     const local = this.opts.transport;
-    if (!(local instanceof LocalTransport) || !this.listable) return;
+    if (!(local instanceof LocalTransport) || !this.opts.hostable || this.offlineOnly) return;
     const first = !this.peerHost;
-    // A fresh match for the public: scores reset, bots back to the host's count.
-    if (first) local.host({ c: 'restart' });
-    ($('host-list') as HTMLInputElement).checked = true;
+    if (first && restart) local.host({ c: 'restart' });
+    if (hubSetting()) ($('host-list') as HTMLInputElement).checked = true;
     if (first) await this.startHosting($('host-game') as HTMLButtonElement, $('host-info'));
     else this.updateListing();
     this.updateOnline();
@@ -1205,7 +1216,9 @@ export class GameSession {
     const wait = Math.max(1000, ((this.rules?.intermissionTicks ?? 300) / TICK_RATE) * 1000 - 1500);
     const map = await r.load(up.entry.map);
     const s = this.hostState;
-    const rules = t.liveRules() ?? this.rules;
+    // The next match: what plays now, with the rules the host saved for it.
+    const live = t.liveRules() ?? this.rules;
+    const rules = live && withPending(live, s?.pending);
     this.rotating = false;
     if (this.closed || this.travel || !s || !rules) return;
     if (!map) return void console.warn(`rotation: ${up.entry.map} didn't load; the match replays`);
@@ -1264,9 +1277,10 @@ export class GameSession {
       this.hostPanel.setStatus(`Changing map to ${map.metadata.name}…`);
       return;
     }
-    const rules = t.liveRules() ?? this.rules;
-    if (!rules) return;
-    const next = rulesForTravel(rules, map, s.fill, mode, s.teamSize);
+    const live = t.liveRules() ?? this.rules;
+    if (!live) return;
+    // A new match there: the rules the host saved for the next match go along.
+    const next = rulesForTravel(withPending(live, s.pending), map, s.fill, mode, s.teamSize);
     t.notice(travelNotice(map.metadata.name, next.rules.mode));
     this.travel = { host: { map, rules: next.rules, fill: next.fill, skill: s.skill, botSet: s.mapBots ? null : (s.botSet ?? null) } };
     window.setTimeout(() => this.exit('travel'), 1200);
@@ -1415,6 +1429,11 @@ export class GameSession {
       return;
     }
     if (this.advertiser) return;
+    // Listed under your name: wait for the roster that says it (a match hosted from the start lists as it loads).
+    if (!this.lastRoster) {
+      status.textContent = 'Listing as the match starts…';
+      return;
+    }
     const me = this.hud.name(this.slot);
     const show = () => (status.textContent = this.advertiser?.error ? `Not listed: ${this.advertiser.error}` : 'Listed: anyone can join from Online → Game browser.');
     this.advertiser = new LobbyAdvertiser(
@@ -1574,7 +1593,11 @@ export class GameSession {
         this.hud.setRoster(msg.players);
         this.lastRoster = msg.players;
         this.hostPanel.setPeople(this.peopleIn(msg.players), this.teamPeople(msg.players));
-        if (this.peerHost) this.updateOnline();
+        if (this.peerHost) {
+          // Hosting from the start: the listing waited for your name (updateListing).
+          if (!this.advertiser) this.updateListing();
+          this.updateOnline();
+        }
         if ((msg.players.find((p) => p.slot === this.slot)?.sp === 1) !== this.spectator) this.spectatorChanged(!this.spectator);
         this.looks = new Map(msg.players.map((p) => [p.slot, p.look]));
         this.view.setLocalLook(this.looks.get(this.slot));

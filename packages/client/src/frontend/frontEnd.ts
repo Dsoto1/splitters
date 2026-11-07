@@ -43,12 +43,17 @@ import {
   setVariant,
   setupFamily,
   setupFit,
+  setupLimits,
   setupPlayers,
   setupSummary,
   setupTeams,
   setupYourTeam,
   sizePresets,
   variantStates,
+  withSetupLimits,
+  limitsScale,
+  scoreStep,
+  SCORE_LIMIT_MAX,
   type MatchSetup,
   type TeamAssign,
   getLook,
@@ -86,7 +91,7 @@ import type { AudioSystem } from '../audio/audio.ts';
 import { listCustomLooks } from '../designer/customLooks.ts';
 import { mapThumbs, thumbPair, type MapThumbs } from './mapThumbs.ts';
 import type { MapMeta } from '../mapIndex.ts';
-import { botCastSelect, choice, field, fitChip, fitList, fold as foldEl, inert, infoTip, section, segmented, settingRow, sizeChips, stepper, teamEditor, type ChoiceOption } from './setupControls.ts';
+import { botCastSelect, choice, field, fitChip, fitList, fold as foldEl, inert, infoTip, limitsText, section, segmented, settingRow, sizeChips, stepper, teamEditor, type ChoiceOption } from './setupControls.ts';
 import { deleteSetup, lastSetup, listSetups, saveSetupAs, setLastSetup } from './savedSetups.ts';
 import type { MenuScene } from './menuScene.ts';
 import { weaponIcon } from './weaponIcons.ts';
@@ -229,7 +234,7 @@ export type ArcadeSetup = MatchSetup;
 export interface FrontEndHooks {
   openEditor(): void;
   openDesigner(look: string): void;
-  /** `host`: open a join code for friends as soon as the match starts (Match setup's Host online). */
+  /** `host`: online from the start (Match setup's Host online, the Host tab's Host online without its restart): listed in the game browser when there's a hub, and a join code. */
   /** `botSet`: the host's own bots (Bots → Edit bots…). `spectate`: join it watching (Match setup → Spectate). */
   playLocal(map: MapDocument, rules: MatchRules, bots: number, skill: ArcadeSetup['skill'], host?: boolean, botSet?: BotSet | null, spectate?: boolean): void;
   playOnline(server: string, name: string): void;
@@ -245,7 +250,7 @@ const MODE_LABEL = MODE_LABELS;
 const BASE_RULES = DEFAULT_RULES;
 /** The score limit row per mode: its label and stepper (step, min, max). */
 const SCORE_ROW: Partial<Record<GameMode, { label: string; step: number; min: number; max: number }>> = {
-  'core.tdm': { label: 'Team score', step: 5, min: 5, max: 200 },
+  'core.tdm': { label: 'Team score', step: 5, min: 5, max: SCORE_LIMIT_MAX },
   'core.ctf': { label: 'Captures', step: 1, min: 1, max: 20 },
   'core.forts': { label: 'Captures', step: 1, min: 1, max: 20 },
   'core.koth': { label: 'Hill seconds', step: 10, min: 30, max: 600 },
@@ -412,7 +417,8 @@ export class FrontEnd {
     const savedMap = maps.find((m) => m.key === (raw as { map?: unknown } | null)?.map);
     const saved = savedMap ? normalizeSetup(raw, savedMap.modes) : null;
     const first = maps.find((m) => m.key === 'sandgate') ?? maps[0]!;
-    this.setup = saved ?? { map: first.key, mode: first.modes[0]!, bots: first.bots, skill: 'normal', scoreLimit: BASE_RULES[first.modes[0]!].scoreLimit, minutes: 10 };
+    // Score and time follow the match's size until the player sets them (scoreAuto, timeAuto).
+    this.setup = saved ?? { map: first.key, mode: first.modes[0]!, bots: first.bots, skill: 'normal', scoreLimit: BASE_RULES[first.modes[0]!].scoreLimit, minutes: 10, scoreAuto: true, timeAuto: true };
     // The bottom bar: the news and the privacy page (main menu only; Profile links it too), then the
     // screen's key hints in groups (hints()). Sign-in and your profile are the Profile entry, top right.
     this.footer.append(
@@ -746,7 +752,7 @@ export class FrontEnd {
   private readonly browse = loadBrowsePrefs();
   /** Even teams: a bot added or taken away changes every team alike (shown on while the teams are the same size). */
   private evenTeams = true;
-  /** Start match plays offline, or hosts the match online: a join code, and friends who join take bots' places. */
+  /** Start match plays offline, or hosts the match online: listed in the game browser (with a hub) and a join code; friends who join take bots' places. */
   private hostOnline = false;
   /** Why the last change to the players stopped short (a limit), shown until the next change. */
   private stopped: string | null = null;
@@ -776,7 +782,8 @@ export class FrontEnd {
     const mode = m.modes.includes(this.setup.mode) ? this.setup.mode : m.modes[0]!;
     // Teams on the old map's own layout (Map's pick) take the new map's own; a layout of your own stays.
     const theirs = !!old && !!this.setup.teams && this.setup.teams.join() === mapPickTeams(old, this.setup.mode, this.device().max).join();
-    this.setup = { ...this.setup, map: key, mode, bots: m.bots, scoreLimit: mode === this.setup.mode ? this.setup.scoreLimit : BASE_RULES[mode].scoreLimit };
+    // Another mode: a score set for the old one means nothing there, so it follows the suggestion again.
+    this.setup = { ...this.setup, map: key, mode, bots: m.bots, ...(mode === this.setup.mode ? {} : { scoreLimit: BASE_RULES[mode].scoreLimit, scoreAuto: true }) };
     if (theirs) delete this.setup.teams;
     this.stopped = null;
   }
@@ -784,6 +791,9 @@ export class FrontEnd {
   /** Change the setup, remember it and redraw the panel. `stopped`: why the change stopped short of what was asked (a limit). */
   private change(f: (s: ArcadeSetup) => void, stopped: string | null = null): void {
     f(this.setup);
+    // Score and time that follow the size: stored as what they'll play (the setup saves as it reads).
+    const map = this.currentMap().map;
+    if (map) this.setup = withSetupLimits(this.setup, map, playerCap(this.setup.mode, map, this.device().max).max);
     this.stopped = stopped;
     this.saveSetup();
     this.refreshSetup();
@@ -835,7 +845,9 @@ export class FrontEnd {
   private setMode(m: GameMode): void {
     this.change((s) => {
       s.mode = m;
+      // A score set for another mode means nothing in this one: it follows the suggestion again (a time set by hand stays).
       s.scoreLimit = BASE_RULES[m].scoreLimit;
+      s.scoreAuto = true;
     });
   }
 
@@ -987,6 +999,8 @@ export class FrontEnd {
     const sizes = team ? setupTeams(s, map, cap.max) : [];
     const pickPlayers = current.bots + 1;
     const fit = setupFit(s, map, { deviceMax: dev.max, device: dev.name, pickPlayers });
+    // Score and time: the suggestion for this size, or the player's own.
+    const lim = setupLimits(s, map, cap.max);
     const fold = (id: string, title: string, badge: string | undefined, ...children: HTMLElement[]) =>
       foldEl({ id, title, badge, open: this.folds.has(id), onToggle: (open) => (open ? this.folds.add(id) : this.folds.delete(id)) }, ...children);
 
@@ -1004,7 +1018,7 @@ export class FrontEnd {
     const rec = map.metadata.recommendedPlayers;
     const spawnCount = map.entities.filter((e) => e.kind === 'spawn').length;
     const about = [map.metadata.description, map.metadata.author && !['Tile Trigger', 'ChronoSplit'].includes(map.metadata.author) ? `Map by ${map.metadata.author}` : '', `Made for ${rec.min}–${rec.max} players; ${spawnCount} spawn points.`].filter(Boolean).join('\n\n');
-    const length = coop ? (s.mode === 'core.zombies' ? 'Until the last wave' : 'Mission') : forts ? `~${Math.round((s.fortCycles ?? 1) * ((s.fortBuild ?? 2.5) + (s.fortCombat ?? 5)))} min` : race ? `${s.raceLaps ?? raceTrack(map)?.laps ?? 3} laps` : s.minutes ? `~${s.minutes} min` : 'No time limit';
+    const length = coop ? (s.mode === 'core.zombies' ? 'Until the last wave' : 'Mission') : forts ? `~${Math.round((s.fortCycles ?? 1) * ((s.fortBuild ?? 2.5) + (s.fortCombat ?? 5)))} min` : race ? `${s.raceLaps ?? raceTrack(map)?.laps ?? 3} laps` : lim.minutes ? `~${lim.minutes} min` : 'No time limit';
     const toggleFit = () => {
       this.fitOpen = !this.fitOpen;
       this.refreshSetup();
@@ -1091,12 +1105,14 @@ export class FrontEnd {
         }))]
       : [];
     variants[0]?.setAttribute('aria-label', 'Variants');
-    const scoreRow = SCORE_ROW[s.mode] ?? { label: 'Score limit', step: 5, min: 5, max: 200 };
+    const scoreRow = SCORE_ROW[s.mode] ?? { label: 'Score limit', step: 5, min: 5, max: 500 };
+    // Kills and points step by more as they grow (5, 10, 50, 100): a big match's 500 is a few presses away.
+    const scoreBy = scoreRow.step === 5 ? scoreStep(lim.scoreLimit) : scoreRow.step;
     const win: HTMLElement[] = [];
     if (coop) win.push(el('p', { class: 'setup-hint win-note', textContent: `${MODE_LABEL[s.mode]} ends through the mission, not a score or a clock.` }));
     else {
-      if (!race) win.push(field(scoreRow.label, 'The match ends when someone reaches this.', stepper({ value: s.scoreLimit, min: scoreRow.min, max: scoreRow.max, step: scoreRow.step, id: 'arcade-score', label: scoreRow.label.toLowerCase(), onChange: (v) => this.change((x) => (x.scoreLimit = v)) })));
-      if (!forts) win.push(field('Time limit', 'When time runs out the highest score (or the race leader) wins. ∞: no limit.', stepper({ value: s.minutes, min: 0, max: 60, id: 'arcade-minutes', fmt: (v) => (v ? `${v} min` : '∞'), onChange: (v) => this.change((x) => (x.minutes = v)) })));
+      if (!race) win.push(field(scoreRow.label, "The match ends when someone reaches this. It follows the match's size (players and bots) until you change it.", stepper({ value: lim.scoreLimit, min: scoreRow.min, max: scoreRow.max, step: scoreBy, id: 'arcade-score', label: scoreRow.label.toLowerCase(), onChange: (v) => this.change((x) => ((x.scoreLimit = v), (x.scoreAuto = false))) }), { custom: !lim.auto.score }));
+      if (!forts) win.push(field('Time limit', "When time runs out the highest score (or the race leader) wins. ∞: no limit. It follows the match's size until you change it.", stepper({ value: lim.minutes, min: 0, max: 60, id: 'arcade-minutes', fmt: (v) => (v ? `${v} min` : '∞'), onChange: (v) => this.change((x) => ((x.minutes = v), (x.timeAuto = false))) }), { custom: !lim.auto.time }));
     }
     // The mode's own key setting(s), with what wins; the rest of its settings are in Advanced rules.
     const flagReturn = () => stepper({ value: s.flagReturn ?? 30, min: 5, max: 120, step: 5, id: 'arcade-flag-return', fmt: (v) => `${v} s`, onChange: (v) => this.change((x) => (x.flagReturn = v === 30 ? undefined : v)) });
@@ -1110,7 +1126,8 @@ export class FrontEnd {
         field('Combat phase', 'Minutes of Capture the Flag after each build phase.', stepper({ value: s.fortCombat ?? 5, min: 2, max: 20, id: 'arcade-fort-combat', fmt: (v) => `${v} min`, onChange: (v) => this.change((x) => (x.fortCombat = v)) })),
       );
     }
-    const essentials = el('section', { class: 'setup-essentials', id: 'setup-essentials' }, modeChips, modeLine, ...unavailable, ...variants, el('div', { class: 'field-grid', id: 'setup-win' }, ...win));
+    const limitsLine = coop ? [] : this.limitsLine(s.mode, lim, { score: !race, time: !forts }, team && sizes.length <= 4 ? sizes.join('v') : `${players} ${race ? 'racers' : 'players'}`);
+    const essentials = el('section', { class: 'setup-essentials', id: 'setup-essentials' }, modeChips, modeLine, ...unavailable, ...variants, el('div', { class: 'field-grid', id: 'setup-win' }, ...win), ...limitsLine);
 
     // ---- presets: sizes worked out for this map and device (any change makes it Custom), then the party bundles
     const presets = sizePresets(s.mode, map, { teams: team ? sizes.length : undefined, deviceMax: dev.max, device: dev.name, pickPlayers });
@@ -1305,19 +1322,41 @@ export class FrontEnd {
   }
 
   /**
-   * The setup's foot, always in view: where the match runs (Offline, or Host online: a join code for friends,
-   * who take bots' places), saved setups in a small menu, then Spectate and Start match. Enter does what the
-   * switch says.
+   * Under what wins: the score and time suggested for the match's size (`size`: "24v24", "12 players"), which they
+   * follow until the player changes them; changed (Custom), a button puts them back on the suggestion. Nothing for
+   * a mode that keeps its own (rounds, laps) while it does.
+   */
+  private limitsLine(mode: GameMode, lim: ReturnType<typeof setupLimits>, shown: { score: boolean; time: boolean }, size: string): HTMLElement[] {
+    const custom = (shown.score && !lim.auto.score) || (shown.time && !lim.auto.time);
+    if (!custom && !limitsScale(mode)) return [];
+    const what = limitsText(mode, lim.suggested, shown);
+    const line = el('p', { class: 'setup-hint limits-line', id: 'setup-limits' });
+    if (!custom) line.textContent = `Suggested for ${size}: ${what}. They follow the size until you change them.`;
+    else {
+      const back = el('button', { type: 'button', class: 'link', id: 'setup-limits-reset', textContent: 'Back to suggested', title: "Score and time follow the match's size again" });
+      back.addEventListener('click', () => this.change((x) => ((x.scoreAuto = true), (x.timeAuto = true))));
+      line.append(el('span', { textContent: `Custom. Suggested for ${size}: ${what}.` }), back);
+    }
+    return [line];
+  }
+
+  /**
+   * The setup's foot, always in view: where the match runs (Offline, or Host online, as the pause menu's Host tab
+   * means it: listed publicly in the game browser when there's a community hub, and a join code for friends, who
+   * take bots' places), saved setups in a small menu, then Spectate and Start match. Enter does what the switch
+   * says; Spectate follows it too (offline, bots only; online, you watch while friends play).
    */
   private setupFoot(map: MapDocument, players: number): HTMLElement {
     const s = this.setup;
     const playlist = s.mode === 'core.coop' && !!s.playlist;
     const hostWhy = playlist ? 'Playlists are played offline: pick "Just this map" to host.' : null;
     const online = this.hostOnline && !hostWhy;
+    // With a community hub the match is listed publicly (the game browser); without one, friends join by code only.
+    const listed = !!hubSetting();
     const where = segmented(
       [
         ['offline', 'Offline', null, 'arcade-offline', 'Just you and the bots, on this computer.'],
-        ['online', 'Host online', hostWhy, 'arcade-host', "Host the match from this browser: a join code and an invite link for friends, who take bots' places. Esc → Host tab shows them, and can list the match in the game browser."],
+        ['online', 'Host online', hostWhy, 'arcade-host', listed ? "Host the match from this browser, listed publicly in the game browser: anyone can join, and friends also join with the code or invite link (Esc → Host tab shows them). People who join take bots' places." : "Host the match from this browser: a join code and an invite link for friends (Esc → Host tab shows them), who take bots' places. (No community hub is set, so it isn't listed in the game browser.)"],
       ],
       online ? 'online' : 'offline',
       (v) => {
@@ -1366,9 +1405,9 @@ export class FrontEnd {
     spectate.dataset.tip = `Start the match watching it: you follow players or fly a free camera while ${online ? 'friends and bots play' : 'the bots go at it'} (a bot takes your place). Press J to join the game.`;
     inert(spectate, nobody);
     spectate.addEventListener('click', () => !nobody && this.start({ spectate: true }));
-    const start = el('button', { type: 'button', class: 'primary go', id: 'arcade-start', title: online ? "Start the match and host it online: friends join with a code and take bots' places (Enter)" : 'Start the match offline: you and the bots (Enter)' }, el('span', { textContent: 'Start match' }), el('kbd', { class: 'a', textContent: '↵' }));
+    const start = el('button', { type: 'button', class: 'primary go', id: 'arcade-start', title: online ? `Start the match and host it online: ${listed ? 'listed in the game browser, and ' : ''}friends join with a code, taking bots' places (Enter)` : 'Start the match offline: you and the bots (Enter)' }, el('span', { textContent: 'Start match' }), el('kbd', { class: 'a', textContent: '↵' }));
     start.addEventListener('click', () => this.start());
-    const note = online ? [el('p', { class: 'foot-note', id: 'arcade-online-note', textContent: "Online: friends join with a code (Esc → Host tab, in the match) and take bots' places." })] : [];
+    const note = online ? [el('p', { class: 'foot-note', id: 'arcade-online-note', textContent: listed ? "Online: listed in the game browser; friends also join with the code (Esc → Host tab, in the match), taking bots' places." : "Online: friends join with a code (Esc → Host tab, in the match) and take bots' places." })] : [];
     return el('div', { class: 'setup-foot' }, el('div', { class: 'foot-row' }, where, menu), el('div', { class: 'go-row' }, spectate, start), ...note);
   }
 
@@ -1446,6 +1485,7 @@ export class FrontEnd {
           if (isTeamMode(x.mode) || isCoopMode(x.mode)) {
             x.mode = ffaModes.includes('core.deathmatch') ? 'core.deathmatch' : ffaModes[0]!;
             x.scoreLimit = BASE_RULES[x.mode].scoreLimit;
+            x.scoreAuto = true;
           }
           x.bots = Number(v.slice(4)) - 1;
           return;
@@ -1455,6 +1495,7 @@ export class FrontEnd {
           const pool = sizes.length > 2 ? anyTeams : teamModes;
           x.mode = pool.includes('core.tdm') ? 'core.tdm' : pool[0]!;
           x.scoreLimit = BASE_RULES[x.mode].scoreLimit;
+          x.scoreAuto = true;
         }
         x.teams = sizes;
         if (x.playerTeam !== undefined && x.playerTeam >= sizes.length) x.playerTeam = sizes.length - 1;
@@ -1490,8 +1531,9 @@ export class FrontEnd {
   }
 
   /**
-   * Start the match as the switch says (Offline, or Host online: a join code for friends). `spectate`: you
-   * join it watching (a bot plays your place; J joins the game).
+   * Start the match as the switch says (Offline, or Host online: listed in the game browser when there's a community
+   * hub, and a join code for friends: the Host tab's Host online). `spectate`: you join it watching (a bot plays your
+   * place; J joins the game).
    */
   private start(o: { spectate?: boolean } = {}): void {
     const m = this.currentMap();

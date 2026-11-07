@@ -1,5 +1,5 @@
-import { DEFAULT_TEAMS, botSetLabel, HOST_BOT_SKILLS, HOST_BOT_STYLES, MODE_LABELS, ROTATION_MAX, TICK_RATE, isTeamMode, isTwoTeamMode, mapPickPlayers, matchingPreset, peopleAndBots, setupFit, sizePresets, teamsLabel, type HostCommand, type HostRulesPatch, type HostState, type MapDocument, type MatchSetup, type RotationEntry, type RotationPreset, type RotationState } from '@tiletrigger/shared';
-import { botCastSelect, choice, el, field, fitChip, fitList, settingRow, sizeChips, stepper, teamEditor } from '../frontend/setupControls.ts';
+import { DEFAULT_TEAMS, botSetLabel, HOST_BOT_SKILLS, HOST_BOT_STYLES, MODE_LABELS, ROTATION_MAX, SCORE_LIMIT_MAX, TICK_RATE, isTeamMode, isTwoTeamMode, limitsScale, mapPickPlayers, matchingPreset, peopleAndBots, scoreStep, setupFit, sizePresets, suggestedLimits, teamsLabel, type HostCommand, type HostRulesPatch, type HostState, type MapDocument, type MatchSetup, type RotationEntry, type RotationPreset, type RotationState } from '@tiletrigger/shared';
+import { botCastSelect, choice, el, field, fitChip, fitList, limitsText, segmented, settingRow, sizeChips, stepper, teamEditor } from '../frontend/setupControls.ts';
 import { botManager } from '../frontend/botManager.ts';
 import { BOT_SET_PRESETS } from '../playlists.ts';
 
@@ -40,6 +40,13 @@ const nextRules = (s: HostState): Required<HostRulesPatch> | null => (s.rules ? 
 /** Rules that apply at once (not at the restart). */
 const LIVE_RULES: readonly (keyof HostRulesPatch)[] = ['mixPickups', 'dropWeapons'];
 const same = (a: readonly unknown[] | null | undefined, b: readonly unknown[] | null | undefined): boolean => (a ?? null) === (b ?? null) || (!!a && !!b && a.length === b.length && a.every((x, i) => x === b[i]));
+/** Rules that need a new match, as the foot and the saved line say them: "score 16", "time 15 min", "respawn 3 s", "friendly fire half". */
+const rulePhrases = (p: HostRulesPatch): string[] => [
+  ...(p.scoreLimit !== undefined ? [`score ${p.scoreLimit}`] : []),
+  ...(p.timeLimitSeconds !== undefined ? [`time ${p.timeLimitSeconds ? `${Math.round(p.timeLimitSeconds / 60)} min` : '∞'}`] : []),
+  ...(p.respawnDelayTicks !== undefined ? [`respawn ${Math.round(p.respawnDelayTicks / TICK_RATE)} s`] : []),
+  ...(p.friendlyFire !== undefined ? [`friendly fire ${FF_LABELS[p.friendlyFire].toLowerCase()}`] : []),
+];
 
 /**
  * The pause menu's Host tab for whoever runs the match (the offline player, the Host game host, a dedicated
@@ -77,6 +84,12 @@ export class HostPanel {
   private fitOpen = false;
   /** Apply & restart was pressed once with other people in the match: the next press does it. */
   private armed: ReturnType<typeof setTimeout> | null = null;
+  /**
+   * When changed rules that need a new match apply: 'now' (Apply & restart: the match starts over with them) or
+   * 'next' (Save for next match: they wait for the next match, after this one's scoreboard or Restart match, and
+   * this one carries on). The host's choice stays while the panel does.
+   */
+  private when: 'now' | 'next' = 'now';
 
   constructor(
     private readonly hooks: HostPanelHooks,
@@ -255,8 +268,12 @@ export class HostPanel {
     return { map: s.map, mode: s.mode, bots: Math.max(0, d.fill - 1), skill: d.skill, scoreLimit: d.rules?.scoreLimit ?? 0, minutes: Math.round((d.rules?.timeLimitSeconds ?? 0) / 60), ...(s.teams ? { teams: [...d.sizes] } : {}) };
   }
 
-  /** What the draft changes: live (now) and at the restart, as short phrases for the foot ("+2 bots", "score 16"). */
-  private changes(s: HostState, d: Draft): { live: string[]; restart: string[]; liveRules: HostRulesPatch; restartRules: HostRulesPatch } {
+  /**
+   * What the draft changes, as short phrases for the foot ("+2 bots", "score 16"): `live`, now; `restart`, the rules
+   * that need a new match, against what plays now (Apply & restart plays them, any saved for the next match too);
+   * `fresh`, those not saved for the next match yet (Save for next match saves them).
+   */
+  private changes(s: HostState, d: Draft): { live: string[]; restart: string[]; fresh: string[]; liveRules: HostRulesPatch; restartRules: HostRulesPatch; freshRules: HostRulesPatch } {
     const now = this.sizesOf(s);
     const live: string[] = [];
     const total = (sizes: readonly number[], fill: number) => (s.teams ? sizes.reduce((a, b) => a + b, 0) : fill);
@@ -268,27 +285,29 @@ export class HostPanel {
     if (d.cast !== undefined && !same(d.cast, s.cast)) live.push('bot characters');
     const liveRules: HostRulesPatch = {};
     const restartRules: HostRulesPatch = {};
-    const restart: string[] = [];
+    const freshRules: HostRulesPatch = {};
     const want = nextRules(s);
     const r = d.rules;
     if (r && want && s.rules) {
       for (const k of Object.keys(r) as (keyof HostRulesPatch)[]) {
         if (LIVE_RULES.includes(k)) {
           if (r[k] !== s.rules[k]) (liveRules as Record<string, unknown>)[k] = r[k];
-        } else if (r[k] !== s.rules[k] || r[k] !== want[k]) (restartRules as Record<string, unknown>)[k] = r[k];
+          continue;
+        }
+        if (r[k] !== s.rules[k] || r[k] !== want[k]) (restartRules as Record<string, unknown>)[k] = r[k];
+        if (r[k] !== want[k]) (freshRules as Record<string, unknown>)[k] = r[k];
       }
       if (liveRules.mixPickups !== undefined) live.push(`mixed pickups ${liveRules.mixPickups ? 'on' : 'off'}`);
       if (liveRules.dropWeapons !== undefined) live.push(`weapon drops ${liveRules.dropWeapons ? 'on' : 'off'}`);
-      if (restartRules.scoreLimit !== undefined) restart.push(`score ${restartRules.scoreLimit}`);
-      if (restartRules.timeLimitSeconds !== undefined) restart.push(`time ${restartRules.timeLimitSeconds ? `${Math.round(restartRules.timeLimitSeconds / 60)} min` : '∞'}`);
-      if (restartRules.respawnDelayTicks !== undefined) restart.push(`respawn ${Math.round(restartRules.respawnDelayTicks / TICK_RATE)} s`);
-      if (restartRules.friendlyFire !== undefined) restart.push(`friendly fire ${FF_LABELS[restartRules.friendlyFire].toLowerCase()}`);
     }
-    return { live, restart, liveRules, restartRules };
+    return { live, restart: rulePhrases(restartRules), fresh: rulePhrases(freshRules), liveRules, restartRules, freshRules };
   }
 
-  /** Send what the draft changes: the live part now, then the rules, then (when any needs it) the restart. */
-  private apply(): void {
+  /**
+   * Send what the draft changes: the live part now, then the rules, then (`when` 'now', when any needs it) the
+   * restart. 'next': the rules wait for the next match (the match keeps them: HostControl's pending rules).
+   */
+  private apply(when: 'now' | 'next'): void {
     const s = this.state;
     const d = this.draft;
     if (!s || !d) return;
@@ -306,9 +325,9 @@ export class HostPanel {
     if (d.style !== s.style) cmd.style = d.style;
     if (d.cast !== undefined && !same(d.cast, s.cast)) cmd.cast = d.cast;
     if (Object.keys(cmd).length > 1) this.hooks.command(cmd);
-    const rules = { ...c.liveRules, ...c.restartRules };
+    const rules = { ...c.liveRules, ...(when === 'now' ? c.restartRules : c.freshRules) };
     if (Object.keys(rules).length) this.hooks.command({ c: 'rules', rules });
-    if (c.restart.length) this.hooks.command({ c: 'restart' });
+    if (when === 'now' && c.restart.length) this.hooks.command({ c: 'restart' });
   }
 
   private render(): void {
@@ -332,8 +351,22 @@ export class HostPanel {
     const map = this.map && this.map.metadata.id === s.map ? this.map : null;
     const coop = s.mode === 'core.coop' || s.mode === 'core.zombies';
 
-    // ---- what wins (restart): score and time, as on Match setup
+    // ---- what wins (restart): score and time, as on Match setup, with what's suggested for the players and bots
     const r = d.rules;
+    const players = s.teams ? d.sizes.reduce((a, b) => a + b, 0) : d.fill;
+    const sug = r && limitsScale(s.mode) ? suggestedLimits(s.mode, players, s.teams ? d.sizes : undefined) : null;
+    const suggestion: HTMLElement[] = [];
+    if (r && sug) {
+      const size = s.teams && d.sizes.length <= 4 ? d.sizes.join('v') : `${players} players`;
+      const off = r.scoreLimit !== sug.scoreLimit || r.timeLimitSeconds !== sug.minutes * 60;
+      const use = el('button', { type: 'button', class: 'link', id: 'hc-use-suggested', textContent: 'Use suggested', title: 'Set the score and time suggested for this many players and bots (they apply with a new match: Apply & restart, or Save for next match)' });
+      use.addEventListener('click', () => {
+        r.scoreLimit = sug.scoreLimit;
+        r.timeLimitSeconds = sug.minutes * 60;
+        redraw();
+      });
+      suggestion.push(el('p', { class: 'setup-hint limits-line', id: 'hc-suggest' }, el('span', { textContent: `Suggested for ${size}: ${limitsText(s.mode, sug)}.` }), ...(off ? [use] : [])));
+    }
     const win = r
       ? [
           card(
@@ -342,9 +375,11 @@ export class HostPanel {
             el(
               'div',
               { class: 'field-grid' },
-              field('Score limit', 'Score that wins (0: none).', stepper({ value: r.scoreLimit, min: 0, max: 1000, id: 'hc-score', label: 'score limit', onChange: (v) => ((r.scoreLimit = v), redraw()) }), { restart: true }),
+              // Small scores step by one (a capture, a round); big ones by more (10, 50, 100).
+              field('Score limit', 'Score that wins (0: none).', stepper({ value: r.scoreLimit, min: 0, max: SCORE_LIMIT_MAX, step: r.scoreLimit < 50 ? 1 : scoreStep(r.scoreLimit), id: 'hc-score', label: 'score limit', onChange: (v) => ((r.scoreLimit = v), redraw()) }), { restart: true }),
               field('Time limit', 'Minutes until the match ends (∞: none).', stepper({ value: Math.round(r.timeLimitSeconds / 60), min: 0, max: 120, id: 'hc-minutes', fmt: (v) => (v ? `${v} min` : '∞'), onChange: (v) => ((r.timeLimitSeconds = v * 60), redraw()) }), { restart: true }),
             ),
+            ...suggestion,
           ),
         ]
       : [];
@@ -439,7 +474,7 @@ export class HostPanel {
       if (s.rules?.dropWeapons !== undefined && s.mode !== 'core.discs' && s.mode !== 'core.race') ruleRows.push(settingRow('Drop weapon on death', "A fallen player's or bot's primary with ammo left lies at the body for 30 s, with exactly that ammo; the rest of what they carried is recycled. Applies at once (off clears the ones lying about).", choice([['on', 'On'], ['off', 'Off']] as const, r.dropWeapons ? 'on' : 'off', (v) => ((r.dropWeapons = v === 'on'), redraw()), 'hc-drops'), { live: true }));
     }
     const pending = s.pending && Object.keys(s.pending).length ? s.pending : null;
-    if (pending) ruleRows.push(el('p', { class: 'hc-pending', id: 'hc-pending', textContent: `Waiting for the restart: ${[pending.scoreLimit !== undefined ? `score ${pending.scoreLimit}` : '', pending.timeLimitSeconds !== undefined ? `time ${pending.timeLimitSeconds ? `${Math.round(pending.timeLimitSeconds / 60)} min` : '∞'}` : '', pending.respawnDelayTicks !== undefined ? `respawn ${Math.round(pending.respawnDelayTicks / TICK_RATE)} s` : '', pending.friendlyFire ? `friendly fire ${FF_LABELS[pending.friendlyFire].toLowerCase()}` : ''].filter(Boolean).join(', ')}. Restart match plays with them.` }));
+    if (pending) ruleRows.push(el('p', { class: 'hc-pending', id: 'hc-pending', textContent: `Saved for the next match: ${rulePhrases(pending).join(', ')}. They play once this match ends (or on Restart match, or a map change).` }));
 
     // ---- the match: Change map (routine), then what undoes everyone's match (restart, end), set apart in red
     const routine: HTMLElement[] = [];
@@ -448,7 +483,7 @@ export class HostPanel {
       mapBtn.addEventListener('click', () => this.hooks.changeMap?.());
       routine.push(mapBtn);
     }
-    const restart = el('button', { id: 'hc-restart', class: 'danger', textContent: 'Restart match', title: pending ? 'Start over with the waiting rule changes (asks for a second click)' : 'Start the match over on this map (asks for a second click)' });
+    const restart = el('button', { id: 'hc-restart', class: 'danger', textContent: 'Restart match', title: pending ? 'Start over with the rules saved for the next match (asks for a second click)' : 'Start the match over on this map (asks for a second click)' });
     confirmTwice(restart, 'Click again to restart', () => this.hooks.command({ c: 'restart' }));
     const end = el('button', { id: 'hc-end', class: 'danger', textContent: 'End match', title: 'End the match now and show the scoreboard (asks for a second click)' });
     confirmTwice(end, 'Click again to end', () => this.hooks.command({ c: 'end' }));
@@ -494,17 +529,31 @@ export class HostPanel {
   }
 
   /**
-   * The foot, always in view: Resume, then Apply, named by what it will do (Apply now: everything changes
-   * live; Apply & restart: something waits for the match to start over), what it changes, and the status.
+   * The foot, always in view: Resume, then Apply, named by what it will do: Apply now (everything changes live),
+   * Apply & restart (a rule that needs a new match changed: the match starts over with it) or Save for next match
+   * (those rules wait for the next match and this one carries on). While such a rule has changed, beside it the
+   * choice between the last two (Restart now | Next match); then a line saying what will happen, and the status.
    */
   private drawFoot(s: HostState, d: Draft): void {
     const c = this.changes(s, d);
-    const restart = c.restart.length > 0;
-    const any = restart || c.live.length > 0;
+    const rules = c.restart.length > 0;
+    const next = rules && this.when === 'next';
+    const restart = rules && !next;
+    const any = c.live.length > 0 || (next ? c.fresh.length > 0 : rules);
     const resume = el('button', { type: 'button', class: 'primary', id: 'hc-resume', textContent: 'Resume', title: 'Back to the game (Esc)' });
     resume.addEventListener('click', () => this.hooks.resume?.());
-    const apply = el('button', { type: 'button', class: `hc-apply${restart ? ' restart' : ''}`, id: 'hc-apply', textContent: restart ? 'Apply & restart' : 'Apply now', disabled: !any });
-    apply.title = !any ? 'Change something above first' : restart ? 'Apply these changes and start the match over (scores reset): some rules only change at a restart' : 'Apply these changes now (bots join or leave one at a time)';
+    // (Rules saved already and only players or bots changed since: those apply now.)
+    const saving = next && (c.fresh.length > 0 || !c.live.length);
+    const apply = el('button', { type: 'button', class: `hc-apply${restart ? ' restart' : saving ? ' next' : ''}`, id: 'hc-apply', textContent: restart ? 'Apply & restart' : saving ? 'Save for next match' : 'Apply now', disabled: !any });
+    apply.title = !any
+      ? next
+        ? 'Saved already: the next match plays with it'
+        : 'Change something above first'
+      : restart
+        ? 'Apply these changes and start the match over (scores reset): some rules only change with a new match'
+        : next
+          ? `Keep the changed rules for the next match (after this one's scoreboard, or Restart match): this match carries on${c.live.length ? '; players and bots change now' : ''}`
+          : 'Apply these changes now (bots join or leave one at a time)';
     const others = this.people.length;
     apply.addEventListener('click', () => {
       if (!any) return;
@@ -520,10 +569,37 @@ export class HostPanel {
       }
       if (this.armed) clearTimeout(this.armed);
       this.armed = null;
-      this.apply();
+      this.apply(next ? 'next' : 'now');
     });
-    const what = el('span', { class: 'hc-changes', id: 'hc-changes', textContent: any ? [c.live.join(', '), c.restart.length ? `${c.restart.join(', ')} (restart)` : ''].filter(Boolean).join(' · ') : 'No changes' });
-    this.foot.replaceChildren(resume, apply, what, this.status);
+    // When the changed rules apply: now (the match restarts) or with the next match.
+    const when = rules
+      ? [
+          segmented(
+            [
+              ['now', 'Restart now', null, 'hc-when-now', 'Apply restarts the match now with the changed rules (scores reset).'],
+              ['next', 'Next match', null, 'hc-when-next', 'Save the changed rules for the next match: this one carries on, and they play after its scoreboard (or when you restart it, or change map). Players and bots still change now.'],
+            ],
+            this.when,
+            (v) => {
+              this.when = v;
+              this.drawFoot(s, d);
+              document.getElementById(`hc-when-${v}`)?.focus();
+            },
+            { id: 'hc-when', label: 'When the rule changes apply' },
+          ),
+        ]
+      : [];
+    // What will happen, in a line.
+    const list = (xs: readonly string[]) => xs.join(', ');
+    const text = !rules
+      ? c.live.length
+        ? list(c.live)
+        : 'No changes'
+      : restart
+        ? `${list([...c.live, ...c.restart])}: the match restarts now`
+        : [c.live.length ? `${list(c.live)} now` : '', c.fresh.length ? `${list(c.fresh)} from the next match` : `saved for the next match: ${list(c.restart)}`].filter(Boolean).join('; ');
+    const what = el('span', { class: 'hc-changes', id: 'hc-changes', textContent: text, title: text });
+    this.foot.replaceChildren(resume, apply, ...when, what, this.status);
   }
 }
 

@@ -214,6 +214,7 @@
         <div class="ed-pal-head">
           <div class="tabs ed-pal-tabs" id="ed-pal-tabs" role="tablist" aria-label="Palette">
             <button class="tab on" data-ws="build" data-pane="tiles" data-cat="structure" title="Structure: rooms, corridors, buildings, stairs and open ground">Tiles</button>
+            <button class="tab" data-ws="build" data-pane="setpieces" data-cat="structure" title="Set pieces: structures of several cells placed as one (a carriageway, a skybridge, a casemate), and your own, saved from a selection">Set pieces</button>
             <button class="tab" data-ws="build" data-pane="advanced" data-cat="structure" title="Walls &amp; openings: build any side of a room as a wall, window, doorway or gap">Walls</button>
             <button class="tab" data-ws="build" data-pane="props" data-cat="props" title="Props by theme: home &amp; town, industrial, sci-fi, medieval, dungeons, western, ancient">Props</button>
             <button class="tab" data-ws="entities" data-pane="entities" data-cat="gameplay" title="Gameplay: spawns, game-mode objectives and pickups" hidden>Gameplay</button>
@@ -247,6 +248,10 @@
         </div>
         <div class="ed-pane" data-pane="tiles" data-cat="structure">
           <div id="ed-tiles"></div>
+        </div>
+        <div class="ed-pane" data-pane="setpieces" data-cat="structure" hidden>
+          <div id="ed-setpieces"></div>
+          <input id="ed-sp-import-file" type="file" accept=".json,application/json" hidden />
         </div>
         <div class="ed-pane" data-pane="advanced" data-cat="structure" hidden>
           <div id="ed-edges"></div>
@@ -357,6 +362,7 @@
         <span id="ed-hint"></span>
       </footer>
       <div id="ed-tip" hidden></div>
+      <div id="ed-marquee" hidden></div>
       <div id="ed-toast"></div>
       <div id="ed-logic" hidden></div>
       <dialog id="ed-open-dialog">
@@ -375,6 +381,17 @@
         </div>
       </dialog>
       <dialog id="ed-publish-dialog"></dialog>
+      <dialog id="ed-sp-save-dialog">
+        <h2>Save as set piece</h2>
+        <p class="ed-note">The selection becomes a piece you place as one, in any map: kept in this browser (Set pieces → My set pieces), with Export to share it as a file.</p>
+        <label class="ed-dialog-field"><span>Name</span><input id="ed-sp-save-name" maxlength="60" /></label>
+        <p id="ed-sp-save-summary" class="ed-note"></p>
+        <ul id="ed-sp-save-problems" class="ed-sp-problems"></ul>
+        <div class="ed-dialog-actions">
+          <button id="ed-sp-save-ok" class="primary">Save to my set pieces</button>
+          <button id="ed-sp-save-cancel">Cancel</button>
+        </div>
+      </dialog>
       <dialog id="ed-quit-dialog">
         <h2>Unsaved changes</h2>
         <p id="ed-quit-msg"></p>

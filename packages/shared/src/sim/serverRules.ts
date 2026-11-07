@@ -4,7 +4,7 @@ import { teamCount } from './hostRules.ts';
 import { isCoopMode, isTwoTeamMode } from './matchSetup.ts';
 import { MAX_TEAMS } from './npc.ts';
 import { BOT_CAST_CHOICES } from '../content/botThemes.ts';
-import { GAME_MODES, MODE_LABELS, isGameMode, isTeamMode, rulesForMode, type GameMode, type MatchRules } from './rules.ts';
+import { GAME_MODES, MODE_LABELS, SCORE_LIMIT_MAX, isGameMode, isTeamMode, rulesForMode, type GameMode, type MatchRules } from './rules.ts';
 
 /**
  * A dedicated server's match rules (the Host Service's RULES setting, its
@@ -71,7 +71,7 @@ export const castFromRuleValue = (v: string | undefined): string[] | undefined =
 /** Every rule, in the order the console and the launcher list them. */
 export const SERVER_RULES: readonly RuleSpec[] = [
   {
-    key: 'score', label: 'Score limit', help: 'The score that wins (0: none). Per mode: kills in Deathmatch and Team Deathmatch, captures in CTF, rounds in Elimination…', type: { kind: 'int', min: 0, max: 1000, zero: 'none' }, apply: 'restart', perMode: true,
+    key: 'score', label: 'Score limit', help: 'The score that wins (0: none). Per mode: kills in Deathmatch and Team Deathmatch, captures in CTF, rounds in Elimination…', type: { kind: 'int', min: 0, max: SCORE_LIMIT_MAX, zero: 'none' }, apply: 'restart', perMode: true,
     modes: (m) => notCoop(m) && m !== 'core.race', read: (r) => r.scoreLimit, write: (r, v) => (r.scoreLimit = v as number),
   },
   {

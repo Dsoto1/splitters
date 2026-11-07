@@ -1347,6 +1347,16 @@ function facadeOpenings(segs: readonly [number, number, number, number, number][
   }
   return out;
 }
+/** The stretches of a wall that stand on the floor (its segments from the floor up, joined): a doorway breaks them. */
+function floorRuns(segs: readonly [number, number, number, number, number][]): [number, number][] {
+  const runs: [number, number][] = [];
+  for (const [u0, u1] of segs.filter((g) => g[2] <= 0.01).sort((a, b) => a[0] - b[0])) {
+    const last = runs.at(-1);
+    if (last && u0 <= last[1] + 1e-6) last[1] = Math.max(last[1], u1);
+    else runs.push([u0, u1]);
+  }
+  return runs;
+}
 /** Walls whose street face gets a frontier false front, awning and boardwalk. */
 const STREET_FACES = new Set<ResolvedEdge>(STREET_EDGE_STYLES);
 
@@ -1415,7 +1425,9 @@ function packFacadeBoxes(map: MapDocument, cells: Map<string, CellOccupant>): Wo
           // battlemented parapet with pinnacles over the buttresses: dark flagstone dressing on Gothic stone, dressed
           // limestone on Collegiate stone.
           const [dressing, plinthTint, courseTint] = facade === 'collegiate_stone' ? ['core.stone_trim', '#c4bfb2', '#d8d3c6'] : ['core.pbr_flagstone', '#8a8a90', '#a0a0a8'];
-          if (ground) add(side, -half, half, 0, 0.6, out0 - 0.1, -base, dressing, plinthTint);
+          // The plinth runs under the wall and stops at a doorway (where no wall stands on the floor): a skybridge's
+          // door ends, a hall's doors.
+          if (ground) for (const [u0, u1] of floorRuns(segs)) add(side, u0, u1, 0, 0.6, out0 - 0.1, -base, dressing, plinthTint);
           if (full) for (const u of [-half + 0.45, half - 0.45]) {
             add(side, u - 0.32, u + 0.32, 0, levelHeight * 0.6, out0 - 0.55, out0, look.skin, look.tint);
             add(side, u - 0.26, u + 0.26, levelHeight * 0.6, levelHeight, out0 - 0.3, out0, look.skin, look.tint);

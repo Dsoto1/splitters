@@ -365,6 +365,10 @@ button.cta:hover { background: #ffc46e; }
 .when-tag { padding: 1px 5px; border-radius: 2px; font: 700 9px var(--font-display); letter-spacing: 0.1em; text-transform: uppercase; }
 .when-tag.restart { color: var(--orange); border: 1px solid rgba(255, 179, 71, 0.5); }
 .when-tag.live { color: var(--success); border: 1px solid rgba(46, 204, 113, 0.5); }
+.when-tag.custom { color: var(--cyan); border: 1px solid rgba(0, 209, 255, 0.5); }
+/* Under what wins: the score and time suggested for the size (they follow it until changed); Custom, a button back to it. */
+.limits-line { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; }
+.limits-line button { padding: 3px 10px; font-size: 11px; }
 .team-editor { display: flex; flex-direction: column; gap: 8px; }
 .team-head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; color: var(--muted); font: 600 13px var(--font-display); text-transform: uppercase; letter-spacing: 0.06em; }
 .team-total { color: var(--text); font: 600 13px var(--font-display); letter-spacing: 0.04em; text-transform: none; }
@@ -604,13 +608,18 @@ html.touch .char-spin .spin-label kbd { display: none; }
 #pause .hc-foot #hc-resume { min-width: 120px; padding: 10px 18px; font-size: 15px; }
 #pause .hc-foot .hc-apply { padding: 10px 16px; font-size: 14px; color: var(--cyan); border-color: rgba(0, 209, 255, 0.55); background: rgba(0, 209, 255, 0.1); }
 #pause .hc-foot .hc-apply.restart { color: var(--orange); border-color: rgba(255, 179, 71, 0.6); background: rgba(255, 179, 71, 0.1); }
+#pause .hc-foot .hc-apply.next { color: var(--success); border-color: rgba(46, 204, 113, 0.6); background: rgba(46, 204, 113, 0.1); }
+/* When changed rules apply (Restart now | Next match), beside Apply: compact, and not pushed right as the Offline / Host online switch is. */
+#pause .hc-foot .seg-switch { margin-left: 0; }
+#pause .hc-foot #hc-when .seg-opt { padding: 6px 9px; }
 #pause .hc-foot .hc-apply.armed { color: #ff8a7a; border-color: rgba(231, 76, 60, 0.7); background: rgba(231, 76, 60, 0.16); }
 #pause .hc-foot .hc-apply:disabled { color: var(--muted); border-color: var(--line); background: transparent; opacity: 0.6; cursor: default; }
 #pause .hc-changes { flex: 0 1 auto; min-width: 0; max-width: 420px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; color: var(--muted); font: 500 13px var(--font-body); }
 #pause .hc-foot .hc-status { flex-basis: 100%; margin: 0; }
 #pause .hc-foot .hc-status:empty { display: none; }
 #pause .hc-foot .hc-status.error { color: #ff8a6b; }
-#pause .pause-host-foot .seg-switch { margin-left: auto; }
+/* Offline / Host online, pushed right (only the foot's own switch: Restart now | Next match stays beside Apply). */
+#pause .pause-host-foot > .seg-switch { margin-left: auto; }
 /* A short window (a phone sideways): on the Host tab its foot's Resume does what the key hints would, so they make room. */
 @media (max-height: 520px) {
   #pause:has(#pause-host-foot:not([hidden])) .pause-hints { display: none; }

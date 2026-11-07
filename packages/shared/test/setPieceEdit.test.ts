@@ -29,8 +29,13 @@ import {
   updateTileCommand,
   validateMap,
   addSetPieceDefCommand,
+  setEdgeCommand,
+  setPieceMirrorRefusal,
+  setPiecePortStates,
+  type EdgeStyle,
   type EditCommand,
   type MapDocument,
+  type MapEntity,
   type SetPiecePlacement,
 } from '../src/index.ts';
 import { makeMap } from './helpers.ts';
@@ -214,5 +219,68 @@ describe('set pieces: budgets count the parts', () => {
     const h = new EditHistory(base());
     h.execute('nothing', empty);
     expect(h.canUndo).toBe(false);
+  });
+});
+
+describe('set pieces in MapMaker: ports facing walls, and mirror', () => {
+  const portsOf = (doc: MapDocument, p: SetPiecePlacement) => setPiecePortStates(p, library.pieces.get(p.piece)!, buildMapGeometry(expandSetPieces(doc, library).map));
+  /** The carriageway at (2, 1) and a room west of it, against its ground-floor west door. */
+  const withRoom = () => {
+    const { doc, placement } = place(base(), 'setpiece.carriageway_1', 2, 1, 0);
+    const next = applyCommand(doc, ok(placeTileCommand(doc, 'core.room', 1, 1, 0, 0)).command);
+    return { doc: next, placement, room: next.classicStructure.tiles.find((t) => t.x === 1 && t.y === 1)! };
+  };
+  const westDoor = (doc: MapDocument, p: SetPiecePlacement) => portsOf(doc, p).find((s) => s.side === 'W' && s.z === 0)!;
+  const roomSide = (doc: MapDocument, style: EdgeStyle) => applyCommand(doc, ok(setEdgeCommand(doc, { cell: [1, 1, 0], side: 'E' }, style)));
+
+  it('every port of a piece in the open is clear; its own parts never count; its own wall closes an automatic side', () => {
+    const { doc, placement } = place(base(), 'setpiece.carriageway_1', 2, 1, 0);
+    const states = portsOf(doc, placement);
+    expect(states.map((s) => `${s.side}${s.z}:${s.kind}`)).toEqual(['N0:opening', 'S0:opening', 'W0:door', 'E0:door', 'W1:door', 'E1:door']);
+    expect(states.every((s) => s.blockedBy === null)).toBe(true);
+    // The room over the arch leaves its sides to the automatic wall: with nothing built against them they are walls.
+    expect(states.map((s) => s.closed)).toEqual([false, false, false, false, true, true]);
+    // A room against it on Level 1 meets those ports: a doorway (open), and its wall in the way is a warning again.
+    const upstairs = applyCommand(doc, ok(placeTileCommand(doc, 'core.room', 1, 1, 1, 0)).command);
+    expect(portsOf(upstairs, placement).find((s) => s.side === 'W' && s.z === 1)).toMatchObject({ closed: false, blockedBy: null });
+    // Without its own parts in the boxes (a ghost not yet placed), every port counts as open.
+    expect(setPiecePortStates(placement, library.pieces.get(placement.piece)!, []).every((s) => !s.closed && !s.blockedBy)).toBe(true);
+  });
+
+  it('a room built against a door: its side a doorway (ports meeting) is clear; a wall, a window or a half wall is not', () => {
+    const { doc, placement, room } = withRoom();
+    expect(westDoor(doc, placement).blockedBy).toBeNull();
+    expect(westDoor(roomSide(doc, 'door'), placement).blockedBy).toBeNull();
+    expect(westDoor(roomSide(doc, 'arch'), placement).blockedBy).toBeNull();
+    for (const style of ['wall', 'window', 'half'] as const) expect(westDoor(roomSide(doc, style), placement), style).toMatchObject({ kind: 'door', blockedBy: room.id });
+    // Only that port: the door over it (level 1) and the others stay clear.
+    expect(portsOf(roomSide(doc, 'wall'), placement).filter((s) => s.blockedBy)).toHaveLength(1);
+  });
+
+  it("a free block in a port blocks it (turned blocks too); one over the opening's head, a step or one aside doesn't", () => {
+    const { doc, placement } = place(base(), 'setpiece.carriageway_1', 2, 1, 0);
+    // The north opening's middle is at (16, 0, 12): just beyond it, z 12.25.
+    const block = (id: string, position: [number, number, number], size: [number, number, number], yaw = 0): MapEntity => ({ id, kind: 'block', position, size, yaw, material: null, tint: null, behaviour: 'solid' }) as MapEntity;
+    const north = (e: MapEntity) => portsOf(applyCommand(doc, { kind: 'addEntities', entities: [e] }), placement).find((s) => s.side === 'N')!.blockedBy;
+    expect(north(block('wall_b', [16, 0, 12.6], [6, 3, 0.8]))).toBe('wall_b');
+    expect(north(block('turned_b', [16, 0, 13], [0.6, 3, 3], Math.PI / 5))).toBe('turned_b');
+    expect(north(block('lintel_b', [16, 3, 12.6], [6, 0.6, 0.8]))).toBeNull();
+    expect(north(block('step_b', [16, 0, 12.6], [6, 0.25, 0.8]))).toBeNull();
+    expect(north(block('aside_b', [21, 0, 12.6], [2, 3, 0.8]))).toBeNull();
+  });
+
+  it('ports follow the turn and the mirror', () => {
+    const turned = place(base(), 'setpiece.carriageway_1', 2, 1, 0, 1);
+    expect(portsOf(turned.doc, turned.placement).filter((s) => s.z === 0).map((s) => `${s.side}:${s.kind}`).sort()).toEqual(['E:opening', 'N:door', 'S:door', 'W:opening']);
+    const bridge = place(base(), 'setpiece.skybridge_3', 0, 0, 1, 0, true);
+    expect(portsOf(bridge.doc, bridge.placement)).toHaveLength(library.pieces.get('setpiece.skybridge_3')!.ports.length);
+  });
+
+  it("why M can't mirror a piece: a tile that isn't its own mirror image, or the piece saying so", () => {
+    expect(setPieceMirrorRefusal(library.pieces.get('setpiece.carriageway_1')!)).toBeNull();
+    expect(setPieceMirrorRefusal(library.pieces.get('setpiece.trench_bend')!)).toBe("Trench Bend can't be mirrored: Sunken Trench Bend (core.trench_sunk_corner) isn't its own mirror image. Turn it (R) instead");
+    const said = { ...library.pieces.get('setpiece.carriageway_1')!, mirror: 'none' as const };
+    expect(setPieceMirrorRefusal(said)).toMatch(/the piece says mirror: none/);
+    for (const def of library.pieces.values()) expect(!!setPieceMirrorRefusal(def), def.id).toBe(def.mirror === 'none');
   });
 });

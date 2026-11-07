@@ -73,6 +73,36 @@ to half a minute while joining. While that happens, their connection is still up
 of silence. Now it checks the connection itself, and gives a friend whose connection is up 60 s. A dead link still goes
 after 20 s.
 
+**Score and time follow the match's size** (owner, 2026-11-06: "24v24 in a 40 pt match means on average 1 kill per
+[player]. 24v24 plays ok with 500 points, but also 15–20 min"): Match setup suggests the score and time for the
+players and bots, and they follow every size change until you set them yourself. Yours then stay, marked **Custom**,
+with **Back to suggested** one click away. The suggestions are fitted to how fast bots score on real maps
+(`pnpm bot-report`, which now prints each match's team scores and its top bot's kills; checked again with the Phase A
+bots), so a match is usually won near its time limit, not in two minutes (docs/BOTS.md, "Score and time"):
+- **Team Deathmatch**: a point for each player on a team per minute of the time limit, which is 10 minutes up to 6 a
+  side, 15 up to 16 and 20 above: 4v4 40 points in 10 minutes, 8v8 120 in 15, 12v12 180 in 15, 24v24 500 in 20.
+- **Deathmatch**: the leader's kills grow gently with the players (12 × √players), in 10 minutes: 15 for 2 players,
+  35 for 8, 50 for 16, 70 for 32.
+- **Capture the Flag** keeps 3 captures, with 10, 15 or 20 minutes by team size; **King of the Hill**'s hill seconds
+  go with the time (12 a minute: 120 in 10 minutes, 180 in 15, 240 in 20).
+- Rounds modes, co-op and Zombies are as before.
+
+Saved setups keep working: a score or time you set stays; the old defaults (40 points, 10 minutes) follow the size.
+Scores can now go up to 5,000 (they stopped at 1,000).
+
+**Host online means the same everywhere** (owner, 2026-11-06): Match setup's Host online now starts the match online
+**and listed** in the game browser, as the pause menu's does (with a community hub; without one, a join code). The
+join code still shows. Spectate follows the switch: offline you watch the bots, online you watch while friends play.
+
+**Save for next match** (owner, 2026-11-06): in the pause menu's Host tab, when you change a rule that needs a new
+match (score, time, respawn, friendly fire), choose **Restart now** or **Next match** beside Apply. Next match keeps
+the rules for the next match (after this one's scoreboard, or Restart, Change map or the rotation) and this one
+carries on; the foot says which will happen. The Host tab also shows the suggested score and time for the players
+being set, with **Use suggested**.
+
+**Co-op sizes stop at the map's size** (owner, 2026-11-06): co-op and Zombies' size presets go up to what the map is
+made for (its team layout, or its recommended most), not a Big squad of 24 or Max of 48 beyond it.
+
 **Signing in doesn't flash a red line** (owner, 2026-11-06): after Google sign-in the menu no longer shows "Signed in" in the red status line bottom left (the profile corner top right shows it); sign-in problems still show there.
 
 **Match setup, redesigned** (the owner's report and the approved design, 2026-11-06)
@@ -105,6 +135,34 @@ people apart from bots, the fit indicator), bots and rules, every setting that n
 **Resume** (Esc too), **Apply** named by what it does (Apply now, or Apply & restart), what it changes, the
 Offline / Host online switch and **Leave match**. The join code, invite link, listing, players and kicks, rotation and
 Change map are all still there.
+
+**Set pieces, part 2: MapMaker** (owner-approved, docs/SET_PIECES_PLAN.md; how to use it: docs/BUILDING_KIT.md, "Set
+pieces")
+- **A Set pieces tab** (Build): every set piece with its picture, grouped by family, found by search, narrowed to the
+  Style Pack you pick.
+- **Place a whole piece in one click:** a see-through ghost of it follows the pointer in its real materials, green
+  where it fits and red where it doesn't, and it says why. R turns it, M mirrors it (a piece that can't be mirrored
+  says why). Its look follows the map's theme, the Style Pack you pick, or any look you choose.
+- **One piece, one click:** clicking any part of a placed piece selects all of it; it moves, turns, mirrors,
+  duplicates and deletes as one, with undo. The inspector shows its look, mirror and place, its doors and openings,
+  and changes a material or leaves a part out for that piece alone.
+- **Doors and openings shown:** the ghost and the selected piece mark where they connect, in red where a wall is in
+  the way, with a warning that says which wall.
+- **Explode to tiles** turns a piece into ordinary tiles, blocks and props to edit one by one; one undo brings it back.
+- **Make your own:** drag a box over tiles, blocks and props to select them, then **Save as set piece**. Your pieces
+  are kept in this browser next to your maps, place in any map (the map carries them), and export and import as
+  files. The owner can export one to ship with the game.
+- **St. John's gets two set pieces, placed in MapMaker:** the Argonne Gate is now a two-storey castellated carriageway
+  (St. John's stone, Collegiate stone facade, the shallow vault) from Exeter Street to the drill field, with a door
+  into Knight on one side and, on the other, a new two-storey east tower against Welles with its own door onto the
+  drill field and a window on the street; and a covered skybridge on the first floor joins DeKoven and Smythe over
+  Church Street, battlements and all, its floor high enough that nobody inside it holds the Church Street hill in King
+  of the Hill. Spawns and objectives are where they were.
+- A set piece's own parts no longer count in MapMaker's overlaps warning (only your pieces against it do); placing a
+  set piece lowers the ground under its floors at once (a sunk trench's slot), as loading the map does, so an
+  exported map loads exactly as it was saved; the Collegiate and Gothic stone plinth stops at doorways instead of
+  running across them.
+- The coverage test map has one of every set piece.
 
 **Set pieces, part 3: pieces for the beach assault and the colosseum** (owner-approved, docs/SET_PIECES_PLAN.md)
 - **For MAP 21 (Military Compound look):** the Gun Casemate and the Cliff Casemate (a gun port to the sea, and rooms

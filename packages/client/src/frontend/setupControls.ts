@@ -1,4 +1,4 @@
-import { BOT_CAST_CHOICES, CHARACTER_GROUPS, DEFAULT_TEAMS, MAX_PLAYER_SLOTS, MAX_TEAMS, MAX_TEAM_SIZE, botCastLabel, changeTeamCount, evenTeams, peopleAndBots, setTeamSize, type FitItem, type FitTopic, type GameMode, type PlayerCap, type SetupFit, type SizePreset, type TeamChange } from '@tiletrigger/shared';
+import { BOT_CAST_CHOICES, CHARACTER_GROUPS, DEFAULT_TEAMS, MAX_PLAYER_SLOTS, MAX_TEAMS, MAX_TEAM_SIZE, botCastLabel, changeTeamCount, evenTeams, peopleAndBots, setTeamSize, type FitItem, type FitTopic, type GameMode, type MatchLimits, type PlayerCap, type SetupFit, type SizePreset, type TeamChange } from '@tiletrigger/shared';
 
 /**
  * Match setup controls shared by Play → match setup and the host's pause
@@ -86,6 +86,25 @@ export function stepper(o: StepperOptions): HTMLElement {
   return box;
 }
 
+/** What each mode's score counts, for a score limit in words. */
+const SCORE_UNITS: Partial<Record<GameMode, string>> = {
+  'core.tdm': 'points',
+  'core.deathmatch': 'kills',
+  'core.ctf': 'captures',
+  'core.forts': 'captures',
+  'core.koth': 'hill seconds',
+  'core.elim': 'rounds',
+  'core.bomb': 'rounds',
+  'core.hostage': 'rounds',
+  'core.discs': 'knock-offs',
+};
+
+/** A score limit and time in words ("500 points, 20 min"): the parts the mode shows (a race has no score, Fort Wars no clock). */
+export function limitsText(mode: GameMode, l: MatchLimits, shown: { score: boolean; time: boolean } = { score: true, time: true }): string {
+  const parts = [shown.score ? `${l.scoreLimit} ${SCORE_UNITS[mode] ?? 'points'}` : '', shown.time ? (l.minutes ? `${l.minutes} min` : 'no time limit') : ''];
+  return parts.filter(Boolean).join(', ');
+}
+
 /** One option of a choice: its value, label and (when it can't be picked) why not. */
 export type ChoiceOption<T extends string> = readonly [value: T, label: string, disabled?: string | null];
 
@@ -131,6 +150,8 @@ export interface RowOptions {
   restart?: boolean;
   /** Changes now, mid-match. */
   live?: boolean;
+  /** Set by hand: it no longer follows the suggestion for the match's size (score, time). */
+  custom?: boolean;
   /** Can't be used here, and why. */
   disabled?: string | null;
 }
@@ -140,6 +161,7 @@ function whenTags(o: RowOptions): HTMLElement[] {
   const tags: HTMLElement[] = [];
   if (o.restart) tags.push(el('span', { class: 'when-tag restart', textContent: '⟳ Restart', title: 'Applies when the match restarts (Apply & restart)' }));
   if (o.live) tags.push(el('span', { class: 'when-tag live', textContent: 'Live', title: 'Changes right away, mid-match' }));
+  if (o.custom) tags.push(el('span', { class: 'when-tag custom', textContent: 'Custom', title: 'Set by you: it stays when the size changes ("Back to suggested" follows the size again)' }));
   return tags;
 }
 

@@ -19,7 +19,7 @@ import { DEFAULT_RULES, GAME_MODES, MODE_LABELS, type GameMode } from './rules.t
  */
 
 /** Settings a variant can switch: any optional MatchSetup field. */
-export type VariantSettings = Partial<Omit<MatchSetup, 'map' | 'mode' | 'bots' | 'skill' | 'scoreLimit' | 'minutes'>>;
+export type VariantSettings = Partial<Omit<MatchSetup, 'map' | 'mode' | 'bots' | 'skill' | 'scoreLimit' | 'minutes' | 'scoreAuto' | 'timeAuto'>>;
 
 export interface SetupVariant {
   id: string;
@@ -246,14 +246,15 @@ export function partyOn(p: PartyPreset, setup: MatchSetup, map: MapDocument, off
 }
 
 /**
- * A setup with a party preset applied (a new object): its mode (and that mode's standard score when the mode
- * changes), its variants on and the others off, and the map's own team layout for the mode (`deviceMax`:
- * players this device runs; `pickPlayers`: the map's own free-for-all count). Null when the map can't play it.
+ * A setup with a party preset applied (a new object): its mode (when the mode changes, its score follows the
+ * suggestion for the size again: a score for another mode means nothing), its variants on and the others off, and
+ * the map's own team layout for the mode (`deviceMax`: players this device runs; `pickPlayers`: the map's own
+ * free-for-all count). Null when the map can't play it.
  */
 export function applyParty(p: PartyPreset, setup: MatchSetup, map: MapDocument, offered: readonly GameMode[], o: { deviceMax: number; pickPlayers?: number }): MatchSetup | null {
   const mode = partyMode(p, map, offered);
   if (!mode || partyUnavailable(p, map, offered)) return null;
-  let out: MatchSetup = { ...setup, mode, scoreLimit: mode === setup.mode ? setup.scoreLimit : DEFAULT_RULES[mode].scoreLimit };
+  let out: MatchSetup = mode === setup.mode ? { ...setup } : { ...setup, mode, scoreLimit: DEFAULT_RULES[mode].scoreLimit, scoreAuto: true };
   for (const v of SETUP_VARIANTS) if (variantFor(v, mode) && !p.variants.includes(v.id) && variantOn(v, out, map)) out = setVariant(out, v.id, false);
   for (const id of p.variants) out = setVariant(out, id, true);
   const pick = sizePresets(mode, map, { deviceMax: o.deviceMax, pickPlayers: o.pickPlayers ?? mapPickPlayers(map.metadata.recommendedPlayers) }).find((x) => x.id === 'pick');

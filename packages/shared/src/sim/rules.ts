@@ -145,6 +145,12 @@ export interface MatchRules {
   ballistics?: 'arcade' | 'standard' | 'advanced';
 }
 
+/**
+ * The highest score limit a host can set: big matches suggest far more than the old cap of 1,000 (48 v 48 Team
+ * Deathmatch about 1,500: matchSetup.ts suggestedLimits), with room above for longer matches.
+ */
+export const SCORE_LIMIT_MAX = 5000;
+
 /** Weapons-only rules (spears, discs) take away weapon, ammo and grenade pickups. */
 export const restrictedWeapons = (rules: MatchRules): boolean => !!rules.weapons && rules.weapons !== 'normal';
 

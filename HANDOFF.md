@@ -100,6 +100,59 @@ Bomb plants (0.5 → 0.3 a match) a little down on the samples, and ten CTF maps
 <!-- /bots-a -->
 
 <!-- setpieces -->
+### Set pieces, part 2: MapMaker (`wip/setpieces-2`, agents, 2026-11-06; from `wip/setpieces-3`, main dbbc4b78 merged in; green on `check/setpieces-2` at 555c40ec, run 42312043139; not landed)
+What was built: docs/SET_PIECES_PLAN.md, "As built: part 2" and "St. John's (as built)"; how to use it:
+docs/BUILDING_KIT.md, "Set pieces". MapMaker places, selects, themes, explodes and saves set pieces; the coverage map
+has all 39; St. John's has the Argonne Gate carriageway (with an east tower) and a DeKoven-Smythe skybridge. The first
+agent built the MapMaker side and the coverage map and was stopped by an interrupt before St. John's was saved; the
+second placed St. John's (from the start, in MapMaker) and finished.
+- **Where the code is:** `packages/client/src/editor/editorApp.ts` (the set piece tool and ghost, picking a part as its
+  placement, the box select, the tab and its panel, the inspector, Explode, the save dialog, My set pieces),
+  `editorView.ts` (the piece ghost, outlines, port marks), `paletteCatalog.ts` (the `setpieces` pane, families,
+  Style Pack fit), `storage.ts` (the local library), `frontend/modelThumbs.ts` (the `piece` view for the atlas);
+  shared `editor/setPieceEdit.ts` (`setPieceMirrorRefusal`, `setPiecePortStates`).
+- **Fixed on the way (shared):** `coplanarSpots(map, boxes, partOf)` leaves a set piece's parts against each other
+  out (MapMaker passes the expansion's `partOf`); `withTerrainUnderFloors` counts set pieces' floors (placing a
+  trench carves the ground at once: exports used to change on load); the Gothic/Collegiate stone plinth stops at
+  doorways (`floorRuns`).
+- **Tests:** shared `setPieceEdit.test.ts` (ports, mirror refusal), `zfight.test.ts` (a piece is one piece),
+  `terrainFloors.test.ts` (the carve on placing), `setPieceExpand.test.ts` (the plinth at doorways),
+  `coverageMap.test.ts` (every set piece); client `setPieceLibrary.test.ts`; e2e editorux `editorSetPieceChecks` (the
+  tab, ghost and refusal, turn and mirror, select as one, move and undo, explode and undo, box select, save, export
+  and import, the ports warning) and the coverage flow's set piece count.
+- **St. John's, proof** (the exported file): validate-map OK (0 issues); z-fight audit 0; MapMaker's overlaps 69 spots
+  before and after, none new; the navigation audit no traps and no findings (two new islands: the closed rooms over
+  the arch and in the tower); spawns (41), objectives, logic and modes unchanged; bots sent each way in a match walk
+  Exeter Street to the drill field through the passage and back, into Knight by its new door and back, through the
+  east tower, and DeKoven's first floor to Smythe's over the bridge and back. Screenshots (street, drill field,
+  inside, before and after) are in the session scratchpad, `sp2b/shots/`.
+- **Pitfalls:** MapMaker's document keeps the placements: draw, pick and check `viewDoc` (expanded), and map a part
+  id to its placement with `expansion.partOf`. Driving MapMaker with Playwright on a big map: click palette cards by
+  mouse position and wait for the tool (Playwright's own click can wait forever on a busy page), run long drivers
+  against `vite preview`, not the dev server (it reloads when a source file changes), keep the window 1280 px wide or
+  more (narrower, the inspector folds away), and point the view at the sky while editing through the inspector (on
+  St. John's, software rendering of the campus was most of the time). Screenshots with the view's photo camera
+  (`view.photoCamera()`, as capture-map-shots.mjs does) come out on Medium graphics: on High every view drew the
+  player's own picture. **Every MapMaker edit lowers the ground under every level floor and never raises it back**
+  (`withTerrainUnderFloors`, older than set pieces): a big floor moved field by field lowers the ground under each
+  place it passes. A copy of Welles's 56 m slab, squared up and then moved before it was cut down to the tower's
+  paving, lowered Knight's whole front by 0.7 m on the first try (thrown away): size and place a copied floor first
+  and square it up last (turned floors are never lowered under).
+- **For the owner:**
+  - The other pack facades (concrete, corrugated, manor brick, clapboard, roman, desert, harbour, snow, timber
+    frame...) still draw their ground band across doorways (visual only): stopping them at doorways, as the stone ones
+    now do, changes those packs' look, so it waits for a yes.
+  - St. John's: the gate's east tower (two storeys, Welles's stone, a door onto the drill field, a window on Exeter
+    Street) and the skybridge's site (DeKoven to Smythe over Church Street, the one pair of halls that face each other
+    at a span a skybridge takes, with short block links to each hall's first floor) are the agents' choices, per the
+    plan.
+  - King of the Hill: Church Street's hill (`hill_2938`, radius 5 m) is on the street by the bridge's south end, and a
+    hill counts anyone up to 3.5 m over its floor (4.04 m there); the bridge's own floor is at 4.0 m, so a floor at
+    4.25 m now runs through the bridge (level with the links' steps) and nobody inside holds the hill. Moving the hill
+    a few metres instead would be the other way; it was left where it was (objectives unchanged).
+  - MapMaker's ground lowering (the pitfall above) is a candidate for the MapMaker overhaul: lower the ground only
+    under what an edit moved and put it back when a floor moves away, or work it out on load only.
+
 ### Set pieces, part 1: data, expansion, first content (`wip/setpieces`, agents, 2026-11-06; from main 774a28ce, main e18a175e merged in; green on `check/setpieces` at 09af09cd, run 42211217797; not landed)
 Plan and what it settled: docs/SET_PIECES_PLAN.md ("As built: part 1"); how to add a piece: docs/CONTENT_PIPELINE.md,
 "Set pieces". Part 2 (MapMaker: the Set pieces palette tab, ghost placing, select/inspector, Explode, Save selection,
@@ -449,18 +502,90 @@ for each character?"
 
 The brief is in the session scratchpad, `briefs/perf-4.md`.
 
-### Queued (owner, 2026-11-06): Match Setup follow-ups, NEXT FREE SLOT (before Roulette)
-**Owner's answers to the redesign's questions:**
-1. Host online lists the match publicly from both places.
-2. Spectate keeps following the Offline/Host online switch.
-3. Bring back "save for next match" in the Host tab.
-4. Cap co-op size presets at the map's recommended size.
+<!-- match-setup-2 -->
+### Match Setup follow-ups: one Host online, Save for next match, co-op sizes, score and time follow the size (`wip/match-setup-2`, agents, 2026-11-06; main 2acb8f23 merged in; green on `check/match-setup-2` at 9d41d790, run 42307136197; not landed)
+The owner's answers to the redesign's questions (1. Host online lists the match from both places; 2. Spectate keeps
+following the Offline / Host online switch; 3. "save for next match" back in the Host tab; 4. co-op size presets capped
+at the map's size) and the request that the default score and time scale with players + bots ("24v24 in a 40 pt
+match means on average 1 kill per; 24v24 plays ok with 500 points, but also 15–20 min"). The brief is the session
+scratchpad's `briefs/match-setup-followups.md`. An earlier agent built it and was stopped by an interrupt; the next
+merged main (Bot AI Phase A, the four retired maps, the intake follow-up, the prop slack pass), checked the curve
+against Phase A's bots, fixed the Host tab foot and two e2e checks, and took the pictures.
 
-**New:** default score and time scale with players + bots. The owner: "24v24 in a 40 pt match means on average 1 kill
-per; 24v24 plays ok with 500 points, but also 15–20 min."
+**Screenshots** (session scratchpad `shots-ms2c/`; `shots.mjs` there makes them from a `vite preview`): Match setup on
+St. John's at 4v4, 12v12 and 24v24 (`setup-4v4.png`, `setup-12v12.png`, `setup-24v24.png`), set by hand
+(`setup-24v24-custom.png`, `setup-12v12-custom.png`: Custom stays at another size) and `setup-12v12-back-to-suggested.png`;
+the Host tab's foot in each Apply state at 1280 × 720 and 1920 × 1080 (`host-foot-<width>-1-no-changes.png`,
+`-2-apply-now`, `-3-apply-restart`, `-4-save-next`, `-5-saved`), in a match started from Match setup, so the foot has
+its Offline / Host online switch (test mode has none: it can't host).
 
-The brief is in the session scratchpad, `briefs/match-setup-followups.md`. It has a curve fitted to measured kill rates
-and anchored at 4v4 ≈ 40 points / 10 min and 24v24 ≈ 500 points / 15–20 min.
+**What's in it:**
+- **Score and time follow the size** (`sim/matchSetup.ts`: `suggestedLimits`, `setupLimits`, `withSetupLimits`,
+  `teamMinutes`, `niceScore` / `scoreStep`, `limitsScale`; `MatchSetup.scoreAuto` / `timeAuto`; `SCORE_LIMIT_MAX` 5,000
+  in rules.ts). Match setup's To win follows every size change until set by hand (a Custom tag, `#setup-limits` under
+  it with `#setup-limits-reset` "Back to suggested"). Saved setups: the old defaults (the mode's standard score, 10
+  minutes) follow the size, anything else stays (`normalizeSetup`). The Host tab's To win shows the suggestion for the
+  size being set (`#hc-suggest`, "Use suggested" `#hc-use-suggested`); a map change to another mode takes that mode's
+  suggestion (`rulesForTravel`).
+- **One Host online** (session.ts `goOnline`): Match setup's Host online lists the match as the pause menu's does (a join
+  code without a hub); a match hosted from the start is listed under the host's name (the listing waits for the roster).
+- **Save for next match** (hostPanel.ts `drawFoot`: `#hc-when`, Restart now | Next match, beside Apply while a ⟳ Restart
+  rule changed; Apply becomes Save for next match). HostControl keeps the rules (`pending`, `nextRules`) and
+  `Match.beforeRound` puts them in play when a new match starts (after the scoreboard, or Restart); map changes and the
+  rotation take them (`withPending`; servers: `travelRules`); the host tells everyone (`onNextRules`). The foot's line
+  says which happens, the Rules card what is saved.
+- **Co-op and Zombies' sizes** stop at the map's (`squadRoom`: its team layout in all, else its recommended most).
+- **bot-report** prints each match's team scores and its top bot's kills (`scores:`; `teams`, `top` in `--json`).
+- **This round's fixes:** the foot's Restart now | Next match switch sat at the far right beside Offline / Host online
+  (a later `margin-left: auto` rule beat its own); only the foot's own switch is pushed right now (style.css,
+  `.pause-host-foot > .seg-switch`). e2e: `setupLimitsFlow` wanted the saved setup rewritten just by opening Match
+  setup (it isn't until something changes; it failed every run), now checked after the first size change;
+  `hostcontrols` waits for the match's own phase to leave the restart's countdown before the page's (on a loaded
+  machine the page still showed "playing" from before the restart, so Save for next match and End match ran in the
+  countdown).
+- **Local e2e** (this machine at about 3× CI's flow times, `CI=1` waits): `lobby` passed; `teams` passed every check
+  but the old `setupLimitsFlow` one, which passed after the fix (run alone); `hostcontrols` passed up to its Host game
+  part, whose friend checks (the friend's page loading, rejoining the host's new map, the rotation) passed in one run
+  of three: load (the machine was shared with two other agents). On CI (run 42307136197, the full suite: every unit
+  job, the bots check, 16 e2e shards) all three passed first time; the one retry was `designer` (a custom look's
+  first-person arms), which this branch doesn't touch.
+
+**The curve** (docs/BOTS.md, "Score and time", has the tables): Team Deathmatch a point per player on a team per minute
+of the time limit, the time 10 minutes up to 6 a side, 15 up to 16, 20 above (4v4 40/10, 8v8 120/15, 12v12 180/15,
+16v16 240/15, 24v24 500/20, 48v48 950/20); Deathmatch 12 × √players kills in 10 minutes (15 for 2, 35 for 8, 50 for
+16, 70 for 32); Capture the Flag 3 captures with the team time; King of the Hill 12 hill seconds a minute of the time
+(120/10, 180/15, 240/20); rounds modes, co-op, Zombies, Fort Wars, Disc Arena and races as before.
+
+**The kill rates behind it** (`pnpm bot-report`, 10-minute matches, no limits; the leading team's points a minute,
+the middle of the maps):
+- Before Phase A (main a07cb65b, 5–7 maps a size): TDM 1v1 1.4, 2v2 3.0, 4v4 5.4, 6v6 11.4, 8v8 7.9, 16v16 13.9,
+  24v24 30.6, 48v48 56.5 (2 maps): about 1.3 a player a minute (0.9–1.5; 1.9 at 6v6 on the small maps). Deathmatch,
+  the top bot's kills a minute: 2 players 1.8, 4 2.6, 8 3.8, 12 4.6, 16 7.0, 32 5.0 (big maps).
+- After Phase A (main adad4de7 merged; the same maps, seeds and lengths, Iron Compound left out): TDM 4v4 4.0 → 4.3
+  (Diamond Park, Bunker Cross, Sandgate), 8v8 8.1 → 7.3 (+ Capitol Mall, Fernwood Moon), 24v24 32.1 → 29.3 (Diamond
+  Park, Capitol Mall, Fernwood Moon, Sunken Kingdom); Deathmatch 8 players 4.7 → 4.8, 16 7.9 → 8.4 (Sandgate,
+  Citadel); King of the Hill 8v8 Diamond Park 7.9 → 5.8, St. John's 18.1 → 18.0 hill seconds a minute; CTF 8v8
+  Diamond Park 0.2 → 0.5 captures a minute, St. John's 0.0 → 0.1. All within a seed's spread (Diamond Park 24v24: 22.7
+  and 34.9), so the curve stays: the suggestion falls due at 9.4 minutes of 10 (4v4), 16.4 of 15 (8v8: time first, at
+  about 110 of 120) and 17.1 of 20 (24v24).
+- Scripts and rows: session scratchpad `measure/` (before) and `measure-a/` (after: `run.sh`, `run2.sh`,
+  `compare.mjs`, `tables.mjs`).
+
+**Tests:** unit `packages/shared/test/matchLimits.test.ts` (the curve per mode, Custom and suggested, old saves, co-op
+caps, Save for next match at the next round, Restart and a map change, scores past 1,000) with the matchSetup,
+setupPlan, serverRules and hostControl tests; e2e `teams` (`setupLimitsFlow`: the suggested score and time follow the
+size), `lobby` (Host online from Match setup lists the match), `hostcontrols` (Save for next match, the suggestion
+line).
+
+**For the owner:**
+- 6v6 on the small maps made for it (Atomic Court, Sandgate, Void Yard) reaches its 60 points in about 5 of its 10
+  minutes; 7v7 jumps to 110 points in 15. Both follow the owner's time steps (10 minutes up to 6 a side); a different
+  step there would be a one-line change (`teamMinutes`).
+- King of the Hill's 12 hill seconds a minute (120 in 10 minutes, as before) is reached at about two thirds of the time
+  on St. John's and not at all on Diamond Park, where bots hold the hill 5–8 s a minute.
+- Capture the Flag keeps 3 captures: after Phase A, Diamond Park's bots made 7 in 15 minutes at 8v8 (3 in about 6
+  minutes), St. John's one each (the time decides).
+<!-- /match-setup-2 -->
 
 <!-- match-setup -->
 ### Match Setup redesign, the Host tab, Spectate before the start (`wip/match-setup`, agents, 2026-11-06; main bc6037a1 merged in; green on `check/match-setup` at c32bbf20, run 42242658709; not landed)
@@ -510,7 +635,8 @@ session scratchpad's `shots-ms/before/`, `shots-ms/after/` and `shots-ms/after-h
   for 2v3v5).
 - **Bundle:** the menu's first JS 702.9 kB gzip (budget 840).
 
-**For the owner to decide**
+**For the owner to decide** (answered 2026-11-06: list from both, keep Spectate, Save for next match back, co-op capped;
+built on `wip/match-setup-2`, "Match Setup follow-ups" above)
 - Pause menu → Host online with a community hub restarts and lists the match (as Go online did); Match setup's Host
   online opens a code only (as Host did). Same word, two behaviours: list from Match setup too, or keep?
 - Spectate follows the switch: offline it's bots only; with Host online you watch while friends play. Keep?
