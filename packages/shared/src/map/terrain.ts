@@ -68,16 +68,30 @@ export function cellFoliage(t: TerrainData, i: number): number {
   return MATERIAL_FOLIAGE[TERRAIN_MATERIALS[t.materials[i] ?? 0] ?? 'grass'];
 }
 
-export function newTerrain(sizeMetres: number, spacing = 2, centre: [number, number] = [0, 0], material: TerrainMaterial = 'grass'): TerrainData {
-  const n = Math.min(MAX_TERRAIN_VERTS, Math.round(sizeMetres / spacing) + 1);
+/**
+ * The grid a new terrain `width` × `depth` metres gets: 2 m apart, or the next of 2.5, 3 and 4 m that keeps both sides
+ * within MAX_TERRAIN_VERTS vertices (a 400 × 320 m terrain is 2.5 m apart, 161 × 129 vertices).
+ */
+export function terrainSpacingFor(width: number, depth = width): number {
+  const longest = Math.max(width, depth);
+  return [2, 2.5, 3, 4].find((s) => Math.round(longest / s) + 1 <= MAX_TERRAIN_VERTS) ?? 4;
+}
+
+/**
+ * A flat terrain `sizeMetres` across (east-west) and `depthMetres` (north-south, default the same) round `centre`,
+ * vertices `spacing` m apart (at most MAX_TERRAIN_VERTS a side).
+ */
+export function newTerrain(sizeMetres: number, spacing = 2, centre: [number, number] = [0, 0], material: TerrainMaterial = 'grass', depthMetres = sizeMetres): TerrainData {
+  const cols = Math.min(MAX_TERRAIN_VERTS, Math.round(sizeMetres / spacing) + 1);
+  const rows = Math.min(MAX_TERRAIN_VERTS, Math.round(depthMetres / spacing) + 1);
   return {
-    origin: [centre[0] - ((n - 1) * spacing) / 2, centre[1] - ((n - 1) * spacing) / 2],
+    origin: [centre[0] - ((cols - 1) * spacing) / 2, centre[1] - ((rows - 1) * spacing) / 2],
     spacing,
-    cols: n,
-    rows: n,
+    cols,
+    rows,
     baseY: 0,
-    heights: new Array(n * n).fill(0),
-    materials: new Array((n - 1) * (n - 1)).fill(TERRAIN_MATERIALS.indexOf(material)),
+    heights: new Array(cols * rows).fill(0),
+    materials: new Array((cols - 1) * (rows - 1)).fill(TERRAIN_MATERIALS.indexOf(material)),
     boundary: true,
     foliage: [],
   };

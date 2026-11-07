@@ -1,6 +1,6 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import { NavWorld, initNavigation } from '../src/nav/index.ts';
-import { EditHistory, PhysicsWorld, applyBrush, buildMapGeometry, initPhysics, loadMap, mapTerrainMesh, newTerrain, paintSlopes, smoothGrid, smoothTerrain, stepMovement, terrainHoldMask, terrainHeightAt, terrainRaycast, validateMap, TERRAIN_MATERIALS, type MapDocument } from '../src/index.ts';
+import { EditHistory, PhysicsWorld, applyBrush, buildMapGeometry, initPhysics, loadMap, mapTerrainMesh, newTerrain, paintSlopes, serializeMap, smoothGrid, smoothTerrain, stepMovement, terrainHoldMask, terrainHeightAt, terrainRaycast, terrainSpacingFor, validateMap, TERRAIN_MATERIALS, type MapDocument } from '../src/index.ts';
 import { makeMap } from './helpers.ts';
 
 beforeAll(() => Promise.all([initPhysics(), initNavigation()]));
@@ -22,6 +22,34 @@ describe('terrain', () => {
     const h = terrainHeightAt(t, 5, 3)!;
     expect(h).toBeGreaterThan(0);
     expect(h).toBeLessThan(6);
+  });
+
+  it('makes oblong terrains, 2.5 m apart past 320 m (MapMaker width and depth)', () => {
+    expect(terrainSpacingFor(320)).toBe(2);
+    expect(terrainSpacingFor(380, 320)).toBe(2.5);
+    expect(terrainSpacingFor(400)).toBe(2.5);
+    const t = newTerrain(380, terrainSpacingFor(380, 320), [0, 0], 'sand', 320);
+    expect([t.cols, t.rows]).toEqual([153, 129]);
+    expect(t.origin).toEqual([-190, -160]);
+    expect(t.heights.length).toBe(153 * 129);
+    expect(t.materials.length).toBe(152 * 128);
+    expect(terrainHeightAt(t, 189, 159)).toBeCloseTo(0, 5);
+    expect(terrainHeightAt(t, 189, 161)).toBeNull();
+    // A typed flatten height levels the ground to it from anywhere.
+    const flat = applyBrush(t, { brush: 'flatten', x: 0, z: 0, radius: 10, strength: 1, target: 12 });
+    expect(terrainHeightAt(flat, 0, 0)).toBeCloseTo(12, 2);
+    // It saves and loads as it is, and validates.
+    const map = { ...makeMap([], [[0, 0, 0]]), terrain: t };
+    const back = loadMap(serializeMap(map));
+    expect(back.ok).toBe(true);
+    if (back.ok) expect([back.map.terrain!.cols, back.map.terrain!.rows, back.map.terrain!.spacing]).toEqual([153, 129, 2.5]);
+    // Unfinished (no spawn point yet): it doesn't play, but MapMaker's Import and drafts open it with its problems.
+    const bare = serializeMap({ ...map, entities: [] });
+    expect(loadMap(bare).ok).toBe(false);
+    expect(loadMap(bare, undefined, { forEditing: true }).ok).toBe(false);
+    const open = loadMap(bare, undefined, { forEditing: true, openWithErrors: true });
+    expect(open.ok).toBe(true);
+    expect(open.issues.map((i) => i.code)).toContain('spawn.none');
   });
 
   it('brushes raise, lower, flatten, smooth and paint', () => {

@@ -61,7 +61,7 @@ export function listDrafts(): Draft[] {
   if (legacy) {
     try {
       const parsed = JSON.parse(legacy) as { map: unknown; savedAt: string };
-      const r = loadMap(parsed.map, undefined, { forEditing: true });
+      const r = loadMap(parsed.map, undefined, { forEditing: true, openWithErrors: true });
       // Skip it when it is just the saved copy of a library map.
       const saved = r.ok ? openFromLibrary(r.map.metadata.id, true) : null;
       const same = r.ok && saved && 'map' in saved && sameContent(saved.map, r.map);
@@ -79,7 +79,7 @@ export function listDrafts(): Draft[] {
   }
   const out: Draft[] = [];
   for (const d of storedDrafts()) {
-    const r = loadMap(d.map, undefined, { forEditing: true });
+    const r = loadMap(d.map, undefined, { forEditing: true, openWithErrors: true });
     if (r.ok) out.push({ map: r.map, savedAt: d.savedAt });
   }
   return out.sort((a, b) => b.savedAt.localeCompare(a.savedAt));
@@ -166,7 +166,7 @@ function download(text: string, name: string): void {
 
 export async function importMapFile(file: File): Promise<{ map: MapDocument; issues: ValidationIssue[] } | { issues: ValidationIssue[] }> {
   if (file.size > 4 * 1024 * 1024) return { issues: [{ severity: 'error', code: 'import.size', message: 'file is larger than 4 MB' }] };
-  const r = loadMap(await file.text(), undefined, { forEditing: true });
+  const r = loadMap(await file.text(), undefined, { forEditing: true, openWithErrors: true });
   return r.ok ? { map: r.map, issues: r.issues } : { issues: r.issues };
 }
 

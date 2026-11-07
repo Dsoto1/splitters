@@ -14,6 +14,7 @@ A briefing for the next Claude session or agent picking up this repo. Read
 - Cool Hands Rex and Fishy Fred;
 - the sheep's legs and blast smoke under Reduce flashing;
 - the frozen-corpses fix.
+- Bot AI Phase C follow-up, part 1 (off a sill, corridor followers counted).
 
 The workflow is unchanged (CLAUDE.md):
 - run at most 3 agents, each on `wip/<name>`, green on `check/<name>`, then fast-forward main;
@@ -27,36 +28,29 @@ The workflow is unchanged (CLAUDE.md):
    - **Next:** when that run is green, fast-forward main to 318023ed.
    - **Root cause:** every hit test left teammates out before `damage()` read the rule.
    - **Fix:** `Match.canHurt`. Unit test `shared/test/friendlyFire.test.ts`; e2e `friendlyFireChecks` in `teams`.
-2. **Iron Coast** (`wip/iron-coast` @ 99c48ff4; it builds and the map validates).
-   - **Built in MapMaker and exported:**
-     - the terrain, 380 x 320 m at 2.5 m;
-     - all 13 set pieces;
-     - the 7 routes and the cliff-foot strongpoints;
-     - landing slabs and the sea;
-     - 30 pickups (Military);
-     - Breakthrough: sectors A (A1, A2), B (B1-B4, 2 of 4) and C, with 6 spawn groups of 16;
-     - Team Deathmatch;
-     - crest trenches, ruins, the B/C walls and 16 village houses;
-     - the ground paint.
-   - **Measured so far:** every route routes both ways. bot-report 16 v 16 (one seed) took A at 84 s, B at 155 s and
-     C at 289 s.
-   - **Exact next step:** the last export flags spawn `spawn_jclhkikyqj` at (55, 12, 18) as cut off. Move it in the
-     inspector, export, and get validate-map to 0.
-   - **Then:**
-     - the map card picture;
-     - bot runs at 16 v 16 and 24 v 24;
-     - performance at 48 and 64 bots;
-     - typecheck, test:changed and e2e:changed;
-     - `check/iron-coast`, landing as part 1.
-   - **Part 2, the visual pass:** not started. The burning-wreck prop with smoke is saved unfinished on
-     `wip/iron-coast-wreck`; it needs its palette atlas picture and content:check.
-   - **Known gaps:**
-     - haze and mist didn't take: both are 0 in the map;
-     - the casemates sit on 4 m levels (B2 12 m, B3 16 m);
-     - the terrain can't overhang, so the cave and tunnel are pieces standing in a cut cove, not buried rooms.
-     - Decisions are in `docs/map-briefs/iron_coast/DECISIONS_AND_DEVIATIONS.md`.
-   - **Where the detail is:** driver tricks and the full list are in
-     `docs/map-briefs/iron_coast/MAP_IMPLEMENTATION_MANIFEST.md`, under "Progress".
+2. **Iron Coast** part 1 (`wip/iron-coast`; landing on main as part 1: see the line below).
+   - **Part 1 is done:** the greybox map with Breakthrough and TDM, all built in MapMaker and exported (terrain 380 x
+     320 m, 13 set pieces, 7 routes, the sea, 30 pickups, 3 sectors with 6 spawn groups of 16, crest trenches, ruins,
+     walls, 16 village houses, ground paint). validate-map **0 issues**: the cut-off spawn `spawn_jclhkikyqj` stood
+     in the ruins tile at (56, 16); selected from the issues list and moved to (66, 12, 18) in the inspector.
+   - **Card picture:** `packages/client/public/maps/shots/iron_coast.jpg`.
+   - **A Breakthrough fix it found:** a sector that fell mid-tick kept the old sector's defender plan, so a beach
+     gunner read past the guns' sector's empty gun list (goal with no position; bot-report crashed).
+     `BreakthroughMode.plan` replans when the sector changes; unit test in `breakthrough.test.ts`.
+   - **Bot runs** (after main's Phase C; seeds 1-3, 1200 s): 16 v 16 broke through 2 of 3 (A 42-51 s, B 154-211 s,
+     C 268-298 s); 24 v 24 broke through 1 of 3 (A 39-60 s, B 148-182 s, C 413 s; the other two held at C with the
+     attack out of reinforcements). The beach falls too fast; C decides it. Stuck hot spots: route 1's foot on the
+     west promontory (-152, -48) and route 5's foot under B3 (44, -40).
+   - **Perf** (`pnpm bench`, Breakthrough, loaded 4-core box): 48 bots 5.86 ms avg tick (p95 16.8), 64 bots 6.15 ms
+     (p95 16.2).
+   - **Next:** the two stair feet (landing slab or wider cut, in MapMaker), then the beach's balance (owner's call:
+     zone time, forward posts or cover); then **part 2, the visual pass** (hedgehogs, tank traps, craters, sandbags,
+     haze/mist, the burning wrecks: the prop is saved unfinished on `wip/iron-coast-wreck` and needs its palette atlas
+     picture and content:check).
+   - **Known gaps:** haze and mist are 0 in the map; the casemates sit on 4 m levels (B2 12 m, B3 16 m); the terrain
+     can't overhang, so the cave and tunnel are pieces in a cut cove. Decisions:
+     `docs/map-briefs/iron_coast/DECISIONS_AND_DEVIATIONS.md`; the full list and the MapMaker driver tricks:
+     `docs/map-briefs/iron_coast/MAP_IMPLEMENTATION_MANIFEST.md`, "Progress".
    - **The brief's essentials:**
      - MapMaker only: drive the real editor with Playwright against `vite preview`, a window at least 1280 px wide,
        click palette cards by mouse position, point the view at the sky while editing through the inspector;
@@ -64,27 +58,27 @@ The workflow is unchanged (CLAUDE.md):
      - 24 v 24 by default, playable to 32 v 32;
      - the Military weapon set;
      - golden hour; no flashing.
-3. **Bot AI Phase C follow-up** (`wip/bots-c2` @ 2e6949ca; typechecks; nothing on CI yet). BOT_AI_PLAN.md has it under
-   "Phase C follow-up".
-   - **Ready:**
-     - large bots duck under low roofs (`BotBrain.mustDuck`);
-     - bots step off a sill outside a wall only onto a clear walk (`NavWorld.wayOnto`), which fixes the Capitol Mall
-       office trap;
-     - corridor followers are counted.
-   - **Stuck recoveries in CTF:** 1.35 → 1.05 a bot-minute.
-   - **Reverted:** corridors of their own for bots in no group.
-   - **The Breakthrough Range drop was seed luck:** 40 against 38 over 48 seeds.
-   - **Next:**
-     1. Measure against main: the CTF sample (below) and the Range, then `pnpm test:changed`, then `check/bots-c2`;
-        land part 1.
-     2. CTF ablations: no parkour; no keep-right with its strafing rule. Captures per take fell 0.26 → 0.17 after
-        items 1-4: more carriers die on the way home.
-     3. Route spread: CTF's busiest way is still about 60 %. Next idea: route loose side-lane bots through a
-        corridor's waypoint instead of `laneWaypoint`.
-   - **The measuring commands:**
+3. **Bot AI Phase C follow-up, part 1 landed** (`wip/bots-c2`; green on `check/bots-c2`, run 42424732057; main
+   fast-forwarded to it). BOT_AI_PLAN.md has the tables under "Phase C follow-up".
+   - **Landed:**
+     - bots step off a sill outside a wall only onto a clear walk (`NavWorld.wayOnto`): the Capitol Mall office trap;
+     - corridor followers are counted on their corridor (the crowd price and bot-report see them).
+   - **Measured** (CTF sample, seeds 1-6, 48 matches): part 1 plays as main (captures 48 → 50, stuck 1.32 → 1.31 a
+     bot-minute, busiest way 59 %). TDM and the Breakthrough Range (seeds 1-24: 19 against 18) within noise.
+   - **Held back, the owner's call: large bots duck** (2c586e5a, reverted in c69cd330). Stuck 1.32 → 1.18 (Diamond
+     Park halved), but captures 48 → 40, and botCtf.test's two capture matches go without one. Proposed next: route
+     large bots round low roofs instead of crouching through.
+   - **CTF ablations, no change made:** captures per take 0.24 before items 1-4, 0.18 on main; without parkour 0.15,
+     without keep-right and the strafing rule 0.21, without both 0.17. Neither explains the drop; at 48 matches
+     captures move about ±10 between builds, and the drop is under two standard errors. The strafing rule does cut
+     stuck recoveries (1.43 → 1.32). Not ablated: ground that goes, corridor routes.
+   - **Next:** route spread (CTF's busiest way about 60 %): route loose side-lane bots through a corridor's via
+     instead of `laneWaypoint`, measured on the 48 matches.
+   - **The measuring commands** (run each on the branch and on a detached worktree of main; `--compare=a.json,b.json`
+     puts them side by side, `+` joins shards):
      - the CTF sample: `pnpm bot-report diamond_park sunken_kingdom bunker_cross serene_city capitol_mall fernwood_moon
-       qasr_medina twin_spires --mode=core.ctf --seeds=1,2,3 --seconds=180 --json=<out>/ctf.json`;
-     - with it, TDM: `pnpm bot-report eagle_spires twin_spires riot_junction --mode=core.tdm --seeds=1,2 --seconds=180`;
+       qasr_medina twin_spires --mode=core.ctf --seeds=1,2,3,4,5,6 --seconds=180 --shard=k/2 --json=<out>/ctf.k.json`;
+     - with it, TDM: `pnpm bot-report eagle_spires twin_spires riot_junction --mode=core.tdm --seeds=1,2,3,4 --seconds=180`;
      - the Range: `pnpm bot-report test_breakthrough --mode=core.breakthrough --players=16 --seeds=1,...,24
        --seconds=900 --json=<out>/bt8.json`.
 4. **Roulette** (`wip/roulette`, main 0531b29 merged in): CI fixed, landing from `check/roulette` (see "Roulette mode"

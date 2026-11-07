@@ -15,6 +15,20 @@ the wheel you fire the cannon yourself; it turns on the spot. Bots drive tanks, 
 shells for targets worth one, refill at ammo pickups and get out under a quarter of its health. All in the tank's
 vehicle data (Workbench).
 
+**Iron Coast (MAP 21), part 1: the beach assault and Breakthrough's showcase** (MapMaker only, from the owner's reference)
+- **A new map, Iron Coast** (`iron_coast`): 380 × 320 m of coast for 24-32 a side (24 v 24 is the Map's pick; 16 to 64
+  players). Landing craft beached on the sand, an irregular cliff (8 m at the grand stair's
+  gatehouse, 12 m west and centre, 16 m on the east headland), seven ways up it, four gun casemates at their own
+  heights, trenches and terraces on the crest, and the village with its round fort. It plays **Breakthrough**: take the
+  beach (the two cliff-foot strongpoints), destroy two of the four guns, hold the fort's command room; and **Team
+  Deathmatch** over the whole map. Military weapons.
+- **MapMaker**: a terrain can be oblong (width and depth, 2.5 m apart past 320 m: up to 400 m each way); the Flatten
+  brush levels to a height you type ("Flatten to (m)"); Map properties' **Also offered** lists the modes a map offers
+  besides its main one; Import and the drafts open an unfinished map (no spawn point yet), listing what's left to fix
+  (it exported, but wouldn't import back).
+- **Breakthrough**: when a sector fell, its defenders could be sent for one moment to a post the next sector doesn't
+  have (a goal with no place); they now get their next sector's duties at once.
+
 **Friendly fire works** (owner, 2026-11-07: turned on, shots still didn't hurt teammates): with it on (Half or Full,
 Match setup or the Host tab), your rounds, pellets, rockets, blades and fire hit a teammate in the way and hurt them
 (half as much on Half), and burns and poison stick; blasts already did. Off (the default), shots pass through
@@ -50,6 +64,12 @@ distance, and a body kept for the next player of its look stands up fresh.
   down or the round ends.
 - `pnpm bot-report <maps> --mode=core.roulette [--roulette=lunar,rerolls,swap,variety]` reports kills by character and
   body size, picks and rerolls.
+
+**Bot AI Phase C follow-up, part 1** (docs/BOT_AI_PLAN.md, "Phase C follow-up"): a bot standing on a ledge outside a
+wall, where the walkable ground nearest it was the room behind the wall (Capitol Mall's office sills), now steps off
+toward ground it can walk to instead of pushing into the wall; bots following their group's corridor are counted on
+it, so the team spreads its groups by them. Measured on 48 CTF matches: as before.
+(Large bots ducking under low roofs is held back for a decision: fewer stuck bots, but fewer captures.)
 
 **Bot AI Phase C, items 1-4** (docs/BOT_AI_PLAN.md, "Phase C items 1-4, measured"; docs/BOTS.md):
 - Bots drop off ledges, jump gaps and jump up onto ledges as players do: links found at load and each checked by

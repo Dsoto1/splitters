@@ -1135,6 +1135,22 @@ export class BotBrain {
     return !!a && a.c === c && tick - a.failed < TICK_RATE * 10;
   }
 
+  /**
+   * Toward `goal` by corridor `c`: all the way along its own polygons (NavWorld.pathAlong) when it runs to the goal and
+   * that hasn't failed lately; else by its via, then the shortest way on. Either way the corridor is the one it walks
+   * (BotBrain.corridor: the team brain's crowd price counts it).
+   */
+  private byCorridor(view: BotWorldView, c: Corridor, goal: Vec3): Vec3 {
+    if (c.polys.length > 1 && !this.alongFailed(c, view.tick)) {
+      this.along = { c, tick: view.tick, failed: this.along?.c === c ? this.along.failed : -Infinity };
+      let r = this.route;
+      if (!r || r.c !== c || horizontalDistance(r.goal, goal) > 8) r = this.route = { c, goal: { ...goal }, next: 0, used: view.tick };
+      r.used = view.tick;
+      return goal;
+    }
+    return this.viaRoute(view, c, goal);
+  }
+
   /** `to`, where it was heading for `goal`, was one of its corridor's vias and no route gets there from here: on past it. */
   private skipVia(to: Vec3, goal: Vec3): boolean {
     const r = this.route;
@@ -1162,13 +1178,7 @@ export class BotBrain {
     if (job) {
       if (job.stage) return job.stage;
       if (!job.route || horizontalDistance(me, g.pos) <= ROUTE_FROM) return g.pos;
-      // Its group's corridor all the way (BOT_AI_PLAN.md Phase C item 4: NavWorld.pathAlong), when the corridor runs to
-      // this goal; else by its via, then the shortest way on.
-      if (job.route.polys.length > 1 && !this.alongFailed(job.route, view.tick)) {
-        this.along = { c: job.route, tick: view.tick, failed: this.along?.c === job.route ? this.along.failed : -Infinity };
-        return g.pos;
-      }
-      return this.viaRoute(view, job.route, g.pos);
+      return this.byCorridor(view, job.route, g.pos);
     }
     let lane = this.lane;
     // (Only for a spot to get to, a flag: not for following someone, nor for a carrier running home the short way.)
@@ -3647,7 +3657,7 @@ export class BotBrain {
       // Off the navmesh (knocked or fallen onto ground it doesn't cover, a narrow ledge, spawned badly): no route starts
       // there. The nearest place on it first, level or below, straight there (before, it asked for routes that couldn't
       // start, and stood).
-      const onto = backedOff || me.grounded === false || me.climbing ? null : view.nav.wayOnto(me.pos);
+      const onto = backedOff || me.grounded === false || me.climbing ? null : view.nav.wayOnto(me.pos, this.walkClear(view));
       // A goal no route reaches from here (a flag on a ledge or a roof, a pickup on a crate, a carrier in the air): as
       // near it as a route does get instead, no search for the goal itself. Known per component of routes and goal for
       // the match (NavWorld.standIn: a lookup, the second time).
@@ -3780,6 +3790,18 @@ export class BotBrain {
       return Math.atan2(grab.x - me.pos.x, grab.z - me.pos.z);
     }
     return Math.atan2(corner.x - me.pos.x, corner.z - me.pos.z);
+  }
+
+  /**
+   * Whether a body walks straight from `a` toward `b` (a point on the navmesh near it) with nothing in the way at a
+   * knee's and a chest's height over the higher of the two (going down: off the edge, then falling to it).
+   */
+  private walkClear(view: BotWorldView): (a: Vec3, b: Vec3) => boolean {
+    return (a, b) => {
+      const top = Math.max(a.y, b.y);
+      for (const h of [0.5, 1.2]) if (!view.physics.lineOfSight({ x: a.x, y: top + h, z: a.z }, { x: b.x, y: top + h, z: b.z })) return false;
+      return true;
+    };
   }
 
   /** Flankers, recon, snipers and Arena bots: parkour links cost them no more than walking (NavWorld.findPath `agile`). */
