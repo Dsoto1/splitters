@@ -3358,11 +3358,14 @@ async function breakthroughFlow(browser) {
   };
   await shoot('breakthrough-hud');
   // Bots take the beach on their own: run the clock forward (headless frame rates are slow), you parked out of it.
+  // (The sector's clock is held open for the whole run: with Match Setup's 6 reinforcements an attacker and 3 min, three
+  // bot attackers took the beach in 40-160 s; this checks that they take it, not how fast.)
   const took = await page.evaluate(() => {
     const m = window.__match;
     const me = m.slots[window.__cs.slot];
     let fell = null;
     const start = m.tick;
+    m.mode.clockEnd = Math.max(m.mode.clockEnd, m.tick + 60 * 310);
     for (let i = 0; i < 60 * 300 && m.mode.active === 0 && m.mode.outcome === 0; i++) {
       me.move = { pos: { x: 74, y: 0.2, z: -74 }, velY: 0, grounded: false };
       for (const e of m.step()) if (e.e === 'bt' && e.a === 'sector') fell = { seconds: Math.round((m.tick - start) / 60), team: e.team };
