@@ -906,6 +906,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     },
   },
   // group: The extended arsenal: every one fires differently. 6: lobbers.
+  // bots: Bots lay puddles round their target and light them with the igniter about every three seconds (BotBrain.act), so it is worth as much to them as the flare gun or the goo gun (0.45; it was 0.3 while they never lit it).
   'core.oil_slicker': {
     id: 'core.oil_slicker',
     displayName: 'Oil Slicker',
@@ -917,7 +918,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     pickupAmmo: 24,
     reloadTicks: 70,
     raiseTicks: 18,
-    botDesirability: 0.3,
+    botDesirability: 0.45,
     botRange: [4, 16],
     ammo: 'fuel',
     projectile: {
