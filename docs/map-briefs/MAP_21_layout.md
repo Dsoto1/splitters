@@ -4,50 +4,82 @@
 It follows `MAP_21_Omaha_Beach_Assault.md` (the brief) and the owner's reference image `shingle_point_reference.jpg`.
 The owner decided on 2026-11-05 that this is a new map; Shingle Point stays as its own map.
 
-![Layout plan](MAP_21_plan.png)
+![The plan, marked on the owner's reference image](MAP_21_reference_annotated.jpg)
 
-## From the reference image to the map
-| In the reference | In MAP 21 | Built from |
-|---|---|---|
-| Surf with landing craft | Six to eight beached landing craft in the shallows and on the waterline: the attackers' first cover | `setpiece.landing_craft_beached`, `prop.lcvp_beached` |
-| A wide beach of hedgehogs and log ramps | Three staggered rows of hedgehogs, Belgian gates and log ramps; shell craters; two burning wrecks (smoke, no flashing) | `prop.hedgehog_beach`, kit wrecks, terrain craters |
-| The cliff line | A 12 m cliff (three 4 m levels) along the back of the beach, with a low sea wall (shingle bank) at its foot broken in three places | terrain, kit walls; **a new sea wall section with its breach** (set piece, not built yet) |
-| The central grand stair | Two flights up the middle to a terrace, then onto the crest | `setpiece.cliff_stair_grand` |
-| Side stairs and ramps | Two side stairs on the cliff face | `setpiece.cliff_stair_side` |
-| Cave mouths | Two cliff casemates, each with a stair shaft up into a crest bunker: the "bunker breach" routes | `setpiece.casemate_cave`, `setpiece.stair_tower_4` |
-| Four round gun casemates on the cliff top | Four gun casemates along the crest, joined by zigzag communication trenches, with MG nests | `setpiece.casemate`, trench pieces (timber and sandbag) |
-| Walls and trenches behind the crest | An inner wall line with gates, then fields and hedgerows | kit walls, hedges |
-| The village, with a round fort behind | A village of lanes, houses and walled gardens; the round fort at its head is the **command bunker** | village kit, `core.castle`/Military Compound pieces; **command bunker set piece, not built yet** |
+**The plan is the reference image itself.** Routes, objectives and sectors are marked where the image draws them. An
+earlier schematic straightened the cliff into even bands and mirrored the two halves. The owner, rightly: "doesn't that
+look a little symmetrical and not really what the ref image is?" It's gone.
 
-## Footprint
-- **Size:** 400 m wide × 320 m deep, north up; the sea is south.
-- **Terrain:** 161 × 129 vertices at 2.5 m. That is within MAP_BUDGETS' 400 m for open ground.
-- **Bands, south to north:**
-  - deep water 40 m (out of bounds for play);
-  - surf and shallows 20 m, wading;
-  - beach 60 m;
-  - the cliff foot and face 16 m, rising 12 m;
-  - the crest 64 m;
-  - fields 40 m;
-  - the village and fort 80 m.
-- **Grid:** the standard 8 m cells and 4 m levels, which every set piece uses.
+## What the image has, and keeps
+The map is **not mirrored**. Its two halves differ as drawn:
+- **The west:**
+  - a rocky promontory carries the lowest gun (B1), with far-west steps up to it;
+  - a long diagonal wooden stair climbs the cliff face;
+  - a pillbox and sandbag positions stand at the cliff foot (A1);
+  - behind the crest there are farm terraces and scattered houses.
+- **The centre:**
+  - the grand stair climbs in two flights through a gatehouse to a walled plaza;
+  - a lane runs from the plaza to the round fort (C);
+  - the centre-left gun (B2) stands over a stone stair, and the centre-right gun (B3) over a wooden stair. The two are
+    at different heights and set back differently.
+- **The east:**
+  - the big lit cave at the cliff foot (A2) leads into a tunnel up to a crest bunker;
+  - a walkway with a railing runs along the cliff face to the highest point, the headland, which carries the biggest
+    gun (B4);
+  - more cave bunkers sit in the face;
+  - behind the crest the village is denser.
+- **The cliff line is irregular:** headlands and recesses, lowest at the grand stair's gatehouse and highest at the
+  east headland (about 10–16 m).
+- **Behind the crest:** a maze of walls, trenches, ruined buildings and lit bunkers at angles, on several terraces, not
+  one straight line.
+- **On the beach:**
+  - landing craft in the surf and on the sand;
+  - rows of hedgehogs and Belgian gates, irregular rather than in a grid;
+  - craters;
+  - two burning wrecks, with smoke and no flashing.
+- **No continuous sea wall:** the image draws walls, pillboxes and sandbags at the cliff foot instead. The map follows
+  the image, which comes first under AGENT_BUILD_CONTRACT.md. The brief's "sea wall" becomes those cliff-foot
+  defences.
+
+## Footprint (from the image's proportions)
+- **Scale:** the landing craft (about 11 m long) give it. Roughly **300 m along the beach and 260 m from the surf to the
+  fort**.
+- **Terrain:** about 121 × 105 vertices at 2.5 m.
+- **Bands:**
+  - surf and shallows;
+  - about 60–70 m of beach;
+  - the cliff;
+  - a crest zone of about 80 m on several terraces;
+  - the village and the fort.
+- **Grid:** the standard 8 m cells and 4 m levels. Set pieces sit where the image puts each structure, turned to fit;
+  the cliff is terrain, sculpted to the image's outline.
 - **Players:**
-  - recommended 24 v 24 (Match Setup's "Map's pick": `teamSetup [24, 24]`);
-  - up to 32 v 32 in the browser, once performance round 4 raises the cap;
+  - recommended 24 v 24 (Match Setup's "Map's pick");
+  - up to 32 v 32 in the browser once performance round 4 raises the cap;
   - 48 v 48 on dedicated hosts.
 
-## Seven ways up the cliff (the brief: never a single lethal choke)
-1. **The west draw:** a ravine with a sandy track winding up to the crest. Long, exposed to the west casemate.
-2. **The west side stair,** on the cliff face.
-3. **The west cave tunnel:** into the cliff casemate, up its shaft, out in a crest bunker. Close quarters.
-4. **The grand stair** in the centre: the widest route and the most watched.
-5. **The east cave tunnel,** like the west one.
-6. **The east side stair.**
-7. **The east zigzag trench,** a switchback trench up the bluff. Covered, slow.
+## Seven ways up the cliff, as drawn (green 1–7)
+1. **Far-west steps** up the rock to the promontory gun (B1).
+2. **The west diagonal wooden stair** across the cliff face.
+3. **The stone stair** under the centre-left gun (B2).
+4. **The grand stair:** two flights, the gatehouse, the plaza. The widest and the most watched.
+5. **The wooden stair** under the centre-right gun (B3).
+6. **The big cave:** a tunnel up into a crest bunker. Close quarters.
+7. **The east cliff walkway and stair** to the headland gun (B4). Long and exposed.
 
-There are three breaches in the sea wall, and the wall itself is low enough to vault. The beach gives cover from
-hedgehogs, craters and the landing craft. Sightlines from the crest are long, but the craters and the hedgehog rows
-break them up.
+The beach gives cover from hedgehogs, craters, wrecks and the landing craft. The crest's sightlines are long but broken
+by its terraces and walls.
+
+| In the image | Built from |
+|---|---|
+| Landing craft | `setpiece.landing_craft_beached`, `prop.lcvp_beached` |
+| Hedgehogs, gates, ramps, wrecks | `prop.hedgehog_beach`, kit gates and wrecks |
+| Round gun casemates (B1–B4), each placed and turned as drawn | `setpiece.casemate` |
+| Cave mouths and cliff bunkers | `setpiece.casemate_cave`, with `setpiece.stair_tower_4` for the tunnel's climb |
+| Grand stair, gatehouse and plaza | `setpiece.cliff_stair_grand`, kit walls; **a gatehouse piece** if the kit's arch doesn't read right |
+| Diagonal wooden stairs, the walkway | `setpiece.cliff_stair_side`, kit stairs and railings |
+| Trenches and walls behind the crest | trench pieces (timber and sandbag), kit walls |
+| Round fort | **the command bunker set piece, not built yet** |
 
 ## Assault mode (new, asymmetric): proposal
 No current mode does this. Bomb, CTF, KOTH, Hostage, Elimination and Forts are all symmetric or single-objective. It
@@ -72,7 +104,7 @@ plugs in as a new mode, `core.assault`, any map can use with sector markers in M
 - **Swap sides:** a second round with the sides swapped, scored by how far and how fast each side got.
 
 **Bots** (Bot AI Phase B): an Assault playbook.
-- Attackers bound up the beach from cover to cover and spread over the seven routes.
+- Attackers bound up the beach from cover to cover and spread over the seven routes, as numbered above.
 - They use smoke (from the weapons intake) to cross open sand, and push the tunnels in groups.
 - Defenders man the casemates and trenches. Snipers take the crest, and some fall back early to the next line.
 
@@ -83,7 +115,8 @@ suggests.
 1. **Before the map:**
    - Bot AI Phase B (running) and the MapMaker ground fix (running).
    - The **Assault mode**: sim, HUD and the bot playbook, tested on a small test layout first.
-   - The two missing set pieces: the **sea wall with its breach** and the **command bunker** (round fort).
+   - The missing pieces: the **command bunker** (round fort) and, if needed, a **gatehouse** for the grand stair. The
+     cliff-foot defences replace the brief's sea wall.
 2. **The map, in MapMaker only** (CLAUDE.md, "Maps"), per the contract's order:
    1. footprint and terrain (beach, cliff, draw, crest, fields, village rise);
    2. set pieces;
@@ -101,7 +134,8 @@ suggests.
    - overhead and eye-level screenshots against the reference.
 
 ## Questions for the owner
-1. Approve this layout (the plan above), or change it?
+1. Approve this layout (marked on your image above), or change it?
 2. Approve the Assault mode, as the main mode here and as a mode other maps can use?
 3. The name: "MAP 21" is a working title. Ideas: Iron Coast, Bluff Landing, Hedgehog Beach, or your own.
 4. Is 24 v 24 a good recommended size, up to 32 v 32 in the browser and 48 v 48 on dedicated hosts?
+5. The image shows walls and pillboxes at the cliff foot, not a long sea wall. Follow the image there?
