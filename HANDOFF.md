@@ -301,6 +301,11 @@ slack pass); the brief: session scratchpad `briefs/prop-scale.md`.
     - Crossroads' sofa beside the house's east door: at 2.7 m it reached past the jamb, and with the counter
       opposite it shut the way in to the hostages upstairs for bots (validate-map). It sits 0.1 m north of its old
       place now; its far arm goes 0.17 m into the 0.24 m partition, not through.
+    - Main 5e85caff merged in (2026-11-07). Set pieces part 2 had edited St. John's in MapMaker too, so its file
+      is main's, with the 65 dressers set to ×1 again in MapMaker (session scratchpad `scale/mmedit2.mjs`,
+      `scale/edits-stj-merge.json`). As loaded it is main's map plus those 65 scales and nothing else (its
+      release keeps main's map id, revision 2). Main's St. John's edits are 13 m or more from the four props
+      this pass grew there, and no set piece places a resized prop.
 - **Checked:**
   - `pnpm typecheck`; `pnpm content:rebuild` (content OK; 17 box props carry slack, every one says why).
   - propOpenings and propSlack tests; the z-fighting audit and the coverage map test (207 tests).
@@ -311,10 +316,12 @@ slack pass); the brief: session scratchpad `briefs/prop-scale.md`.
   - A scratch overlap check of every placement against walls and neighbours, old sizes against new: nothing new
     apart from those listed below.
 - **For the owner:**
-  - **A "game size" factor:** nothing applied, waiting for the owner's pick. Real size next to ×1.1 is at session
-    scratchpad `scale/x110sheets/` (the Kenney furniture, Quaternius house, household and hospital kits, and
-    `in-map-real-vs-x110.jpg` for the office desks and the living room). My read: keep real size. At ×1.1 seats sit
-    at 0.48-0.50 m, and rooms built around today's sizes crowd: the living room's sofa and armchair run together.
+  - **A "game size" factor: DECIDED (owner, 2026-11-07): "Keep real size."** No furniture factor, now or as a
+    follow-up; recorded in docs/CONTENT_PIPELINE.md, "Real-world sizes". Why: at ×1.1 seats sit at 0.48-0.50 m
+    and read high beside the 1.8 m body, and rooms built around today's sizes crowd (the living room's sofa and
+    armchair run together). The sheets the owner judged, real size next to ×1.1: session scratchpad
+    `scale/x110sheets/` (the Kenney furniture, Quaternius house, household and hospital kits, and
+    `in-map-real-vs-x110.jpg` for the office desks and the living room).
   - **Listed, not changed** (docs/CONTENT_PIPELINE.md, "Real-world sizes"):
     - Narrow seats (Kenney `chair`, `hh_chair`, 0.40 m).
     - Low beds of the right length (Kenney `bed`, household beds); Quaternius `hm_bed_king` (3.6 m long).

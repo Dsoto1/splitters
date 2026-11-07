@@ -975,6 +975,10 @@ A chair seat narrower than about 0.42 m reads as a child's chair too.
   whole pack is off), chosen so its seat, top or height lands on the reference. Maps place props at ×1;
   an instance scale is for a deliberate difference (Pantry Raid's giant kitchen), never to make up for a
   prop the catalogue has wrong.
+- **Real size, no "game size" factor** (owner, 2026-11-07: "Keep real size"): furniture stands at the
+  reference sizes, with no factor over them to make it read bigger. The lineup drawn at ×1.1 (`SCALE=1.1`)
+  showed why: seats then sit at 0.48–0.50 m and read high beside the 1.8 m body, and rooms built around
+  today's sizes crowd (a living room's sofa and armchair run together).
 - **The 10 % rule**: a prop whose seat, top or height is more than 10 % off its reference (off the
   range, where the reference is one) gets a new height; one within 10 % keeps its own. A height scales
   the prop whole, so where its proportions are off (a bed top right but the bed 3.6 m long) it is listed
