@@ -2,6 +2,7 @@ import type { LookHitbox } from '../sim/hitbox.ts';
 import { angleDelta, clamp, createRng, distance, horizontalDistance, lookAngles, type Vec3, hypot } from '../math.ts';
 import type { NavWorld } from '../nav/index.ts';
 import type { Corridor } from '../nav/corridors.ts';
+import { parkourAlong, parkourInput, type ParkourKind, type ParkourLink } from '../nav/parkour.ts';
 import { LIFT_FLAG, PLAYER, STANCES, TICK_DT, TICK_RATE, type Stance } from '../sim/constants.ts';
 import { PICKUP_RADIUS, type ItemDefinition, type ItemEffect } from '../sim/items.ts';
 import { BUTTON_ALT, BUTTON_CROUCH, BUTTON_FIRE, BUTTON_MELEE, BUTTON_JUMP, BUTTON_PRONE, BUTTON_RELOAD, BUTTON_SPRINT, BUTTON_THROW, BUTTON_USE, BUTTON_ZOOM, type PlayerInput } from '../sim/movement.ts';
@@ -73,6 +74,8 @@ export interface CombatantView {
   climbing?: boolean;
   /** Under an open canopy (a parachute or glider): no route starts in the air, but it steers. */
   chute?: boolean;
+  /** Out of breath (ran its stamina dry): no sprinting until it is back (sim/movement.ts SPRINT.restart). */
+  winded?: boolean;
   /** Body size (BODY_SIZES scale: small 0.78, large 1.18; absent = 1): eye, aim point and hit body scale with it. */
   size?: number;
   /** Its measured hit shapes and their scale before `size` (sim/hitbox.ts): bots aim at the real head and chest. */
@@ -241,6 +244,7 @@ export type BotDoing =
   | 'investigate'
   | 'noPath'
   | 'escape'
+  | 'parkour'
   | 'lift'
   | 'zip'
   | 'press'
@@ -328,6 +332,16 @@ const PASS_RADIUS = 1.4;
 
 /** Tactical decisions (cover, grenades, mounts) run at about 10 Hz, staggered. */
 const DECIDE_TICKS = 6;
+/**
+ * A hurt bot's retreat (the hurt-bot retreat fix, BOT_AI_PLAN.md Phase C item 0): health it can get to this close
+ * (m) is worth running for; with none, nothing heals it (there's no regeneration), so the retreat gives up after
+ * RETREAT_GIVE_UP seconds of it (RETREAT_KEEP for a bot with an objective: it keeps to it), and the bot fights on from
+ * cover, as hurt. Running for health that is there gives up only after RETREAT_HEAL.
+ */
+const HEAL_REACH = 45;
+const RETREAT_GIVE_UP = 4;
+const RETREAT_KEEP = 2;
+const RETREAT_HEAL = 15;
 /** Visibility of crouched and prone targets at range (they are harder to spot). */
 const STANCE_SIGHT = [1, 0.8, 0.55] as const;
 /**
@@ -440,6 +454,19 @@ export class BotBrain {
   private escape: { across: Vec3; goal: Vec3; until: number } | null = null;
   /** Places across it tried and couldn't get to, left alone for a while. */
   private readonly failedCrossings: { at: Vec3; until: number }[] = [];
+  /**
+   * On a parkour link of its route (nav/parkour.ts: a drop, a gap jump, a jump up): the link, the route and corner it
+   * was found at, when it started on it, and when it jumped (-1: not yet) or went over the edge (a drop).
+   */
+  private link: { l: ParkourLink; path: Vec3[]; index: number; since: number; jumped: number; left: number } | null = null;
+  /** Parkour moves it made, by kind, and gave up on (measuring: bot-report). */
+  readonly parkourDone: Record<ParkourKind, number> = { drop: 0, gap: 0, up: 0 };
+  parkourGaveUp = 0;
+  parkourMissed = 0;
+  /** On a parkour link (the match has it think every tick until it lands: the jump is timed to the tick). */
+  get parkouring(): boolean {
+    return this.link !== null;
+  }
   /** Last hop on a crossing. */
   private hopAt = -Infinity;
   /** The hop across (planEscape) is up a ledge higher than a jump clears: the legs tuck up in the air till it lands. */
@@ -509,6 +536,19 @@ export class BotBrain {
   private retreatGoal: { pos: Vec3; until: number } | null = null;
   /** Retreating: sprint away (run) or back off shooting, committed for a moment. */
   private retreatMode: { run: boolean; until: number } | null = null;
+  /**
+   * Ticks spent retreating since it was last well (RETREAT_*: nothing regenerates, so with no health in reach a hurt
+   * bot gives the retreat up after a while and fights on), and the tick of its last decision (to count them).
+   */
+  private retreatTicks = 0;
+  private decidedAt = -1;
+  /**
+   * Hurt, with its retreat given up (nothing heals within reach): it holds cover against what it sees and fights from
+   * there rather than pushing on into it; with nobody in sight it keeps to its objective.
+   */
+  private standHurt = false;
+  /** Whether health it can get to is within HEAL_REACH, worked out about once a second. */
+  private healNear: { tick: number; ok: boolean } | null = null;
   /** Smoothed movement intent in world space (inputs ease in and out rather than snapping). */
   private moveX = 0;
   private moveZ = 0;
@@ -688,6 +728,11 @@ export class BotBrain {
     this.hurtTick = this.underFireTick = -Infinity;
     this.retreatGoal = null;
     this.retreatMode = null;
+    this.retreatTicks = 0;
+    this.decidedAt = -1;
+    this.healNear = null;
+    this.standHurt = false;
+    this.link = null;
     this.spacing = 'hold';
     this.strafing = false;
     this.moveX = this.moveZ = 0;
@@ -811,6 +856,19 @@ export class BotBrain {
   /** Low on health by this bot's standards. */
   private hurt(view: BotWorldView): boolean {
     return view.self.health < (this.profile.selfPreservation / 100) * PLAYER.maxHealth * (this.coward ? 0.8 : 0.6);
+  }
+
+  /**
+   * Whether a hurt bot with an enemy in sight still retreats: while running for health within HEAL_REACH (up to
+   * RETREAT_HEAL seconds); with none, nothing heals it, so only for RETREAT_GIVE_UP seconds (RETREAT_KEEP with an
+   * objective), then it fights on, from cover where it finds some (hurt, it wants cover), and keeps its objective.
+   * Before, a hurt bot retreated from every fight it saw for the rest of its life (the Breakthrough Range's attackers).
+   */
+  private mayRetreat(view: BotWorldView, objective: boolean): boolean {
+    const n = this.healNear;
+    if (!n || view.tick - n.tick >= TICK_RATE) this.healNear = { tick: view.tick, ok: this.pickupGoal(view, 'health', HEAL_REACH) !== null };
+    const most = this.healNear!.ok ? RETREAT_HEAL : objective ? RETREAT_KEEP : RETREAT_GIVE_UP;
+    return this.retreatTicks < most * TICK_RATE;
   }
 
   /** COWARD: gives up a fight sooner, and won't take on several at once. */
@@ -1119,6 +1177,10 @@ export class BotBrain {
     const tick = view.tick;
     const hurt = this.hurt(view);
     const underFire = tick - this.underFireTick < TICK_RATE * 1.5 || tick - this.hurtTick < TICK_RATE * 1.5;
+    // The retreat's clock: ticks spent retreating since it was last well.
+    if (!hurt) this.retreatTicks = 0;
+    else if (this.state === 'retreat' && this.decidedAt >= 0) this.retreatTicks += tick - this.decidedAt;
+    this.decidedAt = tick;
     // Flushed off a vantage spot: hurt there, or shot at by someone it can't see. Or its time there is up (mid-fight too:
     // a sniper moves on after a kill).
     const post = this.post;
@@ -1135,7 +1197,7 @@ export class BotBrain {
 
     // A lift from a teammate is worth taking even when hurt or with someone about.
     if (this.mountPlan && (this.mountPlan.ride || (!hurt && (!target || horizontalDistance(me.pos, target.pos) > 10)))) this.state = 'mount';
-    else if (target && hurt && !this.berserker && !goal?.run) this.state = 'retreat';
+    else if (target && hurt && !this.berserker && !goal?.run && this.mayRetreat(view, !!goal)) this.state = 'retreat';
     else if (!underFire && !armedForVehicles && this.fetchLauncher(view, target)) {
       // An enemy vehicle about and nothing that hurts it: a launcher close by first.
       this.state = 'advance';
@@ -1144,6 +1206,8 @@ export class BotBrain {
       this.option = OPT_FIGHT;
     } else this.choose(view, hurt, underFire);
 
+    // Hurt and no longer retreating (nothing heals within reach): cover against what it sees, every time.
+    this.standHurt = hurt && !!target && this.state !== 'retreat' && !this.berserker && !goal?.run;
     // Cover-to-cover advance (Phase B item 6): on the way to an objective, in a fight at range, by style.
     this.bound = this.boundPhase(view, target, goal);
     // Cover: under fire, fighting at range, reloading or hurt, for bots that play tactically.
@@ -1152,7 +1216,7 @@ export class BotBrain {
     // An enemy vehicle it has nothing to hurt with: cover (any bot that thinks at all).
     const outgunned = !!target && this.targetMount?.kind === 'vehicle' && !armedForVehicles;
     const coverChance = Math.max(this.arena ? this.tactical * 0.4 : 0.15 + this.tactical * 1.7 + (this.methodical ? 0.3 : 0), outgunned ? 0.4 + this.tactical * 0.6 : 0);
-    if (threat && !this.berserker && !holding && !goal?.run && (this.bound !== null || this.rng() < coverChance)) {
+    if (threat && !this.berserker && !holding && !goal?.run && (this.bound !== null || this.standHurt || this.rng() < coverChance)) {
       const dist = horizontalDistance(me.pos, threat);
       const held = this.heldWeapon(view);
       const lowAmmo = !!held && held.def.magazine > 0 && held.mag <= Math.ceil(held.def.magazine * 0.25);
@@ -1242,7 +1306,7 @@ export class BotBrain {
     // only a moment).
     c.cover = !!this.cover && (underFire || !!view.reloading || hurt || tick - this.lastTargetTick < TICK_RATE * (g?.push ? 1 : 2.5 + (1 - this.profile.aggression / 100) * 3));
     // Getting away: keep running a moment after losing sight of the threat.
-    c.retreating = this.state === 'retreat' && !!lk && tick - lk.tick < TICK_RATE * 3;
+    c.retreating = this.state === 'retreat' && !!lk && tick - lk.tick < TICK_RATE * 3 && this.mayRetreat(view, !!g);
     c.pickup = this.pickupScore(view, g, underFire, hurt);
     c.lost = lk ? { pos: lk.pos, age: (tick - lk.tick) / TICK_RATE } : null;
     c.noise = hd ? { pos: hd.pos, age: (tick - hd.tick) / TICK_RATE } : null;
@@ -1485,6 +1549,7 @@ export class BotBrain {
           } else if (dist > preferred + (reach ? 1 : 4) || (squadAdvance && dist > 8)) this.spacing = 'close';
           else if (dist < preferred - 4) this.spacing = 'back';
           if (this.outnumbered() && dist < preferred + 6) this.spacing = 'back';
+          if (this.standHurt && this.spacing === 'close') this.spacing = 'hold';
           this.strafing = this.strafing ? dist < 15.5 : dist < 13;
           if (this.spacing === 'close') {
             moveYaw = this.followPathTo(view, t.pos, true);
@@ -1506,7 +1571,8 @@ export class BotBrain {
           // rather than stopping to trade shots at range. Up close it's a fight like any other.
           // A flag carrier runs whatever the range, sprinting past anyone not right on it.
           const g = view.orderGoal;
-          if (g?.push && this.bound !== 'cover' && (dist > 9 || g.run) && (horizontalDistance(me.pos, g.pos) > g.radius + 0.5 || Math.abs(me.pos.y - g.pos.y) > 2)) {
+          // (Hurt with nothing to heal at: it fights where it is, not on into them.)
+          if (g?.push && this.bound !== 'cover' && !this.standHurt && (dist > 9 || g.run) && (horizontalDistance(me.pos, g.pos) > g.radius + 0.5 || Math.abs(me.pos.y - g.pos.y) > 2)) {
             const go = this.followPathTo(view, this.orderTarget(view, g), false);
             if (go !== null) {
               moveYaw = go;
@@ -1933,6 +1999,17 @@ export class BotBrain {
     }
     // Fighting: ease direction changes (no stutter-steps); travelling, follow the route's turns closely (no clipping corners).
     [forward, right] = this.smoothMove(forward, right, !!target || tick - this.lastTargetTick < TICK_RATE || strafe || backOff || this.state === 'retreat');
+    // On a parkour link of its route: run it as the build played it (facing its way, full ahead, jump at the takeoff).
+    const pk = this.link && (moveYaw !== null || this.link.jumped >= 0 || this.link.left >= 0) ? this.parkourMove(view) : null;
+    if (pk) {
+      this.yaw = pk.yaw;
+      forward = pk.wait ? 0 : 1;
+      right = 0;
+      this.moveX = Math.sin(pk.yaw) * forward;
+      this.moveZ = Math.cos(pk.yaw) * forward;
+      doing = 'parkour';
+      strafe = false;
+    }
 
     let buttons = 0;
     // Fire through the aim model's trigger discipline.
@@ -2035,6 +2112,8 @@ export class BotBrain {
       buttons |= BUTTON_JUMP;
       this.jumpNext = false;
     }
+    // A parkour link's own presses only (no shot, scope, stance or stray hop while it runs and jumps).
+    if (pk) buttons = (buttons & ~(BUTTON_JUMP | BUTTON_CROUCH | BUTTON_PRONE | BUTTON_SPRINT | BUTTON_FIRE | BUTTON_ZOOM | BUTTON_ALT)) | pk.buttons;
     // Getting in: use when close enough to the planned mount.
     if (this.state === 'mount' && this.mountPlan) {
       const m = view.mounts?.find((x) => x.index === this.mountPlan!.index);
@@ -2044,7 +2123,7 @@ export class BotBrain {
         this.lastUseTick = tick;
       }
     }
-    this.steerable = aimedTarget && wantFire && !sprint && !dodge && !throwNow && !pressNow && !this.throwPlan && !this.pressPlan && !this.holdStill && this.state !== 'mount';
+    this.steerable = aimedTarget && wantFire && !sprint && !dodge && !throwNow && !pressNow && !this.throwPlan && !this.pressPlan && !this.holdStill && this.state !== 'mount' && !this.link;
     return { seq, forward, right, yaw: this.yaw, pitch: this.pitch, buttons, weapon: this.chooseWeapon(view, target) };
   }
 
@@ -3389,7 +3468,11 @@ export class BotBrain {
       const to = this.standIn ?? goal;
       let found: Vec3[] | null = null;
       if (onto) found = [{ ...me.pos }, onto];
-      else if (!backedOff) found = (offLifts && view.nav.findPath(me.pos, to, offLifts, false, this.coverRoutes)) || view.nav.findPath(me.pos, to, 0, true, this.coverRoutes);
+      else if (!backedOff) {
+        // Flankers, recon, snipers and Arena bots take parkour's ways (roofs, jumps) as readily as walking (nav/parkour.ts).
+        const agile = this.agile(view);
+        found = (offLifts && view.nav.findPath(me.pos, to, offLifts, false, this.coverRoutes, agile)) || view.nav.findPath(me.pos, to, 0, true, this.coverRoutes, agile);
+      }
       if (!backedOff && !onto) {
         this.pathFails = found ? 0 : Math.min(this.pathFails + 1, 6);
         this.pathSearches++;
@@ -3489,6 +3572,8 @@ export class BotBrain {
       }
       return Math.atan2(goal.x - me.pos.x, goal.z - me.pos.z);
     }
+    // The leg ahead a parkour link (a drop, a jump across or up): act() runs it (parkourMove).
+    if (view.nav.parkour.length) this.watchLink(view, corner);
     if (view.lifts?.length) this.holdStill = this.liftWait(view, corner, this.pathIndex > 0 ? this.path[this.pathIndex - 1]! : null);
     // Taking a portal: the next corner is out of the far portal, so walk into this one's surface instead.
     const face = view.portals?.length ? this.portalFace(view, corner, this.pathIndex > 0 ? this.path[this.pathIndex - 1]! : null) : null;
@@ -3500,6 +3585,78 @@ export class BotBrain {
       return Math.atan2(grab.x - me.pos.x, grab.z - me.pos.z);
     }
     return Math.atan2(corner.x - me.pos.x, corner.z - me.pos.z);
+  }
+
+  /** Flankers, recon, snipers and Arena bots: parkour links cost them no more than walking (NavWorld.findPath `agile`). */
+  private agile(view: BotWorldView): boolean {
+    const plan = view.plan;
+    return this.arena || plan?.role === 'sniper' || plan?.job?.group === 'flank' || plan?.job?.group === 'recon';
+  }
+
+  /**
+   * Whether the route's leg into `corner` is a parkour link (its corners the link's start and end): then it is the one
+   * to run. A link it is already on (jumped, or over the edge) is kept until it lands, whatever the route does.
+   */
+  private watchLink(view: BotWorldView, corner: Vec3): void {
+    const k = this.link;
+    if (k && (k.jumped >= 0 || k.left >= 0)) return;
+    if (k && k.path === this.path && k.index === this.pathIndex) return;
+    const prev = this.pathIndex > 0 ? this.path[this.pathIndex - 1]! : null;
+    const l = prev ? view.nav.parkourAt(prev, corner) : null;
+    this.link = l ? { l, path: this.path, index: this.pathIndex, since: view.tick, jumped: -1, left: -1 } : null;
+  }
+
+  /**
+   * Running a parkour link (nav/parkour.ts parkourInput, as the build played it through the movement code): facing
+   * its way and running (sprinting for a gap), jumping at its takeoff, tucking the legs up in the air for a high ledge.
+   * Null when it isn't on one now (still on its way to the link's start, wandered off it, or done: landed).
+   */
+  private parkourMove(view: BotWorldView): { yaw: number; buttons: number; wait: boolean } | null {
+    const k = this.link!;
+    const me = view.self;
+    const l = k.l;
+    const tick = view.tick;
+    const grounded = me.grounded !== false;
+    if (k.left < 0 && !grounded && me.pos.y < l.start.y - 0.4) k.left = tick;
+    const off = k.jumped >= 0 ? k.jumped : k.left;
+    if (off >= 0) {
+      // Down again: done.
+      if (grounded && tick - off > 3) {
+        // (Down by its end: made; anywhere else, missed: short, or knocked off it.)
+        if (horizontalDistance(me.pos, l.end) < 4.5 && Math.abs(me.pos.y - l.end.y) < 0.8) this.parkourDone[l.kind]++;
+        else this.parkourMissed++;
+        this.link = null;
+        return null;
+      }
+      // (In the air for ever: knocked about, under a canopy; let it go.)
+      if (tick - off > TICK_RATE * 4) {
+        this.link = null;
+        return null;
+      }
+    } else {
+      const along = parkourAlong(l, me.pos);
+      const len = horizontalDistance(l.start, l.end);
+      const side = Math.abs((me.pos.x - l.start.x) * Math.cos(l.yaw) - (me.pos.z - l.start.z) * Math.sin(l.yaw));
+      // Not at it yet (on the way to its start) or off its line: walk on as the route says.
+      if (along < -0.8 || side > 0.9 || along > len + 1) {
+        if (tick - k.since > TICK_RATE * 6) {
+          this.parkourGaveUp++;
+          this.link = null;
+        }
+        return null;
+      }
+      // Too long at it without going (held up, out of breath): give up on it; the stuck checks take over.
+      if (tick - k.since > TICK_RATE * 6) {
+        this.parkourGaveUp++;
+        this.link = null;
+        return null;
+      }
+      // A running jump wants a sprint: out of breath, it waits at the start for its stamina.
+      if (l.sprint && me.winded) return { yaw: l.yaw, buttons: 0, wait: true };
+    }
+    const c = parkourInput(l, me.pos, grounded, k.jumped >= 0);
+    if (c.jump) k.jumped = tick;
+    return { yaw: c.yaw, buttons: c.buttons, wait: false };
   }
 
   /**

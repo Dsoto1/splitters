@@ -26,6 +26,7 @@ export function dropOptions(map: MapDocument, physics: PhysicsWorld, geometry: r
   const liquids = mapLiquids(map.entities);
   return {
     physics,
+    gravity: phys.gravity,
     spawns: map.entities.filter((e) => e.kind === 'spawn').map((e): Vec3 => ({ x: e.position[0], y: e.position[1], z: e.position[2] })),
     maxDrop: phys.fallDamage ? DROP_HURTS_UP_TO / Math.max(0.05, phys.gravity) : DROP_FREE,
     floorY: mapKillY(geometry, map),

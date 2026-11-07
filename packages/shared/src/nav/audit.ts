@@ -304,7 +304,7 @@ function slideFoot(nav: NavWorld, physics: PhysicsWorld, f: Vec3, lowest: number
 export const disabled = (g: NavGraph, i: number): boolean => g.type[i] === 0 && g.flags[i] === 0;
 
 /** Directed edges (CSR) over the graph's polygons: its links, and `extra` [from, to] pairs (none to or from left-out polygons). */
-function edgesOf(g: NavGraph, extra: readonly (readonly [number, number])[] = []): { start: Int32Array; to: Int32Array } {
+export function edgesOf(g: NavGraph, extra: readonly (readonly [number, number])[] = []): { start: Int32Array; to: Int32Array } {
   const n = g.count;
   const ok = (a: number, b: number) => !disabled(g, a) && !disabled(g, b);
   const deg = new Int32Array(n + 1);
@@ -318,7 +318,7 @@ function edgesOf(g: NavGraph, extra: readonly (readonly [number, number])[] = []
   return { start: deg, to };
 }
 
-function reverseOf(e: { start: Int32Array; to: Int32Array }, n: number): { start: Int32Array; to: Int32Array } {
+export function reverseOf(e: { start: Int32Array; to: Int32Array }, n: number): { start: Int32Array; to: Int32Array } {
   const deg = new Int32Array(n + 1);
   for (let i = 0; i < e.to.length; i++) deg[e.to[i]! + 1]!++;
   for (let i = 0; i < n; i++) deg[i + 1]! += deg[i]!;
@@ -351,7 +351,7 @@ function reach(e: { start: Int32Array; to: Int32Array }, n: number, seeds: Itera
 }
 
 /** Strongly connected components (Tarjan, iterative): each polygon's component, and how many there are. */
-function components(e: { start: Int32Array; to: Int32Array }, n: number): { of: Int32Array; count: number } {
+export function components(e: { start: Int32Array; to: Int32Array }, n: number): { of: Int32Array; count: number } {
   const index = new Int32Array(n).fill(-1);
   const low = new Int32Array(n);
   const onStack = new Uint8Array(n);
@@ -443,7 +443,7 @@ function spawnPolys(map: MapDocument, nav: NavWorld): { all: number[]; byTeam: M
  * one-way way out is reached only from its own spawns; the field from everyone's), the biggest of those; without
  * spawns (`edges` or `spawns` empty) the biggest.
  */
-function mainOf(g: NavGraph, comps: { of: Int32Array; count: number }, spawns: readonly number[], edges?: { start: Int32Array; to: Int32Array }): number {
+export function mainOf(g: NavGraph, comps: { of: Int32Array; count: number }, spawns: readonly number[], edges?: { start: Int32Array; to: Int32Array }): number {
   const { area } = polyShapes(g);
   const size = new Float64Array(comps.count);
   for (let i = 0; i < g.count; i++) if (!disabled(g, i)) size[comps.of[i]!]! += area[i]!;
