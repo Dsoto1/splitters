@@ -12,6 +12,7 @@ made only on a commit that passed CI on a check branch.
 Match setup or the Host tab), your rounds, pellets, rockets, blades and fire hit a teammate in the way and hurt them
 (half as much on Half), and burns and poison stick; blasts already did. Off (the default), shots pass through
 teammates as before. A team kill still earns nothing.
+
 **Frozen characters fixed** (owner, 2026-11-07: big bot matches showed figures standing mid-run, some in the air):
 these were the dead. A character that died some 15 m or more away, where its animation is smoothed between steps
 (performance round 4), kept the smoothing after its death, so its body was drawn in its last living pose where it
