@@ -138,7 +138,11 @@ second placed St. John's (from the start, in MapMaker) and finished.
   place it passes. A copy of Welles's 56 m slab, squared up and then moved before it was cut down to the tower's
   paving, lowered Knight's whole front by 0.7 m on the first try (thrown away): size and place a copied floor first
   and square it up last (turned floors are never lowered under).
-- **For the owner:**
+- **For the owner** (answered 2026-11-07):
+  - **Owner's answers:**
+    - "Keep the bridge floor fix, tower and bridge are fine."
+    - The ground bug: "fix the ground bug". It is being fixed now on `wip/ground-fix`, ahead of the overhaul.
+    - The facade ground bands are not answered yet, so they stay as they are.
   - The other pack facades (concrete, corrugated, manor brick, clapboard, roman, desert, harbour, snow, timber
     frame...) still draw their ground band across doorways (visual only): stopping them at doorways, as the stone ones
     now do, changes those packs' look, so it waits for a yes.
