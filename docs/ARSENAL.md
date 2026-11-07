@@ -165,7 +165,10 @@ copy (other players' hands, drops, pickups, Low) stays small:
   everyone's copy at once and the sharper one is swapped in when it has loaded (`View.sharpenViewmodel`); a gun you no
   longer carry frees its held copy's video memory (`View.trimViewmodels`, `ModelLibrary.release`).
 - **Measured** (five guns held: pistol, rifle, SMG, shotgun, hand cannon; textures counted at 4 bytes a texel with
-  mipmaps): HELD_VRAM_NUMBERS
+  mipmaps): **High +140 MB** (28 MB a gun: its 2048 px colour map 22.4, normal 5.6, metal/roughness 1.4), **Medium
+  +35 MB** (7 MB a gun), **Low +0** (everyone's copies are already loaded with the match). For scale, the whole scene's
+  textures at High were 292 MB before (the level, characters, shadow maps). Over 1024 px metal/roughness maps at High
+  measured +160 MB and showed nothing more, so they ship at half the normal map's size.
 - Downloads: see the table in HANDOFF ("Weapons intake of 2026-11-06"): a held High copy is 0.2-1.5 MB, fetched once
   per gun you pick up.
 - **GPU-compressed textures (KTX2 / Basis):** not used. Babylon 9.32 reads them through its KTX2 decoder, whose wasm

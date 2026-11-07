@@ -8,6 +8,30 @@ made only on a commit that passed CI on a check branch.
 
 ## Unreleased
 
+**New weapon and grenade models, sharper textures for the gun in your hands, and a Smoke Grenade** (owner,
+2026-11-06: "replace our tommy gun with the 3DModelsCC0 one, and bring in those others to replace any one-off
+originals"; "we want these weapons to look a little sharper, clearer, better resolution"; docs/ARSENAL.md, "Weapons
+intake of 2026-11-06")
+- **Guns:** the Submachine Gun is a Suomi KP, the Assault Rifle an AK-47, the Burst Rifle an M4A1, the Pistol a
+  Makarov, the Machine Pistol a Grease Gun, the Shotgun a pump shotgun and the Marksman Rifle a scoped hunting rifle
+  (the CC0 Guns & Explosives pack); the Hand Cannon is the BK 220, the Heavy Revolver the Revolver Rustique, the Gilded
+  Pistol a gilded flintlock, the Pulse Pistol the Plasma Defender and the Nailgun the Scrapfire Assault Blaster (Meshy
+  Community). Each keeps the model it replaced as its fallback, and is held by points read off its own grip, handguard
+  and stock.
+- **Grenades have models:** in your hands while you line up a throw (the gun goes away, both hands on it), in flight,
+  and as the pickup (two of it, not coloured balls): the frag is the Globe Grenade, the sticky the Countdown Sphere,
+  the vortex "just a grenade", the cluster bomb the Sunburst, the gas grenade the Toxic Splash, the incendiary a
+  Molotov; the mine's pickup is the AT mine. The holy bomb, sheep, airstrike flare, sandbags and dynamite stay as they
+  were.
+- **Sharper:** the gun in your own hands draws a copy with a 1024 px (Medium) or 2048 px (High) colour map and a
+  512 / 1024 px normal map, fetched only for the guns you carry and freed when you drop one; everyone else's copy
+  stays at 512 px. The new models keep their own metal and roughness (no flat matte finish), and steel reflects a soft
+  gradient in the map's own light.
+- **Smoke Grenade** (new, pickup "Smoke Grenades"): a grey cloud about 5 m across its middle for 18 s. Bots, turrets
+  and homing missiles can't see through it; you can't either (inside it, a grey haze you see 2-3 m through), and an
+  enemy's marker behind it isn't drawn. Bullets still go through. A hurt bot caught in the open throws one between
+  itself and its enemy. No flash, no white-out: there is still no flashbang.
+
 **Furniture at human size** (owner: "Can we scale the props to the normal human character size? Some of them are
 tiny, like chairs and such"; docs/CONTENT_PIPELINE.md, "Real-world sizes")
 - Every furniture and everyday prop was measured by what it is for (a chair's seat, a table's top, a basin's rim)
