@@ -1,6 +1,10 @@
-# MAP 21: layout and Assault mode (proposal for the owner, 2026-11-07)
+# Iron Coast (MAP 21): layout and Breakthrough mode (owner-approved, 2026-11-07)
 
-**Status: a proposal, waiting for the owner's approval. No placement work until it's approved** (AGENT_BUILD_CONTRACT.md).
+**Status: approved by the owner on 2026-11-07:** "Yes follow the image, call it Iron Coast. This map should be a
+showcase of a small 'breakthrough' or assault mode."
+- The map is **Iron Coast**, id `iron_coast`.
+- It follows the reference image, including cliff-foot defences instead of a long sea wall.
+- It is the showcase for a compact **Breakthrough** mode (below).
 It follows `MAP_21_Omaha_Beach_Assault.md` (the brief) and the owner's reference image `shingle_point_reference.jpg`.
 The owner decided on 2026-11-05 that this is a new map; Shingle Point stays as its own map.
 
@@ -53,10 +57,8 @@ The map is **not mirrored**. Its two halves differ as drawn:
   - the village and the fort.
 - **Grid:** the standard 8 m cells and 4 m levels. Set pieces sit where the image puts each structure, turned to fit;
   the cliff is terrain, sculpted to the image's outline.
-- **Players:**
-  - recommended 24 v 24 (Match Setup's "Map's pick");
-  - up to 32 v 32 in the browser once performance round 4 raises the cap;
-  - 48 v 48 on dedicated hosts.
+- **Players:** recommended **16 v 16** (Match Setup's "Map's pick"; the owner wants a *small* breakthrough). It plays
+  from 8 v 8 up to 32 v 32 in the browser once performance round 4 raises the cap, and 48 v 48 on dedicated hosts.
 
 ## Seven ways up the cliff, as drawn (green 1–7)
 1. **Far-west steps** up the rock to the promontory gun (B1).
@@ -81,9 +83,10 @@ by its terraces and walls.
 | Trenches and walls behind the crest | trench pieces (timber and sandbag), kit walls |
 | Round fort | **the command bunker set piece, not built yet** |
 
-## Assault mode (new, asymmetric): proposal
+## Breakthrough mode (new, asymmetric; the owner: "a small 'breakthrough' or assault mode")
 No current mode does this. Bomb, CTF, KOTH, Hostage, Elimination and Forts are all symmetric or single-objective. It
-plugs in as a new mode, `core.assault`, any map can use with sector markers in MapMaker.
+plugs in as a new mode, `core.breakthrough` (shown as **Breakthrough**), that any map can use with sector markers in
+MapMaker. It is **small by design**: three sectors and compact fights, a showcase rather than a 64-player epic.
 
 **How it plays:**
 - **Attackers push; defenders hold three lines in turn.**
@@ -103,7 +106,7 @@ plugs in as a new mode, `core.assault`, any map can use with sector markers in M
   or time.
 - **Swap sides:** a second round with the sides swapped, scored by how far and how fast each side got.
 
-**Bots** (Bot AI Phase B): an Assault playbook.
+**Bots** (Bot AI Phase B): a Breakthrough playbook.
 - Attackers bound up the beach from cover to cover and spread over the seven routes, as numbered above.
 - They use smoke (from the weapons intake) to cross open sand, and push the tunnels in groups.
 - Defenders man the casemates and trenches. Snipers take the crest, and some fall back early to the next line.
@@ -114,7 +117,8 @@ suggests.
 ## Build order (after approval)
 1. **Before the map:**
    - Bot AI Phase B (running) and the MapMaker ground fix (running).
-   - The **Assault mode**: sim, HUD and the bot playbook, tested on a small test layout first.
+   - The **Breakthrough mode**: sim, HUD, MapMaker's sector and objective markers, and the bot playbook, tested on a
+     small test layout first.
    - The missing pieces: the **command bunker** (round fort) and, if needed, a **gatehouse** for the grand stair. The
      cliff-foot defences replace the brief's sea wall.
 2. **The map, in MapMaker only** (CLAUDE.md, "Maps"), per the contract's order:
@@ -133,9 +137,9 @@ suggests.
    - performance at 24 v 24 and 32 v 32;
    - overhead and eye-level screenshots against the reference.
 
-## Questions for the owner
-1. Approve this layout (marked on your image above), or change it?
-2. Approve the Assault mode, as the main mode here and as a mode other maps can use?
-3. The name: "MAP 21" is a working title. Ideas: Iron Coast, Bluff Landing, Hedgehog Beach, or your own.
-4. Is 24 v 24 a good recommended size, up to 32 v 32 in the browser and 48 v 48 on dedicated hosts?
-5. The image shows walls and pillboxes at the cliff foot, not a long sea wall. Follow the image there?
+## Owner's answers (2026-11-07)
+1. **Layout:** follow the image (this page).
+2. **Mode:** a small Breakthrough / assault mode, with this map as its showcase.
+3. **Name:** Iron Coast.
+4. **Cliff foot:** walls and pillboxes as in the image, not a long sea wall.
+5. **Size:** "small" — recommended 16 v 16, scaling up as above.
