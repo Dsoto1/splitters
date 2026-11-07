@@ -751,6 +751,7 @@ export class NavWorld {
           // (Never one left out as inside something solid: flags 0, disableInsideSolid.)
           if (this.insideSolid && f.flags === 0) continue;
           this.navMesh.setPolyFlags(r.nearestRef, (f.flags || 1) | bit);
+          this.usedBits |= bit;
           // (The graph's copy too: pathAlong reads a corridor's flags from it.)
           const gi = r.nearestRef - g.base;
           if (gi >= 0 && gi < g.count) g.flags[gi] = (f.flags || 1) | bit;
@@ -788,9 +789,14 @@ export class NavWorld {
   /** Surfaces gone now (Scenario.surfacesGone: flag bits every route keeps off), and a count of changes to them. */
   private gone = 0;
   goneVersion = 0;
+  /** Opening bits markOpenings gave to at least one polygon (a surface that flagged none changes no route). */
+  private usedBits = 0;
 
   /** The match, when what's gone changes: every route search from now on keeps off those polygons. */
   setGone(mask: number): void {
+    // (Only surfaces with ground on the navmesh: a breakable prop's top bots never stood on changes nobody's route, and
+    // bots needn't all plan again each time one breaks.)
+    mask &= this.usedBits;
     if (mask === this.gone) return;
     this.gone = mask;
     this.goneVersion++;
