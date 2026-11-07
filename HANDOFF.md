@@ -14,6 +14,7 @@ A briefing for the next Claude session or agent picking up this repo. Read
 - Cool Hands Rex and Fishy Fred;
 - the sheep's legs and blast smoke under Reduce flashing;
 - the frozen-corpses fix.
+- Bot AI Phase C follow-up, part 1 (off a sill, corridor followers counted).
 
 The workflow is unchanged (CLAUDE.md):
 - run at most 3 agents, each on `wip/<name>`, green on `check/<name>`, then fast-forward main;
@@ -57,27 +58,27 @@ The workflow is unchanged (CLAUDE.md):
      - 24 v 24 by default, playable to 32 v 32;
      - the Military weapon set;
      - golden hour; no flashing.
-3. **Bot AI Phase C follow-up** (`wip/bots-c2` @ 2e6949ca; typechecks; nothing on CI yet). BOT_AI_PLAN.md has it under
-   "Phase C follow-up".
-   - **Ready:**
-     - large bots duck under low roofs (`BotBrain.mustDuck`);
-     - bots step off a sill outside a wall only onto a clear walk (`NavWorld.wayOnto`), which fixes the Capitol Mall
-       office trap;
-     - corridor followers are counted.
-   - **Stuck recoveries in CTF:** 1.35 → 1.05 a bot-minute.
-   - **Reverted:** corridors of their own for bots in no group.
-   - **The Breakthrough Range drop was seed luck:** 40 against 38 over 48 seeds.
-   - **Next:**
-     1. Measure against main: the CTF sample (below) and the Range, then `pnpm test:changed`, then `check/bots-c2`;
-        land part 1.
-     2. CTF ablations: no parkour; no keep-right with its strafing rule. Captures per take fell 0.26 → 0.17 after
-        items 1-4: more carriers die on the way home.
-     3. Route spread: CTF's busiest way is still about 60 %. Next idea: route loose side-lane bots through a
-        corridor's waypoint instead of `laneWaypoint`.
-   - **The measuring commands:**
+3. **Bot AI Phase C follow-up, part 1 landed** (`wip/bots-c2`; green on `check/bots-c2`, run 42424732057; main
+   fast-forwarded to it). BOT_AI_PLAN.md has the tables under "Phase C follow-up".
+   - **Landed:**
+     - bots step off a sill outside a wall only onto a clear walk (`NavWorld.wayOnto`): the Capitol Mall office trap;
+     - corridor followers are counted on their corridor (the crowd price and bot-report see them).
+   - **Measured** (CTF sample, seeds 1-6, 48 matches): part 1 plays as main (captures 48 → 50, stuck 1.32 → 1.31 a
+     bot-minute, busiest way 59 %). TDM and the Breakthrough Range (seeds 1-24: 19 against 18) within noise.
+   - **Held back, the owner's call: large bots duck** (2c586e5a, reverted in c69cd330). Stuck 1.32 → 1.18 (Diamond
+     Park halved), but captures 48 → 40, and botCtf.test's two capture matches go without one. Proposed next: route
+     large bots round low roofs instead of crouching through.
+   - **CTF ablations, no change made:** captures per take 0.24 before items 1-4, 0.18 on main; without parkour 0.15,
+     without keep-right and the strafing rule 0.21, without both 0.17. Neither explains the drop; at 48 matches
+     captures move about ±10 between builds, and the drop is under two standard errors. The strafing rule does cut
+     stuck recoveries (1.43 → 1.32). Not ablated: ground that goes, corridor routes.
+   - **Next:** route spread (CTF's busiest way about 60 %): route loose side-lane bots through a corridor's via
+     instead of `laneWaypoint`, measured on the 48 matches.
+   - **The measuring commands** (run each on the branch and on a detached worktree of main; `--compare=a.json,b.json`
+     puts them side by side, `+` joins shards):
      - the CTF sample: `pnpm bot-report diamond_park sunken_kingdom bunker_cross serene_city capitol_mall fernwood_moon
-       qasr_medina twin_spires --mode=core.ctf --seeds=1,2,3 --seconds=180 --json=<out>/ctf.json`;
-     - with it, TDM: `pnpm bot-report eagle_spires twin_spires riot_junction --mode=core.tdm --seeds=1,2 --seconds=180`;
+       qasr_medina twin_spires --mode=core.ctf --seeds=1,2,3,4,5,6 --seconds=180 --shard=k/2 --json=<out>/ctf.k.json`;
+     - with it, TDM: `pnpm bot-report eagle_spires twin_spires riot_junction --mode=core.tdm --seeds=1,2,3,4 --seconds=180`;
      - the Range: `pnpm bot-report test_breakthrough --mode=core.breakthrough --players=16 --seeds=1,...,24
        --seconds=900 --json=<out>/bt8.json`.
 4. **Roulette** (`wip/roulette`, main 0531b29 merged in): CI fixed, landing from `check/roulette` (see "Roulette mode"
