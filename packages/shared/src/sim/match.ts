@@ -24,6 +24,8 @@ import {
   POWERUP_DAMAGE_BIT,
   POWERUP_SPEED_BIT,
   STATUS_BURN,
+  FX_JACKPOT,
+  FX_PROTECTED,
   STATUS_CHILL,
   FX_JET,
   FX_SWIM,
@@ -48,6 +50,7 @@ import { CORE_WEAPONS } from '../content/weapons.generated.ts';
 import { lastHit, lookHitbox, npcHitbox, type LookHitbox } from './hitbox.ts';
 import { classStats, matchStats, type CharacterStats } from './characterStats.ts';
 import { randomLook } from './randomLooks.ts';
+import { RouletteDirector } from './roulette.ts';
 import { RESOURCE_BUDGETS } from '../map/budgets.ts';
 import { ARMOR_ABSORB, DAMAGE_BOOST, MAX_ARMOR, PICKUP_RADIUS, SPEED_BOOST, STREAK_REWARDS, getItem, type ItemDefinition } from './items.ts';
 import { rollPickup } from './pickupRoll.ts';
@@ -60,13 +63,13 @@ import { getEnvSpecies } from '../content/environment.ts';
 import { environmentShapes, type EnvWorldShape } from '../map/environment.ts';
 import { SURFACE_TYPES } from './surfaceTypes.ts';
 import { ZIP, leaveZipline, mapZiplines, oneHanded, ziplineLinks, type Zipline } from './zipline.ts';
-import { BUTTON_THIRD_PERSON, BUTTON_STEER_LOOK, BUTTON_ALT, BUTTON_MELEE, BUTTON_JUMP, BUTTON_CROUCH, BUTTON_PRONE, BUTTON_SPRINT, EMOTE_DANCE, PING, QUICK_MESSAGES, SAY_FOLLOW, SAY_HOLD, BUTTON_RESPAWN, BUTTON_FIRE, BUTTON_RELOAD, BUTTON_ZOOM, BUTTON_THROW, BUTTON_USE, applyPads, mapLadders, mapPads,
+import { BUTTON_THIRD_PERSON, BUTTON_STEER_LOOK, BUTTON_ALT, BUTTON_MELEE, BUTTON_JUMP, BUTTON_CROUCH, BUTTON_PRONE, BUTTON_SPRINT, EMOTE_DANCE, PING, QUICK_MESSAGES, SAY_FOLLOW, SAY_HOLD, BUTTON_RESPAWN, BUTTON_FIRE, BUTTON_RELOAD, BUTTON_ZOOM, BUTTON_THROW, BUTTON_USE, applyPads, mapLadders, mapPads, LUNAR_PAD_BOOST,
   padLandings, sanitizeInput, stepMovement, gravityAt, mapGravityZones, type GravityZone, type JumpPad, type Ladder, type MoveEnv, type MoveState, type PlayerInput } from './movement.ts';
 import { PhysicsWorld, type GroundHeight } from './physics.ts';
 import { newSuspension, stepSuspension, suspensionOf, suspensionSnapshot, type SuspensionSetup, type SuspensionState } from './suspension.ts';
 import { terrainHeightAt } from '../map/terrain.ts';
 import { BREATH_SECONDS, JET, LIQUID_SPECS, floatSurface, liquidAt, mapLiquids, stepJetFuel, waterSpan, type LiquidBox } from './liquids.ts';
-import { DEFAULT_DEATHMATCH_RULES, dropsInPlay, isTeamMode, matchPhysics, restrictedWeapons, type MatchRules } from './rules.ts';
+import { DEFAULT_DEATHMATCH_RULES, dropsInPlay, isTeamMode, matchPhysics, restrictedWeapons, rouletteOn, type MatchRules } from './rules.ts';
 import type { CarryOver } from './playlist.ts';
 import type { CheckpointPlayer, MatchCheckpoint } from '../net/handoff.ts';
 import { CLASS_DEFS, ClassPlay, classFromSay, classIndex, classesInPlay, type ClassState } from './classes.ts';
@@ -253,6 +256,9 @@ export interface Spectator {
   /** Tick they started watching. */
   since: number;
 }
+
+/** Lunar (MatchRules.lunar): the least knockback any blast has (the disc launcher's), so explosions throw players about. */
+const LUNAR_BLAST_KNOCK = 10;
 
 export interface Combatant {
   /** Actor ID: the player slot (0..MAX_PLAYER_SLOTS-1), or NPC_ID_BASE + n for NPCs. */
@@ -750,7 +756,8 @@ export class Match {
       m.airdrop = e.airdrop;
       this.physics.setBoxEnabled(m.body, false);
     });
-    this.pads = mapPads(map.entities);
+    // Lunar: stronger jump pads (client prediction scales them the same).
+    this.pads = mapPads(map.entities, rules.lunar ? LUNAR_PAD_BOOST : 1);
     this.ladders = mapLadders(map.entities);
     this.ziplines = mapZiplines(map.entities);
     this.zipRides = this.ziplines.flatMap((z) => ziplineLinks([z], this.physics).map((l) => ({ ...l, ...(z.team ? { team: z.team } : {}) })));
@@ -859,6 +866,51 @@ export class Match {
     this.zombies = rules.mode === 'core.zombies' ? this.zombieDirector() : null;
     this.classes = classesInPlay(rules) ? this.classDirector() : null;
     this.race = rules.mode === 'core.race' && this.road ? this.raceDirector(this.road, gridMounts) : null;
+    this.roulette = rouletteOn(rules) ? this.rouletteDirector() : null;
+  }
+
+  /**
+   * Roulette (sim/roulette.ts): decks, rolls, picks, tokens, the awards and Lunar's gravity storm, when the match
+   * plays it (the Roulette mode, or `rules.roulette` in another).
+   */
+  readonly roulette: RouletteDirector | null;
+
+  private rouletteDirector(): RouletteDirector {
+    const match = this;
+    const base = this.phys.gravity;
+    return new RouletteDirector({
+      seed: this.seed,
+      get rules() {
+        return match.rules;
+      },
+      tick: () => match.tick,
+      emit: (ev) => match.pendingEvents.push(ev),
+      weaponSet: () => match.weaponSet,
+      baseGravity: base,
+    });
+  }
+
+  /** Roulette, Swap on kill: `c` becomes `look` at once, keeping its share of health and its weapons. */
+  private swapLook(c: Combatant, look: string): void {
+    const share = c.maxHealth > 0 ? c.health / c.maxHealth : 1;
+    c.look = look;
+    this.applyBodySize(c);
+    c.health = Math.max(1, Math.round(share * c.maxHealth));
+    if (c.bot) c.bot.playAs(this.bodyProfile(c));
+    this.pendingEvents.push({ e: 'rl', a: 'swap', s: c.slot, l: look });
+  }
+
+  /**
+   * Bots play to their body (docs/BOT_AI_PLAN.md Phase B; Roulette deals a new one every life): the look's own
+   * personality, then a small body flanks (a lone wolf that roams wide), a large one pushes (more aggressive, closes in,
+   * keeps after its target).
+   */
+  private bodyProfile(c: Combatant): BotProfile {
+    const base = c.bot!.baseProfile;
+    const own = profileFor(c.look, base, c.botSet?.style ?? this.rules.botStyle);
+    if (c.size < 0.9) return { ...own, aggression: Math.max(0, own.aggression - 10), exploration: Math.min(100, own.exploration + 20), rangePreference: Math.min(100, own.rangePreference + 5), tags: [...new Set([...own.tags.filter((t) => t !== 'GRUNT' && t !== 'BERSERKER'), 'LONE_WOLF'])] };
+    if (c.size > 1.1) return { ...own, aggression: Math.min(100, own.aggression + 20), pursuitPersistence: Math.min(100, own.pursuitPersistence + 20), riskTolerance: Math.min(100, own.riskTolerance + 15), rangePreference: Math.max(0, own.rangePreference - 20), tags: own.tags.filter((t) => t !== 'LONE_WOLF' && t !== 'COWARD' && t !== 'CAMPER') };
+    return own;
   }
 
   /** Race: the director and its link to the match (vehicles, racers, the end of the race). */
@@ -1605,6 +1657,14 @@ export class Match {
    */
   private relookOnSpawn(c: Combatant): boolean {
     if (c.kind === 'npc') return false;
+    if (this.roulette) {
+      // Roulette: the next card of the player's own deck (or the streak pick chosen), every life.
+      c.ownLook ??= c.look;
+      c.lives = (c.lives ?? 0) + 1;
+      c.look = this.roulette.deal(c).look;
+      this.applyBodySize(c);
+      return true;
+    }
     if (this.rules.randomCharacters) {
       c.ownLook ??= c.look;
       c.lives = (c.lives ?? 0) + 1;
@@ -1645,6 +1705,7 @@ export class Match {
     this.activity.delete(slot);
     if (this.phase === 'playing') this.mode?.onLeave(c);
     this.classes?.onLeave(c);
+    this.roulette?.forget(slot);
     this.readySlots.delete(slot);
     this.leaveMount(c, false);
     this.physics.removeCollider(c.collider);
@@ -1861,6 +1922,8 @@ export class Match {
       if (this.phase === 'playing') this.scenario.step();
       if (this.phase === 'playing') this.encounters.step();
       if (this.phase === 'playing') this.mode?.step();
+      // Roulette with Lunar: the gravity storm moves the match's gravity (movement reads it every move).
+      if (this.phase === 'playing' && this.roulette) this.phys.gravity = this.roulette.step();
       if (this.phase === 'playing') this.zombies?.step();
       if (this.phase === 'playing') this.classes?.step();
       if (this.phase === 'playing') this.race?.step();
@@ -2591,7 +2654,11 @@ export class Match {
         this.classes!.choose(c, pick);
         input.say = undefined;
       }
+      // Roulette's death screen: a streak pick's card, or a reroll token spent (checked by the director).
+      if (this.roulette?.input(c, input.say)) input.say = undefined;
       if (!c.alive) continue;
+      // Firing, throwing or striking ends Roulette's spawn protection.
+      if (this.roulette && input.buttons & (BUTTON_FIRE | BUTTON_ALT | BUTTON_THROW | BUTTON_MELEE)) this.roulette.endProtection(c);
       // The player pulling against the recoil (the client reports how much of its mouse movement countered it).
       if (input.rc) counterRecoil(c.gun, input.rc[0], input.rc[1]);
       if (input.say === PING && !c.npc && this.tick >= (c.pingAt ?? 0)) {
@@ -4922,6 +4989,8 @@ export class Match {
 
   /** Radial damage falling off from `damage` at the centre to `edge` at `radius`, blocked by walls. Also hits destructibles. */
   private splash(at: Vec3, radius: number, damage: number, edge: number, owner: Combatant | null, weapon: string, selfScale: number, knockback = 0, status?: StatusHit): void {
+    // Lunar: every blast throws players about (as hard as a disc launcher's), in the low gravity a long way.
+    if (this.rules.lunar && knockback < LUNAR_BLAST_KNOCK && damage > 0) knockback = LUNAR_BLAST_KNOCK;
     for (const c of this.actors()) {
       if (!c.alive) continue;
       const target = chest(c.move.pos);
@@ -4990,6 +5059,8 @@ export class Match {
   private damage(victim: Combatant, amount: number, attacker: Combatant | null, weapon: string, head = false): void {
     if (!victim.alive || this.phase !== 'playing' || victim.invulnerable) return;
     if (this.mode?.blocksDamage?.(victim, attacker)) return;
+    // Roulette: a moment of spawn protection from everyone else.
+    if (attacker && attacker !== victim && this.roulette?.protectedNow(victim)) return;
     if (this.classes) amount = this.classes.adjustDamage(victim, attacker, weapon, amount);
     // Lethality (spec §10): one systemic multiple, so every weapon keeps its identity.
     amount *= lethalityScale(this.rules);
@@ -5050,6 +5121,13 @@ export class Match {
     this.scenario.playerKilled(victim.slot, killer?.slot ?? null);
     if (this.isLeader(victim)) this.leaderDown(victim, killer);
     this.mode?.onKill(victim, killer);
+    if (this.roulette) {
+      const scorer = killer && !killer.npc && killer !== victim && !teamKill ? killer : null;
+      const r = this.roulette.onKill(victim, scorer, !!scorer);
+      if (scorer && r.bonus) scorer.kills += r.bonus;
+      if (scorer && r.swap && scorer.alive) this.swapLook(scorer, r.swap);
+      if (victim.kind === 'bot') this.roulette.botChoose(victim, this.botBodyStyle(victim));
+    }
     if (!killer || killer.npc || this.rules.scoreLimit <= 0) return;
     const score = this.teams && killer.faction ? (this.teamScores().get(killer.faction) ?? 0) : killer.kills;
     if (score >= this.rules.scoreLimit) this.endRound();
@@ -5301,9 +5379,19 @@ export class Match {
     c.damageTicks = 0;
     // Classes: the class's loadout, health and speed replace all that.
     this.classes?.onSpawn(c);
+    // Roulette: the character's signature weapon in hand, a jackpot's armour, a tiny body, spawn protection.
+    const rl = this.roulette && !c.cls && c.kind !== 'npc' ? this.roulette : null;
+    if (rl) {
+      const sig = rl.signatureFor(c);
+      if (sig) this.give(c, sig);
+      rl.equip(c);
+      if (c.bot) c.bot.playAs(this.bodyProfile(c));
+    }
     c.bot?.onSpawn(sp.yaw);
     this.mode?.onSpawn?.(c);
-    this.pendingEvents.push({ e: 'spawn', s: c.slot, ...(relook ? { l: c.look } : {}) });
+    const roll = rl?.rollOf(c);
+    this.pendingEvents.push({ e: 'spawn', s: c.slot, ...(relook ? { l: c.look } : {}), ...(roll ? { j: roll === 'jackpot' ? (1 as const) : (2 as const) } : {}), ...(rl ? { nx: rl.upcoming(c, 3) } : {}) });
+    if (rl && c.kind === 'bot') rl.botChoose(c, this.botBodyStyle(c));
     // Race: straight into your vehicle, on the grid or at your last checkpoint.
     this.race?.onSpawn(c.slot);
     // Air drop maps start you (or always spawn you) in the transport plane.
@@ -5345,6 +5433,21 @@ export class Match {
     }
     // A grenade or two of the set's first kind (frags, TimeSplitters-style; the rest are pickups after that).
     c.throwable = kit.throwable ? { ...kit.throwable } : null;
+  }
+
+  /** A weapon in hand at spawn (Roulette's signature): added full (or topped up when carried), and held. */
+  private give(c: Combatant, id: string): void {
+    const def = getWeapon(id);
+    const code = weaponCode(def);
+    c.weapons.set(code, { def, mag: def.magazine, reserve: Math.min(def.reserveMax, def.pickupAmmo), alt: def.alt?.ammo === 'own' ? (def.alt.pickup ?? 0) : 0 });
+    c.current = code;
+  }
+
+  /** How a bot plays its body (Roulette's picks and tokens): a pusher (large, or aggressive), a flanker (small, or a lone wolf). */
+  private botBodyStyle(c: Combatant): { push: boolean; flank: boolean } {
+    const p = c.bot?.profile;
+    const flank = !!p && (p.tags.includes('LONE_WOLF') || p.tags.includes('SNIPER') || p.tags.includes('COWARD'));
+    return { push: !!p && !flank && (p.aggression >= 60 || p.tags.includes('BERSERKER')), flank };
   }
 
   /**
@@ -5483,6 +5586,10 @@ export class Match {
     const tied = forced === undefined && top && ranked[1] && ranked[1].kills === top.kills;
     this.phase = 'intermission';
     this.phaseEndTick = this.tick + this.rules.intermissionTicks;
+    // Roulette: the match's awards, with the round's end (the scoreboard shows them).
+    if (this.roulette) this.pendingEvents.push({ e: 'rl', a: 'awards', aw: this.roulette.awards(this.combatants()) });
+    // (Lunar's storm is over with the round.)
+    if (this.roulette) this.phys.gravity = this.roulette.calmGravity();
     this.projectiles = [];
     this.bullets = [];
     this.zones = [];
@@ -5635,6 +5742,7 @@ export class Match {
     this.mode?.reset();
     this.zombies?.reset();
     this.race?.reset(false);
+    this.roulette?.calm();
     this.pendingEvents.push({ e: 'round_start' });
   }
 
@@ -5670,6 +5778,7 @@ export class Match {
     this.mode?.reset();
     this.zombies?.reset();
     this.classes?.reset();
+    this.roulette?.reset();
     this.race?.reset(!this.opts.startGate);
     for (const c of this.combatants()) this.spawnOrQueue(c);
     if (this.opts.startGate) {
@@ -5708,7 +5817,7 @@ export class Match {
         s.vx = c.move.vx ?? 0;
         s.vz = c.move.vz ?? 0;
       }
-      const fx = statusBits(c) | (this.classes?.fx(c) ?? 0);
+      const fx = statusBits(c) | (this.classes?.fx(c) ?? 0) | (this.roulette && c.alive ? (this.roulette.protectedNow(c) ? FX_PROTECTED : 0) | (this.roulette.rollOf(c) === 'jackpot' ? FX_JACKPOT : 0) : 0);
       if (fx) s.fx = fx;
       if (c.cls) s.cl = classIndex(c.cls.id);
       if (c.bot) s.st = c.bot.state;
@@ -5854,6 +5963,7 @@ export class Match {
       ...(c.move.stamina !== undefined || c.move.rest || c.move.winded ? { sta: [Math.round((c.move.stamina ?? 1) * 1000), c.move.rest ?? 0, c.move.winded ? 1 : 0] as [number, number, number] } : {}),
       ...(this.classes?.privateState(c) ?? {}),
       ...(c.discPower ? { dp: [DISC_POWERS.indexOf(c.discPower.kind), c.discPower.shots] as [number, number] } : {}),
+      ...(this.roulette ? { rp: this.roulette.privateState(c) } : {}),
     };
   }
 
@@ -5904,6 +6014,7 @@ export class Match {
       sc: this.scenario.delta(),
       np: this.npcSnapshots(),
       ...(this.rules.leaders && this.teams ? { ld: this.teams.map((t) => this.leaderOf.get(t.id) ?? -1) } : {}),
+      ...(this.roulette?.snapshot() ? { rl: this.roulette.snapshot()! } : {}),
       ...(this.mode ? { md: this.mode.snapshot() } : this.zombies ? { md: { ts: [this.zombies.wave], zb: this.zombies.snapshot() } } : this.race ? { md: { ts: [], rc: this.race.snapshot() } } : {}),
     };
   }

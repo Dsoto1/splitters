@@ -633,17 +633,32 @@ export class BotBrain {
   /** Catching up with its squad's leader. */
   private regrouping = false;
 
+  /** The personality it plays now (playAs: Roulette's body each life), and the one it was made with. */
+  profile: BotProfile;
+  readonly baseProfile: BotProfile;
+
   constructor(
     readonly slot: number,
-    readonly profile: BotProfile,
+    profile: BotProfile,
     readonly difficulty: BotDifficulty,
     seed: number,
   ) {
+    this.profile = profile;
+    this.baseProfile = profile;
     this.rng = createRng(seed * 7919 + slot);
     this.routeRng = createRng((seed * 104729 + slot * 7919 + 17) >>> 0);
     this.aim = new AimModel(this.rng, difficulty, profile);
     this.clearCheck = () => this.clearShot();
     this.choice = { me: { x: 0, y: 0, z: 0 }, goal: null, profile, hurt: false, lowAmmo: false, cover: false, retreating: false, pickup: -Infinity, post: -Infinity, lost: null, noise: null, posted: false };
+  }
+
+  /**
+   * Play another personality from now (Roulette: the body dealt this life; docs/BOT_AI_PLAN.md Phase B, "bots play to
+   * their body"): its choices, ranges and tags. Its aim stays its own.
+   */
+  playAs(profile: BotProfile): void {
+    this.profile = profile;
+    this.choice.profile = profile;
   }
 
   /** Enemy currently targeted (actor ID), if any. */

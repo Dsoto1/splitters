@@ -167,9 +167,9 @@ describe('the score and time a setup plays: suggested, or the host’s own', () 
   it('a party preset that changes the mode puts the score back on the suggestion (a score for another mode means nothing)', () => {
     const map = campus();
     const lunar = PARTY_PRESETS.find((p) => p.id === 'lunar_roulette')!;
-    const s = applyParty(lunar, setup({ mode: 'core.ctf', scoreLimit: 5, scoreAuto: false, minutes: 30, timeAuto: false, teams: [2, 2] }), map, ['core.tdm', 'core.ctf'], { deviceMax: 48 })!;
-    expect(s).toMatchObject({ mode: 'core.tdm', scoreAuto: true, minutes: 30, timeAuto: false });
-    expect(setupLimits(s, map).scoreLimit).toBe(suggestedLimits('core.tdm', 24, [12, 12]).scoreLimit);
+    const s = applyParty(lunar, setup({ mode: 'core.ctf', scoreLimit: 5, scoreAuto: false, minutes: 30, timeAuto: false, teams: [2, 2] }), map, ['core.tdm', 'core.ctf', 'core.roulette'], { deviceMax: 48 })!;
+    expect(s).toMatchObject({ mode: 'core.roulette', scoreAuto: true, minutes: 30, timeAuto: false });
+    expect(setupLimits(s, map).scoreLimit).toBe(suggestedLimits('core.roulette', s.bots + 1).scoreLimit);
   });
 });
 

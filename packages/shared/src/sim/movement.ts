@@ -476,11 +476,14 @@ export interface JumpPad {
 
 export const PAD_RADIUS = 1.1;
 
-/** The jump pads of a map (shared by the server and client prediction so both launch the same). */
-export function mapPads(entities: readonly { kind: string; position: [number, number, number]; yaw?: number; power?: number; push?: number }[]): JumpPad[] {
+/** Lunar (MatchRules.lunar): jump pads launch this much harder. */
+export const LUNAR_PAD_BOOST = 1.3;
+
+/** The jump pads of a map (shared by the server and client prediction so both launch the same); `boost` scales their launch (Lunar). */
+export function mapPads(entities: readonly { kind: string; position: [number, number, number]; yaw?: number; power?: number; push?: number }[], boost = 1): JumpPad[] {
   return entities
     .filter((e) => e.kind === 'pad')
-    .map((e) => ({ pos: { x: e.position[0], y: e.position[1], z: e.position[2] }, vy: e.power ?? 14, vx: Math.sin(e.yaw ?? 0) * (e.push ?? 6), vz: Math.cos(e.yaw ?? 0) * (e.push ?? 6) }));
+    .map((e) => ({ pos: { x: e.position[0], y: e.position[1], z: e.position[2] }, vy: (e.power ?? 14) * boost, vx: Math.sin(e.yaw ?? 0) * (e.push ?? 6) * boost, vz: Math.cos(e.yaw ?? 0) * (e.push ?? 6) * boost }));
 }
 
 /** Launch off a pad you are standing on (after moving). */

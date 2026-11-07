@@ -4,6 +4,7 @@ import type { BotSet } from './sim/botSet.ts';
 import type { RotationEntry, RotationState } from './sim/rotation.ts';
 import type { GameMode, MatchRules } from './sim/rules.ts';
 import type { MatchCheckpoint } from './net/handoff.ts';
+import type { RouletteAward, RoulettePrivate } from './sim/roulette.ts';
 
 /**
  * Wire protocol, version 1. JSON over WebSocket for Phase 0; the message shapes
@@ -223,6 +224,8 @@ export interface PrivateState {
   cl?: [number, number, number, number, number];
   /** Disc Arena: the power disc you hold (index into DISC_POWERS) and throws left. */
   dp?: [number, number];
+  /** Roulette: your next card, tokens, a streak pick on offer, this life's roll (sim/roulette.ts RoulettePrivate). */
+  rp?: RoulettePrivate;
 }
 
 export const STATUS_BURN = 1;
@@ -237,6 +240,9 @@ export const FX_SWIM = 64;
 export const FX_CLOAK = 128;
 /** Classes: overcharged (can't be hurt for a few seconds). */
 export const FX_OVERCHARGE = 256;
+/** Roulette: under spawn protection (a soft shimmer), and playing a jackpot roll (a steady glow). */
+export const FX_PROTECTED = 512;
+export const FX_JACKPOT = 1024;
 
 /**
  * A turret, sentry or vehicle: [map entity index, x, y, z, yaw, aim yaw, aim
@@ -281,7 +287,16 @@ export type GameEvent =
   | { e: 'knock'; s: number; t: number }
   | { e: 'pickup'; s: number; id: string; item: string }
   | { e: 'kill'; killer: number | null; victim: number; weapon: string; /** The killing blow was a head hit. */ hs?: 1 }
-  | { e: 'spawn'; s: number; /** Random characters: the look this life plays (sim/randomLooks.ts). */ l?: string }
+  | { e: 'spawn'; s: number; /** Random characters: the look this life plays (sim/randomLooks.ts). */ l?: string;
+      /** Roulette: this life's roll (1 jackpot, 2 tiny), and the cards the player is dealt next (the client preloads them). */ j?: 1 | 2; nx?: string[] }
+  /**
+   * Roulette (sim/roulette.ts): `s` rolled a jackpot (`jackpot`, as look `l`); earned a streak pick (`pick`) or a reroll
+   * token (`token`, `n` held); chose card look `l` of a pick (`chose`); spent a token on a new next card `l` (`reroll`,
+   * `n` left); downed large `t` as a small one (`giant`), made an air kill (`air`) or a kill as a new character (`variety`,
+   * `n` characters scored as); became their victim's look `l` (`swap`). The gravity storm (`storm`): `n` 1 its warning,
+   * 2 it blows, 0 it's over; `g` its gravity. The match's awards (`awards`, `aw`) with the round's end.
+   */
+  | { e: 'rl'; a: 'jackpot' | 'pick' | 'token' | 'chose' | 'reroll' | 'giant' | 'air' | 'variety' | 'swap' | 'storm' | 'awards'; s?: number; t?: number; l?: string; n?: number; g?: number; aw?: RouletteAward[] }
   /** `outcome` is set when a co-op mission ends (victory or defeat). */
   | { e: 'round_end'; winner: number | null; outcome?: 'victory' | 'defeat'; /** Winning team (faction ID) in Team Deathmatch; null for a draw. */ team?: string | null; /** "Next map" logic: the suite map ID everyone goes on to. */ next?: string;
       /** The map rotation's next map (its display name) and mode, where the match goes after the scoreboard. */ up?: { map: string; mode: GameMode } }
@@ -592,6 +607,8 @@ export type ServerMessage =
       hold?: number[];
       /** Team leaders (rules.leaders): each team's leader slot, in team order (-1: none). */
       ld?: number[];
+      /** Roulette with Lunar: the gravity storm, [phase (0 calm, 1 warning, 2 blowing), seconds left in it, gravity now ×100, the storm's gravity ×100]. */
+      rl?: [number, number, number, number];
     }
   | { t: 'pong'; id: number; ct: number }
   /** Online: each human's round trip for the scoreboard, as flat [slot, ms, slot, ms, …] (every couple of seconds). */
