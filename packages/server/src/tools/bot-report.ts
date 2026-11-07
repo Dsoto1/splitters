@@ -108,6 +108,8 @@ interface BotRow {
   parkour?: [number, number, number];
   parkourGaveUp?: number;
   parkourMissed?: number;
+  /** Route searches that kept to its group's corridor all the way (NavWorld.pathAlong). */
+  along?: number;
   /** Its style: Arena, Tactical, or neither ('mixed': the character's own way between them). */
   style?: BotStyleName;
 }
@@ -131,6 +133,9 @@ export interface MatchRow {
   map: string;
   /** The map's parkour links (nav/parkour.ts): drops, gap jumps, jumps up. */
   parkourLinks?: [number, number, number];
+  /** Route searches the per-tick budget put off a tick, and teammates passed on the right (crowds), in the match. */
+  searchesPutOff?: number;
+  keptRight?: number;
   mode: string;
   seed: number;
   seconds: number;
@@ -628,6 +633,7 @@ function play(map: MapDocument, mode: GameMode, seed: number, seconds: number, s
     r.parkour = [pk.drop, pk.gap, pk.up];
     r.parkourGaveUp = c.bot!.parkourGaveUp;
     r.parkourMissed = c.bot!.parkourMissed;
+    r.along = c.bot!.alongRoutes;
     out.bots.push(r);
   }
   const links = match.nav.parkour;
@@ -649,6 +655,8 @@ function play(map: MapDocument, mode: GameMode, seed: number, seconds: number, s
   // Every navmesh path query (bots' routes, presses, sidesteps, lanes, modes...), and those that found no way.
   out.navQueries = simProfile.n.get('nav') ?? 0;
   out.navFails = simProfile.n.get('navFail') ?? 0;
+  out.searchesPutOff = match.nav.searchesPutOff;
+  out.keptRight = simProfile.n.get('botKeepRight') ?? 0;
   out.seconds = played;
   out.coverage = behaviour.coverage(played);
   if (btRow) out.breakthrough = btRow;
@@ -765,7 +773,7 @@ function printMatch(m: MatchRow): void {
   const snipers = m.bots.filter((r) => r.job === 'sniper');
   if (m.weaponKills) console.log(`weapons (${getWeaponSet(m.set).name}): ${killsText(new Map(Object.entries(m.weaponKills)))}`);
   const made = [0, 1, 2].map((k) => sum(m.bots, (r) => r.parkour?.[k] ?? 0));
-  if (m.parkourLinks) console.log(`parkour: links ${m.parkourLinks[0]} drops, ${m.parkourLinks[1]} gap jumps, ${m.parkourLinks[2]} jumps up | made ${made[0]} drops, ${made[1]} gap jumps, ${made[2]} jumps up (missed ${sum(m.bots, (r) => r.parkourMissed ?? 0)}, given up ${sum(m.bots, (r) => r.parkourGaveUp ?? 0)})`);
+  if (m.parkourLinks) console.log(`parkour: links ${m.parkourLinks[0]} drops, ${m.parkourLinks[1]} gap jumps, ${m.parkourLinks[2]} jumps up | made ${made[0]} drops, ${made[1]} gap jumps, ${made[2]} jumps up (missed ${sum(m.bots, (r) => r.parkourMissed ?? 0)}, given up ${sum(m.bots, (r) => r.parkourGaveUp ?? 0)}) | routes along a group's corridor ${sum(m.bots, (r) => r.along ?? 0)} | searches put off a tick ${m.searchesPutOff ?? 0} | ticks keeping right of a teammate ${m.keptRight ?? 0}`);
   console.log(`fights: in cover ${pct(sum(m.bots, (r) => r.coverFight ?? 0), fightT)} of fight time | scoped kills ${sum(m.bots, (r) => r.scopedKills ?? 0)} (from a vantage spot ${sum(m.bots, (r) => r.postKills ?? 0)}) | snipers ${snipers.length}: spots ${sum(snipers, (r) => r.posts ?? 0)} (only parkour reaches ${sum(snipers, (r) => r.parkourPosts ?? 0)}), rounds from spots ${sum(snipers, (r) => r.postShots ?? 0)}, moved on after shots ${sum(snipers, (r) => r.moves ?? 0)}, shots held ${sum(snipers, (r) => r.held ?? 0)} s, kills ${sum(snipers, (r) => r.kills)} (scoped ${sum(snipers, (r) => r.scopedKills ?? 0)})`);
   const why = new Map<string, number>();
   for (const r of m.bots) for (const [k, v] of Object.entries(r.why)) why.set(k, (why.get(k) ?? 0) + v);

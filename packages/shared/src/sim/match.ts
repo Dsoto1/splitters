@@ -1912,6 +1912,8 @@ export class Match {
     // Ground that has gone (a crumbled bridge, an open trapdoor, a drawbridge up: Scenario.surfacesGone), a few times a
     // second: routes keep off it from now on, and bots on one over it plan again (Phase C item 2).
     if (this.tick % 6 === 0) this.nav.setGone(this.scenario.surfacesGone());
+    // The tick's route searches for bots (Phase C item 4): plenty for a normal match, a ceiling for a crowd's spikes.
+    this.nav.beginTick(SEARCH_BUDGET);
     const t0 = performance.now();
     const actors = this.actors();
     // Actors as bots see them: one view object per actor, refilled every tick (no 96 new objects a tick).
@@ -6444,6 +6446,12 @@ export const RELAXED_RANGE = 45;
 const RELAXED_PORTAL = 6;
 /** Held buttons a coasting bot keeps (movement stance); fire, use, jump and the rest are one-shot. */
 const COAST_BUTTONS = BUTTON_SPRINT | BUTTON_CROUCH | BUTTON_PRONE;
+/**
+ * Route searches bots may start in a tick (NavWorld.beginTick; BOT_AI_PLAN.md Phase C item 4): a 96-bot match averages
+ * about ten a tick, its spikes (a respawn wave, a flag taken: everyone's goal moves at once) several times that; those
+ * over it wait a tick, following the route they have.
+ */
+const SEARCH_BUDGET = 24;
 
 /** Crouching steadies your aim; lying prone steadies it more. */
 const STANCE_SPREAD = [1, 0.7, 0.5] as const;

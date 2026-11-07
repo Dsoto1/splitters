@@ -509,6 +509,61 @@ export class NavWorld {
     return out;
   }
 
+  /**
+   * A route that keeps to a corridor (nav/corridors.ts: its polygons, start to goal) the rest of the way to `to` (its
+   * goal's end): from `from` onto the corridor polygon nearest it ahead (one short search), then along the corridor's
+   * own polygons, the straight path through them all (BOT_AI_PLAN.md Phase C item 4: a group's bots keep to its lane,
+   * where a route with the corridor's via went back to the shortest way by the trip's middle). Null when it can't: the
+   * corridor shut or gone on the way (a door, a fallen bridge: `shut`), `to` off its last polygon, or no way onto it.
+   */
+  pathAlong(from: Vec3, polys: readonly number[], to: Vec3, shut = 0): Vec3[] | null {
+    const g = this.graph();
+    if (polys.length < 2) return null;
+    const ext = { x: 2, y: 3, z: 2 };
+    const s = this.query.findNearestPoly(from, { halfExtents: ext });
+    const e = this.query.findNearestPoly(to, { halfExtents: ext });
+    if (!s.success || !s.nearestRef || !e.success || !e.nearestRef || e.nearestRef - g.base !== polys[polys.length - 1]) return null;
+    const mask = shut | this.gone;
+    // The corridor polygon nearest `from` (later ones win ties: ahead, not back the way it came).
+    const { centre } = polyShapes(g);
+    let k = -1;
+    let best = Infinity;
+    for (let i = 0; i < polys.length; i++) {
+      const p = polys[i]!;
+      const d = hypot(centre[p * 3]! - from.x, centre[p * 3 + 2]! - from.z) + Math.abs(centre[p * 3 + 1]! - from.y) * 2;
+      if (d <= best) {
+        best = d;
+        k = i;
+      }
+    }
+    if (k < 0 || best > 30) return null;
+    for (let i = k; i < polys.length; i++) if (mask && g.flags[polys[i]!]! & mask) return null;
+    // From here onto it: Detour's own route to that polygon (a few polygons, usually).
+    const head: number[] = [];
+    if (s.nearestRef - g.base !== polys[k]) {
+      const target = this.query.closestPointOnPoly(g.base + polys[k]!, from);
+      if (!target.success) return null;
+      const r = this.query.findPath(s.nearestRef, g.base + polys[k]!, s.nearestPoint, target.closestPoint, { maxPathPolys: MAX_PATH_POLYS, filter: this.filterFor(shut | this.gone, 0) });
+      const n = r.polys.size;
+      const whole = r.success && n > 0 && r.polys.get(n - 1) === g.base + polys[k]!;
+      for (let i = 0; whole && i < n - 1; i++) head.push(r.polys.get(i));
+      r.polys.destroy();
+      if (!whole) return null;
+    }
+    const refs = [...head];
+    for (let i = k; i < polys.length; i++) refs.push(g.base + polys[i]!);
+    const sp = this.query.findStraightPath(s.nearestPoint, e.nearestPoint, refs, { maxStraightPathPoints: MAX_CORNERS });
+    const out: Vec3[] = [];
+    if (sp.success) for (let i = 0; i < sp.straightPathCount; i++) out.push({ x: sp.straightPath.get(i * 3), y: sp.straightPath.get(i * 3 + 1), z: sp.straightPath.get(i * 3 + 2) });
+    sp.straightPath.destroy();
+    sp.straightPathFlags.destroy();
+    sp.straightPathRefs.destroy();
+    const last = out[out.length - 1];
+    if (!last || hypot(last.x - e.nearestPoint.x, last.z - e.nearestPoint.z) > 0.5) return null;
+    if (simProfile.on) simProfile.count('navAlong');
+    return out;
+  }
+
   private placeCache: Vec3[] | null = null;
 
   /**
@@ -659,6 +714,30 @@ export class NavWorld {
     });
     // Routes found before are still right for the routes that don't keep out of anything; failures with a mask are new.
     this.noRoute.clear();
+  }
+
+  /**
+   * The per-tick search budget (BOT_AI_PLAN.md Phase C item 4: big matches, huge maps): route searches bots may start
+   * this tick before the rest wait for the next (a bot with a route keeps to it meanwhile). Infinite until the match
+   * sets one (beginTick).
+   */
+  private searchesLeft = Infinity;
+  /** Searches put off by the budget (measuring). */
+  searchesPutOff = 0;
+
+  /** The match, each tick: `budget` route searches for bots this tick. */
+  beginTick(budget: number): void {
+    this.searchesLeft = budget;
+  }
+
+  /** A bot that would plan its route again now: whether the tick's budget has a search for it (one is used). */
+  takeSearch(): boolean {
+    if (this.searchesLeft <= 0) {
+      this.searchesPutOff++;
+      return false;
+    }
+    this.searchesLeft--;
+    return true;
   }
 
   /** Surfaces gone now (Scenario.surfacesGone: flag bits every route keeps off), and a count of changes to them. */

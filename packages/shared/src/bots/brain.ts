@@ -328,6 +328,8 @@ const STEP_OFF = 2.2;
 const CORNER_RADIUS = 0.45;
 /** How strongly teammates close by push a bot going somewhere out of a fight aside, at most (the way itself is 1). */
 const SEPARATE_MAX = 0.8;
+/** A teammate coming the other way this close ahead (m) is passed on the right (separate). */
+const ONCOMING = 4;
 const PASS_RADIUS = 1.4;
 
 /** Tactical decisions (cover, grenades, mounts) run at about 10 Hz, staggered. */
@@ -1051,6 +1053,19 @@ export class BotBrain {
     return goal;
   }
 
+  /**
+   * Keeping to its group's corridor all the way (orderTarget, then the route search: NavWorld.pathAlong): which, when it
+   * was last asked for, and when a route along it last failed (then by its via for a while).
+   */
+  private along: { c: Corridor; tick: number; failed: number } | null = null;
+  /** Routes that kept to a corridor all the way (measuring). */
+  alongRoutes = 0;
+
+  private alongFailed(c: Corridor, tick: number): boolean {
+    const a = this.along;
+    return !!a && a.c === c && tick - a.failed < TICK_RATE * 10;
+  }
+
   /** `to`, where it was heading for `goal`, was one of its corridor's vias and no route gets there from here: on past it. */
   private skipVia(to: Vec3, goal: Vec3): boolean {
     const r = this.route;
@@ -1077,7 +1092,14 @@ export class BotBrain {
     const job = this.jobFor(view, g);
     if (job) {
       if (job.stage) return job.stage;
-      return job.route && horizontalDistance(me, g.pos) > ROUTE_FROM ? this.viaRoute(view, job.route, g.pos) : g.pos;
+      if (!job.route || horizontalDistance(me, g.pos) <= ROUTE_FROM) return g.pos;
+      // Its group's corridor all the way (BOT_AI_PLAN.md Phase C item 4: NavWorld.pathAlong), when the corridor runs to
+      // this goal; else by its via, then the shortest way on.
+      if (job.route.polys.length > 1 && !this.alongFailed(job.route, view.tick)) {
+        this.along = { c: job.route, tick: view.tick, failed: this.along?.c === job.route ? this.along.failed : -Infinity };
+        return g.pos;
+      }
+      return this.viaRoute(view, job.route, g.pos);
     }
     let lane = this.lane;
     // (Only for a spot to get to, a flag: not for following someone, nor for a carrier running home the short way.)
@@ -3305,19 +3327,39 @@ export class BotBrain {
     const me = view.self.pos;
     let px = 0;
     let pz = 0;
-    const near = view.alliesGrid ? view.alliesGrid.near(me.x, me.z, 2.2, this.nearScratch) : view.allies;
+    // Crowds (BOT_AI_PLAN.md Phase C item 3): travelling, a teammate close ahead coming the other way (facing us) is
+    // passed on the right, both of them keeping right, as people do in a doorway, a tunnel or on stairs.
+    let keepRight = 0;
+    const fx = moveYaw === null ? 0 : Math.sin(moveYaw);
+    const fz = moveYaw === null ? 0 : Math.cos(moveYaw);
+    const reach = travelling && moveYaw !== null ? ONCOMING : 2.2;
+    const near = view.alliesGrid ? view.alliesGrid.near(me.x, me.z, reach, this.nearScratch) : view.allies;
     for (const a of near) {
       if (a.slot === view.self.slot) continue;
       const dx = me.x - a.pos.x;
       const dz = me.z - a.pos.z;
       const d2 = dx * dx + dz * dz;
-      if (d2 > 2.2 * 2.2 || Math.abs(a.pos.y - me.y) > 1.5) continue;
+      if (d2 > reach * reach || Math.abs(a.pos.y - me.y) > 1.5) continue;
+      if (reach > 2.2 && d2 > 0.01) {
+        const d = Math.sqrt(d2);
+        // Ahead of us (along our way) and facing us (its look against our way).
+        const ahead = -(dx * fx + dz * fz) / d;
+        const facing = -(Math.sin(a.yaw) * fx + Math.cos(a.yaw) * fz);
+        if (ahead > 0.6 && facing > 0.5) keepRight = Math.max(keepRight, (1 - d / ONCOMING) * 0.9 + 0.2);
+      }
+      if (d2 > 2.2 * 2.2) continue;
       const d = Math.sqrt(d2);
       // Exactly on top of each other: split by slot so the two go opposite ways.
       const ux = d < 1e-3 ? (view.self.slot < a.slot ? 1 : -1) : dx / d;
       const uz = d < 1e-3 ? 0 : dz / d;
       px += ux * (2.2 - d);
       pz += uz * (2.2 - d);
+    }
+    if (keepRight) {
+      // (Our right, as stepMovement reads `right`: x cos, z -sin of the yaw.)
+      px += fz * keepRight;
+      pz -= fx * keepRight;
+      if (simProfile.on) simProfile.count('botKeepRight');
     }
     if (!px && !pz) return moveYaw;
     if (moveYaw === null) return hypot(px, pz) > 1.4 ? Math.atan2(px, pz) : null;
@@ -3396,7 +3438,10 @@ export class BotBrain {
     // In the air off the navmesh (out of the plane, under a canopy, a jump pad's flight): no route starts there, so none
     // is asked for until it lands; a route it is following (the pad's) carries on, and a canopy steers straight for the
     // goal meanwhile. (Before, every replan in the air was a failed search: 860 of Eagle Spires' 1,507 in a minute.)
-    const replan = (goalMoved && view.tick - this.lastPathTick >= 2) || ((stale || exhausted) && view.tick - this.lastPathTick >= 6);
+    let replan = (goalMoved && view.tick - this.lastPathTick >= 2) || ((stale || exhausted) && view.tick - this.lastPathTick >= 6);
+    // Over the tick's search budget (big matches): keep to the route it has and plan again next tick (one with no route
+    // left, or one cut off by a fallen bridge, always searches).
+    if (replan && !exhausted && this.path.length && this.pathIndex < this.path.length && this.goneSeen === view.nav.goneVersion && !view.nav.takeSearch()) replan = false;
     // (On a ladder off the navmesh likewise: it carries on along it and plans again off it. Fernwood Moon's vine ladder
     // made hundreds of failed searches a match from bots on it whose goal changed.)
     if (replan && (me.grounded === false || me.climbing) && !view.nav.closestPoint(me.pos)) {
@@ -3428,7 +3473,14 @@ export class BotBrain {
       else if (!backedOff) {
         // Flankers, recon, snipers and Arena bots take parkour's ways (roofs, jumps) as readily as walking (nav/parkour.ts).
         const agile = this.agile(view);
-        found = (offLifts && view.nav.findPath(me.pos, to, offLifts, false, this.coverRoutes, agile)) || view.nav.findPath(me.pos, to, 0, true, this.coverRoutes, agile);
+        // Along its group's corridor (orderTarget asked for it just now), else the usual search.
+        const al = this.along;
+        if (al && view.tick - al.tick <= DECIDE_TICKS * 2 && !offLifts && !this.standIn) {
+          found = view.nav.pathAlong(me.pos, al.c.polys, to, view.shut ?? 0);
+          if (found) this.alongRoutes++;
+          else al.failed = view.tick;
+        }
+        found ??= (offLifts && view.nav.findPath(me.pos, to, offLifts, false, this.coverRoutes, agile)) || view.nav.findPath(me.pos, to, 0, true, this.coverRoutes, agile);
       }
       if (!backedOff && !onto) {
         this.pathFails = found ? 0 : Math.min(this.pathFails + 1, 6);
