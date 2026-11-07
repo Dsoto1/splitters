@@ -36,18 +36,23 @@
     "lod": 0.25,
     "feet": true,
     "hands": { "scale": 0.7 },
+    "grip": {
+      "gripLong": [-0.045, 0.02, -0.03],
+      "rollR": 0.3
+    },
     "skin": {
+      "smooth": { "joints": "^(spine_0[123]|Head|pelvis)$", "passes": 6 },
       "rigid": [
         {
           "joint": "spine_03",
-          "box": [-0.4, 0.5, -0.7, 0.4, 1, 0.5],
+          "box": [[-0.4, 0.5, -0.7, 0.4, 1, 0.5], [-0.15, 0.4, -0.7, 0.15, 0.5, -0.3]],
           "blend": 0.03,
-          "except": "^(pelvis|spine_0[12]|thigh_|calf_|foot_|ball_|upperarm_|lowerarm_|hand_|thumb_|index_|middle_|ring_|pinky_)"
+          "except": "^(pelvis|spine_0[12]|clavicle_|thigh_|calf_|foot_|ball_|upperarm_|lowerarm_|hand_|thumb_|index_|middle_|ring_|pinky_)"
         },
         {
           "joint": "Head",
-          "box": [-0.3, 0.5, 0.12, 0.3, 0.95, 0.5],
-          "blend": 0.06,
+          "box": [-0.13, 0.58, 0.12, 0.13, 0.95, 0.5],
+          "blend": 0.1,
           "except": "^(pelvis|spine_0[12]|thigh_|calf_|foot_|ball_|upperarm_|lowerarm_|hand_|thumb_|index_|middle_|ring_|pinky_)"
         }
       ]

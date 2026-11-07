@@ -119,7 +119,7 @@ export const WHOLE_BODY_LOOKS: readonly CharacterLook[] = [
   { id: 'core.darkastronaut', name: 'Starfarer', body: 'male', head: '', parts: ['meshy_darkastronaut'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_darkastronaut_fparms', grip: { gripLong: [-0.03, 0.02, -0.03], supportLong: [0, 0.02, 0.03], supportPistol: [-0.01, 0.03, -0.03] } }, group: 'soldiers', nameTheme: 'soldier' },
   { id: 'core.tortoise', name: 'Shellback', body: 'male', head: '', parts: ['meshy_tortoise'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_tortoise_fparms', grip: { gripLong: [-0.045, 0.02, -0.03], supportPistol: [-0.01, 0.03, -0.03] } }, group: 'animals', nameTheme: 'critter' },
   { id: 'core.trex', name: 'Cool Hands Rex', body: 'male', head: '', parts: ['meshy_trex'], hair: [], colorways: [], skin: null, hairColor: null, size: 'large', whole: { arms: 'meshy_trex_fparms' }, group: 'creatures', nameTheme: 'gangster' },
-  { id: 'core.fishyfred', name: 'Fishy Fred', body: 'male', head: '', parts: ['meshy_fishyfred'], hair: [], colorways: [], skin: null, hairColor: null, size: 'small', whole: { arms: 'meshy_fishyfred_fparms' }, group: 'animals', nameTheme: 'critter' },
+  { id: 'core.fishyfred', name: 'Fishy Fred', body: 'male', head: '', parts: ['meshy_fishyfred'], hair: [], colorways: [], skin: null, hairColor: null, size: 'small', whole: { arms: 'meshy_fishyfred_fparms', grip: { gripLong: [-0.045, 0.02, -0.03], rollR: 0.3 } }, group: 'animals', nameTheme: 'critter' },
 ];
 
 /** Whole-body characters made for NPCs only (`use: npc`): not on the roster; NPC_ROLE_SPECS can name them. */
