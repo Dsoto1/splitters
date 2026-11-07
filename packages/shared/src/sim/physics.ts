@@ -333,21 +333,56 @@ export class PhysicsWorld {
     return hit !== null;
   }
 
+  /** Whether a vehicle probe with its base at `feet` overlaps anything it moves against (not its own hull). */
+  private probeOverlaps(probe: RAPIER.Collider, feet: Vec3, centerY: number, body: RAPIER.Collider): boolean {
+    return this.world.intersectionWithShape({ x: feet.x, y: feet.y + centerY, z: feet.z }, probe.rotation(), probe.shape, RAPIER.QueryFilterFlags.EXCLUDE_SENSORS, MOVE_QUERY, body) !== null;
+  }
+
   /**
    * Move a vehicle probe (its base at `feet`) by `delta`, sliding along the
    * world and climbing gentle slopes, ignoring the vehicle's own body.
+   *
+   * Each move starts `lift` (5 cm) up and asks to come down by as much. Pinched between two contacts it can slide
+   * along neither (a doorway or gap narrower than the probe: its jambs; a beam and the floor), the controller moves it
+   * nowhere at all, not even down, and the lift stayed: the vehicle rose 5 cm a tick, up the door into its lintel
+   * and the roof over it, and stuck there (a Hauler at the top of Iron Tide's stairs, in the 3 m door under the
+   * deck's roof). A move the controller refuses now keeps the vehicle where it was, resting (it still falls when it
+   * can: the drop is tried on its own), so it can be driven back out the way it came.
    */
   moveVehicle(probe: RAPIER.Collider, body: RAPIER.Collider, feet: Vec3, delta: Vec3): { feet: Vec3; grounded: boolean; blocked: number } {
     const centerY = this.probeCenter.get(probe) ?? 0;
     const lift = 0.05;
+    const skip = (c: RAPIER.Collider) => c.handle !== body.handle;
     probe.setTranslation({ x: feet.x, y: feet.y + lift + centerY, z: feet.z });
-    this.controller.computeColliderMovement(probe, { x: delta.x, y: delta.y - lift, z: delta.z }, RAPIER.QueryFilterFlags.EXCLUDE_SENSORS, MOVE_QUERY, (c) => c.handle !== body.handle);
-    const m = this.controller.computedMovement();
-    const next = { x: feet.x + m.x, y: feet.y + lift + m.y, z: feet.z + m.z };
-    probe.setTranslation({ x: next.x, y: next.y + centerY, z: next.z });
+    this.controller.computeColliderMovement(probe, { x: delta.x, y: delta.y - lift, z: delta.z }, RAPIER.QueryFilterFlags.EXCLUDE_SENSORS, MOVE_QUERY, skip);
+    let m = this.controller.computedMovement();
+    let grounded = this.controller.computedGrounded();
+    let start = lift;
     const want = hypot(delta.x, delta.z);
+    // Refused: no headway, and not even the lift back down (the controller hardly moved it at all).
+    const refused = hypot(m.x, m.z) < 1e-4 && m.y > -1e-3 && m.y < lift * 0.5 && (want > 1e-6 || delta.y - lift < -1e-6);
+    if (refused) {
+      // Refused: no headway, and only the fall (if any) from where it is, without the lift.
+      start = 0;
+      probe.setTranslation({ x: feet.x, y: feet.y + centerY, z: feet.z });
+      this.controller.computeColliderMovement(probe, { x: 0, y: Math.min(0, delta.y), z: 0 }, RAPIER.QueryFilterFlags.EXCLUDE_SENSORS, MOVE_QUERY, skip);
+      const down = this.controller.computedMovement();
+      m = { x: 0, y: Math.min(0, down.y), z: 0 };
+      // Held where it is (refused that too: the pinch holds it up), or come down onto the ground: it rests.
+      grounded = m.y > -1e-6 || this.controller.computedGrounded();
+    }
+    let next = { x: feet.x + m.x, y: feet.y + start + m.y, z: feet.z + m.z };
+    // The controller can let the probe creep up into what is over it (climbing a sill under a lintel, or starting
+    // within the lift of a ceiling): a move that ends inside the level when it didn't start there keeps its height
+    // (or, if that is inside too, the vehicle stays where it was), as moveCharacter does for players.
+    if (next.y > feet.y + 1e-4 && this.probeOverlaps(probe, next, centerY, body) && !this.probeOverlaps(probe, feet, centerY, body)) {
+      const level = { x: next.x, y: feet.y, z: next.z };
+      next = this.probeOverlaps(probe, level, centerY, body) ? { ...feet } : level;
+      m = { x: next.x - feet.x, y: 0, z: next.z - feet.z };
+    }
+    probe.setTranslation({ x: next.x, y: next.y + centerY, z: next.z });
     const got = hypot(m.x, m.z);
-    return { feet: next, grounded: this.controller.computedGrounded(), blocked: want > 1e-6 ? 1 - got / want : 0 };
+    return { feet: next, grounded, blocked: want > 1e-6 ? 1 - got / want : 0 };
   }
 
   setBoxEnabled(collider: RAPIER.Collider, enabled: boolean): void {

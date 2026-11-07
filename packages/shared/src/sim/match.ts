@@ -4681,7 +4681,11 @@ export class Match {
     const step = Math.hypot(moved.feet.x - m.pos.x, moved.feet.z - m.pos.z);
     m.stall = throttle && step < WEDGE_STEP * ticks ? m.stall + ticks : Math.max(0, m.stall - 2 * ticks);
     if (m.stall >= WEDGE_TICKS && !m.wedged) m.wedged = { at: { ...moved.feet } };
-    else if (m.wedged && Math.hypot(moved.feet.x - m.wedged.at.x, moved.feet.z - m.wedged.at.z) > WEDGE_FREED) m.wedged = undefined;
+    else if (m.wedged && Math.hypot(moved.feet.x - m.wedged.at.x, moved.feet.z - m.wedged.at.z) > WEDGE_FREED) {
+      // Got out: free, and the stall it built up is over (left over, it marked the vehicle wedged again a tick later).
+      m.wedged = undefined;
+      m.stall = 0;
+    }
     m.pos = moved.feet;
     if (m.susp) this.suspend(m, ticks, speedBefore, turn, right, wasAirborne && !m.airborne ? Math.max(0, -fallSpeed) : 0);
     const decay = (moved.grounded || afloat ? 0.9 : 0.99) ** ticks;
