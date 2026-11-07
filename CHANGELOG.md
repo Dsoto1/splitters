@@ -30,7 +30,8 @@ intake of 2026-11-06")
 - **Smoke Grenade** (new, pickup "Smoke Grenades"): a grey cloud about 5 m across its middle for 18 s. Bots, turrets
   and homing missiles can't see through it; you can't either (inside it, a grey haze you see 2-3 m through), and an
   enemy's marker behind it isn't drawn. Bullets still go through. A hurt bot caught in the open throws one between
-  itself and its enemy. No flash, no white-out: there is still no flashbang.
+  itself and its enemy, and a bot bounding cover to cover sends one ahead before it crosses open ground. No flash,
+  no white-out: there is still no flashbang.
 
 **Bots: snipers, cover to cover, playbooks per mode** (docs/BOT_AI_PLAN.md Phase B, part 2; docs/BOTS.md, "Snipers",
 "Cover-to-cover advance", "Team brain and route variety")

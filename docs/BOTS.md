@@ -703,10 +703,15 @@ blocked by 1.6 m or more of a cloud (`smokeBlocks`, the clouds in `BotWorldView.
 - **Using it:** a bot carrying smoke, caught in the open (no cover spot) by an enemy 10-45 m off and hurt (under 70
   health) or shot at, throws it a few metres toward the enemy (`considerSmoke`, then `smokeScreen`), so the cloud
   stands between them while it carries on; Tactical bots do it more often. Bots never throw smoke as a frag.
-- **Phase B's hook:** `BotBrain.smokeScreen(view, threat)` throws one toward a threat and says whether it could;
-  the cover-to-cover advance can call it before a bound across open ground.
+- **Crossing open ground:** bounding cover to cover ("Cover-to-cover advance", `boundPhase`), a bot of the moving half
+  with no cover round it (it left its cover for one further on, or there is none) throws its smoke a few metres toward
+  the enemy first, every time it carries some (no dice), and crosses under it. `BotBrain.smokeScreen(view, threat)`
+  throws one toward a threat and says whether it could.
+- **Who carries it:** for now only a bot that picks up Smoke Grenades (`core.smoke_grenades`, placed on a map; random
+  pickups roll only weapons); the Military and Sci-fi weapon sets will hand it out (docs/WEAPON_SETS_PLAN.md).
 - **Tests:** `smoke.test.ts` (a bot fires across an open yard and not through a cloud; a hurt bot in the open throws
-  smoke between itself and the enemy).
+  smoke between itself and the enemy; a Tactical bot bounding toward the enemy's flag across open ground sends smoke
+  ahead, an Arena bot, which never bounds, doesn't).
 
 ## Scored choices (Bot AI Phase B)
 

@@ -2578,12 +2578,18 @@ export class BotBrain {
   /**
    * A smoke screen (a smoke grenade carried): caught in the open by an enemy 10-45 m off (no cover, and hurt or shot
    * at), the bot throws one a few metres out toward it, so the cloud stands between them while it moves on or back:
-   * the enemy loses sight of it (bots and turrets alike; rounds still pass). Tactical bots do it more. Phase B's
-   * cover-to-cover advance can call smokeScreen before a bound across open ground (docs/BOTS.md, "Smoke").
+   * the enemy loses sight of it (bots and turrets alike; rounds still pass). Tactical bots do it more. Bounding cover
+   * to cover (Phase B, boundPhase), the moving half sends one ahead before it crosses open ground (docs/BOTS.md, "Smoke").
    */
   private considerSmoke(view: BotWorldView, target: CombatantView | undefined): void {
     const tick = view.tick;
     if (view.throwable !== 'smoke' || !(view.throwables ?? 0) || this.throwPlan || tick < this.nextThrow || !target || this.cover) return;
+    // Its half on the move with no cover round it (it left cover for one further on, or there is none): smoke first, so
+    // the open ground it crosses is out of the enemy's sight. (No dice: bounding, a bot carrying smoke always uses it.)
+    if (this.bound === 'move' && !view.reloading) {
+      this.smokeScreen(view, target.pos);
+      return;
+    }
     const me = view.self;
     const shot = !!view.shotAt && tick - view.shotAt.tick < TICK_RATE * 1.5;
     if (me.health >= 70 && !shot) return;

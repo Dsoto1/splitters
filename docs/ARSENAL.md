@@ -198,8 +198,8 @@ sits, and thins over its last 3 s: 18 s in all. It is only sight:
   drawn.
 - **Shots, blasts and movement go through it** (they use the physics' own lines).
 - **Bots use it:** a hurt bot caught in the open by an enemy 10-45 m off throws one a few metres toward it, so the
-  cloud stands between them while it moves on (`considerSmoke`; `BotBrain.smokeScreen` is the hook for Phase B's
-  cover-to-cover bounds, docs/BOTS.md).
+  cloud stands between them while it moves on; bounding cover to cover (Phase B), the moving half sends one ahead
+  before it crosses open ground (`considerSmoke`, `BotBrain.smokeScreen`; docs/BOTS.md, "Smoke").
 - **Weapon sets:** in Military and Sci-fi (docs/WEAPON_SETS_PLAN.md); `throwableModel(kind, set)` gives a set's look
   (the canister in Sci-fi, the realistic frag in Military) once sets pick it.
 

@@ -4,7 +4,9 @@ import {
   BUTTON_FIRE,
   BUTTON_THROW,
   CORE_BOT_PROFILES,
+  DEFAULT_CTF_RULES,
   DEFAULT_DEATHMATCH_RULES,
+  DEFAULT_TEAMS,
   PLAYER,
   SMOKE,
   THROWABLE_DEFS,
@@ -15,6 +17,7 @@ import {
   smokeBlocks,
   smokeRadius,
   weaponCode,
+  type Faction,
   type GameEvent,
   type MapDocument,
   type SmokeCloud,
@@ -24,6 +27,8 @@ import { Match, initNavigation, type Combatant } from '../src/match.ts';
 import { makeMap } from './helpers.ts';
 
 beforeAll(() => Promise.all([initPhysics(), initNavigation()]));
+
+const [A, B] = DEFAULT_TEAMS as [Faction, Faction];
 
 /**
  * The Smoke Grenade (owner, 2026-11-06): a cloud a few metres across for about 18 s that hides whoever is behind
@@ -205,5 +210,61 @@ describe('smoke clouds', () => {
       match.destroy();
     }
     expect(threw).toBeGreaterThanOrEqual(2);
+  }, 120_000);
+
+  /** Capture the Flag in the open yard: team A's flag at x 0, B's at x 26 (z 8), nothing to hide behind between them. */
+  function ctfYard(): MapDocument {
+    const doc = yard();
+    doc.metadata.supportedModes = ['core.ctf'];
+    doc.entities = [
+      { id: 'spawn_a', kind: 'spawn', position: [0, 0, 4], yaw: 0, faction: A.id },
+      { id: 'spawn_b', kind: 'spawn', position: [26, 0, 4], yaw: 0, faction: B.id },
+      { id: 'flag_a', kind: 'flag', position: [0, 0, 8], yaw: 0, team: A.id },
+      { id: 'flag_b', kind: 'flag', position: [26, 0, 8], yaw: 0, team: B.id },
+    ];
+    const r = loadMap(doc);
+    if (!r.ok) throw new Error(JSON.stringify(r.issues));
+    return r.map;
+  }
+
+  /**
+   * A bot of team A on its way to B's flag, unhurt and not shot at, with an enemy standing 20 m ahead in the open:
+   * the tick a smoke cloud came up between them (-1: none in 10 s).
+   */
+  function crossing(tags: string[], seed: number): number {
+    const match = new Match(ctfYard(), { ...DEFAULT_CTF_RULES, scoreLimit: 0, timeLimitSeconds: 0 }, seed);
+    const bot = match.addBot('runner', { ...CORE_BOT_PROFILES[3]!, accuracy: 50, rangePreference: 75, aggression: 20, tags }, BOT_DIFFICULTIES.normal, false, { team: A.id })!;
+    const enemy = match.addHuman('enemy', undefined, B.id)!;
+    bot.move = { pos: { x: 2, y: 0, z: 8 }, velY: 0, grounded: true };
+    enemy.move = { pos: { x: 22, y: 0, z: 8 }, velY: 0, grounded: true };
+    give(bot, 'core.rifle');
+    bot.throwable = { kind: 'smoke', count: 2 };
+    let seq = 0;
+    let at = -1;
+    for (let t = 0; t < 10 * 60 && at < 0; t++) {
+      match.queueInputs(enemy.slot, [{ seq: ++seq, forward: 0, right: 0, yaw: -Math.PI / 2, pitch: 0, buttons: 0 }]);
+      bot.health = enemy.health = 100;
+      enemy.move.pos.x = 22;
+      enemy.move.pos.z = 8;
+      // (Kept 12 m or more off the enemy: the bound's distance, and smoke's 10 m least.)
+      bot.move.pos.x = Math.min(bot.move.pos.x, 10);
+      match.step();
+      const c = match.smokeClouds()[0];
+      if (c) {
+        // Ahead of where the bot set off, between it and the enemy.
+        expect(c.x).toBeGreaterThan(4);
+        expect(c.x).toBeLessThan(22);
+        at = t;
+      }
+    }
+    match.destroy();
+    return at;
+  }
+
+  it("bounding cover to cover across open ground (Phase B), the moving half sends smoke ahead first; an Arena bot (it never bounds) doesn't", () => {
+    const tactical = [1, 2, 3].map((s) => crossing(['TACTICAL'], s));
+    const arena = [1, 2].map((s) => crossing(['ARENA'], s));
+    expect(tactical.filter((t) => t >= 0).length, `tactical ${tactical}, arena ${arena}`).toBe(3);
+    expect(arena.every((t) => t < 0), `tactical ${tactical}, arena ${arena}`).toBe(true);
   }, 120_000);
 });
