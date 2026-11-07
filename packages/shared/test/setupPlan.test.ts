@@ -227,10 +227,11 @@ describe('variants', () => {
       expect(Object.keys(v.sets).length).toBeGreaterThan(0);
       for (const c of [...(v.conflicts ?? []), ...(v.needs ?? [])]) expect(SETUP_VARIANTS.some((x) => x.id === c)).toBe(true);
     }
-    expect(SETUP_VARIANTS.map((v) => v.id)).toEqual(['lunar', 'roulette', 'classes', 'spears', 'discs']);
-    // A race offers Lunar only; co-op Lunar and Roulette bodies.
+    expect(SETUP_VARIANTS.map((v) => v.id)).toEqual(['lunar', 'roulette', 'signature', 'jackpots', 'streakpick', 'rerolls', 'swap', 'variety', 'rlteams', 'classes', 'spears', 'discs']);
+    // A race offers Lunar only; co-op Lunar and Roulette bodies; the Roulette mode Lunar and its own (its bodies are its core).
     expect(variantStates(setup({ mode: 'core.race' }), map, offered).map((v) => v.variant.id)).toEqual(['lunar']);
     expect(variantStates(setup({ mode: 'core.coop' }), map, offered).map((v) => v.variant.id)).toEqual(['lunar', 'roulette']);
+    expect(variantStates(setup({ mode: 'core.roulette' }), map, offered).map((v) => v.variant.id)).toEqual(['lunar', 'signature', 'jackpots', 'streakpick', 'rerolls', 'swap', 'variety', 'rlteams']);
   });
 
   it('switch their settings on and off, and show as on however the settings were set', () => {
@@ -277,23 +278,29 @@ describe('party presets', () => {
   const offered: GameMode[] = ['core.tdm', 'core.deathmatch', 'core.ctf'];
   const lunarRoulette = PARTY_PRESETS.find((p) => p.id === 'lunar_roulette')!;
 
-  it('Lunar Roulette: Team Deathmatch on a map with teams, Lunar and Roulette bodies on, the map’s own layout', () => {
+  it('Lunar Roulette: the Roulette mode with Lunar on (and its extras), its standard features on, the map’s own size', () => {
     const map = stJohns();
-    const s = applyParty(lunarRoulette, setup({ mode: 'core.ctf', scoreLimit: 3, teams: [2, 2], spears: true }), map, offered, desk)!;
-    expect(s).toMatchObject({ mode: 'core.tdm', scoreLimit: 40, teams: [12, 12], gravity: 0.4, fallDamage: false, randomChars: true });
+    const roulette: GameMode[] = [...offered, 'core.roulette'];
+    const s = applyParty(lunarRoulette, setup({ mode: 'core.ctf', scoreLimit: 3, teams: [2, 2], spears: true }), map, roulette, desk)!;
+    expect(s).toMatchObject({ mode: 'core.roulette', gravity: 0.4, fallDamage: false });
     expect(s.spears).toBeUndefined();
-    expect(partyOn(lunarRoulette, s, map, offered)).toBe(true);
-    expect(rulesFromSetup(s, map).rules).toMatchObject({ mode: 'core.tdm', gravity: 0.4, fallDamage: false, randomCharacters: true });
-    // Any other variant on and it's no longer the bundle; a different team size still is.
-    expect(partyOn(lunarRoulette, setVariant(s, 'classes', true), map, offered)).toBe(false);
-    expect(partyOn(lunarRoulette, { ...s, teams: [16, 16] }, map, offered)).toBe(true);
+    expect(s.randomChars).toBeUndefined();
+    expect(partyOn(lunarRoulette, s, map, roulette)).toBe(true);
+    expect(rulesFromSetup(s, map).rules).toMatchObject({ mode: 'core.roulette', gravity: 0.4, fallDamage: false, lunar: true });
+    expect(rulesFromSetup(s, map).rules.rouletteSignature).toBeUndefined();
+    // Any other variant on (or a standard one off) and it's no longer the bundle; a different size still is.
+    expect(partyOn(lunarRoulette, setVariant(s, 'swap', true), map, roulette)).toBe(false);
+    expect(partyOn(lunarRoulette, setVariant(s, 'signature', false), map, roulette)).toBe(false);
+    expect(partyOn(lunarRoulette, { ...s, bots: 3 }, map, roulette)).toBe(true);
+    // Applied over a setup with a standard feature off: it comes back on.
+    expect(applyParty(lunarRoulette, setVariant(setup({ mode: 'core.roulette' }), 'jackpots', false), map, roulette, desk)!.rlJackpots).toBeUndefined();
   });
 
-  it('Deathmatch on a map without teams; unavailable where neither mode is', () => {
+  it('Lunar Roulette needs a map that plays Roulette; Spear Fight plays Deathmatch where there are no teams', () => {
     const map = small();
-    const s = applyParty(lunarRoulette, setup({ map: 'small' }), map, ['core.tdm', 'core.deathmatch'], desk)!;
-    expect(s).toMatchObject({ mode: 'core.deathmatch', scoreLimit: 15, bots: 7, randomChars: true, gravity: 0.4 });
-    expect(partyUnavailable(lunarRoulette, map, ['core.coop'])).toBe('This map has no Deathmatch or Team Deathmatch.');
+    const s = applyParty(lunarRoulette, setup({ map: 'small' }), map, ['core.tdm', 'core.deathmatch', 'core.roulette'], desk)!;
+    expect(s).toMatchObject({ mode: 'core.roulette', bots: 7, gravity: 0.4 });
+    expect(partyUnavailable(lunarRoulette, map, ['core.coop'])).toBe('This map has no Roulette.');
     expect(applyParty(lunarRoulette, setup(), map, ['core.coop'], desk)).toBeNull();
     const spear = PARTY_PRESETS.find((p) => p.id === 'spear_fight')!;
     expect(variantOn(SETUP_VARIANTS.find((v) => v.id === 'spears')!, applyParty(spear, setup(), stJohns(), offered, desk)!, stJohns())).toBe(true);

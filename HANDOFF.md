@@ -27,36 +27,29 @@ The workflow is unchanged (CLAUDE.md):
    - **Next:** when that run is green, fast-forward main to 318023ed.
    - **Root cause:** every hit test left teammates out before `damage()` read the rule.
    - **Fix:** `Match.canHurt`. Unit test `shared/test/friendlyFire.test.ts`; e2e `friendlyFireChecks` in `teams`.
-2. **Iron Coast** (`wip/iron-coast` @ 99c48ff4; it builds and the map validates).
-   - **Built in MapMaker and exported:**
-     - the terrain, 380 x 320 m at 2.5 m;
-     - all 13 set pieces;
-     - the 7 routes and the cliff-foot strongpoints;
-     - landing slabs and the sea;
-     - 30 pickups (Military);
-     - Breakthrough: sectors A (A1, A2), B (B1-B4, 2 of 4) and C, with 6 spawn groups of 16;
-     - Team Deathmatch;
-     - crest trenches, ruins, the B/C walls and 16 village houses;
-     - the ground paint.
-   - **Measured so far:** every route routes both ways. bot-report 16 v 16 (one seed) took A at 84 s, B at 155 s and
-     C at 289 s.
-   - **Exact next step:** the last export flags spawn `spawn_jclhkikyqj` at (55, 12, 18) as cut off. Move it in the
-     inspector, export, and get validate-map to 0.
-   - **Then:**
-     - the map card picture;
-     - bot runs at 16 v 16 and 24 v 24;
-     - performance at 48 and 64 bots;
-     - typecheck, test:changed and e2e:changed;
-     - `check/iron-coast`, landing as part 1.
-   - **Part 2, the visual pass:** not started. The burning-wreck prop with smoke is saved unfinished on
-     `wip/iron-coast-wreck`; it needs its palette atlas picture and content:check.
-   - **Known gaps:**
-     - haze and mist didn't take: both are 0 in the map;
-     - the casemates sit on 4 m levels (B2 12 m, B3 16 m);
-     - the terrain can't overhang, so the cave and tunnel are pieces standing in a cut cove, not buried rooms.
-     - Decisions are in `docs/map-briefs/iron_coast/DECISIONS_AND_DEVIATIONS.md`.
-   - **Where the detail is:** driver tricks and the full list are in
-     `docs/map-briefs/iron_coast/MAP_IMPLEMENTATION_MANIFEST.md`, under "Progress".
+2. **Iron Coast** part 1 (`wip/iron-coast`; landing on main as part 1: see the line below).
+   - **Part 1 is done:** the greybox map with Breakthrough and TDM, all built in MapMaker and exported (terrain 380 x
+     320 m, 13 set pieces, 7 routes, the sea, 30 pickups, 3 sectors with 6 spawn groups of 16, crest trenches, ruins,
+     walls, 16 village houses, ground paint). validate-map **0 issues**: the cut-off spawn `spawn_jclhkikyqj` stood
+     in the ruins tile at (56, 16); selected from the issues list and moved to (66, 12, 18) in the inspector.
+   - **Card picture:** `packages/client/public/maps/shots/iron_coast.jpg`.
+   - **A Breakthrough fix it found:** a sector that fell mid-tick kept the old sector's defender plan, so a beach
+     gunner read past the guns' sector's empty gun list (goal with no position; bot-report crashed).
+     `BreakthroughMode.plan` replans when the sector changes; unit test in `breakthrough.test.ts`.
+   - **Bot runs** (after main's Phase C; seeds 1-3, 1200 s): 16 v 16 broke through 2 of 3 (A 42-51 s, B 154-211 s,
+     C 268-298 s); 24 v 24 broke through 1 of 3 (A 39-60 s, B 148-182 s, C 413 s; the other two held at C with the
+     attack out of reinforcements). The beach falls too fast; C decides it. Stuck hot spots: route 1's foot on the
+     west promontory (-152, -48) and route 5's foot under B3 (44, -40).
+   - **Perf** (`pnpm bench`, Breakthrough, loaded 4-core box): 48 bots 5.86 ms avg tick (p95 16.8), 64 bots 6.15 ms
+     (p95 16.2).
+   - **Next:** the two stair feet (landing slab or wider cut, in MapMaker), then the beach's balance (owner's call:
+     zone time, forward posts or cover); then **part 2, the visual pass** (hedgehogs, tank traps, craters, sandbags,
+     haze/mist, the burning wrecks: the prop is saved unfinished on `wip/iron-coast-wreck` and needs its palette atlas
+     picture and content:check).
+   - **Known gaps:** haze and mist are 0 in the map; the casemates sit on 4 m levels (B2 12 m, B3 16 m); the terrain
+     can't overhang, so the cave and tunnel are pieces in a cut cove. Decisions:
+     `docs/map-briefs/iron_coast/DECISIONS_AND_DEVIATIONS.md`; the full list and the MapMaker driver tricks:
+     `docs/map-briefs/iron_coast/MAP_IMPLEMENTATION_MANIFEST.md`, "Progress".
    - **The brief's essentials:**
      - MapMaker only: drive the real editor with Playwright against `vite preview`, a window at least 1280 px wide,
        click palette cards by mouse position, point the view at the sky while editing through the inspector;
@@ -87,19 +80,8 @@ The workflow is unchanged (CLAUDE.md):
      - with it, TDM: `pnpm bot-report eagle_spires twin_spires riot_junction --mode=core.tdm --seeds=1,2 --seconds=180`;
      - the Range: `pnpm bot-report test_breakthrough --mode=core.breakthrough --players=16 --seeds=1,...,24
        --seconds=900 --json=<out>/bt8.json`.
-4. **Roulette** (`wip/roulette` = `check/roulette` @ 5c210adf), paused for the frozen-corpses hunt.
-   - **Built:**
-     - the whole plan, as built in docs/ROULETTE_MODE_PLAN.md;
-     - signatures in `content/roulette.json` (`tools/content/roulette.mjs`);
-     - streak pick input `say` 180-185;
-     - Lunar Roulette now plays `core.roulette`.
-   - **Its CI (run 42405165063) failed:** look first at flows and unit tests that assume the old Lunar Roulette (Team
-     Deathmatch) or exact `playableModes` lists.
-   - **Next:**
-     - the `roulette` e2e flow with `E2E_SHOTS` (the spawn card, a jackpot, the pick, the awards);
-     - `pnpm bench 48 60 maps/sandgate.json --mode=core.roulette` and `pnpm bench:96:clump`;
-     - its HANDOFF section;
-     - merge main, then land.
+4. **Roulette** (`wip/roulette`, main 0531b29 merged in): CI fixed, landing from `check/roulette` (see "Roulette mode"
+   below for the fix, the pictures and the bench).
 
 **Queued, in the owner's order:**
 1. **Tanks** (owner, 2026-11-07). Bots drive and fire tanks sensibly, and bail out when nearly dead.
@@ -153,6 +135,51 @@ gets overloaded above that: local e2e times out and flakes). Prune landed worktr
 - f5cc70b Capitol Mall domes, roofs; Capitol Dome / Copper Dome / Pediment / Pyramidion props; room Roof surface.
 - Earlier the same day: content scalability steps 2–6, perf toolset, flaky e2e fixes, Runway Nine airliner, map
   reworks batches 2–3, character fixes rounds 2–3 (see the entries below and CHANGELOG).
+
+### Roulette mode (`wip/roulette`, agents, 2026-11-07; main 0531b29 (friendly fire) merged in; landing from `check/roulette`)
+**What it is:** docs/ROULETTE_MODE_PLAN.md ("As built") and docs/GAME_MODES.md, "Roulette". The mode is
+`core.roulette`; Lunar Roulette plays it with Lunar on; balance is data in `content/roulette.json`
+(`tools/content/roulette.mjs`).
+
+**Why run 42405165063 failed:** not the unit tests (all unit and maps shards passed) and not an old-Lunar-Roulette
+assumption. The one real failure was the `roulette` e2e flow (shard 2; shard 11 was only stopped by
+stop-on-failure). On both attempts it never saw two spawn cards: the first life's card (`card: null`) and, on the retry,
+the jackpot card. The only one it saw was the second life's, which the flow holds for its picture. Those cards
+counted their 2 s on the wall clock from the spawn event, so on a slow runner the hitch while the new body was built
+spent the card's time before any frame drew it. A player on a slow machine would miss it the same way.
+**Fix:** `game/cappedTimer.ts` (`CappedTimer`): the card counts 2 s of drawn frames, each frame counting at most
+0.1 s, so a hitch can't use it up unseen (unit test `client/test/cappedTimer.test.ts`). The flow's checks are
+unchanged. The flow's pictures also showed the card staying up over the death screen and the scoreboard: it now
+goes when you go down or the round leaves `playing`.
+
+**Checked locally (CI=1):** typecheck, content:check, `test:changed`; `E2E_ONLY=roulette` passes (330 s). Its
+pictures are `roulette-setup`, `roulette-spawn-card`, `roulette-pick`, `roulette-jackpot` and `roulette-awards` (under
+`E2E_SHOTS`). The jackpot glow is faint in the picture: with Reduce flashing on it peaks at 0.32 opacity, at the
+screen's edges.
+
+**Bench** (a shared 4-core machine at load 13-17, so the numbers are rough; 48 bots, 60 s, Sandgate):
+| mode | tick avg | p95 | p99 | CPU a tick | character moves (full + coarse) | spawn deaths |
+| --- | --- | --- | --- | --- | --- | --- |
+| core.roulette | 5.26 ms | 13.3 | 29.6 | 4.24 ms | 31 + 1 | 211 of 372 (57 %) |
+| core.tdm | 4.10 ms | 10.3 | 18.5 | 4.05 ms | 6 + 39 | 0 of 72 |
+| core.deathmatch | 5.96 ms | 16.1 | 35.7 | 3.72 ms | 31 + 1 | 348 of 490 (71 %) |
+
+Roulette costs what free-for-all Deathmatch costs. Its extra over Team Deathmatch is free-for-all's: everyone fights
+everyone near the spawns, so nearly every move is a full one, and there are 5x the kills. Its 2 s spawn protection
+cuts spawn deaths from Deathmatch's 71 % to 57 %, still high for 48 on Sandgate. `pnpm bench:96:clump` (Team
+Deathmatch, a check that nothing else moved) is in line: tick avg 7.5-10.5 ms over the six runs.
+
+**Not done (as before):** the host checkpoint doesn't carry decks or tokens; dedicated servers have no server rules for
+the variants yet.
+
+**For the owner:**
+- the balance numbers in `content/roulette.json`:
+  - jackpot 5 % a life, tiny 4 %, a pick card a jackpot 15 %;
+  - 50 jackpot armour; tiny 0.65 size and ×1.08 speed;
+  - a pick at 3 kills; a reroll token per 2 kills, 2 at most;
+- the jackpot upgrades, some of them strong (sniper → railgun, rockets → guided, plasma → railgun, goo gun, freeze ray
+  and arc caster → singularity);
+- whether big free-for-all Roulette matches need more spawn protection or spawn spacing.
 
 <!-- small-fixes-1107 -->
 ### Friendly fire (`wip/friendly-fire`, agent, 2026-11-07; from main c8d8cba3; CI on `check/friendly-fire`; not landed)

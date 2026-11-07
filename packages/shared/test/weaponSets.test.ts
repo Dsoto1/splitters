@@ -433,7 +433,7 @@ describe('the map default, the host and saved setups', () => {
     const map = room([], 'military');
     const base: MatchSetup = { map: 'test_map', mode: 'core.deathmatch', bots: 3, skill: 'normal', scoreLimit: 15, minutes: 10, weaponSet: 'chaos' };
     const lunar = PARTY_PRESETS.find((p) => p.id === 'lunar_roulette')!;
-    expect(applyParty(lunar, base, map, ['core.deathmatch'], { deviceMax: 16 })?.weaponSet).toBe('chaos');
+    expect(applyParty(lunar, base, map, ['core.deathmatch', 'core.roulette'], { deviceMax: 16 })?.weaponSet).toBe('chaos');
     expect({ ...base, ...presetPatch({ id: 'small', label: 'Small', players: 4, value: '4 players', tip: '' }) }.weaponSet).toBe('chaos');
   });
 

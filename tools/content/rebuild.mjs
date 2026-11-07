@@ -17,6 +17,7 @@
 //              tools/content/pickups.mjs             pickups.generated.ts from content/pickups.json
 //              tools/content/weapon-sets.mjs         weaponSets.generated.ts from content/weapon-sets.json (after the
 //                                                     weapons and pickups it names)
+//              tools/content/roulette.mjs            roulette.generated.ts from content/roulette.json (Roulette's signatures and odds)
 //              tools/content/materials.mjs           materials.generated.ts from content/materials.json
 //              tools/content/surface-types.mjs       surfaceTypes.generated.ts from content/surface-types.json and the props' `surface`
 //              tools/content/tiles.mjs               kitTiles.generated.ts and edgeStyles.generated.ts from content/tiles/
@@ -81,6 +82,7 @@ node('tools/content/vehicles.mjs');
 node('tools/content/npcs.mjs');
 node('tools/content/pickups.mjs');
 node('tools/content/weapon-sets.mjs');
+node('tools/content/roulette.mjs');
 node('tools/content/materials.mjs');
 node('tools/content/surface-types.mjs');
 node('tools/content/tiles.mjs');

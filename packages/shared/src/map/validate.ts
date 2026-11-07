@@ -49,7 +49,12 @@ export type LoadResult =
  * ground. `forEditing` (MapMaker) keeps both apart: the placements and the paths stay as they are, so the parts and
  * the ground follow them. Either way the checks see the expanded map.
  */
-export function loadMap(json: string | unknown, catalog: TileCatalog = coreCatalog, opts: { forEditing?: boolean; library?: SetPieceLibrary } = {}): LoadResult {
+/**
+ * `opts.forEditing`: the map as made, for MapMaker and publishing (see below). `opts.openWithErrors` (MapMaker's
+ * Import and drafts): a map that reads and fits the format opens even when validation finds errors (no spawn point
+ * yet, an unfinished mode): MapMaker lists them and is where they get fixed; play and publishing still refuse it.
+ */
+export function loadMap(json: string | unknown, catalog: TileCatalog = coreCatalog, opts: { forEditing?: boolean; openWithErrors?: boolean; library?: SetPieceLibrary } = {}): LoadResult {
   let raw: unknown = json;
   // Size first, before any parsing: a map is at most RESOURCE_BUDGETS.mapBytes of JSON wherever it comes from.
   const bytes = typeof json === 'string' ? utf8Length(json) : utf8Length(JSON.stringify(json) ?? '');
@@ -79,7 +84,7 @@ export function loadMap(json: string | unknown, catalog: TileCatalog = coreCatal
   }
   const library = opts.library ?? builtInSetPieces();
   const issues = validateMap(parsed.data, catalog, library);
-  if (issues.some((i) => i.severity === 'error')) return { ok: false, issues };
+  if (issues.some((i) => i.severity === 'error') && !(opts.forEditing && opts.openWithErrors)) return { ok: false, issues };
   // MapMaker (`forEditing`) keeps the map as made: its set pieces as placements, its paths, and its own ground, which
   // it never lowers under a floor, so the parts, the laid paths and the ground kept under the floors follow a piece, a
   // path or a floor that moves (and the ground under one that goes comes back). As played: set pieces expanded into

@@ -521,6 +521,28 @@ describe('Breakthrough', () => {
     match.destroy();
   });
 
+  it('a sector that falls mid-tick plans its defenders again: the beach gunner gets no gun post in a sector without guns', () => {
+    // (bot-report on Iron Coast: the beach's plan was kept for the rest of the tick the guns' sector opened in, and its
+    // gun duty read past the guns' sector's empty list of guns: a goal with no position.)
+    const map = range();
+    map.entities.push({ id: 'gun', kind: 'mount', model: 'turret_mg', position: [8, 0, 20], yaw: Math.PI, faction: null, respawnSeconds: null } as Entity);
+    const match = new Match(map, { ...DEFAULT_RULES['core.breakthrough'], teamSizes: [4, 4] }, 3);
+    for (let i = 0; i < 8; i++) match.addBot(`bot${i}`, CORE_BOT_PROFILES[i % CORE_BOT_PROFILES.length]!, BOT_DIFFICULTIES.normal);
+    const people = match.combatants();
+    for (const c of people) c.invulnerable = true;
+    const mode = match.mode as unknown as BreakthroughMode & { active: number };
+    for (let i = 0; i < 5; i++) match.step();
+    const gunner = people.filter((c) => c.faction === mode.defenders).sort((a, b) => a.slot - b.slot)[0]!;
+    expect(mode.botGoal(gunner)!.pos).toEqual({ x: 8, y: 0, z: 20 });
+    // The beach falls within this tick (no step between): the plan is made again for the guns' sector.
+    mode.active = 1;
+    for (const o of mode.objectives) o.state = o.sector === 1 ? BT_OBJ_ACTIVE : BT_OBJ_DONE;
+    const goal = mode.botGoal(gunner)!;
+    expect(goal.pos).toBeDefined();
+    expect(goal.pos.z).toBe(42);
+    match.destroy();
+  });
+
   it('is deterministic by seed: the same bots on the same seed play the same match', () => {
     const play = () => {
       const match = new Match(range(), { ...DEFAULT_RULES['core.breakthrough'], teamSizes: [3, 3] }, 7);

@@ -89,7 +89,29 @@ export interface MatchSetup {
   btSwap?: boolean;
   /** The host's own bots (Bots step → Edit bots…; sim/botSet.ts). Absent: random bots. */
   botSet?: BotSet;
+  /**
+   * Roulette (sim/roulette.ts): its standard features, on unless switched off (signature loadouts, jackpot rolls,
+   * the streak pick), and its variants, off unless switched on (earned rerolls, swap on kill, the variety bonus,
+   * teams: the players split into two sides of Team Deathmatch, with strong team-colour outlines).
+   */
+  rlSignature?: boolean;
+  rlJackpots?: boolean;
+  rlPick?: boolean;
+  rlRerolls?: boolean;
+  rlSwap?: boolean;
+  rlVariety?: boolean;
+  rlTeams?: boolean;
 }
+
+/** Lunar's gravity (setupVariants.ts, the Lunar variant): with fall damage off, the match plays Lunar's extras too. */
+export const LUNAR_GRAVITY = 0.4;
+
+/**
+ * Whether a setup plays Lunar (its gravity and no fall damage, however set: the variant, Advanced rules or the map's
+ * own physics), and so Lunar's extras (MatchRules.lunar: the air-kill bonus, knock-about blasts, floaty ragdolls,
+ * stronger pads, the gravity storm). Nothing new is stored: the extras come with the settings.
+ */
+export const setupLunar = (s: Pick<MatchSetup, 'gravity' | 'fallDamage'>, map: MapDocument): boolean => (s.gravity ?? map.physics?.gravity ?? 1) === LUNAR_GRAVITY && (s.fallDamage ?? map.physics?.fallDamage ?? false) === false;
 
 export type TeamAssign = 'balanced' | 'random' | 'fixed';
 
@@ -526,7 +548,7 @@ export interface MatchLimits {
  * Flag (the time: captures stay) and King of the Hill (hill seconds with the time). Rounds modes (Elimination,
  * Bomb, Hostage Rescue), co-op and Zombies, Fort Wars, Disc Arena and races keep their own.
  */
-export const limitsScale = (mode: GameMode): boolean => mode === 'core.tdm' || mode === 'core.deathmatch' || mode === 'core.ctf' || mode === 'core.koth' || mode === 'core.breakthrough';
+export const limitsScale = (mode: GameMode): boolean => mode === 'core.tdm' || mode === 'core.deathmatch' || mode === 'core.roulette' || mode === 'core.ctf' || mode === 'core.koth' || mode === 'core.breakthrough';
 
 /**
  * Breakthrough's suggestions by players a side (the setup's "score" is reinforcements per attacker, its time each
@@ -566,6 +588,12 @@ export const TDM_POINTS_PER_PLAYER_MINUTE = 1;
  */
 export const DM_KILLS_PER_ROOT_PLAYER = 12;
 
+/** Roulette: Deathmatch's suggested score times this (its bonus points). */
+export const ROULETTE_SCORE_SHARE = 1.2;
+
+/** Roulette's Teams variant: the setup's players (a free-for-all count) split into two sides, the larger first. */
+export const rouletteSides = (players: number): number[] => [Math.ceil(Math.max(2, players) / 2), Math.floor(Math.max(2, players) / 2)];
+
 /** King of the Hill: hill seconds to win per minute of the match (120 in 10 minutes, as before). */
 export const HILL_SECONDS_PER_MINUTE = 12;
 
@@ -591,6 +619,9 @@ export function suggestedLimits(mode: GameMode, players: number, teams?: readonl
     }
     case 'core.deathmatch':
       return { scoreLimit: niceScore(DM_KILLS_PER_ROOT_PLAYER * Math.sqrt(all)), minutes: 10 };
+    case 'core.roulette':
+      // Deathmatch's, a little higher for the bonus points (Giant Slayer, air kills, variety).
+      return { scoreLimit: niceScore(DM_KILLS_PER_ROOT_PLAYER * ROULETTE_SCORE_SHARE * Math.sqrt(all)), minutes: 10 };
     case 'core.ctf':
       return { scoreLimit: DEFAULT_RULES[mode].scoreLimit, minutes: teamMinutes(perTeam) };
     case 'core.koth': {
@@ -617,7 +648,9 @@ export interface SetupLimits extends MatchLimits {
  */
 export function setupLimits(setup: MatchSetup, map: MapDocument, cap = BROWSER_MAX_PLAYERS): SetupLimits {
   const teams = isTeamMode(setup.mode) ? setupTeams(setup, map, cap) : undefined;
-  const suggested = suggestedLimits(setup.mode, teams ? sum(teams) : setupPlayers(setup, map, cap), teams);
+  // Roulette's Teams variant plays Team Deathmatch over the free-for-all count: a team score to match.
+  const sides = setup.mode === 'core.roulette' && setup.rlTeams ? rouletteSides(setupPlayers(setup, map, cap)) : undefined;
+  const suggested = sides ? suggestedLimits('core.tdm', sum(sides), sides) : suggestedLimits(setup.mode, teams ? sum(teams) : setupPlayers(setup, map, cap), teams);
   const auto = { score: setup.scoreAuto === true, time: setup.timeAuto === true };
   return { scoreLimit: auto.score ? suggested.scoreLimit : setup.scoreLimit, minutes: auto.time ? suggested.minutes : setup.minutes, suggested, auto };
 }
@@ -744,9 +777,12 @@ export function rulesFromSetup(setup: MatchSetup, map: MapDocument, cap = BROWSE
   if (s.gravity !== undefined) rules.gravity = s.gravity;
   if (s.fallDamage !== undefined) rules.fallDamage = s.fallDamage;
   if (s.friendlyFire) rules.friendlyFire = s.friendlyFire;
-  if (s.spears) rules.weapons = 'spears';
-  else if (s.discs) rules.weapons = 'discs';
-  if (s.classes) {
+  // (Roulette plays its own bodies and loadouts: none of the fixed-weapon variants, classes or random characters.)
+  const roulette = s.mode === 'core.roulette';
+  if (roulette) delete rules.randomCharacters;
+  if (s.spears && !roulette) rules.weapons = 'spears';
+  else if (s.discs && !roulette) rules.weapons = 'discs';
+  if (s.classes && !roulette) {
     rules.classes = true;
     if (s.classLimit) rules.classLimit = s.classLimit;
   }
@@ -776,6 +812,26 @@ export function rulesFromSetup(setup: MatchSetup, map: MapDocument, cap = BROWSE
     rules.scoreLimit = 0;
     rules.timeLimitSeconds = 0;
     if (s.btSwap) rules.breakthroughSwap = true;
+  }
+  if (setupLunar(s, map)) rules.lunar = true;
+  if (s.mode === 'core.roulette') {
+    // Roulette's standard features go only when switched off; its variants come only when switched on.
+    if (s.rlSignature === false) rules.rouletteSignature = false;
+    if (s.rlJackpots === false) rules.rouletteJackpots = false;
+    if (s.rlPick === false) rules.rouletteStreakPick = false;
+    if (s.rlRerolls) rules.rouletteRerolls = true;
+    if (s.rlSwap) rules.rouletteSwapOnKill = true;
+    if (s.rlVariety) rules.rouletteVariety = true;
+    if (s.rlTeams) {
+      // Teams: Team Deathmatch with Roulette's core on, the players split in two, outlined in their team's colour.
+      const fill = Math.max(2, Math.min(cap, s.bots + 1));
+      rules.mode = 'core.tdm';
+      rules.roulette = true;
+      rules.teamOutlines = true;
+      rules.teamSizes = rouletteSides(fill);
+      if (s.assign === 'random') rules.teamAssign = 'random';
+      return { rules, fill };
+    }
   }
   if (!isTeamMode(s.mode)) return { rules, fill: Math.max(1, Math.min(cap, s.bots + 1)) };
   const sizes = setupTeams(s, map, cap);

@@ -221,6 +221,7 @@ import {
   teamLayoutLabel,
   type BoundaryStyle,
   newTerrain,
+  terrainSpacingFor,
   paintSlopes,
   blockBox,
   boxFootprint,
@@ -1380,7 +1381,10 @@ export class EditorApp {
   /** Where the Scenario tool puts an object, and its facing: on the level's floor, or in the doorway for doors and the like. */
   private scenarioSpot(key: ScenarioPaletteKey): { p: [number, number, number]; yaw: number } | null {
     if (!this.hoverPoint) return null;
-    const y = this.level * this.doc.classicStructure.levelHeight;
+    // Game modes' markers stand on the ground under the pointer, like spawns and pickups (a Breakthrough spawn group on a
+    // hill went in at the level's height, under the hill); the rest go on the level being edited.
+    const onGround = this.hoverOnTerrain && /^(spawn:|objective:|sector$|flag$|hill$|bombsite$|hostage$|rescue$)/.test(key);
+    const y = onGround ? Math.round(this.hoverPoint.y * 100) / 100 : this.level * this.doc.classicStructure.levelHeight;
     if (snapsToDoorway(key)) {
       const d = snapToDoorway(this.hoverPoint.x, this.hoverPoint.z, this.doc.classicStructure.cellSize);
       return { p: [d.x, y, d.z], yaw: d.yaw };
@@ -3109,7 +3113,10 @@ export class EditorApp {
     if (!t || !this.terrainHover) return;
     if (invert && (this.terrainBrush === 'raise' || this.terrainBrush === 'lower')) this.terrainBrush = this.terrainBrush === 'raise' ? 'lower' : 'raise';
     // The brush works on the document's own ground; Flatten levels it to the height under the pointer as shown.
-    this.stroke = { before: t, now: t, shown: this.view.ground ?? t, target: this.terrainHover.y, seed: (Math.random() * 1e9) | 0 };
+    // Flatten to the height typed in the Terrain tab, else to the height where the stroke starts.
+    const typed = $<HTMLInputElement>('ed-tr-flatten-y').value.trim();
+    const target = typed !== '' && Number.isFinite(Number(typed)) ? Number(typed) : this.terrainHover.y;
+    this.stroke = { before: t, now: t, shown: this.view.ground ?? t, target, seed: (Math.random() * 1e9) | 0 };
     this.strokeStep(1 / 30);
   }
 
@@ -3394,8 +3401,15 @@ export class EditorApp {
     $('ed-tr-new').addEventListener('click', () => {
       const size = Number($<HTMLSelectElement>('ed-tr-new-size').value);
       const ground = $<HTMLSelectElement>('ed-tr-new-ground').value as TerrainMaterial;
+      // Width and depth, when typed, make an oblong terrain (32-400 m each way); the grid widens past 320 m.
+      const side = (id: string) => {
+        const v = Number($<HTMLInputElement>(id).value);
+        return $<HTMLInputElement>(id).value.trim() !== '' && Number.isFinite(v) ? Math.max(32, Math.min(400, v)) : size;
+      };
+      const width = side('ed-tr-new-w');
+      const depth = side('ed-tr-new-d');
       // Just under ground-floor tiles, so the two never fight for the same pixels.
-      this.setTerrain('Create terrain', { ...newTerrain(size, 2, [0, 0], ground), baseY: -0.15 });
+      this.setTerrain('Create terrain', { ...newTerrain(width, terrainSpacingFor(width, depth), [0, 0], ground, depth), baseY: -0.15 });
     });
     for (const m of TERRAIN_MATERIALS) $<HTMLSelectElement>('ed-tr-new-ground').append(new Option(TERRAIN_MATERIAL_LABELS[m], m, m === 'grass', m === 'grass'));
     $('ed-tr-remove').addEventListener('click', () => {
@@ -4187,7 +4201,8 @@ export class EditorApp {
       if (!('map' in r)) return this.toast(`Import failed: ${r.issues[0]?.message ?? 'unknown error'}`, true);
       this.keepDraft();
       this.replaceDocument(r.map);
-      this.toast(`Imported ${r.map.metadata.name}`);
+      const errors = r.issues.filter((i) => i.severity === 'error').length;
+      this.toast(`Imported ${r.map.metadata.name}${errors ? ` (${errors} problem${errors === 1 ? '' : 's'} to fix before it plays: see the list)` : ''}`);
     });
     $('ed-test').addEventListener('click', () => this.test());
     this.setupSidebars();
@@ -4311,7 +4326,8 @@ export class EditorApp {
       const mode = document.createElement('select');
       const current = doc.metadata.supportedModes[0] ?? 'core.deathmatch';
       for (const [id, label] of [['core.deathmatch', 'Deathmatch'], ['core.tdm', 'Team Deathmatch'], ['core.ctf', 'Capture the Flag'], ['core.koth', 'King of the Hill'], ['core.elim', 'Elimination'], ['core.breakthrough', 'Breakthrough'], ['core.coop', 'Co-op mission'], ['core.zombies', 'Zombies'], ['core.discs', 'Disc Arena'], ['core.race', 'Race']] as const) mode.append(new Option(label, id, false, id === current));
-      mode.addEventListener('change', () => this.run('Change mode', { kind: 'setMetadata', before: { supportedModes: doc.metadata.supportedModes }, after: { supportedModes: [mode.value] } }));
+      // The main mode (the map's pick, what TEST plays) changes; the modes it also offers stay.
+      mode.addEventListener('change', () => this.run('Change mode', { kind: 'setMetadata', before: { supportedModes: doc.metadata.supportedModes }, after: { supportedModes: [mode.value, ...doc.metadata.supportedModes.slice(1).filter((m) => m !== mode.value)] } }));
       const teams = mapTeams(doc);
       const help: Record<string, string> = {
         'core.coop': 'Co-op: all players (and bots) team up against the NPC squads. Logic ends the mission with "players win" or "players lose".',
@@ -4331,6 +4347,28 @@ export class EditorApp {
       const extra = playableModes(doc).filter((m) => m !== current && m !== 'core.elim');
       if (extra.length) help[mode.value] = `${help[mode.value] ?? ''} Also playable here: ${extra.map((m) => MODE_LABELS[m]).join(', ')}.`;
       el.append(row('Mode', mode), small(help[mode.value] ?? ''));
+      // Modes the map offers besides its main one (the rest follow from its pieces: flag bases, hills, sectors...).
+      const also = document.createElement('div');
+      also.id = 'ed-prop-also';
+      also.className = 'ed-layers';
+      for (const [id, label] of [['core.deathmatch', 'Deathmatch'], ['core.tdm', 'Team Deathmatch'], ['core.coop', 'Co-op mission']] as const) {
+        if (id === current) continue;
+        const box = document.createElement('input');
+        box.type = 'checkbox';
+        box.dataset.mode = id;
+        box.checked = doc.metadata.supportedModes.includes(id);
+        box.addEventListener('change', () => {
+          const now = this.doc.metadata.supportedModes;
+          const next = box.checked ? [...now.filter((m) => m !== id), id] : now.filter((m) => m !== id);
+          this.run(box.checked ? `Also offer ${label}` : `Stop offering ${label}`, { kind: 'setMetadata', before: { supportedModes: now }, after: { supportedModes: next.length ? next : [current] } });
+        });
+        const lab = document.createElement('label');
+        lab.append(box, document.createTextNode(label));
+        also.append(lab);
+      }
+      const alsoRow = row('Also offered', also);
+      alsoRow.title = 'Other modes Match Setup offers on this map; the Mode above is its own pick and what TEST plays';
+      el.append(alsoRow);
       if (current === 'core.tdm' || current === 'core.koth' || current === 'core.elim' || current === 'core.breakthrough') this.renderTeamSetup(el);
       this.renderWeaponSet(el);
       this.renderMapBots(el);

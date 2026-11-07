@@ -8,6 +8,20 @@ made only on a commit that passed CI on a check branch.
 
 ## Unreleased
 
+**Iron Coast (MAP 21), part 1: the beach assault and Breakthrough's showcase** (MapMaker only, from the owner's reference)
+- **A new map, Iron Coast** (`iron_coast`): 380 × 320 m of coast for 24-32 a side (24 v 24 is the Map's pick; 16 to 64
+  players). Landing craft beached on the sand, an irregular cliff (8 m at the grand stair's
+  gatehouse, 12 m west and centre, 16 m on the east headland), seven ways up it, four gun casemates at their own
+  heights, trenches and terraces on the crest, and the village with its round fort. It plays **Breakthrough**: take the
+  beach (the two cliff-foot strongpoints), destroy two of the four guns, hold the fort's command room; and **Team
+  Deathmatch** over the whole map. Military weapons.
+- **MapMaker**: a terrain can be oblong (width and depth, 2.5 m apart past 320 m: up to 400 m each way); the Flatten
+  brush levels to a height you type ("Flatten to (m)"); Map properties' **Also offered** lists the modes a map offers
+  besides its main one; Import and the drafts open an unfinished map (no spawn point yet), listing what's left to fix
+  (it exported, but wouldn't import back).
+- **Breakthrough**: when a sector fell, its defenders could be sent for one moment to a post the next sector doesn't
+  have (a goal with no place); they now get their next sector's duties at once.
+
 **Friendly fire works** (owner, 2026-11-07: turned on, shots still didn't hurt teammates): with it on (Half or Full,
 Match setup or the Host tab), your rounds, pellets, rockets, blades and fire hit a teammate in the way and hurt them
 (half as much on Half), and burns and poison stick; blasts already did. Off (the default), shots pass through
@@ -21,6 +35,28 @@ distance, and a body kept for the next player of its look stands up fresh.
 
 - Reduce flashing no longer turns blast smoke black: a dimmed blast scaled every piece's colour, so the toon smoke (drawn over the scene, not added to it) came out black near the camera; now only added light is scaled, and the rest have their bright parts capped.
 - The sheep walks on its legs: its body stood half sunk in the ground, so it slid along like a worm (the sim keeps a walking sheep's position on the ground; the model now stands on it).
+
+**New mode: Roulette** (docs/ROULETTE_MODE_PLAN.md; docs/GAME_MODES.md, "Roulette")
+- **A new character every life**, dealt from your own shuffled deck of the roster (no quick repeats), with that
+  character's stats (size, health, speed). A spawn card tells you who you are ("You are Big Bab · Large: tougher,
+  slower") and a moment of spawn protection covers you until you fire. Free-for-all; plays on every Deathmatch or Team
+  Deathmatch map.
+- **On unless you switch them off:** signature loadouts (the knight spawns with a spear, a soldier a rifle, an alien a
+  ray gun; outside the weapon set, its main gun), jackpot rolls (a gold glow, a better weapon and armour; now and then a
+  tiny body), the Giant Slayer bonus (a small character downing a large one), and the streak pick (3 kills in one life:
+  choose your next character from three).
+- **Variants in Match Setup:** Earned rerolls (a token per 2 kills, R on the death screen), Swap on kill (become your
+  victim), Variety bonus, Teams (Team Deathmatch with strong team-colour outlines), and Lunar, which now brings its
+  extras wherever its low gravity is on: a point for an air kill, blasts that throw players about, floaty ragdolls,
+  stronger jump pads and a gravity storm every minute (3-second warning).
+- **Awards** at the end: Shapeshifter, Giant Slayer, Moonwalker, Unluckiest Roll.
+- The **Lunar Roulette** party preset now plays the Roulette mode with Lunar on.
+- Bots take picks and reroll tokens sensibly and play to their body: small ones flank, large ones push.
+- Nothing in it flashes: the jackpot glow and the storm's warning ease in and hold, dimmer with Reduce flashing on.
+- The spawn card stays up for 2 s of play even when the game hitches as your new body loads, and goes when you go
+  down or the round ends.
+- `pnpm bot-report <maps> --mode=core.roulette [--roulette=lunar,rerolls,swap,variety]` reports kills by character and
+  body size, picks and rerolls.
 
 **Bot AI Phase C, items 1-4** (docs/BOT_AI_PLAN.md, "Phase C items 1-4, measured"; docs/BOTS.md):
 - Bots drop off ledges, jump gaps and jump up onto ledges as players do: links found at load and each checked by

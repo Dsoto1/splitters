@@ -23,6 +23,10 @@ import {
   oneHanded,
   mapPortals,
   mapPads,
+  LUNAR_PAD_BOOST,
+  TINY_SIZE,
+  FX_JACKPOT,
+  rouletteOn,
   cockpitEye,
   mountToWorld,
   viewDirection,
@@ -136,6 +140,7 @@ import { FortsClient } from './fortsClient.ts';
 import { HOSTAGE_SLOT_BASE, ModeHud } from './modeHud.ts';
 import type { MinimapBlip } from './minimap.ts';
 import { RaceHud } from './raceHud.ts';
+import { RouletteHud } from './rouletteHud.ts';
 import { LobbyAdvertiser, builtHub, hubAddress, hubSetting } from './hub.ts';
 import { myRegion } from '../profile.ts';
 import { statusColor } from './arsenalVisuals.ts';
@@ -296,6 +301,13 @@ export class GameSession {
   /** Character look of each player slot (from the roster). */
   private looks = new Map<number, string>();
 
+  /** Tests (the flashing flow's jackpot moment): Roulette's jackpot card and glow, as a jackpot life shows them, in any match. */
+  private testJackpot(): void {
+    if (!this.map) return;
+    this.rouletteHud ??= new RouletteHud(this.hud, this.input, this.map, () => this.rules, () => this.slot, this.opts.portraitOf);
+    this.rouletteHud.spawned(this.looks.get(this.slot) ?? 'core.ranger', 1);
+  }
+
   /** A player plays another look from now (Random characters): their body, size, portrait and arms follow. */
   private relook(slot: number, look: string): void {
     this.looks.set(slot, look);
@@ -319,7 +331,9 @@ export class GameSession {
 
   /** A player's body scale: their look's size (class, or its own size stat), as the match plays it (Character sizes and stats). */
   private sizeOf(slot: number): number {
-    return matchStats(this.looks.get(slot), this.rules ?? {}).size;
+    const size = matchStats(this.looks.get(slot), this.rules ?? {}).size;
+    // Roulette's tiny roll: smaller still, as the match plays it.
+    return this.rlTiny.has(slot) ? size * TINY_SIZE : size;
   }
   private botStates: string[] = [];
   private outbox: PlayerInput[] = [];
@@ -420,6 +434,15 @@ export class GameSession {
   private readonly punches = new Map<number, boolean>();
   /** Capture the Flag, King of the Hill, Elimination: flags, hill, status line, markers, announcer. */
   private modeHud: ModeHud | null = null;
+  /** Roulette (rouletteHud.ts): the spawn card, the death screen's pick and reroll, the storm, the awards. */
+  private rouletteHud: RouletteHud | null = null;
+  /** Roulette: players on a tiny roll this life (drawn and predicted smaller), on a jackpot (a gold glow); the cards coming up (preloaded). */
+  private rlTiny = new Set<number>();
+  private rlJackpot = new Set<number>();
+  private readonly rlUpcoming = new Set<string>();
+  /** Roulette: cards further ahead, loaded once the match has started (the loading gate waits only for the next ones). */
+  private rlLater: string[] | null = [];
+  private readonly rlLoaded = new Set<string>();
   /** Fort Wars: pieces, the build-phase barrier, the Builder's ghost and panel. */
   private forts: FortsClient | null = null;
   /** Race mode's lap counter, places, next-checkpoint marker and countdown. */
@@ -1512,6 +1535,7 @@ export class GameSession {
     this.modeHud?.dispose();
     this.forts?.dispose();
     this.raceHud?.dispose();
+    this.rouletteHud?.dispose();
     this.hud.hide();
     $('pause').hidden = true;
     this.view.dispose();
@@ -1552,7 +1576,7 @@ export class GameSession {
         this.teamIds = teams?.map((t) => t.id) ?? null;
         this.hud.setTeams(teams);
         this.hud.setBoardMode(msg.rules.mode);
-        this.hud.setModeLabel(msg.rules.mode === 'core.coop' ? 'Co-op Mission' : (MODE_LABELS[msg.rules.mode] ?? 'Deathmatch'));
+        this.hud.setModeLabel(msg.rules.mode === 'core.coop' ? 'Co-op Mission' : rouletteOn(msg.rules) && msg.rules.mode !== 'core.roulette' ? `Roulette: ${MODE_LABELS[msg.rules.mode]}` : (MODE_LABELS[msg.rules.mode] ?? 'Deathmatch'));
         this.hud.waitLabel = msg.rules.mode === 'core.zombies' ? 'Down: back at the next wave' : 'Respawning…';
         // Classes: the class screen opens as you join (and whenever you're down).
         this.classesOn = classesInPlay(msg.rules);
@@ -1568,11 +1592,23 @@ export class GameSession {
         this.view.buildMap(loaded.map, geometry);
         if (teams && (msg.rules.mode === 'core.ctf' || msg.rules.mode === 'core.forts' || msg.rules.mode === 'core.koth' || msg.rules.mode === 'core.elim' || msg.rules.mode === 'core.bomb' || msg.rules.mode === 'core.hostage' || msg.rules.mode === 'core.breakthrough')) this.modeHud = new ModeHud(this.hud, this.view, loaded.map, teams, msg.rules.mode, () => this.slot);
         if (msg.rules.mode === 'core.race') this.raceHud = new RaceHud(this.hud, this.view, loaded.map, () => this.slot);
+        if (rouletteOn(msg.rules)) {
+          // Roulette: its HUD, outlines in the team's colour (its Teams variant) and a jackpot's glow, warmed up at loading.
+          this.rouletteHud = new RouletteHud(this.hud, this.input, loaded.map, () => this.rules, () => this.slot, this.opts.portraitOf);
+          this.view.auraWarm = true;
+          this.view.auraOf = (slot) => {
+            const outline = this.rules?.teamOutlines ? (this.hud.team(slot)?.color ?? null) : null;
+            const glow = this.rlJackpot.has(slot) ? '#ffc93c' : null;
+            return outline || glow ? { outline, glow } : null;
+          };
+        }
+        // Lunar: floaty ragdolls (the effects world falls as slowly as the match).
+        if (msg.rules.lunar) this.view.setEffectsGravity(matchPhysics(msg.rules, loaded.map).gravity);
         this.sfx.setMap(loaded.map);
         this.sfx.joined();
         const physics = new PhysicsWorld(geometry, mapTerrainMesh(loaded.map), environmentShapes(loaded.map));
         this.local = new LocalPlayer(physics);
-        this.local.pads = mapPads(loaded.map.entities);
+        this.local.pads = mapPads(loaded.map.entities, msg.rules.lunar ? LUNAR_PAD_BOOST : 1);
         this.local.ladders = mapLadders(loaded.map.entities);
         this.local.ziplines = mapZiplines(loaded.map.entities);
         this.local.team = () => this.hud.team(this.slot)?.id ?? (this.rules?.mode === 'core.coop' ? 'players' : null);
@@ -1597,7 +1633,7 @@ export class GameSession {
         // Hosting since before the match had loaded (Host this map, a handoff, a map change): list it now that it can be.
         if (this.peerHost) this.updateListing();
         this.updateOnline();
-        (window as unknown as { __cs: unknown }).__cs = { slot: this.slot, hud: this.hud, renderer: this.opts.rendererKind, local: this.local, view: this.view, input: this.input, wheel: this.wheel, mode: this.modeHud, race: () => this.raceHud?.state, transport: this.opts.transport, mounts: this.mounts, forts: this.forts, phase: () => this.phase, rideView: () => this.rideView, host: () => this.hostState, rules: () => this.rules, timeLeft: () => this.timeLeft, map: loaded.map.metadata.id, spec: () => this.specState(), spectate: (on: boolean) => this.setSpectating(on), thirdPerson: () => this.thirdPerson, tpAim: () => this.tpAim, viewTick: () => this.interp.renderTick() };
+        (window as unknown as { __cs: unknown }).__cs = { slot: this.slot, hud: this.hud, renderer: this.opts.rendererKind, local: this.local, view: this.view, input: this.input, wheel: this.wheel, mode: this.modeHud, race: () => this.raceHud?.state, transport: this.opts.transport, mounts: this.mounts, forts: this.forts, phase: () => this.phase, rideView: () => this.rideView, host: () => this.hostState, rules: () => this.rules, roulette: () => this.rouletteHud?.debug(), rouletteGlow: () => this.rouletteHud?.glowOverlay() ?? null, rouletteHold: (on: boolean) => void (this.rouletteHud && (this.rouletteHud.hold = on)), jackpotGlow: () => this.testJackpot(), timeLeft: () => this.timeLeft, map: loaded.map.metadata.id, spec: () => this.specState(), spectate: (on: boolean) => this.setSpectating(on), thirdPerson: () => this.thirdPerson, tpAim: () => this.tpAim, viewTick: () => this.interp.renderTick() };
         this.opts.onReady?.();
         if (this.opts.greeting) this.hud.showMessage(this.opts.greeting, 6);
         void this.prepareMatch();
@@ -1669,6 +1705,22 @@ export class GameSession {
         this.forts?.apply(msg.md);
         this.raceHud?.snapshot(msg.md?.rc);
         this.zombieHud(msg.md?.zb);
+        if (this.rouletteHud) {
+          // Lunar's gravity storm: prediction falls as the match does, ragdolls too; the warning's countdown.
+          this.rouletteHud.stormSnapshot(msg.rl);
+          if (msg.rl && this.local) {
+            const g = msg.rl[2] / 100;
+            if (this.local.gravity !== g) {
+              this.local.gravity = g;
+              this.view.setEffectsGravity(g);
+            }
+          }
+          const kept = msg.hold ? [...this.rlJackpot].filter((slot) => msg.hold!.includes(slot)) : [];
+          this.rlJackpot = new Set([...kept, ...msg.players.filter((p) => ((p.fx ?? 0) & FX_JACKPOT) !== 0).map((p) => p.s)]);
+          const mine = msg.players.find((p) => p.s === this.slot);
+          this.rouletteHud.state(msg.me?.rp, mine ? mine.alive === 1 : true, msg.phase);
+          this.rouletteHud.phase(msg.phase);
+        }
         // Door and crate colliders first, so reconciliation replays against the same world as the server.
         this.scenario?.apply(msg.sc);
         const me = msg.players.find((p) => p.s === this.slot);
@@ -1689,7 +1741,25 @@ export class GameSession {
         const posesNow = () => (poses ??= this.interp.sample());
         for (const ev of msg.ev) {
           // Random characters: this life's look (the roster has the one they had when it was sent).
+          if (ev.e === 'spawn' && this.rouletteHud) {
+            // Roulette: this life's roll (a tiny body is drawn and predicted smaller), and the cards it is dealt next,
+            // loaded now so a spawn never waits on a download.
+            if (ev.j === 2) this.rlTiny.add(ev.s);
+            else this.rlTiny.delete(ev.s);
+            (ev.nx ?? []).forEach((look, i) => {
+              if (this.rlLoaded.has(look)) return;
+              // The next card now (and in the loading gate's warm-up); the ones after it once the match is under way.
+              if (i > 0 && this.rlLater) return void this.rlLater.push(look);
+              this.rlLoaded.add(look);
+              if (i === 0 && this.rlLater) this.rlUpcoming.add(look);
+              void this.view.characters.preload({ look });
+            });
+          }
           if (ev.e === 'spawn' && ev.l) this.relook(ev.s, ev.l);
+          else if (ev.e === 'spawn' && this.rouletteHud && ev.s === this.slot && this.local) this.local.scale = this.sizeOf(this.slot);
+          if (ev.e === 'spawn' && this.rouletteHud && ev.s === this.slot) this.rouletteHud.spawned(this.looks.get(this.slot) ?? ev.l ?? '', ev.j);
+          if (ev.e === 'rl' && ev.a === 'swap' && ev.s !== undefined && ev.l) this.relook(ev.s, ev.l);
+          if (ev.e === 'rl') this.rouletteHud?.event(ev);
           // In a background tab nothing draws, so effects would only pile up (blood, bullets,
           // sounds) and all land at once when you come back: skip the purely visual ones.
           if (document.hidden && VISUAL_EVENTS.has(ev.e)) continue;
@@ -1978,7 +2048,8 @@ export class GameSession {
     // The roster comes straight after the welcome.
     for (let i = 0; i < 40 && this.looks.size === 0; i++) await new Promise((r) => setTimeout(r, 50));
     const jobs: Promise<unknown>[] = [];
-    for (const look of new Set(this.looks.values())) jobs.push(this.view.characters.preload({ look }));
+    // Roulette: the cards everyone is dealt next as well (the spawn events name them), so the first lives load with the map.
+    for (const look of new Set([...this.looks.values(), ...this.rlUpcoming])) jobs.push(this.view.characters.preload({ look }));
     jobs.push(this.view.characters.preload({ npc: { color: '#888888', scale: 1, female: true } }));
     if (rules.mode === 'core.zombies' || map.entities.some((e) => e.kind === 'encounter' && (e.roster?.zombie ?? 0) > 0)) this.view.creatures.preload('zombie');
     // NPCs drawn as a creature original's look (goblins, boglurkers…) in this map's encounters.
@@ -2035,7 +2106,7 @@ export class GameSession {
     for (const m of models) jobs.push(this.view.models.load(m).catch(() => undefined));
     // Every shader the match will need (a character of each look, every effect), built before the start:
     // the first sight of a model or an effect mid-fight otherwise stalled on it (GameView.prewarm).
-    const looks = [...new Set(this.looks.values())].map((look) => ({ look }));
+    const looks = [...new Set([...this.looks.values(), ...this.rlUpcoming])].map((look) => ({ look }));
     // (The gate waits for it 8 s at most: a slow machine finishes it in the background, out of sight.)
     // Every gun the match can put in a hand (starting weapons, pickups and what they may roll), as held and as yours.
     const guns = [...models].filter((m) => WEAPONS_BY_SLOT.some((w) => w.view.model === m) || thrown.has(m));
@@ -2058,6 +2129,13 @@ export class GameSession {
     await Promise.race([all, new Promise((r) => setTimeout(r, 25000))]);
     started = true;
     if (this.closed) return;
+    // Roulette: the cards further ahead, now the match has its files.
+    for (const look of this.rlLater ?? []) {
+      if (this.rlLoaded.has(look)) continue;
+      this.rlLoaded.add(look);
+      void this.view.characters.preload({ look });
+    }
+    this.rlLater = null;
     this.hud.setLoading(null);
     this.opts.transport.sendReady();
   }
@@ -2620,6 +2698,7 @@ export class GameSession {
       this.hud.setPowerups(local.speedTicks / TICK_RATE, local.damageTicks / TICK_RATE, local.jetFuel === null ? null : local.jetFuel / JET.max, this.uav, this.jam, this.streakLabel());
       // A spectator isn't waiting to respawn: no "Respawning…".
       this.hud.setStatus(this.phase, this.timeLeft, local.alive || this.spectator, this.winner, this.outcome);
+      this.rouletteHud?.frame(now);
       this.updateScenarioHud(local, now);
     }
     if (this.scenario) {

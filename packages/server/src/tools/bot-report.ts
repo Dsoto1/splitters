@@ -2,7 +2,7 @@ import { readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { cpus, loadavg } from 'node:os';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { BOT_DIFFICULTIES, CHARACTER_PROFILES, CORE_BOT_PROFILES, CORE_WEAPONS, THROWABLE_DEFS, TICK_RATE, WEAPON_SET_IDS, getWeaponSet, hasTag, initPhysics, isGameMode, isWeaponSetId, loadMap, mapCanRun, matchWeaponSet, rulesForMode, setThrowables, setWeaponIds, throwableWeaponId, type BotProfile, type GameEvent, type GameMode, type MapDocument } from '@tiletrigger/shared';
+import { BOT_DIFFICULTIES, CHARACTER_PROFILES, bodyClass, getLook, CORE_BOT_PROFILES, CORE_WEAPONS, THROWABLE_DEFS, TICK_RATE, WEAPON_SET_IDS, getWeaponSet, hasTag, initPhysics, isGameMode, isWeaponSetId, loadMap, mapCanRun, matchWeaponSet, rulesForMode, setThrowables, setWeaponIds, throwableWeaponId, type BotProfile, type GameEvent, type GameMode, type MapDocument } from '@tiletrigger/shared';
 import { BreakthroughMode, CtfMode, FortsMode, KothMode, Match, ctfRoleOf, initNavigation, placeOn, simProfile } from '@tiletrigger/shared/match';
 import { Behaviour } from './botMeasures.ts';
 import { drawNavPictures } from './navPictures.ts';
@@ -41,6 +41,10 @@ import { drawNavPictures } from './navPictures.ts';
  *                                                 (Breakthrough: sectors taken, when each fell, how the round ended and
  *                                                  the attackers' reinforcements left; a match stops when its last round
  *                                                  is over)
+ *   pnpm bot-report sandgate citadel canyon --mode=core.roulette --seconds=300 [--roulette=lunar,rerolls,swap,variety]
+ *                                                 (Roulette: kills by character and by body size against the lives
+ *                                                  dealt, picks earned and taken, rerolls, jackpots, Giant Slayer and
+ *                                                  air kills, the awards; --roulette switches its variants on)
  *   pnpm bot-report shingle_point halcyon_station --mode=core.tdm --set=military,scifi,chaos  (each match in each
  *                                                 weapon set: kills by weapon per set)
  *   --shard=k/n plays every n-th match of the list from the k-th (run n processes; --compare and --judge take
@@ -200,6 +204,12 @@ export interface MatchRow {
    * up on before (a bot going back and forth to a vehicle it can't use is many of these).
    */
   boarding?: { tries: number; failed: number; gaveUp: number; back: number };
+  /**
+   * Roulette (sim/roulette.ts): lives dealt and kills by character (the killer's look) and by body size, characters
+   * played, picks earned (3 kills in a life) and taken, reroll tokens spent, jackpot lives, Giant Slayer and air kills,
+   * the bonus points, and the awards (kind: the winner's name).
+   */
+  roulette?: { lives: Record<string, number>; kills: Record<string, number>; bySize: Record<string, [lives: number, kills: number]>; earned: number; picks: number; rerolls: number; jackpots: number; giant: number; air: number; bonus: number; awards: Record<string, string> };
   bots: BotRow[];
 }
 
@@ -226,6 +236,8 @@ const modeArg = opt('mode') ?? 'core.ctf';
 if (!isGameMode(modeArg)) throw new Error(`unknown mode ${modeArg}`);
 const mode = modeArg as GameMode;
 const seeds = (opt('seeds') ?? '1').split(',').map(Number);
+/** --roulette=lunar,rerolls,swap,variety: Roulette's variants on (Lunar: its gravity and extras). */
+const rouletteArg = new Set(opt('roulette')?.split(',').filter(Boolean) ?? []);
 const seconds = Number(opt('seconds') ?? 240);
 const players = opt('players') ? Number(opt('players')) : null;
 const style = opt('style') as 'mixed' | 'arena' | 'tactical' | undefined;
@@ -331,6 +343,10 @@ const FIGHTING = new Set<string>(['fight', 'cover', 'retreat', 'chaseHold', 'thr
 function play(map: MapDocument, mode: GameMode, seed: number, seconds: number, set?: string): MatchRow {
   const base = rulesForMode(map, mode);
   const rules = { ...base, scoreLimit: 0, timeLimitSeconds: 0, ...(style ? { botStyle: style } : {}), ...(set ? { weaponSet: set } : {}) };
+  if (rouletteArg.has('lunar')) Object.assign(rules, { gravity: 0.4, fallDamage: false, lunar: true });
+  if (rouletteArg.has('rerolls')) rules.rouletteRerolls = true;
+  if (rouletteArg.has('swap')) rules.rouletteSwapOnKill = true;
+  if (rouletteArg.has('variety')) rules.rouletteVariety = true;
   if (players && rules.teamSizes?.length) rules.teamSizes = rules.teamSizes.map((_, i, a) => Math.floor(players / a.length) + (i < players % a.length ? 1 : 0));
   const total = players ?? (rules.teamSizes?.length ? rules.teamSizes.reduce((a, b) => a + b, 0) : 16);
   const match = new Match(map, rules, seed);
@@ -371,6 +387,7 @@ function play(map: MapDocument, mode: GameMode, seed: number, seconds: number, s
   const stuckAt = new Map<string, number>();
   const behaviour = new Behaviour(match);
   const weaponKills: Record<string, number> = {};
+  const rl: MatchRow['roulette'] = match.roulette ? { lives: {}, kills: {}, bySize: { small: [0, 0], standard: [0, 0], large: [0, 0] }, earned: 0, picks: 0, rerolls: 0, jackpots: 0, giant: 0, air: 0, bonus: 0, awards: {} } : undefined;
   const out: MatchRow = { map: map.metadata.id, mode, seed, seconds, players: total, takes: 0, captures: 0, returns: 0, drops: 0, firstTake: null, firstCapture: null, runs, kills: 0, objective: {}, tickMs: 0, tickP95: 0, set: matchWeaponSet(rules, map), weaponKills, bots: [] };
   const tickMs: number[] = [];
   const closeSpell = (slot: number) => {
@@ -414,6 +431,11 @@ function play(map: MapDocument, mode: GameMode, seed: number, seconds: number, s
         const killer = e.killer === null || e.killer === undefined ? undefined : rec.get(e.killer);
         if (killer && e.killer !== e.victim) {
           killer.kills++;
+          const look = match.actor(e.killer!)?.look;
+          if (rl && look) {
+            rl.kills[look] = (rl.kills[look] ?? 0) + 1;
+            rl.bySize[bodyClass(look, match.rules)]![1]++;
+          }
           weaponKills[e.weapon] = (weaponKills[e.weapon] ?? 0) + 1;
           if (SCOPED.has(e.weapon)) {
             killer.scopedKills!++;
@@ -421,6 +443,15 @@ function play(map: MapDocument, mode: GameMode, seed: number, seconds: number, s
           }
         }
       }
+      if (rl && e.e === 'spawn') {
+        const look = match.actor(e.s)?.look;
+        if (look) {
+          rl.lives[look] = (rl.lives[look] ?? 0) + 1;
+          rl.bySize[bodyClass(look, match.rules)]![0]++;
+        }
+      }
+      if (rl && e.e === 'rl' && e.a === 'pick') rl.earned++;
+      if (rl && e.e === 'rl' && e.a === 'awards') for (const a of e.aw ?? []) rl.awards[a[0]] = `${match.actor(a[1])?.name ?? a[1]} (${a[2]})`;
       // Rounds fired from a vantage spot it holds.
       if (e.e === 'shot') {
         const r = rec.get(e.s);
@@ -679,10 +710,44 @@ function play(map: MapDocument, mode: GameMode, seed: number, seconds: number, s
     if (b) for (const k of Object.keys(boarding) as (keyof typeof boarding)[]) boarding[k] += b[k];
   }
   if (boarding.tries || boarding.gaveUp) out.boarding = boarding;
+  if (rl && match.roulette) {
+    // The awards as the match would give them now (the report's matches have no end of their own).
+    for (const a of match.roulette.awards(match.combatants())) rl.awards[a[0]] ??= `${match.actor(a[1])?.name ?? a[1]} (${a[2]})`;
+    for (const c of bots) {
+      const s = match.roulette.stats(c.slot);
+      if (!s) continue;
+      rl.picks += s.picks;
+      rl.rerolls += s.rerolls;
+      rl.jackpots += s.jackpots;
+      rl.giant += s.giant;
+      rl.air += s.air;
+      rl.bonus += s.bonus;
+    }
+    out.roulette = rl;
+  }
   // Where stuck recoveries happen most (4 m cells, with what the bots were doing): the top 12.
   out.stuckAt = [...stuckAt].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])).slice(0, 12);
   match.destroy();
   return out;
+}
+
+/**
+ * A Roulette match (or several, summed) in lines: kills spread over the characters (how many scored, the top five's
+ * share, kills per life by body size), and the picks, rerolls, jackpots, Giant Slayer and air kills.
+ */
+export function rouletteText(r: NonNullable<MatchRow['roulette']>): string[] {
+  const kills = Object.values(r.kills).reduce((a, b) => a + b, 0);
+  const lives = Object.values(r.lives).reduce((a, b) => a + b, 0);
+  const top = Object.entries(r.kills).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
+  const top5 = top.slice(0, 5).reduce((a, [, n]) => a + n, 0);
+  const size = (['small', 'standard', 'large'] as const).map((k) => {
+    const [l, n] = r.bySize[k] ?? [0, 0];
+    return `${k} ${n} kills in ${l} lives (${(n / Math.max(1, l)).toFixed(2)} a life)`;
+  });
+  return [
+    `roulette: ${Object.keys(r.lives).length} characters played in ${lives} lives; ${Object.keys(r.kills).length} scored ${kills} kills, the top five ${pct(top5, kills)} (${top.slice(0, 5).map(([l, n]) => `${getLook(l).name} ${n}`).join(', ')}) | ${size.join(', ')}`,
+    `roulette: picks earned ${r.earned}, taken ${r.picks} | rerolls ${r.rerolls} | jackpot lives ${r.jackpots} | Giant Slayer ${r.giant} | air kills ${r.air} | bonus points ${r.bonus} | awards: ${Object.entries(r.awards).map(([k, v]) => `${k} ${v}`).join(', ') || 'none'}`,
+  ];
 }
 
 /** A Breakthrough match in a line: "2 of 3 sectors (A 76 s, B 190 s), the line held at 410 s; reinforcements 48, 3 left". */
@@ -770,6 +835,7 @@ function printMatch(m: MatchRow): void {
   if (m.rounds) console.log(`rounds: ${m.rounds.length} finished${m.rounds.length ? `, ${(sum(m.rounds, (r) => r) / m.rounds.length).toFixed(0)} s on average (${m.rounds.join(', ')})` : ''}`);
   if (m.pieces !== undefined) console.log(`forts: ${m.pieces} pieces built`);
   if (m.breakthrough) console.log(`breakthrough: ${breakthroughText(m.breakthrough)}`);
+  if (m.roulette) for (const line of rouletteText(m.roulette)) console.log(line);
   if (m.boarding) console.log(`boarding: ${m.boarding.tries} tries, ${m.boarding.failed} failed, ${m.boarding.gaveUp} given up on, ${m.boarding.back} back to one given up on`);
   const searches = sum(m.bots, (r) => r.searches);
   const failures = sum(m.bots, (r) => r.pathFailures);
@@ -1082,6 +1148,23 @@ function printSummary(rs: readonly MatchRow[]): void {
   }
   const sets = weaponSetTable(rs);
   if (sets.length) console.log(`\n${sets.join('\n')}`);
+  // Roulette over every match: kills spread over characters and sizes, picks taken.
+  const rls = rs.filter((r) => r.roulette).map((r) => r.roulette!);
+  if (rls.length > 1) {
+    const all: NonNullable<MatchRow['roulette']> = { lives: {}, kills: {}, bySize: { small: [0, 0], standard: [0, 0], large: [0, 0] }, earned: 0, picks: 0, rerolls: 0, jackpots: 0, giant: 0, air: 0, bonus: 0, awards: {} };
+    for (const r of rls) {
+      for (const [k, n] of Object.entries(r.lives)) all.lives[k] = (all.lives[k] ?? 0) + n;
+      for (const [k, n] of Object.entries(r.kills)) all.kills[k] = (all.kills[k] ?? 0) + n;
+      for (const [k, [l, n]] of Object.entries(r.bySize)) {
+        all.bySize[k]![0] += l;
+        all.bySize[k]![1] += n;
+      }
+      for (const k of ['earned', 'picks', 'rerolls', 'jackpots', 'giant', 'air', 'bonus'] as const) all[k] += r[k];
+    }
+    console.log(`
+roulette over ${rls.length} matches:`);
+    for (const line of rouletteText(all)) console.log(`  ${line}`);
+  }
   const bt = [...new Set(rs.filter((r) => r.breakthrough).map((r) => `${r.map}|${r.players}`))];
   for (const k of bt) {
     const ms = rs.filter((r) => r.breakthrough && `${r.map}|${r.players}` === k);

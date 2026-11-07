@@ -1,5 +1,5 @@
 import type { MapDocument } from '../map/schema.ts';
-import { mapPickPlayers, presetPatch, sizePresets, type MatchSetup } from './matchSetup.ts';
+import { LUNAR_GRAVITY, mapPickPlayers, presetPatch, sizePresets, type MatchSetup } from './matchSetup.ts';
 import { DEFAULT_RULES, GAME_MODES, MODE_LABELS, type GameMode } from './rules.ts';
 
 /**
@@ -38,6 +38,11 @@ export interface SetupVariant {
   needs?: readonly string[];
   /** Why it can't be switched on for this map and mode (greyed, with the reason), or null. `offered`: the map's modes. */
   unavailable?: (map: MapDocument, mode: GameMode, offered: readonly GameMode[]) => string | null;
+  /**
+   * On unless switched off (Roulette's standard features: signature loadouts, jackpot rolls, the streak pick): its
+   * settings are on by the standard, and off writes each one false.
+   */
+  onByDefault?: boolean;
 }
 
 /** Modes with players fighting players and the weapons they pick up. */
@@ -48,15 +53,70 @@ export const SETUP_VARIANTS: readonly SetupVariant[] = [
   {
     id: 'lunar',
     label: 'Lunar',
-    tip: 'Low gravity: high, floaty jumps and long drops, with fall damage off.',
-    sets: { gravity: 0.4, fallDamage: false },
+    tip: 'Low gravity: high, floaty jumps and long drops, with fall damage off. A bonus point for a kill in the air, blasts that throw players about, floaty ragdolls, stronger jump pads, and a gravity storm every minute (a 3-second warning, then gravity shifts for a while).',
+    // (Its extras come with its settings: rulesFromSetup plays them wherever Lunar is on, MatchRules.lunar.)
+    sets: { gravity: LUNAR_GRAVITY, fallDamage: false },
   },
   {
     id: 'roulette',
     label: 'Roulette bodies',
     tip: "Everyone, you and the bots, plays a random character each life, with that character's own stats (size, health, speed, damage…).",
-    modes: GAME_MODES.filter((m) => m !== 'core.race'),
+    // (The Roulette mode deals a new character every life anyway.)
+    modes: GAME_MODES.filter((m) => m !== 'core.race' && m !== 'core.roulette'),
     sets: { randomChars: true, stats: true },
+  },
+  // Roulette (docs/ROULETTE_MODE_PLAN.md; sim/roulette.ts): its standard features, then its variants.
+  {
+    id: 'signature',
+    label: 'Signature loadouts',
+    tip: 'Each character spawns holding a weapon that suits it: the knight a spear, a soldier a rifle, an alien a ray gun (as the weapon set allows: else its main gun).',
+    modes: ['core.roulette'],
+    sets: { rlSignature: true },
+    onByDefault: true,
+  },
+  {
+    id: 'jackpots',
+    label: 'Jackpot rolls',
+    tip: 'Now and then a life rolls a jackpot (a glow, an announcer line, a better weapon and armour) or a tiny body; and a small character downing a large one scores a Giant Slayer bonus.',
+    modes: ['core.roulette'],
+    sets: { rlJackpots: true },
+    onByDefault: true,
+  },
+  {
+    id: 'streakpick',
+    label: 'Streak pick',
+    tip: '3 kills in one life earn a pick: at your next spawn, choose your character from 3 (each with its own jackpot chance).',
+    modes: ['core.roulette'],
+    sets: { rlPick: true },
+    onByDefault: true,
+  },
+  {
+    id: 'rerolls',
+    label: 'Earned rerolls',
+    tip: 'Every 2 kills earn a reroll token (2 at most): spend one while down to deal yourself a different next character. Never free.',
+    modes: ['core.roulette'],
+    sets: { rlRerolls: true },
+  },
+  {
+    id: 'swap',
+    label: 'Swap on kill',
+    tip: "You become your victim's character at once, keeping your share of health and your weapons. The leader keeps changing.",
+    modes: ['core.roulette'],
+    sets: { rlSwap: true },
+  },
+  {
+    id: 'variety',
+    label: 'Variety bonus',
+    tip: 'Bonus points for kills made as several different characters: a point each time the characters you have scored as reach another 3.',
+    modes: ['core.roulette'],
+    sets: { rlVariety: true },
+  },
+  {
+    id: 'rlteams',
+    label: 'Teams',
+    tip: 'Play it as Team Deathmatch: everyone split into two sides, each player outlined in their team colour (random looks hide who is on which side).',
+    modes: ['core.roulette'],
+    sets: { rlTeams: true },
   },
   {
     id: 'classes',
@@ -102,6 +162,13 @@ const STANDARD: Partial<Record<keyof VariantSettings, unknown>> = {
   emotes: true,
   dropWeapons: true,
   mixPickups: false,
+  rlSignature: true,
+  rlJackpots: true,
+  rlPick: true,
+  rlRerolls: false,
+  rlSwap: false,
+  rlVariety: false,
+  rlTeams: false,
 };
 
 /** A setting as the match plays it: the setup's, else the map's own (gravity, fall damage), else the standard. */
@@ -151,6 +218,12 @@ const setOn = (v: SetupVariant, setup: MatchSetup): boolean => (Object.keys(v.se
 function switchOff(out: MatchSetup, v: SetupVariant, seen: Set<string>): void {
   if (seen.has(v.id)) return;
   seen.add(v.id);
+  // On by default: off says so (each of its settings false).
+  if (v.onByDefault) {
+    for (const k of Object.keys(v.sets) as (keyof VariantSettings)[]) (out as unknown as Record<string, unknown>)[k] = false;
+    for (const d of SETUP_VARIANTS) if (d.needs?.includes(v.id)) switchOff(out, d, seen);
+    return;
+  }
   // Back to the standard (or the map's own) for each setting it moved; one it set to the standard stays.
   for (const k of Object.keys(v.sets) as (keyof VariantSettings)[]) if (STANDARD[k] === undefined || STANDARD[k] !== v.sets[k]) delete out[k];
   for (const k of v.clears ?? []) delete out[k];
@@ -192,21 +265,25 @@ export interface PartyPreset {
   line: string;
   /** Its mode: `teams` on a map with teams of its own (sides or a team layout), else `ffa`; whichever of them the map has. */
   mode: { teams?: GameMode; ffa?: GameMode };
-  /** The variants it switches on; every other variant goes off. */
+  /** The variants it switches on; every other variant goes off (but those on by default, which stay on). */
   variants: readonly string[];
 }
 
+/** Whether a party preset wants a variant on: one it lists, or one on by default. */
+const partyWants = (p: PartyPreset, v: SetupVariant): boolean => p.variants.includes(v.id) || !!v.onByDefault;
+
 /**
- * One-click party bundles: a mode, its variants and the map's own team layout. When the Roulette mode lands
- * (docs/ROULETTE_MODE_PLAN.md), Lunar Roulette points at it: `mode: { ffa: 'core.roulette' }, variants: ['lunar']`.
+ * One-click party bundles: a mode, its variants and the map's own team layout. Lunar Roulette plays the Roulette mode
+ * (docs/ROULETTE_MODE_PLAN.md) with Lunar on; Roulette's standard features stay on (a preset leaves a variant that is on
+ * by default on).
  */
 export const PARTY_PRESETS: readonly PartyPreset[] = [
   {
     id: 'lunar_roulette',
     label: 'Lunar Roulette',
-    line: 'Low gravity, and a new random character every life, stats and all.',
-    mode: { teams: 'core.tdm', ffa: 'core.deathmatch' },
-    variants: ['lunar', 'roulette'],
+    line: 'Roulette on the moon: a new character every life, low gravity, air kills and a gravity storm every minute.',
+    mode: { ffa: 'core.roulette' },
+    variants: ['lunar'],
   },
   {
     id: 'spear_fight',
@@ -242,7 +319,7 @@ export function partyUnavailable(p: PartyPreset, map: MapDocument, offered: read
 /** Whether a setup is a party preset: its mode, its variants on and every other one off (the team layout can be anything). */
 export function partyOn(p: PartyPreset, setup: MatchSetup, map: MapDocument, offered: readonly GameMode[]): boolean {
   if (setup.mode !== partyMode(p, map, offered)) return false;
-  return SETUP_VARIANTS.filter((v) => variantFor(v, setup.mode)).every((v) => variantOn(v, setup, map) === p.variants.includes(v.id));
+  return SETUP_VARIANTS.filter((v) => variantFor(v, setup.mode)).every((v) => variantOn(v, setup, map) === partyWants(p, v));
 }
 
 /**
@@ -255,8 +332,9 @@ export function applyParty(p: PartyPreset, setup: MatchSetup, map: MapDocument, 
   const mode = partyMode(p, map, offered);
   if (!mode || partyUnavailable(p, map, offered)) return null;
   let out: MatchSetup = mode === setup.mode ? { ...setup } : { ...setup, mode, scoreLimit: DEFAULT_RULES[mode].scoreLimit, scoreAuto: true };
-  for (const v of SETUP_VARIANTS) if (variantFor(v, mode) && !p.variants.includes(v.id) && variantOn(v, out, map)) out = setVariant(out, v.id, false);
-  for (const id of p.variants) out = setVariant(out, id, true);
+  // Off: every variant it doesn't want, also one its mode doesn't offer (Spears only left on would play in Roulette).
+  for (const v of SETUP_VARIANTS) if (!partyWants(p, v) && variantOn(v, out, map)) out = setVariant(out, v.id, false);
+  for (const v of SETUP_VARIANTS) if (variantFor(v, mode) && partyWants(p, v) && !variantOn(v, out, map)) out = setVariant(out, v.id, true);
   const pick = sizePresets(mode, map, { deviceMax: o.deviceMax, pickPlayers: o.pickPlayers ?? mapPickPlayers(map.metadata.recommendedPlayers) }).find((x) => x.id === 'pick');
   if (pick) Object.assign(out, presetPatch(pick));
   if (out.playerTeam !== undefined && out.teams && out.playerTeam >= out.teams.length) out.playerTeam = out.teams.length - 1;
