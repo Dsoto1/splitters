@@ -205,10 +205,11 @@ export interface MatchRow {
    */
   boarding?: { tries: number; failed: number; gaveUp: number; back: number };
   /**
-   * Vehicles wedged (Match's MountRt.wedged: driven with the throttle open and going nowhere for 3 s): how many times,
-   * the ticks one spent wedged with a driver aboard, by vehicle id, and where (4 m cells, "x,y,z id") most.
+   * Vehicles wedged (Match's MountRt.wedged: driven with the throttle open and going nowhere for 3 s): how many times
+   * and the ticks one spent wedged with someone aboard; stalls (a driver on the throttle, under 1 cm a tick for 1 s or
+   * more: bot drivers back out long before 3 s) and their ticks; by vehicle id, and where stalls began most (4 m cells).
    */
-  wedges?: { times: number; ticks: number; byVehicle: Record<string, [times: number, ticks: number]>; at: [string, number][] };
+  wedges?: { times: number; ticks: number; stalls: number; stallTicks: number; byVehicle: Record<string, [times: number, ticks: number, stalls: number]>; at: [string, number][] };
   /**
    * Roulette (sim/roulette.ts): lives dealt and kills by character (the killer's look) and by body size, characters
    * played, picks earned (3 kills in a life) and taken, reroll tokens spent, jackpot lives, Giant Slayer and air kills,
@@ -391,10 +392,11 @@ function play(map: MapDocument, mode: GameMode, seed: number, seconds: number, s
   const lastStuck = new Map<number, number>();
   const stuckAt = new Map<string, number>();
   const behaviour = new Behaviour(match);
-  type WedgeMount = { def: { id: string; vehicle?: unknown }; pos: { x: number; y: number; z: number }; seats: (number | null)[]; wedged?: unknown };
+  type WedgeMount = { def: { id: string; vehicle?: unknown; seats: { role: string }[] }; pos: { x: number; y: number; z: number }; seats: (number | null)[]; drive: { forward: number }; wedged?: unknown };
   const wedgeMounts = ((match as unknown as { mounts: WedgeMount[] }).mounts ?? []).filter((m) => m.def.vehicle);
+  const lastPos = new Map<WedgeMount, { x: number; z: number; run: number }>();
   const wasWedged = new Set<WedgeMount>();
-  const wedges = { times: 0, ticks: 0, byVehicle: {} as Record<string, [number, number]>, at: new Map<string, number>() };
+  const wedges = { times: 0, ticks: 0, stalls: 0, stallTicks: 0, byVehicle: {} as Record<string, [number, number, number]>, at: new Map<string, number>() };
   const weaponKills: Record<string, number> = {};
   const rl: MatchRow['roulette'] = match.roulette ? { lives: {}, kills: {}, bySize: { small: [0, 0], standard: [0, 0], large: [0, 0] }, earned: 0, picks: 0, rerolls: 0, jackpots: 0, giant: 0, air: 0, bonus: 0, awards: {} } : undefined;
   const out: MatchRow = { map: map.metadata.id, mode, seed, seconds, players: total, takes: 0, captures: 0, returns: 0, drops: 0, firstTake: null, firstCapture: null, runs, kills: 0, objective: {}, tickMs: 0, tickP95: 0, set: matchWeaponSet(rules, map), weaponKills, bots: [] };
@@ -426,17 +428,28 @@ function play(map: MapDocument, mode: GameMode, seed: number, seconds: number, s
     if (bt && btRow) btRow.poolLeft = bt.pool;
     behaviour.events(match, events);
     for (const wm of wedgeMounts) {
+      const row = (wedges.byVehicle[wm.def.id] ??= [0, 0, 0]);
+      const cell = `${Math.round(wm.pos.x / 4) * 4},${Math.round(wm.pos.y / 4) * 4},${Math.round(wm.pos.z / 4) * 4} ${wm.def.id}`;
+      // Stalls: a driver on the throttle and the vehicle going nowhere (under 1 cm a tick) for a second or more.
+      const was = lastPos.get(wm);
+      const driven = wm.def.seats.some((s, i) => s.role === 'driver' && wm.seats[i] !== null) && Math.abs(wm.drive.forward) > 0.2;
+      const still = !!was && Math.hypot(wm.pos.x - was.x, wm.pos.z - was.z) < 0.01;
+      const run = driven && still ? (was?.run ?? 0) + 1 : 0;
+      lastPos.set(wm, { x: wm.pos.x, z: wm.pos.z, run });
+      if (run === TICK_RATE) {
+        wedges.stalls++;
+        row[2]++;
+        wedges.at.set(cell, (wedges.at.get(cell) ?? 0) + 1);
+      }
+      if (run >= TICK_RATE) wedges.stallTicks += run === TICK_RATE ? TICK_RATE : 1;
       if (!wm.wedged) {
         wasWedged.delete(wm);
         continue;
       }
-      const row = (wedges.byVehicle[wm.def.id] ??= [0, 0]);
       if (!wasWedged.has(wm)) {
         wasWedged.add(wm);
         wedges.times++;
         row[0]++;
-        const key = `${Math.round(wm.pos.x / 4) * 4},${Math.round(wm.pos.y / 4) * 4},${Math.round(wm.pos.z / 4) * 4} ${wm.def.id}`;
-        wedges.at.set(key, (wedges.at.get(key) ?? 0) + 1);
       }
       if (wm.seats.some((x) => x !== null)) {
         wedges.ticks++;
@@ -737,7 +750,7 @@ function play(map: MapDocument, mode: GameMode, seed: number, seconds: number, s
     if (b) for (const k of Object.keys(boarding) as (keyof typeof boarding)[]) boarding[k] += b[k];
   }
   if (boarding.tries || boarding.gaveUp) out.boarding = boarding;
-  if (wedgeMounts.length) out.wedges = { times: wedges.times, ticks: wedges.ticks, byVehicle: wedges.byVehicle, at: [...wedges.at].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])).slice(0, 12) };
+  if (wedgeMounts.length) out.wedges = { times: wedges.times, ticks: wedges.ticks, stalls: wedges.stalls, stallTicks: wedges.stallTicks, byVehicle: wedges.byVehicle, at: [...wedges.at].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])).slice(0, 12) };
   if (rl && match.roulette) {
     // The awards as the match would give them now (the report's matches have no end of their own).
     for (const a of match.roulette.awards(match.combatants())) rl.awards[a[0]] ??= `${match.actor(a[1])?.name ?? a[1]} (${a[2]})`;
@@ -864,7 +877,7 @@ function printMatch(m: MatchRow): void {
   if (m.pieces !== undefined) console.log(`forts: ${m.pieces} pieces built`);
   if (m.breakthrough) console.log(`breakthrough: ${breakthroughText(m.breakthrough)}`);
   if (m.roulette) for (const line of rouletteText(m.roulette)) console.log(line);
-  if (m.wedges) console.log(`vehicles wedged: ${m.wedges.times} times, ${m.wedges.ticks} ticks with someone aboard${Object.keys(m.wedges.byVehicle).length ? ` (${Object.entries(m.wedges.byVehicle).map(([k, [n, t]]) => `${k} ${n}/${t}`).join(', ')})` : ''}${m.wedges.at.length ? `; where: ${m.wedges.at.map(([k, v]) => `${k} ${v}`).join(', ')}` : ''}`);
+  if (m.wedges) console.log(`vehicles: stalled ${m.wedges.stalls} times (${m.wedges.stallTicks} ticks), wedged ${m.wedges.times} times (${m.wedges.ticks} ticks aboard)${Object.values(m.wedges.byVehicle).some((r) => r[0] || r[2]) ? ` | by vehicle (stalls/wedged): ${Object.entries(m.wedges.byVehicle).filter(([, r]) => r[0] || r[2]).map(([k, [n, , st]]) => `${k} ${st}/${n}`).join(', ')}` : ''}${m.wedges.at.length ? ` | stalls where: ${m.wedges.at.map(([k, v]) => `${k} ${v}`).join(', ')}` : ''}`);
   if (m.boarding) console.log(`boarding: ${m.boarding.tries} tries, ${m.boarding.failed} failed, ${m.boarding.gaveUp} given up on, ${m.boarding.back} back to one given up on`);
   const searches = sum(m.bots, (r) => r.searches);
   const failures = sum(m.bots, (r) => r.pathFailures);
