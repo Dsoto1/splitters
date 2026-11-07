@@ -119,14 +119,17 @@ The workflow is unchanged (CLAUDE.md):
 7. **Kit-prop generators.**
 8. **Player profiles,** last.
 
-**Open questions for the owner:**
-- Fishy Fred's name and Meshy post URL.
-- A dinosaur bot-name list for Rex?
-- Slow the 26 maps whose lights blink up to 4 times a second?
-- A 12 s per-fight cap on the hurt-bot retreat? We recommend no.
-- The tank's ammo refill.
-- Recordings on the M1 for performance round 4 (see its section).
-- A playtest of Breakthrough Range.
+**Owner's answers (2026-11-07, later):**
+- Fishy Fred: the name stays; his Meshy page is https://www.meshy.ai/s/P4iLfn (shows CC0). Recorded in his manifest
+  (`source.url`). Follow-up: provenance takes the URL from the shared `meshy-community-characters` pack in
+  content/models.json, not per character; make build.mjs prefer a character's own `source.url` (needs the lock entry
+  to carry it) so each community character credits its own page.
+- Rex: no dinosaur bot-name list.
+- Blinking lights: fine for now; leave the 26 maps as they are.
+- Hurt-bot retreat: no per-fight cap.
+- Tank ammo: as proposed (refills slowly over time, full at an ammo pickup). Tanks job can start on that.
+
+**Still open:** M1 recordings for performance round 4; a playtest of Breakthrough Range.
 
 ## Start here (session of 2026-11-04, handed off to the next account)
 

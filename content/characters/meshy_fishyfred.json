@@ -10,7 +10,7 @@
   "bio": "Walked out of the river in his best red sneakers. Nobody has told him about the smell.",
   "body": "male",
   "size": "small",
-  "notes": "Import list batch 1 (docs/IMPORT_LIST.md; \"Fishy Fred\", as Meshy names the download; rigged and animated on Meshy: Mixamo joint names read as Meshy's; finger chains for the thumb, middle and little finger only, no index or ring finger, so the fingers are re-fitted by hands.mjs; its two clips are not used). A big-headed fish on striped legs in red sneakers, a fin down its back and its tail curled up behind its head. Name a placeholder (the download's own) until the owner names it. A 5k-triangle download, kept whole. Small for its short body. Licence: Meshy Community, CC0 per the owner (2026-11-06: \"i did not make fishy fred, community\"); author and post URL pending from the owner.",
+  "notes": "Import list batch 1 (docs/IMPORT_LIST.md; \"Fishy Fred\", as Meshy names the download; rigged and animated on Meshy: Mixamo joint names read as Meshy's; finger chains for the thumb, middle and little finger only, no index or ring finger, so the fingers are re-fitted by hands.mjs; its two clips are not used). A big-headed fish on striped legs in red sneakers, a fin down its back and its tail curled up behind its head. Name confirmed by the owner (2026-11-07). A 5k-triangle download, kept whole. Small for its short body. Licence: Meshy Community, CC0 per the owner (2026-11-06: \"i did not make fishy fred, community\"); the owner gave its Meshy page, https://www.meshy.ai/s/P4iLfn (2026-11-07; the page shows CC0).",
   "source": {
     "license": "CC0",
     "author": "Meshy Community (CC0 per the owner)",
@@ -18,7 +18,7 @@
       "model": "Fishy Fred"
     },
     "date": "2026-11-06",
-    "url": null,
+    "url": "https://www.meshy.ai/s/P4iLfn",
     "file": "^Meshy_AI_Fishy_Fred_\\d+_animated_mixamo_All_animation\\.glb$"
   },
   "finish": {
