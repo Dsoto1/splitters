@@ -43,6 +43,8 @@ export class RouletteHud {
   private cardUntil = 0;
   /** The glow's start (ms), or 0: none. */
   private glowAt = 0;
+  /** The glow's brightest since the last jackpot began (tests). */
+  private glowPeak = 0;
   private me: RoulettePrivate | null = null;
   private offerKey = '';
   private aw: RouletteAward[] = [];
@@ -66,6 +68,7 @@ export class RouletteHud {
     this.awards = el('div', 'rl-awards');
     for (const e of [this.card, this.next, this.pick, this.storm, this.awards]) e.hidden = true;
     this.glow.style.opacity = '0';
+    this.glow.style.backgroundImage = `url(${glowPicture().toDataURL()})`;
     this.root.append(this.glow, this.card, this.next, this.pick, this.storm, this.awards);
     host.append(this.root);
   }
@@ -91,7 +94,10 @@ export class RouletteHud {
     this.card.innerHTML = `${roll === 1 ? '<em>Jackpot!</em>' : roll === 2 ? '<em>Tiny roll!</em>' : ''}<small>You are</small><b>${escapeHtml(d.name)}</b><span>${escapeHtml(d.line)}</span>${d.weapon ? `<i>${escapeHtml(d.weapon)}${roll === 1 ? ' · +armour' : ''}</i>` : ''}`;
     this.card.hidden = false;
     this.cardUntil = performance.now() + SPAWN_CARD_SECONDS * 1000;
-    if (roll === 1) this.glowAt = performance.now();
+    if (roll === 1) {
+      this.glowAt = performance.now();
+      this.glowPeak = 0;
+    }
     this.hidePick();
   }
 
@@ -165,7 +171,8 @@ export class RouletteHud {
     this.offerKey = key;
     this.pick.innerHTML = '';
     this.pick.append(Object.assign(document.createElement('h3'), { textContent: 'Streak pick: choose your next character' }));
-    const row = el('div', 'rl-pick-row');
+    const row = document.createElement('div');
+    row.className = 'rl-pick-row';
     cards.forEach((look, i) => {
       const jp = (jackpots & (1 << i)) !== 0;
       const d = this.describe(look, jp);
@@ -224,8 +231,12 @@ export class RouletteHud {
     }
   }
 
+  /** Tests (pictures on a slow page): the card and the glow stay as they are while held. */
+  hold = false;
+
   /** Each frame: the card's time, the glow's ease (in, hold, out; never a flash). */
   frame(now: number): void {
+    if (this.hold) return;
     if (!this.card.hidden && now > this.cardUntil) this.card.hidden = true;
     if (!this.glowAt) return;
     const calm = reduceFlashing();
@@ -241,12 +252,39 @@ export class RouletteHud {
       this.glowAt = 0;
     }
     this.glow.style.opacity = v.toFixed(3);
+    this.glowPeak = Math.max(this.glowPeak, v);
+  }
+
+  /** The jackpot glow as drawn (its picture and its opacity now): the flashing flow lays it over the frames it grabs. */
+  glowOverlay(): { image: HTMLCanvasElement; opacity: number } {
+    return { image: glowPicture(), opacity: Number(this.glow.style.opacity || 0) };
   }
 
   /** For tests: the glow's opacity now, the storm and the state last seen. */
-  debug(): { glow: number; storm: [number, number, number, number] | null; me: RoulettePrivate | null; awards: number } {
-    return { glow: Number(this.glow.style.opacity || 0), storm: this.stormState, me: this.me, awards: this.aw.length };
+  debug(): { glow: number; glowPeak: number; storm: [number, number, number, number] | null; me: RoulettePrivate | null; awards: number } {
+    return { glow: Number(this.glow.style.opacity || 0), glowPeak: this.glowPeak, storm: this.stormState, me: this.me, awards: this.aw.length };
   }
+}
+
+let glowCanvas: HTMLCanvasElement | null = null;
+/** The jackpot glow's picture: gold at the screen's edges, fading to nothing a third of the way in (stretched to the screen). */
+function glowPicture(): HTMLCanvasElement {
+  if (glowCanvas) return glowCanvas;
+  const c = document.createElement('canvas');
+  c.width = 256;
+  c.height = 144;
+  const ctx = c.getContext('2d')!;
+  ctx.save();
+  ctx.translate(128, 72);
+  ctx.scale(1, 144 / 256);
+  const g = ctx.createRadialGradient(0, 0, 70, 0, 0, 182);
+  g.addColorStop(0, 'rgba(255, 196, 60, 0)');
+  g.addColorStop(0.55, 'rgba(255, 196, 60, 0.35)');
+  g.addColorStop(1, 'rgba(255, 196, 60, 0.9)');
+  ctx.fillStyle = g;
+  ctx.fillRect(-128, -128, 256, 256);
+  ctx.restore();
+  return (glowCanvas = c);
 }
 
 const smooth = (x: number): number => {

@@ -3378,8 +3378,15 @@ async function rouletteFlow(browser) {
     const after = await page.evaluate(() => window.__match.slots[window.__cs.slot].look);
     return { before: before.look, after, card };
   };
-  const lives = [await life(), await life()];
+  // Shader programs once the warm-up is done, and after a few lives in new bodies (Roulette's swaps build none mid-match).
+  await page.waitForFunction(() => !!window.__cs.view.prewarmed, null, { timeout: T(30000) }).catch(() => {});
+  const shadersAtStart = await page.evaluate(() => window.__cs.view.shaderCount());
+  const first = await life();
+  // (The second life's card held on screen for its picture: a slow page draws a frame a second.)
+  await page.evaluate(() => window.__cs.rouletteHold(true));
+  const lives = [first, await life()];
   await shoot('roulette-spawn-card');
+  await page.evaluate(() => window.__cs.rouletteHold(false));
   check(lives.every((l) => l.after !== l.before && !!l.card?.name && /:/.test(l.card?.line ?? '')), `a new character every life, with its spawn card (${JSON.stringify(lives)})`);
   // A streak pick: three kills in one life, then down: the death screen offers three; a click picks the second.
   await page.evaluate(() => {
@@ -3396,6 +3403,8 @@ async function rouletteFlow(browser) {
   });
   const shown = await page.waitForFunction(() => document.querySelectorAll('#rl-pick .rl-pick-card').length === 3 && !document.getElementById('rl-pick').hidden, null, { timeout: T(20000) }).then(() => true, () => false);
   const cards = await page.evaluate(() => [...document.querySelectorAll('#rl-pick .rl-pick-card')].map((b) => b.dataset.look));
+  // (The respawn holds 6 s for the choice: held longer here, while a slow page draws the picture.)
+  await page.evaluate(() => (window.__match.slots[window.__cs.slot].respawnTick = window.__match.tick + 60 * 120));
   check(shown && new Set(cards).size === 3, `3 kills in one life: the death screen offers a pick of three (${cards.join(', ')})`);
   await page.waitForFunction(() => [...document.querySelectorAll('#rl-pick img')].every((i) => i.complete), null, { timeout: T(10000) }).catch(() => {});
   await shoot('roulette-pick');
@@ -3419,13 +3428,22 @@ async function rouletteFlow(browser) {
     m.kill(m.slots[window.__cs.slot], null, 'core.fall');
   });
   const jackpot = await page.waitForFunction(() => document.getElementById('rl-card')?.classList.contains('jackpot') && !document.getElementById('rl-card').hidden, null, { timeout: T(30000) }).then(() => true, () => false);
-  await page.waitForFunction(() => (window.__cs.roulette()?.glow ?? 0) > 0.3, null, { timeout: T(10000) }).catch(() => {});
-  const glow = await page.evaluate(() => window.__cs.roulette()?.glow ?? 0);
+  await page.waitForFunction(() => (window.__cs.roulette()?.glowPeak ?? 0) > 0.3, null, { timeout: T(10000) }).catch(() => {});
+  const glow = await page.evaluate(() => window.__cs.roulette()?.glowPeak ?? 0);
+  // (Held at its brightest for the picture.)
+  await page.evaluate(() => window.__cs.rouletteHold(true));
   await shoot('roulette-jackpot');
+  await page.evaluate(() => window.__cs.rouletteHold(false));
   const armour = await page.evaluate(() => window.__match.slots[window.__cs.slot].armor);
   check(jackpot && glow > 0 && armour >= 50, `a jackpot life: its card, the glow (${glow}), armour (${armour})`);
+  const shadersAfter = await page.evaluate(() => window.__cs.view.shaderCount());
+  console.log(`roulette: shader programs ${shadersAtStart} after the warm-up, ${shadersAfter} after three new bodies, a pick and a jackpot`);
   // The end of the match: the awards on the scoreboard.
-  await page.evaluate(() => window.__match.endMatch());
+  // (The scoreboard held up for the check and its picture.)
+  await page.evaluate(() => {
+    window.__match.endMatch();
+    window.__match.phaseEndTick = window.__match.tick + 60 * 120;
+  });
   const awards = await page.waitForFunction(() => !document.getElementById('rl-awards')?.hidden && document.querySelectorAll('#rl-awards .rl-award').length > 0, null, { timeout: T(20000) }).then(() => page.evaluate(() => [...document.querySelectorAll('#rl-awards .rl-award b')].map((b) => b.textContent)), () => []);
   await shoot('roulette-awards');
   check(awards.includes('Shapeshifter') && awards.includes('Unluckiest Roll'), `the awards at the end of the match (${awards.join(', ')})`);
@@ -4917,8 +4935,8 @@ async function visualFlow(browser) {
 }
 
 /**
- * After each frame drawn, the canvas at `size` with the HUD's hurt tint over it (HTML: drawn here as the HUD draws
- * it, hud.ts `hurtOverlay`), kept while `window.__flick.on` (the flashing flow). Runs in the page.
+ * After each frame drawn, the canvas at `size` with the HUD's hurt tint and Roulette's jackpot glow over it (HTML:
+ * drawn here as the HUD draws them, hud.ts `hurtOverlay`, rouletteHud.ts `glowOverlay`), kept while `window.__flick.on` (the flashing flow). Runs in the page.
  */
 function installFrameGrab(size) {
   const view = window.__cs.view;
@@ -4937,6 +4955,13 @@ function installFrameGrab(size) {
       if (hurt.opacity > 0.002) {
         ctx.globalAlpha = Math.min(1, hurt.opacity);
         ctx.drawImage(hurt.image, 0, 0, out.width, out.height);
+        ctx.globalAlpha = 1;
+      }
+      // Roulette's jackpot glow (HTML too: rouletteHud.ts glowOverlay).
+      const glow = window.__cs.rouletteGlow?.();
+      if (glow && glow.opacity > 0.002) {
+        ctx.globalAlpha = Math.min(1, glow.opacity);
+        ctx.drawImage(glow.image, 0, 0, out.width, out.height);
         ctx.globalAlpha = 1;
       }
       grab.frames.push(ctx.getImageData(0, 0, out.width, out.height).data);
