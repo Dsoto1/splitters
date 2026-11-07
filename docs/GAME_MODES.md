@@ -391,9 +391,10 @@ v28).
   within reach of a target to plant or a charge to defuse holds still,
   crouched, still shooting, until it's done (the mode's `botInput`: a bot
   plants or defuses by holding still within reach, and kept to their way
-  they used to fight on the move instead). Every other attacking bot spawns
-  carrying smoke grenades instead of its frags (the playbook's smoke): the
-  moving half of a bound screens the open ground it crosses. The defenders take the playbook's shares of the
+  they used to fight on the move instead). Attacking bots that move up
+  cover to cover (all but Arena bots and berserkers) spawn carrying smoke
+  grenades instead of their frags (the playbook's smoke): the moving half
+  of a bound screens the open ground it crosses. The defenders take the playbook's shares of the
   sector's posts: what stands within 60 m of its objectives on their side
   of its line (a crest over a beach covers the zones at the cliff's foot).
   A quarter man its guns (turrets), 15 % snipe from its crest (high ground

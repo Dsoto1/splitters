@@ -62,8 +62,10 @@ MapMaker steps: docs/GAME_MODES.md, "Breakthrough". The pieces: docs/SET_PIECES_
   and sandbags, high ground that sees an objective, within 60 m of its objectives on their side of its line) and
   `botInput` (a bot within reach of a target to plant or a charge to defuse holds still, crouched: kept to their way,
   bots fought on the move and in 8 v 8 never planted). A defender caught behind the line runs for it. The playbook's
-  smoke (with the weapons intake's Smoke Grenade, main d3830145 merged in): every other attacking bot spawns carrying
-  smoke instead of its frags (`onSpawn`), so the moving half of a bound screens open ground (BotBrain.considerSmoke).
+  smoke (with the weapons intake's Smoke Grenade, main d3830145 merged in): attacking bots that bound (all but Arena
+  bots and berserkers) spawn carrying smoke instead of frags (`onSpawn`; a bot being added spawns before it has a
+  brain, so it is armed at its first `botInput`), and the moving half of a bound screens open ground
+  (BotBrain.considerSmoke: 49 such screens in a 150 s 8 v 8 match on the Range).
 - **Set pieces**: `setpiece.command_bunker` (fort.json, new family; kit tiles `core.fort_ring`, `core.fort_ring_gate`)
   and `setpiece.cliff_stair_gate` (cliffstair.json; edge style `gate_arch`); `setPieces4.test.ts`.
 - **Maps** (MapMaker only, driven through its own palette, inspector, Import and Export): the **Breakthrough Range**

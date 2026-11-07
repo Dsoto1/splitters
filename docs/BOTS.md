@@ -708,8 +708,9 @@ blocked by 1.6 m or more of a cloud (`smokeBlocks`, the clouds in `BotWorldView.
   the enemy first, every time it carries some (no dice), and crosses under it. `BotBrain.smokeScreen(view, threat)`
   throws one toward a threat and says whether it could.
 - **Who carries it:** a bot that picks up Smoke Grenades (`core.smoke_grenades`, placed on a map; random pickups roll
-  only weapons), and in Breakthrough every other attacking bot (its playbook's `smoke`: the mode swaps its frags for
-  smoke as it spawns); the Military and Sci-fi weapon sets will hand it out (docs/WEAPON_SETS_PLAN.md).
+  only weapons), and in Breakthrough every attacking bot that moves up cover to cover (its playbook's `smoke`: the mode
+  swaps its frags for smoke as it spawns; Arena bots and berserkers, who never bound, keep frags); the Military and
+  Sci-fi weapon sets will hand it out (docs/WEAPON_SETS_PLAN.md).
 - **Tests:** `smoke.test.ts` (a bot fires across an open yard and not through a cloud; a hurt bot in the open throws
   smoke between itself and the enemy; a Tactical bot bounding toward the enemy's flag across open ground sends smoke
   ahead, an Arena bot, which never bounds, doesn't).
@@ -812,8 +813,10 @@ and the other vehicle modes: no attack brief) plays by the default. King of the 
   crest's guns and trenches cover a beach's zones. Gunners and crest snipers stay on their posts; the trenches and
   objectives answer the attack (defusing, crowding a zone being taken); the early fall-back comes from the trenches'
   share. A bot within reach of a target to plant or a charge to defuse holds still, crouched, until it's done (the
-  mode's `botInput`). Smoke: every other attacking bot spawns carrying smoke grenades instead of its frags (the mode's
-  `onSpawn`), so bounding up the beach the moving half screens the open ground it crosses ("Smoke" above). Tunnel
+  mode's `botInput`). Smoke: every attacking bot that bounds (all but Arena bots and berserkers) spawns carrying smoke
+  grenades instead of its frags (the mode's `onSpawn`), so going up the beach the moving half screens the open ground
+  it crosses ("Smoke" above): in a 150 s 8 v 8 match on the Range, 49 screens sent ahead in bounds and 28 thrown by
+  hurt bots in the open. (Every other attacker by place first gave it, there, only to bots that never bound.) Tunnel
   groups wait for a map with tunnels (the team brain's staging pushes any held objective as a group). **Measured** on the Breakthrough Range (headless matches, bots only, the first
   round, Match Setup's suggested reinforcements and sector time): 4 v 4, eight seeds, the beach fell in 7 (96 s on
   average), the guns in 7 and the fort in 7; 8 v 8, six seeds, the beach in 6 (65 s), the guns in 4, the fort in 3.

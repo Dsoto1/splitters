@@ -144,7 +144,8 @@ in MapMaker. What the plan above became:
   defenders man the guns (a quarter), hold the trenches and sandbags (40 %), snipe from the crest (15 %: high ground
   that sees the objectives) and hold the objectives, by what stands within 60 m of the sector's objectives on their
   side of its line, so the crest's guns and trenches cover the beach; 30 % fall back early to the next line once the
-  sector is half taken. Every other attacking bot carries smoke grenades and screens the open ground as it moves up.
+  sector is half taken. Attacking bots that move up cover to cover carry smoke grenades and screen the open ground
+  they cross.
   Not yet: tunnels pushed as a group (the team brain's staging does it for any held objective).
 - **The pieces** the map still needed are built: the **Command Bunker** (the round fort) and the **Grand Cliff Stair
   (Gatehouse)** (docs/SET_PIECES_PLAN.md, "As built: part 4").
