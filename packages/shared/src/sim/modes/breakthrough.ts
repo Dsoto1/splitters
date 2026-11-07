@@ -25,6 +25,7 @@ import { getMountDef } from '../mounts.ts';
 import { BUTTON_CROUCH, BUTTON_JUMP, BUTTON_PRONE, BUTTON_SPRINT, type PlayerInput } from '../movement.ts';
 import { BREAKTHROUGH_POOL, BREAKTHROUGH_SECTOR_SECONDS } from '../rules.ts';
 import type { SpawnSpot } from '../spawns.ts';
+import { THROWABLE_DEFS } from '../weapons.ts';
 import { teamHome, type BotGoal, type BotTripSpec, type ModeHost, type ModeLogic } from './types.ts';
 
 /**
@@ -716,8 +717,17 @@ export class BreakthroughMode implements ModeLogic {
     for (const o of this.objectives) if (o.action?.slot === c.slot) o.action = null;
   }
 
+  /**
+   * The playbook's smoke (BreakthroughRoles.smoke): every other attacking bot (by its place among them) carries smoke
+   * grenades instead of its frags, so bounding up the beach the moving half screens the open ground it crosses
+   * (BotBrain.considerSmoke; docs/BOTS.md, "Smoke"). The rest keep their frags.
+   */
   onSpawn(c: Combatant): void {
     this.behind.delete(c.slot);
+    if (!ROLES.smoke || c.kind !== 'bot' || c.throwable?.kind !== 'frag' || this.sideOf(c) !== 'attack') return;
+    // (Its place counted here, not from this tick's plan: bots joining in one tick each count those before them.)
+    const k = this.host.combatants().filter((x) => x.faction === c.faction && x.kind === 'bot' && x.slot < c.slot).length;
+    if (k % 2 === 0) c.throwable = { kind: 'smoke', count: Math.min(THROWABLE_DEFS.smoke.max, c.throwable.count) };
   }
 
   /** Host handoff: the team scores a checkpoint carried (sectors taken). */
