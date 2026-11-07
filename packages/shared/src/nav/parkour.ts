@@ -52,9 +52,13 @@ const PARKOUR_MIN_WALK = 9;
 /** How far (m, polygon centre to centre) the walk round is looked for. */
 const PARKOUR_WALK = 60;
 /** At most this many links a map, this many of each kind, and this many candidates played through. */
-const MAX_LINKS = 180;
-const MAX_KIND = 90;
-const MAX_TRIALS = 320;
+const MAX_LINKS = 160;
+const MAX_KIND = 80;
+/** Drops are the most of them and the least worth (most ledges have a way down already): fewer. */
+const MAX_DROPS = 50;
+const MAX_TRIALS = 240;
+/** Links per navmesh (a fingerprint of its polygons and the fall rules): the next match on the map reuses them. */
+const cache = new Map<string, ParkourLink[]>();
 /** Links of a kind closer together than this (m, start to start and end to end) are one link. */
 const LINK_SPACING = 4;
 /** Candidates this close to one that didn't play through (start to start, end to end) aren't tried. */
@@ -270,6 +274,24 @@ export const parkourStats = { cands: {} as Record<string, number>, trials: {} as
 
 export function parkourLinks(nav: NavWorld, physics: PhysicsWorld, opts: FallOptions, gravity = 1, others: readonly (readonly [number, number])[] = [], spawns: readonly Vec3[] = []): ParkourLink[] {
   const g = nav.graph();
+  const key = `${fingerprint(g)}|${gravity}|${opts.maxDrop}|${opts.solids?.length ?? 0}|${others.length}|${spawns.length}`;
+  const known = cache.get(key);
+  if (known) return known;
+  const links = parkourLinksNow(nav, g, physics, opts, gravity, others, spawns);
+  if (cache.size >= 4) cache.delete(cache.keys().next().value!);
+  cache.set(key, links);
+  return links;
+}
+
+/** A navmesh's polygons in a word: their count and a sample of their corners. */
+function fingerprint(g: NavGraph): string {
+  let h = 2166136261;
+  const step = Math.max(1, Math.floor(g.vxyz.length / 512));
+  for (let i = 0; i < g.vxyz.length; i += step) h = Math.imul(h ^ Math.round(g.vxyz[i]! * 20), 16777619);
+  return `${g.count}:${g.vxyz.length}:${h >>> 0}`;
+}
+
+function parkourLinksNow(nav: NavWorld, g: NavGraph, physics: PhysicsWorld, opts: FallOptions, gravity: number, others: readonly (readonly [number, number])[], spawns: readonly Vec3[]): ParkourLink[] {
   const n = g.count;
   if (!n) return [];
   const { centre } = polyShapes(g);
@@ -283,6 +305,7 @@ export function parkourLinks(nav: NavWorld, physics: PhysicsWorld, opts: FallOpt
   parkourStats.trials = {};
   parkourStats.links = {};
   parkourStats.sims = 0;
+  parkourStats.ticks = 0;
   // Drops are only those that don't hurt (fall damage starts past 5 m at normal gravity).
   const dropOpts: FallOptions = { ...opts, maxDrop: Math.min(opts.maxDrop, 5 / Math.max(0.05, gravity)) };
   for (let i = 0; i < n; i++) {
@@ -350,7 +373,7 @@ export function parkourLinks(nav: NavWorld, physics: PhysicsWorld, opts: FallOpt
   try {
     for (const c of cands) {
       if (out.length >= MAX_LINKS || trials >= MAX_TRIALS) break;
-      if (kinds[c.kind] >= MAX_KIND) continue;
+      if (kinds[c.kind] >= (c.kind === 'drop' ? MAX_DROPS : MAX_KIND)) continue;
       const near = (l: { kind: ParkourKind; start: Vec3; end: Vec3 }, r: number) => l.kind === c.kind && hypot(l.start.x - c.start.x, l.start.z - c.start.z) < r && Math.abs(l.start.y - c.start.y) < 1 && hypot(l.end.x - c.end.x, l.end.z - c.end.z) < r && Math.abs(l.end.y - c.end.y) < 1;
       // (One link for a stretch of ledge; and not again beside one that didn't play through.)
       if (out.some((l) => near(l, LINK_SPACING)) || failed.some((l) => near(l, FAILED_SPACING))) continue;
@@ -438,7 +461,7 @@ function verify(physics: PhysicsWorld, collider: Parameters<typeof stepMovement>
   // Where the edge is along the way (the sample's distance past the start), and the takeoffs to try, latest first.
   const edge = parkourAlong(base, c.at);
   const rise = c.end.y - c.start.y;
-  const variants: { sprint: boolean; tuck: boolean }[] = c.kind === 'gap' ? [{ sprint: false, tuck: false }, { sprint: true, tuck: false }] : rise > 0.9 ? [{ sprint: false, tuck: true }] : [{ sprint: false, tuck: false }, { sprint: false, tuck: true }];
+  const variants: { sprint: boolean; tuck: boolean }[] = c.kind === 'gap' ? [{ sprint: true, tuck: false }] : rise > 0.9 ? [{ sprint: false, tuck: true }] : [{ sprint: false, tuck: false }, { sprint: false, tuck: true }];
   const offsets = c.kind === 'gap' ? [0.6, 0.4, 0.2, 0] : [0.2, 0, -0.2, -0.4];
   for (const v of variants) {
     for (const o of offsets) {

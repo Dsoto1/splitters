@@ -462,8 +462,9 @@ export class NavWorld {
       if (simProfile.on) simProfile.count('navSearchFail');
       return null;
     }
-    // (Off the polygons of surfaces that are gone, whatever else the route keeps out of.)
-    shut |= this.gone;
+    // (Off the polygons of surfaces that are gone, whatever else the route keeps out of; not the ones it starts or ends on:
+    // a bot riding a button-called lift, or going for someone on one, stands on ground that's "gone" from where it was.)
+    if (this.gone) shut |= this.gone & ~this.navMesh.getPolyFlags(s.nearestRef).flags & ~this.navMesh.getPolyFlags(e.nearestRef).flags;
     const failKey = `${s.nearestRef}:${e.nearestRef}:${shut}`;
     // (Every search with a filter once there are parkour links: their area costs more than walking.)
     const filtered = shut || open || (this.parkour.length && !agile);
