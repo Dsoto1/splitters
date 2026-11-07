@@ -4,7 +4,7 @@ import type { NavWorld } from '../nav/index.ts';
 import { LIFT_FLAG, PLAYER, STANCES, TICK_DT, TICK_RATE, type Stance } from '../sim/constants.ts';
 import { PICKUP_RADIUS, type ItemDefinition, type ItemEffect } from '../sim/items.ts';
 import { BUTTON_ALT, BUTTON_CROUCH, BUTTON_FIRE, BUTTON_MELEE, BUTTON_JUMP, BUTTON_PRONE, BUTTON_RELOAD, BUTTON_SPRINT, BUTTON_THROW, BUTTON_USE, BUTTON_ZOOM, type PlayerInput } from '../sim/movement.ts';
-import { THROWABLE_DEFS, getWeapon, weaponCode, type AltFire, type ThrowableKind, type WeaponDefinition } from '../sim/weapons.ts';
+import { THROWABLE_DEFS, getWeapon, smokeBlocks, weaponCode, type AltFire, type SmokeCloud, type ThrowableKind, type WeaponDefinition } from '../sim/weapons.ts';
 import type { PhysicsWorld } from '../sim/physics.ts';
 import { segmentHitsAabb, type Aabb } from '../sim/scenarioDefs.ts';
 import { AimModel, type AimContext, type AimSolution, type AimTarget } from './aim.ts';
@@ -169,6 +169,8 @@ export interface BotWorldView {
   sight?: SightCache | undefined;
   /** A big match (past BOT_FULL_RATE bots): perception casts a bounded number of sight lines. */
   crowded?: boolean;
+  /** Smoke clouds up now (smoke grenades, SMOKE): a sight line through one is blocked; shots still go through. */
+  smoke?: readonly SmokeCloud[];
   /** `allies` on a grid (big matches): keeping apart reads the cells around the bot. */
   alliesGrid?: ViewGrid | undefined;
   /** The match's planning for this bot (role, squad, side knowledge: director.ts); undefined without one. */
@@ -1063,6 +1065,7 @@ export class BotBrain {
     }
 
     this.considerGrenade(view, target);
+    this.considerSmoke(view, target);
     this.considerMount(view, target);
   }
 
@@ -1787,7 +1790,10 @@ export class BotBrain {
 
   /** Line of sight to a spot, rechecked a few times a second (it only steers the look). */
   private canSee(view: BotWorldView, eye: Vec3, p: Vec3): boolean {
-    if (view.tick - this.sightCache.tick >= DECIDE_TICKS) this.sightCache = { tick: view.tick, ok: view.physics.lineOfSight(eye, { x: p.x, y: p.y + 1.2, z: p.z }) };
+    if (view.tick - this.sightCache.tick >= DECIDE_TICKS) {
+      const at = { x: p.x, y: p.y + 1.2, z: p.z };
+      this.sightCache = { tick: view.tick, ok: view.physics.lineOfSight(eye, at) && !(view.smoke && smokeBlocks(eye, at, view.smoke)) };
+    }
     return this.sightCache.ok;
   }
 
@@ -2235,7 +2241,7 @@ export class BotBrain {
    */
   private considerGrenade(view: BotWorldView, target: CombatantView | undefined): void {
     const tick = view.tick;
-    if (this.throwPlan || tick < this.nextThrow || !(view.throwables ?? 0) || !view.throwable || view.throwable === 'mine' || view.throwable === 'sandbag') return;
+    if (this.throwPlan || tick < this.nextThrow || !(view.throwables ?? 0) || !view.throwable || view.throwable === 'mine' || view.throwable === 'sandbag' || view.throwable === 'smoke') return;
     if (this.rng() > 0.25 + this.tactical * 0.5) return;
     const me = view.self;
     const eye = { x: me.pos.x, y: me.pos.y + STANCES[me.stance ?? 0].eye, z: me.pos.z };
@@ -2265,6 +2271,39 @@ export class BotBrain {
     // Don't throw if it would land close to ourselves.
     if (horizontalDistance(sol.impact, me.pos) < spec.splashRadius + 0.5) return;
     this.throwPlan = { yaw: sol.yaw, pitch: sol.pitch, until: tick + TICK_RATE };
+  }
+
+  /**
+   * A smoke screen (a smoke grenade carried): caught in the open by an enemy 10-45 m off (no cover, and hurt or shot
+   * at), the bot throws one a few metres out toward it, so the cloud stands between them while it moves on or back:
+   * the enemy loses sight of it (bots and turrets alike; rounds still pass). Tactical bots do it more. Phase B's
+   * cover-to-cover advance can call smokeScreen before a bound across open ground (docs/BOTS.md, "Smoke").
+   */
+  private considerSmoke(view: BotWorldView, target: CombatantView | undefined): void {
+    const tick = view.tick;
+    if (view.throwable !== 'smoke' || !(view.throwables ?? 0) || this.throwPlan || tick < this.nextThrow || !target || this.cover) return;
+    const me = view.self;
+    const shot = !!view.shotAt && tick - view.shotAt.tick < TICK_RATE * 1.5;
+    if (me.health >= 70 && !shot) return;
+    if (this.rng() > 0.3 + this.tactical * 0.5) return;
+    this.smokeScreen(view, target.pos);
+  }
+
+  /** Throw smoke a few metres out toward `threat` (the cloud's middle between the bot and it); false when it can't. */
+  smokeScreen(view: BotWorldView, threat: Vec3): boolean {
+    const me = view.self;
+    const d = horizontalDistance(me.pos, threat);
+    if (view.throwable !== 'smoke' || !(view.throwables ?? 0) || d < 10 || d > 45) return false;
+    const k = 5.5 / d;
+    const at = { x: me.pos.x + (threat.x - me.pos.x) * k, y: me.pos.y, z: me.pos.z + (threat.z - me.pos.z) * k };
+    const eye = { x: me.pos.x, y: me.pos.y + STANCES[me.stance ?? 0].eye, z: me.pos.z };
+    const sol = solveThrow(view.physics, eye, at, THROWABLE_DEFS.smoke.projectile, 2.5);
+    if (!sol) {
+      this.nextThrow = view.tick + TICK_RATE;
+      return false;
+    }
+    this.throwPlan = { yaw: sol.yaw, pitch: sol.pitch, until: view.tick + TICK_RATE };
+    return true;
   }
 
   // ------------------------------------------------------------------ turrets and vehicles
@@ -2743,6 +2782,8 @@ export class BotBrain {
         theirEye.z -= c.dz * 0.8;
         clear = view.physics.lineOfSight(myEye, theirEye);
       } else clear = view.sight ? view.sight.lineOfSight(tick, me.slot, myEye, o.slot, theirEye) : view.physics.lineOfSight(myEye, theirEye);
+      // Behind smoke: hidden (it doesn't stop rounds, so a bot already firing keeps its aim only while it sees).
+      if (clear && view.smoke && smokeBlocks(myEye, theirEye, view.smoke)) clear = false;
       if (!clear) continue;
       // Behind bulletproof glass: seen, but not worth a bullet.
       if (view.physics.armorGlass && !view.physics.shotLine(myEye, theirEye)) continue;

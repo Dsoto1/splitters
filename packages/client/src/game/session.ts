@@ -2517,11 +2517,15 @@ export class GameSession {
       else this.hud.setWeapons(local.inventory, local.held, local.reloadTicks > 0, local.alive, handsBusy);
       this.hud.setThrowable(local.throwable, local.alive);
       // Holding G: show where the throw will go (bounces and the blast area).
-      if (this.input.throwAiming && local.alive && local.throwable && !handsBusy) {
-        const spec = THROWABLE_DEFS[local.throwable.kind].projectile;
+      const aiming = this.input.throwAiming && local.alive && local.throwable && !handsBusy ? local.throwable.kind : null;
+      if (aiming) {
+        const spec = THROWABLE_DEFS[aiming].projectile;
         const path = predictThrow(spec, local.state.pos, this.input.yaw, this.input.pitch, 0.12, (o, d, len) => this.view.raycastLevel(o, d, len));
-        this.view.throwArc.show(path, spec.mine?.triggerRadius ?? spec.splashRadius);
+        // How far it reaches where it lands: a mine's trigger, a blast, or a cloud or puddle (gas, smoke, fire).
+        this.view.throwArc.show(path, spec.mine?.triggerRadius ?? (spec.splashRadius || spec.zone?.radius || 0));
       } else this.view.throwArc.hide();
+      // The throwable in your hands while you line it up (first person; your own model in third person throws as before).
+      this.view.setThrowHold(aiming && !this.thirdPerson ? aiming : null);
       this.input.altTrigger = !!local.weapon?.alt && local.weapon.kind === 'melee';
       this.hud.setMessageMenu(this.input.msgMenu && this.rules?.emotes !== false, QUICK_MESSAGES);
       this.hud.setClassMenu(this.classesOn && this.input.classMenu, this.classesOn ? { current: this.myClass?.[0] ?? null, next: this.myClass?.[1] ?? null, full: this.classesFull(), pick: (i) => this.input.chooseClass(i) } : null);

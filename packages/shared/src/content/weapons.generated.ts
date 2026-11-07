@@ -1870,6 +1870,7 @@ export const THROWABLE_DEFS: Readonly<Record<(typeof THROWABLES)[number], Throwa
       visual: 'mine',
       mine: { armSeconds: 1.2, triggerRadius: 2.2 },
     },
+    view: { model: 'guns/at_mine.glb' },
   },
   sticky: {
     kind: 'sticky',

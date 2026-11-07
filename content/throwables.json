@@ -36,7 +36,8 @@
         "selfDamageScale": 0.8,
         "visual": "mine",
         "mine": { "armSeconds": 1.2, "triggerRadius": 2.2 }
-      }
+      },
+      "view": { "model": "guns/at_mine.glb" }
     },
     {
       "kind": "sticky",

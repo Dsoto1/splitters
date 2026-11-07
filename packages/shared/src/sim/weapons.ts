@@ -279,6 +279,15 @@ export interface WeaponPresentation {
   altShot?: { sound: string; rate?: number; flash: { effect: string; scale?: number }; smoke?: number };
 }
 
+/**
+ * The copy of a weapon's model drawn in your own hands at a graphics setting: Medium and High have sharper ones
+ * (`view.held`), Low draws `view.model` like everyone else's copy. Null when there is none to swap in.
+ */
+export function heldModel(def: WeaponDefinition, quality: 'low' | 'medium' | 'high'): string | null {
+  if (quality === 'low' || !def.view.held) return null;
+  return def.view.held[quality];
+}
+
 /** A point on a weapon model, in model space (metres; +Z along the barrel, +Y up, +X right). */
 export type ModelPoint = [number, number, number];
 

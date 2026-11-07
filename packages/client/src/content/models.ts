@@ -49,6 +49,8 @@ export class ModelLibrary {
         // Environment species drawn as props (MapMaker, and the game without ?env=1) take the environment's
         // materials: the shared bark, rock and leaf pictures. Loaded on demand, so the menu never carries them.
         if (path.startsWith('env/')) (await import('../environment/envMaterials.ts')).applyEnvMaterials(c, this.scene);
+        // Weapons with their own metal and roughness reflect a soft gradient in the map's light (bare metal drew black).
+        if (path.startsWith('guns/') && c.materials.some((m) => (m as { metallicTexture?: unknown }).metallicTexture)) (await import('../game/weaponFinish.ts')).finishWeapons(c, this.scene);
         return c;
       });
       // Models from pack downloads (content/guns.json) fall back to the ones they replaced.
