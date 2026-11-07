@@ -73,7 +73,7 @@ export function frameStats(px, w, h, channels = 4, limits = FLICKER_LIMITS) {
     red[i] = s;
     if (s > limits.redDelta) reds++;
   }
-  return { L, red, meanL: sum / n, redArea: reds / n };
+  return { L, red, w, h, meanL: sum / n, redArea: reds / n };
 }
 
 const BINS = 1024;
@@ -143,6 +143,38 @@ export function mostInWindow(transitions, seconds = 1) {
 }
 
 /**
+ * WCAG's own area, stricter than a quarter of the screen: a quarter of any 10° visual field, about a third of the
+ * screen each way at a typical viewing distance (WCAG: a 341 × 256 window on a 1024 × 768 screen). The most
+ * transitions in any second within any such window, slid over the screen by half a window. Reported, not judged.
+ */
+export function fieldPerSecond(stats, fps, limits = FLICKER_LIMITS) {
+  const { w, h } = stats[0] ?? {};
+  if (!w || !h) return 0;
+  const fw = Math.max(1, Math.round(w / 3));
+  const fh = Math.max(1, Math.round(h / 3));
+  let most = 0;
+  for (let y0 = 0; y0 + fh <= h; y0 += Math.max(1, Math.round(fh / 2))) {
+    for (let x0 = 0; x0 + fw <= w; x0 += Math.max(1, Math.round(fw / 2))) {
+      const take = (L) => {
+        const out = new Float32Array(fw * fh);
+        for (let y = 0; y < fh; y++) out.set(L.subarray((y0 + y) * w + x0, (y0 + y) * w + x0 + fw), y * fw);
+        return out;
+      };
+      let prev = take(stats[0].L);
+      const changes = [];
+      for (let i = 1; i < stats.length; i++) {
+        const cur = take(stats[i].L);
+        const a = prev;
+        changes.push(areaChange(a, cur, limits.area, 1, (k) => Math.min(a[k], cur[k]) >= limits.darkMax));
+        prev = cur;
+      }
+      most = Math.max(most, mostInWindow(transitionsOf(changes, limits.delta, fps)));
+    }
+  }
+  return most;
+}
+
+/**
  * Measure a recorded moment. `frames`: [{ px, w, h, channels? }] in order at `fps`; or already `frameStats` results
  * ({ L, red, meanL, redArea }). Returns the numbers and the verdict:
  * { frames, seconds, meanL: [..], change: [..] (per frame, signed), transitions, perSecond (most in any second),
@@ -185,6 +217,7 @@ export function analyseFrames(frames, fps, limits = FLICKER_LIMITS) {
     flashesPerSecond: Math.floor(perSecond / 2),
     maxStep: change.reduce((m, c) => Math.max(m, Math.abs(c)), 0),
     red: { transitions: redTransitions, perSecond: redPerSecond, onsets, maxArea: stats.reduce((m, s) => Math.max(m, s.redArea), 0) },
+    fieldPerSecond: fieldPerSecond(stats, fps, limits),
     pass: reasons.length === 0,
     reasons,
   };
@@ -193,5 +226,5 @@ export function analyseFrames(frames, fps, limits = FLICKER_LIMITS) {
 /** One line of numbers for a measured moment (the flow's log and its JSON report). */
 export function summary(r) {
   const pct = (x) => `${(x * 100).toFixed(1)} %`;
-  return `${r.perSecond} transitions/s (${r.flashesPerSecond} flashes/s) of ${r.transitions.length} in ${r.seconds.toFixed(1)} s; biggest one-frame change over a quarter of the screen ${r.maxStep.toFixed(3)}; red: ${r.red.perSecond} transitions/s, ${r.red.onsets.length} red flashes, up to ${pct(r.red.maxArea)} of the screen saturated red`;
+  return `${r.perSecond} transitions/s (${r.flashesPerSecond} flashes/s) of ${r.transitions.length} in ${r.seconds.toFixed(1)} s; biggest one-frame change over a quarter of the screen ${r.maxStep.toFixed(3)}; within a 10° field ${r.fieldPerSecond} transitions/s; red: ${r.red.perSecond} transitions/s, ${r.red.onsets.length} red flashes, up to ${pct(r.red.maxArea)} of the screen saturated red`;
 }

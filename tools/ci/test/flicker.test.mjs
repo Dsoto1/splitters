@@ -73,6 +73,9 @@ describe('the flicker measure', () => {
     expect(small.transitions).toEqual([]);
     const third = analyseFrames(clip(2, strobe(left(0.3))), FPS);
     expect(third.pass).toBe(false);
+    // WCAG's own area (a quarter of a 10° field) sees the small strobe: reported, not judged.
+    expect(small.fieldPerSecond).toBeGreaterThan(FLICKER_LIMITS.maxTransitions);
+    expect(analyseFrames(clip(2, () => grey(90)), FPS).fieldPerSecond).toBe(0);
   });
 
   it('a slow pulse passes (two transitions a second), and so do flashes between bright states', () => {

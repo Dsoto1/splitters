@@ -4511,7 +4511,7 @@ async function frameStrip(frames, every = 4, cols = 5) {
  * flash thresholds). MapMaker makes a night scene with its own edits: a dark room, a room lit by a red alarm light
  * blinking four times a second, an Arc Turret and an electric fence. In play, the brightest moments are recorded
  * frame by frame at 30 frames a second of the page's own time (e2e/frameClock.mjs: however slowly this machine draws,
- * a recorded second is a second of play): an arc fight up close, the fence zapping you and the bots beside you, four
+ * a recorded second is a second of play): an arc fight up close, the fence zapping bots in front of you, four
  * grenade blasts in front of the camera, a machine gun firing at a wall in the dark, the alarm light. With the setting
  * on each moment must stay under the thresholds; the same moments with it off are measured and reported as numbers
  * only. Frame strips (every 4th frame) and the numbers go to e2e-artifacts/ (flashing-<moment>-<on|off>.png,
@@ -4633,11 +4633,11 @@ async function flashingFlow(browser) {
     },
     {
       name: 'fence',
-      label: 'the electric fence (you against it, two bots against it across the wires)',
+      label: 'the electric fence (three bots against it 2-4 m in front of you, zapped twice a second each)',
       weapon: 'core.arc_caster',
-      me: [20.5, 0, 24.3],
-      look: aim([20.5, 0, 24.3], [25, 1.2, 21.5]),
-      bots: [[23, 0, 23.7], [25.4, 0, 23.7]],
+      me: [23.5, 0, 26.5],
+      look: aim([23.5, 0, 26.5], [24, 1.1, 24]),
+      bots: [[22.6, 0, 24.3], [24.4, 0, 24.3], [26, 0, 23.7]],
     },
     {
       name: 'blast',
@@ -4709,9 +4709,10 @@ async function flashingFlow(browser) {
     }
     const { on, off } = runs;
     report.moments[mo.name] = Object.fromEntries(
-      Object.entries(runs).map(([k, r]) => [k, { pass: r.pass, reasons: r.reasons, transitionsPerSecond: r.perSecond, flashesPerSecond: r.flashesPerSecond, transitions: r.transitions.length, maxStep: +r.maxStep.toFixed(4), redTransitionsPerSecond: r.red.perSecond, redFlashes: r.red.onsets.length, maxRedArea: +r.red.maxArea.toFixed(4), activity: +r.activity.toFixed(4), meanL: r.meanL.map((x) => +x.toFixed(4)), change: r.change.map((x) => +x.toFixed(4)) }]),
+      Object.entries(runs).map(([k, r]) => [k, { pass: r.pass, reasons: r.reasons, transitionsPerSecond: r.perSecond, flashesPerSecond: r.flashesPerSecond, fieldTransitionsPerSecond: r.fieldPerSecond, transitions: r.transitions.length, maxStep: +r.maxStep.toFixed(4), redTransitionsPerSecond: r.red.perSecond, redFlashes: r.red.onsets.length, maxRedArea: +r.red.maxArea.toFixed(4), activity: +r.activity.toFixed(4), meanL: r.meanL.map((x) => +x.toFixed(4)), change: r.change.map((x) => +x.toFixed(4)) }]),
     );
-    check(on.frames === RECORD && off.frames === RECORD && off.activity > 0.003 && on.activity > 0.003, `${mo.name}: the moment was recorded, every frame, and it happened (${on.frames} + ${off.frames} frames; up to ${(on.activity * 100).toFixed(1)} % / ${(off.activity * 100).toFixed(1)} % of the picture changed between two frames, on / off)`);
+    // (With the setting on a moment may change little from one frame to the next: that is the point.)
+    check(on.frames === RECORD && off.frames === RECORD && off.activity > 0.003, `${mo.name}: the moment was recorded, every frame, and it happened (${on.frames} + ${off.frames} frames; up to ${(off.activity * 100).toFixed(1)} % of the picture changed between two frames with the setting off, ${(on.activity * 100).toFixed(1)} % on)`);
     check(on.pass, `${mo.label}, Reduce flashing on: ${flickerSummary(on)}${on.reasons.length ? ` (FAILS: ${on.reasons.join('; ')})` : ''}`);
   }
   writeFileSync(`${ARTIFACTS}/flashing.json`, JSON.stringify(report));

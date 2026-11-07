@@ -147,7 +147,7 @@ recorded frame by frame at 30 frames a second of the page's own time (`e2e/frame
 and steps it a frame at a time, so a recorded second is a second of play however slowly CI draws), each canvas frame
 with the HUD's hurt tint drawn over it, at 160 × 90:
 - an arc fight up close (an Arc Turret locked on you 4.5 m off, your Arc Caster on three bots between you);
-- the electric fence (you against it, two bots against it across the wires);
+- the electric fence (three bots against it 2-4 m in front of you, zapped twice a second each);
 - four grenade blasts 3-5 m in front of the camera in 0.8 s;
 - a machine gun firing at a wall 3.5 m off in the dark room;
 - the alarm light in its dark room.
