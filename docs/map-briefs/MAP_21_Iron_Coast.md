@@ -4,7 +4,9 @@
 showcase of a small 'breakthrough' or assault mode."
 - The map is **Iron Coast**, id `iron_coast`.
 - It follows the reference image, including cliff-foot defences instead of a long sea wall.
-- It is the showcase for a compact **Breakthrough** mode (below).
+- It is the showcase for the new **Breakthrough** mode (below).
+- **It's a large map** (owner, 2026-11-07: "Iron Coast should be (24-32) v (24-32) and higher for dedicated servers, it's
+  a large map"; "small" meant nothing about its size).
 It follows `MAP_21_Omaha_Beach_Assault.md` (the brief) and the owner's reference image `shingle_point_reference.jpg`.
 The owner decided on 2026-11-05 that this is a new map; Shingle Point stays as its own map.
 
@@ -46,9 +48,10 @@ The map is **not mirrored**. Its two halves differ as drawn:
   defences.
 
 ## Footprint (from the image's proportions)
-- **Scale:** the landing craft (about 11 m long) give it. Roughly **300 m along the beach and 260 m from the surf to the
-  fort**.
-- **Terrain:** about 121 × 105 vertices at 2.5 m.
+- **Scale:** the landing craft (about 11 m long) give the image's own scale: roughly 300 m along the beach and 260 m from
+  the surf to the fort. For 24–32 a side, build it **up to about 380 m along the beach and 320 m deep**, keeping the
+  image's proportions. That is inside the 400 m terrain limit.
+- **Terrain:** up to 153 × 129 vertices at 2.5 m.
 - **Bands:**
   - surf and shallows;
   - about 60–70 m of beach;
@@ -57,8 +60,9 @@ The map is **not mirrored**. Its two halves differ as drawn:
   - the village and the fort.
 - **Grid:** the standard 8 m cells and 4 m levels. Set pieces sit where the image puts each structure, turned to fit;
   the cliff is terrain, sculpted to the image's outline.
-- **Players:** recommended **16 v 16** (Match Setup's "Map's pick"; the owner wants a *small* breakthrough). It plays
-  from 8 v 8 up to 32 v 32 in the browser once performance round 4 raises the cap, and 48 v 48 on dedicated hosts.
+- **Players:** **24 v 24 to 32 v 32** (Match Setup's "Map's pick": `teamSetup [24, 24]`; 32 v 32 in the browser once
+  performance round 4 raises the cap), **and more on dedicated hosts**: 48 v 48, and 64 v 64 if round 4 makes that
+  possible. Smaller games still work, but this is a large map.
 
 ## Seven ways up the cliff, as drawn (green 1–7)
 1. **Far-west steps** up the rock to the promontory gun (B1).
@@ -86,7 +90,7 @@ by its terraces and walls.
 ## Breakthrough mode (new, asymmetric; the owner: "a small 'breakthrough' or assault mode")
 No current mode does this. Bomb, CTF, KOTH, Hostage, Elimination and Forts are all symmetric or single-objective. It
 plugs in as a new mode, `core.breakthrough` (shown as **Breakthrough**), that any map can use with sector markers in
-MapMaker. It is **small by design**: three sectors and compact fights, a showcase rather than a 64-player epic.
+MapMaker. Iron Coast is its showcase: three sectors, built for 24–32 a side.
 
 **How it plays:**
 - **Attackers push; defenders hold three lines in turn.**
@@ -142,4 +146,4 @@ suggests.
 2. **Mode:** a small Breakthrough / assault mode, with this map as its showcase.
 3. **Name:** Iron Coast.
 4. **Cliff foot:** walls and pillboxes as in the image, not a long sea wall.
-5. **Size:** "small" — recommended 16 v 16, scaling up as above.
+5. **Size:** a large map, 24–32 a side, more on dedicated servers ("small" was only about the mode, and doesn't apply).
