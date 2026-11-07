@@ -159,6 +159,16 @@
       "surface": "metal"
     },
     {
+      "id": "landing_craft_wreck_burning",
+      "src": "landing_craft_wreck.glb",
+      "name": "Burning Landing Craft Wreck",
+      "category": "Military",
+      "scale": 1,
+      "collide": "model",
+      "surface": "metal",
+      "flame": {"fx": "campfire", "at": [0, 0.9, -1.2], "size": 1.4, "smoke": 2}
+    },
+    {
       "id": "hedgehog_beach",
       "src": "hedgehog_beach.glb",
       "name": "Czech Hedgehog",

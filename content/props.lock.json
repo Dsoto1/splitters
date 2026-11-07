@@ -511,6 +511,7 @@
     {"file":"props/kitchen_cabinet.glb","source":"kenney-furniture-kit","src":"kitchenCabinet.glb","triangles":114,"surfaces":["metal","wood"],"bytes":10228,"sha256":"407c41dcb67171ae"},
     {"file":"props/landing_craft.glb","source":"tiletrigger-kit","src":"landing_craft.glb","triangles":1696,"surfaces":["painted_metal"],"bytes":96008,"sha256":"9ce3dd590d0ffb89"},
     {"file":"props/landing_craft_wreck.glb","source":"tiletrigger-kit","src":"landing_craft_wreck.glb","triangles":1316,"surfaces":["metal"],"bytes":85888,"sha256":"8cb8e45677fe2b19"},
+    {"file":"props/landing_craft_wreck_burning.glb","source":"tiletrigger-kit","src":"landing_craft_wreck.glb","triangles":1316,"bytes":75604,"sha256":"a0857136c98b4e0e"},
     {"file":"props/lantern.glb","source":"kenney-graveyard-kit","src":"lantern-candle.glb","triangles":224,"surfaces":["painted_metal"],"bytes":25508,"sha256":"d0cf7b3f5b3ad3e6"},
     {"file":"props/lantern_post.glb","source":"kenney-fantasy-town-kit","src":"lantern.glb","triangles":158,"surfaces":["metal"],"bytes":21856,"sha256":"3a199f1d4573d1c6"},
     {"file":"props/lcvp_beached.glb","source":"meshy-community-drive-1106","budget":"hero","title":"Amphibious Landing Craft (Meshy community, from the owner's Drive: intake of 2026-11-06) (download dated 2026-11-06)","src":"Meshy_AI_Amphibious_Landing_Cr_1106110500_texture.glb","triangles":15979,"lodTriangles":[3994],"normalMap":true,"bytes":1025848,"sha256":"6e5039a7d87c248c","size":[3.279,2.2,10.709]},
