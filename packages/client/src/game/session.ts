@@ -70,6 +70,8 @@ import {
   mapGravityZones,
   JET,
   getItem,
+  heldModel,
+  throwableModel,
   pickupPool,
   getMountDef,
   airCraftDef,
@@ -1962,6 +1964,25 @@ export class GameSession {
     }
     const models = new Set<string>();
     for (const id of rules.startingWeapons) models.add(getWeapon(id).view.model);
+    // Your starting guns' sharper copies for your own hands (Medium, High: View.sharpenViewmodel) come in with the
+    // loading screen, as you hold them at once; a gun picked up later fetches its own then.
+    for (const id of rules.startingWeapons) {
+      const held = heldModel(getWeapon(id), this.view.atmosphere.quality);
+      if (held) jobs.push(this.view.models.load(held).catch(() => undefined));
+    }
+    // Throwables' models (content/throwables.json `view`): the frag everyone may start with and those lying as pickups,
+    // loaded and warmed like the guns, so the first one in a hand, in the air or on the ground is no stall mid-fight.
+    const thrown = new Set<string>();
+    const frag = rules.startingGrenades > 0 ? throwableModel('frag') : null;
+    if (frag) thrown.add(frag);
+    for (const e of map.entities) {
+      if (e.kind === 'pickup') {
+        const fx = getItem(e.item)?.effect;
+        const model = fx?.kind === 'throwable' ? throwableModel(fx.throwable) : null;
+        if (model) thrown.add(model);
+      }
+    }
+    for (const m of thrown) models.add(m);
     for (const e of map.entities) {
       if (e.kind === 'pickup') {
         const fx = getItem(e.item)?.effect;
@@ -1982,7 +2003,7 @@ export class GameSession {
     const looks = [...new Set(this.looks.values())].map((look) => ({ look }));
     // (The gate waits for it 8 s at most: a slow machine finishes it in the background, out of sight.)
     // Every gun the match can put in a hand (starting weapons, pickups and what they may roll), as held and as yours.
-    const guns = [...models].filter((m) => WEAPONS_BY_SLOT.some((w) => w.view.model === m));
+    const guns = [...models].filter((m) => WEAPONS_BY_SLOT.some((w) => w.view.model === m) || thrown.has(m));
     let started = false;
     jobs.push(Promise.race([this.view.prewarm(looks, guns, () => !started && !this.closed), new Promise((r) => setTimeout(r, 8000))]));
     let done = 0;

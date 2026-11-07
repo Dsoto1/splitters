@@ -82,8 +82,9 @@ feel audit and the reasoning are in [GUNPLAY_AUDIT.md](GUNPLAY_AUDIT.md)):
 | Falloff | 18→45 m to 65% | 25→60 m to 70% | 12→35 m to 55% (steep) | 30→80 m to 75% | 6→22 m to 25% (steep) | 150→300 m to 90% | self-damage ×0.75 |
 
 The **Heavy Revolver** (slot 2, pickup `core.weapon_revolver`) uses the Meshy community Revolver Rustique (CC0 per
-the owner, `guns/revolver_rustique.glb`, since the weapons intake of 2026-11-06, below); the earlier Meshy revolver
-(`guns/ironclad_revolver.glb`: the 2026-01-26 download, its lettering painted out) is its fallback. Its holds are read
+the owner, `guns/revolver_rustique.glb`, since the weapons intake of 2026-11-06, below); it replaced the earlier Meshy
+revolver (`guns/ironclad_revolver.glb`: the 2026-01-26 download, its lettering painted out; still built), and the
+Quaternius revolver stays its fallback. Its holds are read
 off the model's own grip (`grip` / `support` in the weapon's `content/weapons/<name>.json`); aiming down the sights
 lines the top of the front and rear sights up under the eye.
 
@@ -115,11 +116,12 @@ Explosions chain into other destructibles in range.
 The owner: "Added a bunch of new weapons, all Meshy community"; the 3DModelsCC0 kit "has good ones too, not sure we
 need the nuclear bomb or flare gun though"; "We can replace our tommy gun with the 3DModelsCC0 one, and bring in those
 others to replace any one-off originals we have"; and "we want these weapons to look a little sharper, clearer, better
-resolution". Every model below was rendered and checked by eye first; each weapon keeps the model it replaced as its
-`view.fallback`. Built by `tools/content/prepare-guns.mjs` (content/guns.json: the pack's own PBR maps, `held` copies,
+resolution". Every model below was rendered and checked by eye first. Each weapon's `view.fallback` stays the model
+built from the repo (always there), as earlier swaps did; the downloads that were replaced stay built in the repo
+(content/guns.json), so going back is a one-line change. Built by `tools/content/prepare-guns.mjs` (content/guns.json: the pack's own PBR maps, `held` copies,
 `pbr`); holds read off gridded side views of each built model (CHARACTERS.md, "Holding weapons").
 
-| New model | Source | Weapon | Replaced (now the fallback) |
+| New model | Source | Weapon | Replaced |
 |---|---|---|---|
 | Suomi KP (`guns/suomi_kp.glb`) | 3DModelsCC0 | Submachine Gun (`core.smg`) | Meshy Tommy Gun |
 | AK-47 (`guns/ak47_cc0.glb`) | 3DModelsCC0 | Assault Rifle (`core.rifle`) | Styloo AK-47 |
@@ -222,13 +224,13 @@ its own grip, handguard and stock:
 
 | Model | Weapon or turret | Replaced |
 |---|---|---|
-| Tommy Gun | Submachine Gun (`core.smg`); since 2026-11-06 the Suomi KP's fallback | Styloo MAC-10 |
+| Tommy Gun | Submachine Gun (`core.smg`) until 2026-11-06, replaced by the Suomi KP (still built) | Styloo MAC-10 |
 | Rotary Gatling Gun | Spin Gun (`core.lmg`) | Meshy community plasma spin gun |
 | Military sniper rifle | Sniper Rifle (`core.sniper`) | Styloo AWP |
-| Neon Flux | Burst Rifle; since 2026-11-06 the M4A1's fallback | Quaternius rifle |
-| Frontier Rifle | Marksman Rifle; since 2026-11-06 the scoped rifle's fallback | Quaternius rifle |
+| Neon Flux | Burst Rifle until 2026-11-06, replaced by the M4A1 (still built) | Quaternius rifle |
+| Frontier Rifle | Marksman Rifle until 2026-11-06, replaced by the scoped rifle (still built) | Quaternius rifle |
 | Futuristic Blaster | Plasma Rifle | Quaternius sci-fi rifle |
-| Ornate energy handgun | Pulse Pistol; since 2026-11-06 the Plasma Defender's fallback | Quaternius sci-fi pistol |
+| Ornate energy handgun | Pulse Pistol until 2026-11-06, replaced by the Plasma Defender (still built) | Quaternius sci-fi pistol |
 | Freeze Gun | Freeze Ray | Quaternius sci-fi gun |
 | Mystical Glue Gun | Goo Gun | Quaternius sci-fi gun |
 | Steampunk Battle Axe | Battle Axe (new) | — (the knife as the fallback) |

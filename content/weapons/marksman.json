@@ -24,13 +24,13 @@
     "tracer": "#bfe4ff",
     "hold": { "style": "long", "grip": [0, -0.025, -0.29], "support": [0, 0.005, 0.07], "shoulder": [0, -0.03, -0.585] },
     "muzzleAt": [0, 0.052, 0.565],
-    "fallback": "guns/frontier_rifle.glb",
+    "fallback": "weapons/marksman.glb",
     "zoomFov": 0.7,
     "sound": "fire.sniper"
   },
   "notes": {
     "recoil": "The legacy spread bloom (bloom per shot, cap, recovery per tick). With a family its spread comes from the family's accuracy; `maxBloom` still sets how long bots fire their bursts.",
     "group": "The extended arsenal: every one fires differently. 3: rifles.",
-    "model": "The 3DModelsCC0 scoped bolt-action rifle (the pack's Sniper, CC0; content/guns.json, levelled), replacing the Meshy community Frontier Rifle, now the fallback: a hunting rifle with a scope, apart from the Sniper Rifle's tactical one, for the Military set."
+    "model": "The 3DModelsCC0 scoped bolt-action rifle (the pack's Sniper, CC0; content/guns.json, levelled), replacing the Meshy community Frontier Rifle (still built): a hunting rifle with a scope, apart from the Sniper Rifle's tactical one, for the Military set. The kit rifle is the fallback."
   }
 }

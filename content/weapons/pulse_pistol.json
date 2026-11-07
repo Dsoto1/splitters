@@ -27,13 +27,13 @@
     "tracer": "#c69bff",
     "hold": { "style": "pistol", "grip": [0, -0.04, -0.1], "support": [-0.02, -0.05, -0.09], "rake": 34 },
     "muzzleAt": [0, 0.03, 0.135],
-    "fallback": "guns/ornate_pistol.glb",
+    "fallback": "weapons/pulse_pistol.glb",
     "sound": "fire.pulse",
     "beam": true
   },
   "notes": {
     "recoil": "`kick` is the legacy camera kick folded into family-style kick (identical to what gunplayOf derived from `recoil.kick`). `recoil` is the legacy spread bloom, kept as it was: the family spread model can't reproduce it exactly (docs/CONTENT_SCALABILITY.md, step 4).",
     "group": "The extended arsenal: every one fires differently. 2: sidearms.",
-    "model": "The Meshy community Plasma Defender (CC0 per the owner; content/guns.json), replacing the Meshy community ornate handgun, now the fallback."
+    "model": "The Meshy community Plasma Defender (CC0 per the owner; content/guns.json), replacing the Meshy community ornate handgun (still built), the kit sci-fi pistol as the fallback."
   }
 }

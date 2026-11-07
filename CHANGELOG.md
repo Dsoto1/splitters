@@ -16,8 +16,8 @@ intake of 2026-11-06")
   Makarov, the Machine Pistol a Grease Gun, the Shotgun a pump shotgun and the Marksman Rifle a scoped hunting rifle
   (the CC0 Guns & Explosives pack); the Hand Cannon is the BK 220, the Heavy Revolver the Revolver Rustique, the Gilded
   Pistol a gilded flintlock, the Pulse Pistol the Plasma Defender and the Nailgun the Scrapfire Assault Blaster (Meshy
-  Community). Each keeps the model it replaced as its fallback, and is held by points read off its own grip, handguard
-  and stock.
+  Community). Each is held by points read off its own grip, handguard and stock, and still falls back to its model
+  built from the repo if its own fails to load.
 - **Grenades have models:** in your hands while you line up a throw (the gun goes away, both hands on it), in flight,
   and as the pickup (two of it, not coloured balls): the frag is the Globe Grenade, the sticky the Countdown Sphere,
   the vortex "just a grenade", the cluster bomb the Sunburst, the gas grenade the Toxic Splash, the incendiary a

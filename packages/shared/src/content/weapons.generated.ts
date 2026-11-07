@@ -68,7 +68,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
       muzzleAt: [0, 0.055, 0.1],
     },
   },
-  // model: The 3DModelsCC0 AK-47 (CC0; content/guns.json), replacing Styloo's AK-47, now the fallback.
+  // model: The 3DModelsCC0 AK-47 (CC0; content/guns.json), replacing Styloo's AK-47 (still built), the kit rifle as the fallback.
   // design: Benchmark D: high velocity, visible long-range travel and drop, predictable vertical climb, a medium-range workhorse.
   'core.rifle': {
     id: 'core.rifle',
@@ -113,14 +113,14 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     view: {
       model: 'guns/ak47_cc0.glb',
       held: { medium: 'guns/ak47_cc0.medium.glb', high: 'guns/ak47_cc0.high.glb' },
-      fallback: 'guns/ak47.glb',
+      fallback: 'weapons/rifle.glb',
       viewOffset: [0.2, -0.2, 0.55],
       tracer: '#ffd36b',
       hold: { style: 'long', grip: [0, -0.012, -0.175], support: [0, 0.048, 0.13], shoulder: [0, 0.02, -0.43] },
       muzzleAt: [0, 0.068, 0.44],
     },
   },
-  // model: The 3DModelsCC0 pump shotgun (CC0; content/guns.json), replacing Styloo's, now the fallback.
+  // model: The 3DModelsCC0 pump shotgun (CC0; content/guns.json), replacing Styloo's (still built), the kit shotgun as the fallback.
   // design: Benchmark shotgun: makes you close in. Ten pellets in a fixed 75 mrad pattern: all of them on a body out to about 5 m (one shot kills), a few at 15 m, a scratch at 25 m (pattern and steep falloff).
   // reload: Shell by shell: each one loaded can be fired straight away.
   'core.shotgun': {
@@ -157,7 +157,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     view: {
       model: 'guns/shotgun_cc0.glb',
       held: { medium: 'guns/shotgun_cc0.medium.glb', high: 'guns/shotgun_cc0.high.glb' },
-      fallback: 'guns/shotgun.glb',
+      fallback: 'weapons/shotgun.glb',
       viewOffset: [0.2, -0.2, 0.6],
       tracer: '#ffb38a',
       hold: { style: 'long', grip: [0, 0.015, -0.205], support: [0, 0.035, 0.22], shoulder: [0, -0.03, -0.52] },
@@ -234,7 +234,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     },
   },
   // design: Benchmark C: very high rate of weak rounds, tight for the first few then widening fast, very fast recovery, snappy reload.
-  // model: The Suomi KP (3DModelsCC0 Guns & Explosives, CC0; content/guns.json), replacing the Meshy community Tommy Gun, now the fallback (owner, 2026-11-06).
+  // model: The Suomi KP (3DModelsCC0 Guns & Explosives, CC0; content/guns.json), replacing the Meshy community Tommy Gun (owner, 2026-11-06; still built in the repo), the kit SMG as the fallback.
   'core.smg': {
     id: 'core.smg',
     displayName: 'Submachine Gun',
@@ -259,7 +259,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     view: {
       model: 'guns/suomi_kp.glb',
       held: { medium: 'guns/suomi_kp.medium.glb', high: 'guns/suomi_kp.high.glb' },
-      fallback: 'guns/tommy_gun.glb',
+      fallback: 'weapons/smg.glb',
       viewOffset: [0.2, -0.2, 0.5],
       tracer: '#ffe9a8',
       hold: { style: 'long', grip: [0, -0.005, -0.15], support: [0, 0.045, 0.17], shoulder: [0, -0.03, -0.44] },
@@ -364,7 +364,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
   },
   // recoil: `kick` is the legacy camera kick folded into family-style kick (identical to what gunplayOf derived from `recoil.kick`). `recoil` is the legacy spread bloom, kept as it was: the family spread model can't reproduce it exactly (docs/CONTENT_SCALABILITY.md, step 4).
   // group: The extended arsenal: every one fires differently. 2: sidearms.
-  // model: The Meshy community Plasma Defender (CC0 per the owner; content/guns.json), replacing the Meshy community ornate handgun, now the fallback.
+  // model: The Meshy community Plasma Defender (CC0 per the owner; content/guns.json), replacing the Meshy community ornate handgun (still built), the kit sci-fi pistol as the fallback.
   'core.pulse_pistol': {
     id: 'core.pulse_pistol',
     displayName: 'Pulse Pistol',
@@ -402,7 +402,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
       tracer: '#c69bff',
       hold: { style: 'pistol', grip: [0, -0.04, -0.1], support: [-0.02, -0.05, -0.09], rake: 34 },
       muzzleAt: [0, 0.03, 0.135],
-      fallback: 'guns/ornate_pistol.glb',
+      fallback: 'weapons/pulse_pistol.glb',
       sound: 'fire.pulse',
       beam: true,
     },
@@ -567,7 +567,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
   },
   // recoil: The legacy spread bloom (bloom per shot, cap, recovery per tick). With a family its spread comes from the family's accuracy; `maxBloom` still sets how long bots fire their bursts.
   // group: The extended arsenal: every one fires differently. 3: rifles.
-  // model: The 3DModelsCC0 M4A1 (CC0; content/guns.json), replacing the Meshy community Neon Flux, now the fallback: a realistic rifle for the Military set.
+  // model: The 3DModelsCC0 M4A1 (CC0; content/guns.json), replacing the Meshy community Neon Flux (still built): a realistic rifle for the Military set. The kit burst rifle is the fallback.
   'core.burst_rifle': {
     id: 'core.burst_rifle',
     displayName: 'Burst Rifle',
@@ -598,7 +598,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
       tracer: '#ffd36b',
       hold: { style: 'long', grip: [0, -0.04, -0.195], support: [0, 0.045, 0.11], shoulder: [0, 0.02, -0.425] },
       muzzleAt: [0, 0.065, 0.43],
-      fallback: 'guns/neon_flux.glb',
+      fallback: 'weapons/burst_rifle.glb',
       sound: 'fire.rifle',
     },
   },
@@ -633,7 +633,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
   },
   // recoil: The legacy spread bloom (bloom per shot, cap, recovery per tick). With a family its spread comes from the family's accuracy; `maxBloom` still sets how long bots fire their bursts.
   // group: The extended arsenal: every one fires differently. 3: rifles.
-  // model: The 3DModelsCC0 scoped bolt-action rifle (the pack's Sniper, CC0; content/guns.json, levelled), replacing the Meshy community Frontier Rifle, now the fallback: a hunting rifle with a scope, apart from the Sniper Rifle's tactical one, for the Military set.
+  // model: The 3DModelsCC0 scoped bolt-action rifle (the pack's Sniper, CC0; content/guns.json, levelled), replacing the Meshy community Frontier Rifle (still built): a hunting rifle with a scope, apart from the Sniper Rifle's tactical one, for the Military set. The kit rifle is the fallback.
   'core.marksman': {
     id: 'core.marksman',
     displayName: 'Marksman Rifle',
@@ -663,7 +663,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
       tracer: '#bfe4ff',
       hold: { style: 'long', grip: [0, -0.025, -0.29], support: [0, 0.005, 0.07], shoulder: [0, -0.03, -0.585] },
       muzzleAt: [0, 0.052, 0.565],
-      fallback: 'guns/frontier_rifle.glb',
+      fallback: 'weapons/marksman.glb',
       zoomFov: 0.7,
       sound: 'fire.sniper',
     },
@@ -1740,7 +1740,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     },
   },
   // design: Weapon of the gunplay pass (docs/GUNPLAY_SPEC.md), benchmark B: every trigger pull is an event. Absurd damage for a handgun (a head shot kills at any range, a body shot takes nine tenths of a life), savage kick, five rounds, a true first shot that only comes back once the last one has settled (fan it and you miss), and a slow, rhythmic round-by-round reload (each cartridge can be fired as soon as it is in).
-  // model: The Meshy community Revolver Rustique (CC0 per the owner; content/guns.json), replacing the Meshy community revolver (2026-01-26 download), now the fallback.
+  // model: The Meshy community Revolver Rustique (CC0 per the owner; content/guns.json), replacing the Meshy community revolver of 2026-01-26 (still built), the kit revolver as the fallback.
   'core.revolver': {
     id: 'core.revolver',
     displayName: 'Heavy Revolver',
@@ -1771,7 +1771,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
       tracer: '#ffcf7a',
       hold: { style: 'pistol', grip: [0, -0.045, -0.115], support: [-0.02, -0.055, -0.105], rake: 18 },
       muzzleAt: [0, 0.055, 0.145],
-      fallback: 'guns/ironclad_revolver.glb',
+      fallback: 'weapons/revolver.glb',
       sound: 'fire.revolver',
     },
   },

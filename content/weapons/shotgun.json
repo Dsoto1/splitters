@@ -33,14 +33,14 @@
   "view": {
     "model": "guns/shotgun_cc0.glb",
     "held": { "medium": "guns/shotgun_cc0.medium.glb", "high": "guns/shotgun_cc0.high.glb" },
-    "fallback": "guns/shotgun.glb",
+    "fallback": "weapons/shotgun.glb",
     "viewOffset": [0.2, -0.2, 0.6],
     "tracer": "#ffb38a",
     "hold": { "style": "long", "grip": [0, 0.015, -0.205], "support": [0, 0.035, 0.22], "shoulder": [0, -0.03, -0.52] },
     "muzzleAt": [0, 0.083, 0.52]
   },
   "notes": {
-    "model": "The 3DModelsCC0 pump shotgun (CC0; content/guns.json), replacing Styloo's, now the fallback.",
+    "model": "The 3DModelsCC0 pump shotgun (CC0; content/guns.json), replacing Styloo's (still built), the kit shotgun as the fallback.",
     "design": "Benchmark shotgun: makes you close in. Ten pellets in a fixed 75 mrad pattern: all of them on a body out to about 5 m (one shot kills), a few at 15 m, a scratch at 25 m (pattern and steep falloff).",
     "reload": "Shell by shell: each one loaded can be fired straight away."
   }
