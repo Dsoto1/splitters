@@ -27,7 +27,7 @@ gets overloaded above that: local e2e times out and flakes). Prune landed worktr
   reworks batches 2–3, character fixes rounds 2–3 (see the entries below and CHANGELOG).
 
 <!-- breakthrough -->
-### Breakthrough mode, and Iron Coast's fort and gatehouse (`wip/breakthrough`, agents, 2026-11-07; from main 17d0e0a0, main 2c48debf (Bot AI Phase B parts 1 and 2) merged in; green on `check/breakthrough` at 077efcf4, run 42367283316 (its second attempt: the first stopped on the perf budget's timing on a slow runner, starting an explosion 50.4 ms against 40, unrelated); not landed)
+### Breakthrough mode, and Iron Coast's fort and gatehouse (`wip/breakthrough`, agents, 2026-11-07; from main 17d0e0a0, main 2c48debf (Bot AI Phase B parts 1 and 2) and d3830145 (weapons intake 11-06) merged in; CI on `check/breakthrough` (before the second merge: green at 077efcf4, run 42367283316); not landed)
 The brief: docs/map-briefs/MAP_21_Iron_Coast.md ("Breakthrough mode", and "The mode as built"). Rules, settings, HUD,
 MapMaker steps: docs/GAME_MODES.md, "Breakthrough". The pieces: docs/SET_PIECES_PLAN.md, "As built: part 4".
 
@@ -61,7 +61,9 @@ MapMaker steps: docs/GAME_MODES.md, "Breakthrough". The pieces: docs/SET_PIECES_
   the defenders' duties by the playbook's shares over each sector's posts, `findPosts`/`postsOf`: turrets, trench tiles
   and sandbags, high ground that sees an objective, within 60 m of its objectives on their side of its line) and
   `botInput` (a bot within reach of a target to plant or a charge to defuse holds still, crouched: kept to their way,
-  bots fought on the move and in 8 v 8 never planted). A defender caught behind the line runs for it.
+  bots fought on the move and in 8 v 8 never planted). A defender caught behind the line runs for it. The playbook's
+  smoke (with the weapons intake's Smoke Grenade, main d3830145 merged in): every other attacking bot spawns carrying
+  smoke instead of its frags (`onSpawn`), so the moving half of a bound screens open ground (BotBrain.considerSmoke).
 - **Set pieces**: `setpiece.command_bunker` (fort.json, new family; kit tiles `core.fort_ring`, `core.fort_ring_gate`)
   and `setpiece.cliff_stair_gate` (cliffstair.json; edge style `gate_arch`); `setPieces4.test.ts`.
 - **Maps** (MapMaker only, driven through its own palette, inspector, Import and Export): the **Breakthrough Range**
