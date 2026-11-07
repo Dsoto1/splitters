@@ -28,6 +28,17 @@ made only on a commit that passed CI on a check branch.
 - `pnpm bot-report <maps> --mode=core.roulette [--roulette=lunar,rerolls,swap,variety]` reports kills by character and
   body size, picks and rerolls.
 
+**Bot AI Phase C, items 1-4** (docs/BOT_AI_PLAN.md, "Phase C items 1-4, measured"; docs/BOTS.md):
+- Bots drop off ledges, jump gaps and jump up onto ledges as players do: links found at load and each checked by
+  playing it through the real movement code; flankers, scouts, snipers and Arena bots use them most, and snipers look
+  for spots on roofs and ledges only a jump reaches.
+- Routes keep off a bridge that has crumbled, a trapdoor that has opened, a drawbridge that is up, and come back when
+  the ground does.
+- Teammates meeting head-on in a doorway, a tunnel or on stairs pass each other on the right.
+- A squad's bots keep to their own lane all the way to the objective; route searches are spread over ticks in big
+  matches.
+- `pnpm bot-report`: parkour moves, routes along a lane, searches put off, sniper spots only parkour reaches.
+
 **Two new characters: Cool Hands Rex and Fishy Fred** (the owner's import list, batch 1; docs/IMPORT_LIST.md)
 - **Cool Hands Rex**, a T-rex in a bomber jacket and shades, the owner's own Meshy model ("i made him in meshy"). Large
   (2.12 m, 115 health), under Creatures & Machines; his bots take gangster names. His tail rides his hips: it stays off

@@ -74,7 +74,8 @@ describe('navigation audit', () => {
     expect(auditNavigation(map, bare, built.physics, opts).issues.map((i) => i.code)).toContain('nav.disconnected');
     bare.destroy();
     // With them (as the match builds it): a way down, not up.
-    expect(built.nav.drops).toBeGreaterThan(0);
+    // (A parkour drop off it, nav/parkour.ts, or a trap exit when that's left out.)
+    expect(built.nav.drops + built.nav.parkour.filter((l) => l.kind === 'drop').length).toBeGreaterThan(0);
     expect(built.nav.findPath({ x: 10, y: 2, z: 10 }, { x: 0, y: 0, z: 0 })).not.toBeNull();
     expect(built.nav.findPath({ x: 0, y: 0, z: 0 }, { x: 10, y: 2, z: 10 })).toBeNull();
     expect(auditNavigation(map, built.nav, built.physics, opts).issues).toEqual([]);
@@ -96,7 +97,8 @@ describe('navigation audit', () => {
     const top = { x: 0, y: terrainHeightAt(t, 0, 0)!, z: 0 };
     const map: MapDocument = { ...makeMap([], [[-16, 0, -16], [top.x, top.y, top.z]]), terrain: t };
     const built = mapNavigation(map);
-    expect(built.nav.drops).toBeGreaterThan(0);
+    // (A parkour drop off it, nav/parkour.ts, or a trap exit when that's left out.)
+    expect(built.nav.drops + built.nav.parkour.filter((l) => l.kind === 'drop').length).toBeGreaterThan(0);
     expect(built.nav.findPath(top, { x: -16, y: 0, z: -16 })).not.toBeNull();
     expect(validateMapNavigation(map, true).issues).toEqual([]);
     built.physics.free();
@@ -126,9 +128,12 @@ describe('navigation audit', () => {
     expect(official.audit.patches.length).toBeGreaterThan(0);
   });
 
-  it('counts a pit 1.3 m deep as none: bots hop out of it, the legs tucked up (Undergate Transit’s track beds); 1.8 m deep is one', () => {
+  it('counts a pit 1.3 m deep as none: bots hop out of it, the legs tucked up (Undergate Transit’s track beds); 2.4 m deep is one', () => {
     expect(validateMapNavigation(pitMap(1.3), true).issues.filter((i) => i.code === 'nav.trap')).toEqual([]);
-    expect(validateMapNavigation(pitMap(1.8), true).issues.find((i) => i.code === 'nav.trap')?.severity).toBe('error');
+    // (1.8 m is none either since parkour's jumps up, nav/parkour.ts: a tucked jump every body size makes in the
+    // movement code gets out of it.)
+    expect(validateMapNavigation(pitMap(1.8), true).issues.filter((i) => i.code === 'nav.trap')).toEqual([]);
+    expect(validateMapNavigation(pitMap(2.4), true).issues.find((i) => i.code === 'nav.trap')?.severity).toBe('error');
     // And a bot put into the 1.3 m pit does get out (a jump alone clears about 1.1 m).
     const match = new Match(pitMap(1.3), { ...DEFAULT_DEATHMATCH_RULES, scoreLimit: 0, timeLimitSeconds: 0 }, 2);
     for (let i = 0; i < 2; i++) match.addBot(`bot${i}`, CORE_BOT_PROFILES[i]!, BOT_DIFFICULTIES.normal, true);

@@ -9,15 +9,25 @@ import { trackGeometry } from '../map/track.ts';
 import { mapPortals, portalEntry, PORTAL_EXIT } from '../sim/portals.ts';
 import { mapZiplines, ziplineClearanceIssues, ziplineLinks } from '../sim/zipline.ts';
 import type { PhysicsWorld } from '../sim/physics.ts';
-import type { Aabb } from '../sim/scenarioDefs.ts';
+import type { Aabb, OBox } from '../sim/scenarioDefs.ts';
 import { simProfile } from '../sim/profile.ts';
 import { hypot } from '../math.ts';
-import { auditNavigation, polyShapes, reachSet, routeComponents, trapExits, type AuditOptions, type FallOptions } from './audit.ts';
+import { auditNavigation, edgesOf, polyShapes, reachSet, routeComponents, trapExits, type AuditOptions, type FallOptions } from './audit.ts';
+import { PARKOUR_AREA, parkourLinks, type ParkourLink } from './parkour.ts';
 
 /** Ledge-drop links at build (NavWorld.build `drops`): the level to trace falls against, and the spawn points that say where the main area is. */
 export interface DropOptions extends FallOptions {
   physics: PhysicsWorld;
   spawns: readonly Vec3[];
+  /** The match's gravity (a multiple), for parkour links played through stepMovement; 1 when absent. */
+  gravity?: number;
+  /** No parkour links (nav/parkour.ts): the build as before them. */
+  noParkour?: boolean;
+  /**
+   * What the scenario adds to the level after the navmesh that a body can't pass while it stands (window panes, door
+   * panels, breakable walls and boards): parkour links are played through with them in the way.
+   */
+  blockers?: readonly OBox[];
 }
 
 let initPromise: Promise<void> | undefined;
@@ -94,6 +104,11 @@ export interface NavGraph {
 export const OPEN_AREA = 1;
 const EXPOSED_REACH = 3;
 const OPEN_COST = [1, 1.2, 1.45];
+/**
+ * A parkour link's cost (nav/parkour.ts, area PARKOUR_AREA) a metre, over walking's: bots walk unless the move saves
+ * a real walk; agile ones (findPath `agile`: flankers, snipers, the Arena style) take it at walking's cost.
+ */
+const PARKOUR_COST = 1.6;
 const FOUR = [
   { x: 1, y: 0, z: 0 },
   { x: -1, y: 0, z: 0 },
@@ -120,7 +135,7 @@ const RECAST_CONFIG = {
   detailSampleMaxError: 1,
 } as const;
 
-const offMesh = (l: { start: Vec3; end: Vec3 }) => ({ startPosition: l.start, endPosition: l.end, radius: 0.8, bidirectional: false });
+const offMesh = (l: { start: Vec3; end: Vec3; area?: number }) => ({ startPosition: l.start, endPosition: l.end, radius: 0.8, bidirectional: false, area: l.area ?? 0 });
 
 type Intermediates = ReturnType<typeof generateSoloNavMesh>['intermediates'];
 
@@ -128,7 +143,7 @@ type Intermediates = ReturnType<typeof generateSoloNavMesh>['intermediates'];
  * A navmesh of the first build's polygons with `links` in: Detour's tile data made again from Recast's polygon and
  * detail meshes, as generateSoloNavMesh's last step makes it (its polygons' areas and flags are already set).
  */
-function withLinks(inter: Intermediates, links: readonly { start: Vec3; end: Vec3 }[]): NavMesh {
+function withLinks(inter: Intermediates, links: readonly { start: Vec3; end: Vec3; area?: number }[]): NavMesh {
   const polyMesh = inter.polyMesh;
   const detail = inter.polyMeshDetail;
   if (!polyMesh || !detail) throw new Error('navmesh generation kept no polygon mesh');
@@ -220,10 +235,13 @@ export class NavWorld {
         const end = world.closestPoint(l.end, l.reach ?? { x: 2.5, y: 3, z: 2.5 });
         return start && end ? [{ start, end }] : [];
       });
+      // Parkour (nav/parkour.ts): drops, gap jumps and jumps up a player makes, played through the movement code.
+      const parkour = drops && !drops.noParkour ? parkourLinks(world, drops.physics, drops, drops.gravity ?? 1, linkPairs(world, onMesh), drops.spawns) : [];
       // Ways down off patches that have none (on the mesh already: an edge of the patch, a polygon below).
-      const exits = drops ? trapExits(world, drops.physics, drops.spawns, onMesh, drops) : [];
-      if (!onMesh.length && !exits.length) return done(world);
-      const all = [...onMesh, ...exits];
+      const exits = drops ? trapExits(world, drops.physics, drops.spawns, [...onMesh, ...parkour], drops) : [];
+      if (!onMesh.length && !exits.length && !parkour.length) return done(world);
+      const all = [...onMesh, ...parkour.map((l) => ({ start: l.start, end: l.end, area: PARKOUR_AREA })), ...exits];
+      const walkOnly = parkour.length ? world.walkOnlyFromMain(drops!.spawns, onMesh) : null;
       const navMesh = withLinks(inter, all);
       world.destroy();
       const built = new NavWorld(navMesh, new NavMeshQuery(navMesh, { maxNodes: MAX_NODES }));
@@ -232,6 +250,7 @@ export class NavWorld {
         built.disableInsideSolid(drops.physics, drops.solids);
       }
       built.drops = exits.length;
+      built.setParkour(parkour, walkOnly);
       return done(built);
     } finally {
       if (relink) freeIntermediates(inter);
@@ -240,6 +259,106 @@ export class NavWorld {
 
   /** Ledge-drop links the build added (NavWorld.build `drops`). */
   drops = 0;
+
+  /** Parkour links the build added (nav/parkour.ts), and a lookup of them by where they start (2 m cells). */
+  parkour: readonly ParkourLink[] = [];
+  private readonly parkourCells = new Map<number, ParkourLink[]>();
+  /** Ground polygons walking (and the map's own links) reach from the spawns without parkour; null without parkour. */
+  private walkReach: Uint8Array | null = null;
+
+  /** At build: the parkour links, and what walking reaches without them. */
+  setParkour(links: readonly ParkourLink[], walkReach: Uint8Array | null): void {
+    this.parkour = links;
+    this.walkReach = walkReach;
+    this.parkourCells.clear();
+    for (const l of links) {
+      const k = cellKey(Math.floor(l.start.x / 2), Math.floor(l.start.z / 2));
+      (this.parkourCells.get(k) ?? this.parkourCells.set(k, []).get(k)!).push(l);
+    }
+  }
+
+  /** Times bots missed each parkour link (landed somewhere else: knocked off it, short). */
+  private readonly linkMisses = new Map<ParkourLink, number>();
+  /** Parkour links switched off in the match (linkFailed). */
+  linksOff = 0;
+
+  /**
+   * A bot gave up on a parkour link (it couldn't start or finish it: something the build didn't have in the way), or
+   * missed it (`gaveUp` false). Given up on, or missed three times, the link is switched off for everyone for the match:
+   * its navmesh polygon's flags to 0 (no route takes it), out of the lookup, and bots plan their routes again.
+   */
+  linkFailed(l: ParkourLink, gaveUp: boolean): void {
+    const misses = (this.linkMisses.get(l) ?? 0) + 1;
+    this.linkMisses.set(l, misses);
+    if (!gaveUp && misses < 3) return;
+    const list = this.parkourCells.get(cellKey(Math.floor(l.start.x / 2), Math.floor(l.start.z / 2)));
+    const at = list?.indexOf(l) ?? -1;
+    if (at < 0) return;
+    list!.splice(at, 1);
+    const mesh = this.navMesh;
+    const tile = mesh.getMaxTiles() === 1 ? mesh.getTile(0) : null;
+    const header = tile?.header();
+    if (!tile || !header) return;
+    const base = mesh.getPolyRefBase(tile);
+    for (let i = 0; i < header.offMeshConCount(); i++) {
+      const con = tile.offMeshCons(i);
+      if (hypot(con.pos(0) - l.start.x, con.pos(2) - l.start.z) > 0.35 || Math.abs(con.pos(1) - l.start.y) > 0.5) continue;
+      if (hypot(con.pos(3) - l.end.x, con.pos(5) - l.end.z) > 0.35 || Math.abs(con.pos(4) - l.end.y) > 0.5) continue;
+      mesh.setPolyFlags(base + con.poly(), 0);
+    }
+    this.linksOff++;
+    this.noRoute.clear();
+    this.goneVersion++;
+  }
+
+  /** The parkour link a route's leg from `a` to `b` takes (its corners at the link's start and end), or null. */
+  parkourAt(a: Vec3, b: Vec3): ParkourLink | null {
+    if (!this.parkour.length) return null;
+    const cx = Math.floor(a.x / 2);
+    const cz = Math.floor(a.z / 2);
+    for (let dx = -1; dx <= 1; dx++) {
+      for (let dz = -1; dz <= 1; dz++) {
+        const list = this.parkourCells.get(cellKey(cx + dx, cz + dz));
+        if (!list) continue;
+        for (const l of list) if (hypot(l.start.x - a.x, l.start.z - a.z) < 0.35 && Math.abs(l.start.y - a.y) < 0.5 && hypot(l.end.x - b.x, l.end.z - b.z) < 0.35 && Math.abs(l.end.y - b.y) < 0.5) return l;
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Walking (and the map's own links, `links`) from the spawn points, before any parkour link goes in: what each ground
+   * polygon of this (first) build is reached by. The rebuilt navmesh keeps the same ground polygons, in the same order.
+   */
+  walkOnlyFromMain(spawns: readonly Vec3[], links: readonly { start: Vec3; end: Vec3 }[]): Uint8Array {
+    const g = this.graph();
+    const seeds = spawns.flatMap((p) => {
+      const h = this.nearestPoly(p, { x: 1, y: 1, z: 1 });
+      return h ? [h.index] : [];
+    });
+    const e = edgesOf(g, linkPairs(this, links));
+    return reachSet(e.start, e.to, g.count, seeds);
+  }
+
+  private parkourPlaceCache: Vec3[] | null = null;
+
+  /**
+   * mainPlaces() only parkour gets to (roofs and ledges a jump up or across reaches, that walking and the map's own
+   * links don't): where snipers look for spots others don't go (bots/vantage.ts).
+   */
+  parkourPlaces(): readonly Vec3[] {
+    if (this.parkourPlaceCache) return this.parkourPlaceCache;
+    const walk = this.walkReach;
+    if (!walk) return (this.parkourPlaceCache = []);
+    const out: Vec3[] = [];
+    const base = this.graph().base;
+    for (const p of this.mainPlaces()) {
+      const h = this.query.findNearestPoly(p, { halfExtents: { x: 0.5, y: 1, z: 0.5 } });
+      const i = h.success && h.nearestRef ? h.nearestRef - base : -1;
+      if (i >= 0 && i < walk.length && !walk[i]) out.push(p);
+    }
+    return (this.parkourPlaceCache = out);
+  }
   /** Polygons the build found inside something solid and left out (disableInsideSolid). */
   insideSolid = 0;
   /** Ground polygons in the open (markExposure), and their area. */
@@ -337,12 +456,13 @@ export class NavWorld {
 
   /**
    * Straight-path corners from a to b, or null if b is unreachable from a. `shut`: openings (markOpenings' flag
-   * bits) the route must keep out of, such as doors shut to the bot's team that no button opens for it.
+   * bits) the route must keep out of, such as doors shut to the bot's team that no button opens for it. `agile`:
+   * parkour links at walking's cost (PARKOUR_COST otherwise).
    */
-  findPath(a: Vec3, b: Vec3, shut = 0, partial = false, open = 0): Vec3[] | null {
-    if (!simProfile.on) return this.findPathNow(a, b, shut, partial, open);
+  findPath(a: Vec3, b: Vec3, shut = 0, partial = false, open = 0, agile = false): Vec3[] | null {
+    if (!simProfile.on) return this.findPathNow(a, b, shut, partial, open, agile);
     const t0 = performance.now();
-    const r = this.findPathNow(a, b, shut, partial, open);
+    const r = this.findPathNow(a, b, shut, partial, open, agile);
     simProfile.add('nav', performance.now() - t0);
     simProfile.count('nav');
     if (!r) simProfile.count('navFail');
@@ -363,7 +483,7 @@ export class NavWorld {
    * `partial`: a route that exists but that the search ran out of nodes on (a very long way over a big map) comes
    * back as far as the search got, Detour's partial route: walk it, and ask again from its end.
    */
-  private findPathNow(a: Vec3, b: Vec3, shut = 0, partial = false, open = 0): Vec3[] | null {
+  private findPathNow(a: Vec3, b: Vec3, shut = 0, partial = false, open = 0, agile = false): Vec3[] | null {
     const ext = { x: 2, y: 3, z: 2 };
     const s = this.query.findNearestPoly(a, { halfExtents: ext });
     const e = this.query.findNearestPoly(b, { halfExtents: ext });
@@ -381,9 +501,14 @@ export class NavWorld {
       if (simProfile.on) simProfile.count('navSearchFail');
       return null;
     }
+    // (Off the polygons of surfaces that are gone, whatever else the route keeps out of; not the ones it starts or ends on:
+    // a bot riding a button-called lift, or going for someone on one, stands on ground that's "gone" from where it was.)
+    if (this.gone) shut |= this.gone & ~this.navMesh.getPolyFlags(s.nearestRef).flags & ~this.navMesh.getPolyFlags(e.nearestRef).flags;
     const failKey = `${s.nearestRef}:${e.nearestRef}:${shut}`;
+    // (Every search with a filter once there are parkour links: their area costs more than walking.)
+    const filtered = shut || open || (this.parkour.length && !agile);
     if (!partial && this.noRoute.has(failKey)) return null;
-    const r = this.query.findPath(s.nearestRef, e.nearestRef, start, end, shut || open ? { maxPathPolys: MAX_PATH_POLYS, filter: this.filterFor(shut, open) } : { maxPathPolys: MAX_PATH_POLYS });
+    const r = this.query.findPath(s.nearestRef, e.nearestRef, start, end, filtered ? { maxPathPolys: MAX_PATH_POLYS, filter: this.filterFor(shut, open, agile) } : { maxPathPolys: MAX_PATH_POLYS });
     const n = r.polys.size;
     // A partial path (destination unreachable, or the search ran out of nodes) ends short of the goal.
     const whole = r.success && n > 0 && r.polys.get(n - 1) === e.nearestRef;
@@ -421,6 +546,61 @@ export class NavWorld {
     sp.straightPathRefs.destroy();
     const last = out[out.length - 1];
     if (!last || hypot(last.x - end.x, last.z - end.z) > 0.5 || Math.abs(last.y - end.y) > 1) return null;
+    return out;
+  }
+
+  /**
+   * A route that keeps to a corridor (nav/corridors.ts: its polygons, start to goal) the rest of the way to `to` (its
+   * goal's end): from `from` onto the corridor polygon nearest it ahead (one short search), then along the corridor's
+   * own polygons, the straight path through them all (BOT_AI_PLAN.md Phase C item 4: a group's bots keep to its lane,
+   * where a route with the corridor's via went back to the shortest way by the trip's middle). Null when it can't: the
+   * corridor shut or gone on the way (a door, a fallen bridge: `shut`), `to` off its last polygon, or no way onto it.
+   */
+  pathAlong(from: Vec3, polys: readonly number[], to: Vec3, shut = 0): Vec3[] | null {
+    const g = this.graph();
+    if (polys.length < 2) return null;
+    const ext = { x: 2, y: 3, z: 2 };
+    const s = this.query.findNearestPoly(from, { halfExtents: ext });
+    const e = this.query.findNearestPoly(to, { halfExtents: ext });
+    if (!s.success || !s.nearestRef || !e.success || !e.nearestRef || e.nearestRef - g.base !== polys[polys.length - 1]) return null;
+    const mask = shut | this.gone;
+    // The corridor polygon nearest `from` (later ones win ties: ahead, not back the way it came).
+    const { centre } = polyShapes(g);
+    let k = -1;
+    let best = Infinity;
+    for (let i = 0; i < polys.length; i++) {
+      const p = polys[i]!;
+      const d = hypot(centre[p * 3]! - from.x, centre[p * 3 + 2]! - from.z) + Math.abs(centre[p * 3 + 1]! - from.y) * 2;
+      if (d <= best) {
+        best = d;
+        k = i;
+      }
+    }
+    if (k < 0 || best > 30) return null;
+    for (let i = k; i < polys.length; i++) if (mask && g.flags[polys[i]!]! & mask) return null;
+    // From here onto it: Detour's own route to that polygon (a few polygons, usually).
+    const head: number[] = [];
+    if (s.nearestRef - g.base !== polys[k]) {
+      const target = this.query.closestPointOnPoly(g.base + polys[k]!, from);
+      if (!target.success) return null;
+      const r = this.query.findPath(s.nearestRef, g.base + polys[k]!, s.nearestPoint, target.closestPoint, { maxPathPolys: MAX_PATH_POLYS, filter: this.filterFor(shut | this.gone, 0) });
+      const n = r.polys.size;
+      const whole = r.success && n > 0 && r.polys.get(n - 1) === g.base + polys[k]!;
+      for (let i = 0; whole && i < n - 1; i++) head.push(r.polys.get(i));
+      r.polys.destroy();
+      if (!whole) return null;
+    }
+    const refs = [...head];
+    for (let i = k; i < polys.length; i++) refs.push(g.base + polys[i]!);
+    const sp = this.query.findStraightPath(s.nearestPoint, e.nearestPoint, refs, { maxStraightPathPoints: MAX_CORNERS });
+    const out: Vec3[] = [];
+    if (sp.success) for (let i = 0; i < sp.straightPathCount; i++) out.push({ x: sp.straightPath.get(i * 3), y: sp.straightPath.get(i * 3 + 1), z: sp.straightPath.get(i * 3 + 2) });
+    sp.straightPath.destroy();
+    sp.straightPathFlags.destroy();
+    sp.straightPathRefs.destroy();
+    const last = out[out.length - 1];
+    if (!last || hypot(last.x - e.nearestPoint.x, last.z - e.nearestPoint.z) > 0.5) return null;
+    if (simProfile.on) simProfile.count('navAlong');
     return out;
   }
 
@@ -522,14 +702,15 @@ export class NavWorld {
   /** Route filters that keep out of shut openings, by mask (a few per match: doors open and shut). */
   private readonly filters = new Map<number, QueryFilter>();
 
-  private filterFor(shut: number, open = 0): QueryFilter {
-    const key = shut * 4 + open;
+  private filterFor(shut: number, open = 0, agile = false): QueryFilter {
+    const key = (shut * 4 + open) * 2 + (agile ? 1 : 0);
     let f = this.filters.get(key);
     if (!f) {
       f = new QueryFilter();
       f.includeFlags = 0xffff;
       f.excludeFlags = shut;
       f.setAreaCost(OPEN_AREA, OPEN_COST[open] ?? 1);
+      f.setAreaCost(PARKOUR_AREA, agile ? 1 : PARKOUR_COST);
       if (this.filters.size >= 64) this.filters.clear();
       this.filters.set(key, f);
     }
@@ -542,25 +723,83 @@ export class NavWorld {
    * ones shut to a bot. Sampled every 0.25 m over each opening's footprint, keeping only polygons the samples
    * stand over (not ones that merely come near). Once, at match start (and when the navmesh is rebuilt).
    */
-  markOpenings(boxes: readonly Aabb[]): void {
+  markOpenings(boxes: readonly Aabb[], surfacesFrom = Infinity): void {
     const half = { x: 0.15, y: 0.9, z: 0.15 };
+    const g = this.graph();
+    const { centre } = polyShapes(g);
     boxes.slice(0, OPENING_BITS).forEach((b, k) => {
       const bit = 1 << (k + 1);
       const marked = new Set<number>();
+      // A surface (Scenario.surfaces: a bridge, a trapdoor): the polygons on its top, whose middles are over it (not the
+      // floor round a trapdoor that Recast merged it into); an opening: those its footprint stands over at its foot.
+      const surface = k >= surfacesFrom;
+      const y = surface ? b.max.y : b.min.y + 0.3;
       for (let x = b.min.x; x <= b.max.x + 1e-6; x += 0.25) {
         for (let z = b.min.z; z <= b.max.z + 1e-6; z += 0.25) {
-          const r = this.query.findNearestPoly({ x, y: b.min.y + 0.3, z }, { halfExtents: half });
+          const r = this.query.findNearestPoly({ x, y, z }, { halfExtents: surface ? { x: 0.15, y: 0.4, z: 0.15 } : half });
           if (!r.success || !r.nearestRef || !r.isOverPoly || marked.has(r.nearestRef)) continue;
           marked.add(r.nearestRef);
+          if (surface) {
+            const i = r.nearestRef - g.base;
+            const cx = centre[i * 3]!;
+            const cz = centre[i * 3 + 2]!;
+            if (cx < b.min.x - 0.3 || cx > b.max.x + 0.3 || cz < b.min.z - 0.3 || cz > b.max.z + 0.3) continue;
+            // (And at its top: not the floor beside a low one, sandbags or a charge's target, which goes on being floor.)
+            if (Math.abs(centre[i * 3 + 1]! - b.max.y) > 0.25) continue;
+          }
           const f = this.navMesh.getPolyFlags(r.nearestRef);
           // (Never one left out as inside something solid: flags 0, disableInsideSolid.)
           if (this.insideSolid && f.flags === 0) continue;
           this.navMesh.setPolyFlags(r.nearestRef, (f.flags || 1) | bit);
+          this.usedBits |= bit;
+          // (The graph's copy too: pathAlong reads a corridor's flags from it.)
+          const gi = r.nearestRef - g.base;
+          if (gi >= 0 && gi < g.count) g.flags[gi] = (f.flags || 1) | bit;
         }
       }
     });
     // Routes found before are still right for the routes that don't keep out of anything; failures with a mask are new.
     this.noRoute.clear();
+  }
+
+  /**
+   * The per-tick search budget (BOT_AI_PLAN.md Phase C item 4: big matches, huge maps): route searches bots may start
+   * this tick before the rest wait for the next (a bot with a route keeps to it meanwhile). Infinite until the match
+   * sets one (beginTick).
+   */
+  private searchesLeft = Infinity;
+  /** Searches put off by the budget (measuring). */
+  searchesPutOff = 0;
+
+  /** The match, each tick: `budget` route searches for bots this tick. */
+  beginTick(budget: number): void {
+    this.searchesLeft = budget;
+  }
+
+  /** A bot that would plan its route again now: whether the tick's budget has a search for it (one is used). */
+  takeSearch(): boolean {
+    if (this.searchesLeft <= 0) {
+      this.searchesPutOff++;
+      return false;
+    }
+    this.searchesLeft--;
+    return true;
+  }
+
+  /** Surfaces gone now (Scenario.surfacesGone: flag bits every route keeps off), and a count of changes to them. */
+  private gone = 0;
+  goneVersion = 0;
+  /** Opening bits markOpenings gave to at least one polygon (a surface that flagged none changes no route). */
+  private usedBits = 0;
+
+  /** The match, when what's gone changes: every route search from now on keeps off those polygons. */
+  setGone(mask: number): void {
+    // (Only surfaces with ground on the navmesh: a breakable prop's top bots never stood on changes nobody's route, and
+    // bots needn't all plan again each time one breaks.)
+    mask &= this.usedBits;
+    if (mask === this.gone) return;
+    this.gone = mask;
+    this.goneVersion++;
   }
 
   /**
@@ -1020,6 +1259,20 @@ export class NavWorld {
     this.query.destroy();
     this.navMesh.destroy();
   }
+}
+
+/** A 2 m cell's key (parkour links by where they start). */
+const cellKey = (cx: number, cz: number): number => (cx + 32768) * 65536 + (cz + 32768);
+
+/** Links as [from, to] ground polygons of `nav` (their ends within half a metre of a polygon). */
+function linkPairs(nav: NavWorld, links: readonly { start: Vec3; end: Vec3 }[]): [number, number][] {
+  const out: [number, number][] = [];
+  for (const l of links) {
+    const a = nav.nearestPoly(l.start, { x: 0.5, y: 1, z: 0.5 });
+    const b = nav.nearestPoly(l.end, { x: 0.5, y: 1, z: 0.5 });
+    if (a && b && a.index !== b.index) out.push([a.index, b.index]);
+  }
+  return out;
 }
 
 /**

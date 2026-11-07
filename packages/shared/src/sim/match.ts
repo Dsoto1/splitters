@@ -804,7 +804,7 @@ export class Match {
     });
     // Doors and walls that block paths, and lift rides, as navmesh flags: a bot's route can keep out of the ones shut
     // to it, and off a lift it's tired of waiting for.
-    this.nav.markOpenings(this.scenario.openings());
+    this.nav.markOpenings([...this.scenario.openings(), ...this.scenario.surfaces()], this.scenario.openings().length);
     this.nav.markLifts(liftLinks(map));
     this.encounters = new Encounters(map, {
       get tick() {
@@ -1133,9 +1133,9 @@ export class Match {
     const area = xs.length ? (Math.max(...xs) - Math.min(...xs)) * (Math.max(...zs) - Math.min(...zs)) : 0;
     if (area > NAV_REBUILD_MAX_AREA) return false;
     const old = this.nav;
-    this.nav = buildMapNav(this.map, this.geometry, this.physics, this.envShapes, this.phys, extra);
+    this.nav = buildMapNav(this.map, this.geometry, this.physics, this.envShapes, this.phys, extra, false);
     old.destroy();
-    this.nav.markOpenings(this.scenario.openings());
+    this.nav.markOpenings([...this.scenario.openings(), ...this.scenario.surfaces()], this.scenario.openings().length);
     this.nav.markLifts(liftLinks(this.map));
     this.nav.places();
     this.sight.clear();
@@ -1962,7 +1962,7 @@ export class Match {
    */
   private relaxedMove(c: Combatant, input: PlayerInput): 'full' | 'coarse' | 'far' {
     const near = this.watched;
-    if (!near || c.kind === 'human' || this.watchers.has(c.slot)) return 'full';
+    if (!near || c.kind === 'human' || this.watchers.has(c.slot) || c.bot?.parkouring) return 'full';
     const m = c.move;
     if (!m.grounded || m.velY !== 0 || m.vx || m.vz || m.swim || m.climb || m.chute || m.jet || m.zip !== undefined || input.buttons & (BUTTON_JUMP | BUTTON_USE)) return 'full';
     const p = m.pos;
@@ -1990,6 +1990,11 @@ export class Match {
   }
 
   private runBots(): void {
+    // Ground that has gone (a crumbled bridge, an open trapdoor, a drawbridge up: Scenario.surfacesGone), a few times a
+    // second: routes keep off it from now on, and bots on one over it plan again (Phase C item 2).
+    if (this.tick % 6 === 0) this.nav.setGone(this.scenario.surfacesGone());
+    // The tick's route searches for bots (Phase C item 4): plenty for a normal match, a ceiling for a crowd's spikes.
+    this.nav.beginTick(SEARCH_BUDGET);
     const t0 = performance.now();
     const actors = this.actors();
     // Actors as bots see them: one view object per actor, refilled every tick (no 96 new objects a tick).
@@ -2086,7 +2091,8 @@ export class Match {
         c.queue.push(this.raceBotInput(c, this.race));
         continue;
       }
-      const due = every === 1 || (this.tick + c.slot) % every === 0 || deferredBefore.has(c.slot);
+      // (A bot on a parkour link thinks every tick until it lands: its jump is timed to the tick.)
+      const due = every === 1 || (this.tick + c.slot) % every === 0 || deferredBefore.has(c.slot) || c.bot.parkouring;
       // Big matches: a bot with nobody to fight thinks on its own ticks and keeps its last move in between.
       if (!due && this.coastBot(c, every)) continue;
       const hostiles = hostilesOf(c);
@@ -2104,7 +2110,7 @@ export class Match {
       const allies = c.faction === null ? undefined : factionViews.get(c.faction);
       const tt = simProfile.on ? performance.now() : 0;
       // Over the think budget, a bot due to think steers (or coasts) this tick and thinks first on the next.
-      const over = due && every > 1 && thoughts >= cap && !deferredBefore.has(c.slot);
+      const over = due && every > 1 && thoughts >= cap && !deferredBefore.has(c.slot) && !c.bot.parkouring;
       const mayWait = every > 1 && (!due || over) && c.alive && !c.mount;
       // (A steering bot has no use for its goal, except a class's own input below.)
       let orderGoal = mayWait && !this.classes ? undefined : this.botGoal(c, hostiles, zombies, coop);
@@ -2271,7 +2277,8 @@ export class Match {
     // The common trips' corridors, here at setup rather than in a tick (a few ms each).
     this.botTrips();
     if (!this.director.vantage && [...roles.values()].some((r) => r === 'camper' || r === 'sniper')) {
-      this.director.vantage = new VantageBoard(vantageFor(places, (o, d, max) => this.physics.raycastWorld(o, d, max)));
+      // (With the roofs and ledges only parkour reaches, nav/parkour.ts: snipers' spots others don't go to.)
+      this.director.vantage = new VantageBoard(vantageFor(places, (o, d, max) => this.physics.raycastWorld(o, d, max), this.nav.parkourPlaces()));
       // Snipers' spots are worth more the better they look down the ways the enemy comes (the trips' corridors).
       this.director.vantage.lanes(
         this.botTrips().flatMap((t) => t.trip.corridors.map((c) => c.line)),
@@ -6038,7 +6045,7 @@ export class Match {
  * reads polymorphic.
  */
 function toView(c: Combatant, concealed = false): CombatantView {
-  return { slot: c.slot, pos: c.move.pos, yaw: c.yaw, pitch: c.pitch, health: c.health, armor: c.armor, alive: c.alive, stance: stanceOf(c.move), human: c.kind === 'human', mounted: !!c.mount, grounded: c.move.grounded, object: false, concealed, riding: c.move.zip !== undefined, climbing: !!c.move.climb, chute: !!c.move.chute, size: c.size, box: hitboxOf(c), hitScale: c.hitScale };
+  return { slot: c.slot, pos: c.move.pos, yaw: c.yaw, pitch: c.pitch, health: c.health, armor: c.armor, alive: c.alive, stance: stanceOf(c.move), human: c.kind === 'human', mounted: !!c.mount, grounded: c.move.grounded, object: false, concealed, riding: c.move.zip !== undefined, climbing: !!c.move.climb, chute: !!c.move.chute, size: c.size, box: hitboxOf(c), hitScale: c.hitScale, winded: !!c.move.winded };
 }
 
 /** Refill a view made by toView for this tick. */
@@ -6591,6 +6598,12 @@ export const RELAXED_RANGE = 45;
 const RELAXED_PORTAL = 6;
 /** Held buttons a coasting bot keeps (movement stance); fire, use, jump and the rest are one-shot. */
 const COAST_BUTTONS = BUTTON_SPRINT | BUTTON_CROUCH | BUTTON_PRONE;
+/**
+ * Route searches bots may start in a tick (NavWorld.beginTick; BOT_AI_PLAN.md Phase C item 4): a 96-bot match averages
+ * about ten a tick, its spikes (a respawn wave, a flag taken: everyone's goal moves at once) several times that; those
+ * over it wait a tick, following the route they have.
+ */
+const SEARCH_BUDGET = 24;
 
 /** Crouching steadies your aim; lying prone steadies it more. */
 const STANCE_SPREAD = [1, 0.7, 0.5] as const;

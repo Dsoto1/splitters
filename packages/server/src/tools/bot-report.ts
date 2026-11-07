@@ -102,10 +102,18 @@ interface BotRow {
   postKills?: number;
   /** Vantage spots it got to (campers, snipers), and rounds it fired from one. */
   posts?: number;
+  /** Of them, spots only parkour reaches (roofs, ledges: nav/parkour.ts). */
+  parkourPosts?: number;
   postShots?: number;
   /** Snipers: spots left after a shot or two or for being spotted, and seconds a shot was held for a better one. */
   moves?: number;
   held?: number;
+  /** Parkour moves made (nav/parkour.ts): drops, gap jumps, jumps up; and links it gave up on. */
+  parkour?: [number, number, number];
+  parkourGaveUp?: number;
+  parkourMissed?: number;
+  /** Route searches that kept to its group's corridor all the way (NavWorld.pathAlong). */
+  along?: number;
   /** Its style: Arena, Tactical, or neither ('mixed': the character's own way between them). */
   style?: BotStyleName;
 }
@@ -127,6 +135,11 @@ export type FailSpot = [number, number, number, number, number, number];
 
 export interface MatchRow {
   map: string;
+  /** The map's parkour links (nav/parkour.ts): drops, gap jumps, jumps up. */
+  parkourLinks?: [number, number, number];
+  /** Route searches the per-tick budget put off a tick, and teammates passed on the right (crowds), in the match. */
+  searchesPutOff?: number;
+  keptRight?: number;
   mode: string;
   seed: number;
   seconds: number;
@@ -543,6 +556,7 @@ function play(map: MapDocument, mode: GameMode, seed: number, seconds: number, s
         if (postAt.get(c.slot) !== key) {
           postAt.set(c.slot, key);
           r.posts!++;
+          if (v.parkour) r.parkourPosts = (r.parkourPosts ?? 0) + 1;
         }
       } else postAt.delete(c.slot);
       // Route variety, once a second: between a fifth and four fifths of the way along a trip of its team's toward
@@ -652,8 +666,15 @@ function play(map: MapDocument, mode: GameMode, seed: number, seconds: number, s
     r.style = styleOf(c.bot!.profile);
     r.moves = c.bot!.relocations;
     r.held = c.bot!.heldShots;
+    const pk = c.bot!.parkourDone;
+    r.parkour = [pk.drop, pk.gap, pk.up];
+    r.parkourGaveUp = c.bot!.parkourGaveUp;
+    r.parkourMissed = c.bot!.parkourMissed;
+    r.along = c.bot!.alongRoutes;
     out.bots.push(r);
   }
+  const links = match.nav.parkour;
+  out.parkourLinks = [links.filter((l) => l.kind === 'drop').length, links.filter((l) => l.kind === 'gap').length, links.filter((l) => l.kind === 'up').length];
   out.routes = routeUse.filter((u) => u.other + u.use.reduce((a, b) => a + b, 0) > 0);
   const pushes: NonNullable<MatchRow['pushes']> = {};
   for (const team of new Set(bots.map((c) => c.faction).filter((t): t is string => !!t))) {
@@ -671,6 +692,8 @@ function play(map: MapDocument, mode: GameMode, seed: number, seconds: number, s
   // Every navmesh path query (bots' routes, presses, sidesteps, lanes, modes...), and those that found no way.
   out.navQueries = simProfile.n.get('nav') ?? 0;
   out.navFails = simProfile.n.get('navFail') ?? 0;
+  out.searchesPutOff = match.nav.searchesPutOff;
+  out.keptRight = simProfile.n.get('botKeepRight') ?? 0;
   out.seconds = played;
   out.coverage = behaviour.coverage(played);
   if (btRow) out.breakthrough = btRow;
@@ -828,7 +851,9 @@ function printMatch(m: MatchRow): void {
   const fightT = sum(m.bots, (r) => r.fight ?? 0);
   const snipers = m.bots.filter((r) => r.job === 'sniper');
   if (m.weaponKills) console.log(`weapons (${getWeaponSet(m.set).name}): ${killsText(new Map(Object.entries(m.weaponKills)))}`);
-  console.log(`fights: in cover ${pct(sum(m.bots, (r) => r.coverFight ?? 0), fightT)} of fight time | scoped kills ${sum(m.bots, (r) => r.scopedKills ?? 0)} (from a vantage spot ${sum(m.bots, (r) => r.postKills ?? 0)}) | snipers ${snipers.length}: spots ${sum(snipers, (r) => r.posts ?? 0)}, rounds from spots ${sum(snipers, (r) => r.postShots ?? 0)}, moved on after shots ${sum(snipers, (r) => r.moves ?? 0)}, shots held ${sum(snipers, (r) => r.held ?? 0)} s, kills ${sum(snipers, (r) => r.kills)} (scoped ${sum(snipers, (r) => r.scopedKills ?? 0)})`);
+  const made = [0, 1, 2].map((k) => sum(m.bots, (r) => r.parkour?.[k] ?? 0));
+  if (m.parkourLinks) console.log(`parkour: links ${m.parkourLinks[0]} drops, ${m.parkourLinks[1]} gap jumps, ${m.parkourLinks[2]} jumps up | made ${made[0]} drops, ${made[1]} gap jumps, ${made[2]} jumps up (missed ${sum(m.bots, (r) => r.parkourMissed ?? 0)}, given up ${sum(m.bots, (r) => r.parkourGaveUp ?? 0)}) | routes along a group's corridor ${sum(m.bots, (r) => r.along ?? 0)} | searches put off a tick ${m.searchesPutOff ?? 0} | ticks keeping right of a teammate ${m.keptRight ?? 0}`);
+  console.log(`fights: in cover ${pct(sum(m.bots, (r) => r.coverFight ?? 0), fightT)} of fight time | scoped kills ${sum(m.bots, (r) => r.scopedKills ?? 0)} (from a vantage spot ${sum(m.bots, (r) => r.postKills ?? 0)}) | snipers ${snipers.length}: spots ${sum(snipers, (r) => r.posts ?? 0)} (only parkour reaches ${sum(snipers, (r) => r.parkourPosts ?? 0)}), rounds from spots ${sum(snipers, (r) => r.postShots ?? 0)}, moved on after shots ${sum(snipers, (r) => r.moves ?? 0)}, shots held ${sum(snipers, (r) => r.held ?? 0)} s, kills ${sum(snipers, (r) => r.kills)} (scoped ${sum(snipers, (r) => r.scopedKills ?? 0)})`);
   const why = new Map<string, number>();
   for (const r of m.bots) for (const [k, v] of Object.entries(r.why)) why.set(k, (why.get(k) ?? 0) + v);
   console.log(`idle by reason (% of alive time): ${[...why].sort((a, b) => b[1] - a[1]).slice(0, 12).map(([k, v]) => `${k} ${pct(v, alive)}`).join(', ')}`);
@@ -1184,7 +1209,8 @@ function printCompare(before: readonly MatchRow[], after: readonly MatchRow[]): 
     return t ? f.map((v) => `${((v / t) * 100).toFixed(0)}`).join('/') : '-';
   };
   console.log(`route choice by how the bots went (on the corridor they followed / off it / their own lane, %): ${follow(before)} → ${follow(after)}`);
-  // Retreating, of alive time (a hurt bot getting away from what it sees: BotBrain's 'retreat').
+  // Retreating, of alive time (a hurt bot getting away from what it sees: BotBrain's 'retreat'), and parkour moves a
+  // match (drops, gap jumps, jumps up; missed, given up).
   const doingShare = (ms: readonly MatchRow[], what: string) => {
     let t = 0;
     let all = 0;
@@ -1196,7 +1222,13 @@ function printCompare(before: readonly MatchRow[], after: readonly MatchRow[]): 
     }
     return all ? ((t / all) * 100).toFixed(1) : '-';
   };
-  console.log(`retreating ${doingShare(before, 'retreat')} → ${doingShare(after, 'retreat')} % of alive time`);
+  const moves = (ms: readonly MatchRow[]) => {
+    const k = [0, 1, 2].map((i) => sum(ms, (m) => sum(m.bots, (r) => r.parkour?.[i] ?? 0)) / Math.max(1, ms.length));
+    const gave = sum(ms, (m) => sum(m.bots, (r) => r.parkourGaveUp ?? 0)) / Math.max(1, ms.length);
+    const missed = sum(ms, (m) => sum(m.bots, (r) => r.parkourMissed ?? 0)) / Math.max(1, ms.length);
+    return `${k.map((v) => v.toFixed(1)).join('/')} (missed ${missed.toFixed(1)}, given up ${gave.toFixed(1)})`;
+  };
+  console.log(`retreating ${doingShare(before, 'retreat')} → ${doingShare(after, 'retreat')} % of alive time; parkour moves a match (drops/gap jumps/jumps up) ${moves(before)} → ${moves(after)}`);
   // Per mode: each mode's objective and the measures every mode has.
   const modes = [...new Set([...before, ...after].map((m) => m.mode))].sort();
   if (modes.length > 1 || !modes.includes('core.ctf')) {

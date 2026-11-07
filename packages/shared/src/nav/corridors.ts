@@ -42,6 +42,11 @@ export interface Corridor {
    * one-side runs, 6 and 9 against 14 and 17 on the same matches.)
    */
   readonly vias: readonly Vec3[];
+  /**
+   * The navmesh polygons it crosses, start to goal (graph indices: NavWorld.graph), for routes that keep to it all the
+   * way (NavWorld.pathAlong; BOT_AI_PLAN.md Phase C item 4).
+   */
+  readonly polys: readonly number[];
 }
 
 /** A trip: from, to, and its corridors (the first the shortest; at least one, or none when no route exists). */
@@ -367,7 +372,7 @@ function corridorsBetween(p: Prepared, s: number, t: number, from: Vec3, to: Vec
     const points = resample(line, SPACING);
     const measure = resample(line, LINE_STEP);
     const lineAt = alongOf(measure);
-    out.push({ points, pointsAt: alongOf(points), line: measure, lineAt, length, shared: k ? share : 0, via: null, viaApart: 0, vias: [] });
+    out.push({ points, pointsAt: alongOf(points), line: measure, lineAt, length, shared: k ? share : 0, via: null, viaApart: 0, vias: [], polys });
     for (const q of dense) found.add(q);
     // The ground near it costs more for the next search (not near the ends: every way meets there).
     const c = p.centre;
