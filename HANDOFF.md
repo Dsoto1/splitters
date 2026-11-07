@@ -51,6 +51,11 @@ The workflow is unchanged (CLAUDE.md):
      - `check/iron-coast`, landing as part 1.
    - **Part 2, the visual pass:** not started. The burning-wreck prop with smoke is saved unfinished on
      `wip/iron-coast-wreck`; it needs its palette atlas picture and content:check.
+   - **Known gaps:**
+     - haze and mist didn't take: both are 0 in the map;
+     - the casemates sit on 4 m levels (B2 12 m, B3 16 m);
+     - the terrain can't overhang, so the cave and tunnel are pieces standing in a cut cove, not buried rooms.
+     - Decisions are in `docs/map-briefs/iron_coast/DECISIONS_AND_DEVIATIONS.md`.
    - **Where the detail is:** driver tricks and the full list are in
      `docs/map-briefs/iron_coast/MAP_IMPLEMENTATION_MANIFEST.md`, under "Progress".
    - **The brief's essentials:**
