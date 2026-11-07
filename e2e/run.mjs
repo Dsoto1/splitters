@@ -2687,6 +2687,65 @@ async function teamsFlow(browser) {
   await setupLayoutFlow(browser);
   await setupLimitsFlow(browser);
   await spectateStartFlow(browser);
+  await friendlyFireChecks(browser);
+}
+
+/**
+ * Friendly fire (owner, 2026-11-07: turned on, it did nothing): set in Match setup, it reaches the match, and your
+ * rounds hurt a teammate in front of you; with it off (the default) the same rounds pass through them.
+ */
+async function friendlyFireChecks(browser) {
+  const out = {};
+  for (const ff of ['on', 'off']) {
+    const page = await (await browser.newContext({ viewport: { width: 960, height: 540 } })).newPage();
+    const errors = [];
+    page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
+    await page.addInitScript((on) => localStorage.setItem('cs.arcade', JSON.stringify({ map: 'sandgate', mode: 'core.tdm', bots: 3, skill: 'easy', scoreLimit: 40, minutes: 10, ...(on ? { friendlyFire: 'on' } : {}) })), ff === 'on');
+    await page.goto(CLIENT);
+    await page.click('#nav-play');
+    await page.click('#arcade-start');
+    await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() === 'playing', null, { timeout: T(60000) });
+    // A teammate held 4 m in front of you, three rounds of your gun fired straight at their chest.
+    const shot = await sim(page, (m, me) => {
+      const mate = m.combatants().find((c) => c !== me && c.alive && c.faction === me.faction && !c.mount);
+      if (!mate) return { rule: m.rules.friendlyFire ?? 'off', mate: false, tick: m.tick };
+      const at = { x: me.move.pos.x + Math.sin(me.yaw) * 4, y: me.move.pos.y, z: me.move.pos.z + Math.cos(me.yaw) * 4 };
+      if (mate.bot && !mate.queue.ffHeld) {
+        mate.queue.push = (...inputs) => Array.prototype.push.apply(mate.queue, inputs.map((i) => ({ ...i, forward: 0, right: 0, buttons: 0 })));
+        mate.queue.ffHeld = true;
+      }
+      mate.move = { ...mate.move, pos: at, velY: 0, vx: 0, vz: 0, grounded: true };
+      mate.health = mate.maxHealth;
+      mate.armor = 0;
+      mate.invulnerable = false;
+      globalThis.__ffMate = mate;
+      const eye = { x: me.move.pos.x, y: me.move.pos.y + 1.6, z: me.move.pos.z };
+      const chest = { x: at.x, y: at.y + 1.2, z: at.z };
+      const clear = m.physics.lineOfSight(eye, chest);
+      me.pitch = Math.atan2(chest.y - eye.y, 4);
+      const gun = [...me.weapons.values()].map((w) => w.def).find((d) => d.kind === 'hitscan' && d.damage > 0);
+      for (let i = 0; i < 3; i++) m.fireNow(me, { ...gun, alt: undefined }, 0);
+      return { rule: m.rules.friendlyFire ?? 'off', mate: true, gun: gun?.id, clear, tick: m.tick };
+    });
+    // Ballistic rounds fly a tick or two: a third of a second of match time is plenty.
+    await simWait(page, (m, me, t) => m.tick > t + 20, shot.tick, T(10000));
+    const after = await sim(page, () => {
+      const mate = globalThis.__ffMate;
+      if (!mate) return null;
+      const r = { hurt: mate.maxHealth - (mate.alive ? mate.health : 0) };
+      if (mate.queue?.ffHeld) {
+        delete mate.queue.push;
+        delete mate.queue.ffHeld;
+      }
+      return r;
+    });
+    out[ff] = { ...shot, hurt: after?.hurt ?? null, errors: errors.join('; ') };
+    await page.context().close();
+  }
+  check(out.on.rule === 'on' && out.off.rule === 'off', `Match setup's friendly fire reaches the match (on: ${out.on.rule}, off: ${out.off.rule})`);
+  check(out.on.mate && out.on.clear && out.on.hurt > 0, `friendly fire on: your rounds hurt a teammate in front of you (${JSON.stringify(out.on)})`);
+  check(out.off.mate && out.off.clear && out.off.hurt === 0, `friendly fire off: your rounds pass through a teammate unhurt (${JSON.stringify(out.off)})`);
+  check(!out.on.errors && !out.off.errors, `no page errors in the friendly fire matches (${out.on.errors}${out.off.errors})`);
 }
 
 /**
