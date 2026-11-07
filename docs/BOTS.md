@@ -791,8 +791,13 @@ the move saves a real walk; **agile** bots (flankers, the recon pair, snipers, t
 the link's start and end), the bot faces the link's way, runs (sprints for a gap: out of breath, it waits at the start
 for its stamina), jumps at the takeoff and tucks in the air, with no shooting, scoping or stance meanwhile; the match
 has it think every tick, and move in full detail, until it lands (its jump is timed to the tick). Down by the link's end
-counts as made, anywhere else as missed; one it doesn't start within 6 s is given up (`bot-report`: links, made, missed,
-given up).
+counts as made, anywhere else as missed. One it can't make (at it 4 s without going: 8 for a running jump; the clock
+goes on across stuck recoveries) is given up and **switched off for everyone** for the match (`NavWorld.linkFailed`: its
+navmesh polygon's flags to 0, bots plan again), and so is one missed three times (`bot-report`: links, made, missed, given
+up). Links are played through with the scenario's window panes, door panels and breakable walls in the way (they join
+the level only after the navmesh: a drop out through a window was made without its pane). A navmesh rebuilt mid-match
+(Fort Wars' pieces) has none: playing them through would be a hitch, and over the forts' walls they took attackers off
+the way to the flag.
 
 **Snipers' spots others don't go to:** `NavWorld.parkourPlaces()` are the main area's places that walking and the map's
 own links don't reach from the spawns, only parkour (a roof a jump gets onto). Vantage spots are looked for on them all,

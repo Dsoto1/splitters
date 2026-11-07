@@ -8,6 +8,17 @@ made only on a commit that passed CI on a check branch.
 
 ## Unreleased
 
+**Bot AI Phase C, items 1-4** (docs/BOT_AI_PLAN.md, "Phase C items 1-4, measured"; docs/BOTS.md):
+- Bots drop off ledges, jump gaps and jump up onto ledges as players do: links found at load and each checked by
+  playing it through the real movement code; flankers, scouts, snipers and Arena bots use them most, and snipers look
+  for spots on roofs and ledges only a jump reaches.
+- Routes keep off a bridge that has crumbled, a trapdoor that has opened, a drawbridge that is up, and come back when
+  the ground does.
+- Teammates meeting head-on in a doorway, a tunnel or on stairs pass each other on the right.
+- A squad's bots keep to their own lane all the way to the objective; route searches are spread over ticks in big
+  matches.
+- `pnpm bot-report`: parkour moves, routes along a lane, searches put off, sniper spots only parkour reaches.
+
 **Bot AI Phase C, item 0** (docs/BOT_AI_PLAN.md, "Phase C item 0, measured"):
 - Fixed: a Breakthrough match could stop with an error when a defender sent to fall back to the next sector was on the
   last one.

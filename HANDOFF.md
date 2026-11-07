@@ -164,6 +164,42 @@ the retreating share of alive time in `--compare`.
 **Run it:** `pnpm bot-report test_breakthrough --mode=core.breakthrough --players=16 --seeds=1,2,3,4,5,6,7,8,9,10,11,12
 --seconds=900 --json=…` (8 v 8; `--players=8 --seconds=600` for 4 v 4), then `--compare=a.json,b.json`. The Range's
 matches are chaotic: six seeds swing by two or three breakthroughs between near-identical builds; use twelve.
+
+**Items 1-4** (`wip/bots-c`, after item 0 landed; docs/BOTS.md "Parkour", "Ground that goes", "Crowds", "Routes along a
+group's corridor, and the search budget"; BOT_AI_PLAN.md "Phase C items 1-4, measured"):
+- **Parkour** (`nav/parkour.ts`): drops, gap jumps and jumps up as one-way navmesh links, found at load from every open
+  edge where they save a real walk, each played through `stepMovement` with the bot's own inputs (`parkourInput`) for
+  three body sizes and takeoffs either side, with the scenario's window panes, door panels and breakable walls in the
+  way; at most 160 a map, cached per navmesh. Bots run them (`BotBrain.parkourMove`: face, run, jump at the takeoff,
+  tuck), think every tick while on one; agile bots (flankers, recon, snipers, Arena) take them at walking's cost, the
+  rest at 1.6 times. A link a bot gives up on (6 s without starting, 4 s at it) or misses three times is switched off
+  for the match (`NavWorld.linkFailed`). Snipers' spots on places only parkour reaches score 0.45 more. Not on a navmesh
+  rebuilt mid-match (Fort Wars).
+- **Ground that goes** (`Scenario.surfaces`/`surfacesGone`, `NavWorld.setGone`): the tops of breakable props, free
+  blocks that crumble, break or hide, and non-lift movers' blocks share the opening flag bits; gone ones are kept off by
+  every route; bots replan.
+- **Crowds:** a teammate coming the other way within 4 m is passed on the right; strafing isn't judged stuck.
+- **Routes:** a group's bots route along their corridor's own polygons all the way (`NavWorld.pathAlong`); at most 24
+  route searches start in a tick (`NavWorld.beginTick`).
+- `bot-report`: parkour links, moves made, missed, given up; routes along a corridor; searches put off; ticks keeping
+  right; sniper spots only parkour reaches; `--compare`'s retreating share and parkour moves a match.
+
+**Numbers** (main 0d03c3bd against the branch, BOT_AI_PLAN.md): stuck recoveries a bot-minute CTF 1.40 → 1.34, Team
+Deathmatch 0.92 → 0.68 (the plan's "halve": not met); 38 parkour moves a CTF match, 22 a Team Deathmatch one, under 2 %
+missed; CTF captures 22 → 18 (takes 85 → 112), busiest way 57 → 61 %; **the Breakthrough Range at 8 v 8 broke through
+BT_AFTER** (ablations in the plan: no single part accounts for it, and with every change off the build replays main
+exactly). Load: navmesh build +13 % on ten big maps (Qasr Medina the most, about a second, cached per map after).
+
+**For the owner:**
+- Capitol Mall's upstairs office by (140, 4, 8), by the desks and a bookshelf (`prop_1626`): bots heading for the
+  objective get stuck there, 150-300 recoveries in a match, with or without parkour: a MapMaker fix (move the shelf off
+  the walkway?).
+- Qasr Medina: a bot on a 0.45 m wall top by (-13.3, 1.75, 26) stalls at its end (the character controller, the
+  pitfall above); the parkour drop off it is switched off by the first bot that can't make it.
+- The Breakthrough Range's attack is weaker with Phase C (BT_AFTER): worth a playtest before Iron Coast leans on it.
+
+**Pictures:** a sniper reaching a ledge only a jump gets onto, Fernwood Moon (top view and side view; session scratchpad
+`sniper-parkour-fernwood.png`, made by a scratch harness from a headless match).
 <!-- /bots-c -->
 
 ### Breakthrough mode, and Iron Coast's fort and gatehouse (`wip/breakthrough`, agents, 2026-11-07; from main 17d0e0a0, main 2c48debf (Bot AI Phase B parts 1 and 2), d3830145 (weapons intake 11-06) and 5087b0b6 (weapon sets) merged in; green on `check/breakthrough` at 647512a5, run 42373473729; not landed)
