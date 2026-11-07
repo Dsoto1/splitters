@@ -4018,6 +4018,21 @@ async function vehiclesFlow(browser) {
   await page.waitForFunction(() => /Drive/.test(document.getElementById('prompt').textContent ?? ''), null, { timeout: T(8000) }).catch(() => {});
   const prompt = await page.evaluate(() => document.getElementById('prompt').textContent);
   check(/Drive the Buggy/.test(prompt ?? ''), `the prompt offers the wheel (${prompt})`);
+  // It reads on sand, snow and sky (owner, 2026-11-07: "kinda dark, black font?"): white words, a light green key on
+  // a dark cap, each with a dark outline; the key's letter stands out from its cap (its ink was the dark of every other kbd).
+  const look = await page.evaluate(() => {
+    const el = document.getElementById('prompt');
+    const kbd = el.querySelector('kbd');
+    const rgb = (c) => (c.match(/[\d.]+/g) ?? []).map(Number);
+    const lum = ([r, g, b]) => [r, g, b].map((v) => ((v /= 255) <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4)).reduce((a, v, i) => a + v * [0.2126, 0.7152, 0.0722][i], 0);
+    const contrast = (a, b) => (Math.max(lum(a), lum(b)) + 0.05) / (Math.min(lum(a), lum(b)) + 0.05);
+    const ps = getComputedStyle(el);
+    const ks = kbd ? getComputedStyle(kbd) : null;
+    return { text: rgb(ps.color), shadow: ps.textShadow, key: ks ? rgb(ks.color) : null, cap: ks ? rgb(ks.backgroundColor) : null, keyOnCap: ks ? contrast(rgb(ks.color), rgb(ks.backgroundColor)) : 0 };
+  });
+  const [kr, kg, kb] = look.key ?? [0, 0, 0];
+  check(look.text.slice(0, 3).every((v) => v >= 240) && /rgba?\(0, 0, 0/.test(look.shadow) && kg >= 200 && kg > kr && kg > kb && look.keyOnCap >= 7, `the use prompt is white with a light green key on a dark cap, outlined (${JSON.stringify(look)})`);
+  if (process.env.E2E_SHOTS) await page.screenshot({ path: `${process.env.E2E_SHOTS}/vehicles-prompt.png`, timeout: T(60000) }).catch(() => {});
   // Press E (again, if a slow frame swallowed the press) until we're aboard.
   // A late press can still land after the wait: never press again once aboard (that gets you out).
   for (let i = 0; i < 4; i++) {
