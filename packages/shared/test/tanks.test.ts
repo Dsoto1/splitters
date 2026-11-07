@@ -443,6 +443,8 @@ describe('bots in tanks', () => {
     // A wall across z = 20 with a gap from x = -1.2 to 1.2 (2.4 m: a person's door, not a 2.9 m tank's).
     const physics = {
       boxClear: (c: { x: number; z: number }, h: { x: number; z: number }) => !(Math.abs(c.z - 20) < 0.3 + h.z && (c.x - h.x < -1.2 || c.x + h.x > 1.2)),
+      // Flat ground at y 0 (the rays down start 4 m over the route).
+      raycastHit: (o: { y: number }) => ({ dist: o.y }),
     };
     const through = [{ x: 0, y: 0, z: 0 }, { x: 0, y: 0, z: 40 }];
     expect(routeFits(physics, through, TANK.half[0])).toBe(false);
@@ -450,6 +452,9 @@ describe('bots in tanks', () => {
     // A route that stays short of the wall fits.
     const round = [{ x: 0, y: 0, z: 0 }, { x: 0, y: 0, z: 10 }, { x: 0, y: 0, z: 12 }];
     expect(routeFits(physics, round, TANK.half[0])).toBe(true);
+    // A rise of more than 1.2 m on the way (a ledge people climb over on the navmesh) is a wall to it.
+    const ledge = { ...physics, raycastHit: (o: { y: number; z: number }) => ({ dist: o.z > 6 ? o.y - 1.5 : o.y }) };
+    expect(routeFits(ledge, round, TANK.half[0])).toBe(false);
   });
 
   it('a bot drives a tank across an open field to the far side without getting stuck', () => {

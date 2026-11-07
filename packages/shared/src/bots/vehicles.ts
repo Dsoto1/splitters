@@ -127,28 +127,56 @@ export function boardingSpot(m: MountView, from: Vec3): Vec3 {
   return { x: m.pos.x + ox * c + oz * s, y: m.pos.y, z: m.pos.z - ox * s + oz * c };
 }
 
-/** Route clearance for a wide vehicle (routeFits): a box this tall (m, half height) centred this high over the route, every this many metres. */
+/** Route clearance for a wide vehicle (routeFits): a box this tall (m, half height) centred this high over the ground, every this many metres; a rise of more than FIT_STEP_UP m over the route is a wall. */
 const FIT_HALF_HEIGHT = 0.5;
 const FIT_LIFT = 1.4;
 const FIT_STEP = 2;
+const FIT_STEP_UP = 1.2;
+/** The ray down for the ground starts this high (m) over the ground so far. */
+const FIT_PROBE = 2.5;
+/** Off the route's line it may run (m, + right of the way). */
+const FIT_SHIFTS = [0, 0.75, -0.75, 1.5, -1.5, 2.5, -2.5];
 
 /**
- * Does a vehicle `halfWidth` m either side of its middle fit along `path` (the navmesh's route, sized for people)? A
- * box that wide (square, so any heading) is tested every FIT_STEP m from 0.9 to 1.9 m over the route, past the first
- * `skip` m (where the vehicle itself stands). A tank kept out of passages a person fits through but it doesn't: it
- * would wedge there (Iron Tide's hangar).
+ * Does a vehicle `halfWidth` m either side of its middle fit along `path` (the navmesh's route, sized for people)? Every
+ * FIT_STEP m past the first `skip` m (where the vehicle itself stands) the ground is found under the route (a ray down;
+ * the route's corners are far apart over open ground, and hills rise between them) and a box that wide (square, so any
+ * heading) must be clear from 0.9 to 1.9 m over it. A tank is kept out of passages a person fits through and it
+ * doesn't, where it would wedge (Iron Tide's hangar).
  */
-export function routeFits(physics: { boxClear(center: Vec3, half: Vec3): boolean }, path: readonly Vec3[], halfWidth: number, skip = 4): boolean {
+export function routeFits(
+  physics: { boxClear(center: Vec3, half: Vec3): boolean; raycastHit(origin: Vec3, dir: Vec3, max: number): { dist: number } | null },
+  path: readonly Vec3[],
+  halfWidth: number,
+  skip = 4,
+): boolean {
   const half = { x: halfWidth, y: FIT_HALF_HEIGHT, z: halfWidth };
+  const down = { x: 0, y: -1, z: 0 };
   let along = 0;
+  // The ground under the last sample that fitted: a rise of more than FIT_STEP_UP from it in one step is a ledge.
+  let prev = path[0]?.y ?? 0;
   for (let i = 1; i < path.length; i++) {
     const a = path[i - 1]!;
     const b = path[i]!;
     const len = Math.hypot(b.x - a.x, b.z - a.z);
+    // Sideways (right of the way): string-pulled routes hug corners, so the vehicle may run a little off the line.
+    const sx = len > 0 ? (b.z - a.z) / len : 0;
+    const sz = len > 0 ? -(b.x - a.x) / len : 0;
     for (let d = 0; d < len; d += FIT_STEP) {
       if (along + d < skip) continue;
       const t = d / len;
-      if (!physics.boxClear({ x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t + FIT_LIFT, z: a.z + (b.z - a.z) * t }, half)) return false;
+      const fits = FIT_SHIFTS.some((k) => {
+        const x = a.x + (b.x - a.x) * t + sx * k;
+        const z = a.z + (b.z - a.z) * t + sz * k;
+        // Down from a little over the ground so far (under a roof the vehicle stands beneath, over the hill ahead).
+        const y = Math.max(prev, a.y + (b.y - a.y) * t) + FIT_PROBE;
+        const hit = physics.raycastHit({ x, y, z }, down, FIT_PROBE + 4);
+        const ground = hit ? y - hit.dist : a.y + (b.y - a.y) * t;
+        if (ground > prev + FIT_STEP_UP || !physics.boxClear({ x, y: ground + FIT_LIFT, z }, half)) return false;
+        prev = ground;
+        return true;
+      });
+      if (!fits) return false;
     }
     along += len;
   }

@@ -315,6 +315,8 @@ const AMMO_DETOUR = 120;
 const SHELTERED_TARGET_SCALE = 3;
 /** A tank whose route to the goal doesn't fit it (routeFits) is left alone this long (s) before it is looked at again. */
 const TANK_NO_FIT_SECONDS = 20;
+/** The share of a tank's width the route clearance asks for (routeFits): it pushes past a little scraping, and a narrower check kept it off routes it drives fine. */
+const TANK_FIT_WIDTH = 0.8;
 /** A pickup a bot got stuck going for is left alone this long (s). */
 const PICKUP_GIVE_UP_SECONDS = 90;
 /** How far (m) a bot goes to hop into a teammate's vehicle. */
@@ -2975,7 +2977,7 @@ export class BotBrain {
       if (!route && !v.floats) return;
       if (route && pathLength(route) > horizontalDistance(v.pos, goal) * 1.5 && !v.floats) return;
       // A tank only where it fits: the route is for people, and a tank wedges in their passages.
-      if (route && v.sealed && v.half && !routeFits(view.physics, route, Math.min(v.half[0], v.half[2]))) {
+      if (route && v.sealed && v.half && !routeFits(view.physics, route, Math.min(v.half[0], v.half[2]) * TANK_FIT_WIDTH, Math.max(v.half[0], v.half[2]) + Math.min(v.half[0], v.half[2]) + 0.5)) {
         // (Not a give-up: another goal may give it a route that fits. Looked at again in TANK_NO_FIT_SECONDS.)
         this.avoidMounts.set(v.index, view.tick + TICK_RATE * TANK_NO_FIT_SECONDS);
         return;
