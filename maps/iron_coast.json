@@ -19,11 +19,11 @@
     ],
     "release": {
       "mapId": "m_volbp47vkztqi47u",
-      "versionId": "v_pmru55msmnsm3xl7",
-      "revision": 9,
-      "contentHash": "sha256:612b3f4ed86824ee931871d8903be1f562fb9e945a51c4c7eb16c864d76b4829",
+      "versionId": "v_wnd5winpwq2n6vs7",
+      "revision": 10,
+      "contentHash": "sha256:29b95ee6eda95b6902860cc9ee1712634442b61a1fe112f553ec6ae1854c73c9",
       "schemaVersion": 29,
-      "releasedAt": "2026-11-07T19:29:32.635Z"
+      "releasedAt": "2026-11-07T19:52:48.484Z"
     }
   },
   "classicStructure": {
@@ -206,6 +206,382 @@
         "y": -6,
         "z": 0,
         "rotation": 2
+      },
+      {
+        "id": "tile_jkkxm6bx1b",
+        "tile": "core.yard_ruins",
+        "x": -6,
+        "y": 2,
+        "z": 3,
+        "rotation": 0
+      },
+      {
+        "id": "tile_8s9t6jynqq",
+        "tile": "core.yard_ruins",
+        "x": -17,
+        "y": 2,
+        "z": 3,
+        "rotation": 0
+      },
+      {
+        "id": "tile_b6cr3gerb1",
+        "tile": "core.yard_ruins",
+        "x": 7,
+        "y": 2,
+        "z": 3,
+        "rotation": 0
+      },
+      {
+        "id": "tile_po9uni4ozi",
+        "tile": "core.yard_ruins",
+        "x": 16,
+        "y": 1,
+        "z": 4,
+        "rotation": 0
+      },
+      {
+        "id": "tile_5vg5bmp9t6",
+        "tile": "military.pillbox",
+        "x": -10,
+        "y": -1,
+        "z": 3,
+        "rotation": 2
+      },
+      {
+        "id": "tile_d6hy5bflos",
+        "tile": "military.pillbox",
+        "x": 13,
+        "y": 2,
+        "z": 3,
+        "rotation": 2
+      },
+      {
+        "id": "tile_utbi1msegg",
+        "tile": "military.wall",
+        "x": -22,
+        "y": 5,
+        "z": 4,
+        "rotation": 2
+      },
+      {
+        "id": "tile_ipfxnp9n8k",
+        "tile": "military.wall",
+        "x": -21,
+        "y": 5,
+        "z": 4,
+        "rotation": 2
+      },
+      {
+        "id": "tile_519abtp0hv",
+        "tile": "military.wall",
+        "x": -20,
+        "y": 5,
+        "z": 4,
+        "rotation": 2
+      },
+      {
+        "id": "tile_x813i2bqxz",
+        "tile": "military.wall",
+        "x": -19,
+        "y": 5,
+        "z": 4,
+        "rotation": 2
+      },
+      {
+        "id": "tile_x52unz4bra",
+        "tile": "military.wall",
+        "x": -15,
+        "y": 5,
+        "z": 4,
+        "rotation": 2
+      },
+      {
+        "id": "tile_9q10fsaiwb",
+        "tile": "military.wall",
+        "x": -14,
+        "y": 5,
+        "z": 4,
+        "rotation": 2
+      },
+      {
+        "id": "tile_0cj0zuz5na",
+        "tile": "military.wall",
+        "x": -13,
+        "y": 5,
+        "z": 4,
+        "rotation": 2
+      },
+      {
+        "id": "tile_iyvdgvyj2f",
+        "tile": "military.wall",
+        "x": -12,
+        "y": 5,
+        "z": 4,
+        "rotation": 2
+      },
+      {
+        "id": "tile_dvxi5u1y3t",
+        "tile": "military.wall",
+        "x": -9,
+        "y": 5,
+        "z": 4,
+        "rotation": 2
+      },
+      {
+        "id": "tile_rwg7k5ffae",
+        "tile": "military.wall",
+        "x": -8,
+        "y": 5,
+        "z": 4,
+        "rotation": 2
+      },
+      {
+        "id": "tile_as9k8mt2e9",
+        "tile": "military.wall",
+        "x": -7,
+        "y": 5,
+        "z": 4,
+        "rotation": 2
+      },
+      {
+        "id": "tile_7e4dj1r7a8",
+        "tile": "military.wall",
+        "x": 1,
+        "y": 5,
+        "z": 4,
+        "rotation": 2
+      },
+      {
+        "id": "tile_zalxbikfyn",
+        "tile": "military.wall",
+        "x": 2,
+        "y": 5,
+        "z": 4,
+        "rotation": 2
+      },
+      {
+        "id": "tile_tt2fsm500h",
+        "tile": "military.wall",
+        "x": 3,
+        "y": 5,
+        "z": 4,
+        "rotation": 2
+      },
+      {
+        "id": "tile_n30nxd2qhy",
+        "tile": "military.wall",
+        "x": 7,
+        "y": 5,
+        "z": 4,
+        "rotation": 2
+      },
+      {
+        "id": "tile_nnzamtau0e",
+        "tile": "military.wall",
+        "x": 8,
+        "y": 5,
+        "z": 4,
+        "rotation": 2
+      },
+      {
+        "id": "tile_t12jfl6igy",
+        "tile": "military.wall",
+        "x": 9,
+        "y": 5,
+        "z": 4,
+        "rotation": 2
+      },
+      {
+        "id": "tile_o3le9iibaa",
+        "tile": "military.wall",
+        "x": 10,
+        "y": 5,
+        "z": 4,
+        "rotation": 2
+      },
+      {
+        "id": "tile_jp88d5lotg",
+        "tile": "military.wall",
+        "x": 14,
+        "y": 5,
+        "z": 4,
+        "rotation": 2
+      },
+      {
+        "id": "tile_ckf707yljm",
+        "tile": "military.wall",
+        "x": 15,
+        "y": 5,
+        "z": 4,
+        "rotation": 2
+      },
+      {
+        "id": "tile_0m20qgjqhk",
+        "tile": "military.wall",
+        "x": 16,
+        "y": 5,
+        "z": 4,
+        "rotation": 2
+      },
+      {
+        "id": "tile_pnf7gbqs1f",
+        "tile": "military.wall",
+        "x": 19,
+        "y": 5,
+        "z": 4,
+        "rotation": 2
+      },
+      {
+        "id": "tile_3swy3sze3p",
+        "tile": "military.wall",
+        "x": 20,
+        "y": 5,
+        "z": 4,
+        "rotation": 2
+      },
+      {
+        "id": "tile_qt1g11wqf0",
+        "tile": "military.wall",
+        "x": 21,
+        "y": 5,
+        "z": 4,
+        "rotation": 2
+      },
+      {
+        "id": "tile_1cppnl6c54",
+        "tile": "military.wall",
+        "x": 22,
+        "y": 5,
+        "z": 4,
+        "rotation": 2
+      },
+      {
+        "id": "tile_bc2ofeevkz",
+        "tile": "harbor.office",
+        "x": -8,
+        "y": 12,
+        "z": 4,
+        "rotation": 0
+      },
+      {
+        "id": "tile_o8zhiw388t",
+        "tile": "medieval.house_balcony",
+        "x": -13,
+        "y": 14,
+        "z": 4,
+        "rotation": 1
+      },
+      {
+        "id": "tile_88gl1ac1r8",
+        "tile": "harbor.net_shed",
+        "x": -6,
+        "y": 16,
+        "z": 4,
+        "rotation": 0
+      },
+      {
+        "id": "tile_noucy8dfwd",
+        "tile": "medieval.house",
+        "x": 4,
+        "y": 12,
+        "z": 4,
+        "rotation": 0
+      },
+      {
+        "id": "tile_jlcafp2di2",
+        "tile": "harbor.warehouse",
+        "x": 8,
+        "y": 14,
+        "z": 4,
+        "rotation": 1
+      },
+      {
+        "id": "tile_c5mmyhzi6x",
+        "tile": "medieval.house_balcony",
+        "x": 3,
+        "y": 16,
+        "z": 4,
+        "rotation": 0
+      },
+      {
+        "id": "tile_znjewub4fj",
+        "tile": "medieval.house",
+        "x": -16,
+        "y": 10,
+        "z": 4,
+        "rotation": 0
+      },
+      {
+        "id": "tile_iau7j52fp7",
+        "tile": "harbor.net_shed",
+        "x": -20,
+        "y": 13,
+        "z": 4,
+        "rotation": 1
+      },
+      {
+        "id": "tile_ea2bd7c2jd",
+        "tile": "harbor.office",
+        "x": 14,
+        "y": 11,
+        "z": 4,
+        "rotation": 0
+      },
+      {
+        "id": "tile_n4x8z9l0d7",
+        "tile": "medieval.house",
+        "x": 18,
+        "y": 14,
+        "z": 4,
+        "rotation": 1
+      },
+      {
+        "id": "tile_tidxibvp91",
+        "tile": "medieval.house_balcony",
+        "x": 11,
+        "y": 17,
+        "z": 4,
+        "rotation": 0
+      },
+      {
+        "id": "tile_rurztneskv",
+        "tile": "harbor.net_shed",
+        "x": -15,
+        "y": 17,
+        "z": 4,
+        "rotation": 0
+      },
+      {
+        "id": "tile_2qkzy0b3ue",
+        "tile": "medieval.house",
+        "x": -3,
+        "y": 19,
+        "z": 4,
+        "rotation": 0
+      },
+      {
+        "id": "tile_aflq9hfy3l",
+        "tile": "harbor.office",
+        "x": 16,
+        "y": 19,
+        "z": 4,
+        "rotation": 0
+      },
+      {
+        "id": "tile_orq811ncdh",
+        "tile": "medieval.house_balcony",
+        "x": -19,
+        "y": 19,
+        "z": 4,
+        "rotation": 0
+      },
+      {
+        "id": "tile_g6odg75y6y",
+        "tile": "harbor.net_shed",
+        "x": 8,
+        "y": 19,
+        "z": 4,
+        "rotation": 0
       }
     ]
   },
@@ -41531,6 +41907,105 @@
       "x": 15,
       "y": -11,
       "z": 0,
+      "rotation": 0,
+      "mirror": false
+    },
+    {
+      "id": "setpiece_vu8zonh6bs",
+      "piece": "setpiece.trench_end_sandbag",
+      "x": -15,
+      "y": 0,
+      "z": 3,
+      "rotation": 2,
+      "mirror": false
+    },
+    {
+      "id": "setpiece_9fjsr3xioj",
+      "piece": "setpiece.trench_straight_sandbag",
+      "x": -14,
+      "y": 0,
+      "z": 3,
+      "rotation": 0,
+      "mirror": false
+    },
+    {
+      "id": "setpiece_2cf35oc2sk",
+      "piece": "setpiece.trench_straight_sandbag",
+      "x": -13,
+      "y": 0,
+      "z": 3,
+      "rotation": 0,
+      "mirror": false
+    },
+    {
+      "id": "setpiece_styz3gkaof",
+      "piece": "setpiece.trench_straight_sandbag",
+      "x": -12,
+      "y": 0,
+      "z": 3,
+      "rotation": 0,
+      "mirror": false
+    },
+    {
+      "id": "setpiece_dfj27bqajh",
+      "piece": "setpiece.trench_end_sandbag",
+      "x": -11,
+      "y": 0,
+      "z": 3,
+      "rotation": 0,
+      "mirror": false
+    },
+    {
+      "id": "setpiece_e9k09xva94",
+      "piece": "setpiece.trench_end",
+      "x": 9,
+      "y": 0,
+      "z": 3,
+      "rotation": 2,
+      "mirror": false
+    },
+    {
+      "id": "setpiece_h5zf3opaw7",
+      "piece": "setpiece.trench_straight",
+      "x": 10,
+      "y": 0,
+      "z": 3,
+      "rotation": 0,
+      "mirror": false
+    },
+    {
+      "id": "setpiece_22hj9dwkcl",
+      "piece": "setpiece.trench_straight",
+      "x": 11,
+      "y": 0,
+      "z": 3,
+      "rotation": 0,
+      "mirror": false
+    },
+    {
+      "id": "setpiece_b73dlqasmx",
+      "piece": "setpiece.trench_end",
+      "x": 12,
+      "y": 0,
+      "z": 3,
+      "rotation": 0,
+      "mirror": false
+    },
+    {
+      "id": "setpiece_nowum9kvl7",
+      "piece": "setpiece.trench_end_sandbag",
+      "x": -19,
+      "y": -2,
+      "z": 2,
+      "rotation": 2,
+      "mirror": false
+    },
+    {
+      "id": "setpiece_cpl9htgnxo",
+      "piece": "setpiece.trench_end_sandbag",
+      "x": -18,
+      "y": -2,
+      "z": 2,
       "rotation": 0,
       "mirror": false
     }
