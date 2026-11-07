@@ -221,6 +221,7 @@ import {
   teamLayoutLabel,
   type BoundaryStyle,
   newTerrain,
+  terrainSpacingFor,
   paintSlopes,
   blockBox,
   boxFootprint,
@@ -3109,7 +3110,10 @@ export class EditorApp {
     if (!t || !this.terrainHover) return;
     if (invert && (this.terrainBrush === 'raise' || this.terrainBrush === 'lower')) this.terrainBrush = this.terrainBrush === 'raise' ? 'lower' : 'raise';
     // The brush works on the document's own ground; Flatten levels it to the height under the pointer as shown.
-    this.stroke = { before: t, now: t, shown: this.view.ground ?? t, target: this.terrainHover.y, seed: (Math.random() * 1e9) | 0 };
+    // Flatten to the height typed in the Terrain tab, else to the height where the stroke starts.
+    const typed = $<HTMLInputElement>('ed-tr-flatten-y').value.trim();
+    const target = typed !== '' && Number.isFinite(Number(typed)) ? Number(typed) : this.terrainHover.y;
+    this.stroke = { before: t, now: t, shown: this.view.ground ?? t, target, seed: (Math.random() * 1e9) | 0 };
     this.strokeStep(1 / 30);
   }
 
@@ -3394,8 +3398,15 @@ export class EditorApp {
     $('ed-tr-new').addEventListener('click', () => {
       const size = Number($<HTMLSelectElement>('ed-tr-new-size').value);
       const ground = $<HTMLSelectElement>('ed-tr-new-ground').value as TerrainMaterial;
+      // Width and depth, when typed, make an oblong terrain (32-400 m each way); the grid widens past 320 m.
+      const side = (id: string) => {
+        const v = Number($<HTMLInputElement>(id).value);
+        return $<HTMLInputElement>(id).value.trim() !== '' && Number.isFinite(v) ? Math.max(32, Math.min(400, v)) : size;
+      };
+      const width = side('ed-tr-new-w');
+      const depth = side('ed-tr-new-d');
       // Just under ground-floor tiles, so the two never fight for the same pixels.
-      this.setTerrain('Create terrain', { ...newTerrain(size, 2, [0, 0], ground), baseY: -0.15 });
+      this.setTerrain('Create terrain', { ...newTerrain(width, terrainSpacingFor(width, depth), [0, 0], ground, depth), baseY: -0.15 });
     });
     for (const m of TERRAIN_MATERIALS) $<HTMLSelectElement>('ed-tr-new-ground').append(new Option(TERRAIN_MATERIAL_LABELS[m], m, m === 'grass', m === 'grass'));
     $('ed-tr-remove').addEventListener('click', () => {

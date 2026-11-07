@@ -283,8 +283,12 @@
           <div id="ed-tr-create">
             <p class="ed-note">Open ground you can sculpt into hills, ridges and canyons, then paint with grass, dirt, stone and more. Tiles and props sit on top.</p>
             <label class="stack">Size
-              <select id="ed-tr-new-size"><option value="96">96 m (skirmish)</option><option value="160" selected>160 m (medium)</option><option value="240">240 m (large)</option><option value="320">320 m (huge)</option></select>
+              <select id="ed-tr-new-size"><option value="96">96 m (skirmish)</option><option value="160" selected>160 m (medium)</option><option value="240">240 m (large)</option><option value="320">320 m (huge)</option><option value="400">400 m (largest)</option></select>
             </label>
+            <div class="ed-tr-swap" title="Optional: a terrain longer one way than the other (32-400 m each way). Blank: the size above, square. Past 320 m the vertices are 2.5 m apart">
+              <label class="stack">Width (m)<input id="ed-tr-new-w" type="number" min="32" max="400" step="4" placeholder="size" /></label>
+              <label class="stack">Depth (m)<input id="ed-tr-new-d" type="number" min="32" max="400" step="4" placeholder="size" /></label>
+            </div>
             <label class="stack">Ground<select id="ed-tr-new-ground"></select></label>
             <button id="ed-tr-new" class="primary">Create terrain</button>
           </div>
@@ -294,6 +298,7 @@
             <div id="ed-tr-brushes" class="tiles"></div>
             <label class="stack">Brush size <span id="ed-tr-radius-v">8 m</span><input id="ed-tr-radius" type="range" min="2" max="40" step="1" value="8" /></label>
             <label class="stack">Strength <span id="ed-tr-strength-v">50%</span><input id="ed-tr-strength" type="range" min="5" max="100" step="5" value="50" /></label>
+            <label class="stack" title="Flatten levels the ground to this height (m). Blank: the height under the pointer where the stroke starts">Flatten to (m)<input id="ed-tr-flatten-y" type="number" step="0.5" min="-50" max="200" placeholder="where you start" /></label>
             <div class="ed-tr-swap" title="Smooth the whole terrain in one undo step: small bumps and pits go, slopes, banks and hills keep their shape">
               <label class="stack">Smooth all<select id="ed-tr-smooth-all-amount"><option value="1.5">Light</option><option value="2.5" selected>Medium</option><option value="4">Strong</option></select></label>
               <button id="ed-tr-smooth-all">Smooth all</button>
