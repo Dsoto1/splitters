@@ -62,6 +62,9 @@ export const MIGRATIONS: ReadonlyMap<number, Migration> = new Map<number, Migrat
   // v26 -> v27: optional `setPieces` (placements, expanded into their parts on load) and `setPieceDefs`, the room
   // ceiling `vault`, the wall style `arch_segmental` and the facade `collegiate_stone`. Additive: v26 data is valid as is.
   [26, (doc) => ({ ...doc })],
+  // v27 -> v28: Breakthrough's `sector` and `objective` entity kinds, and a spawn's optional `sector` and `side` (its
+  // spawn group). Additive: v27 data is valid as is.
+  [27, (doc) => ({ ...doc })],
 ]);
 
 /** The race track's own settings as they were in v22 (missing = the v22 defaults). */

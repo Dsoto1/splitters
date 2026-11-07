@@ -2,7 +2,7 @@ import type { MapDocument, SpawnEntity } from '../map/schema.ts';
 import { raceTrack } from '../map/track.ts';
 import { BROWSER_MAX_PLAYERS, MAX_PLAYER_SLOTS, TICK_RATE } from './constants.ts';
 import { MAX_TEAMS, mapTeams } from './npc.ts';
-import { DEFAULT_RULES, GAME_MODES, MODE_LABELS, SCORE_LIMIT_MAX, isGameMode, isTeamMode, mapCanRun, type GameMode, type MatchRules } from './rules.ts';
+import { DEFAULT_RULES, GAME_MODES, MODE_LABELS, SCORE_LIMIT_MAX, isGameMode, isTeamMode, isTwoTeamMode, mapCanRun, type GameMode, type MatchRules } from './rules.ts';
 import { IMPROMPTU_MIN_PLAYERS } from './spawns.ts';
 import { botSetInUse, validateBotSet, type BotSet } from './botSet.ts';
 import { validBotCast } from '../content/botThemes.ts';
@@ -88,8 +88,7 @@ export type TeamAssign = 'balanced' | 'random' | 'fixed';
 /** Largest single team (two of them fill MAX_PLAYER_SLOTS: 48 v 48). */
 export const MAX_TEAM_SIZE = MAX_PLAYER_SLOTS / 2;
 
-/** Modes that are always exactly two teams (attack/defend or one flag each). */
-export const isTwoTeamMode = (mode: string): boolean => mode === 'core.ctf' || mode === 'core.forts' || mode === 'core.bomb' || mode === 'core.hostage';
+export { isTwoTeamMode } from './rules.ts';
 
 /** Modes where everyone is on one side against the map (no teams, no free-for-all). */
 export const isCoopMode = (mode: string): boolean => mode === 'core.coop' || mode === 'core.zombies';

@@ -3,6 +3,7 @@ import { CtfMode } from './ctf.ts';
 import { ElimMode } from './elim.ts';
 import { BombMode } from './bomb.ts';
 import { HostageMode } from './hostage.ts';
+import { BreakthroughMode } from './breakthrough.ts';
 import { FortsMode } from './forts.ts';
 import { KothMode } from './koth.ts';
 import type { ModeHost, ModeLogic } from './types.ts';
@@ -16,6 +17,7 @@ export { FortsMode, type FortPieceRt } from './forts.ts';
 export { FortBots } from './fortsBots.ts';
 export { HostageMode, HOSTAGE_ROUND_SECONDS } from './hostage.ts';
 export { BombMode, BOMB_DEFUSE_SECONDS, BOMB_FUSE_SECONDS, BOMB_PLANT_SECONDS, BOMB_ROUND_SECONDS } from './bomb.ts';
+export { BreakthroughMode, BT_BREAK_SECONDS, BT_DEFENDER_RESPAWN, BT_DEFUSE_SECONDS, BT_FALLBACK_DPS, BT_FALLBACK_SECONDS, BT_FINAL_SECONDS, BT_FUSE_SECONDS, BT_PLANT_SECONDS, BT_ZONE_SECONDS, inObjective, type BreakthroughSide, type BtObjectiveRt, type BtSectorRt } from './breakthrough.ts';
 
 /** The objective rules for a mode, or null for modes without any (deathmatch, TDM, co-op). */
 export function createMode(mode: GameMode, host: ModeHost): ModeLogic | null {
@@ -30,6 +32,8 @@ export function createMode(mode: GameMode, host: ModeHost): ModeLogic | null {
       return new BombMode(host);
     case 'core.hostage':
       return new HostageMode(host);
+    case 'core.breakthrough':
+      return new BreakthroughMode(host);
     case 'core.forts':
       return new FortsMode(host);
     default:

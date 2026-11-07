@@ -20,6 +20,8 @@ export * from './map/inspirations.ts';
 export * from './map/retired.ts';
 export * from './map/migrate.ts';
 export * from './map/validate.ts';
+export * from './map/validateBreakthrough.ts';
+export * from './map/sectors.ts';
 export * from './map/setPieces.ts';
 export * from './map/setPieceCheck.ts';
 export * from './map/setPieceLibrary.ts';

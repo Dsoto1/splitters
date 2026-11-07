@@ -18,7 +18,8 @@ import { WEAPON_CATEGORIES } from '../sim/weapons.ts';
  * and hills for Capture the Flag and King of the Hill, v18 the race `track`, v19 the transport plane and mount skins, v20 movers, logic-driven
  * lights and blocks, pitched blocks, team-only buttons/doors/zones and tinted liquids, v21 vehicles that ride on water, v22 the map's picture: `metadata.thumbnail`
  * and the camera it was taken from, `metadata.thumbnailCamera`, v23 one path primitive, v24 random weapon pickups:
- * a pickup's `random` category and `keepFixed`, v25 the `zipline` entity).
+ * a pickup's `random` category and `keepFixed`, v25 the `zipline` entity, v27 set pieces, v28 Breakthrough's
+ * `sector` and `objective` entities and spawn groups: a spawn's `sector` and `side`).
  *
  * Maps are data, never code. Every placed item carries a stable string ID and
  * references catalog content by content ID. Domains the spec reserves
@@ -186,6 +187,9 @@ export const ClassicStructure = z.object({
   tiles: z.array(TilePlacement).max(4096),
 });
 
+/** Breakthrough: the most sectors a map can have. */
+export const BREAKTHROUGH_MAX_SECTORS = 16;
+
 const EntityBase = z.object({
   id: StableId,
   position: Vec3Tuple,
@@ -203,6 +207,13 @@ export const SpawnEntity = EntityBase.extend({
     .regex(/^[a-z0-9_.]{2,64}$/)
     .nullable()
     .default(null),
+  /**
+   * Breakthrough (v28): this spawn point is in the spawn group of sector `sector` (its order, 1-based) for `side`
+   * (the attackers or the defenders, whichever team that is in a round). Breakthrough spawns each side at its group
+   * for the sector in play; other modes use it like any other spawn point. Absent: in no group.
+   */
+  sector: z.number().int().min(1).max(BREAKTHROUGH_MAX_SECTORS).optional(),
+  side: z.enum(['attack', 'defend']).optional(),
 });
 
 /** A pickup (health, armor, ammo, weapon, powerup) that respawns after being taken. */
@@ -586,6 +597,45 @@ export const FlagEntity = EntityBase.extend({
   team: z.string().regex(/^[a-z0-9_.]{2,64}$/),
 });
 
+/**
+ * Breakthrough (v28): a sector of the attackers' push (sim/modes/breakthrough.ts). The attackers take the sectors in
+ * `order` (1, 2, 3…). Its line runs through `position`, square to `yaw` (the way the attackers push): where the
+ * sector's ground starts. Once the sector before it falls, defenders still on the attackers' side of the line have
+ * 10 s to fall back over it. Its objectives and spawn groups name its order; `name` is shown on the sector strip.
+ */
+export const SectorEntity = EntityBase.extend({
+  kind: z.literal('sector'),
+  yaw: z.number().finite().default(0),
+  order: z.number().int().min(1).max(BREAKTHROUGH_MAX_SECTORS).default(1),
+  /** How many of its targets must be destroyed for it to fall ("2 of 4"); absent: all of them. */
+  need: z.number().int().min(1).max(32).optional(),
+  /** Seconds it puts on the clock (the first sector's to start with, each next one's when the one before falls); absent: the match's sector time. */
+  seconds: z.number().int().min(30).max(1800).optional(),
+});
+
+/** Breakthrough objective kinds: a capture zone, a target to destroy (plant a charge; defenders defuse it), and the capture zone that ends the round. */
+export const BREAKTHROUGH_OBJECTIVES = ['zone', 'target', 'final'] as const;
+export type BreakthroughObjective = (typeof BREAKTHROUGH_OBJECTIVES)[number];
+
+/**
+ * Breakthrough (v28): one of a sector's objectives. `zone`: stand in it to capture it (as a King of the Hill zone,
+ * contested while a defender stands in it); `target`: plant a charge at it (Use, then hold still), which the
+ * defenders can defuse, as in Bomb; `final`: a capture zone that ends the round. Position: the floor at its centre.
+ */
+export const ObjectiveEntity = EntityBase.extend({
+  kind: z.literal('objective'),
+  objective: z.enum(BREAKTHROUGH_OBJECTIVES).default('zone'),
+  yaw: z.number().finite().default(0),
+  /** The sector it belongs to (that sector's order). */
+  sector: z.number().int().min(1).max(BREAKTHROUGH_MAX_SECTORS).default(1),
+  /** Its short name on the HUD and the map ("A1", "B3", "C"). */
+  label: z.string().min(1).max(3).default('A'),
+  /** Zones: the zone's radius; targets: how close you must stand to plant or defuse (m). */
+  radius: z.number().min(1).max(20).default(5),
+  /** Zones: seconds one attacker alone takes to capture it (more are quicker); absent: 20, a final hold 40. */
+  seconds: z.number().int().min(5).max(300).optional(),
+});
+
 /** King of the Hill: one of the places the hill moves between (in map order). Position: the floor at its centre. */
 export const HillEntity = EntityBase.extend({
   kind: z.literal('hill'),
@@ -721,7 +771,7 @@ export const ZiplineEntity = EntityBase.extend({
   sag: z.number().min(0).max(0.1).default(0.03),
 });
 
-export const MapEntity = z.discriminatedUnion('kind', [SpawnEntity, PickupEntity, DoorEntity, ButtonEntity, DestructibleEntity, ZoneEntity, TrapEntity, EncounterEntity, PropEntity, MountEntity, PadEntity, BlockEntity, WaterEntity, FlagEntity, HillEntity, LadderEntity, BombsiteEntity, HostageEntity, RescueEntity, LightEntity, AirplaneEntity, MoverEntity, PortalEntity, ZiplineEntity]);
+export const MapEntity = z.discriminatedUnion('kind', [SpawnEntity, PickupEntity, DoorEntity, ButtonEntity, DestructibleEntity, ZoneEntity, TrapEntity, EncounterEntity, PropEntity, MountEntity, PadEntity, BlockEntity, WaterEntity, FlagEntity, HillEntity, LadderEntity, BombsiteEntity, HostageEntity, RescueEntity, LightEntity, AirplaneEntity, MoverEntity, PortalEntity, ZiplineEntity, SectorEntity, ObjectiveEntity]);
 
 export const RELATIONS = ['ally', 'neutral', 'enemy'] as const;
 
@@ -1168,6 +1218,8 @@ export type WaterEntity = z.infer<typeof WaterEntity>;
 export type FlagEntity = z.infer<typeof FlagEntity>;
 export type HillEntity = z.infer<typeof HillEntity>;
 export type BombsiteEntity = z.infer<typeof BombsiteEntity>;
+export type SectorEntity = z.infer<typeof SectorEntity>;
+export type ObjectiveEntity = z.infer<typeof ObjectiveEntity>;
 export type HostageEntity = z.infer<typeof HostageEntity>;
 export type RescueEntity = z.infer<typeof RescueEntity>;
 export type LightEntity = z.infer<typeof LightEntity>;

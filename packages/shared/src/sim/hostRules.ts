@@ -2,15 +2,15 @@ import type { MapDocument } from '../map/schema.ts';
 import type { HostRulesPatch } from '../protocol.ts';
 import { MAX_PLAYER_SLOTS } from './constants.ts';
 import { limitsScale, suggestedLimits } from './matchSetup.ts';
-import { MODE_LABELS, isTeamMode, mapCanRun, rulesForMap, rulesForMode, type GameMode, type MatchRules } from './rules.ts';
+import { MODE_LABELS, isTeamMode, isTwoTeamMode, mapCanRun, rulesForMap, rulesForMode, type GameMode, type MatchRules } from './rules.ts';
 
 /** Rules that aren't about the map or the mode: they stay as the host set them when the map changes. */
 const KEPT = ['teamAssign', 'hostTeam', 'bodySizes', 'characterStats', 'randomCharacters', 'emotes', 'botStyle', 'botCast', 'killstreaks', 'mixPickups', 'dropWeapons', 'squadSpawn', 'friendlyFire', 'weapons', 'classes', 'classLimit', 'vehicleDamage', 'gravity', 'fallDamage'] as const;
 /** Kept too when the mode stays the same (they mean different things in different modes). */
-const SAME_MODE = ['scoreLimit', 'timeLimitSeconds', 'respawnDelayTicks', 'fortBuildSeconds', 'fortCombatSeconds', 'fortCycles', 'fortBudget'] as const;
+const SAME_MODE = ['scoreLimit', 'timeLimitSeconds', 'respawnDelayTicks', 'fortBuildSeconds', 'fortCombatSeconds', 'fortCycles', 'fortBudget', 'breakthroughPool', 'breakthroughSectorSeconds', 'breakthroughSwap'] as const;
 
 /** Teams in a mode's rules: two-team modes always two; others the sizes listed (two when none are). */
-export const teamCount = (rules: MatchRules): number => (!isTeamMode(rules.mode) ? 0 : rules.mode === 'core.ctf' || rules.mode === 'core.forts' || rules.mode === 'core.bomb' || rules.mode === 'core.hostage' ? 2 : Math.max(2, rules.teamSizes?.length ?? 2));
+export const teamCount = (rules: MatchRules): number => (!isTeamMode(rules.mode) ? 0 : isTwoTeamMode(rules.mode) ? 2 : Math.max(2, rules.teamSizes?.length ?? 2));
 
 /** "8v8", "4v4v4": teams of one size. */
 export const teamsLabel = (teams: number, size: number): string => Array.from({ length: teams }, () => size).join('v');

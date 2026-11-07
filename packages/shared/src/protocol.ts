@@ -284,6 +284,13 @@ export type GameEvent =
   /** Hostage Rescue: hostage `i` (index in ModeSnapshot.hg) started following `s`, was left behind, or was rescued. */
   | { e: 'hostage'; a: 'follow' | 'stop' | 'rescue'; i: number; s: number | null }
   | { e: 'bomb'; a: 'pickup' | 'drop' | 'plant' | 'defuse' | 'explode'; s: number | null; i?: number; p?: Tuple3 }
+  /**
+   * Breakthrough (`i`: an objective's entity index): a zone captured (`capture`); a charge planted at a target by `s`,
+   * defused by `s`, or gone off (`destroy`, at `p`); sector `n` (0-based) fallen to `team` (`sector`); round `n` won
+   * by `team` (`round`); round `n` starting with `team` attacking (`start`); the attackers' reinforcements down to `n`
+   * (`pool`: at a quarter, and when spent).
+   */
+  | { e: 'bt'; a: 'capture' | 'plant' | 'defuse' | 'destroy' | 'sector' | 'round' | 'start' | 'pool'; s?: number | null; i?: number; n?: number; team?: string | null; p?: Tuple3 }
   /** Race: `s` passed checkpoint `n`, started lap `n`, finished in place `n` (`t` race time in ms), set a best lap (`t` ms), or the start was given (`s` -1). */
   | { e: 'race'; a: 'gate' | 'lap' | 'finish' | 'best' | 'go'; s: number; n: number; t?: number }
   // Scenario events. `i` is the entity's index in map.entities (or the objective's index in map.logic.objectives).
@@ -436,7 +443,37 @@ export interface ModeSnapshot {
   fp?: [number, number, number, number, number, number, number, number][];
   /** Race (see RaceSnapshot). */
   rc?: RaceSnapshot;
+  /**
+   * Breakthrough: [round (1-based), rounds (1, or 2 with the sides swapped), attacking team index, sector in play
+   * (0-based; the sector count once the last has fallen), reinforcements left, seconds left on the clock, seconds
+   * until the next round (0 while in play), how the round stands (BT_ROUND_*)].
+   */
+  bt?: [number, number, number, number, number, number, number, number];
+  /**
+   * Breakthrough objectives, all of the map's in map order: [entity index, state (BT_OBJ_*), progress 0-100 (a zone's
+   * capture; a target's plant or defuse under way, -1 none), who stands in a zone (BT_IN_*) or a planted charge's
+   * fuse in seconds, the slot planting or defusing (-1 nobody)].
+   */
+  bo?: [number, number, number, number, number][];
+  /** Breakthrough: defenders behind the line, as [slot, seconds before it starts to hurt (0: hurting now)]. */
+  bf?: [number, number][];
 }
+
+/** Breakthrough objective states (ModeSnapshot.bo): a later sector's, in play, a charge planted at it, captured or destroyed, or not needed (its sector fell without it). */
+export const BT_OBJ_WAITING = 0;
+export const BT_OBJ_ACTIVE = 1;
+export const BT_OBJ_PLANTED = 2;
+export const BT_OBJ_DONE = 3;
+export const BT_OBJ_SKIPPED = 4;
+/** Who stands in a Breakthrough zone (ModeSnapshot.bo): nobody, attackers only, defenders only, both (contested). */
+export const BT_IN_NOBODY = 0;
+export const BT_IN_ATTACKERS = 1;
+export const BT_IN_DEFENDERS = 2;
+export const BT_IN_BOTH = 3;
+/** How a Breakthrough round stands (ModeSnapshot.bt): in play, won by the attackers, held by the defenders. */
+export const BT_ROUND_PLAYING = 0;
+export const BT_ROUND_ATTACKERS = 1;
+export const BT_ROUND_DEFENDERS = 2;
 
 /**
  * Race state: `st` 0 on the grid (countdown), 1 racing, 2 the leader has

@@ -806,7 +806,8 @@ export class Match {
           killY: this.killY,
           combatants: () => this.combatants(),
           emit: (ev) => this.pendingEvents.push(ev),
-          endRound: () => this.endRound(),
+          endRound: (winner) => (winner === undefined ? this.endRound() : this.endRound(undefined, undefined, undefined, winner)),
+          hurt: (c, amount, cause) => this.damage(c, amount, null, cause),
           respawn: (c) => {
             this.leaveMount(c, false);
             this.spawn(c);
@@ -5100,7 +5101,9 @@ export class Match {
       occupants.push(o.move.pos);
       if (this.hostile(c, o)) enemies.push(o.move.pos);
     }
-    const own = this.teams && c.faction ? this.spawnPoints.filter((sp) => sp.team === c.faction) : [];
+    // A mode may say where (Breakthrough: the side's spawn group for the sector in play).
+    const forMode = this.mode?.spawnSpots?.(c) ?? null;
+    const own = forMode?.length ? forMode : this.teams && c.faction ? this.spawnPoints.filter((sp) => sp.team === c.faction) : [];
     const shared = this.spawnPoints.filter((sp) => sp.team === null);
     // A team without spawns of its own (more teams than the map has bases) uses the shared ones, else anyone's, farthest from enemies.
     const candidates = own.length ? own : shared.length ? shared : this.spawnPoints;
@@ -5280,7 +5283,7 @@ export class Match {
   /** The map a "Next map" logic action sent everyone on to (a suite map ID; hosts check it), once the round has ended. */
   nextMap: string | null = null;
 
-  private endRound(forced?: number | null, outcome?: 'victory' | 'defeat', next?: string): void {
+  private endRound(forced?: number | null, outcome?: 'victory' | 'defeat', next?: string, winTeam?: string | null): void {
     if (this.phase !== 'playing') return;
     if (next) this.nextMap = next;
     const ranked = this.combatants().sort((a, b) => b.kills - a.kills);
@@ -5293,9 +5296,10 @@ export class Match {
     this.bullets = [];
     this.zones = [];
     if (this.teams && !outcome) {
-      // Team Deathmatch: the highest team score wins; a tie at the top is a draw (logic can still name a player, whose team wins).
+      // Team Deathmatch: the highest team score wins; a tie at the top is a draw (logic can still name a player, whose
+      // team wins; a mode can name the team: Breakthrough's attack, or the better of its two rounds).
       const scores = [...this.teamScores()].sort((x, y) => y[1] - x[1]);
-      const team = named && !named.npc ? named.faction : scores.length > 1 && scores[0]![1] === scores[1]![1] ? null : (scores[0]?.[0] ?? null);
+      const team = winTeam !== undefined ? winTeam : named && !named.npc ? named.faction : scores.length > 1 && scores[0]![1] === scores[1]![1] ? null : (scores[0]?.[0] ?? null);
       this.pendingEvents.push({ e: 'round_end', winner: null, team });
       return;
     }
@@ -5486,6 +5490,9 @@ export class Match {
   }
 
   timeLeftSeconds(): number {
+    // A mode with a clock of its own shows it while in play (Breakthrough's sector clock).
+    const own = this.phase === 'playing' ? (this.mode?.clock?.() ?? null) : null;
+    if (own !== null) return own;
     return Number.isFinite(this.phaseEndTick) ? Math.max(0, Math.ceil((this.phaseEndTick - this.tick) / TICK_RATE)) : 0;
   }
 
@@ -5607,7 +5614,7 @@ export class Match {
   private squadSpawnSpot(c: Combatant): { pos: Vec3; yaw: number } | null {
     if (!this.teams || !c.faction || this.rules.squadSpawn === false || c.kind === 'npc') return null;
     const enemies = this.actors().filter((o) => o.alive && this.hostile(c, o));
-    const mates = this.combatants().filter((o) => o !== c && o.alive && !o.mount && o.faction === c.faction && o.move.grounded && this.tick - (o.hurtAt ?? -Infinity) > TICK_RATE * 4 && !enemies.some((e) => distance(e.move.pos, o.move.pos) < 20));
+    const mates = this.combatants().filter((o) => o !== c && o.alive && !o.mount && o.faction === c.faction && o.move.grounded && this.tick - (o.hurtAt ?? -Infinity) > TICK_RATE * 4 && !enemies.some((e) => distance(e.move.pos, o.move.pos) < 20) && this.mode?.spawnBeside?.(c, o) !== false);
     if (!mates.length) return null;
     const mate = mates[Math.floor(this.rng() * mates.length)]!;
     // Only beside a teammate on walkable ground (the navmesh), and onto it: one stuck where nobody walks drew every
@@ -5678,8 +5685,9 @@ export class Match {
   /** Credit objective plays (the scoreboard's Caps / Bomb / Rescues column) to the player who made them. */
   private noteObjectives(events: readonly GameEvent[]): void {
     for (const ev of events) {
-      const play = (ev.e === 'flag' && ev.a === 'capture') || (ev.e === 'bomb' && (ev.a === 'plant' || ev.a === 'defuse')) || (ev.e === 'hostage' && ev.a === 'rescue');
-      if (!play || ev.s === null) continue;
+      // (Breakthrough credits a zone's capture to the attackers standing in it itself.)
+      const play = (ev.e === 'flag' && ev.a === 'capture') || ((ev.e === 'bomb' || ev.e === 'bt') && (ev.a === 'plant' || ev.a === 'defuse')) || (ev.e === 'hostage' && ev.a === 'rescue');
+      if (!play || ev.s === null || ev.s === undefined) continue;
       const c = this.slots[ev.s];
       if (c) c.objective++;
     }

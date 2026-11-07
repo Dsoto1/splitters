@@ -7,6 +7,7 @@ import type { Combatant } from '../match.ts';
 import type { PlayerInput } from '../movement.ts';
 import type { PhysicsWorld } from '../physics.ts';
 import type { MatchRules } from '../rules.ts';
+import type { SpawnSpot } from '../spawns.ts';
 
 /**
  * What an objective mode (Capture the Flag, King of the Hill, Elimination)
@@ -23,8 +24,10 @@ export interface ModeHost {
   readonly killY: number;
   combatants(): Combatant[];
   emit(ev: GameEvent): void;
-  /** End the round now (the top team score wins). */
-  endRound(): void;
+  /** End the round now: the top team score wins, or `winner` (a team ID; null: a draw) when given. */
+  endRound(winner?: string | null): void;
+  /** Hurt a player for the mode (Breakthrough: a defender left behind the line), with no attacker; `cause` names it in the kill feed. */
+  hurt?(c: Combatant, amount: number, cause: string): void;
   /** Put a player back at a spawn point, alive and freshly equipped (out of any seat). */
   respawn(c: Combatant): void;
   /** Height of the floor under a point (within a few metres), or null over a drop. */
@@ -37,8 +40,8 @@ export interface ModeHost {
   explode(at: Vec3, radius: number, damage: number, by: Combatant | null): void;
   /** The match's collision world (Fort Wars adds and removes pieces in it). */
   readonly physics: PhysicsWorld;
-  /** The map's spawn points. */
-  readonly spawnPoints: readonly { pos: Vec3; yaw: number; team: string | null }[];
+  /** The map's spawn points: the map's own first, in the order of its spawn entities (then any the match made up). */
+  readonly spawnPoints: readonly SpawnSpot[];
   /** Rebuild the bots' navmesh with these extra obstacles (Fort Wars, when the forts are done); false when the map is too big to do it quickly. */
   rebuildNav(extra: readonly WorldBox[]): boolean;
 }
@@ -80,4 +83,11 @@ export interface ModeLogic {
   splash?(at: Vec3, radius: number, damage: number, edge: number, attacker: Combatant | null): void;
   /** Adjust a Player Bot's input after it thought (Fort Wars: shoot through enemy walls in the way). */
   botInput?(c: Combatant, input: PlayerInput): void;
+  // Optional hooks (Breakthrough).
+  /** The spawn points this player may use now (Breakthrough: its side's group for the sector in play); null: the match's usual choice. */
+  spawnSpots?(c: Combatant): readonly SpawnSpot[] | null;
+  /** May this player spawn beside this teammate (squad spawn)? Absent: yes. */
+  spawnBeside?(c: Combatant, mate: Combatant): boolean;
+  /** Seconds the match clock shows while in play (Breakthrough: the sector clock); null: the match's own. */
+  clock?(): number | null;
 }
