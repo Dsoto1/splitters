@@ -53,3 +53,12 @@ describe('compare.mjs', () => {
     expect(histQuantile(edges, [90, 0, 0, 10, 0], 0.95)).toBeGreaterThan(4);
   });
 });
+
+describe("the recording's main-thread watch (performance round 4)", () => {
+  it('reports nothing, and throws nothing, where the browser has no long-task or long-frame entries', async () => {
+    const { watchMainThread } = await import('../src/game/perfRecorder.ts');
+    const w = watchMainThread();
+    expect(w.blocks(0, performance.now())).toEqual([]);
+    w.stop();
+  });
+});
