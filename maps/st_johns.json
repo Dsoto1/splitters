@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 27,
+  "formatVersion": 28,
   "metadata": {
     "id": "st_johns",
     "name": "St. John's",
@@ -22,11 +22,11 @@
     ],
     "release": {
       "mapId": "m_q6ux6zjoxe4ehs3o",
-      "versionId": "v_bch2ciywalhuu6gp",
-      "revision": 2,
-      "contentHash": "sha256:1471050b2e2f4caddc4a3e69e1aaaa5bc5ec3437c41643f3ff0bd43a210145c9",
-      "schemaVersion": 27,
-      "releasedAt": "2026-11-07T00:29:55.227Z"
+      "versionId": "v_iw2onflu627kqfbw",
+      "revision": 3,
+      "contentHash": "sha256:11728bc7b7b35b57f908267ca9f2fd13d5bcf638253a3b7f37a760fed81d3e82",
+      "schemaVersion": 28,
+      "releasedAt": "2026-11-07T11:05:15.531Z"
     }
   },
   "classicStructure": {
@@ -107914,5 +107914,6 @@
       "rotation": 0,
       "mirror": false
     }
-  ]
+  ],
+  "weaponSet": "military"
 }

@@ -473,6 +473,7 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
       if (r.friendlyFire !== undefined) put('ff', r.friendlyFire);
       if (r.mixPickups !== undefined) put('mix', r.mixPickups);
       if (r.dropWeapons !== undefined) put('drops', r.dropWeapons);
+      if (r.weaponSet !== undefined) put('set', r.weaponSet ?? undefined);
     }
     if (managed && cmd.c === 'bots' && cmd.style) serverRules = setServerRule(serverRules, 'style', cmd.style, { mode: match.rules.mode });
     if (managed && cmd.c === 'bots' && cmd.cast !== undefined) serverRules = setServerRule(serverRules, 'cast', cmd.cast === null ? undefined : castRuleValue(cmd.cast), { mode: match.rules.mode });
@@ -951,6 +952,7 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
         if (spec.key === 'ff') patch.friendlyFire = read as 'off' | 'half' | 'on';
         if (spec.key === 'mix') patch.mixPickups = !!read;
         if (spec.key === 'drops') patch.dropWeapons = read !== false;
+        if (spec.key === 'set') patch.weaponSet = typeof read === 'string' && read !== 'map' ? read : null;
         const r = control.apply({ c: 'rules', rules: patch });
         if (r.error) return r.error;
         if (r.notice) notice(r.notice.replace(/^Admin/, by));

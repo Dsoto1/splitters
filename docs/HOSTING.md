@@ -492,6 +492,7 @@ mode playing.
 | Time limit | Match rules → Time limit | `rules time 15` | `RULES.modes.<mode>.time` | restart |
 | Respawn delay | Match rules → Respawn delay | `rules respawn 3` | `RULES.modes.<mode>.respawn` | restart |
 | Friendly fire | Match rules → Friendly fire | `rules ff half` | `RULES.ff` | restart |
+| Weapon set (Standard, Military, Sci-fi, Medieval, Chaos, Mixed bag; docs/WEAPON_SETS_PLAN.md) | Match rules → Weapon set | `rules set military` (`map`: the map's default) | `RULES.set` | live (pickups at once, loadouts at each spawn) |
 | Mix up weapon pickups | Match rules → Mix up weapon pickups | `rules mix on` | `RULES.mix` | live |
 | Drop weapon on death | Match rules → Drop weapon on death | `rules drops off` | `RULES.drops` | live |
 | Team leaders, Leader hunt | Match rules → Team leaders | `rules leaders vip` | `RULES.leaders` (or `LEADERS`) | next match |

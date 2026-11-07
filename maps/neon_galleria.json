@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 27,
+  "formatVersion": 28,
   "metadata": {
     "id": "neon_galleria",
     "name": "Neon Galleria",
@@ -22,11 +22,11 @@
     ],
     "release": {
       "mapId": "m_uy54jdpkmne5vzsk",
-      "versionId": "v_vuqfc3ahygcm3rlh",
-      "revision": 1,
-      "contentHash": "sha256:9e13cdd7a53e7eea80b46ccc558209aaa0370cafa65b4e4120e5ad111149bcdf",
-      "schemaVersion": 27,
-      "releasedAt": "2026-11-06T23:05:17.019Z"
+      "versionId": "v_b2qh7s6yqt46ucp6",
+      "revision": 2,
+      "contentHash": "sha256:4d8387cb2d56d01f36d0d4f1354e459cc9547544f59d9813ad5ac4913cabc34e",
+      "schemaVersion": 28,
+      "releasedAt": "2026-11-07T11:19:34.569Z"
     }
   },
   "classicStructure": {
@@ -25954,5 +25954,6 @@
       8
     ]
   },
-  "dependencies": []
+  "dependencies": [],
+  "weaponSet": "mixed"
 }

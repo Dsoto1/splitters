@@ -2531,7 +2531,7 @@
     "pickupAmmo": 24,
     "reloadTicks": 70,
     "raiseTicks": 18,
-    "botDesirability": 0.3,
+    "botDesirability": 0.45,
     "botRange": [
      4,
      16

@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 17,
+  "formatVersion": 28,
   "metadata": {
     "id": "cinder_foundry",
     "name": "Cinder Foundry",
@@ -18,7 +18,15 @@
       "core.tdm",
       "core.koth",
       "core.ctf"
-    ]
+    ],
+    "release": {
+      "mapId": "m_cz2zu3ctolnayno6",
+      "versionId": "v_r4lebvq2jcdazruj",
+      "revision": 1,
+      "contentHash": "sha256:b41b8f553a264f9330370ab074f23bb38021ae1d0d7adc07985beeda7424cec0",
+      "schemaVersion": 28,
+      "releasedAt": "2026-11-07T11:16:46.433Z"
+    }
   },
   "classicStructure": {
     "cellSize": 8,
@@ -50424,5 +50432,6 @@
       6
     ]
   },
-  "dependencies": []
+  "dependencies": [],
+  "weaponSet": "chaos"
 }

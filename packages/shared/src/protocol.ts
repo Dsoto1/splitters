@@ -84,7 +84,7 @@ export type RotationCommand = Extract<HostCommand, { c: 'rotation' | 'skip' }>;
 /** Commands the match itself runs (HostControl). */
 export type MatchCommand = Exclude<HostCommand, { c: 'map' } | PlayerCommand | RotationCommand>;
 
-/** Rules a host can change mid-match; they wait for the next restart (all but mixPickups and dropWeapons, which apply at once). */
+/** Rules a host can change mid-match; they wait for the next restart (all but mixPickups, dropWeapons and weaponSet, which apply at once). */
 export interface HostRulesPatch {
   scoreLimit?: number;
   timeLimitSeconds?: number;
@@ -98,6 +98,12 @@ export interface HostRulesPatch {
   breakthroughPool?: number;
   breakthroughSectorSeconds?: number;
   breakthroughSwap?: boolean;
+  /**
+   * The weapon set (MatchRules.weaponSet; sim/weaponSets.ts), null for the map's default: takes effect at once (the
+   * pickups roll within it now, everyone's next life spawns with its loadout). Hosts that don't know it ignore it
+   * (their HostState.rules has no weaponSet, so the pause menu offers none).
+   */
+  weaponSet?: string | null;
 }
 
 /** The match's host settings, for the pause menu of whoever runs it. */
@@ -132,6 +138,8 @@ export interface HostState {
   cast?: string[] | null;
   /** The map's own bot characters (empty: all). */
   mapCast?: string[];
+  /** The map's own default weapon set (MapDocument.weaponSet; standard when it names none). */
+  mapWeaponSet?: string;
 }
 
 export interface PlayerSnapshot {

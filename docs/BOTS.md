@@ -837,8 +837,9 @@ judge's line for each map its busiest route and way.
 The sniper role plays like a sniper (`bots/sniper.ts`; BOT_AI_PLAN.md Phase B item 5; the owner: "camping in tucked
 away high spots … to take calculated shots, some even moving locations after, acting like real snipers"):
 - **The gun first**: a sniper-role bot without a scoped gun goes for a scoped pickup within 70 m before anything but
-  cover (`SCOPE_WEIGHT` 2.8). The match can hand it one at spawn (`Match.sniperGun`: for the weapon sets, Military's
-  marksman rifle and Sci-fi's railgun, docs/WEAPON_SETS_PLAN.md; none today).
+  cover (`SCOPE_WEIGHT` 2.8). In the Military and Sci-fi weapon sets it spawns with one in place of the set's main
+  gun (`Match.sniperGun`: Military's marksman rifle, Sci-fi's railgun; docs/WEAPON_SETS_PLAN.md); a bot whose role is
+  shared out after it spawned is re-armed at once (`Match.rearmForRole`).
 - **Spots** (`vantage.ts`): a sniper spot scores its view, its height (up to 0.8), a wall behind (0.5) and walls close
   at its sides (tucked away: 0.12 each, four at most), and, once a match, how well it looks down the ways the enemy
   comes: the share of the trips' corridor points in its view and reach that it can see, × 0.8 (`VantageBoard.lanes`,
@@ -1011,3 +1012,17 @@ about 110 of 120) and 17.1 of 20 (24v24, 500).
 - **Capture the Flag**, the leading team's captures a minute (15-minute runs). Before: 0.0–0.3 at 4v4 to 16v16 on
   Diamond Park, St. John's and Iron Compound. After, 8v8: Diamond Park 0.2 → 0.5 (7 captures to 3), St. John's 0.0 →
   0.1.
+
+## Weapon sets' oddballs (docs/WEAPON_SETS_PLAN.md)
+
+Bots weigh every weapon of a set as any other (`weaponScore`: range band, splash, flight, heat). Three things were
+added so the sets' oddballs get used:
+- **The sheep** (`BotBrain.considerWalker`): its throw (9 m/s) lands only 5-6 m out and it walks the rest (3.2 m/s,
+  7 s fuse), so bots never threw it (they lob grenades 7-24 m and refuse a landing inside the grenade's own blast).
+  Now, with an enemy in sight (or seen a moment ago) 6-20 m off on about the same level, a bot throws it short along
+  the line to them where a knee-high line from its landing to them is clear, and it waddles in.
+- **A big blast with a long fuse** (the holy bomb: a 9 m blast from a throw that carries 9 m): thrown so it lands at
+  least half its blast away; the thrower then runs straight away from it until it has gone off (`ThrowPlan.clear`).
+- **The oil slicker**: puddles round the target, then its igniter (the second trigger) about every three seconds of
+  the fight; its bot value went from 0.3 to 0.45 now that it kills (Chaos on Atomic Court, a probe with everyone
+  carrying it: 29 slicks laid, 22 lit, 8 kills in 120 s).

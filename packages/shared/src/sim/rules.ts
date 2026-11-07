@@ -100,6 +100,12 @@ export interface MatchRules {
    * pick up, with exactly that ammo (sim/drops.ts). Default true; never in Disc Arena, races or spears/discs only.
    */
   dropWeapons?: boolean;
+  /**
+   * Weapon set (sim/weaponSets.ts, content/weapon-sets.json: standard, military, scifi, medieval, chaos, mixed): what
+   * everyone spawns with, what weapon and grenade pickups hold and what drops. Absent: the map's default
+   * (MapDocument.weaponSet), else Standard. Spears or discs only (and Disc Arena) play none.
+   */
+  weaponSet?: string;
   /** Kill-streak rewards (UAV, supply pulse, Counter-UAV, airstrike). Default true. */
   killstreaks?: boolean;
   /** Team modes: respawn beside a teammate who isn't in a fight, when one is free. Default true. */

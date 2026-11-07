@@ -2,7 +2,7 @@ import { readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { cpus, loadavg } from 'node:os';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { BOT_DIFFICULTIES, CHARACTER_PROFILES, CORE_BOT_PROFILES, TICK_RATE, hasTag, initPhysics, isGameMode, loadMap, mapCanRun, rulesForMode, type BotProfile, type GameEvent, type GameMode, type MapDocument } from '@tiletrigger/shared';
+import { BOT_DIFFICULTIES, CHARACTER_PROFILES, CORE_BOT_PROFILES, CORE_WEAPONS, THROWABLE_DEFS, TICK_RATE, WEAPON_SET_IDS, getWeaponSet, hasTag, initPhysics, isGameMode, isWeaponSetId, loadMap, mapCanRun, matchWeaponSet, rulesForMode, setThrowables, setWeaponIds, throwableWeaponId, type BotProfile, type GameEvent, type GameMode, type MapDocument } from '@tiletrigger/shared';
 import { CtfMode, FortsMode, KothMode, Match, ctfRoleOf, initNavigation, placeOn, simProfile } from '@tiletrigger/shared/match';
 import { Behaviour } from './botMeasures.ts';
 import { drawNavPictures } from './navPictures.ts';
@@ -37,9 +37,12 @@ import { drawNavPictures } from './navPictures.ts';
  *   pnpm bot-report --judge=s0.json+s1.json [--pictures=dir] [--summary=file.md]
  *                                                 (the nightly's results held to bot-limits.json's limits; the nav
  *                                                  pictures with each map's failed searches)
+ *   pnpm bot-report shingle_point halcyon_station --mode=core.tdm --set=military,scifi,chaos  (each match in each
+ *                                                 weapon set: kills by weapon per set)
  *   --shard=k/n plays every n-th match of the list from the k-th (run n processes; --compare and --judge take
  *   several files joined with +). --suite=<mode> plays the maps that list that mode (ctf, koth, bomb, hostage, elim,
- *   forts, tdm). --pictures=dir after a run draws the maps it played, with their failed searches.
+ *   forts, tdm). --pictures=dir after a run draws the maps it played, with their failed searches. --set=a,b plays
+ *   every match once in each weapon set (absent: the map's own default); every report lists kills by weapon per set.
  * Bots are added as the server adds them (as their characters, normal skill,
  * the match's bot style); --players=N overrides the map's team sizes.
  */
@@ -165,6 +168,9 @@ export interface MatchRow {
   routes?: { team: string; to: [number, number, number]; corridors: number; use: number[]; other: number; cross?: number[]; crossOther?: number; follow?: [number, number, number] }[];
   /** Group pushes per team (the team brain, bots/teamBrain.ts PushStats): waves set out, got there, lost half first, metres gained and seconds. */
   pushes?: Record<string, { started: number; reached: number; lostHalf: number; metres: number; seconds: number }>;
+  /** The weapon set it played (sim/weaponSets.ts: --set, else the map's default), and the bots' kills by weapon id (not suicides). */
+  set?: string;
+  weaponKills?: Record<string, number>;
   bots: BotRow[];
 }
 
@@ -199,6 +205,9 @@ const showBots = flags.includes('--bots');
 const quiet = flags.includes('--quiet');
 const jsonOut = opt('json');
 const suite = opt('suite');
+/** --set=a,b: every match once in each weapon set (absent: the map's own default). */
+const setArg = opt('set')?.split(',').filter(Boolean);
+for (const s of setArg ?? []) if (!isWeaponSetId(s)) throw new Error(`unknown weapon set ${s} (${WEAPON_SET_IDS.join(', ')})`);
 
 /** The (map, mode) pairs a suite plays: `ctf` (or any mode's short name) the maps that list the mode; `all` every scorecard mode. */
 function suitePairs(name: string): [string, GameMode][] {
@@ -254,7 +263,8 @@ async function main(): Promise<void> {
   const pairs: [string, GameMode][] = limits ? limits.check.matches.map(([id, m]) => [id, m as GameMode]) : suite ? suitePairs(suite) : args.map((id) => [id, mode]);
   const runSeeds = limits ? [limits.check.seed] : seeds;
   const runSeconds = limits ? limits.check.seconds : seconds;
-  const jobs = pairs.flatMap(([id, m]) => runSeeds.map((seed) => ({ id, mode: m, seed }))).filter((_, i) => i % n === k);
+  const sets: (string | undefined)[] = limits || !setArg?.length ? [undefined] : setArg;
+  const jobs = pairs.flatMap(([id, m]) => runSeeds.flatMap((seed) => sets.map((set) => ({ id, mode: m, seed, set })))).filter((_, i) => i % n === k);
   await Promise.all([initPhysics(), initNavigation()]);
   const rows: MatchRow[] = [];
   const maps = new Map<string, MapDocument>();
@@ -270,7 +280,7 @@ async function main(): Promise<void> {
       console.log(`${job.id}: can't run ${job.mode}`);
       continue;
     }
-    const row = play(map, job.mode, job.seed, runSeconds);
+    const row = play(map, job.mode, job.seed, runSeconds, job.set);
     rows.push(row);
     if (!quiet) printMatch(row);
     if (jsonOut) writeFileSync(here(jsonOut), JSON.stringify(rows));
@@ -283,15 +293,15 @@ async function main(): Promise<void> {
 }
 
 function readRows(files: string): MatchRow[] {
-  return [...new Map(files.split('+').flatMap((p) => JSON.parse(readFileSync(here(p), 'utf8')) as MatchRow[]).map((m) => [`${m.map}|${m.mode}|${m.seed}`, m] as const)).values()];
+  return [...new Map(files.split('+').flatMap((p) => JSON.parse(readFileSync(here(p), 'utf8')) as MatchRow[]).map((m) => [`${m.map}|${m.mode}|${m.seed}|${m.set ?? ''}`, m] as const)).values()];
 }
 
 /** Reasons a bot may stand still in a fight (not "idle" in the owner's sense). */
 const FIGHTING = new Set<string>(['fight', 'cover', 'retreat', 'chaseHold', 'throw', 'dodge']);
 
-function play(map: MapDocument, mode: GameMode, seed: number, seconds: number): MatchRow {
+function play(map: MapDocument, mode: GameMode, seed: number, seconds: number, set?: string): MatchRow {
   const base = rulesForMode(map, mode);
-  const rules = { ...base, scoreLimit: 0, timeLimitSeconds: 0, ...(style ? { botStyle: style } : {}) };
+  const rules = { ...base, scoreLimit: 0, timeLimitSeconds: 0, ...(style ? { botStyle: style } : {}), ...(set ? { weaponSet: set } : {}) };
   if (players && rules.teamSizes?.length) rules.teamSizes = rules.teamSizes.map((_, i, a) => Math.floor(players / a.length) + (i < players % a.length ? 1 : 0));
   const total = players ?? (rules.teamSizes?.length ? rules.teamSizes.reduce((a, b) => a + b, 0) : 16);
   const match = new Match(map, rules, seed);
@@ -329,7 +339,8 @@ function play(map: MapDocument, mode: GameMode, seed: number, seconds: number): 
   const lastStuck = new Map<number, number>();
   const stuckAt = new Map<string, number>();
   const behaviour = new Behaviour(match);
-  const out: MatchRow = { map: map.metadata.id, mode, seed, seconds, players: total, takes: 0, captures: 0, returns: 0, drops: 0, firstTake: null, firstCapture: null, runs, kills: 0, objective: {}, tickMs: 0, tickP95: 0, bots: [] };
+  const weaponKills: Record<string, number> = {};
+  const out: MatchRow = { map: map.metadata.id, mode, seed, seconds, players: total, takes: 0, captures: 0, returns: 0, drops: 0, firstTake: null, firstCapture: null, runs, kills: 0, objective: {}, tickMs: 0, tickP95: 0, set: matchWeaponSet(rules, map), weaponKills, bots: [] };
   const tickMs: number[] = [];
   const closeSpell = (slot: number) => {
     const s = open.get(slot);
@@ -364,6 +375,7 @@ function play(map: MapDocument, mode: GameMode, seed: number, seconds: number): 
         const killer = e.killer === null || e.killer === undefined ? undefined : rec.get(e.killer);
         if (killer && e.killer !== e.victim) {
           killer.kills++;
+          weaponKills[e.weapon] = (weaponKills[e.weapon] ?? 0) + 1;
           if (SCOPED.has(e.weapon)) {
             killer.scopedKills!++;
             if (match.actor(e.killer!)?.bot?.vantage?.arrived) killer.postKills!++;
@@ -614,6 +626,57 @@ function angleDiff(a: number, b: number): number {
 const pct = (v: number, of: number) => `${((v / Math.max(1e-9, of)) * 100).toFixed(1)}%`;
 const sum = <T>(rs: readonly T[], f: (r: T) => number) => rs.reduce((a, r) => a + f(r), 0);
 
+/** A weapon's name in the report: a gun's, a grenade's (its kill credit is core.<kind>), else its id. */
+function weaponName(id: string): string {
+  const w = CORE_WEAPONS[id];
+  if (w) return w.displayName;
+  const t = (Object.keys(THROWABLE_DEFS) as (keyof typeof THROWABLE_DEFS)[]).find((k) => throwableWeaponId(k) === id);
+  return t ? THROWABLE_DEFS[t].displayName : id.replace(/^core\./, '');
+}
+
+/** A grenade that hurts nobody: no blast, bomblets, airstrike or harmful zone (the smoke grenade, sandbags). */
+function harmless(kind: keyof typeof THROWABLE_DEFS): boolean {
+  const p = THROWABLE_DEFS[kind].projectile;
+  return !p.splashDamage && !p.cluster && !p.airstrike && (!p.zone || p.zone.kind === 'smoke');
+}
+
+/** Kills by weapon, most first: "Assault Rifle 31, Pistol 12". */
+const killsText = (kills: ReadonlyMap<string, number>): string => [...kills].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])).map(([w, n]) => `${weaponName(w)} ${n}`).join(', ') || 'none';
+
+/**
+ * Kills by weapon per weapon set (docs/WEAPON_SETS_PLAN.md, "Proof"; sim/weaponSets.ts): a table row per set the
+ * matches played, its matches and kills, the bots' kills by weapon (most first), and the set's weapons and grenades
+ * that got none (Standard has no list of its own: as placed on each map).
+ */
+export function weaponSetRows(rows: readonly MatchRow[]): string[] {
+  const bySet = new Map<string, MatchRow[]>();
+  for (const r of rows) {
+    if (!r.weaponKills) continue;
+    const id = r.set ?? 'standard';
+    (bySet.get(id) ?? bySet.set(id, []).get(id)!).push(r);
+  }
+  const order = (id: string) => (WEAPON_SET_IDS as readonly string[]).indexOf(id);
+  const out: string[] = [];
+  for (const [id, ms] of [...bySet].sort((a, b) => order(a[0]) - order(b[0]))) {
+    const kills = new Map<string, number>();
+    for (const m of ms) for (const [w, n] of Object.entries(m.weaponKills ?? {})) kills.set(w, (kills.get(w) ?? 0) + n);
+    const set = getWeaponSet(id);
+    const own = setWeaponIds(set);
+    // Grenades that can't kill (smoke, sandbags) aren't missed for having no kills.
+    const grenades = (setThrowables(set) ?? []).filter((k) => !harmless(k)).map((k) => throwableWeaponId(k));
+    const none = own ? [...own, ...grenades].filter((w) => !kills.get(w)) : null;
+    const total = [...kills.values()].reduce((a, b) => a + b, 0);
+    out.push(`| ${set.name} | ${ms.length} | ${total} | ${killsText(kills)} | ${none === null ? 'as placed' : none.length ? none.map(weaponName).join(', ') : 'every one got kills'} |`);
+  }
+  return out;
+}
+
+/** The kills-by-weapon table (weaponSetRows) with its head, or nothing when no match recorded its kills. */
+function weaponSetTable(rows: readonly MatchRow[]): string[] {
+  const body = weaponSetRows(rows);
+  return body.length ? ['| Weapon set | matches | kills | kills by weapon (bots, most first) | set weapons and grenades without a kill |', '|---|---|---|---|---|', ...body] : [];
+}
+
 function printMatch(m: MatchRow): void {
   const alive = sum(m.bots, (r) => r.alive);
   const goalT = sum(m.bots, (r) => r.goalTime);
@@ -643,6 +706,7 @@ function printMatch(m: MatchRow): void {
   }
   const fightT = sum(m.bots, (r) => r.fight ?? 0);
   const snipers = m.bots.filter((r) => r.job === 'sniper');
+  if (m.weaponKills) console.log(`weapons (${getWeaponSet(m.set).name}): ${killsText(new Map(Object.entries(m.weaponKills)))}`);
   console.log(`fights: in cover ${pct(sum(m.bots, (r) => r.coverFight ?? 0), fightT)} of fight time | scoped kills ${sum(m.bots, (r) => r.scopedKills ?? 0)} (from a vantage spot ${sum(m.bots, (r) => r.postKills ?? 0)}) | snipers ${snipers.length}: spots ${sum(snipers, (r) => r.posts ?? 0)}, rounds from spots ${sum(snipers, (r) => r.postShots ?? 0)}, moved on after shots ${sum(snipers, (r) => r.moves ?? 0)}, shots held ${sum(snipers, (r) => r.held ?? 0)} s, kills ${sum(snipers, (r) => r.kills)} (scoped ${sum(snipers, (r) => r.scopedKills ?? 0)})`);
   const why = new Map<string, number>();
   for (const r of m.bots) for (const [k, v] of Object.entries(r.why)) why.set(k, (why.get(k) ?? 0) + v);
@@ -873,6 +937,8 @@ function printScorecard(rows: readonly MatchRow[], limits: Record<string, Record
     ].filter(Boolean).join('; ');
     lines.push(`| ${k} | ${m.n} | ${f(m.failedSearches, true, 2)} | ${f(m.noRouteIdle, true, 2)} | ${f(m.calm, true)} | ${f(m.frozen, true)} | ${f(m.stuckPerBotMin, false, 2)} | ${f(m.goalTime > 0 ? m.toward : undefined, true)} | ${f(m.coverage, true)} | ${f(m.spawnDeaths, true)} | ${f(m.killsMin)} | ${f(m.routes2, true, 0)} | ${f(m.busiest, true, 0)} | ${f(m.ways2, true, 0)} | ${f(m.waysBusiest, true, 0)} | ${f(m.coverFight, true)} | ${f(m.scopedKills)} (${f(m.postKills)}) | ${f(m.thinkMs, false, 2)} | ${obj || '-'} |`);
   }
+  const sets = weaponSetTable(rows);
+  if (sets.length) lines.push('', '#### Kills by weapon, per weapon set', '', ...sets);
   const broken: string[] = [];
   let held = 0;
   for (const [key, ls] of Object.entries(limits)) {
@@ -933,6 +999,8 @@ function printSummary(rs: readonly MatchRow[]): void {
   for (const m of perMap(rs)) {
     console.log(`| ${m.map} | ${m.n} | ${m.players} | ${f(m.captures)} | ${m.capsMin.toFixed(2)} | ${f(m.takes)} | ${f(m.returns)} | ${m.withCapture}/${m.n} | ${f(m.idle, 1, 100)} | ${f(m.calm, 1, 100)} | ${f(m.frozen, 1, 100)} | ${f(m.noRouteIdle, 2, 100)} | ${f(m.toward, 1, 100)} | ${m.stuck.toFixed(0)} | ${m.searches.toFixed(0)} | ${f(m.failedSearches, 2, 100)} | ${m.spells10.toFixed(1)} | ${f(m.coverage, 1, 100)} | ${m.killsMin.toFixed(1)} | ${m.routes2 === undefined ? (m.oneWay ? 'one way' : '-') : f(m.routes2, 0, 100)} | ${f(m.busiest, 0, 100)} | ${f(m.coverFight, 1, 100)} | ${m.scopedKills.toFixed(1)} (${m.postKills.toFixed(1)}) | ${f(m.thinkMs, 2)} | ${m.tick.toFixed(2)} |`);
   }
+  const sets = weaponSetTable(rs);
+  if (sets.length) console.log(`\n${sets.join('\n')}`);
 }
 
 function printCompare(before: readonly MatchRow[], after: readonly MatchRow[]): void {

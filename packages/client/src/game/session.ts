@@ -70,9 +70,13 @@ import {
   mapGravityZones,
   JET,
   getItem,
+  setPickupPool,
+  setSpawnWeapons,
+  setThrowables,
+  setWeaponsInPlay,
+  weaponSetInPlay,
   heldModel,
   throwableModel,
-  pickupPool,
   getMountDef,
   airCraftDef,
   getWeapon,
@@ -1525,6 +1529,8 @@ export class GameSession {
         }
         this.slot = msg.slot;
         this.rules = msg.rules;
+        // Grenades wear the weapon set's looks (the Military frag, the Sci-fi smoke canister) before the map's pickups are drawn.
+        this.view.setWeaponSetLook(weaponSetInPlay(msg.rules, loaded.map)?.id);
         this.canSpectate = msg.spectate === 1;
         this.drawSpectateButton();
         this.freeBounds = freeCamBounds(loaded.map);
@@ -1934,7 +1940,16 @@ export class GameSession {
         break;
       case 'rules':
         // The host restarted with new rules (score limit, time…), or changed a live one.
-        if (this.rules && msg.rules.mode === this.rules.mode) this.rules = msg.rules;
+        if (this.rules && msg.rules.mode === this.rules.mode) {
+          const before = this.map ? weaponSetInPlay(this.rules, this.map)?.id : undefined;
+          this.rules = msg.rules;
+          // Another weapon set: its guns load now, before a pickup or your next life shows one mid-fight, and grenades
+          // wear its looks from now on.
+          if (this.map && weaponSetInPlay(msg.rules, this.map)?.id !== before) {
+            this.view.setWeaponSetLook(weaponSetInPlay(msg.rules, this.map)?.id);
+            this.loadSetGuns();
+          }
+        }
         break;
       case 'pong':
         break;
@@ -1964,22 +1979,31 @@ export class GameSession {
       if (look && map.entities.some((e) => e.kind === 'encounter' && (e.roster?.[role] ?? 0) > 0)) jobs.push(this.view.characters.preload({ look }));
     }
     const models = new Set<string>();
-    for (const id of rules.startingWeapons) models.add(getWeapon(id).view.model);
+    // The weapon set's (sim/weaponSets.ts): its spawn weapons (Standard: the mode's own), random spawn guns, sniper gun
+    // and what its pickups hold.
+    const set = weaponSetInPlay(rules, map);
+    const spawnGuns = set ? setSpawnWeapons(set, rules) : rules.startingWeapons;
+    for (const id of spawnGuns) models.add(getWeapon(id).view.model);
+    for (const id of set ? (setWeaponsInPlay(set, rules) ?? []) : []) models.add(getWeapon(id).view.model);
     // Your starting guns' sharper copies for your own hands (Medium, High: View.sharpenViewmodel) come in with the
     // loading screen, as you hold them at once; a gun picked up later fetches its own then.
-    for (const id of rules.startingWeapons) {
+    for (const id of spawnGuns) {
       const held = heldModel(getWeapon(id), this.view.atmosphere.quality);
       if (held) jobs.push(this.view.models.load(held).catch(() => undefined));
     }
-    // Throwables' models (content/throwables.json `view`): the frag everyone may start with and those lying as pickups,
-    // loaded and warmed like the guns, so the first one in a hand, in the air or on the ground is no stall mid-fight.
+    // Throwables' models (content/throwables.json `view`, as the weapon set shows them: its `looks`): the grenade
+    // everyone may start with (the set's first, else the frag) and what grenade pickups may hold, loaded and warmed like
+    // the guns, so the first one in a hand, in the air or on the ground is no stall mid-fight.
     const thrown = new Set<string>();
-    const frag = rules.startingGrenades > 0 ? throwableModel('frag') : null;
-    if (frag) thrown.add(frag);
+    const look = set?.id;
+    const first = rules.startingGrenades > 0 ? throwableModel((set && setThrowables(set)?.[0]) || 'frag', look) : null;
+    if (first) thrown.add(first);
     for (const e of map.entities) {
-      if (e.kind === 'pickup') {
-        const fx = getItem(e.item)?.effect;
-        const model = fx?.kind === 'throwable' ? throwableModel(fx.throwable) : null;
+      if (e.kind !== 'pickup') continue;
+      const item = getItem(e.item);
+      if (item?.effect.kind !== 'throwable') continue;
+      for (const it of setPickupPool(set, e, !!rules.mixPickups) ?? [item]) {
+        const model = it.effect.kind === 'throwable' ? throwableModel(it.effect.throwable, look) : null;
         if (model) thrown.add(model);
       }
     }
@@ -1987,9 +2011,11 @@ export class GameSession {
     for (const e of map.entities) {
       if (e.kind === 'pickup') {
         const fx = getItem(e.item)?.effect;
-        if (fx?.kind === 'weapon') models.add(getWeapon(fx.weapon).view.model);
-        // Whatever a random (or mixed-up) weapon pickup may roll, so a respawn never loads a model mid-fight.
-        for (const item of pickupPool(e, !!rules.mixPickups) ?? []) if (item.effect.kind === 'weapon') models.add(getWeapon(item.effect.weapon).view.model);
+        // Whatever a random (or mixed-up, or weapon set's) weapon pickup may roll, so a respawn never loads a model
+        // mid-fight; the weapon placed there only while it stays as placed.
+        const pool = setPickupPool(set, e, !!rules.mixPickups);
+        if (fx?.kind === 'weapon' && !pool) models.add(getWeapon(fx.weapon).view.model);
+        for (const item of pool ?? []) if (item.effect.kind === 'weapon') models.add(getWeapon(item.effect.weapon).view.model);
       }
       if (e.kind === 'mount') {
         const def = getMountDef(e.model);
@@ -2019,6 +2045,14 @@ export class GameSession {
     if (this.closed) return;
     this.hud.setLoading(null);
     this.opts.transport.sendReady();
+  }
+
+  /** The weapon set's guns (a host switched sets mid-match), loaded in the background. */
+  private loadSetGuns(): void {
+    const map = this.map;
+    const rules = this.rules;
+    const set = map && rules ? weaponSetInPlay(rules, map) : null;
+    for (const id of set && rules ? (setWeaponsInPlay(set, rules) ?? []) : []) void this.view.models.load(getWeapon(id).view.model).catch(() => undefined);
   }
 
   /** Everyone on one side against NPCs (co-op missions and Zombies). */

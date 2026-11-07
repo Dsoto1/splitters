@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 25,
+  "formatVersion": 28,
   "metadata": {
     "id": "coldwater_gulch",
     "name": "Coldwater Gulch",
@@ -18,7 +18,15 @@
       "core.tdm",
       "core.deathmatch",
       "core.koth"
-    ]
+    ],
+    "release": {
+      "mapId": "m_ev3sc6tr7ku33fgt",
+      "versionId": "v_4werkdjyh7vgmqht",
+      "revision": 1,
+      "contentHash": "sha256:36b9f3e69eec98a2beedd71d8f1b014f161eb9f777af10c455d5dcfcb35a408c",
+      "schemaVersion": 28,
+      "releasedAt": "2026-11-07T11:14:17.006Z"
+    }
   },
   "classicStructure": {
     "cellSize": 8,
@@ -84475,5 +84483,6 @@
       8
     ]
   },
-  "dependencies": []
+  "dependencies": [],
+  "weaponSet": "scifi"
 }

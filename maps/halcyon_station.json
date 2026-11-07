@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 26,
+  "formatVersion": 28,
   "metadata": {
     "id": "halcyon_station",
     "name": "Halcyon Station",
@@ -17,7 +17,15 @@
       "core.deathmatch",
       "core.tdm",
       "core.koth"
-    ]
+    ],
+    "release": {
+      "mapId": "m_ta56aj7kp5e75s2e",
+      "versionId": "v_gmaxbb4lrzf5yd4d",
+      "revision": 1,
+      "contentHash": "sha256:337e9dbaf3d8b7baab12161e17bb590c87da70de67b45ee6de0e762c173f64e3",
+      "schemaVersion": 28,
+      "releasedAt": "2026-11-07T11:06:49.967Z"
+    }
   },
   "classicStructure": {
     "cellSize": 8,
@@ -2484,5 +2492,6 @@
       6
     ]
   },
-  "dependencies": []
+  "dependencies": [],
+  "weaponSet": "scifi"
 }

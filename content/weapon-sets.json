@@ -1,0 +1,54 @@
+{
+  "$comment": "Weapon sets (docs/WEAPON_SETS_PLAN.md; docs/ARSENAL.md, \"Weapon sets\"; sim/weaponSets.ts): what a match spawns with, what its weapon and grenade pickups turn into, and what drops. A map names its default (MapMaker: Map properties, Weapon set; absent: standard) and the host can pick another (Match setup: Weapons; the pause menu's Host tab; a server's `set` rule). `id`: what maps, saved setups and server rules name, so never rename one; the order is the menu's. `name` and `blurb`: the menus' label and tooltip. `spawn`: the weapons everyone spawns with, the last one held (absent: the mode's own, as before). `randomGun`: plus one of the set's main guns (slots 3-9) each life, dealt from a deck of them shuffled from the match seed and the slot (every one before any comes again, never the same twice running), and held. `sniper`: what sniper-role bots spawn with in place of the spawn's main gun (a scoped gun of the set). `weapons`: the set's weapons: a weapon pickup holds one of them of its own category (else of the nearest categories the set has), rolled again each time it comes back, and only they (and the spawn's own) drop; \"all\": every weapon a pickup can hold; absent: pickups as placed. `throwables`: the set's grenades: a grenade pickup holds one of them, and everyone spawns with the first; \"all\": every one; absent: as placed, and frags at spawn. Tools, mode-only weapons and mounted guns are never in a set; matches with fixed weapons (Disc Arena, spears or discs only) play none. Edit, then run `node tools/content/weapon-sets.mjs`.",
+  "sets": [
+    {
+      "id": "standard",
+      "name": "Standard",
+      "blurb": "Knife and pistol (the mode's own loadout); every pickup as the map's maker placed it."
+    },
+    {
+      "id": "military",
+      "name": "Military",
+      "blurb": "Real-world guns: everyone spawns with a knife, a pistol and an assault rifle; sniper-role bots carry a marksman rifle.",
+      "spawn": ["core.knife", "core.pistol", "core.rifle"],
+      "sniper": "core.marksman",
+      "weapons": ["core.rifle", "core.burst_rifle", "core.smg", "core.machine_pistol", "core.lmg", "core.shotgun", "core.auto_shotgun", "core.sawed_off", "core.sniper", "core.marksman", "core.launcher", "core.rockets", "core.pistol", "core.revolver", "core.hand_cannon"],
+      "throwables": ["frag", "mine", "smoke"]
+    },
+    {
+      "id": "scifi",
+      "name": "Sci-fi",
+      "blurb": "Energy weapons: everyone spawns with a knife, a pulse pistol and a plasma rifle; sniper-role bots carry the railgun.",
+      "spawn": ["core.knife", "core.pulse_pistol", "core.plasma"],
+      "sniper": "core.railgun",
+      "weapons": ["core.plasma", "core.laser_rifle", "core.railgun", "core.pulse_pistol", "core.arc_caster", "core.disc_launcher", "core.swarm", "core.guided"],
+      "throwables": ["sticky", "vortex", "smoke"]
+    },
+    {
+      "id": "medieval",
+      "name": "Medieval",
+      "blurb": "Blades and spears: everyone spawns with a knife and a throwing spear; every weapon pickup is a spear or a battle axe.",
+      "spawn": ["core.knife", "core.spear"],
+      "weapons": ["core.spear", "core.battle_axe", "core.knife"],
+      "throwables": ["incendiary", "holy"]
+    },
+    {
+      "id": "chaos",
+      "name": "Chaos",
+      "blurb": "The oddballs: a knife, a pistol and a random oddball every life, a sheep to throw, and every pickup something strange.",
+      "spawn": ["core.knife", "core.pistol"],
+      "randomGun": true,
+      "weapons": ["core.swarm", "core.singularity", "core.freeze_ray", "core.goo_gun", "core.bubble_blaster", "core.oil_slicker", "core.flare_gun", "core.nailgun", "core.flak", "core.blast_rockets", "core.gilded_pistol"],
+      "throwables": ["sheep", "holy", "cluster"]
+    },
+    {
+      "id": "mixed",
+      "name": "Mixed bag",
+      "blurb": "Anything goes: a knife, a pistol and a random main gun every life; every pickup can hold any weapon of its kind.",
+      "spawn": ["core.knife", "core.pistol"],
+      "randomGun": true,
+      "weapons": "all",
+      "throwables": "all"
+    }
+  ]
+}

@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 25,
+  "formatVersion": 28,
   "metadata": {
     "id": "primeval_park",
     "name": "Primeval Park",
@@ -19,7 +19,15 @@
       "core.ctf",
       "core.koth",
       "core.deathmatch"
-    ]
+    ],
+    "release": {
+      "mapId": "m_eomhuy476jfxk4xz",
+      "versionId": "v_rssxqmbrdg7ta7dw",
+      "revision": 1,
+      "contentHash": "sha256:9474100a2c72bc610cdea93cde37d3a30a07cc54685d83945cd1b271970653e0",
+      "schemaVersion": 28,
+      "releasedAt": "2026-11-07T11:20:59.179Z"
+    }
   },
   "classicStructure": {
     "cellSize": 8,
@@ -60700,5 +60708,6 @@
       10
     ]
   },
-  "dependencies": []
+  "dependencies": [],
+  "weaponSet": "mixed"
 }

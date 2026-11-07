@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 25,
+  "formatVersion": 28,
   "metadata": {
     "id": "atomic_court",
     "name": "Atomic Court",
@@ -16,7 +16,15 @@
     "supportedModes": [
       "core.tdm",
       "core.deathmatch"
-    ]
+    ],
+    "release": {
+      "mapId": "m_jf6ib5hkuurh2by5",
+      "versionId": "v_mzttzjbfvjun3z6q",
+      "revision": 1,
+      "contentHash": "sha256:8cf3631196df478df4ef6399b73ffd4657aea6fceba8ae4819d76cf6467f5eab",
+      "schemaVersion": 28,
+      "releasedAt": "2026-11-07T10:55:11.958Z"
+    }
   },
   "classicStructure": {
     "cellSize": 8,
@@ -3758,12 +3766,12 @@
     },
     {
       "id": "prop_0q8joaheql",
-      "kind": "prop",
       "position": [
         18,
         0,
         17
       ],
+      "kind": "prop",
       "model": "prop.sb_picket_fence",
       "yaw": 0,
       "scale": 1,
@@ -3772,12 +3780,12 @@
     },
     {
       "id": "prop_k16m74i748",
-      "kind": "prop",
       "position": [
         22.8,
         0,
         17
       ],
+      "kind": "prop",
       "model": "prop.sb_picket_fence",
       "yaw": 0,
       "scale": 1,
@@ -3786,12 +3794,12 @@
     },
     {
       "id": "prop_wk1dk4w27u",
-      "kind": "prop",
       "position": [
         16.8,
         0,
         19.3
       ],
+      "kind": "prop",
       "model": "prop.sb_picket_fence",
       "yaw": 1.571,
       "scale": 1,
@@ -3800,12 +3808,12 @@
     },
     {
       "id": "prop_v2d83t7ium",
-      "kind": "prop",
       "position": [
         52,
         0,
         40.5
       ],
+      "kind": "prop",
       "model": "prop.ge_hedge_wall",
       "yaw": 0,
       "scale": 1,
@@ -3814,12 +3822,12 @@
     },
     {
       "id": "prop_y1j8m30l01",
-      "kind": "prop",
       "position": [
         46,
         0,
         50
       ],
+      "kind": "prop",
       "model": "prop.ge_hedge_wall",
       "yaw": 1.571,
       "scale": 1,
@@ -31718,5 +31726,6 @@
       6
     ]
   },
-  "dependencies": []
+  "dependencies": [],
+  "weaponSet": "military"
 }

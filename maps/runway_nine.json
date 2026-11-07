@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 27,
+  "formatVersion": 28,
   "metadata": {
     "id": "runway_nine",
     "name": "Runway Nine",
@@ -24,11 +24,11 @@
     ],
     "release": {
       "mapId": "m_5x4zlanrxgtdua3l",
-      "versionId": "v_foshce3vdzzkuuyj",
-      "revision": 3,
-      "contentHash": "sha256:2517f838be896bd7c1276e2ca09005a25214648fdebfdaca85e80d986ffbd00f",
-      "schemaVersion": 27,
-      "releasedAt": "2026-11-06T23:07:56.468Z"
+      "versionId": "v_qjc3subyhm36ddmi",
+      "revision": 4,
+      "contentHash": "sha256:2904ac7a7f33f35cd350a617bacb312bf5224e74923a1c222e977102fc77dd48",
+      "schemaVersion": 28,
+      "releasedAt": "2026-11-07T11:01:57.232Z"
     }
   },
   "classicStructure": {
@@ -43074,5 +43074,6 @@
       10
     ]
   },
-  "dependencies": []
+  "dependencies": [],
+  "weaponSet": "military"
 }

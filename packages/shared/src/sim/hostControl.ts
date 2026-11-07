@@ -2,6 +2,7 @@ import { BOT_DIFFICULTIES } from '../bots/profile.ts';
 import type { HostRulesPatch, HostState, MatchCommand } from '../protocol.ts';
 import { botSetLabel, sameBotSet, validateBotSet } from './botSet.ts';
 import { botCastLabel, validBotCast } from '../content/botThemes.ts';
+import { getWeaponSet, isWeaponSetId, mapWeaponSet } from './weaponSets.ts';
 import { MAX_PLAYER_SLOTS } from './constants.ts';
 import { BREAKTHROUGH_POOL, BREAKTHROUGH_POOL_MAX, BREAKTHROUGH_SECTOR_SECONDS, SCORE_LIMIT_MAX, type MatchRules } from './rules.ts';
 import { teamCount, teamsLabel, withPending } from './hostRules.ts';
@@ -46,7 +47,8 @@ export class HostControl {
   /** The changes saved for the next match go into play (a new round is starting). */
   private playPending(): void {
     if (!Object.keys(this.pending).length) return;
-    const p = this.pending;
+    // (The weapon set never waits: it plays at once.)
+    const { weaponSet: _set, ...p } = this.pending;
     this.match.setRules({ ...p, ...(p.friendlyFire === 'off' ? { friendlyFire: undefined } : {}) });
     this.pending = {};
     this.onNextRules?.();
@@ -68,12 +70,13 @@ export class HostControl {
       teamNames: this.match.teams?.map((t) => t.name) ?? [],
       teamColors: this.match.teams?.map((t) => t.color) ?? [],
       sizes: teams ? Array.from({ length: teams }, (_, i) => sizes[i] ?? Math.max(1, Math.round(this.fill / teams))) : [],
-      rules: { scoreLimit: r.scoreLimit, timeLimitSeconds: r.timeLimitSeconds, friendlyFire: r.friendlyFire ?? 'off', respawnDelayTicks: r.respawnDelayTicks, mixPickups: !!r.mixPickups, dropWeapons: r.dropWeapons !== false, breakthroughPool: r.breakthroughPool ?? BREAKTHROUGH_POOL, breakthroughSectorSeconds: r.breakthroughSectorSeconds ?? BREAKTHROUGH_SECTOR_SECONDS, breakthroughSwap: !!r.breakthroughSwap },
+      rules: { scoreLimit: r.scoreLimit, timeLimitSeconds: r.timeLimitSeconds, friendlyFire: r.friendlyFire ?? 'off', respawnDelayTicks: r.respawnDelayTicks, mixPickups: !!r.mixPickups, dropWeapons: r.dropWeapons !== false, breakthroughPool: r.breakthroughPool ?? BREAKTHROUGH_POOL, breakthroughSectorSeconds: r.breakthroughSectorSeconds ?? BREAKTHROUGH_SECTOR_SECONDS, breakthroughSwap: !!r.breakthroughSwap, weaponSet: isWeaponSetId(r.weaponSet) ? r.weaponSet : null },
       pending: { ...this.pending },
       botSet: this.bots.botSet,
       ...(this.bots.botSet && !this.bots.hostSet ? { mapBots: true } : {}),
       cast: r.botCast ? [...r.botCast] : null,
       mapCast: validBotCast(this.match.map.botCast),
+      mapWeaponSet: mapWeaponSet(this.match.map),
     };
   }
 
@@ -103,6 +106,13 @@ export class HostControl {
       if (r.dropWeapons !== undefined && r.dropWeapons !== (this.match.rules.dropWeapons !== false)) {
         this.match.setRules({ dropWeapons: r.dropWeapons ? undefined : false });
         const line = `${who} turned weapon drops ${r.dropWeapons ? 'on' : 'off'}`;
+        mixed = mixed ? `${mixed}; ${line}` : line;
+      }
+      // And the weapon set (null: the map's default): the pickups roll within it now, everyone's next life spawns with it.
+      const set = r.weaponSet === undefined ? undefined : r.weaponSet === null || !isWeaponSetId(r.weaponSet) ? null : r.weaponSet;
+      if (set !== undefined && set !== (isWeaponSetId(this.match.rules.weaponSet) ? this.match.rules.weaponSet : null)) {
+        this.match.setRules({ weaponSet: set ?? undefined });
+        const line = `${who} set the weapons to ${set ? getWeaponSet(set).name : `the map's (${getWeaponSet(mapWeaponSet(this.match.map)).name})`}`;
         mixed = mixed ? `${mixed}; ${line}` : line;
       }
       this.pending = { ...this.pending, ...p };

@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 26,
+  "formatVersion": 28,
   "metadata": {
     "id": "neon_spire",
     "name": "Neon Spire",
@@ -17,7 +17,15 @@
       "core.deathmatch",
       "core.tdm",
       "core.koth"
-    ]
+    ],
+    "release": {
+      "mapId": "m_blh4e3anqsjhglti",
+      "versionId": "v_jdxaphlgpjz5ha45",
+      "revision": 1,
+      "contentHash": "sha256:7c8f2ef228e1eec290ceeafff8b56031ca27913e1aa2100a0e1986a042e9e6b5",
+      "schemaVersion": 28,
+      "releasedAt": "2026-11-07T11:08:14.469Z"
+    }
   },
   "classicStructure": {
     "cellSize": 8,
@@ -14831,5 +14839,6 @@
       7
     ]
   },
-  "dependencies": []
+  "dependencies": [],
+  "weaponSet": "scifi"
 }

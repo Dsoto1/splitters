@@ -584,3 +584,20 @@ Which looks random bots wear, and so their names (`shared/content/botNames.ts`):
   send neither, so the pause menu shows no Bot characters row.
 - Bot names and looks travel as before (the roster's `name` and `look`); the
   names themselves are chosen by the host and nothing else crosses the wire.
+
+## 20. Weapon sets (November 2026)
+
+What everyone spawns with and what weapon and grenade pickups hold (`shared/sim/weaponSets.ts`,
+docs/WEAPON_SETS_PLAN.md):
+
+- **Map data:** `MapDocument.weaponSet` (map format v28), the map's default set id (`military`, `scifi`, `medieval`,
+  `chaos`, `mixed`); absent: Standard. An id the host's build has no set for plays Standard.
+- **Rules:** `MatchRules.weaponSet`, the host's choice (absent: the map's default). It rides in `welcome` and `rules`
+  messages like every rule, so clients know the set in play (they load its guns with the map).
+- **Host command** `{ c: "rules", rules: { weaponSet } }`: a set id, or `null` for the map's default; any other value
+  is refused. It applies at once, like `mixPickups`: pickups roll within the new set now and everyone's next life spawns
+  with its loadout. **HostState** `rules.weaponSet` (the host's choice, `null`: the map's) and `mapWeaponSet` (the map's
+  own). Older clients ignore both; older hosts send neither, so the pause menu shows no Weapon set row.
+- Nothing new crosses the wire in play: loadouts and inventories travel as before (private state), and what a pickup
+  holds is the snapshot's `pw`, as for random pickups. A life's random spawn gun (Chaos, Mixed bag) is the host's roll
+  from its match seed, the slot and the life.

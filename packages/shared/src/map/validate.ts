@@ -4,6 +4,7 @@ import { SURFACE_SLOTS, coreMaterials, coreThemes } from './materials.ts';
 import { getItem } from '../sim/items.ts';
 import { itemCategory } from '../sim/pickupRoll.ts';
 import { WEAPON_CATEGORY_LABELS } from '../sim/weapons.ts';
+import { isWeaponSetId } from '../sim/weaponSets.ts';
 import { getProp } from '../content/props.ts';
 import { getEnvSpecies, isEnvModel } from '../content/environment.ts';
 import { buildOccupancy, cellHasFloor, cellKey, cellSides, dynamicBlockIds, propBoxes, resolveEdge, yawXZ, type WorldBox } from './geometry.ts';
@@ -166,6 +167,7 @@ function validateExpanded(map: MapDocument, stored: MapDocument, catalog: TileCa
 
   issues.push(...budgetIssues(map));
   for (const x of map.botCast ?? []) if (!isCastId(x)) issues.push({ severity: 'warning', code: 'bots.cast_unknown', message: `bot characters: unknown group or theme "${x}" (left out)` });
+  if (map.weaponSet !== undefined && !isWeaponSetId(map.weaponSet)) issues.push({ severity: 'warning', code: 'weapons.set_unknown', message: `weapon set: no set "${map.weaponSet}" (it plays Standard)` });
   const floating = floatingProps(map);
   if (floating.length) {
     const worst = floating.reduce((a, b) => (b.gap > a.gap ? b : a));

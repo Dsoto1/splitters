@@ -1,5 +1,5 @@
-import { BREAKTHROUGH_POOL_MAX, DEFAULT_TEAMS, botSetLabel, HOST_BOT_SKILLS, HOST_BOT_STYLES, MODE_LABELS, ROTATION_MAX, SCORE_LIMIT_MAX, TICK_RATE, isTeamMode, isTwoTeamMode, limitsScale, mapPickPlayers, matchingPreset, peopleAndBots, scoreStep, setupFit, sizePresets, suggestedLimits, teamsLabel, type HostCommand, type HostRulesPatch, type HostState, type MapDocument, type MatchSetup, type RotationEntry, type RotationPreset, type RotationState } from '@tiletrigger/shared';
-import { botCastSelect, choice, el, field, fitChip, fitList, limitsText, segmented, settingRow, sizeChips, stepper, teamEditor } from '../frontend/setupControls.ts';
+import { BREAKTHROUGH_POOL_MAX, DEFAULT_TEAMS, botSetLabel, getWeaponSet, HOST_BOT_SKILLS, HOST_BOT_STYLES, MODE_LABELS, ROTATION_MAX, SCORE_LIMIT_MAX, TICK_RATE, isTeamMode, isTwoTeamMode, limitsScale, mapPickPlayers, matchingPreset, peopleAndBots, scoreStep, setupFit, sizePresets, suggestedLimits, teamsLabel, type HostCommand, type HostRulesPatch, type HostState, type MapDocument, type MatchSetup, type RotationEntry, type RotationPreset, type RotationState } from '@tiletrigger/shared';
+import { botCastSelect, choice, el, field, fitChip, fitList, limitsText, segmented, settingRow, sizeChips, stepper, teamEditor, weaponSetSelect } from '../frontend/setupControls.ts';
 import { botManager } from '../frontend/botManager.ts';
 import { BOT_SET_PRESETS } from '../playlists.ts';
 
@@ -31,14 +31,14 @@ interface Draft {
   style: HostState['style'];
   /** Bot characters (null: the map's own); undefined where the host doesn't know them. */
   cast: string[] | null | undefined;
-  /** Rules as they'll be: the restart-only ones (score, time, respawn, friendly fire) and the two that apply at once. */
+  /** Rules as they'll be: the restart-only ones (score, time, respawn, friendly fire) and the three that apply at once. */
   rules: Required<HostRulesPatch> | null;
 }
 
 /** The restart-only rules after any change waiting for the restart. */
 const nextRules = (s: HostState): Required<HostRulesPatch> | null => (s.rules ? { ...s.rules, ...(s.pending ?? {}) } : null);
 /** Rules that apply at once (not at the restart). */
-const LIVE_RULES: readonly (keyof HostRulesPatch)[] = ['mixPickups', 'dropWeapons'];
+const LIVE_RULES: readonly (keyof HostRulesPatch)[] = ['mixPickups', 'dropWeapons', 'weaponSet'];
 const same = (a: readonly unknown[] | null | undefined, b: readonly unknown[] | null | undefined): boolean => (a ?? null) === (b ?? null) || (!!a && !!b && a.length === b.length && a.every((x, i) => x === b[i]));
 /** Rules that need a new match, as the foot and the saved line say them: "score 16", "time 15 min", "respawn 3 s", "friendly fire half". */
 const rulePhrases = (p: HostRulesPatch): string[] => [
@@ -299,6 +299,7 @@ export class HostPanel {
       }
       if (liveRules.mixPickups !== undefined) live.push(`mixed pickups ${liveRules.mixPickups ? 'on' : 'off'}`);
       if (liveRules.dropWeapons !== undefined) live.push(`weapon drops ${liveRules.dropWeapons ? 'on' : 'off'}`);
+      if (liveRules.weaponSet !== undefined) live.push(`${liveRules.weaponSet ? getWeaponSet(liveRules.weaponSet).name : `the map's (${getWeaponSet(s.mapWeaponSet).name})`} weapons`);
     }
     return { live, restart: rulePhrases(restartRules), fresh: rulePhrases(freshRules), liveRules, restartRules, freshRules };
   }
@@ -477,6 +478,8 @@ export class HostPanel {
       );
       // Mix up weapon pickups and drop weapon on death: hosts that know them send them in HostState.rules.
       if (s.rules?.mixPickups !== undefined) ruleRows.push(settingRow('Mix up weapon pickups', 'Every weapon pickup not marked "keep fixed" in MapMaker holds a random weapon of the same kind as the one placed there, and a new one each time it comes back. Applies at once.', choice([['off', 'Off'], ['on', 'On']] as const, r.mixPickups ? 'on' : 'off', (v) => ((r.mixPickups = v === 'on'), redraw()), 'hc-mix'), { live: true }));
+      // The weapon set (null: the map's default): hosts that know it send it in HostState.rules.
+      if (s.rules?.weaponSet !== undefined && s.mode !== 'core.discs') ruleRows.push(settingRow('Weapon set', "What everyone spawns with and what the weapon and grenade pickups hold (Map default: the map maker's choice). Applies at once: the pickups change now, and everyone's next life spawns with the set.", weaponSetSelect(r.weaponSet ?? undefined, s.mapWeaponSet ?? 'standard', (v) => ((r.weaponSet = v ?? null), redraw()), 'hc-weapons'), { live: true }));
       if (s.rules?.dropWeapons !== undefined && s.mode !== 'core.discs' && s.mode !== 'core.race') ruleRows.push(settingRow('Drop weapon on death', "A fallen player's or bot's primary with ammo left lies at the body for 30 s, with exactly that ammo; the rest of what they carried is recycled. Applies at once (off clears the ones lying about).", choice([['on', 'On'], ['off', 'Off']] as const, r.dropWeapons ? 'on' : 'off', (v) => ((r.dropWeapons = v === 'on'), redraw()), 'hc-drops'), { live: true }));
     }
     const pending = s.pending && Object.keys(s.pending).length ? s.pending : null;

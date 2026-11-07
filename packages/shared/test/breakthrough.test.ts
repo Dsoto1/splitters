@@ -374,12 +374,12 @@ describe('Breakthrough', () => {
     expect(end && end.e === 'round_end' && end.team).toBe(first.faction);
   });
 
-  it('format v28: a v27 map migrates unchanged, and a map with sectors saves and loads', () => {
-    expect(MAP_FORMAT_VERSION).toBe(28);
-    const v27 = { ...JSON.parse(readFileSync(new URL('./fixtures/iron_compound_v26.json', import.meta.url), 'utf8')), formatVersion: 27 };
-    const { doc, fromVersion } = migrateMapDocument(structuredClone(v27));
-    expect(fromVersion).toBe(27);
-    expect(doc).toEqual({ ...v27, formatVersion: 28 });
+  it("format v29: a v28 map (the weapon set's) migrates unchanged, and a map with sectors saves and loads", () => {
+    expect(MAP_FORMAT_VERSION).toBe(29);
+    const v28 = { ...JSON.parse(readFileSync(new URL('./fixtures/iron_compound_v26.json', import.meta.url), 'utf8')), formatVersion: 28, weaponSet: 'military' };
+    const { doc, fromVersion } = migrateMapDocument(structuredClone(v28));
+    expect(fromVersion).toBe(28);
+    expect(doc).toEqual({ ...v28, formatVersion: 29 });
     const back = loadMap(serializeMap(range()));
     expect(back.ok && back.map.entities.filter((e) => e.kind === 'sector' || e.kind === 'objective').length).toBe(9);
     expect(back.ok && back.map.entities.filter((e) => e.kind === 'spawn' && e.side === 'defend' && e.sector === 2).length).toBe(2);

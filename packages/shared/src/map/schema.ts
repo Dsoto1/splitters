@@ -18,7 +18,7 @@ import { WEAPON_CATEGORIES } from '../sim/weapons.ts';
  * and hills for Capture the Flag and King of the Hill, v18 the race `track`, v19 the transport plane and mount skins, v20 movers, logic-driven
  * lights and blocks, pitched blocks, team-only buttons/doors/zones and tinted liquids, v21 vehicles that ride on water, v22 the map's picture: `metadata.thumbnail`
  * and the camera it was taken from, `metadata.thumbnailCamera`, v23 one path primitive, v24 random weapon pickups:
- * a pickup's `random` category and `keepFixed`, v25 the `zipline` entity, v27 set pieces, v28 Breakthrough's
+ * a pickup's `random` category and `keepFixed`, v25 the `zipline` entity, v27 set pieces, v28 the weapon set, v29 Breakthrough's
  * `sector` and `objective` entities and spawn groups: a spawn's `sector` and `side`).
  *
  * Maps are data, never code. Every placed item carries a stable string ID and
@@ -75,7 +75,7 @@ export const MapMetadata = z.object({
   /** Remix lineage; null for original maps. */
   parentId: StableId.nullable().default(null),
   recommendedPlayers: z
-    // Up to 96 (v28; 32 before): the most a match holds (48 v 48).
+    // Up to 96 (v29; 32 before): the most a match holds (48 v 48).
     .object({ min: z.number().int().min(1).max(96), max: z.number().int().min(1).max(96) })
     .default({ min: 2, max: 8 }),
   supportedModes: z.array(ContentId).default(['core.deathmatch']),
@@ -209,7 +209,7 @@ export const SpawnEntity = EntityBase.extend({
     .nullable()
     .default(null),
   /**
-   * Breakthrough (v28): this spawn point is in the spawn group of sector `sector` (its order, 1-based) for `side`
+   * Breakthrough (v29): this spawn point is in the spawn group of sector `sector` (its order, 1-based) for `side`
    * (the attackers or the defenders, whichever team that is in a round). Breakthrough spawns each side at its group
    * for the sector in play; other modes use it like any other spawn point. Absent: in no group.
    */
@@ -599,7 +599,7 @@ export const FlagEntity = EntityBase.extend({
 });
 
 /**
- * Breakthrough (v28): a sector of the attackers' push (sim/modes/breakthrough.ts). The attackers take the sectors in
+ * Breakthrough (v29): a sector of the attackers' push (sim/modes/breakthrough.ts). The attackers take the sectors in
  * `order` (1, 2, 3…). Its line runs through `position`, square to `yaw` (the way the attackers push): where the
  * sector's ground starts. Once the sector before it falls, defenders still on the attackers' side of the line have
  * 10 s to fall back over it. Its objectives and spawn groups name its order; `name` is shown on the sector strip.
@@ -619,7 +619,7 @@ export const BREAKTHROUGH_OBJECTIVES = ['zone', 'target', 'final'] as const;
 export type BreakthroughObjective = (typeof BREAKTHROUGH_OBJECTIVES)[number];
 
 /**
- * Breakthrough (v28): one of a sector's objectives. `zone`: stand in it to capture it (as a King of the Hill zone,
+ * Breakthrough (v29): one of a sector's objectives. `zone`: stand in it to capture it (as a King of the Hill zone,
  * contested while a defender stands in it); `target`: plant a charge at it (Use, then hold still), which the
  * defenders can defuse, as in Bomb; `final`: a capture zone that ends the round. Position: the floor at its centre.
  */
@@ -968,7 +968,7 @@ export const DEFAULT_BLOOD = { color: '#8a0b0b', amount: 'light' } as const;
 
 /** Recommended team layout for team modes: players per team, 2–8 teams (e.g. [2, 2, 2, 12]). */
 export const TeamSetup = z.object({
-  // Up to 48 a team (v28; 16 before): a large map's own layout (Iron Coast, 24 v 24 and more on dedicated hosts).
+  // Up to 48 a team (v29; 16 before): a large map's own layout (Iron Coast, 24 v 24 and more on dedicated hosts).
   sizes: z.array(z.number().int().min(1).max(48)).min(2).max(8),
 });
 
@@ -1184,6 +1184,13 @@ export const MapDocument = z.object({
    * Unknown ids are left out when a match starts (validBotCast) and flagged by validateMap.
    */
   botCast: z.array(z.string().min(1).max(24)).max(8).optional(),
+  /**
+   * The map's default weapon set (v28; sim/weaponSets.ts, content/weapon-sets.json: military, scifi, medieval, chaos,
+   * mixed), set in MapMaker's Map properties: what a match here spawns with and its pickups hold, unless the host picks
+   * another. Absent: Standard (the mode's own loadout, pickups as placed). An id this build has no set for plays
+   * Standard and is flagged by validateMap.
+   */
+  weaponSet: z.string().regex(/^[a-z][a-z0-9_]{1,23}$/, 'weapon set ids look like "military"').optional(),
   /** Content packs this map needs, beyond the always-present core pack. */
   dependencies: z.array(z.object({ pack: ContentId, version: z.string().max(32) })).max(MAX_MAP_DEPENDENCIES).default([]),
   /**

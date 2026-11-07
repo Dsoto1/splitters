@@ -1020,7 +1020,7 @@ const SCRIPT = `
   var RULES = DATA.rules || [];
   var ruleByKey = {};
   RULES.forEach(function (r) { ruleByKey[r.key] = r; });
-  var MAIN_RULES = ['score', 'time', 'respawn', 'ff', 'mix', 'drops', 'teams', 'assign'];
+  var MAIN_RULES = ['score', 'time', 'respawn', 'ff', 'set', 'mix', 'drops', 'teams', 'assign'];
   var scope = 'all';
   $('rules-scope').addEventListener('click', function (e) {
     var b = e.target.closest('button'); if (!b) return;

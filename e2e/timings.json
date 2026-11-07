@@ -16,6 +16,7 @@
     "setpieces": 26,
     "physicsfx": 128,
     "teams": 132,
+    "weaponsets": 150,
     "ctf": 65,
     "breakthrough": 90,
     "forts": 38,

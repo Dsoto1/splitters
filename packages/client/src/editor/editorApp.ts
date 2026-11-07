@@ -7,6 +7,9 @@ import {
   botCastLabel,
   castLooks,
   validBotCast,
+  mapWeaponSet,
+  weaponSetList,
+  getWeaponSet,
   terrainUnderFloors,
   withPathsLaid,
   addSpawnCommand,
@@ -2787,6 +2790,30 @@ export class EditorApp {
   }
 
   /**
+   * Map properties: the map's default weapon set (MapDocument.weaponSet; sim/weaponSets.ts): what a match here spawns
+   * with, what its weapon and grenade pickups hold and what drops, unless the host picks another. Standard (the
+   * mode's own loadout, pickups as placed) leaves no `weaponSet` in the file.
+   */
+  private renderWeaponSet(el: HTMLElement): void {
+    const now = mapWeaponSet(this.doc);
+    const pick = document.createElement('select');
+    pick.id = 'ed-prop-weapons';
+    for (const s of weaponSetList()) {
+      const o = new Option(s.name, s.id, false, s.id === now);
+      o.title = s.blurb;
+      pick.append(o);
+    }
+    pick.title = getWeaponSet(now).blurb;
+    pick.addEventListener('change', () => {
+      const after = pick.value === 'standard' ? null : pick.value;
+      if (after !== (this.doc.weaponSet ?? null)) this.run('Weapon set', { kind: 'setWeaponSet', before: this.doc.weaponSet ?? null, after });
+    });
+    const hint = small(`${getWeaponSet(now).blurb} Hosts can pick another set (Play → Match setup → Weapons, the pause menu's Host tab).`);
+    hint.id = 'ed-prop-weapons-hint';
+    el.append(row('Weapon set', pick), hint);
+  }
+
+  /**
    * Bot characters (MapDocument.botCast): which looks the map's random bots wear, and so their names (a D-Day map:
    * soldiers only, named "Sgt. Dunmore"). Groups and/or name themes; none ticked: every look. Hosts can change it.
    */
@@ -4305,6 +4332,7 @@ export class EditorApp {
       if (extra.length) help[mode.value] = `${help[mode.value] ?? ''} Also playable here: ${extra.map((m) => MODE_LABELS[m]).join(', ')}.`;
       el.append(row('Mode', mode), small(help[mode.value] ?? ''));
       if (current === 'core.tdm' || current === 'core.koth' || current === 'core.elim' || current === 'core.breakthrough') this.renderTeamSetup(el);
+      this.renderWeaponSet(el);
       this.renderMapBots(el);
       const layersHead = document.createElement('h3');
       layersHead.id = 'ed-layers-head';

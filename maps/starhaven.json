@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 26,
+  "formatVersion": 28,
   "metadata": {
     "id": "starhaven",
     "name": "Starhaven",
@@ -19,7 +19,15 @@
       "core.koth",
       "core.bomb",
       "core.deathmatch"
-    ]
+    ],
+    "release": {
+      "mapId": "m_cjjkpxa2vkpthquj",
+      "versionId": "v_2j5ldcmgaxqkzsmf",
+      "revision": 1,
+      "contentHash": "sha256:2c3f82b0c4fcbe84208f7283f63850081be42d8f667de13c2f4de0064d2d1e26",
+      "schemaVersion": 28,
+      "releasedAt": "2026-11-07T11:07:31.153Z"
+    }
   },
   "classicStructure": {
     "cellSize": 8,
@@ -8546,5 +8554,6 @@
       10
     ]
   },
-  "dependencies": []
+  "dependencies": [],
+  "weaponSet": "scifi"
 }

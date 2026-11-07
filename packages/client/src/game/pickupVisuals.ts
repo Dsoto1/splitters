@@ -7,7 +7,7 @@ import { CreateBox } from '@babylonjs/core/Meshes/Builders/boxBuilder';
 import { CreateCylinder } from '@babylonjs/core/Meshes/Builders/cylinderBuilder';
 import { CreateSphere } from '@babylonjs/core/Meshes/Builders/sphereBuilder';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
-import { THROWABLE_DEFS, getItem, getWeapon, type AmmoType, type DiscPower } from '@tiletrigger/shared';
+import { THROWABLE_DEFS, getItem, getWeapon, throwableModel, type AmmoType, type DiscPower } from '@tiletrigger/shared';
 import type { ModelLibrary } from '../content/models.ts';
 import { castSmall } from './shadowFlags.ts';
 
@@ -49,8 +49,9 @@ function mat(scene: Scene, hex: string, glow = 0): StandardMaterial {
  * powerups.
  * The returned root is centred on the item; place it PICKUP_HOVER above the floor.
  * `lying`: a weapon dropped by the fallen, on its side on a small ring (place it DROP_LIE_HEIGHT above the ground).
+ * `look`: the match's weapon set, whose looks grenades wear (the Military frag, the Sci-fi smoke canister).
  */
-export function createPickupVisual(scene: Scene, models: ModelLibrary, itemId: string, name: string, instanced = false, lying = false): TransformNode {
+export function createPickupVisual(scene: Scene, models: ModelLibrary, itemId: string, name: string, instanced = false, lying = false, look?: string): TransformNode {
   const root = new TransformNode(name, scene);
   // Small and floating: its shadow is cast only near the camera (Atmosphere).
   castSmall(root);
@@ -107,7 +108,8 @@ export function createPickupVisual(scene: Scene, models: ModelLibrary, itemId: s
   } else if (fx.kind === 'throwable') {
     // The thing itself: two of its model side by side (content/throwables.json `view`), a little bigger than in the
     // hand so it reads from across a room; the code-built ones a small cluster of coloured shapes.
-    const model = THROWABLE_DEFS[fx.throwable]?.view?.model ?? null;
+    // (As the match's weapon set shows it, `look`: content/throwables.json `view.looks`.)
+    const model = THROWABLE_DEFS[fx.throwable] ? throwableModel(fx.throwable, look) : null;
     const shapes = () => {
       for (const [x, z] of [[-0.12, 0], [0.12, 0.04], [0, -0.13]] as const) {
         if (fx.throwable === 'mine') part(CreateCylinder(`${name}_m${x}`, { diameter: 0.26, height: 0.08, tessellation: 12 }, scene), mat(scene, '#3c4038')).position.set(x, 0, z);
