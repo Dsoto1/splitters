@@ -13,6 +13,11 @@ made only on a commit that passed CI on a check branch.
   that added it works only on test builds). Now it is in Play and Match Setup (Breakthrough its mode), rotations and
   the host's map list, with its own map picture. Unmarked in MapMaker's Map properties; its id stays
   `test_breakthrough`.
+- **The gun no longer vanishes from your hands after the scope** (the owner saw it on Count Bonesworth after a sniper on
+  a St. John's roof; it could happen to anyone). On Medium and High a gun you pick up fetches a sharper copy for your
+  own hands; when that copy came in while the gun was put away (looking through a scope, or in third person) it took
+  "hidden" from the scope and kept it, so when the scope came down the hands held nothing (until you switched guns).
+  The sharper copy now takes over shown or hidden as the gun itself was.
 - **The use prompt reads on any background**: white words and a light green key on a dark cap, with a soft dark
   outline (the key's letter was the dark ink of the menu's keys, on a dark cap: nearly invisible). Refusals ("Locked",
   "The Dropship is full") stay light red.
