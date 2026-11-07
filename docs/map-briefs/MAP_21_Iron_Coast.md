@@ -87,7 +87,7 @@ by its terraces and walls.
 | Trenches and walls behind the crest | trench pieces (timber and sandbag), kit walls |
 | Round fort | **the command bunker set piece, not built yet** |
 
-## Breakthrough mode (new, asymmetric; the owner: "a small 'breakthrough' or assault mode")
+## Breakthrough mode (new, asymmetric)
 No current mode does this. Bomb, CTF, KOTH, Hostage, Elimination and Forts are all symmetric or single-objective. It
 plugs in as a new mode, `core.breakthrough` (shown as **Breakthrough**), that any map can use with sector markers in
 MapMaker. Iron Coast is its showcase: three sectors, built for 24–32 a side.
@@ -143,7 +143,7 @@ suggests.
 
 ## Owner's answers (2026-11-07)
 1. **Layout:** follow the image (this page).
-2. **Mode:** a small Breakthrough / assault mode, with this map as its showcase.
+2. **Mode:** a Breakthrough / assault mode, with this map as its showcase.
 3. **Name:** Iron Coast.
 4. **Cliff foot:** walls and pillboxes as in the image, not a long sea wall.
 5. **Size:** a large map, 24–32 a side, more on dedicated servers ("small" was only about the mode, and doesn't apply).
