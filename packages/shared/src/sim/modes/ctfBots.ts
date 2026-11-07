@@ -1,5 +1,6 @@
 import { horizontalDistance, type Vec3 } from '../../math.ts';
 import { FLAG_CARRIED, FLAG_DROPPED, FLAG_HOME } from '../../protocol.ts';
+import { ctfDefendersBy, playbookFor } from '../../bots/playbooks.ts';
 import { hasTag } from '../../bots/profile.ts';
 import { TICK_RATE } from '../constants.ts';
 import type { Combatant } from '../match.ts';
@@ -37,22 +38,19 @@ import type { BotGoal } from './types.ts';
  */
 export type CtfRole = 'attack' | 'defend' | 'escort';
 
-/** Bots this close to their own flag when it's in trouble drop their role to deal with it. */
-const RESPOND_RANGE = 22;
-/** An enemy this close to a flag at its base: the flag is in trouble. */
-const THREAT_RANGE = 16;
-/** Attackers nearest a teammate carrying the enemy flag that escort it closely (the rest follow further back). */
-const ESCORTS = 3;
-/** Defenders keep watch within this of their flag (m). */
-const DEFEND_RADIUS = 9;
+/** CTF's playbook (bots/playbooks.ts): defenders by team size, escorts, response and threat ranges, and so on. */
+const ROLES = playbookFor('core.ctf').ctf!;
+const RESPOND_RANGE = ROLES.respond;
+const THREAT_RANGE = ROLES.threat;
+const ESCORTS = ROLES.escorts;
+const DEFEND_RADIUS = ROLES.defendRadius;
 /** Carriers run for home and only notice enemies this close (they shoot back at them on the run). */
-export const CARRIER_AWARENESS = 15;
-/** A carrier this close to its base while its own flag is away keeps watch round the base until the flag is back. */
-const CARRIER_WAIT = 8;
+export const CARRIER_AWARENESS = ROLES.carrierAwareness;
+const CARRIER_WAIT = ROLES.carrierWait;
 
 /** How many of a team's Player Bots defend: 3 on a team of 12 or more players, 2 on a smaller one (1 on a team of two or three). */
 export function ctfDefenders(teamSize: number): number {
-  return teamSize >= 12 ? 3 : teamSize >= 4 ? 2 : teamSize >= 2 ? 1 : 0;
+  return ctfDefendersBy(ROLES, teamSize);
 }
 
 /** How well a bot suits defending: campers and snipers first, then the careful and unaggressive; rushers and roamers last. */

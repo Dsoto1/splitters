@@ -3,6 +3,7 @@ import { FLAG_CARRIED, FLAG_DROPPED, FLAG_HOME, type FlagAction, type ModeSnapsh
 import { TICK_RATE } from '../constants.ts';
 import type { Combatant } from '../match.ts';
 import { CtfBotPlan, ctfBotAwareness, ctfBotGoal, ctfBotTookFlag } from './ctfBots.ts';
+import { playbookFor } from '../../bots/playbooks.ts';
 import type { SideBrief } from '../../bots/teamBrain.ts';
 import type { BotGoal, BotTripSpec, ModeHost, ModeLogic } from './types.ts';
 
@@ -179,7 +180,7 @@ export class CtfMode implements ModeLogic {
     if (!own || !enemy) return null;
     const attack = enemy.state === FLAG_CARRIED ? null : { pos: { ...enemy.pos }, stage: enemy.state === FLAG_HOME };
     const carrier = own.state === FLAG_CARRIED && own.carrier !== null ? own.carrier : null;
-    return { attack, intercept: carrier !== null ? { pos: { ...own.pos }, to: { ...enemy.base }, slot: carrier } : null };
+    return { attack, intercept: carrier !== null ? { pos: { ...own.pos }, to: { ...enemy.base }, slot: carrier } : null, playbook: playbookFor('core.ctf').team };
   }
 
   /** Each team's way from its own flag to the enemy's (its attackers' trip, and the way an enemy carrier runs home with its flag). */

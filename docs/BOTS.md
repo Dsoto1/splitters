@@ -278,9 +278,10 @@ each, 14 m apart. A bot claims a spot while it uses it.
   for 45–75 s (tactical 35–65, arena 60–90) before camping again: campers
   are a minority and never camp all match.
 - **Sniper**: the same with sniper spots (within 110 m), only while carrying
-  a scoped gun with rounds; prone with the scope, holds 25–50 s, and leaves
-  its spot within a second or so of a kill (mid-fight too), taking another
-  one (never the same) 4–10 s later.
+  a scoped gun with rounds (it goes for one first: "Snipers" below); prone
+  with the scope, holds 25–50 s, takes calculated shots and moves on after
+  one or two, and leaves its spot within a second or so of a kill (mid-fight
+  too), taking another one (never the same) 4–10 s later.
 - **Lone wolf**: never in a squad; picks far, uncrowded regions, flanks wide.
 - **Squad**: the rest; in squads in big team matches.
 
@@ -766,10 +767,21 @@ for points on the ground ahead, and captures halved on the dev sample.)
   against 6 of 6 without; one interceptor, 5 of 6). The reactions in play are the mode's: a carrier gets escorts,
   defenders close in on an enemy at their flag.
 - **A person's orders win**: a bot under orders gets no job, and its order outweighs everything in its choices.
-- **Playbooks** (`Playbook`: group shares, staging distances, timings, prices), per mode through its brief. King of the
-  Hill never splits: everyone goes straight for the hill (split over the ways, the hill was held 33 % of the time on the
-  dev sample against 49 % going straight; gathering out of the hill's sight to retake it together, the side doing it
-  held the hill 37 s to the other side's 170 in the same matches).
+- **Playbooks** (`bots/playbooks.ts`, `PLAYBOOKS`: per mode, as data): the team brain's numbers (`Playbook`: group
+  shares, when to split, staging distances, timings, bounds, prices, interceptors), which the mode hands over in its
+  brief, and the mode's own roles (Capture the Flag's defenders by team size, escorts, response and threat ranges, the
+  defenders' watch radius, the carrier's; Breakthrough's below). King of the Hill, Bomb, Hostage, Elimination, Team
+  Deathmatch, co-op and zombies never split; Capture the Flag and Forts split on long trips. King of the Hill
+  straight: split over the ways, the hill was held 33 % of the time on the dev sample against 49 % going straight;
+  gathering out of the hill's sight to retake it together, the side doing it held the hill 37 s to the other side's
+  170 in the same matches.
+- **Breakthrough's playbook** (the owner's brief for Iron Coast; the mode, `core.breakthrough`, is on its way): the
+  attackers spread over the sector's ways on any length of trip (a main push, flankers 35 % and a recon pair), every
+  style but Arena's bounds cover to cover up the beach from 12 m (`bound: 'all'`), a tunnel is pushed as a group
+  (staging at its mouth), and smoke goes before open ground once the weapons have smoke; the defenders' shares: a
+  quarter on the guns, 40 % in the trenches, 15 % sniping from the crest, the rest on the objective, and 30 % of them
+  falling back early to the next line once the sector's capture passes half or half of them are down
+  (`BreakthroughRoles`, for the mode's bot logic to read). Not measured: the mode and its map aren't in yet.
 
 Bots read their job (`BotPlan.job`: group, corridor and staging spot, or an interceptor's cut-off point) and the side's
 priced trips (`BotPlan.trips`) from objects the director updates in place. `bot-report` prints, per match, each team's
@@ -778,6 +790,46 @@ waves set out, got there, lost half first); its rows also keep the route choice 
 once it is past a trip's middle, counted once a life, the way it really took rather than where it stood or fought).
 The scorecard has "two routes" and "busiest route" (time) and "two ways" and "busiest way" (choice) per mode, and the
 judge's line for each map its busiest route and way.
+
+## Snipers (Bot AI Phase B)
+
+The sniper role plays like a sniper (`bots/sniper.ts`; BOT_AI_PLAN.md Phase B item 5; the owner: "camping in tucked
+away high spots … to take calculated shots, some even moving locations after, acting like real snipers"):
+- **The gun first**: a sniper-role bot without a scoped gun goes for a scoped pickup within 70 m before anything but
+  cover (`SCOPE_WEIGHT` 2.8). The match can hand it one at spawn (`Match.sniperGun`: for the weapon sets, Military's
+  marksman rifle and Sci-fi's railgun, docs/WEAPON_SETS_PLAN.md; none today).
+- **Spots** (`vantage.ts`): a sniper spot scores its view, its height (up to 0.8), a wall behind (0.5) and walls close
+  at its sides (tucked away: 0.12 each, four at most), and, once a match, how well it looks down the ways the enemy
+  comes: the share of the trips' corridor points in its view and reach that it can see, × 0.8 (`VantageBoard.lanes`,
+  24 sight lines a spot at most). A sniper with a goal to hold (a CTF defender's flag, a hill) takes a spot within 75
+  m in sight of it (`OPT_POST`, 1.35: over the goal to hold); one with a goal to get to goes with its team.
+- **Calculated shots** (`goodShot`): on its spot with the scope up it fires only once its aim has settled on the
+  target (its wander within about the target's width), the target in the gun's reach, and still (under 1.2 m/s across
+  its view) or not looking its way, or lined up 3.5 s at one walking across; otherwise it keeps tracking with the scope
+  up and holds the shot (`held` in bot-report).
+- **Moving after a shot or two**: one shot from a spot, two for the bold (aggression 60+), then it leaves within a
+  second and takes another spot 1-3 s later, at least 18 m away and not back toward the one before (`relocatePrefer`);
+  also when the target it watches has looked straight at it for 1.5 s (spotted), and, as before, when hurt there or
+  shot at by someone it can't see (`moves` in bot-report).
+
+## Cover-to-cover advance (Bot AI Phase B)
+
+BOT_AI_PLAN.md Phase B item 6 (the owner: "We don't have nearly enough taking cover and using it to progressively
+advance through a map or objective"):
+- **Bounds** (`BotBrain.boundPhase`): a bot on its way to an objective (a goal to keep to, not a carrier's run) in a
+  fight at range moves cover to cover by its style: Tactical from 12 m, Mixed from 18 m, Arena never (nor berserkers).
+  Half cover while half move, on a shared clock by slot (3.5 s turns for Tactical, 4.5 s for Mixed), so teammates near
+  each other take turns without anyone arranging it: the covering half holds cover facing the threat, peeking and
+  shooting rather than running at it; the moving half leaves its cover for one further on (`findCover`'s advance), or
+  advances in the open shooting where there's none.
+- **In cover while reloading or hurt**: hide-and-peek keeps on while it reloads or is hurt, not only while shot at.
+- **Routes that prefer cover** (`NavWorld.markExposure`): when the navmesh is built, each ground polygon with nothing
+  within 3 m of its middle at chest height in any of four directions is open ground (navmesh area `OPEN_AREA`); a
+  route across it costs 1.2 times as much for Mixed bots and 1.45 for Tactical ones, Arena bots as before
+  (`findPath`'s `open`).
+
+`bot-report` keeps each bot's style (`style`: Arena, Tactical, or neither) and `--compare` prints time in cover in a
+fight by style.
 
 ## Measuring
 
