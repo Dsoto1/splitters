@@ -149,7 +149,7 @@ in MapMaker. What the plan above became:
   Not yet: tunnels pushed as a group (the team brain's staging does it for any held objective).
 - **The pieces** the map still needed are built: the **Command Bunker** (the round fort) and the **Grand Cliff Stair
   (Gatehouse)** (docs/SET_PIECES_PLAN.md, "As built: part 4").
-- **The test layout:** the Breakthrough Range (`maps/test_breakthrough.json`, a test map made in MapMaker; docs/GAME_MODES.md
+- **The test layout:** the Breakthrough Range (`maps/test_breakthrough.json`, made in MapMaker; an ordinary map since 2026-11-07; docs/GAME_MODES.md
   describes it) proved the flow with bots before the map exists.
 
 ## Build order (after approval)

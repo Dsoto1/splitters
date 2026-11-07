@@ -16,6 +16,29 @@ made only on a commit that passed CI on a check branch.
 - Hurt bots keep retreating from what they see, as before: seven ways of cutting the retreat short all made
   Breakthrough's attackers worse (measured; the table is in the plan).
 
+**Small fixes from the owner's play, 2026-11-07**
+- **The Breakthrough Range is an ordinary map**: it was marked as a test map, so no list showed it (and the test hook
+  that added it works only on test builds). Now it is in Play and Match Setup (Breakthrough its mode), rotations and
+  the host's map list, with its own map picture. Unmarked in MapMaker's Map properties; its id stays
+  `test_breakthrough`.
+- **The gun no longer vanishes from your hands after the scope** (the owner saw it on Count Bonesworth after a sniper on
+  a St. John's roof; it could happen to anyone). On Medium and High a gun you pick up fetches a sharper copy for your
+  own hands; when that copy came in while the gun was put away (looking through a scope, or in third person) it took
+  "hidden" from the scope and kept it, so when the scope came down the hands held nothing (until you switched guns).
+  The sharper copy now takes over shown or hidden as the gun itself was.
+- **The use prompt reads on any background**: white words and a light green key on a dark cap, with a soft dark
+  outline (the key's letter was the dark ink of the menu's keys, on a dark cap: nearly invisible). Refusals ("Locked",
+  "The Dropship is full") stay light red.
+- **A Dropship can no longer wedge on Shingle Point's beach**, and bots stop going back and forth to one they can't
+  use. A bot had flown one into a landing craft wreck's hull and left it turned across it: its nose and tail poked out
+  past its enter radius and its sides were inside the hull, so nobody could get in (E did nothing), and bots kept
+  walking up to it, giving up and coming back. Now flyers driven into something they can't pass climb over it on their
+  own and settle back to their height after; you can get into any vehicle from within 1.6 m of its hull, not only
+  within its enter radius of its centre (long hulls: the Dropship, the Gunship, the tank); a vehicle in reach with every
+  seat taken says "The … is full"; a vehicle driven and going nowhere for 3 s is marked wedged and bots leave it for
+  something else until it is got out; and a bot that presses E and still isn't in (twice), or can't reach the seat,
+  gives up on that one, for longer each time (30 s, then 60, 120, 240). Iron Tide, Dune Harbor and the other beach maps
+  had the same wreck, hedgehogs and landing craft: the same fixes apply there.
 **Performance round 4: crowds, 32 v 32 in a browser, 64 v 64 on a dedicated host** (owner, 2026-11-06: "32v32 would be
 max I want to shoot for without dedicated host … push dedicated hosts to 64v64 if at all possible"; docs/PERF_96.md,
 "Performance round 4")

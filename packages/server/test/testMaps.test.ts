@@ -10,5 +10,8 @@ describe('test maps', () => {
     const lookup = suiteLookup(MAPS);
     expect(lookup('test_coverage')).toBeNull();
     expect(lookup('frost_basin')?.name).toBe('Frost Basin');
+    // The Breakthrough Range is an ordinary map (it was a test map): a rotation can play it, in Breakthrough.
+    expect(lookup('test_breakthrough')?.name).toBe('Breakthrough Range');
+    expect(lookup('test_breakthrough')?.modes[0]).toBe('core.breakthrough');
   });
 });

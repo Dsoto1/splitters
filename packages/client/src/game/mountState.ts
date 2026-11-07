@@ -1,4 +1,4 @@
-import { BUILT_MOUNT_BASE, airCraftDef, MAX_TEAMS, MOUNT_DEFS, MOUNT_FLAG_ALIVE, MOUNT_FLAG_ARC, MOUNT_FLAG_BURNING, MOUNT_FLAG_CHARGING, MOUNT_FLAG_WRECK, SEAT_LEG_DROP, TICK_RATE, airRoute, getMountDef, mapTeams, mountTint, routePose, type MapDocument, type MountDef, type MountSnapshot, type PhysicsWorld, type Vec3 } from '@tiletrigger/shared';
+import { BUILT_MOUNT_BASE, airCraftDef, enterReach, MAX_TEAMS, MOUNT_DEFS, MOUNT_FLAG_ALIVE, MOUNT_FLAG_ARC, MOUNT_FLAG_BURNING, MOUNT_FLAG_CHARGING, MOUNT_FLAG_WRECK, SEAT_LEG_DROP, TICK_RATE, airRoute, getMountDef, mapTeams, mountTint, routePose, type MapDocument, type MountDef, type MountSnapshot, type PhysicsWorld, type Vec3 } from '@tiletrigger/shared';
 
 /** One mount as the client knows it: the latest server state and a smoothed pose to draw. */
 export interface ClientMount {
@@ -215,14 +215,23 @@ export class MountState {
     return out;
   }
 
+  /** A vehicle in reach whose every seat is taken (the prompt says so instead of offering nothing), or null. */
+  fullInReach(feet: Vec3): ClientMount | null {
+    for (const m of this.mounts.values()) {
+      if (!m.alive || m.def.kind !== 'vehicle' || !m.def.seats.length || m.seats.includes(-1) || m.def.airplane) continue;
+      if (enterReach(m.def, m.pos, m.yaw, feet) !== null) return m;
+    }
+    return null;
+  }
+
   /** The mount you would get into from here, and the seat (same rule as the server: driver, then gunner, then passengers). */
   enterable(feet: Vec3): { mount: ClientMount; seat: number } | null {
     let best: ClientMount | null = null;
     let bestD = Infinity;
     for (const m of this.mounts.values()) {
       if (!m.alive || !m.def.seats.length || !m.seats.includes(-1) || m.def.airplane) continue;
-      const d = Math.hypot(m.pos.x - feet.x, m.pos.z - feet.z);
-      if (d <= m.def.enterRadius && Math.abs(m.pos.y - feet.y) < 2.5 && d < bestD) {
+      const d = enterReach(m.def, m.pos, m.yaw, feet);
+      if (d !== null && d < bestD) {
         best = m;
         bestD = d;
       }

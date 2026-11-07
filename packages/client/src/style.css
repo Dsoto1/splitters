@@ -743,10 +743,14 @@ html.touch .char-spin .spin-label kbd { display: none; }
 #message { position: absolute; top: 20%; left: 50%; transform: translateX(-50%); max-width: 70vw; padding: 10px 22px 10px 18px; background: linear-gradient(90deg, rgba(18, 24, 39, 0.94), rgba(18, 24, 39, 0.75)); border-left: 4px solid var(--orange); font: 600 22px var(--font-display); text-align: center; opacity: 0; transition: opacity 0.4s; box-sizing: border-box; }
 #message:empty { display: none; }
 #message.on { opacity: 1; transition: none; }
-#prompt { position: absolute; left: 50%; top: calc(50% + 34px); transform: translateX(-50%); font-weight: 600; text-shadow: 0 1px 3px #000; white-space: nowrap; }
-#prompt kbd { display: inline-block; min-width: 18px; padding: 0 5px; margin-right: 6px; border: 1px solid #ddd; border-radius: 4px; background: rgba(0, 0, 0, 0.5); font: inherit; }
-#prompt.denied { color: #f19a9a; }
-#prompt .prompt-hint { margin-left: 14px; opacity: 0.8; font-weight: 500; }
+/* The use prompt ("[E] Drive the Dropship"): white text and a light green key cap on a dark backing, each with a soft
+   dark outline, so it reads on sand, snow and sky alike (the key's letter took the global kbd's dark ink on a dark cap).
+   Refused ("Locked", "The Dropship is full"): a light red, on the same dark outline, with no key. */
+#prompt { position: absolute; left: 50%; top: calc(50% + 34px); transform: translateX(-50%); font-weight: 600; color: #fff; text-shadow: 0 0 2px rgba(0, 0, 0, 0.95), 0 1px 3px rgba(0, 0, 0, 0.9), 0 0 8px rgba(0, 0, 0, 0.6); white-space: nowrap; }
+#prompt:not(:empty) { padding: 2px 10px; border-radius: 6px; background: rgba(6, 10, 18, 0.42); }
+#prompt kbd { display: inline-block; min-width: 18px; height: auto; padding: 0 5px; margin-right: 6px; border: 1px solid #7dff9a; border-radius: 4px; background: rgba(8, 22, 12, 0.88); color: #7dff9a; font: inherit; text-align: center; text-shadow: none; box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.7), 0 1px 4px rgba(0, 0, 0, 0.6); }
+#prompt.denied { color: #ffb3b3; }
+#prompt .prompt-hint { margin-left: 14px; opacity: 0.9; font-weight: 500; }
 #marker { position: absolute; transform: translate(-50%, -100%); color: var(--accent); font-weight: 700; text-shadow: 0 1px 3px #000; text-align: center; font-size: 12px; }
 #marker::before { content: '◆'; display: block; font-size: 20px; line-height: 20px; }
 

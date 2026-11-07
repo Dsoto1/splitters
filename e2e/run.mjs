@@ -3295,8 +3295,8 @@ async function ctfFlow(browser) {
 }
 
 /**
- * Breakthrough (core.breakthrough) on the Breakthrough Range (maps/test_breakthrough.json, a test map: `testmap=`
- * adds it to the Arcade in test mode). Match Setup offers the mode on a map with sectors, with its own settings
+ * Breakthrough (core.breakthrough) on the Breakthrough Range (maps/test_breakthrough.json: a map every list offers,
+ * Breakthrough its only mode; its id kept from when it was a test map). Match Setup offers the mode on a map with sectors, with its own settings
  * (reinforcements, sector time, second round), and greys it out on one without, saying why. In the match the HUD
  * shows your side, the sector strip, the pool and the objectives (marked, drawn in the world, on the minimap); bots
  * take the first sector on their own (the clock run forward, you kept out of it); both sides' spawns move on, the
@@ -3309,7 +3309,7 @@ async function breakthroughFlow(browser) {
   await page.addInitScript(() => {
     if (!localStorage.getItem('cs.arcade')) localStorage.setItem('cs.arcade', JSON.stringify({ map: 'sandgate', mode: 'core.tdm', bots: 3, skill: 'normal', scoreLimit: 40, minutes: 10, scoreAuto: true, timeAuto: true, teams: [4, 4] }));
   });
-  await page.goto(`${CLIENT}/?test=1&god=1&testmap=test_breakthrough`);
+  await page.goto(`${CLIENT}/?test=1&god=1`);
   await page.waitForFunction(() => window.__front, null, { timeout: T(30000) });
   await page.evaluate(() => document.getElementById('nav-play').click());
   await page.waitForSelector('#arcade-map', { state: 'attached', timeout: T(30000) });
@@ -3317,6 +3317,9 @@ async function breakthroughFlow(browser) {
   await page.waitForSelector('.mode-tag-off[data-mode="core.breakthrough"]', { timeout: T(30000) }).catch(() => {});
   const off = await page.evaluate(() => document.querySelector('.mode-tag-off[data-mode="core.breakthrough"]')?.dataset.tip ?? null);
   check(/sectors/.test(off ?? ''), `Match Setup greys Breakthrough out on a map without sectors, saying why (${off})`);
+  // The Breakthrough Range is an ordinary map now (no test hook): Match Setup's map list offers it by its name.
+  const listed = await page.evaluate(() => [...document.getElementById('arcade-map').options].find((o) => o.value === 'test_breakthrough')?.textContent ?? null);
+  check(/Breakthrough Range/.test(listed ?? ''), `Match Setup lists the Breakthrough Range without any test hook (${listed})`);
   // The map with sectors: Breakthrough is offered, its own settings in "what wins".
   // (The setup's map list: picked as its select does, the map browser being the way a player picks.)
   await page.evaluate(() => {
@@ -4016,6 +4019,21 @@ async function vehiclesFlow(browser) {
   await page.waitForFunction(() => /Drive/.test(document.getElementById('prompt').textContent ?? ''), null, { timeout: T(8000) }).catch(() => {});
   const prompt = await page.evaluate(() => document.getElementById('prompt').textContent);
   check(/Drive the Buggy/.test(prompt ?? ''), `the prompt offers the wheel (${prompt})`);
+  // It reads on sand, snow and sky (owner, 2026-11-07: "kinda dark, black font?"): white words, a light green key on
+  // a dark cap, each with a dark outline; the key's letter stands out from its cap (its ink was the dark of every other kbd).
+  const look = await page.evaluate(() => {
+    const el = document.getElementById('prompt');
+    const kbd = el.querySelector('kbd');
+    const rgb = (c) => (c.match(/[\d.]+/g) ?? []).map(Number);
+    const lum = ([r, g, b]) => [r, g, b].map((v) => ((v /= 255) <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4)).reduce((a, v, i) => a + v * [0.2126, 0.7152, 0.0722][i], 0);
+    const contrast = (a, b) => (Math.max(lum(a), lum(b)) + 0.05) / (Math.min(lum(a), lum(b)) + 0.05);
+    const ps = getComputedStyle(el);
+    const ks = kbd ? getComputedStyle(kbd) : null;
+    return { text: rgb(ps.color), shadow: ps.textShadow, key: ks ? rgb(ks.color) : null, cap: ks ? rgb(ks.backgroundColor) : null, keyOnCap: ks ? contrast(rgb(ks.color), rgb(ks.backgroundColor)) : 0 };
+  });
+  const [kr, kg, kb] = look.key ?? [0, 0, 0];
+  check(look.text.slice(0, 3).every((v) => v >= 240) && /rgba?\(0, 0, 0/.test(look.shadow) && kg >= 200 && kg > kr && kg > kb && look.keyOnCap >= 7, `the use prompt is white with a light green key on a dark cap, outlined (${JSON.stringify(look)})`);
+  if (process.env.E2E_SHOTS) await page.screenshot({ path: `${process.env.E2E_SHOTS}/vehicles-prompt.png`, timeout: T(60000) }).catch(() => {});
   // Press E (again, if a slow frame swallowed the press) until we're aboard.
   // A late press can still land after the wait: never press again once aboard (that gets you out).
   for (let i = 0; i < 4; i++) {
@@ -5613,6 +5631,44 @@ async function gripsInPlay(browser) {
     await page.click('#resume').catch(() => {});
   });
   check(misses.length === 0, `in a match, your own hands are drawn on the gun through switches, looking up and down, third person and a respawn (${misses.join('; ') || 'all'})`);
+  // Scoped when the gun's sharper held copy comes in (Medium and High fetch it once you hold the gun; on a big map that
+  // can land while you are already looking through the scope, or in third person): the gun is back in your hands when
+  // the scope comes down (owner, 2026-11-07: Count Bonesworth's gun vanished after a sniper on a St. John's roof; the
+  // copy took "off" from the view's root, switched off while scoped).
+  await page.evaluate(() => window.__give('core.marksman'));
+  for (let i = 0; i < 8 && (await page.evaluate(() => window.__cs.view.viewWeapon)) !== 'core.marksman'; i++) {
+    await page.keyboard.press('Digit3');
+    await sleep(600);
+  }
+  await page.waitForFunction(() => window.__cs.view.viewWeapon === 'core.marksman' && window.__cs.view.viewmodel && window.__cs.local.raiseTicks === 0, null, { timeout: T(20000) }).catch(() => {});
+  await page.evaluate(() => (window.__autoInput = { zoom: true }));
+  const scopedIn = await page.waitForFunction(() => window.__cs.view.camera.fov < 0.8, null, { timeout: T(20000) }).then(() => true, () => false);
+  const swapped = await page.evaluate(
+    () =>
+      new Promise((done) => {
+        const v = window.__cs.view;
+        const def = window.__cs.local.weapon;
+        const kept = v.viewmodels.get(def.id);
+        const was = kept?.node;
+        if (!kept || !def.view.held) return done(false);
+        v.sharpenViewmodel(def, kept, def.view.held.medium);
+        const t0 = performance.now();
+        const poll = () => (kept.node !== was ? done(true) : performance.now() - t0 > 20000 ? done(false) : setTimeout(poll, 50));
+        poll();
+      }),
+  );
+  await page.evaluate(() => (window.__autoInput = { zoom: false }));
+  await page.waitForFunction(() => window.__cs.view.camera.fov > 1.2, null, { timeout: T(20000) }).catch(() => {});
+  await page.evaluate(() => delete window.__autoInput);
+  await sleep(500);
+  const back = await page.evaluate(() => {
+    const v = window.__cs.view;
+    const vm = v.viewmodel;
+    const drawn = v.drawnByCamera();
+    return { weapon: v.viewWeapon, on: !!vm && vm.isEnabled(), drawn: !!vm && vm.getChildMeshes().some((m) => drawn.has(m)) };
+  });
+  const scopeHand = await own();
+  check(scopedIn && swapped && back.on && back.drawn && !badHand(scopeHand), `the gun is back in your hands after the scope, its sharper copy having come in while scoped (scoped ${scopedIn}, copy in ${swapped}, ${JSON.stringify(back)}, ${fmt(scopeHand)})`);
   const body = await page.evaluate(() => window.__cs.view.gripReport().local?.mode);
   check(body === 'body', `the match draws your whole body in first person (${body})`);
   // Bots near and far (animation LOD, the low-detail mesh past 18 m): their drawn hands on their guns. Only bots
