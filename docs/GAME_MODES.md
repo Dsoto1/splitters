@@ -378,14 +378,19 @@ v28).
 - **Bots** play it by Breakthrough's playbook (`bots/playbooks.ts`;
   docs/BOTS.md, "Breakthrough's playbook"), each by its place among its
   side's bots (in slot order; the teams alternate slots). The mode briefs
-  the team brain once a second: the attackers' objective is the first in
-  the sector still to take (a group push while the defenders hold it), and
-  the bots' trips are each sector's spawn groups to each of its objectives,
-  so the attackers spread over the sector's ways in groups on any length of
-  trip and bound up cover to cover whatever their style (Arena's aside).
-  They stand in a zone to capture it, hold still at a target to plant (a
-  bot plants or defuses by holding still within reach), and one in three
-  guards a burning charge. The defenders take the playbook's shares of the
+  the team brain once a second: the attackers' objective is the least
+  defended in the sector still to take (the fewest defenders within 15 m;
+  kept until taken or planted, looked at again every 20 s while no attacker
+  is on it), a group push while the defenders hold it; the bots' trips are
+  each sector's spawn groups to each of its objectives, so the attackers
+  spread over the sector's ways in groups on any length of trip and bound
+  up cover to cover whatever their style (Arena's aside). They stand in a
+  zone to capture it and plant at a target; one in three guards a burning
+  charge, and all of them once enough are burning to take the sector. A bot
+  within reach of a target to plant or a charge to defuse holds still,
+  crouched, still shooting, until it's done (the mode's `botInput`: a bot
+  plants or defuses by holding still within reach, and kept to their way
+  they used to fight on the move instead). The defenders take the playbook's shares of the
   sector's posts: what stands within 60 m of its objectives on their side
   of its line (a crest over a beach covers the zones at the cliff's foot).
   A quarter man its guns (turrets), 15 % snipe from its crest (high ground

@@ -779,13 +779,27 @@ and the other vehicle modes: no attack brief) plays by the default. King of the 
   straight: split over the ways, the hill was held 33 % of the time on the dev sample against 49 % going straight;
   gathering out of the hill's sight to retake it together, the side doing it held the hill 37 s to the other side's
   170 in the same matches.
-- **Breakthrough's playbook** (the owner's brief for Iron Coast; the mode, `core.breakthrough`, is on its way): the
-  attackers spread over the sector's ways on any length of trip (a main push, flankers and a recon pair), every
-  style but Arena's bounds cover to cover up the beach from 12 m (`bound: 'all'`), a tunnel is pushed as a group
-  (staging at its mouth), and smoke goes before open ground once the weapons have smoke; the defenders' shares: a
-  quarter on the guns, 40 % in the trenches, 15 % sniping from the crest, the rest on the objective, and 30 % of them
-  falling back early to the next line once the sector's capture passes half or half of them are down
-  (`BreakthroughRoles`, for the mode's bot logic to read). Not measured: the mode and its map aren't in yet.
+- **Breakthrough's playbook** (the owner's brief for Iron Coast; the mode is `core.breakthrough`, its bot logic in
+  `sim/modes/breakthrough.ts`): the attackers spread over the sector's ways on any length of trip (a main push,
+  flankers and a recon pair), every style but Arena's bounds cover to cover up the beach from 12 m (`bound: 'all'`),
+  a tunnel is pushed as a group (staging at its mouth), and smoke goes before open ground once the weapons have smoke;
+  the defenders' shares: a quarter on the guns, 40 % in the trenches, 15 % sniping from the crest, the rest on the
+  objective, and 30 % of them falling back early to the next line once the sector's capture passes half or half of
+  them are down (`BreakthroughRoles`). **As wired:** the mode's brief names the attackers' objective (the least
+  defended still to take in the sector in play, kept until taken or planted; `stage` while the defenders hold it) with
+  this playbook's `team`, and its trips are each sector's spawn groups to each of its objectives (both teams' when the
+  sides swap). The defenders' duties go by each bot's place among its side's bots (by slot order: the teams alternate
+  slots, so `slot % 2` picked no defender at all) over the sector's posts: turrets, trench tiles and sandbag walls, and
+  high ground that sees an objective, within 60 m of its objectives on the defenders' side of its line, so the
+  crest's guns and trenches cover a beach's zones. Gunners and crest snipers stay on their posts; the trenches and
+  objectives answer the attack (defusing, crowding a zone being taken); the early fall-back comes from the trenches'
+  share. A bot within reach of a target to plant or a charge to defuse holds still, crouched, until it's done (the
+  mode's `botInput`). Smoke and tunnel groups wait for smoke and a map with tunnels (the team brain's staging pushes
+  any held objective as a group). **Measured** on the Breakthrough Range (headless matches, bots only, the first
+  round, Match Setup's suggested reinforcements and sector time): 4 v 4, eight seeds, the beach fell in 7 (96 s on
+  average), the guns in 7 and the fort in 7; 8 v 8, six seeds, the beach in 6 (65 s), the guns in 4, the fort in 3.
+  At the mode's defaults (6 reinforcements an attacker, 4 min a sector) 4 v 4 took the beach in 5 of 8, the guns in 4,
+  the fort in 3. Before the hold-still fix no attacker planted in 8 v 8 (the guns fell in none of six).
 
 Bots read their job (`BotPlan.job`: group, corridor and staging spot, or an interceptor's cut-off point) and the side's
 priced trips (`BotPlan.trips`) from objects the director updates in place. `bot-report` prints, per match, each team's
