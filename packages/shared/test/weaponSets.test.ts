@@ -164,8 +164,10 @@ describe('spawn loadouts', () => {
     const lives = Array.from({ length: 60 }, (_, i) => randomGunFor(chaos, 7, 3, i + 1)!);
     expect(Array.from({ length: 60 }, (_, i) => randomGunFor(chaos, 7, 3, i + 1))).toEqual(lives);
     for (const g of lives) expect(mains).toContain(g);
-    expect(new Set(lives).size).toBe(mains.length);
-    expect(lives.filter((g, i) => i > 0 && g !== lives[i - 1]).length).toBeGreaterThan(40);
+    // A shuffled deck: every oddball once in each round of nine lives, and never the same one twice running.
+    for (let round = 0; round + mains.length <= lives.length; round += mains.length) expect(new Set(lives.slice(round, round + mains.length)).size).toBe(mains.length);
+    expect(lives.filter((g, i) => i > 0 && g === lives[i - 1])).toEqual([]);
+    expect(lives.slice(0, 9).join()).not.toBe(lives.slice(9, 18).join());
     // Another seed, or another player, rolls another sequence.
     expect(Array.from({ length: 10 }, (_, i) => randomGunFor(chaos, 8, 3, i + 1)).join()).not.toBe(lives.slice(0, 10).join());
     expect(Array.from({ length: 10 }, (_, i) => randomGunFor(chaos, 7, 4, i + 1)).join()).not.toBe(lives.slice(0, 10).join());

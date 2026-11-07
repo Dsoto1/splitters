@@ -3020,7 +3020,7 @@ async function customSetupFlow(browser) {
  * Match setup names it ("Map default (Military)") and its facts show it; the match spawns you with a knife, a pistol
  * and an assault rifle (the bots too) and its weapon pickups hold Military weapons; the pause menu's Host tab switches
  * the set at once (the pickups now, your next life's loadout). Match setup's own choice, Chaos, saved with the setup,
- * gives a new oddball each life (the roll of the seed, your slot and the life) and a sheep. MapMaker's Map properties
+ * gives a new oddball each life (dealt from a deck shuffled from the seed and your slot) and a sheep. MapMaker's Map properties
  * field sets a map's default, and its TEST plays it. E2E_SHOTS: the Weapons choice, a Chaos spawn, the field.
  */
 async function weaponsetsFlow(browser) {
@@ -3122,12 +3122,22 @@ async function weaponsetsFlow(browser) {
   const picked = await setupState(page2);
   check(picked.saved === 'chaos' && picked.value === 'chaos' && picked.fact === 'Chaos weapons' && /Chaos weapons/.test(picked.chips), `picking Chaos saves it with the setup, and the setup says so (${JSON.stringify(picked)})`);
   if (shots) {
-    // The choice drawn open (a list showing every option) for the picture, then back to a drop-down.
-    await page2.evaluate(() => {
-      const s = document.getElementById('arcade-weapons');
-      s.size = s.options.length;
-      s.scrollIntoView({ block: 'center' });
-    });
+    // The choice drawn open (a list showing every option) for the picture, then back to a drop-down. Scrolled to
+    // until it is in view (the setup can redraw over a first scroll).
+    await page2
+      .waitForFunction(
+        () => {
+          const s = document.getElementById('arcade-weapons');
+          s.size = s.options.length;
+          const r = s.getBoundingClientRect();
+          if (r.top > 0 && r.bottom < innerHeight) return true;
+          s.scrollIntoView({ block: 'center' });
+          return false;
+        },
+        null,
+        { timeout: T(10000), polling: 250 },
+      )
+      .catch(() => {});
     await page2.screenshot({ path: `${shots}/weapon-sets-setup.png` });
     await page2.evaluate(() => (document.getElementById('arcade-weapons').size = 0));
   }
@@ -3139,7 +3149,9 @@ async function weaponsetsFlow(browser) {
   check(lives[0].set === 'chaos' && lives.every((l) => l.weapons[0] === 'core.knife' && l.weapons[1] === 'core.pistol' && l.weapons.length === 3 && mains.includes(l.held) && l.held === l.rolled && l.grenade === 'sheep'), `a Chaos match spawns you with a knife, a pistol and the life's oddball, and a sheep (${lives.map((l) => `life ${l.life}: ${l.held}${l.held === l.rolled ? '' : ` (rolled ${l.rolled})`}`).join(', ')})`);
   check(new Set(lives.map((l) => l.held)).size >= 3, `the spawn gun changes from life to life (${lives.map((l) => l.held?.replace('core.', '')).join(', ')})`);
   if (shots) {
-    // Your own oddball in the picture: the page draws the held gun once the snapshot has it.
+    // Your own oddball in the picture, with the pause menu (headless pages open it) out of the way: the page draws the
+    // held gun once the snapshot has it.
+    await page2.addStyleTag({ content: '#pause { display: none !important; }' });
     await page2.waitForFunction((code) => window.__cs.local.held === code, await sim(page2, (m, me) => me.current), { timeout: T(10000) }).catch(() => {});
     await frames(page2, 20);
     await page2.screenshot({ path: `${shots}/weapon-sets-chaos-spawn.png` });

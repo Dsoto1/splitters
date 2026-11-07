@@ -6,8 +6,9 @@
  * server's `set` rule).
  *
  * - Spawn: the set's weapons (Standard: the mode's own), plus a random main gun each life for Chaos and Mixed bag
- *   (rolled from the match seed, the slot and the life: a match replays the same), with sniper-role bots carrying the
- *   set's scoped gun in place of the main gun (Match.sniperGun), and the set's first grenade.
+ *   (dealt from a deck shuffled from the match seed and the slot: each once before any again; a match replays the
+ *   same), with sniper-role bots carrying the set's scoped gun in place of the main gun (Match.sniperGun), and the
+ *   set's first grenade.
  * - Pickups: a weapon pickup holds a weapon of the set of its own category, else of the nearest categories the set
  *   has (a sniper pickup in Sci-fi is the railgun; nearCategories), rolled again each time it comes back; one marked
  *   "keep fixed" stays as placed when its weapon is of the set. Grenade pickups likewise hold the set's grenades.
@@ -35,7 +36,7 @@ export interface WeaponSetDef {
   blurb: string;
   /** Weapons everyone spawns with, the last one held (absent: the mode's own, MatchRules.startingWeapons). */
   spawn?: readonly string[];
-  /** Plus one of the set's main guns (slots 3-9), rolled each life and held. */
+  /** Plus one of the set's main guns (slots 3-9) each life, dealt from a shuffled deck (randomGunFor), and held. */
   randomGun?: boolean;
   /** What sniper-role bots spawn with in place of the spawn's main gun: a scoped gun of the set. */
   sniper?: string;
@@ -228,12 +229,36 @@ export interface SpawnLoadout {
 /** The weapons everyone spawns with in a set, whatever the life (never dropped): the set's own, else the mode's. */
 export const setSpawnWeapons = (set: WeaponSetDef, rules: Pick<MatchRules, 'startingWeapons'>): readonly string[] => set.spawn ?? rules.startingWeapons;
 
-/** A set's random main gun for a life: rolled from the match seed, the slot and the life (1, 2, 3…), or null without one. */
+/**
+ * A set's random main gun for a life (1, 2, 3…), or null without one: the life's place in a deck of the set's main
+ * guns shuffled from the match seed, the slot and the round, so every one comes up once before any comes up again
+ * (Chaos's nine oddballs in nine lives), and never the same twice running.
+ */
 export function randomGunFor(set: WeaponSetDef, seed: number, slot: number, life: number): string | null {
   if (!set.randomGun) return null;
   const guns = setMainGuns(set);
   if (!guns.length) return null;
-  return guns[rollHash(`spawn_gun_${slot}`, (seed ^ Math.imul(life + 1, 0x9e3779b1)) >>> 0) % guns.length]!.id;
+  const i = Math.max(0, life - 1);
+  return guns[gunDeck(guns.length, seed, slot, Math.floor(i / guns.length))[i % guns.length]!]!.id;
+}
+
+/** A slot's deck of `n` guns for a round of lives: a seeded shuffle, whose first is never the round before's last. */
+function gunDeck(n: number, seed: number, slot: number, round: number): number[] {
+  // Two guns take turns.
+  if (n <= 2) return shuffledGuns(n, seed, slot, 0);
+  const deck = shuffledGuns(n, seed, slot, round);
+  // The round before's last is its shuffle's own: trading its first two places never moves the last of three or more.
+  if (round > 0 && deck[0] === shuffledGuns(n, seed, slot, round - 1)[n - 1]) [deck[0], deck[1]] = [deck[1]!, deck[0]!];
+  return deck;
+}
+
+function shuffledGuns(n: number, seed: number, slot: number, round: number): number[] {
+  const deck = Array.from({ length: n }, (_, k) => k);
+  for (let k = n - 1; k > 0; k--) {
+    const j = rollHash(`spawn_gun_${slot}_${round}_${k}`, seed >>> 0) % (k + 1);
+    [deck[k], deck[j]] = [deck[j]!, deck[k]!];
+  }
+  return deck;
 }
 
 /**

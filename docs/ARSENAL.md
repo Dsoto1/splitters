@@ -365,8 +365,9 @@ server's `set` rule (`MatchRules.weaponSet`).
 | **Chaos** | knife, pistol, a random oddball each life | sheep | swarm, singularity, freeze ray, goo gun, bubble blaster, oil slicker, flare gun, nailgun, flak, blast rockets, gilded pistol | sheep, holy bomb, cluster bomb |
 | **Mixed bag** | knife, pistol, a random main gun each life | frag | every weapon a pickup can hold | every grenade |
 
-- **Random spawn guns** (Chaos, Mixed bag): one of the set's main guns (slots 3-9 with a pickup), rolled from the
-  match seed, the slot and the life (`randomGunFor`): a match replays the same.
+- **Random spawn guns** (Chaos, Mixed bag): one of the set's main guns (slots 3-9 with a pickup) each life, dealt
+  from a deck of them shuffled from the match seed and the slot (`randomGunFor`): every one comes up once before any
+  comes up again (Chaos's nine oddballs in nine lives), never the same twice running, and a match replays the same.
 - **Pickups:** a weapon pickup holds a weapon of the set of its own category (its `random` category, else its
   weapon's), else of the nearest categories the set has (`nearCategories`: ties together; a sniper pickup in Sci-fi
   is the railgun, a battle axe in Military a shotgun, everything in Medieval a spear or a battle axe), rolled again

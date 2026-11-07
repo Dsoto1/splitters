@@ -79,8 +79,9 @@ cloud in the way) is used by sentries, arc turrets, homing and spawn safety, and
 (`BotWorldView.smoke`: target acquisition and `canSee`). Shots, blasts and chain lightning use the physics' own lines,
 so they pass through. Bots (`considerSmoke`, then `smokeScreen`): hurt or shot at in the open by an enemy 10-45 m
 off, and (since main 2c48debf brought Phase B's cover-to-cover advance) bounding, the moving half with no cover round
-it sends smoke ahead every time before it crosses open ground. For now only a bot that picks up Smoke Grenades
-carries any (placed pickups; random ones roll only weapons); the weapon sets will hand it out.
+it sends smoke ahead every time before it crosses open ground. Only a bot that picks up Smoke Grenades carries any:
+placed pickups, and in Military and Sci-fi their grenade pickups, which roll it (`wip/weapon-sets`, "Weapon sets"
+above).
 
 **Numbers:**
 | Weapon | Model | Triangles (LOD) | Everyone's KB | Medium KB | High KB | Before: model, KB |
@@ -797,6 +798,7 @@ before the stone. The brief: session scratchpad `briefs/slack-pass.md`.
 - **No new effect may add** a full-screen flash or white-out. CLAUDE.md gets the rule when this lands.
 
 ### Queued (owner-approved, 2026-11-06): weapon sets. After the Match Setup follow-ups, alongside Bot AI Phase B
+**Built** (2026-11-07): see "Weapon sets" near the top (`wip/weapon-sets`). The ask as it was queued:
 **The owner:** bots mostly use pistols. "I have never once seen the sheep weapon, hardly see swarm launcher or gravity
 weapon." They want weapon sets as map defaults, with a host setting.
 - **The plan:** docs/WEAPON_SETS_PLAN.md.

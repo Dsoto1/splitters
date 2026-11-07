@@ -634,6 +634,12 @@ function weaponName(id: string): string {
   return t ? THROWABLE_DEFS[t].displayName : id.replace(/^core\./, '');
 }
 
+/** A grenade that hurts nobody: no blast, bomblets, airstrike or harmful zone (the smoke grenade, sandbags). */
+function harmless(kind: keyof typeof THROWABLE_DEFS): boolean {
+  const p = THROWABLE_DEFS[kind].projectile;
+  return !p.splashDamage && !p.cluster && !p.airstrike && (!p.zone || p.zone.kind === 'smoke');
+}
+
 /** Kills by weapon, most first: "Assault Rifle 31, Pistol 12". */
 const killsText = (kills: ReadonlyMap<string, number>): string => [...kills].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])).map(([w, n]) => `${weaponName(w)} ${n}`).join(', ') || 'none';
 
@@ -656,7 +662,8 @@ export function weaponSetRows(rows: readonly MatchRow[]): string[] {
     for (const m of ms) for (const [w, n] of Object.entries(m.weaponKills ?? {})) kills.set(w, (kills.get(w) ?? 0) + n);
     const set = getWeaponSet(id);
     const own = setWeaponIds(set);
-    const grenades = (setThrowables(set) ?? []).map((k) => throwableWeaponId(k));
+    // Grenades that can't kill (smoke, sandbags) aren't missed for having no kills.
+    const grenades = (setThrowables(set) ?? []).filter((k) => !harmless(k)).map((k) => throwableWeaponId(k));
     const none = own ? [...own, ...grenades].filter((w) => !kills.get(w)) : null;
     const total = [...kills.values()].reduce((a, b) => a + b, 0);
     out.push(`| ${set.name} | ${ms.length} | ${total} | ${killsText(kills)} | ${none === null ? 'as placed' : none.length ? none.map(weaponName).join(', ') : 'every one got kills'} |`);
