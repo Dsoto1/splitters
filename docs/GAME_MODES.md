@@ -398,7 +398,7 @@ v28).
   (the Breakthrough Range, a test map). Headless: `pnpm bench 8 300
   maps/test_breakthrough.json --mode=core.breakthrough`.
 
-**MapMaker** (Gameplay tab → Spawns & Objectives):
+**MapMaker** (Entities → Gameplay tab → Spawns & Objectives):
 
 1. **Sector**: click where its line runs, facing the way the attackers push
    (R turns it). A new sector takes the next number; the inspector sets its

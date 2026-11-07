@@ -59,7 +59,7 @@ export function releaseCurrent(map: MapDocument): boolean {
   const r = map.metadata.release;
   if (!r) return false;
   if (r.contentHash === mapContentHash(map)) return true;
-  return r.schemaVersion !== map.formatVersion && r.contentHash === mapContentHash({ ...map, formatVersion: r.schemaVersion });
+  return r.schemaVersion !== map.formatVersion && r.contentHash === mapContentHash({ ...map, formatVersion: r.schemaVersion as MapDocument['formatVersion'] });
 }
 
 /** A versionId derived from a content hash, for maps hosted without a release block (same content, same ID). */

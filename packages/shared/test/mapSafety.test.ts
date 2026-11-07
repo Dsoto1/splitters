@@ -210,7 +210,7 @@ describe('map identity', () => {
 
   it('a format bump alone keeps a stamped map as it was: no new version, no "changed since it was exported"', () => {
     const map = loadArena();
-    const old = { ...map, formatVersion: MAP_FORMAT_VERSION - 1 };
+    const old = { ...map, formatVersion: (MAP_FORMAT_VERSION - 1) as MapDocument['formatVersion'] };
     const release = { mapId: 'm_aaaaaaaaaaaaaaaa', versionId: 'v_bbbbbbbbbbbbbbbb', revision: 3, contentHash: mapContentHash(old), schemaVersion: MAP_FORMAT_VERSION - 1, releasedAt: '2026-11-01T00:00:00.000Z' };
     const back = loadMap(JSON.stringify({ ...old, metadata: { ...old.metadata, release } }));
     expect(back.ok).toBe(true);
