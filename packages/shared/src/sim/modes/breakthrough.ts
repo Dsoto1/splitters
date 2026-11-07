@@ -1,5 +1,8 @@
+import { playbookFor } from '../../bots/playbooks.ts';
+import type { SideBrief } from '../../bots/teamBrain.ts';
 import type { BreakthroughObjective } from '../../map/schema.ts';
 import { behindLine, breakthroughSectors } from '../../map/sectors.ts';
+import { terrainHeightAt } from '../../map/terrain.ts';
 import { horizontalDistance, type Vec3 } from '../../math.ts';
 import {
   BT_IN_ATTACKERS,
@@ -18,9 +21,25 @@ import {
 } from '../../protocol.ts';
 import { TICK_RATE } from '../constants.ts';
 import type { Combatant } from '../match.ts';
+import { getMountDef } from '../mounts.ts';
 import { BREAKTHROUGH_POOL, BREAKTHROUGH_SECTOR_SECONDS } from '../rules.ts';
 import type { SpawnSpot } from '../spawns.ts';
-import type { BotGoal, ModeHost, ModeLogic } from './types.ts';
+import { teamHome, type BotGoal, type BotTripSpec, type ModeHost, type ModeLogic } from './types.ts';
+
+/**
+ * Breakthrough's playbook (bots/playbooks.ts; docs/BOTS.md, "Breakthrough's playbook"): the team brain's numbers for
+ * the attackers (spread over the sector's ways on any trip, bounds cover to cover whatever the style), and the
+ * defenders' shares (the guns, the trenches, the crest, falling back early) for botGoal.
+ */
+const PLAYBOOK = playbookFor('core.breakthrough');
+const ROLES = PLAYBOOK.breakthrough!;
+/** Crest spots: ground at least this much higher than the sector's line, at most this far beyond it (m); how many. */
+const CREST_RISE = 2.5;
+const CREST_REACH = 48;
+const CREST_SPOTS = 6;
+
+/** A spawn group's home for its trips: its spot nearest the group's middle (null: an empty group). */
+const groupHome = (spots: readonly SpawnSpot[]): Vec3 | null => teamHome(spots.map((s) => ({ pos: s.pos, team: '' })), '');
 
 /** Seconds to plant a charge at a target (attackers) and to defuse one (defenders), holding still within its reach. */
 export const BT_PLANT_SECONDS = 3;
@@ -90,6 +109,12 @@ export interface BtSectorRt {
   objectives: BtObjectiveRt[];
   /** Its spawn groups: the map's spawn points marked for it (as the match's spawn spots, so recent use counts). */
   spawns: Record<BreakthroughSide, SpawnSpot[]>;
+  /**
+   * Where its defenders post (the playbook's shares), on its own ground (beyond its line, short of the next): its guns
+   * (turrets), its trenches (trench tiles, and a step behind each sandbag wall) and its crest (high ground over its line:
+   * upper floors, terrain rising CREST_RISE over the line), highest first.
+   */
+  posts: { guns: Vec3[]; trenches: Vec3[]; crest: Vec3[] };
 }
 
 /** Standing in a zone (or close enough to a target to plant or defuse at it). */
@@ -139,6 +164,11 @@ export class BreakthroughMode implements ModeLogic {
   /** Spots added round a spawn group too small for its team (per sector and side). */
   private readonly extraSpots = new Map<string, SpawnSpot[]>();
   private warnedQuarter = false;
+  /** Bots: each sector's crest spots its defenders can reach (crestOf), and the defenders' places this tick (defenderShare). */
+  private readonly crestReach = new Map<number, Vec3[]>();
+  private readonly ranks = new Map<number, number>();
+  private rankTick = -1;
+  private fallingBack = false;
 
   constructor(private readonly host: ModeHost) {
     const map = host.map;
@@ -153,6 +183,7 @@ export class BreakthroughMode implements ModeLogic {
       seconds: s.seconds ?? host.rules.breakthroughSectorSeconds ?? BREAKTHROUGH_SECTOR_SECONDS,
       objectives: [],
       spawns: { attack: [], defend: [] },
+      posts: { guns: [], trenches: [], crest: [] },
     }));
     const byOrder = new Map<number, BtSectorRt>();
     for (const s of this.sectors) if (!byOrder.has(s.order)) byOrder.set(s.order, s);
@@ -190,7 +221,105 @@ export class BreakthroughMode implements ModeLogic {
       const spot = host.spawnPoints[i];
       if (sector && spot) sector.spawns[e.side].push(spot);
     });
+    this.findPosts();
     this.reset();
+  }
+
+  /** Each sector's posts for its defenders (BtSectorRt.posts): what stands on its own ground. */
+  private findPosts(): void {
+    const map = this.host.map;
+    const { cellSize, levelHeight } = map.classicStructure;
+    const n = this.sectors.length;
+    const own = (k: number, p: Vec3) => !behindLine(this.sectors[k]!, p) && (k + 1 >= n || behindLine(this.sectors[k + 1]!, p));
+    this.sectors.forEach((s, k) => {
+      const { guns, trenches, crest } = s.posts;
+      for (const e of map.entities) {
+        const p = { x: e.position[0], y: e.position[1], z: e.position[2] };
+        if (!own(k, p)) continue;
+        if (e.kind === 'mount' && getMountDef(e.model)?.kind === 'turret') guns.push(p);
+        // A sandbag wall: a fighting position a step behind it (away from the attack).
+        else if (e.kind === 'prop' && /sandbag/.test(e.model)) trenches.push({ x: p.x + s.dir.x * 1.2, y: p.y, z: p.z + s.dir.z * 1.2 });
+      }
+      const high: Vec3[] = [];
+      for (const t of map.classicStructure.tiles) {
+        const p = { x: t.x * cellSize, y: t.z * levelHeight, z: t.y * cellSize };
+        if (!own(k, p)) continue;
+        // (A sunken trench's floor is 1.5 m under its level.)
+        if (/trench/.test(t.tile)) trenches.push({ ...p, y: p.y - 1.5 });
+        else if (t.z >= 1) high.push(p);
+      }
+      // Terrain rising over the line within CREST_REACH beyond it (a cliff's crest over a beach).
+      const ground = map.terrain;
+      if (ground) {
+        const across = { x: s.dir.z, z: -s.dir.x };
+        for (let f = 4; f <= CREST_REACH; f += 6) {
+          for (let l = -160; l <= 160; l += 8) {
+            const x = s.pos.x + s.dir.x * f + across.x * l;
+            const z = s.pos.z + s.dir.z * f + across.z * l;
+            const h = terrainHeightAt(ground, x, z);
+            if (h !== null && h >= s.pos.y + CREST_RISE && own(k, { x, y: h, z })) high.push({ x, y: h, z });
+          }
+        }
+      }
+      // Highest first, then nearest the line (the same order every time).
+      const ahead = (p: Vec3) => (p.x - s.pos.x) * s.dir.x + (p.z - s.pos.z) * s.dir.z;
+      high.sort((a, b) => b.y - a.y || ahead(a) - ahead(b) || a.x - b.x || a.z - b.z);
+      crest.push(...high.slice(0, CREST_SPOTS * 4));
+    });
+  }
+
+  /** A sector's crest spots its defenders can walk to (on the navmesh, the first time they are asked for). */
+  private crestOf(s: BtSectorRt): Vec3[] {
+    let spots = this.crestReach.get(s.index);
+    if (spots) return spots;
+    const home = groupHome(s.spawns.defend) ?? s.objectives[0]?.pos ?? null;
+    spots = home ? s.posts.crest.filter((p) => this.host.path(home, p) !== null).slice(0, CREST_SPOTS) : [];
+    this.crestReach.set(s.index, spots);
+    return spots;
+  }
+
+  /**
+   * A defender's place in its side (by slot, the same every time), 0..1: the playbook's shares go by it. Worked out
+   * once a tick, with whether the side falls back early (the sector half taken, or half of the defenders down).
+   */
+  private defenderShare(c: Combatant): number {
+    if (this.rankTick !== this.host.tick) {
+      this.rankTick = this.host.tick;
+      this.ranks.clear();
+      const side = this.host.combatants().filter((x) => x.faction === this.defenders).sort((a, b) => a.slot - b.slot);
+      side.forEach((x, i) => this.ranks.set(x.slot, (i + 0.5) / side.length));
+      const down = side.filter((x) => !x.alive).length;
+      this.fallingBack = side.length > 1 && (down * 2 >= side.length || this.sectorProgress() > ROLES.fallBackAt);
+    }
+    return this.ranks.get(c.slot) ?? 0.5;
+  }
+
+  /** How far the attackers have got with the sector in play, 0..1: its zones' capture, or its targets toward the need. */
+  private sectorProgress(): number {
+    const s = this.sector;
+    if (!s) return 0;
+    const zones = s.objectives.filter((o) => o.kind !== 'target');
+    const zoneShare = zones.length ? zones.reduce((a, o) => a + (o.state === BT_OBJ_DONE ? 1 : o.progress), 0) / zones.length : 0;
+    const gone = s.objectives.filter((o) => o.kind === 'target' && o.state === BT_OBJ_DONE).length;
+    return Math.max(zoneShare, s.need > 0 ? gone / s.need : 0);
+  }
+
+  /** Where the attackers come from in a sector (for its defenders to watch): its attackers' spawn group, else short of its line. */
+  private attackFrom(s: BtSectorRt): Vec3 {
+    return groupHome(s.spawns.attack) ?? { x: s.pos.x - s.dir.x * 20, y: s.pos.y, z: s.pos.z - s.dir.z * 20 };
+  }
+
+  /** The attackers' objective in the sector in play: the first still to take (in the map's order), else a burning charge. */
+  private attackFocus(): BtObjectiveRt | null {
+    const s = this.sector;
+    if (!s) return null;
+    return s.objectives.find((o) => o.state === BT_OBJ_ACTIVE) ?? s.objectives.find((o) => o.state === BT_OBJ_PLANTED) ?? null;
+  }
+
+  /** Whether the defenders hold an objective: a zone they alone stand in, or a target with one of them within reach and 6 m. */
+  private held(o: BtObjectiveRt): boolean {
+    if (o.kind !== 'target') return o.presence === BT_IN_DEFENDERS;
+    return this.host.combatants().some((c) => c.alive && c.faction === this.defenders && horizontalDistance(c.move.pos, o.pos) < o.radius + 6);
   }
 
   private get attackIndex(): number {
@@ -581,11 +710,43 @@ export class BreakthroughMode implements ModeLogic {
     return !line || !behindLine(line, mate.move.pos);
   }
 
+  /** The team brain's brief (bots/teamBrain.ts): the attackers' objective, a group push while the defenders hold it; the playbook. */
+  botBrief(team: string): SideBrief | null {
+    if (this.outcome !== BT_ROUND_PLAYING || this.restartAt !== null) return null;
+    if (team !== this.attackers) return { attack: null, intercept: null, playbook: PLAYBOOK.team };
+    const o = this.attackFocus();
+    return { attack: o ? { pos: { ...o.pos }, stage: this.held(o) } : null, intercept: null, playbook: PLAYBOOK.team };
+  }
+
   /**
-   * Basic Breakthrough bots (Bot AI Phase B part 2 gives them a playbook), through the King of the Hill and Bomb
-   * hooks: attackers spread over the sector's open objectives by slot and stand in a zone to capture it, or stand
-   * still at a target to plant (and guard a charge once it burns); defenders hold the objectives, crowd a zone the
-   * attackers are taking and rush a planted charge to defuse it. Between rounds: roam.
+   * The trips the bots make again and again (their corridors are worked out once, at setup): each sector's attackers'
+   * spawn group to each of its objectives, and its defenders' group to each (both teams each way when the sides swap).
+   */
+  botTrips(): readonly BotTripSpec[] {
+    const teams = this.host.teams;
+    if (teams.length < 2) return [];
+    const both = [teams[0]!.id, teams[1]!.id];
+    const attack = this.rounds > 1 ? both : [teams[0]!.id];
+    const defend = this.rounds > 1 ? both : [teams[1]!.id];
+    const out: BotTripSpec[] = [];
+    for (const s of this.sectors) {
+      const from = { attack: groupHome(s.spawns.attack), defend: groupHome(s.spawns.defend) };
+      for (const o of s.objectives) {
+        if (from.attack) for (const team of attack) out.push({ team, from: from.attack, to: { ...o.pos }, kind: 'attack' });
+        if (from.defend) for (const team of defend) out.push({ team, from: from.defend, to: { ...o.pos }, kind: 'defend' });
+      }
+    }
+    return out;
+  }
+
+  /**
+   * Breakthrough's bots, by its playbook (docs/BOTS.md, "Breakthrough's playbook"). Attackers: one in three guards a
+   * burning charge, the rest go for the side's objective (the brief's: the first still to take), which the team brain
+   * spreads over the sector's ways in groups that bound cover to cover and gather for a push on a held objective;
+   * they stand in a zone to capture it, or still at a target to plant. Defenders: a share falls back early to the next
+   * line once the sector is half taken or half of them are down; every other one rushes a burning charge to defuse it,
+   * most crowd a zone being taken; the rest post by the playbook's shares (the sector's guns, its trenches and sandbags,
+   * its crest) where it has them, watching the way the attackers come, and hold the objectives. Between rounds: roam.
    */
   botGoal(c: Combatant): BotGoal | null {
     const sector = this.sector;
@@ -594,14 +755,21 @@ export class BreakthroughMode implements ModeLogic {
     const open = sector.objectives.filter((o) => o.state === BT_OBJ_ACTIVE || o.state === BT_OBJ_PLANTED);
     if (!side || !open.length) return null;
     const planted = open.filter((o) => o.state === BT_OBJ_PLANTED);
+    const guard = (o: BtObjectiveRt): BotGoal => ({ pos: o.pos, radius: Math.max(3, o.radius + 3) });
     if (side === 'attack') {
-      // Targets still to plant come first (zones are taken by standing in them, which any attacker on the way helps).
-      const o = open[c.slot % open.length]!;
-      if (o.state === BT_OBJ_PLANTED) return { pos: o.pos, radius: Math.max(3, o.radius + 3) };
+      if (planted.length && c.slot % 3 === 0) return guard(planted[Math.floor(c.slot / 3) % planted.length]!);
+      const o = this.attackFocus() ?? open[c.slot % open.length]!;
+      if (o.state === BT_OBJ_PLANTED) return guard(o);
       if (o.kind === 'target') return { pos: o.pos, radius: Math.max(0.6, Math.min(1.2, o.radius * 0.4)), push: true };
       return { pos: o.pos, radius: Math.max(1, o.radius * 0.6 - (c.slot % 3) * 0.5), push: true };
     }
-    // Defenders: a burning charge first (every other one), a zone being taken next, else hold their share.
+    const share = this.defenderShare(c);
+    const watch = this.attackFrom(sector);
+    const next = this.sectors[this.active + 1];
+    if (next?.objectives.length && this.fallingBack && share < ROLES.fallBack) {
+      const o = next.objectives[c.slot % next.objectives.length]!;
+      return { pos: o.pos, radius: Math.max(2, o.radius * 0.8), watch };
+    }
     if (planted.length && c.slot % 2 === 0) {
       const o = planted.reduce((a, b) => (horizontalDistance(a.pos, c.move.pos) <= horizontalDistance(b.pos, c.move.pos) ? a : b));
       return { pos: o.pos, radius: Math.max(0.6, Math.min(1.2, o.radius * 0.4)), push: true };
@@ -611,7 +779,10 @@ export class BreakthroughMode implements ModeLogic {
       const o = taking[c.slot % taking.length]!;
       return { pos: o.pos, radius: Math.max(1, o.radius * 0.5), push: true };
     }
+    const posts =
+      share < ROLES.guns ? sector.posts.guns : share < ROLES.guns + ROLES.trenches ? sector.posts.trenches : share < ROLES.guns + ROLES.trenches + ROLES.crestSnipers ? this.crestOf(sector) : [];
+    if (posts.length) return { pos: posts[c.slot % posts.length]!, radius: posts === sector.posts.guns ? 2.5 : 1.5, watch };
     const o = open[c.slot % open.length]!;
-    return { pos: o.pos, radius: o.kind === 'target' ? Math.max(3, o.radius + 3) : Math.max(1.5, o.radius * 0.8) };
+    return { pos: o.pos, radius: o.kind === 'target' ? Math.max(3, o.radius + 3) : Math.max(1.5, o.radius * 0.8), watch };
   }
 }

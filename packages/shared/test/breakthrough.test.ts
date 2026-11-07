@@ -30,6 +30,9 @@ import {
   type MatchRules,
   type MatchSetup,
 } from '../src/index.ts';
+import { playbookFor } from '../src/bots/playbooks.ts';
+import type { SideBrief } from '../src/bots/teamBrain.ts';
+import type { BotTripSpec } from '../src/sim/modes/types.ts';
 import { BT_FALLBACK_SECONDS, BT_FUSE_SECONDS, Match, initNavigation, type BreakthroughMode, type Combatant } from '../src/match.ts';
 import { makeMap } from './helpers.ts';
 
@@ -408,6 +411,61 @@ describe('Breakthrough', () => {
     const auto = rulesFromSetup({ ...setup, teams: [16, 16], scoreAuto: true, timeAuto: true, btSwap: false }, range()).rules;
     expect(auto).toMatchObject({ breakthroughPool: breakthroughPoolFor(16), breakthroughSectorSeconds: breakthroughMinutesFor(16) * 60 });
     expect(auto.breakthroughSwap).toBeUndefined();
+  });
+
+  it("bots play its playbook: the team brain's brief and trips, the defenders' posts and early fall-back", () => {
+    const map = range();
+    // The beach's own ground (z 0 to 28): a machine gun, a sandbag wall and a raised platform (high ground).
+    map.entities.push({ id: 'gun', kind: 'mount', model: 'turret_mg', position: [8, 0, 20], yaw: Math.PI, faction: null, respawnSeconds: null } as Entity);
+    map.entities.push({ id: 'bags', kind: 'prop', model: 'prop.sandbag_wall', position: [16, 0, 10], yaw: 0, scale: 1 } as Entity);
+    map.classicStructure.tiles.push({ id: 'deck', tile: 'core.platform', x: 0, y: 2, z: 1, rotation: 0 });
+    const match = new Match(map, { ...DEFAULT_RULES['core.breakthrough'], teamSizes: [4, 4] });
+    const people = Array.from({ length: 8 }, (_, i) => match.addHuman(`p${i}`)!);
+    const mode = match.mode as unknown as BreakthroughMode & { botBrief(t: string): SideBrief | null; botTrips(): readonly BotTripSpec[] };
+    for (let i = 0; i < 5; i++) match.step();
+    const [teamA, teamB] = match.teams!.map((t) => t.id);
+    // Trips: each sector's attackers' group to each of its objectives (the round's attackers), its defenders' to each.
+    const trips = mode.botTrips();
+    expect(trips.filter((t) => t.kind === 'attack').every((t) => t.team === teamA)).toBe(true);
+    expect(trips.filter((t) => t.kind === 'defend').every((t) => t.team === teamB)).toBe(true);
+    expect(trips.filter((t) => t.kind === 'attack').map((t) => [t.from.z, t.to.z])).toEqual([[0, 16], [0, 16], [24, 42], [24, 42], [24, 42], [52, 68]]);
+    // The brief: the attackers go for the first objective still to take; a push (staging) while the defenders hold it.
+    const brief = mode.botBrief(mode.attackers)!;
+    expect(brief.playbook).toBe(playbookFor('core.breakthrough').team);
+    expect(brief.attack).toEqual({ pos: { x: 2, y: 0, z: 16 }, stage: false });
+    expect(mode.botBrief(mode.defenders)!.attack).toBeNull();
+    const att = people.filter((c) => c.faction === mode.attackers);
+    const def = people.filter((c) => c.faction === mode.defenders).sort((a, b) => a.slot - b.slot);
+    for (const c of [...att, ...def]) c.move = { pos: { x: 8, y: 0, z: 74 }, velY: 0, grounded: true };
+    def[0]!.move = { pos: { x: 2, y: 0, z: 16 }, velY: 0, grounded: true };
+    match.step();
+    expect(mode.botBrief(mode.attackers)!.attack!.stage).toBe(true);
+    // Attackers' goals: the brief's objective (one in three guards a burning charge when there is one).
+    expect(att.map((c) => mode.botGoal(c, [])!.pos)).toEqual(att.map(() => ({ x: 2, y: 0, z: 16 })));
+    // The beach's posts: the gun, a step behind the sandbags, the platform's deck.
+    const beach = mode.sectors[0]!;
+    expect(beach.posts.guns).toEqual([{ x: 8, y: 0, z: 20 }]);
+    expect(beach.posts.trenches).toEqual([{ x: 16, y: 0, z: 11.2 }]);
+    expect(beach.posts.crest).toEqual([{ x: 0, y: 4, z: 16 }]);
+    // Defenders by the playbook's shares (by slot, of four: 1/8, 3/8, 5/8, 7/8): a quarter on the gun, the next 40 % at
+    // the sandbags, the last (past the crest's 15 %) holds the objectives. Each watches where the attackers come from.
+    def[0]!.move = { pos: { x: 8, y: 0, z: 74 }, velY: 0, grounded: true };
+    match.step();
+    const goals = def.map((c) => mode.botGoal(c, [])!);
+    expect(goals[0]!.pos).toEqual({ x: 8, y: 0, z: 20 });
+    expect(goals[1]!.pos).toEqual({ x: 16, y: 0, z: 11.2 });
+    expect(goals[2]!.pos).toEqual({ x: 16, y: 0, z: 11.2 });
+    expect(goals[3]!.pos.z).toBe(16);
+    expect(goals.every((g) => g.watch && g.watch.z === 0)).toBe(true);
+    // Early fall-back: once the beach is past half taken, the playbook's share (here the first of four) goes to the guns.
+    mode.objectives.find((o) => o.label === 'A1')!.state = BT_OBJ_DONE;
+    match.step();
+    expect(mode.botGoal(def[0]!, [])!.pos.z).toBe(20);
+    mode.objectives.find((o) => o.label === 'A2')!.progress = 0.3;
+    match.step();
+    expect(mode.botGoal(def[0]!, [])!.pos.z).toBe(42);
+    expect(mode.botGoal(def[1]!, [])!.pos.z).not.toBe(42);
+    match.destroy();
   });
 
   it('is deterministic by seed: the same bots on the same seed play the same match', () => {
