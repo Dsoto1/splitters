@@ -484,6 +484,11 @@ describe('Breakthrough', () => {
     expect(rush.map((g) => g.pos.z === 42 && g.pos.x === 0 && !!g.push)).toEqual([true, true, false, true]);
     // ...and one in three attackers guards it, the rest go for the next target.
     expect(att.map((c) => mode.botGoal(c)!.pos.x)).toEqual([0, 8, 8, 0]);
+    // A defender left behind the guns' line (z 28, the fall-back warning) runs for the nearest objective over it.
+    put(def[3]!, 8, 10);
+    match.step();
+    expect(mode.behind.has(def[3]!.slot)).toBe(true);
+    expect(mode.botGoal(def[3]!)).toMatchObject({ pos: { x: 8, z: 42 }, run: true });
     match.destroy();
   });
 

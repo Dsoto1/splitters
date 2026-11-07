@@ -800,6 +800,14 @@ export class BreakthroughMode implements ModeLogic {
       if (o.kind === 'target') return reach(o);
       return { pos: o.pos, radius: Math.max(1, o.radius * 0.6 - (k % 3) * 0.5), push: true };
     }
+    // Left behind the line as it fell (the fall-back warning): run for it, to the nearest of the sector's objectives
+    // and the defenders' spawn group, not stopping to fight.
+    if (this.behind.has(c.slot)) {
+      const home = groupHome(sector.spawns.defend);
+      let to: Vec3 | null = null;
+      for (const p of [...open.map((o) => o.pos), ...(home ? [home] : [])]) if (!to || horizontalDistance(p, c.move.pos) < horizontalDistance(to, c.move.pos)) to = p;
+      if (to) return { pos: to, radius: 3, run: true };
+    }
     const share = (k + 0.5) / n;
     const guns = ROLES.guns;
     const trenches = guns + ROLES.trenches;
