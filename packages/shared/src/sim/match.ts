@@ -14,7 +14,7 @@ import { EncounterEntity as EncounterSchema, NPC_ROLES, PLAYERS_FACTION, type En
 import { add, createRng, distance, dot, horizontalDistance, lookAngles, normalize, scale, sub, viewDirection, type Vec3, hypot } from '../math.ts';
 import {
   MOUNT_BURN_FRACTION, MOUNT_BURN_SECONDS, MOUNT_FLAG_ALIVE, MOUNT_FLAG_ARC, MOUNT_FLAG_BURNING, MOUNT_FLAG_CHARGING, MOUNT_FLAG_WRECK, MOUNT_WRECK_FADE_SECONDS, MOUNT_WRECK_SECONDS, VEHICLE_DAMAGE_SCALE,
-  airCraftDef, BUILT_MOUNT_BASE, FLOAT, MOUNT_DEFS, footprintGap, getMountDef, mountMass, mountToWorld, type MountDef, type SeatDef, type SeatRole,
+  airCraftDef, BUILT_MOUNT_BASE, enterReach, FLOAT, MOUNT_DEFS, footprintGap, getMountDef, mountMass, mountToWorld, type MountDef, type SeatDef, type SeatRole,
 } from './mounts.ts';
 import { airRoute, botDropIndex, canDrop, dropArea, dropIndex, dropOffsets, dropPlan, dropStretchEnds, dropTarget, routePose, shouldJump, ticksToRouteEnd, type AirRoute, type DropPlan } from './airplane.ts';
 import { CHUTE, heightAboveGround } from './parachute.ts';
@@ -145,6 +145,14 @@ export interface WeaponState {
   unchambered?: boolean;
 }
 
+/** Driven with the throttle open, moving under WEDGE_STEP m a tick for WEDGE_TICKS (3 s): wedged (MountRt.wedged). */
+const WEDGE_STEP = 0.01;
+const WEDGE_TICKS = 180;
+/** A wedged vehicle counts as got out once it is this far (m) from where it wedged. */
+const WEDGE_FREED = 3;
+/** A flyer blocked with the throttle open climbs on its own for this many ticks after the last blocked one. */
+const CLIMB_ASSIST_TICKS = 30;
+
 /** A turret, sentry or vehicle in play (see mounts.ts). */
 interface MountRt {
   /** Index of its map entity (snapshots refer to it). */
@@ -202,6 +210,16 @@ interface MountRt {
   builtBy?: number;
   /** An arc sentry's state (mounts.ts ArcSentrySpec): wind-up ticks done, the slot it is on, ticks locked, vent ticks left. */
   arc?: ArcSentryState;
+  /**
+   * Wedged: driven with the throttle open and going nowhere for WEDGE_TICKS. Bots see it (MountView.wedged) and leave
+   * it for something else until it has moved WEDGE_FREED metres from `at` (someone got it out); a respawn clears it.
+   */
+  stall: number;
+  wedged?: { at: Vec3 };
+  /** Flyers: ticks left of the climb a flyer driven into something it can't pass makes on its own (driveVehicle). */
+  climbAssist: number;
+  /** Flyers: the height (m) it was flying at when climbAssist lifted it; past the obstacle it settles back down to it. */
+  assistFrom: number | null;
   /** The transport plane: the route it flies and how players board it (see airplane.ts). */
   route?: AirRoute;
   airdrop?: 'off' | 'start' | 'always';
@@ -237,7 +255,7 @@ export interface Spectator {
 }
 
 export interface Combatant {
-  /** Actor ID: the player slot (0..31), or NPC_ID_BASE + n for NPCs. */
+  /** Actor ID: the player slot (0..MAX_PLAYER_SLOTS-1), or NPC_ID_BASE + n for NPCs. */
   slot: number;
   kind: 'human' | 'bot' | 'npc';
   /** Faction; null = free-for-all player (deathmatch). */
@@ -2396,6 +2414,8 @@ export class Match {
       ...(m.def.vehicle && m.speed < -0.5 ? { reversing: true } : {}),
       ...(m.burning ? { burning: true } : {}),
       ...(m.floats ? { floats: true } : {}),
+      ...(m.wedged ? { wedged: true } : {}),
+      half: m.def.half,
       humanNear: humans.some((h) => horizontalDistance(h.move.pos, m.pos) < 35),
     }));
   }
@@ -3995,6 +4015,9 @@ export class Match {
       wreckUntil: 0,
       vel: { x: 0, z: 0 },
       rammed: new Map(),
+      stall: 0,
+      climbAssist: 0,
+      assistFrom: null,
     };
     const setup = suspensionOf(def);
     if (setup) {
@@ -4028,8 +4051,9 @@ export class Match {
     for (const m of this.mounts) {
       if (!m.alive || !m.def.seats.length || !m.seats.includes(null)) continue;
       if (m.def.vehicle && this.mode?.blocksVehicle(c)) continue;
-      const d = horizontalDistance(m.pos, c.move.pos);
-      if (d <= m.def.enterRadius && Math.abs(m.pos.y - c.move.pos.y) < 2.5 && d < bestD) {
+      // Near its centre or its hull (a long hull, or one wedged with only its nose clear: sim/mounts.ts enterReach).
+      const d = enterReach(m.def, m.pos, m.yaw, c.move.pos);
+      if (d !== null && d < bestD) {
         best = m;
         bestD = d;
       }
@@ -4263,6 +4287,9 @@ export class Match {
     m.airborne = m.afloat = false;
     m.push = { x: 0, z: 0 };
     m.lastHitBy = null;
+    m.stall = m.climbAssist = 0;
+    m.assistFrom = null;
+    m.wedged = undefined;
     if (m.suspSetup) m.susp = newSuspension(m.suspSetup);
     for (const g of m.guns) if (g) g.heat = 0;
     this.physics.setBoxEnabled(m.body, true);
@@ -4467,10 +4494,17 @@ export class Match {
     const grip = grounded ? Math.min(0.6, (v.grip ?? (v.hover ? 0.06 : 0.25)) * road.grip * loose * wheels) * (brake ? 0.25 : 1) * (m.afloat ? FLOAT.grip : 1) : 0;
     m.slide *= (1 - grip) ** ticks;
     if (Math.abs(m.slide) < 0.02) m.slide = 0;
+    const piloted = m.def.seats.some((s, i) => s.role === 'driver' && m.seats[i] !== null);
     if (v.fly) {
       // Flyers hold their height: climb or dive at the pilot's say, and sink back down with nobody at the controls.
-      const piloted = m.def.seats.some((s, i) => s.role === 'driver' && m.seats[i] !== null);
-      const want = piloted ? (m.drive.lift ?? 0) * v.fly.climb : -v.fly.climb * 0.5;
+      // Driven into something it can't pass (a wreck's hull, a wall, a prop too tall to ride over), a flyer climbs on
+      // its own until it clears it (climbAssist): it lifts over instead of wedging (a bot pilot never climbs). Past
+      // it, it settles back down to the height it was flying at (assistFrom), unless the pilot climbs or dives.
+      const asked = m.drive.lift ?? 0;
+      if (asked) m.assistFrom = null;
+      else if (m.climbAssist > 0) m.assistFrom ??= m.pos.y;
+      else if (m.assistFrom !== null && m.pos.y <= m.assistFrom + 0.05) m.assistFrom = null;
+      const want = !piloted ? -v.fly.climb * 0.5 : m.climbAssist > 0 ? Math.max(1, asked) * v.fly.climb : m.assistFrom !== null ? -v.fly.climb * 0.5 : asked * v.fly.climb;
       m.velY += Math.max(-v.fly.climb * 3 * dt, Math.min(v.fly.climb * 3 * dt, want - m.velY));
       if (m.pos.y >= m.home.pos.y + v.fly.ceiling && m.velY > 0) m.velY = 0;
     } else m.velY -= PLAYER.gravity * dt;
@@ -4517,6 +4551,13 @@ export class Match {
       m.speed *= Math.min(0.8, 0.4 + mass * 0.1);
       m.slide *= 0.5;
     }
+    const throttle = piloted && Math.abs(forward) > 0.2;
+    if (v.fly) m.climbAssist = throttle && moved.blocked > 0.5 ? CLIMB_ASSIST_TICKS : Math.max(0, m.climbAssist - ticks);
+    // Wedged: driven and getting nowhere for a while (bots leave it for something else until it is got out).
+    const step = Math.hypot(moved.feet.x - m.pos.x, moved.feet.z - m.pos.z);
+    m.stall = throttle && step < WEDGE_STEP * ticks ? m.stall + ticks : Math.max(0, m.stall - 2 * ticks);
+    if (m.stall >= WEDGE_TICKS && !m.wedged) m.wedged = { at: { ...moved.feet } };
+    else if (m.wedged && Math.hypot(moved.feet.x - m.wedged.at.x, moved.feet.z - m.wedged.at.z) > WEDGE_FREED) m.wedged = undefined;
     m.pos = moved.feet;
     if (m.susp) this.suspend(m, ticks, speedBefore, turn, right, wasAirborne && !m.airborne ? Math.max(0, -fallSpeed) : 0);
     const decay = (moved.grounded || afloat ? 0.9 : 0.99) ** ticks;

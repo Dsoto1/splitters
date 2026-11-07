@@ -8,6 +8,63 @@ made only on a commit that passed CI on a check branch.
 
 ## Unreleased
 
+**Small fixes from the owner's play, 2026-11-07**
+- **The Breakthrough Range is an ordinary map**: it was marked as a test map, so no list showed it (and the test hook
+  that added it works only on test builds). Now it is in Play and Match Setup (Breakthrough its mode), rotations and
+  the host's map list, with its own map picture. Unmarked in MapMaker's Map properties; its id stays
+  `test_breakthrough`.
+- **The gun no longer vanishes from your hands after the scope** (the owner saw it on Count Bonesworth after a sniper on
+  a St. John's roof; it could happen to anyone). On Medium and High a gun you pick up fetches a sharper copy for your
+  own hands; when that copy came in while the gun was put away (looking through a scope, or in third person) it took
+  "hidden" from the scope and kept it, so when the scope came down the hands held nothing (until you switched guns).
+  The sharper copy now takes over shown or hidden as the gun itself was.
+- **The use prompt reads on any background**: white words and a light green key on a dark cap, with a soft dark
+  outline (the key's letter was the dark ink of the menu's keys, on a dark cap: nearly invisible). Refusals ("Locked",
+  "The Dropship is full") stay light red.
+- **A Dropship can no longer wedge on Shingle Point's beach**, and bots stop going back and forth to one they can't
+  use. A bot had flown one into a landing craft wreck's hull and left it turned across it: its nose and tail poked out
+  past its enter radius and its sides were inside the hull, so nobody could get in (E did nothing), and bots kept
+  walking up to it, giving up and coming back. Now flyers driven into something they can't pass climb over it on their
+  own and settle back to their height after; you can get into any vehicle from within 1.6 m of its hull, not only
+  within its enter radius of its centre (long hulls: the Dropship, the Gunship, the tank); a vehicle in reach with every
+  seat taken says "The … is full"; a vehicle driven and going nowhere for 3 s is marked wedged and bots leave it for
+  something else until it is got out; and a bot that presses E and still isn't in (twice), or can't reach the seat,
+  gives up on that one, for longer each time (30 s, then 60, 120, 240). Iron Tide, Dune Harbor and the other beach maps
+  had the same wreck, hedgehogs and landing craft: the same fixes apply there.
+**Performance round 4: crowds, 32 v 32 in a browser, 64 v 64 on a dedicated host** (owner, 2026-11-06: "32v32 would be
+max I want to shoot for without dedicated host … push dedicated hosts to 64v64 if at all possible"; docs/PERF_96.md,
+"Performance round 4")
+- **Far runners don't stutter any more.** Characters further off were animated 8-20 times a second and held each pose
+  in between, so a running foot stood still for two to four frames and then jumped. Now the frames in between are drawn
+  part way from one pose to the next (the gun with them), and the rate goes by how big a character is on screen (a
+  scope brings far ones back to full rate): every frame to about 15 m, then 30, 20, 15, 10 and 5 times a second out to
+  150 m and beyond, each at least as often as before to 150 m, and smooth.
+- **A crowd's animation costs about a fifth less** (56 characters running and strafing, 5-60 m): the arm and hand
+  fitting on far guns starts at 25 m (was 35), and clips leaving a crossfade are kept a moment instead of stopped and
+  started again (a strafing crowd started some 50 a second).
+- **32 v 32 in a browser** (was 24 v 24): Match Setup's Max is 32v32; past 48 players its check says it takes a recent
+  desktop or a fast laptop. Phones stay at 16. **64 v 64 on a dedicated host** (was 48 v 48; protocol 5, so older
+  clients are told the server speaks another protocol).
+- **Hitches:** effects physics (ragdolls, casings, debris) no longer walks every level collider after each step (a
+  third of each step and half a megabyte of garbage on Shingle Point); joints are turned in place (less garbage for the
+  long collections); the loading screen waits for the looks and guns the match needs before it starts counting the
+  shader warm-up, so a first visit after an update no longer builds the spawn wave's shaders in the first seconds.
+- **Tests:** the host handoff flow runs each of its three pages in a browser of its own (sharing one GPU process, a
+  joining friend's page waited up to a minute on its shader builds behind the other two pages' frames); `pnpm bench
+  … --wire` reports what each player is sent.
+
+**Reduce flashing: a seizure-safety setting, on by default** (owner, 2026-11-06, after dropping the flashbang: "I
+don't want to give people seizures"; docs/LOOK.md, "Reduce flashing")
+- **Options → Accessibility → Reduce flashing**, also in the pause menu's Settings; on unless you switch it off.
+- With it on, lightning (the Arc Caster, arc turrets, electric fences) holds a steady glow instead of crackling bolts,
+  fence wires and an arc turret's charge stop flickering, blasts near you are dimmer and fade in instead of whiting
+  out the screen, muzzle flashes are smaller and dimmer, blinking map lights and indicators pulse gently at most once
+  a second, a light's "Flash" flares less and eases, the haze of water you dive into eases in, and taking damage
+  tints the screen edge a duller red that eases in and holds instead of flashing red with every hit.
+- **A flicker check in CI** (e2e flow `flashing`): the brightest moments (an arc fight up close, the fence, grenade
+  blasts in front of you, a machine gun in a dark room, a red alarm light) are recorded frame by frame and held to
+  WCAG 2.3.1's flash and red-flash thresholds with the setting on; with it off they are measured and reported.
+
 **Breakthrough: a new asymmetric mode** (owner-approved for Iron Coast, MAP 21; docs/GAME_MODES.md, "Breakthrough")
 - The attackers push through a map's sectors in order; the defenders hold each line in turn. A sector falls when its
   **capture zones** are taken (attackers alone in a zone capture it, faster with more; a defender inside contests it)

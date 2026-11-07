@@ -182,6 +182,20 @@ while, as when stuck. `test/botRiders.test.ts`: a player drives two bots
 over Iron Maw for 60 s (stops included): they stay; on fire, or wrecked to a
 quarter, both are out within 1.5 s; parked, they leave after 8 s.
 
+**A wedged Dropship drew bots back again and again** (owner, Shingle Point, 2026-11-07: "a bot seemed to try and get
+in, would turn around and seem to leave but turn back around"). A bot had flown it into a landing craft wreck's hull
+and left it there turned across it; its nose and tail (4.8 m from its centre) poked out past its enter radius (4.5 m)
+and its sides were inside the hull, so nobody could get in, and bots kept planning it, walking up, giving up when the
+plan ran out (30 s away) and coming back. Now (`bots/vehicles.ts`, `sim/mounts.ts enterReach`, `sim/match.ts`):
+bots walk to a spot just off the hull on their side (`boardingSpot`, not its centre) and press E when the match's own
+rule says they can get in (`inBoardingReach`: within the enter radius of the centre or 1.6 m of the hull); use pressed
+and still not in 0.25 s later is a failed boarding, and two at one mount (`MAX_BOARD_FAILS`) give up on it; no route
+to the spot gives up at once; each give-up on the same mount leaves it alone twice as long (`avoidSeconds`: 30, 60,
+120, 240 s); and a vehicle the match sees driven and going nowhere for 3 s is `wedged` for every bot (`vehicleFor`,
+`rideFor` skip it) until it has moved 3 m. Flyers driven into something they can't pass climb over it on their own
+(`climbAssist`) and settle back to their height after, so a bot pilot no longer wedges one. `bot-report` prints
+"boarding: tries, failed, given up on, back to one given up on" per match; `test/vehicleWedge.test.ts`.
+
 **Tactical squads with a leader stood about or went back and forth.** Found
 by measuring (both teams: first contact, progress from the side's base to
 the enemy's, share of time standing still out of a fight, share of time

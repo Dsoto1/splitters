@@ -15,13 +15,14 @@ const yard = (spawns = 4): MapDocument => {
 const base = (over: Partial<MatchSetup> = {}): MatchSetup => ({ map: 'test_map', mode: 'core.tdm', bots: 3, skill: 'normal', scoreLimit: 40, minutes: 10, ...over });
 
 describe('team configuration', () => {
-  it('keeps 2–8 teams of 1–48, at most 96 players in all', () => {
+  it('keeps 2–8 teams of 1–64, at most 128 players in all (a dedicated host since performance round 4)', () => {
     expect(validateTeamSizes([2, 3, 5], 'core.tdm')).toEqual({ sizes: [2, 3, 5], fixes: [] });
     expect(validateTeamSizes([48, 48], 'core.tdm').sizes).toEqual([48, 48]);
-    const big = validateTeamSizes([48, 48, 10], 'core.tdm');
+    expect(validateTeamSizes([64, 64], 'core.tdm').sizes).toEqual([64, 64]);
+    const big = validateTeamSizes([64, 64, 10], 'core.tdm');
     expect(big.sizes.reduce((a, b) => a + b, 0)).toBe(MAX_PLAYER_SLOTS);
-    expect(big.fixes.join()).toMatch(/96/);
-    expect(validateTeamSizes([0, 2.6, 99], 'core.tdm').sizes).toEqual([1, 3, 48]);
+    expect(big.fixes.join()).toMatch(/128/);
+    expect(validateTeamSizes([0, 2.6, 199], 'core.tdm').sizes).toEqual([1, 3, 64]);
     expect(validateTeamSizes([1, 1, 1, 1, 1, 1, 1, 1, 1, 1], 'core.tdm').sizes).toHaveLength(8);
     expect(validateTeamSizes([5], 'core.tdm').sizes).toEqual([5, 5]);
     expect(validateTeamSizes(['x', 2], 'core.tdm').sizes).toEqual([1, 2]);
@@ -106,8 +107,12 @@ describe('fits the map', () => {
     expect(notes).toMatch(/big match/);
     expect(fit([16, 16]).items.some((n) => /very big/.test(n.text))).toBe(false);
     expect(fit([24, 24]).items.some((n) => n.level === 'warn' && /very big/.test(n.text))).toBe(true);
-    // A browser runs at most 24 v 24 (dedicated hosts 48 v 48): bigger saved layouts shrink to fit.
-    expect(setupPlayers(base({ teams: [48, 48] }), map)).toBe(48);
+    // A browser runs at most 32 v 32 (performance round 4; dedicated hosts more): bigger saved layouts shrink to fit.
+    expect(setupPlayers(base({ teams: [48, 48] }), map)).toBe(64);
+    // 32 v 32 is a crowd for one computer: the fit check names what it takes.
+    const crowd = setupFit(base({ teams: [32, 32] }), map, { deviceMax: 64 }).items.find((n) => n.topic === 'performance');
+    expect(crowd).toMatchObject({ level: 'warn' });
+    expect(crowd!.text).toMatch(/64 players is a crowd for one computer: a recent desktop or a fast laptop/);
     // Teams beyond the map's own sides use the shared spawns.
     const sided = { ...map, factions: [{ id: 'red', name: 'Red', color: '#ff0000', relations: {} }, { id: 'blue', name: 'Blue', color: '#0000ff', relations: {} }], entities: map.entities.map((e, i) => (e.kind === 'spawn' && i < 2 ? { ...e, faction: i ? 'blue' : 'red' } : e)) } as MapDocument;
     const three = setupFit(base({ teams: [1, 1, 1] }), sided, { deviceMax: 48 }).items.map((n) => n.text).join('\n');

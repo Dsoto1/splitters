@@ -287,6 +287,8 @@ interface Piece {
   layer: Layer | null;
   delay: number;
   size: number;
+  /** Its own opacity as the pack made it (the glow's is the effect's); a shot's `opacity` scales it. */
+  opacity: number;
 }
 
 /**
@@ -348,7 +350,7 @@ export class MuzzleFlashRig {
         mesh.setEnabled(false);
         // Particles come out over the first (1 - explosiveness) of their life, in turn.
         const delay = (i / layer.count) * layer.life * (1 - layer.explode);
-        this.pieces.push({ mesh, mat, layer, delay, size: 1 });
+        this.pieces.push({ mesh, mat, layer, delay, size: 1, opacity: 1 });
       }
     });
     if (fx.glow) {
@@ -370,18 +372,22 @@ export class MuzzleFlashRig {
       mesh.position.z = fx.glow.at - fx.glow.height * 0.75;
       mesh.scaling.setAll(fx.glow.radius * 2.2);
       mesh.setEnabled(false);
-      this.pieces.push({ mesh, mat, layer: null, delay: 0, size: 1 });
+      this.pieces.push({ mesh, mat, layer: null, delay: 0, size: 1, opacity: fx.glow.alphaMul });
     }
     this.length = fx.length;
     return true;
   }
 
-  /** A shot: the effect (built the first time) at this scale, with fresh random turns and sizes. False when it can't be drawn yet. */
-  fire(id: string, scale: number): boolean {
+  /**
+   * A shot: the effect (built the first time) at this scale, with fresh random turns and sizes; `opacity` scales how
+   * strongly it shows (Reduce flashing: your own flash dimmer). False when it can't be drawn yet.
+   */
+  fire(id: string, scale: number, opacity = 1): boolean {
     if (!this.build(id)) return false;
     this.root.scaling.setAll(scale);
     this.firedAt = performance.now();
     for (const p of this.pieces) {
+      if (opacity !== this.opacity) p.mat.setFloat('opacity', p.opacity * opacity);
       const l = p.layer;
       if (!l) continue;
       p.size = l.scale[0] + Math.random() * (l.scale[1] - l.scale[0]);
@@ -397,8 +403,11 @@ export class MuzzleFlashRig {
         p.mesh.scaling.set(l.w * p.size, l.h * p.size, l.w * p.size);
       }
     }
+    this.opacity = opacity;
     return true;
   }
+  /** The opacity the pieces were last fired at. */
+  private opacity = 1;
 
   /**
    * Build these flashes once (the shared pieces, the materials) while the match loads: the first shot of each
@@ -459,6 +468,7 @@ export class MuzzleFlashRig {
     }
     this.pieces = [];
     this.effectId = '';
+    this.opacity = 1;
   }
 
   dispose(): void {

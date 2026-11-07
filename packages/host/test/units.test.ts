@@ -41,10 +41,10 @@ describe('Host Service settings', () => {
 
   it('reads the environment over a JSON file, and refuses what is off', () => {
     const files: Record<string, string> = { '/cfg/host.json': JSON.stringify({ MAP: 'sandgate', botFill: 10, SERVER_NAME: 'From file' }) };
-    const c = loadConfig({ HOST_CONFIG: 'host.json', BOT_FILL: '96', MODE: 'core.tdm' }, '/cfg', (p) => files[p]!);
-    expect(c).toMatchObject({ map: 'sandgate', botFill: 96, mode: 'core.tdm', name: 'From file' });
+    const c = loadConfig({ HOST_CONFIG: 'host.json', BOT_FILL: '128', MODE: 'core.tdm' }, '/cfg', (p) => files[p]!);
+    expect(c).toMatchObject({ map: 'sandgate', botFill: 128, mode: 'core.tdm', name: 'From file' });
     expect(() => loadConfig({ HOST_CONFIG: 'host.json' }, '/cfg', () => '{"SHELL":"rm -rf"}')).toThrow(ConfigError);
-    expect(() => parseConfig({ botFill: 97 })).toThrow(/BOT_FILL/);
+    expect(() => parseConfig({ botFill: 129 })).toThrow(/BOT_FILL/);
     expect(() => parseConfig({ mode: 'core.chess' })).toThrow(/MODE/);
     expect(() => parseConfig({ joinCode: 'ABCDE1' })).toThrow(/JOIN_CODE/);
     expect(() => parseConfig({ adminToken: 'short' })).toThrow(/ADMIN_TOKEN/);

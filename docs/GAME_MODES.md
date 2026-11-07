@@ -419,7 +419,7 @@ v29).
   objective's state, progress, presence or fuse, actor) and `md.bf` (the
   defenders being warned).
 - **Quick start:** `?offline=test_breakthrough&gamemode=core.breakthrough`
-  (the Breakthrough Range, a test map). Headless: `pnpm bench 8 300
+  (the Breakthrough Range: an ordinary map since 2026-11-07, in every map list; its id kept). Headless: `pnpm bench 8 300
   maps/test_breakthrough.json --mode=core.breakthrough`.
 
 **MapMaker** (Entities → Gameplay tab → Spawns & Objectives):
@@ -441,8 +441,10 @@ v29).
    the pieces); asking for more targets than a sector has, a final hold
    before the last sector, and a spawn with a side but no sector warn.
 
-The Breakthrough Range (`maps/test_breakthrough.json`, test map, made in
-MapMaker) is the test layout: three sectors on 160 m of sand, pushed north.
+The Breakthrough Range (`maps/test_breakthrough.json`, made in MapMaker; a
+test map until 2026-11-07, when the owner couldn't find it to try: now in
+Play, Match Setup and rotations like any map, its id kept) is the practice
+layout: three sectors on 160 m of sand, pushed north.
 The beach (two capture zones, two landing craft and hedgehogs for cover),
 the guns (three targets, two to destroy, behind sandbags, the gatehouse
 stair as a lookout) and the fort (the Command Bunker, its command room the

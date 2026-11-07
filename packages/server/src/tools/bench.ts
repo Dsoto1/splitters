@@ -2,9 +2,10 @@ import { readFileSync } from 'node:fs';
 import { cpus, loadavg } from 'node:os';
 import { PerformanceObserver, type PerformanceEntry } from 'node:perf_hooks';
 import { getHeapStatistics } from 'node:v8';
+import { deflateRawSync } from 'node:zlib';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { BOT_DIFFICULTIES, CORE_BOT_PROFILES, MAX_PLAYER_SLOTS, SNAPSHOT_INTERVAL_TICKS, TICK_RATE, encodeSnapshots, initPhysics, isGameMode, loadMap, mapCanRun, rulesForMode, type GameEvent, type GameMode } from '@tiletrigger/shared';
+import { BOT_DIFFICULTIES, CORE_BOT_PROFILES, MAX_PLAYER_SLOTS, SNAPSHOT_INTERVAL_TICKS, SnapshotStream, TICK_RATE, encodeSnapshots, initPhysics, isGameMode, loadMap, mapCanRun, rulesForMode, type GameEvent, type GameMode } from '@tiletrigger/shared';
 import { Match, clumpArea, clumpInto, initNavigation, simProfile } from '@tiletrigger/shared/match';
 import { Behaviour } from './botMeasures.ts';
 
@@ -12,7 +13,8 @@ import { Behaviour } from './botMeasures.ts';
  * Headless load harness: runs a full match with N Player Bots as fast as
  * possible and reports per-tick cost against the 60 Hz budget.
  * Usage: pnpm bench [bots=96] [seconds=60] [map.json ...] [--npcs=N] [--mode=core.ctf] [--viewers=4]
- * (--viewers: how many of the bots stand in for connected players, see Match.watchers)
+ * (--viewers: how many of the bots stand in for connected players, see Match.watchers; --wire: what each is sent,
+ * delta snapshots raw and deflated as the server's WebSocket sends them, in KB/s)
  * `pnpm bench:96`: the 48 v 48 check (96 bots, Frost Basin, Team Deathmatch, 60 s; target avg tick < 8 ms).
  * `pnpm bench:96:maps`: the same on the eight big maps, one after another, with a summary table.
  *
@@ -113,6 +115,18 @@ function benchMap(mapPath: string, clump: boolean): { row: string; cpuRow: strin
   for (let i = 0; i < bots; i++) match.addBot(`bot${i}`, CORE_BOT_PROFILES[i % CORE_BOT_PROFILES.length]!, BOT_DIFFICULTIES[mixedSkills ? SKILLS[i % 3]! : 'normal']);
   // The first --viewers bots stand in for players: snapshots are encoded for them, and bots near them move at full detail.
   for (const c of match.combatants().slice(0, viewers)) match.watchers.add(c.slot);
+  // What each viewer is sent, as the dedicated server sends it: delta snapshots on a stream of their own, then the
+  // WebSocket's per-message deflate (level 3, the server keeping its context): bytes a viewer, raw and on the wire.
+  const streams = Array.from({ length: Math.min(viewers, bots) }, () => new SnapshotStream());
+  const lastSent: string[] = [];
+  const wire = { raw: 0, zipped: 0, snaps: 0 };
+  const wireOn = flags.includes('--wire');
+  // The connection's context, as a dictionary: the end of the last message (deflate's window is 32 KB).
+  const deflated = (i: number, text: string): number => {
+    const prev = lastSent[i];
+    lastSent[i] = text.slice(-32768);
+    return deflateRawSync(text, { level: 3, ...(prev ? { dictionary: Buffer.from(prev) } : {}) }).length;
+  };
   const behaviour = new Behaviour(match);
   for (let i = 0; i < warmup * TICK_RATE; i++) behaviour.events(match, match.step());
   if (clump && rules?.teamSizes?.length !== 2) throw new Error('--clump needs a two-team mode (--mode=core.tdm)');
@@ -173,11 +187,17 @@ function benchMap(mapPath: string, clump: boolean): { row: string; cpuRow: strin
     const tStep = t1;
     if (match.tick % SNAPSHOT_INTERVAL_TICKS === 0) {
       const body = match.snapshot(pending);
-      encodeSnapshots(body, Array.from({ length: Math.min(viewers, bots) }, (_, s) => ({ slot: s, ack: match.slots[s]?.lastSeq ?? 0, me: match.privateState(s) })));
+      const texts = encodeSnapshots(body, Array.from({ length: Math.min(viewers, bots) }, (_, s) => ({ slot: s, ack: match.slots[s]?.lastSeq ?? 0, me: match.privateState(s), stream: streams[s] })));
       pending = [];
       const t2 = performance.now();
       snapMs += t2 - t1;
       t1 = t2;
+      // --wire: compressed outside the tick's time (the server's WebSocket deflates off the match's thread).
+      wire.snaps++;
+      if (wireOn) for (const [i, text] of texts.entries()) {
+        wire.raw += text.length;
+        wire.zipped += deflated(i, text);
+      }
     }
     kills += events.filter((e) => e.e === 'kill').length;
     behaviour.events(match, events);
@@ -263,6 +283,8 @@ function benchMap(mapPath: string, clump: boolean): { row: string; cpuRow: strin
   console.log(`tick ms  avg ${avg(tickMs).toFixed(3)}  p50 ${pct(0.5).toFixed(3)}  p95 ${pct(0.95).toFixed(3)}  p99 ${pct(0.99).toFixed(3)}  max ${sorted[sorted.length - 1]!.toFixed(3)}  (budget ${budget.toFixed(2)}) | process CPU ${(cpuMs / ticks).toFixed(3)} ms a tick`);
   console.log(`per tick ms: bots ${per('bots').toFixed(2)} (nav ${per('nav').toFixed(2)}) | players ${per('players').toFixed(2)} (character moves ${per('move').toFixed(2)}: ${(n('move') / ticks).toFixed(0)} full + ${(n('moveCoarse') / ticks).toFixed(0)} coarse a tick) | mounts+ambient ${per('mounts').toFixed(2)} (physics broad-phase updates ${per('commit').toFixed(2)}) | projectiles ${per('projectiles').toFixed(2)} | scenario/logic ${per('scenario').toFixed(2)} | snapshots ${(snapMs / ticks).toFixed(2)} (${viewers} viewers)`);
   console.log(`CPU per tick avg ${(cpuMs / ticks).toFixed(3)} p95 ${cpuP95.toFixed(3)} | breakdown (CPU-scaled, x${k.toFixed(2)}): bot think ${c2(think)} [setup ${c2(think - per('botThink'))}, perception ${c2(per('botPerceive'))} (${(n('botPerceive') / ticks).toFixed(1)}/tick), ${(n('botThink') / ticks).toFixed(0)} bots a tick (${(n('botSteer') / ticks).toFixed(0)} only steering, ${(n('botDeferred') / ticks).toFixed(1)} put off by the think budget), decisions ${c2(per('botDecide'))}, paths ${c2(per('botPath'))} (nav ${c2(per('nav'))}), aim ${c2(per('botAim'))}; LOS rays ${c2(per('los'))}] | movement ${c2(movement)} | combat ${c2(combat)} (firing ${c2(fire)}, ${(n('fire') / ticks).toFixed(1)} shots/tick) | rest ${c2(rest)}`);
+  const perViewer = (b: number) => b / Math.max(1, Math.min(viewers, bots)) / seconds / 1024;
+  if (wireOn) console.log(`snapshots a viewer: ${perViewer(wire.raw).toFixed(1)} KB/s raw, ${perViewer(wire.zipped).toFixed(1)} KB/s deflated (${((perViewer(wire.zipped) * 8) / 1024).toFixed(2)} Mbit/s; ${(wire.raw / Math.max(1, wire.snaps * Math.min(viewers, bots)) / 1024).toFixed(1)} KB a snapshot raw)`);
   console.log(`nav: ${n('nav')} path queries (${(n('nav') / seconds).toFixed(0)}/s), ${n('navFail')} failed | line-of-sight rays ${(n('los') / ticks).toFixed(0)}/tick (+ ${(n('losShared') / ticks).toFixed(0)}/tick answered from the shared sight cache)`);
   console.log(`accuracy (rounds that hit / fired): ${[...aim].sort(([a], [b]) => SKILLS.indexOf(a as never) - SKILLS.indexOf(b as never)).map(([k, a]) => `${k} ${((a.hits / Math.max(1, a.rounds)) * 100).toFixed(1)}% of ${a.rounds}`).join(' | ')}`);
   console.log(`kills ${kills} | bot stuck recoveries ${stuck} (goals given up after getting stuck in a loop: ${loops}) | idle (moved < 2 m in 5 s) ${idlePct.toFixed(1)}% of samples, ${idleNow} at the end`);

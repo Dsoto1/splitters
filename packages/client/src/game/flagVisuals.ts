@@ -12,6 +12,7 @@ import { CreatePlane } from '@babylonjs/core/Meshes/Builders/planeBuilder';
 import { Mesh as MeshClass } from '@babylonjs/core/Meshes/mesh';
 import { BOMB_CARRIED, BOMB_DROPPED, BOMB_PLANTED, BT_IN_BOTH, BT_OBJ_ACTIVE, BT_OBJ_PLANTED, FLAG_CARRIED, FLAG_DROPPED, type Faction, type MapDocument, type ModeSnapshot, type Vec3 } from '@tiletrigger/shared';
 import type { RemotePose } from './interpolation.ts';
+import { blinkLevel, reduceFlashing } from './reduceFlashing.ts';
 
 const materials = new WeakMap<Scene, Map<string, StandardMaterial>>();
 
@@ -253,7 +254,14 @@ export class ModeVisuals {
         this.bomb.root.rotation.y = pose.yaw;
       } else this.bomb.root.position.set(x, y + 0.12, z);
       const rate = state === BOMB_PLANTED ? Math.max(1.5, 12 - secs * 0.25) : 1;
-      this.bomb.light.setEnabled(Math.sin(t * Math.PI * 2 * rate) > 0);
+      // Reduce flashing: a gentle pulse at most once a second (the HUD's fuse timer tells the time left).
+      if (reduceFlashing()) {
+        this.bomb.light.setEnabled(true);
+        this.bomb.light.visibility = blinkLevel(t, rate, true);
+      } else {
+        this.bomb.light.setEnabled(Math.sin(t * Math.PI * 2 * rate) > 0);
+        this.bomb.light.visibility = 1;
+      }
     } else this.bomb?.root.setEnabled(false);
     // Breakthrough: the objectives in play (a zone tinted as it is taken, a target with its charge blinking faster as
     // the fuse burns down); the rest of the map's objectives wait unseen, done ones go.

@@ -1,5 +1,5 @@
 import { angleDelta, clamp, horizontalDistance, type Vec3 } from '../math.ts';
-import type { SeatRole } from '../sim/mounts.ts';
+import { enterReach, type SeatRole } from '../sim/mounts.ts';
 import type { WeaponDefinition } from '../sim/weapons.ts';
 
 /**
@@ -41,8 +41,17 @@ export const RECOVER_GRACE_TICKS = 180;
 export const MAX_RECOVERIES = 3;
 /** Below this share of health (or on fire) everyone gets out: it is about to blow. */
 export const BAIL_HEALTH = 0.3;
-/** A vehicle a bot gave up on as stuck isn't taken again for this long (s). */
+/** A vehicle a bot gave up on as stuck isn't taken again for this long (s): doubled each further time it gives up on the same one (avoidSeconds). */
 export const STUCK_AVOID_SECONDS = 30;
+/** The longest a bot leaves one mount alone after giving up on it again and again (s). */
+export const MAX_AVOID_SECONDS = 240;
+/** Pressing use beside the mount it is going for and still not in it this many ticks later: a failed boarding. */
+export const BOARD_CHECK_TICKS = 15;
+/** Failed boardings of one mount before the bot gives up on it (and picks something else). */
+export const MAX_BOARD_FAILS = 2;
+
+/** How long a bot leaves a mount alone after giving up on it for the `times`-th time (1, 2, …): 30 s, 60 s, 120 s, 240 s. */
+export const avoidSeconds = (times: number): number => Math.min(MAX_AVOID_SECONDS, STUCK_AVOID_SECONDS * 2 ** Math.max(0, times - 1));
 /** Riders with a bot at the wheel: under RIDER_MIN_PROGRESS m in RIDER_STUCK_TICKS (3 s) and they get out. */
 export const RIDER_STUCK_TICKS = 180;
 export const RIDER_MIN_PROGRESS = 2;
@@ -80,6 +89,36 @@ export interface MountView {
   burning?: boolean;
   /** Vehicles: going backwards (`speed` is how fast either way). */
   reversing?: boolean;
+  /** Collision box half extents (getting in near the hull, not just its centre: enterReach). Absent: its centre only. */
+  half?: readonly [number, number, number];
+  /** Wedged where it stands (driven and going nowhere: the match's MountRt.wedged): nobody takes it till it is got out. */
+  wedged?: boolean;
+}
+
+/** Can a bot at `feet` get into `m` from where it stands (the match's own rule, sim/mounts.ts enterReach)? */
+export function inBoardingReach(m: MountView, feet: Vec3): boolean {
+  return enterReach({ half: m.half ?? [0, 0, 0], enterRadius: m.enterRadius }, m.pos, m.yaw, feet) !== null;
+}
+
+/**
+ * Where to walk to board `m` from `from`: a spot just off its hull on the side nearest `from` (its centre is inside the
+ * hull, where no route goes; a long hull's sides are nearer than its centre, and a wedged one may show only its nose).
+ */
+export function boardingSpot(m: MountView, from: Vec3): Vec3 {
+  const half = m.half;
+  if (!half) return m.pos;
+  const s = Math.sin(m.yaw);
+  const c = Math.cos(m.yaw);
+  const dx = from.x - m.pos.x;
+  const dz = from.z - m.pos.z;
+  // In the mount's frame (right +X, forward +Z), clamped to just outside the footprint.
+  const lx = clamp(dx * c - dz * s, -half[0] - 0.7, half[0] + 0.7);
+  const lz = clamp(dx * s + dz * c, -half[2] - 0.7, half[2] + 0.7);
+  const out = Math.abs(lx) > half[0] || Math.abs(lz) > half[2];
+  // From inside the footprint (it can't be: the hull is solid), out of the nearest side.
+  const ox = out ? lx : Math.abs(lx) / half[0] > Math.abs(lz) / half[2] ? Math.sign(lx || 1) * (half[0] + 0.7) : lx;
+  const oz = out ? lz : Math.abs(lx) / half[0] > Math.abs(lz) / half[2] ? lz : Math.sign(lz || 1) * (half[2] + 0.7);
+  return { x: m.pos.x + ox * c + oz * s, y: m.pos.y, z: m.pos.z - ox * s + oz * c };
 }
 
 /** The seat a bot is in. */
@@ -130,7 +169,7 @@ export function vehicleFor(mounts: readonly MountView[], from: Vec3, goal: Vec3,
   let best: MountView | null = null;
   let bestD = reach;
   for (const m of mounts) {
-    if (!m.alive || m.kind !== 'vehicle' || m.health < 0.5 || m.humanNear || m.hostile || m.burning || skip?.(m)) continue;
+    if (!m.alive || m.kind !== 'vehicle' || m.health < 0.5 || m.humanNear || m.hostile || m.burning || m.wedged || skip?.(m)) continue;
     const driver = m.seats.find((s) => s.role === 'driver');
     if (!driver?.free || m.seats.some((s) => !s.free)) continue;
     const d = horizontalDistance(m.pos, from) + Math.abs(m.pos.y - from.y) * 3;
@@ -153,7 +192,7 @@ export function rideFor(mounts: readonly MountView[], from: Vec3, self: number, 
   let best: MountView | null = null;
   let bestScore = Infinity;
   for (const m of mounts) {
-    if (!m.alive || m.kind !== 'vehicle' || m.health < 0.35 || m.hostile || m.burning || skip?.(m)) continue;
+    if (!m.alive || m.kind !== 'vehicle' || m.health < 0.35 || m.hostile || m.burning || m.wedged || skip?.(m)) continue;
     const by = m.seats.find((s) => s.role === 'driver')?.by;
     if (by === undefined || by === self) continue;
     const driver = allies.find((a) => a.slot === by);

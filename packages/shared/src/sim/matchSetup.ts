@@ -93,7 +93,7 @@ export interface MatchSetup {
 
 export type TeamAssign = 'balanced' | 'random' | 'fixed';
 
-/** Largest single team (two of them fill MAX_PLAYER_SLOTS: 48 v 48). */
+/** Largest single team (two of them fill MAX_PLAYER_SLOTS: 64 v 64 on a dedicated host). */
 export const MAX_TEAM_SIZE = MAX_PLAYER_SLOTS / 2;
 
 export { isTwoTeamMode } from './rules.ts';
@@ -119,7 +119,9 @@ export const SETUP_PRESETS: readonly SetupPreset[] = [
   { id: '8v8', label: '8v8', sizes: [8, 8] },
   { id: '16v16', label: '16v16', sizes: [16, 16] },
   { id: '24v24', label: '24v24', sizes: [24, 24] },
+  { id: '32v32', label: '32v32', sizes: [32, 32] },
   { id: '48v48', label: '48v48', sizes: [48, 48] },
+  { id: '64v64', label: '64v64', sizes: [64, 64] },
   { id: '2v2v2v2', label: '2v2v2v2', sizes: [2, 2, 2, 2] },
   { id: '4x4', label: '4×4 (four teams of four)', sizes: [4, 4, 4, 4] },
   { id: 'ffa8', label: 'FFA 8', ffa: 8 },
@@ -205,9 +207,10 @@ export function modeUnavailableReason(map: MapDocument, mode: GameMode): string 
   return `This map wasn't made for ${MODE_LABELS[mode]}.`;
 }
 
-/** Past this many players the setup suggests going easy on the computer; past the second, it warns. */
+/** Past this many players the setup suggests going easy on the computer; past the second, it warns; past the third (32 v 32's range), it names the computer it takes. */
 export const BIG_MATCH = 32;
 export const HUGE_MATCH = 40;
+export const CROWD_MATCH = 48;
 
 const sum = (xs: readonly number[]): number => xs.reduce((a, b) => a + b, 0);
 const clampInt = (v: number, lo: number, hi: number): number => Math.max(lo, Math.min(hi, Math.round(v)));
@@ -707,7 +710,8 @@ export function setupFit(setup: MatchSetup, map: MapDocument, o: { deviceMax: nu
     }
     if (map.factions.length >= 2 && sizes.length > 2) items.push({ topic: 'teams', level: 'info', text: `This map's sides are ${map.factions[0]!.name} and ${map.factions[1]!.name} (their bases and spawns); teams beyond them use the shared spawns.` });
   }
-  if (players > HUGE_MATCH) items.push({ topic: 'performance', level: 'warn', text: `${players} players is a very big match: slower computers may stutter. Low graphics helps; bots think less often past ${BIG_MATCH}.` });
+  if (players > CROWD_MATCH) items.push({ topic: 'performance', level: 'warn', text: `${players} players is a crowd for one computer: a recent desktop or a fast laptop runs it; slower ones will stutter. Low or Medium graphics helps; bots think less often past ${BIG_MATCH}.` });
+  else if (players > HUGE_MATCH) items.push({ topic: 'performance', level: 'warn', text: `${players} players is a very big match: slower computers may stutter. Low graphics helps; bots think less often past ${BIG_MATCH}.` });
   else if (players > BIG_MATCH) items.push({ topic: 'performance', level: 'info', text: `${players} players: a big match. If it stutters, try Low graphics.` });
   else items.push({ topic: 'performance', level: 'ok', text: `${players} ${unit}: light enough for most computers.` });
   const level: FitLevel = items.some((i) => i.level === 'problem') ? 'problem' : items.some((i) => i.level === 'warn') ? 'crowded' : 'fits';

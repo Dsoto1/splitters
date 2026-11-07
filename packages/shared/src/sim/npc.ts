@@ -10,8 +10,11 @@ import type { Faction, MapDocument, NpcRole, Relation } from '../map/schema.ts';
  * weaker settings and take orders from their encounter's squad.
  */
 
-/** NPC actor IDs start here; player slots are 0..31. */
-export const NPC_ID_BASE = 100;
+/**
+ * NPC actor IDs start here; player slots are 0..MAX_PLAYER_SLOTS-1. It was 100 until performance round 4 raised a
+ * dedicated host's slots to 128 (slots 100-127 read as NPCs); protocol 5 carries the change.
+ */
+export const NPC_ID_BASE = 1000;
 export const isNpcId = (id: number): boolean => id >= NPC_ID_BASE;
 
 export interface NpcRoleSpec {

@@ -26,6 +26,122 @@ gets overloaded above that: local e2e times out and flakes). Prune landed worktr
 - Earlier the same day: content scalability steps 2–6, perf toolset, flaky e2e fixes, Runway Nine airliner, map
   reworks batches 2–3, character fixes rounds 2–3 (see the entries below and CHANGELOG).
 
+<!-- small-fixes-1107 -->
+### Small fixes from the owner's play, 2026-11-07 (`wip/small-fixes-1107`, agent; from main 3647eee9; green on `check/small-fixes-1107` at f79d1ec2, run 42384938315 (the full suite: unit, maps, build, check, bots, perf, 14 e2e shards); not landed)
+Four owner reports, each fixed at the cause with a test (CHANGELOG, "Small fixes from the owner's play").
+
+- **Breakthrough Range is an ordinary map** (`maps/test_breakthrough.json`, id kept): "Test map" unticked in MapMaker's
+  Map properties and its card's description reworded ("A Breakthrough test layout" was its first sentence), through
+  the real editor (Import, a mouse click on the box, typing, Export: revision 5); its map picture
+  (`public/maps/shots/test_breakthrough.jpg`, 16 KB, `tools/content/capture-map-shots.mjs`). Play, Match Setup,
+  rotations and the host's list offer it (Breakthrough its first mode). e2e `breakthrough` goes without `testmap=`
+  and checks Match Setup lists it; `main.ts` no longer adds a `testmap=` map that is already listed. Tests:
+  mapIndexPlugin, server testMaps.
+- **The use prompt**: the key's letter took the global `kbd` rule's dark ink (#0b0f1a) on `#prompt kbd`'s dark cap.
+  Now white text, a light green key (#7dff9a) on a dark cap, a soft dark outline and a faint dark backing; refusals
+  light red. e2e `vehicles` checks the colours and the key's contrast on its cap (at least 7:1). No baseline shows it.
+- **Dropship wedged on Shingle Point's beach.** Headless repro (`bot` match, 24 bots): a bot flew a Dropship into a
+  landing craft wreck (prop at 12, -1.4, -61) and left it turned across the hull, 708 ticks wedged in 180 s. Causes:
+  the vehicle probe is a capsule of the hull's half width (1.9 m) that covers only its middle, so it fits the wreck's
+  open stern; turned across a 5 m hull it can't move; flyers never climbed on their own and bot pilots never climb.
+  Entry was refused because the nose and tail (4.8 m from the centre) were past the 4.5 m enter radius and the sides
+  were inside the hull (no prompt, E did nothing). Bots walked to its centre, gave up when the plan ran out, came back
+  30 s later. Fixes, general: flyers driven into something they can't pass climb on their own (`climbAssist`, Match
+  driveVehicle) and settle back to their height after (`assistFrom`); entry within the enter radius of the centre OR
+  1.6 m of the hull (`enterReach`, sim/mounts.ts: the match, the client's prompt and the bots); "The … is full"
+  (denied) by a full vehicle; `wedged` (driven, no headway 3 s) marks a vehicle for every bot until it has moved 3 m;
+  bots walk to a spot off the hull (`boardingSpot`), give up after 2 failed boardings or no route, longer each time
+  (`avoidSeconds` 30/60/120/240 s); `bot-report` prints boardings. The beach props' collision is right (their boxes
+  match the models; a Dropship rides over the hedgehog, timber, dory and a desk: tested). Numbers (scratch harness,
+  same measure before and after): Shingle Point 180 s: Dropship wedged 708 → 15 ticks, back to a mount it had dropped
+  6 → 1; the Dropship placed wedged in the wreck, 3 seeds × 150 s: a player at its nose can't → can get in, wedged
+  731 → 119 ticks, bots back to it after giving up 9 → 1, it is flown out after 17-65 → 14-38 s; failed use presses
+  0 → 0 (on main bots pressed E only within 95 % of the radius, so they walked instead: the "turn around and back").
+  Iron Tide and Dune Harbor have no wreck, but their Dropships wedged too (323; 244 + 506 ticks) → (189, climbing a
+  cliff; 38 + 44). Their hovercraft (Hauler, Speeder, Hover Bike: hover, not flyers) still wedge on structures (a
+  Hauler under Iron Tide's platforms at -16, 5, -20): not the beach props, left for a vehicles pass. `bot-report
+  shingle_point --mode=core.tdm --seeds=1,2 --seconds=180`: boarding 43/29 tries, 0 failed, 6/7 given up on, 1/0 back
+  to one given up on. `test/vehicleWedge.test.ts`.
+- **Count Bonesworth's gun vanished after the scope** (every character, every gun with a sharper held copy: pistol,
+  rifles, shotguns, SMGs, revolver, the Marksman Rifle St. John's Military set has): on Medium and High a gun you pick
+  up fetches its sharper copy (`View.sharpenViewmodel`); it took over with `old.isEnabled()`, which asks the parents,
+  so when it came in while the gun was put away (scoped, or in third person: the view's root off) it stayed off, and
+  the hands held nothing until you switched guns. Now `takeOverViewmodel` (game/viewmodelSwap.ts) takes the old
+  copy's own switch. Reproduced on cue (scoped, the copy swapped in, scope down): before, the gun off and not drawn,
+  no hand on it, for Bonesworth, the Dapper and the Iron Knight; after, drawn and gripped. The "flicker" itself didn't
+  show in frame-by-frame probes (gun and hands drawn every frame, the grip steady at 3-4 cm, standing and prone, the
+  Sniper Rifle and the Marksman Rifle, canyon and St. John's); hands chasing a gun that isn't drawn is what the owner
+  would have seen. Unit test `viewmodelSwap.test.ts`; e2e `characters3` scopes with the copy swapped in mid-scope.
+- Pitfalls: the e2e flows that use `window.__match` run the match on the page (`localStorage tiletrigger.sim =
+  main`); a Playwright driver needs the same or `__match` never appears. A loaded machine draws a frame in seconds:
+  wait on the view's state (camera fov for the scope), not the clock.
+
+<!-- /small-fixes-1107 -->
+<!-- perf-4 -->
+### Performance round 4: crowds, 32 v 32 in a browser, 64 v 64 on a dedicated host (`wip/perf-4`, agent, 2026-11-07; from main 5087b0b6, main 3647eee9 merged in; CI on `check/perf-4`; not landed)
+docs/PERF_96.md, "Performance round 4", has the numbers; CHANGELOG has the player-facing lines.
+
+**What changed:**
+- **Animation by size on screen, smoothed** (`game/animLod.ts`, `CharacterAnimator.blendSkin/blendGun`). Far
+  characters drew each evaluated pose until the next, so a running foot stood still 2-4 frames, then jumped up to
+  half a metre. Now the frames between are blended from the pose before the last to the last (the skin matrices and the
+  held gun; the bones keep the evaluated pose). Bands by a standing character's share of the view's height (a scope
+  brings far ones back): every frame to ~15 m (fingers kept past 8 m), 30 Hz to 25 m, 20 Hz to 40 m, 15 Hz to 80 m,
+  10 Hz to 150 m, 5 Hz beyond, all smoothed. The coarse after-clip detail (no arm IK) starts at 25 m (was 35 m): that
+  pays for it. `?perfoff=animlod4` gives round 2's bands.
+- **Loops faded out stay started 3 s at weight 0** (`CharacterAnimator.fadeOut`, `?perfoff=animlinger`).
+- **Effects world** (`sim/effectsPhysics.ts`) steps its pipeline without Rapier's per-step walk of every collider.
+- **Garbage:** joints turned and restored in place; avatars' last positions reused.
+- **Warm-up's files first** (`GameView.prewarm`, `session.prepareMatch`): looks and guns load alongside the effects;
+  the gate waits for them (20 s at most) before the shader warm-up's 8 s.
+- **Caps:** `BROWSER_MAX_PLAYERS` 64 (32 v 32; phones 16), Match Setup's Max 32v32 and a fit warning past 48 players.
+  `MAX_PLAYER_SLOTS` 128 (64 v 64) with `NPC_ID_BASE` 1000 (was 100: slots 100-127 read as NPCs and a 128-player
+  match crashed on its first shot) and `PROTOCOL_VERSION` 5. Layouts 32v32 and 64v64 added.
+- **Handoff e2e flake, root cause:** the flow's three pages shared one browser, so one GPU process drawing all their
+  frames with SwiftShader; each page's synchronous WebGL calls (program link status, uniform blocks, extensions) wait
+  behind the others' frames. Measured (an init script timing those calls, not committed): the joining friend's page
+  waited 30-55 s in a single second on them. The flow now gives each page its own browser (`instrumentBrowser`); the
+  same run then had the friends' worst second at 16 s and the successor named in 30 s instead of 64 s. Real players
+  never share a GPU process with two other games, so nothing in the game changes for it; the 60 s grace for a stalled
+  friend with its connection up stays.
+- **Bench:** `--wire` reports each viewer's delta snapshots raw and deflated. **Recordings:** each hitch carries the
+  browser's long tasks and long animation frames over it.
+- **Host Service:** its launcher's player and team steppers follow `MAX_PLAYER_SLOTS` (128, 64 a team).
+
+**Measured** (4 cores shared with two other agents, load 8-11; before and after in turn):
+- Running character at 30 / 50 / 80 m (virtual 60 fps filmstrips): frames the foot stood still 7 / 9 / 9 of 11 before,
+  0 after; biggest jump 51 / 40 / 41 cm before, 14 / 15 / 16 cm after. Pictures:
+  scratchpad `p4/strip/running-30-50-80m-before-after.png`.
+- Character bench (56 running and strafing 5-60 m, CPU per frame at a virtual 60 fps): 23.1 → 18.7 ms (-19 %), with
+  11 % more evaluations; clip starts 49 → 40 a second.
+- Effects world step on Shingle Point (2,970 colliders): 4.38 → 2.76 ms, ~0.4 MB less garbage a step.
+- `pnpm bench 64`: bot thinking 0.87-2.32 ms a tick on four maps spread and clumped (guard 2.5).
+- `pnpm bench 128` (64 viewers, `--wire`): tick 11.4-13.3 ms avg, p95 20-25 ms on this loaded box, about a quarter
+  over 96 players under the same load (8.3-12.0, p95 15-25); bot thinking 2.8-3.9 ms; each player sent 26-57 KB/s
+  deflated (0.2-0.45 Mbit/s).
+
+**64 v 64 on a dedicated host, what it takes:** the cap is 128 now, and nothing structural stands in the way after
+the NPC id move. Not measured on a real host box: a desktop-class core (the tick is ~1.25x 96 players') and, with 128
+people connected, about 3-7 MB/s of upload (26-57 KB/s each). The client draws up to 127 characters: far ones are
+cheap now, but a 64 v 64 map should spread them out. `pnpm bench 128 60 maps/<map>.json --mode=core.tdm
+--viewers=128 --wire` on the host's own machine says whether it holds.
+
+**For the owner to record on the M1 (High, render scale auto, 60 fps cap):**
+1. 32v32 offline TDM on Shingle Point and on Market Town (Max preset): a 30-60 s recording each with a 10 s trace.
+2. A running crowd at a distance: stand at one end of Shingle Point's beach and watch bots run 30-80 m off; then the
+   same with `?perfoff=animlod4` for the old look side by side.
+3. A rocket into a crowd on Market Town (7+ kills), recording running.
+4. The first 10 s of a match after the update (the first visit: the cache empty), on Shingle Point.
+
+**Left for later:**
+- **The mass death on Market Town** (frames of 60-140 ms for 0.6 s after a 7-kill rocket, all outside the game's own
+  work) was not found here: the box ran at load 20 and SwiftShader's frames took seconds. A local trace of the blast
+  showed one 175 ms young-generation collection and nothing else long on the main thread. Recordings now carry the
+  browser's long tasks and long animation frames per hitch (`perfRecorder.ts` `watchMainThread`; `compare.mjs` prints
+  them), so the owner's next rocket-into-a-crowd recording says main thread (collection or script) or GPU (neither).
+- Character moves are most of a 128-player tick; bot thinking's setup is 0.7-1.6 ms of it (BOT_AI_PLAN Phase B).
+- Not done: shared evaluation for characters on the same clip and phase, fewer bones on far skeletons, impostors.
+
 <!-- breakthrough -->
 ### Breakthrough mode, and Iron Coast's fort and gatehouse (`wip/breakthrough`, agents, 2026-11-07; from main 17d0e0a0, main 2c48debf (Bot AI Phase B parts 1 and 2), d3830145 (weapons intake 11-06) and 5087b0b6 (weapon sets) merged in; green on `check/breakthrough` at 647512a5, run 42373473729; not landed)
 The brief: docs/map-briefs/MAP_21_Iron_Coast.md ("Breakthrough mode", and "The mode as built"). Rules, settings, HUD,
@@ -962,26 +1078,66 @@ before the stone. The brief: session scratchpad `briefs/slack-pass.md`.
     clear would tighten round props; it would change every voxel prop's collision.
   - Natural rocks keep their two tiers (`isRock`): voxelised, the boulders alone would add over 10,000 boxes to the maps.
 
-### Queued (owner, 2026-11-06): "Reduce flashing", a seizure-safety setting. A small job, the next small slot
-**Why:** the owner dropped the planned flashbang ("I don't want to give people seizures").
+<!-- reduce-flashing -->
+### Reduce flashing: a seizure-safety setting and a CI flicker check (`wip/reduce-flashing`, agent, 2026-11-07; from main e0690630, main 5087b0b6 and 3cec2e59 merged in; green on `check/reduce-flashing` at 9d2dd7a1, run 42375448239 (the full suite: unit, maps, build, check, bots, perf, 16 e2e shards); not landed)
+**Why:** the owner dropped the planned flashbang ("I don't want to give people seizures", 2026-11-06) and asked for
+this. docs/LOOK.md, "Reduce flashing", has the full table and the check; CLAUDE.md has the new "Accessibility" rule (no
+new effect may add a full-screen flash, white-out or rapid flicker; new effects must pass the flicker check).
 
-**What already flickers:**
-- lightning from the arc weapons, electric fences and arc turrets (Binbun's Electric FX crackle);
-- big explosions flaring near the camera;
-- any strobing light in the maps.
+**The setting:** Options → Accessibility → Reduce flashing, and the pause menu (Settings → Sound and screen). On by
+default, saved as `tiletrigger.reduceFlashing` (`game/reduceFlashing.ts`: `reduceFlashing()`, `blinkLevel`, `ease`,
+`blastStrength`, `SAFE_*`), applied at once mid-match (`tiletrigger:reduce-flashing` event). With it on:
+- **Lightning** (Arc Caster, arc turrets, electric fences; also fast beam weapons): one steady beam per source
+  (`game/steadyArcs.ts`, keyed by shooter, turret or stretch of fence) instead of a new Electric FX bolt and crackle
+  per arc; the turret's charge glow stops flickering and shows the plain ball, not the pack's crackling one; fence
+  wires glow steadily (`borderVisuals.ts buildFence`).
+- **Blasts**: dimmed near the camera (`blastStrength`: 30 % within 0.6 radii, full beyond 3.6) and faded in over
+  0.12 s; this needed a per-play brightness in the VFX player (`GodotVfx` options `gain`/`fadeIn`: a `u_gain` uniform
+  after the tone map, each tenth a copy of the effect's materials made on first use; `u_gain` 1 everywhere else, so
+  nothing changes with the setting off). Vehicle explosions lose the white-hot flash ball.
+- **Muzzle flashes** 75 % size, 45 % opacity (`SAFE_MUZZLE`; `MuzzleFlashRig.fire(id, scale, opacity)`).
+- **Map lights** (`scenarioVisuals.ts`): blinking is a smooth pulse at most once a second between 55 % and full; a
+  logic "Flash" flares to 1.35 (2.5 off); level and colour ease; candles don't gutter. Small indicators (mines, sticky
+  grenade, bomb, laser-trap warning) pulse gently instead of blinking (the bomb's fuse is in the mode HUD).
+- **Hurt vignette** (`game/hurtVignette.ts`, hud.ts): now drawn from JS every frame (`hud.tickHurt`) in both looks:
+  off, the classic saturated-red edge as before; on, a duller red (R/(R+G+B) 0.76 in linear light, under WCAG's 0.8)
+  further out, eased in over 0.15 s, held under fire, gone over 0.8 s.
+- **Underwater haze** eases over a third of a second.
+- Nothing to do: no storm lightning, no low-health pulse exist; smoke and status tints were already eased.
 
-**The setting:**
-- **Accessibility → "Reduce flashing", on by default:**
-  - lightning keeps a steady glow instead of crackling;
-  - full-screen brightness jumps (an explosion right in front of you, a muzzle flash in the dark) are capped and
-    eased in over a few frames;
-  - strobing lights hold steady.
-- **A check in CI:**
-  - an e2e flow records frames of the brightest moments: arc fights, a blast close up, the fence;
-  - it fails if any part bigger than about a quarter of the screen changes brightness more than three times a second
-    by a large amount, or turns saturated red. That is the usual photosensitivity guideline (WCAG 2.3.1, "three
-    flashes or below threshold").
-- **No new effect may add** a full-screen flash or white-out. CLAUDE.md gets the rule when this lands.
+**The check** (e2e flow `flashing`; `e2e/flicker.mjs`, `e2e/frameClock.mjs`; unit tests `tools/ci/test/flicker.test.mjs`,
+`packages/client/test/reduceFlashing.test.ts`): MapMaker builds a night scene with its own edits (two dark rooms, one
+with a red alarm light blinking 4/s; an Arc Turret; a 12 m electric fence), TEST plays it on the page's thread, the
+frame clock freezes the page's time and steps it 1/30 s a frame, and each canvas frame (160 × 90, the hurt tint drawn
+over it) is grabbed. Fails, with the setting on, on more than 6 transitions in a second (a quarter of the screen
+changing relative luminance by 0.1 or more, darker state under 0.8; same-way changes add up) or a quarter of the screen
+turning saturated red within 0.25 s or more than 6 red transitions a second. Off: numbers only. It also reports WCAG's
+stricter area (a quarter of a 10° field, a third of the screen each way). Frame strips and `flashing.json` go to
+e2e-artifacts (CI uploads them only when a flow fails). `e2e/timings.json` has a 240 s guess until CI's timings job
+refreshes it.
+
+| Moment (2 s each) | Off: transitions/s (10° field) | Off: biggest quarter-screen change | On: transitions/s (10° field) | On: biggest change |
+|---|---|---|---|---|
+| Arc fight up close | 0 (1) | 0.000 | 0 (0) | 0.000 |
+| Electric fence | 0 (0) | 0.000 | 0 (0) | 0.000 |
+| Four blasts in front of you | 4 (9) | 0.402 (a white-out) | 0 (4) | 0.062 |
+| Machine gun in a dark room | 0 (0) | 0.000 | 0 (0) | 0.000 |
+| Red alarm light, 4 blinks/s | **9 (9): fails WCAG** | 0.123 | 0 (0) | 0.005 |
+
+(CI run 42375448239. The blasts vary run to run with the effects' randomness: locally off 5 (13) / 0.254, on 2 (4) /
+0.072; CI's first run off 2 (7) / 0.306, on 2 (4) / 0.067. The flow took 283 s on CI.)
+
+What the numbers say: at these distances the arcs, the fence and your muzzle flash cover too little of the screen to
+count as flashes even with the setting off (they flicker hard, but small); the setting still takes their strobing out.
+The real hazards were blinking lights (the alarm's 4 flashes a second fails WCAG outright; 26 maps blink or flash
+lights, at up to 4 a second) and blasts close up (a white-out over most of the screen).
+
+**Left / for the owner:**
+- Lights blinking 3-4 times a second (Starhaven's bay lights and beacons, Serene City's alarm, Sushi Belt's signs and
+  others) are at or over WCAG's limit with the setting off; the setting fixes them, the maps could also blink slower.
+- The bomb's light no longer speeds up with the setting on (its fuse shows in the HUD).
+- A storm with lightning flashes would need the same cap and ease (none exists).
+<!-- /reduce-flashing -->
 
 ### Queued (owner-approved, 2026-11-06): weapon sets. After the Match Setup follow-ups, alongside Bot AI Phase B
 **Built** (2026-11-07): see "Weapon sets" near the top (`wip/weapon-sets`). The ask as it was queued:
@@ -1053,22 +1209,7 @@ for each character?"
   - a voice service whose terms name games (needs the owner's approval);
   - a local open-source text-to-speech with permissively licensed voices.
 
-### Queued (owner, 2026-11-06): performance round 4, crowds. Right after the Match Setup follow-ups, ahead of Roulette
-**The owner:**
-- "Focus round 4 on crowds."
-- "32v32 would be max I want to shoot for without dedicated host."
-- "Push dedicated hosts to 64v64 if at all possible."
-- Running characters look choppy at a distance (fewer animation frames). Push the reduced-rate distance out.
-
-**Scope:**
-- Animation that doesn't look choppy and costs less: screen-size bands, smoothing between samples, shared or cheaper
-  evaluation.
-- The M1 recording's three hitches: start-of-match shaders, the mass-death spike, GC frames.
-- The browser cap raised to 32v32 (`BROWSER_MAX_PLAYERS` 48 → 64) once measured.
-- 64v64 on dedicated hosts (`MAX_PLAYER_SLOTS` 96 → 128) only if the measurements hold; otherwise a precise report.
-- The handoff e2e flake.
-
-The brief is in the session scratchpad, `briefs/perf-4.md`.
+### Done (owner, 2026-11-06): performance round 4, crowds: see "Performance round 4" at the top (`wip/perf-4`)
 
 <!-- match-setup-2 -->
 ### Match Setup follow-ups: one Host online, Save for next match, co-op sizes, score and time follow the size (`wip/match-setup-2`, agents, 2026-11-06; main 2acb8f23 merged in; green on `check/match-setup-2` at 9d41d790, run 42307136197; not landed)
@@ -2564,9 +2705,9 @@ the fingers bent "toward the gun", i.e. backwards). Creatures (Imp, Puglin) were
 - The warning says "(connection up)" when that was the case.
 - Unit test: `localHost.test.ts`, "silent friends".
 
-**Still open, for performance round 4:** why a joining friend's page freezes for half a minute on CI. Probably the
-shader builds left over after the warm-up's cap, on a GPU process the three pages share. Round 4's item 2 already
-covers the start-of-match shader stalls.
+**Root-caused in performance round 4** (see its section): the three pages shared one browser's GPU process, and a
+joining friend's synchronous WebGL calls (shader programs' link status, uniform blocks, extensions) waited behind the
+other pages' SwiftShader frames, 30-55 s in a second measured locally. The flow now gives each page a browser of its own.
 
 ### Flaky e2e (seen 2026-11-06): `handoff` (host handoff between three browsers)
 It failed on CI twice in one job on the HUD portrait train (run 42215908322) and once on `check/bots-idle`. Each time it
@@ -2690,6 +2831,44 @@ pickups as thin instances (35-55 meshes); breakable props batched while intact (
     insula, plus a volcano backdrop. Follow docs/map-briefs/AGENT_BUILD_CONTRACT.md: playable footprint, routes,
     spawns, budgets, bots, and NOT TESTED where it applies.
   - **Timing:** a natural first big use of set pieces (agreed queue item 3), so after those exist.
+
+### Queued (owner, 2026-11-07): player profiles with career stats. LAST: after everything else queued or on the roadmap
+The owner: "a player's profile should list their stats similar to how gran turismo 7 displays their user profiles. It
+could also list any games they are active in, their top 10 most played maps, and list of maps they
+created/popularity, etc. … we can add this after all this is completed".
+
+**Today:**
+- A profile is only a username and region. It is kept by Cognito account in the hub's `profiles.json`
+  (`packages/server/src/profiles.ts`).
+- No match results are recorded anywhere.
+
+**The idea:**
+- **A profile page** in the GT7 style: a header card with name, level and rank, then tiles of numbers. Shown for you
+  and for anyone you click in a lobby or scoreboard.
+- **Career:** matches, wins and win rate, kills, deaths and K/D, accuracy, headshots, time played; favourite weapon,
+  character and mode; best streak.
+- **"Playing now":** the listed server they're in, from the hub's tickets.
+- **Top 10 maps** by time played.
+- **Maps they made:** their community maps, with play counts and Community Pick status. This needs the
+  community-maps plan (docs/COMMUNITY_MAPS.md) first: sharing by hosting, plays counted by the hub.
+
+**The constraint** (MULTIPLAYER_DIRECTION: players' machines compute, AWS only coordinates, small recurring cost):
+- Match results come from whoever hosts.
+- **Trusted:** results from official and dedicated servers count, sent signed with the account tickets.
+- **Not trusted:** a player's own browser host could fake its numbers. Either show those separately ("casual") or
+  count only plays and time there, never kills.
+- **Cost:** about 1 KB per player, kept with the profile on the hub. No new service.
+
+**The owner's answers (2026-11-07):**
+- **Two kinds of stats.**
+  - **Official:** from official and dedicated servers, sent signed. Only these are the profile's real numbers: the
+    career tiles, level and rank.
+  - **Casual:** from matches players host themselves. They don't count; they're shown apart, labelled "Casual".
+  - The owner: "stats from matches they host themselves do not count. we could just track official kills vs casual
+    kills".
+- **Bot kills count separately:** player kills and bot kills are their own numbers, in both Official and Casual.
+- **Public or private:** a signed-in player turns their profile public or private in their profile settings. Private
+  shows only the username to others.
 
 ### Queued (owner-approved, 2026-11-05): community maps
 Plan in docs/COMMUNITY_MAPS.md:

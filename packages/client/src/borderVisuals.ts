@@ -30,6 +30,7 @@ import type { ModelLibrary } from './content/models.ts';
 import type { MapStyler } from './mapMeshes.ts';
 import { windows } from './backdrop.ts';
 import { loadGraphicsQuality } from './game/graphicsSettings.ts';
+import { reduceFlashing } from './game/reduceFlashing.ts';
 
 type V3 = [number, number, number];
 
@@ -763,6 +764,11 @@ export function buildFence(scene: Scene, name: string, runs: readonly FenceRun[]
     animate: (now, live) => {
       if (!live) {
         wireMat.emissiveColor = new Color3(0.12, 0.12, 0.11);
+        return;
+      }
+      // Reduce flashing: a steady glow, breathing slowly (game/reduceFlashing.ts).
+      if (reduceFlashing()) {
+        wireMat.emissiveColor = WIRE.scale(0.8 + 0.05 * Math.sin(now * 0.002));
         return;
       }
       // A steady hum of light with now and then a crackling flicker.

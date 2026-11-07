@@ -103,6 +103,8 @@ import { ImpactVisuals } from './impactVisuals.ts';
 import { ThrowArc } from './throwArc.ts';
 import { createStarFlash, kickFlash } from './muzzleVisuals.ts';
 import { MuzzleFlashRig, loadMuzzleFlashes, muzzleEffectFor } from './muzzleFlash.ts';
+import { BLAST_FADE_IN, SAFE_MUZZLE, blastStrength, ease, indicator, reduceFlashing } from './reduceFlashing.ts';
+import { SteadyArcs } from './steadyArcs.ts';
 import { GodotVfx, type VfxHandle } from './godotVfx.ts';
 import { LastingFx } from './lastingFx.ts';
 import { PropFlames } from './propFlames.ts';
@@ -124,13 +126,14 @@ import { CityVisuals } from './cityVisuals.ts';
 import { SkyEffects } from './skyEffects.ts';
 import { CharacterLibrary, setCharacterLodCrowd, setCharacterLodZoom, type CharacterInstance } from '../content/characters.ts';
 import { CharacterAnimator, type OneShot } from './characterAnimator.ts';
-import { ANIM_LOD_FAR, ANIM_LOD_NEAR, SHOT_OVERLAY_REACH, animStep } from './animLod.ts';
+import { ANIM_LOD_FAR, ANIM_LOD_NEAR, SHOT_OVERLAY_REACH, animStep, animStepByShare } from './animLod.ts';
 import { perfOn } from './perfSwitches.ts';
 import { installAnimationPatches, trackAnimatedTargets } from './animPatches.ts';
 import { freezeStaticMaterials, selectLiveCandidates } from './meshSelection.ts';
 import { fitFirstPersonArms } from './firstPersonArms.ts';
 import { FirstPersonBodyRig } from './firstPersonBody.ts';
 import { loadFirstPersonMode, loadGraphicsQuality, loadRenderScale, renderRatio, type FirstPersonMode } from './graphicsSettings.ts';
+import { takeOverViewmodel } from './viewmodelSwap.ts';
 import { levelMipBias } from '../levelMerge.ts';
 import { CreatureLibrary, fitPlayerSkin, type AvatarSpec } from '../content/creatures.ts';
 import { BodyHitbox, hitboxForSpec } from './hitboxOverlay.ts';
@@ -370,6 +373,8 @@ export class GameView {
   private effects: Fx[] = [];
   /** Binbun's hit and explosion effects (godotVfx.ts), once their packs are in. */
   private readonly vfx: GodotVfx;
+  /** Lightning with flashing reduced: a steady beam per source instead of crackling bolts (steadyArcs.ts). */
+  readonly steadyArcs: SteadyArcs;
   /** Pack effects that last while something burns or glows (fires, flares), the nearest drawn first. */
   private readonly lasting: LastingFx;
   /** Fire props' open flames (content/props.json `flame`), drawn with Flame FX near the camera. */
@@ -506,6 +511,7 @@ export class GameView {
     // Browser tests hold flashes still to look at them (window.__flashHold = ms after the shot).
     Object.defineProperty(window, '__flashHold', { configurable: true, set: (v: number | undefined) => (MuzzleFlashRig.hold = v), get: () => MuzzleFlashRig.hold });
     this.vfx = new GodotVfx(this.scene);
+    this.steadyArcs = new SteadyArcs(this.scene);
     // Low graphics plays fewer pack effects at once and thins the lasting ones (fires, charge balls).
     this.vfx.quality = this.atmosphere.quality;
     this.lasting = new LastingFx(this.vfx);
@@ -636,7 +642,7 @@ export class GameView {
    * constructor) keeps those programs when the samples go, so the first sight of a model or an effect mid-match
    * doesn't stall on a shader build. Resolves with how many shader programs were built by then.
    */
-  async prewarm(specs: readonly AvatarSpec[], guns: readonly string[] = [], veiled: () => boolean = () => false): Promise<number> {
+  async prewarm(specs: readonly AvatarSpec[], guns: readonly string[] = [], veiled: () => boolean = () => false, filesIn: () => void = () => {}): Promise<number> {
     const t0 = performance.now();
     // The merged level first (its textures load in a moment; its shader is then built with everyone else's).
     if (this.levelMerge) await Promise.race([this.levelMerge, new Promise((r) => setTimeout(r, 15000))]);
@@ -648,30 +654,15 @@ export class GameView {
     const ready = () => (this.scene.isDisposed ? Promise.resolve() : Promise.race([this.scene.whenReadyAsync(), new Promise((r) => setTimeout(r, 8000))]));
     // Water's splash rings and drops (made on the first splash) draw a copy out of sight meanwhile.
     this.scenario.liquids.fx.warm(4000);
-    // The effects first (they don't wait for the characters' files), ended as soon as their shaders are built.
-    let effects = 0;
-    try {
-      await GodotVfx.preload(...mappedPacks());
-      const ends: (() => void)[] = [];
-      // Each effect plays out of sight for a few frames (its particles spawn: their pieces draw then).
-      for (const r of mappedEffects()) {
-        const end = this.vfx.warm(r.pack, r.effect, true);
-        if (end) ends.push(end);
-      }
-      effects = ends.length;
-      await this.afterFrames(4, 2500);
-      await ready();
-      for (const end of ends) end();
-    } catch {
-      // Effects that didn't load stay as they were (their first play builds them).
-    }
-    if (this.scene.isDisposed) return 0;
     // Then a character of each look and every gun the match can hold (a crowd's GPU instance and a plain copy: the
     // view model, a small match's held gun). While the loading screen is up they stand in front of the camera, so
     // every pass that will draw them in play draws them now (the main pass and its pre-pass outputs, the shadow
     // cascades, water's depth), each variant built: out of sight only the materials' own checks ran, and the first
     // gun or body seen in a shadow or in the depth map built its programs mid-match (round 3 of docs/PERF_96.md).
     // Once the game shows (a slow machine finishes this in the background) they are parked out of sight.
+    // Their files load from the start, while the effects warm (round 4 of docs/PERF_96.md: on a first visit the
+    // characters' downloads came after the effects' shaders, so the gate's cap passed before they were in, and the
+    // spawn wave's looks built their shaders in the first seconds of play: 52 programs on the owner's M1).
     const stage = new TransformNode('prewarm', this.scene);
     stage.position.set(0, -10000, 0);
     const place = this.scene.onBeforeRenderObservable.add(() => {
@@ -724,7 +715,7 @@ export class GameView {
       node.position.set((i - 0.5) * 6, 0, 9);
       return { node, kind };
     });
-    const made = await Promise.all(
+    const making = Promise.all(
       specs.slice(0, 32).map((spec, i) =>
         this.characters.create(spec, `prewarm_${i}`).then(
           (ch) => {
@@ -738,7 +729,27 @@ export class GameView {
         ),
       ),
     );
-    const held = await Promise.all(gunCopies);
+    // The effects meanwhile (they don't wait for the characters' files), ended as soon as their shaders are built.
+    let effects = 0;
+    try {
+      await GodotVfx.preload(...mappedPacks());
+      const ends: (() => void)[] = [];
+      // Each effect plays out of sight for a few frames (its particles spawn: their pieces draw then).
+      for (const r of mappedEffects()) {
+        const end = this.vfx.warm(r.pack, r.effect, true);
+        if (end) ends.push(end);
+      }
+      effects = ends.length;
+      await this.afterFrames(4, 2500);
+      await ready();
+      for (const end of ends) end();
+    } catch {
+      // Effects that didn't load stay as they were (their first play builds them).
+    }
+    if (this.scene.isDisposed) return 0;
+    const [made, held] = await Promise.all([making, Promise.all(gunCopies)]);
+    // Everything it draws is in: what is left is building shaders (the gate gives that a time of its own).
+    filesIn();
     if (this.scene.isDisposed) return 0;
     // Drawn every frame wherever the stage is: in front of the camera while the loading screen is up, and far below
     // the map (out of sight) once the game shows, so their main-pass programs are built either way (a slow machine or
@@ -1102,9 +1113,11 @@ export class GameView {
    * damage, more on a head), or a hole, sparks and dust on a wall. Bodies
    * lying in the way take the hit too and are knocked about.
    */
-  shotVisual(o: { eye: Vec3; muzzle: Vec3 | null; to: Vec3; color: string; victim: number | null; zone: number; strength: number; def?: WeaponDefinition; local?: boolean; speed?: number; time?: number; tracer?: boolean; land?: boolean }): void {
+  shotVisual(o: { eye: Vec3; muzzle: Vec3 | null; to: Vec3; color: string; victim: number | null; zone: number; strength: number; def?: WeaponDefinition; local?: boolean; slot?: number; speed?: number; time?: number; tracer?: boolean; land?: boolean }): void {
     if (o.def?.view.beam) {
-      this.addShot(o.def, o.muzzle ?? o.eye, o.to, o.color);
+      // Reduce flashing: a fast-firing beam (the Arc Caster, lasers) holds one steady beam instead of one per shot.
+      if (reduceFlashing() && o.def.fireIntervalTicks <= 15) this.steadyArcs.hit(`beam:${o.local ? 'me' : (o.slot ?? 'other')}`, [o.muzzle ?? o.eye, o.to], o.def.view.tracer);
+      else this.addShot(o.def, o.muzzle ?? o.eye, o.to, o.color);
       this.landRound(o);
       return;
     }
@@ -1216,15 +1229,16 @@ export class GameView {
         a.flashRig = new MuzzleFlashRig(this.scene, `${a.root.name}_flashRig`);
         this.remoteRigs++;
       }
-      // A little bigger than your own: it's seen from further off.
-      if (a.flashRig.fire(fx.id, fx.scale * 1.25)) {
+      // A little bigger than your own: it's seen from further off. Reduce flashing: smaller and dimmer.
+      const calm = reduceFlashing();
+      if (a.flashRig.fire(fx.id, fx.scale * 1.25 * (calm ? SAFE_MUZZLE.scale : 1), calm ? SAFE_MUZZLE.opacity : 1)) {
         this.placeRemoteFlash(a);
         return;
       }
     }
     a.flash ??= this.createFlash(a.root.name);
     a.flashUntil = performance.now() + 55;
-    kickFlash(a.flash, 1);
+    kickFlash(a.flash, reduceFlashing() ? SAFE_MUZZLE.scale : 1, reduceFlashing() ? SAFE_MUZZLE.opacity : 1);
   }
 
   /** Put a remote flash rig at the muzzle, pointing down the barrel. */
@@ -1265,6 +1279,7 @@ export class GameView {
       this.vfx.update(dt * 1000);
     }
     this.impacts.update(wall);
+    this.steadyArcs.update(now);
     // Remote muzzle flashes follow the guns.
     for (const a of this.avatars.values()) {
       if (a.flashRig?.update(now)) this.placeRemoteFlash(a);
@@ -1412,23 +1427,48 @@ export class GameView {
     return flame;
   }
 
-  /** Under the surface of a liquid the view is hazed in its colour (the backdrop's haze comes back on the way out). */
+  /**
+   * Under the surface of a liquid the view is hazed in its colour (the backdrop's haze comes back on the way out).
+   * Reduce flashing: the haze comes and goes over a third of a second, so bobbing at the surface doesn't flicker the
+   * whole screen between the two.
+   */
   private updateUnderwater(): void {
     const l = this.liquids.length ? liquidAt(this.liquids, this.camera.position) : null;
     const kind = l?.liquid ?? null;
-    if (kind === this.underLiquid) return;
-    if (this.underLiquid === null) this.dryFog = { mode: this.scene.fogMode, color: this.scene.fogColor.clone(), density: this.scene.fogDensity };
-    this.underLiquid = kind;
-    if (kind) {
-      this.scene.fogMode = 2;
-      this.scene.fogColor = Color3.FromHexString(LIQUID_LOOKS[kind].color).scale(0.6);
-      this.scene.fogDensity = kind === 'water' ? 0.09 : 0.5;
-    } else if (this.dryFog) {
-      this.scene.fogMode = this.dryFog.mode;
-      this.scene.fogColor = this.dryFog.color;
-      this.scene.fogDensity = this.dryFog.density;
+    if (kind !== this.underLiquid) {
+      if (this.underLiquid === null && this.underHaze === 0) this.dryFog = { mode: this.scene.fogMode, color: this.scene.fogColor.clone(), density: this.scene.fogDensity };
+      this.underLiquid = kind;
+      if (kind) this.underLook = { color: Color3.FromHexString(LIQUID_LOOKS[kind].color).scale(0.6), density: kind === 'water' ? 0.09 : 0.5 };
     }
+    const now = performance.now();
+    const dt = Math.min(0.1, Math.max(0, (now - (this.underAt || now)) / 1000));
+    this.underAt = now;
+    const want = kind ? 1 : 0;
+    const was = this.underHaze;
+    this.underHaze = reduceFlashing() ? ease(was, want, dt, 3) : want;
+    if (this.underHaze === was && (want === was || !this.dryFog)) return;
+    const dry = this.dryFog;
+    const look = this.underLook;
+    if (!dry || !look) return;
+    const k = this.underHaze;
+    if (k <= 0) {
+      this.scene.fogMode = dry.mode;
+      this.scene.fogColor = dry.color;
+      this.scene.fogDensity = dry.density;
+      return;
+    }
+    this.scene.fogMode = 2;
+    // Exponential fog from the dry haze's colour and density to the liquid's (the dry fog's own mode may be none:
+    // its density then counts from nothing).
+    const dryDensity = dry.mode === 2 ? dry.density : 0;
+    this.scene.fogColor = Color3.Lerp(dry.color, look.color, k);
+    this.scene.fogDensity = dryDensity + (look.density - dryDensity) * k;
   }
+
+  /** How far into a liquid's haze the view is (0 dry, 1 under), eased with flashing reduced. */
+  private underHaze = 0;
+  private underAt = 0;
+  private underLook: { color: Color3; density: number } | null = null;
 
   private liquids: LiquidBox[] = [];
   private underLiquid: Liquid | null = null;
@@ -1603,10 +1643,10 @@ export class GameView {
     void this.models.instantiate(path, `view_${def.id}_held`).then(
       (node) => {
         if (this.viewmodels.get(def.id) !== v || this.scene.isDisposed) return node.dispose();
-        node.parent = this.viewRoot;
         for (const m of node.getChildMeshes()) m.renderingGroupId = 1;
         const old = v.node;
-        node.setEnabled(old.isEnabled());
+        // On or off by the old copy's own switch (not its parents': scoped or in third person the view's root is off).
+        takeOverViewmodel(old, node);
         v.node = node;
         this.viewmodelPaths.set(def.id, path);
         if (this.viewmodel === old) {
@@ -1720,12 +1760,16 @@ export class GameView {
   kick(def: WeaponDefinition, alt = false): void {
     const barrel = alt ? def.view.altShot : undefined;
     this.kickShot = !!barrel;
+    // Reduce flashing: your own flash is smaller and dimmer (in the dark it was the brightest thing on screen).
+    const calm = reduceFlashing();
+    const size = calm ? SAFE_MUZZLE.scale : 1;
+    const opacity = calm ? SAFE_MUZZLE.opacity : 1;
     if (barrel) {
       // A melee weapon's own barrel (the Battle Axe's blunderbuss): a gun's kick, a big flash and a cloud of smoke.
       this.kickAmount = 1;
       this.flashUntil = performance.now() + 60;
-      this.starFlash = !this.flashRig.fire(barrel.flash.effect, (barrel.flash.scale ?? 0.2) * OWN_FLASH_SCALE);
-      if (this.starFlash) kickFlash(this.flash, 1.8);
+      this.starFlash = !this.flashRig.fire(barrel.flash.effect, (barrel.flash.scale ?? 0.2) * OWN_FLASH_SCALE * size, opacity);
+      if (this.starFlash) kickFlash(this.flash, 1.8 * size, opacity);
       const at = this.localMuzzle();
       if (at && barrel.smoke) {
         const m = this.viewRoot.getWorldMatrix();
@@ -1743,14 +1787,14 @@ export class GameView {
       // The rail slams back with a big blue-white flash.
       this.flashUntil = performance.now() + 80;
       this.starFlash = true;
-      kickFlash(this.flash, 2);
+      kickFlash(this.flash, 2 * size, opacity);
       return;
     }
     if (def.kind === 'melee' || def.view.beam) return;
     this.flashUntil = performance.now() + 45;
     const fx = muzzleEffectFor(def);
-    this.starFlash = !(fx && this.flashRig.fire(fx.id, fx.scale * OWN_FLASH_SCALE));
-    if (this.starFlash) kickFlash(this.flash, def.pellets > 1 || def.damage >= 60 ? 1.5 : def.damage < 15 ? 0.7 : 1);
+    this.starFlash = !(fx && this.flashRig.fire(fx.id, fx.scale * OWN_FLASH_SCALE * size, opacity));
+    if (this.starFlash) kickFlash(this.flash, (def.pellets > 1 || def.damage >= 60 ? 1.5 : def.damage < 15 ? 0.7 : 1) * size, opacity);
     if (def.kind === 'hitscan' && def.ammo) this.ejectCasing(def.pellets > 1 ? 1.6 : def.damage >= 60 ? 1.4 : 1);
   }
 
@@ -1869,6 +1913,7 @@ export class GameView {
     // Crowds draw characters' low-detail meshes sooner.
     setCharacterLodCrowd(crowd);
     const planes = crowd && this.scene.activeCamera ? Frustum.GetPlanes(this.scene.activeCamera.getTransformationMatrix()) : null;
+    const fov = (this.scene.activeCamera as { fov?: number } | null)?.fov ?? DEFAULT_FOV;
     // Shadows: the nearest SHADOW_CHARACTERS live characters in view cast (squared distance of the last that does).
     const eye = this.scene.activeCamera?.globalPosition;
     let shadowCut = Infinity;
@@ -1947,7 +1992,13 @@ export class GameView {
         // Respawn teleports are not motion.
         if (Math.hypot(p.x - a.last.x, p.z - a.last.z) > 4) a.vel = { x: 0, z: 0 };
       }
-      a.last = { x: p.x, y: p.y, z: p.z, t: now };
+      // In place: a crowd's avatars made one of these a frame each (performance round 4's garbage pass).
+      if (a.last) {
+        a.last.x = p.x;
+        a.last.y = p.y;
+        a.last.z = p.z;
+        a.last.t = now;
+      } else a.last = { x: p.x, y: p.y, z: p.z, t: now };
       // Shadows from the nearest few living characters (and anyone within SHADOW_ALWAYS); in crowds none past
       // CROWD_SHADOW_REACH, the dead and dying included (a body far off waiting for its ragdoll cast one before).
       const d2 = eye ? (p.x - eye.x) ** 2 + (p.z - eye.z) ** 2 : 0;
@@ -2036,10 +2087,10 @@ export class GameView {
         let run: boolean;
         let stepped: boolean;
         if (a.anim instanceof CharacterAnimator && !a.culled) {
-          // Characters in view: past ANIM_LOD_FULL their clips, bones and aim are evaluated at 30 Hz (and at most
-          // every 2nd frame), past ANIM_LOD_NEAR at 15 Hz (every 3rd), past ANIM_LOD_FAR at 10 Hz (every 4th), on each
-          // one's own phase, with the fingers' pose kept from the last full close; the state machine runs with them.
-          const step = animStep(far, perfOn('animlod2'));
+          // Characters in view: by their size on screen (animLod.ts, round 4), every frame near, then 30, 20, 15, 10 and
+          // 5 Hz (and at most every 2nd, 3rd, 4th, 6th, 12th frame), each smoothed between its evaluations, on each one's
+          // own phase, with the fingers' pose kept from the last full close; the state machine runs with them.
+          const step = perfOn('animlod4') ? animStepByShare(screenShare(far, fov)) : animStep(far, perfOn('animlod2'));
           run = a.anim.stepAt(now, step, this.avatarFrame, (p.slot * 37) % 100);
           stepped = step.frames > 1;
           if (run && perfProbe.on) perfProbe.n[COUNT.animated]!++;
@@ -2677,9 +2728,13 @@ export class GameView {
         const d = p.node.position.subtract(prev);
         if (d.lengthSquared() > 1e-6) p.node.lookAt(p.node.position.add(d));
       } else if (look === 'mine') {
-        // Blink once armed.
+        // Blink once armed (Reduce flashing: a gentle pulse, once a second at most).
         const light = p.node.getChildMeshes().find((m) => m.name.endsWith('_light'));
-        light?.setEnabled(now - p.born > 1200 && Math.floor(now / 350) % 2 === 0);
+        if (light) {
+          const blink = indicator(now / 1000, 1000 / 700);
+          light.setEnabled(now - p.born > 1200 && blink.on);
+          light.visibility = blink.level;
+        }
       } else p.node.scaling.setAll(1 + Math.sin(now * 0.03) * 0.12);
     }
     for (const [id, p] of this.projectiles) {
@@ -2799,13 +2854,25 @@ export class GameView {
     return n;
   }
 
+  /**
+   * How strongly a blast at `at` shows (0..1): 1, or with flashing reduced less the nearer it is to the camera (a blast
+   * filling the view is the full-screen flash the setting caps; reduceFlashing.ts blastStrength).
+   */
+  private blastStrength(at: Vec3, radius: number): number {
+    if (!reduceFlashing()) return 1;
+    const cam = this.camera.globalPosition;
+    return blastStrength(Math.hypot(cam.x - at.x, cam.y - at.y, cam.z - at.z), radius);
+  }
+
   /** The Binbun explosion for a blast (content/vfx.json map.explosions: by weapon, its projectile, the kind), sized to its radius. */
   private blastFx(at: Vec3, radius: number, weapon: string | undefined, kind: string | null, minScale: number): boolean {
     // Nothing under it within a couple of metres: an air burst.
     const airborne = kind !== 'vehicle' && !this.physics?.raycast({ x: at.x, y: at.y + 0.2, z: at.z }, { x: 0, y: -1, z: 0 }, 2.2);
     const fx = explosionFor(weapon, airborne ? 'air' : kind, (id) => CORE_WEAPONS[id]);
     const y = airborne ? at.y : at.y - 0.3;
-    return this.vfx.play(fx.pack, fx.effect, new Vector3(at.x, y, at.z), { scale: Math.max(minScale, radius * fx.scale) });
+    // Reduce flashing: dimmed near the camera, and brought up over a few frames instead of popping in white.
+    const calm = reduceFlashing() ? { gain: this.blastStrength(at, radius), fadeIn: BLAST_FADE_IN } : {};
+    return this.vfx.play(fx.pack, fx.effect, new Vector3(at.x, y, at.z), { scale: Math.max(minScale, radius * fx.scale), ...calm });
   }
 
   explosion(at: Vec3, radius: number, weapon?: string): void {
@@ -2816,13 +2883,16 @@ export class GameView {
     ball.material = mat;
     ball.position.set(at.x, at.y, at.z);
     ball.isPickable = false;
+    const strength = this.blastStrength(at, radius);
+    // Reduce flashing: it fades in over the first third of its life instead of starting at full.
+    const rise = strength < 1 || reduceFlashing() ? 0.3 : 0;
     this.effects.push({
       mesh: ball,
       born: performance.now(),
       ttl: 380,
       update: (f) => {
         ball.scaling.setAll(radius * 2 * (0.3 + 0.7 * Math.sqrt(f)));
-        mat.alpha = 0.85 * (1 - f);
+        mat.alpha = 0.85 * strength * (1 - f) * (rise ? Math.min(1, f / rise) : 1);
       },
     });
   }
@@ -2837,7 +2907,11 @@ export class GameView {
   vehicleExplosion(at: Vec3, radius: number): void {
     const now = performance.now();
     this.blastFx(at, radius, undefined, 'vehicle', 0.8);
-    const ball = (name: string, hex: string, centre: Vec3, size: number, delay: number, ttl: number, alpha: number) => {
+    // Reduce flashing: no white-hot flash, the fireballs dimmed near the camera and faded in.
+    const calm = reduceFlashing();
+    const strength = this.blastStrength(at, radius);
+    const ball = (name: string, hex: string, centre: Vec3, size: number, delay: number, ttl: number, a0: number) => {
+      const alpha = a0 * strength;
       const mesh = CreateSphere(name, { diameter: 1, segments: 10 }, this.scene);
       const mat = glow(this.scene, `${name}Mat`, hex, 1);
       mesh.material = mat;
@@ -2852,11 +2926,11 @@ export class GameView {
           if (f < 0) return void mesh.scaling.setAll(0.01);
           mesh.scaling.setAll(size * (0.25 + 0.75 * Math.sqrt(f)));
           mesh.position.y = centre.y + f * size * 0.25;
-          mat.alpha = alpha * (1 - f) * (1 - f * 0.3);
+          mat.alpha = alpha * (1 - f) * (1 - f * 0.3) * (calm ? Math.min(1, f / 0.25) : 1);
         },
       });
     };
-    ball('boomFlash', '#fff4c8', at, radius * 1.1, 0, 160, 1);
+    if (!calm) ball('boomFlash', '#fff4c8', at, radius * 1.1, 0, 160, 1);
     ball('boomCore', '#ffb347', at, radius * 1.6, 20, 650, 0.9);
     ball('boomOuter', '#e8541c', at, radius * 2.1, 60, 900, 0.55);
     for (let i = 0; i < 5; i++) {
@@ -2877,7 +2951,7 @@ export class GameView {
       update: (f) => {
         const r = radius * 0.5 + radius * 3 * Math.sqrt(f);
         ring.scaling.set(r, 1 + 6 * (1 - f), r);
-        ringMat.alpha = 0.7 * (1 - f);
+        ringMat.alpha = 0.7 * strength * (1 - f);
       },
     });
     this.impacts.sparkBurst(at, 40, 9);
@@ -3083,11 +3157,13 @@ export class GameView {
   /**
    * An arc sentry's tell: its body glows brighter through a wind-up and a ball of its colour grows over the gun
    * (where the arc will start), then both hold, flickering, while the arc is locked on. Idle: a faint glow, no ball.
+   * Reduce flashing: no flicker, and the plain ball of light instead of the pack's crackling one.
    */
   private arcSentryGlow(m: ClientMount, node: TransformNode, now: number): void {
     const glow = m.def.glow!;
     const windUp = (m.def.sentry?.arc?.windUpSeconds ?? 0.75) * 1000;
-    const flicker = 0.5 + 0.5 * Math.sin(now * 0.045);
+    const calm = reduceFlashing();
+    const flicker = calm ? 0.5 : 0.5 + 0.5 * Math.sin(now * 0.045);
     const charge = m.alive && m.charging ? Math.min(1, (now - m.charging) / windUp) : 0;
     const level = !m.alive ? 0 : m.arcing ? 0.8 + 0.2 * flicker : charge ? charge * (0.75 + 0.25 * flicker) : 0;
     setMountGlow(node, glow, level);
@@ -3109,13 +3185,13 @@ export class GameView {
     // replaces: the tell's timing and reach are the game's); it fades out when the sentry lets go.
     let ball = this.chargeBalls.get(m.index);
     if (!ball) this.chargeBalls.set(m.index, (ball = { fx: null, size: 0 }));
-    const ref = lastingFx(`charge.${m.def.id}`);
+    const ref = calm ? null : lastingFx(`charge.${m.def.id}`);
     if (shown && ref && (!ball.fx || ball.fx.done)) ball.fx = this.vfx.start(ref.pack, ref.effect, at, { scale: size * ref.scale });
-    else if (!shown && ball.fx) {
+    else if ((!shown || !ref) && ball.fx) {
       ball.fx.stop();
       ball.fx = null;
     }
-    ball.fx?.move(at, { scale: size * ref!.scale });
+    if (ref) ball.fx?.move(at, { scale: size * ref.scale });
     ball.size = shown ? size : 0;
     // The plain orb stays under the pack's ball, fainter: the tell reads as a solid ball of its colour from afar.
     orb.setEnabled(shown);
@@ -3608,7 +3684,13 @@ export class GameView {
    * fence or a gun). Each bolt plays a few times faster than the pack's, to last about as long as the game's gap
    * between arcs. Where the pack can't play (not in yet, or too many effects at once) the plain jagged line does.
    */
-  addArc(pts: readonly Vec3[], color = '#9fd8ff', source: 'mount' | 'fence' | 'default' = 'default'): void {
+  addArc(pts: readonly Vec3[], color = '#9fd8ff', source: 'mount' | 'fence' | 'default' = 'default', key?: string): void {
+    // Reduce flashing: one steady beam per source instead of a new crackling bolt each arc (steadyArcs.ts).
+    if (reduceFlashing()) {
+      const first = pts[0];
+      this.steadyArcs.hit(key ?? (source === 'fence' && first ? `fence:${Math.round(first.x)},${Math.round(first.z)}` : source), pts, color);
+      return;
+    }
     const fx = arcFx(source);
     const plain: Vec3[][] = [];
     let drawn = 0;

@@ -111,6 +111,7 @@ import {
 import { GameplayFxWatch } from './gameplayFxWatch.ts';
 import type { AudioSystem } from '../audio/audio.ts';
 import { BLOOD_PREF_KEY } from './bloodVisuals.ts';
+import { REDUCE_FLASHING_EVENT, reduceFlashing, saveReduceFlashing } from './reduceFlashing.ts';
 import { BULLET_SPEED } from './impactVisuals.ts';
 import { bindFullscreenButton, browserTookEscape, isFullscreen, pageHoldsEscape, toggleFullscreen } from '../fullscreen.ts';
 import { testMode } from '../testMode.ts';
@@ -752,6 +753,11 @@ export class GameSession {
       { signal },
     );
     this.sfx.bloodOn = () => this.view.blood.on;
+    // Reduce flashing (also Options → Accessibility): on unless switched off, applied at once (reduceFlashing.ts).
+    const flashBox = $('reduce-flashing') as HTMLInputElement;
+    flashBox.checked = reduceFlashing();
+    flashBox.addEventListener('change', () => saveReduceFlashing(flashBox.checked), { signal });
+    window.addEventListener(REDUCE_FLASHING_EVENT, () => (flashBox.checked = reduceFlashing()), { signal });
     // A round landing in the level sounds like what it struck (its surface type's sound family: bark knocks, metal rings).
     this.sfx.worldImpact = (from, to) => {
       const struck = this.view.surfaceStruck(from, to);
@@ -1745,7 +1751,7 @@ export class GameSession {
                 if (victim !== null) window.setTimeout(() => this.view.landRound({ eye, to, victim, zone, strength }), Math.max(0, (dist / (ev.v ?? BULLET_SPEED)) * 1000 - 40));
                 return;
               }
-              this.view.shotVisual({ eye, muzzle, to, color, victim, zone, strength, def, ...(ev.v ? { speed: ev.v } : {}) });
+              this.view.shotVisual({ eye, muzzle, to, color, victim, zone, strength, def, slot: ev.s, ...(ev.v ? { speed: ev.v } : {}) });
             });
             // Rounds that went through a surface or glanced off it leave their mark there too.
             for (const p of ev.pn ?? []) this.view.landRound({ eye, to: { x: p[0], y: p[1], z: p[2] }, victim: null, zone: 0, strength });
@@ -1796,7 +1802,9 @@ export class GameSession {
             // An arc sentry's arc is drawn in its own colour.
             const glow = ev.m !== undefined ? this.mounts?.mounts.get(ev.m)?.def.glow : undefined;
             // Lightning by its source (content/vfx.json map.arcs): an arc sentry, an electric fence (no shooter) or a gun.
-            this.view.addArc(ev.pts.map((p) => ({ x: p[0], y: p[1], z: p[2] })), glow, ev.m !== undefined ? 'mount' : ev.s < 0 ? 'fence' : 'default');
+            // With flashing reduced, each source holds one steady beam (keyed by it; a fence's by where it struck).
+            const source = ev.m !== undefined ? 'mount' : ev.s < 0 ? 'fence' : 'default';
+            this.view.addArc(ev.pts.map((p) => ({ x: p[0], y: p[1], z: p[2] })), glow, source, ev.m !== undefined ? `m${ev.m}` : ev.s >= 0 ? `s${ev.s}` : undefined);
           } else if (ev.e === 'explode') {
             this.hurtFrom = { x: ev.p[0], z: ev.p[2], at: performance.now() };
             const at = { x: ev.p[0], y: ev.p[1], z: ev.p[2] };
@@ -2032,7 +2040,14 @@ export class GameSession {
     // Every gun the match can put in a hand (starting weapons, pickups and what they may roll), as held and as yours.
     const guns = [...models].filter((m) => WEAPONS_BY_SLOT.some((w) => w.view.model === m) || thrown.has(m));
     let started = false;
-    jobs.push(Promise.race([this.view.prewarm(looks, guns, () => !started && !this.closed), new Promise((r) => setTimeout(r, 8000))]));
+    // The gate waits for the warm-up's files (a first visit downloads every look in the match and every gun: the
+    // overall cap below still holds), then gives its shader builds 8 s: a slow GPU finishes those out of sight after
+    // the start. Round 3 counted the 8 s from the warm-up's start, so on a first visit the files came in after the
+    // gate and the spawn wave built its shaders in the first seconds of play (docs/PERF_96.md, "Performance round 4").
+    let filesIn: () => void = () => {};
+    const loaded = new Promise<void>((r) => (filesIn = r));
+    const warm = this.view.prewarm(looks, guns, () => !started && !this.closed, () => filesIn());
+    jobs.push(Promise.race([warm, Promise.race([loaded, new Promise((r) => setTimeout(r, 20000))]).then(() => new Promise((r) => setTimeout(r, 8000)))]));
     let done = 0;
     const total = jobs.length + 2;
     // A file that finishes after the start (see the cap below) must not bring the loading screen back over the game.
@@ -2137,6 +2152,7 @@ export class GameSession {
     const target = local.alive ? pickUsable(map, local.eye, this.input.yaw, this.input.pitch, (i) => sc.usable(i, myTeam)) : null;
     const e = target === null ? undefined : map.entities[target];
     const enter = local.alive && !this.seat ? this.mounts?.enterable(local.state.pos) : null;
+    let full: { def: { displayName: string } } | null = null;
     if (local.alive && this.seat) {
       const m = this.mounts?.mounts.get(this.seat[0]);
       const hint = m && m.def.kind === 'vehicle' && !m.def.airplane && VehicleCamera.drives(m.def, this.seat[1]) ? { key: 'H', text: this.vehicleCam.viewFor(m.def) === 'cockpit' ? 'Chase camera' : 'Cockpit view' } : undefined;
@@ -2150,6 +2166,9 @@ export class GameSession {
       const seat = enter.mount.def.seats[enter.seat]!;
       const verb = seat.role === 'driver' ? (enter.mount.def.kind === 'vehicle' ? 'Drive' : 'Use') : seat.role === 'gunner' ? 'Man the gun on' : 'Ride in';
       this.hud.setPrompt(`${verb} the ${enter.mount.def.displayName}`);
+    } else if (local.alive && !this.seat && (full = this.mounts?.fullInReach(local.state.pos) ?? null)) {
+      // In reach but every seat is taken: say so (E does nothing here).
+      this.hud.setPrompt(`The ${full.def.displayName} is full`, true);
     } else if (local.alive && !local.state.grounded && !local.state.chute && local.state.velY < -CHUTE.armSpeed && local.jetFuel === null && heightAboveGround(local.physics, local.state.pos, CHUTE.minHeight) === null) {
       this.hud.setPrompt(local.glider ? 'Open your glider (Space)' : 'Open your parachute (Space)');
     } else if (local.state.chute) this.hud.setPrompt(local.state.chute === CHUTE_GLIDER ? 'Gliding: W faster, S slower, crouch to let go' : 'Parachute: steer with WASD, crouch to cut away');
@@ -2635,6 +2654,7 @@ export class GameSession {
       if (!local) this.view.updateMounts(this.mounts.mounts.values(), this.mannedTurret());
     }
     this.hud.setStatusTint(statusColor(this.local?.alive ? this.localStatus : 0));
+    this.hud.tickHurt();
     const poses = this.interp.sample(now);
     // Splashes and ripples where players and projectiles meet water.
     this.view.scenario.liquids.fx.track(poses, shells);
