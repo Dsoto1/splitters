@@ -845,6 +845,8 @@ export class BreakthroughMode implements ModeLogic {
     const defend = this.rounds > 1 ? both : [teams[1]!.id];
     const out: BotTripSpec[] = [];
     for (const s of this.sectors) {
+      // (Its defenders' posts too: their routes are looked up here, at setup, rather than in a tick.)
+      this.postsOf(s);
       const from = { attack: groupHome(s.spawns.attack), defend: groupHome(s.spawns.defend) };
       for (const o of s.objectives) {
         if (from.attack) for (const team of attack) out.push({ team, from: from.attack, to: { ...o.pos }, kind: 'attack' });
