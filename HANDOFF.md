@@ -100,7 +100,7 @@ Bomb plants (0.5 → 0.3 a match) a little down on the samples, and ten CTF maps
 <!-- /bots-a -->
 
 <!-- ground-fix -->
-### MapMaker's ground under floors (`wip/ground-fix`, agent, 2026-11-07; from main 5e85caff; in progress)
+### MapMaker's ground under floors (`wip/ground-fix`, agent, 2026-11-07; from main 5e85caff, main 9dfe3ba1 merged in; green on `check/ground-fix` at e16079fe, run 42328205906; not landed)
 The owner: "fix the ground bug" (set pieces part 2's pitfall: every MapMaker edit lowered the ground under every level
 floor and nothing ever raised it back).
 
