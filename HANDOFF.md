@@ -76,8 +76,12 @@ Setup's suggestions, 4 v 4 (8 an attacker, 3 min a sector), eight seeds: the bea
 8 v 8 (6, 4 min), six seeds: the beach in 6 (65 s on average), the guns in 4, the fort in 3. At the mode's defaults 4 v
 4 took the beach in 5 of 8, the guns in 4, the fort in 3. Before the playbook (the old `botGoal`, defenders never
 defusing) 4 v 4 at the defaults: 6, 3 and 3 of 8; with the playbook but before holding still to plant, 8 v 8 never
-planted (the guns fell in none of six). The scratch harness that measured it is not in the repo (bench's Match with
-bots, the `bt` events); `pnpm bench 8 300 maps/test_breakthrough.json --mode=core.breakthrough` counts the events.
+planted (the guns fell in none of six). A second round with the sides swapped (4 v 4, three seeds): both teams broke
+through in two, the one with more time left when its last sector fell winning (442 s against 436, 305 against 271);
+in the third only the second team did, and won. In the e2e flow (you parked, three bot attackers against four) the
+bots took the beach in 76 s. The scratch harness that measured it is not in the repo (bench's Match with bots, the
+`bt` events); `pnpm bench 8 300 maps/test_breakthrough.json --mode=core.breakthrough` counts the events. For Iron
+Coast's check ("bots take every sector in a scorecard run") `bot-report` needs Breakthrough (sectors taken a match).
 
 **Pitfalls:**
 - Driving MapMaker with Playwright against the dev server: any edit to a file the page imports reloads the page and
