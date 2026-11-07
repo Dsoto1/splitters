@@ -1132,6 +1132,13 @@ export const MapDocument = z.object({
    * Unknown ids are left out when a match starts (validBotCast) and flagged by validateMap.
    */
   botCast: z.array(z.string().min(1).max(24)).max(8).optional(),
+  /**
+   * The map's default weapon set (v28; sim/weaponSets.ts, content/weapon-sets.json: military, scifi, medieval, chaos,
+   * mixed), set in MapMaker's Map properties: what a match here spawns with and its pickups hold, unless the host picks
+   * another. Absent: Standard (the mode's own loadout, pickups as placed). An id this build has no set for plays
+   * Standard and is flagged by validateMap.
+   */
+  weaponSet: z.string().regex(/^[a-z][a-z0-9_]{1,23}$/, 'weapon set ids look like "military"').optional(),
   /** Content packs this map needs, beyond the always-present core pack. */
   dependencies: z.array(z.object({ pack: ContentId, version: z.string().max(32) })).max(MAX_MAP_DEPENDENCIES).default([]),
   /**

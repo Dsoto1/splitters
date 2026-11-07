@@ -378,12 +378,12 @@ describe('format v27', () => {
 
   it('a v26 map migrates unchanged: nothing added, it plays as it did', () => {
     expect(v26.formatVersion).toBe(26);
-    expect(MAP_FORMAT_VERSION).toBe(27);
+    expect(MAP_FORMAT_VERSION).toBeGreaterThanOrEqual(27);
     const { doc, fromVersion } = migrateMapDocument(structuredClone(v26));
     expect(fromVersion).toBe(26);
-    expect(doc).toEqual({ ...v26, formatVersion: 27 });
+    expect(doc).toEqual({ ...v26, formatVersion: MAP_FORMAT_VERSION });
     const old = loadMap(structuredClone(v26));
-    const now = loadMap({ ...structuredClone(v26), formatVersion: 27 });
+    const now = loadMap({ ...structuredClone(v26), formatVersion: MAP_FORMAT_VERSION });
     expect(old.ok && now.ok).toBe(true);
     if (!old.ok || !now.ok) return;
     expect(old.migratedFrom).toBe(26);

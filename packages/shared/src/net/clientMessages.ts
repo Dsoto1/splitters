@@ -4,6 +4,7 @@ import { ROTATION_MAX } from '../sim/rotation.ts';
 import { validateBotSet } from '../sim/botSet.ts';
 import { validBotCast } from '../content/botThemes.ts';
 import { SCORE_LIMIT_MAX, isGameMode, type GameMode } from '../sim/rules.ts';
+import { isWeaponSetId } from '../sim/weaponSets.ts';
 import type { PlayerInput } from '../sim/movement.ts';
 
 /**
@@ -129,6 +130,11 @@ function parseHostCommand(raw: unknown): HostCommand | null {
       if (p.dropWeapons !== undefined) {
         if (typeof p.dropWeapons !== 'boolean') return null;
         rules.dropWeapons = p.dropWeapons;
+      }
+      // A weapon set by id, or null for the map's default; an id no set has is refused.
+      if (p.weaponSet !== undefined) {
+        if (p.weaponSet !== null && !isWeaponSetId(p.weaponSet)) return null;
+        rules.weaponSet = p.weaponSet;
       }
       return { c: 'rules', rules };
     }

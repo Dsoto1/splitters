@@ -4,6 +4,7 @@ import { teamCount } from './hostRules.ts';
 import { isCoopMode, isTwoTeamMode } from './matchSetup.ts';
 import { MAX_TEAMS } from './npc.ts';
 import { BOT_CAST_CHOICES } from '../content/botThemes.ts';
+import { WEAPON_SET_DEFS, WEAPON_SET_IDS, isWeaponSetId } from './weaponSets.ts';
 import { GAME_MODES, MODE_LABELS, SCORE_LIMIT_MAX, isGameMode, isTeamMode, rulesForMode, type GameMode, type MatchRules } from './rules.ts';
 
 /**
@@ -93,6 +94,10 @@ export const SERVER_RULES: readonly RuleSpec[] = [
   {
     key: 'drops', label: 'Drop weapon on death', help: "A fallen player's or bot's primary lies at the body for 30 s with the ammo it had left (off clears the ones lying about).", type: onOff, apply: 'live',
     modes: (m) => m !== 'core.race' && m !== 'core.discs', read: (r) => r.dropWeapons !== false, write: (r, v) => (v ? delete r.dropWeapons : (r.dropWeapons = false)),
+  },
+  {
+    key: 'set', label: 'Weapon set', help: "What everyone spawns with and what weapon and grenade pickups hold: map (the map's own default; most maps: standard), standard (knife, pistol, the map's pickups as placed), military, scifi, medieval, chaos or mixed (a random gun each life).", type: choice(['map', 'Map default'], ...WEAPON_SET_IDS.map((id): [string, string] => [id, WEAPON_SET_DEFS[id].name])), apply: 'live',
+    modes: (m) => m !== 'core.discs', read: (r) => (isWeaponSetId(r.weaponSet) ? r.weaponSet : 'map'), write: (r, v) => (v === 'map' || !isWeaponSetId(v) ? delete r.weaponSet : (r.weaponSet = v)),
   },
   {
     key: 'style', label: 'Bot style', help: 'Mixed: every character its own way. Arena: always moving (Quake). Tactical: cover and held angles (Counter-Strike).', type: choice(['mixed', 'Mixed'], ['arena', 'Arena'], ['tactical', 'Tactical']), apply: 'live',

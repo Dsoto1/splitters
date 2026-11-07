@@ -50,6 +50,18 @@ export function mapContentHash(map: MapDocument): string {
   return `sha256:${sha256Hex(new TextEncoder().encode(canonicalMapJson(map)))}`;
 }
 
+/**
+ * Whether a map's release stamp still describes it: its content hash now, or with the format version the stamp was
+ * made at. A format bump whose migration changes nothing (new optional fields only) leaves a stamped map as it was: the
+ * same version, no "changed since it was exported"; a migration that changes the content changes the hash too.
+ */
+export function releaseCurrent(map: MapDocument): boolean {
+  const r = map.metadata.release;
+  if (!r) return false;
+  if (r.contentHash === mapContentHash(map)) return true;
+  return r.schemaVersion !== map.formatVersion && r.contentHash === mapContentHash({ ...map, formatVersion: r.schemaVersion as MapDocument['formatVersion'] });
+}
+
 /** A versionId derived from a content hash, for maps hosted without a release block (same content, same ID). */
 export const derivedVersionId = (hash: string): string => `v_${hexToBase32(hash.replace(/^sha256:/, '')).slice(0, 16)}`;
 
@@ -59,9 +71,9 @@ export const derivedVersionId = (hash: string): string => `v_${hexToBase32(hash.
  * and the next revision. Returns a new document; the input is untouched.
  */
 export function stampMapRelease(map: MapDocument, now: Date = new Date()): MapDocument {
-  const contentHash = mapContentHash(map);
   const prev = map.metadata.release;
-  if (prev && prev.contentHash === contentHash) return map;
+  if (prev && releaseCurrent(map)) return map;
+  const contentHash = mapContentHash(map);
   const release: MapRelease = {
     mapId: prev?.mapId ?? `m_${randomBase32(16)}`,
     versionId: `v_${randomBase32(16)}`,
@@ -75,9 +87,9 @@ export function stampMapRelease(map: MapDocument, now: Date = new Date()): MapDo
 
 /** What a host announces about the map it runs: from its release block, else derived from its content. */
 export function mapIdentity(map: MapDocument): { mapId: string; versionId: string; contentHash: string; stamped: boolean } {
-  const contentHash = mapContentHash(map);
   const r = map.metadata.release;
-  if (r && r.contentHash === contentHash) return { mapId: r.mapId, versionId: r.versionId, contentHash, stamped: true };
+  if (r && releaseCurrent(map)) return { mapId: r.mapId, versionId: r.versionId, contentHash: r.contentHash, stamped: true };
+  const contentHash = mapContentHash(map);
   return { mapId: r?.mapId ?? map.metadata.id, versionId: derivedVersionId(contentHash), contentHash, stamped: false };
 }
 
