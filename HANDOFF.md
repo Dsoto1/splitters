@@ -3,6 +3,131 @@
 A briefing for the next Claude session or agent picking up this repo. Read
 `CLAUDE.md` first (workflow and rules), then this file. Keep this file current.
 
+## Start here (session of 2026-11-07, handed off to the next account)
+
+**Main** = 63731808 plus this note, green. Today's landings are on main, in order:
+- Breakthrough;
+- Reduce flashing;
+- performance round 4 (32 v 32 in a browser, 64 v 64 on dedicated servers);
+- the small fixes (Breakthrough Range an ordinary map, the gun after the scope, dropships, the use prompt);
+- Bot AI Phase C (item 0, then items 1-4: parkour, ground that goes, keep right, corridor routes);
+- Cool Hands Rex and Fishy Fred;
+- the sheep's legs and blast smoke under Reduce flashing;
+- the frozen-corpses fix.
+
+The workflow is unchanged (CLAUDE.md):
+- run at most 3 agents, each on `wip/<name>`, green on `check/<name>`, then fast-forward main;
+- give agents their own port ranges (4950-4959, 4970-4979, 4980-4989);
+- tell agents a CI failure in `attest-build-provenance` (a transparency-log 500 or 404) is GitHub's signing service: re-run the failed job.
+
+**In flight at the switch** (each branch pushed, tree clean; scratchpad files did not survive the switch):
+1. **Friendly fire** (`wip/friendly-fire` @ 318023ed). Green at 1a347140 (run 42408271804, with its new e2e check).
+   - **The switch commit:** main's frozen-corpses fix was merged in (conflicts only in CHANGELOG and HANDOFF;
+     typecheck passes), and `check/friendly-fire` was re-running at 318023ed at the switch.
+   - **Next:** when that run is green, fast-forward main to 318023ed.
+   - **Root cause:** every hit test left teammates out before `damage()` read the rule.
+   - **Fix:** `Match.canHurt`. Unit test `shared/test/friendlyFire.test.ts`; e2e `friendlyFireChecks` in `teams`.
+2. **Iron Coast** (`wip/iron-coast` @ 99c48ff4; it builds and the map validates).
+   - **Built in MapMaker and exported:**
+     - the terrain, 380 x 320 m at 2.5 m;
+     - all 13 set pieces;
+     - the 7 routes and the cliff-foot strongpoints;
+     - landing slabs and the sea;
+     - 30 pickups (Military);
+     - Breakthrough: sectors A (A1, A2), B (B1-B4, 2 of 4) and C, with 6 spawn groups of 16;
+     - Team Deathmatch;
+     - crest trenches, ruins, the B/C walls and 16 village houses;
+     - the ground paint.
+   - **Measured so far:** every route routes both ways. bot-report 16 v 16 (one seed) took A at 84 s, B at 155 s and
+     C at 289 s.
+   - **Exact next step:** the last export flags spawn `spawn_jclhkikyqj` at (55, 12, 18) as cut off. Move it in the
+     inspector, export, and get validate-map to 0.
+   - **Then:**
+     - the map card picture;
+     - bot runs at 16 v 16 and 24 v 24;
+     - performance at 48 and 64 bots;
+     - typecheck, test:changed and e2e:changed;
+     - `check/iron-coast`, landing as part 1.
+   - **Part 2, the visual pass:** not started. The burning-wreck prop with smoke is saved unfinished on
+     `wip/iron-coast-wreck`; it needs its palette atlas picture and content:check.
+   - **Known gaps:**
+     - haze and mist didn't take: both are 0 in the map;
+     - the casemates sit on 4 m levels (B2 12 m, B3 16 m);
+     - the terrain can't overhang, so the cave and tunnel are pieces standing in a cut cove, not buried rooms.
+     - Decisions are in `docs/map-briefs/iron_coast/DECISIONS_AND_DEVIATIONS.md`.
+   - **Where the detail is:** driver tricks and the full list are in
+     `docs/map-briefs/iron_coast/MAP_IMPLEMENTATION_MANIFEST.md`, under "Progress".
+   - **The brief's essentials:**
+     - MapMaker only: drive the real editor with Playwright against `vite preview`, a window at least 1280 px wide,
+       click palette cards by mouse position, point the view at the sky while editing through the inspector;
+     - follow `docs/map-briefs/MAP_21_reference_annotated.jpg`, not a symmetrical plan;
+     - 24 v 24 by default, playable to 32 v 32;
+     - the Military weapon set;
+     - golden hour; no flashing.
+3. **Bot AI Phase C follow-up** (`wip/bots-c2` @ 2e6949ca; typechecks; nothing on CI yet). BOT_AI_PLAN.md has it under
+   "Phase C follow-up".
+   - **Ready:**
+     - large bots duck under low roofs (`BotBrain.mustDuck`);
+     - bots step off a sill outside a wall only onto a clear walk (`NavWorld.wayOnto`), which fixes the Capitol Mall
+       office trap;
+     - corridor followers are counted.
+   - **Stuck recoveries in CTF:** 1.35 → 1.05 a bot-minute.
+   - **Reverted:** corridors of their own for bots in no group.
+   - **The Breakthrough Range drop was seed luck:** 40 against 38 over 48 seeds.
+   - **Next:**
+     1. Measure against main: the CTF sample (below) and the Range, then `pnpm test:changed`, then `check/bots-c2`;
+        land part 1.
+     2. CTF ablations: no parkour; no keep-right with its strafing rule. Captures per take fell 0.26 → 0.17 after
+        items 1-4: more carriers die on the way home.
+     3. Route spread: CTF's busiest way is still about 60 %. Next idea: route loose side-lane bots through a
+        corridor's waypoint instead of `laneWaypoint`.
+   - **The measuring commands:**
+     - the CTF sample: `pnpm bot-report diamond_park sunken_kingdom bunker_cross serene_city capitol_mall fernwood_moon
+       qasr_medina twin_spires --mode=core.ctf --seeds=1,2,3 --seconds=180 --json=<out>/ctf.json`;
+     - with it, TDM: `pnpm bot-report eagle_spires twin_spires riot_junction --mode=core.tdm --seeds=1,2 --seconds=180`;
+     - the Range: `pnpm bot-report test_breakthrough --mode=core.breakthrough --players=16 --seeds=1,...,24
+       --seconds=900 --json=<out>/bt8.json`.
+4. **Roulette** (`wip/roulette` = `check/roulette` @ 5c210adf), paused for the frozen-corpses hunt.
+   - **Built:**
+     - the whole plan, as built in docs/ROULETTE_MODE_PLAN.md;
+     - signatures in `content/roulette.json` (`tools/content/roulette.mjs`);
+     - streak pick input `say` 180-185;
+     - Lunar Roulette now plays `core.roulette`.
+   - **Its CI (run 42405165063) failed:** look first at flows and unit tests that assume the old Lunar Roulette (Team
+     Deathmatch) or exact `playableModes` lists.
+   - **Next:**
+     - the `roulette` e2e flow with `E2E_SHOTS` (the spawn card, a jackpot, the pick, the awards);
+     - `pnpm bench 48 60 maps/sandgate.json --mode=core.roulette` and `pnpm bench:96:clump`;
+     - its HANDOFF section;
+     - merge main, then land.
+
+**Queued, in the owner's order:**
+1. **Tanks** (owner, 2026-11-07). Bots drive and fire tanks sensibly, and bail out when nearly dead.
+   - **Occupants:** whoever drives or rides a tank can't be shot from outside.
+   - **The gun:** works, with limited ammo shown in the HUD. Proposed refill: slowly over time, and full at an ammo
+     pickup. The owner hasn't confirmed.
+   - **Damage:** rockets and blasts wear its health down; bullets do little.
+   - **Destruction:** occupants still inside die with it.
+2. **Hovercraft** (Hauler, Speeder, Hover Bike) stuck under structures on Iron Tide and Dune Harbor. A Hauler got stuck
+   under Iron Tide's platforms at (-16, 5, -20). Flyers got their climb in the small fixes; hovercraft didn't.
+3. **Sound pass 2** (Sonniss and Freesound). Both are approved, and their hosts are on the environment's allowlist.
+   - Sonniss sits behind a Cloudflare browser check, so the owner puts the chosen packs in the Drive.
+   - Freesound needs an API key: ask with the credential form, never in chat.
+4. **Fireteams.**
+5. **The MapMaker overhaul.** Its Phase 3 item 9 is the rotate ring.
+6. **Community maps.**
+7. **Kit-prop generators.**
+8. **Player profiles,** last.
+
+**Open questions for the owner:**
+- Fishy Fred's name and Meshy post URL.
+- A dinosaur bot-name list for Rex?
+- Slow the 26 maps whose lights blink up to 4 times a second?
+- A 12 s per-fight cap on the hurt-bot retreat? We recommend no.
+- The tank's ammo refill.
+- Recordings on the M1 for performance round 4 (see its section).
+- A playtest of Breakthrough Range.
+
 ## Start here (session of 2026-11-04, handed off to the next account)
 
 **State:** `main` = f61f2cf (+ this note), green. Everything below "Landed" is on main; nothing is half-merged.
@@ -27,6 +152,43 @@ gets overloaded above that: local e2e times out and flakes). Prune landed worktr
   reworks batches 2–3, character fixes rounds 2–3 (see the entries below and CHANGELOG).
 
 <!-- small-fixes-1107 -->
+### Friendly fire (`wip/friendly-fire`, agent, 2026-11-07; from main c8d8cba3; CI on `check/friendly-fire`; not landed)
+**Root cause:** the rule reached the match (Match setup's `rulesFromSetup`, the Host tab's `setRules`, hostRules KEPT;
+bots aren't flagged npc) but only `damage()` read it, and every hit test before it left teammates out: `targetsFor`
+(rounds, pellets, ballistic bullets, blades, punches) filtered on `hostile`, a projectile's direct hit skipped allies
+(a rocket flew through and burst beyond), and `applyStatus` dropped burns, poison and slows from allies. Splash
+already sent everyone to `damage()`, so only a blast right beside a teammate hurt.
+**Fix:** `Match.canHurt(a, b)`: an enemy, or anyone not hostile when `rules.friendlyFire` is on (never NPCs, never in
+a race without combat); used by the hit tests and `applyStatus`. Third-person aim (`targetsFor(..., aimOnly)`),
+homing, walkers, mines and bots' targets stay on `hostile`. **Tests:** `shared/test/friendlyFire.test.ts` fires each
+path for real (rifle, shotgun, rockets, knife, flamethrower and its burn) at a teammate and an enemy with the rule
+off, half and full; Breakthrough; a team kill earns nothing (fails without the fix). e2e `teams`
+(`friendlyFireChecks`): Match setup's rule reaches the match; a teammate takes your rounds with it on and none off.
+
+
+### Frozen characters in big matches (`wip/frozen-fix`, agent, 2026-11-07; green on `check/frozen-fix` at 63731808, run 42407015946; landed on main 63731808)
+**Root cause:** the figures frozen mid-run (some in the air) were the dead. Performance round 4's pose smoothing
+(`CharacterAnimator` `blend.on`, set only in `stepAt`) stayed on after a death: GameView stops calling `stepAt` once a
+character dies (startRagdoll and toCorpse run first; corpses are never stepped), and `ragdoll`, `lieDown`, `die`
+and `freezePose` never cleared it. So every frame the patched `Skeleton.prepare` overwrote a corpse's skin with its
+last two living poses (`blendSkin`, its evals and time frozen too): the ragdoll moved the bones unseen and the body was
+drawn standing where it died, until it sank or the 32-corpse cap took it. Only deaths in a smoothed band (screen share
+below 0.075, about 15 m and more at the usual field of view) did it, which is why big matches (many far deaths at
+once, more bodies kept) showed it and a 12 v 12 near fight hardly did.
+**Measured** (scratchpad `frozen/probe.mjs`, Shingle Point 32 v 32 TDM, real client): before, 9 of 9 corpses of the
+fight's own deaths and 1-3 after each scripted mass death had the smoothing on; one corpse's drawn skin stayed the
+same (checksum 19942.942) over 12 s while its pelvis moved 3.41 → 2.52 → 2.56 m. Live characters were all stepped
+and animating (no live one stuck). Corpses drawn off their bones (max skin-matrix error), before → after: the fight's
+own deaths 4 of 4 (4.1) → 0 (0); mass death 2: 2 of 2 (2.9) → 0 (0); mass death 3: 3 of 9 (3.3) → 0 (0).
+**Fix:** `CharacterAnimator.endSmoothing()` (smoothing off, recorded poses and the gun's dropped) on die, ragdoll,
+lieDown, freezePose, standBy and revive, so a body is drawn as its bones lie and a revived or reused body starts
+afresh. **Tests:** `client/test/smoothedDeath.test.ts` (a ragdoll's drawn skin follows its joints after a smoothed
+death; laid down and plain deaths stop smoothing; a kept body stands up fresh; fails without the fix); e2e
+`physicsfx`: a bot 22 m off, smoothed, is killed and its corpse's drawn skin matches its bones every frame.
+**The singularity:** its pull lasts as ARSENAL says (cannon 2.4 s, grenade 2 s; code unchanged since 10-28), and
+characters it holds are alive and animate. The figures frozen in the air were bodies killed by its collapse blast:
+this fix covers them.
+
 ### Small fixes from the owner's play, 2026-11-07 (`wip/small-fixes-1107`, agent; from main 3647eee9; green on `check/small-fixes-1107` at f79d1ec2, run 42384938315 (the full suite: unit, maps, build, check, bots, perf, 14 e2e shards); not landed)
 Four owner reports, each fixed at the cause with a test (CHANGELOG, "Small fixes from the owner's play").
 
@@ -142,7 +304,126 @@ cheap now, but a 64 v 64 map should spread them out. `pnpm bench 128 60 maps/<ma
 - Character moves are most of a 128-player tick; bot thinking's setup is 0.7-1.6 ms of it (BOT_AI_PLAN Phase B).
 - Not done: shared evaluation for characters on the same clip and phase, fewer bones on far skeletons, impostors.
 
+<!-- intake-rex-fred -->
+### Import list batch 1: Cool Hands Rex and Fishy Fred (`wip/intake-rex-fred`, agent, 2026-11-07; from main dc60bdb5, main 0d03c3bd merged in; green on `check/intake-rex-fred` at beb336a7, run 42396566250; not landed)
+The owner (2026-11-06): "call him 'Cool Hands Rex', i made him in meshy"; "i did not make fishy fred, community".
+Downloads in `/home/user/meshy-drive/intake-2026-11-06b/` (raw, never committed), linked in the agent scratchpad
+`rexfred/dl`; each built with `ONLY=<id> node tools/content/prepare-meshy-characters.mjs <dir>`. Both are Mixamo
+rigs from Meshy; their Running and Walking clips are not used. Scratch: `rexfred/` (tools, shots, audits).
+
+| Character (manifest / look) | Group, size, bot names | Built (body + far copy; colour and normal map 1024 px) | Hands | Licence |
+|---|---|---|---|---|
+| **Cool Hands Rex** `meshy_trex` / `core.trex` (the owner's name) | creatures, large (2.12 m, 115 health), gangster | the whole 10,404-triangle download + 2,600; its two 4096 px maps baked down (colour 1024 px JPEG, a 1024 px normal map); 1.08 MB; arms 1,079 | thumb, middle, ring and little finger chains, no index: re-fitted from the mesh (right hand split into four fingers, left a mitten); no grip offsets needed | Meshy, owned (pack `meshy-owned`) |
+| **Fishy Fred** `meshy_fishyfred` / `core.fishyfred` (the download's name, a placeholder) | animals, small (1.40 m, 85 health), critter (the river names) | the whole 5,000-triangle download + 1,250; its 2048 px map at 1024 px, a 1024 px normal map; 0.55 MB; arms 521 | thumb, middle and little finger chains: re-fitted as mittens; `hands.scale 0.7` (29 -> 21 cm); `grip { gripLong [-0.045, 0.02, -0.03], rollR 0.3 }` | Meshy Community CC0, author and post URL pending (pack `meshy-community-characters`) |
+
+- **The trigger finger.** Neither download has an index finger, so neither keeps its own finger chains (`fingers:
+  own` needs all five); the build re-fits the fingers from the mesh (`hands.mjs`), and the rig's index chain takes the
+  nearest mesh finger: Rex's right hand splits into four, a claw on the trigger; his left and both of Fred's are
+  mittens that close together. No `fixes.fingers` needed.
+- **Rex's extra joints.** The tail (`Bone_015`-`Bone_020`) rides the hips and the jaw and head (`Bone_034`-`Bone_039`,
+  `headfront`) the head, as the crocodile's do. Meshy centred the download's box, so the tail stood the body 0.32 m
+  ahead of its origin: `fixes.centre`. Measured through the rig's clips (scratch `tools/tailcheck.mjs`, the tail's
+  lowest point against the feet's): walk, run, sprint, the shooter set's moving clips, crouch and prone keep the tail
+  0.17-0.48 m above the feet's lowest point; jump landing brings it to the feet's level for a moment; **death and
+  knockback** (lying on the back) put it through the floor, as the crocodile's (Boglurker) already does: a tail with
+  no joints of its own can't bend. Pictures: `rexfred/shots/trex-run-side-1.png`, `screens/play-trex-tp-strafe.png`.
+- **Hit shapes.** Rex's tail is left out on purpose (the rule: tails aren't hittable, docs/CHARACTERS.md "Hitboxes";
+  the torso fit drops vertices far from the spine): the audit reads top 0.02, bottom -0.08, head 0.05, 93% inside
+  (`shots/hitboxes-final.png`).
+- **Fred's skin.** The download's rig held the fish's face on the left collarbone (602 vertices) and the rest of the
+  fish on the head joint; the face would have moved with the left arm. The first build's head sphere was 0.55 m (the
+  whole fish) and failed the hitbox audit (head 0.10 off, 85%). Now `fixes.skin.rigid` binds the fish to `spine_03`
+  (two boxes, the hips spared) and then its face to `Head` (`blend 0.1`), with `smooth` over the spine, hips and head:
+  head sphere 0.30 m on the face, the fish counts as body; audit passes; no stretched edges standing, aiming or running
+  (26 with a first, hard-edged try; crouching leaves 6 small ones at the lower back, like Rex's 7).
+- **Grip audit** (rifle, pistol, shotgun; lower is better; `rexfred/audit-1` first build, `audit-final`):
+
+  | Character | first build | final | rifle drawn R / L, m |
+  |---|---|---|---|
+  | Cool Hands Rex | 0 | 0 | 0.05 / 0.12 (unchanged) |
+  | Fishy Fred | 5 flat off (rifle: the shooting hand behind the grip, closing it gained nothing, -0.001 m) | 0 | 0.07 / 0.21 -> 0.03 / 0.13 |
+
+- **Portraits** captured for both (`capture-portraits.mjs core.trex core.fishyfred`, a temp copy with Chromium's
+  path); `PORTRAIT_VIEWS`: Rex `zoom 1.15` (snout and shades), Fred `aim [0, -0.06, 0], zoom 1.25` (the face low on
+  the fish).
+- **The coverage map's unit test** didn't ask for the new looks (it passes as is), so no MapMaker change.
+- **Screenshots** (agent scratchpad `rexfred/screens/`): `select-<look>.png` in Character Select; `play-<look>-fp-rifle`,
+  `fp-pistol`, `tp-rifle`, `tp-pistol`, `tp-run`, `tp-strafe` in an offline match on Canyon; sheets `sheet-trex.png`,
+  `sheet-fishyfred.png`, `sheet-running.png`. Viewer frames `rexfred/shots/` (`trex-run-*.png`, `fishyfred-run-*-2.png`).
+
+**For the owner:** a name for Fishy Fred, and his Meshy post URL (CC0 needs no credit; the URL is the licence's proof;
+a CC BY post would need a credit). Rex's bots take the gangster names (Slick Vinnie, Knuckles Nolan…): there is no
+dinosaur list; say if you'd like one.
+
+**Checks:** CI green on `check/intake-rex-fred` at beb336a7, run 42396566250 (the full suite: unit, maps, build,
+check, bots, perf budget and mass, 13 e2e shards). Locally: `pnpm typecheck` clean; `pnpm content:check` OK; the
+hitbox audit and coverage-map tests pass; e2e `characters` (324 s), `characters2` (476 s) and `characters3` (489 s)
+PASS (ports 4951/4952). `pnpm test:changed` (load 15-17 on 4 cores): 2037 passed, 4 failed, all load: three time-outs
+(the 32-bot match, the eagle_spires pads, the host end to end) and the dedicated server's bot refill read 50 ms after a
+leave; each passes run on its own, and CI passes them all. Only docs changed after beb336a7.
+<!-- /intake-rex-fred -->
+
 <!-- breakthrough -->
+<!-- bots-c -->
+### Bot AI Phase C: navigation depth (`wip/bots-c`, agent, 2026-11-07; item 0 landed, main 0d03c3bd; items 1-4 green on `check/bots-c` at 2a8464b7, run 42400318933; not landed)
+docs/BOT_AI_PLAN.md (Phase C; "Phase C item 0, measured"), docs/BOTS.md ("Hurt bots retreat").
+
+**Item 0, the hurt-bot retreat: kept as it is** (the coordinator agreed, 2026-11-07). The pitfall below ("Bots without
+health pickups") said a hurt bot retreats from every fight for the rest of its life and the Range's attackers suffer.
+Measured with `bot-report` on main, the retreat is what keeps them alive: main broke through at 8 v 8 in 11 of 12 seeds
+(35 of 36 sectors), and every one of seven ways of cutting it short did worse (1 to 9 of 12; kills a minute 33 → 47-52,
+the pool spent by 150-250 s). The table is in BOT_AI_PLAN.md, "Phase C item 0, measured": **don't try these again
+without a new reason.** Main also beats the brief's numbers to beat (4 v 4: 5 of 8 against 2 of 8): those came from a
+scratch harness on an earlier main.
+
+**What item 0 landed:** a Breakthrough crash fix (`BreakthroughMode.botGoal`: a defender with the fall-back duty while
+the last sector is the active one read `sectors[active + 1]`, undefined: a TypeError mid-match; seed 2 of the Range
+at 8 v 8 hit it; the plan is made once a tick, so a sector falling mid-tick leaves the duty stale); `bot-report`'s
+Breakthrough fields (the Iron Coast build's commit 9436ea3a cherry-picked byte-identical, so the two merge cleanly) and
+the retreating share of alive time in `--compare`.
+
+**Run it:** `pnpm bot-report test_breakthrough --mode=core.breakthrough --players=16 --seeds=1,2,3,4,5,6,7,8,9,10,11,12
+--seconds=900 --json=…` (8 v 8; `--players=8 --seconds=600` for 4 v 4), then `--compare=a.json,b.json`. The Range's
+matches are chaotic: six seeds swing by two or three breakthroughs between near-identical builds; use twelve.
+
+**Items 1-4** (`wip/bots-c`, after item 0 landed; docs/BOTS.md "Parkour", "Ground that goes", "Crowds", "Routes along a
+group's corridor, and the search budget"; BOT_AI_PLAN.md "Phase C items 1-4, measured"):
+- **Parkour** (`nav/parkour.ts`): drops, gap jumps and jumps up as one-way navmesh links, found at load from every open
+  edge where they save a real walk, each played through `stepMovement` with the bot's own inputs (`parkourInput`) for
+  three body sizes and takeoffs either side, with the scenario's window panes, door panels and breakable walls in the
+  way; at most 160 a map, cached per navmesh. Bots run them (`BotBrain.parkourMove`: face, run, jump at the takeoff,
+  tuck), think every tick while on one; agile bots (flankers, recon, snipers, Arena) take them at walking's cost, the
+  rest at 1.6 times. A link a bot gives up on (6 s without starting, 4 s at it) or misses three times is switched off
+  for the match (`NavWorld.linkFailed`). Snipers' spots on places only parkour reaches score 0.45 more. Not on a navmesh
+  rebuilt mid-match (Fort Wars).
+- **Ground that goes** (`Scenario.surfaces`/`surfacesGone`, `NavWorld.setGone`): the tops of breakable props, free
+  blocks that crumble, break or hide, and non-lift movers' blocks share the opening flag bits; gone ones are kept off by
+  every route; bots replan.
+- **Crowds:** a teammate coming the other way within 4 m is passed on the right; strafing isn't judged stuck.
+- **Routes:** a group's bots route along their corridor's own polygons all the way (`NavWorld.pathAlong`); at most 24
+  route searches start in a tick (`NavWorld.beginTick`).
+- `bot-report`: parkour links, moves made, missed, given up; routes along a corridor; searches put off; ticks keeping
+  right; sniper spots only parkour reaches; `--compare`'s retreating share and parkour moves a match.
+
+**Numbers** (main 0d03c3bd against the branch, BOT_AI_PLAN.md): stuck recoveries a bot-minute CTF 1.40 → 1.34, Team
+Deathmatch 0.92 → 0.68 (the plan's "halve": not met); 38 parkour moves a CTF match, 22 a Team Deathmatch one, under 2 %
+missed; CTF captures 22 → 18 (takes 85 → 112), busiest way 57 → 61 %; **the Breakthrough Range at 8 v 8 broke through
+in 16 of 24 seeds against main's 21 (sectors 62 of 72 against 68), and the final build, seeds 1-12, in 9 of 12 against 11 (sectors 31 of 36 against 35)** (ablations in the plan: no single part accounts for it, and with every change off the build replays main
+exactly). Load: navmesh build +13 % on ten big maps (Qasr Medina the most, about a second, cached per map after). `pnpm bench 64
+30`: bot thinking 1.45 → 1.54 ms a tick (means; inside the 2.5 ms guard).
+
+**For the owner:**
+- Capitol Mall's upstairs office by (140, 4, 8), by the desks and a bookshelf (`prop_1626`): bots heading for the
+  objective get stuck there, 150-300 recoveries in a match, with or without parkour: a MapMaker fix (move the shelf off
+  the walkway?).
+- Qasr Medina: a bot on a 0.45 m wall top by (-13.3, 1.75, 26) stalls at its end (the character controller, the
+  pitfall above); the parkour drop off it is switched off by the first bot that can't make it.
+- The Breakthrough Range's attack is weaker with Phase C (broke through in 16 of 24 seeds against main's 21 (sectors 62 of 72 against 68), and the final build, seeds 1-12, in 9 of 12 against 11 (sectors 31 of 36 against 35)): worth a playtest before Iron Coast leans on it.
+
+**Pictures:** a sniper reaching a ledge only a jump gets onto, Fernwood Moon (top view and side view; session scratchpad
+`sniper-parkour-fernwood.png`, made by a scratch harness from a headless match).
+<!-- /bots-c -->
+
 ### Breakthrough mode, and Iron Coast's fort and gatehouse (`wip/breakthrough`, agents, 2026-11-07; from main 17d0e0a0, main 2c48debf (Bot AI Phase B parts 1 and 2), d3830145 (weapons intake 11-06) and 5087b0b6 (weapon sets) merged in; green on `check/breakthrough` at 647512a5, run 42373473729; not landed)
 The brief: docs/map-briefs/MAP_21_Iron_Coast.md ("Breakthrough mode", and "The mode as built"). Rules, settings, HUD,
 MapMaker steps: docs/GAME_MODES.md, "Breakthrough". The pieces: docs/SET_PIECES_PLAN.md, "As built: part 4".
@@ -213,10 +494,11 @@ Coast's check ("bots take every sector in a scorecard run") `bot-report` needs B
   the map's own.
 - Rapier's character controller can stall on one big flat merged floor box at some spots (setPieces4's gate tests
   check headroom instead of walking every gate): worth a look if a player reports a stuck spot.
-- Bots without health pickups: a hurt bot (under its self-preservation share of its health) retreats from every fight
-  it sees for the rest of its life (no regeneration), so on the Range a hurt attacker rarely pushes again. Health
-  pickups by the spawn groups didn't help the attackers (the defenders' were nearer the fighting: the beach fell in 1
-  of 8), so the Range has none; for Phase B: hurt bots with nothing to heal at could keep their objective.
+- Bots without health pickups: a hurt bot (under its self-preservation share of its health) retreats while it sees an
+  enemy (no regeneration), between sightings it goes for its objective again. Health pickups by the spawn groups didn't
+  help the attackers (the defenders' were nearer the fighting: the beach fell in 1 of 8), so the Range has none.
+  Cutting the retreat short was tried seven ways in Bot AI Phase C (item 0): every one made the attack worse (the
+  Phase C section above; BOT_AI_PLAN.md, "Phase C item 0, measured").
 - Slots alternate between two teams (0 one team, 1 the other...): anything picking "every other bot" by `slot % 2`
   picks a whole team or nobody. Breakthrough's bots go by their place among their side's bots.
 
@@ -1187,7 +1469,7 @@ noises, etc."
 - The container can't reach Sonniss or Freesound today. Either the agent asks for those hosts on the environment card,
   or the owner puts the chosen files in the Drive.
 
-### Queued (owner, 2026-11-06): import list, batch 1: Cool Hands Rex and Fishy Fred. After the work in flight
+### Done (owner, 2026-11-06): import list, batch 1: Cool Hands Rex and Fishy Fred: see "Import list batch 1" at the top (`wip/intake-rex-fred`)
 **The owner:** "There is a fish and t-rex (call him 'Cool Hands Rex', I made him in meshy) model to add for after all
 of this work. I'll be trying to generate brand new ones going forward and we can just begin working on a new import
 list."

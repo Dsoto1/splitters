@@ -19,6 +19,8 @@ export interface VantageSpot {
   /** How much higher than the ground around it (m). */
   height: number;
   score: number;
+  /** Only parkour gets there (a roof or ledge a jump reaches: nav/parkour.ts): where others don't normally go. */
+  parkour?: boolean;
 }
 
 /** Sample places looked at (a spread-out subset of the navmesh's places), and spots kept of each kind. */
@@ -28,6 +30,10 @@ const SPACING = 14;
 const DIRS = 8;
 const EYE = 1.5;
 const FAR = 90;
+/** A sniper spot only parkour reaches: worth this much more (the owner: "where others don't normally go (roofs, etc)"). */
+const PARKOUR_SPOT = 0.45;
+/** Places only parkour reaches looked at, at most (all of them are, on top of the spread-out samples). */
+const PARKOUR_SAMPLES = 160;
 
 export type Raycast = (origin: Vec3, dir: Vec3, maxDist: number) => number | null;
 
@@ -35,7 +41,7 @@ export type Raycast = (origin: Vec3, dir: Vec3, maxDist: number) => number | nul
  * Vantage spots for a navmesh: SAMPLES places × DIRS horizontal rays (about
  * 5,000 rays, tens of milliseconds, at match start). Deterministic.
  */
-export function computeVantage(places: readonly Vec3[], raycast: Raycast): VantageSpot[] {
+export function computeVantage(places: readonly Vec3[], raycast: Raycast, parkour: readonly Vec3[] = []): VantageSpot[] {
   if (!places.length) return [];
   // Height of the ground round about: the lowest of the average heights of nearby 16 m cells.
   const CELL = 16;
@@ -63,8 +69,12 @@ export function computeVantage(places: readonly Vec3[], raycast: Raycast): Vanta
   const sniper: VantageSpot[] = [];
   const camp: VantageSpot[] = [];
   const dist = new Float64Array(DIRS);
-  for (let f = 0; f < places.length; f += stride) {
-    const p = places[Math.floor(f)]!;
+  // The spread-out samples, then the places only parkour reaches (each looked at: few, and the spots worth most).
+  const samples: { p: Vec3; parkour: boolean }[] = [];
+  for (let f = 0; f < places.length; f += stride) samples.push({ p: places[Math.floor(f)]!, parkour: false });
+  const pStride = Math.max(1, parkour.length / PARKOUR_SAMPLES);
+  for (let f = 0; f < parkour.length; f += pStride) samples.push({ p: parkour[Math.floor(f)]!, parkour: true });
+  for (const { p, parkour: only } of samples) {
     const eye = { x: p.x, y: p.y + EYE, z: p.z };
     for (let k = 0; k < DIRS; k++) {
       const a = (k / DIRS) * Math.PI * 2;
@@ -88,8 +98,8 @@ export function computeVantage(places: readonly Vec3[], raycast: Raycast): Vanta
     if (bestOpen >= 40 && walls < DIRS - 2) {
       // High, tucked away (walls close on the sides), a wall behind (Phase B item 5: the owner's "tucked away high
       // spots"), and a long view.
-      const score = Math.min(bestOpen, FAR) / FAR + Math.max(0, Math.min(height / 8, 1)) * 0.8 + backed * 0.5 + Math.min(walls, 4) * 0.12;
-      sniper.push({ pos: { ...p }, kind: 'sniper', yaw, reach: bestOpen, height, score });
+      const score = Math.min(bestOpen, FAR) / FAR + Math.max(0, Math.min(height / 8, 1)) * 0.8 + backed * 0.5 + Math.min(walls, 4) * 0.12 + (only ? PARKOUR_SPOT : 0);
+      sniper.push({ pos: { ...p }, kind: 'sniper', yaw, reach: bestOpen, height, score, ...(only ? { parkour: true } : {}) });
     }
     if (walls >= 2 && walls <= DIRS - 3 && bestOpen >= 10 && bestOpen <= 55) {
       const score = (walls / DIRS) * 1.2 + (Math.min(bestOpen, 40) / 40) * 0.6 + (height > 1.5 ? 0.2 : 0) + backed * 0.2;
@@ -125,11 +135,11 @@ function fingerprint(places: readonly Vec3[]): string {
   return `${places.length}:${h >>> 0}`;
 }
 
-export function vantageFor(places: readonly Vec3[], raycast: Raycast): VantageSpot[] {
-  const key = fingerprint(places);
+export function vantageFor(places: readonly Vec3[], raycast: Raycast, parkour: readonly Vec3[] = []): VantageSpot[] {
+  const key = `${fingerprint(places)}+${fingerprint(parkour)}`;
   let spots = cache.get(key);
   if (!spots) {
-    spots = computeVantage(places, raycast);
+    spots = computeVantage(places, raycast, parkour);
     if (cache.size >= 8) cache.delete(cache.keys().next().value!);
     cache.set(key, spots);
   }

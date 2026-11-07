@@ -10,7 +10,7 @@ made only on a commit that passed CI on a check branch.
 
 **Iron Coast (MAP 21), part 1: the beach assault and Breakthrough's showcase** (MapMaker only, from the owner's reference)
 - **A new map, Iron Coast** (`iron_coast`): 380 × 320 m of coast for 24-32 a side (24 v 24 is the Map's pick; 16 to 64
-  players). Landing craft in the surf, a beach of hedgehogs and craters, an irregular cliff (8 m at the grand stair's
+  players). Landing craft beached on the sand, an irregular cliff (8 m at the grand stair's
   gatehouse, 12 m west and centre, 16 m on the east headland), seven ways up it, four gun casemates at their own
   heights, trenches and terraces on the crest, and the village with its round fort. It plays **Breakthrough**: take the
   beach (the two cliff-foot strongpoints), destroy two of the four guns, hold the fort's command room; and **Team
@@ -19,8 +19,49 @@ made only on a commit that passed CI on a check branch.
   brush levels to a height you type ("Flatten to (m)"); Map properties' **Also offered** lists the modes a map offers
   besides its main one; Import and the drafts open an unfinished map (no spawn point yet), listing what's left to fix
   (it exported, but wouldn't import back).
-- **bot-report** reports Breakthrough: the sectors the attackers took, when each fell, how the round ended and the
-  reinforcements left.
+
+**Friendly fire works** (owner, 2026-11-07: turned on, shots still didn't hurt teammates): with it on (Half or Full,
+Match setup or the Host tab), your rounds, pellets, rockets, blades and fire hit a teammate in the way and hurt them
+(half as much on Half), and burns and poison stick; blasts already did. Off (the default), shots pass through
+teammates as before. A team kill still earns nothing.
+
+**Frozen characters fixed** (owner, 2026-11-07: big bot matches showed figures standing mid-run, some in the air):
+these were the dead. A character that died some 15 m or more away, where its animation is smoothed between steps
+(performance round 4), kept the smoothing after its death, so its body was drawn in its last living pose where it
+died instead of as its ragdoll; it stayed so until the body sank. Bodies now fall and lie as they should at any
+distance, and a body kept for the next player of its look stands up fresh.
+
+- Reduce flashing no longer turns blast smoke black: a dimmed blast scaled every piece's colour, so the toon smoke (drawn over the scene, not added to it) came out black near the camera; now only added light is scaled, and the rest have their bright parts capped.
+- The sheep walks on its legs: its body stood half sunk in the ground, so it slid along like a worm (the sim keeps a walking sheep's position on the ground; the model now stands on it).
+
+**Bot AI Phase C, items 1-4** (docs/BOT_AI_PLAN.md, "Phase C items 1-4, measured"; docs/BOTS.md):
+- Bots drop off ledges, jump gaps and jump up onto ledges as players do: links found at load and each checked by
+  playing it through the real movement code; flankers, scouts, snipers and Arena bots use them most, and snipers look
+  for spots on roofs and ledges only a jump reaches.
+- Routes keep off a bridge that has crumbled, a trapdoor that has opened, a drawbridge that is up, and come back when
+  the ground does.
+- Teammates meeting head-on in a doorway, a tunnel or on stairs pass each other on the right.
+- A squad's bots keep to their own lane all the way to the objective; route searches are spread over ticks in big
+  matches.
+- `pnpm bot-report`: parkour moves, routes along a lane, searches put off, sniper spots only parkour reaches.
+
+**Two new characters: Cool Hands Rex and Fishy Fred** (the owner's import list, batch 1; docs/IMPORT_LIST.md)
+- **Cool Hands Rex**, a T-rex in a bomber jacket and shades, the owner's own Meshy model ("i made him in meshy"). Large
+  (2.12 m, 115 health), under Creatures & Machines; his bots take gangster names. His tail rides his hips: it stays off
+  the ground walking, running and crouching, and, like every tail, it can't be shot.
+- **Fishy Fred**, a big fish on striped legs in red sneakers (Meshy Community, CC0). Small (1.40 m, 85 health), under
+  Animals; his bots take the river-critter names. "Fishy Fred" is the download's own name until the owner names him.
+  His head shots are on his face, not the whole fish: the fish counts as his body.
+- Both close their hands round rifle and pistol grips in third and first person (grip audit 0 for both), and have their
+  own portraits.
+
+**Bot AI Phase C, item 0** (docs/BOT_AI_PLAN.md, "Phase C item 0, measured"):
+- Fixed: a Breakthrough match could stop with an error when a defender sent to fall back to the next sector was on the
+  last one.
+- `pnpm bot-report`: Breakthrough's sectors, when each fell, how the round ended and the reinforcements left; `--compare`
+  shows the share of time bots spend retreating.
+- Hurt bots keep retreating from what they see, as before: seven ways of cutting the retreat short all made
+  Breakthrough's attackers worse (measured; the table is in the plan).
 
 **Small fixes from the owner's play, 2026-11-07**
 - **The Breakthrough Range is an ordinary map**: it was marked as a test map, so no list showed it (and the test hook

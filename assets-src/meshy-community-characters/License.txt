@@ -116,6 +116,13 @@ author is optional; post URLs pending from the owner:
 - "a meticulously detailed astronaut with a" (downloaded 2026-11-06)  -> character meshy_darkastronaut (look Starfarer; its back pack held whole by the chest at build time, `fixes.skin.rigid`)
 - "The object resembles a humanoid tortoise" (downloaded 2026-11-06)  -> character meshy_tortoise (look Shellback, standard size)
 
+Import list batch 1 (docs/IMPORT_LIST.md), downloaded 2026-11-06, rigged and
+animated on Meshy ("All Animations" GLB, Mixamo skeleton). The owner, 2026-11-06:
+"i did not make fishy fred, community". Meshy Community, CC0 per the owner;
+author and post URL pending from the owner:
+
+- "Fishy Fred" (downloaded 2026-11-06)  -> character meshy_fishyfred (look Fishy Fred, small; the name is the download's, a placeholder until the owner names it)
+
 Recorded as owned until 2026-11-06 and relabelled by that day's provenance
 audit under the same rule (they came from the owner's Drive or meshystuff repo,
 with no record of the owner saying they made them; if the owner made any, it

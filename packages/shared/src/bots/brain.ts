@@ -2,6 +2,7 @@ import type { LookHitbox } from '../sim/hitbox.ts';
 import { angleDelta, clamp, createRng, distance, horizontalDistance, lookAngles, type Vec3, hypot } from '../math.ts';
 import type { NavWorld } from '../nav/index.ts';
 import type { Corridor } from '../nav/corridors.ts';
+import { parkourAlong, parkourInput, type ParkourKind, type ParkourLink } from '../nav/parkour.ts';
 import { LIFT_FLAG, PLAYER, STANCES, TICK_DT, TICK_RATE, type Stance } from '../sim/constants.ts';
 import { PICKUP_RADIUS, type ItemDefinition, type ItemEffect } from '../sim/items.ts';
 import { BUTTON_ALT, BUTTON_CROUCH, BUTTON_FIRE, BUTTON_MELEE, BUTTON_JUMP, BUTTON_PRONE, BUTTON_RELOAD, BUTTON_SPRINT, BUTTON_THROW, BUTTON_USE, BUTTON_ZOOM, type PlayerInput } from '../sim/movement.ts';
@@ -77,6 +78,8 @@ export interface CombatantView {
   climbing?: boolean;
   /** Under an open canopy (a parachute or glider): no route starts in the air, but it steers. */
   chute?: boolean;
+  /** Out of breath (ran its stamina dry): no sprinting until it is back (sim/movement.ts SPRINT.restart). */
+  winded?: boolean;
   /** Body size (BODY_SIZES scale: small 0.78, large 1.18; absent = 1): eye, aim point and hit body scale with it. */
   size?: number;
   /** Its measured hit shapes and their scale before `size` (sim/hitbox.ts): bots aim at the real head and chest. */
@@ -245,6 +248,7 @@ export type BotDoing =
   | 'investigate'
   | 'noPath'
   | 'escape'
+  | 'parkour'
   | 'lift'
   | 'zip'
   | 'press'
@@ -328,6 +332,8 @@ const STEP_OFF = 2.2;
 const CORNER_RADIUS = 0.45;
 /** How strongly teammates close by push a bot going somewhere out of a fight aside, at most (the way itself is 1). */
 const SEPARATE_MAX = 0.8;
+/** A teammate coming the other way this close ahead (m) is passed on the right (separate). */
+const ONCOMING = 4;
 const PASS_RADIUS = 1.4;
 
 /** Tactical decisions (cover, grenades, mounts) run at about 10 Hz, staggered. */
@@ -444,6 +450,23 @@ export class BotBrain {
   private escape: { across: Vec3; goal: Vec3; until: number } | null = null;
   /** Places across it tried and couldn't get to, left alone for a while. */
   private readonly failedCrossings: { at: Vec3; until: number }[] = [];
+  /**
+   * On a parkour link of its route (nav/parkour.ts: a drop, a gap jump, a jump up): the link, the route and corner it
+   * was found at, when it started on it, and when it jumped (-1: not yet) or went over the edge (a drop).
+   */
+  private link: { l: ParkourLink; path: Vec3[]; index: number; since: number; jumped: number; left: number } | null = null;
+  /** Parkour moves it made, by kind, and gave up on (measuring: bot-report). */
+  readonly parkourDone: Record<ParkourKind, number> = { drop: 0, gap: 0, up: 0 };
+  parkourGaveUp = 0;
+  /** The link it was last on and since when (kept between routes: watchLink). */
+  private linkClock: { l: ParkourLink; since: number; at: number } | null = null;
+  /** The navmesh's goneVersion its route was planned against. */
+  private goneSeen = 0;
+  parkourMissed = 0;
+  /** On a parkour link (the match has it think every tick until it lands: the jump is timed to the tick). */
+  get parkouring(): boolean {
+    return this.link !== null;
+  }
   /** Last hop on a crossing. */
   private hopAt = -Infinity;
   /** The hop across (planEscape) is up a ledge higher than a jump clears: the legs tuck up in the air till it lands. */
@@ -701,6 +724,8 @@ export class BotBrain {
     this.hurtTick = this.underFireTick = -Infinity;
     this.retreatGoal = null;
     this.retreatMode = null;
+    this.link = null;
+    this.linkClock = null;
     this.spacing = 'hold';
     this.strafing = false;
     this.moveX = this.moveZ = 0;
@@ -727,9 +752,9 @@ export class BotBrain {
   }
 
   /** Holding (or heading for) a vantage spot: its kind and position (debug and tests). */
-  get vantage(): { kind: VantageKind; pos: Vec3; arrived: boolean } | null {
+  get vantage(): { kind: VantageKind; pos: Vec3; arrived: boolean; parkour: boolean } | null {
     const p = this.post;
-    return p ? { kind: p.kind, pos: p.board.spots[p.spot]!.pos, arrived: p.arrived >= 0 } : null;
+    return p ? { kind: p.kind, pos: p.board.spots[p.spot]!.pos, arrived: p.arrived >= 0, parkour: !!p.board.spots[p.spot]!.parkour } : null;
   }
 
   // ------------------------------------------------------------------ main loop
@@ -1058,6 +1083,19 @@ export class BotBrain {
     return goal;
   }
 
+  /**
+   * Keeping to its group's corridor all the way (orderTarget, then the route search: NavWorld.pathAlong): which, when it
+   * was last asked for, and when a route along it last failed (then by its via for a while).
+   */
+  private along: { c: Corridor; tick: number; failed: number } | null = null;
+  /** Routes that kept to a corridor all the way (measuring). */
+  alongRoutes = 0;
+
+  private alongFailed(c: Corridor, tick: number): boolean {
+    const a = this.along;
+    return !!a && a.c === c && tick - a.failed < TICK_RATE * 10;
+  }
+
   /** `to`, where it was heading for `goal`, was one of its corridor's vias and no route gets there from here: on past it. */
   private skipVia(to: Vec3, goal: Vec3): boolean {
     const r = this.route;
@@ -1084,7 +1122,14 @@ export class BotBrain {
     const job = this.jobFor(view, g);
     if (job) {
       if (job.stage) return job.stage;
-      return job.route && horizontalDistance(me, g.pos) > ROUTE_FROM ? this.viaRoute(view, job.route, g.pos) : g.pos;
+      if (!job.route || horizontalDistance(me, g.pos) <= ROUTE_FROM) return g.pos;
+      // Its group's corridor all the way (BOT_AI_PLAN.md Phase C item 4: NavWorld.pathAlong), when the corridor runs to
+      // this goal; else by its via, then the shortest way on.
+      if (job.route.polys.length > 1 && !this.alongFailed(job.route, view.tick)) {
+        this.along = { c: job.route, tick: view.tick, failed: this.along?.c === job.route ? this.along.failed : -Infinity };
+        return g.pos;
+      }
+      return this.viaRoute(view, job.route, g.pos);
     }
     let lane = this.lane;
     // (Only for a spot to get to, a flag: not for following someone, nor for a carrier running home the short way.)
@@ -1970,6 +2015,17 @@ export class BotBrain {
     }
     // Fighting: ease direction changes (no stutter-steps); travelling, follow the route's turns closely (no clipping corners).
     [forward, right] = this.smoothMove(forward, right, !!target || tick - this.lastTargetTick < TICK_RATE || strafe || backOff || this.state === 'retreat');
+    // On a parkour link of its route: run it as the build played it (facing its way, full ahead, jump at the takeoff).
+    const pk = this.link && (moveYaw !== null || this.link.jumped >= 0 || this.link.left >= 0) ? this.parkourMove(view) : null;
+    if (pk) {
+      this.yaw = pk.yaw;
+      forward = pk.wait ? 0 : 1;
+      right = 0;
+      this.moveX = Math.sin(pk.yaw) * forward;
+      this.moveZ = Math.cos(pk.yaw) * forward;
+      doing = 'parkour';
+      strafe = false;
+    }
 
     let buttons = 0;
     // Fire through the aim model's trigger discipline.
@@ -2068,10 +2124,14 @@ export class BotBrain {
     this.doing = doing;
     // (Not off a ladder in mid-air: letting go halfway up a tall one is a fall that hurts. Standing at its top or
     // foot, a hop is what gets you on or off it.)
-    if ((this.checkStuck(view, this.meantToMove) && (!me.climbing || me.grounded)) || this.jumpNext) {
+    // (Strafing on the spot in a fight isn't being stuck: its runs reverse when something stops them, updateStrafe; a
+    // stuck recovery there only threw away its cover and route. Going somewhere, or backing off, is judged.)
+    if ((this.checkStuck(view, this.meantToMove && (moveYaw !== null || backOff)) && (!me.climbing || me.grounded)) || this.jumpNext) {
       buttons |= BUTTON_JUMP;
       this.jumpNext = false;
     }
+    // A parkour link's own presses only (no shot, scope, stance or stray hop while it runs and jumps).
+    if (pk) buttons = (buttons & ~(BUTTON_JUMP | BUTTON_CROUCH | BUTTON_PRONE | BUTTON_SPRINT | BUTTON_FIRE | BUTTON_ZOOM | BUTTON_ALT)) | pk.buttons;
     // Getting in: use when close enough to the planned mount.
     if (this.state === 'mount' && this.mountPlan) {
       const m = view.mounts?.find((x) => x.index === this.mountPlan!.index);
@@ -2083,7 +2143,7 @@ export class BotBrain {
         this.boarding.tries++;
       }
     }
-    this.steerable = aimedTarget && wantFire && !sprint && !dodge && !throwNow && !pressNow && !this.throwPlan && !this.pressPlan && !this.holdStill && this.state !== 'mount';
+    this.steerable = aimedTarget && wantFire && !sprint && !dodge && !throwNow && !pressNow && !this.throwPlan && !this.pressPlan && !this.holdStill && this.state !== 'mount' && !this.link;
     return { seq, forward, right, yaw: this.yaw, pitch: this.pitch, buttons, weapon: this.chooseWeapon(view, target) };
   }
 
@@ -3333,19 +3393,39 @@ export class BotBrain {
     const me = view.self.pos;
     let px = 0;
     let pz = 0;
-    const near = view.alliesGrid ? view.alliesGrid.near(me.x, me.z, 2.2, this.nearScratch) : view.allies;
+    // Crowds (BOT_AI_PLAN.md Phase C item 3): travelling, a teammate close ahead coming the other way (facing us) is
+    // passed on the right, both of them keeping right, as people do in a doorway, a tunnel or on stairs.
+    let keepRight = 0;
+    const fx = moveYaw === null ? 0 : Math.sin(moveYaw);
+    const fz = moveYaw === null ? 0 : Math.cos(moveYaw);
+    const reach = travelling && moveYaw !== null ? ONCOMING : 2.2;
+    const near = view.alliesGrid ? view.alliesGrid.near(me.x, me.z, reach, this.nearScratch) : view.allies;
     for (const a of near) {
       if (a.slot === view.self.slot) continue;
       const dx = me.x - a.pos.x;
       const dz = me.z - a.pos.z;
       const d2 = dx * dx + dz * dz;
-      if (d2 > 2.2 * 2.2 || Math.abs(a.pos.y - me.y) > 1.5) continue;
+      if (d2 > reach * reach || Math.abs(a.pos.y - me.y) > 1.5) continue;
+      if (reach > 2.2 && d2 > 0.01) {
+        const d = Math.sqrt(d2);
+        // Ahead of us (along our way) and facing us (its look against our way).
+        const ahead = -(dx * fx + dz * fz) / d;
+        const facing = -(Math.sin(a.yaw) * fx + Math.cos(a.yaw) * fz);
+        if (ahead > 0.6 && facing > 0.5) keepRight = Math.max(keepRight, (1 - d / ONCOMING) * 0.9 + 0.2);
+      }
+      if (d2 > 2.2 * 2.2) continue;
       const d = Math.sqrt(d2);
       // Exactly on top of each other: split by slot so the two go opposite ways.
       const ux = d < 1e-3 ? (view.self.slot < a.slot ? 1 : -1) : dx / d;
       const uz = d < 1e-3 ? 0 : dz / d;
       px += ux * (2.2 - d);
       pz += uz * (2.2 - d);
+    }
+    if (keepRight) {
+      // (Our right, as stepMovement reads `right`: x cos, z -sin of the yaw.)
+      px += fz * keepRight;
+      pz -= fx * keepRight;
+      if (simProfile.on) simProfile.count('botKeepRight');
     }
     if (!px && !pz) return moveYaw;
     if (moveYaw === null) return hypot(px, pz) > 1.4 ? Math.atan2(px, pz) : null;
@@ -3414,7 +3494,9 @@ export class BotBrain {
       this.path = [];
       this.lastPathTick = -Infinity;
     }
-    const goalMoved = this.goal === null || horizontalDistance(this.goal, goal) > 2 || Math.abs(this.goal.y - goal.y) > 1.5;
+    // (Ground on the way gone, or back: Scenario.surfacesGone; a route over a fallen bridge is planned again.)
+    const navChanged = view.nav.goneVersion !== this.goneSeen;
+    const goalMoved = this.goal === null || navChanged || horizontalDistance(this.goal, goal) > 2 || Math.abs(this.goal.y - goal.y) > 1.5;
     // (Heading for a stand-in: whether the goal itself has come within reach is asked again every second.)
     const stale = (movingGoal && view.tick - this.lastPathTick > PATH_REFRESH_TICKS) || (!!this.standIn && view.tick - this.lastPathTick > TICK_RATE);
     // Ran out of corners without arriving (e.g. pushed off the path): replan, throttled.
@@ -3422,7 +3504,10 @@ export class BotBrain {
     // In the air off the navmesh (out of the plane, under a canopy, a jump pad's flight): no route starts there, so none
     // is asked for until it lands; a route it is following (the pad's) carries on, and a canopy steers straight for the
     // goal meanwhile. (Before, every replan in the air was a failed search: 860 of Eagle Spires' 1,507 in a minute.)
-    const replan = (goalMoved && view.tick - this.lastPathTick >= 2) || ((stale || exhausted) && view.tick - this.lastPathTick >= 6);
+    let replan = (goalMoved && view.tick - this.lastPathTick >= 2) || ((stale || exhausted) && view.tick - this.lastPathTick >= 6);
+    // Over the tick's search budget (big matches): keep to the route it has and plan again next tick (one with no route
+    // left, or one cut off by a fallen bridge, always searches).
+    if (replan && !exhausted && this.path.length && this.pathIndex < this.path.length && this.goneSeen === view.nav.goneVersion && !view.nav.takeSearch()) replan = false;
     // (On a ladder off the navmesh likewise: it carries on along it and plans again off it. Fernwood Moon's vine ladder
     // made hundreds of failed searches a match from bots on it whose goal changed.)
     if (replan && (me.grounded === false || me.climbing) && !view.nav.closestPoint(me.pos)) {
@@ -3431,6 +3516,7 @@ export class BotBrain {
       if (!this.path.length) this.pathMiss = true;
     } else if (replan) {
       this.goal = { ...goal };
+      this.goneSeen = view.nav.goneVersion;
       // No way there a moment ago: don't search again every few ticks, back off (0.2 s, doubling up to 4 s).
       const np = this.noPath;
       // (Only from about where it failed: one that failed on a moving lift, or before crossing off a cut-off patch,
@@ -3450,7 +3536,18 @@ export class BotBrain {
       const to = this.standIn ?? goal;
       let found: Vec3[] | null = null;
       if (onto) found = [{ ...me.pos }, onto];
-      else if (!backedOff) found = (offLifts && view.nav.findPath(me.pos, to, offLifts, false, this.coverRoutes)) || view.nav.findPath(me.pos, to, 0, true, this.coverRoutes);
+      else if (!backedOff) {
+        // Flankers, recon, snipers and Arena bots take parkour's ways (roofs, jumps) as readily as walking (nav/parkour.ts).
+        const agile = this.agile(view);
+        // Along its group's corridor (orderTarget asked for it just now), else the usual search.
+        const al = this.along;
+        if (al && view.tick - al.tick <= DECIDE_TICKS * 2 && !offLifts && !this.standIn) {
+          found = view.nav.pathAlong(me.pos, al.c.polys, to, view.shut ?? 0);
+          if (found) this.alongRoutes++;
+          else al.failed = view.tick;
+        }
+        found ??= (offLifts && view.nav.findPath(me.pos, to, offLifts, false, this.coverRoutes, agile)) || view.nav.findPath(me.pos, to, 0, true, this.coverRoutes, agile);
+      }
       if (!backedOff && !onto) {
         this.pathFails = found ? 0 : Math.min(this.pathFails + 1, 6);
         this.pathSearches++;
@@ -3550,6 +3647,8 @@ export class BotBrain {
       }
       return Math.atan2(goal.x - me.pos.x, goal.z - me.pos.z);
     }
+    // The leg ahead a parkour link (a drop, a jump across or up): act() runs it (parkourMove).
+    if (view.nav.parkour.length) this.watchLink(view, corner);
     if (view.lifts?.length) this.holdStill = this.liftWait(view, corner, this.pathIndex > 0 ? this.path[this.pathIndex - 1]! : null);
     // Taking a portal: the next corner is out of the far portal, so walk into this one's surface instead.
     const face = view.portals?.length ? this.portalFace(view, corner, this.pathIndex > 0 ? this.path[this.pathIndex - 1]! : null) : null;
@@ -3561,6 +3660,93 @@ export class BotBrain {
       return Math.atan2(grab.x - me.pos.x, grab.z - me.pos.z);
     }
     return Math.atan2(corner.x - me.pos.x, corner.z - me.pos.z);
+  }
+
+  /** Flankers, recon, snipers and Arena bots: parkour links cost them no more than walking (NavWorld.findPath `agile`). */
+  private agile(view: BotWorldView): boolean {
+    const plan = view.plan;
+    return this.arena || plan?.role === 'sniper' || plan?.job?.group === 'flank' || plan?.job?.group === 'recon';
+  }
+
+  /**
+   * Whether the route's leg into `corner` is a parkour link (its corners the link's start and end): then it is the one
+   * to run. A link it is already on (jumped, or over the edge) is kept until it lands, whatever the route does.
+   */
+  private watchLink(view: BotWorldView, corner: Vec3): void {
+    const k = this.link;
+    if (k && (k.jumped >= 0 || k.left >= 0)) return;
+    if (k && k.path === this.path && k.index === this.pathIndex) return;
+    const prev = this.pathIndex > 0 ? this.path[this.pathIndex - 1]! : null;
+    const l = prev ? view.nav.parkourAt(prev, corner) : null;
+    // (The same link again on a new route, after a stuck recovery cleared the last and the bot walked back to the link's
+    // start: its clock goes on, so a link the bot can't make is given up in the end. On Qasr Medina one stood at a drop for
+    // minutes, the character controller stalled at the end of a wall top it stood on, re-finding the link every second.)
+    if (!l) {
+      this.link = null;
+      return;
+    }
+    const clock = this.linkClock;
+    const since = clock && clock.l === l && view.tick - clock.at < TICK_RATE * 20 ? clock.since : view.tick;
+    this.linkClock = { l, since, at: view.tick };
+    this.link = { l, path: this.path, index: this.pathIndex, since, jumped: -1, left: -1 };
+  }
+
+  /**
+   * Running a parkour link (nav/parkour.ts parkourInput, as the build played it through the movement code): facing
+   * its way and running (sprinting for a gap), jumping at its takeoff, tucking the legs up in the air for a high ledge.
+   * Null when it isn't on one now (still on its way to the link's start, wandered off it, or done: landed).
+   */
+  private parkourMove(view: BotWorldView): { yaw: number; buttons: number; wait: boolean } | null {
+    const k = this.link!;
+    const me = view.self;
+    const l = k.l;
+    const tick = view.tick;
+    const grounded = me.grounded !== false;
+    if (k.left < 0 && !grounded && me.pos.y < l.start.y - 0.4) k.left = tick;
+    const off = k.jumped >= 0 ? k.jumped : k.left;
+    if (off >= 0) {
+      // Down again: done.
+      if (grounded && tick - off > 3) {
+        // (Down by its end: made; anywhere else, missed: short, or knocked off it.)
+        if (horizontalDistance(me.pos, l.end) < 4.5 && Math.abs(me.pos.y - l.end.y) < 0.8) this.parkourDone[l.kind]++;
+        else {
+          this.parkourMissed++;
+          view.nav.linkFailed(l, false);
+        }
+        this.link = null;
+        return null;
+      }
+      // (In the air for ever: knocked about, under a canopy; let it go.)
+      if (tick - off > TICK_RATE * 4) {
+        this.link = null;
+        return null;
+      }
+    } else {
+      const along = parkourAlong(l, me.pos);
+      const len = horizontalDistance(l.start, l.end);
+      const side = Math.abs((me.pos.x - l.start.x) * Math.cos(l.yaw) - (me.pos.z - l.start.z) * Math.sin(l.yaw));
+      // Not at it yet (on the way to its start) or off its line: walk on as the route says.
+      if (along < -0.8 || side > 0.9 || along > len + 1) {
+        if (tick - k.since > TICK_RATE * 6) {
+          this.parkourGaveUp++;
+          this.link = null;
+        }
+        return null;
+      }
+      // Too long at it without going (held up: something the build didn't have in the way): give up on it, and the link is
+      // switched off for everyone (NavWorld.linkFailed); the route is planned again without it.
+      if (tick - k.since > TICK_RATE * (l.sprint ? 8 : 4)) {
+        this.parkourGaveUp++;
+        view.nav.linkFailed(l, true);
+        this.link = null;
+        return null;
+      }
+      // A running jump wants a sprint: out of breath, it waits at the start for its stamina.
+      if (l.sprint && me.winded) return { yaw: l.yaw, buttons: 0, wait: true };
+    }
+    const c = parkourInput(l, me.pos, grounded, k.jumped >= 0);
+    if (c.jump) k.jumped = tick;
+    return { yaw: c.yaw, buttons: c.buttons, wait: false };
   }
 
   /**

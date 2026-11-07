@@ -536,6 +536,97 @@ time): the place to look for the headroom the 64-player browser round needs.
 - bots use drops, jumps and doors as players do;
 - no bot is frozen by a closed door or a broken bridge.
 
+### Phase C item 0, measured: the hurt-bot retreat (kept as it is)
+**The report** (HANDOFF's pitfalls, from the Breakthrough work): a bot under its self-preservation share of its health
+retreats from every enemy it sees for the rest of its life when no health pickup is in reach (nothing regenerates), so
+on the Breakthrough Range a hurt attacker rarely pushes again. **The ask:** the retreat gives up after a while, or the
+bot fights from cover at low health and keeps its objective.
+
+**Measured, it is the other way round:** on main (`wip/bots-c` from 61652cb9, `pnpm bot-report test_breakthrough
+--mode=core.breakthrough`), the retreat is what keeps the attack alive. Every variant tried took the attackers' pool
+down faster (kills a minute 33 → 47-52 at 8 v 8: hurt bots that stay and fight die, and each death is a reinforcement
+spent; the lines held at 150-250 s with none left) and broke through less:
+
+| Variant (8 v 8 on the Range, smoke on, pool 6 an attacker) | Seeds | Broke through | Sectors | Retreating, of alive time |
+|---|---|---|---|---|
+| main (a hurt bot retreats from every enemy it sees while hurt) | 1-12 | 11 | 35 of 36 | 11.5 % |
+| The retreat gives up after 4 s a life (2 s with an objective) | 1-6 | 1 | 10 of 18 | 4.7 % |
+| ...and hurt with the retreat given up: cover against what it sees, never on into it | 1-6 | 2 | 12 of 18 | 4.4 % |
+| ...only bots pushing an objective give up (defenders retreat as before) | 1-12 | 7 | 27 of 36 | 5.2 % |
+| A 4 s retreat each fight (the clock starts again 8 s out of one) | 1-6 | 3 | 13 of 18 | 4.6 % |
+| Objective pushers: a retreat each fight, none once in cover | 1-12 | 6 | 24 of 36 | 5.1 % |
+| No retreat while standing in its objective (a zone, a charge) | 1-12 | 5 | 23 of 36 | 6.0 % |
+| ...and an 8 s retreat each fight | 1-12 | 9 | 30 of 36 | 8.3 % |
+| A 12 s retreat each fight | 1-12 | 8 | 32 of 36 | 9.0 % |
+
+At 4 v 4 (seeds 1-8, pool 6) main broke through in 5 (sectors 19 of 24, retreating 9.6 %); the first two variants
+in 5 (21 of 24, 3.3 %) and 3 (17 of 24, 3.8 %); the 12 s retreat each fight played main's matches exactly. CTF (Diamond
+Park, Sunken Kingdom, Bunker Cross, Serene City; seeds 1 and 2, 180 s) and Team Deathmatch (Fernwood Moon, Riot
+Junction) were within their noise for the first and the last variant (CTF captures 20 → 14 and 17 in 8 matches, stuck
+recoveries 1.74 → 1.69 a bot-minute); their maps have health, so their bots retreat to it as before.
+
+Why: a hurt bot doesn't retreat for the rest of its life, only while it sees an enemy (and 3 s on); with nobody in sight
+its scored choice is its objective again (and a hurt bot lets noises and chases go). So it does push again, between
+sightings, and lives. The numbers the brief set to beat (4 v 4: 2 of 8; 8 v 8: the beach 6 of 6, the fort 2 of 6) came
+from the Breakthrough agent's scratch harness on an earlier main; today's main beats them by `bot-report` already.
+**Kept as it is.** What landed for item 0: a crash fix found on the way (a Breakthrough defender with the fall-back duty
+on the last sector read the sector after it: `BreakthroughMode.botGoal` threw mid-match, seed 2 at 8 v 8), `bot-report`'s
+Breakthrough fields (the Iron Coast build's commit, taken unchanged) and the retreating share in `--compare`.
+
+### Phase C items 1-4, measured
+What's in it: docs/BOTS.md, "Parkour", "Ground that goes", "Crowds" and "Routes along a group's corridor, and the search
+budget". Before: main 0d03c3bd (item 0 and the small fixes of 11-07). After: `wip/bots-c` (items 1-4), main merged in.
+The same matches (`pnpm bot-report`): CTF on Diamond Park, Sunken Kingdom, Bunker Cross, Serene City, Capitol Mall,
+Fernwood Moon, Qasr Medina and Twin Spires (seeds 1 and 2, 180 s: 16 matches), Team Deathmatch on Eagle Spires, Twin
+Spires and Riot Junction (6), the Breakthrough Range at 8 v 8 (seeds 1-24, 900 s).
+
+| Sample | Before | After |
+|---|---|---|
+| CTF: stuck recoveries a bot-minute | 1.40 | 1.34 |
+| CTF: captures (flag takes); matches with one | 22 (85); 9 | 18 (112); 9 |
+| CTF: idle out of a fight; frozen | 5.4 %; 0.6 % | 5.1 %; 0.8 % |
+| CTF: failed searches; no-route idle | 0.00 %; 0.00 % | 0.00 %; 0.00 % |
+| CTF: parkour moves a match (drops / gap jumps / jumps up); missed, given up | - | 10.2 / 1.9 / 25.9; 0.6, 1.8 |
+| CTF: route choice, busiest way; busiest route (time) | 57 %; 53 % | 61 %; 55 % |
+| Team Deathmatch: stuck recoveries a bot-minute | 0.92 | 0.68 |
+| Team Deathmatch: parkour moves a match | - | 2.8 / 0.0 / 19.7 |
+| Team Deathmatch: sniper spots a match, kills from them | 3.2, 0.2 | 3.3, 0.5 |
+| Bot thinking a tick (CTF; load 10-14 on 4 cores) | 1.18 ms | 1.25 ms |
+| Breakthrough Range 8 v 8: broke through (seeds 1-24); sectors | 21; 68 of 72 | 16; 62 of 72 (the final build, seeds 1-12: 9 of 12, 31 of 36; main 11, 35) |
+
+**Done when, as it stands:**
+- *Stuck recoveries halve:* not met. Down a quarter in Team Deathmatch, 4 % in CTF. The biggest single source on the
+  sample is a map spot (Capitol Mall's upstairs office by (140, 4, 8): 150-300 a match, with or without parkour), and
+  the rest is spread thin. What did cut them: strafing in a fight no longer judged stuck; a parkour link a bot can't
+  make given up on and switched off (Qasr Medina seed 2: 201 → 123).
+- *Bots use drops, jumps and doors as players do:* met. 38 parkour moves a CTF match, 22 a Team Deathmatch match,
+  under 2 % missed; doors were already routed (openings), and now so is ground that goes.
+- *No bot is frozen by a closed door or a broken bridge:* met for bridges, trapdoors and floors that crumble, break or
+  hide, and drawbridges (`parkour.test.ts`: routes go round a crumbled bridge by the walkway). Breakable crates or walls
+  that open a way when broken don't open a route (the navmesh has no ground under them: a tiled navmesh's work).
+- *Think time inside the guard:* met. `pnpm bench 64 30` (Norman Shores, Frost Basin, Riot Junction; TDM, 10 s
+  warm-up, spread and clumped; load 6, main and the branch in turn): bot thinking a tick 1.23-1.69 ms on main (mean
+  1.45), 1.34-1.87 on the branch (mean 1.54), inside the 2.5 ms guard; movement a little more (bots that move, and move
+  in full on a link).
+- *CTF's busiest route down from 59 %:* not met on this sample (57 → 61 %). Groups (main push, flankers, recon) only
+  form on trips of 180 m and more; of the sample's maps that is Capitol Mall, Fernwood Moon and Sunken Kingdom, where
+  routes along a corridor (`pathAlong`) were about 150 a match. Their bots keep their lane all the way now, but most of a
+  team isn't in a group, and loose bots take the shortest way.
+
+**The Breakthrough Range** went down: in 16 of 24 seeds against main's 21 (sectors 62 of 72 against 68), and the
+final build, seeds 1-12, in 9 of 12 against 11 (sectors 31 of 36 against 35). The matches are chaotic (one changed
+decision reshuffles everything after it), so it was taken apart, 12 seeds each (main: 11 of 12): parkour, ground that goes and
+the parts of items 3 and 4 one at a time and together: without parkour 8, without keeping right 7, without corridor
+routes 5, without all three 6, without the strafing rule as well 8. With every change switched off the build replays
+main's matches exactly, seed for seed. No one part accounts for it; each reshuffles the matches and the attack comes out
+a little worse. One cause was found and fixed: ground that goes had every bot plan its route again whenever any
+breakable prop broke, even one with no ground on the navmesh (the Range's sandbags). For the owner to judge in a
+playtest (`check/bots-c` CI and the 4 v 4 numbers in HANDOFF).
+
+**Load time** (the navmesh build with and without parkour, ten big maps, load 11 on 4 cores, noisy): +13 % in all;
+Qasr Medina's the most (a second or so: its flat roofs' 280 drop candidates). Links are cached per navmesh, so the next
+match on a map pays nothing.
+
 ## Phase D: polish and tools
 1. **Memory:**
    - last-known enemy spots kept for a while;

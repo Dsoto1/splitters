@@ -1,0 +1,37 @@
+{
+  "id": "meshy_trex",
+  "kind": "character",
+  "use": "player",
+  "order": 117,
+  "name": "Cool Hands Rex",
+  "look": "core.trex",
+  "group": "creatures",
+  "nameTheme": "gangster",
+  "bio": "Shades on, collar up, and the steadiest trigger claw since the Cretaceous.",
+  "body": "male",
+  "size": "large",
+  "notes": "Import list batch 1 (docs/IMPORT_LIST.md; \"Cool TRex 10k\", as Meshy names the download; rigged and animated on Meshy: Mixamo joint names read as Meshy's; finger chains for the thumb, middle, ring and little finger but no index finger, so the fingers are re-fitted by hands.mjs; the tail's (Bone_015-Bone_020) and the jaw's and head's (Bone_034-Bone_039, headfront) extra joints ride the hips and the head; its two clips are not used). A T-rex in a dark bomber jacket, cargo trousers and sunglasses, with a long tail. Named by the owner (2026-11-06: \"call him 'Cool Hands Rex', i made him in meshy\"). A 10.4k-triangle download, kept whole; its two 4096 px maps baked down. Large for its heavy build. Licence: the owner's own Meshy model (owned).",
+  "source": {
+    "license": "owned",
+    "author": "The owner (Meshy, owner's account)",
+    "date": "2026-11-06",
+    "url": null,
+    "file": "^Meshy_AI_Cool_TRex_10k_\\d+_animated_mixamo_All_animation\\.glb$"
+  },
+  "finish": {
+    "metallic": 0,
+    "roughness": 0.65
+  },
+  "firstPerson": {
+    "arms": "own"
+  },
+  "fixes": {
+    "triangles": 11000,
+    "headShare": 0.16,
+    "handsShare": 0.1,
+    "normalSize": 1024,
+    "lod": 0.25,
+    "feet": true,
+    "centre": true
+  }
+}

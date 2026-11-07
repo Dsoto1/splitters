@@ -9,6 +9,8 @@ import { LIQUID_SPECS, SWIM_DEPTH, liquidAt, mapLiquids } from './liquids.ts';
 import { navLinks, type ExtraRay } from './movement.ts';
 import { liftLinks } from './movers.ts';
 import { PhysicsWorld } from './physics.ts';
+import { DOOR, destructibleBox, doorway, type OBox } from './scenarioDefs.ts';
+import { windowPanes } from './glass.ts';
 import { matchPhysics, type MatchRules } from './rules.ts';
 
 /**
@@ -18,6 +20,18 @@ import { matchPhysics, type MatchRules } from './rules.ts';
 export const DROP_HURTS_UP_TO = 5 + 30 / 9;
 const DROP_FREE = 60;
 
+/** What the scenario adds that bodies can't pass while it stands: window panes, door panels, breakable walls and boards. */
+function scenarioBlockers(map: MapDocument): OBox[] {
+  const out: OBox[] = windowPanes(map).map((p) => p.box);
+  for (const e of map.entities) {
+    if (e.kind === 'door') {
+      const d = doorway(e);
+      out.push({ ...d, half: { ...d.half, z: DOOR.thickness } });
+    } else if (e.kind === 'destructible') out.push(destructibleBox(e));
+  }
+  return out;
+}
+
 /** A ray against boxes physics doesn't hold yet (the scenario's solids), for jump pads' landings; none for none. */
 export const solidsRay = (solids: readonly WorldBox[]): ExtraRay | undefined => (solids.length ? (o, d, max) => boxesRay(solids, o, d, max) : undefined);
 
@@ -26,6 +40,8 @@ export function dropOptions(map: MapDocument, physics: PhysicsWorld, geometry: r
   const liquids = mapLiquids(map.entities);
   return {
     physics,
+    gravity: phys.gravity,
+    blockers: scenarioBlockers(map),
     spawns: map.entities.filter((e) => e.kind === 'spawn').map((e): Vec3 => ({ x: e.position[0], y: e.position[1], z: e.position[2] })),
     maxDrop: phys.fallDamage ? DROP_HURTS_UP_TO / Math.max(0.05, phys.gravity) : DROP_FREE,
     floorY: mapKillY(geometry, map),
@@ -47,8 +63,10 @@ export function dropOptions(map: MapDocument, physics: PhysicsWorld, geometry: r
  * (plus `extra` boxes: Fort Wars' pieces), terrain and the environment's shapes, the map's links (jump pads, ladders,
  * portals, ziplines, lifts) and ledge-drop links off patches that have no other way down.
  */
-export function buildMapNav(map: MapDocument, geometry: readonly WorldBox[], physics: PhysicsWorld, envShapes: readonly EnvWorldShape[], phys: { gravity: number; fallDamage: boolean }, extra: readonly WorldBox[] = []): NavWorld {
-  const drops = dropOptions(map, physics, geometry, phys);
+export function buildMapNav(map: MapDocument, geometry: readonly WorldBox[], physics: PhysicsWorld, envShapes: readonly EnvWorldShape[], phys: { gravity: number; fallDamage: boolean }, extra: readonly WorldBox[] = [], parkour = true): NavWorld {
+  // (Parkour links at load only: a rebuild in a match, Fort Wars' pieces, goes without them. Played through mid-match they
+  // cost a hitch, and over the forts' walls they took attackers off the way to the flag: forts.test's capture.)
+  const drops = { ...dropOptions(map, physics, geometry, phys), noParkour: !parkour };
   const solids = drops.solids ?? [];
   return NavWorld.build(
     [...geometry, ...solids, ...extra],

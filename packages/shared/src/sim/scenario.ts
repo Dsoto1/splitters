@@ -1172,6 +1172,70 @@ export class Scenario {
     return out;
   }
 
+  /**
+   * Ground bots stand on that can go (BOT_AI_PLAN.md Phase C item 2): the tops of breakable props and of free blocks
+   * that crumble, break, hide or show (bridges, trapdoors, floors), and of movers' blocks that aren't lifts (drawbridges,
+   * sliding floors), as the navmesh has them (in their idle state, a mover's at its first point). In a fixed order, after
+   * openings(): NavWorld.markOpenings flags the polygons on top of each with the bits left after the openings', and
+   * surfacesGone says which are gone now, so no route goes over a bridge that has fallen.
+   */
+  surfaces(): Aabb[] {
+    return this.surfaceList().map((s) => s.box);
+  }
+
+  private surfaceCache: { box: Aabb; d?: DestructibleRt; mover?: number }[] | null = null;
+
+  private surfaceList(): { box: Aabb; d?: DestructibleRt; mover?: number }[] {
+    if (this.surfaceCache) return this.surfaceCache;
+    const out: { box: Aabb; d?: DestructibleRt; mover?: number }[] = [];
+    const lifts = new Set(this.lifts.map((l) => l.mover));
+    const carried = new Set<number>();
+    this.movers.defs.forEach((def, k) => {
+      for (const b of def.blocks) carried.add(b.i);
+      if (lifts.has(def.e.id)) return;
+      for (const b of def.blocks) {
+        const c = { x: def.pivot.x + def.points[0]!.x + b.local.x, y: def.pivot.y + def.points[0]!.y + b.local.y, z: def.pivot.z + def.points[0]!.z + b.local.z };
+        const r = Math.max(b.half.x, b.half.z);
+        out.push({ box: { min: { x: c.x - r, y: c.y - b.half.y, z: c.z - r }, max: { x: c.x + r, y: c.y + b.half.y, z: c.z + r } }, mover: k });
+      }
+    });
+    for (const d of this.destructibles.values()) {
+      // (Walls and boards that block paths are openings already; glass is no floor; a mover's block goes with its mover.)
+      if (d.b.blocksPaths || d.b.glass || carried.has(d.i)) continue;
+      out.push({ box: oboxAabb(d.b.box), d });
+    }
+    return (this.surfaceCache = out);
+  }
+
+  /** Which of surfaces() are gone now (broken, crumbled, hidden; a mover away from its first point), as navmesh flag bits after the openings'. */
+  surfacesGone(): number {
+    let k = (this.openingsN ??= this.openingCount());
+    if (k >= OPENING_BITS) return 0;
+    let mask = 0;
+    for (const s of this.surfaceList()) {
+      if (k >= OPENING_BITS) break;
+      const gone = s.d ? !s.d.alive : s.mover !== undefined && !this.moverParked(s.mover);
+      if (gone) mask |= 1 << (k + 1);
+      k++;
+    }
+    return mask;
+  }
+
+  private openingsN: number | null = null;
+
+  /** Doors and walls that block paths: how many openings() there are. */
+  private openingCount(): number {
+    let n = this.doors.size;
+    for (const d of this.destructibles.values()) if (d.b.blocksPaths) n++;
+    return n;
+  }
+
+  /** Whether mover k is parked at its first point (where the navmesh has its blocks). */
+  private moverParked(k: number): boolean {
+    const leg = this.movers.legs[k];
+    return !!leg && leg.from === 0 && leg.to === 0;
+  }
+
   /** Which of openings() stop `team` now, as navmesh flag bits (bit k + 1 for opening k). */
   openingsShut(team: string | null): number {
     let mask = 0;
