@@ -8,7 +8,7 @@ const profile = { ...CORE_BOT_PROFILES[0]!, aggression: 50, exploration: 50, pur
 const at = (x: number, z: number): Vec3 => ({ x, y: 0, z });
 
 function choice(over: Partial<ChoiceInput>, last = -1): number {
-  const i: ChoiceInput = { me: at(0, 0), goal: null, profile, hurt: false, lowAmmo: false, cover: false, retreating: false, pickup: -Infinity, lost: null, noise: null, posted: false, ...over };
+  const i: ChoiceInput = { me: at(0, 0), goal: null, profile, hurt: false, lowAmmo: false, cover: false, retreating: false, pickup: -Infinity, post: -Infinity, lost: null, noise: null, posted: false, ...over };
   const sc = new Float32Array(OPTIONS);
   scoreChoices(i, sc);
   return bestChoice(sc, last, !!i.goal);

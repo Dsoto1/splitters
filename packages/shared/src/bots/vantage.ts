@@ -1,4 +1,5 @@
 import { horizontalDistance, type Vec3 } from '../math.ts';
+import { laneCover } from './sniper.ts';
 
 /**
  * Vantage spots (docs/BOTS.md "Roles"): places worth holding, worked out once
@@ -85,7 +86,9 @@ export function computeVantage(places: readonly Vec3[], raycast: Raycast): Vanta
     const height = p.y - groundNear(p);
     const backed = dist[(bestK + DIRS / 2) % DIRS]! < 4 ? 1 : 0;
     if (bestOpen >= 40 && walls < DIRS - 2) {
-      const score = Math.min(bestOpen, FAR) / FAR + Math.max(0, Math.min(height / 8, 1)) * 0.7 + backed * 0.3 + Math.min(walls, 3) * 0.05;
+      // High, tucked away (walls close on the sides), a wall behind (Phase B item 5: the owner's "tucked away high
+      // spots"), and a long view.
+      const score = Math.min(bestOpen, FAR) / FAR + Math.max(0, Math.min(height / 8, 1)) * 0.8 + backed * 0.5 + Math.min(walls, 4) * 0.12;
       sniper.push({ pos: { ...p }, kind: 'sniper', yaw, reach: bestOpen, height, score });
     }
     if (walls >= 2 && walls <= DIRS - 3 && bestOpen >= 10 && bestOpen <= 55) {
@@ -141,11 +144,26 @@ export class VantageBoard {
   private readonly holder: Int32Array;
   private readonly holdUntil: Float64Array;
   private readonly badUntil: Float64Array;
+  /** Each spot's worth for this match on top of its own score (snipers: how well it covers the ways the enemy comes). */
+  readonly bonus: Float32Array;
 
   constructor(readonly spots: readonly VantageSpot[]) {
     this.holder = new Int32Array(spots.length).fill(-1);
     this.holdUntil = new Float64Array(spots.length);
     this.badUntil = new Float64Array(spots.length);
+    this.bonus = new Float32Array(spots.length);
+  }
+
+  /**
+   * The match's lanes (the trips' corridors' routes): each sniper spot's bonus is how well it covers them (sniper.ts
+   * laneCover: the share of the lane points in its view it can see), × `weight`. A sight line per point checked, at most
+   * 24 a spot, once per match.
+   */
+  lanes(lines: readonly (readonly Vec3[])[], sees: (a: Vec3, b: Vec3) => boolean, weight = 0.8): void {
+    for (let i = 0; i < this.spots.length; i++) {
+      const s = this.spots[i]!;
+      if (s.kind === 'sniper') this.bonus[i] = laneCover(s, lines, sees) * weight;
+    }
   }
 
   /**
@@ -161,7 +179,7 @@ export class VantageBoard {
       if (s.kind !== kind || i === skip || tick < this.badUntil[i]! || (this.holder[i]! >= 0 && tick < this.holdUntil[i]!)) continue;
       const d = horizontalDistance(s.pos, from) + Math.abs(s.pos.y - from.y) * 2;
       if (d > within) continue;
-      const score = s.score - d / within + (prefer ? prefer(s.pos) : 0) + rng() * 0.3;
+      const score = s.score + this.bonus[i]! - d / within + (prefer ? prefer(s.pos) : 0) + rng() * 0.3;
       if (score > bestS) {
         bestS = score;
         best = i;

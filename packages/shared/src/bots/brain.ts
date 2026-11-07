@@ -15,7 +15,8 @@ import type { ViewGrid } from './grid.ts';
 import { MapMemory, laneWaypoint, pickExploreGoal } from './explore.ts';
 import type { BotPlan } from './director.ts';
 import type { PricedTrip } from './teamBrain.ts';
-import { GUN_WEIGHT, OPT_CHASE, OPT_COVER, OPT_FIGHT, OPT_NOISE, OPT_PICKUP, OPT_RETREAT, OPTIONS, bestChoice, scoreChoices, type ChoiceInput } from './choices.ts';
+import { GUN_WEIGHT, OPT_CHASE, OPT_COVER, OPT_FIGHT, OPT_NOISE, OPT_PICKUP, OPT_POST, OPT_RETREAT, OPTIONS, POST_WEIGHT, SCOPE_WEIGHT, bestChoice, scoreChoices, type ChoiceInput } from './choices.ts';
+import { goodShot, relocatePrefer, shotsPerSpot } from './sniper.ts';
 import type { VantageBoard, VantageKind } from './vantage.ts';
 import { simProfile } from '../sim/profile.ts';
 import { hasTag, type BotDifficulty, type BotProfile } from './profile.ts';
@@ -251,6 +252,12 @@ export type BotDoing =
   | 'dead';
 
 const SIGHT_RANGE = 60;
+/**
+ * A sniper on its spot with the scope up sees further (Phase B item 5): out to its gun's reach, SCOPE_SIGHT at most, but
+ * past SIGHT_RANGE only within SCOPE_COS of where it looks (its scope's narrower view).
+ */
+const SCOPE_SIGHT = 120;
+const SCOPE_COS = Math.cos((30 * Math.PI) / 180);
 const HEARING_RANGE = 6;
 /** How close a bot must be to spot someone hiding in a bush, and to keep tracking them once seen (m). */
 const CONCEAL_SPOT = 4;
@@ -271,6 +278,13 @@ function pathLength(route: readonly Vec3[]): number {
 const VEHICLE_TRIP = 55;
 /** How far (m, plus height) a bot with only a sidearm detours for a gun. */
 const GUN_DETOUR = 30;
+/** Bounding (boundPhase): fights this far off or more (m); Mixed-style bots only from BOUND_MIXED. */
+const BOUND_FROM = 12;
+const BOUND_MIXED = 18;
+/** How far a sniper-role bot goes for a scoped gun (m, plus height). */
+const SCOPE_DETOUR = 70;
+/** A sniper whose target looks straight at it (this or more: within about 25°) a moment is spotted: it moves on. */
+const SPOTTED_FACING = 0.9;
 /** Riding along: a vehicle standing still this long (s), with nothing to shoot for 4 s, is parked; riders get out. */
 const RIDE_PARKED_SECONDS = 8;
 /** A bot at the wheel gives up (gets out) when the route left hasn't shrunk this much (m) in this long (s). */
@@ -563,7 +577,22 @@ export class BotBrain {
    * Holding a vantage spot (camper and sniper roles, director.ts): which spot,
    * when it got there (-1: on the way), how long it holds once there, until when.
    */
-  private post: { board: VantageBoard; spot: number; kind: VantageKind; arrived: number; hold: number; until: number } | null = null;
+  private post: { board: VantageBoard; spot: number; kind: VantageKind; arrived: number; hold: number; until: number; shots: number; moving: boolean } | null = null;
+  /**
+   * How much its routes keep out of open ground (NavWorld.findPath `open`; Phase B item 6): Tactical bots the most,
+   * Arena bots not at all, the rest a little.
+   */
+  private get coverRoutes(): number {
+    return this.arena ? 0 : this.methodical ? 2 : 1;
+  }
+
+  /** Bounding (boundPhase): this half moving from cover to cover, or covering; null when not bounding. */
+  private bound: 'move' | 'cover' | null = null;
+  /** Where its last vantage spot was (a sniper moves on somewhere else, not back the way it came). */
+  private prevSpot: Vec3 | null = null;
+  /** Snipers: shots held for a better one, and spots left after a shot or two or for being spotted (measuring). */
+  heldShots = 0;
+  relocations = 0;
   private nextPost = 0;
   private lastSpot = -1;
   /** Recent stuck recoveries (when and where), to notice being stuck in a loop. */
@@ -593,7 +622,7 @@ export class BotBrain {
     this.routeRng = createRng((seed * 104729 + slot * 7919 + 17) >>> 0);
     this.aim = new AimModel(this.rng, difficulty, profile);
     this.clearCheck = () => this.clearShot();
-    this.choice = { me: { x: 0, y: 0, z: 0 }, goal: null, profile, hurt: false, lowAmmo: false, cover: false, retreating: false, pickup: -Infinity, lost: null, noise: null, posted: false };
+    this.choice = { me: { x: 0, y: 0, z: 0 }, goal: null, profile, hurt: false, lowAmmo: false, cover: false, retreating: false, pickup: -Infinity, post: -Infinity, lost: null, noise: null, posted: false };
   }
 
   /** Enemy currently targeted (actor ID), if any. */
@@ -797,6 +826,7 @@ export class BotBrain {
     const p = this.post;
     if (!p) return;
     p.board.release(p.spot, this.slot);
+    this.prevSpot = { ...p.board.spots[p.spot]!.pos };
     this.post = null;
     this.nextPost = tick + Math.round(TICK_RATE * cooldownSeconds);
     this.roamGoal = null;
@@ -807,6 +837,46 @@ export class BotBrain {
   private postCooldown(kind: VantageKind): number {
     if (kind === 'sniper') return 4 + this.routeRng() * 6;
     return (this.arena ? 60 : this.methodical ? 35 : 45) + this.routeRng() * 30;
+  }
+
+  /**
+   * Cover-to-cover advance (BOT_AI_PLAN.md Phase B item 6): a bot on its way to an objective (a goal to keep to, not a
+   * carrier's run) in a fight at range bounds by its style: Tactical always, Mixed when the fight is BOUND_MIXED m or
+   * further, Arena never (it keeps the rush; so do berserkers). Half the bots cover while half move, on a shared clock
+   * by slot (odd and even), so teammates near each other take turns without anyone arranging it: 'cover' holds cover
+   * facing the threat (peeking and shooting, not running at it), 'move' leaves it for cover further on, or advances in
+   * the open shooting when there's none. Null: not bounding.
+   */
+  private boundPhase(view: BotWorldView, target: CombatantView | undefined, goal: OrderGoal | null | undefined): 'move' | 'cover' | null {
+    if (!target || !goal?.push || goal.run || this.arena || this.berserker || view.self.mounted) return null;
+    const dist = horizontalDistance(view.self.pos, target.pos);
+    // (A playbook that has everyone bound, Breakthrough's: every style but Arena's from BOUND_FROM.)
+    const all = !!view.plan?.job?.bound;
+    if (dist < BOUND_FROM || (!this.methodical && !all && dist < BOUND_MIXED)) return null;
+    const period = TICK_RATE * (this.methodical ? 3.5 : 4.5);
+    return (Math.floor(view.tick / period) + this.slot) % 2 === 0 ? 'move' : 'cover';
+  }
+
+  /** On its sniper spot with its scoped gun in hand. */
+  private sniping(view: BotWorldView, def: WeaponDefinition | undefined): boolean {
+    const p = this.post;
+    return !!p && p.kind === 'sniper' && !!def?.view.zoomFov && !def.alt && this.posted(view.self.pos);
+  }
+
+  /** A shot from its sniper spot: after its share of them (one, or two for the bold), it moves on. */
+  private sniperShot(tick: number): void {
+    const p = this.post;
+    if (!p || ++p.shots < shotsPerSpot(this.profile)) return;
+    this.relocate(tick, 0.4 + this.routeRng() * 0.6);
+  }
+
+  /** Leave the sniper spot in `seconds` for another one somewhere else soon after (counted once a spot). */
+  private relocate(tick: number, seconds: number): void {
+    const p = this.post;
+    if (!p || p.moving) return;
+    p.moving = true;
+    p.until = Math.min(p.until, tick + Math.round(TICK_RATE * seconds));
+    this.relocations++;
   }
 
   /** A scoped gun with rounds in it. */
@@ -825,21 +895,32 @@ export class BotBrain {
     const plan = view.plan;
     const board = plan?.vantage;
     const tick = view.tick;
-    if (!board || this.post || tick < this.nextPost || view.orderGoal) return;
+    const g = view.orderGoal ?? null;
+    if (!board || this.post || tick < this.nextPost) return;
     if (plan.role !== 'camper' && plan.role !== 'sniper') return;
     const kind: VantageKind = plan.role === 'camper' ? 'camp' : 'sniper';
+    // (A goal: only a sniper's, and only one to hold, a CTF defender's flag or a hill: its spot looks over it.)
+    if (g && (kind !== 'sniper' || !holdsPost(g))) return;
     if (kind === 'sniper' && !this.hasScope(view)) {
       this.nextPost = tick + TICK_RATE * 5;
       return;
     }
     const towards = plan.towards;
-    const prefer = towards?.length
-      ? (p: Vec3) => {
-          let near = Infinity;
-          for (const t of towards) near = Math.min(near, horizontalDistance(t, p));
-          return near < 35 ? -2 : near < 130 ? 0.4 : 0;
-        }
-      : undefined;
+    const away = kind === 'sniper' ? relocatePrefer(view.self.pos, this.prevSpot) : null;
+    const eye = (p: Vec3) => ({ x: p.x, y: p.y + 1.5, z: p.z });
+    const prefer = (p: Vec3) => {
+      let v = away ? away(p) : 0;
+      if (g) {
+        // Near the goal it holds and in sight of it.
+        const d = horizontalDistance(p, g.pos);
+        v += d > 75 ? -3 : view.physics.lineOfSight(eye(p), eye(g.pos)) ? 1 : -0.5;
+      } else if (towards?.length) {
+        let near = Infinity;
+        for (const t of towards) near = Math.min(near, horizontalDistance(t, p));
+        v += near < 35 ? -2 : near < 130 ? 0.4 : 0;
+      }
+      return v;
+    };
     const i = board.pick(kind, view.self.pos, tick, kind === 'sniper' ? 110 : 75, this.routeRng, prefer, this.lastSpot);
     if (i < 0) {
       this.nextPost = tick + TICK_RATE * 8;
@@ -847,7 +928,7 @@ export class BotBrain {
     }
     const hold = kind === 'sniper' ? 25 + this.routeRng() * 25 : this.arena ? 10 + this.routeRng() * 8 : this.methodical ? 25 + this.routeRng() * 20 : 18 + this.routeRng() * 17;
     // Getting there gets a generous allowance; the hold starts on arrival.
-    this.post = { board, spot: i, kind, arrived: -1, hold: Math.round(TICK_RATE * hold), until: tick + TICK_RATE * 40 };
+    this.post = { board, spot: i, kind, arrived: -1, hold: Math.round(TICK_RATE * hold), until: tick + TICK_RATE * 40, shots: 0, moving: false };
     board.claim(i, this.slot, this.post.until);
     this.lastSpot = i;
   }
@@ -1033,7 +1114,7 @@ export class BotBrain {
     // Flushed off a vantage spot: hurt there, or shot at by someone it can't see. Or its time there is up (mid-fight too:
     // a sniper moves on after a kill).
     const post = this.post;
-    if (post && ((post.arrived >= 0 && (this.hurtTick > post.arrived || (underFire && !target))) || tick >= post.until)) this.leavePost(tick, this.postCooldown(post.kind));
+    if (post && ((post.arrived >= 0 && (this.hurtTick > post.arrived || (underFire && !target))) || tick >= post.until)) this.leavePost(tick, post.moving ? 1 + this.routeRng() * 2 : this.postCooldown(post.kind));
     // Holding a spot (or on the way to one): an enemy who slipped out of view, or a noise, isn't worth leaving it for, unless close.
     // Going for an objective (a goal to keep to): the same, unless it is on the way.
     const holding = this.posted(me.pos);
@@ -1055,18 +1136,21 @@ export class BotBrain {
       this.option = OPT_FIGHT;
     } else this.choose(view, hurt, underFire);
 
+    // Cover-to-cover advance (Phase B item 6): on the way to an objective, in a fight at range, by style.
+    this.bound = this.boundPhase(view, target, goal);
     // Cover: under fire, fighting at range, reloading or hurt, for bots that play tactically.
     const threat = target?.pos ?? (underFire ? this.threatFrom : null);
     // Better bots take cover far more often; arena bots mostly keep moving instead.
     // An enemy vehicle it has nothing to hurt with: cover (any bot that thinks at all).
     const outgunned = !!target && this.targetMount?.kind === 'vehicle' && !armedForVehicles;
     const coverChance = Math.max(this.arena ? this.tactical * 0.4 : 0.15 + this.tactical * 1.7 + (this.methodical ? 0.3 : 0), outgunned ? 0.4 + this.tactical * 0.6 : 0);
-    if (threat && !this.berserker && !holding && !goal?.run && this.rng() < coverChance) {
+    if (threat && !this.berserker && !holding && !goal?.run && (this.bound !== null || this.rng() < coverChance)) {
       const dist = horizontalDistance(me.pos, threat);
       const held = this.heldWeapon(view);
       const lowAmmo = !!held && held.def.magazine > 0 && held.mag <= Math.ceil(held.def.magazine * 0.25);
-      // (On the way to an objective, not for a fight at range or only for being shot at: it fights on the move instead.)
-      const wantCover = (underFire && !push) || hurt || lowAmmo || !!view.reloading || (dist > 11 && !push) || this.state === 'retreat' || outgunned;
+      // (On the way to an objective, not for a fight at range or only for being shot at: it fights on the move instead,
+      // unless it bounds: then in cover while its half covers, and from cover to cover further on while its half moves.)
+      const wantCover = (underFire && !push) || hurt || lowAmmo || !!view.reloading || (dist > 11 && !push) || this.state === 'retreat' || outgunned || this.bound !== null;
       const threatEye = { x: threat.x, y: threat.y + PLAYER.eyeHeight, z: threat.z };
       if (this.cover && (horizontalDistance(this.cover.threat, threatEye) > 4 || (tick % 30 < DECIDE_TICKS && !stillCovered(view.physics, this.cover.pos, threatEye, me.size ?? 1)))) {
         // Threat moved round our cover: find another.
@@ -1074,7 +1158,7 @@ export class BotBrain {
       }
       if (wantCover && !this.cover && tick >= this.nextCoverSearch) {
         this.nextCoverSearch = tick + Math.round(TICK_RATE * (1.2 + this.rng()));
-        const advance = view.squad?.advance === true;
+        const advance = view.squad?.advance === true || this.bound === 'move';
         this.cover = findCover({
           physics: view.physics,
           nav: view.nav,
@@ -1096,8 +1180,9 @@ export class BotBrain {
     } else if (!target && !underFire && tick - this.lastTargetTick > TICK_RATE * 4) {
       this.cover = null;
     }
-    // Bounding squads: the moving half leaves its cover for one further forward.
-    if (view.squad?.advance && this.cover && target && horizontalDistance(this.cover.pos, target.pos) > horizontalDistance(me.pos, target.pos) - 1 && tick >= this.nextCoverSearch) {
+    // Bounding squads: the moving half leaves its cover for one further forward (reloading or hurt, it stays put).
+    const moving = view.squad?.advance || (this.bound === 'move' && !view.reloading && !hurt);
+    if (moving && this.cover && target && horizontalDistance(this.cover.pos, target.pos) > horizontalDistance(me.pos, target.pos) - 1 && tick >= this.nextCoverSearch) {
       this.cover = null;
     }
 
@@ -1146,13 +1231,14 @@ export class BotBrain {
     c.lowAmmo = !!held && held.def.magazine > 0 && held.mag + held.reserve <= held.def.magazine;
     // Ducked out of sight behind cover: keep up the hide-and-peek rather than charging off (an objective to get to:
     // only a moment).
-    c.cover = !!this.cover && (underFire || tick - this.lastTargetTick < TICK_RATE * (g?.push ? 1 : 2.5 + (1 - this.profile.aggression / 100) * 3));
+    c.cover = !!this.cover && (underFire || !!view.reloading || hurt || tick - this.lastTargetTick < TICK_RATE * (g?.push ? 1 : 2.5 + (1 - this.profile.aggression / 100) * 3));
     // Getting away: keep running a moment after losing sight of the threat.
     c.retreating = this.state === 'retreat' && !!lk && tick - lk.tick < TICK_RATE * 3;
     c.pickup = this.pickupScore(view, g, underFire, hurt);
     c.lost = lk ? { pos: lk.pos, age: (tick - lk.tick) / TICK_RATE } : null;
     c.noise = hd ? { pos: hd.pos, age: (tick - hd.tick) / TICK_RATE } : null;
     c.posted = !!this.post;
+    c.post = this.postScore(view, g);
     scoreChoices(c, this.scores);
     const best = bestChoice(this.scores, this.option, !!g);
     // Done with a chase or a noise (a chase that got there and found nobody looks round first).
@@ -1178,6 +1264,10 @@ export class BotBrain {
       case OPT_NOISE:
         this.state = 'investigate';
         break;
+      case OPT_POST:
+        // (A sniper's spot: held from the advance state, actPost.)
+        this.state = 'advance';
+        break;
       case OPT_PICKUP: {
         const at = this.gunNearby ?? this.pickCand?.pos ?? null;
         this.state = 'advance';
@@ -1194,14 +1284,29 @@ export class BotBrain {
   }
 
   /**
-   * The pickup option's score: a real gun close by with only a sidearm (2.1: before chasing anyone; on the way to an
-   * objective, one a few steps off it), else, holding an objective, what it needs close by (health when hurt, ammo
-   * when low: its pickup score, worth more when badly hurt), worked out about once a second. A roaming bot picks up
-   * what it needs as it goes (act()).
+   * A sniper's spot (POST_WEIGHT; Phase B item 5): the sniper role with a scoped gun, with nowhere it was sent or a goal
+   * to hold (its spot looks over it), holding a spot or able to take one now. -Infinity otherwise.
+   */
+  private postScore(view: BotWorldView, g: OrderGoal | null): number {
+    if (view.plan?.role !== 'sniper' || (g && !holdsPost(g))) return -Infinity;
+    if (!this.post) this.considerPost(view);
+    return this.post ? POST_WEIGHT : -Infinity;
+  }
+
+  /**
+   * The pickup option's score: a sniper's scoped gun first (SCOPE_WEIGHT, within SCOPE_DETOUR), a real gun close by
+   * with only a sidearm (GUN_WEIGHT: before chasing anyone; on the way to an objective, one a few steps off it), else,
+   * holding an objective, what it needs close by (health when hurt, ammo when low: its pickup score, worth more when
+   * badly hurt), worked out about once a second. A roaming bot picks up what it needs as it goes (act()).
    */
   private pickupScore(view: BotWorldView, g: OrderGoal | null, underFire: boolean, hurt: boolean): number {
     this.gunNearby = null;
     if (underFire || g?.run || g?.order) return -Infinity;
+    // A sniper without a scoped gun goes for one first (weapon sets will give the role one: Match.sniperGun).
+    if (view.plan?.role === 'sniper' && !this.hasScope(view) && (!g || holdsPost(g))) {
+      this.gunNearby = this.pickupGoal(view, 'weapon', SCOPE_DETOUR, (def) => !!def.view.zoomFov && !def.alt);
+      if (this.gunNearby) return SCOPE_WEIGHT;
+    }
     const keep = !g || ((!!g.push || !!g.watch) && g.detour !== 0);
     if (keep && bestLoadedDesirability(view.inventory) <= SIDEARM) {
       this.gunNearby = this.pickupGoal(view, 'weapon', g ? Math.min(GUN_DETOUR, this.detourFor(g)) : GUN_DETOUR);
@@ -1392,7 +1497,7 @@ export class BotBrain {
           // rather than stopping to trade shots at range. Up close it's a fight like any other.
           // A flag carrier runs whatever the range, sprinting past anyone not right on it.
           const g = view.orderGoal;
-          if (g?.push && (dist > 9 || g.run) && (horizontalDistance(me.pos, g.pos) > g.radius + 0.5 || Math.abs(me.pos.y - g.pos.y) > 2)) {
+          if (g?.push && this.bound !== 'cover' && (dist > 9 || g.run) && (horizontalDistance(me.pos, g.pos) > g.radius + 0.5 || Math.abs(me.pos.y - g.pos.y) > 2)) {
             const go = this.followPathTo(view, this.orderTarget(view, g), false);
             if (go !== null) {
               moveYaw = go;
@@ -1822,13 +1927,24 @@ export class BotBrain {
     const reacted = target ? this.reacted(view, target) : true;
     let pull = false;
     const ta = simProfile.on ? performance.now() : 0;
-    if (wantFire && sol && !sprint) pull = this.aim.trigger(ctx, sol, this.yaw, this.pitch, reacted, this.shotCheck(view, ctx, sol, target));
+    // A sniper on its spot takes only a calculated shot (bots/sniper.ts goodShot): it keeps the target in its scope and
+    // waits rather than give the spot away on a poor one.
+    const sniping = !!target && !!sol && wantFire && this.sniping(view, def);
+    if (sniping && !goodShot({ dist: sol!.dist, reach: def!.botRange[1], lateral: this.aim.speedAcross(ctx.eye, target!.pos), facing: facingOf(target!, me.pos), settled: this.aim.settledOn(sol!), tracked: this.aim.trackedTicks(tick) / TICK_RATE })) {
+      wantFire = false;
+      if (tick % TICK_RATE === 0) this.heldShots++;
+      this.aim.trigger(ctx, { yaw: this.yaw + 9, pitch: 0, dist: 1, halfAngle: 0 }, this.yaw, this.pitch, false);
+    } else if (wantFire && sol && !sprint) pull = this.aim.trigger(ctx, sol, this.yaw, this.pitch, reacted, this.shotCheck(view, ctx, sol, target));
     else this.aim.trigger(ctx, { yaw: this.yaw + 9, pitch: 0, dist: 1, halfAngle: 0 }, this.yaw, this.pitch, false);
     if (simProfile.on) simProfile.add('botAim', performance.now() - ta);
     if (pull) buttons |= BUTTON_FIRE;
-    // Scoped weapons are fired through the scope (they spray from the hip); not up close.
+    // A sniper moves on after a shot or two (the shot told them where it is), and when it's spotted.
+    if (pull && sniping) this.sniperShot(tick);
+    else if (sniping && facingOf(target!, me.pos) > SPOTTED_FACING && this.aim.trackedTicks(tick) > TICK_RATE * 1.5) this.relocate(tick, 0.2);
+    // Scoped weapons are fired through the scope (they spray from the hip); not up close (a sniper waiting on its shot
+    // keeps it up).
     const sDist = (sol as AimSolution | null)?.dist ?? 0;
-    if (wantFire && def?.view.zoomFov && !def.alt && sDist > 7) buttons |= BUTTON_ZOOM;
+    if ((wantFire || sniping) && def?.view.zoomFov && !def.alt && sDist > 7) buttons |= BUTTON_ZOOM;
     if (throwNow) buttons |= BUTTON_THROW;
 
     // Reload: when empty; topping up only when nobody is in sight, or from behind cover.
@@ -2887,23 +3003,28 @@ export class BotBrain {
     const fx = Math.sin(this.yaw);
     const fz = Math.cos(this.yaw);
     this.memory.mark(me.pos, tick);
-    // Who could be seen (in range, in view or close enough to hear, not hidden in a bush), nearest first.
+    // Who could be seen (in range, in view or close enough to hear, not hidden in a bush), nearest first. A sniper on
+    // its spot with the scope up: further, within the scope's view.
     const live = this.live;
     live.length = 0;
+    const held = this.post?.kind === 'sniper' ? this.heldDef(view) : undefined;
+    const sight = held && this.sniping(view, held) ? Math.max(SIGHT_RANGE, Math.min(SCOPE_SIGHT, held.botRange[1])) : SIGHT_RANGE;
     for (const o of view.others) {
       if (!o.alive) continue;
       const ox = o.pos.x - me.pos.x;
       const oy = o.pos.y - me.pos.y;
       const oz = o.pos.z - me.pos.z;
       const d2 = ox * ox + oy * oy + oz * oz;
-      if (d2 >= SIGHT_RANGE * SIGHT_RANGE) continue;
+      if (d2 >= sight * sight) continue;
       const d = Math.sqrt(d2);
-      const range = SIGHT_RANGE * STANCE_SIGHT[o.stance ?? 0];
+      const range = sight * STANCE_SIGHT[o.stance ?? 0];
       if (d > range && !this.visibleSince.has(o.slot)) continue;
       const dx = ox / (d || 1);
       const dz = oz / (d || 1);
-      const inFov = dx * fx + dz * fz >= FOV_COS * Math.sqrt(dx * dx + dz * dz);
+      const ahead = dx * fx + dz * fz;
+      const inFov = ahead >= FOV_COS * Math.sqrt(dx * dx + dz * dz);
       if (!inFov && d > HEARING_RANGE) continue;
+      if (d > SIGHT_RANGE && ahead < SCOPE_COS * Math.sqrt(dx * dx + dz * dz)) continue;
       // Someone hiding in a bush is only spotted close by (a little further once already being tracked).
       if (o.concealed && d > (this.visibleSince.has(o.slot) ? CONCEAL_TRACK : CONCEAL_SPOT)) continue;
       const c = this.pool[live.length] ?? (this.pool[live.length] = { o, dx: 0, dz: 0, score: 0, checked: false });
@@ -3171,7 +3292,7 @@ export class BotBrain {
       const to = this.standIn ?? goal;
       let found: Vec3[] | null = null;
       if (onto) found = [{ ...me.pos }, onto];
-      else if (!backedOff) found = (offLifts && view.nav.findPath(me.pos, to, offLifts)) || view.nav.findPath(me.pos, to, 0, true);
+      else if (!backedOff) found = (offLifts && view.nav.findPath(me.pos, to, offLifts, false, this.coverRoutes)) || view.nav.findPath(me.pos, to, 0, true, this.coverRoutes);
       if (!backedOff && !onto) {
         this.pathFails = found ? 0 : Math.min(this.pathFails + 1, 6);
         this.pathSearches++;
@@ -3678,6 +3799,19 @@ function cheapestRoute(trips: readonly PricedTrip[], goal: Vec3, rng: () => numb
     }
   });
   return pick;
+}
+
+/** A goal a sniper may hold a spot over (OrderGoal): one to hold (a CTF defender's flag, a hill), not one to get to. */
+function holdsPost(g: OrderGoal): boolean {
+  return !g.run && !g.order && !g.push;
+}
+
+/** How squarely `t` faces `at` (1: looking straight at it; 0: sideways; below: away). */
+function facingOf(t: CombatantView, at: Vec3): number {
+  const dx = at.x - t.pos.x;
+  const dz = at.z - t.pos.z;
+  const d = Math.hypot(dx, dz) || 1;
+  return (Math.sin(t.yaw) * dx + Math.cos(t.yaw) * dz) / d;
 }
 
 /** The nearest of `points` to `from` (null: none). */

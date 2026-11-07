@@ -2,7 +2,7 @@ import { readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { cpus, loadavg } from 'node:os';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { BOT_DIFFICULTIES, CORE_BOT_PROFILES, TICK_RATE, initPhysics, isGameMode, loadMap, mapCanRun, rulesForMode, type GameEvent, type GameMode, type MapDocument } from '@tiletrigger/shared';
+import { BOT_DIFFICULTIES, CHARACTER_PROFILES, CORE_BOT_PROFILES, TICK_RATE, hasTag, initPhysics, isGameMode, loadMap, mapCanRun, rulesForMode, type BotProfile, type GameEvent, type GameMode, type MapDocument } from '@tiletrigger/shared';
 import { CtfMode, FortsMode, KothMode, Match, ctfRoleOf, initNavigation, placeOn, simProfile } from '@tiletrigger/shared/match';
 import { Behaviour } from './botMeasures.ts';
 import { drawNavPictures } from './navPictures.ts';
@@ -92,6 +92,23 @@ interface BotRow {
   /** Vantage spots it got to (campers, snipers), and rounds it fired from one. */
   posts?: number;
   postShots?: number;
+  /** Snipers: spots left after a shot or two or for being spotted, and seconds a shot was held for a better one. */
+  moves?: number;
+  held?: number;
+  /** Its style: Arena, Tactical, or neither ('mixed': the character's own way between them). */
+  style?: BotStyleName;
+}
+
+type BotStyleName = 'arena' | 'tactical' | 'mixed';
+const STYLES: readonly BotStyleName[] = ['tactical', 'mixed', 'arena'];
+
+function styleOf(p: BotProfile): BotStyleName {
+  return hasTag(p, 'ARENA') ? 'arena' : hasTag(p, 'TACTICAL') ? 'tactical' : 'mixed';
+}
+
+/** A row's style (rows from before it was kept: by its character, as a match without a style setting plays it). */
+function rowStyle(r: BotRow): BotStyleName {
+  return r.style ?? (CHARACTER_PROFILES[r.look] ? styleOf(CHARACTER_PROFILES[r.look]!) : 'mixed');
 }
 
 /** A failed route search: from (x, y, z) toward (x, y, z). */
@@ -145,7 +162,7 @@ export interface MatchRow {
    * its bots between a fifth and four fifths of the way along it, by the corridor they were on (within ROUTE_NEAR m of
    * it), and off them all.
    */
-  routes?: { team: string; to: [number, number, number]; corridors: number; use: number[]; other: number; cross?: number[]; crossOther?: number }[];
+  routes?: { team: string; to: [number, number, number]; corridors: number; use: number[]; other: number; cross?: number[]; crossOther?: number; follow?: [number, number, number] }[];
   /** Group pushes per team (the team brain, bots/teamBrain.ts PushStats): waves set out, got there, lost half first, metres gained and seconds. */
   pushes?: Record<string, { started: number; reached: number; lostHalf: number; metres: number; seconds: number }>;
   bots: BotRow[];
@@ -289,7 +306,7 @@ function play(map: MapDocument, mode: GameMode, seed: number, seconds: number): 
   }
   // Route variety: each team's trips (to an objective) and the bot-seconds on each of their corridors.
   const trips = match.botTrips().filter((t) => t.kind !== 'carry' && t.trip.corridors.length > 0);
-  const routeUse = trips.map((t) => ({ team: t.team, to: [Math.round(t.to.x), Math.round(t.to.y), Math.round(t.to.z)] as [number, number, number], corridors: t.trip.corridors.length, use: t.trip.corridors.map(() => 0), other: 0, cross: t.trip.corridors.map(() => 0), crossOther: 0 }));
+  const routeUse = trips.map((t) => ({ team: t.team, to: [Math.round(t.to.x), Math.round(t.to.y), Math.round(t.to.z)] as [number, number, number], corridors: t.trip.corridors.length, use: t.trip.corridors.map(() => 0), other: 0, cross: t.trip.corridors.map(() => 0), crossOther: 0, follow: [0, 0, 0] as [number, number, number] }));
   // Route choice: per bot and trip, its progress along the trip a second ago, and whether it has voted this life.
   const crossing = new Map<string, { along: number; voted: boolean }>();
   // Vantage spots: where each bot last held one (to count arrivals).
@@ -475,6 +492,10 @@ function play(map: MapDocument, mode: GameMode, seed: number, seconds: number): 
             });
             if (pick >= 0) routeUse[i]!.cross[pick]!++;
             else routeUse[i]!.crossOther++;
+            // How it went: on the corridor it was following (the team brain's or its own pick), off it, or its own lane.
+            const own = (b as unknown as { corridor: unknown }).corridor;
+            const followed = own ? t.trip.corridors.indexOf(own as never) : -2;
+            routeUse[i]!.follow[followed === -2 || followed === -1 ? 2 : followed === pick ? 0 : 1]++;
           }
           if (cs) cs.along = along;
           else crossing.set(key, { along, voted: false });
@@ -547,6 +568,9 @@ function play(map: MapDocument, mode: GameMode, seed: number, seconds: number): 
     for (const [k, v] of roles.get(c.slot) ?? []) if (k !== 'carrier' && v > n) [best, n] = [k, v];
     r.role = best;
     r.job = match.botRole(c.slot) ?? '';
+    r.style = styleOf(c.bot!.profile);
+    r.moves = c.bot!.relocations;
+    r.held = c.bot!.heldShots;
     out.bots.push(r);
   }
   out.routes = routeUse.filter((u) => u.other + u.use.reduce((a, b) => a + b, 0) > 0);
@@ -619,7 +643,7 @@ function printMatch(m: MatchRow): void {
   }
   const fightT = sum(m.bots, (r) => r.fight ?? 0);
   const snipers = m.bots.filter((r) => r.job === 'sniper');
-  console.log(`fights: in cover ${pct(sum(m.bots, (r) => r.coverFight ?? 0), fightT)} of fight time | scoped kills ${sum(m.bots, (r) => r.scopedKills ?? 0)} (from a vantage spot ${sum(m.bots, (r) => r.postKills ?? 0)}) | snipers ${snipers.length}: spots ${sum(snipers, (r) => r.posts ?? 0)}, rounds from spots ${sum(snipers, (r) => r.postShots ?? 0)}, kills ${sum(snipers, (r) => r.kills)} (scoped ${sum(snipers, (r) => r.scopedKills ?? 0)})`);
+  console.log(`fights: in cover ${pct(sum(m.bots, (r) => r.coverFight ?? 0), fightT)} of fight time | scoped kills ${sum(m.bots, (r) => r.scopedKills ?? 0)} (from a vantage spot ${sum(m.bots, (r) => r.postKills ?? 0)}) | snipers ${snipers.length}: spots ${sum(snipers, (r) => r.posts ?? 0)}, rounds from spots ${sum(snipers, (r) => r.postShots ?? 0)}, moved on after shots ${sum(snipers, (r) => r.moves ?? 0)}, shots held ${sum(snipers, (r) => r.held ?? 0)} s, kills ${sum(snipers, (r) => r.kills)} (scoped ${sum(snipers, (r) => r.scopedKills ?? 0)})`);
   const why = new Map<string, number>();
   for (const r of m.bots) for (const [k, v] of Object.entries(r.why)) why.set(k, (why.get(k) ?? 0) + v);
   console.log(`idle by reason (% of alive time): ${[...why].sort((a, b) => b[1] - a[1]).slice(0, 12).map(([k, v]) => `${k} ${pct(v, alive)}`).join(', ')}`);
@@ -710,9 +734,18 @@ export function measure(ms: readonly MatchRow[]) {
     pieces: has('core.forts') ? sum(ms, (m) => m.pieces ?? 0) / n : undefined,
     ...routeMeasures(ms),
     coverFight: sum(bots, (r) => r.fight ?? 0) > 0 ? sum(bots, (r) => r.coverFight ?? 0) / sum(bots, (r) => r.fight ?? 0) : undefined,
+    /** Time in cover in a fight by style (Phase B item 6: Tactical most, Arena least). */
+    coverByStyle: Object.fromEntries(
+      STYLES.map((st) => {
+        const of = bots.filter((r) => rowStyle(r) === st);
+        const fight = sum(of, (r) => r.fight ?? 0);
+        return [st, fight > 0 ? sum(of, (r) => r.coverFight ?? 0) / fight : undefined];
+      }),
+    ) as Record<BotStyleName, number | undefined>,
     scopedKills: sum(bots, (r) => r.scopedKills ?? 0) / n,
     postKills: sum(bots, (r) => r.postKills ?? 0) / n,
     sniperPosts: sum(bots.filter((r) => r.job === 'sniper'), (r) => r.posts ?? 0) / n,
+    sniperMoves: sum(bots.filter((r) => r.job === 'sniper'), (r) => r.moves ?? 0) / n,
     snipers: bots.filter((r) => r.job === 'sniper').length / n,
   };
 }
@@ -919,7 +952,15 @@ function printCompare(before: readonly MatchRow[], after: readonly MatchRow[]): 
   const g = (v: number | undefined, d = 2, k = 100) => (v === undefined ? '-' : (v * k).toFixed(d));
   console.log(`failed searches ${g(ma.failedSearches)} → ${g(mb.failedSearches)} % (${ma.noRoute.toFixed(0)} → ${mb.noRoute.toFixed(0)} a match of ${ma.searches.toFixed(0)} → ${mb.searches.toFixed(0)}); no-route idle ${g(ma.noRouteIdle)} → ${g(mb.noRouteIdle)} %; idle out of a fight ${g(ma.calm, 1)} → ${g(mb.calm, 1)} %; frozen ${g(ma.frozen, 1)} → ${g(mb.frozen, 1)} %; stuck ${ma.stuck.toFixed(0)} → ${mb.stuck.toFixed(0)} a match (${ma.stuckPerBotMin.toFixed(2)} → ${mb.stuckPerBotMin.toFixed(2)} a bot-minute); 10 s+ idle spells ${ma.spells10.toFixed(1)} → ${mb.spells10.toFixed(1)} a match; kills ${ma.killsMin.toFixed(1)} → ${mb.killsMin.toFixed(1)} a minute; think ${g(ma.thinkMs, 2, 1)} → ${g(mb.thinkMs, 2, 1)} ms`);
   console.log(`route choice (bots past a trip's middle, once a life): two ways or more ${g(ma.ways2, 0)} → ${g(mb.ways2, 0)} % of team trips, busiest way ${g(ma.waysBusiest, 0)} → ${g(mb.waysBusiest, 0)} %`);
-  console.log(`routes: team trips on two routes or more ${g(ma.routes2, 0)} → ${g(mb.routes2, 0)} % (of ${ma.tripsMeasured} → ${mb.tripsMeasured} with two ways or more; ${ma.oneWay} → ${mb.oneWay} with one), busiest route ${g(ma.busiest, 0)} → ${g(mb.busiest, 0)} %; time in cover in a fight ${g(ma.coverFight, 1)} → ${g(mb.coverFight, 1)} %; scoped kills ${ma.scopedKills.toFixed(1)} → ${mb.scopedKills.toFixed(1)} a match (from a vantage spot ${ma.postKills.toFixed(1)} → ${mb.postKills.toFixed(1)}); sniper spots ${ma.sniperPosts.toFixed(1)} → ${mb.sniperPosts.toFixed(1)} a match (${ma.snipers.toFixed(1)} → ${mb.snipers.toFixed(1)} snipers)`);
+  console.log(`routes: team trips on two routes or more ${g(ma.routes2, 0)} → ${g(mb.routes2, 0)} % (of ${ma.tripsMeasured} → ${mb.tripsMeasured} with two ways or more; ${ma.oneWay} → ${mb.oneWay} with one), busiest route ${g(ma.busiest, 0)} → ${g(mb.busiest, 0)} %; time in cover in a fight ${g(ma.coverFight, 1)} → ${g(mb.coverFight, 1)} %; scoped kills ${ma.scopedKills.toFixed(1)} → ${mb.scopedKills.toFixed(1)} a match (from a vantage spot ${ma.postKills.toFixed(1)} → ${mb.postKills.toFixed(1)}); sniper spots ${ma.sniperPosts.toFixed(1)} → ${mb.sniperPosts.toFixed(1)} a match (${ma.snipers.toFixed(1)} → ${mb.snipers.toFixed(1)} snipers), moved on after shots ${ma.sniperMoves.toFixed(1)} → ${mb.sniperMoves.toFixed(1)} a match`);
+  console.log(`time in cover in a fight by style: ${STYLES.map((st) => `${st} ${g(ma.coverByStyle[st], 1)} → ${g(mb.coverByStyle[st], 1)} %`).join(', ')}`);
+  const follow = (ms: readonly MatchRow[]) => {
+    const f = [0, 0, 0];
+    for (const m of ms) for (const u of m.routes ?? []) if (u.follow) for (let k = 0; k < 3; k++) f[k]! += u.follow[k]!;
+    const t = f[0]! + f[1]! + f[2]!;
+    return t ? f.map((v) => `${((v / t) * 100).toFixed(0)}`).join('/') : '-';
+  };
+  console.log(`route choice by how the bots went (on the corridor they followed / off it / their own lane, %): ${follow(before)} → ${follow(after)}`);
   // Per mode: each mode's objective and the measures every mode has.
   const modes = [...new Set([...before, ...after].map((m) => m.mode))].sort();
   if (modes.length > 1 || !modes.includes('core.ctf')) {

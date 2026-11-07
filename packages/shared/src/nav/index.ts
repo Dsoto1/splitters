@@ -86,6 +86,21 @@ export interface NavGraph {
   flags: Uint16Array;
 }
 
+/**
+ * Open ground (NavWorld.markExposure): its navmesh area, how far (m) round a polygon's middle cover must be for it not
+ * to count, and what crossing it costs a route by how much the bot prefers cover (findPath `open`: 0 Arena, 1 Mixed,
+ * 2 Tactical).
+ */
+export const OPEN_AREA = 1;
+const EXPOSED_REACH = 3;
+const OPEN_COST = [1, 1.2, 1.45];
+const FOUR = [
+  { x: 1, y: 0, z: 0 },
+  { x: -1, y: 0, z: 0 },
+  { x: 0, y: 0, z: 1 },
+  { x: 0, y: 0, z: -1 },
+];
+
 /** Recast's settings for the bots' navmesh (NavWorld.build). */
 const RECAST_CONFIG = {
   cs: CELL,
@@ -192,7 +207,12 @@ export class NavWorld {
         world.spawnSeeds = drops.spawns;
         world.disableInsideSolid(drops.physics, drops.solids);
       }
-      if (!relink) return world;
+      // (Exposed ground on the world returned only: the first is rebuilt with its links when it has any.)
+      const done = (w: NavWorld) => {
+        if (drops) w.markExposure(drops.physics);
+        return w;
+      };
+      if (!relink) return done(world);
       // Jump links must start and end on the mesh: snap them to it, then build again with the links in.
       const onMesh = links.flatMap((l) => {
         // Lift links say how far to look (level with the platform's stop, so the far end isn't snapped back onto the platform below).
@@ -202,7 +222,7 @@ export class NavWorld {
       });
       // Ways down off patches that have none (on the mesh already: an edge of the patch, a polygon below).
       const exits = drops ? trapExits(world, drops.physics, drops.spawns, onMesh, drops) : [];
-      if (!onMesh.length && !exits.length) return world;
+      if (!onMesh.length && !exits.length) return done(world);
       const all = [...onMesh, ...exits];
       const navMesh = withLinks(inter, all);
       world.destroy();
@@ -212,7 +232,7 @@ export class NavWorld {
         built.disableInsideSolid(drops.physics, drops.solids);
       }
       built.drops = exits.length;
-      return built;
+      return done(built);
     } finally {
       if (relink) freeIntermediates(inter);
     }
@@ -222,6 +242,40 @@ export class NavWorld {
   drops = 0;
   /** Polygons the build found inside something solid and left out (disableInsideSolid). */
   insideSolid = 0;
+  /** Ground polygons in the open (markExposure), and their area. */
+  exposed = 0;
+  exposedArea = 0;
+
+  /**
+   * Route costs that prefer cover (BOT_AI_PLAN.md Phase B item 6): each ground polygon with nothing within EXPOSED_REACH
+   * m of its middle at chest height in any of four directions (open ground: a field, a square) gets area OPEN_AREA,
+   * which a route asked for with `open` costs more to cross (findPath; Tactical bots most, Arena bots not at all). Four
+   * rays a polygon, at build.
+   */
+  markExposure(physics: PhysicsWorld): number {
+    const g = this.graph();
+    const { centre, area } = polyShapes(g);
+    let n = 0;
+    let m2 = 0;
+    for (let i = 0; i < g.count; i++) {
+      if (g.type[i] !== 0 || g.flags[i] === 0) continue;
+      const o = { x: centre[i * 3]!, y: centre[i * 3 + 1]! + 1, z: centre[i * 3 + 2]! };
+      let hit = false;
+      for (const d of FOUR) {
+        if (physics.raycastWorld(o, d, EXPOSED_REACH) !== null) {
+          hit = true;
+          break;
+        }
+      }
+      if (hit) continue;
+      this.navMesh.setPolyArea(g.base + i, OPEN_AREA);
+      n++;
+      m2 += area[i] ?? 0;
+    }
+    this.exposed = n;
+    this.exposedArea = m2;
+    return n;
+  }
 
   /**
    * Recast rasterizes surfaces, not volumes: inside a closed box at least a body's height tall (a stack of 2 m rock
@@ -285,10 +339,10 @@ export class NavWorld {
    * Straight-path corners from a to b, or null if b is unreachable from a. `shut`: openings (markOpenings' flag
    * bits) the route must keep out of, such as doors shut to the bot's team that no button opens for it.
    */
-  findPath(a: Vec3, b: Vec3, shut = 0, partial = false): Vec3[] | null {
-    if (!simProfile.on) return this.findPathNow(a, b, shut, partial);
+  findPath(a: Vec3, b: Vec3, shut = 0, partial = false, open = 0): Vec3[] | null {
+    if (!simProfile.on) return this.findPathNow(a, b, shut, partial, open);
     const t0 = performance.now();
-    const r = this.findPathNow(a, b, shut, partial);
+    const r = this.findPathNow(a, b, shut, partial, open);
     simProfile.add('nav', performance.now() - t0);
     simProfile.count('nav');
     if (!r) simProfile.count('navFail');
@@ -309,7 +363,7 @@ export class NavWorld {
    * `partial`: a route that exists but that the search ran out of nodes on (a very long way over a big map) comes
    * back as far as the search got, Detour's partial route: walk it, and ask again from its end.
    */
-  private findPathNow(a: Vec3, b: Vec3, shut = 0, partial = false): Vec3[] | null {
+  private findPathNow(a: Vec3, b: Vec3, shut = 0, partial = false, open = 0): Vec3[] | null {
     const ext = { x: 2, y: 3, z: 2 };
     const s = this.query.findNearestPoly(a, { halfExtents: ext });
     const e = this.query.findNearestPoly(b, { halfExtents: ext });
@@ -329,7 +383,7 @@ export class NavWorld {
     }
     const failKey = `${s.nearestRef}:${e.nearestRef}:${shut}`;
     if (!partial && this.noRoute.has(failKey)) return null;
-    const r = this.query.findPath(s.nearestRef, e.nearestRef, start, end, shut ? { maxPathPolys: MAX_PATH_POLYS, filter: this.filterFor(shut) } : { maxPathPolys: MAX_PATH_POLYS });
+    const r = this.query.findPath(s.nearestRef, e.nearestRef, start, end, shut || open ? { maxPathPolys: MAX_PATH_POLYS, filter: this.filterFor(shut, open) } : { maxPathPolys: MAX_PATH_POLYS });
     const n = r.polys.size;
     // A partial path (destination unreachable, or the search ran out of nodes) ends short of the goal.
     const whole = r.success && n > 0 && r.polys.get(n - 1) === e.nearestRef;
@@ -468,14 +522,16 @@ export class NavWorld {
   /** Route filters that keep out of shut openings, by mask (a few per match: doors open and shut). */
   private readonly filters = new Map<number, QueryFilter>();
 
-  private filterFor(shut: number): QueryFilter {
-    let f = this.filters.get(shut);
+  private filterFor(shut: number, open = 0): QueryFilter {
+    const key = shut * 4 + open;
+    let f = this.filters.get(key);
     if (!f) {
       f = new QueryFilter();
       f.includeFlags = 0xffff;
       f.excludeFlags = shut;
+      f.setAreaCost(OPEN_AREA, OPEN_COST[open] ?? 1);
       if (this.filters.size >= 64) this.filters.clear();
-      this.filters.set(shut, f);
+      this.filters.set(key, f);
     }
     return f;
   }
