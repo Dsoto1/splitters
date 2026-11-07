@@ -152,7 +152,10 @@ describe('interior dressing', () => {
     for (const type of ROOM_TYPES) {
       const full = dressRoom(space, type, { seed: 3, density: 'full' });
       expect(full.length, type).toBeLessThanOrEqual(48);
-      expect(new Set(full.map((p) => p.model)).size, type).toBeLessThanOrEqual(16);
+      // A full room mixes its recipe's alternatives: over seeds 1-30 the most different models any room type takes
+      // here is 19 (a kitchen; a living room's two lounge sets alone are 8). 16 held for seed 3 only by chance: the
+      // living room took 16 until the prop scale pass's real-size sofas changed where its pieces fit, then 19.
+      expect(new Set(full.map((p) => p.model)).size, type).toBeLessThanOrEqual(20);
       expect(dressRoom(space, type, { seed: 3, density: 'full', max: 6 }).length).toBeLessThanOrEqual(6);
     }
     // At the map's model budget, only models already in use are picked.

@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 20,
+  "formatVersion": 27,
   "metadata": {
     "id": "maple_court",
     "name": "Maple Court",
@@ -18,7 +18,15 @@
       "core.ctf",
       "core.koth",
       "core.deathmatch"
-    ]
+    ],
+    "release": {
+      "mapId": "m_tqonszbqjn5i6g6u",
+      "versionId": "v_jwmtlbweixevsieb",
+      "revision": 1,
+      "contentHash": "sha256:b43de9ac837a5f170abb3714cd2f94cf70450655b3c6a0f34ec1b5414e4accde",
+      "schemaVersion": 27,
+      "releasedAt": "2026-11-06T23:02:46.031Z"
+    }
   },
   "classicStructure": {
     "cellSize": 8,
@@ -13086,7 +13094,7 @@
     {
       "id": "prop_661",
       "position": [
-        61.17,
+        61.215,
         0,
         108.69
       ],
@@ -16632,7 +16640,6 @@
     "style": "invisible",
     "height": 8
   },
-  "track": null,
   "backdrop": {
     "sky": "sunset",
     "scenery": "hills",

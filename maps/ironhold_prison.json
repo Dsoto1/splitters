@@ -24,11 +24,11 @@
     ],
     "release": {
       "mapId": "m_hec75nt4d7ttj6ub",
-      "versionId": "v_ze2hxs62pr7vors4",
-      "revision": 2,
-      "contentHash": "sha256:0467ea081215fc799e4484b6008eda900d9a9dd73560093308b582cbc9d977f4",
+      "versionId": "v_cjhmdx6feek5hdci",
+      "revision": 3,
+      "contentHash": "sha256:339d0fabcc6a623aac5c18eb431a8801be94ded8030e06fd68dd1db84f8f1a74",
       "schemaVersion": 27,
-      "releasedAt": "2026-11-06T15:56:35.975Z"
+      "releasedAt": "2026-11-06T23:01:38.266Z"
     }
   },
   "classicStructure": {
@@ -18573,7 +18573,7 @@
       "kind": "prop",
       "model": "prop.bench",
       "yaw": 0,
-      "scale": 2.5,
+      "scale": 1,
       "solid": false,
       "tint": null
     },
@@ -18587,7 +18587,7 @@
       "kind": "prop",
       "model": "prop.bench",
       "yaw": 0,
-      "scale": 2.5,
+      "scale": 1,
       "solid": false,
       "tint": null
     },
@@ -18615,7 +18615,7 @@
       "kind": "prop",
       "model": "prop.bench",
       "yaw": 0,
-      "scale": 2.5,
+      "scale": 1,
       "solid": false,
       "tint": null
     },
@@ -18629,7 +18629,7 @@
       "kind": "prop",
       "model": "prop.bench",
       "yaw": 0,
-      "scale": 2.5,
+      "scale": 1,
       "solid": false,
       "tint": null
     },
@@ -18657,7 +18657,7 @@
       "kind": "prop",
       "model": "prop.bench",
       "yaw": 0,
-      "scale": 2.5,
+      "scale": 1,
       "solid": false,
       "tint": null
     },
@@ -18671,7 +18671,7 @@
       "kind": "prop",
       "model": "prop.bench",
       "yaw": 0,
-      "scale": 2.5,
+      "scale": 1,
       "solid": false,
       "tint": null
     },
@@ -18699,7 +18699,7 @@
       "kind": "prop",
       "model": "prop.bench",
       "yaw": 0,
-      "scale": 2.5,
+      "scale": 1,
       "solid": false,
       "tint": null
     },
@@ -18713,7 +18713,7 @@
       "kind": "prop",
       "model": "prop.bench",
       "yaw": 0,
-      "scale": 2.5,
+      "scale": 1,
       "solid": false,
       "tint": null
     },
@@ -19329,7 +19329,7 @@
       "kind": "prop",
       "model": "prop.bench",
       "yaw": 0,
-      "scale": 2.5,
+      "scale": 1,
       "solid": false,
       "tint": null
     },
@@ -19343,7 +19343,7 @@
       "kind": "prop",
       "model": "prop.bench",
       "yaw": 0,
-      "scale": 2.5,
+      "scale": 1,
       "solid": false,
       "tint": null
     },
@@ -19371,7 +19371,7 @@
       "kind": "prop",
       "model": "prop.bench",
       "yaw": 0,
-      "scale": 2.5,
+      "scale": 1,
       "solid": false,
       "tint": null
     },
@@ -19385,7 +19385,7 @@
       "kind": "prop",
       "model": "prop.bench",
       "yaw": 0,
-      "scale": 2.5,
+      "scale": 1,
       "solid": false,
       "tint": null
     },
@@ -19413,7 +19413,7 @@
       "kind": "prop",
       "model": "prop.bench",
       "yaw": 0,
-      "scale": 2.5,
+      "scale": 1,
       "solid": false,
       "tint": null
     },
@@ -19427,7 +19427,7 @@
       "kind": "prop",
       "model": "prop.bench",
       "yaw": 0,
-      "scale": 2.5,
+      "scale": 1,
       "solid": false,
       "tint": null
     },
@@ -19455,7 +19455,7 @@
       "kind": "prop",
       "model": "prop.bench",
       "yaw": 0,
-      "scale": 2.5,
+      "scale": 1,
       "solid": false,
       "tint": null
     },
@@ -19469,7 +19469,7 @@
       "kind": "prop",
       "model": "prop.bench",
       "yaw": 0,
-      "scale": 2.5,
+      "scale": 1,
       "solid": false,
       "tint": null
     },
@@ -19497,7 +19497,7 @@
       "kind": "prop",
       "model": "prop.bench",
       "yaw": 0,
-      "scale": 2.5,
+      "scale": 1,
       "solid": false,
       "tint": null
     },
@@ -19511,7 +19511,7 @@
       "kind": "prop",
       "model": "prop.bench",
       "yaw": 0,
-      "scale": 2.5,
+      "scale": 1,
       "solid": false,
       "tint": null
     },
@@ -19539,7 +19539,7 @@
       "kind": "prop",
       "model": "prop.bench",
       "yaw": 0,
-      "scale": 2.5,
+      "scale": 1,
       "solid": false,
       "tint": null
     },
@@ -19553,7 +19553,7 @@
       "kind": "prop",
       "model": "prop.bench",
       "yaw": 0,
-      "scale": 2.5,
+      "scale": 1,
       "solid": false,
       "tint": null
     },
@@ -20477,7 +20477,7 @@
       "kind": "prop",
       "model": "prop.bench",
       "yaw": 3.14,
-      "scale": 2.5,
+      "scale": 1,
       "solid": false,
       "tint": null
     },
@@ -20743,7 +20743,7 @@
       "kind": "prop",
       "model": "prop.bench",
       "yaw": 1.57,
-      "scale": 2.5,
+      "scale": 1,
       "solid": false,
       "tint": null
     },

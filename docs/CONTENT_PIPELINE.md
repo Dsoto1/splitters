@@ -944,6 +944,97 @@ stop on a plate where it is narrower (`iron_fence`'s close bars).
 Breakable props collide as their `boxes` too (one collider each in `ScenarioBodies`, all of them the
 prop: a shot anywhere damages it); their bounds still decide blasts, footing and paths.
 
+### Real-world sizes
+
+Props stand at their real-world size beside the characters: 1.80 m standard (1.40 m small, 2.12 m
+large), the standing eye at 1.6 m. Furniture is judged by what it is for, not by its bounding box: a
+chair by its seat, a table by its top, a bed by its mattress, a fridge, a bookcase or a door by its
+height. A tall back over a small, low seat reads as a child's chair beside a 1.8 m body.
+
+| Piece | Reference |
+|---|---|
+| Dining chair | seat 0.46 m |
+| Office chair | seat 0.48 m |
+| Bar stool / counter stool | seat 0.75 m / 0.65 m |
+| Sofa or armchair | seat 0.44 m (back 0.85–0.95 m) |
+| Bench | seat 0.45 m |
+| Desk or table | top 0.75–0.78 m |
+| Kitchen counter | 0.92 m |
+| Bar or shop counter | 1.05 m |
+| Bed | top 0.5–0.6 m, length 2.0 m |
+| Bunk | 1.6–1.8 m |
+| Toilet | seat 0.42 m |
+| Sink or wash basin | rim 0.85 m |
+| Fridge | 1.75–1.85 m |
+| Bookcase | 1.8–2.0 m |
+| Door opening | 2.05–2.1 m × 0.9 m |
+
+A chair seat narrower than about 0.42 m reads as a child's chair too.
+
+- **The catalogue carries the size**: one `height` per prop in its pack file (the pack's `scale` when a
+  whole pack is off), chosen so its seat, top or height lands on the reference. Maps place props at ×1;
+  an instance scale is for a deliberate difference (Pantry Raid's giant kitchen), never to make up for a
+  prop the catalogue has wrong.
+- **Real size, no "game size" factor** (owner, 2026-11-07: "Keep real size"): furniture stands at the
+  reference sizes, with no factor over them to make it read bigger. The lineup drawn at ×1.1 (`SCALE=1.1`)
+  showed why: seats then sit at 0.48–0.50 m and read high beside the 1.8 m body, and rooms built around
+  today's sizes crowd (a living room's sofa and armchair run together).
+- **The 10 % rule**: a prop whose seat, top or height is more than 10 % off its reference (off the
+  range, where the reference is one) gets a new height; one within 10 % keeps its own. A height scales
+  the prop whole, so where its proportions are off (a bed top right but the bed 3.6 m long) it is listed
+  below instead of stretched.
+- **Kept-as-built props follow their height** (packs from a `download` that isn't being rebuilt):
+  `prepare-props.mjs` scales the built model about its foot to a new `height` (a rebuild from the
+  download makes it at that height anyway).
+- **`node tools/content/prop-sizes.mjs`** measures every furniture prop from its built model: its kind
+  and reference (`tools/content/furniture.mjs`), the seat or top (the largest upward-facing area in the
+  band of its height where that sits), the height that would bring it to the reference, its width then,
+  and how the maps place it; it marks seats narrower than 0.42 m. `PACKS=` or `ONLY=` limit it, `--json`
+  prints JSON. The area can catch the wrong face (a basin's bowl, armrests, a dungeon chair named
+  "Stool"): look at those in the lineup.
+- **`node tools/content/prop-lineup.mjs <url> <out dir>`** (against a served build; `?mode=lineup`,
+  `packages/client/src/tools/propLineup.ts`) draws a sheet per pack: its furniture and everyday props in
+  rows beside the three characters and a ruler, the seat, table, counter and door heights drawn across,
+  each row from a standing player's eye and from the side. `PACKS=` or `ONLY=` pick props;
+  `SCALE=<factor>` draws them that much bigger, to show a "game size" factor without changing anything.
+- **Maps after a resize**, in MapMaker (never by hand): placements whose instance scale made up for the
+  old size go back to ×1, props resting on a resized prop follow its top, and a prop whose new bounds
+  reach into a wall or a neighbour moves clear of it.
+
+The pass of 2026-11-06 (measured from the built models, before → after):
+
+| Prop | Height | Seat, top or rim |
+|---|---|---|
+| `bench` (Kenney Furniture) | 0.45 → 0.92 m | seat 0.22 → 0.46 m |
+| `graveyard_bench` (Kenney Graveyard) | 0.5 → 1.02 m | seat 0.22 → 0.45 m |
+| `office_chair` (Kenney Furniture) | 1.0 → 1.26 m | seat 0.37 → 0.47 m |
+| `dungeon_chair` (Kenney Mini Dungeon) | 0.8 → 1.12 m | seat 0.33 → 0.46 m |
+| `hm_couch`, `hm_couch_large`, `hm_couch_l`, `hm_armchair` (Quaternius House) | 0.85 → 1.04 m | seat 0.35–0.37 → 0.43–0.45 m |
+| `hm_dresser` (Quaternius House) | 1.0 → 0.8 m | top 1.0 → 0.8 m (65 of its 79 placements were at ×0.8) |
+| `mt_bench` (Metro) | 0.81 → 0.96 m | seat 0.39 → 0.47 m |
+| `hh_toilet` (Household) | 1.01 → 0.89 m | seat 0.48 → 0.42 m |
+| `hh_desk` (Household) | 0.85 → 0.77 m | top 0.84 → 0.76 m |
+| `hh_basin` (Household) | 0.76 → 0.95 m | rim 0.67 → 0.84 m |
+
+The maps followed in MapMaker: 44 Kenney benches at ×2.5, ×2.6 or ×1.5 (Ironhold Prison, Diamond Park,
+Neon Galleria, Riot Junction, Grand Marquee) and St John's 65 dressers at ×0.8 went back to ×1; 7
+monitors and lamps on household desks came down with the desk tops; 27 placements (14 sofas, 6
+armchairs, 6 benches, a basin) moved 0.05–0.32 m clear of the wall, bookcase or plant their new size
+reached into. Listed, not changed:
+
+- Seats the right height but narrow: Kenney `chair` (0.40 m wide, 182 placements) and the household
+  `hh_chair` (0.41 m, 80): widening them takes the model.
+- Low beds whose length is right: Kenney `bed` (top 0.38 m, 1.95 m long) and the household beds (top
+  0.38 m, 2.22 m long); raising the top to 0.5 m would make them 2.6–2.9 m long. Quaternius
+  `hm_bed_king` is the other way: top 0.65 m but 3.6 m long and 2.8 m wide.
+- `hp_wheelchair`: seat 0.40 m, but bigger it would be 0.83 m wide and 1.23 m long.
+- Doors sized to their wall kits: the hospital's doors are 3.0 m high in 3.75 m doorways, and the Wild
+  West, sci-fi, castle and dungeon doors follow their walls; a real-size door needs its kit and its
+  maps rebuilt.
+- The household kettle (0.55 m) and desk fan (0.59 m) are twice their size, but Pantry Raid places the
+  kettle at ×4 as a giant, and MapMaker's scale stops at 4.
+- `hm_chair_wood` (seat 0.42 m) and `hm_chair_office` (0.44 m) are within 10 % and keep their heights.
+
 ### Adding a prop pack
 
 Props live one file per content pack, `content/props/<pack>.json` (the pack id is the file name),

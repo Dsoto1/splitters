@@ -69,9 +69,11 @@ describe('one path primitive: migration (v22 -> v23)', () => {
   // Every shipped map with a race track races and draws exactly as before: the same curve, checkpoints, grid,
   // ambient cars and pit, and the same ground (the track was never laid in on load and had no ground of its own).
   const tracked = readdirSync(MAPS).filter((f) => f.endsWith('.json')).map((f) => f.slice(0, -5)).filter((id) => raw(id).track);
-  // Serene City (format 25) and Neon Spire (format 26: a spawn point moved out of a wall, Bot AI Phase A) were saved
-  // again in MapMaker, so their tracks are paths now; three still carry the old field.
-  it('finds the shipped race maps', () => expect(tracked.length).toBeGreaterThanOrEqual(3));
+  // Serene City (format 25), Neon Spire (format 26: a spawn point moved out of a wall, Bot AI Phase A) and Undergate
+  // Transit (format 19: a sofa moved clear of a wall, the prop scale pass; its path checked against the old track's
+  // curve, checkpoints, grid and ground) were saved again in MapMaker, so their tracks are paths now; two still carry
+  // the old field.
+  it('finds the shipped race maps', () => expect(tracked.length).toBeGreaterThanOrEqual(2));
   for (const id of tracked) {
     it(`${id}: races exactly as before`, () => {
       const file = raw(id);

@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 26,
+  "formatVersion": 27,
   "metadata": {
     "id": "diamond_park",
     "name": "Diamond Park",
@@ -20,7 +20,15 @@
       "core.koth",
       "core.elim",
       "core.bomb"
-    ]
+    ],
+    "release": {
+      "mapId": "m_gkegta35ah54zd5g",
+      "versionId": "v_shsrgqutz3ahk2lz",
+      "revision": 1,
+      "contentHash": "sha256:9e65dd07246ab06777eb40d50a0b4d8ec180282c90f2fc85d74d8782f0145365",
+      "schemaVersion": 27,
+      "releasedAt": "2026-11-06T22:52:54.641Z"
+    }
   },
   "classicStructure": {
     "cellSize": 8,
@@ -18606,7 +18614,7 @@
       "kind": "prop",
       "model": "prop.bench",
       "yaw": 0,
-      "scale": 2.5,
+      "scale": 1,
       "solid": false,
       "tint": null
     },
@@ -18620,7 +18628,7 @@
       "kind": "prop",
       "model": "prop.bench",
       "yaw": 0,
-      "scale": 2.5,
+      "scale": 1,
       "solid": false,
       "tint": null
     },
@@ -19240,7 +19248,7 @@
       "kind": "prop",
       "model": "prop.bench",
       "yaw": 1.5708,
-      "scale": 2.5,
+      "scale": 1,
       "solid": false,
       "tint": null
     },
@@ -19254,7 +19262,7 @@
       "kind": "prop",
       "model": "prop.bench",
       "yaw": 1.5708,
-      "scale": 2.5,
+      "scale": 1,
       "solid": false,
       "tint": null
     },
@@ -21858,7 +21866,7 @@
       "kind": "prop",
       "model": "prop.bench",
       "yaw": 3.1416,
-      "scale": 2.5,
+      "scale": 1,
       "solid": false,
       "tint": null
     },
@@ -21872,7 +21880,7 @@
       "kind": "prop",
       "model": "prop.bench",
       "yaw": 3.1416,
-      "scale": 2.5,
+      "scale": 1,
       "solid": false,
       "tint": null
     },
@@ -22464,7 +22472,7 @@
       "kind": "prop",
       "model": "prop.bench",
       "yaw": -1.5708,
-      "scale": 2.5,
+      "scale": 1,
       "solid": false,
       "tint": null
     },
@@ -22478,7 +22486,7 @@
       "kind": "prop",
       "model": "prop.bench",
       "yaw": -1.5708,
-      "scale": 2.5,
+      "scale": 1,
       "solid": false,
       "tint": null
     },

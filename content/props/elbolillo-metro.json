@@ -60,6 +60,7 @@
       "name": "Platform Seats",
       "category": "Metro",
       "collide": "voxel",
+      "height": 0.96,
       "yaw": 180
     },
     {
