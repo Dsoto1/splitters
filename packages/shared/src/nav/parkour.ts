@@ -184,6 +184,8 @@ function probeOut(physics: PhysicsWorld, opts: FallOptions, at: Vec3, nx: number
   const depth = top - (at.y - Math.max(4, opts.maxDrop + 1));
   let gapFrom = -1;
   let level = true;
+  // The gap's floor: the lowest ground under it (-Infinity: none, a fall out of the world).
+  let bottom = Infinity;
   for (let d = PROBE_STEP; d <= GAP_MAX + 1e-6; d += PROBE_STEP) {
     const x = at.x + nx * d;
     const z = at.z + nz * d;
@@ -200,16 +202,19 @@ function probeOut(physics: PhysicsWorld, opts: FallOptions, at: Vec3, nx: number
       if (y === null || y < at.y - 1) {
         level = false;
         gapFrom = d;
+        bottom = y ?? -Infinity;
       } else if (Math.abs(y - at.y) > UP_MIN) return out;
       continue;
     }
-    // Over the gap: ground about as high again, past a real gap (a metre of it at least).
-    if (y !== null && y > at.y - 3 && y < at.y + 0.5 && d - gapFrom >= 1) {
+    // Over the gap: ground about as high again (a metre over the gap's floor at least: not the floor below going on),
+    // past a real gap (a metre of it at least).
+    if (y !== null && y > at.y - 3 && y < at.y + 0.5 && y > bottom + 1 && d - gapFrom >= 1) {
       const inY = groundAt(physics, opts.solids, at.x + nx * (d + 0.5), at.z + nz * (d + 0.5), top, depth);
       if (inY !== null && Math.abs(inY - y) < 0.25) out.push({ kind: 'gap', land: { x: at.x + nx * (d + 0.5), y: inY, z: at.z + nz * (d + 0.5) } });
       return out;
     }
     if (y !== null && y >= at.y + 0.5) return out;
+    bottom = Math.min(bottom, y ?? -Infinity);
   }
   return out;
 }
@@ -232,7 +237,7 @@ function playThrough(physics: PhysicsWorld, collider: Parameters<typeof stepMove
   const from = s.pos.y;
   let jumped = false;
   let left = false;
-  const lowest = link.end.y - 1;
+  const lowest = Math.min(link.end.y, link.start.y) - 1;
   for (let t = 0; t < MAX_TICKS; t++) {
     const c = parkourInput(link, s.pos, s.grounded, jumped);
     if (c.jump) jumped = true;
@@ -240,6 +245,7 @@ function playThrough(physics: PhysicsWorld, collider: Parameters<typeof stepMove
     s = stepMovement(physics, collider, s, { seq: t, forward: 1, right: 0, yaw: c.yaw, pitch: 0, buttons: c.buttons }, body.speed, TICK_DT, 1, env);
     // (Off the edge: well below where it set off from, not a grounded flag flickering over a seam.)
     if (!s.grounded && s.pos.y < from - 0.4) left = true;
+    if (process.env.PKDEBUG === link.kind) console.log(t, s.pos.x.toFixed(2), s.pos.y.toFixed(2), s.pos.z.toFixed(2), s.grounded, s.stance ?? 0, 'end', link.end.x.toFixed(2), link.end.y.toFixed(2), link.end.z.toFixed(2), 'takeoff', link.takeoff.toFixed(2), link.tuck, parkourAlong(link, s.pos).toFixed(2));
     if ((jumped || left) && s.pos.y < lowest) return false;
     // Down at the end's height, by it (a body landing at a run goes a little past it: the bot walks back, or on).
     if (s.grounded && (jumped || left) && Math.abs(s.pos.y - link.end.y) < 0.6) {

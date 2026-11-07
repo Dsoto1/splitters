@@ -462,6 +462,8 @@ export class BotBrain {
   /** Parkour moves it made, by kind, and gave up on (measuring: bot-report). */
   readonly parkourDone: Record<ParkourKind, number> = { drop: 0, gap: 0, up: 0 };
   parkourGaveUp = 0;
+  /** The navmesh's goneVersion its route was planned against. */
+  private goneSeen = 0;
   parkourMissed = 0;
   /** On a parkour link (the match has it think every tick until it lands: the jump is timed to the tick). */
   get parkouring(): boolean {
@@ -759,9 +761,9 @@ export class BotBrain {
   }
 
   /** Holding (or heading for) a vantage spot: its kind and position (debug and tests). */
-  get vantage(): { kind: VantageKind; pos: Vec3; arrived: boolean } | null {
+  get vantage(): { kind: VantageKind; pos: Vec3; arrived: boolean; parkour: boolean } | null {
     const p = this.post;
-    return p ? { kind: p.kind, pos: p.board.spots[p.spot]!.pos, arrived: p.arrived >= 0 } : null;
+    return p ? { kind: p.kind, pos: p.board.spots[p.spot]!.pos, arrived: p.arrived >= 0, parkour: !!p.board.spots[p.spot]!.parkour } : null;
   }
 
   // ------------------------------------------------------------------ main loop
@@ -3432,7 +3434,9 @@ export class BotBrain {
       this.path = [];
       this.lastPathTick = -Infinity;
     }
-    const goalMoved = this.goal === null || horizontalDistance(this.goal, goal) > 2 || Math.abs(this.goal.y - goal.y) > 1.5;
+    // (Ground on the way gone, or back: Scenario.surfacesGone; a route over a fallen bridge is planned again.)
+    const navChanged = view.nav.goneVersion !== this.goneSeen;
+    const goalMoved = this.goal === null || navChanged || horizontalDistance(this.goal, goal) > 2 || Math.abs(this.goal.y - goal.y) > 1.5;
     // (Heading for a stand-in: whether the goal itself has come within reach is asked again every second.)
     const stale = (movingGoal && view.tick - this.lastPathTick > PATH_REFRESH_TICKS) || (!!this.standIn && view.tick - this.lastPathTick > TICK_RATE);
     // Ran out of corners without arriving (e.g. pushed off the path): replan, throttled.
@@ -3449,6 +3453,7 @@ export class BotBrain {
       if (!this.path.length) this.pathMiss = true;
     } else if (replan) {
       this.goal = { ...goal };
+      this.goneSeen = view.nav.goneVersion;
       // No way there a moment ago: don't search again every few ticks, back off (0.2 s, doubling up to 4 s).
       const np = this.noPath;
       // (Only from about where it failed: one that failed on a moving lift, or before crossing off a cut-off patch,
@@ -3623,6 +3628,7 @@ export class BotBrain {
       // Down again: done.
       if (grounded && tick - off > 3) {
         // (Down by its end: made; anywhere else, missed: short, or knocked off it.)
+        if (process.env.PKLOG) console.log(`PK ${this.slot} ${l.kind} ${l.start.x.toFixed(1)},${l.start.y.toFixed(1)},${l.start.z.toFixed(1)} > ${l.end.x.toFixed(1)},${l.end.y.toFixed(1)},${l.end.z.toFixed(1)} at ${me.pos.x.toFixed(1)},${me.pos.y.toFixed(1)},${me.pos.z.toFixed(1)} t${tick} ${this.state}`);
         if (horizontalDistance(me.pos, l.end) < 4.5 && Math.abs(me.pos.y - l.end.y) < 0.8) this.parkourDone[l.kind]++;
         else this.parkourMissed++;
         this.link = null;

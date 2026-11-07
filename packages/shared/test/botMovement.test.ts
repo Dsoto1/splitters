@@ -5,11 +5,13 @@ import { makeMap } from './helpers.ts';
 
 beforeAll(() => Promise.all([initPhysics(), initNavigation()]));
 
-/** Open yard 48 × 32 m (x -4..44, z -4..28). */
-function yard(): MapDocument {
+/** Open yard 48 × 32 m (x -4..44, z -4..28); `health`: a health pickup in a far corner (respawning every second). */
+function yard(health = false): MapDocument {
   const tiles: MapDocument['classicStructure']['tiles'] = [];
   for (let x = 0; x < 6; x++) for (let z = 0; z < 4; z++) tiles.push({ id: `y${x}_${z}`, tile: 'core.yard', x, y: z, z: 0, rotation: 0 });
-  const r = loadMap(makeMap(tiles, [[0, 0, 12], [40, 0, 12], [20, 0, 0], [20, 0, 24]]));
+  const doc = makeMap(tiles, [[0, 0, 12], [40, 0, 12], [20, 0, 0], [20, 0, 24]]);
+  if (health) doc.entities.push({ id: 'health_1', kind: 'pickup', position: [0, 0, 26], item: 'core.health_small', respawnSeconds: 1 });
+  const r = loadMap(doc);
   if (!r.ok) throw new Error(JSON.stringify(r.issues));
   return r.map;
 }
@@ -43,7 +45,8 @@ function jitter(difficulty: BotDifficulty, opts: { retreat?: boolean; seeds?: nu
   let dist = 0;
   let time = 0;
   for (const seed of opts.seeds ?? [1, 2, 3]) {
-    const match = new Match(yard(), { ...DEFAULT_DEATHMATCH_RULES, scoreLimit: 0 }, seed);
+    // (A hurt bot runs for as long as health is within reach: with none, it gives the retreat up after a few seconds.)
+    const match = new Match(yard(!!opts.retreat), { ...DEFAULT_DEATHMATCH_RULES, scoreLimit: 0 }, seed);
     const human = match.addHuman('human')!;
     const profile = { ...CORE_BOT_PROFILES[3]!, tags: [], selfPreservation: opts.retreat ? 90 : 50, itemGreed: 0, exploration: 0 };
     // The bot these thresholds were measured with: Sprout (Small: 6% quicker), which the bot rotation used to hand
@@ -133,7 +136,7 @@ describe('bot movement smoothness', () => {
 
   it('retreats steadily: keeps running instead of stopping and turning back every moment', () => {
     for (const id of ['easy', 'normal', 'hard'] as const) {
-      const j = jitter(BOT_DIFFICULTIES[id], { retreat: true });
+      const j = jitter(BOT_DIFFICULTIES[id], { retreat: true, seconds: 12 });
       console.log(`retreat ${id}: ${fmt(j)}`);
       // Before: 0.5 to 2 stop-and-go halts a second (turning back to look for the enemy, then running again).
       expect(j.flips, id).toBeLessThan(0.5);

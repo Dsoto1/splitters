@@ -462,6 +462,8 @@ export class NavWorld {
       if (simProfile.on) simProfile.count('navSearchFail');
       return null;
     }
+    // (Off the polygons of surfaces that are gone, whatever else the route keeps out of.)
+    shut |= this.gone;
     const failKey = `${s.nearestRef}:${e.nearestRef}:${shut}`;
     // (Every search with a filter once there are parkour links: their area costs more than walking.)
     const filtered = shut || open || (this.parkour.length && !agile);
@@ -626,16 +628,28 @@ export class NavWorld {
    * ones shut to a bot. Sampled every 0.25 m over each opening's footprint, keeping only polygons the samples
    * stand over (not ones that merely come near). Once, at match start (and when the navmesh is rebuilt).
    */
-  markOpenings(boxes: readonly Aabb[]): void {
+  markOpenings(boxes: readonly Aabb[], surfacesFrom = Infinity): void {
     const half = { x: 0.15, y: 0.9, z: 0.15 };
+    const g = this.graph();
+    const { centre } = polyShapes(g);
     boxes.slice(0, OPENING_BITS).forEach((b, k) => {
       const bit = 1 << (k + 1);
       const marked = new Set<number>();
+      // A surface (Scenario.surfaces: a bridge, a trapdoor): the polygons on its top, whose middles are over it (not the
+      // floor round a trapdoor that Recast merged it into); an opening: those its footprint stands over at its foot.
+      const surface = k >= surfacesFrom;
+      const y = surface ? b.max.y : b.min.y + 0.3;
       for (let x = b.min.x; x <= b.max.x + 1e-6; x += 0.25) {
         for (let z = b.min.z; z <= b.max.z + 1e-6; z += 0.25) {
-          const r = this.query.findNearestPoly({ x, y: b.min.y + 0.3, z }, { halfExtents: half });
+          const r = this.query.findNearestPoly({ x, y, z }, { halfExtents: surface ? { x: 0.15, y: 0.4, z: 0.15 } : half });
           if (!r.success || !r.nearestRef || !r.isOverPoly || marked.has(r.nearestRef)) continue;
           marked.add(r.nearestRef);
+          if (surface) {
+            const i = r.nearestRef - g.base;
+            const cx = centre[i * 3]!;
+            const cz = centre[i * 3 + 2]!;
+            if (cx < b.min.x - 0.3 || cx > b.max.x + 0.3 || cz < b.min.z - 0.3 || cz > b.max.z + 0.3) continue;
+          }
           const f = this.navMesh.getPolyFlags(r.nearestRef);
           // (Never one left out as inside something solid: flags 0, disableInsideSolid.)
           if (this.insideSolid && f.flags === 0) continue;
@@ -645,6 +659,17 @@ export class NavWorld {
     });
     // Routes found before are still right for the routes that don't keep out of anything; failures with a mask are new.
     this.noRoute.clear();
+  }
+
+  /** Surfaces gone now (Scenario.surfacesGone: flag bits every route keeps off), and a count of changes to them. */
+  private gone = 0;
+  goneVersion = 0;
+
+  /** The match, when what's gone changes: every route search from now on keeps off those polygons. */
+  setGone(mask: number): void {
+    if (mask === this.gone) return;
+    this.gone = mask;
+    this.goneVersion++;
   }
 
   /**

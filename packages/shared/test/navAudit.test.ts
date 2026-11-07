@@ -74,7 +74,8 @@ describe('navigation audit', () => {
     expect(auditNavigation(map, bare, built.physics, opts).issues.map((i) => i.code)).toContain('nav.disconnected');
     bare.destroy();
     // With them (as the match builds it): a way down, not up.
-    expect(built.nav.drops).toBeGreaterThan(0);
+    // (A parkour drop off it, nav/parkour.ts, or a trap exit when that's left out.)
+    expect(built.nav.drops + built.nav.parkour.filter((l) => l.kind === 'drop').length).toBeGreaterThan(0);
     expect(built.nav.findPath({ x: 10, y: 2, z: 10 }, { x: 0, y: 0, z: 0 })).not.toBeNull();
     expect(built.nav.findPath({ x: 0, y: 0, z: 0 }, { x: 10, y: 2, z: 10 })).toBeNull();
     expect(auditNavigation(map, built.nav, built.physics, opts).issues).toEqual([]);
@@ -96,7 +97,8 @@ describe('navigation audit', () => {
     const top = { x: 0, y: terrainHeightAt(t, 0, 0)!, z: 0 };
     const map: MapDocument = { ...makeMap([], [[-16, 0, -16], [top.x, top.y, top.z]]), terrain: t };
     const built = mapNavigation(map);
-    expect(built.nav.drops).toBeGreaterThan(0);
+    // (A parkour drop off it, nav/parkour.ts, or a trap exit when that's left out.)
+    expect(built.nav.drops + built.nav.parkour.filter((l) => l.kind === 'drop').length).toBeGreaterThan(0);
     expect(built.nav.findPath(top, { x: -16, y: 0, z: -16 })).not.toBeNull();
     expect(validateMapNavigation(map, true).issues).toEqual([]);
     built.physics.free();

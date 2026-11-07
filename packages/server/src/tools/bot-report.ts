@@ -98,6 +98,8 @@ interface BotRow {
   postKills?: number;
   /** Vantage spots it got to (campers, snipers), and rounds it fired from one. */
   posts?: number;
+  /** Of them, spots only parkour reaches (roofs, ledges: nav/parkour.ts). */
+  parkourPosts?: number;
   postShots?: number;
   /** Snipers: spots left after a shot or two or for being spotted, and seconds a shot was held for a better one. */
   moves?: number;
@@ -512,6 +514,7 @@ function play(map: MapDocument, mode: GameMode, seed: number, seconds: number, s
         if (postAt.get(c.slot) !== key) {
           postAt.set(c.slot, key);
           r.posts!++;
+          if (v.parkour) r.parkourPosts = (r.parkourPosts ?? 0) + 1;
         }
       } else postAt.delete(c.slot);
       // Route variety, once a second: between a fifth and four fifths of the way along a trip of its team's toward
@@ -763,7 +766,7 @@ function printMatch(m: MatchRow): void {
   if (m.weaponKills) console.log(`weapons (${getWeaponSet(m.set).name}): ${killsText(new Map(Object.entries(m.weaponKills)))}`);
   const made = [0, 1, 2].map((k) => sum(m.bots, (r) => r.parkour?.[k] ?? 0));
   if (m.parkourLinks) console.log(`parkour: links ${m.parkourLinks[0]} drops, ${m.parkourLinks[1]} gap jumps, ${m.parkourLinks[2]} jumps up | made ${made[0]} drops, ${made[1]} gap jumps, ${made[2]} jumps up (missed ${sum(m.bots, (r) => r.parkourMissed ?? 0)}, given up ${sum(m.bots, (r) => r.parkourGaveUp ?? 0)})`);
-  console.log(`fights: in cover ${pct(sum(m.bots, (r) => r.coverFight ?? 0), fightT)} of fight time | scoped kills ${sum(m.bots, (r) => r.scopedKills ?? 0)} (from a vantage spot ${sum(m.bots, (r) => r.postKills ?? 0)}) | snipers ${snipers.length}: spots ${sum(snipers, (r) => r.posts ?? 0)}, rounds from spots ${sum(snipers, (r) => r.postShots ?? 0)}, moved on after shots ${sum(snipers, (r) => r.moves ?? 0)}, shots held ${sum(snipers, (r) => r.held ?? 0)} s, kills ${sum(snipers, (r) => r.kills)} (scoped ${sum(snipers, (r) => r.scopedKills ?? 0)})`);
+  console.log(`fights: in cover ${pct(sum(m.bots, (r) => r.coverFight ?? 0), fightT)} of fight time | scoped kills ${sum(m.bots, (r) => r.scopedKills ?? 0)} (from a vantage spot ${sum(m.bots, (r) => r.postKills ?? 0)}) | snipers ${snipers.length}: spots ${sum(snipers, (r) => r.posts ?? 0)} (only parkour reaches ${sum(snipers, (r) => r.parkourPosts ?? 0)}), rounds from spots ${sum(snipers, (r) => r.postShots ?? 0)}, moved on after shots ${sum(snipers, (r) => r.moves ?? 0)}, shots held ${sum(snipers, (r) => r.held ?? 0)} s, kills ${sum(snipers, (r) => r.kills)} (scoped ${sum(snipers, (r) => r.scopedKills ?? 0)})`);
   const why = new Map<string, number>();
   for (const r of m.bots) for (const [k, v] of Object.entries(r.why)) why.set(k, (why.get(k) ?? 0) + v);
   console.log(`idle by reason (% of alive time): ${[...why].sort((a, b) => b[1] - a[1]).slice(0, 12).map(([k, v]) => `${k} ${pct(v, alive)}`).join(', ')}`);

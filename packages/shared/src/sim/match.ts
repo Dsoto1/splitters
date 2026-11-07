@@ -779,7 +779,7 @@ export class Match {
     });
     // Doors and walls that block paths, and lift rides, as navmesh flags: a bot's route can keep out of the ones shut
     // to it, and off a lift it's tired of waiting for.
-    this.nav.markOpenings(this.scenario.openings());
+    this.nav.markOpenings([...this.scenario.openings(), ...this.scenario.surfaces()], this.scenario.openings().length);
     this.nav.markLifts(liftLinks(map));
     this.encounters = new Encounters(map, {
       get tick() {
@@ -1065,7 +1065,7 @@ export class Match {
     const old = this.nav;
     this.nav = buildMapNav(this.map, this.geometry, this.physics, this.envShapes, this.phys, extra);
     old.destroy();
-    this.nav.markOpenings(this.scenario.openings());
+    this.nav.markOpenings([...this.scenario.openings(), ...this.scenario.surfaces()], this.scenario.openings().length);
     this.nav.markLifts(liftLinks(this.map));
     this.nav.places();
     this.sight.clear();
@@ -1909,6 +1909,9 @@ export class Match {
   }
 
   private runBots(): void {
+    // Ground that has gone (a crumbled bridge, an open trapdoor, a drawbridge up: Scenario.surfacesGone), a few times a
+    // second: routes keep off it from now on, and bots on one over it plan again (Phase C item 2).
+    if (this.tick % 6 === 0) this.nav.setGone(this.scenario.surfacesGone());
     const t0 = performance.now();
     const actors = this.actors();
     // Actors as bots see them: one view object per actor, refilled every tick (no 96 new objects a tick).
@@ -2191,7 +2194,8 @@ export class Match {
     // The common trips' corridors, here at setup rather than in a tick (a few ms each).
     this.botTrips();
     if (!this.director.vantage && [...roles.values()].some((r) => r === 'camper' || r === 'sniper')) {
-      this.director.vantage = new VantageBoard(vantageFor(places, (o, d, max) => this.physics.raycastWorld(o, d, max)));
+      // (With the roofs and ledges only parkour reaches, nav/parkour.ts: snipers' spots others don't go to.)
+      this.director.vantage = new VantageBoard(vantageFor(places, (o, d, max) => this.physics.raycastWorld(o, d, max), this.nav.parkourPlaces()));
       // Snipers' spots are worth more the better they look down the ways the enemy comes (the trips' corridors).
       this.director.vantage.lanes(
         this.botTrips().flatMap((t) => t.trip.corridors.map((c) => c.line)),
