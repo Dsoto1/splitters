@@ -8,6 +8,20 @@ made only on a commit that passed CI on a check branch.
 
 ## Unreleased
 
+**MapMaker gives the ground back when a floor moves** (owner: "fix the ground bug")
+- MapMaker used to write the ground it lowers under floors into the map: every edit lowered the terrain under every
+  floor and nothing ever raised it back, so a floor moved across a field left a dip at each place it passed and a
+  deleted floor left its pad (props on the ground there were left floating). Now the map keeps the ground you sculpted,
+  and the ground kept under the floors is worked out from it, after every edit and when the map loads, the same way
+  for both: move, turn or delete a floor and the ground where it stood comes back; an edit and its undo leave the
+  terrain exactly as it was; opening a map and exporting it changes nothing; the map plays as MapMaker shows it. No
+  change to the map format: existing maps load as before.
+- Props bedded on the ground beside a floor are played bedded on the ground kept under it, as MapMaker draws them: on
+  Blackout, Crossroads and Dockside Depot (their files have ground 5 cm through a floor's edge) 32 props, mostly trees
+  and lamp posts, sit 1–5 cm lower.
+- Step Temple: the 2.2 m slot the old behaviour cut beside the west terrace stair is filled again (in MapMaker). No
+  other shipped map had ground lowered where no floor stands now.
+
 **Props collide as what you see: the slack pass** (owner's bug report, Capitol Mall: "These pillars are blocking my
 bullets"; docs/CONTENT_PIPELINE.md, "Prop collision")
 - **Columns**: the white Ionic column collided as one box as wide as its plinth and capital all the way up, so rounds
