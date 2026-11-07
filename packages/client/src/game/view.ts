@@ -124,7 +124,7 @@ import { CityVisuals } from './cityVisuals.ts';
 import { SkyEffects } from './skyEffects.ts';
 import { CharacterLibrary, setCharacterLodCrowd, setCharacterLodZoom, type CharacterInstance } from '../content/characters.ts';
 import { CharacterAnimator, type OneShot } from './characterAnimator.ts';
-import { ANIM_LOD_FAR, ANIM_LOD_NEAR, SHOT_OVERLAY_REACH, animStep } from './animLod.ts';
+import { ANIM_LOD_FAR, ANIM_LOD_NEAR, SHOT_OVERLAY_REACH, animStep, animStepByShare } from './animLod.ts';
 import { perfOn } from './perfSwitches.ts';
 import { installAnimationPatches, trackAnimatedTargets } from './animPatches.ts';
 import { freezeStaticMaterials, selectLiveCandidates } from './meshSelection.ts';
@@ -1869,6 +1869,7 @@ export class GameView {
     // Crowds draw characters' low-detail meshes sooner.
     setCharacterLodCrowd(crowd);
     const planes = crowd && this.scene.activeCamera ? Frustum.GetPlanes(this.scene.activeCamera.getTransformationMatrix()) : null;
+    const fov = (this.scene.activeCamera as { fov?: number } | null)?.fov ?? DEFAULT_FOV;
     // Shadows: the nearest SHADOW_CHARACTERS live characters in view cast (squared distance of the last that does).
     const eye = this.scene.activeCamera?.globalPosition;
     let shadowCut = Infinity;
@@ -2036,10 +2037,10 @@ export class GameView {
         let run: boolean;
         let stepped: boolean;
         if (a.anim instanceof CharacterAnimator && !a.culled) {
-          // Characters in view: past ANIM_LOD_FULL their clips, bones and aim are evaluated at 30 Hz (and at most
-          // every 2nd frame), past ANIM_LOD_NEAR at 15 Hz (every 3rd), past ANIM_LOD_FAR at 10 Hz (every 4th), on each
-          // one's own phase, with the fingers' pose kept from the last full close; the state machine runs with them.
-          const step = animStep(far, perfOn('animlod2'));
+          // Characters in view: by their size on screen (animLod.ts, round 4), every frame near, then 30, 15, 10 and 5 Hz
+          // (and at most every 2nd, 4th, 6th, 12th frame), each smoothed between its evaluations, on each one's own
+          // phase, with the fingers' pose kept from the last full close; the state machine runs with them.
+          const step = perfOn('animlod4') ? animStepByShare(screenShare(far, fov)) : animStep(far, perfOn('animlod2'));
           run = a.anim.stepAt(now, step, this.avatarFrame, (p.slot * 37) % 100);
           stepped = step.frames > 1;
           if (run && perfProbe.on) perfProbe.n[COUNT.animated]!++;
