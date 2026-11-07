@@ -20,9 +20,12 @@ import {
 import type { Hud } from './hud.ts';
 import type { InputState } from './input.ts';
 import { reduceFlashing } from './reduceFlashing.ts';
+import { CappedTimer } from './cappedTimer.ts';
 
 const escapeHtml = (s: string) => s.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
 
+/** The most of the spawn card's time one frame can use (s): a longer frame (a hitch) counts as this. */
+const CARD_STEP_CAP = 0.1;
 /** The jackpot glow's brightest (the screen's edges only), its ease in and how long it holds and fades: with Reduce flashing on, dimmer and slower. */
 const GLOW = { peak: 0.55, calmPeak: 0.32, easeIn: 0.45, calmEaseIn: 1.2, hold: 1.6, fadeOut: 1.6 };
 
@@ -40,7 +43,8 @@ export class RouletteHud {
   private readonly next: HTMLElement;
   private readonly storm: HTMLElement;
   private readonly awards: HTMLElement;
-  private cardUntil = 0;
+  /** The spawn card's time, over drawn frames (a hitch as the new body is built doesn't use it up unseen). */
+  private readonly cardTime = new CappedTimer(CARD_STEP_CAP);
   /** The glow's start (ms), or 0: none. */
   private glowAt = 0;
   /** The glow's brightest since the last jackpot began (tests). */
@@ -93,7 +97,7 @@ export class RouletteHud {
     this.card.className = `rl-card${roll === 1 ? ' jackpot' : roll === 2 ? ' tiny' : ''}`;
     this.card.innerHTML = `${roll === 1 ? '<em>Jackpot!</em>' : roll === 2 ? '<em>Tiny roll!</em>' : ''}<small>You are</small><b>${escapeHtml(d.name)}</b><span>${escapeHtml(d.line)}</span>${d.weapon ? `<i>${escapeHtml(d.weapon)}${roll === 1 ? ' · +armour' : ''}</i>` : ''}`;
     this.card.hidden = false;
-    this.cardUntil = performance.now() + SPAWN_CARD_SECONDS * 1000;
+    this.cardTime.start(SPAWN_CARD_SECONDS);
     if (roll === 1) {
       this.glowAt = performance.now();
       this.glowPeak = 0;
@@ -236,8 +240,9 @@ export class RouletteHud {
 
   /** Each frame: the card's time, the glow's ease (in, hold, out; never a flash). */
   frame(now: number): void {
+    const cardOn = this.cardTime.frame(now, !this.hold);
     if (this.hold) return;
-    if (!this.card.hidden && now > this.cardUntil) this.card.hidden = true;
+    if (!this.card.hidden && !cardOn) this.card.hidden = true;
     if (!this.glowAt) return;
     const calm = reduceFlashing();
     const t = (now - this.glowAt) / 1000;
