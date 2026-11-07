@@ -627,6 +627,50 @@ playtest (`check/bots-c` CI and the 4 v 4 numbers in HANDOFF).
 Qasr Medina's the most (a second or so: its flat roofs' 280 drop candidates). Links are cached per navmesh, so the next
 match on a map pays nothing.
 
+### Phase C follow-up (`wip/bots-c2`, in progress, 2026-11-07; not landed)
+The coordinator's list after items 1-4 landed: route spread, CTF captures, the Range's 8 v 8, stuck recoveries,
+Capitol Mall's office. Baselines: main c8d8cba3 (Phase C), and main 0d03c3bd (before items 1-4). CTF sample: the
+eight maps of "Phase C items 1-4, measured", seeds 1-3 (24 matches, 180 s).
+
+**What worked (on the branch, ready to land once measured green):**
+- **Large bots duck** (`BotBrain.mustDuck`): a body taller than the navmesh's 1.8 m (large looks, 2.12 m) crouches
+  where there's no room to stand a step ahead (or a step up) but room to crouch. Diamond Park's dugout roof edge held
+  them for 20 s and more. Diamond Park CTF seed 1: stuck recoveries 152 → about 80, large bots' 91 → about 25.
+- **Off a sill outside a wall** (`NavWorld.wayOnto` with a walk-clear check): a bot on ground the navmesh doesn't
+  cover took the nearest polygon within 2 m as its start even when it was behind a wall, and its route went through
+  the wall. Capitol Mall's office trap at (140, 4, 8) was this: bots on the sill outside the office wall (x 139.6,
+  4 m up), 150-300 stuck recoveries in a match on the runs before main's small fixes. General code, no map change.
+  `parkour.test.ts`: a bot put on that sill gets off.
+- **Corridor followers count on their corridor** (`BotBrain.byCorridor`): bots routing along a group's corridor by
+  `pathAlong` weren't counted by `BotBrain.corridor`, so neither the team brain's crowd price nor bot-report's "how the
+  bots went" saw them.
+- Together (CTF, 24 matches, the build with the lone-bot corridors below, which doesn't change stuck): stuck
+  recoveries 1.35 → 1.05 a bot-minute against main (pre-Phase C 1.40): a quarter down, not yet half.
+
+**What didn't:** **bots in no group taking a corridor of their own** (the cheapest by the crowd price, claimed at
+once so a respawn wave spreads, only corridors within 1.3 times the shortest, followed all the way by `pathAlong`):
+CTF captures 26 → 13, flag takes 155 → 94, and the busiest way 60 → 72 % (the length cap left Qasr Medina one
+corridor; the old left/right lanes spread loose bots better). Reverted (`5275543d`).
+
+**The Range's 8 v 8 drop was a lucky draw for main, not a loss:** on fresh seeds 25-48, main before items 1-4 broke
+through in 19 of 24 and this branch in 21 (before: 21 against 16 on seeds 1-24). Over 48 seeds: 40 against 38. The
+strafing rule (no stuck recovery while strafing) changes nothing there (17 of 24 with and without it, seeds 1-24), and
+the per-tick search budget never put a search off on the Range.
+
+**CTF captures, the question still open:** over 24 matches, captures per flag take 0.26 before items 1-4 (31 of
+119), 0.17 after (26 of 155): more takes, but more carriers die on the way home. Carriers take few parkour links (0-5 a
+match), so not that. Ablations on the CTF sample (no parkour links; no keep-right and no strafing rule) were started
+and stopped unfinished at the account switch.
+
+**Route spread, still open:** the busiest way is about 60 % on main. Only groups (trips of 180 m and more) follow
+corridors; loose bots take left/right lanes, which re-join the main way by the trip's middle. On a two-way trip the
+busiest way can only drop under half with an even split. Next to try: loose side-lane bots routed by a corridor's
+via (the point furthest from the other corridors) instead of `laneWaypoint`, measured on 24 matches for captures.
+
+**Next step:** measure the branch as it is (duck, sill, counting; lone-bot corridors reverted) on the CTF sample
+(seeds 1-3) and the Range (seeds 1-24) against main, run `pnpm test:changed`, push `check/bots-c2`, land as part 1.
+Then the CTF ablations, then route spread.
+
 ## Phase D: polish and tools
 1. **Memory:**
    - last-known enemy spots kept for a while;
