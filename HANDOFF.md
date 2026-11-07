@@ -3,6 +3,131 @@
 A briefing for the next Claude session or agent picking up this repo. Read
 `CLAUDE.md` first (workflow and rules), then this file. Keep this file current.
 
+## Start here (session of 2026-11-07, handed off to the next account)
+
+**Main** = 63731808 plus this note, green. Today's landings are on main, in order:
+- Breakthrough;
+- Reduce flashing;
+- performance round 4 (32 v 32 in a browser, 64 v 64 on dedicated servers);
+- the small fixes (Breakthrough Range an ordinary map, the gun after the scope, dropships, the use prompt);
+- Bot AI Phase C (item 0, then items 1-4: parkour, ground that goes, keep right, corridor routes);
+- Cool Hands Rex and Fishy Fred;
+- the sheep's legs and blast smoke under Reduce flashing;
+- the frozen-corpses fix.
+
+The workflow is unchanged (CLAUDE.md):
+- run at most 3 agents, each on `wip/<name>`, green on `check/<name>`, then fast-forward main;
+- give agents their own port ranges (4950-4959, 4970-4979, 4980-4989);
+- tell agents a CI failure in `attest-build-provenance` (a transparency-log 500 or 404) is GitHub's signing service: re-run the failed job.
+
+**In flight at the switch** (each branch pushed, tree clean; scratchpad files did not survive the switch):
+1. **Friendly fire** (`wip/friendly-fire` @ 318023ed). Green at 1a347140 (run 42408271804, with its new e2e check).
+   - **The switch commit:** main's frozen-corpses fix was merged in (conflicts only in CHANGELOG and HANDOFF;
+     typecheck passes), and `check/friendly-fire` was re-running at 318023ed at the switch.
+   - **Next:** when that run is green, fast-forward main to 318023ed.
+   - **Root cause:** every hit test left teammates out before `damage()` read the rule.
+   - **Fix:** `Match.canHurt`. Unit test `shared/test/friendlyFire.test.ts`; e2e `friendlyFireChecks` in `teams`.
+2. **Iron Coast** (`wip/iron-coast` @ 99c48ff4; it builds and the map validates).
+   - **Built in MapMaker and exported:**
+     - the terrain, 380 x 320 m at 2.5 m;
+     - all 13 set pieces;
+     - the 7 routes and the cliff-foot strongpoints;
+     - landing slabs and the sea;
+     - 30 pickups (Military);
+     - Breakthrough: sectors A (A1, A2), B (B1-B4, 2 of 4) and C, with 6 spawn groups of 16;
+     - Team Deathmatch;
+     - crest trenches, ruins, the B/C walls and 16 village houses;
+     - the ground paint.
+   - **Measured so far:** every route routes both ways. bot-report 16 v 16 (one seed) took A at 84 s, B at 155 s and
+     C at 289 s.
+   - **Exact next step:** the last export flags spawn `spawn_jclhkikyqj` at (55, 12, 18) as cut off. Move it in the
+     inspector, export, and get validate-map to 0.
+   - **Then:**
+     - the map card picture;
+     - bot runs at 16 v 16 and 24 v 24;
+     - performance at 48 and 64 bots;
+     - typecheck, test:changed and e2e:changed;
+     - `check/iron-coast`, landing as part 1.
+   - **Part 2, the visual pass:** not started. The burning-wreck prop with smoke is saved unfinished on
+     `wip/iron-coast-wreck`; it needs its palette atlas picture and content:check.
+   - **Known gaps:**
+     - haze and mist didn't take: both are 0 in the map;
+     - the casemates sit on 4 m levels (B2 12 m, B3 16 m);
+     - the terrain can't overhang, so the cave and tunnel are pieces standing in a cut cove, not buried rooms.
+     - Decisions are in `docs/map-briefs/iron_coast/DECISIONS_AND_DEVIATIONS.md`.
+   - **Where the detail is:** driver tricks and the full list are in
+     `docs/map-briefs/iron_coast/MAP_IMPLEMENTATION_MANIFEST.md`, under "Progress".
+   - **The brief's essentials:**
+     - MapMaker only: drive the real editor with Playwright against `vite preview`, a window at least 1280 px wide,
+       click palette cards by mouse position, point the view at the sky while editing through the inspector;
+     - follow `docs/map-briefs/MAP_21_reference_annotated.jpg`, not a symmetrical plan;
+     - 24 v 24 by default, playable to 32 v 32;
+     - the Military weapon set;
+     - golden hour; no flashing.
+3. **Bot AI Phase C follow-up** (`wip/bots-c2` @ 2e6949ca; typechecks; nothing on CI yet). BOT_AI_PLAN.md has it under
+   "Phase C follow-up".
+   - **Ready:**
+     - large bots duck under low roofs (`BotBrain.mustDuck`);
+     - bots step off a sill outside a wall only onto a clear walk (`NavWorld.wayOnto`), which fixes the Capitol Mall
+       office trap;
+     - corridor followers are counted.
+   - **Stuck recoveries in CTF:** 1.35 → 1.05 a bot-minute.
+   - **Reverted:** corridors of their own for bots in no group.
+   - **The Breakthrough Range drop was seed luck:** 40 against 38 over 48 seeds.
+   - **Next:**
+     1. Measure against main: the CTF sample (below) and the Range, then `pnpm test:changed`, then `check/bots-c2`;
+        land part 1.
+     2. CTF ablations: no parkour; no keep-right with its strafing rule. Captures per take fell 0.26 → 0.17 after
+        items 1-4: more carriers die on the way home.
+     3. Route spread: CTF's busiest way is still about 60 %. Next idea: route loose side-lane bots through a
+        corridor's waypoint instead of `laneWaypoint`.
+   - **The measuring commands:**
+     - the CTF sample: `pnpm bot-report diamond_park sunken_kingdom bunker_cross serene_city capitol_mall fernwood_moon
+       qasr_medina twin_spires --mode=core.ctf --seeds=1,2,3 --seconds=180 --json=<out>/ctf.json`;
+     - with it, TDM: `pnpm bot-report eagle_spires twin_spires riot_junction --mode=core.tdm --seeds=1,2 --seconds=180`;
+     - the Range: `pnpm bot-report test_breakthrough --mode=core.breakthrough --players=16 --seeds=1,...,24
+       --seconds=900 --json=<out>/bt8.json`.
+4. **Roulette** (`wip/roulette` = `check/roulette` @ 5c210adf), paused for the frozen-corpses hunt.
+   - **Built:**
+     - the whole plan, as built in docs/ROULETTE_MODE_PLAN.md;
+     - signatures in `content/roulette.json` (`tools/content/roulette.mjs`);
+     - streak pick input `say` 180-185;
+     - Lunar Roulette now plays `core.roulette`.
+   - **Its CI (run 42405165063) failed:** look first at flows and unit tests that assume the old Lunar Roulette (Team
+     Deathmatch) or exact `playableModes` lists.
+   - **Next:**
+     - the `roulette` e2e flow with `E2E_SHOTS` (the spawn card, a jackpot, the pick, the awards);
+     - `pnpm bench 48 60 maps/sandgate.json --mode=core.roulette` and `pnpm bench:96:clump`;
+     - its HANDOFF section;
+     - merge main, then land.
+
+**Queued, in the owner's order:**
+1. **Tanks** (owner, 2026-11-07). Bots drive and fire tanks sensibly, and bail out when nearly dead.
+   - **Occupants:** whoever drives or rides a tank can't be shot from outside.
+   - **The gun:** works, with limited ammo shown in the HUD. Proposed refill: slowly over time, and full at an ammo
+     pickup. The owner hasn't confirmed.
+   - **Damage:** rockets and blasts wear its health down; bullets do little.
+   - **Destruction:** occupants still inside die with it.
+2. **Hovercraft** (Hauler, Speeder, Hover Bike) stuck under structures on Iron Tide and Dune Harbor. A Hauler got stuck
+   under Iron Tide's platforms at (-16, 5, -20). Flyers got their climb in the small fixes; hovercraft didn't.
+3. **Sound pass 2** (Sonniss and Freesound). Both are approved, and their hosts are on the environment's allowlist.
+   - Sonniss sits behind a Cloudflare browser check, so the owner puts the chosen packs in the Drive.
+   - Freesound needs an API key: ask with the credential form, never in chat.
+4. **Fireteams.**
+5. **The MapMaker overhaul.** Its Phase 3 item 9 is the rotate ring.
+6. **Community maps.**
+7. **Kit-prop generators.**
+8. **Player profiles,** last.
+
+**Open questions for the owner:**
+- Fishy Fred's name and Meshy post URL.
+- A dinosaur bot-name list for Rex?
+- Slow the 26 maps whose lights blink up to 4 times a second?
+- A 12 s per-fight cap on the hurt-bot retreat? We recommend no.
+- The tank's ammo refill.
+- Recordings on the M1 for performance round 4 (see its section).
+- A playtest of Breakthrough Range.
+
 ## Start here (session of 2026-11-04, handed off to the next account)
 
 **State:** `main` = f61f2cf (+ this note), green. Everything below "Landed" is on main; nothing is half-merged.
@@ -27,6 +152,43 @@ gets overloaded above that: local e2e times out and flakes). Prune landed worktr
   reworks batches 2–3, character fixes rounds 2–3 (see the entries below and CHANGELOG).
 
 <!-- small-fixes-1107 -->
+### Friendly fire (`wip/friendly-fire`, agent, 2026-11-07; from main c8d8cba3; CI on `check/friendly-fire`; not landed)
+**Root cause:** the rule reached the match (Match setup's `rulesFromSetup`, the Host tab's `setRules`, hostRules KEPT;
+bots aren't flagged npc) but only `damage()` read it, and every hit test before it left teammates out: `targetsFor`
+(rounds, pellets, ballistic bullets, blades, punches) filtered on `hostile`, a projectile's direct hit skipped allies
+(a rocket flew through and burst beyond), and `applyStatus` dropped burns, poison and slows from allies. Splash
+already sent everyone to `damage()`, so only a blast right beside a teammate hurt.
+**Fix:** `Match.canHurt(a, b)`: an enemy, or anyone not hostile when `rules.friendlyFire` is on (never NPCs, never in
+a race without combat); used by the hit tests and `applyStatus`. Third-person aim (`targetsFor(..., aimOnly)`),
+homing, walkers, mines and bots' targets stay on `hostile`. **Tests:** `shared/test/friendlyFire.test.ts` fires each
+path for real (rifle, shotgun, rockets, knife, flamethrower and its burn) at a teammate and an enemy with the rule
+off, half and full; Breakthrough; a team kill earns nothing (fails without the fix). e2e `teams`
+(`friendlyFireChecks`): Match setup's rule reaches the match; a teammate takes your rounds with it on and none off.
+
+
+### Frozen characters in big matches (`wip/frozen-fix`, agent, 2026-11-07; green on `check/frozen-fix` at 63731808, run 42407015946; landed on main 63731808)
+**Root cause:** the figures frozen mid-run (some in the air) were the dead. Performance round 4's pose smoothing
+(`CharacterAnimator` `blend.on`, set only in `stepAt`) stayed on after a death: GameView stops calling `stepAt` once a
+character dies (startRagdoll and toCorpse run first; corpses are never stepped), and `ragdoll`, `lieDown`, `die`
+and `freezePose` never cleared it. So every frame the patched `Skeleton.prepare` overwrote a corpse's skin with its
+last two living poses (`blendSkin`, its evals and time frozen too): the ragdoll moved the bones unseen and the body was
+drawn standing where it died, until it sank or the 32-corpse cap took it. Only deaths in a smoothed band (screen share
+below 0.075, about 15 m and more at the usual field of view) did it, which is why big matches (many far deaths at
+once, more bodies kept) showed it and a 12 v 12 near fight hardly did.
+**Measured** (scratchpad `frozen/probe.mjs`, Shingle Point 32 v 32 TDM, real client): before, 9 of 9 corpses of the
+fight's own deaths and 1-3 after each scripted mass death had the smoothing on; one corpse's drawn skin stayed the
+same (checksum 19942.942) over 12 s while its pelvis moved 3.41 → 2.52 → 2.56 m. Live characters were all stepped
+and animating (no live one stuck). Corpses drawn off their bones (max skin-matrix error), before → after: the fight's
+own deaths 4 of 4 (4.1) → 0 (0); mass death 2: 2 of 2 (2.9) → 0 (0); mass death 3: 3 of 9 (3.3) → 0 (0).
+**Fix:** `CharacterAnimator.endSmoothing()` (smoothing off, recorded poses and the gun's dropped) on die, ragdoll,
+lieDown, freezePose, standBy and revive, so a body is drawn as its bones lie and a revived or reused body starts
+afresh. **Tests:** `client/test/smoothedDeath.test.ts` (a ragdoll's drawn skin follows its joints after a smoothed
+death; laid down and plain deaths stop smoothing; a kept body stands up fresh; fails without the fix); e2e
+`physicsfx`: a bot 22 m off, smoothed, is killed and its corpse's drawn skin matches its bones every frame.
+**The singularity:** its pull lasts as ARSENAL says (cannon 2.4 s, grenade 2 s; code unchanged since 10-28), and
+characters it holds are alive and animate. The figures frozen in the air were bodies killed by its collapse blast:
+this fix covers them.
+
 ### Small fixes from the owner's play, 2026-11-07 (`wip/small-fixes-1107`, agent; from main 3647eee9; green on `check/small-fixes-1107` at f79d1ec2, run 42384938315 (the full suite: unit, maps, build, check, bots, perf, 14 e2e shards); not landed)
 Four owner reports, each fixed at the cause with a test (CHANGELOG, "Small fixes from the owner's play").
 

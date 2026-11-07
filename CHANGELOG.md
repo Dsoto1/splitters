@@ -8,6 +8,20 @@ made only on a commit that passed CI on a check branch.
 
 ## Unreleased
 
+**Friendly fire works** (owner, 2026-11-07: turned on, shots still didn't hurt teammates): with it on (Half or Full,
+Match setup or the Host tab), your rounds, pellets, rockets, blades and fire hit a teammate in the way and hurt them
+(half as much on Half), and burns and poison stick; blasts already did. Off (the default), shots pass through
+teammates as before. A team kill still earns nothing.
+
+**Frozen characters fixed** (owner, 2026-11-07: big bot matches showed figures standing mid-run, some in the air):
+these were the dead. A character that died some 15 m or more away, where its animation is smoothed between steps
+(performance round 4), kept the smoothing after its death, so its body was drawn in its last living pose where it
+died instead of as its ragdoll; it stayed so until the body sank. Bodies now fall and lie as they should at any
+distance, and a body kept for the next player of its look stands up fresh.
+
+- Reduce flashing no longer turns blast smoke black: a dimmed blast scaled every piece's colour, so the toon smoke (drawn over the scene, not added to it) came out black near the camera; now only added light is scaled, and the rest have their bright parts capped.
+- The sheep walks on its legs: its body stood half sunk in the ground, so it slid along like a worm (the sim keeps a walking sheep's position on the ground; the model now stands on it).
+
 **New mode: Roulette** (docs/ROULETTE_MODE_PLAN.md; docs/GAME_MODES.md, "Roulette")
 - **A new character every life**, dealt from your own shuffled deck of the roster (no quick repeats), with that
   character's stats (size, health, speed). A spawn card tells you who you are ("You are Big Bab · Large: tougher,

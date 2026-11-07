@@ -488,6 +488,25 @@ export class CharacterAnimator {
   private readonly gunPose = { node: null as TransformNode | null, prevPos: new Vector3(), prevRot: new Quaternion(), lastPos: new Vector3(), lastRot: new Quaternion(), prevAt: -1e9, at: -1e9, eval: -1 };
 
   /**
+   * Smoothing off and its recorded poses dropped: on every path that stops stepAt being called (a death, a ragdoll, a
+   * body laid down or frozen, a body kept for reuse) and on revival. Only stepAt turns it on, and GameView stops
+   * stepping a character the moment it dies, so a body that died in a smoothed band (some 15 m and more away) kept
+   * it on: every frame its skin was overwritten with its last two living poses, and the ragdoll under it was drawn as
+   * a figure standing mid-stride where it died, in the air if it died there (frozen characters, owner, 2026-11-07).
+   * A respawn (into the same body or a kept one) starts afresh rather than blending from a pose from before the death.
+   */
+  private endSmoothing(): void {
+    this.blend.on = false;
+    this.skinPoses.clear();
+    this.gunPose.node = null;
+  }
+
+  /** Whether the frames between evaluations are smoothed now (tests). */
+  get smoothing(): boolean {
+    return this.blend.on;
+  }
+
+  /**
    * A smoothed skeleton's skin this frame: on an evaluated frame its new matrices are recorded (the last two kept), and
    * every frame it is drawn `blendAt` of the way from the one before to the last, one step behind the clips, so a
    * character stepped at 10-30 Hz moves on every frame instead of jumping from pose to pose. The bones themselves keep
@@ -1205,6 +1224,7 @@ export class CharacterAnimator {
    */
   ragdoll(limbs: 'stop' | 'limp' = 'stop'): void {
     this.dead = true;
+    this.endSmoothing();
     // Physics poses the bones from now on: they must be drawn every frame.
     this.gate.skip = false;
     for (const g of this.ch.clips.values()) if (g.isPlaying) g.stop();
@@ -1223,6 +1243,7 @@ export class CharacterAnimator {
    */
   lieDown(): void {
     this.dead = true;
+    this.endSmoothing();
     this.gate.skip = false;
     this.prone = 0;
     this.sit = 0;
@@ -1252,6 +1273,7 @@ export class CharacterAnimator {
   freezePose(): void {
     if (this.frozenPose) return;
     this.frozenPose = true;
+    this.endSmoothing();
     for (const j of this.ch.joints.values()) j.freezeWorldMatrix();
     // Every skin takes the final pose now: a skin is only updated while its mesh is drawn, so the near-detail
     // mesh of a body that died far away (its low-detail mesh drawn) kept the last pose it was drawn in, or the
@@ -1271,6 +1293,7 @@ export class CharacterAnimator {
    * back where it belongs, the hands empty and the clips asleep until it is shown. It revives on its first update.
    */
   standBy(): void {
+    this.endSmoothing();
     this.hold(null);
     this.thawPose();
     if (this.rootHome) this.skelRoot?.position.copyFrom(this.rootHome);
@@ -1404,6 +1427,7 @@ export class CharacterAnimator {
 
   private die(): void {
     this.dead = true;
+    this.endSmoothing();
     this.gate.skip = false;
     // The ragdoll takes over from wherever the body is.
     this.prone = 0;
@@ -1425,6 +1449,7 @@ export class CharacterAnimator {
 
   private revive(): void {
     this.dead = false;
+    this.endSmoothing();
     this.thawPose();
     const d = this.ch.clips.get('death');
     if (d) d.mask = null;

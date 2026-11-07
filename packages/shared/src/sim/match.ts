@@ -1277,6 +1277,19 @@ export class Match {
     return h;
   }
 
+  /**
+   * Can `a`'s shots, blasts, blades and fire hurt `b`? An enemy always; a teammate (anyone not hostile) only with
+   * the match's friendly fire on, and never between NPCs and players (as `damage` rules). Hit tests use this, so with
+   * friendly fire on a teammate in the line of fire takes the round (and stops it) instead of letting it through;
+   * aiming, homing and bots' choice of target stay on `hostile`.
+   */
+  canHurt(a: Combatant, b: Combatant): boolean {
+    if (a === b) return false;
+    if (this.hostile(a, b)) return true;
+    if (this.race && !this.race.combat) return false;
+    return (this.rules.friendlyFire ?? 'off') !== 'off' && !a.npc && !b.npc;
+  }
+
   /** Players and NPCs. */
   actors(): Combatant[] {
     return [...this.combatants(), ...this.npcs.values()];
@@ -2985,7 +2998,7 @@ export class Match {
   /** Launch a projectile from the eye along the aim (lifted a little for throws, so they arc). */
   private launch(shooter: Combatant, spec: ProjectileSpec, weapon: string, lift = 0, spread = 0): void {
     const eye = { x: shooter.move.pos.x, y: shooter.move.pos.y + eyeHeightOf(shooter.move, shooter.size), z: shooter.move.pos.z };
-    const aim = this.spreadDir(lift ? normalize(add(viewDirection(shooter.yaw, shooter.pitch), { x: 0, y: lift, z: 0 })) : this.aimOf(shooter, shooter.thirdPerson ? this.targetsFor(shooter, 0) : undefined), spread);
+    const aim = this.spreadDir(lift ? normalize(add(viewDirection(shooter.yaw, shooter.pitch), { x: 0, y: lift, z: 0 })) : this.aimOf(shooter, shooter.thirdPerson ? this.targetsFor(shooter, 0, true) : undefined), spread);
     this.projectiles.push({
       id: this.nextProjectileId++,
       owner: shooter.slot,
@@ -3015,7 +3028,7 @@ export class Match {
 
   private fireNow(shooter: Combatant, def: Trigger, viewTick: number): void {
     const eye = { x: shooter.move.pos.x, y: shooter.move.pos.y + eyeHeightOf(shooter.move, shooter.size), z: shooter.move.pos.z };
-    const aim = this.aimOf(shooter, shooter.thirdPerson ? this.targetsFor(shooter, viewTick) : undefined);
+    const aim = this.aimOf(shooter, shooter.thirdPerson ? this.targetsFor(shooter, viewTick, true) : undefined);
     const gp = gunplayOf(getWeapon(def.id));
     let spread: number;
     if (gp.accuracy && !def.alt) {
@@ -3194,7 +3207,7 @@ export class Match {
 
   /** Put a status effect on a player (kill credit for its damage goes to `by`). */
   private applyStatus(c: Combatant, st: StatusHit, by: Combatant | null, weapon: string): void {
-    if (!c.alive || (by && by !== c && !this.hostile(by, c))) return;
+    if (!c.alive || (by && by !== c && !this.canHurt(by, c))) return;
     const ticks = Math.round(st.seconds * TICK_RATE);
     if (st.kind === 'burn') c.burnTicks = Math.max(c.burnTicks, ticks);
     else if (st.kind === 'poison') c.poisonTicks = Math.max(c.poisonTicks, ticks);
@@ -3310,16 +3323,17 @@ export class Match {
    * resolved against recorded positions at the tick they were viewing
    * (bounded by MAX_REWIND_TICKS). Bots see the present.
    */
-  private targetsFor(shooter: Combatant, viewTick: number): ShotBody[] {
+  private targetsFor(shooter: Combatant, viewTick: number, aimOnly = false): ShotBody[] {
     let past: Map<number, PastBody> | undefined;
     if (shooter.kind === 'human' && viewTick > 0) {
       const t = Math.max(this.tick - MAX_REWIND_TICKS, Math.min(this.tick, viewTick));
       const e = this.history[t % HISTORY_TICKS];
       past = e?.tick === t ? e.at : undefined;
     }
-    // Allies are not targets: shots pass through them (no friendly fire).
+    // Allies are not targets: shots pass through them, unless the match has friendly fire on (canHurt). Third-person
+    // aim (`aimOnly`) settles on enemies only, as ever.
     return this.actors()
-      .filter((o) => o.alive && this.hostile(shooter, o))
+      .filter((o) => o.alive && (aimOnly ? this.hostile(shooter, o) : this.canHurt(shooter, o)))
       .map((o) => {
         const then = past?.get(o.slot);
         // The rewound body is the whole body as it was: where it stood, which way it faced, its stance and shapes.
@@ -3422,7 +3436,7 @@ export class Match {
       for (const c of this.actors()) {
         // Your own discs never hit you.
         if (!c.alive || (c === owner && (p.age < OWNER_GRACE_TICKS || spec.disc))) continue;
-        if (owner && c !== owner && !this.hostile(owner, c)) continue;
+        if (owner && c !== owner && !this.canHurt(owner, c)) continue;
         const d = rayTarget(p.pos, dir, this.shotBody(c), len, PROJECTILE_THICKNESS);
         if (d !== null && d <= len && (hitDist === null || d < hitDist)) {
           hitDist = d;
@@ -3643,7 +3657,7 @@ export class Match {
     this.bullets = keep;
   }
 
-  /** Living actors a bullet of `owner`'s can hit, where they are now (allies are passed through, as with every shot). */
+  /** Living actors a bullet of `owner`'s can hit, where they are now (allies are passed through unless friendly fire is on, as with every shot). */
   private liveTargets(owner: number): ShotTargets {
     const shooter = this.actor(owner);
     if (shooter) return this.targetsFor(shooter, 0);
@@ -5005,7 +5019,7 @@ export class Match {
       if (d > radius || !this.physics.lineOfSight(at, target)) continue;
       let dmg = damage + (edge - damage) * (d / radius);
       if (owner && c === owner) dmg *= selfScale;
-      // Knockback throws everyone up and out (you too: rocket and disc jumps), friends included, but only enemies take damage.
+      // Knockback throws everyone up and out (you too: rocket and disc jumps), friends included; damage() decides who is hurt (teammates only with friendly fire on).
       if (knockback && !c.mount) this.throwBy(c, blastThrow(d > 0.01 ? scale(sub(target, at), 1 / d) : { x: 0, y: 1, z: 0 }, d, radius, knockback, c === owner));
       if (dmg > 0) this.damage(c, dmg, owner, weapon);
       if (status && c.alive) this.applyStatus(c, status, owner, weapon);
