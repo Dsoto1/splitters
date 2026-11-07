@@ -99,6 +99,35 @@ Bomb plants (0.5 → 0.3 a match) a little down on the samples, and ten CTF maps
    coming back along the gantry walk into it. Move it off the walkway's middle?
 <!-- /bots-a -->
 
+<!-- ground-fix -->
+### MapMaker's ground under floors (`wip/ground-fix`, agent, 2026-11-07; from main 5e85caff; in progress)
+The owner: "fix the ground bug" (set pieces part 2's pitfall: every MapMaker edit lowered the ground under every level
+floor and nothing ever raised it back).
+
+**The cause (step 1, as found):**
+- **Loading** (`loadMap`, map/validate.ts): the set pieces are expanded into their parts (`expandSetPieces`: a sunk
+  trench's buried carve floor is one of its parts), as played the paths are laid into the ground (`withPathsLaid`) and
+  the props bedded on the ground re-bedded on the laid ground (`rebedProps`), then `terrainUnderFloors` (map/settle.ts) keeps the
+  terrain under every floor: each unturned `floor` box (tile slabs, room-option and extra floors such as the trench's,
+  roofs, every static block), highest first, lowers each terrain vertex inside its footprint whose height is between
+  5 cm under its top and 3 m over it, to just under the slab inside and 5 cm under the top on its edges. It only ever
+  lowers. Loading for editing (`forEditing`: MapMaker, publishing) kept the placements and the paths apart but handed
+  back the carved ground.
+- **MapMaker:** `EditorApp.run` wrapped every edit of tiles, blocks, set pieces or terrain in `withTerrainUnderFloors`
+  (editor/operations.ts): apply the edit, carve, and add a `setTerrain` (the ground after the edit → the carved
+  ground) to the same undo step. The carved ground replaced the document's ground.
+- **Why it never came back:** once the carve was in the document, the heights it lowered were gone (only that step's
+  undo still had them). The next edit carved again from the carved ground, and the carve only lowers: a floor moved
+  away left its dip, a floor moved in steps left one at every step (the 56 m slab on St. John's), a deleted floor
+  left its pad. Loading for editing and exporting wrote the carve into the file, so the ground as made under every
+  floor that had ever stood anywhere was lost for good. Play never showed it: loading carved the same ground again,
+  which changed nothing. Six shipped maps still have ground that loading carves (Apex Ring, 390 vertices, up to
+  0.32 m; Norman Shores, 82, up to 0.83 m; Blackout, Crossroads, Dead Reel, Dockside Depot, 5 cm), so opening one of
+  them in MapMaker and exporting it changed the file.
+- MapMaker's view already drew `terrainUnderFloors(withPathsLaid(viewDoc))`: the carve in the document added nothing
+  to what it showed but its permanence.
+<!-- /ground-fix -->
+
 <!-- setpieces -->
 ### Set pieces, part 2: MapMaker (`wip/setpieces-2`, agents, 2026-11-06; from `wip/setpieces-3`, main dbbc4b78 merged in; green on `check/setpieces-2` at 555c40ec, run 42312043139; not landed)
 What was built: docs/SET_PIECES_PLAN.md, "As built: part 2" and "St. John's (as built)"; how to use it:
