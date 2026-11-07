@@ -727,6 +727,7 @@ export class BotBrain {
     this.retreatGoal = null;
     this.retreatMode = null;
     this.duckUntil = -Infinity;
+    this.ownWay = null;
     this.link = null;
     this.linkClock = null;
     this.spacing = 'hold';
@@ -1099,6 +1100,25 @@ export class BotBrain {
     return !!a && a.c === c && tick - a.failed < TICK_RATE * 10;
   }
 
+  /** The corridor it picked for itself this life (in no group: orderTarget), for the goal it was picked for. */
+  private ownWay: { goal: Vec3; c: Corridor | null } | null = null;
+
+  /**
+   * Toward `goal` by corridor `c`: all the way along its own polygons (NavWorld.pathAlong) when it runs to the goal and
+   * that hasn't failed lately; else by its via, then the shortest way on. Either way the corridor is the one it walks
+   * (BotBrain.corridor: the team brain's crowd price counts it).
+   */
+  private byCorridor(view: BotWorldView, c: Corridor, goal: Vec3): Vec3 {
+    if (c.polys.length > 1 && !this.alongFailed(c, view.tick)) {
+      this.along = { c, tick: view.tick, failed: this.along?.c === c ? this.along.failed : -Infinity };
+      let r = this.route;
+      if (!r || r.c !== c || horizontalDistance(r.goal, goal) > 8) r = this.route = { c, goal: { ...goal }, next: 0, used: view.tick };
+      r.used = view.tick;
+      return goal;
+    }
+    return this.viaRoute(view, c, goal);
+  }
+
   /** `to`, where it was heading for `goal`, was one of its corridor's vias and no route gets there from here: on past it. */
   private skipVia(to: Vec3, goal: Vec3): boolean {
     const r = this.route;
@@ -1126,17 +1146,21 @@ export class BotBrain {
     if (job) {
       if (job.stage) return job.stage;
       if (!job.route || horizontalDistance(me, g.pos) <= ROUTE_FROM) return g.pos;
-      // Its group's corridor all the way (BOT_AI_PLAN.md Phase C item 4: NavWorld.pathAlong), when the corridor runs to
-      // this goal; else by its via, then the shortest way on.
-      if (job.route.polys.length > 1 && !this.alongFailed(job.route, view.tick)) {
-        this.along = { c: job.route, tick: view.tick, failed: this.along?.c === job.route ? this.along.failed : -Infinity };
-        return g.pos;
-      }
-      return this.viaRoute(view, job.route, g.pos);
+      return this.byCorridor(view, job.route, g.pos);
     }
     let lane = this.lane;
     // (Only for a spot to get to, a flag: not for following someone, nor for a carrier running home the short way.)
     if (!g.push || g.detour === 0 || g.radius >= 1) return g.pos;
+    // A bot in no group, on its way to an objective a trip of its side's runs to (CTF's flags): a corridor of that trip,
+    // the cheapest now by the team brain's prices (its length, the teammates on it, deaths and sightings near it), picked
+    // once a life, and kept to all the way (Phase C follow-up: the busiest way carried three in five of a CTF team, as
+    // only groups had corridors, and groups only form on the longest trips).
+    if (view.plan?.trips.length) {
+      const own = this.ownWay;
+      if (!own || horizontalDistance(own.goal, g.pos) > 8) this.ownWay = { goal: { ...g.pos }, c: cheapestRoute(view.plan.trips, g.pos, this.routeRng, true) };
+      const c = this.ownWay!.c;
+      if (c && c.polys.length > 1 && horizontalDistance(me, g.pos) > ROUTE_FROM) return this.byCorridor(view, c, g.pos);
+    }
     if (!lane || horizontalDistance(lane.goal, g.pos) > 8) {
       const far = horizontalDistance(me, g.pos) > LANE_FROM;
       const r = this.routeRng();
@@ -4170,7 +4194,7 @@ function farthest(points: readonly Vec3[], from: Vec3): Vec3 | undefined {
  * length with the teammates on it, and the deaths and sightings near it), with a little of the bot's own taste (up to
  * ×1.3): null when no trip ends there.
  */
-function cheapestRoute(trips: readonly PricedTrip[], goal: Vec3, rng: () => number): Corridor | null {
+function cheapestRoute(trips: readonly PricedTrip[], goal: Vec3, rng: () => number, claim = false): Corridor | null {
   let best: PricedTrip | null = null;
   let bestD = 40;
   for (const t of trips) {
@@ -4182,16 +4206,29 @@ function cheapestRoute(trips: readonly PricedTrip[], goal: Vec3, rng: () => numb
   }
   if (!best) return null;
   let pick: Corridor | null = null;
+  let at = -1;
   let low = Infinity;
+  const shortest = Math.min(...best.trip.corridors.map((c) => c.length));
   best.trip.corridors.forEach((c, k) => {
+    // (Claiming one for good: only corridors not much longer than the shortest, so a run isn't a long way round.)
+    if (claim && c.length > shortest * OWN_WAY_STRETCH) return;
     const cost = best!.cost[k]! * (1 + rng() * 0.3);
     if (cost < low) {
       low = cost;
       pick = c;
+      at = k;
     }
   });
+  // Claimed: its price goes up at once by a teammate's crowd share, so the next bot setting out in the same second (a
+  // respawn wave) sees it (the team brain prices the corridors again once a second; before, a wave all took one way).
+  if (claim && pick && at >= 0) best.cost[at] = best.cost[at]! + (pick as Corridor).length * CLAIM_CROWD;
   return pick;
 }
+
+/** A bot in no group takes a corridor for itself only up to this many times the trip's shortest. */
+const OWN_WAY_STRETCH = 1.3;
+/** What one bot's claim adds to a corridor's price, of its length (the team brain's crowd share: DEFAULT_PLAYBOOK.crowd). */
+const CLAIM_CROWD = 0.15;
 
 /** A goal a sniper may hold a spot over (OrderGoal): one to hold (a CTF defender's flag, a hill), not one to get to. */
 function holdsPost(g: OrderGoal): boolean {
