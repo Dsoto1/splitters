@@ -18,6 +18,12 @@ Already done from the owner's earlier ask: **the real buildable area.**
   storage, like saved maps.
 - **One source of truth.** Every new edit is a shared editor command with undo (`packages/shared/src/editor`),
   tested headless. The UI only wires it up.
+- **The ground is worked out, never stored** (fixed 2026-11-07, HANDOFF "MapMaker's ground under floors").
+  - The document keeps the ground as made. MapMaker shows the ground as played: paths laid in, the terrain kept under
+    every floor (`EditorView.setMap`, from the same pieces as `withGroundAsPlayed`, which loading uses).
+  - A tool that needs the ground under the pointer uses `EditorApp.shownGround`.
+  - Anything bedded on the ground is bedded on the document's own ground; the view and loading re-bed it.
+  - No command writes the lowered ground into the document: groups, paste and templates move floors like any edit.
 - **Performance.** MapMaker stays smooth on the owner's M1. Anything that shows in play (time of day, weather) goes
   through the perf budgets and the phone tiers.
 - **Tests.** Each phase adds e2e checks to the `editorux` flow and regenerates the `mapmaker.png` baseline when the

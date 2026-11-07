@@ -200,7 +200,8 @@ with undo (part 1's API, plus `editor/setPieceEdit.ts`).
   piece's parts against each other are one piece (the insula's floors met its stairwells in 138 places on the
   coverage map: nothing an author could move); `withTerrainUnderFloors` sees set pieces' floors (a sunk trench
   carves its slot when placed, in the same undo step, as loading does: before, an exported map changed on load and
-  said "changed since it was exported"); the Gothic and Collegiate stone facades' plinth runs under the wall and
+  said "changed since it was exported"; since 2026-11-07 MapMaker writes no carve into the map at all and draws the
+  ground under floors worked out from the ground as made, as loading does); the Gothic and Collegiate stone facades' plinth runs under the wall and
   stops at doorways (it crossed a skybridge's door ends). The other pack facades still draw their ground band across
   doorways: a change to their look, left for the owner.
 - **Coverage map:** one of every set piece (39), placed in MapMaker from the tab: the trenches and the landing craft on
@@ -237,11 +238,12 @@ spawns, objectives and logic (unchanged), and bots walking each way in a match (
 - **Bots** (a match, one bot sent each way as an order goal): Exeter Street to the drill field through the passage and
   back (5.5 s each), the passage into Knight by the new door and back, the passage through the east tower to the drill
   field, and DeKoven's first floor to Smythe's over the bridge and back (about 10 and 7 s, at 4.27-4.76 m).
-- **Pitfall found on the way (MapMaker):** every edit lowers the ground under every level floor (`withTerrainUnderFloors`)
-  and never raises it back, so a big floor moved field by field lowers the ground under each place it passes through.
-  A copy of Welles's 56 m ground slab, squared up and then moved before it was cut down to the tower's paving, lowered
-  the ground along Knight's whole front by 0.7 m (a bush left floating). Size and place a copied floor first and
-  square it up last (turned floors are never lowered under), or make it small before moving it.
+- **Pitfall found on the way (MapMaker), fixed since (2026-11-07, HANDOFF "MapMaker's ground under floors"):** every
+  edit lowered the ground under every level floor (`withTerrainUnderFloors`, gone now) and never raised it back, so a
+  big floor moved field by field lowered the ground under each place it passed through. A copy of Welles's 56 m ground
+  slab, squared up and then moved before it was cut down to the tower's paving, lowered the ground along Knight's
+  whole front by 0.7 m (a bush left floating; that run was thrown away). MapMaker now keeps the ground as made and works
+  out the ground under floors from it after every edit, as loading does: no workaround needed.
 
 ## As built: part 3 (the showpiece maps' pieces; 2026-11-06)
 Part 3 is the pieces MAP 21 (Omaha beach assault) and the Sandfall Colosseum rebuild are built from, and the kit they

@@ -138,6 +138,107 @@ Bomb plants (0.5 → 0.3 a match) a little down on the samples, and ten CTF maps
    coming back along the gantry walk into it. Move it off the walkway's middle?
 <!-- /bots-a -->
 
+<!-- ground-fix -->
+### MapMaker's ground under floors (`wip/ground-fix`, agent, 2026-11-07; from main 5e85caff, main 9dfe3ba1 merged in; green on `check/ground-fix` at e16079fe, run 42328205906; not landed)
+The owner: "fix the ground bug" (set pieces part 2's pitfall: every MapMaker edit lowered the ground under every level
+floor and nothing ever raised it back).
+
+**The cause (step 1, as found):**
+- **Loading** (`loadMap`, map/validate.ts): the set pieces are expanded into their parts (`expandSetPieces`: a sunk
+  trench's buried carve floor is one of its parts), as played the paths are laid into the ground (`withPathsLaid`) and
+  the props bedded on the ground re-bedded on the laid ground (`rebedProps`), then `terrainUnderFloors` (map/settle.ts) keeps the
+  terrain under every floor: each unturned `floor` box (tile slabs, room-option and extra floors such as the trench's,
+  roofs, every static block), highest first, lowers each terrain vertex inside its footprint whose height is between
+  5 cm under its top and 3 m over it, to just under the slab inside and 5 cm under the top on its edges. It only ever
+  lowers. Loading for editing (`forEditing`: MapMaker, publishing) kept the placements and the paths apart but handed
+  back the carved ground.
+- **MapMaker:** `EditorApp.run` wrapped every edit of tiles, blocks, set pieces or terrain in `withTerrainUnderFloors`
+  (editor/operations.ts): apply the edit, carve, and add a `setTerrain` (the ground after the edit → the carved
+  ground) to the same undo step. The carved ground replaced the document's ground.
+- **Why it never came back:** once the carve was in the document, the heights it lowered were gone (only that step's
+  undo still had them). The next edit carved again from the carved ground, and the carve only lowers: a floor moved
+  away left its dip, a floor moved in steps left one at every step (the 56 m slab on St. John's), a deleted floor
+  left its pad. Loading for editing and exporting wrote the carve into the file, so the ground as made under every
+  floor that had ever stood anywhere was lost for good. Play never showed it: loading carved the same ground again,
+  which changed nothing. Five shipped maps still have ground that loading carves (Apex Ring, 390 vertices, up to
+  0.32 m; Norman Shores, 82, up to 0.83 m; Blackout, Dead Reel, Dockside Depot, 5 cm; Crossroads was the sixth until
+  the prop scale pass re-saved it), so opening one of them in MapMaker and exporting it changed the file.
+- MapMaker's view already drew `terrainUnderFloors(withPathsLaid(viewDoc))`: the carve in the document added nothing
+  to what it showed but its permanence.
+
+**The fix (step 2): the ground is worked out, never stored.** No format change.
+- **The document and the file keep the ground as made** (only sculpting changes it): `EditorApp.run` runs edits as
+  they are (`withTerrainUnderFloors` is gone) and `loadMap(..., { forEditing: true })` hands back the file's own ground.
+- **The ground as played is one function,** `withGroundAsPlayed` (settle.ts): the paths laid in, `terrainUnderFloors`
+  over the floors of the geometry as made (set pieces' parts included), and the props bedded on the ground as made
+  re-bedded on it (`rebeddedY`, the rule `rebedProps` applies to each prop). `loadMap` plays every map on it.
+  `EditorView.setMap` draws the same pieces after every edit: the laid ground cached per ground and paths, the carve
+  redone over the whole map's geometry (`mapBoxes()`; under a millisecond on St. John's), and kept as the same terrain
+  when it comes out the same, so an edit that moves no floor's carve rebuilds no terrain mesh.
+- **Everything in MapMaker that meets the ground uses the ground as shown** (`EditorApp.shownGround`): the pointer (a
+  hill inside a building no longer catches clicks), the brush rings, the live brush preview (kept under the floors
+  while it is dragged; Flatten levels to the height under the pointer as shown), the level strip's "on the terrain",
+  Smooth all's moves of spawns, pickups, flags, hills and vehicles, and the navigation check. Props are bedded on the
+  document's own ground (placing, Settle on ground, Scatter, moves, Replace all) and drawn re-bedded on the ground as
+  shown (the ghost too), as loading plays them.
+- **Loading as played changed in one way:** props on the ground are re-bedded on the ground as played (laid and kept
+  under floors), not only on the laid ground, and the carve and the re-bed use the geometry as made (the laid map's
+  but for the terrain's edge walls). Over all 90 shipped maps (main 9dfe3ba1 merged in): every map loads
+  byte-identically but Blackout and Dockside Depot (9 props each), whose files carry ground 5 cm through a floor's
+  edge: those props sit 1-5 cm lower, bedded.
+- **No migration:** the file's `terrain` was always the ground before the carve as far as loading goes (`loadMap`
+  lowered every map's), so existing maps load as before and older clients play maps the new MapMaker exports.
+- **Known, intended:** what stands on a floor or on the lowered ground (spawns, pickups, objectives) stays put when the
+  floor goes (props follow the ground). A room moved off its spawn leaves the spawn under the ground that comes back,
+  and MapMaker says so ("inside something solid"); before, the spawn was left in a pit. On maps last exported by the old
+  MapMaker, the ground under their floors is that old carve (nothing tells it from sculpting): an existing building
+  moved away leaves its pad, as before; the terrain tools level it.
+
+**Tests (step 4):** shared `terrainFloors.test.ts`: an edit and its undo byte-identical (moves, turns, deletes, a
+raise, a room, a trench, a sculpt); a slab moved across a field in 15 steps and back; a deleted floor; a turned floor,
+squared up and then moved (the St. John's slab); trenches and set pieces carving as on load, the slot moving, turning
+and going with the piece; a Sunken Trench tile alone; props beside a floor played on the lowered ground and back on
+the ground as made when the floor goes; every shipped map loads for editing with its own ground and as played with
+none through a floor; MapMaker's view composition equals `loadMap` on St. John's. e2e editorux `editorGroundChecks`:
+the starter room on ground raised 0.6 m, dragged two cells with Select (the ground back where it stood, lowered where
+it went, the document untouched), undo (byte-identical), redo, across the field and back a cell at a time, TEST plays
+the ground MapMaker showed.
+
+**Proof** (session scratchpad `gf/pics/`): `drag-main-*`: main's MapMaker, the room dragged four cells east over the
+raised ground: a 1.1 m trench along its whole path (the ground along z 0 from x -8 to 40: 75, 75, 10, -37, -37, -37,
+10, ... cm, the document the same). `drag-fix-*`: this branch, the same drags: lowered only under where it stands, the
+document 75 cm all along. Step Temple: `st-yaw0-tiles` (before) and `st-after-yaw0-tiles` (after),
+`step-temple-before-ground` / `step-temple-after-ground` (the Tiles layer off).
+
+**Audit of the shipped maps (step 3).** Three passes: (1) every commit since the carve landed (a631338d, 2026-10-28)
+that changed a map, branch commits too, against its parent: vertices lowered to a floor's carve value (2 cm under a
+bottom or 5 cm under a top) in flat runs, or by 20 cm or more, still that low now with no floor over them; (2) on every
+map, flat dips at a carve value with no floor over them (for maps made after the carve landed); (3) as played, props
+floating (validate-map's `prop.floating`) and pickups, spawns and objectives over the ground with nothing under them.
+
+| Map | Ground lowered where no floor stands | Over it | Done |
+|---|---|---|---|
+| Step Temple | a slot 2.2 m deep and 4 m long between the west terrace and the Terrace Stair's west face (x -14..-12, z -2..0; the 11-03 rework) | a plant cluster at its bottom | filled in MapMaker (below) |
+| Fogbound | 4 vertices at carve values (11-03): shell craters (brush falloff; one holds a mud swamp) | - | deliberate, left |
+| St. John's | 595 vertices lowered to carve values by Smooth all (10-31), none under a floor then: smoothing; three gentle lawn hollows (0.1-0.4 m) are flat beds from the 10-30 generation, smoothed | nothing | left |
+| the other 26 maps changed since the carve landed (main's prop scale pass, re-saved in MapMaker, included) | none | no prop floats | - |
+| the 15 maps with terrain not changed since | the carve never reached their files (five carry ground through a floor edge, lowered on load as always) | - | - |
+
+No prop floats on any shipped map as played. Things over the ground with nothing under them: boats on water (Norman
+Shores, Primeval Park), parked vehicles (St. John's), pickups over Sunken Kingdom's flooded courts, Reactor's
+`pickup_084`, Overhang's `flag_092` and Cinder Foundry's `pickup_504`: none over ground the bug lowered (their files
+never went through the carve, or the history shows none there), so not part of this.
+
+**Step Temple, fixed in MapMaker** (fixed build, driving the real editor with Playwright; scratch driver, not
+committed): Import, the Terrain tool's Flatten brush (2 m, 100 %) from the terrace top over each of the slot's four
+vertices (back to 220 cm, their height before that session), the plant lifted (inspector Height 2.2, then Settle on
+ground: 2.17 m), Export. The file's diff: those four heights, the plant's height, the release stamp. validate-map: 0
+issues; the navigation audit: no traps before or after (five drop links into the slot gone).
+
+**For the owner:** nothing to decide for the fix. St. John's three lawn hollows are left as they are (say if you want
+them levelled). Moving an existing building in MapMaker leaves its old pad, as described above.
+<!-- /ground-fix -->
+
 <!-- setpieces -->
 ### Set pieces, part 2: MapMaker (`wip/setpieces-2`, agents, 2026-11-06; from `wip/setpieces-3`, main dbbc4b78 merged in; green on `check/setpieces-2` at 555c40ec, run 42312043139; not landed)
 What was built: docs/SET_PIECES_PLAN.md, "As built: part 2" and "St. John's (as built)"; how to use it:
@@ -172,15 +273,16 @@ second placed St. John's (from the start, in MapMaker) and finished.
   more (narrower, the inspector folds away), and point the view at the sky while editing through the inspector (on
   St. John's, software rendering of the campus was most of the time). Screenshots with the view's photo camera
   (`view.photoCamera()`, as capture-map-shots.mjs does) come out on Medium graphics: on High every view drew the
-  player's own picture. **Every MapMaker edit lowers the ground under every level floor and never raises it back**
-  (`withTerrainUnderFloors`, older than set pieces): a big floor moved field by field lowers the ground under each
-  place it passes. A copy of Welles's 56 m slab, squared up and then moved before it was cut down to the tower's
-  paving, lowered Knight's whole front by 0.7 m on the first try (thrown away): size and place a copied floor first
-  and square it up last (turned floors are never lowered under).
+  player's own picture. **Every MapMaker edit lowered the ground under every level floor and never raised it back**
+  (`withTerrainUnderFloors`, older than set pieces): a big floor moved field by field lowered the ground under each
+  place it passed. A copy of Welles's 56 m slab, squared up and then moved before it was cut down to the tower's
+  paving, lowered Knight's whole front by 0.7 m on the first try (thrown away). **Fixed** (2026-11-07, "MapMaker's
+  ground under floors" above): MapMaker keeps the ground as made and works out the ground under floors after every
+  edit, so floors can be moved in any order; no workaround needed.
 - **For the owner** (answered 2026-11-07):
   - **Owner's answers:**
     - "Keep the bridge floor fix, tower and bridge are fine."
-    - The ground bug: "fix the ground bug". It is being fixed now on `wip/ground-fix`, ahead of the overhaul.
+    - The ground bug: "fix the ground bug". Fixed on `wip/ground-fix` (2026-11-07), ahead of the overhaul.
     - The facade ground bands: "leave the facades as they are for now" (2026-11-07).
   - The other pack facades (concrete, corrugated, manor brick, clapboard, roman, desert, harbour, snow, timber
     frame...) still draw their ground band across doorways (visual only): stopping them at doorways, as the stone ones
@@ -193,8 +295,8 @@ second placed St. John's (from the start, in MapMaker) and finished.
     hill counts anyone up to 3.5 m over its floor (4.04 m there); the bridge's own floor is at 4.0 m, so a floor at
     4.25 m now runs through the bridge (level with the links' steps) and nobody inside holds the hill. Moving the hill
     a few metres instead would be the other way; it was left where it was (objectives unchanged).
-  - MapMaker's ground lowering (the pitfall above) is a candidate for the MapMaker overhaul: lower the ground only
-    under what an edit moved and put it back when a floor moves away, or work it out on load only.
+  - MapMaker's ground lowering (the pitfall above): fixed on `wip/ground-fix` (2026-11-07), worked out after every
+    edit and on load from the ground as made, never stored.
 
 ### Set pieces, part 1: data, expansion, first content (`wip/setpieces`, agents, 2026-11-06; from main 774a28ce, main e18a175e merged in; green on `check/setpieces` at 09af09cd, run 42211217797; not landed)
 Plan and what it settled: docs/SET_PIECES_PLAN.md ("As built: part 1"); how to add a piece: docs/CONTENT_PIPELINE.md,

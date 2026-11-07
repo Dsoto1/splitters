@@ -26,6 +26,20 @@ choices", "Team brain and route variety")
   busiest way 54 → 43 % of a team's bots; Capture the Flag as many captures as before (20) from fewer flag takes (176
   → 141): the defenders hold their flags now, and the attack against a held flag is part 2's.
 
+**MapMaker gives the ground back when a floor moves** (owner: "fix the ground bug")
+- MapMaker used to write the ground it lowers under floors into the map: every edit lowered the terrain under every
+  floor and nothing ever raised it back, so a floor moved across a field left a dip at each place it passed and a
+  deleted floor left its pad (props on the ground there were left floating). Now the map keeps the ground you sculpted,
+  and the ground kept under the floors is worked out from it, after every edit and when the map loads, the same way
+  for both: move, turn or delete a floor and the ground where it stood comes back; an edit and its undo leave the
+  terrain exactly as it was; opening a map and exporting it changes nothing; the map plays as MapMaker shows it. No
+  change to the map format: existing maps load as before.
+- Props bedded on the ground beside a floor are played bedded on the ground kept under it, as MapMaker draws them: on
+  Blackout and Dockside Depot (their files have ground 5 cm through a floor's edge) 18 props, mostly trees and lamp
+  posts, sit 1–5 cm lower.
+- Step Temple: the 2.2 m slot the old behaviour cut beside the west terrace stair is filled again (in MapMaker). No
+  other shipped map had ground lowered where no floor stands now.
+
 **Furniture at human size** (owner: "Can we scale the props to the normal human character size? Some of them are
 tiny, like chairs and such"; docs/CONTENT_PIPELINE.md, "Real-world sizes")
 - Every furniture and everyday prop was measured by what it is for (a chair's seat, a table's top, a basin's rim)
