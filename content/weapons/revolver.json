@@ -22,15 +22,17 @@
   "ammo": "light",
   "knockback": 4,
   "view": {
-    "model": "guns/ironclad_revolver.glb",
+    "model": "guns/revolver_rustique.glb",
+    "held": { "medium": "guns/revolver_rustique.medium.glb", "high": "guns/revolver_rustique.high.glb" },
     "viewOffset": [0.2, -0.18, 0.42],
     "tracer": "#ffcf7a",
-    "hold": { "style": "pistol", "grip": [0, -0.03, -0.108], "support": [-0.02, -0.04, -0.098], "rake": 18 },
+    "hold": { "style": "pistol", "grip": [0, -0.045, -0.115], "support": [-0.02, -0.055, -0.105], "rake": 18 },
+    "muzzleAt": [0, 0.055, 0.145],
     "fallback": "weapons/revolver.glb",
     "sound": "fire.revolver"
   },
   "notes": {
     "design": "Weapon of the gunplay pass (docs/GUNPLAY_SPEC.md), benchmark B: every trigger pull is an event. Absurd damage for a handgun (a head shot kills at any range, a body shot takes nine tenths of a life), savage kick, five rounds, a true first shot that only comes back once the last one has settled (fan it and you miss), and a slow, rhythmic round-by-round reload (each cartridge can be fired as soon as it is in).",
-    "model": "A Meshy community revolver (CC0 per the owner, markings painted out; content/guns.json), held on its own grip."
+    "model": "The Meshy community Revolver Rustique (CC0 per the owner; content/guns.json), replacing the Meshy community revolver of 2026-01-26 (still built), the kit revolver as the fallback."
   }
 }

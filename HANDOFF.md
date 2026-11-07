@@ -99,6 +99,190 @@ Coast's check ("bots take every sector in a scorecard run") `bot-report` needs B
 
 <!-- /breakthrough -->
 
+<!-- weapons-1106 -->
+### Weapons intake of 2026-11-06: new weapon and grenade models, sharper held textures, the Smoke Grenade (`wip/weapons-1106`, agents, 2026-11-07; from main 9dfe3ba1, main 7c40d0b9 and 2c48debf merged in; green on `check/weapons-1106` at 143ed252, run 42364965060; not landed)
+The owner: "Added a bunch of new weapons, all Meshy community"; "We can replace our tommy gun with the 3DModelsCC0 one,
+and bring in those others to replace any one-off originals we have"; "retain the fidelity of the texture best we can:
+we want these weapons to look a little sharper, clearer, better resolution"; the grenade picks of 2026-11-06 and a new
+Smoke grenade; no flashbang (seizure risk). docs/ARSENAL.md, "Weapons intake of 2026-11-06", has the tables, the
+texture tiers and the smoke as built. Session scratchpad: `wi/` (tools, shots, renders, the picture sheets); the
+brief: `briefs/weapons-intake.md`.
+
+**What each model became** (every one rendered first: `wi/shots/cc0-guns.jpg`, `meshy-guns-q.jpg`,
+`cc0-explosives.jpg`, `cur-weapons.jpg` (the originals); the grenades as the main session rendered them,
+`nadeview/grenades-sheet.jpg`):
+- **Guns** (each weapon's `view.fallback` stays its model built from the repo, the mechanics test's rule; the
+  downloads they replaced stay built in content/guns.json, so going back is one line): Suomi KP → SMG (was the Meshy
+  Tommy Gun); AK-47 → Assault Rifle (Styloo AK); M4A1 → Burst Rifle (Meshy Neon Flux); Makarov → Pistol (flat kit
+  pistol; its magazine, laid out beside the gun in the download, put back in the grip: `move`); Grease Gun → Machine
+  Pistol (flat kit, the same shape; now held as a compact long gun); pump Shotgun → Shotgun (Styloo); the pack's
+  Sniper → Marksman Rifle (a scoped hunting rifle, posed nose-up in its download: built levelled with `noseDown`,
+  magazine seated; was the Meshy Frontier Rifle; the Sniper Rifle keeps its tactical Meshy model); BK 220 → Hand
+  Cannon (a heavy semi-automatic, so it reads apart from the Heavy Revolver; was the flat kit revolver); Revolver
+  Rustique → Heavy Revolver (was the 2026-01-26 Meshy revolver); the unnamed gilded flintlock → Gilded Pistol (one
+  shot, one kill); Plasma Defender → Pulse Pistol (was the Meshy ornate handgun); Scrapfire Assault Blaster →
+  Nailgun (drum-fed scrap gun; was the flat kit nailgun).
+- **Grenades** (the owner's picks): Globe → frag (Styloo frag the fallback; the pack's frag is its Military look);
+  Countdown Sphere → sticky (its blinking light kept on top); "just a grenade" → vortex (its own projectile look
+  `vortexNade`: the Singularity Cannon keeps `vortex`); Sunburst → cluster; Toxic Splash → gas; the pack's Molotov →
+  incendiary; the pack's smoke grenade → the new Smoke Grenade, the Meshy sci-fi canister its Sci-fi look; the AT
+  mine now also shows on the mine's pickup.
+- **Spare** (no good place yet; quick builds from the same downloads): the Luger, C4, claymore, pipe bomb, M24.
+  Still drawn in code: holy bomb, sheep, airstrike flare, sandbags, dynamite.
+
+**Build** (`prepare-guns.mjs`; CONTENT_PIPELINE.md, "The weapons intake's options"): the pack's PBR maps on its FBX
+(`maps`/`materials`, DirectX normals flipped), `move`, `noseDown`, `height`, `pbr` (the source's metal and roughness
+kept: the pack's maps, or a Meshy GLB's painted into the rebaked charts by `rebake`'s `also`), `held` (three copies:
+everyone's 512 px colour / 512 normal / 256 metal-roughness with its LOD; Medium 1024/512/256 and High 2048/1024/512
+for your own hands, budget tier `held`); pack meshes joined and given an LOD. Holds read off gridded side views of
+each built model (`wi/tools/holdgrid.mjs`, `wi/shots/grid/`).
+
+**Client:** your gun shows everyone's copy at once, then its Medium/High copy swapped in when loaded
+(`View.sharpenViewmodel`); a gun no longer carried frees its held copy (`View.trimViewmodels`,
+`ModelLibrary.release`); the loading screen fetches your starting guns' held copies and the match's throwable
+models, and warms the throwables' shaders with the guns' (`GameSession.prepareMatch`). Weapon metal reflects a soft
+gradient in the map's light (`game/weaponFinish.ts`, loaded on demand). Throwables: their model in flight
+(`View.thrownProjectile`, instanced), on pickups (two of it), and in both hands while you line up a throw
+(`View.setThrowHold`: the gun put away, a pistol-style hold on the grenade; first person only). Smoke: soft grey
+camera-facing puffs (`ZoneVisuals`), an eased grey fog with your eye inside and the sky faded to the same grey
+(`View.updateSmokeFog`), enemy markers behind it hidden; the throw arc shows a cloud's or puddle's reach.
+
+**Sim:** the smoke zone billows out, sits and thins (`SMOKE`, `smokeRadius`); `Match.sees` (static sight and no
+cloud in the way) is used by sentries, arc turrets, homing and spawn safety, and bots get the clouds in their view
+(`BotWorldView.smoke`: target acquisition and `canSee`). Shots, blasts and chain lightning use the physics' own lines,
+so they pass through. Bots (`considerSmoke`, then `smokeScreen`): hurt or shot at in the open by an enemy 10-45 m
+off, and (since main 2c48debf brought Phase B's cover-to-cover advance) bounding, the moving half with no cover round
+it sends smoke ahead every time before it crosses open ground. For now only a bot that picks up Smoke Grenades
+carries any (placed pickups; random ones roll only weapons); the weapon sets will hand it out.
+
+**Numbers:**
+| Weapon | Model | Triangles (LOD) | Everyone's KB | Medium KB | High KB | Before: model, KB |
+|---|---|---|---|---|---|---|
+| Submachine Gun | suomi_kp | 9188 (2296) | 402 | 413 | 840 | tommy_gun, 737 |
+| Assault Rifle | ak47_cc0 | 4805 | 213 | 270 | 608 | ak47, 146 |
+| Burst Rifle | m4a1 | 9258 (2309) | 368 | 299 | 394 | neon_flux, 965 |
+| Pistol | makarov | 3991 | 188 | 246 | 569 | pistol, 76 |
+| Machine Pistol | grease_gun | 7713 | 268 | 323 | 618 | machine_pistol, 113 |
+| Shotgun | shotgun_cc0 | 1740 | 101 | 155 | 456 | shotgun, 97 |
+| Marksman Rifle | scoped_rifle | 4808 | 138 | 148 | 233 | frontier_rifle, 953 |
+| Hand Cannon | bk220 | 7900 (1561) | 574 | 618 | 1314 | hand_cannon, 91 |
+| Heavy Revolver | revolver_rustique | 7979 (1590) | 501 | 530 | 1139 | ironclad_revolver, 249 |
+| Gilded Pistol | flintlock | 9000 (1800) | 504 | 561 | 1269 | gilded_pistol, 95 |
+| Pulse Pistol | plasma_defender | 8000 (1600) | 481 | 510 | 1004 | ornate_pistol, 801 |
+| Nailgun | scrapfire | 9995 (1998) | 668 | 725 | 1558 | nailgun, 70 |
+| all 12 | | | 4405 | 4799 | 10000 | 4393 |
+
+Grenades (one copy each, 2.8k-6.3k triangles, 256 px normal maps): Globe 374 KB, Countdown Sphere 241, "just a
+grenade" 250, Sunburst 248, Toxic Splash 234, Molotov 210, smoke grenade 112, sci-fi canister 190, the pack's frag
+130: 1988 KB in all, fetched with the match only for what it can throw.
+
+- **Downloads:** everyone's copies of the twelve guns 4405 KB against 4393 before (the same); a held copy is fetched
+  only for the guns you carry (Medium 148-725 KB, High 233-1558 KB each).
+- **Video memory** (five guns held: pistol, rifle, SMG, shotgun, hand cannon): High +140 MB (28 MB a gun), Medium
+  +35 MB, Low +0; the scene's textures at High were 292 MB before.
+- **First-load JS** (`tools/ci/bundle-budget.mjs`): 2516.9 kB, 706.8 kB gzip (budget 3000 / 840); the models and the
+  new code load with the match.
+- **Perf budget** (CI, frost_basin, 96 bots; this branch's run 42342142073 against main's nearest, run 42339408690 at
+  21e00f81, main 2c48debf's parent with the same client): within budget on both. Clumped draws Medium 213 / Low 191
+  (main 293 / 134; budget 900), shadow casters at Medium 30 (55; budget 600), slowest effect start 17 / 14.1 ms
+  (10.8 / 9.9; budget 40); CI's draw counts move run to run with where 96 bots stand. Programs built after the
+  loading gate, over three runs each: this branch Medium 13 / 13 / 15 and Low 6 / 7 / 6 (runs 42342142073,
+  42363390935, 42364965060); main-like runs Medium 3 / 7 / 7 and Low 0 / 0 / 4 (42339408690, 42330592363,
+  42328205906). On CI's software-drawn page the gate opens with the warm-up still running ("prewarm null" on both),
+  and this branch's warm-up has more to build (the new guns' metal, tangent and reflection variants, nine throwable
+  models), so more of it lands after the gate, out of sight. The probes below put the builds in play level with
+  main's. A further cut, if wanted: ship the new models without tangents (Babylon then works them out in the shader),
+  one variant fewer for each way a gun is drawn.
+- **Probe** (`wi/tools/shaderprobe.mjs`: frost_basin, 12 bots, 90 s of play, every program built after the gate with
+  its defines and meshes): Medium 8 against main's 8 (`wi/probe-*-medium-r3.log`). This branch's 8: three gun pbr
+  variants built in the second its background warm-up ended (no mesh left drawing them: the warm-up's samples) and
+  five decal, blood and shadow programs. Main's 8 include a bot's Assault Rifle at first sight in third person and
+  the muzzle flash. At the gate 133 programs against 121; the warm-up 71.0 s against 68.7 s on this box, 146
+  programs against 130, 42 gun samples against 36. Low (`wi/probe-*-low.log`): 9 against 9; at the gate 88 against
+  81; warm-up 48.6 s against 48.9 s.
+- **Warm-up at High** (`wi/tools/warm.mjs`: Rockfall Canyon, then each of the twelve guns given in turn, its High
+  held copy swapped in): this branch 57.2 s, 160 programs, 33 gun samples, and **0 programs built at first sight**
+  over the twelve guns; main 74.7 s, 153 programs, 27 samples, 1 built at first sight (the revolver)
+  (`wi/warm-*-high-r3.log`). This box's timings swing with the other agents' load (an earlier pair: main 73.5 s,
+  the branch 68.1 s); the program counts are the measure.
+
+**Pictures** (session scratchpad `wi/shots/sheets/`, before = main's build, after = this branch, in Rockfall
+Canyon): `first-high-1.jpg` and `first-high-2.jpg` (all twelve guns in first person at High), `first-low.jpg` (four
+at Low), `closeup-tiers.jpg` and `closeup-zoom.jpg` (your held copy at High against everyone's copy at Low),
+`third-high.jpg` (over the shoulder), `nades-hold.jpg` (each grenade in your hands), `nades-fly.jpg` (in flight, main's
+code-drawn shapes beside each model), `pickups.jpg` (two of each grenade, the AT mines, the SMG and shotgun, against
+main's coloured balls and discs); `wi/shots/icons.jpg` (the kill-feed icons), `wi/shots/smoke2.jpg` (the cloud from
+outside and inside) and `wi/shots/smoke3/inside-before-after.jpg` (inside it, before and after the sky fades); the grip sheets
+of all twelve guns on the Ranger, third and first person (`wi/gripsheet-after/core.ranger.png` against
+`wi/gripsheet-before/`; halves in `wi/shots/grips/`); the download renders `wi/shots/cc0-guns.jpg`,
+`meshy-guns-q.jpg`, `cc0-explosives.jpg` and `cur-weapons.jpg`; the pack's maps screened for marks,
+`wi/shots/sheets/packmaps-*.jpg` and `packnormals-*.jpg`. A source edit while the dev server is serving a shot reloads
+its page (the pause menu comes back over it): shoot from a build, or edit nothing meanwhile.
+
+**Grip audit** (`tools/content/grip-audit.mjs`, the twelve guns on the Ranger, the Tactical Soldier and the Cowboy,
+this branch's build against main's; `wi/audit-after/summary.md`, `wi/audit-before/`, `wi/audit-compare.txt`): the
+same flags as main's on every gun and character (Ranger 9, Tactical Soldier 3, Cowboy 3 on both). The one gun flagged
+is the Assault Rifle (Ranger `back flat`, the other two `flat`), flagged alike with main's Styloo AK, plus the Ranger's
+cloth `spikes` on every gun. The support hand ends further from its point on the longer new guns (Marksman Rifle
++9 cm, Shotgun +4-6, Burst Rifle +2-5, Nailgun +3-5): short arms slide it back along the handguard, as the audit
+allows; the shooting hands are where they were.
+
+**Tests:** `smoke.test.ts` (growth and life, sight geometry, the thrown grenade, a bot fires across open ground and
+not through a cloud, rounds go through, a hurt bot throws smoke between itself and its enemy, a Tactical bot bounding
+toward the enemy's flag across open ground sends smoke ahead and an Arena bot doesn't); `weaponModels.test.ts`
+(every weapon and throwable has its model; held copies are the same mesh); the content check (budgets, locks,
+provenance). Run here: typecheck, content:check, the tests the change touches (smoke, weaponModels, mechanics,
+weaponsData, pickupsData and, after merging main 2c48debf, the bot tests: 57 passed), the bundle budget, e2e
+`coverage` and `characters3` (pass) and `visual` (baselines: menu, arena and canyon show the new pistol, 1.1 / 2.5 /
+0.4 % of pixels; the other two unchanged). Not conclusive here: `test:changed` (cut short at the box's load 18 on
+4 cores; its one failure, a 50 ms wait in server.test.ts, passes alone) and e2e `arsenal` (a 60 s page-load wait
+timed out; with CI's waits, one third-person shot over a wall missed, a check this change doesn't touch); CI ran both
+in full. After the restart: typecheck and `smoke.test.ts` (7 passed; the bounding test fails without its change).
+CI: green at 7e15660f (run 42342142073, everything the branch touched: 36 e2e flows), 19c66184 (run 42363390935,
+35 flows) and 143ed252 (run 42364965060, 32 flows); red at f349eecf (run 42340584990: `handoff`, below).
+
+**For the owner:**
+- The Flare Gun weapon (`core.flare_gun`) is the one sidearm left on its flat kit model; the pack's flare gun is
+  there if you want it after all (you said you weren't sure it was needed).
+- Spare models: the Luger, C4, claymore, pipe bomb and M24 (above). Say if one should go somewhere (e.g. C4 as the
+  sticky's Military look, the Luger for a WWII set).
+- The Grease Gun as the Machine Pistol is a compact SMG now held with both hands at the shoulder (the old flat model
+  had the same shape); the BK 220 made the Hand Cannon a semi-automatic and the Revolver Rustique the Heavy Revolver.
+- KTX2 (GPU-compressed textures) would cut a High held gun from 28 MB of video memory to about 7: it needs Babylon's
+  transcoder files vendored from cdn.babylonjs.com (blocked here: the proxy refuses it). Worth a small job if High's
+  +140 MB for five guns matters on your machines.
+  **Owner (2026-11-07): skip KTX2 for now.** Revisit only if video memory becomes a problem on someone's machine: UASTC
+  (not ETC1S, which shows blocks and banding), the transcoder hosted on our own site, and a side-by-side close-up sheet
+  for the owner first.
+- Post URLs for the 11 Meshy downloads, if you have them (CC0 needs no credit; the post is the proof).
+- The pack's flashbang is not imported (your call, over seizure risk); nothing in this work flashes the screen, and
+  the smoke eases in and out in a mid grey.
+- Smoke on the 15 maps without haze (the space maps, maps without a backdrop): the first step into a cloud builds
+  every visible material's fog variant, a stall, as going under water does there. No map places smoke yet; before the
+  Sci-fi set hands it out on space maps, run those maps with fog on at zero density (a small job).
+
+**CI on this branch:** run 42340584990 (f349eecf) failed the `handoff` e2e flow, both attempts: "two friends join the
+hosted match", a friend's link closing under it with no "closing ... link" from the host, pages a second or two behind.
+That is the open item under "Fixed (2026-11-06): the `handoff` e2e failure" (a joining friend's page freezing on CI,
+for performance round 4); this branch adds to a joining page's start (the throwable models, more warm-up programs),
+the part that item suspects. It passed at 7e15660f, 19c66184 and 143ed252; if it fails again, start there.
+
+**After the container restart (2026-11-07, a second agent):** CI run 42342142073 (7e15660f) had gone green. Redone:
+the pickups, the vortex grenade in hand, main's grenades in flight, the grip sheets and the grip audit (above); the
+measures (the warm-up at High and the probe at Medium on both builds; main's build was main 7c40d0b9: 2c48debf after
+it changed only bot logic). Added: smoke before open ground in the bounds, and the sky fading inside smoke.
+
+**Pitfalls:**
+- The rar doesn't fully unpack with `unar`: `AK47_Height.png`, `Flashbang.fbx` and `Liquid_Base_Color.png` fail (RAR5;
+  none is used). `7z`/`unrar` aren't installed.
+- glTF-Transform's `join` clashes with `node:path`'s in prepare-guns.mjs: imported as `joinPrimitives`. Scratch scripts
+  must import glTF-Transform's ESM build (`dist/index.js`), or POSITION goes missing on write (two module copies).
+- In-game pictures on this machine: the page draws a frame or two a second while the offline match runs in real time
+  (a 1.5 s grenade flight is over before the picture); the shot scripts hold a grenade or a cloud in the sim for the
+  picture (`wi/tools/ingame.mjs`), never in the game.
+- A Meshy held entry rebakes at 2048 px (about 3-5 minutes each on this box).
+<!-- /weapons-1106 -->
+
 <!-- bots-b -->
 ### Bot AI Phase B: bot logic (`wip/bots-b`, agents, 2026-11-07; part 1 landed, main 7c40d0b9; part 2 on `check/bots-b2`)
 docs/BOT_AI_PLAN.md (Phase B; "Phase B part 1, measured"), docs/BOTS.md ("Scored choices", "Team brain and route

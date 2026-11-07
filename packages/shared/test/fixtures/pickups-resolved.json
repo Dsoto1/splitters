@@ -1032,6 +1032,21 @@
    },
    "category": "melee",
    "found": true
+  },
+  {
+   "item": {
+    "id": "core.smoke_grenades",
+    "displayName": "Smoke Grenades",
+    "effect": {
+     "kind": "throwable",
+     "throwable": "smoke",
+     "count": 2
+    },
+    "respawnSeconds": 25,
+    "botValue": 0.35
+   },
+   "category": null,
+   "found": true
   }
  ],
  "rules": {

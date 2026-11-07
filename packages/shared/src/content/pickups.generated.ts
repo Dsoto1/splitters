@@ -86,4 +86,5 @@ export const CORE_ITEMS: readonly ItemDefinition[] = [
   { id: 'core.disc_freeze', displayName: DISC_POWER_LABELS.freeze, effect: { kind: 'disc', power: 'freeze' }, respawnSeconds: 30, botValue: 0.8 },
   { id: 'core.weapon_revolver', displayName: 'Heavy Revolver', effect: { kind: 'weapon', weapon: 'core.revolver' }, respawnSeconds: 20, botValue: 0.6 },
   { id: 'core.weapon_battle_axe', displayName: 'Battle Axe', effect: { kind: 'weapon', weapon: 'core.battle_axe' }, respawnSeconds: 20, botValue: 0.5 },
+  { id: 'core.smoke_grenades', displayName: 'Smoke Grenades', effect: { kind: 'throwable', throwable: 'smoke', count: 2 }, respawnSeconds: 25, botValue: 0.35 },
 ];

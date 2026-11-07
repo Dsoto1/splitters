@@ -70,6 +70,8 @@ import {
   mapGravityZones,
   JET,
   getItem,
+  heldModel,
+  throwableModel,
   pickupPool,
   getMountDef,
   airCraftDef,
@@ -335,6 +337,9 @@ export class GameSession {
   private uav = 0;
   /** H: a camera over your shoulder, to see your own character. */
   private thirdPerson = false;
+  /** What you carried when the kept first-person guns were last trimmed (View.trimViewmodels): the map and its codes. */
+  private carriedInventory: unknown = null;
+  private carried = '';
   /** Third person: your own gun's last turn from the view onto the crosshair point (tests: `__cs.tpAim()`). */
   private tpAim: { yaw: number; pitch: number } | null = null;
   /** Riding: the cockpit or chase camera (H switches while driving, remembered per ground / air). */
@@ -1960,6 +1965,25 @@ export class GameSession {
     }
     const models = new Set<string>();
     for (const id of rules.startingWeapons) models.add(getWeapon(id).view.model);
+    // Your starting guns' sharper copies for your own hands (Medium, High: View.sharpenViewmodel) come in with the
+    // loading screen, as you hold them at once; a gun picked up later fetches its own then.
+    for (const id of rules.startingWeapons) {
+      const held = heldModel(getWeapon(id), this.view.atmosphere.quality);
+      if (held) jobs.push(this.view.models.load(held).catch(() => undefined));
+    }
+    // Throwables' models (content/throwables.json `view`): the frag everyone may start with and those lying as pickups,
+    // loaded and warmed like the guns, so the first one in a hand, in the air or on the ground is no stall mid-fight.
+    const thrown = new Set<string>();
+    const frag = rules.startingGrenades > 0 ? throwableModel('frag') : null;
+    if (frag) thrown.add(frag);
+    for (const e of map.entities) {
+      if (e.kind === 'pickup') {
+        const fx = getItem(e.item)?.effect;
+        const model = fx?.kind === 'throwable' ? throwableModel(fx.throwable) : null;
+        if (model) thrown.add(model);
+      }
+    }
+    for (const m of thrown) models.add(m);
     for (const e of map.entities) {
       if (e.kind === 'pickup') {
         const fx = getItem(e.item)?.effect;
@@ -1980,7 +2004,7 @@ export class GameSession {
     const looks = [...new Set(this.looks.values())].map((look) => ({ look }));
     // (The gate waits for it 8 s at most: a slow machine finishes it in the background, out of sight.)
     // Every gun the match can put in a hand (starting weapons, pickups and what they may roll), as held and as yours.
-    const guns = [...models].filter((m) => WEAPONS_BY_SLOT.some((w) => w.view.model === m));
+    const guns = [...models].filter((m) => WEAPONS_BY_SLOT.some((w) => w.view.model === m) || thrown.has(m));
     let started = false;
     jobs.push(Promise.race([this.view.prewarm(looks, guns, () => !started && !this.closed), new Promise((r) => setTimeout(r, 8000))]));
     let done = 0;
@@ -2495,6 +2519,15 @@ export class GameSession {
         }
       }
       this.view.setViewmodel(weapon);
+      // Guns no longer carried free their first-person copies (and a held copy's video memory).
+      if (local.inventory !== this.carriedInventory) {
+        this.carriedInventory = local.inventory;
+        const carried = [...local.inventory.keys()].sort((a, b) => a - b).join(',');
+        if (carried !== this.carried) {
+          this.carried = carried;
+          this.view.trimViewmodels(new Set([...local.inventory.keys()].map((code) => weaponByCode(code)?.id).filter((id): id is string => !!id)));
+        }
+      }
       const reloadFrac = weapon && local.reloadTicks > 0 ? Math.min(1, local.reloadTicks / 10, ((local.reload?.total ?? weapon.reloadTicks) - local.reloadTicks) / 10) : 0;
       this.view.updateViewmodel(dt, { moving, raise: weapon && weapon.raiseTicks ? local.raiseTicks / weapon.raiseTicks : 0, reload: reloadFrac, hidden: zoomed || (this.thirdPerson && !ride), ads: this.adsAmount, speed: this.drawnSpeed });
       this.hud.setScope(zoomed);
@@ -2518,11 +2551,15 @@ export class GameSession {
       else this.hud.setWeapons(local.inventory, local.held, local.reloadTicks > 0, local.alive, handsBusy);
       this.hud.setThrowable(local.throwable, local.alive);
       // Holding G: show where the throw will go (bounces and the blast area).
-      if (this.input.throwAiming && local.alive && local.throwable && !handsBusy) {
-        const spec = THROWABLE_DEFS[local.throwable.kind].projectile;
+      const aiming = this.input.throwAiming && local.alive && local.throwable && !handsBusy ? local.throwable.kind : null;
+      if (aiming) {
+        const spec = THROWABLE_DEFS[aiming].projectile;
         const path = predictThrow(spec, local.state.pos, this.input.yaw, this.input.pitch, 0.12, (o, d, len) => this.view.raycastLevel(o, d, len));
-        this.view.throwArc.show(path, spec.mine?.triggerRadius ?? spec.splashRadius);
+        // How far it reaches where it lands: a mine's trigger, a blast, or a cloud or puddle (gas, smoke, fire).
+        this.view.throwArc.show(path, spec.mine?.triggerRadius ?? (spec.splashRadius || spec.zone?.radius || 0));
       } else this.view.throwArc.hide();
+      // The throwable in your hands while you line it up (first person; your own model in third person throws as before).
+      this.view.setThrowHold(aiming && !this.thirdPerson ? aiming : null);
       this.input.altTrigger = !!local.weapon?.alt && local.weapon.kind === 'melee';
       this.hud.setMessageMenu(this.input.msgMenu && this.rules?.emotes !== false, QUICK_MESSAGES);
       this.hud.setClassMenu(this.classesOn && this.input.classMenu, this.classesOn ? { current: this.myClass?.[0] ?? null, next: this.myClass?.[1] ?? null, full: this.classesFull(), pick: (i) => this.input.chooseClass(i) } : null);

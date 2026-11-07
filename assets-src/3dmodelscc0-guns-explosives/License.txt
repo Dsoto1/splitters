@@ -9,9 +9,29 @@ closed); the author confirms in the page's comments that they modelled every
 asset they share. The download holds Cinema 4D FBX exports with separate
 Substance-style PBR maps and no licence file.
 
-Used: the anti-tank mine (the thrown mine's model). The other models are
-realistic PBR pieces that do not match the game's low-poly look; the flare
-gun is modelled broken open for loading.
+Used (2026-11-07, the owner's weapons intake of 2026-11-06: "We can replace our
+tommy gun with the 3DModelsCC0 one, and bring in those others to replace any
+one-off originals we have"):
+- AT_MINE  -> guns/at_mine.glb (the thrown mine's model, since 2026-10-26)
+- Suomi_KP  -> guns/suomi_kp.glb (the Submachine Gun)
+- AK-47  -> guns/ak47_cc0.glb (the Assault Rifle)
+- M4A1  -> guns/m4a1.glb (the Burst Rifle)
+- Pistol_MK (Makarov)  -> guns/makarov.glb (the Pistol; its magazine, laid out
+  beside the gun in the download, put back in the grip)
+- GreaseGun  -> guns/grease_gun.glb (the Machine Pistol)
+- Shotgun  -> guns/shotgun_cc0.glb (the Shotgun)
+- Sniper  -> guns/sniper_cc0.glb
+- Smoke_Grenade  -> guns/smoke_m18.glb (the Smoke Grenade)
+- FragGrenade  -> guns/frag_m67.glb (the frag's look in the Military weapon set)
+- Molotv_Cocktail  -> guns/molotov.glb (the Incendiary; its liquid a flat
+  colour: Liquid_Base_Color.png does not unpack from the rar)
+The guns ship three copies each (everyone's, and sharper ones for the gun in
+your own hands at Medium and High graphics), all with the pack's own colour,
+normal, metal and roughness maps (DirectX normal maps' green flipped for glTF).
+Not used: the nuclear bomb and the flare gun (the owner: "not sure we need the
+nuclear bomb or flare gun"), the flashbang (dropped by the owner over seizure
+risk; its FBX doesn't unpack from the rar either), the Luger, C4, claymore,
+M24 grenade and pipe bomb (spare: docs/IMPORT_LIST.md).
 
 Raw pack files are not kept in this repository. tools/content/prepare-guns.mjs
 builds the game-ready model from the extracted download (see

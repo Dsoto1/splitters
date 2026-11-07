@@ -7,7 +7,7 @@ import { CreateBox } from '@babylonjs/core/Meshes/Builders/boxBuilder';
 import { CreateCylinder } from '@babylonjs/core/Meshes/Builders/cylinderBuilder';
 import { CreateSphere } from '@babylonjs/core/Meshes/Builders/sphereBuilder';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
-import { getItem, getWeapon , type AmmoType, type DiscPower } from '@tiletrigger/shared';
+import { THROWABLE_DEFS, getItem, getWeapon, type AmmoType, type DiscPower } from '@tiletrigger/shared';
 import type { ModelLibrary } from '../content/models.ts';
 import { castSmall } from './shadowFlags.ts';
 
@@ -105,11 +105,32 @@ export function createPickupVisual(scene: Scene, models: ModelLibrary, itemId: s
   } else if (fx.kind === 'ammo') {
     ammoBoxes(scene, root, name, fx.ammo, part);
   } else if (fx.kind === 'throwable') {
-    // A small cluster of the thing itself.
-    for (const [x, z] of [[-0.12, 0], [0.12, 0.04], [0, -0.13]] as const) {
-      if (fx.throwable === 'mine') part(CreateCylinder(`${name}_m${x}`, { diameter: 0.26, height: 0.08, tessellation: 12 }, scene), mat(scene, '#3c4038')).position.set(x, 0, z);
-      else part(CreateSphere(`${name}_g${x}`, { diameter: 0.18, segments: 8 }, scene), mat(scene, THROWABLE_COLORS[fx.throwable] ?? '#5e6a46', fx.throwable === 'frag' ? 0 : 0.35)).position.set(x, 0, z);
-    }
+    // The thing itself: two of its model side by side (content/throwables.json `view`), a little bigger than in the
+    // hand so it reads from across a room; the code-built ones a small cluster of coloured shapes.
+    const model = THROWABLE_DEFS[fx.throwable]?.view?.model ?? null;
+    const shapes = () => {
+      for (const [x, z] of [[-0.12, 0], [0.12, 0.04], [0, -0.13]] as const) {
+        if (fx.throwable === 'mine') part(CreateCylinder(`${name}_m${x}`, { diameter: 0.26, height: 0.08, tessellation: 12 }, scene), mat(scene, '#3c4038')).position.set(x, 0, z);
+        else part(CreateSphere(`${name}_g${x}`, { diameter: 0.18, segments: 8 }, scene), mat(scene, THROWABLE_COLORS[fx.throwable] ?? '#5e6a46', fx.throwable === 'frag' ? 0 : 0.35)).position.set(x, 0, z);
+      }
+    };
+    if (model) {
+      const scale = fx.throwable === 'mine' ? 0.7 : 1.5;
+      for (const [i, [x, z, yaw]] of ([[-0.09, 0, 0.5], [0.09, 0.03, -0.7]] as const).entries()) {
+        void copy(model, `nade${i}`).then(
+          (m) => {
+            if (root.isDisposed()) return m.dispose();
+            m.parent = root;
+            m.position.set(x, 0, z);
+            m.rotation.y = yaw;
+            m.scaling.setAll(scale);
+          },
+          () => {
+            if (i === 0 && !root.isDisposed()) shapes();
+          },
+        );
+      }
+    } else shapes();
     part(CreateCylinder(`${name}_ring`, { diameter: 0.7, height: 0.03, tessellation: 24 }, scene), mat(scene, '#ff7a3d', 0.5)).position.y = -0.3;
   } else if (fx.kind === 'jetpack') {
     // Twin tanks on a back plate, with nozzles and a glow underneath.
@@ -219,7 +240,7 @@ function instanceParts(scene: Scene, root: TransformNode): void {
 export const DISC_COLORS: Record<DiscPower, string> = { fast: '#ffe14a', triple: '#5ff2ff', split: '#ff6ad0', freeze: '#bff0ff' };
 
 /** Grenade colour per kind on pickups. */
-const THROWABLE_COLORS: Partial<Record<string, string>> = { frag: '#5e6a46', sticky: '#5ad24a', incendiary: '#ff7a2a', toxic: '#a8ff3a', vortex: '#b07aff', holy: '#ffd24a', cluster: '#f5d33a', sheep: '#f4f2ea', airstrike: '#ff4a2a', sandbag: '#b39b6b', dynamite: '#b3261e' };
+const THROWABLE_COLORS: Partial<Record<string, string>> = { frag: '#5e6a46', sticky: '#5ad24a', incendiary: '#ff7a2a', toxic: '#a8ff3a', vortex: '#b07aff', holy: '#ffd24a', cluster: '#f5d33a', sheep: '#f4f2ea', airstrike: '#ff4a2a', sandbag: '#b39b6b', dynamite: '#b3261e', smoke: '#9aa0a6' };
 
 /** Stripe colour per ammo type (pickups and MapMaker icons). */
 const AMMO_COLORS: Record<AmmoType, string> = { light: '#f2e28a', rifle: '#e8a33a', shells: '#d8483a', sniper: '#5ab4e6', explosive: '#7a8a3a', cells: '#7dffb0', fuel: '#ff7a2a', chem: '#9a5ae0' };

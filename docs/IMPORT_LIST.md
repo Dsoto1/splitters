@@ -117,6 +117,8 @@ was replaced.
 The brief is `briefs/weapons-intake.md` in the session scratchpad.
 
 ## Wanted: grenade and throwable models (owner, 2026-11-06: "do we have better grenade models?")
+**Since batch 2** (above): the frag, sticky, gas, incendiary, vortex and cluster bomb have models, and the new Smoke
+Grenade. Still wanted: the holy bomb, airstrike flare, dynamite, sheep and sandbags (drawn in code).
 **Today:**
 - Only the **frag** (Styloo's low-poly grenade, `guns/frag.glb`, about 530 triangles) and the **proximity mine**
   (3DModelsCC0's anti-tank mine) are real models.
@@ -145,4 +147,17 @@ The brief is `briefs/weapons-intake.md` in the session scratchpad.
 The same model is used in the hand, in flight, and as the pickup on the ground.
 
 ## Done
-Nothing yet.
+- **Batch 2, weapons and grenades** (2026-11-07, `wip/weapons-1106`): every model rendered and given a role or set
+  aside; ARSENAL.md, "Weapons intake of 2026-11-06", has the table and HANDOFF the pictures. The pack arrived in the
+  Drive on 2026-11-06 (`Guns&Explosives.rar`).
+  - **Used:** Suomi KP (SMG), AK-47 (rifle), M4A1 (burst rifle), Makarov (pistol), Grease Gun (machine pistol),
+    Shotgun, Sniper (marksman rifle), smoke grenade (the new Smoke Grenade), Molotov (incendiary), frag (the frag's
+    Military look); BK 220 (hand cannon), Revolver Rustique (heavy revolver), the unnamed gilded flintlock (gilded
+    pistol), Plasma Defender (pulse pistol), Scrapfire (nailgun); the Globe, Countdown Sphere, "just a grenade",
+    Sunburst and Toxic Splash grenades as the owner picked; the sci-fi canister (the smoke's Sci-fi look).
+  - **Spare** (no place yet; each is a quick build from the same download): the Luger (a second pistol look, e.g. for
+    a WWII set), C4 (a Military sticky look), the claymore (a proximity mine look; the AT mine reads fine), the pipe
+    bomb and the M24 (neither reads as Frontier dynamite).
+  - **Not imported:** the nuclear bomb and the flare gun (the owner), the flashbang (dropped over seizure risk).
+  - **For the owner:** the Flare Gun weapon (`core.flare_gun`) is the one sidearm still on its flat kit model; the
+    pack's flare gun (modelled broken open for loading) is there if you want it after all.

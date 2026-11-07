@@ -62,6 +62,16 @@
       "meshy": true,
       "glb": true
     },
+    "meshy-community-drive-1106c": {
+      "title": "Meshy community models (weapons and grenades, textured GLB downloads from the owner's Drive, 2026-11-06)",
+      "creator": "Meshy community (authors not recorded; CC0 per the owner's rule of 2026-11-06)",
+      "url": "https://www.meshy.ai (community post URLs pending from the owner)",
+      "license": "CC0-1.0",
+      "licenseFile": "assets-src/meshy-community/License.txt",
+      "retrieved": "2026-11-06",
+      "meshy": true,
+      "glb": true
+    },
     "meshy-community-arsenal": {
       "title": "Meshy community models (weapons, turrets, the medkit, the WWII tank, the buggy and its tire; textured GLB downloads)",
       "creator": "Meshy community, CC0 (per owner)",
@@ -90,6 +100,10 @@
       "cockpit": {
         "maxTriangles": 36000,
         "maxBytes": 5000000
+      },
+      "held": {
+        "maxTriangles": 20000,
+        "maxBytes": 4500000
       }
     }
   },
@@ -554,6 +568,366 @@
           "pivot": [0, 0.537, 1.45]
         }
       ]
+    },
+    {
+      "out": "guns/suomi_kp.glb",
+      "pack": "3dmodelscc0-guns-explosives",
+      "file": "Suomi_KP/Suomi_KP.fbx",
+      "label": "Suomi KP (3DModelsCC0 Guns & Explosives): the Submachine Gun",
+      "maps": {
+        "base": "Suomi_KP_Base_Color.png",
+        "normal": "Suomi_KP_Normal.png",
+        "metallic": "Suomi_KP_Metallic.png",
+        "roughness": "Suomi_KP_Roughness.png"
+      },
+      "pbr": true,
+      "held": true,
+      "forward": "-z",
+      "length": 0.87,
+      "budget": "hero",
+      "lod": [
+        0.25,
+        12
+      ]
+    },
+    {
+      "out": "guns/ak47_cc0.glb",
+      "pack": "3dmodelscc0-guns-explosives",
+      "file": "AK-47/AK47.fbx",
+      "label": "AK-47 (3DModelsCC0 Guns & Explosives): the Assault Rifle",
+      "maps": {
+        "base": "AK47_Base_Color.png",
+        "normal": "AK47_Normal_DirectX.png",
+        "metallic": "AK47_Metallic.png",
+        "roughness": "AK47_Roughness.png"
+      },
+      "pbr": true,
+      "held": true,
+      "forward": "-z",
+      "length": 0.88
+    },
+    {
+      "out": "guns/m4a1.glb",
+      "pack": "3dmodelscc0-guns-explosives",
+      "file": "M4A1/M4A1.fbx",
+      "label": "M4A1 (3DModelsCC0 Guns & Explosives): the Burst Rifle",
+      "maps": {
+        "base": "M4A1_Base_Color.png",
+        "normal": "M4A1_Normal.png",
+        "metallic": "M4A1_Metallic.png",
+        "roughness": "M4A1_Roughness.png"
+      },
+      "pbr": true,
+      "held": true,
+      "forward": "-z",
+      "length": 0.86,
+      "budget": "hero",
+      "lod": [
+        0.25,
+        12
+      ]
+    },
+    {
+      "out": "guns/makarov.glb",
+      "pack": "3dmodelscc0-guns-explosives",
+      "file": "Pistol_MK/Makarov.fbx",
+      "label": "Makarov (3DModelsCC0 Guns & Explosives): the Pistol, its magazine put back in the grip",
+      "maps": {
+        "base": "Makarov_Base_Color.png",
+        "normal": "Makarov_Normal.png",
+        "metallic": "Makarov_Metallic.png",
+        "roughness": "Makarov_Roughness.png"
+      },
+      "move": {
+        "Magazine": [
+          0,
+          0,
+          -9.15
+        ]
+      },
+      "pbr": true,
+      "held": true,
+      "forward": "-z",
+      "length": 0.2
+    },
+    {
+      "out": "guns/grease_gun.glb",
+      "pack": "3dmodelscc0-guns-explosives",
+      "file": "GreaseGun/Grease_Gun.fbx",
+      "label": "Grease Gun (3DModelsCC0 Guns & Explosives): the Machine Pistol",
+      "maps": {
+        "base": "Grease_Gun_Base_Color.png",
+        "normal": "Grease_Gun_Normal_DirectX.png",
+        "metallic": "Grease_Gun_Metallic.png",
+        "roughness": "Grease_Gun_Roughness.png"
+      },
+      "pbr": true,
+      "held": true,
+      "forward": "-z",
+      "length": 0.5
+    },
+    {
+      "out": "guns/shotgun_cc0.glb",
+      "pack": "3dmodelscc0-guns-explosives",
+      "file": "Shotgun/Shotgun.fbx",
+      "label": "Shotgun (3DModelsCC0 Guns & Explosives): the Shotgun",
+      "maps": {
+        "base": "Shotgun_Base_Color.png",
+        "normal": "Shotgun_Normal_DirectX.png",
+        "metallic": "Shotgun_Metallic.png",
+        "roughness": "Shotgun_Roughness.png"
+      },
+      "pbr": true,
+      "held": true,
+      "forward": "-z",
+      "length": 1.05
+    },
+    {
+      "out": "guns/scoped_rifle.glb",
+      "pack": "3dmodelscc0-guns-explosives",
+      "file": "Sniper/Sniper.fbx",
+      "label": "Sniper (3DModelsCC0 Guns & Explosives, levelled: posed nose-up in the download): the Marksman Rifle",
+      "noseDown": 9.6,
+      "move": {
+        "Magazine": [0, 2.0, 0]
+      },
+      "maps": {
+        "base": "Sniper_Base_Color.png",
+        "normal": "Sniper_Normal.png",
+        "metallic": "Sniper_Metallic.png",
+        "roughness": "Sniper_Roughness.png"
+      },
+      "pbr": true,
+      "held": true,
+      "forward": "-z",
+      "length": 1.15
+    },
+    {
+      "out": "guns/frag_m67.glb",
+      "pack": "3dmodelscc0-guns-explosives",
+      "file": "FragGrenade/FragGrenadeModel.fbx",
+      "label": "Frag Grenade (3DModelsCC0 Guns & Explosives): the frag's Military look",
+      "maps": {
+        "base": "FragGrenade_Base_Color.png",
+        "normal": "FragGrenade_Normal_DirectX.png",
+        "metallic": "FragGrenade_Metallic.png",
+        "roughness": "FragGrenade_Roughness.png"
+      },
+      "pbr": true,
+      "forward": "+z",
+      "height": 0.1,
+      "normalSize": 256
+    },
+    {
+      "out": "guns/smoke_m18.glb",
+      "pack": "3dmodelscc0-guns-explosives",
+      "file": "Smoke_Grenade/Smoke_Grenade.fbx",
+      "label": "Smoke Grenade (3DModelsCC0 Guns & Explosives): the Smoke Grenade",
+      "maps": {
+        "base": "Smoke_Grenade_Base_Color.png",
+        "normal": "Smoke_Grenade_Normal_DirectX.png",
+        "metallic": "Smoke_Grenade_Metallic.png",
+        "roughness": "Smoke_Grenade_Roughness.png"
+      },
+      "pbr": true,
+      "forward": "+z",
+      "height": 0.15,
+      "normalSize": 256
+    },
+    {
+      "out": "guns/molotov.glb",
+      "pack": "3dmodelscc0-guns-explosives",
+      "file": "Molotv_Cocktail/Molotov_Cocktail.fbx",
+      "label": "Molotov Cocktail (3DModelsCC0 Guns & Explosives): the Incendiary; its liquid a flat colour (the pack's 625-byte map does not unpack)",
+      "materials": {
+        "Bottle": {
+          "base": "Bottle_Base_Color.png",
+          "opacity": "Bottle_Opacity.png",
+          "metallic": "Bottle_Metallic.png",
+          "roughness": "Bottle_Roughness.png"
+        },
+        "Fabric": {
+          "base": "Fabric_Base_Colo.png",
+          "normal": "Fabric_Normal_DirectX.png",
+          "roughnessFactor": 0.9
+        },
+        "Liquid": {
+          "color": "#a0621e",
+          "alpha": 0.85
+        }
+      },
+      "pbr": true,
+      "forward": "+z",
+      "height": 0.21,
+      "normalSize": 256
+    },
+    {
+      "out": "guns/bk220.glb",
+      "pack": "meshy-community-drive-1106c",
+      "glb": "Meshy_AI_BK_220_1106083440_texture.glb",
+      "label": "BK 220 (Meshy Community download, 2026-11-06): the Hand Cannon",
+      "forward": "-x",
+      "length": 0.26,
+      "triangles": 8000,
+      "maxError": 0.03,
+      "surface": "rebake",
+      "pbr": true,
+      "held": true,
+      "budget": "hero",
+      "lod": [
+        0.2,
+        12
+      ]
+    },
+    {
+      "out": "guns/revolver_rustique.glb",
+      "pack": "meshy-community-drive-1106c",
+      "glb": "Meshy_AI_Revolver_Rustique_1106214209_texture.glb",
+      "label": "Revolver Rustique (Meshy Community download, 2026-11-06): the Heavy Revolver",
+      "forward": "-x",
+      "length": 0.29,
+      "triangles": 8000,
+      "maxError": 0.03,
+      "surface": "rebake",
+      "pbr": true,
+      "held": true,
+      "budget": "hero",
+      "lod": [
+        0.2,
+        12
+      ]
+    },
+    {
+      "out": "guns/flintlock.glb",
+      "pack": "meshy-community-drive-1106c",
+      "glb": "Meshy_AI__1106214221_texture.glb",
+      "label": "Gilded flintlock pistol (Meshy Community download, unnamed, 2026-11-06): the Gilded Pistol",
+      "forward": "-x",
+      "length": 0.34,
+      "triangles": 9000,
+      "maxError": 0.03,
+      "surface": "rebake",
+      "pbr": true,
+      "held": true,
+      "budget": "hero",
+      "lod": [
+        0.2,
+        12
+      ]
+    },
+    {
+      "out": "guns/plasma_defender.glb",
+      "pack": "meshy-community-drive-1106c",
+      "glb": "Meshy_AI_Plasma_Defender_1106214346_texture.glb",
+      "label": "Plasma Defender (Meshy Community download, 2026-11-06): the Pulse Pistol",
+      "forward": "-x",
+      "length": 0.28,
+      "triangles": 8000,
+      "maxError": 0.03,
+      "surface": "rebake",
+      "pbr": true,
+      "held": true,
+      "budget": "hero",
+      "lod": [
+        0.2,
+        12
+      ]
+    },
+    {
+      "out": "guns/scrapfire.glb",
+      "pack": "meshy-community-drive-1106c",
+      "glb": "Meshy_AI_Scrapfire_Assault_Bla_1106214428_texture.glb",
+      "label": "Scrapfire Assault Blaster (Meshy Community download, 2026-11-06): the Nailgun",
+      "forward": "-x",
+      "length": 0.7,
+      "triangles": 10000,
+      "maxError": 0.03,
+      "surface": "rebake",
+      "pbr": true,
+      "held": true,
+      "budget": "hero",
+      "lod": [
+        0.2,
+        12
+      ]
+    },
+    {
+      "out": "guns/globe_grenade.glb",
+      "pack": "meshy-community-drive-1106c",
+      "glb": "Meshy_AI_Globe_Grenade_1106214152_texture.glb",
+      "label": "Globe Grenade (Meshy Community download, 2026-11-06): the Frag Grenade",
+      "forward": "+z",
+      "height": 0.11,
+      "triangles": 3000,
+      "maxError": 0.03,
+      "normalSize": 256,
+      "surface": "rebake",
+      "pbr": true
+    },
+    {
+      "out": "guns/countdown_sphere.glb",
+      "pack": "meshy-community-drive-1106c",
+      "glb": "Meshy_AI_Countdown_Sphere_1106213632_texture.glb",
+      "label": "Countdown Sphere (Meshy Community download, 2026-11-06): the Sticky Grenade",
+      "forward": "+z",
+      "height": 0.12,
+      "triangles": 3000,
+      "maxError": 0.03,
+      "normalSize": 256,
+      "surface": "rebake",
+      "pbr": true
+    },
+    {
+      "out": "guns/vortex_grenade.glb",
+      "pack": "meshy-community-drive-1106c",
+      "glb": "Meshy_AI_just_a_grenade_that_l_1106214244_texture.glb",
+      "label": "\"just a grenade\" (Meshy Community download, 2026-11-06): the Vortex Grenade",
+      "forward": "+z",
+      "height": 0.12,
+      "triangles": 3000,
+      "maxError": 0.03,
+      "normalSize": 256,
+      "surface": "rebake",
+      "pbr": true
+    },
+    {
+      "out": "guns/sunburst_grenade.glb",
+      "pack": "meshy-community-drive-1106c",
+      "glb": "Meshy_AI_Sunburst_Grenade_1106213842_texture.glb",
+      "label": "Sunburst Grenade (Meshy Community download, 2026-11-06): the Cluster Bomb",
+      "forward": "+z",
+      "height": 0.13,
+      "triangles": 3000,
+      "maxError": 0.03,
+      "normalSize": 256,
+      "surface": "rebake",
+      "pbr": true
+    },
+    {
+      "out": "guns/toxic_splash.glb",
+      "pack": "meshy-community-drive-1106c",
+      "glb": "Meshy_AI_Toxic_Splash_Grenade_1106213853_texture.glb",
+      "label": "Toxic Splash Grenade (Meshy Community download, 2026-11-06): the Gas Grenade",
+      "forward": "+z",
+      "height": 0.15,
+      "triangles": 3000,
+      "maxError": 0.03,
+      "normalSize": 256,
+      "surface": "rebake",
+      "pbr": true
+    },
+    {
+      "out": "guns/smoke_scifi.glb",
+      "pack": "meshy-community-drive-1106c",
+      "glb": "Meshy_AI_Sci_fi_fire_suppressa_1106213707_texture.glb",
+      "label": "Sci-fi fire suppressant canister (Meshy Community download, 2026-11-06): the Smoke Grenade's Sci-fi look",
+      "forward": "+z",
+      "height": 0.16,
+      "triangles": 3000,
+      "maxError": 0.03,
+      "normalSize": 256,
+      "surface": "rebake",
+      "pbr": true
     }
   ]
 }

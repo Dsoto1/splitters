@@ -94,7 +94,7 @@ import {
   type BallisticMaterial, type FalloffSpec, type GunState, type Gunplay, type KickSpec, type ReloadRun,
 } from './gunplay.ts';
 import { GLASS, glassAt } from './glass.ts';
-import { OIL_TRACTION, PROJECTILE_VISUALS, THROWABLES, THROWABLE_DEFS, ZONE_KINDS, getWeapon, zoneContains, rayCapsule, rayTarget, PROJECTILE_THICKNESS, weaponByCode, weaponCode, resolveHitscan, throwableWeaponId, type HitZone, UNARMED, unarmedStrike, type AltFire, type ProjectileSpec, type StatusHit, type ThrowableKind, type WeaponDefinition, type ZoneKind, type ZoneSpec } from './weapons.ts';
+import { OIL_TRACTION, PROJECTILE_VISUALS, SMOKE, THROWABLES, THROWABLE_DEFS, ZONE_KINDS, getWeapon, smokeBlocks, smokeRadius, zoneContains, rayCapsule, rayTarget, PROJECTILE_THICKNESS, weaponByCode, weaponCode, resolveHitscan, throwableWeaponId, type HitZone, UNARMED, unarmedStrike, type AltFire, type ProjectileSpec, type SmokeCloud, type StatusHit, type ThrowableKind, type WeaponDefinition, type ZoneKind, type ZoneSpec } from './weapons.ts';
 import { blastKnockback, blastThrow, hitImpact, impactSpeed, newImpact, stepImpact, stoppingPower, type ImpactState } from './impact.ts';
 
 /** At most this many queued inputs are applied per player per tick, which caps speed hacks. */
@@ -455,6 +455,8 @@ interface Zone {
   kind: ZoneKind;
   pos: Vec3;
   radius: number;
+  /** When it came (smoke billows out from then: smokeRadius). */
+  start: number;
   endTick: number;
   owner: number;
   weapon: string;
@@ -2029,6 +2031,7 @@ export class Match {
         // Shared sight lines and bounded perception only in big matches: smaller ones see exactly as before.
         sight: every > 1 ? this.sight : undefined,
         crowded: every > 1,
+        ...(this.smokeClouds().length ? { smoke: this.smokeClouds() } : {}),
         nav: this.nav,
         spawnPoints: orderGoal === undefined ? spawnPoints : npc && orderGoal ? [orderGoal.pos] : (c.faction && teamRoam.get(c.faction)) || spawnPoints,
         pickups: npc ? npcPickups : pickups,
@@ -3939,7 +3942,7 @@ export class Match {
       const to = sub(chest(c.move.pos), p.pos);
       const d = hypot(to.x, to.y, to.z);
       if (d > bestD || dot(to, fwd) < d * 0.3) continue;
-      if (!this.physics.lineOfSight(p.pos, chest(c.move.pos))) continue;
+      if (!this.sees(p.pos, chest(c.move.pos))) continue;
       best = scale(to, 1 / d);
       bestD = d;
     }
@@ -4591,7 +4594,7 @@ export class Match {
       if (!c.alive || c.slot === m.builtBy) continue;
       if (m.faction !== null && relation(this.factions, m.faction, c.faction) !== 'enemy') continue;
       const d = distance(muzzle, chest(c.move.pos));
-      if (d < bestD && this.physics.lineOfSight(muzzle, chest(c.move.pos))) {
+      if (d < bestD && this.sees(muzzle, chest(c.move.pos))) {
         bestD = d;
         target = c;
       }
@@ -4636,7 +4639,7 @@ export class Match {
     const st = (m.arc ??= { charge: 0, target: null, lockTicks: 0, vent: 0 });
     const def = getWeapon(spec.weapon);
     const muzzle = { x: m.pos.x, y: m.pos.y + m.def.half[1] * 2 + 0.2, z: m.pos.z };
-    const sees = (c: Combatant): boolean => distance(muzzle, chest(c.move.pos)) <= spec.range && this.physics.lineOfSight(muzzle, chest(c.move.pos));
+    const sees = (c: Combatant): boolean => distance(muzzle, chest(c.move.pos)) <= spec.range && this.sees(muzzle, chest(c.move.pos));
     if (m.cooldown > 0) m.cooldown--;
     if (st.vent > 0) {
       st.vent--;
@@ -4652,7 +4655,7 @@ export class Match {
       for (const c of this.actors()) {
         if (!this.arcTargetable(m, c)) continue;
         const d = distance(muzzle, chest(c.move.pos));
-        if (d < bestD && this.physics.lineOfSight(muzzle, chest(c.move.pos))) {
+        if (d < bestD && this.sees(muzzle, chest(c.move.pos))) {
           bestD = d;
           st.target = c.slot;
         }
@@ -4727,10 +4730,39 @@ export class Match {
 
   // ---------------------------------------------------------------- hazards and status effects
 
+  /** A smoke zone's radius now (SMOKE: it billows out, sits, thins; 0 once it hides nothing). */
+  private smokeNow(z: Zone): number {
+    return smokeRadius(z.radius, (this.tick - z.start) / TICK_RATE, (z.endTick - z.start) / TICK_RATE);
+  }
+
+  private smokeCache: { tick: number; clouds: SmokeCloud[] } = { tick: -1, clouds: [] };
+
+  /** The smoke clouds up now, for the sight checks (bots, sentries, homing, spawn safety); worked out once a tick. */
+  smokeClouds(): readonly SmokeCloud[] {
+    if (this.smokeCache.tick === this.tick) return this.smokeCache.clouds;
+    const clouds: SmokeCloud[] = [];
+    for (const z of this.zones) {
+      if (z.kind !== 'smoke') continue;
+      const radius = this.smokeNow(z);
+      if (radius > 0) clouds.push({ x: z.pos.x, y: z.pos.y + radius * SMOKE.rise, z: z.pos.z, radius });
+    }
+    this.smokeCache = { tick: this.tick, clouds };
+    return clouds;
+  }
+
+  /**
+   * Whether `b` can be seen from `a`: nothing static in the way and no smoke cloud across it. For sight only:
+   * shots, blasts and chain lightning go through smoke (they use the physics' own line).
+   */
+  sees(a: Vec3, b: Vec3): boolean {
+    return this.physics.lineOfSight(a, b) && !smokeBlocks(a, b, this.smokeClouds());
+  }
+
   private spawnZone(spec: ZoneSpec, at: Vec3, owner: number, weapon: string): void {
     let pos = at;
-    // Puddles and flames settle on the floor below; clouds and fields stay where they burst.
-    if (spec.kind === 'fire' || spec.kind === 'oil' || spec.kind === 'goo') {
+    // Puddles, flames and smoke settle on the floor below (smoke billows up from where the grenade lies); toxic
+    // clouds and fields stay where they burst.
+    if (spec.kind === 'fire' || spec.kind === 'oil' || spec.kind === 'goo' || spec.kind === 'smoke') {
       const down = this.physics.raycastHit({ x: at.x, y: at.y + 0.3, z: at.z }, { x: 0, y: -1, z: 0 }, 8);
       if (down) pos = { x: at.x, y: at.y + 0.3 - down.dist, z: at.z };
     }
@@ -4742,7 +4774,7 @@ export class Match {
       same.owner = owner;
       return;
     }
-    this.zones.push({ kind: spec.kind, pos, radius: spec.radius, endTick, owner, weapon });
+    this.zones.push({ kind: spec.kind, pos, radius: spec.radius, start: this.tick, endTick, owner, weapon });
     if (this.zones.length > MAX_ZONES) this.zones.shift();
   }
 
@@ -4777,7 +4809,8 @@ export class Match {
     for (const c of this.actors()) {
       if (!c.alive) continue;
       for (const z of this.zones) {
-        if (!inZone(z, c.move.pos)) continue;
+        // Smoke only hides (smokeClouds): nothing happens to whoever stands in it.
+        if (z.kind === 'smoke' || !inZone(z, c.move.pos)) continue;
         const owner = this.actor(z.owner) ?? null;
         switch (z.kind) {
           case 'fire':
@@ -5180,7 +5213,7 @@ export class Match {
     const mates = rotating ? this.combatants().filter((o) => o !== c && o.alive && o.faction === c.faction).map((o) => o.move.pos) : undefined;
     // Made-up spawn points on a side: the ones nearer the side's base are preferred (they are on its own third anyway).
     const home = own.length && own.some((sp) => sp.generated) && c.faction ? this.sideHome(c.faction) : null;
-    const pick = pickSpawn({ tick: this.tick, candidates, lastUsed: this.spawnUsed, enemies, occupants, ...(mates ? { mates } : {}), home, sees: (a, b) => this.physics.lineOfSight(a, b), rng: this.rng });
+    const pick = pickSpawn({ tick: this.tick, candidates, lastUsed: this.spawnUsed, enemies, occupants, ...(mates ? { mates } : {}), home, sees: (a, b) => this.sees(a, b), rng: this.rng });
     const best = candidates[pick];
     // Team modes: usually beside a teammate who's out of the fight, else the safest spawn point.
     const squad = this.teams && this.rules.squadSpawn !== false && this.rng() < 0.7 ? this.squadSpawnSpot(c) : null;
@@ -5785,7 +5818,7 @@ export class Match {
       ...(this.mounts.length ? { mt: this.mountSnapshots() } : {}),
       ...(this.mounts.some((m) => m.susp && m.alive) ? { ms: this.suspensionSnapshots() } : {}),
       ...(this.covers.length ? { cv: this.covers.map((c): CoverSnapshot => [c.id, r3(c.pos.x), r3(c.pos.y), r3(c.pos.z), r3(c.yaw), Math.ceil((Math.max(0, c.health) / c.max) * 100)]) } : {}),
-      ...(this.zones.length ? { zn: this.zones.map((z): ZoneSnapshot => [ZONE_KINDS.indexOf(z.kind), r3(z.pos.x), r3(z.pos.y), r3(z.pos.z), r3(z.radius), Math.round((z.endTick - this.tick) / 6) / 10]) } : {}),
+      ...(this.zones.length ? { zn: this.zones.map((z): ZoneSnapshot => [ZONE_KINDS.indexOf(z.kind), r3(z.pos.x), r3(z.pos.y), r3(z.pos.z), r3(z.kind === 'smoke' ? this.smokeNow(z) : z.radius), Math.round((z.endTick - this.tick) / 6) / 10]) } : {}),
       sc: this.scenario.delta(),
       np: this.npcSnapshots(),
       ...(this.rules.leaders && this.teams ? { ld: this.teams.map((t) => this.leaderOf.get(t.id) ?? -1) } : {}),
