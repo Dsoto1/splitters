@@ -3,7 +3,7 @@ import { cpus, loadavg } from 'node:os';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { BOT_DIFFICULTIES, CORE_BOT_PROFILES, TICK_RATE, initPhysics, isGameMode, loadMap, mapCanRun, rulesForMode, type GameEvent, type GameMode, type MapDocument } from '@tiletrigger/shared';
-import { CtfMode, FortsMode, KothMode, Match, ctfRoleOf, initNavigation, placeOn, setBotTrials, simProfile } from '@tiletrigger/shared/match';
+import { CtfMode, FortsMode, KothMode, Match, ctfRoleOf, initNavigation, placeOn, simProfile } from '@tiletrigger/shared/match';
 import { Behaviour } from './botMeasures.ts';
 import { drawNavPictures } from './navPictures.ts';
 
@@ -148,8 +148,6 @@ export interface MatchRow {
   routes?: { team: string; to: [number, number, number]; corridors: number; use: number[]; other: number; cross?: number[]; crossOther?: number }[];
   /** Group pushes per team (the team brain, bots/teamBrain.ts PushStats): waves set out, got there, lost half first, metres gained and seconds. */
   pushes?: Record<string, { started: number; reached: number; lostHalf: number; metres: number; seconds: number }>;
-  /** BOTB=half: the side the team brain played for (measuring Phase B; temporary). */
-  trialSide?: string | null;
   bots: BotRow[];
 }
 
@@ -240,8 +238,6 @@ async function main(): Promise<void> {
   const runSeeds = limits ? [limits.check.seed] : seeds;
   const runSeconds = limits ? limits.check.seconds : seconds;
   const jobs = pairs.flatMap(([id, m]) => runSeeds.map((seed) => ({ id, mode: m, seed }))).filter((_, i) => i % n === k);
-  // (Measuring switches for Phase B's parts: BOTB=nojobs,nostage...; bots/trials.ts. Temporary.)
-  if (process.env.BOTB) setBotTrials(process.env.BOTB);
   await Promise.all([initPhysics(), initNavigation()]);
   const rows: MatchRow[] = [];
   const maps = new Map<string, MapDocument>();
@@ -554,7 +550,6 @@ function play(map: MapDocument, mode: GameMode, seed: number, seconds: number): 
     out.bots.push(r);
   }
   out.routes = routeUse.filter((u) => u.other + u.use.reduce((a, b) => a + b, 0) > 0);
-  if (match.trialSide()) out.trialSide = match.trialSide();
   const pushes: NonNullable<MatchRow['pushes']> = {};
   for (const team of new Set(bots.map((c) => c.faction).filter((t): t is string => !!t))) {
     const st = match.teamBrain(team)?.stats;

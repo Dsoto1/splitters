@@ -1,7 +1,6 @@
 import { horizontalDistance, type Vec3 } from '../math.ts';
 import type { OrderGoal } from './brain.ts';
 import type { BotProfile } from './profile.ts';
-import { BOT_TRIALS } from './trials.ts';
 
 /**
  * Scored choices (docs/BOTS.md, "Scored choices"; BOT_AI_PLAN.md Phase B item 1): with nobody in sight, what a bot
@@ -101,7 +100,6 @@ export function leaveCost(g: OrderGoal | null, d: number, at: Vec3): number {
   if (g.run) return Infinity;
   if (g.order) return d > ORDER_NOTICE ? Infinity : 0;
   if (g.push) return d > PUSH_NOTICE ? Infinity : 0;
-  if (BOT_TRIALS.holdfree) return 0;
   const off = horizontalDistance(g.pos, at) - g.radius;
   return Math.min(1.6, Math.max(0, (off - HOLD_NOTICE) / 12));
 }

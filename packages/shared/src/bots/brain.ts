@@ -15,8 +15,7 @@ import type { ViewGrid } from './grid.ts';
 import { MapMemory, laneWaypoint, pickExploreGoal } from './explore.ts';
 import type { BotPlan } from './director.ts';
 import type { PricedTrip } from './teamBrain.ts';
-import { BOT_TRIALS } from './trials.ts';
-import { GUN_WEIGHT, OPT_CHASE, OPT_COVER, OPT_FIGHT, OPT_GOAL, OPT_NOISE, OPT_PICKUP, OPT_RETREAT, OPTIONS, PUSH_NOTICE, bestChoice, scoreChoices, type ChoiceInput } from './choices.ts';
+import { GUN_WEIGHT, OPT_CHASE, OPT_COVER, OPT_FIGHT, OPT_NOISE, OPT_PICKUP, OPT_RETREAT, OPTIONS, bestChoice, scoreChoices, type ChoiceInput } from './choices.ts';
 import type { VantageBoard, VantageKind } from './vantage.ts';
 import { simProfile } from '../sim/profile.ts';
 import { hasTag, type BotDifficulty, type BotProfile } from './profile.ts';
@@ -1134,7 +1133,6 @@ export class BotBrain {
    * shot it heard 30 m away.
    */
   private choose(view: BotWorldView, hurt: boolean, underFire: boolean): void {
-    if (BOT_TRIALS.legacy) return this.chooseLegacy(view, hurt, underFire);
     const me = view.self;
     const tick = view.tick;
     const g = view.orderGoal ?? null;
@@ -1195,37 +1193,6 @@ export class BotBrain {
     }
   }
 
-  /** The rule chain scored choices replaced (measuring only: BOT_TRIALS.legacy). */
-  private chooseLegacy(view: BotWorldView, hurt: boolean, underFire: boolean): void {
-    const me = view.self;
-    const tick = view.tick;
-    const goal = view.orderGoal;
-    const push = !!goal?.push;
-    const stayPut = (p: Vec3) => (!!this.post && horizontalDistance(me.pos, p) > 10) || (push && horizontalDistance(me.pos, p) > PUSH_NOTICE);
-    if (this.cover && (underFire || tick - this.lastTargetTick < TICK_RATE * (push ? 1 : 2.5 + (1 - this.profile.aggression / 100) * 3))) {
-      this.state = 'cover';
-    } else if (!underFire && (!goal || ((push || !!goal.watch) && goal.detour !== 0)) && bestLoadedDesirability(view.inventory) <= SIDEARM && (this.gunNearby = this.pickupGoal(view, 'weapon', goal ? Math.min(GUN_DETOUR, this.detourFor(goal)) : GUN_DETOUR))) {
-      this.state = 'advance';
-      this.roamGoal = this.gunNearby;
-      this.via = null;
-    } else if (this.state === 'retreat' && this.lastKnown && tick - this.lastKnown.tick < TICK_RATE * 3) {
-      // Keep running for a moment after losing sight of the threat.
-    } else if (this.lastKnown && !hurt && !stayPut(this.lastKnown.pos) && tick - this.lastKnown.tick < TICK_RATE * (1 + (this.profile.pursuitPersistence / 100) * 7) && horizontalDistance(me.pos, this.lastKnown.pos) > 1.5) {
-      this.state = 'chase';
-    } else if (this.heard && !stayPut(this.heard.pos) && tick - this.heard.tick < TICK_RATE * 10 && horizontalDistance(me.pos, this.heard.pos) > 2) {
-      this.state = 'investigate';
-    } else {
-      if (this.state === 'chase' && this.lastKnown && horizontalDistance(me.pos, this.lastKnown.pos) <= 1.5) {
-        this.scanUntil = tick + Math.round(TICK_RATE * (0.8 + this.tactical));
-        this.scanYaw = this.yaw;
-      }
-      if (this.state === 'investigate') this.heard = null;
-      if (this.state === 'chase') this.lastKnown = null;
-      this.state = this.mountPlan ? 'mount' : view.orderGoal ? 'hold' : 'advance';
-      if (this.state === 'advance') this.considerPost(view);
-    }
-  }
-
   /**
    * The pickup option's score: a real gun close by with only a sidearm (2.1: before chasing anyone; on the way to an
    * objective, one a few steps off it), else, holding an objective, what it needs close by (health when hurt, ammo
@@ -1240,7 +1207,7 @@ export class BotBrain {
       this.gunNearby = this.pickupGoal(view, 'weapon', g ? Math.min(GUN_DETOUR, this.detourFor(g)) : GUN_DETOUR);
       if (this.gunNearby) return GUN_WEIGHT;
     }
-    if (!g || g.detour === 0 || BOT_TRIALS.nogoalpickup) return -Infinity;
+    if (!g || g.detour === 0) return -Infinity;
     const tick = view.tick;
     let c = this.pickCand;
     if (!c || tick - c.tick >= TICK_RATE) {
@@ -2877,7 +2844,7 @@ export class BotBrain {
         this.roamGoal = pick.pos;
         // Straight for the enemy's side: by the cheapest corridor of the side's trip there now (teammates on it, and
         // deaths and sightings near it, priced in: loose bots spread over the ways by themselves).
-        const route = push && !BOT_TRIALS.noroamroute ? cheapestRoute(plan.trips, pick.pos, this.routeRng) : null;
+        const route = push ? cheapestRoute(plan.trips, pick.pos, this.routeRng) : null;
         if (route) {
           this.roamRoute = { c: route, goal: { ...pick.pos } };
           return;
