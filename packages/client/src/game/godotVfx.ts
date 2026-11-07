@@ -1222,8 +1222,14 @@ void main(void) {
   // Godot shows these through a tone map with glow; a soft roll-off keeps the hues instead of clipping to white.
   // (Not named c: the shader bodies use that name.)
   vec3 toned = vec3(1.0) - exp(-max(outColor, vec3(0.0)) * u_bright);
-  // Brightness of this play (1, or less where Reduce flashing dims a blast near the camera: GodotVfx gain).
+  // Brightness of this play (1, or less where Reduce flashing dims a blast near the camera: GodotVfx gain). Light that
+  // adds to the scene is scaled down; a piece drawn over it (smoke, debris, a cut-out fireball) is capped instead, so a
+  // dimmed blast's bright parts come down while its smoke keeps its own grey: scaling those turned smoke black.
+#ifdef ADDITIVE
   toned *= u_gain;
+#else
+  toned = min(toned, vec3(0.3 + 0.7 * u_gain));
+#endif
 #ifdef CUT
   if (outAlpha < CUT) discard;
   gl_FragColor = vec4(toned, 1.0);
@@ -1269,7 +1275,7 @@ function materialFor(scene: Scene, mat: Json, root: Json, set: string | undefine
   if (hit) return hit;
   registerShaders();
   const billboard = billboardAlign || port.billboard === true || (port.billboardUniform === true && bool(mat['shader_parameter/billboard'], false));
-  const defines = [...(billboard ? ['#define BILLBOARD'] : []), ...(port.blend === 'cut' || (port.cut !== undefined && port.blend !== 'add') ? [`#define CUT ${(port.cut ?? 0.5) < 0 ? '-1.0' : (port.cut ?? 0.5).toFixed(3)}`] : []), ...(port.lit ? ['#define WORLD_NORMAL'] : [])];
+  const defines = [...(billboard ? ['#define BILLBOARD'] : []), ...(port.blend === 'cut' || (port.cut !== undefined && port.blend !== 'add') ? [`#define CUT ${(port.cut ?? 0.5) < 0 ? '-1.0' : (port.cut ?? 0.5).toFixed(3)}`] : []), ...(port.lit ? ['#define WORLD_NORMAL'] : []), ...(port.blend === 'add' ? ['#define ADDITIVE'] : [])];
   const uniforms = ['world', 'view', 'viewProjection', 'eye', 'u_time', 'u_bright', 'u_gain', 'u_sunDir', 'u_sunColor', 'u_ambient', ...Object.keys(port.uniforms).map((k) => `u_${k}`)];
   const m = new ShaderMaterial(`gv_${key}`, scene, { vertex: `gv_${shaderName}`, fragment: `gv_${shaderName}` }, {
     attributes: ['position', 'normal', 'uv', 'pcolor', 'pextra'],
