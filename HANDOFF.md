@@ -142,7 +142,7 @@ second placed St. John's (from the start, in MapMaker) and finished.
   - **Owner's answers:**
     - "Keep the bridge floor fix, tower and bridge are fine."
     - The ground bug: "fix the ground bug". It is being fixed now on `wip/ground-fix`, ahead of the overhaul.
-    - The facade ground bands are not answered yet, so they stay as they are.
+    - The facade ground bands: "leave the facades as they are for now" (2026-11-07).
   - The other pack facades (concrete, corrugated, manor brick, clapboard, roman, desert, harbour, snow, timber
     frame...) still draw their ground band across doorways (visual only): stopping them at doorways, as the stone ones
     now do, changes those packs' look, so it waits for a yes.
