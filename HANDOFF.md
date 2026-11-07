@@ -27,36 +27,29 @@ The workflow is unchanged (CLAUDE.md):
    - **Next:** when that run is green, fast-forward main to 318023ed.
    - **Root cause:** every hit test left teammates out before `damage()` read the rule.
    - **Fix:** `Match.canHurt`. Unit test `shared/test/friendlyFire.test.ts`; e2e `friendlyFireChecks` in `teams`.
-2. **Iron Coast** (`wip/iron-coast` @ 99c48ff4; it builds and the map validates).
-   - **Built in MapMaker and exported:**
-     - the terrain, 380 x 320 m at 2.5 m;
-     - all 13 set pieces;
-     - the 7 routes and the cliff-foot strongpoints;
-     - landing slabs and the sea;
-     - 30 pickups (Military);
-     - Breakthrough: sectors A (A1, A2), B (B1-B4, 2 of 4) and C, with 6 spawn groups of 16;
-     - Team Deathmatch;
-     - crest trenches, ruins, the B/C walls and 16 village houses;
-     - the ground paint.
-   - **Measured so far:** every route routes both ways. bot-report 16 v 16 (one seed) took A at 84 s, B at 155 s and
-     C at 289 s.
-   - **Exact next step:** the last export flags spawn `spawn_jclhkikyqj` at (55, 12, 18) as cut off. Move it in the
-     inspector, export, and get validate-map to 0.
-   - **Then:**
-     - the map card picture;
-     - bot runs at 16 v 16 and 24 v 24;
-     - performance at 48 and 64 bots;
-     - typecheck, test:changed and e2e:changed;
-     - `check/iron-coast`, landing as part 1.
-   - **Part 2, the visual pass:** not started. The burning-wreck prop with smoke is saved unfinished on
-     `wip/iron-coast-wreck`; it needs its palette atlas picture and content:check.
-   - **Known gaps:**
-     - haze and mist didn't take: both are 0 in the map;
-     - the casemates sit on 4 m levels (B2 12 m, B3 16 m);
-     - the terrain can't overhang, so the cave and tunnel are pieces standing in a cut cove, not buried rooms.
-     - Decisions are in `docs/map-briefs/iron_coast/DECISIONS_AND_DEVIATIONS.md`.
-   - **Where the detail is:** driver tricks and the full list are in
-     `docs/map-briefs/iron_coast/MAP_IMPLEMENTATION_MANIFEST.md`, under "Progress".
+2. **Iron Coast** part 1 (`wip/iron-coast`; landing on main as part 1: see the line below).
+   - **Part 1 is done:** the greybox map with Breakthrough and TDM, all built in MapMaker and exported (terrain 380 x
+     320 m, 13 set pieces, 7 routes, the sea, 30 pickups, 3 sectors with 6 spawn groups of 16, crest trenches, ruins,
+     walls, 16 village houses, ground paint). validate-map **0 issues**: the cut-off spawn `spawn_jclhkikyqj` stood
+     in the ruins tile at (56, 16); selected from the issues list and moved to (66, 12, 18) in the inspector.
+   - **Card picture:** `packages/client/public/maps/shots/iron_coast.jpg`.
+   - **A Breakthrough fix it found:** a sector that fell mid-tick kept the old sector's defender plan, so a beach
+     gunner read past the guns' sector's empty gun list (goal with no position; bot-report crashed).
+     `BreakthroughMode.plan` replans when the sector changes; unit test in `breakthrough.test.ts`.
+   - **Bot runs** (after main's Phase C; seeds 1-3, 1200 s): 16 v 16 broke through 2 of 3 (A 42-51 s, B 154-211 s,
+     C 268-298 s); 24 v 24 broke through 1 of 3 (A 39-60 s, B 148-182 s, C 413 s; the other two held at C with the
+     attack out of reinforcements). The beach falls too fast; C decides it. Stuck hot spots: route 1's foot on the
+     west promontory (-152, -48) and route 5's foot under B3 (44, -40).
+   - **Perf** (`pnpm bench`, Breakthrough, loaded 4-core box): 48 bots 5.86 ms avg tick (p95 16.8), 64 bots 6.15 ms
+     (p95 16.2).
+   - **Next:** the two stair feet (landing slab or wider cut, in MapMaker), then the beach's balance (owner's call:
+     zone time, forward posts or cover); then **part 2, the visual pass** (hedgehogs, tank traps, craters, sandbags,
+     haze/mist, the burning wrecks: the prop is saved unfinished on `wip/iron-coast-wreck` and needs its palette atlas
+     picture and content:check).
+   - **Known gaps:** haze and mist are 0 in the map; the casemates sit on 4 m levels (B2 12 m, B3 16 m); the terrain
+     can't overhang, so the cave and tunnel are pieces in a cut cove. Decisions:
+     `docs/map-briefs/iron_coast/DECISIONS_AND_DEVIATIONS.md`; the full list and the MapMaker driver tricks:
+     `docs/map-briefs/iron_coast/MAP_IMPLEMENTATION_MANIFEST.md`, "Progress".
    - **The brief's essentials:**
      - MapMaker only: drive the real editor with Playwright against `vite preview`, a window at least 1280 px wide,
        click palette cards by mouse position, point the view at the sky while editing through the inspector;

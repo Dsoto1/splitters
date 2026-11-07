@@ -19,6 +19,8 @@ made only on a commit that passed CI on a check branch.
   brush levels to a height you type ("Flatten to (m)"); Map properties' **Also offered** lists the modes a map offers
   besides its main one; Import and the drafts open an unfinished map (no spawn point yet), listing what's left to fix
   (it exported, but wouldn't import back).
+- **Breakthrough**: when a sector fell, its defenders could be sent for one moment to a post the next sector doesn't
+  have (a goal with no place); they now get their next sector's duties at once.
 
 **Friendly fire works** (owner, 2026-11-07: turned on, shots still didn't hurt teammates): with it on (Half or Full,
 Match setup or the Host tab), your rounds, pellets, rockets, blades and fire hit a teammate in the way and hurt them
