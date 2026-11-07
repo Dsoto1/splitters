@@ -89,8 +89,14 @@ export interface Playbook {
   flank: number;
   /** Corridors for the groups: at most this many times as long as the shortest, plus 20 m. */
   stretch: number;
-  /** Groups only with this many attackers or more. */
+  /** Groups only with this many attackers or more... */
   groupsFrom: number;
+  /**
+   * ...on a trip whose shortest way is this long or more (m), with two ways at most `stretch` times as long (plus 20 m):
+   * on a shorter trip each bot takes its own lane (split over the ways on every map, Capture the Flag lost a third of
+   * its captures on the dev sample).
+   */
+  groupsFromLength: number;
   /**
    * When the attackers split over the corridors: always, or only for a group push (`attack.stage`: retaking a hill the
    * enemy holds; going for one nobody holds, everyone goes straight, a detour costs hill time).
@@ -122,9 +128,10 @@ export const DEFAULT_PLAYBOOK: Playbook = {
   split: 'always',
   reconFrom: 6,
   reconFrom1: 4,
-  flank: 0.4,
+  flank: 0.3,
   stretch: 1.35,
   groupsFrom: 3,
+  groupsFromLength: 180,
   stageShare: 0.35,
   stageMin: 28,
   stageMax: 60,
@@ -320,14 +327,21 @@ export class TeamBrain {
   /** Groups for the attackers, their corridors and pushes; each attacker's job. */
   private assign(tick: number, attackers: readonly BrainMember[], attack: { pos: Vec3; stage: boolean }, trip: PricedTrip, jobs: Map<number, TeamJob | null>): void {
     const pb = this.pb;
+    // A short trip, or one without two ways near the shortest: no groups, each bot its own lane (one group on one
+    // corridor sent a whole team down one way; flankers on a long way round got there late and alone).
+    if (!splits(trip.trip, pb)) {
+      for (const m of attackers) this.groupOf.delete(m.slot);
+      for (const g of Object.values(this.groups)) {
+        g.members.length = 0;
+        resetGroup(g);
+      }
+      return;
+    }
     const ways = trip.trip.corridors.length;
     const n = attackers.length;
-    // (Flankers and the recon pair only on a corridor not much longer than the shortest: by a long way round they got
-    // there late and alone.)
     const short = Math.min(...trip.trip.corridors.map((c) => c.length));
-    const fit = trip.trip.corridors.filter((c) => c.length <= short * pb.stretch + 20).length;
-    const recon = fit >= 2 ? (n >= pb.reconFrom ? pb.recon : n >= pb.reconFrom1 ? 1 : 0) : 0;
-    const flank = fit >= 2 ? Math.round((n - recon) * pb.flank) : 0;
+    const recon = n >= pb.reconFrom ? pb.recon : n >= pb.reconFrom1 ? 1 : 0;
+    const flank = Math.round((n - recon) * pb.flank);
     const want: Record<GroupKind, number> = { main: n - recon - flank, flank, recon };
     // Keep each bot in its group while the group isn't over its size; the rest (and newcomers) fill what's short,
     // the recon pair first from the explorers and lone wolves, the flankers from the aggressive.
@@ -532,6 +546,12 @@ export class TeamBrain {
 
 function newGroup(kind: GroupKind): Group {
   return { kind, corridor: -1, stage: null, waiting: new Map(), sent: new Set(), members: [] };
+}
+
+/** Whether the attackers split over a trip's ways: its shortest `groupsFromLength` or more, two ways near the shortest. */
+export function splits(trip: Trip, pb: Playbook): boolean {
+  const short = Math.min(...trip.corridors.map((c) => c.length));
+  return short >= pb.groupsFromLength && trip.corridors.filter((c) => c.length <= short * pb.stretch + 20).length >= 2;
 }
 
 function resetGroup(g: Group): void {
