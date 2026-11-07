@@ -1,4 +1,5 @@
 import { playbookFor } from '../../bots/playbooks.ts';
+import { hasTag } from '../../bots/profile.ts';
 import type { SideBrief } from '../../bots/teamBrain.ts';
 import type { BreakthroughObjective } from '../../map/schema.ts';
 import { behindLine, breakthroughSectors } from '../../map/sectors.ts';
@@ -195,6 +196,8 @@ export class BreakthroughMode implements ModeLogic {
   private fallingBack = false;
   private focus: BtObjectiveRt | null = null;
   private focusAt = 0;
+  /** Attacking bots spawned as they were added, before they had a brain: armed with smoke at their first input. */
+  private readonly unarmed = new Set<number>();
 
   constructor(private readonly host: ModeHost) {
     const map = host.map;
@@ -714,20 +717,28 @@ export class BreakthroughMode implements ModeLogic {
 
   onLeave(c: Combatant): void {
     this.behind.delete(c.slot);
+    this.unarmed.delete(c.slot);
     for (const o of this.objectives) if (o.action?.slot === c.slot) o.action = null;
   }
 
   /**
-   * The playbook's smoke (BreakthroughRoles.smoke): every other attacking bot (by its place among them) carries smoke
-   * grenades instead of its frags, so bounding up the beach the moving half screens the open ground it crosses
-   * (BotBrain.considerSmoke; docs/BOTS.md, "Smoke"). The rest keep their frags.
+   * The playbook's smoke (BreakthroughRoles.smoke): an attacking bot that moves up cover to cover (every style but
+   * Arena's and the berserkers', who rush and never bound) carries smoke grenades instead of its frags, so bounding up
+   * the beach the moving half screens the open ground it crosses (BotBrain.considerSmoke; docs/BOTS.md, "Smoke"). The
+   * rushers keep their frags.
    */
   onSpawn(c: Combatant): void {
     this.behind.delete(c.slot);
-    if (!ROLES.smoke || c.kind !== 'bot' || c.throwable?.kind !== 'frag' || this.sideOf(c) !== 'attack') return;
-    // (Its place counted here, not from this tick's plan: bots joining in one tick each count those before them.)
-    const k = this.host.combatants().filter((x) => x.faction === c.faction && x.kind === 'bot' && x.slot < c.slot).length;
-    if (k % 2 === 0) c.throwable = { kind: 'smoke', count: Math.min(THROWABLE_DEFS.smoke.max, c.throwable.count) };
+    // (A bot being added spawns before it has a brain, and so a style: it is armed at its first input, botInput.)
+    if (c.kind === 'bot' && !c.bot) this.unarmed.add(c.slot);
+    else this.armSmoke(c);
+  }
+
+  private armSmoke(c: Combatant): void {
+    const profile = c.bot?.profile;
+    if (!ROLES.smoke || c.kind !== 'bot' || !profile || c.throwable?.kind !== 'frag' || this.sideOf(c) !== 'attack') return;
+    if (hasTag(profile, 'ARENA') || hasTag(profile, 'BERSERKER')) return;
+    c.throwable = { kind: 'smoke', count: Math.min(THROWABLE_DEFS.smoke.max, c.throwable.count) };
   }
 
   /** Host handoff: the team scores a checkpoint carried (sectors taken). */
@@ -878,6 +889,7 @@ export class BreakthroughMode implements ModeLogic {
    * one shot at on the target never planted (none in 8 v 8 matches on the Breakthrough Range).
    */
   botInput(c: Combatant, input: PlayerInput): void {
+    if (this.unarmed.size && this.unarmed.delete(c.slot)) this.armSmoke(c);
     const sector = this.sector;
     if (!sector || !c.alive || c.mount || this.outcome !== BT_ROUND_PLAYING || this.restartAt !== null) return;
     const side = this.sideOf(c);

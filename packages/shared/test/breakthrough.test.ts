@@ -443,8 +443,11 @@ describe('Breakthrough', () => {
     // (The teams alternate slots: the defenders' are all odd. Their shares go by their place among them.)
     const def = people.filter((c) => c.faction === mode.defenders).sort((a, b) => a.slot - b.slot);
     expect(def.every((c) => c.slot % 2 === 1)).toBe(true);
-    // The playbook's smoke: every other attacking bot carries smoke grenades instead of its frags; defenders keep theirs.
-    expect(att.map((c) => c.throwable?.kind)).toEqual(['smoke', 'frag', 'smoke', 'frag']);
+    // The playbook's smoke: attacking bots that move up cover to cover carry smoke grenades instead of their frags; the
+    // rushers (Arena style, berserkers) and the defenders keep theirs.
+    const bounds = (c: Combatant) => !c.bot!.profile.tags.includes('ARENA') && !c.bot!.profile.tags.includes('BERSERKER');
+    expect(att.map((c) => c.throwable?.kind)).toEqual(att.map((c) => (bounds(c) ? 'smoke' : 'frag')));
+    expect(new Set(att.map((c) => c.throwable?.kind))).toEqual(new Set(['smoke', 'frag']));
     expect(def.every((c) => c.throwable?.kind === 'frag')).toBe(true);
     const put = (c: Combatant, x: number, z: number) => (c.move = { pos: { x, y: 0, z }, velY: 0, grounded: true });
     for (const c of people) put(c, 8, 74);
