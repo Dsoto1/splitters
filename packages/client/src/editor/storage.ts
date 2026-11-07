@@ -1,4 +1,4 @@
-import { loadMap, serializeMap, stampMapRelease, type MapDocument, type ValidationIssue } from '@tiletrigger/shared';
+import { loadMap, parseSetPiece, serializeMap, stampMapRelease, type MapDocument, type SetPieceDefinition, type ValidationIssue } from '@tiletrigger/shared';
 
 /**
  * Local map storage. Browser storage can be missing or cleared (private
@@ -150,17 +150,117 @@ export function deleteFromLibrary(id: string): void {
  */
 export function exportMap(map: MapDocument): MapDocument {
   const stamped = stampMapRelease(map);
-  const blob = new Blob([serializeMap(stamped)], { type: 'application/json' });
+  download(serializeMap(stamped), `${map.metadata.name.replace(/[^\w.-]+/g, '_') || 'map'}.cmap.json`);
+  return stamped;
+}
+
+/** Hand the browser a file to save. */
+function download(text: string, name: string): void {
+  const blob = new Blob([text], { type: 'application/json' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = `${map.metadata.name.replace(/[^\w.-]+/g, '_') || 'map'}.cmap.json`;
+  a.download = name;
   a.click();
   setTimeout(() => URL.revokeObjectURL(a.href), 1000);
-  return stamped;
 }
 
 export async function importMapFile(file: File): Promise<{ map: MapDocument; issues: ValidationIssue[] } | { issues: ValidationIssue[] }> {
   if (file.size > 4 * 1024 * 1024) return { issues: [{ severity: 'error', code: 'import.size', message: 'file is larger than 4 MB' }] };
   const r = loadMap(await file.text(), undefined, { forEditing: true });
   return r.ok ? { map: r.map, issues: r.issues } : { issues: r.issues };
+}
+
+// ---------------------------------------------------------------- the player's set pieces
+
+/**
+ * The player's own set pieces (MapMaker → Save selection as set piece), kept in this browser next to their maps: a
+ * list of definitions named `local.<name>` (a map that places one carries its definition, so the map plays anywhere).
+ * Export and Import move them between browsers as JSON files; nothing is uploaded (docs/MULTIPLAYER_DIRECTION.md).
+ */
+const SET_PIECES_KEY = 'cs.setpieces';
+/** The library holds at most this many pieces (saving another drops the oldest). */
+export const SET_PIECE_LIBRARY_MAX = 64;
+
+interface StoredSetPiece {
+  def: unknown;
+  savedAt: string;
+}
+
+function storedSetPieces(): StoredSetPiece[] {
+  try {
+    const list = JSON.parse(get(SET_PIECES_KEY) ?? '[]') as StoredSetPiece[];
+    return Array.isArray(list) ? list.filter((s) => s && typeof s === 'object') : [];
+  } catch {
+    return [];
+  }
+}
+
+const storedId = (s: StoredSetPiece): unknown => (s.def as { id?: unknown } | null)?.id;
+
+/** The library's pieces, newest first; each is read as untrusted data (one that no longer parses is left out). */
+export function listSetPieces(): { def: SetPieceDefinition; savedAt: string }[] {
+  const out: { def: SetPieceDefinition; savedAt: string }[] = [];
+  for (const s of storedSetPieces()) {
+    const r = parseSetPiece(s.def);
+    if (r.ok && r.def.id.startsWith('local.')) out.push({ def: r.def, savedAt: String(s.savedAt ?? '') });
+  }
+  return out.sort((a, b) => b.savedAt.localeCompare(a.savedAt));
+}
+
+/** Keep a piece in the library (replacing one with the same id). False when browser storage refused it. */
+export function saveSetPiece(def: SetPieceDefinition): boolean {
+  const rest = storedSetPieces().filter((s) => storedId(s) !== def.id);
+  return set(SET_PIECES_KEY, JSON.stringify([{ def, savedAt: new Date().toISOString() }, ...rest].slice(0, SET_PIECE_LIBRARY_MAX)));
+}
+
+export function deleteSetPiece(id: string): void {
+  set(SET_PIECES_KEY, JSON.stringify(storedSetPieces().filter((s) => storedId(s) !== id)));
+}
+
+/**
+ * A piece as content/setpieces/<family>.json holds it (the owner ships a piece the way official maps are files):
+ * its id `setpiece.<name>`, no `family` (the file's), its fields in the content files' order.
+ */
+export function officialSetPiece(def: SetPieceDefinition): Record<string, unknown> {
+  const { id, displayName, category, blurb, packs, footprint, mirror, roles, ports, parts, markers } = def;
+  return Object.fromEntries(
+    Object.entries({ id: `setpiece.${id.slice(id.indexOf('.') + 1)}`, displayName, category, blurb, packs, footprint, mirror, roles, ports, parts, markers }).filter(([, v]) => v !== undefined),
+  );
+}
+
+/**
+ * Download a piece as a JSON file: the player's definition as it is (Import reads it back, in any browser), or with
+ * `official` (the owner) as a family file for content/setpieces/<family>.json (docs/CONTENT_PIPELINE.md, "Set pieces").
+ */
+export function exportSetPiece(def: SetPieceDefinition, official?: { family: string }): void {
+  const name = def.id.slice(def.id.indexOf('.') + 1);
+  if (official) download(`${JSON.stringify({ family: official.family, pieces: [officialSetPiece(def)] }, null, 2)}\n`, `${official.family}.json`);
+  else download(`${JSON.stringify(def, null, 2)}\n`, `${name}.setpiece.json`);
+}
+
+/**
+ * Read set pieces from a file: one definition, a list of them, or a family file ({ family, pieces }, as in
+ * content/setpieces/). Each is checked as untrusted data (parseSetPiece); a shipped id (setpiece.*) comes in as local.*.
+ */
+export async function importSetPieceFile(file: File): Promise<{ defs: SetPieceDefinition[]; problems: string[] }> {
+  if (file.size > 2 * 1024 * 1024) return { defs: [], problems: ['the file is larger than 2 MB'] };
+  let raw: unknown;
+  try {
+    raw = JSON.parse(await file.text());
+  } catch (e) {
+    return { defs: [], problems: [`not a JSON file: ${(e as Error).message}`] };
+  }
+  const family = raw && typeof raw === 'object' && !Array.isArray(raw) && typeof (raw as { family?: unknown }).family === 'string' ? (raw as { family: string }).family : undefined;
+  const pieces = (raw as { pieces?: unknown } | null)?.pieces;
+  const list: unknown[] = Array.isArray(raw) ? raw : Array.isArray(pieces) ? pieces : [raw];
+  const defs: SetPieceDefinition[] = [];
+  const problems: string[] = [];
+  list.slice(0, SET_PIECE_LIBRARY_MAX).forEach((item, i) => {
+    const o = item && typeof item === 'object' ? (item as Record<string, unknown>) : null;
+    const local = o && typeof o.id === 'string' ? { ...o, id: o.id.replace(/^setpiece\./, 'local.'), family: o.family ?? family ?? 'custom' } : item;
+    const r = parseSetPiece(local);
+    if (r.ok) defs.push(r.def);
+    else problems.push(`piece ${i + 1}: ${r.problems.slice(0, 3).join('; ')}`);
+  });
+  return { defs, problems };
 }

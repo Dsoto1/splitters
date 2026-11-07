@@ -11,7 +11,7 @@ import { getProp } from '../content/props.ts';
 import { envVariant, getEnvSpecies } from '../content/environment.ts';
 import { DEFAULT_TEAMS, mapTeams } from '../sim/npc.ts';
 import { FLOAT_TOLERANCE, floatingProps, settledPropY, supportBoxes, supportUnder, terrainUnderFloors } from '../map/settle.ts';
-import { piecesFor, setPieceCells, setPieceFootprint, setPieceMirrorProblem, type SetPieceLibrary } from '../map/setPieces.ts';
+import { expandSetPieces, piecesFor, setPieceCells, setPieceFootprint, setPieceMirrorProblem, type SetPieceLibrary } from '../map/setPieces.ts';
 import { builtInSetPieces } from '../map/setPieceLibrary.ts';
 import type { SetPiecePlacement } from '../map/schema.ts';
 
@@ -1207,9 +1207,11 @@ export function edgeGlassAt(doc: MapDocument, target: EdgeTarget, catalog: TileC
  * A MapMaker edit, plus lowering the terrain wherever a floor now lies over
  * it (settle.ts terrainUnderFloors), in the same undo step: placing a room on
  * a hillside, moving a block or raising the ground under a floor never leaves
- * terrain showing through. Edits that can't move a floor or the ground pass through.
+ * terrain showing through. Set pieces count with their parts' floors (a sunk
+ * trench carves its slot), as loading the map does, so what MapMaker exports is
+ * what loads. Edits that can't move a floor or the ground pass through.
  */
-export function withTerrainUnderFloors(doc: MapDocument, cmd: EditCommand): EditCommand {
+export function withTerrainUnderFloors(doc: MapDocument, cmd: EditCommand, library: SetPieceLibrary = builtInSetPieces()): EditCommand {
   const touches = (c: EditCommand): boolean => {
     switch (c.kind) {
       case 'batch':
@@ -1218,6 +1220,10 @@ export function withTerrainUnderFloors(doc: MapDocument, cmd: EditCommand): Edit
       case 'removeTiles':
       case 'updateTiles':
       case 'setTerrain':
+      case 'addSetPieces':
+      case 'removeSetPieces':
+      case 'updateSetPieces':
+      case 'setSetPieceDefs':
         return true;
       case 'addEntities':
       case 'removeEntities':
@@ -1230,7 +1236,7 @@ export function withTerrainUnderFloors(doc: MapDocument, cmd: EditCommand): Edit
   };
   if (!touches(cmd)) return cmd;
   const after = applyCommand(doc, cmd);
-  const terrain = terrainUnderFloors(after);
+  const terrain = terrainUnderFloors(expandSetPieces(after, library).map);
   if (!terrain || terrain === after.terrain) return cmd;
   return { kind: 'batch', commands: [cmd, { kind: 'setTerrain', before: after.terrain, after: terrain }] };
 }

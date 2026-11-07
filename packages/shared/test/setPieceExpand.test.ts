@@ -294,6 +294,21 @@ describe('set pieces: every shipped piece in each turn, mirror and role pack', (
     expect(medieval.classicStructure.tiles.find((t) => t.id === 'sp_piece_1_1')!.glass).toBeUndefined();
   });
 
+  it("the Collegiate stone plinth stops at a doorway: nothing drawn across a skybridge's door ends", () => {
+    const map = expandSetPieces(withPiece({ piece: 'setpiece.skybridge_2', x: 0, y: 0, z: 1, rotation: 0, mirror: false, pack: 'collegiate' }), shipped).map;
+    const doors = map.entities.filter((e) => e.kind === 'door');
+    expect(doors.length).toBe(2);
+    const decor = buildMapDecor(map);
+    for (const d of doors) {
+      const [x, y, z] = d.position;
+      // A walk through the doorway's middle, at knee height, from 0.5 m outside to 0.5 m in: no trim in the way.
+      const inWay = decor.filter((b) => b.min[0] < x + 0.3 && b.max[0] > x - 0.3 && b.min[1] < y + 0.5 && b.max[1] > y + 0.3 && b.min[2] < z + 0.5 && b.max[2] > z - 0.5);
+      expect(inWay.map((b) => `${b.kind} ${b.min.map((v) => v.toFixed(2))}..${b.max.map((v) => v.toFixed(2))}`)).toEqual([]);
+    }
+    // The plinth still runs along the rest of the end walls and the sides.
+    expect(decor.filter((b) => b.kind === 'trim' && Math.abs(b.max[1] - b.min[1] - 0.6) < 1e-6).length).toBeGreaterThanOrEqual(4);
+  });
+
   it('overrides: a role of its own, and parts left out', () => {
     const doc = withPiece({ piece: 'setpiece.carriageway_1', x: 0, y: 0, z: 0, rotation: 0, mirror: false, pack: 'collegiate', overrides: { roles: { stone: { material: 'core.pbr_limestone', tint: '#c8c0b0' }, door: 'portcullis' }, hide: [6, 7, 8, 9] } });
     const map = expandSetPieces(doc, shipped).map;

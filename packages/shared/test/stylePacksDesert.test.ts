@@ -57,9 +57,12 @@ describe('Style Pack 09 Desert City (in Sands of Egypt\'s place)', () => {
       // No errors, and nothing it uses is unknown (After Hours keeps its own logic warning, unrelated).
       expect(r.issues.filter((i) => i.severity === 'error' || /^(tile|prop|material|theme)\.unknown$/.test(i.code)), f).toEqual([]);
       expect(validateMap(r.map).filter((i) => i.severity === 'error' || /^(tile|prop|material|theme)\.unknown$/.test(i.code)), f).toEqual([]);
-      const raw = JSON.parse(text) as { classicStructure: { tiles: unknown[] }; entities: unknown[] };
-      expect(r.map.classicStructure.tiles.length, f).toBe(raw.classicStructure.tiles.length);
-      expect(r.map.entities.length, f).toBe(raw.entities.length);
+      // Nothing lost: every tile and entity of the file is in the map as played (a map's set pieces add their parts).
+      const raw = JSON.parse(text) as { classicStructure: { tiles: { id: string }[] }; entities: { id: string }[] };
+      const tiles = new Set(r.map.classicStructure.tiles.map((t) => t.id));
+      const entities = new Set(r.map.entities.map((e) => e.id));
+      expect(raw.classicStructure.tiles.filter((t) => !tiles.has(t.id)).map((t) => t.id), f).toEqual([]);
+      expect(raw.entities.filter((e) => !entities.has(e.id)).map((e) => e.id), f).toEqual([]);
       for (const tile of r.map.classicStructure.tiles) expect(coreCatalog.get(tile.tile), `${f} ${tile.tile}`).toBeDefined();
       for (const e of r.map.entities) if (e.kind === 'prop') expect(getProp(e.model), `${f} ${e.model}`).toBeDefined();
     }

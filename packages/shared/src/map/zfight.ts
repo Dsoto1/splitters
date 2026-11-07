@@ -23,16 +23,19 @@ function faceStyle(map: MapDocument, tiles: Map<string, MapDocument['classicStru
  * different look. The renderer draws only one of them there (visibleFaces' priority), so these
  * never flicker; but one look hides the other, which may not be what was meant. Left out: tiles
  * against tiles (neighbouring rooms share walls by design, the pass sorts those out), overlaps
- * inside one piece, and faces that look the same (nothing shows).
+ * inside one piece (a set piece's parts are one piece: `partOf`, from expandSetPieces, names each
+ * part's placement; the author can't move a part on its own), and faces that look the same
+ * (nothing shows).
  */
-export function coplanarSpots(map: MapDocument, boxes: readonly WorldBox[] = [...buildMapGeometry(map), ...buildMapDecor(map)]): CoplanarSpot[] {
+export function coplanarSpots(map: MapDocument, boxes: readonly WorldBox[] = [...buildMapGeometry(map), ...buildMapDecor(map)], partOf: ReadonlyMap<string, string> = new Map()): CoplanarSpot[] {
   const tiles = new Map(map.classicStructure.tiles.map((t) => [t.id, t]));
   const entities = new Set(map.entities.map((e) => e.id));
+  const piece = (id: string) => partOf.get(id) ?? id;
   const out: CoplanarSpot[] = [];
   for (const o of coplanarOverlaps(boxes, { minArea: 0.01 })) {
     const a = boxes[o.a]!;
     const b = boxes[o.b]!;
-    if (a.sourceId === b.sourceId || (!entities.has(a.sourceId) && !entities.has(b.sourceId))) continue;
+    if (piece(a.sourceId) === piece(b.sourceId) || (!entities.has(a.sourceId) && !entities.has(b.sourceId))) continue;
     const n = [Math.round(o.normal[0]), Math.round(o.normal[1]), Math.round(o.normal[2])] as [number, number, number];
     if (faceStyle(map, tiles, a, n) === faceStyle(map, tiles, b, n)) continue;
     out.push({ ...o, ids: [a.sourceId, b.sourceId] });

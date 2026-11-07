@@ -129,6 +129,54 @@ Pieces made for MAP 21 and the Sandfall Colosseum (docs/SET_PIECES_PLAN.md, "As 
   hatch on it (a 4 m board square on a cell corner).
 - **Sandbags** (material): our own procedural paint, bags 0.6 m by 0.3 m in stretcher bond.
 
+## Set pieces: the Set pieces tab (format v27)
+
+A set piece is a structure of several cells placed as one: a carriageway through a hall, a skybridge, a casemate, a
+stand of the arena, a trench run (docs/SET_PIECES_PLAN.md). In play it is ordinary tiles, blocks, props, doors and
+lights; in MapMaker it stays one thing you place, select, turn and theme until you explode it.
+
+- **The tab** (Build → Set pieces): every shipped piece, grouped by family (Carriageways, Skybridges, Casemates,
+  Trench runs, Cliff stairs, Stair towers, Arena stands, Hypogeum, Insulae, Landing craft), pictured from the palette
+  atlas (`thumbs/setpieces.*.webp`), then **My set pieces** (your own, and the map's own that came with it). Search
+  finds pieces by name; the **Style Pack** picker narrows the tab to the pieces made for that pack's look.
+- **Placing:** pick a piece, then click the map. A see-through **ghost of the whole piece** follows the pointer in its
+  real materials, its footprint and ports outlined **green** where it fits and **red** where it doesn't; the hover
+  card and the status line say **why** (it overlaps a tile or another set piece, it's past the build limit…). **R**
+  turns it (quarter turns), **M** mirrors it (east and west swapped over the same cells); a piece that can't be
+  mirrored greys out M and says why (a tile in it isn't its own mirror image: turn it instead). PgUp/PgDn pick the
+  level (a skybridge goes on level 1 or 2). The panel over the tab shows the piece, its size and levels, and its
+  **Look**: the map theme's (Castle Keep gives Collegiate Gothic), a look made for it, or any other; picking a Style
+  Pack picks that pack's look. A placed piece keeps its look.
+- **Selecting:** a click on any part of a placed piece selects the whole placement (its footprint outlined). It
+  moves (drag, arrows, Shift+PgUp/PgDn), turns (R), mirrors (M), duplicates (Ctrl+D) and deletes (Del) as one, each one
+  undo step. The **inspector** shows the piece and its family, its **Look**, **Mirror**, X / Y / Level and turn, its
+  **ports**, and the **overrides**: a role's material (Stone, Trim, Floor, Paving, Roof, Wood, Metal; the facade, the
+  doors' style, the glass) for this placement only, and its **parts**, each with a tick: untick one to leave it out.
+- **Ports** (where a piece meets what's round it: its doors and openings) are drawn on the ghost's and the selected
+  piece's outline: a door frame and an arrow out, blue for a door, green for an opening, **red and crossed where a wall
+  stands in it** (a tile's wall or window, a block: MapMaker looks just outside the port, at waist to chest height),
+  grey where the piece's own wall shuts it (a side left automatic, with nothing built against it). A port in a wall is
+  a warning in the inspector and the issues list: open the wall (the Walls tool, or cut the block), or move the piece.
+- **The ground and the overlaps check:** placing or moving a piece lowers the terrain under its floors at once (a
+  sunk trench carves its slot), the same as the map does when it loads. MapMaker's **Overlaps** warning leaves a
+  piece's own parts out: it points only at your blocks flush with a piece in another look.
+- **Explode to tiles** (inspector button, or the right-click menu): the placement becomes its parts, ordinary tiles,
+  blocks, props, doors and lights you can edit one by one (they keep their ids, `sp_<placement>_<n>`, and are
+  selected); one undo puts the set piece back.
+- **Save as set piece:** select what it is made of (drag a box on empty ground with Select: everything whose middle is
+  in the box on the level you're editing; Shift adds), then **Save as set piece…** (inspector, the tab, or the
+  right-click menu). Name it; the dialog says what it holds (tiles, blocks, props, doors, ladders and lights; set
+  pieces count as their parts; spawns and the like are left out), its size, ports, whether it mirrors, and whether its
+  materials matched a look (then they become roles and the piece re-themes). It goes into **My set pieces**, kept in
+  this browser next to your maps (`cs.setpieces`, at most 64). Placed in a map, the map carries its definition
+  (`setPieceDefs`), so the map plays anywhere.
+- **Your library:** pick one of your pieces to **Export…** it (a `.setpiece.json` file) or **Delete** it; **Import…**
+  (under My set pieces) adds pieces from a file, checked first (a piece naming a tile, prop or material the game
+  hasn't got is refused). A piece that came with a map can be saved to your library from the panel. Nothing is
+  uploaded.
+- **The owner** also sees **Export for content/setpieces/**: the piece as a family file (its id `setpiece.<name>`) to
+  add to `content/setpieces/` and ship, the way official maps are files (docs/CONTENT_PIPELINE.md, "Set pieces").
+
 ## Room options (format v16)
 
 Room, the Room variants (Pillar, Columns, Low Cover, Dais), Long Room, Large
