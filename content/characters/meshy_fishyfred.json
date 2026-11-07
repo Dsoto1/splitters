@@ -34,6 +34,23 @@
     "handsShare": 0.1,
     "normalSize": 1024,
     "lod": 0.25,
-    "feet": true
+    "feet": true,
+    "hands": { "scale": 0.7 },
+    "skin": {
+      "rigid": [
+        {
+          "joint": "spine_03",
+          "box": [-0.4, 0.5, -0.7, 0.4, 1, 0.5],
+          "blend": 0.03,
+          "except": "^(pelvis|spine_0[12]|thigh_|calf_|foot_|ball_|upperarm_|lowerarm_|hand_|thumb_|index_|middle_|ring_|pinky_)"
+        },
+        {
+          "joint": "Head",
+          "box": [-0.3, 0.5, 0.12, 0.3, 0.95, 0.5],
+          "blend": 0.06,
+          "except": "^(pelvis|spine_0[12]|thigh_|calf_|foot_|ball_|upperarm_|lowerarm_|hand_|thumb_|index_|middle_|ring_|pinky_)"
+        }
+      ]
+    }
   }
 }
