@@ -963,7 +963,7 @@ before the stone. The brief: session scratchpad `briefs/slack-pass.md`.
   - Natural rocks keep their two tiers (`isRock`): voxelised, the boulders alone would add over 10,000 boxes to the maps.
 
 <!-- reduce-flashing -->
-### Reduce flashing: a seizure-safety setting and a CI flicker check (`wip/reduce-flashing`, agent, 2026-11-07; from main e0690630, main 5087b0b6 merged in; CI on `check/reduce-flashing` at bf1631e0, run 42373039632; not landed)
+### Reduce flashing: a seizure-safety setting and a CI flicker check (`wip/reduce-flashing`, agent, 2026-11-07; from main e0690630, main 5087b0b6 and 3cec2e59 merged in; green on `check/reduce-flashing` at 9d2dd7a1, run 42375448239 (the full suite: unit, maps, build, check, bots, perf, 16 e2e shards); not landed)
 **Why:** the owner dropped the planned flashbang ("I don't want to give people seizures", 2026-11-06) and asked for
 this. docs/LOOK.md, "Reduce flashing", has the full table and the check; CLAUDE.md has the new "Accessibility" rule (no
 new effect may add a full-screen flash, white-out or rapid flicker; new effects must pass the flicker check).
@@ -997,16 +997,19 @@ over it) is grabbed. Fails, with the setting on, on more than 6 transitions in a
 changing relative luminance by 0.1 or more, darker state under 0.8; same-way changes add up) or a quarter of the screen
 turning saturated red within 0.25 s or more than 6 red transitions a second. Off: numbers only. It also reports WCAG's
 stricter area (a quarter of a 10° field, a third of the screen each way). Frame strips and `flashing.json` go to
-e2e-artifacts (CI uploads them only when a flow fails). Local run, 255 s; CI timings: `e2e/timings.json` has a 240 s
-guess until CI measures it.
+e2e-artifacts (CI uploads them only when a flow fails). `e2e/timings.json` has a 240 s guess until CI's timings job
+refreshes it.
 
 | Moment (2 s each) | Off: transitions/s (10° field) | Off: biggest quarter-screen change | On: transitions/s (10° field) | On: biggest change |
 |---|---|---|---|---|
 | Arc fight up close | 0 (1) | 0.000 | 0 (0) | 0.000 |
 | Electric fence | 0 (0) | 0.000 | 0 (0) | 0.000 |
-| Four blasts in front of you | 5 (13) | 0.254 (white-out: screen 0.31) | 2 (4) | 0.072 |
+| Four blasts in front of you | 4 (9) | 0.402 (a white-out) | 0 (4) | 0.062 |
 | Machine gun in a dark room | 0 (0) | 0.000 | 0 (0) | 0.000 |
 | Red alarm light, 4 blinks/s | **9 (9): fails WCAG** | 0.123 | 0 (0) | 0.005 |
+
+(CI run 42375448239. The blasts vary run to run with the effects' randomness: locally off 5 (13) / 0.254, on 2 (4) /
+0.072; CI's first run off 2 (7) / 0.306, on 2 (4) / 0.067. The flow took 283 s on CI.)
 
 What the numbers say: at these distances the arcs, the fence and your muzzle flash cover too little of the screen to
 count as flashes even with the setting off (they flicker hard, but small); the setting still takes their strobing out.
