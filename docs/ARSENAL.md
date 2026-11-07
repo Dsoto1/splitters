@@ -205,8 +205,10 @@ sits, and thins over its last 3 s: 18 s in all. It is only sight:
 - **Bots use it:** a hurt bot caught in the open by an enemy 10-45 m off throws one a few metres toward it, so the
   cloud stands between them while it moves on; bounding cover to cover (Phase B), the moving half sends one ahead
   before it crosses open ground (`considerSmoke`, `BotBrain.smokeScreen`; docs/BOTS.md, "Smoke").
-- **Weapon sets:** in Military and Sci-fi (docs/WEAPON_SETS_PLAN.md); `throwableModel(kind, set)` gives a set's look
-  (the canister in Sci-fi, the realistic frag in Military) once sets pick it.
+- **Weapon sets:** among Military's and Sci-fi's grenades (after the frag and the sticky, which everyone spawns with;
+  their grenade pickups roll it, so a bot there that picks one up has smoke; docs/WEAPON_SETS_PLAN.md). The match's
+  set picks each grenade's look in your hands, in flight and on its pickups (`throwableModel(kind, set)`: the Meshy
+  canister in Sci-fi, the pack's frag in Military), and the loading screen fetches those.
 
 ## Extended arsenal (32 weapons)
 

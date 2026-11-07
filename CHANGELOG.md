@@ -27,7 +27,13 @@ docs/ARSENAL.md "Weapon sets")
 - **Bots** use the sets' weapons: sniper-role bots spawn with Military's marksman rifle or Sci-fi's railgun, bots throw
   the sheep (short, so it waddles the rest of the way) and the holy bomb (then run clear of it), and light their oil
   slicks with the oil slicker's igniter. `bot-report --set=…` and the scorecard list kills by weapon per set.
+- **The official maps' defaults:** Military on 16 maps (Sandgate, Shingle Point, Fogbound, Rockfall Canyon, Bunker
+  Cross, Atomic Court …), Sci-fi on 12 (Halcyon Station, Starhaven, Twin Spires, Void Yard, Neon Spire, Frost Basin,
+  Fernwood Moon …), Medieval on Market Town and Sandfall Colosseum, Chaos on Cinder Foundry, Pantry Raid, Flatpack
+  Depot and Erosion, Mixed bag on Neon Galleria, Grand Marquee and Primeval Park; every other map stays Standard.
 - Map format v28 (the map's `weaponSet`); older maps load unchanged and play Standard. Saved setups keep their choice.
+- **Fixed:** on the space maps (no haze), the first step into a smoke cloud, or into water, no longer freezes the game
+  while every material in view is rebuilt: the fog is on there at nothing, so smoke only thickens it.
 
 **New weapon and grenade models, sharper textures for the gun in your hands, and a Smoke Grenade** (owner,
 2026-11-06: "replace our tommy gun with the 3DModelsCC0 one, and bring in those others to replace any one-off
