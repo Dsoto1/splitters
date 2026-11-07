@@ -256,6 +256,26 @@ export function setLoadout(set: WeaponSetDef, rules: Pick<MatchRules, 'startingW
 }
 
 /**
+ * A set's main gun: the spawn's held gun when it is one (slots 3-9: Military's assault rifle, Sci-fi's plasma rifle),
+ * else the set's first main gun (Chaos and Mixed bag roll theirs; Medieval has none: null), null for a set without
+ * weapons of its own.
+ */
+export function setMainGun(set: WeaponSetDef): string | null {
+  const held = set.spawn?.[set.spawn.length - 1];
+  if (held && getWeapon(held).slot >= 3) return held;
+  return setMainGuns(set)[0]?.id ?? null;
+}
+
+/**
+ * A weapon a mode hands out (the Roulette mode's signature loadouts, docs/ROULETTE_MODE_PLAN.md) as the set allows:
+ * the weapon when it is of the set, else the set's main gun (else the weapon: a set without one, Medieval, keeps it).
+ */
+export function inSetOr(set: WeaponSetDef | null, weapon: string): string {
+  if (!set || setHas(set, weapon)) return weapon;
+  return setMainGun(set) ?? weapon;
+}
+
+/**
  * Every weapon a match in this set can put in a hand (spawn, random guns, the sniper gun, what its pickups may hold):
  * the client loads their models with the map. Null: a set that leaves weapons as placed (the map's pickups decide).
  */

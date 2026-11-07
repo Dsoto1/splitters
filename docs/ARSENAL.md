@@ -248,6 +248,43 @@ mode-only weapons (arena disc) and mounted guns have none and never roll.
   lies there now. Validation warns when a random pickup shows a weapon of
   another category (`pickup.random_item`).
 
+## Weapon sets
+
+A **weapon set** (docs/WEAPON_SETS_PLAN.md; data `content/weapon-sets.json`, built by
+`tools/content/weapon-sets.mjs`; behaviour `sim/weaponSets.ts`) decides what a match spawns with, what its weapon and
+grenade pickups hold and what drops. Each map has a default (MapMaker → Map properties → **Weapon set**, map field
+`weaponSet`, format v28; absent: Standard); the host picks another in Match setup → Advanced rules → Weapons (a
+**Weapon set** row, "Map default (…)" naming the map's own), the pause menu's Host tab (applies at once) or a
+server's `set` rule (`MatchRules.weaponSet`).
+
+| Set | Spawn (the last held) | Grenade at spawn | The set's weapons | Its grenades |
+|---|---|---|---|---|
+| **Standard** | the mode's own (knife, pistol; co-op, Zombies, Bomb and Hostage add a rifle) | frag | as placed on the map | as placed |
+| **Military** | knife, pistol, assault rifle; sniper-role bots a marksman rifle instead | frag | rifle, burst rifle, SMG, machine pistol, spin gun, shotgun, auto shotgun, sawed-off, sniper, marksman, grenade launcher, rockets, pistol, revolver, hand cannon | frag, mine |
+| **Sci-fi** | knife, pulse pistol, plasma rifle; sniper-role bots the railgun instead | sticky | plasma, laser rifle, railgun, pulse pistol, arc caster, disc launcher, swarm, guided | sticky, vortex |
+| **Medieval** | knife, spear | incendiary | spear, battle axe, knife | incendiary, holy bomb |
+| **Chaos** | knife, pistol, a random oddball each life | sheep | swarm, singularity, freeze ray, goo gun, bubble blaster, oil slicker, flare gun, nailgun, flak, blast rockets, gilded pistol | sheep, holy bomb, cluster bomb |
+| **Mixed bag** | knife, pistol, a random main gun each life | frag | every weapon a pickup can hold | every grenade |
+
+- **Random spawn guns** (Chaos, Mixed bag): one of the set's main guns (slots 3-9 with a pickup), rolled from the
+  match seed, the slot and the life (`randomGunFor`): a match replays the same.
+- **Pickups:** a weapon pickup holds a weapon of the set of its own category (its `random` category, else its
+  weapon's), else of the nearest categories the set has (`nearCategories`: ties together; a sniper pickup in Sci-fi
+  is the railgun, a battle axe in Military a shotgun, everything in Medieval a spear or a battle axe), rolled again
+  each time it comes back. One marked **Keep fixed** stays as placed when its weapon is of the set. A grenade pickup
+  holds one of the set's grenades the same way. Health, armor, ammo, tools, powerups and the rest stay as placed;
+  Standard keeps the old rules ("Random from category", "Mix up weapon pickups"), which the other sets make moot.
+- **Drops:** only the set's weapons, never what everyone spawns with (a Chaos or Mixed bag life's random gun does
+  drop: it's that player's own).
+- **Never in a set:** tools, mode-only weapons and mounted guns (no category). **Classes** keep their loadouts
+  (pickups still roll within the set). **Spears or discs only** and **Disc Arena** play no set.
+- **Bots:** they weigh every set weapon as they weigh any (range, splash, flight, beams, heat: `weaponScore`). For the
+  sets they also throw the sheep (thrown short along an open line to an enemy 6-20 m off, it walks the rest), throw a
+  big blast with a long fuse (the holy bomb) half its blast away and run clear, and light their oil slicks with the oil
+  slicker's igniter. Sniper-role bots spawn with the set's scoped gun (`Match.sniperGun`).
+- **Scorecard:** `pnpm bot-report … --set=military,scifi,…` plays each match in each set, and every report (and the
+  nightly scorecard) lists kills by weapon per set, with the set's weapons and grenades that got none.
+
 ## Weapon drops
 
 **Drop weapon on death** (`MatchRules.dropWeapons`, default on: match setup →
@@ -255,8 +292,8 @@ Advanced rules → Weapons, pickups & vehicles; the pause menu's Host tab, where
 Apply now applies it at once and off clears the drops lying about): when a player or bot dies (not NPCs), `chooseDrop`
 (`sim/drops.ts`) picks the weapon in hand, else the most desirable one, that
 has a pickup item and a category (not a tool, mode-only weapon or mounted gun),
-isn't a fetched-back throw (spear), isn't in the starting loadout (rules or
-class) and has ammo (magazine + reserve; heat weapons always count, plain melee
+isn't a fetched-back throw (spear), isn't in the starting loadout (weapon set or
+rules, and class), is one of the weapon set's and has ammo (magazine + reserve; heat weapons always count, plain melee
 never). It lies on the ground straight below the body (a raycast; none over
 the void) for `DROP_LIE_SECONDS` (30), at most `MAX_DROPS` (24, oldest first),
 carrying exactly that ammo (and second-trigger rounds). Everything else is

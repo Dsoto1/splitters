@@ -26,15 +26,18 @@ A set is data in `content/weapon-sets.json`. It decides:
   category the set has (a sniper pickup in Sci-fi becomes the Railgun);
 - **what drops** (only set weapons).
 
-| Set | Spawn loadout | Weapons in the set |
-|---|---|---|
-| **Standard** | knife, pistol (today's pickup hunt) | as placed on the map (today) |
-| **Military** (owner: "pistol and a main gun") | knife, pistol, **assault rifle**; sniper-role bots a **marksman rifle** instead | rifle, burst rifle, SMG, machine pistol, LMG, shotgun, auto shotgun, sawed-off, sniper, marksman, grenade launcher, rockets, pistol, revolver, hand cannon |
-| **Sci-fi** | knife, pulse pistol, **plasma rifle**; sniper-role bots the **railgun** | plasma, laser rifle, railgun, pulse pistol, arc caster, disc launcher, swarm, guided |
-| **Medieval** | knife, **spear** | spear, battle axe, knife |
-| **Chaos** | pistol, **one random oddball each life** | the sheep, swarm, singularity, freeze ray, goo gun, bubble blaster, oil slicker, flare gun, nailgun, flak, blast rockets, gilded pistol |
-| **Mixed bag** | pistol, **a random main gun each life** | every weapon a pickup can hold |
+| Set | Spawn loadout | Weapons in the set | Grenades (owner, 2026-11-07) |
+|---|---|---|---|
+| **Standard** | knife, pistol (today's pickup hunt) | as placed on the map (today) | as placed; a frag at spawn |
+| **Military** (owner: "pistol and a main gun") | knife, pistol, **assault rifle**; sniper-role bots a **marksman rifle** instead | rifle, burst rifle, SMG, machine pistol, LMG, shotgun, auto shotgun, sawed-off, sniper, marksman, grenade launcher, rockets, pistol, revolver, hand cannon | frag, mine (+ smoke when the weapons intake lands) |
+| **Sci-fi** | knife, pulse pistol, **plasma rifle**; sniper-role bots the **railgun** | plasma, laser rifle, railgun, pulse pistol, arc caster, disc launcher, swarm, guided | sticky, vortex (+ smoke) |
+| **Medieval** | knife, **spear** | spear, battle axe, knife | incendiary, holy bomb |
+| **Chaos** | knife, pistol, **one random oddball each life** | the sheep, swarm, singularity, freeze ray, goo gun, bubble blaster, oil slicker, flare gun, nailgun, flak, blast rockets, gilded pistol | sheep, holy bomb, cluster bomb (everyone spawns with the sheep) |
+| **Mixed bag** | knife, pistol, **a random main gun each life** | every weapon a pickup can hold | every grenade |
 
+- **The knife in every set** (owner, 2026-11-07: "for consistency"), Chaos and Mixed bag included.
+- **Grenades** (owner, 2026-11-07): grenade pickups roll within the set's grenades, and everyone spawns with the set's
+  first.
 - **Random spawn guns** (Chaos, Mixed bag) are rolled from the match seed, the slot and the life. A match replays the
   same, and every peer agrees.
 - **Classes on:** class loadouts stay as they are. Pickups still roll within the set.

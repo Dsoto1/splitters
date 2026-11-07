@@ -20,6 +20,7 @@ import {
   getItem,
   getWeapon,
   getWeaponSet,
+  inSetOr,
   initPhysics,
   itemCategory,
   loadMap,
@@ -39,6 +40,7 @@ import {
   setCategoryPool,
   setHas,
   setLoadout,
+  setMainGun,
   setMainGuns,
   setPickupPool,
   setServerRule,
@@ -455,6 +457,17 @@ describe('the map default, the host and saved setups', () => {
     expect(odd.ok && mapWeaponSet(odd.map)).toBe('standard');
     // Malformed ids are refused by the schema.
     expect(loadMap({ ...room([]), weaponSet: 'Mil Itary!' }).ok).toBe(false);
+  });
+
+  it("a mode's own weapon outside the set falls back to the set's main gun (the Roulette mode's signature loadouts)", () => {
+    expect(inSetOr(set('military'), 'core.plasma')).toBe('core.rifle');
+    expect(inSetOr(set('military'), 'core.shotgun')).toBe('core.shotgun');
+    expect(inSetOr(set('scifi'), 'core.rockets')).toBe('core.plasma');
+    expect(inSetOr(set('standard'), 'core.rockets')).toBe('core.rockets');
+    expect(inSetOr(null, 'core.rockets')).toBe('core.rockets');
+    expect(setMainGun(set('chaos'))).toBe(setMainGuns(set('chaos'))[0]!.id);
+    expect(setMainGun(set('medieval'))).toBeNull();
+    expect(inSetOr(set('medieval'), 'core.rockets')).toBe('core.rockets');
   });
 
   it('an item category for every set weapon pickup', () => {
