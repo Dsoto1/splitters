@@ -178,6 +178,9 @@ CI: green at 7e15660f (run 42342142073, everything the branch touched: 36 e2e fl
 - KTX2 (GPU-compressed textures) would cut a High held gun from 28 MB of video memory to about 7: it needs Babylon's
   transcoder files vendored from cdn.babylonjs.com (blocked here: the proxy refuses it). Worth a small job if High's
   +140 MB for five guns matters on your machines.
+  **Owner (2026-11-07): skip KTX2 for now.** Revisit only if video memory becomes a problem on someone's machine: UASTC
+  (not ETC1S, which shows blocks and banding), the transcoder hosted on our own site, and a side-by-side close-up sheet
+  for the owner first.
 - Post URLs for the 11 Meshy downloads, if you have them (CC0 needs no credit; the post is the proof).
 - The pack's flashbang is not imported (your call, over seizure risk); nothing in this work flashes the screen, and
   the smoke eases in and out in a mid grey.
