@@ -19,7 +19,7 @@ export function breakthroughIssues(map: MapDocument): ValidationIssue[] {
   const issues: ValidationIssue[] = [];
   const severity = listed ? 'error' : 'warning';
   if (!sectors.length) {
-    issues.push({ severity, code: 'breakthrough.no_sectors', message: 'Breakthrough needs sectors: place a Sector (Game Modes & Objectives), then its objectives and spawn groups' });
+    issues.push({ severity, code: 'breakthrough.no_sectors', message: 'Breakthrough needs sectors: place a Sector (Entities tab, Spawns & Objectives), then its objectives and spawn groups' });
     return issues;
   }
   // The order: 1..N, each once.

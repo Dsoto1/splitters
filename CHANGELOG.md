@@ -8,6 +8,36 @@ made only on a commit that passed CI on a check branch.
 
 ## Unreleased
 
+**Breakthrough: a new asymmetric mode** (owner-approved for Iron Coast, MAP 21; docs/GAME_MODES.md, "Breakthrough")
+- The attackers push through a map's sectors in order; the defenders hold each line in turn. A sector falls when its
+  **capture zones** are taken (attackers alone in a zone capture it, faster with more; a defender inside contests it)
+  and enough of its **targets** are destroyed (plant a charge with E and hold still, 20 s fuse; defenders defuse it the
+  same way; a sector can ask for "two of three"). The last sector's **final hold** ends the round.
+- When a sector falls both sides' spawns move on, the next sector's objectives switch on and its time goes on the
+  clock; defenders left behind the new line get a 10 s fall-back warning, then it hurts. The attackers have a pool of
+  reinforcements (topped up for each sector taken); the defenders respawn without end, a little slower. Out of time
+  or reinforcements, the defenders win. An optional second round swaps the sides; more sectors, then more time left,
+  wins.
+- The HUD: your side, the sector strip, the pool, each objective's state (capture %, contested, a charge's fuse),
+  markers and minimap labels on the objectives, the fall-back warning, and announcer lines for both sides.
+- Match Setup offers it on maps with sectors, with its settings in "what wins": reinforcements, sector time (both
+  follow the match's size) and the second round; the host panel has them too. Team setups now go to 48 a side.
+- MapMaker: new pieces in Entities → Spawns & Objectives: **Sector** (its order, name, targets to destroy, time),
+  **Capture Zone**, **Destroy Target**, **Final Hold**, **Attackers' Spawn**, **Defenders' Spawn** (each in a sector's
+  group), with inspectors and checks in the issues list. A game mode's pieces now show whatever Style Pack the
+  palette is narrowed to. Map properties has a **Map ID** field (the file name an official or test map is saved as).
+- Bots play it (the mode's goals: zones, charges, defusing, falling back). Map format v28: older maps load unchanged.
+- **The Breakthrough Range** (test map, made in MapMaker): three sectors to try it on.
+
+**Iron Coast's fort and gatehouse** (docs/SET_PIECES_PLAN.md, "As built: part 4")
+- **Command Bunker**: a round fort 31.6 m across with three gates in a thick wall with firing slits, round a keep: the
+  command room (big enough for a final hold), the radio room and a roof terrace over it, a stair to the roof.
+  Military Compound, Coastal Harbor and Snow Outpost looks.
+- **Grand Cliff Stair (Gatehouse)**: the grand stair with a twin arched gate between its flights, high flanking walls
+  and piers.
+- New kit for any map: the **Fort Ring** and **Fort Ring Gate** tiles (quarters of a round fort's wall) and the
+  **Gate arch** wall style.
+
 **MapMaker gives the ground back when a floor moves** (owner: "fix the ground bug")
 - MapMaker used to write the ground it lowers under floors into the map: every edit lowered the terrain under every
   floor and nothing ever raised it back, so a floor moved across a field left a dip at each place it passed and a

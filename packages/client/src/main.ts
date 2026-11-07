@@ -246,6 +246,11 @@ class App {
   init(): Promise<void> {
     this.ready ??= (async () => {
       const maps = arcadeMaps();
+      // Browser tests (?test=1&testmap=<id>): a test map (metadata.testOnly, which no list offers) joins the Arcade,
+      // so a test can set a match up on it in Match Setup.
+      const testMap = testMode() ? params.get('testmap') : null;
+      const testDoc = testMap ? await loadBuiltInMap(testMap).catch(() => null) : null;
+      if (testMap && testDoc) maps.push(loadedEntry(testMap, testDoc, { blurb: blurbOf(testDoc.metadata.description), modes: playableModes(testDoc), bots: botsFor(testDoc.metadata.recommendedPlayers) }));
       // The owner's published maps update the list as soon as the hub answers (the menu draws from it when opened).
       void publishedMaps().then((p) => p.size && applyPublished(maps, p));
       // The home screen's featured map draws its plan: fetch that one map alongside the engine.

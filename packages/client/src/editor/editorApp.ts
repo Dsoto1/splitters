@@ -4293,7 +4293,7 @@ export class EditorApp {
         'core.deathmatch': 'Deathmatch: everyone for themselves. NPC squads fight everyone.',
         'core.ctf': `Capture the Flag: ${teams.slice(0, 2).map((t) => t.name).join(' against ')}. Place a Flag Base (Entities tab) for each team; bring the enemy flag to yours while yours is home. Other modes ignore flag bases.`,
         'core.hostage': 'Hostage Rescue: place Hostages and at least one Rescue Zone; the first team rescues.',
-        'core.breakthrough': 'Breakthrough: the first team attacks through the sectors in order, the second holds each line in turn. Entities tab → Breakthrough: place a Sector for each line (1, 2, 3…, facing the way the attackers push), its objectives (Capture Zones, Destroy Targets, a Final Hold in the last) and an Attackers\' and a Defenders\' Spawn group for each sector.',
+        'core.breakthrough': 'Breakthrough: the first team attacks through the sectors in order, the second holds each line in turn. Entities tab (Spawns & Objectives): place a Sector for each line (1, 2, 3…, facing the way the attackers push), its objectives (Capture Zones, Destroy Targets, a Final Hold in the last) and an Attackers\' and a Defenders\' Spawn group for each sector.',
         'core.discs': 'Disc Arena: everyone throws bouncing discs that knock players about; knocking someone into the void scores. Build decks over nothing (free blocks), join them with jump pads, add walls to bank discs off, and place power disc pickups.',
         'core.bomb': 'Bomb: place Bomb Sites (A and B) away from both team spawns; the first team attacks.',
         'core.koth': 'King of the Hill: place one or more Hills (Entities tab). The hill moves to the next one every minute; a team scores while it alone stands on it.',
@@ -5139,7 +5139,8 @@ export class EditorApp {
         order.id = 'ed-bt-order';
         el.append(row('Order', order));
         const targets = doc.entities.filter((o) => o.kind === 'objective' && o.sector === e.order && o.objective === 'target').length;
-        const need = numberInput(e.need ?? targets, 1, (v) => update('Set targets needed', { need: v >= targets || v < 1 ? undefined : Math.round(v) }));
+        // Kept whatever its targets are so far (set it before placing them); more than there are warns, and plays as all.
+        const need = numberInput(e.need ?? targets, 1, (v) => update('Set targets needed', { need: v < 1 ? undefined : Math.round(clamp(v, 1, 32)) }));
         need.id = 'ed-bt-need';
         el.append(row('Targets to destroy', need));
         const secs = numberInput(e.seconds ?? 0, 30, (v) => update('Set sector time', { seconds: v < 30 ? undefined : Math.round(clamp(v, 30, 1800)) }));

@@ -11,6 +11,7 @@
 | Fort Wars | `core.forts` | 2 | captures (default 3) | a **Flag Base** per team (any CTF map) |
 | Disc Arena | `core.discs` | none | knock-offs (default 10) | listed in the map's modes (decks over a void) |
 | Race | `core.race` | none | first over the line after the last lap | a **track** (Road tool) |
+| Breakthrough | `core.breakthrough` | 2 (attackers, defenders) | sectors (the attack's reinforcements and the sector clock end it) | **Sectors**, their **objectives** and each side's **spawn groups** |
 
 **Classes** isn't a mode but a match setting for any mode with weapons
 (see below).
@@ -311,6 +312,117 @@ Road tool.
 Sandsweep Circuit is the demo: a 1 km podrace circuit round a desert mesa
 in speeders, a combat race by default, with five sentries on the rocks 31 m
 off the straights (they reach only the near edge of the road).
+
+## Breakthrough
+
+Asymmetric and two teams (`sim/modes/breakthrough.ts`): the attackers push
+through the map's **sectors** in order, the defenders hold each line in
+turn. Made for Iron Coast (docs/map-briefs/MAP_21_Iron_Coast.md: the beach,
+the guns, the village, the fort). Needs sectors with objectives (map format
+v28).
+
+- **Sectors.** A sector is a line across the map (MapMaker's **Sector**:
+  its order, a name, its facing the way the attack pushes). Only the
+  sector in play has live objectives; later ones wait. A sector falls when
+  every **Capture Zone** in it is captured and enough of its **Destroy
+  Targets** are destroyed: all of them, or its "N of M" (the sector's
+  *Targets to destroy*, e.g. two of three).
+- **Capture zones** (KOTH-like): attackers alone in the zone capture it,
+  faster with more of them (one 1×, two 1.5×, three or more 2×; 20 s for
+  one by default, the zone's *Capture time* overrides). A defender inside
+  **contests** it (it holds); defenders alone push it back. Captured, it
+  stays captured. Standing in it: within its radius, from 1 m below its
+  floor to 3.5 m above.
+- **Destroy targets** (Bomb-like): an attacker within reach presses **E**
+  and holds still for 3 s to plant a charge; the fuse burns 20 s; a
+  defender within reach defuses it the same way (5 s). Moving more than
+  0.6 m cancels a plant or a defuse. A charge going off destroys the target
+  and hurts whoever stands close (9 m).
+- **The final hold** is a capture zone whose capture ends the round: the
+  attackers win. Put it in the last sector (a final hold earlier plays as a
+  plain zone; MapMaker warns).
+- **When a sector falls** both sides' spawns move to the next sector's
+  spawn groups (attackers just before its line, defenders beyond it), the
+  next sector's objectives switch on and its time goes on the clock.
+  Defenders left on the attackers' side of the new line get a 10 s
+  **fall-back** warning (a countdown over the crosshair), then lose 20
+  health a second until they cross it.
+- **Reinforcements.** The attackers have a pool: *Reinforcements* (per
+  attacker, 6 by default) times the attacking team, topped up by half as
+  much per attacker for each sector taken. Each attacker death costs one;
+  once it is spent the fallen stay down, and the defenders win when the
+  last attacker standing falls. Defenders respawn without limit, 1.5×
+  slower than the match's respawn delay.
+- **The clock.** Each sector puts its time on the clock (its own *Time*,
+  else the match's *Sector time*, 4 min by default). Out of time, the
+  defenders win; a charge still burning plays on until it goes off or is
+  defused (overtime).
+- **Second round** (optional): the sides swap after an 8 s break. Each
+  team scores the sectors it took (a full breakthrough counts every
+  sector); more sectors wins, then the team that took its last with more
+  time left.
+- **HUD.** The status line shows your side (Attack or Defend), the sector
+  strip (taken, in play, to come, by letter, the sector's name), the round
+  (with a second round), the pool (amber under 10, red at 0), each live
+  objective with its state (a zone's capture %, contested, taking, held; a
+  target standing, its charge's fuse, destroyed), "Targets: 1 of 2
+  destroyed" when a sector needs N of M, your own plant or defuse, and the
+  E prompt at a target. Objectives get world markers (Capture, Plant,
+  Defend, Defuse, Hold, Guard) and labelled squares on the minimap (held at
+  its rim when far). In the world, zones are labelled rings and targets a
+  ring round a banded post with a lamp, coloured by kind (a planted charge
+  blinks on it, faster as the fuse runs down). The announcer
+  words each event for your side ("Zone A1 captured!" / "Zone A1 lost!",
+  "Charge planted on B2! Defuse it", "The beach taken! Push on", "We broke
+  through!", "The line held!", "Out of reinforcements: last stand!").
+- **Bots** play it through the mode's goal hook (as KOTH and Bomb, no
+  change to the bot brain): the attackers spread over the live objectives,
+  stand in zones, plant at targets (a bot plants or defuses by holding
+  still within reach) and guard their planted charges; on defence every
+  other bot goes for a burning charge to defuse it, most of the rest crowd
+  a zone being taken, and the others guard their share of the objectives.
+  Their goals move with the sector, so they fall back when it falls.
+- **Settings** (Match Setup's "what wins", and the host panel):
+  *Reinforcements* (1–40 per attacker), *Sector time* (1–15 min), *Second
+  round* (one round, or swap sides). The first two follow the match's size
+  until changed: up to 4 a side 8 and 3 min, up to 16 a side 6 and 4 min,
+  bigger 5 and 5 min. `MatchRules.breakthroughPool`,
+  `breakthroughSectorSeconds`, `breakthroughSwap`. Match Setup offers the
+  mode only on maps with sectors (a map without says why).
+- **Events:** `bt` with `a` = `capture` / `plant` / `defuse` / `destroy` /
+  `sector` / `round` / `start` / `pool`. Snapshots carry `md.bt` (round,
+  rounds, attackers, sector, pool, clock, break, outcome), `md.bo` (each
+  objective's state, progress, presence or fuse, actor) and `md.bf` (the
+  defenders being warned).
+- **Quick start:** `?offline=test_breakthrough&gamemode=core.breakthrough`
+  (the Breakthrough Range, a test map). Headless: `pnpm bench 8 300
+  maps/test_breakthrough.json --mode=core.breakthrough`.
+
+**MapMaker** (Gameplay tab → Spawns & Objectives):
+
+1. **Sector**: click where its line runs, facing the way the attackers push
+   (R turns it). A new sector takes the next number; the inspector sets its
+   order (1, 2, 3…), name, *Targets to destroy* (N of its M) and *Time*.
+2. **Capture Zone**, **Destroy Target**, **Final Hold**: each goes into the
+   latest sector, labelled by it (A1, A2 in sector 1, B1 in sector 2…; a
+   final hold by its letter). The inspector sets its sector, label, radius
+   (a target's reach) and a zone's capture time.
+3. **Attackers' Spawn** and **Defenders' Spawn**: spawn points in the
+   latest sector's group for that side (the spawn inspector's *Group*
+   changes it). Attackers' before the sector's line, defenders' beyond it.
+4. **Map properties → Mode: Breakthrough.** Validation: listing the mode
+   with no sectors, a gap or repeat in the order, a sector without
+   objectives or without a spawn group for each side, or an objective in a
+   sector that isn't there is an **error** (a warning when the map only has
+   the pieces); asking for more targets than a sector has, a final hold
+   before the last sector, and a spawn with a side but no sector warn.
+
+The Breakthrough Range (`maps/test_breakthrough.json`, test map, made in
+MapMaker) is the test layout: three sectors on 160 m of sand, pushed north.
+The beach (two capture zones, two landing craft and hedgehogs for cover),
+the guns (three targets, two to destroy, behind sandbags, the gatehouse
+stair as a lookout) and the fort (the Command Bunker, its command room the
+final hold).
 
 ## Map requirements and MapMaker steps
 

@@ -387,6 +387,52 @@ sides, the Roman facade on the stair towers (`overrides.roles.facade: "none"`).
   Craft: the owner compares the two in the maps; nothing is swapped. Its community page URL is still to come from
   the owner (content provenance says "pending").
 
+## As built: part 4 (MAP 21's fort and gatehouse; 2026-11-07)
+Iron Coast's two missing pieces (docs/map-briefs/MAP_21_Iron_Coast.md: the round fort at the head of the village,
+Breakthrough's last line, and the gate on the grand stair), all data on the standard grid with the kit they needed.
+The sea wall is still to come.
+
+| Piece | Family (file) | Footprint | Packs | What it is |
+|---|---|---|---|---|
+| Command Bunker (`setpiece.command_bunker`) | Fort (`fort.json`, new) | 4 × 4 cells, levels 0-1 | military, harbor, snow | A round fort 31.6 m across round a square keep. The ring is four **Fort Ring** quarters: a wall 1.6 m thick and 3.6 m high, its middle 15 m from the fort's centre, firing slits at eye height all round. Gates south-west, south-east and north-west (**Fort Ring Gate** quarters: a gateway 4.4 m wide between two piers, 3 m clear under the lintel, a slit either side), the north-east quarter whole: turn the piece so its gates face the attack. The north-west gate opens where the courtyard is narrowest (2.9 m to the keep's corner), so nobody sees straight in. The keep (2 × 2 cells) is the **command room** on the ground (15 m of floor each way under its ceiling; two doors south, one west; firing slits west, east and north): room for a final hold (6 m round its middle stays inside it and under its ceiling), a map table and chairs, ammunition. Over it the **radio room** (north-west quarter: doors onto the terrace south and east, windows north and west, a desk and the sets in crates) and a **roof terrace** behind parapets that sees over the ring, sandbags at its corners. The **roof stair** (16 steps of 0.25 × 0.5 m, 2 m wide) climbs east along the keep's north wall from the courtyard by the north-west gate to a 3.5 m landing beside the terrace's open corner. Lit: four ceiling lights in the command room, one in the radio room, a bulb in each gateway. Markers: `command_room`, `radio_room`, `gates`, `keep_doors`. |
+| Grand Cliff Stair (Gatehouse) (`setpiece.cliff_stair_gate`) | Cliff stairs (`cliffstair.json`) | 2 × 4 cells, levels 0-3 (as the Grand Cliff Stair, one level more for the gate) | military, harbor, imperial, medieval, desert, jungle | The Grand Cliff Stair as it is (the same flights, landing, terrace and bases, one for one, so it swaps in for it) with a gatehouse on its landing between the flights: the landing's head is a twin **Gate arch** (two arches 5 m wide and 5.7 m to the crown on a central pier 3 m wide, in two storeys of wall 1.2 m thick on each side of the line, so the gateway is 2.4 m deep, crenellated at 12 m), the landing's sides **High walls** (8 m) instead of parapets, and a pier 1.4 m wide at each end of the gate rising over the battlements, with a lamp on each. The landing's sandbags stand 1 m further back to clear the gate. A squad still climbs abreast: four to each arch. Mirrors freely, like the stair. |
+
+**New kit (any map; MapMaker offers it):** the tiles **Fort Ring (Quarter)** (`core.fort_ring`) and **Fort Ring Gate (Quarter)**
+(`core.fort_ring_gate`): a quarter of a round fort's wall (1.6 m thick, 3.6 m high, four firing slits; the gate's with
+a gateway in its middle), round the corner of the cell it leaves free, so four turned round a 2 × 2 keep make a ring
+31.6 m across; any keep or courtyard can go in the middle. The edge style **Gate arch** (`gate_arch`, "Gate arch (2 storeys)"): the twin gate as a
+wall style any cell side can carry (two storeys high, 1.2 m thick on each side).
+
+**Budgets** (one piece as expanded; collision boxes are the tiles' and blocks' own, measured as the Grand Cliff Stair's
+139 today):
+
+| Piece | Pack | Tiles | Blocks | Props | Lights | Doors | Ladders | Collision boxes | Trim boxes |
+|---|---|---|---|---|---|---|---|---|---|
+| Command Bunker (`command_bunker`) | military | 9 | 18 | 11 | 8 | 3 | 0 | 343 | 239 |
+| Grand Cliff Stair (Gatehouse) (`cliff_stair_gate`) | military | 6 | 7 | 6 | 2 | 0 | 0 | 239 | 148 |
+
+**Tests** (`setPieces4.test.ts`): the fort is a ring 31.6 m across in the Military Compound and Coastal Harbor
+looks; a standing player fits all the way in through each gate in every turn (headroom checked every 0.2 m), the
+whole quarter stops them, and a player walks in through the south-west gate to the keep; bots path in through every
+gate to the command room, up the stair to the roof terrace and into the radio room; the command room has 15 m of
+floor between its walls each way under its ceiling (a final hold fits); shots go out through the slits at eye height
+and stop on the wall above and below, and from the terrace the guns see over the ring. The gatehouse is the Grand
+Cliff Stair part for part with its gate; players climb both flights through the arches to the terrace in every turn
+and mirror; bots path up through the gate from anywhere along the foot; shots pass both arches and stop on the
+central pier and the flanking walls, and nobody leaves the landing sideways; each piece builds what its exploded
+parts build (collision, trim, navigation). The generic set piece tests cover both too (every turn, mirror and pack
+expands clean, z-fight audit 0); `setPiecePlay.test.ts` lists them as open-sided (their ports are gateways and
+stair heads, not doorways) and its z-fight layout spaces pieces 8 cells apart for the 4 × 4 fort.
+
+**In maps:** the Breakthrough Range (`maps/test_breakthrough.json`, a test map) has both, placed in MapMaker (the
+fort the last sector, its command room the final hold; the gatehouse stair a lookout over the guns), and so does the
+coverage map (`maps/test_coverage.json`, whose test requires every shipped set piece).
+
+**For the owner:** Rapier's character controller can stall on a single big flat merged floor box at some spots
+(walking a character through every gate in every turn stopped short on the fort's paving at a few positions, with
+headroom and rays clear there), so the gate tests check a standing player's room every 0.2 m instead and walk one
+real way in. Worth a look if a player ever reports a stuck spot on a big flat floor.
+
 ## Phase 1 (this task)
 1. **Schema and expansion** (shared): definitions, the format v27 `setPieces` field, the expansion, overlap checks
    and validation.
