@@ -63,8 +63,10 @@ export function dropOptions(map: MapDocument, physics: PhysicsWorld, geometry: r
  * (plus `extra` boxes: Fort Wars' pieces), terrain and the environment's shapes, the map's links (jump pads, ladders,
  * portals, ziplines, lifts) and ledge-drop links off patches that have no other way down.
  */
-export function buildMapNav(map: MapDocument, geometry: readonly WorldBox[], physics: PhysicsWorld, envShapes: readonly EnvWorldShape[], phys: { gravity: number; fallDamage: boolean }, extra: readonly WorldBox[] = []): NavWorld {
-  const drops = dropOptions(map, physics, geometry, phys);
+export function buildMapNav(map: MapDocument, geometry: readonly WorldBox[], physics: PhysicsWorld, envShapes: readonly EnvWorldShape[], phys: { gravity: number; fallDamage: boolean }, extra: readonly WorldBox[] = [], parkour = true): NavWorld {
+  // (Parkour links at load only: a rebuild in a match, Fort Wars' pieces, goes without them. Played through mid-match they
+  // cost a hitch, and over the forts' walls they took attackers off the way to the flag: forts.test's capture.)
+  const drops = { ...dropOptions(map, physics, geometry, phys), noParkour: !parkour };
   const solids = drops.solids ?? [];
   return NavWorld.build(
     [...geometry, ...solids, ...extra],

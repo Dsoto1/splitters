@@ -1081,7 +1081,7 @@ export class Match {
     const area = xs.length ? (Math.max(...xs) - Math.min(...xs)) * (Math.max(...zs) - Math.min(...zs)) : 0;
     if (area > NAV_REBUILD_MAX_AREA) return false;
     const old = this.nav;
-    this.nav = buildMapNav(this.map, this.geometry, this.physics, this.envShapes, this.phys, extra);
+    this.nav = buildMapNav(this.map, this.geometry, this.physics, this.envShapes, this.phys, extra, false);
     old.destroy();
     this.nav.markOpenings([...this.scenario.openings(), ...this.scenario.surfaces()], this.scenario.openings().length);
     this.nav.markLifts(liftLinks(this.map));
