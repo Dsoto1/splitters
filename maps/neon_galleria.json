@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 20,
+  "formatVersion": 27,
   "metadata": {
     "id": "neon_galleria",
     "name": "Neon Galleria",
@@ -19,7 +19,15 @@
       "core.ctf",
       "core.koth",
       "core.zombies"
-    ]
+    ],
+    "release": {
+      "mapId": "m_uy54jdpkmne5vzsk",
+      "versionId": "v_vuqfc3ahygcm3rlh",
+      "revision": 1,
+      "contentHash": "sha256:9e13cdd7a53e7eea80b46ccc558209aaa0370cafa65b4e4120e5ad111149bcdf",
+      "schemaVersion": 27,
+      "releasedAt": "2026-11-06T23:05:17.019Z"
+    }
   },
   "classicStructure": {
     "cellSize": 8,
@@ -18324,9 +18332,9 @@
     {
       "id": "prop_791",
       "position": [
-        -18.64,
+        -18.502,
         4,
-        18.66
+        18.528
       ],
       "kind": "prop",
       "model": "prop.hm_armchair",
@@ -18619,7 +18627,7 @@
       "id": "prop_812",
       "position": [
         6.55,
-        0.85,
+        0.766,
         -15.03
       ],
       "kind": "prop",
@@ -19108,9 +19116,9 @@
     {
       "id": "prop_847",
       "position": [
-        -10.18,
+        -10.141,
         4,
-        -18.61
+        -18.583
       ],
       "kind": "prop",
       "model": "prop.hm_armchair",
@@ -20683,7 +20691,7 @@
       "kind": "prop",
       "model": "prop.bench",
       "yaw": 0,
-      "scale": 2.5,
+      "scale": 1,
       "solid": false,
       "tint": null
     },
@@ -20725,7 +20733,7 @@
       "kind": "prop",
       "model": "prop.bench",
       "yaw": 0,
-      "scale": 2.5,
+      "scale": 1,
       "solid": false,
       "tint": null
     },
@@ -20767,7 +20775,7 @@
       "kind": "prop",
       "model": "prop.bench",
       "yaw": 0,
-      "scale": 2.5,
+      "scale": 1,
       "solid": false,
       "tint": null
     },
@@ -20809,7 +20817,7 @@
       "kind": "prop",
       "model": "prop.bench",
       "yaw": 0,
-      "scale": 2.5,
+      "scale": 1,
       "solid": false,
       "tint": null
     },
@@ -20851,7 +20859,7 @@
       "kind": "prop",
       "model": "prop.bench",
       "yaw": 0,
-      "scale": 2.5,
+      "scale": 1,
       "solid": false,
       "tint": null
     },
@@ -20893,7 +20901,7 @@
       "kind": "prop",
       "model": "prop.bench",
       "yaw": 0,
-      "scale": 2.5,
+      "scale": 1,
       "solid": false,
       "tint": null
     },
@@ -20935,7 +20943,7 @@
       "kind": "prop",
       "model": "prop.bench",
       "yaw": 0,
-      "scale": 2.5,
+      "scale": 1,
       "solid": false,
       "tint": null
     },
@@ -20977,7 +20985,7 @@
       "kind": "prop",
       "model": "prop.bench",
       "yaw": 0,
-      "scale": 2.5,
+      "scale": 1,
       "solid": false,
       "tint": null
     },
@@ -25932,7 +25940,6 @@
     "style": "invisible",
     "height": 24
   },
-  "track": null,
   "backdrop": {
     "sky": "night",
     "scenery": "city",

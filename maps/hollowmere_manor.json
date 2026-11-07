@@ -20,11 +20,11 @@
     ],
     "release": {
       "mapId": "m_ccrw2yobc2qzmf5z",
-      "versionId": "v_py2k3viz3zfer3uk",
-      "revision": 2,
-      "contentHash": "sha256:557b7702dddfa3cb904a6b3cca083d2acebde364a69aae20cc843a106d853a60",
+      "versionId": "v_hgkkhhreek25oilv",
+      "revision": 3,
+      "contentHash": "sha256:631399e8a0f402f9c68023b4c0c1d6ffbdbb2ef4b8990dc9eb19fea1509af97d",
       "schemaVersion": 27,
-      "releasedAt": "2026-11-06T15:55:31.660Z"
+      "releasedAt": "2026-11-06T22:58:16.387Z"
     }
   },
   "classicStructure": {
@@ -4731,9 +4731,9 @@
     {
       "id": "prop_227",
       "position": [
-        13.3,
+        13.21,
         0,
-        3.2
+        2.89
       ],
       "kind": "prop",
       "model": "prop.hm_couch",
@@ -4747,7 +4747,7 @@
       "position": [
         26.4,
         0,
-        3.15
+        2.89
       ],
       "kind": "prop",
       "model": "prop.hm_armchair",

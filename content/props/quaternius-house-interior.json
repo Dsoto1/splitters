@@ -103,7 +103,7 @@
       "src": "Couch_L.glb",
       "name": "Corner Sofa",
       "category": "Home",
-      "height": 0.85,
+      "height": 1.04,
       "collide": "voxel"
     },
     {
@@ -111,7 +111,7 @@
       "src": "Couch_Large1.glb",
       "name": "Large Sofa",
       "category": "Home",
-      "height": 0.85,
+      "height": 1.04,
       "collide": "box"
     },
     {
@@ -119,7 +119,7 @@
       "src": "Couch_Medium1.glb",
       "name": "Sofa",
       "category": "Home",
-      "height": 0.85,
+      "height": 1.04,
       "collide": "box"
     },
     {
@@ -127,7 +127,7 @@
       "src": "Couch_Small1.glb",
       "name": "Armchair",
       "category": "Home",
-      "height": 0.85,
+      "height": 1.04,
       "collide": "box"
     },
     {
@@ -135,7 +135,7 @@
       "src": "Drawer_1.glb",
       "name": "Dresser",
       "category": "Home",
-      "height": 1.0,
+      "height": 0.8,
       "collide": "box"
     },
     {

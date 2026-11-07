@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 25,
+  "formatVersion": 27,
   "metadata": {
     "id": "capitol_mall",
     "name": "Capitol Mall",
@@ -31,6 +31,14 @@
         5,
         -5
       ]
+    },
+    "release": {
+      "mapId": "m_x4waknbq3l2sv7d5",
+      "versionId": "v_tis3cdowf3dapeqq",
+      "revision": 1,
+      "contentHash": "sha256:5f500c6e9ead094d69820337bb0a2cc399abe1c760c10b377780a2f45266bf17",
+      "schemaVersion": 27,
+      "releasedAt": "2026-11-06T22:48:16.503Z"
     }
   },
   "classicStructure": {
@@ -23032,7 +23040,7 @@
       "position": [
         61.2,
         4,
-        60.94
+        61.002
       ],
       "kind": "prop",
       "model": "prop.hm_couch_large",
@@ -24948,9 +24956,9 @@
     {
       "id": "prop_1487",
       "position": [
-        115.06,
+        114.998,
         0,
-        -10.35
+        -10.138
       ],
       "kind": "prop",
       "model": "prop.hm_couch_large",
@@ -24962,7 +24970,7 @@
     {
       "id": "prop_1488",
       "position": [
-        115.06,
+        114.998,
         0,
         8.4
       ],
@@ -24976,7 +24984,7 @@
     {
       "id": "prop_1489",
       "position": [
-        115.06,
+        114.998,
         0,
         4.8
       ],
@@ -25116,7 +25124,7 @@
     {
       "id": "prop_1499",
       "position": [
-        140.94,
+        141.002,
         0,
         -8.95
       ],

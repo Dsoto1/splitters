@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 26,
+  "formatVersion": 27,
   "metadata": {
     "id": "flatpack_depot",
     "name": "Flatpack Depot",
@@ -19,7 +19,15 @@
       "core.koth",
       "core.deathmatch",
       "core.zombies"
-    ]
+    ],
+    "release": {
+      "mapId": "m_nrfxczl6m2zcqbew",
+      "versionId": "v_d4236qriknk7zkai",
+      "revision": 1,
+      "contentHash": "sha256:9681a699684d9df5e45349d3b40bcc0384d50c6ac93ee62758c17609a9d80791",
+      "schemaVersion": 27,
+      "releasedAt": "2026-11-06T22:53:33.225Z"
+    }
   },
   "classicStructure": {
     "cellSize": 8,
@@ -18819,7 +18827,7 @@
       "position": [
         -25.3,
         4,
-        42.44
+        42.324
       ],
       "kind": "prop",
       "model": "prop.hm_armchair",

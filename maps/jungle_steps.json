@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 26,
+  "formatVersion": 27,
   "metadata": {
     "id": "jungle_steps",
     "name": "Jungle Steps",
@@ -16,7 +16,15 @@
     "supportedModes": [
       "core.tdm",
       "core.deathmatch"
-    ]
+    ],
+    "release": {
+      "mapId": "m_oah2unwu4m6kjknp",
+      "versionId": "v_xaavrqwpx2u2qwxe",
+      "revision": 1,
+      "contentHash": "sha256:b2e58151515ca8eab8b3baf4e11b0261d8225074eb4372b7a25e5f28d7f2b740",
+      "schemaVersion": 27,
+      "releasedAt": "2026-11-06T23:02:15.394Z"
+    }
   },
   "classicStructure": {
     "cellSize": 8,
@@ -3740,9 +3748,9 @@
     {
       "id": "prop_300",
       "position": [
-        43.26,
+        43.098,
         0,
-        27.35
+        27.294
       ],
       "kind": "prop",
       "model": "prop.bench",

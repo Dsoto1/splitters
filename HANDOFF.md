@@ -240,7 +240,11 @@ second placed St. John's (from the start, in MapMaker) and finished.
   paving, lowered Knight's whole front by 0.7 m on the first try (thrown away). **Fixed** (2026-11-07, "MapMaker's
   ground under floors" above): MapMaker keeps the ground as made and works out the ground under floors after every
   edit, so floors can be moved in any order; no workaround needed.
-- **For the owner:**
+- **For the owner** (answered 2026-11-07):
+  - **Owner's answers:**
+    - "Keep the bridge floor fix, tower and bridge are fine."
+    - The ground bug: "fix the ground bug". Fixed on `wip/ground-fix` (2026-11-07), ahead of the overhaul.
+    - The facade ground bands: "leave the facades as they are for now" (2026-11-07).
   - The other pack facades (concrete, corrugated, manor brick, clapboard, roman, desert, harbour, snow, timber
     frame...) still draw their ground band across doorways (visual only): stopping them at doorways, as the stone ones
     now do, changes those packs' look, so it waits for a yes.
@@ -364,25 +368,101 @@ are right for the campus. The shallow vault stays. Skybridges keep the pack's fa
 - **In zsh, write `${b}` inside strings:** `"$b:refs/..."` reads `:r` as a modifier.
 - A "Prune branches" Actions workflow is offered for the future; waiting on the owner.
 
-### Queued (owner, 2026-11-06): prop scale pass, "some of them are tiny, like chairs". Part B of the prop pass, after the slack pass
+<!-- prop-scale -->
+### Prop scale pass: furniture at human size (`wip/prop-scale`, agents, 2026-11-06/07; from main 2acb8f23, main 5e85caff and 372d503f merged in; green on `check/prop-scale` at 61585943, run 42324256688 (full suite: unit, maps, build, check, bots, perf budget and mass, 16 e2e shards); not landed)
 **The owner:** "Can we scale the props to the normal human character size? Some of them are tiny, like chairs and
-such."
-- **The catalogue looks real-world by total height:** chairs 0.95 m, tables 0.8 m. But stylised models put small, low
-  seats under tall backs (Kenney's chair is 0.40 m wide). The eye judges the seat, the table top and the door opening.
-- **Maps already compensate in places:** the Kenney bench at a mean scale of 1.93 over 69 placements, the dresser at
-  0.84 over 65.
-- **Plan:**
-  - a lineup of every furniture prop beside a 1.8 m character (and a small and a large one) first;
-  - functional reference sizes (seat 0.46 m, table top 0.76 m, counter 0.92 m, door 2.1 m and so on);
-  - the catalogue fixed to them;
-  - placements fixed in MapMaker: compensating scales back to 1, props resting on resized ones kept on them.
-- **A single "game size" factor** (e.g. +10 %) only with the owner's OK, from before and after pictures.
-- **The brief:** session scratchpad `briefs/prop-scale.md`. The same agent does the slack pass first: one agent, two
-  landings.
+such." Then, on the lineup sheets: "yes fix the outliers, show me the 10% sheets." Part B of the prop pass (after the
+slack pass); the brief: session scratchpad `briefs/prop-scale.md`.
+- **Done:**
+  - **Tools:**
+    - The lineup: `?mode=lineup` (`packages/client/src/tools/propLineup.ts`) and `node tools/content/prop-lineup.mjs
+      <url> <out dir>`. It draws a sheet per pack: the furniture beside the small, standard and large characters and
+      a ruler, from a standing player's eye and from the side. `PACKS=`, `ONLY=`, and `SCALE=1.1` for a furniture
+      factor.
+    - The measure: `node tools/content/prop-sizes.mjs` gives each piece's seat, top or height against its
+      reference (`tools/content/furniture.mjs`).
+    - `prepare-props.mjs` scales a prop kept as built (a pack from a download) to a new `height`.
+    - docs/CONTENT_PIPELINE.md, "Real-world sizes", has the references and the rule: more than 10 % off → a new
+      height; one height per prop; maps at ×1.
+  - **Catalogue** (13 props; the openings fixture has them, 604 entries):
+    - Kenney: `bench` 0.45 → 0.92 m (seat 0.22 → 0.46). It also collides as voxel now (2 boxes): at full size
+      its single box carried slack. `office_chair` 1.0 → 1.26 (seat 0.37 → 0.47), `graveyard_bench` 0.5 → 1.02
+      (seat 0.22 → 0.45), `dungeon_chair` 0.8 → 1.12 (seat 0.33 → 0.46).
+    - Quaternius: `hm_couch`, `hm_couch_large`, `hm_couch_l` and `hm_armchair` 0.85 → 1.04 (seats 0.35-0.37 →
+      0.43-0.45); `hm_dresser` 1.0 → 0.8.
+    - Metro: `mt_bench` 0.81 → 0.96 (seat 0.39 → 0.47).
+    - Household: `hh_toilet` 1.01 → 0.89 (seat 0.48 → 0.42), `hh_desk` 0.85 → 0.77 (top 0.84 → 0.76), `hh_basin`
+      0.76 → 0.95 (rim 0.67 → 0.84; the top of the model is its tap).
+    - The plan list sent to the owner said dungeon chair 1.15, desk 0.78 and basin 0.85. Measuring the models
+      gave the values above (reported to main).
+  - **Maps, in MapMaker**, 16 maps. Session scratchpad `scale/mmedit.mjs` drives the real editor: Import, select,
+    the inspector's Scale, X, Z and Height fields, Export. The export brings each file to format 27 and stamps its
+    release; as loaded, only the edits differ.
+    - Back to ×1: 44 Kenney benches (Ironhold Prison 22, Diamond Park 8 and Neon Galleria 8 at ×2.5, Riot
+      Junction 4 at ×2.6, Grand Marquee 2 at ×1.5) and St John's 65 dressers at ×0.8.
+    - Down with the desk tops: Glasswork Office's 4 monitors, Neon Galleria's monitor and Riot Junction's 2 desk
+      lamps.
+    - Moved 0.05-0.32 m clear of the wall, bookcase or plant their new size reached into: 27 placements (14
+      sofas, 6 armchairs, 6 benches, a basin). Two of Crossroads' sofas had poked through a partition.
+    - Crossroads' sofa beside the house's east door: at 2.7 m it reached past the jamb, and with the counter
+      opposite it shut the way in to the hostages upstairs for bots (validate-map). It sits 0.1 m north of its old
+      place now; its far arm goes 0.17 m into the 0.24 m partition, not through.
+    - Main 5e85caff merged in (2026-11-07). Set pieces part 2 had edited St. John's in MapMaker too, so its file
+      is main's, with the 65 dressers set to ×1 again in MapMaker (session scratchpad `scale/mmedit2.mjs`,
+      `scale/edits-stj-merge.json`). As loaded it is main's map plus those 65 scales and nothing else (its
+      release keeps main's map id, revision 2). Main's St. John's edits are 13 m or more from the four props
+      this pass grew there, and no set piece places a resized prop.
+- **Checked:**
+  - `pnpm typecheck`; `pnpm content:rebuild` (content OK; 17 box props carry slack, every one says why).
+  - propOpenings and propSlack tests; the z-fighting audit and the coverage map test (207 tests).
+  - validate-map on the 38 maps that place a resized prop: clean, apart from the known warnings on Grand Marquee,
+    Reactor and Serpent Gorge.
+  - The bots' navmesh area reached from the spawns, before and after, on the same 38 maps: it shrinks only by the
+    props' own bigger footprints (at most 67 m², 0.15 %, Capitol Mall); no room is cut off.
+  - A scratch overlap check of every placement against walls and neighbours, old sizes against new: nothing new
+    apart from those listed below.
+  - After main 5e85caff was merged (2026-11-07):
+    - `pnpm content:rebuild` changed nothing (no new pictures; content OK); `pnpm typecheck`; validate-map on St.
+      John's: OK (0 issues).
+    - `pnpm test:changed` (183 files, then the 32 that read maps): two failures, both from this branch, fixed in
+      the tests. unifiedPaths: Undergate Transit's re-save made its old race-track field a path (checked against
+      main's file: the same curve, checkpoints, grid and ground), so two maps carry the old field, not three.
+      dressing: a full living room at seed 3 takes 19 different models with the real-size sofas (bound 16; over
+      seeds 1-30 main's tables already gave kitchens 19 and living rooms 18), so the bound is 20.
+    - The e2e smoke on the local build (`pnpm e2e:changed`'s set for a full-suite change: editor, offline, online,
+      maps) with `E2E_MAPS` = the 16 edited maps: all pass. Every one starts a match on solid ground and opens in
+      MapMaker with no errors and nothing lost (Ironhold Prison and Riot Junction, which timed out in the run the
+      restart cut off, included).
+    - `pnpm bot-report --check` (Diamond Park CTF among its 4 matches, with its benches back at ×1): every limit
+      held (11 measures).
+- **For the owner:**
+  - **A "game size" factor: DECIDED (owner, 2026-11-07): "Keep real size."** No furniture factor, now or as a
+    follow-up; recorded in docs/CONTENT_PIPELINE.md, "Real-world sizes". Why: at ×1.1 seats sit at 0.48-0.50 m
+    and read high beside the 1.8 m body, and rooms built around today's sizes crowd (the living room's sofa and
+    armchair run together). The sheets the owner judged, real size next to ×1.1: session scratchpad
+    `scale/x110sheets/` (the Kenney furniture, Quaternius house, household and hospital kits, and
+    `in-map-real-vs-x110.jpg` for the office desks and the living room).
+  - **Listed, not changed** (docs/CONTENT_PIPELINE.md, "Real-world sizes"):
+    - Narrow seats (Kenney `chair`, `hh_chair`, 0.40 m).
+    - Low beds of the right length (Kenney `bed`, household beds); Quaternius `hm_bed_king` (3.6 m long).
+    - The wheelchair; doors sized to their kits (hospital 3.0 m).
+    - The household kettle and desk fan, twice their size: Pantry Raid's kettle is a ×4 giant.
+  - **Hollowmere Manor's sofa** (`prop_227`) stands in a 2 m alcove beside its sitting room's north doorway, and no
+    real-size sofa fits there. Its back is flush with the wall now and its left arm stays inside the 1 m double wall
+    (as it did, deeper), so the doorway keeps clear. A two-seater or the armchair would fit.
+  - **The dungeon chairs** round the small tables (Dune Harbor, Flatpack Depot, Grand Marquee, Serene City,
+    Starhaven) now tuck 7 cm under the tables' tops.
+  - **Serpent Gorge** (retired) is not edited: three graveyard benches there reach into a wall or each other.
+- **Pictures** (session scratchpad):
+  - Lineups: `scale/lineup-before/` (every pack); `scale/lineup-after/` and `scale/lineup-compare/<pack>.jpg` (the
+    six changed packs, before above after); `scale/lineup-resized-before-after.jpg` (the 13 props).
+  - In the maps: `scale/maps/in-map-before-after.jpg` (office, living room, dining room, Ironhold's benches, a ward,
+    Hollowmere's sofa), and `scale/maps/after-dungeon-chairs.png`.
+<!-- /prop-scale -->
 
 <!-- prop-slack -->
-### Prop slack pass: columns, the slack audit, 391 props to voxel (`wip/prop-slack`, agent, 2026-11-06; rebased on main e63ffc6f; green on `check/prop-slack` at a3198d27, run 42300775716; ready to land)
-**Status:** green, every job (run 42300775716). The run before the rebase (42299124567) failed only perf (budget),
+### Prop slack pass: columns, the slack audit, 391 props to voxel (`wip/prop-slack`, agent, 2026-11-06; green on `check/prop-slack`, run 42300775716; LANDED: main 04660a1e)
+**Status:** landed (main 04660a1e, a fast-forward to `wip/prop-slack`); green, every job (run 42300775716). The run before the rebase (42299124567) failed only perf (budget),
 "frost_basin medium: starting arc took 41.4 ms > 40", with the explosion start at 37 ms in the same pass (about 1 ms
 in every other run, 9 ms on low that run): a hitch on the runner; the rerun passed. Screenshots: session scratchpad
 `slack/shots/colonnade-before-after.jpg` (the sheet) and `slack/shots/{before,after}-*.png`.

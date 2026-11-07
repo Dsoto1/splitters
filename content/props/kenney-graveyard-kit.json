@@ -238,7 +238,7 @@
       "src": "bench.glb",
       "name": "Stone Bench",
       "category": "Gothic",
-      "height": 0.5,
+      "height": 1.02,
       "collide": "voxel",
       "breakable": {
         "health": 80,

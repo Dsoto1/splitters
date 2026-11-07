@@ -1,6 +1,6 @@
 # MAP 21 — OMAHA-INSPIRED BEACH ASSAULT
 
-**Status:** Proposed visual concept; not approved geometry.
+**Status:** Proposed visual concept; not approved geometry. **Approved 2026-11-07 as Iron Coast: `MAP_21_Iron_Coast.md`** (the layout on the reference image, and the Breakthrough mode).
 **Map scale:** Massive battlefield. **Target combatants:** 64–96.
 **Recommended modes:** Asymmetric objective assault (custom rules may be needed), TDM, Co-op.
 

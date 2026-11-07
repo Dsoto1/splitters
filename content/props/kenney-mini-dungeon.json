@@ -91,7 +91,7 @@
       "src": "chair.glb",
       "name": "Stool",
       "category": "Medieval",
-      "height": 0.8,
+      "height": 1.12,
       "collide": "voxel",
       "breakable": {
         "health": 20,

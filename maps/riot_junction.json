@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 26,
+  "formatVersion": 27,
   "metadata": {
     "id": "riot_junction",
     "name": "Riot Junction",
@@ -20,7 +20,15 @@
       "core.bomb",
       "core.deathmatch",
       "core.zombies"
-    ]
+    ],
+    "release": {
+      "mapId": "m_ruc3fnxenmg4ganz",
+      "versionId": "v_xd3zx64xq4s32fws",
+      "revision": 1,
+      "contentHash": "sha256:85f319edf96d6f615f917c31b13dfaf6d067b61cf4d62fab4a8eead7ebc133ff",
+      "schemaVersion": 27,
+      "releasedAt": "2026-11-06T23:06:55.796Z"
+    }
   },
   "classicStructure": {
     "cellSize": 8,
@@ -13175,7 +13183,7 @@
       "position": [
         28,
         -4,
-        92.6
+        92.782
       ],
       "kind": "prop",
       "model": "prop.mt_bench",
@@ -13189,7 +13197,7 @@
       "position": [
         40,
         -4,
-        92.6
+        92.782
       ],
       "kind": "prop",
       "model": "prop.mt_bench",
@@ -13203,7 +13211,7 @@
       "position": [
         52,
         -4,
-        92.6
+        92.782
       ],
       "kind": "prop",
       "model": "prop.mt_bench",
@@ -17823,7 +17831,7 @@
       "kind": "prop",
       "model": "prop.bench",
       "yaw": 0,
-      "scale": 2.6,
+      "scale": 1,
       "solid": true,
       "tint": null
     },
@@ -17837,7 +17845,7 @@
       "kind": "prop",
       "model": "prop.bench",
       "yaw": 3.141592653589793,
-      "scale": 2.6,
+      "scale": 1,
       "solid": true,
       "tint": null
     },
@@ -17851,7 +17859,7 @@
       "kind": "prop",
       "model": "prop.bench",
       "yaw": 1.5707963267948966,
-      "scale": 2.6,
+      "scale": 1,
       "solid": true,
       "tint": null
     },
@@ -17865,7 +17873,7 @@
       "kind": "prop",
       "model": "prop.bench",
       "yaw": -1.5707963267948966,
-      "scale": 2.6,
+      "scale": 1,
       "solid": true,
       "tint": null
     },
@@ -18585,7 +18593,7 @@
       "position": [
         128.14,
         0,
-        148.99
+        149.11
       ],
       "kind": "prop",
       "model": "prop.hm_couch",
@@ -19452,7 +19460,7 @@
       "id": "prop_1046",
       "position": [
         146.92,
-        4.85,
+        4.766,
         140.99
       ],
       "kind": "prop",
@@ -21944,7 +21952,7 @@
       "id": "prop_1224",
       "position": [
         42.92,
-        8.85,
+        8.766,
         132.99
       ],
       "kind": "prop",

@@ -22,6 +22,19 @@ made only on a commit that passed CI on a check branch.
 - Step Temple: the 2.2 m slot the old behaviour cut beside the west terrace stair is filled again (in MapMaker). No
   other shipped map had ground lowered where no floor stands now.
 
+**Furniture at human size** (owner: "Can we scale the props to the normal human character size? Some of them are
+tiny, like chairs and such"; docs/CONTENT_PIPELINE.md, "Real-world sizes")
+- Every furniture and everyday prop was measured by what it is for (a chair's seat, a table's top, a basin's rim)
+  against real-world sizes beside the 1.8 m character. 13 that were more than 10 % off are the right size now: the
+  Kenney bench (its seat was 0.22 m off the floor) and office chair, the graveyard bench, the dungeon chair, the four
+  Quaternius sofas and armchairs, the metro platform seats, and the household toilet, desk and wash basin come up or
+  down to their seats and tops; the Quaternius dresser comes down to 0.8 m.
+- The maps follow, edited in MapMaker: benches that were scaled up by hand to look right (×2.5 in Ironhold Prison,
+  Diamond Park and Neon Galleria) and St John's shrunken dressers are back at ×1, monitors and lamps sit on the lower
+  desk tops, and sofas, armchairs and benches that would now reach into the wall behind them moved clear of it.
+- New tools: a lineup sheet per prop pack (its furniture beside small, standard and large characters and a ruler,
+  from a player's eye and from the side) and a size table measured from the models.
+
 **Props collide as what you see: the slack pass** (owner's bug report, Capitol Mall: "These pillars are blocking my
 bullets"; docs/CONTENT_PIPELINE.md, "Prop collision")
 - **Columns**: the white Ionic column collided as one box as wide as its plinth and capital all the way up, so rounds
