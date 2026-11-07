@@ -45,10 +45,12 @@ const CREST_APART = 6;
 const CREST_SPOTS = 6;
 /**
  * The attackers' objective is the least defended of the sector's (the fewest defenders within this of it, m), kept
- * until it is taken or planted, and looked at again this often (s) while no attacker is on it yet.
+ * until it is taken or planted, and looked at again this often (s) while no attacker is on it yet: it moves to
+ * another only with at least FOCUS_MARGIN fewer defenders (a long walk between two objectives isn't thrown away for one).
  */
 const FOCUS_GUARD = 15;
 const FOCUS_SECONDS = 20;
+const FOCUS_MARGIN = 2;
 /** A defender's duty (the playbook's shares): a gun, the crest, falling back early, a trench or sandbags, the objectives. */
 type Duty = 'gun' | 'crest' | 'back' | 'trench' | 'hold';
 
@@ -403,7 +405,8 @@ export class BreakthroughMode implements ModeLogic {
   /**
    * The attackers' objective in the sector in play: of those still to take, the least defended (the fewest defenders
    * alive within FOCUS_GUARD of it, then the map's order), kept until it is taken or planted and looked at again every
-   * FOCUS_SECONDS while no attacker is on it (it changes only for one with fewer defenders); else a burning charge.
+   * FOCUS_SECONDS while no attacker is on it (it changes only for one with FOCUS_MARGIN fewer defenders); else a burning
+   * charge.
    */
   private attackFocus(): BtObjectiveRt | null {
     const s = this.sector;
@@ -416,7 +419,7 @@ export class BreakthroughMode implements ModeLogic {
     const all = this.host.combatants();
     if (f && all.some((c) => c.alive && c.faction === this.attackers && horizontalDistance(c.move.pos, f.pos) < f.radius + 3)) return f;
     const guards = (o: BtObjectiveRt) => all.filter((c) => c.alive && c.faction === this.defenders && horizontalDistance(c.move.pos, o.pos) < FOCUS_GUARD).length;
-    let best = f ?? live[0]!;
+    let best = live[0]!;
     let fewest = guards(best);
     for (const o of live) {
       const g = guards(o);
@@ -425,6 +428,7 @@ export class BreakthroughMode implements ModeLogic {
         fewest = g;
       }
     }
+    if (f && guards(f) - fewest < FOCUS_MARGIN) best = f;
     this.focus = best;
     this.focusAt = tick;
     return best;
