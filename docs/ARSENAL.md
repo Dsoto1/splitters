@@ -194,8 +194,13 @@ sits, and thins over its last 3 s: 18 s in all. It is only sight:
   is still seen.
 - **Players:** the cloud is soft grey puffs (`ZoneVisuals`, a steady mid grey scaled by the map's light, never white);
   with your eye in it, the scene's fog eases to a mid grey you see 2-3 m through (`View.updateSmokeFog`, eased in and
-  out over about two thirds of a second: no flash, no white-out, no flicker); an enemy's marker behind smoke isn't
-  drawn.
+  out over about two thirds of a second: no flash, no white-out, no flicker), and the sky, which draws without fog,
+  fades to the same grey (else the skyline, and anyone against it, showed through); an enemy's marker behind smoke
+  isn't drawn. Left as it is: at High the screen-space shading still picks out faint, low-contrast shapes of the
+  scenery past the cloud. On a map without haze (the space maps, maps without a backdrop: 15 of 90) the scene has no
+  fog at all, so the first step into smoke builds every visible material's fog variant (a stall, as going under water
+  does there); smoke reaches those maps only through a placed pickup until the weapon sets hand it out. The fix then:
+  run those maps with fog on at zero density.
 - **Shots, blasts and movement go through it** (they use the physics' own lines).
 - **Bots use it:** a hurt bot caught in the open by an enemy 10-45 m off throws one a few metres toward it, so the
   cloud stands between them while it moves on; bounding cover to cover (Phase B), the moving half sends one ahead

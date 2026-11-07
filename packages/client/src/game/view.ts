@@ -3496,13 +3496,38 @@ export class GameView {
         this.scene.fogDensity = this.smokeDryFog.density;
         this.smokeDryFog = null;
       }
+      this.smokeSkyBack();
       return;
     }
     this.smokeDryFog ??= { mode: this.scene.fogMode, color: this.scene.fogColor.clone(), density: this.scene.fogDensity };
     const dry = this.smokeDryFog;
+    const grey = Math.min(1, this.smokeFog * 1.5);
     this.scene.fogMode = 2;
-    this.scene.fogColor = Color3.Lerp(dry.color, SMOKE_FOG, Math.min(1, this.smokeFog * 1.5));
+    this.scene.fogColor = Color3.Lerp(dry.color, SMOKE_FOG, grey);
     this.scene.fogDensity = dry.density + (SMOKE_FOG_DENSITY - dry.density) * this.smokeFog;
+    // The sky draws without fog (backdrop.ts): it fades to the same grey, or the skyline, and anyone against it,
+    // would show through the haze. Its brightness and glow are uniforms: no shader is built for it.
+    const sky = this.scene.getMaterialByName('backdrop_skyMat');
+    if (sky instanceof StandardMaterial && sky.reflectionTexture) {
+      if (this.smokeSky?.mat !== sky) {
+        this.smokeSkyBack();
+        this.smokeSky = { mat: sky, level: sky.reflectionTexture.level, glow: sky.emissiveColor.clone() };
+      }
+      sky.reflectionTexture.level = this.smokeSky.level * (1 - grey);
+      sky.emissiveColor = Color3.Lerp(this.smokeSky.glow, this.scene.fogColor, grey);
+    }
+  }
+
+  /** The sky as it was before smoke faded it (updateSmokeFog), and how bright it was then. */
+  private smokeSky: { mat: StandardMaterial; level: number; glow: Color3 } | null = null;
+
+  /** The sky back as it was, out of the smoke. */
+  private smokeSkyBack(): void {
+    const s = this.smokeSky;
+    if (!s) return;
+    this.smokeSky = null;
+    if (s.mat.reflectionTexture) s.mat.reflectionTexture.level = s.level;
+    s.mat.emissiveColor = s.glow;
   }
 
   /** Whether smoke hides a point from your eye (tests, and enemy markers). */
