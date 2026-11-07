@@ -5,6 +5,7 @@ export * from './sim/hostControl.ts';
 export * from './bots/brain.ts';
 export * from './bots/teamBrain.ts';
 export * from './bots/trials.ts';
+export * from './bots/choices.ts';
 export * from './nav/index.ts';
 export * from './nav/audit.ts';
 export * from './nav/corridors.ts';
