@@ -1202,7 +1202,13 @@ kinds of hitch (the first 3 s of a Shingle Point match, a mass death on Market T
    other pages' frames. Measured locally with every such call timed (an init script; not committed): the joining
    friend's page waited 30 s in one second on 12 `getExtension` calls at its start, and 55 s in another on 41
    `getProgramParameter` calls, up to 3 s each. No player's page shares a GPU process with two other games.
-6. **Player slots ran into NPC ids at 100.** Actor ids from 100 were NPCs' (`NPC_ID_BASE`): a match with more than 100
+6. **The mass death on Market Town: not found here.** The owner's frames after a 7-kill rocket were 60-140 ms for
+   0.6 s with 13 ms of the game's own work each, 1-2 characters and 11 effects in view, no shaders built: GPU, driver or
+   garbage collection, which the game's trace can't tell apart. A Chrome trace of the same blast here (Market Town,
+   High, 7 kills 12 m off) caught one 175 ms young-generation collection 0.43 s after the blast and nothing else long on
+   the main thread, but with the box at load 20 SwiftShader's frames took 5-20 s each, so the GPU side couldn't be
+   seen. Recordings now say what the main thread did over each hitch (below), so the owner's next one can.
+7. **Player slots ran into NPC ids at 100.** Actor ids from 100 were NPCs' (`NPC_ID_BASE`): a match with more than 100
    players crashed on the first shot at slot 100 or above (found running the bench at 128).
 
 ### What changed
@@ -1231,6 +1237,9 @@ kinds of hitch (the first 3 s of a Shingle Point match, a mass death on Market T
   every big map); the fit check warns past 48 players that it takes a recent desktop or a fast laptop. A dedicated
   host's `MAX_PLAYER_SLOTS` 96 → 128 (64 v 64), with NPC ids from 1000 (`NPC_ID_BASE`, was 100) and protocol 5
   (older clients are told the server speaks another protocol). Layouts 32v32 and 64v64 join the setup's list.
+- **Recordings name the main thread's part of a hitch** (`perfRecorder.ts` `watchMainThread`, `compare.mjs`): the
+  browser's long tasks and long animation frames over the hitch (blocked time, the longest scripts). A hitch whose
+  outside time has neither was the main thread waiting: the GPU or the compositor; with them, a script or a collection.
 - **Handoff flow:** each page in a browser of its own. Bench: `--wire` reports each viewer's snapshots raw and
   deflated (the server's WebSocket compression).
 
@@ -1314,7 +1323,9 @@ High, render scale auto, 60 fps cap, a recording running with a 10 s trace:
 
 ### Next
 
-- MASS_DEATH_NEXT
+- The mass death: the owner's next Market Town recording (a rocket into a crowd) says whether its outside time is the
+  main thread (long tasks: a collection or a script) or the GPU (none). If the GPU, the suspects are the explosion's
+  big particles near the camera (overdraw at a Retina render size) and the bodies' first frames in the shadow map.
 - Character moves are most of a 128-player tick (every player near a viewer moves at full detail): a cheaper move for
   bots far from every human, or moves on more than one core, if dedicated hosts fill up.
 - Bot thinking's setup (views, pickups, goals) is 0.7-1.6 ms of a 128-player tick (BOT_AI_PLAN, Phase B).

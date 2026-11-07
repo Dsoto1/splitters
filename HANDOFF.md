@@ -26,6 +26,71 @@ gets overloaded above that: local e2e times out and flakes). Prune landed worktr
 - Earlier the same day: content scalability steps 2–6, perf toolset, flaky e2e fixes, Runway Nine airliner, map
   reworks batches 2–3, character fixes rounds 2–3 (see the entries below and CHANGELOG).
 
+<!-- perf-4 -->
+### Performance round 4: crowds, 32 v 32 in a browser, 64 v 64 on a dedicated host (`wip/perf-4`, agent, 2026-11-07; from main 5087b0b6, main 3647eee9 merged in; CI on `check/perf-4`; not landed)
+docs/PERF_96.md, "Performance round 4", has the numbers; CHANGELOG has the player-facing lines.
+
+**What changed:**
+- **Animation by size on screen, smoothed** (`game/animLod.ts`, `CharacterAnimator.blendSkin/blendGun`). Far
+  characters drew each evaluated pose until the next, so a running foot stood still 2-4 frames, then jumped up to
+  half a metre. Now the frames between are blended from the pose before the last to the last (the skin matrices and the
+  held gun; the bones keep the evaluated pose). Bands by a standing character's share of the view's height (a scope
+  brings far ones back): every frame to ~15 m (fingers kept past 8 m), 30 Hz to 25 m, 20 Hz to 40 m, 15 Hz to 80 m,
+  10 Hz to 150 m, 5 Hz beyond, all smoothed. The coarse after-clip detail (no arm IK) starts at 25 m (was 35 m): that
+  pays for it. `?perfoff=animlod4` gives round 2's bands.
+- **Loops faded out stay started 3 s at weight 0** (`CharacterAnimator.fadeOut`, `?perfoff=animlinger`).
+- **Effects world** (`sim/effectsPhysics.ts`) steps its pipeline without Rapier's per-step walk of every collider.
+- **Garbage:** joints turned and restored in place; avatars' last positions reused.
+- **Warm-up's files first** (`GameView.prewarm`, `session.prepareMatch`): looks and guns load alongside the effects;
+  the gate waits for them (20 s at most) before the shader warm-up's 8 s.
+- **Caps:** `BROWSER_MAX_PLAYERS` 64 (32 v 32; phones 16), Match Setup's Max 32v32 and a fit warning past 48 players.
+  `MAX_PLAYER_SLOTS` 128 (64 v 64) with `NPC_ID_BASE` 1000 (was 100: slots 100-127 read as NPCs and a 128-player
+  match crashed on its first shot) and `PROTOCOL_VERSION` 5. Layouts 32v32 and 64v64 added.
+- **Handoff e2e flake, root cause:** the flow's three pages shared one browser, so one GPU process drawing all their
+  frames with SwiftShader; each page's synchronous WebGL calls (program link status, uniform blocks, extensions) wait
+  behind the others' frames. Measured (an init script timing those calls, not committed): the joining friend's page
+  waited 30-55 s in a single second on them. The flow now gives each page its own browser (`instrumentBrowser`); the
+  same run then had the friends' worst second at 16 s and the successor named in 30 s instead of 64 s. Real players
+  never share a GPU process with two other games, so nothing in the game changes for it; the 60 s grace for a stalled
+  friend with its connection up stays.
+- **Bench:** `--wire` reports each viewer's delta snapshots raw and deflated. **Recordings:** each hitch carries the
+  browser's long tasks and long animation frames over it.
+- **Host Service:** its launcher's player and team steppers follow `MAX_PLAYER_SLOTS` (128, 64 a team).
+
+**Measured** (4 cores shared with two other agents, load 8-11; before and after in turn):
+- Running character at 30 / 50 / 80 m (virtual 60 fps filmstrips): frames the foot stood still 7 / 9 / 9 of 11 before,
+  0 after; biggest jump 51 / 40 / 41 cm before, 14 / 15 / 16 cm after. Pictures:
+  scratchpad `p4/strip/running-30-50-80m-before-after.png`.
+- Character bench (56 running and strafing 5-60 m, CPU per frame at a virtual 60 fps): 23.1 → 18.7 ms (-19 %), with
+  11 % more evaluations; clip starts 49 → 40 a second.
+- Effects world step on Shingle Point (2,970 colliders): 4.38 → 2.76 ms, ~0.4 MB less garbage a step.
+- `pnpm bench 64`: bot thinking 0.87-2.32 ms a tick on four maps spread and clumped (guard 2.5).
+- `pnpm bench 128` (64 viewers, `--wire`): tick 11.4-13.3 ms avg, p95 20-25 ms on this loaded box, about a quarter
+  over 96 players under the same load (8.3-12.0, p95 15-25); bot thinking 2.8-3.9 ms; each player sent 26-57 KB/s
+  deflated (0.2-0.45 Mbit/s).
+
+**64 v 64 on a dedicated host, what it takes:** the cap is 128 now, and nothing structural stands in the way after
+the NPC id move. Not measured on a real host box: a desktop-class core (the tick is ~1.25x 96 players') and, with 128
+people connected, about 3-7 MB/s of upload (26-57 KB/s each). The client draws up to 127 characters: far ones are
+cheap now, but a 64 v 64 map should spread them out. `pnpm bench 128 60 maps/<map>.json --mode=core.tdm
+--viewers=128 --wire` on the host's own machine says whether it holds.
+
+**For the owner to record on the M1 (High, render scale auto, 60 fps cap):**
+1. 32v32 offline TDM on Shingle Point and on Market Town (Max preset): a 30-60 s recording each with a 10 s trace.
+2. A running crowd at a distance: stand at one end of Shingle Point's beach and watch bots run 30-80 m off; then the
+   same with `?perfoff=animlod4` for the old look side by side.
+3. A rocket into a crowd on Market Town (7+ kills), recording running.
+4. The first 10 s of a match after the update (the first visit: the cache empty), on Shingle Point.
+
+**Left for later:**
+- **The mass death on Market Town** (frames of 60-140 ms for 0.6 s after a 7-kill rocket, all outside the game's own
+  work) was not found here: the box ran at load 20 and SwiftShader's frames took seconds. A local trace of the blast
+  showed one 175 ms young-generation collection and nothing else long on the main thread. Recordings now carry the
+  browser's long tasks and long animation frames per hitch (`perfRecorder.ts` `watchMainThread`; `compare.mjs` prints
+  them), so the owner's next rocket-into-a-crowd recording says main thread (collection or script) or GPU (neither).
+- Character moves are most of a 128-player tick; bot thinking's setup is 0.7-1.6 ms of it (BOT_AI_PLAN Phase B).
+- Not done: shared evaluation for characters on the same clip and phase, fewer bones on far skeletons, impostors.
+
 <!-- breakthrough -->
 ### Breakthrough mode, and Iron Coast's fort and gatehouse (`wip/breakthrough`, agents, 2026-11-07; from main 17d0e0a0, main 2c48debf (Bot AI Phase B parts 1 and 2), d3830145 (weapons intake 11-06) and 5087b0b6 (weapon sets) merged in; green on `check/breakthrough` at 647512a5, run 42373473729; not landed)
 The brief: docs/map-briefs/MAP_21_Iron_Coast.md ("Breakthrough mode", and "The mode as built"). Rules, settings, HUD,
