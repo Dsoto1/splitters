@@ -27,6 +27,26 @@ gets overloaded above that: local e2e times out and flakes). Prune landed worktr
   reworks batches 2–3, character fixes rounds 2–3 (see the entries below and CHANGELOG).
 
 <!-- small-fixes-1107 -->
+### Frozen characters in big matches (`wip/frozen-fix`, agent, 2026-11-07; from main c8d8cba3; CI on `check/frozen-fix`; not landed)
+**Root cause:** the figures frozen mid-run (some in the air) were the dead. Performance round 4's pose smoothing
+(`CharacterAnimator` `blend.on`, set only in `stepAt`) stayed on after a death: GameView stops calling `stepAt` once a
+character dies (startRagdoll and toCorpse run first; corpses are never stepped), and `ragdoll`, `lieDown`, `die`
+and `freezePose` never cleared it. So every frame the patched `Skeleton.prepare` overwrote a corpse's skin with its
+last two living poses (`blendSkin`, its evals and time frozen too): the ragdoll moved the bones unseen and the body was
+drawn standing where it died, until it sank or the 32-corpse cap took it. Only deaths in a smoothed band (screen share
+below 0.075, about 15 m and more at the usual field of view) did it, which is why big matches (many far deaths at
+once, more bodies kept) showed it and a 12 v 12 near fight hardly did.
+**Measured** (scratchpad `frozen/probe.mjs`, Shingle Point 32 v 32 TDM, real client): before, 9 of 9 corpses of the
+fight's own deaths and 1-3 after each scripted mass death had the smoothing on; one corpse's drawn skin stayed the
+same (checksum 19942.942) over 12 s while its pelvis moved 3.41 → 2.52 → 2.56 m. Live characters were all stepped
+and animating (no live one stuck). After: see the HANDOFF numbers below.
+**Fix:** `CharacterAnimator.endSmoothing()` (smoothing off, recorded poses and the gun's dropped) on die, ragdoll,
+lieDown, freezePose, standBy and revive, so a body is drawn as its bones lie and a revived or reused body starts
+afresh. **Tests:** `client/test/smoothedDeath.test.ts` (a ragdoll's drawn skin follows its joints after a smoothed
+death; laid down and plain deaths stop smoothing; a kept body stands up fresh; fails without the fix); e2e
+`physicsfx`: a bot 22 m off, smoothed, is killed and its corpse's drawn skin matches its bones every frame.
+**The singularity:** see "Singularity hold" below when checked.
+
 ### Small fixes from the owner's play, 2026-11-07 (`wip/small-fixes-1107`, agent; from main 3647eee9; green on `check/small-fixes-1107` at f79d1ec2, run 42384938315 (the full suite: unit, maps, build, check, bots, perf, 14 e2e shards); not landed)
 Four owner reports, each fixed at the cause with a test (CHANGELOG, "Small fixes from the owner's play").
 

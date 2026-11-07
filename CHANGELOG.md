@@ -8,6 +8,12 @@ made only on a commit that passed CI on a check branch.
 
 ## Unreleased
 
+**Frozen characters fixed** (owner, 2026-11-07: big bot matches showed figures standing mid-run, some in the air):
+these were the dead. A character that died some 15 m or more away, where its animation is smoothed between steps
+(performance round 4), kept the smoothing after its death, so its body was drawn in its last living pose where it
+died instead of as its ragdoll; it stayed so until the body sank. Bodies now fall and lie as they should at any
+distance, and a body kept for the next player of its look stands up fresh.
+
 **Bot AI Phase C, items 1-4** (docs/BOT_AI_PLAN.md, "Phase C items 1-4, measured"; docs/BOTS.md):
 - Bots drop off ledges, jump gaps and jump up onto ledges as players do: links found at load and each checked by
   playing it through the real movement code; flankers, scouts, snipers and Arena bots use them most, and snipers look
