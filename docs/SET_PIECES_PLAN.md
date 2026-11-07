@@ -424,7 +424,7 @@ parts build (collision, trim, navigation). The generic set piece tests cover bot
 expands clean, z-fight audit 0); `setPiecePlay.test.ts` lists them as open-sided (their ports are gateways and
 stair heads, not doorways) and its z-fight layout spaces pieces 8 cells apart for the 4 × 4 fort.
 
-**In maps:** the Breakthrough Range (`maps/test_breakthrough.json`, a test map) has both, placed in MapMaker (the
+**In maps:** the Breakthrough Range (`maps/test_breakthrough.json`, an ordinary map since 2026-11-07) has both, placed in MapMaker (the
 fort the last sector, its command room the final hold; the gatehouse stair a lookout over the guns), and so does the
 coverage map (`maps/test_coverage.json`, whose test requires every shipped set piece).
 

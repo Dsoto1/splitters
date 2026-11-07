@@ -182,6 +182,20 @@ while, as when stuck. `test/botRiders.test.ts`: a player drives two bots
 over Iron Maw for 60 s (stops included): they stay; on fire, or wrecked to a
 quarter, both are out within 1.5 s; parked, they leave after 8 s.
 
+**A wedged Dropship drew bots back again and again** (owner, Shingle Point, 2026-11-07: "a bot seemed to try and get
+in, would turn around and seem to leave but turn back around"). A bot had flown it into a landing craft wreck's hull
+and left it there turned across it; its nose and tail (4.8 m from its centre) poked out past its enter radius (4.5 m)
+and its sides were inside the hull, so nobody could get in, and bots kept planning it, walking up, giving up when the
+plan ran out (30 s away) and coming back. Now (`bots/vehicles.ts`, `sim/mounts.ts enterReach`, `sim/match.ts`):
+bots walk to a spot just off the hull on their side (`boardingSpot`, not its centre) and press E when the match's own
+rule says they can get in (`inBoardingReach`: within the enter radius of the centre or 1.6 m of the hull); use pressed
+and still not in 0.25 s later is a failed boarding, and two at one mount (`MAX_BOARD_FAILS`) give up on it; no route
+to the spot gives up at once; each give-up on the same mount leaves it alone twice as long (`avoidSeconds`: 30, 60,
+120, 240 s); and a vehicle the match sees driven and going nowhere for 3 s is `wedged` for every bot (`vehicleFor`,
+`rideFor` skip it) until it has moved 3 m. Flyers driven into something they can't pass climb over it on their own
+(`climbAssist`) and settle back to their height after, so a bot pilot no longer wedges one. `bot-report` prints
+"boarding: tries, failed, given up on, back to one given up on" per match; `test/vehicleWedge.test.ts`.
+
 **Tactical squads with a leader stood about or went back and forth.** Found
 by measuring (both teams: first contact, progress from the side's base to
 the enemy's, share of time standing still out of a fight, share of time
@@ -739,6 +753,16 @@ applies the choice).
 - King of the Hill's goal is one to hold (it was pushed, in an earlier try): bots on the hill look into what happens
   near it, not gunfire across the map, and keep taking cover when shot at.
 
+### Hurt bots retreat (measured, Phase C item 0)
+A bot under its self-preservation share of its health (`BotBrain.hurt`: selfPreservation × 0.6 of full health, 0.8 for
+cowards) retreats while it sees an enemy, to health if any is about, else away from the threat (the farthest spawn
+point), and runs on 3 s after losing sight; with nobody in sight its scored choice is its objective again. Nothing
+regenerates, so on maps without health a hurt bot does this until it dies. Seven ways of cutting the retreat short
+(giving up after a few seconds, a life or a fight; fighting from cover instead; never leaving an objective it stands
+in) all made the Breakthrough Range's attack worse, a lot (8 v 8: 5 to 9 breakthroughs in 12 against 11): hurt
+attackers that stay die, and their deaths spend the pool. Kept as it is; the numbers are in BOT_AI_PLAN.md, "Phase C
+item 0, measured".
+
 ## Team brain and route variety (Bot AI Phase B)
 
 **Corridors** (`nav/corridors.ts`; BOT_AI_PLAN.md Phase B item 4): for the trips a mode's bots make again and again
@@ -884,6 +908,12 @@ takes, captures, returns and drops, and every flag run (when, how long, how it e
 recoveries, kills and tick cost. `--suite=ctf` plays every map that offers CTF, `--shard=k/n` splits a suite over
 processes, `--json=file` keeps the rows and `--compare=before.json,after.json` (several files joined with `+`)
 prints the two side by side, per map. `--spells` lists the longest idle spells, `--bots` every bot.
+**Breakthrough** (`--mode=core.breakthrough`, or `--suite=breakthrough`: the maps that list it): each match records
+the sectors the attackers took of the map's, the second each fell, how the round ended (broke through, the line held,
+or still playing when `--seconds` ran out) and when, and the attackers' reinforcements at the start and left
+(`breakthrough` in the JSON rows); the match stops once its last round is over. Several seeds print a line per map and
+size: sectors taken on average, matches broken through, and each sector's share of matches taken with its average
+fall time. It is not in the nightly scorecard's suites.
 
 ### Scorecard (Phase A)
 

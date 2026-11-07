@@ -536,6 +536,43 @@ time): the place to look for the headroom the 64-player browser round needs.
 - bots use drops, jumps and doors as players do;
 - no bot is frozen by a closed door or a broken bridge.
 
+### Phase C item 0, measured: the hurt-bot retreat (kept as it is)
+**The report** (HANDOFF's pitfalls, from the Breakthrough work): a bot under its self-preservation share of its health
+retreats from every enemy it sees for the rest of its life when no health pickup is in reach (nothing regenerates), so
+on the Breakthrough Range a hurt attacker rarely pushes again. **The ask:** the retreat gives up after a while, or the
+bot fights from cover at low health and keeps its objective.
+
+**Measured, it is the other way round:** on main (`wip/bots-c` from 61652cb9, `pnpm bot-report test_breakthrough
+--mode=core.breakthrough`), the retreat is what keeps the attack alive. Every variant tried took the attackers' pool
+down faster (kills a minute 33 → 47-52 at 8 v 8: hurt bots that stay and fight die, and each death is a reinforcement
+spent; the lines held at 150-250 s with none left) and broke through less:
+
+| Variant (8 v 8 on the Range, smoke on, pool 6 an attacker) | Seeds | Broke through | Sectors | Retreating, of alive time |
+|---|---|---|---|---|
+| main (a hurt bot retreats from every enemy it sees while hurt) | 1-12 | 11 | 35 of 36 | 11.5 % |
+| The retreat gives up after 4 s a life (2 s with an objective) | 1-6 | 1 | 10 of 18 | 4.7 % |
+| ...and hurt with the retreat given up: cover against what it sees, never on into it | 1-6 | 2 | 12 of 18 | 4.4 % |
+| ...only bots pushing an objective give up (defenders retreat as before) | 1-12 | 7 | 27 of 36 | 5.2 % |
+| A 4 s retreat each fight (the clock starts again 8 s out of one) | 1-6 | 3 | 13 of 18 | 4.6 % |
+| Objective pushers: a retreat each fight, none once in cover | 1-12 | 6 | 24 of 36 | 5.1 % |
+| No retreat while standing in its objective (a zone, a charge) | 1-12 | 5 | 23 of 36 | 6.0 % |
+| ...and an 8 s retreat each fight | 1-12 | 9 | 30 of 36 | 8.3 % |
+| A 12 s retreat each fight | 1-12 | 8 | 32 of 36 | 9.0 % |
+
+At 4 v 4 (seeds 1-8, pool 6) main broke through in 5 (sectors 19 of 24, retreating 9.6 %); the first two variants
+in 5 (21 of 24, 3.3 %) and 3 (17 of 24, 3.8 %); the 12 s retreat each fight played main's matches exactly. CTF (Diamond
+Park, Sunken Kingdom, Bunker Cross, Serene City; seeds 1 and 2, 180 s) and Team Deathmatch (Fernwood Moon, Riot
+Junction) were within their noise for the first and the last variant (CTF captures 20 → 14 and 17 in 8 matches, stuck
+recoveries 1.74 → 1.69 a bot-minute); their maps have health, so their bots retreat to it as before.
+
+Why: a hurt bot doesn't retreat for the rest of its life, only while it sees an enemy (and 3 s on); with nobody in sight
+its scored choice is its objective again (and a hurt bot lets noises and chases go). So it does push again, between
+sightings, and lives. The numbers the brief set to beat (4 v 4: 2 of 8; 8 v 8: the beach 6 of 6, the fort 2 of 6) came
+from the Breakthrough agent's scratch harness on an earlier main; today's main beats them by `bot-report` already.
+**Kept as it is.** What landed for item 0: a crash fix found on the way (a Breakthrough defender with the fall-back duty
+on the last sector read the sector after it: `BreakthroughMode.botGoal` threw mid-match, seed 2 at 8 v 8), `bot-report`'s
+Breakthrough fields (the Iron Coast build's commit, taken unchanged) and the retreating share in `--compare`.
+
 ## Phase D: polish and tools
 1. **Memory:**
    - last-known enemy spots kept for a while;

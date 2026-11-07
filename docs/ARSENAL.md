@@ -166,7 +166,10 @@ copy (other players' hands, drops, pickups, Low) stays small:
 
 - The held copy is the same mesh (same holds, muzzle and sights), named in the weapon's `view.held`. Your gun shows
   everyone's copy at once and the sharper one is swapped in when it has loaded (`View.sharpenViewmodel`); a gun you no
-  longer carry frees its held copy's video memory (`View.trimViewmodels`, `ModelLibrary.release`).
+  longer carry frees its held copy's video memory (`View.trimViewmodels`, `ModelLibrary.release`). The swap takes the
+  old copy's own on/off switch (`takeOverViewmodel`), never `isEnabled()` (which asks its parents): a copy that came in
+  while you were scoped or in third person (the view's root off) stayed hidden, and the gun vanished from your hands
+  when the scope came down (owner, 2026-11-07).
 - **Measured** (five guns held: pistol, rifle, SMG, shotgun, hand cannon; textures counted at 4 bytes a texel with
   mipmaps): **High +140 MB** (28 MB a gun: its 2048 px colour map 22.4, normal 5.6, metal/roughness 1.4), **Medium
   +35 MB** (7 MB a gun), **Low +0** (everyone's copies are already loaded with the match). For scale, the whole scene's

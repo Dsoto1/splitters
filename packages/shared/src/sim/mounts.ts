@@ -208,6 +208,37 @@ export function mountToWorld(pos: { x: number; y: number; z: number }, yaw: numb
   return { x: pos.x + o[0] * c + o[2] * s, y: pos.y + o[1], z: pos.z - o[0] * s + o[2] * c };
 }
 
+/**
+ * How far from a mount's hull (its footprint seen from above, m) you can still get in, wherever its centre is: a
+ * long hull keeps you further from its centre than its enter radius (the Dropship's nose and tail are 4.8 m from it,
+ * its enter radius 4.5), and one wedged between props or in a wreck may show only its nose or tail.
+ */
+export const ENTER_HULL_REACH = 1.6;
+/** How far below a mount's base (m) you can climb in from; and above it, its roof plus this (standing on its deck). */
+export const ENTER_BELOW = 2.5;
+export const ENTER_ABOVE_ROOF = 0.6;
+
+/**
+ * Can someone standing at `feet` get into a mount at `pos` facing `yaw`? Within its enter radius of its centre, or
+ * within ENTER_HULL_REACH of its hull; and at a height they could climb in from (ENTER_BELOW under its base up to
+ * its roof). Returns the distance from its centre (the nearest mount in reach is the one you get into), or null out
+ * of reach. The match, the client's prompt and the bots all ask this.
+ */
+export function enterReach(def: { half: readonly [number, number, number]; enterRadius: number }, pos: { x: number; y: number; z: number }, yaw: number, feet: { x: number; y: number; z: number }): number | null {
+  const dy = feet.y - pos.y;
+  if (dy <= -ENTER_BELOW || dy >= Math.max(ENTER_BELOW, def.half[1] * 2 + ENTER_ABOVE_ROOF)) return null;
+  const dx = feet.x - pos.x;
+  const dz = feet.z - pos.z;
+  const centre = Math.hypot(dx, dz);
+  if (centre <= def.enterRadius) return centre;
+  // In the mount's frame: right (+X) is (cos yaw, -sin yaw), forward (+Z) is (sin yaw, cos yaw).
+  const s = Math.sin(yaw);
+  const c = Math.cos(yaw);
+  const gx = Math.max(0, Math.abs(dx * c - dz * s) - def.half[0]);
+  const gz = Math.max(0, Math.abs(dx * s + dz * c) - def.half[2]);
+  return Math.hypot(gx, gz) <= ENTER_HULL_REACH ? centre : null;
+}
+
 /** A seated rider's eye above the seat's feet point, and how far forward of it (cockpit camera). */
 export const SEATED_EYE_HEIGHT = 1.0;
 export const SEATED_EYE_FORWARD = 0.15;

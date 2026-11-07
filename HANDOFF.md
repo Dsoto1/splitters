@@ -26,6 +26,57 @@ gets overloaded above that: local e2e times out and flakes). Prune landed worktr
 - Earlier the same day: content scalability steps 2–6, perf toolset, flaky e2e fixes, Runway Nine airliner, map
   reworks batches 2–3, character fixes rounds 2–3 (see the entries below and CHANGELOG).
 
+<!-- small-fixes-1107 -->
+### Small fixes from the owner's play, 2026-11-07 (`wip/small-fixes-1107`, agent; from main 3647eee9; green on `check/small-fixes-1107` at f79d1ec2, run 42384938315 (the full suite: unit, maps, build, check, bots, perf, 14 e2e shards); not landed)
+Four owner reports, each fixed at the cause with a test (CHANGELOG, "Small fixes from the owner's play").
+
+- **Breakthrough Range is an ordinary map** (`maps/test_breakthrough.json`, id kept): "Test map" unticked in MapMaker's
+  Map properties and its card's description reworded ("A Breakthrough test layout" was its first sentence), through
+  the real editor (Import, a mouse click on the box, typing, Export: revision 5); its map picture
+  (`public/maps/shots/test_breakthrough.jpg`, 16 KB, `tools/content/capture-map-shots.mjs`). Play, Match Setup,
+  rotations and the host's list offer it (Breakthrough its first mode). e2e `breakthrough` goes without `testmap=`
+  and checks Match Setup lists it; `main.ts` no longer adds a `testmap=` map that is already listed. Tests:
+  mapIndexPlugin, server testMaps.
+- **The use prompt**: the key's letter took the global `kbd` rule's dark ink (#0b0f1a) on `#prompt kbd`'s dark cap.
+  Now white text, a light green key (#7dff9a) on a dark cap, a soft dark outline and a faint dark backing; refusals
+  light red. e2e `vehicles` checks the colours and the key's contrast on its cap (at least 7:1). No baseline shows it.
+- **Dropship wedged on Shingle Point's beach.** Headless repro (`bot` match, 24 bots): a bot flew a Dropship into a
+  landing craft wreck (prop at 12, -1.4, -61) and left it turned across the hull, 708 ticks wedged in 180 s. Causes:
+  the vehicle probe is a capsule of the hull's half width (1.9 m) that covers only its middle, so it fits the wreck's
+  open stern; turned across a 5 m hull it can't move; flyers never climbed on their own and bot pilots never climb.
+  Entry was refused because the nose and tail (4.8 m from the centre) were past the 4.5 m enter radius and the sides
+  were inside the hull (no prompt, E did nothing). Bots walked to its centre, gave up when the plan ran out, came back
+  30 s later. Fixes, general: flyers driven into something they can't pass climb on their own (`climbAssist`, Match
+  driveVehicle) and settle back to their height after (`assistFrom`); entry within the enter radius of the centre OR
+  1.6 m of the hull (`enterReach`, sim/mounts.ts: the match, the client's prompt and the bots); "The … is full"
+  (denied) by a full vehicle; `wedged` (driven, no headway 3 s) marks a vehicle for every bot until it has moved 3 m;
+  bots walk to a spot off the hull (`boardingSpot`), give up after 2 failed boardings or no route, longer each time
+  (`avoidSeconds` 30/60/120/240 s); `bot-report` prints boardings. The beach props' collision is right (their boxes
+  match the models; a Dropship rides over the hedgehog, timber, dory and a desk: tested). Numbers (scratch harness,
+  same measure before and after): Shingle Point 180 s: Dropship wedged 708 → 15 ticks, back to a mount it had dropped
+  6 → 1; the Dropship placed wedged in the wreck, 3 seeds × 150 s: a player at its nose can't → can get in, wedged
+  731 → 119 ticks, bots back to it after giving up 9 → 1, it is flown out after 17-65 → 14-38 s; failed use presses
+  0 → 0 (on main bots pressed E only within 95 % of the radius, so they walked instead: the "turn around and back").
+  Iron Tide and Dune Harbor have no wreck, but their Dropships wedged too (323; 244 + 506 ticks) → (189, climbing a
+  cliff; 38 + 44). Their hovercraft (Hauler, Speeder, Hover Bike: hover, not flyers) still wedge on structures (a
+  Hauler under Iron Tide's platforms at -16, 5, -20): not the beach props, left for a vehicles pass. `bot-report
+  shingle_point --mode=core.tdm --seeds=1,2 --seconds=180`: boarding 43/29 tries, 0 failed, 6/7 given up on, 1/0 back
+  to one given up on. `test/vehicleWedge.test.ts`.
+- **Count Bonesworth's gun vanished after the scope** (every character, every gun with a sharper held copy: pistol,
+  rifles, shotguns, SMGs, revolver, the Marksman Rifle St. John's Military set has): on Medium and High a gun you pick
+  up fetches its sharper copy (`View.sharpenViewmodel`); it took over with `old.isEnabled()`, which asks the parents,
+  so when it came in while the gun was put away (scoped, or in third person: the view's root off) it stayed off, and
+  the hands held nothing until you switched guns. Now `takeOverViewmodel` (game/viewmodelSwap.ts) takes the old
+  copy's own switch. Reproduced on cue (scoped, the copy swapped in, scope down): before, the gun off and not drawn,
+  no hand on it, for Bonesworth, the Dapper and the Iron Knight; after, drawn and gripped. The "flicker" itself didn't
+  show in frame-by-frame probes (gun and hands drawn every frame, the grip steady at 3-4 cm, standing and prone, the
+  Sniper Rifle and the Marksman Rifle, canyon and St. John's); hands chasing a gun that isn't drawn is what the owner
+  would have seen. Unit test `viewmodelSwap.test.ts`; e2e `characters3` scopes with the copy swapped in mid-scope.
+- Pitfalls: the e2e flows that use `window.__match` run the match on the page (`localStorage tiletrigger.sim =
+  main`); a Playwright driver needs the same or `__match` never appears. A loaded machine draws a frame in seconds:
+  wait on the view's state (camera fov for the scope), not the clock.
+
+<!-- /small-fixes-1107 -->
 <!-- perf-4 -->
 ### Performance round 4: crowds, 32 v 32 in a browser, 64 v 64 on a dedicated host (`wip/perf-4`, agent, 2026-11-07; from main 5087b0b6, main 3647eee9 merged in; CI on `check/perf-4`; not landed)
 docs/PERF_96.md, "Performance round 4", has the numbers; CHANGELOG has the player-facing lines.
@@ -146,6 +197,29 @@ dinosaur list; say if you'd like one.
 <!-- /intake-rex-fred -->
 
 <!-- breakthrough -->
+<!-- bots-c -->
+### Bot AI Phase C: navigation depth (`wip/bots-c`, agent, 2026-11-07; from main 61652cb9; landing in parts on `check/bots-c`)
+docs/BOT_AI_PLAN.md (Phase C; "Phase C item 0, measured"), docs/BOTS.md ("Hurt bots retreat").
+
+**Item 0, the hurt-bot retreat: kept as it is** (the coordinator agreed, 2026-11-07). The pitfall below ("Bots without
+health pickups") said a hurt bot retreats from every fight for the rest of its life and the Range's attackers suffer.
+Measured with `bot-report` on main, the retreat is what keeps them alive: main broke through at 8 v 8 in 11 of 12 seeds
+(35 of 36 sectors), and every one of seven ways of cutting it short did worse (1 to 9 of 12; kills a minute 33 → 47-52,
+the pool spent by 150-250 s). The table is in BOT_AI_PLAN.md, "Phase C item 0, measured": **don't try these again
+without a new reason.** Main also beats the brief's numbers to beat (4 v 4: 5 of 8 against 2 of 8): those came from a
+scratch harness on an earlier main.
+
+**What item 0 landed:** a Breakthrough crash fix (`BreakthroughMode.botGoal`: a defender with the fall-back duty while
+the last sector is the active one read `sectors[active + 1]`, undefined: a TypeError mid-match; seed 2 of the Range
+at 8 v 8 hit it; the plan is made once a tick, so a sector falling mid-tick leaves the duty stale); `bot-report`'s
+Breakthrough fields (the Iron Coast build's commit 9436ea3a cherry-picked byte-identical, so the two merge cleanly) and
+the retreating share of alive time in `--compare`.
+
+**Run it:** `pnpm bot-report test_breakthrough --mode=core.breakthrough --players=16 --seeds=1,2,3,4,5,6,7,8,9,10,11,12
+--seconds=900 --json=…` (8 v 8; `--players=8 --seconds=600` for 4 v 4), then `--compare=a.json,b.json`. The Range's
+matches are chaotic: six seeds swing by two or three breakthroughs between near-identical builds; use twelve.
+<!-- /bots-c -->
+
 ### Breakthrough mode, and Iron Coast's fort and gatehouse (`wip/breakthrough`, agents, 2026-11-07; from main 17d0e0a0, main 2c48debf (Bot AI Phase B parts 1 and 2), d3830145 (weapons intake 11-06) and 5087b0b6 (weapon sets) merged in; green on `check/breakthrough` at 647512a5, run 42373473729; not landed)
 The brief: docs/map-briefs/MAP_21_Iron_Coast.md ("Breakthrough mode", and "The mode as built"). Rules, settings, HUD,
 MapMaker steps: docs/GAME_MODES.md, "Breakthrough". The pieces: docs/SET_PIECES_PLAN.md, "As built: part 4".
@@ -216,10 +290,11 @@ Coast's check ("bots take every sector in a scorecard run") `bot-report` needs B
   the map's own.
 - Rapier's character controller can stall on one big flat merged floor box at some spots (setPieces4's gate tests
   check headroom instead of walking every gate): worth a look if a player reports a stuck spot.
-- Bots without health pickups: a hurt bot (under its self-preservation share of its health) retreats from every fight
-  it sees for the rest of its life (no regeneration), so on the Range a hurt attacker rarely pushes again. Health
-  pickups by the spawn groups didn't help the attackers (the defenders' were nearer the fighting: the beach fell in 1
-  of 8), so the Range has none; for Phase B: hurt bots with nothing to heal at could keep their objective.
+- Bots without health pickups: a hurt bot (under its self-preservation share of its health) retreats while it sees an
+  enemy (no regeneration), between sightings it goes for its objective again. Health pickups by the spawn groups didn't
+  help the attackers (the defenders' were nearer the fighting: the beach fell in 1 of 8), so the Range has none.
+  Cutting the retreat short was tried seven ways in Bot AI Phase C (item 0): every one made the attack worse (the
+  Phase C section above; BOT_AI_PLAN.md, "Phase C item 0, measured").
 - Slots alternate between two teams (0 one team, 1 the other...): anything picking "every other bot" by `slot % 2`
   picks a whole team or nobody. Breakthrough's bots go by their place among their side's bots.
 
