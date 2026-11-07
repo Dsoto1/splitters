@@ -13,7 +13,7 @@ each for a reason on record; the owner then said of three of them, the same day:
 "I did not make any, they are Meshy community." The airliner shell, the buggy
 and its tire, and the Alien Biker are listed in
 assets-src/meshy-community/License.txt and
-assets-src/meshy-community-characters/License.txt now. What stays:
+assets-src/meshy-community-characters/License.txt now. What is owned:
 
 - The mining machines (props mining_excavator and mining_haul_truck, pack
   meshy-owned-mining, for Iron Maw): generated on 2026-10-30 with Meshy's
@@ -23,8 +23,13 @@ assets-src/meshy-community-characters/License.txt now. What stays:
   tools/content/prepare-props.mjs from the textured GLB downloads. We made
   them through the API with the owner's approval, so they were never the
   owner's own downloads: they stay owned.
+- Cool Hands Rex (character meshy_trex, pack meshy-owned): the download
+  "Cool TRex 10k" (2026-11-06, rigged and animated on Meshy, from the owner's
+  Drive; import list batch 1, docs/IMPORT_LIST.md). The owner, 2026-11-06:
+  "call him 'Cool Hands Rex', i made him in meshy". Built by
+  tools/content/prepare-meshy-characters.mjs.
 
-Their download file names are recorded in content/props.lock.json. The raw
-downloads are not kept in the repo.
+Their download file names are recorded in content/props.lock.json and
+content/meshy.lock.json. The raw downloads are not kept in the repo.
 
 Provenance: Meshy, owned.

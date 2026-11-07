@@ -43,6 +43,10 @@ const PORTRAIT_VIEWS: Record<string, PortraitView> = {
   // The tortoise's head is small against its shell: wider, so the shell's dome frames it (any size: a portrait body is
   // built at 1.8 m, so Shellback's move from large to standard, 2026-11-06, left the picture as it was).
   'core.tortoise': { zoom: 1.25 },
+  // Cool Hands Rex's long snout and shades ran off the frame; Fishy Fred's face sits low on the front of the fish, its
+  // tail curled up over its back: wider, the aim down onto the face.
+  'core.trex': { zoom: 1.15 },
+  'core.fishyfred': { aim: [0, -0.06, 0], zoom: 1.25 },
   // Sir Galloway's visor: from a little below, into the helmet.
   'core.galloway': { from: [0.26, -0.2, 1], zoom: 0.9 },
   // Grizzelda's hat brim hid her face from above: from below, the aim down onto her face.

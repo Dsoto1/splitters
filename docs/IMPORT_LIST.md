@@ -27,58 +27,6 @@ step 2" and "Intake of 2026-11-06".
 - **Keeping the list current.** Add each new model here when the owner mentions it. Move it to "Done" when it lands on
   main.
 
-## Batch 1: queued after the work in flight (owner, 2026-11-06: "for after all of this work")
-"The work in flight" is:
-- Bot AI Phase A;
-- the map retirement;
-- set pieces part 2;
-- the Match Setup follow-ups;
-- the intake follow-up;
-- the prop slack pass.
-
-Batch 1 can run beside Bot AI Phase B.
-
-Both models are already downloaded to `/home/user/meshy-drive/intake-2026-11-06b/`. Re-download them if the container
-was replaced.
-
-### Cool Hands Rex
-- **File:** `Meshy_AI_Cool_TRex_10k_20261106_animated_mixamo_All_animation.glb`, Drive id
-  `1divaI19ZlfSTFOIKMuGdtrcNKPIRkaYO`.
-- **What it is:** a T-rex.
-- **Licence:** Meshy, owned. The owner said "i made him in meshy".
-- **Name:** "Cool Hands Rex", from the owner.
-- **Measured:**
-  - 10.4k triangles in one skinned mesh: in budget already.
-  - Two 4096² textures: bake them down.
-  - A Mixamo rig with 70 joints. On top of the Mixamo set: `Bone_015`–`Bone_020` (probably the tail) and
-    `Bone_034`–`Bone_039` plus `headfront` (probably the jaw and head).
-  - Each hand has a thumb, middle, ring and pinky. **There is no index finger.**
-  - Mesh extent 2.37 × 2.00 × 1.79 (x, y, z), before the pipeline's scaling.
-  - The download carries Running and Walking clips. The game's own clips replace them.
-- **To check:**
-  - **Size class.** Large by build seems likely; decide by eye, as for the tortoise.
-  - **The tail.** The game's clips don't drive the extra bones. Check the tail sits well when running and doesn't
-    clip the ground. Also check the hitbox fits it, or deliberately leaves it out.
-  - **Grip.** A grip needs an index finger on the trigger. Map the nearest finger, or use `fixes.fingers`, and show
-    the audit numbers.
-
-### Fishy Fred
-- **File:** `Meshy_AI_Fishy_Fred_20261106_animated_mixamo_All_animation.glb`, Drive id
-  `1B0ssiBuvghCSbT0zDi2DQcHaVbOupnEQ`.
-- **What it is:** a fish.
-- **Licence:** Meshy Community CC0. The owner confirmed on 2026-11-06: "I did not make fishy fred, community."
-- **Name:** "Fishy Fred", the file's name, until the owner names it.
-- **Measured:**
-  - 5.0k triangles.
-  - One 2048² texture.
-  - A Mixamo rig with 50 joints.
-  - Each hand has a thumb, middle and pinky. **There is no index finger and no ring finger.**
-  - Mesh extent 1.42 × 1.28 × 1.12, before the pipeline's scaling.
-  - The download carries Running and Walking clips.
-- **To check:**
-  - **Size class.** Small by build seems likely; decide by eye.
-  - **Grip.** Same check as for the Rex: a grip needs an index finger on the trigger.
-
 ## Batch 2: weapons and grenades (owner, 2026-11-06). Queued after Bot AI Phase B takes its slot
 **The owner:**
 - "Added a bunch of new weapons, all Meshy community."
@@ -147,6 +95,19 @@ Grenade. Still wanted: the holy bomb, airstrike flare, dynamite, sheep and sandb
 The same model is used in the hand, in flight, and as the pickup on the ground.
 
 ## Done
+- **Batch 1, Cool Hands Rex and Fishy Fred** (2026-11-07, `wip/intake-rex-fred`, green on `check/intake-rex-fred` run 42396566250; HANDOFF, "Import list batch 1"). Both
+  downloads (Drive ids `1divaI19ZlfSTFOIKMuGdtrcNKPIRkaYO`, `1B0ssiBuvghCSbT0zDi2DQcHaVbOupnEQ`) are in
+  `/home/user/meshy-drive/intake-2026-11-06b/`.
+  - **Cool Hands Rex** (`meshy_trex`, `core.trex`; Meshy, owned: "i made him in meshy"): the whole 10.4k-triangle
+    download, its two 4096 px maps baked to a 1024 px colour and normal map; large, Creatures & Machines, gangster bot
+    names. No index finger: the fingers are re-fitted from the mesh, a claw on the trigger; grip audit 0. The tail rides
+    the hips (`fixes.centre` stands the body over its origin): clear of the ground walking, running and crouching,
+    through it only when he lies dead (as the crocodile's); left out of the hit shapes on purpose, as every tail.
+  - **Fishy Fred** (`meshy_fishyfred`, `core.fishyfred`; Meshy Community CC0, author and post URL pending): the whole
+    5k-triangle download; small, Animals, critter bot names. The download's rig had the face on a collarbone: the fish
+    rides the chest and its face the head (`fixes.skin.rigid`), so head shots are the face. Mitten hands scaled 0.7, grip
+    tuned; grip audit 5 -> 0.
+  - **For the owner:** Fred's name (the download's is a placeholder) and his post URL.
 - **Batch 2, weapons and grenades** (2026-11-07, `wip/weapons-1106`): every model rendered and given a role or set
   aside; ARSENAL.md, "Weapons intake of 2026-11-06", has the table and HANDOFF the pictures. The pack arrived in the
   Drive on 2026-11-06 (`Guns&Explosives.rar`).

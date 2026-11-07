@@ -100,8 +100,8 @@ every built-in look names exactly one, and a unit test
 | Knights & Legends (`legends`) | Medieval, royalty, monks, wizards, mythic and historical warriors: Anubis, Ashwalker, Brother Ansel, Elder Tomo, Frost Viking, Goblin Warlord, Grizzelda, Imperial Guard, Iron Knight, King Aldric, Lancer Mei, Linktifa, Merrow the Wise, Old King Halvard, Ser Brannock, Shade, Sir Galloway, Thornweaver |
 | Everyday Folk (`folk`) | Ordinary people: Big Bogdan, Biker Gang Girl, Brawler, Cap'n Barnacle, Chef Basile, The Butcher, Dale, Drifter, Dusty Colt, Engineer, Farmhand, Grandpa Chains, Hector, Huntress, Old Timer, Pathfinder, Patches, Saint Nick, Sprout, The Dapper, Tracker, Umpire, Uncle Bao, Wayfarer |
 | Undead & Horror (`horror`) | Bonejack, Count Bonesworth, Fearsome Undead, Giggles, Gorgle, Groaner, Lurcher (queued), The Masked Figure, Punkin, Rattles, Rotter, Shambler, Spiked Skeleton Biker |
-| Animals (`animals`) | Bandit, Barnaby Bruin (queued), Big Bab, Biscuit, Brass Hare, Croakley, Greyfang, Hyena Warrior, Scamp, Shellback (standard size since 2026-11-06; it came in large), Shiba, Teddy, Wealthy Otter (Bamboo retired 2026-11-06: its saved choices play Shellback) |
-| Creatures & Machines (`creatures`) | Aliens, goblins, reptiles, robots, monsters: Boglurker, Botboy, Emerald Robot, Goblin, Imp and Puglin (NPC skins), Ivory Rustwalker, Ricochet, Salamander Warlord, Snikkit, T-350, The Hollow Visitor, The Visitor |
+| Animals (`animals`) | Bandit, Barnaby Bruin (queued), Big Bab, Biscuit, Brass Hare, Croakley, Fishy Fred (small; name a placeholder), Greyfang, Hyena Warrior, Scamp, Shellback (standard size since 2026-11-06; it came in large), Shiba, Teddy, Wealthy Otter (Bamboo retired 2026-11-06: its saved choices play Shellback) |
+| Creatures & Machines (`creatures`) | Aliens, goblins, reptiles, robots, monsters: Boglurker, Botboy, Cool Hands Rex (large; bot names from the gangster theme), Emerald Robot, Goblin, Imp and Puglin (NPC skins), Ivory Rustwalker, Ricochet, Salamander Warlord, Snikkit, T-350, The Hollow Visitor, The Visitor |
 
 Where a group comes from: a part-built preset has `group` on its entry in
 `CORE_LOOKS`; a whole-body character has `group` in its manifest (below,
@@ -890,6 +890,10 @@ pose. So only a build from the download applies it; `rehand-built.mjs` keeps wha
   hard edge. `except` is a pattern of rig joints: a vertex held most by one is left as it is (the helmet's back
   where the pack's tank sits against it: `^Head$`). The build log says how many vertices it bound and eased.
   Starfarer: the pack box and the tank above it, `blend 0.025`, `except: "^Head$"` (1315 bound, 377 eased).
+  Fishy Fred (2026-11-07): the download's rig held the fish's face on the left collarbone and the rest of the fish on
+  the head. Two regions: the fish to `spine_03` (two boxes, the hips spared), then its face to `Head` (`blend 0.1`), each
+  `except` the legs, arms, hips and lower spine, with `smooth` over the spine, hips and head. The head sphere is then
+  the face (0.30 m, was 0.55 m round the whole fish) and the fish is body; no stretched edges standing, aiming or running.
 
 `rehand-built.mjs` applies `fixes.skin` to a built file (`ONLY=<ids>`); `SIDES=r` (or `l`) refits only that hand,
 the other kept as built (a refit from the built file measures a hand a little differently from the download, so a
