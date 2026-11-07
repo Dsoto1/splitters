@@ -5630,6 +5630,44 @@ async function gripsInPlay(browser) {
     await page.click('#resume').catch(() => {});
   });
   check(misses.length === 0, `in a match, your own hands are drawn on the gun through switches, looking up and down, third person and a respawn (${misses.join('; ') || 'all'})`);
+  // Scoped when the gun's sharper held copy comes in (Medium and High fetch it once you hold the gun; on a big map that
+  // can land while you are already looking through the scope, or in third person): the gun is back in your hands when
+  // the scope comes down (owner, 2026-11-07: Count Bonesworth's gun vanished after a sniper on a St. John's roof; the
+  // copy took "off" from the view's root, switched off while scoped).
+  await page.evaluate(() => window.__give('core.marksman'));
+  for (let i = 0; i < 8 && (await page.evaluate(() => window.__cs.view.viewWeapon)) !== 'core.marksman'; i++) {
+    await page.keyboard.press('Digit3');
+    await sleep(600);
+  }
+  await page.waitForFunction(() => window.__cs.view.viewWeapon === 'core.marksman' && window.__cs.view.viewmodel && window.__cs.local.raiseTicks === 0, null, { timeout: T(20000) }).catch(() => {});
+  await page.evaluate(() => (window.__autoInput = { zoom: true }));
+  const scopedIn = await page.waitForFunction(() => window.__cs.view.camera.fov < 0.8, null, { timeout: T(20000) }).then(() => true, () => false);
+  const swapped = await page.evaluate(
+    () =>
+      new Promise((done) => {
+        const v = window.__cs.view;
+        const def = window.__cs.local.weapon;
+        const kept = v.viewmodels.get(def.id);
+        const was = kept?.node;
+        if (!kept || !def.view.held) return done(false);
+        v.sharpenViewmodel(def, kept, def.view.held.medium);
+        const t0 = performance.now();
+        const poll = () => (kept.node !== was ? done(true) : performance.now() - t0 > 20000 ? done(false) : setTimeout(poll, 50));
+        poll();
+      }),
+  );
+  await page.evaluate(() => (window.__autoInput = { zoom: false }));
+  await page.waitForFunction(() => window.__cs.view.camera.fov > 1.2, null, { timeout: T(20000) }).catch(() => {});
+  await page.evaluate(() => delete window.__autoInput);
+  await sleep(500);
+  const back = await page.evaluate(() => {
+    const v = window.__cs.view;
+    const vm = v.viewmodel;
+    const drawn = v.drawnByCamera();
+    return { weapon: v.viewWeapon, on: !!vm && vm.isEnabled(), drawn: !!vm && vm.getChildMeshes().some((m) => drawn.has(m)) };
+  });
+  const scopeHand = await own();
+  check(scopedIn && swapped && back.on && back.drawn && !badHand(scopeHand), `the gun is back in your hands after the scope, its sharper copy having come in while scoped (scoped ${scopedIn}, copy in ${swapped}, ${JSON.stringify(back)}, ${fmt(scopeHand)})`);
   const body = await page.evaluate(() => window.__cs.view.gripReport().local?.mode);
   check(body === 'body', `the match draws your whole body in first person (${body})`);
   // Bots near and far (animation LOD, the low-detail mesh past 18 m): their drawn hands on their guns. Only bots

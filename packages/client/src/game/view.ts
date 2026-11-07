@@ -133,6 +133,7 @@ import { freezeStaticMaterials, selectLiveCandidates } from './meshSelection.ts'
 import { fitFirstPersonArms } from './firstPersonArms.ts';
 import { FirstPersonBodyRig } from './firstPersonBody.ts';
 import { loadFirstPersonMode, loadGraphicsQuality, loadRenderScale, renderRatio, type FirstPersonMode } from './graphicsSettings.ts';
+import { takeOverViewmodel } from './viewmodelSwap.ts';
 import { levelMipBias } from '../levelMerge.ts';
 import { CreatureLibrary, fitPlayerSkin, type AvatarSpec } from '../content/creatures.ts';
 import { BodyHitbox, hitboxForSpec } from './hitboxOverlay.ts';
@@ -1637,10 +1638,10 @@ export class GameView {
     void this.models.instantiate(path, `view_${def.id}_held`).then(
       (node) => {
         if (this.viewmodels.get(def.id) !== v || this.scene.isDisposed) return node.dispose();
-        node.parent = this.viewRoot;
         for (const m of node.getChildMeshes()) m.renderingGroupId = 1;
         const old = v.node;
-        node.setEnabled(old.isEnabled());
+        // On or off by the old copy's own switch (not its parents': scoped or in third person the view's root is off).
+        takeOverViewmodel(old, node);
         v.node = node;
         this.viewmodelPaths.set(def.id, path);
         if (this.viewmodel === old) {
