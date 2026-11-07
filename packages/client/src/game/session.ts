@@ -2031,7 +2031,14 @@ export class GameSession {
     // Every gun the match can put in a hand (starting weapons, pickups and what they may roll), as held and as yours.
     const guns = [...models].filter((m) => WEAPONS_BY_SLOT.some((w) => w.view.model === m) || thrown.has(m));
     let started = false;
-    jobs.push(Promise.race([this.view.prewarm(looks, guns, () => !started && !this.closed), new Promise((r) => setTimeout(r, 8000))]));
+    // The gate waits for the warm-up's files (a first visit downloads every look in the match and every gun: the
+    // overall cap below still holds), then gives its shader builds 8 s: a slow GPU finishes those out of sight after
+    // the start. Round 3 counted the 8 s from the warm-up's start, so on a first visit the files came in after the
+    // gate and the spawn wave built its shaders in the first seconds of play (docs/PERF_96.md, "Performance round 4").
+    let filesIn: () => void = () => {};
+    const loaded = new Promise<void>((r) => (filesIn = r));
+    const warm = this.view.prewarm(looks, guns, () => !started && !this.closed, () => filesIn());
+    jobs.push(Promise.race([warm, Promise.race([loaded, new Promise((r) => setTimeout(r, 20000))]).then(() => new Promise((r) => setTimeout(r, 8000)))]));
     let done = 0;
     const total = jobs.length + 2;
     // A file that finishes after the start (see the cap below) must not bring the loading screen back over the game.

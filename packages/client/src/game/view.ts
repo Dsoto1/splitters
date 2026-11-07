@@ -636,7 +636,7 @@ export class GameView {
    * constructor) keeps those programs when the samples go, so the first sight of a model or an effect mid-match
    * doesn't stall on a shader build. Resolves with how many shader programs were built by then.
    */
-  async prewarm(specs: readonly AvatarSpec[], guns: readonly string[] = [], veiled: () => boolean = () => false): Promise<number> {
+  async prewarm(specs: readonly AvatarSpec[], guns: readonly string[] = [], veiled: () => boolean = () => false, filesIn: () => void = () => {}): Promise<number> {
     const t0 = performance.now();
     // The merged level first (its textures load in a moment; its shader is then built with everyone else's).
     if (this.levelMerge) await Promise.race([this.levelMerge, new Promise((r) => setTimeout(r, 15000))]);
@@ -648,30 +648,15 @@ export class GameView {
     const ready = () => (this.scene.isDisposed ? Promise.resolve() : Promise.race([this.scene.whenReadyAsync(), new Promise((r) => setTimeout(r, 8000))]));
     // Water's splash rings and drops (made on the first splash) draw a copy out of sight meanwhile.
     this.scenario.liquids.fx.warm(4000);
-    // The effects first (they don't wait for the characters' files), ended as soon as their shaders are built.
-    let effects = 0;
-    try {
-      await GodotVfx.preload(...mappedPacks());
-      const ends: (() => void)[] = [];
-      // Each effect plays out of sight for a few frames (its particles spawn: their pieces draw then).
-      for (const r of mappedEffects()) {
-        const end = this.vfx.warm(r.pack, r.effect, true);
-        if (end) ends.push(end);
-      }
-      effects = ends.length;
-      await this.afterFrames(4, 2500);
-      await ready();
-      for (const end of ends) end();
-    } catch {
-      // Effects that didn't load stay as they were (their first play builds them).
-    }
-    if (this.scene.isDisposed) return 0;
     // Then a character of each look and every gun the match can hold (a crowd's GPU instance and a plain copy: the
     // view model, a small match's held gun). While the loading screen is up they stand in front of the camera, so
     // every pass that will draw them in play draws them now (the main pass and its pre-pass outputs, the shadow
     // cascades, water's depth), each variant built: out of sight only the materials' own checks ran, and the first
     // gun or body seen in a shadow or in the depth map built its programs mid-match (round 3 of docs/PERF_96.md).
     // Once the game shows (a slow machine finishes this in the background) they are parked out of sight.
+    // Their files load from the start, while the effects warm (round 4 of docs/PERF_96.md: on a first visit the
+    // characters' downloads came after the effects' shaders, so the gate's cap passed before they were in, and the
+    // spawn wave's looks built their shaders in the first seconds of play: 52 programs on the owner's M1).
     const stage = new TransformNode('prewarm', this.scene);
     stage.position.set(0, -10000, 0);
     const place = this.scene.onBeforeRenderObservable.add(() => {
@@ -724,7 +709,7 @@ export class GameView {
       node.position.set((i - 0.5) * 6, 0, 9);
       return { node, kind };
     });
-    const made = await Promise.all(
+    const making = Promise.all(
       specs.slice(0, 32).map((spec, i) =>
         this.characters.create(spec, `prewarm_${i}`).then(
           (ch) => {
@@ -738,7 +723,27 @@ export class GameView {
         ),
       ),
     );
-    const held = await Promise.all(gunCopies);
+    // The effects meanwhile (they don't wait for the characters' files), ended as soon as their shaders are built.
+    let effects = 0;
+    try {
+      await GodotVfx.preload(...mappedPacks());
+      const ends: (() => void)[] = [];
+      // Each effect plays out of sight for a few frames (its particles spawn: their pieces draw then).
+      for (const r of mappedEffects()) {
+        const end = this.vfx.warm(r.pack, r.effect, true);
+        if (end) ends.push(end);
+      }
+      effects = ends.length;
+      await this.afterFrames(4, 2500);
+      await ready();
+      for (const end of ends) end();
+    } catch {
+      // Effects that didn't load stay as they were (their first play builds them).
+    }
+    if (this.scene.isDisposed) return 0;
+    const [made, held] = await Promise.all([making, Promise.all(gunCopies)]);
+    // Everything it draws is in: what is left is building shaders (the gate gives that a time of its own).
+    filesIn();
     if (this.scene.isDisposed) return 0;
     // Drawn every frame wherever the stage is: in front of the camera while the loading screen is up, and far below
     // the map (out of sight) once the game shows, so their main-pass programs are built either way (a slow machine or
