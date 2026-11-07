@@ -9,6 +9,8 @@ import { Matrix, Quaternion, Vector3 } from '@babylonjs/core/Maths/math.vector';
 import { Frustum } from '@babylonjs/core/Maths/math.frustum';
 import type { Plane } from '@babylonjs/core/Maths/math.plane';
 import { Color3, Color4 } from '@babylonjs/core/Maths/math.color';
+// Roulette: team-colour outlines (its Teams variant) and a jackpot's glow (an overlay) on characters.
+import '@babylonjs/core/Rendering/outlineRenderer';
 import { HemisphericLight } from '@babylonjs/core/Lights/hemisphericLight';
 import { DirectionalLight } from '@babylonjs/core/Lights/directionalLight';
 import type { Mesh } from '@babylonjs/core/Meshes/mesh';
@@ -234,6 +236,8 @@ interface Avatar {
   animDt?: number;
   /** The power-up glow last applied (it is only set again when it changes). */
   glowKey?: string;
+  /** Roulette's outline and glow last applied (GameView.auraOf), only set again when it changes. */
+  auraKey?: string;
   /** Crowds: left out of drawing while outside the view (see updateAvatars). */
   culled?: boolean;
   /** Your own body while you look through your own eyes: kept loaded, not drawn. */
@@ -748,6 +752,15 @@ export class GameView {
     }
     if (this.scene.isDisposed) return 0;
     const [made, held] = await Promise.all([making, Promise.all(gunCopies)]);
+    // Roulette: outlined and glowing too, so the first outline or jackpot in play builds nothing.
+    if (this.auraWarm)
+      for (const [i, ch] of made.entries()) {
+        if (!ch || i > 3) continue;
+        for (const m of ch.root.getChildMeshes()) {
+          m.renderOutline = i % 2 === 0;
+          m.renderOverlay = i % 2 === 1 || i === 2;
+        }
+      }
     // Everything it draws is in: what is left is building shaders (the gate gives that a time of its own).
     filesIn();
     if (this.scene.isDisposed) return 0;
@@ -2161,6 +2174,8 @@ export class GameView {
         a.root.rotation.x = glide ? 1.1 : 0;
         if (glide) a.root.position.set(a.root.position.x - Math.sin(p.yaw) * 0.9, a.root.position.y + 0.8, a.root.position.z - Math.cos(p.yaw) * 0.9);
       }
+      // Roulette: a team-colour outline (its Teams variant) and a jackpot's steady gold glow.
+      if (this.auraOf) this.applyAura(a, p.alive ? this.auraOf(p.slot) : null);
       // Classes: a cloaked Shade is a faint shimmer to enemies (no tag over it), a ghost to teammates.
       const tag = p.alive ? allyColor(p.slot) : null;
       const cloaked = p.alive && (p.status & FX_CLOAK) !== 0;
@@ -2192,6 +2207,41 @@ export class GameView {
       }
     }
     this.drawTags();
+  }
+
+  /**
+   * Roulette (sim/roulette.ts): each player's outline (its Teams variant: their team's colour, strong, so random looks
+   * still show the sides) and glow (a jackpot life: a steady gold overlay, never a flash). Null: none.
+   */
+  auraOf: ((slot: number) => { outline: string | null; glow: string | null } | null) | null = null;
+  /** Roulette: the loading gate's warm-up also draws its samples outlined and glowing (their shaders built before play). */
+  auraWarm = false;
+
+  private applyAura(a: Avatar, aura: { outline: string | null; glow: string | null } | null): void {
+    const key = aura ? `${aura.outline}|${aura.glow}|${a.anim ? 1 : 0}|${a.specKey}` : '';
+    if (a.auraKey === key) return;
+    a.auraKey = key;
+    const outline = aura?.outline ? Color3.FromHexString(aura.outline) : null;
+    const glow = aura?.glow ? Color3.FromHexString(aura.glow) : null;
+    for (const m of a.root.getChildMeshes()) {
+      // (A crowd's held guns are GPU instances: their source draws them.)
+      if (m.isAnInstance || m === a.placeholder) continue;
+      m.renderOutline = !!outline;
+      if (outline) {
+        m.outlineColor = outline;
+        m.outlineWidth = 0.025;
+      }
+      m.renderOverlay = !!glow;
+      if (glow) {
+        m.overlayColor = glow;
+        m.overlayAlpha = 0.22;
+      }
+    }
+  }
+
+  /** Floaty ragdolls (Lunar) and the gravity storm: the effects world's gravity, a multiple of the usual. */
+  setEffectsGravity(scale: number): void {
+    this.physics?.setGravityScale(scale);
   }
 
   /** Play an upper-body action on a remote avatar (shooting, melee). */

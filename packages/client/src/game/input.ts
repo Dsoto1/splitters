@@ -1,5 +1,5 @@
 import { LookFilter, browserLookScale } from './lookFilter.ts';
-import { CLASS_SAY_BASE, EMOTE_DANCE, PING, QUICK_MESSAGES, BUTTON_ALT, BUTTON_CROUCH, BUTTON_FIRE, BUTTON_JUMP, BUTTON_MELEE, BUTTON_PRONE, BUTTON_RELOAD, BUTTON_RESPAWN, BUTTON_SPRINT, BUTTON_THROW, BUTTON_USE, BUTTON_ZOOM } from '@tiletrigger/shared';
+import { CLASS_SAY_BASE, ROULETTE_SAY_PICK, ROULETTE_SAY_REROLL, EMOTE_DANCE, PING, QUICK_MESSAGES, BUTTON_ALT, BUTTON_CROUCH, BUTTON_FIRE, BUTTON_JUMP, BUTTON_MELEE, BUTTON_PRONE, BUTTON_RELOAD, BUTTON_RESPAWN, BUTTON_SPRINT, BUTTON_THROW, BUTTON_USE, BUTTON_ZOOM } from '@tiletrigger/shared';
 
 const MOUSE_SENSITIVITY = 0.0022;
 const MOUSE_PREF_KEY = 'tiletrigger.mouse';
@@ -301,6 +301,15 @@ export class InputState {
       this.msgMenu = false;
     }
     const digit = /^Digit([1-9])$/.exec(e.code);
+    // Roulette's death screen: 1-3 picks a card of a streak pick, R spends a reroll token.
+    if (this.roulettePick && digit && Number(digit[1]) <= this.roulettePick) {
+      this.chooseRoulette(ROULETTE_SAY_PICK + Number(digit[1]) - 1);
+      return;
+    }
+    if (this.rouletteReroll && e.code === 'KeyR' && !e.repeat) {
+      this.chooseRoulette(ROULETTE_SAY_REROLL);
+      return;
+    }
     if (digit && this.classMenu) {
       if (Number(digit[1]) <= this.classCount) this.chooseClass(Number(digit[1]) - 1);
     } else if (digit && this.msgMenu) {
@@ -581,6 +590,15 @@ export class InputState {
     this.classMenu = false;
   }
 
+  /** Roulette's death screen (rouletteHud.ts): cards of a streak pick on offer (1-3 choose), and a reroll token to spend (R). */
+  roulettePick = 0;
+  rouletteReroll = false;
+
+  /** Roulette: pick a card or spend a reroll token (ROULETTE_SAY_*), sent with the next input (the pointer may be free: a click on a card). */
+  chooseRoulette(say: number): void {
+    this.sayQueued = say;
+  }
+
   sample(): { forward: number; right: number; buttons: number; say?: number } {
     // Automation hook for browser tests and screenshots (no pointer lock in headless browsers).
     const auto = (window as unknown as { __autoInput?: { forward?: number; right?: number; buttons?: number; once?: number } }).__autoInput;
@@ -591,8 +609,8 @@ export class InputState {
       return { forward: auto.forward ?? 0, right: auto.right ?? 0, buttons: (auto.buttons ?? 0) | once };
     }
     if (!this.locked) {
-      // The class screen works with the pointer free (clicking a class): its pick still goes out.
-      if (this.sayQueued >= CLASS_SAY_BASE) {
+      // The class screen works with the pointer free (clicking a class): its pick still goes out (and Roulette's card).
+      if (this.sayQueued >= ROULETTE_SAY_PICK || this.sayQueued >= CLASS_SAY_BASE) {
         const say = this.sayQueued;
         this.sayQueued = 0;
         return { forward: 0, right: 0, buttons: 0, say };

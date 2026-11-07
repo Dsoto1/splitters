@@ -7,6 +7,8 @@ import type { GameMode } from '@tiletrigger/shared';
 const PATHS: Record<GameMode, string> = {
   // Skull.
   'core.deathmatch': 'M12 3a7 7 0 0 0-7 7c0 2.4 1.2 4 2.5 5v3h9v-3c1.3-1 2.5-2.6 2.5-5a7 7 0 0 0-7-7Z M9 10.5h.01 M15 10.5h.01 M10 18v3 M14 18v3 M11.2 14l.8-1.2.8 1.2',
+  // A die (a new character every life).
+  'core.roulette': 'M5 5h14v14H5Z M8.5 8.5h.01 M15.5 8.5h.01 M12 12h.01 M8.5 15.5h.01 M15.5 15.5h.01',
   // Crossed swords.
   'core.tdm': 'M4 4l10 10 M4 4h3l9 9 M20 4L10 14 M20 4h-3l-9 9 M13 17l4-4 M11 17l-4-4 M16.5 15.5l3 3 M7.5 15.5l-3 3',
   // Flag.
@@ -49,6 +51,7 @@ export function modeIcon(mode: GameMode): SVGSVGElement {
 /** Short tags for map cards (a row of these must fit a card). */
 export const MODE_SHORT: Record<GameMode, string> = {
   'core.deathmatch': 'DM',
+  'core.roulette': 'Roulette',
   'core.tdm': 'TDM',
   'core.ctf': 'CTF',
   'core.forts': 'Forts',

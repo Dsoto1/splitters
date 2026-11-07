@@ -3,13 +3,14 @@ import { racePath } from '../map/track.ts';
 import { TICK_RATE } from './constants.ts';
 import { mapTeams } from './npc.ts';
 
-export type GameMode = 'core.deathmatch' | 'core.coop' | 'core.tdm' | 'core.ctf' | 'core.koth' | 'core.elim' | 'core.bomb' | 'core.hostage' | 'core.breakthrough' | 'core.zombies' | 'core.forts' | 'core.discs' | 'core.race';
+export type GameMode = 'core.deathmatch' | 'core.coop' | 'core.tdm' | 'core.ctf' | 'core.koth' | 'core.elim' | 'core.bomb' | 'core.hostage' | 'core.breakthrough' | 'core.zombies' | 'core.forts' | 'core.discs' | 'core.race' | 'core.roulette';
 
 /** Every mode, in menu order. */
-export const GAME_MODES: readonly GameMode[] = ['core.deathmatch', 'core.tdm', 'core.ctf', 'core.koth', 'core.elim', 'core.bomb', 'core.hostage', 'core.breakthrough', 'core.forts', 'core.coop', 'core.zombies', 'core.discs', 'core.race'];
+export const GAME_MODES: readonly GameMode[] = ['core.deathmatch', 'core.roulette', 'core.tdm', 'core.ctf', 'core.koth', 'core.elim', 'core.bomb', 'core.hostage', 'core.breakthrough', 'core.forts', 'core.coop', 'core.zombies', 'core.discs', 'core.race'];
 
 export const MODE_LABELS: Record<GameMode, string> = {
   'core.deathmatch': 'Deathmatch',
+  'core.roulette': 'Roulette',
   'core.tdm': 'Team Deathmatch',
   'core.ctf': 'Capture the Flag',
   'core.koth': 'King of the Hill',
@@ -145,6 +146,29 @@ export interface MatchRules {
   breakthroughPool?: number;
   breakthroughSectorSeconds?: number;
   breakthroughSwap?: boolean;
+  /**
+   * Roulette (sim/roulette.ts, docs/ROULETTE_MODE_PLAN.md): a new character every life from each player's own
+   * shuffled deck, with character stats, a spawn card and spawn protection. Always on in `core.roulette`; `roulette`
+   * plays it in another mode (Roulette's Teams variant: Team Deathmatch). Its standard features are on unless switched
+   * off (`rouletteSignature` signature loadouts, `rouletteJackpots` jackpot and tiny rolls and the Giant Slayer bonus,
+   * `rouletteStreakPick` a pick of 3 after a streak); its variants are off unless switched on (`rouletteRerolls` reroll
+   * tokens earned by kills, `rouletteSwapOnKill` become your victim, `rouletteVariety` bonus points for kills as new
+   * characters). `teamOutlines`: strong team-colour outlines on every player (random looks hide the sides).
+   */
+  roulette?: boolean;
+  rouletteSignature?: boolean;
+  rouletteJackpots?: boolean;
+  rouletteStreakPick?: boolean;
+  rouletteRerolls?: boolean;
+  rouletteSwapOnKill?: boolean;
+  rouletteVariety?: boolean;
+  teamOutlines?: boolean;
+  /**
+   * Lunar's extras (the Lunar variant, with its low gravity and no fall damage): a bonus point for a kill while
+   * airborne, explosions that throw players about, floaty ragdolls, stronger jump pads, and a gravity storm every
+   * minute (gravity shifts for a while after a 3-second warning). Default off.
+   */
+  lunar?: boolean;
   /** Race: the vehicle everyone races in (absent: the track's own). */
   raceVehicle?: 'kart' | 'speeder' | 'buggy';
   /** Race: weapons, vehicle guns and sideline sentries on (absent: the track's own setting). */
@@ -181,6 +205,9 @@ export function matchPhysics(rules: MatchRules, map: { physics?: { gravity: numb
   return { gravity: rules.gravity ?? map.physics?.gravity ?? 1, fallDamage: rules.fallDamage ?? map.physics?.fallDamage ?? false };
 }
 
+/** Whether Roulette's core plays in this match: the Roulette mode, or Roulette in another mode (its Teams variant). */
+export const rouletteOn = (rules: Pick<MatchRules, 'mode' | 'roulette'>): boolean => rules.mode === 'core.roulette' || !!rules.roulette;
+
 export const DEFAULT_DEATHMATCH_RULES: MatchRules = {
   mode: 'core.deathmatch',
   scoreLimit: 15,
@@ -189,6 +216,22 @@ export const DEFAULT_DEATHMATCH_RULES: MatchRules = {
   startingWeapons: ['core.knife', 'core.pistol'],
   startingGrenades: 1,
   intermissionTicks: TICK_RATE * 6,
+};
+
+/**
+ * Roulette (sim/roulette.ts): free-for-all where everyone plays a new character every life, with its stats, its
+ * signature weapon and a chance of a jackpot roll. The score counts kills and bonus points (Giant Slayer, air kills,
+ * variety).
+ */
+export const DEFAULT_ROULETTE_RULES: MatchRules = {
+  mode: 'core.roulette',
+  scoreLimit: 20,
+  timeLimitSeconds: 600,
+  respawnDelayTicks: Math.round(TICK_RATE * 2.5),
+  startingWeapons: ['core.knife', 'core.pistol'],
+  startingGrenades: 1,
+  intermissionTicks: TICK_RATE * 9,
+  characterStats: true,
 };
 
 /**
@@ -372,6 +415,7 @@ export const DEFAULT_RACE_RULES: MatchRules = {
 
 export const DEFAULT_RULES: Record<GameMode, MatchRules> = {
   'core.deathmatch': DEFAULT_DEATHMATCH_RULES,
+  'core.roulette': DEFAULT_ROULETTE_RULES,
   'core.tdm': DEFAULT_TDM_RULES,
   'core.coop': DEFAULT_COOP_RULES,
   'core.ctf': DEFAULT_CTF_RULES,
@@ -434,6 +478,8 @@ export function playableModes(map: MapDocument): GameMode[] {
   if (hasHostages(map) && !out.includes('core.hostage')) out.push('core.hostage');
   if (hasSectors(map) && !out.includes('core.breakthrough')) out.push('core.breakthrough');
   if (hasTrack(map) && !out.includes('core.race')) out.push('core.race');
+  // Roulette is a free-for-all: it plays wherever Deathmatch or Team Deathmatch does.
+  if ((out.includes('core.deathmatch') || out.includes('core.tdm')) && !out.includes('core.roulette')) out.splice(out.indexOf('core.deathmatch') >= 0 ? out.indexOf('core.deathmatch') + 1 : out.length, 0, 'core.roulette');
   // Zombies plays anywhere: the horde rises from the map's spawners, spawn points or open floor.
   if (!out.includes('core.zombies')) out.push('core.zombies');
   return out;

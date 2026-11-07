@@ -36,6 +36,28 @@ distance, and a body kept for the next player of its look stands up fresh.
 - Reduce flashing no longer turns blast smoke black: a dimmed blast scaled every piece's colour, so the toon smoke (drawn over the scene, not added to it) came out black near the camera; now only added light is scaled, and the rest have their bright parts capped.
 - The sheep walks on its legs: its body stood half sunk in the ground, so it slid along like a worm (the sim keeps a walking sheep's position on the ground; the model now stands on it).
 
+**New mode: Roulette** (docs/ROULETTE_MODE_PLAN.md; docs/GAME_MODES.md, "Roulette")
+- **A new character every life**, dealt from your own shuffled deck of the roster (no quick repeats), with that
+  character's stats (size, health, speed). A spawn card tells you who you are ("You are Big Bab · Large: tougher,
+  slower") and a moment of spawn protection covers you until you fire. Free-for-all; plays on every Deathmatch or Team
+  Deathmatch map.
+- **On unless you switch them off:** signature loadouts (the knight spawns with a spear, a soldier a rifle, an alien a
+  ray gun; outside the weapon set, its main gun), jackpot rolls (a gold glow, a better weapon and armour; now and then a
+  tiny body), the Giant Slayer bonus (a small character downing a large one), and the streak pick (3 kills in one life:
+  choose your next character from three).
+- **Variants in Match Setup:** Earned rerolls (a token per 2 kills, R on the death screen), Swap on kill (become your
+  victim), Variety bonus, Teams (Team Deathmatch with strong team-colour outlines), and Lunar, which now brings its
+  extras wherever its low gravity is on: a point for an air kill, blasts that throw players about, floaty ragdolls,
+  stronger jump pads and a gravity storm every minute (3-second warning).
+- **Awards** at the end: Shapeshifter, Giant Slayer, Moonwalker, Unluckiest Roll.
+- The **Lunar Roulette** party preset now plays the Roulette mode with Lunar on.
+- Bots take picks and reroll tokens sensibly and play to their body: small ones flank, large ones push.
+- Nothing in it flashes: the jackpot glow and the storm's warning ease in and hold, dimmer with Reduce flashing on.
+- The spawn card stays up for 2 s of play even when the game hitches as your new body loads, and goes when you go
+  down or the round ends.
+- `pnpm bot-report <maps> --mode=core.roulette [--roulette=lunar,rerolls,swap,variety]` reports kills by character and
+  body size, picks and rerolls.
+
 **Bot AI Phase C, items 1-4** (docs/BOT_AI_PLAN.md, "Phase C items 1-4, measured"; docs/BOTS.md):
 - Bots drop off ledges, jump gaps and jump up onto ledges as players do: links found at load and each checked by
   playing it through the real movement code; flankers, scouts, snipers and Arena bots use them most, and snipers look
