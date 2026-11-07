@@ -744,11 +744,16 @@ export class NavWorld {
             const cx = centre[i * 3]!;
             const cz = centre[i * 3 + 2]!;
             if (cx < b.min.x - 0.3 || cx > b.max.x + 0.3 || cz < b.min.z - 0.3 || cz > b.max.z + 0.3) continue;
+            // (And at its top: not the floor beside a low one, sandbags or a charge's target, which goes on being floor.)
+            if (Math.abs(centre[i * 3 + 1]! - b.max.y) > 0.25) continue;
           }
           const f = this.navMesh.getPolyFlags(r.nearestRef);
           // (Never one left out as inside something solid: flags 0, disableInsideSolid.)
           if (this.insideSolid && f.flags === 0) continue;
           this.navMesh.setPolyFlags(r.nearestRef, (f.flags || 1) | bit);
+          // (The graph's copy too: pathAlong reads a corridor's flags from it.)
+          const gi = r.nearestRef - g.base;
+          if (gi >= 0 && gi < g.count) g.flags[gi] = (f.flags || 1) | bit;
         }
       }
     });
