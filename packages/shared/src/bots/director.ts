@@ -6,6 +6,7 @@ import { laneWaypoint } from './explore.ts';
 import { hasTag, type BotProfile, type BotStyle } from './profile.ts';
 import { RegionMap, type RegionLayout } from './regions.ts';
 import { TeamBrain, type PricedTrip, type PushStats, type SideBrief, type TeamJob } from './teamBrain.ts';
+import { BOT_TRIALS } from './trials.ts';
 import type { VantageBoard } from './vantage.ts';
 
 /**
@@ -334,7 +335,7 @@ export class BotDirector {
           // Squads spread over the routes: toward the enemy's side, the cheapest corridor of the side's trip there that
           // no other squad is on (route variety: crowd, deaths, sightings); elsewhere each takes a different side of
           // the straight line (and some the middle).
-          v.route = toEnemy ? squadRoute(brain.trips, pick.pos, list, c) : null;
+          v.route = toEnemy && !BOT_TRIALS.nosquadroute ? squadRoute(brain.trips, pick.pos, list, c) : null;
           const l = ((c.view.id + lane++) % 3) - 1;
           v.via = v.route || l === 0 ? null : laneWaypoint(this.places, leader.pos, pick.pos, l);
         }

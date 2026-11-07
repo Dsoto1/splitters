@@ -15,6 +15,7 @@ import type { ViewGrid } from './grid.ts';
 import { MapMemory, laneWaypoint, pickExploreGoal } from './explore.ts';
 import type { BotPlan } from './director.ts';
 import type { PricedTrip } from './teamBrain.ts';
+import { BOT_TRIALS } from './trials.ts';
 import type { VantageBoard, VantageKind } from './vantage.ts';
 import { simProfile } from '../sim/profile.ts';
 import { hasTag, type BotDifficulty, type BotProfile } from './profile.ts';
@@ -323,23 +324,31 @@ const OPT_NOISE = 6;
 const OPT_FIGHT = 7;
 const OPTIONS = 8;
 const MARGIN = 0.25;
-/** Roaming, with nothing else to do (no objective). */
-const ROAM_WEIGHT = 0.6;
+/** Roaming, with nothing else to do (no objective): anything worth a look beats it. */
+const ROAM_WEIGHT = 0.3;
+/**
+ * An enemy that slipped out of sight, and a noise, at least (scored choices): above any goal but a carrier's run and a
+ * person's order with the margin on top, so where a bot may leave its goal for one (leaveCost) it does, as it did
+ * before scores (measured: attackers that kept to the flag past what happened within PUSH_NOTICE of them took half the
+ * flags, Diamond Park, two matches of 300 s: 21 takes a match against 9).
+ */
+const CHASE_WEIGHT = 1.6;
+const NOISE_WEIGHT = 1.5;
 /** Holding a place (a defender, a guard): what happens this close to it (m, past its radius) is worth going to look at. */
 const HOLD_NOTICE = 12;
 
 /**
  * How much a bot's objective is worth to it (scored choices): a carrier's run home above everything, a person's order
- * next, then an objective to keep to (CTF attackers, a hill, an interceptor's cut-off point: more for bots that care
- * for objectives), one to hold (a defender's base), any other goal.
+ * next, then an objective to keep to (CTF attackers, a hill, an interceptor's cut-off point), one to hold (a defender's
+ * base), any other goal; a little more for bots that care for objectives.
  */
 function goalWeight(g: OrderGoal, p: BotProfile): number {
-  const care = (p.objectivePriority / 100) * 0.4;
+  const care = (p.objectivePriority / 100) * 0.3;
   if (g.run) return 6;
   if (g.order) return 2.4;
-  if (g.push) return 1.5 + care;
-  if (g.watch) return 1.3 + care;
-  return 1.1 + care;
+  if (g.push) return 1 + care;
+  if (g.watch) return 0.9 + care;
+  return 0.8 + care;
 }
 
 /** Tactical decisions (cover, grenades, mounts) run at about 10 Hz, staggered. */
@@ -1161,6 +1170,7 @@ export class BotBrain {
    * shot it heard 30 m away.
    */
   private choose(view: BotWorldView, hurt: boolean, underFire: boolean): void {
+    if (BOT_TRIALS.legacy) return this.chooseLegacy(view, hurt, underFire);
     const me = view.self;
     const tick = view.tick;
     const g = view.orderGoal ?? null;
@@ -1176,18 +1186,23 @@ export class BotBrain {
     // Getting away: keep running a moment after losing sight of the threat.
     if (this.state === 'retreat' && this.lastKnown && tick - this.lastKnown.tick < TICK_RATE * 3) sc[OPT_RETREAT] = 2.2;
     sc[OPT_PICKUP] = this.pickupScore(view, g, underFire, hurt);
+    const held = this.heldWeapon(view);
+    const lowAmmo = !!held && held.def.magazine > 0 && held.mag + held.reserve <= held.def.magazine;
     const lk = this.lastKnown;
     if (lk && !hurt) {
+      // An enemy that slipped out of sight: worth more to persistent bots and the fresher the sighting, less with
+      // little ammo left. Within its window it outweighs any goal it may leave for (leaveCost decides where).
       const age = (tick - lk.tick) / TICK_RATE;
       const most = 1 + (p.pursuitPersistence / 100) * 7;
       const d = horizontalDistance(me.pos, lk.pos);
-      if (age < most && d > 1.5) sc[OPT_CHASE] = (1.1 + (p.pursuitPersistence / 100) * 0.9) * (0.4 + 0.6 * (1 - age / most)) + (d < PUSH_NOTICE && age < 2 ? 0.5 : 0) - this.leaveCost(g, d, lk.pos);
+      if (age < most && d > 1.5) sc[OPT_CHASE] = CHASE_WEIGHT + (p.pursuitPersistence / 100) * 0.4 + 0.4 * (1 - age / most) - (lowAmmo ? 0.3 : 0) - this.leaveCost(g, d, lk.pos);
     }
     const hd = this.heard;
     if (hd) {
+      // A noise: more to aggressive and curious bots and the fresher it is, less when hurt.
       const age = (tick - hd.tick) / TICK_RATE;
       const d = horizontalDistance(me.pos, hd.pos);
-      if (age < 10 && d > 2) sc[OPT_NOISE] = (0.7 + aggr * 0.4 + (p.exploration / 100) * 0.3) * (0.4 + 0.6 * (1 - age / 10)) - this.leaveCost(g, d, hd.pos);
+      if (age < 10 && d > 2) sc[OPT_NOISE] = NOISE_WEIGHT + aggr * 0.25 + (p.exploration / 100) * 0.15 + 0.2 * (1 - age / 10) - (hurt ? 0.6 : 0) - this.leaveCost(g, d, hd.pos);
     }
     // A camper or sniper on its spot (or on the way to one) leaves it only for something close.
     if (this.post) {
@@ -1255,8 +1270,40 @@ export class BotBrain {
     if (g.run) return Infinity;
     if (g.order) return d > 10 ? Infinity : 0;
     if (g.push) return d > PUSH_NOTICE ? Infinity : 0;
+    if (BOT_TRIALS.holdfree) return 0;
     const off = horizontalDistance(g.pos, at) - g.radius;
     return Math.min(1.6, Math.max(0, (off - HOLD_NOTICE) / 12));
+  }
+
+  /** The rule chain scored choices replaced (measuring only: BOT_TRIALS.legacy). */
+  private chooseLegacy(view: BotWorldView, hurt: boolean, underFire: boolean): void {
+    const me = view.self;
+    const tick = view.tick;
+    const goal = view.orderGoal;
+    const push = !!goal?.push;
+    const stayPut = (p: Vec3) => (!!this.post && horizontalDistance(me.pos, p) > 10) || (push && horizontalDistance(me.pos, p) > PUSH_NOTICE);
+    if (this.cover && (underFire || tick - this.lastTargetTick < TICK_RATE * (push ? 1 : 2.5 + (1 - this.profile.aggression / 100) * 3))) {
+      this.state = 'cover';
+    } else if (!underFire && (!goal || ((push || !!goal.watch) && goal.detour !== 0)) && bestLoadedDesirability(view.inventory) <= SIDEARM && (this.gunNearby = this.pickupGoal(view, 'weapon', goal ? Math.min(GUN_DETOUR, this.detourFor(goal)) : GUN_DETOUR))) {
+      this.state = 'advance';
+      this.roamGoal = this.gunNearby;
+      this.via = null;
+    } else if (this.state === 'retreat' && this.lastKnown && tick - this.lastKnown.tick < TICK_RATE * 3) {
+      // Keep running for a moment after losing sight of the threat.
+    } else if (this.lastKnown && !hurt && !stayPut(this.lastKnown.pos) && tick - this.lastKnown.tick < TICK_RATE * (1 + (this.profile.pursuitPersistence / 100) * 7) && horizontalDistance(me.pos, this.lastKnown.pos) > 1.5) {
+      this.state = 'chase';
+    } else if (this.heard && !stayPut(this.heard.pos) && tick - this.heard.tick < TICK_RATE * 10 && horizontalDistance(me.pos, this.heard.pos) > 2) {
+      this.state = 'investigate';
+    } else {
+      if (this.state === 'chase' && this.lastKnown && horizontalDistance(me.pos, this.lastKnown.pos) <= 1.5) {
+        this.scanUntil = tick + Math.round(TICK_RATE * (0.8 + this.tactical));
+        this.scanYaw = this.yaw;
+      }
+      if (this.state === 'investigate') this.heard = null;
+      if (this.state === 'chase') this.lastKnown = null;
+      this.state = this.mountPlan ? 'mount' : view.orderGoal ? 'hold' : 'advance';
+      if (this.state === 'advance') this.considerPost(view);
+    }
   }
 
   /**
@@ -1273,7 +1320,7 @@ export class BotBrain {
       this.gunNearby = this.pickupGoal(view, 'weapon', g ? Math.min(GUN_DETOUR, this.detourFor(g)) : GUN_DETOUR);
       if (this.gunNearby) return 2.1;
     }
-    if (!g || g.detour === 0) return -Infinity;
+    if (!g || g.detour === 0 || BOT_TRIALS.nogoalpickup) return -Infinity;
     const tick = view.tick;
     let c = this.pickCand;
     if (!c || tick - c.tick >= TICK_RATE) {
@@ -2908,7 +2955,7 @@ export class BotBrain {
         this.roamGoal = pick.pos;
         // Straight for the enemy's side: by the cheapest corridor of the side's trip there now (teammates on it, and
         // deaths and sightings near it, priced in: loose bots spread over the ways by themselves).
-        const route = push ? cheapestRoute(plan.trips, pick.pos, this.routeRng) : null;
+        const route = push && !BOT_TRIALS.noroamroute ? cheapestRoute(plan.trips, pick.pos, this.routeRng) : null;
         if (route) {
           this.roamRoute = { c: route, goal: { ...pick.pos } };
           return;

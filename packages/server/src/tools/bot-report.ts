@@ -3,7 +3,7 @@ import { cpus, loadavg } from 'node:os';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { BOT_DIFFICULTIES, CORE_BOT_PROFILES, TICK_RATE, initPhysics, isGameMode, loadMap, mapCanRun, rulesForMode, type GameEvent, type GameMode, type MapDocument } from '@tiletrigger/shared';
-import { CtfMode, FortsMode, KothMode, Match, ctfRoleOf, initNavigation, placeOn, simProfile } from '@tiletrigger/shared/match';
+import { CtfMode, FortsMode, KothMode, Match, ctfRoleOf, initNavigation, placeOn, setBotTrials, simProfile } from '@tiletrigger/shared/match';
 import { Behaviour } from './botMeasures.ts';
 import { drawNavPictures } from './navPictures.ts';
 
@@ -146,6 +146,8 @@ export interface MatchRow {
    * it), and off them all.
    */
   routes?: { team: string; to: [number, number, number]; corridors: number; use: number[]; other: number }[];
+  /** Group pushes per team (the team brain, bots/teamBrain.ts PushStats): waves set out, got there, lost half first, metres gained and seconds. */
+  pushes?: Record<string, { started: number; reached: number; lostHalf: number; metres: number; seconds: number }>;
   bots: BotRow[];
 }
 
@@ -232,6 +234,8 @@ async function main(): Promise<void> {
   const runSeeds = limits ? [limits.check.seed] : seeds;
   const runSeconds = limits ? limits.check.seconds : seconds;
   const jobs = pairs.flatMap(([id, m]) => runSeeds.map((seed) => ({ id, mode: m, seed }))).filter((_, i) => i % n === k);
+  // (Measuring switches for Phase B's parts: BOTB=nojobs,nostage...; bots/trials.ts. Temporary.)
+  if (process.env.BOTB) setBotTrials(process.env.BOTB);
   await Promise.all([initPhysics(), initNavigation()]);
   const rows: MatchRow[] = [];
   const maps = new Map<string, MapDocument>();
@@ -522,6 +526,12 @@ function play(map: MapDocument, mode: GameMode, seed: number, seconds: number): 
     out.bots.push(r);
   }
   out.routes = routeUse.filter((u) => u.other + u.use.reduce((a, b) => a + b, 0) > 0);
+  const pushes: NonNullable<MatchRow['pushes']> = {};
+  for (const team of new Set(bots.map((c) => c.faction).filter((t): t is string => !!t))) {
+    const st = match.teamBrain(team)?.stats;
+    if (st && st.started) pushes[team] = { ...st, metres: Math.round(st.metres), seconds: Math.round(st.seconds) };
+  }
+  if (Object.keys(pushes).length) out.pushes = pushes;
   const sorted = [...tickMs].sort((x, y) => x - y);
   out.tickMs = tickMs.reduce((x, y) => x + y, 0) / tickMs.length;
   out.tickP95 = sorted[Math.floor(sorted.length * 0.95)]!;
@@ -836,6 +846,33 @@ function printCompare(before: readonly MatchRow[], after: readonly MatchRow[]): 
   const g = (v: number | undefined, d = 2, k = 100) => (v === undefined ? '-' : (v * k).toFixed(d));
   console.log(`failed searches ${g(ma.failedSearches)} → ${g(mb.failedSearches)} % (${ma.noRoute.toFixed(0)} → ${mb.noRoute.toFixed(0)} a match of ${ma.searches.toFixed(0)} → ${mb.searches.toFixed(0)}); no-route idle ${g(ma.noRouteIdle)} → ${g(mb.noRouteIdle)} %; idle out of a fight ${g(ma.calm, 1)} → ${g(mb.calm, 1)} %; frozen ${g(ma.frozen, 1)} → ${g(mb.frozen, 1)} %; stuck ${ma.stuck.toFixed(0)} → ${mb.stuck.toFixed(0)} a match (${ma.stuckPerBotMin.toFixed(2)} → ${mb.stuckPerBotMin.toFixed(2)} a bot-minute); 10 s+ idle spells ${ma.spells10.toFixed(1)} → ${mb.spells10.toFixed(1)} a match; kills ${ma.killsMin.toFixed(1)} → ${mb.killsMin.toFixed(1)} a minute; think ${g(ma.thinkMs, 2, 1)} → ${g(mb.thinkMs, 2, 1)} ms`);
   console.log(`routes: team trips on two routes or more ${g(ma.routes2, 0)} → ${g(mb.routes2, 0)} % (of ${ma.tripsMeasured} → ${mb.tripsMeasured} with two ways or more; ${ma.oneWay} → ${mb.oneWay} with one), busiest route ${g(ma.busiest, 0)} → ${g(mb.busiest, 0)} %; time in cover in a fight ${g(ma.coverFight, 1)} → ${g(mb.coverFight, 1)} %; scoped kills ${ma.scopedKills.toFixed(1)} → ${mb.scopedKills.toFixed(1)} a match (from a vantage spot ${ma.postKills.toFixed(1)} → ${mb.postKills.toFixed(1)}); sniper spots ${ma.sniperPosts.toFixed(1)} → ${mb.sniperPosts.toFixed(1)} a match (${ma.snipers.toFixed(1)} → ${mb.snipers.toFixed(1)} snipers)`);
+  // Per mode: each mode's objective and the measures every mode has.
+  const modes = [...new Set([...before, ...after].map((m) => m.mode))].sort();
+  if (modes.length > 1 || !modes.includes('core.ctf')) {
+    console.log('\n| Mode | matches | objective | idle out of a fight % | stuck a bot-min | kills/min | two routes % | busiest route % | cover in fights % | pushes (reached, lost half) | think ms |');
+    console.log('|---|---|---|---|---|---|---|---|---|---|---|');
+    for (const mode of modes) {
+      const x = before.filter((m) => m.mode === mode);
+      const y = after.filter((m) => m.mode === mode);
+      if (!x.length || !y.length) continue;
+      const p = measure(x);
+      const q = measure(y);
+      const obj = (m: Measures) =>
+        [
+          m.captures !== undefined ? `caps ${f(m.captures)} takes ${f(m.takes)}` : '',
+          m.hillHeld !== undefined ? `held ${f(m.hillHeld, 1, 100)} % contested ${f(m.hillContested, 1, 100)} %` : '',
+          m.plants !== undefined ? `plants ${f(m.plants)} defuses ${f(m.defuses)}` : '',
+          m.rescues !== undefined ? `rescues ${f(m.rescues)}` : '',
+          m.roundSeconds !== undefined ? `rounds ${f(m.rounds)} of ${f(m.roundSeconds, 0)} s` : '',
+          m.pieces !== undefined ? `pieces ${f(m.pieces, 0)}` : '',
+        ].filter(Boolean).join(', ') || '-';
+      const pushes = (rs: readonly MatchRow[]) => {
+        const s = rs.flatMap((m) => Object.values(m.pushes ?? {}));
+        return s.length ? `${sum(s, (v) => v.started)} (${sum(s, (v) => v.reached)}, ${sum(s, (v) => v.lostHalf)})` : '-';
+      };
+      console.log(`| ${mode.slice(5)} | ${x.length} → ${y.length} | ${obj(p)} → ${obj(q)} | ${f(p.calm, 1, 100)} → ${f(q.calm, 1, 100)} | ${f(p.stuckPerBotMin, 2)} → ${f(q.stuckPerBotMin, 2)} | ${f(p.killsMin)} → ${f(q.killsMin)} | ${f(p.routes2, 0, 100)} → ${f(q.routes2, 0, 100)} | ${f(p.busiest, 0, 100)} → ${f(q.busiest, 0, 100)} | ${f(p.coverFight, 1, 100)} → ${f(q.coverFight, 1, 100)} | ${pushes(x)} → ${pushes(y)} | ${f(p.thinkMs, 2)} → ${f(q.thinkMs, 2)} |`);
+    }
+  }
 }
 
 await main();

@@ -3,6 +3,7 @@ import { TICK_RATE } from '../sim/constants.ts';
 import { placeOn, type Corridor, type Trip } from '../nav/corridors.ts';
 import type { OrderGoal } from './brain.ts';
 import { hasTag, type BotProfile } from './profile.ts';
+import { BOT_TRIALS } from './trials.ts';
 
 /**
  * The team brain (docs/BOTS.md, "Team brain"; BOT_AI_PLAN.md Phase B items 2 and 4): once a second per side, from what
@@ -229,7 +230,7 @@ export class TeamBrain {
       this.waves.length = 0;
     }
     const attackers = attack ? members.filter((m) => !m.ordered && !m.mounted && m.goal && !m.goal.run && horizontalDistance(m.goal.pos, attack.pos) < SAME_GOAL && Math.abs(m.goal.pos.y - attack.pos.y) < 4) : [];
-    if (attack && trip && trip.trip.corridors.length && attackers.length >= pb.groupsFrom) this.assign(tick, attackers, attack, trip, jobs);
+    if (attack && trip && trip.trip.corridors.length && attackers.length >= pb.groupsFrom && !BOT_TRIALS.nojobs) this.assign(tick, attackers, attack, trip, jobs);
     else {
       for (const m of attackers) this.groupOf.delete(m.slot);
       for (const g of Object.values(this.groups)) g.members.length = 0;
@@ -237,7 +238,7 @@ export class TeamBrain {
 
     // Interceptors: the members best placed to get ahead of the enemy on its way.
     const cut = brief?.intercept ?? null;
-    if (cut) this.intercept(cut, members, all, jobs);
+    if (cut && !BOT_TRIALS.nointercept) this.intercept(cut, members, all, jobs);
     return jobs;
   }
 
@@ -332,7 +333,7 @@ export class TeamBrain {
       }
       // Waves (an objective to take from the enemy): those coming up from behind gather at the staging spot and go on
       // together. The recon pair goes ahead on its own; a group of one just goes.
-      g.stage = attack.stage && kind !== 'recon' && g.members.length >= 2 ? stagePoint(c, pb) : null;
+      g.stage = attack.stage && !BOT_TRIALS.nostage && kind !== 'recon' && g.members.length >= 2 ? stagePoint(c, pb) : null;
       const stage = g.stage;
       const stageAt = (stage ? alongOf(c, stage) : null) ?? 0;
       let behind = 0;

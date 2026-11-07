@@ -3,6 +3,7 @@ import type { ModeSnapshot } from '../../protocol.ts';
 import { TICK_RATE } from '../constants.ts';
 import type { Combatant } from '../match.ts';
 import type { SideBrief } from '../../bots/teamBrain.ts';
+import { BOT_TRIALS } from '../../bots/trials.ts';
 import { teamHome, type BotGoal, type BotTripSpec, type ModeHost, type ModeLogic } from './types.ts';
 
 export interface HillRt {
@@ -131,6 +132,6 @@ export class KothMode implements ModeLogic {
    */
   botGoal(c: Combatant): BotGoal | null {
     const h = this.hill;
-    return { pos: h.pos, radius: Math.max(1, h.radius * 0.6 - (c.slot % 3)), push: true };
+    return { pos: h.pos, radius: Math.max(1, h.radius * 0.6 - (c.slot % 3)), push: !BOT_TRIALS.kothnopush };
   }
 }
