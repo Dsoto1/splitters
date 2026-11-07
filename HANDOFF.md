@@ -143,7 +143,7 @@ cheap now, but a 64 v 64 map should spread them out. `pnpm bench 128 60 maps/<ma
 - Not done: shared evaluation for characters on the same clip and phase, fewer bones on far skeletons, impostors.
 
 <!-- intake-rex-fred -->
-### Import list batch 1: Cool Hands Rex and Fishy Fred (`wip/intake-rex-fred`, agent, 2026-11-07; from main dc60bdb5; CI on `check/intake-rex-fred`, see the end of this section; not landed)
+### Import list batch 1: Cool Hands Rex and Fishy Fred (`wip/intake-rex-fred`, agent, 2026-11-07; from main dc60bdb5, main 0d03c3bd merged in; green on `check/intake-rex-fred` at beb336a7, run 42396566250; not landed)
 The owner (2026-11-06): "call him 'Cool Hands Rex', i made him in meshy"; "i did not make fishy fred, community".
 Downloads in `/home/user/meshy-drive/intake-2026-11-06b/` (raw, never committed), linked in the agent scratchpad
 `rexfred/dl`; each built with `ONLY=<id> node tools/content/prepare-meshy-characters.mjs <dir>`. Both are Mixamo
@@ -193,7 +193,12 @@ rigs from Meshy; their Running and Walking clips are not used. Scratch: `rexfred
 a CC BY post would need a credit). Rex's bots take the gangster names (Slick Vinnie, Knuckles Nolan…): there is no
 dinosaur list; say if you'd like one.
 
-**Checks:** CHECKS_PLACEHOLDER
+**Checks:** CI green on `check/intake-rex-fred` at beb336a7, run 42396566250 (the full suite: unit, maps, build,
+check, bots, perf budget and mass, 13 e2e shards). Locally: `pnpm typecheck` clean; `pnpm content:check` OK; the
+hitbox audit and coverage-map tests pass; e2e `characters` (324 s), `characters2` (476 s) and `characters3` (489 s)
+PASS (ports 4951/4952). `pnpm test:changed` (load 15-17 on 4 cores): 2037 passed, 4 failed, all load: three time-outs
+(the 32-bot match, the eagle_spires pads, the host end to end) and the dedicated server's bot refill read 50 ms after a
+leave; each passes run on its own, and CI passes them all. Only docs changed after beb336a7.
 <!-- /intake-rex-fred -->
 
 <!-- breakthrough -->

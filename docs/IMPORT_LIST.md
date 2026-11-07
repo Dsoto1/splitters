@@ -95,7 +95,7 @@ Grenade. Still wanted: the holy bomb, airstrike flare, dynamite, sheep and sandb
 The same model is used in the hand, in flight, and as the pickup on the ground.
 
 ## Done
-- **Batch 1, Cool Hands Rex and Fishy Fred** (2026-11-07, `wip/intake-rex-fred`; HANDOFF, "Import list batch 1"). Both
+- **Batch 1, Cool Hands Rex and Fishy Fred** (2026-11-07, `wip/intake-rex-fred`, green on `check/intake-rex-fred` run 42396566250; HANDOFF, "Import list batch 1"). Both
   downloads (Drive ids `1divaI19ZlfSTFOIKMuGdtrcNKPIRkaYO`, `1B0ssiBuvghCSbT0zDi2DQcHaVbOupnEQ`) are in
   `/home/user/meshy-drive/intake-2026-11-06b/`.
   - **Cool Hands Rex** (`meshy_trex`, `core.trex`; Meshy, owned: "i made him in meshy"): the whole 10.4k-triangle
