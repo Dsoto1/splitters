@@ -728,11 +728,10 @@ spawn to each site; Hostage, the rescuers' spawn to each hostage and on to a res
 one, spawn to spawn), two or three ways that really differ: the shortest over the navmesh's polygons, then again with
 the ground within 10 m of the ones found made costly, keeping a way only when under 40 % of it runs within 7 m of the
 others and it is at most 1.6 times as long plus 30 m. Worked out at match setup (a few ms each) and kept per navmesh.
-Each corridor has a **via**: its point furthest from the trip's other corridors, in its second half (45-80 % of the
-way) where it is still 12 m or more from them there, else anywhere from a fifth to four fifths along. A bot takes a
-corridor by going to its via, then on to the goal, its own routes doing the rest (from a via early on, a bot was back on
-the shortest way by the trip's middle: on the long CTF maps the busiest way past the middle carried 60 % of a team's
-bots, 56 % with the via later). (Following a
+Each corridor has a **via**: its point (between a fifth and four fifths of the way) furthest from the trip's other
+corridors. A bot takes a corridor by going to its via, then on to the goal, its own routes doing the rest. (A via in
+the corridor's second half kept more bots on their way past the trip's middle, the busiest way on the long CTF maps 60
+→ 56 %, but Sunken Kingdom's first capture in five minutes came in 4 of 6 matches against 6 of 6: kept as it was.) (Following a
 corridor's points every 12 m went wrong on maps with floors: a bot on a deck over a corridor counted as on it and headed
 for points on the ground ahead, and captures halved on the dev sample.)
 
