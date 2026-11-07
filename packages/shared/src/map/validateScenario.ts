@@ -4,6 +4,7 @@ import { isMapId } from '../sim/playlist.ts';
 import { PLAYERS_FACTION, type MapDocument } from './schema.ts';
 import { MAX_TEAMS, mapFactions, mapTeams, rosterSize } from '../sim/npc.ts';
 import type { ValidationIssue } from './validate.ts';
+import { breakthroughIssues } from './validateBreakthrough.ts';
 
 const KIND_LABEL: Record<TargetKind, string> = {
   door: 'door',
@@ -166,6 +167,8 @@ export function validateScenario(map: MapDocument): ValidationIssue[] {
   if (map.metadata.supportedModes.includes('core.koth') && !map.entities.some((e) => e.kind === 'hill')) {
     issues.push({ severity: 'error', code: 'koth.no_hill', message: 'King of the Hill needs at least one hill' });
   }
+  // Breakthrough: sectors in a complete order, each with objectives and both sides' spawn groups.
+  issues.push(...breakthroughIssues(map));
 
   // Team-only buttons, doors and zones name a team or faction.
   const sides = new Set([PLAYERS_FACTION, ...mapTeams(map, MAX_TEAMS).map((t) => t.id), ...mapFactions(map).map((f) => f.id)]);

@@ -2,7 +2,7 @@ import type { MapDocument, SpawnEntity } from '../map/schema.ts';
 import { raceTrack } from '../map/track.ts';
 import { BROWSER_MAX_PLAYERS, MAX_PLAYER_SLOTS, TICK_RATE } from './constants.ts';
 import { MAX_TEAMS, mapTeams } from './npc.ts';
-import { DEFAULT_RULES, GAME_MODES, MODE_LABELS, SCORE_LIMIT_MAX, isGameMode, isTeamMode, mapCanRun, type GameMode, type MatchRules } from './rules.ts';
+import { BREAKTHROUGH_POOL, BREAKTHROUGH_POOL_MAX, BREAKTHROUGH_SECTOR_SECONDS, DEFAULT_RULES, GAME_MODES, MODE_LABELS, SCORE_LIMIT_MAX, isGameMode, isTeamMode, isTwoTeamMode, mapCanRun, type GameMode, type MatchRules } from './rules.ts';
 import { IMPROMPTU_MIN_PLAYERS } from './spawns.ts';
 import { botSetInUse, validateBotSet, type BotSet } from './botSet.ts';
 import { validBotCast } from '../content/botThemes.ts';
@@ -82,6 +82,11 @@ export interface MatchSetup {
   raceLaps?: number;
   raceVehicle?: 'kart' | 'speeder' | 'buggy';
   raceCombat?: boolean;
+  /**
+   * Breakthrough: a second round with the sides swapped (absent: one round). Its reinforcements per attacker are the
+   * setup's `scoreLimit` and each sector's minutes its `minutes`, both following the size like any score and time.
+   */
+  btSwap?: boolean;
   /** The host's own bots (Bots step → Edit bots…; sim/botSet.ts). Absent: random bots. */
   botSet?: BotSet;
 }
@@ -91,8 +96,7 @@ export type TeamAssign = 'balanced' | 'random' | 'fixed';
 /** Largest single team (two of them fill MAX_PLAYER_SLOTS: 48 v 48). */
 export const MAX_TEAM_SIZE = MAX_PLAYER_SLOTS / 2;
 
-/** Modes that are always exactly two teams (attack/defend or one flag each). */
-export const isTwoTeamMode = (mode: string): boolean => mode === 'core.ctf' || mode === 'core.forts' || mode === 'core.bomb' || mode === 'core.hostage';
+export { isTwoTeamMode } from './rules.ts';
 
 /** Modes where everyone is on one side against the map (no teams, no free-for-all). */
 export const isCoopMode = (mode: string): boolean => mode === 'core.coop' || mode === 'core.zombies';
@@ -193,6 +197,8 @@ export function modeUnavailableReason(map: MapDocument, mode: GameMode): string 
         return 'Needs hill spots, and this map has none.';
       case 'core.race':
         return 'Needs a race track, and this map has none.';
+      case 'core.breakthrough':
+        return 'Needs sectors, with their objectives and both sides’ spawns, and this map has none.';
     }
   }
   if (mode === 'core.coop') return "This map isn't a co-op mission (it has no mission for a squad to play).";
@@ -517,7 +523,17 @@ export interface MatchLimits {
  * Flag (the time: captures stay) and King of the Hill (hill seconds with the time). Rounds modes (Elimination,
  * Bomb, Hostage Rescue), co-op and Zombies, Fort Wars, Disc Arena and races keep their own.
  */
-export const limitsScale = (mode: GameMode): boolean => mode === 'core.tdm' || mode === 'core.deathmatch' || mode === 'core.ctf' || mode === 'core.koth';
+export const limitsScale = (mode: GameMode): boolean => mode === 'core.tdm' || mode === 'core.deathmatch' || mode === 'core.ctf' || mode === 'core.koth' || mode === 'core.breakthrough';
+
+/**
+ * Breakthrough's suggestions by players a side (the setup's "score" is reinforcements per attacker, its time each
+ * sector's minutes): up to 16 a side 6 reinforcements an attacker, big teams a little less (many deaths add up
+ * quickly), and a sector's time grows with the teams (bigger maps, longer pushes): up to 4 a side 6 and 3 min, up to
+ * 16 a side 6 and 4 min, beyond 5 and 5 min. (Small teams were suggested 8: bot attackers broke through in 7 of 8
+ * matches on the Breakthrough Range; the owner, 2026-11-07: 6.)
+ */
+export const breakthroughPoolFor = (perTeam: number): number => (perTeam <= 16 ? 6 : 5);
+export const breakthroughMinutesFor = (perTeam: number): number => (perTeam <= 4 ? 3 : perTeam <= 16 ? 4 : 5);
 
 /** How far a score steps from `v` (a stepper's − and +), and what a worked-out score rounds to: 5 under 50, 10 under 300, 50 under 1,000, then 100. */
 export const scoreStep = (v: number): number => (v < 50 ? 5 : v < 300 ? 10 : v < 1000 ? 50 : 100);
@@ -578,6 +594,8 @@ export function suggestedLimits(mode: GameMode, players: number, teams?: readonl
       const minutes = teamMinutes(perTeam);
       return { scoreLimit: minutes * HILL_SECONDS_PER_MINUTE, minutes };
     }
+    case 'core.breakthrough':
+      return { scoreLimit: breakthroughPoolFor(perTeam), minutes: breakthroughMinutesFor(perTeam) };
     default:
       return { scoreLimit: DEFAULT_RULES[mode].scoreLimit, minutes: 10 };
   }
@@ -746,6 +764,14 @@ export function rulesFromSetup(setup: MatchSetup, map: MapDocument, cap = BROWSE
     if (s.raceLaps) rules.raceLaps = s.raceLaps;
     if (s.raceVehicle) rules.raceVehicle = s.raceVehicle;
     if (s.raceCombat !== undefined) rules.raceCombat = s.raceCombat;
+  }
+  if (s.mode === 'core.breakthrough' && limits) {
+    // The mode ends the match itself: the setup's score is reinforcements per attacker, its time each sector's.
+    rules.breakthroughPool = Math.max(1, Math.min(BREAKTHROUGH_POOL_MAX, Math.round(limits.scoreLimit) || BREAKTHROUGH_POOL));
+    rules.breakthroughSectorSeconds = Math.max(60, Math.round(limits.minutes * 60) || BREAKTHROUGH_SECTOR_SECONDS);
+    rules.scoreLimit = 0;
+    rules.timeLimitSeconds = 0;
+    if (s.btSwap) rules.breakthroughSwap = true;
   }
   if (!isTeamMode(s.mode)) return { rules, fill: Math.max(1, Math.min(cap, s.bots + 1)) };
   const sizes = setupTeams(s, map, cap);

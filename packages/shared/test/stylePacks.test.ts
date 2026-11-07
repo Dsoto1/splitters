@@ -187,6 +187,8 @@ describe('Style Packs', () => {
       expect(stylePackHas(p, `tile:${coreCatalog.all().find((d) => !p.tiles.includes(d.id))!.id}`)).toBe(false);
       expect(stylePackHas(p, `mount:${MOUNT_MODELS.find((m) => !(p.mounts as readonly string[]).includes(m))}`)).toBe(false);
       expect(stylePackHas(p, 'edge:door')).toBe(true);
+      // A game mode's pieces go with every pack (a Breakthrough map built in the Military pack still gets its sectors).
+      for (const k of ['flag', 'bombsite', 'sector', 'objective:target', 'spawn:attack']) expect(stylePackHas(p, `scenario:${k}`), k).toBe(true);
     }
   });
 

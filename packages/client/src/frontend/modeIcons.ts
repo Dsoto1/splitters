@@ -21,6 +21,8 @@ const PATHS: Record<GameMode, string> = {
   'core.bomb': 'M10.5 8a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13Z M14.5 9.5l2-2 M16 6c1-2 3-2 4-1 M8 13a3 3 0 0 1 2.5-2',
   // A person inside a guarded ring.
   'core.hostage': 'M12 7a2.5 2.5 0 1 0 0 .01 M8 18c0-2.5 1.8-4.5 4-4.5s4 2 4 4.5 M12 2.5l7.5 3V11c0 5-3.3 8.5-7.5 10.5C7.8 19.5 4.5 16 4.5 11V5.5Z',
+  // Chevrons breaking through a line.
+  'core.breakthrough': 'M3 13h18 M6 21l6-5 6 5 M6 16.5l6-5 6 5 M8 8l4-3.5L16 8 M3 13l2-1.5 M21 13l-2-1.5',
   // Two people.
   'core.coop': 'M9 7a3 3 0 1 0 0 .01 M3 19c0-3.3 2.7-6 6-6s6 2.7 6 6 M16 5.5a2.5 2.5 0 1 1 0 5 M17 13c2.5.5 4 2.7 4 6',
   // Three linked rings (a hazard sign).
@@ -54,6 +56,7 @@ export const MODE_SHORT: Record<GameMode, string> = {
   'core.elim': 'Elim',
   'core.bomb': 'Bomb',
   'core.hostage': 'Hostage',
+  'core.breakthrough': 'Break',
   'core.coop': 'Co-op',
   'core.zombies': 'Zombies',
   'core.discs': 'Discs',

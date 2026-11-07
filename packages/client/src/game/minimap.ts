@@ -10,6 +10,8 @@ export interface MinimapBlip {
   x: number;
   z: number;
   color: string;
+  /** An objective: drawn as a square with its label, and held at the rim (pointing the way) when out of range. */
+  label?: string;
 }
 
 /**
@@ -82,7 +84,7 @@ export class Minimap {
     if (!g || !this.plan) return;
     // Nothing moved by a pixel (you stood still, so did the dots): the canvas already shows it.
     let key = `${Math.round(x * PX_PER_M)},${Math.round(z * PX_PER_M)},${Math.round(yaw * 200)}`;
-    for (const b of blips) key += `|${Math.round(b.x * 2)},${Math.round(b.z * 2)},${b.color}`;
+    for (const b of blips) key += `|${Math.round(b.x * 2)},${Math.round(b.z * 2)},${b.color},${b.label ?? ''}`;
     if (key === this.last) return;
     this.last = key;
     const size = this.canvas.width;
@@ -110,6 +112,7 @@ export class Minimap {
     const sh = Math.min(src.height, Math.ceil(py + reach)) - sy;
     if (sw > 0 && sh > 0) g.drawImage(src, sx, sy, sw, sh, sx, sy, sw, sh);
     for (const b of blips) {
+      if (b.label) continue;
       const [bx, by] = toPlan(b.x, b.z);
       g.fillStyle = b.color;
       g.beginPath();
@@ -117,6 +120,31 @@ export class Minimap {
       g.fill();
     }
     g.restore();
+    // Objectives: a labelled square where they are, or on the rim the way they lie when further off.
+    for (const b of blips) {
+      if (!b.label) continue;
+      const dx = b.x - x;
+      const dz = b.z - z;
+      // The view turns with you (facing up): a point ahead is up the canvas.
+      const ahead = dx * Math.sin(yaw) + dz * Math.cos(yaw);
+      const right = dx * Math.cos(yaw) - dz * Math.sin(yaw);
+      const px = PX_PER_M * scale;
+      let sx = right * px;
+      let sy = -ahead * px;
+      const d = Math.hypot(sx, sy);
+      const rim = r - 10;
+      if (d > rim) {
+        sx = (sx / d) * rim;
+        sy = (sy / d) * rim;
+      }
+      g.fillStyle = b.color;
+      g.fillRect(r + sx - 7, r + sy - 7, 14, 14);
+      g.fillStyle = '#0b0f1a';
+      g.font = 'bold 9px sans-serif';
+      g.textAlign = 'center';
+      g.textBaseline = 'middle';
+      g.fillText(b.label.slice(0, 2), r + sx, r + sy + 0.5);
+    }
     // You: an arrow pointing up (the view turns with you).
     g.fillStyle = '#00d1ff';
     g.beginPath();

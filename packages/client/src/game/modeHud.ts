@@ -1,7 +1,34 @@
-import { HOSTAGE_FOLLOWING, HOSTAGE_RESCUED, HOSTAGE_WAITING, BOMB_CARRIED, BOMB_DROPPED, BOMB_PLANTED, FLAG_CARRIED, FLAG_DROPPED, type Faction, type GameEvent, type MapDocument, type ModeSnapshot, type Vec3 } from '@tiletrigger/shared';
-import { ModeVisuals } from './flagVisuals.ts';
+import {
+  HOSTAGE_FOLLOWING,
+  HOSTAGE_RESCUED,
+  HOSTAGE_WAITING,
+  BOMB_CARRIED,
+  BOMB_DROPPED,
+  BOMB_PLANTED,
+  BT_IN_ATTACKERS,
+  BT_IN_BOTH,
+  BT_IN_DEFENDERS,
+  BT_OBJ_ACTIVE,
+  BT_OBJ_DONE,
+  BT_OBJ_PLANTED,
+  BT_OBJ_SKIPPED,
+  BT_ROUND_ATTACKERS,
+  BT_ROUND_PLAYING,
+  FLAG_CARRIED,
+  FLAG_DROPPED,
+  breakthroughSectors,
+  sectorLetter,
+  type Faction,
+  type GameEvent,
+  type MapDocument,
+  type ModeSnapshot,
+  type SectorInfo,
+  type Vec3,
+} from '@tiletrigger/shared';
+import { BT_COLORS, ModeVisuals } from './flagVisuals.ts';
 import type { Hud } from './hud.ts';
 import type { RemotePose } from './interpolation.ts';
+import type { MinimapBlip } from './minimap.ts';
 import type { GameView } from './view.ts';
 
 const escapeHtml = (s: string) => s.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
@@ -18,6 +45,9 @@ export const HOSTAGE_SLOT_BASE = 900_000;
 export class ModeHud {
   private md: ModeSnapshot | undefined;
   private readonly visuals: ModeVisuals;
+  /** Breakthrough: the sectors in order, and the fall-back warning over the crosshair. */
+  private readonly sectors: SectorInfo[];
+  private warning: HTMLElement | null = null;
 
   constructor(
     private readonly hud: Hud,
@@ -29,11 +59,48 @@ export class ModeHud {
   ) {
     this.visuals = new ModeVisuals(view.scene, map, teams, mode);
     hud.waitLabel = mode === 'core.elim' || mode === 'core.bomb' || mode === 'core.hostage' ? 'Out until the next round' : 'Respawning…';
+    this.sectors = mode === 'core.breakthrough' ? breakthroughSectors(map) : [];
+    if (mode === 'core.breakthrough') {
+      this.warning = document.createElement('div');
+      this.warning.id = 'bt-warning';
+      this.warning.hidden = true;
+      (document.getElementById('hud') ?? document.body).append(this.warning);
+    }
+  }
+
+  /** Breakthrough: is my team attacking this round? */
+  private get attacking(): boolean {
+    const bt = this.md?.bt;
+    return !!bt && this.teams[bt[2]]?.id === this.myTeam?.id;
+  }
+
+  /** Breakthrough: an objective's label, kind and sector, from its map entity. */
+  private btObjective(i: number): { label: string; kind: 'zone' | 'target' | 'final'; sector: number } {
+    const e = this.map.entities[i];
+    return e?.kind === 'objective' ? { label: e.label, kind: e.objective, sector: e.sector } : { label: '?', kind: 'zone', sector: 0 };
+  }
+
+  /** Breakthrough: the objectives in play as minimap blips (labelled squares, held at the rim when far). */
+  minimapBlips(): MinimapBlip[] {
+    const bo = this.md?.bo;
+    if (!bo) return [];
+    return bo.flatMap(([i, state]) => {
+      if (state !== BT_OBJ_ACTIVE && state !== BT_OBJ_PLANTED) return [];
+      const e = this.map.entities[i];
+      if (!e) return [];
+      const o = this.btObjective(i);
+      return [{ x: e.position[0], z: e.position[2], color: state === BT_OBJ_PLANTED ? '#ff4a3a' : BT_COLORS[o.kind], label: o.label }];
+    });
   }
 
   /** Flags drawn (for tests). */
   get flagCount(): number {
     return this.visuals.flagCount;
+  }
+
+  /** Breakthrough objectives showing in the world (for tests). */
+  get objectiveCount(): number {
+    return this.visuals.objectiveCount;
   }
 
   /** Latest mode state (for tests). */
@@ -116,7 +183,45 @@ export class ModeHud {
     } else if (ev.e === 'elim') {
       if (ev.a === 'start') this.hud.showMessage(`Round ${ev.round}: fight!`, 2);
       else this.hud.showMessage(ev.team === null ? `Round ${ev.round} drawn` : ev.team === mine ? `Your team wins round ${ev.round}!` : `${this.teamName(ev.team)} win round ${ev.round}`, 3);
+    } else if (ev.e === 'bt') {
+      const text = this.btLine(ev, mine);
+      if (text) this.hud.showMessage(text, ev.a === 'round' || ev.a === 'sector' ? 4 : 3);
     }
+  }
+
+  /** Breakthrough's announcer: the same news worded for each side. */
+  private btLine(ev: Extract<GameEvent, { e: 'bt' }>, mine: string | undefined): string {
+    const attacker = ev.team === mine;
+    const o = ev.i !== undefined ? this.btObjective(ev.i) : null;
+    const me = this.slot();
+    switch (ev.a) {
+      case 'capture':
+        return o?.kind === 'final' ? (attacker ? `${o.label} is ours!` : `${o?.label} has fallen!`) : attacker ? `Zone ${o?.label} captured!` : `Zone ${o?.label} lost!`;
+      case 'plant':
+        return ev.s === me ? `Charge set on ${o?.label}: defend it!` : attacker ? `Charge planted on ${o?.label}! Defend it` : `Charge planted on ${o?.label}! Defuse it`;
+      case 'defuse':
+        return ev.s === me ? `You defused the charge on ${o?.label}` : attacker ? `Our charge on ${o?.label} was defused!` : `Charge on ${o?.label} defused!`;
+      case 'destroy':
+        return attacker ? `Target ${o?.label} destroyed!` : `We lost ${o?.label}!`;
+      case 'sector': {
+        const s = this.sectors[ev.n ?? 0];
+        const name = s?.name ?? `Sector ${sectorLetter(ev.n ?? 0)}`;
+        const last = (ev.n ?? 0) + 1 >= this.sectors.length;
+        if (last) return '';
+        return attacker ? `${name} taken! Push on` : `${name} lost! Fall back to the next line`;
+      }
+      case 'round': {
+        const won = ev.team === mine;
+        const breakthrough = ev.team !== null && this.teams[this.md?.bt?.[2] ?? 0]?.id === ev.team;
+        return breakthrough ? (won ? 'We broke through!' : 'They broke through!') : won ? 'The line held!' : 'Our attack is spent: the line held';
+      }
+      case 'start':
+        return `Round ${ev.n}: sides swapped. ${attacker ? 'You attack!' : 'You defend!'}`;
+      case 'pool':
+        if (ev.n === 0) return attacker ? 'Out of reinforcements: last stand!' : 'Their reinforcements are spent!';
+        return attacker ? 'Reinforcements running low!' : '';
+    }
+    return '';
   }
 
   /** Hostages as poses to draw like players (slots from HOSTAGE_SLOT_BASE), the rescued ones gone. */
@@ -220,12 +325,73 @@ export class ModeHud {
         for (const [i, e] of this.map.entities.entries()) if (e.kind === 'bombsite') mark(`site_${i}`, { x: e.position[0], y: e.position[1], z: e.position[2] }, '#ff7a2a', e.label, attacker ? (carrier === me ? 'Plant' : 'Site') : 'Guard');
       }
     }
+    if (md.bt) this.btFrame(md, parts, mark, eye);
     this.hud.setModeStatus(parts.join(''));
     this.hud.setModeMarkers(markers);
   }
 
+  /**
+   * Breakthrough on the HUD: the sector strip (taken, in play, to come), the round, the attackers' reinforcements;
+   * the objectives in play with their state (a zone's capture, a charge's fuse) and markers on them; your own plant or
+   * defuse; and, left behind the line, the fall-back warning with its countdown.
+   */
+  private btFrame(md: ModeSnapshot, parts: string[], mark: (id: string, p: Vec3, color: string, icon: string, label: string) => void, eye: Vec3 | null): void {
+    const [round, rounds, , active, pool, , next, outcome] = md.bt!;
+    const attacking = this.attacking;
+    const me = this.slot();
+    const strip = this.sectors
+      .map((s, i) => `<i class="bt-sec ${i < active ? 'done' : i === active ? 'on' : 'next'}" title="${escapeHtml(s.name)}">${sectorLetter(i)}</i>`)
+      .join('');
+    const current = this.sectors[active];
+    const where = outcome !== BT_ROUND_PLAYING ? (outcome === BT_ROUND_ATTACKERS ? 'Broken through' : 'The line held') : current ? escapeHtml(current.name) : '';
+    const side = attacking ? 'Attack' : 'Defend';
+    parts.push(`<span class="ms bt-strip" data-bt-sector="${active}" data-bt-side="${attacking ? 'attack' : 'defend'}" style="color:${attacking ? '#ff8a3a' : '#5ab0ff'}"><b>${side}</b>${strip}<em>${where}${rounds > 1 ? ` · round ${round}/${rounds}` : ''}${next ? ` · next round in ${next}s` : ''}</em></span>`);
+    parts.push(`<span class="ms bt-pool" data-bt-pool="${pool}" style="color:${pool === 0 ? '#ff4a3a' : pool < 10 ? '#ffb03b' : '#f2f2f2'}"><b>⚑</b><em>Reinforcements ${pool}</em></span>`);
+    // The objectives in play.
+    const near = (p: Vec3, r: number) => !!eye && Math.hypot(p.x - eye.x, p.z - eye.z) <= r && Math.abs(eye.y - 1.6 - p.y) < 2;
+    let need = 0;
+    let gone = 0;
+    for (const [i, state, progress, extra, actor] of md.bo ?? []) {
+      const o = this.btObjective(i);
+      const e = this.map.entities[i];
+      if (!e || o.sector !== current?.order) continue;
+      if (o.kind === 'target') {
+        need++;
+        if (state === BT_OBJ_DONE) gone++;
+      }
+      if (state !== BT_OBJ_ACTIVE && state !== BT_OBJ_PLANTED && state !== BT_OBJ_DONE) continue;
+      const at = { x: e.position[0], y: e.position[1], z: e.position[2] };
+      const color = state === BT_OBJ_PLANTED ? '#ff4a3a' : BT_COLORS[o.kind];
+      let word: string;
+      if (o.kind === 'target') word = state === BT_OBJ_DONE ? 'destroyed' : state === BT_OBJ_PLANTED ? `charge ${extra}s` : 'standing';
+      else if (state === BT_OBJ_DONE) word = 'captured';
+      else word = `${progress}%${extra === BT_IN_BOTH ? ' · contested' : extra === BT_IN_ATTACKERS ? ' · taking' : extra === BT_IN_DEFENDERS ? ' · held' : ''}`;
+      parts.push(`<span class="ms bt-obj" data-bt-obj="${escapeHtml(o.label)}" data-state="${state}" style="color:${state === BT_OBJ_DONE ? '#8a93a6' : color}"><b>${o.kind === 'target' ? '✱' : '◆'}</b><em>${escapeHtml(o.label)} ${word}</em></span>`);
+      if (state === BT_OBJ_DONE) continue;
+      const label = o.kind === 'target' ? (state === BT_OBJ_PLANTED ? (attacking ? 'Defend' : 'Defuse') : attacking ? 'Plant' : 'Guard') : attacking ? (o.kind === 'final' ? 'Take' : 'Capture') : 'Hold';
+      mark(`bt_${i}`, at, color, o.label, label);
+      if (actor === me && progress >= 0) parts.push(`<span class="ms me"><em>${state === BT_OBJ_PLANTED ? 'Defusing' : 'Planting'} ${progress}% — hold still</em></span>`);
+      else if (o.kind === 'target' && near(at, (e.kind === 'objective' ? e.radius : 2) + 0.2) && ((attacking && state === BT_OBJ_ACTIVE) || (!attacking && state === BT_OBJ_PLANTED))) {
+        parts.push(`<span class="ms me"><em>E: ${attacking ? 'plant a charge' : 'defuse'}, then hold still</em></span>`);
+      }
+    }
+    if (current && need > (current.need ?? need) && outcome === BT_ROUND_PLAYING) parts.push(`<span class="ms" style="color:#ff7a5a"><em>Targets: ${gone} of ${current.need} destroyed (${need} to choose from)</em></span>`);
+    // Left behind the line: the warning, then it hurts.
+    const behind = md.bf?.find(([slot]) => slot === me);
+    if (this.warning) {
+      this.warning.hidden = !behind;
+      if (behind) {
+        const text = behind[1] > 0 ? `Fall back behind the line! ${behind[1]}` : 'Fall back behind the line!';
+        if (this.warning.textContent !== text) this.warning.textContent = text;
+        this.warning.classList.toggle('hurting', behind[1] === 0);
+      }
+    }
+    this.hud.waitLabel = attacking && pool === 0 ? 'Out of reinforcements' : 'Respawning…';
+  }
+
   dispose(): void {
     this.visuals.dispose();
+    this.warning?.remove();
     this.hud.setModeScores(null);
     this.hud.setModeStatus('');
     this.hud.setModeMarkers([]);

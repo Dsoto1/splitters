@@ -19,10 +19,10 @@ const map = (loaded.ok ? loaded.map : raw) as MapDocument;
 const tiles = new Set(map.classicStructure.tiles.map((t) => t.tile));
 const missing = (want: readonly string[], have: ReadonlySet<string>) => want.filter((w) => !have.has(w));
 
-/** What tells one scenario piece from another: its kind and its own string fields (not ids, which are random). */
+/** What tells one scenario piece from another: its kind and its own string fields (not ids, which are random, or labels, numbered as placed: bomb site B, Breakthrough's A1, A2…). */
 const signature = (e: Record<string, unknown>): string => {
   const o: Record<string, unknown> = { kind: e.kind };
-  for (const [k, v] of Object.entries(e)) if (k !== 'id' && typeof v === 'string' && !/^[a-z]+_[a-z0-9]{8,}$/.test(v)) o[k] = v;
+  for (const [k, v] of Object.entries(e)) if (k !== 'id' && k !== 'label' && typeof v === 'string' && !/^[a-z]+_[a-z0-9]{8,}$/.test(v)) o[k] = v;
   return JSON.stringify(o, Object.keys(o).sort());
 };
 const signatures = new Set(map.entities.map((e) => signature(e as unknown as Record<string, unknown>)));
@@ -85,7 +85,7 @@ describe('the coverage map', () => {
 
   it('has the markers of every game mode, terrain, roads, a race track, an AI route and logic', () => {
     expect(new Set(map.entities.flatMap((e) => (e.kind === 'flag' ? [e.team] : []))).size).toBeGreaterThanOrEqual(2);
-    expect(playableModes(map)).toEqual(expect.arrayContaining(['core.ctf', 'core.forts', 'core.koth', 'core.bomb', 'core.hostage', 'core.race', 'core.zombies']));
+    expect(playableModes(map)).toEqual(expect.arrayContaining(['core.ctf', 'core.forts', 'core.koth', 'core.bomb', 'core.hostage', 'core.breakthrough', 'core.race', 'core.zombies']));
     expect(raceTrack(map)).not.toBeNull();
     const uses = new Set((map.paths ?? []).flatMap((p) => p.uses));
     expect(missing(['road', 'race', 'route'], uses)).toEqual([]);

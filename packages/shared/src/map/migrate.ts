@@ -65,6 +65,10 @@ export const MIGRATIONS: ReadonlyMap<number, Migration> = new Map<number, Migrat
   // v27 -> v28: optional `weaponSet` (the map's default weapon set, sim/weaponSets.ts). Absent = Standard, as every
   // map played before: v27 data is valid as is.
   [27, (doc) => ({ ...doc })],
+  // v28 -> v29: Breakthrough's `sector` and `objective` entity kinds, and a spawn's optional `sector` and `side` (its
+  // spawn group); a team setup of up to 48 a team and recommended players up to 96 (large maps). Additive: v28 data
+  // is valid as is.
+  [28, (doc) => ({ ...doc })],
 ]);
 
 /** The race track's own settings as they were in v22 (missing = the v22 defaults). */

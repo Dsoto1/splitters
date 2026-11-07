@@ -231,7 +231,8 @@ export function mapAirplanes(map: MapDocument): { index: number; entity: Airplan
  */
 export function dropTarget(map: MapDocument, team: string | null, pick: number, mode = ''): Vec3 {
   const p = (e: { position: [number, number, number] }): Vec3 => ({ x: e.position[0], y: e.position[1], z: e.position[2] });
-  const objectives = map.entities.filter((e) => (mode === 'core.ctf' && e.kind === 'flag' && e.team !== team) || (mode === 'core.koth' && e.kind === 'hill') || (mode === 'core.bomb' && e.kind === 'bombsite'));
+  const first = Math.min(...map.entities.flatMap((e) => (e.kind === 'sector' ? [e.order] : [])));
+  const objectives = map.entities.filter((e) => (mode === 'core.ctf' && e.kind === 'flag' && e.team !== team) || (mode === 'core.koth' && e.kind === 'hill') || (mode === 'core.bomb' && e.kind === 'bombsite') || (mode === 'core.breakthrough' && e.kind === 'objective' && e.sector === first));
   if (objectives.length) return p(objectives[Math.floor(pick * objectives.length) % objectives.length]!);
   const spawns = map.entities.filter((e) => e.kind === 'spawn');
   const own = spawns.filter((e) => e.kind === 'spawn' && team !== null && e.faction === team);

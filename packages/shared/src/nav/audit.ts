@@ -517,7 +517,7 @@ export interface AuditOptions extends FallOptions {
 }
 
 /** What an objective is called in messages. */
-const OBJECTIVES: Partial<Record<string, string>> = { flag: 'flag base', hill: 'hill', bombsite: 'bomb site', hostage: 'hostage', rescue: 'rescue zone' };
+const OBJECTIVES: Partial<Record<string, string>> = { flag: 'flag base', hill: 'hill', bombsite: 'bomb site', hostage: 'hostage', rescue: 'rescue zone', objective: 'Breakthrough objective' };
 
 /**
  * The navigation audit of a map's navmesh (built as the match builds it, links and drop links in) against its level

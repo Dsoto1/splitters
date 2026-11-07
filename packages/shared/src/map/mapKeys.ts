@@ -8,7 +8,7 @@
 export const MAP_FORMAT = 'tiletrigger.map';
 /** The format name maps were saved under while the game was called ChronoSplit; they load and are re-saved as MAP_FORMAT. */
 export const LEGACY_MAP_FORMAT = 'chronosplit.map';
-export const MAP_FORMAT_VERSION = 28;
+export const MAP_FORMAT_VERSION = 29;
 
 /** `players` is the built-in faction of every player in co-op. */
 export const PLAYERS_FACTION = 'players';

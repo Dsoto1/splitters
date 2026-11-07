@@ -534,7 +534,8 @@ export class EditorView {
       if (e.kind === 'spawn') {
         m.node.position.set(e.position[0], e.position[1] + PLAYER.height / 2, e.position[2]);
         m.node.rotation.y = e.yaw;
-        (m.node as Mesh).material = selected.has(e.id) ? this.mat.spawnSel : e.faction ? this.teamMaterial(teams.find((t) => t.id === e.faction)?.color ?? '#888888') : this.mat.spawn;
+        // Breakthrough spawn groups: the attackers' orange, the defenders' blue (the inspector says which sector).
+        (m.node as Mesh).material = selected.has(e.id) ? this.mat.spawnSel : e.side ? this.teamMaterial(e.side === 'attack' ? '#ff8a3a' : '#5ab0ff') : e.faction ? this.teamMaterial(teams.find((t) => t.id === e.faction)?.color ?? '#888888') : this.mat.spawn;
       } else {
         this.placeEntityNode(m.node as TransformNode, e, doc);
         if (selected.has(e.id) && !m.ring) {
@@ -1022,7 +1023,10 @@ function selectionSize(e: MapEntity): number {
     case 'hill':
     case 'bombsite':
     case 'rescue':
+    case 'objective':
       return e.radius * 2 + 0.4;
+    case 'sector':
+      return 4;
     case 'hostage':
       return 1.2;
     case 'flag':

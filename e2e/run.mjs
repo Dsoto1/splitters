@@ -33,7 +33,7 @@ let failures = 0;
  * own thread instead (localStorage tiletrigger.sim = main), the fallback the game keeps for browsers
  * without workers. Every other flow plays the worker, and reaches the match through `sim()` / `simWait()`.
  */
-const MAIN_THREAD_FLOWS = new Set(['setpieces', 'physicsfx', 'ctf', 'forts', 'zombies', 'classes', 'vehicles', 'race', 'flashing', ...MAP_FLOWS]);
+const MAIN_THREAD_FLOWS = new Set(['setpieces', 'physicsfx', 'ctf', 'forts', 'breakthrough', 'zombies', 'classes', 'vehicles', 'race', 'flashing', ...MAP_FLOWS]);
 
 /** Run `fn(match, me, arg)` where the page's match runs (its worker, or the page), and return what it returns. */
 async function sim(page, fn, arg) {
@@ -3289,6 +3289,148 @@ async function ctfFlow(browser) {
   check(cols.length === 2 && cols[0].top === cols[1].top && cols[1].left >= cols[0].right, `two teams show as two side-by-side columns (${JSON.stringify(cols)})`);
   check(meSeen.ok, `your row is visible on the scoreboard (${meSeen.why})`);
   check(caps === '1', `the scoreboard's Caps column counts your capture (${caps})`);
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  await page.context().close();
+}
+
+/**
+ * Breakthrough (core.breakthrough) on the Breakthrough Range (maps/test_breakthrough.json, a test map: `testmap=`
+ * adds it to the Arcade in test mode). Match Setup offers the mode on a map with sectors, with its own settings
+ * (reinforcements, sector time, second round), and greys it out on one without, saying why. In the match the HUD
+ * shows your side, the sector strip, the pool and the objectives (marked, drawn in the world, on the minimap); bots
+ * take the first sector on their own (the clock run forward, you kept out of it); both sides' spawns move on, the
+ * next sector's targets switch on ("two of three"), and a defender left behind the new line is warned, then hurt.
+ */
+async function breakthroughFlow(browser) {
+  const page = await (await browser.newContext({ viewport: { width: 1280, height: 720 } })).newPage();
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
+  await page.addInitScript(() => {
+    if (!localStorage.getItem('cs.arcade')) localStorage.setItem('cs.arcade', JSON.stringify({ map: 'sandgate', mode: 'core.tdm', bots: 3, skill: 'normal', scoreLimit: 40, minutes: 10, scoreAuto: true, timeAuto: true, teams: [4, 4] }));
+  });
+  await page.goto(`${CLIENT}/?test=1&god=1&testmap=test_breakthrough`);
+  await page.waitForFunction(() => window.__front, null, { timeout: T(30000) });
+  await page.evaluate(() => document.getElementById('nav-play').click());
+  await page.waitForSelector('#arcade-map', { state: 'attached', timeout: T(30000) });
+  // (The map loads behind the panel: its unavailable modes show once it has.)
+  await page.waitForSelector('.mode-tag-off[data-mode="core.breakthrough"]', { timeout: T(30000) }).catch(() => {});
+  const off = await page.evaluate(() => document.querySelector('.mode-tag-off[data-mode="core.breakthrough"]')?.dataset.tip ?? null);
+  check(/sectors/.test(off ?? ''), `Match Setup greys Breakthrough out on a map without sectors, saying why (${off})`);
+  // The map with sectors: Breakthrough is offered, its own settings in "what wins".
+  // (The setup's map list: picked as its select does, the map browser being the way a player picks.)
+  await page.evaluate(() => {
+    const select = document.getElementById('arcade-map');
+    select.value = 'test_breakthrough';
+    select.dispatchEvent(new Event('change', { bubbles: true }));
+  });
+  await page.waitForSelector('#arcade-mode-breakthrough', { timeout: T(10000) });
+  await page.evaluate(() => document.getElementById('arcade-mode-breakthrough').click());
+  await page.waitForSelector('#arcade-bt-swap', { timeout: T(10000) });
+  const setup = await page.evaluate(() => ({
+    on: document.getElementById('arcade-mode-breakthrough')?.getAttribute('aria-pressed'),
+    fields: [...document.querySelectorAll('#setup-win .field-label')].map((l) => l.firstChild?.textContent),
+    pool: Number(document.getElementById('arcade-score')?.value),
+    minutes: document.getElementById('arcade-minutes')?.textContent,
+    swap: document.querySelector('#arcade-bt-swap .tab.on')?.textContent,
+    length: document.querySelector('#setup-summary .fact-time')?.textContent,
+  }));
+  check(setup.on === 'true' && setup.fields.join() === 'Reinforcements,Sector time,Second round' && setup.pool > 0 && /^\d+ min$/.test(setup.minutes ?? '') && setup.swap === 'One round', `Match Setup offers Breakthrough on a map with sectors, with reinforcements, sector time and a second round (${JSON.stringify(setup)})`);
+  if (process.env.E2E_SHOTS) await page.screenshot({ path: `${process.env.E2E_SHOTS}/breakthrough-setup.png`, timeout: T(60000) }).catch(() => {});
+  await page.evaluate(() => document.getElementById('arcade-start').click());
+  await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown' && window.__match && window.__cs.mode?.state?.bt, null, { timeout: T(90000) });
+  await page.waitForFunction(() => document.getElementById('mode-label')?.textContent === 'Breakthrough' && document.querySelectorAll('#mode-status .bt-obj').length === 2, null, { timeout: T(15000) }).catch(() => {});
+  const hud = await page.evaluate(() => {
+    const m = window.__match;
+    const strip = document.querySelector('#mode-status .bt-strip');
+    return {
+      label: document.getElementById('mode-label')?.textContent,
+      side: strip?.dataset.btSide,
+      sector: strip?.dataset.btSector,
+      letters: [...document.querySelectorAll('#mode-status .bt-sec')].map((s) => s.textContent).join(''),
+      pool: Number(document.querySelector('#mode-status .bt-pool')?.dataset.btPool),
+      matchPool: m.mode.pool,
+      perAttacker: m.rules.breakthroughPool,
+      objectives: [...document.querySelectorAll('#mode-status .bt-obj')].map((o) => o.dataset.btObj).join(),
+      markers: [...document.querySelectorAll('#mode-markers .mode-marker')].filter((x) => x.dataset.id?.startsWith('bt_')).length,
+      world: window.__cs.mode.objectiveCount,
+      blips: window.__cs.mode.minimapBlips().map((b) => b.label).join(),
+    };
+  });
+  check(hud.label === 'Breakthrough' && hud.side === 'attack' && hud.sector === '0' && hud.letters === 'ABC', `the HUD shows your side and the sector strip (${JSON.stringify(hud)})`);
+  check(hud.pool > 0 && Math.abs(hud.pool - hud.matchPool) <= 2 && hud.perAttacker === setup.pool, `the HUD shows the attackers' reinforcements, as set up (${hud.pool}; the match ${hud.matchPool}, ${hud.perAttacker} an attacker)`);
+  check(hud.objectives === 'A1,A2' && hud.markers === 2 && hud.world >= 2 && hud.blips === 'A1,A2', `the beach's two capture zones are in play: on the HUD, marked, drawn and on the minimap (${JSON.stringify(hud)})`);
+  // Pictures: the pause overlay (up in headless runs) hidden.
+  const shoot = async (name) => {
+    if (!process.env.E2E_SHOTS) return;
+    await page.evaluate(() => (document.getElementById('pause').style.visibility = 'hidden'));
+    await frames(page, 5);
+    await page.screenshot({ path: `${process.env.E2E_SHOTS}/${name}.png`, timeout: T(60000) }).catch(() => {});
+  };
+  await shoot('breakthrough-hud');
+  // Bots take the beach on their own: run the clock forward (headless frame rates are slow), you parked out of it.
+  // (The sector's clock is held open for the whole run: with Match Setup's 6 reinforcements an attacker and 3 min, three
+  // bot attackers took the beach in 40-160 s; this checks that they take it, not how fast.)
+  const took = await page.evaluate(() => {
+    const m = window.__match;
+    const me = m.slots[window.__cs.slot];
+    let fell = null;
+    const start = m.tick;
+    m.mode.clockEnd = Math.max(m.mode.clockEnd, m.tick + 60 * 310);
+    for (let i = 0; i < 60 * 300 && m.mode.active === 0 && m.mode.outcome === 0; i++) {
+      me.move = { pos: { x: 74, y: 0.2, z: -74 }, velY: 0, grounded: false };
+      for (const e of m.step()) if (e.e === 'bt' && e.a === 'sector') fell = { seconds: Math.round((m.tick - start) / 60), team: e.team };
+    }
+    return { fell, active: m.mode.active, outcome: m.mode.outcome, attackers: m.mode.attackers, pool: m.mode.pool, clock: Math.round(m.mode.timeLeft) };
+  });
+  check(!!took.fell && took.fell.team === took.attackers && took.active === 1, `bots take the first sector on their own (${JSON.stringify(took)})`);
+  if (took.active === 1) {
+    await page.waitForFunction(() => document.querySelector('#mode-status .bt-strip')?.dataset.btSector === '1' && document.querySelectorAll('#mode-status .bt-obj').length === 3, null, { timeout: T(15000) }).catch(() => {});
+    const next = await page.evaluate(() => {
+      const m = window.__match;
+      const z = (side) => m.combatants().filter((c) => m.mode.sideOf(c) === side).flatMap((c) => (m.mode.spawnSpots(c) ?? []).map((s) => s.pos.z));
+      return {
+        sector: document.querySelector('#mode-status .bt-strip')?.dataset.btSector,
+        objectives: [...document.querySelectorAll('#mode-status .bt-obj')].map((o) => o.dataset.btObj).join(),
+        need: [...document.querySelectorAll('#mode-status .ms')].map((x) => x.textContent).find((t) => /Targets:/.test(t)) ?? null,
+        attack: [Math.min(...z('attack')), Math.max(...z('attack'))].map(Math.round),
+        defend: [Math.min(...z('defend')), Math.max(...z('defend'))].map(Math.round),
+      };
+    });
+    check(next.sector === '1' && next.objectives === 'B1,B2,B3' && /0 of 2 destroyed/.test(next.need ?? ''), `the guns' three targets switch on, two of three to destroy (${JSON.stringify(next)})`);
+    // The guns' line runs at z -8: the attackers now spawn between the beach's line and it, the defenders beyond it.
+    check(next.attack[0] > -52 && next.attack[1] < -8 && next.defend[0] > -8, `both sides' spawns move on to the guns' groups (attackers z ${next.attack}, defenders z ${next.defend})`);
+    // A defender held behind the new line: warned at once, hurt after the 10 s warning.
+    const fallback = await page.evaluate(() => {
+      const m = window.__match;
+      const d = m.combatants().find((c) => m.mode.sideOf(c) === 'defend' && c.alive && c.slot !== window.__cs.slot);
+      // Its 10 s from now (one caught behind the line as the sector fell has already had some of them).
+      m.mode.behind.delete(d.slot);
+      // Far from the attackers' spawn and their way to the guns, so only the fall-back hurts it.
+      const hold = () => (d.move = { pos: { x: 70, y: 0.2, z: -72 }, velY: 0, grounded: false });
+      hold();
+      m.step();
+      const warned = (m.snapshot([]).md?.bf ?? []).some(([s]) => s === d.slot);
+      const health = d.health;
+      for (let i = 0; i < 60 * 9; i++) (hold(), m.step());
+      const at9 = d.health;
+      for (let i = 0; i < 60 * 2 && d.alive; i++) (hold(), m.step());
+      return { warned, health, at9, at11: d.alive ? d.health : 0 };
+    });
+    check(fallback.warned && fallback.at9 >= fallback.health && fallback.at11 < fallback.at9, `a defender left behind the new line is warned, then hurt (${JSON.stringify(fallback)})`);
+    // Your own warning: join the defenders (the HUD told of it as a roster change would), behind the line.
+    await page.evaluate(() => {
+      const m = window.__match;
+      const me = m.slots[window.__cs.slot];
+      me.faction = m.mode.defenders;
+      window.__cs.hud.setRoster(m.roster());
+      self.__btHold = setInterval(() => (me.move = { pos: { x: -60, y: 0.2, z: -66 }, velY: 0, grounded: false }), 50);
+    });
+    const warned = await page.waitForFunction(() => !document.getElementById('bt-warning')?.hidden && /Fall back behind the line/.test(document.getElementById('bt-warning')?.textContent ?? ''), null, { timeout: T(15000) }).then(() => true, () => false);
+    const warning = await page.evaluate(() => ({ text: document.getElementById('bt-warning')?.textContent, side: document.querySelector('#mode-status .bt-strip')?.dataset.btSide }));
+    check(warned && warning.side === 'defend', `left behind the line as a defender, you get the fall-back warning (${JSON.stringify(warning)})`);
+    await shoot('breakthrough-fallback');
+    await page.evaluate(() => clearInterval(self.__btHold));
+  }
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await page.context().close();
 }
@@ -6554,7 +6696,7 @@ try {
   };
   // E2E_ONLY=editor,characters runs a subset; E2E_SHARD=2/8 one of CI's parallel groups (balanced by e2e/timings.json;
   // CI's plan job passes each shard's flows in E2E_ONLY itself).
-  const flows = { editor: editorFlow, editorux: editoruxFlow, offline: offlineFlow, mobile: mobileFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, scenery: sceneryFlow, setpieces: setpiecesFlow, physicsfx: physicsfxFlow, teams: teamsFlow, weaponsets: weaponsetsFlow, ctf: ctfFlow, forts: fortsFlow, arsenal: arsenalFlow, vehicles: vehiclesFlow, race: raceFlow, zombies: zombiesFlow, classes: classesFlow, coverage: coverageFlow, ...Object.fromEntries(MAP_FLOWS.map((name, part) => [name, (b) => mapsFlow(b, part)])), designer: designerFlow, ...Object.fromEntries(CHARACTER_FLOWS.map((name, part) => [name, (b) => charactersFlow(b, part)])), online: onlineFlow, hostgame: hostgameFlow, hostcontrols: hostcontrolsFlow, lobby: lobbyFlow, handoff: handoffFlow, dedicatedhost: dedicatedhostFlow, hostpage: hostpageFlow, webgpu: webgpuFlow, visual: visualFlow, environment: environmentFlow, flashing: flashingFlow };
+  const flows = { editor: editorFlow, editorux: editoruxFlow, offline: offlineFlow, mobile: mobileFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, scenery: sceneryFlow, setpieces: setpiecesFlow, physicsfx: physicsfxFlow, teams: teamsFlow, weaponsets: weaponsetsFlow, ctf: ctfFlow, forts: fortsFlow, breakthrough: breakthroughFlow, arsenal: arsenalFlow, vehicles: vehiclesFlow, race: raceFlow, zombies: zombiesFlow, classes: classesFlow, coverage: coverageFlow, ...Object.fromEntries(MAP_FLOWS.map((name, part) => [name, (b) => mapsFlow(b, part)])), designer: designerFlow, ...Object.fromEntries(CHARACTER_FLOWS.map((name, part) => [name, (b) => charactersFlow(b, part)])), online: onlineFlow, hostgame: hostgameFlow, hostcontrols: hostcontrolsFlow, lobby: lobbyFlow, handoff: handoffFlow, dedicatedhost: dedicatedhostFlow, hostpage: hostpageFlow, webgpu: webgpuFlow, visual: visualFlow, environment: environmentFlow, flashing: flashingFlow };
   // e2e/flowMap.mjs (change-based selection, shards) must know every flow, and only those.
   const known = new Set(FLOWS);
   const drift = [...Object.keys(flows).filter((f) => !known.has(f)), ...FLOWS.filter((f) => !(f in flows))];

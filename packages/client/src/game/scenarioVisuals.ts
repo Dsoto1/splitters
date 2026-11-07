@@ -55,7 +55,7 @@ import {
   fixtureGap,
   type WorldBox,
 } from '@tiletrigger/shared';
-import { createFlagBase, createFlagModel, createHillModel, createBombsiteModel } from './flagVisuals.ts';
+import { BT_COLORS, createBombsiteModel, createFlagBase, createFlagModel, createHillModel, createSectorModel, createTargetModel } from './flagVisuals.ts';
 import { buildFence } from '../borderVisuals.ts';
 import { GlassVisuals, glassMaterial } from './glassVisuals.ts';
 import { WaterVisuals } from './waterVisuals.ts';
@@ -78,7 +78,7 @@ export const LIQUID_LOOKS: Record<Liquid, { color: string; glow: number; alpha: 
  */
 
 type Kind = Exclude<MapEntity['kind'], 'spawn' | 'pickup' | 'prop' | 'mount'>;
-export const SCENARIO_KINDS: readonly Kind[] = ['door', 'button', 'destructible', 'zone', 'trap', 'pad', 'block', 'water', 'flag', 'hill', 'ladder', 'bombsite', 'hostage', 'rescue', 'light', 'mover', 'portal', 'zipline'];
+export const SCENARIO_KINDS: readonly Kind[] = ['door', 'button', 'destructible', 'zone', 'trap', 'pad', 'block', 'water', 'flag', 'hill', 'ladder', 'bombsite', 'hostage', 'rescue', 'light', 'mover', 'portal', 'zipline', 'sector', 'objective'];
 
 /**
  * Place an entity's visual root: at its position, turned to its facing.
@@ -479,6 +479,9 @@ export class ScenarioVisuals {
       case 'hostage':
       case 'rescue':
         return this.objective(name, e);
+      case 'sector':
+      case 'objective':
+        return this.breakthrough(name, e);
       case 'light':
         return this.light(name, e);
       case 'airplane':
@@ -970,6 +973,18 @@ export class ScenarioVisuals {
     const root = createFlagBase(this.scene, color, name);
     createFlagModel(this.scene, color, `${name}_flag`).parent = root;
     return { root };
+  }
+
+  /**
+   * Breakthrough's pieces, MapMaker only: a sector's line across the map with its order and the way the attackers
+   * push; an objective's area in its kind's colour with its label (a target with its demolition point). In a match
+   * the mode draws the objectives in play itself (ModeVisuals), and a sector's line is never drawn.
+   */
+  private breakthrough(name: string, e: Extract<MapEntity, { kind: 'sector' | 'objective' }>): Visual {
+    if (!this.opts.editor) return { root: new TransformNode(name, this.scene) };
+    if (e.kind === 'sector') return { root: createSectorModel(this.scene, e.order, name) };
+    if (e.objective === 'target') return { root: createTargetModel(this.scene, e.radius, e.label, name) };
+    return { root: createBombsiteModel(this.scene, e.radius, e.label, name, BT_COLORS[e.objective]) };
   }
 
   /** Materials for free blocks (the map's library materials; set by the game and MapMaker views). */

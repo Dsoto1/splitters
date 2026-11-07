@@ -26,6 +26,86 @@ gets overloaded above that: local e2e times out and flakes). Prune landed worktr
 - Earlier the same day: content scalability steps 2–6, perf toolset, flaky e2e fixes, Runway Nine airliner, map
   reworks batches 2–3, character fixes rounds 2–3 (see the entries below and CHANGELOG).
 
+<!-- breakthrough -->
+### Breakthrough mode, and Iron Coast's fort and gatehouse (`wip/breakthrough`, agents, 2026-11-07; from main 17d0e0a0, main 2c48debf (Bot AI Phase B parts 1 and 2), d3830145 (weapons intake 11-06) and 5087b0b6 (weapon sets) merged in; green on `check/breakthrough` at 647512a5, run 42373473729; not landed)
+The brief: docs/map-briefs/MAP_21_Iron_Coast.md ("Breakthrough mode", and "The mode as built"). Rules, settings, HUD,
+MapMaker steps: docs/GAME_MODES.md, "Breakthrough". The pieces: docs/SET_PIECES_PLAN.md, "As built: part 4".
+
+**What's in it:**
+- **The mode** (`sim/modes/breakthrough.ts`, `core.breakthrough`): sectors in order; capture zones (KOTH-like,
+  contested), destroy targets (plant 3 s / fuse 20 s / defuse 5 s; a sector's "N of M"), the final hold; spawn groups
+  per sector and side moving on as sectors fall; the 10 s fall-back warning, then 20 hp/s; the attackers' pool
+  (`breakthroughPool` per attacker, half again per attacker for each sector taken); defenders unlimited at 1.5× the
+  respawn delay; the sector clock (`breakthroughSectorSeconds`, a sector's own `seconds`; carried over; a burning
+  charge plays on); an optional second round with the sides swapped (`breakthroughSwap`; sectors, then time left).
+  New ModeHost/ModeLogic hooks: `endRound(winner)`, `hurt`, `spawnSpots`, `spawnBeside`, `clock` (and `spawnPoints` are
+  the match's own spawn spots now, so recent use counts).
+- **Map format v29** (`sector` and `objective` entities, a spawn's `sector` and `side`; v28, the weapon sets' format,
+  migrates unchanged; the Breakthrough Range and the coverage map re-exported through MapMaker at v29, Standard weapons).
+  Validation: `map/validateBreakthrough.ts`. A format bump alone no longer changes a stamped map (`releaseCurrent`,
+  map/identity.ts: the content hash at the stamp's own format version): the 24 maps stamped at v27 keep their
+  versions and identity and show no "changed since it was exported" (CI's demo-map tests caught it).
+- **HUD** (`game/modeHud.ts`, `flagVisuals.ts`, `minimap.ts`): side, sector strip, pool, objectives with state, world
+  markers, labelled minimap blips, `#bt-warning`, announcer lines per side. **Match Setup** (frontEnd.ts) and the
+  **host panel**: Reinforcements, Sector time (both follow the size: `breakthroughPoolFor`, `breakthroughMinutesFor`),
+  Second round; offered only on maps with sectors (`modeUnavailableReason` says why not). Team setups go to 48 a side
+  (TeamSetup max), for Iron Coast's 24-32 a side.
+- **MapMaker**: Sector, Capture Zone, Destroy Target, Final Hold, Attackers' Spawn, Defenders' Spawn (Entities →
+  Gameplay → Spawns & Objectives), inspectors (`ed-bt-*`, the spawn's `ed-spawn-group`), the sector line drawn with
+  its arrows and number; game modes' pieces now show under any Style Pack (`stylePackHas`); Map properties' **Map ID**
+  (`#ed-prop-id`: an official or test map's file name, which MapMaker had no way to set).
+- **Bots**: Phase B's Breakthrough playbook wired in the mode (no change to the bot brain or Phase B's files;
+  docs/BOTS.md, "Breakthrough's playbook"): `botBrief` (the attackers' objective, the least defended still to take,
+  kept until taken or planted, `stage` while held; `playbookFor('core.breakthrough').team`), `botTrips` (each sector's
+  spawn groups to each of its objectives), `botGoal` by a plan made once a tick (`plan`: each bot's place among its
+  side's bots, never its slot, which alternates between the teams: `slot % 2` had picked no defender to defuse, ever;
+  the defenders' duties by the playbook's shares over each sector's posts, `findPosts`/`postsOf`: turrets, trench tiles
+  and sandbags, high ground that sees an objective, within 60 m of its objectives on their side of its line) and
+  `botInput` (a bot within reach of a target to plant or a charge to defuse holds still, crouched: kept to their way,
+  bots fought on the move and in 8 v 8 never planted). A defender caught behind the line runs for it. The playbook's
+  smoke (with the weapons intake's Smoke Grenade, main d3830145 merged in): attacking bots that bound (all but Arena
+  bots and berserkers) spawn carrying smoke instead of frags (`onSpawn`; a bot being added spawns before it has a
+  brain, so it is armed at its first `botInput`), and the moving half of a bound screens open ground
+  (BotBrain.considerSmoke: 49 such screens in a 150 s 8 v 8 match on the Range).
+- **Set pieces**: `setpiece.command_bunker` (fort.json, new family; kit tiles `core.fort_ring`, `core.fort_ring_gate`)
+  and `setpiece.cliff_stair_gate` (cliffstair.json; edge style `gate_arch`); `setPieces4.test.ts`.
+- **Maps** (MapMaker only, driven through its own palette, inspector, Import and Export): the **Breakthrough Range**
+  (`maps/test_breakthrough.json`, testOnly) and the coverage map (one of each new piece, both set pieces).
+- **Tests**: `breakthrough.test.ts` (14: order, zones, targets, N of M, spawns and fall-back, pool, clock, final hold,
+  second round, format v29, validation, Match Setup, the playbook's brief, trips, posts, shares, fall-back, defusing,
+  holding still, determinism by seed), `setPieces4.test.ts`, the coverage map's test (new pieces, the mode); e2e flow
+  `breakthrough` (main thread; `?test=1&testmap=test_breakthrough` puts the test map in the Arcade).
+
+**Bots on the Breakthrough Range** (headless matches, bots only, first round; BOTS.md has the details), with Match
+Setup's suggestions and smoke: 4 v 4 (6 an attacker, 3 min a sector; the owner lowered it from 8, 2026-11-07), eight
+seeds: the beach fell in 4 (106 s on average), the guns in 2, the fort in 2; 8 v 8 (6, 4 min), six seeds: the beach in
+6 (61 s), the guns in 4, the fort in 2. Before smoke, at 8 an attacker, 4 v 4 broke through in 7 of 8 (with smoke at
+8: the beach 6, the guns 5, the fort 4), 8 v 8 in 3 of 6. Before the playbook (the old `botGoal`, defenders never
+defusing) 4 v 4 at the defaults: 6, 3 and 3 of 8; with the playbook but before holding still to plant, 8 v 8 never
+planted (the guns fell in none of six). A second round with the sides swapped (4 v 4, three seeds): both teams broke
+through in two, the one with more time left when its last sector fell winning (442 s against 436, 305 against 271);
+in the third only the second team did, and won. In the e2e flow (you parked, three bot attackers against four) the
+bots took the beach in 76 s, 95 s after the main merge with smoke; at the new suggestion its scene took the beach in 8
+of 8 seeds (40-72 s). The scratch harness that measured it is not in the repo (bench's Match with bots, the
+`bt` events); `pnpm bench 8 300 maps/test_breakthrough.json --mode=core.breakthrough` counts the events. For Iron
+Coast's check ("bots take every sector in a scorecard run") `bot-report` needs Breakthrough (sectors taken a match).
+
+**Pitfalls:**
+- Driving MapMaker with Playwright against the dev server: any edit to a file the page imports reloads the page and
+  kills the run (save edits for after).
+- MapMaker in test mode (`?test=1`) hands out seeded ids: import an existing map without it, or new ids can repeat
+  the map's own.
+- Rapier's character controller can stall on one big flat merged floor box at some spots (setPieces4's gate tests
+  check headroom instead of walking every gate): worth a look if a player reports a stuck spot.
+- Bots without health pickups: a hurt bot (under its self-preservation share of its health) retreats from every fight
+  it sees for the rest of its life (no regeneration), so on the Range a hurt attacker rarely pushes again. Health
+  pickups by the spawn groups didn't help the attackers (the defenders' were nearer the fighting: the beach fell in 1
+  of 8), so the Range has none; for Phase B: hurt bots with nothing to heal at could keep their objective.
+- Slots alternate between two teams (0 one team, 1 the other...): anything picking "every other bot" by `slot % 2`
+  picks a whole team or nobody. Breakthrough's bots go by their place among their side's bots.
+
+<!-- /breakthrough -->
+
 <!-- weapon-sets -->
 ### Weapon sets (`wip/weapon-sets`, agent, 2026-11-07; from main 2c48debf, main e0690630 and d3830145 merged in; green on `check/weapon-sets` at 4142cf63, run 42369778613 (the full suite: unit, maps, build, check, bots, perf budget and mass, 16 e2e shards) and at 16b5a8a4, run 42371041159 (after the shuffled deck: unit, maps, build, check, bots, perf, the 11 e2e shards it needed); not landed)
 The owner's ask (2026-11-06: "I have never once seen the sheep weapon, hardly see swarm launcher or gravity weapon …
@@ -116,9 +196,8 @@ Weapon set list open: "Map default (Military)" on Sandgate, Chaos picked, its fa
 `weapon-sets-chaos-spawn.png` (a Chaos spawn: the goo gun in hand, a sheep to throw), `weapon-sets-mapmaker.png` (Map
 properties, Weapon set Sci-fi and its line).
 
-**For Breakthrough** (`wip/breakthrough`): both branches bump the map format to v28. Whichever lands second renumbers
-its own migration to the next version (its `MIGRATIONS` entry, `MAP_FORMAT_VERSION`, the schema comment) and re-exports
-the maps it touched through MapMaker; the stamp fix is the same text on both. Iron Coast's default set is **Military**
+**For Breakthrough** (`wip/breakthrough`): done there: Breakthrough's format is v29 after this v28 (its migration
+after this one), and the maps it touched are re-exported through MapMaker; the stamp fix is the same text on both. Iron Coast's default set is **Military**
 (owner): set it in MapMaker's Map properties when the map is built.
 
 **For the owner:**
@@ -365,11 +444,10 @@ sniper-role bots' scoped kills 4 → 27 in the sniper sample). The nightly score
 plants 0.8 → 0.9, rescues 1.5 → 2.0; limits raised: CTF idle spells of 10 s+ 2 → 2.5 a match (snipers holding spots),
 Bomb idle out of a fight 12 → 14 % (defenders waiting longer at their sites for attackers moving up in bounds).
 
-**Breakthrough** (`wip/breakthrough`, another agent): its mode has `botGoal` only. When it lands, its `botBrief` should
-hand `playbookFor('core.breakthrough').team` with the attack objective (`stage` while the defenders hold it) and its
-`botTrips` the attackers' spawn to each objective; its bot logic reads `playbookFor('core.breakthrough').breakthrough`
-for the defenders' shares (guns, trenches, crest snipers, falling back). Whichever lands first, the other merges main
-and keeps both sides in `modes/types.ts`, `modes/index.ts` and `sim/match.ts`.
+**Breakthrough** (`wip/breakthrough`): wired (2026-11-07): its `botBrief` hands `playbookFor('core.breakthrough').team`
+with the attack objective (`stage` while the defenders hold it), its `botTrips` each sector's spawn groups to each
+objective, and its bot logic reads `.breakthrough` for the defenders' shares (guns, trenches, crest snipers, falling
+back). See the Breakthrough section above.
 
 **Left after part 2:** CTF against a held flag (bounds slow the attack: Diamond Park's first capture in five minutes
 in 4 of 6 seeds, 6 of 6 in part 1); the busiest way under half (60 % on the long CTF maps: routes that stay on a

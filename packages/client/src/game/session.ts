@@ -134,6 +134,7 @@ import type { BoardData } from './scoreBoard.ts';
 import { CoverState } from './coverState.ts';
 import { FortsClient } from './fortsClient.ts';
 import { HOSTAGE_SLOT_BASE, ModeHud } from './modeHud.ts';
+import type { MinimapBlip } from './minimap.ts';
 import { RaceHud } from './raceHud.ts';
 import { LobbyAdvertiser, builtHub, hubAddress, hubSetting } from './hub.ts';
 import { myRegion } from '../profile.ts';
@@ -1565,7 +1566,7 @@ export class GameSession {
         this.map = loaded.map;
         this.hostPanel.setMap(loaded.map);
         this.view.buildMap(loaded.map, geometry);
-        if (teams && (msg.rules.mode === 'core.ctf' || msg.rules.mode === 'core.forts' || msg.rules.mode === 'core.koth' || msg.rules.mode === 'core.elim' || msg.rules.mode === 'core.bomb' || msg.rules.mode === 'core.hostage')) this.modeHud = new ModeHud(this.hud, this.view, loaded.map, teams, msg.rules.mode, () => this.slot);
+        if (teams && (msg.rules.mode === 'core.ctf' || msg.rules.mode === 'core.forts' || msg.rules.mode === 'core.koth' || msg.rules.mode === 'core.elim' || msg.rules.mode === 'core.bomb' || msg.rules.mode === 'core.hostage' || msg.rules.mode === 'core.breakthrough')) this.modeHud = new ModeHud(this.hud, this.view, loaded.map, teams, msg.rules.mode, () => this.slot);
         if (msg.rules.mode === 'core.race') this.raceHud = new RaceHud(this.hud, this.view, loaded.map, () => this.slot);
         this.sfx.setMap(loaded.map);
         this.sfx.joined();
@@ -2708,9 +2709,11 @@ export class GameSession {
       // Teammates on the minimap (co-op: every player is one).
       const mine = this.hud.team(this.slot);
       const coop = this.allied;
-      const blips = poses
+      const blips: MinimapBlip[] = poses
         .filter((p) => p.slot !== this.slot && p.slot < NPC_ID_BASE && p.alive && (coop || (mine && this.hud.team(p.slot)?.id === mine.id)))
         .map((p) => ({ x: p.x, z: p.z, color: coop ? '#2ecc71' : mine!.color }));
+      // The mode's objectives (Breakthrough's in play), pinned to the rim when out of range.
+      blips.push(...(this.modeHud?.minimapBlips() ?? []));
       // Pings show on the minimap too.
       for (const p of this.pings) blips.push({ x: p.at.x, z: p.at.z, color: p.target !== undefined ? '#ff3b3b' : '#ffd24a' });
       // A UAV sweep puts every enemy (and hostile NPC) on the map too.

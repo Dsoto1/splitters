@@ -40,7 +40,10 @@ import { makeMap } from './helpers.ts';
 
 beforeAll(() => Promise.all([initPhysics(), initNavigation()]));
 
-/** The pieces with open sides (no wall of their own at a port): setPieces3.test.ts proves their ways through. */
+/**
+ * The pieces with open sides (no wall of their own at a port): setPieces3.test.ts proves their ways through, and
+ * setPieces4.test.ts the command bunker's gates and the gatehouse's arches (MAP 21).
+ */
 const OPEN_SIDED = [
   'setpiece.arena_arcade',
   'setpiece.arena_attic',
@@ -49,7 +52,9 @@ const OPEN_SIDED = [
   'setpiece.arena_vomitorium',
   'setpiece.cage_block',
   'setpiece.cage_lift',
+  'setpiece.cliff_stair_gate',
   'setpiece.cliff_stair_grand',
+  'setpiece.command_bunker',
   'setpiece.landing_craft_beached',
   ...['bend', 'end', 'jog', 'junction', 'straight'].flatMap((s) => [`setpiece.trench_${s}`, `setpiece.trench_${s}_sandbag`]),
   'setpiece.tunnel_bend',
@@ -150,7 +155,8 @@ describe('z-fighting audit over every set piece', () => {
     for (const def of library.pieces.values()) {
       for (const rotation of [0, 1, 2, 3] as Rotation[]) {
         for (const mirror of def.mirror === 'free' ? [false, true] : [false]) {
-          pieces.push({ id: `piece_${n}`, piece: def.id, x: (n % 8) * 6, y: Math.floor(n / 8) * 6, z: def.id.includes('skybridge') ? 1 : 0, rotation, mirror, pack: packs[n % packs.length] });
+          // 8 cells apart: the largest pieces (the command bunker, 4 × 4) turn about their anchor into the cells behind it.
+          pieces.push({ id: `piece_${n}`, piece: def.id, x: (n % 8) * 8, y: Math.floor(n / 8) * 8, z: def.id.includes('skybridge') ? 1 : 0, rotation, mirror, pack: packs[n % packs.length] });
           n++;
         }
       }

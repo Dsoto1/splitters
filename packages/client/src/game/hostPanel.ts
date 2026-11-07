@@ -1,4 +1,4 @@
-import { DEFAULT_TEAMS, botSetLabel, getWeaponSet, HOST_BOT_SKILLS, HOST_BOT_STYLES, MODE_LABELS, ROTATION_MAX, SCORE_LIMIT_MAX, TICK_RATE, isTeamMode, isTwoTeamMode, limitsScale, mapPickPlayers, matchingPreset, peopleAndBots, scoreStep, setupFit, sizePresets, suggestedLimits, teamsLabel, type HostCommand, type HostRulesPatch, type HostState, type MapDocument, type MatchSetup, type RotationEntry, type RotationPreset, type RotationState } from '@tiletrigger/shared';
+import { BREAKTHROUGH_POOL_MAX, DEFAULT_TEAMS, botSetLabel, getWeaponSet, HOST_BOT_SKILLS, HOST_BOT_STYLES, MODE_LABELS, ROTATION_MAX, SCORE_LIMIT_MAX, TICK_RATE, isTeamMode, isTwoTeamMode, limitsScale, mapPickPlayers, matchingPreset, peopleAndBots, scoreStep, setupFit, sizePresets, suggestedLimits, teamsLabel, type HostCommand, type HostRulesPatch, type HostState, type MapDocument, type MatchSetup, type RotationEntry, type RotationPreset, type RotationState } from '@tiletrigger/shared';
 import { botCastSelect, choice, el, field, fitChip, fitList, limitsText, segmented, settingRow, sizeChips, stepper, teamEditor, weaponSetSelect } from '../frontend/setupControls.ts';
 import { botManager } from '../frontend/botManager.ts';
 import { BOT_SET_PRESETS } from '../playlists.ts';
@@ -357,33 +357,39 @@ export class HostPanel {
     const players = s.teams ? d.sizes.reduce((a, b) => a + b, 0) : d.fill;
     const sug = r && limitsScale(s.mode) ? suggestedLimits(s.mode, players, s.teams ? d.sizes : undefined) : null;
     const suggestion: HTMLElement[] = [];
+    // Breakthrough wins by sectors: its "score" is reinforcements per attacker, its time each sector's.
+    const bt = s.mode === 'core.breakthrough';
+    const btSecs = r?.breakthroughSectorSeconds ?? 240;
     if (r && sug) {
       const size = s.teams && d.sizes.length <= 4 ? d.sizes.join('v') : `${players} players`;
-      const off = r.scoreLimit !== sug.scoreLimit || r.timeLimitSeconds !== sug.minutes * 60;
+      const off = bt ? r.breakthroughPool !== sug.scoreLimit || btSecs !== sug.minutes * 60 : r.scoreLimit !== sug.scoreLimit || r.timeLimitSeconds !== sug.minutes * 60;
       const use = el('button', { type: 'button', class: 'link', id: 'hc-use-suggested', textContent: 'Use suggested', title: 'Set the score and time suggested for this many players and bots (they apply with a new match: Apply & restart, or Save for next match)' });
       use.addEventListener('click', () => {
-        r.scoreLimit = sug.scoreLimit;
-        r.timeLimitSeconds = sug.minutes * 60;
+        if (bt) {
+          r.breakthroughPool = sug.scoreLimit;
+          r.breakthroughSectorSeconds = sug.minutes * 60;
+        } else {
+          r.scoreLimit = sug.scoreLimit;
+          r.timeLimitSeconds = sug.minutes * 60;
+        }
         redraw();
       });
-      suggestion.push(el('p', { class: 'setup-hint limits-line', id: 'hc-suggest' }, el('span', { textContent: `Suggested for ${size}: ${limitsText(s.mode, sug)}.` }), ...(off ? [use] : [])));
+      suggestion.push(el('p', { class: 'setup-hint limits-line', id: 'hc-suggest' }, el('span', { textContent: `Suggested for ${size}: ${limitsText(s.mode, sug)}${bt ? ' a sector' : ''}.` }), ...(off ? [use] : [])));
     }
-    const win = r
-      ? [
-          card(
-            'To win',
-            null,
-            el(
-              'div',
-              { class: 'field-grid' },
-              // Small scores step by one (a capture, a round); big ones by more (10, 50, 100).
-              field('Score limit', 'Score that wins (0: none).', stepper({ value: r.scoreLimit, min: 0, max: SCORE_LIMIT_MAX, step: r.scoreLimit < 50 ? 1 : scoreStep(r.scoreLimit), id: 'hc-score', label: 'score limit', onChange: (v) => ((r.scoreLimit = v), redraw()) }), { restart: true }),
-              field('Time limit', 'Minutes until the match ends (∞: none).', stepper({ value: Math.round(r.timeLimitSeconds / 60), min: 0, max: 120, id: 'hc-minutes', fmt: (v) => (v ? `${v} min` : '∞'), onChange: (v) => ((r.timeLimitSeconds = v * 60), redraw()) }), { restart: true }),
-            ),
-            ...suggestion,
-          ),
-        ]
-      : [];
+    const fields = !r
+      ? []
+      : bt
+        ? [
+            field('Reinforcements', 'Respawns per attacker (the pool is this times the attacking team, topped up by half as much for each sector taken).', stepper({ value: r.breakthroughPool, min: 1, max: BREAKTHROUGH_POOL_MAX, id: 'hc-score', label: 'reinforcements per attacker', onChange: (v) => ((r.breakthroughPool = v), redraw()) }), { restart: true }),
+            field('Sector time', "Minutes each sector puts on the clock (taking one adds the next one's).", stepper({ value: Math.round(btSecs / 60), min: 1, max: 15, id: 'hc-minutes', fmt: (v) => `${v} min`, onChange: (v) => ((r.breakthroughSectorSeconds = v * 60), redraw()) }), { restart: true }),
+            field('Second round', 'A second round with the sides swapped.', choice([['off', 'One round'], ['on', 'Swap sides']], r.breakthroughSwap ? 'on' : 'off', (v) => ((r.breakthroughSwap = v === 'on'), redraw()), 'hc-bt-swap'), { restart: true }),
+          ]
+        : [
+            // Small scores step by one (a capture, a round); big ones by more (10, 50, 100).
+            field('Score limit', 'Score that wins (0: none).', stepper({ value: r.scoreLimit, min: 0, max: SCORE_LIMIT_MAX, step: r.scoreLimit < 50 ? 1 : scoreStep(r.scoreLimit), id: 'hc-score', label: 'score limit', onChange: (v) => ((r.scoreLimit = v), redraw()) }), { restart: true }),
+            field('Time limit', 'Minutes until the match ends (∞: none).', stepper({ value: Math.round(r.timeLimitSeconds / 60), min: 0, max: 120, id: 'hc-minutes', fmt: (v) => (v ? `${v} min` : '∞'), onChange: (v) => ((r.timeLimitSeconds = v * 60), redraw()) }), { restart: true }),
+          ];
+    const win = r ? [card('To win', null, el('div', { class: 'field-grid' }, ...fields), ...suggestion)] : [];
 
     // ---- players and teams (live): the presets for this map, the team editor or the count, the fit check
     const rows: HTMLElement[] = [];

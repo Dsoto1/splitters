@@ -126,7 +126,7 @@ function benchMap(mapPath: string, clump: boolean): { row: string; cpuRow: strin
   let snapMs = 0;
   const objective = new Map<string, number>();
   const count = (ev: GameEvent) => {
-    const key = ev.e === 'flag' ? `flag ${ev.a}` : ev.e === 'hill' ? `hill ${ev.a}` : ev.e === 'elim' ? `round ${ev.a}` : ev.e === 'race' ? `race ${ev.a}` : ev.e === 'round_end' && mode === 'core.race' ? 'races won' : null;
+    const key = ev.e === 'flag' ? `flag ${ev.a}` : ev.e === 'hill' ? `hill ${ev.a}` : ev.e === 'elim' ? `round ${ev.a}` : ev.e === 'race' ? `race ${ev.a}` : ev.e === 'bt' ? `breakthrough ${ev.a}` : ev.e === 'round_end' && mode === 'core.race' ? 'races won' : null;
     if (key) objective.set(key, (objective.get(key) ?? 0) + 1);
   };
   // Idle: alive for the last five seconds and moved less than 2 m in them.
