@@ -187,8 +187,9 @@ group's corridor, and the search budget"; BOT_AI_PLAN.md "Phase C items 1-4, mea
 **Numbers** (main 0d03c3bd against the branch, BOT_AI_PLAN.md): stuck recoveries a bot-minute CTF 1.40 → 1.34, Team
 Deathmatch 0.92 → 0.68 (the plan's "halve": not met); 38 parkour moves a CTF match, 22 a Team Deathmatch one, under 2 %
 missed; CTF captures 22 → 18 (takes 85 → 112), busiest way 57 → 61 %; **the Breakthrough Range at 8 v 8 broke through
-BT_AFTER** (ablations in the plan: no single part accounts for it, and with every change off the build replays main
-exactly). Load: navmesh build +13 % on ten big maps (Qasr Medina the most, about a second, cached per map after).
+in 16 of 24 seeds against main's 21 (sectors 62 of 72 against 68), and the final build, seeds 1-12, in 9 of 12 against 11 (sectors 31 of 36 against 35)** (ablations in the plan: no single part accounts for it, and with every change off the build replays main
+exactly). Load: navmesh build +13 % on ten big maps (Qasr Medina the most, about a second, cached per map after). `pnpm bench 64
+30`: bot thinking 1.45 → 1.54 ms a tick (means; inside the 2.5 ms guard).
 
 **For the owner:**
 - Capitol Mall's upstairs office by (140, 4, 8), by the desks and a bookshelf (`prop_1626`): bots heading for the
@@ -196,7 +197,7 @@ exactly). Load: navmesh build +13 % on ten big maps (Qasr Medina the most, about
   the walkway?).
 - Qasr Medina: a bot on a 0.45 m wall top by (-13.3, 1.75, 26) stalls at its end (the character controller, the
   pitfall above); the parkour drop off it is switched off by the first bot that can't make it.
-- The Breakthrough Range's attack is weaker with Phase C (BT_AFTER): worth a playtest before Iron Coast leans on it.
+- The Breakthrough Range's attack is weaker with Phase C (broke through in 16 of 24 seeds against main's 21 (sectors 62 of 72 against 68), and the final build, seeds 1-12, in 9 of 12 against 11 (sectors 31 of 36 against 35)): worth a playtest before Iron Coast leans on it.
 
 **Pictures:** a sniper reaching a ledge only a jump gets onto, Fernwood Moon (top view and side view; session scratchpad
 `sniper-parkour-fernwood.png`, made by a scratch harness from a headless match).
