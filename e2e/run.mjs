@@ -16,7 +16,7 @@ import { chromium, devices } from 'playwright';
 import { CHARACTER_FLOWS, COVERAGE_MAP, COVERED_MAPS, FLOWS, MAP_FLOWS, MAP_PARTS } from './flowMap.mjs';
 import { assignShards, loadTimings } from './shards.mjs';
 import { installFrameClock } from './frameClock.mjs';
-import { FLICKER_LIMITS, analyseFrames, summary as flickerSummary } from './flicker.mjs';
+import { FLICKER_LIMITS, analyseFrames, frameStats, summary as flickerSummary } from './flicker.mjs';
 
 // E2E_CLIENT_PORT / E2E_SERVER_PORT move the preview and game servers (e.g. when another checkout is testing).
 const CLIENT_PORT = process.env.E2E_CLIENT_PORT ?? '4173';
@@ -4585,6 +4585,9 @@ async function flashingFlow(browser) {
       return thrown;
     }, [n, 1000 / FPS]);
   const clockErrors = [];
+  // Through the wait for players and the start countdown (nobody fires before play), on the page's clock.
+  for (let i = 0; i < 40 && (await sim(page, (m) => m.phase)) !== 'playing'; i++) clockErrors.push(...(await step(15)));
+  check((await sim(page, (m) => m.phase)) === 'playing', 'the match is in play before the recording starts');
   /** You, the bots and your aim held where a moment wants them (each tick), never dying, magazines full. */
   const stage = (mo) =>
     sim(page, (m, me, mo) => {
@@ -4604,7 +4607,7 @@ async function flashingFlow(browser) {
       };
       pin();
       self.__flashPin = setInterval(pin, 1000 / 60);
-    }, mo);
+    }, { me: mo.me, bots: mo.bots });
   /** Aim from your eye (1.6 m up) at a point. */
   const aim = (from, to) => {
     const d = [to[0] - from[0], to[1] - from[1] - 1.6, to[2] - from[2]];
@@ -4630,11 +4633,11 @@ async function flashingFlow(browser) {
     },
     {
       name: 'fence',
-      label: 'the electric fence (you against it, two bots against it further along)',
+      label: 'the electric fence (you against it, two bots against it across the wires)',
       weapon: 'core.arc_caster',
       me: [20.5, 0, 24.3],
-      look: aim([20.5, 0, 24.3], [27, 1.1, 24]),
-      bots: [[23.2, 0, 23.72], [25.8, 0, 24.28]],
+      look: aim([20.5, 0, 24.3], [25, 1.2, 21.5]),
+      bots: [[23, 0, 23.7], [25.4, 0, 23.7]],
     },
     {
       name: 'blast',
@@ -4691,7 +4694,14 @@ async function flashingFlow(browser) {
       const { frames, errors: grabErrors } = await takeFrames(page, W, H);
       clockErrors.push(...grabErrors);
       const r = analyseFrames(frames, FPS);
-      const activity = Math.max(...r.meanL) - Math.min(...r.meanL);
+      // How much of the picture moved at most between two frames (a change of 0.02 or more): the moment happened.
+      const stats = frames.map((f) => frameStats(f.px, f.w, f.h));
+      let activity = 0;
+      for (let i = 1; i < stats.length; i++) {
+        let moved = 0;
+        for (let k = 0; k < stats[i].L.length; k++) if (Math.abs(stats[i].L[k] - stats[i - 1].L[k]) >= 0.02) moved++;
+        activity = Math.max(activity, moved / stats[i].L.length);
+      }
       runs[on ? 'on' : 'off'] = { ...r, activity, frames: frames.length };
       const strip = await frameStrip(frames);
       if (strip) writeFileSync(`${ARTIFACTS}/flashing-${mo.name}-${on ? 'on' : 'off'}.png`, strip);
@@ -4701,7 +4711,7 @@ async function flashingFlow(browser) {
     report.moments[mo.name] = Object.fromEntries(
       Object.entries(runs).map(([k, r]) => [k, { pass: r.pass, reasons: r.reasons, transitionsPerSecond: r.perSecond, flashesPerSecond: r.flashesPerSecond, transitions: r.transitions.length, maxStep: +r.maxStep.toFixed(4), redTransitionsPerSecond: r.red.perSecond, redFlashes: r.red.onsets.length, maxRedArea: +r.red.maxArea.toFixed(4), activity: +r.activity.toFixed(4), meanL: r.meanL.map((x) => +x.toFixed(4)), change: r.change.map((x) => +x.toFixed(4)) }]),
     );
-    check(on.frames === RECORD && off.frames === RECORD && off.activity > 0.002, `${mo.name}: the moment was recorded, every frame, and something happened in it (${on.frames} + ${off.frames} frames; brightness moved ${off.activity.toFixed(3)} with the setting off)`);
+    check(on.frames === RECORD && off.frames === RECORD && off.activity > 0.003 && on.activity > 0.003, `${mo.name}: the moment was recorded, every frame, and it happened (${on.frames} + ${off.frames} frames; up to ${(on.activity * 100).toFixed(1)} % / ${(off.activity * 100).toFixed(1)} % of the picture changed between two frames, on / off)`);
     check(on.pass, `${mo.label}, Reduce flashing on: ${flickerSummary(on)}${on.reasons.length ? ` (FAILS: ${on.reasons.join('; ')})` : ''}`);
   }
   writeFileSync(`${ARTIFACTS}/flashing.json`, JSON.stringify(report));

@@ -111,3 +111,55 @@ sub-millimetre at any range but needs a full-screen copy every frame and patchin
 left it isn't needed. WebGPU (opt-in, `?renderer=webgpu`) now runs without a stencil buffer (nothing uses one), so
 Babylon gives it a 32-bit float depth buffer, and with reverse depth on WebGPU's [0, 1] range that is the precise
 setup at no cost. Not measurable in the container (SwiftShader's depth is float either way); not judged on a GPU.
+
+## Reduce flashing (seizure safety)
+
+The owner dropped a planned flashbang ("I don't want to give people seizures", 2026-11-06) and asked for this setting.
+**Options → Accessibility → Reduce flashing**, also in the pause menu (Settings → Sound and screen): **on by default**,
+saved as `tiletrigger.reduceFlashing` (`game/reduceFlashing.ts`), applied at once in a running match. Off, everything
+looks as it always did.
+
+What flickered, and what the setting does to each:
+
+| What | Off (as before) | On |
+|---|---|---|
+| Lightning: the Arc Caster, arc turrets, electric fences (`view.addArc`, Binbun's Electric FX bolts and crackles) | a new crackling bolt and a crackle for every arc, 7 a second from an Arc Caster, 10 from a turret | one steady beam per source (`steadyArcs.ts`: a thin core in a soft glow and a glow where it lands); its ends glide after the targets, it comes up over 0.1 s, holds while arcs keep coming and fades over 0.35 s after the last |
+| Fast beam weapons (Arc Caster, lasers) | a beam flash per shot | the same steady beam |
+| An arc turret's charge | its glow and ball flicker 7 times a second; the pack's crackling ball of lightning | steady glow, the plain ball |
+| Electric fence wires (border and placed) | hum at 2 and 7.5 Hz plus random crackles | a steady glow breathing slowly |
+| Blasts (`blastFx`, the plain fireball, vehicle explosions) | full brightness at once; a white-hot flash ball on vehicles | dimmed the nearer they are to the camera (`blastStrength`: 30 % within 0.6 radii, full beyond 3.6 radii), brought up over 0.12 s (`GodotVfx` gain and fade-in: each brightness step a copy of the effect's materials), no white flash ball |
+| Muzzle flashes (yours and others') | as the pack draws them | 75 % size, 45 % opacity (`SAFE_MUZZLE`) |
+| Map lights logic drives (`blink`, `light_blink`, `light_flash`, colour changes) | hard on/off up to 10 times a second; "Flash" flares to 2.5 × | a smooth pulse at most once a second between 55 % and full (`blinkLevel`); "Flash" flares to 1.35 ×; level and colour ease (off to full in about 0.4 s) |
+| Candles that gutter | random drops near dark | a slow, slight sway |
+| Small blinking indicators (a mine's light, a thrown mine, a sticky grenade, the bomb, a laser trap's warning) | blink 1-12 times a second | a gentle pulse at most once a second; the laser warning shows its beams faint and steady |
+| The hurt vignette (HUD) | saturated red edge, snapping on with each hit | a duller red (not a saturated red by WCAG's test), reaching less far in, eased in over 0.15 s, held steady under fire, gone over 0.8 s (`hurtVignette.ts`) |
+| Diving into water or another liquid | the haze snaps on and off at the surface | eased over a third of a second |
+
+Not changed (nothing flashes there): smoke grenades' haze (already eased), status tints (CSS transitions), the sky (no
+storm lightning exists; a storm flash would have to be capped and eased the same way), the health bar (no low-health
+pulse exists).
+
+### The flicker check (e2e flow `flashing`, `e2e/flicker.mjs`)
+
+`E2E_ONLY=flashing node e2e/run.mjs`. MapMaker makes a night scene with its own edits (two dark rooms, one lit by a
+red alarm light blinking four times a second, an Arc Turret, an electric fence); in play the brightest moments are
+recorded frame by frame at 30 frames a second of the page's own time (`e2e/frameClock.mjs` freezes the page's clock
+and steps it a frame at a time, so a recorded second is a second of play however slowly CI draws), each canvas frame
+with the HUD's hurt tint drawn over it, at 160 × 90:
+- an arc fight up close (an Arc Turret locked on you 4.5 m off, your Arc Caster on three bots between you);
+- the electric fence (you against it, two bots against it across the wires);
+- four grenade blasts 3-5 m in front of the camera in 0.8 s;
+- a machine gun firing at a wall 3.5 m off in the dark room;
+- the alarm light in its dark room.
+
+The measure is WCAG 2.3.1 ("Three Flashes or Below Threshold"), the way photosensitivity analysers apply it:
+- relative luminance per pixel; a frame's change is the largest change at least **a quarter of the screen** made
+  (brightening or darkening), counting only pixels whose darker state is **below 0.8**;
+- same-way changes add up over frames; reaching **0.1** is a transition (a fade over several frames counts once);
+- a flash is a pair of opposing transitions: **more than 3 flashes in any second (more than 6 transitions) fails**;
+- the same on red saturation ((R − G − B) × 320 in linear light where R / (R + G + B) ≥ 0.8; a change of 20 is a
+  red transition), and **a quarter of the screen turning saturated red within 0.25 s fails at once**.
+
+With the setting on every moment must pass; the same moments with it off are measured and reported as numbers only.
+The flow writes frame strips (every 4th frame) and the numbers to `e2e-artifacts/` (`flashing-<moment>-<on|off>.png`,
+`flashing.json`). A new effect that can fill a large part of the screen gets a moment here (CLAUDE.md, "Accessibility").

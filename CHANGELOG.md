@@ -8,6 +8,18 @@ made only on a commit that passed CI on a check branch.
 
 ## Unreleased
 
+**Reduce flashing: a seizure-safety setting, on by default** (owner, 2026-11-06, after dropping the flashbang: "I
+don't want to give people seizures"; docs/LOOK.md, "Reduce flashing")
+- **Options → Accessibility → Reduce flashing**, also in the pause menu's Settings; on unless you switch it off.
+- With it on, lightning (the Arc Caster, arc turrets, electric fences) holds a steady glow instead of crackling bolts,
+  fence wires and an arc turret's charge stop flickering, blasts near you are dimmer and fade in instead of whiting
+  out the screen, muzzle flashes are smaller and dimmer, blinking map lights and indicators pulse gently at most once
+  a second, a light's "Flash" flares less and eases, the haze of water you dive into eases in, and taking damage
+  tints the screen edge a duller red that eases in and holds instead of flashing red with every hit.
+- **A flicker check in CI** (e2e flow `flashing`): the brightest moments (an arc fight up close, the fence, grenade
+  blasts in front of you, a machine gun in a dark room, a red alarm light) are recorded frame by frame and held to
+  WCAG 2.3.1's flash and red-flash thresholds with the setting on; with it off they are measured and reported.
+
 **New weapon and grenade models, sharper textures for the gun in your hands, and a Smoke Grenade** (owner,
 2026-11-06: "replace our tommy gun with the 3DModelsCC0 one, and bring in those others to replace any one-off
 originals"; "we want these weapons to look a little sharper, clearer, better resolution"; docs/ARSENAL.md, "Weapons
