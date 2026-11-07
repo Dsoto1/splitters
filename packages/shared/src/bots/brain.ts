@@ -2084,7 +2084,9 @@ export class BotBrain {
     this.doing = doing;
     // (Not off a ladder in mid-air: letting go halfway up a tall one is a fall that hurts. Standing at its top or
     // foot, a hop is what gets you on or off it.)
-    if ((this.checkStuck(view, this.meantToMove) && (!me.climbing || me.grounded)) || this.jumpNext) {
+    // (Strafing on the spot in a fight isn't being stuck: its runs reverse when something stops them, updateStrafe; a
+    // stuck recovery there only threw away its cover and route. Going somewhere, or backing off, is judged.)
+    if ((this.checkStuck(view, this.meantToMove && (moveYaw !== null || backOff)) && (!me.climbing || me.grounded)) || this.jumpNext) {
       buttons |= BUTTON_JUMP;
       this.jumpNext = false;
     }

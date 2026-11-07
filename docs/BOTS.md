@@ -749,6 +749,80 @@ in) all made the Breakthrough Range's attack worse, a lot (8 v 8: 5 to 9 breakth
 attackers that stay die, and their deaths spend the pool. Kept as it is; the numbers are in BOT_AI_PLAN.md, "Phase C
 item 0, measured".
 
+## Parkour (Bot AI Phase C item 1)
+At load the navmesh build (`NavWorld.build`, `nav/parkour.ts`) adds one-way links for the moves a player makes off the
+walkable ground, so routes take them:
+- **drop**: walking off a ledge onto ground below, no more than a fall that doesn't hurt (5 m at normal gravity);
+- **gap**: a running jump across a gap (a metre or more of it, over ground at least a metre lower) onto ground about as
+  high or up to 3 m lower, up to 5.5 m across;
+- **up**: a jump up onto a ledge 0.45-1.8 m higher within a body's reach, the legs tucked up in the air (crouch while
+  airborne, as players do) for the higher ones.
+
+Candidates come from every open edge of the navmesh (every 1.5 m), and only where the move saves a real walk: the walk
+round is 2.5 times the move or more and at least 9 m, or there is none within 60 m. Best savings first, each candidate
+is **played through the real movement code** (`stepMovement`) with the inputs a bot gives (`parkourInput`: face the
+link's way, run, sprint for a gap, jump at the takeoff, tuck in the air), from takeoffs a little before and past the edge;
+the takeoff kept is one that also works 0.15 m early and late, for the standard body from the middle, a small body from
+one side and a large one from the other (a drop: the standard body once). One link for a stretch of ledge (4 m apart);
+none beside a candidate that failed. A link that would lead from ground that routes back to the main area onto ground that
+doesn't (a pillar with no way off) is left out. At most 160 a map (50 drops, 80 of each jump), 240 candidates played; the
+links are cached per navmesh, so the next match on the map reuses them. Lifts, rope lifts included, were links already
+(`liftLinks`); moves players don't have (vaults, mantles) aren't made.
+
+**Routes:** parkour links are navmesh area `PARKOUR_AREA`, which costs 1.6 times walking a metre, so a bot walks unless
+the move saves a real walk; **agile** bots (flankers, the recon pair, snipers, the Arena style: `BotBrain.agile`, the
+`findPath` `agile` flag) take them at walking's cost.
+
+**Running one** (`BotBrain.parkourMove`): when its route's next leg is a link (`NavWorld.parkourAt`, the leg's corners
+the link's start and end), the bot faces the link's way, runs (sprints for a gap: out of breath, it waits at the start
+for its stamina), jumps at the takeoff and tucks in the air, with no shooting, scoping or stance meanwhile; the match
+has it think every tick, and move in full detail, until it lands (its jump is timed to the tick). Down by the link's end
+counts as made, anywhere else as missed; one it doesn't start within 6 s is given up (`bot-report`: links, made, missed,
+given up).
+
+**Snipers' spots others don't go to:** `NavWorld.parkourPlaces()` are the main area's places that walking and the map's
+own links don't reach from the spawns, only parkour (a roof a jump gets onto). Vantage spots are looked for on them all,
+on top of the spread-out samples, and a sniper spot there is worth 0.45 more (`bots/vantage.ts`; `bot-report`: spots
+"only parkour reaches"). Few maps have such places: most roofs have stairs, or are higher than a jump.
+
+**What it costs:** nothing a tick but bots on a link thinking every tick. At load, about 13 % more for the navmesh build
+on ten big maps together (measured at load 11 on 4 cores; Qasr Medina, with its 280 drop candidates off flat roofs, the
+most: a second or so).
+
+## Ground that goes (Bot AI Phase C item 2)
+The navmesh is fixed for the match and has breakable props and free blocks that crumble, break, hide or show, and
+movers' blocks, as they start (a mover's at its first point). Doors and walls that block paths were openings already
+(flag bits routes keep out of when shut). Now the ground bots stand on that can go is too: the tops of breakable props,
+of free blocks and of movers' blocks that aren't lifts (`Scenario.surfaces`: bridges, trapdoors, crumbling floors,
+drawbridges) get flag bits after the openings' (14 in all, shared), and a few times a second the match tells the navmesh
+which are gone now (`Scenario.surfacesGone`: broken, crumbled, hidden, a mover away from its first point;
+`NavWorld.setGone`). Every route search keeps off gone ground (except the polygon it starts or ends on: a bot riding a
+button-called lift), and a bot whose route was planned before plans again. When the ground comes back, so do the routes.
+A breakable crate or wall that opens a way when it breaks doesn't open a route (the navmesh has no ground under it):
+that needs the navmesh rebuilt there (a tiled navmesh: not done).
+
+## Crowds (Bot AI Phase C item 3)
+Bodies don't block each other in this game (the movement code ignores other players), so crowds never jam: bots pass
+through each other. They did so head-on in doorways, tunnels and on stairs. Now a travelling bot with a teammate within
+4 m ahead coming the other way (facing it) steers to its right, as both do (`BotBrain.separate`, on the allies' grid in
+big matches), so they pass side by side. And a bot strafing in a fight is no longer judged stuck when its runs reverse in
+the same second (they reverse by themselves when something stops them: the stuck recovery only threw away its cover and
+route).
+
+## Routes along a group's corridor, and the search budget (Bot AI Phase C item 4)
+The team brain's groups take different corridors to the objective (Phase B). A bot took its corridor by its via and
+then the shortest way on, and was back on the main way by the trip's middle (60 % of a team on the busiest way on the
+long CTF maps). Now a route for a group's job is planned along the corridor's own polygons all the way to the objective
+(`NavWorld.pathAlong`: one short search onto the corridor polygon nearest the bot, then the corridor's polygons, the
+straight path through them), when the corridor ends at the goal; when it can't (shut by a door, ground gone, off its
+end), by its via as before, for 10 s (`bot-report`: routes along a group's corridor). The common trips' corridors are
+cached per navmesh already (`findCorridors`).
+
+**The per-tick search budget:** at most 24 route searches start in a tick (`NavWorld.beginTick`, `takeSearch`); a bot
+over it keeps the route it has and plans next tick (one with no route left, or with ground gone under its route, always
+searches). A 96-bot match averages about ten a tick; the budget only flattens spikes (a respawn wave, a flag taken)
+(`bot-report`: searches put off a tick).
+
 ## Team brain and route variety (Bot AI Phase B)
 
 **Corridors** (`nav/corridors.ts`; BOT_AI_PLAN.md Phase B item 4): for the trips a mode's bots make again and again
