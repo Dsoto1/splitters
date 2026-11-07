@@ -884,26 +884,63 @@ before the stone. The brief: session scratchpad `briefs/slack-pass.md`.
     clear would tighten round props; it would change every voxel prop's collision.
   - Natural rocks keep their two tiers (`isRock`): voxelised, the boulders alone would add over 10,000 boxes to the maps.
 
-### Queued (owner, 2026-11-06): "Reduce flashing", a seizure-safety setting. A small job, the next small slot
-**Why:** the owner dropped the planned flashbang ("I don't want to give people seizures").
+<!-- reduce-flashing -->
+### Reduce flashing: a seizure-safety setting and a CI flicker check (`wip/reduce-flashing`, agent, 2026-11-07; from main e0690630, main 5087b0b6 merged in; CI on `check/reduce-flashing` at bf1631e0, run 42373039632; not landed)
+**Why:** the owner dropped the planned flashbang ("I don't want to give people seizures", 2026-11-06) and asked for
+this. docs/LOOK.md, "Reduce flashing", has the full table and the check; CLAUDE.md has the new "Accessibility" rule (no
+new effect may add a full-screen flash, white-out or rapid flicker; new effects must pass the flicker check).
 
-**What already flickers:**
-- lightning from the arc weapons, electric fences and arc turrets (Binbun's Electric FX crackle);
-- big explosions flaring near the camera;
-- any strobing light in the maps.
+**The setting:** Options → Accessibility → Reduce flashing, and the pause menu (Settings → Sound and screen). On by
+default, saved as `tiletrigger.reduceFlashing` (`game/reduceFlashing.ts`: `reduceFlashing()`, `blinkLevel`, `ease`,
+`blastStrength`, `SAFE_*`), applied at once mid-match (`tiletrigger:reduce-flashing` event). With it on:
+- **Lightning** (Arc Caster, arc turrets, electric fences; also fast beam weapons): one steady beam per source
+  (`game/steadyArcs.ts`, keyed by shooter, turret or stretch of fence) instead of a new Electric FX bolt and crackle
+  per arc; the turret's charge glow stops flickering and shows the plain ball, not the pack's crackling one; fence
+  wires glow steadily (`borderVisuals.ts buildFence`).
+- **Blasts**: dimmed near the camera (`blastStrength`: 30 % within 0.6 radii, full beyond 3.6) and faded in over
+  0.12 s; this needed a per-play brightness in the VFX player (`GodotVfx` options `gain`/`fadeIn`: a `u_gain` uniform
+  after the tone map, each tenth a copy of the effect's materials made on first use; `u_gain` 1 everywhere else, so
+  nothing changes with the setting off). Vehicle explosions lose the white-hot flash ball.
+- **Muzzle flashes** 75 % size, 45 % opacity (`SAFE_MUZZLE`; `MuzzleFlashRig.fire(id, scale, opacity)`).
+- **Map lights** (`scenarioVisuals.ts`): blinking is a smooth pulse at most once a second between 55 % and full; a
+  logic "Flash" flares to 1.35 (2.5 off); level and colour ease; candles don't gutter. Small indicators (mines, sticky
+  grenade, bomb, laser-trap warning) pulse gently instead of blinking (the bomb's fuse is in the mode HUD).
+- **Hurt vignette** (`game/hurtVignette.ts`, hud.ts): now drawn from JS every frame (`hud.tickHurt`) in both looks:
+  off, the classic saturated-red edge as before; on, a duller red (R/(R+G+B) 0.76 in linear light, under WCAG's 0.8)
+  further out, eased in over 0.15 s, held under fire, gone over 0.8 s.
+- **Underwater haze** eases over a third of a second.
+- Nothing to do: no storm lightning, no low-health pulse exist; smoke and status tints were already eased.
 
-**The setting:**
-- **Accessibility → "Reduce flashing", on by default:**
-  - lightning keeps a steady glow instead of crackling;
-  - full-screen brightness jumps (an explosion right in front of you, a muzzle flash in the dark) are capped and
-    eased in over a few frames;
-  - strobing lights hold steady.
-- **A check in CI:**
-  - an e2e flow records frames of the brightest moments: arc fights, a blast close up, the fence;
-  - it fails if any part bigger than about a quarter of the screen changes brightness more than three times a second
-    by a large amount, or turns saturated red. That is the usual photosensitivity guideline (WCAG 2.3.1, "three
-    flashes or below threshold").
-- **No new effect may add** a full-screen flash or white-out. CLAUDE.md gets the rule when this lands.
+**The check** (e2e flow `flashing`; `e2e/flicker.mjs`, `e2e/frameClock.mjs`; unit tests `tools/ci/test/flicker.test.mjs`,
+`packages/client/test/reduceFlashing.test.ts`): MapMaker builds a night scene with its own edits (two dark rooms, one
+with a red alarm light blinking 4/s; an Arc Turret; a 12 m electric fence), TEST plays it on the page's thread, the
+frame clock freezes the page's time and steps it 1/30 s a frame, and each canvas frame (160 × 90, the hurt tint drawn
+over it) is grabbed. Fails, with the setting on, on more than 6 transitions in a second (a quarter of the screen
+changing relative luminance by 0.1 or more, darker state under 0.8; same-way changes add up) or a quarter of the screen
+turning saturated red within 0.25 s or more than 6 red transitions a second. Off: numbers only. It also reports WCAG's
+stricter area (a quarter of a 10° field, a third of the screen each way). Frame strips and `flashing.json` go to
+e2e-artifacts (CI uploads them only when a flow fails). Local run, 255 s; CI timings: `e2e/timings.json` has a 240 s
+guess until CI measures it.
+
+| Moment (2 s each) | Off: transitions/s (10° field) | Off: biggest quarter-screen change | On: transitions/s (10° field) | On: biggest change |
+|---|---|---|---|---|
+| Arc fight up close | 0 (1) | 0.000 | 0 (0) | 0.000 |
+| Electric fence | 0 (0) | 0.000 | 0 (0) | 0.000 |
+| Four blasts in front of you | 5 (13) | 0.254 (white-out: screen 0.31) | 2 (4) | 0.072 |
+| Machine gun in a dark room | 0 (0) | 0.000 | 0 (0) | 0.000 |
+| Red alarm light, 4 blinks/s | **9 (9): fails WCAG** | 0.123 | 0 (0) | 0.005 |
+
+What the numbers say: at these distances the arcs, the fence and your muzzle flash cover too little of the screen to
+count as flashes even with the setting off (they flicker hard, but small); the setting still takes their strobing out.
+The real hazards were blinking lights (the alarm's 4 flashes a second fails WCAG outright; 26 maps blink or flash
+lights, at up to 4 a second) and blasts close up (a white-out over most of the screen).
+
+**Left / for the owner:**
+- Lights blinking 3-4 times a second (Starhaven's bay lights and beacons, Serene City's alarm, Sushi Belt's signs and
+  others) are at or over WCAG's limit with the setting off; the setting fixes them, the maps could also blink slower.
+- The bomb's light no longer speeds up with the setting on (its fuse shows in the HUD).
+- A storm with lightning flashes would need the same cap and ease (none exists).
+<!-- /reduce-flashing -->
 
 ### Queued (owner-approved, 2026-11-06): weapon sets. After the Match Setup follow-ups, alongside Bot AI Phase B
 **Built** (2026-11-07): see "Weapon sets" near the top (`wip/weapon-sets`). The ask as it was queued:
