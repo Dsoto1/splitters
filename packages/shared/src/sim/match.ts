@@ -1,11 +1,12 @@
 import type RAPIER from '@dimforge/rapier3d-compat';
 import { simProfile } from './profile.ts';
-import { BotBrain, type BotWorldView, type CombatantView, type InventoryView, type MountView, type NoiseView, type PickupView, type SeatView } from '../bots/brain.ts';
+import { BotBrain, type BotWorldView, type CombatantView, type InventoryView, type MountView, type NoiseView, type OrderGoal, type PickupView, type SeatView } from '../bots/brain.ts';
 import { BOT_DIFFICULTIES, CORE_BOT_PROFILES, profileFor, type BotDifficulty, type BotProfile, type BotStyle } from '../bots/profile.ts';
 import { botSetInUse, mapBotSet, type BotEntry, type BotSet } from './botSet.ts';
 import { SightCache } from '../bots/sight.ts';
 import { ViewGrid } from '../bots/grid.ts';
 import { BotDirector, CLUSTER_MIN_PLAYERS, assignRoles, type DirectorMember } from '../bots/director.ts';
+import type { TeamBrain } from '../bots/teamBrain.ts';
 import { regionLayout } from '../bots/regions.ts';
 import { VantageBoard, vantageFor } from '../bots/vantage.ts';
 import { buildMapGeometry, mapKillY, mapTerrainMesh, type WorldBox } from '../map/geometry.ts';
@@ -70,6 +71,8 @@ import type { CheckpointPlayer, MatchCheckpoint } from '../net/handoff.ts';
 import { CLASS_DEFS, ClassPlay, classFromSay, classIndex, classesInPlay, type ClassState } from './classes.ts';
 import { ARENA_DISC, DISC_KNOCK_CREDIT_SECONDS, DISC_SPAWN_GUARD_SECONDS, DISC_POWERS, DISC_POWER_SHOTS, discThrows, dodgeDisc, keepOnDeck, splitVelocities, type DiscPower } from './discs.ts';
 import { createMode, type ModeLogic } from './modes/index.ts';
+import { teamHome, type BotTripSpec } from './modes/types.ts';
+import { findCorridors, type Trip } from '../nav/corridors.ts';
 import { Scenario, teamAllows } from './scenario.ts';
 import { liftLinks } from './movers.ts';
 import { IMPROMPTU_MIN_PLAYERS, WAVE_MIN_PLAYERS, centroid, generateSpawns, pickSpawn, spawnShortfall, spawnsPerTick, type SpawnSpot } from './spawns.ts';
@@ -1062,6 +1065,8 @@ export class Match {
     this.nav.markLifts(liftLinks(this.map));
     this.nav.places();
     this.sight.clear();
+    // (The trips' corridors again, on the new navmesh, the next time they are asked for.)
+    this.trips = null;
     return true;
   }
 
@@ -2122,6 +2127,37 @@ export class Match {
 
   /** Squads, roles and each side's map knowledge for Player Bots (bots/director.ts); made with the first bot. */
   private director: BotDirector | null = null;
+  /** The bots' common trips with their corridors (botTrips); null until asked for, and again once the navmesh changes. */
+  private trips: (BotTripSpec & { trip: Trip })[] | null = null;
+
+  /** A side's team brain (bots/teamBrain.ts: its groups, pushes and prices), for measuring and tests; null before the first bot. */
+  teamBrain(side: string): TeamBrain | null {
+    return this.director?.brainFor(side) ?? null;
+  }
+
+  /** A Player Bot's role this match (director.ts: squad, camper, sniper, lone wolf), for measuring; null without one. */
+  botRole(slot: number): string | null {
+    return this.director?.roleOf(slot) ?? null;
+  }
+
+  /**
+   * The trips a team's bots make again and again (the mode's: base to flag, spawn to hill...; without a mode, each
+   * team's spawn to the other's) and two or three corridors for each (nav/corridors.ts: a few ms each, kept per
+   * navmesh), worked out the first time they are asked for (at setup: refreshRoles) and again once the navmesh is
+   * rebuilt (Fort Wars). The team brain spreads its groups over them; the scorecard measures who walks which.
+   */
+  botTrips(): readonly (BotTripSpec & { trip: Trip })[] {
+    if (this.trips) return this.trips;
+    let specs: readonly BotTripSpec[] = this.mode?.botTrips?.() ?? [];
+    if (!this.mode && this.teams && this.teams.length === 2) {
+      const [a, b] = this.teams;
+      const ha = teamHome(this.spawnPoints, a!.id);
+      const hb = teamHome(this.spawnPoints, b!.id);
+      if (ha && hb) specs = [{ team: a!.id, from: ha, to: hb, kind: 'attack' }, { team: b!.id, from: hb, to: ha, kind: 'attack' }];
+    }
+    this.nav.mainPlaces();
+    return (this.trips = specs.map((s) => ({ ...s, trip: findCorridors(this.nav, s.from, s.to) })));
+  }
   /** Player Bots the roles were last handed out for (-1: hand them out again). */
   private rolesFor = -1;
 
@@ -2137,13 +2173,15 @@ export class Match {
     this.rolesFor = bots.length;
     // (The main area's places: regions, lanes and vantage spots a route gets to, not roofs and pits.)
     const places = this.nav.mainPlaces();
-    this.director ??= new BotDirector(this.seed, regionLayout(places), places);
+    this.director ??= new BotDirector(this.seed, regionLayout(places), places, (a, b) => this.physics.lineOfSight(a, b));
     const roles = assignRoles(
       bots.map((c) => ({ slot: c.slot, profile: c.bot!.profile })),
       this.rules.botStyle ?? 'mixed',
       this.seed,
     );
     for (const [slot, role] of roles) this.director.setRole(slot, role);
+    // The common trips' corridors, here at setup rather than in a tick (a few ms each).
+    this.botTrips();
     if (!this.director.vantage && [...roles.values()].some((r) => r === 'camper' || r === 'sniper')) {
       this.director.vantage = new VantageBoard(vantageFor(places, (o, d, max) => this.physics.raycastWorld(o, d, max)));
       for (const c of bots) this.director.planFor(c.slot).vantage = this.director.vantage;
@@ -2160,8 +2198,12 @@ export class Match {
     const teams = this.teams;
     if (!d || !teams) return;
     const squads = actors.length >= CLUSTER_MIN_PLAYERS && !this.mode && this.rules.mode !== 'core.coop' && this.rules.mode !== 'core.zombies';
+    const trips = this.botTrips();
+    const all = trips.map((x) => x.trip);
     teams.forEach((t, i) => {
       if ((this.tick + i * 29) % TICK_RATE !== 0) return;
+      // What the mode says about the side (its attackers' objective, an enemy to cut off) for the team brain.
+      const brief = this.mode?.botBrief?.(t.id) ?? null;
       const everyone: Vec3[] = [];
       const members: DirectorMember[] = [];
       for (const c of actors) {
@@ -2170,6 +2212,7 @@ export class Match {
         if (!c.bot || c.npc || c.kind !== 'bot') continue;
         const fighting = c.bot.target !== null;
         const seen = c.bot.lastSeen;
+        const ordered = !!c.order && this.tick <= c.order.until;
         members.push({
           slot: c.slot,
           pos: c.move.pos,
@@ -2178,11 +2221,24 @@ export class Match {
           free: !c.mount && !c.order && !c.botSet?.squad && d.planFor(c.slot).role === 'squad',
           teamLeader: this.isLeader(c),
           profile: c.bot.profile,
+          // (The mode's goal only when the mode briefs the side: the team brain's groups are made of its attackers.)
+          goal: brief && !ordered ? (this.mode?.botGoal(c, []) ?? null) : null,
+          corridor: c.bot.corridor,
+          ordered: ordered || !!c.botSet?.squad,
+          mounted: !!c.mount,
+          seen: seen && this.tick - seen.tick < TICK_RATE * 1.5 ? seen.pos : null,
         });
       }
       const towards = this.spawnPoints.filter((s) => s.team !== null && s.team !== t.id && !s.generated).map((s) => s.pos);
-      d.update(this.tick, t.id, everyone, members, towards.length ? towards : null, squads, (slot, at) => this.slots[slot]?.bot?.alert(at, this.tick));
+      const own = trips.filter((x) => x.team === t.id).map((x) => x.trip);
+      d.update(this.tick, t.id, everyone, members, towards.length ? towards : null, squads, (slot, at) => this.slots[slot]?.bot?.alert(at, this.tick), brief, own, all);
     });
+  }
+
+  /** The team brain's own goal for a bot (an interceptor's cut-off point), if it has one. */
+  private jobGoal(c: Combatant): { pos: Vec3; radius: number } | null {
+    if (c.kind !== 'bot' || !this.director) return null;
+    return this.director.planFor(c.slot).job?.goal ?? null;
   }
 
   /** Where a bot is told to go (squad orders, teammates' orders, co-op and mode goals), or null to roam. */
@@ -2193,6 +2249,9 @@ export class Match {
     if (order) return order;
     const squad = this.squadGoal(c);
     if (squad !== undefined) return squad;
+    // The team brain's job for it (an interceptor cutting off our flag's carrier), over the mode's goal.
+    const job = this.jobGoal(c);
+    if (job) return job;
     const goal = zombies ? this.holdOutGoal(c, hostiles) : coop ? this.coopGoal(c, hostiles) : this.classGoal(c, this.mode?.botGoal(c, hostiles) ?? null);
     // A squad's leader: its followers go where it goes.
     if (c.botSet?.squad) this.leadGoals.set(c.slot, goal);
@@ -2474,16 +2533,17 @@ export class Match {
     this.pendingEvents.push({ e: 'leader', a: 'down', s: victim.slot, team, ...(n ? { n } : {}) });
   }
 
-  private teammateOrder(c: Combatant): { pos: Vec3; radius: number } | null {
+  private teammateOrder(c: Combatant): OrderGoal | null {
     const o = c.order;
     if (!o || this.tick > o.until) return null;
-    if (o.kind === 'hold') return { pos: o.pos, radius: 3 };
+    // (A person's order: it wins over pickups, noises and chases in the bot's choices; it still fights what it sees.)
+    if (o.kind === 'hold') return { pos: o.pos, radius: 3, order: true };
     const leader = this.actor(o.leader);
     if (!leader?.alive) {
       c.order = undefined;
       return null;
     }
-    return { pos: leader.move.pos, radius: 4 };
+    return { pos: leader.move.pos, radius: 4, order: true };
   }
 
   private applyInputs(c: Combatant): void {
@@ -4928,6 +4988,8 @@ export class Match {
       return;
     }
     victim.deaths++;
+    // The team brain prices the corridors near where a teammate fell up for a minute (route variety: death cost).
+    if (this.teams && victim.faction) this.director?.noteDeath(victim.faction, victim.move.pos, this.tick);
     // Zombies: the fallen sit out the rest of the wave.
     victim.respawnTick = this.zombies ? Infinity : this.tick + this.rules.respawnDelayTicks;
     // Suicides (falls, own grenades, traps) are just a death, counted for stats.

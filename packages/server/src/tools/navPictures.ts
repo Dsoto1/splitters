@@ -1,7 +1,7 @@
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { PNG } from 'pngjs';
-import { loadMap, type MapDocument } from '@tiletrigger/shared';
-import { auditNavigation, dropOptions, mapNavigation, polyShapes, type NavAudit, type NavWorld } from '@tiletrigger/shared/match';
+import { loadMap, type MapDocument, type Vec3 } from '@tiletrigger/shared';
+import { auditNavigation, dropOptions, findCorridors, mapNavigation, polyShapes, teamHome, type NavAudit, type NavWorld, type Trip } from '@tiletrigger/shared/match';
 
 /**
  * A map's navigation picture (docs/BOTS.md, "Navigation audit"), top-down: the navmesh by what the audit makes of
@@ -9,7 +9,7 @@ import { auditNavigation, dropOptions, mapNavigation, polyShapes, type NavAudit,
  * ziplines, lifts) and ledge-drop links, spawn points, objectives, pickups, and where route searches failed in
  * scorecard runs. Written to `<dir>/<map id>.png`.
  */
-export function drawNavPicture(dir: string, map: MapDocument, nav: NavWorld, audit: NavAudit, fails: readonly (readonly number[])[]): string {
+export function drawNavPicture(dir: string, map: MapDocument, nav: NavWorld, audit: NavAudit, fails: readonly (readonly number[])[], trips: readonly Trip[] = []): string {
   const g = audit.graph;
   const { centre } = polyShapes(g);
   let minX = Infinity;
@@ -81,6 +81,22 @@ export function drawNavPicture(dir: string, map: MapDocument, nav: NavWorld, aud
     line(from, to, (x, y) => set(x, y, drop ? DROP : LINK));
     dot(to[0], to[1], 1, drop ? DROP : LINK, set);
   });
+  // Corridors (route variety: nav/corridors.ts), the first (shortest) of each trip last, so it shows on top.
+  for (const t of trips) {
+    for (let k = t.corridors.length - 1; k >= 0; k--) {
+      const c = ROUTE[k % ROUTE.length]!;
+      const pts = t.corridors[k]!.line;
+      for (let i = 1; i < pts.length; i++) {
+        const a: [number, number] = [sx(pts[i - 1]!.x), sz(pts[i - 1]!.z)];
+        const b: [number, number] = [sx(pts[i]!.x), sz(pts[i]!.z)];
+        line(a, b, (x, y) => {
+          set(x, y, c, 0.9);
+          set(x + 1, y, c, 0.9);
+          set(x, y + 1, c, 0.9);
+        });
+      }
+    }
+  }
   // Failed route searches (scorecard runs): where the bot was.
   for (const f of fails) {
     const x = sx(f[0]!);
@@ -105,7 +121,7 @@ export function drawNavPicture(dir: string, map: MapDocument, nav: NavWorld, aud
   }
   // Title and legend.
   const islands = audit.patches.length - audit.traps.length;
-  text(`${map.metadata.id}  TRAPS ${audit.traps.length}  ISLANDS ${islands}  DROP LINKS ${nav.drops}  FAILED SEARCHES ${fails.length}`, 6, 4, TEXT, set);
+  text(`${map.metadata.id}  TRAPS ${audit.traps.length}  ISLANDS ${islands}  DROP LINKS ${nav.drops}  FAILED SEARCHES ${fails.length}${trips.length ? `  ROUTES ${trips.map((t) => t.corridors.length).join('/')}` : ''}`, 6, 4, TEXT, set);
   let lx = 6;
   for (const [label, c] of LEGEND) {
     for (let y = 0; y < 7; y++) for (let x = 0; x < 7; x++) set(lx + x, 18 + y, c);
@@ -130,11 +146,27 @@ export async function drawNavPictures(dir: string, mapsDir: string, rows: readon
     if (!loaded.ok) continue;
     const built = mapNavigation(loaded.map);
     const audit = auditNavigation(loaded.map, built.nav, built.physics, { ...dropOptions(loaded.map, built.physics, built.geometry, built.phys), official: true });
-    const file = drawNavPicture(dir, loaded.map, built.nav, audit, fails);
+    const file = drawNavPicture(dir, loaded.map, built.nav, audit, fails, mapTrips(loaded.map, built.nav));
     console.log(`nav picture: ${file} (${audit.traps.length} traps, ${fails.length} failed searches)`);
     built.physics.free();
     built.nav.destroy();
   }
+}
+
+/**
+ * The corridors to draw for a map: its two flags' (each way's are much the same: one way), else each team's way to
+ * the hills, the bomb sites or the hostages, else from each team's spawn to the other's.
+ */
+export function mapTrips(map: MapDocument, nav: NavWorld): Trip[] {
+  const at = (e: { position: readonly number[] }): Vec3 => ({ x: e.position[0]!, y: e.position[1]!, z: e.position[2]! });
+  const flags = map.entities.filter((e) => e.kind === 'flag');
+  if (flags.length >= 2) return [findCorridors(nav, at(flags[0]!), at(flags[1]!))];
+  const spawns = map.entities.filter((e) => e.kind === 'spawn').map((e) => ({ pos: at(e), team: (e as { faction?: string | null }).faction ?? null }));
+  const teams = [...new Set(spawns.map((s) => s.team).filter((t): t is string => !!t))].sort();
+  const homes = teams.map((t) => teamHome(spawns, t)).filter((h): h is Vec3 => !!h);
+  const goals = map.entities.filter((e) => e.kind === 'hill' || e.kind === 'bombsite' || e.kind === 'hostage').map(at);
+  if (homes.length && goals.length) return homes.flatMap((h) => goals.map((g) => findCorridors(nav, h, g)));
+  return homes.length >= 2 ? [findCorridors(nav, homes[0]!, homes[1]!)] : [];
 }
 
 type Rgb = readonly [number, number, number];
@@ -154,6 +186,12 @@ const OBJECTIVE: Rgb = [255, 236, 40];
 const PICKUP: Rgb = [80, 220, 245];
 const FAIL: Rgb = [255, 60, 220];
 const TEXT: Rgb = [235, 235, 235];
+/** Each trip's corridors: the shortest, the second, the third. */
+const ROUTE: readonly Rgb[] = [
+  [40, 140, 255],
+  [255, 95, 95],
+  [250, 250, 250],
+];
 const LEGEND: [string, Rgb][] = [
   ['MAIN', MAIN_HI],
   ['ONE-WAY', ONE_WAY_HI],
@@ -165,6 +203,7 @@ const LEGEND: [string, Rgb][] = [
   ['OBJECTIVE', OBJECTIVE],
   ['PICKUP', PICKUP],
   ['FAILED SEARCH', FAIL],
+  ['ROUTES 1 2 3', ROUTE[0]!],
 ];
 
 const mix = (a: Rgb, b: Rgb, t: number): Rgb => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t];

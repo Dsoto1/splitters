@@ -1,7 +1,9 @@
 import { getProp } from '../content/props.ts';
 import { envTilts, getEnvSpecies, isEnvModel } from '../content/environment.ts';
 import type { Vec3 } from '../math.ts';
+import { coreCatalog, type TileCatalog } from './catalog.ts';
 import { blockBoxes, buildMapGeometry, propBoxes, type WorldBox } from './geometry.ts';
+import { withPathsLaid } from './paths.ts';
 import type { LightEntity, LightFixture, MapDocument, PropEntity } from './schema.ts';
 import { terrainHeightAt, type TerrainData } from './terrain.ts';
 
@@ -155,16 +157,23 @@ export function rebedShift(before: TerrainData, after: TerrainData, e: Pick<Prop
   return now === null ? 0 : Math.round((now - was) * 100) / 100;
 }
 
+/** Where rebedProps puts one prop's base when the ground goes from `before` to `after`, or null where it stays (held up by what's in `boxes`, or not on the ground). */
+export function rebeddedY(before: TerrainData, after: TerrainData, boxes: readonly WorldBox[], e: Pick<PropEntity, 'id' | 'model' | 'position' | 'yaw' | 'scale'>): number | null {
+  const dy = rebedShift(before, after, e);
+  if (!dy) return null;
+  if (supportUnder(boxes, e.position[0], e.position[2], e.position[1], e.id) > e.position[1] - FLOAT_TOLERANCE) return null;
+  return Math.round((e.position[1] + dy) * 1000) / 1000;
+}
+
 /** The map's props on the ground re-bedded on `after` (the same map when none moves). `boxes`: what could hold a prop up instead. */
 export function rebedProps(map: MapDocument, before: TerrainData, after: TerrainData, boxes: readonly WorldBox[]): MapDocument {
   let entities: MapDocument['entities'] | null = null;
   map.entities.forEach((e, i) => {
     if (e.kind !== 'prop') return;
-    const dy = rebedShift(before, after, e);
-    if (!dy) return;
-    if (supportUnder(boxes, e.position[0], e.position[2], e.position[1], e.id) > e.position[1] - FLOAT_TOLERANCE) return;
+    const y = rebeddedY(before, after, boxes, e);
+    if (y === null) return;
     entities ??= [...map.entities];
-    entities[i] = { ...e, position: [e.position[0], Math.round((e.position[1] + dy) * 1000) / 1000, e.position[2]] };
+    entities[i] = { ...e, position: [e.position[0], y, e.position[2]] };
   });
   return entities ? { ...map, entities } : map;
 }
@@ -240,8 +249,11 @@ export function hungPropLift(boxes: readonly WorldBox[], e: Pick<PropEntity, 'id
  * its top, so open ground outside meets the floor without a step. Only ground
  * near a floor is touched (within FLOOR_REACH of its top): a hill a floor is
  * buried in, or a valley far below a bridge, stays as it is. Returns the same
- * terrain when nothing needed lowering. Every load and every MapMaker edit of
- * tiles or terrain goes through this, so maps never carry terrain through floors.
+ * terrain when nothing needed lowering. It only ever lowers, so it is worked
+ * out from the ground as made every time (withGroundAsPlayed: every load as
+ * played, and MapMaker's view) and never stored: the map's file and MapMaker's
+ * document keep the ground as made, and the ground under a floor that moves or
+ * goes comes back as it was.
  */
 export const FLOOR_REACH = 3;
 export function terrainUnderFloors(map: MapDocument, boxes: readonly WorldBox[] = buildMapGeometry(map)): TerrainData | null {
@@ -278,4 +290,23 @@ export function terrainUnderFloors(map: MapDocument, boxes: readonly WorldBox[] 
     }
   }
   return heights ? { ...t, heights } : t;
+}
+
+/**
+ * The map on its ground as played (loadMap plays every map so; MapMaker's view draws the same, from the same
+ * pieces): its paths laid into the terrain (paths.ts withPathsLaid), the terrain kept under every floor
+ * (terrainUnderFloors), and the props bedded on the map's own ground re-bedded on that (rebedProps). `map` has its
+ * set pieces expanded and its ground as made, which is what the map's file and MapMaker's document keep: this ground
+ * is worked out from it, never stored, so it follows the paths and the floors (a floor that moves or goes takes its
+ * dip with it), and a map loads as MapMaker showed it. The floors, and what holds a prop up, are the map's geometry as
+ * made (the laid ground changes none of them); `boxes` is that geometry when the caller has it.
+ */
+export function withGroundAsPlayed(map: MapDocument, catalog: TileCatalog = coreCatalog, boxes?: readonly WorldBox[]): MapDocument {
+  const laid = withPathsLaid(map);
+  const made = map.terrain;
+  if (!laid.terrain || !made) return laid;
+  const geometry = boxes ?? buildMapGeometry(map, catalog);
+  const ground = terrainUnderFloors(laid, geometry)!;
+  const out = ground === made ? laid : rebedProps(laid, made, ground, geometry);
+  return out.terrain === ground ? out : { ...out, terrain: ground };
 }

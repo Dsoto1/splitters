@@ -6,11 +6,10 @@ import { itemCategory } from '../sim/pickupRoll.ts';
 import { WEAPON_CATEGORY_LABELS } from '../sim/weapons.ts';
 import { getProp } from '../content/props.ts';
 import { getEnvSpecies, isEnvModel } from '../content/environment.ts';
-import { buildMapGeometry, buildOccupancy, cellHasFloor, cellKey, cellSides, dynamicBlockIds, propBoxes, resolveEdge, yawXZ, type WorldBox } from './geometry.ts';
+import { buildOccupancy, cellHasFloor, cellKey, cellSides, dynamicBlockIds, propBoxes, resolveEdge, yawXZ, type WorldBox } from './geometry.ts';
 import { terrainHeightAt } from './terrain.ts';
 import { borderRect, hasBorder } from './border.ts';
-import { floatingProps, rebedProps, terrainUnderFloors } from './settle.ts';
-import { withPathsLaid } from './paths.ts';
+import { floatingProps, withGroundAsPlayed } from './settle.ts';
 import { migrateMapDocument, MapMigrationError } from './migrate.ts';
 import { MapDocument, type MapEntity } from './schema.ts';
 import { IMPROMPTU_MIN_PLAYERS, SPAWN_SHARE } from '../sim/spawns.ts';
@@ -80,18 +79,12 @@ export function loadMap(json: string | unknown, catalog: TileCatalog = coreCatal
   const library = opts.library ?? builtInSetPieces();
   const issues = validateMap(parsed.data, catalog, library);
   if (issues.some((i) => i.severity === 'error')) return { ok: false, issues };
-  // As played: set pieces expanded into their parts, paths laid into the ground (paths.ts; MapMaker keeps both
-  // apart, `forEditing`, so parts and ground follow a piece or a path that moves), then terrain kept under every
-  // floor, the set pieces' floors too (settle.ts terrainUnderFloors).
-  const expanded = expandSetPieces(parsed.data, library, catalog).map;
-  let map = opts.forEditing ? expanded : withPathsLaid(expanded);
-  if (map.terrain) {
-    const boxes = buildMapGeometry(map, catalog);
-    // Props MapMaker bedded on the ground stay bedded on the ground as played (settle.ts rebedProps).
-    if (parsed.data.terrain && map.terrain !== parsed.data.terrain) map = rebedProps(map, parsed.data.terrain, map.terrain, boxes);
-    map = { ...map, terrain: terrainUnderFloors(map, boxes) };
-  }
-  if (opts.forEditing && expanded !== parsed.data) map = { ...parsed.data, terrain: map.terrain };
+  // MapMaker (`forEditing`) keeps the map as made: its set pieces as placements, its paths, and its own ground, which
+  // it never lowers under a floor, so the parts, the laid paths and the ground kept under the floors follow a piece, a
+  // path or a floor that moves (and the ground under one that goes comes back). As played: set pieces expanded into
+  // their parts, on the ground as played (settle.ts withGroundAsPlayed: the paths laid in, the terrain kept under
+  // every floor, the set pieces' too, and the props on the ground re-bedded on it), as MapMaker draws it.
+  const map = opts.forEditing ? parsed.data : withGroundAsPlayed(expandSetPieces(parsed.data, library, catalog).map, catalog);
   return { ok: true, map, issues, migratedFrom: migrated.fromVersion };
 }
 

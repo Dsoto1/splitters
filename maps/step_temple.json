@@ -19,11 +19,11 @@
     ],
     "release": {
       "mapId": "m_ohrgwqhp5taoboee",
-      "versionId": "v_47sm2qdptqr5mz2c",
-      "revision": 2,
-      "contentHash": "sha256:fc623762a7a931571beeeff50e0ac0e9b7617c4a8c75ca8f104e5626730d29f3",
+      "versionId": "v_qvugf2moyllurv55",
+      "revision": 3,
+      "contentHash": "sha256:52a3157d2daea6ed899914b6af4e7f87e60242d0ede13fd7b80399d4952cccbf",
       "schemaVersion": 27,
-      "releasedAt": "2026-11-06T15:59:49.243Z"
+      "releasedAt": "2026-11-07T01:44:46.609Z"
     }
   },
   "classicStructure": {
@@ -7880,7 +7880,7 @@
       "id": "prop_soabhlvmd7",
       "position": [
         -13.2,
-        -0.05,
+        2.17,
         -1
       ],
       "kind": "prop",
@@ -14171,8 +14171,8 @@
       480,
       480,
       273,
-      -2,
-      -2,
+      220,
+      220,
       -40,
       -40,
       -40,
@@ -14292,8 +14292,8 @@
       476,
       429,
       235,
-      -2,
-      -2,
+      220,
+      220,
       -40,
       -40,
       -40,

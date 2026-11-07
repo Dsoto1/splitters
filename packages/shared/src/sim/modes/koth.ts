@@ -2,7 +2,16 @@ import { horizontalDistance, type Vec3 } from '../../math.ts';
 import type { ModeSnapshot } from '../../protocol.ts';
 import { TICK_RATE } from '../constants.ts';
 import type { Combatant } from '../match.ts';
-import type { BotGoal, ModeHost, ModeLogic } from './types.ts';
+import { DEFAULT_PLAYBOOK, type Playbook, type SideBrief } from '../../bots/teamBrain.ts';
+import { teamHome, type BotGoal, type BotTripSpec, type ModeHost, type ModeLogic } from './types.ts';
+
+/**
+ * King of the Hill's playbook (bots/teamBrain.ts): everyone straight for the hill, always. Measured on the dev sample
+ * (Shingle Point, Diamond Park, Bunker Cross): split over the ways, the hill was held 33 % of the time against 49 %
+ * going straight; gathering out of the hill's sight to retake it together, the side doing it held it 37 s to the other
+ * side's 170 in the same matches (on the hill, steady pressure wins).
+ */
+export const KOTH_PLAYBOOK: Playbook = { ...DEFAULT_PLAYBOOK, split: 'never' };
 
 export interface HillRt {
   /** Index of its map entity. */
@@ -104,7 +113,31 @@ export class KothMode implements ModeLogic {
     return false;
   }
 
-  /** Everyone heads for the hill and spreads out on it. */
+  /** Each team's way from its spawn to every hill. */
+  botTrips(): readonly BotTripSpec[] {
+    const out: BotTripSpec[] = [];
+    for (const t of this.host.teams) {
+      const home = teamHome(this.host.spawnPoints, t.id);
+      if (home) for (const h of this.hills) if (h.index >= 0) out.push({ team: t.id, from: home, to: { ...h.pos }, kind: 'attack' });
+    }
+    return out;
+  }
+
+  /**
+   * The team brain's brief: everyone goes for the hill; while the other team holds it, they gather first and retake it
+   * together (a group push), otherwise straight in.
+   */
+  botBrief(team: string): SideBrief | null {
+    const theirs = this.holder !== null && this.holder !== 'contested' && this.holder !== team;
+    return { attack: { pos: { ...this.hill.pos }, stage: theirs }, intercept: null, playbook: KOTH_PLAYBOOK };
+  }
+
+  /**
+   * Everyone heads for the hill and spreads out on it. A goal to hold (bots/brain.ts scored choices: what happens near
+   * the hill draws a bot on it, gunfire further off doesn't), not one to keep to on the way (`push`: such a bot takes
+   * cover only when hurt or reloading). Before scores a bot on the hill went after any gunfire it heard and the hill
+   * emptied: held 26 % of the time on the dev sample (Shingle Point, Diamond Park, Bunker Cross), 40 % with them.
+   */
   botGoal(c: Combatant): BotGoal | null {
     const h = this.hill;
     return { pos: h.pos, radius: Math.max(1, h.radius * 0.6 - (c.slot % 3)) };

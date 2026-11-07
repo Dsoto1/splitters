@@ -1085,6 +1085,7 @@ async function editoruxFlow(browser) {
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await page.context().close();
   await editorSetPieceChecks(browser);
+  await editorGroundChecks(browser);
 }
 
 /**
@@ -1294,6 +1295,117 @@ async function editorSetPieceChecks(browser) {
   check(ports.warn.length === 1 && /west side \(Ground\) faces a wall: the Room's wall/.test(ports.warn[0]) && !!ports.issue && ports.red === 1, `a door facing a wall is warned about, and red on the outline (${JSON.stringify(ports)})`);
   await shot('ports');
   check(errors.length === 0, `no page errors with set pieces (${errors.join('; ')})`);
+  await page.context().close();
+}
+
+/**
+ * MapMaker's ground under floors (HANDOFF "MapMaker's ground under floors"): the document keeps the ground as made and
+ * MapMaker shows it kept under the floors (EditorView.setMap: what loading plays), so a floor dragged off a rise gives
+ * the ground under it back, its undo leaves the document's terrain byte-identical, a floor moved across the field and
+ * back leaves no dip, and TEST plays the ground MapMaker showed. Screenshots go to E2E_SHOTS when set.
+ */
+async function editorGroundChecks(browser) {
+  const page = await (await browser.newContext({ viewport: { width: 1400, height: 820 } })).newPage();
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
+  page.on('dialog', (d) => d.accept());
+  const shot = (name) => (process.env.E2E_SHOTS ? page.screenshot({ path: `${process.env.E2E_SHOTS}/ground-${name}.png` }).catch(() => {}) : Promise.resolve());
+  await page.goto(`${CLIENT}/?mode=editor&test=1`);
+  await page.waitForFunction(() => window.__editor, null, { timeout: T(60000) });
+  livePages.add(page);
+  await newMap(page, 96);
+  const settle = () => frames(page, 3);
+  const at = (x, y, z) => page.evaluate(([x, y, z]) => window.__editor.view.project({ x, y, z }), [x, y, z]);
+  // The ground 0.6 m up all round (75 cm over the starter ground at -0.15 m): the starter room's floor, at 0 m, stands
+  // in it, so MapMaker shows the ground lowered under the room.
+  await page.evaluate(() => {
+    const ed = window.__editor;
+    const t = ed.doc.terrain;
+    ed.run('Raise the ground', { kind: 'setTerrain', before: t, after: { ...t, heights: t.heights.map(() => 75) } });
+    ed.setTool({ kind: 'select' });
+    ed.view.focus({ x: 8, y: 0, z: 0 });
+  });
+  await settle();
+  const room = (await page.evaluate(() => window.__editor.doc.classicStructure.tiles))[0];
+  /** The ground's vertex heights (cm) inside a box [x0, z0, x1, z1]: as MapMaker shows it, and the document's own. */
+  const ground = (box) =>
+    page.evaluate((box) => {
+      const ed = window.__editor;
+      const read = (t) => {
+        const out = [];
+        for (let r = 0; r < t.rows; r++) for (let c = 0; c < t.cols; c++) {
+          const x = t.origin[0] + c * t.spacing;
+          const z = t.origin[1] + r * t.spacing;
+          if (x >= box[0] && x <= box[2] && z >= box[1] && z <= box[3]) out.push(t.heights[r * t.cols + c]);
+        }
+        return out;
+      };
+      return { shown: read(ed.view.ground), made: read(ed.doc.terrain) };
+    }, box);
+  const whole = () => page.evaluate(() => ({ made: JSON.stringify(window.__editor.doc.terrain), shown: JSON.stringify(window.__editor.view.ground.heights), x: window.__editor.doc.classicStructure.tiles[0].x }));
+  const lowered = (h) => h.length > 0 && h.every((v) => v < 0);
+  const open = (h) => h.length > 0 && h.every((v) => v === 75);
+  // Inside the room (its floor's edge vertices are lowered less), and the open ground two cells east.
+  const site = (cx) => [cx * 8 - 3, -3, cx * 8 + 3, 3];
+  const start = await whole();
+  const g0 = { here: await ground(site(0)), there: await ground(site(2)) };
+  check(room?.x === 0 && lowered(g0.here.shown) && open(g0.here.made) && open(g0.there.shown), `MapMaker shows the ground lowered under the room's floor; the document keeps the ground as made (${JSON.stringify({ shown: g0.here.shown.slice(0, 3), made: g0.here.made.slice(0, 3), east: g0.there.shown.slice(0, 3) })})`);
+  await shot('placed');
+  // Drag the room two cells east with Select (a click on its floor picks it, a drag moves it cell by cell).
+  const drag = async (fromX, toX) => {
+    // The view over both ends (the room walks off the screen otherwise).
+    await page.evaluate((x) => window.__editor.view.focus({ x, y: 0, z: 0 }), (fromX + toX) / 2);
+    await settle();
+    const from = await at(fromX + 2.5, 0, 2.5);
+    await page.mouse.move(from.x, from.y);
+    await settle();
+    await page.mouse.click(from.x, from.y);
+    await settle();
+    const picked = await page.evaluate(() => window.__editor.selection.tiles.join());
+    const to = await at(toX + 2.5, 0.6, 2.5);
+    await page.mouse.move(from.x, from.y);
+    await page.mouse.down();
+    await page.mouse.move((from.x + to.x) / 2, (from.y + to.y) / 2, { steps: 4 });
+    await page.mouse.move(to.x, to.y, { steps: 4 });
+    await settle();
+    await page.mouse.up();
+    await settle();
+    return picked;
+  };
+  const picked = await drag(0, 16);
+  const moved = await whole();
+  const g1 = { here: await ground(site(0)), there: await ground(site(2)) };
+  check(picked === room.id && moved.x === 2 && moved.made === start.made && open(g1.here.shown) && lowered(g1.there.shown), `the room dragged two cells east gives the ground where it stood back, and MapMaker shows it lowered where it went; the document's ground is untouched (${JSON.stringify({ picked, x: moved.x, made: moved.made === start.made, back: g1.here.shown.slice(0, 3), there: g1.there.shown.slice(0, 3) })})`);
+  await shot('moved');
+  await page.keyboard.press('Control+KeyZ');
+  await settle();
+  const undone = await whole();
+  check(undone.x === 0 && undone.made === start.made && undone.shown === start.shown, `one undo puts the room back with the document's terrain byte-identical and the ground as before (x ${undone.x}, document ${undone.made === start.made}, shown ${undone.shown === start.shown})`);
+  await shot('undone');
+  await page.keyboard.press('Control+KeyY');
+  await settle();
+  const redone = await whole();
+  check(redone.x === 2 && redone.made === start.made && redone.shown === moved.shown, `redo moves it again, onto the same ground (x ${redone.x}, shown ${redone.shown === moved.shown})`);
+  // Across the field and back, one cell at a time (each its own edit): no dip anywhere it passed.
+  await drag(16, 24);
+  await drag(24, 32);
+  const far = await whole();
+  await drag(32, 24);
+  await drag(24, 16);
+  await drag(16, 8);
+  await drag(8, 0);
+  const home = await whole();
+  // Everywhere it passed east of where it stands now: open ground again.
+  const passed = await ground([5, -3, 35, 3]);
+  check(far.x === 4 && home.x === 0 && home.made === start.made && home.shown === start.shown && open(passed.shown), `a floor dragged across the field and back leaves the ground as it was (x ${far.x} → ${home.x}, document ${home.made === start.made}, shown ${home.shown === start.shown}, where it passed ${[...new Set(passed.shown)].join('/')} cm)`);
+  await shot('home');
+  // TEST plays the ground MapMaker showed.
+  await page.keyboard.press('F5');
+  const testing = await page.waitForFunction(() => window.__cs?.local && window.__testStartMs, null, { timeout: T(30000) }).then(() => true, () => false);
+  const playedHeights = testing ? await sim(page, (m) => JSON.stringify(m.map.terrain.heights)).catch((e) => String(e)) : null;
+  check(testing && playedHeights === home.shown, `TEST plays the ground MapMaker showed (${testing ? (playedHeights === home.shown ? 'same' : 'differs') : 'no match'})`);
+  check(errors.length === 0, `no page errors with the ground (${errors.join('; ')})`);
+  livePages.delete(page);
   await page.context().close();
 }
 

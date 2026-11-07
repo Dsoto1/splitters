@@ -3,7 +3,7 @@ import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { buildMapGeometry, environmentNavTriangles, environmentShapes, initPhysics, joinTriangles, liftLinks, loadMap, mapTerrainMesh, navLinks, PhysicsWorld, propBoxes, blockBoxes, type MapDocument } from '@tiletrigger/shared';
 import { NavWorld, auditNavigation, dropOptions, initNavigation, polyShapes, solidsRay } from '@tiletrigger/shared/match';
-import { drawNavPicture } from './navPictures.ts';
+import { drawNavPicture, mapTrips } from './navPictures.ts';
 
 /**
  * The navigation audit over maps (docs/BOTS.md, "Navigation audit"): per map, the navmesh as the match builds it
@@ -84,7 +84,7 @@ for (const id of ids) {
   }
   traps += audit.traps.length;
   errors += audit.issues.filter((i) => i.severity === 'error').length;
-  if (pictures) drawNavPicture(here(pictures), map, nav, audit, []);
+  if (pictures) drawNavPicture(here(pictures), map, nav, audit, [], mapTrips(map, nav));
   physics.free();
   nav.destroy();
 }

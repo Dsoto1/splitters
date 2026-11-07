@@ -31,7 +31,8 @@ import { BUTTON_ALT, BUTTON_FIRE, BUTTON_RELOAD, BUTTON_ZOOM, eyeHeightOf, type 
 import { getWeapon, weaponCode } from '../weapons.ts';
 import { CtfMode } from './ctf.ts';
 import { FortBots } from './fortsBots.ts';
-import type { BotGoal, ModeHost, ModeLogic } from './types.ts';
+import type { SideBrief } from '../../bots/teamBrain.ts';
+import type { BotGoal, BotTripSpec, ModeHost, ModeLogic } from './types.ts';
 
 /** A piece on the server: its state, health and colliders. */
 export interface FortPieceRt extends FortPieceState {
@@ -379,6 +380,16 @@ export class FortsMode implements ModeLogic {
 
   botGoal(c: Combatant): BotGoal | null {
     return this.phase === FORT_BUILD ? this.bots.goal(c) : this.ctf.botGoal(c);
+  }
+
+  /** The team brain's brief: nothing while the teams build; the fight's, CTF's. */
+  botBrief(team: string): SideBrief | null {
+    return this.phase === FORT_BUILD ? null : this.ctf.botBrief(team);
+  }
+
+  /** The fight's trips (the flags'), worked out again once the navmesh has the forts in it. */
+  botTrips(): readonly BotTripSpec[] {
+    return this.ctf.botTrips();
   }
 
   botInput(c: Combatant, input: PlayerInput): void {
