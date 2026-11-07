@@ -26,6 +26,113 @@ gets overloaded above that: local e2e times out and flakes). Prune landed worktr
 - Earlier the same day: content scalability steps 2–6, perf toolset, flaky e2e fixes, Runway Nine airliner, map
   reworks batches 2–3, character fixes rounds 2–3 (see the entries below and CHANGELOG).
 
+<!-- weapon-sets -->
+### Weapon sets (`wip/weapon-sets`, agent, 2026-11-07; from main 2c48debf, main e0690630 and d3830145 merged in; green on `check/weapon-sets` at 4142cf63, run 42369778613 (the full suite: unit, maps, build, check, bots, perf budget and mass, 16 e2e shards) and at 16b5a8a4, run 42371041159 (after the shuffled deck: unit, maps, build, check, bots, perf, the 11 e2e shards it needed); not landed)
+The owner's ask (2026-11-06: "I have never once seen the sheep weapon, hardly see swarm launcher or gravity weapon …
+weapon sets for map defaults … weapon style sets or a mixed bag, all depending on the map default and host setting")
+and the approved plan, docs/WEAPON_SETS_PLAN.md (as built at its end); docs/ARSENAL.md, "Weapon sets". The brief is the
+session scratchpad's `briefs/weapon-sets.md`; this work's scratch is its `ws/` folder.
+
+**What's in it:**
+- **The sets as data:** `content/weapon-sets.json` (Standard, Military, Sci-fi, Medieval, Chaos, Mixed bag: spawn,
+  random gun, sniper gun, weapons, grenades), checked and built by `tools/content/weapon-sets.mjs` (in `content:check`
+  and `content:rebuild`) into `shared/src/content/weaponSets.generated.ts`. Owner, 2026-11-07: the knife in every set;
+  grenade pickups roll within the set and everyone spawns with its first (Military frag, mine, smoke; Sci-fi sticky,
+  vortex, smoke; Medieval incendiary, holy bomb; Chaos sheep, holy bomb, cluster; Mixed bag all; Standard as placed).
+- **The sim** (`sim/weaponSets.ts`): `setLoadout` (spawn weapons, the life's random main gun dealt from a deck
+  shuffled from the seed and the slot, a sniper-role bot's scoped gun in place of the main gun, the first grenade),
+  `setPickupPool` (by category, else the nearest categories the set has: `nearCategories`; kept-fixed pickups of the
+  set stay; grenade pickups too), `setAllowsDrop`, `inSetOr` (for the Roulette mode's signature loadouts, not built
+  yet).
+  `Match.weaponSet` and `Match.sniperGun` (Bot AI Phase B's hook, now the set's) read the host's choice, else the
+  map's default; `Combatant.spawns` counts lives; a bot whose role comes after its spawn is re-armed for it at once
+  (`rearmForRole`). Spears or discs only and Disc Arena play no set; classes keep their loadouts.
+- **Map default:** `MapDocument.weaponSet`, map format **v28** (no-op migration); MapMaker → Map properties → Weapon
+  set (`setWeaponSet` command); validation warns on an unknown id. The stamped-map fix from Breakthrough
+  (`releaseCurrent`: a format bump alone keeps a stamped map's version) is taken verbatim, so both branches merge clean.
+- **Host choice:** `MatchRules.weaponSet`; Match setup → Advanced rules → Weapons, pickups & vehicles → Weapon set
+  ("Map default (…)" names the map's own; the setup's facts show a set other than Standard; Mix up weapon pickups is
+  greyed under a set of its own); the pause menu's Host tab (live, `HostRulesPatch.weaponSet`,
+  `HostState.mapWeaponSet`); a server's `set` rule (the Host Service launcher shows it among its main rules); kept
+  through map changes; saved setups keep it. Character Select's loadout follows the setup's set.
+  `?offline=<map>&weapons=<set>` starts a quick match in a set (the arsenal flow and the canyon picture pin Standard
+  with it).
+- **Looks:** grenades wear the match's set's look in your hands, in flight and on pickups (`throwableModel(kind, set)`,
+  `View.setWeaponSetLook`: the pack's frag in Military, the Meshy canister for smoke in Sci-fi); the loading screen
+  fetches the set's spawn guns' held copies, its guns and its grenades' models; a host's live switch loads the new
+  set's guns in the background.
+- **Bots:** sniper-role bots spawn with Military's marksman rifle or Sci-fi's railgun; bots throw the sheep (thrown
+  short along an open line to an enemy 6-20 m off: it walks the rest; they never threw it: its 9 m/s throw lands ~6 m
+  out, inside their 7 m minimum and its own 5 m blast) and big blasts with a long fuse (the holy bomb, half its blast
+  away, then run clear); they light their oil slicks with the igniter (the oil slicker's bot value 0.3 → 0.45).
+- **Scorecard:** `pnpm bot-report … --set=a,b` plays each match in each set; every report and the nightly scorecard
+  list kills by weapon per set and the set's weapons and grenades without a kill.
+- **Smoke on the space maps** (the weapons intake's open item): maps without haze drew with the scene's fog off, so
+  the first step into a smoke cloud (or water) switched it on and Babylon rebuilt every material in view for its FOG
+  define. They now draw with the fog on at density 0 (`BackdropVisuals.build`; Medium's mist keeps its own colour:
+  `SkyEffects.foldMist`). That is 7 maps, not the 15 the intake guessed: Halcyon Station, Starhaven, Twin Spires and
+  Void Yard (all Sci-fi now) and the retired Creature Lab, Obsidian Orb and Skyward; every other map has haze.
+  Measured on Halcyon Station at Medium (`ws/stall3.mjs`: the build before and after served side by side, a cloud
+  laid 10 m off first, then one at your feet): before, 31 and 38 programs built stepping in, every one a fog variant
+  (22 and 31 of them materials already in view), 8.0 and 12.4 s inside WebGL's compile and link calls on this box's
+  software renderer, the frames stepping in 4.8 s longer than inside the cloud; after, no program, 0 ms, 0.35 s. At
+  High: 45 programs (36 materials again), 12.3 s, 6.1 s before; none, 0 ms, 0.12 s after.
+
+**Map defaults** (the owner's OK, 2026-11-07, of the proposed table; set in MapMaker's Map properties by driving the
+real editor with Playwright: Import, Weapon set, Export, `ws/setmaps.mjs`; each export differs from its map only in
+the format, MapMaker's release stamp and the set, plus the v22 `track: null` that migration drops on five older maps;
+retired maps left out):
+- **Military** (16): Sandgate, Atomic Court, Shingle Point, Fogbound, No Man's Field, Bunker Cross, Iron Tide,
+  Rockfall Canyon, Crossroads, Riot Junction, Runway Nine, Capitol Mall, St. John's, Dockside Depot, Glasswork Office,
+  Whiteout Station.
+- **Sci-fi** (12): Halcyon Station, Starhaven, Twin Spires, Void Yard, Neon Spire, Express Lobby, Undergate Transit,
+  Serene City, Dune Harbor, Fernwood Moon, Coldwater Gulch, Frost Basin.
+- **Medieval** (2): Market Town, Sandfall Colosseum. Citadel and Gallows Yard stay Standard (owner: their layouts are
+  built round rockets and the railgun).
+- **Chaos** (4): Cinder Foundry, Pantry Raid, Flatpack Depot, Erosion. **Mixed bag** (3): Neon Galleria, Grand
+  Marquee, Primeval Park.
+- **Standard:** every other map (53, the retired ones among them).
+
+**Numbers:** kills by weapon, each set on three maps of its theme (TDM, seeds 1 and 2, 180 s, the maps' own team sizes;
+`ws/measure/final/`; the table is in WEAPON_SETS_PLAN.md, "As built"). Military 359 kills (assault rifle 268,
+marksman 20, rockets 11 …; none for the SMG, hand cannon and mine); Sci-fi 318 (plasma rifle 209, pulse pistol 27,
+sticky 23, railgun 20 …; none for the vortex grenade); Medieval 464 (spear 362, knife 36, incendiary 33, battle axe
+33; none for the holy bomb); Chaos 376 (swarm 113, pistol 54, blast rockets 47, nailgun 31, gilded pistol 23, oil
+slicker 23, singularity 19, sheep 16, flak 14, freeze ray 12, bubble blaster 8, goo gun 4, flare gun 3, holy bomb 1;
+none for the cluster bomb); Mixed bag 382 by 32 weapons; Standard on maps of those kinds 413 (pistol 155, assault
+rifle 109; no swarm, singularity or sheep). Sniper-role bots: Military 8 (17 kills, 15 scoped), Sci-fi 4 (15, 10
+scoped). `pnpm bot-report --check` (Shingle Point KOTH now Military, Fernwood Moon TDM Sci-fi): every limit held.
+The probes behind the bot changes: the sheep was never thrown in three Chaos matches before `considerWalker` (12
+kills after); the oil slicker got no kills before the igniter (Atomic Court probe: 29 slicks, 22 lit, 8 kills).
+
+**Tests:** unit `packages/shared/test/weaponSets.test.ts` (data, loadouts, random guns, pools, drops, the sniper gun,
+map default and host override, old maps and setups), `tools/content/test/weapon-sets.test.mjs`; the server-rule parity
+list; e2e flow `weaponsets` (Sandgate's Military default in Match setup and in play, the Host tab's live switch, a
+Chaos match's guns by life, MapMaker's field and TEST). Run here: typecheck, content:check, the unit tests the change
+touches (weaponSets; botRoles and botPush, which now pin Standard weapons: Riot Junction's and Shingle Point's own
+Military spawned other guns than those tests were measured with), `bot-report --check`, e2e `weaponsets` and `teams`
+(pass); CI ran the rest. Screenshots (session scratchpad `ws/shots/`): `weapon-sets-setup.png` (Match setup, the
+Weapon set list open: "Map default (Military)" on Sandgate, Chaos picked, its fact and chip),
+`weapon-sets-chaos-spawn.png` (a Chaos spawn: the goo gun in hand, a sheep to throw), `weapon-sets-mapmaker.png` (Map
+properties, Weapon set Sci-fi and its line).
+
+**For Breakthrough** (`wip/breakthrough`): both branches bump the map format to v28. Whichever lands second renumbers
+its own migration to the next version (its `MIGRATIONS` entry, `MAP_FORMAT_VERSION`, the schema comment) and re-exports
+the maps it touched through MapMaker; the stamp fix is the same text on both. Iron Coast's default set is **Military**
+(owner): set it in MapMaker's Map properties when the map is built.
+
+**For the owner:**
+- Military and Sci-fi play mostly with their spawn gun (75 % and 66 % of kills): the set's other guns come from the
+  map's weapon pickups, rolled within the set by category, so a map with few pickups shows little of the set. For
+  more: more weapon pickups on those maps (MapMaker), or a random main gun each life as in Mixed bag.
+- Mixed bag's random gun is a main gun (slots 3-9): its sidearms, spear and battle axe come only from pickups, and
+  besides the frag its grenades only from the few grenade pickups the maps place (none got a kill).
+- Chaos and Mixed bag deal the life's gun from a shuffled deck (every one before any again) rather than a fresh roll
+  each life, which handed one player the goo gun four lives in six. Say if you would rather have the plain roll.
+- Citadel and Gallows Yard stay Standard; MapMaker's Map properties → Weapon set moves either to Medieval in a
+  click. Iron Coast becomes Military when Breakthrough builds it.
+<!-- /weapon-sets -->
+
 <!-- weapons-1106 -->
 ### Weapons intake of 2026-11-06: new weapon and grenade models, sharper held textures, the Smoke Grenade (`wip/weapons-1106`, agents, 2026-11-07; from main 9dfe3ba1, main 7c40d0b9 and 2c48debf merged in; green on `check/weapons-1106` at 143ed252, run 42364965060; not landed)
 The owner: "Added a bunch of new weapons, all Meshy community"; "We can replace our tommy gun with the 3DModelsCC0 one,
@@ -188,7 +295,7 @@ CI: green at 7e15660f (run 42342142073, everything the branch touched: 36 e2e fl
 - Smoke on the maps without haze: **done** on `wip/weapon-sets` ("Weapon sets" above). They are 7, not 15: the four
   live space maps (Halcyon Station, Starhaven, Twin Spires, Void Yard, all Sci-fi) and three retired ones. They draw
   with the fog on at density 0, so stepping into smoke (or water) builds no shader: on Halcyon Station at Medium,
-  31-38 programs before, none after.
+  31-38 programs before (45 at High), none after.
 
 **CI on this branch:** run 42340584990 (f349eecf) failed the `handoff` e2e flow, both attempts: "two friends join the
 hosted match", a friend's link closing under it with no "closing ... link" from the host, pages a second or two behind.

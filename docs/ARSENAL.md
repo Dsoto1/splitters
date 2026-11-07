@@ -203,8 +203,9 @@ sits, and thins over its last 3 s: 18 s in all. It is only sight:
   With the fog off there, the first step into smoke switched it on, and every material in view was built again with
   Babylon's FOG define in that frame: on Halcyon Station at Medium, 31 and 38 programs (22 and 31 of them materials
   already in view), 8.0 and 12.4 s inside WebGL's compile and link calls on the agents' software renderer, and the
-  frames stepping in 4.8 s longer than inside the cloud; with the fog on at nothing, no program and 0.35 s
-  (`ws/stall3.mjs` in the weapon sets session's scratchpad).
+  frames stepping in 4.8 s longer than inside the cloud; at High 45 programs (36), 12.3 s and 6.1 s. With the fog
+  on at nothing: no program, and 0.35 s (Medium) and 0.12 s (High) (`ws/stall3.mjs` in the weapon sets session's
+  scratchpad).
 - **Shots, blasts and movement go through it** (they use the physics' own lines).
 - **Bots use it:** a hurt bot caught in the open by an enemy 10-45 m off throws one a few metres toward it, so the
   cloud stands between them while it moves on; bounding cover to cover (Phase B), the moving half sends one ahead

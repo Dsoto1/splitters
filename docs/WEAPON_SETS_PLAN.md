@@ -74,3 +74,42 @@ A set is data in `content/weapon-sets.json`. It decides:
 ## Order
 - After the Match Setup follow-ups (they share Match Setup and the Host tab).
 - It runs alongside Bot AI Phase B.
+
+## As built (`wip/weapon-sets`, 2026-11-07)
+- **Data and code:** the table above is `content/weapon-sets.json` (checked and built by
+  `tools/content/weapon-sets.mjs`); the behaviour is `sim/weaponSets.ts` (docs/ARSENAL.md, "Weapon sets", has the
+  rules: pickups by category with the nearest categories as fallback, kept-fixed pickups, drops, classes, modes
+  without a set).
+- **Map default:** the map's `weaponSet` (format v28), MapMaker → Map properties → Weapon set. **Host:** Match setup
+  → Advanced rules → Weapons, pickups & vehicles → Weapon set ("Map default (…)" or any set), the Host tab (at once),
+  a server's `set` rule.
+- **Official maps** (the owner's OK of the proposed table, 2026-11-07; set in MapMaker's Map properties; retired maps
+  left alone): **Military** Sandgate, Atomic Court, Shingle Point, Fogbound, No Man's Field, Bunker Cross, Iron Tide,
+  Rockfall Canyon, Crossroads, Riot Junction, Runway Nine, Capitol Mall, St. John's, Dockside Depot, Glasswork Office,
+  Whiteout Station (and Iron Coast once Breakthrough builds it); **Sci-fi** Halcyon Station, Starhaven, Twin Spires,
+  Void Yard, Neon Spire, Express Lobby, Undergate Transit, Serene City, Dune Harbor, Fernwood Moon, Coldwater Gulch,
+  Frost Basin; **Medieval** Market Town, Sandfall Colosseum (Citadel and Gallows Yard stay Standard: their layouts
+  are built round rockets and the railgun); **Chaos** Cinder Foundry, Pantry Raid, Flatpack Depot, Erosion; **Mixed
+  bag** Neon Galleria, Grand Marquee, Primeval Park; **Standard** the rest.
+- **Bots:** sniper-role bots spawn with the set's scoped gun (`Match.sniperGun`; re-armed at once when the role comes
+  after the spawn). For the oddballs they never used: the sheep is thrown short along an open line to an enemy
+  6-20 m off and walks the rest; a big blast with a long fuse (the holy bomb) is thrown half its blast away and the
+  bot runs clear; the oil slicker's igniter lights the bot's own slicks (its bot value 0.3 → 0.45).
+- **Random spawn guns** are dealt from a deck per player, shuffled from the match seed and the slot: every one of the
+  set's main guns comes up once before any comes up again (Chaos's nine oddballs in nine lives), never the same twice
+  running. A plain roll per life handed one player the goo gun four lives in six.
+- **Measured** (`pnpm bot-report <maps> --mode=core.tdm --seeds=1,2 --seconds=180 --set=<set>`: each set on three maps
+  of its theme at the maps' own team sizes, six matches; the bots' kills by weapon, most first):
+
+  | Set (maps) | Kills | By weapon | None |
+  |---|---|---|---|
+  | **Military** (Shingle Point, Bunker Cross, Sandgate) | 359 | assault rifle 268, marksman rifle 20, rockets 11, frag 9, knife 8, sawed-off 7, grenade launcher 6, pistol 6, shotgun 6, burst rifle 5, machine pistol 3, spin gun (LMG) 3, auto shotgun 3, sniper rifle 1, heavy revolver 1 | SMG, hand cannon, mine |
+  | **Sci-fi** (Halcyon Station, Twin Spires, Frost Basin) | 318 | plasma rifle 209, pulse pistol 27, sticky 23, railgun 20, laser rifle 13, knife 7, swarm 5, guided 3, disc launcher 2, arc caster 2 | vortex grenade |
+  | **Medieval** (Market Town, Sandfall Colosseum, Gallows Yard) | 464 | spear 362, knife 36, incendiary 33, battle axe 33 | holy bomb |
+  | **Chaos** (Cinder Foundry, Pantry Raid, Flatpack Depot) | 376 | swarm 113, pistol 54, blast rockets 47, nailgun 31, gilded pistol 23, oil slicker 23, singularity 19, sheep 16, flak 14, freeze ray 12, bubble blaster 8, goo gun 4, flare gun 3, holy bomb 1 | cluster bomb |
+  | **Mixed bag** (Neon Galleria, Grand Marquee, Primeval Park) | 382 | 32 weapons: pistol 87, spin gun 32, sniper rifle 23, SMG 23, swarm 23, marksman 16, arc caster 16, rockets 16, … | the sidearms but the pistol, the spear and axe, every grenade but the frag |
+  | **Standard** (Halcyon Station, Cinder Foundry, Market Town) | 413 | pistol 155, assault rifle 109, frag 27, marksman 20, hand cannon 20, burst rifle 18, SMG 18, grenade launcher 15, … | (as placed) |
+
+  Sniper-role bots spawned with the scoped gun: Military 8 (17 kills, 15 scoped), Sci-fi 4 (15, 10 scoped). Military's
+  and Sci-fi's spawn guns take most of their kills (75 % and 66 %): the set's other guns come from the map's pickups,
+  so how many a map places decides how much of the set shows. Smoke never kills, so it isn't counted as missing.
