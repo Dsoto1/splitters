@@ -311,6 +311,66 @@ against 1.34–2.57.)
 - in Tactical and Mixed, bots spend clearly more of a fight in cover, and push objectives in bounds;
 - the owner playtests it.
 
+### Phase B part 1, measured (scored choices, team brain, route variety)
+Before: main with Phase B's measuring (route use and route choice in `bot-report`; the bots unchanged). After:
+`wip/bots-b`, part 1. The dev sample: Capture the Flag on 12 maps (Bunker Cross, Diamond Park, Serene City, Twin
+Spires, Capitol Mall, Grand Marquee, Maple Court, Pantry Raid, Iron Tide, Saltmarsh Harbor, Sunken Kingdom, Fernwood
+Moon; seeds 1 and 2), King of the Hill on Shingle Point, Diamond Park and Bunker Cross, Bomb on Serene City and
+Ironhold Prison, Hostage on Serene City, Elimination on Diamond Park, Team Deathmatch on Fernwood Moon and Riot
+Junction; 180 s each, 33 matches. Each part was measured on its own first: the branch carried switches for them while
+measuring (with every switch off it replayed main's matches exactly); they are gone.
+
+| Dev sample | Before | After |
+|---|---|---|
+| CTF captures (flag takes), 24 matches | 20 (176) | 20 (141) |
+| CTF matches with a capture | 12 | 9 |
+| CTF route choice (each bot past a trip's middle, once a life): team trips with two ways taking 15 % or more; the busiest way's share | 88 %; 59 % | 93 %; 58 % |
+| King of the Hill: hill held, contested | 26.3 %, 0.0 % | 48.9 %, 0.6 % |
+| Bomb plants a match | 0.5 | 1.5 |
+| Hostage rescues | 0 | 1 |
+| Elimination round | 120 s | 70 s |
+| Team Deathmatch: idle out of a fight; the busiest way's share; time in cover in a fight | 7.1 %; 54 %; 31.9 % | 6.6 %; 43 %; 36.7 % |
+| Idle out of a fight, CTF | 4.3 % | 5.9 % |
+
+On this sample King of the Hill, Bomb, Hostage and Elimination played the same matches as the scored choices alone
+(the team brain's groups switched off): King of the Hill never splits, and those maps' trips are under 180 m. More
+idle out of a fight in CTF is the defenders keeping watch by their flag (they chased gunfire across the map before).
+
+**Scored choices alone** (the team brain off): CTF captures 23 (129 takes), King of the Hill's hill held 48.9 %, Bomb
+plants 1.5 a match, a hostage rescued, Team Deathmatch idle out of a fight 5.3 %. Fewer takes for as many captures:
+with the defenders staying by their flag, a take is a real attack, and more of them end in a capture (11 → 18 %).
+
+**The team brain, as it went** (CTF captures on the same 24 matches, and matches with one; scored choices in all):
+
+| Variant | CTF captures |
+|---|---|
+| No groups | 23 (11) |
+| Groups on every map, following their corridors point by point (12 m) | 9 (5) |
+| Groups on every map, by one via a corridor | 16 (9) |
+| ...with staging, waves together and interceptors | 15 (6) |
+| Groups only on trips of 110 m and more | 22 (11) |
+| ...without interceptors | 22 (11) |
+| Groups only on trips of 180 m and more (landed) | 20 (9) |
+
+One side with the team brain and the other without, in the same matches (the side alternating by seed): CTF captures
+10 against 12 and takes 71 against 78 (groups on every map); King of the Hill hill seconds 238 against 263, and
+gathering out of the hill's sight to retake it 37 against 170 (so King of the Hill goes straight for the hill). From
+110 m, Diamond Park's attack went in two groups, and its five-minute capture test (seed 1) went without a capture (13
+takes); from 180 m it has a capture again. Interceptors made no difference to the captures on this sample (22 and 22)
+and stay: they are the reaction the plan asks for, and they cost nothing in the numbers.
+
+**What it didn't do yet:** CTF captures didn't go up. With both sides' defenders holding their flags, carriers die close
+to them: on Diamond Park 25 takes in two matches, 23 carriers killed within 14 s of the take, no capture (before: 24
+takes, 2 captures). The attack against a held flag (moving up cover to cover, bounds, the playbooks) is part 2's. The
+busiest way still carries 58 % of a CTF team's bots (the aim: under half).
+
+**`pnpm bench:96:clump`** (96 bots; Norman Shores, Frost Basin and Riot Junction, spread and clumped, 30 s each), bot
+thinking a tick, before and after taken in turn, two rounds each at load 1.2-1.5: before 1.43-2.58 ms (means 1.87 and
+1.93), after 1.46-2.68 ms (means 1.85 and 1.91). The same on average; Norman Shores spread out, the first of the run, is
+the most both times (2.51 and 2.58 before, 2.68 and 2.65 after: over the 2.5 ms guard before the change too, on this
+machine, which measured Phase A's base at 1.13-1.90). The team brain itself is a few corridors' prices and a group
+assignment once a second a side.
+
 ## Phase C: navigation depth (straight after Phase B; item 1 first)
 1. **Parkour first** (owner, 2026-11-06: snipers "trying different 'parkour' to get where others don't normally go
    (roofs, etc)"). Links for every move a player can make, generated at load from the geometry and checked against the real

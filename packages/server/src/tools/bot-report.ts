@@ -825,8 +825,8 @@ function printScorecard(rows: readonly MatchRow[], limits: Record<string, Record
   const lines: string[] = [];
   lines.push(`### Bot scorecard (${what}): ${rows.length} matches, ${new Set(rows.map((r) => r.map)).size} maps`);
   lines.push('');
-  lines.push('| Mode | matches | failed searches | no-route idle | idle out of a fight | frozen | stuck a bot-min | going to the goal | coverage /min | spawn deaths | kills /min | two routes | busiest route | cover in fights | scoped kills (from spots) | think ms | objective |');
-  lines.push('|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|');
+  lines.push('| Mode | matches | failed searches | no-route idle | idle out of a fight | frozen | stuck a bot-min | going to the goal | coverage /min | spawn deaths | kills /min | two routes | busiest route | two ways | busiest way | cover in fights | scoped kills (from spots) | think ms | objective |');
+  lines.push('|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|');
   for (const [k, ms] of groups) {
     if (k.includes('/')) continue;
     const m = measure(ms);
@@ -838,7 +838,7 @@ function printScorecard(rows: readonly MatchRow[], limits: Record<string, Record
       m.roundSeconds !== undefined && k !== 'all' ? `rounds ${f(m.rounds)} a match, ${f(m.roundSeconds, false, 0)} s each` : '',
       m.pieces !== undefined ? `pieces built ${f(m.pieces, false, 0)} a match` : '',
     ].filter(Boolean).join('; ');
-    lines.push(`| ${k} | ${m.n} | ${f(m.failedSearches, true, 2)} | ${f(m.noRouteIdle, true, 2)} | ${f(m.calm, true)} | ${f(m.frozen, true)} | ${f(m.stuckPerBotMin, false, 2)} | ${f(m.goalTime > 0 ? m.toward : undefined, true)} | ${f(m.coverage, true)} | ${f(m.spawnDeaths, true)} | ${f(m.killsMin)} | ${f(m.routes2, true, 0)} | ${f(m.busiest, true, 0)} | ${f(m.coverFight, true)} | ${f(m.scopedKills)} (${f(m.postKills)}) | ${f(m.thinkMs, false, 2)} | ${obj || '-'} |`);
+    lines.push(`| ${k} | ${m.n} | ${f(m.failedSearches, true, 2)} | ${f(m.noRouteIdle, true, 2)} | ${f(m.calm, true)} | ${f(m.frozen, true)} | ${f(m.stuckPerBotMin, false, 2)} | ${f(m.goalTime > 0 ? m.toward : undefined, true)} | ${f(m.coverage, true)} | ${f(m.spawnDeaths, true)} | ${f(m.killsMin)} | ${f(m.routes2, true, 0)} | ${f(m.busiest, true, 0)} | ${f(m.ways2, true, 0)} | ${f(m.waysBusiest, true, 0)} | ${f(m.coverFight, true)} | ${f(m.scopedKills)} (${f(m.postKills)}) | ${f(m.thinkMs, false, 2)} | ${obj || '-'} |`);
   }
   const broken: string[] = [];
   let held = 0;

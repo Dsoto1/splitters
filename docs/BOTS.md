@@ -740,29 +740,41 @@ for points on the ground ahead, and captures halved on the dev sample.)
   matches) the cheapest no other squad is on.
 - **Groups**: the side's attackers (bots whose goal is the attack objective, not under a person's orders, on foot) split
   into a main push (the cheapest corridor by length, deaths and sightings: not by who walks it, or the groups swapped
-  ways every second), flankers (40 % of the rest, the next corridor) and a recon pair (two from six attackers, one from
-  four; explorers and lone wolves first; the third corridor, or the flankers'), where the map has the corridors. A
-  group moves to another corridor only when that one is a third cheaper, and only for bots joining it after: a bot
-  keeps the corridor it set out on until it dies (a group changing ways mid-push turned bots 20 m from the flag back).
-- **Group pushes**: with the objective the enemy's (a flag at its base, a hill the other team holds), bots coming up from
-  their spawn gather at their corridor's staging spot (28-60 m back from the objective, out of its sight where the
-  corridor allows) and go together once most of those on their way have gathered or 10 s after the first got there;
-  when one group goes, every group waiting at its spot goes too, so the main push and the flankers arrive about the same
-  time from different ways. A bot already nearer the objective than its spot never falls back to it; the recon pair goes
-  ahead on its own.
+  ways every second), flankers (30 % of the rest, the next corridor) and a recon pair (two from six attackers, one from
+  four; explorers and lone wolves first; the third corridor, or the flankers'). Only on a long trip
+  (`Playbook.groupsFromLength`, `splits`): its shortest way 180 m or more, with two corridors at most 1.35 times as long
+  plus 20 m. In Capture the Flag that is Fernwood Moon (186 m between the flags) and the 14 longer maps with a second way
+  near the shortest (Dune Harbor, Riot Junction, Sunken Kingdom, Primeval Park, Iron Tide, Coldwater Gulch, Sunstone
+  Crag, Capitol Mall, Glacier Line, Eagle Spires, St John's, Iron Maw, Fogbound, Norman Shores). On a shorter trip, or
+  with only far longer ways round, each bot takes its own lane as before, the loose bots' prices spreading them: split
+  over the ways on every map, Capture the Flag lost a third of its captures on the dev sample (BOT_AI_PLAN.md, "Phase B
+  part 1, measured"); from 110 m, Diamond Park's attack went in two groups and its five-minute capture test went
+  without a capture; flankers on a long way round got there late and alone. A group moves to another corridor only
+  when that one is a third cheaper, and only for bots joining it after: a bot keeps the corridor it set out on until it
+  dies (a group changing ways mid-push turned bots 20 m from the flag back).
+- **Group pushes**: with the objective the enemy's (a flag at its base), bots coming up from their spawn gather at their
+  corridor's staging spot (28-60 m back from the objective, out of its sight where the corridor allows) and go together
+  once most of those on their way have gathered or 10 s after the first got there; when one group goes, every group
+  waiting at its spot goes too, so the main push and the flankers arrive about the same time from different ways. A bot
+  already nearer the objective than its spot never falls back to it, one that hasn't got to it in 25 s goes on, and the
+  recon pair goes ahead on its own.
 - **Interceptors** (a reaction: our flag carried off): up to three bots the carrier will run into (ahead of it on its
   way home and within 40 m of its route) wait for it on its route, a goal to keep to, and go straight at it once it's
   close. Bots behind it leave it to the mode's chasers (the defenders and those within 22 m). The other reactions are
-  the mode's: a carrier gets escorts (CTF), a hill the other team holds is retaken from two ways at once.
+  the mode's: a carrier gets escorts, defenders close in on an enemy at their flag.
 - **A person's orders win**: a bot under orders gets no job, and its order outweighs everything in its choices.
-- **Playbooks** (`Playbook`: group shares, staging distances, timings, prices), per mode through its brief: King of the
-  Hill goes straight for the hill and splits over the ways only to retake it (a detour costs hill time: held 49 % of
-  the time going straight on the dev sample, 33 % split over the ways).
+- **Playbooks** (`Playbook`: group shares, staging distances, timings, prices), per mode through its brief. King of the
+  Hill never splits: everyone goes straight for the hill (split over the ways, the hill was held 33 % of the time on the
+  dev sample against 49 % going straight; gathering out of the hill's sight to retake it together, the side doing it
+  held the hill 37 s to the other side's 170 in the same matches).
 
 Bots read their job (`BotPlan.job`: group, corridor, staging spot, or an interceptor's cut-off point) and the side's
 priced trips (`BotPlan.trips`) from objects the director updates in place. `bot-report` prints, per match, each team's
-use of each corridor of its trips (`routes:`) and the group pushes (`pushes`: waves set out, got there, lost half
-first); the scorecard has "two routes" and "busiest route" per mode and map.
+use of each corridor of its trips (`routes:`, bot-seconds by the nearest corridor) and the group pushes (`pushes`:
+waves set out, got there, lost half first); its rows also keep the route choice (`routes[].cross`: each bot's corridor
+once it is past a trip's middle, counted once a life, the way it really took rather than where it stood or fought).
+The scorecard has "two routes" and "busiest route" (time) and "two ways" and "busiest way" (choice) per mode, and the
+judge's line for each map its busiest route and way.
 
 ## Measuring
 
