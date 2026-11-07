@@ -2042,9 +2042,9 @@ export class GameView {
         let run: boolean;
         let stepped: boolean;
         if (a.anim instanceof CharacterAnimator && !a.culled) {
-          // Characters in view: by their size on screen (animLod.ts, round 4), every frame near, then 30, 15, 10 and 5 Hz
-          // (and at most every 2nd, 4th, 6th, 12th frame), each smoothed between its evaluations, on each one's own
-          // phase, with the fingers' pose kept from the last full close; the state machine runs with them.
+          // Characters in view: by their size on screen (animLod.ts, round 4), every frame near, then 30, 20, 15, 10 and
+          // 5 Hz (and at most every 2nd, 3rd, 4th, 6th, 12th frame), each smoothed between its evaluations, on each one's
+          // own phase, with the fingers' pose kept from the last full close; the state machine runs with them.
           const step = perfOn('animlod4') ? animStepByShare(screenShare(far, fov)) : animStep(far, perfOn('animlod2'));
           run = a.anim.stepAt(now, step, this.avatarFrame, (p.slot * 37) % 100);
           stepped = step.frames > 1;

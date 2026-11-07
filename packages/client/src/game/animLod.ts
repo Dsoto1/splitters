@@ -5,10 +5,14 @@
  *
  * Round 4 judges by **size on screen**, a standing character's height as a share of the view's (ragdollBudget's
  * screenShare: the distance and the field of view, so a scope brings far characters back to a full rate), and smooths
- * every reduced rate: between evaluations the skin is drawn part way from the last evaluated pose to the one before it
- * (CharacterAnimator's pose blend), so a far character's run is fluid instead of stepping 8-20 times a second. The
- * bands sit further out than round 2's (full rate to about 20 m, 30 Hz to 40 m, 15 Hz to 80 m, 10 Hz to 150 m, 5 Hz
- * past it, at the usual field of view), each smoothed.
+ * every reduced rate: between evaluations the skin is drawn part way from the one before the last evaluated pose to the
+ * last (CharacterAnimator's pose blend), so a far character's run is fluid instead of stepping 8-20 times a second. At
+ * the usual field of view: every frame to about 15 m (the fingers kept from 8 m), then 30 Hz to 25 m, 20 Hz to 40 m,
+ * 15 Hz to 80 m, 10 Hz to 150 m and 5 Hz past it, each smoothed: at every distance to 150 m at least round 2's rate,
+ * reduced rates pushed out (20 Hz from 35 to 40 m, 12 Hz from 70 to 80 m, 8 Hz now 10 Hz to 150 m), and none of them
+ * stepping. It pays with the coarse after-clip detail from 25 m (round 2: 35 m), where the arm IK and hand turns were
+ * most of a crowd's animation time; on the character bench (56 running, 5-60 m) a frame's animation is about a fifth
+ * cheaper than round 2's while evaluating a tenth more often.
  *
  * The rate is the slower of two rules: a time step and a frame step (every 2nd, 4th, 6th, 12th frame). On a slow frame
  * (25-40 fps, a busy fight on a laptop) the time step alone was due every frame, so the LOD saved nothing just when it
@@ -25,17 +29,20 @@ export const ANIM_LOD_FAR = 70;
 
 /**
  * Round 4's bands: the share of the view's height a standing character (1.8 m) fills. With the game's field of view
- * (1.35 rad vertical) a share is 1.125 / distance: 0.056 at 20 m, 0.028 at 40 m, 0.014 at 80 m, 0.0075 at 150 m. On the
- * owner's 1080p screen a character at 0.028 is about 30 pixels tall.
+ * (1.35 rad vertical) a share is 1.125 / distance: 0.14 at 8 m, 0.075 at 15 m, 0.045 at 25 m, 0.028 at 40 m, 0.014 at
+ * 80 m, 0.0075 at 150 m. On a 1080p screen a character at 0.028 is about 30 pixels tall.
  */
-export const ANIM_SHARE_FULL = 0.056;
-/** Bigger than this (nearer than about 8 m): every frame with the full after-clip detail; 8-20 m every frame, the fingers kept. */
+/** Bigger than this (nearer than about 8 m): every frame with the full after-clip detail. */
 export const ANIM_SHARE_FINE = 0.14;
-/** Past this (smaller): 15 Hz and the coarse after-clip detail. */
+/** Bigger than this (8-15 m): every frame, the fingers kept from their last full close. */
+export const ANIM_SHARE_FULL = 0.075;
+/** Bigger than this (15-25 m): 30 Hz, smoothed. */
+export const ANIM_SHARE_MID = 0.045;
+/** Bigger than this (25-40 m): 20 Hz smoothed, and the coarse after-clip detail from here on. */
 export const ANIM_SHARE_NEAR = 0.028;
-/** Past this: 10 Hz. */
+/** Bigger than this (40-80 m): 15 Hz; smaller (80-150 m), 10 Hz. */
 export const ANIM_SHARE_FAR = 0.014;
-/** Past this (a figure a dozen pixels tall): 5 Hz, smoothed. */
+/** Smaller than this (a figure a dozen pixels tall, past 150 m): 5 Hz, smoothed. */
 export const ANIM_SHARE_TINY = 0.0075;
 
 export interface AnimStep {
@@ -62,6 +69,7 @@ export const EVERY_FRAME: AnimStep = { ms: 0, frames: 1, detail: 'full', smooth:
 /** Every frame, the fingers kept from their last full close (8-20 m: a finger is a few pixels). */
 const NEAR: AnimStep = { ms: 0, frames: 1, detail: 'cached', smooth: false };
 const MID: AnimStep = { ms: 1000 / 30, frames: 2, detail: 'cached', smooth: true };
+const OUTER: AnimStep = { ms: 1000 / 20, frames: 3, detail: 'coarse', smooth: true };
 const FAR: AnimStep = { ms: 1000 / 15, frames: 4, detail: 'coarse', smooth: true };
 const FARTHEST: AnimStep = { ms: 100, frames: 6, detail: 'coarse', smooth: true };
 const TINY: AnimStep = { ms: 200, frames: 12, detail: 'coarse', smooth: true };
@@ -76,7 +84,8 @@ const FARTHEST_1: AnimStep = { ms: 100, frames: 4, detail: 'cached', smooth: fal
 
 /** How a character filling `share` of the view's height is animated (round 4). */
 export function animStepByShare(share: number): AnimStep {
-  return share < ANIM_SHARE_TINY ? TINY : share < ANIM_SHARE_FAR ? FARTHEST : share < ANIM_SHARE_NEAR ? FAR : share < ANIM_SHARE_FULL ? MID : share < ANIM_SHARE_FINE ? NEAR : EVERY_FRAME;
+  if (share >= ANIM_SHARE_FULL) return share >= ANIM_SHARE_FINE ? EVERY_FRAME : NEAR;
+  return share >= ANIM_SHARE_MID ? MID : share >= ANIM_SHARE_NEAR ? OUTER : share >= ANIM_SHARE_FAR ? FAR : share >= ANIM_SHARE_TINY ? FARTHEST : TINY;
 }
 
 /**

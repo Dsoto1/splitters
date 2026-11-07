@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ANIM_LOD_FAR, ANIM_LOD_FULL, ANIM_LOD_NEAR, ANIM_SHARE_FAR, ANIM_SHARE_FINE, ANIM_SHARE_FULL, ANIM_SHARE_NEAR, ANIM_SHARE_TINY, EVERY_FRAME, StepClock, animStep, animStepByShare, blendAt } from '../src/game/animLod.ts';
+import { ANIM_LOD_FAR, ANIM_LOD_FULL, ANIM_LOD_NEAR, ANIM_SHARE_FAR, ANIM_SHARE_FINE, ANIM_SHARE_FULL, ANIM_SHARE_MID, ANIM_SHARE_NEAR, ANIM_SHARE_TINY, EVERY_FRAME, StepClock, animStep, animStepByShare, blendAt } from '../src/game/animLod.ts';
 import { screenShare } from '../src/game/ragdollBudget.ts';
 import { DEFAULT_FOV } from '../src/game/view.ts';
 
@@ -26,11 +26,13 @@ function rateByShare(share: number, frameMs: number, seconds = 10): number {
 describe('character animation LOD by size on screen (round 4)', () => {
   const at = (m: number) => screenShare(m, DEFAULT_FOV);
 
-  it('puts the bands at about 8, 20, 40, 80 and 150 m with the usual field of view', () => {
+  it('puts the bands at about 8, 15, 25, 40, 80 and 150 m with the usual field of view', () => {
     expect(at(7.5)).toBeGreaterThan(ANIM_SHARE_FINE);
     expect(at(8.5)).toBeLessThan(ANIM_SHARE_FINE);
-    expect(at(19)).toBeGreaterThan(ANIM_SHARE_FULL);
-    expect(at(21)).toBeLessThan(ANIM_SHARE_FULL);
+    expect(at(14.5)).toBeGreaterThan(ANIM_SHARE_FULL);
+    expect(at(15.5)).toBeLessThan(ANIM_SHARE_FULL);
+    expect(at(24.5)).toBeGreaterThan(ANIM_SHARE_MID);
+    expect(at(25.5)).toBeLessThan(ANIM_SHARE_MID);
     expect(at(39)).toBeGreaterThan(ANIM_SHARE_NEAR);
     expect(at(41)).toBeLessThan(ANIM_SHARE_NEAR);
     expect(at(78)).toBeGreaterThan(ANIM_SHARE_FAR);
@@ -39,18 +41,19 @@ describe('character animation LOD by size on screen (round 4)', () => {
     expect(at(155)).toBeLessThan(ANIM_SHARE_TINY);
   });
 
-  it('animates every frame to 20 m (the fingers kept past 8 m), then 30, 15, 10 and 5 Hz at 60 fps, every reduced rate smoothed', () => {
+  it('animates every frame to 15 m (the fingers kept past 8 m), then 30, 20, 15, 10 and 5 Hz at 60 fps, every reduced rate smoothed', () => {
     expect(animStepByShare(at(5))).toBe(EVERY_FRAME);
     expect(animStepByShare(at(12)).detail).toBe('cached');
     expect(rateByShare(at(12), 1000 / 60)).toBeCloseTo(60, 0);
-    expect(rateByShare(at(30), 1000 / 60)).toBeCloseTo(30, 0);
+    expect(rateByShare(at(20), 1000 / 60)).toBeCloseTo(30, 0);
+    expect(rateByShare(at(30), 1000 / 60)).toBeCloseTo(20, 0);
     expect(rateByShare(at(60), 1000 / 60)).toBeCloseTo(15, 0);
     expect(rateByShare(at(100), 1000 / 60)).toBeCloseTo(10, 0);
     expect(rateByShare(at(200), 1000 / 60)).toBeCloseTo(5, 0);
-    for (const m of [30, 60, 100, 200]) expect(animStepByShare(at(m)).smooth).toBe(true);
+    for (const m of [20, 30, 60, 100, 200]) expect(animStepByShare(at(m)).smooth).toBe(true);
     expect(animStepByShare(at(12)).smooth).toBe(false);
-    expect(animStepByShare(at(30)).detail).toBe('cached');
-    expect(animStepByShare(at(60)).detail).toBe('coarse');
+    expect(animStepByShare(at(20)).detail).toBe('cached');
+    expect(animStepByShare(at(30)).detail).toBe('coarse');
   });
 
   it('gives each distance at least the rate round 2 did', () => {
@@ -62,8 +65,9 @@ describe('character animation LOD by size on screen (round 4)', () => {
     expect(animStepByShare(scoped).ms).toBe(0);
   });
 
-  it('still saves on slow frames: every 2nd, 4th, 6th and 12th frame at 25 fps', () => {
-    expect(rateByShare(at(30), 40)).toBeCloseTo(12.5, 0);
+  it('still saves on slow frames: every 2nd, 3rd, 4th, 6th and 12th frame at 25 fps', () => {
+    expect(rateByShare(at(20), 40)).toBeCloseTo(12.5, 0);
+    expect(rateByShare(at(30), 40)).toBeCloseTo(25 / 3, 0);
     expect(rateByShare(at(60), 40)).toBeCloseTo(6.25, 0);
     expect(rateByShare(at(100), 40)).toBeCloseTo(25 / 6, 0);
     expect(rateByShare(at(200), 40)).toBeCloseTo(25 / 12, 0);
