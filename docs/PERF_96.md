@@ -1259,8 +1259,8 @@ the camera, a few shooting, at a virtual 60 fps, draws not sent: the animation's
 | evaluations per frame | 22.7 | 25.3 (+11 %) |
 | clip starts / stops a second | 49 / 37 | 40 / 24 |
 
-The same table with round 4's bands but the full grip to 40 m (30 Hz, round 4's first try): 26.0 and 27.3 ms against 22.9 and 22.8, 16 % over round
-2; the coarse detail from 25 m is what pays for the higher rates.
+The same table with round 4's bands but the full grip to 40 m (30 Hz, round 4's first try): 26.0 and 27.3 ms against
+22.9 and 22.8, 16 % over round 2; the coarse detail from 25 m is what pays for the higher rates.
 
 **Effects world**, Shingle Point with 64 players, after a few minutes of fighting (162 bodies, 2,970 colliders): a step
 4.38 ms before, 2.76 ms after (load 10); garbage per step about 0.42 MB before, none from the walk after. In the
@@ -1269,3 +1269,55 @@ at 4-5 fps (several steps a frame there).
 
 **Server bench at 64** (`pnpm bench 64 30`, TDM, 10 s warm-up, spread and clumped, load 9-10): bot thinking a tick
 0.87-2.32 ms (Shingle Point spread the most, its setup 0.73), within the 2.5 ms guard; the tick 3.2-6.9 ms of CPU.
+
+**Server bench at 128** (`pnpm bench 128 30`, 64 viewers, `--wire`; the same at 96 with 48 viewers, in turn, load
+9-11; tick wall ms avg / p95, bot thinking a tick, what each viewer is sent deflated):
+
+| | 96 players | 128 players |
+|---|---|---|
+| Norman Shores spread | 10.8 / 25.3, 2.46 ms, 19 KB/s | 12.1 / 24.5, 3.44 ms, 26 KB/s |
+| Norman Shores clumped | 12.0 / 24.7, 2.61 ms, 35 KB/s | 13.3 / 25.3, 3.26 ms, 45 KB/s |
+| Frost Basin spread | 8.3 / 15.4, 2.10 ms, 38 KB/s | 12.2 / 24.1, 2.76 ms, 43 KB/s |
+| Frost Basin clumped | 9.2 / 16.0, 2.79 ms, 47 KB/s | 12.9 / 22.1, 3.77 ms, 57 KB/s |
+| Shingle Point spread | 9.8 / 18.6, 2.30 ms, 27 KB/s | 11.4 / 19.8, 2.93 ms, 34 KB/s |
+| Shingle Point clumped | 11.3 / 22.6, 3.34 ms, 37 KB/s | 13.2 / 22.8, 3.85 ms, 49 KB/s |
+
+Both over the 16.7 ms budget at p95 on this box under this load (it ran 96 at 0.5-1.5 ms a tick unloaded, without
+viewers); 128 is about a quarter dearer than 96, character moves (every player near a viewer at full detail) the
+biggest part. Before the NPC id move it crashed on Norman Shores' first shot at a slot past 99.
+
+**Handoff flow** (locally, `E2E_ONLY=handoff`, the box at load 10-13, with every synchronous WebGL call timed):
+
+| | one browser (before) | a browser per page (after) |
+|---|---|---|
+| a friend's worst second waiting on WebGL | 55 s (41 link-status queries, up to 3.1 s each) | 15.7 s |
+| a friend's page start (`getExtension`) | 26 s in one second | under a second |
+| successor named after both joined | 64 s | 30 s |
+| flow | PASS in 481 s (the 60 s grace) | PASS |
+
+### Projected on the M1 Pro
+
+From the owner's round 3 recordings (49 players: 17.3 / 17.6 ms average, characters 4.1 / 4.8 ms of which animation
+3.0 / 3.4): at 64 players with 50-60 in view the characters' part grows by about a third, the animation shrinks by
+about a fifth per character, the effects physics loses its collider walk (0.5-1 ms in a fight there, more on slow
+frames). Expect about 18-20 ms in the busiest 32 v 32 views at High (50-55 fps), a 60 fps cap held in most others;
+Medium about 2-3 ms less. Not measured on the M1.
+
+### For the owner to record on the M1 Pro
+
+High, render scale auto, 60 fps cap, a recording running with a 10 s trace:
+1. 32v32 offline TDM (Max) on Shingle Point and on Market Town, 30-60 s each.
+2. A running crowd at a distance: Shingle Point's beach, bots running 30-80 m away; then the same with
+   `?perfoff=animlod4` (round 2's bands) to compare by eye.
+3. A rocket into a crowd on Market Town (7 or more kills).
+4. The first 10 s of a Shingle Point match on a first visit after the update (the browser's cache empty).
+
+### Next
+
+- MASS_DEATH_NEXT
+- Character moves are most of a 128-player tick (every player near a viewer moves at full detail): a cheaper move for
+  bots far from every human, or moves on more than one core, if dedicated hosts fill up.
+- Bot thinking's setup (views, pickups, goals) is 0.7-1.6 ms of a 128-player tick (BOT_AI_PLAN, Phase B).
+- Shared evaluation for characters on the same clip and phase, and fewer bones on far skeletons: not done; the clip
+  sampling is a fifth of a crowd's animation now, the after-clip work most of it.
+

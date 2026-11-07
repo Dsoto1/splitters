@@ -1,6 +1,6 @@
 import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
-import { GAME_MODES, MODE_LABELS, SERVER_RULES, isGameMode, isTeamMode } from '@tiletrigger/shared';
+import { GAME_MODES, MAX_PLAYER_SLOTS, MODE_LABELS, SERVER_RULES, isGameMode, isTeamMode } from '@tiletrigger/shared';
 import { botSetToText, presetBotSet, type BotSetPreset, type RotationPreset } from '@tiletrigger/shared';
 import type { CommandSpec } from './commands.ts';
 
@@ -207,9 +207,9 @@ export function launcherPage(info: LauncherInfo, nonce: string): string {
     </section>
     <section class="card">
       <h3>Players <em>&amp; bots</em></h3>
-      <div class="field"><span title="Players and bots to keep: bots fill up to this, people take bots' places">Players + bots</span><div class="stepper" data-k="bots" data-min="1" data-max="96"><button type="button" data-d="-1" aria-label="Fewer">−</button><b id="v-bots">–</b><button type="button" data-d="1" aria-label="More">+</button></div></div>
-      <div class="field" id="team-field"><span title="Every team to this size (8 = 8 v 8)">Team size</span><div class="stepper" data-k="teams" data-min="1" data-max="48"><button type="button" data-d="-1" aria-label="Smaller">−</button><b id="v-teams">–</b><button type="button" data-d="1" aria-label="Bigger">+</button></div></div>
-      <div class="field"><span title="People (not bots) at once: your upload carries each one (about 20 KB/s each at 48 v 48)">People at most</span><div class="stepper" data-k="maxPlayers" data-min="1" data-max="64"><button type="button" data-d="-1" aria-label="Fewer">−</button><b id="v-max">–</b><button type="button" data-d="1" aria-label="More">+</button></div></div>
+      <div class="field"><span title="Players and bots to keep: bots fill up to this, people take bots' places">Players + bots</span><div class="stepper" data-k="bots" data-min="1" data-max="${MAX_PLAYER_SLOTS}"><button type="button" data-d="-1" aria-label="Fewer">−</button><b id="v-bots">–</b><button type="button" data-d="1" aria-label="More">+</button></div></div>
+      <div class="field" id="team-field"><span title="Every team to this size (8 = 8 v 8)">Team size</span><div class="stepper" data-k="teams" data-min="1" data-max="${MAX_PLAYER_SLOTS / 2}"><button type="button" data-d="-1" aria-label="Smaller">−</button><b id="v-teams">–</b><button type="button" data-d="1" aria-label="Bigger">+</button></div></div>
+      <div class="field"><span title="People (not bots) at once: your upload carries each one (about 25-55 KB/s each at 64 v 64)">People at most</span><div class="stepper" data-k="maxPlayers" data-min="1" data-max="64"><button type="button" data-d="-1" aria-label="Fewer">−</button><b id="v-max">–</b><button type="button" data-d="1" aria-label="More">+</button></div></div>
       <div class="field"><span title="Easy bots aim slowly and miss often; hard ones react fast, use cover and lead their shots">Bot skill</span><div class="seg" id="f-skill" role="group" aria-label="Bot skill"><button type="button" data-v="easy">Easy</button><button type="button" data-v="normal">Normal</button><button type="button" data-v="hard">Hard</button></div></div>
       <div class="field"><span title="Mixed: every character its own way. Arena: always moving. Tactical: cover and held angles">Bot style</span><div class="seg" id="f-style" role="group" aria-label="Bot style"><button type="button" data-v="mixed">Mixed</button><button type="button" data-v="arena">Arena</button><button type="button" data-v="tactical">Tactical</button></div></div>
       <div class="field"><span title="Idle this many seconds and a bot plays for them until they're back (0: never)">Idle → bot</span><span class="inline"><input id="f-afk" type="number" min="0" max="3600" aria-label="Seconds idle before a bot plays"><small class="unit">s</small><button type="button" id="b-afk">Set</button></span></div>
@@ -712,7 +712,7 @@ const SCRIPT = `
     document.querySelector('.stepper[data-k=' + k + ']').classList.remove('pending');
     if (v == null) return;
     if (!running()) {
-      if (k === 'teams') { draft.botFill = Math.min(96, v * 2); }
+      if (k === 'teams') { draft.botFill = Math.min(${MAX_PLAYER_SLOTS}, v * 2); }
       else if (k === 'bots') draft.botFill = v;
       else draft.maxPlayers = v;
       renderAll();

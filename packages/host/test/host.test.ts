@@ -138,7 +138,7 @@ describe('Host Service end to end (hub, host and players in this process)', () =
     const ana: Guest = await joinAsGuest(hub.url, host.code, 'Ana', { pk: 'p_anaanaana' });
     cleanup.push(() => ana.close());
     await until(() => ana.welcome);
-    expect(ana.welcome).toMatchObject({ dedicated: true, protocol: 4 });
+    expect(ana.welcome).toMatchObject({ dedicated: true, protocol: 5 });
     ana.send({ t: 'ready' });
     await until(() => ana.snapshots > 10);
     expect(host.status().players).toBe(1);

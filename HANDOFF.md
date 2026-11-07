@@ -1093,22 +1093,7 @@ for each character?"
   - a voice service whose terms name games (needs the owner's approval);
   - a local open-source text-to-speech with permissively licensed voices.
 
-### Queued (owner, 2026-11-06): performance round 4, crowds. Right after the Match Setup follow-ups, ahead of Roulette
-**The owner:**
-- "Focus round 4 on crowds."
-- "32v32 would be max I want to shoot for without dedicated host."
-- "Push dedicated hosts to 64v64 if at all possible."
-- Running characters look choppy at a distance (fewer animation frames). Push the reduced-rate distance out.
-
-**Scope:**
-- Animation that doesn't look choppy and costs less: screen-size bands, smoothing between samples, shared or cheaper
-  evaluation.
-- The M1 recording's three hitches: start-of-match shaders, the mass-death spike, GC frames.
-- The browser cap raised to 32v32 (`BROWSER_MAX_PLAYERS` 48 → 64) once measured.
-- 64v64 on dedicated hosts (`MAX_PLAYER_SLOTS` 96 → 128) only if the measurements hold; otherwise a precise report.
-- The handoff e2e flake.
-
-The brief is in the session scratchpad, `briefs/perf-4.md`.
+### Done (owner, 2026-11-06): performance round 4, crowds: see "Performance round 4" at the top (`wip/perf-4`)
 
 <!-- match-setup-2 -->
 ### Match Setup follow-ups: one Host online, Save for next match, co-op sizes, score and time follow the size (`wip/match-setup-2`, agents, 2026-11-06; main 2acb8f23 merged in; green on `check/match-setup-2` at 9d41d790, run 42307136197; not landed)
@@ -2604,9 +2589,9 @@ the fingers bent "toward the gun", i.e. backwards). Creatures (Imp, Puglin) were
 - The warning says "(connection up)" when that was the case.
 - Unit test: `localHost.test.ts`, "silent friends".
 
-**Still open, for performance round 4:** why a joining friend's page freezes for half a minute on CI. Probably the
-shader builds left over after the warm-up's cap, on a GPU process the three pages share. Round 4's item 2 already
-covers the start-of-match shader stalls.
+**Root-caused in performance round 4** (see its section): the three pages shared one browser's GPU process, and a
+joining friend's synchronous WebGL calls (shader programs' link status, uniform blocks, extensions) waited behind the
+other pages' SwiftShader frames, 30-55 s in a second measured locally. The flow now gives each page a browser of its own.
 
 ### Flaky e2e (seen 2026-11-06): `handoff` (host handoff between three browsers)
 It failed on CI twice in one job on the HUD portrait train (run 42215908322) and once on `check/bots-idle`. Each time it
