@@ -67,7 +67,10 @@ shots a spot), cover-to-cover advance (`BotBrain.boundPhase`: bounds by style; i
 (`bots/playbooks.ts`, Breakthrough's included: `bound: 'all'` reaches the brain through `TeamJob.bound`), flankers
 45 %, `bot-report`'s style per bot (cover by style in `--compare`) and how each route-choice vote's bot went. Numbers:
 BOT_AI_PLAN.md, "Phase B part 2, measured" (cover in a fight Tactical 24 → 40 %, Mixed 18 → 28 %, Arena as before;
-sniper-role bots' scoped kills 4 → 27 in the sniper sample).
+sniper-role bots' scoped kills 4 → 27 in the sniper sample). The nightly scorecard (run 42339417626): cover in a fight
+33.8 → 36.5 % (CTF 13.7 → 23.6 %), scoped kills 1.8 → 2.6 a match, CTF captures 1.0 → 0.9, hill held 40.8 → 40.1 %,
+plants 0.8 → 0.9, rescues 1.5 → 2.0; limits raised: CTF idle spells of 10 s+ 2 → 2.5 a match (snipers holding spots),
+Bomb idle out of a fight 12 → 14 % (defenders waiting longer at their sites for attackers moving up in bounds).
 
 **Breakthrough** (`wip/breakthrough`, another agent): its mode has `botGoal` only. When it lands, its `botBrief` should
 hand `playbookFor('core.breakthrough').team` with the attack objective (`stage` while the defenders hold it) and its

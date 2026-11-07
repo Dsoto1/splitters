@@ -480,6 +480,30 @@ What it would take: route searches that stay on a group's corridor all the way, 
 polygons off it (as the corridors themselves were found), not more vias (several vias a corridor kept groups on their
 way but slowed them: fewer takes). That is Phase C's route cost work (item 4) more than Phase B's.
 
+**The nightly scorecard** (Run workflow, 398 matches on 77 maps: run 42339417626 against part 1's 42330601755, the
+same maps):
+
+| Nightly | Part 1 | Part 2 |
+|---|---|---|
+| Time in cover in a fight: all; CTF; King of the Hill; Team Deathmatch | 33.8 %; 13.7 %; 36.9 %; 43.5 % | 36.5 %; 23.6 %; 37.8 %; 43.7 % |
+| Scoped kills a match (from vantage spots) | 1.8 (0.0) | 2.6 (0.1) |
+| CTF captures, flag takes, returns a match | 1.0, 4.5, 1.9 | 0.9, 4.5, 1.7 |
+| CTF route choice: two ways or more; the busiest way | 85 %; 61 % | 88 %; 59 % |
+| King of the Hill: hill held | 40.8 % | 40.1 % |
+| Bomb plants a match; rounds a match, each | 0.8; 1.6, 86 s | 0.9; 1.3, 97 s |
+| Hostage rescues a match | 1.5 | 2.0 |
+| Elimination rounds a match, each | 3.6, 37 s | 3.4, 38 s |
+| Team Deathmatch kills a minute | 21.6 | 21.1 |
+| Idle out of a fight: all; CTF; Bomb; Hostage | 6.7 %; 6.7 %; 10.0 %; 14.0 % | 7.1 %; 6.7 %; 12.3 %; 9.8 % |
+| Stuck recoveries a bot-minute | 1.73 | 1.71 |
+| Bot thinking a tick (GitHub's machines, not the same ones) | 0.37 ms | 0.32 ms |
+
+Two limits broke, and went up for it (bot-limits.json): CTF's idle spells of 10 s and more, 2.06 a match against 2.0
+(now 2.5): snipers hold their spots now, 25-50 s each, deliberately still; Bomb's idle out of a fight, 12.3 % against
+12 % (now 14 %): its attackers move up in bounds, so the defenders keep watch at their sites longer (Shingle Point,
+seed 1: station-keeping 7.2 → 15.5 % of the bots' time, sniper spots 2.0 %), and its rounds run longer (86 → 97 s)
+for as many plants.
+
 **`pnpm bench:96:clump`** (96 bots; Norman Shores, Frost Basin and Riot Junction, spread and clumped, 30 s each), bot
 thinking a tick, part 1 and part 2 taken in turn, three rounds each, at load 10-14 on 4 cores (other agents' tests
 running): means 1.96, 2.01 and 2.00 ms against 1.93, 2.15 and 1.92. The worst case, Norman Shores spread out: part 1
