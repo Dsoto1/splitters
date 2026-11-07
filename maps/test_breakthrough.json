@@ -5,7 +5,7 @@
     "id": "test_breakthrough",
     "name": "Breakthrough Range",
     "author": "",
-    "description": "A Breakthrough test layout: the beach (two capture zones), the guns (two of three targets), the fort (the Command Bunker, its command room the final hold). Attackers push north.",
+    "description": "Breakthrough on a practice coast: the beach (two capture zones), the guns (two of three targets), then the fort (the Command Bunker, its command room the final hold). Attackers push north.",
     "createdAt": "2026-11-07T04:00:21.711Z",
     "updatedAt": "2026-11-07T04:00:21.711Z",
     "parentId": null,
@@ -18,13 +18,12 @@
     ],
     "release": {
       "mapId": "m_6ub4zneeteooq2ql",
-      "versionId": "v_j3ne27rl2kswuuaw",
-      "revision": 4,
-      "contentHash": "sha256:d73b66ed4b57f0dd8a15d85cf483b25df02522fe607ceb75e4b407ade230b129",
-      "schemaVersion": 28,
-      "releasedAt": "2026-11-07T04:21:38.550Z"
-    },
-    "testOnly": true
+      "versionId": "v_lnb3zatb7qbck2yo",
+      "revision": 5,
+      "contentHash": "sha256:d67095715fc4416d323b22962ff07ca1632366f134ed36bb3b993d66b4e37ef0",
+      "schemaVersion": 29,
+      "releasedAt": "2026-11-07T13:47:06.058Z"
+    }
   },
   "classicStructure": {
     "cellSize": 8,

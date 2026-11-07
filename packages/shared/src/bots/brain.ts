@@ -27,10 +27,14 @@ import {
   ROADKILL_SPEED,
   RIDER_MIN_PROGRESS,
   RIDER_STUCK_TICKS,
-  STUCK_AVOID_SECONDS,
+  BOARD_CHECK_TICKS,
+  MAX_BOARD_FAILS,
   aboutToBlow,
   antiVehicle,
+  avoidSeconds,
+  boardingSpot,
   freshDrive,
+  inBoardingReach,
   inArc,
   inVehiclePath,
   mountOf,
@@ -563,7 +567,8 @@ export class BotBrain {
   private throwPlan: ThrowPlan | null = null;
   private nextThrow = 0;
   // Turrets and vehicles.
-  private mountPlan: { index: number; until: number; drive: boolean; ride?: boolean } | null = null;
+  /** The mount it is going for; `spot`: where it walks to board (just off the hull), worked out where the mount stood at `spotOf`. */
+  private mountPlan: { index: number; until: number; drive: boolean; ride?: boolean; spot?: Vec3; spotOf?: Vec3 } | null = null;
   /** Riding with a teammate: when the driver left (or the vehicle stopped), and how long before getting out. */
   private rideIdleSince = -Infinity;
   private noDriverSince = -Infinity;
@@ -575,6 +580,14 @@ export class BotBrain {
   private lastUseTick = -Infinity;
   /** Vehicles (by mount index) this bot got stuck in, and until when it leaves them alone. */
   private readonly avoidMounts = new Map<number, number>();
+  /** How many times it has given up on each mount (by index): each time it leaves it alone twice as long (avoidSeconds). */
+  private readonly giveUps = new Map<number, number>();
+  /** Use pressed beside the mount it was going for (and when): still not in it BOARD_CHECK_TICKS later, that boarding failed. */
+  private boardTry: { index: number; tick: number } | null = null;
+  /** Failed boardings per mount since it last got in one: at MAX_BOARD_FAILS it gives up on that one. */
+  private readonly boardFails = new Map<number, number>();
+  /** Boardings so far (bot-report): use pressed for a planned mount, those that failed, mounts given up on, and plans for one it had given up on before (`back`). */
+  readonly boarding = { tries: 0, failed: 0, gaveUp: 0, back: 0 };
   private readonly skipMount = (m: MountView): boolean => (this.avoidMounts.get(m.index) ?? -Infinity) > this.lastThinkTick;
   /** Riding with a bot at the wheel: is it getting anywhere? */
   private riderHeadway: Headway = { pos: null, tick: 0 };
@@ -794,11 +807,25 @@ export class BotBrain {
       return this.thinkMounted(view, seq, target, ctx);
     }
     this.useLatch = false;
+    // Pressed use beside it and still not in: a failed boarding (no seat after all, out of reach, the mode won't let
+    // it). Twice at one mount and it gives up on that one for a while and looks for something else, rather than
+    // walking back to it again and again (the owner saw a bot at a stuck Dropship on Shingle Point, 2026-11-07).
+    const tried = this.boardTry;
+    if (tried && view.tick - tried.tick >= BOARD_CHECK_TICKS) {
+      this.boardTry = null;
+      this.boarding.failed++;
+      const n = (this.boardFails.get(tried.index) ?? 0) + 1;
+      this.boardFails.set(tried.index, n);
+      if (n >= MAX_BOARD_FAILS) {
+        this.giveUpOn(tried.index, view.tick);
+        if (this.mountPlan?.index === tried.index) this.mountPlan = null;
+      }
+    }
     if (this.mountPlan && view.tick >= this.mountPlan.until) {
       // Didn't get in in time (no way to it, stuck on the way, someone else took it): leave that one alone a while,
       // as one it got stuck driving (the next check sent it straight back: Coldwater Gulch's bots spent 5 % of the
       // match walking into a vehicle they couldn't reach).
-      if (!this.mountPlan.ride) this.avoidMounts.set(this.mountPlan.index, view.tick + TICK_RATE * STUCK_AVOID_SECONDS);
+      if (!this.mountPlan.ride) this.giveUpOn(this.mountPlan.index, view.tick);
       this.mountPlan = null;
     }
 
@@ -1631,9 +1658,19 @@ export class BotBrain {
           }
           break;
         }
-        if (d > m.enterRadius * 0.8) {
-          moveYaw = this.followPathTo(view, m.pos, false);
+        // To a spot just off its hull (its centre is inside it, where no route goes), until it can get in from here.
+        if (!inBoardingReach(m, me.pos)) {
+          if (!plan.spot || !plan.spotOf || horizontalDistance(plan.spotOf, m.pos) > 1.5) {
+            plan.spot = boardingSpot(m, me.pos);
+            plan.spotOf = { ...m.pos };
+          }
+          moveYaw = this.followPathTo(view, plan.spot, false);
           sprint = d > 8;
+          // No way there at all: give up on it now, not when the plan runs out.
+          if (moveYaw === null && horizontalDistance(me.pos, plan.spot) > 2) {
+            this.giveUpOn(m.index, tick);
+            this.mountPlan = null;
+          }
         }
         break;
       }
@@ -2095,10 +2132,12 @@ export class BotBrain {
     // Getting in: use when close enough to the planned mount.
     if (this.state === 'mount' && this.mountPlan) {
       const m = view.mounts?.find((x) => x.index === this.mountPlan!.index);
-      // (The match lets you in within the whole enter radius; a big hull can keep you from getting much nearer.)
-      if (m && horizontalDistance(me.pos, m.pos) <= m.enterRadius * 0.95 && Math.abs(m.pos.y - me.pos.y) < 2.3 && tick - this.lastUseTick > 20) {
+      // (The match's own rule: near its centre or its hull, sim/mounts.ts enterReach.)
+      if (m && inBoardingReach(m, me.pos) && tick - this.lastUseTick > 20) {
         buttons |= BUTTON_USE;
         this.lastUseTick = tick;
+        this.boardTry ??= { index: m.index, tick };
+        this.boarding.tries++;
       }
     }
     this.steerable = aimedTarget && wantFire && !sprint && !dodge && !throwNow && !pressNow && !this.throwPlan && !this.pressPlan && !this.holdStill && this.state !== 'mount' && !this.link;
@@ -2801,6 +2840,21 @@ export class BotBrain {
     return def && this.targetMount && t.slot === this.targetSlot && antiVehicle(def) ? 2 : t.stance;
   }
 
+  /**
+   * Leave mount `index` alone for a while (stuck in it, couldn't reach it, couldn't get in): each time it gives up on
+   * the same one it stays away twice as long (avoidSeconds), so a vehicle nobody can use stops drawing it back.
+   */
+  private giveUpOn(index: number, tick: number): void {
+    // Already leaving it alone (the stuck checks run every tick until it is out): once per give-up.
+    if ((this.avoidMounts.get(index) ?? -Infinity) > tick) return;
+    const n = (this.giveUps.get(index) ?? 0) + 1;
+    this.giveUps.set(index, n);
+    this.avoidMounts.set(index, tick + Math.round(TICK_RATE * avoidSeconds(n)));
+    this.boardFails.delete(index);
+    if (this.boardTry?.index === index) this.boardTry = null;
+    this.boarding.gaveUp++;
+  }
+
   private considerMount(view: BotWorldView, target: CombatantView | undefined): void {
     const mounts = view.mounts;
     if (!mounts?.length || this.mountPlan || hasTag(this.profile, 'NPC') || view.tick < this.nextMountTick) return;
@@ -2814,6 +2868,7 @@ export class BotBrain {
       const close = target && horizontalDistance(me.pos, target.pos) < 12 && horizontalDistance(me.pos, ride.pos) > 6;
       if (!close && this.rng() < 0.6 + (this.profile.teamLoyalty / 100) * 0.4) {
         this.mountPlan = { index: ride.index, until: view.tick + TICK_RATE * 8, drive: false, ride: true };
+        if (this.giveUps.has(ride.index)) this.boarding.back++;
         this.state = 'mount';
         return;
       }
@@ -2825,6 +2880,7 @@ export class BotBrain {
       const m = turretFor(mounts, me.pos, enemy, Math.min(14, horizontalDistance(me.pos, enemy) * 0.6), this.skipMount);
       if (m && this.rng() < 0.4 + this.tactical * 0.6) {
         this.mountPlan = { index: m.index, until: view.tick + TICK_RATE * 6, drive: false };
+        if (this.giveUps.has(m.index)) this.boarding.back++;
         this.state = 'mount';
       }
       return;
@@ -2847,6 +2903,7 @@ export class BotBrain {
       this.roamGoal = { ...goal };
       this.via = null;
       this.mountPlan = { index: v.index, until: view.tick + TICK_RATE * 8, drive: true };
+      if (this.giveUps.has(v.index)) this.boarding.back++;
       this.state = 'mount';
     }
   }
@@ -2859,6 +2916,10 @@ export class BotBrain {
     if (this.state !== 'mounted') {
       this.state = 'mounted';
       this.mountedSince = tick;
+      // In: whatever it tried before at this one worked in the end.
+      this.boardTry = null;
+      this.boardFails.delete(seat.mount);
+      this.giveUps.delete(seat.mount);
       this.drive = freshDrive();
       this.useLatch = true;
       this.path = [];
@@ -2922,7 +2983,7 @@ export class BotBrain {
       // Get out: arrived, about to blow (or on fire), stuck for good (a back-out didn't free it), or a fight with no gun.
       if (left < 14 || aboutToBlow(m) || this.drive.stuck || (target && !seat.weapon && horizontalDistance(m.pos, target.pos) < 22)) leave = true;
       // Don't climb straight back into the one that got stuck.
-      if (this.drive.stuck) this.avoidMounts.set(m.index, tick + TICK_RATE * STUCK_AVOID_SECONDS);
+      if (this.drive.stuck) this.giveUpOn(m.index, tick);
     } else if (m && m.kind === 'vehicle') {
       // Riding along: stay while a teammate drives; get out when they do, when it is about to blow (or on fire),
       // when a bot at the wheel has got it stuck, or when it has sat parked a while with nothing to shoot.
@@ -2939,7 +3000,7 @@ export class BotBrain {
       const parked = this.rideIdleSince !== -Infinity && tick - this.rideIdleSince > TICK_RATE * RIDE_PARKED_SECONDS && tick - this.lastTargetTick > TICK_RATE * 4;
       // (A human at the wheel may stop on purpose; a bot driver never parks with riders.)
       const stuck = driven && !ally.human && noHeadway(this.riderHeadway, m.pos, tick, RIDER_STUCK_TICKS, RIDER_MIN_PROGRESS);
-      if (stuck) this.avoidMounts.set(m.index, tick + TICK_RATE * STUCK_AVOID_SECONDS);
+      if (stuck) this.giveUpOn(m.index, tick);
       if ((!driven && tick - this.noDriverSince >= this.bailDelay) || aboutToBlow(m) || parked || stuck) leave = true;
       if (!fireAt) this.turnToward(m.yaw, 0);
     } else if (m) {

@@ -26,6 +26,57 @@ gets overloaded above that: local e2e times out and flakes). Prune landed worktr
 - Earlier the same day: content scalability steps 2–6, perf toolset, flaky e2e fixes, Runway Nine airliner, map
   reworks batches 2–3, character fixes rounds 2–3 (see the entries below and CHANGELOG).
 
+<!-- small-fixes-1107 -->
+### Small fixes from the owner's play, 2026-11-07 (`wip/small-fixes-1107`, agent; from main 3647eee9; green on `check/small-fixes-1107` at f79d1ec2, run 42384938315 (the full suite: unit, maps, build, check, bots, perf, 14 e2e shards); not landed)
+Four owner reports, each fixed at the cause with a test (CHANGELOG, "Small fixes from the owner's play").
+
+- **Breakthrough Range is an ordinary map** (`maps/test_breakthrough.json`, id kept): "Test map" unticked in MapMaker's
+  Map properties and its card's description reworded ("A Breakthrough test layout" was its first sentence), through
+  the real editor (Import, a mouse click on the box, typing, Export: revision 5); its map picture
+  (`public/maps/shots/test_breakthrough.jpg`, 16 KB, `tools/content/capture-map-shots.mjs`). Play, Match Setup,
+  rotations and the host's list offer it (Breakthrough its first mode). e2e `breakthrough` goes without `testmap=`
+  and checks Match Setup lists it; `main.ts` no longer adds a `testmap=` map that is already listed. Tests:
+  mapIndexPlugin, server testMaps.
+- **The use prompt**: the key's letter took the global `kbd` rule's dark ink (#0b0f1a) on `#prompt kbd`'s dark cap.
+  Now white text, a light green key (#7dff9a) on a dark cap, a soft dark outline and a faint dark backing; refusals
+  light red. e2e `vehicles` checks the colours and the key's contrast on its cap (at least 7:1). No baseline shows it.
+- **Dropship wedged on Shingle Point's beach.** Headless repro (`bot` match, 24 bots): a bot flew a Dropship into a
+  landing craft wreck (prop at 12, -1.4, -61) and left it turned across the hull, 708 ticks wedged in 180 s. Causes:
+  the vehicle probe is a capsule of the hull's half width (1.9 m) that covers only its middle, so it fits the wreck's
+  open stern; turned across a 5 m hull it can't move; flyers never climbed on their own and bot pilots never climb.
+  Entry was refused because the nose and tail (4.8 m from the centre) were past the 4.5 m enter radius and the sides
+  were inside the hull (no prompt, E did nothing). Bots walked to its centre, gave up when the plan ran out, came back
+  30 s later. Fixes, general: flyers driven into something they can't pass climb on their own (`climbAssist`, Match
+  driveVehicle) and settle back to their height after (`assistFrom`); entry within the enter radius of the centre OR
+  1.6 m of the hull (`enterReach`, sim/mounts.ts: the match, the client's prompt and the bots); "The … is full"
+  (denied) by a full vehicle; `wedged` (driven, no headway 3 s) marks a vehicle for every bot until it has moved 3 m;
+  bots walk to a spot off the hull (`boardingSpot`), give up after 2 failed boardings or no route, longer each time
+  (`avoidSeconds` 30/60/120/240 s); `bot-report` prints boardings. The beach props' collision is right (their boxes
+  match the models; a Dropship rides over the hedgehog, timber, dory and a desk: tested). Numbers (scratch harness,
+  same measure before and after): Shingle Point 180 s: Dropship wedged 708 → 15 ticks, back to a mount it had dropped
+  6 → 1; the Dropship placed wedged in the wreck, 3 seeds × 150 s: a player at its nose can't → can get in, wedged
+  731 → 119 ticks, bots back to it after giving up 9 → 1, it is flown out after 17-65 → 14-38 s; failed use presses
+  0 → 0 (on main bots pressed E only within 95 % of the radius, so they walked instead: the "turn around and back").
+  Iron Tide and Dune Harbor have no wreck, but their Dropships wedged too (323; 244 + 506 ticks) → (189, climbing a
+  cliff; 38 + 44). Their hovercraft (Hauler, Speeder, Hover Bike: hover, not flyers) still wedge on structures (a
+  Hauler under Iron Tide's platforms at -16, 5, -20): not the beach props, left for a vehicles pass. `bot-report
+  shingle_point --mode=core.tdm --seeds=1,2 --seconds=180`: boarding 43/29 tries, 0 failed, 6/7 given up on, 1/0 back
+  to one given up on. `test/vehicleWedge.test.ts`.
+- **Count Bonesworth's gun vanished after the scope** (every character, every gun with a sharper held copy: pistol,
+  rifles, shotguns, SMGs, revolver, the Marksman Rifle St. John's Military set has): on Medium and High a gun you pick
+  up fetches its sharper copy (`View.sharpenViewmodel`); it took over with `old.isEnabled()`, which asks the parents,
+  so when it came in while the gun was put away (scoped, or in third person: the view's root off) it stayed off, and
+  the hands held nothing until you switched guns. Now `takeOverViewmodel` (game/viewmodelSwap.ts) takes the old
+  copy's own switch. Reproduced on cue (scoped, the copy swapped in, scope down): before, the gun off and not drawn,
+  no hand on it, for Bonesworth, the Dapper and the Iron Knight; after, drawn and gripped. The "flicker" itself didn't
+  show in frame-by-frame probes (gun and hands drawn every frame, the grip steady at 3-4 cm, standing and prone, the
+  Sniper Rifle and the Marksman Rifle, canyon and St. John's); hands chasing a gun that isn't drawn is what the owner
+  would have seen. Unit test `viewmodelSwap.test.ts`; e2e `characters3` scopes with the copy swapped in mid-scope.
+- Pitfalls: the e2e flows that use `window.__match` run the match on the page (`localStorage tiletrigger.sim =
+  main`); a Playwright driver needs the same or `__match` never appears. A loaded machine draws a frame in seconds:
+  wait on the view's state (camera fov for the scope), not the clock.
+
+<!-- /small-fixes-1107 -->
 <!-- perf-4 -->
 ### Performance round 4: crowds, 32 v 32 in a browser, 64 v 64 on a dedicated host (`wip/perf-4`, agent, 2026-11-07; from main 5087b0b6, main 3647eee9 merged in; CI on `check/perf-4`; not landed)
 docs/PERF_96.md, "Performance round 4", has the numbers; CHANGELOG has the player-facing lines.

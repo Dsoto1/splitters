@@ -2152,6 +2152,7 @@ export class GameSession {
     const target = local.alive ? pickUsable(map, local.eye, this.input.yaw, this.input.pitch, (i) => sc.usable(i, myTeam)) : null;
     const e = target === null ? undefined : map.entities[target];
     const enter = local.alive && !this.seat ? this.mounts?.enterable(local.state.pos) : null;
+    let full: { def: { displayName: string } } | null = null;
     if (local.alive && this.seat) {
       const m = this.mounts?.mounts.get(this.seat[0]);
       const hint = m && m.def.kind === 'vehicle' && !m.def.airplane && VehicleCamera.drives(m.def, this.seat[1]) ? { key: 'H', text: this.vehicleCam.viewFor(m.def) === 'cockpit' ? 'Chase camera' : 'Cockpit view' } : undefined;
@@ -2165,6 +2166,9 @@ export class GameSession {
       const seat = enter.mount.def.seats[enter.seat]!;
       const verb = seat.role === 'driver' ? (enter.mount.def.kind === 'vehicle' ? 'Drive' : 'Use') : seat.role === 'gunner' ? 'Man the gun on' : 'Ride in';
       this.hud.setPrompt(`${verb} the ${enter.mount.def.displayName}`);
+    } else if (local.alive && !this.seat && (full = this.mounts?.fullInReach(local.state.pos) ?? null)) {
+      // In reach but every seat is taken: say so (E does nothing here).
+      this.hud.setPrompt(`The ${full.def.displayName} is full`, true);
     } else if (local.alive && !local.state.grounded && !local.state.chute && local.state.velY < -CHUTE.armSpeed && local.jetFuel === null && heightAboveGround(local.physics, local.state.pos, CHUTE.minHeight) === null) {
       this.hud.setPrompt(local.glider ? 'Open your glider (Space)' : 'Open your parachute (Space)');
     } else if (local.state.chute) this.hud.setPrompt(local.state.chute === CHUTE_GLIDER ? 'Gliding: W faster, S slower, crouch to let go' : 'Parachute: steer with WASD, crouch to cut away');
