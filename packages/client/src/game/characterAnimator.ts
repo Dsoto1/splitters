@@ -11,7 +11,8 @@ import type { AbstractMesh } from '@babylonjs/core/Meshes/abstractMesh';
 import type { GripTune, ModelPoint, WeaponHold } from '@tiletrigger/shared';
 import type { CharacterInstance, Clip } from '../content/characters.ts';
 import { gripReport, skinHandFrame, type PalmCues } from './handProbe.ts';
-import { EVERY_FRAME, StepClock, type AnimStep } from './animLod.ts';
+import { EVERY_FRAME, StepClock, blendAt, type AnimStep } from './animLod.ts';
+import { perfOn } from './perfSwitches.ts';
 import { TorsoSurface, armReach, reachAlong } from './torsoSurface.ts';
 import { GAIT, GAIT_CLIPS, clipCycleRate, clipGaitWeights, clipUpperWeights, gaitCycleRate, gaitWeights, matchClipPhase, matchPhase, strideWarp, type ClipLoop, type GaitClip } from './gait.ts';
 
@@ -102,6 +103,13 @@ const SIT_KNEE_MIN = 0.3;
 const SIT_KNEE_MAX = 1.5;
 const SIT_SHIN = 0.45;
 const FADE_PER_SEC = 8;
+/**
+ * A loop faded out of the blend stays started at weight 0 this long (ms) before it stops (docs/PERF_96.md, "Performance
+ * round 4"): a strafing, backpedalling crowd crossfaded its walk, run and backward clips in and out every second or so,
+ * and each start made an animation per joint (some 35-55) that the stop then freed: a tenth of a crowd's frame went on
+ * starting and stopping clips. At weight 0 Babylon leaves a clip out of the blend; one taken back is put in step again.
+ */
+const LOOP_LINGER_MS = 3000;
 /**
  * Rolling (a look with `locomotion: 'roll'`: no legs, a ball or a wheel under it). No walk cycle: the body glides,
  * tipped about its ground contact toward where it is going (ROLL_LEAN_SPEED radians per m/s) and into its turns and
@@ -287,6 +295,16 @@ export function worldTurn(parent: TransformNode, axisWorld: Vector3, angle: numb
   return Quaternion.RotationAxis(turnAxis, m.determinant() < 0 ? -angle : angle);
 }
 
+/**
+ * A kept rotation put back on a joint: copied into the joint's own quaternion (a fresh one only if it has none). A
+ * copy a joint held until its next evaluation, 50-200 ms away for a stepped crowd, outlived the young collections and
+ * filled the old generation (performance round 4's garbage pass).
+ */
+function putRot(joint: TransformNode, q: Quaternion): void {
+  if (joint.rotationQuaternion) joint.rotationQuaternion.copyFrom(q);
+  else joint.rotationQuaternion = q.clone();
+}
+
 /** A rotation that is numbers throughout (absent counts as fine). */
 function finiteQuat(q: Quaternion | null | undefined): boolean {
   return !q || (Number.isFinite(q.x) && Number.isFinite(q.y) && Number.isFinite(q.z) && Number.isFinite(q.w));
@@ -412,13 +430,17 @@ export class CharacterAnimator {
     for (const sk of skeletons) {
       const prepare = sk.prepare.bind(sk);
       sk.prepare = (dontCheckFrameId?: boolean) => {
-        if (this.gate.skip) return;
+        if (this.gate.skip) {
+          // Between evaluations (animation LOD): the skin drawn part way between the last two evaluated poses.
+          if (this.blend.on) this.blendSkin(sk, prepare, false);
+          return;
+        }
         const probe = CharacterAnimator.skinProbe;
-        if (!probe) return prepare(dontCheckFrameId);
-        // The performance split: skinning (bone matrices) on its own, and how many skeletons it posed.
-        const t = performance.now();
+        const t = probe ? performance.now() : 0;
         prepare(dontCheckFrameId);
-        probe(t);
+        if (this.blend.on) this.blendSkin(sk, prepare, true);
+        // The performance split: skinning (bone matrices) on its own, and how many skeletons it posed.
+        probe?.(t);
       };
       this.prepareSkins.push(() => prepare(true));
     }
@@ -440,14 +462,103 @@ export class CharacterAnimator {
    */
   stepAt(now: number, step: AnimStep = EVERY_FRAME, frame = 0, phase = 0): boolean {
     this.detail = this.dead || this.fp || this.external ? 'full' : step.detail;
+    const b = this.blend;
+    b.now = now;
     if (this.dead) {
       this.gate.skip = false;
+      b.on = false;
       this.clock.due(now, frame, EVERY_FRAME);
       return true;
     }
     const run = this.clock.due(now, frame, step, phase);
     this.gate.skip = !run;
+    b.on = step.smooth && !this.fp && !this.external;
+    if (run) b.evals++;
     return run;
+  }
+
+  /**
+   * Smoothing between evaluations (animation LOD's `smooth` steps): whether it is on, the frame's time, and the
+   * evaluations so far (a skin or the gun records each evaluated pose once, by this count).
+   */
+  private readonly blend = { on: false, now: 0, evals: 0 };
+  /** Each skeleton's skin matrices at its last two recorded evaluations, when they were (ms), and the frame last drawn. */
+  private readonly skinPoses = new Map<Skeleton, { prev: Float32Array; last: Float32Array; prevAt: number; at: number; eval: number; shown: number }>();
+  /** The held gun's place in the root at its last two recorded evaluations. */
+  private readonly gunPose = { node: null as TransformNode | null, prevPos: new Vector3(), prevRot: new Quaternion(), lastPos: new Vector3(), lastRot: new Quaternion(), prevAt: -1e9, at: -1e9, eval: -1 };
+
+  /**
+   * A smoothed skeleton's skin this frame: on an evaluated frame its new matrices are recorded (the last two kept), and
+   * every frame it is drawn `blendAt` of the way from the one before to the last, one step behind the clips, so a
+   * character stepped at 10-30 Hz moves on every frame instead of jumping from pose to pose. The bones themselves keep
+   * the evaluated pose (the aim, the grip and the next evaluation build on it); only what is drawn is blended.
+   */
+  private blendSkin(sk: Skeleton, prepare: (dont?: boolean) => void, evaluated: boolean): void {
+    if (sk.needInitialSkinMatrix) return;
+    const raw = sk as unknown as { _transformMatrices: Float32Array | null; _transformMatrixTexture: { update(m: Float32Array): void } | null };
+    const id = this.scene.getRenderId();
+    let rec = this.skinPoses.get(sk);
+    const b = this.blend;
+    if (!evaluated && rec?.shown === id) return;
+    if (!evaluated && rec?.eval !== b.evals) {
+      // Not drawn when it was last evaluated (out of view then): its matrices from the bones, which hold that pose.
+      prepare(true);
+      evaluated = true;
+    }
+    const m = raw._transformMatrices;
+    if (!m) return;
+    if (!rec || rec.last.length !== m.length) {
+      rec = { prev: new Float32Array(m.length), last: new Float32Array(m.length), prevAt: -1e9, at: -1e9, eval: -1, shown: -1 };
+      this.skinPoses.set(sk, rec);
+    }
+    if (evaluated && rec.eval !== b.evals) {
+      const t = rec.prev;
+      rec.prev = rec.last;
+      rec.last = t;
+      rec.last.set(m);
+      rec.prevAt = rec.at;
+      rec.at = b.now;
+      rec.eval = b.evals;
+    }
+    rec.shown = id;
+    const a = blendAt(b.now, rec.prevAt, rec.at);
+    const { prev, last } = rec;
+    if (a >= 1) m.set(last);
+    else for (let i = 0; i < m.length; i++) m[i] = prev[i]! + (last[i]! - prev[i]!) * a;
+    if (sk.isUsingTextureForMatrices) raw._transformMatrixTexture?.update(m);
+  }
+
+  /** The held gun with the skin (blendSkin): recorded after an evaluation's grip, drawn between its last two places. */
+  private blendGun(evaluated: boolean): void {
+    const w = this.weapon;
+    const g = this.gunPose;
+    if (!w || this.unplaced || !w.rotationQuaternion) {
+      g.node = null;
+      return;
+    }
+    if (g.node !== w) {
+      if (!evaluated) return;
+      g.node = w;
+      g.at = -1e9;
+    }
+    const b = this.blend;
+    if (evaluated && g.eval !== b.evals) {
+      g.prevPos.copyFrom(g.lastPos);
+      g.prevRot.copyFrom(g.lastRot);
+      g.lastPos.copyFrom(w.position);
+      g.lastRot.copyFrom(w.rotationQuaternion);
+      g.prevAt = g.at;
+      g.at = b.now;
+      g.eval = b.evals;
+    }
+    const a = blendAt(b.now, g.prevAt, g.at);
+    if (a >= 1) {
+      w.position.copyFrom(g.lastPos);
+      w.rotationQuaternion.copyFrom(g.lastRot);
+    } else {
+      Vector3.LerpToRef(g.prevPos, g.lastPos, a, w.position);
+      Quaternion.SlerpToRef(g.prevRot, g.lastRot, a, w.rotationQuaternion);
+    }
   }
 
   /** Carry a weapon model, held as `grip` describes (null to empty the hands). */
@@ -605,7 +716,7 @@ export class CharacterAnimator {
       const g = this.ch.clips.get(c);
       if (!g) continue;
       if (w <= 0.001 && c !== this.current) {
-        if (g.isPlaying) g.stop();
+        if (g.isPlaying) this.fadeOut(g);
         continue;
       }
       g.weight = w;
@@ -650,7 +761,7 @@ export class CharacterAnimator {
     if (!loops.length) return;
     // isStarted, not isPlaying: a sleeping crowd member's loops are paused, not stopped.
     if (weight <= 0.001 && (this.current !== 'run' || off)) {
-      for (const [, g] of loops) if (g.isStarted) g.stop();
+      for (const [, g] of loops) this.fadeOut(g);
       this.gaitRate = 0;
       return;
     }
@@ -670,7 +781,7 @@ export class CharacterAnimator {
     let lead: { clip: GaitClip; phase: number } | null = null;
     for (const [c, g] of loops) {
       const frame = g.animatables[0]?.masterFrame;
-      if (!g.isStarted || frame === undefined || (lead && mix[c] <= mix[lead.clip])) continue;
+      if (!this.live(g) || frame === undefined || (lead && mix[c] <= mix[lead.clip])) continue;
       const p = (frame - g.from) / (g.to - g.from || 1);
       lead = { clip: c, phase: p - Math.floor(p) };
     }
@@ -678,12 +789,12 @@ export class CharacterAnimator {
     for (const [c, g] of loops) {
       const w = weight * mix[c];
       if (w <= 0.001) {
-        if (g.isStarted) g.stop();
+        this.fadeOut(g);
         continue;
       }
-      if (!g.isStarted) {
+      if (!this.live(g)) {
         joined = true;
-        g.start(true);
+        if (!this.unfade(g)) g.start(true);
         // In step with the loop already playing, or from a left footfall.
         const phase = lead ? matchPhase(lead.clip, lead.phase, c) : GAIT[c].footDown;
         g.goToFrame(g.from + phase * (g.to - g.from));
@@ -799,17 +910,17 @@ export class CharacterAnimator {
     let lead: { loop: ClipLoop; phase: number; w: number } | null = null;
     for (const l of fwdLoops) {
       const frame = l.g.animatables[0]?.masterFrame;
-      if (!l.g.isStarted || frame === undefined || (lead && l.w <= lead.w)) continue;
+      if (!this.live(l.g) || frame === undefined || (lead && l.w <= lead.w)) continue;
       const p = (frame - l.g.from) / (l.g.to - l.g.from || 1);
       lead = { loop: l.loop, phase: p - Math.floor(p), w: l.w };
     }
     for (const l of fwdLoops) {
       if (l.w <= 0.001) {
-        if (l.g.isStarted) l.g.stop();
+        this.fadeOut(l.g);
         continue;
       }
-      if (!l.g.isStarted) {
-        l.g.start(true);
+      if (!this.live(l.g)) {
+        if (!this.unfade(l.g)) l.g.start(true);
         const phase = lead ? matchClipPhase(lead.loop, lead.phase, l.loop) : l.loop.footDown;
         l.g.goToFrame(l.g.from + phase * (l.g.to - l.g.from));
       }
@@ -822,12 +933,12 @@ export class CharacterAnimator {
       const w = weight * mix.back;
       const g = cs.back.g;
       if (w <= 0.001) {
-        if (g.isStarted) g.stop();
+        this.fadeOut(g);
         this.strideGain = 1;
       } else {
-        if (!g.isStarted) {
+        if (!this.live(g)) {
           g.mask = null;
-          g.start(true);
+          if (!this.unfade(g)) g.start(true);
           g.goToFrame(g.from + cs.back.loop.footDown * (g.to - g.from));
         }
         g.weight = w;
@@ -962,7 +1073,7 @@ export class CharacterAnimator {
   private turnJoint(bone: TransformNode | undefined, axisWorld: Vector3, angle: number): void {
     const parent = bone?.parent as TransformNode | null | undefined;
     if (!bone?.rotationQuaternion || !parent || Math.abs(angle) < 1e-4) return;
-    bone.rotationQuaternion = worldTurn(parent, axisWorld, angle).multiply(bone.rotationQuaternion);
+    worldTurn(parent, axisWorld, angle).multiplyToRef(bone.rotationQuaternion, bone.rotationQuaternion);
   }
 
   /** The flinch and the kick, on top of the pose (afterAnimations). */
@@ -1045,7 +1156,42 @@ export class CharacterAnimator {
     const g = this.ch.clips.get(clip);
     if (!g) return;
     g.weight = weight;
+    if (this.unfade(g)) return;
     if (!g.isPlaying) g.start(true);
+  }
+
+  /** Loops faded out of the blend, kept started at weight 0 (LOOP_LINGER_MS), and since when (ms). */
+  private readonly faded = new Map<AnimationGroup, number>();
+
+  /** A loop out of the blend: kept started at weight 0 a while (it may well come back), then stopped. */
+  private fadeOut(g: AnimationGroup): void {
+    if (!g.isStarted) {
+      this.faded.delete(g);
+      return;
+    }
+    if (!perfOn('animlinger')) {
+      g.stop();
+      return;
+    }
+    const now = performance.now();
+    const since = this.faded.get(g);
+    if (since === undefined) {
+      g.weight = 0;
+      this.faded.set(g, now);
+    } else if (now - since > LOOP_LINGER_MS) {
+      this.faded.delete(g);
+      g.stop();
+    }
+  }
+
+  /** Whether a loop is in the blend: started and not faded out. */
+  private live(g: AnimationGroup): boolean {
+    return g.isStarted && !this.faded.has(g);
+  }
+
+  /** A faded loop taken back into the blend (true; the caller sets its weight and phase), or false if it isn't one. */
+  private unfade(g: AnimationGroup): boolean {
+    return this.faded.delete(g) && g.isStarted;
   }
 
   /** The skeleton's root joint (ragdolls work in its space). */
@@ -1293,8 +1439,19 @@ export class CharacterAnimator {
 
   /** Bend the spine for aim pitch and counter-twist the hip turn, then put the weapon in the hands. */
   private afterAnimations(): void {
-    // Not evaluated this frame (animation LOD): the bones still hold last evaluation's aim and grip.
-    if (this.dead || this.dormant || this.gate.skip || !this.spine.length) return;
+    if (this.dead || this.dormant || !this.spine.length) return;
+    // Not evaluated this frame (animation LOD): the bones still hold last evaluation's aim and grip (the gun drawn
+    // between its last two places while smoothed).
+    if (this.gate.skip) {
+      if (this.blend.on) this.blendGun(false);
+      return;
+    }
+    this.pose();
+    if (this.blend.on) this.blendGun(true);
+  }
+
+  /** The after-clip work of an evaluation: aim pitch and twist on the spine, the reactions, the weapon in the hands. */
+  private pose(): void {
     const root = this.ch.root;
     root.computeWorldMatrix(true);
     const rootRot = Quaternion.FromRotationMatrix(root.getWorldMatrix().getRotationMatrix());
@@ -1308,7 +1465,7 @@ export class CharacterAnimator {
     const hips = this.pelvis;
     const hipsParent = hips?.parent as TransformNode | null | undefined;
     if (hips?.rotationQuaternion && hipsParent && Math.abs(hipTurn) > 1e-4) {
-      hips.rotationQuaternion = worldTurn(hipsParent, up, hipTurn).multiply(hips.rotationQuaternion);
+      worldTurn(hipsParent, up, hipTurn).multiplyToRef(hips.rotationQuaternion, hips.rotationQuaternion);
     }
     // An authored clip holding the upper body (a clip set's shooting walks) has its own torso turn, which isn't the aim
     // pose's: the shoulders are brought back to the aim pose's line (measured from it) by as much as the clip holds.
@@ -1328,7 +1485,8 @@ export class CharacterAnimator {
       // about the up axis read through a rotation-only inverse wound the shoulders the same way as the hips (a
       // strafe turned the chest 140 degrees off the aim instead of keeping it square to the gun).
       const q = worldTurn(parent, right, pitch).multiply(worldTurn(parent, up, -twist * share));
-      bone.rotationQuaternion = q.multiply(bone.rotationQuaternion);
+      // In place (the joint keeps its own quaternion: see putRot).
+      q.multiplyToRef(bone.rotationQuaternion, bone.rotationQuaternion);
     }
     this.applySit(right, up);
     this.applyReactions(right, up, rootRot);
@@ -1367,7 +1525,7 @@ export class CharacterAnimator {
     ) {
       armsKept.joints.forEach((j, i) => {
         const q = armsKept.rots[i];
-        if (q) j.rotationQuaternion = q.clone();
+        if (q) putRot(j, q);
       });
       this.keepFingers(arms.r);
       if (grip.support) this.keepFingers(arms.l);
@@ -1560,7 +1718,7 @@ export class CharacterAnimator {
     for (const chain of arm.fingers) {
       for (const joint of chain) {
         const q = kept.rots[i++];
-        if (q) joint.rotationQuaternion = q.clone();
+        if (q) putRot(joint, q);
       }
     }
   }
@@ -1573,7 +1731,7 @@ export class CharacterAnimator {
         for (const joint of chain) {
           const q = kept.rots[i++];
           // A copy (the clips write into the joint's quaternion at their next evaluation; the cache stays apart).
-          if (q) joint.rotationQuaternion = q.clone();
+          if (q) putRot(joint, q);
         }
       }
       return;

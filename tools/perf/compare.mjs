@@ -92,7 +92,10 @@ export function summarise(rec, worstN = 8) {
       .sort((a, b) => b[1] - a[1])
       .slice(0, 3)
       .map(([k, v]) => `${k} ${v.toFixed(1)}`);
-    return { t: h.t, dt: h.dt, outside: h.outside, pos: h.pos, top: top.join(', '), inView: h.inView, shadersNew: h.shadersNew, server: h.server };
+    // Round 4's recordings say what the main thread did over the frame: long tasks, and the browser's long frames
+    // (blocked time, the longest scripts). Outside time with neither: the main thread waited (the GPU, the compositor).
+    const main = h.main ? { longTasks: h.main.longTasks, blocked: h.main.frames?.reduce((t, f) => t + (f.blocking ?? 0), 0) ?? 0, scripts: h.main.frames?.flatMap((f) => f.scripts ?? []).slice(0, 3) } : undefined;
+    return { t: h.t, dt: h.dt, outside: h.outside, pos: h.pos, top: top.join(', '), inView: h.inView, shadersNew: h.shadersNew, server: h.server, ...(main ? { main } : {}) };
   });
   return {
     file: rec.match?.map,
@@ -158,7 +161,7 @@ const args = process.argv.slice(2);
     console.log('');
     const h = s.hitches;
     console.log(`hitches ${label}: ${h.count} over 50 ms (${h.perMinute.toFixed(1)} a minute), ${h.over100} over 100 ms, ${h.over250} over 250 ms`);
-    for (const w of h.worst) console.log(`  ${w.dt.toFixed(0).padStart(5)} ms at ${w.t.toFixed(0)} s, ${w.pos ? `(${w.pos.join(', ')})` : '?'}: ${w.top}${w.outside > w.dt / 2 ? `; ${w.outside.toFixed(0)} ms outside the frame` : ''}; in view ${w.inView.characters} characters, ${w.inView.draws} draws, ${w.inView.casters} casters, ${w.inView.effects} effects, ${w.inView.ragdolls} ragdolls${w.shadersNew ? `; ${w.shadersNew} shaders built` : ''}${w.server ? `; server tick ${w.server.tickAvg} / ${w.server.tickMax} ms` : ''}`);
+    for (const w of h.worst) console.log(`  ${w.dt.toFixed(0).padStart(5)} ms at ${w.t.toFixed(0)} s, ${w.pos ? `(${w.pos.join(', ')})` : '?'}: ${w.top}${w.outside > w.dt / 2 ? `; ${w.outside.toFixed(0)} ms outside the frame` : ''}; in view ${w.inView.characters} characters, ${w.inView.draws} draws, ${w.inView.casters} casters, ${w.inView.effects} effects, ${w.inView.ragdolls} ragdolls${w.shadersNew ? `; ${w.shadersNew} shaders built` : ''}${w.server ? `; server tick ${w.server.tickAvg} / ${w.server.tickMax} ms` : ''}${w.main ? `; main thread: long tasks ${w.main.longTasks} ms, frames blocked ${w.main.blocked} ms${w.main.scripts?.length ? ` (${w.main.scripts.join('; ')})` : ''}` : ''}`);
     if (h.places.length) console.log(`  places (10 m cells, by hitch time): ${h.places.map((c) => `${c.at} ×${c.hitches} (worst ${c.worst.toFixed(0)})`).join('; ')}`);
   }
 }

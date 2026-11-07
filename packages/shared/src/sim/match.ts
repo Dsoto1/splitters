@@ -255,7 +255,7 @@ export interface Spectator {
 }
 
 export interface Combatant {
-  /** Actor ID: the player slot (0..31), or NPC_ID_BASE + n for NPCs. */
+  /** Actor ID: the player slot (0..MAX_PLAYER_SLOTS-1), or NPC_ID_BASE + n for NPCs. */
   slot: number;
   kind: 'human' | 'bot' | 'npc';
   /** Faction; null = free-for-all player (deathmatch). */

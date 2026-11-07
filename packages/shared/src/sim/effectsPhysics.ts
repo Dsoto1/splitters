@@ -86,10 +86,26 @@ export class EffectsWorld {
   step(dt: number): void {
     this.acc = Math.min(this.acc + dt, 6 / 60);
     while (this.acc >= 1 / 60) {
-      this.world.step();
+      this.stepWorld();
       this.steps++;
       this.acc -= 1 / 60;
     }
+  }
+
+  /**
+   * One step of the world. Rapier's World.step() then walks every body and collider handle through a JS callback, and
+   * every collider again, to pick up what the step made or removed itself (docs/PERF_96.md, "Performance round 4"):
+   * on a map of a few thousand level colliders that was most of a step and half a megabyte of garbage each, as the
+   * game's own physics found (sim/physics.ts, commit). Ours are all made and removed through the JS API, which keeps
+   * its maps itself: the pipeline runs on its own, with a full walk now and then to be safe.
+   */
+  private stepWorld(): void {
+    const w = this.world as unknown as Record<string, unknown> & { physicsPipeline?: { step?: (...a: unknown[]) => void }; mapNewSoftBodies?: () => void };
+    if (typeof w.physicsPipeline?.step !== 'function' || typeof w.mapNewSoftBodies !== 'function' || !('softBodies' in w) || this.steps % 600 === 0) {
+      this.world.step();
+      return;
+    }
+    w.physicsPipeline.step(w.gravity, w.integrationParameters, w.islands, w.broadPhase, w.narrowPhase, w.bodies, w.colliders, w.softBodies, w.impulseJoints, w.multibodyJoints, w.ccdSolver);
   }
 
   /**

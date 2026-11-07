@@ -31,6 +31,27 @@ made only on a commit that passed CI on a check branch.
   something else until it is got out; and a bot that presses E and still isn't in (twice), or can't reach the seat,
   gives up on that one, for longer each time (30 s, then 60, 120, 240). Iron Tide, Dune Harbor and the other beach maps
   had the same wreck, hedgehogs and landing craft: the same fixes apply there.
+**Performance round 4: crowds, 32 v 32 in a browser, 64 v 64 on a dedicated host** (owner, 2026-11-06: "32v32 would be
+max I want to shoot for without dedicated host … push dedicated hosts to 64v64 if at all possible"; docs/PERF_96.md,
+"Performance round 4")
+- **Far runners don't stutter any more.** Characters further off were animated 8-20 times a second and held each pose
+  in between, so a running foot stood still for two to four frames and then jumped. Now the frames in between are drawn
+  part way from one pose to the next (the gun with them), and the rate goes by how big a character is on screen (a
+  scope brings far ones back to full rate): every frame to about 15 m, then 30, 20, 15, 10 and 5 times a second out to
+  150 m and beyond, each at least as often as before to 150 m, and smooth.
+- **A crowd's animation costs about a fifth less** (56 characters running and strafing, 5-60 m): the arm and hand
+  fitting on far guns starts at 25 m (was 35), and clips leaving a crossfade are kept a moment instead of stopped and
+  started again (a strafing crowd started some 50 a second).
+- **32 v 32 in a browser** (was 24 v 24): Match Setup's Max is 32v32; past 48 players its check says it takes a recent
+  desktop or a fast laptop. Phones stay at 16. **64 v 64 on a dedicated host** (was 48 v 48; protocol 5, so older
+  clients are told the server speaks another protocol).
+- **Hitches:** effects physics (ragdolls, casings, debris) no longer walks every level collider after each step (a
+  third of each step and half a megabyte of garbage on Shingle Point); joints are turned in place (less garbage for the
+  long collections); the loading screen waits for the looks and guns the match needs before it starts counting the
+  shader warm-up, so a first visit after an update no longer builds the spawn wave's shaders in the first seconds.
+- **Tests:** the host handoff flow runs each of its three pages in a browser of its own (sharing one GPU process, a
+  joining friend's page waited up to a minute on its shader builds behind the other two pages' frames); `pnpm bench
+  … --wire` reports what each player is sent.
 
 **Reduce flashing: a seizure-safety setting, on by default** (owner, 2026-11-06, after dropping the flashbang: "I
 don't want to give people seizures"; docs/LOOK.md, "Reduce flashing")

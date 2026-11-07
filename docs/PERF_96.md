@@ -1167,3 +1167,168 @@ the same match with `?perfoff=propbatch` or `?perfoff=fogprepass` gives the comp
   (about 40 on Shingle Point).
 - The cascades' squares are about a tenth bigger than before (centred on the camera): shadows a tenth coarser. Not
   seen in CI's visual baselines; worth a look on the M1.
+
+## Performance round 4: crowds (7 Nov 2026, `wip/perf-4`)
+
+**The owner (2026-11-06):** "32v32 would be max I want to shoot for without dedicated host. It would be nice to push
+dedicated hosts to 64v64 if at all possible", and running characters looked choppy at a distance ("less frames").
+**Where it started** (the owner's M1 Pro recordings after round 3, High, 49 players): 17.3 ms frames on Shingle Point,
+17.6 on Market Town; characters the biggest part, 4-5 ms at 40 and more in view, 3-3.4 of it their animation; three
+kinds of hitch (the first 3 s of a Shingle Point match, a mass death on Market Town, 50-60 ms frames every 20-30 s).
+
+### What it was
+
+1. **Choppy far characters were the animation LOD itself.** Past 15 m a character's clips, aim and grip were evaluated
+   20, 12 or 8 times a second and its skin held each pose until the next: at 60 fps a far runner's foot stood still for
+   two to four frames, then jumped up to half a metre (the filmstrips below: 7 or 9 of 11 frames still).
+2. **A crowd's animation time was mostly after the clips.** A CPU profile of 56 characters running and strafing 5-60 m
+   away: sampling the clips was a fifth of it; the arm IK, hand turns and fingers closed on the gun (each joint's world
+   matrix worked out afresh, again and again) most of the rest, every evaluation out to 35 m. Then starting and
+   stopping clips: a strafing, backpedalling crowd crossfaded its walk, run and backward clips in and out every second
+   or so, and each start made an animation per joint (35-55) that the stop then threw away: 49 starts a second for 56
+   characters, a tenth of the frame in a fight.
+3. **The effects world walked every collider after every step.** Rapier's World.step() then calls into JavaScript once
+   per body and collider and lists every collider again (to pick up what the step made itself): on Shingle Point's
+   2,970 level colliders that was 0.4 MB of garbage and over a third of each 60 Hz step. The game's own physics had
+   found and fixed the same walk (sim/physics.ts, commit); the effects world hadn't. Slow frames take up to six steps.
+4. **The first seconds of a match on a first visit.** The loading gate gives the shader warm-up 8 s. The warm-up
+   warmed the effects first and only then fetched a character of each look and every gun, so after an update (the
+   browser's cache empty) the characters' files were still coming in when the gate opened: the spawn wave's looks were
+   built and their shaders compiled in the first seconds of play (the M1: 36 programs in second 2, 16 in second 3,
+   frames of 230-360 ms; Market Town, recorded second, had the files by then).
+5. **The handoff e2e flake** (a joining friend's page frozen for half a minute on CI): the flow's three pages ran in
+   one browser, so one GPU process, whose thread draws every page's frames with SwiftShader. A page's synchronous
+   WebGL calls (each new shader program's link status, its uniform blocks, a new context's extensions) wait behind the
+   other pages' frames. Measured locally with every such call timed (an init script; not committed): the joining
+   friend's page waited 30 s in one second on 12 `getExtension` calls at its start, and 55 s in another on 41
+   `getProgramParameter` calls, up to 3 s each. No player's page shares a GPU process with two other games.
+6. **The mass death on Market Town: not found here.** The owner's frames after a 7-kill rocket were 60-140 ms for
+   0.6 s with 13 ms of the game's own work each, 1-2 characters and 11 effects in view, no shaders built: GPU, driver or
+   garbage collection, which the game's trace can't tell apart. A Chrome trace of the same blast here (Market Town,
+   High, 7 kills 12 m off) caught one 175 ms young-generation collection 0.43 s after the blast and nothing else long on
+   the main thread, but with the box at load 20 SwiftShader's frames took 5-20 s each, so the GPU side couldn't be
+   seen. Recordings now say what the main thread did over each hitch (below), so the owner's next one can.
+7. **Player slots ran into NPC ids at 100.** Actor ids from 100 were NPCs' (`NPC_ID_BASE`): a match with more than 100
+   players crashed on the first shot at slot 100 or above (found running the bench at 128).
+
+### What changed
+
+- **Animation by size on screen, smoothed** (`game/animLod.ts`, `CharacterAnimator.blendSkin/blendGun`): the rate
+  comes from a standing character's share of the view's height (a scope brings far ones back to full rate), and every
+  reduced rate is smoothed: between evaluations the skin is drawn part way from the evaluated pose before the last to
+  the last (the skeleton's matrices, blended; the bones keep the evaluated pose for the aim, grip and next
+  evaluation), and the held gun with it, one step behind the clips. At the usual field of view: every frame to 15 m
+  (the fingers kept from their last close past 8 m), then 30 Hz to 25 m, 20 Hz to 40 m, 15 Hz to 80 m, 10 Hz to
+  150 m and 5 Hz past that. Every distance to 150 m gets at least round 2's rate; the reduced rates start further out
+  (20 Hz now to 40 m, was 35; 12 Hz became 15 Hz to 80 m, was 70; 8 Hz became 10 Hz to 150 m), and none steps.
+  It pays with the coarse after-clip detail from 25 m (was 35 m): the arms take back their last full grip relative to
+  the shoulders, no IK. `?perfoff=animlod4` gives round 2's bands for measuring against.
+- **Faded loops kept a moment** (`CharacterAnimator.fadeOut`, `LOOP_LINGER_MS` 3 s): a loop leaving the blend stays
+  started at weight 0 (Babylon leaves it out of the blend), and coming back it is put in step with the others again;
+  only after 3 s out is it stopped. `?perfoff=animlinger`.
+- **The effects world steps its pipeline directly** (`sim/effectsPhysics.ts`), with Rapier's full walk every 600
+  steps to be safe (everything in it is made and removed through the JS API, which keeps its maps itself). Unit test.
+- **Garbage:** joints turned and restored in place (they were new quaternions every evaluation, held until the next,
+  50-200 ms away for a stepped crowd: old enough to be promoted), avatars' last positions reused.
+- **The warm-up's files first** (`GameView.prewarm`, `session.prepareMatch`): the looks and guns are fetched and built
+  from the start, alongside the effects; the gate waits for them (20 s at most, the 25 s overall cap still holds) and
+  then gives the shader builds their 8 s.
+- **Caps:** `BROWSER_MAX_PLAYERS` 48 → 64 (32 v 32; phones stay at 16); Match Setup's Max preset follows (32v32 on
+  every big map); the fit check warns past 48 players that it takes a recent desktop or a fast laptop. A dedicated
+  host's `MAX_PLAYER_SLOTS` 96 → 128 (64 v 64), with NPC ids from 1000 (`NPC_ID_BASE`, was 100) and protocol 5
+  (older clients are told the server speaks another protocol). Layouts 32v32 and 64v64 join the setup's list.
+- **Recordings name the main thread's part of a hitch** (`perfRecorder.ts` `watchMainThread`, `compare.mjs`): the
+  browser's long tasks and long animation frames over the hitch (blocked time, the longest scripts). A hitch whose
+  outside time has neither was the main thread waiting: the GPU or the compositor; with them, a script or a collection.
+- **Handoff flow:** each page in a browser of its own. Bench: `--wire` reports each viewer's snapshots raw and
+  deflated (the server's WebSocket compression).
+
+### Measured
+
+The box: 4 cores shared with two other agents, load 8-11 for most of it; before and after run in turn at the same load.
+
+**Filmstrips** (`strip.mjs` in the session scratchpad: the character viewer at a virtual 60 fps, every frame
+rendered at 1920 × 1080 with the game's field of view, a running Commando 30, 50 and 80 m away, cropped and scaled up 4×;
+round 2's steps against round 4's, same build). The foot's place in the skin from frame to frame, 11 frames:
+
+| | 30 m before | after | 50 m before | after | 80 m before | after |
+|---|---|---|---|---|---|---|
+| frames the foot stood still | 7 | **0** | 9 | **0** | 9 | **0** |
+| biggest jump between frames | 51 cm | 14 cm | 40 cm | 15 cm | 41 cm | 16 cm |
+
+Pictures: `p4/strip/running-30-50-80m-before-after.png` (each distance, before over after), and each strip on its own.
+
+**Character bench** (`animbench.mjs`: the viewer's 56 first looks with rifles, running and strafing 5-60 m in front of
+the camera, a few shooting, at a virtual 60 fps, draws not sent: the animation's CPU per frame, ms):
+
+| | round 2 | round 4 |
+|---|---|---|
+| frame (three runs each, in turn, load 8-10) | 21.8, 25.1, 22.4 (mean 23.1) | 20.6, 17.1, 18.4 (mean **18.7, -19 %**) |
+| frame (two runs each, load 2-7) | 24.0, 23.8 | 18.4, 19.3 (-21 %) |
+| evaluations per frame | 22.7 | 25.3 (+11 %) |
+| clip starts / stops a second | 49 / 37 | 40 / 24 |
+
+The same table with round 4's bands but the full grip to 40 m (30 Hz, round 4's first try): 26.0 and 27.3 ms against
+22.9 and 22.8, 16 % over round 2; the coarse detail from 25 m is what pays for the higher rates.
+
+**Effects world**, Shingle Point with 64 players, after a few minutes of fighting (162 bodies, 2,970 colliders): a step
+4.38 ms before, 2.76 ms after (load 10); garbage per step about 0.42 MB before, none from the walk after. In the
+64-player probe (CPU only, the draws not sent) the ragdoll and effects-physics part of the frame went from 11.7 to 5.1 ms
+at 4-5 fps (several steps a frame there).
+
+**Server bench at 64** (`pnpm bench 64 30`, TDM, 10 s warm-up, spread and clumped, load 9-10): bot thinking a tick
+0.87-2.32 ms (Shingle Point spread the most, its setup 0.73), within the 2.5 ms guard; the tick 3.2-6.9 ms of CPU.
+
+**Server bench at 128** (`pnpm bench 128 30`, 64 viewers, `--wire`; the same at 96 with 48 viewers, in turn, load
+9-11; tick wall ms avg / p95, bot thinking a tick, what each viewer is sent deflated):
+
+| | 96 players | 128 players |
+|---|---|---|
+| Norman Shores spread | 10.8 / 25.3, 2.46 ms, 19 KB/s | 12.1 / 24.5, 3.44 ms, 26 KB/s |
+| Norman Shores clumped | 12.0 / 24.7, 2.61 ms, 35 KB/s | 13.3 / 25.3, 3.26 ms, 45 KB/s |
+| Frost Basin spread | 8.3 / 15.4, 2.10 ms, 38 KB/s | 12.2 / 24.1, 2.76 ms, 43 KB/s |
+| Frost Basin clumped | 9.2 / 16.0, 2.79 ms, 47 KB/s | 12.9 / 22.1, 3.77 ms, 57 KB/s |
+| Shingle Point spread | 9.8 / 18.6, 2.30 ms, 27 KB/s | 11.4 / 19.8, 2.93 ms, 34 KB/s |
+| Shingle Point clumped | 11.3 / 22.6, 3.34 ms, 37 KB/s | 13.2 / 22.8, 3.85 ms, 49 KB/s |
+
+Both over the 16.7 ms budget at p95 on this box under this load (it ran 96 at 0.5-1.5 ms a tick unloaded, without
+viewers); 128 is about a quarter dearer than 96, character moves (every player near a viewer at full detail) the
+biggest part. Before the NPC id move it crashed on Norman Shores' first shot at a slot past 99.
+
+**Handoff flow** (locally, `E2E_ONLY=handoff`, the box at load 10-13, with every synchronous WebGL call timed):
+
+| | one browser (before) | a browser per page (after) |
+|---|---|---|
+| a friend's worst second waiting on WebGL | 55 s (41 link-status queries, up to 3.1 s each) | 15.7 s |
+| a friend's page start (`getExtension`) | 26 s in one second | under a second |
+| successor named after both joined | 64 s | 30 s |
+| flow | PASS in 481 s (the 60 s grace) | PASS |
+
+### Projected on the M1 Pro
+
+From the owner's round 3 recordings (49 players: 17.3 / 17.6 ms average, characters 4.1 / 4.8 ms of which animation
+3.0 / 3.4): at 64 players with 50-60 in view the characters' part grows by about a third, the animation shrinks by
+about a fifth per character, the effects physics loses its collider walk (0.5-1 ms in a fight there, more on slow
+frames). Expect about 18-20 ms in the busiest 32 v 32 views at High (50-55 fps), a 60 fps cap held in most others;
+Medium about 2-3 ms less. Not measured on the M1.
+
+### For the owner to record on the M1 Pro
+
+High, render scale auto, 60 fps cap, a recording running with a 10 s trace:
+1. 32v32 offline TDM (Max) on Shingle Point and on Market Town, 30-60 s each.
+2. A running crowd at a distance: Shingle Point's beach, bots running 30-80 m away; then the same with
+   `?perfoff=animlod4` (round 2's bands) to compare by eye.
+3. A rocket into a crowd on Market Town (7 or more kills).
+4. The first 10 s of a Shingle Point match on a first visit after the update (the browser's cache empty).
+
+### Next
+
+- The mass death: the owner's next Market Town recording (a rocket into a crowd) says whether its outside time is the
+  main thread (long tasks: a collection or a script) or the GPU (none). If the GPU, the suspects are the explosion's
+  big particles near the camera (overdraw at a Retina render size) and the bodies' first frames in the shadow map.
+- Character moves are most of a 128-player tick (every player near a viewer moves at full detail): a cheaper move for
+  bots far from every human, or moves on more than one core, if dedicated hosts fill up.
+- Bot thinking's setup (views, pickups, goals) is 0.7-1.6 ms of a 128-player tick (BOT_AI_PLAN, Phase B).
+- Shared evaluation for characters on the same clip and phase, and fewer bones on far skeletons: not done; the clip
+  sampling is a fifth of a crowd's animation now, the after-clip work most of it.
+

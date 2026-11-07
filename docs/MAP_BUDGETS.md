@@ -92,6 +92,15 @@ texture, and a simple collision box (`collide: box`, `trunk` or `none` in
 - City facades are GPU thin instances: one draw per piece and material, however many bays use it.
 - Borders cost a few dozen draw calls however long the boundary (merged meshes and thin instances; low-poly conifers stand in for trees behind the front row, the window texture for facades above the second storey). The detailed models (front-row trees, facades) are split into 120 m squares so the ones behind you are culled: Apex Ring's 1.58 km boundary was ≈0.6 M triangles wherever you looked.
 
+### 32 v 32 in a browser, 64 v 64 on a dedicated host (performance round 4)
+
+Since round 4 a browser runs at most 32 v 32 (`BROWSER_MAX_PLAYERS` 64; phones 16) and a dedicated host 64 v 64
+(`MAX_PLAYER_SLOTS` 128). A map offering more than 24 a side (Iron Coast's 24-32 in a browser) should keep the
+48 v 48 budgets below, which a 32 v 32 browser match sits inside; a map for 64 v 64 on a dedicated host spreads its
+players (the client draws whoever is in view: far characters are cheap, but 60 in one view at High is about the
+limit on an M1 Pro) and should be benched at 128 on the host's machine: `pnpm bench 128 60 maps/<map>.json
+--mode=core.tdm --viewers=128 --wire` (each player is sent about 25-55 KB/s). docs/PERF_96.md, "Performance round 4".
+
 ### Big maps at 48 v 48
 
 The server's tick (60 Hz, 16.7 ms) and a player's frame both grow with the

@@ -56,6 +56,61 @@ const SECOND_FIELDS = [
 
 const round = (x: number, d = 2) => Math.round(x * 10 ** d) / 10 ** d;
 
+/** A long task or long animation frame the browser reported (its own timing, ms on the page's clock). */
+interface MainBlock {
+  start: number;
+  dur: number;
+  /** Long animation frames: how long the main thread was blocked, its scripts (the longest), and when rendering began. */
+  blocking?: number;
+  scripts?: string[];
+  render?: number;
+}
+
+/**
+ * The main thread's own record of what blocked it (round 4 of docs/PERF_96.md): long tasks (over 50 ms) and long
+ * animation frames, kept for the last few seconds so a hitch can say whether its time outside the game's spans was
+ * the main thread busy (a garbage collection, a long script, the browser's own work) or the main thread waiting (the
+ * GPU, the compositor). A Market Town mass death's 60-140 ms frames were all "outside" and the recording couldn't say
+ * which.
+ */
+export function watchMainThread(keepMs = 5000): { blocks: (from: number, to: number) => MainBlock[]; stop: () => void } {
+  const seen: MainBlock[] = [];
+  const observers: PerformanceObserver[] = [];
+  const keep = () => {
+    const old = performance.now() - keepMs;
+    while (seen.length && seen[0]!.start + seen[0]!.dur < old) seen.shift();
+  };
+  const watch = (type: string, f: (e: PerformanceEntry) => MainBlock) => {
+    try {
+      const o = new PerformanceObserver((list) => {
+        for (const e of list.getEntries()) seen.push(f(e));
+        seen.sort((a, b) => a.start - b.start);
+        keep();
+      });
+      o.observe({ type, buffered: false });
+      observers.push(o);
+    } catch {
+      // Not in this browser (Safari, Firefox have neither): hitches go without it.
+    }
+  };
+  watch('longtask', (e) => ({ start: e.startTime, dur: e.duration }));
+  watch('long-animation-frame', (e) => {
+    const l = e as PerformanceEntry & { blockingDuration?: number; renderStart?: number; scripts?: { duration: number; invoker?: string; sourceFunctionName?: string; sourceURL?: string }[] };
+    const scripts = [...(l.scripts ?? [])].sort((a, b) => b.duration - a.duration).slice(0, 3);
+    return {
+      start: e.startTime,
+      dur: e.duration,
+      blocking: round(l.blockingDuration ?? 0, 1),
+      scripts: scripts.map((x) => `${round(x.duration, 0)} ms ${x.sourceFunctionName || x.invoker || '?'} ${(x.sourceURL ?? '').split('/').pop() ?? ''}`.trim()),
+      ...(l.renderStart ? { render: round(l.renderStart - e.startTime, 1) } : {}),
+    };
+  });
+  return {
+    blocks: (from, to) => seen.filter((b) => b.start < to && b.start + b.dur > from),
+    stop: () => observers.forEach((o) => o.disconnect()),
+  };
+}
+
 export class PerfRecorder {
   readonly started = new Date();
   private readonly t0 = performance.now();
@@ -69,6 +124,7 @@ export class PerfRecorder {
   private shaders0 = -1;
   private shadersAt = 0;
   private header: RecorderContext | null = null;
+  private readonly main = watchMainThread();
 
   constructor(private readonly ctx: () => RecorderContext) {
     perfProbe.keep ||= 3600;
@@ -107,6 +163,11 @@ export class PerfRecorder {
     // character, a garbage collection, the browser itself), when the frame's work is far below its time.
     const busy = f.sim + f.msg + f.js + f.render;
     const shaders = x.shaders;
+    // The browser's long tasks and long animation frames over this frame: main-thread time there (and, for the frames,
+    // the longest scripts); none over a long "outside" means the main thread was waiting, not working.
+    const end = performance.now();
+    const blocks = this.main.blocks(end - f.dt, end);
+    const mainLong = blocks.filter((b) => b.blocking === undefined).reduce((t, b) => t + Math.min(end, b.start + b.dur) - Math.max(end - f.dt, b.start), 0);
     this.hitches.push({
       t: round((performance.now() - this.t0) / 1000, 2),
       dt: round(f.dt, 1),
@@ -118,6 +179,7 @@ export class PerfRecorder {
       inView: { characters: c.characters, effects: c.effects, lasting: n.lasting, ragdolls: n.ragdolls, draws: c.draws, meshes: c.meshes, casters: c.casters },
       counts: n,
       shadersNew: this.shaders0 >= 0 ? shaders - this.shadersAt : 0,
+      main: { longTasks: round(mainLong, 1), frames: blocks.filter((b) => b.blocking !== undefined).map((b) => ({ dur: round(b.dur, 1), blocking: b.blocking, ...(b.render !== undefined ? { render: b.render } : {}), scripts: b.scripts })) },
       quality: { graphics: loadGraphicsQuality(), renderScale: loadRenderScale(), frameCap: currentFrameCap() || null },
       server: x.server ? { tickAvg: round(x.server.tickMsAvg), tickMax: round(x.server.tickMsMax), aiAvg: round(x.server.aiMsAvg), late: x.server.lateTicks, bots: x.server.bots, ...(x.server.split ? { split: x.server.split } : {}) } : null,
     });
@@ -160,6 +222,7 @@ export class PerfRecorder {
   /** Stop: the recording as the file's object. */
   finish(): object {
     perfProbe.use('record', false);
+    this.main.stop();
     this.flushSecond(performance.now());
     const x = this.header ?? this.ctx();
     const nav = navigator as Navigator & { deviceMemory?: number };

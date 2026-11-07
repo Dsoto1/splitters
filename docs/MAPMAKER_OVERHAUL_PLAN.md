@@ -83,6 +83,15 @@ Already done from the owner's earlier ask: **the real buildable area.**
 8. **The card-shot camera.**
    - Set the menu card shot from the current view, eye level by default.
    - Preview it in the card's frame.
+9. **Turning by mouse** (owner, 2026-11-07: "add to the mapmaker overhaul, it makes most sense").
+   - **Today:** you turn things only by R / Shift+R, the right-click menu's Rotate and Rotate a little, the
+     toolbar's rotate button, and the inspector's "Facing °" field. The gizmo's arrows only show the axes and can't
+     be grabbed.
+   - **Add a rotate ring** on the selection gizmo: drag it to turn the selection about its centre. It snaps by the
+     selected thing's own step (`yawStep`: tiles, set pieces, zones and water 90°; objects and NPCs 90°; spawns 45°;
+     props and vehicles 15°), with Shift for the finer step.
+   - **Show the angle while dragging,** and let Esc cancel the drag. A drag is one undo step.
+   - **Quick facings:** four buttons in the inspector (0°, 90°, 180°, 270°) set the facing in one click.
 
 ## Phase 4: testing the map
 1. **A bot test run from MapMaker.**

@@ -126,7 +126,7 @@ import { CityVisuals } from './cityVisuals.ts';
 import { SkyEffects } from './skyEffects.ts';
 import { CharacterLibrary, setCharacterLodCrowd, setCharacterLodZoom, type CharacterInstance } from '../content/characters.ts';
 import { CharacterAnimator, type OneShot } from './characterAnimator.ts';
-import { ANIM_LOD_FAR, ANIM_LOD_NEAR, SHOT_OVERLAY_REACH, animStep } from './animLod.ts';
+import { ANIM_LOD_FAR, ANIM_LOD_NEAR, SHOT_OVERLAY_REACH, animStep, animStepByShare } from './animLod.ts';
 import { perfOn } from './perfSwitches.ts';
 import { installAnimationPatches, trackAnimatedTargets } from './animPatches.ts';
 import { freezeStaticMaterials, selectLiveCandidates } from './meshSelection.ts';
@@ -642,7 +642,7 @@ export class GameView {
    * constructor) keeps those programs when the samples go, so the first sight of a model or an effect mid-match
    * doesn't stall on a shader build. Resolves with how many shader programs were built by then.
    */
-  async prewarm(specs: readonly AvatarSpec[], guns: readonly string[] = [], veiled: () => boolean = () => false): Promise<number> {
+  async prewarm(specs: readonly AvatarSpec[], guns: readonly string[] = [], veiled: () => boolean = () => false, filesIn: () => void = () => {}): Promise<number> {
     const t0 = performance.now();
     // The merged level first (its textures load in a moment; its shader is then built with everyone else's).
     if (this.levelMerge) await Promise.race([this.levelMerge, new Promise((r) => setTimeout(r, 15000))]);
@@ -654,30 +654,15 @@ export class GameView {
     const ready = () => (this.scene.isDisposed ? Promise.resolve() : Promise.race([this.scene.whenReadyAsync(), new Promise((r) => setTimeout(r, 8000))]));
     // Water's splash rings and drops (made on the first splash) draw a copy out of sight meanwhile.
     this.scenario.liquids.fx.warm(4000);
-    // The effects first (they don't wait for the characters' files), ended as soon as their shaders are built.
-    let effects = 0;
-    try {
-      await GodotVfx.preload(...mappedPacks());
-      const ends: (() => void)[] = [];
-      // Each effect plays out of sight for a few frames (its particles spawn: their pieces draw then).
-      for (const r of mappedEffects()) {
-        const end = this.vfx.warm(r.pack, r.effect, true);
-        if (end) ends.push(end);
-      }
-      effects = ends.length;
-      await this.afterFrames(4, 2500);
-      await ready();
-      for (const end of ends) end();
-    } catch {
-      // Effects that didn't load stay as they were (their first play builds them).
-    }
-    if (this.scene.isDisposed) return 0;
     // Then a character of each look and every gun the match can hold (a crowd's GPU instance and a plain copy: the
     // view model, a small match's held gun). While the loading screen is up they stand in front of the camera, so
     // every pass that will draw them in play draws them now (the main pass and its pre-pass outputs, the shadow
     // cascades, water's depth), each variant built: out of sight only the materials' own checks ran, and the first
     // gun or body seen in a shadow or in the depth map built its programs mid-match (round 3 of docs/PERF_96.md).
     // Once the game shows (a slow machine finishes this in the background) they are parked out of sight.
+    // Their files load from the start, while the effects warm (round 4 of docs/PERF_96.md: on a first visit the
+    // characters' downloads came after the effects' shaders, so the gate's cap passed before they were in, and the
+    // spawn wave's looks built their shaders in the first seconds of play: 52 programs on the owner's M1).
     const stage = new TransformNode('prewarm', this.scene);
     stage.position.set(0, -10000, 0);
     const place = this.scene.onBeforeRenderObservable.add(() => {
@@ -730,7 +715,7 @@ export class GameView {
       node.position.set((i - 0.5) * 6, 0, 9);
       return { node, kind };
     });
-    const made = await Promise.all(
+    const making = Promise.all(
       specs.slice(0, 32).map((spec, i) =>
         this.characters.create(spec, `prewarm_${i}`).then(
           (ch) => {
@@ -744,7 +729,27 @@ export class GameView {
         ),
       ),
     );
-    const held = await Promise.all(gunCopies);
+    // The effects meanwhile (they don't wait for the characters' files), ended as soon as their shaders are built.
+    let effects = 0;
+    try {
+      await GodotVfx.preload(...mappedPacks());
+      const ends: (() => void)[] = [];
+      // Each effect plays out of sight for a few frames (its particles spawn: their pieces draw then).
+      for (const r of mappedEffects()) {
+        const end = this.vfx.warm(r.pack, r.effect, true);
+        if (end) ends.push(end);
+      }
+      effects = ends.length;
+      await this.afterFrames(4, 2500);
+      await ready();
+      for (const end of ends) end();
+    } catch {
+      // Effects that didn't load stay as they were (their first play builds them).
+    }
+    if (this.scene.isDisposed) return 0;
+    const [made, held] = await Promise.all([making, Promise.all(gunCopies)]);
+    // Everything it draws is in: what is left is building shaders (the gate gives that a time of its own).
+    filesIn();
     if (this.scene.isDisposed) return 0;
     // Drawn every frame wherever the stage is: in front of the camera while the loading screen is up, and far below
     // the map (out of sight) once the game shows, so their main-pass programs are built either way (a slow machine or
@@ -1908,6 +1913,7 @@ export class GameView {
     // Crowds draw characters' low-detail meshes sooner.
     setCharacterLodCrowd(crowd);
     const planes = crowd && this.scene.activeCamera ? Frustum.GetPlanes(this.scene.activeCamera.getTransformationMatrix()) : null;
+    const fov = (this.scene.activeCamera as { fov?: number } | null)?.fov ?? DEFAULT_FOV;
     // Shadows: the nearest SHADOW_CHARACTERS live characters in view cast (squared distance of the last that does).
     const eye = this.scene.activeCamera?.globalPosition;
     let shadowCut = Infinity;
@@ -1986,7 +1992,13 @@ export class GameView {
         // Respawn teleports are not motion.
         if (Math.hypot(p.x - a.last.x, p.z - a.last.z) > 4) a.vel = { x: 0, z: 0 };
       }
-      a.last = { x: p.x, y: p.y, z: p.z, t: now };
+      // In place: a crowd's avatars made one of these a frame each (performance round 4's garbage pass).
+      if (a.last) {
+        a.last.x = p.x;
+        a.last.y = p.y;
+        a.last.z = p.z;
+        a.last.t = now;
+      } else a.last = { x: p.x, y: p.y, z: p.z, t: now };
       // Shadows from the nearest few living characters (and anyone within SHADOW_ALWAYS); in crowds none past
       // CROWD_SHADOW_REACH, the dead and dying included (a body far off waiting for its ragdoll cast one before).
       const d2 = eye ? (p.x - eye.x) ** 2 + (p.z - eye.z) ** 2 : 0;
@@ -2075,10 +2087,10 @@ export class GameView {
         let run: boolean;
         let stepped: boolean;
         if (a.anim instanceof CharacterAnimator && !a.culled) {
-          // Characters in view: past ANIM_LOD_FULL their clips, bones and aim are evaluated at 30 Hz (and at most
-          // every 2nd frame), past ANIM_LOD_NEAR at 15 Hz (every 3rd), past ANIM_LOD_FAR at 10 Hz (every 4th), on each
-          // one's own phase, with the fingers' pose kept from the last full close; the state machine runs with them.
-          const step = animStep(far, perfOn('animlod2'));
+          // Characters in view: by their size on screen (animLod.ts, round 4), every frame near, then 30, 20, 15, 10 and
+          // 5 Hz (and at most every 2nd, 3rd, 4th, 6th, 12th frame), each smoothed between its evaluations, on each one's
+          // own phase, with the fingers' pose kept from the last full close; the state machine runs with them.
+          const step = perfOn('animlod4') ? animStepByShare(screenShare(far, fov)) : animStep(far, perfOn('animlod2'));
           run = a.anim.stepAt(now, step, this.avatarFrame, (p.slot * 37) % 100);
           stepped = step.frames > 1;
           if (run && perfProbe.on) perfProbe.n[COUNT.animated]!++;
