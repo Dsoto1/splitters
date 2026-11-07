@@ -4527,7 +4527,7 @@ export class Match {
    */
   private moveVehicleProbe(m: MountRt, delta: Vec3): { feet: Vec3; grounded: boolean; blocked: number } {
     const lowProbe = m.lowProbe;
-    if (!lowProbe) return this.physics.moveVehicle(m.probe!, m.body, m.pos, delta);
+    if (!lowProbe) return this.physics.moveVehicle(m.probe!, m.body, m.pos, delta, !m.def.vehicle!.fly);
     const r = Math.min(m.def.half[0], m.def.half[2]) * 0.95;
     const hull = m.def.half[1] * 2;
     m.low = this.physics.overhead(m.pos, hull, this.physics.probeHeight(m.probe!) + 0.1, r, m.body);

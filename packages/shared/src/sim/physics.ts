@@ -347,9 +347,11 @@ export class PhysicsWorld {
    * nowhere at all, not even down, and the lift stayed: the vehicle rose 5 cm a tick, up the door into its lintel
    * and the roof over it, and stuck there (a Hauler at the top of Iron Tide's stairs, in the 3 m door under the
    * deck's roof). A move the controller refuses now keeps the vehicle where it was, resting (it still falls when it
-   * can: the drop is tried on its own), so it can be driven back out the way it came.
+   * can: the drop is tried on its own), so it can be driven back out the way it came; and a move that creeps up
+   * into something over the probe (the controller lets it, climbing a sill under a lintel) keeps its height.
+   * `ground` false (flyers) leaves both out: a flyer climbs its own way out (Match.driveVehicle's climbAssist).
    */
-  moveVehicle(probe: RAPIER.Collider, body: RAPIER.Collider, feet: Vec3, delta: Vec3): { feet: Vec3; grounded: boolean; blocked: number } {
+  moveVehicle(probe: RAPIER.Collider, body: RAPIER.Collider, feet: Vec3, delta: Vec3, ground = true): { feet: Vec3; grounded: boolean; blocked: number } {
     const centerY = this.probeCenter.get(probe) ?? 0;
     const lift = 0.05;
     const skip = (c: RAPIER.Collider) => c.handle !== body.handle;
@@ -360,7 +362,7 @@ export class PhysicsWorld {
     let start = lift;
     const want = hypot(delta.x, delta.z);
     // Refused: no headway, and not even the lift back down (the controller hardly moved it at all).
-    const refused = hypot(m.x, m.z) < 1e-4 && m.y > -1e-3 && m.y < lift * 0.5 && (want > 1e-6 || delta.y - lift < -1e-6);
+    const refused = ground && hypot(m.x, m.z) < 1e-4 && m.y > -1e-3 && m.y < lift * 0.5 && (want > 1e-6 || delta.y - lift < -1e-6);
     if (refused) {
       // Refused: no headway, and only the fall (if any) from where it is, without the lift.
       start = 0;
@@ -375,7 +377,7 @@ export class PhysicsWorld {
     // The controller can let the probe creep up into what is over it (climbing a sill under a lintel, or starting
     // within the lift of a ceiling): a move that ends inside the level when it didn't start there keeps its height
     // (or, if that is inside too, the vehicle stays where it was), as moveCharacter does for players.
-    if (next.y > feet.y + 1e-4 && this.probeOverlaps(probe, next, centerY, body) && !this.probeOverlaps(probe, feet, centerY, body)) {
+    if (ground && next.y > feet.y + 1e-4 && this.probeOverlaps(probe, next, centerY, body) && !this.probeOverlaps(probe, feet, centerY, body)) {
       const level = { x: next.x, y: feet.y, z: next.z };
       next = this.probeOverlaps(probe, level, centerY, body) ? { ...feet } : level;
       m = { x: next.x - feet.x, y: 0, z: next.z - feet.z };
