@@ -203,7 +203,7 @@ leave; each passes run on its own, and CI passes them all. Only docs changed aft
 
 <!-- breakthrough -->
 <!-- bots-c -->
-### Bot AI Phase C: navigation depth (`wip/bots-c`, agent, 2026-11-07; from main 61652cb9; landing in parts on `check/bots-c`)
+### Bot AI Phase C: navigation depth (`wip/bots-c`, agent, 2026-11-07; item 0 landed, main 0d03c3bd; items 1-4 green on `check/bots-c` at 2a8464b7, run 42400318933; not landed)
 docs/BOT_AI_PLAN.md (Phase C; "Phase C item 0, measured"), docs/BOTS.md ("Hurt bots retreat").
 
 **Item 0, the hurt-bot retreat: kept as it is** (the coordinator agreed, 2026-11-07). The pitfall below ("Bots without
