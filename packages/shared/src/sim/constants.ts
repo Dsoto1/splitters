@@ -12,11 +12,14 @@ export const BROWSER_HOST_MAX_GUESTS = 10;
 /**
  * Most players (you, friends and bots) in a match a browser runs (offline,
  * Host game): every bot thinks and every character draws on that one
- * computer, and past 24 v 24 an ordinary laptop stutters. Dedicated hosts
- * take MAX_PLAYER_SLOTS (48 v 48). A policy for browsers, not a structural
- * limit (load tests still ask for more with ?bots=).
+ * computer. 32 v 32 since performance round 4 (docs/PERF_96.md: a crowd's
+ * animation a fifth cheaper, smoothed far characters, 64 bots' thinking about
+ * 1.3 ms a tick in the worker); past 24 v 24 an ordinary laptop may stutter,
+ * and Match Setup says so (setupFit). Dedicated hosts take MAX_PLAYER_SLOTS.
+ * A policy for browsers, not a structural limit (load tests still ask for
+ * more with ?bots=). Phones keep to 16 (client touchDevice.ts).
  */
-export const BROWSER_MAX_PLAYERS = 48;
+export const BROWSER_MAX_PLAYERS = 64;
 
 export const TICK_RATE = 60;
 /** Openings (doors, walls that block paths until broken) a map's navmesh can mark, one flag bit each (bits 1..14; bit 0 is walkable ground). */

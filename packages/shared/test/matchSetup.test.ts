@@ -106,8 +106,12 @@ describe('fits the map', () => {
     expect(notes).toMatch(/big match/);
     expect(fit([16, 16]).items.some((n) => /very big/.test(n.text))).toBe(false);
     expect(fit([24, 24]).items.some((n) => n.level === 'warn' && /very big/.test(n.text))).toBe(true);
-    // A browser runs at most 24 v 24 (dedicated hosts 48 v 48): bigger saved layouts shrink to fit.
-    expect(setupPlayers(base({ teams: [48, 48] }), map)).toBe(48);
+    // A browser runs at most 32 v 32 (performance round 4; dedicated hosts more): bigger saved layouts shrink to fit.
+    expect(setupPlayers(base({ teams: [48, 48] }), map)).toBe(64);
+    // 32 v 32 is a crowd for one computer: the fit check names what it takes.
+    const crowd = setupFit(base({ teams: [32, 32] }), map, { deviceMax: 64 }).items.find((n) => n.topic === 'performance');
+    expect(crowd).toMatchObject({ level: 'warn' });
+    expect(crowd!.text).toMatch(/64 players is a crowd for one computer: a recent desktop or a fast laptop/);
     // Teams beyond the map's own sides use the shared spawns.
     const sided = { ...map, factions: [{ id: 'red', name: 'Red', color: '#ff0000', relations: {} }, { id: 'blue', name: 'Blue', color: '#0000ff', relations: {} }], entities: map.entities.map((e, i) => (e.kind === 'spawn' && i < 2 ? { ...e, faction: i ? 'blue' : 'red' } : e)) } as MapDocument;
     const three = setupFit(base({ teams: [1, 1, 1] }), sided, { deviceMax: 48 }).items.map((n) => n.text).join('\n');

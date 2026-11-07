@@ -2686,8 +2686,8 @@ async function teamsFlow(browser) {
  * before suggestions, at the old 40 points and 10 minutes, follows the size.
  */
 async function setupLimitsFlow(browser) {
-  // The curve's values for St. John's presets (Small 4v4, Map's pick 12v12, Max 24v24): points and minutes.
-  const EXPECT = { '4v4': [40, 10], '12v12': [180, 15], '24v24': [500, 20] };
+  // The curve's values for St. John's presets (Small 4v4, Map's pick 12v12, Max 32v32 since performance round 4): points and minutes.
+  const EXPECT = { '4v4': [40, 10], '12v12': [180, 15], '32v32': [650, 20] };
   const errors = [];
   const page = await (await browser.newContext({ viewport: { width: 1280, height: 720 } })).newPage();
   page.on('pageerror', (e) => errors.push(e.message));
@@ -2723,7 +2723,7 @@ async function setupLimitsFlow(browser) {
   const big = await read();
   // Opening the setup doesn't write it; the first change saves it with the marks (score and time following the size).
   const marks = { scoreAuto: twelve.saved.scoreAuto, timeAuto: twelve.saved.timeAuto, score: big.saved.scoreLimit, minutes: big.saved.minutes };
-  check(suggests(twelve, '12v12') && suggests(big, '24v24') && marks.scoreAuto === true && marks.timeAuto === true && marks.score === EXPECT['24v24'][0] && marks.minutes === EXPECT['24v24'][1], `the suggested score and time follow the size, and the setup saves them following it: 12v12 ${twelve.score}, ${twelve.time}; 24v24 ${big.score}, ${big.time} (${JSON.stringify({ line: big.line, fact: big.fact, saved: marks })})`);
+  check(suggests(twelve, '12v12') && suggests(big, '32v32') && marks.scoreAuto === true && marks.timeAuto === true && marks.score === EXPECT['32v32'][0] && marks.minutes === EXPECT['32v32'][1], `the suggested score and time follow the size, and the setup saves them following it: 12v12 ${twelve.score}, ${twelve.time}; 32v32 ${big.score}, ${big.time} (${JSON.stringify({ line: big.line, fact: big.fact, saved: marks })})`);
   // Set by hand: Custom, kept through a size change; Back to suggested follows the size again.
   await page.evaluate(() => {
     const i = document.getElementById('arcade-score');
@@ -2850,7 +2850,8 @@ async function setupLayoutFlow(browser) {
       variants: [...document.querySelectorAll('#setup-variants .variant-chip.on')].map((b) => b.dataset.variant),
     }));
   const owner = await read();
-  check(owner.who === 'You + 47 bots · 24v24' && owner.preset === 'max', `people apart from bots: the owner's setup reads "${owner.who}", on the Max preset (${owner.preset})`);
+  // (24v24 was Max until performance round 4 raised a computer's limit to 32v32: between Big battle and Max now.)
+  check(owner.who === 'You + 47 bots · 24v24' && owner.preset === 'custom', `people apart from bots: the owner's setup reads "${owner.who}", on no preset (${owner.preset})`);
   check(owner.advanced === '9 changed · Low gravity · Tactical bots +7' && owner.chips === 0, `Advanced rules in one line, its chips inside it ("${owner.advanced}", ${owner.chips} chips while closed)`);
   check(owner.variants.join() === 'roulette', `a variant shows on when its settings are, however set (${owner.variants.join(', ')})`);
   // The fit indicator: Crowded, its details say why, and the map's own layout is a button.
@@ -2865,9 +2866,9 @@ async function setupLayoutFlow(browser) {
   await page.evaluate(() => document.querySelector('#setup-sizes [data-preset="max"]').click());
   await page.evaluate(() => document.getElementById('arcade-team-size-1-plus').click());
   const capped = { teams: (await setup()).teams, note: await page.evaluate(() => document.getElementById('arcade-team-stopped')?.textContent) };
-  check(capped.teams?.join() === '24,24' && capped.note === "24 per team is this computer's limit.", `a bot past the limit says whose limit it is (${JSON.stringify(capped)})`);
+  check(capped.teams?.join() === '32,32' && capped.note === "32 per team is this computer's limit.", `a bot past the limit says whose limit it is (${JSON.stringify(capped)})`);
   await page.evaluate(() => document.getElementById('arcade-team-size-0-minus').click());
-  check((await setup()).teams?.join() === '23,23', 'a bot fewer shrinks every team alike (Even teams)');
+  check((await setup()).teams?.join() === '31,31', 'a bot fewer shrinks every team alike (Even teams)');
   // A party preset: Lunar Roulette (Team Deathmatch here: the map has teams).
   await page.evaluate(() => document.getElementById('setup-party-lunar_roulette').click());
   const party = await setup();
