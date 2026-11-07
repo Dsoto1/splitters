@@ -88,13 +88,15 @@ export interface Playbook {
   reconFrom1: number;
   /** Flankers: this share of the attackers left after the recon pair, with two corridors or more. */
   flank: number;
+  /** Corridors for the groups: at most this many times as long as the shortest, plus 20 m. */
+  stretch: number;
   /** Groups only with this many attackers or more. */
   groupsFrom: number;
   /**
    * When the attackers split over the corridors: always, or only for a group push (`attack.stage`: retaking a hill the
    * enemy holds; going for one nobody holds, everyone goes straight, a detour costs hill time).
    */
-  split: 'always' | 'push';
+  split: 'always' | 'push' | 'never';
   /** Staging: this share of the route back from the objective, at least / at most (m). */
   stageShare: number;
   stageMin: number;
@@ -122,6 +124,7 @@ export const DEFAULT_PLAYBOOK: Playbook = {
   reconFrom: 6,
   reconFrom1: 4,
   flank: 0.4,
+  stretch: 1.35,
   groupsFrom: 3,
   stageShare: 0.35,
   stageMin: 28,
@@ -137,6 +140,8 @@ export const DEFAULT_PLAYBOOK: Playbook = {
   seen: 0.2,
 };
 
+/** A bot on its way to its staging spot this long (s) without getting there goes on (a spot it can't reach, a fight). */
+const STAGE_PATIENCE = 25;
 /** Deaths and sightings count against a corridor this close to its route (m), for this long (s). */
 const NEAR_ROUTE = 12;
 const DEATH_SECONDS = 60;
@@ -189,6 +194,8 @@ export class TeamBrain {
   private readonly groupOf = new Map<number, GroupKind>();
   /** The corridor (of the attack trip) each attacker set out on: kept until it dies or stops attacking. */
   private readonly ways = new Map<number, number>();
+  /** Since when (tick) each attacker has been on its way to its staging spot without getting there. */
+  private readonly staging = new Map<number, number>();
   private readonly lastAlive = new Map<number, number>();
   private readonly groups: Record<GroupKind, Group> = {
     main: newGroup('main'),
@@ -260,7 +267,7 @@ export class TeamBrain {
       this.waves.length = 0;
     }
     const attackers = attack ? members.filter((m) => !m.ordered && !m.mounted && m.goal && !m.goal.run && horizontalDistance(m.goal.pos, attack.pos) < SAME_GOAL && Math.abs(m.goal.pos.y - attack.pos.y) < 4) : [];
-    if (attack && trip && trip.trip.corridors.length && attackers.length >= pb.groupsFrom && (pb.split === 'always' || attack.stage) && !BOT_TRIALS.nojobs) this.assign(tick, attackers, attack, trip, jobs);
+    if (attack && trip && trip.trip.corridors.length && attackers.length >= pb.groupsFrom && (pb.split === 'always' || (pb.split === 'push' && attack.stage)) && !BOT_TRIALS.nojobs) this.assign(tick, attackers, attack, trip, jobs);
     else {
       for (const m of attackers) this.groupOf.delete(m.slot);
       for (const g of Object.values(this.groups)) g.members.length = 0;
@@ -316,8 +323,12 @@ export class TeamBrain {
     const pb = this.pb;
     const ways = trip.trip.corridors.length;
     const n = attackers.length;
-    const recon = ways >= 2 ? (n >= pb.reconFrom ? pb.recon : n >= pb.reconFrom1 ? 1 : 0) : 0;
-    const flank = ways >= 2 ? Math.round((n - recon) * pb.flank) : 0;
+    // (Flankers and the recon pair only on a corridor not much longer than the shortest: by a long way round they got
+    // there late and alone.)
+    const short = Math.min(...trip.trip.corridors.map((c) => c.length));
+    const fit = trip.trip.corridors.filter((c) => c.length <= short * pb.stretch + 20).length;
+    const recon = fit >= 2 ? (n >= pb.reconFrom ? pb.recon : n >= pb.reconFrom1 ? 1 : 0) : 0;
+    const flank = fit >= 2 ? Math.round((n - recon) * pb.flank) : 0;
     const want: Record<GroupKind, number> = { main: n - recon - flank, flank, recon };
     // Keep each bot in its group while the group isn't over its size; the rest (and newcomers) fill what's short,
     // the recon pair first from the explorers and lone wolves, the flankers from the aggressive.
@@ -346,7 +357,9 @@ export class TeamBrain {
     // flankers'). A group keeps its corridor while it pushes (members waiting or a wave on its way), and otherwise until
     // another is clearly cheaper (by a third).
     const risk = (k: number) => trip.trip.corridors[k]!.length * (1 + trip.deaths[k]! * pb.death + Math.min(trip.seen[k]!, 6) * pb.seen);
-    const order = Array.from({ length: ways }, (_, k) => k).sort((a, b) => risk(a) - risk(b) || a - b);
+    const order = Array.from({ length: ways }, (_, k) => k)
+      .filter((k) => trip.trip.corridors[k]!.length <= short * pb.stretch + 20)
+      .sort((a, b) => risk(a) - risk(b) || a - b);
     const main = this.groups.main;
     const flk = this.groups.flank;
     const rec = this.groups.recon;
@@ -363,6 +376,7 @@ export class TeamBrain {
     // Each bot keeps the corridor it set out on until it dies or stops attacking (a group's corridor changes only for
     // those joining after: swapping a group's way mid-push turned bots 20 m from the flag back for the other way).
     for (const slot of this.ways.keys()) if (!living.has(slot)) this.ways.delete(slot);
+    for (const slot of this.staging.keys()) if (!living.has(slot)) this.staging.delete(slot);
     const to = trip.trip.to;
     // Each group: who is in it alive, where each waits, whether it is ready to go.
     const state: { g: Group; kind: GroupKind; ms: BrainMember[]; ready: boolean }[] = [];
@@ -419,7 +433,17 @@ export class TeamBrain {
       for (const m of x.ms) {
         const c = trip.trip.corridors[this.ways.get(m.slot) ?? g.corridor]!;
         const stage = g.stage ? this.stageOn(c, pb) : null;
-        const waits = !!stage && !g.sent.has(m.slot) && horizontalDistance(m.pos, to) >= horizontalDistance(stage, to) - 5;
+        let waits = !!stage && !g.sent.has(m.slot) && horizontalDistance(m.pos, to) >= horizontalDistance(stage, to) - 5;
+        // On its way to the spot this long without getting there (no way to it, held up): it goes on.
+        if (waits && !g.waiting.has(m.slot)) {
+          const since = this.staging.get(m.slot) ?? tick;
+          this.staging.set(m.slot, since);
+          if (tick - since > TICK_RATE * STAGE_PATIENCE) {
+            g.sent.add(m.slot);
+            waits = false;
+          }
+        }
+        if (!waits || g.waiting.has(m.slot)) this.staging.delete(m.slot);
         jobs.set(m.slot, { group: x.kind, to: { ...to }, route: c, stage: waits ? stage : null, goal: null });
       }
     }

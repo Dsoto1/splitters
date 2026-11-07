@@ -57,6 +57,13 @@ describe('corridors', () => {
       const along = c.lineAt[placeOn(c, via).at]!;
       expect(along).toBeGreaterThanOrEqual(c.length * 0.15);
       expect(along).toBeLessThanOrEqual(c.length * 0.85);
+      // The points a bot goes by to take it (its via), in order along it, each on it and away from the others.
+      expect(c.vias.length).toBeGreaterThanOrEqual(1);
+      expect(c.vias.length).toBeLessThanOrEqual(3);
+      expect(c.vias.some((p) => p.x === via.x && p.z === via.z)).toBe(true);
+      const ats = c.vias.map((p) => c.lineAt[placeOn(c, p).at]!);
+      expect([...ats].sort((a, b) => a - b)).toEqual(ats);
+      for (const p of c.vias) for (const o of trip.corridors) if (o !== c) expect(placeOn(o, p).off).toBeGreaterThan(7);
     }
     // The same again (and from the cache: the same object), and the same for a navmesh built again.
     expect(findCorridors(built.nav, a!, b!)).toBe(trip);

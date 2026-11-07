@@ -145,7 +145,7 @@ export interface MatchRow {
    * its bots between a fifth and four fifths of the way along it, by the corridor they were on (within ROUTE_NEAR m of
    * it), and off them all.
    */
-  routes?: { team: string; to: [number, number, number]; corridors: number; use: number[]; other: number }[];
+  routes?: { team: string; to: [number, number, number]; corridors: number; use: number[]; other: number; cross?: number[]; crossOther?: number }[];
   /** Group pushes per team (the team brain, bots/teamBrain.ts PushStats): waves set out, got there, lost half first, metres gained and seconds. */
   pushes?: Record<string, { started: number; reached: number; lostHalf: number; metres: number; seconds: number }>;
   /** BOTB=half: the side the team brain played for (measuring Phase B; temporary). */
@@ -156,6 +156,8 @@ export interface MatchRow {
 const FAIL_SPOTS = 600;
 /** On a corridor: within this of its route (m). */
 const ROUTE_NEAR = 15;
+/** A trip's route choice is judged with this many votes or more (bots past its middle). */
+const WAY_VOTES = 6;
 /** A corridor carries this share of a team's way or more: it is one of the routes the team uses. */
 const ROUTE_USED = 0.15;
 /** Weapons with a scope (a sniper's kill). */
@@ -291,7 +293,9 @@ function play(map: MapDocument, mode: GameMode, seed: number, seconds: number): 
   }
   // Route variety: each team's trips (to an objective) and the bot-seconds on each of their corridors.
   const trips = match.botTrips().filter((t) => t.kind !== 'carry' && t.trip.corridors.length > 0);
-  const routeUse = trips.map((t) => ({ team: t.team, to: [Math.round(t.to.x), Math.round(t.to.y), Math.round(t.to.z)] as [number, number, number], corridors: t.trip.corridors.length, use: t.trip.corridors.map(() => 0), other: 0 }));
+  const routeUse = trips.map((t) => ({ team: t.team, to: [Math.round(t.to.x), Math.round(t.to.y), Math.round(t.to.z)] as [number, number, number], corridors: t.trip.corridors.length, use: t.trip.corridors.map(() => 0), other: 0, cross: t.trip.corridors.map(() => 0), crossOther: 0 }));
+  // Route choice: per bot and trip, its progress along the trip a second ago, and whether it has voted this life.
+  const crossing = new Map<string, { along: number; voted: boolean }>();
   // Vantage spots: where each bot last held one (to count arrivals).
   const postAt = new Map<number, string>();
   const roles = new Map<number, Map<string, number>>();
@@ -425,6 +429,7 @@ function play(map: MapDocument, mode: GameMode, seed: number, seconds: number): 
       if (!c.alive) {
         h.length = 0;
         closeSpell(c.slot);
+        for (let i = 0; i < trips.length; i++) crossing.delete(`${c.slot}|${i}`);
         continue;
       }
       r.alive += dt;
@@ -458,6 +463,25 @@ function play(map: MapDocument, mode: GameMode, seed: number, seconds: number): 
           const dx = t.to.x - t.from.x;
           const dz = t.to.z - t.from.z;
           const along = ((p.x - t.from.x) * dx + (p.z - t.from.z) * dz) / Math.max(1, dx * dx + dz * dz);
+          // Route choice: the first time this life it passes the middle of the trip, the corridor it is on.
+          const key = `${c.slot}|${i}`;
+          const cs = crossing.get(key);
+          if (cs && !cs.voted && cs.along < 0.5 && along >= 0.5) {
+            cs.voted = true;
+            let pick = -1;
+            let near = ROUTE_NEAR;
+            t.trip.corridors.forEach((cor, j) => {
+              const o = placeOn(cor, p).off;
+              if (o < near) {
+                near = o;
+                pick = j;
+              }
+            });
+            if (pick >= 0) routeUse[i]!.cross[pick]!++;
+            else routeUse[i]!.crossOther++;
+          }
+          if (cs) cs.along = along;
+          else crossing.set(key, { along, voted: false });
           if (along < 0.2 || along > 0.8) continue;
           let best = -1;
           let off = ROUTE_NEAR;
@@ -704,7 +728,8 @@ export function measure(ms: readonly MatchRow[]) {
  * ROUTE_USED of its bots or more; those off every corridor count as one more route when they do), and the busiest
  * route's share on average; trips with only one way (a single bridge) are counted apart, not judged.
  */
-export function routeMeasures(ms: readonly MatchRow[]): { routes2?: number; busiest?: number; routesUsed?: number; oneWay: number; tripsMeasured: number } {
+export function routeMeasures(ms: readonly MatchRow[]): { routes2?: number; busiest?: number; routesUsed?: number; oneWay: number; tripsMeasured: number; ways2?: number; waysBusiest?: number } {
+  const choice = wayMeasures(ms);
   let multi = 0;
   let two = 0;
   let busy = 0;
@@ -726,7 +751,31 @@ export function routeMeasures(ms: readonly MatchRow[]): { routes2?: number; busi
       busy += Math.max(...shares);
     }
   }
-  return multi ? { routes2: two / multi, busiest: busy / multi, routesUsed: used / multi, oneWay, tripsMeasured: multi } : { oneWay, tripsMeasured: 0 };
+  return multi ? { routes2: two / multi, busiest: busy / multi, routesUsed: used / multi, oneWay, tripsMeasured: multi, ...choice } : { oneWay, tripsMeasured: 0, ...choice };
+}
+
+/**
+ * Route choice (each bot's way past the middle of a trip, once a life: the `cross` votes): of each team's trips with two
+ * or more corridors and WAY_VOTES votes, the share where two ways or more took ROUTE_USED of them, and the busiest way's
+ * share on average. Unlike `routes` (bot-seconds by the corridor they were near), a long fight on one corridor counts
+ * once per bot, not once a second.
+ */
+export function wayMeasures(ms: readonly MatchRow[]): { ways2?: number; waysBusiest?: number } {
+  let multi = 0;
+  let two = 0;
+  let busy = 0;
+  for (const m of ms) {
+    for (const u of m.routes ?? []) {
+      if (!u.cross || u.corridors < 2) continue;
+      const total = u.cross.reduce((a, b) => a + b, 0) + (u.crossOther ?? 0);
+      if (total < WAY_VOTES) continue;
+      const shares = [...u.cross, u.crossOther ?? 0].map((v) => v / total);
+      multi++;
+      if (shares.filter((v) => v >= ROUTE_USED).length >= 2) two++;
+      busy += Math.max(...shares);
+    }
+  }
+  return multi ? { ways2: two / multi, waysBusiest: busy / multi } : {};
 }
 
 type Measures = ReturnType<typeof measure>;
@@ -828,8 +877,8 @@ function printScorecard(rows: readonly MatchRow[], limits: Record<string, Record
 /** One line per map and mode: its objective and the measures every mode has (the judge's log: every map's numbers). */
 function printMaps(rs: readonly MatchRow[]): void {
   const f = (v: number | undefined, d = 1, k = 1) => (v === undefined ? '-' : (v * k).toFixed(d));
-  console.log('\n| Map | mode | matches | objective | idle out of a fight % | stuck a bot-min | kills/min | two routes % | busiest route % | cover in fights % | scoped kills (from spots) | pushes (reached, lost half) |');
-  console.log('|---|---|---|---|---|---|---|---|---|---|---|---|');
+  console.log('\n| Map | mode | matches | objective | idle out of a fight % | stuck a bot-min | kills/min | two routes % | busiest route % | busiest way % | cover in fights % | scoped kills (from spots) | pushes (reached, lost half) |');
+  console.log('|---|---|---|---|---|---|---|---|---|---|---|---|---|');
   const byKey = new Map<string, MatchRow[]>();
   for (const r of rs) (byKey.get(`${r.map}|${r.mode}`) ?? byKey.set(`${r.map}|${r.mode}`, []).get(`${r.map}|${r.mode}`)!).push(r);
   for (const [key, ms] of [...byKey].sort((a, b) => a[0].localeCompare(b[0]))) {
@@ -845,7 +894,7 @@ function printMaps(rs: readonly MatchRow[]): void {
     ].filter(Boolean).join(', ') || '-';
     const s = ms.flatMap((r) => Object.values(r.pushes ?? {}));
     const pushes = s.length ? `${sum(s, (v) => v.started)} (${sum(s, (v) => v.reached)}, ${sum(s, (v) => v.lostHalf)})` : '-';
-    console.log(`| ${map} | ${mode!.slice(5)} | ${m.n} | ${obj} | ${f(m.calm, 1, 100)} | ${f(m.stuckPerBotMin, 2)} | ${f(m.killsMin)} | ${m.routes2 === undefined ? (m.oneWay ? 'one way' : '-') : f(m.routes2, 0, 100)} | ${f(m.busiest, 0, 100)} | ${f(m.coverFight, 1, 100)} | ${m.scopedKills.toFixed(1)} (${m.postKills.toFixed(1)}) | ${pushes} |`);
+    console.log(`| ${map} | ${mode!.slice(5)} | ${m.n} | ${obj} | ${f(m.calm, 1, 100)} | ${f(m.stuckPerBotMin, 2)} | ${f(m.killsMin)} | ${m.routes2 === undefined ? (m.oneWay ? 'one way' : '-') : f(m.routes2, 0, 100)} | ${f(m.busiest, 0, 100)} | ${f(m.waysBusiest, 0, 100)} | ${f(m.coverFight, 1, 100)} | ${m.scopedKills.toFixed(1)} (${m.postKills.toFixed(1)}) | ${pushes} |`);
   }
 }
 
@@ -874,12 +923,13 @@ function printCompare(before: readonly MatchRow[], after: readonly MatchRow[]): 
   const mb = measure(after);
   const g = (v: number | undefined, d = 2, k = 100) => (v === undefined ? '-' : (v * k).toFixed(d));
   console.log(`failed searches ${g(ma.failedSearches)} → ${g(mb.failedSearches)} % (${ma.noRoute.toFixed(0)} → ${mb.noRoute.toFixed(0)} a match of ${ma.searches.toFixed(0)} → ${mb.searches.toFixed(0)}); no-route idle ${g(ma.noRouteIdle)} → ${g(mb.noRouteIdle)} %; idle out of a fight ${g(ma.calm, 1)} → ${g(mb.calm, 1)} %; frozen ${g(ma.frozen, 1)} → ${g(mb.frozen, 1)} %; stuck ${ma.stuck.toFixed(0)} → ${mb.stuck.toFixed(0)} a match (${ma.stuckPerBotMin.toFixed(2)} → ${mb.stuckPerBotMin.toFixed(2)} a bot-minute); 10 s+ idle spells ${ma.spells10.toFixed(1)} → ${mb.spells10.toFixed(1)} a match; kills ${ma.killsMin.toFixed(1)} → ${mb.killsMin.toFixed(1)} a minute; think ${g(ma.thinkMs, 2, 1)} → ${g(mb.thinkMs, 2, 1)} ms`);
+  console.log(`route choice (bots past a trip's middle, once a life): two ways or more ${g(ma.ways2, 0)} → ${g(mb.ways2, 0)} % of team trips, busiest way ${g(ma.waysBusiest, 0)} → ${g(mb.waysBusiest, 0)} %`);
   console.log(`routes: team trips on two routes or more ${g(ma.routes2, 0)} → ${g(mb.routes2, 0)} % (of ${ma.tripsMeasured} → ${mb.tripsMeasured} with two ways or more; ${ma.oneWay} → ${mb.oneWay} with one), busiest route ${g(ma.busiest, 0)} → ${g(mb.busiest, 0)} %; time in cover in a fight ${g(ma.coverFight, 1)} → ${g(mb.coverFight, 1)} %; scoped kills ${ma.scopedKills.toFixed(1)} → ${mb.scopedKills.toFixed(1)} a match (from a vantage spot ${ma.postKills.toFixed(1)} → ${mb.postKills.toFixed(1)}); sniper spots ${ma.sniperPosts.toFixed(1)} → ${mb.sniperPosts.toFixed(1)} a match (${ma.snipers.toFixed(1)} → ${mb.snipers.toFixed(1)} snipers)`);
   // Per mode: each mode's objective and the measures every mode has.
   const modes = [...new Set([...before, ...after].map((m) => m.mode))].sort();
   if (modes.length > 1 || !modes.includes('core.ctf')) {
-    console.log('\n| Mode | matches | objective | idle out of a fight % | stuck a bot-min | kills/min | two routes % | busiest route % | cover in fights % | pushes (reached, lost half) | think ms |');
-    console.log('|---|---|---|---|---|---|---|---|---|---|---|');
+    console.log('\n| Mode | matches | objective | idle out of a fight % | stuck a bot-min | kills/min | two routes % | busiest route % | two ways % | busiest way % | cover in fights % | pushes (reached, lost half) | think ms |');
+    console.log('|---|---|---|---|---|---|---|---|---|---|---|---|---|');
     for (const mode of modes) {
       const x = before.filter((m) => m.mode === mode);
       const y = after.filter((m) => m.mode === mode);
@@ -899,7 +949,7 @@ function printCompare(before: readonly MatchRow[], after: readonly MatchRow[]): 
         const s = rs.flatMap((m) => Object.values(m.pushes ?? {}));
         return s.length ? `${sum(s, (v) => v.started)} (${sum(s, (v) => v.reached)}, ${sum(s, (v) => v.lostHalf)})` : '-';
       };
-      console.log(`| ${mode.slice(5)} | ${x.length} → ${y.length} | ${obj(p)} → ${obj(q)} | ${f(p.calm, 1, 100)} → ${f(q.calm, 1, 100)} | ${f(p.stuckPerBotMin, 2)} → ${f(q.stuckPerBotMin, 2)} | ${f(p.killsMin)} → ${f(q.killsMin)} | ${f(p.routes2, 0, 100)} → ${f(q.routes2, 0, 100)} | ${f(p.busiest, 0, 100)} → ${f(q.busiest, 0, 100)} | ${f(p.coverFight, 1, 100)} → ${f(q.coverFight, 1, 100)} | ${pushes(x)} → ${pushes(y)} | ${f(p.thinkMs, 2)} → ${f(q.thinkMs, 2)} |`);
+      console.log(`| ${mode.slice(5)} | ${x.length} → ${y.length} | ${obj(p)} → ${obj(q)} | ${f(p.calm, 1, 100)} → ${f(q.calm, 1, 100)} | ${f(p.stuckPerBotMin, 2)} → ${f(q.stuckPerBotMin, 2)} | ${f(p.killsMin)} → ${f(q.killsMin)} | ${f(p.routes2, 0, 100)} → ${f(q.routes2, 0, 100)} | ${f(p.busiest, 0, 100)} → ${f(q.busiest, 0, 100)} | ${f(p.ways2, 0, 100)} → ${f(q.ways2, 0, 100)} | ${f(p.waysBusiest, 0, 100)} → ${f(q.waysBusiest, 0, 100)} | ${f(p.coverFight, 1, 100)} → ${f(q.coverFight, 1, 100)} | ${pushes(x)} → ${pushes(y)} | ${f(p.thinkMs, 2)} → ${f(q.thinkMs, 2)} |`);
     }
   }
 }

@@ -12,7 +12,7 @@ function corridor(pts: Vec3[], via: Vec3 | null): Corridor {
   const line = resample(pts, 4);
   const points = resample(pts, 12);
   const lineAt = along(line);
-  return { points, pointsAt: along(points), line, lineAt, length: lineAt[lineAt.length - 1]!, shared: 0, via, viaApart: via ? Math.abs(via.z) : 0 };
+  return { points, pointsAt: along(points), line, lineAt, length: lineAt[lineAt.length - 1]!, shared: 0, via, viaApart: via ? Math.abs(via.z) : 0, vias: via ? [via] : [] };
 }
 
 // Three ways from (0, 0) to (100, 0): straight, round the north (z 30) and round the south (z -30).

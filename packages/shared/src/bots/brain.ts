@@ -429,7 +429,7 @@ export class BotBrain {
    * Route variety: the corridor it goes by to a far goal (its group's, its squad's, or the cheapest of its side's trip:
    * teamBrain.ts), the goal it is for, whether it has been by the corridor's via yet, and when it last went by it.
    */
-  private route: { c: Corridor; goal: Vec3; passed: boolean; used: number } | null = null;
+  private route: { c: Corridor; goal: Vec3; next: number; used: number } | null = null;
   /** A corridor picked with its roaming goal (toward the enemy's side), for that goal only. */
   private roamRoute: { c: Corridor; goal: Vec3 } | null = null;
   /** A few steps aside after getting stuck on the same spot again and again (planSidestep). */
@@ -922,32 +922,33 @@ export class BotBrain {
   }
 
   /**
-   * Where to head for `goal` by corridor `c` (route variety): its via (Corridor.via, where it is furthest from the
-   * corridors before it) until the bot has been by it or is nearer the goal than it is, then the goal; the bot's own
-   * routes do the rest, so it goes that corridor's way without following it point by point. (Following its points every
-   * 12 m went wrong on maps with floors: a bot on a deck above a corridor counted as on it, headed for a point on the
-   * ground ahead and stood under a gallery's rail; captures halved on the dev sample.)
+   * Where to head for `goal` by corridor `c` (route variety): its vias in order (Corridor.vias: where it is furthest from
+   * the trip's other corridors), each until the bot has been by it or is nearer the goal than it is, then the goal; the
+   * bot's own routes do the rest, so it goes that corridor's way without following it point by point. (Following its
+   * points every 12 m went wrong on maps with floors: a bot on a deck above a corridor counted as on it, headed for a
+   * point on the ground ahead and stood under a gallery's rail; captures halved on the dev sample.)
    */
   private viaRoute(view: BotWorldView, c: Corridor, goal: Vec3): Vec3 {
     const me = view.self.pos;
     let r = this.route;
-    if (!r || r.c !== c || horizontalDistance(r.goal, goal) > 8) r = this.route = { c, goal: { ...goal }, passed: !c.via, used: view.tick };
+    if (!r || r.c !== c || horizontalDistance(r.goal, goal) > 8) r = this.route = { c, goal: { ...goal }, next: 0, used: view.tick };
     r.used = view.tick;
-    const via = c.via;
-    if (!via || r.passed) return goal;
-    // Near it, or already nearer the goal than it is: on to the goal.
-    if ((horizontalDistance(me, via) < 6 && Math.abs(me.y - via.y) < 3) || horizontalDistance(me, goal) < horizontalDistance(via, goal)) {
-      r.passed = true;
-      return goal;
+    const left = horizontalDistance(me, goal);
+    while (r.next < c.vias.length) {
+      const via = c.vias[r.next]!;
+      // Near it, or already nearer the goal than it is: on to the next.
+      if ((horizontalDistance(me, via) < 6 && Math.abs(me.y - via.y) < 3) || left < horizontalDistance(via, goal)) r.next++;
+      else return via;
     }
-    return via;
+    return goal;
   }
 
-  /** `to`, where it was heading for `goal`, was its corridor's via and no route gets there from here: straight on. */
+  /** `to`, where it was heading for `goal`, was one of its corridor's vias and no route gets there from here: on past it. */
   private skipVia(to: Vec3, goal: Vec3): boolean {
     const r = this.route;
-    if (!r || r.passed || !r.c.via || horizontalDistance(r.goal, goal) > 8 || horizontalDistance(r.c.via, to) > 0.5) return false;
-    r.passed = true;
+    const via = r?.c.vias[r.next];
+    if (!r || !via || horizontalDistance(r.goal, goal) > 8 || horizontalDistance(via, to) > 0.5) return false;
+    r.next++;
     return true;
   }
 

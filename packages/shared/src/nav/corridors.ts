@@ -31,12 +31,17 @@ export interface Corridor {
   readonly shared: number;
   /**
    * Where it is furthest from the trip's other corridors (between a fifth and four fifths of the way; on the navmesh):
-   * going by this one point, a bot's own shortest route there and on to the goal is this corridor's way
-   * (BotBrain.viaRoute). Null when the trip has only the one.
+   * the first of `vias` that is furthest. Null when the trip has only the one.
    */
   readonly via: Vec3 | null;
   /** How far the via is from the other corridors (m). */
   readonly viaApart: number;
+  /**
+   * The points a bot goes by, in order, to take this corridor (BotBrain.viaRoute): its via. (Three, one in each third of
+   * its way, kept bots on it better but made the groups on the longer corridors slower: fewer flag takes in the
+   * one-side runs, 6 and 9 against 14 and 17 on the same matches.)
+   */
+  readonly vias: readonly Vec3[];
 }
 
 /** A trip: from, to, and its corridors (the first the shortest; at least one, or none when no route exists). */
@@ -362,7 +367,7 @@ function corridorsBetween(p: Prepared, s: number, t: number, from: Vec3, to: Vec
     const points = resample(line, SPACING);
     const measure = resample(line, LINE_STEP);
     const lineAt = alongOf(measure);
-    out.push({ points, pointsAt: alongOf(points), line: measure, lineAt, length, shared: k ? share : 0, via: null, viaApart: 0 });
+    out.push({ points, pointsAt: alongOf(points), line: measure, lineAt, length, shared: k ? share : 0, via: null, viaApart: 0, vias: [] });
     for (const q of dense) found.add(q);
     // The ground near it costs more for the next search (not near the ends: every way meets there).
     const c = p.centre;
@@ -379,7 +384,7 @@ function corridorsBetween(p: Prepared, s: number, t: number, from: Vec3, to: Vec
   if (out.length < 2) return out;
   return out.map((c, k) => {
     const [via, viaApart] = furthestFrom(c.line, c.lineAt, out.filter((_, j) => j !== k));
-    return { ...c, via, viaApart };
+    return { ...c, via, viaApart, vias: via ? [via] : [] };
   });
 }
 
