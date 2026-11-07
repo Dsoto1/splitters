@@ -81,14 +81,12 @@ feel audit and the reasoning are in [GUNPLAY_AUDIT.md](GUNPLAY_AUDIT.md)):
 | Equip | 0.15 s | 0.27 s | 0.2 s | 0.33 s | 0.27 s | 0.5 s | 0.53 s |
 | Falloff | 18→45 m to 65% | 25→60 m to 70% | 12→35 m to 55% (steep) | 30→80 m to 75% | 6→22 m to 25% (steep) | 150→300 m to 90% | self-damage ×0.75 |
 
-The **Heavy Revolver** (slot 2, pickup `core.weapon_revolver`) uses a Meshy
-community revolver (CC0 per the owner, `guns/ironclad_revolver.glb`, 5k
-triangles: a modern long-barrelled revolver with a ventilated rib and an olive
-grip; the lettering, skull decal and tally marks it came with were painted out
-of its colour map, see ASSET_SOURCES.md). The Quaternius Ultimate Gun Pack
-revolver (CC0) stays as its `fallback`. Its holds are read off the model's own
-grip (`grip` / `support` in the weapon's `content/weapons/<name>.json`); aiming down the sights lines the top
-of the front and rear sights up under the eye.
+The **Heavy Revolver** (slot 2, pickup `core.weapon_revolver`) uses the Meshy community Revolver Rustique (CC0 per
+the owner, `guns/revolver_rustique.glb`, since the weapons intake of 2026-11-06, below); it replaced the earlier Meshy
+revolver (`guns/ironclad_revolver.glb`: the 2026-01-26 download, its lettering painted out; still built), and the
+Quaternius revolver stays its fallback. Its holds are read
+off the model's own grip (`grip` / `support` in the weapon's `content/weapons/<name>.json`); aiming down the sights
+lines the top of the front and rear sights up under the eye.
 
 **Training Range** (`maps/training_range.json`, built by
 `maps/training_range.json`): the gunplay test arena
@@ -103,13 +101,112 @@ with a full pickup; Explosives also refill underbarrel grenades.
 the ammo. Frag grenades bounce and go off after 2.5 s (everyone spawns with
 one; packs give two, up to four). Proximity mines stick where they land, arm
 after 1.2 s and go off when an enemy comes within 2.2 m. Bots throw grenades
-at targets 6–18 m away.
+at targets 6–18 m away. Each throwable with a model (content/throwables.json
+`view`) shows it in your hands while you line up the throw (G held: the gun goes away, both hands on it), in flight
+and lying as a pickup (two of it on the ring); see "Weapons intake of 2026-11-06" below.
 
 **Destruction.** Destructible entities: crate, explosive barrel, breakable
 wall, window pane (one hit), board barricade, gas cylinder (explodes) and
 generator (explodes). Panes and boards snap to doorways and windows. 84 props
 are breakable too, and powder kegs, machines, valves and fire baskets explode.
 Explosions chain into other destructibles in range.
+
+## Weapons intake of 2026-11-06: new models, sharper textures, smoke
+
+The owner: "Added a bunch of new weapons, all Meshy community"; the 3DModelsCC0 kit "has good ones too, not sure we
+need the nuclear bomb or flare gun though"; "We can replace our tommy gun with the 3DModelsCC0 one, and bring in those
+others to replace any one-off originals we have"; and "we want these weapons to look a little sharper, clearer, better
+resolution". Every model below was rendered and checked by eye first. Each weapon's `view.fallback` stays the model
+built from the repo (always there), as earlier swaps did; the downloads that were replaced stay built in the repo
+(content/guns.json), so going back is a one-line change. Built by `tools/content/prepare-guns.mjs`
+(content/guns.json: the pack's own PBR maps, `held` copies, `pbr`); holds read off gridded side views of each built
+model (CHARACTERS.md, "Holding weapons").
+
+| New model | Source | Weapon | Replaced |
+|---|---|---|---|
+| Suomi KP (`guns/suomi_kp.glb`) | 3DModelsCC0 | Submachine Gun (`core.smg`) | Meshy Tommy Gun |
+| AK-47 (`guns/ak47_cc0.glb`) | 3DModelsCC0 | Assault Rifle (`core.rifle`) | Styloo AK-47 |
+| M4A1 (`guns/m4a1.glb`) | 3DModelsCC0 | Burst Rifle | Meshy Neon Flux |
+| Makarov (`guns/makarov.glb`; its magazine, laid out beside it in the download, put back in the grip) | 3DModelsCC0 | Pistol (`core.pistol`) | flat kit pistol |
+| Grease Gun (`guns/grease_gun.glb`; held as a compact long gun) | 3DModelsCC0 | Machine Pistol | flat kit machine pistol |
+| Shotgun (`guns/shotgun_cc0.glb`) | 3DModelsCC0 | Shotgun | Styloo shotgun |
+| Sniper (`guns/scoped_rifle.glb`: posed nose-up in the download, built levelled, magazine seated) | 3DModelsCC0 | Marksman Rifle | Meshy Frontier Rifle |
+| BK 220 (`guns/bk220.glb`) | Meshy Community | Hand Cannon (a heavy semi-automatic: the Heavy Revolver is the revolver) | flat kit revolver |
+| Revolver Rustique (`guns/revolver_rustique.glb`) | Meshy Community | Heavy Revolver | Meshy revolver (2026-01-26) |
+| gilded flintlock (unnamed download, `guns/flintlock.glb`) | Meshy Community | Gilded Pistol (one shot, one kill) | flat kit pistol |
+| Plasma Defender (`guns/plasma_defender.glb`) | Meshy Community | Pulse Pistol | Meshy ornate handgun |
+| Scrapfire Assault Blaster (`guns/scrapfire.glb`) | Meshy Community | Nailgun (a drum-fed scrap gun) | flat kit nailgun |
+
+Grenades (the owner's picks, 2026-11-06), one model each in the hand, in flight and on the pickup:
+
+| Model | Throwable | Replaced |
+|---|---|---|
+| Globe Grenade (`guns/globe_grenade.glb`) | Frag; the 3DModelsCC0 frag (`guns/frag_m67.glb`) is its look in the Military weapon set | Styloo frag (the fallback) |
+| Countdown Sphere (`guns/countdown_sphere.glb`; the blinking light kept on top) | Sticky | shapes in code |
+| "just a grenade" (`guns/vortex_grenade.glb`, its own projectile look `vortexNade`: the Singularity Cannon keeps `vortex`) | Vortex | shapes in code |
+| Sunburst Grenade (`guns/sunburst_grenade.glb`) | Cluster Bomb (its bomblets stay small shapes) | shapes in code |
+| Toxic Splash (`guns/toxic_splash.glb`) | Gas | shapes in code |
+| 3DModelsCC0 Molotov (`guns/molotov.glb`) | Incendiary | shapes in code |
+| 3DModelsCC0 smoke grenade (`guns/smoke_m18.glb`) | **Smoke Grenade** (new, below); the Meshy sci-fi canister (`guns/smoke_scifi.glb`) is its Sci-fi set look | — |
+| 3DModelsCC0 anti-tank mine (as before) | Proximity Mine (now also its pickup) | coloured discs on the pickup |
+
+Still drawn in code (no model fits yet): the holy bomb, sheep, airstrike flare, sandbags and dynamite (neither the
+pack's pipe bomb nor its M24 reads as Frontier dynamite). Spare, kept out of the game: the pack's Luger, C4, claymore,
+pipe bomb and M24 (docs/IMPORT_LIST.md). Not imported: the nuclear bomb and the flare gun (the owner), the flashbang
+(dropped over seizure risk: nothing in the game flashes the whole screen white).
+
+**Texture tiers.** The weapon in your own hands draws a sharper copy of its model by graphics setting; everyone else's
+copy (other players' hands, drops, pickups, Low) stays small:
+
+| Copy | Colour map | Normal map | Metal/roughness | Loaded |
+|---|---|---|---|---|
+| everyone's (`guns/<name>.glb`, with its lower level of detail) | 512 px | 512 | 256 | with the match, for every gun it can hold |
+| Medium, in your hands (`guns/<name>.medium.glb`) | 1024 | 512 | 256 | only for the guns you hold |
+| High, in your hands (`guns/<name>.high.glb`) | 2048 | 1024 | 512 | only for the guns you hold |
+
+- The held copy is the same mesh (same holds, muzzle and sights), named in the weapon's `view.held`. Your gun shows
+  everyone's copy at once and the sharper one is swapped in when it has loaded (`View.sharpenViewmodel`); a gun you no
+  longer carry frees its held copy's video memory (`View.trimViewmodels`, `ModelLibrary.release`).
+- **Measured** (five guns held: pistol, rifle, SMG, shotgun, hand cannon; textures counted at 4 bytes a texel with
+  mipmaps): **High +140 MB** (28 MB a gun: its 2048 px colour map 22.4, normal 5.6, metal/roughness 1.4), **Medium
+  +35 MB** (7 MB a gun), **Low +0** (everyone's copies are already loaded with the match). For scale, the whole scene's
+  textures at High were 292 MB before (the level, characters, shadow maps). Over 1024 px metal/roughness maps at High
+  measured +160 MB and showed nothing more, so they ship at half the normal map's size.
+- Downloads: see the table in HANDOFF ("Weapons intake of 2026-11-06"): a held High copy is 0.2-1.5 MB, fetched once
+  per gun you pick up.
+- **GPU-compressed textures (KTX2 / Basis):** not used. Babylon 9.32 reads them through its KTX2 decoder, whose wasm
+  transcoders it serves only from cdn.babylonjs.com (the npm package holds just the 24 KB decoder); the game must not
+  load code from a third-party CDN (offline and LAN play, the site's policy), and this environment can't reach it to
+  vendor them. The encoder side is workable (`ktx2-encoder` on npm, 3.3 MB wasm). With the transcoders vendored, a
+  2048 px colour map would take about 5.6 MB of video memory instead of 22 (UASTC to BC7/ASTC).
+
+**Kept metal and roughness.** The new models keep their source's metal and roughness (`pbr` in content/guns.json)
+instead of a forced matte finish. The game's scenes have no environment map (bare metal drew black), so a weapon's
+metal materials reflect a soft gradient in the map's own light (`game/weaponFinish.ts`): dim at night, a bright band
+above, blurred by roughness.
+
+**Smoke Grenade** (`smoke`, code 12, pickup `core.smoke_grenades`; owner, 2026-11-06). Thrown like a frag; after 1.5 s
+a cloud billows out where it lies to 5 m across its radius over 2.5 s (`SMOKE`, `smokeRadius` in `sim/weapons.ts`),
+sits, and thins over its last 3 s: 18 s in all. It is only sight:
+- **Bots and the match** (`Match.sees`, `smokeBlocks`): a sight line crossing 1.6 m or more of a cloud is blocked:
+  bots don't see (or shoot at) whoever is behind it, sentries and arc turrets don't lock through it, homing missiles
+  don't steer to someone behind it, and a spawn point behind it counts as unseen. Someone a metre off inside the cloud
+  is still seen.
+- **Players:** the cloud is soft grey puffs (`ZoneVisuals`, a steady mid grey scaled by the map's light, never white);
+  with your eye in it, the scene's fog eases to a mid grey you see 2-3 m through (`View.updateSmokeFog`, eased in and
+  out over about two thirds of a second: no flash, no white-out, no flicker), and the sky, which draws without fog,
+  fades to the same grey (else the skyline, and anyone against it, showed through); an enemy's marker behind smoke
+  isn't drawn. Left as it is: at High the screen-space shading still picks out faint, low-contrast shapes of the
+  scenery past the cloud. On a map without haze (the space maps, maps without a backdrop: 15 of 90) the scene has no
+  fog at all, so the first step into smoke builds every visible material's fog variant (a stall, as going under water
+  does there); smoke reaches those maps only through a placed pickup until the weapon sets hand it out. The fix then:
+  run those maps with fog on at zero density.
+- **Shots, blasts and movement go through it** (they use the physics' own lines).
+- **Bots use it:** a hurt bot caught in the open by an enemy 10-45 m off throws one a few metres toward it, so the
+  cloud stands between them while it moves on; bounding cover to cover (Phase B), the moving half sends one ahead
+  before it crosses open ground (`considerSmoke`, `BotBrain.smokeScreen`; docs/BOTS.md, "Smoke").
+- **Weapon sets:** in Military and Sci-fi (docs/WEAPON_SETS_PLAN.md); `throwableModel(kind, set)` gives a set's look
+  (the canister in Sci-fi, the realistic frag in Military) once sets pick it.
 
 ## Extended arsenal (32 weapons)
 
@@ -119,7 +216,7 @@ extra weapon). Weapons are keyed by a small code on the wire (`weaponCode`).
 Models are Quaternius Modular Sci Fi Guns (CC0; each energy weapon gets its
 own accent colour on the kit's orange trim, and its hold points are placed on
 the model's own grip, handguard and stock) and Quaternius Ultimate Gun Pack
-guns (CC0). The assault rifle, shotgun, rocket launcher and frag grenade use
+guns (CC0). Since the weapons intake of 2026-11-06 (above) most of these have newer models. The assault rifle, shotgun, rocket launcher and frag grenade use
 Styloo's Guns Asset Pack (CC0: AK-47, pump shotgun, RPG, frag;
 `content/guns.json`), each keeping its Quaternius model as `view.fallback` in
 case the pack's file is missing. No weapon stats changed with these models.
@@ -133,13 +230,13 @@ its own grip, handguard and stock:
 
 | Model | Weapon or turret | Replaced |
 |---|---|---|
-| Tommy Gun | Submachine Gun (`core.smg`) | Styloo MAC-10 |
+| Tommy Gun | Submachine Gun (`core.smg`) until 2026-11-06, replaced by the Suomi KP (still built) | Styloo MAC-10 |
 | Rotary Gatling Gun | Spin Gun (`core.lmg`) | Meshy community plasma spin gun |
 | Military sniper rifle | Sniper Rifle (`core.sniper`) | Styloo AWP |
-| Neon Flux | Burst Rifle | Quaternius rifle |
-| Frontier Rifle | Marksman Rifle | Quaternius rifle |
+| Neon Flux | Burst Rifle until 2026-11-06, replaced by the M4A1 (still built) | Quaternius rifle |
+| Frontier Rifle | Marksman Rifle until 2026-11-06, replaced by the scoped rifle (still built) | Quaternius rifle |
 | Futuristic Blaster | Plasma Rifle | Quaternius sci-fi rifle |
-| Ornate energy handgun | Pulse Pistol | Quaternius sci-fi pistol |
+| Ornate energy handgun | Pulse Pistol until 2026-11-06, replaced by the Plasma Defender (still built) | Quaternius sci-fi pistol |
 | Freeze Gun | Freeze Ray | Quaternius sci-fi gun |
 | Mystical Glue Gun | Goo Gun | Quaternius sci-fi gun |
 | Steampunk Battle Axe | Battle Axe (new) | — (the knife as the fallback) |
@@ -260,8 +357,8 @@ server's `set` rule (`MatchRules.weaponSet`).
 | Set | Spawn (the last held) | Grenade at spawn | The set's weapons | Its grenades |
 |---|---|---|---|---|
 | **Standard** | the mode's own (knife, pistol; co-op, Zombies, Bomb and Hostage add a rifle) | frag | as placed on the map | as placed |
-| **Military** | knife, pistol, assault rifle; sniper-role bots a marksman rifle instead | frag | rifle, burst rifle, SMG, machine pistol, spin gun, shotgun, auto shotgun, sawed-off, sniper, marksman, grenade launcher, rockets, pistol, revolver, hand cannon | frag, mine |
-| **Sci-fi** | knife, pulse pistol, plasma rifle; sniper-role bots the railgun instead | sticky | plasma, laser rifle, railgun, pulse pistol, arc caster, disc launcher, swarm, guided | sticky, vortex |
+| **Military** | knife, pistol, assault rifle; sniper-role bots a marksman rifle instead | frag | rifle, burst rifle, SMG, machine pistol, spin gun, shotgun, auto shotgun, sawed-off, sniper, marksman, grenade launcher, rockets, pistol, revolver, hand cannon | frag, mine, smoke |
+| **Sci-fi** | knife, pulse pistol, plasma rifle; sniper-role bots the railgun instead | sticky | plasma, laser rifle, railgun, pulse pistol, arc caster, disc launcher, swarm, guided | sticky, vortex, smoke |
 | **Medieval** | knife, spear | incendiary | spear, battle axe, knife | incendiary, holy bomb |
 | **Chaos** | knife, pistol, a random oddball each life | sheep | swarm, singularity, freeze ray, goo gun, bubble blaster, oil slicker, flare gun, nailgun, flak, blast rockets, gilded pistol | sheep, holy bomb, cluster bomb |
 | **Mixed bag** | knife, pistol, a random main gun each life | frag | every weapon a pickup can hold | every grenade |
@@ -317,7 +414,8 @@ are unchanged; each has a pickup like every weapon):
 **Grenades (G):** frag, proximity mine, sticky (rides on whoever it hits),
 incendiary (a pool of fire), gas (a toxic cloud), vortex (a small
 singularity) and dynamite (Style Pack 02 Frontier Dust: a 3 s fuse, a 6 m
-blast that throws people about; pickup `core.dynamite`).
+blast that throws people about; pickup `core.dynamite`). And the Smoke Grenade (a cloud that hides whoever is
+behind it, 18 s; pickup `core.smoke_grenades`): see "Weapons intake of 2026-11-06".
 
 **Mechanics** (all data on `WeaponDefinition` / `ProjectileSpec`):
 

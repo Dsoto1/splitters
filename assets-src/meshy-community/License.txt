@@ -83,6 +83,29 @@ downloads, name as on the download and its date):
   CC0 in the owner's intake queue of 2026-10-29)  -> guns/medkit.glb (health pickups, the Medkit and Medi-Beam)
 - "A tank from World War…" (2026-11-01)  -> vehicles/tank_wwii.glb (the Tank)
 
+Weapons and grenades from the owner's Drive of 2026-11-06 (pack
+meshy-community-drive-1106c in content/guns.json, built by
+tools/content/prepare-guns.mjs from the textured GLB downloads; Meshy Community
+CC0 per the owner's rule of 2026-11-06, authors and post URLs pending from the
+owner; name as on the download):
+
+- "BK 220"  -> guns/bk220.glb (the Hand Cannon)
+- "Revolver Rustique"  -> guns/revolver_rustique.glb (the Heavy Revolver)
+- (unnamed, "Meshy_AI__1106214221": a gilded flintlock pistol)  -> guns/flintlock.glb (the Gilded Pistol)
+- "Plasma Defender"  -> guns/plasma_defender.glb (the Pulse Pistol)
+- "Scrapfire Assault Bla…"  -> guns/scrapfire.glb (the Nailgun)
+- "Globe Grenade"  -> guns/globe_grenade.glb (the Frag Grenade)
+- "Countdown Sphere"  -> guns/countdown_sphere.glb (the Sticky Grenade)
+- "just a grenade that l…"  -> guns/vortex_grenade.glb (the Vortex Grenade)
+- "Sunburst Grenade"  -> guns/sunburst_grenade.glb (the Cluster Bomb)
+- "Toxic Splash Grenade"  -> guns/toxic_splash.glb (the Gas Grenade)
+- "Sci-fi fire suppressa…"  -> guns/smoke_scifi.glb (the Smoke Grenade's look in
+  the Sci-fi weapon set)
+
+The five guns ship three copies each (everyone's, and sharper ones for the gun in
+your own hands at Medium and High graphics: guns/<name>.medium.glb and
+.high.glb), all from the same download.
+
 Props (built by tools/content/prepare-props.mjs from the textured GLB downloads):
 
 - Crates and cargo (pack meshy-community-cargo, downloads of 2026-10-29/30):

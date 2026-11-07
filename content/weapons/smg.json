@@ -20,14 +20,16 @@
   "botDesirability": 0.6,
   "botRange": [0, 18],
   "view": {
-    "model": "guns/tommy_gun.glb",
+    "model": "guns/suomi_kp.glb",
+    "held": { "medium": "guns/suomi_kp.medium.glb", "high": "guns/suomi_kp.high.glb" },
     "fallback": "weapons/smg.glb",
     "viewOffset": [0.2, -0.2, 0.5],
     "tracer": "#ffe9a8",
-    "hold": { "style": "long", "grip": [0, -0.04, -0.075], "support": [0, 0.06, 0.22], "shoulder": [0, -0.01, -0.41] }
+    "hold": { "style": "long", "grip": [0, -0.005, -0.15], "support": [0, 0.045, 0.17], "shoulder": [0, -0.03, -0.44] },
+    "muzzleAt": [0, 0.072, 0.435]
   },
   "notes": {
     "design": "Benchmark C: very high rate of weak rounds, tight for the first few then widening fast, very fast recovery, snappy reload.",
-    "model": "The owner's Tommy Gun (Meshy, owned; content/guns.json), the gun-pack SMG as the fallback."
+    "model": "The Suomi KP (3DModelsCC0 Guns & Explosives, CC0; content/guns.json), replacing the Meshy community Tommy Gun (owner, 2026-11-06; still built in the repo), the kit SMG as the fallback."
   }
 }

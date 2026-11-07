@@ -110,8 +110,9 @@ describe('the sets (content/weapon-sets.json)', () => {
     expect(set('mixed').spawn).toEqual(['core.knife', 'core.pistol']);
     expect([set('chaos').randomGun, set('mixed').randomGun]).toEqual([true, true]);
     for (const id of WEAPON_SET_IDS) if (id !== 'standard') expect(set(id).spawn?.[0], id).toBe('core.knife');
-    expect(set('military').throwables).toEqual(['frag', 'mine']);
-    expect(set('scifi').throwables).toEqual(['sticky', 'vortex']);
+    // (The Smoke Grenade, the weapons intake of 2026-11-06, in Military and Sci-fi.)
+    expect(set('military').throwables).toEqual(['frag', 'mine', 'smoke']);
+    expect(set('scifi').throwables).toEqual(['sticky', 'vortex', 'smoke']);
     expect(set('medieval').throwables).toEqual(['incendiary', 'holy']);
     expect(set('chaos').throwables).toEqual(['sheep', 'holy', 'cluster']);
     expect(set('mixed').throwables).toBe('all');
@@ -232,9 +233,9 @@ describe('pickups roll within the set', () => {
   });
 
   it("grenade pickups hold the set's grenades; Standard's stay as placed", () => {
-    expect(ids(pool('military', { item: 'core.vortex_grenades' }))).toEqual(['core.grenades', 'core.mines']);
+    expect(ids(pool('military', { item: 'core.vortex_grenades' }))).toEqual(['core.grenades', 'core.mines', 'core.smoke_grenades']);
     expect(ids(pool('chaos', { item: 'core.grenades' }))).toEqual(['core.sheep', 'core.holy_bomb', 'core.cluster_bombs']);
-    expect(ids(pool('scifi', { item: 'core.grenades' }))).toEqual(['core.sticky_grenades', 'core.vortex_grenades']);
+    expect(ids(pool('scifi', { item: 'core.grenades' }))).toEqual(['core.sticky_grenades', 'core.vortex_grenades', 'core.smoke_grenades']);
     expect(pool('military', { item: 'core.grenades', keepFixed: true })).toBeNull();
     expect(pool('standard', { item: 'core.grenades' })).toBeNull();
     const every = setThrowablePool(set('mixed'))!;
@@ -306,7 +307,7 @@ describe('in a match', () => {
     expect(['core.weapon_plasma', 'core.weapon_laser_rifle']).toContain(item(a, 1).id);
     expect(setHas(set('scifi'), (item(a, 2).effect as { weapon: string }).weapon)).toBe(true);
     expect(item(a, 3).id).toBe('core.health_small');
-    expect(['core.sticky_grenades', 'core.vortex_grenades']).toContain(item(a, 4).id);
+    expect(['core.sticky_grenades', 'core.vortex_grenades', 'core.smoke_grenades']).toContain(item(a, 4).id);
     // The snapshot says what they hold (clients draw that).
     expect(new Map(a.snapshot([]).pw ?? []).get('pickup_0')).toBe('core.weapon_railgun');
     // The host switches to Military: they roll within it now.
@@ -319,7 +320,7 @@ describe('in a match', () => {
     expect(a.weaponSet?.id).toBe('military');
     expect(['core.weapon_sniper', 'core.weapon_marksman']).toContain(item(a, 0).id);
     expect(['core.weapon_rifle', 'core.weapon_burst_rifle']).toContain(item(a, 1).id);
-    expect(['core.grenades', 'core.mines']).toContain(item(a, 4).id);
+    expect(['core.grenades', 'core.mines', 'core.smoke_grenades']).toContain(item(a, 4).id);
     // Back to the map's default.
     expect(host.apply({ c: 'rules', rules: { weaponSet: null } }).notice).toMatch(/the map's \(Sci-fi\)/);
     expect(a.rules.weaponSet).toBeUndefined();

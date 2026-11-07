@@ -97,7 +97,8 @@ folder can sit directly in it or one level down), and run:
 | The Meshy airliner of 2026-11-04 (Meshy Community CC0 per the owner, 2026-11-06; the refined GLB in a folder `airliner-2026-11-04/refined/airliner.glb`; preview task 01a1a451-1dda-77ed-82ec-810c24ac1e9a, refine 01a1a451-ee8d-72d3-99ea-48063cd52abe) | `node tools/content/fuselage-profile.mjs <dir>` (its cross-section for the cabin kit, `assets-src/tiletrigger-cabin/fuselage.json`, and its collision and openings, written into its pack file), then `ONLY=airliner_shell node tools/content/prepare-props.mjs --downloads <dir>` | `props/airliner_shell.glb` (pack `meshy-community-airliner`, hero tier: 19.7k triangles, a 6.1k one from 120 m, 1.38 MB) |
 | "Snowmobile" by roygbpjyt (Meshy Community, CC0: Meshy Terms of Use §3.3 "Community License"; the textured GLB `snowmobile.glb` in a folder `snowmobile-cc0-2026-11-04`) | `ONLY=vehicles/snowmobile.glb node tools/content/prepare-guns.mjs --downloads <dir>` | `public/models/vehicles/snowmobile.glb` (pack `meshy-community-snowmobile`, vehicle tier: 20k triangles plus a 5k one from 40 m, 2048 px colour and 1024 px normal map, 1.42 MB), the Snow Sled's model |
 | The amphibious landing craft of 2026-11-06 (Meshy community, CC0 per owner; the textured GLB `Meshy_AI_Amphibious_Landing_Cr_1106110500_texture.glb` in a folder `intake-2026-11-06`) | `ONLY=lcvp_beached node tools/content/prepare-props.mjs --downloads <dir>` (then `build-palette-atlas.mjs`) | `props/lcvp_beached.glb` (pack `meshy-community-drive-1106`, hero tier: 16k triangles, a 4k one from 40 m, a baked normal map, 1.0 MB; collides as voxels), the Landing Craft (Beached): static dressing and cover, in the Beached Landing Craft set piece |
-| Styloo Guns Asset Pack (`Styloo Guns Asset Pack GLTF FBX V1.1`), CC0 Guns & Explosives Pack (the rar's `Guns&Explosives` folder) | `node tools/content/prepare-guns.mjs --downloads <dir>` | `public/models/guns`, `content/guns.lock.json` (see `content/guns.json`) |
+| Styloo Guns Asset Pack (`Styloo Guns Asset Pack GLTF FBX V1.1`), CC0 Guns & Explosives Pack (the rar's `Guns&Explosives` folder; unpack it with `unar`: three of its files don't unpack, none used) | `node tools/content/prepare-guns.mjs --downloads <dir>` | `public/models/guns`, `content/guns.lock.json` (see `content/guns.json`) |
+| The weapons and grenades of 2026-11-06 (Meshy Community CC0: the 11 `Meshy_AI_<name>_1106…_texture.glb` in a folder `intake-2026-11-06c`) and the Guns & Explosives pack's guns and grenades, side by side in one downloads dir | `ONLY=guns/<out>.glb,… node tools/content/prepare-guns.mjs --downloads <dir>` (a `held` gun writes three files: everyone's, `.medium.glb` and `.high.glb`) | pack `meshy-community-drive-1106c` and `3dmodelscc0-guns-explosives` entries in `content/guns.json`; ARSENAL.md, "Weapons intake of 2026-11-06" |
 
 Locomotion clips (walk, run, sprint) come from Library 1: the Standard edition
 of Library 2 (43 clips, listed 2026-10-27) has no jog, run, sprint, strafe or
@@ -169,6 +170,15 @@ in their own texture layout (`prepare-meshy-characters.mjs`, 512 px). Vertices
 are quantized with 8-bit normals and tangents (`MESHY_QUANTIZE`).
 `ONLY=<id>,… node tools/content/prepare-props.mjs --downloads <dir>` rebuilds
 just those props.
+
+**The weapons intake's options** (`prepare-guns.mjs`, 2026-11-07): `maps`/`materials` put the Guns & Explosives pack's
+own PBR maps on its FBX (colour, normal with a DirectX map's green flipped, metal and roughness packed for glTF;
+`color` for a material with none); `move` shifts an object in the download's units (a magazine laid out for show, put
+back); `noseDown` levels a model posed tilted (the pack's sniper); `height` scales an upright throwable by its height;
+`pbr` keeps the source's metal and roughness (a Meshy GLB's metal/roughness map painted into the rebaked charts from
+the same rays: `rebake`'s `also`) instead of a matte finish; `held` writes the weapon's copy for everyone plus Medium
+and High copies for your own hands (colour 1024/2048, normal 512/1024, metal/roughness 256/512; budget tier `held`).
+The pack's models are joined into one mesh and given their `lod`. ARSENAL.md, "Texture tiers", has the numbers.
 
 **Budget tiers.** `budgets` in `content/props.json` (shared by every prop pack) and `content/guns.json` are
 the default caps (props 6,000 triangles / 400 KB; guns 8,000 / 512 KB);

@@ -49,6 +49,8 @@ export class ModelLibrary {
         // Environment species drawn as props (MapMaker, and the game without ?env=1) take the environment's
         // materials: the shared bark, rock and leaf pictures. Loaded on demand, so the menu never carries them.
         if (path.startsWith('env/')) (await import('../environment/envMaterials.ts')).applyEnvMaterials(c, this.scene);
+        // Weapons with their own metal and roughness reflect a soft gradient in the map's light (bare metal drew black).
+        if (path.startsWith('guns/') && c.materials.some((m) => (m as { metallicTexture?: unknown }).metallicTexture)) (await import('../game/weaponFinish.ts')).finishWeapons(c, this.scene);
         return c;
       });
       // Models from pack downloads (content/guns.json) fall back to the ones they replaced.
@@ -57,6 +59,21 @@ export class ModelLibrary {
       this.containers.set(path, p);
     }
     return p;
+  }
+
+  /**
+   * Drop a loaded model and free what it holds on the GPU (the sharper held copy of a gun you no longer carry: its
+   * 2048 px maps are most of a held gun's video memory). Its copies must be disposed first; loading it again
+   * fetches it again.
+   */
+  release(path: string): void {
+    const p = this.containers.get(path);
+    if (!p) return;
+    this.containers.delete(path);
+    void p.then(
+      (c) => c.dispose(),
+      () => undefined,
+    );
   }
 
   private readonly merged = new Map<string, Promise<Mesh[] | null>>();

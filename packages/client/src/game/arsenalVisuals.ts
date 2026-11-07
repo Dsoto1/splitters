@@ -10,7 +10,9 @@ import { CreateLines } from '@babylonjs/core/Meshes/Builders/linesBuilder';
 import { CreateSphere } from '@babylonjs/core/Meshes/Builders/sphereBuilder';
 import { CreateTorus } from '@babylonjs/core/Meshes/Builders/torusBuilder';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
-import { STATUS_BURN, STATUS_CHILL, STATUS_FROZEN, STATUS_POISON, STATUS_SLOW, ZONE_KINDS, type ProjectileVisual, type Vec3, type ZoneSnapshot } from '@tiletrigger/shared';
+import { DynamicTexture } from '@babylonjs/core/Materials/Textures/dynamicTexture';
+import { CreatePlane } from '@babylonjs/core/Meshes/Builders/planeBuilder';
+import { SMOKE, STATUS_BURN, STATUS_CHILL, STATUS_FROZEN, STATUS_POISON, STATUS_SLOW, ZONE_KINDS, type ProjectileVisual, type SmokeCloud, type Vec3, type ZoneSnapshot } from '@tiletrigger/shared';
 
 /**
  * Looks for the extended arsenal, all built from simple shapes and glowing
@@ -261,6 +263,79 @@ interface ZoneMesh {
   kind: (typeof ZONE_KINDS)[number];
   radius: number;
   phase: number;
+  /** Seconds left (smoke fades out over its last ones). */
+  left?: number;
+}
+
+/**
+ * A smoke cloud's puffs in a cloud of radius 1 (x, y, z, size): soft camera-facing cards scattered through it (a
+ * fixed scatter, the same for every cloud), a big one in the middle and more round it, so it reads as one billowing
+ * mass with a ragged edge. Scaled each frame to the radius the match sends.
+ */
+const SMOKE_PUFFS: readonly (readonly [number, number, number, number])[] = (() => {
+  const out: [number, number, number, number][] = [[0, 0, 0, 1.7]];
+  let seed = 7;
+  const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  for (let i = 0; i < 21; i++) {
+    const a = rnd() * Math.PI * 2;
+    const r = 0.2 + 0.55 * Math.sqrt(rnd());
+    out.push([Math.cos(a) * r, (rnd() - 0.4) * 0.6, Math.sin(a) * r, 1.0 + rnd() * 0.6]);
+  }
+  return out;
+})();
+
+/** A soft round puff of smoke (alpha falling off to its edge, a little lumpy): a 64 px picture made once a scene. */
+function smokeTexture(scene: Scene): DynamicTexture {
+  const cached = puffTextures.get(scene);
+  if (cached) return cached;
+  const tex = new DynamicTexture('smokePuff', { width: 64, height: 64 }, scene, true);
+  const ctx = tex.getContext();
+  ctx.clearRect(0, 0, 64, 64);
+  // Overlapping soft blobs: lumps on the edge, a dense middle.
+  let seed = 3;
+  const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  for (let i = 0; i < 14; i++) {
+    const r = i === 0 ? 30 : 10 + rnd() * 12;
+    const a = rnd() * Math.PI * 2;
+    const d = i === 0 ? 0 : 6 + rnd() * 14;
+    const x = 32 + Math.cos(a) * d;
+    const y = 32 + Math.sin(a) * d;
+    const g = ctx.createRadialGradient(x, y, 0, x, y, r);
+    g.addColorStop(0, `rgba(255,255,255,${i === 0 ? 0.8 : 0.45})`);
+    g.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, 64, 64);
+  }
+  tex.hasAlpha = true;
+  tex.update();
+  puffTextures.set(scene, tex);
+  return tex;
+}
+const puffTextures = new WeakMap<Scene, DynamicTexture>();
+
+/**
+ * The smoke's material: soft puffs in a steady mid grey (never white: no bright full-screen look when one fills the
+ * view), unlit but as bright as the map's light, so it sits in a night map as in a day one. Seen from inside, the
+ * scene's fog takes over (View.updateSmokeFog).
+ */
+function smokeMaterial(scene: Scene): StandardMaterial {
+  let byKey = materials.get(scene);
+  if (!byKey) materials.set(scene, (byKey = new Map()));
+  let m = byKey.get('smoke');
+  if (!m) {
+    m = new StandardMaterial('arsenal_smoke', scene);
+    const hemi = scene.getLightByName('hemi');
+    const light = Math.max(0.35, Math.min(1, hemi?.intensity ?? 0.8));
+    m.disableLighting = true;
+    m.emissiveColor = Color3.FromHexString('#8a8e93').scale(light);
+    m.diffuseTexture = smokeTexture(scene);
+    m.useAlphaFromDiffuseTexture = true;
+    m.backFaceCulling = false;
+    // Drawn over each other in any order without cutting holes (soft cards, nothing behind them to hide).
+    m.disableDepthWrite = true;
+    byKey.set('smoke', m);
+  }
+  return m;
 }
 
 /** Ground hazards and fields from the snapshot, kept in step every frame. */
@@ -287,6 +362,11 @@ export class ZoneVisuals {
         m = this.create(kind, z[4]);
         m.root.position.set(z[1], z[2], z[3]);
         this.zones.set(key, m);
+      }
+      // Smoke billows out and thins (the match sends its radius now; 0 over its last moment, when it is fading out).
+      if (m.kind === 'smoke') {
+        if (z[4] > 0) m.radius = z[4];
+        m.left = z[5];
       }
       // Fade out over the last second.
       const fade = Math.min(1, z[5]);
@@ -352,6 +432,19 @@ export class ZoneVisuals {
         cloud.isPickable = false;
         break;
       }
+      case 'smoke': {
+        const material = smokeMaterial(scene);
+        for (const [i, [x, y, z, size]] of SMOKE_PUFFS.entries()) {
+          const puff = CreatePlane(`smoke${i}`, { size }, scene);
+          puff.billboardMode = TransformNode.BILLBOARDMODE_ALL;
+          // Its middle SMOKE.rise of the radius above the ground it lies on (the root's scale carries the radius).
+          puff.position.set(x, y + SMOKE.rise, z);
+          puff.material = material;
+          puff.parent = root;
+          puff.isPickable = false;
+        }
+        break;
+      }
       case 'singularity': {
         const core = CreateSphere('singularity', { diameter: 1.2, segments: 14 }, scene);
         core.material = mat(scene, '#05010a', 0);
@@ -386,8 +479,32 @@ export class ZoneVisuals {
     });
   }
 
+  /** The smoke clouds drawn now (their middles and radii), for what smoke hides on this screen (enemy markers). */
+  smokeClouds(): SmokeCloud[] {
+    const out: SmokeCloud[] = [];
+    for (const m of this.zones.values()) {
+      if (m.kind !== 'smoke' || (m.left ?? 0) <= SMOKE.clearSeconds) continue;
+      const p = m.root.position;
+      out.push({ x: p.x, y: p.y + m.radius * SMOKE.rise, z: p.z, radius: m.radius });
+    }
+    return out;
+  }
+
   private animate(m: ZoneMesh, now: number, fade: number): void {
     const t = now * 0.001 + m.phase;
+    if (m.kind === 'smoke') {
+      // As big as the match says, squashed up and down; a slow churn (the puffs breathe a little, out of step), and
+      // over its last seconds it thins out. Nothing flickers.
+      m.root.scaling.set(m.radius, m.radius * SMOKE.squash, m.radius);
+      m.root.rotation.y = t * 0.05;
+      const thin = Math.max(0, Math.min(1, (m.left ?? 3) / 2.5));
+      m.root.getChildMeshes().forEach((c, i) => {
+        c.scaling.setAll(1 + Math.sin(t * 0.6 + i * 1.3) * 0.05);
+        c.rotation.z = (i % 2 ? 1 : -1) * t * 0.08 + i;
+        c.visibility = thin;
+      });
+      return;
+    }
     m.root.scaling.setAll(m.kind === 'singularity' ? 1 : 0.5 + 0.5 * fade);
     if (m.kind === 'fire') {
       m.root.getChildMeshes().forEach((c, i) => {

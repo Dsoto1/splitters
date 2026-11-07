@@ -38,13 +38,16 @@
   "botDesirability": 0.7,
   "botRange": [4, 35],
   "view": {
-    "model": "guns/ak47.glb",
+    "model": "guns/ak47_cc0.glb",
+    "held": { "medium": "guns/ak47_cc0.medium.glb", "high": "guns/ak47_cc0.high.glb" },
     "fallback": "weapons/rifle.glb",
     "viewOffset": [0.2, -0.2, 0.55],
     "tracer": "#ffd36b",
-    "hold": { "style": "long", "grip": [0, -0.01, -0.165], "support": [0, 0.05, 0.14], "shoulder": [0, 0.02, -0.41] }
+    "hold": { "style": "long", "grip": [0, -0.012, -0.175], "support": [0, 0.048, 0.13], "shoulder": [0, 0.02, -0.43] },
+    "muzzleAt": [0, 0.068, 0.44]
   },
   "notes": {
+    "model": "The 3DModelsCC0 AK-47 (CC0; content/guns.json), replacing Styloo's AK-47 (still built), the kit rifle as the fallback.",
     "design": "Benchmark D: high velocity, visible long-range travel and drop, predictable vertical climb, a medium-range workhorse."
   }
 }

@@ -5,13 +5,11 @@
    "id": "core.knife",
    "def": {
     "id": "core.knife",
-    "category": "melee",
     "displayName": "Knife",
+    "category": "melee",
     "kind": "melee",
     "slot": 1,
     "damage": 55,
-    "pellets": 1,
-    "spread": 0,
     "fireIntervalTicks": 30,
     "range": 2.2,
     "magazine": 0,
@@ -24,6 +22,8 @@
      0,
      2
     ],
+    "pellets": 1,
+    "spread": 0,
     "view": {
      "model": "weapons/knife.glb",
      "viewOffset": [
@@ -64,16 +64,14 @@
    "id": "core.pistol",
    "def": {
     "id": "core.pistol",
-    "category": "pistol",
     "displayName": "Pistol",
+    "category": "pistol",
     "kind": "hitscan",
     "slot": 2,
-    "fireMode": "semi",
     "family": "pistol",
+    "fireMode": "semi",
     "damage": 24,
-    "pellets": 1,
     "spread": 0.002,
-    "fireIntervalTicks": 10,
     "range": 250,
     "magazine": 12,
     "reserveMax": 96,
@@ -93,8 +91,15 @@
      2,
      25
     ],
+    "pellets": 1,
+    "fireIntervalTicks": 10,
     "view": {
-     "model": "weapons/pistol.glb",
+     "model": "guns/makarov.glb",
+     "held": {
+      "medium": "guns/makarov.medium.glb",
+      "high": "guns/makarov.high.glb"
+     },
+     "fallback": "weapons/pistol.glb",
      "viewOffset": [
       0.2,
       -0.18,
@@ -105,15 +110,21 @@
       "style": "pistol",
       "grip": [
        0,
-       -0.03,
-       -0.075
+       -0.022,
+       -0.083
       ],
       "support": [
        -0.02,
-       -0.04,
-       -0.065
-      ]
-     }
+       -0.032,
+       -0.073
+      ],
+      "rake": 10
+     },
+     "muzzleAt": [
+      0,
+      0.055,
+      0.1
+     ]
     }
    },
    "gunplay": {
@@ -172,13 +183,12 @@
    "id": "core.rifle",
    "def": {
     "id": "core.rifle",
-    "category": "rifle",
     "displayName": "Assault Rifle",
+    "category": "rifle",
     "kind": "hitscan",
     "slot": 3,
     "family": "rifle",
     "damage": 18,
-    "pellets": 1,
     "spread": 0.0015,
     "fireIntervalTicks": 6,
     "range": 500,
@@ -193,7 +203,6 @@
      "out": 0.3,
      "in": 0.7
     },
-    "raiseTicks": 20,
     "ammo": "rifle",
     "alt": {
      "label": "Underbarrel grenade",
@@ -219,8 +228,14 @@
      4,
      35
     ],
+    "pellets": 1,
+    "raiseTicks": 20,
     "view": {
-     "model": "guns/ak47.glb",
+     "model": "guns/ak47_cc0.glb",
+     "held": {
+      "medium": "guns/ak47_cc0.medium.glb",
+      "high": "guns/ak47_cc0.high.glb"
+     },
      "fallback": "weapons/rifle.glb",
      "viewOffset": [
       0.2,
@@ -232,20 +247,25 @@
       "style": "long",
       "grip": [
        0,
-       -0.01,
-       -0.165
+       -0.012,
+       -0.175
       ],
       "support": [
        0,
-       0.05,
-       0.14
+       0.048,
+       0.13
       ],
       "shoulder": [
        0,
        0.02,
-       -0.41
+       -0.43
       ]
-     }
+     },
+     "muzzleAt": [
+      0,
+      0.068,
+      0.44
+     ]
     }
    },
    "gunplay": {
@@ -313,8 +333,8 @@
    "id": "core.shotgun",
    "def": {
     "id": "core.shotgun",
-    "category": "shotgun",
     "displayName": "Shotgun",
+    "category": "shotgun",
     "kind": "hitscan",
     "slot": 4,
     "family": "shotgun",
@@ -351,7 +371,11 @@
      9
     ],
     "view": {
-     "model": "guns/shotgun.glb",
+     "model": "guns/shotgun_cc0.glb",
+     "held": {
+      "medium": "guns/shotgun_cc0.medium.glb",
+      "high": "guns/shotgun_cc0.high.glb"
+     },
      "fallback": "weapons/shotgun.glb",
      "viewOffset": [
       0.2,
@@ -363,20 +387,25 @@
       "style": "long",
       "grip": [
        0,
-       0,
-       -0.18
+       0.015,
+       -0.205
       ],
       "support": [
        0,
-       0.045,
+       0.035,
        0.22
       ],
       "shoulder": [
        0,
        -0.03,
-       -0.46
+       -0.52
       ]
-     }
+     },
+     "muzzleAt": [
+      0,
+      0.083,
+      0.52
+     ]
     }
    },
    "gunplay": {
@@ -428,14 +457,12 @@
    "id": "core.sniper",
    "def": {
     "id": "core.sniper",
-    "category": "sniper",
     "displayName": "Sniper Rifle",
+    "category": "sniper",
     "kind": "hitscan",
     "slot": 5,
     "family": "precision",
     "damage": 80,
-    "pellets": 1,
-    "spread": 0,
     "fireIntervalTicks": 75,
     "range": 1000,
     "magazine": 5,
@@ -457,6 +484,8 @@
      18,
      120
     ],
+    "pellets": 1,
+    "spread": 0,
     "view": {
      "model": "guns/sniper_rifle.glb",
      "fallback": "weapons/sniper.glb",
@@ -542,13 +571,10 @@
    "id": "core.launcher",
    "def": {
     "id": "core.launcher",
-    "category": "explosive",
     "displayName": "Grenade Launcher",
+    "category": "explosive",
     "kind": "projectile",
     "slot": 6,
-    "damage": 0,
-    "pellets": 1,
-    "spread": 0,
     "fireIntervalTicks": 55,
     "range": 0,
     "magazine": 4,
@@ -572,6 +598,9 @@
      6,
      22
     ],
+    "damage": 0,
+    "pellets": 1,
+    "spread": 0,
     "view": {
      "model": "weapons/launcher.glb",
      "viewOffset": [
@@ -622,13 +651,12 @@
    "id": "core.smg",
    "def": {
     "id": "core.smg",
-    "category": "smg",
     "displayName": "Submachine Gun",
+    "category": "smg",
     "kind": "hitscan",
     "slot": 7,
     "family": "smg",
     "damage": 11,
-    "pellets": 1,
     "spread": 0.006,
     "fireIntervalTicks": 4,
     "range": 200,
@@ -650,8 +678,13 @@
      0,
      18
     ],
+    "pellets": 1,
     "view": {
-     "model": "guns/tommy_gun.glb",
+     "model": "guns/suomi_kp.glb",
+     "held": {
+      "medium": "guns/suomi_kp.medium.glb",
+      "high": "guns/suomi_kp.high.glb"
+     },
      "fallback": "weapons/smg.glb",
      "viewOffset": [
       0.2,
@@ -663,20 +696,25 @@
       "style": "long",
       "grip": [
        0,
-       -0.04,
-       -0.075
+       -0.005,
+       -0.15
       ],
       "support": [
        0,
-       0.06,
-       0.22
+       0.045,
+       0.17
       ],
       "shoulder": [
        0,
-       -0.01,
-       -0.41
+       -0.03,
+       -0.44
       ]
-     }
+     },
+     "muzzleAt": [
+      0,
+      0.072,
+      0.435
+     ]
     }
    },
    "gunplay": {
@@ -751,13 +789,10 @@
    "id": "core.rockets",
    "def": {
     "id": "core.rockets",
-    "category": "explosive",
     "displayName": "Rocket Launcher",
+    "category": "explosive",
     "kind": "projectile",
     "slot": 8,
-    "damage": 0,
-    "pellets": 1,
-    "spread": 0,
     "fireIntervalTicks": 36,
     "range": 0,
     "magazine": 1,
@@ -782,6 +817,9 @@
      7,
      40
     ],
+    "damage": 0,
+    "pellets": 1,
+    "spread": 0,
     "view": {
      "model": "guns/rocket_launcher.glb",
      "fallback": "weapons/rockets.glb",
@@ -833,12 +871,10 @@
    "id": "core.plasma",
    "def": {
     "id": "core.plasma",
-    "category": "rifle",
     "displayName": "Plasma Rifle",
+    "category": "rifle",
     "kind": "projectile",
     "slot": 9,
-    "damage": 0,
-    "pellets": 1,
     "spread": 0.01,
     "fireIntervalTicks": 7,
     "range": 0,
@@ -846,7 +882,6 @@
     "reserveMax": 160,
     "pickupAmmo": 60,
     "reloadTicks": 90,
-    "raiseTicks": 20,
     "projectile": {
      "speed": 55,
      "gravity": 0,
@@ -882,6 +917,9 @@
      3,
      25
     ],
+    "damage": 0,
+    "pellets": 1,
+    "raiseTicks": 20,
     "view": {
      "model": "guns/futuristic_blaster.glb",
      "fallback": "weapons/plasma.glb",
@@ -932,8 +970,13 @@
    "code": 10,
    "id": "core.pulse_pistol",
    "def": {
+    "id": "core.pulse_pistol",
+    "displayName": "Pulse Pistol",
+    "category": "pistol",
+    "kind": "hitscan",
+    "slot": 2,
+    "fireMode": "semi",
     "damage": 24,
-    "pellets": 1,
     "spread": 0.004,
     "fireIntervalTicks": 9,
     "range": 110,
@@ -947,12 +990,6 @@
      2,
      28
     ],
-    "id": "core.pulse_pistol",
-    "displayName": "Pulse Pistol",
-    "category": "pistol",
-    "kind": "hitscan",
-    "slot": 2,
-    "fireMode": "semi",
     "ammo": "cells",
     "recoil": {
      "bloom": 0.004,
@@ -973,8 +1010,13 @@
      "rate": 0.1,
      "visual": 0.18
     },
+    "pellets": 1,
     "view": {
-     "model": "guns/ornate_pistol.glb",
+     "model": "guns/plasma_defender.glb",
+     "held": {
+      "medium": "guns/plasma_defender.medium.glb",
+      "high": "guns/plasma_defender.high.glb"
+     },
      "viewOffset": [
       0.2,
       -0.18,
@@ -985,16 +1027,21 @@
       "style": "pistol",
       "grip": [
        0,
-       -0.045,
-       -0.102
+       -0.04,
+       -0.1
       ],
       "support": [
        -0.02,
-       -0.055,
-       -0.092
+       -0.05,
+       -0.09
       ],
-      "rake": 17
+      "rake": 34
      },
+     "muzzleAt": [
+      0,
+      0.03,
+      0.135
+     ],
      "fallback": "weapons/pulse_pistol.glb",
      "sound": "fire.pulse",
      "beam": true
@@ -1034,8 +1081,14 @@
    "code": 11,
    "id": "core.hand_cannon",
    "def": {
+    "id": "core.hand_cannon",
+    "displayName": "Hand Cannon",
+    "category": "pistol",
+    "kind": "hitscan",
+    "slot": 2,
+    "family": "revolver",
+    "fireMode": "semi",
     "damage": 58,
-    "pellets": 1,
     "spread": 0.002,
     "fireIntervalTicks": 30,
     "range": 140,
@@ -1049,13 +1102,6 @@
      3,
      35
     ],
-    "id": "core.hand_cannon",
-    "displayName": "Hand Cannon",
-    "category": "pistol",
-    "kind": "hitscan",
-    "slot": 2,
-    "fireMode": "semi",
-    "family": "revolver",
     "ammo": "light",
     "knockback": 3,
     "recoil": {
@@ -1063,8 +1109,14 @@
      "maxBloom": 0.05,
      "recover": 0.0012
     },
+    "pellets": 1,
     "view": {
-     "model": "weapons/hand_cannon.glb",
+     "model": "guns/bk220.glb",
+     "held": {
+      "medium": "guns/bk220.medium.glb",
+      "high": "guns/bk220.high.glb"
+     },
+     "fallback": "weapons/hand_cannon.glb",
      "viewOffset": [
       0.2,
       -0.18,
@@ -1076,15 +1128,20 @@
       "grip": [
        0,
        -0.03,
-       -0.144
+       -0.097
       ],
       "support": [
        -0.02,
        -0.04,
-       -0.134
+       -0.087
       ],
-      "rake": 15
+      "rake": 8
      },
+     "muzzleAt": [
+      0,
+      0.06,
+      0.125
+     ],
      "sound": "fire.heavy"
     }
    },
@@ -1142,9 +1199,13 @@
    "code": 12,
    "id": "core.gilded_pistol",
    "def": {
+    "id": "core.gilded_pistol",
+    "displayName": "Gilded Pistol",
+    "category": "special",
+    "kind": "hitscan",
+    "slot": 2,
+    "fireMode": "semi",
     "damage": 999,
-    "pellets": 1,
-    "spread": 0,
     "fireIntervalTicks": 45,
     "range": 160,
     "magazine": 1,
@@ -1157,12 +1218,6 @@
      2,
      40
     ],
-    "id": "core.gilded_pistol",
-    "displayName": "Gilded Pistol",
-    "category": "special",
-    "kind": "hitscan",
-    "slot": 2,
-    "fireMode": "semi",
     "ammo": "light",
     "recoil": {
      "bloom": 0,
@@ -1183,8 +1238,15 @@
      "rate": 0.1,
      "visual": 0.75
     },
+    "pellets": 1,
+    "spread": 0,
     "view": {
-     "model": "weapons/gilded_pistol.glb",
+     "model": "guns/flintlock.glb",
+     "held": {
+      "medium": "guns/flintlock.medium.glb",
+      "high": "guns/flintlock.high.glb"
+     },
+     "fallback": "weapons/gilded_pistol.glb",
      "viewOffset": [
       0.2,
       -0.18,
@@ -1195,16 +1257,21 @@
       "style": "pistol",
       "grip": [
        0,
-       -0.023,
-       -0.073
+       -0.045,
+       -0.13
       ],
       "support": [
        -0.02,
-       -0.033,
-       -0.063
+       -0.055,
+       -0.12
       ],
-      "rake": 7
+      "rake": 28
      },
+     "muzzleAt": [
+      0,
+      0.05,
+      0.165
+     ],
      "sound": "fire.heavy"
     }
    },
@@ -1242,11 +1309,13 @@
    "code": 13,
    "id": "core.flare_gun",
    "def": {
-    "damage": 0,
-    "pellets": 1,
-    "spread": 0,
+    "id": "core.flare_gun",
+    "displayName": "Flare Gun",
+    "category": "special",
+    "kind": "projectile",
+    "slot": 2,
+    "fireMode": "semi",
     "fireIntervalTicks": 40,
-    "range": 120,
     "magazine": 1,
     "reserveMax": 10,
     "pickupAmmo": 4,
@@ -1257,12 +1326,6 @@
      5,
      25
     ],
-    "id": "core.flare_gun",
-    "displayName": "Flare Gun",
-    "category": "special",
-    "kind": "projectile",
-    "slot": 2,
-    "fireMode": "semi",
     "ammo": "fuel",
     "projectile": {
      "speed": 30,
@@ -1286,6 +1349,10 @@
      },
      "ignites": true
     },
+    "damage": 0,
+    "pellets": 1,
+    "spread": 0,
+    "range": 120,
     "view": {
      "model": "weapons/flare_gun.glb",
      "viewOffset": [
@@ -1332,8 +1399,13 @@
    "code": 14,
    "id": "core.machine_pistol",
    "def": {
+    "id": "core.machine_pistol",
+    "displayName": "Machine Pistol",
+    "category": "smg",
+    "kind": "hitscan",
+    "slot": 2,
+    "family": "machine_pistol",
     "damage": 7,
-    "pellets": 1,
     "spread": 0.03,
     "fireIntervalTicks": 3,
     "range": 60,
@@ -1342,45 +1414,54 @@
     "pickupAmmo": 48,
     "reloadTicks": 60,
     "raiseTicks": 12,
-    "botDesirability": 0.5,
     "botRange": [
      0,
      14
     ],
-    "id": "core.machine_pistol",
-    "displayName": "Machine Pistol",
-    "category": "smg",
-    "kind": "hitscan",
-    "slot": 2,
-    "family": "machine_pistol",
     "ammo": "light",
     "recoil": {
      "bloom": 0.006,
      "maxBloom": 0.07,
      "recover": 0.002
     },
+    "pellets": 1,
+    "botDesirability": 0.5,
     "view": {
-     "model": "weapons/machine_pistol.glb",
+     "model": "guns/grease_gun.glb",
+     "held": {
+      "medium": "guns/grease_gun.medium.glb",
+      "high": "guns/grease_gun.high.glb"
+     },
+     "fallback": "weapons/machine_pistol.glb",
      "viewOffset": [
       0.2,
-      -0.18,
-      0.38
+      -0.2,
+      0.42
      ],
      "tracer": "#ffe9a8",
      "hold": {
-      "style": "pistol",
+      "style": "long",
       "grip": [
        0,
-       -0.03,
-       -0.024
+       0.015,
+       -0.175
       ],
       "support": [
-       -0.02,
-       -0.04,
-       -0.014
+       0,
+       0.05,
+       0
       ],
-      "rake": 10
+      "shoulder": [
+       0,
+       0.03,
+       -0.245
+      ]
      },
+     "muzzleAt": [
+      0,
+      0.085,
+      0.245
+     ],
      "sound": "fire.smg"
     }
    },
@@ -1440,21 +1521,6 @@
    "code": 15,
    "id": "core.burst_rifle",
    "def": {
-    "damage": 17,
-    "pellets": 1,
-    "spread": 0.008,
-    "fireIntervalTicks": 24,
-    "range": 160,
-    "magazine": 24,
-    "reserveMax": 144,
-    "pickupAmmo": 48,
-    "reloadTicks": 85,
-    "raiseTicks": 20,
-    "botDesirability": 0.68,
-    "botRange": [
-     5,
-     45
-    ],
     "id": "core.burst_rifle",
     "displayName": "Burst Rifle",
     "category": "rifle",
@@ -1462,6 +1528,19 @@
     "slot": 3,
     "family": "rifle",
     "fireMode": "burst",
+    "damage": 17,
+    "spread": 0.008,
+    "fireIntervalTicks": 24,
+    "range": 160,
+    "magazine": 24,
+    "reserveMax": 144,
+    "pickupAmmo": 48,
+    "reloadTicks": 85,
+    "botDesirability": 0.68,
+    "botRange": [
+     5,
+     45
+    ],
     "burst": {
      "count": 3,
      "intervalTicks": 4
@@ -1472,8 +1551,14 @@
      "maxBloom": 0.03,
      "recover": 0.002
     },
+    "pellets": 1,
+    "raiseTicks": 20,
     "view": {
-     "model": "guns/neon_flux.glb",
+     "model": "guns/m4a1.glb",
+     "held": {
+      "medium": "guns/m4a1.medium.glb",
+      "high": "guns/m4a1.high.glb"
+     },
      "viewOffset": [
       0.21,
       -0.21,
@@ -1484,20 +1569,25 @@
       "style": "long",
       "grip": [
        0,
-       -0.06,
-       -0.16
+       -0.04,
+       -0.195
       ],
       "support": [
        0,
-       -0.04,
-       0.13
+       0.045,
+       0.11
       ],
       "shoulder": [
        0,
-       0.05,
-       -0.34
+       0.02,
+       -0.425
       ]
      },
+     "muzzleAt": [
+      0,
+      0.065,
+      0.43
+     ],
      "fallback": "weapons/burst_rifle.glb",
      "sound": "fire.rifle"
     }
@@ -1566,30 +1656,30 @@
    "code": 16,
    "id": "core.laser_rifle",
    "def": {
+    "id": "core.laser_rifle",
+    "displayName": "Laser Rifle",
+    "category": "rifle",
+    "kind": "hitscan",
+    "slot": 3,
     "damage": 4,
-    "pellets": 1,
-    "spread": 0,
     "fireIntervalTicks": 2,
     "range": 90,
     "magazine": 0,
     "reserveMax": 0,
     "pickupAmmo": 0,
     "reloadTicks": 0,
-    "raiseTicks": 20,
     "botDesirability": 0.66,
     "botRange": [
      3,
      40
     ],
-    "id": "core.laser_rifle",
-    "displayName": "Laser Rifle",
-    "category": "rifle",
-    "kind": "hitscan",
-    "slot": 3,
     "heat": {
      "perShot": 0.022,
      "coolPerTick": 0.01
     },
+    "pellets": 1,
+    "spread": 0,
+    "raiseTicks": 20,
     "view": {
      "model": "weapons/laser_rifle.glb",
      "viewOffset": [
@@ -1641,21 +1731,6 @@
    "code": 17,
    "id": "core.marksman",
    "def": {
-    "damage": 38,
-    "pellets": 1,
-    "spread": 0.001,
-    "fireIntervalTicks": 14,
-    "range": 220,
-    "magazine": 10,
-    "reserveMax": 40,
-    "pickupAmmo": 20,
-    "reloadTicks": 90,
-    "raiseTicks": 22,
-    "botDesirability": 0.6,
-    "botRange": [
-     12,
-     90
-    ],
     "id": "core.marksman",
     "displayName": "Marksman Rifle",
     "category": "sniper",
@@ -1663,38 +1738,62 @@
     "slot": 3,
     "family": "marksman",
     "fireMode": "semi",
+    "damage": 38,
+    "spread": 0.001,
+    "fireIntervalTicks": 14,
+    "range": 220,
+    "reloadTicks": 90,
+    "raiseTicks": 22,
+    "botDesirability": 0.6,
+    "botRange": [
+     12,
+     90
+    ],
     "ammo": "sniper",
     "recoil": {
      "bloom": 0.01,
      "maxBloom": 0.03,
      "recover": 0.0015
     },
+    "pellets": 1,
+    "magazine": 10,
+    "reserveMax": 40,
+    "pickupAmmo": 20,
     "view": {
-     "model": "guns/frontier_rifle.glb",
+     "model": "guns/scoped_rifle.glb",
+     "held": {
+      "medium": "guns/scoped_rifle.medium.glb",
+      "high": "guns/scoped_rifle.high.glb"
+     },
      "viewOffset": [
       0.21,
       -0.21,
-      0.52
+      0.62
      ],
      "tracer": "#bfe4ff",
      "hold": {
       "style": "long",
       "grip": [
        0,
-       -0.08,
-       -0.24
+       -0.025,
+       -0.29
       ],
       "support": [
        0,
-       -0.06,
-       0.08
+       0.005,
+       0.07
       ],
       "shoulder": [
        0,
-       0.04,
-       -0.46
+       -0.03,
+       -0.585
       ]
      },
+     "muzzleAt": [
+      0,
+      0.052,
+      0.565
+     ],
      "fallback": "weapons/marksman.glb",
      "zoomFov": 0.7,
      "sound": "fire.sniper"
@@ -1754,6 +1853,13 @@
    "code": 18,
    "id": "core.sawed_off",
    "def": {
+    "id": "core.sawed_off",
+    "displayName": "Sawed-Off",
+    "category": "shotgun",
+    "kind": "hitscan",
+    "slot": 4,
+    "family": "shotgun",
+    "fireMode": "semi",
     "damage": 8,
     "pellets": 14,
     "spread": 0.15,
@@ -1769,13 +1875,6 @@
      0,
      6
     ],
-    "id": "core.sawed_off",
-    "displayName": "Sawed-Off",
-    "category": "shotgun",
-    "kind": "hitscan",
-    "slot": 4,
-    "family": "shotgun",
-    "fireMode": "semi",
     "ammo": "shells",
     "knockback": 1.2,
     "recoil": {
@@ -1861,13 +1960,18 @@
    "code": 19,
    "id": "core.auto_shotgun",
    "def": {
+    "id": "core.auto_shotgun",
+    "displayName": "Auto Shotgun",
+    "category": "shotgun",
+    "kind": "hitscan",
+    "slot": 4,
+    "family": "shotgun",
     "damage": 7,
     "pellets": 7,
     "spread": 0.09,
     "fireIntervalTicks": 18,
     "range": 40,
     "magazine": 8,
-    "reserveMax": 40,
     "pickupAmmo": 16,
     "reloadTicks": 100,
     "raiseTicks": 22,
@@ -1876,18 +1980,13 @@
      0,
      10
     ],
-    "id": "core.auto_shotgun",
-    "displayName": "Auto Shotgun",
-    "category": "shotgun",
-    "kind": "hitscan",
-    "slot": 4,
-    "family": "shotgun",
     "ammo": "shells",
     "recoil": {
      "bloom": 0.012,
      "maxBloom": 0.04,
      "recover": 0.0015
     },
+    "reserveMax": 40,
     "view": {
      "model": "weapons/auto_shotgun.glb",
      "viewOffset": [
@@ -1966,11 +2065,14 @@
    "code": 20,
    "id": "core.flak",
    "def": {
-    "damage": 0,
+    "id": "core.flak",
+    "displayName": "Flak Cannon",
+    "category": "shotgun",
+    "kind": "projectile",
+    "slot": 4,
     "pellets": 7,
     "spread": 0.08,
     "fireIntervalTicks": 50,
-    "range": 120,
     "magazine": 4,
     "reserveMax": 24,
     "pickupAmmo": 8,
@@ -1981,11 +2083,6 @@
      0,
      14
     ],
-    "id": "core.flak",
-    "displayName": "Flak Cannon",
-    "category": "shotgun",
-    "kind": "projectile",
-    "slot": 4,
     "ammo": "shells",
     "projectile": {
      "speed": 48,
@@ -2000,6 +2097,8 @@
      "bounce": 0.65,
      "maxBounces": 2
     },
+    "damage": 0,
+    "range": 120,
     "view": {
      "model": "weapons/flak.glb",
      "viewOffset": [
@@ -2050,9 +2149,12 @@
    "code": 21,
    "id": "core.railgun",
    "def": {
+    "id": "core.railgun",
+    "displayName": "Railgun",
+    "category": "sniper",
+    "kind": "hitscan",
+    "slot": 5,
     "damage": 100,
-    "pellets": 1,
-    "spread": 0,
     "fireIntervalTicks": 40,
     "range": 320,
     "magazine": 4,
@@ -2065,11 +2167,6 @@
      15,
      150
     ],
-    "id": "core.railgun",
-    "displayName": "Railgun",
-    "category": "sniper",
-    "kind": "hitscan",
-    "slot": 5,
     "windupTicks": 24,
     "windupResets": true,
     "ammo": "cells",
@@ -2094,6 +2191,8 @@
      "rate": 0.1,
      "visual": 1.2
     },
+    "pellets": 1,
+    "spread": 0,
     "view": {
      "model": "weapons/railgun.glb",
      "viewOffset": [
@@ -2159,11 +2258,12 @@
    "code": 22,
    "id": "core.disc_launcher",
    "def": {
-    "damage": 0,
-    "pellets": 1,
-    "spread": 0,
+    "id": "core.disc_launcher",
+    "displayName": "Disc Launcher",
+    "category": "explosive",
+    "kind": "projectile",
+    "slot": 6,
     "fireIntervalTicks": 50,
-    "range": 120,
     "magazine": 3,
     "reserveMax": 18,
     "pickupAmmo": 6,
@@ -2174,11 +2274,6 @@
      6,
      35
     ],
-    "id": "core.disc_launcher",
-    "displayName": "Disc Launcher",
-    "category": "explosive",
-    "kind": "projectile",
-    "slot": 6,
     "ammo": "explosive",
     "projectile": {
      "speed": 34,
@@ -2192,6 +2287,10 @@
      "impactDamage": 25,
      "knockback": 10
     },
+    "damage": 0,
+    "pellets": 1,
+    "spread": 0,
+    "range": 120,
     "view": {
      "model": "weapons/disc_launcher.glb",
      "viewOffset": [
@@ -2242,26 +2341,19 @@
    "code": 23,
    "id": "core.bubble_blaster",
    "def": {
-    "damage": 0,
-    "pellets": 1,
-    "spread": 0,
-    "fireIntervalTicks": 22,
-    "range": 120,
-    "magazine": 6,
-    "reserveMax": 30,
-    "pickupAmmo": 12,
-    "reloadTicks": 80,
-    "raiseTicks": 20,
-    "botDesirability": 0.5,
-    "botRange": [
-     3,
-     16
-    ],
     "id": "core.bubble_blaster",
     "displayName": "Bubble Blaster",
     "category": "special",
     "kind": "projectile",
     "slot": 6,
+    "fireIntervalTicks": 22,
+    "magazine": 6,
+    "reserveMax": 30,
+    "pickupAmmo": 12,
+    "botRange": [
+     3,
+     16
+    ],
     "ammo": "chem",
     "projectile": {
      "speed": 10,
@@ -2285,6 +2377,13 @@
       "seconds": 3
      }
     },
+    "damage": 0,
+    "pellets": 1,
+    "spread": 0,
+    "range": 120,
+    "reloadTicks": 80,
+    "raiseTicks": 20,
+    "botDesirability": 0.5,
     "view": {
      "model": "weapons/bubble_blaster.glb",
      "viewOffset": [
@@ -2335,11 +2434,12 @@
    "code": 24,
    "id": "core.goo_gun",
    "def": {
-    "damage": 0,
-    "pellets": 1,
-    "spread": 0,
+    "id": "core.goo_gun",
+    "displayName": "Goo Gun",
+    "category": "special",
+    "kind": "projectile",
+    "slot": 6,
     "fireIntervalTicks": 12,
-    "range": 120,
     "magazine": 20,
     "reserveMax": 80,
     "pickupAmmo": 30,
@@ -2350,11 +2450,6 @@
      3,
      20
     ],
-    "id": "core.goo_gun",
-    "displayName": "Goo Gun",
-    "category": "special",
-    "kind": "projectile",
-    "slot": 6,
     "ammo": "chem",
     "projectile": {
      "speed": 22,
@@ -2376,6 +2471,10 @@
       "seconds": 2.5
      }
     },
+    "damage": 0,
+    "pellets": 1,
+    "spread": 0,
+    "range": 120,
     "view": {
      "model": "guns/glue_gun.glb",
      "viewOffset": [
@@ -2422,11 +2521,11 @@
    "code": 25,
    "id": "core.oil_slicker",
    "def": {
-    "damage": 0,
-    "pellets": 1,
-    "spread": 0,
-    "fireIntervalTicks": 10,
-    "range": 120,
+    "id": "core.oil_slicker",
+    "displayName": "Oil Slicker",
+    "category": "special",
+    "kind": "projectile",
+    "slot": 6,
     "magazine": 12,
     "reserveMax": 48,
     "pickupAmmo": 24,
@@ -2437,11 +2536,6 @@
      4,
      16
     ],
-    "id": "core.oil_slicker",
-    "displayName": "Oil Slicker",
-    "category": "special",
-    "kind": "projectile",
-    "slot": 6,
     "ammo": "fuel",
     "projectile": {
      "speed": 17,
@@ -2485,6 +2579,11 @@
       }
      }
     },
+    "damage": 0,
+    "pellets": 1,
+    "spread": 0,
+    "fireIntervalTicks": 10,
+    "range": 120,
     "view": {
      "model": "weapons/oil_slicker.glb",
      "viewOffset": [
@@ -2535,8 +2634,13 @@
    "code": 26,
    "id": "core.lmg",
    "def": {
+    "id": "core.lmg",
+    "displayName": "Spin Gun",
+    "category": "smg",
+    "kind": "hitscan",
+    "slot": 7,
+    "family": "lmg",
     "damage": 9,
-    "pellets": 1,
     "spread": 0.035,
     "fireIntervalTicks": 3,
     "range": 300,
@@ -2550,19 +2654,14 @@
      3,
      40
     ],
-    "id": "core.lmg",
-    "displayName": "Spin Gun",
-    "category": "smg",
-    "kind": "hitscan",
-    "slot": 7,
     "windupTicks": 28,
-    "family": "lmg",
     "ammo": "rifle",
     "recoil": {
      "bloom": 0.002,
      "maxBloom": 0.04,
      "recover": 0.001
     },
+    "pellets": 1,
     "view": {
      "model": "guns/gatling_gun.glb",
      "viewOffset": [
@@ -2649,26 +2748,22 @@
    "code": 27,
    "id": "core.nailgun",
    "def": {
-    "damage": 0,
-    "pellets": 1,
+    "id": "core.nailgun",
+    "displayName": "Nailgun",
+    "category": "smg",
+    "kind": "projectile",
+    "slot": 7,
     "spread": 0.02,
     "fireIntervalTicks": 5,
-    "range": 120,
     "magazine": 50,
     "reserveMax": 200,
     "pickupAmmo": 60,
-    "reloadTicks": 80,
     "raiseTicks": 18,
     "botDesirability": 0.6,
     "botRange": [
      2,
      25
     ],
-    "id": "core.nailgun",
-    "displayName": "Nailgun",
-    "category": "smg",
-    "kind": "projectile",
-    "slot": 7,
     "ammo": "light",
     "projectile": {
      "speed": 75,
@@ -2683,8 +2778,17 @@
      "bounce": 0.75,
      "maxBounces": 2
     },
+    "damage": 0,
+    "pellets": 1,
+    "range": 120,
+    "reloadTicks": 80,
     "view": {
-     "model": "weapons/nailgun.glb",
+     "model": "guns/scrapfire.glb",
+     "held": {
+      "medium": "guns/scrapfire.medium.glb",
+      "high": "guns/scrapfire.high.glb"
+     },
+     "fallback": "weapons/nailgun.glb",
      "viewOffset": [
       0.21,
       -0.21,
@@ -2695,20 +2799,25 @@
       "style": "long",
       "grip": [
        0,
-       -0.029,
-       -0.126
+       -0.04,
+       -0.14
       ],
       "support": [
        0,
-       0.058,
-       0.168
+       0,
+       0.2
       ],
       "shoulder": [
        0,
-       -0.002,
-       -0.33
+       0.02,
+       -0.345
       ]
      },
+     "muzzleAt": [
+      0,
+      0.1,
+      0.34
+     ],
      "sound": "fire.nail"
     }
    },
@@ -2733,11 +2842,14 @@
    "code": 28,
    "id": "core.swarm",
    "def": {
-    "damage": 0,
+    "id": "core.swarm",
+    "displayName": "Swarm Launcher",
+    "category": "explosive",
+    "kind": "projectile",
+    "slot": 8,
     "pellets": 4,
     "spread": 0.14,
     "fireIntervalTicks": 70,
-    "range": 120,
     "magazine": 4,
     "reserveMax": 12,
     "pickupAmmo": 4,
@@ -2748,11 +2860,6 @@
      8,
      45
     ],
-    "id": "core.swarm",
-    "displayName": "Swarm Launcher",
-    "category": "explosive",
-    "kind": "projectile",
-    "slot": 8,
     "ammo": "explosive",
     "projectile": {
      "speed": 20,
@@ -2769,6 +2876,8 @@
       "range": 45
      }
     },
+    "damage": 0,
+    "range": 120,
     "view": {
      "model": "weapons/swarm.glb",
      "viewOffset": [
@@ -2819,11 +2928,13 @@
    "code": 29,
    "id": "core.guided",
    "def": {
-    "damage": 0,
-    "pellets": 1,
-    "spread": 0,
+    "id": "core.guided",
+    "displayName": "Guided Rocket",
+    "category": "explosive",
+    "kind": "projectile",
+    "slot": 8,
+    "fireMode": "semi",
     "fireIntervalTicks": 75,
-    "range": 120,
     "magazine": 1,
     "reserveMax": 6,
     "pickupAmmo": 3,
@@ -2834,12 +2945,6 @@
      10,
      60
     ],
-    "id": "core.guided",
-    "displayName": "Guided Rocket",
-    "category": "explosive",
-    "kind": "projectile",
-    "slot": 8,
-    "fireMode": "semi",
     "ammo": "explosive",
     "projectile": {
      "speed": 17,
@@ -2855,6 +2960,10 @@
       "turnRate": 3.2
      }
     },
+    "damage": 0,
+    "pellets": 1,
+    "spread": 0,
+    "range": 120,
     "view": {
      "model": "weapons/rockets.glb",
      "viewOffset": [
@@ -2905,11 +3014,13 @@
    "code": 30,
    "id": "core.singularity",
    "def": {
-    "damage": 0,
-    "pellets": 1,
-    "spread": 0,
+    "id": "core.singularity",
+    "displayName": "Singularity Cannon",
+    "category": "special",
+    "kind": "projectile",
+    "slot": 8,
+    "fireMode": "semi",
     "fireIntervalTicks": 90,
-    "range": 120,
     "magazine": 1,
     "reserveMax": 4,
     "pickupAmmo": 2,
@@ -2920,12 +3031,6 @@
      8,
      30
     ],
-    "id": "core.singularity",
-    "displayName": "Singularity Cannon",
-    "category": "special",
-    "kind": "projectile",
-    "slot": 8,
-    "fireMode": "semi",
     "ammo": "cells",
     "projectile": {
      "speed": 13,
@@ -2942,6 +3047,10 @@
       "seconds": 2.4
      }
     },
+    "damage": 0,
+    "pellets": 1,
+    "spread": 0,
+    "range": 120,
     "view": {
      "model": "guns/plasma_blaster.glb",
      "viewOffset": [
@@ -2998,8 +3107,12 @@
    "code": 31,
    "id": "core.arc_caster",
    "def": {
+    "id": "core.arc_caster",
+    "displayName": "Arc Caster",
+    "category": "special",
+    "kind": "hitscan",
+    "slot": 9,
     "damage": 15,
-    "pellets": 1,
     "spread": 0.01,
     "fireIntervalTicks": 9,
     "range": 32,
@@ -3007,17 +3120,11 @@
     "reserveMax": 0,
     "pickupAmmo": 0,
     "reloadTicks": 0,
-    "raiseTicks": 20,
     "botDesirability": 0.62,
     "botRange": [
      2,
      25
     ],
-    "id": "core.arc_caster",
-    "displayName": "Arc Caster",
-    "category": "special",
-    "kind": "hitscan",
-    "slot": 9,
     "heat": {
      "perShot": 0.08,
      "coolPerTick": 0.009
@@ -3027,6 +3134,8 @@
      "range": 9,
      "falloff": 0.7
     },
+    "pellets": 1,
+    "raiseTicks": 20,
     "view": {
      "model": "weapons/arc_caster.glb",
      "viewOffset": [
@@ -3078,11 +3187,13 @@
    "code": 32,
    "id": "core.flamethrower",
    "def": {
-    "damage": 0,
-    "pellets": 1,
+    "id": "core.flamethrower",
+    "displayName": "Flamethrower",
+    "category": "special",
+    "kind": "projectile",
+    "slot": 9,
     "spread": 0.05,
     "fireIntervalTicks": 3,
-    "range": 120,
     "magazine": 100,
     "reserveMax": 200,
     "pickupAmmo": 100,
@@ -3093,11 +3204,6 @@
      0,
      8
     ],
-    "id": "core.flamethrower",
-    "displayName": "Flamethrower",
-    "category": "special",
-    "kind": "projectile",
-    "slot": 9,
     "ammo": "fuel",
     "projectile": {
      "speed": 17,
@@ -3116,6 +3222,9 @@
      },
      "ignites": true
     },
+    "damage": 0,
+    "pellets": 1,
+    "range": 120,
     "view": {
      "model": "weapons/flamethrower.glb",
      "viewOffset": [
@@ -3166,26 +3275,22 @@
    "code": 33,
    "id": "core.freeze_ray",
    "def": {
+    "id": "core.freeze_ray",
+    "displayName": "Freeze Ray",
+    "category": "special",
+    "kind": "hitscan",
+    "slot": 9,
     "damage": 3,
-    "pellets": 1,
-    "spread": 0,
     "fireIntervalTicks": 3,
     "range": 40,
     "magazine": 0,
     "reserveMax": 0,
     "pickupAmmo": 0,
     "reloadTicks": 0,
-    "raiseTicks": 20,
-    "botDesirability": 0.5,
     "botRange": [
      2,
      30
     ],
-    "id": "core.freeze_ray",
-    "displayName": "Freeze Ray",
-    "category": "special",
-    "kind": "hitscan",
-    "slot": 9,
     "heat": {
      "perShot": 0.018,
      "coolPerTick": 0.01
@@ -3195,6 +3300,10 @@
      "seconds": 2,
      "amount": 0.07
     },
+    "pellets": 1,
+    "spread": 0,
+    "raiseTicks": 20,
+    "botDesirability": 0.5,
     "view": {
      "model": "guns/freeze_gun.glb",
      "viewOffset": [
@@ -3243,8 +3352,11 @@
    "code": 34,
    "id": "core.mount_mg",
    "def": {
+    "id": "core.mount_mg",
+    "displayName": "Mounted MG",
+    "kind": "hitscan",
+    "slot": 0,
     "damage": 11,
-    "pellets": 1,
     "spread": 0.018,
     "fireIntervalTicks": 4,
     "range": 160,
@@ -3258,14 +3370,11 @@
      0,
      80
     ],
-    "id": "core.mount_mg",
-    "displayName": "Mounted MG",
-    "kind": "hitscan",
-    "slot": 0,
     "heat": {
      "perShot": 0.022,
      "coolPerTick": 0.008
     },
+    "pellets": 1,
     "view": {
      "model": "guns/tripod_mg.glb",
      "fallback": "turrets/mg.glb",
@@ -3307,11 +3416,11 @@
    "code": 35,
    "id": "core.mount_rockets",
    "def": {
-    "damage": 0,
-    "pellets": 1,
-    "spread": 0,
+    "id": "core.mount_rockets",
+    "displayName": "Mounted Rockets",
+    "kind": "projectile",
+    "slot": 0,
     "fireIntervalTicks": 45,
-    "range": 120,
     "magazine": 0,
     "reserveMax": 0,
     "pickupAmmo": 0,
@@ -3322,10 +3431,6 @@
      0,
      80
     ],
-    "id": "core.mount_rockets",
-    "displayName": "Mounted Rockets",
-    "kind": "projectile",
-    "slot": 0,
     "heat": {
      "perShot": 0.3,
      "coolPerTick": 0.004
@@ -3341,6 +3446,10 @@
      "visual": "rocket",
      "impactDamage": 30
     },
+    "damage": 0,
+    "pellets": 1,
+    "spread": 0,
+    "range": 120,
     "view": {
      "model": "guns/arc_cannon_turret.glb",
      "fallback": "turrets/rocket.glb",
@@ -3382,11 +3491,11 @@
    "code": 36,
    "id": "core.tank_cannon",
    "def": {
-    "damage": 0,
-    "pellets": 1,
-    "spread": 0,
+    "id": "core.tank_cannon",
+    "displayName": "Tank Cannon",
+    "kind": "projectile",
+    "slot": 0,
     "fireIntervalTicks": 80,
-    "range": 120,
     "magazine": 0,
     "reserveMax": 0,
     "pickupAmmo": 0,
@@ -3397,10 +3506,6 @@
      0,
      90
     ],
-    "id": "core.tank_cannon",
-    "displayName": "Tank Cannon",
-    "kind": "projectile",
-    "slot": 0,
     "heat": {
      "perShot": 0.25,
      "coolPerTick": 0.004
@@ -3416,6 +3521,10 @@
      "visual": "rocket",
      "impactDamage": 60
     },
+    "damage": 0,
+    "pellets": 1,
+    "spread": 0,
+    "range": 120,
     "view": {
      "model": "vehicles/tank.glb",
      "viewOffset": [
@@ -3456,11 +3565,12 @@
    "code": 37,
    "id": "core.speeder_guns",
    "def": {
-    "damage": 0,
-    "pellets": 1,
+    "id": "core.speeder_guns",
+    "displayName": "Speeder Blasters",
+    "kind": "projectile",
+    "slot": 0,
     "spread": 0.02,
     "fireIntervalTicks": 7,
-    "range": 120,
     "magazine": 0,
     "reserveMax": 0,
     "pickupAmmo": 0,
@@ -3471,10 +3581,6 @@
      0,
      60
     ],
-    "id": "core.speeder_guns",
-    "displayName": "Speeder Blasters",
-    "kind": "projectile",
-    "slot": 0,
     "heat": {
      "perShot": 0.05,
      "coolPerTick": 0.01
@@ -3490,6 +3596,9 @@
      "visual": "plasma",
      "impactDamage": 10
     },
+    "damage": 0,
+    "pellets": 1,
+    "range": 120,
     "view": {
      "model": "vehicles/speeder.glb",
      "viewOffset": [
@@ -3530,8 +3639,11 @@
    "code": 38,
    "id": "core.sentry_gun",
    "def": {
+    "id": "core.sentry_gun",
+    "displayName": "Sentry Gun",
+    "kind": "hitscan",
+    "slot": 0,
     "damage": 7,
-    "pellets": 1,
     "spread": 0.03,
     "fireIntervalTicks": 7,
     "range": 40,
@@ -3545,10 +3657,7 @@
      0,
      30
     ],
-    "id": "core.sentry_gun",
-    "displayName": "Sentry Gun",
-    "kind": "hitscan",
-    "slot": 0,
+    "pellets": 1,
     "view": {
      "model": "guns/sentry_turret.glb",
      "fallback": "turrets/sentry.glb",
@@ -3590,9 +3699,11 @@
    "code": 39,
    "id": "core.sentry_arc",
    "def": {
+    "id": "core.sentry_arc",
+    "displayName": "Arc Turret",
+    "kind": "hitscan",
+    "slot": 0,
     "damage": 5,
-    "pellets": 1,
-    "spread": 0,
     "fireIntervalTicks": 6,
     "range": 22,
     "magazine": 0,
@@ -3605,15 +3716,13 @@
      0,
      22
     ],
-    "id": "core.sentry_arc",
-    "displayName": "Arc Turret",
-    "kind": "hitscan",
-    "slot": 0,
     "chain": {
      "jumps": 1,
      "range": 6,
      "falloff": 0.5
     },
+    "pellets": 1,
+    "spread": 0,
     "view": {
      "model": "guns/arc_cannon_turret.glb",
      "fallback": "turrets/rocket.glb",
@@ -3660,9 +3769,6 @@
     "displayName": "Medkit",
     "kind": "melee",
     "slot": 1,
-    "damage": 0,
-    "pellets": 1,
-    "spread": 0,
     "fireIntervalTicks": 75,
     "range": 3,
     "magazine": 0,
@@ -3676,6 +3782,9 @@
      0,
      0
     ],
+    "damage": 0,
+    "pellets": 1,
+    "spread": 0,
     "view": {
      "model": "guns/medkit.glb",
      "fallback": "procedural/medkit",
@@ -3722,9 +3831,6 @@
     "kind": "melee",
     "slot": 1,
     "fireMode": "semi",
-    "damage": 0,
-    "pellets": 1,
-    "spread": 0,
     "fireIntervalTicks": 50,
     "range": 32,
     "magazine": 0,
@@ -3740,6 +3846,9 @@
      0,
      0
     ],
+    "damage": 0,
+    "pellets": 1,
+    "spread": 0,
     "view": {
      "model": "weapons/flare_gun.glb",
      "viewOffset": [
@@ -3787,14 +3896,11 @@
    "id": "core.spear",
    "def": {
     "id": "core.spear",
-    "category": "melee",
     "displayName": "Spear",
+    "category": "melee",
     "kind": "projectile",
     "slot": 1,
     "fireMode": "semi",
-    "damage": 0,
-    "pellets": 1,
-    "spread": 0,
     "fireIntervalTicks": 30,
     "range": 60,
     "magazine": 1,
@@ -3816,6 +3922,9 @@
      "retrievable": true
     },
     "botDesirability": 0.6,
+    "damage": 0,
+    "pellets": 1,
+    "spread": 0,
     "botRange": [
      3,
      30
@@ -3866,9 +3975,6 @@
     "kind": "melee",
     "slot": 1,
     "fireMode": "semi",
-    "damage": 0,
-    "pellets": 1,
-    "spread": 0,
     "fireIntervalTicks": 12,
     "range": 7,
     "magazine": 0,
@@ -3881,6 +3987,9 @@
      0,
      0
     ],
+    "damage": 0,
+    "pellets": 1,
+    "spread": 0,
     "view": {
      "model": "procedural/builder",
      "viewOffset": [
@@ -3921,9 +4030,11 @@
    "code": 44,
    "id": "core.arena_disc",
    "def": {
-    "damage": 0,
-    "pellets": 1,
-    "spread": 0,
+    "id": "core.arena_disc",
+    "displayName": "Arena Disc",
+    "kind": "projectile",
+    "slot": 6,
+    "fireMode": "semi",
     "fireIntervalTicks": 20,
     "range": 60,
     "magazine": 3,
@@ -3936,11 +4047,6 @@
      3,
      28
     ],
-    "id": "core.arena_disc",
-    "displayName": "Arena Disc",
-    "kind": "projectile",
-    "slot": 6,
-    "fireMode": "semi",
     "projectile": {
      "speed": 24,
      "gravity": 0,
@@ -3957,6 +4063,9 @@
       "lift": 4.5
      }
     },
+    "damage": 0,
+    "pellets": 1,
+    "spread": 0,
     "view": {
      "model": "weapons/disc_launcher.glb",
      "viewOffset": [
@@ -4007,9 +4116,11 @@
    "code": 45,
    "id": "core.blast_rockets",
    "def": {
-    "damage": 0,
-    "pellets": 1,
-    "spread": 0,
+    "id": "core.blast_rockets",
+    "displayName": "Blast Rockets",
+    "category": "explosive",
+    "kind": "projectile",
+    "slot": 8,
     "fireIntervalTicks": 48,
     "range": 0,
     "magazine": 4,
@@ -4022,11 +4133,6 @@
      6,
      40
     ],
-    "id": "core.blast_rockets",
-    "displayName": "Blast Rockets",
-    "category": "explosive",
-    "kind": "projectile",
-    "slot": 8,
     "ammo": "explosive",
     "projectile": {
      "speed": 26,
@@ -4040,6 +4146,9 @@
      "impactDamage": 20,
      "knockback": 11
     },
+    "damage": 0,
+    "pellets": 1,
+    "spread": 0,
     "view": {
      "model": "weapons/rockets.glb",
      "viewOffset": [
@@ -4090,9 +4199,10 @@
    "code": 46,
    "id": "core.medi_beam",
    "def": {
-    "damage": 0,
-    "pellets": 1,
-    "spread": 0,
+    "id": "core.medi_beam",
+    "displayName": "Medi-Beam",
+    "kind": "melee",
+    "slot": 1,
     "fireIntervalTicks": 12,
     "range": 9,
     "magazine": 0,
@@ -4105,11 +4215,10 @@
      0,
      0
     ],
-    "id": "core.medi_beam",
-    "displayName": "Medi-Beam",
-    "kind": "melee",
-    "slot": 1,
     "heal": 6,
+    "damage": 0,
+    "pellets": 1,
+    "spread": 0,
     "view": {
      "model": "guns/medkit.glb",
      "fallback": "procedural/medkit",
@@ -4151,8 +4260,14 @@
    "code": 47,
    "id": "core.revolver",
    "def": {
+    "id": "core.revolver",
+    "displayName": "Heavy Revolver",
+    "category": "pistol",
+    "kind": "hitscan",
+    "slot": 2,
+    "family": "revolver",
+    "fireMode": "semi",
     "damage": 90,
-    "pellets": 1,
     "spread": 0.0005,
     "fireIntervalTicks": 40,
     "range": 300,
@@ -4166,13 +4281,6 @@
      3,
      40
     ],
-    "id": "core.revolver",
-    "displayName": "Heavy Revolver",
-    "category": "pistol",
-    "kind": "hitscan",
-    "slot": 2,
-    "fireMode": "semi",
-    "family": "revolver",
     "reload": {
      "type": "shell",
      "start": 18,
@@ -4181,8 +4289,13 @@
     },
     "ammo": "light",
     "knockback": 4,
+    "pellets": 1,
     "view": {
-     "model": "guns/ironclad_revolver.glb",
+     "model": "guns/revolver_rustique.glb",
+     "held": {
+      "medium": "guns/revolver_rustique.medium.glb",
+      "high": "guns/revolver_rustique.high.glb"
+     },
      "viewOffset": [
       0.2,
       -0.18,
@@ -4193,16 +4306,21 @@
       "style": "pistol",
       "grip": [
        0,
-       -0.03,
-       -0.108
+       -0.045,
+       -0.115
       ],
       "support": [
        -0.02,
-       -0.04,
-       -0.098
+       -0.055,
+       -0.105
       ],
       "rake": 18
      },
+     "muzzleAt": [
+      0,
+      0.055,
+      0.145
+     ],
      "fallback": "weapons/revolver.glb",
      "sound": "fire.revolver"
     }
@@ -4260,9 +4378,13 @@
    "code": 48,
    "id": "core.battle_axe",
    "def": {
+    "id": "core.battle_axe",
+    "displayName": "Battle Axe",
+    "category": "melee",
+    "kind": "melee",
+    "slot": 1,
+    "fireMode": "semi",
     "damage": 85,
-    "pellets": 1,
-    "spread": 0,
     "fireIntervalTicks": 48,
     "range": 2.7,
     "magazine": 0,
@@ -4275,12 +4397,6 @@
      0,
      2.5
     ],
-    "id": "core.battle_axe",
-    "displayName": "Battle Axe",
-    "category": "melee",
-    "kind": "melee",
-    "slot": 1,
-    "fireMode": "semi",
     "knockback": 6,
     "ammo": "shells",
     "alt": {
@@ -4322,6 +4438,8 @@
       "visual": 1.4
      }
     },
+    "pellets": 1,
+    "spread": 0,
     "view": {
      "model": "guns/battle_axe.glb",
      "fallback": "weapons/knife.glb",
@@ -4451,6 +4569,13 @@
      "selfDamageScale": 0.8,
      "visual": "frag",
      "bounce": 0.45
+    },
+    "view": {
+     "model": "guns/globe_grenade.glb",
+     "fallback": "guns/frag.glb",
+     "looks": {
+      "military": "guns/frag_m67.glb"
+     }
     }
    }
   },
@@ -4476,6 +4601,9 @@
       "armSeconds": 1.2,
       "triggerRadius": 2.2
      }
+    },
+    "view": {
+     "model": "guns/at_mine.glb"
     }
    }
   },
@@ -4498,6 +4626,9 @@
      "selfDamageScale": 0.8,
      "visual": "sticky",
      "sticky": "any"
+    },
+    "view": {
+     "model": "guns/countdown_sphere.glb"
     }
    }
   },
@@ -4529,6 +4660,9 @@
       "radius": 4,
       "seconds": 7
      }
+    },
+    "view": {
+     "model": "guns/molotov.glb"
     }
    }
   },
@@ -4556,6 +4690,9 @@
       "radius": 4.5,
       "seconds": 9
      }
+    },
+    "view": {
+     "model": "guns/toxic_splash.glb"
     }
    }
   },
@@ -4576,13 +4713,16 @@
      "splashDamage": 0,
      "splashEdgeDamage": 0,
      "selfDamageScale": 0,
-     "visual": "vortex",
+     "visual": "vortexNade",
      "bounce": 0.3,
      "zone": {
       "kind": "singularity",
       "radius": 7,
       "seconds": 2
      }
+    },
+    "view": {
+     "model": "guns/vortex_grenade.glb"
     }
    }
   },
@@ -4644,6 +4784,9 @@
        "maxBounces": 1
       }
      }
+    },
+    "view": {
+     "model": "guns/sunburst_grenade.glb"
     }
    }
   },
@@ -4758,6 +4901,39 @@
      "visual": "dynamite",
      "bounce": 0.3,
      "knockback": 12
+    }
+   }
+  },
+  {
+   "code": 12,
+   "kind": "smoke",
+   "weaponId": "core.smoke",
+   "def": {
+    "kind": "smoke",
+    "displayName": "Smoke Grenade",
+    "max": 3,
+    "throwIntervalTicks": 45,
+    "projectile": {
+     "speed": 15,
+     "gravity": 14,
+     "fuseSeconds": 1.5,
+     "splashRadius": 0,
+     "splashDamage": 0,
+     "splashEdgeDamage": 0,
+     "selfDamageScale": 0,
+     "visual": "smoke",
+     "bounce": 0.35,
+     "zone": {
+      "kind": "smoke",
+      "radius": 5,
+      "seconds": 18
+     }
+    },
+    "view": {
+     "model": "guns/smoke_m18.glb",
+     "looks": {
+      "scifi": "guns/smoke_scifi.glb"
+     }
     }
    }
   }

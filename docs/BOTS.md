@@ -696,6 +696,23 @@ Left for Phase C (found on the way): a mount's body isn't on the navmesh. Iron C
 mode's goal sends it back along the same line. And a dropship landing beside Dune Harbor's sunken room leaves its
 riders under the street floor, where nothing gets them out (the Bomb and Hostage samples, modes the map doesn't list).
 
+## Smoke (November 2026)
+The Smoke Grenade (docs/ARSENAL.md) hides whoever is behind a cloud. Bots see it as the match does: their sight lines
+(target acquisition, `canSee`) and the match's own (sentries, arc turrets, homing, spawn safety: `Match.sees`) are
+blocked by 1.6 m or more of a cloud (`smokeBlocks`, the clouds in `BotWorldView.smoke`); shots still pass through.
+- **Using it:** a bot carrying smoke, caught in the open (no cover spot) by an enemy 10-45 m off and hurt (under 70
+  health) or shot at, throws it a few metres toward the enemy (`considerSmoke`, then `smokeScreen`), so the cloud
+  stands between them while it carries on; Tactical bots do it more often. Bots never throw smoke as a frag.
+- **Crossing open ground:** bounding cover to cover ("Cover-to-cover advance", `boundPhase`), a bot of the moving half
+  with no cover round it (it left its cover for one further on, or there is none) throws its smoke a few metres toward
+  the enemy first, every time it carries some (no dice), and crosses under it. `BotBrain.smokeScreen(view, threat)`
+  throws one toward a threat and says whether it could.
+- **Who carries it:** for now only a bot that picks up Smoke Grenades (`core.smoke_grenades`, placed on a map; random
+  pickups roll only weapons); the Military and Sci-fi weapon sets will hand it out (docs/WEAPON_SETS_PLAN.md).
+- **Tests:** `smoke.test.ts` (a bot fires across an open yard and not through a cloud; a hurt bot in the open throws
+  smoke between itself and the enemy; a Tactical bot bounding toward the enemy's flag across open ground sends smoke
+  ahead, an Arena bot, which never bounds, doesn't).
+
 ## Scored choices (Bot AI Phase B)
 
 With nobody in sight, a bot chooses what to do next by score (`bots/choices.ts`, a pure function the brain feeds about

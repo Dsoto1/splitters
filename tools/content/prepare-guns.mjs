@@ -47,16 +47,36 @@
 // one folder down (so the owner's download folders can sit side by side in it), and is read the same way.
 // `url` on an entry: the model's own community post, recorded in the lock and the provenance ledger instead of its
 // pack's page (CC0 needs no credit; the post is the licence's proof).
+//
+// The CC0 Guns & Explosives pack (FBX with 2048 px PBR maps beside it, unlinked): `maps` names a model's maps in its
+// folder, `{ base, normal, metallic, roughness, opacity }` (`materials: { <material>: { ...the same, or color: "#rrggbb",
+// alpha } }` for a model whose materials each have their own: the Molotov's bottle, rag and liquid). A normal map
+// named `*_DirectX*` has its green channel flipped (glTF's normal maps are OpenGL's). `move: { <object>: [x, y, z] }`
+// shifts an object in the download's own units first (a pistol's magazine laid out beside it for show, put back in
+// its grip).
+//
+// `pbr: true` keeps the source's metal and roughness (no forced matte): the pack's Metallic and Roughness maps, or a
+// Meshy GLB's metal/roughness map painted into the rebaked charts, as glTF's metallicRoughnessTexture (roughness green,
+// metal blue). The game gives the held weapon's materials the sky to reflect (client game/weaponFinish.ts), or metal
+// would read black.
+//
+// `held: true`: the weapon in your own hands gets sharper copies by graphics setting (docs/ARSENAL.md, "Texture
+// tiers"). Built from the full download once, then written three times with the maps shrunk per tier:
+// `<out>` (everyone else's copy: drops, pickups, other players' hands, Low; colour `textureSize`, default 512, normal
+// `normalSize`, default 512, metal/roughness 256, with its `lod`), `<name>.medium.glb` (colour 1024, normal 512,
+// metal/roughness 256) and `<name>.high.glb` (colour 2048, normal 1024, metal/roughness 512: measured, a 1024 one
+// cost 4 MB of video memory a gun and showed nothing more), neither with a lower level of detail (your own gun
+// always draws full detail). The weapon names them in `view.held` (content/weapons).
 import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { Logger, NodeIO, getBounds } from '@gltf-transform/core';
 import { ALL_EXTENSIONS } from '@gltf-transform/extensions';
-import { clearNodeTransform, compactPrimitive, dedup, flatten, prune, quantize, weld } from '@gltf-transform/functions';
+import { clearNodeTransform, cloneDocument, compactPrimitive, dedup, flatten, join as joinPrimitives, prune, quantize, weld } from '@gltf-transform/functions';
 import sharp from 'sharp';
 import { fbxToDocument } from './fbx.mjs';
-import { MESHY_QUANTIZE, markings, meshyDocument, normalJpeg, paintOut } from './meshy-mesh.mjs';
+import { MESHY_QUANTIZE, addLod, markings, meshyDocument, normalJpeg, paintOut } from './meshy-mesh.mjs';
 import { writeLock } from './lockfile.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
@@ -102,6 +122,147 @@ async function shrink(tex, size, mime) {
   const img = sharp(Buffer.from(tex.getImage())).resize(size, size, { fit: 'inside', kernel: 'lanczos3' });
   const data = mime === 'image/png' ? await img.png({ palette: true, quality: 90 }).toBuffer() : await img.removeAlpha().jpeg({ quality: 85, mozjpeg: true }).toBuffer();
   tex.setImage(data).setMimeType(mime).setURI('');
+}
+
+/** The sizes each copy of a `held` entry ships at (see the header). */
+const HELD_TIERS = [
+  { tier: 'world', colour: null, normal: null, metalRough: 256 },
+  { tier: 'medium', colour: 1024, normal: 512, metalRough: 256 },
+  { tier: 'high', colour: 2048, normal: 1024, metalRough: 512 },
+];
+/** The file a tier of `out` is written to: `guns/x.glb` → `guns/x.high.glb` (the world copy keeps `out`). */
+export const tierFile = (out, tier) => (tier === 'world' ? out : out.replace(/\.glb$/, `.${tier}.glb`));
+
+/**
+ * `move: { <object>: [x, y, z] }` (an FBX pack entry): shift that object's vertices, in the download's own units,
+ * before anything else (fbxToDocument names each mesh after its scene object).
+ */
+function movePieces(doc, move) {
+  for (const [name, by] of Object.entries(move)) {
+    const meshes = doc.getRoot().listMeshes().filter((m) => m.getName() === name);
+    if (!meshes.length) throw new Error(`move: no object named ${name}`);
+    for (const mesh of meshes) {
+      for (const prim of mesh.listPrimitives()) {
+        const pos = prim.getAttribute('POSITION');
+        const a = pos.getArray().slice();
+        for (let i = 0; i < a.length; i += 3) for (let k = 0; k < 3; k++) a[i + k] += by[k];
+        pos.setArray(a);
+      }
+    }
+  }
+}
+
+/**
+ * `maps` / `materials` (an FBX pack entry, the CC0 Guns & Explosives pack): the maps beside the FBX on its materials,
+ * at their full size (the tiers shrink them): base colour (with `opacity` as its alpha: BLEND), the normal map (a
+ * DirectX one's green flipped), and the metal and roughness maps packed as glTF's metallicRoughnessTexture. A
+ * material given `color` instead gets that flat colour (and `alpha`).
+ */
+async function packMaps(doc, dir, entry) {
+  const cache = new Map();
+  const file = (name) => {
+    const bytes = readFileSync(join(dir, name));
+    if (!bytes.length) throw new Error(`${name} is empty (the download did not unpack it)`);
+    return bytes;
+  };
+  const once = async (key, make) => {
+    if (!cache.has(key)) cache.set(key, await make());
+    return cache.get(key);
+  };
+  const colourTex = (base, opacity) =>
+    once(`base:${base}:${opacity}`, async () => {
+      if (!opacity) return doc.createTexture(base).setImage(await sharp(file(base)).removeAlpha().jpeg({ quality: 92, mozjpeg: true }).toBuffer()).setMimeType('image/jpeg');
+      const { info } = await sharp(file(base)).metadata().then((m) => ({ info: m }));
+      const alpha = await sharp(file(opacity)).greyscale().resize(info.width, info.height, { fit: 'fill' }).raw().toBuffer();
+      const png = await sharp(file(base)).removeAlpha().joinChannel(alpha, { raw: { width: info.width, height: info.height, channels: 1 } }).png().toBuffer();
+      return doc.createTexture(base).setImage(png).setMimeType('image/png');
+    });
+  const normalTex = (name) =>
+    once(`normal:${name}`, async () => {
+      let img = sharp(file(name)).removeAlpha();
+      if (/DirectX/i.test(name)) {
+        const { data, info } = await img.raw().toBuffer({ resolveWithObject: true });
+        for (let i = 1; i < data.length; i += 3) data[i] = 255 - data[i];
+        img = sharp(data, { raw: { width: info.width, height: info.height, channels: 3 } });
+      }
+      return doc.createTexture(name).setImage(await img.png().toBuffer()).setMimeType('image/png');
+    });
+  const metalRoughTex = (metallic, roughness) =>
+    once(`mr:${metallic}:${roughness}`, async () => {
+      const r = await sharp(file(roughness)).greyscale().raw().toBuffer({ resolveWithObject: true });
+      const { width, height } = r.info;
+      const m = metallic ? await sharp(file(metallic)).greyscale().resize(width, height, { fit: 'fill' }).raw().toBuffer() : null;
+      const px = Buffer.alloc(width * height * 3);
+      for (let i = 0; i < width * height; i++) {
+        px[i * 3] = 255;
+        px[i * 3 + 1] = r.data[i];
+        px[i * 3 + 2] = m ? m[i] : 0;
+      }
+      return doc.createTexture(`metalRough`).setImage(await sharp(px, { raw: { width, height, channels: 3 } }).png().toBuffer()).setMimeType('image/png');
+    });
+  for (const mat of doc.getRoot().listMaterials()) {
+    const maps = { ...(entry.maps ?? {}), ...(entry.materials?.[mat.getName()] ?? {}) };
+    if (entry.materials && !entry.materials[mat.getName()]) throw new Error(`materials: nothing for material ${mat.getName()}`);
+    mat.setBaseColorFactor([1, 1, 1, 1]).setEmissiveFactor([0, 0, 0]).setAlphaMode('OPAQUE');
+    if (maps.color) {
+      const c = [1, 3, 5].map((i) => (parseInt(maps.color.slice(i, i + 2), 16) / 255) ** 2.2);
+      mat.setBaseColorFactor([...c, maps.alpha ?? 1]).setBaseColorTexture(null);
+      if ((maps.alpha ?? 1) < 1) mat.setAlphaMode('BLEND');
+    } else if (maps.base) {
+      mat.setBaseColorTexture(await colourTex(maps.base, maps.opacity));
+      if (maps.opacity) mat.setAlphaMode('BLEND');
+    }
+    if (maps.normal) mat.setNormalTexture(await normalTex(maps.normal));
+    if (maps.roughness) mat.setMetallicRoughnessTexture(await metalRoughTex(maps.metallic, maps.roughness)).setMetallicFactor(maps.metallic ? 1 : 0).setRoughnessFactor(1);
+    else mat.setMetallicRoughnessTexture(null).setMetallicFactor(0).setRoughnessFactor(maps.roughnessFactor ?? 0.6);
+  }
+}
+
+/**
+ * The tiers of a `held` entry (see the header): the built document copied once per tier, its maps shrunk to the
+ * tier's sizes (colour, normal, metal/roughness), the held copies without the lower level of detail. Returns
+ * [{ tier, out, doc }].
+ */
+async function heldTiers(doc, entry) {
+  const tiers = [];
+  for (const t of HELD_TIERS) {
+    const copy = cloneDocument(doc);
+    const colour = t.colour ?? entry.textureSize ?? 512;
+    const normal = t.normal ?? entry.normalSize ?? 512;
+    if (t.tier !== 'world') {
+      for (const node of copy.getRoot().listNodes()) {
+        if (!node.getExtras()?.lod) continue;
+        node.getMesh()?.dispose();
+        node.dispose();
+      }
+    }
+    const done = new Set();
+    for (const mat of copy.getRoot().listMaterials()) {
+      const base = mat.getBaseColorTexture();
+      if (base && !done.has(base)) await shrink(base, colour, mat.getAlphaMode() === 'OPAQUE' ? 'image/jpeg' : 'image/png');
+      const nrm = mat.getNormalTexture();
+      if (nrm && !done.has(nrm)) nrm.setImage(await normalJpeg(nrm.getImage(), normal)).setMimeType('image/jpeg').setURI('');
+      const mr = mat.getMetallicRoughnessTexture();
+      if (mr && !done.has(mr)) mr.setImage(await normalJpeg(mr.getImage(), t.metalRough)).setMimeType('image/jpeg').setURI('');
+      for (const tex of [base, nrm, mr]) if (tex) done.add(tex);
+    }
+    await copy.transform(prune());
+    tiers.push({ tier: t.tier, out: tierFile(entry.out, t.tier), doc: copy });
+  }
+  return tiers;
+}
+
+/** Triangles in a document: the full-detail model's, and its lower level of detail's apart. */
+function countTriangles(doc) {
+  let triangles = 0;
+  let lodTriangles = 0;
+  for (const mesh of doc.getRoot().listMeshes()) {
+    let n = 0;
+    for (const p of mesh.listPrimitives()) n += (p.getIndices()?.getCount() ?? p.getAttribute('POSITION').getCount()) / 3;
+    if (mesh.listParents().some((node) => node.propertyType === 'Node' && node.getExtras()?.lod)) lodTriangles += n;
+    else triangles += n;
+  }
+  return { triangles, lodTriangles };
 }
 
 
@@ -354,12 +515,16 @@ async function build(src, entry, pack, place = null) {
       if (tint) await tint(img);
     } : null;
     const crop = place && entry.box ? boxToSource(entry.box, place) : null;
-    ({ doc: meshy } = await meshyDocument(src, { triangles: entry.triangles, maxError: entry.maxError, surface: entry.surface, dropHidden: entry.dropHidden, recolor, sloppy: entry.sloppy, lod: entry.lod ?? null, crop, ...(entry.normalSize > 1024 ? { normalSize: entry.normalSize } : {}), ...(entry.textureSize ? { textureSize: entry.textureSize } : {}) }));
+    // A `held` entry is painted at its sharpest tier's sizes (the tiers shrink copies of it).
+    const sizes = entry.held ? { textureSize: HELD_TIERS.at(-1).colour, normalSize: HELD_TIERS.at(-1).normal } : { ...(entry.normalSize > 1024 ? { normalSize: entry.normalSize } : {}), ...(entry.textureSize ? { textureSize: entry.textureSize } : {}) };
+    ({ doc: meshy } = await meshyDocument(src, { triangles: entry.triangles, maxError: entry.maxError, surface: entry.surface, dropHidden: entry.dropHidden, recolor, sloppy: entry.sloppy, lod: entry.lod ?? null, crop, keepMetalRough: !!entry.pbr, ...sizes }));
   }
   // FBX sources (the Guns & Explosives pack) keep their UVs; their colour and normal maps sit beside them
-  // unlinked, so `baseColor` / `normal` name them and they go on every material.
+  // unlinked, so `baseColor` / `normal` name them and they go on every material (or `maps`, all of them: packMaps).
   const doc = meshy ?? (/\.fbx$/i.test(src) ? (await fbxToDocument(src, { keepUv: true })).doc : await io.read(src));
   doc.setLogger(new Logger(Logger.Verbosity.WARN));
+  if (entry.move) movePieces(doc, entry.move);
+  if (entry.maps || entry.materials) await packMaps(doc, dirname(src), entry);
   for (const [key, slot] of [['baseColor', 'setBaseColorTexture'], ['normal', 'setNormalTexture']]) {
     if (!entry[key]) continue;
     const tex = doc.createTexture(key).setImage(readFileSync(join(dirname(src), entry[key]))).setMimeType('image/png');
@@ -367,7 +532,16 @@ async function build(src, entry, pack, place = null) {
   }
   const scene = doc.getRoot().listScenes()[0];
   const forward = place?.forward ?? entry.forward;
-  const root = doc.createNode('model').setRotation(turn(forward));
+  // `noseDown: degrees`: a model posed tilted in its download (the pack's sniper, nose up) levelled about +X after the turn.
+  let rotation = turn(forward);
+  if (entry.noseDown) {
+    const h = (entry.noseDown * Math.PI) / 360;
+    const [px, pw] = [Math.sin(h), Math.cos(h)];
+    const [x, y, z, w] = rotation;
+    // The pitch applied after the turn: q = pitch * turn.
+    rotation = [pw * x + px * w, pw * y - px * z, pw * z + px * y, pw * w - px * x];
+  }
+  const root = doc.createNode('model').setRotation(rotation);
   for (const child of scene.listChildren()) {
     scene.removeChild(child);
     root.addChild(child);
@@ -378,7 +552,8 @@ async function build(src, entry, pack, place = null) {
   if (!place) {
     root.setScale([1, 1, 1]);
     const b = getBounds(scene);
-    s = entry.length / (b.max[2] - b.min[2]);
+    // `height` (an upright throwable) scales by the model's height instead of its length along the barrel.
+    s = entry.height ? entry.height / (b.max[1] - b.min[1]) : entry.length / (b.max[2] - b.min[2]);
     t = b.min.map((v, i) => (-(v + b.max[i]) / 2) * s);
   }
   root.setScale([s, s, s]).setTranslation(t);
@@ -386,6 +561,16 @@ async function build(src, entry, pack, place = null) {
   for (const node of doc.getRoot().listNodes()) if (node.getMesh()) clearNodeTransform(node);
   const base = entry.centre === 'base' || place?.centred ? centreOnBase(doc, place?.base ?? null) : [0, 0];
   for (const node of doc.getRoot().listNodes()) if (!node.getMesh()) node.dispose();
+  // The pack's models come as a few objects (magazine, bolt, trigger) on one material: joined into one mesh, given
+  // its `lod` like a Meshy model's.
+  if (entry.maps || entry.materials) {
+    await doc.transform(dedup(), joinPrimitives({ keepNamed: false }), weld());
+    if (entry.lod) {
+      const prims = doc.getRoot().listMeshes().flatMap((m) => m.listPrimitives());
+      if (prims.length !== 1) throw new Error(`${entry.out}: lod needs one primitive, found ${prims.length}`);
+      addLod(doc, prims[0], entry.lod);
+    }
+  }
   const holder = doc.createNode('model');
   for (const node of scene.listChildren()) {
     scene.removeChild(node);
@@ -395,9 +580,14 @@ async function build(src, entry, pack, place = null) {
   // An interior says which part of the body it stands in for (`box`, in its glTF extras).
   if (place && entry.box) holder.setExtras({ cockpit: { box: entry.box } });
   if (entry.parts) splitParts(doc, holder, entry.parts);
+  if (entry.held && entry.glow) throw new Error(`${entry.out}: held tiers don't carry a glow map yet`);
   for (const mat of doc.getRoot().listMaterials()) {
-    mat.setMetallicFactor(0).setRoughnessFactor(entry.roughness ?? 0.85).setMetallicRoughnessTexture(null).setOcclusionTexture(null).setEmissiveTexture(null);
+    // `pbr`: the source's own metal and roughness (packMaps, or meshyDocument's keepMetalRough), else a matte finish.
+    if (entry.pbr) mat.setOcclusionTexture(null).setEmissiveTexture(null);
+    else mat.setMetallicFactor(0).setRoughnessFactor(entry.roughness ?? 0.85).setMetallicRoughnessTexture(null).setOcclusionTexture(null).setEmissiveTexture(null);
     for (const ext of mat.listExtensions()) ext.dispose();
+    // A `held` entry keeps its maps whole here: heldTiers shrinks a copy per tier.
+    if (entry.held) continue;
     const baseMap = mat.getBaseColorTexture();
     if (baseMap) await shrink(baseMap, entry.textureSize ?? 512, mat.getAlphaMode() === 'OPAQUE' ? 'image/jpeg' : 'image/png');
     // `glow`: an emissive map of the glowing parts, taken from the colour map as shipped.
@@ -408,22 +598,28 @@ async function build(src, entry, pack, place = null) {
     const normal = mat.getNormalTexture();
     // A Meshy model's normal map is baked from the full download (meshy-mesh.mjs): `normalSize` px (default 512, a
     // first-person gun is seen from a hand's length away); a pack's own is shrunk to 256 px.
+    // The pack's maps (`maps`) as full-chroma JPEGs: `normalSize` (default 256) and metal/roughness 256.
+    const packed = !!(entry.maps || entry.materials);
     if (normal && pack.meshy) normal.setImage(await normalJpeg(normal.getImage(), entry.normalSize ?? 512)).setMimeType('image/jpeg').setURI('');
+    else if (normal && packed) normal.setImage(await normalJpeg(normal.getImage(), entry.normalSize ?? 256)).setMimeType('image/jpeg').setURI('');
     else if (normal) await shrink(normal, 256, 'image/jpeg');
+    const metalRough = mat.getMetallicRoughnessTexture();
+    if (metalRough) metalRough.setImage(await normalJpeg(metalRough.getImage(), 256)).setMimeType('image/jpeg').setURI('');
   }
   doc.getRoot().getAsset().generator = 'tiletrigger content build';
-  await doc.transform(weld(), dedup(), prune(), ...(meshy ? [quantize(MESHY_QUANTIZE)] : []));
-  // The budget is for the full-detail model; a lower level of detail (`lod`) is counted apart.
-  let triangles = 0;
-  let lodTriangles = 0;
-  for (const mesh of doc.getRoot().listMeshes()) {
-    let n = 0;
-    for (const p of mesh.listPrimitives()) n += (p.getIndices()?.getCount() ?? p.getAttribute('POSITION').getCount()) / 3;
-    if (mesh.listParents().some((node) => node.propertyType === 'Node' && node.getExtras()?.lod)) lodTriangles += n;
-    else triangles += n;
-  }
+  // Meshy models with 8-bit normals; the pack's (smooth curved metal under a normal map) with glTF-Transform's default 10.
+  const packed = !!(entry.maps || entry.materials);
+  await doc.transform(weld(), dedup(), prune(), ...(meshy ? [quantize(MESHY_QUANTIZE)] : packed ? [quantize()] : []));
   const placed = { forward, s, t, base, centred: entry.centre === 'base' || !!place?.centred };
-  return { glb: Buffer.from(await io.writeBinary(doc)), triangles, lodTriangles, normalMap: !!pack.meshy && doc.getRoot().listMaterials().some((m) => m.getNormalTexture()), place: placed };
+  const normalMap = (d) => (!!pack.meshy || packed) && d.getRoot().listMaterials().some((m) => m.getNormalTexture());
+  // A `held` entry: its tiers, each written and counted on its own.
+  if (entry.held) {
+    const tiers = [];
+    for (const t of await heldTiers(doc, entry)) tiers.push({ ...t, glb: Buffer.from(await io.writeBinary(t.doc)), ...countTriangles(t.doc), normalMap: normalMap(t.doc) });
+    return { ...tiers[0], tiers, place: placed };
+  }
+  // The budget is for the full-detail model; a lower level of detail (`lod`) is counted apart.
+  return { glb: Buffer.from(await io.writeBinary(doc)), ...countTriangles(doc), normalMap: normalMap(doc), place: placed };
 }
 
 mkdirSync(OUT, { recursive: true });
@@ -467,7 +663,14 @@ for (const entry of manifest.models) {
   const dir = skip ? null : entry.glb ? src && dirname(src) : downloadDir(entry.download ?? pack.download);
   const from = dir ? (src ?? join(dir, pack.models ?? '.', entry.file)) : null;
   const made = from ? await build(from, entry, pack) : null;
-  record(entry.out, entry, pack, made);
+  if (entry.held) {
+    // The world copy under the entry's own budget; the held copies under the `held` tier's (sharper maps, more bytes).
+    for (const { tier } of HELD_TIERS) {
+      const t = made?.tiers.find((x) => x.tier === tier) ?? null;
+      const extra = tier === 'world' ? {} : { tier, heldOf: `models/${entry.out}` };
+      record(tierFile(entry.out, tier), tier === 'world' ? entry : { ...entry, budget: 'held' }, pack, t, extra);
+    }
+  } else record(entry.out, entry, pack, made);
   if (interior) {
     console.log(`  interior ${interior.out}`);
     record(interior.out, interior, pack, made ? await build(from, interior, pack, made.place) : null, { interiorOf: `models/${entry.out}` });

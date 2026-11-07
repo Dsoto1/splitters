@@ -43,13 +43,21 @@ import {
   WEAPONS_BY_SLOT,
   weaponByCode,
   getWeapon,
+  heldModel,
   CORE_WEAPONS,
   gunplayOf,
+  THROWABLE_DEFS,
+  throwableModel,
+  SMOKE,
+  smokeBlocks,
+  type SmokeCloud,
+  type ThrowableKind,
   type MapDocument,
   type PropEntity,
   type PickupEntity,
   type Vec3,
   type WeaponDefinition,
+  type WeaponHold,
   type WorldBox,
   PROJECTILE_VISUALS,
   type ZoneSnapshot,
@@ -142,6 +150,17 @@ const MAX_REMOTE_RIGS = 8;
 /** Your own pack flash: this much bigger than the weapon's scale, starting this far (m) past the muzzle so the gun doesn't hide it. */
 const OWN_FLASH_SCALE = 1.6;
 const OWN_FLASH_AHEAD = 0.05;
+/**
+ * Projectile looks drawn with a throwable's own model (content/throwables.json `view`: the frag, sticky, gas,
+ * incendiary, vortex, cluster and smoke grenades), by look: the throwable whose model it is (its model as the match's
+ * weapon set shows it: throwableModel). The mine keeps its own drawing (it blinks once armed).
+ */
+const THROWN_KINDS: ReadonlyMap<string, ThrowableKind> = new Map(Object.values(THROWABLE_DEFS).flatMap((t) => (t.view && t.kind !== 'mine' ? [[t.projectile.visual, t.kind]] : [])));
+/** How a throwable lies in your hands while you line up a throw: held like a pistol's grip, the support hand round it. */
+const THROW_HOLD: WeaponHold = { style: 'pistol', grip: [0, -0.012, -0.012], support: [-0.03, -0.022, 0], rake: 0 };
+/** Where that hold sits in your view (right, up, forward of the eye): low and a little right, as a pistol is held. */
+const THROW_HOLD_AT = [0.14, -0.16, 0.34] as const;
+
 /** How far ahead of a thrown spear's sim point its tip is drawn (m): the head goes a little way into what it hits. */
 const SPEAR_TIP_AHEAD = 0.52;
 const SLOT_COLORS = ['#e6544a', '#4aa3e6', '#f2c14e', '#5cc77a', '#b276e0', '#f28f3b', '#46c9c0', '#e872b0'];
@@ -257,6 +276,9 @@ const PUSH_KEEP_MS = 1200;
 const PUSH_KEEP_FRAMES = 3;
 /** An enemy's marker colour (a downward triangle; allies get a diamond). */
 const isEnemyTag = (color: string): boolean => color.toLowerCase() === '#ff3b3b';
+/** The fog's colour and thickness inside a smoke cloud: a mid grey (not white) through which you see about 2-3 m. */
+const SMOKE_FOG = new Color3(0.42, 0.44, 0.46);
+const SMOKE_FOG_DENSITY = 0.42;
 /** The way an avatar faces (its yaw; characters face +Z at yaw 0), for its ragdoll to tell front from back. */
 const facingOf = (a: Avatar): Vec3 => ({ x: Math.sin(a.root.rotation.y), y: 0, z: Math.cos(a.root.rotation.y) });
 
@@ -1432,6 +1454,7 @@ export class GameView {
     this.foliage.update(this.camera.position);
     this.environment?.update(this.camera.position);
     this.updateUnderwater();
+    this.updateSmokeFog();
     this.updateEffects();
   }
 
@@ -1469,9 +1492,132 @@ export class GameView {
       const at = def.view.muzzleAt;
       const v = { node, muzzleZ: at ? at[2] : bounds.max.z, muzzleY: at ? at[1] : (bounds.min.y + bounds.max.y) / 2 + (bounds.max.y - bounds.min.y) * 0.2, sightTop: bounds.max.y, stockZ: bounds.min.z };
       this.viewmodels.set(def.id, v);
+      this.viewmodelPaths.set(def.id, def.view.model);
       node.setEnabled(false);
       if (load === this.viewLoad) show(v);
+      // Medium and High: the sharper copy of the same model for your own hands, swapped in once it has loaded.
+      const held = heldModel(def, this.atmosphere.quality);
+      if (held) this.sharpenViewmodel(def, v, held);
     });
+  }
+
+  /** Which copy of each kept first-person gun is drawn (tests): the model path. */
+  readonly viewmodelPaths = new Map<string, string>();
+
+  /**
+   * Guns no longer carried (dropped, or the match changed hands) leave the kept first-person guns, and a sharper held
+   * copy's maps leave the GPU with them: held copies at High are about 30 MB of video memory each, so only the guns
+   * you carry keep theirs (docs/ARSENAL.md, "Texture tiers"). `carried`: weapon ids.
+   */
+  trimViewmodels(carried: ReadonlySet<string>): void {
+    for (const [id, v] of this.viewmodels) {
+      if (carried.has(id) || id === this.viewWeapon) continue;
+      if (this.viewmodel === v.node) this.viewmodel = undefined;
+      v.node.dispose();
+      this.viewmodels.delete(id);
+      const path = this.viewmodelPaths.get(id);
+      this.viewmodelPaths.delete(id);
+      const def = CORE_WEAPONS[id];
+      if (path && def?.view.held && path !== def.view.model) this.models.release(path);
+    }
+  }
+
+  // ---------------------------------------------------------------- throw hold
+
+  /** Your own throwable in your hands while you line up a throw (setThrowHold). */
+  private throwHold: { kind: ThrowableKind; path: string; node: TransformNode | null } | null = null;
+  /** Each throwable's model in your hands, made once and kept (hidden) like the guns you have held. */
+  private readonly throwModels = new Map<string, Promise<TransformNode | null>>();
+  private throwRoot: TransformNode | null = null;
+
+  /**
+   * Lining up a throw (G held) with `kind`, or null when not: the gun goes away and the throwable's model
+   * (content/throwables.json `view`) comes up in both hands, held like a pistol's grip with the support hand round
+   * it; let go and the same model flies off. Throwables drawn in code (no model) leave the gun in hand.
+   */
+  setThrowHold(kind: ThrowableKind | null): void {
+    const path = kind ? throwableModel(kind, this.setLook) : null;
+    if (this.throwHold?.kind === kind && this.throwHold?.path === path) return;
+    if (this.throwHold) {
+      this.throwHold.node?.setEnabled(false);
+      this.throwHold = null;
+      this.restoreGrip();
+    }
+    if (!kind || !path) return;
+    const hold = { kind, path, node: null as TransformNode | null };
+    this.throwHold = hold;
+    void this.throwModel(path).then((node) => {
+      if (this.throwHold !== hold || !node) return;
+      hold.node = node;
+      node.setEnabled(true);
+      this.viewmodel?.setEnabled(false);
+      this.fpArms?.anim?.gripExternal(node, THROW_HOLD);
+      if (this.fpBody?.a.anim instanceof CharacterAnimator) this.fpBody.a.anim.gripExternal(node, THROW_HOLD);
+    });
+  }
+
+  /** The model of the throwable in your hands now, or null (tests). */
+  throwHoldShown(): string | null {
+    return this.throwHold?.node?.isEnabled() ? this.throwHold.path : null;
+  }
+
+  private throwModel(path: string): Promise<TransformNode | null> {
+    let p = this.throwModels.get(path);
+    if (!p) {
+      if (!this.throwRoot) {
+        this.throwRoot = new TransformNode('throwRoot', this.scene);
+        this.throwRoot.parent = this.camera;
+        this.throwRoot.position.set(...THROW_HOLD_AT);
+      }
+      const root = this.throwRoot;
+      p = this.models.instantiate(path, `throwHold_${this.throwModels.size}`).then(
+        (node) => {
+          node.parent = root;
+          // Drawn over the world like the gun, so it never clips into a wall in front of you.
+          for (const m of node.getChildMeshes()) m.renderingGroupId = 1;
+          node.setEnabled(false);
+          return node;
+        },
+        () => null,
+      );
+      this.throwModels.set(path, p);
+    }
+    return p;
+  }
+
+  /** The hands back on the gun after a throw hold. */
+  private restoreGrip(): void {
+    const def = this.viewWeapon ? getWeapon(this.viewWeapon) : undefined;
+    const node = def ? (this.viewmodel ?? null) : null;
+    node?.setEnabled(true);
+    this.fpArms?.anim?.gripExternal(node, def?.view.hold ?? null);
+    if (this.fpBody?.a.anim instanceof CharacterAnimator) this.fpBody.a.anim.gripExternal(node, def?.view.hold ?? null);
+  }
+
+  /**
+   * Swap a kept first-person gun for its sharper copy (view.held: the same mesh with bigger maps, docs/ARSENAL.md
+   * "Texture tiers"): fetched only for the guns you hold, drawn the moment it is in; until then (or if it fails) the
+   * copy everyone else sees stays in your hands. Same mesh, so the muzzle, sight and hold numbers carry over.
+   */
+  private sharpenViewmodel(def: WeaponDefinition, v: { node: TransformNode }, path: string): void {
+    void this.models.instantiate(path, `view_${def.id}_held`).then(
+      (node) => {
+        if (this.viewmodels.get(def.id) !== v || this.scene.isDisposed) return node.dispose();
+        node.parent = this.viewRoot;
+        for (const m of node.getChildMeshes()) m.renderingGroupId = 1;
+        const old = v.node;
+        node.setEnabled(old.isEnabled());
+        v.node = node;
+        this.viewmodelPaths.set(def.id, path);
+        if (this.viewmodel === old) {
+          this.viewmodel = node;
+          this.fpArms?.anim?.gripExternal(node, def.view.hold);
+          if (this.fpBody?.a.anim instanceof CharacterAnimator) this.fpBody.a.anim.gripExternal(node, def.view.hold);
+        }
+        old.dispose();
+      },
+      () => undefined,
+    );
   }
 
   /**
@@ -1479,6 +1625,14 @@ export class GameView {
    * The arms hang from the camera at shoulder height; the gun keeps its
    * viewmodel placement (bob, recoil, reload dip) and the hands follow it by IK.
    */
+  /** The match's weapon set (sim/weaponSets.ts), whose looks grenades wear in hands, in flight and as pickups. */
+  private setLook: string | undefined;
+
+  /** The match's weapon set (the session, on joining and when the host changes it): grenades drawn from now on wear its looks. */
+  setWeaponSetLook(set: string | undefined): void {
+    this.setLook = set;
+  }
+
   setLocalLook(look: string | undefined): void {
     this.localLook = look;
     // Full body draws your own character instead: the arms are built only if first person falls back to them.
@@ -1961,7 +2115,9 @@ export class GameView {
       const cloaked = p.alive && (p.status & FX_CLOAK) !== 0;
       const enemy = !tag || tag.toLowerCase() === '#ff3b3b';
       const shown = cloaked ? (enemy ? 0.06 : 0.35) : 1;
-      this.setTag(a, cloaked && enemy ? null : tag);
+      // Behind smoke an enemy's marker isn't drawn either (the cloud hides the body; the marker would give it away).
+      const smoked = enemy && !!tag && this.smoke.length > 0 && this.smokeHides({ x: a.root.position.x, y: a.root.position.y + 1.4, z: a.root.position.z });
+      this.setTag(a, (cloaked || smoked) && enemy ? null : tag);
       // Team leaders wear a gold star over their marker, for both sides to see.
       const leads = p.alive && !cloaked && this.leaderSlots.has(p.slot);
       if (leads || a.crown) {
@@ -2409,7 +2565,7 @@ export class GameView {
   // ---------------------------------------------------------------- pickups
 
   private addPickup(e: PickupEntity, item = e.item): void {
-    const root = createPickupVisual(this.scene, this.models, item, `pickup_${e.id}`, true);
+    const root = createPickupVisual(this.scene, this.models, item, `pickup_${e.id}`, true, false, this.setLook);
     const baseY = e.position[1] + PICKUP_HOVER;
     root.position.set(e.position[0], baseY, e.position[2]);
     this.pickups.set(e.id, { root, baseY, phase: (e.position[0] * 7 + e.position[2] * 3) % (Math.PI * 2), item, placed: e.item });
@@ -2432,7 +2588,7 @@ export class GameView {
         // Not its materials: they are shared (the model library's, the ring colours' cache), and disposing them
         // drew every other copy of that gun, your own first-person one included, in plain white.
         p.root.dispose(false, false);
-        p.root = createPickupVisual(this.scene, this.models, want, `pickup_${id}`, true);
+        p.root = createPickupVisual(this.scene, this.models, want, `pickup_${id}`, true, false, this.setLook);
         p.root.position.copyFrom(at);
         p.item = want;
       }
@@ -2512,7 +2668,10 @@ export class GameView {
       // A flare burns in flight and where it sticks (Flame FX, map.lasting `fire.flare`).
       if (look === 'flare') this.lasting.want(`proj:${id}`, 'fire.flare', { x: pos[0], y: pos[1], z: pos[2] });
       if (look && ARSENAL_LOOKS.has(look)) animateArsenalProjectile(p.node, look, now, p.node.position.subtract(prev), p.born);
-      else if (look === 'grenade' || look === 'frag') p.node.rotation.x += 0.3;
+      // Grenades tumble while they fly and lie still where they stop.
+      else if (look === 'grenade' || look === 'frag' || look === 'vortexNade' || look === 'smoke') {
+        if (p.node.position.subtract(prev).lengthSquared() > 1e-6) p.node.rotation.x += 0.3;
+      }
       else if (look === 'rocket') {
         // Point the rocket along its flight.
         const d = p.node.position.subtract(prev);
@@ -2533,9 +2692,12 @@ export class GameView {
 
   private createProjectile(id: number, look: (typeof PROJECTILE_VISUALS)[number]): TransformNode {
     if (look === 'spear') return this.spearProjectile(id);
+    const kind = THROWN_KINDS.get(look);
+    const thrown = kind ? throwableModel(kind, this.setLook) : null;
+    if (thrown) return this.thrownProjectile(id, look, thrown);
     if (ARSENAL_LOOKS.has(look)) return createArsenalProjectile(this.scene, id, look);
     const node = new TransformNode(`proj_${id}`, this.scene);
-    const model = look === 'grenade' ? 'projectiles/grenade.glb' : look === 'frag' ? 'guns/frag.glb' : null;
+    const model = look === 'grenade' ? 'projectiles/grenade.glb' : null;
     if (model) {
       void this.models.instantiate(model, `${look}_${id}`).then((m) => {
         if (node.isDisposed()) return m.dispose();
@@ -2578,6 +2740,39 @@ export class GameView {
     }
     for (const m of node.getChildMeshes()) m.isPickable = false;
     return node;
+  }
+
+  /**
+   * A thrown grenade, in flight and where it lies: its throwable's model (instanced: a bot match throws dozens), the
+   * shapes drawn in code until it loads (and if it can't). The sticky grenade keeps its blinking light on top.
+   */
+  private thrownProjectile(id: number, look: (typeof PROJECTILE_VISUALS)[number], model: string): TransformNode {
+    const coded = ARSENAL_LOOKS.has(look);
+    const node = coded ? createArsenalProjectile(this.scene, id, look) : new TransformNode(`proj_${id}`, this.scene);
+    const shapes = node.getChildMeshes().filter((m) => !m.name.endsWith('_light'));
+    void this.models.instantiate(model, `thrown_${id}`, true).then(
+      (m) => {
+        if (node.isDisposed()) return m.dispose();
+        m.parent = node;
+        for (const s of shapes) s.setEnabled(false);
+        // The sticky grenade's light sits on the model's top (models are built centred on their bounds).
+        const light = node.getChildMeshes().find((c) => c.name.endsWith('_light'));
+        if (light) {
+          const b = m.getHierarchyBoundingVectors(true);
+          light.position.y = (b.max.y - b.min.y) / 2 + 0.01;
+        }
+      },
+      () => undefined,
+    );
+    for (const m of node.getChildMeshes()) m.isPickable = false;
+    return node;
+  }
+
+  /** How many grenades in flight or lying are drawn with their throwable's model (tests). */
+  thrownModelsDrawn(): number {
+    let n = 0;
+    for (const p of this.projectiles.values()) if (p.node.getChildren((c) => c.name.startsWith('thrown_'), true).length) n++;
+    return n;
   }
 
   /**
@@ -3275,6 +3470,82 @@ export class GameView {
   /** Ground hazards and fields from the latest snapshot. */
   updateZones(zones: readonly ZoneSnapshot[] | undefined, now: number): void {
     this.zoneVisuals.apply(zones, now);
+    this.smoke = this.zoneVisuals.smokeClouds();
+  }
+
+  /** The smoke clouds drawn now (smoke grenades): enemy markers behind one aren't drawn; inside one, grey fog. */
+  private smoke: SmokeCloud[] = [];
+  /** How deep in smoke your eye is, eased (0 clear, 1 thick): the fog follows it, so it never jumps. */
+  private smokeFog = 0;
+  private smokeFogAt = 0;
+  private smokeDryFog: { mode: number; color: Color3; density: number } | null = null;
+
+  /**
+   * Inside a smoke cloud you see a couple of metres (the match's sight checks let a body SMOKE.opaque m off show):
+   * the scene's fog turns a steady mid grey and thickens as your eye goes deeper, eased in and out over about two
+   * thirds of a second. No flash, no white-out and no flicker. Under water, the water's fog wins.
+   */
+  private updateSmokeFog(): void {
+    const now = performance.now();
+    const dt = Math.min(0.1, (now - (this.smokeFogAt || now)) / 1000);
+    this.smokeFogAt = now;
+    let deep = 0;
+    const eye = this.camera.position;
+    for (const c of this.smoke) {
+      const dx = (eye.x - c.x) / c.radius;
+      const dy = (eye.y - c.y) / (c.radius * SMOKE.squash);
+      const dz = (eye.z - c.z) / c.radius;
+      deep = Math.max(deep, Math.min(1, (1 - Math.sqrt(dx * dx + dy * dy + dz * dz)) * 2.5));
+    }
+    this.smokeFog += Math.max(-dt * 1.5, Math.min(dt * 1.5, deep - this.smokeFog));
+    if (this.underLiquid) return;
+    if (this.smokeFog < 0.005) {
+      this.smokeFog = 0;
+      if (this.smokeDryFog) {
+        this.scene.fogMode = this.smokeDryFog.mode;
+        this.scene.fogColor = this.smokeDryFog.color;
+        this.scene.fogDensity = this.smokeDryFog.density;
+        this.smokeDryFog = null;
+      }
+      this.smokeSkyBack();
+      return;
+    }
+    this.smokeDryFog ??= { mode: this.scene.fogMode, color: this.scene.fogColor.clone(), density: this.scene.fogDensity };
+    const dry = this.smokeDryFog;
+    const grey = Math.min(1, this.smokeFog * 1.5);
+    this.scene.fogMode = 2;
+    this.scene.fogColor = Color3.Lerp(dry.color, SMOKE_FOG, grey);
+    this.scene.fogDensity = dry.density + (SMOKE_FOG_DENSITY - dry.density) * this.smokeFog;
+    // The sky draws without fog (backdrop.ts): it fades to the same grey, or the skyline, and anyone against it,
+    // would show through the haze. Its brightness and glow are uniforms: no shader is built for it.
+    const sky = this.scene.getMaterialByName('backdrop_skyMat');
+    if (sky instanceof StandardMaterial && sky.reflectionTexture) {
+      if (this.smokeSky?.mat !== sky) {
+        this.smokeSkyBack();
+        this.smokeSky = { mat: sky, level: sky.reflectionTexture.level, glow: sky.emissiveColor.clone() };
+      }
+      sky.reflectionTexture.level = this.smokeSky.level * (1 - grey);
+      sky.emissiveColor = Color3.Lerp(this.smokeSky.glow, this.scene.fogColor, grey);
+    }
+  }
+
+  /** The sky as it was before smoke faded it (updateSmokeFog), and how bright it was then. */
+  private smokeSky: { mat: StandardMaterial; level: number; glow: Color3 } | null = null;
+
+  /** The sky back as it was, out of the smoke. */
+  private smokeSkyBack(): void {
+    const s = this.smokeSky;
+    if (!s) return;
+    this.smokeSky = null;
+    if (s.mat.reflectionTexture) s.mat.reflectionTexture.level = s.level;
+    s.mat.emissiveColor = s.glow;
+  }
+
+  /** Whether smoke hides a point from your eye (tests, and enemy markers). */
+  smokeHides(at: Vec3): boolean {
+    if (!this.smoke.length) return false;
+    const e = this.camera.position;
+    return smokeBlocks({ x: e.x, y: e.y, z: e.z }, at, this.smoke);
   }
 
   /** A solid beam (lasers, rails, freeze rays) that thins away. */

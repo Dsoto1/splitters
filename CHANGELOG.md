@@ -18,8 +18,9 @@ docs/ARSENAL.md "Weapon sets")
   weapon in any pickup. Standard: as before.
 - **Pickups roll within the set:** a weapon pickup holds one of the set's weapons of its own kind, else of the nearest
   kind it has (a sniper rifle pickup in Sci-fi is the railgun), a new one each time it comes back; grenade pickups hold
-  the set's grenades (Military frag and mine, Sci-fi sticky and vortex, Medieval incendiary and holy bomb, Chaos sheep,
-  holy bomb and cluster bomb).
+  the set's grenades (Military frag, mine and smoke, Sci-fi sticky, vortex and smoke, Medieval incendiary and holy
+  bomb, Chaos sheep, holy bomb and cluster bomb); in Military the frag looks like the realistic frag, in Sci-fi the
+  smoke grenade is the sci-fi canister.
 - **Each map has a default set** (MapMaker → Map properties → Weapon set; maps without one play Standard), and the host
   can pick another: Match setup → Advanced rules → Weapons ("Map default" names the map's own, and the setup's facts
   show the set in play), the pause menu's Host tab (it applies at once), or a server's `set` rule.
@@ -27,6 +28,31 @@ docs/ARSENAL.md "Weapon sets")
   the sheep (short, so it waddles the rest of the way) and the holy bomb (then run clear of it), and light their oil
   slicks with the oil slicker's igniter. `bot-report --set=…` and the scorecard list kills by weapon per set.
 - Map format v28 (the map's `weaponSet`); older maps load unchanged and play Standard. Saved setups keep their choice.
+
+**New weapon and grenade models, sharper textures for the gun in your hands, and a Smoke Grenade** (owner,
+2026-11-06: "replace our tommy gun with the 3DModelsCC0 one, and bring in those others to replace any one-off
+originals"; "we want these weapons to look a little sharper, clearer, better resolution"; docs/ARSENAL.md, "Weapons
+intake of 2026-11-06")
+- **Guns:** the Submachine Gun is a Suomi KP, the Assault Rifle an AK-47, the Burst Rifle an M4A1, the Pistol a
+  Makarov, the Machine Pistol a Grease Gun, the Shotgun a pump shotgun and the Marksman Rifle a scoped hunting rifle
+  (the CC0 Guns & Explosives pack); the Hand Cannon is the BK 220, the Heavy Revolver the Revolver Rustique, the Gilded
+  Pistol a gilded flintlock, the Pulse Pistol the Plasma Defender and the Nailgun the Scrapfire Assault Blaster (Meshy
+  Community). Each is held by points read off its own grip, handguard and stock, and still falls back to its model
+  built from the repo if its own fails to load.
+- **Grenades have models:** in your hands while you line up a throw (the gun goes away, both hands on it), in flight,
+  and as the pickup (two of it, not coloured balls): the frag is the Globe Grenade, the sticky the Countdown Sphere,
+  the vortex "just a grenade", the cluster bomb the Sunburst, the gas grenade the Toxic Splash, the incendiary a
+  Molotov; the mine's pickup is the AT mine. The holy bomb, sheep, airstrike flare, sandbags and dynamite stay as they
+  were.
+- **Sharper:** the gun in your own hands draws a copy with a 1024 px (Medium) or 2048 px (High) colour map and a
+  512 / 1024 px normal map, fetched only for the guns you carry and freed when you drop one; everyone else's copy
+  stays at 512 px. The new models keep their own metal and roughness (no flat matte finish), and steel reflects a soft
+  gradient in the map's own light.
+- **Smoke Grenade** (new, pickup "Smoke Grenades"): a grey cloud about 5 m across its middle for 18 s. Bots, turrets
+  and homing missiles can't see through it; you can't either (inside it, a grey haze you see 2-3 m through), and an
+  enemy's marker behind it isn't drawn. Bullets still go through. A hurt bot caught in the open throws one between
+  itself and its enemy, and a bot bounding cover to cover sends one ahead before it crosses open ground. No flash,
+  no white-out: there is still no flashbang.
 
 **Bots: snipers, cover to cover, playbooks per mode** (docs/BOT_AI_PLAN.md Phase B, part 2; docs/BOTS.md, "Snipers",
 "Cover-to-cover advance", "Team brain and route variety")

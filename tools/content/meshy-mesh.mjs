@@ -126,7 +126,7 @@ const HIDDEN_WORK = 40000;
  * triangles whose centre is inside that box before anything else: a part of the model (a vehicle's cockpit) cut far
  * less than the whole, with maps of its own (prepare-guns.mjs `interior`). Returns { doc, sourceTriangles, triangles }.
  */
-export async function meshyDocument(fbxPath, { triangles, recolor = null, renormal = null, metallic = 0, roughness = 0.75, maxError = 0.02, surface = 'texture', textureSize = 1024, normalSize = 1024, dropHidden = false, sloppy = false, lod = null, crop = null } = {}) {
+export async function meshyDocument(fbxPath, { triangles, recolor = null, renormal = null, metallic = 0, roughness = 0.75, maxError = 0.02, surface = 'texture', textureSize = 1024, normalSize = 1024, dropHidden = false, sloppy = false, lod = null, crop = null, keepMetalRough = false } = {}) {
   const glb = /\.glb$/i.test(fbxPath);
   const { doc, normalImage, metalRoughImage = null } = glb ? await glbDocument(fbxPath) : { ...(await fbxToDocument(fbxPath, { keepUv: true })), normalImage: existsSync(fbxPath.replace(/\.fbx$/i, '_normal.png')) ? readFileSync(fbxPath.replace(/\.fbx$/i, '_normal.png')) : null };
   const prims = doc.getRoot().listMeshes().flatMap((m) => m.listPrimitives());
@@ -192,9 +192,14 @@ export async function meshyDocument(fbxPath, { triangles, recolor = null, renorm
       prim.setAttribute('TEXCOORD_0', null).setAttribute('POSITION', acc('VEC3', low.pos)).setAttribute('NORMAL', acc('VEC3', low.nrm)).setAttribute('COLOR_0', acc('VEC3', low.col)).setIndices(acc('SCALAR', low.idx));
       compactPrimitive(prim);
     } else {
-      const out = await rebake(low, hi, map, textureSize, maxError);
+      // `keepMetalRough` (a GLB's metal/roughness map): painted into the same new charts from the same hits, and kept
+      // on the material (glTF's metallicRoughnessTexture: roughness green, metal blue) instead of a flat matte finish.
+      const keep = keepMetalRough && metalRough;
+      if (keepMetalRough && !metalRough) console.log('  keepMetalRough: the download has no metal/roughness map; matte');
+      const out = await rebake(low, hi, map, textureSize, maxError, keep ? { also: [metalRough] } : {});
       prim.setAttribute('POSITION', acc('VEC3', out.pos)).setAttribute('NORMAL', acc('VEC3', out.nrm)).setAttribute('TEXCOORD_0', acc('VEC2', out.uv)).setIndices(acc('SCALAR', out.idx));
       material.setBaseColorTexture(doc.createTexture('albedo').setImage(new Uint8Array(out.jpeg)).setMimeType('image/jpeg'));
+      if (keep) material.setMetallicRoughnessTexture(doc.createTexture('metalRough').setImage(new Uint8Array(out.alsoJpeg[0])).setMimeType('image/jpeg')).setMetallicFactor(1).setRoughnessFactor(1);
       await bake({ P: out.pos, N: out.nrm, UV: out.uv, idx: out.idx }, hi);
     }
   }
@@ -229,7 +234,7 @@ function cropToBox(prim, { min, max }) {
  * Babylon as the mesh's LOD level, see models.ts). Same material and texture coordinates (the colour and normal maps
  * fit it), cut to `ratio` of the triangles, the charts' seams allowed to collapse where their sides sit together.
  */
-function addLod(doc, prim, [ratio, distance]) {
+export function addLod(doc, prim, [ratio, distance]) {
   const P = new Float32Array(prim.getAttribute('POSITION').getArray());
   const UV = new Float32Array(prim.getAttribute('TEXCOORD_0')?.getArray() ?? new Float32Array((P.length / 3) * 2));
   const idx = new Uint32Array(prim.getIndices().getArray());
@@ -493,7 +498,7 @@ const CREASE = Math.cos((40 * Math.PI) / 180);
  * how far the rays look (share of the model's size, at least maxError * 1.5; thin cloth over a body wants it short). Returns { pos, nrm, uv, idx, jpeg, from } (unwelded where charts or creases split; `from[i]`: the
  * low mesh's vertex output vertex i was made from, so per-vertex data such as skin weights can follow).
  */
-export async function rebake(low, hi, map, size, maxError, { grow = 0, crease = CREASE, quality = 88, reach: near = 0.03, dense = null } = {}) {
+export async function rebake(low, hi, map, size, maxError, { grow = 0, crease = CREASE, quality = 88, reach: near = 0.03, dense = null, also = [] } = {}) {
   const { pos, idx } = low;
   const T = idx.length / 3;
   // Face normals and areas.
@@ -630,8 +635,8 @@ export async function rebake(low, hi, map, size, maxError, { grow = 0, crease = 
   const N2 = new Float32Array(outNrm);
   // Paint: every texel inside (or within a texel of) a triangle, from the high mesh along the normal.
   const caster = bvh(hi.P, hi.I);
-  const { data: src, info } = map;
-  const sample = (u, v) => {
+  /** Bilinear RGB of a raw image at (u, v). */
+  const sampler = ({ data: src, info }) => (u, v) => {
     const x = Math.min(info.width - 1.001, Math.max(0, u * info.width - 0.5));
     const y = Math.min(info.height - 1.001, Math.max(0, v * info.height - 0.5));
     const [x0, y0] = [Math.floor(x), Math.floor(y)];
@@ -643,6 +648,10 @@ export async function rebake(low, hi, map, size, maxError, { grow = 0, crease = 
     }
     return out;
   };
+  const sample = sampler(map);
+  // `also`: more of the download's maps in its own texture layout (a GLB's metal/roughness), painted into the same
+  // texels from the same hits (one cast for all of them).
+  const extra = also.map((m) => ({ sample: sampler(m), img: Buffer.alloc(size * size * 3) }));
   // As far as the simplifier may have moved the surface, and a little more.
   const reach = caster.size * Math.max(near, maxError * 1.5);
   const img = Buffer.alloc(size * size * 3);
@@ -680,17 +689,25 @@ export async function rebake(low, hi, map, size, maxError, { grow = 0, crease = 
         }
         const [i0, i1, i2] = [hi.I[hit.tri * 3], hi.I[hit.tri * 3 + 1], hi.I[hit.tri * 3 + 2]];
         const w0 = 1 - hit.u - hit.v;
-        const rgb = sample(hi.UV[i0 * 2] * w0 + hi.UV[i1 * 2] * hit.u + hi.UV[i2 * 2] * hit.v, hi.UV[i0 * 2 + 1] * w0 + hi.UV[i1 * 2 + 1] * hit.u + hi.UV[i2 * 2 + 1] * hit.v);
+        const [hu, hv] = [hi.UV[i0 * 2] * w0 + hi.UV[i1 * 2] * hit.u + hi.UV[i2 * 2] * hit.v, hi.UV[i0 * 2 + 1] * w0 + hi.UV[i1 * 2 + 1] * hit.u + hi.UV[i2 * 2 + 1] * hit.v];
+        const rgb = sample(hu, hv);
         img.set(rgb.map((v) => Math.round(v)), (y * size + x) * 3);
+        for (const e of extra) e.img.set(e.sample(hu, hv).map((v) => Math.round(v)), (y * size + x) * 3);
         empty[y * size + x] = 0;
         painted++;
       }
     }
   }
   console.log(`  rebaked: ${list.length} charts, ${painted} texels painted, ${missed} missed (filled from their neighbours)`);
+  // The extra maps first: fillMasked clears the mask as it fills.
+  const alsoJpeg = [];
+  for (const e of extra) {
+    await fillMasked({ data: e.img, info: { width: size, height: size } }, empty.slice());
+    alsoJpeg.push(await sharp(e.img, { raw: { width: size, height: size, channels: 3 } }).jpeg({ quality }).toBuffer());
+  }
   await fillMasked({ data: img, info: { width: size, height: size } }, empty);
   const jpeg = await sharp(img, { raw: { width: size, height: size, channels: 3 } }).jpeg({ quality }).toBuffer();
-  return { pos: P2, nrm: N2, uv, idx: outIdx, jpeg, from: Uint32Array.from(outFrom) };
+  return { pos: P2, nrm: N2, uv, idx: outIdx, jpeg, alsoJpeg, from: Uint32Array.from(outFrom) };
 }
 
 /** Vertex v of `pos` projected onto a chart's plane (`basis`: two unit vectors across its normal). */

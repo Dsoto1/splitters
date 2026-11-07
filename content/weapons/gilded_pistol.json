@@ -20,11 +20,15 @@
   "recoil": { "bloom": 0, "maxBloom": 0, "recover": 0 },
   "kick": { "pitch": [0.05], "yaw": [0.0125, -0.0125], "variance": 0.010000000000000002, "delay": 4, "settle": 8, "rate": 0.1, "visual": 0.75 },
   "view": {
-    "model": "weapons/gilded_pistol.glb",
+    "model": "guns/flintlock.glb",
+    "held": { "medium": "guns/flintlock.medium.glb", "high": "guns/flintlock.high.glb" },
+    "fallback": "weapons/gilded_pistol.glb",
     "viewOffset": [0.2, -0.18, 0.42],
     "tracer": "#ffe070",
-    "hold": { "style": "pistol", "grip": [0, -0.023, -0.073], "support": [-0.02, -0.033, -0.063], "rake": 7 },
+    "hold": { "style": "pistol", "grip": [0, -0.045, -0.13], "support": [-0.02, -0.055, -0.12], "rake": 28 },
+    "muzzleAt": [0, 0.05, 0.165],
     "sound": "fire.heavy"
   },
-  "notes": { "group": "The extended arsenal: every one fires differently. 2: sidearms." }
+  "notes": {
+    "model": "The Meshy community gilded flintlock pistol (an unnamed download, CC0 per the owner; content/guns.json): one shot, one kill. The flat-colour kit pistol is the fallback.", "group": "The extended arsenal: every one fires differently. 2: sidearms." }
 }

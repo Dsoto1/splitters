@@ -19,7 +19,7 @@ export const WEAPON_SET_DEFS: Readonly<Record<(typeof WEAPON_SET_IDS)[number], W
     spawn: ['core.knife', 'core.pistol', 'core.rifle'],
     sniper: 'core.marksman',
     weapons: ['core.rifle', 'core.burst_rifle', 'core.smg', 'core.machine_pistol', 'core.lmg', 'core.shotgun', 'core.auto_shotgun', 'core.sawed_off', 'core.sniper', 'core.marksman', 'core.launcher', 'core.rockets', 'core.pistol', 'core.revolver', 'core.hand_cannon'],
-    throwables: ['frag', 'mine'],
+    throwables: ['frag', 'mine', 'smoke'],
   },
   scifi: {
     id: 'scifi',
@@ -28,7 +28,7 @@ export const WEAPON_SET_DEFS: Readonly<Record<(typeof WEAPON_SET_IDS)[number], W
     spawn: ['core.knife', 'core.pulse_pistol', 'core.plasma'],
     sniper: 'core.railgun',
     weapons: ['core.plasma', 'core.laser_rifle', 'core.railgun', 'core.pulse_pistol', 'core.arc_caster', 'core.disc_launcher', 'core.swarm', 'core.guided'],
-    throwables: ['sticky', 'vortex'],
+    throwables: ['sticky', 'vortex', 'smoke'],
   },
   medieval: {
     id: 'medieval',
