@@ -1,8 +1,10 @@
-// Parkour links (nav/parkour.ts; BOT_AI_PLAN.md Phase C item 1) and ground that goes (Scenario.surfaces, Phase C item 2):
-// drops, gap jumps and jumps up, played through the movement code at load; bots that take them; routes off a fallen bridge.
+// Bot AI Phase C: parkour links (nav/parkour.ts, item 1), ground that goes (Scenario.surfaces, item 2), routes along a
+// group's corridor and the per-tick search budget (item 4): drops, gap jumps and jumps up, played through the movement
+// code at load; bots that take them; routes off a fallen bridge; a route that keeps to its corridor.
+import { readFileSync } from 'node:fs';
 import { beforeAll, describe, expect, it } from 'vitest';
 import { BUTTON_CROUCH, BUTTON_JUMP, CORE_BOT_PROFILES, PhysicsWorld, TICK_DT, TICK_RATE, buildMapGeometry, initPhysics, loadMap, stepMovement, type MapDocument, type MoveState } from '../src/index.ts';
-import { Match, initNavigation, mapNavigation } from '../src/match.ts';
+import { Match, findCorridors, initNavigation, mapNavigation } from '../src/match.ts';
 import { parkourAlong, parkourInput, type ParkourLink } from '../src/nav/parkour.ts';
 import { makeMap } from './helpers.ts';
 
@@ -179,5 +181,47 @@ describe('ground that goes', () => {
     expect(after).not.toBeNull();
     expect(maxZ(after)).toBeGreaterThan(14);
     match.destroy();
+  });
+});
+
+describe('routes along a corridor, and the search budget', () => {
+  it('Bunker Cross: a route along each of the three lanes between the flags keeps to that lane all the way (NavWorld.pathAlong)', () => {
+    const map = loadMap(readFileSync(new URL('../../../maps/bunker_cross.json', import.meta.url), 'utf8'));
+    if (!map.ok) throw new Error('bunker_cross failed to load');
+    const built = mapNavigation(map.map);
+    const [from, to] = map.map.entities.filter((e) => e.kind === 'flag').map((e) => ({ x: e.position[0], y: e.position[1], z: e.position[2] }));
+    const trip = findCorridors(built.nav, from!, to!);
+    expect(trip.corridors.length).toBe(3);
+    for (const c of trip.corridors) {
+      const path = built.nav.pathAlong(from!, c.polys, to!);
+      expect(path).not.toBeNull();
+      // Every 2 m of it within a few metres of the lane's own line (the lanes are 10 m and more apart), to the flag.
+      for (let i = 1; i < path!.length; i++) {
+        const a = path![i - 1]!;
+        const b = path![i]!;
+        const n = Math.max(1, Math.ceil(Math.hypot(b.x - a.x, b.z - a.z) / 2));
+        for (let k = 0; k <= n; k++) {
+          const p = { x: a.x + ((b.x - a.x) * k) / n, z: a.z + ((b.z - a.z) * k) / n };
+          expect(Math.min(...c.line.map((q) => Math.hypot(q.x - p.x, q.z - p.z)))).toBeLessThan(5);
+        }
+      }
+      const end = path![path!.length - 1]!;
+      expect(Math.hypot(end.x - to!.x, end.z - to!.z)).toBeLessThan(1.5);
+    }
+    // Not to somewhere other than the lane's end.
+    expect(built.nav.pathAlong(from!, trip.corridors[1]!.polys, { x: (from!.x + to!.x) / 2, y: from!.y, z: (from!.z + to!.z) / 2 })).toBeNull();
+    built.physics.free();
+    built.nav.destroy();
+  });
+
+  it('a tick has so many route searches; the rest wait for the next', () => {
+    const built = mapNavigation(gapMap(false));
+    built.nav.beginTick(2);
+    expect([built.nav.takeSearch(), built.nav.takeSearch(), built.nav.takeSearch()]).toEqual([true, true, false]);
+    expect(built.nav.searchesPutOff).toBe(1);
+    built.nav.beginTick(2);
+    expect(built.nav.takeSearch()).toBe(true);
+    built.physics.free();
+    built.nav.destroy();
   });
 });
