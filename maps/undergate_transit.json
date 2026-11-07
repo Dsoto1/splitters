@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 27,
+  "formatVersion": 28,
   "metadata": {
     "id": "undergate_transit",
     "name": "Undergate Transit",
@@ -20,11 +20,11 @@
     ],
     "release": {
       "mapId": "m_5lhttjun3ohakisn",
-      "versionId": "v_vwvwbng3zm3us62b",
-      "revision": 1,
-      "contentHash": "sha256:10c46ee818df3f5393876c02b8b87833f1553b0e224e3f0a4e90e38d25c1a54c",
-      "schemaVersion": 27,
-      "releasedAt": "2026-11-06T23:12:05.633Z"
+      "versionId": "v_ktlfptzaixp7g2rf",
+      "revision": 2,
+      "contentHash": "sha256:384ee485cb1e425cdc7548ddf43cf319c971a837b5f99b6d6d57e2710214d0b1",
+      "schemaVersion": 28,
+      "releasedAt": "2026-11-07T11:10:37.456Z"
     }
   },
   "classicStructure": {
@@ -23870,5 +23870,6 @@
       7
     ]
   },
-  "dependencies": []
+  "dependencies": [],
+  "weaponSet": "scifi"
 }

@@ -5,6 +5,12 @@ import {
   CORE_LOOKS,
   botCastLabel,
   botSetLabel,
+  getWeaponSet,
+  matchWeaponSet,
+  mapWeaponSet,
+  setThrowables,
+  THROWABLE_DEFS,
+  weaponSetList,
   type BotProfile,
   type BotSet,
   NPC_LOOKS,
@@ -92,7 +98,7 @@ import type { AudioSystem } from '../audio/audio.ts';
 import { listCustomLooks } from '../designer/customLooks.ts';
 import { mapThumbs, thumbPair, type MapThumbs } from './mapThumbs.ts';
 import type { MapMeta } from '../mapIndex.ts';
-import { botCastSelect, choice, field, fitChip, fitList, fold as foldEl, inert, infoTip, limitsText, section, segmented, settingRow, sizeChips, stepper, teamEditor, type ChoiceOption } from './setupControls.ts';
+import { botCastSelect, choice, field, fitChip, fitList, fold as foldEl, inert, infoTip, limitsText, section, segmented, settingRow, sizeChips, stepper, teamEditor, weaponSetSelect, type ChoiceOption } from './setupControls.ts';
 import { deleteSetup, lastSetup, listSetups, saveSetupAs, setLastSetup } from './savedSetups.ts';
 import type { MenuScene } from './menuScene.ts';
 import { weaponIcon } from './weaponIcons.ts';
@@ -194,7 +200,7 @@ const SETUP_SECTIONS = ['setup-teams', 'setup-bots', 'setup-advanced'] as const;
 const compactSetup = (): boolean => isTouchDevice() || (typeof matchMedia === 'function' && matchMedia('(max-width: 900px), (max-height: 600px)').matches);
 
 /** Advanced rules' summary names the changes that matter most first ("9 changed · Low gravity · Tactical bots +7"). */
-const RULE_RANK: Record<string, number> = { weapons: 0, gravity: 1, style: 2, lethality: 3, ballistics: 4, randomchars: 5, classes: 6, ff: 7, fall: 8, stats: 9, sizes: 10 };
+const RULE_RANK: Record<string, number> = { weapons: 0, set: 0, gravity: 1, style: 2, lethality: 3, ballistics: 4, randomchars: 5, classes: 6, ff: 7, fall: 8, stats: 9, sizes: 10 };
 
 /** Draw each card's plan once it scrolls into view in `root` (a long list draws only what is seen). */
 function lazyPlans(root: HTMLElement): (card: Element, draw: () => void) => void {
@@ -1029,11 +1035,14 @@ export class FrontEnd {
         if (b) b.scrollTop = this.setupScroll = 0;
       }
     };
+    // The weapon set in play, when it isn't Standard (the map's default or the setup's own; none with fixed weapons).
+    const factSet = s.spears || s.discs || s.mode === 'core.discs' ? null : getWeaponSet(matchWeaponSet({ weaponSet: s.weaponSet }, map));
     const facts = el(
       'div',
       { class: 'setup-facts', id: 'setup-summary' },
       el('span', { class: 'fact-players', title: `Made for ${rec.min}–${rec.max} players. Bots fill every place you don't.` }, setupSummary(s, map, 1, cap.max)),
       el('span', { class: 'fact-time', title: coop ? 'Ends through the mission' : 'How long it runs' }, length),
+      ...(factSet && factSet.id !== 'standard' ? [el('span', { class: 'fact-weapons', id: 'setup-weapons-fact', title: `${factSet.blurb} (${s.weaponSet === undefined ? "the map's default" : 'your choice'}; Advanced rules → Weapons)` }, `${factSet.name} weapons`)] : []),
     );
     const featured = !current.group && FEATURED_MAPS.includes(current.key);
     const head = el(
@@ -1248,9 +1257,15 @@ export class FrontEnd {
       { id: 'emotes', label: 'Emotes & messages', tip: 'Quick messages (B, then 1-7; 1 "Follow me!" and 7 "Hold here!" also order your team\'s bots), the dance emote (N). Pings (T) always work.', changed: s.emotes === false, value: 'No emotes', control: choice([['on', 'On'], ['off', 'Off']], s.emotes === false ? 'off' : 'on', (v) => this.change((x) => (x.emotes = v === 'on'))) },
     ];
     const restricted = s.spears ? 'Spears only' : s.discs ? 'Discs only' : null;
+    // The weapon set: the setup's, else the map's default (Disc Arena and spears or discs only play none).
+    const fixedWeapons = restricted ? `${restricted}: everyone holds the same weapon, whatever the set.` : s.mode === 'core.discs' ? 'Disc Arena: everyone throws arena discs, whatever the set.' : null;
+    const mapSet = mapWeaponSet(map);
+    const playSet = getWeaponSet(matchWeaponSet({ weaponSet: s.weaponSet }, map));
+    const setTip = `What everyone spawns with, what the weapon and grenade pickups hold (rolled within the set, a pickup of a kind it lacks holding the nearest kind it has) and what drops.\n\n${weaponSetList().map((w) => `${w.name}: ${w.blurb}`).join('\n\n')}\n\nMap default: what the map's maker chose (this map: ${getWeaponSet(mapSet).name}).`;
     const arsenal: typeof extras = [
+      { id: 'set', label: 'Weapon set', tip: setTip, changed: s.weaponSet !== undefined && !fixedWeapons, value: `${playSet.name} weapons`, control: weaponSetSelect(s.weaponSet, mapSet, (v) => this.change((x) => (x.weaponSet = v)), 'arcade-weapons', !!fixedWeapons), disabled: fixedWeapons },
       { id: 'weapons', label: 'Weapons & pickups', tip: 'Normal: the map\'s weapons, ammo and grenades lie about. Spears only: everyone holds one throwing spear (one hit kills; go and fetch it back). Discs only: everyone throws bouncing arena discs that knock players about without hurting (Disc Arena rules). No weapon, ammo or grenade pickups either way.', changed: !!s.spears || !!s.discs, value: s.discs ? 'Discs only' : 'Spears only', control: choice([['normal', 'Normal'], ['spears', 'Spears only'], ['discs', 'Discs only']], s.spears ? 'spears' : s.discs ? 'discs' : 'normal', (v) => this.change((x) => ((x.spears = v === 'spears' || undefined), (x.discs = v === 'discs' || undefined)))) },
-      { id: 'mix', label: 'Mix up weapon pickups', tip: "Every weapon pickup the map's maker didn't mark \"keep fixed\" holds a random weapon of the same kind as the one placed there (a pistol stays a pistol, a rifle a rifle), and a new one each time it comes back.", changed: !!s.mixPickups && !restricted, value: 'Mixed-up pickups', control: choice([['off', 'Off'], ['on', 'On']], s.mixPickups ? 'on' : 'off', (v) => this.change((x) => (x.mixPickups = v === 'on' || undefined)), 'arcade-mix'), disabled: restricted ? `${restricted}: no weapon pickups.` : null },
+      { id: 'mix', label: 'Mix up weapon pickups', tip: "Every weapon pickup the map's maker didn't mark \"keep fixed\" holds a random weapon of the same kind as the one placed there (a pistol stays a pistol, a rifle a rifle), and a new one each time it comes back.", changed: !!s.mixPickups && !restricted && !playSet.weapons, value: 'Mixed-up pickups', control: choice([['off', 'Off'], ['on', 'On']], s.mixPickups ? 'on' : 'off', (v) => this.change((x) => (x.mixPickups = v === 'on' || undefined)), 'arcade-mix'), disabled: restricted ? `${restricted}: no weapon pickups.` : playSet.weapons ? `${playSet.name} weapons: every weapon pickup already holds one of the set's, a new one each time it comes back.` : null },
       { id: 'drops', label: 'Drop weapon on death', tip: "A fallen player's or bot's primary (the gun in hand, else their best one; never the starting pistol or knife) lies at the body for 30 s with the ammo it had left. Walk over it to take it, or its ammo if you have one. The rest of what they carried is recycled.", changed: s.dropWeapons === false && !restricted && s.mode !== 'core.race' && s.mode !== 'core.discs', value: 'No weapon drops', control: choice([['on', 'On'], ['off', 'Off']], s.dropWeapons === false ? 'off' : 'on', (v) => this.change((x) => (x.dropWeapons = v === 'off' ? false : undefined)), 'arcade-drops'), disabled: restricted ? `${restricted}: no weapon drops.` : s.mode === 'core.race' || s.mode === 'core.discs' ? `Nothing drops in ${MODE_LABEL[s.mode]}.` : null },
       { id: 'classes', label: 'Classes', tip: 'Everyone picks one of nine classes (L or , in play; it opens when you join and when you are down): Runner, Rocketeer, Torch, Breacher, Bulwark, Mechanic (G: sentry that heals and restocks), Medic (medi-beam, G: overcharge), Marksman and Shade (G: cloak, backstabs). Limits cap how many on a team play the same class.', changed: !!s.classes && !restricted, value: `Classes${s.classLimit ? ` (max ${s.classLimit})` : ''}`, control: choice([['off', 'Off'], ['on', 'On'], ['1', 'Max 1'], ['2', 'Max 2']], !s.classes ? 'off' : s.classLimit ? String(s.classLimit) : 'on', (v) => this.change((x) => ((x.classes = v !== 'off' || undefined), (x.classLimit = v === '1' || v === '2' ? Number(v) : undefined)))), disabled: restricted ? `Classes don't mix with ${restricted.toLowerCase()}.` : null },
       { id: 'vehicles', label: 'Vehicle damage', tip: "Normal: vehicles smoke, catch fire and blow up. Tough: they take half damage. Off: they can't be destroyed (except by falling off the map). Turrets and sentries always take full damage.", changed: !!s.vehicleDamage, value: `${s.vehicleDamage === 'off' ? 'Indestructible' : 'Tough'} vehicles`, control: choice([['normal', 'Normal'], ['tough', 'Tough'], ['off', 'Off']], s.vehicleDamage ?? 'normal', (v) => this.change((x) => (x.vehicleDamage = v === 'normal' ? undefined : (v as 'tough' | 'off')))), disabled: map.entities.some((e) => e.kind === 'mount') || race ? null : 'This map has no vehicles.' },
@@ -1265,7 +1280,7 @@ export class FrontEnd {
     const changed = [...live(extras), ...live(arsenal), ...live(botRules)].sort((a, b) => (RULE_RANK[a.id] ?? 50) - (RULE_RANK[b.id] ?? 50));
     const reset = el('button', { type: 'button', class: 'link rule-reset', id: 'setup-reset', textContent: 'Reset', title: 'Back to the standard rules (every variant off)' });
     reset.addEventListener('click', () => this.change((x) => {
-      for (const k of ['spears', 'discs', 'mixPickups', 'dropWeapons', 'classes', 'classLimit', 'botStyle', 'botCast', 'gravity', 'fallDamage', 'friendlyFire', 'killstreaks', 'squadSpawn', 'emotes', 'sizes', 'stats', 'randomChars', 'vehicleDamage', 'leaders', 'lethality', 'ballistics', 'respawn'] as const) delete x[k];
+      for (const k of ['spears', 'discs', 'mixPickups', 'dropWeapons', 'weaponSet', 'classes', 'classLimit', 'botStyle', 'botCast', 'gravity', 'fallDamage', 'friendlyFire', 'killstreaks', 'squadSpawn', 'emotes', 'sizes', 'stats', 'randomChars', 'vehicleDamage', 'leaders', 'lethality', 'ballistics', 'respawn'] as const) delete x[k];
     }));
     const count = (xs: typeof extras) => {
       const n = live(xs).length;
@@ -1877,15 +1892,19 @@ export class FrontEnd {
     const img = el('img', { alt: '' });
     void this.portraits.get(id).then((src) => (img.src = src), () => undefined);
     const outfits = [...new Set(l.parts.map((p) => partInfo(p)?.outfit).filter((x): x is 'ranger' | 'peasant' | 'athlete' => !!x))].map((o) => FAMILY_LABEL[o]).join(' / ');
+    // What you spawn with in the match setup's weapon set (the setup's own, else its map's default; Standard: the mode's).
+    const kitSet = getWeaponSet(matchWeaponSet({ weaponSet: this.setup.weaponSet }, this.currentMap().map ?? null));
+    const grenade = setThrowables(kitSet)?.[0] ?? 'frag';
     const loadout = el(
       'div',
       { class: 'loadout' },
-      el('h4', { textContent: 'Loadout' }),
-      ...DEFAULT_RULES['core.deathmatch'].startingWeapons.map((w) => {
+      el('h4', { textContent: kitSet.id === 'standard' ? 'Loadout' : `Loadout · ${kitSet.name}` }),
+      ...(kitSet.spawn ?? DEFAULT_RULES[this.setup.mode]?.startingWeapons ?? DEFAULT_RULES['core.deathmatch'].startingWeapons).map((w) => {
         const icon = weaponIcon(w, 'wicon large');
         return el('span', { title: getWeapon(w).displayName }, ...(icon ? [icon] : []), getWeapon(w).displayName);
       }),
-      el('span', { title: 'Frag grenade (G)' }, '● Frag grenade'),
+      ...(kitSet.randomGun ? [el('span', { title: `A random main gun of the ${kitSet.name} set, a new one each life` }, '＋ A random gun each life')] : []),
+      el('span', { title: `${THROWABLE_DEFS[grenade].displayName} (G)` }, `● ${THROWABLE_DEFS[grenade].displayName}`),
     );
     // Character stats (shown while the match setup plays with them): each against everyone's range.
     const stats = this.setup.stats === false ? null : statBars(id, this.setup.sizes !== false);

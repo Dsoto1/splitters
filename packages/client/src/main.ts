@@ -902,9 +902,11 @@ else if (params.get('mode') === 'assets') {
 else if (params.get('mode') === 'designer') void app.openDesigner();
 else if (params.has('offline')) {
   const which = params.get('offline');
-  // &classes=1 (or a number: the per-team class limit) plays with Classes.
+  // &classes=1 (or a number: the per-team class limit) plays with Classes; &weapons=chaos a weapon set (standard,
+  // military…: sim/weaponSets.ts) over the map's default.
   const classes = params.get('classes');
-  void app.playOffline(which || 'arena', params.get('gamemode'), classes ? { classes: true, ...(Number(classes) > 1 ? { classLimit: Number(classes) } : {}) } : {}, Math.max(0, Math.min(96, Number(params.get('bots')) || 0)));
+  const weapons = params.get('weapons');
+  void app.playOffline(which || 'arena', params.get('gamemode'), { ...(classes ? { classes: true, ...(Number(classes) > 1 ? { classLimit: Number(classes) } : {}) } : {}), ...(weapons ? { weaponSet: weapons } : {}) }, Math.max(0, Math.min(96, Number(params.get('bots')) || 0)));
 } else if (params.has('join')) void app.init().then(() => app.joinCode(params.get('join') ?? '', app.front!.displayName || 'Player'));
 else if (params.has('autojoin')) void app.init().then(() => app.playOnline(app.front!.server, app.front!.name));
 else void app.showMenu();

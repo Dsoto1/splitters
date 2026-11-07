@@ -50,7 +50,8 @@ import { classStats, matchStats, type CharacterStats } from './characterStats.ts
 import { randomLook } from './randomLooks.ts';
 import { RESOURCE_BUDGETS } from '../map/budgets.ts';
 import { ARMOR_ABSORB, DAMAGE_BOOST, MAX_ARMOR, PICKUP_RADIUS, SPEED_BOOST, STREAK_REWARDS, getItem, type ItemDefinition } from './items.ts';
-import { pickupPool, rollPickup } from './pickupRoll.ts';
+import { rollPickup } from './pickupRoll.ts';
+import { setAllowsDrop, setLoadout, setPickupPool, setSpawnWeapons, weaponSetInPlay, type WeaponSetDef } from './weaponSets.ts';
 import { DROP_LIE_SECONDS, DROP_REACH, MAX_DROPS, chooseDrop, dropItem, dropSpent, takeDropAmmo, type WeaponDrop } from './drops.ts';
 import { bodyHeightOf, eyeHeightOf, stanceOf } from './movement.ts';
 import { thirdPersonAim, type RayQuery } from './thirdPerson.ts';
@@ -257,6 +258,8 @@ export interface Combatant {
   /** Random characters (rules.randomCharacters): the look it chose, kept while it plays random ones; and lives begun. */
   ownLook?: string;
   lives?: number;
+  /** Lives begun in this match (1 from the first spawn): a weapon set's random spawn gun is rolled for each (sim/weaponSets.ts). */
+  spawns?: number;
   /** Health on spawn and the most health pickups can give. */
   maxHealth: number;
   /** Dancing until this tick (emote); and the next tick a quick message or emote may be sent. */
@@ -1529,8 +1532,9 @@ export class Match {
    */
   setRules(patch: Partial<MatchRules>): void {
     (this as { rules: MatchRules }).rules = { ...this.rules, ...patch };
-    // "Mix up weapon pickups" turned on or off: every pickup it touches rolls (or goes back to what was placed) now.
-    if ('mixPickups' in patch) for (const p of this.pickups) this.repool(p);
+    // "Mix up weapon pickups" turned on or off, or another weapon set: every pickup it touches rolls (or goes back to
+    // what was placed) now; everyone's next life spawns with the set's loadout.
+    if ('mixPickups' in patch || 'weaponSet' in patch) for (const p of this.pickups) this.repool(p);
     // Weapon drops turned off: the ones lying about go too.
     if (!dropsInPlay(this.rules)) this.drops.length = 0;
   }
@@ -2180,6 +2184,8 @@ export class Match {
       this.seed,
     );
     for (const [slot, role] of roles) this.director.setRole(slot, role);
+    // Bots that spawned this tick, before their roles were known: a sniper takes the weapon set's scoped gun now.
+    for (const c of bots) this.rearmForRole(c);
     // The common trips' corridors, here at setup rather than in a tick (a few ms each).
     this.botTrips();
     if (!this.director.vantage && [...roles.values()].some((r) => r === 'camper' || r === 'sniper')) {
@@ -5039,8 +5045,10 @@ export class Match {
    */
   private dropWeapon(c: Combatant): void {
     if (!dropsInPlay(this.rules)) return;
-    const defaults = new Set([...this.rules.startingWeapons, ...(c.cls ? CLASS_DEFS[c.cls.id].weapons : [])]);
-    const w = chooseDrop(c.weapons.values(), c.weapons.get(c.current), defaults);
+    // Never what everyone spawns with (the set's, else the mode's) or the class's own; only the weapon set's weapons.
+    const set = this.weaponSet;
+    const defaults = new Set([...(set ? setSpawnWeapons(set, this.rules) : this.rules.startingWeapons), ...(c.cls ? CLASS_DEFS[c.cls.id].weapons : [])]);
+    const w = chooseDrop(c.weapons.values(), c.weapons.get(c.current), defaults, (def) => setAllowsDrop(set, def.id));
     const item = w && dropItem(w.def);
     if (!w || !item) return;
     const at = c.move.pos;
@@ -5079,9 +5087,9 @@ export class Match {
     return this.drops.map((d) => [d.id, d.item.id, r3(d.pos.x), r3(d.pos.y), r3(d.pos.z), r3(d.yaw)]);
   }
 
-  /** Work out what a pickup rolls from (its own category, or the host's mix-up), and roll it afresh when that changed. */
+  /** Work out what a pickup rolls from (the weapon set, its own category, or the host's mix-up), and roll it afresh when that changed. */
   private repool(p: PickupState): void {
-    const pool = pickupPool(p.entity, !!this.rules.mixPickups);
+    const pool = setPickupPool(this.weaponSet, p.entity, !!this.rules.mixPickups);
     // Pools are shared per category (categoryItems), so the same pool is the same array.
     if (pool === p.pool) return;
     p.pool = pool;
@@ -5236,7 +5244,8 @@ export class Match {
     c.semiLatch = false;
     c.gun = newGunState();
     c.reload = null;
-    this.loadout(c);
+    c.spawns = (c.spawns ?? 0) + 1;
+    this.loadout(c, c.spawns);
     c.discPower = undefined;
     c.knockedBy = undefined;
     c.spawnedAt = this.tick;
@@ -5258,24 +5267,56 @@ export class Match {
   }
 
   /**
-   * The scoped gun a sniper-role Player Bot spawns with (docs/BOT_AI_PLAN.md Phase B item 5): none today, so a sniper
-   * goes for a scoped pickup first (BotBrain.pickupScore). Weapon sets (docs/WEAPON_SETS_PLAN.md) set it from the set
-   * (Military: the marksman rifle; Sci-fi: the railgun).
+   * The weapon set in play (sim/weaponSets.ts, docs/WEAPON_SETS_PLAN.md): the host's (rules.weaponSet), else the map's
+   * default, else Standard; null where the weapons are fixed (spears or discs only, Disc Arena).
    */
-  sniperGun: string | null = null;
+  get weaponSet(): WeaponSetDef | null {
+    return weaponSetInPlay(this.rules, this.map);
+  }
 
-  /** The starting weapons and grenades (a bot waiting for its spawn wave carries them already). */
-  private loadout(c: Combatant): void {
+  /**
+   * The scoped gun a sniper-role Player Bot spawns with in place of its main gun (docs/BOT_AI_PLAN.md Phase B item 5):
+   * the weapon set's (Military: the marksman rifle; Sci-fi: the railgun). None in the other sets, where a sniper goes
+   * for a scoped pickup first (BotBrain.pickupScore).
+   */
+  get sniperGun(): string | null {
+    return this.weaponSet?.sniper ?? null;
+  }
+
+  /**
+   * The starting weapons and grenades for life number `life` (a bot waiting for its spawn wave carries them already):
+   * the weapon set's (sim/weaponSets.ts setLoadout: its spawn weapons, its random gun for the life, a sniper-role
+   * bot's scoped gun, its first grenade), or one spear or a hand of arena discs where the weapons are fixed.
+   */
+  private loadout(c: Combatant, life: number): void {
     c.weapons = new Map();
-    const restricted = this.rules.weapons === 'spears' || this.rules.weapons === 'discs';
-    const sniper = !restricted && this.sniperGun && c.kind === 'bot' && this.director?.roleOf(c.slot) === 'sniper' ? [this.sniperGun] : [];
-    for (const id of this.rules.weapons === 'spears' ? ['core.spear'] : this.rules.weapons === 'discs' ? [ARENA_DISC] : [...this.rules.startingWeapons, ...sniper]) {
+    const set = this.weaponSet;
+    const kit = set
+      ? setLoadout(set, this.rules, { seed: this.seed, slot: c.slot, life, sniper: c.kind === 'bot' && this.director?.roleOf(c.slot) === 'sniper' })
+      : { weapons: [this.rules.weapons === 'spears' ? 'core.spear' : ARENA_DISC], throwable: null };
+    for (const id of kit.weapons) {
       const def = getWeapon(id);
       c.weapons.set(weaponCode(def), { def, mag: def.magazine, reserve: Math.min(def.reserveMax, def.pickupAmmo), alt: def.alt?.ammo === 'own' ? (def.alt.pickup ?? 0) : 0 });
       c.current = weaponCode(def);
     }
-    // Everyone starts with a frag grenade (TimeSplitters-style loadouts are pickups after that).
-    c.throwable = this.rules.startingGrenades > 0 && !restrictedWeapons(this.rules) ? { kind: 'frag', count: this.rules.startingGrenades } : null;
+    // A grenade or two of the set's first kind (frags, TimeSplitters-style; the rest are pickups after that).
+    c.throwable = kit.throwable ? { ...kit.throwable } : null;
+  }
+
+  /**
+   * A bot whose role was worked out after it spawned (a bot is added, spawns, then the roles are shared out again)
+   * takes the loadout of its role at once while it still carries its untouched spawn loadout: a sniper the set's
+   * scoped gun, a bot that is no longer one the set's main gun.
+   */
+  private rearmForRole(c: Combatant): void {
+    if (!c.alive || c.kind !== 'bot' || c.cls || !this.sniperGun || c.spawnedAt !== this.tick) return;
+    const set = this.weaponSet;
+    if (!set) return;
+    const life = c.spawns ?? 0;
+    const kit = (sniper: boolean) => setLoadout(set, this.rules, { seed: this.seed, slot: c.slot, life, sniper }).weapons.join();
+    const now = [...c.weapons.values()].map((w) => w.def.id).join();
+    const sniper = this.director?.roleOf(c.slot) === 'sniper';
+    if (now !== kit(sniper) && now === kit(!sniper)) this.loadout(c, life);
   }
 
   /** Spawn points used lately (tick), for the recent-use penalty. */
@@ -5356,7 +5397,7 @@ export class Match {
   private queueSpawn(c: Combatant): void {
     c.alive = false;
     c.respawnTick = this.tick;
-    this.loadout(c);
+    this.loadout(c, (c.spawns ?? 0) + 1);
     // Made-up spawn points now, while the match is being set up, not in its first tick.
     this.ensureSpawnCapacity();
   }

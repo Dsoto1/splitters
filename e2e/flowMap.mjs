@@ -22,7 +22,7 @@ export const COVERAGE_MAP = 'test_coverage';
 /** Every flow in e2e/run.mjs (run.mjs refuses to start if they differ). */
 export const FLOWS = [
   'editor', 'editorux', 'offline', 'mobile', 'vault', 'outpost', 'sandgate', 'citadel', 'canyon', 'scenery', 'setpieces', 'physicsfx',
-  'teams', 'ctf', 'forts', 'arsenal', 'vehicles', 'race', 'zombies', 'classes', 'coverage', ...MAP_FLOWS,
+  'teams', 'weaponsets', 'ctf', 'forts', 'arsenal', 'vehicles', 'race', 'zombies', 'classes', 'coverage', ...MAP_FLOWS,
   'designer', ...CHARACTER_FLOWS, 'online', 'hostgame', 'hostcontrols', 'lobby', 'handoff', 'dedicatedhost', 'hostpage', 'webgpu', 'visual', 'environment', 'flashing',
 ];
 
@@ -139,7 +139,7 @@ const RULES = [
   // The rest of the client, by area.
   // Phones and tablets (on-screen controls, touch detection) and the weapon wheel.
   [/^packages\/client\/src\/(touchDevice|game\/(touchControls|weaponWheel))\.ts$/, ['mobile', 'offline'], ['client']],
-  [/^packages\/client\/src\/editor\//, ['editor', 'editorux', 'scenery', 'canyon', 'race', 'visual'], ['client']],
+  [/^packages\/client\/src\/editor\//, ['editor', 'editorux', 'scenery', 'canyon', 'race', 'weaponsets', 'visual'], ['client']],
   [/^packages\/client\/src\/designer\//, ['designer', ...CHARACTER_FLOWS], ['client']],
   [/^packages\/client\/src\/tools\/characterViewer/, [...CHARACTER_FLOWS], ['client']],
   // Your own body and arms in first person, and where hands are drawn on guns (the grip checks).
@@ -147,10 +147,10 @@ const RULES = [
   // The procedural environment (renderer behind ?env=1, materials, the lab).
   [/^packages\/client\/src\/(environment\/|tools\/envLab\.ts$)/, ['environment', 'webgpu', 'scenery', 'visual'], ['client']],
   [/^packages\/client\/src\/tools\//, NONE, ['client']],
-  [/^packages\/client\/src\/frontend\//, ['offline', 'mobile', 'teams', 'lobby', 'hostgame', 'hostcontrols', 'dedicatedhost', 'designer', ...CHARACTER_FLOWS, 'editor', 'webgpu', 'visual'], ['client']],
+  [/^packages\/client\/src\/frontend\//, ['offline', 'mobile', 'teams', 'weaponsets', 'lobby', 'hostgame', 'hostcontrols', 'dedicatedhost', 'designer', ...CHARACTER_FLOWS, 'editor', 'webgpu', 'visual'], ['client']],
   [/^packages\/client\/src\/hostPage\.ts$/, ['hostpage'], ['client']],
   [/^packages\/client\/src\/audio\//, ['offline'], ['client']],
-  [/^packages\/client\/src\/game\/(hostPanel|pauseMenu)\.ts$/, ['offline', 'hostgame', 'hostcontrols', 'lobby', 'dedicatedhost'], ['client']],
+  [/^packages\/client\/src\/game\/(hostPanel|pauseMenu)\.ts$/, ['offline', 'weaponsets', 'hostgame', 'hostcontrols', 'lobby', 'dedicatedhost'], ['client']],
   [/^packages\/client\/src\/game\/(peerLink|relay|hub|lan|netTransport|joinCode)\.ts$/, ['online', 'hostgame', 'hostcontrols', 'lobby', 'handoff', 'dedicatedhost'], ['client']],
   [/^packages\/client\/src\/game\/hostLeft\.ts$/, ['hostgame', 'handoff'], ['client']],
   [/^packages\/client\/src\/game\/spectatorCam\.ts$/, ['offline', 'teams', 'hostgame'], ['client']],

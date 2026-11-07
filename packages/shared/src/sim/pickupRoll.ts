@@ -38,8 +38,8 @@ export function pickupPool(entity: Pick<PickupEntity, 'item' | 'random' | 'keepF
   return pool.length ? pool : null;
 }
 
-/** 32-bit FNV-1a of a string, mixed with a number. */
-function hash(text: string, salt: number): number {
+/** 32-bit FNV-1a of a string, mixed with a number (also the weapon sets' random spawn guns: sim/weaponSets.ts). */
+export function rollHash(text: string, salt: number): number {
   let h = 0x811c9dc5 ^ salt;
   for (let i = 0; i < text.length; i++) h = Math.imul(h ^ text.charCodeAt(i), 0x01000193);
   // Final avalanche (murmur3 fmix32).
@@ -57,5 +57,5 @@ function hash(text: string, salt: number): number {
  */
 export function rollPickup(seed: number, id: string, n: number, pool: readonly ItemDefinition[], current?: ItemDefinition): ItemDefinition {
   const choices = pool.length > 1 && current ? pool.filter((i) => i !== current) : pool;
-  return choices[hash(id, (seed ^ Math.imul(n + 1, 0x9e3779b1)) >>> 0) % choices.length]!;
+  return choices[rollHash(id, (seed ^ Math.imul(n + 1, 0x9e3779b1)) >>> 0) % choices.length]!;
 }

@@ -27,6 +27,8 @@ export type EditCommand =
   | { kind: 'setMapBots'; before: MapBotSet | null; after: MapBotSet | null }
   /** Which looks random bots wear (MapDocument.botCast); null or empty: every look (the document then has no `botCast` key). */
   | { kind: 'setBotCast'; before: string[] | null; after: string[] | null }
+  /** The map's default weapon set (MapDocument.weaponSet); null: Standard (the document then has no `weaponSet` key). */
+  | { kind: 'setWeaponSet'; before: string | null; after: string | null }
   | { kind: 'setBackdrop'; before: Backdrop | null; after: Backdrop | null }
   | { kind: 'setBlood'; before: BloodSettings | null; after: BloodSettings | null }
   | { kind: 'setPhysics'; before: MapPhysics | null; after: MapPhysics | null }
@@ -117,6 +119,10 @@ export function applyCommand(doc: MapDocument, cmd: EditCommand): MapDocument {
       const { botCast: _old, ...rest } = doc;
       return cmd.after?.length ? { ...rest, botCast: [...cmd.after] } : rest;
     }
+    case 'setWeaponSet': {
+      const { weaponSet: _old, ...rest } = doc;
+      return cmd.after ? { ...rest, weaponSet: cmd.after } : rest;
+    }
     case 'setPaths': {
       const { paths: _old, ...rest } = doc;
       return cmd.after?.length ? { ...rest, paths: cmd.after } : rest;
@@ -184,6 +190,8 @@ export function invertCommand(cmd: EditCommand): EditCommand {
       return { kind: 'setPaths', before: cmd.after, after: cmd.before };
     case 'setBotCast':
       return { kind: 'setBotCast', before: cmd.after, after: cmd.before };
+    case 'setWeaponSet':
+      return { kind: 'setWeaponSet', before: cmd.after, after: cmd.before };
     case 'addSetPieces':
       return { kind: 'removeSetPieces', setPieces: cmd.setPieces };
     case 'removeSetPieces':
@@ -227,6 +235,7 @@ export function isEmptyCommand(cmd: EditCommand): boolean {
     case 'setGlass':
     case 'setMapBots':
     case 'setBotCast':
+    case 'setWeaponSet':
     case 'setPaths':
     case 'setSetPieceDefs':
       return JSON.stringify(cmd.before) === JSON.stringify(cmd.after);

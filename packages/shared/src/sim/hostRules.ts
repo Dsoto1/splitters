@@ -5,7 +5,7 @@ import { limitsScale, suggestedLimits } from './matchSetup.ts';
 import { MODE_LABELS, isTeamMode, mapCanRun, rulesForMap, rulesForMode, type GameMode, type MatchRules } from './rules.ts';
 
 /** Rules that aren't about the map or the mode: they stay as the host set them when the map changes. */
-const KEPT = ['teamAssign', 'hostTeam', 'bodySizes', 'characterStats', 'randomCharacters', 'emotes', 'botStyle', 'botCast', 'killstreaks', 'mixPickups', 'dropWeapons', 'squadSpawn', 'friendlyFire', 'weapons', 'classes', 'classLimit', 'vehicleDamage', 'gravity', 'fallDamage'] as const;
+const KEPT = ['teamAssign', 'hostTeam', 'bodySizes', 'characterStats', 'randomCharacters', 'emotes', 'botStyle', 'botCast', 'killstreaks', 'mixPickups', 'dropWeapons', 'weaponSet', 'squadSpawn', 'friendlyFire', 'weapons', 'classes', 'classLimit', 'vehicleDamage', 'gravity', 'fallDamage'] as const;
 /** Kept too when the mode stays the same (they mean different things in different modes). */
 const SAME_MODE = ['scoreLimit', 'timeLimitSeconds', 'respawnDelayTicks', 'fortBuildSeconds', 'fortCombatSeconds', 'fortCycles', 'fortBudget'] as const;
 
@@ -56,8 +56,12 @@ export function rulesForTravel(prev: MatchRules, map: MapDocument, fill: number,
  */
 export function withPending(rules: MatchRules, pending: HostRulesPatch | null | undefined): MatchRules {
   if (!pending || !Object.keys(pending).length) return rules;
-  const out: MatchRules = { ...rules, ...pending };
+  const { weaponSet, ...rest } = pending;
+  const out: MatchRules = { ...rules, ...rest };
   if (pending.friendlyFire === 'off') delete out.friendlyFire;
+  // (A weapon set plays at once, so it never waits; null is the map's default.)
+  if (weaponSet) out.weaponSet = weaponSet;
+  else if (weaponSet === null) delete out.weaponSet;
   return out;
 }
 

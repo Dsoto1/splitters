@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 27,
+  "formatVersion": 28,
   "metadata": {
     "id": "riot_junction",
     "name": "Riot Junction",
@@ -23,11 +23,11 @@
     ],
     "release": {
       "mapId": "m_ruc3fnxenmg4ganz",
-      "versionId": "v_xd3zx64xq4s32fws",
-      "revision": 1,
-      "contentHash": "sha256:85f319edf96d6f615f917c31b13dfaf6d067b61cf4d62fab4a8eead7ebc133ff",
-      "schemaVersion": 27,
-      "releasedAt": "2026-11-06T23:06:55.796Z"
+      "versionId": "v_r3l6m5nh7eyf3six",
+      "revision": 2,
+      "contentHash": "sha256:482cab7f1588f5b991f963d490fe131a3211a7096827ea53ca5f4a55cb78979d",
+      "schemaVersion": 28,
+      "releasedAt": "2026-11-07T11:00:55.879Z"
     }
   },
   "classicStructure": {
@@ -25288,5 +25288,6 @@
       16
     ]
   },
-  "dependencies": []
+  "dependencies": [],
+  "weaponSet": "military"
 }

@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 27,
+  "formatVersion": 28,
   "metadata": {
     "id": "crossroads",
     "name": "Crossroads",
@@ -19,11 +19,11 @@
     ],
     "release": {
       "mapId": "m_4e643bgh7xvf5cfd",
-      "versionId": "v_sgs75bi6i3ks57pk",
-      "revision": 2,
-      "contentHash": "sha256:fd83858be5de43be54cd4431b0ddd5f6fb40d0d37067591775fce32bb0cd0a03",
-      "schemaVersion": 27,
-      "releasedAt": "2026-11-06T23:21:46.146Z"
+      "versionId": "v_hrfhjyhgacmfg6lv",
+      "revision": 3,
+      "contentHash": "sha256:3de54555873c6b45d067b2af900bfb6efd1668e25a4f9a2fd3e21958b5d709cf",
+      "schemaVersion": 28,
+      "releasedAt": "2026-11-07T10:59:46.934Z"
     }
   },
   "classicStructure": {
@@ -35964,5 +35964,6 @@
       8
     ]
   },
-  "dependencies": []
+  "dependencies": [],
+  "weaponSet": "military"
 }

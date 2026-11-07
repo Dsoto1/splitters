@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 20,
+  "formatVersion": 28,
   "metadata": {
     "id": "erosion",
     "name": "Erosion",
@@ -17,7 +17,15 @@
       "core.deathmatch",
       "core.elim",
       "core.discs"
-    ]
+    ],
+    "release": {
+      "mapId": "m_nclrtgwlthwc4jdd",
+      "versionId": "v_y3myo2ot6w2cnqhf",
+      "revision": 1,
+      "contentHash": "sha256:c652459fac3816bea35fd038cbf8cd495a179a5de2beb3bf2cb87e20a216df7b",
+      "schemaVersion": 28,
+      "releasedAt": "2026-11-07T11:18:20.437Z"
+    }
   },
   "classicStructure": {
     "cellSize": 8,
@@ -8815,7 +8823,6 @@
     "style": "invisible",
     "height": 24
   },
-  "track": null,
   "backdrop": {
     "sky": "cloudy",
     "scenery": "forest",
@@ -8826,5 +8833,6 @@
   "physics": null,
   "blood": null,
   "teamSetup": null,
-  "dependencies": []
+  "dependencies": [],
+  "weaponSet": "chaos"
 }

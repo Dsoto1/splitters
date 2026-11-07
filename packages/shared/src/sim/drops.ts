@@ -47,22 +47,23 @@ export function hasAmmo(w: DropAmmo): boolean {
 
 /**
  * Whether a weapon can drop at all: a pickup weapon (it has a category and an item, so not a tool, a mode-only
- * weapon or a mounted gun), not a thrown one fetched back (spears, discs), not one everyone starts with, and
- * with ammo left.
+ * weapon or a mounted gun), not a thrown one fetched back (spears, discs), not one everyone starts with, one the
+ * match's weapon set allows (`allowed`; sim/weaponSets.ts: only the set's weapons drop), and with ammo left.
  */
-export function droppable(w: DropAmmo, defaults: ReadonlySet<string>): boolean {
+export function droppable(w: DropAmmo, defaults: ReadonlySet<string>, allowed?: (def: WeaponDefinition) => boolean): boolean {
   const def = w.def;
-  return !!def.category && !def.projectile?.retrievable && !defaults.has(def.id) && !!dropItem(def) && hasAmmo(w);
+  return !!def.category && !def.projectile?.retrievable && !defaults.has(def.id) && (!allowed || allowed(def)) && !!dropItem(def) && hasAmmo(w);
 }
 
 /**
  * What a fallen player drops: the weapon in hand when it can drop, else their best (most desirable) one that
- * can; null when nothing can. `defaults`: the starting loadout (rules and class), which never drops.
+ * can; null when nothing can. `defaults`: the starting loadout (rules or weapon set, and class), which never drops;
+ * `allowed`: what the weapon set lets drop (absent: anything).
  */
-export function chooseDrop<W extends DropAmmo>(weapons: Iterable<W>, held: W | undefined, defaults: ReadonlySet<string>): W | null {
-  if (held && droppable(held, defaults)) return held;
+export function chooseDrop<W extends DropAmmo>(weapons: Iterable<W>, held: W | undefined, defaults: ReadonlySet<string>, allowed?: (def: WeaponDefinition) => boolean): W | null {
+  if (held && droppable(held, defaults, allowed)) return held;
   let best: W | null = null;
-  for (const w of weapons) if (droppable(w, defaults) && (!best || w.def.botDesirability > best.def.botDesirability)) best = w;
+  for (const w of weapons) if (droppable(w, defaults, allowed) && (!best || w.def.botDesirability > best.def.botDesirability)) best = w;
   return best;
 }
 

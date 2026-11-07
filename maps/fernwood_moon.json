@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 27,
+  "formatVersion": 28,
   "metadata": {
     "id": "fernwood_moon",
     "name": "Fernwood Moon",
@@ -22,11 +22,11 @@
     ],
     "release": {
       "mapId": "m_kb5g35wcgjqiapzs",
-      "versionId": "v_seenvuugpkkkcw2p",
-      "revision": 2,
-      "contentHash": "sha256:ac6b17452dbdf85441424597366be5107381a1c510b61928712368765f6b03b5",
-      "schemaVersion": 27,
-      "releasedAt": "2026-11-06T15:54:05.190Z"
+      "versionId": "v_gscnevl67cndqglb",
+      "revision": 3,
+      "contentHash": "sha256:32808c4a9d01c13ac76e2788d1cbfa63e99690f561a7d7cd000358c7132758f2",
+      "schemaVersion": 28,
+      "releasedAt": "2026-11-07T11:13:27.551Z"
     }
   },
   "classicStructure": {
@@ -59972,5 +59972,6 @@
       16
     ]
   },
-  "dependencies": []
+  "dependencies": [],
+  "weaponSet": "scifi"
 }

@@ -47,6 +47,7 @@ import {
   CORE_WEAPONS,
   gunplayOf,
   THROWABLE_DEFS,
+  throwableModel,
   SMOKE,
   smokeBlocks,
   type SmokeCloud,
@@ -153,9 +154,10 @@ const OWN_FLASH_SCALE = 1.6;
 const OWN_FLASH_AHEAD = 0.05;
 /**
  * Projectile looks drawn with a throwable's own model (content/throwables.json `view`: the frag, sticky, gas,
- * incendiary, vortex, cluster and smoke grenades), by look. The mine keeps its own drawing (it blinks once armed).
+ * incendiary, vortex, cluster and smoke grenades), by look: the throwable whose model it is (its model as the match's
+ * weapon set shows it: throwableModel). The mine keeps its own drawing (it blinks once armed).
  */
-const THROWN_MODELS: ReadonlyMap<string, string> = new Map(Object.values(THROWABLE_DEFS).flatMap((t) => (t.view && t.kind !== 'mine' ? [[t.projectile.visual, t.view.model]] : [])));
+const THROWN_KINDS: ReadonlyMap<string, ThrowableKind> = new Map(Object.values(THROWABLE_DEFS).flatMap((t) => (t.view && t.kind !== 'mine' ? [[t.projectile.visual, t.kind]] : [])));
 /** How a throwable lies in your hands while you line up a throw: held like a pistol's grip, the support hand round it. */
 const THROW_HOLD: WeaponHold = { style: 'pistol', grip: [0, -0.012, -0.012], support: [-0.03, -0.022, 0], rake: 0 };
 /** Where that hold sits in your view (right, up, forward of the eye): low and a little right, as a pistol is held. */
@@ -1568,7 +1570,7 @@ export class GameView {
    * it; let go and the same model flies off. Throwables drawn in code (no model) leave the gun in hand.
    */
   setThrowHold(kind: ThrowableKind | null): void {
-    const path = kind ? (THROWABLE_DEFS[kind].view?.model ?? null) : null;
+    const path = kind ? throwableModel(kind, this.setLook) : null;
     if (this.throwHold?.kind === kind && this.throwHold?.path === path) return;
     if (this.throwHold) {
       this.throwHold.node?.setEnabled(false);
@@ -1657,6 +1659,14 @@ export class GameView {
    * The arms hang from the camera at shoulder height; the gun keeps its
    * viewmodel placement (bob, recoil, reload dip) and the hands follow it by IK.
    */
+  /** The match's weapon set (sim/weaponSets.ts), whose looks grenades wear in hands, in flight and as pickups. */
+  private setLook: string | undefined;
+
+  /** The match's weapon set (the session, on joining and when the host changes it): grenades drawn from now on wear its looks. */
+  setWeaponSetLook(set: string | undefined): void {
+    this.setLook = set;
+  }
+
   setLocalLook(look: string | undefined): void {
     this.localLook = look;
     // Full body draws your own character instead: the arms are built only if first person falls back to them.
@@ -2593,7 +2603,7 @@ export class GameView {
   // ---------------------------------------------------------------- pickups
 
   private addPickup(e: PickupEntity, item = e.item): void {
-    const root = createPickupVisual(this.scene, this.models, item, `pickup_${e.id}`, true);
+    const root = createPickupVisual(this.scene, this.models, item, `pickup_${e.id}`, true, false, this.setLook);
     const baseY = e.position[1] + PICKUP_HOVER;
     root.position.set(e.position[0], baseY, e.position[2]);
     this.pickups.set(e.id, { root, baseY, phase: (e.position[0] * 7 + e.position[2] * 3) % (Math.PI * 2), item, placed: e.item });
@@ -2616,7 +2626,7 @@ export class GameView {
         // Not its materials: they are shared (the model library's, the ring colours' cache), and disposing them
         // drew every other copy of that gun, your own first-person one included, in plain white.
         p.root.dispose(false, false);
-        p.root = createPickupVisual(this.scene, this.models, want, `pickup_${id}`, true);
+        p.root = createPickupVisual(this.scene, this.models, want, `pickup_${id}`, true, false, this.setLook);
         p.root.position.copyFrom(at);
         p.item = want;
       }
@@ -2724,7 +2734,8 @@ export class GameView {
 
   private createProjectile(id: number, look: (typeof PROJECTILE_VISUALS)[number]): TransformNode {
     if (look === 'spear') return this.spearProjectile(id);
-    const thrown = THROWN_MODELS.get(look);
+    const kind = THROWN_KINDS.get(look);
+    const thrown = kind ? throwableModel(kind, this.setLook) : null;
     if (thrown) return this.thrownProjectile(id, look, thrown);
     if (ARSENAL_LOOKS.has(look)) return createArsenalProjectile(this.scene, id, look);
     const node = new TransformNode(`proj_${id}`, this.scene);

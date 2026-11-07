@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 27,
+  "formatVersion": 28,
   "metadata": {
     "id": "flatpack_depot",
     "name": "Flatpack Depot",
@@ -22,11 +22,11 @@
     ],
     "release": {
       "mapId": "m_nrfxczl6m2zcqbew",
-      "versionId": "v_d4236qriknk7zkai",
-      "revision": 1,
-      "contentHash": "sha256:9681a699684d9df5e45349d3b40bcc0384d50c6ac93ee62758c17609a9d80791",
-      "schemaVersion": 27,
-      "releasedAt": "2026-11-06T22:53:33.225Z"
+      "versionId": "v_q3bnevhpfmumfznh",
+      "revision": 2,
+      "contentHash": "sha256:2b47ab757a1fcfd67ec0d173924bb5fdc886db18dd411d8d05b57537cbb6fdff",
+      "schemaVersion": 28,
+      "releasedAt": "2026-11-07T11:17:48.025Z"
     }
   },
   "classicStructure": {
@@ -23826,5 +23826,6 @@
       10
     ]
   },
-  "dependencies": []
+  "dependencies": [],
+  "weaponSet": "chaos"
 }

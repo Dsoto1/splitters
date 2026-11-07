@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 19,
+  "formatVersion": 28,
   "metadata": {
     "id": "iron_tide",
     "name": "Iron Tide",
@@ -31,6 +31,14 @@
         6,
         -60
       ]
+    },
+    "release": {
+      "mapId": "m_vfevdrgwi6zn7cfg",
+      "versionId": "v_erhcaoaiajxwhle5",
+      "revision": 1,
+      "contentHash": "sha256:fde9a2b4455b385be8c42672ce593d5f36d966ae10ff2a4bb8cf82f2215d9ba2",
+      "schemaVersion": 28,
+      "releasedAt": "2026-11-07T10:58:50.755Z"
     }
   },
   "classicStructure": {
@@ -31013,7 +31021,6 @@
     "style": "invisible",
     "height": 40
   },
-  "track": null,
   "backdrop": {
     "sky": "night",
     "scenery": "ocean",
@@ -31029,5 +31036,6 @@
       12
     ]
   },
-  "dependencies": []
+  "dependencies": [],
+  "weaponSet": "military"
 }

@@ -42,7 +42,9 @@ interface PushStats {
 /** A Team Deathmatch of `bots` tactical bots with team leaders (character looks: the roster's bodies, fixed by slot). */
 function pushStats(mapId: string, bots: number, seconds: number, seed: number): PushStats[] {
   const m = map(mapId);
-  const rules = { ...rulesForMode(m, 'core.tdm'), scoreLimit: 0, timeLimitSeconds: 0, botStyle: 'tactical' as const, leaders: true, teamSizes: [bots / 2, bots / 2] };
+  // Standard weapons, as these pushes were measured: Shingle Point's own set, Military, spawns everyone with an assault
+  // rifle, and the longer-range fights hold the garrison back (0.27 at seed 1 against the 0.3 below).
+  const rules = { ...rulesForMode(m, 'core.tdm'), scoreLimit: 0, timeLimitSeconds: 0, botStyle: 'tactical' as const, leaders: true, teamSizes: [bots / 2, bots / 2], weaponSet: 'standard' };
   const match = new Match(m, rules, seed);
   for (let i = 0; i < bots; i++) match.addBot(`bot${i}`, CORE_BOT_PROFILES[i % CORE_BOT_PROFILES.length]!, BOT_DIFFICULTIES.normal, true, { look: i % 2 ? 'core.ranger' : 'core.knight' });
   const inner = match as unknown as { teams: { id: string }[]; spawnPoints: { pos: Vec3; team: string | null; generated?: boolean }[] };

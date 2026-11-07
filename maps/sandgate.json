@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 25,
+  "formatVersion": 28,
   "metadata": {
     "id": "sandgate",
     "name": "Sandgate",
@@ -16,7 +16,15 @@
     "supportedModes": [
       "core.tdm",
       "core.deathmatch"
-    ]
+    ],
+    "release": {
+      "mapId": "m_7lyosx6ztb63qla6",
+      "versionId": "v_yc6zot5tw6hoj4dd",
+      "revision": 1,
+      "contentHash": "sha256:4741b8d62d989bcae28d9a55f2d7f2d89d154d8972ec7c422fedc8d40cf0671d",
+      "schemaVersion": 28,
+      "releasedAt": "2026-11-07T10:54:38.130Z"
+    }
   },
   "classicStructure": {
     "cellSize": 8,
@@ -54359,5 +54367,6 @@
   "physics": null,
   "blood": null,
   "teamSetup": null,
-  "dependencies": []
+  "dependencies": [],
+  "weaponSet": "military"
 }

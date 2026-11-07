@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 17,
+  "formatVersion": 28,
   "metadata": {
     "id": "dockside_depot",
     "name": "Dockside Depot",
@@ -16,7 +16,15 @@
     "supportedModes": [
       "core.tdm",
       "core.deathmatch"
-    ]
+    ],
+    "release": {
+      "mapId": "m_wlnyyvayibx2npzp",
+      "versionId": "v_orykqzwsgul4cvbm",
+      "revision": 1,
+      "contentHash": "sha256:3c0163eb9dff8c508cdae2a3fbe243852a5ca8ce0832ee0ece44215687ff2993",
+      "schemaVersion": 28,
+      "releasedAt": "2026-11-07T11:03:47.495Z"
+    }
   },
   "classicStructure": {
     "cellSize": 8,
@@ -31778,5 +31786,6 @@
       8
     ]
   },
-  "dependencies": []
+  "dependencies": [],
+  "weaponSet": "military"
 }

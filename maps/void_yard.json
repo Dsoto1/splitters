@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 15,
+  "formatVersion": 28,
   "metadata": {
     "id": "void_yard",
     "name": "Void Yard",
@@ -28,6 +28,14 @@
         2,
         20
       ]
+    },
+    "release": {
+      "mapId": "m_m7ytbrtuti7dovwf",
+      "versionId": "v_2evd64d2mcp3ibq7",
+      "revision": 1,
+      "contentHash": "sha256:d30a3c32a842420a884307c4ea9984a1f8003952f16132dbdab0f7a0a6e1d93c",
+      "schemaVersion": 28,
+      "releasedAt": "2026-11-07T11:09:42.810Z"
     }
   },
   "classicStructure": {
@@ -1388,5 +1396,6 @@
       4
     ]
   },
-  "dependencies": []
+  "dependencies": [],
+  "weaponSet": "scifi"
 }

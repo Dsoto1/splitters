@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 26,
+  "formatVersion": 28,
   "metadata": {
     "id": "sandfall_colosseum",
     "name": "Sandfall Colosseum",
@@ -18,7 +18,15 @@
       "core.tdm",
       "core.koth",
       "core.ctf"
-    ]
+    ],
+    "release": {
+      "mapId": "m_prmawkdzrmtay5mm",
+      "versionId": "v_3zbxwnbjtt4lnny7",
+      "revision": 1,
+      "contentHash": "sha256:233ac0c2329133c7e2d76bd9d2c7c2e3248b25519d4a6c3eca9c5ce63f2ede85",
+      "schemaVersion": 28,
+      "releasedAt": "2026-11-07T11:16:03.604Z"
+    }
   },
   "classicStructure": {
     "cellSize": 8,
@@ -4385,5 +4393,6 @@
       8
     ]
   },
-  "dependencies": []
+  "dependencies": [],
+  "weaponSet": "medieval"
 }

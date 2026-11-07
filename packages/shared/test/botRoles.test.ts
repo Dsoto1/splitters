@@ -240,7 +240,8 @@ describe('vantage spots up a ladder', () => {
     const r = loadMap(readFileSync(new URL('../../../maps/riot_junction.json', import.meta.url), 'utf8'));
     if (!r.ok) throw new Error('map');
     const rules = rulesForMode(r.map, 'core.tdm');
-    const match = new Match(r.map, { ...rules, scoreLimit: 0, timeLimitSeconds: 0, teamSizes: [1, 1], startingWeapons: [...rules.startingWeapons, 'core.sniper'] }, 1);
+    // Standard weapons, so the sniper rifle given here is in hand (the map's own set, Military, spawns its own guns).
+    const match = new Match(r.map, { ...rules, scoreLimit: 0, timeLimitSeconds: 0, teamSizes: [1, 1], startingWeapons: [...rules.startingWeapons, 'core.sniper'], weaponSet: 'standard' }, 1);
     const bot = match.addBot('sniper', CORE_BOT_PROFILES[1]!, BOT_DIFFICULTIES.normal)!;
     match.step();
     expect(bot.alive).toBe(true);

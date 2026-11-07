@@ -20,6 +20,33 @@ don't want to give people seizures"; docs/LOOK.md, "Reduce flashing")
   blasts in front of you, a machine gun in a dark room, a red alarm light) are recorded frame by frame and held to
   WCAG 2.3.1's flash and red-flash thresholds with the setting on; with it off they are measured and reported.
 
+**Weapon sets: Standard, Military, Sci-fi, Medieval, Chaos and Mixed bag** (owner, 2026-11-06: "I have never once
+seen the sheep weapon, hardly see swarm launcher or gravity weapon … weapon sets for map defaults"; docs/WEAPON_SETS_PLAN.md,
+docs/ARSENAL.md "Weapon sets")
+- **A set decides what you spawn with, what the pickups hold and what drops.** Military: a knife, a pistol and an
+  assault rifle, real-world guns only. Sci-fi: a knife, a pulse pistol and a plasma rifle, energy weapons only.
+  Medieval: a knife and a throwing spear, every weapon pickup a spear or a battle axe. Chaos: a knife, a pistol and a
+  random oddball every life, a sheep to throw. Mixed bag: a knife, a pistol and a random main gun every life, any
+  weapon in any pickup. Standard: as before.
+- **Pickups roll within the set:** a weapon pickup holds one of the set's weapons of its own kind, else of the nearest
+  kind it has (a sniper rifle pickup in Sci-fi is the railgun), a new one each time it comes back; grenade pickups hold
+  the set's grenades (Military frag, mine and smoke, Sci-fi sticky, vortex and smoke, Medieval incendiary and holy
+  bomb, Chaos sheep, holy bomb and cluster bomb); in Military the frag looks like the realistic frag, in Sci-fi the
+  smoke grenade is the sci-fi canister.
+- **Each map has a default set** (MapMaker → Map properties → Weapon set; maps without one play Standard), and the host
+  can pick another: Match setup → Advanced rules → Weapons ("Map default" names the map's own, and the setup's facts
+  show the set in play), the pause menu's Host tab (it applies at once), or a server's `set` rule.
+- **Bots** use the sets' weapons: sniper-role bots spawn with Military's marksman rifle or Sci-fi's railgun, bots throw
+  the sheep (short, so it waddles the rest of the way) and the holy bomb (then run clear of it), and light their oil
+  slicks with the oil slicker's igniter. `bot-report --set=…` and the scorecard list kills by weapon per set.
+- **The official maps' defaults:** Military on 16 maps (Sandgate, Shingle Point, Fogbound, Rockfall Canyon, Bunker
+  Cross, Atomic Court …), Sci-fi on 12 (Halcyon Station, Starhaven, Twin Spires, Void Yard, Neon Spire, Frost Basin,
+  Fernwood Moon …), Medieval on Market Town and Sandfall Colosseum, Chaos on Cinder Foundry, Pantry Raid, Flatpack
+  Depot and Erosion, Mixed bag on Neon Galleria, Grand Marquee and Primeval Park; every other map stays Standard.
+- Map format v28 (the map's `weaponSet`); older maps load unchanged and play Standard. Saved setups keep their choice.
+- **Fixed:** on the space maps (no haze), the first step into a smoke cloud, or into water, no longer freezes the game
+  while every material in view is rebuilt: the fog is on there at nothing, so smoke only thickens it.
+
 **New weapon and grenade models, sharper textures for the gun in your hands, and a Smoke Grenade** (owner,
 2026-11-06: "replace our tommy gun with the 3DModelsCC0 one, and bring in those others to replace any one-off
 originals"; "we want these weapons to look a little sharper, clearer, better resolution"; docs/ARSENAL.md, "Weapons

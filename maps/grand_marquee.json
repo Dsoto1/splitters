@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 27,
+  "formatVersion": 28,
   "metadata": {
     "id": "grand_marquee",
     "name": "Grand Marquee",
@@ -22,11 +22,11 @@
     ],
     "release": {
       "mapId": "m_e6dqdikseiiwt3s5",
-      "versionId": "v_vpns7jten2qpy3rp",
-      "revision": 1,
-      "contentHash": "sha256:5ea027f29c1b48350fc1b3607923133000cb2e64a6e92d22f7d927bc8314b0da",
-      "schemaVersion": 27,
-      "releasedAt": "2026-11-06T22:56:49.840Z"
+      "versionId": "v_ai4t3s7ldxv5p5gy",
+      "revision": 2,
+      "contentHash": "sha256:f04da7dd1b62f0a4ab81dea5aa1ece068e454c122029bb3b7cc3ec6f995df7d5",
+      "schemaVersion": 28,
+      "releasedAt": "2026-11-07T11:20:11.945Z"
     }
   },
   "classicStructure": {
@@ -17241,5 +17241,6 @@
       8
     ]
   },
-  "dependencies": []
+  "dependencies": [],
+  "weaponSet": "mixed"
 }

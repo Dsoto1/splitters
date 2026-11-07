@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto';
 import { beforeAll, describe, expect, it } from 'vitest';
 import {
+  MAP_FORMAT_VERSION,
   RESOURCE_BUDGETS,
   canonicalJson,
   derivedVersionId,
@@ -9,6 +10,7 @@ import {
   logicCycles,
   mapContentHash,
   mapIdentity,
+  releaseCurrent,
   sha256Hex,
   stampMapRelease,
   type EncounterEntity,
@@ -204,6 +206,25 @@ describe('map identity', () => {
     expect(r2.versionId).not.toBe(r1.versionId);
     expect(r2.revision).toBe(2);
     expect(r2.contentHash).not.toBe(r1.contentHash);
+  });
+
+  it('a format bump alone keeps a stamped map as it was: no new version, no "changed since it was exported"', () => {
+    const map = loadArena();
+    const old = { ...map, formatVersion: (MAP_FORMAT_VERSION - 1) as MapDocument['formatVersion'] };
+    const release = { mapId: 'm_aaaaaaaaaaaaaaaa', versionId: 'v_bbbbbbbbbbbbbbbb', revision: 3, contentHash: mapContentHash(old), schemaVersion: MAP_FORMAT_VERSION - 1, releasedAt: '2026-11-01T00:00:00.000Z' };
+    const back = loadMap(JSON.stringify({ ...old, metadata: { ...old.metadata, release } }));
+    expect(back.ok).toBe(true);
+    if (!back.ok) return;
+    expect(back.map.formatVersion).toBe(MAP_FORMAT_VERSION);
+    expect(back.issues.map((i) => i.code)).not.toContain('release.changed');
+    expect(releaseCurrent(back.map)).toBe(true);
+    expect(mapIdentity(back.map)).toEqual({ mapId: release.mapId, versionId: release.versionId, contentHash: release.contentHash, stamped: true });
+    expect(stampMapRelease(back.map).metadata.release).toEqual(release);
+    // A real change still is one.
+    const edited = { ...back.map, metadata: { ...back.map.metadata, description: 'changed' } };
+    expect(releaseCurrent(edited)).toBe(false);
+    expect(loadMap(edited).issues.map((i) => i.code)).toContain('release.changed');
+    expect(stampMapRelease(edited).metadata.release).toMatchObject({ mapId: release.mapId, revision: 4, schemaVersion: MAP_FORMAT_VERSION });
   });
 
   it('gives unstamped maps an identity derived from their content', () => {

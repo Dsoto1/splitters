@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 19,
+  "formatVersion": 28,
   "metadata": {
     "id": "frost_basin",
     "name": "Frost Basin",
@@ -16,7 +16,15 @@
     "supportedModes": [
       "core.tdm",
       "core.deathmatch"
-    ]
+    ],
+    "release": {
+      "mapId": "m_wm4ypl2enajhiaqu",
+      "versionId": "v_tub5pvt753wf4e5d",
+      "revision": 1,
+      "contentHash": "sha256:4e26b47d6d221ca692af238e13a89a2ede3daf600a2bd9e5325a06cbe4d0f3bb",
+      "schemaVersion": 28,
+      "releasedAt": "2026-11-07T11:14:59.113Z"
+    }
   },
   "classicStructure": {
     "cellSize": 8,
@@ -50629,7 +50637,6 @@
     "foliage": []
   },
   "bounds": null,
-  "track": null,
   "backdrop": {
     "sky": "snowy",
     "scenery": "peaks",
@@ -50645,5 +50652,6 @@
       8
     ]
   },
-  "dependencies": []
+  "dependencies": [],
+  "weaponSet": "scifi"
 }

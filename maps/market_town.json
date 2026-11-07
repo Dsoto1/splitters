@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 27,
+  "formatVersion": 28,
   "metadata": {
     "id": "market_town",
     "name": "Market Town",
@@ -21,11 +21,11 @@
     ],
     "release": {
       "mapId": "m_d3ml2watxrhzzmt6",
-      "versionId": "v_dyawcll2ljmkbb4y",
-      "revision": 2,
-      "contentHash": "sha256:d8871adbead583528f7ec1b70ca8664e52cb90ff877f616cbecfe21f67010da9",
-      "schemaVersion": 27,
-      "releasedAt": "2026-11-06T15:57:21.095Z"
+      "versionId": "v_hyizmfmm3pobfl3l",
+      "revision": 3,
+      "contentHash": "sha256:6d819dbe1cc0ea52f4698ee75f7482dc608bbaf4d329982c58b4199369051fd2",
+      "schemaVersion": 28,
+      "releasedAt": "2026-11-07T11:15:33.279Z"
     }
   },
   "classicStructure": {
@@ -3280,5 +3280,6 @@
       12
     ]
   },
-  "dependencies": []
+  "dependencies": [],
+  "weaponSet": "medieval"
 }

@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 25,
+  "formatVersion": 28,
   "metadata": {
     "id": "fogbound",
     "name": "Fogbound",
@@ -16,7 +16,15 @@
     "supportedModes": [
       "core.ctf",
       "core.tdm"
-    ]
+    ],
+    "release": {
+      "mapId": "m_wj7aappgoc2u4sdj",
+      "versionId": "v_wjqict54itkbqx6f",
+      "revision": 1,
+      "contentHash": "sha256:c24912a8848d6e3ace0d03b380383b2418fad8260fb1a354108b9df250d5df61",
+      "schemaVersion": 28,
+      "releasedAt": "2026-11-07T10:56:20.287Z"
+    }
   },
   "classicStructure": {
     "cellSize": 8,
@@ -3882,12 +3890,12 @@
     },
     {
       "id": "prop_4np7umrgol",
-      "kind": "prop",
       "position": [
         -46,
         6.76,
         -4
       ],
+      "kind": "prop",
       "model": "prop.nt_dead_tree",
       "yaw": -2.478,
       "scale": 1,
@@ -3896,12 +3904,12 @@
     },
     {
       "id": "prop_7bx3655tha",
-      "kind": "prop",
       "position": [
         46,
         6.53,
         4
       ],
+      "kind": "prop",
       "model": "prop.nt_dead_tree",
       "yaw": 2.478,
       "scale": 1,
@@ -3910,12 +3918,12 @@
     },
     {
       "id": "prop_n3v86bkc4j",
-      "kind": "prop",
       "position": [
         -36,
         6.34,
         7
       ],
+      "kind": "prop",
       "model": "prop.rn_dead_tree",
       "yaw": -1.257,
       "scale": 1,
@@ -3924,12 +3932,12 @@
     },
     {
       "id": "prop_st8bd02gw4",
-      "kind": "prop",
       "position": [
         36,
         6.19,
         -7
       ],
+      "kind": "prop",
       "model": "prop.rn_dead_tree",
       "yaw": 1.257,
       "scale": 1,
@@ -3938,12 +3946,12 @@
     },
     {
       "id": "prop_miejf7xudn",
-      "kind": "prop",
       "position": [
         -62,
         1.11,
         -30
       ],
+      "kind": "prop",
       "model": "prop.nt_dead_tree",
       "yaw": -1.292,
       "scale": 1,
@@ -3952,12 +3960,12 @@
     },
     {
       "id": "prop_u4y61xf504",
-      "kind": "prop",
       "position": [
         62,
         1,
         30
       ],
+      "kind": "prop",
       "model": "prop.nt_dead_tree",
       "yaw": 1.292,
       "scale": 1,
@@ -3966,12 +3974,12 @@
     },
     {
       "id": "prop_eo5v8jcjg6",
-      "kind": "prop",
       "position": [
         -16,
         -0.18,
         30
       ],
+      "kind": "prop",
       "model": "prop.rn_dead_tree",
       "yaw": -1.955,
       "scale": 1,
@@ -3980,12 +3988,12 @@
     },
     {
       "id": "prop_4avlgmpksl",
-      "kind": "prop",
       "position": [
         16,
         -0.18,
         -30
       ],
+      "kind": "prop",
       "model": "prop.rn_dead_tree",
       "yaw": 1.955,
       "scale": 1,
@@ -24245,5 +24253,6 @@
       12
     ]
   },
-  "dependencies": []
+  "dependencies": [],
+  "weaponSet": "military"
 }

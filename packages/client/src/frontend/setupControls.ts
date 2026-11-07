@@ -1,4 +1,4 @@
-import { BOT_CAST_CHOICES, CHARACTER_GROUPS, DEFAULT_TEAMS, MAX_PLAYER_SLOTS, MAX_TEAMS, MAX_TEAM_SIZE, botCastLabel, changeTeamCount, evenTeams, peopleAndBots, setTeamSize, type FitItem, type FitTopic, type GameMode, type MatchLimits, type PlayerCap, type SetupFit, type SizePreset, type TeamChange } from '@tiletrigger/shared';
+import { BOT_CAST_CHOICES, CHARACTER_GROUPS, DEFAULT_TEAMS, MAX_PLAYER_SLOTS, MAX_TEAMS, MAX_TEAM_SIZE, botCastLabel, changeTeamCount, evenTeams, getWeaponSet, isWeaponSetId, peopleAndBots, setTeamSize, weaponSetList, type FitItem, type FitTopic, type GameMode, type MatchLimits, type PlayerCap, type SetupFit, type SizePreset, type TeamChange } from '@tiletrigger/shared';
 
 /**
  * Match setup controls shared by Play → match setup and the host's pause
@@ -485,5 +485,19 @@ export function botCastSelect(value: readonly string[] | undefined, mapCast: rea
     const v = sel.value;
     onChange(v === 'map' ? undefined : v === 'all' ? [] : v.split('+'));
   });
+  return sel;
+}
+
+/**
+ * Weapon set (sim/weaponSets.ts): the map's default or any set, each option's line on hover. `value`: undefined the
+ * map's default; `mapSet`: the map's own (its name in the "Map default" option, so the setup shows what it is).
+ */
+export function weaponSetSelect(value: string | undefined, mapSet: string, onChange: (v: string | undefined) => void, id?: string, disabled?: boolean): HTMLSelectElement {
+  const sel = el('select', { ...(id ? { id } : {}), disabled: !!disabled });
+  const own = getWeaponSet(mapSet);
+  sel.append(el('option', { value: 'map', textContent: `Map default (${own.name})`, title: own.blurb }));
+  for (const s of weaponSetList()) sel.append(el('option', { value: s.id, textContent: s.name, title: s.blurb }));
+  sel.value = isWeaponSetId(value) ? value : 'map';
+  sel.addEventListener('change', () => onChange(sel.value === 'map' ? undefined : sel.value));
   return sel;
 }
