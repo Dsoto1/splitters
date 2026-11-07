@@ -15,6 +15,8 @@ import { setTimeout as sleep } from 'node:timers/promises';
 import { chromium, devices } from 'playwright';
 import { CHARACTER_FLOWS, COVERAGE_MAP, COVERED_MAPS, FLOWS, MAP_FLOWS, MAP_PARTS } from './flowMap.mjs';
 import { assignShards, loadTimings } from './shards.mjs';
+import { installFrameClock } from './frameClock.mjs';
+import { FLICKER_LIMITS, analyseFrames, summary as flickerSummary } from './flicker.mjs';
 
 // E2E_CLIENT_PORT / E2E_SERVER_PORT move the preview and game servers (e.g. when another checkout is testing).
 const CLIENT_PORT = process.env.E2E_CLIENT_PORT ?? '4173';
@@ -31,7 +33,7 @@ let failures = 0;
  * own thread instead (localStorage tiletrigger.sim = main), the fallback the game keeps for browsers
  * without workers. Every other flow plays the worker, and reaches the match through `sim()` / `simWait()`.
  */
-const MAIN_THREAD_FLOWS = new Set(['setpieces', 'physicsfx', 'ctf', 'forts', 'zombies', 'classes', 'vehicles', 'race', ...MAP_FLOWS]);
+const MAIN_THREAD_FLOWS = new Set(['setpieces', 'physicsfx', 'ctf', 'forts', 'zombies', 'classes', 'vehicles', 'race', 'flashing', ...MAP_FLOWS]);
 
 /** Run `fn(match, me, arg)` where the page's match runs (its worker, or the page), and return what it returns. */
 async function sim(page, fn, arg) {
@@ -4434,6 +4436,279 @@ async function visualFlow(browser) {
   }
 }
 
+/**
+ * After each frame drawn, the canvas at `size` with the HUD's hurt tint over it (HTML: drawn here as the HUD draws
+ * it, hud.ts `hurtOverlay`), kept while `window.__flick.on` (the flashing flow). Runs in the page.
+ */
+function installFrameGrab(size) {
+  const view = window.__cs.view;
+  const engine = view.scene.getEngine();
+  const canvas = engine.getRenderingCanvas();
+  const out = document.createElement('canvas');
+  [out.width, out.height] = size;
+  const ctx = out.getContext('2d', { willReadFrequently: true });
+  const grab = (window.__flick = { on: false, frames: [], errors: [] });
+  engine.onEndFrameObservable.add(() => {
+    if (!grab.on) return;
+    try {
+      ctx.globalAlpha = 1;
+      ctx.drawImage(canvas, 0, 0, out.width, out.height);
+      const hurt = window.__cs.hud.hurtOverlay();
+      if (hurt.opacity > 0.002) {
+        ctx.globalAlpha = Math.min(1, hurt.opacity);
+        ctx.drawImage(hurt.image, 0, 0, out.width, out.height);
+        ctx.globalAlpha = 1;
+      }
+      grab.frames.push(ctx.getImageData(0, 0, out.width, out.height).data);
+    } catch (e) {
+      grab.errors.push(String(e));
+    }
+  });
+}
+
+/** The frames grabbed since the last call, as [{ px, w, h }] (RGBA), and the grab's errors. */
+async function takeFrames(page, w, h) {
+  const { data, errors } = await page.evaluate(() => {
+    const grab = window.__flick;
+    const frames = grab.frames;
+    grab.frames = [];
+    const all = new Uint8Array(frames.reduce((n, f) => n + f.length, 0));
+    let at = 0;
+    for (const f of frames) {
+      all.set(f, at);
+      at += f.length;
+    }
+    let text = '';
+    for (let i = 0; i < all.length; i += 0x8000) text += String.fromCharCode.apply(null, all.subarray(i, i + 0x8000));
+    return { data: btoa(text), errors: grab.errors.splice(0) };
+  });
+  const bytes = Buffer.from(data, 'base64');
+  const size = w * h * 4;
+  const frames = [];
+  for (let at = 0; at + size <= bytes.length; at += size) frames.push({ px: bytes.subarray(at, at + size), w, h });
+  return { frames, errors };
+}
+
+/** Every `every`th frame in a grid `cols` wide, as a PNG (the flow's frame strips). */
+async function frameStrip(frames, every = 4, cols = 5) {
+  const { PNG } = await import('pngjs');
+  const picked = frames.filter((_, i) => i % every === 0);
+  if (!picked.length) return null;
+  const { w, h } = picked[0];
+  const rows = Math.ceil(picked.length / cols);
+  const png = new PNG({ width: w * cols + cols - 1, height: h * rows + rows - 1 });
+  png.data.fill(255);
+  picked.forEach((f, k) => {
+    const ox = (k % cols) * (w + 1);
+    const oy = Math.floor(k / cols) * (h + 1);
+    for (let y = 0; y < h; y++) f.px.copy(png.data, ((oy + y) * png.width + ox) * 4, y * w * 4, (y + 1) * w * 4);
+  });
+  return PNG.sync.write(png);
+}
+
+/**
+ * Reduce flashing's flicker check (docs/LOOK.md, "Reduce flashing"; e2e/flicker.mjs: WCAG 2.3.1's general and red
+ * flash thresholds). MapMaker makes a night scene with its own edits: a dark room, a room lit by a red alarm light
+ * blinking four times a second, an Arc Turret and an electric fence. In play, the brightest moments are recorded
+ * frame by frame at 30 frames a second of the page's own time (e2e/frameClock.mjs: however slowly this machine draws,
+ * a recorded second is a second of play): an arc fight up close, the fence zapping you and the bots beside you, four
+ * grenade blasts in front of the camera, a machine gun firing at a wall in the dark, the alarm light. With the setting
+ * on each moment must stay under the thresholds; the same moments with it off are measured and reported as numbers
+ * only. Frame strips (every 4th frame) and the numbers go to e2e-artifacts/ (flashing-<moment>-<on|off>.png,
+ * flashing.json). E2E_FLASH_MOMENTS=arc,blast records just those.
+ */
+async function flashingFlow(browser) {
+  const FPS = 30;
+  const [W, H] = [160, 90];
+  const RECORD = 2 * FPS;
+  const only = process.env.E2E_FLASH_MOMENTS?.split(',').filter(Boolean);
+  const ctx = await browser.newContext({ viewport: { width: 480, height: 270 }, deviceScaleFactor: 1 });
+  await ctx.addInitScript(installFrameClock);
+  const page = await ctx.newPage();
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
+  await page.goto(`${CLIENT}/?mode=editor&test=1`);
+  await page.waitForFunction(() => window.__editor, null, { timeout: T(30000) });
+  page.once('dialog', (d) => d.accept());
+  await newMap(page, 96);
+  // The scene, as MapMaker edits (one undo step): a night sky, two closed rooms of dark blocks (the second lit by the
+  // alarm light), an Arc Turret and a 12 m electric fence.
+  const made = await page.evaluate(() => {
+    const ed = window.__editor;
+    const block = (id, at, size) => ({ id, kind: 'block', position: at, size, yaw: 0, material: null, tint: '#2a2a2f', behaviour: 'solid', trigger: 'step', delaySeconds: 0.8, respawnSeconds: 8, health: 120 });
+    const room = (name, x, z) => [
+      block(`${name}_n`, [x, 0, z - 5], [10.4, 3.4, 0.4]),
+      block(`${name}_s`, [x, 0, z + 5], [10.4, 3.4, 0.4]),
+      block(`${name}_w`, [x - 5, 0, z], [0.4, 3.4, 10.4]),
+      block(`${name}_e`, [x + 5, 0, z], [0.4, 3.4, 10.4]),
+      block(`${name}_roof`, [x, 3.4, z], [10.4, 0.4, 10.4]),
+    ];
+    const entities = [
+      ...room('dark_room', 0, -24),
+      ...room('alarm_room', 24, -24),
+      { id: 'alarm_light', kind: 'light', position: [24, 3.1, -24], yaw: 0, color: '#ff3020', intensity: 1.6, range: 12, fixture: 'ceiling', blink: 4 },
+      { id: 'arc_turret', kind: 'mount', model: 'sentry_arc', position: [-24, 0, 24], yaw: 0, faction: null, respawnSeconds: null },
+      { id: 'live_fence', kind: 'trap', trap: 'shock', position: [24, 0, 24], yaw: 0, activation: 'always', onSeconds: 2, offSeconds: 2, offsetSeconds: 0, startEnabled: true, damage: null, length: 12 },
+    ];
+    const before = ed.doc.backdrop ?? null;
+    const after = { scenery: 'hills', ground: 'grass', ...(before ?? {}), sky: 'night', haze: 0 };
+    const ok = ed.run('Flicker check scene', { kind: 'batch', commands: [{ kind: 'setBackdrop', before, after }, { kind: 'addEntities', entities }] });
+    return { ok, entities: ed.doc.entities.length, sky: ed.doc.backdrop?.sky };
+  });
+  check(made.ok && made.sky === 'night', `MapMaker makes the check's night scene: two dark rooms (one with a red alarm light blinking 4 times a second), an Arc Turret and an electric fence (${JSON.stringify(made)})`);
+  await page.keyboard.press('F5');
+  const playing = await page.waitForFunction(() => window.__cs?.local && window.__testStartMs, null, { timeout: T(60000) }).then(() => true, () => false);
+  check(playing, 'the scene plays (MapMaker TEST)');
+  if (!playing) return void (await ctx.close());
+  await holdBots(page);
+  // Both guns in hand once, so their models are in before the page's clock stops (models load in real time).
+  for (const id of ['core.lmg', 'core.arc_caster']) {
+    await page.evaluate((w) => window.__give(w), id);
+    await page.waitForFunction((w) => window.__cs.view.viewWeapon === w && !!window.__cs.view.viewmodel, id, { timeout: T(30000) }).catch(() => {});
+  }
+  // The setting as the pause menu's Settings switch changes it (the menu itself stays shut).
+  const setFlashing = (on) =>
+    page.evaluate((on) => {
+      const box = document.getElementById('reduce-flashing');
+      if (box.checked === on) return;
+      box.checked = on;
+      box.dispatchEvent(new Event('change'));
+    }, on);
+  const defaultOn = await page.evaluate(() => document.getElementById('reduce-flashing')?.checked);
+  check(defaultOn === true, `Reduce flashing is on by default (the pause menu's switch: ${defaultOn})`);
+  await page.evaluate(installFrameGrab, [W, H]);
+  await page.evaluate(() => window.__frameClock.freeze());
+  const step = (n) =>
+    page.evaluate(([n, ms]) => {
+      const thrown = [];
+      for (let i = 0; i < n; i++) thrown.push(...window.__frameClock.step(ms));
+      return thrown;
+    }, [n, 1000 / FPS]);
+  const clockErrors = [];
+  /** You, the bots and your aim held where a moment wants them (each tick), never dying, magazines full. */
+  const stage = (mo) =>
+    sim(page, (m, me, mo) => {
+      clearInterval(self.__flashPin);
+      const put = (c, p) => {
+        c.move = { ...c.move, pos: { x: p[0], y: p[1], z: p[2] }, velY: 0, vx: 0, vz: 0, grounded: true };
+      };
+      const bots = m.combatants().filter((c) => c.bot);
+      const pin = () => {
+        put(me, mo.me);
+        me.maxHealth = me.health = 100000;
+        for (const w of me.weapons.values()) if (w.def.magazine) w.mag = w.def.magazine;
+        bots.forEach((b, i) => {
+          b.maxHealth = b.health = 100000;
+          put(b, mo.bots[i] ?? [40 + i * 2, 0, -40]);
+        });
+      };
+      pin();
+      self.__flashPin = setInterval(pin, 1000 / 60);
+    }, mo);
+  /** Aim from your eye (1.6 m up) at a point. */
+  const aim = (from, to) => {
+    const d = [to[0] - from[0], to[1] - from[1] - 1.6, to[2] - from[2]];
+    return { yaw: Math.atan2(d[0], d[2]), pitch: Math.atan2(d[1], Math.hypot(d[0], d[2])) };
+  };
+  const blast = (at) => sim(page, (m, _me, at) => m.scenario.host.blast({ x: at[0], y: at[1], z: at[2] }, 4.5, 100, 15, null, 'core.launcher'), at);
+  // The moments (a few metres apart in the scene; 2 s each, setting on then off).
+  const moments = [
+    {
+      name: 'arc',
+      label: 'an arc fight up close (an Arc Turret locked on you 4.5 m off, your Arc Caster on three bots between you)',
+      weapon: 'core.arc_caster',
+      me: [-24, 0, 19.5],
+      look: aim([-24, 0, 19.5], [-24.1, 1.1, 22.6]),
+      bots: [[-25.2, 0, 22.2], [-22.9, 0, 22.5], [-24.1, 0, 22.9]],
+      fire: true,
+      // Locked on you from the first frame (no wind-up), for the whole recording.
+      before: () =>
+        sim(page, (m, me) => {
+          const t = m.mounts.find((x) => x.def.id === 'sentry_arc');
+          if (t) t.arc = { charge: 1000, target: me.slot, lockTicks: 0, vent: 0 };
+        }),
+    },
+    {
+      name: 'fence',
+      label: 'the electric fence (you against it, two bots against it further along)',
+      weapon: 'core.arc_caster',
+      me: [20.5, 0, 24.3],
+      look: aim([20.5, 0, 24.3], [27, 1.1, 24]),
+      bots: [[23.2, 0, 23.72], [25.8, 0, 24.28]],
+    },
+    {
+      name: 'blast',
+      label: 'four grenade blasts 3-5 m in front of the camera in 0.8 s',
+      weapon: 'core.arc_caster',
+      me: [0, 0, 8],
+      look: aim([0, 0, 8], [0, 0.5, 13]),
+      bots: [],
+      at: { 6: () => blast([-1.2, 0.3, 11.5]), 14: () => blast([1, 0.3, 12.5]), 22: () => blast([0, 0.3, 11]), 30: () => blast([-0.4, 0.3, 13]) },
+    },
+    {
+      name: 'muzzle',
+      label: 'a machine gun firing at a wall 3.5 m off in the dark room',
+      weapon: 'core.lmg',
+      me: [0, 0, -25.5],
+      look: aim([0, 0, -25.5], [0, 1.2, -29]),
+      bots: [],
+      fire: true,
+    },
+    {
+      name: 'alarm',
+      label: 'the red alarm light blinking 4 times a second, in its dark room',
+      weapon: 'core.arc_caster',
+      me: [24, 0, -20.5],
+      look: aim([24, 0, -20.5], [24, 1.4, -28]),
+      bots: [],
+    },
+  ];
+  const report = { fps: FPS, frame: [W, H], viewport: [480, 270], limits: FLICKER_LIMITS, moments: {} };
+  for (const mo of moments) {
+    if (only && !only.includes(mo.name)) continue;
+    await page.evaluate(() => (window.__autoInput = { buttons: 0 }));
+    await page.evaluate((w) => window.__give(w), mo.weapon);
+    await stage(mo);
+    await page.evaluate((look) => Object.assign(window.__cs.input, look), mo.look);
+    clockErrors.push(...(await step(15)));
+    const runs = {};
+    for (const on of [true, false]) {
+      await setFlashing(on);
+      await mo.before?.();
+      if (mo.fire) await page.evaluate(() => (window.__autoInput = { buttons: 2 }));
+      // The switch (and the trigger) settle in: a third of a second before the recording.
+      clockErrors.push(...(await step(10)));
+      await page.evaluate(() => {
+        window.__flick.frames = [];
+        window.__flick.on = true;
+      });
+      for (let f = 0; f < RECORD; f++) {
+        await mo.at?.[f]?.();
+        clockErrors.push(...(await step(1)));
+      }
+      await page.evaluate(() => (window.__flick.on = false));
+      if (mo.fire) await page.evaluate(() => (window.__autoInput = { buttons: 0 }));
+      const { frames, errors: grabErrors } = await takeFrames(page, W, H);
+      clockErrors.push(...grabErrors);
+      const r = analyseFrames(frames, FPS);
+      const activity = Math.max(...r.meanL) - Math.min(...r.meanL);
+      runs[on ? 'on' : 'off'] = { ...r, activity, frames: frames.length };
+      const strip = await frameStrip(frames);
+      if (strip) writeFileSync(`${ARTIFACTS}/flashing-${mo.name}-${on ? 'on' : 'off'}.png`, strip);
+      console.log(`flashing ${mo.name} ${on ? 'on ' : 'off'}: ${flickerSummary(r)}; screen brightness ${Math.min(...r.meanL).toFixed(3)}-${Math.max(...r.meanL).toFixed(3)}`);
+    }
+    const { on, off } = runs;
+    report.moments[mo.name] = Object.fromEntries(
+      Object.entries(runs).map(([k, r]) => [k, { pass: r.pass, reasons: r.reasons, transitionsPerSecond: r.perSecond, flashesPerSecond: r.flashesPerSecond, transitions: r.transitions.length, maxStep: +r.maxStep.toFixed(4), redTransitionsPerSecond: r.red.perSecond, redFlashes: r.red.onsets.length, maxRedArea: +r.red.maxArea.toFixed(4), activity: +r.activity.toFixed(4), meanL: r.meanL.map((x) => +x.toFixed(4)), change: r.change.map((x) => +x.toFixed(4)) }]),
+    );
+    check(on.frames === RECORD && off.frames === RECORD && off.activity > 0.002, `${mo.name}: the moment was recorded, every frame, and something happened in it (${on.frames} + ${off.frames} frames; brightness moved ${off.activity.toFixed(3)} with the setting off)`);
+    check(on.pass, `${mo.label}, Reduce flashing on: ${flickerSummary(on)}${on.reasons.length ? ` (FAILS: ${on.reasons.join('; ')})` : ''}`);
+  }
+  writeFileSync(`${ARTIFACTS}/flashing.json`, JSON.stringify(report));
+  check(clockErrors.length === 0 && errors.length === 0, `no page errors while recording (${[...clockErrors, ...errors].slice(0, 4).join(' | ')})`);
+  await ctx.close();
+}
+
 async function designerFlow(browser) {
   const page = await (await browser.newContext({ viewport: { width: 1200, height: 760 } })).newPage();
   const errors = [];
@@ -6080,7 +6355,7 @@ try {
   };
   // E2E_ONLY=editor,characters runs a subset; E2E_SHARD=2/8 one of CI's parallel groups (balanced by e2e/timings.json;
   // CI's plan job passes each shard's flows in E2E_ONLY itself).
-  const flows = { editor: editorFlow, editorux: editoruxFlow, offline: offlineFlow, mobile: mobileFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, scenery: sceneryFlow, setpieces: setpiecesFlow, physicsfx: physicsfxFlow, teams: teamsFlow, ctf: ctfFlow, forts: fortsFlow, arsenal: arsenalFlow, vehicles: vehiclesFlow, race: raceFlow, zombies: zombiesFlow, classes: classesFlow, coverage: coverageFlow, ...Object.fromEntries(MAP_FLOWS.map((name, part) => [name, (b) => mapsFlow(b, part)])), designer: designerFlow, ...Object.fromEntries(CHARACTER_FLOWS.map((name, part) => [name, (b) => charactersFlow(b, part)])), online: onlineFlow, hostgame: hostgameFlow, hostcontrols: hostcontrolsFlow, lobby: lobbyFlow, handoff: handoffFlow, dedicatedhost: dedicatedhostFlow, hostpage: hostpageFlow, webgpu: webgpuFlow, visual: visualFlow, environment: environmentFlow };
+  const flows = { editor: editorFlow, editorux: editoruxFlow, offline: offlineFlow, mobile: mobileFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, scenery: sceneryFlow, setpieces: setpiecesFlow, physicsfx: physicsfxFlow, teams: teamsFlow, ctf: ctfFlow, forts: fortsFlow, arsenal: arsenalFlow, vehicles: vehiclesFlow, race: raceFlow, zombies: zombiesFlow, classes: classesFlow, coverage: coverageFlow, ...Object.fromEntries(MAP_FLOWS.map((name, part) => [name, (b) => mapsFlow(b, part)])), designer: designerFlow, ...Object.fromEntries(CHARACTER_FLOWS.map((name, part) => [name, (b) => charactersFlow(b, part)])), online: onlineFlow, hostgame: hostgameFlow, hostcontrols: hostcontrolsFlow, lobby: lobbyFlow, handoff: handoffFlow, dedicatedhost: dedicatedhostFlow, hostpage: hostpageFlow, webgpu: webgpuFlow, visual: visualFlow, environment: environmentFlow, flashing: flashingFlow };
   // e2e/flowMap.mjs (change-based selection, shards) must know every flow, and only those.
   const known = new Set(FLOWS);
   const drift = [...Object.keys(flows).filter((f) => !known.has(f)), ...FLOWS.filter((f) => !(f in flows))];

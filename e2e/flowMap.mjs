@@ -23,7 +23,7 @@ export const COVERAGE_MAP = 'test_coverage';
 export const FLOWS = [
   'editor', 'editorux', 'offline', 'mobile', 'vault', 'outpost', 'sandgate', 'citadel', 'canyon', 'scenery', 'setpieces', 'physicsfx',
   'teams', 'ctf', 'forts', 'arsenal', 'vehicles', 'race', 'zombies', 'classes', 'coverage', ...MAP_FLOWS,
-  'designer', ...CHARACTER_FLOWS, 'online', 'hostgame', 'hostcontrols', 'lobby', 'handoff', 'dedicatedhost', 'hostpage', 'webgpu', 'visual', 'environment',
+  'designer', ...CHARACTER_FLOWS, 'online', 'hostgame', 'hostcontrols', 'lobby', 'handoff', 'dedicatedhost', 'hostpage', 'webgpu', 'visual', 'environment', 'flashing',
 ];
 
 /** Maps that have a flow of their own, so the tour leaves them out. */
@@ -119,7 +119,8 @@ const RULES = [
   [/^content\/(props\/|props(\.lock)?\.json$)/, ['editor', 'scenery', 'setpieces', 'visual'], ['client', 'shared']],
   // Guns: the arsenal, the grips on them (characters), mounted guns (vehicles).
   [/^content\/guns(\.lock)?\.json$/, ['arsenal', ...CHARACTER_FLOWS, 'vehicles'], ['shared']],
-  [/^content\/vfx(\.lock)?\.json$/, ['physicsfx', 'arsenal'], ['client']],
+  // Effects: the flows that play them, and the flicker check (Reduce flashing: no new effect may flash).
+  [/^content\/vfx(\.lock)?\.json$/, ['physicsfx', 'arsenal', 'flashing'], ['client']],
   [/^content\/skies(\.lock)?\.json$/, [...MAP_FLOWS, 'scenery', 'setpieces', 'canyon', 'visual'], ['shared']],
   [/^content\/city(\.lock)?\.json$/, [...MAP_FLOWS, 'vault', 'outpost', 'sandgate', 'citadel', 'canyon', 'scenery', 'setpieces'], ['client', 'shared']],
   [/^content\/sounds\.json$/, ['offline'], ['client']],
@@ -156,12 +157,14 @@ const RULES = [
   [/^packages\/client\/src\/game\/(mountVisuals|mountState|vehicleCamera)\.ts$/, ['vehicles', 'race'], ['client']],
   [/^packages\/client\/src\/(game\/raceHud\.ts|roadMeshes\.ts)$/, ['race'], ['client']],
   [/^packages\/client\/src\/game\/fortsClient\.ts$/, ['forts'], ['client']],
-  [/^packages\/client\/src\/game\/(flagVisuals|modeHud)\.ts$/, ['ctf', 'forts', 'zombies', 'teams', 'race', 'classes'], ['client']],
+  [/^packages\/client\/src\/game\/(flagVisuals|modeHud)\.ts$/, ['ctf', 'forts', 'zombies', 'teams', 'race', 'classes', 'flashing'], ['client']],
   [/^packages\/client\/src\/game\/scoreBoard\.ts$/, ['teams', 'ctf', 'zombies', 'classes', 'hostcontrols'], ['client']],
-  [/^packages\/client\/src\/game\/(glassVisuals|waterVisuals|ragdoll|ragdollBudget|ragdollJoints|bloodVisuals|impactVisuals|reflections|skyEffects)\.ts$/, ['physicsfx', 'setpieces'], ['client']],
-  [/^packages\/client\/src\/game\/(arsenalVisuals|muzzleVisuals|crosshair|throwArc|coverState)\.ts$/, ['arsenal', 'physicsfx'], ['client']],
-  [/^packages\/client\/src\/game\/(scenarioVisuals|scenarioState|pickupVisuals|propVisuals|canopyVisuals|cityVisuals|creatureAnimator|gait|torsoSurface|minimap|perfProbe|sessionAudio)\.ts$/, [...MAP_FLOWS, 'vault', 'outpost', 'sandgate', 'citadel', 'canyon', 'scenery', 'setpieces', 'zombies', ...CHARACTER_FLOWS], ['client']],
-  [/^packages\/client\/src\/(backdrop|borderVisuals|foliage|mapMeshes|playlists)\.ts$/, [...MAP_FLOWS, 'vault', 'outpost', 'sandgate', 'citadel', 'canyon', 'scenery', 'setpieces', 'visual'], ['client']],
+  [/^packages\/client\/src\/game\/(glassVisuals|waterVisuals|ragdoll|ragdollBudget|ragdollJoints|bloodVisuals|impactVisuals|reflections|skyEffects)\.ts$/, ['physicsfx', 'setpieces', 'flashing'], ['client']],
+  [/^packages\/client\/src\/game\/(arsenalVisuals|muzzleVisuals|crosshair|throwArc|coverState)\.ts$/, ['arsenal', 'physicsfx', 'flashing'], ['client']],
+  // Reduce flashing (the setting, steady lightning, the hurt vignette): its check, and where else they show.
+  [/^packages\/client\/src\/game\/(reduceFlashing|steadyArcs|hurtVignette)\.ts$/, ['offline', 'physicsfx', 'arsenal', 'visual', 'flashing'], ['client']],
+  [/^packages\/client\/src\/game\/(scenarioVisuals|scenarioState|pickupVisuals|propVisuals|canopyVisuals|cityVisuals|creatureAnimator|gait|torsoSurface|minimap|perfProbe|sessionAudio)\.ts$/, [...MAP_FLOWS, 'vault', 'outpost', 'sandgate', 'citadel', 'canyon', 'scenery', 'setpieces', 'zombies', ...CHARACTER_FLOWS, 'flashing'], ['client']],
+  [/^packages\/client\/src\/(backdrop|borderVisuals|foliage|mapMeshes|playlists)\.ts$/, [...MAP_FLOWS, 'vault', 'outpost', 'sandgate', 'citadel', 'canyon', 'scenery', 'setpieces', 'visual', 'flashing'], ['client']],
 
   // The server (dedicated server, hub, lobby).
   [/^packages\/server\/src\/tools\//, NONE, ['server']],

@@ -79,7 +79,7 @@ describe('change-based selection', () => {
     ['content/props/kenney-survival-kit.json', ['editor', 'scenery', 'setpieces', 'visual'], ['client', 'shared']],
     ['content/props.lock.json', ['editor', 'scenery', 'setpieces', 'visual'], ['client', 'shared']],
     ['content/guns.json', ['arsenal', 'vehicles', ...CHARACTER_FLOWS], ['shared']],
-    ['content/vfx.json', ['physicsfx', 'arsenal'], ['client']],
+    ['content/vfx.json', ['physicsfx', 'arsenal', 'flashing'], ['client']],
     ['content/gear.json', ['designer', ...CHARACTER_FLOWS, 'visual'], ['shared']],
     ['content/sounds.json', ['offline'], ['client']],
   ])('a content manifest (%s) runs the flows that look at it', (p, flows, unit) => {
@@ -98,6 +98,16 @@ describe('change-based selection', () => {
       expect(tourSel(p).flows).not.toContain('coverage');
     }
     expect(unitTestPaths(['content'])).toEqual(['tools/content/test']);
+  });
+
+  it('effects run the flicker check (Reduce flashing) with the flows that show them', () => {
+    for (const p of ['packages/client/src/game/arsenalVisuals.ts', 'packages/client/src/game/impactVisuals.ts', 'packages/client/src/game/scenarioVisuals.ts', 'packages/client/src/borderVisuals.ts', 'packages/client/src/game/flagVisuals.ts', 'content/vfx.json']) {
+      const s = sel(p);
+      expect(s.full, p).toBe(false);
+      expect(s.flows, p).toContain('flashing');
+    }
+    const own = sel('packages/client/src/game/reduceFlashing.ts', 'packages/client/src/game/steadyArcs.ts', 'packages/client/src/game/hurtVignette.ts');
+    expect(own).toMatchObject({ full: false, flows: ['offline', 'physicsfx', 'arsenal', 'visual', 'flashing'], unit: ['client'] });
   });
 
   it('MapMaker code runs the editor flows and client unit tests only', () => {
