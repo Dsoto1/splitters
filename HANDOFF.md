@@ -40,9 +40,10 @@ MapMaker steps: docs/GAME_MODES.md, "Breakthrough". The pieces: docs/SET_PIECES_
   charge plays on); an optional second round with the sides swapped (`breakthroughSwap`; sectors, then time left).
   New ModeHost/ModeLogic hooks: `endRound(winner)`, `hurt`, `spawnSpots`, `spawnBeside`, `clock` (and `spawnPoints` are
   the match's own spawn spots now, so recent use counts).
-- **Map format v28** (`sector` and `objective` entities, a spawn's `sector` and `side`; v27 migrates unchanged). The
-  release stamps' content hash covers the format version, so stamped maps re-exported later get a new version (as
-  every format bump does). Validation: `map/validateBreakthrough.ts`.
+- **Map format v28** (`sector` and `objective` entities, a spawn's `sector` and `side`; v27 migrates unchanged).
+  Validation: `map/validateBreakthrough.ts`. A format bump alone no longer changes a stamped map (`releaseCurrent`,
+  map/identity.ts: the content hash at the stamp's own format version): the 24 maps stamped at v27 keep their
+  versions and identity and show no "changed since it was exported" (CI's demo-map tests caught it).
 - **HUD** (`game/modeHud.ts`, `flagVisuals.ts`, `minimap.ts`): side, sector strip, pool, objectives with state, world
   markers, labelled minimap blips, `#bt-warning`, announcer lines per side. **Match Setup** (frontEnd.ts) and the
   **host panel**: Reinforcements, Sector time (both follow the size: `breakthroughPoolFor`, `breakthroughMinutesFor`),
