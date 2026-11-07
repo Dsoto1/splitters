@@ -16,7 +16,7 @@
     "core.ctf": { "failedSearches": 0.02, "noRouteIdle": 0.01, "idleCalm": 0.08, "stuckPerBotMin": 3.5, "spells10": 2, "captures": 0.5, "takes": 3 },
     "core.koth": { "idleCalm": 0.08, "hillTaken": 0.25 },
     "core.bomb": { "idleCalm": 0.12, "plants": 0.2 },
-    "core.hostage": { "idleCalm": 0.12 },
+    "core.hostage": { "idleCalm": 0.16 },
     "core.elim": { "roundSeconds": 120 },
     "core.forts": { "pieces": 20 },
     "core.tdm": { "idleCalm": 0.1, "killsPerMin": 8 }

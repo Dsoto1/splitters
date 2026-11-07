@@ -27,7 +27,7 @@ gets overloaded above that: local e2e times out and flakes). Prune landed worktr
   reworks batches 2–3, character fixes rounds 2–3 (see the entries below and CHANGELOG).
 
 <!-- bots-b -->
-### Bot AI Phase B: bot logic (`wip/bots-b`, agents, 2026-11-07; main 9dfe3ba1 merged in; part 1 on `check/bots-b1`; part 2 in progress; not landed)
+### Bot AI Phase B: bot logic (`wip/bots-b`, agents, 2026-11-07; main 17d0e0a0 merged in; part 1 on `check/bots-b1`; part 2 in progress; not landed)
 docs/BOT_AI_PLAN.md (Phase B; "Phase B part 1, measured"), docs/BOTS.md ("Scored choices", "Team brain and route
 variety"). Landing in two parts, each green on its own check branch: part 1 (scored choices, the team brain, route
 variety), part 2 (snipers, cover-to-cover advance, playbooks per mode).
@@ -56,6 +56,9 @@ repos/Dsoto1/splitters/actions/jobs/<id>/logs`).
 match, hostage rescues 0 → 1, Elimination's round 120 → 70 s, Team Deathmatch's busiest way 54 → 43 %; CTF captures
 20 → 23 from 176 → 127 takes, matches with a capture 12 → 11, route choice two ways 88 → 89 %, busiest way 59 → 60 %.
 Five-minute capture tests' matches, seeds 1-6: first capture in 6 of 6 on Diamond Park and Sunken Kingdom, as main.
+The nightly scorecard (run 42330601755): CTF captures 0.9 → 1.0 a match (25 of 44 maps with one), hill held 26.3 →
+40.8 %, plants 0.5 → 0.8, rescues 0.1 → 1.5 a match; Hostage's idle limit raised 12 → 16 % (its guards keep watch at
+their station now).
 
 **Left for part 2 and after:** CTF against a held flag (6 of the dev sample's 12 maps without a capture); the
 busiest way under half; snipers (the scoped gun from spawn, calculated shots, moving after a shot or

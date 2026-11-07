@@ -378,6 +378,31 @@ whose flag was taken: its attack stopped while they waited on the carrier's way,
 flag (moving up cover to cover, bounds, the playbooks) is part 2's. The busiest way still carries 60 % of a CTF team's
 bots past a trip's middle (the aim: under half).
 
+**The nightly scorecard** (Run workflow: every scorecard mode on the maps that list it, two seeds of 180 s, 398 matches
+on 77 maps; before: run 42312799177 on main with Phase B's measuring; after: run 42330601755 on part 1, which also has
+main's prop scale pass and ground fix):
+
+| Nightly | Before | After |
+|---|---|---|
+| CTF captures, flag takes, returns a match | 0.9, 5.6, 2.1 | 1.0, 4.5, 1.9 |
+| CTF team trips on two routes or more (time); the busiest route | 87 %; 56 % | 87 %; 57 % |
+| CTF route choice: two ways or more; the busiest way | - | 85 %; 61 % |
+| King of the Hill: hill held, contested | 26.3 %, 0.3 % | 40.8 %, 0.4 % |
+| Bomb plants, defuses a match | 0.5, 0.0 | 0.8, 0.0 |
+| Hostage rescues a match | 0.1 | 1.5 |
+| Elimination rounds a match, each | 3.7, 35 s | 3.6, 37 s |
+| Team Deathmatch kills a minute | 21.6 | 21.6 |
+| Idle out of a fight: all; CTF; Hostage | 6.1 %; 5.5 %; 9.6 % | 6.7 %; 6.7 %; 14.0 % |
+| Stuck recoveries a bot-minute, all | 1.80 | 1.73 |
+| Failed searches; no-route idle | 0.00 %; 0.09 % | 0.00 %; 0.08 % |
+| Bot thinking a tick (GitHub's machines, not the same ones) | 0.31 ms | 0.37 ms |
+
+25 of the 44 CTF maps had a capture in their two matches; of the 19 without, 11 are maps of 180 m or more between the
+flags (three minutes is short for a run there). Hostage's idle out of a fight is its guards keeping watch at their
+station (they chased gunfire away from the hostages before): on Iron Tide, station-keeping went from 14 and 8 % of
+the bots' time in its two matches to 21 and 17 %. Its limit (bot-limits.json) went from 12 to 16 % for it; the
+rescues came with it.
+
 **`pnpm bench:96:clump`** (96 bots; Norman Shores, Frost Basin and Riot Junction, spread and clumped, 30 s each), bot
 thinking a tick, before and after taken in turn, two rounds each at load 1.2-1.5: before 1.43-2.58 ms (means 1.87 and
 1.93), after 1.46-2.68 ms (means 1.85 and 1.91). The same on average; Norman Shores spread out, the first of the run, is
