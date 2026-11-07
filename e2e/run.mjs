@@ -6507,6 +6507,27 @@ async function hostcontrolsFlow(browser) {
  * browser (the listing moves with it), and the other friend follows, keeping their place and score.
  */
 async function handoffFlow(browser) {
+  // Each of the three pages in a browser of its own (performance round 4, the handoff flake's root cause): in one
+  // browser they share one GPU process, whose thread draws every page's frames with SwiftShader, and a page's
+  // synchronous WebGL calls (each shader program's link status, its uniform blocks, a context's extensions) wait
+  // behind the other two pages' frames. A joining friend's warm-up made a few hundred of those: measured locally, Bo's
+  // page waited 30-55 s in a second on them, 3 s a call (e2e glwait). No player's page shares a GPU process with two
+  // others; that wait was the "frozen friend" the host dropped as silent.
+  const own = [];
+  const separate = async () => {
+    const b = await browser.browserType().launch({ args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'], ...(process.env.E2E_CHROMIUM ? { executablePath: process.env.E2E_CHROMIUM } : {}) });
+    instrumentBrowser(b);
+    own.push(b);
+    return b;
+  };
+  try {
+    await handoffPages(separate);
+  } finally {
+    for (const b of own) await b.close().catch(() => {});
+  }
+}
+
+async function handoffPages(separate) {
   const PEER_PORT = +(process.env.E2E_PEER_PORT ?? 9077);
   start('pnpm', ['--filter', '@tiletrigger/server', 'hub'], { PORT: String(PEER_PORT), HOST: '127.0.0.1' });
   await sleep(5000);
@@ -6518,7 +6539,7 @@ async function handoffFlow(browser) {
   const dump = () => console.log(`handoff console (last 40):\n  ${logs.slice(-40).join('\n  ')}`);
   const playing = () => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown';
   const open = async (name, url) => {
-    const p = await (await browser.newContext({ viewport: { width: 640, height: 360 } })).newPage();
+    const p = await (await (await separate()).newContext({ viewport: { width: 640, height: 360 } })).newPage();
     p.on('pageerror', (e) => errors.push(`${name}: ${e.message}`));
     // The friends' console (warnings and up, and timed lines), shown when a check after the handoff fails.
     p.on('console', (m) => (m.type() === 'warning' || m.type() === 'error' || process.env.E2E_HANDOFF_LOG) && logs.push(`${((Date.now() - began) / 1000).toFixed(1)} ${name} ${m.type()}: ${m.text().slice(0, 300)}`));
@@ -6618,6 +6639,42 @@ async function handoffFlow(browser) {
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
 }
 
+/** Every context a browser opens (the run's own, and the handoff flow's own browsers): its pages tracked for artifacts, low graphics, CI's waits. */
+function instrumentBrowser(browser) {
+  // Playwright's own default waits (30 s) stretch on CI too.
+  const newContext = browser.newContext.bind(browser);
+  const open = new Set();
+  browser.newContext = async (...a) => {
+    const ctx = await newContext(...a);
+    open.add(ctx);
+    ctx.on('close', () => open.delete(ctx));
+    ctx.on('page', (page) => {
+      livePages.add(page);
+      page.on('close', () => livePages.delete(page));
+    });
+    // Low graphics unless a flow asks otherwise: software rendering on CI can't afford shadows and
+    // post effects, and no check looks at them (the WebGPU flow uses its own browser).
+    await ctx.addInitScript((simThread) => {
+      try {
+        if (!localStorage.getItem('tiletrigger.graphics')) localStorage.setItem('tiletrigger.graphics', 'low');
+        if (simThread) localStorage.setItem('tiletrigger.sim', simThread);
+      } catch {
+        // No storage: the default applies.
+      }
+    }, MAIN_THREAD_FLOWS.has(currentFlow) ? 'main' : '');
+    // A flow closing its pages right after a failed check must not cut that check's screenshot short.
+    const close = ctx.close.bind(ctx);
+    ctx.close = async (...c) => {
+      await Promise.all(shots);
+      return close(...c);
+    };
+    ctx.setDefaultTimeout(T(30000));
+    ctx.setDefaultNavigationTimeout(T(30000));
+    return ctx;
+  };
+  return open;
+}
+
 /** Each flow's outcome: { flow, status PASS | FLAKY | FAIL, seconds, attempts, fails (failed checks per failed attempt) }. */
 const results = [];
 
@@ -6664,37 +6721,8 @@ try {
   await waitForHttp(CLIENT);
   await sleep(1500);
   const browser = await chromium.launch({ args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
-  // Playwright's own default waits (30 s) stretch on CI too.
-  const newContext = browser.newContext.bind(browser);
-  const open = new Set();
-  browser.newContext = async (...a) => {
-    const ctx = await newContext(...a);
-    open.add(ctx);
-    ctx.on('close', () => open.delete(ctx));
-    ctx.on('page', (page) => {
-      livePages.add(page);
-      page.on('close', () => livePages.delete(page));
-    });
-    // Low graphics unless a flow asks otherwise: software rendering on CI can't afford shadows and
-    // post effects, and no check looks at them (the WebGPU flow uses its own browser).
-    await ctx.addInitScript((simThread) => {
-      try {
-        if (!localStorage.getItem('tiletrigger.graphics')) localStorage.setItem('tiletrigger.graphics', 'low');
-        if (simThread) localStorage.setItem('tiletrigger.sim', simThread);
-      } catch {
-        // No storage: the default applies.
-      }
-    }, MAIN_THREAD_FLOWS.has(currentFlow) ? 'main' : '');
-    // A flow closing its pages right after a failed check must not cut that check's screenshot short.
-    const close = ctx.close.bind(ctx);
-    ctx.close = async (...c) => {
-      await Promise.all(shots);
-      return close(...c);
-    };
-    ctx.setDefaultTimeout(T(30000));
-    ctx.setDefaultNavigationTimeout(T(30000));
-    return ctx;
-  };
+  // The contexts it opened (the run closes those a flow left open).
+  const open = instrumentBrowser(browser);
   // E2E_ONLY=editor,characters runs a subset; E2E_SHARD=2/8 one of CI's parallel groups (balanced by e2e/timings.json;
   // CI's plan job passes each shard's flows in E2E_ONLY itself).
   const flows = { editor: editorFlow, editorux: editoruxFlow, offline: offlineFlow, mobile: mobileFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, scenery: sceneryFlow, setpieces: setpiecesFlow, physicsfx: physicsfxFlow, teams: teamsFlow, weaponsets: weaponsetsFlow, ctf: ctfFlow, forts: fortsFlow, breakthrough: breakthroughFlow, arsenal: arsenalFlow, vehicles: vehiclesFlow, race: raceFlow, zombies: zombiesFlow, classes: classesFlow, coverage: coverageFlow, ...Object.fromEntries(MAP_FLOWS.map((name, part) => [name, (b) => mapsFlow(b, part)])), designer: designerFlow, ...Object.fromEntries(CHARACTER_FLOWS.map((name, part) => [name, (b) => charactersFlow(b, part)])), online: onlineFlow, hostgame: hostgameFlow, hostcontrols: hostcontrolsFlow, lobby: lobbyFlow, handoff: handoffFlow, dedicatedhost: dedicatedhostFlow, hostpage: hostpageFlow, webgpu: webgpuFlow, visual: visualFlow, environment: environmentFlow, flashing: flashingFlow };

@@ -15,13 +15,14 @@ const yard = (spawns = 4): MapDocument => {
 const base = (over: Partial<MatchSetup> = {}): MatchSetup => ({ map: 'test_map', mode: 'core.tdm', bots: 3, skill: 'normal', scoreLimit: 40, minutes: 10, ...over });
 
 describe('team configuration', () => {
-  it('keeps 2–8 teams of 1–48, at most 96 players in all', () => {
+  it('keeps 2–8 teams of 1–64, at most 128 players in all (a dedicated host since performance round 4)', () => {
     expect(validateTeamSizes([2, 3, 5], 'core.tdm')).toEqual({ sizes: [2, 3, 5], fixes: [] });
     expect(validateTeamSizes([48, 48], 'core.tdm').sizes).toEqual([48, 48]);
-    const big = validateTeamSizes([48, 48, 10], 'core.tdm');
+    expect(validateTeamSizes([64, 64], 'core.tdm').sizes).toEqual([64, 64]);
+    const big = validateTeamSizes([64, 64, 10], 'core.tdm');
     expect(big.sizes.reduce((a, b) => a + b, 0)).toBe(MAX_PLAYER_SLOTS);
-    expect(big.fixes.join()).toMatch(/96/);
-    expect(validateTeamSizes([0, 2.6, 99], 'core.tdm').sizes).toEqual([1, 3, 48]);
+    expect(big.fixes.join()).toMatch(/128/);
+    expect(validateTeamSizes([0, 2.6, 199], 'core.tdm').sizes).toEqual([1, 3, 64]);
     expect(validateTeamSizes([1, 1, 1, 1, 1, 1, 1, 1, 1, 1], 'core.tdm').sizes).toHaveLength(8);
     expect(validateTeamSizes([5], 'core.tdm').sizes).toEqual([5, 5]);
     expect(validateTeamSizes(['x', 2], 'core.tdm').sizes).toEqual([1, 2]);

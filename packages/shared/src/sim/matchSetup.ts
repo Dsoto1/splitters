@@ -93,7 +93,7 @@ export interface MatchSetup {
 
 export type TeamAssign = 'balanced' | 'random' | 'fixed';
 
-/** Largest single team (two of them fill MAX_PLAYER_SLOTS: 48 v 48). */
+/** Largest single team (two of them fill MAX_PLAYER_SLOTS: 64 v 64 on a dedicated host). */
 export const MAX_TEAM_SIZE = MAX_PLAYER_SLOTS / 2;
 
 export { isTwoTeamMode } from './rules.ts';
@@ -119,7 +119,9 @@ export const SETUP_PRESETS: readonly SetupPreset[] = [
   { id: '8v8', label: '8v8', sizes: [8, 8] },
   { id: '16v16', label: '16v16', sizes: [16, 16] },
   { id: '24v24', label: '24v24', sizes: [24, 24] },
+  { id: '32v32', label: '32v32', sizes: [32, 32] },
   { id: '48v48', label: '48v48', sizes: [48, 48] },
+  { id: '64v64', label: '64v64', sizes: [64, 64] },
   { id: '2v2v2v2', label: '2v2v2v2', sizes: [2, 2, 2, 2] },
   { id: '4x4', label: '4×4 (four teams of four)', sizes: [4, 4, 4, 4] },
   { id: 'ffa8', label: 'FFA 8', ffa: 8 },

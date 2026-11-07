@@ -10,7 +10,8 @@ import type { MatchCheckpoint } from './net/handoff.ts';
  * are kept compact so a binary encoding can replace JSON after measurement
  * without changing gameplay code.
  */
-export const PROTOCOL_VERSION = 4;
+/** 5 (performance round 4): NPC actor IDs from 1000 (they were from 100), so a dedicated host's 128 player slots don't run into them. */
+export const PROTOCOL_VERSION = 5;
 
 export type Tuple3 = [number, number, number];
 

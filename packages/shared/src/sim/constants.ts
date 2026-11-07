@@ -1,11 +1,14 @@
-/** Architectural maximum (MASTER_SPEC_V2 §3.4). Never hard-code a smaller structural limit. */
-export const MAX_PLAYER_SLOTS = 96;
+/**
+ * Architectural maximum (MASTER_SPEC_V2 §3.4): a dedicated host's 64 v 64 since performance round 4 (docs/PERF_96.md;
+ * 96 before). Never hard-code a smaller structural limit; actor IDs past the slots are NPCs' (NPC_ID_BASE, 1000).
+ */
+export const MAX_PLAYER_SLOTS = 128;
 
 /**
  * Most friends (people, not bots) who can join a game a browser hosts (Host
  * game, Go online): the host's upload carries every friend's snapshots, so
- * that is the limit there. Bots still fill the match up to MAX_PLAYER_SLOTS
- * (48 v 48). A policy for browser hosts, not a structural limit.
+ * that is the limit there. Bots fill the match up to BROWSER_MAX_PLAYERS
+ * (32 v 32). A policy for browser hosts, not a structural limit.
  */
 export const BROWSER_HOST_MAX_GUESTS = 10;
 
@@ -15,7 +18,7 @@ export const BROWSER_HOST_MAX_GUESTS = 10;
  * computer. 32 v 32 since performance round 4 (docs/PERF_96.md: a crowd's
  * animation a fifth cheaper, smoothed far characters, 64 bots' thinking about
  * 1.3 ms a tick in the worker); past 24 v 24 an ordinary laptop may stutter,
- * and Match Setup says so (setupFit). Dedicated hosts take MAX_PLAYER_SLOTS.
+ * and Match Setup says so (setupFit). Dedicated hosts take MAX_PLAYER_SLOTS (64 v 64).
  * A policy for browsers, not a structural limit (load tests still ask for
  * more with ?bots=). Phones keep to 16 (client touchDevice.ts).
  */

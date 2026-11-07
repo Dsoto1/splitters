@@ -1495,7 +1495,7 @@ export class FrontEnd {
     const shown = new Set<string>();
     const teams = el('optgroup', { label: 'Teams' });
     const ffa = el('optgroup', { label: 'Free-for-all' });
-    // Past this device's cap (24 v 24 in a browser, 8 v 8 on a phone): a dedicated host's sizes.
+    // Past this device's cap (32 v 32 in a browser, 8 v 8 on a phone): a dedicated host's sizes.
     for (const p of SETUP_PRESETS) {
       if (presetPlayers(p) > max) continue;
       if (p.sizes) {

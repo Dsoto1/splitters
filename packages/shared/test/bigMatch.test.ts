@@ -245,17 +245,21 @@ describe('interest management', () => {
   });
 });
 
-describe('96 players', () => {
+describe('a full dedicated host: 128 players', () => {
   it(`runs ${MAX_PLAYER_SLOTS} bots on Frost Basin within the tick budget (bench, generous threshold)`, () => {
-    expect(MAX_PLAYER_SLOTS).toBe(96);
+    // 64 v 64 since performance round 4 (docs/PERF_96.md; 48 v 48 before).
+    expect(MAX_PLAYER_SLOTS).toBe(128);
     const loaded = loadMap(readFileSync(fileURLToPath(new URL('../../../maps/frost_basin.json', import.meta.url)), 'utf8'));
     if (!loaded.ok) throw new Error('Frost Basin failed to load');
     const map = loaded.map;
-    const match = new Match(map, { ...rulesForMode(map, 'core.tdm'), teamSizes: [48, 48], scoreLimit: 0, timeLimitSeconds: 0 }, 42);
+    const match = new Match(map, { ...rulesForMode(map, 'core.tdm'), teamSizes: [64, 64], scoreLimit: 0, timeLimitSeconds: 0 }, 42);
     for (let i = 0; i < MAX_PLAYER_SLOTS; i++) expect(match.addBot(`bot${i}`, CORE_BOT_PROFILES[i % CORE_BOT_PROFILES.length]!, BOT_DIFFICULTIES.normal)).not.toBeNull();
+    // One more is refused; slot 127 is a player, not an NPC (NPC ids start at NPC_ID_BASE, 1000: they started at 100).
+    expect(match.addBot('one more', CORE_BOT_PROFILES[0]!, BOT_DIFFICULTIES.normal)).toBeNull();
+    expect(match.actor(127)?.kind).toBe('bot');
     const teams = new Map<string | null, number>();
     for (const c of match.combatants()) teams.set(c.faction, (teams.get(c.faction) ?? 0) + 1);
-    expect([...teams.values()]).toEqual([48, 48]);
+    expect([...teams.values()]).toEqual([64, 64]);
     const ticks = 60 * 15;
     let total = 0;
     let max = 0;
@@ -267,7 +271,7 @@ describe('96 players', () => {
       max = Math.max(max, ms);
     }
     const avg = total / ticks;
-    console.log(`96 bots on Frost Basin: avg tick ${avg.toFixed(2)} ms, max ${max.toFixed(1)} ms (target avg < 8 ms; pnpm bench 96 60 maps/frost_basin.json --mode=core.tdm)`);
+    console.log(`${MAX_PLAYER_SLOTS} bots on Frost Basin: avg tick ${avg.toFixed(2)} ms, max ${max.toFixed(1)} ms (pnpm bench 128 60 maps/frost_basin.json --mode=core.tdm)`);
     // Generous: shared CI runners are slow and noisy. The real budget is 16.7 ms a tick.
     expect(avg).toBeLessThan(30);
     for (const c of match.combatants()) expect(c.move.pos.y).toBeGreaterThan(match.killY);
@@ -281,7 +285,7 @@ describe('96 players', () => {
     if (!loaded.ok) throw new Error('Frost Basin failed to load');
     const map = loaded.map;
     const match = new Match(map, { ...rulesForMode(map, 'core.tdm'), teamSizes: [48, 48], scoreLimit: 0, timeLimitSeconds: 0 }, 42);
-    for (let i = 0; i < MAX_PLAYER_SLOTS; i++) match.addBot(`bot${i}`, CORE_BOT_PROFILES[i % CORE_BOT_PROFILES.length]!, BOT_DIFFICULTIES.normal);
+    for (let i = 0; i < 96; i++) match.addBot(`bot${i}`, CORE_BOT_PROFILES[i % CORE_BOT_PROFILES.length]!, BOT_DIFFICULTIES.normal);
     const friends = 10;
     for (let s = 0; s < friends; s++) match.watchers.add(s);
     run(match, 120);
@@ -307,7 +311,7 @@ describe('96 players', () => {
       chars += texts[1]!.length;
       fullChars += encodeSnapshots(b, [{ slot: 1, ack: 0, me: match.privateState(1) }])[0]!.length;
       const msg = decoder.snapshot(JSON.parse(texts[1]!));
-      expect(msg.players.length + (msg.hold?.length ?? 0)).toBe(MAX_PLAYER_SLOTS);
+      expect(msg.players.length + (msg.hold?.length ?? 0)).toBe(96);
     }
     const perSecond = chars / seconds / 1024;
     console.log(`hosted 48 v 48, clumped Frost Basin: ${perSecond.toFixed(0)} KB/s a friend before compression (full snapshots: ${(fullChars / seconds / 1024).toFixed(0)} KB/s); writing ${friends} friends' copies ${(ms / snaps).toFixed(2)} ms a snapshot`);
