@@ -230,6 +230,8 @@ export interface DriveState {
   /** Times it had to back out. */
   unstick: number;
   last: Vec3 | null;
+  /** Its heading at the last look: turning on the spot (tracks) is not standing still. */
+  lastYaw?: number;
   /** The headway window: where the vehicle was when it started, and when. */
   anchor: Vec3 | null;
   anchorTick: number;
@@ -260,8 +262,12 @@ export function steer(st: DriveState, tick: number, m: MountView, aim: Vec3, dis
   }
   if (st.tick !== tick) {
     st.tick = tick;
-    const moved = st.last ? horizontalDistance(pos, st.last) : 1;
+    const turned = st.lastYaw === undefined ? 0 : Math.abs(angleDelta(st.lastYaw, m.yaw));
+    const moved = (st.last ? horizontalDistance(pos, st.last) : 1) + turned * 2;
     st.last = { ...pos };
+    st.lastYaw = m.yaw;
+    // Swinging round on the spot (tracks): the headway window starts again once it is facing the way.
+    if (m.pivots && turned > 0.004) st.anchor = null;
     st.slow = moved < 0.01 ? st.slow + 1 : Math.max(0, st.slow - 2);
     let stuck = st.slow > STUCK_SLOW_TICKS;
     if (!st.anchor) {
@@ -286,7 +292,8 @@ export function steer(st: DriveState, tick: number, m: MountView, aim: Vec3, dis
     }
   }
   const right = clamp(err * 2.2, -1, 1);
-  let forward = Math.abs(err) > 1.4 ? 0.35 : Math.abs(err) > 0.7 ? 0.6 : 1;
+  // Tracks (pivots) turn on the spot for a sharp turn rather than circling round it.
+  let forward = Math.abs(err) > 1.4 ? (m.pivots ? 0 : 0.35) : Math.abs(err) > 0.7 ? 0.6 : 1;
   if (distLeft < 25) forward = Math.min(forward, 0.5);
   return { forward, right };
 }

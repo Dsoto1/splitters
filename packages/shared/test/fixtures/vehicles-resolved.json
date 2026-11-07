@@ -763,7 +763,12 @@
        -0.3
       ],
       "weapon": "core.tank_cannon",
-      "arc": 0.6
+      "arc": 0.6,
+      "ammo": {
+       "max": 10,
+       "refillSeconds": 15
+      },
+      "driverFires": true
      },
      {
       "role": "gunner",
@@ -782,13 +787,22 @@
      "radius": 6,
      "damage": 120
     },
+    "armour": {
+     "surface": "armor",
+     "sealed": true,
+     "bullets": 0.1,
+     "blasts": 1.25,
+     "melee": 0
+    },
+    "bailHealth": 0.25,
     "vehicle": {
      "maxSpeed": 11,
      "reverseSpeed": 5,
      "accel": 5,
      "turnRate": 1,
      "grip": 0.45,
-     "mass": 6
+     "mass": 6,
+     "pivot": 0.8
     },
     "cockpitEye": [
      -0.6,
