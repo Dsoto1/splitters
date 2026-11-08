@@ -8,6 +8,19 @@ made only on a commit that passed CI on a check branch.
 
 ## Unreleased
 
+**Maps: no more spots you can't get out of** (owner's "Fix all", 2026-11-08; all in MapMaker):
+- Skyward: the two spawn points on the one-way gun towers are on the central deck now.
+- Sky Islands: a jump pad on the sky platform drops you back onto the west arm.
+- Grand Marquee: a gap at the back of each side panel on the marquee top; drop down to the street.
+- Obsidian Orb: the reactor shaft is bottomless again (the core isn't solid, its floor is gone): a fall is a fall, not
+  a pit. The glowing trims along the shaft walls are flush, so nothing lands on a ledge.
+- Reactor: railings beside the roof's stair head and along the stairs' open side; no more drop into the outer yard.
+- Serpent Gorge: climbing vines up from the gorge floor beside the river.
+- Erosion: the corner pad pillars meet the lower deck along an edge, so bots walk onto them too.
+- Outpost Siege: a smaller dais in the uplink room and the north room's low cover set back from the walls; bots get
+  round to the armour and the north rooms.
+- Iron Compound: the gantry MG turret sits in the gantry's end corner, out of the walkway.
+
 **Fixes**
 - Debris from a vehicle or turret blowing up no longer falls through the ground: its chunks start above it, and any
   that get under the world anyway are cleared away.
