@@ -391,8 +391,11 @@ gets overloaded above that: local e2e times out and flakes). Prune landed worktr
   sooner than a loaded page looked again).
 - **weaponsets** Match setup: Advanced rules is opened by its `aria-expanded` state until its Weapons fold shows (a
   click while the setup redrew left it shut, locally).
-- **characters3** far bodies (`core.hyena` drawn 1.5 of 2.12 m, check/quickplay 05a1515, both attempts; not reproduced
-  in 5 local runs): the message now also says where you are against the crowd's setup and whether you died.
+- **characters3** far bodies (`core.hyena` drawn 1.5 of 2.12 m, three times on CI, never another look; not reproduced
+  locally, where no hyena was among the measured bots): the drawn low-detail level is now measured against the
+  full-detail mesh in the same pose (and a 50% floor of the standing height), not against the standing height alone.
+  If it fails again with "full detail in that pose" near 2.1 m, the hyena's low-detail level really is short (content).
+  The message also says where you are against the crowd's setup and whether you died.
 - **characters3**, scope check: `__give` already puts the marksman in hand; pressing 3 while only the view lagged cycled
   on to the rifle in the same slot. It waits for the held gun and presses only while it isn't the marksman.
 - **party** (a real bug): a friend sent `travel` (the vote's winner, the rotation, Change map) rejoined the host's code

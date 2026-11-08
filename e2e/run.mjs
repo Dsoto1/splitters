@@ -6588,6 +6588,9 @@ async function wholeBodies(page, frames, upright = []) {
             let lo = Infinity;
             let hi = -Infinity;
             let bad = 0;
+            // The full-detail mesh in the same pose (the same skeleton): the height the drawn level should have.
+            let lo0 = Infinity;
+            let hi0 = -Infinity;
             const off = [];
             for (const m of parts) {
               const level = m.getLOD(cam);
@@ -6599,12 +6602,20 @@ async function wholeBodies(page, frames, upright = []) {
               lo = Math.min(lo, b.lo);
               hi = Math.max(hi, b.hi);
               bad += b.bad;
+              const f = level === m ? b : skinned(m);
+              lo0 = Math.min(lo0, f.lo);
+              hi0 = Math.max(hi0, f.hi);
             }
             const spec = JSON.parse(a.specKey);
             const height = hi > lo ? hi - lo : 0;
             const want = fullHeight * (spec.size ?? 1);
-            if ((off.length || bad || (upright.includes(slot) && height < want * 0.75)) && !failed.has(slot)) {
-              failed.set(slot, { slot, look: spec.look, dist: Math.round(dist), frame: n, height: +height.toFixed(2), want: +want.toFixed(2), nonNumbers: bad, off });
+            const full = hi0 > lo0 ? hi0 - lo0 : 0;
+            // Whole: the drawn level as tall as the full-detail mesh in the same pose (a character's own pose sets the
+            // height; measured against a standing height, Hyena Warrior failed three times on CI at 1.5 of 2.1 m), and
+            // never a stub of it (feet only). A low-detail level that really is short still fails here.
+            const short = height < full * 0.85 || height < want * 0.5;
+            if ((off.length || bad || (upright.includes(slot) && short)) && !failed.has(slot)) {
+              failed.set(slot, { slot, look: spec.look, dist: Math.round(dist), frame: n, height: +height.toFixed(2), want: +want.toFixed(2), full: +full.toFixed(2), nonNumbers: bad, off });
             }
           }
           if (++n >= frames) {
@@ -6728,7 +6739,7 @@ async function farBodies(browser) {
   await page.waitForFunction((slots) => slots.filter((s) => window.__cs.view.avatars.get(s)?.culled === false).length >= 8, setup.slots, { timeout: T(60000) }).catch(() => {});
   const back = await page.evaluate((slots) => slots.filter((s) => window.__cs.view.avatars.get(s)?.culled === false).length, setup.slots);
   const r = await wholeBodies(page, 12, setup.slots);
-  const broken = r.failed.map((f) => `${f.look} at ${f.dist} m, frame ${f.frame}: ${f.height} of ${f.want} m drawn${f.nonNumbers ? `, ${f.nonNumbers} vertices not numbers` : ''}${f.off.length ? `, ${f.off.join(', ')}` : ''}`);
+  const broken = r.failed.map((f) => `${f.look} at ${f.dist} m, frame ${f.frame}: ${f.height} of ${f.want} m drawn (full detail in that pose: ${f.full} m)${f.nonNumbers ? `, ${f.nonNumbers} vertices not numbers` : ''}${f.off.length ? `, ${f.off.join(', ')}` : ''}`);
   // (For a failure: where you are now against where the crowd was set out from, and whether you are alive.)
   if (r.failed.length) broken.push(`you ${await sim(page, (m, me, from) => `${Math.hypot(me.move.pos.x - from.x, me.move.pos.z - from.z).toFixed(1)} m from the setup, ${me.alive ? 'alive' : 'dead'}, ${me.deaths} deaths`, setup.from)}`);
   check(slept >= 8 && back >= 8 && r.checked >= 6 && r.failed.length === 0, `far characters draw their whole bodies after a fight, asleep out of view and awake again (${slept} slept, ${back} back in view, ${r.checked} checked past the low-detail switch of ${r.seen} seen; broken: ${broken.join('; ') || 'none'})`);
