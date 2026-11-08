@@ -114,6 +114,9 @@ interface BotRow {
   parkourMissed?: number;
   /** Route searches that kept to its group's corridor all the way (NavWorld.pathAlong). */
   along?: number;
+  /** Its body size class (BODY_SIZES), and seconds it spent ducking under a low roof (brain.ts lowRoute, mustDuck). */
+  size?: string;
+  ducked?: number;
   /** Its style: Arena, Tactical, or neither ('mixed': the character's own way between them). */
   style?: BotStyleName;
 }
@@ -140,6 +143,9 @@ export interface MatchRow {
   /** Route searches the per-tick budget put off a tick, and teammates passed on the right (crowds), in the match. */
   searchesPutOff?: number;
   keptRight?: number;
+  /** Tall bodies' routes (NavWorld.findPath `tall`) on a map with low headroom, and those that went under it (no way round). */
+  tallRoutes?: number;
+  lowRoutes?: number;
   mode: string;
   seed: number;
   seconds: number;
@@ -671,6 +677,8 @@ function play(map: MapDocument, mode: GameMode, seed: number, seconds: number, s
     r.parkourGaveUp = c.bot!.parkourGaveUp;
     r.parkourMissed = c.bot!.parkourMissed;
     r.along = c.bot!.alongRoutes;
+    r.size = bodyClass(c.look, match.rules);
+    r.ducked = Math.round((c.bot!.duckTicks / TICK_RATE) * 10) / 10;
     out.bots.push(r);
   }
   const links = match.nav.parkour;
@@ -694,6 +702,8 @@ function play(map: MapDocument, mode: GameMode, seed: number, seconds: number, s
   out.navFails = simProfile.n.get('navFail') ?? 0;
   out.searchesPutOff = match.nav.searchesPutOff;
   out.keptRight = simProfile.n.get('botKeepRight') ?? 0;
+  out.tallRoutes = match.nav.tallRoutes;
+  out.lowRoutes = match.nav.lowRoutes;
   out.seconds = played;
   out.coverage = behaviour.coverage(played);
   if (btRow) out.breakthrough = btRow;
@@ -1183,6 +1193,25 @@ function breakthroughSummary(ms: readonly MatchRow[]): string {
   return `sectors ${(bs.reduce((a, b) => a + b.sectors, 0) / bs.length).toFixed(1)} of ${of}, broke through ${bs.filter((b) => b.outcome === 'attack').length}/${bs.length} (${times.join(', ')})`;
 }
 
+/**
+ * Stuck recoveries a bot-minute by body size (rows from before sizes were written: by the look's class with sizes
+ * on), the large bodies' ducking a match, and tall bodies' routes that went under a low roof (NavWorld.lowRoutes).
+ */
+export function sizeLine(ms: readonly MatchRow[]): string {
+  const bots = ms.flatMap((m) => m.bots);
+  const of = (r: BotRow) => r.size ?? bodyClass(r.look, {});
+  const per = (['small', 'standard', 'large'] as const).map((k) => {
+    const bs = bots.filter((r) => of(r) === k);
+    const alive = bs.reduce((x, r) => x + r.alive, 0);
+    return `${k} ${(bs.reduce((x, r) => x + r.stuck, 0) / Math.max(1e-9, alive / 60)).toFixed(2)}`;
+  });
+  const n = Math.max(1, ms.length);
+  const ducked = bots.reduce((x, r) => x + (r.ducked ?? 0), 0) / n;
+  const tall = ms.reduce((x, m) => x + (m.tallRoutes ?? 0), 0);
+  const low = ms.reduce((x, m) => x + (m.lowRoutes ?? 0), 0);
+  return `stuck a bot-minute ${per.join(', ')}; ducking ${ducked.toFixed(1)} s a match; tall routes under a low roof ${low} of ${tall}`;
+}
+
 function printCompare(before: readonly MatchRow[], after: readonly MatchRow[]): void {
   const a = new Map(perMap(before).map((m) => [m.key, m]));
   const b = perMap(after);
@@ -1200,6 +1229,7 @@ function printCompare(before: readonly MatchRow[], after: readonly MatchRow[]): 
   const g = (v: number | undefined, d = 2, k = 100) => (v === undefined ? '-' : (v * k).toFixed(d));
   console.log(`failed searches ${g(ma.failedSearches)} → ${g(mb.failedSearches)} % (${ma.noRoute.toFixed(0)} → ${mb.noRoute.toFixed(0)} a match of ${ma.searches.toFixed(0)} → ${mb.searches.toFixed(0)}); no-route idle ${g(ma.noRouteIdle)} → ${g(mb.noRouteIdle)} %; idle out of a fight ${g(ma.calm, 1)} → ${g(mb.calm, 1)} %; frozen ${g(ma.frozen, 1)} → ${g(mb.frozen, 1)} %; stuck ${ma.stuck.toFixed(0)} → ${mb.stuck.toFixed(0)} a match (${ma.stuckPerBotMin.toFixed(2)} → ${mb.stuckPerBotMin.toFixed(2)} a bot-minute); 10 s+ idle spells ${ma.spells10.toFixed(1)} → ${mb.spells10.toFixed(1)} a match; kills ${ma.killsMin.toFixed(1)} → ${mb.killsMin.toFixed(1)} a minute; think ${g(ma.thinkMs, 2, 1)} → ${g(mb.thinkMs, 2, 1)} ms`);
   console.log(`route choice (bots past a trip's middle, once a life): two ways or more ${g(ma.ways2, 0)} → ${g(mb.ways2, 0)} % of team trips, busiest way ${g(ma.waysBusiest, 0)} → ${g(mb.waysBusiest, 0)} %`);
+  console.log(`body sizes: ${sizeLine(before)} → ${sizeLine(after)}`);
   console.log(`routes: team trips on two routes or more ${g(ma.routes2, 0)} → ${g(mb.routes2, 0)} % (of ${ma.tripsMeasured} → ${mb.tripsMeasured} with two ways or more; ${ma.oneWay} → ${mb.oneWay} with one), busiest route ${g(ma.busiest, 0)} → ${g(mb.busiest, 0)} %; time in cover in a fight ${g(ma.coverFight, 1)} → ${g(mb.coverFight, 1)} %; scoped kills ${ma.scopedKills.toFixed(1)} → ${mb.scopedKills.toFixed(1)} a match (from a vantage spot ${ma.postKills.toFixed(1)} → ${mb.postKills.toFixed(1)}); sniper spots ${ma.sniperPosts.toFixed(1)} → ${mb.sniperPosts.toFixed(1)} a match (${ma.snipers.toFixed(1)} → ${mb.snipers.toFixed(1)} snipers), moved on after shots ${ma.sniperMoves.toFixed(1)} → ${mb.sniperMoves.toFixed(1)} a match`);
   console.log(`time in cover in a fight by style: ${STYLES.map((st) => `${st} ${g(ma.coverByStyle[st], 1)} → ${g(mb.coverByStyle[st], 1)} %`).join(', ')}`);
   const follow = (ms: readonly MatchRow[]) => {
