@@ -44,7 +44,7 @@ beforeAll(() => Promise.all([initPhysics(), initNavigation()]));
  * The pieces with open sides (no wall of their own at a port): setPieces3.test.ts proves their ways through,
  * setPieces4.test.ts the command bunker's gates and the gatehouse's arches (MAP 21), and setPieces5.test.ts the
  * brainstorm list's open ones (catwalks, the overlook, the dock, the arena, the bunker cluster, the plaza, the ramp
- * junction).
+ * junction) and MAP 21's sea wall and its breach.
  */
 const OPEN_SIDED = [
   'setpiece.arena_arcade',
@@ -65,6 +65,8 @@ const OPEN_SIDED = [
   'setpiece.landing_craft_beached',
   'setpiece.loading_dock',
   'setpiece.ramp_junction',
+  'setpiece.sea_wall',
+  'setpiece.sea_wall_breach',
   'setpiece.sunken_arena',
   'setpiece.twin_stair_overlook',
   ...['bend', 'end', 'jog', 'junction', 'straight'].flatMap((s) => [`setpiece.trench_${s}`, `setpiece.trench_${s}_sandbag`]),

@@ -246,3 +246,44 @@ describe('retired tiles: the alias table', () => {
     expect(replaceTilesWithSetPieceCommand(after, 'core.room')).toMatchObject({ error: expect.stringContaining('no set piece') });
   });
 });
+
+describe('MAP 21: the sea wall and its breach', () => {
+  const along = (p: Vec3, yaw: number) => p.x * Math.sin(yaw) + p.z * Math.cos(yaw);
+
+  it('the wall stops the beach: players walk into it, shots at chest height stop on it; from the fire step the guns clear its top', () => {
+    for (const rotation of ROTATIONS) {
+      for (const mirror of [false, true]) {
+        const map = withPiece('setpiece.sea_wall', rotation, mirror);
+        const physics = new PhysicsWorld(buildMapGeometry(map), mapTerrainMesh(map));
+        const at = (x: number, y: number, z: number) => place({ x, y, z }, rotation, mirror, 0);
+        const north = placeYaw(0, rotation, mirror);
+        const where = `turned ${rotation}${mirror ? ' mirrored' : ''}`;
+        // At most up onto the footing (0.4 m), never past the wall's face 3 m south of the cell's middle.
+        expect(along(walk(physics, at(-1, 0.02, -7), north, 150).pos, north), `${where}: walked from the beach`).toBeLessThan(-3.2);
+        const dir = { x: Math.sin(north), y: 0, z: Math.cos(north) };
+        expect(physics.raycastHit(at(-1, 1.5, -8), dir, 12), `${where}: a shot from the beach`).not.toBeNull();
+        // Eyes on the fire step (2 m up) at 3.6 m: a shot out to sea passes over the wall and its lip.
+        expect(physics.raycastHit(at(-1, 3.6, 0), { x: -dir.x, y: 0, z: -dir.z }, 12), `${where}: a shot from the fire step`).toBeNull();
+        // Up the stair at the east end onto the fire step.
+        expect(walk(physics, at(2.95, 0.02, 4.5), placeYaw(Math.PI, rotation, mirror), 90).pos.y, `${where}: climbed to the fire step`).toBeGreaterThan(1.9);
+      }
+    }
+  });
+
+  it('the breach: players and bots go through the gap from the beach to the land side, over the rubble; the stair still climbs', () => {
+    for (const rotation of ROTATIONS) {
+      for (const mirror of [false, true]) {
+        const map = withPiece('setpiece.sea_wall_breach', rotation, mirror);
+        const physics = new PhysicsWorld(buildMapGeometry(map), mapTerrainMesh(map));
+        const at = (x: number, y: number, z: number) => place({ x, y, z }, rotation, mirror, 0);
+        const north = placeYaw(0, rotation, mirror);
+        const where = `turned ${rotation}${mirror ? ' mirrored' : ''}`;
+        expect(along(walk(physics, at(0, 0.02, -7), north, 150).pos, north), `${where}: walked through the breach`).toBeGreaterThan(4);
+        const nav = navOf(map);
+        expect(miss(nav, at(0, 0, -7), at(0, 0, 6)), `${where}: a bot's path through`).toBeLessThan(1.2);
+        nav.destroy();
+        expect(walk(physics, at(2.95, 0.02, 4.5), placeYaw(Math.PI, rotation, mirror), 90).pos.y, `${where}: up the stair to the east stub's fire step`).toBeGreaterThan(1.9);
+      }
+    }
+  });
+});
