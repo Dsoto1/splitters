@@ -72,6 +72,19 @@ The workflow is unchanged (CLAUDE.md):
      without keep-right and the strafing rule 0.21, without both 0.17. Neither explains the drop; at 48 matches
      captures move about ±10 between builds, and the drop is under two standard errors. The strafing rule does cut
      stuck recoveries (1.43 → 1.32). Not ablated: ground that goes, corridor routes.
+   - **Part 2, large bots route round low roofs (owner's option a): done, held back for the owner** (`wip/bots-lowroof`
+     @ fc4d701 and its docs commit; CI on `check/bots-lowroof`). BOT_AI_PLAN.md, "Part 2", has the tables.
+     - **How:** the navmesh marks ground with less headroom than a large body (2.12 m) as `LOW_AREA` (`nav/solo.ts`,
+       Recast splits polygons there); tall bodies' searches price it at 1,000 a metre (`findPath` `tall`), small and
+       standard ones don't change. A route that still goes under (no way round, or it starts or ends there) turns on
+       the duck (`lowRoute`, `mustDuck`). `botLowRoof.test.ts`.
+     - **Measured against main b8854c6:** stuck 1.31 → 1.12 a bot-minute (large bodies 1.54 → 1.01; Diamond Park 2.17
+       → 1.04 over seeds 1-12), ducking 0.0 s a match; TDM stuck 1.04 → 0.76, kills the same; the Range 19 → 19.
+       **But captures 50 → 43** (48 matches), all of it Diamond Park and Qasr Medina: Diamond Park 13 → 5 over seeds
+       1-12, flag takes up, returns 36 → 51 (large bodies' 6 → 17). Un-stuck large defenders, not crouching carriers.
+       A moderate price (4 a metre) gave Diamond Park 9 captures, ducking 6 s a match.
+     - **The owner's call:** land it, land it with the moderate price, or neither. Not landed: the goal was the stuck
+       reduction without the capture loss.
    - **Next:** route spread (CTF's busiest way about 60 %): route loose side-lane bots through a corridor's via
      instead of `laneWaypoint`, measured on the 48 matches.
    - **The measuring commands** (run each on the branch and on a detached worktree of main; `--compare=a.json,b.json`
