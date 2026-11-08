@@ -27,6 +27,7 @@ import {
   isMapId,
   playlistNext,
   rulesForTravel,
+  mapPlayerCaps,
   travelNotice,
   MapRotation,
   validateRotation,
@@ -354,6 +355,19 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
   let bots = new BotFiller(match, BOT_DIFFICULTIES[opts.botDifficulty ?? 'normal'], { takeBack: opts.botTakeBack, botSet: firstSet.set });
   /** Players to keep (bots included), bot skill and style: the admin can change them mid-match (HostControl). */
   let control = new HostControl(match, bots, botFill, 'Admin');
+  /**
+   * The players the admin asked for, before a map's player cap (shared sim/matchSetup.ts mapPlayerCaps) cut a match
+   * down: a smaller map in the rotation plays fewer, the next bigger one fills up again. `cappedFill`: the fill the
+   * last map change left (an admin who changes the fill since asks anew).
+   */
+  let askedFill = botFill;
+  let cappedFill = botFill;
+  const travelFill = (): number => {
+    if (control.fill !== cappedFill) askedFill = control.fill;
+    return askedFill;
+  };
+  /** The team size to keep on a map change: the admin's, unless only a map's cap set it (then it follows the asked fill). */
+  const travelTeamSize = (): number | null => (control.fill !== cappedFill || askedFill === cappedFill ? control.state().teamSize : null);
   /** Scenario chains: what each player (by name) takes into the next map, until they rejoin. */
   let carried = new Map<string, CarryOver>();
   /** A won map with somewhere to go: travel at this tick (late in the intermission). */
@@ -427,7 +441,7 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
       const m = suiteMap(cmd.map);
       if (!m) return `"${cmd.map}" is not a map of our suite`;
       if (travel) return 'Already changing map';
-      const next = rulesForTravel(travelRules(), m, control.fill, cmd.mode, control.state().teamSize);
+      const next = rulesForTravel(travelRules(), m, travelFill(), cmd.mode, travelTeamSize());
       travel = { atTick: match.tick + HOST_TRAVEL_TICKS, map: m, rules: next.rules, index: playIndex, carry: { score: false, loadout: false }, fill: next.fill };
       notice(travelNotice(m.metadata.name, next.rules.mode));
       return null;
@@ -735,13 +749,18 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
    * players carry over (rulesForTravel), scores and weapons don't. Returns the rules it will play.
    */
   const travelTo = (m: MapDocument, mode: GameMode, atTick: number): MatchRules => {
-    const next = rulesForTravel(travelRules(), m, control.fill, mode, control.state().teamSize);
+    const next = rulesForTravel(travelRules(), m, travelFill(), mode, travelTeamSize());
     travel = { atTick, map: m, rules: next.rules, index: playIndex, carry: { score: false, loadout: false }, fill: next.fill };
     return next.rules;
   };
   /** A match ended with nowhere else to go: the rotation's next map after the scoreboard (and everyone is told where). */
   const planRotation = (ev: Extract<GameEvent, { e: 'round_end' }>) => {
-    const up = rotation.peek();
+    // Past maps too small for the people here (their player cap for the mode: MapMaker's, else the automatic one).
+    const people = humans();
+    const up = rotation.peekFitting((e) => {
+      const m = suiteMap(e.map);
+      return !!m && mapPlayerCaps(m, e.mode).max >= people;
+    });
     if (!up) return;
     const m = suiteMap(up.entry.map);
     if (!m) return void console.warn(`[rotation] ${up.entry.map} didn't load: replaying ${map.metadata.name}`);
@@ -775,6 +794,7 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
     nextPending = new Set();
     bots = new BotFiller(match, bots.skill, { takeBack: opts.botTakeBack, botSet: bots.hostSet });
     control = new HostControl(match, bots, next.fill, 'Admin');
+    cappedFill = next.fill;
     watchNextRules(control);
     bots.rebalance(control.fill);
     // A map the owner published since is picked up from here on.

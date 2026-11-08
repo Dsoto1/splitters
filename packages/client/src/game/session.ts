@@ -26,6 +26,9 @@ import {
   LUNAR_PAD_BOOST,
   TINY_SIZE,
   FX_JACKPOT,
+  FX_PROTECTED,
+  type MatchAward,
+  type GameEvent,
   rouletteOn,
   cockpitEye,
   mountToWorld,
@@ -101,6 +104,7 @@ import {
   environmentShapes,
   mountDamageState,
   rulesForTravel,
+  mapPlayerCaps,
   travelNotice,
   withPending,
   nextMapLine,
@@ -142,6 +146,7 @@ import { HOSTAGE_SLOT_BASE, ModeHud } from './modeHud.ts';
 import type { MinimapBlip } from './minimap.ts';
 import { RaceHud } from './raceHud.ts';
 import { RouletteHud } from './rouletteHud.ts';
+import { AwardsHud } from './awardsHud.ts';
 import { LobbyAdvertiser, builtHub, hubAddress, hubSetting } from './hub.ts';
 import { myRegion } from '../profile.ts';
 import { statusColor } from './arsenalVisuals.ts';
@@ -435,6 +440,50 @@ export class GameSession {
   private readonly punches = new Map<number, boolean>();
   /** Capture the Flag, King of the Hill, Elimination: flags, hill, status line, markers, announcer. */
   private modeHud: ModeHud | null = null;
+  /** The end-of-match awards and the revenge and nemesis callouts (awardsHud.ts), every mode. */
+  private awardsHud: AwardsHud | null = null;
+  /** Kills in this life by slot (the kill-streak burst at 3, 5, 10...: content/vfx.json map.gameplay streak). */
+  private readonly lifeKills = new Map<number, number>();
+
+  /** A kill: the killer's streak this life, and its burst over them at 3, 5, 7, 10, 15, 20... */
+  private streakMoment(ev: Extract<GameEvent, { e: 'kill' }>, poses: () => ReturnType<Interpolator['sample']>): void {
+    this.lifeKills.delete(ev.victim);
+    if (ev.killer === null || ev.killer === undefined || ev.killer === ev.victim) return;
+    const n = (this.lifeKills.get(ev.killer) ?? 0) + 1;
+    this.lifeKills.set(ev.killer, n);
+    if (!(n === 3 || n === 5 || n === 7 || (n >= 10 && n % 5 === 0)) || document.hidden) return;
+    // Over them for everyone else; yours shows on the HUD (the burst would be round your own head).
+    if (ev.killer === this.slot && !this.thirdPerson) return void this.hud.showMessage(`${n} kills in a row!`, 1.5);
+    const p = ev.killer === this.slot && this.local ? this.local.state.pos : poses().find((x) => x.slot === ev.killer);
+    if (p) this.view.playGameplayFx('streak', { x: p.x, y: p.y + 2.1, z: p.z }, { calmable: true });
+  }
+
+  /** A hit worth showing (the `hurt` event): armour breaking, a heavy hit (and, if it was you, the screen's edge). */
+  private hurtMoment(ev: Extract<GameEvent, { e: 'hurt' }>): void {
+    const at = { x: ev.p[0], y: ev.p[1], z: ev.p[2] };
+    const me = ev.s === this.slot;
+    if (me && ev.a === 'big') this.hud.heavyHit(ev.n ?? 50);
+    // Not on yourself in first person (it would be round the camera).
+    if (me && !this.thirdPerson) return;
+    this.view.playGameplayFx(ev.a === 'armor' ? 'armor.break' : 'hit.big', at, { calmable: true });
+  }
+
+  /** Spawn protection on you: a line under the crosshair until it drops (firing ends it). */
+  private shieldNote(on: boolean): void {
+    let el = document.getElementById('shield-note');
+    if (!on) {
+      if (el) el.hidden = true;
+      return;
+    }
+    if (!el) {
+      el = document.createElement('div');
+      el.id = 'shield-note';
+      el.textContent = 'Spawn protection: firing ends it';
+      (document.getElementById('hud') ?? document.body).append(el);
+    }
+    el.hidden = false;
+  }
+
   /** Roulette (rouletteHud.ts): the spawn card, the death screen's pick and reroll, the storm, the awards. */
   private rouletteHud: RouletteHud | null = null;
   /** Roulette: players on a tiny roll this life (drawn and predicted smaller), on a jackpot (a gold glow); the cards coming up (preloaded). */
@@ -1248,13 +1297,20 @@ export class GameSession {
   private async rotateOn(): Promise<void> {
     const r = this.ownRotation;
     const t = this.opts.transport;
-    const up = r?.list.peek();
+    let up = r?.list.peek();
     if (!r || !up || !(t instanceof LocalTransport) || this.travel || this.rotating) return;
     this.rotating = true;
     const t0 = performance.now();
     // Before the match starts itself over (the page hears of the end a little after the match).
     const wait = Math.max(1000, ((this.rules?.intermissionTicks ?? 300) / TICK_RATE) * 1000 - 1500);
-    const map = await r.load(up.entry.map);
+    let map = await r.load(up.entry.map);
+    // Past maps too small for the people here (the mode's player cap: MapMaker's, else the automatic one).
+    const people = Math.max(1, (this.lastRoster ?? []).filter((p) => !p.bot && !p.sp).length);
+    for (let tries = r.list.entries.length; map && tries > 1 && mapPlayerCaps(map, up.entry.mode).max < people; tries--) {
+      r.list.advance();
+      up = r.list.peek()!;
+      map = await r.load(up.entry.map);
+    }
     const s = this.hostState;
     // The next match: what plays now, with the rules the host saved for it.
     const live = t.liveRules() ?? this.rules;
@@ -1537,6 +1593,7 @@ export class GameSession {
     this.forts?.dispose();
     this.raceHud?.dispose();
     this.rouletteHud?.dispose();
+    this.awardsHud?.dispose();
     this.hud.hide();
     $('pause').hidden = true;
     this.view.dispose();
@@ -1593,6 +1650,9 @@ export class GameSession {
         this.view.buildMap(loaded.map, geometry);
         if (teams && (msg.rules.mode === 'core.ctf' || msg.rules.mode === 'core.forts' || msg.rules.mode === 'core.koth' || msg.rules.mode === 'core.elim' || msg.rules.mode === 'core.bomb' || msg.rules.mode === 'core.hostage' || msg.rules.mode === 'core.breakthrough')) this.modeHud = new ModeHud(this.hud, this.view, loaded.map, teams, msg.rules.mode, () => this.slot);
         if (msg.rules.mode === 'core.race') this.raceHud = new RaceHud(this.hud, this.view, loaded.map, () => this.slot);
+        // The end-of-match awards and the revenge and nemesis callouts (every mode: awardsHud.ts).
+        this.awardsHud?.dispose();
+        this.awardsHud = new AwardsHud(this.hud, () => this.slot);
         if (rouletteOn(msg.rules)) {
           // Roulette: its HUD, outlines in the team's colour (its Teams variant) and a jackpot's glow, warmed up at loading.
           this.rouletteHud = new RouletteHud(this.hud, this.input, loaded.map, () => this.rules, () => this.slot, this.opts.portraitOf);
@@ -1634,7 +1694,7 @@ export class GameSession {
         // Hosting since before the match had loaded (Host this map, a handoff, a map change): list it now that it can be.
         if (this.peerHost) this.updateListing();
         this.updateOnline();
-        (window as unknown as { __cs: unknown }).__cs = { slot: this.slot, hud: this.hud, renderer: this.opts.rendererKind, local: this.local, view: this.view, input: this.input, wheel: this.wheel, mode: this.modeHud, race: () => this.raceHud?.state, transport: this.opts.transport, mounts: this.mounts, forts: this.forts, phase: () => this.phase, rideView: () => this.rideView, host: () => this.hostState, rules: () => this.rules, roulette: () => this.rouletteHud?.debug(), rouletteGlow: () => this.rouletteHud?.glowOverlay() ?? null, rouletteHold: (on: boolean) => void (this.rouletteHud && (this.rouletteHud.hold = on)), jackpotGlow: () => this.testJackpot(), timeLeft: () => this.timeLeft, map: loaded.map.metadata.id, spec: () => this.specState(), spectate: (on: boolean) => this.setSpectating(on), thirdPerson: () => this.thirdPerson, tpAim: () => this.tpAim, viewTick: () => this.interp.renderTick() };
+        (window as unknown as { __cs: unknown }).__cs = { slot: this.slot, hud: this.hud, renderer: this.opts.rendererKind, local: this.local, view: this.view, input: this.input, wheel: this.wheel, mode: this.modeHud, race: () => this.raceHud?.state, transport: this.opts.transport, mounts: this.mounts, forts: this.forts, phase: () => this.phase, rideView: () => this.rideView, host: () => this.hostState, rules: () => this.rules, roulette: () => this.rouletteHud?.debug(), awards: () => this.awardsHud?.debug(), showAwards: (aw: MatchAward[]) => this.awardsHud?.show(aw), heavyOverlay: () => this.hud.heavyOverlay(), rouletteGlow: () => this.rouletteHud?.glowOverlay() ?? null, rouletteHold: (on: boolean) => void (this.rouletteHud && (this.rouletteHud.hold = on)), jackpotGlow: () => this.testJackpot(), timeLeft: () => this.timeLeft, map: loaded.map.metadata.id, spec: () => this.specState(), spectate: (on: boolean) => this.setSpectating(on), thirdPerson: () => this.thirdPerson, tpAim: () => this.tpAim, viewTick: () => this.interp.renderTick() };
         this.opts.onReady?.();
         if (this.opts.greeting) this.hud.showMessage(this.opts.greeting, 6);
         void this.prepareMatch();
@@ -1706,6 +1766,8 @@ export class GameSession {
         this.forts?.apply(msg.md);
         this.raceHud?.snapshot(msg.md?.rc);
         this.zombieHud(msg.md?.zb);
+        this.awardsHud?.phase(msg.phase);
+        this.shieldNote(((this.localStatus & FX_PROTECTED) !== 0) && msg.phase === 'playing');
         if (this.rouletteHud) {
           // Lunar's gravity storm: prediction falls as the match does, ragdolls too; the warning's countdown.
           this.rouletteHud.stormSnapshot(msg.rl);
@@ -1761,12 +1823,15 @@ export class GameSession {
           if (ev.e === 'spawn' && this.rouletteHud && ev.s === this.slot) this.rouletteHud.spawned(this.looks.get(this.slot) ?? ev.l ?? '', ev.j);
           if (ev.e === 'rl' && ev.a === 'swap' && ev.s !== undefined && ev.l) this.relook(ev.s, ev.l);
           if (ev.e === 'rl') this.rouletteHud?.event(ev);
+          if (ev.e === 'awards' || ev.e === 'callout') this.awardsHud?.event(ev);
+          if (ev.e === 'kill') this.streakMoment(ev, posesNow);
           // In a background tab nothing draws, so effects would only pile up (blood, bullets,
           // sounds) and all land at once when you come back: skip the purely visual ones.
           if (document.hidden && VISUAL_EVENTS.has(ev.e)) continue;
           if (!document.hidden) this.sfx.event(ev, posesNow, performance.now());
           this.modeHud?.event(ev);
           this.raceHud?.event(ev);
+          if (ev.e === 'hurt') this.hurtMoment(ev);
           if (ev.e === 'shot') {
             const def = CORE_WEAPONS[ev.w];
             const mine = ev.s === this.slot;
@@ -2738,6 +2803,7 @@ export class GameSession {
     }
     this.hud.setStatusTint(statusColor(this.local?.alive ? this.localStatus : 0));
     this.hud.tickHurt();
+    this.hud.tickHeavy();
     const poses = this.interp.sample(now);
     // Splashes and ripples where players and projectiles meet water.
     this.view.scenario.liquids.fx.track(poses, shells);

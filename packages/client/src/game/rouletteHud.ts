@@ -4,7 +4,6 @@ import {
   ROULETTE_SAY_REROLL,
   SPAWN_CARD_SECONDS,
   STORM_WARN_SECONDS,
-  awardText,
   bodyLine,
   getLook,
   rouletteSignatures,
@@ -14,7 +13,6 @@ import {
   type MapDocument,
   type MatchPhase,
   type MatchRules,
-  type RouletteAward,
   type RoulettePrivate,
 } from '@tiletrigger/shared';
 import type { Hud } from './hud.ts';
@@ -32,7 +30,7 @@ const GLOW = { peak: 0.55, calmPeak: 0.32, easeIn: 0.45, calmEaseIn: 1.2, hold: 
 /**
  * Roulette on the client (docs/ROULETTE_MODE_PLAN.md; sim/roulette.ts): the spawn card ("You are: Big Bab · Large:
  * tougher, slower"), the jackpot's glow and announcer lines, the death screen's next card, streak pick (1-3 or a click)
- * and reroll (R), Lunar's gravity-storm warning, and the awards at the end of the match. Nothing here flashes: the glow
+ * and reroll (R), and Lunar's gravity-storm warning (the awards at the end of the match: awardsHud.ts). Nothing here flashes: the glow
  * and the storm's warning ease in and hold (Reduce flashing makes them dimmer and slower still).
  */
 export class RouletteHud {
@@ -42,7 +40,6 @@ export class RouletteHud {
   private readonly pick: HTMLElement;
   private readonly next: HTMLElement;
   private readonly storm: HTMLElement;
-  private readonly awards: HTMLElement;
   /** The spawn card's time, over drawn frames (a hitch as the new body is built doesn't use it up unseen). */
   private readonly cardTime = new CappedTimer(CARD_STEP_CAP);
   /** The glow's start (ms), or 0: none. */
@@ -51,7 +48,6 @@ export class RouletteHud {
   private glowPeak = 0;
   private me: RoulettePrivate | null = null;
   private offerKey = '';
-  private aw: RouletteAward[] = [];
   private stormState: [number, number, number, number] | null = null;
 
   constructor(
@@ -69,11 +65,10 @@ export class RouletteHud {
     this.next = el('div', 'rl-next');
     this.pick = el('div', 'rl-pick');
     this.storm = el('div', 'rl-storm');
-    this.awards = el('div', 'rl-awards');
-    for (const e of [this.card, this.next, this.pick, this.storm, this.awards]) e.hidden = true;
+    for (const e of [this.card, this.next, this.pick, this.storm]) e.hidden = true;
     this.glow.style.opacity = '0';
     this.glow.style.backgroundImage = `url(${glowPicture().toDataURL()})`;
-    this.root.append(this.glow, this.card, this.next, this.pick, this.storm, this.awards);
+    this.root.append(this.glow, this.card, this.next, this.pick, this.storm);
     host.append(this.root);
   }
 
@@ -105,7 +100,7 @@ export class RouletteHud {
     this.hidePick();
   }
 
-  /** Roulette's events: announcer lines and the feed, the storm, the awards. */
+  /** Roulette's events: announcer lines and the feed, the storm (the awards are the match's: awardsHud.ts). */
   event(ev: GameEvent): void {
     if (ev.e !== 'rl') return;
     const me = ev.s === this.slot();
@@ -138,9 +133,6 @@ export class RouletteHud {
       case 'storm':
         if (ev.n === 2) this.hud.showMessage(ev.g !== undefined && ev.g > (this.rules()?.gravity ?? 1) ? 'Gravity surge!' : 'Gravity storm: float!', 2.5);
         else if (ev.n === 0) this.hud.showMessage('The gravity storm is over', 2);
-        break;
-      case 'awards':
-        this.aw = ev.aw ?? [];
         break;
     }
   }
@@ -217,19 +209,8 @@ export class RouletteHud {
     this.storm.hidden = false;
   }
 
-  /** The awards while the scoreboard is up (intermission). */
+  /** Off the playing field (the scoreboard, the countdown): the card, the storm and the death screen go. */
   phase(phase: MatchPhase): void {
-    const show = phase === 'intermission' && this.aw.length > 0;
-    if (show && this.awards.hidden) {
-      this.awards.innerHTML = `<h3>Awards</h3>${this.aw
-        .map((a) => {
-          const t = awardText(a, (s) => this.hud.name(s));
-          return `<div class="rl-award ${a[0]}"><b>${escapeHtml(t.title)}</b><span>${escapeHtml(t.line)}</span></div>`;
-        })
-        .join('')}`;
-    }
-    this.awards.hidden = !show;
-    if (phase !== 'intermission' && phase !== 'playing') this.aw = [];
     if (phase !== 'playing') {
       if (!this.hold) this.hideCard();
       this.storm.hidden = true;
@@ -274,8 +255,8 @@ export class RouletteHud {
   }
 
   /** For tests: the glow's opacity now, the storm and the state last seen. */
-  debug(): { glow: number; glowPeak: number; storm: [number, number, number, number] | null; me: RoulettePrivate | null; awards: number } {
-    return { glow: Number(this.glow.style.opacity || 0), glowPeak: this.glowPeak, storm: this.stormState, me: this.me, awards: this.aw.length };
+  debug(): { glow: number; glowPeak: number; storm: [number, number, number, number] | null; me: RoulettePrivate | null } {
+    return { glow: Number(this.glow.style.opacity || 0), glowPeak: this.glowPeak, storm: this.stormState, me: this.me };
   }
 }
 

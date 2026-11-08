@@ -4,7 +4,7 @@ import { applyCrosshair, applyHitmarker } from './crosshair.ts';
 import { weaponIcon } from '../frontend/weaponIcons.ts';
 import { Minimap } from './minimap.ts';
 import { ScoreBoard, type BoardData, type BoardRow } from './scoreBoard.ts';
-import { HURT_LOOKS, HurtFade, paintVignette } from './hurtVignette.ts';
+import { HEAVY_LOOK, HURT_LOOKS, HeavyFade, HurtFade, paintVignette } from './hurtVignette.ts';
 import { reduceFlashing } from './reduceFlashing.ts';
 
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
@@ -862,6 +862,40 @@ export class Hud {
     if (shown !== this.hurtShown) el.style.opacity = this.hurtShown = shown;
   }
   private hurtShown = '';
+
+  /** You took a heavy hit (content/match-play.json heavyHit): the screen's edges darken for a moment (hurtVignette.ts HeavyFade). */
+  heavyHit(amount: number): void {
+    this.heavyFade.hit(amount, performance.now());
+    this.tickHeavy();
+  }
+  private readonly heavyFade = new HeavyFade();
+  private heavyEl: HTMLElement | null = null;
+  private heavyShown = '';
+  private heavyPicture: HTMLCanvasElement | null = null;
+
+  /** The heavy-hit edge this frame. */
+  tickHeavy(): void {
+    const level = this.heavyFade.update(performance.now(), reduceFlashing());
+    if (!this.heavyEl && level <= 0.002) return;
+    if (!this.heavyEl) {
+      this.heavyEl = document.createElement('div');
+      this.heavyEl.id = 'heavy-hit';
+      this.heavyPicture ??= paintVignette(HEAVY_LOOK);
+      this.heavyEl.style.backgroundImage = `url(${this.heavyPicture.toDataURL()})`;
+      (document.getElementById('hud') ?? document.body).append(this.heavyEl);
+    }
+    const shown = level > 0.002 ? level.toFixed(3) : '0';
+    if (shown === this.heavyShown) return;
+    this.heavyShown = shown;
+    this.heavyEl.style.opacity = shown;
+    // A small kick inward with the hit (none with flashing reduced: the edge only eases).
+    this.heavyEl.style.transform = reduceFlashing() ? '' : `scale(${(1 + level * 0.04).toFixed(3)})`;
+  }
+
+  /** The heavy-hit edge as drawn now (the flicker check draws it over its frames). */
+  heavyOverlay(): { image: HTMLCanvasElement; opacity: number } {
+    return { image: (this.heavyPicture ??= paintVignette(HEAVY_LOOK)), opacity: this.heavyFade.level };
+  }
 
   /** The hurt vignette as drawn now (the flicker check draws it over its frames). */
   hurtOverlay(): { image: HTMLCanvasElement; opacity: number } {

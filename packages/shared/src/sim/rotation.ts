@@ -185,6 +185,20 @@ export class MapRotation {
     return { entry: this.list[index]!, index };
   }
 
+  /**
+   * The entry played next that `fits` (a map whose player cap holds the people in the match: sim/matchSetup.ts
+   * mapPlayerCaps), moving past those that don't (each counts as played this time round). When none fits, the next
+   * one as it comes. Like peek, it doesn't move onto the entry itself: advance() does.
+   */
+  peekFitting(fits: (e: RotationEntry) => boolean): { entry: RotationEntry; index: number } | null {
+    let up = this.peek();
+    for (let tries = this.list.length; up && tries > 1 && !fits(up.entry); tries--) {
+      this.advance();
+      up = this.peek();
+    }
+    return up && fits(up.entry) ? up : this.peek();
+  }
+
   /** Move on to the next entry (the match is travelling there) and return it. */
   advance(): RotationEntry | null {
     const next = this.peek();

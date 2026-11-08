@@ -84,10 +84,11 @@ export class LastingFx {
       if (!ref) continue;
       const at = new Vector3(w.at.x, w.at.y, w.at.z);
       const place = { scale: ref.scale * (w.place.size ?? 1), ...(w.place.up ? { up: new Vector3(w.place.up.x, w.place.up.y, w.place.up.z) } : {}) };
+      const tint = ref.tint ? { tint: ref.tint } : {};
       const id = w.id;
       let l = this.live.get(id);
       if (!l) {
-        const h = this.vfx.start(ref.pack, ref.effect, at, place);
+        const h = this.vfx.start(ref.pack, ref.effect, at, { ...place, ...tint });
         if (!h) continue;
         this.live.set(id, (l = { h, fx: w.key }));
       } else l.h.move(at, place);

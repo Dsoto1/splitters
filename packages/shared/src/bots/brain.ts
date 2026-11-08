@@ -5,6 +5,7 @@ import type { Corridor } from '../nav/corridors.ts';
 import { parkourAlong, parkourInput, type ParkourKind, type ParkourLink } from '../nav/parkour.ts';
 import { LIFT_FLAG, PLAYER, STANCES, TICK_DT, TICK_RATE, type Stance } from '../sim/constants.ts';
 import { PICKUP_RADIUS, type ItemDefinition, type ItemEffect } from '../sim/items.ts';
+import { MATCH_PLAY } from '../content/matchPlay.generated.ts';
 import { BUTTON_ALT, BUTTON_CROUCH, BUTTON_FIRE, BUTTON_MELEE, BUTTON_JUMP, BUTTON_PRONE, BUTTON_RELOAD, BUTTON_SPRINT, BUTTON_THROW, BUTTON_USE, BUTTON_ZOOM, type PlayerInput } from '../sim/movement.ts';
 import { THROWABLE_DEFS, getWeapon, smokeBlocks, weaponCode, type AltFire, type ProjectileSpec, type SmokeCloud, type ThrowableKind, type WeaponDefinition } from '../sim/weapons.ts';
 import type { PhysicsWorld } from '../sim/physics.ts';
@@ -319,8 +320,8 @@ const AMMO_DETOUR = 120;
 const SHELTERED_TARGET_SCALE = 3;
 /** Someone under spawn protection is this much less of a target (as if this many times further): shots at them do nothing until they fire. */
 const SHIELDED_TARGET_SCALE = 6;
-/** A bot under spawn protection holds its fire until this long before the shield runs out (s), unless an enemy is within SHIELD_HOLD_INSIDE m. */
-const SHIELD_FIRE_BEFORE = 0.5;
+/** A bot under spawn protection holds its fire until this long before the shield runs out (s; content/match-play.json botFireBefore), unless an unshielded enemy is within SHIELD_HOLD_INSIDE m. */
+const SHIELD_FIRE_BEFORE: number = MATCH_PLAY.botFireBefore;
 const SHIELD_HOLD_INSIDE = 2;
 /** A tank whose route to the goal doesn't fit it (routeFits) is left alone this long (s) before it is looked at again. */
 const TANK_NO_FIT_SECONDS = 20;

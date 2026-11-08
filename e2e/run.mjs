@@ -3633,7 +3633,7 @@ async function rouletteFlow(browser) {
     window.__match.endMatch();
     window.__match.phaseEndTick = window.__match.tick + 60 * 120;
   });
-  const awards = await page.waitForFunction(() => !document.getElementById('rl-awards')?.hidden && document.querySelectorAll('#rl-awards .rl-award').length > 0, null, { timeout: T(20000) }).then(() => page.evaluate(() => [...document.querySelectorAll('#rl-awards .rl-award b')].map((b) => b.textContent)), () => []);
+  const awards = await page.waitForFunction(() => !document.getElementById('match-awards')?.hidden && document.querySelectorAll('#match-awards .award').length > 0, null, { timeout: T(20000) }).then(() => page.evaluate(() => [...document.querySelectorAll('#match-awards .award b')].map((b) => b.textContent)), () => []);
   await shoot('roulette-awards');
   check(awards.includes('Shapeshifter') && awards.includes('Unluckiest Roll'), `the awards at the end of the match (${awards.join(', ')})`);
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
@@ -5206,6 +5206,13 @@ function installFrameGrab(size) {
         ctx.drawImage(hurt.image, 0, 0, out.width, out.height);
         ctx.globalAlpha = 1;
       }
+      // A heavy hit's darkened edge (HTML too: hud.ts heavyOverlay).
+      const heavy = window.__cs.heavyOverlay?.();
+      if (heavy && heavy.opacity > 0.002) {
+        ctx.globalAlpha = Math.min(1, heavy.opacity);
+        ctx.drawImage(heavy.image, 0, 0, out.width, out.height);
+        ctx.globalAlpha = 1;
+      }
       // Roulette's jackpot glow (HTML too: rouletteHud.ts glowOverlay).
       const glow = window.__cs.rouletteGlow?.();
       if (glow && glow.opacity > 0.002) {
@@ -5419,6 +5426,24 @@ async function flashingFlow(browser) {
       look: aim([0, 0, 8], [0, 0.5, 13]),
       bots: [],
       at: { 2: () => page.evaluate(() => window.__cs.jackpotGlow()) },
+    },
+    {
+      name: 'fight',
+      label: "a fight's moments 3 m in front of you (armour breaking, two heavy hits with your screen's edge, a kill streak's burst, a spawn shield's shimmer)",
+      weapon: 'core.arc_caster',
+      me: [0, 0, 8],
+      look: aim([0, 0, 8], [0, 1, 11]),
+      bots: [[0, 0, 11]],
+      before: () => sim(page, (m) => {
+        const b = m.combatants().find((c) => c.bot);
+        if (b) b.shieldUntil = m.tick + 60 * 30;
+      }),
+      at: {
+        4: () => page.evaluate(() => window.__cs.view.playGameplayFx('armor.break', { x: 0, y: 1.2, z: 11 }, { calmable: true })),
+        12: () => page.evaluate(() => (window.__cs.view.playGameplayFx('hit.big', { x: 0, y: 1.1, z: 11 }, { calmable: true }), window.__cs.hud.heavyHit(90))),
+        24: () => page.evaluate(() => window.__cs.view.playGameplayFx('streak', { x: 0, y: 2.1, z: 11 }, { calmable: true })),
+        36: () => page.evaluate(() => (window.__cs.view.playGameplayFx('hit.big', { x: 0.3, y: 1, z: 11 }, { calmable: true }), window.__cs.hud.heavyHit(70))),
+      },
     },
     {
       name: 'alarm',

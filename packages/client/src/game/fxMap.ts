@@ -14,6 +14,8 @@ export interface FxRef {
   readonly scale: number;
   /** A lasting effect that only dresses the scene (a fire prop's flame): drawn after every other lasting one. */
   readonly decor?: boolean;
+  /** Recolour it (#rrggbb): godotVfx.ts VfxOptions.tint. */
+  readonly tint?: string;
 }
 
 /** What a surface is made of (content/surface-types.json), the same list the server's ballistic classes come from. */

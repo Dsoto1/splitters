@@ -84,6 +84,11 @@ const color = (v: unknown, d: [number, number, number, number]): [number, number
   const a = ctor(v, 'Color');
   return a ? [a[0]!, a[1]!, a[2]!, a[3] ?? 1] : d;
 };
+/** "#rrggbb" as a Godot colour (linear-ish 0..1 channels, alpha 1). */
+const hexColor = (hex: string): [number, number, number, number] => {
+  const n = Number.parseInt(hex.replace('#', ''), 16);
+  return [((n >> 16) & 255) / 255, ((n >> 8) & 255) / 255, (n & 255) / 255, 1];
+};
 const packed = (v: unknown): number[] => {
   if (!v || typeof v !== 'object') return [];
   for (const k of ['@PackedFloat32Array', '@PackedColorArray', '@PackedVector2Array']) {
@@ -1266,7 +1271,7 @@ function registerShaders(): void {
 }
 
 /** Uniform values from the Godot material (and the effect root's shared colours), falling back to the shader's defaults. */
-function materialFor(scene: Scene, mat: Json, root: Json, set: string | undefined, billboardAlign: boolean, key: string, cache: Map<string, ShaderMaterial>, gain = 1): ShaderMaterial | null {
+function materialFor(scene: Scene, mat: Json, root: Json, set: string | undefined, billboardAlign: boolean, key: string, cache: Map<string, ShaderMaterial>, gain = 1, tint?: string): ShaderMaterial | null {
   const portKey = portName(set, String((mat.shader as Json | undefined)?.shader ?? ''));
   if (!portKey) return null;
   const port = PORTS[portKey]!;
@@ -1288,7 +1293,10 @@ function materialFor(scene: Scene, mat: Json, root: Json, set: string | undefine
   if (port.blend === 'add') m.alphaMode = Constants.ALPHA_ADD;
   else if (port.blend === 'mix') m.alphaMode = Constants.ALPHA_COMBINE;
   if (port.blend !== 'cut') m.disableDepthWrite = true;
+  const tinted = tint ? hexColor(tint) : null;
   const param = (k: string): unknown => {
+    // A tint (content/vfx.json `tint`) takes the effect's own colour: the secondary (and tertiary) one its controller sets.
+    if (tinted && (k === 'secondary_color' || k === 'tertiary_color')) return { '@Color': tinted };
     const own = mat[`shader_parameter/${k}`];
     if (own !== undefined) return own;
     // The effect's controller sets these on every material (VFXControllerBB / VFXExplosionBB).
@@ -1791,6 +1799,8 @@ export interface VfxOptions extends VfxPlace {
   gain?: number;
   /** One-shots: seconds its brightness takes to come up to `gain` from nothing, instead of popping in. */
   fadeIn?: number;
+  /** Recolour it (#rrggbb): its secondary and tertiary colours, the ones Binbun's effect controllers set (content/vfx.json `tint`). */
+  tint?: string;
 }
 
 /** A lasting effect playing (GodotVfx.start): move it, fade it, stop it. */
@@ -1923,6 +1933,8 @@ export class GodotVfx {
     const dim = !loop && ((opts.gain ?? 1) < 1 || (opts.fadeIn ?? 0) > 0);
     const id = this.serial++;
     const wanted = (name: string) => (!opts.only || opts.only.includes(name)) && !opts.skip?.includes(name);
+    // A tinted play draws with materials of its own (cached by tint).
+    const tk = opts.tint ? `#t${opts.tint}` : '';
     const byName = new Map(fx.nodes.map((n) => [String(n.name), n]));
     // A node's place in the effect: its own transform under its parents' (Godot nests them).
     const placeOf = (node: Json): Matrix => {
@@ -1947,7 +1959,7 @@ export class GodotVfx {
         const matSpec = node.material_override as Json | undefined;
         if (!meshSpec || !matSpec) continue;
         const align = num(node.transform_align, 0) === 1 || num(node.transform_align, 0) === 3;
-        const material = materialFor(this.scene, matSpec, fx.root, fx.set, align, `${pack}/${effect}/${name}`, this.materials);
+        const material = materialFor(this.scene, matSpec, fx.root, fx.set, align, `${pack}/${effect}/${name}${tk}`, this.materials, 1, opts.tint);
         if (!material) continue;
         const mesh = pieceOf(this.baseMesh(`${pack}/${effect}/${name}`, meshSpec), `gv_${name}_${id}`);
         mesh.metadata = EFFECT;
@@ -1965,18 +1977,18 @@ export class GodotVfx {
           m2.setEnabled(false);
           e.addPass(m2, material);
         }
-        if (dim) pieces.push({ meshes: e.mesh2 ? [e.mesh, e.mesh2] : [e.mesh], at: (s) => (s >= GAIN_STEPS ? material : materialFor(this.scene, matSpec, fx.root, fx.set, align, `${pack}/${effect}/${name}#g${s}`, this.materials, s / GAIN_STEPS)) });
+        if (dim) pieces.push({ meshes: e.mesh2 ? [e.mesh, e.mesh2] : [e.mesh], at: (s) => (s >= GAIN_STEPS ? material : materialFor(this.scene, matSpec, fx.root, fx.set, align, `${pack}/${effect}/${name}${tk}#g${s}`, this.materials, s / GAIN_STEPS, opts.tint)) });
         emitters.set(name, e);
       } else if (node.type === 'MeshInstance3D') {
         const meshSpec = node.mesh as Json | undefined;
         const matSpec = (node.material_override ?? node['surface_material_override/0']) as Json | undefined;
         if (!meshSpec || !matSpec) continue;
-        const material = materialFor(this.scene, matSpec, fx.root, fx.set, false, `${pack}/${effect}/${name}`, this.materials);
+        const material = materialFor(this.scene, matSpec, fx.root, fx.set, false, `${pack}/${effect}/${name}${tk}`, this.materials, 1, opts.tint);
         if (!material) continue;
         const mesh = pieceOf(this.baseMesh(`${pack}/${effect}/${name}`, meshSpec), `gv_${name}_${id}`);
         mesh.metadata = EFFECT;
         mesh.material = material;
-        if (dim) pieces.push({ meshes: [mesh], at: (s) => (s >= GAIN_STEPS ? material : materialFor(this.scene, matSpec, fx.root, fx.set, false, `${pack}/${effect}/${name}#g${s}`, this.materials, s / GAIN_STEPS)) });
+        if (dim) pieces.push({ meshes: [mesh], at: (s) => (s >= GAIN_STEPS ? material : materialFor(this.scene, matSpec, fx.root, fx.set, false, `${pack}/${effect}/${name}${tk}#g${s}`, this.materials, s / GAIN_STEPS, opts.tint)) });
         const prop = new Prop(mesh, name, placeOf(node));
         prop.decay = num(matSpec['shader_parameter/effect_decay'], 0);
         props.push(prop);

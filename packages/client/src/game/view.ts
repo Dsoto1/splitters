@@ -64,6 +64,7 @@ import {
   PROJECTILE_VISUALS,
   type ZoneSnapshot,
   FX_CLOAK,
+  FX_PROTECTED,
   FX_JET,
   CHUTE_GLIDER,
   CHUTE_PARACHUTE,
@@ -184,7 +185,17 @@ interface Fx {
   shared?: boolean;
 }
 
+/** Reduce flashing: a fight's bright moments (armour breaking, a heavy hit, a streak's burst) at this size and brightness. */
+const CALM_MOMENT = { scale: 0.8, gain: 0.55 } as const;
+
+/** Spawn protection's shimmer: the pack's ball at this strength, and the soft blue the body glows (both faint). */
+const SHIELD_SHIMMER = 0.32;
+const SHIELD_GLOW = new Color3(0.35, 0.7, 1);
+
 interface Avatar {
+  /** Spawn protection's glow on the body now (0..1, eased), and the tenth it was last set at. */
+  shieldGlow?: number;
+  shieldStep?: number;
   root: TransformNode;
   /** Capsule shown until the character model loads. */
   placeholder: Mesh;
@@ -1202,12 +1213,15 @@ export class GameView {
   }
 
   /** A moment of play's effect (content/vfx.json map.gameplay: `pickup.health`, `spawn`, `portal`, `pad`, `trap.shock`, `zipline` …). */
-  playGameplayFx(key: string, at: Vec3): boolean {
+  playGameplayFx(key: string, at: Vec3, o: { size?: number; calmable?: boolean } = {}): boolean {
     const fx = gameplayFx(key);
     if (!fx) return false;
     const cam = this.scene.activeCamera?.globalPosition;
     if (cam && Math.hypot(cam.x - at.x, cam.y - at.y, cam.z - at.z) > ACCENT_RANGE * 2) return false;
-    return this.vfx.play(fx.pack, fx.effect, new Vector3(at.x, at.y, at.z), { scale: fx.scale, minor: true });
+    // Reduce flashing: the bright moments of a fight (armour breaking, a heavy hit, a streak's burst) play smaller and
+    // dimmer, easing in instead of popping (reduceFlashing.ts).
+    const calm = !!o.calmable && reduceFlashing();
+    return this.vfx.play(fx.pack, fx.effect, new Vector3(at.x, at.y, at.z), { scale: fx.scale * (o.size ?? 1) * (calm ? CALM_MOMENT.scale : 1), minor: true, ...(fx.tint ? { tint: fx.tint } : {}), ...(calm ? { gain: CALM_MOMENT.gain, fadeIn: BLAST_FADE_IN } : {}) });
   }
 
   /**
@@ -2090,6 +2104,25 @@ export class GameView {
       const reglow = a.glowKey !== glowKey;
       a.glowKey = glowKey;
       if (reglow) a.mat.emissiveColor = glowColor ? Color3.FromHexString(glowColor).scale(0.55) : Color3.Black();
+      // Spawn protection: a faint shimmer round them until it drops (content/vfx.json map.lasting shield.spawn; Reduce
+      // flashing: the steady glow below instead of the pack's crackling ball). A powerup: a low flame at the feet.
+      const size = a.root.scaling.y || 1;
+      const shielded = p.alive && (p.status & FX_PROTECTED) !== 0;
+      if (shielded && !reduceFlashing() && !a.culled) this.lasting.want(`shield:${p.slot}`, 'shield.spawn', { x: p.x, y: p.y + 0.95 * size, z: p.z }, { size, level: SHIELD_SHIMMER });
+      const aura = p.alive && !a.culled ? (p.powerups & POWERUP_DAMAGE_BIT ? 'aura.damage' : p.powerups & POWERUP_SPEED_BIT ? 'aura.speed' : null) : null;
+      if (aura) this.lasting.want(`aura:${p.slot}`, aura, { x: p.x, y: p.y + 0.02, z: p.z }, { size, level: 0.85 });
+      // The calm shimmer (and the steady glow everyone sees under the pack's): a soft blue on the body, eased in and out.
+      const shieldGlow = shielded ? 1 : 0;
+      a.shieldGlow = ease(a.shieldGlow ?? 0, shieldGlow, dt, 4, 3);
+      // In tenths, set only when it changes (setting a material's colour costs a shader check).
+      const step = Math.round(a.shieldGlow * 10);
+      if (step !== (a.shieldStep ?? 0) || (reglow && step)) {
+        a.shieldStep = step;
+        const k = (step / 10) * 0.35;
+        const base = glowColor ? Color3.FromHexString(glowColor).scale(0.55) : Color3.Black();
+        a.mat.emissiveColor = base.add(SHIELD_GLOW.scale(k));
+        if (a.anim instanceof CharacterAnimator) for (const m of a.anim.ch.meshes) if (m.material && 'emissiveColor' in m.material) (m.material as unknown as { emissiveColor: Color3 }).emissiveColor = (glowColor ? Color3.FromHexString(glowColor).scale(0.35) : Color3.Black()).add(SHIELD_GLOW.scale(k));
+      }
       if (a.anim) {
         // Riders stand (or sit) still in their seats, however fast the vehicle goes.
         const sit = sitting.get(p.slot);

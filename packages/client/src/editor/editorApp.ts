@@ -65,6 +65,9 @@ import {
   mapBotSet,
   type MapBotSet,
   playableModes,
+  setupFamily,
+  mapPlayerCaps,
+  autoPlayerCaps,
   isTeamMode,
   MODE_LABELS,
   SCENARIO_PALETTE,
@@ -4289,6 +4292,60 @@ export class EditorApp {
     this.renderBackdropPanel(el);
   }
 
+  /**
+   * Players by mode (the map's player caps, metadata.playerCaps): for each mode the map plays (squads and races keep
+   * their own sizes), the recommended and most players. Empty fields show the automatic caps (worked out from the
+   * map's size and spawn points: sim/matchSetup.ts autoPlayerCaps); typing one sets the mode's own, Auto goes back.
+   */
+  private renderPlayerCaps(el: HTMLElement): void {
+    const doc = this.doc;
+    const modes = playableModes(doc).filter((m) => setupFamily(m) === 'ffa' || setupFamily(m) === 'teams');
+    if (!modes.length) return;
+    const head = document.createElement('h3');
+    head.textContent = 'Players by mode';
+    head.title = 'What Match Setup recommends for each mode and the most it takes here; rotations and map changes keep matches within the most';
+    const box = document.createElement('div');
+    box.id = 'ed-player-caps';
+    box.className = 'ed-caps';
+    for (const mode of modes) {
+      const caps = mapPlayerCaps(doc, mode);
+      const auto = autoPlayerCaps(doc, mode);
+      const set = (recommended: number, max: number) => {
+        const before = doc.metadata.playerCaps;
+        const r = Math.max(1, Math.min(128, Math.round(recommended)));
+        const m = Math.max(r, Math.min(128, Math.round(max)));
+        this.run(`Set ${MODE_LABELS[mode]} players`, { kind: 'setMetadata', before: { playerCaps: before }, after: { playerCaps: { ...(before ?? {}), [mode]: { recommended: r, max: m } } } });
+      };
+      const rec = numberInput(caps.recommended, 1, (v) => set(v, Math.max(v, caps.max)));
+      rec.dataset.mode = mode;
+      rec.dataset.cap = 'recommended';
+      rec.title = `Recommended (automatic: ${auto.recommended})`;
+      const max = numberInput(caps.max, 1, (v) => set(Math.min(caps.recommended, v), v));
+      max.dataset.mode = mode;
+      max.dataset.cap = 'max';
+      max.title = `Most (automatic: ${auto.max})`;
+      const line = document.createElement('div');
+      line.className = 'ed-cap-row';
+      line.append(rec, document.createTextNode(' best, up to '), max);
+      if (caps.auto) line.append(small(' (automatic)'));
+      else {
+        const back = document.createElement('button');
+        back.type = 'button';
+        back.className = 'ed-cap-auto';
+        back.textContent = 'Auto';
+        back.title = `Back to the automatic caps (${auto.recommended} best, up to ${auto.max})`;
+        back.addEventListener('click', () => {
+          const before = doc.metadata.playerCaps;
+          const { [mode]: _gone, ...rest } = before ?? {};
+          this.run(`${MODE_LABELS[mode]} players: automatic`, { kind: 'setMetadata', before: { playerCaps: before }, after: { playerCaps: Object.keys(rest).length ? rest : undefined } });
+        });
+        line.append(back);
+      }
+      box.append(row(MODE_LABELS[mode], line));
+    }
+    el.append(head, box);
+  }
+
   private renderInspector(): void {
     this.renderSkyPane();
     const el = $('ed-inspector');
@@ -4372,6 +4429,7 @@ export class EditorApp {
       if (current === 'core.tdm' || current === 'core.koth' || current === 'core.elim' || current === 'core.breakthrough') this.renderTeamSetup(el);
       this.renderWeaponSet(el);
       this.renderMapBots(el);
+      this.renderPlayerCaps(el);
       const layersHead = document.createElement('h3');
       layersHead.id = 'ed-layers-head';
       layersHead.textContent = 'Map layers';

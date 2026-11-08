@@ -14,21 +14,37 @@ and bots read the results from objects the match updates in place.
 
 ## Spawning
 
-**Choosing a spawn point** (`pickSpawn`). Every candidate gets a cheap score:
+**Choosing a spawn point** (`pickSpawn`, the same rule for people and bots; weights are data in
+`content/match-play.json` `spawnChoice`, docs/GAME_MODES.md "Spawns, protection and awards"). Every candidate gets
+a cheap score:
 
-- distance to the nearest living enemy (capped at 100 m; height counts double);
+- distance to the nearest living enemy, up to 30 m (height counts double); past 50 m a little less again (0.3 a
+  metre, at most −15: a spawn should be safe, not out of the game);
 - someone standing on it (within 1.5 m): −60; a few people within 4 m: −6 each;
-- used in the last 3 s: up to −20, fading (enough to break ties, not to send
-  anyone nearer an enemy);
-- team modes on shared spawns: +8 per teammate within 25 m (each side keeps an
-  area of its own), as before;
-- made-up points (below): a small pull toward the side's own base.
+- used in the last 3 s: up to −20, fading (enough to break ties, not to send anyone nearer an enemy);
+- fresh deaths: each player an enemy downed within 12 m in the last 10 s costs up to 18 (less with distance and
+  age; at most twice that however many fell there): whoever killed them may still be watching;
+- team modes: +6 for each living teammate out of a fight (not hurt for 4 s) within 25 m, up to three;
+- team modes on shared spawns: each side keeps its end of the map (`SpawnSides`: a running average of where each
+  side spawned): up to ±8 for being nearer your own side's end than an enemy side's, so the sides don't swap ends
+  (no spawn flips) while safety still decides;
+- made-up points: a small pull toward the side's own base.
 
-Then the best six are checked for enemies within 50 m with a clear sight
-line to the spawn (the three nearest each): −30 for every one that can see
-it. At most 18 rays a spawn. A little randomness (0–3) separates near-equal choices. Squad spawn
-(beside a teammate out of the fight, 70 % of team spawns) is unchanged.
-Spawn protection is unchanged: there is none outside Disc Arena's 2 s guard.
+Then the best eight are checked for enemies within 60 m with a clear sight line to the spawn (the four nearest
+each): −35 for every one that can see it (at most 32 rays a spawn). One is then picked **at random among the best
+three within 8 of the best**, so nobody can learn where the next spawn will be and a few points share the load.
+**Squad spawn** (team modes, 70 % of spawns, beside a teammate out of the fight with no enemy within 20 m): of up to
+four such teammates at random, the one nearest the fight that no enemy can see (the three nearest within 50 m
+checked), else the spawn point.
+
+**Spawn protection** (`Match.shielded`; seconds by mode in `content/match-play.json` `spawnProtection`: Deathmatch
+and Team Deathmatch 3 s, Roulette 2 s, other modes none; a match's `spawnProtection` rule overrides it): every
+respawn, and a first life that begins mid-round, is shielded: nobody else's damage gets through, and firing,
+throwing or striking drops it at once. The lives a round opens with have none (everyone is spread over the spawns;
+a start gate holds them in the countdown). Players see a faint shimmer (a steady blue glow with Reduce flashing on)
+and a line under the crosshair. Bots treat a shielded enemy as 6 times further off (a target only when nobody else
+is), and a shielded bot holds its fire until a second before its shield runs out (unless an unshielded enemy is
+within 2 m), so it gets its bearings rather than throwing the shield away on its first sight of someone.
 
 **Spawn waves.** Matches of 12 players or more spawn bots a few a tick
 (`spawnsPerTick`: an eighth of the players, 12 a tick at 96), longest-waiting

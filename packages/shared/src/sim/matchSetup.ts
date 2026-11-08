@@ -317,6 +317,9 @@ export function mapPlayerCaps(map: MapDocument, mode: GameMode): PlayerCaps {
   return { recommended: clampInt(own.recommended, 1, max), max, auto: false };
 }
 
+/** `total` players in `n` even teams (the larger first when it doesn't divide). */
+const splitTeams = (total: number, n: number): number[] => Array.from({ length: n }, (_, i) => Math.max(1, Math.floor(total / n) + (i < total % n ? 1 : 0)));
+
 /** "16 best · up to 48" (the setup screen's chip). */
 export const capsLine = (c: Pick<PlayerCaps, 'recommended' | 'max'>): string => (c.max > c.recommended ? `${c.recommended} best · up to ${c.max}` : `${c.max} players`);
 
@@ -746,7 +749,7 @@ export function withSetupLimits(setup: MatchSetup, map: MapDocument, cap = BROWS
 // ------------------------------------------------------------------ fit
 
 export type FitLevel = 'fits' | 'crowded' | 'problem';
-export type FitTopic = 'device' | 'grid' | 'size' | 'spawns' | 'teams' | 'performance';
+export type FitTopic = 'caps' | 'device' | 'grid' | 'size' | 'spawns' | 'teams' | 'performance';
 
 /** One line of the fit check: what it found about one thing, how much that matters, and a fix when there is one. */
 export interface FitItem {
@@ -800,7 +803,16 @@ export function setupFit(setup: MatchSetup, map: MapDocument, o: { deviceMax: nu
   } else if (grid !== null) items.push({ topic: 'grid', level: 'ok', text: `${grid} places on the grid: every racer starts in a vehicle.` });
   // The map's size, and its own layout when this isn't it.
   const suggest = family === 'teams' && map.teamSetup && !atPick ? ` The map suggests ${pick.join('v')}.` : '';
-  if (players > rec.max * 2) items.push({ topic: 'size', level: 'problem', text: `The map is made for ${recText} players: ${players} is far more than it has room for.${suggest}`, ...(atPick ? {} : { fix: pickFix }) });
+  // The mode's player caps (MapMaker's Map properties, else worked out from the map's size and spawn points).
+  const caps = mapPlayerCaps(map, setup.mode);
+  const capsWhat = `${MODE_LABELS[setup.mode]} here: ${caps.recommended} recommended, ${caps.max} at most${caps.auto ? ' (from its size and spawn points)' : " (the map's own)"}`;
+  const capsFix: NonNullable<FitItem['fix']> = family === 'teams' ? { label: `Use ${caps.recommended}`, teams: splitTeams(caps.recommended, Math.max(2, sizes.length)) } : { label: `Use ${caps.recommended} ${unit}`, players: caps.recommended };
+  if (family !== 'squad' && family !== 'race') {
+    if (players > caps.max) items.push({ topic: 'caps', level: 'problem', text: `${capsWhat}. ${players} is more than it holds.`, fix: capsFix });
+    else if (players > caps.recommended) items.push({ topic: 'caps', level: 'info', text: `${capsWhat}. ${players} will be busy.` });
+    else items.push({ topic: 'caps', level: 'ok', text: `${capsWhat}.` });
+  }
+  if (players > rec.max * 2) items.push({ topic: 'size', level: 'warn', text: `The map is made for ${recText} players: ${players} is far more than that.${suggest}`, ...(atPick ? {} : { fix: pickFix }) });
   else if (players > rec.max) items.push({ topic: 'size', level: 'warn', text: `The map is made for ${recText} players: ${players} will be crowded.${suggest}`, ...(atPick ? {} : { fix: pickFix }) });
   else if (players < rec.min) items.push({ topic: 'size', level: 'info', text: `The map is made for ${recText} players: ${players} will feel empty.${suggest}`, ...(atPick ? {} : { fix: pickFix }) });
   else items.push({ topic: 'size', level: suggest ? 'info' : 'ok', text: `The map is made for ${recText} players: ${players} fit.${suggest}`, ...(suggest ? { fix: pickFix } : {}) });

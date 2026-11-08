@@ -321,6 +321,29 @@ export const FX_MAP = {
       "effect": "vfx_hit_07",
       "scale": 0.35
     },
+    "pickup.armor": {
+      "pack": "hit_fx",
+      "effect": "vfx_strike_04",
+      "scale": 0.34,
+      "tint": "#2f6dff"
+    },
+    "armor.break": {
+      "pack": "hit_fx",
+      "effect": "vfx_hit_05",
+      "scale": 0.28,
+      "tint": "#8cc8ff"
+    },
+    "hit.big": {
+      "pack": "hit_fx",
+      "effect": "vfx_big_impact_01",
+      "scale": 0.3
+    },
+    "streak": {
+      "pack": "hit_fx",
+      "effect": "vfx_big_impact_02",
+      "scale": 0.32,
+      "tint": "#ffc93c"
+    },
     "spawn": {
       "pack": "hit_fx",
       "effect": "vfx_impact_03",
@@ -398,6 +421,21 @@ export const FX_MAP = {
       "pack": "electric_fx",
       "effect": "vfx_ball_lightning_04",
       "scale": 0.6
+    },
+    "shield.spawn": {
+      "pack": "electric_fx",
+      "effect": "vfx_ball_lightning_04",
+      "scale": 1.1
+    },
+    "aura.damage": {
+      "pack": "flame_fx",
+      "effect": "vfx_purple_fire_02",
+      "scale": 0.42
+    },
+    "aura.speed": {
+      "pack": "flame_fx",
+      "effect": "vfx_cold_fire_02",
+      "scale": 0.42
     },
     "fire.zone": {
       "pack": "flame_fx",

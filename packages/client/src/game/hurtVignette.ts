@@ -79,3 +79,34 @@ export function paintVignette(look: HurtLook, size = 256): HTMLCanvasElement {
   ctx.fillRect(0, 0, size, size);
   return c;
 }
+
+/**
+ * A heavy hit (content/match-play.json heavyHit): the screen's edges darken for a moment, a smoky brown (never a flash:
+ * darker, not brighter, and no saturated red), with a small kick inward. Calm (Reduce flashing on): fainter, eased in
+ * over 0.15 s and out over 0.8 s; classic: on at once, gone in 0.45 s.
+ */
+export const HEAVY_LOOK: HurtLook = { inner: 0.42, color: [34, 22, 12], alpha: 0.82 };
+export const CALM_HEAVY = { peak: 0.6, rise: 0.15, hold: 0.1, fall: 0.8 } as const;
+const HEAVY_FADE = 0.45;
+
+export class HeavyFade {
+  level = 0;
+  private lastHit = -Infinity;
+  private at = 0;
+  private strength = 0;
+
+  /** A heavy hit of `amount` damage at `now` (ms). */
+  hit(amount: number, now: number): void {
+    this.strength = Math.min(1, 0.55 + amount / 200);
+    this.lastHit = now;
+  }
+
+  update(now: number, calm: boolean): number {
+    const dt = Math.min(0.1, Math.max(0, (now - (this.at || now)) / 1000));
+    this.at = now;
+    const t = (now - this.lastHit) / 1000;
+    if (calm) this.level = ease(this.level, t < CALM_HEAVY.hold ? this.strength * CALM_HEAVY.peak : 0, dt, 1 / CALM_HEAVY.rise, 1 / CALM_HEAVY.fall);
+    else this.level = t < HEAVY_FADE ? this.strength * (1 - t / HEAVY_FADE) ** 2 : 0;
+    return this.level;
+  }
+}

@@ -6179,8 +6179,8 @@ export class Match {
     const enemies = this.actors().filter((o) => o.alive && this.hostile(c, o));
     const mates = this.combatants().filter((o) => o !== c && o.alive && !o.mount && o.faction === c.faction && o.move.grounded && this.tick - (o.hurtAt ?? -Infinity) > TICK_RATE * 4 && !enemies.some((e) => distance(e.move.pos, o.move.pos) < 20) && this.mode?.spawnBeside?.(c, o) !== false);
     if (!mates.length) return null;
-    // A few of them at random, the one furthest from enemies and out of their sight (the nearest three within 50 m
-    // checked for a clear line to its head): never beside a teammate an enemy is looking at.
+    // A few of them at random, out of enemy sight (the nearest three within 50 m checked for a clear line to its head;
+    // never beside a teammate an enemy is looking at), the one nearest the fight (none within 20 m, above).
     for (let i = mates.length - 1; i > 0; i--) {
       const j = Math.floor(this.rng() * (i + 1));
       [mates[i], mates[j]] = [mates[j]!, mates[i]!];
@@ -6191,7 +6191,7 @@ export class Match {
       const near = enemies.map((e) => ({ e, d: distance(e.move.pos, o.move.pos) })).filter((x) => x.d < 50).sort((a, b) => a.d - b.d);
       const head = { x: o.move.pos.x, y: o.move.pos.y + 1.6, z: o.move.pos.z };
       if (near.slice(0, 3).some((x) => this.sees({ x: x.e.move.pos.x, y: x.e.move.pos.y + 1.6, z: x.e.move.pos.z }, head))) continue;
-      const score = near.length ? near[0]!.d : 50;
+      const score = -(near.length ? near[0]!.d : 50);
       if (score > mateScore) [mate, mateScore] = [o, score];
     }
     if (!mate) return null;

@@ -3,7 +3,7 @@ import { SNAPSHOT_INTERVAL_TICKS, TICK_RATE, type ScenarioSnapshot, type ServerM
 type Snapshot = Extract<ServerMessage, { t: 'snapshot' }>;
 
 /** Events that only show or sound something (tracers, impacts, blasts): skipped where nobody would see them in time. */
-export const VISUAL_EVENTS: ReadonlySet<string> = new Set(['shot', 'impact', 'melee', 'arc', 'explode', 'crash', 'throw']);
+export const VISUAL_EVENTS: ReadonlySet<string> = new Set(['shot', 'impact', 'melee', 'arc', 'explode', 'crash', 'throw', 'hurt']);
 
 /** Two scenario deltas as one: entity states by index (the later wins), objectives and timers the latest sent. */
 function mergeScenario(a: ScenarioSnapshot | undefined, b: ScenarioSnapshot | undefined): ScenarioSnapshot | undefined {

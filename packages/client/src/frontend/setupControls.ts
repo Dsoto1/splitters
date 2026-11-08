@@ -235,7 +235,7 @@ export function sizeChips(presets: readonly SizePreset[], on: SizePreset | null,
 }
 
 /** The fit check's topics, as its details name them. */
-export const FIT_TOPICS: Record<FitTopic, string> = { device: 'This device', grid: 'Grid', size: 'Map size', spawns: 'Spawns', teams: 'Teams', performance: 'Performance' };
+export const FIT_TOPICS: Record<FitTopic, string> = { caps: 'Players', device: 'This device', grid: 'Grid', size: 'Map size', spawns: 'Spawns', teams: 'Teams', performance: 'Performance' };
 
 /** The fit indicator: one chip, green Fits, amber Crowded or red Problem; it shows or hides the details. */
 export function fitChip(fit: SetupFit, open: boolean, onToggle: () => void, id: string): HTMLButtonElement {

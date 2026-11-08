@@ -88,19 +88,28 @@ const RECENT_PENALTY = 20;
 export const SPAWN_DEATHS_KEPT = 64;
 export const SPAWN_DEATH_TICKS = Math.round(W.deathSeconds * TICK_RATE);
 
+/** How far the nearest living enemy is from a spawn point (height counts double); Infinity with none. */
+function nearestEnemy(sp: SpawnSpot, c: SpawnChoice): number {
+  let nearest = Infinity;
+  for (const e of c.enemies) {
+    const d = horizontalDistance(sp.pos, e) + Math.abs(sp.pos.y - e.y) * 2;
+    if (d < nearest) nearest = d;
+  }
+  return nearest;
+}
+
 /**
- * The cheap part of a spawn point's score: farther from the nearest enemy is better (up to enemyRange), someone
+ * The cheap part of a spawn point's score: farther from the nearest enemy is better (up to enemyRange; past
+ * farRange a little worse again: out of the game), someone
  * standing on it or right next to it is bad, a point used in the last few seconds is worse, a fresh death beside it
  * is worse, teammates out of a fight near it help, and on shared spawns in team modes the side's own end of the map
  * helps.
  */
 export function spawnScore(sp: SpawnSpot, c: SpawnChoice): number {
-  let nearest: number = W.enemyRange;
-  for (const e of c.enemies) {
-    const d = horizontalDistance(sp.pos, e) + Math.abs(sp.pos.y - e.y) * 2;
-    if (d < nearest) nearest = d;
-  }
-  let score = nearest;
+  const nearest = nearestEnemy(sp, c);
+  // Safe up to enemyRange; far past farRange, a long walk back to the fight.
+  let score = Math.min(nearest, W.enemyRange);
+  if (c.enemies.length && nearest > W.farRange) score -= Math.min(15, (nearest - W.farRange) * W.farWeight);
   // Somebody on it (or about to be shoved off it): another spot.
   let crowd = 0;
   for (const o of c.occupants) {
@@ -176,9 +185,12 @@ export function pickSpawn(c: SpawnChoice): number {
     }
     scored.sort((a, b) => b.s - a.s || a.i - b.i);
   }
-  // The safest few: within `margin` of the best (and checked for sight lines when there were any to check).
-  const best = scored[0]!.s;
-  const few = scored.slice(0, Math.min(W.safeFew, checked)).filter((s) => s.s >= best - W.margin);
+  // The safest few: within `margin` of the best (and checked for sight lines when there were any to check), none
+  // with an enemy much nearer than the best's nearest (a random pick never puts anyone in someone's lap), none seen
+  // when the best isn't.
+  const top = scored[0]!;
+  const safeAt = Math.min(W.enemyRange, nearestEnemy(c.candidates[top.i]!, c)) * 0.7;
+  const few = scored.slice(0, Math.min(W.safeFew, checked)).filter((s) => s.s >= top.s - W.margin && Math.min(W.enemyRange, nearestEnemy(c.candidates[s.i]!, c)) >= safeAt && s.seen <= top.seen);
   return few[Math.min(few.length - 1, Math.floor(c.rng() * few.length))]!.i;
 }
 
