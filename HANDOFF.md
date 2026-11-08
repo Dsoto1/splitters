@@ -279,7 +279,7 @@ Iron Maw and Frost Basin tanks never got down to 3 shells. Driving/shell totals 
 general Ammo Box also refills infantry: the Coldwater and Frost Basin ones sit on open lanes 16-40 m from other ammo,
 none in a chokepoint.
 
-### Gunplay audit, measured (`wip/gunplay-audit`, agent, 2026-11-08; owner-approved brief: measurement first, no tuning)
+### Gunplay audit, measured (`wip/gunplay-audit`, agent, 2026-11-08; owner-approved brief: measurement first, no tuning; green on `check/gunplay-audit`, run 42466478881; LANDED: main f1a16d3)
 
 - **Tool:** `pnpm gun-report` (`packages/server/src/tools/gun-report.ts`) drives the real shared sim (Match) on a flat
   deck, one perfect shooter and one standard target, for every gun (34): TTK at 10/25/50/100 m (body/head,
@@ -296,6 +296,7 @@ none in a chokepoint.
 - **Training Range:** every gun not on the front rack (24) now lies on two racks at x -12 and -15 (placed with
   MapMaker's palette and inspector, exported; validate-map 0 issues). Still missing (listed in the audit, appendix C):
   damage readout on hit, humanoid dummies that don't shoot back, armoured targets, a trajectory view.
+- **CI note:** physicsfx's canyon blast checks failed on first attempts here (a bot stood by a wall; nothing from this branch runs there) and passed on re-run; watch it.
 - **Next (owner picks from the audit's ranked list):** 1 SMG vs rifle identity, 2 shotgun room range, 3 damage
   numbers option, 4 precision rifle body case, 5 melee breaks reloads / auto-reload, 6 recoil-wall readout,
   7 8-client latency/loss harness (G3), 8 bot weapon choice from measured ranges (G4).
