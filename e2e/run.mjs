@@ -2321,7 +2321,8 @@ async function physicsfxFlow(browser) {
   await page.evaluate((open) => {
     const m = window.__match;
     const me = m.slots[window.__cs.slot];
-    const bot = m.slots.find((c) => c && c !== me && c.alive);
+    // (Not one seated in a vehicle or on a turret: moved, it stayed seated, and a tank's crew can't be hurt from outside.)
+    const bot = m.slots.find((c) => c && c !== me && c.alive && !c.mount);
     for (const c of m.slots) if (c && c !== me && c !== bot) c.alive = false;
     const f = window.__cs.view.camera.getForwardRay(1).direction;
     const len = Math.hypot(f.x, f.z) || 1;
