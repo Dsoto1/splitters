@@ -37,6 +37,7 @@
     {"file":"props/bathtub.glb","source":"kenney-furniture-kit","src":"bathtub.glb","triangles":602,"surfaces":["metal","painted_metal","plastic"],"bytes":25316,"sha256":"27532c2f707d17aa"},
     {"file":"props/battering_ram.glb","source":"kenney-castle-kit","src":"siege-ram.glb","triangles":1112,"surfaces":["fabric","metal","wood"],"bytes":89476,"sha256":"1ee39a28caf9187e"},
     {"file":"props/bed.glb","source":"kenney-furniture-kit","src":"bedDouble.glb","triangles":214,"surfaces":["fabric","metal","wood"],"bytes":17392,"sha256":"1cf5a5570153829b"},
+    {"file":"props/belgian_gate.glb","source":"tiletrigger-kit","src":"belgian_gate.glb","triangles":592,"surfaces":["metal"],"bytes":36164,"sha256":"21e9c35385729c54"},
     {"file":"props/bench.glb","source":"kenney-furniture-kit","src":"bench.glb","triangles":170,"surfaces":["wood"],"bytes":9288,"sha256":"1f8010a759ba66b1"},
     {"file":"props/big_pipe.glb","source":"kenney-platformer-kit","src":"pipe.glb","triangles":216,"surfaces":["painted_metal"],"bytes":23080,"sha256":"072f1f12139931d2"},
     {"file":"props/bookcase.glb","source":"kenney-furniture-kit","src":"bookcaseOpen.glb","triangles":320,"surfaces":["wood"],"bytes":15420,"sha256":"47288780c045a7b1"},

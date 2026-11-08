@@ -141,6 +141,7 @@ export const PROP_SURFACES: Readonly<Record<string, SurfaceTypeId>> = {
   'prop.landing_craft_wreck': 'metal',
   'prop.landing_craft_wreck_burning': 'metal',
   'prop.hedgehog_beach': 'metal',
+  'prop.belgian_gate': 'metal',
   'prop.sandbag_stack': 'dirt',
   'prop.timber_baulk': 'bark',
   'prop.timber_stack': 'bark',

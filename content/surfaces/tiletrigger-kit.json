@@ -7,6 +7,7 @@
     "landing_craft_wreck": {"default": "metal"},
     "landing_craft_wreck_burning": {"default": "metal"},
     "hedgehog_beach": {"default": "metal"},
+    "belgian_gate": {"default": "metal"},
     "sandbag_stack": {"default": "fabric"},
     "timber_baulk": {"default": "wood"},
     "timber_stack": {"default": "wood"},

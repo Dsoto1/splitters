@@ -178,6 +178,15 @@
       "surface": "metal"
     },
     {
+      "id": "belgian_gate",
+      "src": "belgian_gate.glb",
+      "name": "Belgian Gate",
+      "category": "Military",
+      "scale": 1,
+      "collide": "model",
+      "surface": "metal"
+    },
+    {
       "id": "sandbag_stack",
       "src": "sandbag_stack.glb",
       "name": "Sandbag Stack",
