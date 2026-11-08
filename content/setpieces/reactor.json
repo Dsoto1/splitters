@@ -17,7 +17,7 @@
         {"side":"N","cell":[2,1],"level":0,"kind":"door"}
       ],
       "markers": [
-        {"name":"airlock","kind":"doorPair","parts":[13,14]},
+        {"name":"airlock","kind":"doorPair","parts":[14,15]},
         {"name":"reactor","kind":"spot","parts":[5]}
       ],
       "parts": [
@@ -27,6 +27,7 @@
         {"kind":"tile","tile":"core.room","x":2,"y":0,"z":1,"rotation":0,"edges":{"0,0,0:N":"open","0,0,0:E":"windows","0,0,0:S":"wall","0,0,0:W":"windows"},"glass":{"0,0,0:E":"reinforced","0,0,0:W":"reinforced"},"surfaces":{"floor":{"role":"floor"},"walls":{"role":"stone"},"solids":{"role":"metal"},"underside":{"role":"stone"},"trim":{"role":"trim"},"roof":{"role":"roof"}},"options":{"ceiling":"roof"}},
         {"kind":"tile","tile":"core.room","x":2,"y":1,"z":1,"rotation":0,"edges":{"0,0,0:S":"open","0,0,0:E":"wall","0,0,0:N":"wall","0,0,0:W":"door"},"surfaces":{"floor":{"role":"floor"},"walls":{"role":"stone"},"solids":{"role":"metal"},"underside":{"role":"stone"},"trim":{"role":"trim"},"roof":{"role":"roof"}},"options":{"ceiling":"roof"}},
         {"kind":"prop","model":"prop.os_reactor_core","position":[4,0,4],"yaw":0,"scale":1},
+        {"kind":"block","name":"Hall roof","position":[4,7.6,4],"size":[15.5,0.4,15.5],"material":{"role":"roof"}},
         {"kind":"prop","model":"prop.os_generator","position":[17.4,0,8.4],"yaw":0,"scale":1},
         {"kind":"prop","model":"prop.barrel","position":[13.2,0,10.8],"yaw":0,"scale":1},
         {"kind":"prop","model":"prop.barrel","position":[14.1,0,10.9],"yaw":0,"scale":1},

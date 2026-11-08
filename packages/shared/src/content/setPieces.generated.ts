@@ -164,6 +164,7 @@ export const SET_PIECE_DEFS: readonly SetPieceDefinitionInput[] = [
       { kind: 'light', position: [16, 3.3, 4], fixture: 'ceiling', color: '#fff1d6', intensity: 0.8, range: 9 },
       { kind: 'light', position: [16, 15.3, 8], fixture: 'ceiling', color: '#fff1d6', intensity: 0.8, range: 9 },
       { kind: 'prop', model: 'prop.bench', position: [4, 0, 7], yaw: 0, scale: 1 },
+      { kind: 'block', name: 'Atrium roof', position: [4, 15.6, 4], size: [15.5, 0.4, 15.5], material: { role: 'roof' } },
     ],
   },
   // design: Rooms with slits on three sides and a door onto the yard (roofed, in the pack's facade), a Courtyard between them and a Courtyard (Low Wall) as the way in. Sandbags in the yard. Everything is its own mirror image.
@@ -1155,7 +1156,7 @@ export const SET_PIECE_DEFS: readonly SetPieceDefinitionInput[] = [
       { side: 'W', cell: [0, 1], level: 1, kind: 'door' },
       { side: 'E', cell: [2, 1], level: 1, kind: 'door' },
     ],
-    markers: [{ name: 'core', kind: 'spot', parts: [52] }, { name: 'gallery', kind: 'spot', parts: [9, 10, 11, 12] }, { name: 'gallery_doors', kind: 'doorPair', parts: [64, 65] }],
+    markers: [{ name: 'core', kind: 'spot', parts: [52] }, { name: 'gallery', kind: 'spot', parts: [9, 10, 11, 12] }, { name: 'gallery_doors', kind: 'doorPair', parts: [65, 66] }],
     parts: [
       { kind: 'tile', tile: 'core.room_tall', x: 0, y: 0, z: 0, rotation: 0, edges: { '0,0,0:N': 'open', '0,0,0:S': 'wall', '0,0,0:E': 'open', '0,0,0:W': 'wall', '0,0,1:N': 'open', '0,0,1:S': 'windows', '0,0,1:E': 'open', '0,0,1:W': 'windows' }, glass: { '0,0,1:S': { role: 'glass' }, '0,0,1:W': { role: 'glass' } }, surfaces: { floor: { role: 'floor' }, walls: { role: 'stone' }, solids: { role: 'metal' }, underside: { role: 'stone' }, trim: { role: 'trim' }, roof: { role: 'roof' } } },
       { kind: 'tile', tile: 'core.room_tall', x: 1, y: 0, z: 0, rotation: 0, edges: { '0,0,0:N': 'open', '0,0,0:S': 'door', '0,0,0:E': 'open', '0,0,0:W': 'open', '0,0,1:N': 'open', '0,0,1:S': 'windows', '0,0,1:E': 'open', '0,0,1:W': 'open' }, glass: { '0,0,1:S': { role: 'glass' } }, surfaces: { floor: { role: 'floor' }, walls: { role: 'stone' }, solids: { role: 'metal' }, underside: { role: 'stone' }, trim: { role: 'trim' }, roof: { role: 'roof' } } },
@@ -1215,6 +1216,7 @@ export const SET_PIECE_DEFS: readonly SetPieceDefinitionInput[] = [
       { kind: 'block', name: 'Core rib', position: [6.45, 0.8, 8], size: [0.1, 5.4, 0.6], material: 'core.glow_trim', tint: '#7fe0ff' },
       { kind: 'block', name: 'Core rib', position: [9.55, 0.8, 8], size: [0.1, 5.4, 0.6], material: 'core.glow_trim', tint: '#7fe0ff' },
       { kind: 'block', name: 'Core cap', position: [8, 6.5, 8], size: [4, 0.5, 4], material: { role: 'metal' } },
+      { kind: 'block', name: 'Roof', position: [8, 7.6, 8], size: [23.5, 0.4, 23.5], material: { role: 'roof' } },
       { kind: 'prop', model: 'prop.os_terminal', position: [3.2, 0, 8], yaw: 1.570796, scale: 1 },
       { kind: 'prop', model: 'prop.os_terminal', position: [12.8, 0, 8], yaw: -1.570796, scale: 1 },
       { kind: 'door', name: 'South door', position: [8, 0, -4], yaw: 0, style: { role: 'door' }, auto: true },
@@ -1279,7 +1281,7 @@ export const SET_PIECE_DEFS: readonly SetPieceDefinitionInput[] = [
       { side: 'E', cell: [2, 0], level: 0, kind: 'door' },
       { side: 'N', cell: [2, 1], level: 0, kind: 'door' },
     ],
-    markers: [{ name: 'airlock', kind: 'doorPair', parts: [13, 14] }, { name: 'reactor', kind: 'spot', parts: [5] }],
+    markers: [{ name: 'airlock', kind: 'doorPair', parts: [14, 15] }, { name: 'reactor', kind: 'spot', parts: [5] }],
     parts: [
       { kind: 'tile', tile: 'orbital.reactor_hall', x: 0, y: 0, z: 0, rotation: 0, edges: { '0,0,0:S': 'door', '1,0,0:S': 'wall', '0,0,0:W': 'wall', '0,1,0:W': 'wall', '0,1,0:N': 'wall', '1,1,0:N': 'wall', '1,0,0:E': 'door', '1,1,0:E': 'door', '0,0,1:S': 'wall', '1,0,1:S': 'wall', '0,0,1:W': 'wall', '0,1,1:W': 'wall', '0,1,1:N': 'wall', '1,1,1:N': 'wall', '1,0,1:E': 'windows', '1,1,1:E': 'door' }, glass: { '1,0,1:E': 'reinforced' }, surfaces: { floor: { role: 'floor' }, walls: { role: 'stone' }, solids: { role: 'metal' }, underside: { role: 'stone' }, trim: { role: 'trim' }, roof: { role: 'roof' } } },
       { kind: 'tile', tile: 'core.corridor_clear', x: 2, y: 0, z: 0, rotation: 1, edges: { '0,0,0:N': 'door', '0,0,0:S': 'door' }, surfaces: { floor: { role: 'floor' }, walls: { role: 'stone' }, solids: { role: 'metal' }, underside: { role: 'stone' }, trim: { role: 'trim' }, roof: { role: 'roof' } } },
@@ -1287,6 +1289,7 @@ export const SET_PIECE_DEFS: readonly SetPieceDefinitionInput[] = [
       { kind: 'tile', tile: 'core.room', x: 2, y: 0, z: 1, rotation: 0, edges: { '0,0,0:N': 'open', '0,0,0:E': 'windows', '0,0,0:S': 'wall', '0,0,0:W': 'windows' }, glass: { '0,0,0:E': 'reinforced', '0,0,0:W': 'reinforced' }, surfaces: { floor: { role: 'floor' }, walls: { role: 'stone' }, solids: { role: 'metal' }, underside: { role: 'stone' }, trim: { role: 'trim' }, roof: { role: 'roof' } }, options: { ceiling: 'roof' } },
       { kind: 'tile', tile: 'core.room', x: 2, y: 1, z: 1, rotation: 0, edges: { '0,0,0:S': 'open', '0,0,0:E': 'wall', '0,0,0:N': 'wall', '0,0,0:W': 'door' }, surfaces: { floor: { role: 'floor' }, walls: { role: 'stone' }, solids: { role: 'metal' }, underside: { role: 'stone' }, trim: { role: 'trim' }, roof: { role: 'roof' } }, options: { ceiling: 'roof' } },
       { kind: 'prop', model: 'prop.os_reactor_core', position: [4, 0, 4], yaw: 0, scale: 1 },
+      { kind: 'block', name: 'Hall roof', position: [4, 7.6, 4], size: [15.5, 0.4, 15.5], material: { role: 'roof' } },
       { kind: 'prop', model: 'prop.os_generator', position: [17.4, 0, 8.4], yaw: 0, scale: 1 },
       { kind: 'prop', model: 'prop.barrel', position: [13.2, 0, 10.8], yaw: 0, scale: 1 },
       { kind: 'prop', model: 'prop.barrel', position: [14.1, 0, 10.9], yaw: 0, scale: 1 },

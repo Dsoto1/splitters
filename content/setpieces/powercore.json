@@ -22,7 +22,7 @@
       "markers": [
         {"name":"core","kind":"spot","parts":[52]},
         {"name":"gallery","kind":"spot","parts":[9,10,11,12]},
-        {"name":"gallery_doors","kind":"doorPair","parts":[64,65]}
+        {"name":"gallery_doors","kind":"doorPair","parts":[65,66]}
       ],
       "parts": [
         {"kind":"tile","tile":"core.room_tall","x":0,"y":0,"z":0,"rotation":0,"edges":{"0,0,0:N":"open","0,0,0:S":"wall","0,0,0:E":"open","0,0,0:W":"wall","0,0,1:N":"open","0,0,1:S":"windows","0,0,1:E":"open","0,0,1:W":"windows"},"glass":{"0,0,1:S":{"role":"glass"},"0,0,1:W":{"role":"glass"}},"surfaces":{"floor":{"role":"floor"},"walls":{"role":"stone"},"solids":{"role":"metal"},"underside":{"role":"stone"},"trim":{"role":"trim"},"roof":{"role":"roof"}}},
@@ -83,6 +83,7 @@
         {"kind":"block","name":"Core rib","position":[6.45,0.8,8],"size":[0.1,5.4,0.6],"material":"core.glow_trim","tint":"#7fe0ff"},
         {"kind":"block","name":"Core rib","position":[9.55,0.8,8],"size":[0.1,5.4,0.6],"material":"core.glow_trim","tint":"#7fe0ff"},
         {"kind":"block","name":"Core cap","position":[8,6.5,8],"size":[4,0.5,4],"material":{"role":"metal"}},
+        {"kind":"block","name":"Roof","position":[8,7.6,8],"size":[23.5,0.4,23.5],"material":{"role":"roof"}},
         {"kind":"prop","model":"prop.os_terminal","position":[3.2,0,8],"yaw":1.570796,"scale":1},
         {"kind":"prop","model":"prop.os_terminal","position":[12.8,0,8],"yaw":-1.570796,"scale":1},
         {"kind":"door","name":"South door","position":[8,0,-4],"yaw":0,"style":{"role":"door"},"auto":true},
