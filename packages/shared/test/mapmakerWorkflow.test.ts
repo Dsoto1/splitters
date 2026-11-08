@@ -8,7 +8,7 @@ import {
   EditHistory,
   MAP_FORMAT_VERSION,
   TICK_RATE,
-  WORKFLOW_KEYS,
+  matchEditorKey,
   applyCommand,
   blockBoxes,
   buildMapGeometry,
@@ -41,12 +41,11 @@ import {
   screenToPlan,
   serializeMap,
   setCardCameraCommand,
-  type Combatant,
   type MapDocument,
   type MapEntity,
   type WorldBox,
 } from '../src/index.ts';
-import { COUNTDOWN_SECONDS, Match, initNavigation } from '../src/match.ts';
+import { COUNTDOWN_SECONDS, Match, initNavigation, type Combatant } from '../src/match.ts';
 
 /** The starter room, a room on Level 1 over the next cell east, a block standing in the open, on open ground. */
 function scene(): { doc: MapDocument; boxes: WorldBox[] } {
@@ -273,11 +272,11 @@ describe('The card-shot camera (MapMaker overhaul Phase 3 item 8)', () => {
   });
 });
 
-describe("Phase 3 part A's keys", () => {
-  it('Shift+F5 plays from here, K toggles the plan view, and neither clashes with the other', () => {
-    expect(WORKFLOW_KEYS.map((k) => [k.action, k.keys])).toEqual([
-      ['playFromHere', 'Shift+F5'],
-      ['planView', 'K'],
-    ]);
+describe("Phase 3 part A's keys (in the key table)", () => {
+  it('Shift+F5 plays from here, F5 still plays the test, K toggles the plan view', () => {
+    const press = (code: string, shiftKey = false) => matchEditorKey({ code, key: '', shiftKey, ctrlKey: false, metaKey: false })?.action;
+    expect(press('F5', true)).toBe('playFromHere');
+    expect(press('F5')).toBe('test');
+    expect(press('KeyK')).toBe('planView');
   });
 });

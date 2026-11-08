@@ -1,0 +1,4 @@
+# Two Claude sessions (two accounts) land on main in parallel. These logs only grow: git keeps both sides'
+# added lines on a merge instead of stopping on a conflict. Read the merged section once; fix order if needed.
+HANDOFF.md merge=union
+CHANGELOG.md merge=union

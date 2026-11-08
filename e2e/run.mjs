@@ -1077,6 +1077,7 @@ async function editoruxFlow(browser) {
   });
   await page.keyboard.press('Control+KeyZ');
   check((await doc()).entities.length === before, 'a stroke undoes in one step');
+  await editorPhase1aChecks(page, { doc, at, clickAt, settle, shot });
   // The same layout at 1280×720: panels narrow, the tool bar drops its labels, nothing overlaps.
   await page.setViewportSize({ width: 1280, height: 720 });
   await page.evaluate(() => document.querySelector('#ed-modes [data-ws="build"]').click());
@@ -1339,6 +1340,7 @@ async function editorTurnChecks(browser) {
 }
 
 /**
+<<<<<<< HEAD
  * MapMaker overhaul Phase 3 part A (docs/MAPMAKER_OVERHAUL_PLAN.md, items 1, 2 and 8): Play from here (Shift+F5)
  * starts you at the camera spot and Esc comes back with the view, the selection and undo as they were; the plan view
  * (K) toggles, selects and moves things, and exports a PNG; the card shot is framed at eye level, saved as the map's
@@ -1503,6 +1505,110 @@ async function editorWorkflowChecks(browser) {
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   livePages.delete(page);
   await page.context().close();
+=======
+ * MapMaker overhaul Phase 1, part A (docs/MAPMAKER_OVERHAUL_PLAN.md): the ghost says why it's refused, beside the
+ * pointer; the live budget bar changes on an edit and on undo, goes amber near a budget and selects what it counts; `?`
+ * (and the tool bar's Keys button) opens every key, grouped, and Esc or `?` closes it.
+ */
+async function editorPhase1aChecks(page, { doc, at, clickAt, settle, shot }) {
+  await page.evaluate(() => window.__editor.view.focus({ x: 0, y: 0, z: -16 }));
+  await settle();
+  // The ghost says why: a corridor over a corridor is refused, and the note beside the pointer names it and its level.
+  await clickTool(page, '[data-tool="tile:core.corridor"]');
+  await clickAt(-8, 0, -16);
+  const placed = (await doc()).classicStructure.tiles.some((t) => t.x === -1 && t.y === -2 && t.z === 0);
+  const p = await at(-8, 0, -16);
+  await page.mouse.move(p.x + 3, p.y + 2);
+  await settle();
+  const why = await page.evaluate(() => ({ cls: document.getElementById('ed-tip').className, text: document.getElementById('ed-tip').textContent, shown: !document.getElementById('ed-tip').hidden, status: document.getElementById('ed-target').textContent, ghost: window.__editor.tileGhostAt?.check }));
+  check(placed && why.shown && /tone-bad/.test(why.cls) && why.text.includes('Overlaps the Corridor on Ground') && /^Overlaps Corridor on Ground: pick a free cell/.test(why.status), `a refused ghost says why beside the pointer (${why.text}; ${why.status.slice(0, 60)})`);
+  await shot('ghost-why');
+  // Past the build limit (a level past the top).
+  const limit = await page.evaluate(() => {
+    const ed = window.__editor;
+    const c = ed.tileGhost('core.corridor', [0, 0, 17]);
+    return c.ok ? '' : c.short;
+  });
+  check(limit === 'Past the build limit (16 levels up or down)', `the ghost names the build limit (${limit})`);
+  // A spawn over nothing (up on Level 1, the ground 4 m below): a warning, not a refusal.
+  await page.evaluate(() => {
+    window.__editor.setTool({ kind: 'spawn' });
+    window.__editor.setLevel(1);
+  });
+  await settle();
+  const off = await at(32, 4, -16);
+  await page.mouse.move(off.x, off.y);
+  await settle();
+  const spawnWhy = await page.evaluate(() => ({ text: document.getElementById('ed-tip').textContent, shown: !document.getElementById('ed-tip').hidden, onTerrain: window.__editor.hoverOnTerrain }));
+  check(!spawnWhy.onTerrain && spawnWhy.shown && spawnWhy.text.includes('No floor under it'), `a spawn over nothing says "No floor under it" (${JSON.stringify(spawnWhy)})`);
+  await shot('spawn-why');
+  await page.evaluate(() => {
+    window.__editor.setTool({ kind: 'select' });
+    window.__editor.setLevel(0);
+  });
+
+  // The live budget bar: Props goes up by one with a prop and back with undo.
+  const bar = () =>
+    page.evaluate(() => {
+      const el = document.getElementById('ed-budget');
+      const row = (id) => document.querySelector(`#ed-budget-rows [data-budget="${id}"]`)?.closest('.ed-budget-row');
+      return { level: el?.dataset.level, sum: el?.querySelector('.ed-budget-sum')?.textContent ?? '', props: row('props')?.querySelector('.ed-budget-amt')?.textContent ?? '', lights: row('lights')?.querySelector('.ed-budget-amt')?.textContent ?? '', lightsWord: row('lights')?.querySelector('.ed-budget-word')?.textContent ?? '' };
+    });
+  const b0 = await bar();
+  await clickTool(page, '[data-tool="prop:prop.barrel"]');
+  await clickAt(0, 0, -24);
+  await settle();
+  const b1 = await bar();
+  await page.evaluate(() => window.__editor.setTool({ kind: 'select' }));
+  await page.keyboard.press('Control+KeyZ');
+  await settle();
+  const b2 = await bar();
+  const n = (t) => Number(t.split('/')[0].replace(/[^0-9]/g, ''));
+  check(n(b1.props) === n(b0.props) + 1 && b2.props === b0.props && /Budget OK/i.test(b0.sum), `the budget bar counts a placed prop and its undo (${b0.props} → ${b1.props} → ${b2.props}; ${b0.sum})`);
+  // Near a budget: 220 of 256 lights goes amber, names Lights, and clicking the name selects them.
+  await page.evaluate(() => {
+    const ed = window.__editor;
+    const lights = Array.from({ length: 220 }, (_, i) => ({ id: `light_e2e_${i}`, kind: 'light', position: [(i % 20) * 2 - 20, 3, Math.floor(i / 20) * 2 - 30], yaw: 0, color: '#ffd9a0', intensity: 1, range: 6, fixture: 'ceiling' }));
+    ed.history.execute('Lights', { kind: 'addEntities', entities: lights });
+  });
+  await settle();
+  const near = await bar();
+  await page.click('#ed-budget-toggle');
+  await settle();
+  await shot('budget-near');
+  await page.click('#ed-budget .ed-budget-sum [data-budget="lights"]');
+  await settle();
+  const selected = await page.evaluate(() => window.__editor.selection.entities.filter((id) => id.startsWith('light_e2e_')).length);
+  check(near.level === 'near' && /Near:\s*Lights/.test(near.sum) && near.lightsWord === 'Near' && selected === 220, `220 lights: the bar goes amber with its word, names Lights, and selects them (${near.sum}; ${selected} selected)`);
+  await page.click('#ed-budget-toggle');
+  await page.evaluate(() => window.__editor.setSelection({ tiles: [], entities: [] }));
+  await page.keyboard.press('Control+KeyZ');
+  await settle();
+  check((await bar()).level === 'ok', 'undo takes the bar back to OK');
+
+  // `?`: every key, grouped, from the key table; Esc and `?` close it; so does the tool bar's Keys button open it.
+  await page.mouse.move(5, 400);
+  await page.keyboard.press('Shift+Slash');
+  await settle();
+  const keys = await page.evaluate(() => ({ open: document.getElementById('ed-keys')?.open, rows: [...document.querySelectorAll('#ed-keys .ed-keys-row dt')].map((d) => d.textContent), groups: [...document.querySelectorAll('#ed-keys h3')].map((h) => h.textContent) }));
+  const has = (k) => keys.rows.includes(k);
+  check(keys.open && has('R') && has('Ctrl+Z') && ['V', 'P', 'X', 'B', 'O', 'T', 'G', 'N', 'U', 'Esc'].every(has) && keys.groups.includes('Tools'), `? opens the key list with R, Ctrl+Z and the tool keys (${keys.rows.length} rows; ${keys.groups.join(', ')})`);
+  await shot('keys');
+  await page.keyboard.press('Escape');
+  await settle();
+  const afterEsc = await page.evaluate(() => ({ open: document.getElementById('ed-keys')?.open, tool: window.__editor.tool.kind }));
+  await page.click('#ed-tb-keys');
+  await settle();
+  const byButton = await page.evaluate(() => document.getElementById('ed-keys')?.open);
+  await page.keyboard.press('Shift+Slash');
+  await settle();
+  const afterQ = await page.evaluate(() => document.getElementById('ed-keys')?.open);
+  check(!afterEsc.open && byButton && !afterQ, `Esc closes it, the Keys button opens it, ? closes it (${JSON.stringify({ afterEsc, byButton, afterQ })})`);
+  // / still searches the palette.
+  await page.keyboard.press('Slash');
+  check(await page.evaluate(() => document.activeElement?.id === 'ed-search'), '/ still searches the palette');
+  await page.evaluate(() => document.activeElement?.blur());
+>>>>>>> origin/main
 }
 
 /**
@@ -1581,7 +1687,7 @@ async function editorSetPieceChecks(browser) {
   // Red where it can't go, with the reason, and a click there places nothing.
   await hover(16, 0, 8.5);
   const red = await ghost();
-  check(red && !red.ok && /tone-bad/.test(red.tip) && /overlaps the Carriageway set piece/.test(red.tipText) && /can't go here/.test(await page.textContent('#ed-target')), `over another piece the ghost is red and says why (${red?.reason})`);
+  check(red && !red.ok && /tone-bad/.test(red.tip) && /overlaps the Carriageway set piece/i.test(red.tipText) && /can't go here/.test(await page.textContent('#ed-target')), `over another piece the ghost is red and says why (${red?.reason})`);
   await shot('ghost-red');
   await page.mouse.click((await at(16, 0, 8.5)).x, (await at(16, 0, 8.5)).y);
   check((await doc()).setPieces.length === 1 && /Can't place Carriageway/.test(await page.textContent('#ed-toast')), 'a click there places nothing and says why');

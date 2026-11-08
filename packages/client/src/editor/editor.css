@@ -552,6 +552,10 @@ button.danger { border-color: rgba(231, 76, 60, 0.6); color: #ff8a7a; }
 #ed-tip.tone-bad { border-left-color: var(--error); border-color: rgba(231, 76, 60, 0.45); }
 #ed-tip span.bad { color: #ff8a80; }
 #ed-tip span.warn { color: #ffc46b; }
+#ed-tip span.note { color: #9fd8ff; }
+/* The ghost says why: the refusal or warning stands out, in words (not colour alone). */
+#ed-tip span.bad, #ed-tip span.warn { font-weight: 700; }
+#ed-tip.tone-warn { border-left-color: #ffc46b; }
 
 /* Set pieces tab: the piece being placed, the library's actions, your pieces. */
 .ed-sp-info { margin: 4px 0 10px; padding: 8px; border: 1px solid var(--line); border-radius: 6px; background: rgba(255, 255, 255, 0.03); }
@@ -573,6 +577,54 @@ button.danger { border-color: rgba(231, 76, 60, 0.6); color: #ff8a7a; }
 .ed-sp-problems li.error { color: var(--error); }
 .ed-sp-problems li.warning { color: #ffc46b; }
 
+/* The live budget bar (MapMaker overhaul Phase 1 item 2): a pill beside the level strip, its colour and its word; the
+   arrow opens every row above it. Green OK, amber Near (80 % of a budget), red Over. */
+.ed-budget {
+  position: absolute; left: calc(var(--ed-pal-w) + 152px); bottom: 48px; max-width: calc(100% - var(--ed-pal-w) - var(--ed-right-w) - 176px);
+  display: flex; align-items: center; gap: 6px; padding: 4px 4px 4px 8px; pointer-events: auto;
+  background: rgba(18, 24, 39, 0.94); border: 1px solid rgba(46, 204, 113, 0.45); border-left: 3px solid var(--success); border-radius: 6px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35); font-size: 12px; color: var(--muted); white-space: nowrap;
+}
+.ed-budget[data-level='near'] { border-color: rgba(255, 196, 107, 0.6); border-left-color: #ffc46b; }
+.ed-budget[data-level='over'] { border-color: rgba(231, 76, 60, 0.6); border-left-color: var(--error); }
+.ed-budget-sum { display: flex; align-items: center; gap: 5px; overflow: hidden; text-overflow: ellipsis; }
+.ed-budget-sum b { color: var(--text); font: 700 12px var(--font-display); text-transform: uppercase; letter-spacing: 0.05em; }
+.ed-budget-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--success); flex: none; }
+.ed-budget[data-level='near'] .ed-budget-dot { background: #ffc46b; }
+.ed-budget[data-level='over'] .ed-budget-dot { background: var(--error); }
+.ed-budget-more { color: #ff8a80; }
+.ed-budget-name { padding: 1px 5px; font: 600 12px var(--font-body); text-transform: none; letter-spacing: 0; color: var(--text); background: transparent; border: 1px solid transparent; text-decoration: underline dotted; text-underline-offset: 3px; }
+button.ed-budget-name:hover { border-color: var(--line); background: var(--surface-2); }
+span.ed-budget-name { text-decoration: none; }
+.ed-budget-toggle { width: 22px; height: 22px; padding: 0; font-size: 11px; }
+.ed-budget-rows { position: absolute; left: -1px; bottom: calc(100% + 4px); min-width: 300px; display: grid; gap: 2px; padding: 6px; background: rgba(18, 24, 39, 0.97); border: 1px solid rgba(0, 209, 255, 0.28); border-radius: 6px; box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35); }
+.ed-budget-rows[hidden] { display: none; }
+.ed-budget-row { display: grid; grid-template-columns: 96px 1fr auto 36px; align-items: center; gap: 6px; }
+.ed-budget-row .ed-budget-name { justify-self: start; }
+.ed-budget-meter { height: 6px; min-width: 50px; border-radius: 3px; background: var(--surface-3); overflow: hidden; }
+.ed-budget-meter i { display: block; height: 100%; background: var(--success); }
+.ed-budget-row.lvl-near .ed-budget-meter i { background: #ffc46b; }
+.ed-budget-row.lvl-over .ed-budget-meter i { background: var(--error); }
+.ed-budget-amt { color: var(--text); font-variant-numeric: tabular-nums; }
+.ed-budget-word { font: 700 10px var(--font-display); text-transform: uppercase; letter-spacing: 0.06em; }
+.ed-budget-row.lvl-near .ed-budget-word { color: #ffc46b; }
+.ed-budget-row.lvl-over .ed-budget-word { color: #ff8a80; }
+
+/* The `?` overlay (MapMaker overhaul Phase 1 item 5): every key, grouped, from the key table (keymap.ts). */
+dialog.ed-keys { pointer-events: auto; width: min(1040px, 94vw); max-height: 86vh; padding: 0; overflow: hidden; }
+.ed-keys-inner { display: flex; flex-direction: column; max-height: 86vh; }
+.ed-keys header { display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-bottom: 1px solid var(--line); }
+.ed-keys h2 { margin: 0; font: 700 18px var(--font-display); text-transform: uppercase; letter-spacing: 0.06em; color: var(--text); }
+.ed-keys-hint { flex: 1; color: var(--muted); font-size: 12px; }
+.ed-keys header button { width: 28px; height: 28px; padding: 0; }
+.ed-keys-grid { columns: 3 300px; column-gap: 22px; padding: 10px 14px 14px; overflow-y: auto; }
+.ed-keys-group { break-inside: avoid; margin-bottom: 12px; }
+.ed-keys-group h3 { margin: 0 0 4px; font: 600 11px var(--font-display); text-transform: uppercase; letter-spacing: 0.12em; color: var(--cyan); }
+.ed-keys-group dl { margin: 0; display: grid; gap: 3px; }
+.ed-keys-row { display: grid; grid-template-columns: 104px 1fr; gap: 8px; align-items: baseline; font-size: 12px; }
+.ed-keys-row dt { color: var(--text); white-space: nowrap; }
+.ed-keys-row dd { margin: 0; color: var(--muted); }
+.ed-keys-row kbd { display: inline-block; min-width: 0; height: auto; padding: 1px 5px; font-size: 11px; background: var(--surface-3); color: var(--text); border: 1px solid var(--line); border-radius: 3px; }
 /* The measure tool's numbers (measureTool.ts), on their stretches; editor-only. */
 #editor > .ed-measure-label {
   position: absolute; left: 0; top: 0; z-index: 4; pointer-events: none; white-space: nowrap; padding: 3px 7px;
