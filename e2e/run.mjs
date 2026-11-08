@@ -2835,14 +2835,20 @@ async function glassChecks(browser) {
       window.__cs.input.pitch = -0.02;
     }, z);
     await page.waitForTimeout(T(600)); // wait-ok: the view turns to the panel
+    // Each shot: the trigger held until the round has gone (the magazine drops: a press only fires on a frame that sees
+    // it, and a loaded page can take longer than any fixed hold between frames; CI and locally, a pistol never fired),
+    // then let go for frames that see it let go (a semi-automatic fires once a press).
     for (let k = 0; k < n; k++) {
       if (await page.evaluate(done)) break;
+      const before = await page.evaluate(() => { const me = window.__match.slots[window.__cs.slot]; return me.weapons.get(me.current)?.mag ?? 0; });
       await page.evaluate(() => (window.__autoInput = { buttons: 2 }));
-      await page.waitForTimeout(T(200)); // wait-ok: holds the trigger for a shot
+      const went = await page.waitForFunction((b) => { const me = window.__match.slots[window.__cs.slot]; return (me.weapons.get(me.current)?.mag ?? 0) < b; }, before, { timeout: T(5000) }).then(() => true, () => false);
       await page.evaluate(() => (window.__autoInput = { buttons: 0 }));
-      await page.waitForTimeout(T(250)); // wait-ok: between shots
+      await frames(page, 2);
+      fired += went ? 1 : 0;
     }
   };
+  let fired = 0;
   const z = (i) => -8 - i * 2.6;
   // Shots go with the frames (a held trigger fires on the next one), so on a slow renderer keep firing
   // until two rounds have landed, as a fixed few might not.
@@ -2861,7 +2867,8 @@ async function glassChecks(browser) {
     return { health: s ? s[1] : null, cracks: window.__cs.view.scenario.glass.counts.cracks };
   });
   check(proof.health !== null && proof.health > 0 && proof.health < 100 && proof.cracks > 0, `bulletproof glass stops the rounds, cracks where they strike and holds (${JSON.stringify(proof)})`);
-  await fireAt(z(0), 5, () => window.__match.scenario.destructibleAlive('panel_0') === false);
+  fired = 0;
+  await fireAt(z(0), 8, () => window.__match.scenario.destructibleAlive('panel_0') === false);
   await page.waitForFunction(() => window.__cs.view.scene.meshes.some((m) => m.name === 'glassShard'), null, { timeout: T(5000) }).catch(() => {});
   const broke = await page.evaluate(() => {
     const m = window.__match;
@@ -2871,6 +2878,7 @@ async function glassChecks(browser) {
     const w = me.weapons.get(me.current);
     return { alive: m.scenario.destructibleAlive('panel_0'), shards: window.__cs.view.scene.meshes.filter((x) => x.name === 'glassShard').length, health: st ? st[1] : null, gun: w?.def.id, mag: w?.mag, at: { x: +me.move.pos.x.toFixed(1), z: +me.move.pos.z.toFixed(1) } };
   });
+  broke.fired = fired;
   check(broke.alive === false && broke.shards > 0, `the glass panel shatters into shards (${JSON.stringify(broke)})`);
   await page.evaluate(() => {
     clearInterval(window.__pin);
