@@ -352,9 +352,9 @@ button.danger { border-color: rgba(231, 76, 60, 0.6); color: #ff8a7a; }
 }
 
 /* Top bar icon buttons (file actions, grid). */
-#ed-top .ed-file button, #ed-grid, #ed-grid-full, #ed-overlaps { display: flex; align-items: center; gap: 5px; }
-#ed-top .ed-file svg, #ed-grid svg, #ed-grid-full svg, #ed-overlaps svg { width: 16px; height: 16px; flex: none; }
-#ed-grid.on, #ed-grid-full.on, #ed-overlaps.on { color: var(--cyan); border-color: rgba(0, 209, 255, 0.5); }
+#ed-top .ed-file button, #ed-grid, #ed-grid-full, #ed-overlaps, #ed-plan { display: flex; align-items: center; gap: 5px; }
+#ed-top .ed-file svg, #ed-grid svg, #ed-grid-full svg, #ed-overlaps svg, #ed-plan svg { width: 16px; height: 16px; flex: none; }
+#ed-grid.on, #ed-grid-full.on, #ed-overlaps.on, #ed-plan.on { color: var(--cyan); border-color: rgba(0, 209, 255, 0.5); }
 #ed-snap { padding: 4px 5px; font-size: 12px; }
 @media (max-width: 1400px) {
   #ed-top .ed-file button { padding: 5px 6px; }
@@ -526,7 +526,7 @@ button.danger { border-color: rgba(231, 76, 60, 0.6); color: #ff8a7a; }
 
 /* The top bar fits itself (editorApp fitTopBar): whenever its contents overflow, whatever the browser draws them
    at (Safari's controls are wider than Chrome's), it steps through these until they fit; PLAY TEST never leaves. */
-#ed-top #ed-test { flex-shrink: 0; }
+#ed-top #ed-test, #ed-top #ed-test-here { flex-shrink: 0; }
 #ed-top.fit-1 .ed-brand { display: none; }
 #ed-top.fit-2 .wide { display: none; }
 #ed-top.fit-2 .narrow { display: inline; }
@@ -538,7 +538,7 @@ button.danger { border-color: rgba(231, 76, 60, 0.6); color: #ff8a7a; }
 #ed-top.fit-3 #ed-name { width: 96px; }
 #ed-top.fit-3 #ed-snap { max-width: 84px; }
 #ed-top.fit-4 #ed-skill { display: none; }
-#ed-top.fit-4 #ed-grid, #ed-top.fit-4 #ed-grid-full, #ed-top.fit-4 #ed-overlaps { padding: 5px; }
+#ed-top.fit-4 #ed-grid, #ed-top.fit-4 #ed-grid-full, #ed-top.fit-4 #ed-overlaps, #ed-top.fit-4 #ed-plan { padding: 5px; }
 #ed-top.fit-4 #ed-theme { max-width: 84px; }
 #ed-tr-edit .ed-tr-swap { display: flex; align-items: flex-end; gap: 6px; margin: 6px 0; }
 #ed-tr-edit .ed-tr-swap label { flex: 1; margin: 0; }

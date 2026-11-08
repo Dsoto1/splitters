@@ -361,6 +361,9 @@ export interface EditorHost {
   goHome(): void;
 }
 
+/** What the card shot leaves out: editor markers a match doesn't draw (zones, hills, sites, objectives, squads, routes). */
+const CARD_HIDDEN_KINDS = ['zone', 'hill', 'rescue', 'sector', 'objective', 'encounter', 'spawn', 'airplane'] as const;
+
 /** A new map starts on open ground this size (m); New offers the others, and the sky (0: no terrain). */
 const STARTER_TERRAIN = 160;
 const NEW_MAP_SIZES: readonly [number, string, string][] = [
@@ -962,6 +965,14 @@ export class EditorApp {
     standOn: () => [...this.mapBoxes(), ...blockBoxes(this.viewDoc), ...propBoxes(this.viewDoc)],
     ground: () => this.shownGround,
     run: (label, cmd) => this.run(label, cmd),
+    showAll: () => this.showAll,
+    setShowAll: (on) => this.setShowAll(on, true),
+    hideMarkers: (on) => {
+      const kinds = this.view.hiddenKinds;
+      kinds.clear();
+      if (on) for (const k of CARD_HIDDEN_KINDS) kinds.add(k);
+      this.updateSelectionVisuals();
+    },
     leavePlan: () => this.plan.exit(),
     toast: (message, error) => this.toast(message, error),
   };

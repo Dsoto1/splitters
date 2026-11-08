@@ -15,6 +15,11 @@ export interface CardShotHost {
   standOn(): readonly WorldBox[];
   ground(): TerrainData | null;
   run(label: string, cmd: EditCommand): boolean;
+  /** Every level drawn (as the card picture shows the map), and back. */
+  showAll(): boolean;
+  setShowAll(on: boolean): void;
+  /** Hide (or show again) the markers a match doesn't draw: zones, hills, objectives' areas, NPC squads' rings. */
+  hideMarkers(on: boolean): void;
   /** Out of the plan view first (the card shot is a perspective view). */
   leavePlan(): void;
   toast(message: string, error?: boolean): void;
@@ -87,9 +92,13 @@ function cardRect(view: EditorView): { x: number; y: number; w: number; h: numbe
   if (bar && bar.bottom < cy) halfH = Math.min(halfH, cy - bar.bottom);
   const foot = box('ed-bottom');
   if (foot && foot.top > cy) halfH = Math.min(halfH, foot.top - cy);
-  const f = cardFrameIn(half * 2, halfH * 2, 24);
-  return { x: cx - half + f.x, y: cy - halfH + f.y, w: f.w, h: f.h };
+  // Room above the frame for its bar and below it for the name (both page, not picture), the same both sides.
+  const f = cardFrameIn(half * 2 - 48, halfH * 2 - 2 * CARD_FRAME_ROOM, 0);
+  return { x: cx - f.w / 2, y: cy - f.h / 2, w: f.w, h: f.h };
 }
+
+/** Room above and below the card frame for its bar and the map's name (px). */
+const CARD_FRAME_ROOM = 54;
 
 let open: (() => void) | null = null;
 
@@ -147,12 +156,16 @@ export function startCardFrame(host: CardShotHost, mode: 'set' | 'preview'): voi
   const place = () => {
     rect = cardRect(view);
     Object.assign(frame.style, { left: `${rect.x}px`, top: `${rect.y}px`, width: `${rect.w}px`, height: `${rect.h}px` });
-    Object.assign(bar.style, { left: `${rect.x + 8}px`, top: `${rect.y + 8}px`, width: `${rect.w - 16}px` });
+    // The bar sits just above the frame: nothing covers the picture.
+    Object.assign(bar.style, { left: `${rect.x}px`, top: `${rect.y - 48}px`, width: `${rect.w}px` });
   };
   place();
   const viewH = () => view.scene.getEngine().getRenderingCanvasClientRect()?.height ?? window.innerHeight;
-  // The shot as the card shows it: no grid, gizmo or markers (they come back on close).
+  // The shot as the card shows it: no grid, gizmo or markers, every level drawn whole (all back on close).
   view.photoMode(true);
+  const allBefore = host.showAll();
+  if (!allBefore) host.setShowAll(true);
+  host.hideMarkers(true);
   // Each frame: the card's lens over the frame, and eye level kept while it's on.
   const tick = view.scene.onBeforeRenderObservable.add(() => {
     cam.fov = cardViewFov(rect.h, viewH());
@@ -165,6 +178,8 @@ export function startCardFrame(host: CardShotHost, mode: 'set' | 'preview'): voi
   const close = (restore: boolean) => {
     view.scene.onBeforeRenderObservable.remove(tick);
     view.photoMode(false);
+    if (!allBefore) host.setShowAll(false);
+    host.hideMarkers(false);
     window.removeEventListener('resize', place);
     window.removeEventListener('keydown', keys, true);
     cam.fov = before.fov;
