@@ -203,6 +203,46 @@ describe('benchmark personalities', () => {
   });
 });
 
+describe('each gun owns its range (GUNPLAY_AUDIT.md, the tuning of 2026-11-08)', () => {
+  /** Ideal body time to kill (s) of a single-round hitscan gun at `dist`: rounds after the first, plus the flight. */
+  const ttk = (id: string, dist: number): number => {
+    const def = getWeapon(id);
+    const gp = gunplayOf(def);
+    const per = def.damage * falloffAt(def.falloff ?? gp.falloff, dist);
+    const rounds = Math.ceil(PLAYER.maxHealth / per - 1e-9);
+    return ((rounds - 1) * def.fireIntervalTicks) / TICK_RATE + (gp.ballistic ? flightTo(gp.ballistic, dist).time : 0);
+  };
+
+  it('the SMG wins at its own range, the rifle from 20 m out, and the rifle is not the quickest far away', () => {
+    for (const d of [5, 10, 15]) expect(ttk(BENCH.smg, d), `${d} m`).toBeLessThan(ttk(BENCH.rifle, d));
+    for (const d of [25, 35]) expect(ttk(BENCH.rifle, d), `${d} m`).toBeLessThan(ttk(BENCH.smg, d));
+    for (const d of [100, 150]) {
+      expect(ttk(BENCH.precision, d), `${d} m`).toBeLessThan(ttk(BENCH.rifle, d));
+      expect(ttk(BENCH.precision, d), `${d} m`).toBeLessThan(1.05);
+    }
+    // The rifle needs its sights far out: its hip cone is wider than its aimed one by far (spec §15, ADS specialists).
+    expect(gunplayOf(getWeapon(BENCH.rifle)).accuracy!.ads).toBeLessThanOrEqual(0.25);
+  });
+
+  it('the Pulse Pistol fades with range: it out-paces the Pistol up close, not at 50 m and beyond', () => {
+    expect(ttk('core.pulse_pistol', 10)).toBeLessThan(ttk(BENCH.pistol, 10));
+    for (const d of [50, 100]) expect(ttk(BENCH.pistol, d), `${d} m`).toBeLessThan(ttk('core.pulse_pistol', d));
+  });
+
+  it('the Marksman is the quicker body killer at mid range, the Precision Rifle far out', () => {
+    expect(ttk('core.marksman', 40)).toBeLessThan(ttk(BENCH.precision, 40));
+    expect(ttk(BENCH.precision, 100)).toBeLessThan(ttk('core.marksman', 100));
+  });
+
+  it('a pump shell kills across a room: one shell on a body at 8 m', () => {
+    const { a, others, step } = setup(BENCH.shotgun, [[8, 0, 0]]);
+    const aim = lookAngles(eye(a.move.pos), chest(others[0]!.move.pos));
+    step({ ...aim, buttons: BUTTON_FIRE });
+    step(aim);
+    expect(others[0]!.alive).toBe(false);
+  });
+});
+
 describe('do not accidentally make (GUNPLAY_DIRECTION.md)', () => {
   const ids = Object.values(BENCH);
 

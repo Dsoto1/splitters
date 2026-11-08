@@ -278,14 +278,14 @@
      "tracerFinal": 3
     },
     "accuracy": {
-     "base": 0.0015,
+     "base": 0.005,
      "move": 0.008,
      "air": 0.035,
      "perShot": 0.0012,
      "tight": 3,
      "max": 0.025,
      "recovery": 8,
-     "ads": 0.4,
+     "ads": 0.2,
      "adsTicks": 14
     },
     "kick": {
@@ -319,9 +319,9 @@
      "in": 0.7
     },
     "falloff": {
-     "start": 30,
-     "end": 80,
-     "min": 0.75,
+     "start": 25,
+     "end": 70,
+     "min": 0.6,
      "curve": "smooth"
     },
     "head": 2,
@@ -340,7 +340,7 @@
     "family": "shotgun",
     "damage": 12,
     "pellets": 10,
-    "spread": 0.075,
+    "spread": 0.055,
     "fireIntervalTicks": 45,
     "range": 40,
     "magazine": 6,
@@ -443,8 +443,8 @@
      "end": 12
     },
     "falloff": {
-     "start": 6,
-     "end": 22,
+     "start": 8,
+     "end": 28,
      "min": 0.25,
      "curve": "steep"
     },
@@ -462,8 +462,8 @@
     "kind": "hitscan",
     "slot": 5,
     "family": "precision",
-    "damage": 80,
-    "fireIntervalTicks": 75,
+    "damage": 90,
+    "fireIntervalTicks": 50,
     "range": 1000,
     "magazine": 5,
     "reserveMax": 25,
@@ -656,7 +656,7 @@
     "kind": "hitscan",
     "slot": 7,
     "family": "smg",
-    "damage": 11,
+    "damage": 15,
     "spread": 0.006,
     "fireIntervalTicks": 4,
     "range": 200,
@@ -775,7 +775,7 @@
      "in": 0.65
     },
     "falloff": {
-     "start": 12,
+     "start": 15,
      "end": 35,
      "min": 0.55,
      "curve": "steep"
@@ -981,6 +981,12 @@
     "spread": 0.004,
     "fireIntervalTicks": 9,
     "range": 110,
+    "falloff": {
+     "start": 15,
+     "end": 45,
+     "min": 0.45,
+     "curve": "linear"
+    },
     "magazine": 15,
     "reserveMax": 90,
     "pickupAmmo": 30,
@@ -1073,7 +1079,12 @@
      "out": 0.35,
      "in": 1
     },
-    "falloff": null,
+    "falloff": {
+     "start": 15,
+     "end": 45,
+     "min": 0.45,
+     "curve": "linear"
+    },
     "head": 2,
     "legs": 0.75
    }
@@ -1603,14 +1614,14 @@
      "tracerFinal": 3
     },
     "accuracy": {
-     "base": 0.0015,
+     "base": 0.005,
      "move": 0.008,
      "air": 0.035,
      "perShot": 0.0012,
      "tight": 3,
      "max": 0.025,
      "recovery": 8,
-     "ads": 0.4,
+     "ads": 0.2,
      "adsTicks": 14
     },
     "kick": {
@@ -1644,9 +1655,9 @@
      "in": 1
     },
     "falloff": {
-     "start": 30,
-     "end": 80,
-     "min": 0.75,
+     "start": 25,
+     "end": 70,
+     "min": 0.6,
      "curve": "smooth"
     },
     "head": 2,
@@ -1739,9 +1750,9 @@
     "slot": 3,
     "family": "marksman",
     "fireMode": "semi",
-    "damage": 38,
+    "damage": 34,
     "spread": 0.001,
-    "fireIntervalTicks": 14,
+    "fireIntervalTicks": 18,
     "range": 220,
     "reloadTicks": 90,
     "raiseTicks": 22,
@@ -1861,9 +1872,9 @@
     "slot": 4,
     "family": "shotgun",
     "fireMode": "semi",
-    "damage": 8,
+    "damage": 10,
     "pellets": 14,
-    "spread": 0.15,
+    "spread": 0.085,
     "fireIntervalTicks": 14,
     "range": 25,
     "magazine": 2,
@@ -1948,8 +1959,8 @@
      "in": 1
     },
     "falloff": {
-     "start": 6,
-     "end": 22,
+     "start": 8,
+     "end": 28,
      "min": 0.25,
      "curve": "steep"
     },
@@ -1967,9 +1978,9 @@
     "kind": "hitscan",
     "slot": 4,
     "family": "shotgun",
-    "damage": 7,
-    "pellets": 7,
-    "spread": 0.09,
+    "damage": 8,
+    "pellets": 8,
+    "spread": 0.065,
     "fireIntervalTicks": 18,
     "range": 40,
     "magazine": 8,
@@ -2053,8 +2064,8 @@
      "in": 1
     },
     "falloff": {
-     "start": 6,
-     "end": 22,
+     "start": 8,
+     "end": 28,
      "min": 0.25,
      "curve": "steep"
     },
@@ -2649,7 +2660,7 @@
     "reserveMax": 240,
     "pickupAmmo": 120,
     "reloadTicks": 210,
-    "raiseTicks": 48,
+    "raiseTicks": 30,
     "botDesirability": 0.72,
     "botRange": [
      3,
