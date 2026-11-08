@@ -18,12 +18,13 @@
     ],
     "release": {
       "mapId": "m_6ub4zneeteooq2ql",
-      "versionId": "v_lnb3zatb7qbck2yo",
-      "revision": 5,
-      "contentHash": "sha256:d67095715fc4416d323b22962ff07ca1632366f134ed36bb3b993d66b4e37ef0",
+      "versionId": "v_jfyvf66nszd5rzvr",
+      "revision": 6,
+      "contentHash": "sha256:c0666040f49f72817c6bee6a65ee0f894a421d122cee55213d6b93dedeb13e0c",
       "schemaVersion": 29,
-      "releasedAt": "2026-11-07T13:47:06.058Z"
-    }
+      "releasedAt": "2026-11-08T17:49:02.142Z"
+    },
+    "testOnly": true
   },
   "classicStructure": {
     "cellSize": 8,
