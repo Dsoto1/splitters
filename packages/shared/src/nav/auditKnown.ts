@@ -20,10 +20,6 @@ const KNOWN: readonly KnownNavIssue[] = [
   { map: 'skyward', code: 'nav.trap', near: [-40, 4.1, 0], why: 'the plasma gun tower (x -40): a pad up, no way back, as the map says' },
   { map: 'skyward', code: 'nav.trap', near: [40, 4.1, 0], why: 'the disc launcher tower (x 40): a pad up, no way back, as the map says' },
   // For the owner: places players are stuck in too.
-  // The reactor core (prop_087, scaled 4x) collides as its shape since the slack pass (2026-11-06), no longer its box:
-  // a fall off a bridge goes past it down the shaft the map calls bottomless, onto the shaft's floor 32 m down (above
-  // the kill height: fatal with fall damage on, a pit without). One finding each side of the core's foot.
-  ...[[7, 0], [-7, 0], [0, 7], [0, -7]].map(([x, z]): KnownNavIssue => ({ map: 'obsidian_orb', code: 'nav.trap', near: [x!, -31.9, z!], why: "the reactor shaft's floor beside the core's foot, 32 m below the bridges: a fall off a bridge lands there, above the kill height, not to death down the bottomless shaft the map describes: for the owner (the shaft's floor under the kill height)" })),
   { map: 'reactor', code: 'nav.trap', near: [41, -0.8, 25], why: "the yard outside the plant's walls, inside the map's bounds: off the roof's south-west corner at (37, 4, 50) you drop 4.3 m into it, and no route, step or hop leads back in: for the owner (a railing on that corner)" },
   { map: 'serpent_gorge', code: 'nav.trap', near: [28, -7.7, 64], why: "the gorge floor's dry strips along the river, 8 m down: a fall through the openings in the gallery above lands there and the banks are steeper than anyone walks up: for the owner (steps or a ladder out)" },
   { map: 'serpent_gorge', code: 'nav.trap', near: [38, -3.8, 87], why: "slivers along the crypt's walls under the temple, 0.4 m below its floor with a ledge between: a 0.9 m step down at (50, -0.3, 103) gets you in, and no route, step or hop leads out: for the owner" },
