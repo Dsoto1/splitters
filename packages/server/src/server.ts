@@ -624,7 +624,8 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
         const key = awayKey(who);
         const back = key ? bots.reclaim(key, name) : null;
         // The map's player cap for this mode (MapMaker's, else the automatic one): bots fill up to it, people too.
-        const cap = mapPlayerCaps(map, match.rules.mode).max;
+        // (Or the match's size, when the admin set more.)
+        const cap = Math.max(mapPlayerCaps(map, match.rules.mode).max, control.fill);
         if (!back && humans() >= cap) return refuse(`match full (${map.metadata.name} takes ${cap} players in ${MODE_LABELS[match.rules.mode]})`, 4002);
         const player = back ?? bots.join(name, msg.look, control.fill, msg.party);
         if (!player) {

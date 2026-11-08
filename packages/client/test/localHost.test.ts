@@ -1,5 +1,5 @@
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
-import { BROWSER_HOST_MAX_GUESTS, DEFAULT_RULES, PROTOCOL_VERSION, type ServerMessage } from '@tiletrigger/shared';
+import { BROWSER_HOST_MAX_GUESTS, DEFAULT_RULES, PROTOCOL_VERSION, mapPlayerCaps, type ServerMessage } from '@tiletrigger/shared';
 import { makeMap } from '../../shared/test/helpers.ts';
 import { LocalTransport, type RemoteLink } from '../src/game/localTransport.ts';
 import { MAX_CATCH_UP_TICKS, silentLimit, simWake } from '../src/game/matchHost.ts';
@@ -115,6 +115,42 @@ describe('host controls in a browser match (offline, Host game)', () => {
     t.sendReady();
     await until(() => match.phase !== 'waiting', 2000);
     expect(match.phase).toBe('countdown');
+  });
+
+  it("people fill the match up to the map's player cap and no further; a friend's party puts them on the host's side; a vote opens and counts", async () => {
+    const map = yard();
+    const most = mapPlayerCaps(map, 'core.tdm').max;
+    const fill = Math.min(most, 4);
+    const t = new LocalTransport(map, { name: 'Host', botFill: fill, difficulty: 'normal', rules: { ...DEFAULT_RULES['core.tdm'], teamSizes: [fill / 2, fill / 2] }, party: 'PARTY01' });
+    open.push(t);
+    const got: ServerMessage[] = [];
+    t.start((m) => got.push(m), () => undefined);
+    await until(() => got.some((m) => m.t === 'host'));
+    const n = Math.max(fill, most);
+    // The host is one: n - 1 friends get in (all on the host's side while it has bots to give way), the next is turned away.
+    const friends = Array.from({ length: Math.min(n, BROWSER_HOST_MAX_GUESTS) }, () => friend());
+    friends.forEach((f, i) => {
+      t.accept(f.link);
+      f.say({ t: 'hello', protocol: PROTOCOL_VERSION, name: `Friend${i}`, party: 'PARTY01' });
+    });
+    const match = (globalThis as { __match?: { combatants(): { name: string; faction: string | null; kind: string }[]; endMatch(): boolean } }).__match!;
+    if (n - 1 < BROWSER_HOST_MAX_GUESTS) {
+      expect(friends.slice(0, n - 1).every((f) => f.got.some((m) => m.t === 'welcome'))).toBe(true);
+      expect(friends[n - 1]!.got.find((m) => m.t === 'reject')).toMatchObject({ reason: expect.stringContaining('match full') });
+    }
+    const host = match.combatants().find((c) => c.name === 'Host')!;
+    expect(match.combatants().find((c) => c.name === 'Friend0')?.faction).toBe(host.faction);
+    // The page opens the vote at the end of the match; a friend's vote is counted and everyone hears it.
+    t.sendReady();
+    for (const f of friends) f.say({ t: 'ready' });
+    await until(() => (match as unknown as { phase: string }).phase === 'playing');
+    match.endMatch();
+    await until(() => got.some((m) => m.t === 'snapshot' && m.phase === 'intermission'));
+    t.openVote([{ map: 'a', name: 'A', mode: 'core.tdm' }, { map: 'b', name: 'B', mode: 'core.tdm' }]);
+    await until(() => friends[0]!.got.some((m) => m.t === 'vote'));
+    friends[0]!.say({ t: 'vote', i: 1 });
+    await until(() => got.some((m) => m.t === 'vote' && m.v?.n[1] === 1));
+    expect(friends[0]!.got.filter((m) => m.t === 'vote').pop()).toMatchObject({ v: { n: [0, 1] } });
   });
 
   it('a browser host keeps 48 v 48 with friends in, and takes up to BROWSER_HOST_MAX_GUESTS of them', async () => {

@@ -637,10 +637,12 @@ export class MatchHost {
       }
       // A place kept by a handoff is held under the hashed key (the old host's checkpoint never carried keys themselves).
       const back = key ? (bots.reclaim(key, name) ?? bots.reclaim(handoffKey(key), name)) : null;
-      // The map's player cap for this mode: bots fill up to it, and so do people (a back player's place is theirs).
+      // The map's player cap for this mode (or the match's size, when the host set more): people fill up to it, as
+      // bots do (a back player's place is theirs).
       const people = match.combatants().filter((c) => c.kind === 'human').length + match.spectatorCount;
-      if (!back && people >= this.cap) {
-        this.sink.send(id, JSON.stringify({ t: 'reject', reason: `match full (${this.map.metadata.name} takes ${this.cap} players in this mode)` } satisfies ServerMessage));
+      const most = Math.max(this.cap, control.fill);
+      if (!back && people >= most) {
+        this.sink.send(id, JSON.stringify({ t: 'reject', reason: `match full (${this.map.metadata.name} takes ${most} players in this mode)` } satisfies ServerMessage));
         return this.drop(id);
       }
       const player = back ?? bots.join(name, msg.look, control.fill, msg.party);
