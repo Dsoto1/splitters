@@ -20,7 +20,6 @@ const KNOWN: readonly KnownNavIssue[] = [
   { map: 'skyward', code: 'nav.trap', near: [-40, 4.1, 0], why: 'the plasma gun tower (x -40): a pad up, no way back, as the map says' },
   { map: 'skyward', code: 'nav.trap', near: [40, 4.1, 0], why: 'the disc launcher tower (x 40): a pad up, no way back, as the map says' },
   // For the owner: places players are stuck in too.
-  { map: 'serpent_gorge', code: 'nav.trap', near: [28, -7.7, 64], why: "the gorge floor's dry strips along the river, 8 m down: a fall through the openings in the gallery above lands there and the banks are steeper than anyone walks up: for the owner (steps or a ladder out)" },
   { map: 'serpent_gorge', code: 'nav.trap', near: [38, -3.8, 87], why: "slivers along the crypt's walls under the temple, 0.4 m below its floor with a ledge between: a 0.9 m step down at (50, -0.3, 103) gets you in, and no route, step or hop leads out: for the owner" },
 ];
 

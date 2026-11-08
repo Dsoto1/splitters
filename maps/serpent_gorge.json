@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 26,
+  "formatVersion": 29,
   "metadata": {
     "id": "serpent_gorge",
     "name": "Serpent Gorge",
@@ -18,7 +18,15 @@
       "core.tdm",
       "core.koth",
       "core.deathmatch"
-    ]
+    ],
+    "release": {
+      "mapId": "m_vheet2oqm3ur4l6v",
+      "versionId": "v_ysgpkrmrizjwhagk",
+      "revision": 1,
+      "contentHash": "sha256:3ff85a1dbb89351964c2a9240fe73c6e0fa9b0fea59c5b9cfbb0fd57a61203a2",
+      "schemaVersion": 29,
+      "releasedAt": "2026-11-08T21:14:52.218Z"
+    }
   },
   "classicStructure": {
     "cellSize": 8,
@@ -7443,6 +7451,32 @@
       "scale": 1,
       "solid": true,
       "tint": null
+    },
+    {
+      "id": "ladder_edih7d0jlj",
+      "kind": "ladder",
+      "position": [
+        12,
+        -8.4,
+        56.5
+      ],
+      "yaw": 1.571,
+      "height": 4.5,
+      "width": 1.2,
+      "style": "vines"
+    },
+    {
+      "id": "ladder_09wf4h3n8x",
+      "kind": "ladder",
+      "position": [
+        44,
+        -8.4,
+        56.5
+      ],
+      "yaw": -1.571,
+      "height": 4.5,
+      "width": 1.2,
+      "style": "vines"
     }
   ],
   "factions": [],
