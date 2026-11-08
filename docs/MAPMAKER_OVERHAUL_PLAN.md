@@ -42,9 +42,27 @@ Already done from the owner's earlier ask: **the real buildable area.**
    - It updates on each edit from cheap counters, not a full validation every frame.
 3. **A measure tool.** Click two points to get the distance, the height difference and the slope. It snaps to cells
    and surfaces.
+   - **As built** (`wip/mapmaker-p1b`): the Measure tool, U and the tool bar (`editor/measureTool.ts`; the maths in
+     shared `editor/measure.ts`, unit-tested in `mapmakerTools.test.ts`). Two clicks: distance, rise, slope in degrees
+     and percent; a third chains a path with its total; right-click takes a point back; Esc clears; it stays on screen
+     with another tool until then. Points snap to the Snap step on surfaces and the ground, to an object's top's middle
+     (props, blocks), and a wall face's height to the step; Ctrl or Alt: free. Each stretch says whether a player
+     could make it, from `PLAYER` (`sim/constants.ts`, as `sim/movement.ts` moves): the step (walk ≤ 0.3 m, jump ≤
+     1.22 m, "too high") and the gap (a sprinting jump's reach to that height). Labels are DOM over the view; nothing
+     is stored. e2e: `editorMeasureChecks` in `editorux`.
 4. **Props snap to surfaces, with randomise.**
    - A prop drops onto whatever is under the cursor: a tabletop, a roof, the ground.
    - Optionally, each placement gets a random turn, size and variant within a range.
+   - **As built** (`wip/mapmaker-p1b`): `propDrop` (shared `editor/surfaceSnap.ts`) casts the pointer's ray at the map
+     as drawn (tiles shown, blocks, solid props: `editor/surfaceBoxes.ts`, once per document version) and the ground
+     as shown (`shownGround`). A top: the prop sits on it; a side: it stands off the face and drops to what is below;
+     the ground: bedded into the document's ground (the view re-beds it). The grid snap still applies to x and z, and
+     the prop lands on what is under the snapped spot. Over nothing (open air on an upper level), the level's plane,
+     as before. Randomise (`editor/propPlaceOptions.ts`, `rollProp` in shared `editor/propRandom.ts`): off by default;
+     turn any / ±90 / ±45 / ±15 / none, size ±0-30 % clamped to the prop's allowed scale (0.25-4, an environment
+     species' own range), a variant for props with variants (the environment species). Seeded (`?test=1`: seed 1),
+     roll by roll, and the ghost (`setPropGhost`, now with scale and variant) shows the next roll. Unit tests: table,
+     roof, ground, a wall's foot, the snapped edge; e2e: table, ground, Randomise in `editorux`.
 5. **A shortcut overlay.**
    - Press `?` to see every key.
    - It is generated from the same table the keys are bound with, so it can't go stale.

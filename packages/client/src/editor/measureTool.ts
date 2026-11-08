@@ -69,21 +69,29 @@ export class MeasureTool {
     if (was?.at.x !== p?.at.x || was?.at.y !== p?.at.y || was?.at.z !== p?.at.z) this.redraw();
   }
 
-  /** The points measured, with the live stretch to the pointer while the tool is in hand. */
+  /** The points measured. */
   private shown(): Vec3[] {
-    const pts = this.points.map((p) => p.at);
-    if (this.active && !this.fresh && this.hover && pts.length) pts.push(this.hover.at);
-    return pts;
+    return this.points.map((p) => p.at);
   }
 
-  /** The measurement on screen (the live stretch included). */
+  /** The live stretch, from the last point to the pointer, while the tool is in hand (none on the last point itself). */
+  private live(): [Vec3, Vec3] | null {
+    const last = this.points.at(-1)?.at;
+    const h = this.hover?.at;
+    if (!this.active || this.fresh || !last || !h || (h.x === last.x && h.y === last.y && h.z === last.z)) return null;
+    return [last, h];
+  }
+
+  /** The measurement clicked so far (the live stretch left out). */
   get measurement(): Measurement {
     return measurePath(this.shown());
   }
 
-  /** The status line: the last stretch and the total, or what to do. */
+  /** The status line: the stretch to the pointer (or the last one) and the total, or what to do. */
   summary(): string {
-    const m = this.measurement;
+    const live = this.live();
+    const pts = live ? [...this.shown(), live[1]] : this.shown();
+    const m = measurePath(pts);
     const last = m.segments.at(-1);
     if (!last) return this.points.length && !this.fresh ? 'Click the second point' : this.hover ? `Measure from here · ${snapWord(this.hover)}` : 'Click two points to measure';
     return `${describeSegment(last)}${m.segments.length > 1 ? ` · total ${formatLength(m.total)} over ${m.segments.length}` : ''}`;
@@ -91,7 +99,8 @@ export class MeasureTool {
 
   private redraw(): void {
     const pts = this.shown();
-    const key = pts.map((p) => `${p.x},${p.y},${p.z}`).join(';');
+    const live = this.live();
+    const key = [...pts, ...(live ? [live[1]] : [])].map((p) => `${p.x},${p.y},${p.z}`).join(';') + (live ? '+' : '');
     if (key === this.drawnKey) return;
     this.drawnKey = key;
     this.lines?.dispose();
@@ -118,8 +127,14 @@ export class MeasureTool {
         colors.push([faint, faint], [faint, faint]);
       }
     }
+    // The live stretch to the pointer, fainter.
+    if (live) {
+      const faint = new Color4(1, 0.82, 0.3, 0.6);
+      lines.push([lift(live[0]), lift(live[1])]);
+      colors.push([faint, faint]);
+    }
     // A small cross at each point.
-    for (const p of pts) {
+    for (const p of live ? [...pts, live[1]] : pts) {
       const c = lift(p);
       for (const d of [new Vector3(0.25, 0, 0), new Vector3(0, 0, 0.25), new Vector3(0, 0.25, 0)]) {
         lines.push([c.subtract(d), c.add(d)]);
@@ -140,6 +155,16 @@ export class MeasureTool {
       el.querySelector('span')!.textContent = rest.join(' · ');
       this.labels.push(el);
     });
+    if (live) {
+      const el = document.createElement('div');
+      el.className = 'ed-measure-label live';
+      el.dataset.live = '';
+      const [len, ...rest] = describeSegment(measurePath(live).segments[0]!).split(' · ');
+      el.innerHTML = `<b></b><span></span>`;
+      el.querySelector('b')!.textContent = len!;
+      el.querySelector('span')!.textContent = rest.join(' · ');
+      this.labels.push(el);
+    }
     if (m.segments.length > 1) {
       const el = document.createElement('div');
       el.className = 'ed-measure-label total';
@@ -162,8 +187,10 @@ export class MeasureTool {
       el.hidden = !s;
       if (s) el.style.transform = `translate(${Math.round(s.x)}px, ${Math.round(s.y)}px) translate(-50%, ${below ? '35%' : '-120%'})`;
     };
+    const live = this.live();
     for (const el of this.labels) {
       if (el.dataset.total !== undefined) place(el, pts.at(-1) ?? null, true);
+      else if (el.dataset.live !== undefined) place(el, live ? { x: (live[0].x + live[1].x) / 2, y: (live[0].y + live[1].y) / 2, z: (live[0].z + live[1].z) / 2 } : null);
       else {
         const i = Number(el.dataset.segment);
         const a = pts[i];

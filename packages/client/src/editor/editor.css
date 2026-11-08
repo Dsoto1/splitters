@@ -561,7 +561,7 @@ button.danger { border-color: rgba(231, 76, 60, 0.6); color: #ff8a7a; }
 .ed-sp-problems li.warning { color: #ffc46b; }
 
 /* The measure tool's numbers (measureTool.ts), on their stretches; editor-only. */
-.ed-measure-label {
+#editor > .ed-measure-label {
   position: absolute; left: 0; top: 0; z-index: 4; pointer-events: none; white-space: nowrap; padding: 3px 7px;
   background: rgba(11, 15, 26, 0.88); border: 1px solid rgba(255, 209, 77, 0.55); border-radius: 4px; font-size: 11px; color: var(--muted);
 }
@@ -573,3 +573,4 @@ button.danger { border-color: rgba(231, 76, 60, 0.6); color: #ff8a7a; }
 .ed-prop-place { display: flex; flex-direction: column; gap: 4px; margin: 0 0 8px; padding: 6px 8px; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 4px; }
 .ed-prop-random-opts { display: none; flex-wrap: wrap; align-items: end; gap: 6px 10px; }
 .ed-prop-place.on .ed-prop-random-opts { display: flex; }
+.ed-measure-label.live { opacity: 0.8; border-style: dashed; }
