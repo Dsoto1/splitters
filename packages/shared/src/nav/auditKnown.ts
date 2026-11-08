@@ -22,7 +22,6 @@ const KNOWN: readonly KnownNavIssue[] = [
   // For the owner: places players are stuck in too.
   { map: 'serpent_gorge', code: 'nav.trap', near: [28, -7.7, 64], why: "the gorge floor's dry strips along the river, 8 m down: a fall through the openings in the gallery above lands there and the banks are steeper than anyone walks up: for the owner (steps or a ladder out)" },
   { map: 'serpent_gorge', code: 'nav.trap', near: [38, -3.8, 87], why: "slivers along the crypt's walls under the temple, 0.4 m below its floor with a ledge between: a 0.9 m step down at (50, -0.3, 103) gets you in, and no route, step or hop leads out: for the owner" },
-  { map: 'erosion', code: 'nav.trap', near: [0, 2.1, 1], why: "the lower deck: the corner pads that throw you back up stand on 3 m pillars that meet the deck only at a corner, which players step across and the navmesh doesn't; the decks crumble away in play anyway: for the owner (corner pillars that share an edge with the deck)" },
   // The navmesh keeps 0.8 m from walls (docs/BOTS.md, "Navmesh clearance"): gaps under 1.6 m are shut to it.
   { map: 'm4_outpost', code: 'nav.pickup_unreachable', id: 'pk_armor_uplink', why: "the uplink room's dais leaves gaps of 1.5-2 m round it, too narrow for the navmesh: bots hop onto the dais from the gate but not round it" },
   { map: 'm4_outpost', code: 'nav.pickup_unreachable', id: 'g_pickup_017', why: "the corridor north of the uplink room, through a 2 m doorway beside the dais: too narrow for the navmesh" },
