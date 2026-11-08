@@ -344,6 +344,19 @@ gets overloaded above that: local e2e times out and flakes). Prune landed worktr
      or Defend the objective keeps its post. Keep that?
   3. The party preset (Part 3) and the squad HUD (Part 2) are next.
 
+### MapMaker overhaul: measure, props on surfaces, Randomise, turning by mouse (`wip/mapmaker-p1b`, agent, 2026-11-08; Phase 1 items 3-4 and Phase 3 item 9)
+- **Built:** the measure tool (U), props dropped onto the surface under the pointer, Randomise in the prop tool, the
+  rotate ring on the selection gizmo and the inspector's quick facings. As built: docs/MAPMAKER_OVERHAUL_PLAN.md under
+  each item; how-to: BUILDING_KIT.md, "Measuring and placing props (MapMaker)".
+- **Where:** shared `editor/{raycast,surfaceSnap,measure,propRandom,turnRing}.ts` (unit tests `mapmakerTools.test.ts`;
+  `raycastBoxes` moved here from the client); client `editor/{measureTool,propPlaceOptions,surfaceBoxes,rotateRing,
+  quickFacings}.ts`, wired into `editorApp.ts` with a few lines each; e2e `editorMeasureChecks` and `editorTurnChecks`
+  in `editorux`.
+- **Keys:** only U (measure) is new, one `case 'KeyU'` in the keydown switch; fold it into `wip/mapmaker-p1a`'s key
+  table (`keymap.ts`) when both are on main. Esc now also cancels a ring drag and clears a measurement (in that order,
+  before the old Esc).
+- **Not stored:** no map field, no format bump. Randomise's settings live for the session only.
+
 ### Ammo Boxes by the tank routes (`wip/ammo-boxes`, agent, 2026-11-08; owner-approved follow-up to Tanks 2 item 2)
 
 **Maps** (MapMaker only: Import → palette Ammo Box (`pickup:core.ammo`) placed by hovering the spot → Export, Playwright

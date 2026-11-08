@@ -1192,6 +1192,10 @@ template automatically.
   where. Against a wall, the prop stands at its foot. Ctrl (or Shift) places it off the grid.
 - **Randomise** (Props tab, above the pieces; off by default): each prop you place gets a random turn, size and
   variant within the ranges you pick, the preview showing the next one.
+- **Turning by mouse.** With Select, drag the yellow ring round the selection's gizmo: it turns by the selected
+  thing's own step (the same as R; Shift: the finer step), the angle by the pointer; Esc cancels. Tiles, set pieces,
+  zones and water turn in quarter turns. The inspector's **Face** buttons (0°, 90°, 180°, 270°) set a facing in one
+  click; 0° faces north (+Z), 90° east (+X).
 
 ## Backdrops and plants
 

@@ -20,6 +20,15 @@ made only on a commit that passed CI on a check branch.
   size (±5 to ±30 %, within the prop's allowed scale) and variant where the prop has them. The preview shows the
   next one, so what you see is what you place.
 
+**MapMaker: turning by mouse** (MapMaker overhaul Phase 3, item 9; owner, 2026-11-07):
+- **A rotate ring** round the selection's gizmo: drag it to turn the selection about its centre. It snaps by the
+  selected thing's own step, as R does (props and vehicles 15°, spawns 45°, the rest 90°; Shift: the finer step);
+  tiles, set pieces, zones and water keep to quarter turns. The angle shows by the pointer while you drag, Esc cancels,
+  and one drag is one undo step.
+- **Quick facings** in the inspector: 0°, 90°, 180°, 270° in one click, for anything with a facing (tiles and set
+  pieces too).
+- Fixed: turning tiles or set pieces the other way (a negative quarter turn) could give them a rotation out of range.
+
 **Fireteams, part 1** (owner-approved, 2026-11-08; docs/FIRETEAMS_PLAN.md):
 - A new **variant** for Team Deathmatch, Capture the Flag, King of the Hill, Bomb, Hostage and Breakthrough (Match
   setup's Variants row; servers `rules fireteams 5`). The host picks the **squad size**: 4, 5 or 6, you included.

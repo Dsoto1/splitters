@@ -110,6 +110,18 @@ Already done from the owner's earlier ask: **the real buildable area.**
      props and vehicles 15°), with Shift for the finer step.
    - **Show the angle while dragging,** and let Esc cancel the drag. A drag is one undo step.
    - **Quick facings:** four buttons in the inspector (0°, 90°, 180°, 270°) set the facing in one click.
+   - **As built** (`wip/mapmaker-p1b`): the ring (`editor/rotateRing.ts`, drawn by `EditorView.setRing` beside
+     `setGizmo`) is a circle round the selection's centre, clear of what is selected (at least 2.2 m). The pointer
+     grabs it within 12 px on screen; the status line says so. A drag measures the turn from where it was grabbed,
+     snaps it with `ringStep` (the selection's own `yawStep`, Shift the fine one; the coarsest step of a mixed
+     selection; tiles, set pieces, zones and water 90° always) and previews it (things turned, tiles and set pieces
+     outlined where they'd land, red where they can't), the angle in a label by the pointer and spokes and an arc on
+     the ring. Letting go runs `turnByCommand`, which is `rotateCommand` with an `angle` (new): one undo step, about
+     the centre exactly as R. Esc (or leaving the window) cancels. Quick facings (`editor/quickFacings.ts`,
+     `setFacingCommand`): a Face row of four buttons under Facing ° (things), and under Rotation (tiles, set pieces),
+     the current one lit. Fixed on the way: `rotateCommand` with a negative quarter turn left tiles' rotation
+     negative. Unit tests in `mapmakerTools.test.ts`; e2e `editorTurnChecks` in `editorux` (a prop and a spawn turned
+     by dragging, Shift, Esc, undo, quick facings on a spawn and a tile).
 
 ## Phase 4: testing the map
 1. **A bot test run from MapMaker.**
