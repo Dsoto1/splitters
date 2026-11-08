@@ -171,6 +171,13 @@ describe('the new pieces expand into what they are made of', () => {
     expect(kinds('setpiece.ramp_junction')).toMatchObject({ tiles: 8, tileIds: ['core.corridor_clear', 'core.platform_rail', 'core.ramp', 'core.room'] });
   });
 
+  it('the catwalk bridges are open: no wall anywhere (open ground under the deck, open stairs)', () => {
+    for (const id of ['setpiece.catwalk_bridge_2', 'setpiece.catwalk_bridge_3', 'setpiece.catwalk_bridge_4']) {
+      const walls = buildMapGeometry(withPiece(id, 0)).filter((b) => b.sourceId.startsWith('sp_piece_') && b.kind === 'wall');
+      expect(walls.map((b) => `${b.sourceId} ${b.min} ${b.max}`), id).toEqual([]);
+    }
+  });
+
   it('the sunken arena carves its own hollow in the terrain: the ground under its pit is 2 m down', () => {
     const map = withPiece('setpiece.sunken_arena', 0);
     const t = map.terrain!;

@@ -384,7 +384,7 @@ export const SET_PIECE_DEFS: readonly SetPieceDefinitionInput[] = [
     ],
     parts: [
       { kind: 'tile', tile: 'core.stairs_open', x: 0, y: 0, z: 0, rotation: 3, surfaces: { floor: { role: 'paving' }, solids: { role: 'metal' }, trim: { role: 'trim' } } },
-      { kind: 'tile', tile: 'core.yard', x: 0, y: 1, z: 0, rotation: 0, edges: { '0,0,0:E': 'open', '0,0,0:W': 'open', '0,0,0:N': 'open' }, surfaces: { floor: { role: 'paving' } } },
+      { kind: 'tile', tile: 'core.yard', x: 0, y: 1, z: 0, rotation: 0, edges: { '0,0,0:N': 'open', '0,0,0:E': 'open', '0,0,0:S': 'open', '0,0,0:W': 'open' }, surfaces: { floor: { role: 'paving' } } },
       { kind: 'tile', tile: 'core.bridge', x: 0, y: 1, z: 1, rotation: 0, surfaces: { floor: { role: 'metal' }, solids: { role: 'metal' }, trim: { role: 'trim' } } },
       { kind: 'block', name: 'Leg', position: [-1.3, 0, 6], size: [0.25, 3.5, 0.25], material: { role: 'metal' } },
       { kind: 'block', name: 'Leg', position: [1.3, 0, 6], size: [0.25, 3.5, 0.25], material: { role: 'metal' } },
@@ -410,7 +410,7 @@ export const SET_PIECE_DEFS: readonly SetPieceDefinitionInput[] = [
     ],
     parts: [
       { kind: 'tile', tile: 'core.stairs_open', x: 0, y: 0, z: 0, rotation: 3, surfaces: { floor: { role: 'paving' }, solids: { role: 'metal' }, trim: { role: 'trim' } } },
-      { kind: 'tile', tile: 'core.yard', x: 0, y: 1, z: 0, rotation: 0, edges: { '0,0,0:E': 'open', '0,0,0:W': 'open' }, surfaces: { floor: { role: 'paving' } } },
+      { kind: 'tile', tile: 'core.yard', x: 0, y: 1, z: 0, rotation: 0, edges: { '0,0,0:N': 'open', '0,0,0:E': 'open', '0,0,0:S': 'open', '0,0,0:W': 'open' }, surfaces: { floor: { role: 'paving' } } },
       { kind: 'tile', tile: 'core.bridge', x: 0, y: 1, z: 1, rotation: 0, surfaces: { floor: { role: 'metal' }, solids: { role: 'metal' }, trim: { role: 'trim' } } },
       { kind: 'tile', tile: 'core.stairs_open', x: 0, y: 2, z: 0, rotation: 1, surfaces: { floor: { role: 'paving' }, solids: { role: 'metal' }, trim: { role: 'trim' } } },
       { kind: 'block', name: 'Leg', position: [-1.3, 0, 6], size: [0.25, 3.5, 0.25], material: { role: 'metal' } },
@@ -437,9 +437,9 @@ export const SET_PIECE_DEFS: readonly SetPieceDefinitionInput[] = [
     ],
     parts: [
       { kind: 'tile', tile: 'core.stairs_open', x: 0, y: 0, z: 0, rotation: 3, surfaces: { floor: { role: 'paving' }, solids: { role: 'metal' }, trim: { role: 'trim' } } },
-      { kind: 'tile', tile: 'core.yard', x: 0, y: 1, z: 0, rotation: 0, edges: { '0,0,0:E': 'open', '0,0,0:W': 'open' }, surfaces: { floor: { role: 'paving' } } },
+      { kind: 'tile', tile: 'core.yard', x: 0, y: 1, z: 0, rotation: 0, edges: { '0,0,0:N': 'open', '0,0,0:E': 'open', '0,0,0:S': 'open', '0,0,0:W': 'open' }, surfaces: { floor: { role: 'paving' } } },
       { kind: 'tile', tile: 'core.bridge', x: 0, y: 1, z: 1, rotation: 0, surfaces: { floor: { role: 'metal' }, solids: { role: 'metal' }, trim: { role: 'trim' } } },
-      { kind: 'tile', tile: 'core.yard', x: 0, y: 2, z: 0, rotation: 0, edges: { '0,0,0:E': 'open', '0,0,0:W': 'open' }, surfaces: { floor: { role: 'paving' } } },
+      { kind: 'tile', tile: 'core.yard', x: 0, y: 2, z: 0, rotation: 0, edges: { '0,0,0:N': 'open', '0,0,0:E': 'open', '0,0,0:S': 'open', '0,0,0:W': 'open' }, surfaces: { floor: { role: 'paving' } } },
       { kind: 'tile', tile: 'core.bridge', x: 0, y: 2, z: 1, rotation: 0, surfaces: { floor: { role: 'metal' }, solids: { role: 'metal' }, trim: { role: 'trim' } } },
       { kind: 'tile', tile: 'core.stairs_open', x: 0, y: 3, z: 0, rotation: 1, surfaces: { floor: { role: 'paving' }, solids: { role: 'metal' }, trim: { role: 'trim' } } },
       { kind: 'block', name: 'Leg', position: [-1.3, 0, 6], size: [0.25, 3.5, 0.25], material: { role: 'metal' } },
