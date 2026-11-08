@@ -513,6 +513,8 @@ export class MatchHost {
       return this.announce({ t: 'vote', v: null });
     }
     if (v.closed) return;
+    // The scoreboard stays up until the vote has had its time and the winner its moment (a shorter hold never cuts it).
+    match.holdIntermission(v.closeAt + (VOTE_RESULT_SECONDS + 1) * TICK_RATE);
     if (v.tick(match.tick, match.intermissionEnds)) {
       // The winner on everyone's screen a moment before the travel.
       match.holdIntermission(match.tick + (VOTE_RESULT_SECONDS + 4) * TICK_RATE);

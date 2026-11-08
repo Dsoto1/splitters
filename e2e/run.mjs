@@ -7138,6 +7138,8 @@ async function partyFlow(browser) {
     m.holdIntermission(m.tick + 60 * 300);
   });
   const opened = await page.waitForFunction(voteOpen, null, { timeout: T(20000) }).then(() => true, () => false);
+  // (The scoreboard opens with the intermission's snapshot, which a loaded page may draw a moment after the vote.)
+  await page.waitForFunction(() => !document.getElementById('scoreboard').hidden, null, { timeout: T(10000) }).catch(() => {});
   const ballot = await page.evaluate(() => window.__cs.vote());
   check(opened && ballot.maps.length >= 2 && ballot.maps.length <= 3 && !ballot.maps.includes(before.map) && ballot.left > 3, `the match ends into the scoreboard and a vote on 2-3 other maps (${JSON.stringify(ballot)})`);
   const screen = await page.evaluate(() => ({ board: !document.getElementById('scoreboard').hidden, cards: document.querySelectorAll('#map-vote .mv-card').length, pause: !document.getElementById('pause').hidden, overlap: (() => { const a = document.getElementById('scoreboard').getBoundingClientRect(); const b = document.getElementById('map-vote').getBoundingClientRect(); return a.bottom > b.top + 1; })() }));
