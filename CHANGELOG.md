@@ -20,6 +20,8 @@ made only on a commit that passed CI on a check branch.
 - **`?` lists every key** MapMaker binds, grouped (also the tool bar's **Keys** button); Esc or `?` closes it. The
   keys, the fly camera and the list all come from one table, so it can't go stale. `/` still searches the palette.
 
+## 0.9.0 (2026-11-08)
+
 **MapMaker: measure, props on surfaces, Randomise** (MapMaker overhaul Phase 1, items 3 and 4):
 - **Measure tool** (U, or Measure in the tool bar): click two points for the distance, the height difference and the
   slope (degrees and percent); a third click chains a path and shows its total. It snaps to the grid, to surfaces and
