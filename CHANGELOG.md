@@ -8,6 +8,8 @@ made only on a commit that passed CI on a check branch.
 
 ## Unreleased
 
+## 0.9.0 (2026-11-08)
+
 **Passengers ride with the vehicle** (owner's bug report, 2026-11-08):
 - **Riders stay in their seats at speed.** Driver and passengers, bots and people, are drawn on their seats of the
   vehicle as you see it this frame (bumps and tilt included), in every vehicle, online and offline, whoever is
