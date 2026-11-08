@@ -43,6 +43,11 @@ export function insideBuildLimit(x: number, y: number, z: number): boolean {
   return Math.abs(x) <= MAX_TILE_CELL && Math.abs(y) <= MAX_TILE_CELL && Math.abs(z) <= MAX_TILE_LEVEL;
 }
 
+/** The build limit refusal in a few words, for the ghost's note beside the pointer (`buildLimitReason` has the rest). */
+export function buildLimitShort(z: number): string {
+  return Math.abs(z) > MAX_TILE_LEVEL ? `Past the build limit (${MAX_TILE_LEVEL} levels up or down)` : `Past the build limit (${MAX_TILE_CELL} cells from the centre)`;
+}
+
 /** What MapMaker says when a placement would cross the build limit. */
 export function buildLimitReason(doc: Pick<MapDocument, 'classicStructure'>, z: number): string {
   const metres = Math.round(MAX_TILE_CELL * doc.classicStructure.cellSize);

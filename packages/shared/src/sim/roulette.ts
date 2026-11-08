@@ -324,6 +324,12 @@ export class RouletteDirector {
     return this.seats.get(c.slot)?.roll ?? null;
   }
 
+  /** A team kill: it ends the killer's kills this life (toward a streak pick); a pick already earned stays. */
+  endStreak(killer: RouletteBody): void {
+    if (killer.kind === 'npc') return;
+    this.seat(killer).lifeKills = 0;
+  }
+
   /**
    * A kill (after the match booked it; `killer` scores, not a team kill). Returns the bonus points the killer earns
    * (Giant Slayer, an air kill with Lunar, the variety bonus) and, with Swap on kill, the look the killer becomes.

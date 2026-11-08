@@ -1077,6 +1077,7 @@ async function editoruxFlow(browser) {
   });
   await page.keyboard.press('Control+KeyZ');
   check((await doc()).entities.length === before, 'a stroke undoes in one step');
+  await editorPhase1aChecks(page, { doc, at, clickAt, settle, shot });
   // The same layout at 1280×720: panels narrow, the tool bar drops its labels, nothing overlaps.
   await page.setViewportSize({ width: 1280, height: 720 });
   await page.evaluate(() => document.querySelector('#ed-modes [data-ws="build"]').click());
@@ -1090,6 +1091,7 @@ async function editoruxFlow(browser) {
   await editorGroundChecks(browser);
   await editorMeasureChecks(browser);
   await editorTurnChecks(browser);
+  await editorWorkflowChecks(browser);
 }
 
 /**
@@ -1338,6 +1340,278 @@ async function editorTurnChecks(browser) {
 }
 
 /**
+ * MapMaker overhaul Phase 3 part A (docs/MAPMAKER_OVERHAUL_PLAN.md, items 1, 2 and 8): Play from here (Shift+F5)
+ * starts you at the camera spot and Esc comes back with the view, the selection and undo as they were; the plan view
+ * (K) toggles, selects and moves things, and exports a PNG; the card shot is framed at eye level, saved as the map's
+ * camera (one undo step) and previewed in the card's frame. Screenshots go to E2E_SHOTS when set.
+ */
+async function editorWorkflowChecks(browser) {
+  const page = await (await browser.newContext({ viewport: { width: 1400, height: 820 }, acceptDownloads: true })).newPage();
+  livePages.add(page);
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  const shot = (name) => (process.env.E2E_SHOTS ? page.screenshot({ path: `${process.env.E2E_SHOTS}/editorux-${name}.png` }).catch(() => {}) : Promise.resolve());
+  await page.goto(`${CLIENT}/?mode=editor&test=1`);
+  await page.waitForFunction(() => window.__editor, null, { timeout: T(60000) });
+  page.once('dialog', (d) => d.accept());
+  await newMap(page, 96);
+  const doc = () => page.evaluate(() => window.__editor.doc);
+  const at = (x, y, z) => page.evaluate(([x, y, z]) => window.__editor.view.project({ x, y, z }), [x, y, z]);
+  const camera = () => page.evaluate(() => {
+    const v = window.__editor.view;
+    const p = v.camera.position;
+    return { x: +p.x.toFixed(3), y: +p.y.toFixed(3), z: +p.z.toFixed(3), yaw: +v.yaw.toFixed(4), pitch: +v.pitch.toFixed(4), fov: +v.camera.fov.toFixed(4), mode: v.camera.mode };
+  });
+  const setCamera = (x, y, z, yaw, pitch) =>
+    page.evaluate(([x, y, z, yaw, pitch]) => {
+      const v = window.__editor.view;
+      v.camera.position.set(x, y, z);
+      v.yaw = yaw;
+      v.pitch = pitch;
+      v.applyCamera();
+    }, [x, y, z, yaw, pitch]);
+  await page.evaluate(() => window.__editor.view.focus({ x: 12, y: 0, z: 4 }));
+  await frames(page, 3);
+  // A barrel out on the ground, placed with its tool (an edit to undo later), and selected.
+  await clickTool(page, '[data-tool="prop:prop.barrel"]');
+  const bp = await at(12, 0, 0);
+  await page.mouse.move(bp.x, bp.y);
+  await frames(page, 3);
+  await page.mouse.click(bp.x, bp.y);
+  await frames(page, 3);
+  const barrel = await page.evaluate(() => window.__editor.selection.entities[0]);
+  await page.evaluate((id) => {
+    window.__editor.setTool({ kind: 'select' });
+    window.__editor.setSelection({ tiles: [], entities: [id] });
+  }, barrel);
+
+  // ---- Play from here: out on the open ground south-west of the room, looking north-east.
+  await setCamera(-14, 9, -16, Math.PI / 4, -0.25);
+  await frames(page, 2);
+  const before = { cam: await camera(), rev: await page.evaluate(() => window.__editor.history.revision), sel: await page.evaluate(() => JSON.stringify(window.__editor.selection)) };
+  check(await page.isVisible('#ed-test-here'), 'the top bar has ▶ Here (Play from here) beside PLAY TEST');
+  await page.keyboard.press('Shift+F5');
+  const started = await page.waitForFunction(() => window.__cs?.local && window.__testStartMs, null, { timeout: T(30000) }).then(() => true, () => false);
+  const me = started ? await sim(page, (m, me) => ({ x: me.move.pos.x, y: me.move.pos.y, z: me.move.pos.z, yaw: me.yaw, pitch: me.pitch })).catch((e) => String(e)) : null;
+  check(started && Math.abs(me.x + 14) < 0.3 && Math.abs(me.z + 16) < 0.3 && Math.abs(me.y) < 0.6 && Math.abs(me.yaw - Math.PI / 4) < 0.01 && Math.abs(me.pitch + 0.25) < 0.01, `Shift+F5 starts a test match standing on the ground under the camera, facing its way (${JSON.stringify(me)})`);
+  const room = await sim(page, (m) => m.spawnPoints.map((s) => [Math.round(s.pos.x), Math.round(s.pos.z)])).catch(() => []);
+  check(room.every(([x, z]) => Math.hypot(x + 14, z + 16) > 6), `not at the map's spawn point (${JSON.stringify(room)})`);
+  await frames(page, 10);
+  // The view as you play it (headless pages have no pointer lock, so the pause menu is up: hidden for the picture).
+  await page.addStyleTag({ content: '#pause { visibility: hidden !important; }' }).then((h) => shot('play-from-here').then(() => h.evaluate((el) => el.remove())));
+  await page.keyboard.press('Escape');
+  await page.waitForFunction(() => !document.getElementById('editor').hidden, null, { timeout: T(15000) });
+  await frames(page, 2);
+  const back = { cam: await camera(), rev: await page.evaluate(() => window.__editor.history.revision), sel: await page.evaluate(() => JSON.stringify(window.__editor.selection)) };
+  check(JSON.stringify(back) === JSON.stringify(before), `Esc goes back to MapMaker at the same view, with the selection and history as they were (${JSON.stringify(back.cam)})`);
+  await page.keyboard.press('Control+KeyZ');
+  check(!(await doc()).entities.some((e) => e.id === barrel), 'undo still works after Play from here (the barrel goes)');
+  await page.keyboard.press('Control+KeyY');
+  // Refused, with the reason: the camera outside the map's boundary.
+  await page.evaluate(() => window.__editor.run('Boundary', { kind: 'setBounds', before: null, after: { min: [-30, -30], max: [30, 30], style: 'invisible', height: 8 } }));
+  await setCamera(45, 6, 0, 0, -0.2);
+  await page.click('#ed-test-here');
+  await frames(page, 2);
+  const refused = await page.evaluate(() => ({ toast: document.getElementById('ed-toast').textContent, editor: !document.getElementById('editor').hidden, err: document.getElementById('ed-toast').classList.contains('err') }));
+  check(refused.editor && refused.err && /Can't play from here: .*outside the playable boundary/.test(refused.toast), `outside the boundary it refuses, saying why (${refused.toast})`);
+  await page.keyboard.press('Control+KeyZ');
+
+  // ---- The plan view: K, from straight above, the level's tiles and icons, select and move, PNG.
+  await page.evaluate(() => window.__editor.run('Flag', { kind: 'addEntities', entities: [{ id: 'flag_e2e', kind: 'flag', position: [-8, 0, 8], yaw: 0, team: 'embers' }, { id: 'hill_e2e', kind: 'hill', position: [8, 0, -10], radius: 5 }, { id: 'pick_e2e', kind: 'pickup', position: [-6, 0, -8], item: 'core.health', respawnSeconds: null }] }));
+  const view3d = await camera();
+  await page.mouse.move(700, 400);
+  await page.keyboard.press('KeyK');
+  await frames(page, 3);
+  const plan = await page.evaluate(() => ({ on: window.__editor.plan.on, mode: window.__editor.view.camera.mode, pressed: document.getElementById('ed-plan').getAttribute('aria-pressed'), title: document.getElementById('ed-plan-title')?.textContent, overlay: !!document.getElementById('ed-plan-overlay'), clip: !!window.__editor.view.scene.clipPlane }));
+  check(plan.on && plan.mode === 1 && plan.pressed === 'true' && plan.title === 'Plan · Ground' && plan.overlay && plan.clip, `K switches to the plan view: an orthographic camera from above, cut above the floor, its icons over it (${JSON.stringify(plan)})`);
+  // North is up and east is right on screen.
+  const n = await at(0, 0, 10);
+  const s = await at(0, 0, -10);
+  const e = await at(10, 0, 0);
+  const c0 = await at(0, 0, 0);
+  check(n.y < s.y && e.x > c0.x && Math.abs(n.x - s.x) < 1, `north is up, east to the right (${JSON.stringify({ n, s, e })})`);
+  await shot('plan-view');
+  // Select the barrel by clicking it in the plan, drag it 4 m east, undo.
+  await page.evaluate(() => window.__editor.setSelection({ tiles: [], entities: [] }));
+  const bpos = (await doc()).entities.find((x) => x.id === barrel).position;
+  const p0 = await at(bpos[0], bpos[1] + 0.5, bpos[2]);
+  await page.mouse.move(p0.x, p0.y);
+  await frames(page, 3);
+  await page.mouse.click(p0.x, p0.y);
+  await frames(page, 2);
+  check((await page.evaluate(() => window.__editor.selection.entities)).includes(barrel), 'a click in the plan selects the barrel');
+  const p1 = await at(bpos[0] + 4, bpos[1] + 0.5, bpos[2]);
+  await page.mouse.move(p0.x, p0.y);
+  await page.mouse.down();
+  await page.mouse.move((p0.x + p1.x) / 2, p0.y, { steps: 4 });
+  await page.mouse.move(p1.x, p1.y, { steps: 4 });
+  await frames(page, 2);
+  await page.mouse.up();
+  await frames(page, 2);
+  const moved = (await doc()).entities.find((x) => x.id === barrel).position;
+  check(Math.abs(moved[0] - bpos[0] - 4) < 0.6 && Math.abs(moved[2] - bpos[2]) < 0.6, `dragging it in the plan moves it east (${JSON.stringify(bpos)} → ${JSON.stringify(moved)})`);
+  await page.keyboard.press('Control+KeyZ');
+  // Another level: the level selector picks the plan.
+  await page.keyboard.press('PageUp');
+  await frames(page, 2);
+  const up = await page.evaluate(() => ({ title: document.getElementById('ed-plan-title')?.textContent, cut: window.__editor.plan.cutY }));
+  check(up.title === 'Plan · Level 1' && up.cut > 4, `PgUp shows Level 1's plan, cut above its floor (${JSON.stringify(up)})`);
+  await page.keyboard.press('PageDown');
+  await frames(page, 2);
+  // Export PNG: through the browser's download.
+  const [download] = await Promise.all([page.waitForEvent('download', { timeout: T(20000) }).catch(() => null), page.click('#ed-plan-export')]);
+  const file = download ? await download.path().catch(() => null) : null;
+  const png = file ? readFileSync(file) : null;
+  if (png && process.env.E2E_SHOTS) writeFileSync(`${process.env.E2E_SHOTS}/editorux-plan-export.png`, png);
+  check(download?.suggestedFilename() === 'untitled_map-ground-plan.png' && png && png.subarray(1, 4).toString() === 'PNG' && png.length > 20000, `Export PNG downloads the plan (${download?.suggestedFilename()}, ${png?.length ?? 0} bytes)`);
+  await page.click('#ed-plan');
+  await frames(page, 2);
+  const after = await camera();
+  check(!(await page.evaluate(() => window.__editor.plan.on || !!document.getElementById('ed-plan-overlay') || !!window.__editor.view.scene.clipPlane)) && JSON.stringify(after) === JSON.stringify(view3d), `the Plan button goes back to the 3D view as it was (${JSON.stringify(after)})`);
+
+  // ---- The card shot: Map properties → Set card shot…, eye level by default, Enter saves; Preview in the frame.
+  await page.evaluate(() => window.__editor.setSelection({ tiles: [], entities: [] }));
+  await page.waitForSelector('#ed-card-set', { timeout: T(5000) });
+  check(await page.isDisabled('#ed-card-preview'), 'no card camera yet: Preview is off');
+  await setCamera(-10, 12, -18, 0.6, -0.15);
+  const fov0 = (await camera()).fov;
+  await page.click('#ed-card-set');
+  await frames(page, 3);
+  const framing = await page.evaluate(() => ({ eye: document.getElementById('ed-card-eye')?.checked, crop: document.querySelector('.ed-card-crop')?.getBoundingClientRect().toJSON(), y: window.__editor.view.camera.position.y, fov: window.__editor.view.camera.fov, ground: window.__editor.shownGround ? null : 'none' }));
+  const ratio = framing.crop ? framing.crop.width / framing.crop.height : 0;
+  check(framing.eye && Math.abs(ratio - 16 / 9) < 0.02 && Math.abs(framing.y - (-0.15 + 1.7)) < 0.15 && framing.fov > 0.9, `the card frame is 16:9 with the card's lens, and the camera drops to eye level, 1.7 m over the ground (${JSON.stringify(framing)})`);
+  await shot('card-frame');
+  await page.keyboard.press('Enter');
+  await frames(page, 2);
+  const saved = (await doc()).metadata.cardCamera;
+  check(saved && Math.abs(saved.position[1] - 1.55) < 0.15 && Math.abs(saved.yaw - 0.6) < 0.001 && Math.abs(saved.pitch + 0.15) < 0.001 && (await camera()).fov === fov0, `Enter saves the card camera in the map at eye level, and the lens goes back (${JSON.stringify(saved)})`);
+  check((await doc()).formatVersion === 30, 'the map is format v30');
+  await page.keyboard.press('Control+KeyZ');
+  check((await doc()).metadata.cardCamera === undefined, 'one undo takes the card camera off');
+  await page.keyboard.press('Control+KeyY');
+  // Preview: from somewhere else, the saved shot in the card's frame; Esc goes back.
+  await setCamera(20, 30, 20, 2, -0.8);
+  const elsewhere = await camera();
+  await page.waitForSelector('#ed-card-preview:not([disabled])', { timeout: T(5000) });
+  await page.click('#ed-card-preview');
+  await frames(page, 3);
+  const pv = await camera();
+  check(Math.abs(pv.x - saved.position[0]) < 0.01 && Math.abs(pv.y - saved.position[1]) < 0.01 && Math.abs(pv.yaw - saved.yaw) < 0.001 && (await page.isVisible('.ed-card-frame.preview .ed-card-crop')), `Preview shows the saved shot in the card's frame (${JSON.stringify(pv)})`);
+  await shot('card-preview');
+  await page.keyboard.press('Escape');
+  await frames(page, 2);
+  check(JSON.stringify(await camera()) === JSON.stringify(elsewhere) && !(await page.$('.ed-card-frame')), 'Esc closes the preview, back where you were');
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  livePages.delete(page);
+  await page.context().close();
+}
+
+/**
+ * MapMaker overhaul Phase 1, part A (docs/MAPMAKER_OVERHAUL_PLAN.md): the ghost says why it's refused, beside the
+ * pointer; the live budget bar changes on an edit and on undo, goes amber near a budget and selects what it counts; `?`
+ * (and the tool bar's Keys button) opens every key, grouped, and Esc or `?` closes it.
+ */
+async function editorPhase1aChecks(page, { doc, at, clickAt, settle, shot }) {
+  await page.evaluate(() => window.__editor.view.focus({ x: 0, y: 0, z: -16 }));
+  await settle();
+  // The ghost says why: a corridor over a corridor is refused, and the note beside the pointer names it and its level.
+  await clickTool(page, '[data-tool="tile:core.corridor"]');
+  await clickAt(-8, 0, -16);
+  const placed = (await doc()).classicStructure.tiles.some((t) => t.x === -1 && t.y === -2 && t.z === 0);
+  const p = await at(-8, 0, -16);
+  await page.mouse.move(p.x + 3, p.y + 2);
+  await settle();
+  const why = await page.evaluate(() => ({ cls: document.getElementById('ed-tip').className, text: document.getElementById('ed-tip').textContent, shown: !document.getElementById('ed-tip').hidden, status: document.getElementById('ed-target').textContent, ghost: window.__editor.tileGhostAt?.check }));
+  check(placed && why.shown && /tone-bad/.test(why.cls) && why.text.includes('Overlaps the Corridor on Ground') && /^Overlaps Corridor on Ground: pick a free cell/.test(why.status), `a refused ghost says why beside the pointer (${why.text}; ${why.status.slice(0, 60)})`);
+  await shot('ghost-why');
+  // Past the build limit (a level past the top).
+  const limit = await page.evaluate(() => {
+    const ed = window.__editor;
+    const c = ed.tileGhost('core.corridor', [0, 0, 17]);
+    return c.ok ? '' : c.short;
+  });
+  check(limit === 'Past the build limit (16 levels up or down)', `the ghost names the build limit (${limit})`);
+  // A spawn over nothing (up on Level 1, the ground 4 m below): a warning, not a refusal.
+  await page.evaluate(() => {
+    window.__editor.setTool({ kind: 'spawn' });
+    window.__editor.setLevel(1);
+  });
+  await settle();
+  const off = await at(32, 4, -16);
+  await page.mouse.move(off.x, off.y);
+  await settle();
+  const spawnWhy = await page.evaluate(() => ({ text: document.getElementById('ed-tip').textContent, shown: !document.getElementById('ed-tip').hidden, onTerrain: window.__editor.hoverOnTerrain }));
+  check(!spawnWhy.onTerrain && spawnWhy.shown && spawnWhy.text.includes('No floor under it'), `a spawn over nothing says "No floor under it" (${JSON.stringify(spawnWhy)})`);
+  await shot('spawn-why');
+  await page.evaluate(() => {
+    window.__editor.setTool({ kind: 'select' });
+    window.__editor.setLevel(0);
+  });
+
+  // The live budget bar: Props goes up by one with a prop and back with undo.
+  const bar = () =>
+    page.evaluate(() => {
+      const el = document.getElementById('ed-budget');
+      const row = (id) => document.querySelector(`#ed-budget-rows [data-budget="${id}"]`)?.closest('.ed-budget-row');
+      return { level: el?.dataset.level, sum: el?.querySelector('.ed-budget-sum')?.textContent ?? '', props: row('props')?.querySelector('.ed-budget-amt')?.textContent ?? '', lights: row('lights')?.querySelector('.ed-budget-amt')?.textContent ?? '', lightsWord: row('lights')?.querySelector('.ed-budget-word')?.textContent ?? '' };
+    });
+  const b0 = await bar();
+  await clickTool(page, '[data-tool="prop:prop.barrel"]');
+  await clickAt(0, 0, -24);
+  await settle();
+  const b1 = await bar();
+  await page.evaluate(() => window.__editor.setTool({ kind: 'select' }));
+  await page.keyboard.press('Control+KeyZ');
+  await settle();
+  const b2 = await bar();
+  const n = (t) => Number(t.split('/')[0].replace(/[^0-9]/g, ''));
+  check(n(b1.props) === n(b0.props) + 1 && b2.props === b0.props && /Budget OK/i.test(b0.sum), `the budget bar counts a placed prop and its undo (${b0.props} → ${b1.props} → ${b2.props}; ${b0.sum})`);
+  // Near a budget: 220 of 256 lights goes amber, names Lights, and clicking the name selects them.
+  await page.evaluate(() => {
+    const ed = window.__editor;
+    const lights = Array.from({ length: 220 }, (_, i) => ({ id: `light_e2e_${i}`, kind: 'light', position: [(i % 20) * 2 - 20, 3, Math.floor(i / 20) * 2 - 30], yaw: 0, color: '#ffd9a0', intensity: 1, range: 6, fixture: 'ceiling' }));
+    ed.history.execute('Lights', { kind: 'addEntities', entities: lights });
+  });
+  await settle();
+  const near = await bar();
+  await page.click('#ed-budget-toggle');
+  await settle();
+  await shot('budget-near');
+  await page.click('#ed-budget .ed-budget-sum [data-budget="lights"]');
+  await settle();
+  const selected = await page.evaluate(() => window.__editor.selection.entities.filter((id) => id.startsWith('light_e2e_')).length);
+  check(near.level === 'near' && /Near:\s*Lights/.test(near.sum) && near.lightsWord === 'Near' && selected === 220, `220 lights: the bar goes amber with its word, names Lights, and selects them (${near.sum}; ${selected} selected)`);
+  await page.click('#ed-budget-toggle');
+  await page.evaluate(() => window.__editor.setSelection({ tiles: [], entities: [] }));
+  await page.keyboard.press('Control+KeyZ');
+  await settle();
+  check((await bar()).level === 'ok', 'undo takes the bar back to OK');
+
+  // `?`: every key, grouped, from the key table; Esc and `?` close it; so does the tool bar's Keys button open it.
+  await page.mouse.move(5, 400);
+  await page.keyboard.press('Shift+Slash');
+  await settle();
+  const keys = await page.evaluate(() => ({ open: document.getElementById('ed-keys')?.open, rows: [...document.querySelectorAll('#ed-keys .ed-keys-row dt')].map((d) => d.textContent), groups: [...document.querySelectorAll('#ed-keys h3')].map((h) => h.textContent) }));
+  const has = (k) => keys.rows.includes(k);
+  check(keys.open && has('R') && has('Ctrl+Z') && ['V', 'P', 'X', 'B', 'O', 'T', 'G', 'N', 'U', 'Esc'].every(has) && keys.groups.includes('Tools'), `? opens the key list with R, Ctrl+Z and the tool keys (${keys.rows.length} rows; ${keys.groups.join(', ')})`);
+  await shot('keys');
+  await page.keyboard.press('Escape');
+  await settle();
+  const afterEsc = await page.evaluate(() => ({ open: document.getElementById('ed-keys')?.open, tool: window.__editor.tool.kind }));
+  await page.click('#ed-tb-keys');
+  await settle();
+  const byButton = await page.evaluate(() => document.getElementById('ed-keys')?.open);
+  await page.keyboard.press('Shift+Slash');
+  await settle();
+  const afterQ = await page.evaluate(() => document.getElementById('ed-keys')?.open);
+  check(!afterEsc.open && byButton && !afterQ, `Esc closes it, the Keys button opens it, ? closes it (${JSON.stringify({ afterEsc, byButton, afterQ })})`);
+  // / still searches the palette.
+  await page.keyboard.press('Slash');
+  check(await page.evaluate(() => document.activeElement?.id === 'ed-search'), '/ still searches the palette');
+  await page.evaluate(() => document.activeElement?.blur());
+}
+
+/**
  * MapMaker's set pieces (docs/SET_PIECES_PLAN.md, "As built: part 2"): the Set pieces tab, placing with the ghost (and
  * its refusal, with the reason), turning and mirroring (and a piece that can't be), selecting one as one, moving it and
  * undoing, Explode and undo, Save selection as set piece with Export and Import, and a port facing a wall. Not the
@@ -1413,7 +1687,7 @@ async function editorSetPieceChecks(browser) {
   // Red where it can't go, with the reason, and a click there places nothing.
   await hover(16, 0, 8.5);
   const red = await ghost();
-  check(red && !red.ok && /tone-bad/.test(red.tip) && /overlaps the Carriageway set piece/.test(red.tipText) && /can't go here/.test(await page.textContent('#ed-target')), `over another piece the ghost is red and says why (${red?.reason})`);
+  check(red && !red.ok && /tone-bad/.test(red.tip) && /overlaps the Carriageway set piece/i.test(red.tipText) && /can't go here/.test(await page.textContent('#ed-target')), `over another piece the ghost is red and says why (${red?.reason})`);
   await shot('ghost-red');
   await page.mouse.click((await at(16, 0, 8.5)).x, (await at(16, 0, 8.5)).y);
   check((await doc()).setPieces.length === 1 && /Can't place Carriageway/.test(await page.textContent('#ed-toast')), 'a click there places nothing and says why');
@@ -2044,7 +2318,10 @@ async function mobileFlow(browser) {
   check(await page.isVisible('.opt-sub:has-text("Touch")'), 'Options → Controls lists the touch controls on a phone');
   await page.screenshot({ path: `${ARTIFACTS}/mobile-options.png` });
 
-  await page.goto(`${CLIENT}/?offline=training_range&test=1&god=1`);
+  // You alone on the range (&bots=1: one player in all). Its deathmatch bots shot the god-mode you about (their swarm
+  // rockets' and rounds' knockback): the "walk" could be a blast's push, and the jump's tap could land while a hit
+  // had you in the air (CI: grounded false, velY -1.0 / -2.5 at the tap), so the tap did nothing.
+  await page.goto(`${CLIENT}/?offline=training_range&test=1&god=1&bots=1`);
   await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 1 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown', null, { timeout: T(60000) });
   check(await page.evaluate(() => !document.getElementById('pause').hidden && document.getElementById('touch-ui').hidden), 'the match opens paused; the controls wait for Resume');
   await page.tap('#resume');
@@ -2070,7 +2347,9 @@ async function mobileFlow(browser) {
   before = await state();
   check(await holdUntil(fire.x, fire.y, 3, (m) => window.__cs.local.inventory.get(window.__cs.local.held)?.[0] < m, 8000, before.mag), `holding Fire shoots (magazine ${before.mag} went down)`);
   // Jump: a tap on the pad's middle. Tap or hold is read from the events' own times (a slow software-rendered
-  // page handles the lift late), so the tap says when it happened: 80 ms apart.
+  // page handles the lift late), so the tap says when it happened: 80 ms apart. A jump is taken only on the ground:
+  // tap once you stand on it (the walk above can still be carrying you).
+  await page.waitForFunction(() => window.__cs.local.state.grounded && Math.abs(window.__cs.local.state.velY) < 0.01, null, { timeout: T(10000) }).catch(() => {});
   before = await state();
   // (Noted for the message if it doesn't jump: the pad's pointer events as the page saw them, and the body.)
   await page.evaluate(() => {
@@ -2469,6 +2748,9 @@ async function physicsfxFlow(browser) {
   page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
   await page.goto(`${CLIENT}/?offline=canyon&test=1&god=1`);
   await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown' && window.__match, null, { timeout: T(60000) });
+  // The bots stand where they spawn, firing nothing: left to play, they drove vehicles onto the open ground the bodies
+  // are thrown on, and shot you off your mark (the checks below place them where they need them).
+  await holdBots(page);
   await page.waitForFunction(() => window.__cs.view.scene.transformNodes.some((n) => n.name.startsWith('prop_') && !n.name.endsWith('_model') && n.rotationQuaternion && Math.abs(n.rotationQuaternion.x) + Math.abs(n.rotationQuaternion.z) > 0.01), null, { timeout: T(15000) }).catch(() => {});
   // Rocks, logs and plants lean with the slope; trees stay upright; nothing floats.
   const props = await page.evaluate(() => {
@@ -2477,23 +2759,107 @@ async function physicsfxFlow(browser) {
     return { roots: roots.length, leaning };
   });
   check(props.leaning > 0, `natural props lean with the canyon's slopes (${props.leaning} of ${props.roots})`);
-  // Line up a bot in front of you on open ground and kill it: it falls as a ragdoll and bleeds.
-  await page.evaluate(() => {
+  /**
+   * Open ground for the ragdoll checks, the same place on every run (bodies dropped or thrown by cover, or into a rock,
+   * flew or stopped wherever they happened to be: CI, a blast that threw nothing, a body that moved 0.44 m out; locally,
+   * a killed bot's body flung 10 m up). You are put 10 m off it, facing it.
+   */
+  const standByOpenGround = async () => {
+    // The blasts below go off on open ground, the same place on every run, with you 10 m off: nothing of the level
+    // within 5 m of it at body height (a bot standing by a rock or a wall was shielded from the throw, or its body thrown
+    // into the rock: CI, "up no", "outward 0.44"; which depended on where the bot, or you, happened to be). The map is
+    // searched on a fixed 4 m grid out from its middle (the level is static: the same spot every time), and you are put
+    // where you see it.
+    const open = await page.evaluate(() => {
+      const m = window.__match;
+      const v = window.__cs.view;
+      const me = m.slots[window.__cs.slot];
+      const groundAt = (x, z) => {
+        const hit = v.raycastLevel({ x, y: 60, z }, { x: 0, y: -1, z: 0 }, 120);
+        return hit ? 60 - hit.dist : null;
+      };
+      const clearAround = (x, y, z) => {
+        // Level ground round it: within 0.6 m 3 m out every way.
+        for (let a = 0; a < 8; a++) {
+          const g = groundAt(x + Math.cos((a / 8) * Math.PI * 2) * 3, z + Math.sin((a / 8) * Math.PI * 2) * 3);
+          if (g === null || Math.abs(g - y) > 0.6) return false;
+        }
+        // Nothing standing within 5 m at body height: the sim's level (the throw) and the effects world (the bodies).
+        if (!m.physics.boxClear({ x, y: y + 1.9, z }, { x: 5, y: 1, z: 5 }, undefined, true)) return false;
+        for (let a = 0; v.physics && a < 16; a++) {
+          const d = { x: Math.cos((a / 16) * Math.PI * 2), y: 0, z: Math.sin((a / 16) * Math.PI * 2) };
+          for (const h of [1, 1.6]) if (v.physics.raycast({ x, y: y + h, z }, d, 5)) return false;
+        }
+        return true;
+      };
+      const cells = [];
+      for (let x = -80; x <= 80; x += 4) for (let z = -80; z <= 80; z += 4) cells.push({ x, z });
+      cells.sort((p, q) => Math.hypot(p.x, p.z) - Math.hypot(q.x, q.z) || p.x - q.x || p.z - q.z);
+      let checked = 0;
+      for (const c of cells) {
+        const y = groundAt(c.x, c.z);
+        if (y === null || !clearAround(c.x, y, c.z)) continue;
+        // (No vehicle or turret standing there either.)
+        if (m.mounts.some((v) => Math.hypot(v.pos.x - c.x, v.pos.z - c.z) < 10)) continue;
+        checked++;
+        // You 10 m off (the first of eight ways with ground near its height, room to stand and a clear sight of it).
+        for (let k = 0; k < 8; k++) {
+          const yaw = k * (Math.PI / 4);
+          const px = c.x - Math.sin(yaw) * 10;
+          const pz = c.z - Math.cos(yaw) * 10;
+          const py = groundAt(px, pz);
+          if (py === null || Math.abs(py - y) > 1) continue;
+          if (!m.physics.boxClear({ x: px, y: py + 1, z: pz }, { x: 0.6, y: 0.8, z: 0.6 }, undefined, true)) continue;
+          if (!m.physics.lineOfSight({ x: px, y: py + 1.6, z: pz }, { x: c.x, y: y + 1, z: c.z })) continue;
+          const me0 = { x: px, y: py + 0.05, z: pz };
+          me.move = { ...me.move, pos: me0, vx: 0, vz: 0, velY: 0, grounded: false };
+          return { at: { x: c.x, y, z: c.z }, me: me0, yaw, checked };
+        }
+      }
+      return { at: null, checked };
+    });
+    check(!!open.at, `open ground for the ragdolls, with you 10 m off (${JSON.stringify(open)})`);
+    // You land there.
+    if (open.at) await page.waitForFunction((p) => { const me = window.__match.slots[window.__cs.slot]; return me.move.grounded && Math.hypot(me.move.pos.x - p.x, me.move.pos.z - p.z) < 1; }, open.me, { timeout: T(5000) }).catch(() => {});
+    // And the view has you there (a slow page draws the move frames later: what is in view is judged from its camera).
+    if (open.at) await page.waitForFunction((p) => { const c = window.__cs.view.camera.globalPosition; return Math.hypot(c.x - p.x, c.z - p.z) < 1.5; }, open.me, { timeout: T(15000) }).catch(() => {});
+    // Face it (the mass blast is the bodies in view), turned round if the yaw went the wrong way.
+    if (open.at) {
+      await page.evaluate((yaw) => (window.__cs.input.yaw = yaw), open.yaw);
+      await frames(page, 3);
+      await page.evaluate((at) => {
+        const cam = window.__cs.view.camera;
+        const f = cam.getForwardRay(1).direction;
+        const p = cam.globalPosition;
+        if (f.x * (at.x - p.x) + f.z * (at.z - p.z) < 0) window.__cs.input.yaw += Math.PI;
+      }, open.at);
+      await frames(page, 3);
+    }
+    return open;
+  };
+  const open0 = await standByOpenGround();
+  // Line up a bot on that open ground in front of you and kill it: it falls as a ragdoll and bleeds.
+  await page.evaluate((open) => {
     const m = window.__match;
     const me = m.slots[window.__cs.slot];
-    const bot = m.slots.find((c) => c && c !== me && c.alive);
+    // (Not one seated in a vehicle or on a turret: moved, it stayed seated, and a tank's crew can't be hurt from outside.)
+    const bot = m.slots.find((c) => c && c !== me && c.alive && !c.mount);
     for (const c of m.slots) if (c && c !== me && c !== bot) c.alive = false;
     const f = window.__cs.view.camera.getForwardRay(1).direction;
     const len = Math.hypot(f.x, f.z) || 1;
-    bot.move = { ...bot.move, pos: { x: me.move.pos.x + (f.x / len) * 4, y: me.move.pos.y + 0.5, z: me.move.pos.z + (f.z / len) * 4 }, velY: 0, grounded: false };
+    // 4 m in front of you, towards the open ground.
+    const d = open ? { x: open.x - me.move.pos.x, z: open.z - me.move.pos.z } : { x: f.x, z: f.z };
+    const dl = Math.hypot(d.x, d.z) || len;
+    bot.move = { ...bot.move, pos: { x: me.move.pos.x + (d.x / dl) * 4, y: me.move.pos.y + 0.5, z: me.move.pos.z + (d.z / dl) * 4 }, vx: 0, vz: 0, velY: 0, grounded: false };
     window.__botSlot = bot.slot;
     window.__autoInput = { buttons: 0 };
-  });
+  }, open0.at);
   // The bot lands where it was put and its avatar stands there.
   await page.waitForFunction(() => {
     const bot = window.__match.slots[window.__botSlot];
-    return bot?.move.grounded && !!window.__cs.view.avatars.get(bot.slot)?.anim?.ch.joints.get('Head');
-  }, null, { timeout: T(5000) }).catch(() => {});
+    const a = window.__cs.view.avatars.get(bot?.slot);
+    return bot?.move.grounded && !!a?.anim?.ch.joints.get('Head') && Math.hypot(a.root.position.x - bot.move.pos.x, a.root.position.z - bot.move.pos.z) < 0.5;
+  }, null, { timeout: T(15000) }).catch(() => {});
   await frames(page, 5);
   const standing = await page.evaluate(() => {
     const m = window.__match;
@@ -2501,7 +2867,9 @@ async function physicsfxFlow(browser) {
     const bot = m.slots[window.__botSlot];
     const standing = window.__cs.view.avatars.get(bot.slot)?.anim?.ch.joints.get('Head')?.getAbsolutePosition().y ?? null;
     window.__cs.view.pushPlayer(bot.slot, { x: (bot.move.pos.x - me.move.pos.x) * 1.2, y: 2, z: (bot.move.pos.z - me.move.pos.z) * 1.2 });
-    m.damage(bot, 500, me, 'core.pistol');
+    // No attacker: the bot may be on your team (no friendly fire; Team Deathmatch on the canyon: the first other slot
+    // was a teammate on some runs, and nothing died).
+    m.damage(bot, 500, null, 'core.pistol');
     return standing;
   });
   await page.addStyleTag({ content: '#pause { display: none !important; }' });
@@ -2535,8 +2903,12 @@ async function physicsfxFlow(browser) {
   // The sampling above stops once the body is down: give the blood time to land.
   // Splats are thin instances of one disc (bloodVisuals.ts): count them.
   await page.waitForFunction(() => window.__cs.view.blood.splatCount > 0, null, { timeout: T(2500) }).catch(() => {});
-  const dead = await page.evaluate(() => ({ splats: window.__cs.view.blood.splatCount }));
-  check(ragdolled && fell() > 0.5, `the killed bot drops as a ragdoll (${ragdolled ? 'ragdoll' : 'no ragdoll'}, head ${track.map((y) => y.toFixed(2)).join(' → ')})`);
+  const dead = await page.evaluate(() => {
+    const v = window.__cs.view;
+    const c = v.corpses.findLast((x) => x.slot === window.__botSlot);
+    return { splats: v.blood.splatCount, why: { physics: !!v.physics, corpse: !!c, model: !!c?.a.anim?.ch, fall: !!c?.a.fall, death: v.lastDeath ?? null } };
+  });
+  check(ragdolled && fell() > 0.5, `the killed bot drops as a ragdoll (${ragdolled ? 'ragdoll' : `no ragdoll: ${JSON.stringify(dead.why)}`}, head ${track.slice(0, 12).map((y) => y.toFixed(2)).join(' → ')}${track.length > 12 ? ` … ${track.at(-1).toFixed(2)}` : ''})`);
   check(dead.splats > 0, `blood splats where it fell (${dead.splats})`);
   // A body that has come to rest (its capsules back in the pool) is a ragdoll again when a round hits it,
   // rather than staying a stiff pose that rounds pass through (owner, 3 Nov).
@@ -2626,40 +2998,64 @@ async function physicsfxFlow(browser) {
   }, killedAt);
   await page.evaluate(() => (window.__match.slots[window.__airSlot].respawnTick = window.__match.tick));
   check(!!behind && followed && !!laid && laid.tier === 'posed' && laid.ground !== null && Math.abs(laid.y - laid.ground) < 0.3 && laid.y < killedAt - 0.5, `a death out of view isn't simulated: the body is laid on the ground (${JSON.stringify({ followed, killedAt, laid })})`);
-  // A blast throws a bot near it up and out (the game's own throw, sim/impact.ts).
-  const thrown = await page.evaluate(() => {
+  // The blasts go off on the open ground found above, with you back 10 m off it, facing it.
+  const open = await standByOpenGround();
+  // A blast throws a bot near it up and out (the game's own throw, sim/impact.ts): a bot stood there, its inputs
+  // held (it walked off before), the blast a metre to its side at waist height.
+  const thrown = await page.evaluate((at0) => {
     const m = window.__match;
     const me = m.slots[window.__cs.slot];
-    const bot = m.slots.find((c) => c && c !== me && c.alive && c.move.grounded && !c.mount);
+    const bot = at0 && m.slots.find((c) => c && c !== me && c.alive && !c.mount);
     // (Not one seated in a vehicle: a blast doesn't throw a seated rider.)
     if (!bot) return null;
-    // Right beside it, where it stands (open ground: it got there), at waist height.
-    const at = { x: bot.move.pos.x - 1, y: bot.move.pos.y + 0.6, z: bot.move.pos.z };
+    if (bot.bot && !bot.queue.massHeld && !bot.queue.held) {
+      bot.queue.push = (...inputs) => Array.prototype.push.apply(bot.queue, inputs.map((i) => ({ ...i, forward: 0, right: 0, buttons: 0 })));
+      bot.queue.massHeld = true;
+    }
+    bot.move = { ...bot.move, pos: { x: at0.x, y: at0.y + 0.05, z: at0.z }, vx: 0, vz: 0, velY: 0, grounded: false };
     bot.health = 1000;
     window.__blastSlot = bot.slot;
+    window.__blastBot = bot;
+    window.__blastTick = m.tick;
+    return { slot: bot.slot };
+  }, open.at);
+  // Standing there: landed, a few ticks on.
+  if (thrown) await page.waitForFunction(() => { const b = window.__blastBot; return b.alive && b.move.grounded && window.__match.tick > window.__blastTick + 5; }, null, { timeout: T(5000) }).catch(() => {});
+  const blast = !thrown ? null : await page.evaluate(() => {
+    const m = window.__match;
+    const bot = window.__blastBot;
+    const at = { x: bot.move.pos.x - 1, y: bot.move.pos.y + 0.6, z: bot.move.pos.z };
     window.__blastFrom = { y: bot.move.pos.y, x: bot.move.pos.x, z: bot.move.pos.z };
     window.__blastTop = bot.move.pos.y;
     m.splash(at, 5, 0, 0, null, 'core.rockets', 1, 11);
     return { velY: bot.move.velY, push: Math.hypot(bot.move.vx ?? 0, bot.move.vz ?? 0), mount: !!bot.mount, los: m.physics.lineOfSight(at, { x: bot.move.pos.x, y: bot.move.pos.y + 1.2, z: bot.move.pos.z }) };
   });
-  const rose = await page.waitForFunction(() => {
+  const rose = !!blast && await page.waitForFunction(() => {
     const b = window.__match.slots[window.__blastSlot];
     window.__blastTop = Math.max(window.__blastTop, b.move.pos.y);
     return window.__blastTop - window.__blastFrom.y > 1;
   }, null, { timeout: T(5000), polling: 16 }).then(() => true, () => false);
-  const out = await page.evaluate(() => { const b = window.__match.slots[window.__blastSlot]; return Math.hypot(b.move.pos.x - window.__blastFrom.x, b.move.pos.z - window.__blastFrom.z); });
+  const out = !blast ? 0 : await page.evaluate(() => {
+    const b = window.__blastBot;
+    if (b.queue.massHeld) {
+      delete b.queue.push;
+      delete b.queue.massHeld;
+    }
+    return Math.hypot(b.move.pos.x - window.__blastFrom.x, b.move.pos.z - window.__blastFrom.z);
+  });
   // (Where it lands depends on the bot: it steers in the air, and a wall can stop it.)
-  check(!!thrown && thrown.velY > 6 && thrown.push > 4 && rose, `a blast throws a bot up and out (${JSON.stringify(thrown)}, up ${rose ? '> 1 m' : 'no'}, out ${out.toFixed(1)} m)`);
+  check(!!blast && blast.velY > 6 && blast.push > 4 && rose, `a blast throws a bot up and out (${JSON.stringify(blast)}, up ${rose ? '> 1 m' : 'no'}, out ${out.toFixed(1)} m)`);
   // A mass casualty: one blast kills everyone around a point in front of you, and nothing stalls: every body
   // goes down a ragdoll or laid down, within the budget of awake ragdoll bodies. Every body reacts to it as before
   // the performance work spread their starts over frames and settled them sooner: each one in view is thrown out and
   // up by it (screenshots before and after: physicsfx-blast-before.png, physicsfx-blast-after.png).
-  const ring = await page.evaluate(() => {
+  // On the open ground found above, in view.
+  const ring = await page.evaluate((open) => {
     const m = window.__match;
     const me = m.slots[window.__cs.slot];
     const f = window.__cs.view.camera.getForwardRay(1).direction;
     const len = Math.hypot(f.x, f.z) || 1;
-    const at = { x: me.move.pos.x + (f.x / len) * 10, y: me.move.pos.y, z: me.move.pos.z + (f.z / len) * 10 };
+    const at = open ?? { x: me.move.pos.x + (f.x / len) * 10, y: me.move.pos.y, z: me.move.pos.z + (f.z / len) * 10 };
     // Only bots the view has drawn alive (one that respawned since the last drawn frame has no body to drop yet).
     const victims = m.combatants().filter((c) => c !== me && c.alive && !c.mount && window.__cs.view.avatars.get(c.slot)?.wasAlive);
     const spots = victims.map((c, i) => {
@@ -2677,14 +3073,15 @@ async function physicsfxFlow(browser) {
     clearInterval(window.__massHold);
     window.__massHold = setInterval(() => victims.forEach((c, i) => {
       if (!c.alive) return;
-      c.move = { ...c.move, pos: { ...spots[i] }, velY: 0, grounded: true };
+      // (No speed carried: the bot thrown above still had its throw's, which the blast's push then had to overcome.)
+      c.move = { ...c.move, pos: { ...spots[i] }, vx: 0, vz: 0, velY: 0, grounded: true };
       c.health = Math.max(c.health, 100);
     }), 5);
     window.__massSpots = spots;
     window.__massVictims = victims;
     window.__massAt = at;
     return { at, slots: victims.map((c) => c.slot), spots };
-  });
+  }, open.at);
   await page
     .waitForFunction(({ slots, spots }) => slots.every((s, i) => { const a = window.__cs.view.avatars.get(s); return !!a && Math.hypot(a.root.position.x - spots[i].x, a.root.position.z - spots[i].z) < 0.3; }), ring, { timeout: T(15000) })
     .catch(() => {});
@@ -2778,6 +3175,13 @@ async function physicsfxFlow(browser) {
   // round 4); killed there, its body must be drawn as its ragdoll lies, not as its last living poses (the smoothing
   // stayed on after the view stopped stepping it, and the dead stood mid-stride where they died, in the air if they
   // died there). Each corpse's drawn skin is checked against its bones (the skin matrix each bone's pose makes).
+  // A bot back on its feet and drawn: the blast's dead were all just let go, and on a slow page none may have
+  // respawned yet, or been drawn alive again (CI: no bot found, then "reading 'move'" of none).
+  await page.waitForFunction(() => {
+    const m = window.__match;
+    const me = m.slots[window.__cs.slot];
+    return m.combatants().some((c) => c !== me && c.alive && !c.mount && window.__cs.view.avatars.get(c.slot)?.anim?.ch);
+  }, null, { timeout: T(20000) }).catch(() => {});
   const farSlot = await page.evaluate(() => {
     const m = window.__match;
     const v = window.__cs.view;
@@ -2790,7 +3194,7 @@ async function physicsfxFlow(browser) {
     const z = me.move.pos.z + (f.z / len) * 22;
     const hit = v.raycastLevel({ x, y: me.move.pos.y + 30, z }, { x: 0, y: -1, z: 0 }, 80);
     const spot = { x, y: hit ? me.move.pos.y + 30 - hit.dist + 0.05 : me.move.pos.y, z };
-    if (bot.bot && !bot.queue.massHeld) {
+    if (bot.bot && !bot.queue.massHeld && !bot.queue.held) {
       bot.queue.push = (...inputs) => Array.prototype.push.apply(bot.queue, inputs.map((i) => ({ ...i, forward: 0, right: 0, buttons: 0 })));
       bot.queue.massHeld = true;
     }
@@ -2809,7 +3213,7 @@ async function physicsfxFlow(browser) {
     const at = window.__farBot.move.pos;
     return !!a?.anim?.smoothing && Math.hypot(a.root.position.x - at.x, a.root.position.z - at.z) < 0.3;
   }, farSlot, { timeout: T(15000) }).then(() => true, () => false));
-  const farBody = await page.evaluate(async ({ s, frames }) => {
+  const farBody = farSlot === null ? { errors: [], smoothing: [], tier: null, frames: 0 } : await page.evaluate(async ({ s, frames }) => {
     const m = window.__match;
     const v = window.__cs.view;
     clearInterval(window.__farHold);
@@ -2923,7 +3327,9 @@ async function glassChecks(browser) {
   const page = await ctx.newPage();
   const errors = [];
   page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
-  await page.goto(`${CLIENT}/?offline=training_range&test=1&god=1`);
+  // You alone on the range (&bots=1): its deathmatch bots respawned in front of the panels and took the rounds meant
+  // for them (CI: the bulletproof panel at full health after a dozen shots), and shot you about.
+  await page.goto(`${CLIENT}/?offline=training_range&test=1&god=1&bots=1`);
   await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown' && window.__match, null, { timeout: T(60000) });
   const drawn = await page.evaluate(() => {
     const g = window.__cs.view.scenario.glass.counts;
@@ -2953,14 +3359,20 @@ async function glassChecks(browser) {
       window.__cs.input.pitch = -0.02;
     }, z);
     await page.waitForTimeout(T(600)); // wait-ok: the view turns to the panel
+    // Each shot: the trigger held until the round has gone (the magazine drops: a press only fires on a frame that sees
+    // it, and a loaded page can take longer than any fixed hold between frames; CI and locally, a pistol never fired),
+    // then let go for frames that see it let go (a semi-automatic fires once a press).
     for (let k = 0; k < n; k++) {
       if (await page.evaluate(done)) break;
+      const before = await page.evaluate(() => { const me = window.__match.slots[window.__cs.slot]; return me.weapons.get(me.current)?.mag ?? 0; });
       await page.evaluate(() => (window.__autoInput = { buttons: 2 }));
-      await page.waitForTimeout(T(200)); // wait-ok: holds the trigger for a shot
+      const went = await page.waitForFunction((b) => { const me = window.__match.slots[window.__cs.slot]; return (me.weapons.get(me.current)?.mag ?? 0) < b; }, before, { timeout: T(5000) }).then(() => true, () => false);
       await page.evaluate(() => (window.__autoInput = { buttons: 0 }));
-      await page.waitForTimeout(T(250)); // wait-ok: between shots
+      await frames(page, 2);
+      fired += went ? 1 : 0;
     }
   };
+  let fired = 0;
   const z = (i) => -8 - i * 2.6;
   // Shots go with the frames (a held trigger fires on the next one), so on a slow renderer keep firing
   // until two rounds have landed, as a fixed few might not.
@@ -2979,9 +3391,30 @@ async function glassChecks(browser) {
     return { health: s ? s[1] : null, cracks: window.__cs.view.scenario.glass.counts.cracks };
   });
   check(proof.health !== null && proof.health > 0 && proof.health < 100 && proof.cracks > 0, `bulletproof glass stops the rounds, cracks where they strike and holds (${JSON.stringify(proof)})`);
-  await fireAt(z(0), 5, () => window.__match.scenario.destructibleAlive('panel_0') === false);
-  await page.waitForFunction(() => window.__cs.view.scene.meshes.some((m) => m.name === 'glassShard'), null, { timeout: T(5000) }).catch(() => {});
-  const broke = await page.evaluate(() => ({ alive: window.__match.scenario.destructibleAlive('panel_0'), shards: window.__cs.view.scene.meshes.filter((m) => m.name === 'glassShard').length }));
+  // Broken glass comes back after the map's glass time (4 s here): on a slow page that can pass between a shot and the
+  // next look (it broke, and was whole again by the check). So the break and its shards are noted as they happen.
+  await page.evaluate(() => {
+    window.__panelBroke = false;
+    window.__shardsSeen = 0;
+    clearInterval(window.__panelWatch);
+    window.__panelWatch = setInterval(() => {
+      if (window.__match.scenario.destructibleAlive('panel_0') === false) window.__panelBroke = true;
+      window.__shardsSeen = Math.max(window.__shardsSeen, window.__cs.view.scene.meshes.filter((x) => x.name === 'glassShard').length);
+    }, 10);
+  });
+  fired = 0;
+  await fireAt(z(0), 8, () => window.__panelBroke);
+  await page.waitForFunction(() => window.__shardsSeen > 0, null, { timeout: T(5000) }).catch(() => {});
+  const broke = await page.evaluate(() => {
+    const m = window.__match;
+    const me = m.slots[window.__cs.slot];
+    const i = m.map.entities.findIndex((e) => e.id === 'panel_0');
+    const st = m.scenario.fullState().es.find(([k]) => k === i);
+    const w = me.weapons.get(me.current);
+    clearInterval(window.__panelWatch);
+    return { alive: !window.__panelBroke, shards: window.__shardsSeen, health: st ? st[1] : null, gun: w?.def.id, mag: w?.mag, at: { x: +me.move.pos.x.toFixed(1), z: +me.move.pos.z.toFixed(1) } };
+  });
+  broke.fired = fired;
   check(broke.alive === false && broke.shards > 0, `the glass panel shatters into shards (${JSON.stringify(broke)})`);
   await page.evaluate(() => {
     clearInterval(window.__pin);
@@ -3078,7 +3511,7 @@ async function friendlyFireChecks(browser) {
     const errors = [];
     page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
     await page.addInitScript((on) => localStorage.setItem('cs.arcade', JSON.stringify({ map: 'sandgate', mode: 'core.tdm', bots: 3, skill: 'easy', scoreLimit: 40, minutes: 10, ...(on ? { friendlyFire: 'on' } : {}) })), ff === 'on');
-    await page.goto(CLIENT);
+    await page.goto(`${CLIENT}/?test=1`);
     await page.click('#nav-play');
     await page.click('#arcade-start');
     await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown', null, { timeout: T(90000) });
@@ -3116,13 +3549,76 @@ async function friendlyFireChecks(browser) {
       }
       return r;
     });
+    // A team kill (friendly fire on): the feed marks it TK, and nothing rewards it: no kill, the streak ends, no
+    // streak burst or "in a row", no kill marker. Primed one kill short of the first burst and streak reward.
+    if (ff === 'on') out.tk = await teamKillCheck(page);
     out[ff] = { ...shot, hurt: after?.hurt ?? null, errors: errors.join('; ') };
     await page.context().close();
   }
+  const tk = out.tk;
+  check(tk?.dead && tk.feed?.tk && /\bTK\b/.test(tk.feed.text), `a team kill shows in the kill feed (upper right) marked TK (${JSON.stringify(tk)})`);
+  check(tk?.dead && tk.kills === tk.kills0 && tk.streak === 0 && !tk.bursts && !tk.inARow && !tk.marker && tk.lifeKills === 0, `a team kill rewards nothing: no kill, the streak ends, no streak burst, no kill marker (${JSON.stringify(tk)})`);
   check(out.on.rule === 'on' && out.off.rule === 'off', `Match setup's friendly fire reaches the match (on: ${out.on.rule}, off: ${out.off.rule})`);
   check(out.on.mate && out.on.clear && out.on.hurt > 0, `friendly fire on: your rounds hurt a teammate in front of you (${JSON.stringify(out.on)})`);
   check(out.off.mate && out.off.clear && out.off.hurt === 0, `friendly fire off: your rounds pass through a teammate unhurt (${JSON.stringify(out.off)})`);
   check(!out.on.errors && !out.off.errors, `no page errors in the friendly fire matches (${out.on.errors}${out.off.errors})`);
+}
+
+/** Friendly fire on: you down a teammate in front of you. What the page showed for it (teams flow, friendlyFireChecks). */
+async function teamKillCheck(page) {
+  // What the page draws for it: effects, HUD lines and the kill marker, recorded as they happen.
+  await page.evaluate(() => {
+    const cs = window.__cs;
+    const seen = (window.__tkSeen = { fx: [], msgs: [], marker: false, feed: [] });
+    // Each kill-feed line as it is drawn (it fades after 5 s): who, the TK flag passed, the line's class and text.
+    const kill = cs.hud.kill.bind(cs.hud);
+    cs.hud.kill = (...a) => {
+      kill(...a);
+      const line = document.getElementById('feed').firstElementChild;
+      seen.feed.push({ killer: a[0], victim: a[1], tk: !!line?.classList.contains('tk'), text: line?.textContent.trim() ?? '', edge: line ? getComputedStyle(line).borderRightColor : '' });
+    };
+    const fx = cs.view.playGameplayFx.bind(cs.view);
+    cs.view.playGameplayFx = (name, ...rest) => (seen.fx.push(name), fx(name, ...rest));
+    const msg = cs.hud.showMessage.bind(cs.hud);
+    cs.hud.showMessage = (text, ...rest) => (seen.msgs.push(text), msg(text, ...rest));
+    const confirm = cs.hud.killConfirm.bind(cs.hud);
+    cs.hud.killConfirm = (...a) => ((seen.marker = true), confirm(...a));
+    // Two kills this life already, on the page and in the match: one more would be the first burst.
+    cs.lifeKills.set(cs.slot, 2);
+  });
+  const shot = await sim(page, (m, me) => {
+    const mate = globalThis.__ffMate;
+    if (!mate?.alive) return null;
+    const at = { x: me.move.pos.x + Math.sin(me.yaw) * 4, y: me.move.pos.y, z: me.move.pos.z + Math.cos(me.yaw) * 4 };
+    mate.move = { ...mate.move, pos: at, velY: 0, vx: 0, vz: 0, grounded: true };
+    mate.health = 1;
+    mate.armor = 0;
+    mate.invulnerable = false;
+    mate.shieldUntil = 0;
+    me.streak = 2;
+    const eye = { x: me.move.pos.x, y: me.move.pos.y + 1.6, z: me.move.pos.z };
+    me.pitch = Math.atan2(at.y + 1.2 - eye.y, 4);
+    const gun = [...me.weapons.values()].map((w) => w.def).find((d) => d.kind === 'hitscan' && d.damage > 0);
+    for (let i = 0; i < 3 && mate.alive; i++) m.fireNow(me, { ...gun, alt: undefined }, 0);
+    return { tick: m.tick, kills0: me.kills, slot: mate.slot };
+  });
+  if (!shot) return { dead: false };
+  // The kill reaches the page: its feed line drawn.
+  await page.waitForFunction((slot) => window.__tkSeen.feed.some((f) => f.victim === slot), shot.slot, { timeout: T(15000) }).catch(() => {});
+  const inMatch = await sim(page, (m, me) => ({ kills: me.kills, streak: me.streak ?? 0 }));
+  const page_ = await page.evaluate((slot) => {
+    const seen = window.__tkSeen;
+    const line = seen.feed.find((f) => f.victim === slot) ?? null;
+    return {
+      dead: !!line,
+      feed: line,
+      bursts: seen.fx.filter((f) => f === 'streak').length,
+      inARow: seen.msgs.some((t) => /in a row|kill streak/i.test(t)),
+      marker: seen.marker || document.getElementById('hitmarker').classList.contains('kill'),
+      lifeKills: window.__cs.lifeKills.get(window.__cs.slot) ?? 0,
+    };
+  }, shot.slot);
+  return { ...inMatch, kills0: shot.kills0, ...page_ };
 }
 
 /**
@@ -3488,8 +3984,13 @@ async function weaponsetsFlow(browser) {
     await p.waitForFunction(() => window.__front, null, { timeout: T(30000) });
     await p.evaluate(() => document.getElementById('nav-play').click());
     await p.waitForSelector('#setup-advanced-head', { timeout: T(30000) });
-    await p.click('#setup-advanced-head');
-    await p.waitForSelector('#setup-arsenal', { timeout: T(5000) });
+    // Advanced rules open (the head is a toggle, and the setup redraws as it settles: a click while it redrew, or on a
+    // section already open, left it shut): opened only while it says it is shut, until its Weapons fold is there.
+    await p.waitForFunction(() => {
+      const head = document.getElementById('setup-advanced-head');
+      if (head && head.getAttribute('aria-expanded') !== 'true') head.click();
+      return !!document.getElementById('setup-arsenal');
+    }, null, { timeout: T(10000), polling: 500 });
     await p.evaluate(() => {
       const d = document.getElementById('setup-arsenal');
       if (!d.open) d.querySelector('summary').click();
@@ -3508,11 +4009,17 @@ async function weaponsetsFlow(browser) {
   const started = (p) => p.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown', null, { timeout: T(60000) });
   /** What you carry now, and the random gun this life rolls (Chaos, Mixed bag). */
   const myKit = (p) => sim(p, (m, me, a, mod) => ({ set: m.weaponSet?.id, life: me.spawns, weapons: [...me.weapons.values()].map((w) => w.def.id), held: me.weapons.get(me.current)?.def.id, grenade: me.throwable?.kind, rolled: mod.randomGunFor(m.weaponSet, m.seed, me.slot, me.spawns) }));
-  /** Die and come straight back: the new life's loadout. */
+  /**
+   * Die and come straight back: the new life's loadout. The gun you die with drops at your body (rules.dropWeapons):
+   * standing idle at your spawn, the next life could spawn on that same point and pick last life's oddball straight up
+   * (four weapons; CI, once), or a bot's beside it. The lying drops are cleared as you die: what's checked is what a
+   * life spawns with.
+   */
   const respawn = async (p) => {
     const life = await sim(p, (m, me) => me.spawns ?? 0);
     await sim(p, (m, me) => {
       m.kill(me, null, 'core.respawn');
+      m.drops.length = 0;
       me.respawnTick = m.tick;
     });
     await simWait(p, (m, me, n) => me.alive && (me.spawns ?? 0) > n, life, T(15000));
@@ -3593,7 +4100,7 @@ async function weaponsetsFlow(browser) {
   const lives = [await myKit(page2)];
   for (let i = 0; i < 5; i++) lives.push(await respawn(page2));
   const mains = await sim(page2, (m, _me, _a, mod) => mod.setMainGuns(m.weaponSet).map((w) => w.id));
-  check(lives[0].set === 'chaos' && lives.every((l) => l.weapons[0] === 'core.knife' && l.weapons[1] === 'core.pistol' && l.weapons.length === 3 && mains.includes(l.held) && l.held === l.rolled && l.grenade === 'sheep'), `a Chaos match spawns you with a knife, a pistol and the life's oddball, and a sheep (${lives.map((l) => `life ${l.life}: ${l.held}${l.held === l.rolled ? '' : ` (rolled ${l.rolled})`}`).join(', ')})`);
+  check(lives[0].set === 'chaos' && lives.every((l) => l.weapons[0] === 'core.knife' && l.weapons[1] === 'core.pistol' && l.weapons.length === 3 && mains.includes(l.held) && l.held === l.rolled && l.grenade === 'sheep'), `a Chaos match spawns you with a knife, a pistol and the life's oddball, and a sheep (${lives.map((l) => `life ${l.life}: ${l.held}${mains.includes(l.held) ? '' : ' (not a main gun)'}${l.held === l.rolled ? '' : ` (rolled ${l.rolled})`}${l.weapons.length === 3 && l.weapons[0] === 'core.knife' && l.weapons[1] === 'core.pistol' && l.grenade === 'sheep' ? '' : ` [${l.weapons.join(' ')}; ${l.grenade}]`}`).join(', ')}${lives[0].set === 'chaos' ? '' : `; set ${lives[0].set}`})`);
   check(new Set(lives.map((l) => l.held)).size >= 3, `the spawn gun changes from life to life (${lives.map((l) => l.held?.replace('core.', '')).join(', ')})`);
   if (shots) {
     // Your own oddball in the picture, with the pause menu (headless pages open it) out of the way: the page draws the
@@ -3731,8 +4238,8 @@ async function ctfFlow(browser) {
 }
 
 /**
- * Breakthrough (core.breakthrough) on the Breakthrough Range (maps/test_breakthrough.json: a map every list offers,
- * Breakthrough its only mode; its id kept from when it was a test map). Match Setup offers the mode on a map with sectors, with its own settings
+ * Breakthrough (core.breakthrough) on the Breakthrough Range (maps/test_breakthrough.json: a test map, metadata.testOnly,
+ * that no list offers; the test reaches it with ?testmap=; Breakthrough its only mode). Match Setup offers the mode on a map with sectors, with its own settings
  * (reinforcements, sector time, second round), and greys it out on one without, saying why. In the match the HUD
  * shows your side, the sector strip, the pool and the objectives (marked, drawn in the world, on the minimap); bots
  * take the first sector on their own (the clock run forward, you kept out of it); both sides' spawns move on, the
@@ -3894,7 +4401,14 @@ async function breakthroughFlow(browser) {
   await page.addInitScript(() => {
     if (!localStorage.getItem('cs.arcade')) localStorage.setItem('cs.arcade', JSON.stringify({ map: 'sandgate', mode: 'core.tdm', bots: 3, skill: 'normal', scoreLimit: 40, minutes: 10, scoreAuto: true, timeAuto: true, teams: [4, 4] }));
   });
+  // The Breakthrough Range is a test map: Match Setup's list leaves it out, unless a test asks for it (?testmap=).
   await page.goto(`${CLIENT}/?test=1&god=1`);
+  await page.waitForFunction(() => window.__front, null, { timeout: T(30000) });
+  await page.evaluate(() => document.getElementById('nav-play').click());
+  await page.waitForSelector('#arcade-map', { state: 'attached', timeout: T(30000) });
+  const hidden = await page.evaluate(() => [...document.getElementById('arcade-map').options].some((o) => o.value === 'test_breakthrough'));
+  check(!hidden, 'Match Setup does not list the Breakthrough Range (a test map)');
+  await page.goto(`${CLIENT}/?test=1&god=1&testmap=test_breakthrough`);
   await page.waitForFunction(() => window.__front, null, { timeout: T(30000) });
   await page.evaluate(() => document.getElementById('nav-play').click());
   await page.waitForSelector('#arcade-map', { state: 'attached', timeout: T(30000) });
@@ -3902,9 +4416,9 @@ async function breakthroughFlow(browser) {
   await page.waitForSelector('.mode-tag-off[data-mode="core.breakthrough"]', { timeout: T(30000) }).catch(() => {});
   const off = await page.evaluate(() => document.querySelector('.mode-tag-off[data-mode="core.breakthrough"]')?.dataset.tip ?? null);
   check(/sectors/.test(off ?? ''), `Match Setup greys Breakthrough out on a map without sectors, saying why (${off})`);
-  // The Breakthrough Range is an ordinary map now (no test hook): Match Setup's map list offers it by its name.
+  // With ?testmap= the Range joins Match Setup's map list, by its name.
   const listed = await page.evaluate(() => [...document.getElementById('arcade-map').options].find((o) => o.value === 'test_breakthrough')?.textContent ?? null);
-  check(/Breakthrough Range/.test(listed ?? ''), `Match Setup lists the Breakthrough Range without any test hook (${listed})`);
+  check(/Breakthrough Range/.test(listed ?? ''), `with ?testmap= Match Setup lists the Breakthrough Range (${listed})`);
   // The map with sectors: Breakthrough is offered, its own settings in "what wins".
   // (The setup's map list: picked as its select does, the map browser being the way a player picks.)
   await page.evaluate(() => {
@@ -6471,6 +6985,9 @@ async function wholeBodies(page, frames, upright = []) {
             let lo = Infinity;
             let hi = -Infinity;
             let bad = 0;
+            // The full-detail mesh in the same pose (the same skeleton): the height the drawn level should have.
+            let lo0 = Infinity;
+            let hi0 = -Infinity;
             const off = [];
             for (const m of parts) {
               const level = m.getLOD(cam);
@@ -6482,12 +6999,18 @@ async function wholeBodies(page, frames, upright = []) {
               lo = Math.min(lo, b.lo);
               hi = Math.max(hi, b.hi);
               bad += b.bad;
+              const f = level === m ? b : skinned(m);
+              lo0 = Math.min(lo0, f.lo);
+              hi0 = Math.max(hi0, f.hi);
             }
             const spec = JSON.parse(a.specKey);
             const height = hi > lo ? hi - lo : 0;
             const want = fullHeight * (spec.size ?? 1);
+            const full = hi0 > lo0 ? hi0 - lo0 : 0;
+            // (`full`: the full-detail mesh in the same pose, for the message: Hyena Warrior's low-detail level is drawn
+            // 1.5-1.8 m against its full detail's 2.1 m in the same pose, on CI; see HANDOFF.)
             if ((off.length || bad || (upright.includes(slot) && height < want * 0.75)) && !failed.has(slot)) {
-              failed.set(slot, { slot, look: spec.look, dist: Math.round(dist), frame: n, height: +height.toFixed(2), want: +want.toFixed(2), nonNumbers: bad, off });
+              failed.set(slot, { slot, look: spec.look, dist: Math.round(dist), frame: n, height: +height.toFixed(2), want: +want.toFixed(2), full: +full.toFixed(2), nonNumbers: bad, off });
             }
           }
           if (++n >= frames) {
@@ -6556,7 +7079,7 @@ async function farBodies(browser) {
           c.health = Math.max(c.health, 100);
         }
       }, 5);
-      return { yaw, slots: bots.map((c) => c.slot) };
+      return { yaw, slots: bots.map((c) => c.slot), from: { x: p.x, y: p.y, z: p.z } };
     }
     return null;
   });
@@ -6611,7 +7134,9 @@ async function farBodies(browser) {
   await page.waitForFunction((slots) => slots.filter((s) => window.__cs.view.avatars.get(s)?.culled === false).length >= 8, setup.slots, { timeout: T(60000) }).catch(() => {});
   const back = await page.evaluate((slots) => slots.filter((s) => window.__cs.view.avatars.get(s)?.culled === false).length, setup.slots);
   const r = await wholeBodies(page, 12, setup.slots);
-  const broken = r.failed.map((f) => `${f.look} at ${f.dist} m, frame ${f.frame}: ${f.height} of ${f.want} m drawn${f.nonNumbers ? `, ${f.nonNumbers} vertices not numbers` : ''}${f.off.length ? `, ${f.off.join(', ')}` : ''}`);
+  const broken = r.failed.map((f) => `${f.look} at ${f.dist} m, frame ${f.frame}: ${f.height} of ${f.want} m drawn (full detail in that pose: ${f.full} m)${f.nonNumbers ? `, ${f.nonNumbers} vertices not numbers` : ''}${f.off.length ? `, ${f.off.join(', ')}` : ''}`);
+  // (For a failure: where you are now against where the crowd was set out from, and whether you are alive.)
+  if (r.failed.length) broken.push(`you ${await sim(page, (m, me, from) => `${Math.hypot(me.move.pos.x - from.x, me.move.pos.z - from.z).toFixed(1)} m from the setup, ${me.alive ? 'alive' : 'dead'}, ${me.deaths} deaths`, setup.from)}`);
   check(slept >= 8 && back >= 8 && r.checked >= 6 && r.failed.length === 0, `far characters draw their whole bodies after a fight, asleep out of view and awake again (${slept} slept, ${back} back in view, ${r.checked} checked past the low-detail switch of ${r.seen} seen; broken: ${broken.join('; ') || 'none'})`);
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await page.context().close();
@@ -6676,10 +7201,28 @@ async function gripsInPlay(browser) {
   // can land while you are already looking through the scope, or in third person): the gun is back in your hands when
   // the scope comes down (owner, 2026-11-07: Count Bonesworth's gun vanished after a sniper on a St. John's roof; the
   // copy took "off" from the view's root, switched off while scoped).
+  // The give puts the marksman in your hands itself (matchHost.give sets it current). The view draws it a frame or
+  // more later: pressing 3 while only the view lagged cycled on to the rifle (the same slot), and on a 1-2 fps CI page
+  // the presses kept landing between the switch and its frame, ending on the rifle. So wait for the held gun, and
+  // press 3 only while it isn't the marksman, each time until that press has taken.
+  // (What you held, as it changed from here to the scope coming down: for the message if the gun is the wrong one.)
+  await page.evaluate(() => {
+    window.__heldTrace = [];
+    let last = '';
+    const t0 = performance.now();
+    window.__heldIv = setInterval(() => {
+      const asked = [...new Set((window.__cs.local.pending ?? []).map((i) => i.weapon).filter(Boolean))].join('+');
+      const now = `${window.__cs.local.weapon?.id?.replace('core.', '')}/${window.__cs.view.viewWeapon?.replace('core.', '')}${window.__cs.local.alive ? '' : ' dead'}${asked ? ` asked ${asked}` : ''}${window.__cs.input.wheelOpen ? ' wheel' : ''} held#${window.__cs.local.held}`;
+      if (now !== last) window.__heldTrace.push(`${((performance.now() - t0) / 1000).toFixed(1)}s ${(last = now)}`);
+    }, 50);
+  });
   await page.evaluate(() => window.__give('core.marksman'));
-  for (let i = 0; i < 8 && (await page.evaluate(() => window.__cs.view.viewWeapon)) !== 'core.marksman'; i++) {
+  await page.waitForFunction(() => window.__cs.local.weapon?.id === 'core.marksman', null, { timeout: T(10000) }).catch(() => {});
+  for (let i = 0; i < 4; i++) {
+    const held = await page.evaluate(() => window.__cs.local.weapon?.id);
+    if (held === 'core.marksman') break;
     await page.keyboard.press('Digit3');
-    await sleep(600);
+    await page.waitForFunction((was) => window.__cs.local.weapon?.id !== was, held, { timeout: T(10000) }).catch(() => {});
   }
   await page.waitForFunction(() => window.__cs.view.viewWeapon === 'core.marksman' && window.__cs.view.viewmodel && window.__cs.local.raiseTicks === 0, null, { timeout: T(20000) }).catch(() => {});
   await page.evaluate(() => (window.__autoInput = { zoom: true }));
@@ -6709,7 +7252,8 @@ async function gripsInPlay(browser) {
     return { weapon: v.viewWeapon, on: !!vm && vm.isEnabled(), drawn: !!vm && vm.getChildMeshes().some((m) => drawn.has(m)) };
   });
   const scopeHand = await own();
-  check(scopedIn && swapped && back.on && back.drawn && !badHand(scopeHand), `the gun is back in your hands after the scope, its sharper copy having come in while scoped (scoped ${scopedIn}, copy in ${swapped}, ${JSON.stringify(back)}, ${fmt(scopeHand)})`);
+  const heldTrace = await page.evaluate(() => (clearInterval(window.__heldIv), window.__heldTrace.join(', ')));
+  check(scopedIn && swapped && back.on && back.drawn && !badHand(scopeHand), `the gun is back in your hands after the scope, its sharper copy having come in while scoped (scoped ${scopedIn}, copy in ${swapped}, ${JSON.stringify(back)}, ${fmt(scopeHand)}${back.weapon === 'core.marksman' ? '' : `; held/drawn: ${heldTrace}`})`);
   const body = await page.evaluate(() => window.__cs.view.gripReport().local?.mode);
   check(body === 'body', `the match draws your whole body in first person (${body})`);
   // Bots near and far (animation LOD, the low-detail mesh past 18 m): their drawn hands on their guns. Only bots
@@ -7699,6 +8243,9 @@ async function partyFlow(browser) {
   const hub = `&hub=127.0.0.1:${HUB_PORT}`;
   const host = await (await browser.newContext({ viewport: { width: 960, height: 540 } })).newPage();
   host.on('pageerror', (e) => errors.push(`host: ${e.message}`));
+  // (The host's warnings, for the message if the party doesn't arrive together.)
+  const hostLog = [];
+  host.on('console', (msg) => (msg.type() === 'warning' || msg.type() === 'error') && hostLog.length < 20 && hostLog.push(msg.text().slice(0, 200)));
   await host.addInitScript(() => localStorage.setItem('cs.name', 'Hosty'));
   await host.goto(`${CLIENT}/?offline=void_yard&gamemode=core.tdm${hub}`, { waitUntil: 'domcontentloaded', timeout: T(60000) });
   await host.waitForFunction(playing, null, { timeout: T(90000) });
@@ -7740,11 +8287,36 @@ async function partyFlow(browser) {
     await host.keyboard.press(`Digit${pickO + 1}`);
     const counted = await host.waitForFunction((i) => window.__cs.vote().votes[i] === 2, pickO, { timeout: T(15000) }).then(() => true, () => false);
     check(counted, `both votes are counted (${JSON.stringify(await host.evaluate(() => window.__cs.vote()))})`);
+    // (Where the host's page is as it goes, for the message if the party doesn't arrive together.)
+    await host.evaluate(() => {
+      window.__mapTrace = [];
+      let last = '';
+      const t0 = performance.now();
+      setInterval(() => {
+        const now = `${window.__cs?.map ?? '-'} ${window.__cs?.phase?.() ?? '-'} vote ${JSON.stringify(window.__cs?.vote?.() ? { w: window.__cs.vote().winner, open: window.__cs.vote().open } : null)}`;
+        if (now !== last) window.__mapTrace.push(`${((performance.now() - t0) / 1000).toFixed(1)}s ${(last = now)}`);
+      }, 100);
+    });
+    // (What the host tells its friends as it travels, and what the friend's page shows: for the message.)
+    await host.evaluate(() => {
+      window.__travelLog = [];
+      const t = window.__cs.transport;
+      const orig = t.travelGuests?.bind(t);
+      if (orig) t.travelGuests = (name) => { window.__travelLog.push(`travelGuests(${name}) links ${JSON.stringify([...(t.links?.values() ?? [])].map((r) => ({ slot: r.slot, open: r.link?.open ?? null })))}`); return orig(name); };
+    });
+    await friend.evaluate(() => {
+      window.__shown = [];
+      const h = window.__cs.hud;
+      const orig = h.showMessage.bind(h);
+      h.showMessage = (text, ...a) => { window.__shown.push(String(text).slice(0, 80)); return orig(text, ...a); };
+    });
     await sim(host, (m) => (m.phaseEndTick = m.tick + 60 * 6));
     const together = await simWait(host, (m, _me, id) => m.map.metadata.id === id && m.combatants().some((c) => c.kind === 'human' && c.name === 'Friend'), maps[pickO], T(150000));
     const s2 = together ? await sides() : {};
     const fill2 = await sim(host, (m) => m.combatants().length);
-    check(together && s2.Friend?.team === s2.Hosty?.team && fill2 === fill1, `the party goes on to the voted map together, on one side, bots filling the rest (${JSON.stringify({ s2, fill1, fill2 })})`);
+    // (Where each side is, for the message if they didn't get there together.)
+    const whereNow = together ? null : { told: await host.evaluate(() => window.__travelLog).catch(() => null), shown: await friend.evaluate(() => window.__shown).catch(() => null), trace: await host.evaluate(() => window.__mapTrace).catch(() => null), log: hostLog, host: await sim(host, (m) => ({ map: m.map.metadata.id, phase: m.phase, humans: m.combatants().filter((c) => c.kind === 'human').map((c) => c.name) })).catch((e) => String(e)), friend: await friend.evaluate(() => ({ map: window.__cs?.map ?? null, phase: window.__cs?.phase?.() ?? null, local: !!window.__cs?.local, menu: !!window.__front && !window.__cs, reconnect: document.getElementById('reconnect')?.textContent ?? null, status: [...document.querySelectorAll('.status, .front-status, #front-status')].map((e) => e.textContent).filter(Boolean).join(' | ').slice(0, 200) })).catch((e) => String(e)) };
+    check(together && s2.Friend?.team === s2.Hosty?.team && fill2 === fill1, `the party goes on to the voted map together, on one side, bots filling the rest (${JSON.stringify({ s2, fill1, fill2, ...(whereNow ? { whereNow } : {}) })})`);
     const friendThere = await friend.waitForFunction((id) => window.__cs?.map === id && window.__cs.local, maps[pickO], { timeout: T(90000) }).then(() => true, () => false);
     check(friendThere, "the friend's own page is on the new map too");
   }

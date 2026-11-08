@@ -35,11 +35,30 @@ Already done from the owner's earlier ask: **the real buildable area.**
    - Next to the cursor, before you click, it now also says why it's refused: overlap, past the build limit, no floor
      under it, and so on (`checkPlacement`, `buildLimitReason`).
    - The same goes for props and set pieces.
+   - **As built (2026-11-08, `wip/mapmaker-p1a`):** `PlacementCheck` refusals carry `short` beside `reason`
+     (`checkLayout`, `buildLimitShort`); `shared/src/editor/ghostWhy.ts` has `tileGhostCheck` (the Platform-on-an-
+     upper-storey rule too), `zoneNote` and `entityGhostNote` (spawns, pickups, props, vehicles, NPCs: "No floor
+     under it" from the ground within 1.5 m or a floor, block or wall top within 1 m, as the spawn check; outside the
+     boundary; the scenery note; hung props and objects only get the zone notes). The hover card shows it (red ✗,
+     amber ⚠, blue ℹ, each with its words); the status line has the whole reason. Worked out once per cell / spot and
+     document version. Entities are warned, not refused (owner's call, HANDOFF). Tests `shared/test/ghostWhy.test.ts`;
+     e2e in `editorux` (`editorPhase1aChecks`).
 2. **A live budget bar.**
    - It covers entities, destructibles, vehicles, lights, props and draw estimate, the environment budget and the map's
      size (RESOURCE_BUDGETS, MAP_BUDGETS.md).
    - It is colour-coded and names whatever tips a budget over.
    - It updates on each edit from cheap counters, not a full validation every frame.
+   - **As built (2026-11-08, `wip/mapmaker-p1a`):** `shared/src/editor/budgetCounters.ts`: `BUDGET_ROWS` (entities,
+     props, prop models, draws, lights, destructibles, vehicles, the four environment budgets, the file's size),
+     `countBudgets` (from scratch) and `BudgetTracker`, fed by `EditHistory.onChange` (each command, undo's inverse,
+     reset): it counts only what the command touches; a set-piece, theme or set-piece-definition edit recounts the
+     parts (as played, from the cached expansion); a settings edit re-measures the file without its items (the
+     file's size is exact: `serializeMap`'s bytes, per item cached). The draw estimate is a draw per different
+     untinted prop model, per tinted prop, per species variant and per liquid, against 80 + 24 + 32 (owner's call).
+     UI `client/src/editor/budgetBar.ts`: a pill beside the level strip (OK / Near at 80 % / Over, colour and word),
+     naming the worst budget; its name selects what it counts (`budgetCulprits`); the arrow lists every row. Test
+     `shared/test/budgetCounters.test.ts` (counters = full count after commands, a batch, a stroke, every undo and
+     redo; over a budget exactly when the validator warns).
 3. **A measure tool.** Click two points to get the distance, the height difference and the slope. It snaps to cells
    and surfaces.
    - **As built** (`wip/mapmaker-p1b`): the Measure tool, U and the tool bar (`editor/measureTool.ts`; the maths in
@@ -66,6 +85,16 @@ Already done from the owner's earlier ask: **the real buildable area.**
 5. **A shortcut overlay.**
    - Press `?` to see every key.
    - It is generated from the same table the keys are bound with, so it can't go stale.
+   - **As built (2026-11-08, `wip/mapmaker-p1a`):** `shared/src/editor/keymap.ts`: `EDITOR_KEYS` (pressed keys, first
+     match wins), `EDITOR_KEY_NOTES` (held keys: `FLY_KEYS`, `FREE_PLACE_KEYS`; the mouse; the palette's own keys),
+     `matchEditorKey`, `editorKeyGroups`. MapMaker's keydown handler is `matchEditorKey` plus `keyActions` (a Record
+     over every action); the fly camera and free placing read their codes from the table. Every key does what it did,
+     except Shift+/ (`?`), which opens the list (/ still searches). Phase 1B's U (measure) and its Esc order (a ring
+     drag cancelled first, then a measurement cleared, then Select) are in the table (`measure`, `escape`), as are the
+     measure tool's no-snap keys (`FREE_MEASURE_KEYS`) and the ring drag in the Mouse group. Overlay `client/src/editor/keyOverlay.ts`: a modal
+     dialog (MapMaker's keys are off while it's open), the tool bar's **Keys** button. Test `shared/test/keymap.test.ts`
+     (every key × Shift × Ctrl/⌘ against the old handler; every key it answers is listed; no key matched by hand in
+     editorApp.ts).
 
 ## Phase 2: the interface
 1. **Mode tabs:** Build, Props, Gameplay, Logic, Environment, Paths, Test. Each has its own palette and inspector.
@@ -83,9 +112,27 @@ Already done from the owner's earlier ask: **the real buildable area.**
 1. **Play from here.**
    - Start a local test match with you standing at the camera spot.
    - Esc returns to MapMaker at the same view, with undo history intact.
+   - **As built** (`wip/mapmaker-p3a`): Shift+F5 and ▶ Here beside PLAY TEST (`EditorApp.playFromHere`). The spot is
+     shared `editor/playFromHere.ts` (`playFromHereSpot`): the floor, roof, block top or ground straight under the
+     camera (`restUnder` over the map's boxes, blocks and solid props, and `shownGround`), else the nearest such spot
+     in rings of 0.5 m out to 4 m, with room for a standing player (no box between a step and 1.8 m up, the player's
+     radius round) and ground no steeper than PLAYER.maxSlopeDegrees; refused with a reason (nothing below, no room,
+     too steep, outside the boundary). The match: TestRequest/LocalMatchOptions `startAt`, `Match.startHere` (the
+     player put there at once, out of any race car or drop plane, and any life before play begins starts there too;
+     `beginPlay` clears it, so later lives use the spawn points); the client's first life takes the server's pitch
+     (session.ts). The editor is only hidden while you play, so the view, selection and history are as they were.
+     Unit tests `mapmakerWorkflow.test.ts`; e2e `editorWorkflowChecks` in `editorux`.
 2. **A top-down plan view:** an overhead orthographic camera, level by level.
    - It shows tile outlines and icons for spawns, objectives and pickups.
    - It exports a PNG of the plan.
+   - **As built** (`wip/mapmaker-p3a`): K and the top bar's Plan (`editor/planView.ts`, `PlanView`; the maths in shared
+     `editor/planView.ts`: `planFrame`, `planToScreen` / `screenToPlan`, `planZoom` about the pointer, `planPan`,
+     `planTiles`, `planMarkers`, unit-tested). The editor camera turns orthographic, straight down, north up, over
+     the level the selector picks (Show all off while it's on); `scene.clipPlane` cuts at 0.6 of a level above the
+     floor (the terrain's materials are exempt, so hills stay whole). Tile outlines and icons are a 2D canvas over the
+     view (redrawn only when the frame, level, selection or document changes). Picking and dragging are the editor's
+     own (the pointer's ray points straight down). Export PNG: the next frame without the editing aids, the icons
+     over it, a key strip, downloaded as `<map>-<level>-plan.png`. Nothing is stored.
 3. **Groups.**
    - Group a selection, then move, turn, mirror or duplicate it as one, and ungroup it.
    - Groups belong to one map. Set pieces are the shareable kind, and groups reuse their selection code.
@@ -101,6 +148,13 @@ Already done from the owner's earlier ask: **the real buildable area.**
 8. **The card-shot camera.**
    - Set the menu card shot from the current view, eye level by default.
    - Preview it in the card's frame.
+   - **As built** (`wip/mapmaker-p3a`): Map properties → Card shot (`editor/cardShot.ts`; shared `editor/cardShot.ts`):
+     Set card shot… (eye level on: `eyeLevel`, 1.7 m over `restUnder`, kept as you fly), Preview, Clear. The frame is
+     16:9, centred on the camera's axis, and the camera's FOV over it is the card picture's (`cardViewFov`: 0.9 rad
+     across the frame's height, as capture-map-shots.mjs renders 960×540). Saved as `metadata.cardCamera` (position,
+     yaw, pitch; format v30, a no-op migration; left out of the content hash like the thumbnail camera) by
+     `setCardCameraCommand`, one undo step. `capture-map-shots.mjs` takes the card camera first, then
+     `thumbnailCamera`, then its automatic choice.
 9. **Turning by mouse** (owner, 2026-11-07: "add to the mapmaker overhaul, it makes most sense").
    - **Today:** you turn things only by R / Shift+R, the right-click menu's Rotate and Rotate a little, the
      toolbar's rotate button, and the inspector's "Facing °" field. The gizmo's arrows only show the axes and can't

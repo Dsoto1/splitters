@@ -113,12 +113,16 @@ const OPEN_COST = [1, 1.2, 1.45];
 const PARKOUR_COST = 1.6;
 /**
  * Low headroom (nav/solo.ts LOW_AREA): ground with less room over it than a large body stands in (1.18 × 1.8 m, and
- * 5 cm), and a large body's radius round it. A tall body's route (findPath `tall`) prices it at LOW_COST a metre:
- * any way round that isn't hundreds of times longer is taken first, so a tall bot goes under a low roof only where
- * nothing else gets there (then it crouches through: brain.ts lowRoute).
+ * 5 cm), and a large body's radius round it. A tall body's route (findPath `tall`) prices it at LOW_ROOF_COST a metre.
  */
 const LOW_HEADROOM: LowHeadroom = { height: BODY_SIZES.large.scale * PLAYER.height + 0.05, reach: 0.4 };
-const LOW_COST = 1000;
+/**
+ * The price a metre of ground under a low roof costs a tall body's route, over walking's 1 (owner, 2026-11-08: the
+ * moderate price). A way round up to about four times the low stretch's length is taken first; past that the bot
+ * crouches through (brain.ts lowRoute). At 1,000 (any way round, however long) Diamond Park's large defenders left
+ * the dugouts by the back stairs and its captures fell 13 → 5 over twelve seeds; docs/BOT_AI_PLAN.md, "Part 2".
+ */
+export const LOW_ROOF_COST = 4;
 /** Bodies taller than the navmesh's (size over this multiple of the 1.8 m standard) route as tall (findPath `tall`). */
 export const TALL_SIZE = 1.02;
 const FOUR = [
@@ -517,8 +521,8 @@ export class NavWorld {
    * Straight-path corners from a to b, or null if b is unreachable from a. `shut`: openings (markOpenings' flag
    * bits) the route must keep out of, such as doors shut to the bot's team that no button opens for it. `agile`:
    * parkour links at walking's cost (PARKOUR_COST otherwise). `tall`: a body taller than the navmesh's (a large look):
-   * ground under low headroom costs LOW_COST a metre, so the route goes round it wherever a way round exists; one that
-   * still goes under (no way round, or it starts or ends there) sets lastLow.
+   * ground under low headroom costs LOW_ROOF_COST a metre, so the route goes round it where the way round is short
+   * enough; one that still goes under (crouching through is cheaper, or it starts or ends there) sets lastLow.
    */
   findPath(a: Vec3, b: Vec3, shut = 0, partial = false, open = 0, agile = false, tall = false): Vec3[] | null {
     if (!simProfile.on) return this.findPathNow(a, b, shut, partial, open, agile, tall);
@@ -568,7 +572,7 @@ export class NavWorld {
     if (this.gone) shut |= this.gone & ~this.navMesh.getPolyFlags(s.nearestRef).flags & ~this.navMesh.getPolyFlags(e.nearestRef).flags;
     const failKey = `${s.nearestRef}:${e.nearestRef}:${shut}`;
     // A tall body, with low headroom on the map: round it, unless the route starts or ends under it (getting out from
-    // under, or a goal there: crouching is the only way), or this start and end went under it before (no way round:
+    // under, or a goal there: crouching is the only way), or this start and end went under it before (crouching won:
     // the plain search, not the costly one that explores everything cheaper than going under).
     let heavy = false;
     if (tall && this.lowSpans) {
@@ -798,7 +802,7 @@ export class NavWorld {
       f.excludeFlags = shut;
       f.setAreaCost(OPEN_AREA, OPEN_COST[open] ?? 1);
       f.setAreaCost(PARKOUR_AREA, agile ? 1 : PARKOUR_COST);
-      f.setAreaCost(LOW_AREA, tall ? LOW_COST : 1);
+      f.setAreaCost(LOW_AREA, tall ? LOW_ROOF_COST : 1);
       if (this.filters.size >= 64) this.filters.clear();
       this.filters.set(key, f);
     }
