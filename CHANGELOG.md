@@ -22,6 +22,8 @@ made only on a commit that passed CI on a check branch.
   shows it again. It is stored in the map as a camera (map format v30, `metadata.cardCamera`; older maps load as they
   were), and the card picture is rendered from it by the capture tool.
 
+## 0.9.0 (2026-11-08)
+
 **MapMaker: measure, props on surfaces, Randomise** (MapMaker overhaul Phase 1, items 3 and 4):
 - **Measure tool** (U, or Measure in the tool bar): click two points for the distance, the height difference and the
   slope (degrees and percent); a third click chains a path and shows its total. It snaps to the grid, to surfaces and
