@@ -82,6 +82,7 @@ The workflow is unchanged (CLAUDE.md):
 - Claimed: the map schema's backdrop Scenery list (a new value `volcano`, no format bump; `wip/mapmaker-sandfall`), MapMaker lane, 2026-11-08.
 - Claimed: `maps/test_coverage.json` (the new set pieces and Arena kit tiles, through MapMaker; `wip/mapmaker-setpieces`), MapMaker lane, 2026-11-08.
 - Claimed: `content/setpieces/**` and the set-piece alias table (set pieces part 5), MapMaker lane, 2026-11-08.
+- Claimed: `maps/skyward.json`, `maps/sky_islands.json`, `maps/grand_marquee.json`, `maps/obsidian_orb.json`, `maps/reactor.json`, `maps/serpent_gorge.json`, `maps/erosion.json`, `maps/m4_outpost.json`, `maps/iron_compound.json`, trap-spot fixes (this session, `wip/trap-spots`), 2026-11-08.
 
 **In flight: MapMaker overhaul (other account)** (owner, 2026-11-08: a second session owns this lane;
 docs/MAPMAKER_OVERHAUL_PLAN.md). Branches `wip/mapmaker-*` / `check/mapmaker-*` only.
