@@ -1596,13 +1596,14 @@
         {"box":[-4,-2,-1,-1,-1.5,0]},
         {"box":[1,-2,-1,4,-1.5,0]},
         {"box":[-1,-2.3,-1,1,-2,2]},
-        {"box":[-4,-2.3,-4,4,-2,-1]}
+        {"box":[-4,-2.3,-4,4,-2,-1]},
+        {"box":[-3.7,-2.6,-3.7,3.7,-2.3,3.7]}
       ],
       "solids": [
         {"flight":{"axis":"z","dir":1,"from":-2,"across":[-1,1],"steps":8,"base":-2,"run":0.5,"floor":-2}}
       ],
       "notes": {
-        "design": "Set pieces part 5: the ground (solid down to the arena floor, so nothing shows under it) along the local north, three tiers 1 m deep and 0.5 m high (a jump up, a step down; seats to fight from), then 3 m of the arena floor 2 m down. The stair (eight 0.25 m steps of 0.5 m, 2 m wide) climbs north up the middle from the arena floor, on a floor of its own, so the terrain is carved under it too. Every box is a floor, so on terrain the tiers carve their own slot."
+        "design": "Set pieces part 5: the ground (solid down to the arena floor, so nothing shows under it) along the local north, three tiers 1 m deep and 0.5 m high (a jump up, a step down; seats to fight from), then 3 m of the arena floor 2 m down. The stair (eight 0.25 m steps of 0.5 m, 2 m wide) climbs north up the middle from the arena floor, on a floor of its own, so the terrain is carved under it too. Every box is a floor, so on terrain the tiers carve their own slot; a buried carve floor 0.3 m inside the cell edge under all of it (as the sunken trench's) takes the ground under the risers below the arena floor, so no ground shows at the foot of a tier."
       }
     },
     {
@@ -1624,10 +1625,11 @@
         {"box":[0,-2,-4,1,-1,0]},
         {"box":[-4,-2,-1,0,-1.5,0]},
         {"box":[-1,-2,-4,0,-1.5,-1]},
-        {"box":[-4,-2.3,-4,-1,-2,-1]}
+        {"box":[-4,-2.3,-4,-1,-2,-1]},
+        {"box":[-3.7,-2.6,-3.7,3.7,-2.3,3.7]}
       ],
       "notes": {
-        "design": "Set pieces part 5: Arena Tiers turning the corner (north and east), meeting an Arena Tiers on each side, the arena floor in the south-west 3 m square. No stair: the sides have them."
+        "design": "Set pieces part 5: Arena Tiers turning the corner (north and east), meeting an Arena Tiers on each side, the arena floor in the south-west 3 m square, the buried carve floor under it all. No stair: the sides have them."
       }
     }
   ]
