@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 15,
+  "formatVersion": 29,
   "metadata": {
     "id": "m4_outpost",
     "name": "Outpost Siege",
@@ -15,7 +15,15 @@
     },
     "supportedModes": [
       "core.coop"
-    ]
+    ],
+    "release": {
+      "mapId": "m_sdum2n4t3d4kld5f",
+      "versionId": "v_y6kagxzjxxcwrtb6",
+      "revision": 3,
+      "contentHash": "sha256:f6fdf1bc5f79933b60a48c11b97029174ced64b1b2cd261a9d48e61e48ae88dc",
+      "schemaVersion": 29,
+      "releasedAt": "2026-11-08T21:05:52.729Z"
+    }
   },
   "classicStructure": {
     "cellSize": 8,
@@ -48,7 +56,7 @@
       },
       {
         "id": "t_uplink",
-        "tile": "core.room_dais",
+        "tile": "core.room",
         "x": 3,
         "y": 0,
         "z": 0,
@@ -56,11 +64,14 @@
       },
       {
         "id": "t_north",
-        "tile": "core.room_cover",
+        "tile": "core.room",
         "x": 3,
         "y": 1,
         "z": 0,
-        "rotation": 0
+        "rotation": 0,
+        "options": {
+          "layout": "low_cover"
+        }
       },
       {
         "id": "t_south",
@@ -287,8 +298,8 @@
       "id": "pk_damage",
       "position": [
         24,
-        0,
-        1
+        0.75,
+        0
       ],
       "kind": "pickup",
       "item": "core.powerup_damage",
@@ -735,6 +746,72 @@
       "yaw": 0,
       "health": null,
       "explosiveOnly": false
+    },
+    {
+      "id": "block_i1ag3u8db3",
+      "position": [
+        24,
+        0,
+        0
+      ],
+      "kind": "block",
+      "size": [
+        2.5,
+        0.75,
+        2
+      ],
+      "yaw": 0,
+      "material": "core.circuit",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_89hph7ium1",
+      "position": [
+        24,
+        0,
+        -1.25
+      ],
+      "kind": "block",
+      "size": [
+        2,
+        0.5,
+        0.5
+      ],
+      "yaw": 0,
+      "material": "core.circuit",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_p91hu2faa6",
+      "position": [
+        24,
+        0,
+        -1.75
+      ],
+      "kind": "block",
+      "size": [
+        2,
+        0.25,
+        0.5
+      ],
+      "yaw": 0,
+      "material": "core.circuit",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
     }
   ],
   "factions": [
