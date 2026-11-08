@@ -319,7 +319,7 @@ import { KeyOverlay } from './keyOverlay.ts';
 import { MeasureTool } from './measureTool.ts';
 import { RotateRing } from './rotateRing.ts';
 import { quickFacings } from './quickFacings.ts';
-import { isRetiredTile, retiredTilePanel } from './retiredTiles.ts';
+import { isRetiredTile, replaceTilePanel } from './retiredTiles.ts';
 import { PropPlaceOptions } from './propPlaceOptions.ts';
 import { SurfaceBoxes } from './surfaceBoxes.ts';
 import { testMode } from '../testMode.ts';
@@ -926,9 +926,9 @@ export class EditorApp {
     return this.placeLibCache.lib;
   }
 
-  /** Replace all of a retired tile with the set piece that replaced it (one undo step), and select them. */
-  private replaceRetired(tile: string): void {
-    const r = replaceTilesWithSetPieceCommand(this.doc, tile, undefined, coreCatalog, this.setPieceLib);
+  /** Replace all of a tile with a set piece (a retired tile's own replacement, or any), one undo step, and select them. */
+  private replaceTiles(tile: string, piece: string): void {
+    const r = replaceTilesWithSetPieceCommand(this.doc, tile, piece, coreCatalog, this.setPieceLib);
     if (!this.run('Replace all', 'error' in r ? r : r.command) || 'error' in r) return;
     this.setSelection({ tiles: [], entities: [], setPieces: r.placements.map((p) => p.id) });
     this.toast(`Replaced ${r.placements.length} ${coreCatalog.get(tile)?.displayName ?? tile} with ${this.pieceDef(r.placements[0]!.piece)?.displayName ?? r.placements[0]!.piece}`);
@@ -4822,8 +4822,7 @@ export class EditorApp {
     } else if (tiles.length === 1 && entities.length === 0 && !pieces.length) {
       const t = doc.classicStructure.tiles.find((x) => x.id === tiles[0])!;
       el.append(h2(coreCatalog.get(t.tile)?.displayName ?? t.tile));
-      const retired = retiredTilePanel(doc, t.tile, (id) => this.pieceDef(id)?.displayName ?? id, (tile) => this.replaceRetired(tile));
-      if (retired) el.append(retired);
+      el.append(replaceTilePanel(doc, t.tile, [...piecesFor(doc, this.setPieceLib).values()], (tile, piece) => this.replaceTiles(tile, piece)));
       const type = document.createElement('select');
       for (const def of coreCatalog.all()) type.append(new Option(def.displayName, def.id, false, def.id === t.tile));
       type.addEventListener('change', () => this.run('Replace tile', updateTileCommand(doc, t, { ...t, tile: type.value })));
