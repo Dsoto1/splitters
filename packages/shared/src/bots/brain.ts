@@ -1,6 +1,6 @@
 import type { LookHitbox } from '../sim/hitbox.ts';
 import { angleDelta, clamp, createRng, distance, horizontalDistance, lookAngles, type Vec3, hypot } from '../math.ts';
-import type { NavWorld } from '../nav/index.ts';
+import { TALL_SIZE, type NavWorld } from '../nav/index.ts';
 import type { Corridor } from '../nav/corridors.ts';
 import { parkourAlong, parkourInput, type ParkourKind, type ParkourLink } from '../nav/parkour.ts';
 import { LIFT_FLAG, PLAYER, STANCES, TICK_DT, TICK_RATE, type Stance } from '../sim/constants.ts';
@@ -570,6 +570,16 @@ export class BotBrain {
   private yaw = 0;
   private pitch = 0;
   private stuckCheck: { tick: number; pos: Vec3 } | null = null;
+  /**
+   * The route goes under a low roof (NavWorld.lastLow: a tall body with no way round, or a goal under one): it crouches
+   * where there's no room to stand (mustDuck). Off on every other route, so a tall body never ducks on its way
+   * anywhere a way round exists.
+   */
+  private lowRoute = false;
+  /** Ducking under something too low for its body, until then (mustDuck). */
+  private duckUntil = -Infinity;
+  /** Ticks this bot spent ducking under a low roof (measuring: how rare the fallback is). */
+  duckTicks = 0;
   private jumpNext = false;
   private lastPos: Vec3 | null = null;
   /** The tick of the previous think (big matches skip some ticks for bots with nobody to fight). */
@@ -776,6 +786,8 @@ export class BotBrain {
     this.hurtTick = this.underFireTick = -Infinity;
     this.retreatGoal = null;
     this.retreatMode = null;
+    this.lowRoute = false;
+    this.duckUntil = -Infinity;
     this.link = null;
     this.linkClock = null;
     this.spacing = 'hold';
@@ -2156,6 +2168,13 @@ export class BotBrain {
     }
     if (this.zipPress || me.riding) doing = 'zip';
     this.zipPress = false;
+    // A tall body on a route under a low roof (no way round it: lowRoute) ducks where it can't stand, as a player does.
+    // Only then: on every other route it goes round, and keeps its sprint (a carrier that crouched home lost captures).
+    if (this.lowRoute && moveYaw !== null && this.mustDuck(view, moveYaw)) {
+      stance = Math.max(stance, 1) as Stance;
+      sprint = false;
+      this.duckTicks++;
+    }
     if (sprint && moveYaw !== null && forward > 0.3) buttons |= BUTTON_SPRINT;
     else if (stance === 2) buttons |= BUTTON_PRONE;
     else if (stance === 1) buttons |= BUTTON_CROUCH;
@@ -3664,6 +3683,32 @@ export class BotBrain {
     return Math.atan2(wx + px, wz + pz);
   }
 
+  /**
+   * A body taller than the navmesh's standing on its ground: whether there's no room to stand a step ahead along
+   * `moveYaw` (or here) but room to crouch; then it ducks for a moment. Looked at every few ticks (a shape query), only
+   * on a route under a low roof (lowRoute).
+   */
+  private mustDuck(view: BotWorldView, moveYaw: number): boolean {
+    const me = view.self;
+    const k = me.size ?? 1;
+    if (k <= TALL_SIZE || me.grounded === false) return false;
+    const tick = view.tick;
+    if (tick < this.duckUntil) return true;
+    if ((tick + this.slot) % DECIDE_TICKS !== 0) return false;
+    const r = PLAYER.radius * k;
+    // (A step up ahead counts: the head rises with the feet.)
+    for (const ahead of [0, 0.5, 1]) {
+      for (const up of [0, PLAYER.maxStepHeight - 0.02]) {
+        const at = { x: me.pos.x + Math.sin(moveYaw) * ahead, y: me.pos.y + up, z: me.pos.z + Math.cos(moveYaw) * ahead };
+        if (!view.physics.headroom(at, STANCES[0].height * k, r) && view.physics.headroom(at, STANCES[1].height * k, r)) {
+          this.duckUntil = tick + Math.round(TICK_RATE * 0.6);
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
   /** Heading for a ladder's foot (within a few metres) or up or down one: the path's leg there is too steep to walk. */
   private atLadder(me: Vec3): boolean {
     const i = this.pathIndex;
@@ -3759,12 +3804,18 @@ export class BotBrain {
         const agile = this.agile(view);
         // Along its group's corridor (orderTarget asked for it just now), else the usual search.
         const al = this.along;
+        // A body taller than the navmesh's (a large look) routes round low roofs (NavWorld.findPath `tall`).
+        const tall = this.tall(view);
+        this.lowRoute = false;
         if (al && view.tick - al.tick <= DECIDE_TICKS * 2 && !offLifts && !this.standIn) {
-          found = view.nav.pathAlong(me.pos, al.c.polys, to, view.shut ?? 0);
+          found = view.nav.pathAlong(me.pos, al.c.polys, to, view.shut ?? 0, tall);
           if (found) this.alongRoutes++;
           else al.failed = view.tick;
         }
-        found ??= (offLifts && view.nav.findPath(me.pos, to, offLifts, false, this.coverRoutes, agile)) || view.nav.findPath(me.pos, to, 0, true, this.coverRoutes, agile);
+        if (!found) {
+          found = (offLifts && view.nav.findPath(me.pos, to, offLifts, false, this.coverRoutes, agile, tall)) || view.nav.findPath(me.pos, to, 0, true, this.coverRoutes, agile, tall);
+          this.lowRoute = tall && !!found && view.nav.lastLow;
+        }
       }
       if (!backedOff && !onto) {
         this.pathFails = found ? 0 : Math.min(this.pathFails + 1, 6);
@@ -3808,19 +3859,21 @@ export class BotBrain {
         // spawned inside its bunker, where the shortest way out is the blast door only the attackers can open: they
         // stood there until they died, with their own rear door a few steps away).
         if (!this.pressPlan && view.shut) {
-          const round = view.nav.findPath(me.pos, goal, view.shut);
+          const round = view.nav.findPath(me.pos, goal, view.shut, false, 0, false, this.tall(view));
           if (round) {
             this.path = round;
+            this.lowRoute = view.nav.lastLow;
             if (this.pathBlocked(view)) this.path = [];
           }
           // No way round either (a gate a button opens now and then, on cooldown): as near the goal as it gets this side
           // of what's shut, to wait there (keeping watch) for it to open or a button to be ready, asking again every
           // second. Before, it stood at the button, pressing a button that did nothing, every 3 s.
           if (!this.path.length) {
-            const near = view.nav.findPath(me.pos, goal, view.shut, true);
+            const near = view.nav.findPath(me.pos, goal, view.shut, true, 0, false, this.tall(view));
             const end = near?.[near.length - 1];
             if (near && end && horizontalDistance(end, goal) > 1) {
               this.path = near;
+              this.lowRoute = view.nav.lastLow;
               this.standIn = end;
             }
           }
@@ -3893,6 +3946,11 @@ export class BotBrain {
   }
 
   /** Flankers, recon, snipers and Arena bots: parkour links cost them no more than walking (NavWorld.findPath `agile`). */
+  /** A body taller than the navmesh's 1.8 m (a large look): routes round low roofs (NavWorld.findPath `tall`). */
+  private tall(view: BotWorldView): boolean {
+    return (view.self.size ?? 1) > TALL_SIZE;
+  }
+
   private agile(view: BotWorldView): boolean {
     const plan = view.plan;
     return this.arena || plan?.role === 'sniper' || plan?.job?.group === 'flank' || plan?.job?.group === 'recon';

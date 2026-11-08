@@ -114,6 +114,9 @@ interface BotRow {
   parkourMissed?: number;
   /** Route searches that kept to its group's corridor all the way (NavWorld.pathAlong). */
   along?: number;
+  /** Its body size class (BODY_SIZES), and seconds it spent ducking under a low roof (brain.ts lowRoute, mustDuck). */
+  size?: string;
+  ducked?: number;
   /** Its style: Arena, Tactical, or neither ('mixed': the character's own way between them). */
   style?: BotStyleName;
 }
@@ -140,6 +143,9 @@ export interface MatchRow {
   /** Route searches the per-tick budget put off a tick, and teammates passed on the right (crowds), in the match. */
   searchesPutOff?: number;
   keptRight?: number;
+  /** Tall bodies' routes (NavWorld.findPath `tall`) on a map with low headroom, and those that went under it (no way round). */
+  tallRoutes?: number;
+  lowRoutes?: number;
   mode: string;
   seed: number;
   seconds: number;
@@ -204,6 +210,14 @@ export interface MatchRow {
    * up on before (a bot going back and forth to a vehicle it can't use is many of these).
    */
   boarding?: { tries: number; failed: number; gaveUp: number; back: number };
+  /**
+   * Vehicles wedged (Match's MountRt.wedged: driven with the throttle open and going nowhere for 3 s): how many times
+   * and the ticks one spent wedged with someone aboard; stalls (a driver on the throttle, under 1 cm a tick for 1 s or
+   * more: bot drivers back out long before 3 s) and their ticks; by vehicle id, and where stalls began most (4 m cells);
+   * vehicle-seconds inside the level (the top of the hull's middle in something solid: pushed up into a ceiling) and
+   * where; and where each vehicle was at the end.
+   */
+  wedges?: { times: number; ticks: number; stalls: number; stallTicks: number; inside?: number; insideAt?: [string, number][]; parked?: string[]; byVehicle: Record<string, [times: number, ticks: number, stalls: number]>; at: [string, number][] };
   /**
    * Tanks (sealed vehicles, MountArmour.sealed): bot-seconds at the wheel, in the gun seats and with it moving; metres
    * driven; shells fired; kills from aboard by weapon; the bots' drives (BotBrain.tankLog: taken, back-outs, given up
@@ -393,6 +407,20 @@ function play(map: MapDocument, mode: GameMode, seed: number, seconds: number, s
   const lastStuck = new Map<number, number>();
   const stuckAt = new Map<string, number>();
   const behaviour = new Behaviour(match);
+  type WedgeMount = { def: { id: string; vehicle?: unknown; seats: { role: string }[]; half: [number, number, number] }; pos: { x: number; y: number; z: number }; seats: (number | null)[]; drive: { forward: number }; wedged?: unknown; alive: boolean; body: unknown };
+  const wedgeMounts = ((match as unknown as { mounts: WedgeMount[] }).mounts ?? []).filter((m) => m.def.vehicle);
+  const lastPos = new Map<WedgeMount, { x: number; z: number; run: number }>();
+  const wasWedged = new Set<WedgeMount>();
+  // Inside the level: the top of the hull's middle (its upper 40 %, the probe's width) overlapping something solid.
+  const insideNow = (wm: WedgeMount): boolean => {
+    const [hx, hy, hz] = wm.def.half;
+    const r = Math.min(hx, hz) * 0.95 * 0.7;
+    const h = hy * 2;
+    return !match.physics.boxClear({ x: wm.pos.x, y: wm.pos.y + h * 0.8 - 0.025, z: wm.pos.z }, { x: r, y: h * 0.2 - 0.025, z: r }, wm.body as Parameters<typeof match.physics.boxClear>[2], true);
+  };
+  const insideAt = new Map<string, number>();
+  let insideSeconds = 0;
+  const wedges = { times: 0, ticks: 0, stalls: 0, stallTicks: 0, byVehicle: {} as Record<string, [number, number, number]>, at: new Map<string, number>() };
   const weaponKills: Record<string, number> = {};
   // Tanks: the sealed mounts, and who sat in which last tick (the crew killed with one are out of it by the kill event).
   const tankIds = new Set(match.mountStates().filter((m) => getMountDef(m.id)?.armour?.sealed).map((m) => m.index));
@@ -428,6 +456,42 @@ function play(map: MapDocument, mode: GameMode, seed: number, seconds: number, s
     if (bt && btRow && btRow.poolStart === 0 && bt.pool > 0) btRow.poolStart = bt.pool;
     if (bt && btRow) btRow.poolLeft = bt.pool;
     behaviour.events(match, events);
+    if (k % TICK_RATE === 0)
+      for (const wm of wedgeMounts) {
+        if (!wm.alive || !insideNow(wm)) continue;
+        insideSeconds++;
+        const key = `${Math.round(wm.pos.x / 4) * 4},${Math.round(wm.pos.y / 4) * 4},${Math.round(wm.pos.z / 4) * 4} ${wm.def.id}`;
+        insideAt.set(key, (insideAt.get(key) ?? 0) + 1);
+      }
+    for (const wm of wedgeMounts) {
+      const row = (wedges.byVehicle[wm.def.id] ??= [0, 0, 0]);
+      const cell = `${Math.round(wm.pos.x / 4) * 4},${Math.round(wm.pos.y / 4) * 4},${Math.round(wm.pos.z / 4) * 4} ${wm.def.id}`;
+      // Stalls: a driver on the throttle and the vehicle going nowhere (under 1 cm a tick) for a second or more.
+      const was = lastPos.get(wm);
+      const driven = wm.def.seats.some((s, i) => s.role === 'driver' && wm.seats[i] !== null) && Math.abs(wm.drive.forward) > 0.2;
+      const still = !!was && Math.hypot(wm.pos.x - was.x, wm.pos.z - was.z) < 0.01;
+      const run = driven && still ? (was?.run ?? 0) + 1 : 0;
+      lastPos.set(wm, { x: wm.pos.x, z: wm.pos.z, run });
+      if (run === TICK_RATE) {
+        wedges.stalls++;
+        row[2]++;
+        wedges.at.set(cell, (wedges.at.get(cell) ?? 0) + 1);
+      }
+      if (run >= TICK_RATE) wedges.stallTicks += run === TICK_RATE ? TICK_RATE : 1;
+      if (!wm.wedged) {
+        wasWedged.delete(wm);
+        continue;
+      }
+      if (!wasWedged.has(wm)) {
+        wasWedged.add(wm);
+        wedges.times++;
+        row[0]++;
+      }
+      if (wm.seats.some((x) => x !== null)) {
+        wedges.ticks++;
+        row[1]++;
+      }
+    }
     if (k % TICK_RATE === 0) behaviour.sample(match);
     if (tankIds.size) {
       // Crew killed with their tank: a wreck kill of someone aboard one last tick.
@@ -721,6 +785,8 @@ function play(map: MapDocument, mode: GameMode, seed: number, seconds: number, s
     r.parkourGaveUp = c.bot!.parkourGaveUp;
     r.parkourMissed = c.bot!.parkourMissed;
     r.along = c.bot!.alongRoutes;
+    r.size = bodyClass(c.look, match.rules);
+    r.ducked = Math.round((c.bot!.duckTicks / TICK_RATE) * 10) / 10;
     out.bots.push(r);
   }
   const links = match.nav.parkour;
@@ -744,6 +810,8 @@ function play(map: MapDocument, mode: GameMode, seed: number, seconds: number, s
   out.navFails = simProfile.n.get('navFail') ?? 0;
   out.searchesPutOff = match.nav.searchesPutOff;
   out.keptRight = simProfile.n.get('botKeepRight') ?? 0;
+  out.tallRoutes = match.nav.tallRoutes;
+  out.lowRoutes = match.nav.lowRoutes;
   out.seconds = played;
   out.coverage = behaviour.coverage(played);
   if (btRow) out.breakthrough = btRow;
@@ -760,6 +828,7 @@ function play(map: MapDocument, mode: GameMode, seed: number, seconds: number, s
     if (b) for (const k of Object.keys(boarding) as (keyof typeof boarding)[]) boarding[k] += b[k];
   }
   if (boarding.tries || boarding.gaveUp) out.boarding = boarding;
+  if (wedgeMounts.length) out.wedges = { times: wedges.times, ticks: wedges.ticks, stalls: wedges.stalls, stallTicks: wedges.stallTicks, inside: insideSeconds, insideAt: [...insideAt].sort((a, b) => b[1] - a[1]).slice(0, 8), parked: wedgeMounts.filter((wm) => wm.alive).map((wm) => `${wm.def.id} ${wm.pos.x.toFixed(0)},${wm.pos.y.toFixed(0)},${wm.pos.z.toFixed(0)}`), byVehicle: wedges.byVehicle, at: [...wedges.at].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])).slice(0, 12) };
   if (tankIds.size) {
     for (const c of bots) {
       const l = c.bot?.tankLog;
@@ -903,6 +972,8 @@ function printMatch(m: MatchRow): void {
   if (m.pieces !== undefined) console.log(`forts: ${m.pieces} pieces built`);
   if (m.breakthrough) console.log(`breakthrough: ${breakthroughText(m.breakthrough)}`);
   if (m.roulette) for (const line of rouletteText(m.roulette)) console.log(line);
+  if (m.wedges) console.log(`vehicles: stalled ${m.wedges.stalls} times (${m.wedges.stallTicks} ticks), wedged ${m.wedges.times} times (${m.wedges.ticks} ticks aboard)${Object.values(m.wedges.byVehicle).some((r) => r[0] || r[2]) ? ` | by vehicle (stalls/wedged): ${Object.entries(m.wedges.byVehicle).filter(([, r]) => r[0] || r[2]).map(([k, [n, , st]]) => `${k} ${st}/${n}`).join(', ')}` : ''}${m.wedges.at.length ? ` | stalls where: ${m.wedges.at.map(([k, v]) => `${k} ${v}`).join(', ')}` : ''}`);
+  if (m.wedges?.inside !== undefined) console.log(`vehicles inside the level: ${m.wedges.inside} vehicle-seconds${m.wedges.insideAt?.length ? ` (${m.wedges.insideAt.map(([k, v]) => `${k} ${v} s`).join(', ')})` : ''} | at the end: ${m.wedges.parked?.join(', ')}`);
   if (m.boarding) console.log(`boarding: ${m.boarding.tries} tries, ${m.boarding.failed} failed, ${m.boarding.gaveUp} given up on, ${m.boarding.back} back to one given up on`);
   if (m.tanks) {
     const t = m.tanks;
@@ -1255,6 +1326,25 @@ function breakthroughSummary(ms: readonly MatchRow[]): string {
   return `sectors ${(bs.reduce((a, b) => a + b.sectors, 0) / bs.length).toFixed(1)} of ${of}, broke through ${bs.filter((b) => b.outcome === 'attack').length}/${bs.length} (${times.join(', ')})`;
 }
 
+/**
+ * Stuck recoveries a bot-minute by body size (rows from before sizes were written: by the look's class with sizes
+ * on), the large bodies' ducking a match, and tall bodies' routes that went under a low roof (NavWorld.lowRoutes).
+ */
+export function sizeLine(ms: readonly MatchRow[]): string {
+  const bots = ms.flatMap((m) => m.bots);
+  const of = (r: BotRow) => r.size ?? bodyClass(r.look, {});
+  const per = (['small', 'standard', 'large'] as const).map((k) => {
+    const bs = bots.filter((r) => of(r) === k);
+    const alive = bs.reduce((x, r) => x + r.alive, 0);
+    return `${k} ${(bs.reduce((x, r) => x + r.stuck, 0) / Math.max(1e-9, alive / 60)).toFixed(2)}`;
+  });
+  const n = Math.max(1, ms.length);
+  const ducked = bots.reduce((x, r) => x + (r.ducked ?? 0), 0) / n;
+  const tall = ms.reduce((x, m) => x + (m.tallRoutes ?? 0), 0);
+  const low = ms.reduce((x, m) => x + (m.lowRoutes ?? 0), 0);
+  return `stuck a bot-minute ${per.join(', ')}; ducking ${ducked.toFixed(1)} s a match; tall routes under a low roof ${low} of ${tall}`;
+}
+
 function printCompare(before: readonly MatchRow[], after: readonly MatchRow[]): void {
   const a = new Map(perMap(before).map((m) => [m.key, m]));
   const b = perMap(after);
@@ -1272,6 +1362,7 @@ function printCompare(before: readonly MatchRow[], after: readonly MatchRow[]): 
   const g = (v: number | undefined, d = 2, k = 100) => (v === undefined ? '-' : (v * k).toFixed(d));
   console.log(`failed searches ${g(ma.failedSearches)} → ${g(mb.failedSearches)} % (${ma.noRoute.toFixed(0)} → ${mb.noRoute.toFixed(0)} a match of ${ma.searches.toFixed(0)} → ${mb.searches.toFixed(0)}); no-route idle ${g(ma.noRouteIdle)} → ${g(mb.noRouteIdle)} %; idle out of a fight ${g(ma.calm, 1)} → ${g(mb.calm, 1)} %; frozen ${g(ma.frozen, 1)} → ${g(mb.frozen, 1)} %; stuck ${ma.stuck.toFixed(0)} → ${mb.stuck.toFixed(0)} a match (${ma.stuckPerBotMin.toFixed(2)} → ${mb.stuckPerBotMin.toFixed(2)} a bot-minute); 10 s+ idle spells ${ma.spells10.toFixed(1)} → ${mb.spells10.toFixed(1)} a match; kills ${ma.killsMin.toFixed(1)} → ${mb.killsMin.toFixed(1)} a minute; think ${g(ma.thinkMs, 2, 1)} → ${g(mb.thinkMs, 2, 1)} ms`);
   console.log(`route choice (bots past a trip's middle, once a life): two ways or more ${g(ma.ways2, 0)} → ${g(mb.ways2, 0)} % of team trips, busiest way ${g(ma.waysBusiest, 0)} → ${g(mb.waysBusiest, 0)} %`);
+  console.log(`body sizes: ${sizeLine(before)} → ${sizeLine(after)}`);
   console.log(`routes: team trips on two routes or more ${g(ma.routes2, 0)} → ${g(mb.routes2, 0)} % (of ${ma.tripsMeasured} → ${mb.tripsMeasured} with two ways or more; ${ma.oneWay} → ${mb.oneWay} with one), busiest route ${g(ma.busiest, 0)} → ${g(mb.busiest, 0)} %; time in cover in a fight ${g(ma.coverFight, 1)} → ${g(mb.coverFight, 1)} %; scoped kills ${ma.scopedKills.toFixed(1)} → ${mb.scopedKills.toFixed(1)} a match (from a vantage spot ${ma.postKills.toFixed(1)} → ${mb.postKills.toFixed(1)}); sniper spots ${ma.sniperPosts.toFixed(1)} → ${mb.sniperPosts.toFixed(1)} a match (${ma.snipers.toFixed(1)} → ${mb.snipers.toFixed(1)} snipers), moved on after shots ${ma.sniperMoves.toFixed(1)} → ${mb.sniperMoves.toFixed(1)} a match`);
   console.log(`time in cover in a fight by style: ${STYLES.map((st) => `${st} ${g(ma.coverByStyle[st], 1)} → ${g(mb.coverByStyle[st], 1)} %`).join(', ')}`);
   const follow = (ms: readonly MatchRow[]) => {

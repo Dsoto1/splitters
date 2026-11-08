@@ -1,10 +1,9 @@
 import { createNavMeshData, freeCompactHeightfield, freeContourSet, freeHeightfield, freePolyMesh, freePolyMeshDetail, getNavMeshPositionsAndIndices, init as initRecast, NavMesh, NavMeshCreateParams, NavMeshQuery, QueryFilter } from 'recast-navigation';
-import { generateSoloNavMesh } from 'recast-navigation/generators';
 import { boxesToTriangles, type WorldBox } from '../map/geometry.ts';
 import type { MapDocument } from '../map/schema.ts';
 import type { ValidationIssue } from '../map/validate.ts';
 import type { Vec3 } from '../math.ts';
-import { LIFT_FLAG, OPENING_BITS, PLAYER } from '../sim/constants.ts';
+import { BODY_SIZES, LIFT_FLAG, OPENING_BITS, PLAYER } from '../sim/constants.ts';
 import { trackGeometry } from '../map/track.ts';
 import { mapPortals, portalEntry, PORTAL_EXIT } from '../sim/portals.ts';
 import { mapZiplines, ziplineClearanceIssues, ziplineLinks } from '../sim/zipline.ts';
@@ -14,6 +13,9 @@ import { simProfile } from '../sim/profile.ts';
 import { hypot } from '../math.ts';
 import { auditNavigation, edgesOf, polyShapes, reachSet, routeComponents, trapExits, type AuditOptions, type FallOptions } from './audit.ts';
 import { PARKOUR_AREA, parkourLinks, type ParkourLink } from './parkour.ts';
+import { generateSolo, LOW_AREA, type LowHeadroom, type SoloIntermediates } from './solo.ts';
+
+export { LOW_AREA } from './solo.ts';
 
 /** Ledge-drop links at build (NavWorld.build `drops`): the level to trace falls against, and the spawn points that say where the main area is. */
 export interface DropOptions extends FallOptions {
@@ -109,6 +111,16 @@ const OPEN_COST = [1, 1.2, 1.45];
  * a real walk; agile ones (findPath `agile`: flankers, snipers, the Arena style) take it at walking's cost.
  */
 const PARKOUR_COST = 1.6;
+/**
+ * Low headroom (nav/solo.ts LOW_AREA): ground with less room over it than a large body stands in (1.18 × 1.8 m, and
+ * 5 cm), and a large body's radius round it. A tall body's route (findPath `tall`) prices it at LOW_COST a metre:
+ * any way round that isn't hundreds of times longer is taken first, so a tall bot goes under a low roof only where
+ * nothing else gets there (then it crouches through: brain.ts lowRoute).
+ */
+const LOW_HEADROOM: LowHeadroom = { height: BODY_SIZES.large.scale * PLAYER.height + 0.05, reach: 0.4 };
+const LOW_COST = 1000;
+/** Bodies taller than the navmesh's (size over this multiple of the 1.8 m standard) route as tall (findPath `tall`). */
+export const TALL_SIZE = 1.02;
 const FOUR = [
   { x: 1, y: 0, z: 0 },
   { x: -1, y: 0, z: 0 },
@@ -137,7 +149,7 @@ const RECAST_CONFIG = {
 
 const offMesh = (l: { start: Vec3; end: Vec3; area?: number }) => ({ startPosition: l.start, endPosition: l.end, radius: 0.8, bidirectional: false, area: l.area ?? 0 });
 
-type Intermediates = ReturnType<typeof generateSoloNavMesh>['intermediates'];
+type Intermediates = SoloIntermediates;
 
 /**
  * A navmesh of the first build's polygons with `links` in: Detour's tile data made again from Recast's polygon and
@@ -213,8 +225,9 @@ export class NavWorld {
     // polygon mesh and makes only Detour's tile data again with them (the same polygons: no second voxelisation, which
     // took as long again as the first).
     const relink = !snapped && (links.length > 0 || !!drops);
-    const result = generateSoloNavMesh(positions, indices, { ...RECAST_CONFIG, offMeshConnections: (snapped ? links : []).map(offMesh) }, relink);
+    const result = generateSolo(positions, indices, { ...RECAST_CONFIG, offMeshConnections: (snapped ? links : []).map(offMesh) }, relink, LOW_HEADROOM);
     if (!result.success) throw new Error(`navmesh generation failed: ${result.error}`);
+    const lowSpans = result.low;
     const inter = result.intermediates;
     try {
       const world = new NavWorld(result.navMesh, new NavMeshQuery(result.navMesh, { maxNodes: MAX_NODES }));
@@ -224,6 +237,7 @@ export class NavWorld {
       }
       // (Exposed ground on the world returned only: the first is rebuilt with its links when it has any.)
       const done = (w: NavWorld) => {
+        w.lowSpans = lowSpans;
         if (drops) w.markExposure(drops.physics);
         return w;
       };
@@ -259,6 +273,49 @@ export class NavWorld {
 
   /** Ledge-drop links the build added (NavWorld.build `drops`). */
   drops = 0;
+
+  /** Walkable cells of low headroom the build marked (nav/solo.ts LOW_AREA; 0: no polygon is low). */
+  lowSpans = 0;
+  private lowCache: Uint8Array | null = null;
+
+  /** Ground polygons under low headroom (LOW_AREA), by graph index. */
+  private lowPolys(): Uint8Array {
+    if (this.lowCache) return this.lowCache;
+    const g = this.graph();
+    const out = new Uint8Array(g.count);
+    if (this.lowSpans) for (let i = 0; i < g.count; i++) if (g.type[i] === 0 && this.navMesh.getPolyArea(g.base + i).area === LOW_AREA) out[i] = 1;
+    return (this.lowCache = out);
+  }
+
+  /** Whether ground polygon `i` (graph index) is under low headroom. */
+  lowAt(i: number): boolean {
+    return this.lowSpans > 0 && this.lowPolys()[i] === 1;
+  }
+
+  /** Low ground polygons, how many (and their area, m²). */
+  lowCount(): { polys: number; area: number } {
+    const low = this.lowPolys();
+    const { area } = polyShapes(this.graph());
+    let n = 0;
+    let m2 = 0;
+    for (let i = 0; i < low.length; i++) {
+      if (!low[i]) continue;
+      n++;
+      m2 += area[i] ?? 0;
+    }
+    return { polys: n, area: m2 };
+  }
+
+  /**
+   * Whether the last route findPath found for a tall body (`tall`) goes under low headroom: no way round it (or it
+   * starts or ends there). The bot crouches through those polygons (brain.ts lowRoute).
+   */
+  lastLow = false;
+  /** Tall routes that had to go under low headroom (lastLow), and tall routes asked for, in the match (measuring). */
+  lowRoutes = 0;
+  tallRoutes = 0;
+  /** Start and end polygons whose tall route went under low headroom: asked again, the plain search at once. */
+  private readonly lowForced = new Set<string>();
 
   /** Parkour links the build added (nav/parkour.ts), and a lookup of them by where they start (2 m cells). */
   parkour: readonly ParkourLink[] = [];
@@ -378,6 +435,8 @@ export class NavWorld {
     let m2 = 0;
     for (let i = 0; i < g.count; i++) {
       if (g.type[i] !== 0 || g.flags[i] === 0) continue;
+      // (Not ground under a low roof: it has a roof, and keeps its area for tall bodies' routes.)
+      if (this.lowAt(i)) continue;
       const o = { x: centre[i * 3]!, y: centre[i * 3 + 1]! + 1, z: centre[i * 3 + 2]! };
       let hit = false;
       for (const d of FOUR) {
@@ -457,12 +516,14 @@ export class NavWorld {
   /**
    * Straight-path corners from a to b, or null if b is unreachable from a. `shut`: openings (markOpenings' flag
    * bits) the route must keep out of, such as doors shut to the bot's team that no button opens for it. `agile`:
-   * parkour links at walking's cost (PARKOUR_COST otherwise).
+   * parkour links at walking's cost (PARKOUR_COST otherwise). `tall`: a body taller than the navmesh's (a large look):
+   * ground under low headroom costs LOW_COST a metre, so the route goes round it wherever a way round exists; one that
+   * still goes under (no way round, or it starts or ends there) sets lastLow.
    */
-  findPath(a: Vec3, b: Vec3, shut = 0, partial = false, open = 0, agile = false): Vec3[] | null {
-    if (!simProfile.on) return this.findPathNow(a, b, shut, partial, open, agile);
+  findPath(a: Vec3, b: Vec3, shut = 0, partial = false, open = 0, agile = false, tall = false): Vec3[] | null {
+    if (!simProfile.on) return this.findPathNow(a, b, shut, partial, open, agile, tall);
     const t0 = performance.now();
-    const r = this.findPathNow(a, b, shut, partial, open, agile);
+    const r = this.findPathNow(a, b, shut, partial, open, agile, tall);
     simProfile.add('nav', performance.now() - t0);
     simProfile.count('nav');
     if (!r) simProfile.count('navFail');
@@ -483,7 +544,8 @@ export class NavWorld {
    * `partial`: a route that exists but that the search ran out of nodes on (a very long way over a big map) comes
    * back as far as the search got, Detour's partial route: walk it, and ask again from its end.
    */
-  private findPathNow(a: Vec3, b: Vec3, shut = 0, partial = false, open = 0, agile = false): Vec3[] | null {
+  private findPathNow(a: Vec3, b: Vec3, shut = 0, partial = false, open = 0, agile = false, tall = false): Vec3[] | null {
+    this.lastLow = false;
     const ext = { x: 2, y: 3, z: 2 };
     const s = this.query.findNearestPoly(a, { halfExtents: ext });
     const e = this.query.findNearestPoly(b, { halfExtents: ext });
@@ -505,11 +567,34 @@ export class NavWorld {
     // a bot riding a button-called lift, or going for someone on one, stands on ground that's "gone" from where it was.)
     if (this.gone) shut |= this.gone & ~this.navMesh.getPolyFlags(s.nearestRef).flags & ~this.navMesh.getPolyFlags(e.nearestRef).flags;
     const failKey = `${s.nearestRef}:${e.nearestRef}:${shut}`;
+    // A tall body, with low headroom on the map: round it, unless the route starts or ends under it (getting out from
+    // under, or a goal there: crouching is the only way), or this start and end went under it before (no way round:
+    // the plain search, not the costly one that explores everything cheaper than going under).
+    let heavy = false;
+    if (tall && this.lowSpans) {
+      this.tallRoutes++;
+      const lowKey = `${s.nearestRef}:${e.nearestRef}`;
+      heavy = !this.lowAt(s.nearestRef - base) && !this.lowAt(e.nearestRef - base) && !this.lowForced.has(lowKey);
+    }
     // (Every search with a filter once there are parkour links: their area costs more than walking.)
-    const filtered = shut || open || (this.parkour.length && !agile);
+    const filtered = shut || open || heavy || (this.parkour.length && !agile);
     if (!partial && this.noRoute.has(failKey)) return null;
-    const r = this.query.findPath(s.nearestRef, e.nearestRef, start, end, filtered ? { maxPathPolys: MAX_PATH_POLYS, filter: this.filterFor(shut, open, agile) } : { maxPathPolys: MAX_PATH_POLYS });
+    const r = this.query.findPath(s.nearestRef, e.nearestRef, start, end, filtered ? { maxPathPolys: MAX_PATH_POLYS, filter: this.filterFor(shut, open, agile, heavy) } : { maxPathPolys: MAX_PATH_POLYS });
     const n = r.polys.size;
+    if (tall && this.lowSpans && r.success) {
+      for (let i = 0; i < n; i++) {
+        if (!this.lowAt(r.polys.get(i) - base)) continue;
+        this.lastLow = true;
+        break;
+      }
+      if (this.lastLow) {
+        this.lowRoutes++;
+        if (heavy) {
+          if (this.lowForced.size >= 4096) this.lowForced.clear();
+          this.lowForced.add(`${s.nearestRef}:${e.nearestRef}`);
+        }
+      }
+    }
     // A partial path (destination unreachable, or the search ran out of nodes) ends short of the goal.
     const whole = r.success && n > 0 && r.polys.get(n - 1) === e.nearestRef;
     if (simProfile.on) simProfile.count(whole ? 'navSearch' : 'navSearchFail');
@@ -556,7 +641,7 @@ export class NavWorld {
    * where a route with the corridor's via went back to the shortest way by the trip's middle). Null when it can't: the
    * corridor shut or gone on the way (a door, a fallen bridge: `shut`), `to` off its last polygon, or no way onto it.
    */
-  pathAlong(from: Vec3, polys: readonly number[], to: Vec3, shut = 0): Vec3[] | null {
+  pathAlong(from: Vec3, polys: readonly number[], to: Vec3, shut = 0, tall = false): Vec3[] | null {
     const g = this.graph();
     if (polys.length < 2) return null;
     const ext = { x: 2, y: 3, z: 2 };
@@ -578,6 +663,8 @@ export class NavWorld {
     }
     if (k < 0 || best > 30) return null;
     for (let i = k; i < polys.length; i++) if (mask && g.flags[polys[i]!]! & mask) return null;
+    // (A tall body: not along a corridor under low headroom; its own route goes round.)
+    if (tall && this.lowSpans) for (let i = k; i < polys.length; i++) if (this.lowAt(polys[i]!)) return null;
     // From here onto it: Detour's own route to that polygon (a few polygons, usually).
     const head: number[] = [];
     if (s.nearestRef - g.base !== polys[k]) {
@@ -702,8 +789,8 @@ export class NavWorld {
   /** Route filters that keep out of shut openings, by mask (a few per match: doors open and shut). */
   private readonly filters = new Map<number, QueryFilter>();
 
-  private filterFor(shut: number, open = 0, agile = false): QueryFilter {
-    const key = (shut * 4 + open) * 2 + (agile ? 1 : 0);
+  private filterFor(shut: number, open = 0, agile = false, tall = false): QueryFilter {
+    const key = ((shut * 4 + open) * 2 + (agile ? 1 : 0)) * 2 + (tall ? 1 : 0);
     let f = this.filters.get(key);
     if (!f) {
       f = new QueryFilter();
@@ -711,6 +798,7 @@ export class NavWorld {
       f.excludeFlags = shut;
       f.setAreaCost(OPEN_AREA, OPEN_COST[open] ?? 1);
       f.setAreaCost(PARKOUR_AREA, agile ? 1 : PARKOUR_COST);
+      f.setAreaCost(LOW_AREA, tall ? LOW_COST : 1);
       if (this.filters.size >= 64) this.filters.clear();
       this.filters.set(key, f);
     }

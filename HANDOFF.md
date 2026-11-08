@@ -72,6 +72,19 @@ The workflow is unchanged (CLAUDE.md):
      without keep-right and the strafing rule 0.21, without both 0.17. Neither explains the drop; at 48 matches
      captures move about ±10 between builds, and the drop is under two standard errors. The strafing rule does cut
      stuck recoveries (1.43 → 1.32). Not ablated: ground that goes, corridor routes.
+   - **Part 2, large bots route round low roofs (owner's option a): done, held back for the owner** (`wip/bots-lowroof`
+     @ fc4d701 and its docs commits; green on `check/bots-lowroof`, run 42428308885). BOT_AI_PLAN.md, "Part 2", has the tables.
+     - **How:** the navmesh marks ground with less headroom than a large body (2.12 m) as `LOW_AREA` (`nav/solo.ts`,
+       Recast splits polygons there); tall bodies' searches price it at 1,000 a metre (`findPath` `tall`), small and
+       standard ones don't change. A route that still goes under (no way round, or it starts or ends there) turns on
+       the duck (`lowRoute`, `mustDuck`). `botLowRoof.test.ts`.
+     - **Measured against main b8854c6:** stuck 1.31 → 1.12 a bot-minute (large bodies 1.54 → 1.01; Diamond Park 2.17
+       → 1.04 over seeds 1-12), ducking 0.0 s a match; TDM stuck 1.04 → 0.76, kills the same; the Range 19 → 19.
+       **But captures 50 → 43** (48 matches), all of it Diamond Park and Qasr Medina: Diamond Park 13 → 5 over seeds
+       1-12, flag takes up, returns 36 → 51 (large bodies' 6 → 17). Un-stuck large defenders, not crouching carriers.
+       A moderate price (4 a metre) gave Diamond Park 9 captures, ducking 6 s a match.
+     - **The owner's call:** land it, land it with the moderate price, or neither. Not landed: the goal was the stuck
+       reduction without the capture loss.
    - **Next:** route spread (CTF's busiest way about 60 %): route loose side-lane bots through a corridor's via
      instead of `laneWaypoint`, measured on the 48 matches.
    - **The measuring commands** (run each on the branch and on a detached worktree of main; `--compare=a.json,b.json`
@@ -91,8 +104,7 @@ The workflow is unchanged (CLAUDE.md):
      pickup. The owner hasn't confirmed.
    - **Damage:** rockets and blasts wear its health down; bullets do little.
    - **Destruction:** occupants still inside die with it.
-2. **Hovercraft** (Hauler, Speeder, Hover Bike) stuck under structures on Iron Tide and Dune Harbor. A Hauler got stuck
-   under Iron Tide's platforms at (-16, 5, -20). Flyers got their climb in the small fixes; hovercraft didn't.
+2. ~~**Hovercraft** stuck under structures~~: done (`wip/hover-stuck`, see "Hovercraft under structures" below).
 3. **Sound pass 2** (Sonniss and Freesound). Both are approved, and their hosts are on the environment's allowlist.
    - Sonniss sits behind a Cloudflare browser check, so the owner puts the chosen packs in the Drive.
    - Freesound needs an API key: ask with the credential form, never in chat.
@@ -113,6 +125,49 @@ The workflow is unchanged (CLAUDE.md):
 - Tank ammo: as proposed (refills slowly over time, full at an ammo pickup). Tanks job can start on that.
 
 **Still open:** M1 recordings for performance round 4; a playtest of Breakthrough Range.
+
+- **Hovercraft under structures** (queued item 2; `wip/hover-stuck`). Two causes, both in the shared vehicle sim (every
+  ground vehicle, every map; flyers keep their climbAssist):
+  - **The lift ratchet** (the owner's spot). `PhysicsWorld.moveVehicle` starts each move 5 cm up and asks to come down
+    by as much. Pinched between two contacts it can slide along neither (Iron Tide's 3 m door at the top of the stairs
+    up to the deck at (-16, 4, -20): the Hauler's probe is 3.04 m across, its hull 3.2), the controller moved it
+    nowhere, not even down, and the 5 cm stayed: the Hauler rose 5 cm a tick up the door into the lintel and the roof
+    (feet 6.2 m after 2 s; body centre "at 5") and stuck there. A refused move now keeps the vehicle where it was,
+    resting (the drop alone is tried), and a move that creeps up into the level when it didn't start there keeps its
+    height (as moveCharacter does for players): it stops in the door at deck height and backs out.
+  - **The probe's dome.** The probe capsule's radius follows the hull's width, so it stands far over the hull (Hauler
+    3.43 m against 2.0; Speeder 2.82 against 1.3; Hover Bike 2.37 against 1.0). Under Iron Tide's decks (3.4 m clear)
+    and Dune Harbor's arcade (a 0.9 m sill, a lintel at 2.5) the dome caught where the hull fits. A low probe (the
+    capsule's own lower half as a convex hull, cut flat at the hull's top: `createLowVehicleProbe`) carries a ground
+    vehicle while something is over its hull (`PhysicsWorld.overhead`, a cylinder from the hull's top to the dome's),
+    or when the capsule is stopped and the low probe gets further (`Match.moveVehicleProbe`). Open ground: the capsule
+    alone, to the millimetre (test).
+  - Also: a vehicle freed from a wedge drops its built-up stall (it was marked wedged again a tick later).
+  - **Tests** `shared/test/hoverCeiling.test.ts`: flat-ground ride height, top speed and path for all three, equal to
+    main's to 1 mm; Iron Tide's door from the deck and from the stairs; Dune Harbor's arcade (a Speeder through, a
+    Hauler stopped outside and backed out); a 3 m-thick slab just over each hull (in, through, back out; placed under
+    it, out either way; lower than the hull, stopped outside); a door narrower than the probe; bot steering (steer())
+    under a deck and out. 6 of the 18 fail on main.
+  - **bot-report** now prints, per match, `vehicles:` stalls (a driver on the throttle, under 1 cm a tick for 1 s+),
+    wedges, by vehicle and where, and `vehicles inside the level` (vehicle-seconds with the top of the hull's middle
+    in level geometry; `boxClear(..., skip, levelOnly)`) and where each vehicle ended. bot-report's own wedge count
+    is 0 on main: bot drivers back out long before the 3 s mark.
+  - **Numbers** (`pnpm bot-report iron_tide dune_harbor --mode=core.tdm --seeds=1,2,3,4 --seconds=300`, main vs this):
+    vehicle-seconds inside the level Iron Tide 12 → 6, Dune Harbor 24 → 4 (hovercraft 9 → 4); vehicle stalls 120 →
+    136 and 61 → 65 (hovercraft 44 → 65 and 61 → 65: about the same spots, mostly walls by the spawns; seed-to-seed
+    noise is as large). **Foot-bot stuck recoveries rose on Iron Tide: 3.09 → 5.41 a bot-minute** (Dune Harbor 2.27
+    → 2.98), most of it one seed: a Hauler now gets in under Iron Tide's decks, a bot bailed out of it at 12.7 m/s,
+    the empty hovercraft glided ~35 m into the 3 m door at (0, 0, 28) and plugged it for 100 s. Before, the dome kept
+    Haulers out from under the decks. **Next (bots / vehicles, owner's call):** bot drivers follow the foot navmesh
+    (`thinkMounted`: `nav.findPath`) through doors narrower than the vehicle; bots bail out at full speed; an
+    empty hovercraft coasts on (accel × 0.35). Options: brake an empty hovercraft, or keep bots from driving routes
+    narrower than the hull, or have foot bots route round a parked vehicle.
+  - **Tanks** (coordinator's question, after the tanks job): not the same cause. `pnpm bot-report iron_tide
+    --seeds=1,2,3,4 --seconds=300` (CTF), main 110ee71 vs this: tanks given up stuck 9 in 18 drives → 9 in 16, 9 → 7
+    of them at (±4, 0, -2). That spot has 7.4 m over it: it is the row of pillars at z -4 (x ±4..6, solid to 4.1 m),
+    the long hull against them, not a ceiling. Left for the tanks work. (bot-report's `vehicles inside the level`
+    needs this branch's `boxClear(…, skip, levelOnly)`: run on main's sim it counts each vehicle's own box.)
+  - Landed: main = da68ed3 (green on `check/hover-stuck`, run 42429583559).
 
 ## Start here (session of 2026-11-04, handed off to the next account)
 

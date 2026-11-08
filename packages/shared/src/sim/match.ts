@@ -186,6 +186,14 @@ interface MountRt {
   ammoGuns: boolean;
   body: RAPIER.Collider;
   probe: RAPIER.Collider | null;
+  /**
+   * Ground vehicles whose probe capsule stands taller than the hull (all of them: its radius follows the hull's
+   * width): a probe of the same round bottom cut off at the hull's top (PhysicsWorld.createLowVehicleProbe). It
+   * carries the vehicle while something is over the hull that the capsule's dome would catch on (`low`: a deck,
+   * a beam, a low roof), so a vehicle goes, and gets out, wherever its hull fits (Match.moveVehicleProbe).
+   */
+  lowProbe: RAPIER.Collider | null;
+  low: boolean;
   faction: string | null;
   /** The driver's controls this tick. */
   /** Driver's controls: throttle, steering and the handbrake (jump); in a flyer, jump climbs and crouch dives (`lift`). */
@@ -4102,6 +4110,7 @@ export class Match {
     const half = { x: def.half[0], y: def.half[1], z: def.half[2] };
     const body = this.physics.createBox({ x: pos.x, y: pos.y + half.y, z: pos.z }, half, yaw);
     const probe = def.vehicle ? this.physics.createVehicleProbe(Math.min(half.x, half.z) * 0.95) : null;
+    const lowProbe = def.vehicle && !def.vehicle.fly ? this.physics.createLowVehicleProbe(Math.min(half.x, half.z) * 0.95, half.y * 2) : null;
     const m: MountRt = {
       index,
       def,
@@ -4122,6 +4131,8 @@ export class Match {
       ammoGuns: def.seats.some((seat) => !!seat.weapon && !!seat.ammo),
       body,
       probe,
+      lowProbe,
+      low: false,
       faction,
       drive: { forward: 0, right: 0 },
       slide: 0,
@@ -4438,6 +4449,7 @@ export class Match {
     m.stall = m.climbAssist = 0;
     m.assistFrom = null;
     m.wedged = undefined;
+    m.low = false;
     if (m.suspSetup) m.susp = newSuspension(m.suspSetup);
     m.guns.forEach((g, i) => {
       if (!g) return;
@@ -4623,7 +4635,7 @@ export class Match {
       return;
     }
     m.velY = Math.max(-30, m.velY - PLAYER.gravity * TICK_DT);
-    const moved = this.physics.moveVehicle(m.probe, m.body, m.pos, { x: vx * TICK_DT, y: m.velY * TICK_DT, z: vz * TICK_DT });
+    const moved = this.moveVehicleProbe(m, { x: vx * TICK_DT, y: m.velY * TICK_DT, z: vz * TICK_DT });
     if (moved.grounded) m.velY = 0;
     m.airborne = !moved.grounded;
     m.vel = { x: vx, z: vz };
@@ -4633,6 +4645,30 @@ export class Match {
       m.wreckUntil = 0;
       this.physics.setBoxEnabled(m.body, false);
     }
+  }
+
+  /**
+   * Move a vehicle's probe by `delta`. The probe capsule's dome stands well over the hull (its radius follows the
+   * hull's width: a Hauler's is 3.4 m tall, its hull 2 m), so under a deck, a beam or a low roof the capsule caught
+   * where the hull fits and the vehicle wedged there, unable to drive in or out. With something over the hull that
+   * the dome would touch (PhysicsWorld.overhead), or when the capsule is stopped and the low probe (the same bottom,
+   * cut off at the hull's top) gets further, the low probe carries it (`low`) until the space over it is clear
+   * again. Over open ground nothing is overhead: the capsule alone, as before.
+   */
+  private moveVehicleProbe(m: MountRt, delta: Vec3): { feet: Vec3; grounded: boolean; blocked: number } {
+    const lowProbe = m.lowProbe;
+    if (!lowProbe) return this.physics.moveVehicle(m.probe!, m.body, m.pos, delta, !m.def.vehicle!.fly);
+    const r = Math.min(m.def.half[0], m.def.half[2]) * 0.95;
+    const hull = m.def.half[1] * 2;
+    m.low = this.physics.overhead(m.pos, hull, this.physics.probeHeight(m.probe!) + 0.1, r, m.body);
+    if (m.low) return this.physics.moveVehicle(lowProbe, m.body, m.pos, delta);
+    const moved = this.physics.moveVehicle(m.probe!, m.body, m.pos, delta);
+    if (moved.blocked < 0.25) return moved;
+    // Stopped: by a wall (the low probe does no better) or by something over the hull's top (it gets further).
+    const low = this.physics.moveVehicle(lowProbe, m.body, m.pos, delta);
+    if (low.blocked > moved.blocked - 0.05) return moved;
+    m.low = true;
+    return low;
   }
 
   /**
@@ -4747,7 +4783,7 @@ export class Match {
     const surface = m.floats && this.liquids.length ? floatSurface(this.liquids, m.pos) : null;
     const line = surface === null ? null : surface - (v.draft ?? FLOAT.draft);
     if (line !== null && m.pos.y + m.velY * dt < line) m.velY = Math.min(FLOAT.rise, (line - m.pos.y) / dt);
-    const moved = this.physics.moveVehicle(m.probe!, m.body, m.pos, { x: vx * dt, y: m.velY * dt, z: vz * dt });
+    const moved = this.moveVehicleProbe(m, { x: vx * dt, y: m.velY * dt, z: vz * dt });
     if (parked && Math.abs(moved.feet.y - startY) < 1e-3) m.restSince ??= this.tick;
     else m.restSince = undefined;
     const climbed = (moved.feet.y - startY) / dt;
@@ -4777,7 +4813,11 @@ export class Match {
     const step = Math.hypot(moved.feet.x - m.pos.x, moved.feet.z - m.pos.z);
     m.stall = throttle && step < WEDGE_STEP * ticks ? m.stall + ticks : Math.max(0, m.stall - 2 * ticks);
     if (m.stall >= WEDGE_TICKS && !m.wedged) m.wedged = { at: { ...moved.feet } };
-    else if (m.wedged && Math.hypot(moved.feet.x - m.wedged.at.x, moved.feet.z - m.wedged.at.z) > WEDGE_FREED) m.wedged = undefined;
+    else if (m.wedged && Math.hypot(moved.feet.x - m.wedged.at.x, moved.feet.z - m.wedged.at.z) > WEDGE_FREED) {
+      // Got out: free, and the stall it built up is over (left over, it marked the vehicle wedged again a tick later).
+      m.wedged = undefined;
+      m.stall = 0;
+    }
     m.pos = moved.feet;
     if (m.susp) this.suspend(m, ticks, speedBefore, turn, right, wasAirborne && !m.airborne ? Math.max(0, -fallSpeed) : 0);
     const decay = (moved.grounded || afloat ? 0.9 : 0.99) ** ticks;

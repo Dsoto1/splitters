@@ -8,6 +8,11 @@ made only on a commit that passed CI on a check branch.
 
 ## Unreleased
 
+**Hovercraft no longer get stuck under structures** (owner, 2026-11-07: a Hauler stuck under Iron Tide's platforms):
+a vehicle squeezed into a gap narrower than itself (Iron Tide's door at the top of the stairs) used to rise up it into
+the lintel and the roof and stay there; it now stops at floor height and backs out. Hovercraft (and other ground
+vehicles) also go under decks, beams and lintels their hull fits under (Iron Tide's decks, Dune Harbor's arcade), where
+the invisible collision shape over the hull used to catch. Over open ground they drive exactly as before.
 **Tanks play properly** (owner, 2026-11-07): the crew is sealed in (no bullet, blast or blade from outside reaches
 them) and dies with the tank; its armour takes a tenth of bullet damage and 1.25 times blasts (about 6 rockets or 5
 shells kill it); the cannon carries 10 shells, shown in the HUD, one back every 15 s and all at an ammo pickup; alone at
@@ -77,6 +82,12 @@ wall, where the walkable ground nearest it was the room behind the wall (Capitol
 toward ground it can walk to instead of pushing into the wall; bots following their group's corridor are counted on
 it, so the team spreads its groups by them. Measured on 48 CTF matches: as before.
 (Large bots ducking under low roofs is held back for a decision: fewer stuck bots, but fewer captures.)
+
+**Bot AI Phase C follow-up, part 2** (docs/BOT_AI_PLAN.md, "Part 2"; on `wip/bots-lowroof`, held back for the owner):
+large bots go round roofs too low for them to stand under (a dugout's stair top, a low doorway) instead of walking into
+them and sticking there, and crouch through one only where nothing else gets them where they're going. Small and
+standard bots keep their routes. Measured on 48 CTF matches: about 15 % fewer stuck recoveries, no ducking, but fewer captures
+on Diamond Park (its large defenders are back in play).
 
 **Bot AI Phase C, items 1-4** (docs/BOT_AI_PLAN.md, "Phase C items 1-4, measured"; docs/BOTS.md):
 - Bots drop off ledges, jump gaps and jump up onto ledges as players do: links found at load and each checked by

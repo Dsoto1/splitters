@@ -274,26 +274,117 @@ export class PhysicsWorld {
 
   /** A probe capsule that carries a vehicle over the ground (it collides with the world only, never players). */
   createVehicleProbe(radius: number): RAPIER.Collider {
-    const desc = RAPIER.ColliderDesc.capsule(Math.max(0.05, 0.5 - radius * 0.2), radius).setCollisionGroups(PLAYER_COLLIDER_GROUPS).setEnabled(false);
-    return this.world.createCollider(desc);
+    const halfHeight = Math.max(0.05, 0.5 - radius * 0.2);
+    const probe = this.world.createCollider(RAPIER.ColliderDesc.capsule(halfHeight, radius).setCollisionGroups(PLAYER_COLLIDER_GROUPS).setEnabled(false));
+    this.probeCenter.set(probe, halfHeight + radius);
+    return probe;
+  }
+
+  /** How high over its feet each vehicle probe's centre sits (the low probe is no capsule, so it can't be read off the shape). */
+  private readonly probeCenter = new WeakMap<RAPIER.Collider, number>();
+
+  /** A vehicle probe's height over its feet (m). */
+  probeHeight(probe: RAPIER.Collider): number {
+    return 2 * (this.probeCenter.get(probe) ?? 0);
+  }
+
+  /**
+   * The low probe for a vehicle whose probe capsule stands taller than its hull (`height`, m): the same round bottom
+   * as the capsule of `radius` (so it rides the ground just the same), cut off flat at the hull's top. A vehicle
+   * moves with it under a ceiling the capsule's dome would catch on (a deck, a beam, a low roof), as far as the hull
+   * itself fits (Match.moveVehicleProbe). Null when the capsule is no taller than the hull.
+   */
+  createLowVehicleProbe(radius: number, height: number): RAPIER.Collider | null {
+    const tall = 2 * (Math.max(0.05, 0.5 - radius * 0.2) + radius);
+    if (height >= tall - 0.05) return null;
+    // Points of the capsule's lower half (pole, rings every 9 degrees up to its equator), then a ring at the top.
+    const pts: number[] = [];
+    const c = height / 2;
+    pts.push(0, -c, 0);
+    const SEG = 24;
+    const ring = (y: number, r: number) => {
+      for (let k = 0; k < SEG; k++) pts.push(Math.cos((k / SEG) * Math.PI * 2) * r, y - c, Math.sin((k / SEG) * Math.PI * 2) * r);
+    };
+    for (let i = 1; i <= 10; i++) {
+      const a = (i / 10) * (Math.PI / 2);
+      const y = radius - radius * Math.cos(a);
+      if (y >= height) break;
+      ring(y, radius * Math.sin(a));
+    }
+    // The top: the capsule's width at that height (its full radius above the equator; less when it is lower).
+    ring(height, height >= radius ? radius : Math.sqrt(radius * radius - (radius - height) ** 2));
+    const desc = RAPIER.ColliderDesc.convexHull(new Float32Array(pts));
+    if (!desc) return null;
+    const probe = this.world.createCollider(desc.setCollisionGroups(PLAYER_COLLIDER_GROUPS).setEnabled(false));
+    this.probeCenter.set(probe, c);
+    return probe;
+  }
+
+  /**
+   * Whether anything a vehicle moves against (level, built pieces, other vehicles, glass, fields; not `body`, its
+   * own hull) is in the band from `from` to `to` metres over `feet`, within `radius` of it: a ceiling over the hull
+   * that its tall probe would catch on.
+   */
+  overhead(feet: Vec3, from: number, to: number, radius: number, body: RAPIER.Collider): boolean {
+    const half = (to - from) / 2;
+    if (half <= 0.005) return false;
+    const shape = new RAPIER.Cylinder(half, Math.max(0.05, radius - 0.03));
+    const hit = this.world.intersectionWithShape({ x: feet.x, y: feet.y + from + half, z: feet.z }, { x: 0, y: 0, z: 0, w: 1 }, shape, RAPIER.QueryFilterFlags.EXCLUDE_SENSORS, MOVE_QUERY, body);
+    return hit !== null;
+  }
+
+  /** Whether a vehicle probe with its base at `feet` overlaps anything it moves against (not its own hull). */
+  private probeOverlaps(probe: RAPIER.Collider, feet: Vec3, centerY: number, body: RAPIER.Collider): boolean {
+    return this.world.intersectionWithShape({ x: feet.x, y: feet.y + centerY, z: feet.z }, probe.rotation(), probe.shape, RAPIER.QueryFilterFlags.EXCLUDE_SENSORS, MOVE_QUERY, body) !== null;
   }
 
   /**
    * Move a vehicle probe (its base at `feet`) by `delta`, sliding along the
    * world and climbing gentle slopes, ignoring the vehicle's own body.
+   *
+   * Each move starts `lift` (5 cm) up and asks to come down by as much. Pinched between two contacts it can slide
+   * along neither (a doorway or gap narrower than the probe: its jambs; a beam and the floor), the controller moves it
+   * nowhere at all, not even down, and the lift stayed: the vehicle rose 5 cm a tick, up the door into its lintel
+   * and the roof over it, and stuck there (a Hauler at the top of Iron Tide's stairs, in the 3 m door under the
+   * deck's roof). A move the controller refuses now keeps the vehicle where it was, resting (it still falls when it
+   * can: the drop is tried on its own), so it can be driven back out the way it came; and a move that creeps up
+   * into something over the probe (the controller lets it, climbing a sill under a lintel) keeps its height.
+   * `ground` false (flyers) leaves both out: a flyer climbs its own way out (Match.driveVehicle's climbAssist).
    */
-  moveVehicle(probe: RAPIER.Collider, body: RAPIER.Collider, feet: Vec3, delta: Vec3): { feet: Vec3; grounded: boolean; blocked: number } {
-    const shape = probe.shape as RAPIER.Capsule;
-    const centerY = shape.halfHeight + shape.radius;
+  moveVehicle(probe: RAPIER.Collider, body: RAPIER.Collider, feet: Vec3, delta: Vec3, ground = true): { feet: Vec3; grounded: boolean; blocked: number } {
+    const centerY = this.probeCenter.get(probe) ?? 0;
     const lift = 0.05;
+    const skip = (c: RAPIER.Collider) => c.handle !== body.handle;
     probe.setTranslation({ x: feet.x, y: feet.y + lift + centerY, z: feet.z });
-    this.controller.computeColliderMovement(probe, { x: delta.x, y: delta.y - lift, z: delta.z }, RAPIER.QueryFilterFlags.EXCLUDE_SENSORS, MOVE_QUERY, (c) => c.handle !== body.handle);
-    const m = this.controller.computedMovement();
-    const next = { x: feet.x + m.x, y: feet.y + lift + m.y, z: feet.z + m.z };
-    probe.setTranslation({ x: next.x, y: next.y + centerY, z: next.z });
+    this.controller.computeColliderMovement(probe, { x: delta.x, y: delta.y - lift, z: delta.z }, RAPIER.QueryFilterFlags.EXCLUDE_SENSORS, MOVE_QUERY, skip);
+    let m = this.controller.computedMovement();
+    let grounded = this.controller.computedGrounded();
+    let start = lift;
     const want = hypot(delta.x, delta.z);
+    // Refused: no headway, and not even the lift back down (the controller hardly moved it at all).
+    const refused = ground && hypot(m.x, m.z) < 1e-4 && m.y > -1e-3 && m.y < lift * 0.5 && (want > 1e-6 || delta.y - lift < -1e-6);
+    if (refused) {
+      // Refused: no headway, and only the fall (if any) from where it is, without the lift.
+      start = 0;
+      probe.setTranslation({ x: feet.x, y: feet.y + centerY, z: feet.z });
+      this.controller.computeColliderMovement(probe, { x: 0, y: Math.min(0, delta.y), z: 0 }, RAPIER.QueryFilterFlags.EXCLUDE_SENSORS, MOVE_QUERY, skip);
+      const down = this.controller.computedMovement();
+      m = { x: 0, y: Math.min(0, down.y), z: 0 };
+      // Held where it is (refused that too: the pinch holds it up), or come down onto the ground: it rests.
+      grounded = m.y > -1e-6 || this.controller.computedGrounded();
+    }
+    let next = { x: feet.x + m.x, y: feet.y + start + m.y, z: feet.z + m.z };
+    // The controller can let the probe creep up into what is over it (climbing a sill under a lintel, or starting
+    // within the lift of a ceiling): a move that ends inside the level when it didn't start there keeps its height
+    // (or, if that is inside too, the vehicle stays where it was), as moveCharacter does for players.
+    if (ground && next.y > feet.y + 1e-4 && this.probeOverlaps(probe, next, centerY, body) && !this.probeOverlaps(probe, feet, centerY, body)) {
+      const level = { x: next.x, y: feet.y, z: next.z };
+      next = this.probeOverlaps(probe, level, centerY, body) ? { ...feet } : level;
+      m = { x: next.x - feet.x, y: 0, z: next.z - feet.z };
+    }
+    probe.setTranslation({ x: next.x, y: next.y + centerY, z: next.z });
     const got = hypot(m.x, m.z);
-    return { feet: next, grounded: this.controller.computedGrounded(), blocked: want > 1e-6 ? 1 - got / want : 0 };
+    return { feet: next, grounded, blocked: want > 1e-6 ? 1 - got / want : 0 };
   }
 
   setBoxEnabled(collider: RAPIER.Collider, enabled: boolean): void {
@@ -459,11 +550,15 @@ export class PhysicsWorld {
     return r;
   }
 
-  /** True when no world collider (level, door, crate, built piece) overlaps the upright box. */
-  boxClear(center: Vec3, half: Vec3): boolean {
+  /**
+   * True when no world collider (level, door, crate, built piece; not `skip`) overlaps the upright box. `levelOnly`:
+   * only the level itself counts (its boxes, environment shapes and terrain; not vehicles, doors or built pieces).
+   */
+  boxClear(center: Vec3, half: Vec3, skip?: RAPIER.Collider, levelOnly = false): boolean {
     if (this.dirty) this.commit();
     const shape = new RAPIER.Cuboid(Math.max(0.01, half.x), Math.max(0.01, half.y), Math.max(0.01, half.z));
-    return !this.world.intersectionWithShape(center, { x: 0, y: 0, z: 0, w: 1 }, shape, undefined, WORLD_ONLY_QUERY);
+    const level = levelOnly ? (c: RAPIER.Collider) => this.staticBoxes.has(c.handle) || this.staticShapes.has(c.handle) || c.collisionGroups() >>> 16 === GROUP_TERRAIN : undefined;
+    return !this.world.intersectionWithShape(center, { x: 0, y: 0, z: 0, w: 1 }, shape, undefined, WORLD_ONLY_QUERY, skip, undefined, level);
   }
 
   /** True when nothing static blocks the segment a -> b. */
