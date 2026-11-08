@@ -428,7 +428,7 @@ export class EditorView {
     for (const n of this.photoHidden) n.setEnabled(true);
     this.photoHidden = [];
     if (!on) return;
-    const aids: (TransformNode | undefined)[] = [this.trace?.mesh, this.area.root, this.overlaps, this.brushRing, this.gizmo, this.hover, this.ghost, this.faceHighlight, this.propGhost?.node, this.pieceGhost?.root, ...this.pieceMarks, ...this.outlines, ...this.pickBoxes];
+    const aids: (TransformNode | undefined)[] = [this.trace?.mesh, this.area.root, this.overlaps, this.brushRing, this.gizmo, this.ring, this.hover, this.ghost, this.faceHighlight, this.propGhost?.node, this.pieceGhost?.root, ...this.pieceMarks, ...this.outlines, ...this.pickBoxes, this.scene.getMeshByName('measureLines') ?? undefined];
     for (const m of this.markers.values()) aids.push(m.ring, m.key === 'spawn' ? m.node : undefined);
     for (const n of aids) {
       if (!n || !n.isEnabled(false)) continue;
@@ -667,6 +667,41 @@ export class EditorView {
     this.gizmo.renderingGroupId = 1;
   }
 
+  private ring?: LinesMesh;
+
+  /**
+   * The rotate ring round the selection gizmo (rotateRing.ts): a circle on the ground plane at the gizmo, brighter when
+   * the pointer is on it or it is held; while dragging, spokes from the centre to where the drag started and to the
+   * facing it has reached, and the arc between. Null hides it.
+   */
+  setRing(at: Vec3 | null, ring: { radius: number; hot: boolean; from?: number; to?: number } | null): void {
+    this.ring?.dispose();
+    this.ring = undefined;
+    if (!at || !ring) return;
+    const y = at.y + 0.06;
+    const pt = (a: number, r: number) => new Vector3(at.x + Math.sin(a) * r, y, at.z + Math.cos(a) * r);
+    const colour = ring.hot ? new Color4(1, 0.85, 0.25, 1) : new Color4(1, 0.85, 0.25, 0.55);
+    const circle: Vector3[] = [];
+    for (let i = 0; i <= 72; i++) circle.push(pt((i / 72) * Math.PI * 2, ring.radius));
+    const lines: Vector3[][] = [circle];
+    const colors: Color4[][] = [circle.map(() => colour)];
+    if (ring.from !== undefined && ring.to !== undefined) {
+      const o = new Vector3(at.x, y, at.z);
+      const faint = new Color4(1, 1, 1, 0.5);
+      const bright = new Color4(1, 1, 1, 1);
+      lines.push([o, pt(ring.from, ring.radius)], [o, pt(ring.to, ring.radius)]);
+      colors.push([faint, faint], [bright, bright]);
+      const n = Math.max(2, Math.ceil((Math.abs(ring.to - ring.from) / Math.PI) * 36));
+      const arc: Vector3[] = [];
+      for (let i = 0; i <= n; i++) arc.push(pt(ring.from + ((ring.to - ring.from) * i) / n, ring.radius * 0.7));
+      lines.push(arc);
+      colors.push(arc.map(() => bright));
+    }
+    this.ring = CreateLineSystem('gizmoRing', { lines, colors, useVertexAlpha: true }, this.scene);
+    this.ring.isPickable = false;
+    this.ring.renderingGroupId = 1;
+  }
+
   /** The entity is drawn right now (on a shown level and in a shown layer). */
   entityShown(id: string): boolean {
     return this.markers.get(id)?.node.isEnabled() ?? false;
@@ -759,12 +794,13 @@ export class EditorView {
 
   /** A see-through preview of a prop where it would be placed (null hides it). */
   /** The see-through preview of what a placing tool would put down (props, vehicles, spawns, pickups). */
-  setPropGhost(model: string | null, at: [number, number, number] | null, yaw: number, kind: 'prop' | 'mount' | 'spawn' | 'pickup' = 'prop'): void {
+  setPropGhost(model: string | null, at: [number, number, number] | null, yaw: number, kind: 'prop' | 'mount' | 'spawn' | 'pickup' = 'prop', look: { scale: number; variant?: number } = { scale: 1 }): void {
     if (!model || !at) {
       this.propGhost?.node.setEnabled(false);
       return;
     }
-    const key = `${kind}:${model}`;
+    // A prop's ghost shows its variant and size (the prop tool's Randomise: what you see is what you place).
+    const key = `${kind}:${model}:${look.variant ?? ''}`;
     if (this.propGhost?.model !== key) {
       // Not its materials: they are the model's, shared with every placed copy of it.
       if (this.propGhost) disposePropNode(this.propGhost.node);
@@ -777,7 +813,7 @@ export class EditorView {
       }
       else if (kind === 'pickup') node = createPickupVisual(this.scene, this.models, model, 'pickupGhost');
       else {
-        const e = { id: 'ghost', kind: 'prop', position: [0, 0, 0], model, yaw: 0, scale: 1, solid: false, tint: null } as unknown as PropEntity;
+        const e = { id: 'ghost', kind: 'prop', position: [0, 0, 0], model, yaw: 0, scale: 1, solid: false, tint: null, ...(look.variant !== undefined ? { variant: look.variant } : {}) } as unknown as PropEntity;
         node = createPropNode(this.scene, this.models, e, 'propGhost', false);
       }
       this.propGhost = { model: key, node };
@@ -789,9 +825,10 @@ export class EditorView {
     // A prop bedded on the document's ground lands where it will be drawn: re-bedded on the ground as shown.
     const made = this.groundMade;
     const ground = this.shownTerrain;
-    const y = kind === 'prop' && made && ground && ground !== made ? rebeddedY(made, ground, this.groundBoxes, { id: 'ghost', model, position: at, yaw, scale: 1 }) : null;
+    const y = kind === 'prop' && made && ground && ground !== made ? rebeddedY(made, ground, this.groundBoxes, { id: 'ghost', model, position: at, yaw, scale: look.scale }) : null;
     node.position.set(at[0], (y ?? at[1]) + lift, at[2]);
     node.rotation.y = yaw;
+    if (kind === 'prop') node.scaling.setAll(look.scale);
   }
 
   setGhost(doc: MapDocument, tile: string | null, cell: [number, number, number] | null, rotation: Rotation, ok: boolean): void {
