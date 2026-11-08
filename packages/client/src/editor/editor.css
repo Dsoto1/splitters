@@ -566,6 +566,8 @@ button.danger { border-color: rgba(231, 76, 60, 0.6); color: #ff8a7a; }
   background: rgba(11, 15, 26, 0.88); border: 1px solid rgba(255, 209, 77, 0.55); border-radius: 4px; font-size: 11px; color: var(--muted);
 }
 .ed-measure-label b { color: #ffd34d; font: 700 13px var(--font-display); margin-right: 6px; }
+.ed-measure-label span { display: block; }
+#editor > .ed-measure-label { text-align: center; }
 #editor > .ed-measure-label.total { border-color: #ffd34d; }
 .ed-measure-label[hidden] { display: none; }
 

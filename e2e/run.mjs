@@ -1155,7 +1155,7 @@ async function editorMeasureChecks(browser) {
   const [a, b] = m1.points;
   const dist = a && b ? Math.hypot(b.x - a.x, b.y - a.y, b.z - a.z) : 0;
   check(a && b && a.x === -2 && a.y === 0 && a.z === 2.5 && b.x === 0 && b.y === 0.8 && b.z === 1, `measure points snap to the grid on the floor and to the table top's middle (${JSON.stringify(m1.points)})`);
-  check(m1.labels.length === 1 && m1.labels[0].startsWith(`${dist.toFixed(2)} m`) && /up 80 cm/.test(m1.labels[0]) && /step jumpable/.test(m1.labels[0]), `two points show the distance, the height difference, the slope and whether it's jumpable (${m1.labels.join(' | ')})`);
+  check(m1.labels.length === 1 && m1.labels[0].startsWith(`${dist.toFixed(2)} m`) && /up 80 cm/.test(m1.labels[0]) && /jumpable/.test(m1.labels[0]) && /step jumpable/.test(m1.status), `two points show the distance, the height difference, the slope and whether it's jumpable (${m1.labels.join(' | ')})`);
   await clickAt(2, 0, 2.5);
   const m2 = await page.evaluate(() => ({ n: window.__editor.measure.points.length, labels: [...document.querySelectorAll('.ed-measure-label:not(.live)')].map((l) => l.textContent), total: window.__editor.measure.measurement.total }));
   check(m2.n === 3 && m2.labels.length === 3 && m2.labels.at(-1) === `Total ${m2.total.toFixed(2)} m`, `a third click chains the path and shows its total (${m2.labels.join(' | ')})`);

@@ -144,7 +144,15 @@ export function formatLength(m: number): string {
 
 /** One stretch in words: "6.32 m · up 1.20 m · 11.0° (19.4 %) · step jumpable · gap …". */
 export function describeSegment(s: MeasureSegment): string {
+  const p = segmentParts(s);
+  return `${p.length} · ${p.rise} · ${p.slope} · ${describeVerdict(s.verdict)}`;
+}
+
+/** A stretch's words in parts, for the tool's labels on the view: the length, the rise, the slope, and the verdict in a word. */
+export function segmentParts(s: MeasureSegment): { length: string; rise: string; slope: string; verdict: string } {
   const rise = Math.abs(s.rise) < 0.005 ? 'level' : `${s.rise > 0 ? 'up' : 'down'} ${formatLength(Math.abs(s.rise))}`;
   const slope = s.slopePct === null ? (Math.abs(s.rise) < 0.005 ? '0°' : `${s.rise > 0 ? '' : '-'}90°`) : `${s.slopeDeg.toFixed(1)}° (${Math.round(s.slopePct * 10) / 10} %)`;
-  return `${formatLength(s.distance)} · ${rise} · ${slope} · ${describeVerdict(s.verdict)}`;
+  const v = s.verdict;
+  const verdict = v.step === 'too high' ? 'too high' : v.gap === 'too far' ? 'too far to jump' : v.step === 'drop' ? 'a drop' : v.step === 'walk' ? 'walkable' : 'jumpable';
+  return { length: formatLength(s.distance), rise, slope, verdict };
 }

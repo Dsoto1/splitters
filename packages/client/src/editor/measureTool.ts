@@ -1,5 +1,5 @@
 import { Color4, CreateLineSystem, Vector3, type LinesMesh, type Scene } from '@babylonjs/core';
-import { describeSegment, formatLength, measurePath, type MeasurePoint, type Measurement, type Vec3 } from '@tiletrigger/shared';
+import { describeSegment, formatLength, segmentParts, measurePath, type MeasurePoint, type Measurement, type Vec3 } from '@tiletrigger/shared';
 
 /**
  * MapMaker's measure tool (overhaul Phase 1, item 3; the maths is shared editor/measure.ts). Click two points for the
@@ -149,20 +149,22 @@ export class MeasureTool {
       const el = document.createElement('div');
       el.className = 'ed-measure-label';
       el.dataset.segment = String(i);
-      const [len, ...rest] = describeSegment(s).split(' · ');
+      // Two short lines (the length; the rise, slope and verdict in a word): the whole sentence is in the status line.
+      const parts = segmentParts(s);
       el.innerHTML = `<b></b><span></span>`;
-      el.querySelector('b')!.textContent = len!;
-      el.querySelector('span')!.textContent = rest.join(' · ');
+      el.querySelector('b')!.textContent = parts.length;
+      el.querySelector('span')!.textContent = `${parts.rise} · ${parts.slope} · ${parts.verdict}`;
       this.labels.push(el);
     });
     if (live) {
       const el = document.createElement('div');
       el.className = 'ed-measure-label live';
       el.dataset.live = '';
-      const [len, ...rest] = describeSegment(measurePath(live).segments[0]!).split(' · ');
+      // Two short lines (the length; the rise, slope and verdict in a word): the whole sentence is in the status line.
+      const parts = segmentParts(measurePath(live).segments[0]!);
       el.innerHTML = `<b></b><span></span>`;
-      el.querySelector('b')!.textContent = len!;
-      el.querySelector('span')!.textContent = rest.join(' · ');
+      el.querySelector('b')!.textContent = parts.length;
+      el.querySelector('span')!.textContent = `${parts.rise} · ${parts.slope} · ${parts.verdict}`;
       this.labels.push(el);
     }
     if (m.segments.length > 1) {
@@ -181,21 +183,22 @@ export class MeasureTool {
   frame(): void {
     if (!this.labels.length) return;
     const pts = this.shown();
-    // Stretches' labels sit over their middles; the total under the last point.
-    const place = (el: HTMLElement, p: Vec3 | null, below = false) => {
+    // Stretches' labels sit by their middles; the total beside the last point.
+    // Every other stretch's label sits under its line, so neighbours' labels don't cover each other.
+    const place = (el: HTMLElement, p: Vec3 | null, at: 'above' | 'below' | 'beside') => {
       const s = p && this.host.project(p);
       el.hidden = !s;
-      if (s) el.style.transform = `translate(${Math.round(s.x)}px, ${Math.round(s.y)}px) translate(-50%, ${below ? '35%' : '-120%'})`;
+      if (s) el.style.transform = `translate(${Math.round(s.x)}px, ${Math.round(s.y)}px) ${at === 'beside' ? 'translate(14px, -50%)' : `translate(-50%, ${at === 'below' ? '25%' : '-115%'})`}`;
     };
     const live = this.live();
     for (const el of this.labels) {
-      if (el.dataset.total !== undefined) place(el, pts.at(-1) ?? null, true);
-      else if (el.dataset.live !== undefined) place(el, live ? { x: (live[0].x + live[1].x) / 2, y: (live[0].y + live[1].y) / 2, z: (live[0].z + live[1].z) / 2 } : null);
+      if (el.dataset.total !== undefined) place(el, pts.at(-1) ?? null, 'beside');
+      else if (el.dataset.live !== undefined) place(el, live ? { x: (live[0].x + live[1].x) / 2, y: (live[0].y + live[1].y) / 2, z: (live[0].z + live[1].z) / 2 } : null, 'above');
       else {
         const i = Number(el.dataset.segment);
         const a = pts[i];
         const b = pts[i + 1];
-        place(el, a && b ? { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2, z: (a.z + b.z) / 2 } : null);
+        place(el, a && b ? { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2, z: (a.z + b.z) / 2 } : null, i % 2 === 1 ? 'below' : 'above');
       }
     }
   }
