@@ -35,11 +35,30 @@ Already done from the owner's earlier ask: **the real buildable area.**
    - Next to the cursor, before you click, it now also says why it's refused: overlap, past the build limit, no floor
      under it, and so on (`checkPlacement`, `buildLimitReason`).
    - The same goes for props and set pieces.
+   - **As built (2026-11-08, `wip/mapmaker-p1a`):** `PlacementCheck` refusals carry `short` beside `reason`
+     (`checkLayout`, `buildLimitShort`); `shared/src/editor/ghostWhy.ts` has `tileGhostCheck` (the Platform-on-an-
+     upper-storey rule too), `zoneNote` and `entityGhostNote` (spawns, pickups, props, vehicles, NPCs: "No floor
+     under it" from the ground within 1.5 m or a floor, block or wall top within 1 m, as the spawn check; outside the
+     boundary; the scenery note; hung props and objects only get the zone notes). The hover card shows it (red ✗,
+     amber ⚠, blue ℹ, each with its words); the status line has the whole reason. Worked out once per cell / spot and
+     document version. Entities are warned, not refused (owner's call, HANDOFF). Tests `shared/test/ghostWhy.test.ts`;
+     e2e in `editorux` (`editorPhase1aChecks`).
 2. **A live budget bar.**
    - It covers entities, destructibles, vehicles, lights, props and draw estimate, the environment budget and the map's
      size (RESOURCE_BUDGETS, MAP_BUDGETS.md).
    - It is colour-coded and names whatever tips a budget over.
    - It updates on each edit from cheap counters, not a full validation every frame.
+   - **As built (2026-11-08, `wip/mapmaker-p1a`):** `shared/src/editor/budgetCounters.ts`: `BUDGET_ROWS` (entities,
+     props, prop models, draws, lights, destructibles, vehicles, the four environment budgets, the file's size),
+     `countBudgets` (from scratch) and `BudgetTracker`, fed by `EditHistory.onChange` (each command, undo's inverse,
+     reset): it counts only what the command touches; a set-piece, theme or set-piece-definition edit recounts the
+     parts (as played, from the cached expansion); a settings edit re-measures the file without its items (the
+     file's size is exact: `serializeMap`'s bytes, per item cached). The draw estimate is a draw per different
+     untinted prop model, per tinted prop, per species variant and per liquid, against 80 + 24 + 32 (owner's call).
+     UI `client/src/editor/budgetBar.ts`: a pill beside the level strip (OK / Near at 80 % / Over, colour and word),
+     naming the worst budget; its name selects what it counts (`budgetCulprits`); the arrow lists every row. Test
+     `shared/test/budgetCounters.test.ts` (counters = full count after commands, a batch, a stroke, every undo and
+     redo; over a budget exactly when the validator warns).
 3. **A measure tool.** Click two points to get the distance, the height difference and the slope. It snaps to cells
    and surfaces.
 4. **Props snap to surfaces, with randomise.**
@@ -48,6 +67,14 @@ Already done from the owner's earlier ask: **the real buildable area.**
 5. **A shortcut overlay.**
    - Press `?` to see every key.
    - It is generated from the same table the keys are bound with, so it can't go stale.
+   - **As built (2026-11-08, `wip/mapmaker-p1a`):** `shared/src/editor/keymap.ts`: `EDITOR_KEYS` (pressed keys, first
+     match wins), `EDITOR_KEY_NOTES` (held keys: `FLY_KEYS`, `FREE_PLACE_KEYS`; the mouse; the palette's own keys),
+     `matchEditorKey`, `editorKeyGroups`. MapMaker's keydown handler is `matchEditorKey` plus `keyActions` (a Record
+     over every action); the fly camera and free placing read their codes from the table. Every key does what it did,
+     except Shift+/ (`?`), which opens the list (/ still searches). Overlay `client/src/editor/keyOverlay.ts`: a modal
+     dialog (MapMaker's keys are off while it's open), the tool bar's **Keys** button. Test `shared/test/keymap.test.ts`
+     (every key × Shift × Ctrl/⌘ against the old handler; every key it answers is listed; no key matched by hand in
+     editorApp.ts).
 
 ## Phase 2: the interface
 1. **Mode tabs:** Build, Props, Gameplay, Logic, Environment, Paths, Test. Each has its own palette and inspector.

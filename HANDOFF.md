@@ -29,6 +29,14 @@ docs/MAPMAKER_OVERHAUL_PLAN.md). Branches `wip/mapmaker-*` / `check/mapmaker-*` 
   Change grid, a "coast" border side) and the race-mode removal (the race layer reworded to track / NPC traffic) are on
   main. This line will say when it starts. Please say here when those land.
 
+**MapMaker Phase 1, part A** (`wip/mapmaker-p1a`, other account; docs/MAPMAKER_OVERHAUL_PLAN.md "As built" under
+Phase 1 items 1, 2, 5): the ghost says why, the live budget bar, the `?` key list.
+- **Owner's calls, built the conservative way:** (1) entities over nothing or outside the boundary are warned beside
+  the pointer, not refused; (2) the draw estimate (a draw per different untinted prop model, tinted prop, species
+  variant and liquid, budget 136 = 80 + 24 + 32); (3) Shift+/ (`?`) now opens the key list instead of searching.
+- **Pitfall:** new MapMaker keys go in `EDITOR_KEYS` (shared/src/editor/keymap.ts) with a `keyActions` entry in
+  editorApp.ts; `keymap.test.ts` fails on a `case 'KeyX':` matched by hand.
+
 **In flight at the switch** (each branch pushed, tree clean; scratchpad files did not survive the switch):
 1. **Friendly fire** (`wip/friendly-fire` @ 318023ed). Green at 1a347140 (run 42408271804, with its new e2e check).
    - **The switch commit:** main's frozen-corpses fix was merged in (conflicts only in CHANGELOG and HANDOFF;

@@ -2094,7 +2094,8 @@ export class EditorApp {
     this.view.setHoverCell(this.doc, this.tool.kind === 'tile' || this.tool.kind === 'setpiece' || this.tool.kind === 'spawn' || this.tool.kind === 'pickup' || this.tool.kind === 'scenario' || this.tool.kind === 'npc' ? cell : null);
     if (this.tool.kind === 'tile' && cell) {
       const check = this.tileGhost(this.tool.tile, cell);
-      if (!check.ok) $('ed-target').textContent = `Can't place here: ${check.reason}`;
+      // The whole reason on the status line (the note beside the pointer has it in a few words).
+      if (!check.ok) $('ed-target').textContent = check.reason.charAt(0).toUpperCase() + check.reason.slice(1);
       this.view.setGhost(this.doc, this.tool.tile, cell, this.rotation, check.ok);
     } else {
       this.view.setGhost(this.doc, null, null, 0, true);
