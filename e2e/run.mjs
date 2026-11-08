@@ -6558,7 +6558,8 @@ async function gripsInPlay(browser) {
     let last = '';
     const t0 = performance.now();
     window.__heldIv = setInterval(() => {
-      const now = `${window.__cs.local.weapon?.id?.replace('core.', '')}/${window.__cs.view.viewWeapon?.replace('core.', '')}${window.__cs.local.alive ? '' : ' dead'}`;
+      const asked = [...new Set((window.__cs.local.pending ?? []).map((i) => i.weapon).filter(Boolean))].join('+');
+      const now = `${window.__cs.local.weapon?.id?.replace('core.', '')}/${window.__cs.view.viewWeapon?.replace('core.', '')}${window.__cs.local.alive ? '' : ' dead'}${asked ? ` asked ${asked}` : ''}${window.__cs.input.wheelOpen ? ' wheel' : ''} held#${window.__cs.local.held}`;
       if (now !== last) window.__heldTrace.push(`${((performance.now() - t0) / 1000).toFixed(1)}s ${(last = now)}`);
     }, 50);
   });
