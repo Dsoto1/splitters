@@ -5698,6 +5698,17 @@ async function editorPartBChecks(browser) {
   const sel = () => page.evaluate(() => window.__editor.selection);
   const toast = () => page.evaluate(() => document.getElementById('ed-toast').textContent);
   const at = (x, y, z) => page.evaluate(([x, y, z]) => window.__editor.view.project({ x, y, z }), [x, y, z]);
+  /** The camera over the middle of the map, looking north and down at it. */
+  const overview = async () => {
+    await page.evaluate(() => {
+      const v = window.__editor.view;
+      v.camera.position.set(0, 40, -40);
+      v.yaw = 0;
+      v.pitch = -0.8;
+      v.applyCamera();
+    });
+    await frames(page, 3);
+  };
   const pointAt = async (x, y, z) => {
     const p = await at(x, y, z);
     await page.mouse.move(p.x, p.y);
@@ -5740,6 +5751,7 @@ async function editorPartBChecks(browser) {
   s = await sel();
   check(s.tiles.length === 0 && s.entities.length === 1 && s.entities[0] === 'pick_a', `Alt-click picks one member (${JSON.stringify(s)})`);
   // Moved as one (→ a cell east), flipped as one (M), duplicated as one (Ctrl+D: a second group).
+  await page.evaluate(() => window.__editor.setSelection({ tiles: [], entities: [] }));
   await page.mouse.click(pa.x, pa.y);
   await frames(page, 2);
   await page.keyboard.press('ArrowRight');
@@ -5749,7 +5761,7 @@ async function editorPartBChecks(browser) {
   await page.keyboard.press('KeyM');
   await frames(page, 2);
   d = await doc();
-  check(d.entities.find((e) => e.id === 'pick_a').position[0] === 4 && d.classicStructure.tiles[0].x === 0, `M flips the group east ↔ west about its own middle (${JSON.stringify(d.entities.find((e) => e.id === 'pick_a').position)})`);
+  check(d.entities.find((e) => e.id === 'pick_a').position[0] === 12 && d.classicStructure.tiles[0].x === 0, `M flips the group east ↔ west about its own middle (${JSON.stringify(d.entities.find((e) => e.id === 'pick_a').position)})`);
   await page.keyboard.press('Control+KeyD');
   await frames(page, 2);
   d = await doc();
@@ -5775,14 +5787,14 @@ async function editorPartBChecks(browser) {
   check(stored?.format === 'tiletrigger.mapmaker.clipboard' && stored.tiles.length === 1 && stored.entities.length === 2 && stored.groups.length === 1, `Ctrl+C keeps the group in this browser's clipboard (${await toast()})`);
   const firstMap = (await doc()).metadata.id;
   await newMap(page, 96);
-  await page.evaluate(() => window.__editor.view.focus({ x: 0, y: 0, z: 0 }));
-  await frames(page, 3);
-  await pointAt(24, 0, 16);
+  await overview();
+  await pointAt(16, 0, 8);
   await page.keyboard.press('Control+KeyV');
   await frames(page, 2);
   d = await doc();
   const pasted = await sel();
-  check(d.metadata.id !== firstMap && pasted.tiles.length === 1 && pasted.entities.length === 2 && d.classicStructure.tiles.some((t) => t.id === pasted.tiles[0] && t.x === 3 && t.y === 2), `Ctrl+V pastes into the other map with new ids, its anchor on the cell under the pointer (${JSON.stringify(pasted)}; ${await toast()})`);
+  const pastedTile = d.classicStructure.tiles.find((t) => t.id === pasted.tiles[0]);
+  check(d.metadata.id !== firstMap && pasted.tiles.length === 1 && pasted.entities.length === 2 && pastedTile?.x === 2 && pastedTile?.y === 1, `Ctrl+V pastes into the other map with new ids, its anchor on the cell under the pointer (${JSON.stringify(pastedTile)}; ${await toast()})`);
   check(d.groups?.length === 1 && !pasted.entities.includes('pick_a'), 'the pasted things are still a group, with new ids');
   await shot('paste');
   await page.keyboard.press('Control+KeyZ');
@@ -5827,20 +5839,21 @@ async function editorPartBChecks(browser) {
 
   // ---- Note pins: J, click the ground, write, pin; drag it; click it to edit; Map properties lists it; delete.
   await page.keyboard.press('KeyJ');
-  await frames(page, 2);
-  const np = await pointAt(10, 0, -10);
+  await overview();
+  const np = await pointAt(8, 0, -8);
   await page.mouse.click(np.x, np.y);
-  await page.waitForSelector('#ed-note-editor', { timeout: T(5000) });
+  const opened = await page.waitForSelector('#ed-note-editor', { timeout: T(5000) }).then(() => true, () => false);
+  check(opened, `a click with the Note tool opens a new note's editor (${await page.evaluate(() => window.__editor.tool.kind)}; ${await toast()})`);
   await page.fill('#ed-note-text', 'Sniper line from B is too long');
   await shot('note-editor');
   await page.click('#ed-note-save');
   await frames(page, 3);
   d = await doc();
-  check(d.editorNotes?.length === 1 && d.editorNotes[0].text === 'Sniper line from B is too long' && Math.abs(d.editorNotes[0].position[0] - 10) < 1, `a click with the Note tool pins a note there (${JSON.stringify(d.editorNotes)})`);
+  check(d.editorNotes?.length === 1 && d.editorNotes[0].text === 'Sniper line from B is too long' && Math.abs(d.editorNotes[0].position[0] - 8) < 1, `a click with the Note tool pins a note there (${JSON.stringify(d.editorNotes)})`);
   const pin = await page.$('.ed-note-pin');
   check(!!pin && (await pin.isVisible()) && (await pin.textContent()).includes('Sniper line'), 'its pin shows over the view with its first line');
   const box = await pin.boundingBox();
-  const to = await at(18, 0, -10);
+  const to = await at(16, 0, -8);
   await page.mouse.move(box.x + 11, box.y + 22);
   await page.mouse.down();
   await page.mouse.move((box.x + to.x) / 2, (box.y + to.y) / 2, { steps: 4 });
@@ -5848,7 +5861,7 @@ async function editorPartBChecks(browser) {
   await page.mouse.up();
   await frames(page, 3);
   d = await doc();
-  check(Math.abs(d.editorNotes[0].position[0] - 18) < 1.5, `dragging the pin moves the note (${JSON.stringify(d.editorNotes[0].position)})`);
+  check(Math.abs(d.editorNotes[0].position[0] - 16) < 1.5, `dragging the pin moves the note (${JSON.stringify(d.editorNotes[0].position)})`);
   await page.click('.ed-note-pin');
   await page.waitForSelector('#ed-note-editor', { timeout: T(5000) });
   await page.fill('#ed-note-text', 'Sniper line: add a wall');
@@ -5873,7 +5886,7 @@ async function editorPartBChecks(browser) {
   await page.click('#ed-new-templates [data-template="ctf"]');
   await shot('templates');
   await page.click('#ed-new-create');
-  await page.waitForFunction(() => window.__editor.doc.entities.some((e) => e.kind === 'flag'), null, { timeout: T(15000) });
+  await page.waitForFunction(() => window.__editor.doc.entities.filter((e) => e.kind === 'flag').length === 2, null, { timeout: T(15000) }).catch(() => {});
   d = await doc();
   const flags = d.entities.filter((e) => e.kind === 'flag');
   check(flags.length === 2 && new Set(flags.map((f) => f.team)).size === 2 && d.metadata.name === 'Untitled Map' && d.metadata.id !== 'template_ctf', `Start from → Symmetric CTF makes a new map of its own from the layout (${d.metadata.id}, ${flags.length} flags)`);

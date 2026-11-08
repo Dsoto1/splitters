@@ -287,7 +287,8 @@ export function mirrorCommand(
   const items = itemsOf(doc, sel);
   if (!items.tiles.length && !items.entities.length && !items.setPieces.length) return { error: 'nothing selected' };
   const { cellSize } = doc.classicStructure;
-  const m: MirrorPlane = { across: plane.across, at: snapMirrorAt(plane.at, cellSize) };
+  // Tiles and set pieces need the line where cells land on cells; things alone mirror about any line.
+  const m: MirrorPlane = { across: plane.across, at: items.tiles.length || items.setPieces.length ? snapMirrorAt(plane.at, cellSize) : plane.at };
   const pieces = piecesFor(doc, library);
   const tiles: TilePlacement[] = [];
   for (const t of items.tiles) {
@@ -343,10 +344,13 @@ export function selectionMiddle(doc: MapDocument, sel: Selection, catalog: TileC
     const def = pieces.get(p.piece);
     if (def) for (const c of setPieceFootprint(p, def)) cells.push([c[0], c[1]]);
   }
-  const mid = (vs: number[]) => (Math.min(...vs) + Math.max(...vs)) / 2;
-  if (cells.length) return [mid(cells.map((c) => c[0])) * cellSize, mid(cells.map((c) => c[1])) * cellSize];
-  if (!items.entities.length) return null;
-  return [r3(mid(items.entities.map((e) => e.position[0]))), r3(mid(items.entities.map((e) => e.position[2])))];
+  // The extent of everything: a cell's whole width, a thing's position; the middle of that (mirrorCommand snaps it).
+  const half = cellSize / 2;
+  const xs = [...cells.flatMap((c) => [c[0] * cellSize - half, c[0] * cellSize + half]), ...items.entities.map((e) => e.position[0])];
+  const zs = [...cells.flatMap((c) => [c[1] * cellSize - half, c[1] * cellSize + half]), ...items.entities.map((e) => e.position[2])];
+  if (!xs.length) return null;
+  const mid = (vs: number[]) => r3((Math.min(...vs) + Math.max(...vs)) / 2);
+  return [mid(xs), mid(zs)];
 }
 
 /**
