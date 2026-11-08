@@ -19,7 +19,6 @@ const KNOWN: readonly KnownNavIssue[] = [
   { map: 'skyward', code: 'nav.trap', near: [0, 8.1, 32], why: 'the railgun perch: a pad up, no way back, as the map says' },
   { map: 'skyward', code: 'nav.trap', near: [-40, 4.1, 0], why: 'the plasma gun tower (x -40): a pad up, no way back, as the map says' },
   { map: 'skyward', code: 'nav.trap', near: [40, 4.1, 0], why: 'the disc launcher tower (x 40): a pad up, no way back, as the map says' },
-  // For the owner: places players are stuck in too.
 ];
 
 /** Why a finding on an official map is left as it is, or null when it isn't known (an error). */
