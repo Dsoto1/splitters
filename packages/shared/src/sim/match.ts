@@ -2506,6 +2506,17 @@ export class Match {
     return out;
   }
 
+  /** Is vehicle `m` on or over water (or another liquid): afloat, its feet in it, or (a flyer) water under it? */
+  private overWater(m: MountRt): boolean {
+    if (m.afloat || liquidAt(this.liquids, { x: m.pos.x, y: m.pos.y + 0.2, z: m.pos.z }) || liquidAt(this.liquids, { x: m.pos.x, y: m.pos.y - 0.5, z: m.pos.z })) return true;
+    if (!m.def.vehicle?.fly) return false;
+    const hit = this.physics.raycastHit({ x: m.pos.x, y: m.pos.y - 0.05, z: m.pos.z }, { x: 0, y: -1, z: 0 }, 60);
+    const below = hit ? m.pos.y - 0.05 - hit.dist : m.pos.y - 60;
+    // The first liquid between it and the ground under it.
+    for (let y = m.pos.y - 0.5; y > below; y -= 1) if (liquidAt(this.liquids, { x: m.pos.x, y, z: m.pos.z })) return true;
+    return false;
+  }
+
   /** Turrets and vehicles as bots see them (built once per tick). */
   private mountViews(actors: readonly Combatant[]): MountView[] {
     const humans = actors.filter((a) => a.kind === 'human' && a.alive);
@@ -2526,6 +2537,7 @@ export class Match {
       ...(m.def.armour?.sealed ? { sealed: true } : {}),
       ...(m.def.bailHealth !== undefined ? { bailHealth: m.def.bailHealth } : {}),
       ...(m.def.vehicle?.pivot ? { pivots: true } : {}),
+      ...(m.def.vehicle && this.liquids.length && this.overWater(m) ? { overWater: true } : {}),
       ...(m.def.vehicle && !m.def.vehicle.fly ? { routeHalfWidth: Math.min(m.def.half[0], m.def.half[2]) * (m.def.vehicle.routeFit ?? ROUTE_FIT) } : {}),
       half: m.def.half,
       humanNear: humans.some((h) => horizontalDistance(h.move.pos, m.pos) < 35),

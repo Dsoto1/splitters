@@ -29,7 +29,7 @@ type Internals = {
   enterMount(c: Combatant): boolean;
   leaveMount(c: Combatant, step: boolean): void;
   mountViews(actors: readonly Combatant[]): MountView[];
-  nav: { findPath(a: { x: number; y: number; z: number }, b: { x: number; y: number; z: number }): { x: number; y: number; z: number }[] | null };
+  nav: { findPath(a: { x: number; y: number; z: number }, b: { x: number; y: number; z: number }): { x: number; y: number; z: number }[] | null; };
   physics: { setBoxPose(b: unknown, c: unknown, y: number): void };
 };
 const internals = (match: Match) => match as unknown as Internals;
@@ -149,6 +149,28 @@ describe('a bot getting out slows down first', () => {
     const { outAt, outSpeed } = drive(10);
     expect(outAt).toBeGreaterThan(0);
     expect(outSpeed).toBeGreaterThan(8);
+  });
+
+  it("on Iron Tide's sea: it stays aboard a while rather than jump into the water", () => {
+    const map = mapFile('iron_tide');
+    const match = new Match(map, { ...rulesForMode(map, 'core.tdm'), scoreLimit: 0, respawnDelayTicks: 100_000 }, 4);
+    const bot = match.addBot('bot', quiet, BOT_DIFFICULTIES.normal)!;
+    match.step();
+    const m = internals(match).mounts.find((x) => x.def.id === 'hauler')!;
+    pose(match, m, [-60, -1.4, 72], 0);
+    place(bot, -58, -1.4, 72);
+    expect(internals(match).enterMount(bot)).toBe(true);
+    for (let t = 0; t < 30; t++) match.step();
+    expect(internals(match).mountViews([]).find((v) => v.index === m.index)!.overWater).toBe(true);
+    // Arrived (its goal right here): it wants out.
+    (bot.bot as unknown as { roamGoal: { x: number; y: number; z: number } }).roamGoal = { x: -60, y: -1.4, z: 74 };
+    let out = -1;
+    for (let t = 0; t < TICK_RATE * 14 && out < 0; t++) {
+      match.step();
+      if (!bot.mount) out = t;
+    }
+    // Not at once (before: out within a second); in the end it does get out (EXIT_GROUND_WAIT, 8 s).
+    expect(out).toBeGreaterThan(TICK_RATE * 6);
   });
 });
 

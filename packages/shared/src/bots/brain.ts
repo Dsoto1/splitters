@@ -319,8 +319,8 @@ const SHELTERED_TARGET_SCALE = 3;
 const NO_FIT_SECONDS = 20;
 /** At the wheel, the route ahead is checked for fit (routeFits) this far (m) on each new route. */
 const FIT_AHEAD = 80;
-/** Getting out because the route is too narrow only over walkable ground: the navmesh this near (m) under it. */
-const NARROW_EXIT_REACH = { x: 1, y: 1.5, z: 1 };
+/** A bot gets out of a vehicle (not burning or about to blow) on or over water (MountView.overWater) only once it has wanted out this long (s). */
+const EXIT_GROUND_WAIT = 8;
 /** A pickup a bot got stuck going for is left alone this long (s). */
 const PICKUP_GIVE_UP_SECONDS = 90;
 /** How far (m) a bot goes to hop into a teammate's vehicle. */
@@ -3113,7 +3113,7 @@ export class BotBrain {
       // it), or a fight with no gun (not from a sealed one: inside is the safest place there is).
       if ((left < 14 && !engaging && !resupply) || aboutToBlow(m) || this.drive.stuck || (target && !seat.weapon && !m.sealed && horizontalDistance(m.pos, target.pos) < 22)) leave = true;
       // (Not over water, or off the walkable ground: out there it would only have to swim back. On it drives till it is.)
-      if (this.routeTooNarrow && !engaging && view.nav.closestPoint(m.pos, NARROW_EXIT_REACH)) {
+      if (this.routeTooNarrow && !engaging) {
         leave = true;
         this.avoidMounts.set(m.index, tick + TICK_RATE * NO_FIT_SECONDS);
       }
@@ -3122,7 +3122,7 @@ export class BotBrain {
       if (leave && !aboutToBlow(m) && (m.speed ?? 0) > BAIL_SPEED) {
         forward = m.reversing ? 1 : -1;
         slowing = true;
-      }
+      } else if (leave && !aboutToBlow(m) && this.overWater(view, m, tick)) slowing = true;
       // Don't climb straight back into the one that got stuck.
       if (this.drive.stuck) this.giveUpOn(m.index, tick);
       if (m.sealed) {
@@ -3160,7 +3160,7 @@ export class BotBrain {
       if (stuck) this.giveUpOn(m.index, tick);
       if ((!driven && tick - this.noDriverSince >= this.bailDelay) || aboutToBlow(m) || parked || stuck) leave = true;
       // Still going fast with nobody braking it for us: wait till it slows (an empty one brakes on its own: idleBrake).
-      if (leave && !aboutToBlow(m) && (m.speed ?? 0) > BAIL_SPEED) slowing = true;
+      if (leave && !aboutToBlow(m) && ((m.speed ?? 0) > BAIL_SPEED || this.overWater(view, m, tick))) slowing = true;
       if (!fireAt) this.turnToward(m.yaw, 0);
     } else if (m) {
       // Gunner: stay while there is something to shoot.
@@ -3183,6 +3183,20 @@ export class BotBrain {
   }
 
   private nextMountTick = 0;
+  /** When it began waiting to get out until it is over walkable ground (overWater), or -1. */
+  private outWaitSince = -1;
+
+  /**
+   * Wanting out of `m` on or over water (a hovercraft on the harbour, a flyer over the sea): it
+   * stays aboard (a while: EXIT_GROUND_WAIT), as out there it only swims and gets stuck at the quay. Before, bots
+   * jumped out of a sinking dropship over Iron Tide's moat and were stuck in it by the wall.
+   */
+  private overWater(view: BotWorldView, m: MountView, tick: number): boolean {
+    if (!m.overWater) return false;
+    if (this.outWaitSince < 0 || tick - this.outWaitSince > TICK_RATE * (EXIT_GROUND_WAIT + 2)) this.outWaitSince = tick;
+    return tick - this.outWaitSince < TICK_RATE * EXIT_GROUND_WAIT;
+  }
+
   /** At the wheel: the current route goes somewhere the vehicle doesn't fit (vehicleRouteFits), so the bot gets out. */
   private routeTooNarrow = false;
 

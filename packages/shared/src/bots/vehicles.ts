@@ -101,6 +101,8 @@ export interface MountView {
   pivots?: boolean;
   /** Ground vehicles and hovercraft (not flyers): how far (m) either side of its middle a route must be clear for it (routeFits). */
   routeHalfWidth?: number;
+  /** On or over water (or another liquid): afloat, in it, or a flyer with water under it. Bots don't get out there. */
+  overWater?: boolean;
 }
 
 /** Can a bot at `feet` get into `m` from where it stands (the match's own rule, sim/mounts.ts enterReach)? */
