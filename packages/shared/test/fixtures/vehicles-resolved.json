@@ -766,7 +766,10 @@
       "arc": 0.6,
       "ammo": {
        "max": 10,
-       "refillSeconds": 15
+       "refillSeconds": 15,
+       "pickups": [
+        "core.ammo"
+       ]
       },
       "driverFires": true
      },

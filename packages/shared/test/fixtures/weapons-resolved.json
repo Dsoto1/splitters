@@ -817,6 +817,7 @@
      7,
      40
     ],
+    "vehicleDamage": 2,
     "damage": 0,
     "pellets": 1,
     "spread": 0,
@@ -2860,6 +2861,7 @@
      8,
      45
     ],
+    "vehicleDamage": 2,
     "ammo": "explosive",
     "projectile": {
      "speed": 20,
@@ -2945,6 +2947,7 @@
      10,
      60
     ],
+    "vehicleDamage": 2,
     "ammo": "explosive",
     "projectile": {
      "speed": 17,
@@ -3431,6 +3434,7 @@
      0,
      80
     ],
+    "vehicleDamage": 2,
     "heat": {
      "perShot": 0.3,
      "coolPerTick": 0.004
@@ -4133,6 +4137,7 @@
      6,
      40
     ],
+    "vehicleDamage": 2,
     "ammo": "explosive",
     "projectile": {
      "speed": 26,
