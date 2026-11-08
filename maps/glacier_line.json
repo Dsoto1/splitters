@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 20,
+  "formatVersion": 29,
   "metadata": {
     "id": "glacier_line",
     "name": "Glacier Line",
@@ -19,7 +19,15 @@
       "core.ctf",
       "core.koth",
       "core.deathmatch"
-    ]
+    ],
+    "release": {
+      "mapId": "m_6jrvegnpqp5udvrt",
+      "versionId": "v_lju6gzr2wngkpzfc",
+      "revision": 1,
+      "contentHash": "sha256:62175d2005a38e9fb220c8351d2a18f0a00e3b74c8e068aa7667012051e3ebb0",
+      "schemaVersion": 29,
+      "releasedAt": "2026-11-08T05:23:48.095Z"
+    }
   },
   "classicStructure": {
     "cellSize": 8,
@@ -8354,6 +8362,17 @@
       "kind": "spawn",
       "yaw": 3.141592653589793,
       "faction": "tide"
+    },
+    {
+      "id": "pickup_ekrqxstr16",
+      "kind": "pickup",
+      "position": [
+        0,
+        0,
+        -20
+      ],
+      "item": "core.ammo",
+      "respawnSeconds": null
     }
   ],
   "factions": [],
@@ -54021,7 +54040,6 @@
     "style": "invisible",
     "height": 8
   },
-  "track": null,
   "backdrop": {
     "sky": "snowy",
     "scenery": "peaks",

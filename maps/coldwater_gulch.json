@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 28,
+  "formatVersion": 29,
   "metadata": {
     "id": "coldwater_gulch",
     "name": "Coldwater Gulch",
@@ -21,11 +21,11 @@
     ],
     "release": {
       "mapId": "m_ev3sc6tr7ku33fgt",
-      "versionId": "v_4werkdjyh7vgmqht",
-      "revision": 1,
-      "contentHash": "sha256:36b9f3e69eec98a2beedd71d8f1b014f161eb9f777af10c455d5dcfcb35a408c",
-      "schemaVersion": 28,
-      "releasedAt": "2026-11-07T11:14:17.006Z"
+      "versionId": "v_ksqe4gfwv7oeauts",
+      "revision": 2,
+      "contentHash": "sha256:60fd24ccdde1e242cb3c6514bef2e1b0a9b36d3f6d48210c6a46643059638893",
+      "schemaVersion": 29,
+      "releasedAt": "2026-11-08T05:20:09.167Z"
     }
   },
   "classicStructure": {
@@ -7295,6 +7295,28 @@
       "scale": 1,
       "solid": true,
       "tint": null
+    },
+    {
+      "id": "pickup_ekrqxstr16",
+      "kind": "pickup",
+      "position": [
+        -32,
+        0.86,
+        60
+      ],
+      "item": "core.ammo",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_3n235pv1oz",
+      "kind": "pickup",
+      "position": [
+        32,
+        0.86,
+        -60
+      ],
+      "item": "core.ammo",
+      "respawnSeconds": null
     }
   ],
   "factions": [
@@ -84483,6 +84505,6 @@
       8
     ]
   },
-  "dependencies": [],
-  "weaponSet": "scifi"
+  "weaponSet": "scifi",
+  "dependencies": []
 }

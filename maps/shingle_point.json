@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 28,
+  "formatVersion": 29,
   "metadata": {
     "id": "shingle_point",
     "name": "Shingle Point",
@@ -20,11 +20,11 @@
     ],
     "release": {
       "mapId": "m_vql6e6ixmth3q6cb",
-      "versionId": "v_fk5n3fr4njjqcpdr",
-      "revision": 4,
-      "contentHash": "sha256:046f5eabda36fced56d45628318071640b778541b12d969eb0d75cdfd35d5e78",
-      "schemaVersion": 28,
-      "releasedAt": "2026-11-07T10:55:45.122Z"
+      "versionId": "v_kfav2xo2srjcni7v",
+      "revision": 5,
+      "contentHash": "sha256:92281a8675974260bd0fb6c506f17698cc69c4f1cfcb0c4c1e8eefdda5cbcc03",
+      "schemaVersion": 29,
+      "releasedAt": "2026-11-08T05:24:56.366Z"
     }
   },
   "classicStructure": {
@@ -10111,6 +10111,17 @@
       "scale": 1,
       "solid": true,
       "tint": null
+    },
+    {
+      "id": "pickup_ekrqxstr16",
+      "kind": "pickup",
+      "position": [
+        32,
+        15.24,
+        72
+      ],
+      "item": "core.ammo",
+      "respawnSeconds": null
     }
   ],
   "factions": [
@@ -60843,6 +60854,6 @@
       12
     ]
   },
-  "dependencies": [],
-  "weaponSet": "military"
+  "weaponSet": "military",
+  "dependencies": []
 }
