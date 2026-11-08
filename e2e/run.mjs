@@ -6331,6 +6331,16 @@ async function gripsInPlay(browser) {
   // more later: pressing 3 while only the view lagged cycled on to the rifle (the same slot), and on a 1-2 fps CI page
   // the presses kept landing between the switch and its frame, ending on the rifle. So wait for the held gun, and
   // press 3 only while it isn't the marksman, each time until that press has taken.
+  // (What you held, as it changed from here to the scope coming down: for the message if the gun is the wrong one.)
+  await page.evaluate(() => {
+    window.__heldTrace = [];
+    let last = '';
+    const t0 = performance.now();
+    window.__heldIv = setInterval(() => {
+      const now = `${window.__cs.local.weapon?.id?.replace('core.', '')}/${window.__cs.view.viewWeapon?.replace('core.', '')}${window.__cs.local.alive ? '' : ' dead'}`;
+      if (now !== last) window.__heldTrace.push(`${((performance.now() - t0) / 1000).toFixed(1)}s ${(last = now)}`);
+    }, 50);
+  });
   await page.evaluate(() => window.__give('core.marksman'));
   await page.waitForFunction(() => window.__cs.local.weapon?.id === 'core.marksman', null, { timeout: T(10000) }).catch(() => {});
   for (let i = 0; i < 4; i++) {
@@ -6367,7 +6377,8 @@ async function gripsInPlay(browser) {
     return { weapon: v.viewWeapon, on: !!vm && vm.isEnabled(), drawn: !!vm && vm.getChildMeshes().some((m) => drawn.has(m)) };
   });
   const scopeHand = await own();
-  check(scopedIn && swapped && back.on && back.drawn && !badHand(scopeHand), `the gun is back in your hands after the scope, its sharper copy having come in while scoped (scoped ${scopedIn}, copy in ${swapped}, ${JSON.stringify(back)}, ${fmt(scopeHand)})`);
+  const heldTrace = await page.evaluate(() => (clearInterval(window.__heldIv), window.__heldTrace.join(', ')));
+  check(scopedIn && swapped && back.on && back.drawn && !badHand(scopeHand), `the gun is back in your hands after the scope, its sharper copy having come in while scoped (scoped ${scopedIn}, copy in ${swapped}, ${JSON.stringify(back)}, ${fmt(scopeHand)}${back.weapon === 'core.marksman' ? '' : `; held/drawn: ${heldTrace}`})`);
   const body = await page.evaluate(() => window.__cs.view.gripReport().local?.mode);
   check(body === 'body', `the match draws your whole body in first person (${body})`);
   // Bots near and far (animation LOD, the low-detail mesh past 18 m): their drawn hands on their guns. Only bots
