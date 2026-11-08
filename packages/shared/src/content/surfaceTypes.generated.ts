@@ -139,6 +139,7 @@ export const PROP_SURFACES: Readonly<Record<string, SurfaceTypeId>> = {
   'prop.jt_tree_trunk': 'bark',
   'prop.landing_craft': 'metal',
   'prop.landing_craft_wreck': 'metal',
+  'prop.landing_craft_wreck_burning': 'metal',
   'prop.hedgehog_beach': 'metal',
   'prop.sandbag_stack': 'dirt',
   'prop.timber_baulk': 'bark',
