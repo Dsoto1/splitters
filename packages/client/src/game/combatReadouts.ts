@@ -57,6 +57,8 @@ interface FloatingNumber {
   el: HTMLElement;
   at: Vec3;
   born: number;
+  /** Frames it has been drawn in (a slow page still shows it for a few). */
+  frames: number;
 }
 
 /** Floating damage numbers over what you hit (HUD `#damage-numbers`). */
@@ -105,7 +107,7 @@ export class DamageNumbers {
     // Hidden until the next frame puts it over the target (update).
     el.style.visibility = 'hidden';
     this.root.append(el);
-    this.live.push({ el, at, born: now });
+    this.live.push({ el, at, born: now, frames: 0 });
     while (this.live.length > MAX_NUMBERS) this.live.shift()!.el.remove();
   }
 
@@ -113,7 +115,7 @@ export class DamageNumbers {
   update(project: (p: Vec3) => { x: number; y: number } | null, now: number): void {
     for (let i = this.live.length - 1; i >= 0; i--) {
       const n = this.live[i]!;
-      if (now - n.born > NUMBER_MS) {
+      if ((now - n.born > NUMBER_MS && n.frames >= 3) || now - n.born > NUMBER_MS * 4) {
         n.el.remove();
         this.live.splice(i, 1);
         continue;
@@ -124,6 +126,7 @@ export class DamageNumbers {
         continue;
       }
       n.el.style.visibility = '';
+      n.frames++;
       n.el.style.transform = `translate(${Math.round(s.x)}px, ${Math.round(s.y)}px)`;
     }
   }
