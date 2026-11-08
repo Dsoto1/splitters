@@ -2384,36 +2384,60 @@ async function physicsfxFlow(browser) {
   }, killedAt);
   await page.evaluate(() => (window.__match.slots[window.__airSlot].respawnTick = window.__match.tick));
   check(!!behind && followed && !!laid && laid.tier === 'posed' && laid.ground !== null && Math.abs(laid.y - laid.ground) < 0.3 && laid.y < killedAt - 0.5, `a death out of view isn't simulated: the body is laid on the ground (${JSON.stringify({ followed, killedAt, laid })})`);
-  // The blasts below go off on open ground 10 m from you, the same place on every run: nothing of the level within
-  // 6 m of it (a bot standing by a rock or a wall was shielded from the throw, or its body thrown into the rock: CI,
-  // "up no", "outward 0.44"). The first direction round from where you look (45° steps) that has such ground.
+  // The blasts below go off on open ground, the same place on every run, with you 10 m off: nothing of the level
+  // within 5 m of it at body height (a bot standing by a rock or a wall was shielded from the throw, or its body thrown
+  // into the rock: CI, "up no", "outward 0.44"; which depended on where the bot, or you, happened to be). The map is
+  // searched on a fixed 4 m grid out from its middle (the level is static: the same spot every time), and you are put
+  // where you see it.
   const open = await page.evaluate(() => {
     const m = window.__match;
     const v = window.__cs.view;
     const me = m.slots[window.__cs.slot];
-    const f = v.camera.getForwardRay(1).direction;
-    const yaw0 = Math.atan2(f.x, f.z);
-    const tried = [];
-    for (let k = 0; k < 16; k++) {
-      const yaw = yaw0 + (k % 2 ? -1 : 1) * Math.ceil(k / 2) * (Math.PI / 4);
-      const x = me.move.pos.x + Math.sin(yaw) * 10;
-      const z = me.move.pos.z + Math.cos(yaw) * 10;
-      const hit = v.raycastLevel({ x, y: me.move.pos.y + 30, z }, { x: 0, y: -1, z: 0 }, 80);
-      if (!hit) continue;
-      const y = me.move.pos.y + 30 - hit.dist;
-      const eye = { x: me.move.pos.x, y: me.move.pos.y + 1.6, z: me.move.pos.z };
-      // Flat enough, in sight, and clear all round: the sim's level (the throw) and the effects world (the bodies).
-      let clear = Math.abs(y - me.move.pos.y) < 1.5 && m.physics.lineOfSight(eye, { x, y: y + 1, z }) && m.physics.boxClear({ x, y: y + 1.4, z }, { x: 6, y: 1, z: 6 });
-      for (let a = 0; clear && v.physics && a < 16; a++) {
-        const d = { x: Math.cos((a / 16) * Math.PI * 2), y: 0, z: Math.sin((a / 16) * Math.PI * 2) };
-        for (const h of [0.4, 1.2]) if (v.physics.raycast({ x, y: y + h, z }, d, 6)) clear = false;
+    const groundAt = (x, z) => {
+      const hit = v.raycastLevel({ x, y: 60, z }, { x: 0, y: -1, z: 0 }, 120);
+      return hit ? 60 - hit.dist : null;
+    };
+    const clearAround = (x, y, z) => {
+      // Level ground round it: within 0.6 m 3 m out every way.
+      for (let a = 0; a < 8; a++) {
+        const g = groundAt(x + Math.cos((a / 8) * Math.PI * 2) * 3, z + Math.sin((a / 8) * Math.PI * 2) * 3);
+        if (g === null || Math.abs(g - y) > 0.6) return false;
       }
-      tried.push(+(((yaw - yaw0) * 180) / Math.PI).toFixed(0));
-      if (clear) return { at: { x, y, z }, yaw, tried };
+      // Nothing standing within 5 m at body height: the sim's level (the throw) and the effects world (the bodies).
+      if (!m.physics.boxClear({ x, y: y + 1.9, z }, { x: 5, y: 1, z: 5 }, undefined, true)) return false;
+      for (let a = 0; v.physics && a < 16; a++) {
+        const d = { x: Math.cos((a / 16) * Math.PI * 2), y: 0, z: Math.sin((a / 16) * Math.PI * 2) };
+        for (const h of [1, 1.6]) if (v.physics.raycast({ x, y: y + h, z }, d, 5)) return false;
+      }
+      return true;
+    };
+    const cells = [];
+    for (let x = -80; x <= 80; x += 4) for (let z = -80; z <= 80; z += 4) cells.push({ x, z });
+    cells.sort((p, q) => Math.hypot(p.x, p.z) - Math.hypot(q.x, q.z) || p.x - q.x || p.z - q.z);
+    let checked = 0;
+    for (const c of cells) {
+      const y = groundAt(c.x, c.z);
+      if (y === null || !clearAround(c.x, y, c.z)) continue;
+      checked++;
+      // You 10 m off (the first of eight ways with ground near its height, room to stand and a clear sight of it).
+      for (let k = 0; k < 8; k++) {
+        const yaw = k * (Math.PI / 4);
+        const px = c.x - Math.sin(yaw) * 10;
+        const pz = c.z - Math.cos(yaw) * 10;
+        const py = groundAt(px, pz);
+        if (py === null || Math.abs(py - y) > 1) continue;
+        if (!m.physics.boxClear({ x: px, y: py + 1, z: pz }, { x: 0.6, y: 0.8, z: 0.6 }, undefined, true)) continue;
+        if (!m.physics.lineOfSight({ x: px, y: py + 1.6, z: pz }, { x: c.x, y: y + 1, z: c.z })) continue;
+        const me0 = { x: px, y: py + 0.05, z: pz };
+        me.move = { ...me.move, pos: me0, vx: 0, vz: 0, velY: 0, grounded: false };
+        return { at: { x: c.x, y, z: c.z }, me: me0, yaw, checked };
+      }
     }
-    return { at: null, tried };
+    return { at: null, checked };
   });
-  check(!!open.at, `open ground near you for the blasts (${open.at ? `${JSON.stringify(open.at)}, ` : ''}directions tried: ${open.tried.join(', ')}°)`);
+  check(!!open.at, `open ground for the blasts, with you 10 m off (${JSON.stringify(open)})`);
+  // You land there.
+  if (open.at) await page.waitForFunction((p) => { const me = window.__match.slots[window.__cs.slot]; return me.move.grounded && Math.hypot(me.move.pos.x - p.x, me.move.pos.z - p.z) < 1; }, open.me, { timeout: T(5000) }).catch(() => {});
   // Face it (the mass blast is the bodies in view), turned round if the yaw went the wrong way.
   if (open.at) {
     await page.evaluate((yaw) => (window.__cs.input.yaw = yaw), open.yaw);
@@ -3335,11 +3359,17 @@ async function weaponsetsFlow(browser) {
   const started = (p) => p.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown', null, { timeout: T(60000) });
   /** What you carry now, and the random gun this life rolls (Chaos, Mixed bag). */
   const myKit = (p) => sim(p, (m, me, a, mod) => ({ set: m.weaponSet?.id, life: me.spawns, weapons: [...me.weapons.values()].map((w) => w.def.id), held: me.weapons.get(me.current)?.def.id, grenade: me.throwable?.kind, rolled: mod.randomGunFor(m.weaponSet, m.seed, me.slot, me.spawns) }));
-  /** Die and come straight back: the new life's loadout. */
+  /**
+   * Die and come straight back: the new life's loadout. The gun you die with drops at your body (rules.dropWeapons):
+   * standing idle at your spawn, the next life could spawn on that same point and pick last life's oddball straight up
+   * (four weapons; CI, once), or a bot's beside it. The lying drops are cleared as you die: what's checked is what a
+   * life spawns with.
+   */
   const respawn = async (p) => {
     const life = await sim(p, (m, me) => me.spawns ?? 0);
     await sim(p, (m, me) => {
       m.kill(me, null, 'core.respawn');
+      m.drops.length = 0;
       me.respawnTick = m.tick;
     });
     await simWait(p, (m, me, n) => me.alive && (me.spawns ?? 0) > n, life, T(15000));
