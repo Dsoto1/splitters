@@ -279,7 +279,7 @@ Iron Maw and Frost Basin tanks never got down to 3 shells. Driving/shell totals 
 general Ammo Box also refills infantry: the Coldwater and Frost Basin ones sit on open lanes 16-40 m from other ammo,
 none in a chokepoint.
 
-### New players: Quick Play, the tutorial, first-time tips (`wip/quickplay`, agent, 2026-11-08; owner-approved brief; CI on `check/quickplay`)
+### New players: Quick Play, the tutorial, first-time tips (`wip/quickplay`, agent, 2026-11-08; owner-approved brief; green on `check/quickplay` at 973e65f, run 42471172929; LANDED: main 973e65f)
 
 **Quick Play** (`frontend/quickPlay.ts`, FrontEnd `openQuickPlay`/`quickPlay`): first item of the main menu (`#nav-quick`,
 highlighted by default). It opens a small choice over the menu: Team Deathmatch or Deathmatch (the last one marked
@@ -332,6 +332,11 @@ choice, a tip once and clear of the crosshair, touch words on a phone), mapped i
 frontend/, training_range). offline flow's nav check now expects `nav-quick` first. Pictures (agent scratchpad
 `quickplay/`): 01-menu-first-visit-*, 02-quick-play-*, 10-tutorial-step01..11-*, 20-tip-vehicle-* (desktop 1280×720
 and phone 750×342 touch).
+
+**CI notes:** the first check run (05a1515) failed only characters3's far-bodies check (`core.hyena` at 52/98 m drawn
+1.5 of 2.12 m, both attempts; canyon, nothing this branch draws); the merged commit's run passed it, and failed only
+physicsfx (blast throws on canyon, then the bulletproof glass's health read before the hit landed: one crack, health
+100), which passed on a re-run of the failed job. Both look like timing flakes; watch for them.
 
 **For the owner:**
 1. Quick Play's map lists (above): add or drop maps? The lists live in `frontend/quickPlay.ts`.
