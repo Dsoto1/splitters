@@ -99,7 +99,7 @@ The workflow is unchanged (CLAUDE.md):
 4. **Roulette** (`wip/roulette`, main 0531b29 merged in): CI fixed, landing from `check/roulette` (see "Roulette mode"
    below for the fix, the pictures and the bench).
 
-5. **Party join and the vote between matches** (`wip/party`, agent, 2026-11-08; owner-approved brief). docs/GAME_MODES.md
+5. **Party join and the vote between matches** (`wip/party`, agent, 2026-11-08; owner-approved brief; green on `check/party` at 775f503, run 42482093840; LANDED: main 775f503). docs/GAME_MODES.md
    "Between matches", MULTIPLAYER_PROTOCOL.md §21, HOSTING.md (`MAP_VOTE`).
    - **Vote:** `shared/sim/mapVote.ts` (`pickVoteOptions`, `tallyVotes`, `MapVote`; 12 s vote + 3 s winner). Ballot: 2-3
      suite maps for the mode that fit the people (caps), rotation's next first, never the map just played (unless
@@ -119,6 +119,11 @@ The workflow is unchanged (CLAUDE.md):
      `chain.test.ts` (vote travel, MAP_VOTE off), client `localHost.test.ts` (cap, party side, vote count); e2e `party`
      (offline ?test=1 vote with keys → next map same players; phone tap; online invite link → same side → both vote →
      travel together). hostcontrols e2e and server hostControls test play with the vote off (plain rotation checks).
+   - **Tests and tools keep the old replay:** browser tests (`?test=1`) have the vote off unless `&vote=1`; the e2e
+     runner's dedicated server and Host Service run `MAP_VOTE=0`; the perf tools set `cs.mapVote=0` (a TDM match
+     ending mid-measure travelled to a fresh worker and broke perf:mass). A long e2e flow that should see the vote asks.
+   - The dedicated server's ballot reads suite maps raw (JSON only; a full load of all 92 took ~8 s): race tracks
+     aren't offered from the suite there (their paths migrate on load); a race rotation still votes.
    - Open: the launcher/site /host have no vote toggle (config/env and in-game only); the successor of a handoff doesn't
      carry parties or an open vote; free-for-all parties only get the scoreboard mark.
 
