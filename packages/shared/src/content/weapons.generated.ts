@@ -1840,7 +1840,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
       altShot: { sound: 'fire.shotgun', rate: 0.78, flash: { effect: 'wide_flash_02', scale: 0.32 }, smoke: 1.2 },
     },
   },
-  // design: Spec gap G2 (GUNPLAY_SPEC.md §13, "Battle Rifle": high damage, medium-low rate, high recoil, high accuracy, very high velocity, medium capacity). Four heavy rounds kill to 40 m and two to the head anywhere; a true 1 mrad first shot from the hip, 880 m/s and the family's 1800 energy (through drywall and planks where rifle rounds stop). Paced, every round lands where the dot is; held down, it climbs a hand's width a round. Never the quickest body kill of the rifles on paper (0.6 s against the Assault Rifle's 0.5 up close; the Precision Rifle owns 100 m and beyond): its case is the first shot, the head and what's behind cover.
+  // design: Spec gap G2 (GUNPLAY_SPEC.md §13, "Battle Rifle": high damage, medium-low rate, high recoil, high accuracy, very high velocity, medium capacity). Four heavy rounds kill to 40 m and two to the head anywhere; a true 1 mrad first shot from the hip, 880 m/s and the family's 1800 energy (more through walls than the Assault Rifle's 1200). Paced, every round lands where the dot is; held down, it climbs a hand's width a round. Never the quickest body kill of the rifles on paper (0.6 s against the Assault Rifle's 0.5 up close; the Precision Rifle owns 100 m and beyond): its case is the first shot, the head and what's behind cover.
   // falloff: Its own (the family's minimum 0.8 would let five rounds kill at 100 m, quicker than the Precision Rifle's two bolts): five rounds at 50 m, six past 85 m.
   // model: The Meshy Community Frontier Rifle (content/guns.json, built since 2026-10-29, unused since the Marksman swap of 2026-11-06): a heavy scoped rifle with a 20-round box. The 3DModelsCC0 pack has no FAL, M14, G3 or SCAR, and the owner's Drive drop of 2026-11-08 holds vehicles only (gunplay pass 2, ARSENAL.md).
   // hold: Read off a side view on a 5 cm grid: grip in the raked pistol grip's middle under the trigger guard, support on the vertical foregrip, the butt plate in the shoulder.
@@ -1882,7 +1882,6 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
       tracer: '#ffe2a0',
       hold: { style: 'long', grip: [0, -0.075, -0.225], support: [0, -0.07, 0.105], shoulder: [0, 0.01, -0.47] },
       muzzleAt: [0, 0.033, 0.48],
-      zoomFov: 0.62,
       sound: 'fire.heavy',
     },
   },

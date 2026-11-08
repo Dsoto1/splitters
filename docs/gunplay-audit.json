@@ -4,7 +4,7 @@
   "health": 100,
   "armour": 100
  },
- "trials": 8,
+ "trials": 6,
  "distances": [
   10,
   25,
@@ -92,7 +92,7 @@
       "ideal": 700,
       "stk": 5,
       "hip": 867,
-      "ads": 700
+      "ads": 783
      }
     },
     "50": {
@@ -105,46 +105,46 @@
      "unarmoured.head": {
       "ideal": 600,
       "stk": 4,
-      "hip": 683,
+      "hip": 600,
       "ads": 600
      },
      "armoured.body": {
       "ideal": 3200,
       "stk": 13,
-      "hip": 4033,
-      "ads": 3700
+      "hip": 4117,
+      "ads": 3533
      },
      "armoured.head": {
       "ideal": 1100,
       "stk": 7,
-      "hip": 3700,
-      "ads": 2567
+      "hip": 3533,
+      "ads": 2400
      }
     },
     "100": {
      "unarmoured.body": {
       "ideal": 1233,
       "stk": 7,
-      "hip": 3750,
-      "ads": 2617
+      "hip": 3667,
+      "ads": 3333
      },
      "unarmoured.head": {
       "ideal": 733,
       "stk": 4,
-      "hip": 2450,
-      "ads": 900
+      "hip": 1233,
+      "ads": 817
      },
      "armoured.body": {
       "ideal": 3333,
       "stk": 13,
       "hip": null,
-      "ads": 4583
+      "ads": 5467
      },
      "armoured.head": {
       "ideal": 1233,
       "stk": 7,
       "hip": null,
-      "ads": 4667
+      "ads": 4417
      }
     }
    },
@@ -348,7 +348,7 @@
      "unarmoured.head": {
       "ideal": 217,
       "stk": 3,
-      "hip": 217,
+      "hip": 267,
       "ads": 217
      },
      "armoured.body": {
@@ -360,60 +360,60 @@
      "armoured.head": {
       "ideal": 517,
       "stk": 6,
-      "hip": 517,
+      "hip": 617,
       "ads": 517
      }
     },
     "50": {
      "unarmoured.body": {
-      "ideal": 650,
-      "stk": 7,
-      "hip": 650,
-      "ads": 650
+      "ideal": 750,
+      "stk": 8,
+      "hip": 750,
+      "ads": 750
      },
      "unarmoured.head": {
       "ideal": 350,
       "stk": 4,
-      "hip": 350,
+      "hip": 450,
       "ads": 350
      },
      "armoured.body": {
-      "ideal": 1250,
-      "stk": 13,
-      "hip": 1250,
-      "ads": 1250
+      "ideal": 1450,
+      "stk": 15,
+      "hip": 1700,
+      "ads": 1450
      },
      "armoured.head": {
-      "ideal": 650,
-      "stk": 7,
-      "hip": 650,
-      "ads": 650
+      "ideal": 750,
+      "stk": 8,
+      "hip": 3450,
+      "ads": 750
      }
     },
     "100": {
      "unarmoured.body": {
-      "ideal": 800,
-      "stk": 8,
-      "hip": 800,
-      "ads": 800
+      "ideal": 1000,
+      "stk": 10,
+      "hip": 4450,
+      "ads": 1000
      },
      "unarmoured.head": {
-      "ideal": 400,
-      "stk": 4,
-      "hip": 500,
-      "ads": 400
+      "ideal": 500,
+      "stk": 5,
+      "hip": 7050,
+      "ads": 500
      },
      "armoured.body": {
-      "ideal": 1500,
-      "stk": 15,
+      "ideal": 1900,
+      "stk": 19,
       "hip": null,
-      "ads": 1600
+      "ads": 1900
      },
      "armoured.head": {
-      "ideal": 800,
-      "stk": 8,
-      "hip": 7450,
-      "ads": 800
+      "ideal": 1000,
+      "stk": 10,
+      "hip": null,
+      "ads": 1050
      }
     }
    },
@@ -425,13 +425,13 @@
     "25": 517,
     "30": 517,
     "35": 517,
-    "40": 533,
-    "50": 650,
-    "60": 650,
-    "75": 767,
-    "100": 800,
-    "125": 833,
-    "150": 867
+    "40": 633,
+    "50": 750,
+    "60": 850,
+    "75": 967,
+    "100": 1000,
+    "125": 1033,
+    "150": 1067
    },
    "sweepStk": {
     "5": 6,
@@ -441,13 +441,13 @@
     "25": 6,
     "30": 6,
     "35": 6,
-    "40": 6,
-    "50": 7,
-    "60": 7,
-    "75": 8,
-    "100": 8,
-    "125": 8,
-    "150": 8
+    "40": 7,
+    "50": 8,
+    "60": 9,
+    "75": 10,
+    "100": 10,
+    "125": 10,
+    "150": 10
    },
    "firstHit": {
     "10": {
@@ -459,12 +459,12 @@
      "head": 36
     },
     "50": {
-     "body": 16.5,
-     "head": 32.9
+     "body": 14,
+     "head": 27.8
     },
     "100": {
-     "body": 13.5,
-     "head": 27
+     "body": 10.8,
+     "head": 21.6
     }
    },
    "falloff": {
@@ -473,15 +473,15 @@
     "15": 1,
     "20": 1,
     "25": 1,
-    "30": 1,
-    "35": 0.99,
-    "40": 0.97,
-    "50": 0.91,
-    "60": 0.84,
-    "75": 0.76,
-    "100": 0.75,
-    "125": 0.75,
-    "150": 0.75
+    "30": 0.99,
+    "35": 0.95,
+    "40": 0.9,
+    "50": 0.77,
+    "60": 0.65,
+    "75": 0.6,
+    "100": 0.6,
+    "125": 0.6,
+    "150": 0.6
    },
    "drop": {
     "5": {
@@ -561,10 +561,10 @@
     "sprayForgetMs": 1350
    },
    "spread": {
-    "hip": 1.5,
-    "ads": 0.6,
-    "run": 9.5,
-    "spray10": 8.7
+    "hip": 5,
+    "ads": 1,
+    "run": 13,
+    "spray10": 12.2
    }
   },
   {
@@ -583,28 +583,28 @@
    "ttk": {
     "10": {
      "unarmoured.body": {
+      "ideal": 750,
+      "stk": 2,
+      "hip": 750,
+      "ads": 750
+     },
+     "unarmoured.head": {
+      "ideal": 750,
+      "stk": 2,
+      "hip": 750,
+      "ads": 750
+     },
+     "armoured.body": {
       "ideal": 1500,
       "stk": 3,
       "hip": 1500,
       "ads": 1500
      },
-     "unarmoured.head": {
+     "armoured.head": {
       "ideal": 2250,
       "stk": 4,
-      "hip": 1500,
-      "ads": 1500
-     },
-     "armoured.body": {
-      "ideal": 3000,
-      "stk": 5,
-      "hip": 3000,
-      "ads": 3000
-     },
-     "armoured.head": {
-      "ideal": 5033,
-      "stk": 7,
-      "hip": 3750,
-      "ads": 3750
+      "hip": 2250,
+      "ads": 2250
      }
     },
     "25": {
@@ -688,9 +688,9 @@
    },
    "sweep": {
     "5": 0,
-    "10": 1500,
-    "15": 6317,
-    "20": null,
+    "10": 750,
+    "15": 2250,
+    "20": 6317,
     "25": null,
     "30": null,
     "35": null,
@@ -704,9 +704,9 @@
    },
    "sweepStk": {
     "5": 1,
-    "10": 3,
-    "15": 8,
-    "20": null,
+    "10": 2,
+    "15": 4,
+    "20": 8,
     "25": null,
     "30": null,
     "35": null,
@@ -720,11 +720,11 @@
    },
    "firstHit": {
     "10": {
-     "body": 44.2,
-     "head": 18.5
+     "body": 100,
+     "head": 39.3
     },
     "25": {
-     "body": 0,
+     "body": 6.4,
      "head": 0
     },
     "50": {
@@ -738,10 +738,10 @@
    },
    "falloff": {
     "5": 1,
-    "10": 0.67,
-    "15": 0.39,
-    "20": 0.26,
-    "25": 0.25,
+    "10": 0.86,
+    "15": 0.57,
+    "20": 0.37,
+    "25": 0.27,
     "30": 0.25,
     "35": 0.25,
     "40": 0.25,
@@ -788,9 +788,9 @@
     "sprayForgetMs": 1767
    },
    "spread": {
-    "hip": 75,
-    "ads": 75,
-    "run": 81,
+    "hip": 55,
+    "ads": 55,
+    "run": 61,
     "spray10": null
    }
   },
@@ -801,19 +801,19 @@
    "family": "precision",
    "slot": 5,
    "trigger": "auto",
-   "rpm": 48,
+   "rpm": 72,
    "magazine": 5,
-   "damage": 80,
+   "damage": 90,
    "pellets": 1,
    "model": "bullet",
    "velocity": 950,
    "ttk": {
     "10": {
      "unarmoured.body": {
-      "ideal": 1250,
+      "ideal": 833,
       "stk": 2,
-      "hip": 1250,
-      "ads": 1250
+      "hip": 833,
+      "ads": 833
      },
      "unarmoured.head": {
       "ideal": 0,
@@ -822,24 +822,24 @@
       "ads": 0
      },
      "armoured.body": {
-      "ideal": 2500,
+      "ideal": 1667,
       "stk": 3,
       "hip": 2500,
-      "ads": 2500
+      "ads": 1667
      },
      "armoured.head": {
       "ideal": 0,
       "stk": 1,
-      "hip": 1875,
+      "hip": 1250,
       "ads": 0
      }
     },
     "25": {
      "unarmoured.body": {
-      "ideal": 1267,
+      "ideal": 850,
       "stk": 2,
-      "hip": 3142,
-      "ads": 1267
+      "hip": 3850,
+      "ads": 850
      },
      "unarmoured.head": {
       "ideal": 17,
@@ -848,10 +848,10 @@
       "ads": 17
      },
      "armoured.body": {
-      "ideal": 2517,
+      "ideal": 1683,
       "stk": 3,
       "hip": null,
-      "ads": 2517
+      "ads": 1683
      },
      "armoured.head": {
       "ideal": 17,
@@ -862,10 +862,10 @@
     },
     "50": {
      "unarmoured.body": {
-      "ideal": 1283,
+      "ideal": 867,
       "stk": 2,
       "hip": null,
-      "ads": 1283
+      "ads": 867
      },
      "unarmoured.head": {
       "ideal": 33,
@@ -874,10 +874,10 @@
       "ads": 33
      },
      "armoured.body": {
-      "ideal": 2533,
+      "ideal": 1700,
       "stk": 3,
       "hip": null,
-      "ads": 2533
+      "ads": 1700
      },
      "armoured.head": {
       "ideal": 33,
@@ -888,10 +888,10 @@
     },
     "100": {
      "unarmoured.body": {
-      "ideal": 1333,
+      "ideal": 917,
       "stk": 2,
       "hip": null,
-      "ads": 1333
+      "ads": 917
      },
      "unarmoured.head": {
       "ideal": 83,
@@ -900,10 +900,10 @@
       "ads": 83
      },
      "armoured.body": {
-      "ideal": 2583,
+      "ideal": 1750,
       "stk": 3,
       "hip": null,
-      "ads": 3208
+      "ads": 3000
      },
      "armoured.head": {
       "ideal": 83,
@@ -914,20 +914,20 @@
     }
    },
    "sweep": {
-    "5": 1250,
-    "10": 1250,
-    "15": 1250,
-    "20": 1250,
-    "25": 1267,
-    "30": 1267,
-    "35": 1267,
-    "40": 1267,
-    "50": 1283,
-    "60": 1300,
-    "75": 1317,
-    "100": 1333,
-    "125": 1367,
-    "150": 1383
+    "5": 833,
+    "10": 833,
+    "15": 833,
+    "20": 833,
+    "25": 850,
+    "30": 850,
+    "35": 850,
+    "40": 850,
+    "50": 867,
+    "60": 883,
+    "75": 900,
+    "100": 917,
+    "125": 950,
+    "150": 967
    },
    "sweepStk": {
     "5": 2,
@@ -947,19 +947,19 @@
    },
    "firstHit": {
     "10": {
-     "body": 80,
+     "body": 90,
      "head": 100
     },
     "25": {
-     "body": 80,
+     "body": 90,
      "head": 100
     },
     "50": {
-     "body": 80,
+     "body": 90,
      "head": 100
     },
     "100": {
-     "body": 80,
+     "body": 90,
      "head": 100
     }
    },
@@ -1054,7 +1054,7 @@
     "sprayRounds": 5,
     "sprayMrad": 70.3,
     "spraySettleMs": 467,
-    "sprayForgetMs": 5433
+    "sprayForgetMs": 5017
    },
    "spread": {
     "hip": 30,
@@ -1299,173 +1299,173 @@
    "trigger": "auto",
    "rpm": 900,
    "magazine": 32,
-   "damage": 11,
+   "damage": 15,
    "pellets": 1,
    "model": "bullet",
    "velocity": 400,
    "ttk": {
     "10": {
      "unarmoured.body": {
-      "ideal": 600,
-      "stk": 10,
-      "hip": 600,
-      "ads": 600
-     },
-     "unarmoured.head": {
       "ideal": 400,
       "stk": 7,
       "hip": 400,
       "ads": 400
      },
+     "unarmoured.head": {
+      "ideal": 267,
+      "stk": 5,
+      "hip": 267,
+      "ads": 267
+     },
      "armoured.body": {
-      "ideal": 1200,
-      "stk": 19,
-      "hip": 1567,
-      "ads": 1333
+      "ideal": 867,
+      "stk": 14,
+      "hip": 867,
+      "ads": 867
      },
      "armoured.head": {
-      "ideal": 800,
-      "stk": 13,
-      "hip": 933,
-      "ads": 867
+      "ideal": 533,
+      "stk": 9,
+      "hip": 567,
+      "ads": 533
      }
     },
     "25": {
      "unarmoured.body": {
-      "ideal": 967,
-      "stk": 15,
-      "hip": 3500,
-      "ads": 1933
-     },
-     "unarmoured.head": {
       "ideal": 633,
       "stk": 10,
-      "hip": 3367,
-      "ads": 1767
+      "hip": 767,
+      "ads": 667
+     },
+     "unarmoured.head": {
+      "ideal": 433,
+      "stk": 7,
+      "hip": 533,
+      "ads": 500
      },
      "armoured.body": {
-      "ideal": 1900,
-      "stk": 29,
-      "hip": 6967,
-      "ads": 5400
+      "ideal": 1300,
+      "stk": 20,
+      "hip": 3800,
+      "ads": 3700
      },
      "armoured.head": {
-      "ideal": 1233,
-      "stk": 19,
-      "hip": 6833,
-      "ads": 4167
+      "ideal": 900,
+      "stk": 14,
+      "hip": 3633,
+      "ads": 3567
      }
     },
     "50": {
      "unarmoured.body": {
-      "ideal": 1167,
-      "stk": 17,
-      "hip": 6800,
-      "ads": 3867
+      "ideal": 900,
+      "stk": 13,
+      "hip": 3667,
+      "ads": 3567
      },
      "unarmoured.head": {
-      "ideal": 833,
-      "stk": 12,
-      "hip": 6833,
-      "ads": 3733
+      "ideal": 633,
+      "stk": 9,
+      "hip": 3667,
+      "ads": 3500
      },
      "armoured.body": {
-      "ideal": 3500,
-      "stk": 34,
-      "hip": null,
-      "ads": null
+      "ideal": 1700,
+      "stk": 25,
+      "hip": 7400,
+      "ads": 7067
      },
      "armoured.head": {
-      "ideal": 1567,
-      "stk": 23,
-      "hip": null,
-      "ads": null
+      "ideal": 1167,
+      "stk": 17,
+      "hip": 7267,
+      "ads": 6933
      }
     },
     "100": {
      "unarmoured.body": {
-      "ideal": 1283,
-      "stk": 17,
-      "hip": null,
-      "ads": 7017
+      "ideal": 1017,
+      "stk": 13,
+      "hip": 6983,
+      "ads": 3850
      },
      "unarmoured.head": {
-      "ideal": 950,
-      "stk": 12,
-      "hip": null,
-      "ads": null
+      "ideal": 750,
+      "stk": 9,
+      "hip": 7150,
+      "ads": 6950
      },
      "armoured.body": {
-      "ideal": 3617,
-      "stk": 34,
+      "ideal": 1817,
+      "stk": 25,
       "hip": null,
       "ads": null
      },
      "armoured.head": {
-      "ideal": 1683,
-      "stk": 23,
+      "ideal": 1283,
+      "stk": 17,
       "hip": null,
       "ads": null
      }
     }
    },
    "sweep": {
-    "5": 600,
-    "10": 600,
-    "15": 600,
-    "20": 750,
-    "25": 967,
-    "30": 1050,
-    "35": 1117,
-    "40": 1133,
-    "50": 1167,
-    "60": 1183,
-    "75": 1217,
-    "100": 1283,
-    "125": 1350,
-    "150": 1417
+    "5": 400,
+    "10": 400,
+    "15": 400,
+    "20": 550,
+    "25": 633,
+    "30": 783,
+    "35": 850,
+    "40": 867,
+    "50": 900,
+    "60": 917,
+    "75": 950,
+    "100": 1017,
+    "125": 1083,
+    "150": 1150
    },
    "sweepStk": {
-    "5": 10,
-    "10": 10,
-    "15": 10,
-    "20": 12,
-    "25": 15,
-    "30": 16,
-    "35": 17,
-    "40": 17,
-    "50": 17,
-    "60": 17,
-    "75": 17,
-    "100": 17,
-    "125": 17,
-    "150": 17
+    "5": 7,
+    "10": 7,
+    "15": 7,
+    "20": 9,
+    "25": 10,
+    "30": 12,
+    "35": 13,
+    "40": 13,
+    "50": 13,
+    "60": 13,
+    "75": 13,
+    "100": 13,
+    "125": 13,
+    "150": 13
    },
    "firstHit": {
     "10": {
-     "body": 11,
-     "head": 16.5
+     "body": 15,
+     "head": 22.5
     },
     "25": {
-     "body": 7.1,
-     "head": 10.6
+     "body": 10.2,
+     "head": 15.1
     },
     "50": {
-     "body": 6,
-     "head": 9.1
+     "body": 8.3,
+     "head": 12.4
     },
     "100": {
-     "body": 6,
-     "head": 9.1
+     "body": 8.3,
+     "head": 12.4
     }
    },
    "falloff": {
     "5": 1,
     "10": 1,
-    "15": 0.89,
-    "20": 0.74,
-    "25": 0.64,
-    "30": 0.57,
+    "15": 1,
+    "20": 0.8,
+    "25": 0.66,
+    "30": 0.58,
     "35": 0.55,
     "40": 0.55,
     "50": 0.55,
@@ -1849,7 +1849,7 @@
       "ideal": 1467,
       "stk": 10,
       "hip": 1475,
-      "ads": 1467
+      "ads": 1475
      }
     },
     "50": {
@@ -1874,7 +1874,7 @@
      "armoured.head": {
       "ideal": 1933,
       "stk": 10,
-      "hip": 2167,
+      "hip": 2108,
       "ads": 1933
      }
     },
@@ -2055,10 +2055,10 @@
     },
     "25": {
      "unarmoured.body": {
-      "ideal": 600,
-      "stk": 5,
-      "hip": 600,
-      "ads": 600
+      "ideal": 750,
+      "stk": 6,
+      "hip": 750,
+      "ads": 750
      },
      "unarmoured.head": {
       "ideal": 300,
@@ -2067,68 +2067,68 @@
       "ads": 300
      },
      "armoured.body": {
-      "ideal": 1200,
-      "stk": 9,
-      "hip": 1200,
-      "ads": 1200
+      "ideal": 1500,
+      "stk": 11,
+      "hip": 1500,
+      "ads": 1500
      },
      "armoured.head": {
-      "ideal": 600,
-      "stk": 5,
-      "hip": 600,
-      "ads": 600
+      "ideal": 750,
+      "stk": 6,
+      "hip": 750,
+      "ads": 750
      }
     },
     "50": {
      "unarmoured.body": {
-      "ideal": 600,
-      "stk": 5,
-      "hip": 600,
-      "ads": 600
+      "ideal": 1350,
+      "stk": 10,
+      "hip": 1350,
+      "ads": 1350
      },
      "unarmoured.head": {
-      "ideal": 300,
-      "stk": 3,
-      "hip": 300,
-      "ads": 300
-     },
-     "armoured.body": {
-      "ideal": 1200,
-      "stk": 9,
-      "hip": 1200,
-      "ads": 1200
-     },
-     "armoured.head": {
       "ideal": 600,
       "stk": 5,
-      "hip": 600,
+      "hip": 750,
       "ads": 600
+     },
+     "armoured.body": {
+      "ideal": 3617,
+      "stk": 19,
+      "hip": 3617,
+      "ads": 3617
+     },
+     "armoured.head": {
+      "ideal": 1350,
+      "stk": 10,
+      "hip": 1500,
+      "ads": 1350
      }
     },
     "100": {
      "unarmoured.body": {
-      "ideal": 600,
-      "stk": 5,
-      "hip": 525,
-      "ads": 600
+      "ideal": 1350,
+      "stk": 10,
+      "hip": 1275,
+      "ads": 1350
      },
      "unarmoured.head": {
-      "ideal": 300,
-      "stk": 3,
-      "hip": 675,
-      "ads": 300
-     },
-     "armoured.body": {
-      "ideal": 1200,
-      "stk": 9,
-      "hip": 1050,
-      "ads": 1200
-     },
-     "armoured.head": {
       "ideal": 600,
       "stk": 5,
-      "hip": 1200,
-      "ads": 600
+      "hip": 1350,
+      "ads": 750
+     },
+     "armoured.body": {
+      "ideal": 3617,
+      "stk": 19,
+      "hip": 3542,
+      "ads": 3617
+     },
+     "armoured.head": {
+      "ideal": 1350,
+      "stk": 10,
+      "hip": 3767,
+      "ads": 1500
      }
     }
    },
@@ -2137,14 +2137,14 @@
     "10": 600,
     "15": 600,
     "20": 600,
-    "25": 600,
-    "30": 600,
-    "35": 600,
-    "40": 600,
-    "50": 600,
-    "60": 600,
-    "75": 600,
-    "100": 600,
+    "25": 750,
+    "30": 750,
+    "35": 900,
+    "40": 1050,
+    "50": 1350,
+    "60": 1350,
+    "75": 1350,
+    "100": 1350,
     "125": null,
     "150": null
    },
@@ -2153,14 +2153,14 @@
     "10": 5,
     "15": 5,
     "20": 5,
-    "25": 5,
-    "30": 5,
-    "35": 5,
-    "40": 5,
-    "50": 5,
-    "60": 5,
-    "75": 5,
-    "100": 5,
+    "25": 6,
+    "30": 6,
+    "35": 7,
+    "40": 8,
+    "50": 10,
+    "60": 10,
+    "75": 10,
+    "100": 10,
     "125": null,
     "150": null
    },
@@ -2170,33 +2170,33 @@
      "head": 48
     },
     "25": {
-     "body": 24,
-     "head": 48
+     "body": 19.9,
+     "head": 39.5
     },
     "50": {
-     "body": 24,
-     "head": 48
+     "body": 10.8,
+     "head": 21.6
     },
     "100": {
-     "body": 24,
-     "head": 48
+     "body": 10.8,
+     "head": 21.6
     }
    },
    "falloff": {
     "5": 1,
     "10": 1,
     "15": 1,
-    "20": 1,
-    "25": 1,
-    "30": 1,
-    "35": 1,
-    "40": 1,
-    "50": 1,
-    "60": 1,
-    "75": 1,
-    "100": 1,
-    "125": 1,
-    "150": 1
+    "20": 0.91,
+    "25": 0.82,
+    "30": 0.73,
+    "35": 0.63,
+    "40": 0.54,
+    "50": 0.45,
+    "60": 0.45,
+    "75": 0.45,
+    "100": 0.45,
+    "125": 0.45,
+    "150": 0.45
    },
    "drop": {
     "5": null,
@@ -2284,7 +2284,7 @@
      "unarmoured.body": {
       "ideal": 550,
       "stk": 2,
-      "hip": 550,
+      "hip": 800,
       "ads": 550
      },
      "unarmoured.head": {
@@ -2297,7 +2297,7 @@
       "ideal": 1550,
       "stk": 4,
       "hip": 5467,
-      "ads": 1800
+      "ads": 2050
      },
      "armoured.head": {
       "ideal": 550,
@@ -2311,7 +2311,7 @@
       "ideal": 1133,
       "stk": 3,
       "hip": 6050,
-      "ads": 2967
+      "ads": 4800
      },
      "unarmoured.head": {
       "ideal": 633,
@@ -2337,7 +2337,7 @@
       "ideal": 1300,
       "stk": 3,
       "hip": null,
-      "ads": 4967
+      "ads": null
      },
      "unarmoured.head": {
       "ideal": 800,
@@ -2982,7 +2982,7 @@
       "ideal": 750,
       "stk": 16,
       "hip": 925,
-      "ads": 875
+      "ads": 900
      },
      "unarmoured.head": {
       "ideal": 500,
@@ -2999,8 +2999,8 @@
      "armoured.head": {
       "ideal": 1050,
       "stk": 22,
-      "hip": 4825,
-      "ads": 3950
+      "hip": 4750,
+      "ads": 3975
      }
     },
     "25": {
@@ -3282,7 +3282,7 @@
      "unarmoured.head": {
       "ideal": 150,
       "stk": 3,
-      "hip": 150,
+      "hip": 283,
       "ads": 150
      },
      "armoured.body": {
@@ -3294,60 +3294,60 @@
      "armoured.head": {
       "ideal": 550,
       "stk": 6,
-      "hip": 550,
+      "hip": 817,
       "ads": 550
      }
     },
     "50": {
      "unarmoured.body": {
-      "ideal": 850,
-      "stk": 7,
-      "hip": 850,
-      "ads": 850
+      "ideal": 917,
+      "stk": 8,
+      "hip": 917,
+      "ads": 917
      },
      "unarmoured.head": {
       "ideal": 450,
       "stk": 4,
-      "hip": 450,
+      "hip": 517,
       "ads": 450
      },
      "armoured.body": {
-      "ideal": 1650,
-      "stk": 13,
-      "hip": 1717,
-      "ads": 1650
+      "ideal": 2050,
+      "stk": 16,
+      "hip": 3592,
+      "ads": 2050
      },
      "armoured.head": {
-      "ideal": 850,
-      "stk": 7,
-      "hip": 850,
-      "ads": 850
+      "ideal": 917,
+      "stk": 8,
+      "hip": 4158,
+      "ads": 917
      }
     },
     "100": {
      "unarmoured.body": {
-      "ideal": 967,
-      "stk": 9,
-      "hip": 1167,
-      "ads": 967
+      "ideal": 1300,
+      "stk": 11,
+      "hip": null,
+      "ads": 1300
      },
      "unarmoured.head": {
-      "ideal": 500,
-      "stk": 5,
-      "hip": 567,
-      "ads": 500
+      "ideal": 567,
+      "stk": 6,
+      "hip": null,
+      "ads": 567
      },
      "armoured.body": {
-      "ideal": 2100,
-      "stk": 17,
+      "ideal": 2567,
+      "stk": 21,
       "hip": null,
-      "ads": 2167
+      "ads": 2567
      },
      "armoured.head": {
-      "ideal": 967,
-      "stk": 9,
+      "ideal": 1300,
+      "stk": 11,
       "hip": null,
-      "ads": 1000
+      "ads": 1367
      }
     }
    },
@@ -3358,14 +3358,14 @@
     "20": 533,
     "25": 550,
     "30": 550,
-    "35": 550,
+    "35": 817,
     "40": 833,
-    "50": 850,
-    "60": 850,
-    "75": 933,
-    "100": 967,
-    "125": 1000,
-    "150": 1033
+    "50": 917,
+    "60": 983,
+    "75": 1267,
+    "100": 1300,
+    "125": 1333,
+    "150": 1367
    },
    "sweepStk": {
     "5": 6,
@@ -3374,14 +3374,14 @@
     "20": 6,
     "25": 6,
     "30": 6,
-    "35": 6,
+    "35": 7,
     "40": 7,
-    "50": 7,
-    "60": 7,
-    "75": 9,
-    "100": 9,
-    "125": 9,
-    "150": 9
+    "50": 8,
+    "60": 9,
+    "75": 11,
+    "100": 11,
+    "125": 12,
+    "150": 12
    },
    "firstHit": {
     "10": {
@@ -3393,12 +3393,12 @@
      "head": 100
     },
     "50": {
-     "body": 46.7,
-     "head": 93.3
+     "body": 39.5,
+     "head": 78.6
     },
     "100": {
-     "body": 38.3,
-     "head": 76.5
+     "body": 30.6,
+     "head": 61.2
     }
    },
    "falloff": {
@@ -3407,15 +3407,15 @@
     "15": 1,
     "20": 1,
     "25": 1,
-    "30": 1,
-    "35": 0.99,
-    "40": 0.97,
-    "50": 0.91,
-    "60": 0.84,
-    "75": 0.76,
-    "100": 0.75,
-    "125": 0.75,
-    "150": 0.75
+    "30": 0.99,
+    "35": 0.95,
+    "40": 0.9,
+    "50": 0.77,
+    "60": 0.65,
+    "75": 0.6,
+    "100": 0.6,
+    "125": 0.6,
+    "150": 0.6
    },
    "drop": {
     "5": {
@@ -3495,9 +3495,9 @@
     "sprayForgetMs": 2050
    },
    "spread": {
-    "hip": 1.5,
-    "ads": 0.6,
-    "run": 9.5,
+    "hip": 5,
+    "ads": 1,
+    "run": 13,
     "spray10": null
    }
   },
@@ -3736,97 +3736,71 @@
    "family": "marksman",
    "slot": 3,
    "trigger": "semi",
-   "rpm": 257,
+   "rpm": 200,
    "magazine": 10,
-   "damage": 38,
+   "damage": 34,
    "pellets": 1,
    "model": "bullet",
    "velocity": 900,
    "ttk": {
     "10": {
      "unarmoured.body": {
-      "ideal": 467,
+      "ideal": 600,
       "stk": 3,
-      "hip": 467,
-      "ads": 467
+      "hip": 600,
+      "ads": 600
      },
      "unarmoured.head": {
-      "ideal": 233,
+      "ideal": 300,
       "stk": 2,
-      "hip": 233,
-      "ads": 233
+      "hip": 300,
+      "ads": 300
      },
      "armoured.body": {
-      "ideal": 1167,
+      "ideal": 1500,
       "stk": 6,
-      "hip": 1167,
-      "ads": 1167
+      "hip": 1500,
+      "ads": 1500
      },
      "armoured.head": {
-      "ideal": 467,
+      "ideal": 600,
       "stk": 3,
-      "hip": 467,
-      "ads": 467
+      "hip": 600,
+      "ads": 600
      }
     },
     "25": {
      "unarmoured.body": {
-      "ideal": 483,
+      "ideal": 617,
       "stk": 3,
-      "hip": 483,
-      "ads": 483
+      "hip": 1067,
+      "ads": 617
      },
      "unarmoured.head": {
-      "ideal": 250,
+      "ideal": 317,
       "stk": 2,
-      "hip": 483,
-      "ads": 250
+      "hip": 617,
+      "ads": 317
      },
      "armoured.body": {
-      "ideal": 1183,
+      "ideal": 1517,
       "stk": 6,
-      "hip": 2633,
-      "ads": 1183
+      "hip": 3617,
+      "ads": 1517
      },
      "armoured.head": {
-      "ideal": 483,
+      "ideal": 617,
       "stk": 3,
-      "hip": 4200,
-      "ads": 483
+      "hip": 5117,
+      "ads": 617
      }
     },
     "50": {
      "unarmoured.body": {
-      "ideal": 500,
+      "ideal": 633,
       "stk": 3,
-      "hip": 1083,
-      "ads": 500
-     },
-     "unarmoured.head": {
-      "ideal": 267,
-      "stk": 2,
-      "hip": 6017,
-      "ads": 267
-     },
-     "armoured.body": {
-      "ideal": 1200,
-      "stk": 6,
-      "hip": null,
-      "ads": 1200
-     },
-     "armoured.head": {
-      "ideal": 500,
-      "stk": 3,
-      "hip": null,
-      "ads": 500
-     }
-    },
-    "100": {
-     "unarmoured.body": {
-      "ideal": 567,
-      "stk": 3,
-      "hip": null,
-      "ads": 567
+      "hip": 4683,
+      "ads": 633
      },
      "unarmoured.head": {
       "ideal": 333,
@@ -3835,34 +3809,60 @@
       "ads": 333
      },
      "armoured.body": {
-      "ideal": 1267,
+      "ideal": 1533,
       "stk": 6,
       "hip": null,
-      "ads": 1267
+      "ads": 1533
      },
      "armoured.head": {
-      "ideal": 567,
+      "ideal": 633,
       "stk": 3,
       "hip": null,
-      "ads": 800
+      "ads": 633
+     }
+    },
+    "100": {
+     "unarmoured.body": {
+      "ideal": 1000,
+      "stk": 4,
+      "hip": null,
+      "ads": 1000
+     },
+     "unarmoured.head": {
+      "ideal": 400,
+      "stk": 2,
+      "hip": null,
+      "ads": 400
+     },
+     "armoured.body": {
+      "ideal": 1900,
+      "stk": 7,
+      "hip": null,
+      "ads": 2350
+     },
+     "armoured.head": {
+      "ideal": 1000,
+      "stk": 4,
+      "hip": null,
+      "ads": 1150
      }
     }
    },
    "sweep": {
-    "5": 467,
-    "10": 467,
-    "15": 467,
-    "20": 467,
-    "25": 483,
-    "30": 483,
-    "35": 483,
-    "40": 500,
-    "50": 500,
-    "60": 517,
-    "75": 533,
-    "100": 567,
-    "125": 583,
-    "150": 850
+    "5": 600,
+    "10": 600,
+    "15": 600,
+    "20": 600,
+    "25": 617,
+    "30": 617,
+    "35": 617,
+    "40": 633,
+    "50": 633,
+    "60": 650,
+    "75": 667,
+    "100": 1000,
+    "125": 1017,
+    "150": 1050
    },
    "sweepStk": {
     "5": 3,
@@ -3876,26 +3876,26 @@
     "50": 3,
     "60": 3,
     "75": 3,
-    "100": 3,
-    "125": 3,
+    "100": 4,
+    "125": 4,
     "150": 4
    },
    "firstHit": {
     "10": {
-     "body": 38,
-     "head": 76
+     "body": 34,
+     "head": 68
     },
     "25": {
-     "body": 38,
-     "head": 76
+     "body": 34,
+     "head": 68
     },
     "50": {
-     "body": 38,
-     "head": 76
+     "body": 34,
+     "head": 68
     },
     "100": {
-     "body": 35.7,
-     "head": 71.3
+     "body": 31.9,
+     "head": 63.8
     }
    },
    "falloff": {
@@ -3987,9 +3987,9 @@
     "oneMrad": 35.2,
     "oneSettleMs": 283,
     "sprayRounds": 10,
-    "sprayMrad": 52.2,
-    "spraySettleMs": 333,
-    "sprayForgetMs": 2233
+    "sprayMrad": 35.2,
+    "spraySettleMs": 283,
+    "sprayForgetMs": 2300
    },
    "spread": {
     "hip": 13,
@@ -4007,35 +4007,35 @@
    "trigger": "semi",
    "rpm": 257,
    "magazine": 2,
-   "damage": 8,
+   "damage": 10,
    "pellets": 14,
    "model": "hitscan",
    "velocity": null,
    "ttk": {
     "10": {
      "unarmoured.body": {
-      "ideal": 5133,
-      "stk": 8,
-      "hip": 4900,
-      "ads": 4900
+      "ideal": 1633,
+      "stk": 3,
+      "hip": 233,
+      "ads": 233
      },
      "unarmoured.head": {
-      "ideal": 5833,
-      "stk": 8.5,
-      "hip": 5833,
-      "ads": 5833
+      "ideal": 1633,
+      "stk": 3,
+      "hip": 1633,
+      "ads": 1633
      },
      "armoured.body": {
-      "ideal": null,
-      "stk": null,
-      "hip": null,
-      "ads": null
+      "ideal": 3267,
+      "stk": 5,
+      "hip": 1867,
+      "ads": 1867
      },
      "armoured.head": {
-      "ideal": null,
-      "stk": null,
-      "hip": null,
-      "ads": null
+      "ideal": 3500,
+      "stk": 6,
+      "hip": 3267,
+      "ads": 3267
      }
     },
     "25": {
@@ -4118,9 +4118,9 @@
     }
    },
    "sweep": {
-    "5": 233,
-    "10": 5133,
-    "15": null,
+    "5": 0,
+    "10": 1633,
+    "15": 3383,
     "20": null,
     "25": null,
     "30": null,
@@ -4134,9 +4134,9 @@
     "150": null
    },
    "sweepStk": {
-    "5": 2,
-    "10": 8,
-    "15": null,
+    "5": 1,
+    "10": 3,
+    "15": 5.5,
     "20": null,
     "25": null,
     "30": null,
@@ -4151,8 +4151,8 @@
    },
    "firstHit": {
     "10": {
-     "body": 4.4,
-     "head": 0
+     "body": 53.6,
+     "head": 28.2
     },
     "25": {
      "body": 0,
@@ -4169,10 +4169,10 @@
    },
    "falloff": {
     "5": 1,
-    "10": 0.67,
-    "15": 0.39,
-    "20": 0.26,
-    "25": 0.25,
+    "10": 0.86,
+    "15": 0.57,
+    "20": 0.37,
+    "25": 0.27,
     "30": 0.25,
     "35": 0.25,
     "40": 0.25,
@@ -4219,9 +4219,9 @@
     "sprayForgetMs": 567
    },
    "spread": {
-    "hip": 150,
-    "ads": 150,
-    "run": 156,
+    "hip": 85,
+    "ads": 85,
+    "run": 91,
     "spray10": null
    }
   },
@@ -4234,35 +4234,35 @@
    "trigger": "auto",
    "rpm": 200,
    "magazine": 8,
-   "damage": 7,
-   "pellets": 7,
+   "damage": 8,
+   "pellets": 8,
    "model": "hitscan",
    "velocity": null,
    "ttk": {
     "10": {
      "unarmoured.body": {
-      "ideal": 2100,
-      "stk": 8,
-      "hip": 2100,
-      "ads": 2100
+      "ideal": 600,
+      "stk": 3,
+      "hip": 600,
+      "ads": 600
      },
      "unarmoured.head": {
-      "ideal": 4667,
-      "stk": 11,
-      "hip": 4367,
-      "ads": 4367
+      "ideal": 1200,
+      "stk": 5,
+      "hip": 900,
+      "ads": 900
      },
      "armoured.body": {
-      "ideal": 6017,
-      "stk": 15.5,
-      "hip": 5567,
-      "ads": 5567
+      "ideal": 1500,
+      "stk": 6,
+      "hip": 1500,
+      "ads": 1500
      },
      "armoured.head": {
-      "ideal": null,
-      "stk": null,
-      "hip": null,
-      "ads": null
+      "ideal": 3083,
+      "stk": 8.5,
+      "hip": 2100,
+      "ads": 2100
      }
     },
     "25": {
@@ -4345,9 +4345,9 @@
     }
    },
    "sweep": {
-    "5": 600,
-    "10": 2100,
-    "15": null,
+    "5": 300,
+    "10": 600,
+    "15": 4067,
     "20": null,
     "25": null,
     "30": null,
@@ -4361,9 +4361,9 @@
     "150": null
    },
    "sweepStk": {
-    "5": 3,
-    "10": 8,
-    "15": null,
+    "5": 2,
+    "10": 3,
+    "15": 9,
     "20": null,
     "25": null,
     "30": null,
@@ -4378,8 +4378,8 @@
    },
    "firstHit": {
     "10": {
-     "body": 9.9,
-     "head": 10.7
+     "body": 47.4,
+     "head": 17.4
     },
     "25": {
      "body": 0,
@@ -4396,10 +4396,10 @@
    },
    "falloff": {
     "5": 1,
-    "10": 0.67,
-    "15": 0.39,
-    "20": 0.26,
-    "25": 0.25,
+    "10": 0.86,
+    "15": 0.57,
+    "20": 0.37,
+    "25": 0.27,
     "30": 0.25,
     "35": 0.25,
     "40": 0.25,
@@ -4446,9 +4446,9 @@
     "sprayForgetMs": 1650
    },
    "spread": {
-    "hip": 90,
-    "ads": 90,
-    "run": 96,
+    "hip": 65,
+    "ads": 65,
+    "run": 71,
     "spray10": null
    }
   },
@@ -4474,9 +4474,9 @@
       "ads": 1000
      },
      "unarmoured.head": {
-      "ideal": 1842,
+      "ideal": 1850,
       "stk": 3,
-      "hip": 1842,
+      "hip": 1850,
       "ads": 1000
      },
      "armoured.body": {
@@ -4488,7 +4488,7 @@
      "armoured.head": {
       "ideal": 5100,
       "stk": 5,
-      "hip": 5092,
+      "hip": 5100,
       "ads": 1850
      }
     },
@@ -4496,7 +4496,7 @@
      "unarmoured.body": {
       "ideal": 6317,
       "stk": 6,
-      "hip": 5867,
+      "hip": 5825,
       "ads": 2167
      },
      "unarmoured.head": {
@@ -4515,7 +4515,7 @@
       "ideal": null,
       "stk": null,
       "hip": null,
-      "ads": 6250
+      "ads": 7075
      }
     },
     "50": {
@@ -4523,7 +4523,7 @@
       "ideal": null,
       "stk": null,
       "hip": null,
-      "ads": 7608
+      "ads": 7233
      },
      "unarmoured.head": {
       "ideal": null,
@@ -4574,7 +4574,7 @@
    "sweep": {
     "5": 900,
     "10": 1017,
-    "15": 1958,
+    "15": 1967,
     "20": 5317,
     "25": 6317,
     "30": null,
@@ -4755,13 +4755,13 @@
      "unarmoured.head": {
       "ideal": 0,
       "stk": 1,
-      "hip": 0,
+      "hip": 333,
       "ads": 0
      },
      "armoured.body": {
       "ideal": 667,
       "stk": 2,
-      "hip": 1333,
+      "hip": 1667,
       "ads": 667
      },
      "armoured.head": {
@@ -5851,7 +5851,7 @@
       "ideal": 700,
       "stk": 15,
       "hip": 750,
-      "ads": 700
+      "ads": 725
      }
     },
     "25": {
@@ -5864,28 +5864,28 @@
      "unarmoured.head": {
       "ideal": 367,
       "stk": 8,
-      "hip": 517,
+      "hip": 542,
       "ads": 417
      },
      "armoured.body": {
       "ideal": 1117,
       "stk": 23,
-      "hip": 1367,
+      "hip": 1342,
       "ads": 1117
      },
      "armoured.head": {
       "ideal": 717,
       "stk": 15,
       "hip": 2017,
-      "ads": 992
+      "ads": 967
      }
     },
     "50": {
      "unarmoured.body": {
       "ideal": 650,
       "stk": 13,
-      "hip": 2150,
-      "ads": 650
+      "hip": 2375,
+      "ads": 675
      },
      "unarmoured.head": {
       "ideal": 450,
@@ -5897,7 +5897,7 @@
       "ideal": 1250,
       "stk": 25,
       "hip": null,
-      "ads": 3000
+      "ads": 2800
      },
      "armoured.head": {
       "ideal": 850,
@@ -6058,7 +6058,7 @@
     }
    },
    "firstShotMs": 450,
-   "drawMs": 1233,
+   "drawMs": 933,
    "toPistolMs": 133,
    "reload": {
     "tacticalMs": 3517,
@@ -6127,13 +6127,13 @@
      "unarmoured.body": {
       "ideal": 1050,
       "stk": 10,
-      "hip": 1067,
+      "hip": 1058,
       "ads": 1050
      },
      "unarmoured.head": {
       "ideal": 1067,
       "stk": 10,
-      "hip": 1217,
+      "hip": 1192,
       "ads": 1067
      },
      "armoured.body": {
@@ -6179,13 +6179,13 @@
      "unarmoured.body": {
       "ideal": 2050,
       "stk": 10,
-      "hip": 5342,
+      "hip": 5025,
       "ads": 3108
      },
      "unarmoured.head": {
       "ideal": 2067,
       "stk": 10,
-      "hip": 7358,
+      "hip": 7150,
       "ads": 3358
      },
      "armoured.body": {
@@ -6198,7 +6198,7 @@
       "ideal": 2817,
       "stk": 19,
       "hip": null,
-      "ads": 6933
+      "ads": 7225
      }
     }
    },
@@ -6332,9 +6332,9 @@
       "ads": 433
      },
      "unarmoured.head": {
-      "ideal": 433,
+      "ideal": 442,
       "stk": 1,
-      "hip": 450,
+      "hip": 442,
       "ads": 433
      },
      "armoured.body": {
@@ -6355,13 +6355,13 @@
       "ideal": 1200,
       "stk": 1,
       "hip": 1200,
-      "ads": 1200
+      "ads": 1192
      },
      "unarmoured.head": {
       "ideal": 1200,
       "stk": 1,
-      "hip": 1200,
-      "ads": 1192
+      "hip": 1192,
+      "ads": 1183
      },
      "armoured.body": {
       "ideal": 2350,
@@ -6430,7 +6430,7 @@
     }
    },
    "sweep": {
-    "5": 192,
+    "5": 200,
     "10": 450,
     "15": 700,
     "20": 950,
@@ -7945,7 +7945,7 @@
      "unarmoured.body": {
       "ideal": 717,
       "stk": 2,
-      "hip": 717,
+      "hip": 1050,
       "ads": 717
      },
      "unarmoured.head": {
@@ -7957,8 +7957,8 @@
      "armoured.body": {
       "ideal": 1383,
       "stk": 3,
-      "hip": 2050,
-      "ads": 1383
+      "hip": 5250,
+      "ads": 2050
      },
      "armoured.head": {
       "ideal": 717,
@@ -7971,8 +7971,8 @@
      "unarmoured.body": {
       "ideal": 800,
       "stk": 2,
-      "hip": 7233,
-      "ads": 800
+      "hip": 7867,
+      "ads": 1133
      },
      "unarmoured.head": {
       "ideal": 133,
@@ -7984,7 +7984,7 @@
       "ideal": 1467,
       "stk": 3,
       "hip": null,
-      "ads": 7867
+      "ads": null
      },
      "armoured.head": {
       "ideal": 800,
@@ -8168,6 +8168,275 @@
     "ads": 0.3,
     "run": 12.5,
     "spray10": null
+   }
+  },
+  {
+   "id": "core.battle_rifle",
+   "name": "Battle Rifle",
+   "category": "rifle",
+   "family": "battle_rifle",
+   "slot": 3,
+   "trigger": "auto",
+   "rpm": 300,
+   "magazine": 20,
+   "damage": 25,
+   "pellets": 1,
+   "model": "bullet",
+   "velocity": 880,
+   "ttk": {
+    "10": {
+     "unarmoured.body": {
+      "ideal": 600,
+      "stk": 4,
+      "hip": 600,
+      "ads": 600
+     },
+     "unarmoured.head": {
+      "ideal": 200,
+      "stk": 2,
+      "hip": 200,
+      "ads": 200
+     },
+     "armoured.body": {
+      "ideal": 1400,
+      "stk": 8,
+      "hip": 1400,
+      "ads": 1400
+     },
+     "armoured.head": {
+      "ideal": 600,
+      "stk": 4,
+      "hip": 600,
+      "ads": 600
+     }
+    },
+    "25": {
+     "unarmoured.body": {
+      "ideal": 617,
+      "stk": 4,
+      "hip": 817,
+      "ads": 617
+     },
+     "unarmoured.head": {
+      "ideal": 217,
+      "stk": 2,
+      "hip": 717,
+      "ads": 217
+     },
+     "armoured.body": {
+      "ideal": 1417,
+      "stk": 8,
+      "hip": 3117,
+      "ads": 1417
+     },
+     "armoured.head": {
+      "ideal": 617,
+      "stk": 4,
+      "hip": 6317,
+      "ads": 617
+     }
+    },
+    "50": {
+     "unarmoured.body": {
+      "ideal": 833,
+      "stk": 5,
+      "hip": 3333,
+      "ads": 833
+     },
+     "unarmoured.head": {
+      "ideal": 433,
+      "stk": 3,
+      "hip": null,
+      "ads": 433
+     },
+     "armoured.body": {
+      "ideal": 1633,
+      "stk": 9,
+      "hip": null,
+      "ads": 1633
+     },
+     "armoured.head": {
+      "ideal": 833,
+      "stk": 5,
+      "hip": null,
+      "ads": 833
+     }
+    },
+    "100": {
+     "unarmoured.body": {
+      "ideal": 1100,
+      "stk": 6,
+      "hip": null,
+      "ads": 1100
+     },
+     "unarmoured.head": {
+      "ideal": 500,
+      "stk": 3,
+      "hip": null,
+      "ads": 500
+     },
+     "armoured.body": {
+      "ideal": 2100,
+      "stk": 11,
+      "hip": null,
+      "ads": 3000
+     },
+     "armoured.head": {
+      "ideal": 1100,
+      "stk": 6,
+      "hip": null,
+      "ads": 1400
+     }
+    }
+   },
+   "sweep": {
+    "5": 600,
+    "10": 600,
+    "15": 600,
+    "20": 600,
+    "25": 617,
+    "30": 617,
+    "35": 617,
+    "40": 633,
+    "50": 833,
+    "60": 850,
+    "75": 867,
+    "100": 1100,
+    "125": 1117,
+    "150": 1150
+   },
+   "sweepStk": {
+    "5": 4,
+    "10": 4,
+    "15": 4,
+    "20": 4,
+    "25": 4,
+    "30": 4,
+    "35": 4,
+    "40": 4,
+    "50": 5,
+    "60": 5,
+    "75": 5,
+    "100": 6,
+    "125": 6,
+    "150": 6
+   },
+   "firstHit": {
+    "10": {
+     "body": 25,
+     "head": 50
+    },
+    "25": {
+     "body": 25,
+     "head": 50
+    },
+    "50": {
+     "body": 24.6,
+     "head": 49.1
+    },
+    "100": {
+     "body": 18.8,
+     "head": 37.5
+    }
+   },
+   "falloff": {
+    "5": 1,
+    "10": 1,
+    "15": 1,
+    "20": 1,
+    "25": 1,
+    "30": 1,
+    "35": 1,
+    "40": 1,
+    "50": 0.98,
+    "60": 0.94,
+    "75": 0.84,
+    "100": 0.75,
+    "125": 0.75,
+    "150": 0.75
+   },
+   "drop": {
+    "5": {
+     "flightMs": 0,
+     "dropCm": 0
+    },
+    "10": {
+     "flightMs": 2,
+     "dropCm": 0
+    },
+    "15": {
+     "flightMs": 8,
+     "dropCm": 0
+    },
+    "20": {
+     "flightMs": 14,
+     "dropCm": 0
+    },
+    "25": {
+     "flightMs": 19,
+     "dropCm": 0
+    },
+    "30": {
+     "flightMs": 25,
+     "dropCm": 0
+    },
+    "35": {
+     "flightMs": 31,
+     "dropCm": 0
+    },
+    "40": {
+     "flightMs": 36,
+     "dropCm": 1
+    },
+    "50": {
+     "flightMs": 48,
+     "dropCm": 1
+    },
+    "60": {
+     "flightMs": 59,
+     "dropCm": 2
+    },
+    "75": {
+     "flightMs": 76,
+     "dropCm": 3
+    },
+    "100": {
+     "flightMs": 105,
+     "dropCm": 5
+    },
+    "125": {
+     "flightMs": 133,
+     "dropCm": 9
+    },
+    "150": {
+     "flightMs": 161,
+     "dropCm": 13
+    }
+   },
+   "firstShotMs": 0,
+   "drawMs": 350,
+   "toPistolMs": 133,
+   "reload": {
+    "tacticalMs": 1683,
+    "emptyMs": 2117,
+    "firstRoundMs": null,
+    "cancelByFireMs": 0,
+    "cancelBySwapMs": 133,
+    "kind": "magazine"
+   },
+   "recoil": {
+    "oneMrad": 26.4,
+    "oneSettleMs": 267,
+    "sprayRounds": 10,
+    "sprayMrad": 68.5,
+    "spraySettleMs": 367,
+    "sprayForgetMs": 1883
+   },
+   "spread": {
+    "hip": 13,
+    "ads": 0.3,
+    "run": 33,
+    "spray10": 42
    }
   }
  ]
