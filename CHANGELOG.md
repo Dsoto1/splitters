@@ -67,7 +67,7 @@ it, so the team spreads its groups by them. Measured on 48 CTF matches: as befor
 **Bot AI Phase C follow-up, part 2** (docs/BOT_AI_PLAN.md, "Part 2"; on `wip/bots-lowroof`, held back for the owner):
 large bots go round roofs too low for them to stand under (a dugout's stair top, a low doorway) instead of walking into
 them and sticking there, and crouch through one only where nothing else gets them where they're going. Small and
-standard bots keep their routes. Measured on 48 CTF matches: a sixth fewer stuck bots, no ducking, but fewer captures
+standard bots keep their routes. Measured on 48 CTF matches: about 15 % fewer stuck recoveries, no ducking, but fewer captures
 on Diamond Park (its large defenders are back in play).
 
 **Bot AI Phase C, items 1-4** (docs/BOT_AI_PLAN.md, "Phase C items 1-4, measured"; docs/BOTS.md):
