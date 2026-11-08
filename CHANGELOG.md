@@ -25,6 +25,19 @@ made only on a commit that passed CI on a check branch.
   to 40 m, two to the head anywhere, and it climbs hard held down. In the Military set, as a pickup, and on the
   Training Range's front rack.
 
+**MapMaker: Play from here, the plan view, the card shot** (MapMaker overhaul Phase 3, items 1, 2 and 8):
+- **Play from here** (Shift+F5, or ▶ Here beside PLAY TEST): a test match with you standing on the floor or ground
+  below the camera, facing where it looks (the nearest spot with room to stand, within 4 m). Where there's nowhere to
+  stand (nothing below, no room, too steep, outside the boundary) it says why instead. Esc (or the pause menu's Back to
+  MapMaker) brings you back to the same view, with the selection and undo as they were.
+- **The plan view** (K, or Plan in the top bar): the level being edited from straight above, cut a little above its
+  floor so rooms show inside, with the tiles outlined (the level below faint) and icons for spawns (in their team's
+  colour), objectives, flags, hills and pickups. The level selector picks the level; select and move things as usual;
+  the wheel zooms, a right drag or WASD pans, Home fits the map. **Export PNG** saves the plan with a key.
+- **The card shot** (Map properties → Card shot): set the menu card's shot from the view, at eye level (1.7 m over the
+  ground or floor under the camera) unless you untick it, seen through the card's own 16:9 frame and lens; Preview
+  shows it again. It is stored in the map as a camera (map format v30, `metadata.cardCamera`; older maps load as they
+  were), and the card picture is rendered from it by the capture tool.
 **Fixes**
 - Debris from a vehicle or turret blowing up no longer falls through the ground: its chunks start above it, and any
   that get under the world anyway are cleared away.

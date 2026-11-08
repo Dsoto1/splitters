@@ -488,6 +488,8 @@ export class EditorView {
 
   /** Map layers switched off in the inspector: 'prop', 'spawn', 'pickup', 'logic'. */
   readonly hiddenLayers = new Set<string>();
+  /** Entity kinds not drawn (the card shot: markers a match doesn't show, such as zones and hills). */
+  readonly hiddenKinds = new Set<string>();
 
   /** Props drawn a hair apart where they lie flush on other props (propFlushLifts), worked out again when the props change. */
   private flush: { key: string; lifts: Map<string, [number, number, number]> } = { key: '', lifts: new Map() };
@@ -530,7 +532,7 @@ export class EditorView {
         this.nodeEntity.set(m.node, e.id);
       }
       const layer = e.kind === 'prop' || e.kind === 'spawn' || e.kind === 'pickup' ? e.kind : e.kind === 'mount' ? 'prop' : 'logic';
-      m.node.setEnabled(!this.hiddenLayers.has(layer));
+      m.node.setEnabled(!this.hiddenLayers.has(layer) && !this.hiddenKinds.has(e.kind));
       if (e.kind === 'spawn') {
         m.node.position.set(e.position[0], e.position[1] + PLAYER.height / 2, e.position[2]);
         m.node.rotation.y = e.yaw;
