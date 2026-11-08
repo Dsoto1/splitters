@@ -212,6 +212,12 @@ export interface PrivateState {
   rd?: [number, number, number, number];
   /** Weapon codes with a magazine in but no round chambered (an empty reload stopped early). */
   uc?: number[];
+  /**
+   * Damage you dealt lately (the HUD's optional damage numbers): [tick, amount, flags, x, y, z], one entry per target
+   * per tick (a shotgun shell's pellets summed), the last few snapshots' worth (the client shows each tick once).
+   * Flags: 1 a head hit, 2 armour took part of it, 4 it killed, 8 a target (a board, crate or barrel), not a body.
+   */
+  dd?: [number, number, number, number, number, number][];
   /** Remaining inputs of speed / damage boost. */
   sp: number;
   dm: number;

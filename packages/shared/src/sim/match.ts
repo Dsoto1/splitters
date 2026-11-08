@@ -64,7 +64,7 @@ import { getEnvSpecies } from '../content/environment.ts';
 import { environmentShapes, type EnvWorldShape } from '../map/environment.ts';
 import { SURFACE_TYPES } from './surfaceTypes.ts';
 import { ZIP, leaveZipline, mapZiplines, oneHanded, ziplineLinks, type Zipline } from './zipline.ts';
-import { BUTTON_THIRD_PERSON, BUTTON_STEER_LOOK, BUTTON_ALT, BUTTON_MELEE, BUTTON_JUMP, BUTTON_CROUCH, BUTTON_PRONE, BUTTON_SPRINT, EMOTE_DANCE, PING, QUICK_MESSAGES, SAY_FOLLOW, SAY_HOLD, BUTTON_RESPAWN, BUTTON_FIRE, BUTTON_RELOAD, BUTTON_ZOOM, BUTTON_THROW, BUTTON_USE, applyPads, mapLadders, mapPads, LUNAR_PAD_BOOST,
+import { BUTTON_AUTO_RELOAD, BUTTON_THIRD_PERSON, BUTTON_STEER_LOOK, BUTTON_ALT, BUTTON_MELEE, BUTTON_JUMP, BUTTON_CROUCH, BUTTON_PRONE, BUTTON_SPRINT, EMOTE_DANCE, PING, QUICK_MESSAGES, SAY_FOLLOW, SAY_HOLD, BUTTON_RESPAWN, BUTTON_FIRE, BUTTON_RELOAD, BUTTON_ZOOM, BUTTON_THROW, BUTTON_USE, applyPads, mapLadders, mapPads, LUNAR_PAD_BOOST,
   padLandings, sanitizeInput, stepMovement, gravityAt, mapGravityZones, type GravityZone, type JumpPad, type Ladder, type MoveEnv, type MoveState, type PlayerInput } from './movement.ts';
 import { PhysicsWorld, type GroundHeight } from './physics.ts';
 import { newSuspension, stepSuspension, suspensionOf, suspensionSnapshot, type SuspensionSetup, type SuspensionState } from './suspension.ts';
@@ -97,7 +97,7 @@ import { castLooks, validBotCast } from '../content/botThemes.ts';
 import { NPC_DAMAGE_TO_PLAYERS, NPC_ID_BASE, NPC_ROLE_PROFILES, NPC_ROLE_SPECS, mapFactions, mapTeams, matchTeams, relation, validLookId } from './npc.ts';
 import {
   BULLET_LIFETIME, BULLET_SUBSTEPS, MATERIAL_BALLISTICS, MAX_PENETRATIONS, PENETRATION_MIN_ENERGY, penetrationLoss, MAX_RICOCHETS, NEAR_INSTANT_M,
-  RELOAD_KINDS, RICOCHET_MAX_ANGLE, beginReload, bulletPhysics, counterRecoil, entityMaterial, falloffAt, flyBullet, gunplayOf, lethalityScale, newGunState, penetrate, recoilIdle, recoilShot, ricochets, roundsReady, shotCone, stepAds, stepReload, surfaceMaterial,
+  RELOAD_KINDS, RICOCHET_MAX_ANGLE, autoReloadDue, beginReload, bulletPhysics, counterRecoil, entityMaterial, falloffAt, flyBullet, gunplayOf, lethalityScale, newGunState, penetrate, recoilIdle, recoilShot, ricochets, roundsReady, shotCone, stepAds, stepReload, surfaceMaterial,
   type BallisticMaterial, type FalloffSpec, type GunState, type Gunplay, type KickSpec, type ReloadRun,
 } from './gunplay.ts';
 import { GLASS, glassAt } from './glass.ts';
@@ -114,6 +114,8 @@ export const MAX_REWIND_TICKS = 18;
 const HISTORY_TICKS = MAX_REWIND_TICKS + 2;
 /** Projectiles ignore their owner briefly so they don't explode in the shooter's face. */
 const OWNER_GRACE_TICKS = 8;
+/** Damage numbers (privateState `dd`): how long a hit stays in the private state (a few snapshots, for one lost). */
+const DEALT_KEEP_TICKS = 8;
 /** Arena discs drop where their flight ends: found within this far below (m), else over the void (back to the thrower). */
 const DISC_DROP_REACH = 40;
 /** A dropped disc lies this long (s) for anyone to pick up, then goes back to its thrower. */
@@ -379,6 +381,8 @@ export interface Combatant {
   throwCooldown: number;
   /** Unarmed quick melee: ticks until the next strike, and the tick of the last punch (punch, then kick). */
   meleeCooldown: number;
+  /** Humans: damage dealt lately, for their damage numbers (PrivateState `dd`; [tick, amount, flags, x, y, z, key]). */
+  dealt?: [number, number, number, number, number, number, number][];
   punchedAt: number;
   reloadTicks: number;
   raiseTicks: number;
@@ -3171,11 +3175,16 @@ export class Match {
             this.fire(c, primaryTrigger(def), input.viewTick ?? 0);
             fired = true;
           }
-        } else if (c.meleeCooldown === 0 && !def.projectile?.disc) {
+        } else {
+          // Melee is an emergency action: the press breaks a reload where it is (spec §16), struck or not (prediction
+          // mirrors it); the ammunition keeps the stage the reload reached.
+          if (c.reload) this.cancelReload(c);
           // (Not in Disc Arena, where nobody takes damage: discs only knock people off.)
-          this.strike(c, unarmedStrike(input.forward, this.tick - c.punchedAt), input.viewTick ?? 0);
+          if (c.meleeCooldown === 0 && !def.projectile?.disc) this.strike(c, unarmedStrike(input.forward, this.tick - c.punchedAt), input.viewTick ?? 0);
         }
       }
+      // Auto-reload (the player's option): an empty magazine starts reloading by itself once the gun is ready.
+      if (input.buttons & BUTTON_AUTO_RELOAD && !gun && !unarmed && !frozen && !fired && autoReloadDue(def, held, c, ((input.buttons & BUTTON_SPRINT) !== 0 && input.forward > 0) || (input.buttons & BUTTON_MELEE) !== 0)) this.startReload(c);
       if (fired && gun) gun.firedTick = this.tick;
       // Heat weapons cool when not firing (mounted guns cool in stepMounts); bloom settles.
       for (const w of c.weapons.values()) {
@@ -3385,7 +3394,7 @@ export class Match {
     const to: Tuple3[] = [];
     const hits: (number | null)[] = [];
     const zones: number[] = [];
-    const bodies: number[] = [];
+    const bodies: { handle: number; dist: number; at: Vec3 }[] = [];
     const struck: { slot: number; dir: Vec3; zone: HitZone; dist: number; keep: number }[] = [];
     for (let p = 0; p < def.pellets; p++) {
       const dir = this.spreadDir(aim, spread);
@@ -3408,7 +3417,7 @@ export class Match {
         to.push(tuple(add(eye, scale(dir, wallAt))));
         hits.push(along[0]?.slot ?? null);
         zones.push(along[0]?.zone ?? 0);
-        if (world) bodies.push(world.handle);
+        if (world) bodies.push({ handle: world.handle, dist: wallAt, at: add(eye, scale(dir, wallAt)) });
         continue;
       }
       const shot = resolveHitscan(eye, dir, def.range, world?.dist ?? null, targets);
@@ -3419,7 +3428,7 @@ export class Match {
       const zone = shot.hitSlot !== null ? shot.zone : 0;
       zones.push(zone);
       if (shot.hitSlot !== null) struck.push({ slot: shot.hitSlot, dir, zone, dist: shot.distance, keep: GLASS.passDamage ** broke });
-      else if (world) bodies.push(world.handle);
+      else if (world) bodies.push({ handle: world.handle, dist: world.dist, at: shot.end });
     }
     this.pendingEvents.push({ e: 'shot', s: shooter.slot, w: def.id, from: tuple(eye), to, hit: hits, ...(zones.some((z) => z) ? { z: zones } : {}), ...(def.alt ? { alt: 1 as const } : {}) });
     // A second trigger can bring its own falloff and head multiple (the Battle Axe's blunderbuss).
@@ -3432,7 +3441,10 @@ export class Match {
       this.stagger(victim, this.powerOf(def.id), dir, (falloffAt(falloff, dist) * keep) / Math.max(1, def.pellets));
       if (def.knockback) this.push(victim, dir, def.knockback);
     }
-    for (const b of bodies) if (!this.damageMountBody(b, this.boosted(shooter, def.damage), shooter, 'bullet', def.id)) this.scenario.damageBody(b, this.boosted(shooter, def.damage), shooter.slot);
+    for (const b of bodies) {
+      this.noteTargetHit(shooter, b.handle, this.boosted(shooter, def.damage) * falloffAt(falloff, b.dist), b.at);
+      if (!this.damageMountBody(b.handle, this.boosted(shooter, def.damage), shooter, 'bullet', def.id)) this.scenario.damageBody(b.handle, this.boosted(shooter, def.damage), shooter.slot);
+    }
     if (def.chain && struck.length) this.chainLightning(shooter, def, struck[0]!.slot, eye);
   }
 
@@ -4038,6 +4050,7 @@ export class Match {
       // glass by their material (glass shatters, concrete barely chips).
       const owner = this.actor(b.owner) ?? null;
       const raw = owner ? this.boosted(owner, b.trig.damage * b.scale) : b.trig.damage * b.scale;
+      this.noteTargetHit(owner, wall.handle, raw * falloffAt(gunplayOf(getWeapon(b.trig.id)).falloff, b.travelled + wall.dist), at);
       if (!this.damageMountBody(wall.handle, raw, owner, 'bullet', b.trig.id) && spec.destruction > 0) this.scenario.damageBody(wall.handle, raw * spec.destruction, b.owner);
       // Ricochet: only grazing hits on hard surfaces, at most once, and the round comes off weakened.
       const n = wall.normal;
@@ -5553,11 +5566,39 @@ export class Match {
     }
     // A heavy hit (content/match-play.json heavyHit): the big-hit effect on them, the screen edge if it's you.
     if (attacker && attacker !== victim && hit >= MATCH_PLAY.heavyHit) this.pendingEvents.push({ e: 'hurt', a: 'big', s: victim.slot, k: attacker.slot, n: Math.round(hit), p: [round2(victim.move.pos.x), round2(victim.move.pos.y + 1.1 * victim.size), round2(victim.move.pos.z)] });
+    const armoured = dmg < hit;
     victim.health -= dmg;
     victim.hurtAt = this.tick;
+    if (attacker && attacker !== victim) {
+      const k = victim.size;
+      const at = { x: victim.move.pos.x, y: victim.move.pos.y + (head ? 1.75 : 1.2) * k, z: victim.move.pos.z };
+      this.noteDealt(attacker, hit, (head ? 1 : 0) | (armoured ? 2 : 0) | (victim.health <= 0 ? 4 : 0), at, victim.slot);
+    }
     // A hard hit knocks a zipline rider off the line (keeping the ride's momentum).
     if (victim.move.zip !== undefined && dmg >= ZIP.knockDamage) victim.move = leaveZipline(this.ziplines, victim.move);
     if (victim.health <= 0) this.kill(victim, attacker === victim ? null : attacker, weapon, head);
+  }
+
+  /**
+   * Damage numbers (a HUD option): what a human player's hit did, summed per target per tick, kept for the last few
+   * snapshots (privateState `dd`). `key` tells targets apart (a combatant's slot, or -1 - a body's handle).
+   */
+  private noteDealt(attacker: Combatant, amount: number, flags: number, at: Vec3, key: number): void {
+    if (attacker.kind !== 'human' || !(amount > 0)) return;
+    const list = (attacker.dealt ??= []);
+    const last = list[list.length - 1];
+    if (last && last[0] === this.tick && last[6] === key) {
+      last[1] += amount;
+      last[2] |= flags;
+      return;
+    }
+    while (list.length && (list[0]![0] < this.tick - DEALT_KEEP_TICKS || list.length >= 24)) list.shift();
+    list.push([this.tick, amount, flags, at.x, at.y, at.z, key]);
+  }
+
+  /** A round struck a body: on a target (a breakable board, crate or barrel), the shooter sees what it would do to a body. */
+  private noteTargetHit(owner: Combatant | null, handle: number, amount: number, at: Vec3): void {
+    if (owner?.kind === 'human' && this.scenario.shootableTarget(handle)) this.noteDealt(owner, amount, 8, at, -1 - handle);
   }
 
   private kill(victim: Combatant, killer: Combatant | null, weapon: string, head = false): void {
@@ -6491,6 +6532,7 @@ export class Match {
       ...(c.throwable ? { gr: [THROWABLES.indexOf(c.throwable.kind), c.throwable.count] as [number, number] } : {}),
       rl: c.reloadTicks,
       rs: c.raiseTicks,
+      ...(c.dealt?.some((d) => d[0] > this.tick - DEALT_KEEP_TICKS) ? { dd: c.dealt.filter((d) => d[0] > this.tick - DEALT_KEEP_TICKS).map((d) => [d[0], Math.round(d[1]), d[2], round2(d[3]), round2(d[4]), round2(d[5])] as [number, number, number, number, number, number]) } : {}),
       ...(c.reload && c.reloadTicks > 0 ? { rd: [RELOAD_KINDS.indexOf(c.reload.kind), c.reload.t, c.reload.total, c.reload.stage] as [number, number, number, number] } : {}),
       ...([...c.weapons.values()].some((w) => w.unchambered) ? { uc: [...c.weapons.entries()].filter(([, w]) => w.unchambered).map(([code]) => code) } : {}),
       sp: c.speedTicks,
