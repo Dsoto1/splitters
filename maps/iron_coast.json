@@ -19,11 +19,11 @@
     ],
     "release": {
       "mapId": "m_volbp47vkztqi47u",
-      "versionId": "v_ztvii34pkwznjjxz",
-      "revision": 15,
-      "contentHash": "sha256:f21244e7c5a47709945030d2cd8770b7496ab96d0549ca88ad9f522e463cd56f",
+      "versionId": "v_lk243cjrempdtiad",
+      "revision": 17,
+      "contentHash": "sha256:9f1f67ee431116a063eb4fc115c38982c11ce3dada464dc28b3b226c4475620a",
       "schemaVersion": 29,
-      "releasedAt": "2026-11-08T05:26:19.997Z"
+      "releasedAt": "2026-11-08T05:35:35.589Z"
     }
   },
   "classicStructure": {
@@ -863,9 +863,9 @@
     {
       "id": "spawn_kfwbsgi4i1",
       "position": [
-        -121,
-        12,
-        10
+        -110,
+        11.98,
+        -32
       ],
       "kind": "spawn",
       "yaw": 3.142,
@@ -876,9 +876,9 @@
     {
       "id": "spawn_3yjz4dmec6",
       "position": [
-        -99,
-        12,
-        10
+        -118,
+        11.99,
+        -32
       ],
       "kind": "spawn",
       "yaw": 3.142,
@@ -889,9 +889,9 @@
     {
       "id": "spawn_pru2ymymbe",
       "position": [
-        -77,
-        11.99,
-        10
+        -110,
+        12,
+        -20
       ],
       "kind": "spawn",
       "yaw": 3.142,
@@ -902,9 +902,9 @@
     {
       "id": "spawn_n4dqlh54uv",
       "position": [
-        -55,
-        12,
-        10
+        -102,
+        11.99,
+        -20
       ],
       "kind": "spawn",
       "yaw": 3.142,
@@ -967,9 +967,9 @@
     {
       "id": "spawn_ci3vxn4nug",
       "position": [
-        55,
+        80,
         12,
-        10
+        -16
       ],
       "kind": "spawn",
       "yaw": 3.142,
@@ -980,9 +980,9 @@
     {
       "id": "spawn_eyxovsoewi",
       "position": [
-        77,
+        88,
         12,
-        10
+        -12
       ],
       "kind": "spawn",
       "yaw": 3.142,
@@ -993,9 +993,9 @@
     {
       "id": "spawn_00molh968h",
       "position": [
-        99,
+        104,
         12,
-        10
+        -12
       ],
       "kind": "spawn",
       "yaw": 3.142,
@@ -1006,9 +1006,9 @@
     {
       "id": "spawn_8xi3cxubff",
       "position": [
-        121,
-        16,
-        10
+        96,
+        12,
+        -8
       ],
       "kind": "spawn",
       "yaw": 3.142,
