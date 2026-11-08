@@ -8,6 +8,12 @@ made only on a commit that passed CI on a check branch.
 
 ## Unreleased
 
+**Hovercraft no longer get stuck under structures** (owner, 2026-11-07: a Hauler stuck under Iron Tide's platforms):
+a vehicle squeezed into a gap narrower than itself (Iron Tide's door at the top of the stairs) used to rise up it into
+the lintel and the roof and stay there; it now stops at floor height and backs out. Hovercraft (and other ground
+vehicles) also go under decks, beams and lintels their hull fits under (Iron Tide's decks, Dune Harbor's arcade), where
+the invisible collision shape over the hull used to catch. Over open ground they drive exactly as before.
+
 **Iron Coast (MAP 21), part 1: the beach assault and Breakthrough's showcase** (MapMaker only, from the owner's reference)
 - **A new map, Iron Coast** (`iron_coast`): 380 × 320 m of coast for 24-32 a side (24 v 24 is the Map's pick; 16 to 64
   players). Landing craft beached on the sand, an irregular cliff (8 m at the grand stair's
