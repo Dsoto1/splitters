@@ -1774,6 +1774,14 @@ shells wear it down (about 6 rockets, 5 shells), small arms barely mark it. Its 
 blade from outside reaches them; they die with the tank. Readability (§2.4): a hit on the hull sparks like armour.
 Numbers and how to change them: docs/CONTENT_PIPELINE.md, "Tanks and armour".
 
+Balance pass (owner, 2026-11-08: no tank was destroyed in 36 bot-minutes). Rockets hurt vehicles more: a weapon's
+`vehicleDamage` (data, content/weapons) multiplies what it does to vehicles only, never to players; the five rocket
+weapons (Rocket Launcher, Guided Rocket, Swarm Launcher, Blast Rockets, Mounted Rockets) are 2, so a Rocket Launcher
+hit on a tank's side is 400 of its 1200 (3 kill it, 4 at an angle; 6 before), its armour (blasts 1.25) unchanged. A
+heavy launcher is the tank's counter (§32: power weapons balanced by placement, ammunition and their counters): bots
+without one fetch one when a tank is about, draw one they carry and aim it at the hull. The cannon refills only from
+the general Ammo Box (seat `ammo.pickups`), and the driver keeps firing it while its seat is empty (owner kept it).
+
 ---
 
 # 49. Things We Explicitly Do Not Want

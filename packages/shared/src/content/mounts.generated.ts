@@ -81,7 +81,7 @@ export const MOUNT_DEFS: Readonly<Record<(typeof MOUNT_MODELS)[number], MountDef
     enterRadius: 2.6,
     respawnSeconds: 30,
     blast: { radius: 3.5, damage: 70 },
-    vehicle: { maxSpeed: 20, reverseSpeed: 7, accel: 16, turnRate: 2.6, grip: 0.32, mass: 0.4 },
+    vehicle: { maxSpeed: 20, reverseSpeed: 7, accel: 16, turnRate: 2.6, idleBrake: 16, grip: 0.32, mass: 0.4 },
     blurb: 'One seat, very quick, no gun: run them over',
   },
   speeder: {
@@ -98,7 +98,7 @@ export const MOUNT_DEFS: Readonly<Record<(typeof MOUNT_MODELS)[number], MountDef
     enterRadius: 3,
     respawnSeconds: 40,
     blast: { radius: 4, damage: 80 },
-    vehicle: { maxSpeed: 24, reverseSpeed: 8, accel: 14, turnRate: 2.1, hover: true, grip: 0.07, mass: 0.6 },
+    vehicle: { maxSpeed: 24, reverseSpeed: 8, accel: 14, turnRate: 2.1, idleBrake: 16, hover: true, grip: 0.07, mass: 0.6 },
     blurb: 'A hovering two-seater: the pilot fires twin blasters ahead, the passenger shoots their own gun',
   },
   // model: The owner's Tactical Off-Road Beast and its Rugged Off-Road Tire (Meshy, owned; content/guns.json): a long tube-frame buggy with a roof gun, its hubs bare, so the tires go on at its hubs and it rides on them.
@@ -130,6 +130,7 @@ export const MOUNT_DEFS: Readonly<Record<(typeof MOUNT_MODELS)[number], MountDef
       reverseSpeed: 7,
       accel: 10,
       turnRate: 1.8,
+      idleBrake: 12,
       grip: 0.22,
       mass: 1.4,
       drift: 0.55,
@@ -167,7 +168,7 @@ export const MOUNT_DEFS: Readonly<Record<(typeof MOUNT_MODELS)[number], MountDef
     enterRadius: 4,
     respawnSeconds: 60,
     blast: { radius: 5, damage: 100 },
-    vehicle: { maxSpeed: 13, reverseSpeed: 5, accel: 6, turnRate: 1.1, hover: true, grip: 0.05, mass: 3 },
+    vehicle: { maxSpeed: 13, reverseSpeed: 5, accel: 6, turnRate: 1.1, idleBrake: 12, hover: true, grip: 0.05, mass: 3 },
     cockpitEye: [0, 1.95, -0.8],
     blurb: 'A slow hovering transport for six: a pilot, a rocket gunner and four passengers',
   },
@@ -187,6 +188,7 @@ export const MOUNT_DEFS: Readonly<Record<(typeof MOUNT_MODELS)[number], MountDef
       reverseSpeed: 6,
       accel: 12,
       turnRate: 1.9,
+      idleBrake: 10,
       hover: true,
       grip: 0.08,
       mass: 0.7,
@@ -218,6 +220,7 @@ export const MOUNT_DEFS: Readonly<Record<(typeof MOUNT_MODELS)[number], MountDef
       reverseSpeed: 5,
       accel: 5,
       turnRate: 0.9,
+      idleBrake: 6,
       hover: true,
       grip: 0.05,
       mass: 3.5,
@@ -230,7 +233,7 @@ export const MOUNT_DEFS: Readonly<Record<(typeof MOUNT_MODELS)[number], MountDef
   // seats: Moved onto the new model, roles, weapons and arcs unchanged: the driver from the deck under the new turret to the front left of the deck (feet 1.95 m); both gunners up 0.15 m onto the turret roof, the roof gun from beside the roof (x 0.9) onto it.
   // cockpitEye: The driver's hatch, front left of the deck, over the glacis (was the commander's hatch on the old turret).
   // armour: Tanks (owner, 2026-11-07): armour plate (surface armor: rounds stop on it and spark, nothing goes through), bullets do a tenth of their damage (the roof MG's 11 a round does 1.1: about 70 s of fire alone to kill it), blasts and shells 1.25 times theirs (rocket 40 + 120: about 6 rockets; the cannon's 60 + 150: 5 shells; a frag grenade 100: 10), melee nothing. Sealed: the crew can't be shot, blasted or struck from outside; when it is destroyed everyone still inside dies with it.
-  // ammo: The cannon carries 10 shells (5 kill another tank), one back every 15 s (empty to full in 150 s), all back when the crewed tank drives over an ammo pickup (owner-approved, 2026-11-07). With the cannon seat empty the driver fires it (driverFires): a crew of one can fight. The roof gun runs on heat, as every mounted gun.
+  // ammo: The cannon carries 10 shells (5 kill another tank), one back every 15 s (empty to full in 150 s), all back when the crewed tank drives over an Ammo Box (`ammo.pickups`: the general core.ammo only, owner 2026-11-08; Light, Rifle, Shells and Sniper rounds and the rest no longer refill it; refill over time owner-approved, 2026-11-07). With the cannon seat empty the driver fires it (driverFires): a crew of one can fight (owner kept it, 2026-11-08). The roof gun runs on heat, as every mounted gun.
   // pivot: Tracks (2026-11-07): it turns on the spot at 0.8 rad/s (a half turn in 4 s), fading out by 5 m/s: out of a dead end without a three-point turn, and a crew holding still can swing the gun onto a target.
   // bailHealth: Bots get out under a quarter of its health (300 of 1200: under two rockets left), not the 0.3 of other vehicles: inside is safe until it blows. It catches fire under 0.15 and blows 5 s later.
   // turret: The cannon gunner's aim turns the turret (within the seat's 0.6 rad arc) and pitches the barrel (drawn within -0.17..0.35 rad); the roof gun no longer turns it. Shots still leave from the gunner's eye, as for every mounted weapon.
@@ -250,7 +253,7 @@ export const MOUNT_DEFS: Readonly<Record<(typeof MOUNT_MODELS)[number], MountDef
         offset: [-0.3, 3.05, -0.3],
         weapon: 'core.tank_cannon',
         arc: 0.6,
-        ammo: { max: 10, refillSeconds: 15 },
+        ammo: { max: 10, refillSeconds: 15, pickups: ['core.ammo'] },
         driverFires: true,
       },
       { role: 'gunner', label: 'Roof gun', offset: [0.4, 3.05, 0.1], weapon: 'core.mount_mg' },
@@ -260,7 +263,17 @@ export const MOUNT_DEFS: Readonly<Record<(typeof MOUNT_MODELS)[number], MountDef
     blast: { radius: 6, damage: 120 },
     armour: { surface: 'armor', sealed: true, bullets: 0.1, blasts: 1.25, melee: 0 },
     bailHealth: 0.25,
-    vehicle: { maxSpeed: 11, reverseSpeed: 5, accel: 5, turnRate: 1, grip: 0.45, mass: 6, pivot: 0.8 },
+    vehicle: {
+      maxSpeed: 11,
+      reverseSpeed: 5,
+      accel: 5,
+      turnRate: 1,
+      idleBrake: 10,
+      grip: 0.45,
+      mass: 6,
+      pivot: 0.8,
+      routeFit: 0.8,
+    },
     cockpitEye: [-0.6, 3.35, 1.95],
     turret: { seat: 1, pitch: [-0.17, 0.35] },
     blurb: 'A heavy tank for three: a driver, a cannon gunner firing explosive shells ahead, and a roof machine gun',
@@ -304,6 +317,7 @@ export const MOUNT_DEFS: Readonly<Record<(typeof MOUNT_MODELS)[number], MountDef
       reverseSpeed: 8,
       accel: 12,
       turnRate: 2,
+      idleBrake: 14,
       grip: 0.26,
       mass: 1.1,
       drift: 0.4,
@@ -348,7 +362,7 @@ export const MOUNT_DEFS: Readonly<Record<(typeof MOUNT_MODELS)[number], MountDef
     enterRadius: 3.8,
     respawnSeconds: 60,
     blast: { radius: 5.5, damage: 110 },
-    vehicle: { maxSpeed: 14, reverseSpeed: 6, accel: 7, turnRate: 1.25, grip: 0.38, mass: 3.6 },
+    vehicle: { maxSpeed: 14, reverseSpeed: 6, accel: 7, turnRate: 1.25, idleBrake: 10, grip: 0.38, mass: 3.6 },
     blurb: 'A heavy armoured truck for five: a driver, a front and a rear machine gunner and two riders in the back',
   },
   // seats: Astride the canopy, ahead of the middle: the nose (+Z) leads and the twin exhausts trail.
@@ -363,7 +377,7 @@ export const MOUNT_DEFS: Readonly<Record<(typeof MOUNT_MODELS)[number], MountDef
     enterRadius: 2.6,
     respawnSeconds: 30,
     blast: { radius: 3.5, damage: 70 },
-    vehicle: { maxSpeed: 31, reverseSpeed: 8, accel: 18, turnRate: 2.4, hover: true, grip: 0.1, mass: 0.35 },
+    vehicle: { maxSpeed: 31, reverseSpeed: 8, accel: 18, turnRate: 2.4, idleBrake: 22, hover: true, grip: 0.1, mass: 0.35 },
     blurb: 'The fastest thing on the map: one rider, no gun, drifts like a hovercraft',
   },
   // cockpitEye: In the cockpit between its frames, not on the roof.
@@ -401,6 +415,7 @@ export const MOUNT_DEFS: Readonly<Record<(typeof MOUNT_MODELS)[number], MountDef
       reverseSpeed: 6,
       accel: 6,
       turnRate: 1.1,
+      idleBrake: 6,
       hover: true,
       grip: 0.06,
       mass: 3,
@@ -425,7 +440,7 @@ export const MOUNT_DEFS: Readonly<Record<(typeof MOUNT_MODELS)[number], MountDef
     enterRadius: 3.4,
     respawnSeconds: 45,
     blast: { radius: 5, damage: 95 },
-    vehicle: { maxSpeed: 16, reverseSpeed: 6, accel: 8, turnRate: 1.5, grip: 0.24, mass: 1.9 },
+    vehicle: { maxSpeed: 16, reverseSpeed: 6, accel: 8, turnRate: 1.5, idleBrake: 10, grip: 0.24, mass: 1.9 },
     blurb: 'A pastel van for four: no gun, but the three riders shoot out of the windows',
   },
   // model: "Snowmobile" by roygbpjyt (Meshy Community, CC0; content/guns.json pack meshy-community-snowmobile): 3.0 m long, 1.31 m across the skis, 1.15 m to the top of the windscreen, skis ahead (+Z) and the track behind. It replaced the Kenney Holiday Kit long sled on 2026-11-04.
@@ -448,7 +463,7 @@ export const MOUNT_DEFS: Readonly<Record<(typeof MOUNT_MODELS)[number], MountDef
     enterRadius: 2.8,
     respawnSeconds: 30,
     blast: { radius: 3.5, damage: 60 },
-    vehicle: { maxSpeed: 23, reverseSpeed: 5, accel: 13, turnRate: 2, hover: true, grip: 0.12, mass: 0.45 },
+    vehicle: { maxSpeed: 23, reverseSpeed: 5, accel: 13, turnRate: 2, idleBrake: 16, hover: true, grip: 0.12, mass: 0.45 },
     rideHeight: 0,
     blurb: 'A two-seat snowmobile that skims over snow (hover handling): a driver and a passenger with their own gun',
   },

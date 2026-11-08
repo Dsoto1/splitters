@@ -87,7 +87,8 @@ export interface SeatDef {
   /**
    * Limited ammunition for this seat's mounted gun (the Tank's cannon): `max` rounds aboard (and at a respawn, `start`
    * if given), one more back every `refillSeconds` (0: none back over time), and all of them back when the vehicle,
-   * crewed, drives over an ammo pickup. Absent: it never runs dry (heat paces it, if anything).
+   * crewed, drives over one of the ammo pickups `pickups` names (the Tank's: the Ammo Box only). Absent: it never runs
+   * dry (heat paces it, if anything).
    */
   ammo?: SeatAmmo;
   /**
@@ -102,7 +103,12 @@ export interface SeatAmmo {
   max: number;
   start?: number;
   refillSeconds: number;
+  /** The pickup ids (ammo pickups, content/pickups.json) that refill it all when the crewed vehicle drives over one; absent: none does. */
+  pickups?: readonly string[];
 }
+
+/** Pickup `item` refills this limited mounted ammunition (SeatAmmo.pickups). */
+export const ammoRefilledBy = (a: SeatAmmo, item: string): boolean => !!a.pickups?.includes(item);
 
 /**
  * Armour (MountDef.armour): what the hull is made of for bullets (a surface type: its ballistic class decides
@@ -161,6 +167,17 @@ export interface MountDef {
     drift?: number;
     /** Tracks: turns on the spot at this rate (rad/s) standing still, fading out by 5 m/s (where steering takes over). Default none. */
     pivot?: number;
+    /**
+     * With nobody at the wheel it brakes to a stop at this rate (m/s², the slide too), so a vehicle got out of at speed
+     * stops within a few metres instead of coasting on (into a doorway it then blocks). Default 10.
+     */
+    idleBrake?: number;
+    /**
+     * Bots drive only routes clear this share of its half width either side (bots/vehicles.ts routeFits), so they keep
+     * out of doors and passages a person fits and it doesn't. Default 0.95 (the probe's width); the Tank 0.8 (it
+     * pushes past a little scraping).
+     */
+    routeFit?: number;
   };
   sentry?: { weapon: string; range: number; turnRate: number; arc?: ArcSentrySpec };
   /**

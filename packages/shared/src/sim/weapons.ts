@@ -398,6 +398,13 @@ export interface WeaponDefinition {
   /** Hitscan push on the target (m/s), with a little lift: a deliberate shove on top of stopping power. */
   knockback?: number;
   /**
+   * Damage multiplier on vehicles (default 1): what its rounds, direct hits and blasts do to a vehicle (kind
+   * `vehicle`: never to players, turrets or sentries), before the vehicle's own armour share (MountDef.armour). Rockets
+   * declare it (owner, 2026-11-08: rockets hurt vehicles and tanks more); above 1 it also marks the weapon as one that
+   * hurts vehicles, for bots (bots/vehicles.ts antiVehicle).
+   */
+  vehicleDamage?: number;
+  /**
    * Stopping power 0..1 (sim/impact.ts): the small shove along the shot, the brief slow and the
    * flinch a hit gives. Default: by category (a pistol barely, a shotgun or sniper noticeably).
    */

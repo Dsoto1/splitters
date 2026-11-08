@@ -91,7 +91,7 @@ export function schemas(root = ROOT, families = []) {
     reloadTicks: int, raiseTicks: int, 'projectile?': projectile, 'ammo?': en(list('AMMO_TYPES')), 'heal?': num,
     'grapple?': obj({ speed: num }), 'alt?': alt, 'burst?': obj({ count: int, intervalTicks: int }), 'windupTicks?': int,
     'windupResets?': bool, 'heat?': obj({ perShot: num, coolPerTick: num }), 'pierce?': int,
-    'chain?': obj({ jumps: int, range: num, falloff: num }), 'status?': status, 'knockback?': num, 'stoppingPower?': num,
+    'chain?': obj({ jumps: int, range: num, falloff: num }), 'status?': status, 'knockback?': num, 'stoppingPower?': num, 'vehicleDamage?': num,
     'headshot?': num, 'legshot?': num, 'recoil?': obj({ bloom: num, maxBloom: num, recover: num }),
     'ballistic?': nullable(partial(ballistic)), 'accuracy?': partial(accuracy), 'kick?': partial(kick), 'reload?': reload,
     'falloff?': falloff, botDesirability: num, botRange: tup(2), view, 'notes?': notes,
@@ -240,6 +240,7 @@ export function build(content, root = ROOT) {
     if (def.id !== `core.${name}`) problems.push(`${file}: id must be core.${name}`);
     if (def.slot < 0 || def.slot > 9) problems.push(`${file}: slot ${def.slot} is not 0-9`);
     if (def.botRange[0] > def.botRange[1]) problems.push(`${file}: botRange runs backwards`);
+    if (def.vehicleDamage !== undefined && (def.vehicleDamage <= 0 || def.vehicleDamage > 5)) problems.push(`${file}: vehicleDamage multiplies what it does to vehicles, above 0 and at most 5`);
     for (const m of [def.view.model, def.view.fallback, def.view.held?.medium, def.view.held?.high]) if (m && !modelExists(m)) problems.push(`${file}: model ${m} not found under packages/client/public/models`);
     const sound = def.view.sound ?? `fire.${name}`;
     if (!sounds.has(sound)) problems.push(`${file}: sound ${sound} is not in content/sounds.json`);

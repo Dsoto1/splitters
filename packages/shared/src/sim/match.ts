@@ -14,7 +14,7 @@ import { EncounterEntity as EncounterSchema, NPC_ROLES, PLAYERS_FACTION, type En
 import { add, createRng, distance, dot, horizontalDistance, lookAngles, normalize, scale, sub, viewDirection, type Vec3, hypot } from '../math.ts';
 import {
   MOUNT_BURN_FRACTION, MOUNT_BURN_SECONDS, MOUNT_FLAG_ALIVE, MOUNT_FLAG_ARC, MOUNT_FLAG_BURNING, MOUNT_FLAG_CHARGING, MOUNT_FLAG_WRECK, MOUNT_WRECK_FADE_SECONDS, MOUNT_WRECK_SECONDS, VEHICLE_DAMAGE_SCALE,
-  airCraftDef, BUILT_MOUNT_BASE, enterReach, FLOAT, MOUNT_DEFS, footprintGap, getMountDef, mountMass, mountToWorld, type MountDef, type SeatDef, type SeatRole, ammoRefillTicks, armourScale, firingSeat, sealedMount, type MountHit,
+  airCraftDef, BUILT_MOUNT_BASE, enterReach, FLOAT, MOUNT_DEFS, footprintGap, getMountDef, mountMass, mountToWorld, type MountDef, type SeatDef, type SeatRole, ammoRefillTicks, ammoRefilledBy, armourScale, firingSeat, sealedMount, type MountHit,
 } from './mounts.ts';
 import { airRoute, botDropIndex, canDrop, dropArea, dropIndex, dropOffsets, dropPlan, dropStretchEnds, dropTarget, routePose, shouldJump, ticksToRouteEnd, type AirRoute, type DropPlan } from './airplane.ts';
 import { CHUTE, heightAboveGround } from './parachute.ts';
@@ -127,6 +127,10 @@ export const START_WAIT_SECONDS = 30;
 export const COUNTDOWN_SECONDS = 3;
 /** Vehicle crashes: closing speed (m/s) below which nothing is hurt, and damage per m/s over it (split by weight). */
 const RAM_MIN_SPEED = 5;
+/** A vehicle nobody drives brakes at this rate (m/s²) when its data has no `vehicle.idleBrake`. */
+const DEFAULT_IDLE_BRAKE = 10;
+/** The share of a vehicle's half width a bot's route must be clear for (MountView.routeHalfWidth) without `vehicle.routeFit`: its probe's (0.95). */
+const ROUTE_FIT = 0.95;
 const RAM_DAMAGE = 8;
 /** Bots see hostile sentries as targets with these IDs (+ mount index); never a real actor ID. */
 const SENTRY_VIEW_BASE = 1_000_000;
@@ -208,6 +212,8 @@ interface MountRt {
   moveOwed?: boolean;
   /** Parked and settled since this tick (driveVehicle skips the physics until something moves it). */
   restSince?: number;
+  /** Ambient traffic (a race track's cars): driven by a TrackDriver with nobody in the seat, so never idle-braked. */
+  ambient?: boolean;
   /** Raycast suspension (wheeled light vehicles, sim/suspension.ts): its tuning and the sprung body. */
   suspSetup?: SuspensionSetup;
   susp?: SuspensionState;
@@ -755,6 +761,7 @@ export class Match {
         const index = this.mounts.length;
         this.addMount(base + i, def, { x: car.entity.position[0], y: car.entity.position[1], z: car.entity.position[2] }, car.entity.yaw, null, 12);
         this.mounts[index]!.home = { pos: { x: car.pit[0], y: car.pit[1], z: car.pit[2] }, yaw: car.pitYaw };
+        this.mounts[index]!.ambient = true;
         this.ambient.push({ mount: index, driver: new TrackDriver(((i % 3) - 1) * 0.4, 0.86 + (i % 4) * 0.04), stuck: 0 });
       }
     }
@@ -2499,6 +2506,17 @@ export class Match {
     return out;
   }
 
+  /** Is vehicle `m` on or over water (or another liquid): afloat, its feet in it, or (a flyer) water under it? */
+  private overWater(m: MountRt): boolean {
+    if (m.afloat || liquidAt(this.liquids, { x: m.pos.x, y: m.pos.y + 0.2, z: m.pos.z }) || liquidAt(this.liquids, { x: m.pos.x, y: m.pos.y - 0.5, z: m.pos.z })) return true;
+    if (!m.def.vehicle?.fly) return false;
+    const hit = this.physics.raycastHit({ x: m.pos.x, y: m.pos.y - 0.05, z: m.pos.z }, { x: 0, y: -1, z: 0 }, 60);
+    const below = hit ? m.pos.y - 0.05 - hit.dist : m.pos.y - 60;
+    // The first liquid between it and the ground under it.
+    for (let y = m.pos.y - 0.5; y > below; y -= 1) if (liquidAt(this.liquids, { x: m.pos.x, y, z: m.pos.z })) return true;
+    return false;
+  }
+
   /** Turrets and vehicles as bots see them (built once per tick). */
   private mountViews(actors: readonly Combatant[]): MountView[] {
     const humans = actors.filter((a) => a.kind === 'human' && a.alive);
@@ -2517,8 +2535,11 @@ export class Match {
       ...(m.floats ? { floats: true } : {}),
       ...(m.wedged ? { wedged: true } : {}),
       ...(m.def.armour?.sealed ? { sealed: true } : {}),
+      ...(m.def.armour && (m.def.armour.bullets ?? 1) < 0.5 ? { armoured: true } : {}),
       ...(m.def.bailHealth !== undefined ? { bailHealth: m.def.bailHealth } : {}),
       ...(m.def.vehicle?.pivot ? { pivots: true } : {}),
+      ...(m.def.vehicle && this.liquids.length && this.overWater(m) ? { overWater: true } : {}),
+      ...(m.def.vehicle && !m.def.vehicle.fly ? { routeHalfWidth: Math.min(m.def.half[0], m.def.half[2]) * (m.def.vehicle.routeFit ?? ROUTE_FIT) } : {}),
       half: m.def.half,
       humanNear: humans.some((h) => horizontalDistance(h.move.pos, m.pos) < 35),
     }));
@@ -2533,7 +2554,7 @@ export class Match {
     const gun = gs === null ? null : m.guns[gs];
     const aim = gs === null ? seat : m.def.seats[gs]!;
     const ammo = gs === null ? undefined : m.def.seats[gs]!.ammo;
-    return { mount: m.index, seat: c.mount!.seat, role: seat.role, ...(gun ? { weapon: gun.def } : {}), ...(aim.arc !== undefined ? { arc: aim.arc } : {}), ...(aim.facing ? { facing: aim.facing } : {}), heat: gun?.heat ?? 0, overheated: gun?.overheated ?? false, ...(gun?.shells !== undefined && ammo ? { shells: gun.shells, maxShells: ammo.max } : {}) };
+    return { mount: m.index, seat: c.mount!.seat, role: seat.role, ...(gun ? { weapon: gun.def } : {}), ...(aim.arc !== undefined ? { arc: aim.arc } : {}), ...(aim.facing ? { facing: aim.facing } : {}), heat: gun?.heat ?? 0, overheated: gun?.overheated ?? false, ...(gun?.shells !== undefined && ammo ? { shells: gun.shells, maxShells: ammo.max, ...(ammo.pickups ? { refills: ammo.pickups } : {}) } : {}) };
   }
 
   /**
@@ -3172,7 +3193,7 @@ export class Match {
       this.stagger(victim, this.powerOf(def.id), dir, (falloffAt(falloff, dist) * keep) / Math.max(1, def.pellets));
       if (def.knockback) this.push(victim, dir, def.knockback);
     }
-    for (const b of bodies) if (!this.damageMountBody(b, this.boosted(shooter, def.damage), shooter, 'bullet')) this.scenario.damageBody(b, this.boosted(shooter, def.damage), shooter.slot);
+    for (const b of bodies) if (!this.damageMountBody(b, this.boosted(shooter, def.damage), shooter, 'bullet', def.id)) this.scenario.damageBody(b, this.boosted(shooter, def.damage), shooter.slot);
     if (def.chain && struck.length) this.chainLightning(shooter, def, struck[0]!.slot, eye);
   }
 
@@ -3550,7 +3571,7 @@ export class Match {
         }
         if (victim && spec.impactDamage) this.damage(victim, spec.impactDamage, owner ?? null, p.weapon);
         if (victim && spec.status) this.applyStatus(victim, spec.status, owner ?? null, p.weapon);
-        if (!victim && wall && spec.impactDamage && !this.damageMountBody(wall.handle, spec.impactDamage, owner ?? null, 'blast')) this.scenario.damageBody(wall.handle, spec.impactDamage, p.owner);
+        if (!victim && wall && spec.impactDamage && !this.damageMountBody(wall.handle, spec.impactDamage, owner ?? null, 'blast', p.weapon)) this.scenario.damageBody(wall.handle, spec.impactDamage, p.owner);
         this.explode(p, at);
         continue;
       }
@@ -3778,7 +3799,7 @@ export class Match {
       // glass by their material (glass shatters, concrete barely chips).
       const owner = this.actor(b.owner) ?? null;
       const raw = owner ? this.boosted(owner, b.trig.damage * b.scale) : b.trig.damage * b.scale;
-      if (!this.damageMountBody(wall.handle, raw, owner, 'bullet') && spec.destruction > 0) this.scenario.damageBody(wall.handle, raw * spec.destruction, b.owner);
+      if (!this.damageMountBody(wall.handle, raw, owner, 'bullet', b.trig.id) && spec.destruction > 0) this.scenario.damageBody(wall.handle, raw * spec.destruction, b.owner);
       // Ricochet: only grazing hits on hard surfaces, at most once, and the round comes off weakened.
       const n = wall.normal;
       const grazing = Math.asin(Math.min(1, Math.abs(u.x * n.x + u.y * n.y + u.z * n.z)));
@@ -4363,7 +4384,7 @@ export class Match {
   }
 
   /** Damage whatever mount owns this collider; false when it isn't one. */
-  private damageMountBody(handle: number, amount: number, attacker: Combatant | null, hit: MountHit = 'other'): boolean {
+  private damageMountBody(handle: number, amount: number, attacker: Combatant | null, hit: MountHit = 'other', weapon?: string): boolean {
     if (this.mode?.damageBody?.(handle, amount, attacker)) return true;
     const cv = this.covers.find((c) => c.body.handle === handle);
     if (cv) {
@@ -4372,7 +4393,7 @@ export class Match {
     }
     const m = this.mountBodies.get(handle);
     if (!m) return false;
-    this.damageMount(m, amount, attacker, false, hit);
+    this.damageMount(m, amount, attacker, false, hit, weapon);
     return true;
   }
 
@@ -4382,10 +4403,11 @@ export class Match {
    * own clock). The attacker gets the credit when it blows; damage from
    * nobody (fire, crashes, water) leaves the last attacker's credit standing.
    * The transport plane can't be hurt. Armour (MountDef.armour) takes its share of bullets, blasts and melee (`hit`).
+   * A vehicle takes `weapon`'s vehicleDamage multiple of it (rockets: more), before its armour's share.
    */
-  private damageMount(m: MountRt, amount: number, attacker: Combatant | null, raw = false, hit: MountHit = 'other'): void {
+  private damageMount(m: MountRt, amount: number, attacker: Combatant | null, raw = false, hit: MountHit = 'other', weapon?: string): void {
     if (!m.alive || this.phase !== 'playing' || amount <= 0 || m.route) return;
-    if (m.def.kind === 'vehicle' && !raw) amount *= VEHICLE_DAMAGE_SCALE[this.rules.vehicleDamage ?? 'normal'];
+    if (m.def.kind === 'vehicle' && !raw) amount *= VEHICLE_DAMAGE_SCALE[this.rules.vehicleDamage ?? 'normal'] * (weapon ? (CORE_WEAPONS[weapon]?.vehicleDamage ?? 1) : 1);
     amount *= armourScale(m.def, hit);
     if (amount <= 0) return;
     m.health -= amount;
@@ -4519,7 +4541,8 @@ export class Match {
 
   /**
    * Limited mounted ammunition (SeatDef.ammo): a round back every refillSeconds, and every round back when the
-   * vehicle, crewed, stands over an ammo pickup that is up (which it takes, as a player would).
+   * vehicle, crewed, stands over one of the ammo pickups the seat names (SeatAmmo.pickups: the Tank's cannon, the
+   * Ammo Box only) that is up (which it takes, as a player would).
    */
   private resupply(m: MountRt): void {
     let short = false;
@@ -4543,6 +4566,8 @@ export class Match {
     const reach = Math.max(m.def.half[0], m.def.half[2]) + PICKUP_RADIUS;
     for (const p of this.pickups) {
       if (!p.enabled || this.tick < p.availableAt || p.item.effect.kind !== 'ammo' || restrictedWeapons(this.rules)) continue;
+      // Only a pickup that refills a gun running short (SeatAmmo.pickups).
+      if (!m.guns.some((g, i) => g?.shells !== undefined && m.def.seats[i]?.ammo && g.shells < m.def.seats[i]!.ammo!.max && ammoRefilledBy(m.def.seats[i]!.ammo!, p.item.id))) continue;
       if (horizontalDistance(p.pos, m.pos) > reach || p.pos.y < m.pos.y - 1.5 || p.pos.y > m.pos.y + m.def.half[1] * 2 + 1) continue;
       // Over its footprint (seen from above), with PICKUP_RADIUS to spare round the hull.
       const s = Math.sin(m.yaw);
@@ -4552,7 +4577,7 @@ export class Match {
       if (Math.abs(dx * c - dz * s) > m.def.half[0] + PICKUP_RADIUS || Math.abs(dx * s + dz * c) > m.def.half[2] + PICKUP_RADIUS) continue;
       m.guns.forEach((g, i) => {
         const ammo = m.def.seats[i]?.ammo;
-        if (g && ammo) {
+        if (g && ammo && ammoRefilledBy(ammo, p.item.id)) {
           g.shells = ammo.max;
           g.shellTicks = 0;
         }
@@ -4728,7 +4753,16 @@ export class Match {
     let rate = (target === 0 ? v.accel * (v.hover ? 0.35 : 0.8) : braking ? v.accel * 1.8 : v.accel) * dt;
     if (!grounded) rate = 0;
     if (brake && grounded) rate = Math.max(rate, v.accel * 1.2 * dt);
-    m.speed += Math.max(-rate, Math.min(rate, (brake ? 0 : target) - m.speed));
+    const piloted = m.def.seats.some((s, i) => s.role === 'driver' && m.seats[i] !== null);
+    // Nobody at the wheel (and no track driver): it brakes to a stop (`idleBrake`), its slide with it. Before, an empty
+    // hovercraft glided on at accel × 0.35 (a Hauler bailed out of at 12.7 m/s went ~35 m, into a door it then blocked).
+    const idle = !piloted && !m.ambient && grounded ? (v.idleBrake ?? DEFAULT_IDLE_BRAKE) * dt : 0;
+    if (idle) {
+      rate = Math.max(rate, idle);
+      const slide = Math.abs(m.slide);
+      m.slide = slide > idle ? m.slide - Math.sign(m.slide) * idle : 0;
+    }
+    m.speed += Math.max(-rate, Math.min(rate, (brake || idle ? 0 : target) - m.speed));
     // Steering: needs some speed, tightest around half speed, a little lazier flat out; barely any in the air.
     const frac = Math.min(1, Math.abs(m.speed) / v.maxSpeed);
     const steer = Math.min(1, Math.abs(m.speed) / 5) * (1 - 0.35 * frac * frac) * (grounded ? 1 : 0.2) * (brake ? 1.35 : 1);
@@ -4745,7 +4779,6 @@ export class Match {
     const grip = grounded ? Math.min(0.6, (v.grip ?? (v.hover ? 0.06 : 0.25)) * road.grip * loose * wheels) * (brake ? 0.25 : 1) * (m.afloat ? FLOAT.grip : 1) : 0;
     m.slide *= (1 - grip) ** ticks;
     if (Math.abs(m.slide) < 0.02) m.slide = 0;
-    const piloted = m.def.seats.some((s, i) => s.role === 'driver' && m.seats[i] !== null);
     if (v.fly) {
       // Flyers hold their height: climb or dive at the pilot's say, and sink back down with nobody at the controls.
       // Driven into something it can't pass (a wreck's hull, a wall, a prop too tall to ride over), a flyer climbs on
@@ -5196,7 +5229,7 @@ export class Match {
       if (!m.alive) continue;
       const centre = { x: m.pos.x, y: m.pos.y + m.def.half[1], z: m.pos.z };
       const d = Math.max(0, distance(at, centre) - Math.min(m.def.half[0], m.def.half[2]));
-      if (d <= radius) this.damageMount(m, (damage + (edge - damage) * (d / radius)) * boost, owner, false, 'blast');
+      if (d <= radius) this.damageMount(m, (damage + (edge - damage) * (d / radius)) * boost, owner, false, 'blast', weapon);
     }
     for (const cv of [...this.covers]) {
       const d = Math.max(0, distance(at, { x: cv.pos.x, y: cv.pos.y + cv.half.y, z: cv.pos.z }) - cv.half.x);

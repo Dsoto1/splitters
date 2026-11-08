@@ -8,6 +8,11 @@ made only on a commit that passed CI on a check branch.
 
 ## Unreleased
 
+**Empty vehicles stop; bots park out of the way** (follow-up to the hovercraft fix): a vehicle nobody drives now brakes
+to a stop within a few metres (`vehicle.idleBrake` in its data) instead of gliding on; bots slow under 3 m/s before
+getting out (unless it is burning or about to blow), and don't jump out over water; bot drivers keep off routes their vehicle doesn't fit
+(`vehicle.routeFit`, the tanks' route check for every ground vehicle and hovercraft), so they no longer drive a Hauler
+into Iron Tide's 3 m doors, or a tank up its centre stairs under a beam, and leave them plugging the way. Driven vehicles handle exactly as before.
 **Hovercraft no longer get stuck under structures** (owner, 2026-11-07: a Hauler stuck under Iron Tide's platforms):
 a vehicle squeezed into a gap narrower than itself (Iron Tide's door at the top of the stairs) used to rise up it into
 the lintel and the roof and stay there; it now stops at floor height and backs out. Hovercraft (and other ground
@@ -19,6 +24,13 @@ shells kill it); the cannon carries 10 shells, shown in the HUD, one back every 
 the wheel you fire the cannon yourself; it turns on the spot. Bots drive tanks, fight from them at a stand-off, keep
 shells for targets worth one, refill at ammo pickups and get out under a quarter of its health. All in the tank's
 vehicle data (Workbench).
+
+**Tanks can be beaten** (owner, 2026-11-08): rockets do twice their damage to vehicles (never to players), so 3 or 4
+Rocket Launcher hits destroy a tank instead of about 6 (the Guided Rocket, Swarm Launcher, Blast Rockets and Mounted
+Rockets too; light vehicles go down quicker as well). Bots with nothing that hurts a tank go further for a launcher
+when one is about, draw a launcher they carry and aim it at the hull. The cannon now refills only from the general
+Ammo Box (Light, Rifle, Shells and Sniper rounds don't), and tank drivers out of shells drive to one. Rockets'
+`vehicleDamage` and the seat's `ammo.pickups` are data.
 
 **Iron Coast, part 2: the coast looks like a coast** (owner, 2026-11-07/08; all in MapMaker)
 - **Terrain**: the jagged mountains round the map are gone (the sea's shoreline to the south, woods round the other
@@ -91,6 +103,12 @@ wall, where the walkable ground nearest it was the room behind the wall (Capitol
 toward ground it can walk to instead of pushing into the wall; bots following their group's corridor are counted on
 it, so the team spreads its groups by them. Measured on 48 CTF matches: as before.
 (Large bots ducking under low roofs is held back for a decision: fewer stuck bots, but fewer captures.)
+
+**Bot AI Phase C follow-up, part 2** (docs/BOT_AI_PLAN.md, "Part 2"; on `wip/bots-lowroof`, held back for the owner):
+large bots go round roofs too low for them to stand under (a dugout's stair top, a low doorway) instead of walking into
+them and sticking there, and crouch through one only where nothing else gets them where they're going. Small and
+standard bots keep their routes. Measured on 48 CTF matches: about 15 % fewer stuck recoveries, no ducking, but fewer captures
+on Diamond Park (its large defenders are back in play).
 
 **Bot AI Phase C, items 1-4** (docs/BOT_AI_PLAN.md, "Phase C items 1-4, measured"; docs/BOTS.md):
 - Bots drop off ledges, jump gaps and jump up onto ledges as players do: links found at load and each checked by

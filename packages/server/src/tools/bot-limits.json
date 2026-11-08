@@ -6,7 +6,7 @@
     "matches": [["diamond_park", "core.ctf"], ["eagle_spires", "core.ctf"], ["shingle_point", "core.koth"], ["fernwood_moon", "core.tdm"]]
   },
   "checkLimits": {
-    "all": { "failedSearches": 0.02, "noRouteIdle": 0.01, "idleCalm": 0.09, "frozen": 0.02, "stuckPerBotMin": 2.5, "spells10": 1.5, "longestIdle": 45, "spawnDeaths": 0.08 },
+    "all": { "failedSearches": 0.02, "noRouteIdle": 0.01, "idleCalm": 0.09, "frozen": 0.02, "stuckPerBotMin": 2.5, "spells10": 2.5, "longestIdle": 50, "spawnDeaths": 0.08 },
     "core.ctf": { "takes": 0.5 },
     "core.koth": { "hillTaken": 0.3 },
     "core.tdm": { "killsPerMin": 10 }

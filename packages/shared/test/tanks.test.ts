@@ -10,6 +10,7 @@ import {
   BUTTON_FIRE,
   BUTTON_USE,
   CORE_BOT_PROFILES,
+  CORE_WEAPONS,
   DEFAULT_DEATHMATCH_RULES,
   MOUNT_DEFS,
   PLAYER,
@@ -26,7 +27,7 @@ import {
   type PlayerInput,
 } from '../src/index.ts';
 import { Match, initNavigation, type Combatant } from '../src/match.ts';
-import { aboutToBlow, routeFits, type MountView } from '../src/bots/vehicles.ts';
+import { aboutToBlow, antiVehicle, routeFits, type MountView } from '../src/bots/vehicles.ts';
 import { makeMap } from './helpers.ts';
 
 beforeAll(() => Promise.all([initPhysics(), initNavigation()]));
@@ -124,7 +125,7 @@ describe('the Tank data', () => {
   });
 
   it('the cannon has 10 shells, one back every 15 s, and the driver fires it while its seat is empty', () => {
-    expect(TANK.seats[CANNON]!.ammo).toEqual({ max: 10, refillSeconds: 15 });
+    expect(TANK.seats[CANNON]!.ammo).toMatchObject({ max: 10, refillSeconds: 15 });
     const driver = TANK.seats.findIndex((s) => s.role === 'driver');
     expect(firingSeat(TANK, driver, () => false)).toBe(CANNON);
     expect(firingSeat(TANK, driver, (i) => i === CANNON)).toBeNull();
@@ -236,21 +237,25 @@ describe('armour: rockets against bullets', () => {
     const mid = tank.health;
     internals(match).damageMountBody(tank.body.handle, 100, a, 'blast');
     expect(mid - tank.health).toBeCloseTo(125);
-    // A rocket's splash (120 at the centre) against its hull: 150 off.
-    const before = tank.health;
+    // A grenade's splash (120 at the centre) against its hull: 150 off; a rocket's (vehicleDamage 2) twice that.
+    let before = tank.health;
+    internals(match).splash({ x: 12, y: 1, z: 12 + TANK.half[2] + 0.2 }, 5, 120, 20, a, 'core.launcher', 1);
+    const grenade = before - tank.health;
+    expect(grenade).toBeGreaterThan(100);
+    expect(grenade).toBeLessThanOrEqual(150.01);
+    before = tank.health;
     internals(match).splash({ x: 12, y: 1, z: 12 + TANK.half[2] + 0.2 }, 5, 120, 20, a, 'core.rockets', 1);
-    expect(before - tank.health).toBeGreaterThan(100);
-    expect(before - tank.health).toBeLessThanOrEqual(150.01);
+    expect(before - tank.health).toBeCloseTo(grenade * 2);
     // Melee does nothing to it.
     const now = tank.health;
     internals(match).damageMountBody(tank.body.handle, 60, a, 'melee');
     expect(tank.health).toBe(now);
     // Its hull is armour plate to bullets (rounds stop on it, never through it).
     expect(internals(match).materialAt(tank.body.handle)).toBe('armor');
-    // How many of each kill a fresh one: about 6 rockets (40 + 120), 400 rifle-like rounds (30 each).
-    const rocket = (40 + 120) * armourScale(TANK, 'blast');
+    // How many of each kill a fresh one: 3 rockets on its side (2 x (40 + 120) x 1.25; was 6 before rockets' vehicleDamage), 400 rifle-like rounds (30 each).
+    const rocket = (40 + 120) * getWeapon('core.rockets').vehicleDamage! * armourScale(TANK, 'blast');
     const round = 30 * armourScale(TANK, 'bullet');
-    expect(Math.ceil(TANK.health / rocket)).toBe(6);
+    expect(Math.ceil(TANK.health / rocket)).toBe(3);
     expect(Math.ceil(TANK.health / round)).toBe(400);
   });
 
@@ -495,5 +500,162 @@ describe('bots in tanks', () => {
     expect(tank!.guns[CANNON]!.shells).toBeLessThan(10);
     expect(buggy!.health).toBeLessThan(start);
     expect(bot.mount).toBeDefined();
+  });
+});
+
+describe('rockets hurt vehicles more (owner, 2026-11-08)', () => {
+  it('the rocket weapons declare vehicleDamage 2 (and count as anti-vehicle for bots); nothing else changes', () => {
+    const declared = Object.values(CORE_WEAPONS)
+      .filter((w) => (w.vehicleDamage ?? 1) !== 1)
+      .map((w) => [w.id, w.vehicleDamage])
+      .sort();
+    expect(declared).toEqual([
+      ['core.blast_rockets', 2],
+      ['core.guided', 2],
+      ['core.mount_rockets', 2],
+      ['core.rockets', 2],
+      ['core.swarm', 2],
+    ]);
+    expect(antiVehicle(getWeapon('core.swarm'))).toBe(true);
+    expect(antiVehicle(getWeapon('core.rockets'))).toBe(true);
+    expect(antiVehicle(getWeapon('core.launcher'))).toBe(true);
+    expect(antiVehicle(getWeapon('core.rifle'))).toBe(false);
+  });
+
+  it('a rocket blast does twice a grenade’s to a tank, and exactly the same to a player', () => {
+    const match = new Match(yard([mount('tank', 12, 12)]), rules, 3);
+    const pad = new Pad(match);
+    const a = match.addHuman('a')!;
+    const b = match.addHuman('b')!;
+    pad.run(2);
+    place(a, 30, 28);
+    place(b, 30, 2);
+    const tank = internals(match).mounts[0]!;
+    const blast = (at: { x: number; y: number; z: number }, weapon: string) => internals(match).splash(at, 5, 60, 10, a, weapon, 1);
+    const side = { x: 12 + TANK.half[0] + 0.3, y: 1, z: 12 };
+    let before = tank.health;
+    blast(side, 'core.launcher');
+    const grenade = before - tank.health;
+    before = tank.health;
+    blast(side, 'core.rockets');
+    expect(before - tank.health).toBeCloseTo(grenade * 2);
+    // The player beside the blast: the same from either.
+    const near = { x: 30, y: 1, z: 4 };
+    b.health = 100;
+    b.armor = 0;
+    blast(near, 'core.launcher');
+    const onFoot = 100 - b.health;
+    expect(onFoot).toBeGreaterThan(0);
+    b.health = 100;
+    b.armor = 0;
+    blast(near, 'core.rockets');
+    expect(100 - b.health).toBeCloseTo(onFoot);
+  });
+
+  it('fired into its side, 3 to 4 rockets destroy a tank (about 6 before)', () => {
+    const match = new Match(yard([mount('tank', 16, 12)], [], 6, 4), rules, 3);
+    const pad = new Pad(match);
+    const a = match.addHuman('a')!;
+    pad.run(2);
+    const tank = internals(match).mounts[0]!;
+    place(a, 16 - 16, 12);
+    give(a, 'core.rockets');
+    const eye = () => ({ x: a.move.pos.x, y: a.move.pos.y + PLAYER.eyeHeight, z: a.move.pos.z });
+    let rockets = 0;
+    for (let k = 0; k < TICK_RATE * 30 && tank.alive; k++) {
+      const { yaw, pitch } = lookAngles(eye(), { x: tank.pos.x, y: tank.pos.y + TANK.half[1], z: tank.pos.z });
+      const before = internals(match).projectiles.length;
+      pad.run(1, () => pad.input(a, { yaw, pitch, buttons: k % 2 ? 0 : BUTTON_FIRE }));
+      if (internals(match).projectiles.length > before) rockets++;
+      const w = a.weapons.get(a.current)!;
+      if (w.mag === 0) w.mag = w.def.magazine;
+    }
+    expect(tank.alive).toBe(false);
+    expect(rockets).toBeGreaterThanOrEqual(3);
+    expect(rockets).toBeLessThanOrEqual(4);
+  });
+});
+
+describe('the cannon refills only from the Ammo Box (owner, 2026-11-08)', () => {
+  it('the data names the pickups: the general Ammo Box alone', () => {
+    expect(TANK.seats[CANNON]!.ammo!.pickups).toEqual(['core.ammo']);
+  });
+
+  it.each(['core.ammo_light', 'core.ammo_rifle', 'core.ammo_shells', 'core.ammo_sniper', 'core.ammo_explosive'])('%s does not refill it, and is left lying', (item) => {
+    const pickup = { id: 'ammo_1', kind: 'pickup', position: [12, 0, 13], item, respawnSeconds: null } as MapEntity;
+    const match = new Match(yard([mount('tank', 12, 12)], [pickup]), rules, 3);
+    const pad = new Pad(match);
+    const driver = match.addHuman('driver')!;
+    pad.run(2);
+    const gun = internals(match).mounts[0]!.guns[CANNON]!;
+    gun.shells = 2;
+    place(driver, 14, 12);
+    expect(internals(match).enterMount(driver)).toBe(true);
+    const events = pad.run(30);
+    expect(gun.shells).toBe(2);
+    expect(events.some((e) => e.e === 'pickup')).toBe(false);
+  });
+});
+
+describe('bots against a tank: launchers (owner, 2026-11-08)', () => {
+  const quiet = { ...CORE_BOT_PROFILES[3]!, exploration: 0, itemGreed: 0, tags: [] };
+  const rocketsPickup = (x: number, z: number): MapEntity => ({ id: 'rl_1', kind: 'pickup', position: [x, 0, z], item: 'core.weapon_rockets', respawnSeconds: null }) as MapEntity;
+  const ROCKETS = weaponCode(getWeapon('core.rockets'));
+  /**
+   * A bot with only a rifle (and its frag grenades) at (28, 44), its roam ahead (the spawns at the top corners), a Rocket
+   * Launcher lying 42 m behind it and (`tank`) an enemy in a tank 37 m off; else the enemy on foot, far off.
+   */
+  const setup = (tank: boolean) => {
+    const match = new Match(yard(tank ? [mount('tank', 56, 20)] : [], [rocketsPickup(28, 2)], 8, 8, [[4, 0, 56], [52, 0, 56]]), rules, 11);
+    const bot = match.addBot('bot', quiet, BOT_DIFFICULTIES.normal)!;
+    const enemy = match.addHuman('enemy')!;
+    match.step();
+    place(bot, 28, 44, 0);
+    bot.weapons.clear();
+    give(bot, 'core.rifle');
+    if (tank) {
+      place(enemy, 58, 20);
+      expect(internals(match).enterMount(enemy)).toBe(true);
+    } else place(enemy, 58, 58);
+    let took = -1;
+    for (let t = 0; t < TICK_RATE * 20 && took < 0; t++) {
+      for (const e of match.step()) if (e.e === 'pickup' && e.s === bot.slot && e.item === 'core.weapon_rockets') took = t;
+    }
+    return { took, bot };
+  };
+
+  it('a bot with nothing that hurts a tank (frag grenades don’t) fetches a launcher from 42 m off when an enemy tank is about', () => {
+    const { took, bot } = setup(true);
+    expect(took).toBeGreaterThanOrEqual(0);
+    expect(bot.weapons.has(ROCKETS)).toBe(true);
+  });
+
+  it('without a tank about, it leaves the same launcher lying behind it', () => {
+    expect(setup(false).took).toBe(-1);
+  });
+
+  it('a bot carrying a launcher draws it for a tank and puts its rockets into the hull', () => {
+    const match = new Match(yard([mount('tank', 12, 34)], [], 5, 7, [[0, 0, 0], [30, 0, 48]]), rules, 7);
+    const bot = match.addBot('bot', quiet, BOT_DIFFICULTIES.hard)!;
+    const enemy = match.addHuman('enemy')!;
+    match.step();
+    const tank = internals(match).mounts[0]!;
+    place(bot, 12, 6, 0);
+    bot.weapons.clear();
+    give(bot, 'core.rockets');
+    give(bot, 'core.rifle');
+    place(enemy, 14, 34);
+    expect(internals(match).enterMount(enemy)).toBe(true);
+    const start = tank.health;
+    let drew = false;
+    for (let t = 0; t < TICK_RATE * 12 && tank.alive; t++) {
+      match.step();
+      if (bot.current === ROCKETS) drew = true;
+      const w = bot.weapons.get(ROCKETS)!;
+      w.reserve = w.def.reserveMax;
+    }
+    expect(drew).toBe(true);
+    // Rockets on the hull (each 400 to it), not over the deck at the crew.
+    expect(start - tank.health).toBeGreaterThanOrEqual(400);
   });
 });

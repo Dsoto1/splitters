@@ -201,6 +201,7 @@
      "reverseSpeed": 7,
      "accel": 16,
      "turnRate": 2.6,
+     "idleBrake": 16,
      "grip": 0.32,
      "mass": 0.4
     },
@@ -260,6 +261,7 @@
      "reverseSpeed": 8,
      "accel": 14,
      "turnRate": 2.1,
+     "idleBrake": 16,
      "hover": true,
      "grip": 0.07,
      "mass": 0.6
@@ -380,6 +382,7 @@
      "reverseSpeed": 7,
      "accel": 10,
      "turnRate": 1.8,
+     "idleBrake": 12,
      "grip": 0.22,
      "mass": 1.4,
      "drift": 0.55,
@@ -502,6 +505,7 @@
      "reverseSpeed": 5,
      "accel": 6,
      "turnRate": 1.1,
+     "idleBrake": 12,
      "hover": true,
      "grip": 0.05,
      "mass": 3
@@ -583,6 +587,7 @@
      "reverseSpeed": 6,
      "accel": 12,
      "turnRate": 1.9,
+     "idleBrake": 10,
      "hover": true,
      "grip": 0.08,
      "mass": 0.7,
@@ -682,6 +687,7 @@
      "reverseSpeed": 5,
      "accel": 5,
      "turnRate": 0.9,
+     "idleBrake": 6,
      "hover": true,
      "grip": 0.05,
      "mass": 3.5,
@@ -766,7 +772,10 @@
       "arc": 0.6,
       "ammo": {
        "max": 10,
-       "refillSeconds": 15
+       "refillSeconds": 15,
+       "pickups": [
+        "core.ammo"
+       ]
       },
       "driverFires": true
      },
@@ -800,9 +809,11 @@
      "reverseSpeed": 5,
      "accel": 5,
      "turnRate": 1,
+     "idleBrake": 10,
      "grip": 0.45,
      "mass": 6,
-     "pivot": 0.8
+     "pivot": 0.8,
+     "routeFit": 0.8
     },
     "cockpitEye": [
      -0.6,
@@ -916,6 +927,7 @@
      "reverseSpeed": 8,
      "accel": 12,
      "turnRate": 2,
+     "idleBrake": 14,
      "grip": 0.26,
      "mass": 1.1,
      "drift": 0.4,
@@ -1057,6 +1069,7 @@
      "reverseSpeed": 6,
      "accel": 7,
      "turnRate": 1.25,
+     "idleBrake": 10,
      "grip": 0.38,
      "mass": 3.6
     },
@@ -1125,6 +1138,7 @@
      "reverseSpeed": 8,
      "accel": 18,
      "turnRate": 2.4,
+     "idleBrake": 22,
      "hover": true,
      "grip": 0.1,
      "mass": 0.35
@@ -1200,6 +1214,7 @@
      "reverseSpeed": 6,
      "accel": 6,
      "turnRate": 1.1,
+     "idleBrake": 6,
      "hover": true,
      "grip": 0.06,
      "mass": 3,
@@ -1295,6 +1310,7 @@
      "reverseSpeed": 6,
      "accel": 8,
      "turnRate": 1.5,
+     "idleBrake": 10,
      "grip": 0.24,
      "mass": 1.9
     },
@@ -1378,6 +1394,7 @@
      "reverseSpeed": 5,
      "accel": 13,
      "turnRate": 2,
+     "idleBrake": 16,
      "hover": true,
      "grip": 0.12,
      "mass": 0.45

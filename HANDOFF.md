@@ -74,6 +74,19 @@ The workflow is unchanged (CLAUDE.md):
      without keep-right and the strafing rule 0.21, without both 0.17. Neither explains the drop; at 48 matches
      captures move about ±10 between builds, and the drop is under two standard errors. The strafing rule does cut
      stuck recoveries (1.43 → 1.32). Not ablated: ground that goes, corridor routes.
+   - **Part 2, large bots route round low roofs (owner's option a): done, held back for the owner** (`wip/bots-lowroof`
+     @ fc4d701 and its docs commits; green on `check/bots-lowroof`, run 42428308885). BOT_AI_PLAN.md, "Part 2", has the tables.
+     - **How:** the navmesh marks ground with less headroom than a large body (2.12 m) as `LOW_AREA` (`nav/solo.ts`,
+       Recast splits polygons there); tall bodies' searches price it at 1,000 a metre (`findPath` `tall`), small and
+       standard ones don't change. A route that still goes under (no way round, or it starts or ends there) turns on
+       the duck (`lowRoute`, `mustDuck`). `botLowRoof.test.ts`.
+     - **Measured against main b8854c6:** stuck 1.31 → 1.12 a bot-minute (large bodies 1.54 → 1.01; Diamond Park 2.17
+       → 1.04 over seeds 1-12), ducking 0.0 s a match; TDM stuck 1.04 → 0.76, kills the same; the Range 19 → 19.
+       **But captures 50 → 43** (48 matches), all of it Diamond Park and Qasr Medina: Diamond Park 13 → 5 over seeds
+       1-12, flag takes up, returns 36 → 51 (large bodies' 6 → 17). Un-stuck large defenders, not crouching carriers.
+       A moderate price (4 a metre) gave Diamond Park 9 captures, ducking 6 s a match.
+     - **The owner's call:** land it, land it with the moderate price, or neither. Not landed: the goal was the stuck
+       reduction without the capture loss.
    - **Next:** route spread (CTF's busiest way about 60 %): route loose side-lane bots through a corridor's via
      instead of `laneWaypoint`, measured on the 48 matches.
    - **The measuring commands** (run each on the branch and on a detached worktree of main; `--compare=a.json,b.json`
@@ -147,16 +160,56 @@ The workflow is unchanged (CLAUDE.md):
     noise is as large). **Foot-bot stuck recoveries rose on Iron Tide: 3.09 → 5.41 a bot-minute** (Dune Harbor 2.27
     → 2.98), most of it one seed: a Hauler now gets in under Iron Tide's decks, a bot bailed out of it at 12.7 m/s,
     the empty hovercraft glided ~35 m into the 3 m door at (0, 0, 28) and plugged it for 100 s. Before, the dome kept
-    Haulers out from under the decks. **Next (bots / vehicles, owner's call):** bot drivers follow the foot navmesh
-    (`thinkMounted`: `nav.findPath`) through doors narrower than the vehicle; bots bail out at full speed; an
-    empty hovercraft coasts on (accel × 0.35). Options: brake an empty hovercraft, or keep bots from driving routes
-    narrower than the hull, or have foot bots route round a parked vehicle.
+    Haulers out from under the decks. ~~**Next (bots / vehicles, owner's call):** bot drivers follow the foot navmesh
+    through doors narrower than the vehicle; bots bail out at full speed; an empty hovercraft coasts on~~: done, see
+    "Empty vehicles stop, bots park out of the way" just below.
   - **Tanks** (coordinator's question, after the tanks job): not the same cause. `pnpm bot-report iron_tide
     --seeds=1,2,3,4 --seconds=300` (CTF), main 110ee71 vs this: tanks given up stuck 9 in 18 drives → 9 in 16, 9 → 7
     of them at (±4, 0, -2). That spot has 7.4 m over it: it is the row of pillars at z -4 (x ±4..6, solid to 4.1 m),
     the long hull against them, not a ceiling. Left for the tanks work. (bot-report's `vehicles inside the level`
     needs this branch's `boxClear(…, skip, levelOnly)`: run on main's sim it counts each vehicle's own box.)
   - Landed: main = da68ed3 (green on `check/hover-stuck`, run 42429583559).
+
+- **Empty vehicles stop, bots park out of the way** (`wip/hover-regress`, agent, 2026-11-08; the hovercraft item's
+  left-over; green on `check/hover-regress`). All in the shared sim and bot code:
+  - **An empty vehicle brakes** (`vehicle.idleBrake`, m/s², in every vehicle's data; default 10; not ambient track
+    cars): nobody at the wheel, it brakes to a stop, its slide too. A Hauler got out of at 12.7 m/s stops in ~7 m
+    (was ~35). Driven vehicles unchanged (hoverCeiling's open-ground drives match to 1 mm).
+  - **Bots get out slowly**: unless it burns or is about to blow, a driver brakes under `BAIL_SPEED` (3 m/s) before
+    pressing use, and a rider waits till it is that slow. On or over water (`MountView.overWater`: afloat, in a
+    liquid, or a flyer with water under it) they stay aboard up to 8 s more (`EXIT_GROUND_WAIT`) instead of jumping
+    in (bots were left swimming in Iron Tide's moat by the wall at (-20, 0, 72) after a dropship sank there).
+  - **Bot drivers keep to routes their hull fits** (`vehicleRouteFits`, the tanks' `routeFits` for every ground
+    vehicle and hovercraft; flyers none): clear `vehicle.routeFit` × the half width either side (default 0.95, the
+    probe's; the Tank keeps 0.8), and now also high enough for the hull (`half[1]` × 2) over the highest ground
+    within half its length, as a hull rides level. Checked when a bot picks a vehicle (as tanks were) and on each new
+    route at the wheel (80 m ahead): a new route that doesn't fit keeps the route it has; with none, it gets out.
+    Iron Tide's worst foot-bot stuck spot, (-4, 1, 16), turned out to be a tank or jeep driven up the centre stairs,
+    stopped on the first step by the beam at 3 m over their foot (the hover fix's creep guard, correctly) and left
+    plugging them; before the hover fix the probe ratcheted up through the beam.
+  - Not done (optional): foot bots routing round a parked vehicle (the navmesh has no dynamic obstacles).
+  - **Tests** `shared/test/vehicleBail.test.ts` (16): eight vehicles stop within v²/2·idleBrake (a Hauler from
+    12.7 m/s in under 8 m), a bot arriving at speed gets out under 3 m/s (on fire: at once, at speed), stays aboard
+    on Iron Tide's sea, routeFit data, Iron Tide's 3 m door (no Hauler route; a Hover Bike's fits), the centre stairs
+    (no tank or jeep route), a bot in a Hauler sent through the door gets out short of it. 13 of the first 14 fail on
+    main. vehicles-resolved fixture rewritten (only the two new fields).
+  - **bot-limits.json**: the check's 10 s+ idle spells 1.5 → 2.5 a match, longest idle 45 → 50 s. The check's one
+    fernwood_moon match swings on its north rope lift (14 m, a 17 s round trip: bots wait 10-13 s at the top). On main
+    seeds 2-4 of that match give 5, 7 and 3 such spells and a 46 s longest (seed 1: 1 and 32 s); this branch
+    reshuffled seed 1 to 6 and 47 s. Revert if the owner prefers a different fix (the lift wait itself).
+  - **Numbers** (`pnpm bot-report iron_tide dune_harbor --mode=core.tdm --seconds=300`, seeds 1-12: the HANDOFF's
+    four seeds turned out too noisy, a seed swings 200-600 stuck recoveries and runs aren't fully repeatable; foot-bot
+    stuck recoveries a bot-minute, vehicle stalls, wedges, vehicle-seconds inside the level):
+    - pre-hover main (110ee71 + the new bot-report): Iron Tide 2.69, 416 stalls, 8 wedged, 211 s; Dune Harbor 2.02,
+      111, 0, 13 s.
+    - main (d3ed2a0): Iron Tide 3.43, 337, 19, 6 s; Dune Harbor 2.15, 196, 7, 116 s.
+    - this branch: Iron Tide **2.77**, 155, 13, 5 s; Dune Harbor **2.27**, 56, 0, 8 s. Bots spend less time in
+      vehicles (mounted 8.0 → 4.5 % on Iron Tide, 5.7 → 4.6 % on Dune Harbor): they take fewer that don't fit.
+    Iron Tide is back near the old number; Dune Harbor is main's within the noise, not yet pre-hover's 2.02.
+  - **Left over**: (-4, 1, 16) still collects stuck recoveries (292 in 12 matches, from 454 on main): a vehicle still
+    reaches the stairs sometimes (the route check samples every 2 m, and which samples land on the beam varies), and
+    (-12, 1, -48) on Iron Tide (204). Dune Harbor's top spots now (56, 0, 4..8), (36, 0, -4), (-12, 0, -16). Foot bots
+    routing round parked vehicles would cover what remains.
 
 ## Start here (session of 2026-11-04, handed off to the next account)
 
@@ -180,6 +233,61 @@ gets overloaded above that: local e2e times out and flakes). Prune landed worktr
 - f5cc70b Capitol Mall domes, roofs; Capitol Dome / Copper Dome / Pediment / Pyramidion props; room Roof surface.
 - Earlier the same day: content scalability steps 2–6, perf toolset, flaky e2e fixes, Runway Nine airliner, map
   reworks batches 2–3, character fixes rounds 2–3 (see the entries below and CHANGELOG).
+
+### Tanks 2: balance and the Ammo Box (`wip/tanks-2`, agent, 2026-11-08; owner's decisions on the Tanks items)
+
+**Owner decisions (2026-11-08):** (1) keep "the driver fires the cannon while its seat is empty" (no change; noted in
+tank.json, CONTENT_PIPELINE and GUNPLAY_SPEC §48); (2) tanks were too strong: bots fetch launchers for a tank, and
+rockets hurt vehicles more; (3) the cannon refills only from the general Ammo Box.
+
+**What changed:**
+- **Rockets x2 against vehicles** (weapon `vehicleDamage`, data in content/weapons; tools/content/weapons.mjs checks
+  0-5): rockets, guided, swarm, blast_rockets and mount_rockets are 2. It multiplies what a weapon does to a vehicle
+  (kind `vehicle`) only, before its armour share (`Match.damageMount`, given the weapon id by splash, a projectile's
+  direct hit and bullets); players, turrets and sentries take what they did. Tank armour unchanged (blasts 1.25): a
+  Rocket Launcher side hit is 2 x (40 + 120) x 1.25 = 400 of 1200, so 3 kill it (4 at an angle; was 6), Guided 412
+  (3), Blast Rockets 288 (5), a full Swarm volley 500. Unarmoured vehicles go quicker too: a Rocket Launcher hit is
+  320 (buggy 450 in 2, was 3; kart, speeder, hover bike, snow sled in 1).
+- **Ammo Box only** (seat `ammo.pickups`, vehicles.mjs checks the ids are ammo pickups; the Tank `["core.ammo"]`):
+  `Match.resupply` takes only a named pickup and refills only the guns it names; other ammo pickups are left lying.
+  Bots out of shells look only for those (`SeatView.refills` -> `ammoPickupFor`).
+- **Bots vs armour** (bots/brain.ts `watchArmour`): an armoured vehicle (`MountView.armoured`: armour.bullets < 0.5,
+  or sealed) with an enemy aboard within 60 m is remembered 12 s. Then a bot whose weapons don't hurt vehicles (frag
+  grenades no longer count while a tank is about) goes up to 60 m for a launcher (30 m for other vehicles), values
+  launcher pickups and ammo for an empty launcher 3x (`ARMOUR_PICKUP_BOOST`), draws a carried launcher even with no
+  target (`chooseWeapon` vehicle flag), and aims explosives at the middle of the hull (`aimPos`: before, a rocket at the
+  sealed crew went over the 2 m deck through the non-solid turret). `antiVehicle` = vehicleDamage > 1 or splash >= 50.
+- **bot-report:** the tanks line adds "launchers picked up" (every pickup of an anti-vehicle weapon on a map with a
+  tank, not only while one is near). Workbench: weapon "Damage to vehicles", seat "ammo pickups".
+
+**Tests** (packages/shared/test/tanks.test.ts, 29): rocket vs grenade blast on a tank (x2) and on a player (same);
+3-4 live rockets kill a tank; the data names only core.ammo, and Light/Rifle/Shells/Sniper/Explosives leave it at 2
+shells and lie there; a rifle bot fetches a Rocket Launcher 42 m away with an enemy tank about and leaves it without;
+a bot carrying rockets draws them and puts at least 400 into the hull.
+
+**Bot results** (`pnpm bot-report iron_tide iron_maw coldwater_gulch frost_basin --seeds=1,2,3 --seconds=180`, CTF, 12
+matches; before = main 110ee71 with the launcher counter):
+| | before | after |
+|---|---|---|
+| tanks destroyed | 1 | 4 |
+| bailed about to blow | 1 | 3 |
+| drives | 33 | 31 |
+| driven (bot-s) | 685 | 536 |
+| kills from aboard | 56 (cannon 45, MG 8, roadkill 3) | 33 (cannon 24, MG 7, roadkill 1, barrel 1) |
+| shells fired | 95 | 73 |
+| launchers picked up | 90 | 134 |
+| ammo trips / refills | 1 / 2 | 0 / 0 |
+| given up stuck | 8 | 11 |
+Destroyable now, still worth driving (about 3 kills a tank-match). Crew died with it: 0 both times (they bail at a
+quarter). Stuck give-ups are the known spots (Iron Tide centre), not changed here. Tick times in the after run are
+inflated by other agents' suites on the box.
+
+**For the owner:**
+1. Light vehicles: rockets x2 applies to every vehicle (the brief said vehicles and tanks): a Rocket Launcher now
+   one-shots a kart, speeder, hover bike or snow sled and two-shots a buggy. Keep, or limit `vehicleDamage` to
+   armoured vehicles?
+2. Ammo trips fell to 0: with only Ammo Boxes counting, few are within 120 m of where tanks fight on these maps; the
+   cannon still refills one every 15 s. Place Ammo Boxes near tank routes in MapMaker, or fine as is?
 
 ### Tanks (`wip/tanks`, agent, 2026-11-07; Queued item 1; CI on `check/tanks`)
 
