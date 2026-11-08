@@ -761,6 +761,9 @@ html.touch .char-spin .spin-label kbd { display: none; }
 #headshot.on { animation: headshot-pop 0.9s ease-out; }
 @keyframes headshot-pop { 0% { opacity: 0; transform: translateX(-50%) scale(1.6); } 12% { opacity: 1; transform: translateX(-50%) scale(1); } 70% { opacity: 1; } 100% { opacity: 0; transform: translateX(-50%) translateY(-10px); } }
 #feed .hs { color: #ff4b4b; margin-left: 4px; }
+/* A team kill: the warning colour on its edge and a TK tag (no reward to show). */
+#feed .tk { border-right-color: var(--warning); }
+#feed .tk-tag { color: var(--deep-space); background: var(--warning); padding: 0 4px; margin-right: 2px; border-radius: 2px; font-weight: 700; letter-spacing: 0.04em; }
 #weapon-bar { position: absolute; left: 50%; bottom: 18px; transform: translateX(-50%); display: flex; gap: 6px; }
 #weapon-bar span { min-width: 30px; padding: 3px 10px; background: rgba(18, 24, 39, 0.8); color: #56647c; font: 600 12px var(--font-display); text-align: center; clip-path: polygon(5px 0, 100% 0, calc(100% - 5px) 100%, 0 100%); }
 #weapon-bar span.owned { color: var(--fg); }

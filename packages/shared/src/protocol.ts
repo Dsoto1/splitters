@@ -304,7 +304,7 @@ export type GameEvent =
   /** Disc Arena: `s`'s disc struck `t` and knocked them about (no damage). */
   | { e: 'knock'; s: number; t: number }
   | { e: 'pickup'; s: number; id: string; item: string }
-  | { e: 'kill'; killer: number | null; victim: number; weapon: string; /** The killing blow was a head hit. */ hs?: 1 }
+  | { e: 'kill'; killer: number | null; victim: number; weapon: string; /** The killing blow was a head hit (never on a team kill). */ hs?: 1; /** A team kill: the killer downed a teammate (friendly fire); the feed marks it and nothing rewards it. */ tk?: 1 }
   | { e: 'spawn'; s: number; /** Random characters: the look this life plays (sim/randomLooks.ts). */ l?: string;
       /** Roulette: this life's roll (1 jackpot, 2 tiny), and the cards the player is dealt next (the client preloads them). */ j?: 1 | 2; nx?: string[] }
   /**

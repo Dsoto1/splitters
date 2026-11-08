@@ -8,6 +8,34 @@ A briefing for the next Claude session or agent picking up this repo. Read
 **Owner rule for the queue (2026-11-08):** new ideas go to the END of the queue. Only bugs or problematic gameplay
 jump ahead, or something the owner explicitly bumps.
 
+**Release 0.9.0 (2026-11-08, owner-approved "wait for the passenger fix, then release together"):** main 4d8f205
+(green on `check/release-090`, run 42502393727; three e2e shards failed first in flows the release doesn't touch,
+arsenal, weaponsets and hostgame, as on other branches that hour, and passed on a re-run of the failed jobs). CI
+released v0.9.0 from that build (tag and release with its assets). Fireteams part 1 and MapMaker's measure tool and
+turning by mouse went in with it.
+
+**Team kills (`wip/tk`, 2026-11-08; the owner's bug report).** "Teamkills should not count towards a kill streak
+(should end one) or show anything rewarding. It should actually show in the upper right that it was a TK."
+- **Where:** every kill goes through `Match.kill` (bullets, splash, grenades, roadkill, turrets, burns, barrels, a
+  sealed crew's wreck), so the rule is there. A team kill (`killer` not hostile to the victim, not themselves) emits
+  `{ e: 'kill', ..., tk: 1 }` (never `hs`), ends the killer's streak (`streak = 0`, `MatchAwards.endStreak`,
+  `RouletteDirector.endStreak`), and credits nobody: `credited = null` for awards/callouts, the mode's `onKill`, the
+  leader bounty, NPC encounters and the score-limit check. Before, the killer's streak was kept (not ended).
+- **Client:** `session.ts` (no kill confirm, no headshot mark, `streakMoment` drops the killer's life kills),
+  `sessionAudio.ts` (no confirm sounds or multi-kill), `hud.kill(..., teamKill)`: `.tk` line with a `TK` tag
+  (`#feed .tk`, `--warning`).
+- **Roadkill** now reads `canHurt` (it read `hostile`): with friendly fire on a vehicle hurts teammates too (it never
+  did); off, unchanged.
+- **Tests:** `packages/shared/test/teamKill.test.ts` (each source fired for real by a person and a bot: rifle, rocket
+  blast, frag, run over, MG turret, flamethrower burn, a barrel shot; the same on an enemy still scores; FF off and
+  half; every team mode incl. Forts in its fight phase; awards; Roulette with teams; self-kills);
+  `packages/client/test/teamKill.test.ts` (sounds); e2e `teams` → `friendlyFireChecks` → `teamKillCheck` (`?test=1`:
+  a TK primed one kill short of the first burst shows the TK feed line and no burst, message or kill marker).
+- **Breakthrough Range hidden again** (`maps/test_breakthrough.json` `metadata.testOnly`, ticked in the real MapMaker:
+  Import, a click on Map properties' "Test map", Export, revision 6); its card picture removed (content:check: test
+  maps ship none). e2e `breakthrough` reaches it by `?testmap=test_breakthrough`; mapIndexPlugin and server testMaps
+  expect it hidden. bot-report still plays it by name (the HANDOFF commands); its suites skip test maps.
+  (`maps/test_breakthrough.json` is no other lane's claim; this branch's edit to it lands with it, so no claim stays open.)
 **Debris through the world fixed; low roofs at the moderate price (`wip/debris-lowroof`, 2026-11-08).**
 - **Debris:** a vehicle or turret's blast scattered chunks from under the terrain's surface (a one-sided mesh), and they
   fell out of the world. Chunks now start clear of the ground (`EffectsWorld.clearOfGround`), and any that still get
@@ -83,6 +111,10 @@ The workflow is unchanged (CLAUDE.md):
 - Claimed: map format v31 (groups and note pins, chained after v30; `wip/mapmaker-p3b`), MapMaker lane, 2026-11-08.
 - Claimed: map format v32 if needed (the finer terrain grid / Change grid and the coast border side; next free MapMaker slot), MapMaker lane, 2026-11-08.
 - Claimed: `content/setpieces/**` and the set-piece alias table (set pieces part 5), MapMaker lane, 2026-11-08.
+- Claimed: `maps/training_range.json` (the Battle Rifle on a rack, through MapMaker), and the new content ids `core.battle_rifle` (weapon code 49) and `core.weapon_battle_rifle` (pickup), gunplay pass 2 (`wip/gunplay-2`), 2026-11-08.
+- Claimed: `maps/<id>.json` for apex_ring, atomic_court, backwoods, blackout, canyon, capitol_mall, citadel, coldwater_gulch, crossroads, dead_reel, dockside_depot, dune_harbor, dustwater, eagle_spires, fernwood_moon, fort_meadow, gallows_yard, hollowmere_manor, iron_coast, jungle_steps, norman_shores, pharaohs_reach, primeval_park, qasr_medina, rail_stockyard, sandgate, sandsweep, serene_city, st_johns, sunken_kingdom, sunstone_crag (their Kenney trees, bushes, hedges and cacti → our species, MapMaker's Replace all driven in the real editor), Environment Phase 2 (`wip/env-p2`), 2026-11-08.
+- Claimed: the new content ids `env.broadleaf.maple`, `env.broadleaf.acacia`, `env.conifer.spruce`, `env.palm.coconut`, `env.palm.leaning`, `env.cactus.saguaro`, `env.shrub.laurel`, `env.hedge.privet`, `env.hedge.yew`; the leaves and bark atlases (`tools/content/env/**`, `content/environment/**`); the border forest and backdrop scenery's trees (`client/src/borderVisuals.ts`, `backdrop.ts`), Environment Phase 2 (`wip/env-p2`), 2026-11-08.
+- Asked of the MapMaker lane (data only, inside its editor claim): Environment Phase 2 adds its species to and retires the Kenney trees, bushes, hedges and cacti from the Nature tables of `client/src/editor/paletteCatalog.ts` (`RETIRED_PROPS`, `GROUND_COVER_SPECIES`, `REPLACEMENTS`), no other editor file; merged with origin/main before landing, 2026-11-08.
 - **Moved to the MapMaker lane (owner's rule: MapMaker work goes there; 2026-11-08):** the editor half of the Iron
   Coast job, since the lane holds the editor claim: (1) a finer terrain grid (raise the 161-vertices-a-side cap to 321,
   1.25 m cells on a 380 m map) and a Terrain → Change grid tool that resamples heights, paint and plants; (2) a "coast"
@@ -104,6 +136,25 @@ docs/MAPMAKER_OVERHAUL_PLAN.md). Branches `wip/mapmaker-*` / `check/mapmaker-*` 
   - bot hints in MapMaker (Phase 4 item 3, and Bot AI Phase D's MapMaker part; the format goes in docs/BOTS.md);
   - Environment Phase 3's MapMaker tools (PROCEDURAL_ENVIRONMENT §11), after the other session's Environment Phase 2
     lands. Please note it here when it does.
+- **The owner's answers (2026-11-08)** to the MapMaker questions so far:
+  - **Keep as built:**
+    - the measure tool on U;
+    - Randomise variants for plant species only;
+    - Randomise resets each session;
+    - the draw estimate stays as is for now;
+    - `?` opens the key list;
+    - the plan view's cut stays;
+    - the plan export shows the five kinds only;
+    - Iron Compound keeps the gantry id, which loads as the bridge.
+  - **To build:**
+    - the jump hint samples the ground along the line;
+    - spawns, pickups, props, vehicles and NPCs over nothing or outside the boundary are refused (a red ghost, no
+      place);
+    - the budget bar moves into the bottom status bar;
+    - Shingle Point's card stays the cliff-top view, backed up so the cliff-top buildings' crest shows;
+    - "fix em all": swap every old big piece that has a set-piece version (town and city gate, pylon, warehouse,
+      hangar, bunker, city crossroads) on every map that uses one, in MapMaker. Each map is claimed first; the other
+      session's maps get asked first.
 - **The split of `editorApp.ts`** (Phase 2) waits until Iron Coast's MapMaker changes (finer terrain grid, Terrain →
   Change grid, a "coast" border side) and the race-mode removal (the race layer reworded to track / NPC traffic) are on
   main. This line will say when it starts. Please say here when those land.
