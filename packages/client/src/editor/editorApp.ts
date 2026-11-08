@@ -21,6 +21,8 @@ import {
   type GhostNote,
   type GhostEntityKind,
   type PlacementCheck,
+  BudgetTracker,
+  budgetCulprits,
   BUILD_LEVELS,
   buildZone,
   levelName,
@@ -294,6 +296,7 @@ import {
 } from './storage.ts';
 import { tileIcon } from './tileIcon.ts';
 import { raycastBoxes, type BoxHit } from './raycast.ts';
+import { BudgetBar } from './budgetBar.ts';
 import { materialThumbnail } from '../materials/patterns.ts';
 import { itemColor } from '../game/pickupVisuals.ts';
 import { LogicPanel } from './logicPanel.ts';
@@ -671,6 +674,9 @@ export class EditorApp {
   private readonly paths: PathTool;
   /** Mover and plane routes, drawn on the map with the Paths tool's hands. */
   private readonly routes: RouteTool;
+  /** The live budget bar and its counters (MapMaker overhaul Phase 1 item 2). */
+  private readonly budgets: BudgetTracker;
+  private readonly budgetBar: BudgetBar;
   private level = 0;
   private showAll = false;
   /** The last placing tool, so the toolbar's Place button can pick it up again. */
@@ -759,6 +765,16 @@ export class EditorApp {
     new MutationObserver(() => fitTopBar(top)).observe($('ed-status'), { childList: true, characterData: true, subtree: true });
     void document.fonts?.ready.then(() => fitTopBar(top));
     this.history = new EditHistory(starterMap(STARTER_TERRAIN, 'grass'));
+    // The live budget bar: counters kept from each edit (budgetCounters.ts), drawn when the document changes.
+    this.budgets = new BudgetTracker(this.history.doc, this.setPieceLib);
+    this.history.onChange = (c) => (c.reset ? this.budgets.reset(c.reset) : this.budgets.apply(c.command, c.doc));
+    this.budgetBar = new BudgetBar($('editor'), (id, row) => {
+      const ids = budgetCulprits(this.doc, id);
+      if (!ids.length) return this.toast(`Nothing to select for ${row.label.toLowerCase()}${this.doc.setPieces?.length ? ' (set pieces count as their parts: select the set pieces themselves)' : ''}`, true);
+      this.setTool({ kind: 'select' });
+      this.setSelection({ tiles: [], entities: ids });
+      this.toast(`Selected ${ids.length} counted as ${row.label.toLowerCase()} (${row.what})`);
+    });
     this.logic = new LogicPanel({
       doc: () => this.doc,
       commit: (label, after) => this.run(label, { kind: 'setLogic', before: this.doc.logic, after }),
@@ -980,6 +996,7 @@ export class EditorApp {
       this.updateSelectionVisuals();
       this.syncToolbar();
       this.validate();
+      this.budgetBar.update(this.budgets.counts);
       this.renderInspector();
       this.updateTopBar();
       this.updateHover();
