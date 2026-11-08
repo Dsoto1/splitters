@@ -7,6 +7,7 @@ import { IMPROMPTU_MIN_PLAYERS, SPAWN_SHARE } from './spawns.ts';
 import { botSetInUse, validateBotSet, type BotSet } from './botSet.ts';
 import { validBotCast } from '../content/botThemes.ts';
 import { isWeaponSetId } from './weaponSets.ts';
+import { fireteamMode, fireteamSize } from './fireteams.ts';
 
 /**
  * Match setup (Play → match setup, saved setups): everything the player
@@ -42,6 +43,9 @@ export interface MatchSetup {
   /** Co-op: play a playlist (scenario chain) instead of just this map. */
   playlist?: string;
   leaders?: 'on' | 'vip';
+  /** Fireteams (sim/fireteams.ts): every person leads a squad of bots; `squadSize` its size, the leader included (absent: 5). */
+  fireteams?: boolean;
+  squadSize?: number;
   sizes?: boolean;
   /** Character stats (absent: on). */
   stats?: boolean;
@@ -885,6 +889,7 @@ export function rulesFromSetup(setup: MatchSetup, map: MapDocument, cap = BROWSE
   if (s.ballistics) rules.ballistics = s.ballistics;
   if (s.respawn !== undefined) rules.respawnDelayTicks = Math.round(Math.max(0, Math.min(30, s.respawn)) * TICK_RATE);
   if (s.leaders && isTeamMode(s.mode)) rules.leaders = s.leaders === 'vip' ? 'vip' : true;
+  if (s.fireteams && fireteamMode(s.mode)) rules.fireteams = fireteamSize(s.squadSize);
   if ((s.mode === 'core.ctf' || s.mode === 'core.forts') && s.flagReturn) rules.flagReturnSeconds = s.flagReturn;
   if (s.mode === 'core.koth' && s.hill) rules.hillSeconds = s.hill;
   if (s.mode === 'core.forts') {

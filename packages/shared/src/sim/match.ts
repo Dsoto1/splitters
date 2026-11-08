@@ -5,7 +5,8 @@ import { BOT_DIFFICULTIES, CORE_BOT_PROFILES, profileFor, type BotDifficulty, ty
 import { botSetInUse, mapBotSet, type BotEntry, type BotSet } from './botSet.ts';
 import { SightCache } from '../bots/sight.ts';
 import { ViewGrid } from '../bots/grid.ts';
-import { BotDirector, CLUSTER_MIN_PLAYERS, assignRoles, type DirectorMember } from '../bots/director.ts';
+import { BotDirector, CLUSTER_MIN_PLAYERS, assignRoles, leadAbility, type DirectorMember } from '../bots/director.ts';
+import { Fireteams, REFUSALS, checkOrder, fireteamMode, memberGoal, orderFromSay, ORDER_KINDS, type SquadNote, type OrderKind } from './fireteams.ts';
 import type { TeamBrain } from '../bots/teamBrain.ts';
 import { regionLayout } from '../bots/regions.ts';
 import { VantageBoard, vantageFor } from '../bots/vantage.ts';
@@ -81,7 +82,7 @@ import { Scenario, teamAllows } from './scenario.ts';
 import { liftLinks } from './movers.ts';
 import { MatchAwards } from './awards.ts';
 import { MATCH_PLAY } from '../content/matchPlay.generated.ts';
-import { IMPROMPTU_MIN_PLAYERS, SPAWN_DEATHS_KEPT, SpawnSides, spawnProtection, WAVE_MIN_PLAYERS, centroid, generateSpawns, pickSpawn, spawnShortfall, spawnsPerTick, type SpawnDeath, type SpawnSpot } from './spawns.ts';
+import { IMPROMPTU_MIN_PLAYERS, SPAWN_DEATHS_KEPT, SpawnSides, leaderSpotSafe, spawnProtection, WAVE_MIN_PLAYERS, centroid, generateSpawns, pickSpawn, spawnShortfall, spawnsPerTick, type SpawnDeath, type SpawnSpot } from './spawns.ts';
 import { applyPortals, portalCarry, portalSegment } from './portals.ts';
 import { Encounters } from './encounters.ts';
 import { ZombieSurvival } from './zombies.ts';
@@ -324,6 +325,10 @@ export interface Combatant {
   streak?: number;
   /** A teammate's order to a bot: follow them, or hold a spot, until `until`. */
   order?: { kind: 'follow' | 'hold'; leader: number; pos: Vec3; until: number };
+  /** Their last ping (Fireteams: Go there and Attack that read it): where, the enemy it marked, when. */
+  lastPing?: { pos: Vec3; target: number | null; tick: number };
+  /** The next tick a Fireteams order may be given. */
+  orderAt?: number;
   /**
    * A Player Bot from the host's bot set (sim/botSet.ts): which entry it plays (by index), its own skill and
    * style (absent: the match's), and its squad label (bots of one squad on one side stick together).
@@ -1602,6 +1607,7 @@ export class Match {
     c.bot.onSpawn(c.yaw);
     this.nav.places();
     this.refreshRoles();
+    this.squadsDirty = true;
     this.pendingEvents.push({ e: 'takeover', s: c.slot, from, to: name, bot: 1 });
     return c;
   }
@@ -1765,6 +1771,7 @@ export class Match {
     if (slot < 0 || this.slots[slot]) return null;
     const c = this.blankCombatant(slot, kind, name, team);
     this.slots[slot] = c;
+    this.squadsDirty = true;
     this.spawnOrQueue(c);
     return c;
   }
@@ -1787,6 +1794,7 @@ export class Match {
     this.leaveMount(c, false);
     this.physics.removeCollider(c.collider);
     this.slots[slot] = null;
+    this.squadsDirty = true;
     this.director?.forget(slot);
     this.rolesFor = -1;
     this.leadGoals.delete(slot);
@@ -1904,6 +1912,7 @@ export class Match {
     c.bot.onSpawn(c.yaw);
     this.nav.places();
     this.refreshRoles();
+    this.squadsDirty = true;
     return c;
   }
 
@@ -1924,6 +1933,7 @@ export class Match {
     this.nav.places();
     this.refreshRoles();
     this.resetIdle(slot);
+    this.squadsDirty = true;
     return c;
   }
 
@@ -1951,6 +1961,7 @@ export class Match {
   step(): GameEvent[] {
     this.tick++;
     if (this.rules.leaders && this.teams) this.updateLeaders();
+    this.stepFireteams();
     if (this.phase === 'intermission') {
       if (this.tick >= this.phaseEndTick) this.startRound();
     } else if (this.phase === 'waiting' || this.phase === 'countdown') {
@@ -2372,6 +2383,8 @@ export class Match {
       this.rules.botStyle ?? 'mixed',
       this.seed,
     );
+    // Fireteams: every bot plays in its squad (no lone campers or snipers wandering off from it).
+    if (this.fireteams) for (const k of roles.keys()) roles.set(k, 'squad');
     for (const [slot, role] of roles) this.director.setRole(slot, role);
     // Bots that spawned this tick, before their roles were known: a sniper takes the weapon set's scoped gun now.
     for (const c of bots) this.rearmForRole(c);
@@ -2398,7 +2411,8 @@ export class Match {
     const d = this.director;
     const teams = this.teams;
     if (!d || !teams) return;
-    const squads = actors.length >= CLUSTER_MIN_PLAYERS && !this.mode && this.rules.mode !== 'core.coop' && this.rules.mode !== 'core.zombies';
+    const ft = this.fireteams;
+    const squads = (actors.length >= CLUSTER_MIN_PLAYERS || !!ft) && !this.mode && this.rules.mode !== 'core.coop' && this.rules.mode !== 'core.zombies';
     const trips = this.botTrips();
     const all = trips.map((x) => x.trip);
     teams.forEach((t, i) => {
@@ -2414,25 +2428,30 @@ export class Match {
         const fighting = c.bot.target !== null;
         const seen = c.bot.lastSeen;
         const ordered = !!c.order && this.tick <= c.order.until;
+        // Fireteams: a member follows its squad (the team brain plans for its bot leader only); no squads by proximity.
+        const team = ft?.squadOf(c.slot);
+        const follower = !!team && team.leader !== c.slot;
         members.push({
           slot: c.slot,
           pos: c.move.pos,
           fighting,
           enemyAt: fighting && seen ? seen.pos : null,
-          free: !c.mount && !c.order && !c.botSet?.squad && d.planFor(c.slot).role === 'squad',
+          free: !team && !c.mount && !c.order && !c.botSet?.squad && d.planFor(c.slot).role === 'squad',
           teamLeader: this.isLeader(c),
           profile: c.bot.profile,
           // (The mode's goal only when the mode briefs the side: the team brain's groups are made of its attackers.)
-          goal: brief && !ordered ? (this.mode?.botGoal(c, []) ?? null) : null,
+          goal: brief && !ordered && !follower ? (this.mode?.botGoal(c, []) ?? null) : null,
           corridor: c.bot.corridor,
-          ordered: ordered || !!c.botSet?.squad,
+          ordered: ordered || !!c.botSet?.squad || follower,
           mounted: !!c.mount,
           seen: seen && this.tick - seen.tick < TICK_RATE * 1.5 ? seen.pos : null,
         });
       }
       const towards = this.spawnPoints.filter((s) => s.team !== null && s.team !== t.id && !s.generated).map((s) => s.pos);
       const own = trips.filter((x) => x.team === t.id).map((x) => x.trip);
-      d.update(this.tick, t.id, everyone, members, towards.length ? towards : null, squads, (slot, at) => this.slots[slot]?.bot?.alert(at, this.tick), brief, own, all);
+      // Fireteams: its bot-led squads as the director's (fixed) squads, leader first, the members alive.
+      const fixed = ft ? ft.teamSquads(t.id).filter((q) => !q.human && q.leader !== null).map((q) => [q.leader!, ...q.members.filter((m) => m !== q.leader && this.slots[m]?.alive)]) : null;
+      d.update(this.tick, t.id, everyone, members, towards.length ? towards : null, squads, (slot, at) => this.slots[slot]?.bot?.alert(at, this.tick), brief, own, all, fixed);
     });
   }
 
@@ -2446,6 +2465,10 @@ export class Match {
   private botGoal(c: Combatant, hostiles: Combatant[], zombies: boolean, coop: boolean): { pos: Vec3; radius: number } | null {
     const npc = c.npc;
     if (npc) return npc.role === 'zombie' ? this.nearestGoal(c, hostiles, 1.5) : this.encounters.goalFor(c.slot);
+    // Fireteams: a squad member does what its squad was told (its leader's order, following its leader), unless it
+    // carries the objective (a flag, the bomb: what keeps a carrier out of vehicles), which it takes where it goes.
+    const told = this.fireteamGoal(c);
+    if (told && !this.mode?.blocksVehicle(c)) return told;
     const order = this.teammateOrder(c);
     if (order) return order;
     const squad = this.squadGoal(c);
@@ -2770,6 +2793,146 @@ export class Match {
     return { pos: leader.move.pos, radius: 4, order: true };
   }
 
+  // ------------------------------------------------------------------ Fireteams (sim/fireteams.ts)
+
+  /** Fireteams: every team's fixed squads (null: the variant is off). */
+  fireteams: Fireteams | null = null;
+  /** The roster changed since the squads were last brought in line with it. */
+  private squadsDirty = true;
+  private squadsAt = -Infinity;
+
+  /** Once a tick: the squads kept in line with the roster (when it changed, and every 2 s), and their orders a few times a second. */
+  private stepFireteams(): void {
+    const size = this.rules.fireteams;
+    if (!size || !this.teams || !fireteamMode(this.rules.mode)) {
+      this.fireteams = null;
+      return;
+    }
+    if (!this.fireteams || this.fireteams.size !== size) {
+      this.fireteams = new Fireteams(size);
+      this.squadsDirty = true;
+      this.rolesFor = -1;
+    }
+    const ft = this.fireteams;
+    if (this.squadsDirty || this.tick - this.squadsAt >= TICK_RATE * 2) {
+      this.squadsDirty = false;
+      this.squadsAt = this.tick;
+      const roster = this.combatants().map((c) => ({ slot: c.slot, team: c.faction, human: c.kind === 'human', lead: c.bot ? leadAbility(c.bot.profile) : 0, pos: c.move.pos }));
+      this.squadNotes(ft.sync(roster, this.tick));
+    }
+    if (this.phase === 'playing' && this.tick % 6 === 0) this.squadNotes(ft.step(this.tick, this.squadWorld));
+  }
+
+  /** What the squads' step reads of the match. */
+  private readonly squadWorld = {
+    member: (slot: number) => {
+      const c = this.slots[slot];
+      return c ? { alive: c.alive, pos: c.move.pos } : null;
+    },
+    target: (slot: number) => {
+      const c = this.actor(slot);
+      return c?.alive ? c.move.pos : null;
+    },
+  };
+
+  /** The squads' news as events: a new leader, an order (the match's own, as a squad forms up or an order ends). */
+  private squadNotes(notes: readonly SquadNote[]): void {
+    for (const n of notes) {
+      const sq = n.squad;
+      if (n.a === 'lead') this.pendingEvents.push({ e: 'squad', a: 'lead', s: n.slot, sq: sq.id, n: sq.members.length, ...(n.human ? { h: 1 as const } : {}), ...(n.from !== null ? { from: n.from } : {}), team: sq.team });
+      else if (sq.leader !== null) this.pendingEvents.push({ e: 'squad', a: 'order', s: sq.leader, sq: sq.id, k: ORDER_KINDS.indexOf(n.order.kind), ...(n.order.auto ? { auto: 1 as const } : {}), team: sq.team });
+    }
+  }
+
+  /**
+   * A leader's order from the wheel (or the B menu's Follow me / Hold here): checked (sim/fireteams.ts checkOrder:
+   * only a person leading a squad, alive; Go there their fresh ping or the point they aim at; Attack that the enemy in
+   * their sights or their fresh ping's; Defend the objective the mode's nearest), then given to the squad, and the
+   * first member alive answers (the callout). A refused order tells the leader why.
+   */
+  private squadOrder(c: Combatant, kind: OrderKind): void {
+    const ft = this.fireteams;
+    if (!ft || !c.faction) return;
+    const s = ft.ledBy(c.slot);
+    const aim = c.alive ? this.aimAt(c) : null;
+    const lp = c.lastPing;
+    // (A ping's enemy counts while it is still alive and an enemy.)
+    const pinged = lp?.target != null ? this.actor(lp.target) : null;
+    const ping = lp ? { pos: lp.pos, target: pinged?.alive && this.hostile(c, pinged) ? pinged.slot : null, age: (this.tick - lp.tick) / TICK_RATE } : null;
+    const r = checkOrder(kind, {
+      leads: !!s?.human,
+      alive: c.alive,
+      pos: c.move.pos,
+      aim: aim?.at ?? null,
+      aimEnemy: aim?.target?.alive && this.hostile(c, aim.target) ? aim.target.slot : null,
+      ping: ping && (lp!.target === null || ping.target !== null) ? ping : null,
+      objective: kind === 'defend' ? this.squadObjective(c.faction, c.move.pos) : null,
+    });
+    if (!r.ok || !s) {
+      this.pendingEvents.push({ e: 'squad', a: 'deny', s: c.slot, n: REFUSALS.indexOf(r.ok ? 'notLeader' : r.why), team: c.faction });
+      return;
+    }
+    ft.order(s, kind, r.pos, r.target, this.tick);
+    const k = ORDER_KINDS.indexOf(kind);
+    this.pendingEvents.push({ e: 'squad', a: 'order', s: c.slot, sq: s.id, k, team: s.team });
+    // The first member alive answers; an attack tells everyone where the enemy is.
+    const target = r.target !== null ? this.actor(r.target) : null;
+    let answered = false;
+    for (const m of s.members) {
+      const b = this.slots[m];
+      if (!b || b === c || !b.alive || b.kind !== 'bot') continue;
+      if (!answered) {
+        answered = true;
+        this.pendingEvents.push({ e: 'squad', a: 'ack', s: b.slot, sq: s.id, k, team: s.team });
+      }
+      if (target) b.bot?.alert(target.move.pos, this.tick);
+    }
+  }
+
+  /**
+   * The objective a squad defends: the mode's own for the side, nearest the leader (ModeLogic.defendSpot: the hill in
+   * play, the sector's objectives, our flag), else the nearest end of the side's trips to hold (the sites, the
+   * hostages), else any trip's end (the site to plant at); null in Team Deathmatch.
+   */
+  squadObjective(team: string, near: Vec3): Vec3 | null {
+    const own = this.mode?.defendSpot?.(team, near);
+    if (own !== undefined) return own;
+    const trips = this.botTrips().filter((t) => t.team === team && t.kind !== 'carry');
+    const pick = (list: typeof trips): Vec3 | null => {
+      let best: Vec3 | null = null;
+      for (const t of list) if (!best || horizontalDistance(t.to, near) < horizontalDistance(best, near)) best = t.to;
+      return best;
+    };
+    return pick(trips.filter((t) => t.kind === 'defend')) ?? pick(trips);
+  }
+
+  /** Fireteams: where a squad member goes (its squad's order; its leader's way), or null (not a member: its own goals). */
+  private fireteamGoal(c: Combatant): OrderGoal | null {
+    const s = c.kind === 'bot' ? this.fireteams?.squadOf(c.slot) : undefined;
+    if (!s || s.leader === null || s.leader === c.slot) return null;
+    const leader = this.slots[s.leader];
+    const t = s.order.kind === 'attack' && s.order.target !== null ? this.actor(s.order.target) : null;
+    // (Following the squad's anchor: the leader's position, moved on every few metres, so routes aren't asked afresh every think.)
+    return memberGoal(s, c.slot, leader?.alive ? (s.anchor ?? leader.move.pos) : null, t?.alive ? t.move.pos : null);
+  }
+
+  /**
+   * Fireteams: a squadmate respawns beside its leader when it's safe there (spawns.ts leaderSpotSafe: no enemy within
+   * 20 m, no fresh deaths, out of sight of the nearest enemies; the leader on foot on the ground, not hurt lately, and
+   * where the mode allows a squad spawn), else (null) at the team's spawn. Undefined: not a squadmate (the usual rule).
+   */
+  private fireteamSpawn(c: Combatant): { pos: Vec3; yaw: number } | null | undefined {
+    const s = c.kind === 'npc' ? undefined : this.fireteams?.squadOf(c.slot);
+    if (!s || s.leader === null || s.leader === c.slot) return undefined;
+    const l = this.slots[s.leader];
+    if (!l?.alive || l.mount || !l.move.grounded || this.tick - (l.hurtAt ?? -Infinity) < TICK_RATE * 4) return null;
+    if (this.mode?.spawnBeside?.(c, l) === false) return null;
+    const enemies: Vec3[] = [];
+    for (const o of this.actors()) if (o.alive && this.hostile(c, o)) enemies.push(o.move.pos);
+    if (!leaderSpotSafe(l.move.pos, { tick: this.tick, enemies, deaths: this.recentDeaths, sees: (a, b) => this.sees(a, b) })) return null;
+    return this.besideMate(l);
+  }
+
   private applyInputs(c: Combatant): void {
     const n = Math.min(MAX_INPUTS_PER_TICK, c.queue.length);
     for (let i = 0; i < n; i++) {
@@ -2790,13 +2953,26 @@ export class Match {
       if (c.shieldUntil && input.buttons & (BUTTON_FIRE | BUTTON_ALT | BUTTON_THROW | BUTTON_MELEE)) c.shieldUntil = 0;
       // The player pulling against the recoil (the client reports how much of its mouse movement countered it).
       if (input.rc) counterRecoil(c.gun, input.rc[0], input.rc[1]);
+      // Fireteams: an order from the wheel (checked here: only a squad's leader, alive, with what it needs).
+      const ordered = orderFromSay(input.say);
+      if (ordered) {
+        if (!c.npc && this.tick >= (c.orderAt ?? 0)) {
+          c.orderAt = this.tick + Math.round(TICK_RATE * 0.3);
+          this.squadOrder(c, ordered);
+        }
+        input.say = undefined;
+      }
       if (input.say === PING && !c.npc && this.tick >= (c.pingAt ?? 0)) {
         c.pingAt = this.tick + Math.round(TICK_RATE * 0.75);
         this.ping(c);
       } else if (input.say && !c.npc && this.tick >= (c.sayAt ?? 0)) {
         c.sayAt = this.tick + TICK_RATE;
         // Follow / hold orders reach your team's bots even with the pop-ups turned off.
-        if (input.say === SAY_FOLLOW || input.say === SAY_HOLD) this.orderBots(c, input.say === SAY_FOLLOW ? 'follow' : 'hold');
+        // (Fireteams: they order the leader's own squad.)
+        if (input.say === SAY_FOLLOW || input.say === SAY_HOLD) {
+          if (this.fireteams?.ledBy(c.slot)) this.squadOrder(c, input.say === SAY_FOLLOW ? 'follow' : 'hold');
+          else this.orderBots(c, input.say === SAY_FOLLOW ? 'follow' : 'hold');
+        }
         if (this.rules.emotes !== false) {
           if (input.say === EMOTE_DANCE) c.emoteUntil = this.tick + TICK_RATE * 3;
           else if (input.say <= QUICK_MESSAGES.length) this.pendingEvents.push({ e: 'say', s: c.slot, m: input.say, ...(this.teams && c.faction ? { team: c.faction } : {}) });
@@ -5650,7 +5826,9 @@ export class Match {
     const pick = pickSpawn({ tick: this.tick, candidates, lastUsed: this.spawnUsed, enemies, occupants, ...(mates ? { mates } : {}), home, side, deaths: this.recentDeaths, sees: (a, b) => this.sees(a, b), rng: this.rng });
     const best = candidates[pick];
     // Team modes: usually beside a teammate who's out of the fight and out of enemy sight, else the safest spawn point.
-    const squad = this.teams && this.rules.squadSpawn !== false && this.rng() < 0.7 ? this.squadSpawnSpot(c) : null;
+    // Fireteams: a squadmate beside its leader when that's safe, else at the team's spawn.
+    const leader = this.fireteamSpawn(c);
+    const squad = leader !== undefined ? leader : this.teams && this.rules.squadSpawn !== false && this.rng() < 0.7 ? this.squadSpawnSpot(c) : null;
     if (!squad && best) this.spawnUsed.set(best, this.tick);
     const sp = squad ?? best ?? { pos: { x: 0, y: 0, z: 0 }, yaw: 0 };
     if (rotating && c.faction) this.spawnSides.note(c.faction, sp.pos);
@@ -5981,7 +6159,10 @@ export class Match {
    */
   restoreCombatant(c: Combatant, p: CheckpointPlayer): void {
     const team = p.team === null ? null : (this.teams?.find((t) => t.id === p.team)?.id ?? c.faction);
-    if (team !== c.faction) c.faction = team;
+    if (team !== c.faction) {
+      c.faction = team;
+      this.squadsDirty = true;
+    }
     c.kills = p.k;
     c.deaths = p.d;
     c.selfKills = p.x ?? 0;
@@ -6175,6 +6356,15 @@ export class Match {
 
   /** Mark what you're aiming at for your side: an enemy in your sights, or the spot. */
   private ping(c: Combatant): void {
+    const aim = this.aimAt(c);
+    if (!aim) return;
+    const { at, target } = aim;
+    c.lastPing = { pos: { ...at }, target: target?.slot ?? null, tick: this.tick };
+    this.pendingEvents.push({ e: 'ping', s: c.slot, p: tuple(at), ...(target ? { t: target.slot } : {}), ...(this.teams && c.faction ? { team: c.faction } : {}) });
+  }
+
+  /** What `c` aims at: an enemy in their sights (its middle), else the world along their view within 150 m; null: nothing. */
+  private aimAt(c: Combatant): { at: Vec3; target: Combatant | null } | null {
     const eye = { x: c.move.pos.x, y: c.move.pos.y + eyeHeightOf(c.move, c.size), z: c.move.pos.z };
     const dir = viewDirection(c.yaw, c.pitch);
     const wall = this.physics.raycastWorld(eye, dir, 150) ?? 150;
@@ -6188,9 +6378,9 @@ export class Match {
         target = o;
       }
     }
-    if (best >= 150 && !target) return;
+    if (best >= 150 && !target) return null;
     const at = target ? { x: target.move.pos.x, y: target.move.pos.y + 1, z: target.move.pos.z } : add(eye, scale(dir, best));
-    this.pendingEvents.push({ e: 'ping', s: c.slot, p: tuple(at), ...(target ? { t: target.slot } : {}), ...(this.teams && c.faction ? { team: c.faction } : {}) });
+    return { at, target };
   }
 
   /** "Follow me!" / "Hold here!": your side's bots nearby do it for a while. */
@@ -6262,6 +6452,11 @@ export class Match {
       if (score > mateScore) [mate, mateScore] = [o, score];
     }
     if (!mate) return null;
+    return this.besideMate(mate);
+  }
+
+  /** A clear spot on walkable ground a step from `mate` (behind or beside them), facing their way; null: none. */
+  private besideMate(mate: Combatant): { pos: Vec3; yaw: number } | null {
     // Only beside a teammate on walkable ground (the navmesh), and onto it: one stuck where nobody walks drew every
     // squadmate spawning after it in with it (Dune Harbor: a rider thrown under a street's floor, four bots a round).
     const walkable = (p: Vec3): boolean => {

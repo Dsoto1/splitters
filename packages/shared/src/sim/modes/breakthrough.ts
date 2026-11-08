@@ -854,6 +854,19 @@ export class BreakthroughMode implements ModeLogic {
     return !line || !behindLine(line, mate.move.pos);
   }
 
+  /**
+   * Fireteams' "Defend the objective": the sector in play's objective nearest `near` still standing (or a planted one),
+   * for either side (the attackers' squad holds it while it's taken, the defenders' while they hold it).
+   */
+  defendSpot(_team: string, near: Vec3): Vec3 | null {
+    const s = this.sector;
+    if (!s) return null;
+    const live = s.objectives.filter((o) => o.state === BT_OBJ_ACTIVE || o.state === BT_OBJ_PLANTED);
+    let best: Vec3 | null = null;
+    for (const o of live) if (!best || horizontalDistance(o.pos, near) < horizontalDistance(best, near)) best = o.pos;
+    return best ? { ...best } : null;
+  }
+
   /** The team brain's brief (bots/teamBrain.ts): the attackers' objective, a group push while the defenders hold it; the playbook. */
   botBrief(team: string): SideBrief | null {
     if (this.outcome !== BT_ROUND_PLAYING || this.restartAt !== null) return null;

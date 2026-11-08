@@ -1,6 +1,7 @@
 import type { MapDocument } from '../map/schema.ts';
 import { LUNAR_GRAVITY, mapPickPlayers, presetPatch, sizePresets, type MatchSetup } from './matchSetup.ts';
 import { DEFAULT_RULES, GAME_MODES, MODE_LABELS, type GameMode } from './rules.ts';
+import { FIRETEAM_MODES } from './fireteams.ts';
 
 /**
  * Mode variants and party presets (Play → match setup, under the mode chips).
@@ -144,6 +145,15 @@ export const SETUP_VARIANTS: readonly SetupVariant[] = [
     conflicts: ['spears', 'classes'],
     unavailable: (_map, _mode, offered) => (offered.includes('core.discs') ? null : 'Discs knock players off instead of hurting them: it needs a map with edges to fall from (one with Disc Arena).'),
   },
+  {
+    // (docs/FIRETEAMS_PLAN.md; sim/fireteams.ts. Its squad size is the setup's `squadSize`, picked beside the score.)
+    id: 'fireteams',
+    label: 'Fireteams',
+    tip: 'Every player leads their own squad of bots (4 to 6, you included), and bot-led squads of the same size fill each team. Hold B for the order wheel: Follow me, Hold here, Go there, Attack that, Defend the objective, Regroup. Your squad respawns near you when it is safe.',
+    modes: FIRETEAM_MODES,
+    sets: { fireteams: true },
+    clears: ['squadSize'],
+  },
 ];
 
 /**
@@ -169,6 +179,7 @@ const STANDARD: Partial<Record<keyof VariantSettings, unknown>> = {
   rlSwap: false,
   rlVariety: false,
   rlTeams: false,
+  fireteams: false,
 };
 
 /** A setting as the match plays it: the setup's, else the map's own (gravity, fall damage), else the standard. */

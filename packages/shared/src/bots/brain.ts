@@ -215,8 +215,13 @@ export interface OrderGoal {
   run?: boolean;
   /** Holding it (CTF defenders): where the enemy comes from, to watch while it moves between spots round it. */
   watch?: Vec3 | null;
-  /** A person's order ("Follow me!", "Hold here!"): it wins over pickups, noises and chases (bots still fight what they see). */
+  /** A person's order ("Follow me!", "Hold here!", a Fireteams order): it wins over pickups, noises and chases (bots still fight what they see). */
   order?: boolean;
+  /**
+   * Fireteams (sim/fireteams.ts): a member of a bot-led squad keeping with its leader (or holding while it is down):
+   * above any objective of its own, below a chase or a noise close by (SQUAD_NOTICE).
+   */
+  squad?: boolean;
 }
 
 export type BotState = 'roam' | 'advance' | 'engage' | 'cover' | 'chase' | 'investigate' | 'retreat' | 'hold' | 'mount' | 'mounted' | 'dead';
@@ -4531,7 +4536,7 @@ function cheapestRoute(trips: readonly PricedTrip[], goal: Vec3, rng: () => numb
 
 /** A goal a sniper may hold a spot over (OrderGoal): one to hold (a CTF defender's flag, a hill), not one to get to. */
 function holdsPost(g: OrderGoal): boolean {
-  return !g.run && !g.order && !g.push;
+  return !g.run && !g.order && !g.push && !g.squad;
 }
 
 /** How squarely `t` faces `at` (1: looking straight at it; 0: sideways; below: away). */

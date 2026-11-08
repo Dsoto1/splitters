@@ -209,7 +209,7 @@ export class BotDirector {
    * (`everyone`), then squads from its free bots. `alert` tells a squad member
    * where its busy leader's enemy is.
    */
-  update(tick: number, side: string, everyone: readonly Vec3[], members: readonly DirectorMember[], towards: readonly Vec3[] | null, squads: boolean, alert: (slot: number, at: Vec3) => void, brief: SideBrief | null = null, trips: readonly Trip[] = [], allTrips: readonly Trip[] = trips): void {
+  update(tick: number, side: string, everyone: readonly Vec3[], members: readonly DirectorMember[], towards: readonly Vec3[] | null, squads: boolean, alert: (slot: number, at: Vec3) => void, brief: SideBrief | null = null, trips: readonly Trip[] = [], allTrips: readonly Trip[] = trips, fixed: readonly (readonly number[])[] | null = null): void {
     const regions = this.regionsFor(side);
     regions.update(everyone, tick);
     for (const m of members) if (m.enemyAt) regions.contact(m.enemyAt, tick + TICK_RATE * 20);
@@ -232,13 +232,40 @@ export class BotDirector {
     }
     let list = this.clusters.get(side);
     if (!list) this.clusters.set(side, (list = []));
-    const free = new Map<number, DirectorMember>();
+    let free = new Map<number, DirectorMember>();
     for (const m of members) if (m.free) free.set(m.slot, m);
-    if (!squads || free.size < CLUSTER_MIN_FREE) {
+    if (!squads || (!fixed && free.size < CLUSTER_MIN_FREE)) {
       for (const m of members) this.planFor(m.slot).cluster = null;
       list.length = 0;
       return;
     }
+    if (fixed) {
+      // Fireteams: the squads are fixed (sim/fireteams.ts), each bot-led one given as [leader, ...members alive]; the
+      // director keeps only their goals and routes (and its alerts), so a bot-led squad plays the same pushes.
+      free = new Map(members.map((m) => [m.slot, m]));
+      list = this.fixedClusters(list, fixed, free);
+    } else list = this.formClusters(list, free);
+    this.clusters.set(side, list);
+    this.directClusters(tick, list, free, members, regions, towards, brain, alert);
+  }
+
+  /** Fireteams' bot-led squads as the director's clusters (the same cluster for the same leader, for its goal). */
+  private fixedClusters(list: Cluster[], fixed: readonly (readonly number[])[], pool: ReadonlyMap<number, DirectorMember>): Cluster[] {
+    const byLeader = new Map(list.map((c) => [c.view.leader, c]));
+    const out: Cluster[] = [];
+    for (const g of fixed) {
+      const lead = pool.get(g[0]!);
+      const ms = g.filter((s) => pool.has(s));
+      if (!lead || ms.length < 2) continue;
+      const c = byLeader.get(lead.slot) ?? { view: { id: this.nextId++, leader: lead.slot, leaderPos: { ...lead.pos }, goal: null, via: null, size: ms.length, leaderBusy: false, lagging: false, spacing: 3, route: null }, members: [], goalUntil: 0, region: -1, goalDist: Infinity };
+      c.members = ms;
+      out.push(c);
+    }
+    return out;
+  }
+
+  /** Squads from free bots close together (the usual way): keep, re-lead, break up, join, gather. */
+  private formClusters(list: Cluster[], free: ReadonlyMap<number, DirectorMember>): Cluster[] {
     const maxSize = free.size >= 30 ? 6 : free.size >= 16 ? 5 : 4;
     const assigned = new Set<number>();
     // Existing squads: keep members still free and near their leader; a new leader when the old one is gone.
@@ -295,8 +322,11 @@ export class BotDirector {
       for (const g of group) assigned.add(g.slot);
       list.push(c);
     }
-    this.clusters.set(side, list);
-    // Each squad: where its leader is, whether it fights, whether someone lags; a new goal when due.
+    return list;
+  }
+
+  /** Each squad: where its leader is, whether it fights, whether someone lags; a new goal when due. */
+  private directClusters(tick: number, list: readonly Cluster[], free: ReadonlyMap<number, DirectorMember>, members: readonly DirectorMember[], regions: RegionMap, towards: readonly Vec3[] | null, brain: TeamBrain, alert: (slot: number, at: Vec3) => void): void {
     for (const m of members) this.planFor(m.slot).cluster = null;
     let lane = 0;
     for (const c of list) {
@@ -400,5 +430,8 @@ function squadRoute(trips: readonly PricedTrip[], goal: Vec3, squads: readonly C
   return pick >= 0 ? best.trip.corridors[pick]! : null;
 }
 
+/** How well a bot leads by its personality (loyalty, tactical sense; a coward last): squads here and Fireteams' bot leaders. */
+export const leadAbility = (p: BotProfile): number => p.teamLoyalty + p.tacticalAwareness + (hasTag(p, 'TACTICAL') ? 20 : 0) - (hasTag(p, 'COWARD') ? 500 : 0);
+
 /** Who leads a squad: the team's leader always; a coward only when nobody else is in it. */
-const leadScore = (m: DirectorMember): number => (m.teamLeader ? 1000 : 0) + m.profile.teamLoyalty + m.profile.tacticalAwareness + (hasTag(m.profile, 'TACTICAL') ? 20 : 0) - (hasTag(m.profile, 'COWARD') ? 500 : 0);
+const leadScore = (m: DirectorMember): number => (m.teamLeader ? 1000 : 0) + leadAbility(m.profile);

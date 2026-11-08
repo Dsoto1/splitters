@@ -8,6 +8,21 @@ made only on a commit that passed CI on a check branch.
 
 ## Unreleased
 
+**Fireteams, part 1** (owner-approved, 2026-11-08; docs/FIRETEAMS_PLAN.md):
+- A new **variant** for Team Deathmatch, Capture the Flag, King of the Hill, Bomb, Hostage and Breakthrough (Match
+  setup's Variants row; servers `rules fireteams 5`). The host picks the **squad size**: 4, 5 or 6, you included.
+- **You lead your own squad of bots.** Nobody joins another player's squad; bot-led squads of the same size fill the
+  rest of each team. A friend joining mid-match takes over a bot-led squad (its leader steps down; nobody respawns);
+  when a player leaves, a bot leads their squad.
+- **The order wheel:** hold **B** (a quick tap still opens the quick messages), hold a controller's **d-pad up** (a tap
+  still pings), or tap **Orders** on a phone. Follow me, Hold here, Go there (where you ping or aim), Attack that (the
+  enemy you aim at or ping), Defend the objective, Regroup. A squadmate answers in the chat ("Holding here!"), and the
+  HUD shows your squad's order. The orders are checked by the match.
+- **Your squad respawns near you** when it's safe there, else at your team's spawn. While you're down your squad holds
+  its ground and fights; when you're back it forms up on you.
+- Bot-led squads play the team brain's pushes as squads. `pnpm bot-report` measures squads (distance to the leader,
+  members alive, orders carried out; `--fireteams=5 --orders`), and `pnpm bench --fireteams=5`.
+
 **Passengers ride with the vehicle** (owner's bug report, 2026-11-08):
 - **Riders stay in their seats at speed.** Driver and passengers, bots and people, are drawn on their seats of the
   vehicle as you see it this frame (bumps and tilt included), in every vehicle, online and offline, whoever is

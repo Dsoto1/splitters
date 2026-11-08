@@ -30,6 +30,7 @@ import { Behaviour } from './botMeasures.ts';
  * modes split the bots evenly) and reports its objective events: flag takes and
  * captures, hill holds, rounds, race checkpoints, laps and finishes.
  *
+ * --fireteams=N (with --mode) plays the Fireteams variant: every bot in a fixed squad of N, bot-led.
  * --warmup=S plays S seconds before measuring. --clump[=R] (two-team modes)
  * then puts every bot on a patch of open ground R m across (default 40) in
  * the middle of the map, each team on its own half, and puts each bot back
@@ -57,6 +58,8 @@ const clumpFlag = flags.find((f) => f === '--clump' || f.startsWith('--clump='))
 const clumpSize = clumpFlag?.includes('=') ? Number(clumpFlag.slice(8)) : 40;
 /** --skills=mixed: bots are easy, normal and hard in turn (accuracy is then reported per skill); default all normal. */
 const mixedSkills = flags.includes('--skills=mixed');
+/** --fireteams=N: the Fireteams variant on (bot-led squads of N: sim/fireteams.ts), with --mode. */
+const fireteams = Number(flags.find((f) => f.startsWith('--fireteams='))?.slice(12) ?? 0);
 const SKILLS = ['easy', 'normal', 'hard'] as const;
 /**
  * --spikes[=MS]: ticks slower than MS (default 12) are broken down section by section (the same sections as
@@ -108,7 +111,7 @@ function benchMap(mapPath: string, clump: boolean): { row: string; cpuRow: strin
     }
   }
   if (mode && !mapCanRun(map, mode)) throw new Error(`${map.metadata.id} can't run ${mode}`);
-  const rules = mode ? { ...rulesForMode(map, mode), scoreLimit: 0, timeLimitSeconds: 0 } : undefined;
+  const rules = mode ? { ...rulesForMode(map, mode), scoreLimit: 0, timeLimitSeconds: 0, ...(fireteams ? { fireteams } : {}) } : undefined;
   // Two-team modes: an even split of the bots (48 v 48 for 96).
   if (rules?.teamSizes?.length === 2) rules.teamSizes = [Math.ceil(bots / 2), Math.floor(bots / 2)];
   const match = new Match(map, rules, 42);
