@@ -507,7 +507,8 @@ export class FrontEnd {
     this.scene.setShot(screen === 'home' ? 'home' : 'side');
     this.body.replaceChildren(this.build(screen));
     this.footerHints.replaceChildren(...this.hints(screen));
-    if (screen === 'home') (this.body.querySelector('.nav button.on') as HTMLButtonElement | null)?.focus({ preventScroll: true });
+    if (screen === 'home' && this.quickOpen) this.body.querySelector<HTMLButtonElement>(`#quick-play [data-mode="${loadQuickPrefs().mode ?? 'core.tdm'}"]`)?.focus({ preventScroll: true });
+    else if (screen === 'home') (this.body.querySelector('.nav button.on') as HTMLButtonElement | null)?.focus({ preventScroll: true });
   }
 
   /**
@@ -757,8 +758,6 @@ export class FrontEnd {
     this.quickOpen = true;
     this.firstRunOn = false;
     this.go('home');
-    const mode = loadQuickPrefs().mode ?? 'core.tdm';
-    document.querySelector<HTMLButtonElement>(`#quick-play [data-mode="${mode}"]`)?.focus();
   }
 
   private closeQuickPlay(): void {
@@ -839,7 +838,8 @@ export class FrontEnd {
   private setNav(i: number): void {
     this.navIndex = (i + this.navItems.length) % this.navItems.length;
     this.body.querySelectorAll('.nav button').forEach((b, j) => b.classList.toggle('on', j === this.navIndex));
-    (this.body.querySelectorAll('.nav button')[this.navIndex] as HTMLButtonElement | undefined)?.focus({ preventScroll: true });
+    // (Quick Play's choice open over the menu keeps the keyboard.)
+    if (!this.quickOpen) (this.body.querySelectorAll('.nav button')[this.navIndex] as HTMLButtonElement | undefined)?.focus({ preventScroll: true });
   }
 
   /** Your account's state in a word or two, for the Profile entry: Guest, ✓ Signed in, or Pick a username. */

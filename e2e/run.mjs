@@ -5151,11 +5151,13 @@ async function newplayerFlow(browser) {
   const stillMove = await page.evaluate(() => window.__tutorial.state());
   await page.evaluate(() => (window.__autoInput = { forward: 1 }));
   const moved = await page.waitForFunction(() => window.__tutorial.state().step === 'sprint', null, { timeout: T(60000) }).then(() => true, () => false);
+  await page.evaluate(() => (window.__autoInput = { forward: 1, buttons: 128 }));
+  const sprinted = await page.waitForFunction(() => window.__tutorial.state().step === 'crouch', null, { timeout: T(60000) }).then(() => true, () => false);
   await page.evaluate(() => (window.__autoInput = { buttons: 256 }));
   const crouched = await page.waitForFunction(() => window.__tutorial.state().step === 'shoot', null, { timeout: T(60000) }).then(() => true, () => false);
   await page.evaluate(() => delete window.__autoInput);
   const dots = await page.$$eval('#tutorial .tut-dots i', (ds) => ds.map((d) => d.className));
-  check(stillMove.step === 'move' && stillMove.progress === 0 && moved && crouched && dots.slice(0, 4).every((c) => c === 'done') && dots[4] === 'on', `a step completes on its action: walking finishes Move, crouching finishes Crouch, and the dots follow (${JSON.stringify({ stillMove, moved, crouched, dots })})`);
+  check(stillMove.step === 'move' && stillMove.progress === 0 && moved && sprinted && crouched && dots.slice(0, 4).every((c) => c === 'done') && dots[4] === 'on', `a step completes on its action: walking finishes Move, sprinting Sprint, crouching Crouch, and the dots follow (${JSON.stringify({ stillMove, moved, sprinted, crouched, dots })})`);
   // Skip (the pause menu's: Esc pauses): back to the main menu, and the offer won't come back.
   await page.evaluate(() => document.getElementById('pause-skip-tutorial').click());
   const back = await page.waitForFunction(() => !document.getElementById('menu').hidden && window.__front.screen === 'home', null, { timeout: T(30000) }).then(() => true, () => false);
@@ -5194,10 +5196,14 @@ async function newplayerFlow(browser) {
     return { text: document.getElementById('coach-tip').textContent, clear: r.bottom < cy - 60 || r.top > cy + 60 || r.right < cx - 60 || r.left > cx + 60, seen: JSON.parse(localStorage.getItem('tiletrigger.tips')).seen };
   });
   check(shown && /reload/i.test(tip.text) && tip.clear && tip.seen.includes('reload'), `a tip shows once its situation happens, clear of the crosshair, and is remembered (${JSON.stringify(tip)})`);
-  await page.evaluate(() => window.__tips.trigger('reload'));
-  await page.evaluate(() => window.__tips.trigger('pickup'));
-  const one = await page.evaluate(() => [...document.querySelectorAll('#coach-tip.on')].length === 1 && window.__tips.current() === 'reload');
-  check(one, 'one tip at a time: the next waits');
+  // Two situations at once: the first shows, the other waits (frames drawn between, so the HUD has had its turn).
+  const one = await page.evaluate(() => new Promise((done) => {
+    window.__tips.trigger('reload');
+    window.__tips.trigger('vehicle');
+    window.__tips.trigger('armor');
+    requestAnimationFrame(() => requestAnimationFrame(() => done({ shown: document.querySelectorAll('#coach-tip.on').length, current: window.__tips.current() })));
+  }));
+  check(one.shown <= 1 && one.current !== 'armor', `one tip at a time: the others wait their turn (${JSON.stringify(one)})`);
 
   // On a phone the tutorial speaks of the touch controls.
   const phone = devices['Pixel 7'];
