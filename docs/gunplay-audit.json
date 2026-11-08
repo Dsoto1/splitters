@@ -8214,25 +8214,25 @@
      "unarmoured.body": {
       "ideal": 617,
       "stk": 4,
-      "hip": 817,
+      "hip": 617,
       "ads": 617
      },
      "unarmoured.head": {
       "ideal": 217,
       "stk": 2,
-      "hip": 717,
+      "hip": 217,
       "ads": 217
      },
      "armoured.body": {
       "ideal": 1417,
       "stk": 8,
-      "hip": 3117,
+      "hip": 1417,
       "ads": 1417
      },
      "armoured.head": {
       "ideal": 617,
       "stk": 4,
-      "hip": 6317,
+      "hip": 617,
       "ads": 617
      }
     },
@@ -8240,25 +8240,25 @@
      "unarmoured.body": {
       "ideal": 833,
       "stk": 5,
-      "hip": 3333,
+      "hip": 1033,
       "ads": 833
      },
      "unarmoured.head": {
       "ideal": 433,
       "stk": 3,
-      "hip": null,
+      "hip": 433,
       "ads": 433
      },
      "armoured.body": {
       "ideal": 1633,
       "stk": 9,
-      "hip": null,
+      "hip": 3133,
       "ads": 1633
      },
      "armoured.head": {
       "ideal": 833,
       "stk": 5,
-      "hip": null,
+      "hip": 1533,
       "ads": 833
      }
     },
@@ -8266,13 +8266,13 @@
      "unarmoured.body": {
       "ideal": 1100,
       "stk": 6,
-      "hip": null,
+      "hip": 7300,
       "ads": 1100
      },
      "unarmoured.head": {
       "ideal": 500,
       "stk": 3,
-      "hip": null,
+      "hip": 700,
       "ads": 500
      },
      "armoured.body": {
@@ -8433,10 +8433,10 @@
     "sprayForgetMs": 1883
    },
    "spread": {
-    "hip": 13,
+    "hip": 1,
     "ads": 0.3,
-    "run": 33,
-    "spray10": 42
+    "run": 21,
+    "spray10": 30
    }
   }
  ]

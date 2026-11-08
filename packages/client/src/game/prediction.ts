@@ -179,6 +179,10 @@ export class LocalPlayer {
   private readonly collider;
   private pending: PlayerInput[] = [];
   private seq = 0;
+  /** The last input's sequence number: the game's own clock (one a tick), for readouts timed in game time. */
+  get inputSeq(): number {
+    return this.seq;
+  }
   private fireCooldown = 0;
   corrections = 0;
   lastCorrection = 0;

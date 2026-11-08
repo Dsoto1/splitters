@@ -2949,7 +2949,7 @@ export class GameSession {
             const e = local.eye;
             const d = { x: shot.ends[0].x - e.x, y: shot.ends[0].y - e.y, z: shot.ends[0].z - e.z };
             const len = Math.hypot(d.x, d.y, d.z);
-            if (len > 0.01) this.spray.shot(shot.def.id, { x: d.x / len, y: d.y / len, z: d.z / len }, now);
+            if (len > 0.01) this.spray.shot(shot.def.id, { x: d.x / len, y: d.y / len, z: d.z / len }, (cmd.seq * 1000) / TICK_RATE);
           }
           this.view.kick(shot.def, shot.alt);
           const muzzle = this.view.localMuzzle();
@@ -3249,7 +3249,8 @@ export class GameSession {
       this.hud.minimap.update(local.eye.x, local.eye.z, this.input.yaw, this.jam > 0 ? [] : blips);
       this.updatePings(local, poses, now);
       this.damageNumbers.update((p) => this.view.project(p), now);
-      this.spray.update(local.gun, now);
+      // On the game's clock (inputs), so a slow frame rate doesn't split a burst or stretch the settle time.
+      this.spray.update(local.gun, (local.inputSeq * 1000) / TICK_RATE);
     }
 
     this.frames++;

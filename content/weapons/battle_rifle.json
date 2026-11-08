@@ -32,7 +32,7 @@
   "view": {
     "model": "guns/frontier_rifle.glb",
     "fallback": "weapons/rifle.glb",
-    "viewOffset": [0.2, -0.2, 0.58],
+    "viewOffset": [0.21, -0.215, 0.64],
     "tracer": "#ffe2a0",
     "hold": { "style": "long", "grip": [0, -0.075, -0.225], "support": [0, -0.07, 0.105], "shoulder": [0, 0.01, -0.47] },
     "muzzleAt": [0, 0.033, 0.48],

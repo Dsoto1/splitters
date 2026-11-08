@@ -4581,9 +4581,9 @@
      "model": "guns/frontier_rifle.glb",
      "fallback": "weapons/rifle.glb",
      "viewOffset": [
-      0.2,
-      -0.2,
-      0.58
+      0.21,
+      -0.215,
+      0.64
      ],
      "tracer": "#ffe2a0",
      "hold": {
