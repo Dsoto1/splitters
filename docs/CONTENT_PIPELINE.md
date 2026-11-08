@@ -368,7 +368,7 @@ in JSON, the behaviour in code (driving, suspension, flying, sentry aim and the 
 
 | File | Holds |
 |---|---|
-| `content/vehicles/<id>.json` | one mount: `kind` (`turret`, `sentry`, `vehicle`), `order` (MapMaker palette order), model, health, collision box, seats (role, label, place, mounted `weapon`, aim `arc`), get-in reach, respawn, blast, `armour` and `bailHealth`, the `vehicle` handling (speeds, grip, mass, hover, fly, suspension, `pivot`) or the `sentry` block, drawing numbers (`rideHeight`, `wheels`, `cockpitEye`, `glow`), `blurb` and `notes` |
+| `content/vehicles/<id>.json` | one mount: `kind` (`turret`, `sentry`, `vehicle`), `order` (MapMaker palette order), model, health, collision box, seats (role, label, place, mounted `weapon`, aim `arc`), get-in reach, respawn, blast, `armour` and `bailHealth`, the `vehicle` handling (speeds, grip, mass, hover, fly, suspension, `pivot`, `idleBrake`, `routeFit`) or the `sentry` block, drawing numbers (`rideHeight`, `wheels`, `cockpitEye`, `glow`), `blurb` and `notes` |
 | `content/npcs.json` | every NPC role: its network `code`, health, weapon, speed, size (`scale`), `damage` multiple, `creature` / `melee`, the character `look` it is drawn as, and `bot` (what its bot profile changes from `NPC_PROFILE`) |
 
 #### How to add a vehicle or turret
@@ -406,6 +406,10 @@ in JSON, the behaviour in code (driving, suspension, flying, sentry aim and the 
    - A gunner seat's `driverFires`: while it is empty the driver fires its gun, the shot kept within its arc (and a
      turret seat's aim turns the model's turret). At most one per vehicle; the driver must have no gun of their own.
    - `vehicle.pivot` (rad/s): tracks, turning on the spot, fading out by 5 m/s. The Tank: 0.8.
+   - `vehicle.idleBrake` (m/s²): with nobody at the wheel it brakes to a stop at this rate, its slide too (default 10;
+     not ambient track cars, which a track driver drives). From 12.7 m/s a Hauler (12) stops in about 7 m.
+   - `vehicle.routeFit`: bot drivers take only routes clear this share of its half width either side
+     (bots/vehicles.ts `vehicleRouteFits`; default 0.95, the probe's width; the Tank 0.8). Flyers have no check.
    - `bailHealth`: bots get out below this share of health (default 0.3; the Tank 0.25), or when it is on fire.
    Bots: drivers fight from a sealed vehicle (close to 28 m, hold and turn the hull onto the target), fire limited
    shells only at targets worth one (a vehicle, a turret or a sentry; someone on foot past 10 m while over 30 % of the
