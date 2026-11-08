@@ -1340,7 +1340,6 @@ async function editorTurnChecks(browser) {
 }
 
 /**
-<<<<<<< HEAD
  * MapMaker overhaul Phase 3 part A (docs/MAPMAKER_OVERHAUL_PLAN.md, items 1, 2 and 8): Play from here (Shift+F5)
  * starts you at the camera spot and Esc comes back with the view, the selection and undo as they were; the plan view
  * (K) toggles, selects and moves things, and exports a PNG; the card shot is framed at eye level, saved as the map's
@@ -1505,7 +1504,9 @@ async function editorWorkflowChecks(browser) {
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   livePages.delete(page);
   await page.context().close();
-=======
+}
+
+/**
  * MapMaker overhaul Phase 1, part A (docs/MAPMAKER_OVERHAUL_PLAN.md): the ghost says why it's refused, beside the
  * pointer; the live budget bar changes on an edit and on undo, goes amber near a budget and selects what it counts; `?`
  * (and the tool bar's Keys button) opens every key, grouped, and Esc or `?` closes it.
@@ -1608,7 +1609,6 @@ async function editorPhase1aChecks(page, { doc, at, clickAt, settle, shot }) {
   await page.keyboard.press('Slash');
   check(await page.evaluate(() => document.activeElement?.id === 'ed-search'), '/ still searches the palette');
   await page.evaluate(() => document.activeElement?.blur());
->>>>>>> origin/main
 }
 
 /**
