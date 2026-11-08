@@ -80,6 +80,13 @@ export const MapMetadata = z.object({
     .default({ min: 2, max: 8 }),
   supportedModes: z.array(ContentId).default(['core.deathmatch']),
   /**
+   * Player caps by mode (MapMaker's Map properties, "Players by mode"): the recommended and the most players for a
+   * mode on this map. A mode not listed takes the automatic caps worked out from the map's size and spawn points
+   * (sim/matchSetup.ts autoPlayerCaps; docs/GAME_MODES.md, "Player caps"). The setup screen shows them, and the map
+   * rotation and map changes keep a match within the most.
+   */
+  playerCaps: z.record(ContentId, z.object({ recommended: z.number().int().min(1).max(128), max: z.number().int().min(1).max(128) })).optional(),
+  /**
    * The map's own picture (v22), captured in MapMaker from the editor camera
    * (never uploaded): a small JPEG/WebP data URL. Map cards show it instead of
    * the automatic picture. Absent = the automatic one (built-in maps) or none.

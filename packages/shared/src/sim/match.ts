@@ -79,7 +79,9 @@ import { teamHome, type BotTripSpec } from './modes/types.ts';
 import { findCorridors, type Trip } from '../nav/corridors.ts';
 import { Scenario, teamAllows } from './scenario.ts';
 import { liftLinks } from './movers.ts';
-import { IMPROMPTU_MIN_PLAYERS, WAVE_MIN_PLAYERS, centroid, generateSpawns, pickSpawn, spawnShortfall, spawnsPerTick, type SpawnSpot } from './spawns.ts';
+import { MatchAwards } from './awards.ts';
+import { MATCH_PLAY } from '../content/matchPlay.generated.ts';
+import { IMPROMPTU_MIN_PLAYERS, SPAWN_DEATHS_KEPT, SpawnSides, spawnProtection, WAVE_MIN_PLAYERS, centroid, generateSpawns, pickSpawn, spawnShortfall, spawnsPerTick, type SpawnDeath, type SpawnSpot } from './spawns.ts';
 import { applyPortals, portalCarry, portalSegment } from './portals.ts';
 import { Encounters } from './encounters.ts';
 import { ZombieSurvival } from './zombies.ts';
@@ -416,6 +418,8 @@ export interface Combatant {
   knockedBy?: { slot: number; tick: number; weapon: string };
   /** Tick it last spawned (or the round began): Disc Arena's spawn guard. */
   spawnedAt?: number;
+  /** Spawn protection runs until this tick (0: none, or dropped by firing): Match.shielded. */
+  shieldUntil?: number;
 }
 
 interface Projectile {
@@ -887,6 +891,9 @@ export class Match {
    * plays it (the Roulette mode, or `rules.roulette` in another).
    */
   readonly roulette: RouletteDirector | null;
+
+  /** End-of-match awards and the revenge and nemesis callouts (sim/awards.ts), every mode. */
+  readonly awards = new MatchAwards();
 
   private rouletteDirector(): RouletteDirector {
     const match = this;
@@ -1963,6 +1970,22 @@ export class Match {
     this.pendingEvents = [];
     this.noteCombat(events);
     this.noteObjectives(events);
+    this.awards.events(
+      events,
+      (slot) => {
+        const c = this.actor(slot);
+        return !!c && c.kind !== 'npc';
+      },
+      (a, b) => {
+        const x = this.actor(a);
+        const y = this.actor(b);
+        return !!x && !!y && x !== y && this.hostile(x, y);
+      },
+      (w) => {
+        const d = CORE_WEAPONS[w];
+        return !!d && !d.projectile && d.kind !== 'melee';
+      },
+    );
     this.classes?.events(events);
     return events;
   }
@@ -2027,6 +2050,8 @@ export class Match {
     const views = this.views;
     if (views.size > actors.length * 2 + 16) views.clear();
     for (const c of actors) {
+      // Spawn protection run out: gone from the view too.
+      if (c.shieldUntil && !this.shielded(c)) c.shieldUntil = 0;
       const v = views.get(c.slot);
       if (v) fillView(v, c, this.concealed(c), this.sheltered(c));
       else views.set(c.slot, toView(c, this.concealed(c), this.sheltered(c)));
@@ -2703,8 +2728,8 @@ export class Match {
       // Roulette's death screen: a streak pick's card, or a reroll token spent (checked by the director).
       if (this.roulette?.input(c, input.say)) input.say = undefined;
       if (!c.alive) continue;
-      // Firing, throwing or striking ends Roulette's spawn protection.
-      if (this.roulette && input.buttons & (BUTTON_FIRE | BUTTON_ALT | BUTTON_THROW | BUTTON_MELEE)) this.roulette.endProtection(c);
+      // Firing, throwing or striking drops spawn protection at once.
+      if (c.shieldUntil && input.buttons & (BUTTON_FIRE | BUTTON_ALT | BUTTON_THROW | BUTTON_MELEE)) c.shieldUntil = 0;
       // The player pulling against the recoil (the client reports how much of its mouse movement countered it).
       if (input.rc) counterRecoil(c.gun, input.rc[0], input.rc[1]);
       if (input.say === PING && !c.npc && this.tick >= (c.pingAt ?? 0)) {
@@ -5254,8 +5279,8 @@ export class Match {
     // Shut inside a sealed vehicle (the Tank): nothing from outside reaches the crew; they die with it (destroyMount).
     if (this.sheltered(victim)) return;
     if (this.mode?.blocksDamage?.(victim, attacker)) return;
-    // Roulette: a moment of spawn protection from everyone else.
-    if (attacker && attacker !== victim && this.roulette?.protectedNow(victim)) return;
+    // Spawn protection (content/match-play.json): nobody else's damage gets through until it runs out or they fire.
+    if (attacker && attacker !== victim && this.shielded(victim)) return;
     if (this.classes) amount = this.classes.adjustDamage(victim, attacker, weapon, amount);
     // Lethality (spec §10): one systemic multiple, so every weapon keeps its identity.
     amount *= lethalityScale(this.rules);
@@ -5273,11 +5298,19 @@ export class Match {
     else if (attacker && attacker !== victim) amount *= isMeleeWeapon(weapon) ? attacker.stats.melee : attacker.stats.damage;
     if (victim.stats.armor > 0) amount *= 1 - victim.stats.armor;
     let dmg = attacker && attacker !== victim && attacker.damageTicks > 0 ? amount * DAMAGE_BOOST : amount;
+    const hit = dmg;
     if (victim.armor > 0) {
       const absorbed = Math.min(victim.armor, dmg * ARMOR_ABSORB);
       victim.armor -= absorbed;
       dmg -= absorbed;
+      // The hit that broke their armour (the armour-break sparks).
+      if (victim.armor <= 0.01) {
+        victim.armor = 0;
+        this.pendingEvents.push({ e: 'hurt', a: 'armor', s: victim.slot, p: [round2(victim.move.pos.x), round2(victim.move.pos.y + 1.2 * victim.size), round2(victim.move.pos.z)] });
+      }
     }
+    // A heavy hit (content/match-play.json heavyHit): the big-hit effect on them, the screen edge if it's you.
+    if (attacker && attacker !== victim && hit >= MATCH_PLAY.heavyHit) this.pendingEvents.push({ e: 'hurt', a: 'big', s: victim.slot, k: attacker.slot, n: Math.round(hit), p: [round2(victim.move.pos.x), round2(victim.move.pos.y + 1.1 * victim.size), round2(victim.move.pos.z)] });
     victim.health -= dmg;
     victim.hurtAt = this.tick;
     // A hard hit knocks a zipline rider off the line (keeping the ride's momentum).
@@ -5301,12 +5334,22 @@ export class Match {
       killer.streak = (killer.streak ?? 0) + 1;
       this.streakReward(killer);
     }
+    if (!victim.npc) {
+      // Awards and callouts (sim/awards.ts): a scoring kill, else just a death (a fall, their own grenade, a team kill).
+      const scored = !!killer && killer !== victim && !killer.npc && !teamKill;
+      for (const call of this.awards.kill(scored ? killer!.slot : null, victim.slot)) this.pendingEvents.push({ e: 'callout', ...call });
+    }
     if (victim.npc) {
       victim.npc.removeAt = this.tick + TICK_RATE * 2;
       this.encounters.onNpcKilled(victim.slot, killer?.slot ?? null);
       return;
     }
     victim.deaths++;
+    // Spawn choice: a fresh body here, downed by an enemy who may still be watching (sim/spawns.ts SpawnChoice.deaths).
+    if (killer && killer !== victim && !teamKill) {
+      this.recentDeaths.push({ pos: { ...victim.move.pos }, tick: this.tick });
+      if (this.recentDeaths.length > SPAWN_DEATHS_KEPT) this.recentDeaths.shift();
+    }
     // The team brain prices the corridors near where a teammate fell up for a minute (route variety: death cost).
     if (this.teams && victim.faction) this.director?.noteDeath(victim.faction, victim.move.pos, this.tick);
     // Zombies: the fallen sit out the rest of the wave.
@@ -5529,18 +5572,21 @@ export class Match {
     const shared = this.spawnPoints.filter((sp) => sp.team === null);
     // A team without spawns of its own (more teams than the map has bases) uses the shared ones, else anyone's, farthest from enemies.
     const candidates = own.length ? own : shared.length ? shared : this.spawnPoints;
-    // Team modes on shared spawns: the sides rotate. Spawns near your teammates and out of
-    // enemy sight win, so each team keeps an area of its own wherever the fight has moved.
+    // Team modes: spawns near teammates out of a fight win. On shared spawns the sides rotate, so each side keeps
+    // its own end of the map (SpawnSides) wherever the fight has moved: no spawn flips.
     const rotating = !!this.teams && c.faction !== null && !own.length;
-    const mates = rotating ? this.combatants().filter((o) => o !== c && o.alive && o.faction === c.faction).map((o) => o.move.pos) : undefined;
+    const calm = this.tick - TICK_RATE * 4;
+    const mates = this.teams && c.faction ? this.combatants().filter((o) => o !== c && o.alive && o.faction === c.faction && (o.hurtAt ?? -Infinity) < calm).map((o) => o.move.pos) : undefined;
+    const side = rotating && c.faction ? this.spawnSides.of(c.faction) : null;
     // Made-up spawn points on a side: the ones nearer the side's base are preferred (they are on its own third anyway).
     const home = own.length && own.some((sp) => sp.generated) && c.faction ? this.sideHome(c.faction) : null;
-    const pick = pickSpawn({ tick: this.tick, candidates, lastUsed: this.spawnUsed, enemies, occupants, ...(mates ? { mates } : {}), home, sees: (a, b) => this.sees(a, b), rng: this.rng });
+    const pick = pickSpawn({ tick: this.tick, candidates, lastUsed: this.spawnUsed, enemies, occupants, ...(mates ? { mates } : {}), home, side, deaths: this.recentDeaths, sees: (a, b) => this.sees(a, b), rng: this.rng });
     const best = candidates[pick];
-    // Team modes: usually beside a teammate who's out of the fight, else the safest spawn point.
+    // Team modes: usually beside a teammate who's out of the fight and out of enemy sight, else the safest spawn point.
     const squad = this.teams && this.rules.squadSpawn !== false && this.rng() < 0.7 ? this.squadSpawnSpot(c) : null;
     if (!squad && best) this.spawnUsed.set(best, this.tick);
     const sp = squad ?? best ?? { pos: { x: 0, y: 0, z: 0 }, yaw: 0 };
+    if (rotating && c.faction) this.spawnSides.note(c.faction, sp.pos);
     c.streak = 0;
     c.order = undefined;
     c.move = { pos: { ...sp.pos }, velY: 0, grounded: false };
@@ -5582,6 +5628,12 @@ export class Match {
       rl.equip(c);
       if (c.bot) c.bot.playAs(this.bodyProfile(c));
     }
+    // Spawn protection: a short shield (content/match-play.json, by mode), dropped the moment they fire. Every
+    // respawn, and a first life that begins mid-round (someone joining); not the lives the round opens with (everyone
+    // is spread over the spawns, and a round with a start gate holds them in the countdown).
+    const midRound = (c.spawns ?? 0) > 1 || this.tick - this.roundBegan > TICK_RATE * 2;
+    const shield = c.kind === 'npc' || !midRound ? 0 : spawnProtection(this.rules);
+    c.shieldUntil = shield > 0 ? this.tick + Math.round(shield * TICK_RATE) : 0;
     c.bot?.onSpawn(sp.yaw);
     this.mode?.onSpawn?.(c);
     const roll = rl?.rollOf(c);
@@ -5661,8 +5713,17 @@ export class Match {
     if (now !== kit(sniper) && now === kit(!sniper)) this.loadout(c, life);
   }
 
+  /** Under spawn protection now (sim/spawns.ts spawnProtection): nobody else's damage gets through. */
+  shielded(c: Combatant): boolean {
+    return c.alive && this.tick < (c.shieldUntil ?? 0);
+  }
+
   /** Spawn points used lately (tick), for the recent-use penalty. */
   private readonly spawnUsed = new Map<SpawnSpot, number>();
+  /** Where people died lately (the newest SPAWN_DEATHS_KEPT): a spawn point by a fresh body is a worse one. */
+  private readonly recentDeaths: SpawnDeath[] = [];
+  /** Team modes on shared spawns: where each side has been spawning lately (each keeps its end of the map). */
+  private readonly spawnSides = new SpawnSides();
   /** Players the made-up spawn points were last worked out for. */
   private impromptuFor = 0;
 
@@ -5781,8 +5842,10 @@ export class Match {
     const tied = forced === undefined && top && ranked[1] && ranked[1].kills === top.kills;
     this.phase = 'intermission';
     this.phaseEndTick = this.tick + this.rules.intermissionTicks;
-    // Roulette: the match's awards, with the round's end (the scoreboard shows them).
-    if (this.roulette) this.pendingEvents.push({ e: 'rl', a: 'awards', aw: this.roulette.awards(this.combatants()) });
+    // The match's awards (and Roulette's), with the round's end: the scoreboard shows them.
+    const players = this.combatants().filter((c) => c.kind !== 'npc');
+    const aw = [...this.awards.awards(players.map((c) => c.slot)), ...(this.roulette ? this.roulette.awards(players) : [])];
+    if (aw.length) this.pendingEvents.push({ e: 'awards', aw });
     // (Lunar's storm is over with the round.)
     if (this.roulette) this.phys.gravity = this.roulette.calmGravity();
     this.projectiles = [];
@@ -5947,9 +6010,13 @@ export class Match {
    */
   beforeRound?: () => void;
 
+  /** The tick the round in play began (spawn protection leaves out the lives the round opens with). */
+  private roundBegan = 0;
+
   private startRound(): void {
     this.beforeRound?.();
     this.phase = 'playing';
+    this.roundBegan = this.tick;
     for (const m of this.mounts) if (m.route) m.routeT0 = this.tick;
     this.phaseEndTick = this.roundEndTick();
     for (const p of this.pickups) p.availableAt = 0;
@@ -5974,6 +6041,7 @@ export class Match {
     this.zombies?.reset();
     this.classes?.reset();
     this.roulette?.reset();
+    this.awards.reset();
     this.race?.reset(!this.opts.startGate);
     for (const c of this.combatants()) this.spawnOrQueue(c);
     if (this.opts.startGate) {
@@ -6012,7 +6080,7 @@ export class Match {
         s.vx = c.move.vx ?? 0;
         s.vz = c.move.vz ?? 0;
       }
-      const fx = statusBits(c) | (this.classes?.fx(c) ?? 0) | (this.roulette && c.alive ? (this.roulette.protectedNow(c) ? FX_PROTECTED : 0) | (this.roulette.rollOf(c) === 'jackpot' ? FX_JACKPOT : 0) : 0);
+      const fx = statusBits(c) | (this.classes?.fx(c) ?? 0) | (c.alive && this.shielded(c) ? FX_PROTECTED : 0) | (this.roulette && c.alive && this.roulette.rollOf(c) === 'jackpot' ? FX_JACKPOT : 0);
       if (fx) s.fx = fx;
       if (c.cls) s.cl = classIndex(c.cls.id);
       if (c.bot) s.st = c.bot.state;
@@ -6111,7 +6179,22 @@ export class Match {
     const enemies = this.actors().filter((o) => o.alive && this.hostile(c, o));
     const mates = this.combatants().filter((o) => o !== c && o.alive && !o.mount && o.faction === c.faction && o.move.grounded && this.tick - (o.hurtAt ?? -Infinity) > TICK_RATE * 4 && !enemies.some((e) => distance(e.move.pos, o.move.pos) < 20) && this.mode?.spawnBeside?.(c, o) !== false);
     if (!mates.length) return null;
-    const mate = mates[Math.floor(this.rng() * mates.length)]!;
+    // A few of them at random, the one furthest from enemies and out of their sight (the nearest three within 50 m
+    // checked for a clear line to its head): never beside a teammate an enemy is looking at.
+    for (let i = mates.length - 1; i > 0; i--) {
+      const j = Math.floor(this.rng() * (i + 1));
+      [mates[i], mates[j]] = [mates[j]!, mates[i]!];
+    }
+    let mate: Combatant | null = null;
+    let mateScore = -Infinity;
+    for (const o of mates.slice(0, 4)) {
+      const near = enemies.map((e) => ({ e, d: distance(e.move.pos, o.move.pos) })).filter((x) => x.d < 50).sort((a, b) => a.d - b.d);
+      const head = { x: o.move.pos.x, y: o.move.pos.y + 1.6, z: o.move.pos.z };
+      if (near.slice(0, 3).some((x) => this.sees({ x: x.e.move.pos.x, y: x.e.move.pos.y + 1.6, z: x.e.move.pos.z }, head))) continue;
+      const score = near.length ? near[0]!.d : 50;
+      if (score > mateScore) [mate, mateScore] = [o, score];
+    }
+    if (!mate) return null;
     // Only beside a teammate on walkable ground (the navmesh), and onto it: one stuck where nobody walks drew every
     // squadmate spawning after it in with it (Dune Harbor: a rider thrown under a street's floor, four bots a round).
     const walkable = (p: Vec3): boolean => {
@@ -6233,7 +6316,7 @@ export class Match {
  * reads polymorphic.
  */
 function toView(c: Combatant, concealed = false, sheltered = false): CombatantView {
-  return { slot: c.slot, pos: c.move.pos, yaw: c.yaw, pitch: c.pitch, health: c.health, armor: c.armor, alive: c.alive, stance: stanceOf(c.move), human: c.kind === 'human', mounted: !!c.mount, sheltered, grounded: c.move.grounded, object: false, concealed, riding: c.move.zip !== undefined, climbing: !!c.move.climb, chute: !!c.move.chute, size: c.size, box: hitboxOf(c), hitScale: c.hitScale, winded: !!c.move.winded };
+  return { slot: c.slot, pos: c.move.pos, yaw: c.yaw, pitch: c.pitch, health: c.health, armor: c.armor, alive: c.alive, stance: stanceOf(c.move), human: c.kind === 'human', mounted: !!c.mount, sheltered, grounded: c.move.grounded, object: false, concealed, riding: c.move.zip !== undefined, climbing: !!c.move.climb, chute: !!c.move.chute, size: c.size, box: hitboxOf(c), hitScale: c.hitScale, winded: !!c.move.winded, ...(c.shieldUntil ? { shielded: true, shieldUntil: c.shieldUntil } : {}) };
 }
 
 /** Refill a view made by toView for this tick. */
@@ -6257,6 +6340,8 @@ function fillView(v: CombatantView, c: Combatant, concealed: boolean, sheltered:
   v.size = c.size;
   v.box = hitboxOf(c);
   v.hitScale = c.hitScale;
+  v.shielded = !!c.shieldUntil && c.alive;
+  v.shieldUntil = c.shieldUntil ?? 0;
 }
 
 /** A combatant's hit shapes, taken again when its look changed (players and bots; an NPC's are set at its spawn). */
@@ -6900,3 +6985,6 @@ function altTrigger(def: WeaponDefinition, alt: AltFire): Trigger {
     alt: true,
   };
 }
+
+/** Two decimals (event positions). */
+const round2 = (v: number): number => Math.round(v * 100) / 100;

@@ -69,6 +69,10 @@ export interface CombatantView {
   mounted?: boolean;
   /** Shut inside a sealed vehicle (the Tank): bullets can't reach them; only what hurts the vehicle does. */
   sheltered?: boolean;
+  /** Under spawn protection (Match.shielded; it drops when they fire): a target only when there's no one else near. */
+  shielded?: boolean;
+  /** The tick the spawn protection runs out (with `shielded`). */
+  shieldUntil?: number;
   /** On the ground (not jumping or falling). */
   grounded?: boolean;
   /** A machine (a sentry gun), not a person: its own body would block a sight line to its middle. */
@@ -313,6 +317,11 @@ const SHELL_RESERVE = 0.3;
 const AMMO_DETOUR = 120;
 /** Someone shut in a sealed vehicle (the Tank) is this much less of a target (as if this many times further) to a bot with nothing that hurts vehicles. */
 const SHELTERED_TARGET_SCALE = 3;
+/** Someone under spawn protection is this much less of a target (as if this many times further): shots at them do nothing until they fire. */
+const SHIELDED_TARGET_SCALE = 6;
+/** A bot under spawn protection holds its fire until this long before the shield runs out (s), unless an enemy is within SHIELD_HOLD_INSIDE m. */
+const SHIELD_FIRE_BEFORE = 0.5;
+const SHIELD_HOLD_INSIDE = 2;
 /** A tank whose route to the goal doesn't fit it (routeFits) is left alone this long (s) before it is looked at again. */
 const TANK_NO_FIT_SECONDS = 20;
 /** The share of a tank's width the route clearance asks for (routeFits): it pushes past a little scraping, and a narrower check kept it off routes it drives fine. */
@@ -754,6 +763,11 @@ export class BotBrain {
   }
 
   /** Reset per-life memory when the bot respawns. */
+  /** Under spawn protection and holding fire (until SHIELD_FIRE_BEFORE s before it runs out), unless an unshielded enemy is right on top of it. */
+  private holdingForShield(me: CombatantView, target: CombatantView | null | undefined, tick: number): boolean {
+    return !!me.shielded && (me.shieldUntil ?? 0) - tick > SHIELD_FIRE_BEFORE * TICK_RATE && !(target && !target.shielded && horizontalDistance(me.pos, target.pos) < SHIELD_HOLD_INSIDE);
+  }
+
   onSpawn(yaw: number): void {
     this.yaw = yaw;
     this.pitch = 0;
@@ -2160,6 +2174,9 @@ export class BotBrain {
     // Badly hurt and hidden: lie flat.
     if (hurt && inCoverHidden && this.tactical > 0.5) stance = 2;
 
+    // Under spawn protection: get your bearings first. Firing drops the shield, so a bot holds its fire (aiming on)
+    // until the shield is about to go, unless someone is right on top of it.
+    if (buttons & (BUTTON_FIRE | BUTTON_ALT | BUTTON_THROW | BUTTON_MELEE) && this.holdingForShield(me, target, tick)) buttons &= ~(BUTTON_FIRE | BUTTON_ALT | BUTTON_THROW | BUTTON_MELEE);
     if (pressNow) buttons |= BUTTON_USE;
     // At a zipline on the route: grab it (E once; the line does the rest).
     if (this.zipPress && !me.riding && tick - this.lastUseTick > 15) {
@@ -2268,7 +2285,7 @@ export class BotBrain {
     this.aim.track(ctx, aimed);
     const sol = this.aim.solve(ctx, aimed);
     this.turnToward(sol.yaw, sol.pitch);
-    const fire = this.aim.trigger(ctx, sol, this.yaw, this.pitch, this.reacted(view, target), this.shotCheck(view, ctx, sol, target));
+    const fire = this.aim.trigger(ctx, sol, this.yaw, this.pitch, this.reacted(view, target), this.shotCheck(view, ctx, sol, target)) && !this.holdingForShield(me, target, tick);
     if (simProfile.on) simProfile.add('botAim', performance.now() - ta);
     this.lastTargetTick = tick;
     // The same smoothed movement over the ground, seen from the new facing.
@@ -3485,7 +3502,7 @@ export class BotBrain {
       c.dz = dz;
       // Stick with the current target unless another is much closer. Someone shut in a tank only when there's no one
       // else, unless it has something that hurts vehicles (bullets can't reach them).
-      c.score = d * (o.slot === this.targetSlot ? 0.7 : 1) * (o.sheltered && !(armedVsTanks ??= this.armedVsTanks(view)) ? SHELTERED_TARGET_SCALE : 1);
+      c.score = d * (o.slot === this.targetSlot ? 0.7 : 1) * (o.sheltered && !(armedVsTanks ??= this.armedVsTanks(view)) ? SHELTERED_TARGET_SCALE : 1) * (o.shielded ? SHIELDED_TARGET_SCALE : 1);
       c.checked = false;
       live.push(c);
     }

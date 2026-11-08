@@ -107,6 +107,11 @@ export interface MatchRules {
    * (MapDocument.weaponSet), else Standard. Spears or discs only (and Disc Arena) play none.
    */
   weaponSet?: string;
+  /**
+   * Seconds of spawn protection each life (a shield nobody else's damage gets through, dropped the moment you fire);
+   * absent: the mode's (content/match-play.json spawnProtection; sim/spawns.ts spawnProtection). 0: none.
+   */
+  spawnProtection?: number;
   /** Kill-streak rewards (UAV, supply pulse, Counter-UAV, airstrike). Default true. */
   killstreaks?: boolean;
   /** Team modes: respawn beside a teammate who isn't in a fight, when one is free. Default true. */

@@ -3,7 +3,7 @@ import { raceTrack } from '../map/track.ts';
 import { BROWSER_MAX_PLAYERS, MAX_PLAYER_SLOTS, TICK_RATE } from './constants.ts';
 import { MAX_TEAMS, mapTeams } from './npc.ts';
 import { BREAKTHROUGH_POOL, BREAKTHROUGH_POOL_MAX, BREAKTHROUGH_SECTOR_SECONDS, DEFAULT_RULES, GAME_MODES, MODE_LABELS, SCORE_LIMIT_MAX, isGameMode, isTeamMode, isTwoTeamMode, mapCanRun, type GameMode, type MatchRules } from './rules.ts';
-import { IMPROMPTU_MIN_PLAYERS } from './spawns.ts';
+import { IMPROMPTU_MIN_PLAYERS, SPAWN_SHARE } from './spawns.ts';
 import { botSetInUse, validateBotSet, type BotSet } from './botSet.ts';
 import { validBotCast } from '../content/botThemes.ts';
 import { isWeaponSetId } from './weaponSets.ts';
@@ -237,6 +237,88 @@ export const CROWD_MATCH = 48;
 const sum = (xs: readonly number[]): number => xs.reduce((a, b) => a + b, 0);
 const clampInt = (v: number, lo: number, hi: number): number => Math.max(lo, Math.min(hi, Math.round(v)));
 const spawnsOf = (map: MapDocument): SpawnEntity[] => map.entities.filter((e): e is SpawnEntity => e.kind === 'spawn');
+
+// ------------------------------------------------------------------ player caps
+
+/** A mode's player caps on a map: what it plays best with and the most it takes; `auto`: worked out, not set in MapMaker. */
+export interface PlayerCaps {
+  recommended: number;
+  max: number;
+  auto: boolean;
+}
+
+/** The most is at most this many times the recommended. */
+export const CAP_STRETCH = 3;
+
+/** Square metres of the fought-over area a player needs at the most (the cap's floor-space limit). */
+export const CAP_AREA_PER_PLAYER = 80;
+
+/**
+ * The map's fought-over area for the caps (m²): the ground its spawn points, pickups and objectives span, at least
+ * 400, and up to twice that for maps that stack their floors (16 m or more between the lowest and highest of them).
+ */
+export function capArea(map: MapDocument): number {
+  const pts = map.entities.filter((e) => e.kind === 'spawn' || e.kind === 'pickup' || e.kind === 'flag' || e.kind === 'hill' || e.kind === 'objective' || e.kind === 'bombsite').map((e) => e.position);
+  if (!pts.length) return 400;
+  let [x0, x1, y0, y1, z0, z1] = [Infinity, -Infinity, Infinity, -Infinity, Infinity, -Infinity];
+  for (const [x, y, z] of pts) {
+    x0 = Math.min(x0, x);
+    x1 = Math.max(x1, x);
+    y0 = Math.min(y0, y);
+    y1 = Math.max(y1, y);
+    z0 = Math.min(z0, z);
+    z1 = Math.max(z1, z);
+  }
+  return Math.max(400, (x1 - x0) * (z1 - z0)) * (1 + Math.min(1, (y1 - y0) / 16));
+}
+
+/**
+ * The automatic caps for a mode on a map (docs/GAME_MODES.md, "Player caps"):
+ * - recommended: free-for-all, the map's recommended most (Map properties) as far as its spawn points go (one each,
+ *   at least 2); teams, its team layout in all, else its recommended most; a squad, the squad it's made for; a race,
+ *   its grid;
+ * - most: as many as its spawn points serve (SPAWN_SHARE each, as the match's own spawn waves do), its fought-over
+ *   area holds (CAP_AREA_PER_PLAYER m² each) and CAP_STRETCH times the recommended, never under the recommended; even
+ *   in team modes; a squad's and a race's are their recommended.
+ * Free-for-all counts the shared spawn points (what it spawns on), or half of all of them when that is more.
+ */
+export function autoPlayerCaps(map: MapDocument, mode: GameMode): { recommended: number; max: number } {
+  const family = setupFamily(mode);
+  const rec = map.metadata.recommendedPlayers;
+  if (family === 'squad') {
+    const n = squadRoom(map, MAX_PLAYER_SLOTS);
+    return { recommended: n, max: n };
+  }
+  if (family === 'race') {
+    const n = clampInt(Math.min(rec.max, raceGrid(mode, map) ?? rec.max), 2, MAX_PLAYER_SLOTS);
+    return { recommended: n, max: n };
+  }
+  const spawns = spawnsOf(map);
+  const shared = spawns.filter((s) => !s.faction).length;
+  // Free-for-all spawns on the shared points when there are any (Match.spawn), and on made-up ones past 12 players.
+  const usable = family === 'ffa' && shared ? Math.max(shared, Math.ceil(spawns.length / 2)) : spawns.length;
+  const room = Math.round(capArea(map) / CAP_AREA_PER_PLAYER);
+  if (family === 'teams') {
+    const layout = map.teamSetup ? sum(map.teamSetup.sizes) : rec.max;
+    const recommended = clampInt(layout, 2, MAX_PLAYER_SLOTS);
+    const most = Math.max(recommended, Math.min(Math.max(2, usable) * SPAWN_SHARE, room, recommended * CAP_STRETCH));
+    return { recommended, max: clampInt(Math.floor(most / 2) * 2, recommended, MAX_PLAYER_SLOTS) };
+  }
+  const recommended = clampInt(Math.min(rec.max, Math.max(2, usable)), 2, MAX_PLAYER_SLOTS);
+  const most = Math.max(recommended, Math.min(Math.max(2, usable) * SPAWN_SHARE, room, recommended * CAP_STRETCH));
+  return { recommended, max: clampInt(most, recommended, MAX_PLAYER_SLOTS) };
+}
+
+/** A mode's player caps on a map: the ones set in MapMaker's Map properties, else the automatic ones (autoPlayerCaps). */
+export function mapPlayerCaps(map: MapDocument, mode: GameMode): PlayerCaps {
+  const own = map.metadata.playerCaps?.[mode];
+  if (!own) return { ...autoPlayerCaps(map, mode), auto: true };
+  const max = clampInt(own.max, 1, MAX_PLAYER_SLOTS);
+  return { recommended: clampInt(own.recommended, 1, max), max, auto: false };
+}
+
+/** "16 best · up to 48" (the setup screen's chip). */
+export const capsLine = (c: Pick<PlayerCaps, 'recommended' | 'max'>): string => (c.max > c.recommended ? `${c.recommended} best · up to ${c.max}` : `${c.max} players`);
 
 // ------------------------------------------------------------------ people and bots
 

@@ -1,5 +1,7 @@
 import { createRng, horizontalDistance, type Vec3 } from '../math.ts';
 import { TICK_RATE } from './constants.ts';
+import { MATCH_PLAY } from '../content/matchPlay.generated.ts';
+import { rouletteOn, type MatchRules } from './rules.ts';
 
 /**
  * Spawning in big matches (docs/BOTS.md "Spawning"): which spawn point a
@@ -56,32 +58,44 @@ export interface SpawnChoice {
   enemies: readonly Vec3[];
   /** Where everyone alive is (anyone standing on a spawn point blocks it). */
   occupants: readonly Vec3[];
-  /** Team modes on shared spawns: living teammates (spawn near them, so each side keeps an area). */
+  /** Team modes: living teammates out of a fight (spawn near them, so each side keeps an area). */
   mates?: readonly Vec3[];
   /** Where the side's own spawns are (generated and shared spawns nearer it score higher in team modes). */
   home?: Vec3 | null;
+  /**
+   * Team modes on shared spawns: where the side has been spawning lately and where the other sides have (SpawnSides):
+   * points nearer your own side's than an enemy side's win, so the sides don't swap ends (no spawn flips).
+   */
+  side?: { own: Vec3 | null; enemy: readonly Vec3[] } | null;
+  /** Deaths lately (where and when): a spawn point beside a fresh body is a worse one. */
+  deaths?: readonly SpawnDeath[];
   /** Line of sight between two eye points (a few rays, for the best-looking candidates only). */
   sees?: (from: Vec3, to: Vec3) => boolean;
   rng: () => number;
 }
 
-/** Enemies within this range of a spawn point are checked for a sight line to it (m). */
-const SIGHT_CHECK = 50;
-/** Candidates whose sight lines are checked (the best few by the cheap score), and enemies per candidate. */
-const SIGHT_CANDIDATES = 6;
-const SIGHT_ENEMIES = 3;
-/** Each of those enemies with a clear line to the spawn point costs this much. */
-const SEEN_PENALTY = 30;
+/** A death a spawn choice remembers (SpawnChoice.deaths). */
+export interface SpawnDeath {
+  pos: Vec3;
+  tick: number;
+}
+
+/** The weights (content/match-play.json spawnChoice; what each means: its $comment). */
+const W = MATCH_PLAY.spawnChoice;
 /** A spawn point used a moment ago (fading over SPAWN_RECENT_TICKS): enough to break ties, not to send anyone nearer an enemy. */
 const RECENT_PENALTY = 20;
+/** Deaths kept for the spawn choice (the newest), and for how long. */
+export const SPAWN_DEATHS_KEPT = 64;
+export const SPAWN_DEATH_TICKS = Math.round(W.deathSeconds * TICK_RATE);
 
 /**
- * The cheap part of a spawn point's score: farther from the nearest enemy is
- * better (capped), someone standing on it or right next to it is bad, a point
- * used in the last few seconds is worse, teammates near a shared point help.
+ * The cheap part of a spawn point's score: farther from the nearest enemy is better (up to enemyRange), someone
+ * standing on it or right next to it is bad, a point used in the last few seconds is worse, a fresh death beside it
+ * is worse, teammates out of a fight near it help, and on shared spawns in team modes the side's own end of the map
+ * helps.
  */
 export function spawnScore(sp: SpawnSpot, c: SpawnChoice): number {
-  let nearest = 100;
+  let nearest: number = W.enemyRange;
   for (const e of c.enemies) {
     const d = horizontalDistance(sp.pos, e) + Math.abs(sp.pos.y - e.y) * 2;
     if (d < nearest) nearest = d;
@@ -102,44 +116,109 @@ export function spawnScore(sp: SpawnSpot, c: SpawnChoice): number {
   }
   const used = c.lastUsed.get(sp);
   if (used !== undefined && c.tick - used < SPAWN_RECENT_TICKS) score -= RECENT_PENALTY * (1 - (c.tick - used) / SPAWN_RECENT_TICKS);
+  // Fresh bodies: somebody just died here (whoever killed them may still be watching it).
+  if (c.deaths) {
+    let fresh = 0;
+    for (const d of c.deaths) {
+      const age = c.tick - d.tick;
+      if (age < 0 || age >= SPAWN_DEATH_TICKS) continue;
+      const dist = horizontalDistance(d.pos, sp.pos) + Math.abs(d.pos.y - sp.pos.y);
+      if (dist < W.deathRadius) fresh += (1 - dist / W.deathRadius) * (1 - age / SPAWN_DEATH_TICKS);
+    }
+    // A killing ground, at most twice the penalty however many fell there.
+    score -= W.deathPenalty * Math.min(2, fresh);
+  }
   if (c.mates) {
     let near = 0;
-    for (const m of c.mates) if (horizontalDistance(m, sp.pos) < 25 && ++near >= 3) break;
-    score += near * 8;
+    for (const m of c.mates) if (horizontalDistance(m, sp.pos) < W.mateRange && ++near >= W.mateMax) break;
+    score += near * W.mateBonus;
+  }
+  if (c.side?.own && c.side.enemy.length) {
+    // Nearer your own side's spawns than the nearest enemy side's: the sides keep their ends of the map.
+    let enemy = Infinity;
+    for (const e of c.side.enemy) enemy = Math.min(enemy, horizontalDistance(sp.pos, e));
+    score += Math.max(-W.sideMax, Math.min(W.sideMax, (enemy - horizontalDistance(sp.pos, c.side.own)) * W.sideWeight));
   }
   if (c.home) score -= Math.min(40, horizontalDistance(sp.pos, c.home) * 0.15);
   return score;
 }
 
 /**
- * The spawn point to use (an index into `candidates`): the best cheap score,
- * after checking the best few for an enemy with a clear sight line to them
- * (a heavy penalty for each of its three nearest enemies that can see it),
- * with a little randomness between near-equal choices. Bounded: at most
- * SIGHT_CANDIDATES × SIGHT_ENEMIES rays.
+ * The spawn point to use (an index into `candidates`), the same rule for people and bots: every candidate's cheap
+ * score (spawnScore); the best `sightCandidates` checked for enemies with a clear sight line to them (each of its
+ * `sightEnemies` nearest enemies in range that can see it costs `seenPenalty`); then one picked at random among the
+ * best `safeFew` within `margin` of the best (so nobody can learn where the next spawn will be, and a few spawn
+ * points share the load). Bounded: at most sightCandidates × sightEnemies rays.
  */
 export function pickSpawn(c: SpawnChoice): number {
   const n = c.candidates.length;
   if (n === 0) return -1;
-  const scored: { i: number; s: number }[] = [];
-  for (let i = 0; i < n; i++) scored.push({ i, s: spawnScore(c.candidates[i]!, c) + c.rng() * 3 });
+  const scored: { i: number; s: number; seen: number }[] = [];
+  for (let i = 0; i < n; i++) scored.push({ i, s: spawnScore(c.candidates[i]!, c), seen: 0 });
   scored.sort((a, b) => b.s - a.s || a.i - b.i);
+  const checked = Math.min(n, W.sightCandidates);
   if (c.sees) {
     const near: { p: Vec3; d: number }[] = [];
-    for (const s of scored.slice(0, SIGHT_CANDIDATES)) {
+    for (const s of scored.slice(0, checked)) {
       const sp = c.candidates[s.i]!;
       near.length = 0;
       for (const e of c.enemies) {
         const d = horizontalDistance(e, sp.pos);
-        if (d < SIGHT_CHECK) near.push({ p: e, d });
+        if (d < W.sightRange) near.push({ p: e, d });
       }
       near.sort((a, b) => a.d - b.d);
       const head = { x: sp.pos.x, y: sp.pos.y + 1.6, z: sp.pos.z };
-      for (const e of near.slice(0, SIGHT_ENEMIES)) if (c.sees({ x: e.p.x, y: e.p.y + 1.6, z: e.p.z }, head)) s.s -= SEEN_PENALTY;
+      for (const e of near.slice(0, W.sightEnemies))
+        if (c.sees({ x: e.p.x, y: e.p.y + 1.6, z: e.p.z }, head)) {
+          s.s -= W.seenPenalty;
+          s.seen++;
+        }
     }
     scored.sort((a, b) => b.s - a.s || a.i - b.i);
   }
-  return scored[0]!.i;
+  // The safest few: within `margin` of the best (and checked for sight lines when there were any to check).
+  const best = scored[0]!.s;
+  const few = scored.slice(0, Math.min(W.safeFew, checked)).filter((s) => s.s >= best - W.margin);
+  return few[Math.min(few.length - 1, Math.floor(c.rng() * few.length))]!.i;
+}
+
+/**
+ * Team modes on shared spawn points: where each side has been spawning lately (a running average of its spawn
+ * points), so a side keeps to its end of the map wherever the fight goes (SpawnChoice.side).
+ */
+export class SpawnSides {
+  private readonly at = new Map<string, Vec3>();
+
+  /** A side spawned at `p`: its end of the map moves a little that way. */
+  note(side: string, p: Vec3): void {
+    const a = this.at.get(side);
+    if (!a) this.at.set(side, { ...p });
+    else {
+      const k = 0.15;
+      a.x += (p.x - a.x) * k;
+      a.y += (p.y - a.y) * k;
+      a.z += (p.z - a.z) * k;
+    }
+  }
+
+  /** For a spawn of `side`: its own end, and the other sides'. Null until two sides have spawned. */
+  of(side: string): { own: Vec3 | null; enemy: Vec3[] } | null {
+    const enemy = [...this.at].filter(([k]) => k !== side).map(([, v]) => v);
+    return enemy.length ? { own: this.at.get(side) ?? null, enemy } : null;
+  }
+}
+
+// ------------------------------------------------------------------ spawn protection
+
+/**
+ * Seconds of spawn protection a match gives each life (content/match-play.json spawnProtection, by mode; Roulette's
+ * own in Roulette and its variants; the match's own `spawnProtection` rule first): a shield nobody else's damage
+ * gets through, dropped the moment you fire.
+ */
+export function spawnProtection(rules: Pick<MatchRules, 'mode' | 'roulette' | 'spawnProtection'>): number {
+  if (rules.spawnProtection !== undefined) return Math.max(0, Math.min(5, rules.spawnProtection));
+  const by = MATCH_PLAY.spawnProtection as Readonly<Record<string, number>>;
+  return (rouletteOn(rules) ? by['core.roulette'] : by[rules.mode]) ?? 0;
 }
 
 // ------------------------------------------------------------------ made-up spawn points

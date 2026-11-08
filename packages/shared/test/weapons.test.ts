@@ -29,6 +29,11 @@ function room(spawns: [number, number, number][], pickups: { item: string; at: [
   return { ...map, entities: [...map.entities, ...pickups.map((p, i) => ({ id: `pickup_${i}`, kind: 'pickup' as const, position: p.at, item: p.item, respawnSeconds: null }))] };
 }
 
+/** Put a player on a spot (a test's own layout, whichever spawn point they got). */
+function standAt(c: { move: { pos: { x: number; y: number; z: number }; velY: number; grounded: boolean } }, p: readonly [number, number, number]): void {
+  c.move = { pos: { x: p[0], y: p[1], z: p[2] }, velY: 0, grounded: true };
+}
+
 class Driver {
   seq = 0;
   events: GameEvent[] = [];
@@ -96,6 +101,9 @@ describe('weapons', () => {
     const d = new Driver(match);
     const a = match.addHuman('a')!;
     const b = match.addHuman('b')!;
+    // (The spawn choice picks at random among the safest few: put each where the test wants them.)
+    standAt(a, [-2, 0, -2]);
+    standAt(b, [2, 0, 2]);
     d.run(10, d.idle(a, b));
     expect(a.current).toBe(getWeapon('core.shotgun').slot); // picked up and auto-switched
     d.run(getWeapon('core.shotgun').raiseTicks + 2, () => {
@@ -131,6 +139,8 @@ describe('grenade launcher', () => {
     const d = new Driver(match);
     const a = match.addHuman('a')!;
     const b = match.addHuman('b')!;
+    standAt(a, [-3, 0, -3]);
+    standAt(b, target);
     d.run(5 + getWeapon('core.launcher').raiseTicks, d.idle(a, b));
     expect(a.current).toBe(6);
     return { match, d, a, b };
@@ -170,6 +180,8 @@ describe('grenade launcher', () => {
     const d2 = new Driver(match2);
     const s = match2.addHuman('s')!;
     const t = match2.addHuman('t')!;
+    standAt(s, [2.5, 0, 2.5]);
+    standAt(t, [5.0, 0, 2.5]);
     d2.run(40, d2.idle(s, t));
     // Grenade into the wall between them (wall section at x 3.5..4.5, z 1.5..4): t is within radius but behind the wall.
     d2.run(1, () => {
@@ -188,6 +200,8 @@ describe('pickups, armor and powerups', () => {
     const d = new Driver(match);
     const a = match.addHuman('a')!;
     const b = match.addHuman('b')!;
+    standAt(a, [0, 0, 0]);
+    standAt(b, [2, 0, 2]);
     d.run(5, d.idle(a, b));
     // a is at full health: the health pack stays.
     expect(match.snapshot([]).pk).toEqual(['pickup_1']); // b took the armor
@@ -218,6 +232,8 @@ describe('pickups, armor and powerups', () => {
     const d = new Driver(match);
     const a = match.addHuman('a')!;
     const b = match.addHuman('b')!;
+    standAt(a, [-2, 0, -2]);
+    standAt(b, [2, 0, 2]);
     d.run(5, d.idle(a, b));
     expect(a.damageTicks).toBeGreaterThan(0);
     d.run(1, () => {
