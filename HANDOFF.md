@@ -365,6 +365,43 @@ gets overloaded above that: local e2e times out and flakes). Prune landed worktr
 - Earlier the same day: content scalability steps 2–6, perf toolset, flaky e2e fixes, Runway Nine airliner, map
   reworks batches 2–3, character fixes rounds 2–3 (see the entries below and CHANGELOG).
 
+### Gunplay pass 2: identities, readouts, the Battle Rifle (`wip/gunplay-2`, agent, 2026-11-08; owner-approved candidates 1-6 of the audit plus spec gap G2; CHECK_STATUS)
+
+docs/GUNPLAY_AUDIT.md "Pass 2" has the before/after table; docs/ARSENAL.md "Gunplay pass 2"; `pnpm gun-report` re-run
+(docs/gunplay-audit.json, docs/gunplay-ttk.svg).
+- **Data (1, 2, 4):** SMG 15 damage (falloff from 15 m); rifle family falloff 25-70 m to 60 %, hip cone 5 mrad, ADS
+  multiple 0.2; shotguns (pump 10 × 12 in 55 mrad, Sawed-Off 14 × 10 in 85, Auto 8 × 8 in 65; family falloff 8-28 m);
+  Precision Rifle 90 damage, 50-tick bolt; Marksman 34 at 18 ticks; Pulse Pistol falloff 15-45 m to 45 %; Spin Gun
+  raise 30 ticks. Fastest body kill of the seven: SMG to 15 m, rifle 20-50, revolver 60-75, Precision from 100 m.
+  `benchmarks.test.ts` "each gun owns its range" pins it.
+- **Sim (5):** `BUTTON_AUTO_RELOAD` (16384; masked off by older hosts) + `autoReloadDue` (gunplay.ts), read by Match and
+  prediction alike; a quick-melee press breaks a reload struck or not (Match; prediction now mirrors it: it didn't
+  before, so the HUD showed a reload the host had stopped). Tests: `reload.test.ts`, `prediction.test.ts` (reloads
+  predicted exactly with auto-reload and a punch).
+- **Client (3, 6):** `game/combatReadouts.ts`: options (auto-reload on, damage numbers off, spray pattern off;
+  localStorage `tiletrigger.autoReload` / `.damageNumbers` / `.sprayReadout`), `DamageNumbers`, `SprayReadout`.
+  Damage dealt reaches only the shooter: `PrivateState.dd` ([tick, amount, flags, x, y, z]; Match `noteDealt`, humans
+  only, a few snapshots kept, a shell's pellets summed; boards, crates and barrels via `Scenario.shootableTarget`,
+  falloff included). Tests: `damageNumbers.test.ts`, `combatReadouts.test.ts`; e2e `gunplayReadoutChecks` in the
+  `arsenal` flow (numbers on/off, auto-reload, melee break).
+- **The Battle Rifle** (`core.battle_rifle`, code 49): Frontier Rifle model (Meshy Community, built and unused),
+  pickup `core.weapon_battle_rifle`, Military set, Training Range front rack (x -2, z 20; MapMaker import → palette →
+  inspector → export, validate-map 0 issues). Holds from a gridded side view; grip sheet looked at (Ranger).
+- **Not done / for the owner:**
+  - **Lever action (G2):** the Frontier Rifle is not a lever gun and no lever model exists in the repo or the Drive.
+    Proposal: the owner generates a lever-action rifle on Meshy (owned) or drops a CC0 one in the Drive; the
+    weapon (new `lever` family per spec §13: strong damage, a fire/rechamber rhythm, round-by-round loading like the
+    revolver) is then a small data job.
+  - **Battle Rifle model:** the brief wanted an FAL/M14/G3/SCAR from the 3DModelsCC0 pack; the pack has none (its 19
+    models are listed in IMPORT_LIST.md) and the Drive's 2026-11-08 Meshy drop is vehicles. The Frontier Rifle (a
+    scoped near-future rifle) stands in; swap `view.model` if the owner wants a realistic one.
+  - **Recoil readout as a board on the map:** done as a HUD panel (Options → HUD → Spray pattern) because a board that
+    draws the pattern is a new MapMaker piece, i.e. editor code under the MapMaker lane's claim.
+  - **The Machine Pistol** is still dominated by the SMG (audit weak item 5; not in this brief). Candidates 7 (8-client
+    latency/loss harness) and 8 (bot weapon choice from measured TTK) are next on the audit's list.
+  - The MapMaker editor with `?test=1` makes the same entity ids every session: a pickup placed there collided with
+    one the audit placed (`pickup_ekrqxstr16`); placing without `?test=1` worked. For the MapMaker lane.
+
 ### Fireteams, part 1 (`wip/fireteams`, agent, 2026-11-08; owner said "Go"; green on `check/fireteams` at 4610a3b, run 42493762584; LANDED: main 4610a3b; docs/FIRETEAMS_PLAN.md "Part 1", docs/BOTS.md "Fireteams")
 - **What players see:** a **Fireteams** variant chip in Match setup for TDM, CTF, KotH, Bomb, Hostage and
   Breakthrough, with **Squad size 4 / 5 / 6** (5 standard) beside the score. In play, "You lead a fireteam of 5 ·

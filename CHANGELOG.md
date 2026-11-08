@@ -8,6 +8,23 @@ made only on a commit that passed CI on a check branch.
 
 ## Unreleased
 
+**Gunplay pass 2** (docs/GUNPLAY_AUDIT.md, "Pass 2"; the audit's candidates 1-6, owner-approved):
+- **Every gun owns its range.** The SMG wins up close (0.40 s to a kill to 15 m, the Assault Rifle 0.50; hip fire at
+  25 m 0.77 s, was 3.4); the Assault Rifle owns 20-50 m and needs its sights far out (wider hip cone, falloff from
+  25 m); the Precision Rifle kills a body in two shots in under a second at every range (was 1.25-1.38 s) and owns
+  100 m and beyond; the Marksman is the mid-range one (three rounds to 60 m, 200 rpm); the Pulse Pistol's beam now
+  fades past 15 m.
+- **Shotguns kill across a room:** the pump gun's shell kills to 9 m (was 5), the Sawed-Off's two barrels to 9 m, the
+  Auto Shotgun in three shells at 10 m (was eight).
+- **Reloads:** auto-reload (Options → Controls, on by default): an empty magazine reloads by itself; a quick melee
+  breaks a reload on your screen too (it already did in the match); the Spin Gun comes up 0.3 s quicker.
+- **New HUD options** (Options → HUD, off by default): **damage numbers** over what you hit (gold for the head, cyan
+  through armour, on the Training Range's boards what that round would do to a body) and a **spray pattern** panel
+  that plots your last burst and how long your aim took to settle.
+- **New weapon: the Battle Rifle** (slot 3): heavy, accurate, 300 rounds a minute, 20 to a magazine; four rounds kill
+  to 40 m, two to the head anywhere, and it climbs hard held down. In the Military set, as a pickup, and on the
+  Training Range's front rack.
+
 **Fixes**
 - Debris from a vehicle or turret blowing up no longer falls through the ground: its chunks start above it, and any
   that get under the world anyway are cleared away.
