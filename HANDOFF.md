@@ -149,6 +149,12 @@ The workflow is unchanged (CLAUDE.md):
     (`thinkMounted`: `nav.findPath`) through doors narrower than the vehicle; bots bail out at full speed; an
     empty hovercraft coasts on (accel × 0.35). Options: brake an empty hovercraft, or keep bots from driving routes
     narrower than the hull, or have foot bots route round a parked vehicle.
+  - **Tanks** (coordinator's question, after the tanks job): not the same cause. `pnpm bot-report iron_tide
+    --seeds=1,2,3,4 --seconds=300` (CTF), main 110ee71 vs this: tanks given up stuck 9 in 18 drives → 9 in 16, 9 → 7
+    of them at (±4, 0, -2). That spot has 7.4 m over it: it is the row of pillars at z -4 (x ±4..6, solid to 4.1 m),
+    the long hull against them, not a ceiling. Left for the tanks work. (bot-report's `vehicles inside the level`
+    needs this branch's `boxClear(…, skip, levelOnly)`: run on main's sim it counts each vehicle's own box.)
+  - Landed: main = da68ed3 (green on `check/hover-stuck`, run 42429583559).
 
 ## Start here (session of 2026-11-04, handed off to the next account)
 
