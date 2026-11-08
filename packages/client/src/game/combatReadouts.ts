@@ -101,7 +101,9 @@ export class DamageNumbers {
     el.textContent = String(Math.round(amount));
     // Several numbers on one target in a burst: each starts a little to the side of the last.
     const sameSpot = this.live.filter((n) => Math.hypot(n.at.x - at.x, n.at.y - at.y, n.at.z - at.z) < 0.6).length;
-    el.style.setProperty('--dx', `${((sameSpot % 5) - 2) * 14}px`);
+    el.style.setProperty('--dx', `${[0, 14, -14, 28, -28][sameSpot % 5]}px`);
+    // Hidden until the next frame puts it over the target (update).
+    el.style.visibility = 'hidden';
     this.root.append(el);
     this.live.push({ el, at, born: now });
     while (this.live.length > MAX_NUMBERS) this.live.shift()!.el.remove();
