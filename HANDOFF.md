@@ -44,7 +44,13 @@ view of a vehicle ... the driver's seat looks empty."
   hides it at once (`local.alive`) and the dead pose disposes it as on foot; the kill cam and spectating watch others.
 - **Tests:** unit `client/test/ownBody.test.ts`; e2e `passengerChecks` (`vehicles` flow): over the same 90+ frames at
   18 m/s, your body drawn, sitting, 0.00 m off the driver's seat point; H to the cockpit hides it, H back draws it,
-  out on foot (first person) hidden. Before the fix: drawn 0 of 98 frames.
+  out on foot (first person) hidden. Before the fix: drawn 0 of 98 frames; after, 99 of 99 sitting (locally, the
+  flow passes with the tank part skipped: this box was at load 20-30). `CharacterAnimator.settleSeat`: your body,
+  hidden in the cockpit, appears already sitting when H goes to the chase view (it eased up from standing over a few
+  frames). Screenshots (scratchpad, may not survive): `driver-body/{before,after}/vehicles-passenger-speed.png`,
+  `chase-before-after-zoom.png`, `after/close-chase*.png`, `after/vehicles-driver-cockpit.png`.
+- **Pitfall:** `/home/user/wt-pickups` (the node_modules other worktrees symlinked to) was deleted on 2026-11-08 during
+  the disk-full cleanup; this worktree's links now point into `/home/user/splitters/node_modules`.
 
 **Main** = 63731808 plus this note, green. Today's landings are on main, in order:
 - Breakthrough;
