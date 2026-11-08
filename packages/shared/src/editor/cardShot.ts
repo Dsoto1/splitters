@@ -31,12 +31,18 @@ export function cardCamera(position: Vec3, yaw: number, pitch: number): CardCame
   return { position: [r2(position.x), r2(position.y), r2(position.z)], yaw: r4(y), pitch: r4(Math.max(-1.55, Math.min(1.55, pitch))) };
 }
 
+/** Kept at eye level, the camera climbs onto nothing higher than this over the floor it's on (a jump's height, about). */
+export const CARD_EYE_CLIMB = 1.2;
+
 /**
  * Eye level: the camera moved to CARD_EYE_HEIGHT above the floor, roof or ground under it (the highest one no higher
- * than the camera), its look unchanged. Null over nothing at all (the caller keeps the camera as it is).
+ * than the camera), its look unchanged. `kept`: the camera is at eye level already (moving with it): what's under it
+ * counts only up to CARD_EYE_CLIMB over the floor it stands over, so a wall top or a crate just under the eye doesn't
+ * lift it. Null over nothing at all (the caller keeps the camera as it is).
  */
-export function eyeLevel(position: Vec3, boxes: readonly WorldBox[], ground: TerrainData | null): Vec3 | null {
-  const rest = restUnder(boxes, ground, position.x, position.z, position.y);
+export function eyeLevel(position: Vec3, boxes: readonly WorldBox[], ground: TerrainData | null, kept = false): Vec3 | null {
+  const from = kept ? position.y - CARD_EYE_HEIGHT + CARD_EYE_CLIMB : position.y;
+  const rest = restUnder(boxes, ground, position.x, position.z, from);
   if (!rest) return null;
   return { x: position.x, y: rest.y + CARD_EYE_HEIGHT, z: position.z };
 }

@@ -220,6 +220,11 @@ describe('The card-shot camera (MapMaker overhaul Phase 3 item 8)', () => {
     const block = eyeLevel({ x: 20, y: 30, z: 20 }, boxes, doc.terrain);
     expect(block?.y).toBeCloseTo(4.7);
     expect(eyeLevel({ x: 500, y: 30, z: 500 }, boxes, null)).toBeNull();
+    // Kept at eye level beside the 3 m block, then over it: it doesn't climb onto it (3 m is more than a jump);
+    // straight over it from high up, it does.
+    const ground = eyeLevel({ x: 17, y: 1.6, z: 20 }, boxes, doc.terrain, true)!;
+    expect(ground.y).toBeCloseTo(1.55);
+    expect(eyeLevel({ x: 20, y: ground.y, z: 20 }, boxes, doc.terrain, true)?.y).toBeCloseTo(1.55);
   });
 
   it("the card's frame and lens: 16:9, the capture's FOV over the frame's height", () => {

@@ -361,6 +361,23 @@ gets overloaded above that: local e2e times out and flakes). Prune landed worktr
      or Defend the objective keeps its post. Keep that?
   3. The party preset (Part 3) and the squad HUD (Part 2) are next.
 
+### MapMaker overhaul: Play from here, the plan view, the card shot (`wip/mapmaker-p3a`, agent, 2026-11-08; Phase 3 items 1, 2 and 8)
+- **Built:** Play from here (Shift+F5, ▶ Here), the plan view (K, Plan; Export PNG), the card-shot camera (Map
+  properties → Card shot: Set card shot…, eye level, Preview, Clear). As built: docs/MAPMAKER_OVERHAUL_PLAN.md under
+  each item; how-to: BUILDING_KIT.md, "Testing, the plan and the card shot (MapMaker)".
+- **Where:** shared `editor/{playFromHere,planView,cardShot,workflowKeys}.ts` (unit tests `mapmakerWorkflow.test.ts`);
+  client `editor/{planView,cardShot}.ts`, wired into `editorApp.ts` with a few lines; the match: `Match.startHere` and
+  `Combatant.startAt` (sim/match.ts), `LocalMatchOptions.startAt` (matchHost.ts), the first life's pitch (session.ts);
+  e2e `editorWorkflowChecks` in `editorux`.
+- **Map format v30:** `metadata.cardCamera` (position, yaw, pitch), a no-op migration, left out of the content hash
+  (like `thumbnailCamera`), so a stamped map's release stays current. `capture-map-shots.mjs` uses it first.
+- **Keys:** Shift+F5 and K, in `editor/workflowKeys.ts` until `wip/mapmaker-p1a`'s key table (`keymap.ts`) is on main:
+  then move both rows into it (two `case`s in the keydown switch today: F5 with Shift, KeyK).
+- **Card shots redone with it** (owner's addendum): Step Temple at eye level on the south-west hill, looking up the
+  terrace stair at the temple; Shingle Point at eye level on the seawall's west end, looking down the beach to the
+  sea. Set through the real editor (scratch Playwright driver: Import, camera, Set card shot…, Enter, Export); each
+  map file's diff is the `cardCamera` and the format version; the pictures from `capture-map-shots.mjs`.
+
 ### MapMaker overhaul: measure, props on surfaces, Randomise, turning by mouse (`wip/mapmaker-p1b`, agent, 2026-11-08; Phase 1 items 3-4 and Phase 3 item 9)
 - **Built:** the measure tool (U), props dropped onto the surface under the pointer, Randomise in the prop tool, the
   rotate ring on the selection gizmo and the inspector's quick facings. As built: docs/MAPMAKER_OVERHAUL_PLAN.md under

@@ -161,6 +161,8 @@ export function startCardFrame(host: CardShotHost, mode: 'set' | 'preview'): voi
   };
   place();
   const viewH = () => view.scene.getEngine().getRenderingCanvasClientRect()?.height ?? window.innerHeight;
+  /** The camera is at eye level already (Eye level on, snapped). */
+  let kept = false;
   // The shot as the card shows it: no grid, gizmo or markers, every level drawn whole (all back on close).
   view.photoMode(true);
   const allBefore = host.showAll();
@@ -169,9 +171,14 @@ export function startCardFrame(host: CardShotHost, mode: 'set' | 'preview'): voi
   // Each frame: the card's lens over the frame, and eye level kept while it's on.
   const tick = view.scene.onBeforeRenderObservable.add(() => {
     cam.fov = cardViewFov(rect.h, viewH());
-    if (!eyeBox.checked) return;
-    const at = eyeLevel({ x: cam.position.x, y: cam.position.y + 0.05, z: cam.position.z }, host.standOn(), host.ground());
+    if (!eyeBox.checked) {
+      kept = false;
+      return;
+    }
+    // The first time from the camera down; after that from the floor it's over (it doesn't climb onto a wall top).
+    const at = eyeLevel({ x: cam.position.x, y: cam.position.y + 0.05, z: cam.position.z }, host.standOn(), host.ground(), kept);
     if (at && Math.abs(at.y - cam.position.y) > 1e-3) cam.position.y = at.y;
+    kept = !!at;
   });
   // Turning eye level on from high up: drop to it from where the camera is.
   eyeBox.addEventListener('change', () => eyeBox.blur());
