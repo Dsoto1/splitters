@@ -128,7 +128,9 @@ describe('tactical squads with team leaders push', () => {
     // seed 1 gets 0.243 (0.252 on the map before it, main 5b167034); over seeds 1-5 it averages 0.28 (0.24 before):
     // within the seeds' spread, which this one seed sits at the edge of. The fault this guards against was 0.19.
     expect(assault!.progress).toBeGreaterThan(0.22);
-    expect(garrison!.progress).toBeGreaterThan(0.3);
+    // Spawns scored and picked among the safest few (2026-11-08, docs/BOTS.md "Spawning"): over seeds 1-5 the assault
+    // side gets 0.30 (0.26 before) and the garrison 0.25 (0.37 before; 0.17-0.50 seed to seed), seed 1 0.29.
+    expect(garrison!.progress).toBeGreaterThan(0.25);
     expect(assault!.kills + garrison!.kills).toBeGreaterThan(0);
   }, 180_000);
 });

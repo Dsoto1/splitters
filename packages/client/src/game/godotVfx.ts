@@ -1297,6 +1297,8 @@ function materialFor(scene: Scene, mat: Json, root: Json, set: string | undefine
   const param = (k: string): unknown => {
     // A tint (content/vfx.json `tint`) takes the effect's own colour: the secondary (and tertiary) one its controller sets.
     if (tinted && (k === 'secondary_color' || k === 'tertiary_color')) return { '@Color': tinted };
+    // ...and the white-hot core takes a pale wash of it, so the whole burst reads as that colour.
+    if (tinted && k === 'primary_color') return { '@Color': [0.55 + 0.45 * tinted[0], 0.55 + 0.45 * tinted[1], 0.55 + 0.45 * tinted[2], 1] };
     const own = mat[`shader_parameter/${k}`];
     if (own !== undefined) return own;
     // The effect's controller sets these on every material (VFXControllerBB / VFXExplosionBB).
@@ -1799,7 +1801,7 @@ export interface VfxOptions extends VfxPlace {
   gain?: number;
   /** One-shots: seconds its brightness takes to come up to `gain` from nothing, instead of popping in. */
   fadeIn?: number;
-  /** Recolour it (#rrggbb): its secondary and tertiary colours, the ones Binbun's effect controllers set (content/vfx.json `tint`). */
+  /** Recolour it (#rrggbb): its secondary and tertiary colours, the ones Binbun's effect controllers set, and a pale wash of it on its core (content/vfx.json `tint`). */
   tint?: string;
 }
 

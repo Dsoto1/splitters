@@ -5572,11 +5572,12 @@ export class Match {
     const shared = this.spawnPoints.filter((sp) => sp.team === null);
     // A team without spawns of its own (more teams than the map has bases) uses the shared ones, else anyone's, farthest from enemies.
     const candidates = own.length ? own : shared.length ? shared : this.spawnPoints;
-    // Team modes: spawns near teammates out of a fight win. On shared spawns the sides rotate, so each side keeps
-    // its own end of the map (SpawnSides) wherever the fight has moved: no spawn flips.
+    // Team modes on shared spawns: the sides rotate. Spawns near teammates out of a fight win, and each side keeps its
+    // own end of the map (SpawnSides) wherever the fight has moved: no spawn flips. (On a side's own spawns, the
+    // squad spawn below puts them beside a teammate.)
     const rotating = !!this.teams && c.faction !== null && !own.length;
     const calm = this.tick - TICK_RATE * 4;
-    const mates = this.teams && c.faction ? this.combatants().filter((o) => o !== c && o.alive && o.faction === c.faction && (o.hurtAt ?? -Infinity) < calm).map((o) => o.move.pos) : undefined;
+    const mates = rotating && c.faction ? this.combatants().filter((o) => o !== c && o.alive && o.faction === c.faction && (o.hurtAt ?? -Infinity) < calm).map((o) => o.move.pos) : undefined;
     const side = rotating && c.faction ? this.spawnSides.of(c.faction) : null;
     // Made-up spawn points on a side: the ones nearer the side's base are preferred (they are on its own third anyway).
     const home = own.length && own.some((sp) => sp.generated) && c.faction ? this.sideHome(c.faction) : null;

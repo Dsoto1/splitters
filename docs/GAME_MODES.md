@@ -26,8 +26,9 @@ and the higher team score wins.
 ## Spawns, protection and awards
 
 Every mode spawns people and bots by one rule (docs/BOTS.md, "Spawning"): each spawn point is scored for its
-distance to the nearest enemy, enemy sight lines to it and fresh deaths near it (team modes: living teammates near
-it, and on shared spawns each side's own end of the map, so the sides don't swap ends), and one is picked at random
+distance to the nearest enemy, enemy sight lines to it and fresh deaths near it (team modes on shared spawns: living
+teammates near it and each side's own end of the map, so the sides don't swap ends; spawning beside a teammate picks
+one no enemy can see), and one is picked at random
 among the safest few. Deathmatch and Team Deathmatch give every respawn 3 s of **spawn protection** (Roulette 2 s):
 nobody else's damage gets through until it runs out or you fire, throw or strike. The numbers are data:
 `content/match-play.json` (`node tools/content/match-play.mjs` checks them and writes

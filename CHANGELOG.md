@@ -8,6 +8,25 @@ made only on a commit that passed CI on a check branch.
 
 ## Unreleased
 
+**Deathmatch and Team Deathmatch play better** (owner, 2026-11-08):
+- **Safer spawns.** Every spawn point is scored for its distance to the nearest enemy, enemy sight lines to it and
+  fresh deaths near it, and one is picked at random among the safest few, the same for people and bots. Team modes
+  favour points near teammates who aren't in a fight; on shared spawns each side keeps its own end of the map, so the
+  sides don't swap ends; spawning beside a teammate picks one no enemy can see.
+- **Spawn protection.** Every respawn in Deathmatch and Team Deathmatch is shielded for 3 s (Roulette 2 s): nobody
+  else's damage gets through until it runs out or you fire. A faint shimmer shows it (a steady glow with Reduce
+  flashing on), and a line under your crosshair. Bots hold fire for most of it and mostly leave shielded enemies be.
+- **Player caps.** Every map has a recommended and a most player count for each mode, worked out from its size and
+  spawn points unless set in MapMaker (Map properties, Players by mode). Match Setup shows them; map changes and the
+  rotation keep matches within them.
+- **Awards in every mode:** Most Accurate, Longest Streak, Nemesis and Most Revenge Kills on the scoreboard at the end
+  (with Roulette's own in Roulette), and **revenge and nemesis callouts**.
+- **New effects:** a blue burst for armour pickups, sparks when armour breaks, a low flame at the feet while a
+  powerup is on, a heavy hit's impact (and your screen's edges darkening when it's you), and a burst over a player on
+  a kill streak. All respect Reduce flashing.
+- bot-report measures the pace of play: spawn deaths, time between fights, engagement distance and how evenly kills
+  spread over the map.
+
 **Hovercraft no longer get stuck under structures** (owner, 2026-11-07: a Hauler stuck under Iron Tide's platforms):
 a vehicle squeezed into a gap narrower than itself (Iron Tide's door at the top of the stairs) used to rise up it into
 the lintel and the roof and stay there; it now stops at floor height and backs out. Hovercraft (and other ground

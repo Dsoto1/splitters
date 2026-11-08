@@ -163,7 +163,9 @@ export function pickSpawn(c: SpawnChoice): number {
   const n = c.candidates.length;
   if (n === 0) return -1;
   const scored: { i: number; s: number; seen: number }[] = [];
-  for (let i = 0; i < n; i++) scored.push({ i, s: spawnScore(c.candidates[i]!, c), seen: 0 });
+  // A little randomness (0-3) between near-equal points, so ties (a round's first spawns, nobody about) spread over all
+  // of them instead of going to the first listed.
+  for (let i = 0; i < n; i++) scored.push({ i, s: spawnScore(c.candidates[i]!, c) + c.rng() * 3, seen: 0 });
   scored.sort((a, b) => b.s - a.s || a.i - b.i);
   const checked = Math.min(n, W.sightCandidates);
   if (c.sees) {

@@ -191,6 +191,8 @@ const CALM_MOMENT = { scale: 0.8, gain: 0.55 } as const;
 /** Spawn protection's shimmer: the pack's ball at this strength, and the soft blue the body glows (both faint). */
 const SHIELD_SHIMMER = 0.32;
 const SHIELD_GLOW = new Color3(0.35, 0.7, 1);
+/** How much of SHIELD_GLOW the body takes at most (a faint tint, the body still reads). */
+const SHIELD_GLOW_PEAK = 0.14;
 
 interface Avatar {
   /** Spawn protection's glow on the body now (0..1, eased), and the tenth it was last set at. */
@@ -1218,10 +1220,11 @@ export class GameView {
     if (!fx) return false;
     const cam = this.scene.activeCamera?.globalPosition;
     if (cam && Math.hypot(cam.x - at.x, cam.y - at.y, cam.z - at.z) > ACCENT_RANGE * 2) return false;
-    // Reduce flashing: the bright moments of a fight (armour breaking, a heavy hit, a streak's burst) play smaller and
-    // dimmer, easing in instead of popping (reduceFlashing.ts).
+    // A fight's moments (armour breaking, a heavy hit, a streak's burst: `calmable`) count against the full one-shot
+    // budget, not the minor one impacts' accents fill in a firefight. Reduce flashing: they play smaller and dimmer,
+    // easing in instead of popping (reduceFlashing.ts).
     const calm = !!o.calmable && reduceFlashing();
-    return this.vfx.play(fx.pack, fx.effect, new Vector3(at.x, at.y, at.z), { scale: fx.scale * (o.size ?? 1) * (calm ? CALM_MOMENT.scale : 1), minor: true, ...(fx.tint ? { tint: fx.tint } : {}), ...(calm ? { gain: CALM_MOMENT.gain, fadeIn: BLAST_FADE_IN } : {}) });
+    return this.vfx.play(fx.pack, fx.effect, new Vector3(at.x, at.y, at.z), { scale: fx.scale * (o.size ?? 1) * (calm ? CALM_MOMENT.scale : 1), minor: !o.calmable, ...(fx.tint ? { tint: fx.tint } : {}), ...(calm ? { gain: CALM_MOMENT.gain, fadeIn: BLAST_FADE_IN } : {}) });
   }
 
   /**
@@ -2118,7 +2121,7 @@ export class GameView {
       const step = Math.round(a.shieldGlow * 10);
       if (step !== (a.shieldStep ?? 0) || (reglow && step)) {
         a.shieldStep = step;
-        const k = (step / 10) * 0.35;
+        const k = (step / 10) * SHIELD_GLOW_PEAK;
         const base = glowColor ? Color3.FromHexString(glowColor).scale(0.55) : Color3.Black();
         a.mat.emissiveColor = base.add(SHIELD_GLOW.scale(k));
         if (a.anim instanceof CharacterAnimator) for (const m of a.anim.ch.meshes) if (m.material && 'emissiveColor' in m.material) (m.material as unknown as { emissiveColor: Color3 }).emissiveColor = (glowColor ? Color3.FromHexString(glowColor).scale(0.35) : Color3.Black()).add(SHIELD_GLOW.scale(k));

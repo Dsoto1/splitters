@@ -24,13 +24,14 @@ a cheap score:
 - used in the last 3 s: up to −20, fading (enough to break ties, not to send anyone nearer an enemy);
 - fresh deaths: each player an enemy downed within 12 m in the last 10 s costs up to 18 (less with distance and
   age; at most twice that however many fell there): whoever killed them may still be watching;
-- team modes: +6 for each living teammate out of a fight (not hurt for 4 s) within 25 m, up to three;
-- team modes on shared spawns: each side keeps its end of the map (`SpawnSides`: a running average of where each
+- team modes on shared spawns: +6 for each living teammate out of a fight (not hurt for 4 s) within 25 m, up to
+  three; and each side keeps its end of the map (`SpawnSides`: a running average of where each
   side spawned): up to ±8 for being nearer your own side's end than an enemy side's, so the sides don't swap ends
   (no spawn flips) while safety still decides;
 - made-up points: a small pull toward the side's own base.
 
-Then the best eight are checked for enemies within 60 m with a clear sight line to the spawn (the four nearest
+A little randomness (0-3) separates near-equal points (a round's first spawns spread over all of them). Then the
+best eight are checked for enemies within 50 m with a clear sight line to the spawn (the four nearest
 each): −35 for every one that can see it (at most 32 rays a spawn). One is then picked **at random among the best
 three within 8 of the best**, so nobody can learn where the next spawn will be and a few points share the load.
 **Squad spawn** (team modes, 70 % of spawns, beside a teammate out of the fight with no enemy within 20 m): of up to
