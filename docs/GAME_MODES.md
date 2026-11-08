@@ -608,6 +608,16 @@ low-scoring CTF map: its bases are 108 m apart on a sniper causeway.
   bots within 30 m. **Leader hunt** (`vip`): in Team Deathmatch, downing an
   enemy leader scores 3 extra for your team (the feed calls it out).
 
+- **Fireteams** (a variant of Team Deathmatch, CTF, King of the Hill, Bomb, Hostage and Breakthrough: Match setup's
+  Variants row, its squad size 4/5/6 beside the score; servers `RULES.fireteams`; docs/FIRETEAMS_PLAN.md, BOTS.md
+  "Fireteams"). Every person leads their own squad of bots, and bot-led squads of the same size fill each team;
+  nobody joins another person's squad. A person joining mid-match takes over a bot-led squad (its leader steps down,
+  nobody respawns); a person leaving hands theirs to a bot. **Hold B** for the order wheel (a tap is still the quick
+  messages; a controller holds d-pad up, a phone has an Orders button): Follow me, Hold here, Go there (your ping or
+  your aim), Attack that, Defend the objective, Regroup; a squadmate answers. **Squad spawns:** squadmates respawn
+  beside their leader when it's safe there (no enemy within 20 m or in sight, no fresh deaths), else at the team's
+  spawn. The HUD shows your squad's order.
+
 ## Scenario chains
 
 Co-op maps can be played back to back:

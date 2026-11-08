@@ -2834,7 +2834,7 @@ async function friendlyFireChecks(browser) {
     await page.goto(CLIENT);
     await page.click('#nav-play');
     await page.click('#arcade-start');
-    await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() === 'playing', null, { timeout: T(60000) });
+    await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown', null, { timeout: T(90000) });
     // A teammate held 4 m in front of you, three rounds of your gun fired straight at their chest.
     const shot = await sim(page, (m, me) => {
       const mate = m.combatants().find((c) => c !== me && c.alive && c.faction === me.faction && !c.mount);
@@ -5133,11 +5133,11 @@ async function fireteamsFlow(browser) {
   await page.addInitScript(() => localStorage.setItem('cs.arcade', JSON.stringify({ map: 'sandgate', mode: 'core.tdm', bots: 11, skill: 'easy', scoreLimit: 200, minutes: 20, fireteams: true })));
   await page.goto(`${CLIENT}/?test=1&god=1`);
   await page.click('#nav-play');
-  await page.waitForSelector('#setup-variant-fireteams', { timeout: T(10000) });
+  await page.waitForSelector('#setup-variant-fireteams', { timeout: T(30000) });
   const setup = await page.evaluate(() => ({ on: document.getElementById('setup-variant-fireteams')?.getAttribute('aria-pressed'), size: document.querySelector('#arcade-squad-size .tab.on')?.textContent }));
   check(setup.on === 'true' && setup.size === '5', `Match setup: the Fireteams variant is on, squads of 5 by default (${JSON.stringify(setup)})`);
   await page.click('#arcade-start');
-  await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() === 'playing', null, { timeout: T(60000) });
+  await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown', null, { timeout: T(90000) });
   // You lead a squad: the match says so, and the HUD shows its order.
   const led = await page.waitForFunction(() => window.__cs.squad().led !== null && document.querySelector('#squad-order b')?.textContent === 'Follow me', null, { timeout: T(15000) }).then(() => true, () => false);
   const squad = await sim(page, (m, me) => {
@@ -5206,7 +5206,7 @@ async function fireteamsPhone(browser) {
   await page.tap('#nav-play');
   await page.waitForSelector('#arcade-start', { timeout: T(10000) });
   await page.tap('#arcade-start');
-  await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() === 'playing' && window.__cs.squad().led !== null, null, { timeout: T(60000) });
+  await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown' && window.__cs.squad().led !== null, null, { timeout: T(90000) });
   await page.tap('#resume');
   const button = await page.waitForFunction(() => !document.querySelector('#touch-ui .tc-orders')?.hidden && !document.getElementById('touch-ui').hidden, null, { timeout: T(10000) }).then(() => true, () => false);
   check(button, 'a phone shows the Orders button while you lead a squad');

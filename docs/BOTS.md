@@ -952,6 +952,56 @@ once it is past a trip's middle, counted once a life, the way it really took rat
 The scorecard has "two routes" and "busiest route" (time) and "two ways" and "busiest way" (choice) per mode, and the
 judge's line for each map its busiest route and way.
 
+## Fireteams (docs/FIRETEAMS_PLAN.md, Part 1)
+
+A variant of every team mode (`rules.fireteams`, the squad size 4-6; `sim/fireteams.ts`). It replaces the director's
+squads by proximity with **fixed squads** made from the roster.
+
+- **Squads** (`Fireteams.sync`, when the roster changes and every 2 s; slot order, no randomness): every person leads a
+  squad of the size, their bots filling it; bot-led squads of the same size fill the rest of the team, as even as can
+  be (11 bots in squads of 5: 4, 4, 3). No person is ever a member of another person's squad. A person joining
+  mid-match (the match removes a bot for them, as before) takes over a bot-led squad, the one with a hole first: its
+  bot leader steps down to a member, nobody respawns. A person's squad comes first: a hole in it is filled from a
+  bot-led squad (the member nearest them walks over), and one over size gives its furthest member back. A person
+  leaving (or away) hands their squad to its best bot leader (`leadAbility`: loyalty, tactical sense, cowards last).
+  Player caps don't change: squads only group the players there are (more people than squads of the size: every
+  person still leads one, the bots spread among them).
+- **What members do** (`memberGoal`, through `Match.botGoal` ahead of every other goal but a carrier's): follow the
+  leader (the squad's `anchor`, the leader's position moved on every 3 m, so routes aren't asked afresh every think),
+  or the squad's order. A person's order is `OrderGoal.order` (ORDER_WEIGHT 2.4 in the scored choice: above noises and
+  chases, below cover and a gun; bots fight what they see); keeping with a bot leader is `OrderGoal.squad`
+  (SQUAD_WEIGHT 1.3: above the mode's goals, and a member turns to a noise or a chase within SQUAD_NOTICE, 15 m).
+  A member carrying the objective (a flag, the bomb: `ModeLogic.blocksVehicle`) takes it where the mode says.
+- **Bot-led squads use the team brain** (`directBots`): the leader is a normal bot (the mode's goal, the team brain's
+  jobs, pushes and routes); its members follow it and are left out of the team brain's groups (`ordered`). In Team
+  Deathmatch the director keeps its squad goals and routes for them (`BotDirector.update`'s `fixed`: the bot-led
+  squads as its clusters, leader first), so a bot-led fireteam plays the same pushes a proximity squad did. Every bot
+  plays the `squad` role (no lone campers or snipers wandering off).
+- **Orders** (the order wheel: hold B, hold a controller's d-pad up, the Orders button on a phone; `PlayerInput.say`
+  110-115, ORDER_SAY_BASE + kind): Follow me, Hold here (where the leader stands), Go there (their ping in the last
+  10 s, else the point they aim at), Attack that (the enemy in their sights, else their fresh ping's; members are told
+  where it is), Defend the objective (`ModeLogic.defendSpot`: the hill in play, the sector's objective nearest; else the
+  nearest end of the side's trips to hold: its flag, a site, the hostages), Regroup. `checkOrder` checks them on the
+  server: only a person leading a squad, alive, at most one every 0.3 s; a refusal tells them why (the 'squad' event,
+  `deny`). The first member alive answers with a callout ("Holding here!": the 'squad' event, `ack`, in the chat
+  feed). The B menu's Follow me! and Hold here! order the leader's own squad. Pings and the other quick messages work
+  as before.
+- **Ending orders** (`Fireteams.step`, 10 times a second): Attack that ends when the target is down (or after 45 s),
+  Regroup when half the squad is within 8 m (or after 20 s): both turn back into Follow me. An order is **carried out**
+  (`FireteamOrder.done`, measured) when half the squad's living members are within its radius (+2 m).
+- **The leader down**: the squad holds and fights where each member stood (a Hold here, Go there or Defend the
+  objective stays in force). Back, they form up on them (Regroup), a place order staying.
+- **Respawn on the leader** (`Match.fireteamSpawn`): a squadmate respawns beside its leader when it's safe there
+  (`spawns.ts leaderSpotSafe`: no enemy within 20 m, no fresh deaths, out of sight of the nearest enemies, by the spawn
+  choice's own weights; the leader on foot on the ground, not hurt in 4 s, where the mode allows a squad spawn), else
+  at its team's spawn (never beside another teammate).
+- **Measured** (`bot-report --fireteams=N --orders`, squadMeasures.ts): cohesion (each member's distance to its leader,
+  once a second), the share of members alive, and orders carried out and in how long (`--orders`: every squad's leader
+  gets an order every 30 s in turn). With the variant off, the same squads are worked out alongside and measured, for
+  comparison. Numbers: docs/FIRETEAMS_PLAN.md, "Part 1".
+- **Hooks for Parts 2 and 3**: a squad's `id`, `members`, `order` and `anchor` (formations, bounding, the squad HUD,
+  scores and MVP read them); the 'squad' events carry the squad id.
+
 ## Snipers (Bot AI Phase B)
 
 The sniper role plays like a sniper (`bots/sniper.ts`; BOT_AI_PLAN.md Phase B item 5; the owner: "camping in tucked

@@ -2427,9 +2427,10 @@ export class Match {
   private botGoal(c: Combatant, hostiles: Combatant[], zombies: boolean, coop: boolean): { pos: Vec3; radius: number } | null {
     const npc = c.npc;
     if (npc) return npc.role === 'zombie' ? this.nearestGoal(c, hostiles, 1.5) : this.encounters.goalFor(c.slot);
-    // Fireteams: a squad member does what its squad was told (its leader's order, following its leader).
+    // Fireteams: a squad member does what its squad was told (its leader's order, following its leader), unless it
+    // carries the objective (a flag, the bomb: what keeps a carrier out of vehicles), which it takes where it goes.
     const told = this.fireteamGoal(c);
-    if (told) return told;
+    if (told && !this.mode?.blocksVehicle(c)) return told;
     const order = this.teammateOrder(c);
     if (order) return order;
     const squad = this.squadGoal(c);
