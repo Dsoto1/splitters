@@ -173,6 +173,52 @@ gets overloaded above that: local e2e times out and flakes). Prune landed worktr
 - Earlier the same day: content scalability steps 2–6, perf toolset, flaky e2e fixes, Runway Nine airliner, map
   reworks batches 2–3, character fixes rounds 2–3 (see the entries below and CHANGELOG).
 
+### Tanks (`wip/tanks`, agent, 2026-11-07; Queued item 1; CI on `check/tanks`)
+
+**What changed** (all in the tank's vehicle data, content/vehicles/tank.json, with the generator's schema and checks,
+the Workbench fields and docs/CONTENT_PIPELINE.md "Tanks and armour"; GUNPLAY_SPEC §48 note):
+- **Sealed crew** (`armour.sealed`): nobody aboard can be shot, blasted or struck from outside (`Match.sheltered`: out
+  of every shot's targets, splash and `damage()`); when it is destroyed everyone inside dies (`core.wreck`, credited to
+  whoever destroyed it) and the wreck and explosion are as before. Other vehicles still throw riders out.
+- **Armour** (`armour`): surface `armor` (rounds stop on it, spark, no penetration), bullets ×0.1, blasts ×1.25
+  (splash and a projectile's direct hit), melee ×0; crashes and hazards full. About 6 rockets or 5 shells kill it; the
+  roof MG alone needs about 70 s. `damageMount` takes a `MountHit` kind.
+- **Shells** (seat `ammo`): the cannon carries 10, one back every 15 s, all at any ammo pickup the crewed tank drives
+  over (it takes the pickup); full again at a respawn. HUD: "Tank Cannon 10 / 10", low under a quarter, "Empty" at 0
+  (`PrivateState.mo[3]`; client prediction won't fire with none).
+- **The driver fires the cannon while its seat is empty** (seat `driverFires`; `firingSeat()` in sim/mounts.ts, used by
+  the match, the client HUD and prediction, and bots), the shot kept within the seat's arc; a gunner who gets in takes
+  it back. Not asked for: a crew of one could not shoot at all (owner to confirm, below).
+- **Tracks** (`vehicle.pivot` 0.8 rad/s): turns on the spot. Bot steering pivots for sharp turns and doesn't count
+  turning on the spot as stuck.
+- **Bots:** prefer a tank to another vehicle (15 m further, 20 m more detour); take one only where the route fits it
+  (`routeFits`: 0.8 of its width, the ground probed under the route; kept off Iron Tide's hangar passages); fight from
+  it at a stand-off (close to 28 m, hold and turn the hull, back off under 10 m), shells only at targets worth one (a
+  vehicle, turret or sentry; on foot past 10 m while over 30 % of the load is left or with another enemy beside them);
+  drive to an ammo pickup within 120 m when out; don't bail out of a sealed one for a fight; get out under its
+  `bailHealth` 0.25 or when it burns. Bots with nothing that hurts vehicles rank sealed crew a third as worth shooting.
+- **bot-report** prints a `tanks` line (driven, moving, metres, guns manned, drives, back-outs, give-ups and where,
+  bails, ammo trips, shells, kills from aboard, destroyed, crew killed).
+
+**Tests:** `packages/shared/test/tanks.test.ts` (18: sealed crew vs a buggy driver, rockets vs bullets, shells, refill,
+pickup refill, gunner takes over, respawn load, pivot, bail at a quarter, a bot drives 112 m without a back-out, a lone
+bot shells an enemy buggy, route clearance). e2e: `tankChecks` in the `vehicles` flow (Iron Tide: in at the wheel,
+HUD 10/10 then 9 after a shot, a blast beside you hurts only the tank); passed locally (CI=1 timeouts, loaded box).
+
+**Bot results** (`pnpm bot-report iron_tide iron_maw coldwater_gulch frost_basin --seeds=1,2,3 --seconds=180`, CTF):
+34 drives, 2,964 m driven, 116 shells, 51 cannon kills and 8 roof-gun kills from aboard; 9 drives given up stuck (Iron
+Tide 4 at about (±4, 0, -2), iron_maw (-100, 1, 146), coldwater (-10, 0, 100), frost_basin (15, 0, -93) and
+(-13, 13, -93)), 8 back-outs; no tank destroyed in 12 three-minute matches, so no bail-outs or crew deaths there.
+Before (main, coldwater and iron_maw): bots hardly drove tanks (0 s on both); a driver had no gun.
+
+**For the owner:**
+1. Driver fires the cannon when the cannon seat is empty: keep? (The alternative is a driver who can't shoot.)
+2. Balance: tanks are strong against bots (no tank destroyed in 36 bot-minutes; cannon kills lead the board on
+   coldwater). Options: blasts ×1.5, fewer shells, or bots fetch launchers for tanks more eagerly.
+3. Any ammo pickup refills the cannon (also Light/Rifle/Shells/Sniper rounds). Or only the general Ammo Box?
+4. The remaining stuck spots (above) are where a person-sized route still squeezes a tank; Iron Tide's centre is the
+   worst (the same area as the hovercraft item).
+
 ### Roulette mode (`wip/roulette`, agents, 2026-11-07; main 0531b29 (friendly fire) merged in; landing from `check/roulette`)
 **What it is:** docs/ROULETTE_MODE_PLAN.md ("As built") and docs/GAME_MODES.md, "Roulette". The mode is
 `core.roulette`; Lunar Roulette plays it with Lunar on; balance is data in `content/roulette.json`

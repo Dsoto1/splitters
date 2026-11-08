@@ -482,11 +482,25 @@ export class Hud {
     if (heat !== null) el.style.setProperty('--heat', String(Math.min(100, heat)));
   }
 
-  setMountedGun(name: string, heat: number): void {
+  /**
+   * A mounted gun in the ammo counter: its heat, or (limited ammunition: the Tank's cannon) its rounds aboard over the
+   * most it carries, low under a quarter and "Empty" at none (they come back slowly, or all at an ammo pickup).
+   */
+  setMountedGun(name: string, heat: number, shells?: number, max?: number): void {
     this.weaponName.textContent = name;
-    this.ammoReserve.textContent = '';
-    this.ammoCount.textContent = heat >= 100 ? 'OVERHEAT' : `${heat}°`;
-    this.ammoCount.classList.toggle('reloading', heat >= 100);
+    if (shells !== undefined) {
+      this.ammoReserve.textContent = max !== undefined ? String(max) : '';
+      this.ammoCount.textContent = shells > 0 ? String(shells) : 'Empty';
+      this.ammoCount.classList.toggle('reloading', heat >= 100);
+      this.ammoCount.classList.toggle('low', max !== undefined && shells <= Math.ceil(max / 4));
+      this.ammoCount.title = 'Shells: one comes back every few seconds; drive over an ammo pickup to fill up';
+    } else {
+      this.ammoReserve.textContent = '';
+      this.ammoCount.textContent = heat >= 100 ? 'OVERHEAT' : `${heat}°`;
+      this.ammoCount.classList.toggle('reloading', heat >= 100);
+      this.ammoCount.classList.toggle('low', false);
+      this.ammoCount.title = '';
+    }
     this.altEl.textContent = '';
   }
 

@@ -189,8 +189,11 @@ export interface PrivateState {
   inv: [number, number, number, number, number?][];
   /** Movement multiplier from status effects (slow, chill, frozen) ×1000, when not 1000. */
   ms?: number;
-  /** Seated in a mount: [map entity index, seat, mounted gun heat %]. */
-  mo?: [number, number, number];
+  /**
+   * Seated in a mount: [map entity index, seat, heat % of the gun you fire, and its rounds aboard when limited
+   * (SeatDef.ammo: the Tank's shells)]. A driver working an empty gunner seat's gun (driverFires) gets that gun's.
+   */
+  mo?: [number, number, number] | [number, number, number, number];
   /** Carried grenades or mines as [index into THROWABLES, count]; absent = none. */
   gr?: [number, number];
   /** Ticks left on reload / weapon raise (0 = ready). */

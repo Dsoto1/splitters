@@ -229,6 +229,10 @@ export const MOUNT_DEFS: Readonly<Record<(typeof MOUNT_MODELS)[number], MountDef
   // model: The owner's WWII tank (Meshy, owned; content/guns.json vehicles/tank_wwii.glb, 2026-11-05): hull 6.12 m long, 2.93 m wide, deck 2.0 m and turret roof 3.05 m up; the barrel reaches 1.15 m past the box's front (not solid, as before). The box (half [1.47, 1, 3.06], 2026-11-05) is fitted to the hull: 2.94 m wide over the tracks (was 4.2 m, about 0.6 m of it each side beside the tracks, where shots and bodies stopped on air), 6.12 m long (was 6 m) and up to the deck (2 m); the turret (1.84 m wide, inside the hull's footprint) sits on top of it, not solid, as before (one box: raised to the turret roof it would put an invisible roof over the whole deck). The Quaternius tank it replaced is the fallback (vehicles/tank.glb).
   // seats: Moved onto the new model, roles, weapons and arcs unchanged: the driver from the deck under the new turret to the front left of the deck (feet 1.95 m); both gunners up 0.15 m onto the turret roof, the roof gun from beside the roof (x 0.9) onto it.
   // cockpitEye: The driver's hatch, front left of the deck, over the glacis (was the commander's hatch on the old turret).
+  // armour: Tanks (owner, 2026-11-07): armour plate (surface armor: rounds stop on it and spark, nothing goes through), bullets do a tenth of their damage (the roof MG's 11 a round does 1.1: about 70 s of fire alone to kill it), blasts and shells 1.25 times theirs (rocket 40 + 120: about 6 rockets; the cannon's 60 + 150: 5 shells; a frag grenade 100: 10), melee nothing. Sealed: the crew can't be shot, blasted or struck from outside; when it is destroyed everyone still inside dies with it.
+  // ammo: The cannon carries 10 shells (5 kill another tank), one back every 15 s (empty to full in 150 s), all back when the crewed tank drives over an ammo pickup (owner-approved, 2026-11-07). With the cannon seat empty the driver fires it (driverFires): a crew of one can fight. The roof gun runs on heat, as every mounted gun.
+  // pivot: Tracks (2026-11-07): it turns on the spot at 0.8 rad/s (a half turn in 4 s), fading out by 5 m/s: out of a dead end without a three-point turn, and a crew holding still can swing the gun onto a target.
+  // bailHealth: Bots get out under a quarter of its health (300 of 1200: under two rockets left), not the 0.3 of other vehicles: inside is safe until it blows. It catches fire under 0.15 and blows 5 s later.
   // turret: The cannon gunner's aim turns the turret (within the seat's 0.6 rad arc) and pitches the barrel (drawn within -0.17..0.35 rad); the roof gun no longer turns it. Shots still leave from the gunner's eye, as for every mounted weapon.
   tank: {
     id: 'tank',
@@ -240,13 +244,23 @@ export const MOUNT_DEFS: Readonly<Record<(typeof MOUNT_MODELS)[number], MountDef
     half: [1.47, 1, 3.06],
     seats: [
       { role: 'driver', label: 'Driver', offset: [-0.6, 1.95, 1.8] },
-      { role: 'gunner', label: 'Cannon', offset: [-0.3, 3.05, -0.3], weapon: 'core.tank_cannon', arc: 0.6 },
+      {
+        role: 'gunner',
+        label: 'Cannon',
+        offset: [-0.3, 3.05, -0.3],
+        weapon: 'core.tank_cannon',
+        arc: 0.6,
+        ammo: { max: 10, refillSeconds: 15 },
+        driverFires: true,
+      },
       { role: 'gunner', label: 'Roof gun', offset: [0.4, 3.05, 0.1], weapon: 'core.mount_mg' },
     ],
     enterRadius: 4,
     respawnSeconds: 75,
     blast: { radius: 6, damage: 120 },
-    vehicle: { maxSpeed: 11, reverseSpeed: 5, accel: 5, turnRate: 1, grip: 0.45, mass: 6 },
+    armour: { surface: 'armor', sealed: true, bullets: 0.1, blasts: 1.25, melee: 0 },
+    bailHealth: 0.25,
+    vehicle: { maxSpeed: 11, reverseSpeed: 5, accel: 5, turnRate: 1, grip: 0.45, mass: 6, pivot: 0.8 },
     cockpitEye: [-0.6, 3.35, 1.95],
     turret: { seat: 1, pitch: [-0.17, 0.35] },
     blurb: 'A heavy tank for three: a driver, a cannon gunner firing explosive shells ahead, and a roof machine gun',

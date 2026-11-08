@@ -13,6 +13,12 @@ a vehicle squeezed into a gap narrower than itself (Iron Tide's door at the top 
 the lintel and the roof and stay there; it now stops at floor height and backs out. Hovercraft (and other ground
 vehicles) also go under decks, beams and lintels their hull fits under (Iron Tide's decks, Dune Harbor's arcade), where
 the invisible collision shape over the hull used to catch. Over open ground they drive exactly as before.
+**Tanks play properly** (owner, 2026-11-07): the crew is sealed in (no bullet, blast or blade from outside reaches
+them) and dies with the tank; its armour takes a tenth of bullet damage and 1.25 times blasts (about 6 rockets or 5
+shells kill it); the cannon carries 10 shells, shown in the HUD, one back every 15 s and all at an ammo pickup; alone at
+the wheel you fire the cannon yourself; it turns on the spot. Bots drive tanks, fight from them at a stand-off, keep
+shells for targets worth one, refill at ammo pickups and get out under a quarter of its health. All in the tank's
+vehicle data (Workbench).
 
 **Iron Coast (MAP 21), part 1: the beach assault and Breakthrough's showcase** (MapMaker only, from the owner's reference)
 - **A new map, Iron Coast** (`iron_coast`): 380 × 320 m of coast for 24-32 a side (24 v 24 is the Map's pick; 16 to 64

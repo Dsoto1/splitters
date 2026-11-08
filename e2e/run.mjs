@@ -4635,6 +4635,66 @@ async function vehiclesFlow(browser) {
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await page.context().close();
   await arcTurretChecks(browser);
+  await tankChecks(browser);
+}
+
+/**
+ * The Tank (owner, 2026-11-07; content/vehicles/tank.json): alone at the wheel you fire its cannon (the empty cannon
+ * seat's gun, driverFires), the HUD counts its shells (10 of 10, then 9), and nothing outside reaches you aboard (a
+ * rocket's blast beside you leaves you whole; the tank takes it).
+ */
+async function tankChecks(browser) {
+  const page = await (await browser.newContext({ viewport: { width: 960, height: 540 } })).newPage();
+  livePages.add(page);
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
+  await page.goto(`${CLIENT}/?offline=iron_tide&test=1`);
+  await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown', null, { timeout: T(60000) });
+  await holdBots(page);
+  // Bots stay out of vehicles; you stand beside the tank and press E.
+  const at = await sim(page, (m, me) => {
+    for (const c of m.combatants()) if (c.bot) c.bot.nextMountTick = Number.MAX_SAFE_INTEGER;
+    const t = m.mounts.find((x) => x.def.id === 'tank');
+    if (!t) return null;
+    for (const c of m.combatants()) if (c.mount && c.mount.index === m.mounts.indexOf(t)) m.leaveMount(c, true);
+    me.maxHealth = me.health = 100;
+    me.move = { pos: { x: t.pos.x + Math.cos(t.yaw) * 2.4, y: t.pos.y + 0.3, z: t.pos.z - Math.sin(t.yaw) * 2.4 }, velY: 0, grounded: false };
+    return { at: m.mounts.indexOf(t), index: t.index };
+  }).catch(() => null);
+  check(!!at, `iron_tide has a tank (${JSON.stringify(at)})`);
+  if (at) {
+    for (let i = 0; i < 4; i++) {
+      if (await sim(page, (m, me) => !!me.mount).catch(() => false)) break;
+      await page.evaluate(() => (window.__autoInput = { buttons: 0, once: 16 }));
+      await simWait(page, (m, me) => !!me.mount, null, T(8000));
+    }
+    const seat = await sim(page, (m, me) => (me.mount ? m.mounts[me.mount.index].def.seats[me.mount.seat].role : null)).catch(() => null);
+    check(seat === 'driver', `you get in at the wheel (${seat})`);
+    const hud = () => page.evaluate(() => ({ name: document.getElementById('weapon-name')?.textContent, count: document.getElementById('ammo-count')?.textContent, reserve: document.getElementById('ammo-reserve')?.textContent }));
+    const full = await page.waitForFunction(() => document.getElementById('weapon-name')?.textContent === 'Tank Cannon' && document.getElementById('ammo-count')?.textContent === '10', null, { timeout: T(10000) }).then(() => true, () => false);
+    const h0 = await hud();
+    check(full && h0.reserve === '10', `the HUD shows the cannon and its shells, 10 of 10 (${JSON.stringify(h0)})`);
+    // Fire once (aim ahead and up): one shell gone, the HUD follows.
+    await sim(page, (m, me) => (me.pitch = 0.2));
+    await page.evaluate(() => (window.__autoInput = { buttons: 2, once: 6 }));
+    const fired = await simWait(page, (m, me, a) => m.mounts[a].guns[1].shells === 9, at.at, T(10000));
+    const nine = await page.waitForFunction(() => document.getElementById('ammo-count')?.textContent === '9', null, { timeout: T(10000) }).then(() => true, () => false);
+    check(fired && nine, `a shot spends a shell, and the HUD counts 9 (${JSON.stringify(await hud())})`);
+    if (process.env.E2E_SHOTS) {
+      await page.addStyleTag({ content: '#pause, #message { display: none !important; }' });
+      await page.screenshot({ path: `${process.env.E2E_SHOTS}/vehicles-tank-hud.png`, timeout: T(60000) }).catch(() => {});
+    }
+    // A rocket's blast beside you: the tank takes it, you don't.
+    const blast = await sim(page, (m, me, a) => {
+      const t = m.mounts[a];
+      const before = { tank: t.health, me: me.health };
+      m.splash({ x: me.move.pos.x + 1, y: me.move.pos.y + 1, z: me.move.pos.z }, 5, 120, 20, null, 'core.rockets', 1);
+      return { tankLost: Math.round(before.tank - t.health), meLost: before.me - me.health, alive: me.alive };
+    }, at.at).catch((e) => String(e));
+    check(blast.tankLost > 0 && blast.meLost === 0 && blast.alive, `aboard, a blast beside you hurts the tank, not you (${JSON.stringify(blast)})`);
+  }
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  await page.context().close();
 }
 
 /**
