@@ -4813,6 +4813,125 @@ async function vehiclesFlow(browser) {
   await page.context().close();
   await arcTurretChecks(browser);
   await tankChecks(browser);
+  await passengerChecks(browser);
+}
+
+/**
+ * Passengers at speed (owner, 2026-11-08: "those seated don't move in lock step with the vehicle, their bodies drift
+ * back ... also hearing their footsteps instead of an engine sound"). You drive a buggy with a bot beside you down the
+ * canyon; every frame sampled at speed, the bot is drawn on its seat of the buggy as drawn (the model's own transform,
+ * suspension included), no footstep plays near the buggy (and none of your own), and the engine runs.
+ */
+async function passengerChecks(browser) {
+  const ctx = await browser.newContext({ viewport: { width: 960, height: 540 } });
+  await ctx.addInitScript(installFrameClock);
+  const page = await ctx.newPage();
+  livePages.add(page);
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
+  await page.goto(`${CLIENT}/?offline=canyon&test=1&god=1`);
+  await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown' && window.__match, null, { timeout: T(60000) });
+  // Every sound asked for, with where (the AudioSystem plays nothing before a click, but the asks are what's checked).
+  await page.evaluate(() => {
+    const audio = window.__audio;
+    const play = audio.play.bind(audio);
+    window.__played = [];
+    audio.play = (id, o = {}) => {
+      window.__played.push({ id, at: o.at ? { x: o.at.x, y: o.at.y, z: o.at.z } : null });
+      play(id, o);
+    };
+  });
+  // You at the wheel of the south buggy at its spawn, facing up the canyon (open ground for 70 m); a bot (drawn as a
+  // character) beside you.
+  const ride = await page.evaluate(() => {
+    const match = window.__match;
+    const me = match.slots[window.__cs.slot];
+    for (const c of match.slots) if (c?.bot) c.bot.nextMountTick = Number.MAX_SAFE_INTEGER;
+    for (const c of match.slots) if (c?.bot) { const think = c.bot.think.bind(c.bot); c.bot.think = (v) => ({ ...think(v), forward: 0, right: 0, buttons: 0 }); }
+    const m = match.mounts.filter((x) => x.def.id === 'buggy' && x.alive && x.home.pos.z < 0).sort((a, b) => a.home.pos.z - b.home.pos.z)[0];
+    if (!m) return null;
+    for (const c of match.slots) if (c?.mount && match.mounts[c.mount.index] === m) match.leaveMount(c, true);
+    m.pos = { ...m.home.pos };
+    m.yaw = 0;
+    if ('speed' in m) m.speed = 0;
+    me.move = { pos: { x: m.pos.x, y: m.pos.y + 0.3, z: m.pos.z }, velY: 0, grounded: true };
+    match.enterMount(me);
+    const bot = match.slots.find((c) => c?.bot && c.alive && !c.mount && 'sit' in (window.__cs.view.avatars.get(c.slot)?.anim ?? {}));
+    if (!bot) return null;
+    bot.move = { pos: { x: m.pos.x, y: m.pos.y + 0.3, z: m.pos.z }, velY: 0, grounded: true };
+    match.enterMount(bot);
+    window.__autoInput = { buttons: 0 };
+    return { index: m.index, bot: bot.slot, mine: me.mount?.seat, theirs: bot.mount?.seat };
+  });
+  check(ride?.mine === 0 && ride?.theirs === 1, `you drive a buggy with a bot in the seat beside you (${JSON.stringify(ride)})`);
+  if (ride) {
+    // Seated and drawn sitting, then the chase camera (both of you in view) and the throttle down.
+    await page.waitForFunction((r) => window.__cs.mounts.mounts.get(r.index)?.seats[1] === r.bot && (window.__cs.view.avatars.get(r.bot)?.anim?.sit ?? 0) > 0.95, ride, { timeout: T(10000) }).catch(() => {});
+    await page.keyboard.press('KeyH');
+    await page.waitForFunction(() => window.__cs.rideView() === 'chase', null, { timeout: T(8000) }).catch(() => {});
+    // Off at full speed, on the page's frame clock from here: 60 frames a game second however slowly this machine
+    // draws them (e2e/frameClock.mjs), so the passenger's own pose moves as it does for a player.
+    await page.evaluate((r) => {
+      window.__played.length = 0;
+      const m = window.__match.mounts.find((x) => x.index === r.index);
+      if ('speed' in m) m.speed = m.def.vehicle.maxSpeed;
+      window.__autoInput = { forward: 1, buttons: 0 };
+      window.__frameClock.freeze();
+      window.__ride = { frames: 0, fast: 0, drawn: 0, worst: 0, worstY: 0, speed: 0, seated: true };
+    }, ride);
+    // Frame by frame, while the buggy's drawn speed is over 10 m/s: how far the bot's drawn body is from its seat
+    // point on the buggy's model as drawn that frame (the node's world matrix times the seat's offset).
+    const steps = (n) =>
+      page.evaluate(([r, n]) => {
+        const cs = window.__cs;
+        const node = cs.view.scene.transformNodes.find((x) => x.name === `mount_${r.index}`);
+        const out = window.__ride;
+        for (let i = 0; i < n; i++) {
+          window.__frameClock.step(1000 / 60);
+          out.frames++;
+          const m = cs.mounts.mounts.get(r.index);
+          const a = cs.view.avatars.get(r.bot);
+          const speed = m ? Math.hypot(m.vel.x, m.vel.z) : 0;
+          out.seated &&= m?.seats[1] === r.bot;
+          if (!m || !a || !node || speed <= 10) continue;
+          const w = node.getWorldMatrix().m;
+          const [x, y, z] = m.def.seats[1].offset;
+          const at = { x: x * w[0] + y * w[4] + z * w[8] + w[12], y: x * w[1] + y * w[5] + z * w[9] + w[13], z: x * w[2] + y * w[6] + z * w[10] + w[14] };
+          const p = a.root.position;
+          out.fast++;
+          if (a.root.isEnabled() && !a.culled && a.anim) out.drawn++;
+          out.worst = Math.max(out.worst, Math.hypot(p.x - at.x, p.z - at.z));
+          out.worstY = Math.max(out.worstY, Math.abs(p.y - at.y));
+          out.speed = Math.max(out.speed, speed);
+        }
+        return out;
+      }, [ride, n]);
+    let sample = await steps(10);
+    for (let i = 0; i < 10 && sample.fast < 90 && sample.frames < 180; i++) sample = await steps(10);
+    // The frame just drawn, off the canvas in the same task (a screenshot waits for frames a frozen page never asks for).
+    if (process.env.E2E_SHOTS) {
+      const png = await page.evaluate(() => {
+        window.__frameClock.step(1000 / 60);
+        const canvas = window.__cs.view.scene.getEngine().getRenderingCanvas();
+        const out = document.createElement('canvas');
+        [out.width, out.height] = [canvas.width, canvas.height];
+        out.getContext('2d').drawImage(canvas, 0, 0);
+        return out.toDataURL('image/png').split(',')[1];
+      });
+      writeFileSync(`${process.env.E2E_SHOTS}/vehicles-passenger-speed.png`, Buffer.from(png, 'base64'));
+    }
+    const heard = await page.evaluate((r) => {
+      const m = window.__cs.mounts.mounts.get(r.index);
+      // Footsteps from you (unpositioned) or from anyone at the buggy; the engine, yours unpositioned.
+      const near = (at) => !at || (m && Math.hypot(at.x - m.shown.pos.x, at.z - m.shown.pos.z) < 6);
+      return { steps: window.__played.filter((s) => s.id === 'footstep' && near(s.at)).length, engine: window.__played.filter((s) => s.id === 'vehicle.engine' && !s.at).length };
+    }, ride);
+    await page.evaluate(() => (window.__autoInput = { buttons: 0 }));
+    check(sample.seated && sample.fast >= 60 && sample.drawn === sample.fast && sample.worst < 0.05 && sample.worstY < 0.05, `at speed the passenger is drawn on its seat every frame (${JSON.stringify({ ...sample, worst: +sample.worst.toFixed(3), worstY: +sample.worstY.toFixed(3), speed: +sample.speed.toFixed(1) })})`);
+    check(heard.steps === 0 && heard.engine > 0, `riding plays no footsteps and the engine runs (${JSON.stringify(heard)})`);
+  }
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  await page.context().close();
 }
 
 /**

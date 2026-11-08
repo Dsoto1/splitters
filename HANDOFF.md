@@ -5,6 +5,32 @@ A briefing for the next Claude session or agent picking up this repo. Read
 
 ## Start here (session of 2026-11-07, handed off to the next account)
 
+**Owner rule for the queue (2026-11-08):** new ideas go to the END of the queue. Only bugs or problematic gameplay
+jump ahead, or something the owner explicitly bumps.
+
+**Passengers at speed fixed (`wip/passengers`, 2026-11-08; the owner's bug report, top priority).** "Those seated don't
+move in lock step with the vehicle, their bodies drift back ... hearing their footsteps instead of an engine sound."
+- **Root cause:** a rider was drawn from their own pose, snapshot-interpolated 100 ms behind the server
+  (`INTERP_DELAY_TICKS`), while the vehicle is drawn on its own clock (latest snapshot carried on by its velocity, up
+  to 100 ms ahead, `MountState.smooth`) plus its suspension. At 18 m/s a Buggy passenger sat 2.6 m behind their seat
+  (measured, e2e below) and slid back as it slowed. Every vehicle, every seat, whoever watches, online and offline
+  (one client path). Footsteps: `SessionAudio.remoteSteps` stepped anyone whose pose moved
+  (riders included) and `localStep` didn't know you were seated. Engines: there was no engine sound at all.
+- **Fix:** `game/riderPlacement.ts` (`RiderPlacement`): each frame, after the vehicles are posed, every rider
+  (`MountState.seatedRiders`, from the latest snapshot) is put on the seat point of the vehicle's drawn node
+  (`View.seatPoint`: the node's world matrix times the seat offset, suspension included); getting in and out eases
+  over 0.25 s. Session applies it to the frame's poses (so avatars, footsteps, splashes and the spectator camera agree).
+  `remoteSteps(poses, placed)` skips riders; `localStep(..., mounted)` makes no steps or landing in a seat. Engines:
+  synth recipe `engine`, sound `vehicle.engine` (`SessionAudio.engines`: a 1.2 s copy every 0.6 s while anyone rides,
+  pitched by speed over maxSpeed; yours unpositioned, the two nearest others positioned, 60 m). A placeholder for
+  queued sound pass 2's engine loops.
+- **Tests:** unit `packages/client/test/riderPlacement.test.ts` (on the seat every frame at 24 m/s, in/out easing, the
+  footstep gate, engines); e2e `passengerChecks` in the `vehicles` flow: canyon, you drive a Buggy with a bot beside
+  you at 18 m/s on the page's frame clock (60 fps game time): before the fix 2.62 m off the seat and 2 footsteps,
+  after 0.000 m over 90 frames, no footsteps, the engine playing.
+- **Seen, not changed:** in the chase view your own driver's body isn't drawn (session draws your character only on
+  foot); the passengers are.
+
 **Main** = 63731808 plus this note, green. Today's landings are on main, in order:
 - Breakthrough;
 - Reduce flashing;
@@ -20,6 +46,14 @@ The workflow is unchanged (CLAUDE.md):
 - run at most 3 agents, each on `wip/<name>`, green on `check/<name>`, then fast-forward main;
 - give agents their own port ranges (4950-4959, 4970-4979, 4980-4989);
 - tell agents a CI failure in `attest-build-provenance` (a transparency-log 500 or 404) is GitHub's signing service: re-run the failed job.
+
+**In flight: MapMaker overhaul (other account)** (owner, 2026-11-08: a second session owns this lane;
+docs/MAPMAKER_OVERHAUL_PLAN.md). Branches `wip/mapmaker-*` / `check/mapmaker-*` only.
+- **Now:** Phase 1 (the ghost says why, the live budget bar, the `?` overlay; the measure tool, props snap to surfaces with
+  randomise), then Phase 3 item 9 (the rotate ring, quick facings) and the rest of Phase 3 that doesn't need the split.
+- **The split of `editorApp.ts`** (Phase 2) waits until Iron Coast's MapMaker changes (finer terrain grid, Terrain →
+  Change grid, a "coast" border side) and the race-mode removal (the race layer reworded to track / NPC traffic) are on
+  main. This line will say when it starts. Please say here when those land.
 
 **In flight at the switch** (each branch pushed, tree clean; scratchpad files did not survive the switch):
 1. **Friendly fire** (`wip/friendly-fire` @ 318023ed). Green at 1a347140 (run 42408271804, with its new e2e check).
