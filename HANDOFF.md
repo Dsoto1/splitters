@@ -68,6 +68,11 @@ The workflow is unchanged (CLAUDE.md):
 - **Releases:** a session cutting a release says so here first; the other holds its pushes to main until it lands.
 - **Disk:** each session's container is its own; remove a worktree once its branch has landed.
 
+- Claimed: `packages/client/src/editor/**` and `packages/shared/src/editor/**` (Phase 3 part A, set pieces part 5), MapMaker lane, 2026-11-08.
+- Claimed: the next `MAP_FORMAT_VERSION` bump (the card-shot camera, `wip/mapmaker-p3a`), MapMaker lane, 2026-11-08.
+- Claimed: `maps/sandfall_colosseum.json` (rebuild), `maps/step_temple.json` and `maps/shingle_point.json` (card camera only), MapMaker lane, 2026-11-08.
+- Claimed: `content/setpieces/**` and the set-piece alias table (set pieces part 5), MapMaker lane, 2026-11-08.
+
 **In flight: MapMaker overhaul (other account)** (owner, 2026-11-08: a second session owns this lane;
 docs/MAPMAKER_OVERHAUL_PLAN.md). Branches `wip/mapmaker-*` / `check/mapmaker-*` only.
 - **Now:** Phase 1 (the ghost says why, the live budget bar, the `?` overlay; the measure tool, props snap to surfaces with
