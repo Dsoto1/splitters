@@ -559,3 +559,25 @@ button.danger { border-color: rgba(231, 76, 60, 0.6); color: #ff8a7a; }
 .ed-sp-problems { list-style: none; padding: 0; margin: 0 0 12px; font-size: 12px; }
 .ed-sp-problems li.error { color: var(--error); }
 .ed-sp-problems li.warning { color: #ffc46b; }
+
+/* The measure tool's numbers (measureTool.ts), on their stretches; editor-only. */
+#editor > .ed-measure-label {
+  position: absolute; left: 0; top: 0; z-index: 4; pointer-events: none; white-space: nowrap; padding: 3px 7px;
+  background: rgba(11, 15, 26, 0.88); border: 1px solid rgba(255, 209, 77, 0.55); border-radius: 4px; font-size: 11px; color: var(--muted);
+}
+.ed-measure-label b { color: #ffd34d; font: 700 13px var(--font-display); margin-right: 6px; }
+.ed-measure-label span { display: block; }
+#editor > .ed-measure-label { text-align: center; }
+#editor > .ed-measure-label.total { border-color: #ffd34d; }
+.ed-measure-label[hidden] { display: none; }
+
+/* The prop tool's placing options (propPlaceOptions.ts): Randomise and its ranges. */
+.ed-prop-place { display: flex; flex-direction: column; gap: 4px; margin: 0 0 8px; padding: 6px 8px; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 4px; }
+.ed-prop-random-opts { display: none; flex-wrap: wrap; align-items: end; gap: 6px 10px; }
+.ed-prop-place.on .ed-prop-random-opts { display: flex; }
+#editor > .ed-measure-label.live { opacity: 0.8; border-style: dashed; }
+
+/* The rotate ring's angle by the pointer while dragging (rotateRing.ts); the inspector's quick facings. */
+#ed-ring-angle { position: absolute; left: 0; top: 0; z-index: 5; pointer-events: none; padding: 2px 8px; background: rgba(11, 15, 26, 0.9); border: 1px solid #ffd34d; border-radius: 4px; font: 700 15px var(--font-display); color: #ffd34d; }
+#ed-ring-angle[hidden] { display: none; }
+#ed-inspector .ed-quick-facings .seg { grid-template-columns: repeat(4, 1fr); margin-bottom: 0; }
