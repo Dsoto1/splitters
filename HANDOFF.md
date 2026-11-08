@@ -232,6 +232,51 @@ gets overloaded above that: local e2e times out and flakes). Prune landed worktr
 - Earlier the same day: content scalability steps 2–6, perf toolset, flaky e2e fixes, Runway Nine airliner, map
   reworks batches 2–3, character fixes rounds 2–3 (see the entries below and CHANGELOG).
 
+### Ammo Boxes by the tank routes (`wip/ammo-boxes`, agent, 2026-11-08; owner-approved follow-up to Tanks 2 item 2)
+
+**Maps** (MapMaker only: Import → palette Ammo Box (`pickup:core.ammo`) placed by hovering the spot → Export, Playwright
+driving the page; each file is MapMaker's own output, which also took Iron Maw (24) and Glacier Line (20) to format 29
+and stamped `metadata.release`; a key-order-blind compare shows only the new pickups changed). Spots chosen from where
+bot tanks actually drive (a scratch heat probe over TDM matches) and checked flat, open and on a route the tank's hull
+fits from its spawn (`vehicleRouteFits`):
+| map | Ammo Box (x, y, z) | where |
+|---|---|---|
+| Iron Tide | (6, 0, -44) | hangar deck, aft end by the well deck, 16 m from the tank's spot (neutral tank, one box) |
+| Iron Maw | (-88, 0, 84), (88, 0, 84) | each side's haul road, ~118 m out from its tank (mirror pair) |
+| Coldwater Gulch | (-32, 0.86, 60), (32, 0.86, -60) | each side's tank lane, 46 m from its tank (point-symmetric) |
+| Frost Basin | (28, 0.99, 40), (-28, 0.99, -40) | the road down from each tank (point-symmetric) |
+| Glacier Line | (0, 0, -20) | mid-field on the attackers' tank approach (the depot already had (50, -0.15, -104)) |
+| Shingle Point | (32, 15.24, 72) | the garrison's bluff road, 42 m from its tank (the beach already has four at the landing) |
+`after_hours` (named in the brief) is not a map in maps/; skipped. validate-map: 0 new issues (Glacier Line's one
+logic warning is old).
+
+**Bots** (bots/brain.ts `resupplyFor`): a driver goes for an Ammo Box when the cannon is empty (up to `AMMO_DETOUR`
+120 m, as before) **or low** (`AMMO_LOW_SHARE` 3 of 10 or fewer with no target, `AMMO_LOW_DETOUR` 70 m), and keeps
+going till full; it reads the cannon of the gunner beside it too (`MountView.seats[].shells/maxShells/refills`; before,
+a driver with a crewed cannon never knew it was dry). A box its route doesn't fit is passed over for 60 s instead of
+making it get out. A crewmate in the same vehicle is never a target (in a free-for-all the driver turned onto its own
+gunner and sat there). The trip flag no longer carries into the next seat. Tests: tanks.test.ts (low → drives 40 m
+over the box and fills; a gunner's cannon low → the driver takes it; 6 shells drives on; a box 90 m off only when empty).
+
+**bot-report** (`pnpm bot-report iron_tide iron_maw coldwater_gulch frost_basin glacier_line shingle_point
+--mode=core.tdm --seconds=300 --seeds=1,2,3`, 18 matches; before = main 8616c87):
+| | before | after |
+|---|---|---|
+| to an ammo pickup (trips) | 0 | 7 (Coldwater 4, Shingle 2, Glacier 1) |
+| refills | 0 | 2 (Coldwater) |
+| shells fired | 149 | 123 |
+| tanks driven (bot-s) | 1009 | 820 |
+| kills from aboard | 81 | 62 |
+| destroyed / given up stuck / bailed | 8 / 8 / 7 | 6 / 7 / 7 |
+Trips that didn't end in a refill (probe): the crew bailed (tank about to blow, deep in enemy ground) or the box was
+taken first. Bot tanks rarely run low at all, which is why trips stay few: in the heat probe's matches Iron Tide,
+Iron Maw and Frost Basin tanks never got down to 3 shells. Driving/shell totals moved with the matches
+(new pickups change every match's course; Iron Tide is identical), not with the trips.
+
+**For the owner:** (1) the spots above are first picks; move them in MapMaker if a lane reads better elsewhere. (2) a
+general Ammo Box also refills infantry: the Coldwater and Frost Basin ones sit on open lanes 16-40 m from other ammo,
+none in a chokepoint.
+
 ### Tanks 2: balance and the Ammo Box (`wip/tanks-2`, agent, 2026-11-08; owner's decisions on the Tanks items)
 
 **Owner decisions (2026-11-08):** (1) keep "the driver fires the cannon while its seat is empty" (no change; noted in
@@ -285,7 +330,8 @@ inflated by other agents' suites on the box.
    one-shots a kart, speeder, hover bike or snow sled and two-shots a buggy. Keep, or limit `vehicleDamage` to
    armoured vehicles?
 2. Ammo trips fell to 0: with only Ammo Boxes counting, few are within 120 m of where tanks fight on these maps; the
-   cannon still refills one every 15 s. Place Ammo Boxes near tank routes in MapMaker, or fine as is?
+   cannon still refills one every 15 s. Place Ammo Boxes near tank routes in MapMaker, or fine as is? **Done**
+   (owner approved): "Ammo Boxes by the tank routes" above.
 
 ### Tanks (`wip/tanks`, agent, 2026-11-07; Queued item 1; CI on `check/tanks`)
 

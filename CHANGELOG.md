@@ -32,6 +32,12 @@ when one is about, draw a launcher they carry and aim it at the hull. The cannon
 Ammo Box (Light, Rifle, Shells and Sniper rounds don't), and tank drivers out of shells drive to one. Rockets'
 `vehicleDamage` and the seat's `ammo.pickups` are data.
 
+**Ammo Boxes by the tank routes** (owner, 2026-11-08): every map with a tank has an Ammo Box where its tank drives
+(placed in MapMaker): Iron Tide on the hangar deck, Iron Maw on each side's haul road, Coldwater Gulch on each side's
+tank lane, Frost Basin on the road down from each tank, Glacier Line mid-field, Shingle Point on the garrison's bluff
+road. Bot tank drivers now go for one when the cannon is low (3 of 10 or fewer, out of a fight, up to 70 m off) as
+well as when it is empty (120 m), also for the gunner beside them, and stop treating their own crewmate as a target.
+
 **Iron Coast (MAP 21), part 1: the beach assault and Breakthrough's showcase** (MapMaker only, from the owner's reference)
 - **A new map, Iron Coast** (`iron_coast`): 380 × 320 m of coast for 24-32 a side (24 v 24 is the Map's pick; 16 to 64
   players). Landing craft beached on the sand, an irregular cliff (8 m at the grand stair's
