@@ -1,0 +1,127 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" width="800" height="500" role="img" aria-label="Time to kill against distance for the seven benchmark weapons">
+<style>.bg{fill:#fcfcfb}.ink{fill:#0b0b0b}.ink2{fill:#52514e}.tick{fill:#898781;font-size:11px;font-variant-numeric:tabular-nums}.grid{stroke:#e1e0d9;stroke-width:1}.axis{stroke:#c3c2b7;stroke-width:1}.ring{stroke:#fcfcfb}.s0{stroke:#2a78d6}.d0{fill:#2a78d6}.k0{fill:#2a78d6}.s1{stroke:#eb6834}.d1{fill:#eb6834}.k1{fill:#eb6834}.s2{stroke:#1baf7a}.d2{fill:#1baf7a}.k2{fill:#1baf7a}.s3{stroke:#eda100}.d3{fill:#eda100}.k3{fill:#eda100}.s4{stroke:#e87ba4}.d4{fill:#e87ba4}.k4{fill:#e87ba4}.s5{stroke:#008300}.d5{fill:#008300}.k5{fill:#008300}.s6{stroke:#6250d6}.d6{fill:#6250d6}.k6{fill:#6250d6}@media (prefers-color-scheme: dark){.bg{fill:#1a1a19}.ink{fill:#f0efec}.ink2{fill:#c3c2b7}.grid{stroke:#2c2c2a}.axis{stroke:#383835}.ring{stroke:#1a1a19}.s0{stroke:#3987e5}.d0{fill:#3987e5}.k0{fill:#3987e5}.s1{stroke:#d95926}.d1{fill:#d95926}.k1{fill:#d95926}.s2{stroke:#199e70}.d2{fill:#199e70}.k2{fill:#199e70}.s3{stroke:#c98500}.d3{fill:#c98500}.k3{fill:#c98500}.s4{stroke:#d55181}.d4{fill:#d55181}.k4{fill:#d55181}.s5{stroke:#008300}.d5{fill:#008300}.k5{fill:#008300}.s6{stroke:#9085e9}.d6{fill:#9085e9}.k6{fill:#9085e9}}text{font-family:system-ui,-apple-system,"Segoe UI",sans-serif}</style>
+<rect class="bg" x="0" y="0" width="800" height="500" rx="8"/>
+<text class="ink" x="64" y="26" font-size="15" font-weight="600">Time to kill by distance: the benchmark seven</text>
+<text class="ink2" x="64" y="45" font-size="11.5">Every round on the body of an unarmoured standard player (100 health), flight time included; a line stops</text>
+<text class="ink2" x="64" y="60" font-size="11.5">where no kill comes within 8 s (or past 2.5 s). Measured in the shared sim: pnpm gun-report.</text>
+<line class="s0" x1="64" x2="80" y1="80" y2="80" stroke-width="2"/><circle class="d0 ring" cx="72" cy="80" r="4" stroke-width="2"/><text class="ink2" x="86" y="84" font-size="11.5">Service Pistol</text>
+<line class="s1" x1="182.39999999999998" x2="198.39999999999998" y1="80" y2="80" stroke-width="2"/><circle class="d1 ring" cx="190.39999999999998" cy="80" r="4" stroke-width="2"/><text class="ink2" x="204.39999999999998" y="84" font-size="11.5">Heavy Revolver</text>
+<line class="s2" x1="300.79999999999995" x2="316.79999999999995" y1="80" y2="80" stroke-width="2"/><circle class="d2 ring" cx="308.79999999999995" cy="80" r="4" stroke-width="2"/><text class="ink2" x="322.79999999999995" y="84" font-size="11.5">SMG</text>
+<line class="s3" x1="346.59999999999997" x2="362.59999999999997" y1="80" y2="80" stroke-width="2"/><circle class="d3 ring" cx="354.59999999999997" cy="80" r="4" stroke-width="2"/><text class="ink2" x="368.59999999999997" y="84" font-size="11.5">Assault Rifle</text>
+<line class="s4" x1="458.4" x2="474.4" y1="80" y2="80" stroke-width="2"/><circle class="d4 ring" cx="466.4" cy="80" r="4" stroke-width="2"/><text class="ink2" x="480.4" y="84" font-size="11.5">Shotgun</text>
+<line class="s5" x1="530.5999999999999" x2="546.5999999999999" y1="80" y2="80" stroke-width="2"/><circle class="d5 ring" cx="538.5999999999999" cy="80" r="4" stroke-width="2"/><text class="ink2" x="552.5999999999999" y="84" font-size="11.5">Precision Rifle</text>
+<line class="s6" x1="655.5999999999999" x2="671.5999999999999" y1="80" y2="80" stroke-width="2"/><circle class="d6 ring" cx="663.5999999999999" cy="80" r="4" stroke-width="2"/><text class="ink2" x="677.5999999999999" y="84" font-size="11.5">Rocket Launcher</text>
+<line class="grid" x1="64" x2="630" y1="444" y2="444"/><text class="tick" x="56" y="448" text-anchor="end">0</text>
+<line class="grid" x1="64" x2="630" y1="376" y2="376"/><text class="tick" x="56" y="380" text-anchor="end">500</text>
+<line class="grid" x1="64" x2="630" y1="308" y2="308"/><text class="tick" x="56" y="312" text-anchor="end">1000</text>
+<line class="grid" x1="64" x2="630" y1="240" y2="240"/><text class="tick" x="56" y="244" text-anchor="end">1500</text>
+<line class="grid" x1="64" x2="630" y1="172" y2="172"/><text class="tick" x="56" y="176" text-anchor="end">2000</text>
+<line class="grid" x1="64" x2="630" y1="104" y2="104"/><text class="tick" x="56" y="108" text-anchor="end">2500</text>
+<text class="tick" x="64" y="462" text-anchor="middle">0</text>
+<text class="tick" x="158.33333333333331" y="462" text-anchor="middle">25</text>
+<text class="tick" x="252.66666666666666" y="462" text-anchor="middle">50</text>
+<text class="tick" x="347" y="462" text-anchor="middle">75</text>
+<text class="tick" x="441.3333333333333" y="462" text-anchor="middle">100</text>
+<text class="tick" x="535.6666666666667" y="462" text-anchor="middle">125</text>
+<text class="tick" x="630" y="462" text-anchor="middle">150</text>
+<line class="axis" x1="64" x2="630" y1="444" y2="444"/>
+<path class="s0" d="M82.9,353.3 L101.7,353.3 L120.6,351.1 L139.5,351.1 L158.3,348.8 L177.2,346.5 L196.1,321.6 L214.9,319.3 L252.7,294.4 L290.4,289.9 L347.0,285.3 L441.3,276.3 L535.7,267.2 L630.0,258.1" fill="none" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+<circle class="d0 ring" cx="82.9" cy="353.3" r="4" stroke-width="2"><title>Service Pistol, 5 m: 667 ms, 5 rounds</title></circle>
+<circle class="d0 ring" cx="101.7" cy="353.3" r="4" stroke-width="2"><title>Service Pistol, 10 m: 667 ms, 5 rounds</title></circle>
+<circle class="d0 ring" cx="120.6" cy="351.1" r="4" stroke-width="2"><title>Service Pistol, 15 m: 683 ms, 5 rounds</title></circle>
+<circle class="d0 ring" cx="139.5" cy="351.1" r="4" stroke-width="2"><title>Service Pistol, 20 m: 683 ms, 5 rounds</title></circle>
+<circle class="d0 ring" cx="158.3" cy="348.8" r="4" stroke-width="2"><title>Service Pistol, 25 m: 700 ms, 5 rounds</title></circle>
+<circle class="d0 ring" cx="177.2" cy="346.5" r="4" stroke-width="2"><title>Service Pistol, 30 m: 717 ms, 5 rounds</title></circle>
+<circle class="d0 ring" cx="196.1" cy="321.6" r="4" stroke-width="2"><title>Service Pistol, 35 m: 900 ms, 6 rounds</title></circle>
+<circle class="d0 ring" cx="214.9" cy="319.3" r="4" stroke-width="2"><title>Service Pistol, 40 m: 917 ms, 6 rounds</title></circle>
+<circle class="d0 ring" cx="252.7" cy="294.4" r="4" stroke-width="2"><title>Service Pistol, 50 m: 1100 ms, 7 rounds</title></circle>
+<circle class="d0 ring" cx="290.4" cy="289.9" r="4" stroke-width="2"><title>Service Pistol, 60 m: 1133 ms, 7 rounds</title></circle>
+<circle class="d0 ring" cx="347.0" cy="285.3" r="4" stroke-width="2"><title>Service Pistol, 75 m: 1167 ms, 7 rounds</title></circle>
+<circle class="d0 ring" cx="441.3" cy="276.3" r="4" stroke-width="2"><title>Service Pistol, 100 m: 1233 ms, 7 rounds</title></circle>
+<circle class="d0 ring" cx="535.7" cy="267.2" r="4" stroke-width="2"><title>Service Pistol, 125 m: 1300 ms, 7 rounds</title></circle>
+<circle class="d0 ring" cx="630.0" cy="258.1" r="4" stroke-width="2"><title>Service Pistol, 150 m: 1367 ms, 7 rounds</title></circle>
+<path class="s1" d="M82.9,353.3 L101.7,353.3 L120.6,351.1 L139.5,348.8 L158.3,346.5 L177.2,344.3 L196.1,342.0 L214.9,339.7 L252.7,335.2 L290.4,330.7 L347.0,323.9 L441.3,312.5 L535.7,301.2 L630.0,289.9" fill="none" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+<circle class="d1 ring" cx="82.9" cy="353.3" r="4" stroke-width="2"><title>Heavy Revolver, 5 m: 667 ms, 2 rounds</title></circle>
+<circle class="d1 ring" cx="101.7" cy="353.3" r="4" stroke-width="2"><title>Heavy Revolver, 10 m: 667 ms, 2 rounds</title></circle>
+<circle class="d1 ring" cx="120.6" cy="351.1" r="4" stroke-width="2"><title>Heavy Revolver, 15 m: 683 ms, 2 rounds</title></circle>
+<circle class="d1 ring" cx="139.5" cy="348.8" r="4" stroke-width="2"><title>Heavy Revolver, 20 m: 700 ms, 2 rounds</title></circle>
+<circle class="d1 ring" cx="158.3" cy="346.5" r="4" stroke-width="2"><title>Heavy Revolver, 25 m: 717 ms, 2 rounds</title></circle>
+<circle class="d1 ring" cx="177.2" cy="344.3" r="4" stroke-width="2"><title>Heavy Revolver, 30 m: 733 ms, 2 rounds</title></circle>
+<circle class="d1 ring" cx="196.1" cy="342.0" r="4" stroke-width="2"><title>Heavy Revolver, 35 m: 750 ms, 2 rounds</title></circle>
+<circle class="d1 ring" cx="214.9" cy="339.7" r="4" stroke-width="2"><title>Heavy Revolver, 40 m: 767 ms, 2 rounds</title></circle>
+<circle class="d1 ring" cx="252.7" cy="335.2" r="4" stroke-width="2"><title>Heavy Revolver, 50 m: 800 ms, 2 rounds</title></circle>
+<circle class="d1 ring" cx="290.4" cy="330.7" r="4" stroke-width="2"><title>Heavy Revolver, 60 m: 833 ms, 2 rounds</title></circle>
+<circle class="d1 ring" cx="347.0" cy="323.9" r="4" stroke-width="2"><title>Heavy Revolver, 75 m: 883 ms, 2 rounds</title></circle>
+<circle class="d1 ring" cx="441.3" cy="312.5" r="4" stroke-width="2"><title>Heavy Revolver, 100 m: 967 ms, 2 rounds</title></circle>
+<circle class="d1 ring" cx="535.7" cy="301.2" r="4" stroke-width="2"><title>Heavy Revolver, 125 m: 1050 ms, 2 rounds</title></circle>
+<circle class="d1 ring" cx="630.0" cy="289.9" r="4" stroke-width="2"><title>Heavy Revolver, 150 m: 1133 ms, 2 rounds</title></circle>
+<path class="s2" d="M82.9,362.4 L101.7,362.4 L120.6,362.4 L139.5,342.0 L158.3,312.5 L177.2,301.2 L196.1,292.1 L214.9,289.9 L252.7,285.3 L290.4,283.1 L347.0,278.5 L441.3,269.5 L535.7,260.4 L630.0,251.3" fill="none" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+<circle class="d2 ring" cx="82.9" cy="362.4" r="4" stroke-width="2"><title>SMG, 5 m: 600 ms, 10 rounds</title></circle>
+<circle class="d2 ring" cx="101.7" cy="362.4" r="4" stroke-width="2"><title>SMG, 10 m: 600 ms, 10 rounds</title></circle>
+<circle class="d2 ring" cx="120.6" cy="362.4" r="4" stroke-width="2"><title>SMG, 15 m: 600 ms, 10 rounds</title></circle>
+<circle class="d2 ring" cx="139.5" cy="342.0" r="4" stroke-width="2"><title>SMG, 20 m: 750 ms, 12 rounds</title></circle>
+<circle class="d2 ring" cx="158.3" cy="312.5" r="4" stroke-width="2"><title>SMG, 25 m: 967 ms, 15 rounds</title></circle>
+<circle class="d2 ring" cx="177.2" cy="301.2" r="4" stroke-width="2"><title>SMG, 30 m: 1050 ms, 16 rounds</title></circle>
+<circle class="d2 ring" cx="196.1" cy="292.1" r="4" stroke-width="2"><title>SMG, 35 m: 1117 ms, 17 rounds</title></circle>
+<circle class="d2 ring" cx="214.9" cy="289.9" r="4" stroke-width="2"><title>SMG, 40 m: 1133 ms, 17 rounds</title></circle>
+<circle class="d2 ring" cx="252.7" cy="285.3" r="4" stroke-width="2"><title>SMG, 50 m: 1167 ms, 17 rounds</title></circle>
+<circle class="d2 ring" cx="290.4" cy="283.1" r="4" stroke-width="2"><title>SMG, 60 m: 1183 ms, 17 rounds</title></circle>
+<circle class="d2 ring" cx="347.0" cy="278.5" r="4" stroke-width="2"><title>SMG, 75 m: 1217 ms, 17 rounds</title></circle>
+<circle class="d2 ring" cx="441.3" cy="269.5" r="4" stroke-width="2"><title>SMG, 100 m: 1283 ms, 17 rounds</title></circle>
+<circle class="d2 ring" cx="535.7" cy="260.4" r="4" stroke-width="2"><title>SMG, 125 m: 1350 ms, 17 rounds</title></circle>
+<circle class="d2 ring" cx="630.0" cy="251.3" r="4" stroke-width="2"><title>SMG, 150 m: 1417 ms, 17 rounds</title></circle>
+<path class="s3" d="M82.9,376.0 L101.7,376.0 L120.6,376.0 L139.5,376.0 L158.3,373.7 L177.2,373.7 L196.1,373.7 L214.9,371.5 L252.7,355.6 L290.4,355.6 L347.0,339.7 L441.3,335.2 L535.7,330.7 L630.0,326.1" fill="none" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+<circle class="d3 ring" cx="82.9" cy="376.0" r="4" stroke-width="2"><title>Assault Rifle, 5 m: 500 ms, 6 rounds</title></circle>
+<circle class="d3 ring" cx="101.7" cy="376.0" r="4" stroke-width="2"><title>Assault Rifle, 10 m: 500 ms, 6 rounds</title></circle>
+<circle class="d3 ring" cx="120.6" cy="376.0" r="4" stroke-width="2"><title>Assault Rifle, 15 m: 500 ms, 6 rounds</title></circle>
+<circle class="d3 ring" cx="139.5" cy="376.0" r="4" stroke-width="2"><title>Assault Rifle, 20 m: 500 ms, 6 rounds</title></circle>
+<circle class="d3 ring" cx="158.3" cy="373.7" r="4" stroke-width="2"><title>Assault Rifle, 25 m: 517 ms, 6 rounds</title></circle>
+<circle class="d3 ring" cx="177.2" cy="373.7" r="4" stroke-width="2"><title>Assault Rifle, 30 m: 517 ms, 6 rounds</title></circle>
+<circle class="d3 ring" cx="196.1" cy="373.7" r="4" stroke-width="2"><title>Assault Rifle, 35 m: 517 ms, 6 rounds</title></circle>
+<circle class="d3 ring" cx="214.9" cy="371.5" r="4" stroke-width="2"><title>Assault Rifle, 40 m: 533 ms, 6 rounds</title></circle>
+<circle class="d3 ring" cx="252.7" cy="355.6" r="4" stroke-width="2"><title>Assault Rifle, 50 m: 650 ms, 7 rounds</title></circle>
+<circle class="d3 ring" cx="290.4" cy="355.6" r="4" stroke-width="2"><title>Assault Rifle, 60 m: 650 ms, 7 rounds</title></circle>
+<circle class="d3 ring" cx="347.0" cy="339.7" r="4" stroke-width="2"><title>Assault Rifle, 75 m: 767 ms, 8 rounds</title></circle>
+<circle class="d3 ring" cx="441.3" cy="335.2" r="4" stroke-width="2"><title>Assault Rifle, 100 m: 800 ms, 8 rounds</title></circle>
+<circle class="d3 ring" cx="535.7" cy="330.7" r="4" stroke-width="2"><title>Assault Rifle, 125 m: 833 ms, 8 rounds</title></circle>
+<circle class="d3 ring" cx="630.0" cy="326.1" r="4" stroke-width="2"><title>Assault Rifle, 150 m: 867 ms, 8 rounds</title></circle>
+<path class="s4" d="M82.9,444.0 L101.7,240.0" fill="none" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+<circle class="d4 ring" cx="82.9" cy="444.0" r="4" stroke-width="2"><title>Shotgun, 5 m: 0 ms, 1 rounds</title></circle>
+<circle class="d4 ring" cx="101.7" cy="240.0" r="4" stroke-width="2"><title>Shotgun, 10 m: 1500 ms, 3 rounds</title></circle>
+<path class="s5" d="M82.9,274.0 L101.7,274.0 L120.6,274.0 L139.5,274.0 L158.3,271.7 L177.2,271.7 L196.1,271.7 L214.9,271.7 L252.7,269.5 L290.4,267.2 L347.0,264.9 L441.3,262.7 L535.7,258.1 L630.0,255.9" fill="none" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+<circle class="d5 ring" cx="82.9" cy="274.0" r="4" stroke-width="2"><title>Precision Rifle, 5 m: 1250 ms, 2 rounds</title></circle>
+<circle class="d5 ring" cx="101.7" cy="274.0" r="4" stroke-width="2"><title>Precision Rifle, 10 m: 1250 ms, 2 rounds</title></circle>
+<circle class="d5 ring" cx="120.6" cy="274.0" r="4" stroke-width="2"><title>Precision Rifle, 15 m: 1250 ms, 2 rounds</title></circle>
+<circle class="d5 ring" cx="139.5" cy="274.0" r="4" stroke-width="2"><title>Precision Rifle, 20 m: 1250 ms, 2 rounds</title></circle>
+<circle class="d5 ring" cx="158.3" cy="271.7" r="4" stroke-width="2"><title>Precision Rifle, 25 m: 1267 ms, 2 rounds</title></circle>
+<circle class="d5 ring" cx="177.2" cy="271.7" r="4" stroke-width="2"><title>Precision Rifle, 30 m: 1267 ms, 2 rounds</title></circle>
+<circle class="d5 ring" cx="196.1" cy="271.7" r="4" stroke-width="2"><title>Precision Rifle, 35 m: 1267 ms, 2 rounds</title></circle>
+<circle class="d5 ring" cx="214.9" cy="271.7" r="4" stroke-width="2"><title>Precision Rifle, 40 m: 1267 ms, 2 rounds</title></circle>
+<circle class="d5 ring" cx="252.7" cy="269.5" r="4" stroke-width="2"><title>Precision Rifle, 50 m: 1283 ms, 2 rounds</title></circle>
+<circle class="d5 ring" cx="290.4" cy="267.2" r="4" stroke-width="2"><title>Precision Rifle, 60 m: 1300 ms, 2 rounds</title></circle>
+<circle class="d5 ring" cx="347.0" cy="264.9" r="4" stroke-width="2"><title>Precision Rifle, 75 m: 1317 ms, 2 rounds</title></circle>
+<circle class="d5 ring" cx="441.3" cy="262.7" r="4" stroke-width="2"><title>Precision Rifle, 100 m: 1333 ms, 2 rounds</title></circle>
+<circle class="d5 ring" cx="535.7" cy="258.1" r="4" stroke-width="2"><title>Precision Rifle, 125 m: 1367 ms, 2 rounds</title></circle>
+<circle class="d5 ring" cx="630.0" cy="255.9" r="4" stroke-width="2"><title>Precision Rifle, 150 m: 1383 ms, 2 rounds</title></circle>
+<path class="s6" d="M82.9,428.1 L101.7,405.5 L120.6,382.8 L139.5,360.1 L158.3,337.5 L177.2,314.8 L196.1,292.1 L214.9,269.5 L252.7,224.1 L290.4,178.8 L347.0,110.8" fill="none" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+<circle class="d6 ring" cx="82.9" cy="428.1" r="4" stroke-width="2"><title>Rocket Launcher, 5 m: 117 ms, 1 rounds</title></circle>
+<circle class="d6 ring" cx="101.7" cy="405.5" r="4" stroke-width="2"><title>Rocket Launcher, 10 m: 283 ms, 1 rounds</title></circle>
+<circle class="d6 ring" cx="120.6" cy="382.8" r="4" stroke-width="2"><title>Rocket Launcher, 15 m: 450 ms, 1 rounds</title></circle>
+<circle class="d6 ring" cx="139.5" cy="360.1" r="4" stroke-width="2"><title>Rocket Launcher, 20 m: 617 ms, 1 rounds</title></circle>
+<circle class="d6 ring" cx="158.3" cy="337.5" r="4" stroke-width="2"><title>Rocket Launcher, 25 m: 783 ms, 1 rounds</title></circle>
+<circle class="d6 ring" cx="177.2" cy="314.8" r="4" stroke-width="2"><title>Rocket Launcher, 30 m: 950 ms, 1 rounds</title></circle>
+<circle class="d6 ring" cx="196.1" cy="292.1" r="4" stroke-width="2"><title>Rocket Launcher, 35 m: 1117 ms, 1 rounds</title></circle>
+<circle class="d6 ring" cx="214.9" cy="269.5" r="4" stroke-width="2"><title>Rocket Launcher, 40 m: 1283 ms, 1 rounds</title></circle>
+<circle class="d6 ring" cx="252.7" cy="224.1" r="4" stroke-width="2"><title>Rocket Launcher, 50 m: 1617 ms, 1 rounds</title></circle>
+<circle class="d6 ring" cx="290.4" cy="178.8" r="4" stroke-width="2"><title>Rocket Launcher, 60 m: 1950 ms, 1 rounds</title></circle>
+<circle class="d6 ring" cx="347.0" cy="110.8" r="4" stroke-width="2"><title>Rocket Launcher, 75 m: 2450 ms, 1 rounds</title></circle>
+<rect class="k6" x="638" y="109.8" width="10" height="3" rx="1.5"/><text class="ink2" x="652" y="114.8" font-size="11.5">Rocket Launcher (to 75 m)</text>
+<rect class="k4" x="638" y="239.0" width="10" height="3" rx="1.5"/><text class="ink2" x="652" y="244.0" font-size="11.5">Shotgun (to 10 m)</text>
+<rect class="k2" x="638" y="255.0" width="10" height="3" rx="1.5"/><text class="ink2" x="652" y="260.0" font-size="11.5">SMG</text>
+<rect class="k5" x="638" y="271.0" width="10" height="3" rx="1.5"/><text class="ink2" x="652" y="276.0" font-size="11.5">Precision Rifle</text>
+<rect class="k0" x="638" y="287.0" width="10" height="3" rx="1.5"/><text class="ink2" x="652" y="292.0" font-size="11.5">Service Pistol</text>
+<rect class="k1" x="638" y="303.0" width="10" height="3" rx="1.5"/><text class="ink2" x="652" y="308.0" font-size="11.5">Heavy Revolver</text>
+<rect class="k3" x="638" y="325.1" width="10" height="3" rx="1.5"/><text class="ink2" x="652" y="330.1" font-size="11.5">Assault Rifle</text>
+<text class="ink2" x="347" y="486" font-size="12" text-anchor="middle">Distance (m)</text>
+<text class="ink2" transform="translate(18 274) rotate(-90)" font-size="12" text-anchor="middle">Time to kill (ms, first round to the kill)</text>
+</svg>

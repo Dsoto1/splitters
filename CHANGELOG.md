@@ -21,6 +21,14 @@ made only on a commit that passed CI on a check branch.
   armour, spawn protected or die. Each shows once, one at a time, below the crosshair. Options → HUD turns them off
   or shows them all again.
 
+**Gunplay audit, measured** (owner-approved; no weapon changed): `pnpm gun-report` drives the shared sim and measures
+every gun: time to kill at 10/25/50/100 m on an unarmoured and an armoured player (body and head; ideal, hip and
+aimed), shots to kill, first shot, draw, reloads and reload cancels, recoil recovery, hip/aimed/running spread and
+falloff. docs/GUNPLAY_AUDIT.md is the report card (strengths, weaknesses against the direction doc, outliers, a ranked
+list of candidate improvements, the spec's G0-G6 checklist), with the numbers (docs/gunplay-audit.json) and a TTK
+chart (docs/gunplay-ttk.svg). The **Training Range** now has every gun of the arsenal on two racks behind the firing
+line (placed in MapMaker).
+
 **Deathmatch and Team Deathmatch play better** (owner, 2026-11-08):
 - **Safer spawns.** Every spawn point is scored for its distance to the nearest enemy, enemy sight lines to it and
   fresh deaths near it, and one is picked at random among the safest few, the same for people and bots. Team modes

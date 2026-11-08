@@ -1,0 +1,8174 @@
+{
+ "generated": "pnpm gun-report (packages/server/src/tools/gun-report.ts): measured in the shared sim",
+ "target": {
+  "health": 100,
+  "armour": 100
+ },
+ "trials": 8,
+ "distances": [
+  10,
+  25,
+  50,
+  100
+ ],
+ "sweep": [
+  5,
+  10,
+  15,
+  20,
+  25,
+  30,
+  35,
+  40,
+  50,
+  60,
+  75,
+  100,
+  125,
+  150
+ ],
+ "capSeconds": 8,
+ "weapons": [
+  {
+   "id": "core.pistol",
+   "name": "Pistol",
+   "category": "pistol",
+   "family": "pistol",
+   "slot": 2,
+   "trigger": "semi",
+   "rpm": 360,
+   "magazine": 12,
+   "damage": 24,
+   "pellets": 1,
+   "model": "bullet",
+   "velocity": 375,
+   "ttk": {
+    "10": {
+     "unarmoured.body": {
+      "ideal": 667,
+      "stk": 5,
+      "hip": 667,
+      "ads": 667
+     },
+     "unarmoured.head": {
+      "ideal": 333,
+      "stk": 3,
+      "hip": 333,
+      "ads": 333
+     },
+     "armoured.body": {
+      "ideal": 1333,
+      "stk": 9,
+      "hip": 1333,
+      "ads": 1333
+     },
+     "armoured.head": {
+      "ideal": 667,
+      "stk": 5,
+      "hip": 667,
+      "ads": 667
+     }
+    },
+    "25": {
+     "unarmoured.body": {
+      "ideal": 700,
+      "stk": 5,
+      "hip": 700,
+      "ads": 700
+     },
+     "unarmoured.head": {
+      "ideal": 367,
+      "stk": 3,
+      "hip": 367,
+      "ads": 367
+     },
+     "armoured.body": {
+      "ideal": 1533,
+      "stk": 10,
+      "hip": 1533,
+      "ads": 1533
+     },
+     "armoured.head": {
+      "ideal": 700,
+      "stk": 5,
+      "hip": 867,
+      "ads": 700
+     }
+    },
+    "50": {
+     "unarmoured.body": {
+      "ideal": 1100,
+      "stk": 7,
+      "hip": 1267,
+      "ads": 1100
+     },
+     "unarmoured.head": {
+      "ideal": 600,
+      "stk": 4,
+      "hip": 683,
+      "ads": 600
+     },
+     "armoured.body": {
+      "ideal": 3200,
+      "stk": 13,
+      "hip": 4033,
+      "ads": 3700
+     },
+     "armoured.head": {
+      "ideal": 1100,
+      "stk": 7,
+      "hip": 3700,
+      "ads": 2567
+     }
+    },
+    "100": {
+     "unarmoured.body": {
+      "ideal": 1233,
+      "stk": 7,
+      "hip": 3750,
+      "ads": 2617
+     },
+     "unarmoured.head": {
+      "ideal": 733,
+      "stk": 4,
+      "hip": 2450,
+      "ads": 900
+     },
+     "armoured.body": {
+      "ideal": 3333,
+      "stk": 13,
+      "hip": null,
+      "ads": 4583
+     },
+     "armoured.head": {
+      "ideal": 1233,
+      "stk": 7,
+      "hip": null,
+      "ads": 4667
+     }
+    }
+   },
+   "sweep": {
+    "5": 667,
+    "10": 667,
+    "15": 683,
+    "20": 683,
+    "25": 700,
+    "30": 717,
+    "35": 900,
+    "40": 917,
+    "50": 1100,
+    "60": 1133,
+    "75": 1167,
+    "100": 1233,
+    "125": 1300,
+    "150": 1367
+   },
+   "sweepStk": {
+    "5": 5,
+    "10": 5,
+    "15": 5,
+    "20": 5,
+    "25": 5,
+    "30": 5,
+    "35": 6,
+    "40": 6,
+    "50": 7,
+    "60": 7,
+    "75": 7,
+    "100": 7,
+    "125": 7,
+    "150": 7
+   },
+   "firstHit": {
+    "10": {
+     "body": 24,
+     "head": 48
+    },
+    "25": {
+     "body": 22,
+     "head": 43.8
+    },
+    "50": {
+     "body": 15.6,
+     "head": 31.2
+    },
+    "100": {
+     "body": 15.6,
+     "head": 31.2
+    }
+   },
+   "falloff": {
+    "5": 1,
+    "10": 1,
+    "15": 1,
+    "20": 0.97,
+    "25": 0.91,
+    "30": 0.84,
+    "35": 0.78,
+    "40": 0.71,
+    "50": 0.65,
+    "60": 0.65,
+    "75": 0.65,
+    "100": 0.65,
+    "125": 0.65,
+    "150": 0.65
+   },
+   "drop": {
+    "5": {
+     "flightMs": 0,
+     "dropCm": 0
+    },
+    "10": {
+     "flightMs": 5,
+     "dropCm": 0
+    },
+    "15": {
+     "flightMs": 19,
+     "dropCm": 0
+    },
+    "20": {
+     "flightMs": 32,
+     "dropCm": 1
+    },
+    "25": {
+     "flightMs": 45,
+     "dropCm": 1
+    },
+    "30": {
+     "flightMs": 59,
+     "dropCm": 2
+    },
+    "35": {
+     "flightMs": 72,
+     "dropCm": 3
+    },
+    "40": {
+     "flightMs": 85,
+     "dropCm": 4
+    },
+    "50": {
+     "flightMs": 112,
+     "dropCm": 6
+    },
+    "60": {
+     "flightMs": 139,
+     "dropCm": 9
+    },
+    "75": {
+     "flightMs": 179,
+     "dropCm": 16
+    },
+    "100": {
+     "flightMs": 245,
+     "dropCm": 30
+    },
+    "125": {
+     "flightMs": 312,
+     "dropCm": 48
+    },
+    "150": {
+     "flightMs": 379,
+     "dropCm": 70
+    }
+   },
+   "firstShotMs": 0,
+   "drawMs": 133,
+   "toPistolMs": 133,
+   "reload": {
+    "tacticalMs": 850,
+    "emptyMs": 1117,
+    "firstRoundMs": null,
+    "cancelByFireMs": 0,
+    "cancelBySwapMs": null,
+    "kind": "magazine"
+   },
+   "recoil": {
+    "oneMrad": 12.2,
+    "oneSettleMs": 100,
+    "sprayRounds": 10,
+    "sprayMrad": 12.2,
+    "spraySettleMs": 100,
+    "sprayForgetMs": 1183
+   },
+   "spread": {
+    "hip": 2,
+    "ads": 1.2,
+    "run": 8,
+    "spray10": null
+   }
+  },
+  {
+   "id": "core.rifle",
+   "name": "Assault Rifle",
+   "category": "rifle",
+   "family": "rifle",
+   "slot": 3,
+   "trigger": "auto",
+   "rpm": 600,
+   "magazine": 30,
+   "damage": 18,
+   "pellets": 1,
+   "model": "bullet",
+   "velocity": 820,
+   "ttk": {
+    "10": {
+     "unarmoured.body": {
+      "ideal": 500,
+      "stk": 6,
+      "hip": 500,
+      "ads": 500
+     },
+     "unarmoured.head": {
+      "ideal": 200,
+      "stk": 3,
+      "hip": 200,
+      "ads": 200
+     },
+     "armoured.body": {
+      "ideal": 1100,
+      "stk": 12,
+      "hip": 1100,
+      "ads": 1100
+     },
+     "armoured.head": {
+      "ideal": 500,
+      "stk": 6,
+      "hip": 500,
+      "ads": 500
+     }
+    },
+    "25": {
+     "unarmoured.body": {
+      "ideal": 517,
+      "stk": 6,
+      "hip": 517,
+      "ads": 517
+     },
+     "unarmoured.head": {
+      "ideal": 217,
+      "stk": 3,
+      "hip": 217,
+      "ads": 217
+     },
+     "armoured.body": {
+      "ideal": 1117,
+      "stk": 12,
+      "hip": 1117,
+      "ads": 1117
+     },
+     "armoured.head": {
+      "ideal": 517,
+      "stk": 6,
+      "hip": 517,
+      "ads": 517
+     }
+    },
+    "50": {
+     "unarmoured.body": {
+      "ideal": 650,
+      "stk": 7,
+      "hip": 650,
+      "ads": 650
+     },
+     "unarmoured.head": {
+      "ideal": 350,
+      "stk": 4,
+      "hip": 350,
+      "ads": 350
+     },
+     "armoured.body": {
+      "ideal": 1250,
+      "stk": 13,
+      "hip": 1250,
+      "ads": 1250
+     },
+     "armoured.head": {
+      "ideal": 650,
+      "stk": 7,
+      "hip": 650,
+      "ads": 650
+     }
+    },
+    "100": {
+     "unarmoured.body": {
+      "ideal": 800,
+      "stk": 8,
+      "hip": 800,
+      "ads": 800
+     },
+     "unarmoured.head": {
+      "ideal": 400,
+      "stk": 4,
+      "hip": 500,
+      "ads": 400
+     },
+     "armoured.body": {
+      "ideal": 1500,
+      "stk": 15,
+      "hip": null,
+      "ads": 1600
+     },
+     "armoured.head": {
+      "ideal": 800,
+      "stk": 8,
+      "hip": 7450,
+      "ads": 800
+     }
+    }
+   },
+   "sweep": {
+    "5": 500,
+    "10": 500,
+    "15": 500,
+    "20": 500,
+    "25": 517,
+    "30": 517,
+    "35": 517,
+    "40": 533,
+    "50": 650,
+    "60": 650,
+    "75": 767,
+    "100": 800,
+    "125": 833,
+    "150": 867
+   },
+   "sweepStk": {
+    "5": 6,
+    "10": 6,
+    "15": 6,
+    "20": 6,
+    "25": 6,
+    "30": 6,
+    "35": 6,
+    "40": 6,
+    "50": 7,
+    "60": 7,
+    "75": 8,
+    "100": 8,
+    "125": 8,
+    "150": 8
+   },
+   "firstHit": {
+    "10": {
+     "body": 18,
+     "head": 36
+    },
+    "25": {
+     "body": 18,
+     "head": 36
+    },
+    "50": {
+     "body": 16.5,
+     "head": 32.9
+    },
+    "100": {
+     "body": 13.5,
+     "head": 27
+    }
+   },
+   "falloff": {
+    "5": 1,
+    "10": 1,
+    "15": 1,
+    "20": 1,
+    "25": 1,
+    "30": 1,
+    "35": 0.99,
+    "40": 0.97,
+    "50": 0.91,
+    "60": 0.84,
+    "75": 0.76,
+    "100": 0.75,
+    "125": 0.75,
+    "150": 0.75
+   },
+   "drop": {
+    "5": {
+     "flightMs": 0,
+     "dropCm": 0
+    },
+    "10": {
+     "flightMs": 2,
+     "dropCm": 0
+    },
+    "15": {
+     "flightMs": 9,
+     "dropCm": 0
+    },
+    "20": {
+     "flightMs": 15,
+     "dropCm": 0
+    },
+    "25": {
+     "flightMs": 21,
+     "dropCm": 0
+    },
+    "30": {
+     "flightMs": 27,
+     "dropCm": 0
+    },
+    "35": {
+     "flightMs": 33,
+     "dropCm": 1
+    },
+    "40": {
+     "flightMs": 39,
+     "dropCm": 1
+    },
+    "50": {
+     "flightMs": 51,
+     "dropCm": 1
+    },
+    "60": {
+     "flightMs": 63,
+     "dropCm": 2
+    },
+    "75": {
+     "flightMs": 82,
+     "dropCm": 3
+    },
+    "100": {
+     "flightMs": 112,
+     "dropCm": 6
+    },
+    "125": {
+     "flightMs": 143,
+     "dropCm": 10
+    },
+    "150": {
+     "flightMs": 173,
+     "dropCm": 15
+    }
+   },
+   "firstShotMs": 0,
+   "drawMs": 317,
+   "toPistolMs": 133,
+   "reload": {
+    "tacticalMs": 1417,
+    "emptyMs": 1817,
+    "firstRoundMs": null,
+    "cancelByFireMs": 0,
+    "cancelBySwapMs": 133,
+    "kind": "magazine"
+   },
+   "recoil": {
+    "oneMrad": 10,
+    "oneSettleMs": 150,
+    "sprayRounds": 10,
+    "sprayMrad": 86.5,
+    "spraySettleMs": 350,
+    "sprayForgetMs": 1350
+   },
+   "spread": {
+    "hip": 1.5,
+    "ads": 0.6,
+    "run": 9.5,
+    "spray10": 8.7
+   }
+  },
+  {
+   "id": "core.shotgun",
+   "name": "Shotgun",
+   "category": "shotgun",
+   "family": "shotgun",
+   "slot": 4,
+   "trigger": "auto",
+   "rpm": 80,
+   "magazine": 6,
+   "damage": 12,
+   "pellets": 10,
+   "model": "hitscan",
+   "velocity": null,
+   "ttk": {
+    "10": {
+     "unarmoured.body": {
+      "ideal": 1500,
+      "stk": 3,
+      "hip": 1500,
+      "ads": 1500
+     },
+     "unarmoured.head": {
+      "ideal": 2250,
+      "stk": 4,
+      "hip": 1500,
+      "ads": 1500
+     },
+     "armoured.body": {
+      "ideal": 3000,
+      "stk": 5,
+      "hip": 3000,
+      "ads": 3000
+     },
+     "armoured.head": {
+      "ideal": 5033,
+      "stk": 7,
+      "hip": 3750,
+      "ads": 3750
+     }
+    },
+    "25": {
+     "unarmoured.body": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     },
+     "unarmoured.head": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     },
+     "armoured.body": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     },
+     "armoured.head": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     }
+    },
+    "50": {
+     "unarmoured.body": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     },
+     "unarmoured.head": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     },
+     "armoured.body": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     },
+     "armoured.head": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     }
+    },
+    "100": {
+     "unarmoured.body": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     },
+     "unarmoured.head": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     },
+     "armoured.body": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     },
+     "armoured.head": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     }
+    }
+   },
+   "sweep": {
+    "5": 0,
+    "10": 1500,
+    "15": 6317,
+    "20": null,
+    "25": null,
+    "30": null,
+    "35": null,
+    "40": null,
+    "50": null,
+    "60": null,
+    "75": null,
+    "100": null,
+    "125": null,
+    "150": null
+   },
+   "sweepStk": {
+    "5": 1,
+    "10": 3,
+    "15": 8,
+    "20": null,
+    "25": null,
+    "30": null,
+    "35": null,
+    "40": null,
+    "50": null,
+    "60": null,
+    "75": null,
+    "100": null,
+    "125": null,
+    "150": null
+   },
+   "firstHit": {
+    "10": {
+     "body": 44.2,
+     "head": 18.5
+    },
+    "25": {
+     "body": 0,
+     "head": 0
+    },
+    "50": {
+     "body": 0,
+     "head": 0
+    },
+    "100": {
+     "body": 0,
+     "head": 0
+    }
+   },
+   "falloff": {
+    "5": 1,
+    "10": 0.67,
+    "15": 0.39,
+    "20": 0.26,
+    "25": 0.25,
+    "30": 0.25,
+    "35": 0.25,
+    "40": 0.25,
+    "50": 0.25,
+    "60": 0.25,
+    "75": 0.25,
+    "100": 0.25,
+    "125": 0.25,
+    "150": 0.25
+   },
+   "drop": {
+    "5": null,
+    "10": null,
+    "15": null,
+    "20": null,
+    "25": null,
+    "30": null,
+    "35": null,
+    "40": null,
+    "50": null,
+    "60": null,
+    "75": null,
+    "100": null,
+    "125": null,
+    "150": null
+   },
+   "firstShotMs": 0,
+   "drawMs": 250,
+   "toPistolMs": 133,
+   "reload": {
+    "tacticalMs": 1350,
+    "emptyMs": 2250,
+    "firstRoundMs": 550,
+    "cancelByFireMs": 0,
+    "cancelBySwapMs": 133,
+    "kind": "shell"
+   },
+   "recoil": {
+    "oneMrad": 60.3,
+    "oneSettleMs": 417,
+    "sprayRounds": 6,
+    "sprayMrad": 60.3,
+    "spraySettleMs": 417,
+    "sprayForgetMs": 1767
+   },
+   "spread": {
+    "hip": 75,
+    "ads": 75,
+    "run": 81,
+    "spray10": null
+   }
+  },
+  {
+   "id": "core.sniper",
+   "name": "Sniper Rifle",
+   "category": "sniper",
+   "family": "precision",
+   "slot": 5,
+   "trigger": "auto",
+   "rpm": 48,
+   "magazine": 5,
+   "damage": 80,
+   "pellets": 1,
+   "model": "bullet",
+   "velocity": 950,
+   "ttk": {
+    "10": {
+     "unarmoured.body": {
+      "ideal": 1250,
+      "stk": 2,
+      "hip": 1250,
+      "ads": 1250
+     },
+     "unarmoured.head": {
+      "ideal": 0,
+      "stk": 1,
+      "hip": 1250,
+      "ads": 0
+     },
+     "armoured.body": {
+      "ideal": 2500,
+      "stk": 3,
+      "hip": 2500,
+      "ads": 2500
+     },
+     "armoured.head": {
+      "ideal": 0,
+      "stk": 1,
+      "hip": 1875,
+      "ads": 0
+     }
+    },
+    "25": {
+     "unarmoured.body": {
+      "ideal": 1267,
+      "stk": 2,
+      "hip": 3142,
+      "ads": 1267
+     },
+     "unarmoured.head": {
+      "ideal": 17,
+      "stk": 1,
+      "hip": null,
+      "ads": 17
+     },
+     "armoured.body": {
+      "ideal": 2517,
+      "stk": 3,
+      "hip": null,
+      "ads": 2517
+     },
+     "armoured.head": {
+      "ideal": 17,
+      "stk": 1,
+      "hip": null,
+      "ads": 17
+     }
+    },
+    "50": {
+     "unarmoured.body": {
+      "ideal": 1283,
+      "stk": 2,
+      "hip": null,
+      "ads": 1283
+     },
+     "unarmoured.head": {
+      "ideal": 33,
+      "stk": 1,
+      "hip": null,
+      "ads": 33
+     },
+     "armoured.body": {
+      "ideal": 2533,
+      "stk": 3,
+      "hip": null,
+      "ads": 2533
+     },
+     "armoured.head": {
+      "ideal": 33,
+      "stk": 1,
+      "hip": null,
+      "ads": 33
+     }
+    },
+    "100": {
+     "unarmoured.body": {
+      "ideal": 1333,
+      "stk": 2,
+      "hip": null,
+      "ads": 1333
+     },
+     "unarmoured.head": {
+      "ideal": 83,
+      "stk": 1,
+      "hip": null,
+      "ads": 83
+     },
+     "armoured.body": {
+      "ideal": 2583,
+      "stk": 3,
+      "hip": null,
+      "ads": 3208
+     },
+     "armoured.head": {
+      "ideal": 83,
+      "stk": 1,
+      "hip": null,
+      "ads": 83
+     }
+    }
+   },
+   "sweep": {
+    "5": 1250,
+    "10": 1250,
+    "15": 1250,
+    "20": 1250,
+    "25": 1267,
+    "30": 1267,
+    "35": 1267,
+    "40": 1267,
+    "50": 1283,
+    "60": 1300,
+    "75": 1317,
+    "100": 1333,
+    "125": 1367,
+    "150": 1383
+   },
+   "sweepStk": {
+    "5": 2,
+    "10": 2,
+    "15": 2,
+    "20": 2,
+    "25": 2,
+    "30": 2,
+    "35": 2,
+    "40": 2,
+    "50": 2,
+    "60": 2,
+    "75": 2,
+    "100": 2,
+    "125": 2,
+    "150": 2
+   },
+   "firstHit": {
+    "10": {
+     "body": 80,
+     "head": 100
+    },
+    "25": {
+     "body": 80,
+     "head": 100
+    },
+    "50": {
+     "body": 80,
+     "head": 100
+    },
+    "100": {
+     "body": 80,
+     "head": 100
+    }
+   },
+   "falloff": {
+    "5": 1,
+    "10": 1,
+    "15": 1,
+    "20": 1,
+    "25": 1,
+    "30": 1,
+    "35": 1,
+    "40": 1,
+    "50": 1,
+    "60": 1,
+    "75": 1,
+    "100": 1,
+    "125": 1,
+    "150": 1
+   },
+   "drop": {
+    "5": {
+     "flightMs": 0,
+     "dropCm": 0
+    },
+    "10": {
+     "flightMs": 2,
+     "dropCm": 0
+    },
+    "15": {
+     "flightMs": 7,
+     "dropCm": 0
+    },
+    "20": {
+     "flightMs": 13,
+     "dropCm": 0
+    },
+    "25": {
+     "flightMs": 18,
+     "dropCm": 0
+    },
+    "30": {
+     "flightMs": 23,
+     "dropCm": 1
+    },
+    "35": {
+     "flightMs": 28,
+     "dropCm": 1
+    },
+    "40": {
+     "flightMs": 34,
+     "dropCm": 1
+    },
+    "50": {
+     "flightMs": 44,
+     "dropCm": 2
+    },
+    "60": {
+     "flightMs": 55,
+     "dropCm": 4
+    },
+    "75": {
+     "flightMs": 71,
+     "dropCm": 6
+    },
+    "100": {
+     "flightMs": 97,
+     "dropCm": 12
+    },
+    "125": {
+     "flightMs": 123,
+     "dropCm": 19
+    },
+    "150": {
+     "flightMs": 149,
+     "dropCm": 27
+    }
+   },
+   "firstShotMs": 0,
+   "drawMs": 483,
+   "toPistolMs": 133,
+   "reload": {
+    "tacticalMs": 1517,
+    "emptyMs": 1850,
+    "firstRoundMs": null,
+    "cancelByFireMs": 0,
+    "cancelBySwapMs": 133,
+    "kind": "magazine"
+   },
+   "recoil": {
+    "oneMrad": 70.3,
+    "oneSettleMs": 467,
+    "sprayRounds": 5,
+    "sprayMrad": 70.3,
+    "spraySettleMs": 467,
+    "sprayForgetMs": 5433
+   },
+   "spread": {
+    "hip": 30,
+    "ads": 0,
+    "run": 60,
+    "spray10": null
+   }
+  },
+  {
+   "id": "core.launcher",
+   "name": "Grenade Launcher",
+   "category": "explosive",
+   "family": null,
+   "slot": 6,
+   "trigger": "auto",
+   "rpm": 65,
+   "magazine": 4,
+   "damage": 0,
+   "pellets": 1,
+   "model": "projectile",
+   "velocity": 26,
+   "ttk": {
+    "10": {
+     "unarmoured.body": {
+      "ideal": 1250,
+      "stk": 2,
+      "hip": 1250,
+      "ads": 1250
+     },
+     "unarmoured.head": {
+      "ideal": 1250,
+      "stk": 2,
+      "hip": 1250,
+      "ads": 1250
+     },
+     "armoured.body": {
+      "ideal": 2167,
+      "stk": 3,
+      "hip": 2167,
+      "ads": 2167
+     },
+     "armoured.head": {
+      "ideal": 2167,
+      "stk": 3,
+      "hip": 2167,
+      "ads": 2167
+     }
+    },
+    "25": {
+     "unarmoured.body": {
+      "ideal": 1833,
+      "stk": 2,
+      "hip": 1833,
+      "ads": 1833
+     },
+     "unarmoured.head": {
+      "ideal": 1850,
+      "stk": 2,
+      "hip": 1850,
+      "ads": 1850
+     },
+     "armoured.body": {
+      "ideal": 2750,
+      "stk": 3,
+      "hip": 2750,
+      "ads": 2750
+     },
+     "armoured.head": {
+      "ideal": 2767,
+      "stk": 3,
+      "hip": 2767,
+      "ads": 2767
+     }
+    },
+    "50": {
+     "unarmoured.body": {
+      "ideal": 3083,
+      "stk": 2,
+      "hip": 3083,
+      "ads": 3083
+     },
+     "unarmoured.head": {
+      "ideal": 3100,
+      "stk": 2,
+      "hip": 3100,
+      "ads": 3100
+     },
+     "armoured.body": {
+      "ideal": 4000,
+      "stk": 3,
+      "hip": 4000,
+      "ads": 4000
+     },
+     "armoured.head": {
+      "ideal": 4017,
+      "stk": 3,
+      "hip": 4017,
+      "ads": 4017
+     }
+    },
+    "100": {
+     "unarmoured.body": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     },
+     "unarmoured.head": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     },
+     "armoured.body": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     },
+     "armoured.head": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     }
+    }
+   },
+   "sweep": {
+    "5": 1100,
+    "10": 1250,
+    "15": 1433,
+    "20": 1633,
+    "25": 1833,
+    "30": 2050,
+    "35": 2283,
+    "40": 2517,
+    "50": 3083,
+    "60": null,
+    "75": null,
+    "100": null,
+    "125": null,
+    "150": null
+   },
+   "sweepStk": {
+    "5": 2,
+    "10": 2,
+    "15": 2,
+    "20": 2,
+    "25": 2,
+    "30": 2,
+    "35": 2,
+    "40": 2,
+    "50": 2,
+    "60": null,
+    "75": null,
+    "100": null,
+    "125": null,
+    "150": null
+   },
+   "firstHit": {
+    "10": {
+     "body": 82.7,
+     "head": 82
+    },
+    "25": {
+     "body": 81.9,
+     "head": 83.5
+    },
+    "50": {
+     "body": 81.8,
+     "head": 82.3
+    },
+    "100": {
+     "body": 0,
+     "head": 0
+    }
+   },
+   "falloff": {
+    "5": 1,
+    "10": 1,
+    "15": 1,
+    "20": 1,
+    "25": 1,
+    "30": 1,
+    "35": 1,
+    "40": 1,
+    "50": 1,
+    "60": 1,
+    "75": 1,
+    "100": 1,
+    "125": 1,
+    "150": 1
+   },
+   "drop": {
+    "5": null,
+    "10": null,
+    "15": null,
+    "20": null,
+    "25": null,
+    "30": null,
+    "35": null,
+    "40": null,
+    "50": null,
+    "60": null,
+    "75": null,
+    "100": null,
+    "125": null,
+    "150": null
+   },
+   "firstShotMs": 0,
+   "drawMs": 617,
+   "toPistolMs": 133,
+   "reload": {
+    "tacticalMs": 1683,
+    "emptyMs": 1683,
+    "firstRoundMs": null,
+    "cancelByFireMs": 0,
+    "cancelBySwapMs": 133,
+    "kind": "magazine"
+   },
+   "recoil": {
+    "oneMrad": null,
+    "oneSettleMs": null,
+    "sprayRounds": 0,
+    "sprayMrad": null,
+    "spraySettleMs": null,
+    "sprayForgetMs": null
+   },
+   "spread": {
+    "hip": 0,
+    "ads": 0,
+    "run": 14,
+    "spray10": null
+   }
+  },
+  {
+   "id": "core.smg",
+   "name": "Submachine Gun",
+   "category": "smg",
+   "family": "smg",
+   "slot": 7,
+   "trigger": "auto",
+   "rpm": 900,
+   "magazine": 32,
+   "damage": 11,
+   "pellets": 1,
+   "model": "bullet",
+   "velocity": 400,
+   "ttk": {
+    "10": {
+     "unarmoured.body": {
+      "ideal": 600,
+      "stk": 10,
+      "hip": 600,
+      "ads": 600
+     },
+     "unarmoured.head": {
+      "ideal": 400,
+      "stk": 7,
+      "hip": 400,
+      "ads": 400
+     },
+     "armoured.body": {
+      "ideal": 1200,
+      "stk": 19,
+      "hip": 1567,
+      "ads": 1333
+     },
+     "armoured.head": {
+      "ideal": 800,
+      "stk": 13,
+      "hip": 933,
+      "ads": 867
+     }
+    },
+    "25": {
+     "unarmoured.body": {
+      "ideal": 967,
+      "stk": 15,
+      "hip": 3500,
+      "ads": 1933
+     },
+     "unarmoured.head": {
+      "ideal": 633,
+      "stk": 10,
+      "hip": 3367,
+      "ads": 1767
+     },
+     "armoured.body": {
+      "ideal": 1900,
+      "stk": 29,
+      "hip": 6967,
+      "ads": 5400
+     },
+     "armoured.head": {
+      "ideal": 1233,
+      "stk": 19,
+      "hip": 6833,
+      "ads": 4167
+     }
+    },
+    "50": {
+     "unarmoured.body": {
+      "ideal": 1167,
+      "stk": 17,
+      "hip": 6800,
+      "ads": 3867
+     },
+     "unarmoured.head": {
+      "ideal": 833,
+      "stk": 12,
+      "hip": 6833,
+      "ads": 3733
+     },
+     "armoured.body": {
+      "ideal": 3500,
+      "stk": 34,
+      "hip": null,
+      "ads": null
+     },
+     "armoured.head": {
+      "ideal": 1567,
+      "stk": 23,
+      "hip": null,
+      "ads": null
+     }
+    },
+    "100": {
+     "unarmoured.body": {
+      "ideal": 1283,
+      "stk": 17,
+      "hip": null,
+      "ads": 7017
+     },
+     "unarmoured.head": {
+      "ideal": 950,
+      "stk": 12,
+      "hip": null,
+      "ads": null
+     },
+     "armoured.body": {
+      "ideal": 3617,
+      "stk": 34,
+      "hip": null,
+      "ads": null
+     },
+     "armoured.head": {
+      "ideal": 1683,
+      "stk": 23,
+      "hip": null,
+      "ads": null
+     }
+    }
+   },
+   "sweep": {
+    "5": 600,
+    "10": 600,
+    "15": 600,
+    "20": 750,
+    "25": 967,
+    "30": 1050,
+    "35": 1117,
+    "40": 1133,
+    "50": 1167,
+    "60": 1183,
+    "75": 1217,
+    "100": 1283,
+    "125": 1350,
+    "150": 1417
+   },
+   "sweepStk": {
+    "5": 10,
+    "10": 10,
+    "15": 10,
+    "20": 12,
+    "25": 15,
+    "30": 16,
+    "35": 17,
+    "40": 17,
+    "50": 17,
+    "60": 17,
+    "75": 17,
+    "100": 17,
+    "125": 17,
+    "150": 17
+   },
+   "firstHit": {
+    "10": {
+     "body": 11,
+     "head": 16.5
+    },
+    "25": {
+     "body": 7.1,
+     "head": 10.6
+    },
+    "50": {
+     "body": 6,
+     "head": 9.1
+    },
+    "100": {
+     "body": 6,
+     "head": 9.1
+    }
+   },
+   "falloff": {
+    "5": 1,
+    "10": 1,
+    "15": 0.89,
+    "20": 0.74,
+    "25": 0.64,
+    "30": 0.57,
+    "35": 0.55,
+    "40": 0.55,
+    "50": 0.55,
+    "60": 0.55,
+    "75": 0.55,
+    "100": 0.55,
+    "125": 0.55,
+    "150": 0.55
+   },
+   "drop": {
+    "5": {
+     "flightMs": 0,
+     "dropCm": 0
+    },
+    "10": {
+     "flightMs": 5,
+     "dropCm": 0
+    },
+    "15": {
+     "flightMs": 18,
+     "dropCm": 0
+    },
+    "20": {
+     "flightMs": 30,
+     "dropCm": 0
+    },
+    "25": {
+     "flightMs": 43,
+     "dropCm": 1
+    },
+    "30": {
+     "flightMs": 55,
+     "dropCm": 1
+    },
+    "35": {
+     "flightMs": 68,
+     "dropCm": 2
+    },
+    "40": {
+     "flightMs": 80,
+     "dropCm": 3
+    },
+    "50": {
+     "flightMs": 105,
+     "dropCm": 5
+    },
+    "60": {
+     "flightMs": 130,
+     "dropCm": 8
+    },
+    "75": {
+     "flightMs": 168,
+     "dropCm": 14
+    },
+    "100": {
+     "flightMs": 230,
+     "dropCm": 26
+    },
+    "125": {
+     "flightMs": 293,
+     "dropCm": 42
+    },
+    "150": {
+     "flightMs": 355,
+     "dropCm": 62
+    }
+   },
+   "firstShotMs": 0,
+   "drawMs": 183,
+   "toPistolMs": 133,
+   "reload": {
+    "tacticalMs": 917,
+    "emptyMs": 1217,
+    "firstRoundMs": null,
+    "cancelByFireMs": 0,
+    "cancelBySwapMs": 133,
+    "kind": "magazine"
+   },
+   "recoil": {
+    "oneMrad": 3,
+    "oneSettleMs": 67,
+    "sprayRounds": 10,
+    "sprayMrad": 61.3,
+    "spraySettleMs": 150,
+    "sprayForgetMs": 333
+   },
+   "spread": {
+    "hip": 6,
+    "ads": 4.8,
+    "run": 10,
+    "spray10": 32
+   }
+  },
+  {
+   "id": "core.rockets",
+   "name": "Rocket Launcher",
+   "category": "explosive",
+   "family": null,
+   "slot": 8,
+   "trigger": "auto",
+   "rpm": 100,
+   "magazine": 1,
+   "damage": 0,
+   "pellets": 1,
+   "model": "projectile",
+   "velocity": 30,
+   "ttk": {
+    "10": {
+     "unarmoured.body": {
+      "ideal": 283,
+      "stk": 1,
+      "hip": 283,
+      "ads": 283
+     },
+     "unarmoured.head": {
+      "ideal": 283,
+      "stk": 1,
+      "hip": 283,
+      "ads": 283
+     },
+     "armoured.body": {
+      "ideal": 1783,
+      "stk": 2,
+      "hip": 1783,
+      "ads": 1783
+     },
+     "armoured.head": {
+      "ideal": 1783,
+      "stk": 2,
+      "hip": 1783,
+      "ads": 1783
+     }
+    },
+    "25": {
+     "unarmoured.body": {
+      "ideal": 783,
+      "stk": 1,
+      "hip": 783,
+      "ads": 783
+     },
+     "unarmoured.head": {
+      "ideal": 783,
+      "stk": 1,
+      "hip": 783,
+      "ads": 783
+     },
+     "armoured.body": {
+      "ideal": 2283,
+      "stk": 2,
+      "hip": 2283,
+      "ads": 2283
+     },
+     "armoured.head": {
+      "ideal": 2283,
+      "stk": 2,
+      "hip": 2283,
+      "ads": 2283
+     }
+    },
+    "50": {
+     "unarmoured.body": {
+      "ideal": 1617,
+      "stk": 1,
+      "hip": 1617,
+      "ads": 1617
+     },
+     "unarmoured.head": {
+      "ideal": 1617,
+      "stk": 1,
+      "hip": 1617,
+      "ads": 1617
+     },
+     "armoured.body": {
+      "ideal": 3117,
+      "stk": 2,
+      "hip": 3117,
+      "ads": 3117
+     },
+     "armoured.head": {
+      "ideal": 3117,
+      "stk": 2,
+      "hip": 3117,
+      "ads": 3117
+     }
+    },
+    "100": {
+     "unarmoured.body": {
+      "ideal": 3283,
+      "stk": 1,
+      "hip": 3283,
+      "ads": 3283
+     },
+     "unarmoured.head": {
+      "ideal": 3283,
+      "stk": 1,
+      "hip": 3283,
+      "ads": 3283
+     },
+     "armoured.body": {
+      "ideal": 4783,
+      "stk": 2,
+      "hip": 4783,
+      "ads": 4783
+     },
+     "armoured.head": {
+      "ideal": 4783,
+      "stk": 2,
+      "hip": 4783,
+      "ads": 4783
+     }
+    }
+   },
+   "sweep": {
+    "5": 117,
+    "10": 283,
+    "15": 450,
+    "20": 617,
+    "25": 783,
+    "30": 950,
+    "35": 1117,
+    "40": 1283,
+    "50": 1617,
+    "60": 1950,
+    "75": 2450,
+    "100": 3283,
+    "125": null,
+    "150": null
+   },
+   "sweepStk": {
+    "5": 1,
+    "10": 1,
+    "15": 1,
+    "20": 1,
+    "25": 1,
+    "30": 1,
+    "35": 1,
+    "40": 1,
+    "50": 1,
+    "60": 1,
+    "75": 1,
+    "100": 1,
+    "125": null,
+    "150": null
+   },
+   "firstHit": {
+    "10": {
+     "body": 100,
+     "head": 100
+    },
+    "25": {
+     "body": 100,
+     "head": 100
+    },
+    "50": {
+     "body": 100,
+     "head": 100
+    },
+    "100": {
+     "body": 100,
+     "head": 100
+    }
+   },
+   "falloff": {
+    "5": 1,
+    "10": 1,
+    "15": 1,
+    "20": 1,
+    "25": 1,
+    "30": 1,
+    "35": 1,
+    "40": 1,
+    "50": 1,
+    "60": 1,
+    "75": 1,
+    "100": 1,
+    "125": 1,
+    "150": 1
+   },
+   "drop": {
+    "5": null,
+    "10": null,
+    "15": null,
+    "20": null,
+    "25": null,
+    "30": null,
+    "35": null,
+    "40": null,
+    "50": null,
+    "60": null,
+    "75": null,
+    "100": null,
+    "125": null,
+    "150": null
+   },
+   "firstShotMs": 0,
+   "drawMs": 517,
+   "toPistolMs": 133,
+   "reload": {
+    "tacticalMs": null,
+    "emptyMs": 917,
+    "firstRoundMs": null,
+    "cancelByFireMs": null,
+    "cancelBySwapMs": 133,
+    "kind": "magazine"
+   },
+   "recoil": {
+    "oneMrad": null,
+    "oneSettleMs": null,
+    "sprayRounds": 0,
+    "sprayMrad": null,
+    "spraySettleMs": null,
+    "sprayForgetMs": null
+   },
+   "spread": {
+    "hip": 0,
+    "ads": 0,
+    "run": 14,
+    "spray10": null
+   }
+  },
+  {
+   "id": "core.plasma",
+   "name": "Plasma Rifle",
+   "category": "rifle",
+   "family": null,
+   "slot": 9,
+   "trigger": "auto",
+   "rpm": 514,
+   "magazine": 40,
+   "damage": 0,
+   "pellets": 1,
+   "model": "projectile",
+   "velocity": 55,
+   "ttk": {
+    "10": {
+     "unarmoured.body": {
+      "ideal": 617,
+      "stk": 5,
+      "hip": 617,
+      "ads": 617
+     },
+     "unarmoured.head": {
+      "ideal": 617,
+      "stk": 5,
+      "hip": 617,
+      "ads": 617
+     },
+     "armoured.body": {
+      "ideal": 1200,
+      "stk": 10,
+      "hip": 1200,
+      "ads": 1200
+     },
+     "armoured.head": {
+      "ideal": 1200,
+      "stk": 10,
+      "hip": 1200,
+      "ads": 1200
+     }
+    },
+    "25": {
+     "unarmoured.body": {
+      "ideal": 883,
+      "stk": 5,
+      "hip": 883,
+      "ads": 883
+     },
+     "unarmoured.head": {
+      "ideal": 883,
+      "stk": 5,
+      "hip": 883,
+      "ads": 883
+     },
+     "armoured.body": {
+      "ideal": 1467,
+      "stk": 10,
+      "hip": 1467,
+      "ads": 1467
+     },
+     "armoured.head": {
+      "ideal": 1467,
+      "stk": 10,
+      "hip": 1475,
+      "ads": 1467
+     }
+    },
+    "50": {
+     "unarmoured.body": {
+      "ideal": 1350,
+      "stk": 5,
+      "hip": 1350,
+      "ads": 1350
+     },
+     "unarmoured.head": {
+      "ideal": 1350,
+      "stk": 5,
+      "hip": 1467,
+      "ads": 1350
+     },
+     "armoured.body": {
+      "ideal": 1933,
+      "stk": 10,
+      "hip": 1933,
+      "ads": 1933
+     },
+     "armoured.head": {
+      "ideal": 1933,
+      "stk": 10,
+      "hip": 2167,
+      "ads": 1933
+     }
+    },
+    "100": {
+     "unarmoured.body": {
+      "ideal": 2250,
+      "stk": 5,
+      "hip": 2675,
+      "ads": 2267
+     },
+     "unarmoured.head": {
+      "ideal": 2250,
+      "stk": 5,
+      "hip": 2967,
+      "ads": 2383
+     },
+     "armoured.body": {
+      "ideal": 2833,
+      "stk": 10,
+      "hip": 3542,
+      "ads": 2833
+     },
+     "armoured.head": {
+      "ideal": 2833,
+      "stk": 10,
+      "hip": 4017,
+      "ads": 3183
+     }
+    }
+   },
+   "sweep": {
+    "5": 533,
+    "10": 617,
+    "15": 700,
+    "20": 800,
+    "25": 883,
+    "30": 983,
+    "35": 1067,
+    "40": 1167,
+    "50": 1350,
+    "60": 1533,
+    "75": 1800,
+    "100": 2250,
+    "125": null,
+    "150": null
+   },
+   "sweepStk": {
+    "5": 5,
+    "10": 5,
+    "15": 5,
+    "20": 5,
+    "25": 5,
+    "30": 5,
+    "35": 5,
+    "40": 5,
+    "50": 5,
+    "60": 5,
+    "75": 5,
+    "100": 5,
+    "125": null,
+    "150": null
+   },
+   "firstHit": {
+    "10": {
+     "body": 21.5,
+     "head": 21.2
+    },
+    "25": {
+     "body": 21.6,
+     "head": 21.2
+    },
+    "50": {
+     "body": 21.6,
+     "head": 21.2
+    },
+    "100": {
+     "body": 21.6,
+     "head": 21.2
+    }
+   },
+   "falloff": {
+    "5": 1,
+    "10": 1,
+    "15": 1,
+    "20": 1,
+    "25": 1,
+    "30": 1,
+    "35": 1,
+    "40": 1,
+    "50": 1,
+    "60": 1,
+    "75": 1,
+    "100": 1,
+    "125": 1,
+    "150": 1
+   },
+   "drop": {
+    "5": null,
+    "10": null,
+    "15": null,
+    "20": null,
+    "25": null,
+    "30": null,
+    "35": null,
+    "40": null,
+    "50": null,
+    "60": null,
+    "75": null,
+    "100": null,
+    "125": null,
+    "150": null
+   },
+   "firstShotMs": 0,
+   "drawMs": 317,
+   "toPistolMs": 133,
+   "reload": {
+    "tacticalMs": 1517,
+    "emptyMs": 1517,
+    "firstRoundMs": null,
+    "cancelByFireMs": 0,
+    "cancelBySwapMs": 133,
+    "kind": "magazine"
+   },
+   "recoil": {
+    "oneMrad": null,
+    "oneSettleMs": null,
+    "sprayRounds": 0,
+    "sprayMrad": null,
+    "spraySettleMs": null,
+    "sprayForgetMs": null
+   },
+   "spread": {
+    "hip": 10,
+    "ads": 5.5,
+    "run": 24,
+    "spray10": 10
+   }
+  },
+  {
+   "id": "core.pulse_pistol",
+   "name": "Pulse Pistol",
+   "category": "pistol",
+   "family": null,
+   "slot": 2,
+   "trigger": "semi",
+   "rpm": 400,
+   "magazine": 15,
+   "damage": 24,
+   "pellets": 1,
+   "model": "beam",
+   "velocity": null,
+   "ttk": {
+    "10": {
+     "unarmoured.body": {
+      "ideal": 600,
+      "stk": 5,
+      "hip": 600,
+      "ads": 600
+     },
+     "unarmoured.head": {
+      "ideal": 300,
+      "stk": 3,
+      "hip": 300,
+      "ads": 300
+     },
+     "armoured.body": {
+      "ideal": 1200,
+      "stk": 9,
+      "hip": 1200,
+      "ads": 1200
+     },
+     "armoured.head": {
+      "ideal": 600,
+      "stk": 5,
+      "hip": 600,
+      "ads": 600
+     }
+    },
+    "25": {
+     "unarmoured.body": {
+      "ideal": 600,
+      "stk": 5,
+      "hip": 600,
+      "ads": 600
+     },
+     "unarmoured.head": {
+      "ideal": 300,
+      "stk": 3,
+      "hip": 300,
+      "ads": 300
+     },
+     "armoured.body": {
+      "ideal": 1200,
+      "stk": 9,
+      "hip": 1200,
+      "ads": 1200
+     },
+     "armoured.head": {
+      "ideal": 600,
+      "stk": 5,
+      "hip": 600,
+      "ads": 600
+     }
+    },
+    "50": {
+     "unarmoured.body": {
+      "ideal": 600,
+      "stk": 5,
+      "hip": 600,
+      "ads": 600
+     },
+     "unarmoured.head": {
+      "ideal": 300,
+      "stk": 3,
+      "hip": 300,
+      "ads": 300
+     },
+     "armoured.body": {
+      "ideal": 1200,
+      "stk": 9,
+      "hip": 1200,
+      "ads": 1200
+     },
+     "armoured.head": {
+      "ideal": 600,
+      "stk": 5,
+      "hip": 600,
+      "ads": 600
+     }
+    },
+    "100": {
+     "unarmoured.body": {
+      "ideal": 600,
+      "stk": 5,
+      "hip": 525,
+      "ads": 600
+     },
+     "unarmoured.head": {
+      "ideal": 300,
+      "stk": 3,
+      "hip": 675,
+      "ads": 300
+     },
+     "armoured.body": {
+      "ideal": 1200,
+      "stk": 9,
+      "hip": 1050,
+      "ads": 1200
+     },
+     "armoured.head": {
+      "ideal": 600,
+      "stk": 5,
+      "hip": 1200,
+      "ads": 600
+     }
+    }
+   },
+   "sweep": {
+    "5": 600,
+    "10": 600,
+    "15": 600,
+    "20": 600,
+    "25": 600,
+    "30": 600,
+    "35": 600,
+    "40": 600,
+    "50": 600,
+    "60": 600,
+    "75": 600,
+    "100": 600,
+    "125": null,
+    "150": null
+   },
+   "sweepStk": {
+    "5": 5,
+    "10": 5,
+    "15": 5,
+    "20": 5,
+    "25": 5,
+    "30": 5,
+    "35": 5,
+    "40": 5,
+    "50": 5,
+    "60": 5,
+    "75": 5,
+    "100": 5,
+    "125": null,
+    "150": null
+   },
+   "firstHit": {
+    "10": {
+     "body": 24,
+     "head": 48
+    },
+    "25": {
+     "body": 24,
+     "head": 48
+    },
+    "50": {
+     "body": 24,
+     "head": 48
+    },
+    "100": {
+     "body": 24,
+     "head": 48
+    }
+   },
+   "falloff": {
+    "5": 1,
+    "10": 1,
+    "15": 1,
+    "20": 1,
+    "25": 1,
+    "30": 1,
+    "35": 1,
+    "40": 1,
+    "50": 1,
+    "60": 1,
+    "75": 1,
+    "100": 1,
+    "125": 1,
+    "150": 1
+   },
+   "drop": {
+    "5": null,
+    "10": null,
+    "15": null,
+    "20": null,
+    "25": null,
+    "30": null,
+    "35": null,
+    "40": null,
+    "50": null,
+    "60": null,
+    "75": null,
+    "100": null,
+    "125": null,
+    "150": null
+   },
+   "firstShotMs": 0,
+   "drawMs": 183,
+   "toPistolMs": 133,
+   "reload": {
+    "tacticalMs": 933,
+    "emptyMs": 933,
+    "firstRoundMs": null,
+    "cancelByFireMs": 0,
+    "cancelBySwapMs": 133,
+    "kind": "magazine"
+   },
+   "recoil": {
+    "oneMrad": 12.4,
+    "oneSettleMs": 150,
+    "sprayRounds": 10,
+    "sprayMrad": 16.1,
+    "spraySettleMs": 167,
+    "sprayForgetMs": null
+   },
+   "spread": {
+    "hip": 4,
+    "ads": 2.2,
+    "run": 18,
+    "spray10": null
+   }
+  },
+  {
+   "id": "core.hand_cannon",
+   "name": "Hand Cannon",
+   "category": "pistol",
+   "family": "revolver",
+   "slot": 2,
+   "trigger": "semi",
+   "rpm": 120,
+   "magazine": 6,
+   "damage": 58,
+   "pellets": 1,
+   "model": "bullet",
+   "velocity": 300,
+   "ttk": {
+    "10": {
+     "unarmoured.body": {
+      "ideal": 500,
+      "stk": 2,
+      "hip": 500,
+      "ads": 500
+     },
+     "unarmoured.head": {
+      "ideal": 0,
+      "stk": 1,
+      "hip": 0,
+      "ads": 0
+     },
+     "armoured.body": {
+      "ideal": 1500,
+      "stk": 4,
+      "hip": 1750,
+      "ads": 1500
+     },
+     "armoured.head": {
+      "ideal": 500,
+      "stk": 2,
+      "hip": 500,
+      "ads": 500
+     }
+    },
+    "25": {
+     "unarmoured.body": {
+      "ideal": 550,
+      "stk": 2,
+      "hip": 550,
+      "ads": 550
+     },
+     "unarmoured.head": {
+      "ideal": 50,
+      "stk": 1,
+      "hip": 50,
+      "ads": 50
+     },
+     "armoured.body": {
+      "ideal": 1550,
+      "stk": 4,
+      "hip": 5467,
+      "ads": 1800
+     },
+     "armoured.head": {
+      "ideal": 550,
+      "stk": 2,
+      "hip": 4967,
+      "ads": 800
+     }
+    },
+    "50": {
+     "unarmoured.body": {
+      "ideal": 1133,
+      "stk": 3,
+      "hip": 6050,
+      "ads": 2967
+     },
+     "unarmoured.head": {
+      "ideal": 633,
+      "stk": 2,
+      "hip": null,
+      "ads": 3467
+     },
+     "armoured.body": {
+      "ideal": 2133,
+      "stk": 5,
+      "hip": null,
+      "ads": null
+     },
+     "armoured.head": {
+      "ideal": 1133,
+      "stk": 3,
+      "hip": null,
+      "ads": null
+     }
+    },
+    "100": {
+     "unarmoured.body": {
+      "ideal": 1300,
+      "stk": 3,
+      "hip": null,
+      "ads": 4967
+     },
+     "unarmoured.head": {
+      "ideal": 800,
+      "stk": 2,
+      "hip": null,
+      "ads": null
+     },
+     "armoured.body": {
+      "ideal": 2300,
+      "stk": 5,
+      "hip": null,
+      "ads": null
+     },
+     "armoured.head": {
+      "ideal": 1300,
+      "stk": 3,
+      "hip": null,
+      "ads": null
+     }
+    }
+   },
+   "sweep": {
+    "5": 500,
+    "10": 500,
+    "15": 517,
+    "20": 533,
+    "25": 550,
+    "30": 567,
+    "35": 583,
+    "40": 600,
+    "50": 1133,
+    "60": 1167,
+    "75": 1217,
+    "100": 1300,
+    "125": 1383,
+    "150": null
+   },
+   "sweepStk": {
+    "5": 2,
+    "10": 2,
+    "15": 2,
+    "20": 2,
+    "25": 2,
+    "30": 2,
+    "35": 2,
+    "40": 2,
+    "50": 3,
+    "60": 3,
+    "75": 3,
+    "100": 3,
+    "125": 3,
+    "150": null
+   },
+   "firstHit": {
+    "10": {
+     "body": 58,
+     "head": 100
+    },
+    "25": {
+     "body": 58,
+     "head": 100
+    },
+    "50": {
+     "body": 44.4,
+     "head": 77.4
+    },
+    "100": {
+     "body": 40.6,
+     "head": 71.1
+    }
+   },
+   "falloff": {
+    "5": 1,
+    "10": 1,
+    "15": 1,
+    "20": 1,
+    "25": 1,
+    "30": 0.98,
+    "35": 0.94,
+    "40": 0.88,
+    "50": 0.76,
+    "60": 0.7,
+    "75": 0.7,
+    "100": 0.7,
+    "125": 0.7,
+    "150": 0.7
+   },
+   "drop": {
+    "5": {
+     "flightMs": 0,
+     "dropCm": 0
+    },
+    "10": {
+     "flightMs": 7,
+     "dropCm": 0
+    },
+    "15": {
+     "flightMs": 23,
+     "dropCm": 0
+    },
+    "20": {
+     "flightMs": 40,
+     "dropCm": 1
+    },
+    "25": {
+     "flightMs": 57,
+     "dropCm": 2
+    },
+    "30": {
+     "flightMs": 73,
+     "dropCm": 3
+    },
+    "35": {
+     "flightMs": 90,
+     "dropCm": 4
+    },
+    "40": {
+     "flightMs": 107,
+     "dropCm": 6
+    },
+    "50": {
+     "flightMs": 140,
+     "dropCm": 10
+    },
+    "60": {
+     "flightMs": 173,
+     "dropCm": 15
+    },
+    "75": {
+     "flightMs": 223,
+     "dropCm": 24
+    },
+    "100": {
+     "flightMs": 307,
+     "dropCm": 46
+    },
+    "125": {
+     "flightMs": 390,
+     "dropCm": 75
+    },
+    "150": {
+     "flightMs": 473,
+     "dropCm": 110
+    }
+   },
+   "firstShotMs": 0,
+   "drawMs": 350,
+   "toPistolMs": 133,
+   "reload": {
+    "tacticalMs": 1683,
+    "emptyMs": 1683,
+    "firstRoundMs": null,
+    "cancelByFireMs": 0,
+    "cancelBySwapMs": 133,
+    "kind": "magazine"
+   },
+   "recoil": {
+    "oneMrad": 120.7,
+    "oneSettleMs": 767,
+    "sprayRounds": 6,
+    "sprayMrad": 161.8,
+    "spraySettleMs": 833,
+    "sprayForgetMs": 2517
+   },
+   "spread": {
+    "hip": 0.5,
+    "ads": 0.3,
+    "run": 12.5,
+    "spray10": null
+   }
+  },
+  {
+   "id": "core.gilded_pistol",
+   "name": "Gilded Pistol",
+   "category": "special",
+   "family": null,
+   "slot": 2,
+   "trigger": "semi",
+   "rpm": 80,
+   "magazine": 1,
+   "damage": 999,
+   "pellets": 1,
+   "model": "hitscan",
+   "velocity": null,
+   "ttk": {
+    "10": {
+     "unarmoured.body": {
+      "ideal": 0,
+      "stk": 1,
+      "hip": 0,
+      "ads": 0
+     },
+     "unarmoured.head": {
+      "ideal": 0,
+      "stk": 1,
+      "hip": 0,
+      "ads": 0
+     },
+     "armoured.body": {
+      "ideal": 0,
+      "stk": 1,
+      "hip": 0,
+      "ads": 0
+     },
+     "armoured.head": {
+      "ideal": 0,
+      "stk": 1,
+      "hip": 0,
+      "ads": 0
+     }
+    },
+    "25": {
+     "unarmoured.body": {
+      "ideal": 0,
+      "stk": 1,
+      "hip": 0,
+      "ads": 0
+     },
+     "unarmoured.head": {
+      "ideal": 0,
+      "stk": 1,
+      "hip": 0,
+      "ads": 0
+     },
+     "armoured.body": {
+      "ideal": 0,
+      "stk": 1,
+      "hip": 0,
+      "ads": 0
+     },
+     "armoured.head": {
+      "ideal": 0,
+      "stk": 1,
+      "hip": 0,
+      "ads": 0
+     }
+    },
+    "50": {
+     "unarmoured.body": {
+      "ideal": 0,
+      "stk": 1,
+      "hip": 0,
+      "ads": 0
+     },
+     "unarmoured.head": {
+      "ideal": 0,
+      "stk": 1,
+      "hip": 0,
+      "ads": 0
+     },
+     "armoured.body": {
+      "ideal": 0,
+      "stk": 1,
+      "hip": 0,
+      "ads": 0
+     },
+     "armoured.head": {
+      "ideal": 0,
+      "stk": 1,
+      "hip": 0,
+      "ads": 0
+     }
+    },
+    "100": {
+     "unarmoured.body": {
+      "ideal": 0,
+      "stk": 1,
+      "hip": 0,
+      "ads": 0
+     },
+     "unarmoured.head": {
+      "ideal": 0,
+      "stk": 1,
+      "hip": 0,
+      "ads": 0
+     },
+     "armoured.body": {
+      "ideal": 0,
+      "stk": 1,
+      "hip": 0,
+      "ads": 0
+     },
+     "armoured.head": {
+      "ideal": 0,
+      "stk": 1,
+      "hip": 0,
+      "ads": 0
+     }
+    }
+   },
+   "sweep": {
+    "5": 0,
+    "10": 0,
+    "15": 0,
+    "20": 0,
+    "25": 0,
+    "30": 0,
+    "35": 0,
+    "40": 0,
+    "50": 0,
+    "60": 0,
+    "75": 0,
+    "100": 0,
+    "125": 0,
+    "150": 0
+   },
+   "sweepStk": {
+    "5": 1,
+    "10": 1,
+    "15": 1,
+    "20": 1,
+    "25": 1,
+    "30": 1,
+    "35": 1,
+    "40": 1,
+    "50": 1,
+    "60": 1,
+    "75": 1,
+    "100": 1,
+    "125": 1,
+    "150": 1
+   },
+   "firstHit": {
+    "10": {
+     "body": 100,
+     "head": 100
+    },
+    "25": {
+     "body": 100,
+     "head": 100
+    },
+    "50": {
+     "body": 100,
+     "head": 100
+    },
+    "100": {
+     "body": 100,
+     "head": 100
+    }
+   },
+   "falloff": {
+    "5": 1,
+    "10": 1,
+    "15": 1,
+    "20": 1,
+    "25": 1,
+    "30": 1,
+    "35": 1,
+    "40": 1,
+    "50": 1,
+    "60": 1,
+    "75": 1,
+    "100": 1,
+    "125": 1,
+    "150": 1
+   },
+   "drop": {
+    "5": null,
+    "10": null,
+    "15": null,
+    "20": null,
+    "25": null,
+    "30": null,
+    "35": null,
+    "40": null,
+    "50": null,
+    "60": null,
+    "75": null,
+    "100": null,
+    "125": null,
+    "150": null
+   },
+   "firstShotMs": 0,
+   "drawMs": 400,
+   "toPistolMs": 133,
+   "reload": {
+    "tacticalMs": null,
+    "emptyMs": 1433,
+    "firstRoundMs": null,
+    "cancelByFireMs": null,
+    "cancelBySwapMs": 133,
+    "kind": "magazine"
+   },
+   "recoil": {
+    "oneMrad": 51.7,
+    "oneSettleMs": 267,
+    "sprayRounds": 1,
+    "sprayMrad": 51.7,
+    "spraySettleMs": 267,
+    "sprayForgetMs": null
+   },
+   "spread": {
+    "hip": 0,
+    "ads": 0,
+    "run": 14,
+    "spray10": null
+   }
+  },
+  {
+   "id": "core.flare_gun",
+   "name": "Flare Gun",
+   "category": "special",
+   "family": null,
+   "slot": 2,
+   "trigger": "semi",
+   "rpm": 90,
+   "magazine": 1,
+   "damage": 0,
+   "pellets": 1,
+   "model": "projectile",
+   "velocity": 30,
+   "ttk": {
+    "10": {
+     "unarmoured.body": {
+      "ideal": 3600,
+      "stk": 1,
+      "hip": 3600,
+      "ads": 3600
+     },
+     "unarmoured.head": {
+      "ideal": 3600,
+      "stk": 1,
+      "hip": 3600,
+      "ads": 3600
+     },
+     "armoured.body": {
+      "ideal": 6283,
+      "stk": 2,
+      "hip": 6283,
+      "ads": 6283
+     },
+     "armoured.head": {
+      "ideal": 6283,
+      "stk": 2,
+      "hip": 6283,
+      "ads": 6283
+     }
+    },
+    "25": {
+     "unarmoured.body": {
+      "ideal": 4100,
+      "stk": 1,
+      "hip": 4100,
+      "ads": 4100
+     },
+     "unarmoured.head": {
+      "ideal": 4117,
+      "stk": 1,
+      "hip": 4117,
+      "ads": 4117
+     },
+     "armoured.body": {
+      "ideal": 6500,
+      "stk": 2,
+      "hip": 6500,
+      "ads": 6500
+     },
+     "armoured.head": {
+      "ideal": 6500,
+      "stk": 2,
+      "hip": 6500,
+      "ads": 6500
+     }
+    },
+    "50": {
+     "unarmoured.body": {
+      "ideal": 4983,
+      "stk": 1,
+      "hip": 4983,
+      "ads": 4983
+     },
+     "unarmoured.head": {
+      "ideal": 5000,
+      "stk": 1,
+      "hip": 5000,
+      "ads": 5000
+     },
+     "armoured.body": {
+      "ideal": 6533,
+      "stk": 3,
+      "hip": 6533,
+      "ads": 6533
+     },
+     "armoured.head": {
+      "ideal": 6717,
+      "stk": 3,
+      "hip": 6717,
+      "ads": 6717
+     }
+    },
+    "100": {
+     "unarmoured.body": {
+      "ideal": 6333,
+      "stk": 1,
+      "hip": 6333,
+      "ads": 6333
+     },
+     "unarmoured.head": {
+      "ideal": 6383,
+      "stk": 1,
+      "hip": 6383,
+      "ads": 6383
+     },
+     "armoured.body": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     },
+     "armoured.head": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     }
+    }
+   },
+   "sweep": {
+    "5": 3433,
+    "10": 3600,
+    "15": 3767,
+    "20": 3933,
+    "25": 4100,
+    "30": 4267,
+    "35": 4450,
+    "40": 4617,
+    "50": 4983,
+    "60": 5050,
+    "75": 5500,
+    "100": 6333,
+    "125": null,
+    "150": null
+   },
+   "sweepStk": {
+    "5": 1,
+    "10": 1,
+    "15": 1,
+    "20": 1,
+    "25": 1,
+    "30": 1,
+    "35": 1,
+    "40": 1,
+    "50": 1,
+    "60": 1,
+    "75": 1,
+    "100": 1,
+    "125": null,
+    "150": null
+   },
+   "firstHit": {
+    "10": {
+     "body": 100,
+     "head": 100
+    },
+    "25": {
+     "body": 100,
+     "head": 100
+    },
+    "50": {
+     "body": 100,
+     "head": 100
+    },
+    "100": {
+     "body": 100,
+     "head": 100
+    }
+   },
+   "falloff": {
+    "5": 1,
+    "10": 1,
+    "15": 1,
+    "20": 1,
+    "25": 1,
+    "30": 1,
+    "35": 1,
+    "40": 1,
+    "50": 1,
+    "60": 1,
+    "75": 1,
+    "100": 1,
+    "125": 1,
+    "150": 1
+   },
+   "drop": {
+    "5": null,
+    "10": null,
+    "15": null,
+    "20": null,
+    "25": null,
+    "30": null,
+    "35": null,
+    "40": null,
+    "50": null,
+    "60": null,
+    "75": null,
+    "100": null,
+    "125": null,
+    "150": null
+   },
+   "firstShotMs": 0,
+   "drawMs": 233,
+   "toPistolMs": 133,
+   "reload": {
+    "tacticalMs": null,
+    "emptyMs": 850,
+    "firstRoundMs": null,
+    "cancelByFireMs": null,
+    "cancelBySwapMs": 133,
+    "kind": "magazine"
+   },
+   "recoil": {
+    "oneMrad": null,
+    "oneSettleMs": null,
+    "sprayRounds": 0,
+    "sprayMrad": null,
+    "spraySettleMs": null,
+    "sprayForgetMs": null
+   },
+   "spread": {
+    "hip": 0,
+    "ads": 0,
+    "run": 14,
+    "spray10": null
+   }
+  },
+  {
+   "id": "core.machine_pistol",
+   "name": "Machine Pistol",
+   "category": "smg",
+   "family": "machine_pistol",
+   "slot": 2,
+   "trigger": "auto",
+   "rpm": 1200,
+   "magazine": 24,
+   "damage": 7,
+   "pellets": 1,
+   "model": "bullet",
+   "velocity": 360,
+   "ttk": {
+    "10": {
+     "unarmoured.body": {
+      "ideal": 750,
+      "stk": 16,
+      "hip": 925,
+      "ads": 875
+     },
+     "unarmoured.head": {
+      "ideal": 500,
+      "stk": 11,
+      "hip": 1000,
+      "ads": 750
+     },
+     "armoured.body": {
+      "ideal": 2500,
+      "stk": 31,
+      "hip": 3175,
+      "ads": 3025
+     },
+     "armoured.head": {
+      "ideal": 1050,
+      "stk": 22,
+      "hip": 4825,
+      "ads": 3950
+     }
+    },
+    "25": {
+     "unarmoured.body": {
+      "ideal": 2433,
+      "stk": 29,
+      "hip": null,
+      "ads": null
+     },
+     "unarmoured.head": {
+      "ideal": 983,
+      "stk": 20,
+      "hip": null,
+      "ads": null
+     },
+     "armoured.body": {
+      "ideal": 4883,
+      "stk": 58,
+      "hip": null,
+      "ads": null
+     },
+     "armoured.head": {
+      "ideal": 2933,
+      "stk": 39,
+      "hip": null,
+      "ads": null
+     }
+    },
+    "50": {
+     "unarmoured.body": {
+      "ideal": 2500,
+      "stk": 29,
+      "hip": null,
+      "ads": null
+     },
+     "unarmoured.head": {
+      "ideal": 1050,
+      "stk": 20,
+      "hip": null,
+      "ads": null
+     },
+     "armoured.body": {
+      "ideal": 4950,
+      "stk": 58,
+      "hip": null,
+      "ads": null
+     },
+     "armoured.head": {
+      "ideal": 3000,
+      "stk": 39,
+      "hip": null,
+      "ads": null
+     }
+    },
+    "100": {
+     "unarmoured.body": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     },
+     "unarmoured.head": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     },
+     "armoured.body": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     },
+     "armoured.head": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     }
+    }
+   },
+   "sweep": {
+    "5": 700,
+    "10": 750,
+    "15": 1017,
+    "20": 2267,
+    "25": 2433,
+    "30": 2450,
+    "35": 2467,
+    "40": 2483,
+    "50": 2500,
+    "60": 2533,
+    "75": null,
+    "100": null,
+    "125": null,
+    "150": null
+   },
+   "sweepStk": {
+    "5": 15,
+    "10": 16,
+    "15": 21,
+    "20": 26,
+    "25": 29,
+    "30": 29,
+    "35": 29,
+    "40": 29,
+    "50": 29,
+    "60": 29,
+    "75": null,
+    "100": null,
+    "125": null,
+    "150": null
+   },
+   "firstHit": {
+    "10": {
+     "body": 6.5,
+     "head": 9.5
+    },
+    "25": {
+     "body": 3.5,
+     "head": 5.3
+    },
+    "50": {
+     "body": 3.5,
+     "head": 5.3
+    },
+    "100": {
+     "body": 0,
+     "head": 0
+    }
+   },
+   "falloff": {
+    "5": 1,
+    "10": 0.89,
+    "15": 0.67,
+    "20": 0.54,
+    "25": 0.5,
+    "30": 0.5,
+    "35": 0.5,
+    "40": 0.5,
+    "50": 0.5,
+    "60": 0.5,
+    "75": 0.5,
+    "100": 0.5,
+    "125": 0.5,
+    "150": 0.5
+   },
+   "drop": {
+    "5": {
+     "flightMs": 0,
+     "dropCm": 0
+    },
+    "10": {
+     "flightMs": 6,
+     "dropCm": 0
+    },
+    "15": {
+     "flightMs": 19,
+     "dropCm": 0
+    },
+    "20": {
+     "flightMs": 33,
+     "dropCm": 1
+    },
+    "25": {
+     "flightMs": 47,
+     "dropCm": 1
+    },
+    "30": {
+     "flightMs": 61,
+     "dropCm": 2
+    },
+    "35": {
+     "flightMs": 75,
+     "dropCm": 3
+    },
+    "40": {
+     "flightMs": 89,
+     "dropCm": 4
+    },
+    "50": {
+     "flightMs": 117,
+     "dropCm": 7
+    },
+    "60": {
+     "flightMs": 144,
+     "dropCm": 10
+    },
+    "75": {
+     "flightMs": 186,
+     "dropCm": 17
+    },
+    "100": {
+     "flightMs": 256,
+     "dropCm": 32
+    },
+    "125": {
+     "flightMs": 325,
+     "dropCm": 52
+    },
+    "150": {
+     "flightMs": 394,
+     "dropCm": 76
+    }
+   },
+   "firstShotMs": 0,
+   "drawMs": 183,
+   "toPistolMs": 133,
+   "reload": {
+    "tacticalMs": 1017,
+    "emptyMs": 1017,
+    "firstRoundMs": null,
+    "cancelByFireMs": 0,
+    "cancelBySwapMs": 133,
+    "kind": "magazine"
+   },
+   "recoil": {
+    "oneMrad": 6.9,
+    "oneSettleMs": 67,
+    "sprayRounds": 10,
+    "sprayMrad": 60.1,
+    "spraySettleMs": 150,
+    "sprayForgetMs": 683
+   },
+   "spread": {
+    "hip": 12,
+    "ads": 10.2,
+    "run": 18,
+    "spray10": 54
+   }
+  },
+  {
+   "id": "core.burst_rifle",
+   "name": "Burst Rifle",
+   "category": "rifle",
+   "family": "rifle",
+   "slot": 3,
+   "trigger": "burst",
+   "rpm": 150,
+   "magazine": 24,
+   "damage": 17,
+   "pellets": 1,
+   "model": "bullet",
+   "velocity": 820,
+   "ttk": {
+    "10": {
+     "unarmoured.body": {
+      "ideal": 533,
+      "stk": 6,
+      "hip": 533,
+      "ads": 533
+     },
+     "unarmoured.head": {
+      "ideal": 133,
+      "stk": 3,
+      "hip": 133,
+      "ads": 133
+     },
+     "armoured.body": {
+      "ideal": 1333,
+      "stk": 12,
+      "hip": 1333,
+      "ads": 1333
+     },
+     "armoured.head": {
+      "ideal": 533,
+      "stk": 6,
+      "hip": 533,
+      "ads": 533
+     }
+    },
+    "25": {
+     "unarmoured.body": {
+      "ideal": 550,
+      "stk": 6,
+      "hip": 550,
+      "ads": 550
+     },
+     "unarmoured.head": {
+      "ideal": 150,
+      "stk": 3,
+      "hip": 150,
+      "ads": 150
+     },
+     "armoured.body": {
+      "ideal": 1350,
+      "stk": 12,
+      "hip": 1350,
+      "ads": 1350
+     },
+     "armoured.head": {
+      "ideal": 550,
+      "stk": 6,
+      "hip": 550,
+      "ads": 550
+     }
+    },
+    "50": {
+     "unarmoured.body": {
+      "ideal": 850,
+      "stk": 7,
+      "hip": 850,
+      "ads": 850
+     },
+     "unarmoured.head": {
+      "ideal": 450,
+      "stk": 4,
+      "hip": 450,
+      "ads": 450
+     },
+     "armoured.body": {
+      "ideal": 1650,
+      "stk": 13,
+      "hip": 1717,
+      "ads": 1650
+     },
+     "armoured.head": {
+      "ideal": 850,
+      "stk": 7,
+      "hip": 850,
+      "ads": 850
+     }
+    },
+    "100": {
+     "unarmoured.body": {
+      "ideal": 967,
+      "stk": 9,
+      "hip": 1167,
+      "ads": 967
+     },
+     "unarmoured.head": {
+      "ideal": 500,
+      "stk": 5,
+      "hip": 567,
+      "ads": 500
+     },
+     "armoured.body": {
+      "ideal": 2100,
+      "stk": 17,
+      "hip": null,
+      "ads": 2167
+     },
+     "armoured.head": {
+      "ideal": 967,
+      "stk": 9,
+      "hip": null,
+      "ads": 1000
+     }
+    }
+   },
+   "sweep": {
+    "5": 533,
+    "10": 533,
+    "15": 533,
+    "20": 533,
+    "25": 550,
+    "30": 550,
+    "35": 550,
+    "40": 833,
+    "50": 850,
+    "60": 850,
+    "75": 933,
+    "100": 967,
+    "125": 1000,
+    "150": 1033
+   },
+   "sweepStk": {
+    "5": 6,
+    "10": 6,
+    "15": 6,
+    "20": 6,
+    "25": 6,
+    "30": 6,
+    "35": 6,
+    "40": 7,
+    "50": 7,
+    "60": 7,
+    "75": 9,
+    "100": 9,
+    "125": 9,
+    "150": 9
+   },
+   "firstHit": {
+    "10": {
+     "body": 51,
+     "head": 100
+    },
+    "25": {
+     "body": 51,
+     "head": 100
+    },
+    "50": {
+     "body": 46.7,
+     "head": 93.3
+    },
+    "100": {
+     "body": 38.3,
+     "head": 76.5
+    }
+   },
+   "falloff": {
+    "5": 1,
+    "10": 1,
+    "15": 1,
+    "20": 1,
+    "25": 1,
+    "30": 1,
+    "35": 0.99,
+    "40": 0.97,
+    "50": 0.91,
+    "60": 0.84,
+    "75": 0.76,
+    "100": 0.75,
+    "125": 0.75,
+    "150": 0.75
+   },
+   "drop": {
+    "5": {
+     "flightMs": 0,
+     "dropCm": 0
+    },
+    "10": {
+     "flightMs": 2,
+     "dropCm": 0
+    },
+    "15": {
+     "flightMs": 9,
+     "dropCm": 0
+    },
+    "20": {
+     "flightMs": 15,
+     "dropCm": 0
+    },
+    "25": {
+     "flightMs": 21,
+     "dropCm": 0
+    },
+    "30": {
+     "flightMs": 27,
+     "dropCm": 0
+    },
+    "35": {
+     "flightMs": 33,
+     "dropCm": 1
+    },
+    "40": {
+     "flightMs": 39,
+     "dropCm": 1
+    },
+    "50": {
+     "flightMs": 51,
+     "dropCm": 1
+    },
+    "60": {
+     "flightMs": 63,
+     "dropCm": 2
+    },
+    "75": {
+     "flightMs": 82,
+     "dropCm": 3
+    },
+    "100": {
+     "flightMs": 112,
+     "dropCm": 6
+    },
+    "125": {
+     "flightMs": 143,
+     "dropCm": 10
+    },
+    "150": {
+     "flightMs": 173,
+     "dropCm": 15
+    }
+   },
+   "firstShotMs": 0,
+   "drawMs": 317,
+   "toPistolMs": 133,
+   "reload": {
+    "tacticalMs": 1433,
+    "emptyMs": 1433,
+    "firstRoundMs": null,
+    "cancelByFireMs": 0,
+    "cancelBySwapMs": 133,
+    "kind": "magazine"
+   },
+   "recoil": {
+    "oneMrad": 10,
+    "oneSettleMs": 350,
+    "sprayRounds": 10,
+    "sprayMrad": 10,
+    "spraySettleMs": 350,
+    "sprayForgetMs": 2050
+   },
+   "spread": {
+    "hip": 1.5,
+    "ads": 0.6,
+    "run": 9.5,
+    "spray10": null
+   }
+  },
+  {
+   "id": "core.laser_rifle",
+   "name": "Laser Rifle",
+   "category": "rifle",
+   "family": null,
+   "slot": 3,
+   "trigger": "auto",
+   "rpm": 1800,
+   "magazine": 0,
+   "damage": 4,
+   "pellets": 1,
+   "model": "beam",
+   "velocity": null,
+   "ttk": {
+    "10": {
+     "unarmoured.body": {
+      "ideal": 800,
+      "stk": 25,
+      "hip": 800,
+      "ads": 800
+     },
+     "unarmoured.head": {
+      "ideal": 400,
+      "stk": 13,
+      "hip": 400,
+      "ads": 400
+     },
+     "armoured.body": {
+      "ideal": 1667,
+      "stk": 51,
+      "hip": 1667,
+      "ads": 1667
+     },
+     "armoured.head": {
+      "ideal": 800,
+      "stk": 25,
+      "hip": 800,
+      "ads": 800
+     }
+    },
+    "25": {
+     "unarmoured.body": {
+      "ideal": 800,
+      "stk": 25,
+      "hip": 800,
+      "ads": 800
+     },
+     "unarmoured.head": {
+      "ideal": 400,
+      "stk": 13,
+      "hip": 400,
+      "ads": 400
+     },
+     "armoured.body": {
+      "ideal": 1667,
+      "stk": 51,
+      "hip": 1667,
+      "ads": 1667
+     },
+     "armoured.head": {
+      "ideal": 800,
+      "stk": 25,
+      "hip": 800,
+      "ads": 800
+     }
+    },
+    "50": {
+     "unarmoured.body": {
+      "ideal": 800,
+      "stk": 25,
+      "hip": 800,
+      "ads": 800
+     },
+     "unarmoured.head": {
+      "ideal": 400,
+      "stk": 13,
+      "hip": 400,
+      "ads": 400
+     },
+     "armoured.body": {
+      "ideal": 1667,
+      "stk": 51,
+      "hip": 1667,
+      "ads": 1667
+     },
+     "armoured.head": {
+      "ideal": 800,
+      "stk": 25,
+      "hip": 800,
+      "ads": 800
+     }
+    },
+    "100": {
+     "unarmoured.body": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     },
+     "unarmoured.head": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     },
+     "armoured.body": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     },
+     "armoured.head": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     }
+    }
+   },
+   "sweep": {
+    "5": 800,
+    "10": 800,
+    "15": 800,
+    "20": 800,
+    "25": 800,
+    "30": 800,
+    "35": 800,
+    "40": 800,
+    "50": 800,
+    "60": 800,
+    "75": 800,
+    "100": null,
+    "125": null,
+    "150": null
+   },
+   "sweepStk": {
+    "5": 25,
+    "10": 25,
+    "15": 25,
+    "20": 25,
+    "25": 25,
+    "30": 25,
+    "35": 25,
+    "40": 25,
+    "50": 25,
+    "60": 25,
+    "75": 25,
+    "100": null,
+    "125": null,
+    "150": null
+   },
+   "firstHit": {
+    "10": {
+     "body": 4,
+     "head": 8
+    },
+    "25": {
+     "body": 4,
+     "head": 8
+    },
+    "50": {
+     "body": 4,
+     "head": 8
+    },
+    "100": {
+     "body": 0,
+     "head": 0
+    }
+   },
+   "falloff": {
+    "5": 1,
+    "10": 1,
+    "15": 1,
+    "20": 1,
+    "25": 1,
+    "30": 1,
+    "35": 1,
+    "40": 1,
+    "50": 1,
+    "60": 1,
+    "75": 1,
+    "100": 1,
+    "125": 1,
+    "150": 1
+   },
+   "drop": {
+    "5": null,
+    "10": null,
+    "15": null,
+    "20": null,
+    "25": null,
+    "30": null,
+    "35": null,
+    "40": null,
+    "50": null,
+    "60": null,
+    "75": null,
+    "100": null,
+    "125": null,
+    "150": null
+   },
+   "firstShotMs": 0,
+   "drawMs": 317,
+   "toPistolMs": 133,
+   "reload": {
+    "tacticalMs": null,
+    "emptyMs": null,
+    "firstRoundMs": null,
+    "cancelByFireMs": null,
+    "cancelBySwapMs": null,
+    "kind": "heat",
+    "overheatCoolMs": 1667
+   },
+   "recoil": {
+    "oneMrad": null,
+    "oneSettleMs": null,
+    "sprayRounds": 0,
+    "sprayMrad": null,
+    "spraySettleMs": null,
+    "sprayForgetMs": null
+   },
+   "spread": {
+    "hip": 0,
+    "ads": 0,
+    "run": 14,
+    "spray10": null
+   }
+  },
+  {
+   "id": "core.marksman",
+   "name": "Marksman Rifle",
+   "category": "sniper",
+   "family": "marksman",
+   "slot": 3,
+   "trigger": "semi",
+   "rpm": 257,
+   "magazine": 10,
+   "damage": 38,
+   "pellets": 1,
+   "model": "bullet",
+   "velocity": 900,
+   "ttk": {
+    "10": {
+     "unarmoured.body": {
+      "ideal": 467,
+      "stk": 3,
+      "hip": 467,
+      "ads": 467
+     },
+     "unarmoured.head": {
+      "ideal": 233,
+      "stk": 2,
+      "hip": 233,
+      "ads": 233
+     },
+     "armoured.body": {
+      "ideal": 1167,
+      "stk": 6,
+      "hip": 1167,
+      "ads": 1167
+     },
+     "armoured.head": {
+      "ideal": 467,
+      "stk": 3,
+      "hip": 467,
+      "ads": 467
+     }
+    },
+    "25": {
+     "unarmoured.body": {
+      "ideal": 483,
+      "stk": 3,
+      "hip": 483,
+      "ads": 483
+     },
+     "unarmoured.head": {
+      "ideal": 250,
+      "stk": 2,
+      "hip": 483,
+      "ads": 250
+     },
+     "armoured.body": {
+      "ideal": 1183,
+      "stk": 6,
+      "hip": 2633,
+      "ads": 1183
+     },
+     "armoured.head": {
+      "ideal": 483,
+      "stk": 3,
+      "hip": 4200,
+      "ads": 483
+     }
+    },
+    "50": {
+     "unarmoured.body": {
+      "ideal": 500,
+      "stk": 3,
+      "hip": 1083,
+      "ads": 500
+     },
+     "unarmoured.head": {
+      "ideal": 267,
+      "stk": 2,
+      "hip": 6017,
+      "ads": 267
+     },
+     "armoured.body": {
+      "ideal": 1200,
+      "stk": 6,
+      "hip": null,
+      "ads": 1200
+     },
+     "armoured.head": {
+      "ideal": 500,
+      "stk": 3,
+      "hip": null,
+      "ads": 500
+     }
+    },
+    "100": {
+     "unarmoured.body": {
+      "ideal": 567,
+      "stk": 3,
+      "hip": null,
+      "ads": 567
+     },
+     "unarmoured.head": {
+      "ideal": 333,
+      "stk": 2,
+      "hip": null,
+      "ads": 333
+     },
+     "armoured.body": {
+      "ideal": 1267,
+      "stk": 6,
+      "hip": null,
+      "ads": 1267
+     },
+     "armoured.head": {
+      "ideal": 567,
+      "stk": 3,
+      "hip": null,
+      "ads": 800
+     }
+    }
+   },
+   "sweep": {
+    "5": 467,
+    "10": 467,
+    "15": 467,
+    "20": 467,
+    "25": 483,
+    "30": 483,
+    "35": 483,
+    "40": 500,
+    "50": 500,
+    "60": 517,
+    "75": 533,
+    "100": 567,
+    "125": 583,
+    "150": 850
+   },
+   "sweepStk": {
+    "5": 3,
+    "10": 3,
+    "15": 3,
+    "20": 3,
+    "25": 3,
+    "30": 3,
+    "35": 3,
+    "40": 3,
+    "50": 3,
+    "60": 3,
+    "75": 3,
+    "100": 3,
+    "125": 3,
+    "150": 4
+   },
+   "firstHit": {
+    "10": {
+     "body": 38,
+     "head": 76
+    },
+    "25": {
+     "body": 38,
+     "head": 76
+    },
+    "50": {
+     "body": 38,
+     "head": 76
+    },
+    "100": {
+     "body": 35.7,
+     "head": 71.3
+    }
+   },
+   "falloff": {
+    "5": 1,
+    "10": 1,
+    "15": 1,
+    "20": 1,
+    "25": 1,
+    "30": 1,
+    "35": 1,
+    "40": 1,
+    "50": 1,
+    "60": 1,
+    "75": 0.99,
+    "100": 0.94,
+    "125": 0.88,
+    "150": 0.85
+   },
+   "drop": {
+    "5": {
+     "flightMs": 0,
+     "dropCm": 0
+    },
+    "10": {
+     "flightMs": 2,
+     "dropCm": 0
+    },
+    "15": {
+     "flightMs": 8,
+     "dropCm": 0
+    },
+    "20": {
+     "flightMs": 13,
+     "dropCm": 0
+    },
+    "25": {
+     "flightMs": 19,
+     "dropCm": 0
+    },
+    "30": {
+     "flightMs": 24,
+     "dropCm": 0
+    },
+    "35": {
+     "flightMs": 30,
+     "dropCm": 0
+    },
+    "40": {
+     "flightMs": 36,
+     "dropCm": 1
+    },
+    "50": {
+     "flightMs": 47,
+     "dropCm": 1
+    },
+    "60": {
+     "flightMs": 58,
+     "dropCm": 2
+    },
+    "75": {
+     "flightMs": 74,
+     "dropCm": 3
+    },
+    "100": {
+     "flightMs": 102,
+     "dropCm": 5
+    },
+    "125": {
+     "flightMs": 130,
+     "dropCm": 8
+    },
+    "150": {
+     "flightMs": 158,
+     "dropCm": 12
+    }
+   },
+   "firstShotMs": 0,
+   "drawMs": 350,
+   "toPistolMs": 133,
+   "reload": {
+    "tacticalMs": 1517,
+    "emptyMs": 1517,
+    "firstRoundMs": null,
+    "cancelByFireMs": 0,
+    "cancelBySwapMs": 133,
+    "kind": "magazine"
+   },
+   "recoil": {
+    "oneMrad": 35.2,
+    "oneSettleMs": 283,
+    "sprayRounds": 10,
+    "sprayMrad": 52.2,
+    "spraySettleMs": 333,
+    "sprayForgetMs": 2233
+   },
+   "spread": {
+    "hip": 13,
+    "ads": 0.3,
+    "run": 38,
+    "spray10": null
+   }
+  },
+  {
+   "id": "core.sawed_off",
+   "name": "Sawed-Off",
+   "category": "shotgun",
+   "family": "shotgun",
+   "slot": 4,
+   "trigger": "semi",
+   "rpm": 257,
+   "magazine": 2,
+   "damage": 8,
+   "pellets": 14,
+   "model": "hitscan",
+   "velocity": null,
+   "ttk": {
+    "10": {
+     "unarmoured.body": {
+      "ideal": 5133,
+      "stk": 8,
+      "hip": 4900,
+      "ads": 4900
+     },
+     "unarmoured.head": {
+      "ideal": 5833,
+      "stk": 8.5,
+      "hip": 5833,
+      "ads": 5833
+     },
+     "armoured.body": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     },
+     "armoured.head": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     }
+    },
+    "25": {
+     "unarmoured.body": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     },
+     "unarmoured.head": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     },
+     "armoured.body": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     },
+     "armoured.head": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     }
+    },
+    "50": {
+     "unarmoured.body": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     },
+     "unarmoured.head": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     },
+     "armoured.body": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     },
+     "armoured.head": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     }
+    },
+    "100": {
+     "unarmoured.body": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     },
+     "unarmoured.head": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     },
+     "armoured.body": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     },
+     "armoured.head": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     }
+    }
+   },
+   "sweep": {
+    "5": 233,
+    "10": 5133,
+    "15": null,
+    "20": null,
+    "25": null,
+    "30": null,
+    "35": null,
+    "40": null,
+    "50": null,
+    "60": null,
+    "75": null,
+    "100": null,
+    "125": null,
+    "150": null
+   },
+   "sweepStk": {
+    "5": 2,
+    "10": 8,
+    "15": null,
+    "20": null,
+    "25": null,
+    "30": null,
+    "35": null,
+    "40": null,
+    "50": null,
+    "60": null,
+    "75": null,
+    "100": null,
+    "125": null,
+    "150": null
+   },
+   "firstHit": {
+    "10": {
+     "body": 4.4,
+     "head": 0
+    },
+    "25": {
+     "body": 0,
+     "head": 0
+    },
+    "50": {
+     "body": 0,
+     "head": 0
+    },
+    "100": {
+     "body": 0,
+     "head": 0
+    }
+   },
+   "falloff": {
+    "5": 1,
+    "10": 0.67,
+    "15": 0.39,
+    "20": 0.26,
+    "25": 0.25,
+    "30": 0.25,
+    "35": 0.25,
+    "40": 0.25,
+    "50": 0.25,
+    "60": 0.25,
+    "75": 0.25,
+    "100": 0.25,
+    "125": 0.25,
+    "150": 0.25
+   },
+   "drop": {
+    "5": null,
+    "10": null,
+    "15": null,
+    "20": null,
+    "25": null,
+    "30": null,
+    "35": null,
+    "40": null,
+    "50": null,
+    "60": null,
+    "75": null,
+    "100": null,
+    "125": null,
+    "150": null
+   },
+   "firstShotMs": 0,
+   "drawMs": 217,
+   "toPistolMs": 133,
+   "reload": {
+    "tacticalMs": 1183,
+    "emptyMs": 1183,
+    "firstRoundMs": null,
+    "cancelByFireMs": 0,
+    "cancelBySwapMs": 133,
+    "kind": "magazine"
+   },
+   "recoil": {
+    "oneMrad": 60.3,
+    "oneSettleMs": 417,
+    "sprayRounds": 2,
+    "sprayMrad": 92.7,
+    "spraySettleMs": 483,
+    "sprayForgetMs": 567
+   },
+   "spread": {
+    "hip": 150,
+    "ads": 150,
+    "run": 156,
+    "spray10": null
+   }
+  },
+  {
+   "id": "core.auto_shotgun",
+   "name": "Auto Shotgun",
+   "category": "shotgun",
+   "family": "shotgun",
+   "slot": 4,
+   "trigger": "auto",
+   "rpm": 200,
+   "magazine": 8,
+   "damage": 7,
+   "pellets": 7,
+   "model": "hitscan",
+   "velocity": null,
+   "ttk": {
+    "10": {
+     "unarmoured.body": {
+      "ideal": 2100,
+      "stk": 8,
+      "hip": 2100,
+      "ads": 2100
+     },
+     "unarmoured.head": {
+      "ideal": 4667,
+      "stk": 11,
+      "hip": 4367,
+      "ads": 4367
+     },
+     "armoured.body": {
+      "ideal": 6017,
+      "stk": 15.5,
+      "hip": 5567,
+      "ads": 5567
+     },
+     "armoured.head": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     }
+    },
+    "25": {
+     "unarmoured.body": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     },
+     "unarmoured.head": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     },
+     "armoured.body": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     },
+     "armoured.head": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     }
+    },
+    "50": {
+     "unarmoured.body": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     },
+     "unarmoured.head": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     },
+     "armoured.body": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     },
+     "armoured.head": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     }
+    },
+    "100": {
+     "unarmoured.body": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     },
+     "unarmoured.head": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     },
+     "armoured.body": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     },
+     "armoured.head": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     }
+    }
+   },
+   "sweep": {
+    "5": 600,
+    "10": 2100,
+    "15": null,
+    "20": null,
+    "25": null,
+    "30": null,
+    "35": null,
+    "40": null,
+    "50": null,
+    "60": null,
+    "75": null,
+    "100": null,
+    "125": null,
+    "150": null
+   },
+   "sweepStk": {
+    "5": 3,
+    "10": 8,
+    "15": null,
+    "20": null,
+    "25": null,
+    "30": null,
+    "35": null,
+    "40": null,
+    "50": null,
+    "60": null,
+    "75": null,
+    "100": null,
+    "125": null,
+    "150": null
+   },
+   "firstHit": {
+    "10": {
+     "body": 9.9,
+     "head": 10.7
+    },
+    "25": {
+     "body": 0,
+     "head": 0
+    },
+    "50": {
+     "body": 0,
+     "head": 0
+    },
+    "100": {
+     "body": 0,
+     "head": 0
+    }
+   },
+   "falloff": {
+    "5": 1,
+    "10": 0.67,
+    "15": 0.39,
+    "20": 0.26,
+    "25": 0.25,
+    "30": 0.25,
+    "35": 0.25,
+    "40": 0.25,
+    "50": 0.25,
+    "60": 0.25,
+    "75": 0.25,
+    "100": 0.25,
+    "125": 0.25,
+    "150": 0.25
+   },
+   "drop": {
+    "5": null,
+    "10": null,
+    "15": null,
+    "20": null,
+    "25": null,
+    "30": null,
+    "35": null,
+    "40": null,
+    "50": null,
+    "60": null,
+    "75": null,
+    "100": null,
+    "125": null,
+    "150": null
+   },
+   "firstShotMs": 0,
+   "drawMs": 350,
+   "toPistolMs": 133,
+   "reload": {
+    "tacticalMs": 1683,
+    "emptyMs": 1683,
+    "firstRoundMs": null,
+    "cancelByFireMs": 0,
+    "cancelBySwapMs": 133,
+    "kind": "magazine"
+   },
+   "recoil": {
+    "oneMrad": 60.3,
+    "oneSettleMs": 417,
+    "sprayRounds": 8,
+    "sprayMrad": 93,
+    "spraySettleMs": 483,
+    "sprayForgetMs": 1650
+   },
+   "spread": {
+    "hip": 90,
+    "ads": 90,
+    "run": 96,
+    "spray10": null
+   }
+  },
+  {
+   "id": "core.flak",
+   "name": "Flak Cannon",
+   "category": "shotgun",
+   "family": null,
+   "slot": 4,
+   "trigger": "auto",
+   "rpm": 72,
+   "magazine": 4,
+   "damage": 0,
+   "pellets": 7,
+   "model": "projectile",
+   "velocity": 48,
+   "ttk": {
+    "10": {
+     "unarmoured.body": {
+      "ideal": 1017,
+      "stk": 2,
+      "hip": 1017,
+      "ads": 1000
+     },
+     "unarmoured.head": {
+      "ideal": 1842,
+      "stk": 3,
+      "hip": 1842,
+      "ads": 1000
+     },
+     "armoured.body": {
+      "ideal": 2258,
+      "stk": 3.5,
+      "hip": 2667,
+      "ads": 1833
+     },
+     "armoured.head": {
+      "ideal": 5100,
+      "stk": 5,
+      "hip": 5092,
+      "ads": 1850
+     }
+    },
+    "25": {
+     "unarmoured.body": {
+      "ideal": 6317,
+      "stk": 6,
+      "hip": 5867,
+      "ads": 2167
+     },
+     "unarmoured.head": {
+      "ideal": 7083,
+      "stk": 7,
+      "hip": 6667,
+      "ads": 2583
+     },
+     "armoured.body": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": 6233
+     },
+     "armoured.head": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": 6250
+     }
+    },
+    "50": {
+     "unarmoured.body": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": 7608
+     },
+     "unarmoured.head": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     },
+     "armoured.body": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     },
+     "armoured.head": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     }
+    },
+    "100": {
+     "unarmoured.body": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     },
+     "unarmoured.head": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     },
+     "armoured.body": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     },
+     "armoured.head": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     }
+    }
+   },
+   "sweep": {
+    "5": 900,
+    "10": 1017,
+    "15": 1958,
+    "20": 5317,
+    "25": 6317,
+    "30": null,
+    "35": null,
+    "40": null,
+    "50": null,
+    "60": null,
+    "75": null,
+    "100": null,
+    "125": null,
+    "150": null
+   },
+   "sweepStk": {
+    "5": 2,
+    "10": 2,
+    "15": 3,
+    "20": 5,
+    "25": 6,
+    "30": null,
+    "35": null,
+    "40": null,
+    "50": null,
+    "60": null,
+    "75": null,
+    "100": null,
+    "125": null,
+    "150": null
+   },
+   "firstHit": {
+    "10": {
+     "body": 65,
+     "head": 26
+    },
+    "25": {
+     "body": 0,
+     "head": 0
+    },
+    "50": {
+     "body": 0,
+     "head": 0
+    },
+    "100": {
+     "body": 0,
+     "head": 0
+    }
+   },
+   "falloff": {
+    "5": 1,
+    "10": 1,
+    "15": 1,
+    "20": 1,
+    "25": 1,
+    "30": 1,
+    "35": 1,
+    "40": 1,
+    "50": 1,
+    "60": 1,
+    "75": 1,
+    "100": 1,
+    "125": 1,
+    "150": 1
+   },
+   "drop": {
+    "5": null,
+    "10": null,
+    "15": null,
+    "20": null,
+    "25": null,
+    "30": null,
+    "35": null,
+    "40": null,
+    "50": null,
+    "60": null,
+    "75": null,
+    "100": null,
+    "125": null,
+    "150": null
+   },
+   "firstShotMs": 0,
+   "drawMs": 383,
+   "toPistolMs": 133,
+   "reload": {
+    "tacticalMs": 1600,
+    "emptyMs": 1600,
+    "firstRoundMs": null,
+    "cancelByFireMs": 0,
+    "cancelBySwapMs": 133,
+    "kind": "magazine"
+   },
+   "recoil": {
+    "oneMrad": null,
+    "oneSettleMs": null,
+    "sprayRounds": 0,
+    "sprayMrad": null,
+    "spraySettleMs": null,
+    "sprayForgetMs": null
+   },
+   "spread": {
+    "hip": 80,
+    "ads": 44,
+    "run": 84.9,
+    "spray10": null
+   }
+  },
+  {
+   "id": "core.railgun",
+   "name": "Railgun",
+   "category": "sniper",
+   "family": null,
+   "slot": 5,
+   "trigger": "auto",
+   "rpm": 90,
+   "magazine": 4,
+   "damage": 100,
+   "pellets": 1,
+   "model": "beam",
+   "velocity": null,
+   "ttk": {
+    "10": {
+     "unarmoured.body": {
+      "ideal": 0,
+      "stk": 1,
+      "hip": 0,
+      "ads": 0
+     },
+     "unarmoured.head": {
+      "ideal": 0,
+      "stk": 1,
+      "hip": 0,
+      "ads": 0
+     },
+     "armoured.body": {
+      "ideal": 667,
+      "stk": 2,
+      "hip": 667,
+      "ads": 667
+     },
+     "armoured.head": {
+      "ideal": 0,
+      "stk": 1,
+      "hip": 0,
+      "ads": 0
+     }
+    },
+    "25": {
+     "unarmoured.body": {
+      "ideal": 0,
+      "stk": 1,
+      "hip": 0,
+      "ads": 0
+     },
+     "unarmoured.head": {
+      "ideal": 0,
+      "stk": 1,
+      "hip": 0,
+      "ads": 0
+     },
+     "armoured.body": {
+      "ideal": 667,
+      "stk": 2,
+      "hip": 667,
+      "ads": 667
+     },
+     "armoured.head": {
+      "ideal": 0,
+      "stk": 1,
+      "hip": 667,
+      "ads": 0
+     }
+    },
+    "50": {
+     "unarmoured.body": {
+      "ideal": 0,
+      "stk": 1,
+      "hip": 333,
+      "ads": 0
+     },
+     "unarmoured.head": {
+      "ideal": 0,
+      "stk": 1,
+      "hip": 0,
+      "ads": 0
+     },
+     "armoured.body": {
+      "ideal": 667,
+      "stk": 2,
+      "hip": 1333,
+      "ads": 667
+     },
+     "armoured.head": {
+      "ideal": 0,
+      "stk": 1,
+      "hip": 2000,
+      "ads": 0
+     }
+    },
+    "100": {
+     "unarmoured.body": {
+      "ideal": 0,
+      "stk": 1,
+      "hip": null,
+      "ads": 0
+     },
+     "unarmoured.head": {
+      "ideal": 0,
+      "stk": 1,
+      "hip": null,
+      "ads": 0
+     },
+     "armoured.body": {
+      "ideal": 667,
+      "stk": 2,
+      "hip": null,
+      "ads": 667
+     },
+     "armoured.head": {
+      "ideal": 0,
+      "stk": 1,
+      "hip": null,
+      "ads": 0
+     }
+    }
+   },
+   "sweep": {
+    "5": 0,
+    "10": 0,
+    "15": 0,
+    "20": 0,
+    "25": 0,
+    "30": 0,
+    "35": 0,
+    "40": 0,
+    "50": 0,
+    "60": 0,
+    "75": 0,
+    "100": 0,
+    "125": 0,
+    "150": 0
+   },
+   "sweepStk": {
+    "5": 1,
+    "10": 1,
+    "15": 1,
+    "20": 1,
+    "25": 1,
+    "30": 1,
+    "35": 1,
+    "40": 1,
+    "50": 1,
+    "60": 1,
+    "75": 1,
+    "100": 1,
+    "125": 1,
+    "150": 1
+   },
+   "firstHit": {
+    "10": {
+     "body": 100,
+     "head": 100
+    },
+    "25": {
+     "body": 100,
+     "head": 100
+    },
+    "50": {
+     "body": 100,
+     "head": 100
+    },
+    "100": {
+     "body": 100,
+     "head": 100
+    }
+   },
+   "falloff": {
+    "5": 1,
+    "10": 1,
+    "15": 1,
+    "20": 1,
+    "25": 1,
+    "30": 1,
+    "35": 1,
+    "40": 1,
+    "50": 1,
+    "60": 1,
+    "75": 1,
+    "100": 1,
+    "125": 1,
+    "150": 1
+   },
+   "drop": {
+    "5": null,
+    "10": null,
+    "15": null,
+    "20": null,
+    "25": null,
+    "30": null,
+    "35": null,
+    "40": null,
+    "50": null,
+    "60": null,
+    "75": null,
+    "100": null,
+    "125": null,
+    "150": null
+   },
+   "firstShotMs": 383,
+   "drawMs": 833,
+   "toPistolMs": 133,
+   "reload": {
+    "tacticalMs": 1850,
+    "emptyMs": 1850,
+    "firstRoundMs": null,
+    "cancelByFireMs": 383,
+    "cancelBySwapMs": 133,
+    "kind": "magazine"
+   },
+   "recoil": {
+    "oneMrad": 93.1,
+    "oneSettleMs": 333,
+    "sprayRounds": 4,
+    "sprayMrad": 93.1,
+    "spraySettleMs": 333,
+    "sprayForgetMs": null
+   },
+   "spread": {
+    "hip": 12,
+    "ads": 0,
+    "run": 26,
+    "spray10": null
+   }
+  },
+  {
+   "id": "core.disc_launcher",
+   "name": "Disc Launcher",
+   "category": "explosive",
+   "family": null,
+   "slot": 6,
+   "trigger": "auto",
+   "rpm": 72,
+   "magazine": 3,
+   "damage": 0,
+   "pellets": 1,
+   "model": "projectile",
+   "velocity": 34,
+   "ttk": {
+    "10": {
+     "unarmoured.body": {
+      "ideal": 1083,
+      "stk": 2,
+      "hip": 1083,
+      "ads": 1083
+     },
+     "unarmoured.head": {
+      "ideal": 1083,
+      "stk": 2,
+      "hip": 1083,
+      "ads": 1083
+     },
+     "armoured.body": {
+      "ideal": 1917,
+      "stk": 3,
+      "hip": 1917,
+      "ads": 1917
+     },
+     "armoured.head": {
+      "ideal": 1917,
+      "stk": 3,
+      "hip": 1917,
+      "ads": 1917
+     }
+    },
+    "25": {
+     "unarmoured.body": {
+      "ideal": 1517,
+      "stk": 2,
+      "hip": 1517,
+      "ads": 1517
+     },
+     "unarmoured.head": {
+      "ideal": 1533,
+      "stk": 2,
+      "hip": 1533,
+      "ads": 1533
+     },
+     "armoured.body": {
+      "ideal": 2350,
+      "stk": 3,
+      "hip": 2350,
+      "ads": 2350
+     },
+     "armoured.head": {
+      "ideal": 2367,
+      "stk": 3,
+      "hip": 2367,
+      "ads": 2367
+     }
+    },
+    "50": {
+     "unarmoured.body": {
+      "ideal": 2250,
+      "stk": 2,
+      "hip": 2250,
+      "ads": 2250
+     },
+     "unarmoured.head": {
+      "ideal": 2267,
+      "stk": 2,
+      "hip": 2267,
+      "ads": 2267
+     },
+     "armoured.body": {
+      "ideal": 3083,
+      "stk": 3,
+      "hip": 3083,
+      "ads": 3083
+     },
+     "armoured.head": {
+      "ideal": 3100,
+      "stk": 3,
+      "hip": 3100,
+      "ads": 3100
+     }
+    },
+    "100": {
+     "unarmoured.body": {
+      "ideal": 3733,
+      "stk": 2,
+      "hip": 3733,
+      "ads": 3733
+     },
+     "unarmoured.head": {
+      "ideal": 3733,
+      "stk": 2,
+      "hip": 3733,
+      "ads": 3733
+     },
+     "armoured.body": {
+      "ideal": 4567,
+      "stk": 3,
+      "hip": 4567,
+      "ads": 4567
+     },
+     "armoured.head": {
+      "ideal": 4567,
+      "stk": 3,
+      "hip": 4567,
+      "ads": 4567
+     }
+    }
+   },
+   "sweep": {
+    "5": 933,
+    "10": 1083,
+    "15": 1233,
+    "20": 1383,
+    "25": 1517,
+    "30": 1667,
+    "35": 1817,
+    "40": 1967,
+    "50": 2250,
+    "60": 2550,
+    "75": 3000,
+    "100": 3733,
+    "125": null,
+    "150": null
+   },
+   "sweepStk": {
+    "5": 2,
+    "10": 2,
+    "15": 2,
+    "20": 2,
+    "25": 2,
+    "30": 2,
+    "35": 2,
+    "40": 2,
+    "50": 2,
+    "60": 2,
+    "75": 2,
+    "100": 2,
+    "125": null,
+    "150": null
+   },
+   "firstHit": {
+    "10": {
+     "body": 84.7,
+     "head": 83.4
+    },
+    "25": {
+     "body": 84.9,
+     "head": 84
+    },
+    "50": {
+     "body": 85,
+     "head": 83.4
+    },
+    "100": {
+     "body": 85,
+     "head": 83.4
+    }
+   },
+   "falloff": {
+    "5": 1,
+    "10": 1,
+    "15": 1,
+    "20": 1,
+    "25": 1,
+    "30": 1,
+    "35": 1,
+    "40": 1,
+    "50": 1,
+    "60": 1,
+    "75": 1,
+    "100": 1,
+    "125": 1,
+    "150": 1
+   },
+   "drop": {
+    "5": null,
+    "10": null,
+    "15": null,
+    "20": null,
+    "25": null,
+    "30": null,
+    "35": null,
+    "40": null,
+    "50": null,
+    "60": null,
+    "75": null,
+    "100": null,
+    "125": null,
+    "150": null
+   },
+   "firstShotMs": 0,
+   "drawMs": 417,
+   "toPistolMs": 133,
+   "reload": {
+    "tacticalMs": 1517,
+    "emptyMs": 1517,
+    "firstRoundMs": null,
+    "cancelByFireMs": 0,
+    "cancelBySwapMs": 133,
+    "kind": "magazine"
+   },
+   "recoil": {
+    "oneMrad": null,
+    "oneSettleMs": null,
+    "sprayRounds": 0,
+    "sprayMrad": null,
+    "spraySettleMs": null,
+    "sprayForgetMs": null
+   },
+   "spread": {
+    "hip": 0,
+    "ads": 0,
+    "run": 14,
+    "spray10": null
+   }
+  },
+  {
+   "id": "core.bubble_blaster",
+   "name": "Bubble Blaster",
+   "category": "special",
+   "family": null,
+   "slot": 6,
+   "trigger": "auto",
+   "rpm": 164,
+   "magazine": 6,
+   "damage": 0,
+   "pellets": 1,
+   "model": "projectile",
+   "velocity": 10,
+   "ttk": {
+    "10": {
+     "unarmoured.body": {
+      "ideal": 2750,
+      "stk": 3,
+      "hip": 2750,
+      "ads": 2750
+     },
+     "unarmoured.head": {
+      "ideal": 2800,
+      "stk": 3,
+      "hip": 2800,
+      "ads": 2800
+     },
+     "armoured.body": {
+      "ideal": 5550,
+      "stk": 9,
+      "hip": 5550,
+      "ads": 5550
+     },
+     "armoured.head": {
+      "ideal": 5600,
+      "stk": 9,
+      "hip": 5600,
+      "ads": 5600
+     }
+    },
+    "25": {
+     "unarmoured.body": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     },
+     "unarmoured.head": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     },
+     "armoured.body": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     },
+     "armoured.head": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     }
+    },
+    "50": {
+     "unarmoured.body": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     },
+     "unarmoured.head": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     },
+     "armoured.body": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     },
+     "armoured.head": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     }
+    },
+    "100": {
+     "unarmoured.body": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     },
+     "unarmoured.head": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     },
+     "armoured.body": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     },
+     "armoured.head": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     }
+    }
+   },
+   "sweep": {
+    "5": 2200,
+    "10": 2750,
+    "15": 3400,
+    "20": null,
+    "25": null,
+    "30": null,
+    "35": null,
+    "40": null,
+    "50": null,
+    "60": null,
+    "75": null,
+    "100": null,
+    "125": null,
+    "150": null
+   },
+   "sweepStk": {
+    "5": 3,
+    "10": 3,
+    "15": 3,
+    "20": null,
+    "25": null,
+    "30": null,
+    "35": null,
+    "40": null,
+    "50": null,
+    "60": null,
+    "75": null,
+    "100": null,
+    "125": null,
+    "150": null
+   },
+   "firstHit": {
+    "10": {
+     "body": 79.2,
+     "head": 79.2
+    },
+    "25": {
+     "body": 0,
+     "head": 0
+    },
+    "50": {
+     "body": 0,
+     "head": 0
+    },
+    "100": {
+     "body": 0,
+     "head": 0
+    }
+   },
+   "falloff": {
+    "5": 1,
+    "10": 1,
+    "15": 1,
+    "20": 1,
+    "25": 1,
+    "30": 1,
+    "35": 1,
+    "40": 1,
+    "50": 1,
+    "60": 1,
+    "75": 1,
+    "100": 1,
+    "125": 1,
+    "150": 1
+   },
+   "drop": {
+    "5": null,
+    "10": null,
+    "15": null,
+    "20": null,
+    "25": null,
+    "30": null,
+    "35": null,
+    "40": null,
+    "50": null,
+    "60": null,
+    "75": null,
+    "100": null,
+    "125": null,
+    "150": null
+   },
+   "firstShotMs": 0,
+   "drawMs": 317,
+   "toPistolMs": 133,
+   "reload": {
+    "tacticalMs": 1350,
+    "emptyMs": 1350,
+    "firstRoundMs": null,
+    "cancelByFireMs": 0,
+    "cancelBySwapMs": 133,
+    "kind": "magazine"
+   },
+   "recoil": {
+    "oneMrad": null,
+    "oneSettleMs": null,
+    "sprayRounds": 0,
+    "sprayMrad": null,
+    "spraySettleMs": null,
+    "sprayForgetMs": null
+   },
+   "spread": {
+    "hip": 0,
+    "ads": 0,
+    "run": 14,
+    "spray10": null
+   }
+  },
+  {
+   "id": "core.goo_gun",
+   "name": "Goo Gun",
+   "category": "special",
+   "family": null,
+   "slot": 6,
+   "trigger": "auto",
+   "rpm": 300,
+   "magazine": 20,
+   "damage": 0,
+   "pellets": 1,
+   "model": "projectile",
+   "velocity": 22,
+   "ttk": {
+    "10": {
+     "unarmoured.body": {
+      "ideal": 1583,
+      "stk": 7,
+      "hip": 1583,
+      "ads": 1583
+     },
+     "unarmoured.head": {
+      "ideal": 1600,
+      "stk": 7,
+      "hip": 1600,
+      "ads": 1600
+     },
+     "armoured.body": {
+      "ideal": 2783,
+      "stk": 13,
+      "hip": 2783,
+      "ads": 2783
+     },
+     "armoured.head": {
+      "ideal": 2800,
+      "stk": 13,
+      "hip": 2800,
+      "ads": 2800
+     }
+    },
+    "25": {
+     "unarmoured.body": {
+      "ideal": 2333,
+      "stk": 7,
+      "hip": 2333,
+      "ads": 2333
+     },
+     "unarmoured.head": {
+      "ideal": 2350,
+      "stk": 7,
+      "hip": 2350,
+      "ads": 2350
+     },
+     "armoured.body": {
+      "ideal": 3533,
+      "stk": 13,
+      "hip": 3533,
+      "ads": 3533
+     },
+     "armoured.head": {
+      "ideal": 3550,
+      "stk": 13,
+      "hip": 3550,
+      "ads": 3550
+     }
+    },
+    "50": {
+     "unarmoured.body": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     },
+     "unarmoured.head": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     },
+     "armoured.body": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     },
+     "armoured.head": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     }
+    },
+    "100": {
+     "unarmoured.body": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     },
+     "unarmoured.head": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     },
+     "armoured.body": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     },
+     "armoured.head": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     }
+    }
+   },
+   "sweep": {
+    "5": 1367,
+    "10": 1583,
+    "15": 1817,
+    "20": 2067,
+    "25": 2333,
+    "30": 2617,
+    "35": 2950,
+    "40": 3450,
+    "50": null,
+    "60": null,
+    "75": null,
+    "100": null,
+    "125": null,
+    "150": null
+   },
+   "sweepStk": {
+    "5": 7,
+    "10": 7,
+    "15": 7,
+    "20": 7,
+    "25": 7,
+    "30": 7,
+    "35": 7,
+    "40": 7,
+    "50": null,
+    "60": null,
+    "75": null,
+    "100": null,
+    "125": null,
+    "150": null
+   },
+   "firstHit": {
+    "10": {
+     "body": 15.9,
+     "head": 15.9
+    },
+    "25": {
+     "body": 15.8,
+     "head": 16
+    },
+    "50": {
+     "body": 0,
+     "head": 0
+    },
+    "100": {
+     "body": 0,
+     "head": 0
+    }
+   },
+   "falloff": {
+    "5": 1,
+    "10": 1,
+    "15": 1,
+    "20": 1,
+    "25": 1,
+    "30": 1,
+    "35": 1,
+    "40": 1,
+    "50": 1,
+    "60": 1,
+    "75": 1,
+    "100": 1,
+    "125": 1,
+    "150": 1
+   },
+   "drop": {
+    "5": null,
+    "10": null,
+    "15": null,
+    "20": null,
+    "25": null,
+    "30": null,
+    "35": null,
+    "40": null,
+    "50": null,
+    "60": null,
+    "75": null,
+    "100": null,
+    "125": null,
+    "150": null
+   },
+   "firstShotMs": 0,
+   "drawMs": 283,
+   "toPistolMs": 133,
+   "reload": {
+    "tacticalMs": 1267,
+    "emptyMs": 1267,
+    "firstRoundMs": null,
+    "cancelByFireMs": 0,
+    "cancelBySwapMs": 133,
+    "kind": "magazine"
+   },
+   "recoil": {
+    "oneMrad": null,
+    "oneSettleMs": null,
+    "sprayRounds": 0,
+    "sprayMrad": null,
+    "spraySettleMs": null,
+    "sprayForgetMs": null
+   },
+   "spread": {
+    "hip": 0,
+    "ads": 0,
+    "run": 14,
+    "spray10": 0
+   }
+  },
+  {
+   "id": "core.oil_slicker",
+   "name": "Oil Slicker",
+   "category": "special",
+   "family": null,
+   "slot": 6,
+   "trigger": "auto",
+   "rpm": 360,
+   "magazine": 12,
+   "damage": 0,
+   "pellets": 1,
+   "model": "projectile",
+   "velocity": 17,
+   "ttk": {
+    "10": {
+     "unarmoured.body": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     },
+     "unarmoured.head": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     },
+     "armoured.body": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     },
+     "armoured.head": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     }
+    },
+    "25": {
+     "unarmoured.body": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     },
+     "unarmoured.head": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     },
+     "armoured.body": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     },
+     "armoured.head": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     }
+    },
+    "50": {
+     "unarmoured.body": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     },
+     "unarmoured.head": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     },
+     "armoured.body": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     },
+     "armoured.head": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     }
+    },
+    "100": {
+     "unarmoured.body": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     },
+     "unarmoured.head": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     },
+     "armoured.body": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     },
+     "armoured.head": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     }
+    }
+   },
+   "sweep": {
+    "5": null,
+    "10": null,
+    "15": null,
+    "20": null,
+    "25": null,
+    "30": null,
+    "35": null,
+    "40": null,
+    "50": null,
+    "60": null,
+    "75": null,
+    "100": null,
+    "125": null,
+    "150": null
+   },
+   "sweepStk": {
+    "5": null,
+    "10": null,
+    "15": null,
+    "20": null,
+    "25": null,
+    "30": null,
+    "35": null,
+    "40": null,
+    "50": null,
+    "60": null,
+    "75": null,
+    "100": null,
+    "125": null,
+    "150": null
+   },
+   "firstHit": {
+    "10": {
+     "body": 0,
+     "head": 0
+    },
+    "25": {
+     "body": 0,
+     "head": 0
+    },
+    "50": {
+     "body": 0,
+     "head": 0
+    },
+    "100": {
+     "body": 0,
+     "head": 0
+    }
+   },
+   "falloff": {
+    "5": 1,
+    "10": 1,
+    "15": 1,
+    "20": 1,
+    "25": 1,
+    "30": 1,
+    "35": 1,
+    "40": 1,
+    "50": 1,
+    "60": 1,
+    "75": 1,
+    "100": 1,
+    "125": 1,
+    "150": 1
+   },
+   "drop": {
+    "5": null,
+    "10": null,
+    "15": null,
+    "20": null,
+    "25": null,
+    "30": null,
+    "35": null,
+    "40": null,
+    "50": null,
+    "60": null,
+    "75": null,
+    "100": null,
+    "125": null,
+    "150": null
+   },
+   "firstShotMs": 0,
+   "drawMs": 283,
+   "toPistolMs": 133,
+   "reload": {
+    "tacticalMs": 1183,
+    "emptyMs": 1183,
+    "firstRoundMs": null,
+    "cancelByFireMs": 0,
+    "cancelBySwapMs": 133,
+    "kind": "magazine"
+   },
+   "recoil": {
+    "oneMrad": null,
+    "oneSettleMs": null,
+    "sprayRounds": 0,
+    "sprayMrad": null,
+    "spraySettleMs": null,
+    "sprayForgetMs": null
+   },
+   "spread": {
+    "hip": 0,
+    "ads": 0,
+    "run": 14,
+    "spray10": 0
+   }
+  },
+  {
+   "id": "core.lmg",
+   "name": "Spin Gun",
+   "category": "smg",
+   "family": "lmg",
+   "slot": 7,
+   "trigger": "auto",
+   "rpm": 1200,
+   "magazine": 120,
+   "damage": 9,
+   "pellets": 1,
+   "model": "bullet",
+   "velocity": 760,
+   "ttk": {
+    "10": {
+     "unarmoured.body": {
+      "ideal": 550,
+      "stk": 12,
+      "hip": 550,
+      "ads": 550
+     },
+     "unarmoured.head": {
+      "ideal": 350,
+      "stk": 8,
+      "hip": 350,
+      "ads": 350
+     },
+     "armoured.body": {
+      "ideal": 1100,
+      "stk": 23,
+      "hip": 1100,
+      "ads": 1100
+     },
+     "armoured.head": {
+      "ideal": 700,
+      "stk": 15,
+      "hip": 750,
+      "ads": 700
+     }
+    },
+    "25": {
+     "unarmoured.body": {
+      "ideal": 567,
+      "stk": 12,
+      "hip": 567,
+      "ads": 567
+     },
+     "unarmoured.head": {
+      "ideal": 367,
+      "stk": 8,
+      "hip": 517,
+      "ads": 417
+     },
+     "armoured.body": {
+      "ideal": 1117,
+      "stk": 23,
+      "hip": 1367,
+      "ads": 1117
+     },
+     "armoured.head": {
+      "ideal": 717,
+      "stk": 15,
+      "hip": 2017,
+      "ads": 992
+     }
+    },
+    "50": {
+     "unarmoured.body": {
+      "ideal": 650,
+      "stk": 13,
+      "hip": 2150,
+      "ads": 650
+     },
+     "unarmoured.head": {
+      "ideal": 450,
+      "stk": 9,
+      "hip": 3550,
+      "ads": 1075
+     },
+     "armoured.body": {
+      "ideal": 1250,
+      "stk": 25,
+      "hip": null,
+      "ads": 3000
+     },
+     "armoured.head": {
+      "ideal": 850,
+      "stk": 17,
+      "hip": null,
+      "ads": 5000
+     }
+    },
+    "100": {
+     "unarmoured.body": {
+      "ideal": 867,
+      "stk": 16,
+      "hip": null,
+      "ads": null
+     },
+     "unarmoured.head": {
+      "ideal": 617,
+      "stk": 11,
+      "hip": null,
+      "ads": null
+     },
+     "armoured.body": {
+      "ideal": 1667,
+      "stk": 32,
+      "hip": null,
+      "ads": null
+     },
+     "armoured.head": {
+      "ideal": 1167,
+      "stk": 22,
+      "hip": null,
+      "ads": null
+     }
+    }
+   },
+   "sweep": {
+    "5": 550,
+    "10": 550,
+    "15": 550,
+    "20": 550,
+    "25": 567,
+    "30": 567,
+    "35": 583,
+    "40": 583,
+    "50": 650,
+    "60": 717,
+    "75": 833,
+    "100": 867,
+    "125": 900,
+    "150": 933
+   },
+   "sweepStk": {
+    "5": 12,
+    "10": 12,
+    "15": 12,
+    "20": 12,
+    "25": 12,
+    "30": 12,
+    "35": 12,
+    "40": 12,
+    "50": 13,
+    "60": 14,
+    "75": 16,
+    "100": 16,
+    "125": 16,
+    "150": 16
+   },
+   "firstHit": {
+    "10": {
+     "body": 9,
+     "head": 13.5
+    },
+    "25": {
+     "body": 9,
+     "head": 13.5
+    },
+    "50": {
+     "body": 8.1,
+     "head": 12.1
+    },
+    "100": {
+     "body": 6.3,
+     "head": 9.5
+    }
+   },
+   "falloff": {
+    "5": 1,
+    "10": 1,
+    "15": 1,
+    "20": 1,
+    "25": 1,
+    "30": 1,
+    "35": 0.99,
+    "40": 0.97,
+    "50": 0.89,
+    "60": 0.81,
+    "75": 0.71,
+    "100": 0.7,
+    "125": 0.7,
+    "150": 0.7
+   },
+   "drop": {
+    "5": {
+     "flightMs": 0,
+     "dropCm": 0
+    },
+    "10": {
+     "flightMs": 3,
+     "dropCm": 0
+    },
+    "15": {
+     "flightMs": 9,
+     "dropCm": 0
+    },
+    "20": {
+     "flightMs": 16,
+     "dropCm": 0
+    },
+    "25": {
+     "flightMs": 22,
+     "dropCm": 0
+    },
+    "30": {
+     "flightMs": 29,
+     "dropCm": 0
+    },
+    "35": {
+     "flightMs": 36,
+     "dropCm": 1
+    },
+    "40": {
+     "flightMs": 42,
+     "dropCm": 1
+    },
+    "50": {
+     "flightMs": 55,
+     "dropCm": 1
+    },
+    "60": {
+     "flightMs": 68,
+     "dropCm": 2
+    },
+    "75": {
+     "flightMs": 88,
+     "dropCm": 4
+    },
+    "100": {
+     "flightMs": 121,
+     "dropCm": 7
+    },
+    "125": {
+     "flightMs": 154,
+     "dropCm": 12
+    },
+    "150": {
+     "flightMs": 187,
+     "dropCm": 17
+    }
+   },
+   "firstShotMs": 450,
+   "drawMs": 1233,
+   "toPistolMs": 133,
+   "reload": {
+    "tacticalMs": 3517,
+    "emptyMs": 3517,
+    "firstRoundMs": null,
+    "cancelByFireMs": 450,
+    "cancelBySwapMs": 133,
+    "kind": "magazine"
+   },
+   "recoil": {
+    "oneMrad": 5.5,
+    "oneSettleMs": 117,
+    "sprayRounds": 10,
+    "sprayMrad": 50.1,
+    "spraySettleMs": 283,
+    "sprayForgetMs": 2050
+   },
+   "spread": {
+    "hip": 12,
+    "ads": 8.4,
+    "run": 42,
+    "spray10": 15.6
+   }
+  },
+  {
+   "id": "core.nailgun",
+   "name": "Nailgun",
+   "category": "smg",
+   "family": null,
+   "slot": 7,
+   "trigger": "auto",
+   "rpm": 720,
+   "magazine": 50,
+   "damage": 0,
+   "pellets": 1,
+   "model": "projectile",
+   "velocity": 75,
+   "ttk": {
+    "10": {
+     "unarmoured.body": {
+      "ideal": 850,
+      "stk": 10,
+      "hip": 850,
+      "ads": 850
+     },
+     "unarmoured.head": {
+      "ideal": 867,
+      "stk": 10,
+      "hip": 867,
+      "ads": 867
+     },
+     "armoured.body": {
+      "ideal": 1600,
+      "stk": 19,
+      "hip": 1608,
+      "ads": 1600
+     },
+     "armoured.head": {
+      "ideal": 1617,
+      "stk": 19,
+      "hip": 1617,
+      "ads": 1617
+     }
+    },
+    "25": {
+     "unarmoured.body": {
+      "ideal": 1050,
+      "stk": 10,
+      "hip": 1067,
+      "ads": 1050
+     },
+     "unarmoured.head": {
+      "ideal": 1067,
+      "stk": 10,
+      "hip": 1217,
+      "ads": 1067
+     },
+     "armoured.body": {
+      "ideal": 1800,
+      "stk": 19,
+      "hip": 1817,
+      "ads": 1808
+     },
+     "armoured.head": {
+      "ideal": 1817,
+      "stk": 19,
+      "hip": 2225,
+      "ads": 1817
+     }
+    },
+    "50": {
+     "unarmoured.body": {
+      "ideal": 1383,
+      "stk": 10,
+      "hip": 1942,
+      "ads": 1400
+     },
+     "unarmoured.head": {
+      "ideal": 1400,
+      "stk": 10,
+      "hip": 2317,
+      "ads": 1642
+     },
+     "armoured.body": {
+      "ideal": 2133,
+      "stk": 19,
+      "hip": 3400,
+      "ads": 2150
+     },
+     "armoured.head": {
+      "ideal": 2150,
+      "stk": 19,
+      "hip": 4650,
+      "ads": 2600
+     }
+    },
+    "100": {
+     "unarmoured.body": {
+      "ideal": 2050,
+      "stk": 10,
+      "hip": 5342,
+      "ads": 3108
+     },
+     "unarmoured.head": {
+      "ideal": 2067,
+      "stk": 10,
+      "hip": 7358,
+      "ads": 3358
+     },
+     "armoured.body": {
+      "ideal": 2800,
+      "stk": 19,
+      "hip": null,
+      "ads": 4817
+     },
+     "armoured.head": {
+      "ideal": 2817,
+      "stk": 19,
+      "hip": null,
+      "ads": 6933
+     }
+    }
+   },
+   "sweep": {
+    "5": 783,
+    "10": 850,
+    "15": 917,
+    "20": 983,
+    "25": 1050,
+    "30": 1117,
+    "35": 1183,
+    "40": 1250,
+    "50": 1383,
+    "60": 1517,
+    "75": 1717,
+    "100": 2050,
+    "125": null,
+    "150": null
+   },
+   "sweepStk": {
+    "5": 10,
+    "10": 10,
+    "15": 10,
+    "20": 10,
+    "25": 10,
+    "30": 10,
+    "35": 10,
+    "40": 10,
+    "50": 10,
+    "60": 10,
+    "75": 10,
+    "100": 10,
+    "125": null,
+    "150": null
+   },
+   "firstHit": {
+    "10": {
+     "body": 11,
+     "head": 11
+    },
+    "25": {
+     "body": 11,
+     "head": 11
+    },
+    "50": {
+     "body": 11,
+     "head": 11
+    },
+    "100": {
+     "body": 11,
+     "head": 11
+    }
+   },
+   "falloff": {
+    "5": 1,
+    "10": 1,
+    "15": 1,
+    "20": 1,
+    "25": 1,
+    "30": 1,
+    "35": 1,
+    "40": 1,
+    "50": 1,
+    "60": 1,
+    "75": 1,
+    "100": 1,
+    "125": 1,
+    "150": 1
+   },
+   "drop": {
+    "5": null,
+    "10": null,
+    "15": null,
+    "20": null,
+    "25": null,
+    "30": null,
+    "35": null,
+    "40": null,
+    "50": null,
+    "60": null,
+    "75": null,
+    "100": null,
+    "125": null,
+    "150": null
+   },
+   "firstShotMs": 0,
+   "drawMs": 283,
+   "toPistolMs": 133,
+   "reload": {
+    "tacticalMs": 1350,
+    "emptyMs": 1350,
+    "firstRoundMs": null,
+    "cancelByFireMs": 0,
+    "cancelBySwapMs": 133,
+    "kind": "magazine"
+   },
+   "recoil": {
+    "oneMrad": null,
+    "oneSettleMs": null,
+    "sprayRounds": 0,
+    "sprayMrad": null,
+    "spraySettleMs": null,
+    "sprayForgetMs": null
+   },
+   "spread": {
+    "hip": 20,
+    "ads": 11,
+    "run": 34,
+    "spray10": 20
+   }
+  },
+  {
+   "id": "core.swarm",
+   "name": "Swarm Launcher",
+   "category": "explosive",
+   "family": null,
+   "slot": 8,
+   "trigger": "auto",
+   "rpm": 51,
+   "magazine": 4,
+   "damage": 0,
+   "pellets": 4,
+   "model": "projectile",
+   "velocity": 20,
+   "ttk": {
+    "10": {
+     "unarmoured.body": {
+      "ideal": 450,
+      "stk": 1,
+      "hip": 450,
+      "ads": 433
+     },
+     "unarmoured.head": {
+      "ideal": 433,
+      "stk": 1,
+      "hip": 450,
+      "ads": 433
+     },
+     "armoured.body": {
+      "ideal": 1600,
+      "stk": 2,
+      "hip": 1600,
+      "ads": 1600
+     },
+     "armoured.head": {
+      "ideal": 1600,
+      "stk": 2,
+      "hip": 1600,
+      "ads": 1600
+     }
+    },
+    "25": {
+     "unarmoured.body": {
+      "ideal": 1200,
+      "stk": 1,
+      "hip": 1200,
+      "ads": 1200
+     },
+     "unarmoured.head": {
+      "ideal": 1200,
+      "stk": 1,
+      "hip": 1200,
+      "ads": 1192
+     },
+     "armoured.body": {
+      "ideal": 2350,
+      "stk": 2,
+      "hip": 2350,
+      "ads": 2350
+     },
+     "armoured.head": {
+      "ideal": 2350,
+      "stk": 2,
+      "hip": 2350,
+      "ads": 2350
+     }
+    },
+    "50": {
+     "unarmoured.body": {
+      "ideal": 2450,
+      "stk": 1,
+      "hip": 2450,
+      "ads": 2450
+     },
+     "unarmoured.head": {
+      "ideal": 2450,
+      "stk": 1,
+      "hip": 2450,
+      "ads": 2450
+     },
+     "armoured.body": {
+      "ideal": 3600,
+      "stk": 2,
+      "hip": 3600,
+      "ads": 3600
+     },
+     "armoured.head": {
+      "ideal": 3600,
+      "stk": 2,
+      "hip": 3600,
+      "ads": 3600
+     }
+    },
+    "100": {
+     "unarmoured.body": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     },
+     "unarmoured.head": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     },
+     "armoured.body": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     },
+     "armoured.head": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     }
+    }
+   },
+   "sweep": {
+    "5": 192,
+    "10": 450,
+    "15": 700,
+    "20": 950,
+    "25": 1200,
+    "30": 1450,
+    "35": 1700,
+    "40": 1950,
+    "50": 2450,
+    "60": 2950,
+    "75": 3708,
+    "100": null,
+    "125": null,
+    "150": null
+   },
+   "sweepStk": {
+    "5": 1,
+    "10": 1,
+    "15": 1,
+    "20": 1,
+    "25": 1,
+    "30": 1,
+    "35": 1,
+    "40": 1,
+    "50": 1,
+    "60": 1,
+    "75": 1,
+    "100": null,
+    "125": null,
+    "150": null
+   },
+   "firstHit": {
+    "10": {
+     "body": 100,
+     "head": 100
+    },
+    "25": {
+     "body": 100,
+     "head": 100
+    },
+    "50": {
+     "body": 100,
+     "head": 100
+    },
+    "100": {
+     "body": 0,
+     "head": 0
+    }
+   },
+   "falloff": {
+    "5": 1,
+    "10": 1,
+    "15": 1,
+    "20": 1,
+    "25": 1,
+    "30": 1,
+    "35": 1,
+    "40": 1,
+    "50": 1,
+    "60": 1,
+    "75": 1,
+    "100": 1,
+    "125": 1,
+    "150": 1
+   },
+   "drop": {
+    "5": null,
+    "10": null,
+    "15": null,
+    "20": null,
+    "25": null,
+    "30": null,
+    "35": null,
+    "40": null,
+    "50": null,
+    "60": null,
+    "75": null,
+    "100": null,
+    "125": null,
+    "150": null
+   },
+   "firstShotMs": 0,
+   "drawMs": 483,
+   "toPistolMs": 133,
+   "reload": {
+    "tacticalMs": 1683,
+    "emptyMs": 1683,
+    "firstRoundMs": null,
+    "cancelByFireMs": 0,
+    "cancelBySwapMs": 133,
+    "kind": "magazine"
+   },
+   "recoil": {
+    "oneMrad": null,
+    "oneSettleMs": null,
+    "sprayRounds": 0,
+    "sprayMrad": null,
+    "spraySettleMs": null,
+    "sprayForgetMs": null
+   },
+   "spread": {
+    "hip": 140,
+    "ads": 77,
+    "run": 144.9,
+    "spray10": null
+   }
+  },
+  {
+   "id": "core.guided",
+   "name": "Guided Rocket",
+   "category": "explosive",
+   "family": null,
+   "slot": 8,
+   "trigger": "semi",
+   "rpm": 48,
+   "magazine": 1,
+   "damage": 0,
+   "pellets": 1,
+   "model": "projectile",
+   "velocity": 17,
+   "ttk": {
+    "10": {
+     "unarmoured.body": {
+      "ideal": 500,
+      "stk": 1,
+      "hip": 500,
+      "ads": 500
+     },
+     "unarmoured.head": {
+      "ideal": 517,
+      "stk": 1,
+      "hip": 517,
+      "ads": 517
+     },
+     "armoured.body": {
+      "ideal": 3250,
+      "stk": 2,
+      "hip": 3250,
+      "ads": 3250
+     },
+     "armoured.head": {
+      "ideal": 3267,
+      "stk": 2,
+      "hip": 3267,
+      "ads": 3267
+     }
+    },
+    "25": {
+     "unarmoured.body": {
+      "ideal": 1383,
+      "stk": 1,
+      "hip": 1383,
+      "ads": 1383
+     },
+     "unarmoured.head": {
+      "ideal": 1400,
+      "stk": 1,
+      "hip": 1400,
+      "ads": 1400
+     },
+     "armoured.body": {
+      "ideal": 4133,
+      "stk": 2,
+      "hip": 4133,
+      "ads": 4133
+     },
+     "armoured.head": {
+      "ideal": 4150,
+      "stk": 2,
+      "hip": 4150,
+      "ads": 4150
+     }
+    },
+    "50": {
+     "unarmoured.body": {
+      "ideal": 2850,
+      "stk": 1,
+      "hip": 2850,
+      "ads": 2850
+     },
+     "unarmoured.head": {
+      "ideal": 2867,
+      "stk": 1,
+      "hip": 2867,
+      "ads": 2867
+     },
+     "armoured.body": {
+      "ideal": 5600,
+      "stk": 2,
+      "hip": 5600,
+      "ads": 5600
+     },
+     "armoured.head": {
+      "ideal": 5617,
+      "stk": 2,
+      "hip": 5617,
+      "ads": 5617
+     }
+    },
+    "100": {
+     "unarmoured.body": {
+      "ideal": 5800,
+      "stk": 1,
+      "hip": 5800,
+      "ads": 5800
+     },
+     "unarmoured.head": {
+      "ideal": 5800,
+      "stk": 1,
+      "hip": 5800,
+      "ads": 5800
+     },
+     "armoured.body": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     },
+     "armoured.head": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     }
+    }
+   },
+   "sweep": {
+    "5": 217,
+    "10": 500,
+    "15": 800,
+    "20": 1100,
+    "25": 1383,
+    "30": 1683,
+    "35": 1967,
+    "40": 2267,
+    "50": 2850,
+    "60": 3450,
+    "75": 4333,
+    "100": 5800,
+    "125": 7267,
+    "150": null
+   },
+   "sweepStk": {
+    "5": 1,
+    "10": 1,
+    "15": 1,
+    "20": 1,
+    "25": 1,
+    "30": 1,
+    "35": 1,
+    "40": 1,
+    "50": 1,
+    "60": 1,
+    "75": 1,
+    "100": 1,
+    "125": 1,
+    "150": null
+   },
+   "firstHit": {
+    "10": {
+     "body": 100,
+     "head": 100
+    },
+    "25": {
+     "body": 100,
+     "head": 100
+    },
+    "50": {
+     "body": 100,
+     "head": 100
+    },
+    "100": {
+     "body": 100,
+     "head": 100
+    }
+   },
+   "falloff": {
+    "5": 1,
+    "10": 1,
+    "15": 1,
+    "20": 1,
+    "25": 1,
+    "30": 1,
+    "35": 1,
+    "40": 1,
+    "50": 1,
+    "60": 1,
+    "75": 1,
+    "100": 1,
+    "125": 1,
+    "150": 1
+   },
+   "drop": {
+    "5": null,
+    "10": null,
+    "15": null,
+    "20": null,
+    "25": null,
+    "30": null,
+    "35": null,
+    "40": null,
+    "50": null,
+    "60": null,
+    "75": null,
+    "100": null,
+    "125": null,
+    "150": null
+   },
+   "firstShotMs": 0,
+   "drawMs": 517,
+   "toPistolMs": 133,
+   "reload": {
+    "tacticalMs": null,
+    "emptyMs": 1517,
+    "firstRoundMs": null,
+    "cancelByFireMs": null,
+    "cancelBySwapMs": 133,
+    "kind": "magazine"
+   },
+   "recoil": {
+    "oneMrad": null,
+    "oneSettleMs": null,
+    "sprayRounds": 0,
+    "sprayMrad": null,
+    "spraySettleMs": null,
+    "sprayForgetMs": null
+   },
+   "spread": {
+    "hip": 0,
+    "ads": 0,
+    "run": 14,
+    "spray10": null
+   }
+  },
+  {
+   "id": "core.singularity",
+   "name": "Singularity Cannon",
+   "category": "special",
+   "family": null,
+   "slot": 8,
+   "trigger": "semi",
+   "rpm": 40,
+   "magazine": 1,
+   "damage": 0,
+   "pellets": 1,
+   "model": "projectile",
+   "velocity": 13,
+   "ttk": {
+    "10": {
+     "unarmoured.body": {
+      "ideal": 6400,
+      "stk": 2,
+      "hip": 6400,
+      "ads": 6400
+     },
+     "unarmoured.head": {
+      "ideal": 6400,
+      "stk": 2,
+      "hip": 6400,
+      "ads": 6400
+     },
+     "armoured.body": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     },
+     "armoured.head": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     }
+    },
+    "25": {
+     "unarmoured.body": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     },
+     "unarmoured.head": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     },
+     "armoured.body": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     },
+     "armoured.head": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     }
+    },
+    "50": {
+     "unarmoured.body": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     },
+     "unarmoured.head": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     },
+     "armoured.body": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     },
+     "armoured.head": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     }
+    },
+    "100": {
+     "unarmoured.body": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     },
+     "unarmoured.head": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     },
+     "armoured.body": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     },
+     "armoured.head": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     }
+    }
+   },
+   "sweep": {
+    "5": 5833,
+    "10": 6400,
+    "15": 6783,
+    "20": 7167,
+    "25": null,
+    "30": null,
+    "35": null,
+    "40": null,
+    "50": null,
+    "60": null,
+    "75": null,
+    "100": null,
+    "125": null,
+    "150": null
+   },
+   "sweepStk": {
+    "5": 2,
+    "10": 2,
+    "15": 2,
+    "20": 2,
+    "25": null,
+    "30": null,
+    "35": null,
+    "40": null,
+    "50": null,
+    "60": null,
+    "75": null,
+    "100": null,
+    "125": null,
+    "150": null
+   },
+   "firstHit": {
+    "10": {
+     "body": 80.7,
+     "head": 79
+    },
+    "25": {
+     "body": 41.3,
+     "head": 40.8
+    },
+    "50": {
+     "body": 0,
+     "head": 0
+    },
+    "100": {
+     "body": 0,
+     "head": 0
+    }
+   },
+   "falloff": {
+    "5": 1,
+    "10": 1,
+    "15": 1,
+    "20": 1,
+    "25": 1,
+    "30": 1,
+    "35": 1,
+    "40": 1,
+    "50": 1,
+    "60": 1,
+    "75": 1,
+    "100": 1,
+    "125": 1,
+    "150": 1
+   },
+   "drop": {
+    "5": null,
+    "10": null,
+    "15": null,
+    "20": null,
+    "25": null,
+    "30": null,
+    "35": null,
+    "40": null,
+    "50": null,
+    "60": null,
+    "75": null,
+    "100": null,
+    "125": null,
+    "150": null
+   },
+   "firstShotMs": 0,
+   "drawMs": 550,
+   "toPistolMs": 133,
+   "reload": {
+    "tacticalMs": null,
+    "emptyMs": 1850,
+    "firstRoundMs": null,
+    "cancelByFireMs": null,
+    "cancelBySwapMs": 133,
+    "kind": "magazine"
+   },
+   "recoil": {
+    "oneMrad": null,
+    "oneSettleMs": null,
+    "sprayRounds": 0,
+    "sprayMrad": null,
+    "spraySettleMs": null,
+    "sprayForgetMs": null
+   },
+   "spread": {
+    "hip": 0,
+    "ads": 0,
+    "run": 14,
+    "spray10": null
+   }
+  },
+  {
+   "id": "core.arc_caster",
+   "name": "Arc Caster",
+   "category": "special",
+   "family": null,
+   "slot": 9,
+   "trigger": "auto",
+   "rpm": 400,
+   "magazine": 0,
+   "damage": 15,
+   "pellets": 1,
+   "model": "beam",
+   "velocity": null,
+   "ttk": {
+    "10": {
+     "unarmoured.body": {
+      "ideal": 900,
+      "stk": 7,
+      "hip": 900,
+      "ads": 900
+     },
+     "unarmoured.head": {
+      "ideal": 450,
+      "stk": 4,
+      "hip": 450,
+      "ads": 450
+     },
+     "armoured.body": {
+      "ideal": 1950,
+      "stk": 14,
+      "hip": 1950,
+      "ads": 1950
+     },
+     "armoured.head": {
+      "ideal": 900,
+      "stk": 7,
+      "hip": 900,
+      "ads": 900
+     }
+    },
+    "25": {
+     "unarmoured.body": {
+      "ideal": 900,
+      "stk": 7,
+      "hip": 900,
+      "ads": 900
+     },
+     "unarmoured.head": {
+      "ideal": 450,
+      "stk": 4,
+      "hip": 450,
+      "ads": 450
+     },
+     "armoured.body": {
+      "ideal": 1950,
+      "stk": 14,
+      "hip": 1950,
+      "ads": 1950
+     },
+     "armoured.head": {
+      "ideal": 900,
+      "stk": 7,
+      "hip": 1125,
+      "ads": 1050
+     }
+    },
+    "50": {
+     "unarmoured.body": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     },
+     "unarmoured.head": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     },
+     "armoured.body": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     },
+     "armoured.head": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     }
+    },
+    "100": {
+     "unarmoured.body": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     },
+     "unarmoured.head": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     },
+     "armoured.body": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     },
+     "armoured.head": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     }
+    }
+   },
+   "sweep": {
+    "5": 900,
+    "10": 900,
+    "15": 900,
+    "20": 900,
+    "25": 900,
+    "30": 900,
+    "35": null,
+    "40": null,
+    "50": null,
+    "60": null,
+    "75": null,
+    "100": null,
+    "125": null,
+    "150": null
+   },
+   "sweepStk": {
+    "5": 7,
+    "10": 7,
+    "15": 7,
+    "20": 7,
+    "25": 7,
+    "30": 7,
+    "35": null,
+    "40": null,
+    "50": null,
+    "60": null,
+    "75": null,
+    "100": null,
+    "125": null,
+    "150": null
+   },
+   "firstHit": {
+    "10": {
+     "body": 15,
+     "head": 30
+    },
+    "25": {
+     "body": 15,
+     "head": 30
+    },
+    "50": {
+     "body": 0,
+     "head": 0
+    },
+    "100": {
+     "body": 0,
+     "head": 0
+    }
+   },
+   "falloff": {
+    "5": 1,
+    "10": 1,
+    "15": 1,
+    "20": 1,
+    "25": 1,
+    "30": 1,
+    "35": 1,
+    "40": 1,
+    "50": 1,
+    "60": 1,
+    "75": 1,
+    "100": 1,
+    "125": 1,
+    "150": 1
+   },
+   "drop": {
+    "5": null,
+    "10": null,
+    "15": null,
+    "20": null,
+    "25": null,
+    "30": null,
+    "35": null,
+    "40": null,
+    "50": null,
+    "60": null,
+    "75": null,
+    "100": null,
+    "125": null,
+    "150": null
+   },
+   "firstShotMs": 0,
+   "drawMs": 317,
+   "toPistolMs": 133,
+   "reload": {
+    "tacticalMs": null,
+    "emptyMs": null,
+    "firstRoundMs": null,
+    "cancelByFireMs": null,
+    "cancelBySwapMs": null,
+    "kind": "heat",
+    "overheatCoolMs": 1867
+   },
+   "recoil": {
+    "oneMrad": null,
+    "oneSettleMs": null,
+    "sprayRounds": 0,
+    "sprayMrad": null,
+    "spraySettleMs": null,
+    "sprayForgetMs": null
+   },
+   "spread": {
+    "hip": 10,
+    "ads": 5.5,
+    "run": 24,
+    "spray10": null
+   }
+  },
+  {
+   "id": "core.flamethrower",
+   "name": "Flamethrower",
+   "category": "special",
+   "family": null,
+   "slot": 9,
+   "trigger": "auto",
+   "rpm": 1200,
+   "magazine": 100,
+   "damage": 0,
+   "pellets": 1,
+   "model": "projectile",
+   "velocity": 17,
+   "ttk": {
+    "10": {
+     "unarmoured.body": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     },
+     "unarmoured.head": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     },
+     "armoured.body": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     },
+     "armoured.head": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     }
+    },
+    "25": {
+     "unarmoured.body": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     },
+     "unarmoured.head": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     },
+     "armoured.body": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     },
+     "armoured.head": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     }
+    },
+    "50": {
+     "unarmoured.body": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     },
+     "unarmoured.head": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     },
+     "armoured.body": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     },
+     "armoured.head": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     }
+    },
+    "100": {
+     "unarmoured.body": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     },
+     "unarmoured.head": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     },
+     "armoured.body": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     },
+     "armoured.head": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     }
+    }
+   },
+   "sweep": {
+    "5": 900,
+    "10": null,
+    "15": null,
+    "20": null,
+    "25": null,
+    "30": null,
+    "35": null,
+    "40": null,
+    "50": null,
+    "60": null,
+    "75": null,
+    "100": null,
+    "125": null,
+    "150": null
+   },
+   "sweepStk": {
+    "5": 9,
+    "10": null,
+    "15": null,
+    "20": null,
+    "25": null,
+    "30": null,
+    "35": null,
+    "40": null,
+    "50": null,
+    "60": null,
+    "75": null,
+    "100": null,
+    "125": null,
+    "150": null
+   },
+   "firstHit": {
+    "10": {
+     "body": 0,
+     "head": 0
+    },
+    "25": {
+     "body": 0,
+     "head": 0
+    },
+    "50": {
+     "body": 0,
+     "head": 0
+    },
+    "100": {
+     "body": 0,
+     "head": 0
+    }
+   },
+   "falloff": {
+    "5": 1,
+    "10": 1,
+    "15": 1,
+    "20": 1,
+    "25": 1,
+    "30": 1,
+    "35": 1,
+    "40": 1,
+    "50": 1,
+    "60": 1,
+    "75": 1,
+    "100": 1,
+    "125": 1,
+    "150": 1
+   },
+   "drop": {
+    "5": null,
+    "10": null,
+    "15": null,
+    "20": null,
+    "25": null,
+    "30": null,
+    "35": null,
+    "40": null,
+    "50": null,
+    "60": null,
+    "75": null,
+    "100": null,
+    "125": null,
+    "150": null
+   },
+   "firstShotMs": 0,
+   "drawMs": 383,
+   "toPistolMs": 133,
+   "reload": {
+    "tacticalMs": 1850,
+    "emptyMs": 1850,
+    "firstRoundMs": null,
+    "cancelByFireMs": 0,
+    "cancelBySwapMs": 133,
+    "kind": "magazine"
+   },
+   "recoil": {
+    "oneMrad": null,
+    "oneSettleMs": null,
+    "sprayRounds": 0,
+    "sprayMrad": null,
+    "spraySettleMs": null,
+    "sprayForgetMs": null
+   },
+   "spread": {
+    "hip": 50,
+    "ads": 27.5,
+    "run": 64,
+    "spray10": 50
+   }
+  },
+  {
+   "id": "core.freeze_ray",
+   "name": "Freeze Ray",
+   "category": "special",
+   "family": null,
+   "slot": 9,
+   "trigger": "auto",
+   "rpm": 1200,
+   "magazine": 0,
+   "damage": 3,
+   "pellets": 1,
+   "model": "beam",
+   "velocity": null,
+   "ttk": {
+    "10": {
+     "unarmoured.body": {
+      "ideal": 1650,
+      "stk": 34,
+      "hip": 1650,
+      "ads": 1650
+     },
+     "unarmoured.head": {
+      "ideal": 800,
+      "stk": 17,
+      "hip": 800,
+      "ads": 800
+     },
+     "armoured.body": {
+      "ideal": 3300,
+      "stk": 67,
+      "hip": 3300,
+      "ads": 3300
+     },
+     "armoured.head": {
+      "ideal": 1650,
+      "stk": 34,
+      "hip": 1650,
+      "ads": 1650
+     }
+    },
+    "25": {
+     "unarmoured.body": {
+      "ideal": 1650,
+      "stk": 34,
+      "hip": 1650,
+      "ads": 1650
+     },
+     "unarmoured.head": {
+      "ideal": 800,
+      "stk": 17,
+      "hip": 800,
+      "ads": 800
+     },
+     "armoured.body": {
+      "ideal": 3300,
+      "stk": 67,
+      "hip": 3300,
+      "ads": 3300
+     },
+     "armoured.head": {
+      "ideal": 1650,
+      "stk": 34,
+      "hip": 1650,
+      "ads": 1650
+     }
+    },
+    "50": {
+     "unarmoured.body": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     },
+     "unarmoured.head": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     },
+     "armoured.body": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     },
+     "armoured.head": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     }
+    },
+    "100": {
+     "unarmoured.body": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     },
+     "unarmoured.head": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     },
+     "armoured.body": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     },
+     "armoured.head": {
+      "ideal": null,
+      "stk": null,
+      "hip": null,
+      "ads": null
+     }
+    }
+   },
+   "sweep": {
+    "5": 1650,
+    "10": 1650,
+    "15": 1650,
+    "20": 1650,
+    "25": 1650,
+    "30": 1650,
+    "35": 1650,
+    "40": 1650,
+    "50": null,
+    "60": null,
+    "75": null,
+    "100": null,
+    "125": null,
+    "150": null
+   },
+   "sweepStk": {
+    "5": 34,
+    "10": 34,
+    "15": 34,
+    "20": 34,
+    "25": 34,
+    "30": 34,
+    "35": 34,
+    "40": 34,
+    "50": null,
+    "60": null,
+    "75": null,
+    "100": null,
+    "125": null,
+    "150": null
+   },
+   "firstHit": {
+    "10": {
+     "body": 3,
+     "head": 6
+    },
+    "25": {
+     "body": 3,
+     "head": 6
+    },
+    "50": {
+     "body": 0,
+     "head": 0
+    },
+    "100": {
+     "body": 0,
+     "head": 0
+    }
+   },
+   "falloff": {
+    "5": 1,
+    "10": 1,
+    "15": 1,
+    "20": 1,
+    "25": 1,
+    "30": 1,
+    "35": 1,
+    "40": 1,
+    "50": 1,
+    "60": 1,
+    "75": 1,
+    "100": 1,
+    "125": 1,
+    "150": 1
+   },
+   "drop": {
+    "5": null,
+    "10": null,
+    "15": null,
+    "20": null,
+    "25": null,
+    "30": null,
+    "35": null,
+    "40": null,
+    "50": null,
+    "60": null,
+    "75": null,
+    "100": null,
+    "125": null,
+    "150": null
+   },
+   "firstShotMs": 0,
+   "drawMs": 317,
+   "toPistolMs": 133,
+   "reload": {
+    "tacticalMs": null,
+    "emptyMs": null,
+    "firstRoundMs": null,
+    "cancelByFireMs": null,
+    "cancelBySwapMs": null,
+    "kind": "heat",
+    "overheatCoolMs": null
+   },
+   "recoil": {
+    "oneMrad": null,
+    "oneSettleMs": null,
+    "sprayRounds": 0,
+    "sprayMrad": null,
+    "spraySettleMs": null,
+    "sprayForgetMs": null
+   },
+   "spread": {
+    "hip": 0,
+    "ads": 0,
+    "run": 14,
+    "spray10": null
+   }
+  },
+  {
+   "id": "core.blast_rockets",
+   "name": "Blast Rockets",
+   "category": "explosive",
+   "family": null,
+   "slot": 8,
+   "trigger": "auto",
+   "rpm": 75,
+   "magazine": 4,
+   "damage": 0,
+   "pellets": 1,
+   "model": "projectile",
+   "velocity": 26,
+   "ttk": {
+    "10": {
+     "unarmoured.body": {
+      "ideal": 1133,
+      "stk": 2,
+      "hip": 1133,
+      "ads": 1133
+     },
+     "unarmoured.head": {
+      "ideal": 1133,
+      "stk": 2,
+      "hip": 1133,
+      "ads": 1133
+     },
+     "armoured.body": {
+      "ideal": 1933,
+      "stk": 3,
+      "hip": 1933,
+      "ads": 1933
+     },
+     "armoured.head": {
+      "ideal": 1933,
+      "stk": 3,
+      "hip": 1933,
+      "ads": 1933
+     }
+    },
+    "25": {
+     "unarmoured.body": {
+      "ideal": 1700,
+      "stk": 2,
+      "hip": 1700,
+      "ads": 1700
+     },
+     "unarmoured.head": {
+      "ideal": 1700,
+      "stk": 2,
+      "hip": 1700,
+      "ads": 1700
+     },
+     "armoured.body": {
+      "ideal": 2500,
+      "stk": 3,
+      "hip": 2500,
+      "ads": 2500
+     },
+     "armoured.head": {
+      "ideal": 2500,
+      "stk": 3,
+      "hip": 2500,
+      "ads": 2500
+     }
+    },
+    "50": {
+     "unarmoured.body": {
+      "ideal": 2667,
+      "stk": 2,
+      "hip": 2667,
+      "ads": 2667
+     },
+     "unarmoured.head": {
+      "ideal": 2667,
+      "stk": 2,
+      "hip": 2667,
+      "ads": 2667
+     },
+     "armoured.body": {
+      "ideal": 3467,
+      "stk": 3,
+      "hip": 3467,
+      "ads": 3467
+     },
+     "armoured.head": {
+      "ideal": 3467,
+      "stk": 3,
+      "hip": 3467,
+      "ads": 3467
+     }
+    },
+    "100": {
+     "unarmoured.body": {
+      "ideal": 4583,
+      "stk": 2,
+      "hip": 4583,
+      "ads": 4583
+     },
+     "unarmoured.head": {
+      "ideal": 4600,
+      "stk": 2,
+      "hip": 4600,
+      "ads": 4600
+     },
+     "armoured.body": {
+      "ideal": 5383,
+      "stk": 3,
+      "hip": 5383,
+      "ads": 5383
+     },
+     "armoured.head": {
+      "ideal": 5400,
+      "stk": 3,
+      "hip": 5400,
+      "ads": 5400
+     }
+    }
+   },
+   "sweep": {
+    "5": 983,
+    "10": 1133,
+    "15": 1317,
+    "20": 1517,
+    "25": 1700,
+    "30": 1900,
+    "35": 2083,
+    "40": 2283,
+    "50": 2667,
+    "60": 3050,
+    "75": 3633,
+    "100": 4583,
+    "125": null,
+    "150": null
+   },
+   "sweepStk": {
+    "5": 2,
+    "10": 2,
+    "15": 2,
+    "20": 2,
+    "25": 2,
+    "30": 2,
+    "35": 2,
+    "40": 2,
+    "50": 2,
+    "60": 2,
+    "75": 2,
+    "100": 2,
+    "125": null,
+    "150": null
+   },
+   "firstHit": {
+    "10": {
+     "body": 98.7,
+     "head": 97.3
+    },
+    "25": {
+     "body": 98.8,
+     "head": 97.2
+    },
+    "50": {
+     "body": 98.9,
+     "head": 97.2
+    },
+    "100": {
+     "body": 98.9,
+     "head": 97.8
+    }
+   },
+   "falloff": {
+    "5": 1,
+    "10": 1,
+    "15": 1,
+    "20": 1,
+    "25": 1,
+    "30": 1,
+    "35": 1,
+    "40": 1,
+    "50": 1,
+    "60": 1,
+    "75": 1,
+    "100": 1,
+    "125": 1,
+    "150": 1
+   },
+   "drop": {
+    "5": null,
+    "10": null,
+    "15": null,
+    "20": null,
+    "25": null,
+    "30": null,
+    "35": null,
+    "40": null,
+    "50": null,
+    "60": null,
+    "75": null,
+    "100": null,
+    "125": null,
+    "150": null
+   },
+   "firstShotMs": 0,
+   "drawMs": 450,
+   "toPistolMs": 133,
+   "reload": {
+    "tacticalMs": 1850,
+    "emptyMs": 1850,
+    "firstRoundMs": null,
+    "cancelByFireMs": 0,
+    "cancelBySwapMs": 133,
+    "kind": "magazine"
+   },
+   "recoil": {
+    "oneMrad": null,
+    "oneSettleMs": null,
+    "sprayRounds": 0,
+    "sprayMrad": null,
+    "spraySettleMs": null,
+    "sprayForgetMs": null
+   },
+   "spread": {
+    "hip": 0,
+    "ads": 0,
+    "run": 14,
+    "spray10": null
+   }
+  },
+  {
+   "id": "core.revolver",
+   "name": "Heavy Revolver",
+   "category": "pistol",
+   "family": "revolver",
+   "slot": 2,
+   "trigger": "semi",
+   "rpm": 90,
+   "magazine": 5,
+   "damage": 90,
+   "pellets": 1,
+   "model": "bullet",
+   "velocity": 300,
+   "ttk": {
+    "10": {
+     "unarmoured.body": {
+      "ideal": 667,
+      "stk": 2,
+      "hip": 667,
+      "ads": 667
+     },
+     "unarmoured.head": {
+      "ideal": 0,
+      "stk": 1,
+      "hip": 0,
+      "ads": 0
+     },
+     "armoured.body": {
+      "ideal": 1333,
+      "stk": 3,
+      "hip": 1333,
+      "ads": 1333
+     },
+     "armoured.head": {
+      "ideal": 667,
+      "stk": 2,
+      "hip": 667,
+      "ads": 667
+     }
+    },
+    "25": {
+     "unarmoured.body": {
+      "ideal": 717,
+      "stk": 2,
+      "hip": 717,
+      "ads": 717
+     },
+     "unarmoured.head": {
+      "ideal": 50,
+      "stk": 1,
+      "hip": 50,
+      "ads": 50
+     },
+     "armoured.body": {
+      "ideal": 1383,
+      "stk": 3,
+      "hip": 2050,
+      "ads": 1383
+     },
+     "armoured.head": {
+      "ideal": 717,
+      "stk": 2,
+      "hip": 2050,
+      "ads": 717
+     }
+    },
+    "50": {
+     "unarmoured.body": {
+      "ideal": 800,
+      "stk": 2,
+      "hip": 7233,
+      "ads": 800
+     },
+     "unarmoured.head": {
+      "ideal": 133,
+      "stk": 1,
+      "hip": 133,
+      "ads": 133
+     },
+     "armoured.body": {
+      "ideal": 1467,
+      "stk": 3,
+      "hip": null,
+      "ads": 7867
+     },
+     "armoured.head": {
+      "ideal": 800,
+      "stk": 2,
+      "hip": null,
+      "ads": 7233
+     }
+    },
+    "100": {
+     "unarmoured.body": {
+      "ideal": 967,
+      "stk": 2,
+      "hip": null,
+      "ads": null
+     },
+     "unarmoured.head": {
+      "ideal": 300,
+      "stk": 1,
+      "hip": 300,
+      "ads": 300
+     },
+     "armoured.body": {
+      "ideal": 2300,
+      "stk": 4,
+      "hip": null,
+      "ads": null
+     },
+     "armoured.head": {
+      "ideal": 967,
+      "stk": 2,
+      "hip": null,
+      "ads": null
+     }
+    }
+   },
+   "sweep": {
+    "5": 667,
+    "10": 667,
+    "15": 683,
+    "20": 700,
+    "25": 717,
+    "30": 733,
+    "35": 750,
+    "40": 767,
+    "50": 800,
+    "60": 833,
+    "75": 883,
+    "100": 967,
+    "125": 1050,
+    "150": 1133
+   },
+   "sweepStk": {
+    "5": 2,
+    "10": 2,
+    "15": 2,
+    "20": 2,
+    "25": 2,
+    "30": 2,
+    "35": 2,
+    "40": 2,
+    "50": 2,
+    "60": 2,
+    "75": 2,
+    "100": 2,
+    "125": 2,
+    "150": 2
+   },
+   "firstHit": {
+    "10": {
+     "body": 90,
+     "head": 100
+    },
+    "25": {
+     "body": 90,
+     "head": 100
+    },
+    "50": {
+     "body": 69,
+     "head": 100
+    },
+    "100": {
+     "body": 63,
+     "head": 100
+    }
+   },
+   "falloff": {
+    "5": 1,
+    "10": 1,
+    "15": 1,
+    "20": 1,
+    "25": 1,
+    "30": 0.98,
+    "35": 0.94,
+    "40": 0.88,
+    "50": 0.76,
+    "60": 0.7,
+    "75": 0.7,
+    "100": 0.7,
+    "125": 0.7,
+    "150": 0.7
+   },
+   "drop": {
+    "5": {
+     "flightMs": 0,
+     "dropCm": 0
+    },
+    "10": {
+     "flightMs": 7,
+     "dropCm": 0
+    },
+    "15": {
+     "flightMs": 23,
+     "dropCm": 0
+    },
+    "20": {
+     "flightMs": 40,
+     "dropCm": 1
+    },
+    "25": {
+     "flightMs": 57,
+     "dropCm": 2
+    },
+    "30": {
+     "flightMs": 73,
+     "dropCm": 3
+    },
+    "35": {
+     "flightMs": 90,
+     "dropCm": 4
+    },
+    "40": {
+     "flightMs": 107,
+     "dropCm": 6
+    },
+    "50": {
+     "flightMs": 140,
+     "dropCm": 10
+    },
+    "60": {
+     "flightMs": 173,
+     "dropCm": 15
+    },
+    "75": {
+     "flightMs": 223,
+     "dropCm": 24
+    },
+    "100": {
+     "flightMs": 307,
+     "dropCm": 46
+    },
+    "125": {
+     "flightMs": 390,
+     "dropCm": 75
+    },
+    "150": {
+     "flightMs": 473,
+     "dropCm": 110
+    }
+   },
+   "firstShotMs": 0,
+   "drawMs": 250,
+   "toPistolMs": 133,
+   "reload": {
+    "tacticalMs": 1083,
+    "emptyMs": 1983,
+    "firstRoundMs": 617,
+    "cancelByFireMs": 0,
+    "cancelBySwapMs": 133,
+    "kind": "shell"
+   },
+   "recoil": {
+    "oneMrad": 120.7,
+    "oneSettleMs": 767,
+    "sprayRounds": 5,
+    "sprayMrad": 130,
+    "spraySettleMs": 783,
+    "sprayForgetMs": 2350
+   },
+   "spread": {
+    "hip": 0.5,
+    "ads": 0.3,
+    "run": 12.5,
+    "spray10": null
+   }
+  }
+ ]
+}

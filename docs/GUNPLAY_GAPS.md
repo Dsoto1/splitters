@@ -4,7 +4,8 @@ Audit of the weapon system against every section of
 [GUNPLAY_SPEC.md](GUNPLAY_SPEC.md), done October 2026, with the phased plan
 mapped to the spec's G0–G6. **Before** is the state the audit found;
 **Now** is after the G0 pass (and the parts of G1, G5 and G4 that came with
-it). Status: ✅ exists, 🟡 partial, ❌ missing.
+it). Status: ✅ exists, 🟡 partial, ❌ missing. The phase checklist re-checked against the code in November 2026,
+with measured numbers for every gun, is [GUNPLAY_AUDIT.md](GUNPLAY_AUDIT.md), appendix A.
 
 Where things live: weapon data in `packages/shared/src/sim/weapons.ts`, the
 gunplay model in `sim/gunplay.ts`, firing and bullets in `sim/match.ts`
