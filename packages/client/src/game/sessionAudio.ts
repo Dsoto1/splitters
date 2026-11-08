@@ -11,6 +11,21 @@ const MULTI_KILL_WINDOW = 4;
 const MAX_IMPACTS_PER_SHOT = 2;
 
 const fireSound = (weaponId: string) => (CORE_WEAPONS[weaponId]?.view.sound ?? `fire.${weaponId.replace(/^core\./, '')}`) as SoundId;
+/** Engines: how often a copy starts (ms; each is 1.2 s, so two overlap), how many others are heard, and how far (m). */
+const ENGINE_REPEAT_MS = 600;
+const ENGINE_OTHERS = 2;
+const ENGINE_REACH = 60;
+
+/** What the engine sound reads of a mount (game/mountState.ts ClientMount). */
+export interface EngineMount {
+  index: number;
+  alive: boolean;
+  seats: readonly number[];
+  vel: Vec3;
+  shown: { pos: Vec3 };
+  def: { kind: string; turret?: unknown; vehicle?: { fly?: unknown; hover?: boolean; maxSpeed?: number } };
+}
+
 const tuple = (p: readonly number[]): Vec3 => ({ x: p[0]!, y: p[1]!, z: p[2]! });
 
 /**
@@ -122,11 +137,14 @@ export class SessionAudio {
     this.audio.play('dryfire');
   }
 
-  /** Per-tick local movement: footsteps and landings. */
-  localStep(local: LocalPlayer, before: Vec3, speedScale: number): void {
+  /** Per-tick local movement: footsteps and landings (none while `mounted`: riding in a seat). */
+  localStep(local: LocalPlayer, before: Vec3, speedScale: number, mounted = false): void {
     const s = local.state;
-    if (!local.alive) {
+    if (!local.alive || mounted) {
+      // A seat moves you without a step (and getting out isn't a landing).
       this.wasGrounded = true;
+      this.fallSpeed = 0;
+      this.localStride = 0;
       return;
     }
     // On a zipline: the trolley's whirr, higher the faster it runs (no footsteps, no landing from it).
@@ -205,14 +223,48 @@ export class SessionAudio {
     this.audio.play('zip.whirr', { ...(at ? { at } : {}), rate: 0.75 + Math.min(1, speed / 20) * 0.6, gain: 0.5 + Math.min(1, speed / 15) * 0.6 });
   }
 
-  /** Per-frame remote movement: footsteps from interpolated poses. */
-  remoteSteps(poses: readonly RemotePose[]): void {
+  /** When each vehicle's (mount index) engine copy last started. */
+  private readonly engineAt = new Map<number, number>();
+
+  /**
+   * Vehicle engines, every frame: each living vehicle anyone rides runs its engine (`vehicle.engine`, a 1.2 s copy
+   * every 0.6 s, overlapping into a drone), pitched by its speed. `mine` (the vehicle you ride, or null) is heard
+   * unpositioned; the nearest ENGINE_OTHERS others from where they are (`ear`: the camera).
+   */
+  engines(mounts: Iterable<EngineMount>, mine: number | null, ear: Vec3): void {
+    const now = performance.now();
+    const running: { m: EngineMount; d: number }[] = [];
+    for (const m of mounts) {
+      if (!m.alive || m.def.kind !== 'vehicle' || !m.seats.some((s) => s >= 0)) continue;
+      const d = m.index === mine ? -1 : Math.hypot(m.shown.pos.x - ear.x, m.shown.pos.y - ear.y, m.shown.pos.z - ear.z);
+      if (d <= ENGINE_REACH) running.push({ m, d });
+    }
+    running.sort((a, b) => a.d - b.d);
+    const heard = new Set<number>();
+    for (const { m, d } of running.slice(0, mine === null ? ENGINE_OTHERS : ENGINE_OTHERS + 1)) {
+      heard.add(m.index);
+      if (now - (this.engineAt.get(m.index) ?? 0) < ENGINE_REPEAT_MS) continue;
+      this.engineAt.set(m.index, now);
+      const speed = Math.hypot(m.vel.x, m.vel.z);
+      const v = m.def.vehicle;
+      const base = v?.fly ? 1.3 : v?.hover ? 1.15 : m.def.turret ? 0.7 : 1;
+      const pace = Math.min(1, speed / (v?.maxSpeed || 25));
+      const rate = base * (0.8 + pace * 0.6);
+      const gain = 0.6 + pace * 0.5;
+      if (d < 0) this.audio.play('vehicle.engine', { rate, gain: gain * 0.8 });
+      else this.audio.play('vehicle.engine', { at: { x: m.shown.pos.x, y: m.shown.pos.y + 0.6, z: m.shown.pos.z }, rate, gain });
+    }
+    for (const i of this.engineAt.keys()) if (!heard.has(i)) this.engineAt.delete(i);
+  }
+
+  /** Per-frame remote movement: footsteps from interpolated poses (none for `riding`: slots in a seat). */
+  remoteSteps(poses: readonly RemotePose[], riding: ReadonlySet<number> = new Set()): void {
     const me = this.localSlot();
     for (const p of poses) {
       if (p.slot === me) continue;
       if (p.alive && p.zip !== undefined) this.whirr(p.slot, { x: p.x, y: p.y + 2, z: p.z }, p.zipSpeed ?? 0);
       const prev = this.strides.get(p.slot);
-      if (!p.alive || !prev) {
+      if (!p.alive || !prev || riding.has(p.slot)) {
         this.strides.set(p.slot, { x: p.x, z: p.z, acc: 0 });
         continue;
       }

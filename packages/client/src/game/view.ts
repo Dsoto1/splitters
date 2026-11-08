@@ -3212,6 +3212,18 @@ export class GameView {
     this.cockpitInterior.update(cockpit?.m.index ?? null, cockpit?.node ?? null, cockpit?.m.def ?? null, drive);
   }
 
+  /**
+   * A point of a mount (`offset` in its frame: +X right, +Y up, +Z forward) where its model is drawn this frame: its
+   * shown pose with the suspension's height, pitch and roll (call after updateMounts). Null: not drawn yet.
+   */
+  seatPoint(mount: number, offset: readonly [number, number, number]): Vec3 | null {
+    const node = this.mountNodes.get(mount);
+    if (!node) return null;
+    const m = node.computeWorldMatrix(true).m;
+    const [x, y, z] = offset;
+    return { x: x * m[0]! + y * m[4]! + z * m[8]! + m[12]!, y: x * m[1]! + y * m[5]! + z * m[9]! + m[13]!, z: x * m[2]! + y * m[6]! + z * m[10]! + m[14]! };
+  }
+
   /** Each turning-gun vehicle's drawn turret yaw and barrel pitch (radians, in the vehicle's frame), by mount index. */
   private readonly turretAims = new Map<number, { yaw: number; pitch: number }>();
 

@@ -1,4 +1,5 @@
 import { BUILT_MOUNT_BASE, airCraftDef, enterReach, MAX_TEAMS, MOUNT_DEFS, MOUNT_FLAG_ALIVE, MOUNT_FLAG_ARC, MOUNT_FLAG_BURNING, MOUNT_FLAG_CHARGING, MOUNT_FLAG_WRECK, SEAT_LEG_DROP, TICK_RATE, airRoute, getMountDef, mapTeams, mountTint, routePose, type MapDocument, type MountDef, type MountSnapshot, type PhysicsWorld, type Vec3 } from '@tiletrigger/shared';
+import type { RiderSeat } from './riderPlacement.ts';
 
 /** One mount as the client knows it: the latest server state and a smoothed pose to draw. */
 export interface ClientMount {
@@ -201,6 +202,19 @@ export class MountState {
   riders(): Set<number> {
     const out = new Set<number>();
     for (const m of this.mounts.values()) for (const s of m.seats) if (s >= 0) out.add(s);
+    return out;
+  }
+
+  /** Every rider (slot) and their seat: the mount and the seat's offset (the seat point riders are drawn on). */
+  seatedRiders(): Map<number, RiderSeat> {
+    const out = new Map<number, RiderSeat>();
+    for (const m of this.mounts.values()) {
+      if (!m.alive) continue;
+      m.seats.forEach((s, i) => {
+        const seat = m.def.seats[i];
+        if (s >= 0 && seat) out.set(s, { mount: m.index, offset: seat.offset });
+      });
+    }
     return out;
   }
 
