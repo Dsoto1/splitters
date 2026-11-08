@@ -484,6 +484,63 @@ describe('bots in tanks', () => {
     expect(bot.bot!.tankLog).toMatchObject({ drives: 1, backOuts: 0, stuck: 0 });
   });
 
+  /**
+   * A bot at the wheel short of shells (Ammo Boxes near tank routes, 2026-11-08): a tank at (12, 12) heading for the
+   * far corner, an Ammo Box 40 m off to the side of that drive. `shells` in the cannon, `gunner` someone manning it (a
+   * person: in a free-for-all a bot gunner gets out of a stranger's tank).
+   */
+  function shortOfShells(shells: number, gunner = false, box: [number, number] = [52, 12], seconds = 25) {
+    const ammo: MapEntity = { id: 'ammo_1', kind: 'pickup', position: [box[0], 0, box[1]], item: 'core.ammo', respawnSeconds: null } as MapEntity;
+    const match = new Match(yard([mount('tank', 12, 12, Math.PI / 2)], [ammo], 10, 14, [[0, 0, 0], [12, 0, 96]]), rules, 5);
+    const bot = match.addBot('bot', quiet, BOT_DIFFICULTIES.normal)!;
+    const crew = gunner ? match.addHuman('gunner')! : null;
+    match.step();
+    const tank = internals(match).mounts[0]!;
+    place(bot, 14, 12);
+    expect(internals(match).enterMount(bot)).toBe(true);
+    if (crew) {
+      place(crew, 14, 12);
+      expect(internals(match).enterMount(crew)).toBe(true);
+      expect(crew.mount!.seat).toBe(CANNON);
+    }
+    (bot.bot as unknown as { roamGoal: { x: number; y: number; z: number } }).roamGoal = { x: 12, y: 0, z: 96 };
+    tank.guns[CANNON]!.shells = shells;
+    let refilled = -1;
+    let nearest = Infinity;
+    let crewed = !!crew;
+    for (let t = 0; t < TICK_RATE * seconds && refilled < 0; t++) {
+      match.step();
+      nearest = Math.min(nearest, Math.hypot(tank.pos.x - box[0], tank.pos.z - box[1]));
+      if (crew && crew.mount?.seat !== CANNON) crewed = false;
+      if (tank.guns[CANNON]!.shells === 10) refilled = t;
+    }
+    return { refilled, nearest, bot, tank, crewed };
+  }
+
+  it('low on shells (3 of 10) out of a fight, it drives over an Ammo Box 40 m off its way and fills up', () => {
+    const r = shortOfShells(3);
+    expect(r.refilled).toBeGreaterThan(0);
+    expect(r.nearest).toBeLessThan(4);
+    expect(r.bot.bot!.tankLog.resupply).toBe(1);
+  });
+
+  it('the gunner beside it running dry in the cannon seat: the bot driving takes the tank to the box', () => {
+    const r = shortOfShells(1, true);
+    expect(r.refilled).toBeGreaterThan(0);
+    expect(r.crewed).toBe(true);
+    expect(r.bot.bot!.tankLog.resupply).toBe(1);
+  });
+
+  it('with plenty of shells (6 of 10) it drives on past the box; a box 90 m off is for an empty gun only', () => {
+    const plenty = shortOfShells(6);
+    expect(plenty.refilled).toBe(-1);
+    expect(plenty.nearest).toBeGreaterThan(20);
+    expect(plenty.bot.bot!.tankLog.resupply).toBe(0);
+    // (72, 80): 90 m from where it sets off. Low, it drives on (for now); empty, it goes.
+    expect(shortOfShells(2, false, [72, 80], 3).bot.bot!.tankLog.resupply).toBe(0);
+    expect(shortOfShells(0, false, [72, 80], 3).bot.bot!.tankLog.resupply).toBe(1);
+  });
+
   it('a bot alone at the wheel fires the cannon at an enemy vehicle and keeps its shells for targets worth one', () => {
     const match = new Match(yard([mount('tank', 12, 6), mount('buggy', 12, 42)], [], 5, 7, [[0, 0, 0], [30, 0, 48]]), rules, 7);
     const bot = match.addBot('bot', quiet, BOT_DIFFICULTIES.hard)!;

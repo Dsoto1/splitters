@@ -313,6 +313,13 @@ const SHELL_MIN_RANGE = 10;
 const SHELL_RESERVE = 0.3;
 /** A tank out of shells drives to an ammo pickup up to this far away (m) to refill. */
 const AMMO_DETOUR = 120;
+/**
+ * Running low (this share of the load or less, out of a fight) it goes to one up to AMMO_LOW_DETOUR away, and keeps
+ * going till it is full (a shell trickling back on the way doesn't turn it round). Waiting for the last shell sent
+ * almost no tank to a box: the 15 s trickle keeps one in the gun.
+ */
+const AMMO_LOW_SHARE = 0.3;
+const AMMO_LOW_DETOUR = 70;
 /** Someone shut in a sealed vehicle (the Tank) is this much less of a target (as if this many times further) to a bot with nothing that hurts vehicles. */
 const SHELTERED_TARGET_SCALE = 3;
 /** A vehicle whose route to the goal doesn't fit it (routeFits) is left alone this long (s) before it is looked at again. */
@@ -638,6 +645,8 @@ export class BotBrain {
   readonly tankLog = { drives: 0, backOuts: 0, stuck: 0, bails: 0, resupply: 0, stuckAt: [] as [number, number, number][] };
   private tankUnstick = 0;
   private tankResupply = false;
+  /** Ammo pickups (by "x,z") a vehicle's route didn't fit, till the tick given (resupplyFor passes them over). */
+  private readonly ammoSkip = new Map<string, number>();
   private readonly skipMount = (m: MountView): boolean => (this.avoidMounts.get(m.index) ?? -Infinity) > this.lastThinkTick;
   /** Riding with a bot at the wheel: is it getting anywhere? */
   private riderHeadway: Headway = { pos: null, tick: 0 };
@@ -2986,13 +2995,28 @@ export class BotBrain {
     return false;
   }
 
-  /** One of the pickups that refill the gun (`refills`, SeatAmmo.pickups: the Ammo Box) that is up, within AMMO_DETOUR of `from` (a tank out of shells drives over it), or null. */
-  private ammoPickupFor(view: BotWorldView, from: Vec3, refills: readonly string[] | undefined): Vec3 | null {
+  /**
+   * Where a bot at the wheel goes to refill its vehicle's limited gun (the Tank's cannon: its own, driverFires, or a
+   * crewmate's), or null: out of shells, an ammo pickup within AMMO_DETOUR; low (AMMO_LOW_SHARE) with no target, or
+   * already on its way and not yet full, within AMMO_LOW_DETOUR.
+   */
+  private resupplyFor(view: BotWorldView, m: MountView, seat: SeatView, target: CombatantView | undefined): Vec3 | null {
+    const gun = seat.shells !== undefined ? seat : m.seats.find((s) => s.shells !== undefined && s.maxShells);
+    if (gun?.shells === undefined || !gun.maxShells) return null;
+    if (gun.shells === 0) return this.ammoPickupFor(view, m.pos, gun.refills, AMMO_DETOUR);
+    if (gun.shells >= gun.maxShells) return null;
+    if (this.tankResupply || (!target && gun.shells <= gun.maxShells * AMMO_LOW_SHARE)) return this.ammoPickupFor(view, m.pos, gun.refills, AMMO_LOW_DETOUR);
+    return null;
+  }
+
+  /** One of the pickups that refill the gun (`refills`, SeatAmmo.pickups: the Ammo Box) that is up, within `reach` of `from` (a tank short of shells drives over it), or null. */
+  private ammoPickupFor(view: BotWorldView, from: Vec3, refills: readonly string[] | undefined, reach = AMMO_DETOUR): Vec3 | null {
     if (!refills?.length) return null;
     let best: Vec3 | null = null;
-    let bestD = AMMO_DETOUR;
+    let bestD = reach;
     for (const p of view.pickups) {
       if (!p.available || !refills.includes(p.item.id)) continue;
+      if ((this.ammoSkip.get(`${p.pos.x},${p.pos.z}`) ?? -1) > view.tick) continue;
       const d = horizontalDistance(p.pos, from) + Math.abs(p.pos.y - from.y) * 3;
       if (d < bestD) {
         best = p.pos;
@@ -3137,8 +3161,9 @@ export class BotBrain {
     const worth = !target || seat.shells === undefined || this.worthShell(view, seat.shells, seat.maxShells ?? seat.shells, target);
     if (!worth) fireAt = undefined;
     if (seat.role === 'driver' && m) {
-      // Out of shells with an ammo pickup up close by: go and drive over it (it refills them all).
-      const resupply = seat.shells === 0 ? this.ammoPickupFor(view, m.pos, seat.refills) : null;
+      // Out of shells, or low on them out of a fight, with an ammo pickup close by: go and drive over it (it refills
+      // them all). The driver's own gun (driverFires), or the cannon a crewmate mans.
+      const resupply = this.resupplyFor(view, m, seat, target);
       const goal = resupply ?? this.roamGoal ?? view.orderGoal?.pos ?? farthest(view.spawnPoints, m.pos) ?? m.pos;
       const left = horizontalDistance(m.pos, goal);
       if (!this.goal || horizontalDistance(this.goal, goal) > 3 || tick - this.lastPathTick > TICK_RATE * 2) {
@@ -3152,7 +3177,10 @@ export class BotBrain {
         // rather than steering in and wedging or plugging it. (Getting out wherever a new route didn't fit left
         // vehicles parked at the foot of the narrow bit, in everyone's way.)
         const fits = next.length < 2 || vehicleRouteFits(view.physics, m, next, FIT_AHEAD);
-        if (fits || this.path.length < 2) {
+        // An ammo pickup it can't drive to (on a gallery, through a door): left alone a while; it isn't a reason to
+        // get out. Next time round the goal is the next one, or where it was going.
+        if (!fits && resupply) this.ammoSkip.set(`${resupply.x},${resupply.z}`, tick + TICK_RATE * NO_FIT_SECONDS * 3);
+        else if (fits || this.path.length < 2) {
           this.path = next;
           this.pathIndex = 1;
           this.routeTooNarrow = !fits;
@@ -3505,8 +3533,12 @@ export class BotBrain {
     const held = this.post?.kind === 'sniper' ? this.heldDef(view) : undefined;
     const sight = held && this.sniping(view, held) ? Math.max(SIGHT_RANGE, Math.min(SCOPE_SIGHT, held.botRange[1])) : SIGHT_RANGE;
     let armedVsTanks: boolean | undefined;
+    // Not whoever shares its vehicle (in a free-for-all a crewmate is nobody's ally): a tank's driver turned to face
+    // its own gunner and stood there.
+    const aboard = view.seat ? view.mounts?.find((x) => x.index === view.seat!.mount)?.seats : undefined;
     for (const o of view.others) {
       if (!o.alive) continue;
+      if (aboard?.some((s) => s.by === o.slot)) continue;
       const ox = o.pos.x - me.pos.x;
       const oy = o.pos.y - me.pos.y;
       const oz = o.pos.z - me.pos.z;

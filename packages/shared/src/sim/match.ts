@@ -2528,7 +2528,7 @@ export class Match {
       health: Math.max(0, m.health) / m.def.health,
       alive: m.alive,
       enterRadius: m.def.enterRadius,
-      seats: m.def.seats.map((s, i) => ({ role: s.role, free: m.seats[i] === null, ...(m.seats[i] !== null ? { by: m.seats[i]! } : {}), ...(s.weapon ? { weapon: getWeapon(s.weapon) } : {}), ...(s.arc !== undefined ? { arc: s.arc } : {}), ...(s.facing ? { facing: s.facing } : {}) })),
+      seats: m.def.seats.map((s, i) => ({ role: s.role, free: m.seats[i] === null, ...(m.seats[i] !== null ? { by: m.seats[i]! } : {}), ...(s.weapon ? { weapon: getWeapon(s.weapon) } : {}), ...(s.arc !== undefined ? { arc: s.arc } : {}), ...(s.facing ? { facing: s.facing } : {}), ...(s.ammo && m.guns[i]?.shells !== undefined ? { shells: m.guns[i]!.shells, maxShells: s.ammo.max, ...(s.ammo.pickups ? { refills: s.ammo.pickups } : {}) } : {}) })),
       ...(m.def.vehicle ? { maxSpeed: m.def.vehicle.maxSpeed, speed: Math.abs(m.speed) } : {}),
       ...(m.def.vehicle && m.speed < -0.5 ? { reversing: true } : {}),
       ...(m.burning ? { burning: true } : {}),
