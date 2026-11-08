@@ -41,8 +41,10 @@ import { makeMap } from './helpers.ts';
 beforeAll(() => Promise.all([initPhysics(), initNavigation()]));
 
 /**
- * The pieces with open sides (no wall of their own at a port): setPieces3.test.ts proves their ways through, and
- * setPieces4.test.ts the command bunker's gates and the gatehouse's arches (MAP 21).
+ * The pieces with open sides (no wall of their own at a port): setPieces3.test.ts proves their ways through,
+ * setPieces4.test.ts the command bunker's gates and the gatehouse's arches (MAP 21), and setPieces5.test.ts the
+ * brainstorm list's open ones (catwalks, the overlook, the dock, the arena, the bunker cluster, the plaza, the ramp
+ * junction).
  */
 const OPEN_SIDED = [
   'setpiece.arena_arcade',
@@ -50,12 +52,21 @@ const OPEN_SIDED = [
   'setpiece.arena_bay_podium',
   'setpiece.arena_bay_tier',
   'setpiece.arena_vomitorium',
+  'setpiece.bunker_cluster',
   'setpiece.cage_block',
   'setpiece.cage_lift',
+  'setpiece.catwalk_bridge_2',
+  'setpiece.catwalk_bridge_3',
+  'setpiece.catwalk_bridge_4',
   'setpiece.cliff_stair_gate',
   'setpiece.cliff_stair_grand',
   'setpiece.command_bunker',
+  'setpiece.crossroads_plaza',
   'setpiece.landing_craft_beached',
+  'setpiece.loading_dock',
+  'setpiece.ramp_junction',
+  'setpiece.sunken_arena',
+  'setpiece.twin_stair_overlook',
   ...['bend', 'end', 'jog', 'junction', 'straight'].flatMap((s) => [`setpiece.trench_${s}`, `setpiece.trench_${s}_sandbag`]),
   'setpiece.tunnel_bend',
   'setpiece.tunnel_cross',
@@ -155,8 +166,8 @@ describe('z-fighting audit over every set piece', () => {
     for (const def of library.pieces.values()) {
       for (const rotation of [0, 1, 2, 3] as Rotation[]) {
         for (const mirror of def.mirror === 'free' ? [false, true] : [false]) {
-          // 8 cells apart: the largest pieces (the command bunker, 4 × 4) turn about their anchor into the cells behind it.
-          pieces.push({ id: `piece_${n}`, piece: def.id, x: (n % 8) * 8, y: Math.floor(n / 8) * 8, z: def.id.includes('skybridge') ? 1 : 0, rotation, mirror, pack: packs[n % packs.length] });
+          // 8 cells apart, 16 a row: the largest pieces (the command bunker, 4 × 4) turn about their anchor into the cells behind it.
+          pieces.push({ id: `piece_${n}`, piece: def.id, x: (n % 16) * 8 - 64, y: Math.floor(n / 16) * 8 - 96, z: def.id.includes('skybridge') ? 1 : 0, rotation, mirror, pack: packs[n % packs.length] });
           n++;
         }
       }
@@ -344,9 +355,11 @@ describe('every port of every piece, in every turn and mirror, is a way through'
    */
   const walled = [...library.pieces.values()].filter((def) => {
     if (!def.ports.length) return false;
-    const { map, ports } = withNeighbours(def.id, 0, false);
-    const { cells } = buildOccupancy(map);
-    return ports.every((port) => resolveEdge(cells, port.x, port.y, port.z, port.side) !== 'none');
+    // Walled by the piece itself: each port is a wall style of its own with nothing built beyond it (an open tile's side
+    // is no wall at all, whatever a neighbour builds there).
+    const p: SetPiecePlacement = { id: 'piece_alone', piece: def.id, x: 0, y: 0, z: def.id.startsWith('setpiece.skybridge') ? 1 : 0, rotation: 0, mirror: false };
+    const { cells } = buildOccupancy(played(mapOf([room('far_room', 40, 40)], [p])));
+    return setPiecePorts(p, def).every((port) => resolveEdge(cells, port.x, port.y, port.z, port.side) !== 'none');
   });
 
   it('covers every piece with walled ports; the open-sided ones are proved on their own', () => {
@@ -407,9 +420,9 @@ describe('every port of every piece, in every turn and mirror, is a way through'
           const inside = (end.pos.x - onSide(port, 0, 0, 0).x) * SIDE_DIRS[port.side][0] + (end.pos.z - onSide(port, 0, 0, 0).z) * SIDE_DIRS[port.side][1];
           expect(inside, `${where}: walked through`).toBeLessThan(-1.5);
           expect(Math.abs(end.pos.y - port.z * 4), `${where}: on the floor`).toBeLessThan(0.3);
-          // Bots: from the middle of the room beyond to the middle of the piece's cell.
+          // Bots: from the middle of the room beyond to 2 m inside the piece's cell (its middle may hold a column).
           const [dx, dy] = SIDE_DIRS[port.side];
-          const target: Vec3 = { x: port.x * 8, y: port.z * 4, z: port.y * 8 };
+          const target: Vec3 = onSide(port, 0, -2, 0);
           const path = nav.findPath({ x: (port.x + dx) * 8, y: port.z * 4, z: (port.y + dy) * 8 }, target);
           expect(path, `${where}: a bot's path`).not.toBeNull();
           expect(Math.hypot(path!.at(-1)!.x - target.x, path!.at(-1)!.z - target.z), `${where}: the path gets there`).toBeLessThan(1);

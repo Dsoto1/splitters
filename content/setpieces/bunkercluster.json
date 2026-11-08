@@ -1,0 +1,45 @@
+{
+  "$comment": "Bunker cluster family (part 5). Parts as in carriageway.json; parts are only ever added at the end. Edit, then run `node tools/content/setpieces.mjs`.",
+  "family": "bunkercluster",
+  "pieces": [
+    {
+      "id": "setpiece.bunker_cluster",
+      "displayName": "Bunker Cluster",
+      "category": "Fortifications",
+      "blurb": "Three bunkers with firing slits round a sandbagged yard, a low wall across its way in: hold it from inside, or fight into the yard (a cross of five cells in a 3 × 3 square).",
+      "packs": ["military", "snow", "harbor", "desert", "jungle"],
+      "footprint": { "cells": [[1,0],[0,1],[1,1],[2,1],[1,2]], "levels": [0,0] },
+      "mirror": "free",
+      "ports": [
+        {"side":"S","cell":[1,0],"level":0,"kind":"opening"},
+        {"side":"W","cell":[1,0],"level":0,"kind":"opening"},
+        {"side":"E","cell":[1,0],"level":0,"kind":"opening"}
+      ],
+      "markers": [
+        {"name":"yard","kind":"spot","parts":[0]}
+      ],
+      "parts": [
+        {"kind":"tile","tile":"core.yard","x":1,"y":1,"z":0,"rotation":0,"surfaces":{"floor":{"role":"paving"}}},
+        {"kind":"tile","tile":"core.room","x":0,"y":1,"z":0,"rotation":0,"edges":{"0,0,0:N":"slit","0,0,0:E":"door","0,0,0:S":"slit","0,0,0:W":"slit"},"surfaces":{"floor":{"role":"floor"},"walls":{"role":"stone"},"solids":{"role":"stone"},"underside":{"role":"stone"},"trim":{"role":"trim"},"roof":{"role":"roof"}},"options":{"ceiling":"roof","facade":{"role":"facade"}}},
+        {"kind":"tile","tile":"core.room","x":2,"y":1,"z":0,"rotation":0,"edges":{"0,0,0:N":"slit","0,0,0:E":"slit","0,0,0:S":"slit","0,0,0:W":"door"},"surfaces":{"floor":{"role":"floor"},"walls":{"role":"stone"},"solids":{"role":"stone"},"underside":{"role":"stone"},"trim":{"role":"trim"},"roof":{"role":"roof"}},"options":{"ceiling":"roof","facade":{"role":"facade"}}},
+        {"kind":"tile","tile":"core.room","x":1,"y":2,"z":0,"rotation":0,"edges":{"0,0,0:N":"slit","0,0,0:E":"slit","0,0,0:S":"door","0,0,0:W":"slit"},"surfaces":{"floor":{"role":"floor"},"walls":{"role":"stone"},"solids":{"role":"stone"},"underside":{"role":"stone"},"trim":{"role":"trim"},"roof":{"role":"roof"}},"options":{"ceiling":"roof","facade":{"role":"facade"}}},
+        {"kind":"tile","tile":"core.yard_wall","x":1,"y":0,"z":0,"rotation":0,"edges":{"0,0,0:S":"open","0,0,0:E":"open","0,0,0:W":"open"},"surfaces":{"floor":{"role":"paving"},"solids":{"role":"stone"},"trim":{"role":"trim"}}},
+        {"kind":"door","name":"West bunker door","position":[4,0,8],"yaw":1.570796,"style":{"role":"door"},"auto":true},
+        {"kind":"door","name":"East bunker door","position":[12,0,8],"yaw":1.570796,"style":{"role":"door"},"auto":true},
+        {"kind":"door","name":"North bunker door","position":[8,0,12],"yaw":0,"style":{"role":"door"},"auto":true},
+        {"kind":"prop","model":"prop.sandbag_wall","position":[5.6,0,5.2],"yaw":0,"scale":1},
+        {"kind":"prop","model":"prop.sandbag_wall","position":[10.4,0,5.2],"yaw":0,"scale":1},
+        {"kind":"prop","model":"prop.ammo_crate","position":[8,0,9],"yaw":0,"scale":1},
+        {"kind":"prop","model":"prop.sandbag_corner","position":[5.6,0,10.4],"yaw":0,"scale":1},
+        {"kind":"prop","model":"prop.sandbag_corner","position":[10.4,0,10.4],"yaw":1.570796,"scale":1},
+        {"kind":"prop","model":"prop.ammo_stack","position":[-2.5,0,10.6],"yaw":0,"scale":1},
+        {"kind":"prop","model":"prop.ammo_stack","position":[18.5,0,10.6],"yaw":0,"scale":1},
+        {"kind":"prop","model":"prop.table","position":[8,0,18],"yaw":0,"scale":1},
+        {"kind":"light","position":[0,3,8],"fixture":"bulb","color":"#ffd9a0","intensity":0.9,"range":8},
+        {"kind":"light","position":[16,3,8],"fixture":"bulb","color":"#ffd9a0","intensity":0.9,"range":8},
+        {"kind":"light","position":[8,3,16],"fixture":"bulb","color":"#ffd9a0","intensity":0.9,"range":8}
+      ],
+      "notes": {"design":"Rooms with slits on three sides and a door onto the yard (roofed, in the pack's facade), a Courtyard between them and a Courtyard (Low Wall) as the way in. Sandbags in the yard. Everything is its own mirror image."}
+    }
+  ]
+}

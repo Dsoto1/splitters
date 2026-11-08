@@ -1,0 +1,49 @@
+{
+  "$comment": "Sunken arena family (part 5): the Arena Pit and Arena Tiers kit tiles. Parts as in carriageway.json; parts are only ever added at the end. Edit, then run `node tools/content/setpieces.mjs`.",
+  "family": "sunkenarena",
+  "pieces": [
+    {
+      "id": "setpiece.sunken_arena",
+      "displayName": "Sunken Arena",
+      "category": "Arenas & Plazas",
+      "blurb": "A fighting pit 14 m square sunk 2 m into the ground, three tiers of steps down to it on every side, a stair down the middle of each, low walls and pillars on its floor: 3 × 3 cells.",
+      "packs": ["imperial", "military", "medieval", "desert", "jungle", "neon", "orbital", "collegiate", "gothic", "suburban", "harbor", "snow", "frontier"],
+      "footprint": { "cells": [[0,0],[1,0],[2,0],[0,1],[1,1],[2,1],[0,2],[1,2],[2,2]], "levels": [-1,0] },
+      "mirror": "none",
+      "ports": [
+        {"side":"S","cell":[0,0],"level":0,"kind":"opening"},
+        {"side":"N","cell":[0,2],"level":0,"kind":"opening"},
+        {"side":"W","cell":[0,0],"level":0,"kind":"opening"},
+        {"side":"E","cell":[2,0],"level":0,"kind":"opening"},
+        {"side":"S","cell":[1,0],"level":0,"kind":"opening"},
+        {"side":"N","cell":[1,2],"level":0,"kind":"opening"},
+        {"side":"W","cell":[0,1],"level":0,"kind":"opening"},
+        {"side":"E","cell":[2,1],"level":0,"kind":"opening"},
+        {"side":"S","cell":[2,0],"level":0,"kind":"opening"},
+        {"side":"N","cell":[2,2],"level":0,"kind":"opening"},
+        {"side":"W","cell":[0,2],"level":0,"kind":"opening"},
+        {"side":"E","cell":[2,2],"level":0,"kind":"opening"}
+      ],
+      "parts": [
+        {"kind":"tile","tile":"core.arena_pit","x":1,"y":1,"z":0,"rotation":0,"surfaces":{"floor":{"role":"paving"},"solids":{"role":"stone"},"trim":{"role":"trim"}}},
+        {"kind":"tile","tile":"core.arena_tiers","x":1,"y":2,"z":0,"rotation":0,"surfaces":{"floor":{"role":"paving"},"solids":{"role":"stone"},"trim":{"role":"trim"}}},
+        {"kind":"tile","tile":"core.arena_tiers","x":2,"y":1,"z":0,"rotation":1,"surfaces":{"floor":{"role":"paving"},"solids":{"role":"stone"},"trim":{"role":"trim"}}},
+        {"kind":"tile","tile":"core.arena_tiers","x":1,"y":0,"z":0,"rotation":2,"surfaces":{"floor":{"role":"paving"},"solids":{"role":"stone"},"trim":{"role":"trim"}}},
+        {"kind":"tile","tile":"core.arena_tiers","x":0,"y":1,"z":0,"rotation":3,"surfaces":{"floor":{"role":"paving"},"solids":{"role":"stone"},"trim":{"role":"trim"}}},
+        {"kind":"tile","tile":"core.arena_tiers_corner","x":2,"y":2,"z":0,"rotation":0,"surfaces":{"floor":{"role":"paving"},"solids":{"role":"stone"},"trim":{"role":"trim"}}},
+        {"kind":"tile","tile":"core.arena_tiers_corner","x":2,"y":0,"z":0,"rotation":1,"surfaces":{"floor":{"role":"paving"},"solids":{"role":"stone"},"trim":{"role":"trim"}}},
+        {"kind":"tile","tile":"core.arena_tiers_corner","x":0,"y":0,"z":0,"rotation":2,"surfaces":{"floor":{"role":"paving"},"solids":{"role":"stone"},"trim":{"role":"trim"}}},
+        {"kind":"tile","tile":"core.arena_tiers_corner","x":0,"y":2,"z":0,"rotation":3,"surfaces":{"floor":{"role":"paving"},"solids":{"role":"stone"},"trim":{"role":"trim"}}},
+        {"kind":"block","name":"Low wall","position":[8,-2,3.2],"size":[3.2,1.1,0.5],"material":{"role":"stone"}},
+        {"kind":"block","name":"Low wall","position":[8,-2,12.8],"size":[3.2,1.1,0.5],"material":{"role":"stone"}},
+        {"kind":"block","name":"Low wall","position":[3.2,-2,8],"size":[0.5,1.1,3.2],"material":{"role":"stone"}},
+        {"kind":"block","name":"Low wall","position":[12.8,-2,8],"size":[0.5,1.1,3.2],"material":{"role":"stone"}},
+        {"kind":"block","name":"Pillar","position":[5.5,-2,10.5],"size":[1,3,1],"material":{"role":"stone"}},
+        {"kind":"block","name":"Pillar","position":[10.5,-2,5.5],"size":[1,3,1],"material":{"role":"stone"}},
+        {"kind":"prop","model":"prop.crate_large","position":[5.2,-2,5.4],"yaw":0.4,"scale":1},
+        {"kind":"prop","model":"prop.crate_large","position":[10.8,-2,10.6],"yaw":-0.4,"scale":1}
+      ],
+      "notes": {"design":"New kit tiles (any map): Arena Pit, Arena Tiers and Arena Tiers (Corner), their floors 0.5 m apart down to 2 m, so on terrain they carve their own hollow (settle.ts terrainUnderFloors, as the sunken trenches). The tiers are 0.5 m (a jump up, a step down); each side has a stair of 0.25 m steps in its middle. The corner tile isn't its own mirror image (its tiers turn the corner), so the piece says mirror \"none\"; it is symmetric anyway."}
+    }
+  ]
+}
