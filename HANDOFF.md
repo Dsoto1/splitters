@@ -192,6 +192,90 @@ gets overloaded above that: local e2e times out and flakes). Prune landed worktr
 - Earlier the same day: content scalability steps 2–6, perf toolset, flaky e2e fixes, Runway Nine airliner, map
   reworks batches 2–3, character fixes rounds 2–3 (see the entries below and CHANGELOG).
 
+### Deathmatch and Team Deathmatch (`wip/tdm-dm`, agent, 2026-11-08; owner-approved brief; CI on `check/tdm-dm`)
+
+**The brief:** in the Roulette bench (48 bots, Sandgate, free-for-all) 71 % of Deathmatch kills were within 3 s of the
+victim spawning. Spawns, spawn protection, player caps per map, awards and callouts for every mode, new effects,
+bot-report pace metrics.
+
+**What changed:**
+- **Spawn choice** (`sim/spawns.ts` `pickSpawn`, one rule for people and bots; weights in `content/match-play.json`
+  `spawnChoice`, `tools/content/match-play.mjs`): distance to the nearest enemy up to 30 m (past 50 m a little less:
+  out of the game), enemy sight lines (best 8 candidates, 4 nearest enemies within 50 m, −35 each), fresh deaths an
+  enemy made within 12 m in the last 10 s (up to −18, at most twice that), occupants and recent use as before, a 0-3
+  random tie-break; then **random among the best 3 within 8 points** that have no enemy much nearer than the best's and
+  aren't seen when the best isn't. Team modes on shared spawns: +6 a teammate out of a fight near it, and `SpawnSides`
+  (each side's running spawn centre) gives ±8 for your own end of the map: no spawn flips, safety still decides.
+  Squad spawn (TDM, 70 %): of four random teammates out of a fight, the one nearest the fight that no enemy sees.
+- **Spawn protection** (`Match.shielded`, `Combatant.shieldUntil`; `spawnProtection(rules)`): Deathmatch and TDM 3 s,
+  Roulette 2 s (now the general mechanism; `RouletteDirector.protectedNow`/`endProtection` are gone), other modes
+  none; rule `spawnProtection` overrides. Every respawn and a mid-round first life; not the lives a round opens with.
+  Firing, throwing or striking drops it. `FX_PROTECTED` for everyone; the client shows a faint ball-lightning shimmer
+  (Reduce flashing: a steady soft-blue glow on the body) and "Spawn protection: firing ends it" under your crosshair.
+  Bots: a shielded enemy counts as 6× further; a shielded bot holds fire until `botFireBefore` (1 s) before it ends.
+- **Player caps** (`metadata.playerCaps` by mode, optional; `autoPlayerCaps`/`mapPlayerCaps`, sim/matchSetup.ts;
+  docs/GAME_MODES.md "Player caps"): MapMaker Map properties "Players by mode" (below Bots; empty = automatic; Auto
+  button); Match Setup chip `#setup-caps` and a `caps` fit item (over the most: problem with a fix); `rulesForTravel`
+  caps the fill; the dedicated server remembers the asked fill across smaller maps (`askedFill`); the rotation skips
+  maps too small for the people in it (`MapRotation.peekFitting`, server and browser host). No map JSON edited: every
+  map is on its automatic caps. The browser host keeps the capped fill after a smaller map (the server doesn't).
+- **Awards and callouts** (`sim/awards.ts` `MatchAwards`): Most Accurate (25 rounds), Longest Streak (3), Nemesis (3
+  of one player), Most Revenge Kills (1), plus Roulette's; one `awards` event with the round's end (the old `rl
+  awards` is gone); `callout` events (revenge; nemesis at 3 in a row). Client `game/awardsHud.ts` (`#match-awards`,
+  `.award`; the roulette e2e reads it now). bot-report prints the awards as they stood.
+- **Effects** (content/vfx.json, prepared with `ONLY=hit_fx,flame_fx node tools/content/prepare-vfx.mjs --downloads
+  /home/user/fx-packs/links-full`): `pickup.armor` (strike_04, tinted blue), `armor.break` (hit_05, pale blue; `hurt`
+  event `a: 'armor'`), `hit.big` (big_impact_01; `hurt` `a: 'big'` at `heavyHit` 45 damage; the victim's screen edges
+  darken: `hud.heavyHit`, hurtVignette.ts `HeavyFade`), `streak` (big_impact_02, gold, at 3, 5, 7, 10, 15...),
+  lasting `shield.spawn` (ball_lightning_04, level 0.32) and `aura.damage`/`aura.speed` (purple/cold fire at the
+  feet). New `tint` on an effect (godotVfx.ts `VfxOptions.tint`: secondary/tertiary colour, a pale wash on the core).
+  The fight's moments count against the full one-shot budget (not the minor one) and, with Reduce flashing on, play
+  at 0.8 size and 0.55 brightness, faded in. The `flashing` e2e flow has a new `fight` moment (and draws the heavy-hit
+  edge).
+- **bot-report** pace line and compare table: spawn deaths, seconds between fights (a spawn or a fight's end to the
+  next hit; hits within 3 s are one fight) and from a spawn, engagement distance (hits on enemies), kill spread
+  (entropy over 21 m regions) and the busiest tenth's share.
+
+**Before → after** (`pnpm bot-report`, seeds 1-3, 120 s; before = main e394a8e with the new metrics; Sandgate at 48
+bots, the others at their own sizes):
+| Map | mode | spawn deaths | between fights (s) | from a spawn (s) | engagement (m) | kill spread | kills/min |
+|---|---|---|---|---|---|---|---|
+| sandgate (48) | DM | 71.2 → 46.9 % | 1.0 → 1.5 | 0.5 → 1.0 | 8.0 → 7.4 | 0.280 → 0.296 | 489 → 406 |
+| citadel | DM | 5.1 → 0.3 % | 4.7 → 5.0 | 3.2 → 3.8 | 10.2 → 9.9 | 0.477 → 0.495 | 52 → 49 |
+| crossroads | DM | 22.2 → 6.2 % | 2.4 → 3.1 | 0.9 → 1.9 | 11.7 → 12.4 | 0.510 → 0.521 | 94 → 73 |
+| bunker_cross | DM | 5.0 → 2.9 % | 6.4 → 6.3 | 5.7 → 5.8 | 12.7 → 12.2 | 0.666 → 0.655 | 40 → 40 |
+| halcyon_station | DM | 20.8 → 3.8 % | 4.3 → 5.3 | 3.1 → 4.6 | 8.3 → 8.0 | 0.530 → 0.560 | 87 → 74 |
+| sandgate (48) | TDM | 1.6 → 0.0 % | 10.0 → 10.3 | 10.9 → 10.7 | 16.3 → 14.9 | 0.335 → 0.276 | 93 → 101 |
+| crossroads | TDM | 1.5 → 0.0 % | 7.1 → 7.3 | 5.8 → 7.1 | 23.2 → 21.8 | 0.404 → 0.356 | 34 → 36 |
+| bunker_cross | TDM | 1.2 → 0.0 % | 15.5 → 13.8 | 19.9 → 20.6 | 22.4 → 15.4 | 0.695 → 0.456 | 14 → 16 |
+| halcyon_station | TDM | 0.0 → 0.0 % | 10.4 → 10.1 | 11.0 → 10.6 | 13.8 → 13.8 | 0.337 → 0.369 | 27 → 26 |
+| canyon | TDM | 0.0 → 1.2 % | 12.6 → 11.6 | 14.8 → 13.7 | 22.5 → 20.6 | 0.657 → 0.615 | 26 → 29 |
+
+Deathmatch spawn deaths fall by a third at 48 on Sandgate and by two thirds to nine tenths elsewhere; TDM had almost
+none and keeps it so, with time between fights the same or shorter. **But Deathmatch's time between fights rises
+0.3-1.0 s** (kills a minute down 6-23 %): most of it is the shield (a respawned bot holds fire ~2 s and is mostly left
+alone). The knob is `botFireBefore`: with it at 2 (bots hold ~1 s) the rise is 0.1-0.5 s, but spawn deaths fall less
+(Sandgate 71 → 61 %, Crossroads 22 → 18 %, Halcyon 21 → 8 %; seeds 1-3, 120 s). Sandgate at 48 stays high either
+way: 48 is its automatic most (16 spawns × 3), and two thirds of its kills are in a fifth of the map. TDM's kill
+spread falls on some maps (bunker_cross 0.70 → 0.46): squad spawns now go to the teammate nearest the fight.
+
+**Tests:** `spawnChoice.test.ts` (scoring, deaths, random few, sight, side ends, protection on fire, mid-round
+joiner), `awards.test.ts`, `playerCaps.test.ts`, roulette.test (protection on a respawn, the merged awards event),
+reduceFlashing.test (heavy edge). Changed: weapons.test (players placed where the test wants them: spawns are now
+random among the safest few), teamplay.test (unchanged, passes), matchLimits.test (its campus map sets TDM caps),
+botPush.test (garrison > 0.25 at seed 1; over seeds 1-5 assault 0.30 vs 0.26, garrison 0.25 vs 0.37 on main),
+botMovement.test (easy strafing speed > 1.12; 1.149 now).
+
+**Pictures:** session scratchpad `tdm/` (00-bot, 01-armour-pickup, 02-armour-break, 03-big-hit, 04-streak,
+05-spawn-shield, 06-aura-damage, 07-aura-speed, 08-awards).
+
+**For the owner:**
+1. Deathmatch pace: keep `botFireBefore` 1 (spawn deaths way down, ~0.5 s more between fights), or 2 (pace as before,
+   spawn deaths down less)? Or a shorter shield (2-2.5 s)?
+2. The automatic caps (docs/GAME_MODES.md "Player caps"): free-for-all recommended = the map's Max players as far as
+   its spawns go, most = 3 × spawns, 80 m² a player and 3 × recommended. Fine, or set some maps' own in MapMaker?
+3. Effects to look at in the pictures: the armour pickup's blue burst, the heavy-hit and streak sizes.
+
 ### Tanks 2: balance and the Ammo Box (`wip/tanks-2`, agent, 2026-11-08; owner's decisions on the Tanks items)
 
 **Owner decisions (2026-11-08):** (1) keep "the driver fires the cannon while its seat is empty" (no change; noted in
