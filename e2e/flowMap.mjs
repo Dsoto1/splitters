@@ -23,7 +23,7 @@ export const COVERAGE_MAP = 'test_coverage';
 export const FLOWS = [
   'editor', 'editorux', 'offline', 'mobile', 'vault', 'outpost', 'sandgate', 'citadel', 'canyon', 'scenery', 'setpieces', 'physicsfx',
   'teams', 'weaponsets', 'ctf', 'forts', 'breakthrough', 'roulette', 'arsenal', 'vehicles', 'race', 'zombies', 'classes', 'coverage', ...MAP_FLOWS,
-  'designer', ...CHARACTER_FLOWS, 'online', 'hostgame', 'hostcontrols', 'lobby', 'handoff', 'dedicatedhost', 'hostpage', 'webgpu', 'visual', 'environment', 'flashing', 'newplayer',
+  'designer', ...CHARACTER_FLOWS, 'online', 'hostgame', 'hostcontrols', 'lobby', 'handoff', 'dedicatedhost', 'hostpage', 'webgpu', 'visual', 'environment', 'flashing', 'newplayer', 'fireteams',
 ];
 
 /** Maps that have a flow of their own, so the tour leaves them out. */
@@ -40,7 +40,7 @@ export function mapPartOf(id, ids) {
 const MAP_USERS = {
   m3_vault: ['vault'],
   m4_outpost: ['outpost'],
-  sandgate: ['sandgate', 'lobby', 'zombies'],
+  sandgate: ['sandgate', 'lobby', 'zombies', 'fireteams'],
   citadel: ['citadel'],
   canyon: ['canyon', 'scenery', 'physicsfx', 'arsenal', 'vehicles'],
   skyward: ['scenery'],
@@ -139,7 +139,8 @@ const RULES = [
 
   // The rest of the client, by area.
   // Phones and tablets (on-screen controls, touch detection) and the weapon wheel.
-  [/^packages\/client\/src\/(touchDevice|game\/(touchControls|weaponWheel))\.ts$/, ['mobile', 'offline'], ['client']],
+  // (Fireteams' order wheel is the weapon wheel's ring, and has an Orders button on a phone.)
+  [/^packages\/client\/src\/(touchDevice|game\/(touchControls|weaponWheel))\.ts$/, ['mobile', 'offline', 'fireteams'], ['client']],
   [/^packages\/client\/src\/editor\//, ['editor', 'editorux', 'scenery', 'canyon', 'race', 'weaponsets', 'visual'], ['client']],
   [/^packages\/client\/src\/designer\//, ['designer', ...CHARACTER_FLOWS], ['client']],
   [/^packages\/client\/src\/tools\/characterViewer/, [...CHARACTER_FLOWS], ['client']],
@@ -150,7 +151,7 @@ const RULES = [
   [/^packages\/client\/src\/tools\//, NONE, ['client']],
   // New players: the tutorial, first-time tips and their HUD (Quick Play is frontend/).
   [/^packages\/client\/src\/game\/(tutorial|tips|coachHud)\.ts$|^packages\/client\/src\/game\/coach\.css$/, ['newplayer', 'offline', 'mobile'], ['client']],
-  [/^packages\/client\/src\/frontend\//, ['newplayer', 'offline', 'mobile', 'teams', 'weaponsets', 'breakthrough', 'roulette', 'lobby', 'hostgame', 'hostcontrols', 'dedicatedhost', 'designer', ...CHARACTER_FLOWS, 'editor', 'webgpu', 'visual'], ['client']],
+  [/^packages\/client\/src\/frontend\//, ['newplayer', 'fireteams', 'offline', 'mobile', 'teams', 'weaponsets', 'breakthrough', 'roulette', 'lobby', 'hostgame', 'hostcontrols', 'dedicatedhost', 'designer', ...CHARACTER_FLOWS, 'editor', 'webgpu', 'visual'], ['client']],
   [/^packages\/client\/src\/hostPage\.ts$/, ['hostpage'], ['client']],
   [/^packages\/client\/src\/audio\//, ['offline'], ['client']],
   [/^packages\/client\/src\/game\/(hostPanel|pauseMenu)\.ts$/, ['offline', 'weaponsets', 'hostgame', 'hostcontrols', 'lobby', 'dedicatedhost'], ['client']],

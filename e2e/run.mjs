@@ -5121,6 +5121,107 @@ async function environmentFlow(browser) {
 }
 
 /**
+ * Fireteams (docs/FIRETEAMS_PLAN.md, Part 1): the variant on in Match setup (its squad size beside the score) → you
+ * lead a squad of bots (the HUD's order line) → hold B: the order wheel (a tap of B is still the quick-message menu) →
+ * pick Hold here → a bot answers, and the squad holds there while you walk off. Then a phone: the Orders button opens
+ * the same wheel. Screenshots of the wheel: e2e-artifacts/fireteams-wheel-*.png.
+ */
+async function fireteamsFlow(browser) {
+  const page = await (await browser.newContext({ viewport: { width: 1280, height: 720 } })).newPage();
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
+  await page.addInitScript(() => localStorage.setItem('cs.arcade', JSON.stringify({ map: 'sandgate', mode: 'core.tdm', bots: 11, skill: 'easy', scoreLimit: 200, minutes: 20, fireteams: true })));
+  await page.goto(`${CLIENT}/?test=1&god=1`);
+  await page.click('#nav-play');
+  await page.waitForSelector('#setup-variant-fireteams', { timeout: T(10000) });
+  const setup = await page.evaluate(() => ({ on: document.getElementById('setup-variant-fireteams')?.getAttribute('aria-pressed'), size: document.querySelector('#arcade-squad-size .tab.on')?.textContent }));
+  check(setup.on === 'true' && setup.size === '5', `Match setup: the Fireteams variant is on, squads of 5 by default (${JSON.stringify(setup)})`);
+  await page.click('#arcade-start');
+  await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() === 'playing', null, { timeout: T(60000) });
+  // You lead a squad: the match says so, and the HUD shows its order.
+  const led = await page.waitForFunction(() => window.__cs.squad().led !== null && document.querySelector('#squad-order b')?.textContent === 'Follow me', null, { timeout: T(15000) }).then(() => true, () => false);
+  const squad = await sim(page, (m, me) => {
+    const s = m.fireteams?.squadOf(me.slot);
+    return s ? { leader: s.leader === me.slot, members: s.members.length, human: s.human, others: m.fireteams.squads.filter((q) => q !== s && q.team === s.team).map((q) => q.members.length) } : null;
+  });
+  check(led && squad?.leader && squad.human && squad.members === 5, `you lead a fireteam of 5 (HUD "Follow me"; ${JSON.stringify(squad)})`);
+  check(!!squad && squad.others.length > 0 && squad.others.every((n) => n >= 2 && n <= 5), `bot-led squads fill the rest of your team (${JSON.stringify(squad?.others)})`);
+  // Play: the pointer is captured on a real desktop; a headless page without pointer lock plays as touch does.
+  await page.click('#resume').catch(() => {});
+  await page.evaluate(() => document.pointerLockElement || window.__cs.input.setTouchEngaged(true));
+  // A tap of B: the quick-message menu, as without Fireteams.
+  await page.keyboard.press('KeyB');
+  const menu = await page.waitForFunction(() => !document.getElementById('msg-menu')?.hidden && document.getElementById('order-wheel')?.hidden !== false, null, { timeout: T(5000) }).then(() => true, () => false);
+  await page.keyboard.press('KeyB');
+  await page.waitForFunction(() => document.getElementById('msg-menu')?.hidden !== false, null, { timeout: T(5000) }).catch(() => {});
+  check(menu, 'a tap of B opens the quick-message menu, not the order wheel');
+  // Hold B: the order wheel, six orders, your squad's current one ringed.
+  const at = await sim(page, (m, me) => ({ x: me.move.pos.x, z: me.move.pos.z }));
+  await page.keyboard.down('KeyB');
+  const opened = await page.waitForFunction(() => !document.getElementById('order-wheel').hidden && document.querySelectorAll('#order-wheel .ww-item').length === 6, null, { timeout: T(5000) }).then(() => true, () => false);
+  const items = await page.$$eval('#order-wheel .ww-item', (is) => is.map((i) => ({ name: i.querySelector('b').textContent, held: i.classList.contains('held'), dim: i.classList.contains('empty') })));
+  check(opened && items.map((i) => i.name).join('|') === 'Follow me|Hold here|Go there|Attack that|Defend the objective|Regroup', `holding B opens the order wheel (${items.map((i) => i.name).join(', ')})`);
+  check(items[0]?.held && items[4]?.dim, `the wheel rings your squad's order (Follow me) and dims Defend the objective in Team Deathmatch (${JSON.stringify(items)})`);
+  const box = await page.locator('#order-wheel .ww-item[data-code="2"]').boundingBox();
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+  await page.evaluate(() => window.__cs.input.aimWheel(0.87, -0.5));
+  await page.waitForFunction(() => document.querySelector('#order-wheel .ww-item.on b')?.textContent === 'Hold here', null, { timeout: T(5000) }).catch(() => {});
+  await page.screenshot({ path: `${ARTIFACTS}/fireteams-wheel-desktop.png` });
+  // Let go of B on Hold here: the order goes, a bot answers, the HUD says Hold here.
+  await page.keyboard.up('KeyB');
+  const held = await simWait(page, (m, me) => m.fireteams?.squadOf(me.slot)?.order.kind === 'hold', null, T(10000));
+  const ack = await page.waitForFunction(() => [...document.querySelectorAll('#feed .say, .say')].some((l) => /Holding here!/.test(l.textContent)) && document.querySelector('#squad-order b')?.textContent === 'Hold here', null, { timeout: T(10000) }).then(() => true, () => false);
+  check(held, 'letting go of B on Hold here gives your squad the order (checked by the match)');
+  check(ack, 'a squadmate answers "Holding here!" and the HUD shows Hold here');
+  const spot = await sim(page, (m, me) => m.fireteams.squadOf(me.slot).order.pos);
+  // You walk off; the squad stays where you told it.
+  await page.evaluate(() => (window.__autoInput = { forward: 1 }));
+  await meWait(page, (m, me, p) => Math.hypot(me.move.pos.x - p.x, me.move.pos.z - p.z) > 12, spot, 6);
+  await page.evaluate(() => (window.__autoInput = { forward: 0 }));
+  const holding = await meWait(page, (m, me, p) => {
+    const s = m.fireteams.squadOf(me.slot);
+    const bots = s.members.filter((x) => x !== me.slot).map((x) => m.slots[x]).filter((c) => c?.alive);
+    const near = bots.filter((c) => Math.hypot(c.move.pos.x - p.x, c.move.pos.z - p.z) < 8).length;
+    return s.order.kind === 'hold' && bots.length > 0 && near * 2 > bots.length;
+  }, spot, 20);
+  const where = await sim(page, (m, me, p) => {
+    const s = m.fireteams.squadOf(me.slot);
+    return { me: Math.round(Math.hypot(me.move.pos.x - p.x, me.move.pos.z - p.z)), bots: s.members.filter((x) => x !== me.slot).map((x) => m.slots[x]).filter((c) => c?.alive).map((c) => Math.round(Math.hypot(c.move.pos.x - p.x, c.move.pos.z - p.z))) };
+  }, spot);
+  check(holding && where.me > 8, `the squad holds where you gave the order while you walk off (you ${where.me} m from it, the squad ${where.bots.join(', ')} m; from ${JSON.stringify(at)})`);
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  await page.context().close();
+  await fireteamsPhone(browser);
+}
+
+/** Fireteams on a phone: the Orders button shows while you lead a squad and opens the order wheel; a tap on an order gives it. */
+async function fireteamsPhone(browser) {
+  const phone = devices['Pixel 7'];
+  const ctx = await browser.newContext({ ...phone, viewport: { width: phone.viewport.height, height: phone.viewport.width }, screen: { width: phone.screen.height, height: phone.screen.width } });
+  const page = await ctx.newPage();
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
+  await page.addInitScript(() => localStorage.setItem('cs.arcade', JSON.stringify({ map: 'sandgate', mode: 'core.tdm', bots: 11, skill: 'easy', scoreLimit: 200, minutes: 20, fireteams: true, squadSize: 4 })));
+  await page.goto(`${CLIENT}/?test=1&god=1`);
+  await page.tap('#nav-play');
+  await page.waitForSelector('#arcade-start', { timeout: T(10000) });
+  await page.tap('#arcade-start');
+  await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() === 'playing' && window.__cs.squad().led !== null, null, { timeout: T(60000) });
+  await page.tap('#resume');
+  const button = await page.waitForFunction(() => !document.querySelector('#touch-ui .tc-orders')?.hidden && !document.getElementById('touch-ui').hidden, null, { timeout: T(10000) }).then(() => true, () => false);
+  check(button, 'a phone shows the Orders button while you lead a squad');
+  await page.tap('#touch-ui .tc-orders');
+  const opened = await page.waitForFunction(() => !document.getElementById('order-wheel').hidden && document.querySelectorAll('#order-wheel .ww-item').length === 6, null, { timeout: T(5000) }).then(() => true, () => false);
+  check(opened, 'the Orders button opens the order wheel');
+  await page.screenshot({ path: `${ARTIFACTS}/fireteams-wheel-phone.png` });
+  await page.tap('#order-wheel .ww-item[data-code="6"]');
+  const regroup = await simWait(page, (m, me) => ['regroup', 'follow'].includes(m.fireteams?.squadOf(me.slot)?.order.kind) && m.fireteams.orders.some((o) => o.kind === 'regroup' && !o.auto), null, T(10000));
+  check(regroup && (await page.evaluate(() => document.getElementById('order-wheel').hidden)), 'a tap on Regroup gives it and closes the wheel');
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  await ctx.close();
+}
+
+/**
  * New players: the first visit's tutorial offer, the tutorial on the Training Range (a step done by doing it, Skip
  * from the pause menu back to the menu, touch words on a phone), Quick Play into a Deathmatch against bots on a map
  * of its list, and a first-time tip (once only, clear of the crosshair). Automated browsers get neither the offer nor
@@ -7324,7 +7425,7 @@ try {
   const open = instrumentBrowser(browser);
   // E2E_ONLY=editor,characters runs a subset; E2E_SHARD=2/8 one of CI's parallel groups (balanced by e2e/timings.json;
   // CI's plan job passes each shard's flows in E2E_ONLY itself).
-  const flows = { editor: editorFlow, editorux: editoruxFlow, offline: offlineFlow, mobile: mobileFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, scenery: sceneryFlow, setpieces: setpiecesFlow, physicsfx: physicsfxFlow, teams: teamsFlow, weaponsets: weaponsetsFlow, ctf: ctfFlow, forts: fortsFlow, breakthrough: breakthroughFlow, roulette: rouletteFlow, arsenal: arsenalFlow, vehicles: vehiclesFlow, race: raceFlow, zombies: zombiesFlow, classes: classesFlow, coverage: coverageFlow, ...Object.fromEntries(MAP_FLOWS.map((name, part) => [name, (b) => mapsFlow(b, part)])), designer: designerFlow, ...Object.fromEntries(CHARACTER_FLOWS.map((name, part) => [name, (b) => charactersFlow(b, part)])), online: onlineFlow, hostgame: hostgameFlow, hostcontrols: hostcontrolsFlow, lobby: lobbyFlow, handoff: handoffFlow, dedicatedhost: dedicatedhostFlow, hostpage: hostpageFlow, webgpu: webgpuFlow, visual: visualFlow, environment: environmentFlow, flashing: flashingFlow, newplayer: newplayerFlow };
+  const flows = { editor: editorFlow, editorux: editoruxFlow, offline: offlineFlow, mobile: mobileFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, scenery: sceneryFlow, setpieces: setpiecesFlow, physicsfx: physicsfxFlow, teams: teamsFlow, weaponsets: weaponsetsFlow, ctf: ctfFlow, forts: fortsFlow, breakthrough: breakthroughFlow, roulette: rouletteFlow, arsenal: arsenalFlow, vehicles: vehiclesFlow, race: raceFlow, zombies: zombiesFlow, classes: classesFlow, coverage: coverageFlow, ...Object.fromEntries(MAP_FLOWS.map((name, part) => [name, (b) => mapsFlow(b, part)])), designer: designerFlow, ...Object.fromEntries(CHARACTER_FLOWS.map((name, part) => [name, (b) => charactersFlow(b, part)])), online: onlineFlow, hostgame: hostgameFlow, hostcontrols: hostcontrolsFlow, lobby: lobbyFlow, handoff: handoffFlow, dedicatedhost: dedicatedhostFlow, hostpage: hostpageFlow, webgpu: webgpuFlow, visual: visualFlow, environment: environmentFlow, flashing: flashingFlow, newplayer: newplayerFlow, fireteams: fireteamsFlow };
   // e2e/flowMap.mjs (change-based selection, shards) must know every flow, and only those.
   const known = new Set(FLOWS);
   const drift = [...Object.keys(flows).filter((f) => !known.has(f)), ...FLOWS.filter((f) => !(f in flows))];
