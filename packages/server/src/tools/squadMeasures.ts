@@ -92,9 +92,8 @@ export class SquadMeter {
         return { pos: { x: from.x + (f.move.pos.x - from.x) * k, y: from.y, z: from.z + (f.move.pos.z - from.z) * k }, target: null };
       }
       case 'defend': {
-        const trips = this.match.botTrips().filter((t) => t.team === s.team && t.kind !== 'carry');
-        const pick = trips.filter((t) => t.kind === 'defend').concat(trips)[0];
-        return pick ? { pos: { ...pick.to }, target: null } : undefined;
+        const at = this.match.squadObjective(s.team, from);
+        return at ? { pos: at, target: null } : undefined;
       }
       case 'attack': {
         const f = nearest(foes);

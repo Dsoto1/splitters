@@ -2866,7 +2866,7 @@ export class Match {
       aim: aim?.at ?? null,
       aimEnemy: aim?.target?.alive && this.hostile(c, aim.target) ? aim.target.slot : null,
       ping: ping && (lp!.target === null || ping.target !== null) ? ping : null,
-      objective: kind === 'defend' ? this.squadObjective(c) : null,
+      objective: kind === 'defend' ? this.squadObjective(c.faction, c.move.pos) : null,
     });
     if (!r.ok || !s) {
       this.pendingEvents.push({ e: 'squad', a: 'deny', s: c.slot, n: REFUSALS.indexOf(r.ok ? 'notLeader' : r.why), team: c.faction });
@@ -2891,16 +2891,16 @@ export class Match {
 
   /**
    * The objective a squad defends: the mode's own for the side, nearest the leader (ModeLogic.defendSpot: the hill in
-   * play, the sector's objectives), else the nearest end of the side's trips to hold (its flag, the sites, the
-   * hostages), else any trip's end (the hill); null in Team Deathmatch.
+   * play, the sector's objectives, our flag), else the nearest end of the side's trips to hold (the sites, the
+   * hostages), else any trip's end (the site to plant at); null in Team Deathmatch.
    */
-  private squadObjective(c: Combatant): Vec3 | null {
-    const own = this.mode?.defendSpot?.(c.faction!, c.move.pos);
+  squadObjective(team: string, near: Vec3): Vec3 | null {
+    const own = this.mode?.defendSpot?.(team, near);
     if (own !== undefined) return own;
-    const trips = this.botTrips().filter((t) => t.team === c.faction && t.kind !== 'carry');
+    const trips = this.botTrips().filter((t) => t.team === team && t.kind !== 'carry');
     const pick = (list: typeof trips): Vec3 | null => {
       let best: Vec3 | null = null;
-      for (const t of list) if (!best || horizontalDistance(t.to, c.move.pos) < horizontalDistance(best, c.move.pos)) best = t.to;
+      for (const t of list) if (!best || horizontalDistance(t.to, near) < horizontalDistance(best, near)) best = t.to;
       return best;
     };
     return pick(trips.filter((t) => t.kind === 'defend')) ?? pick(trips);

@@ -388,6 +388,11 @@ export class FortsMode implements ModeLogic {
   }
 
   /** The fight's trips (the flags'), worked out again once the navmesh has the forts in it. */
+  /** Fireteams' "Defend the objective": our flag (Capture the Flag's). */
+  defendSpot(team: string): Vec3 | null {
+    return this.ctf.defendSpot(team);
+  }
+
   botTrips(): readonly BotTripSpec[] {
     return this.ctf.botTrips();
   }
