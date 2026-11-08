@@ -29,7 +29,22 @@ move in lock step with the vehicle, their bodies drift back ... hearing their fo
   you at 18 m/s on the page's frame clock (60 fps game time): before the fix 2.62 m off the seat and 2 footsteps,
   after 0.000 m over 90 frames, no footsteps, the engine playing.
 - **Seen, not changed:** in the chase view your own driver's body isn't drawn (session draws your character only on
-  foot); the passengers are.
+  foot); the passengers are. **Fixed next (`wip/driver-body`, below).**
+
+**Your own body in the chase view (`wip/driver-body`, 2026-11-08; owner-approved bug fix).** "In the third-person chase
+view of a vehicle ... the driver's seat looks empty."
+- **Cause:** `Session` drew your character (`updateAvatars(..., localSlot = -1)`) only on foot in third person (`mine`
+  needed `!this.seat`); seated, your slot was always the hidden first-person self.
+- **Fix:** `game/ownBody.ts` `ownBodyDrawn`: on foot as before (third person, not `tpClose`); in a seat only when the
+  vehicle camera's view is `chase` (ground drivers who pressed H, every plane seat); cockpit and `seat` views (gunners,
+  passengers, turrets: your own eyes) stay hidden; dead never. Seated, your pose is the one `RiderPlacement` already put
+  on your seat of the vehicle as drawn (`seatedRiders`/`seatPoint`, b1842c9), so it sits, holds and eases in and out
+  exactly as remote riders do; only its yaw/pitch come from your input (no 100 ms lag turning). The viewmodel is
+  also hidden in `chase`. One avatar per slot, so no doubled body: getting out hands back to the on-foot rule, dying
+  hides it at once (`local.alive`) and the dead pose disposes it as on foot; the kill cam and spectating watch others.
+- **Tests:** unit `client/test/ownBody.test.ts`; e2e `passengerChecks` (`vehicles` flow): over the same 90+ frames at
+  18 m/s, your body drawn, sitting, 0.00 m off the driver's seat point; H to the cockpit hides it, H back draws it,
+  out on foot (first person) hidden. Before the fix: drawn 0 of 98 frames.
 
 **Main** = 63731808 plus this note, green. Today's landings are on main, in order:
 - Breakthrough;

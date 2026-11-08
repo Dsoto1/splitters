@@ -34,6 +34,10 @@ made only on a commit that passed CI on a check branch.
 - **Engines.** A vehicle anyone rides runs its engine, pitched up with speed (lower for the Tank, higher for
   hovercraft and flyers): yours as you ride, and the two nearest others from where they are. A placeholder until the
   sound pass's recorded engine loops.
+- **You in the driver's seat** (owner's bug report, 2026-11-08). In a vehicle's chase view your own character now
+  sits in your seat (driver, gunner or passenger, in every vehicle with seats, the planes' chase view included),
+  posed and turned like every other rider; the seat no longer looks empty. The cockpit and seat views look out from
+  your own eyes and still leave your body out, as first person on foot does.
 
 **Play on with friends: vote on the next map, parties** (owner, 2026-11-08):
 - **Vote on the next map.** When a match ends, the scoreboard (and its awards) shares the screen with two or three of
