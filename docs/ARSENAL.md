@@ -115,7 +115,7 @@ Explosions chain into other destructibles in range.
 
 The owner-approved candidates 1-6 of docs/GUNPLAY_AUDIT.md (its "Pass 2" section has every number, before and after):
 - **SMG vs Assault Rifle:** SMG 15 damage (falloff from 15 m): 0.40 s to 15 m. The rifle family falls off 25-70 m to
-  60 % and its hip cone is 5 mrad (ADS 1): it owns 20-50 m; the Precision Rifle is quickest from 100 m.
+  60 %: it owns 20-50 m; the Precision Rifle is quickest from 100 m.
 - **Shotguns:** pump 10 × 12 in 55 mrad, family falloff 8-28 m: one shell kills to 9 m. Sawed-Off 14 × 10 in 85 mrad
   (both barrels to 9 m), Auto Shotgun 8 × 8 in 65 mrad (three shells at 10 m).
 - **Long guns:** Precision Rifle 90 damage, 50-tick bolt (two body shots in 0.83-0.97 s); Marksman 34 at 200 rpm

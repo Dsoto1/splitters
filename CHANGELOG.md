@@ -10,8 +10,7 @@ made only on a commit that passed CI on a check branch.
 
 **Gunplay pass 2** (docs/GUNPLAY_AUDIT.md, "Pass 2"; the audit's candidates 1-6, owner-approved):
 - **Every gun owns its range.** The SMG wins up close (0.40 s to a kill to 15 m, the Assault Rifle 0.50; hip fire at
-  25 m 0.77 s, was 3.4); the Assault Rifle owns 20-50 m and needs its sights far out (wider hip cone, falloff from
-  25 m); the Precision Rifle kills a body in two shots in under a second at every range (was 1.25-1.38 s) and owns
+  25 m 0.77 s, was 3.4); the Assault Rifle owns 20-50 m and loses damage from 25 m; the Precision Rifle kills a body in two shots in under a second at every range (was 1.25-1.38 s) and owns
   100 m and beyond; the Marksman is the mid-range one (three rounds to 60 m, 200 rpm); the Pulse Pistol's beam now
   fades past 15 m.
 - **Shotguns kill across a room:** the pump gun's shell kills to 9 m (was 5), the Sawed-Off's two barrels to 9 m, the

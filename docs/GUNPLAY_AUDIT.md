@@ -25,13 +25,15 @@ and settings. Unchanged guns are as in the audit.
 | Precision Rifle (`core.sniper`) | 1.25 → **.83** | 1.25 → **.83** | 1.25 → **.83** | 1.25 → **.83** | 1.27 → **.85** | 1.28 → **.87** | 1.33 → **.92** | 1.38 → **.97** | – → **3.85** |
 | Marksman Rifle | .47 → **.60** | .47 → **.60** | .47 → **.60** | .47 → **.60** | .48 → **.62** | .50 → **.63** | .57 → **1.00** | .85 → **1.05** | .72 → **1.07** |
 | Pulse Pistol | .60 | .60 | .60 | .60 | .60 → **.75** | .60 → **1.35** | .60 → **1.35** | – | .60 → **.75** |
+| Burst Rifle (rifle family) | .53 | .53 | .53 | .53 | .55 | .85 → **.92** | .97 → **1.30** | 1.03 → **1.37** | .55 |
 | Battle Rifle (new) | **.60** | **.60** | **.60** | **.60** | **.62** | **.83** | **1.10** | **1.15** | **.62** |
 | Pistol, Heavy Revolver (for reference) | .67, .67 | .67, .67 | .68, .68 | .68, .70 | .70, .72 | 1.10, .80 | 1.23, .97 | 1.37, 1.13 | .70, 1.05 |
 
 1. **SMG vs Assault Rifle** (data): SMG damage 11 → 15 and its falloff from 15 m (was 12); the rifle family's falloff
-   now 25-70 m down to 60 % (was 30-80 m, 75 %), its hip cone 5 mrad (was 1.5) and the sights' multiple 0.2 (ADS
-   1 mrad, was 0.6): rifles are ADS specialists (spec §15). The SMG wins to about 17 m (0.40 s against 0.50 at 5-15 m;
-   hip at 25 m 0.77 s, was 3.4), the rifle from 20 m. Fastest body kill of the seven by range: SMG to 15 m, rifle
+   now 25-70 m down to 60 % (was 30-80 m, 75 %). The SMG wins to about 17 m (0.40 s against 0.50 at 5-15 m; hip at
+   25 m 0.77 s, was 3.4), the rifle from 20 m. (A wider rifle hip cone, 5 mrad with 1 mrad aimed, was tried and taken
+   out: it changes nothing up close, and it stalled the CTF bot matches `botCtf.test.ts` and `forts.test.ts` measure:
+   no capture on Sunken Kingdom in five minutes.) Fastest body kill of the seven by range: SMG to 15 m, rifle
    20-50 m, Heavy Revolver 60-75 m, Precision Rifle from 100 m (the rifle 1.00 s at 100 m against 0.92).
 2. **Shotguns at room range** (data): the pump shell is 10 × 12 in a 55 mrad pattern (was 75), the family's falloff
    8-28 m (was 6-22): one shell kills a body to 9 m (was 5), two to 12 m. The Sawed-Off 14 × 10 in 85 mrad (was 8 in
@@ -97,7 +99,7 @@ seconds unless marked.
 | Reload cancel: fire / swap to Pistol | 0 / – | 0 / 133 ms | 0 / 133 | 0 / 133 | 0 / 133 | 0 / 133 | – / 133 |
 | One round's kick, settles in | 12 mrad, 100 ms | 121, 767 ms | 3, 67 ms | 10, 150 ms | 60, 417 ms | 70, 467 ms | – |
 | 10-round spray offset, settles in | – | – | 61 mrad, 150 ms | 87 mrad, 350 ms | – | – | – |
-| Cone hip / ADS / running (mrad) | 2 / 1.2 / 8 | 0.5 / 0.3 / 12.5 | 6 / 4.8 / 10 (round 10: 32) | 5 / 1 / 13 (round 10: 12.2) | 55 pattern | 30 / 0 / 60 | 0 |
+| Cone hip / ADS / running (mrad) | 2 / 1.2 / 8 | 0.5 / 0.3 / 12.5 | 6 / 4.8 / 10 (round 10: 32) | 1.5 / 0.6 / 9.5 (round 10: 8.7) | 55 pattern | 30 / 0 / 60 | 0 |
 | Falloff (damage at 25 / 50 / 100 m) | 91 / 65 / 65 % | 100 / 76 / 70 % | 66 / 55 / 55 % | 100 / 77 / 60 % | 25 % past 28 m | 100 % | none |
 
 ## What's strong
@@ -227,8 +229,8 @@ TTK, first shot, draw, reload (tactical / empty, or heat cool-down), one round's
 | Machine Pistol | smg | auto 1200 · 24 | 16/29/29/– | .75 / 2.43 / 2.50 / – | .50 / .98 / 1.05 / – | 2.50 / 4.88 / 4.95 / – | .93 / – / – / – | .88 / – / – / – | 0 | 183 | 1017 / 1017 | 67 | 12 / 10.2 / 18 |
 | Spin Gun | smg | auto 1200 · 120 | 12/12/13/16 | .55 / .57 / .65 / .87 | .35 / .37 / .45 / .62 | 1.10 / 1.12 / 1.25 / 1.67 | .55 / .57 / 2.38 / – | .55 / .57 / .68 / – | 450 | 933 | 3517 / 3517 | 117 | 12 / 8.4 / 42 |
 | Nailgun | smg | auto 720 · 50 | 10/10/10/10 | .85 / 1.05 / 1.38 / 2.05 | .87 / 1.07 / 1.40 / 2.07 | 1.60 / 1.80 / 2.13 / 2.80 | .85 / 1.07 / 1.94 / 5.34 | .85 / 1.05 / 1.40 / 3.11 | 0 | 283 | 1350 / 1350 | – | 20 / 11 / 34 |
-| Assault Rifle | rifle | auto 600 · 30 | 6/6/8/10 | .50 / .52 / .75 / 1.00 | .20 / .22 / .35 / .50 | 1.10 / 1.12 / 1.45 / 1.90 | .50 / .52 / .75 / 4.45 | .50 / .52 / .75 / 1.00 | 0 | 317 | 1417 / 1817 | 150 | 5 / 1 / 13 |
-| Burst Rifle | rifle | burst 150 · 24 | 6/6/7/9 | .53 / .55 / .85 / .97 | .13 / .15 / .45 / .50 | 1.33 / 1.35 / 1.65 / 2.10 | .53 / .55 / .85 / 1.17 | .53 / .55 / .85 / .97 | 0 | 317 | 1433 / 1433 | 350 | 1.5 / 0.6 / 9.5 |
+| Assault Rifle | rifle | auto 600 · 30 | 6/6/8/10 | .50 / .52 / .75 / 1.00 | .20 / .22 / .35 / .50 | 1.10 / 1.12 / 1.45 / 1.90 | .50 / .52 / .75 / 1.30 | .50 / .52 / .75 / 1.00 | 0 | 317 | 1417 / 1817 | 150 | 1.5 / 0.6 / 9.5 |
+| Burst Rifle | rifle | burst 150 · 24 | 6/6/8/11 | .53 / .55 / .92 / 1.30 | .13 / .15 / .45 / .57 | 1.33 / 1.35 / 2.05 / 2.57 | .53 / .55 / .92 / 1.77 | .53 / .55 / .92 / 1.30 | 0 | 317 | 1433 / 1433 | 350 | 1.5 / 0.6 / 9.5 |
 | Battle Rifle | rifle | auto 300 · 20 | 4/4/5/6 | .60 / .62 / .83 / 1.10 | .20 / .22 / .43 / .50 | 1.40 / 1.42 / 1.63 / 2.10 | .60 / .62 / 1.03 / 7.30 | .60 / .62 / .83 / 1.10 | 0 | 350 | 1683 / 2117 | 267 | 1 / 0.3 / 21 |
 | Plasma Rifle | rifle | auto 514 · 40 | 5/5/5/5 | .62 / .88 / 1.35 / 2.25 | as body | 1.20 / 1.47 / 1.93 / 2.83 | .62 / .88 / 1.35 / 2.67 | .62 / .88 / 1.35 / 2.27 | 0 | 317 | 1517 / 1517 | – | 10 / 5.5 / 24 |
 | Laser Rifle | rifle | auto 1800 · heat | 25/25/25/– | .80 / .80 / .80 / – | .40 / .40 / .40 / – | 1.67 / 1.67 / 1.67 / – | .80 / .80 / .80 / – | .80 / .80 / .80 / – | 0 | 317 | cool 1667 | – | 0 / 0 / 14 |

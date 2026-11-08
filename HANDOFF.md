@@ -370,8 +370,8 @@ gets overloaded above that: local e2e times out and flakes). Prune landed worktr
 
 docs/GUNPLAY_AUDIT.md "Pass 2" has the before/after table; docs/ARSENAL.md "Gunplay pass 2"; `pnpm gun-report` re-run
 (docs/gunplay-audit.json, docs/gunplay-ttk.svg).
-- **Data (1, 2, 4):** SMG 15 damage (falloff from 15 m); rifle family falloff 25-70 m to 60 %, hip cone 5 mrad, ADS
-  multiple 0.2; shotguns (pump 10 × 12 in 55 mrad, Sawed-Off 14 × 10 in 85, Auto 8 × 8 in 65; family falloff 8-28 m);
+- **Data (1, 2, 4):** SMG 15 damage (falloff from 15 m); rifle family falloff 25-70 m to 60 % (a wider rifle hip cone
+  was tried and dropped: it stalled the CTF bot tests, Sunken Kingdom with no capture); shotguns (pump 10 × 12 in 55 mrad, Sawed-Off 14 × 10 in 85, Auto 8 × 8 in 65; family falloff 8-28 m);
   Precision Rifle 90 damage, 50-tick bolt; Marksman 34 at 18 ticks; Pulse Pistol falloff 15-45 m to 45 %; Spin Gun
   raise 30 ticks. Fastest body kill of the seven: SMG to 15 m, rifle 20-50, revolver 60-75, Precision from 100 m.
   `benchmarks.test.ts` "each gun owns its range" pins it.
