@@ -6,7 +6,7 @@ import { DESTRUCTIBLE_SPECS, TRAP_SPECS } from '../sim/scenarioDefs.ts';
 import { ELECTRIC_FENCE } from '../map/border.ts';
 import { BREAKTHROUGH_MAX_SECTORS, MAP_FORMAT, MAP_FORMAT_VERSION, type BreakthroughObjective, type MapDocument, type MapEntity, type Rotation, type SurfaceStyle, type TilePlacement, type TrapKind, type BlockBehaviour, type Liquid, type LightFixture, type EncounterEntrance, type GlassKind } from '../map/schema.ts';
 import { newId, type EditCommand } from './commands.ts';
-import { buildLimitReason, insideBuildLimit } from './buildArea.ts';
+import { buildLimitReason, buildLimitShort, insideBuildLimit } from './buildArea.ts';
 import { getProp } from '../content/props.ts';
 import { envVariant, getEnvSpecies } from '../content/environment.ts';
 import { DEFAULT_TEAMS, mapTeams } from '../sim/npc.ts';
@@ -25,7 +25,12 @@ export interface Selection {
 
 export const emptySelection = (): Selection => ({ tiles: [], entities: [] });
 
-export type PlacementCheck = { ok: true } | { ok: false; reason: string; conflicts: string[] };
+/**
+ * Whether a placement fits. A refusal has its `reason` (what is in the way and what to do instead: toasts, the status
+ * line) and `short`, the same in a few words for the ghost's note beside the pointer ("Overlaps the Corridor on
+ * Level 1").
+ */
+export type PlacementCheck = { ok: true } | { ok: false; reason: string; short: string; conflicts: string[] };
 
 /** Grid cells a placement would occupy. */
 export function placementCells(p: Pick<TilePlacement, 'tile' | 'x' | 'y' | 'z' | 'rotation'>, catalog: TileCatalog = coreCatalog): [number, number, number][] | null {
@@ -70,7 +75,7 @@ export function checkLayout(doc: MapDocument, moving: { tiles?: readonly TilePla
   let first: { occ: CellOccupant; z: number; byPiece: boolean } | undefined;
   let inside: { p: SetPiecePlacement; z: number; byPiece: boolean } | undefined;
   const claim = (id: string, x: number, y: number, z: number, byPiece: boolean): PlacementCheck | null => {
-    if (!insideBuildLimit(x, y, z)) return { ok: false, reason: buildLimitReason(doc, z), conflicts: [] };
+    if (!insideBuildLimit(x, y, z)) return { ok: false, reason: buildLimitReason(doc, z), short: buildLimitShort(z), conflicts: [] };
     const key = cellKey(x, y, z);
     const hit = cells.get(key);
     if (hit) {
@@ -89,7 +94,7 @@ export function checkLayout(doc: MapDocument, moving: { tiles?: readonly TilePla
   };
   for (const p of tiles) {
     const pc = placementCells(p, catalog);
-    if (!pc) return { ok: false, reason: `unknown tile ${p.tile}`, conflicts: [] };
+    if (!pc) return { ok: false, reason: `unknown tile ${p.tile}`, short: 'Unknown tile', conflicts: [] };
     for (const [x, y, z] of pc) {
       const refused = claim(p.id, x, y, z, false);
       if (refused) return refused;
@@ -97,8 +102,8 @@ export function checkLayout(doc: MapDocument, moving: { tiles?: readonly TilePla
   }
   for (const p of placements) {
     const def = pieces.get(p.piece);
-    if (!def) return { ok: false, reason: `unknown set piece ${p.piece}`, conflicts: [] };
-    if (p.mirror && (def.mirror === 'none' || setPieceMirrorProblem(def, catalog))) return { ok: false, reason: `${def.displayName} can't be mirrored: place it unmirrored`, conflicts: [] };
+    if (!def) return { ok: false, reason: `unknown set piece ${p.piece}`, short: 'Unknown set piece', conflicts: [] };
+    if (p.mirror && (def.mirror === 'none' || setPieceMirrorProblem(def, catalog))) return { ok: false, reason: `${def.displayName} can't be mirrored: place it unmirrored`, short: `${def.displayName} can't be mirrored`, conflicts: [] };
     for (const [x, y, z] of setPieceFootprint(p, def)) {
       const refused = claim(p.id, x, y, z, true);
       if (refused) return refused;
@@ -107,14 +112,18 @@ export function checkLayout(doc: MapDocument, moving: { tiles?: readonly TilePla
   if (!conflicts.size) return { ok: true };
   const name = (p: SetPiecePlacement) => pieces.get(p.piece)?.displayName ?? p.piece;
   let reason = 'overlaps another of the pieces being placed: spread them out';
-  if (first) reason = first.byPiece ? `its footprint overlaps ${first.occ.def.displayName} on ${levelName(first.z)}: pick a free spot, or move or delete the ${first.occ.def.displayName} first` : overlapReason(first.occ, first.z);
-  else if (inside) {
+  let short = 'Overlaps another piece being placed';
+  if (first) {
+    reason = first.byPiece ? `its footprint overlaps ${first.occ.def.displayName} on ${levelName(first.z)}: pick a free spot, or move or delete the ${first.occ.def.displayName} first` : overlapReason(first.occ, first.z);
+    short = `Overlaps the ${first.occ.def.displayName} on ${levelName(first.z)}`;
+  } else if (inside) {
     const n = name(inside.p);
     reason = inside.byPiece
       ? `its footprint overlaps the ${n} set piece on ${levelName(inside.z)}: pick a free spot, or move the ${n}`
       : `inside the ${n} set piece on ${levelName(inside.z)} (it holds every cell of its footprint): pick a free cell or another level, move the ${n}, or explode it into its parts to build into it`;
+    short = inside.byPiece ? `Overlaps the ${n} set piece on ${levelName(inside.z)}` : `Inside the ${n} set piece on ${levelName(inside.z)}`;
   }
-  return { ok: false, reason, conflicts: [...conflicts] };
+  return { ok: false, reason, short, conflicts: [...conflicts] };
 }
 
 /** Why a cell can't take a new tile, and what to do instead. */
