@@ -21,11 +21,11 @@
     ],
     "release": {
       "mapId": "m_prmawkdzrmtay5mm",
-      "versionId": "v_ujvqkouxk4oklpd3",
-      "revision": 13,
-      "contentHash": "sha256:d3817c6ed9c99892522e9797394df097c7b66accc3f5d7b76b3fbbd837cd1ba4",
+      "versionId": "v_tx77g7bhsdw7hdcv",
+      "revision": 14,
+      "contentHash": "sha256:e5b3406547d731e6ef9374c457746d1c164f62685852cd09f81daa21938d506d",
       "schemaVersion": 29,
-      "releasedAt": "2026-11-08T21:33:48.615Z"
+      "releasedAt": "2026-11-08T22:39:17.540Z"
     }
   },
   "classicStructure": {
@@ -20448,7 +20448,7 @@
       "kind": "spawn",
       "position": [
         32,
-        -0.15,
+        -4,
         8
       ],
       "yaw": 0,
@@ -20459,11 +20459,426 @@
       "kind": "spawn",
       "position": [
         -32,
-        -0.15,
+        -4,
         -8
       ],
       "yaw": 0,
       "faction": null
+    },
+    {
+      "id": "flag_fdnvr3v9nj",
+      "kind": "flag",
+      "position": [
+        0,
+        0,
+        18
+      ],
+      "yaw": 0,
+      "team": "embers"
+    },
+    {
+      "id": "flag_pzgxx5a9dd",
+      "kind": "flag",
+      "position": [
+        0,
+        0,
+        -18
+      ],
+      "yaw": 0,
+      "team": "tide"
+    },
+    {
+      "id": "hill_imrrunqkcq",
+      "kind": "hill",
+      "position": [
+        0,
+        0,
+        0
+      ],
+      "radius": 5
+    },
+    {
+      "id": "hill_kopqmyhkll",
+      "kind": "hill",
+      "position": [
+        0,
+        0,
+        12
+      ],
+      "radius": 5
+    },
+    {
+      "id": "hill_z92jnuzrg0",
+      "kind": "hill",
+      "position": [
+        12,
+        0,
+        0
+      ],
+      "radius": 5
+    },
+    {
+      "id": "hill_idymnvzo6m",
+      "kind": "hill",
+      "position": [
+        0,
+        0,
+        -12
+      ],
+      "radius": 5
+    },
+    {
+      "id": "hill_f1hl3td4c3",
+      "kind": "hill",
+      "position": [
+        -12,
+        0,
+        0
+      ],
+      "radius": 5
+    },
+    {
+      "id": "spikes_8wdz1e5fyw",
+      "kind": "trap",
+      "trap": "spikes",
+      "position": [
+        -6,
+        0,
+        2
+      ],
+      "yaw": 0,
+      "activation": "cycle",
+      "onSeconds": 1.5,
+      "offSeconds": 2.5,
+      "offsetSeconds": 0,
+      "startEnabled": true,
+      "damage": null
+    },
+    {
+      "id": "spikes_jseepn7ftq",
+      "kind": "trap",
+      "trap": "spikes",
+      "position": [
+        6,
+        0,
+        -2
+      ],
+      "yaw": 0,
+      "activation": "cycle",
+      "onSeconds": 1.5,
+      "offSeconds": 2.5,
+      "offsetSeconds": 0,
+      "startEnabled": true,
+      "damage": null
+    },
+    {
+      "id": "flames_7ro90cb0vw",
+      "kind": "trap",
+      "trap": "flames",
+      "position": [
+        -2,
+        0,
+        6
+      ],
+      "yaw": 0,
+      "activation": "cycle",
+      "onSeconds": 2,
+      "offSeconds": 3,
+      "offsetSeconds": 0,
+      "startEnabled": true,
+      "damage": null
+    },
+    {
+      "id": "flames_znn7fkjxh1",
+      "kind": "trap",
+      "trap": "flames",
+      "position": [
+        2,
+        0,
+        -6
+      ],
+      "yaw": 0,
+      "activation": "cycle",
+      "onSeconds": 2,
+      "offSeconds": 3,
+      "offsetSeconds": 0,
+      "startEnabled": true,
+      "damage": null
+    },
+    {
+      "id": "pickup_51bncixsee",
+      "kind": "pickup",
+      "position": [
+        16,
+        0,
+        4
+      ],
+      "item": "core.weapon_battle_axe",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_y5y60vwuop",
+      "kind": "pickup",
+      "position": [
+        -16,
+        0,
+        -4
+      ],
+      "item": "core.weapon_battle_axe",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_d31nmwm1bw",
+      "kind": "pickup",
+      "position": [
+        4,
+        0,
+        20
+      ],
+      "item": "core.weapon_spear",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_pvms3haqm8",
+      "kind": "pickup",
+      "position": [
+        -4,
+        0,
+        -20
+      ],
+      "item": "core.weapon_spear",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_olkok6h175",
+      "kind": "pickup",
+      "position": [
+        0,
+        0,
+        4
+      ],
+      "item": "core.health_large",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_bfc113jdti",
+      "kind": "pickup",
+      "position": [
+        20,
+        0,
+        -20
+      ],
+      "item": "core.grenades",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_m9svsvpl8j",
+      "kind": "pickup",
+      "position": [
+        -20,
+        0,
+        20
+      ],
+      "item": "core.grenades",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_kva276uyz7",
+      "kind": "pickup",
+      "position": [
+        16,
+        -4,
+        8
+      ],
+      "item": "core.health_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_q8o15o46hi",
+      "kind": "pickup",
+      "position": [
+        -16,
+        -4,
+        -8
+      ],
+      "item": "core.health_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_kbjokxkrkd",
+      "kind": "pickup",
+      "position": [
+        8,
+        -4,
+        -16
+      ],
+      "item": "core.armor_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_hx81bhk304",
+      "kind": "pickup",
+      "position": [
+        -8,
+        -4,
+        16
+      ],
+      "item": "core.armor_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_7iodos869i",
+      "kind": "pickup",
+      "position": [
+        0,
+        -4,
+        0
+      ],
+      "item": "core.armor_large",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_p4dmsamrs7",
+      "kind": "pickup",
+      "position": [
+        44,
+        -4,
+        0
+      ],
+      "item": "core.weapon_battle_axe",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_uf93u8seb6",
+      "kind": "pickup",
+      "position": [
+        -48,
+        -4,
+        0
+      ],
+      "item": "core.weapon_battle_axe",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_373nsonunu",
+      "kind": "pickup",
+      "position": [
+        0,
+        -4,
+        40
+      ],
+      "item": "core.weapon_spear",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_jfmzgs9xlv",
+      "kind": "pickup",
+      "position": [
+        0,
+        -4,
+        -40
+      ],
+      "item": "core.weapon_spear",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_fk415n521p",
+      "kind": "pickup",
+      "position": [
+        56,
+        0,
+        56
+      ],
+      "item": "core.health_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_crmvvy5u7v",
+      "kind": "pickup",
+      "position": [
+        -56,
+        0,
+        -56
+      ],
+      "item": "core.health_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_rlr672rb6p",
+      "kind": "pickup",
+      "position": [
+        -60,
+        0,
+        56
+      ],
+      "item": "core.weapon_spear",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_5mgjrntssm",
+      "kind": "pickup",
+      "position": [
+        60,
+        0,
+        -56
+      ],
+      "item": "core.weapon_spear",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_zst65fxglx",
+      "kind": "pickup",
+      "position": [
+        0,
+        0,
+        -120
+      ],
+      "item": "core.health_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_ciimtwmell",
+      "kind": "pickup",
+      "position": [
+        16,
+        0,
+        -100
+      ],
+      "item": "core.holy_bomb",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_gevww53e1p",
+      "kind": "pickup",
+      "position": [
+        104,
+        0,
+        0
+      ],
+      "item": "core.health_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_kv6mjbtf12",
+      "kind": "pickup",
+      "position": [
+        -104,
+        0,
+        0
+      ],
+      "item": "core.health_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_d40fg1z5ka",
+      "kind": "pickup",
+      "position": [
+        0,
+        0,
+        100
+      ],
+      "item": "core.weapon_spear",
+      "respawnSeconds": null
     }
   ],
   "factions": [],
