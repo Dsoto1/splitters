@@ -16,6 +16,17 @@ made only on a commit that passed CI on a check branch.
 and go round a long one (docs/BOT_AI_PLAN.md, "The moderate price"; in 0.9.0 they went round however far). Measured on
 48 CTF matches and a Team Deathmatch sample: the same stuck recoveries and captures; Diamond Park's large bots crouch
 through its dugout steps, about 10 s a match.
+**MapMaker: feedback while building** (MapMaker overhaul Phase 1, part A; docs/MAPMAKER_OVERHAUL_PLAN.md):
+- **The ghost says why.** Beside the pointer, before you click, a refused tile or set piece says why in a few words
+  ("Overlaps the Corridor on Ground", "Past the build limit (16 levels up or down)"; the status line has the whole
+  reason). Spawns, pickups, props, vehicles and NPCs over nothing say "No floor under it", outside the boundary say so,
+  and the scenery zone is a note ("Outside the playable area: scenery zone"), never a refusal.
+- **A live budget bar** beside the level strip: green **OK**, amber **Near** (80 %), red **Over**, naming the budget
+  nearest its limit (entities, props, prop models, a draw estimate, lights, destructibles, vehicles, the environment
+  species budgets, the file's size). Click the name to select what it counts; the arrow lists every budget. Counted
+  from each edit, not a full check every frame.
+- **`?` lists every key** MapMaker binds, grouped (also the tool bar's **Keys** button); Esc or `?` closes it. The
+  keys, the fly camera and the list all come from one table, so it can't go stale. `/` still searches the palette.
 
 ## 0.9.0 (2026-11-08)
 
