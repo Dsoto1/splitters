@@ -232,6 +232,27 @@ gets overloaded above that: local e2e times out and flakes). Prune landed worktr
 - Earlier the same day: content scalability steps 2–6, perf toolset, flaky e2e fixes, Runway Nine airliner, map
   reworks batches 2–3, character fixes rounds 2–3 (see the entries below and CHANGELOG).
 
+### Gunplay audit, measured (`wip/gunplay-audit`, agent, 2026-11-08; owner-approved brief: measurement first, no tuning)
+
+- **Tool:** `pnpm gun-report` (`packages/server/src/tools/gun-report.ts`) drives the real shared sim (Match) on a flat
+  deck, one perfect shooter and one standard target, for every gun (34): TTK at 10/25/50/100 m (body/head,
+  unarmoured/full armour; ideal, hip and ADS medians of `--trials` seeds), shots to kill, first shot, draw, reload
+  tactical/empty and cancels, recoil settle, cones, falloff, drop. `--json`, `--svg` (TTK chart), `--from=<json>`
+  redraws. About 3 minutes. Private parts of Match it hooks: `fire`, `spreadDir`, `spawn`, `rng`, `bullets`.
+- **Report card:** docs/GUNPLAY_AUDIT.md (numbers: docs/gunplay-audit.json; chart: docs/gunplay-ttk.svg). Headline:
+  responsiveness is right (0 ms first shot, 0 ms reload cancel by fire, 133 ms swap to the Pistol from anything);
+  the Assault Rifle beats the SMG at the SMG's range (0.50 vs 0.60 s at 10 m; hip at 25 m 0.52 vs 3.50 s) and is the
+  best gun from 20 m out; shotguns kill in one shell only to ~5 m (Sawed-Off 8 shells at 10 m); Machine Pistol
+  dominated by the SMG; Marksman out-kills the Precision Rifle on body shots; Pulse Pistol (beam, no falloff) beats
+  the Pistol at range. Appendix A: the G0-G6 checklist with file:line evidence (G0/G1 done; G2 no lever action; G3 no
+  multi-client latency/loss test; G4 weapon choice by hand-set botRange; G5 lethality/ballistics/friendly fire only).
+- **Training Range:** every gun not on the front rack (24) now lies on two racks at x -12 and -15 (placed with
+  MapMaker's palette and inspector, exported; validate-map 0 issues). Still missing (listed in the audit, appendix C):
+  damage readout on hit, humanoid dummies that don't shoot back, armoured targets, a trajectory view.
+- **Next (owner picks from the audit's ranked list):** 1 SMG vs rifle identity, 2 shotgun room range, 3 damage
+  numbers option, 4 precision rifle body case, 5 melee breaks reloads / auto-reload, 6 recoil-wall readout,
+  7 8-client latency/loss harness (G3), 8 bot weapon choice from measured ranges (G4).
+
 ### Deathmatch and Team Deathmatch (`wip/tdm-dm`, agent, 2026-11-08; owner-approved brief; green on `check/tdm-dm` at 95f3f80, run 42455479068; LANDED: main 95f3f80)
 
 **The brief:** in the Roulette bench (48 bots, Sandgate, free-for-all) 71 % of Deathmatch kills were within 3 s of the

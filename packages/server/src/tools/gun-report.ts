@@ -27,7 +27,7 @@ import {
 import { Match, initNavigation, type Combatant } from '@tiletrigger/shared/match';
 
 /**
- * Gunplay measurement report (docs/GUNPLAY_AUDIT.md, "Method"): drives the real shared sim (Match: the same code the
+ * Gunplay measurement report (docs/GUNPLAY_AUDIT.md, appendix D): drives the real shared sim (Match: the same code the
  * server, client prediction and bots run) on a flat test deck, one shooter and one standard target, and measures every
  * gun of the arsenal. Nothing is worked out by hand from the weapon JSON: each number is what the sim did.
  *
