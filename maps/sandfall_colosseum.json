@@ -21,11 +21,11 @@
     ],
     "release": {
       "mapId": "m_prmawkdzrmtay5mm",
-      "versionId": "v_tx77g7bhsdw7hdcv",
-      "revision": 14,
-      "contentHash": "sha256:e5b3406547d731e6ef9374c457746d1c164f62685852cd09f81daa21938d506d",
+      "versionId": "v_hoctrt43k4juepxl",
+      "revision": 17,
+      "contentHash": "sha256:1aee3f6cd9dc57ab522cc20af05cdc4a8db395444daca00690e8d71d0a3af712",
       "schemaVersion": 29,
-      "releasedAt": "2026-11-08T22:39:17.540Z"
+      "releasedAt": "2026-11-08T23:40:57.666Z"
     }
   },
   "classicStructure": {
@@ -1985,7 +1985,7 @@
         "tile": "core.yard",
         "x": -3,
         "y": -3,
-        "z": 1,
+        "z": 0,
         "rotation": 0
       },
       {
@@ -1993,7 +1993,7 @@
         "tile": "core.yard",
         "x": -2,
         "y": -3,
-        "z": 1,
+        "z": 0,
         "rotation": 0
       },
       {
@@ -2001,7 +2001,7 @@
         "tile": "core.yard",
         "x": -1,
         "y": -3,
-        "z": 1,
+        "z": 0,
         "rotation": 0
       },
       {
@@ -2009,7 +2009,7 @@
         "tile": "core.yard",
         "x": 0,
         "y": -3,
-        "z": 1,
+        "z": 0,
         "rotation": 0
       },
       {
@@ -2017,7 +2017,7 @@
         "tile": "core.yard",
         "x": 1,
         "y": -3,
-        "z": 1,
+        "z": 0,
         "rotation": 0
       },
       {
@@ -2025,7 +2025,7 @@
         "tile": "core.yard",
         "x": 2,
         "y": -3,
-        "z": 1,
+        "z": 0,
         "rotation": 0
       },
       {
@@ -2033,7 +2033,7 @@
         "tile": "core.yard",
         "x": 3,
         "y": -3,
-        "z": 1,
+        "z": 0,
         "rotation": 0
       },
       {
@@ -2041,7 +2041,7 @@
         "tile": "core.yard",
         "x": -3,
         "y": -2,
-        "z": 1,
+        "z": 0,
         "rotation": 0
       },
       {
@@ -2049,7 +2049,7 @@
         "tile": "core.yard",
         "x": 0,
         "y": -2,
-        "z": 1,
+        "z": 0,
         "rotation": 0
       },
       {
@@ -2057,7 +2057,7 @@
         "tile": "core.yard",
         "x": 3,
         "y": -2,
-        "z": 1,
+        "z": 0,
         "rotation": 0
       },
       {
@@ -2065,7 +2065,7 @@
         "tile": "core.yard",
         "x": -3,
         "y": -1,
-        "z": 1,
+        "z": 0,
         "rotation": 0
       },
       {
@@ -2073,7 +2073,7 @@
         "tile": "core.yard",
         "x": 0,
         "y": -1,
-        "z": 1,
+        "z": 0,
         "rotation": 0
       },
       {
@@ -2081,7 +2081,7 @@
         "tile": "core.yard",
         "x": 3,
         "y": -1,
-        "z": 1,
+        "z": 0,
         "rotation": 0
       },
       {
@@ -2089,7 +2089,7 @@
         "tile": "core.yard",
         "x": -3,
         "y": 0,
-        "z": 1,
+        "z": 0,
         "rotation": 0
       },
       {
@@ -2097,7 +2097,7 @@
         "tile": "core.yard",
         "x": -2,
         "y": 0,
-        "z": 1,
+        "z": 0,
         "rotation": 0
       },
       {
@@ -2105,7 +2105,7 @@
         "tile": "core.yard",
         "x": -1,
         "y": 0,
-        "z": 1,
+        "z": 0,
         "rotation": 0
       },
       {
@@ -2113,7 +2113,7 @@
         "tile": "core.yard",
         "x": 1,
         "y": 0,
-        "z": 1,
+        "z": 0,
         "rotation": 0
       },
       {
@@ -2121,7 +2121,7 @@
         "tile": "core.yard",
         "x": 2,
         "y": 0,
-        "z": 1,
+        "z": 0,
         "rotation": 0
       },
       {
@@ -2129,7 +2129,7 @@
         "tile": "core.yard",
         "x": 3,
         "y": 0,
-        "z": 1,
+        "z": 0,
         "rotation": 0
       },
       {
@@ -2137,7 +2137,7 @@
         "tile": "core.yard",
         "x": -3,
         "y": 1,
-        "z": 1,
+        "z": 0,
         "rotation": 0
       },
       {
@@ -2145,7 +2145,7 @@
         "tile": "core.yard",
         "x": 0,
         "y": 1,
-        "z": 1,
+        "z": 0,
         "rotation": 0
       },
       {
@@ -2153,7 +2153,7 @@
         "tile": "core.yard",
         "x": 3,
         "y": 1,
-        "z": 1,
+        "z": 0,
         "rotation": 0
       },
       {
@@ -2161,7 +2161,7 @@
         "tile": "core.yard",
         "x": -3,
         "y": 2,
-        "z": 1,
+        "z": 0,
         "rotation": 0
       },
       {
@@ -2169,7 +2169,7 @@
         "tile": "core.yard",
         "x": 0,
         "y": 2,
-        "z": 1,
+        "z": 0,
         "rotation": 0
       },
       {
@@ -2177,7 +2177,7 @@
         "tile": "core.yard",
         "x": 3,
         "y": 2,
-        "z": 1,
+        "z": 0,
         "rotation": 0
       },
       {
@@ -2185,7 +2185,7 @@
         "tile": "core.yard",
         "x": -3,
         "y": 3,
-        "z": 1,
+        "z": 0,
         "rotation": 0
       },
       {
@@ -2193,7 +2193,7 @@
         "tile": "core.yard",
         "x": -2,
         "y": 3,
-        "z": 1,
+        "z": 0,
         "rotation": 0
       },
       {
@@ -2201,7 +2201,7 @@
         "tile": "core.yard",
         "x": -1,
         "y": 3,
-        "z": 1,
+        "z": 0,
         "rotation": 0
       },
       {
@@ -2209,7 +2209,7 @@
         "tile": "core.yard",
         "x": 0,
         "y": 3,
-        "z": 1,
+        "z": 0,
         "rotation": 0
       },
       {
@@ -2217,7 +2217,7 @@
         "tile": "core.yard",
         "x": 1,
         "y": 3,
-        "z": 1,
+        "z": 0,
         "rotation": 0
       },
       {
@@ -2225,7 +2225,7 @@
         "tile": "core.yard",
         "x": 2,
         "y": 3,
-        "z": 1,
+        "z": 0,
         "rotation": 0
       },
       {
@@ -2233,7 +2233,7 @@
         "tile": "core.yard",
         "x": 3,
         "y": 3,
-        "z": 1,
+        "z": 0,
         "rotation": 0
       },
       {
@@ -2241,7 +2241,7 @@
         "tile": "core.yard",
         "x": 0,
         "y": 0,
-        "z": 1,
+        "z": 0,
         "rotation": 0
       },
       {
@@ -2249,7 +2249,7 @@
         "tile": "core.hatch_corner",
         "x": 1,
         "y": 1,
-        "z": 1,
+        "z": 0,
         "rotation": 0
       },
       {
@@ -2257,7 +2257,7 @@
         "tile": "core.hatch_corner",
         "x": 2,
         "y": 1,
-        "z": 1,
+        "z": 0,
         "rotation": 3
       },
       {
@@ -2265,7 +2265,7 @@
         "tile": "core.hatch_corner",
         "x": 2,
         "y": 2,
-        "z": 1,
+        "z": 0,
         "rotation": 2
       },
       {
@@ -2273,7 +2273,7 @@
         "tile": "core.hatch_corner",
         "x": 1,
         "y": 2,
-        "z": 1,
+        "z": 0,
         "rotation": 1
       },
       {
@@ -2281,7 +2281,7 @@
         "tile": "core.hatch_corner",
         "x": -1,
         "y": 1,
-        "z": 1,
+        "z": 0,
         "rotation": 3
       },
       {
@@ -2289,7 +2289,7 @@
         "tile": "core.hatch_corner",
         "x": -1,
         "y": 2,
-        "z": 1,
+        "z": 0,
         "rotation": 2
       },
       {
@@ -2297,7 +2297,7 @@
         "tile": "core.hatch_corner",
         "x": -2,
         "y": 2,
-        "z": 1,
+        "z": 0,
         "rotation": 1
       },
       {
@@ -2305,7 +2305,7 @@
         "tile": "core.hatch_corner",
         "x": -2,
         "y": 1,
-        "z": 1,
+        "z": 0,
         "rotation": 0
       },
       {
@@ -2313,7 +2313,7 @@
         "tile": "core.hatch_corner",
         "x": 1,
         "y": -1,
-        "z": 1,
+        "z": 0,
         "rotation": 1
       },
       {
@@ -2321,7 +2321,7 @@
         "tile": "core.hatch_corner",
         "x": 1,
         "y": -2,
-        "z": 1,
+        "z": 0,
         "rotation": 0
       },
       {
@@ -2329,7 +2329,7 @@
         "tile": "core.hatch_corner",
         "x": 2,
         "y": -2,
-        "z": 1,
+        "z": 0,
         "rotation": 3
       },
       {
@@ -2337,7 +2337,7 @@
         "tile": "core.hatch_corner",
         "x": 2,
         "y": -1,
-        "z": 1,
+        "z": 0,
         "rotation": 2
       },
       {
@@ -2345,7 +2345,7 @@
         "tile": "core.hatch_corner",
         "x": -1,
         "y": -1,
-        "z": 1,
+        "z": 0,
         "rotation": 2
       },
       {
@@ -2353,7 +2353,7 @@
         "tile": "core.hatch_corner",
         "x": -2,
         "y": -1,
-        "z": 1,
+        "z": 0,
         "rotation": 1
       },
       {
@@ -2361,7 +2361,7 @@
         "tile": "core.hatch_corner",
         "x": -2,
         "y": -2,
-        "z": 1,
+        "z": 0,
         "rotation": 0
       },
       {
@@ -2369,7 +2369,7 @@
         "tile": "core.hatch_corner",
         "x": -1,
         "y": -2,
-        "z": 1,
+        "z": 0,
         "rotation": 3
       },
       {
@@ -2378,7 +2378,7 @@
         "x": 0,
         "y": 11,
         "z": -1,
-        "rotation": 0
+        "rotation": 3
       },
       {
         "id": "tile_lpuu8hq416",
@@ -2386,7 +2386,7 @@
         "x": 0,
         "y": -11,
         "z": -1,
-        "rotation": 2
+        "rotation": 1
       },
       {
         "id": "tile_ol52tjvuhx",
@@ -2394,7 +2394,7 @@
         "x": 11,
         "y": 0,
         "z": -1,
-        "rotation": 1
+        "rotation": 0
       },
       {
         "id": "tile_5frmpb9jhp",
@@ -2402,7 +2402,7 @@
         "x": -11,
         "y": 0,
         "z": -1,
-        "rotation": 3
+        "rotation": 2
       },
       {
         "id": "tile_3pf7hqi8mg",
@@ -2410,7 +2410,7 @@
         "x": 4,
         "y": 5,
         "z": -1,
-        "rotation": 0
+        "rotation": 3
       },
       {
         "id": "tile_85k7nabf2f",
@@ -2418,7 +2418,7 @@
         "x": -4,
         "y": 5,
         "z": -1,
-        "rotation": 0
+        "rotation": 3
       },
       {
         "id": "tile_wphcmtbc66",
@@ -2426,7 +2426,7 @@
         "x": 4,
         "y": -5,
         "z": -1,
-        "rotation": 2
+        "rotation": 1
       },
       {
         "id": "tile_h3o4iln86p",
@@ -2434,7 +2434,7 @@
         "x": -4,
         "y": -5,
         "z": -1,
-        "rotation": 2
+        "rotation": 1
       },
       {
         "id": "sp_setpiece_3crg1e10ma_0",
@@ -14679,7 +14679,7 @@
       "id": "sp_setpiece_ahf9s9w7y2_49",
       "position": [
         0,
-        4,
+        0,
         24
       ],
       "kind": "prop",
@@ -14693,7 +14693,7 @@
       "id": "sp_setpiece_ahf9s9w7y2_50",
       "position": [
         0,
-        4,
+        0,
         -24
       ],
       "kind": "prop",
@@ -14707,7 +14707,7 @@
       "id": "sp_setpiece_ahf9s9w7y2_51",
       "position": [
         24,
-        4,
+        0,
         0
       ],
       "kind": "prop",
@@ -14721,7 +14721,7 @@
       "id": "sp_setpiece_ahf9s9w7y2_52",
       "position": [
         -24,
-        4,
+        0,
         0
       ],
       "kind": "prop",
@@ -14735,7 +14735,7 @@
       "id": "sp_setpiece_ahf9s9w7y2_53",
       "position": [
         16,
-        4,
+        0,
         16
       ],
       "kind": "prop",
@@ -14749,7 +14749,7 @@
       "id": "sp_setpiece_ahf9s9w7y2_54",
       "position": [
         -16,
-        4,
+        0,
         16
       ],
       "kind": "prop",
@@ -14763,7 +14763,7 @@
       "id": "sp_setpiece_ahf9s9w7y2_55",
       "position": [
         16,
-        4,
+        0,
         -16
       ],
       "kind": "prop",
@@ -14777,7 +14777,7 @@
       "id": "sp_setpiece_ahf9s9w7y2_56",
       "position": [
         -16,
-        4,
+        0,
         -16
       ],
       "kind": "prop",
@@ -14791,7 +14791,7 @@
       "id": "sp_setpiece_ahf9s9w7y2_57",
       "position": [
         8,
-        4,
+        0,
         8
       ],
       "kind": "prop",
@@ -14805,7 +14805,7 @@
       "id": "sp_setpiece_ahf9s9w7y2_58",
       "position": [
         -8,
-        4,
+        0,
         8
       ],
       "kind": "prop",
@@ -14819,7 +14819,7 @@
       "id": "sp_setpiece_ahf9s9w7y2_59",
       "position": [
         8,
-        4,
+        0,
         -8
       ],
       "kind": "prop",
@@ -14833,7 +14833,7 @@
       "id": "sp_setpiece_ahf9s9w7y2_60",
       "position": [
         -8,
-        4,
+        0,
         -8
       ],
       "kind": "prop",
@@ -14847,7 +14847,7 @@
       "id": "sp_setpiece_ahf9s9w7y2_61",
       "position": [
         12,
-        3,
+        -1,
         16.5
       ],
       "kind": "light",
@@ -14861,7 +14861,7 @@
       "id": "sp_setpiece_ahf9s9w7y2_62",
       "position": [
         -16.5,
-        3,
+        -1,
         12
       ],
       "kind": "light",
@@ -14875,7 +14875,7 @@
       "id": "sp_setpiece_ahf9s9w7y2_63",
       "position": [
         16.5,
-        3,
+        -1,
         -12
       ],
       "kind": "light",
@@ -14889,7 +14889,7 @@
       "id": "sp_setpiece_ahf9s9w7y2_64",
       "position": [
         -12,
-        3,
+        -1,
         -16.5
       ],
       "kind": "light",
