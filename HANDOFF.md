@@ -28,36 +28,38 @@ The workflow is unchanged (CLAUDE.md):
    - **Next:** when that run is green, fast-forward main to 318023ed.
    - **Root cause:** every hit test left teammates out before `damage()` read the rule.
    - **Fix:** `Match.canHurt`. Unit test `shared/test/friendlyFire.test.ts`; e2e `friendlyFireChecks` in `teams`.
-2. **Iron Coast** part 1 (`wip/iron-coast`; landing on main as part 1: see the line below).
-   - **Part 1 is done:** the greybox map with Breakthrough and TDM, all built in MapMaker and exported (terrain 380 x
-     320 m, 13 set pieces, 7 routes, the sea, 30 pickups, 3 sectors with 6 spawn groups of 16, crest trenches, ruins,
-     walls, 16 village houses, ground paint). validate-map **0 issues**: the cut-off spawn `spawn_jclhkikyqj` stood
-     in the ruins tile at (56, 16); selected from the issues list and moved to (66, 12, 18) in the inspector.
-   - **Card picture:** `packages/client/public/maps/shots/iron_coast.jpg`.
-   - **A Breakthrough fix it found:** a sector that fell mid-tick kept the old sector's defender plan, so a beach
-     gunner read past the guns' sector's empty gun list (goal with no position; bot-report crashed).
-     `BreakthroughMode.plan` replans when the sector changes; unit test in `breakthrough.test.ts`.
-   - **Bot runs** (after main's Phase C; seeds 1-3, 1200 s): 16 v 16 broke through 2 of 3 (A 42-51 s, B 154-211 s,
-     C 268-298 s); 24 v 24 broke through 1 of 3 (A 39-60 s, B 148-182 s, C 413 s; the other two held at C with the
-     attack out of reinforcements). The beach falls too fast; C decides it. Stuck hot spots: route 1's foot on the
-     west promontory (-152, -48) and route 5's foot under B3 (44, -40).
-   - **Perf** (`pnpm bench`, Breakthrough, loaded 4-core box): 48 bots 5.86 ms avg tick (p95 16.8), 64 bots 6.15 ms
-     (p95 16.2).
-   - **Next:** the two stair feet (landing slab or wider cut, in MapMaker), then the beach's balance (owner's call:
-     zone time, forward posts or cover); then **part 2, the visual pass** (hedgehogs, tank traps, craters, sandbags,
-     haze/mist, the burning wrecks: the prop is saved unfinished on `wip/iron-coast-wreck` and needs its palette atlas
-     picture and content:check).
-   - **Known gaps:** haze and mist are 0 in the map; the casemates sit on 4 m levels (B2 12 m, B3 16 m); the terrain
-     can't overhang, so the cave and tunnel are pieces in a cut cove. Decisions:
-     `docs/map-briefs/iron_coast/DECISIONS_AND_DEVIATIONS.md`; the full list and the MapMaker driver tricks:
-     `docs/map-briefs/iron_coast/MAP_IMPLEMENTATION_MANIFEST.md`, "Progress".
-   - **The brief's essentials:**
-     - MapMaker only: drive the real editor with Playwright against `vite preview`, a window at least 1280 px wide,
-       click palette cards by mouse position, point the view at the sky while editing through the inspector;
-     - follow `docs/map-briefs/MAP_21_reference_annotated.jpg`, not a symmetrical plan;
-     - 24 v 24 by default, playable to 32 v 32;
-     - the Military weapon set;
-     - golden hour; no flashing.
+2. **Iron Coast** part 2 (`wip/iron-coast-part2`, 2026-11-08; part 1 landed at 5edb4296). Done in MapMaker, validate-map
+   **0 issues**, card picture recaptured. Details: `docs/map-briefs/iron_coast/DECISIONS_AND_DEVIATIONS.md`, "Part 2",
+   and the manifest's "Progress, part 2".
+   - **Terrain** ("very unnatural and jagged"): most of it was the border (ragged 30-60 m "Cliffs & mountains" on all
+     four sides, in the sea too): now Shoreline & sea south, Forest wall elsewhere. The cliff's foot is cleaned (spikes
+     and pits gone) with a scree apron, shingle band and stone faces; inland terrace banks softened; 12 craters.
+   - **The grid** is part of it: the cliffs must stay over 50° to keep the 7 routes, and on 2.5 m cells that means one-
+     or two-cell steps; every smoothing tried (Smooth all, contour smoothing, a rounded crest lip) opened about 30 new
+     ways up (climb flood). MapMaker caps terrains at 161 vertices a side, so no finer grid; **owner's call**: raise the
+     cap to 321 (1.25 m) with a Terrain → Change grid resample (4× terrain triangles).
+   - **Plants**: foliage layer (crest Overgrown, bluffs and village Lush, none on sand/shingle), 114 bushes (109 our
+     Broadleaf Shrub, which conceals), 24 trees, 32 hedges in hedgerows.
+   - **Beach**: 43 hedgehogs, 10 Belgian gates (new kit prop `prop.belgian_gate`), 19 tank traps, 2 wrecks, 2 burning
+     wrecks (`prop.landing_craft_wreck_burning` finished: surfaces, palette picture, provenance); haze 0.4, mist 0.2.
+   - **Bot runs** (Breakthrough, seeds 1-3, 1200 s; baseline re-run on main d3ed2a0 the same day). A / B / C fell at (s):
+     | | 16 v 16 | 24 v 24 |
+     |---|---|---|
+     | main (before) | A 49/42/51, B 211/154/160, C –/298/268; 2 of 3 broke through | A 60/40/39, B 178/201/148, C –/457/–; 1 of 3 |
+     | + sandbags, stair cheeks, terrain, props | A 60/40/70, B 215/118/203, C 390/275/294; 3 of 3 | A 70/42/64, B 178/155/170, C 429/355/286; 3 of 3 |
+     | + half the beach defenders spawn on the cliff top | A 41/36/56, B 171/122/172, C 381/255/316; 3 of 3 | A 79/67/58, B 201/216/172, C 405/–/251; 2 of 3 |
+     | + MG nest per strongpoint (final) | A 51/38/52, B 156/160/174, C 239/244/301; 3 of 3 | A 81/57/64, B 169/182/191, C 415/423/318; 3 of 3 |
+     The beach holds longer at 24 v 24 (57-81 s against 39-60), not at 16 v 16 (38-52 against 42-51); the attack now
+     breaks through every time (the unstuck stairs help it more than the posts help the defence). **Owner's call**:
+     more zone time on A1/A2, or accept.
+   - **Stuck** (stair cheeks: rock Sky Blocks filling the wedges beside the flights): bot-report `stuckAt` near route 1
+     (x -160..-144, z -62..-38) 624/4/0 and 42/35/8 before, 2/0/0 and 7/0/12 after; near route 5 (x 26..56, z -46..-32)
+     549/0/6 and 158/12/16 before, 0/0/5 and 0/5/0 after. Stuck recoveries a match: 16 v 16 1405/111/95 → 82/75/109,
+     24 v 24 515/336/284 → 189/297/139. New hot spot: route 7's head (156, 12-13, -36), 102 in one 24 v 24 match.
+   - **Perf** (`pnpm bench`, Breakthrough, 4 shared cores at load 21-24, main's map benched alongside): 48 bots 8.76 ms
+     avg tick (CPU 4.79; main 7.65 / 4.20), 64 bots 9.04 ms (CPU 5.35; main 9.54 / 5.07). Plants are drawn only (the
+     server doesn't see them); not measured on a GPU.
+   - **Next**: the owner's two calls above; playtest the beach; route 7's head hot spot.
 3. **Bot AI Phase C follow-up, part 1 landed** (`wip/bots-c2`; green on `check/bots-c2`, run 42424732057; main
    fast-forwarded to it). BOT_AI_PLAN.md has the tables under "Phase C follow-up".
    - **Landed:**

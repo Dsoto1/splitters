@@ -57,6 +57,22 @@ tank lane, Frost Basin on the road down from each tank, Glacier Line mid-field, 
 road. Bot tank drivers now go for one when the cannon is low (3 of 10 or fewer, out of a fight, up to 70 m off) as
 well as when it is empty (120 m), also for the gunner beside them, and stop treating their own crewmate as a target.
 
+**Iron Coast, part 2: the coast looks like a coast** (owner, 2026-11-07/08; all in MapMaker)
+- **Terrain**: the jagged mountains round the map are gone (the sea's shoreline to the south, woods round the other
+  sides); the cliff's foot is cleaned of the spikes and pits the cuts left, with a scree apron, a shingle band and
+  stone on the steep faces; the crest's inland terrace banks are softened; shell craters on the beach. The cliff stays
+  as steep as before, so the seven ways up are still the only ones.
+- **Plants**: long grass and scrub along the crest, scrub on the bluffs, lush ground round the village, none on the
+  sand; 114 bushes along the crest and the routes' heads (cover that hides you, from bots too), 24 trees and four
+  hedgerows on the flanks, out of the main sightlines.
+- **The beach**: hedgehogs in ragged bands, Belgian gates in the surf (a new piece in MapMaker's Military props), tank
+  traps by the cliff, two cold wrecks and two burning wrecks with smoke (the new **Burning Landing Craft Wreck**; it
+  never flashes); golden-hour haze and a low sea mist.
+- **Balance**: the beach's defenders are posted forward: sandbag positions in front of A1 and A2, and half the beach
+  sector's defenders spawn on the cliff top over them. In bot matches at 24 v 24 (the Map's pick) the beach now holds 57-81 s (was 39-60); at 16 v 16 it still falls in 38-52 s (was 42-51).
+- **Stairs**: bots no longer jam on the far-west steps (route 1) and the wooden stair under B3 (route 5): rock cheeks
+  close the gaps beside the flights where they got stuck. Stuck recoveries per match fell from 95-1405 to 75-297.
+
 **Iron Coast (MAP 21), part 1: the beach assault and Breakthrough's showcase** (MapMaker only, from the owner's reference)
 - **A new map, Iron Coast** (`iron_coast`): 380 × 320 m of coast for 24-32 a side (24 v 24 is the Map's pick; 16 to 64
   players). Landing craft beached on the sand, an irregular cliff (8 m at the grand stair's

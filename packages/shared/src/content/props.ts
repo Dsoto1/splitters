@@ -43,6 +43,8 @@ export interface PropFlame {
   at: readonly [number, number, number];
   size: number;
   hide?: readonly string[];
+  /** A column of smoke rising from the flame (Smoke VFX's thin smoke, map.lasting `smoke.wreck`), this size: a burning wreck. */
+  smoke?: number;
 }
 
 export { CORE_PROPS, PROP_CATEGORIES };
