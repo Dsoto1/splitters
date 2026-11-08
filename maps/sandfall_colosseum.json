@@ -21,11 +21,11 @@
     ],
     "release": {
       "mapId": "m_prmawkdzrmtay5mm",
-      "versionId": "v_s7kdwf6ov57urvp6",
-      "revision": 5,
-      "contentHash": "sha256:aa956d4366e87b04aeff168a8500573aaa17628628d847c4f34348f3ee4e4826",
+      "versionId": "v_oec2dttp3ccjt6m2",
+      "revision": 6,
+      "contentHash": "sha256:b08ff3652c2cfbe7e1623aafd384e15f2749e5e55eff0281d09a787806f8cc54",
       "schemaVersion": 29,
-      "releasedAt": "2026-11-08T17:48:07.988Z"
+      "releasedAt": "2026-11-08T18:12:35.284Z"
     }
   },
   "classicStructure": {
@@ -64,38 +64,6 @@
         "y": -4,
         "z": 0,
         "rotation": 2
-      },
-      {
-        "id": "tile_s88lhokppn",
-        "tile": "imperial.gate",
-        "x": 4,
-        "y": 3,
-        "z": 0,
-        "rotation": 1
-      },
-      {
-        "id": "tile_uxmi4s7v3f",
-        "tile": "imperial.gate",
-        "x": 4,
-        "y": -3,
-        "z": 0,
-        "rotation": 1
-      },
-      {
-        "id": "tile_563os54zei",
-        "tile": "imperial.gate",
-        "x": -4,
-        "y": -3,
-        "z": 0,
-        "rotation": 3
-      },
-      {
-        "id": "tile_12lihotopk",
-        "tile": "imperial.gate",
-        "x": -4,
-        "y": 3,
-        "z": 0,
-        "rotation": 3
       }
     ]
   },
@@ -53313,15 +53281,6 @@
       "mirror": false
     },
     {
-      "id": "setpiece_w5gcyzag25",
-      "piece": "setpiece.arena_arcade",
-      "x": 5,
-      "y": 3,
-      "z": 0,
-      "rotation": 1,
-      "mirror": false
-    },
-    {
       "id": "setpiece_t29jqv61m8",
       "piece": "setpiece.arena_arcade",
       "x": 6,
@@ -54015,15 +53974,6 @@
       "mirror": false
     },
     {
-      "id": "setpiece_008g5pfu7e",
-      "piece": "setpiece.arena_arcade",
-      "x": 5,
-      "y": -3,
-      "z": 0,
-      "rotation": 1,
-      "mirror": false
-    },
-    {
       "id": "setpiece_y38fpii55x",
       "piece": "setpiece.arena_arcade",
       "x": 6,
@@ -54129,15 +54079,6 @@
       "y": -3,
       "z": 6,
       "rotation": 1,
-      "mirror": false
-    },
-    {
-      "id": "setpiece_x6c2hc81ap",
-      "piece": "setpiece.arena_arcade",
-      "x": -5,
-      "y": -3,
-      "z": 0,
-      "rotation": 3,
       "mirror": false
     },
     {
@@ -54834,15 +54775,6 @@
       "mirror": false
     },
     {
-      "id": "setpiece_s673he9uxm",
-      "piece": "setpiece.arena_arcade",
-      "x": -5,
-      "y": 3,
-      "z": 0,
-      "rotation": 3,
-      "mirror": false
-    },
-    {
       "id": "setpiece_otzyfn4c2j",
       "piece": "setpiece.arena_arcade",
       "x": -6,
@@ -54947,6 +54879,78 @@
       "x": -10,
       "y": 3,
       "z": 6,
+      "rotation": 3,
+      "mirror": false
+    },
+    {
+      "id": "setpiece_otw0kngwu7",
+      "piece": "setpiece.arena_bay_podium",
+      "x": 4,
+      "y": 3,
+      "z": 0,
+      "rotation": 1,
+      "mirror": false
+    },
+    {
+      "id": "setpiece_izyh4iq7c2",
+      "piece": "setpiece.arena_bay_podium",
+      "x": 4,
+      "y": -3,
+      "z": 0,
+      "rotation": 1,
+      "mirror": false
+    },
+    {
+      "id": "setpiece_gx8dmo86dd",
+      "piece": "setpiece.arena_bay_podium",
+      "x": -4,
+      "y": 3,
+      "z": 0,
+      "rotation": 3,
+      "mirror": false
+    },
+    {
+      "id": "setpiece_xl0guvp2wd",
+      "piece": "setpiece.arena_bay_podium",
+      "x": -4,
+      "y": -3,
+      "z": 0,
+      "rotation": 3,
+      "mirror": false
+    },
+    {
+      "id": "setpiece_95kbeus5nk",
+      "piece": "setpiece.stair_tower_8",
+      "x": 4,
+      "y": 10,
+      "z": 0,
+      "rotation": 1,
+      "mirror": false
+    },
+    {
+      "id": "setpiece_si1aq8kkv4",
+      "piece": "setpiece.stair_tower_8",
+      "x": -4,
+      "y": 8,
+      "z": 0,
+      "rotation": 3,
+      "mirror": false
+    },
+    {
+      "id": "setpiece_ig837ybnuj",
+      "piece": "setpiece.stair_tower_8",
+      "x": 4,
+      "y": -8,
+      "z": 0,
+      "rotation": 1,
+      "mirror": false
+    },
+    {
+      "id": "setpiece_4xr4ucdg5n",
+      "piece": "setpiece.stair_tower_8",
+      "x": -4,
+      "y": -10,
+      "z": 0,
       "rotation": 3,
       "mirror": false
     }
