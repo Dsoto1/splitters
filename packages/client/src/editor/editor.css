@@ -646,3 +646,42 @@ dialog.ed-keys { pointer-events: auto; width: min(1040px, 94vw); max-height: 86v
 #ed-ring-angle { position: absolute; left: 0; top: 0; z-index: 5; pointer-events: none; padding: 2px 8px; background: rgba(11, 15, 26, 0.9); border: 1px solid #ffd34d; border-radius: 4px; font: 700 15px var(--font-display); color: #ffd34d; }
 #ed-ring-angle[hidden] { display: none; }
 #ed-inspector .ed-quick-facings .seg { grid-template-columns: repeat(4, 1fr); margin-bottom: 0; }
+
+/* MapMaker Phase 3 part B. Note pins (noteTool.ts): drawn over the view, editor-only, never in play. */
+.ed-notes { position: absolute; inset: 0; pointer-events: none; z-index: 4; overflow: hidden; }
+.ed-note-pin {
+  position: absolute; left: 0; top: 0; display: flex; align-items: center; gap: 4px; max-width: 220px; height: auto; min-width: 0;
+  padding: 0 7px 0 0; margin: -26px 0 0 -11px; pointer-events: auto; cursor: pointer; background: none; border: none; color: #ffd34d;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.7));
+}
+.ed-note-pin svg { width: 22px; height: 26px; flex: none; }
+.ed-note-pin span { padding: 2px 6px; border-radius: 4px; background: rgba(11, 15, 26, 0.86); border: 1px solid rgba(255, 209, 77, 0.5); color: var(--fg); font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ed-note-pin:hover span, .ed-note-pin:focus-visible span { border-color: #ffd34d; }
+.ed-notes.tool .ed-note-pin { cursor: grab; }
+.ed-note-pin[hidden] { display: none; }
+#editor > .ed-note-editor {
+  position: absolute; z-index: 6; width: 280px; padding: 10px 12px; background: var(--surface-2); color: var(--fg);
+  border: 1px solid rgba(255, 209, 77, 0.6); border-radius: 8px; box-shadow: 0 6px 24px rgba(0, 0, 0, 0.5);
+}
+.ed-note-editor h3 { margin: 0 0 6px; font-size: 13px; color: #ffd34d; }
+.ed-note-editor textarea { width: 100%; box-sizing: border-box; font: inherit; padding: 6px; border-radius: 6px; border: 1px solid rgba(142, 162, 192, 0.28); background: var(--deep-space); color: var(--fg); resize: vertical; margin-bottom: 8px; }
+#ed-inspector .ed-notes-list ul { list-style: none; margin: 0 0 8px; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+#ed-inspector .ed-notes-list li { display: flex; gap: 4px; }
+#ed-inspector .ed-notes-go { flex: 1; text-align: left; font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#ed-inspector .ed-notes-del { width: 28px; padding: 0; }
+/* Groups (groupPanel.ts). */
+#ed-inspector .ed-group-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 8px 0; }
+#ed-inspector .ed-group-row > span { color: var(--muted); }
+#ed-inspector .ed-group-row input { flex: 1; min-width: 100px; width: auto; }
+#ed-inspector .ed-group-row small { flex-basis: 100%; color: var(--muted); font-size: 11px; }
+/* Mirror… (mirrorDialog.ts). */
+.ed-mirror { max-width: 560px; }
+.ed-mirror fieldset { border: 1px solid rgba(142, 162, 192, 0.28); border-radius: 6px; margin: 0 0 12px; padding: 6px 10px 8px; display: flex; flex-direction: column; gap: 6px; }
+.ed-mirror legend { color: var(--muted); padding: 0 4px; }
+.ed-mirror .ed-mirror-at { flex-wrap: wrap; }
+.ed-mirror .ed-mirror-at input { width: 80px; flex: none; }
+.ed-mirror .ed-mirror-check { display: block; margin: 0 0 8px; }
+.ed-mirror #ed-mirror-why { min-height: 2.8em; }
+.ed-mirror #ed-mirror-why.err { color: var(--error); }
+/* New map → Start from (templatePicker.ts). */
+.ed-new-sizes.off, label.off { opacity: 0.45; }
