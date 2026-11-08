@@ -1306,6 +1306,7 @@ html.touch #squad-order { left: calc(8px + env(safe-area-inset-left)); bottom: a
 #order-wheel .ww-item.on { background: rgba(255, 179, 71, 0.2); border-color: var(--orange); }
 #order-wheel .ww-centre b { color: var(--orange); }
 #order-wheel .ww-dot { background: var(--orange); box-shadow: 0 0 6px var(--orange); }
+#order-wheel .ww-item.empty small { color: var(--muted); }
 
 /* Phones and tablets (touchDevice.ts, html.touch): fingers, not a mouse. */
 html.touch { touch-action: manipulation; -webkit-tap-highlight-color: transparent; -webkit-user-select: none; user-select: none; }
