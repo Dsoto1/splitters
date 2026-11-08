@@ -7,6 +7,7 @@ import { rng } from './rng.mjs';
 import { Mesh, add, cross, mul, norm, rotate } from './mesh.mjs';
 import { card, chains, tubes } from './branches.mjs';
 import { toLinear } from './tree.mjs';
+import { BARK_STRIPS } from './textures.mjs';
 
 const GOLDEN = (137.5 * Math.PI) / 180;
 
@@ -81,7 +82,7 @@ export function coniferMesh(seed, sk, g, lod, look, atlas) {
     sides: (rad) => (rad > 0.06 ? lod.trunkSides : lod.branchSides),
     step: lod.step ?? 1,
     stepBelow: 1,
-    uv: { u0: 0.5, u1: 1 },
+    uv: BARK_STRIPS.pine,
     colour: (p) => {
       const ao = 0.6 + 0.4 * Math.min(1, p[1] / (H * 0.5));
       return [barkCol[0] * ao, barkCol[1] * ao, barkCol[2] * ao];

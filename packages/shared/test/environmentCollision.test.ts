@@ -194,7 +194,14 @@ describe('environment collision', () => {
     // Nothing but the movement-blocking shapes of nav obstacles reaches navigation.
     const shapes = environmentShapes(arena(ENV_SPECIES.map((s, i) => ({ model: s.id, position: [8 + i * 6, 0, 0] }))));
     expect(shapes.filter((s) => s.nav).every((s) => s.blocks === 'all')).toBe(true);
-    expect(environmentNavTriangles(shapes.filter((s) => s.sourceId === 'env_3' || s.sourceId === 'env_5'))).toBeNull(); // grass, shrub
+    const at = (id: string) => `env_${ENV_SPECIES.findIndex((s) => s.id === id)}`;
+    const soft = [at('env.grass.clump'), at('env.shrub.broadleaf'), at('env.shrub.laurel')];
+    expect(environmentNavTriangles(shapes.filter((s) => soft.includes(s.sourceId)))).toBeNull();
+    // Environment Phase 2: palms, the saguaro and the hedges are routed round; the laurel bush isn't.
+    expect(crossing(route([{ model: 'env.shrub.laurel', position: [20, 0, 0] }]))).toBeLessThan(0.3);
+    expect(crossing(route([{ model: 'env.palm.coconut', position: [20, 0, 0] }]))).toBeGreaterThan(0.4);
+    expect(crossing(route([{ model: 'env.cactus.saguaro', position: [20, 0, 0] }]))).toBeGreaterThan(0.4);
+    expect(crossing(route([{ model: 'env.hedge.privet', position: [20, 0, 0] }]))).toBeGreaterThan(2);
   });
 
   it('a non-solid placement and the legacy props are untouched: env props add no boxes, solid: false adds no shapes', () => {

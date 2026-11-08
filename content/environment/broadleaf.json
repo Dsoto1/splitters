@@ -37,14 +37,158 @@
         "limbShapeRadius": 0.15
       },
       "lods": [
-        { "distance": 0, "minRadius": 0.016, "barkBudget": 1250, "sides": [[0.15, 8], [0.07, 6], [0.035, 4], [0, 3]], "step": 1, "cards": 760, "cardScale": 1 },
+        {
+          "distance": 0,
+          "minRadius": 0.016,
+          "barkBudget": 1250,
+          "sides": [[0.15, 8], [0.07, 6], [0.035, 4], [0, 3]],
+          "step": 1,
+          "cards": 760,
+          "cardScale": 1
+        },
         { "distance": 30, "minRadius": 0.04, "barkBudget": 380, "sides": [[0.15, 6], [0.07, 4], [0, 3]], "step": 2, "cards": 255, "cardScale": 1.6 },
-        { "distance": 70, "minRadius": 0.09, "barkBudget": 110, "sides": [[0.15, 4], [0, 3]], "step": 3, "stepBelow": 1, "cards": 70, "cardScale": 2.6 }
+        {
+          "distance": 70,
+          "minRadius": 0.09,
+          "barkBudget": 110,
+          "sides": [[0.15, 4], [0, 3]],
+          "step": 3,
+          "stepBelow": 1,
+          "cards": 70,
+          "cardScale": 2.6
+        }
       ],
       "impostor": { "distance": 140, "size": 256 },
       "variants": [
         { "index": 0, "name": "summer", "look": { "bark": "#5a4e42", "leaves": ["#4f6e2c", "#5d7a31", "#47652a"], "jitter": 0.12 } },
         { "index": 1, "name": "autumn", "look": { "bark": "#5a4e42", "leaves": ["#b0702a", "#c08a32", "#9a5426", "#8a7a2c"], "jitter": 0.14 } }
+      ]
+    },
+    {
+      "id": "env.broadleaf.maple",
+      "displayName": "Field Maple",
+      "category": "tree",
+      "assetVersion": 1,
+      "notes": { "1": "First version (Environment Phase 2): a rounder, denser crown on a taller bole than the oak; the round and leafy park trees' replacement." },
+      "nominalHeight": 7,
+      "nav": "obstacle",
+      "role": "cover",
+      "placement": { "maxSlopeDegrees": 30, "minSpacing": 3.5, "scale": [0.8, 1.25] },
+      "generator": {
+        "kind": "broadleaf",
+        "seed": 11,
+        "height": 7,
+        "lean": [0, 4],
+        "crownBase": [0.3, 0.36],
+        "lobes": [1, 2],
+        "crownRadius": 2.9,
+        "clumpScale": 0.7,
+        "clumpCut": -0.12,
+        "scaffold": [4, 6],
+        "limbElevation": [48, 70],
+        "attractors": 850,
+        "segment": 0.3,
+        "influence": 2.6,
+        "kill": 0.45,
+        "tropism": 0.12,
+        "tipRadius": 0.01,
+        "pipe": 2.0,
+        "trunkRadius": 0.24,
+        "cardSize": 0.85,
+        "minShapeRadius": 0.25,
+        "limbShapeRadius": 0.15
+      },
+      "lods": [
+        {
+          "distance": 0,
+          "minRadius": 0.016,
+          "barkBudget": 1250,
+          "sides": [[0.15, 8], [0.07, 6], [0.035, 4], [0, 3]],
+          "step": 1,
+          "cards": 760,
+          "cardScale": 1
+        },
+        { "distance": 30, "minRadius": 0.04, "barkBudget": 380, "sides": [[0.15, 6], [0.07, 4], [0, 3]], "step": 2, "cards": 255, "cardScale": 1.6 },
+        {
+          "distance": 70,
+          "minRadius": 0.09,
+          "barkBudget": 110,
+          "sides": [[0.15, 4], [0, 3]],
+          "step": 3,
+          "stepBelow": 1,
+          "cards": 70,
+          "cardScale": 2.6
+        }
+      ],
+      "impostor": { "distance": 140, "size": 256 },
+      "variants": [
+        { "index": 0, "name": "summer", "look": { "bark": "#6b6158", "leaves": ["#557a30", "#628634", "#4b6d2b"], "jitter": 0.12 } },
+        { "index": 1, "name": "autumn", "look": { "bark": "#6b6158", "leaves": ["#c4612a", "#d68a2e", "#a8402a", "#c9a03a"], "jitter": 0.14 } }
+      ]
+    },
+    {
+      "id": "env.broadleaf.acacia",
+      "displayName": "Umbrella Acacia",
+      "category": "tree",
+      "assetVersion": 1,
+      "notes": { "1": "First version (Environment Phase 2): a savanna tree, a forked leaning trunk under a flat, wide crown; the flat-top tree's replacement on dry and tropical maps." },
+      "nominalHeight": 6.5,
+      "nav": "obstacle",
+      "role": "cover",
+      "placement": { "maxSlopeDegrees": 30, "minSpacing": 5, "scale": [0.8, 1.25] },
+      "generator": {
+        "kind": "broadleaf",
+        "seed": 12,
+        "height": 6.5,
+        "lean": [4, 10],
+        "crownBase": [0.5, 0.56],
+        "lobes": [3, 3],
+        "crownRadius": 3.6,
+        "clumpScale": 0.6,
+        "clumpCut": -0.1,
+        "scaffold": [3, 4],
+        "limbElevation": [32, 48],
+        "attractors": 800,
+        "segment": 0.3,
+        "influence": 2.6,
+        "kill": 0.45,
+        "tropism": 0.02,
+        "tipRadius": 0.01,
+        "pipe": 2.0,
+        "trunkRadius": 0.2,
+        "cardSize": 0.85,
+        "minShapeRadius": 0.25,
+        "limbShapeRadius": 0.15,
+        "limbStep": 0.62,
+        "cards": ["acacia.0"],
+        "umbrella": { "depth": 0.42, "spread": 1.5 }
+      },
+      "lods": [
+        {
+          "distance": 0,
+          "minRadius": 0.016,
+          "barkBudget": 1250,
+          "sides": [[0.15, 8], [0.07, 6], [0.035, 4], [0, 3]],
+          "step": 1,
+          "cards": 760,
+          "cardScale": 1
+        },
+        { "distance": 30, "minRadius": 0.04, "barkBudget": 380, "sides": [[0.15, 6], [0.07, 4], [0, 3]], "step": 2, "cards": 255, "cardScale": 1.6 },
+        {
+          "distance": 70,
+          "minRadius": 0.09,
+          "barkBudget": 110,
+          "sides": [[0.15, 4], [0, 3]],
+          "step": 3,
+          "stepBelow": 1,
+          "cards": 70,
+          "cardScale": 2.6
+        }
+      ],
+      "impostor": { "distance": 140, "size": 256 },
+      "variants": [
+        { "index": 0, "name": "green", "look": { "bark": "#5e4b3e", "leaves": ["#5d7232", "#6a7c38", "#53682c"], "jitter": 0.12 } },
+        { "index": 1, "name": "dry", "look": { "bark": "#5e4b3e", "leaves": ["#8a8a40", "#9a9248", "#7a7a3a"], "jitter": 0.14 } }
       ]
     }
   ]

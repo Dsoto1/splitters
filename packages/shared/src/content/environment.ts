@@ -103,8 +103,8 @@ export function envPropDefinition(id: string): PropDefinition | undefined {
   return def;
 }
 
-/** Whether a placement of this species leans with the ground when drawn: plants only (anything that collides stands upright, as its collision does). */
+/** Whether a placement of this species leans with the ground when drawn: plants without collision only (anything that collides, a hedge too, stands upright, as its collision does). */
 export const envTilts = (model: string): boolean => {
-  const c = getEnvSpecies(model)?.category;
-  return c === 'plant' || c === 'groundcover';
+  const s = getEnvSpecies(model);
+  return !!s && (s.category === 'plant' || s.category === 'groundcover') && !s.variants[0]!.shapes.length;
 };
