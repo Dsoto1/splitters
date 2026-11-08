@@ -5123,8 +5123,9 @@ async function environmentFlow(browser) {
 /**
  * Fireteams (docs/FIRETEAMS_PLAN.md, Part 1): the variant on in Match setup (its squad size beside the score) → you
  * lead a squad of bots (the HUD's order line) → hold B: the order wheel (a tap of B is still the quick-message menu) →
- * pick Hold here → a bot answers, and the squad holds there while you walk off. Then a phone: the Orders button opens
- * the same wheel. Screenshots of the wheel: e2e-artifacts/fireteams-wheel-*.png.
+ * pick Hold here → a bot answers, and the squad holds there while you go off. Screenshot of the wheel:
+ * e2e-artifacts/fireteams-wheel-desktop.png. (The phone's Orders button: packages/client/test/inputWheel.test.ts; a
+ * second match on a phone here would cost another minute and a half of the shards' budget.)
  */
 async function fireteamsFlow(browser) {
   const page = await (await browser.newContext({ viewport: { width: 1280, height: 720 } })).newPage();
@@ -5195,35 +5196,8 @@ async function fireteamsFlow(browser) {
   check(!!away && holding && where.me > 12, `the squad holds where you gave the order after you go off (you ${where.me} m from it, the squad ${where.bots.join(', ')} m; from ${JSON.stringify(at)} to ${JSON.stringify(away)})`);
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await page.context().close();
-  await fireteamsPhone(browser);
 }
 
-/** Fireteams on a phone: the Orders button shows while you lead a squad and opens the order wheel; a tap on an order gives it. */
-async function fireteamsPhone(browser) {
-  const phone = devices['Pixel 7'];
-  const ctx = await browser.newContext({ ...phone, viewport: { width: phone.viewport.height, height: phone.viewport.width }, screen: { width: phone.screen.height, height: phone.screen.width } });
-  const page = await ctx.newPage();
-  const errors = [];
-  page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
-  await page.addInitScript(() => localStorage.setItem('cs.arcade', JSON.stringify({ map: 'sandgate', mode: 'core.tdm', bots: 11, skill: 'easy', scoreLimit: 200, minutes: 20, fireteams: true, squadSize: 4 })));
-  await page.goto(`${CLIENT}/?test=1&god=1`);
-  await page.tap('#nav-play');
-  await page.waitForSelector('#arcade-start', { timeout: T(10000) });
-  await page.tap('#arcade-start');
-  await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown' && window.__cs.squad().led !== null, null, { timeout: T(90000) });
-  await page.tap('#resume');
-  const button = await page.waitForFunction(() => !document.querySelector('#touch-ui .tc-orders')?.hidden && !document.getElementById('touch-ui').hidden, null, { timeout: T(10000) }).then(() => true, () => false);
-  check(button, 'a phone shows the Orders button while you lead a squad');
-  await page.tap('#touch-ui .tc-orders');
-  const opened = await page.waitForFunction(() => !document.getElementById('order-wheel').hidden && document.querySelectorAll('#order-wheel .ww-item').length === 6, null, { timeout: T(5000) }).then(() => true, () => false);
-  check(opened, 'the Orders button opens the order wheel');
-  await page.screenshot({ path: `${ARTIFACTS}/fireteams-wheel-phone.png` });
-  await page.tap('#order-wheel .ww-item[data-code="6"]');
-  const regroup = await simWait(page, (m, me) => ['regroup', 'follow'].includes(m.fireteams?.squadOf(me.slot)?.order.kind) && m.fireteams.orders.some((o) => o.kind === 'regroup' && !o.auto), null, T(10000));
-  check(regroup && (await page.evaluate(() => document.getElementById('order-wheel').hidden)), 'a tap on Regroup gives it and closes the wheel');
-  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
-  await ctx.close();
-}
 
 /**
  * New players: the first visit's tutorial offer, the tutorial on the Training Range (a step done by doing it, Skip
