@@ -3049,14 +3049,20 @@ export class BotBrain {
       const left = horizontalDistance(m.pos, goal);
       if (!this.goal || horizontalDistance(this.goal, goal) > 3 || tick - this.lastPathTick > TICK_RATE * 2) {
         this.goal = { ...goal };
-        this.path = view.nav.findPath(m.pos, goal) ?? [];
+        let next = view.nav.findPath(m.pos, goal) ?? [];
         // On water the navmesh has no route (or only the long way round the shore): straight across, then up the bank.
-        if (m.floats && (this.path.length < 2 || pathLength(this.path) > left * 1.5)) this.path = [];
-        this.pathIndex = 1;
+        if (m.floats && (next.length < 2 || pathLength(next) > left * 1.5)) next = [];
         this.lastPathTick = tick;
-        // A new route through somewhere it doesn't fit (a door, a passage between pillars): out here and on foot,
-        // rather than steering into it and wedging or plugging it.
-        this.routeTooNarrow = this.path.length > 1 && !vehicleRouteFits(view.physics, m, this.path, FIT_AHEAD);
+        // A route through somewhere it doesn't fit (a door, a passage between pillars, stairs under a beam): it keeps
+        // the route it has (that one fitted: where it set off for), or with none, gets out here and goes on foot,
+        // rather than steering in and wedging or plugging it. (Getting out wherever a new route didn't fit left
+        // vehicles parked at the foot of the narrow bit, in everyone's way.)
+        const fits = next.length < 2 || vehicleRouteFits(view.physics, m, next, FIT_AHEAD);
+        if (fits || this.path.length < 2) {
+          this.path = next;
+          this.pathIndex = 1;
+          this.routeTooNarrow = !fits;
+        }
       }
       // Look ahead along the route.
       while (this.pathIndex < this.path.length - 1 && horizontalDistance(m.pos, this.path[this.pathIndex]!) < 6) this.pathIndex++;

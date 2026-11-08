@@ -12,7 +12,7 @@ made only on a commit that passed CI on a check branch.
 to a stop within a few metres (`vehicle.idleBrake` in its data) instead of gliding on; bots slow under 3 m/s before
 getting out (unless it is burning or about to blow); bot drivers keep off routes their vehicle doesn't fit
 (`vehicle.routeFit`, the tanks' route check for every ground vehicle and hovercraft), so they no longer drive a Hauler
-into Iron Tide's 3 m doors and leave it plugging them. Driven vehicles handle exactly as before.
+into Iron Tide's 3 m doors, or a tank up its centre stairs under a beam, and leave them plugging the way. Driven vehicles handle exactly as before.
 **Hovercraft no longer get stuck under structures** (owner, 2026-11-07: a Hauler stuck under Iron Tide's platforms):
 a vehicle squeezed into a gap narrower than itself (Iron Tide's door at the top of the stairs) used to rise up it into
 the lintel and the roof and stay there; it now stops at floor height and backs out. Hovercraft (and other ground
