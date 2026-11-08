@@ -7,6 +7,8 @@
 /** What a key does; MapMaker maps each to its handler (a Record over this type, so none can be left out). */
 export type KeyAction =
   | 'test'
+  | 'playFromHere'
+  | 'planView'
   | 'undo'
   | 'redo'
   | 'save'
@@ -89,6 +91,7 @@ const tool = (action: KeyAction, keys: string, code: string, what: string): KeyB
 
 /** Pressed keys, first match wins (so Ctrl+Shift+Z is before Ctrl+Z, Shift+R before R). */
 export const EDITOR_KEYS: readonly KeyBinding[] = [
+  { action: 'playFromHere', group: 'Map and panels', keys: 'Shift+F5', what: 'Play from here: test the map standing below the camera, facing where it looks', codes: ['F5'], shift: true, always: true },
   { action: 'test', group: 'Map and panels', keys: 'F5', what: 'Play test the map with the chosen bots', codes: ['F5'], always: true },
   { action: 'redo', group: 'Edit', keys: 'Ctrl+Shift+Z', what: 'Redo', codes: ['KeyZ'], mod: true, shift: true },
   { action: 'undo', group: 'Edit', keys: 'Ctrl+Z', what: 'Undo', codes: ['KeyZ'], mod: true },
@@ -121,6 +124,7 @@ export const EDITOR_KEYS: readonly KeyBinding[] = [
   { action: 'levelUp', group: 'Levels', keys: 'PgUp', what: 'Edit the level above', codes: ['PageUp'], shift: false },
   { action: 'lowerSelection', group: 'Levels', keys: 'Shift+PgDn', what: 'Move the selection down a level', codes: ['PageDown'], shift: true },
   { action: 'levelDown', group: 'Levels', keys: 'PgDn', what: 'Edit the level below', codes: ['PageDown'], shift: false },
+  { action: 'planView', group: 'View and camera', keys: 'K', what: 'Plan view: the level from straight above, with spawns, objectives and pickups (again: back)', codes: ['KeyK'] },
   { action: 'showAll', group: 'Levels', keys: 'H', what: 'Show the levels above too', codes: ['KeyH'] },
   { action: 'focus', group: 'View and camera', keys: 'F', what: 'Frame the selection', codes: ['KeyF'] },
   { action: 'resetView', group: 'View and camera', keys: 'Home', what: "Back to the level's overview", codes: ['Home'] },
