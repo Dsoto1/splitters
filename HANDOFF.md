@@ -232,7 +232,7 @@ gets overloaded above that: local e2e times out and flakes). Prune landed worktr
 - Earlier the same day: content scalability steps 2–6, perf toolset, flaky e2e fixes, Runway Nine airliner, map
   reworks batches 2–3, character fixes rounds 2–3 (see the entries below and CHANGELOG).
 
-### Deathmatch and Team Deathmatch (`wip/tdm-dm`, agent, 2026-11-08; owner-approved brief; CI on `check/tdm-dm`)
+### Deathmatch and Team Deathmatch (`wip/tdm-dm`, agent, 2026-11-08; owner-approved brief; green on `check/tdm-dm` at 95f3f80, run 42455479068; LANDED: main 95f3f80)
 
 **The brief:** in the Roulette bench (48 bots, Sandgate, free-for-all) 71 % of Deathmatch kills were within 3 s of the
 victim spawning. Spawns, spawn protection, player caps per map, awards and callouts for every mode, new effects,
@@ -304,10 +304,18 @@ joiner), `awards.test.ts`, `playerCaps.test.ts`, roulette.test (protection on a 
 reduceFlashing.test (heavy edge). Changed: weapons.test (players placed where the test wants them: spawns are now
 random among the safest few), teamplay.test (unchanged, passes), matchLimits.test (its campus map sets TDM caps),
 botPush.test (garrison > 0.25 at seed 1; over seeds 1-5 assault 0.30 vs 0.26, garrison 0.25 vs 0.37 on main),
-botMovement.test (easy strafing speed > 1.12; 1.149 now).
+botMovement.test (easy strafing speed > 1.12; 1.149 now), hostControl.test and setupPlan.test (their small test maps
+set player caps; the fit list starts with `caps`), airplane.test (landed dropship bots may knife each other),
+client prediction.test (starts on a fixed spawn point). e2e: roulette drops the shield with `shieldUntil = 0`; the
+arsenal flow's wall check stands on the first spawn point with open ground and a 1.45 m wall (was the spawn you got,
+and 1.3 m: a crouched eye line cleared it by centimetres); flashing has a `fight` moment (passes, setting on and off);
+the arena and canyon baselines are new (the first spawn moved). Checked locally: typecheck, content:check, the
+touched unit tests, `bot-report --check` (every limit held), e2e flashing, arsenal (CI=1) and visual.
 
-**Pictures:** session scratchpad `tdm/` (00-bot, 01-armour-pickup, 02-armour-break, 03-big-hit, 04-streak,
-05-spawn-shield, 06-aura-damage, 07-aura-speed, 08-awards).
+**Pictures:** session scratchpad `tdm/`: 01-armour-pickup-f*, 02-armour-break-f*, 03-big-hit-f*, 04-streak-f* (frames
+1-5 after each starts, a frozen page clock and canvas grabs on the built game, Citadel), 05-spawn-shield,
+06-aura-damage, 07-aura-speed, 08-awards. The pictures found a real problem: armour-break and big-hit bursts played at
+the body's middle were hidden inside the body; they now play half a metre toward the camera (`View.towardCamera`).
 
 **For the owner:**
 1. Deathmatch pace: keep `botFireBefore` 1 (spawn deaths way down, ~0.5 s more between fights), or 2 (pace as before,
