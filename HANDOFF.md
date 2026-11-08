@@ -55,6 +55,27 @@ The workflow is unchanged (CLAUDE.md):
 - give agents their own port ranges (4950-4959, 4970-4979, 4980-4989);
 - tell agents a CI failure in `attest-build-provenance` (a transparency-log 500 or 404) is GitHub's signing service: re-run the failed job.
 
+**Working in tandem (owner, 2026-11-08): two sessions land on main in parallel.** Both follow this.
+- **Claim before you edit shared ground.** Add a line here ("Claimed: <what>, <session>, <date>") before touching
+  `packages/client/src/editor/**`, `packages/shared/src/editor/**`, the map schema or `MAP_FORMAT_VERSION`
+  (`shared/src/map/mapKeys.ts`), palette or content ids, or any `maps/<id>.json`; remove it when you land. If the
+  other session holds a claim, wait or ask the owner. The MapMaker lane owns the editor code and the maps it builds
+  (sandfall_colosseum, whiteout_station, MAP 02, MAP 04); the other session owns Iron Coast, race removal and
+  Environment Phase 2 until each lands.
+- **Map format bumps:** one at a time, claimed here. Whoever lands second takes the next number and chains its
+  migration after the first one's.
+- **Generated files** (content locks and tables, palette atlases, provenance, `maps/test_coverage.json`,
+  `e2e/timings.json`): on a merge conflict, take either side and regenerate with the repo's tools
+  (`pnpm content:rebuild` and the rest); never hand-merge them.
+- **HANDOFF.md and CHANGELOG.md** merge with `merge=union` (.gitattributes): both sides' lines are kept. After a
+  merge, read the touched section once and fix the order.
+- **Hot shared files** (`e2e/run.mjs`, `e2e/flowMap.mjs`, `match.ts`, `session.ts`, `style.css`): keep changes small
+  and in their own functions or blocks; merge origin/main before every push to a check/ branch.
+- **Landing:** merge origin/main, push to check/, land only that green commit by fast-forward. Never force-push,
+  rebase pushed commits, or push to the other session's branches. If main moved, merge and re-check.
+- **Releases:** a session cutting a release says so here first; the other holds its pushes to main until it lands.
+- **Disk:** each session's container is its own; remove a worktree once its branch has landed.
+
 **In flight: MapMaker overhaul (other account)** (owner, 2026-11-08: a second session owns this lane;
 docs/MAPMAKER_OVERHAUL_PLAN.md). Branches `wip/mapmaker-*` / `check/mapmaker-*` only.
 - **Now:** Phase 1 (the ghost says why, the live budget bar, the `?` overlay; the measure tool, props snap to surfaces with
