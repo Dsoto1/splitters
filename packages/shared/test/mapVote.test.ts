@@ -83,6 +83,12 @@ describe('map vote: one vote, ticked by its host', () => {
     expect(v.closeAt).toBe(1000 - (VOTE_RESULT_SECONDS + 1) * TICK_RATE);
     expect(v.tick(v.closeAt, 1000)).toBe(true);
   });
+  it('let go of again (a shorter hold), it closes as planned', () => {
+    const v = new MapVote(options, 100, null);
+    expect(v.tick(50, 1000)).toBe(false);
+    expect(v.tick(200, 300)).toBe(true);
+    expect(v.planned).toBe(100);
+  });
   it('lasts the vote and the winner’s moment', () => {
     expect(MapVote.ticks()).toBe((VOTE_SECONDS + VOTE_RESULT_SECONDS) * TICK_RATE);
   });

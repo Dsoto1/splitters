@@ -114,7 +114,7 @@ export class MapVote {
   private readonly votes = new Map<number, number>();
   private result: { winner: number; counts: number[]; by: VoteWin } | null = null;
   /** When it closes as planned (a held scoreboard may keep it open longer, never shorter). */
-  private readonly planned: number;
+  readonly planned: number;
 
   constructor(
     readonly options: readonly VoteOption[],

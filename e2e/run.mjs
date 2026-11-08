@@ -7150,9 +7150,13 @@ async function partyFlow(browser) {
   const voted = await page.waitForFunction((i) => window.__cs.vote().mine === i && window.__cs.vote().votes[i] === 1, pick, { timeout: T(10000) }).then(() => true, () => false);
   check(voted, `key ${pick + 1} votes, and the host counts it (${JSON.stringify(await page.evaluate(() => window.__cs.vote()))})`);
   await shot(page, 'vote-desktop-voted');
-  // Let go of the scoreboard: the vote closes as planned (its 12 s have long gone), the winner shows, the match travels.
+  // Let go of the scoreboard: the vote closes as planned, the winner shows, the match travels. (The winner is noted as
+  // it shows: a slow page may be on the next map by the time the runner looks.)
+  await page.evaluate(() => {
+    const keep = setInterval(() => window.__cs?.vote?.()?.winner && ((window.__won = window.__cs.vote().winner), clearInterval(keep)), 50);
+  });
   await sim(page, (m) => (m.phaseEndTick = m.tick + 60 * 6));
-  const won = await page.waitForFunction(() => window.__cs.vote()?.winner ?? null, null, { timeout: T(30000) }).then((h) => h.jsonValue(), () => null);
+  const won = await page.waitForFunction(() => window.__won ?? null, null, { timeout: T(30000), polling: 100 }).then((h) => h.jsonValue(), () => null);
   check(won === ballot.maps[pick], `the vote closes on the map with the votes (${won})`);
   await shot(page, 'vote-desktop-winner');
   const moved = await simWait(page, (m, _me, id) => m.map.metadata.id === id, ballot.maps[pick], T(120000));

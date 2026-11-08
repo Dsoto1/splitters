@@ -916,7 +916,7 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
       }
       if (vote && !vote.closed) {
         // The scoreboard stays up until the vote has had its time and the winner its moment.
-        match.holdIntermission(vote.closeAt + (VOTE_RESULT_SECONDS + 1) * TICK_RATE);
+        match.holdIntermission(vote.planned + (VOTE_RESULT_SECONDS + 1) * TICK_RATE);
         if (vote.tick(match.tick, match.intermissionEnds)) voteClosed();
         else if (match.tick % TICK_RATE === 0) broadcast({ t: 'vote', v: vote.state(match.tick) });
       }
