@@ -243,7 +243,8 @@ export class SessionAudio {
     const heard = new Set<number>();
     for (const { m, d } of running.slice(0, mine === null ? ENGINE_OTHERS : ENGINE_OTHERS + 1)) {
       heard.add(m.index);
-      if (now - (this.engineAt.get(m.index) ?? 0) < ENGINE_REPEAT_MS) continue;
+      const last = this.engineAt.get(m.index);
+      if (last !== undefined && now - last < ENGINE_REPEAT_MS) continue;
       this.engineAt.set(m.index, now);
       const speed = Math.hypot(m.vel.x, m.vel.z);
       const v = m.def.vehicle;
