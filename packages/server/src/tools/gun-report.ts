@@ -1,4 +1,4 @@
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
@@ -53,6 +53,7 @@ import { Match, initNavigation, type Combatant } from '@tiletrigger/shared/match
  *   pnpm gun-report                                  (every gun; prints the tables)
  *   pnpm gun-report --json=docs/gunplay-audit.json --svg=docs/gunplay-ttk.svg
  *   pnpm gun-report --weapons=core.pistol,core.smg --trials=12
+ *   pnpm gun-report --from=docs/gunplay-audit.json --svg=docs/gunplay-ttk.svg   (redraw the chart from a run's JSON)
  * Options: --trials=N (default 6), --distances=10,25,50,100, --seconds=8 (the cap on one kill).
  */
 
@@ -577,30 +578,29 @@ const BENCHMARKS: readonly [string, string][] = [
 ];
 
 /**
- * TTK against distance, one line per benchmark weapon (ideal body TTK on an unarmoured standard player, the sim's
- * sweep): an SVG that reads in light and dark (its own background and ink, swapped by prefers-color-scheme), with
- * direct labels at the line ends.
+ * TTK against distance, one line per benchmark weapon (the ideal body TTK on an unarmoured standard player, from the
+ * sweep): an SVG that reads in light and dark (its own surface and ink, the dark steps under prefers-color-scheme), a
+ * legend row and direct labels at the line ends (ink text beside a swatch of the line's colour). Colours: the
+ * dataviz skill's validated categorical order, light and dark steps.
  */
 function chart(reports: WeaponReport[]): string {
-  const W = 760;
-  const H = 440;
+  const W = 800;
+  const H = 500;
   const L = 64;
-  const R = 150;
-  const T = 56;
+  const R = 170;
+  const T = 104;
   const B = 56;
   const maxD = 150;
-  const maxT = 2000;
+  const maxT = 2500;
   const x = (d: number) => L + (d / maxD) * (W - L - R);
   const y = (t: number) => T + (1 - Math.min(t, maxT) / maxT) * (H - T - B);
-  // Categorical slots (the dataviz skill's validated default palette), light and dark steps.
-  const colours = ['#2563eb', '#dc2626', '#16a34a', '#9333ea', '#ea580c', '#0891b2', '#a16207'];
-  const dark = ['#60a5fa', '#f87171', '#4ade80', '#c084fc', '#fb923c', '#22d3ee', '#facc15'];
+  const light = ['#2a78d6', '#eb6834', '#1baf7a', '#eda100', '#e87ba4', '#008300', '#6250d6'];
+  const dark = ['#3987e5', '#d95926', '#199e70', '#c98500', '#d55181', '#008300', '#9085e9'];
   const lines: string[] = [];
   const labels: { y: number; text: string; i: number }[] = [];
-  BENCHMARKS.forEach(([id, name], i) => {
-    const r = reports.find((w) => w.id === id);
-    if (!r) return;
-    const pts = SWEEP.filter((d) => d <= maxD).map((d) => [d, r.sweep[d] ?? null] as const);
+  const shown = BENCHMARKS.map(([id, name], i) => ({ r: reports.find((w) => w.id === id), name, i })).filter((s) => s.r);
+  for (const { r, name, i } of shown) {
+    const pts = SWEEP.filter((d) => d <= maxD).map((d) => [d, r!.sweep[d] ?? null] as const);
     let path = '';
     let pen = false;
     let last: readonly [number, number] | null = null;
@@ -613,21 +613,31 @@ function chart(reports: WeaponReport[]): string {
       pen = true;
       last = [d, t];
     }
-    if (path) lines.push(`<path class="s${i}" d="${path.trim()}" fill="none" stroke-width="2.25" stroke-linejoin="round" stroke-linecap="round"/>`);
-    for (const [d, t] of pts) if (t !== null && t <= maxT) lines.push(`<circle class="d${i}" cx="${x(d).toFixed(1)}" cy="${y(t).toFixed(1)}" r="2.6"/>`);
+    if (path) lines.push(`<path class="s${i}" d="${path.trim()}" fill="none" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>`);
+    for (const [d, t] of pts) if (t !== null && t <= maxT) lines.push(`<circle class="d${i} ring" cx="${x(d).toFixed(1)}" cy="${y(t).toFixed(1)}" r="4" stroke-width="2"><title>${name}, ${d} m: ${t} ms, ${r!.sweepStk[d]} rounds</title></circle>`);
     if (last) labels.push({ y: y(last[1]), text: `${name}${last[0] < maxD ? ` (to ${last[0]} m)` : ''}`, i });
-  });
-  // Direct labels, pushed apart so they never overlap.
+  }
+  // Direct labels, pushed apart so they never overlap (and kept inside the plot's height).
   labels.sort((p, q) => p.y - q.y);
-  for (let k = 1; k < labels.length; k++) if (labels[k]!.y - labels[k - 1]!.y < 15) labels[k]!.y = labels[k - 1]!.y + 15;
+  for (let k = 1; k < labels.length; k++) if (labels[k]!.y - labels[k - 1]!.y < 16) labels[k]!.y = labels[k - 1]!.y + 16;
+  const over = labels.length ? labels[labels.length - 1]!.y - (H - B) : 0;
+  if (over > 0) for (const l of labels) l.y -= over;
   const grid: string[] = [];
-  for (let t = 0; t <= maxT; t += 250) grid.push(`<line class="grid" x1="${L}" x2="${W - R}" y1="${y(t)}" y2="${y(t)}"/><text class="tick" x="${L - 8}" y="${y(t) + 4}" text-anchor="end">${t}</text>`);
-  for (const d of [0, 10, 25, 50, 75, 100, 125, 150]) grid.push(`<line class="grid" x1="${x(d)}" x2="${x(d)}" y1="${T}" y2="${H - B}"/><text class="tick" x="${x(d)}" y="${H - B + 18}" text-anchor="middle">${d}</text>`);
+  for (let t = 0; t <= maxT; t += 500) grid.push(`<line class="grid" x1="${L}" x2="${W - R}" y1="${y(t)}" y2="${y(t)}"/><text class="tick" x="${L - 8}" y="${y(t) + 4}" text-anchor="end">${t}</text>`);
+  for (const d of [0, 25, 50, 75, 100, 125, 150]) grid.push(`<text class="tick" x="${x(d)}" y="${H - B + 18}" text-anchor="middle">${d}</text>`);
+  // Legend row (identity never by colour alone: the direct labels name each line too).
+  const legend: string[] = [];
+  let lx = L;
+  for (const { name, i } of shown) {
+    legend.push(`<line class="s${i}" x1="${lx}" x2="${lx + 16}" y1="80" y2="80" stroke-width="2"/><circle class="d${i} ring" cx="${lx + 8}" cy="80" r="4" stroke-width="2"/><text class="ink2" x="${lx + 22}" y="84" font-size="11.5">${name}</text>`);
+    lx += 26 + name.length * 6.6;
+  }
+  const vars = (c: string[]) => c.map((v, i) => `.s${i}{stroke:${v}}.d${i}{fill:${v}}.k${i}{fill:${v}}`).join('');
   const style = [
-    '.bg{fill:#ffffff}.ink{fill:#111827}.muted{fill:#4b5563}.tick{fill:#4b5563;font-size:11px}.grid{stroke:#e5e7eb;stroke-width:1}.axis{stroke:#9ca3af}',
-    ...colours.map((c, i) => `.s${i}{stroke:${c}}.d${i}{fill:${c}}.l${i}{fill:${c}}`),
-    '@media (prefers-color-scheme: dark){.bg{fill:#0f172a}.ink{fill:#f1f5f9}.muted{fill:#94a3b8}.tick{fill:#94a3b8}.grid{stroke:#1e293b}.axis{stroke:#475569}',
-    ...dark.map((c, i) => `.s${i}{stroke:${c}}.d${i}{fill:${c}}.l${i}{fill:${c}}`),
+    '.bg{fill:#fcfcfb}.ink{fill:#0b0b0b}.ink2{fill:#52514e}.tick{fill:#898781;font-size:11px;font-variant-numeric:tabular-nums}.grid{stroke:#e1e0d9;stroke-width:1}.axis{stroke:#c3c2b7;stroke-width:1}.ring{stroke:#fcfcfb}',
+    vars(light),
+    '@media (prefers-color-scheme: dark){.bg{fill:#1a1a19}.ink{fill:#f0efec}.ink2{fill:#c3c2b7}.grid{stroke:#2c2c2a}.axis{stroke:#383835}.ring{stroke:#1a1a19}',
+    vars(dark),
     '}',
     'text{font-family:system-ui,-apple-system,"Segoe UI",sans-serif}',
   ].join('');
@@ -635,30 +645,39 @@ function chart(reports: WeaponReport[]): string {
     `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img" aria-label="Time to kill against distance for the seven benchmark weapons">`,
     `<style>${style}</style>`,
     `<rect class="bg" x="0" y="0" width="${W}" height="${H}" rx="8"/>`,
-    `<text class="ink" x="${L}" y="24" font-size="15" font-weight="600">Time to kill by distance: the benchmark seven</text>`,
-    `<text class="muted" x="${L}" y="42" font-size="11.5">Every round on the body of an unarmoured standard player (100 health). Measured in the shared sim (pnpm gun-report).</text>`,
+    `<text class="ink" x="${L}" y="26" font-size="15" font-weight="600">Time to kill by distance: the benchmark seven</text>`,
+    `<text class="ink2" x="${L}" y="45" font-size="11.5">Every round on the body of an unarmoured standard player (100 health), flight time included; a line stops</text>`,
+    `<text class="ink2" x="${L}" y="60" font-size="11.5">where no kill comes within 8 s (or past 2.5 s). Measured in the shared sim: pnpm gun-report.</text>`,
+    ...legend,
     ...grid,
     `<line class="axis" x1="${L}" x2="${W - R}" y1="${H - B}" y2="${H - B}"/>`,
     ...lines,
-    ...labels.map((l) => `<text class="l${l.i}" x="${W - R + 8}" y="${(l.y + 4).toFixed(1)}" font-size="12" font-weight="600">${l.text}</text>`),
-    `<text class="muted" x="${(L + W - R) / 2}" y="${H - 14}" font-size="12" text-anchor="middle">Distance (m)</text>`,
-    `<text class="muted" transform="translate(16 ${(T + H - B) / 2}) rotate(-90)" font-size="12" text-anchor="middle">Time to kill (ms, first round to kill)</text>`,
+    ...labels.map((l) => `<rect class="k${l.i}" x="${W - R + 8}" y="${(l.y - 1).toFixed(1)}" width="10" height="3" rx="1.5"/><text class="ink2" x="${W - R + 22}" y="${(l.y + 4).toFixed(1)}" font-size="11.5">${l.text}</text>`),
+    `<text class="ink2" x="${(L + W - R) / 2}" y="${H - 14}" font-size="12" text-anchor="middle">Distance (m)</text>`,
+    `<text class="ink2" transform="translate(18 ${(T + H - B) / 2}) rotate(-90)" font-size="12" text-anchor="middle">Time to kill (ms, first round to the kill)</text>`,
     '</svg>',
   ].join('\n');
 }
 
 // ---------------------------------------------------------------- run
 
-await Promise.all([initPhysics(), initNavigation()]);
-const lab = new Lab();
+const root = resolve(dirname(fileURLToPath(import.meta.url)), '../../../..');
 const reports: WeaponReport[] = [];
-const began = performance.now();
-for (const def of WEAPONS) {
-  const t0 = performance.now();
-  reports.push(measure(lab, def));
-  process.stderr.write(`${def.id} ${((performance.now() - t0) / 1000).toFixed(1)} s\n`);
+const from = args.get('from');
+if (from) {
+  // Redraw from an earlier run's JSON (no measuring).
+  reports.push(...(JSON.parse(readFileSync(resolve(root, from), 'utf8')) as { weapons: WeaponReport[] }).weapons);
+} else {
+  await Promise.all([initPhysics(), initNavigation()]);
+  const lab = new Lab();
+  const began = performance.now();
+  for (const def of WEAPONS) {
+    const t0 = performance.now();
+    reports.push(measure(lab, def));
+    process.stderr.write(`${def.id} ${((performance.now() - t0) / 1000).toFixed(1)} s\n`);
+  }
+  process.stderr.write(`${WEAPONS.length} weapons in ${((performance.now() - began) / 1000).toFixed(0)} s\n`);
 }
-process.stderr.write(`${WEAPONS.length} weapons in ${((performance.now() - began) / 1000).toFixed(0)} s\n`);
 
 const f = (v: number | null | undefined, unit = ''): string => (v === null || v === undefined ? '-' : `${v}${unit}`);
 const pad = (s: string, n: number) => s.padEnd(n);
@@ -686,9 +705,8 @@ const out = {
   capSeconds: CAP_TICKS / TICK_RATE,
   weapons: reports,
 };
-const root = resolve(dirname(fileURLToPath(import.meta.url)), '../../../..');
 const json = args.get('json');
-if (json) {
+if (json && !from) {
   const p = resolve(root, json);
   mkdirSync(dirname(p), { recursive: true });
   writeFileSync(p, `${JSON.stringify(out, null, 1)}\n`);
