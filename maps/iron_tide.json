@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 28,
+  "formatVersion": 29,
   "metadata": {
     "id": "iron_tide",
     "name": "Iron Tide",
@@ -34,11 +34,11 @@
     },
     "release": {
       "mapId": "m_vfevdrgwi6zn7cfg",
-      "versionId": "v_erhcaoaiajxwhle5",
-      "revision": 1,
-      "contentHash": "sha256:fde9a2b4455b385be8c42672ce593d5f36d966ae10ff2a4bb8cf82f2215d9ba2",
-      "schemaVersion": 28,
-      "releasedAt": "2026-11-07T10:58:50.755Z"
+      "versionId": "v_wlqm5fmtb2vz2wsg",
+      "revision": 2,
+      "contentHash": "sha256:832497714c6fa41042198d0aa7dfe5034dc9bf32d27a6e67f07654dfd791f71b",
+      "schemaVersion": 29,
+      "releasedAt": "2026-11-08T05:15:54.057Z"
     }
   },
   "classicStructure": {
@@ -18023,6 +18023,17 @@
       "intensity": 1.4,
       "range": 14,
       "fixture": "wall"
+    },
+    {
+      "id": "pickup_ekrqxstr16",
+      "kind": "pickup",
+      "position": [
+        6,
+        0,
+        -44
+      ],
+      "item": "core.ammo",
+      "respawnSeconds": null
     }
   ],
   "factions": [],
@@ -31036,6 +31047,6 @@
       12
     ]
   },
-  "dependencies": [],
-  "weaponSet": "military"
+  "weaponSet": "military",
+  "dependencies": []
 }

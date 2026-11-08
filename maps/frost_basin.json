@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 28,
+  "formatVersion": 29,
   "metadata": {
     "id": "frost_basin",
     "name": "Frost Basin",
@@ -19,11 +19,11 @@
     ],
     "release": {
       "mapId": "m_wm4ypl2enajhiaqu",
-      "versionId": "v_tub5pvt753wf4e5d",
-      "revision": 1,
-      "contentHash": "sha256:4e26b47d6d221ca692af238e13a89a2ede3daf600a2bd9e5325a06cbe4d0f3bb",
-      "schemaVersion": 28,
-      "releasedAt": "2026-11-07T11:14:59.113Z"
+      "versionId": "v_uerqxynyxvo43r34",
+      "revision": 2,
+      "contentHash": "sha256:3e4670c89e6d1fdef0950075bb4b60177f917ceb10119ae49de6307c85a7b440",
+      "schemaVersion": 29,
+      "releasedAt": "2026-11-08T05:22:20.193Z"
     }
   },
   "classicStructure": {
@@ -5310,6 +5310,28 @@
       "intensity": 1,
       "range": 9,
       "fixture": "ceiling"
+    },
+    {
+      "id": "pickup_ekrqxstr16",
+      "kind": "pickup",
+      "position": [
+        28,
+        0.99,
+        40
+      ],
+      "item": "core.ammo",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_3n235pv1oz",
+      "kind": "pickup",
+      "position": [
+        -28,
+        0.99,
+        -40
+      ],
+      "item": "core.ammo",
+      "respawnSeconds": null
     }
   ],
   "factions": [],
@@ -50652,6 +50674,6 @@
       8
     ]
   },
-  "dependencies": [],
-  "weaponSet": "scifi"
+  "weaponSet": "scifi",
+  "dependencies": []
 }

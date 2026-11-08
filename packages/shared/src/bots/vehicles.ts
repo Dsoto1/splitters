@@ -73,8 +73,12 @@ export interface MountView {
   health: number;
   alive: boolean;
   enterRadius: number;
-  /** `by`: who sits there (actor ID), when taken; `facing`: where a side gun's arc is centred. */
-  seats: readonly { role: SeatRole; free: boolean; by?: number; weapon?: WeaponDefinition; arc?: number; facing?: number }[];
+  /**
+   * `by`: who sits there (actor ID), when taken; `facing`: where a side gun's arc is centred; `shells`/`maxShells`/
+   * `refills`: a gun with limited ammunition (SeatDef.ammo: the Tank's cannon), as in SeatView (so its driver knows
+   * when the gunner beside it is running dry).
+   */
+  seats: readonly { role: SeatRole; free: boolean; by?: number; weapon?: WeaponDefinition; arc?: number; facing?: number; shells?: number; maxShells?: number; refills?: readonly string[] }[];
   /** Vehicles: top speed (m/s). */
   maxSpeed?: number;
   /** Vehicles: how fast it is going right now (m/s). */

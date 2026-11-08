@@ -104,7 +104,7 @@ the Pistol needs 13-14 rounds through armour at 50-100 m (more than a magazine).
 
 ## Appendix A: spec checklist (phases G0-G6, spec §50)
 
-✅ done, 🟡 partial, ❌ missing. Paths under `packages/`; line numbers at 2185eb5.
+✅ done, 🟡 partial, ❌ missing. Paths under `packages/`; line numbers at main 3d45636.
 
 | Phase · item | | Evidence |
 |---|---|---|
@@ -137,8 +137,8 @@ the Pistol needs 13-14 rounds through armour at 50-100 m (more than a magazine).
 | **G4** leading, drop | ✅ | `shared/src/bots/aim.ts:289` (lead by flight × skill), `:296` (drop comp) |
 | G4 recoil control | ✅ | bots counter by skill: `match.ts:2257-2260` |
 | G4 burst discipline | ✅ | `aim.ts:345-349` |
-| G4 reload decisions | ✅ | empty, or topping up out of sight / in cover: `shared/src/bots/brain.ts:2150-2153` |
-| G4 weapon selection, effective range | 🟡 | `brain.ts:4379` `weaponScore`, `:1265` `preferredRange` by hand-set `botRange` / `botDesirability`, not the measured ranges |
+| G4 reload decisions | ✅ | empty, or topping up out of sight / in cover: `shared/src/bots/brain.ts:2158-2161` |
+| G4 weapon selection, effective range | 🟡 | `brain.ts:4413` `weaponScore`, `:1274` `preferredRange` by hand-set `botRange` / `botDesirability`, not the measured ranges |
 | **G5** lethality, ballistics, friendly fire | 🟡 | `shared/src/sim/rules.ts:188,193,124`, host's match setup (`client/src/frontend/frontEnd.ts:1279`), not per map in MapMaker |
 | G5 headshots, ammo, reload, penetration, destruction, killcam policy, aim-assist policy, global scales | ❌ | none in `MatchRules` |
 | **G6** exotic arsenal | 🟡 | many exotics already ship (Chaos set: bubble, goo, oil, singularity, freeze, flare, nailgun, flak); swappable ammo families and a slow-motion final kill ❌. The spec puts G6 after the foundation is excellent |
