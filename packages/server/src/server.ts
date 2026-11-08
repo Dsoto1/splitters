@@ -391,7 +391,7 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
   /** Between matches: the next-map vote (on unless MAP_VOTE is off), the one open now, and our suite's maps for it. */
   let voteOn = opts.mapVote !== false;
   let vote: MapVote | null = null;
-  const pool = suitePool(mapsDir, suiteMap);
+  const pool = suitePool(mapsDir);
   // Read the suite's caps in the background a while after starting (the first vote then has them to hand).
   const warmTimer = setTimeout(() => voteOn && !stopped && pool.warm(), 20_000);
   warmTimer.unref?.();
