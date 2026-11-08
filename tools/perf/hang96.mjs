@@ -58,6 +58,7 @@ for (let run = 1; run <= runs; run++) {
   await ctx.addInitScript(() => {
     try {
       localStorage.setItem('tiletrigger.graphics', 'low');
+      localStorage.setItem('cs.mapVote', '0');
     } catch {}
   });
   if (process.env.HANG_DIAG) {
