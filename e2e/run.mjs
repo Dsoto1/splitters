@@ -3581,7 +3581,7 @@ async function rouletteFlow(browser) {
   await page.evaluate(() => {
     const m = window.__match;
     const mine = m.slots[window.__cs.slot];
-    m.roulette.endProtection(mine);
+    mine.shieldUntil = 0;
     const bots = m.combatants().filter((c) => c.bot);
     for (let i = 0; i < 3; i++) {
       const b = bots[i % bots.length];
@@ -3633,7 +3633,7 @@ async function rouletteFlow(browser) {
     window.__match.endMatch();
     window.__match.phaseEndTick = window.__match.tick + 60 * 120;
   });
-  const awards = await page.waitForFunction(() => !document.getElementById('rl-awards')?.hidden && document.querySelectorAll('#rl-awards .rl-award').length > 0, null, { timeout: T(20000) }).then(() => page.evaluate(() => [...document.querySelectorAll('#rl-awards .rl-award b')].map((b) => b.textContent)), () => []);
+  const awards = await page.waitForFunction(() => !document.getElementById('match-awards')?.hidden && document.querySelectorAll('#match-awards .award').length > 0, null, { timeout: T(20000) }).then(() => page.evaluate(() => [...document.querySelectorAll('#match-awards .award b')].map((b) => b.textContent)), () => []);
   await shoot('roulette-awards');
   check(awards.includes('Shapeshifter') && awards.includes('Unluckiest Roll'), `the awards at the end of the match (${awards.join(', ')})`);
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
@@ -4133,32 +4133,39 @@ async function thirdPersonShot(browser) {
   await holdBots(page);
   await page.evaluate(() => window.__give('core.pistol'));
   await meWait(page, (m, me) => me.weapons.get(me.current)?.def.id === 'core.pistol' && me.raiseTicks === 0, null, 3);
-  // Open, level ground: from where you are, the first direction with 22 m of it in front (eye-high sight line
-  // clear, ground within 0.3 m of yours all along).
+  // Open, level ground: from the map's spawn points in their order (whichever one the match spawned you on: it picks
+  // at random among the safest few), the first direction with 22 m of it in front (eye-high sight line clear, ground
+  // within 0.3 m of the spot all along); you are put on that spot.
   const setup = await sim(page, (m, me) => {
-    const p = me.move.pos;
-    const ground = (x, z) => {
-      const d = m.physics.raycastWorld({ x, y: p.y + 3, z }, { x: 0, y: -1, z: 0 }, 6);
-      return d === null ? null : p.y + 3 - d;
-    };
-    for (let k = 0; k < 16; k++) {
-      const yaw = (k / 16) * Math.PI * 2;
-      const at = (r) => ({ x: p.x + Math.sin(yaw) * r, z: p.z + Math.cos(yaw) * r });
-      let ok = m.physics.lineOfSight({ x: p.x, y: p.y + 1, z: p.z }, { x: at(22).x, y: p.y + 1, z: at(22).z }) && m.physics.lineOfSight({ x: p.x, y: p.y + 2.2, z: p.z }, { x: at(22).x, y: p.y + 2.2, z: at(22).z });
-      for (let r = 1; ok && r <= 22; r += 1) {
-        const g = ground(at(r).x, at(r).z);
-        ok = g !== null && Math.abs(g - p.y) < 0.3;
+    const spots = m.map.entities.filter((e) => e.kind === 'spawn').map((e) => ({ x: e.position[0], y: e.position[1], z: e.position[2] }));
+    for (const p of spots) {
+      const ground = (x, z) => {
+        const d = m.physics.raycastWorld({ x, y: p.y + 3, z }, { x: 0, y: -1, z: 0 }, 6);
+        return d === null ? null : p.y + 3 - d;
+      };
+      const g0 = ground(p.x, p.z);
+      if (g0 === null || Math.abs(g0 - p.y) > 0.3) continue;
+      for (let k = 0; k < 16; k++) {
+        const yaw = (k / 16) * Math.PI * 2;
+        const at = (r) => ({ x: p.x + Math.sin(yaw) * r, z: p.z + Math.cos(yaw) * r });
+        let ok = m.physics.lineOfSight({ x: p.x, y: p.y + 1, z: p.z }, { x: at(22).x, y: p.y + 1, z: at(22).z }) && m.physics.lineOfSight({ x: p.x, y: p.y + 2.2, z: p.z }, { x: at(22).x, y: p.y + 2.2, z: at(22).z });
+        for (let r = 1; ok && r <= 22; r += 1) {
+          const g = ground(at(r).x, at(r).z);
+          ok = g !== null && Math.abs(g - p.y) < 0.3;
+        }
+        // Room behind for the camera (3 m back and up).
+        const back = { x: p.x - Math.sin(yaw) * 3.5, z: p.z - Math.cos(yaw) * 3.5 };
+        ok = ok && m.physics.lineOfSight({ x: p.x, y: p.y + 1.5, z: p.z }, { x: back.x, y: p.y + 1.9, z: back.z });
+        if (!ok) continue;
+        me.move = { ...me.move, pos: { x: p.x, y: g0, z: p.z }, velY: 0, grounded: true };
+        // The wall: 1.45 m tall (well over a crouched eye's line at 15 m, under the third-person camera's), 15 m out,
+        // 6 m wide, across the line; the target 20 m out.
+        const w = at(15);
+        // (Box axes turned by the yaw: its x runs across the line, its z along it.)
+        m.physics.createBox({ x: w.x, y: g0 + 0.725, z: w.z }, { x: 3, y: 0.725, z: 0.2 }, yaw);
+        const t = m.combatants().find((c) => c.kind === 'bot');
+        return { yaw, slot: t.slot, target: { x: at(20).x, y: g0, z: at(20).z } };
       }
-      // Room behind for the camera (3 m back and up).
-      const back = { x: p.x - Math.sin(yaw) * 3.5, z: p.z - Math.cos(yaw) * 3.5 };
-      ok = ok && m.physics.lineOfSight({ x: p.x, y: p.y + 1.5, z: p.z }, { x: back.x, y: p.y + 1.9, z: back.z });
-      if (!ok) continue;
-      // The wall: 1.3 m tall, 15 m out, 6 m wide, across the line; the target 20 m out.
-      const w = at(15);
-      // (Box axes turned by the yaw: its x runs across the line, its z along it.)
-      m.physics.createBox({ x: w.x, y: p.y + 0.65, z: w.z }, { x: 3, y: 0.65, z: 0.2 }, yaw);
-      const t = m.combatants().find((c) => c.kind === 'bot');
-      return { yaw, slot: t.slot, target: { x: at(20).x, y: p.y, z: at(20).z } };
     }
     return null;
   });
@@ -5206,6 +5213,13 @@ function installFrameGrab(size) {
         ctx.drawImage(hurt.image, 0, 0, out.width, out.height);
         ctx.globalAlpha = 1;
       }
+      // A heavy hit's darkened edge (HTML too: hud.ts heavyOverlay).
+      const heavy = window.__cs.heavyOverlay?.();
+      if (heavy && heavy.opacity > 0.002) {
+        ctx.globalAlpha = Math.min(1, heavy.opacity);
+        ctx.drawImage(heavy.image, 0, 0, out.width, out.height);
+        ctx.globalAlpha = 1;
+      }
       // Roulette's jackpot glow (HTML too: rouletteHud.ts glowOverlay).
       const glow = window.__cs.rouletteGlow?.();
       if (glow && glow.opacity > 0.002) {
@@ -5419,6 +5433,24 @@ async function flashingFlow(browser) {
       look: aim([0, 0, 8], [0, 0.5, 13]),
       bots: [],
       at: { 2: () => page.evaluate(() => window.__cs.jackpotGlow()) },
+    },
+    {
+      name: 'fight',
+      label: "a fight's moments 3 m in front of you (armour breaking, two heavy hits with your screen's edge, a kill streak's burst, a spawn shield's shimmer)",
+      weapon: 'core.arc_caster',
+      me: [0, 0, 8],
+      look: aim([0, 0, 8], [0, 1, 11]),
+      bots: [[0, 0, 11]],
+      before: () => sim(page, (m) => {
+        const b = m.combatants().find((c) => c.bot);
+        if (b) b.shieldUntil = m.tick + 60 * 30;
+      }),
+      at: {
+        4: () => page.evaluate(() => window.__cs.view.playGameplayFx('armor.break', window.__cs.view.towardCamera({ x: 0, y: 1.2, z: 11 }, 0.5), { calmable: true })),
+        12: () => page.evaluate(() => (window.__cs.view.playGameplayFx('hit.big', window.__cs.view.towardCamera({ x: 0, y: 1.1, z: 11 }, 0.5), { calmable: true }), window.__cs.hud.heavyHit(90))),
+        24: () => page.evaluate(() => window.__cs.view.playGameplayFx('streak', { x: 0, y: 2.1, z: 11 }, { calmable: true })),
+        36: () => page.evaluate(() => (window.__cs.view.playGameplayFx('hit.big', window.__cs.view.towardCamera({ x: 0.3, y: 1, z: 11 }, 0.5), { calmable: true }), window.__cs.hud.heavyHit(70))),
+      },
     },
     {
       name: 'alarm',

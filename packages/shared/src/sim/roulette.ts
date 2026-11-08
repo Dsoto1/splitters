@@ -41,8 +41,6 @@ export const TINY_SIZE: number = ROULETTE_DATA.tiny.size;
 export const TINY_SPEED: number = ROULETTE_DATA.tiny.speed;
 /** Variety bonus: a point each time the characters a player has scored as reach another this many. */
 export const VARIETY_EVERY = 3;
-/** Spawn protection: seconds, ended early by firing, throwing or a melee strike. */
-export const SPAWN_PROTECT_SECONDS = 2;
 /** The spawn card's seconds on screen (the client's). */
 export const SPAWN_CARD_SECONDS = 2;
 /** A streak pick holds the respawn this long at most (seconds after death) for the choice; choosing spawns at the usual time. */
@@ -175,7 +173,6 @@ interface Seat {
   dueTick: number;
   tokens: number;
   towardToken: number;
-  protectUntil: number;
   // The awards and the bonus.
   played: Set<string>;
   scoredAs: Set<string>;
@@ -239,7 +236,7 @@ export class RouletteDirector {
     let s = this.seats.get(c.slot);
     if (!s) {
       const deck = rouletteDeck(this.host.seed, c.slot, 0, this.pool.length);
-      s = { round: 0, pos: 0, deck, next: '', life: 0, roll: null, spawnTick: 0, lifeKills: 0, pickEarned: false, offer: null, dueTick: 0, tokens: 0, towardToken: 0, protectUntil: 0, played: new Set(), scoredAs: new Set(), giantKills: 0, airKills: 0, bonus: 0, picks: 0, rerolls: 0, jackpots: 0, shortest: null };
+      s = { round: 0, pos: 0, deck, next: '', life: 0, roll: null, spawnTick: 0, lifeKills: 0, pickEarned: false, offer: null, dueTick: 0, tokens: 0, towardToken: 0, played: new Set(), scoredAs: new Set(), giantKills: 0, airKills: 0, bonus: 0, picks: 0, rerolls: 0, jackpots: 0, shortest: null };
       s.next = this.draw(s, c.slot);
       this.seats.set(c.slot, s);
     }
@@ -310,7 +307,7 @@ export class RouletteDirector {
     return signatureWeapon(c.look, this.seat(c).roll === 'jackpot', this.host.weaponSet());
   }
 
-  /** After the match set the body and the loadout: a jackpot's armour, a tiny body, spawn protection; the spawn's announcements. */
+  /** After the match set the body and the loadout: a jackpot's armour, a tiny body; the spawn's announcements (spawn protection is the match's: content/match-play.json). */
   equip(c: RouletteBody): void {
     const s = this.seat(c);
     if (s.roll === 'jackpot') {
@@ -320,24 +317,11 @@ export class RouletteDirector {
       c.size *= TINY_SIZE;
       c.speedMul *= TINY_SPEED;
     }
-    s.protectUntil = this.host.tick() + Math.round(SPAWN_PROTECT_SECONDS * TICK_RATE);
   }
 
   /** The look a slot plays this life, its roll (for snapshots and the spawn event). */
   rollOf(c: { slot: number }): RouletteRoll {
     return this.seats.get(c.slot)?.roll ?? null;
-  }
-
-  /** Under spawn protection: no other player's damage hurts. */
-  protectedNow(c: { slot: number }): boolean {
-    const s = this.seats.get(c.slot);
-    return !!s && this.host.tick() < s.protectUntil;
-  }
-
-  /** Firing, throwing or a melee strike ends spawn protection. */
-  endProtection(c: { slot: number }): void {
-    const s = this.seats.get(c.slot);
-    if (s) s.protectUntil = 0;
   }
 
   /**
@@ -576,20 +560,5 @@ export class RouletteDirector {
     for (const x of seats) if (x[1].shortest && (!unlucky || x[1].shortest.ticks < unlucky[1].shortest!.ticks)) unlucky = x;
     if (unlucky) out.push(['unlucky', unlucky[0].slot, Math.round((unlucky[1].shortest!.ticks / TICK_RATE) * 10), unlucky[1].shortest!.look]);
     return out;
-  }
-}
-
-/** An award's title and line, for the scoreboard (the client's). */
-export function awardText(a: RouletteAward, name: (slot: number) => string): { title: string; line: string } {
-  const who = name(a[1]);
-  switch (a[0]) {
-    case 'shapeshifter':
-      return { title: 'Shapeshifter', line: `${who}: ${a[2]} different characters` };
-    case 'giantslayer':
-      return { title: 'Giant Slayer', line: `${who}: ${a[2]} large ${a[2] === 1 ? 'character' : 'characters'} downed as a small one` };
-    case 'moonwalker':
-      return { title: 'Moonwalker', line: `${who}: ${a[2]} air ${a[2] === 1 ? 'kill' : 'kills'}` };
-    case 'unlucky':
-      return { title: 'Unluckiest Roll', line: `${who} as ${getLook(a[3]).name}: down in ${(a[2] / 10).toFixed(1)} s` };
   }
 }

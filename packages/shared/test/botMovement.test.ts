@@ -43,7 +43,8 @@ function jitter(difficulty: BotDifficulty, opts: { retreat?: boolean; seeds?: nu
   let dist = 0;
   let time = 0;
   for (const seed of opts.seeds ?? [1, 2, 3]) {
-    const match = new Match(yard(), { ...DEFAULT_DEATHMATCH_RULES, scoreLimit: 0 }, seed);
+    // (No spawn protection: these measure a fight's movement, and a respawned bot would hold its fire under it.)
+    const match = new Match(yard(), { ...DEFAULT_DEATHMATCH_RULES, scoreLimit: 0, spawnProtection: 0 }, seed);
     const human = match.addHuman('human')!;
     const profile = { ...CORE_BOT_PROFILES[3]!, tags: [], selfPreservation: opts.retreat ? 90 : 50, itemGreed: 0, exploration: 0 };
     // The bot these thresholds were measured with: Sprout (Small: 6% quicker), which the bot rotation used to hand
@@ -127,7 +128,8 @@ describe('bot movement smoothness', () => {
       expect(j.jerks, id).toBeLessThan(0.5);
       expect(j.stops, id).toBeLessThan(0.25);
       // Measured hit shapes with their margin (2026-11-04): easy 1.18 m/s over seeds 1-10 (fights end differently).
-      expect(j.speed, id).toBeGreaterThan(1.15);
+      // Spawns scored among the safest few (2026-11-08): a respawn lands elsewhere in the yard, easy 1.149 over seeds 1-10.
+      expect(j.speed, id).toBeGreaterThan(1.12);
     }
   }, 120_000);
 

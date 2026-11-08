@@ -23,6 +23,57 @@ any. Objective modes replace kill totals with their own team score on the
 scorebar and scoreboard. The round ends at the score limit or the time limit,
 and the higher team score wins.
 
+## Spawns, protection and awards
+
+Every mode spawns people and bots by one rule (docs/BOTS.md, "Spawning"): each spawn point is scored for its
+distance to the nearest enemy, enemy sight lines to it and fresh deaths near it (team modes on shared spawns: living
+teammates near it and each side's own end of the map, so the sides don't swap ends; spawning beside a teammate picks
+one no enemy can see), and one is picked at random
+among the safest few. Deathmatch and Team Deathmatch give every respawn 3 s of **spawn protection** (Roulette 2 s):
+nobody else's damage gets through until it runs out or you fire, throw or strike. The numbers are data:
+`content/match-play.json` (`node tools/content/match-play.mjs` checks them and writes
+`packages/shared/src/content/matchPlay.generated.ts`).
+
+**Awards** (sim/awards.ts), on the scoreboard at the end of every match (any mode), each to one player still in it
+(ties to the lower slot; an award nobody earned isn't given):
+
+| Award | For | Needs |
+| --- | --- | --- |
+| Most Accurate | the most rounds fired that hit an enemy, as a share (shots of bullets and pellets; launchers, grenades and melee don't count) | 25 rounds fired |
+| Longest Streak | the most kills in one life | 3 kills |
+| Nemesis | the most kills of one opponent ("downed X 6 times") | 3 kills of them |
+| Most Revenge Kills | the most kills of whoever downed you last | 1 |
+
+Roulette adds its own after them: Shapeshifter, Giant Slayer, Moonwalker (Lunar) and Unluckiest Roll. The
+thresholds are `content/match-play.json` `awards`.
+
+**Callouts** (the `callout` event): downing whoever downed you last is **revenge** ("Revenge on X!"; "X got their
+revenge" to them); the same player downing you `callouts.nemesis` times (3) in a row with none back becomes your
+**nemesis** ("X is your nemesis: 3 in a row"; "You're Y's nemesis" to them). Only the two players involved see them.
+
+## Player caps
+
+Each map has a **recommended** and a **most** player count for every mode it plays (free-for-all and team modes;
+co-op squads and races keep their own sizes). MapMaker sets them in Map properties, **Players by mode** (empty
+fields show the automatic caps; Auto goes back to them); they are `metadata.playerCaps` in the map file, by mode.
+A mode without its own takes the **automatic caps** (`autoPlayerCaps`, sim/matchSetup.ts):
+
+- **recommended:** free-for-all, the map's recommended most (Max players) as far as its spawn points go (one each;
+  free-for-all counts the shared spawn points, or half of all of them when that's more); team modes, the map's team
+  layout in all, else its recommended most;
+- **most:** as many as its spawn points serve (3 each, as the match's spawn waves and made-up spawn points do), its
+  fought-over area holds (80 m² a player: the ground its spawns, pickups and objectives span, up to twice that for
+  maps that stack floors 16 m or more) and three times the recommended, never below the recommended; even in team
+  modes.
+
+For example Sandgate: Deathmatch 16 recommended, 48 at most; Team Deathmatch 16 / 48. Citadel Deathmatch 12 / 36;
+Crossroads Deathmatch 11 / 33, TDM 16 / 48; Iron Coast TDM 48 / 128.
+
+Match Setup shows them as a chip ("16 best · up to 48") and in the fit check (more than the most is a problem with
+a "Use 16" button; more than recommended is busy). Map changes and the rotation keep a match within the most: the
+fill drops to it on a smaller map, and on a dedicated server the next bigger map fills up again to what the admin
+asked for; the rotation skips a map whose most is below the people in the match.
+
 ## Capture the Flag
 
 - Each of the two teams has a flag on its **flag base**. To pick up the enemy

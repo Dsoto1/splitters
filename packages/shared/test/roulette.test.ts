@@ -262,21 +262,27 @@ describe('jackpot rolls', () => {
 });
 
 describe('spawn protection', () => {
-  it('a moment where other players’ hits do nothing; firing ends it; it runs out', () => {
+  it('every respawn: a moment where other players’ hits do nothing; firing ends it; it runs out', () => {
     const { match, d, a, b } = roulette();
     d.run(1);
-    expect(match.roulette!.protectedNow(a)).toBe(true);
+    // The lives the round opens with have none; a respawn has it (Roulette's 2 s: content/match-play.json).
+    expect(match.shielded(a)).toBe(false);
+    kill(match, a, b);
+    kill(match, b, a);
+    d.run(3);
+    expect(a.alive && b.alive).toBe(true);
+    expect(match.shielded(a)).toBe(true);
     expect(match.playerSnapshots().find((p) => p.s === a.slot)!.fx! & FX_PROTECTED).toBeTruthy();
     const before = a.health;
     hurt(match, a, 30, b);
     expect(a.health).toBe(before);
     d.run(1, () => d.input(a, { buttons: BUTTON_FIRE }));
-    expect(match.roulette!.protectedNow(a)).toBe(false);
+    expect(match.shielded(a)).toBe(false);
     hurt(match, a, 30, b);
     expect(a.health).toBeLessThan(before);
-    expect(match.roulette!.protectedNow(b)).toBe(true);
+    expect(match.shielded(b)).toBe(true);
     d.run(2 * TICK_RATE + 2);
-    expect(match.roulette!.protectedNow(b)).toBe(false);
+    expect(match.shielded(b)).toBe(false);
   });
 });
 
@@ -476,8 +482,11 @@ describe('awards', () => {
       kill(match, b, a);
     }
     const ev = d.run(1);
-    const awards = ev.find((e) => e.e === 'rl' && e.a === 'awards');
-    expect(awards?.e === 'rl' && awards.aw?.length).toBeTruthy();
+    const awards = ev.find((e) => e.e === 'awards');
+    expect(awards?.e === 'awards' && awards.aw.some((x) => x[0] === 'unlucky')).toBeTruthy();
+    // The match's own awards come with Roulette's: a 3-kill life is the longest streak, three of one player a nemesis.
+    expect(awards?.e === 'awards' && awards.aw.some((x) => x[0] === 'streak' && x[1] === a.slot && x[2] === 3)).toBeTruthy();
+    expect(awards?.e === 'awards' && awards.aw.some((x) => x[0] === 'nemesis' && x[1] === a.slot && x[3] === b.slot)).toBeTruthy();
     expect(ev.some((e) => e.e === 'round_end')).toBe(true);
     expect(getLook(b.look)).toBeTruthy();
     expect(weaponCode(getWeapon('core.pistol'))).toBeGreaterThan(0);

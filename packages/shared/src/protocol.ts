@@ -4,7 +4,8 @@ import type { BotSet } from './sim/botSet.ts';
 import type { RotationEntry, RotationState } from './sim/rotation.ts';
 import type { GameMode, MatchRules } from './sim/rules.ts';
 import type { MatchCheckpoint } from './net/handoff.ts';
-import type { RouletteAward, RoulettePrivate } from './sim/roulette.ts';
+import type { RoulettePrivate } from './sim/roulette.ts';
+import type { MatchAward } from './sim/awards.ts';
 
 /**
  * Wire protocol, version 1. JSON over WebSocket for Phase 0; the message shapes
@@ -297,9 +298,18 @@ export type GameEvent =
    * token (`token`, `n` held); chose card look `l` of a pick (`chose`); spent a token on a new next card `l` (`reroll`,
    * `n` left); downed large `t` as a small one (`giant`), made an air kill (`air`) or a kill as a new character (`variety`,
    * `n` characters scored as); became their victim's look `l` (`swap`). The gravity storm (`storm`): `n` 1 its warning,
-   * 2 it blows, 0 it's over; `g` its gravity. The match's awards (`awards`, `aw`) with the round's end.
+   * 2 it blows, 0 it's over; `g` its gravity.
    */
-  | { e: 'rl'; a: 'jackpot' | 'pick' | 'token' | 'chose' | 'reroll' | 'giant' | 'air' | 'variety' | 'swap' | 'storm' | 'awards'; s?: number; t?: number; l?: string; n?: number; g?: number; aw?: RouletteAward[] }
+  | { e: 'rl'; a: 'jackpot' | 'pick' | 'token' | 'chose' | 'reroll' | 'giant' | 'air' | 'variety' | 'swap' | 'storm'; s?: number; t?: number; l?: string; n?: number; g?: number }
+  /** The match's awards (sim/awards.ts; Roulette's too, in Roulette), with the round's end: the scoreboard shows them. */
+  | { e: 'awards'; aw: MatchAward[] }
+  /** A callout (sim/awards.ts): `s` got revenge on `t` (`revenge`), or became `t`'s nemesis, `n` kills in a row (`nemesis`). */
+  | { e: 'callout'; a: 'revenge' | 'nemesis'; s: number; t: number; n?: number }
+  /**
+   * A hit worth showing (content/match-play.json heavyHit): `s` took `n` damage in one hit (`big`) from `k` at `p`, or
+   * the hit that broke their armour (`armor`).
+   */
+  | { e: 'hurt'; a: 'big' | 'armor'; s: number; k?: number; n?: number; p: Tuple3 }
   /** `outcome` is set when a co-op mission ends (victory or defeat). */
   | { e: 'round_end'; winner: number | null; outcome?: 'victory' | 'defeat'; /** Winning team (faction ID) in Team Deathmatch; null for a draw. */ team?: string | null; /** "Next map" logic: the suite map ID everyone goes on to. */ next?: string;
       /** The map rotation's next map (its display name) and mode, where the match goes after the scoreboard. */ up?: { map: string; mode: GameMode } }

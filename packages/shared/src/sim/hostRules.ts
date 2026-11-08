@@ -1,7 +1,7 @@
 import type { MapDocument } from '../map/schema.ts';
 import type { HostRulesPatch } from '../protocol.ts';
 import { MAX_PLAYER_SLOTS } from './constants.ts';
-import { limitsScale, suggestedLimits } from './matchSetup.ts';
+import { limitsScale, mapPlayerCaps, suggestedLimits } from './matchSetup.ts';
 import { MODE_LABELS, isTeamMode, isTwoTeamMode, mapCanRun, rulesForMap, rulesForMode, type GameMode, type MatchRules } from './rules.ts';
 
 /** Rules that aren't about the map or the mode: they stay as the host set them when the map changes. */
@@ -19,7 +19,7 @@ export const teamsLabel = (teams: number, size: number): string => Array.from({ 
  * The host changes map mid-match: the rules for `map` in `mode` (else the
  * current mode where the map runs it, else the map's own), keeping the host's
  * own settings, and the players to fill (team modes: every team at
- * `teamSize`; otherwise the same count as now). A new mode's score limit and
+ * `teamSize`; otherwise the same count as now), at most the map's most for the mode (mapPlayerCaps). A new mode's score limit and
  * time are the ones suggested for the players (suggestedLimits), not its
  * standard ones; the same mode keeps the host's.
  */
@@ -36,9 +36,12 @@ export function rulesForTravel(prev: MatchRules, map: MapDocument, fill: number,
   if (prev.leaders && isTeamMode(base.mode)) out.leaders = prev.leaders;
   if (classesClash(out)) delete out.classes;
   const teams = teamCount(out);
-  let players = Math.max(1, Math.min(MAX_PLAYER_SLOTS, fill));
+  // The map's most for the mode (MapMaker's player caps, else the automatic ones): a smaller map in the rotation
+  // plays fewer; the next bigger one fills up again from what the host asked for (`fill`).
+  const most = mapPlayerCaps(map, out.mode).max;
+  let players = Math.max(1, Math.min(MAX_PLAYER_SLOTS, fill, most));
   if (teams) {
-    const size = Math.max(1, Math.min(Math.floor(MAX_PLAYER_SLOTS / teams), teamSize ?? Math.max(1, Math.round(fill / teams))));
+    const size = Math.max(1, Math.min(Math.floor(MAX_PLAYER_SLOTS / teams), Math.floor(most / teams) || 1, teamSize ?? Math.max(1, Math.round(fill / teams))));
     out.teamSizes = Array.from({ length: teams }, () => size);
     players = size * teams;
   }

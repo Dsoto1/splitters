@@ -177,6 +177,15 @@ export interface MatchRow {
   spread?: number;
   spawnDeaths?: number;
   deaths?: number;
+  /**
+   * The pace of play (botMeasures.ts Behaviour.pace): seconds between fights (a spawn or a fight's end to the next
+   * fight; a fight's hits no more than 3 s apart) and of them from a spawn, gaps counted, the average distance of hits
+   * on enemies (m) and hits counted, how evenly kills spread over the map's 21 m regions (0..1) and the busiest tenth
+   * of regions' share of kills.
+   */
+  /** The end-of-match awards as they stood at the end (sim/awards.ts): kind -> "who value". */
+  awards?: Record<string, string>;
+  pace?: { betweenFights: number; firstFight: number; fights: number; engagement: number; hits: number; killSpread: number; killTop10: number };
   /** King of the Hill: seconds the hill was held by one team alone, contested, empty. */
   hill?: { held: number; contested: number; empty: number };
   /** Rounds (Elimination, Bomb, Hostage): how long each finished one lasted (s). */
@@ -565,7 +574,7 @@ function play(map: MapDocument, mode: GameMode, seed: number, seconds: number, s
         }
       }
       if (rl && e.e === 'rl' && e.a === 'pick') rl.earned++;
-      if (rl && e.e === 'rl' && e.a === 'awards') for (const a of e.aw ?? []) rl.awards[a[0]] = `${match.actor(a[1])?.name ?? a[1]} (${a[2]})`;
+      if (rl && e.e === 'awards') for (const a of e.aw) rl.awards[a[0]] = `${match.actor(a[1])?.name ?? a[1]} (${a[2]})`;
       // Rounds fired from a vantage spot it holds.
       if (e.e === 'shot') {
         const r = rec.get(e.s);
@@ -818,6 +827,10 @@ function play(map: MapDocument, mode: GameMode, seed: number, seconds: number, s
   out.spread = behaviour.spread();
   out.spawnDeaths = behaviour.spawnDeaths;
   out.deaths = behaviour.deaths;
+  out.pace = behaviour.pace();
+  // The end-of-match awards as they stand (sim/awards.ts; these matches have no end of their own).
+  const awardPlayers = match.combatants().filter((c) => c.kind !== 'npc');
+  out.awards = Object.fromEntries([...match.awards.awards(awardPlayers.map((c) => c.slot)), ...(match.roulette ? match.roulette.awards(awardPlayers) : [])].map((a) => [a[0], `${match.actor(a[1])?.name ?? a[1]} ${a[2]}${a[0] === 'nemesis' && typeof a[3] === 'number' ? ` of ${match.actor(a[3])?.name ?? a[3]}` : a[0] === 'accurate' ? `% of ${a[3]}` : ''}`]));
   if (hill) out.hill = { held: Math.round(hill.held), contested: Math.round(hill.contested), empty: Math.round(hill.empty) };
   if (rounds.length || match.mode?.constructor.name.match(/Elim|Bomb|Hostage/)) out.rounds = rounds;
   if (forts) out.pieces = pieceIds.size;
@@ -984,6 +997,8 @@ function printMatch(m: MatchRow): void {
   const failures = sum(m.bots, (r) => r.pathFailures);
   console.log(`time: idle ${pct(sum(m.bots, (r) => r.idle), alive)} (out of a fight ${pct(sum(m.bots, (r) => r.idleCalm), alive)}, frozen ${pct(sum(m.bots, (r) => r.frozen), alive)}, no route ${pct(sum(m.bots, (r) => r.why.noPath ?? 0), alive)}) | going to the goal ${pct(sum(m.bots, (r) => r.towardGoal), goalT)} of goal time, at it ${pct(sum(m.bots, (r) => r.atGoal), goalT)} | kills ${m.kills} (${((m.kills / m.seconds) * 60).toFixed(1)}/min) | stuck recoveries ${sum(m.bots, (r) => r.stuck)} (loops ${sum(m.bots, (r) => r.loops)}) | route searches ${searches}, no route ${failures} (${pct(failures, searches)})`);
   if (m.coverage !== undefined) console.log(`map: coverage ${((m.coverage ?? 0) * 100).toFixed(1)}% a minute, spread ${(m.spread ?? 0).toFixed(3)} | spawn deaths ${m.spawnDeaths} of ${m.deaths} (${pct(m.spawnDeaths ?? 0, m.deaths ?? 0)})`);
+  if (m.awards && Object.keys(m.awards).length) console.log(`awards: ${Object.entries(m.awards).map(([k, v]) => `${k} ${v}`).join(' | ')}`);
+  if (m.pace) console.log(`pace: between fights ${m.pace.betweenFights.toFixed(1)} s (${m.pace.fights} gaps; from a spawn ${m.pace.firstFight.toFixed(1)} s) | engagement ${m.pace.engagement.toFixed(1)} m (${m.pace.hits} hits) | kills spread ${m.pace.killSpread.toFixed(3)}, busiest tenth of regions ${(m.pace.killTop10 * 100).toFixed(0)}% of kills`);
   if (m.routes?.length) {
     const ways = m.routes.map((u) => {
       const total = u.use.reduce((a, b) => a + b, 0) + u.other;
@@ -1075,6 +1090,7 @@ export function measure(ms: readonly MatchRow[]) {
     killsMin: sum(ms, (m) => m.kills) / minutes,
     coverage: ms.every((m) => m.coverage !== undefined) ? sum(ms, (m) => m.coverage!) / n : undefined,
     spawnDeaths: deaths ? sum(ms, (m) => m.spawnDeaths ?? 0) / deaths : undefined,
+    ...paceMeasures(ms),
     thinkMs: ms.every((m) => m.thinkMs !== undefined) ? sum(ms, (m) => m.thinkMs!) / n : undefined,
     tick: sum(ms, (m) => m.tickMs) / n,
     hillHeld: hills.length ? sum(hills, (m) => m.hill!.held) / sum(hills, (m) => m.seconds) : undefined,
@@ -1159,6 +1175,22 @@ export function wayMeasures(ms: readonly MatchRow[]): { ways2?: number; waysBusi
   return multi ? { ways2: two / multi, waysBusiest: busy / multi } : {};
 }
 
+/** The pace of play over a set of matches: gaps and hits weighted by their counts, kill spread by match. */
+function paceMeasures(ms: readonly MatchRow[]): { betweenFights?: number; firstFight?: number; engagement?: number; killSpread?: number; killTop10?: number } {
+  const p = ms.filter((m) => m.pace).map((m) => m.pace!);
+  if (!p.length) return {};
+  const fights = sum(p, (x) => x.fights);
+  const hits = sum(p, (x) => x.hits);
+  const firsts = p.length;
+  return {
+    betweenFights: fights ? sum(p, (x) => x.betweenFights * x.fights) / fights : undefined,
+    firstFight: sum(p, (x) => x.firstFight) / firsts,
+    engagement: hits ? sum(p, (x) => x.engagement * x.hits) / hits : undefined,
+    killSpread: sum(p, (x) => x.killSpread) / p.length,
+    killTop10: sum(p, (x) => x.killTop10) / p.length,
+  };
+}
+
 type Measures = ReturnType<typeof measure>;
 
 /**
@@ -1176,6 +1208,7 @@ const METRICS: Record<string, { better: 'low' | 'high'; of: (m: Measures) => num
   towardGoal: { better: 'high', of: (m) => (m.goalTime > 0 ? m.toward : undefined), label: 'going to the goal', pct: true },
   coverage: { better: 'high', of: (m) => m.coverage, label: 'coverage a minute', pct: true },
   spawnDeaths: { better: 'low', of: (m) => m.spawnDeaths, label: 'spawn deaths', pct: true },
+  betweenFights: { better: 'low', of: (m) => m.betweenFights, label: 'seconds between fights' },
   killsPerMin: { better: 'high', of: (m) => m.killsMin, label: 'kills a minute' },
   thinkMs: { better: 'low', of: (m) => m.thinkMs, label: 'bot thinking ms a tick' },
   captures: { better: 'high', of: (m) => m.captures, label: 'captures a match' },
@@ -1354,6 +1387,18 @@ function printCompare(before: readonly MatchRow[], after: readonly MatchRow[]): 
   for (const m of b) {
     const o = a.get(m.key);
     console.log(`| ${m.map} | ${f(o?.captures)} → ${f(m.captures)} | ${f(o?.takes)} → ${f(m.takes)} | ${o ? `${o.withCapture}/${o.n}` : '-'} → ${m.withCapture}/${m.n} | ${f(o?.calm, 1, 100)} → ${f(m.calm, 1, 100)} | ${f(o?.frozen, 1, 100)} → ${f(m.frozen, 1, 100)} | ${f(o?.noRouteIdle, 2, 100)} → ${f(m.noRouteIdle, 2, 100)} | ${f(o?.toward, 1, 100)} → ${f(m.toward, 1, 100)} | ${f(o?.stuck, 0)} → ${f(m.stuck, 0)} | ${f(o?.failedSearches, 2, 100)} → ${f(m.failedSearches, 2, 100)} | ${f(o?.spells10)} → ${f(m.spells10)} | ${f(o?.killsMin)} → ${f(m.killsMin)} | ${f(o?.routes2, 0, 100)} → ${f(m.routes2, 0, 100)} | ${f(o?.busiest, 0, 100)} → ${f(m.busiest, 0, 100)} | ${f(o?.coverFight, 1, 100)} → ${f(m.coverFight, 1, 100)} | ${f(o?.scopedKills)} (${f(o?.postKills)}) → ${f(m.scopedKills)} (${f(m.postKills)}) | ${f(o?.thinkMs, 2)} → ${f(m.thinkMs, 2)} | ${f(o?.tick, 2)} → ${f(m.tick, 2)} |`);
+  }
+  // The pace of play (free-for-all and team fights): spawn deaths, time between fights, engagement distance, kill spread.
+  if (b.some((m) => m.betweenFights !== undefined)) {
+    console.log('\n| Map | mode | spawn deaths % | between fights (s) | from a spawn (s) | engagement (m) | kills spread | busiest tenth % of kills | kills/min |');
+    console.log('|---|---|---|---|---|---|---|---|---|');
+    for (const m of b) {
+      const o = a.get(m.key);
+      console.log(`| ${m.map} | ${m.key.split('|')[1]?.slice(5) ?? ''} | ${f(o?.spawnDeaths, 1, 100)} → ${f(m.spawnDeaths, 1, 100)} | ${f(o?.betweenFights)} → ${f(m.betweenFights)} | ${f(o?.firstFight)} → ${f(m.firstFight)} | ${f(o?.engagement)} → ${f(m.engagement)} | ${f(o?.killSpread, 3)} → ${f(m.killSpread, 3)} | ${f(o?.killTop10, 0, 100)} → ${f(m.killTop10, 0, 100)} | ${f(o?.killsMin)} → ${f(m.killsMin)} |`);
+    }
+    const pa = measure(before);
+    const pb = measure(after);
+    console.log(`all: spawn deaths ${f(pa.spawnDeaths, 1, 100)} → ${f(pb.spawnDeaths, 1, 100)} %; between fights ${f(pa.betweenFights)} → ${f(pb.betweenFights)} s (from a spawn ${f(pa.firstFight)} → ${f(pb.firstFight)} s); engagement ${f(pa.engagement)} → ${f(pb.engagement)} m; kills spread ${f(pa.killSpread, 3)} → ${f(pb.killSpread, 3)}; kills ${f(pa.killsMin)} → ${f(pb.killsMin)} a minute`);
   }
   const tot = (rs: readonly MatchRow[], k: (m: MatchRow) => number) => rs.reduce((x, m) => x + k(m), 0);
   console.log(`\nall maps: captures ${tot(before, (m) => m.captures)} → ${tot(after, (m) => m.captures)} in ${before.length} → ${after.length} matches; matches with a capture ${before.filter((m) => m.captures > 0).length} → ${after.filter((m) => m.captures > 0).length}`);

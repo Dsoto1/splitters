@@ -140,11 +140,15 @@
       "default": { "pack": "explosion_fx", "effect": "vfx_ground_explosion_01", "scale": 0.38 }
     },
     "gameplay": {
-      "$comment": "Moments of play: pickups (by item kind: pickup.<kind>), spawns, portals, jump pads, traps (trap.<type>) and ziplines. Minor effects: dropped when many effects are playing.",
+      "$comment": "Moments of play: pickups (by item kind: pickup.<kind>), spawns, portals, jump pads, traps (trap.<type>) and ziplines. armor.break: sparks off a body whose armour a hit just broke. hit.big: a heavy hit landing on a body (both on the body's near side, half a metre toward the camera) (content/match-play.json heavyHit; scale per metre of the body's size). streak: a short burst over a player on a kill streak (3, 5, 10... kills in one life). `tint` (#rrggbb) recolours an effect (its secondary colour, the one Binbun's controllers set, and a pale wash of it on its white core). Minor effects: dropped when many effects are playing; with Reduce flashing on, armor.break, hit.big and streak play smaller and dimmer (game/view.ts).",
       "pickup": { "pack": "hit_fx", "effect": "vfx_strike_02", "scale": 0.3 },
       "pickup.health": { "pack": "hit_fx", "effect": "vfx_strike_03", "scale": 0.3 },
       "pickup.weapon": { "pack": "hit_fx", "effect": "vfx_hit_01", "scale": 0.25 },
       "pickup.powerup": { "pack": "hit_fx", "effect": "vfx_hit_07", "scale": 0.35 },
+      "pickup.armor": { "pack": "hit_fx", "effect": "vfx_strike_04", "scale": 0.3, "tint": "#2f6dff" },
+      "armor.break": { "pack": "hit_fx", "effect": "vfx_hit_05", "scale": 0.24, "tint": "#8cc8ff" },
+      "hit.big": { "pack": "hit_fx", "effect": "vfx_big_impact_01", "scale": 0.22 },
+      "streak": { "pack": "hit_fx", "effect": "vfx_big_impact_02", "scale": 0.22, "tint": "#ffc93c" },
       "spawn": { "pack": "hit_fx", "effect": "vfx_impact_03", "scale": 0.45 },
       "portal": { "pack": "hit_fx", "effect": "vfx_impact_07", "scale": 0.45 },
       "pad": { "pack": "hit_fx", "effect": "vfx_impact_04", "scale": 0.35 },
@@ -159,8 +163,11 @@
       "fence": { "zap": { "pack": "electric_fx", "effect": "vfx_zap_lightning_01", "scale": 0.22 }, "hit": { "pack": "electric_fx", "effect": "vfx_impact_lightning_01", "scale": 0.3 }, "speed": 2.5 }
     },
     "lasting": {
-      "$comment": "Effects that last while something is so (started and stopped by the game; at most a few at once by graphics quality, the nearest first). charge.<mount>: an arc sentry winding up and holding its lock (scale per metre of its drawn charge ball). fire.zone: a burning patch (molotov, flamethrower, flare, lit oil; scale per metre of its radius, three or four overlapping). fire.vehicle / fire.wreck: a burning vehicle and the wreck smouldering (scale per metre of its size). fire.flare: a flare burning in flight or where it stuck. fire.trap: a flame trap's jet (laid along it). cloud.toxic: a toxic gas cloud (scale per metre of its radius). smoke.wreck: the smoke column over a burning vehicle or its wreck (scale per metre of its size). flame.<kind>: the open flame of a fire prop (braziers, fire bowls, torches, candles, campfires): content/props.json gives each prop its flame point, size (scale per metre of flame height; the candle effect is half the fire's size, so torches and candles scale 2) and kind; `decor` ones come after every other lasting effect when places are handed out, and aren't drawn on low graphics.",
+      "$comment": "Effects that last while something is so (started and stopped by the game; at most a few at once by graphics quality, the nearest first). charge.<mount>: an arc sentry winding up and holding its lock (scale per metre of its drawn charge ball). fire.zone: a burning patch (molotov, flamethrower, flare, lit oil; scale per metre of its radius, three or four overlapping). fire.vehicle / fire.wreck: a burning vehicle and the wreck smouldering (scale per metre of its size). fire.flare: a flare burning in flight or where it stuck. fire.trap: a flame trap's jet (laid along it). cloud.toxic: a toxic gas cloud (scale per metre of its radius). smoke.wreck: the smoke column over a burning vehicle or its wreck (scale per metre of its size). shield.spawn: the faint shimmer round a player under spawn protection, until it drops (scale per metre of the body's size; Reduce flashing: a steady glow on the body instead). aura.damage / aura.speed: a low flame at the feet while a powerup is on (scale per metre of the body's size). flame.<kind>: the open flame of a fire prop (braziers, fire bowls, torches, candles, campfires): content/props.json gives each prop its flame point, size (scale per metre of flame height; the candle effect is half the fire's size, so torches and candles scale 2) and kind; `decor` ones come after every other lasting effect when places are handed out, and aren't drawn on low graphics.",
       "charge.sentry_arc": { "pack": "electric_fx", "effect": "vfx_ball_lightning_04", "scale": 0.6 },
+      "shield.spawn": { "pack": "electric_fx", "effect": "vfx_ball_lightning_04", "scale": 1.1 },
+      "aura.damage": { "pack": "flame_fx", "effect": "vfx_purple_fire_02", "scale": 1.2 },
+      "aura.speed": { "pack": "flame_fx", "effect": "vfx_cold_fire_02", "scale": 1.2 },
       "fire.zone": { "pack": "flame_fx", "effect": "vfx_basic_fire_02", "scale": 1.1 },
       "fire.vehicle": { "pack": "flame_fx", "effect": "vfx_basic_fire_01", "scale": 1.1 },
       "fire.wreck": { "pack": "flame_fx", "effect": "vfx_basic_fire_01", "scale": 0.5 },

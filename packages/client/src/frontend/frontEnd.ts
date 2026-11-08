@@ -51,6 +51,8 @@ import {
   setVariant,
   setupFamily,
   setupFit,
+  mapPlayerCaps,
+  capsLine,
   setupLimits,
   setupPlayers,
   setupSummary,
@@ -1055,6 +1057,8 @@ export class FrontEnd {
       { class: 'setup-facts', id: 'setup-summary' },
       el('span', { class: 'fact-players', title: `Made for ${rec.min}–${rec.max} players. Bots fill every place you don't.` }, setupSummary(s, map, 1, cap.max)),
       el('span', { class: 'fact-time', title: coop ? 'Ends through the mission' : 'How long it runs' }, length),
+      // The mode's player caps on this map (MapMaker's, else from its size and spawn points).
+      ...(coop || race ? [] : [((c) => el('span', { class: 'fact-caps', id: 'setup-caps', title: `${MODE_LABELS[s.mode]} on this map: ${c.recommended} players recommended, ${c.max} at most${c.auto ? ' (worked out from its size and spawn points)' : " (set in the map's properties)"}.` }, capsLine(c)))(mapPlayerCaps(map, s.mode))]),
       ...(factSet && factSet.id !== 'standard' ? [el('span', { class: 'fact-weapons', id: 'setup-weapons-fact', title: `${factSet.blurb} (${s.weaponSet === undefined ? "the map's default" : 'your choice'}; Advanced rules → Weapons)` }, `${factSet.name} weapons`)] : []),
     );
     const featured = !current.group && FEATURED_MAPS.includes(current.key);
