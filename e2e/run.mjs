@@ -3078,7 +3078,7 @@ async function friendlyFireChecks(browser) {
     const errors = [];
     page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
     await page.addInitScript((on) => localStorage.setItem('cs.arcade', JSON.stringify({ map: 'sandgate', mode: 'core.tdm', bots: 3, skill: 'easy', scoreLimit: 40, minutes: 10, ...(on ? { friendlyFire: 'on' } : {}) })), ff === 'on');
-    await page.goto(CLIENT);
+    await page.goto(`${CLIENT}/?test=1`);
     await page.click('#nav-play');
     await page.click('#arcade-start');
     await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown', null, { timeout: T(90000) });
@@ -3116,13 +3116,69 @@ async function friendlyFireChecks(browser) {
       }
       return r;
     });
+    // A team kill (friendly fire on): the feed marks it TK, and nothing rewards it: no kill, the streak ends, no
+    // streak burst or "in a row", no kill marker. Primed one kill short of the first burst and streak reward.
+    if (ff === 'on') out.tk = await teamKillCheck(page);
     out[ff] = { ...shot, hurt: after?.hurt ?? null, errors: errors.join('; ') };
     await page.context().close();
   }
+  const tk = out.tk;
+  check(tk?.dead && tk.feed?.tk && /\bTK\b/.test(tk.feed.text), `a team kill shows in the kill feed (upper right) marked TK (${JSON.stringify(tk)})`);
+  check(tk?.dead && tk.kills === tk.kills0 && tk.streak === 0 && !tk.bursts && !tk.inARow && !tk.marker && tk.lifeKills === 0, `a team kill rewards nothing: no kill, the streak ends, no streak burst, no kill marker (${JSON.stringify(tk)})`);
   check(out.on.rule === 'on' && out.off.rule === 'off', `Match setup's friendly fire reaches the match (on: ${out.on.rule}, off: ${out.off.rule})`);
   check(out.on.mate && out.on.clear && out.on.hurt > 0, `friendly fire on: your rounds hurt a teammate in front of you (${JSON.stringify(out.on)})`);
   check(out.off.mate && out.off.clear && out.off.hurt === 0, `friendly fire off: your rounds pass through a teammate unhurt (${JSON.stringify(out.off)})`);
   check(!out.on.errors && !out.off.errors, `no page errors in the friendly fire matches (${out.on.errors}${out.off.errors})`);
+}
+
+/** Friendly fire on: you down a teammate in front of you. What the page showed for it (teams flow, friendlyFireChecks). */
+async function teamKillCheck(page) {
+  // What the page draws for it: effects, HUD lines and the kill marker, recorded as they happen.
+  await page.evaluate(() => {
+    const cs = window.__cs;
+    const seen = (window.__tkSeen = { fx: [], msgs: [], marker: false });
+    const fx = cs.view.playGameplayFx.bind(cs.view);
+    cs.view.playGameplayFx = (name, ...rest) => (seen.fx.push(name), fx(name, ...rest));
+    const msg = cs.hud.showMessage.bind(cs.hud);
+    cs.hud.showMessage = (text, ...rest) => (seen.msgs.push(text), msg(text, ...rest));
+    const confirm = cs.hud.killConfirm.bind(cs.hud);
+    cs.hud.killConfirm = (...a) => ((seen.marker = true), confirm(...a));
+    // Two kills this life already, on the page and in the match: one more would be the first burst.
+    cs.lifeKills.set(cs.slot, 2);
+  });
+  const shot = await sim(page, (m, me) => {
+    const mate = globalThis.__ffMate;
+    if (!mate?.alive) return null;
+    const at = { x: me.move.pos.x + Math.sin(me.yaw) * 4, y: me.move.pos.y, z: me.move.pos.z + Math.cos(me.yaw) * 4 };
+    mate.move = { ...mate.move, pos: at, velY: 0, vx: 0, vz: 0, grounded: true };
+    mate.health = 1;
+    mate.armor = 0;
+    mate.invulnerable = false;
+    mate.shieldUntil = 0;
+    me.streak = 2;
+    const eye = { x: me.move.pos.x, y: me.move.pos.y + 1.6, z: me.move.pos.z };
+    me.pitch = Math.atan2(at.y + 1.2 - eye.y, 4);
+    const gun = [...me.weapons.values()].map((w) => w.def).find((d) => d.kind === 'hitscan' && d.damage > 0);
+    for (let i = 0; i < 3 && mate.alive; i++) m.fireNow(me, { ...gun, alt: undefined }, 0);
+    return { tick: m.tick, kills0: me.kills, slot: mate.slot };
+  });
+  if (!shot) return { dead: false };
+  // The kill reaches the page: a feed line naming the teammate.
+  const name = await page.evaluate((slot) => window.__cs.hud.name(slot), shot.slot);
+  await page.waitForFunction((n) => [...document.querySelectorAll('#feed div')].some((d) => d.textContent.includes(n)), name, { timeout: T(10000) }).catch(() => {});
+  const inMatch = await sim(page, (m, me) => ({ dead: !globalThis.__ffMate.alive, kills: me.kills, streak: me.streak ?? 0 }));
+  const page_ = await page.evaluate((n) => {
+    const line = [...document.querySelectorAll('#feed div')].find((d) => d.textContent.includes(n));
+    const seen = window.__tkSeen;
+    return {
+      feed: line ? { tk: line.classList.contains('tk'), text: line.textContent.trim(), edge: getComputedStyle(line).borderRightColor } : null,
+      bursts: seen.fx.filter((f) => f === 'streak').length,
+      inARow: seen.msgs.some((t) => /in a row|kill streak/i.test(t)),
+      marker: seen.marker || document.getElementById('hitmarker').classList.contains('kill'),
+      lifeKills: window.__cs.lifeKills.get(window.__cs.slot) ?? 0,
+    };
+  }, name);
+  return { ...inMatch, kills0: shot.kills0, ...page_ };
 }
 
 /**
