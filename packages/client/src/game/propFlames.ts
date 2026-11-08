@@ -13,6 +13,8 @@ interface Entry {
   root: TransformNode;
   local: Vector3;
   size: number;
+  /** A column of smoke over the flame (a burning wreck), this size; 0: none. */
+  smoke: number;
   /** Rides a mover: its flame point is worked out every frame. */
   moving: boolean;
   world: Vec3 | null;
@@ -23,7 +25,7 @@ interface Entry {
 }
 
 /**
- * The open flames of fire props (braziers, fire bowls, torches, candles, campfires: content/props.json `flame`):
+ * The open flames of fire props (braziers, fire bowls, torches, candles, campfires, burning wrecks: content/props.json `flame`):
  * each asks LastingFx for its Flame FX effect (map.lasting `flame.<fx>`) at its flame point, sized to its flame;
  * where one is drawn the model's own flame (its `hide` materials) gives way, and everywhere else (past 70 m, past
  * the lasting cap, on low graphics, before the pack is in) the model's flame stands as it always did. Flames are
@@ -45,6 +47,7 @@ export class PropFlames {
       root,
       local: new Vector3(flame.at[0], flame.at[1], flame.at[2]),
       size: flame.size * scale,
+      smoke: (flame.smoke ?? 0) * scale,
       moving,
       world: null,
       hide: flame.hide ?? [],
@@ -69,6 +72,8 @@ export class PropFlames {
       const dz = at.z - cam.z;
       if (dx * dx + dy * dy + dz * dz > ASK_RANGE * ASK_RANGE) continue;
       this.lasting.want(e.id, e.key, at, { size: e.size });
+      // Smoke rises over a burning wreck: the same column a burnt-out vehicle smoulders with (steady, never a flash).
+      if (e.smoke) this.lasting.want(`${e.id}:smoke`, 'smoke.wreck', at, { size: e.smoke });
     }
   }
 

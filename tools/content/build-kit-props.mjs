@@ -534,6 +534,46 @@ const PIECES = {
     for (let i = 0; i < 6; i++) out.push(place(cylinder('rustDeep', 0.025, -0.04, 0.04, 6), { at: [Math.cos(i) * 0.1, cy + Math.sin(i * 1.7) * 0.1, Math.sin(i) * 0.1], rx: i }));
     return withCollision(out, boxes);
   },
+  belgian_gate: () => {
+    // A Belgian gate (Element C) as the beaches had them: a steel fence panel 3 m wide and 2.5 m tall facing the sea
+    // (+Z), braced from behind by two side trusses running 2.8 m back to the base rails, on four small rollers. Built
+    // from angle irons; collision as short boxes along each member, so shots and players pass through its gaps.
+    const W = 1.5;
+    const T = 2.5;
+    const B = -2.8;
+    const y0 = 0.16;
+    const members = [
+      // the front panel: posts, rails, the X of its bracing and two middle uprights
+      [[-W, y0, 0], [-W, T, 0]], [[W, y0, 0], [W, T, 0]],
+      [[-W, T, 0], [W, T, 0]], [[-W, 1.35, 0], [W, 1.35, 0]], [[-W, y0, 0], [W, y0, 0]],
+      [[-W, y0, 0], [W, T, 0]], [[W, y0, 0], [-W, T, 0]],
+      [[-0.5, y0, 0], [-0.5, T, 0]], [[0.5, y0, 0], [0.5, T, 0]],
+      // the base: side rails back to the cross rail
+      [[-W, y0, 0], [-W, y0, B]], [[W, y0, 0], [W, y0, B]], [[-W, y0, B], [W, y0, B]],
+      // the side trusses: from the panel's top corners down to the back, and a strut halfway
+      [[-W, T, 0], [-W, y0, B]], [[W, T, 0], [W, y0, B]],
+      [[-W, 1.35, 0], [-W, y0, B * 0.55]], [[W, 1.35, 0], [W, y0, B * 0.55]],
+      // a middle spine from the panel's top to the cross rail
+      [[0, T, 0], [0, y0, B]],
+    ];
+    const out = [];
+    const boxes = [];
+    members.forEach(([a, b], i) => {
+      out.push(...angleIron(i % 4 === 1 ? 'rustDeep' : 'rust', a, b, 0.12, 0.018, i * 1.3));
+      const len = Math.hypot(b[0] - a[0], b[1] - a[1], b[2] - a[2]);
+      const n = Math.max(1, Math.round(len / 0.5));
+      const at = (u) => [a[0] + (b[0] - a[0]) * u, a[1] + (b[1] - a[1]) * u, a[2] + (b[2] - a[2]) * u];
+      for (let k = 0; k < n; k++) {
+        const [p, q] = [at(k / n), at((k + 1) / n)];
+        const r = 0.07;
+        boxes.push([Math.min(p[0], q[0]) - r, Math.max(0, Math.min(p[1], q[1]) - r), Math.min(p[2], q[2]) - r, Math.max(p[0], q[0]) + r, Math.max(p[1], q[1]) + r, Math.max(p[2], q[2]) + r]);
+      }
+    });
+    // Rollers under the corners, and gussets where the trusses meet the panel.
+    for (const x of [-W, W]) for (const z of [0, B]) out.push(place(cylinder('rustDeep', 0.11, -0.05, 0.05, 10), { at: [x, 0.11, z], rz: Math.PI / 2 }));
+    for (const x of [-W, W]) out.push(place(box('rustDeep', [0.03, 0.3, 0.3]), { at: [x, T - 0.15, -0.15] }));
+    return withCollision(out, boxes);
+  },
   sandbag_stack: () => {
     // A square stack of bags, each course crossing the one below (about 1.05 m square and 1 m high): cover that
     // shooting wears down (breakable).

@@ -5,7 +5,7 @@
 | Map | `maps/iron_coast.json` (id `iron_coast`, "Iron Coast") |
 | Source | The owner's reference `docs/map-briefs/shingle_point_reference.jpg`, marked up as `MAP_21_reference_annotated.jpg`; the approved layout `docs/map-briefs/MAP_21_Iron_Coast.md` (owner, 2026-11-07: "Yes follow the image, call it Iron Coast") |
 | Author / date | Tile Trigger, built in MapMaker 2026-11-07 |
-| Status | Part 1: the playable greybox with Breakthrough (this file's tables); part 2: the visual pass |
+| Status | Part 1: the playable greybox with Breakthrough (this file's tables); part 2 (2026-11-08): terrain, plants, the beach's balance and dressing, the stair feet |
 | Players | 24 v 24 (Map's pick, `teamSetup [24, 24]`), 16-64 (`recommendedPlayers`); plays to 32 v 32 and 48 v 48 on dedicated hosts |
 | Modes | Breakthrough (the map's mode), Team Deathmatch (also offered); Elimination with TDM; Zombies anywhere |
 | Weapon set | Military |
@@ -73,16 +73,44 @@ pillboxes, the B/C compound walls (z 36–44) and 16 village houses (last export
 - Performance, `pnpm bench 48|64 60 maps/iron_coast.json --mode=core.breakthrough` (headless server tick, load 17 on 4
   shared cores): 48 bots avg 5.86 ms (CPU 4.33, p95 16.8), 64 bots avg 6.15 ms (CPU 4.94, p95 16.2); budget 16.67.
 
+## Progress, part 2 (2026-11-08: the owner's decisions of 2026-11-07/08)
+All through MapMaker's UI (the scratch driver against `vite preview`; Export), `validate-map` **0 issues** after every
+export. The reasons and the measurements are in `DECISIONS_AND_DEVIATIONS.md`, "Part 2".
+- **Terrain**: the border per side (Shoreline & sea south, Forest wall north, east and west: the "Cliffs & mountains"
+  peaks were most of the jagged look); the cliff's foot levelled to 1 m 1.5-9 m in front of the face with a scree
+  apron against it; the inland 12-16 m terrace banks softened (Smooth); Paint steep slopes as stone; a gravel shingle
+  band along the foot; 12 shell craters. The cliff faces keep their steepness: every pass was checked with a climb
+  flood (48°, beach to crest) and none opened a new way up. **Grid**: not changed (MapMaker caps a terrain at 161
+  vertices a side, so 380 m needs 2.5 m); the proposal is in DECISIONS.
+- **Plants**: foliage layer Overgrown behind the crest, Lush on the bluffs and round the village, Grassy on the rest of
+  the grass, Bare on sand and shingle; 114 bushes (109 Broadleaf Shrub, which conceal; 5 Kenney), 24 trees, 32 hedges
+  in four hedgerows.
+- **Beach**: 43 Czech hedgehogs, 10 Belgian gates (new kit prop), 19 tank traps, 2 wrecks, 2 burning wrecks.
+- **Balance (option 1a)**: 10 sandbag positions and a machine-gun nest (`turret_mg`) behind each of A1 and A2; 8 of the
+  16 beach-sector defender spawns moved from z 10 to the cliff top over A1 (x -118..-102, z -32..-20) and A2 (x
+  80..104, z -16..-8).
+- **Stair feet**: rock cheeks (Sky Blocks, rock) beside the flights of route 1 (x -156..-148, z -54.5..-44, 0-8 m) and
+  route 5 (x 44..47, z -44..-36, 0-4 m).
+- **Sky**: haze 0.4, mist 0.2 (sunset kept).
+- **Bots and performance**: the tables in HANDOFF's Iron Coast entry.
+
+**MapMaker driver tricks learnt in part 2:**
+- Use graphics **low** in the driven MapMaker (localStorage `tiletrigger.graphics`) and ONE browser: with three
+  drivers by mistake and high graphics, a stroke point took 8 s; alone on low, about 3-5 s. During a stroke MapMaker
+  draws about one frame a second on this map, and the brushes work per frame by time: Raise at 5 % barely moves the
+  ground, Smooth at 30 % is a full 3 × 3 average each frame. Hold a point about two frames.
+- Things above the level being edited are hidden and can't be clicked: PgUp to their level first (spawns on the crest
+  are level 3). Props without collision (bushes) can't be clicked at all; to swap them, Alt-click the patch with the
+  scatter brush (clears that kind of plant) and plant again (`?env=1` offers the procedural shrubs).
+- Palette cards in a collapsed group (`.ed-group` without `open`) are hidden: click the group's header first. The right
+  panel is folded away under 1280 px: its buttons (Settle all props on ground, Replace all) can be pressed in the page.
+- A prop placed where the level plane (y 0) is above the ground (the surf) stands on the plane: **Settle all props on
+  ground** (Map properties) beds them all.
+
 **Left (next steps, in order):**
-1. The stair feet bots get stuck at (route 1 west, route 5 under B3): a landing slab or a wider cut at each foot, in
-   MapMaker; then bot-report again (stuck per match should fall well under 300 at 24 v 24).
-2. The beach: A falls in under a minute. Candidates (owner's call): A1/A2 zone time up (MapMaker, the objective's
-   seconds), the cliff-foot strongpoints' defenders posted further forward, or more cover for the defenders there.
-3. Part 2, the visual pass: hedgehogs, tank traps, logs, landing craft in the surf, craters, sandbags (props from the
-   Props tab, Facing in the inspector); haze/mist (Sky tab; the range fields didn't take values typed 0.45/0.25: try
-   45/25); two burning wrecks: the prop `landing_craft_wreck_burning` (PropFlame `smoke`, propFlames.ts asks
-   `smoke.wreck`) is saved unfinished on `wip/iron-coast-wreck`; it still needs the palette atlas
-   (build-palette-atlas.mjs), `content:build` and `content:check`.
+1. The owner's calls: the finer terrain grid (DECISIONS, "Part 2"); whether the beach should hold longer still (more
+   zone time, or more posts).
+2. Playtest the beach and the stairs with people.
 
 **MapMaker driver tricks (the scratch driver won't survive):**
 - Keep ONE MapMaker open (vite preview, not dev) and feed it command files; reloading a big map costs minutes. Import

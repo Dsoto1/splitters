@@ -922,7 +922,8 @@ for (const p of manifest.props) {
  * A fire prop's open flame (`flame` in content/props/<pack>.json), drawn as a Binbun Flame FX effect (content/vfx.json
  * map.lasting `flame.<fx>`): `at` is where the flame stands in the prop's own space as the game draws it (x
  * mirrored like the collision boxes; metres at scale 1), `size` its height in metres, `hide` the model's
- * materials (its own flame) that give way to it while it is drawn.
+ * materials (its own flame) that give way to it while it is drawn, `smoke` (optional) the size of a column of smoke
+ * rising from it (a burning wreck: Smoke VFX's thin smoke, map.lasting `smoke.wreck`).
  */
 function propFlame(p) {
   const f = p.flame;
@@ -930,7 +931,8 @@ function propFlame(p) {
   if (!kinds.includes(f.fx)) throw new Error(`${p.id}: flame.fx must be one of ${kinds.join(', ')}`);
   if (!Array.isArray(f.at) || f.at.length !== 3 || !f.at.every(Number.isFinite)) throw new Error(`${p.id}: flame.at must be [x, y, z]`);
   if (!(f.size > 0)) throw new Error(`${p.id}: flame.size must be above 0`);
-  return { fx: f.fx, at: f.at.map(round), size: round(f.size), ...(f.hide?.length ? { hide: f.hide } : {}) };
+  if (f.smoke !== undefined && !(f.smoke > 0)) throw new Error(`${p.id}: flame.smoke must be above 0`);
+  return { fx: f.fx, at: f.at.map(round), size: round(f.size), ...(f.hide?.length ? { hide: f.hide } : {}), ...(f.smoke ? { smoke: round(f.smoke) } : {}) };
 }
 
 // Files left behind by renamed or removed props.
