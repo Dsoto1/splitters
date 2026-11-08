@@ -252,12 +252,20 @@ interface HistoryEntry {
   after: MapDocument;
 }
 
+/** What EditHistory tells its `onChange`: a command and the document it gave, or a document put in wholesale. */
+export type HistoryChange = { command: EditCommand; doc: MapDocument; reset?: undefined } | { reset: MapDocument; command?: undefined };
+
 /** Undo/redo history over an immutable MapDocument. */
 export class EditHistory {
   private undoStack: HistoryEntry[] = [];
   private redoStack: HistoryEntry[] = [];
   /** Increments on every change, so views can cheaply detect staleness. */
   revision = 0;
+  /**
+   * Told of every change: the command applied and the document it gave (undo: the inverse of the step's command; a
+   * stroke: each edit as it joins), or the document replaced (`reset`). MapMaker's budget bar counts from it.
+   */
+  onChange: ((change: HistoryChange) => void) | null = null;
 
   constructor(
     private current: MapDocument,
@@ -308,6 +316,7 @@ export class EditHistory {
       top.after = after;
       this.redoStack = [];
       this.revision++;
+      this.onChange?.({ command, doc: after });
       return;
     }
     const entry = { label, command, before, after };
@@ -316,6 +325,7 @@ export class EditHistory {
     if (this.undoStack.length > this.limit) this.undoStack.shift();
     this.redoStack = [];
     this.revision++;
+    this.onChange?.({ command, doc: after });
   }
 
   undo(): string | undefined {
@@ -325,6 +335,7 @@ export class EditHistory {
     this.current = entry.before;
     this.redoStack.push(entry);
     this.revision++;
+    this.onChange?.({ command: invertCommand(entry.command), doc: entry.before });
     return entry.label;
   }
 
@@ -335,6 +346,7 @@ export class EditHistory {
     this.current = entry.after;
     this.undoStack.push(entry);
     this.revision++;
+    this.onChange?.({ command: entry.command, doc: entry.after });
     return entry.label;
   }
 
@@ -344,6 +356,7 @@ export class EditHistory {
     this.undoStack = [];
     this.redoStack = [];
     this.revision++;
+    this.onChange?.({ reset: doc });
   }
 }
 

@@ -234,6 +234,21 @@ MapMaker draws the build area on the level being edited
 The camera may fly out to the build limit (and 600 m up). Photo mode (Set
 thumbnail) hides all of it.
 
+**The ghost says why** (`shared/src/editor/ghostWhy.ts`): beside the pointer, a
+refused tile or set piece says why in a few words ("Overlaps the Corridor on
+Ground", "Past the build limit (16 levels up or down)"), and the status bar has
+the whole reason. Spawns, pickups, props, vehicles and NPCs say "No floor under
+it" over nothing, and outside the boundary say so (a warning: they still place).
+In the scenery zone the card notes it.
+
+**The budget bar** (beside the level strip; `shared/src/editor/budgetCounters.ts`)
+shows the budget nearest its limit: green OK, amber Near (80 %), red Over, each
+with its word. Click the name to select what it counts; the arrow lists every
+budget (docs/MAP_BUDGETS.md).
+
+**Keys:** `?` (or the tool bar's Keys button) lists every key MapMaker binds,
+from the same table its keys are bound with (`shared/src/editor/keymap.ts`).
+
 ## Floors over tall pieces (format v26)
 
 A grid cell holds one piece. A piece that stands more than one level tall
