@@ -82,6 +82,15 @@ The workflow is unchanged (CLAUDE.md):
 - Claimed: the map schema's backdrop Scenery list (a new value `volcano`, no format bump; `wip/mapmaker-sandfall`), MapMaker lane, 2026-11-08.
 - Claimed: `maps/test_coverage.json` (the new set pieces and Arena kit tiles, through MapMaker; `wip/mapmaker-setpieces`), MapMaker lane, 2026-11-08.
 - Claimed: `content/setpieces/**` and the set-piece alias table (set pieces part 5), MapMaker lane, 2026-11-08.
+- **Moved to the MapMaker lane (owner's rule: MapMaker work goes there; 2026-11-08):** the editor half of the Iron
+  Coast job, since the lane holds the editor claim: (1) a finer terrain grid (raise the 161-vertices-a-side cap to 321,
+  1.25 m cells on a 380 m map) and a Terrain → Change grid tool that resamples heights, paint and plants; (2) a "coast"
+  border side (`borderSides`: sand and shallow water carry on past the boundary along the shoreline, cliffs taper to low
+  headlands and dunes, forest only inland; scenery only, no collision or nav). Either may need a format bump: take the
+  one after the card camera's. Please note here when they land: the other session then reshapes Iron Coast in MapMaker
+  (natural cliffs, inland drops to slopes, the coast edge on its east and west ends, A1/A2 zone time). Details:
+  docs/map-briefs/iron_coast/DECISIONS_AND_DEVIATIONS.md and the owner's screenshots described in this file's Iron Coast
+  part 2 entry.
 
 **In flight: MapMaker overhaul (other account)** (owner, 2026-11-08: a second session owns this lane;
 docs/MAPMAKER_OVERHAUL_PLAN.md). Branches `wip/mapmaker-*` / `check/mapmaker-*` only.
