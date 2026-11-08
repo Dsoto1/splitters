@@ -2295,6 +2295,8 @@ async function physicsfxFlow(browser) {
     check(!!open.at, `open ground for the ragdolls, with you 10 m off (${JSON.stringify(open)})`);
     // You land there.
     if (open.at) await page.waitForFunction((p) => { const me = window.__match.slots[window.__cs.slot]; return me.move.grounded && Math.hypot(me.move.pos.x - p.x, me.move.pos.z - p.z) < 1; }, open.me, { timeout: T(5000) }).catch(() => {});
+    // And the view has you there (a slow page draws the move frames later: what is in view is judged from its camera).
+    if (open.at) await page.waitForFunction((p) => { const c = window.__cs.view.camera.globalPosition; return Math.hypot(c.x - p.x, c.z - p.z) < 1.5; }, open.me, { timeout: T(15000) }).catch(() => {});
     // Face it (the mass blast is the bodies in view), turned round if the yaw went the wrong way.
     if (open.at) {
       await page.evaluate((yaw) => (window.__cs.input.yaw = yaw), open.yaw);
@@ -2326,8 +2328,9 @@ async function physicsfxFlow(browser) {
   // The bot lands where it was put and its avatar stands there.
   await page.waitForFunction(() => {
     const bot = window.__match.slots[window.__botSlot];
-    return bot?.move.grounded && !!window.__cs.view.avatars.get(bot.slot)?.anim?.ch.joints.get('Head');
-  }, null, { timeout: T(5000) }).catch(() => {});
+    const a = window.__cs.view.avatars.get(bot?.slot);
+    return bot?.move.grounded && !!a?.anim?.ch.joints.get('Head') && Math.hypot(a.root.position.x - bot.move.pos.x, a.root.position.z - bot.move.pos.z) < 0.5;
+  }, null, { timeout: T(15000) }).catch(() => {});
   await frames(page, 5);
   const standing = await page.evaluate(() => {
     const m = window.__match;
@@ -2823,12 +2826,16 @@ async function glassChecks(browser) {
       window.__cs.input.pitch = -0.02;
     }, z);
     await page.waitForTimeout(T(600)); // wait-ok: the view turns to the panel
+    // Each shot: the trigger held until the round has gone (the magazine drops; a held trigger fires on a frame, and a
+    // loaded CI page can go a second without one), then let go for a frame or two.
+    const mag = () => window.__match.slots[window.__cs.slot].weapons.get(window.__match.slots[window.__cs.slot].current)?.mag ?? 0;
     for (let k = 0; k < n; k++) {
       if (await page.evaluate(done)) break;
+      const before = await page.evaluate(mag);
       await page.evaluate(() => (window.__autoInput = { buttons: 2 }));
-      await page.waitForTimeout(T(200)); // wait-ok: holds the trigger for a shot
+      await page.waitForFunction(([src, b]) => eval(src)() < b, [mag.toString(), before], { timeout: T(5000) }).catch(() => {});
       await page.evaluate(() => (window.__autoInput = { buttons: 0 }));
-      await page.waitForTimeout(T(250)); // wait-ok: between shots
+      await frames(page, 2);
     }
   };
   const z = (i) => -8 - i * 2.6;
