@@ -18,11 +18,11 @@
     ],
     "release": {
       "mapId": "m_sdum2n4t3d4kld5f",
-      "versionId": "v_y6kagxzjxxcwrtb6",
-      "revision": 3,
-      "contentHash": "sha256:f6fdf1bc5f79933b60a48c11b97029174ced64b1b2cd261a9d48e61e48ae88dc",
+      "versionId": "v_wy7wwdsev6j5oli3",
+      "revision": 4,
+      "contentHash": "sha256:20b793e75015855f4566cb433f227dbd0aaae1f24b61a4a2abe72e279fa40e44",
       "schemaVersion": 29,
-      "releasedAt": "2026-11-08T21:05:52.729Z"
+      "releasedAt": "2026-11-08T21:54:21.838Z"
     }
   },
   "classicStructure": {
@@ -778,7 +778,7 @@
       ],
       "kind": "block",
       "size": [
-        2,
+        2.5,
         0.5,
         0.5
       ],
@@ -800,7 +800,7 @@
       ],
       "kind": "block",
       "size": [
-        2,
+        2.5,
         0.25,
         0.5
       ],

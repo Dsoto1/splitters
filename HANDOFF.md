@@ -1573,7 +1573,7 @@ Bomb plants (0.5 → 0.3 a match) a little down on the samples, and ten CTF maps
 7. Erosion: corner pad pillars met the deck at a corner. **Fixed:** the four pillars (`block_064`-`070`) are 6 m deep
    (was 3) toward the middle, sharing a 3 m edge with the lower deck.
 8. M4 Outpost: the uplink dais gaps. **Fixed:** the uplink room is a plain Room with a smaller dais of Sky Blocks
-   (2.5 × 2 m, 0.75 m, two 0.25 m steps, Circuit like the theme's solids; 2.25-2.5 m gaps), the damage power-up on it;
+   (2.5 × 2 m, 0.75 m, two 0.25 m steps its full width, Circuit like the theme's solids; 2.25-2.5 m gaps), the damage power-up on it;
    the north room (`t_north`) is a Room with the Low cover layout (kept 2 m off the walls: its old block pinched the
    doorway to the north rooms). Both unreachable pickups reachable.
 9. Iron Compound: the gantry MG turret (`mount_148`). **Fixed:** moved to the gantry's dead-end south-east corner
