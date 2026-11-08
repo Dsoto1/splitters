@@ -29,6 +29,6 @@
   "enterRadius": 3.8,
   "respawnSeconds": 60,
   "blast": { "radius": 5.5, "damage": 110 },
-  "vehicle": { "maxSpeed": 14, "reverseSpeed": 6, "accel": 7, "turnRate": 1.25, "grip": 0.38, "mass": 3.6 },
+  "vehicle": { "maxSpeed": 14, "reverseSpeed": 6, "accel": 7, "turnRate": 1.25, "idleBrake": 10, "grip": 0.38, "mass": 3.6 },
   "blurb": "A heavy armoured truck for five: a driver, a front and a rear machine gunner and two riders in the back"
 }

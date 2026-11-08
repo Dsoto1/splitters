@@ -99,6 +99,8 @@ export interface MountView {
   bailHealth?: number;
   /** Turns on the spot (tracks: the vehicle's `pivot`). */
   pivots?: boolean;
+  /** Ground vehicles and hovercraft (not flyers): how far (m) either side of its middle a route must be clear for it (routeFits). */
+  routeHalfWidth?: number;
 }
 
 /** Can a bot at `feet` get into `m` from where it stands (the match's own rule, sim/mounts.ts enterReach)? */
@@ -145,10 +147,11 @@ const FIT_SHIFTS = [0, 0.75, -0.75, 1.5, -1.5, 2.5, -2.5];
  * doesn't, where it would wedge (Iron Tide's hangar).
  */
 export function routeFits(
-  physics: { boxClear(center: Vec3, half: Vec3): boolean; raycastHit(origin: Vec3, dir: Vec3, max: number): { dist: number } | null },
+  physics: FitPhysics,
   path: readonly Vec3[],
   halfWidth: number,
   skip = 4,
+  upTo = Infinity,
 ): boolean {
   const half = { x: halfWidth, y: FIT_HALF_HEIGHT, z: halfWidth };
   const down = { x: 0, y: -1, z: 0 };
@@ -164,6 +167,7 @@ export function routeFits(
     const sz = len > 0 ? -(b.x - a.x) / len : 0;
     for (let d = 0; d < len; d += FIT_STEP) {
       if (along + d < skip) continue;
+      if (along + d > upTo) return true;
       const t = d / len;
       const fits = FIT_SHIFTS.some((k) => {
         const x = a.x + (b.x - a.x) * t + sx * k;
@@ -181,6 +185,20 @@ export function routeFits(
     along += len;
   }
   return true;
+}
+
+type FitPhysics = { boxClear(center: Vec3, half: Vec3): boolean; raycastHit(origin: Vec3, dir: Vec3, max: number): { dist: number } | null };
+
+/**
+ * Does vehicle `m` fit along `path` (routeFits, at its `routeHalfWidth`), checked from just past its own hull to `upTo`
+ * m along? Flyers (no routeHalfWidth) always do. Bot drivers keep to routes their hull fits: before, a Hauler followed
+ * the foot route into Iron Tide's 3 m doors.
+ */
+export function vehicleRouteFits(physics: FitPhysics, m: Pick<MountView, 'routeHalfWidth' | 'half'>, path: readonly Vec3[], upTo = Infinity): boolean {
+  if (!m.routeHalfWidth || !m.half) return true;
+  const long = Math.max(m.half[0], m.half[2]);
+  const wide = Math.min(m.half[0], m.half[2]);
+  return routeFits(physics, path, m.routeHalfWidth, long + wide + 0.5, upTo);
 }
 
 /** The seat a bot is in. */

@@ -43,7 +43,7 @@ import {
   steer,
   turretFor,
   vehicleFor,
-  routeFits,
+  vehicleRouteFits,
   type DriveState,
   type Headway,
   type MountView,
@@ -300,6 +300,8 @@ const SCOPE_DETOUR = 70;
 const SPOTTED_FACING = 0.9;
 /** Riding along: a vehicle standing still this long (s), with nothing to shoot for 4 s, is parked; riders get out. */
 const RIDE_PARKED_SECONDS = 8;
+/** A bot getting out of a vehicle that isn't burning or about to blow slows it under this first (m/s). */
+export const BAIL_SPEED = 3;
 /** A bot at the wheel gives up (gets out) when the route left hasn't shrunk this much (m) in this long (s). */
 const DRIVE_PROGRESS_SECONDS = 12;
 const DRIVE_MIN_PROGRESS = 10;
@@ -313,10 +315,10 @@ const SHELL_RESERVE = 0.3;
 const AMMO_DETOUR = 120;
 /** Someone shut in a sealed vehicle (the Tank) is this much less of a target (as if this many times further) to a bot with nothing that hurts vehicles. */
 const SHELTERED_TARGET_SCALE = 3;
-/** A tank whose route to the goal doesn't fit it (routeFits) is left alone this long (s) before it is looked at again. */
-const TANK_NO_FIT_SECONDS = 20;
-/** The share of a tank's width the route clearance asks for (routeFits): it pushes past a little scraping, and a narrower check kept it off routes it drives fine. */
-const TANK_FIT_WIDTH = 0.8;
+/** A vehicle whose route to the goal doesn't fit it (routeFits) is left alone this long (s) before it is looked at again. */
+const NO_FIT_SECONDS = 20;
+/** At the wheel, the route ahead is checked for fit (routeFits) this far (m) on each new route. */
+const FIT_AHEAD = 80;
 /** A pickup a bot got stuck going for is left alone this long (s). */
 const PICKUP_GIVE_UP_SECONDS = 90;
 /** How far (m) a bot goes to hop into a teammate's vehicle. */
@@ -2986,10 +2988,10 @@ export class BotBrain {
       const route = view.nav.findPath(v.pos, goal);
       if (!route && !v.floats) return;
       if (route && pathLength(route) > horizontalDistance(v.pos, goal) * 1.5 && !v.floats) return;
-      // A tank only where it fits: the route is for people, and a tank wedges in their passages.
-      if (route && v.sealed && v.half && !routeFits(view.physics, route, Math.min(v.half[0], v.half[2]) * TANK_FIT_WIDTH, Math.max(v.half[0], v.half[2]) + Math.min(v.half[0], v.half[2]) + 0.5)) {
-        // (Not a give-up: another goal may give it a route that fits. Looked at again in TANK_NO_FIT_SECONDS.)
-        this.avoidMounts.set(v.index, view.tick + TICK_RATE * TANK_NO_FIT_SECONDS);
+      // Only where it fits: the route is for people, and a vehicle wedges in their passages (or plugs a door).
+      if (route && !vehicleRouteFits(view.physics, v, route)) {
+        // (Not a give-up: another goal may give it a route that fits. Looked at again in NO_FIT_SECONDS.)
+        this.avoidMounts.set(v.index, view.tick + TICK_RATE * NO_FIT_SECONDS);
         return;
       }
       this.roamGoal = { ...goal };
@@ -3029,6 +3031,8 @@ export class BotBrain {
     let right = 0;
     let buttons = 0;
     let leave = false;
+    // Wants out but brakes first (BAIL_SPEED): `leave` stays true, the use button waits.
+    let slowing = false;
     const gunCtx: AimContext = { ...ctx, weapon: seat.weapon ?? ctx.weapon, steady: !!seat.weapon, speed: 0, stance: 0 };
     const armed = !!seat.weapon || seat.role === 'passenger';
     const inSeatArc = (p: Vec3) => !m || inArc(m, seat, p) || (!seat.weapon && seat.role === 'passenger');
@@ -3048,6 +3052,9 @@ export class BotBrain {
         if (m.floats && (this.path.length < 2 || pathLength(this.path) > left * 1.5)) this.path = [];
         this.pathIndex = 1;
         this.lastPathTick = tick;
+        // A new route through somewhere it doesn't fit (a door, a passage between pillars): out here and on foot,
+        // rather than steering into it and wedging or plugging it.
+        this.routeTooNarrow = this.path.length > 1 && !vehicleRouteFits(view.physics, m, this.path, FIT_AHEAD);
       }
       // Look ahead along the route.
       while (this.pathIndex < this.path.length - 1 && horizontalDistance(m.pos, this.path[this.pathIndex]!) < 6) this.pathIndex++;
@@ -3097,6 +3104,16 @@ export class BotBrain {
       // Get out: arrived (and not fighting from it), about to blow (or on fire), stuck for good (a back-out didn't free
       // it), or a fight with no gun (not from a sealed one: inside is the safest place there is).
       if ((left < 14 && !engaging && !resupply) || aboutToBlow(m) || this.drive.stuck || (target && !seat.weapon && !m.sealed && horizontalDistance(m.pos, target.pos) < 22)) leave = true;
+      if (this.routeTooNarrow && !engaging) {
+        leave = true;
+        this.avoidMounts.set(m.index, tick + TICK_RATE * NO_FIT_SECONDS);
+      }
+      // Getting out at speed (not when it burns or is about to blow): brake first, out once under BAIL_SPEED. Jumping
+      // out flat out left the vehicle to coast on into whatever was ahead (a door it then blocked).
+      if (leave && !aboutToBlow(m) && (m.speed ?? 0) > BAIL_SPEED) {
+        forward = m.reversing ? 1 : -1;
+        slowing = true;
+      }
       // Don't climb straight back into the one that got stuck.
       if (this.drive.stuck) this.giveUpOn(m.index, tick);
       if (m.sealed) {
@@ -3109,7 +3126,7 @@ export class BotBrain {
         this.tankUnstick = this.drive.unstick;
         if (resupply && !this.tankResupply) this.tankLog.resupply++;
         this.tankResupply = !!resupply;
-        if (leave && this.drive.stuck && tick - this.mountedSince > TICK_RATE && !this.useLatch) {
+        if (leave && !slowing && this.drive.stuck && tick - this.mountedSince > TICK_RATE && !this.useLatch) {
           this.tankLog.stuck++;
           this.tankLog.stuckAt.push([Math.round(m.pos.x), Math.round(m.pos.y), Math.round(m.pos.z)]);
         }
@@ -3133,6 +3150,8 @@ export class BotBrain {
       const stuck = driven && !ally.human && noHeadway(this.riderHeadway, m.pos, tick, RIDER_STUCK_TICKS, RIDER_MIN_PROGRESS);
       if (stuck) this.giveUpOn(m.index, tick);
       if ((!driven && tick - this.noDriverSince >= this.bailDelay) || aboutToBlow(m) || parked || stuck) leave = true;
+      // Still going fast with nobody braking it for us: wait till it slows (an empty one brakes on its own: idleBrake).
+      if (leave && !aboutToBlow(m) && (m.speed ?? 0) > BAIL_SPEED) slowing = true;
       if (!fireAt) this.turnToward(m.yaw, 0);
     } else if (m) {
       // Gunner: stay while there is something to shoot.
@@ -3148,13 +3167,15 @@ export class BotBrain {
       const cool = !seat.overheated && seat.heat < 0.85;
       if (cool && this.aim.trigger(gunCtx, sol, this.yaw, this.pitch, this.reacted(view, fireAt))) buttons |= BUTTON_FIRE;
     }
-    if (leave && tick - this.mountedSince > TICK_RATE && !this.useLatch) buttons |= BUTTON_USE;
+    if (leave && !slowing && tick - this.mountedSince > TICK_RATE && !this.useLatch) buttons |= BUTTON_USE;
     this.useLatch = (buttons & BUTTON_USE) !== 0;
     if (leave) this.nextMountTick = tick + TICK_RATE * 10;
     return { seq, forward, right, yaw: this.yaw, pitch: this.pitch, buttons };
   }
 
   private nextMountTick = 0;
+  /** At the wheel: the current route goes somewhere the vehicle doesn't fit (vehicleRouteFits), so the bot gets out. */
+  private routeTooNarrow = false;
 
   // ------------------------------------------------------------------ weapons and items
 

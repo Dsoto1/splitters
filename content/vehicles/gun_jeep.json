@@ -35,6 +35,7 @@
     "reverseSpeed": 8,
     "accel": 12,
     "turnRate": 2,
+    "idleBrake": 14,
     "grip": 0.26,
     "mass": 1.1,
     "drift": 0.4,
