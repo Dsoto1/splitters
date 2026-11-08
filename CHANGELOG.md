@@ -8,6 +8,23 @@ made only on a commit that passed CI on a check branch.
 
 ## Unreleased
 
+**MapMaker: groups, copy and paste, templates, mirror, note pins** (MapMaker overhaul Phase 3, items 3-7):
+- **Groups** (Ctrl+G, or the inspector's Group): keep things together. A click on any of a group picks it all (Alt-click
+  just that one), so it moves, turns, mirrors (M flips it east ↔ west over its middle), duplicates and deletes as
+  one; a duplicate is a group of its own. Name it in the inspector; Ctrl+Shift+G ungroups. Groups belong to their map.
+- **Copy and paste between maps** (Ctrl+C, Ctrl+V; the right-click menu): the copy is kept in this browser and pasted
+  with new ids where the pointer is, on the level being edited, in this map or another one (its groups and its own
+  set pieces come too). A map on another grid or in another theme refuses it, saying why.
+- **Templates:** New map → start from a layout: Arena, Symmetric CTF, Assault (Breakthrough) or Open terrain. Each
+  becomes a map of your own; the layouts never show in map lists.
+- **Mirror…** (Shift+M, the inspector, the right-click menu): the selection or half the map, across an east–west or
+  north–south line or through a point, as one undo step. In a mirrored copy, team things swap sides: spawns, flag
+  bases, team-only zones, doors and buttons, team vehicles. Tiles mirror as their own mirror image (a corridor's cover
+  goes to the other side, stairs climb the other way); a tile that has none is refused across a line, saying which.
+- **Note pins** (J, Notes on the tool bar): notes for the map's makers pinned on the map. Click to pin one, click a
+  pin to edit or delete it, drag it to move it; Map properties lists them all. They show in MapMaker only, never in
+  play. Groups and notes are stored in the map (format v31; older maps load as they were).
+
 **MapMaker: Play from here, the plan view, the card shot** (MapMaker overhaul Phase 3, items 1, 2 and 8):
 - **Play from here** (Shift+F5, or ▶ Here beside PLAY TEST): a test match with you standing on the floor or ground
   below the camera, facing where it looks (the nearest spot with room to stand, within 4 m). Where there's nowhere to

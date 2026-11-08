@@ -118,6 +118,17 @@ docs/MAPMAKER_OVERHAUL_PLAN.md). Branches `wip/mapmaker-*` / `check/mapmaker-*` 
   foliage (no Kenney trees, bushes, flowers or grass anywhere; owner 2026-11-08). The full pass over every map comes
   after all of this, one map at a time, judging whether each map needs it.
 
+**MapMaker Phase 3, part B** (`wip/mapmaker-p3b`, other account; docs/MAPMAKER_OVERHAUL_PLAN.md "As built" under
+Phase 3 items 3-7): groups (Ctrl+G), copy and paste between maps (Ctrl+C / Ctrl+V, localStorage), templates
+(`maps/templates/*.json`, New map → start from), Mirror… (Shift+M), note pins (J). Map format v31 (`groups`,
+`editorNotes`), chained after v30.
+- **Owner's calls, built the conservative way:** (1) paste into another theme is refused (`PASTE_ACROSS_THEMES`);
+  (2) half-map mirror refuses while the other half has anything; (3) terrain and paths aren't mirrored; (4) Breakthrough
+  spawn groups keep their side in a mirror; (5) a tile with no mirror image among its turns is refused across a line.
+- **Pitfalls:** `setSelection` widens every selection to whole groups (pass `single` for one member); MapMaker's `run`
+  tidies groups after every edit (`withGroupsTidied`). Templates live in `maps/templates/` on purpose: anything
+  reading `maps/*.json` must stay non-recursive. Rebuild a template with MapMaker (its tools), never by hand.
+
 **MapMaker Phase 1, part A** (`wip/mapmaker-p1a`, other account; docs/MAPMAKER_OVERHAUL_PLAN.md "As built" under
 Phase 1 items 1, 2, 5): the ghost says why, the live budget bar, the `?` key list.
 - **Owner's calls, built the conservative way:** (1) entities over nothing or outside the boundary are warned beside
