@@ -21,6 +21,14 @@ The workflow is unchanged (CLAUDE.md):
 - give agents their own port ranges (4950-4959, 4970-4979, 4980-4989);
 - tell agents a CI failure in `attest-build-provenance` (a transparency-log 500 or 404) is GitHub's signing service: re-run the failed job.
 
+**In flight: MapMaker overhaul (other account)** (owner, 2026-11-08: a second session owns this lane;
+docs/MAPMAKER_OVERHAUL_PLAN.md). Branches `wip/mapmaker-*` / `check/mapmaker-*` only.
+- **Now:** Phase 1 (the ghost says why, the live budget bar, the `?` overlay; the measure tool, props snap to surfaces with
+  randomise), then Phase 3 item 9 (the rotate ring, quick facings) and the rest of Phase 3 that doesn't need the split.
+- **The split of `editorApp.ts`** (Phase 2) waits until Iron Coast's MapMaker changes (finer terrain grid, Terrain →
+  Change grid, a "coast" border side) and the race-mode removal (the race layer reworded to track / NPC traffic) are on
+  main. This line will say when it starts. Please say here when those land.
+
 **In flight at the switch** (each branch pushed, tree clean; scratchpad files did not survive the switch):
 1. **Friendly fire** (`wip/friendly-fire` @ 318023ed). Green at 1a347140 (run 42408271804, with its new e2e check).
    - **The switch commit:** main's frozen-corpses fix was merged in (conflicts only in CHANGELOG and HANDOFF;
