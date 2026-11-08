@@ -1551,26 +1551,33 @@ Phase B's playbook); Norman Shores' bots in the shallows (off the navmesh, no wa
 crumbling wall by its west jump pad (`block_341`: bots stuck at it for minutes in one match); hills held (32 → 29 %) and
 Bomb plants (0.5 → 0.3 a match) a little down on the samples, and ten CTF maps still without a capture: Phase B.
 
-**For the owner** (each would be a MapMaker fix; players get stuck in all but the first two too):
-1. Skyward: the four pad perches are one-way by design ("fall off and you are gone"), but two spawn points
-   (`spawn_035`, `spawn_036`) are on the towers: whoever spawns there can't leave. A pad back down, or move them?
-2. Sky Islands: the sky platform (double damage), pad up, no way back (as designed?).
-3. Grand Marquee: the marquee top over the street; the street pad throws you up and nothing gets you down (1.6 m
-   sign panels, the terrace 2.9 m up). A gap in a side panel or a ladder?
-4. Obsidian Orb: the reactor core (`prop_087`, scale 4) fills the "bottomless" shaft up to 3.8 m under the bridges:
-   a fall off a retracting bridge lands on it and stays there. Core not solid, or lower it? And a 0.4 m ledge
-   (`block_082`) runs along the shaft's north wall at -5.6 m: falls land on it and nothing gets off it (913 of the
-   CTF suite's 915 failed searches, 1.4 % of the map's, are bots on that ledge asking for a way off).
-5. Reactor: off the roof's south-west corner at (37, 4, 50) you drop 4.3 m into the yard outside the walls and can't
-   get back in. A railing on that corner?
-6. Serpent Gorge: the gorge floor along the river (falls through the gallery's openings, banks too steep to climb)
-   and slivers by the crypt's walls. Steps or a ladder out?
-7. Erosion: the corner pads that throw you back up from the lower deck stand on 3 m pillars meeting the deck only at
-   a corner (players step across, bots can't). Pillars that share an edge with the deck?
-8. M4 Outpost: the uplink room's dais leaves 1.5-2 m gaps the navmesh (0.8 m from walls) can't pass; bots hop onto
-   the dais but not round it to the armour behind it or the north corridor. Wider gaps?
-9. Iron Compound: the MG turret on the gantry by the stairs (`mount_148`) leaves 0.8 m of walkway beside it; bots
-   coming back along the gantry walk into it. Move it off the walkway's middle?
+**For the owner** (each would be a MapMaker fix; players get stuck in all but the first two too). **All nine fixed**
+(owner 2026-11-08, "Fix all"; `wip/trap-spots`, in MapMaker, see "Trap spots fixed" below):
+1. Skyward: the four pad perches are one-way by design; spawn points `spawn_035`, `spawn_036` were on the towers.
+   **Fixed:** both moved to the central deck ((-6, 0, -10) and (6, 0, 10), one each side as before). The perches stay one-way.
+2. Sky Islands: the sky platform (double damage), pad up, no way back. **Fixed:** a return jump pad on the platform
+   (`pad_uk0eh8m93m`, (-2, 12.5, 0), west, 4 up / 5 forward) lands on the west arm; still a perch over the drop.
+3. Grand Marquee: the marquee top, nothing gets you down. **Fixed:** each side panel (`block_394`, `block_395`) is 3 m
+   long now (was 6), leaving a 3 m gap at the back to drop to the street.
+4. Obsidian Orb: the reactor core and the shaft's floor caught falls. **Fixed:** the core (`prop_087`) is not solid and
+   the shaft's floor block (`block_086`) is gone, so the kill height (lowest floor 14 m) is under the shaft: a fall is
+   a fall. The four glowing trims (`block_082`-`085`, the 0.4 m ledges) are 0.2 m deep and sunk into the walls with 5 cm
+   showing: nothing lands on them.
+5. Reactor: off the roof's south-west corner into the yard. **Fixed:** railings (Sky Blocks, the theme's material) on
+   the roof's west edge either side of the stair head, and a sloped one (roll 27°) along the stairs' open south side
+   (falls off its top went past the stair cell into the yard). The yard is now an island nobody reaches.
+6. Serpent Gorge: the gorge floor and the slivers by the crypt. **Fixed:** two Climbing Vines (4.5 m) from the gorge
+   floor up the outer walls of the two half-buried rooms at (12, -8.4, 56.5) and (44, -8.4, 56.5) onto their roofs; the
+   slivers were reached from the strip north of the temple yards (0.4 m below them, a trough to -4.4 m beside the
+   crypt): `tile_100`, `tile_101`, `tile_103` have a railing on that edge now.
+7. Erosion: corner pad pillars met the deck at a corner. **Fixed:** the four pillars (`block_064`-`070`) are 6 m deep
+   (was 3) toward the middle, sharing a 3 m edge with the lower deck.
+8. M4 Outpost: the uplink dais gaps. **Fixed:** the uplink room is a plain Room with a smaller dais of Sky Blocks
+   (2.5 × 2 m, 0.75 m, two 0.25 m steps, Circuit like the theme's solids; 2.25-2.5 m gaps), the damage power-up on it;
+   the north room (`t_north`) is a Room with the Low cover layout (kept 2 m off the walls: its old block pinched the
+   doorway to the north rooms). Both unreachable pickups reachable.
+9. Iron Compound: the gantry MG turret (`mount_148`). **Fixed:** moved to the gantry's dead-end south-east corner
+   (10.8, 3, 9.4), its gunner on the deck behind it; the sniper rifle (`pickup_224`) to the north-east corner.
 <!-- /bots-a -->
 
 <!-- ground-fix -->
