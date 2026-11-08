@@ -2379,8 +2379,12 @@ async function physicsfxFlow(browser) {
   // The sampling above stops once the body is down: give the blood time to land.
   // Splats are thin instances of one disc (bloodVisuals.ts): count them.
   await page.waitForFunction(() => window.__cs.view.blood.splatCount > 0, null, { timeout: T(2500) }).catch(() => {});
-  const dead = await page.evaluate(() => ({ splats: window.__cs.view.blood.splatCount }));
-  check(ragdolled && fell() > 0.5, `the killed bot drops as a ragdoll (${ragdolled ? 'ragdoll' : 'no ragdoll'}, head ${track.map((y) => y.toFixed(2)).join(' → ')})`);
+  const dead = await page.evaluate(() => {
+    const v = window.__cs.view;
+    const c = v.corpses.findLast((x) => x.slot === window.__botSlot);
+    return { splats: v.blood.splatCount, why: { physics: !!v.physics, corpse: !!c, model: !!c?.a.anim?.ch, fall: !!c?.a.fall, death: v.lastDeath ?? null } };
+  });
+  check(ragdolled && fell() > 0.5, `the killed bot drops as a ragdoll (${ragdolled ? 'ragdoll' : `no ragdoll: ${JSON.stringify(dead.why)}`}, head ${track.slice(0, 12).map((y) => y.toFixed(2)).join(' → ')}${track.length > 12 ? ` … ${track.at(-1).toFixed(2)}` : ''})`);
   check(dead.splats > 0, `blood splats where it fell (${dead.splats})`);
   // A body that has come to rest (its capsules back in the pool) is a ragdoll again when a round hits it,
   // rather than staying a stiff pose that rounds pass through (owner, 3 Nov).
@@ -2859,7 +2863,14 @@ async function glassChecks(browser) {
   check(proof.health !== null && proof.health > 0 && proof.health < 100 && proof.cracks > 0, `bulletproof glass stops the rounds, cracks where they strike and holds (${JSON.stringify(proof)})`);
   await fireAt(z(0), 5, () => window.__match.scenario.destructibleAlive('panel_0') === false);
   await page.waitForFunction(() => window.__cs.view.scene.meshes.some((m) => m.name === 'glassShard'), null, { timeout: T(5000) }).catch(() => {});
-  const broke = await page.evaluate(() => ({ alive: window.__match.scenario.destructibleAlive('panel_0'), shards: window.__cs.view.scene.meshes.filter((m) => m.name === 'glassShard').length }));
+  const broke = await page.evaluate(() => {
+    const m = window.__match;
+    const me = m.slots[window.__cs.slot];
+    const i = m.map.entities.findIndex((e) => e.id === 'panel_0');
+    const st = m.scenario.fullState().es.find(([k]) => k === i);
+    const w = me.weapons.get(me.current);
+    return { alive: m.scenario.destructibleAlive('panel_0'), shards: window.__cs.view.scene.meshes.filter((x) => x.name === 'glassShard').length, health: st ? st[1] : null, gun: w?.def.id, mag: w?.mag, at: { x: +me.move.pos.x.toFixed(1), z: +me.move.pos.z.toFixed(1) } };
+  });
   check(broke.alive === false && broke.shards > 0, `the glass panel shatters into shards (${JSON.stringify(broke)})`);
   await page.evaluate(() => {
     clearInterval(window.__pin);
