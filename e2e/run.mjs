@@ -2867,16 +2867,28 @@ async function glassChecks(browser) {
     return { health: s ? s[1] : null, cracks: window.__cs.view.scenario.glass.counts.cracks };
   });
   check(proof.health !== null && proof.health > 0 && proof.health < 100 && proof.cracks > 0, `bulletproof glass stops the rounds, cracks where they strike and holds (${JSON.stringify(proof)})`);
+  // Broken glass comes back after the map's glass time (4 s here): on a slow page that can pass between a shot and the
+  // next look (it broke, and was whole again by the check). So the break and its shards are noted as they happen.
+  await page.evaluate(() => {
+    window.__panelBroke = false;
+    window.__shardsSeen = 0;
+    clearInterval(window.__panelWatch);
+    window.__panelWatch = setInterval(() => {
+      if (window.__match.scenario.destructibleAlive('panel_0') === false) window.__panelBroke = true;
+      window.__shardsSeen = Math.max(window.__shardsSeen, window.__cs.view.scene.meshes.filter((x) => x.name === 'glassShard').length);
+    }, 10);
+  });
   fired = 0;
-  await fireAt(z(0), 8, () => window.__match.scenario.destructibleAlive('panel_0') === false);
-  await page.waitForFunction(() => window.__cs.view.scene.meshes.some((m) => m.name === 'glassShard'), null, { timeout: T(5000) }).catch(() => {});
+  await fireAt(z(0), 8, () => window.__panelBroke);
+  await page.waitForFunction(() => window.__shardsSeen > 0, null, { timeout: T(5000) }).catch(() => {});
   const broke = await page.evaluate(() => {
     const m = window.__match;
     const me = m.slots[window.__cs.slot];
     const i = m.map.entities.findIndex((e) => e.id === 'panel_0');
     const st = m.scenario.fullState().es.find(([k]) => k === i);
     const w = me.weapons.get(me.current);
-    return { alive: m.scenario.destructibleAlive('panel_0'), shards: window.__cs.view.scene.meshes.filter((x) => x.name === 'glassShard').length, health: st ? st[1] : null, gun: w?.def.id, mag: w?.mag, at: { x: +me.move.pos.x.toFixed(1), z: +me.move.pos.z.toFixed(1) } };
+    clearInterval(window.__panelWatch);
+    return { alive: !window.__panelBroke, shards: window.__shardsSeen, health: st ? st[1] : null, gun: w?.def.id, mag: w?.mag, at: { x: +me.move.pos.x.toFixed(1), z: +me.move.pos.z.toFixed(1) } };
   });
   broke.fired = fired;
   check(broke.alive === false && broke.shards > 0, `the glass panel shatters into shards (${JSON.stringify(broke)})`);
