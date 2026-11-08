@@ -710,6 +710,25 @@ html.touch .char-spin .spin-label kbd { display: none; }
 .xh-col { width: 26px; height: 26px; padding: 0; border-radius: 50%; }
 #hitmarker { position: absolute; left: 50%; top: 50%; width: 30px; height: 30px; margin: -15px 0 0 -15px; opacity: 0; border: 2px solid var(--danger); transform: rotate(45deg); transition: opacity 0.15s; }
 #hitmarker.on { opacity: 1; transition: none; }
+/* Damage numbers (Options → HUD; combatReadouts.ts): small, outlined, they rise and fade; nothing pops or flashes
+   (Reduce flashing). Gold: a head hit; cyan: armour took part; bolder: the hit that killed; grey: a board or crate. */
+#damage-numbers { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+#damage-numbers .dmg-num { position: absolute; left: 0; top: 0; will-change: transform; font: 700 15px var(--font-display); color: var(--text); text-shadow: 0 0 2px #000, 0 1px 3px rgba(0, 0, 0, 0.9); white-space: nowrap; animation: dmg-rise 0.9s ease-out forwards; translate: calc(-50% + var(--dx, 0px)) -100%; }
+#damage-numbers .dmg-num.head { color: var(--warning); }
+#damage-numbers .dmg-num.armour { color: var(--cyan); }
+#damage-numbers .dmg-num.kill { font-size: 19px; }
+#damage-numbers .dmg-num.target { color: var(--muted); }
+@keyframes dmg-rise { 0% { opacity: 0; margin-top: 0; } 12% { opacity: 1; } 70% { opacity: 1; } 100% { opacity: 0; margin-top: -34px; } }
+/* The spray pattern (Options → HUD): where the last burst went against a body's width at 25 m. */
+#spray-readout { position: absolute; right: 18px; top: 42%; width: 156px; padding: 8px 10px 10px; background: rgba(18, 24, 39, 0.78); border: 1px solid var(--line); border-radius: 8px; color: var(--text); font: 12px var(--font-body, inherit); }
+#spray-readout[hidden] { display: none; }
+#spray-readout b { display: block; font: 600 12px var(--font-display); letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); margin-bottom: 4px; }
+#spray-readout svg { display: block; width: 136px; height: 136px; background: rgba(11, 15, 26, 0.6); border-radius: 4px; }
+#spray-readout .axes { stroke: var(--line); stroke-width: 0.6; fill: none; }
+#spray-readout .ring { stroke: var(--muted); stroke-width: 0.8; stroke-dasharray: 2 2; fill: none; }
+#spray-readout circle:not(.ring) { fill: var(--orange); }
+#spray-readout circle.first { fill: var(--cyan); }
+#spray-readout small { display: block; margin-top: 6px; line-height: 1.3; color: var(--muted); }
 #hitmarker.head { border-color: #ff2a2a; border-width: 3px; width: 38px; height: 38px; margin: -19px 0 0 -19px; }
 /* Infinite-Warfare-style hit marker: four diagonal ticks around an open centre that pop out; red for head hits. */
 #hitmarker[data-style='ticks'] { border: none; transform: none; width: 30px; height: 30px; margin: -15px 0 0 -15px; }

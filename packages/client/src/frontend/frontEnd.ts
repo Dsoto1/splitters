@@ -108,6 +108,7 @@ import { botCastSelect, choice, field, fitChip, fitList, fold as foldEl, inert, 
 import { deleteSetup, lastSetup, listSetups, saveSetupAs, setLastSetup } from './savedSetups.ts';
 import type { MenuScene } from './menuScene.ts';
 import { weaponIcon } from './weaponIcons.ts';
+import { autoReloadOn, damageNumbersOn, saveAutoReload, saveDamageNumbers, saveSprayReadout, sprayReadoutOn } from '../game/combatReadouts.ts';
 import { ALLY_MARKER_COLOURS, CROSSHAIR_COLOURS, CROSSHAIR_STYLES, HITMARKER_STYLES, markerSetting, saveMarkers, crosshairSetting, hitmarkerSetting, saveCrosshair, saveHitmarker, type HitmarkerStyle } from '../game/crosshair.ts';
 import type { PortraitRenderer } from './portraits.ts';
 import { SHIPPED_PORTRAITS } from './portraitIndex.ts';
@@ -2437,6 +2438,15 @@ export class FrontEnd {
     const tutorialBtn = el('button', { type: 'button', id: 'opt-tutorial', textContent: 'Start tutorial' });
     tutorialBtn.addEventListener('click', () => this.hooks.playTutorial());
     // First-time tips (game/tips.ts): on unless switched off; Show tips again forgets the ones seen.
+    const autoReload = el('input', { type: 'checkbox', checked: autoReloadOn() });
+    autoReload.id = 'opt-auto-reload';
+    autoReload.addEventListener('change', () => saveAutoReload(autoReload.checked));
+    const dmgNumbers = el('input', { type: 'checkbox', checked: damageNumbersOn() });
+    dmgNumbers.id = 'opt-damage-numbers';
+    dmgNumbers.addEventListener('change', () => saveDamageNumbers(dmgNumbers.checked));
+    const sprayOn = el('input', { type: 'checkbox', checked: sprayReadoutOn() });
+    sprayOn.id = 'opt-spray-readout';
+    sprayOn.addEventListener('change', () => saveSprayReadout(sprayOn.checked));
     const tipsOn = el('input', { type: 'checkbox', checked: !loadTipState().off });
     tipsOn.id = 'opt-tips';
     tipsOn.addEventListener('change', () => setTipsOn(tipsOn.checked));
@@ -2600,6 +2610,7 @@ export class FrontEnd {
         row('Zoom sensitivity', el('span', { class: 'opt-range' }, zoomSens, zoomSensVal), 'Look speed when aiming down the sights or through a scope. At 1.00× the view moves on screen just as it does in hip fire; lower is steadier, higher is quicker.'),
         row('Invert look', toggle(invert), 'Mouse up looks down.'),
         row('Vehicle steering', steer, 'Look to steer: cars, buggies and hovercraft turn toward where you look (A / D still steer too), and the view stays where you point it. Classic: A and D steer and the view turns with the vehicle. Applies from your next match.'),
+        row('Auto-reload', toggle(autoReload), 'On by default: an empty magazine reloads by itself once the gun is ready, without a trigger pull. Sprinting or a quick melee still break a reload.'),
         row('Aim assist', toggle(assist), isTouchDevice() ? 'Gently pulls your sights onto enemies near the crosshair: a help with touch controls.' : 'Helps on a touchpad: look with the arrow keys, fire with F and aim with X. Controllers work too (click into the game first).'),
         row('Weapon wheel', el('span', { class: 'opt-stack' }, el('span', { class: 'key-bind-row' }, wheelKey, wheelReset), wheelNote), 'Hold it to open a wheel of the weapons you carry, point with the mouse and let go to switch (a click picks too). A quick tap of Q still goes back to your last weapon. On a controller hold Y; on a phone tap Weapons.'),
         ...(isTouchDevice() ? [el('h3', { class: 'opt-sub', textContent: 'Touch' }), touchList] : []),
@@ -2613,6 +2624,8 @@ export class FrontEnd {
         row('Hit marker', hitStyle, 'What flashes on the crosshair when you hit someone.'),
         row('Teammate marker', allySel),
         row('Enemy marker', enemySel, 'Off: only teammates are marked.'),
+        row('Damage numbers', toggle(dmgNumbers), 'What each of your hits did, floating up from the target for a moment: gold for a head hit, cyan where armour took part, bolder for the kill. On the Training Range\'s boards it shows what that round would do to a body there.'),
+        row('Spray pattern', toggle(sprayOn), 'A small panel plots where your last burst went, round by round, against a ring the width of a body at 25 m, and how long your aim took to settle. Handy on the Training Range\'s recoil wall.'),
         row('First-time tips', toggle(tipsOn), 'A short hint the first time something happens in a match: low ammo, a vehicle in reach, a pickup, armour, spawn protection, your first death. Each shows once.'),
         row('Show tips again', tipsReset, 'Every tip shows once more.'),
       ]],
