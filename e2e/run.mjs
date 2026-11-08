@@ -1797,7 +1797,10 @@ async function mobileFlow(browser) {
   check(await page.isVisible('.opt-sub:has-text("Touch")'), 'Options → Controls lists the touch controls on a phone');
   await page.screenshot({ path: `${ARTIFACTS}/mobile-options.png` });
 
-  await page.goto(`${CLIENT}/?offline=training_range&test=1&god=1`);
+  // You alone on the range (&bots=1: one player in all). Its deathmatch bots shot the god-mode you about (their swarm
+  // rockets' and rounds' knockback): the "walk" could be a blast's push, and the jump's tap could land while a hit
+  // had you in the air (CI: grounded false, velY -1.0 / -2.5 at the tap), so the tap did nothing.
+  await page.goto(`${CLIENT}/?offline=training_range&test=1&god=1&bots=1`);
   await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 1 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown', null, { timeout: T(60000) });
   check(await page.evaluate(() => !document.getElementById('pause').hidden && document.getElementById('touch-ui').hidden), 'the match opens paused; the controls wait for Resume');
   await page.tap('#resume');
@@ -1823,7 +1826,9 @@ async function mobileFlow(browser) {
   before = await state();
   check(await holdUntil(fire.x, fire.y, 3, (m) => window.__cs.local.inventory.get(window.__cs.local.held)?.[0] < m, 8000, before.mag), `holding Fire shoots (magazine ${before.mag} went down)`);
   // Jump: a tap on the pad's middle. Tap or hold is read from the events' own times (a slow software-rendered
-  // page handles the lift late), so the tap says when it happened: 80 ms apart.
+  // page handles the lift late), so the tap says when it happened: 80 ms apart. A jump is taken only on the ground:
+  // tap once you stand on it (the walk above can still be carrying you).
+  await page.waitForFunction(() => window.__cs.local.state.grounded && Math.abs(window.__cs.local.state.velY) < 0.01, null, { timeout: T(10000) }).catch(() => {});
   before = await state();
   // (Noted for the message if it doesn't jump: the pad's pointer events as the page saw them, and the body.)
   await page.evaluate(() => {
@@ -2379,40 +2384,102 @@ async function physicsfxFlow(browser) {
   }, killedAt);
   await page.evaluate(() => (window.__match.slots[window.__airSlot].respawnTick = window.__match.tick));
   check(!!behind && followed && !!laid && laid.tier === 'posed' && laid.ground !== null && Math.abs(laid.y - laid.ground) < 0.3 && laid.y < killedAt - 0.5, `a death out of view isn't simulated: the body is laid on the ground (${JSON.stringify({ followed, killedAt, laid })})`);
-  // A blast throws a bot near it up and out (the game's own throw, sim/impact.ts).
-  const thrown = await page.evaluate(() => {
+  // The blasts below go off on open ground 10 m from you, the same place on every run: nothing of the level within
+  // 6 m of it (a bot standing by a rock or a wall was shielded from the throw, or its body thrown into the rock: CI,
+  // "up no", "outward 0.44"). The first direction round from where you look (45° steps) that has such ground.
+  const open = await page.evaluate(() => {
+    const m = window.__match;
+    const v = window.__cs.view;
+    const me = m.slots[window.__cs.slot];
+    const f = v.camera.getForwardRay(1).direction;
+    const yaw0 = Math.atan2(f.x, f.z);
+    const tried = [];
+    for (let k = 0; k < 16; k++) {
+      const yaw = yaw0 + (k % 2 ? -1 : 1) * Math.ceil(k / 2) * (Math.PI / 4);
+      const x = me.move.pos.x + Math.sin(yaw) * 10;
+      const z = me.move.pos.z + Math.cos(yaw) * 10;
+      const hit = v.raycastLevel({ x, y: me.move.pos.y + 30, z }, { x: 0, y: -1, z: 0 }, 80);
+      if (!hit) continue;
+      const y = me.move.pos.y + 30 - hit.dist;
+      const eye = { x: me.move.pos.x, y: me.move.pos.y + 1.6, z: me.move.pos.z };
+      // Flat enough, in sight, and clear all round: the sim's level (the throw) and the effects world (the bodies).
+      let clear = Math.abs(y - me.move.pos.y) < 1.5 && m.physics.lineOfSight(eye, { x, y: y + 1, z }) && m.physics.boxClear({ x, y: y + 1.4, z }, { x: 6, y: 1, z: 6 });
+      for (let a = 0; clear && v.physics && a < 16; a++) {
+        const d = { x: Math.cos((a / 16) * Math.PI * 2), y: 0, z: Math.sin((a / 16) * Math.PI * 2) };
+        for (const h of [0.4, 1.2]) if (v.physics.raycast({ x, y: y + h, z }, d, 6)) clear = false;
+      }
+      tried.push(+(((yaw - yaw0) * 180) / Math.PI).toFixed(0));
+      if (clear) return { at: { x, y, z }, yaw, tried };
+    }
+    return { at: null, tried };
+  });
+  check(!!open.at, `open ground near you for the blasts (${open.at ? `${JSON.stringify(open.at)}, ` : ''}directions tried: ${open.tried.join(', ')}°)`);
+  // Face it (the mass blast is the bodies in view), turned round if the yaw went the wrong way.
+  if (open.at) {
+    await page.evaluate((yaw) => (window.__cs.input.yaw = yaw), open.yaw);
+    await frames(page, 3);
+    await page.evaluate((at) => {
+      const cam = window.__cs.view.camera;
+      const f = cam.getForwardRay(1).direction;
+      const p = cam.globalPosition;
+      if (f.x * (at.x - p.x) + f.z * (at.z - p.z) < 0) window.__cs.input.yaw += Math.PI;
+    }, open.at);
+    await frames(page, 3);
+  }
+  // A blast throws a bot near it up and out (the game's own throw, sim/impact.ts): a bot stood there, its inputs
+  // held (it walked off before), the blast a metre to its side at waist height.
+  const thrown = await page.evaluate((at0) => {
     const m = window.__match;
     const me = m.slots[window.__cs.slot];
-    const bot = m.slots.find((c) => c && c !== me && c.alive && c.move.grounded && !c.mount);
+    const bot = at0 && m.slots.find((c) => c && c !== me && c.alive && !c.mount);
     // (Not one seated in a vehicle: a blast doesn't throw a seated rider.)
     if (!bot) return null;
-    // Right beside it, where it stands (open ground: it got there), at waist height.
-    const at = { x: bot.move.pos.x - 1, y: bot.move.pos.y + 0.6, z: bot.move.pos.z };
+    if (bot.bot && !bot.queue.massHeld) {
+      bot.queue.push = (...inputs) => Array.prototype.push.apply(bot.queue, inputs.map((i) => ({ ...i, forward: 0, right: 0, buttons: 0 })));
+      bot.queue.massHeld = true;
+    }
+    bot.move = { ...bot.move, pos: { x: at0.x, y: at0.y + 0.05, z: at0.z }, vx: 0, vz: 0, velY: 0, grounded: false };
     bot.health = 1000;
     window.__blastSlot = bot.slot;
+    window.__blastBot = bot;
+    window.__blastTick = m.tick;
+    return { slot: bot.slot };
+  }, open.at);
+  // Standing there: landed, a few ticks on.
+  if (thrown) await page.waitForFunction(() => { const b = window.__blastBot; return b.alive && b.move.grounded && window.__match.tick > window.__blastTick + 5; }, null, { timeout: T(5000) }).catch(() => {});
+  const blast = !thrown ? null : await page.evaluate(() => {
+    const m = window.__match;
+    const bot = window.__blastBot;
+    const at = { x: bot.move.pos.x - 1, y: bot.move.pos.y + 0.6, z: bot.move.pos.z };
     window.__blastFrom = { y: bot.move.pos.y, x: bot.move.pos.x, z: bot.move.pos.z };
     window.__blastTop = bot.move.pos.y;
     m.splash(at, 5, 0, 0, null, 'core.rockets', 1, 11);
     return { velY: bot.move.velY, push: Math.hypot(bot.move.vx ?? 0, bot.move.vz ?? 0), mount: !!bot.mount, los: m.physics.lineOfSight(at, { x: bot.move.pos.x, y: bot.move.pos.y + 1.2, z: bot.move.pos.z }) };
   });
-  const rose = await page.waitForFunction(() => {
+  const rose = !!blast && await page.waitForFunction(() => {
     const b = window.__match.slots[window.__blastSlot];
     window.__blastTop = Math.max(window.__blastTop, b.move.pos.y);
     return window.__blastTop - window.__blastFrom.y > 1;
   }, null, { timeout: T(5000), polling: 16 }).then(() => true, () => false);
-  const out = await page.evaluate(() => { const b = window.__match.slots[window.__blastSlot]; return Math.hypot(b.move.pos.x - window.__blastFrom.x, b.move.pos.z - window.__blastFrom.z); });
+  const out = !blast ? 0 : await page.evaluate(() => {
+    const b = window.__blastBot;
+    delete b.queue.push;
+    delete b.queue.massHeld;
+    return Math.hypot(b.move.pos.x - window.__blastFrom.x, b.move.pos.z - window.__blastFrom.z);
+  });
   // (Where it lands depends on the bot: it steers in the air, and a wall can stop it.)
-  check(!!thrown && thrown.velY > 6 && thrown.push > 4 && rose, `a blast throws a bot up and out (${JSON.stringify(thrown)}, up ${rose ? '> 1 m' : 'no'}, out ${out.toFixed(1)} m)`);
+  check(!!blast && blast.velY > 6 && blast.push > 4 && rose, `a blast throws a bot up and out (${JSON.stringify(blast)}, up ${rose ? '> 1 m' : 'no'}, out ${out.toFixed(1)} m)`);
   // A mass casualty: one blast kills everyone around a point in front of you, and nothing stalls: every body
   // goes down a ragdoll or laid down, within the budget of awake ragdoll bodies. Every body reacts to it as before
   // the performance work spread their starts over frames and settled them sooner: each one in view is thrown out and
   // up by it (screenshots before and after: physicsfx-blast-before.png, physicsfx-blast-after.png).
-  const ring = await page.evaluate(() => {
+  // On the open ground found above, in view.
+  const ring = await page.evaluate((open) => {
     const m = window.__match;
     const me = m.slots[window.__cs.slot];
     const f = window.__cs.view.camera.getForwardRay(1).direction;
     const len = Math.hypot(f.x, f.z) || 1;
-    const at = { x: me.move.pos.x + (f.x / len) * 10, y: me.move.pos.y, z: me.move.pos.z + (f.z / len) * 10 };
+    const at = open ?? { x: me.move.pos.x + (f.x / len) * 10, y: me.move.pos.y, z: me.move.pos.z + (f.z / len) * 10 };
     // Only bots the view has drawn alive (one that respawned since the last drawn frame has no body to drop yet).
     const victims = m.combatants().filter((c) => c !== me && c.alive && !c.mount && window.__cs.view.avatars.get(c.slot)?.wasAlive);
     const spots = victims.map((c, i) => {
@@ -2437,7 +2504,7 @@ async function physicsfxFlow(browser) {
     window.__massVictims = victims;
     window.__massAt = at;
     return { at, slots: victims.map((c) => c.slot), spots };
-  });
+  }, open.at);
   await page
     .waitForFunction(({ slots, spots }) => slots.every((s, i) => { const a = window.__cs.view.avatars.get(s); return !!a && Math.hypot(a.root.position.x - spots[i].x, a.root.position.z - spots[i].z) < 0.3; }), ring, { timeout: T(15000) })
     .catch(() => {});
@@ -2531,6 +2598,13 @@ async function physicsfxFlow(browser) {
   // round 4); killed there, its body must be drawn as its ragdoll lies, not as its last living poses (the smoothing
   // stayed on after the view stopped stepping it, and the dead stood mid-stride where they died, in the air if they
   // died there). Each corpse's drawn skin is checked against its bones (the skin matrix each bone's pose makes).
+  // A bot back on its feet and drawn: the blast's dead were all just let go, and on a slow page none may have
+  // respawned yet, or been drawn alive again (CI: no bot found, then "reading 'move'" of none).
+  await page.waitForFunction(() => {
+    const m = window.__match;
+    const me = m.slots[window.__cs.slot];
+    return m.combatants().some((c) => c !== me && c.alive && !c.mount && window.__cs.view.avatars.get(c.slot)?.anim?.ch);
+  }, null, { timeout: T(20000) }).catch(() => {});
   const farSlot = await page.evaluate(() => {
     const m = window.__match;
     const v = window.__cs.view;
@@ -2562,7 +2636,7 @@ async function physicsfxFlow(browser) {
     const at = window.__farBot.move.pos;
     return !!a?.anim?.smoothing && Math.hypot(a.root.position.x - at.x, a.root.position.z - at.z) < 0.3;
   }, farSlot, { timeout: T(15000) }).then(() => true, () => false));
-  const farBody = await page.evaluate(async ({ s, frames }) => {
+  const farBody = farSlot === null ? { errors: [], smoothing: [], tier: null, frames: 0 } : await page.evaluate(async ({ s, frames }) => {
     const m = window.__match;
     const v = window.__cs.view;
     clearInterval(window.__farHold);
@@ -3346,7 +3420,7 @@ async function weaponsetsFlow(browser) {
   const lives = [await myKit(page2)];
   for (let i = 0; i < 5; i++) lives.push(await respawn(page2));
   const mains = await sim(page2, (m, _me, _a, mod) => mod.setMainGuns(m.weaponSet).map((w) => w.id));
-  check(lives[0].set === 'chaos' && lives.every((l) => l.weapons[0] === 'core.knife' && l.weapons[1] === 'core.pistol' && l.weapons.length === 3 && mains.includes(l.held) && l.held === l.rolled && l.grenade === 'sheep'), `a Chaos match spawns you with a knife, a pistol and the life's oddball, and a sheep (${lives.map((l) => `life ${l.life}: ${l.held}${l.held === l.rolled ? '' : ` (rolled ${l.rolled})`}`).join(', ')})`);
+  check(lives[0].set === 'chaos' && lives.every((l) => l.weapons[0] === 'core.knife' && l.weapons[1] === 'core.pistol' && l.weapons.length === 3 && mains.includes(l.held) && l.held === l.rolled && l.grenade === 'sheep'), `a Chaos match spawns you with a knife, a pistol and the life's oddball, and a sheep (${lives.map((l) => `life ${l.life}: ${l.held}${mains.includes(l.held) ? '' : ' (not a main gun)'}${l.held === l.rolled ? '' : ` (rolled ${l.rolled})`}${l.weapons.length === 3 && l.weapons[0] === 'core.knife' && l.weapons[1] === 'core.pistol' && l.grenade === 'sheep' ? '' : ` [${l.weapons.join(' ')}; ${l.grenade}]`}`).join(', ')}${lives[0].set === 'chaos' ? '' : `; set ${lives[0].set}`})`);
   check(new Set(lives.map((l) => l.held)).size >= 3, `the spawn gun changes from life to life (${lives.map((l) => l.held?.replace('core.', '')).join(', ')})`);
   if (shots) {
     // Your own oddball in the picture, with the pause menu (headless pages open it) out of the way: the page draws the
@@ -6081,10 +6155,17 @@ async function gripsInPlay(browser) {
   // can land while you are already looking through the scope, or in third person): the gun is back in your hands when
   // the scope comes down (owner, 2026-11-07: Count Bonesworth's gun vanished after a sniper on a St. John's roof; the
   // copy took "off" from the view's root, switched off while scoped).
+  // The give puts the marksman in your hands itself (matchHost.give sets it current). The view draws it a frame or
+  // more later: pressing 3 while only the view lagged cycled on to the rifle (the same slot), and on a 1-2 fps CI page
+  // the presses kept landing between the switch and its frame, ending on the rifle. So wait for the held gun, and
+  // press 3 only while it isn't the marksman, each time until that press has taken.
   await page.evaluate(() => window.__give('core.marksman'));
-  for (let i = 0; i < 8 && (await page.evaluate(() => window.__cs.view.viewWeapon)) !== 'core.marksman'; i++) {
+  await page.waitForFunction(() => window.__cs.local.weapon?.id === 'core.marksman', null, { timeout: T(10000) }).catch(() => {});
+  for (let i = 0; i < 4; i++) {
+    const held = await page.evaluate(() => window.__cs.local.weapon?.id);
+    if (held === 'core.marksman') break;
     await page.keyboard.press('Digit3');
-    await sleep(600);
+    await page.waitForFunction((was) => window.__cs.local.weapon?.id !== was, held, { timeout: T(10000) }).catch(() => {});
   }
   await page.waitForFunction(() => window.__cs.view.viewWeapon === 'core.marksman' && window.__cs.view.viewmodel && window.__cs.local.raiseTicks === 0, null, { timeout: T(20000) }).catch(() => {});
   await page.evaluate(() => (window.__autoInput = { zoom: true }));
