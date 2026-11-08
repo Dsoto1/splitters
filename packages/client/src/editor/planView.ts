@@ -240,8 +240,9 @@ export class PlanView {
       const a = P(t.x0, t.z1);
       const b = P(t.x1, t.z0);
       g.save();
-      g.lineWidth = (t.current ? 1.5 : 1) * u;
-      g.strokeStyle = sel.has(t.id) ? '#ffb03b' : t.current ? 'rgba(0, 209, 255, 0.85)' : 'rgba(150, 170, 200, 0.4)';
+      g.lineWidth = (t.current ? 2 : 1) * u;
+      // White, not the level grid's cyan: the tiles stand out from the grid lines.
+      g.strokeStyle = sel.has(t.id) ? '#ffb03b' : t.current ? 'rgba(255, 255, 255, 0.95)' : 'rgba(200, 210, 230, 0.45)';
       if (!t.current) g.setLineDash([4 * u, 4 * u]);
       g.strokeRect(a.x, a.y, b.x - a.x, b.y - a.y);
       g.restore();
@@ -343,7 +344,7 @@ export class PlanView {
       ['flag', 'Flag', '#ff5a4f'],
       ['hill', 'Hill', '#ffd34d'],
       ['objective', 'Objective', '#ff8a3a'],
-      ['pickup', 'Pickup', '#58d68d'],
+      ['pickup', 'Pickup (item colour)', '#58d68d'],
     ];
     g.font = `${Math.round(12 * k)}px system-ui, sans-serif`;
     let x = out.width - 14 * k;

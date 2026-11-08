@@ -83,9 +83,27 @@ Already done from the owner's earlier ask: **the real buildable area.**
 1. **Play from here.**
    - Start a local test match with you standing at the camera spot.
    - Esc returns to MapMaker at the same view, with undo history intact.
+   - **As built** (`wip/mapmaker-p3a`): Shift+F5 and ▶ Here beside PLAY TEST (`EditorApp.playFromHere`). The spot is
+     shared `editor/playFromHere.ts` (`playFromHereSpot`): the floor, roof, block top or ground straight under the
+     camera (`restUnder` over the map's boxes, blocks and solid props, and `shownGround`), else the nearest such spot
+     in rings of 0.5 m out to 4 m, with room for a standing player (no box between a step and 1.8 m up, the player's
+     radius round) and ground no steeper than PLAYER.maxSlopeDegrees; refused with a reason (nothing below, no room,
+     too steep, outside the boundary). The match: TestRequest/LocalMatchOptions `startAt`, `Match.startHere` (the
+     player put there at once, out of any race car or drop plane, and any life before play begins starts there too;
+     `beginPlay` clears it, so later lives use the spawn points); the client's first life takes the server's pitch
+     (session.ts). The editor is only hidden while you play, so the view, selection and history are as they were.
+     Unit tests `mapmakerWorkflow.test.ts`; e2e `editorWorkflowChecks` in `editorux`.
 2. **A top-down plan view:** an overhead orthographic camera, level by level.
    - It shows tile outlines and icons for spawns, objectives and pickups.
    - It exports a PNG of the plan.
+   - **As built** (`wip/mapmaker-p3a`): K and the top bar's Plan (`editor/planView.ts`, `PlanView`; the maths in shared
+     `editor/planView.ts`: `planFrame`, `planToScreen` / `screenToPlan`, `planZoom` about the pointer, `planPan`,
+     `planTiles`, `planMarkers`, unit-tested). The editor camera turns orthographic, straight down, north up, over
+     the level the selector picks (Show all off while it's on); `scene.clipPlane` cuts at 0.6 of a level above the
+     floor (the terrain's materials are exempt, so hills stay whole). Tile outlines and icons are a 2D canvas over the
+     view (redrawn only when the frame, level, selection or document changes). Picking and dragging are the editor's
+     own (the pointer's ray points straight down). Export PNG: the next frame without the editing aids, the icons
+     over it, a key strip, downloaded as `<map>-<level>-plan.png`. Nothing is stored.
 3. **Groups.**
    - Group a selection, then move, turn, mirror or duplicate it as one, and ungroup it.
    - Groups belong to one map. Set pieces are the shareable kind, and groups reuse their selection code.
@@ -101,6 +119,13 @@ Already done from the owner's earlier ask: **the real buildable area.**
 8. **The card-shot camera.**
    - Set the menu card shot from the current view, eye level by default.
    - Preview it in the card's frame.
+   - **As built** (`wip/mapmaker-p3a`): Map properties → Card shot (`editor/cardShot.ts`; shared `editor/cardShot.ts`):
+     Set card shot… (eye level on: `eyeLevel`, 1.7 m over `restUnder`, kept as you fly), Preview, Clear. The frame is
+     16:9, centred on the camera's axis, and the camera's FOV over it is the card picture's (`cardViewFov`: 0.9 rad
+     across the frame's height, as capture-map-shots.mjs renders 960×540). Saved as `metadata.cardCamera` (position,
+     yaw, pitch; format v30, a no-op migration; left out of the content hash like the thumbnail camera) by
+     `setCardCameraCommand`, one undo step. `capture-map-shots.mjs` takes the card camera first, then
+     `thumbnailCamera`, then its automatic choice.
 9. **Turning by mouse** (owner, 2026-11-07: "add to the mapmaker overhaul, it makes most sense").
    - **Today:** you turn things only by R / Shift+R, the right-click menu's Rotate and Rotate a little, the
      toolbar's rotate button, and the inspector's "Facing °" field. The gizmo's arrows only show the axes and can't

@@ -76,6 +76,7 @@ function cardRect(view: EditorView): { x: number; y: number; w: number; h: numbe
   // Half the free width either side of the middle (the frame stays on the camera's axis), and the free height.
   const cx = L + W / 2;
   let half = W / 2;
+  // Clear of the palette (the level strip hides while the frame is up: editor.css).
   const pal = box('ed-palette');
   if (pal && pal.right < cx) half = Math.min(half, cx - pal.right);
   const side = box('ed-right');
@@ -150,6 +151,8 @@ export function startCardFrame(host: CardShotHost, mode: 'set' | 'preview'): voi
   };
   place();
   const viewH = () => view.scene.getEngine().getRenderingCanvasClientRect()?.height ?? window.innerHeight;
+  // The shot as the card shows it: no grid, gizmo or markers (they come back on close).
+  view.photoMode(true);
   // Each frame: the card's lens over the frame, and eye level kept while it's on.
   const tick = view.scene.onBeforeRenderObservable.add(() => {
     cam.fov = cardViewFov(rect.h, viewH());
@@ -161,6 +164,7 @@ export function startCardFrame(host: CardShotHost, mode: 'set' | 'preview'): voi
   eyeBox.addEventListener('change', () => eyeBox.blur());
   const close = (restore: boolean) => {
     view.scene.onBeforeRenderObservable.remove(tick);
+    view.photoMode(false);
     window.removeEventListener('resize', place);
     window.removeEventListener('keydown', keys, true);
     cam.fov = before.fov;

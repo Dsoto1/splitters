@@ -181,13 +181,16 @@ dialog { border-top: 3px solid var(--cyan); }
 .ed-thumb-bar span { flex: 1; color: var(--text); font-size: 12px; text-shadow: 0 1px 2px #000; }
 /* The card shot (cardShot.ts): the card's frame, centred on the camera's axis; the map name under it as on a card. */
 .ed-card-section .sub-h { margin-top: 6px; }
-.ed-card-section .ed-thumb-actions #ed-card-set { flex: 1; }
+.ed-card-section .ed-thumb-actions { flex-wrap: wrap; }
+.ed-card-section .ed-thumb-actions #ed-card-set { flex: 1 1 100%; }
+.ed-card-section .ed-thumb-actions #ed-card-preview { flex: 1; }
 .ed-card-crop { background: none; }
 .ed-card-name { position: absolute; left: -2px; right: -2px; top: 100%; padding: 6px 12px; background: var(--glass, rgba(13, 19, 34, 0.92)); color: var(--text); font: 700 15px/1.2 var(--font-display, system-ui); text-transform: uppercase; letter-spacing: 0.04em; border: 2px solid var(--cyan); border-top: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#editor:has(> .ed-card-frame) > #ed-levels { visibility: hidden; }
 .ed-card-eye { display: flex; align-items: center; gap: 4px; color: var(--text); font-size: 12px; white-space: nowrap; }
 /* The plan view (planView.ts): icons over the view, and its bar. */
 #editor > #ed-plan-overlay { position: fixed; pointer-events: none; }
-#editor > #ed-plan-bar { position: fixed; top: 64px; left: 50%; transform: translateX(-50%); z-index: 6; display: flex; align-items: center; gap: 8px; padding: 5px 8px; background: rgba(8, 12, 22, 0.8); border: 1px solid rgba(0, 209, 255, 0.35); border-radius: 4px; }
+#editor > #ed-plan-bar { position: fixed; bottom: 48px; left: 50%; transform: translateX(-50%); z-index: 6; display: flex; align-items: center; gap: 8px; padding: 5px 8px; background: rgba(8, 12, 22, 0.8); border: 1px solid rgba(0, 209, 255, 0.35); border-radius: 4px; }
 #ed-plan-bar b { color: var(--cyan); font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; padding: 0 4px; }
 .ed-layers { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 10px; margin: 4px 0; }
 .ed-layers label { display: flex; align-items: center; gap: 6px; color: var(--text); font-size: 12px; }

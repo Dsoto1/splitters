@@ -8,6 +8,20 @@ made only on a commit that passed CI on a check branch.
 
 ## Unreleased
 
+**MapMaker: Play from here, the plan view, the card shot** (MapMaker overhaul Phase 3, items 1, 2 and 8):
+- **Play from here** (Shift+F5, or ▶ Here beside PLAY TEST): a test match with you standing on the floor or ground
+  below the camera, facing where it looks (the nearest spot with room to stand, within 4 m). Where there's nowhere to
+  stand (nothing below, no room, too steep, outside the boundary) it says why instead. Esc (or the pause menu's Back to
+  MapMaker) brings you back to the same view, with the selection and undo as they were.
+- **The plan view** (K, or Plan in the top bar): the level being edited from straight above, cut a little above its
+  floor so rooms show inside, with the tiles outlined (the level below faint) and icons for spawns (in their team's
+  colour), objectives, flags, hills and pickups. The level selector picks the level; select and move things as usual;
+  the wheel zooms, a right drag or WASD pans, Home fits the map. **Export PNG** saves the plan with a key.
+- **The card shot** (Map properties → Card shot): set the menu card's shot from the view, at eye level (1.7 m over the
+  ground or floor under the camera) unless you untick it, seen through the card's own 16:9 frame and lens; Preview
+  shows it again. It is stored in the map as a camera (map format v30, `metadata.cardCamera`; older maps load as they
+  were), and the card picture is rendered from it by the capture tool.
+
 **MapMaker: measure, props on surfaces, Randomise** (MapMaker overhaul Phase 1, items 3 and 4):
 - **Measure tool** (U, or Measure in the tool bar): click two points for the distance, the height difference and the
   slope (degrees and percent); a third click chains a path and shows its total. It snaps to the grid, to surfaces and
