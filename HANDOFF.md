@@ -1578,6 +1578,28 @@ Bomb plants (0.5 → 0.3 a match) a little down on the samples, and ten CTF maps
    doorway to the north rooms). Both unreachable pickups reachable.
 9. Iron Compound: the gantry MG turret (`mount_148`). **Fixed:** moved to the gantry's dead-end south-east corner
    (10.8, 3, 9.4), its gunner on the deck behind it; the sniper rifle (`pickup_224`) to the north-east corner.
+### Trap spots fixed (`wip/trap-spots`, 2026-11-08; owner: "Fix all")
+The nine spots above, in MapMaker only (Playwright driving the built editor: Import, select, inspector fields, palette
+Sky Block / Jump Pad / Climbing Vines, tile Type and Walls, Delete, Export; scratch driver, not committed). Each map
+validate-map 0 issues; `pnpm nav-audit` on the nine: 13 traps before, the 4 Skyward perches after (one-way by design,
+still known); the emptied entries left `nav/auditKnown.ts`. No card shot shows a fixed spot (only Erosion and Grand
+Marquee have one), so none retaken.
+
+**Bots** (`pnpm bot-report <map> --seeds=1,2,3 --seconds=240`, each map in one mode, main's file against the branch's;
+summed over the three matches):
+| map (mode) | stuck recoveries | no-route searches | failed searches (navFails) | notes |
+|---|---|---|---|---|
+| Skyward (TDM) | 7 → 7 | 0 → 0 | 0 → 0 | the moved spawns cut nobody off (nav audit) |
+| Sky Islands (TDM) | 113 → 143 | 1338 → 1386 | 1413 → 1458 | fails all on the west lava island, as before |
+| Grand Marquee (CTF) | 394 → 376 | 0 → 0 | 0 → 0 | |
+| Obsidian Orb (CTF) | 250 → 524 | 0 → 0 | 2992 → 134 | idle stuck(goal) 11-15 % → under 1 %; kills 194 → 796 (bots off a bridge no longer stranded in the shaft); captures 28 → 5 |
+| Reactor (TDM) | 583 → 784 | 0 → 0 | 0 → 0 | all at one older spot, (56, 0, 20): bots after the grenades (`pickup_091`) a floor down |
+| Serpent Gorge (CTF) | 482 → 486 | 0 → 0 | 2 → 2 | |
+| Erosion (DM) | 5 → 7 | 2 → 5 | 2 → 5 | |
+| M4 Outpost (co-op) | 285 → 260 | 17093 → 1753 | 18437 → 4164 | what's left: bots on the dais just off its navmesh strip, the south room before the gate opens |
+| Iron Compound (CTF) | 442 → 383 | 0 → 0 | 129 → 96 | stuck spots by the turret 193 → 21 |
+- **Seen, not changed:** Reactor's grenades hot spot above; Obsidian Orb's hangar (0, 0, -24) stays its busiest stuck
+  spot (more bots alive to get stuck there); Sky Islands' west island fails.
 <!-- /bots-a -->
 
 <!-- ground-fix -->
