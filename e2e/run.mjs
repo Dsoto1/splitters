@@ -3373,8 +3373,13 @@ async function weaponsetsFlow(browser) {
     await p.waitForFunction(() => window.__front, null, { timeout: T(30000) });
     await p.evaluate(() => document.getElementById('nav-play').click());
     await p.waitForSelector('#setup-advanced-head', { timeout: T(30000) });
-    await p.click('#setup-advanced-head');
-    await p.waitForSelector('#setup-arsenal', { timeout: T(5000) });
+    // Advanced rules open (the head is a toggle, and the setup redraws as it settles: a click while it redrew, or on a
+    // section already open, left it shut): opened only while it says it is shut, until its Weapons fold is there.
+    await p.waitForFunction(() => {
+      const head = document.getElementById('setup-advanced-head');
+      if (head && head.getAttribute('aria-expanded') !== 'true') head.click();
+      return !!document.getElementById('setup-arsenal');
+    }, null, { timeout: T(10000), polling: 500 });
     await p.evaluate(() => {
       const d = document.getElementById('setup-arsenal');
       if (!d.open) d.querySelector('summary').click();
