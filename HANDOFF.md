@@ -297,7 +297,7 @@ gets overloaded above that: local e2e times out and flakes). Prune landed worktr
 - Earlier the same day: content scalability steps 2–6, perf toolset, flaky e2e fixes, Runway Nine airliner, map
   reworks batches 2–3, character fixes rounds 2–3 (see the entries below and CHANGELOG).
 
-### Fireteams, part 1 (`wip/fireteams`, agent, 2026-11-08; owner said "Go"; docs/FIRETEAMS_PLAN.md "Part 1", docs/BOTS.md "Fireteams")
+### Fireteams, part 1 (`wip/fireteams`, agent, 2026-11-08; owner said "Go"; green on `check/fireteams` at 4610a3b, run 42493762584; LANDED: main 4610a3b; docs/FIRETEAMS_PLAN.md "Part 1", docs/BOTS.md "Fireteams")
 - **What players see:** a **Fireteams** variant chip in Match setup for TDM, CTF, KotH, Bomb, Hostage and
   Breakthrough, with **Squad size 4 / 5 / 6** (5 standard) beside the score. In play, "You lead a fireteam of 5 ·
   hold B for orders" and an orange **SQUAD · FOLLOW ME** line over your portrait.
