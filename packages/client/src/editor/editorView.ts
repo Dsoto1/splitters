@@ -428,7 +428,7 @@ export class EditorView {
     for (const n of this.photoHidden) n.setEnabled(true);
     this.photoHidden = [];
     if (!on) return;
-    const aids: (TransformNode | undefined)[] = [this.trace?.mesh, this.area.root, this.overlaps, this.brushRing, this.gizmo, this.hover, this.ghost, this.faceHighlight, this.propGhost?.node, this.pieceGhost?.root, ...this.pieceMarks, ...this.outlines, ...this.pickBoxes];
+    const aids: (TransformNode | undefined)[] = [this.trace?.mesh, this.area.root, this.overlaps, this.brushRing, this.gizmo, this.hover, this.ghost, this.faceHighlight, this.propGhost?.node, this.pieceGhost?.root, ...this.pieceMarks, ...this.outlines, ...this.pickBoxes, this.scene.getMeshByName('measureLines') ?? undefined];
     for (const m of this.markers.values()) aids.push(m.ring, m.key === 'spawn' ? m.node : undefined);
     for (const n of aids) {
       if (!n || !n.isEnabled(false)) continue;
@@ -759,12 +759,13 @@ export class EditorView {
 
   /** A see-through preview of a prop where it would be placed (null hides it). */
   /** The see-through preview of what a placing tool would put down (props, vehicles, spawns, pickups). */
-  setPropGhost(model: string | null, at: [number, number, number] | null, yaw: number, kind: 'prop' | 'mount' | 'spawn' | 'pickup' = 'prop'): void {
+  setPropGhost(model: string | null, at: [number, number, number] | null, yaw: number, kind: 'prop' | 'mount' | 'spawn' | 'pickup' = 'prop', look: { scale: number; variant?: number } = { scale: 1 }): void {
     if (!model || !at) {
       this.propGhost?.node.setEnabled(false);
       return;
     }
-    const key = `${kind}:${model}`;
+    // A prop's ghost shows its variant and size (the prop tool's Randomise: what you see is what you place).
+    const key = `${kind}:${model}:${look.variant ?? ''}`;
     if (this.propGhost?.model !== key) {
       // Not its materials: they are the model's, shared with every placed copy of it.
       if (this.propGhost) disposePropNode(this.propGhost.node);
@@ -777,7 +778,7 @@ export class EditorView {
       }
       else if (kind === 'pickup') node = createPickupVisual(this.scene, this.models, model, 'pickupGhost');
       else {
-        const e = { id: 'ghost', kind: 'prop', position: [0, 0, 0], model, yaw: 0, scale: 1, solid: false, tint: null } as unknown as PropEntity;
+        const e = { id: 'ghost', kind: 'prop', position: [0, 0, 0], model, yaw: 0, scale: 1, solid: false, tint: null, ...(look.variant !== undefined ? { variant: look.variant } : {}) } as unknown as PropEntity;
         node = createPropNode(this.scene, this.models, e, 'propGhost', false);
       }
       this.propGhost = { model: key, node };
@@ -789,9 +790,10 @@ export class EditorView {
     // A prop bedded on the document's ground lands where it will be drawn: re-bedded on the ground as shown.
     const made = this.groundMade;
     const ground = this.shownTerrain;
-    const y = kind === 'prop' && made && ground && ground !== made ? rebeddedY(made, ground, this.groundBoxes, { id: 'ghost', model, position: at, yaw, scale: 1 }) : null;
+    const y = kind === 'prop' && made && ground && ground !== made ? rebeddedY(made, ground, this.groundBoxes, { id: 'ghost', model, position: at, yaw, scale: look.scale }) : null;
     node.position.set(at[0], (y ?? at[1]) + lift, at[2]);
     node.rotation.y = yaw;
+    if (kind === 'prop') node.scaling.setAll(look.scale);
   }
 
   setGhost(doc: MapDocument, tile: string | null, cell: [number, number, number] | null, rotation: Rotation, ok: boolean): void {
