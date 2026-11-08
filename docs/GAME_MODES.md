@@ -74,6 +74,43 @@ a "Use 16" button; more than recommended is busy). Map changes and the rotation 
 fill drops to it on a smaller map, and on a dedicated server the next bigger map fills up again to what the admin
 asked for; the rotation skips a map whose most is below the people in the match.
 
+## Between matches: the vote on the next map, and parties
+
+**The flow** (`sim/mapVote.ts`; dedicated servers and Host Service `server.ts`, browser hosts and offline
+`matchHost.ts` with the page's `session.ts`): the match ends → the scoreboard (and its awards) with the vote under
+it → the winner on screen for 3 s → everyone travels there; the next match starts about 20 s after the last one
+ended (12 s vote, 3 s winner, the map's load and the start countdown). Nobody is sent back to the menu.
+
+- **The ballot:** 2 or 3 of our own maps (the suite; never community maps) that play the mode just played, whose
+  player cap for it (above) holds the people in the match: the rotation's next map that fits first, then the rest of
+  the rotation, then the suite in a random order. The map just played is left out unless nothing else fits. Fewer
+  than two fit: no vote, the rotation goes on as before (an empty rotation replays). A rotation entry plays its own
+  mode; suite maps play the mode just played.
+- **Who votes:** people (players and spectators), one vote each, changed freely until it closes. **Bots don't vote**
+  (chosen over random bot votes: a vote you can't explain isn't fun to lose); offline your vote is the vote.
+- **The winner:** most votes; a **tie goes to the host's vote** when the host voted for one of the tied maps (a browser
+  host is a player), else to the tied map that comes first on the ballot (a dedicated server has no player of its
+  own); nobody voted: the first map (so a quiet match carries the rotation on). A winner in the rotation moves the
+  rotation there (`MapRotation.moveTo`): it carries on after it.
+- **The host's setting:** pause menu → Host → Rotation → **Vote on the next map** (on by default; a browser keeps it
+  in `cs.mapVote`); off is plain rotation. Dedicated: `MAP_VOTE=0` (server and Host Service config `mapVote: false`),
+  and admins switch it in game (`{ c: "rotation", vote }`), kept for the next start by the Host Service.
+- **On screen** (`game/mapVoteHud.ts`, `#map-vote`): the scoreboard moves up, the awards sit between it and the vote;
+  a card per map (its picture, name, mode, votes, a bar), the seconds left. **1-3** (keyboard), a click or a tap
+  votes; your card is lit cyan, the winner orange. The mouse is free while it's up (the pause menu waits for Esc).
+- Not for chains and playlists (a won co-op map goes where its "Next map" says) or MapMaker TEST.
+
+**Parties** (`net/party.ts`): a party is a random tag a tab keeps (sessionStorage). Invite links carry it
+(`?join=CODE&party=TAG`: the host's in the Host tab, and anyone's who joined by code in the Match tab), so whoever
+follows one is in your party. `hello` carries the tag; a host keeps it on the player (`Combatant.party`, the roster's
+`py`), and **in team modes a joining member takes a bot's place on the team most of their party is on**
+(`Match.takeOverBot`, `partyTeam`), while it has a bot to give way; else the usual balance. Free-for-all: nothing
+changes but the scoreboard's **PARTY** mark. Travelling (the vote, the rotation, Change map) everyone rejoins the next
+match with the same tag, so the party lands on one side again. Bots fill and leave as people join and leave, as
+before; **a join beyond the map's player cap for the mode is refused** ("match full: <map> takes N players"), a
+player coming back to a kept place excepted. Online → Join a friend's game takes a code or a pasted invite link, and
+offers **Rejoin your last friend's game** for six hours.
+
 ## Capture the Flag
 
 - Each of the two teams has a flag on its **flag base**. To pick up the enemy

@@ -77,6 +77,12 @@ describe('map vote: one vote, ticked by its host', () => {
     // Closed: no more votes.
     expect(v.cast(8, 0)).toBe(false);
   });
+  it('a scoreboard held longer (a host, a test) keeps the vote open until just before it ends', () => {
+    const v = new MapVote(options, 100, null);
+    expect(v.tick(100, 1000)).toBe(false);
+    expect(v.closeAt).toBe(1000 - (VOTE_RESULT_SECONDS + 1) * TICK_RATE);
+    expect(v.tick(v.closeAt, 1000)).toBe(true);
+  });
   it('lasts the vote and the winner’s moment', () => {
     expect(MapVote.ticks()).toBe((VOTE_SECONDS + VOTE_RESULT_SECONDS) * TICK_RATE);
   });

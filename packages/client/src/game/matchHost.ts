@@ -513,7 +513,7 @@ export class MatchHost {
       return this.announce({ t: 'vote', v: null });
     }
     if (v.closed) return;
-    if (v.tick(match.tick)) {
+    if (v.tick(match.tick, match.intermissionEnds)) {
       // The winner on everyone's screen a moment before the travel.
       match.holdIntermission(match.tick + (VOTE_RESULT_SECONDS + 4) * TICK_RATE);
       this.voteToAll();

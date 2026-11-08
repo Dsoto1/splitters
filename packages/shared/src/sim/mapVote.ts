@@ -113,6 +113,8 @@ export function tallyVotes(votes: ReadonlyMap<number, number>, options: number, 
 export class MapVote {
   private readonly votes = new Map<number, number>();
   private result: { winner: number; counts: number[]; by: VoteWin } | null = null;
+  /** When it closes as planned (a held scoreboard may keep it open longer, never shorter). */
+  private readonly planned: number;
 
   constructor(
     readonly options: readonly VoteOption[],
@@ -120,7 +122,9 @@ export class MapVote {
     public closeAt: number,
     /** The host's own player (a browser host), whose vote breaks ties; null on a dedicated server. */
     private readonly host: number | null = null,
-  ) {}
+  ) {
+    this.planned = closeAt;
+  }
 
   /** The ticks a vote takes, open to travel. */
   static ticks(): number {
@@ -154,8 +158,12 @@ export class MapVote {
     return this.votes.get(slot);
   }
 
-  /** Close the vote at `tick` if it's time; true the tick it closes. */
-  tick(tick: number): boolean {
+  /**
+   * Close the vote at `tick` if it's time; true the tick it closes. `holdUntil`: the match's intermission end (a
+   * host or a test held the scoreboard longer): the vote stays open until the winner's moment before it.
+   */
+  tick(tick: number, holdUntil: number | null = null): boolean {
+    if (holdUntil !== null) this.closeAt = Math.max(this.planned, holdUntil - (VOTE_RESULT_SECONDS + 1) * TICK_RATE);
     if (this.result || tick < this.closeAt) return false;
     this.result = tallyVotes(this.votes, this.options.length, this.host);
     return true;

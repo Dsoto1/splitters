@@ -914,7 +914,7 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
         if (split) simProfile.add('snapshot', snapMs);
       }
       if (vote && !vote.closed) {
-        if (vote.tick(match.tick)) voteClosed();
+        if (vote.tick(match.tick, match.intermissionEnds)) voteClosed();
         else if (match.tick % TICK_RATE === 0) broadcast({ t: 'vote', v: vote.state(match.tick) });
       }
       if (travel && match.tick >= travel.atTick) doTravel();

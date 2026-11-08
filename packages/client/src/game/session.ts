@@ -1347,8 +1347,9 @@ export class GameSession {
       this.votePause = false;
       if (document.pointerLockElement) document.exitPointerLock();
     }
+    // The scoreboard's line: the vote while it's open, then where everyone goes.
     const lead = hud.leader();
-    if (lead) this.hud.nextMap = nextMapLine(lead.map, lead.mode);
+    this.hud.nextMap = v && v.w === undefined ? 'Voting on the next map' : lead && v ? nextMapLine(lead.map, lead.mode) : this.hud.nextMap;
     if (v?.w !== undefined) void this.voteWon(v);
     this.updatePause();
   }
