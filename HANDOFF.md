@@ -1561,8 +1561,8 @@ Bomb plants (0.5 → 0.3 a match) a little down on the samples, and ten CTF maps
    long now (was 6), leaving a 3 m gap at the back to drop to the street.
 4. Obsidian Orb: the reactor core and the shaft's floor caught falls. **Fixed:** the core (`prop_087`) is not solid and
    the shaft's floor block (`block_086`) is gone, so the kill height (lowest floor 14 m) is under the shaft: a fall is
-   a fall. The four glowing trims (`block_082`-`085`, the 0.4 m ledges) are 0.2 m deep and sunk into the walls with 5 cm
-   showing: nothing lands on them.
+   a fall. The four glowing trims along the shaft walls (`block_082`-`085`, the 0.4 m ledges) are gone (sunk to a 5 cm
+   lip first, bots still caught on it).
 5. Reactor: off the roof's south-west corner into the yard. **Fixed:** railings (Sky Blocks, the theme's material) on
    the roof's west edge either side of the stair head, and a sloped one (roll 27°) along the stairs' open south side
    (falls off its top went past the stair cell into the yard). The yard is now an island nobody reaches.

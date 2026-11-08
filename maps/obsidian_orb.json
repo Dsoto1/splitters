@@ -22,11 +22,11 @@
     ],
     "release": {
       "mapId": "m_oyvr2rvdsjvrhwut",
-      "versionId": "v_vknkt34p455m65hh",
-      "revision": 1,
-      "contentHash": "sha256:01f88c64e0141f409321b105b33bbb5a371e0fb69328894f9e7e4a97a60ca287",
+      "versionId": "v_pzrworzdz5siv345",
+      "revision": 2,
+      "contentHash": "sha256:3bfcdfb54427a0621eaa42e271a5b3a7d9038b6bbf78a791cd5e7eb9020c23af",
       "schemaVersion": 29,
-      "releasedAt": "2026-11-08T20:41:25.929Z"
+      "releasedAt": "2026-11-08T21:50:40.880Z"
     }
   },
   "classicStructure": {
@@ -2362,94 +2362,6 @@
       "yaw": 0,
       "material": "core.pbr_space_metal",
       "tint": "#8a9098",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_082",
-      "position": [
-        0,
-        -6,
-        -12.05
-      ],
-      "kind": "block",
-      "size": [
-        40,
-        0.4,
-        0.2
-      ],
-      "yaw": 0,
-      "material": "core.glow_trim",
-      "tint": "#ff7a3a",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_083",
-      "position": [
-        0,
-        -6,
-        12.05
-      ],
-      "kind": "block",
-      "size": [
-        40,
-        0.4,
-        0.2
-      ],
-      "yaw": 0,
-      "material": "core.glow_trim",
-      "tint": "#ff7a3a",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_084",
-      "position": [
-        0,
-        -16,
-        -12.05
-      ],
-      "kind": "block",
-      "size": [
-        40,
-        0.4,
-        0.2
-      ],
-      "yaw": 0,
-      "material": "core.glow_trim",
-      "tint": "#ff7a3a",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_085",
-      "position": [
-        0,
-        -16,
-        12.05
-      ],
-      "kind": "block",
-      "size": [
-        40,
-        0.4,
-        0.2
-      ],
-      "yaw": 0,
-      "material": "core.glow_trim",
-      "tint": "#ff7a3a",
       "behaviour": "solid",
       "trigger": "step",
       "delaySeconds": 0.8,
