@@ -154,6 +154,9 @@ import { InputState, saveMousePrefs } from './input.ts';
 import { TouchControls } from './touchControls.ts';
 import { WeaponWheel, wheelEntries } from './weaponWheel.ts';
 import { isTouchDevice } from '../touchDevice.ts';
+import { CoachHud } from './coachHud.ts';
+import { TipBook } from './tips.ts';
+import { Tutorial, setTutorialState } from './tutorial.ts';
 import { zoomLookScale } from './lookFilter.ts';
 import { markerSetting } from './crosshair.ts';
 import { Interpolator } from './interpolation.ts';
@@ -218,6 +221,10 @@ export interface SessionOptions {
    * `info` is a map's name and the modes it plays (null: not one of ours).
    */
   rotation?: { list: MapRotation; load(id: string): Promise<MapDocument | null>; info: RotationLookup };
+  /** The tutorial (tutorial.ts): its step card over the match, Skip in it and in the pause menu (back to the menu). */
+  tutorial?: boolean;
+  /** First-time tips (tips.ts); off in the tutorial and in browser tests (main.ts). */
+  tips?: boolean;
 }
 
 /** How a match stood when it ended for this player: the last standings, and enough to host the same match again. */
@@ -471,6 +478,7 @@ export class GameSession {
 
   /** Spawn protection on you: a line under the crosshair until it drops (firing ends it). */
   private shieldNote(on: boolean): void {
+    if (on) this.tips?.trigger('shield', performance.now() / 1000);
     let el = document.getElementById('shield-note');
     if (!on) {
       if (el) el.hidden = true;
@@ -620,6 +628,7 @@ export class GameSession {
       };
     }
     this.hud.reset();
+    this.setUpCoach();
 
     const signal = this.abort.signal;
     const lock = () => {
@@ -1595,6 +1604,8 @@ export class GameSession {
     this.raceHud?.dispose();
     this.rouletteHud?.dispose();
     this.awardsHud?.dispose();
+    this.coach?.dispose();
+    document.getElementById('pause-skip-tutorial')?.remove();
     this.hud.hide();
     $('pause').hidden = true;
     this.view.dispose();
@@ -1961,6 +1972,7 @@ export class GameSession {
             if (near > 0) this.view.shake(near * ev.n * 0.6);
           } else if (ev.e === 'pickup') {
             if (ev.s === this.slot) this.hud.pickup(getItem(ev.item)?.displayName ?? 'Item');
+            if (ev.s === this.slot && getItem(ev.item)?.effect.kind === 'armor') this.tips?.trigger('armor', performance.now() / 1000);
             // A sparkle where it was taken (content/vfx.json map.gameplay, by the item's kind).
             const at = this.view.chestOf(ev.s);
             if (at) this.view.playGameplayFx(`pickup.${getItem(ev.item)?.effect.kind ?? 'item'}`, at);
@@ -2470,6 +2482,122 @@ export class GameSession {
   }
 
   /** Advance prediction at a fixed 60 Hz and render one frame. */
+  /** The tutorial (opts.tutorial) and the first-time tips (opts.tips): coachHud.ts draws both. */
+  private coach: CoachHud | null = null;
+  private tutorial: Tutorial | null = null;
+  private tips: TipBook | null = null;
+  /** Gathered over a frame's ticks for the tutorial: rounds fired, and those fired aiming. */
+  private coachShots = 0;
+  private coachAimed = 0;
+  private coachMoving = false;
+  private coachThrowables = -1;
+  private coachAlive = false;
+  private coachPickups: { x: number; z: number }[] | null = null;
+
+  private setUpCoach(): void {
+    const tutorial = !!this.opts.tutorial;
+    if (tutorial) this.tutorial = new Tutorial();
+    if (this.opts.tips !== false && !tutorial) this.tips = new TipBook();
+    if (!this.tutorial && !this.tips) return;
+    this.coach = new CoachHud($('hud'), isTouchDevice(), tutorial ? { onSkip: () => this.skipTutorial() } : null);
+    if (!tutorial) return;
+    // Pause menu: Skip tutorial beside Resume.
+    const skip = document.createElement('button');
+    skip.id = 'pause-skip-tutorial';
+    skip.textContent = 'Skip tutorial';
+    skip.title = "Leave the tutorial and go back to the main menu (it won't be offered again; the main menu has it any time)";
+    skip.addEventListener('click', () => this.skipTutorial(), { signal: this.abort.signal });
+    $('resume').after(skip);
+    (window as unknown as { __tutorial: unknown }).__tutorial = { state: () => ({ index: this.tutorial?.index ?? -1, step: this.tutorial?.step?.id ?? null, progress: this.tutorial?.progress ?? 0, done: !!this.tutorial?.done }), goTo: (i: number) => this.tutorial?.goTo(i), skip: () => this.skipTutorial() };
+  }
+
+  /** Skip (the card, the pause menu): the tutorial counts as seen, and you go back to the main menu. */
+  private skipTutorial(): void {
+    if (!this.tutorial) return;
+    setTutorialState(this.tutorial.done ? 'done' : 'skipped');
+    this.exit();
+  }
+
+  /** Each frame: the tutorial's step from what you did, the tips' situations, and their HUD. */
+  private coachFrame(local: LocalPlayer, now: number, dt: number, ride: { def: { kind: string }; shown: { pos: Vec3 } } | undefined, driving: boolean): void {
+    if (!this.coach) return;
+    const t = now / 1000;
+    const shots = this.coachShots;
+    const aimed = this.coachAimed;
+    const moving = this.coachMoving;
+    this.coachShots = this.coachAimed = 0;
+    this.coachMoving = false;
+    const count = local.alive ? (local.throwable?.count ?? 0) : -1;
+    const thrown = this.coachThrowables > 0 && count >= 0 && count < this.coachThrowables && local.alive ? this.coachThrowables - count : 0;
+    this.coachThrowables = count;
+    const died = this.coachAlive && !local.alive && this.phase === 'playing';
+    this.coachAlive = local.alive;
+    if (this.tutorial) {
+      const at = driving && ride ? ride.shown.pos : local.state.pos;
+      const advanced = this.tutorial.update({
+        dt,
+        alive: local.alive,
+        x: at.x,
+        z: at.z,
+        yaw: this.input.yaw,
+        pitch: this.input.pitch,
+        moving,
+        sprinting: !!local.state.sprint,
+        stance: local.state.stance ?? 0,
+        shots,
+        aimedShots: aimed,
+        reloading: local.reloadTicks > 0 || !!local.reload,
+        held: local.held,
+        thrown,
+        driving,
+      });
+      if (advanced && this.tutorial.done) setTutorialState('done');
+      this.coach.tutorial(this.tutorial, advanced, t);
+      // The drive step: the marker points at the nearest vehicle until you're in one.
+      if (this.tutorial.step?.id === 'drive' && !this.seat && local.alive && this.mounts) {
+        let best: Vec3 | null = null;
+        let bestD = Infinity;
+        for (const m of this.mounts.mounts.values()) {
+          if (!m.alive || m.def.kind !== 'vehicle') continue;
+          const d = Math.hypot(m.shown.pos.x - local.state.pos.x, m.shown.pos.z - local.state.pos.z);
+          if (d < bestD) [best, bestD] = [m.shown.pos, d];
+        }
+        if (best) {
+          const p = { x: best.x, y: best.y + 2.2, z: best.z };
+          const screen = this.view.project(p);
+          const eye = local.eye;
+          this.hud.setMarker(screen && { ...screen, dist: Math.hypot(p.x - eye.x, p.y - eye.y, p.z - eye.z) });
+        }
+      }
+    }
+    const tips = this.tips;
+    if (!tips) return;
+    if (tips.enabled && this.phase === 'playing') {
+      if (died) tips.trigger('death', t);
+      if (local.alive && !this.seat) {
+        const w = local.weapon;
+        const ammo = local.inventory.get(local.held);
+        if (w?.magazine && ammo && ammo[0] <= Math.max(1, Math.floor(w.magazine * 0.25)) && ammo[1] > 0 && local.reloadTicks === 0) tips.trigger('reload', t);
+        const enter = this.mounts?.enterable(local.state.pos);
+        if (enter && enter.mount.def.kind === 'vehicle') tips.trigger('vehicle', t);
+        // A pickup a few metres ahead.
+        this.coachPickups ??= (this.map?.entities ?? []).filter((e) => e.kind === 'pickup').map((e) => ({ x: e.position[0], z: e.position[2] }));
+        const fx = Math.sin(this.input.yaw);
+        const fz = Math.cos(this.input.yaw);
+        for (const p of this.coachPickups) {
+          const dx = p.x - local.state.pos.x;
+          const dz = p.z - local.state.pos.z;
+          const d = Math.hypot(dx, dz);
+          if (d > 1 && d < 8 && (dx * fx + dz * fz) / d > 0.7) {
+            tips.trigger('pickup', t);
+            break;
+          }
+        }
+      }
+    }
+    this.coach.setTip(tips.update(t));
+  }
+
   frame(): void {
     if (this.closed) return;
     const t0 = performance.now();
@@ -2569,6 +2697,7 @@ export class GameSession {
         // Third person on foot: the host sends your rounds from the eye toward what the crosshair is on.
         if (this.thirdPerson && !this.seat && local.alive) sample.buttons |= BUTTON_THIRD_PERSON;
         moving ||= sample.forward !== 0 || sample.right !== 0;
+        this.coachMoving ||= sample.forward !== 0 || sample.right !== 0;
         const before = { ...local.state.pos };
         const meleeNow = (sample.buttons & BUTTON_MELEE) !== 0;
         if (meleeNow && !this.meleeHeld && local.alive && !this.seat) this.localStrike(local.weapon, sample.forward, now);
@@ -2596,6 +2725,8 @@ export class GameSession {
         const ammo = local.inventory.get(local.held);
         if (local.alive && sample.buttons & BUTTON_FIRE && ammo && ammo[0] === 0 && ammo[1] === 0 && local.weapon?.magazine) this.sfx.dryFire(now);
         if (shot) {
+          this.coachShots++;
+          if (this.input.zooming) this.coachAimed++;
           this.sfx.localShot(shot.def, shot.alt);
           this.view.kick(shot.def, shot.alt);
           const muzzle = this.view.localMuzzle();
@@ -2770,6 +2901,7 @@ export class GameSession {
       this.hud.setStatus(this.phase, this.timeLeft, local.alive || this.spectator, this.winner, this.outcome);
       this.rouletteHud?.frame(now);
       this.updateScenarioHud(local, now);
+      this.coachFrame(local, now, dt, ride, !!ride && seatDef?.role === 'driver' && ride.def.kind === 'vehicle');
     }
     if (this.scenario) {
       this.view.scenario.apply(this.scenario.entities);

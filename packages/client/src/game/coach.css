@@ -1,0 +1,35 @@
+/* The new player's HUD (coachHud.ts): the tutorial's step card and the first-time tips. Design tokens from style.css. */
+#tutorial { position: absolute; top: 64px; left: 50%; transform: translateX(-50%); width: min(440px, calc(100vw - 32px)); padding: 10px 14px 12px; background: linear-gradient(180deg, rgba(18, 24, 39, 0.94), rgba(18, 24, 39, 0.82)); border: 1px solid var(--line); border-top: 3px solid var(--cyan); border-radius: 4px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35); font-family: var(--font-body); color: var(--text); pointer-events: none; }
+#tutorial .tut-head { display: flex; align-items: center; gap: 10px; }
+#tutorial .tut-kicker { font: 700 11px var(--font-display); letter-spacing: 0.16em; text-transform: uppercase; color: var(--cyan); }
+#tutorial .tut-count { font: 600 12px var(--font-display); letter-spacing: 0.08em; color: var(--muted); font-variant-numeric: tabular-nums; }
+#tutorial .tut-skip { margin-left: auto; pointer-events: auto; padding: 3px 10px; font-size: 12px; display: inline-flex; align-items: center; gap: 8px; }
+#tutorial .tut-skip small { font: 600 10px var(--font-display); color: var(--muted); letter-spacing: 0.06em; }
+#tutorial .tut-dots { display: flex; gap: 4px; margin: 8px 0 6px; }
+#tutorial .tut-dots i { flex: 1; height: 4px; border-radius: 2px; background: rgba(142, 162, 192, 0.25); transition: background-color 0.25s; }
+#tutorial .tut-dots i.done { background: var(--success); }
+#tutorial .tut-dots i.on { background: var(--cyan); }
+#tutorial .tut-title { display: block; font: 700 20px var(--font-display); text-transform: uppercase; letter-spacing: 0.04em; }
+#tutorial .tut-text { margin: 4px 0 8px; font-size: 15px; line-height: 1.45; }
+#tutorial kbd, #coach-tip kbd { display: inline-flex; align-items: center; min-width: 20px; height: 20px; padding: 0 6px; margin: 0 1px; border-radius: 4px; background: #e6f0ff; color: #0b0f1a; font: 700 12px var(--font-display); letter-spacing: 0.02em; vertical-align: 1px; }
+#tutorial .tut-bar { height: 6px; border-radius: 3px; background: rgba(142, 162, 192, 0.2); overflow: hidden; }
+#tutorial .tut-bar i { display: block; height: 100%; background: var(--cyan); transition: width 0.15s linear; }
+#tutorial.just-done .tut-bar i { background: var(--success); }
+#tutorial[data-step='done'] .tut-bar i { background: var(--success); }
+#hud.watching #tutorial { opacity: 0.6; }
+
+/* One tip at a time, low in the middle: under the crosshair's area (the use prompt, the spawn-protection line and
+   the pickup line sit between them), above the weapon bar. */
+#coach-tip { position: absolute; left: 50%; top: 73%; transform: translateX(-50%); max-width: min(560px, calc(100vw - 32px)); padding: 7px 14px 7px 12px; background: linear-gradient(90deg, rgba(18, 24, 39, 0.94), rgba(18, 24, 39, 0.78)); border-left: 3px solid var(--cyan); font: 500 15px/1.4 var(--font-body); color: var(--text); text-align: left; opacity: 0; transition: opacity 0.35s ease-out; pointer-events: none; }
+#coach-tip.on { opacity: 1; }
+#coach-tip:not(.on) { visibility: hidden; transition: opacity 0.35s ease-out, visibility 0s 0.35s; }
+#coach-tip .tip-kicker { margin-right: 6px; font: 700 11px var(--font-display); letter-spacing: 0.16em; text-transform: uppercase; color: var(--cyan); }
+
+/* Phones sideways: smaller, and clear of the touch buttons (right) and the pad (left). */
+@media (max-height: 520px) {
+  #tutorial { top: 44px; width: min(380px, 52vw); padding: 6px 10px 8px; }
+  #tutorial .tut-title { font-size: 16px; }
+  #tutorial .tut-text { margin: 2px 0 6px; font-size: 13px; line-height: 1.35; }
+  #tutorial .tut-dots { margin: 5px 0 4px; }
+  #coach-tip { top: 70%; max-width: min(420px, 46vw); font-size: 13px; padding: 5px 10px; }
+}
