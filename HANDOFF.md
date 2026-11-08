@@ -73,7 +73,7 @@ The workflow is unchanged (CLAUDE.md):
      captures move about ±10 between builds, and the drop is under two standard errors. The strafing rule does cut
      stuck recoveries (1.43 → 1.32). Not ablated: ground that goes, corridor routes.
    - **Part 2, large bots route round low roofs (owner's option a): done, held back for the owner** (`wip/bots-lowroof`
-     @ fc4d701 and its docs commit; CI on `check/bots-lowroof`). BOT_AI_PLAN.md, "Part 2", has the tables.
+     @ fc4d701 and its docs commits; green on `check/bots-lowroof`, run 42428308885). BOT_AI_PLAN.md, "Part 2", has the tables.
      - **How:** the navmesh marks ground with less headroom than a large body (2.12 m) as `LOW_AREA` (`nav/solo.ts`,
        Recast splits polygons there); tall bodies' searches price it at 1,000 a metre (`findPath` `tall`), small and
        standard ones don't change. A route that still goes under (no way round, or it starts or ends there) turns on

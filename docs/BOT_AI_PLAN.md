@@ -666,7 +666,7 @@ a few captures); the owner's. To try next with it: large bots route round low ro
 headroom) rather than crouching through.
 
 **Part 2, held back for the owner: large bots route round low roofs** (owner's option a, 2026-11-07; `wip/bots-lowroof`,
-fc4d701; green on `check/bots-lowroof`; not landed: the captures fell):
+fc4d701; green on `check/bots-lowroof`, run 42428308885 (characters3's scope check failed once, as on `check/tanks`; passed on the re-run); not landed: the captures fell):
 - **The navmesh marks low headroom** (`nav/solo.ts`): generateSoloNavMesh's own steps, with one added after the erosion:
   walkable cells with less room over them than a large body stands in (1.18 × 1.8 m and 5 cm) and the cells within a
   large body's radius (0.4 m) of them get area `LOW_AREA`, so Recast splits polygons there. Read straight off the WASM
