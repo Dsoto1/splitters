@@ -16,6 +16,7 @@ made only on a commit that passed CI on a check branch.
 and go round a long one (docs/BOT_AI_PLAN.md, "The moderate price"; in 0.9.0 they went round however far). Measured on
 48 CTF matches and a Team Deathmatch sample: the same stuck recoveries and captures; Diamond Park's large bots crouch
 through its dugout steps, about 10 s a match.
+
 **MapMaker: feedback while building** (MapMaker overhaul Phase 1, part A; docs/MAPMAKER_OVERHAUL_PLAN.md):
 - **The ghost says why.** Beside the pointer, before you click, a refused tile or set piece says why in a few words
   ("Overlaps the Corridor on Ground", "Past the build limit (16 levels up or down)"; the status line has the whole
