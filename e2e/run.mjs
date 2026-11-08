@@ -7590,6 +7590,9 @@ async function partyFlow(browser) {
   const hub = `&hub=127.0.0.1:${HUB_PORT}`;
   const host = await (await browser.newContext({ viewport: { width: 960, height: 540 } })).newPage();
   host.on('pageerror', (e) => errors.push(`host: ${e.message}`));
+  // (The host's warnings, for the message if the party doesn't arrive together.)
+  const hostLog = [];
+  host.on('console', (msg) => (msg.type() === 'warning' || msg.type() === 'error') && hostLog.length < 20 && hostLog.push(msg.text().slice(0, 200)));
   await host.addInitScript(() => localStorage.setItem('cs.name', 'Hosty'));
   await host.goto(`${CLIENT}/?offline=void_yard&gamemode=core.tdm${hub}`, { waitUntil: 'domcontentloaded', timeout: T(60000) });
   await host.waitForFunction(playing, null, { timeout: T(90000) });
@@ -7631,11 +7634,36 @@ async function partyFlow(browser) {
     await host.keyboard.press(`Digit${pickO + 1}`);
     const counted = await host.waitForFunction((i) => window.__cs.vote().votes[i] === 2, pickO, { timeout: T(15000) }).then(() => true, () => false);
     check(counted, `both votes are counted (${JSON.stringify(await host.evaluate(() => window.__cs.vote()))})`);
+    // (Where the host's page is as it goes, for the message if the party doesn't arrive together.)
+    await host.evaluate(() => {
+      window.__mapTrace = [];
+      let last = '';
+      const t0 = performance.now();
+      setInterval(() => {
+        const now = `${window.__cs?.map ?? '-'} ${window.__cs?.phase?.() ?? '-'} vote ${JSON.stringify(window.__cs?.vote?.() ? { w: window.__cs.vote().winner, open: window.__cs.vote().open } : null)}`;
+        if (now !== last) window.__mapTrace.push(`${((performance.now() - t0) / 1000).toFixed(1)}s ${(last = now)}`);
+      }, 100);
+    });
+    // (What the host tells its friends as it travels, and what the friend's page shows: for the message.)
+    await host.evaluate(() => {
+      window.__travelLog = [];
+      const t = window.__cs.transport;
+      const orig = t.travelGuests?.bind(t);
+      if (orig) t.travelGuests = (name) => { window.__travelLog.push(`travelGuests(${name}) links ${JSON.stringify([...(t.links?.values() ?? [])].map((r) => ({ slot: r.slot, open: r.link?.open ?? null })))}`); return orig(name); };
+    });
+    await friend.evaluate(() => {
+      window.__shown = [];
+      const h = window.__cs.hud;
+      const orig = h.showMessage.bind(h);
+      h.showMessage = (text, ...a) => { window.__shown.push(String(text).slice(0, 80)); return orig(text, ...a); };
+    });
     await sim(host, (m) => (m.phaseEndTick = m.tick + 60 * 6));
     const together = await simWait(host, (m, _me, id) => m.map.metadata.id === id && m.combatants().some((c) => c.kind === 'human' && c.name === 'Friend'), maps[pickO], T(150000));
     const s2 = together ? await sides() : {};
     const fill2 = await sim(host, (m) => m.combatants().length);
-    check(together && s2.Friend?.team === s2.Hosty?.team && fill2 === fill1, `the party goes on to the voted map together, on one side, bots filling the rest (${JSON.stringify({ s2, fill1, fill2 })})`);
+    // (Where each side is, for the message if they didn't get there together.)
+    const whereNow = together ? null : { told: await host.evaluate(() => window.__travelLog).catch(() => null), shown: await friend.evaluate(() => window.__shown).catch(() => null), trace: await host.evaluate(() => window.__mapTrace).catch(() => null), log: hostLog, host: await sim(host, (m) => ({ map: m.map.metadata.id, phase: m.phase, humans: m.combatants().filter((c) => c.kind === 'human').map((c) => c.name) })).catch((e) => String(e)), friend: await friend.evaluate(() => ({ map: window.__cs?.map ?? null, phase: window.__cs?.phase?.() ?? null, local: !!window.__cs?.local, menu: !!window.__front && !window.__cs, reconnect: document.getElementById('reconnect')?.textContent ?? null, status: [...document.querySelectorAll('.status, .front-status, #front-status')].map((e) => e.textContent).filter(Boolean).join(' | ').slice(0, 200) })).catch((e) => String(e)) };
+    check(together && s2.Friend?.team === s2.Hosty?.team && fill2 === fill1, `the party goes on to the voted map together, on one side, bots filling the rest (${JSON.stringify({ s2, fill1, fill2, ...(whereNow ? { whereNow } : {}) })})`);
     const friendThere = await friend.waitForFunction((id) => window.__cs?.map === id && window.__cs.local, maps[pickO], { timeout: T(90000) }).then(() => true, () => false);
     check(friendThere, "the friend's own page is on the new map too");
   }
