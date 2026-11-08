@@ -21,11 +21,11 @@
     ],
     "release": {
       "mapId": "m_prmawkdzrmtay5mm",
-      "versionId": "v_oec2dttp3ccjt6m2",
-      "revision": 6,
-      "contentHash": "sha256:b08ff3652c2cfbe7e1623aafd384e15f2749e5e55eff0281d09a787806f8cc54",
+      "versionId": "v_ndleqh4duqsaoxwn",
+      "revision": 7,
+      "contentHash": "sha256:b0736d1af0cdff5c89f25132285a5cbe34654bab11eb5a139fd61d77c4b685db",
       "schemaVersion": 29,
-      "releasedAt": "2026-11-08T18:12:35.284Z"
+      "releasedAt": "2026-11-08T18:15:47.767Z"
     }
   },
   "classicStructure": {
@@ -64,10 +64,98 @@
         "y": -4,
         "z": 0,
         "rotation": 2
+      },
+      {
+        "id": "sp_setpiece_svyomxnw1s_1",
+        "tile": "core.room",
+        "x": 0,
+        "y": 5,
+        "z": 0,
+        "rotation": 1,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_travertine",
+            "tint": "#d8c8b0"
+          },
+          "walls": {
+            "material": "core.pbr_limestone",
+            "tint": null
+          },
+          "solids": {
+            "material": "core.pbr_limestone",
+            "tint": null
+          },
+          "trim": {
+            "material": "core.pbr_white_marble",
+            "tint": null
+          },
+          "roof": {
+            "material": "core.pbr_roof",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:E": "wall",
+          "0,0,0:N": "open",
+          "0,0,0:S": "open",
+          "0,0,0:W": "arch_round"
+        },
+        "options": {
+          "ceiling": "vault"
+        }
+      },
+      {
+        "id": "sp_setpiece_svyomxnw1s_2",
+        "tile": "core.cavea",
+        "x": 0,
+        "y": 5,
+        "z": 1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_travertine",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.pbr_limestone",
+            "tint": null
+          },
+          "solids": {
+            "material": "core.pbr_limestone",
+            "tint": null
+          },
+          "trim": {
+            "material": "core.pbr_white_marble",
+            "tint": null
+          }
+        }
+      },
+      {
+        "id": "tile_6k4phjykd7",
+        "tile": "imperial.emperor_box",
+        "x": 0,
+        "y": 4,
+        "z": 0,
+        "rotation": 0
       }
     ]
   },
-  "entities": [],
+  "entities": [
+    {
+      "id": "sp_setpiece_svyomxnw1s_3",
+      "position": [
+        -2.6,
+        2.3,
+        36.53
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffd9a0",
+      "intensity": 1,
+      "range": 9,
+      "fixture": "candle"
+    }
+  ],
   "factions": [],
   "logic": {
     "variables": [],
@@ -51990,15 +52078,6 @@
       "x": -1,
       "y": 10,
       "z": 6,
-      "rotation": 0,
-      "mirror": false
-    },
-    {
-      "id": "setpiece_svyomxnw1s",
-      "piece": "setpiece.arena_bay_podium",
-      "x": 0,
-      "y": 4,
-      "z": 0,
       "rotation": 0,
       "mirror": false
     },
