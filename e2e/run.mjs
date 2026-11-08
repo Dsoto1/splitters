@@ -1116,14 +1116,22 @@ async function editorPhase1aChecks(page, { doc, at, clickAt, settle, shot }) {
     return c.ok ? '' : c.short;
   });
   check(limit === 'Past the build limit (16 levels up or down)', `the ghost names the build limit (${limit})`);
-  // A spawn over nothing: a warning, not a refusal.
-  await page.evaluate(() => window.__editor.setTool({ kind: 'spawn' }));
-  const off = await at(32, 0, -16);
+  // A spawn over nothing (up on Level 1, the ground 4 m below): a warning, not a refusal.
+  await page.evaluate(() => {
+    window.__editor.setTool({ kind: 'spawn' });
+    window.__editor.setLevel(1);
+  });
+  await settle();
+  const off = await at(32, 4, -16);
   await page.mouse.move(off.x, off.y);
   await settle();
   const spawnWhy = await page.evaluate(() => ({ text: document.getElementById('ed-tip').textContent, shown: !document.getElementById('ed-tip').hidden, onTerrain: window.__editor.hoverOnTerrain }));
-  check(spawnWhy.onTerrain || (spawnWhy.shown && spawnWhy.text.includes('No floor under it')), `a spawn over nothing says "No floor under it" (${JSON.stringify(spawnWhy)})`);
-  await page.evaluate(() => window.__editor.setTool({ kind: 'select' }));
+  check(!spawnWhy.onTerrain && spawnWhy.shown && spawnWhy.text.includes('No floor under it'), `a spawn over nothing says "No floor under it" (${JSON.stringify(spawnWhy)})`);
+  await shot('spawn-why');
+  await page.evaluate(() => {
+    window.__editor.setTool({ kind: 'select' });
+    window.__editor.setLevel(0);
+  });
 
   // The live budget bar: Props goes up by one with a prop and back with undo.
   const bar = () =>
