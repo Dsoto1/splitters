@@ -2345,7 +2345,9 @@ async function physicsfxFlow(browser) {
     const bot = m.slots[window.__botSlot];
     const standing = window.__cs.view.avatars.get(bot.slot)?.anim?.ch.joints.get('Head')?.getAbsolutePosition().y ?? null;
     window.__cs.view.pushPlayer(bot.slot, { x: (bot.move.pos.x - me.move.pos.x) * 1.2, y: 2, z: (bot.move.pos.z - me.move.pos.z) * 1.2 });
-    m.damage(bot, 500, me, 'core.pistol');
+    // No attacker: the bot may be on your team (no friendly fire; Team Deathmatch on the canyon: the first other slot
+    // was a teammate on some runs, and nothing died).
+    m.damage(bot, 500, null, 'core.pistol');
     return standing;
   });
   await page.addStyleTag({ content: '#pause { display: none !important; }' });
