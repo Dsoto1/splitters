@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 22,
+  "formatVersion": 29,
   "metadata": {
     "id": "training_range",
     "name": "Training Range",
@@ -15,7 +15,15 @@
     },
     "supportedModes": [
       "core.deathmatch"
-    ]
+    ],
+    "release": {
+      "mapId": "m_ctsnxcfzn4e6gtgk",
+      "versionId": "v_6yyw43k3puk44pfw",
+      "revision": 1,
+      "contentHash": "sha256:05d1f4ce016bb7329e9048b043614c304fb9d5f9f66043c9c625aaceaab9a4df",
+      "schemaVersion": 29,
+      "releasedAt": "2026-11-08T07:37:36.200Z"
+    }
   },
   "classicStructure": {
     "cellSize": 8,
@@ -6639,6 +6647,54 @@
       "intensity": 1,
       "range": 14,
       "fixture": "none"
+    },
+    {
+      "id": "mount_nkby1lsxj1",
+      "kind": "mount",
+      "position": [
+        -26,
+        0,
+        30
+      ],
+      "model": "buggy",
+      "yaw": 1.571,
+      "faction": null,
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_ypowqzoejo",
+      "kind": "pickup",
+      "position": [
+        -12,
+        0,
+        24
+      ],
+      "item": "core.grenades",
+      "respawnSeconds": null
+    },
+    {
+      "id": "mount_3yj8waeplk",
+      "kind": "mount",
+      "position": [
+        206,
+        0,
+        -32
+      ],
+      "model": "buggy",
+      "yaw": -1.571,
+      "faction": null,
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_0is7s16bhc",
+      "kind": "pickup",
+      "position": [
+        194,
+        0,
+        -24
+      ],
+      "item": "core.grenades",
+      "respawnSeconds": null
     }
   ],
   "factions": [
@@ -6668,7 +6724,6 @@
     "style": "fence",
     "height": 8
   },
-  "track": null,
   "backdrop": null,
   "physics": null,
   "blood": null,
