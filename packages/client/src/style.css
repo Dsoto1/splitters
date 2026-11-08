@@ -1438,6 +1438,15 @@ html.touch #menu .screen.characters, html.touch #menu .screen.profile { padding-
 .pause-invite { margin: 6px 0; display: grid; grid-template-columns: 1fr auto; gap: 6px; align-items: center; }
 .pause-invite .host-code, .pause-invite .hint { grid-column: 1 / -1; margin: 0; }
 .pause-invite input { min-width: 0; }
+@media (max-height: 640px) {
+  #map-vote .mv-pic { aspect-ratio: 16 / 4; }
+  #map-vote .mv-hint { display: none; }
+  #map-vote .mv-head { margin-bottom: 5px; }
+  #hud.vote-on #match-awards { font-size: 12px; padding: 4px 8px 5px; }
+  #hud.vote-on #match-awards .award { padding: 2px 6px; }
+  #hud.vote-on #match-awards .award b { font-size: 13px; }
+  #hud.vote-on #match-awards .award span { font-size: 11px; }
+}
 @media (max-height: 480px) {
   #map-vote { padding: 5px 8px 6px; bottom: 4px; }
   #map-vote .mv-head { margin-bottom: 4px; }
