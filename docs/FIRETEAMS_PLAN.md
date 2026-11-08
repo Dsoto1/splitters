@@ -82,3 +82,28 @@ switched on in Match Setup's variants row. There is also a party preset.
   - squad survival;
   - the mode's objective numbers.
 - **Proof:** e2e for the order wheel and the HUD, then an owner playtest.
+
+## Part 1: done (2026-11-08, `wip/fireteams`)
+Part 1 was the variant, fixed squads, the order wheel, respawn on the leader and the measures. Parts 2 (formations and
+bounding, the squad HUD) and 3 (squad scores, MVP, the party preset) are still to come. The rules as built are in
+docs/BOTS.md, "Fireteams"; the code is `sim/fireteams.ts`.
+
+- **The variant:** "Fireteams" in Match setup's Variants row for Team Deathmatch, CTF, King of the Hill, Bomb, Hostage and
+  Breakthrough (MAP 21's assault). The squad size picker (4 / 5 / 6, standard 5) sits beside the score. It is
+  `MatchRules.fireteams` (the size), and on servers `rules fireteams 5`. Host travel and the rotation keep it.
+- **Squads:** every person leads one; bot-led squads of the same size fill the team, as even as can be. A friend
+  joining mid-match takes over a bot-led squad (the one with a hole first): its bot leader steps down, and nobody
+  respawns. A person leaving, or going away, hands their squad to its best bot. Holes in a person's squad are filled
+  from bot-led squads (the nearest member walks over). Player caps are untouched: squads only group who is there.
+  The joining path (`takeOverBot`, `BotFiller.join`) is unchanged: the squads follow the roster (`Fireteams.sync`).
+  So wip/party's party join stacks on top without conflict.
+- **Orders:** the order wheel. Hold B (a tap is still the quick messages), hold a controller's d-pad up (a tap still
+  pings), or tap the Orders button on a phone. The orders are Follow me, Hold here, Go there (a fresh ping, else the
+  aim), Attack that, Defend the objective (`ModeLogic.defendSpot`, else the side's trips) and Regroup. Each is an
+  input message (say 110-115) that the match checks (`checkOrder`). A bot answers in the chat. The B menu's Follow
+  me! and Hold here! order your squad. The HUD shows your squad's order. An order is a heavy weight (2.4) in each
+  member's scored choice; following a bot leader is lighter (1.3).
+- **Respawn on the leader:** when it's safe by the spawn choice's own measures (`leaderSpotSafe`), else at the team's
+  spawn. With the leader down the squad holds and fights; back, it forms up on them (a place order stays).
+- **Hooks left for Parts 2 and 3:** `Squad.id / members / order / anchor`, `FireteamOrder.done`, and the 'squad'
+  events (`lead`, `order`, `ack`, `deny`) with the squad id.

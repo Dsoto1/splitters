@@ -5174,21 +5174,25 @@ async function fireteamsFlow(browser) {
   check(held, 'letting go of B on Hold here gives your squad the order (checked by the match)');
   check(ack, 'a squadmate answers "Holding here!" and the HUD shows Hold here');
   const spot = await sim(page, (m, me) => m.fireteams.squadOf(me.slot).order.pos);
-  // You walk off; the squad stays where you told it.
-  await page.evaluate(() => (window.__autoInput = { forward: 1 }));
-  await meWait(page, (m, me, p) => Math.hypot(me.move.pos.x - p.x, me.move.pos.z - p.z) > 12, spot, 6);
-  await page.evaluate(() => (window.__autoInput = { forward: 0 }));
-  const holding = await meWait(page, (m, me, p) => {
+  // You go off (to a teammate of another squad, out of sight of the spot); the squad stays where you told it.
+  const away = await sim(page, (m, me, p) => {
+    const s = m.fireteams.squadOf(me.slot);
+    const mate = m.combatants().filter((c) => c.alive && c.faction === me.faction && !s.members.includes(c.slot)).sort((a, b) => Math.hypot(b.move.pos.x - p.x, b.move.pos.z - p.z) - Math.hypot(a.move.pos.x - p.x, a.move.pos.z - p.z))[0];
+    if (!mate) return null;
+    me.move = { pos: { x: mate.move.pos.x + 1, y: mate.move.pos.y + 0.2, z: mate.move.pos.z }, velY: 0, grounded: false };
+    return { tick: m.tick, x: Math.round(me.move.pos.x), z: Math.round(me.move.pos.z) };
+  }, spot);
+  const holding = await meWait(page, (m, me, a) => {
     const s = m.fireteams.squadOf(me.slot);
     const bots = s.members.filter((x) => x !== me.slot).map((x) => m.slots[x]).filter((c) => c?.alive);
-    const near = bots.filter((c) => Math.hypot(c.move.pos.x - p.x, c.move.pos.z - p.z) < 8).length;
-    return s.order.kind === 'hold' && bots.length > 0 && near * 2 > bots.length;
-  }, spot, 20);
+    const near = bots.filter((c) => Math.hypot(c.move.pos.x - a.p.x, c.move.pos.z - a.p.z) < 8).length;
+    return m.tick - a.tick > 8 * 60 && s.order.kind === 'hold' && bots.length > 0 && near * 2 > bots.length;
+  }, { p: spot, tick: away?.tick ?? 0 }, 25);
   const where = await sim(page, (m, me, p) => {
     const s = m.fireteams.squadOf(me.slot);
     return { me: Math.round(Math.hypot(me.move.pos.x - p.x, me.move.pos.z - p.z)), bots: s.members.filter((x) => x !== me.slot).map((x) => m.slots[x]).filter((c) => c?.alive).map((c) => Math.round(Math.hypot(c.move.pos.x - p.x, c.move.pos.z - p.z))) };
   }, spot);
-  check(holding && where.me > 8, `the squad holds where you gave the order while you walk off (you ${where.me} m from it, the squad ${where.bots.join(', ')} m; from ${JSON.stringify(at)})`);
+  check(!!away && holding && where.me > 12, `the squad holds where you gave the order after you go off (you ${where.me} m from it, the squad ${where.bots.join(', ')} m; from ${JSON.stringify(at)} to ${JSON.stringify(away)})`);
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await page.context().close();
   await fireteamsPhone(browser);
