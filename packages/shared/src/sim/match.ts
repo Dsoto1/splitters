@@ -2873,7 +2873,8 @@ export class Match {
     if (!s || s.leader === null || s.leader === c.slot) return null;
     const leader = this.slots[s.leader];
     const t = s.order.kind === 'attack' && s.order.target !== null ? this.actor(s.order.target) : null;
-    return memberGoal(s, c.slot, leader?.alive ? leader.move.pos : null, t?.alive ? t.move.pos : null);
+    // (Following the squad's anchor: the leader's position, moved on every few metres, so routes aren't asked afresh every think.)
+    return memberGoal(s, c.slot, leader?.alive ? (s.anchor ?? leader.move.pos) : null, t?.alive ? t.move.pos : null);
   }
 
   /**

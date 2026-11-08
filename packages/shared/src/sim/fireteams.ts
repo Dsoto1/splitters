@@ -90,7 +90,15 @@ export interface Squad {
   /** The leader went down at this tick (null: alive): the squad holds where each member stood (`holds`). */
   downAt: number | null;
   holds: Map<number, Vec3>;
+  /**
+   * Where members follow the leader to: the leader's position, moved on only when they have gone ANCHOR_MOVE m from it
+   * (a goal that moves every tick has every member planning a fresh route every think).
+   */
+  anchor: Vec3 | null;
 }
+
+/** The follow point moves on once the leader is this far from it (m, or 2 m up or down). */
+const ANCHOR_MOVE = 3;
 
 /** One combatant as the squads see it (Match.squadRoster). */
 export interface SquadRosterEntry {
@@ -281,7 +289,7 @@ export class Fireteams {
   }
 
   private create(team: string, members: number[], leader: number, human: boolean, tick: number, notes: SquadNote[]): Squad {
-    const s: Squad = { id: this.nextId++, team, leader: null, members: [...members], human, order: follow(tick), downAt: null, holds: new Map() };
+    const s: Squad = { id: this.nextId++, team, leader: null, members: [...members], human, order: follow(tick), downAt: null, holds: new Map(), anchor: null };
     this.squads.push(s);
     for (const m of members) this.bySlot.set(m, s);
     this.lead(s, leader, human, tick, notes);
@@ -335,11 +343,14 @@ export class Fireteams {
         }
       } else if (up && s.downAt !== null) {
         s.downAt = null;
+        s.anchor = null;
         s.holds.clear();
         // Back: the squad forms up on them (a place order stays: the squad keeps it until told otherwise).
         if (!placeOrder(s.order.kind)) notes.push({ a: 'order', squad: s, order: this.order(s, 'regroup', null, null, tick, true) });
       }
       if (!up) continue;
+      const lp = lead!.pos;
+      if (!s.anchor || horizontalDistance(s.anchor, lp) > ANCHOR_MOVE || Math.abs(s.anchor.y - lp.y) > 2) s.anchor = { ...lp };
       const o = s.order;
       const age = (tick - o.tick) / TICK_RATE;
       if (o.kind === 'attack' && (o.target === null || !world.target(o.target) || age > ATTACK_SECONDS)) {
