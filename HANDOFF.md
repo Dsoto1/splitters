@@ -51,9 +51,26 @@ The workflow is unchanged (CLAUDE.md):
 docs/MAPMAKER_OVERHAUL_PLAN.md). Branches `wip/mapmaker-*` / `check/mapmaker-*` only.
 - **Now:** Phase 1 (the ghost says why, the live budget bar, the `?` overlay; the measure tool, props snap to surfaces with
   randomise), then Phase 3 item 9 (the rotate ring, quick facings) and the rest of Phase 3 that doesn't need the split.
+- **Also in this lane** (owner's addendum, 2026-11-08; the other session took these off its queue):
+  - set pieces: the 12-piece brainstorm list, retiring the old big pieces they replace (MapMaker's Replace all and
+    the load-time alias table), and the MAP 21 sea wall with its breach;
+  - the card shots of Step Temple (eye level) and Shingle Point, redone with Phase 3 item 8's card-shot camera;
+  - bot hints in MapMaker (Phase 4 item 3, and Bot AI Phase D's MapMaker part; the format goes in docs/BOTS.md);
+  - Environment Phase 3's MapMaker tools (PROCEDURAL_ENVIRONMENT §11), after the other session's Environment Phase 2
+    lands. Please note it here when it does.
 - **The split of `editorApp.ts`** (Phase 2) waits until Iron Coast's MapMaker changes (finer terrain grid, Terrain →
   Change grid, a "coast" border side) and the race-mode removal (the race layer reworded to track / NPC traffic) are on
   main. This line will say when it starts. Please say here when those land.
+- **Also in this lane (owner, 2026-11-08, moved from the other session's queue):** set pieces (the 12-piece list,
+  retiring old big pieces via Replace all + aliases, MAP 21 sea wall and breach); redo Step Temple's (eye level) and
+  Shingle Point's card shots with Phase 3 item 8's card-shot camera; bot hints in MapMaker (Phase 4 item 3 = Bot AI
+  Phase D's MapMaker part; keep the format small, document it in docs/BOTS.md); Environment Phase 3's MapMaker tools
+  once Environment Phase 2 lands. The other session keeps Iron Coast, race removal and Environment Phase 2.
+- **Map builds also in this lane (owner, 2026-11-08):** the Sandfall Colosseum rebuild (docs/map-briefs/sandfall_colosseum),
+  the Whiteout Station rebuild from MAP 03 Frostbite Station, and two new maps from their briefs (concepts approved):
+  MAP 02 The Spillway and MAP 04 Verdant Protocol (docs/map-briefs/). Build with MapMaker only, using our generated
+  foliage (no Kenney trees, bushes, flowers or grass anywhere; owner 2026-11-08). The full pass over every map comes
+  after all of this, one map at a time, judging whether each map needs it.
 
 **MapMaker Phase 1, part A** (`wip/mapmaker-p1a`, other account; docs/MAPMAKER_OVERHAUL_PLAN.md "As built" under
 Phase 1 items 1, 2, 5): the ghost says why, the live budget bar, the `?` key list.
@@ -61,7 +78,8 @@ Phase 1 items 1, 2, 5): the ghost says why, the live budget bar, the `?` key lis
   the pointer, not refused; (2) the draw estimate (a draw per different untinted prop model, tinted prop, species
   variant and liquid, budget 136 = 80 + 24 + 32); (3) Shift+/ (`?`) now opens the key list instead of searching.
 - **Pitfall:** new MapMaker keys go in `EDITOR_KEYS` (shared/src/editor/keymap.ts) with a `keyActions` entry in
-  editorApp.ts; `keymap.test.ts` fails on a `case 'KeyX':` matched by hand.
+  editorApp.ts; `keymap.test.ts` fails on a `case 'KeyX':` matched by hand or a held-key list (`['AltLeft', …]`)
+  written in editorApp.ts. Phase 1B's U and Esc order are folded in.
 
 **In flight at the switch** (each branch pushed, tree clean; scratchpad files did not survive the switch):
 1. **Friendly fire** (`wip/friendly-fire` @ 318023ed). Green at 1a347140 (run 42408271804, with its new e2e check).
@@ -351,6 +369,19 @@ gets overloaded above that: local e2e times out and flakes). Prune landed worktr
   2. After the leader's respawn, a squad on Follow me or Attack that regroups on them, while one on Hold here, Go there
      or Defend the objective keeps its post. Keep that?
   3. The party preset (Part 3) and the squad HUD (Part 2) are next.
+
+### MapMaker overhaul: measure, props on surfaces, Randomise, turning by mouse (`wip/mapmaker-p1b`, agent, 2026-11-08; Phase 1 items 3-4 and Phase 3 item 9)
+- **Built:** the measure tool (U), props dropped onto the surface under the pointer, Randomise in the prop tool, the
+  rotate ring on the selection gizmo and the inspector's quick facings. As built: docs/MAPMAKER_OVERHAUL_PLAN.md under
+  each item; how-to: BUILDING_KIT.md, "Measuring and placing props (MapMaker)".
+- **Where:** shared `editor/{raycast,surfaceSnap,measure,propRandom,turnRing}.ts` (unit tests `mapmakerTools.test.ts`;
+  `raycastBoxes` moved here from the client); client `editor/{measureTool,propPlaceOptions,surfaceBoxes,rotateRing,
+  quickFacings}.ts`, wired into `editorApp.ts` with a few lines each; e2e `editorMeasureChecks` and `editorTurnChecks`
+  in `editorux`.
+- **Keys:** only U (measure) is new, one `case 'KeyU'` in the keydown switch; fold it into `wip/mapmaker-p1a`'s key
+  table (`keymap.ts`) when both are on main. Esc now also cancels a ring drag and clears a measurement (in that order,
+  before the old Esc).
+- **Not stored:** no map field, no format bump. Randomise's settings live for the session only.
 
 ### Ammo Boxes by the tank routes (`wip/ammo-boxes`, agent, 2026-11-08; owner-approved follow-up to Tanks 2 item 2)
 

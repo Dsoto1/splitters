@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { EDITOR_KEYS, EDITOR_KEY_NOTES, FLY_KEYS, FREE_PLACE_KEYS, editorKeyGroups, keyFor, matchEditorKey, type KeyAction } from '../src/index.ts';
+import { EDITOR_KEYS, EDITOR_KEY_NOTES, FLY_KEYS, FREE_MEASURE_KEYS, FREE_PLACE_KEYS, editorKeyGroups, keyFor, matchEditorKey, type KeyAction } from '../src/index.ts';
 
 /** Every KeyboardEvent.code a keyboard sends, near enough: letters, digits, F keys, punctuation, navigation, modifiers. */
 const CODES = [
@@ -17,7 +17,7 @@ const CODES = [
 const keyOf = (code: string, shift: boolean) => (code === 'Slash' ? (shift ? '?' : '/') : code.startsWith('Key') ? (shift ? code.slice(3) : code.slice(3).toLowerCase()) : code);
 
 /**
- * MapMaker's keydown handler before the key table (editorApp.ts, 2026-11-08), as data: what each key did. The table
+ * MapMaker's keydown handler before the key table (editorApp.ts, 2026-11-08, with Phase 1B's U and Esc), as data: what each key did. The table
  * must do the same, except Shift+/ (`?`), which now opens the key list (it searched the palette, as / does).
  */
 function before(code: string, shift: boolean, mod: boolean): KeyAction | null {
@@ -34,12 +34,13 @@ function before(code: string, shift: boolean, mod: boolean): KeyAction | null {
     KeyT: 'terrain',
     KeyO: 'walls',
     KeyX: 'erase',
+    KeyU: 'measure',
     KeyG: shift ? 'raceTrack' : 'paths',
     KeyN: 'scatter',
     KeyP: 'place',
     KeyI: 'pickStyle',
     KeyV: 'select',
-    Escape: 'select',
+    Escape: 'escape',
     KeyH: 'showAll',
     Slash: 'search',
     Delete: 'delete',
@@ -90,16 +91,17 @@ describe('MapMaker key table and the ? overlay (Phase 1, item 5)', () => {
     // And every binding in the table is reachable by some key.
     for (const b of EDITOR_KEYS) expect(seen.has(b.keys), `${b.keys} reachable`).toBe(true);
     // The overlay lists R, Ctrl+Z and the tool keys.
-    for (const k of ['R', 'Ctrl+Z', 'V', 'P', 'X', 'B', 'O', 'T', 'G', 'N', '?']) expect([...listed].some((l) => l.startsWith(`${k}|`)), k).toBe(true);
+    for (const k of ['R', 'Ctrl+Z', 'V', 'P', 'X', 'B', 'O', 'T', 'G', 'N', 'U', 'Esc', '?']) expect([...listed].some((l) => l.startsWith(`${k}|`)), k).toBe(true);
     expect(keyFor('undo')).toBe('Ctrl+Z');
   });
 
   it('the held keys MapMaker reads are the table’s (the fly camera, free placing)', () => {
     const held = new Set(EDITOR_KEY_NOTES.flatMap((n) => n.held ?? []));
-    for (const c of [...Object.values(FLY_KEYS), ...FREE_PLACE_KEYS]) expect(held.has(c), c).toBe(true);
+    for (const c of [...Object.values(FLY_KEYS), ...FREE_PLACE_KEYS, ...FREE_MEASURE_KEYS]) expect(held.has(c), c).toBe(true);
     // MapMaker reads no other held key by name: every `keys.has('…')` in the editor is from the table's lists.
     const src = readFileSync(fileURLToPath(new URL('../../client/src/editor/editorApp.ts', import.meta.url)), 'utf8');
     expect(src.match(/keys\.has\('[A-Za-z]+'\)/g) ?? []).toEqual([]);
+    expect(src.match(/\['(Control|Shift|Alt|Meta)\w+'/g) ?? [], 'held-key lists come from the table').toEqual([]);
     // And no key is matched by hand outside the table (the old handler's `case 'KeyR':` and `e.code === 'F5'`).
     expect(src.match(/case '(Key[A-Z]|Digit\d|Escape|F5|PageUp|PageDown|Arrow\w+|Bracket\w+|Slash|Backslash|Delete|Home)':/g) ?? []).toEqual([]);
   });

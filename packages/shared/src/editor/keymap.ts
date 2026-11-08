@@ -23,6 +23,8 @@ export type KeyAction =
   | 'terrain'
   | 'walls'
   | 'erase'
+  | 'measure'
+  | 'escape'
   | 'paths'
   | 'raceTrack'
   | 'scatter'
@@ -78,6 +80,8 @@ export interface KeyNote {
 /** The fly camera's held keys (WASD, Q and E; Shift for faster). Ctrl or ⌘ held stops it (Ctrl+S, Ctrl+D…). */
 export const FLY_KEYS = { forward: 'KeyW', back: 'KeyS', left: 'KeyA', right: 'KeyD', up: 'KeyE', down: 'KeyQ', fast: 'ShiftLeft' } as const;
 export const FLY_PAUSE_KEYS = ['ControlLeft', 'ControlRight', 'MetaLeft'] as const;
+/** Held while measuring: no snapping (the measure tool). */
+export const FREE_MEASURE_KEYS = ['ControlLeft', 'ControlRight', 'MetaLeft', 'AltLeft', 'AltRight'] as const;
 /** Held while placing: no snapping (one rule for every kind). */
 export const FREE_PLACE_KEYS = ['ControlLeft', 'ControlRight', 'MetaLeft', 'ShiftLeft', 'ShiftRight'] as const;
 
@@ -94,9 +98,10 @@ export const EDITOR_KEYS: readonly KeyBinding[] = [
   { action: 'toggleSidePanel', group: 'Map and panels', keys: 'Shift+\\', what: 'Hide or show the side panel', codes: ['Backslash'], shift: true },
   { action: 'togglePalette', group: 'Map and panels', keys: '\\', what: 'Hide or show the palette', codes: ['Backslash'], shift: false },
   tool('select', 'V', 'KeyV', 'Select: pick, move and edit things'),
-  { action: 'select', group: 'Tools', keys: 'Esc', what: 'Back to Select (with Select in hand: select none)', codes: ['Escape'] },
+  { action: 'escape', group: 'Tools', keys: 'Esc', what: 'Cancel a ring turn mid-drag, else clear a measurement, else back to Select (with Select in hand: select none)', codes: ['Escape'] },
   tool('place', 'P', 'KeyP', 'Place: the last piece picked from the palette'),
   tool('erase', 'X', 'KeyX', 'Erase: click anything to delete it'),
+  tool('measure', 'U', 'KeyU', 'Measure: distance, height difference and slope between points'),
   tool('paint', 'B', 'KeyB', 'Paint surfaces'),
   tool('walls', 'O', 'KeyO', 'Walls & openings (again: the next style)'),
   tool('terrain', 'T', 'KeyT', 'Terrain (again: the next brush)'),
@@ -132,12 +137,14 @@ export const EDITOR_KEY_NOTES: readonly KeyNote[] = [
   { group: 'View and camera', keys: 'Q E', what: 'Fly down, up (hold)', held: [FLY_KEYS.down, FLY_KEYS.up] },
   { group: 'View and camera', keys: 'Shift', what: 'Fly or zoom faster (hold)', held: [FLY_KEYS.fast] },
   { group: 'Placing', keys: 'Ctrl or Shift', what: 'Place without snapping (hold while placing)', held: FREE_PLACE_KEYS },
+  { group: 'Placing', keys: 'Ctrl or Alt', what: 'Measure without snapping (hold while measuring)', held: FREE_MEASURE_KEYS },
   { group: 'Mouse', keys: 'Click', what: 'Place, select or act with the tool in hand' },
   { group: 'Mouse', keys: 'Shift+click', what: 'Add to the selection (Paths, Routes: put a point in)' },
   { group: 'Mouse', keys: 'Drag', what: 'Select: move it, or box-select on empty ground; brushes: paint a stroke' },
   { group: 'Mouse', keys: 'Alt+click', what: 'Select or Erase: just that piece of a moving build; Paint: pick up a look' },
   { group: 'Mouse', keys: 'Shift+drag', what: 'Terrain: the brush the other way (lower, for Raise)' },
   { group: 'Mouse', keys: 'Right-click', what: 'Select: the selection menu; Walls: back to automatic; paths: remove a point' },
+  { group: 'Mouse', keys: 'Ring drag', what: "Select: drag the gizmo's ring to turn the selection (Shift: a finer step; Esc cancels)" },
   { group: 'Mouse', keys: 'Right-drag', what: 'Look round' },
   { group: 'Mouse', keys: 'Wheel', what: 'Zoom (Shift: faster)' },
   { group: 'Palette', keys: '↑ ↓ ← →', what: 'Move between pieces (from the search box: ↓)' },
