@@ -9,13 +9,14 @@ import { readFileSync } from 'node:fs';
 import { coreCatalog } from '../../packages/shared/src/map/catalog.ts';
 import { SetPieceDefinition, SetPieceRoleValues, type MapDocument, type Rotation } from '../../packages/shared/src/map/schema.ts';
 import { checkSetPieceDefinition } from '../../packages/shared/src/map/setPieceCheck.ts';
-import type { SetPieceLibrary, SetPieceRolePack } from '../../packages/shared/src/map/setPieces.ts';
+import { setPieceFootprint, type SetPieceLibrary, type SetPieceRolePack } from '../../packages/shared/src/map/setPieces.ts';
 import { validateMap } from '../../packages/shared/src/map/validate.ts';
 import { newMapDocument } from '../../packages/shared/src/editor/operations.ts';
 
 interface Input {
   pieces: { where: string; def: unknown }[];
   packs: (Omit<SetPieceRolePack, 'roles'> & { roles: unknown })[];
+  aliases?: { tile: string; piece: string }[];
 }
 const input = JSON.parse(readFileSync(0, 'utf8')) as Input;
 const problems: string[] = [];
@@ -72,6 +73,19 @@ for (const def of pieces.values()) {
       }
     }
   }
+}
+
+// Retired tiles: the piece covers exactly the tile's cells and levels, unturned, so it takes the tile's place.
+for (const a of input.aliases ?? []) {
+  const w = `content/setpieces/aliases.json: ${a.tile}`;
+  const tile = coreCatalog.get(a.tile);
+  const def = pieces.get(a.piece);
+  if (!tile) problems.push(`${w}: not a tile`);
+  if (!tile || !def) continue;
+  const key = (c: readonly number[]) => c.join(',');
+  const own = tile.cells.map(key).sort();
+  const theirs = setPieceFootprint({ x: 0, y: 0, z: 0, rotation: 0, mirror: false }, def).map(key).sort();
+  if (JSON.stringify(own) !== JSON.stringify(theirs)) problems.push(`${w}: ${a.piece} covers ${theirs.join(' ')}, the tile ${own.join(' ')}: an alias takes the tile's exact place`);
 }
 
 process.stdout.write(JSON.stringify({ problems }));

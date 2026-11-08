@@ -1604,14 +1604,14 @@ export const SET_PIECE_DEFS: readonly SetPieceDefinitionInput[] = [
       { kind: 'tile', tile: 'core.arena_tiers_corner', x: 2, y: 0, z: 0, rotation: 1, surfaces: { floor: { role: 'paving' }, solids: { role: 'stone' }, trim: { role: 'trim' } } },
       { kind: 'tile', tile: 'core.arena_tiers_corner', x: 0, y: 0, z: 0, rotation: 2, surfaces: { floor: { role: 'paving' }, solids: { role: 'stone' }, trim: { role: 'trim' } } },
       { kind: 'tile', tile: 'core.arena_tiers_corner', x: 0, y: 2, z: 0, rotation: 3, surfaces: { floor: { role: 'paving' }, solids: { role: 'stone' }, trim: { role: 'trim' } } },
-      { kind: 'block', name: 'Low wall', position: [8, -2, 3.2], size: [3.2, 1.1, 0.5], material: { role: 'stone' } },
-      { kind: 'block', name: 'Low wall', position: [8, -2, 12.8], size: [3.2, 1.1, 0.5], material: { role: 'stone' } },
-      { kind: 'block', name: 'Low wall', position: [3.2, -2, 8], size: [0.5, 1.1, 3.2], material: { role: 'stone' } },
-      { kind: 'block', name: 'Low wall', position: [12.8, -2, 8], size: [0.5, 1.1, 3.2], material: { role: 'stone' } },
+      { kind: 'block', name: 'Low wall', position: [8, -2, 4.8], size: [3.2, 1.1, 0.5], material: { role: 'stone' } },
+      { kind: 'block', name: 'Low wall', position: [8, -2, 11.2], size: [3.2, 1.1, 0.5], material: { role: 'stone' } },
+      { kind: 'block', name: 'Low wall', position: [4.8, -2, 8], size: [0.5, 1.1, 3.2], material: { role: 'stone' } },
+      { kind: 'block', name: 'Low wall', position: [11.2, -2, 8], size: [0.5, 1.1, 3.2], material: { role: 'stone' } },
       { kind: 'block', name: 'Pillar', position: [5.5, -2, 10.5], size: [1, 3, 1], material: { role: 'stone' } },
       { kind: 'block', name: 'Pillar', position: [10.5, -2, 5.5], size: [1, 3, 1], material: { role: 'stone' } },
-      { kind: 'prop', model: 'prop.crate_large', position: [5.2, -2, 5.4], yaw: 0.4, scale: 1 },
-      { kind: 'prop', model: 'prop.crate_large', position: [10.8, -2, 10.6], yaw: -0.4, scale: 1 },
+      { kind: 'prop', model: 'prop.crate_large', position: [12.8, -2, 3.5], yaw: 0, scale: 1 },
+      { kind: 'prop', model: 'prop.crate_large', position: [3.5, -2, 12.8], yaw: 1.570796, scale: 1 },
     ],
   },
   {
@@ -1808,4 +1808,13 @@ export const SET_PIECE_PACKS: readonly SetPieceRolePackInput[] = [
   { id: 'desert', displayName: 'Desert City', stylePack: 'desert', themes: ['core.desert_city', 'core.egypt', 'core.desert'], roles: { stone: { material: 'core.ashlar' }, trim: { material: 'core.sandstone_tiles', tint: '#e8d8b8' }, floor: { material: 'core.sandstone_tiles' }, paving: { material: 'core.worn_paving' }, roof: { material: 'core.stucco', tint: '#f2e6cc' }, wood: { material: 'core.cedar' }, metal: { material: 'core.brass' }, facade: 'desert_ashlar', door: 'oak', glass: 'none' } },
   { id: 'harbor', displayName: 'Coastal Harbor', stylePack: 'harbor', themes: ['core.coastal', 'core.harbour'], roles: { stone: { material: 'core.quay_granite' }, trim: { material: 'core.harbour_paint' }, floor: { material: 'core.pier_decking' }, paving: { material: 'core.harbour_setts' }, roof: { material: 'core.pbr_slate_roof' }, wood: { material: 'core.tarred_boards' }, metal: { material: 'core.rusty_corrugated' }, facade: 'harbour_render', door: 'oak', glass: 'breakable' } },
   { id: 'snow', displayName: 'Snow Outpost', stylePack: 'snow', themes: ['core.snow_outpost', 'core.arctic'], roles: { stone: { material: 'core.prefab_red' }, trim: { material: 'core.prefab_white' }, floor: { material: 'core.steel_grating' }, paving: { material: 'core.packed_snow' }, roof: { material: 'core.snowy_concrete' }, wood: { material: 'core.prefab_white' }, metal: { material: 'core.pbr_steel', tint: '#b8c0c8' }, facade: 'prefab', door: 'blast', glass: 'reinforced' } },
+];
+
+/**
+ * Retired tiles and the set pieces that replace them (content/setpieces/aliases.json): a map placing one plays the
+ * piece in the tile's place (map/setPieceAliases.ts), and MapMaker's Replace all writes it.
+ */
+export const SET_PIECE_TILE_ALIASES: readonly { tile: string; piece: string; since: string }[] = [
+  // design: The Catwalk Gantry (1 x 2 cells, levels 0-1: stairs up to a railed catwalk 4 m up on legs, meeting the level above at its north end) as the Catwalk Bridge (Up): the same cells, levels and ways in, open ground under the deck; its stair 4 m wide (the gantry's 2.4 m) and its deck 3 m (2.4 m).
+  { tile: 'military.gantry', piece: 'setpiece.catwalk_bridge_2', since: '2026-11-08' },
 ];

@@ -23,6 +23,7 @@ import { arcSentryIssues } from '../sim/mounts.ts';
 import { ziplineShapeIssues } from '../sim/zipline.ts';
 import { GLASS_EDGES } from '../sim/glass.ts';
 import { expandSetPieces, setPieceOverlapIssues, type SetPieceLibrary } from './setPieces.ts';
+import { withTileAliases } from './setPieceAliases.ts';
 import { builtInSetPieces } from './setPieceLibrary.ts';
 import { checkSetPieceDefinition } from './setPieceCheck.ts';
 
@@ -83,14 +84,17 @@ export function loadMap(json: string | unknown, catalog: TileCatalog = coreCatal
     };
   }
   const library = opts.library ?? builtInSetPieces();
-  const issues = validateMap(parsed.data, catalog, library);
+  // As played, a retired tile plays as the set piece that replaced it (setPieceAliases.ts); MapMaker keeps it as made
+  // and offers Replace all.
+  const doc = opts.forEditing ? parsed.data : withTileAliases(parsed.data);
+  const issues = validateMap(doc, catalog, library);
   if (issues.some((i) => i.severity === 'error') && !(opts.forEditing && opts.openWithErrors)) return { ok: false, issues };
   // MapMaker (`forEditing`) keeps the map as made: its set pieces as placements, its paths, and its own ground, which
   // it never lowers under a floor, so the parts, the laid paths and the ground kept under the floors follow a piece, a
   // path or a floor that moves (and the ground under one that goes comes back). As played: set pieces expanded into
   // their parts, on the ground as played (settle.ts withGroundAsPlayed: the paths laid in, the terrain kept under
   // every floor, the set pieces' too, and the props on the ground re-bedded on it), as MapMaker draws it.
-  const map = opts.forEditing ? parsed.data : withGroundAsPlayed(expandSetPieces(parsed.data, library, catalog).map, catalog);
+  const map = opts.forEditing ? parsed.data : withGroundAsPlayed(expandSetPieces(doc, library, catalog).map, catalog);
   return { ok: true, map, issues, migratedFrom: migrated.fromVersion };
 }
 

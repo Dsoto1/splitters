@@ -1599,10 +1599,10 @@
         {"box":[-4,-2.3,-4,4,-2,-1]}
       ],
       "solids": [
-        {"flight":{"axis":"z","dir":1,"from":-1,"across":[-1,1],"steps":8,"base":-2,"run":0.375,"floor":-2}}
+        {"flight":{"axis":"z","dir":1,"from":-2,"across":[-1,1],"steps":8,"base":-2,"run":0.5,"floor":-2}}
       ],
       "notes": {
-        "design": "Set pieces part 5: the ground (solid down to the arena floor, so nothing shows under it) along the local north, three tiers 1 m deep and 0.5 m high (a jump up, a step down; seats to fight from), then 3 m of the arena floor 2 m down. The stair (eight 0.25 m steps of 0.375 m, 2 m wide) climbs north up the middle on a floor of its own, so the terrain is carved under it too. Every box is a floor, so on terrain the tiers carve their own slot."
+        "design": "Set pieces part 5: the ground (solid down to the arena floor, so nothing shows under it) along the local north, three tiers 1 m deep and 0.5 m high (a jump up, a step down; seats to fight from), then 3 m of the arena floor 2 m down. The stair (eight 0.25 m steps of 0.5 m, 2 m wide) climbs north up the middle from the arena floor, on a floor of its own, so the terrain is carved under it too. Every box is a floor, so on terrain the tiers carve their own slot."
       }
     },
     {
