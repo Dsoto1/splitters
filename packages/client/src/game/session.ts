@@ -301,6 +301,8 @@ export class GameSession {
   private readonly abort = new AbortController();
   private slot = -1;
   private local: LocalPlayer | null = null;
+  /** This player has had a life in this match (the first one may start looking up or down: Play from here). */
+  private livedBefore = false;
   /** Spawns, portals, jump pads and ziplines read off movement, for their effects (gameplayFxWatch.ts). */
   private fxWatch: GameplayFxWatch | null = null;
   private map: MapDocument | null = null;
@@ -1948,7 +1950,10 @@ export class GameSession {
           if (!me.alive && this.local.alive && this.classesOn) this.input.classMenu = true;
           if (me.alive && !this.local.alive) {
             this.input.yaw = me.yaw;
-            this.input.pitch = 0;
+            // The first life looks where the server put it (MapMaker's Play from here: up or down as the camera
+            // looked; otherwise level); every later one level.
+            this.input.pitch = this.livedBefore ? 0 : me.pitch;
+            this.livedBefore = true;
             this.wantWeapon = 0;
           }
           this.local.reconcile(me, msg.ack, msg.me, msg.tick);

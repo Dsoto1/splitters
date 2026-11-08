@@ -438,6 +438,8 @@ export interface Combatant {
   spawnedAt?: number;
   /** Spawn protection runs until this tick (0: none, or dropped by firing): Match.shielded. */
   shieldUntil?: number;
+  /** MapMaker's Play from here: where this player's lives start (feet, facing) until play begins (Match.startHere). */
+  startAt?: { pos: Vec3; yaw: number; pitch: number };
 }
 
 interface Projectile {
@@ -1461,6 +1463,20 @@ export class Match {
   }
 
   /** `team`: the faction to join (default: the rules' team assignment). */
+  /**
+   * MapMaker's Play from here (editor/playFromHere.ts): put a player at a spot now, feet there and facing that way,
+   * and start any life before play begins there too (the countdown's). Once play begins, the spawn points again.
+   */
+  startHere(c: Combatant, at: { pos: Vec3; yaw: number; pitch: number }): void {
+    c.startAt = { pos: { ...at.pos }, yaw: at.yaw, pitch: at.pitch };
+    if (!c.alive) return;
+    // Out of a race car or the drop plane the spawn may have put them in: on foot, where asked.
+    this.leaveMount(c, false);
+    c.move = { pos: { ...at.pos }, velY: 0, grounded: false };
+    c.yaw = at.yaw;
+    c.pitch = at.pitch;
+  }
+
   addHuman(name: string, look?: string, team?: string | null): Combatant | null {
     const c = this.addCombatant('human', name, team);
     if (c) this.chooseLook(c, validLookId(look));
@@ -5840,13 +5856,15 @@ export class Match {
     const leader = this.fireteamSpawn(c);
     const squad = leader !== undefined ? leader : this.teams && this.rules.squadSpawn !== false && this.rng() < 0.7 ? this.squadSpawnSpot(c) : null;
     if (!squad && best) this.spawnUsed.set(best, this.tick);
-    const sp = squad ?? best ?? { pos: { x: 0, y: 0, z: 0 }, yaw: 0 };
+    // Play from here: until play begins, this player's lives start where MapMaker's camera was (startHere).
+    const at = c.startAt;
+    const sp = at ? { pos: at.pos, yaw: at.yaw } : (squad ?? best ?? { pos: { x: 0, y: 0, z: 0 }, yaw: 0 });
     if (rotating && c.faction) this.spawnSides.note(c.faction, sp.pos);
     c.streak = 0;
     c.order = undefined;
     c.move = { pos: { ...sp.pos }, velY: 0, grounded: false };
     c.yaw = sp.yaw;
-    c.pitch = 0;
+    c.pitch = at?.pitch ?? 0;
     c.health = c.maxHealth;
     c.armor = 0;
     c.alive = true;
@@ -5894,6 +5912,8 @@ export class Match {
     const roll = rl?.rollOf(c);
     this.pendingEvents.push({ e: 'spawn', s: c.slot, ...(relook ? { l: c.look } : {}), ...(roll ? { j: roll === 'jackpot' ? (1 as const) : (2 as const) } : {}), ...(rl ? { nx: rl.upcoming(c, 3) } : {}) });
     if (rl && c.kind === 'bot') rl.botChoose(c, this.botBodyStyle(c));
+    // Play from here: on foot where you asked (no grid, no plane).
+    if (at) return;
     // Race: straight into your vehicle, on the grid or at your last checkpoint.
     this.race?.onSpawn(c.slot);
     // Air drop maps start you (or always spawn you) in the transport plane.
@@ -6253,7 +6273,11 @@ export class Match {
     // Drop routes start from their first point as play begins (off the map's edge, for a run-in).
     for (const m of this.mounts) if (m.route) m.routeT0 = this.tick;
     this.phase = 'playing';
-    for (const c of this.combatants()) c.spawnedAt = this.tick;
+    for (const c of this.combatants()) {
+      c.spawnedAt = this.tick;
+      // Play from here: from now on, lives start at the spawn points.
+      c.startAt = undefined;
+    }
     this.phaseEndTick = this.roundEndTick();
     this.mode?.reset();
     this.zombies?.reset();
