@@ -11,7 +11,7 @@ import { checkSetPieceDefinition } from '../map/setPieceCheck.ts';
 import { builtInSetPieces } from '../map/setPieceLibrary.ts';
 import { ROLE_THEME_SLOT, SET_PIECE_GRID, piecesFor, placementPack, setPieceMirrorProblem, setPieceParts, setPiecePorts, tileMirrorAxis, type SetPieceLibrary, type SetPieceRolePack } from '../map/setPieces.ts';
 import { newId, type EditCommand } from './commands.ts';
-import { checkLayout, type PlacementCheck, type Selection } from './operations.ts';
+import { checkLayout, unusedDefsCommand, type PlacementCheck, type Selection } from './operations.ts';
 
 /** Whether set pieces fit where they would go (their footprints against tiles, other set pieces and the build limit). */
 export function checkSetPiecePlacement(doc: MapDocument, placements: readonly SetPiecePlacement[], ignoreIds: readonly string[] = [], catalog: TileCatalog = coreCatalog, library: SetPieceLibrary = builtInSetPieces()): PlacementCheck {
@@ -64,11 +64,14 @@ export function mirrorSetPieceCommand(doc: MapDocument, id: string, catalog: Til
   return updateSetPieceCommand(doc, p, { ...p, mirror: !p.mirror }, catalog, library);
 }
 
-/** Delete placements. */
+/** Delete placements (and the map's own definitions nothing places any more). */
 export function deleteSetPieceCommand(doc: MapDocument, ids: readonly string[]): EditCommand {
   const set = new Set(ids);
-  return { kind: 'removeSetPieces', setPieces: (doc.setPieces ?? []).filter((p) => set.has(p.id)) };
+  const remove: EditCommand = { kind: 'removeSetPieces', setPieces: (doc.setPieces ?? []).filter((p) => set.has(p.id)) };
+  const defs = unusedDefsCommand(doc, set);
+  return defs ? { kind: 'batch', commands: [remove, defs] } : remove;
 }
+
 
 /**
  * "Explode to tiles": the placement replaced by its parts as ordinary, editable tiles and entities, keeping their ids
@@ -84,7 +87,7 @@ export function explodeSetPieceCommand(doc: MapDocument, id: string, catalog: Ti
   const clash = [...tiles, ...entities].find((x) => taken.has(x.id));
   if (clash) return { error: `can't explode ${def.displayName}: the map already has a piece called ${clash.id}` };
   return {
-    command: { kind: 'batch', commands: [{ kind: 'removeSetPieces', setPieces: [p] }, { kind: 'addTiles', tiles }, { kind: 'addEntities', entities }] },
+    command: { kind: 'batch', commands: [{ kind: 'removeSetPieces', setPieces: [p] }, { kind: 'addTiles', tiles }, { kind: 'addEntities', entities }, ...[unusedDefsCommand(doc, new Set([p.id]))].filter((c): c is EditCommand => !!c)] },
     selection: { tiles: tiles.map((t) => t.id), entities: entities.map((e) => e.id) },
   };
 }
