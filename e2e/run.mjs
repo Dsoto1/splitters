@@ -1089,6 +1089,7 @@ async function editoruxFlow(browser) {
   await editorSetPieceChecks(browser);
   await editorGroundChecks(browser);
   await editorMeasureChecks(browser);
+  await editorTurnChecks(browser);
 }
 
 /**
@@ -1216,6 +1217,122 @@ async function editorMeasureChecks(browser) {
   await page.mouse.move(700, 790);
   await frames(page, 10);
   await shot('randomise');
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  await page.context().close();
+}
+
+/**
+ * MapMaker overhaul Phase 3 item 9 (docs/MAPMAKER_OVERHAUL_PLAN.md): turning by mouse. The rotate ring on the
+ * selection gizmo turns a prop and a spawn by their own steps, shows the angle while dragging, Esc cancels a drag, a
+ * drag is one undo step; the inspector's quick facings set the facing in one click (a tile's too). Screenshots go to
+ * E2E_SHOTS when set.
+ */
+async function editorTurnChecks(browser) {
+  const page = await (await browser.newContext({ viewport: { width: 1400, height: 820 } })).newPage();
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  const shot = (name) => (process.env.E2E_SHOTS ? page.screenshot({ path: `${process.env.E2E_SHOTS}/editorux-${name}.png` }).catch(() => {}) : Promise.resolve());
+  await page.goto(`${CLIENT}/?mode=editor&test=1`);
+  await page.waitForFunction(() => window.__editor, null, { timeout: T(60000) });
+  page.once('dialog', (d) => d.accept());
+  await newMap(page);
+  const doc = () => page.evaluate(() => window.__editor.doc);
+  const at = (x, y, z) => page.evaluate(([x, y, z]) => window.__editor.view.project({ x, y, z }), [x, y, z]);
+  const yawOf = async (id) => (await doc()).entities.find((e) => e.id === id)?.yaw;
+  const deg = (r) => Math.round((r * 180) / Math.PI);
+  await page.evaluate(() => window.__editor.view.focus({ x: 12, y: 0, z: 4 }));
+  await page.waitForFunction(() => {
+    const p = window.__editor.view.project({ x: 12, y: 0, z: 4 });
+    return Math.abs(p.x - innerWidth / 2) < innerWidth / 4 && Math.abs(p.y - innerHeight / 2) < innerHeight / 4;
+  }, null, { timeout: T(10000) }).catch(() => {});
+  await frames(page, 3);
+  // A barrel and a spawn, placed with their tools.
+  const place = async (tool, x, z) => {
+    await clickTool(page, tool);
+    const p = await at(x, 0, z);
+    await page.mouse.move(p.x, p.y);
+    await frames(page, 3);
+    await page.mouse.click(p.x, p.y);
+    await frames(page, 3);
+    return page.evaluate(() => window.__editor.selection.entities[0]);
+  };
+  const barrel = await place('[data-tool="prop:prop.barrel"]', 12, 0);
+  const spawn = await place('[data-tool="spawn"]', 12, 8);
+  // A point on the ring of the selected thing at `centre`, facing `a` (radians; 0 is +Z, a quarter turn +X).
+  const ringAt = async (centre, a) => {
+    const r = await page.evaluate(() => window.__editor.ringRadius());
+    return at(centre[0] + Math.sin(a) * r, centre[1], centre[2] + Math.cos(a) * r);
+  };
+  const select = async (id) => {
+    await page.evaluate((id) => {
+      window.__editor.setTool({ kind: 'select' });
+      window.__editor.setSelection({ tiles: [], entities: [id] });
+    }, id);
+    await frames(page, 3);
+  };
+  /** Drag the ring from facing `from` to `to` (radians) round `centre`, through the facings between; `finish` lets go (or `esc` cancels first). */
+  const dragRing = async (centre, from, to, { finish = true, esc = false, midShot = '' } = {}) => {
+    const a = await ringAt(centre, from);
+    await page.mouse.move(a.x, a.y);
+    await frames(page, 3);
+    const hot = await page.evaluate(() => window.__editor.ring.hot && /Drag the ring/.test(document.getElementById('ed-target').textContent));
+    await page.mouse.down();
+    for (let i = 1; i <= 6; i++) {
+      const p = await ringAt(centre, from + ((to - from) * i) / 6);
+      await page.mouse.move(p.x, p.y, { steps: 2 });
+    }
+    await frames(page, 3);
+    const mid = await page.evaluate(() => ({ label: document.getElementById('ed-ring-angle')?.hidden ? null : document.getElementById('ed-ring-angle')?.textContent, turn: window.__editor.ring.drag?.turn ?? null }));
+    if (midShot) await shot(midShot);
+    if (esc) await page.keyboard.press('Escape');
+    if (finish) await page.mouse.up();
+    await frames(page, 3);
+    return { hot, ...mid };
+  };
+
+  // The barrel (a prop: 15° steps): from the south (180°) round to the east (90°) is -90°.
+  await select(barrel);
+  check(await page.evaluate(() => !!window.__editor.view.scene.getMeshByName('gizmoRing')), 'a selected prop has the rotate ring on its gizmo');
+  const rev0 = await page.evaluate(() => window.__editor.history.revision);
+  const d1 = await dragRing([12, 0, 0], Math.PI, Math.PI / 2 + 0.03, { midShot: 'rotate-ring' });
+  check(d1.hot && d1.label === '-90°', `the ring lights under the pointer and shows the angle while dragging (${JSON.stringify(d1)})`);
+  check(Math.abs((await yawOf(barrel)) + Math.PI / 2) < 0.002 && (await page.evaluate(() => window.__editor.history.revision)) === rev0 + 1, `letting go turns the prop -90°, one edit (yaw ${await yawOf(barrel)})`);
+  await page.keyboard.press('Control+KeyZ');
+  check((await yawOf(barrel)) === 0, 'one undo takes the whole drag back');
+  // 20° of drag snaps to the prop's 15° step; with Shift, to its 5° step.
+  await dragRing([12, 0, 0], 0, (20 * Math.PI) / 180);
+  check(deg(await yawOf(barrel)) === 15, `a prop snaps to its 15° step (${deg(await yawOf(barrel))}°)`);
+  await page.keyboard.down('Shift');
+  await dragRing([12, 0, 0], 0, (22 * Math.PI) / 180);
+  await page.keyboard.up('Shift');
+  check(deg(await yawOf(barrel)) === 35, `with Shift, the finer 5° step (${deg(await yawOf(barrel))}°)`);
+  // Esc cancels a drag: nothing turns.
+  const before = await yawOf(barrel);
+  const esc = await dragRing([12, 0, 0], 0, Math.PI / 2, { esc: true });
+  check(esc.turn !== 0 && (await yawOf(barrel)) === before && !(await page.isVisible('#ed-ring-angle')), `Esc cancels the drag: no turn (${esc.label}, yaw ${await yawOf(barrel)})`);
+
+  // The spawn (45° steps): about 50° of drag turns it 45°.
+  await select(spawn);
+  const s0 = await yawOf(spawn);
+  await dragRing([12, 0, 8], 0, (50 * Math.PI) / 180);
+  check(deg((await yawOf(spawn)) - s0) === 45, `a spawn snaps to its 45° step (${deg((await yawOf(spawn)) - s0)}°)`);
+
+  // Quick facings: one click each, one undo step; the current one lit.
+  await page.click('#ed-inspector .ed-quick-facings [data-facing="180"]');
+  await frames(page, 2);
+  check(Math.abs(Math.abs(await yawOf(spawn)) - Math.PI) < 0.002 && (await page.getAttribute('#ed-inspector .ed-quick-facings [data-facing="180"]', 'class'))?.includes('active'), `the 180° quick facing turns the spawn round and lights (${await yawOf(spawn)})`);
+  await page.mouse.move(700, 790);
+  await shot('quick-facings');
+  await page.keyboard.press('Control+KeyZ');
+  check(deg(await yawOf(spawn)) === deg(s0) + 45, 'one undo puts the spawn back');
+  // A tile: the start room faces 90° in one click (quarter turns only, in place).
+  const room = (await doc()).classicStructure.tiles[0];
+  await page.evaluate((id) => window.__editor.setSelection({ tiles: [id], entities: [] }), room.id);
+  await frames(page, 2);
+  await page.click('#ed-inspector .ed-quick-facings [data-facing="90"]');
+  const turned = (await doc()).classicStructure.tiles.find((t) => t.id === room.id);
+  check(turned?.rotation === 1 && turned.x === room.x && turned.y === room.y, `a tile's quick facing turns it to 90° in place (${JSON.stringify(turned && [turned.x, turned.y, turned.rotation])})`);
+  await page.keyboard.press('Control+KeyZ');
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await page.context().close();
 }

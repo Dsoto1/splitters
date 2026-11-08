@@ -265,7 +265,11 @@ import {
   type SetPieceRole,
   type SetPieceExpansion,
   propDrop,
+  ringStep,
+  setFacingCommand,
   snapMeasurePoint,
+  turnByCommand,
+  turnLabel,
   type MeasurePoint,
   surfaceHit,
 } from '@tiletrigger/shared';
@@ -295,6 +299,8 @@ import {
 import { tileIcon } from './tileIcon.ts';
 import { raycastBoxes, type BoxHit } from './raycast.ts';
 import { MeasureTool } from './measureTool.ts';
+import { RotateRing } from './rotateRing.ts';
+import { quickFacings } from './quickFacings.ts';
 import { PropPlaceOptions } from './propPlaceOptions.ts';
 import { SurfaceBoxes } from './surfaceBoxes.ts';
 import { testMode } from '../testMode.ts';
@@ -682,6 +688,8 @@ export class EditorApp {
   private readonly propOpts: PropPlaceOptions;
   /** What props and the measure tool land on, per document version and view. */
   private readonly surfaces = new SurfaceBoxes();
+  /** The rotate ring on the selection gizmo: drag to turn (MapMaker overhaul Phase 3 item 9). */
+  private readonly ring: RotateRing;
   private level = 0;
   private showAll = false;
   /** The last placing tool, so the toolbar's Place button can pick it up again. */
@@ -765,6 +773,19 @@ export class EditorApp {
     });
     this.routes = new RouteTool({ doc: () => this.doc, run: (label, cmd) => this.run(label, cmd), toast: (t, bad) => this.toast(t, bad), scene: this.view.scene });
     this.measure = new MeasureTool({ scene: this.view.scene, project: (p) => this.view.projectInView(p), overlay: $('editor') });
+    this.ring = new RotateRing(
+      {
+        center: () => (this.selCount() ? this.selectionCenter() : null),
+        radius: () => this.ringRadius(),
+        step: (fine) => ringStep(this.doc, this.selection, fine),
+        project: (p) => this.view.projectInView(p),
+        onPlane: (y) => (this.pointerAt ? this.view.pickPlane(this.pointerAt.x, this.pointerAt.y, y) : null),
+        preview: (turn) => this.previewTurn(turn),
+        commit: (turn) => this.run(`Turn ${turnLabel(turn)}`, turnByCommand(this.doc, this.selection, turn, coreCatalog, this.placeLib)),
+        draw: (r) => this.view.setRing(r ? this.selectionCenter() : null, r),
+      },
+      $('editor'),
+    );
     this.propOpts = new PropPlaceOptions(testMode()?.seed ?? Math.floor(Math.random() * 2 ** 31), () => this.updateHover());
     // The top bar steps through its compact layouts until it fits, whenever its width or contents change.
     const top = $('ed-top');
@@ -1122,7 +1143,7 @@ export class EditorApp {
     $('ed-tb-place-what').textContent = this.lastPlace ? this.toolName(this.lastPlace) : '';
     const hints: Record<Tool['kind'], [string, string]> = {
       // One line per tool, in the same order: left-click · right-click (takes back what the tool does) · R · modifiers.
-      select: ['Select', 'Click picks · right-click: menu · drag moves · R turns (Shift+R a little) · Shift+click adds · Alt+click one piece of a build · Del deletes'],
+      select: ['Select', 'Click picks · right-click: menu · drag moves · R turns (Shift+R a little), or drag the ring round it · Shift+click adds · Alt+click one piece of a build · Del deletes'],
       erase: ['Erase', 'Click or drag deletes what is outlined in red (a whole moving build; Alt: one piece) · Ctrl+Z brings it back'],
       tile: ['Place', 'Click places the green piece · right-click removes a tile · R turns it 90° · PgUp/PgDn level'],
       setpiece: ['Place', 'Click places the set piece where it shows green (red says why not) · right-click removes a set piece · R turns it 90° · M mirrors it · PgUp/PgDn level'],
@@ -1188,6 +1209,54 @@ export class EditorApp {
     this.view.setOutlines(this.doc, this.selection.tiles, offset, bad, this.selectedPieceOutlines());
     this.view.setEntities(this.viewDoc, this.level, this.showAll, new Set(this.selection.entities));
     this.view.setGizmo(offset ? null : this.selectionCenter());
+    if (offset) this.view.setRing(null, null);
+    else this.ring.redraw();
+  }
+
+  /** The rotate ring's radius: clear of what is selected (its cells, the props' size), never under 2.2 m. */
+  private ringRadius(): number {
+    const c = this.selectionCenter();
+    if (!c) return 2.2;
+    const { cellSize } = this.doc.classicStructure;
+    let r = 0;
+    const reach = (x: number, z: number, half: number) => (r = Math.max(r, Math.hypot(x - c.x, z - c.z) + half));
+    const tiles = new Set(this.selection.tiles);
+    const ents = new Set(this.selection.entities);
+    for (const t of this.doc.classicStructure.tiles) if (tiles.has(t.id)) reach(t.x * cellSize, t.y * cellSize, cellSize * 0.71);
+    for (const e of this.doc.entities) {
+      if (!ents.has(e.id)) continue;
+      const size = e.kind === 'prop' ? (getProp(e.model)?.size ?? [1, 1, 1]).map((v) => v * e.scale) : 'size' in e && Array.isArray(e.size) ? e.size : [1, 1, 1];
+      reach(e.position[0], e.position[2], Math.hypot(size[0]!, size[2]!) / 2);
+    }
+    for (const id of this.selPieces()) {
+      const p = this.placementOf(id);
+      const def = p && this.pieceDef(p.piece);
+      if (p && def) for (const cell of setPieceFootprint(p, def)) reach(cell[0] * cellSize, cell[1] * cellSize, cellSize * 0.71);
+    }
+    return Math.max(2.2, r + 0.6);
+  }
+
+  /** The rotate ring's drag: the selection shown turned by `turn` (tiles and set pieces outlined where they'd land, red where they can't), or as it is. */
+  private previewTurn(turn: number | null): void {
+    if (turn === null) {
+      this.view.setOutlines(this.doc, this.selection.tiles, undefined, false, this.selectedPieceOutlines());
+      this.view.setEntities(this.viewDoc, this.level, this.showAll, new Set(this.selection.entities));
+      return;
+    }
+    const cmd = turnByCommand(this.doc, this.selection, turn, coreCatalog, this.placeLib);
+    if ('error' in cmd) {
+      this.view.setOutlines(this.doc, this.selection.tiles, undefined, true, this.selectedPieceOutlines());
+      return;
+    }
+    const after = applyCommand(this.doc, cmd);
+    const pieces = this.selPieces().flatMap((id) => {
+      const p = (after.setPieces ?? []).find((x) => x.id === id);
+      const o = p && this.pieceOutline(p);
+      return o ? [o] : [];
+    });
+    this.view.setOutlines(after, this.selection.tiles, undefined, false, pieces);
+    const ents = cmd.kind === 'batch' ? cmd.commands.find((c) => c.kind === 'updateEntities') : cmd.kind === 'updateEntities' ? cmd : undefined;
+    if (ents && this.selection.entities.length) this.view.setEntities(applyCommand(this.viewDoc, ents), this.level, this.showAll, new Set(this.selection.entities));
   }
 
   /** The selected set pieces' footprints and ports (a port facing a wall flagged). */
@@ -2046,6 +2115,17 @@ export class EditorApp {
     this.view.setEntityGhost(this.doc, objects?.key ?? null, objects?.entities ?? []);
     this.updatePieceGhost();
     if (this.tool.kind === 'select' || this.tool.kind === 'erase') {
+      // Select: the rotate ring round the selection lights under the pointer (and, held, turns it).
+      const onRing = this.tool.kind === 'select' && !this.drag && !this.looking && !this.marquee && (!!this.ring.drag || this.ring.hover(this.pointerAt));
+      if (onRing) {
+        this.view.setPickHighlight(this.doc, null, 'pick', this.history.revision);
+        $('ed-target').textContent = this.ring.drag ? `Turning ${turnLabel(this.ring.drag.turn)} · Shift: finer · Esc cancels` : 'Drag the ring to turn the selection (Shift: a finer step)';
+        this.view.setFaceHighlight(null, null);
+        this.view.setHoverCell(this.doc, null);
+        this.view.setGhost(this.doc, null, null, 0, true);
+        return;
+      }
+      if (this.tool.kind === 'erase' || this.drag || this.looking || this.marquee) this.ring.hover(null);
       const target = this.drag || this.looking || this.marquee ? null : this.pick();
       const cells = target?.kind === 'setpiece' ? (this.expansion.footprints.get(target.id) ?? []) : [];
       this.view.setPickHighlight(this.doc, target, this.tool.kind === 'erase' ? 'erase' : 'pick', this.history.revision, cells);
@@ -2275,6 +2355,11 @@ export class EditorApp {
         else this.view.fly(0, -dx * 0.05, dy * 0.05);
         return;
       }
+      if (this.ring.drag) {
+        this.updatePointer(e.clientX, e.clientY);
+        this.ring.move({ x: e.clientX, y: e.clientY }, e.shiftKey);
+        return this.updateHover();
+      }
       if (this.marquee) {
         const m = this.marquee;
         m.x1 = e.clientX;
@@ -2326,6 +2411,11 @@ export class EditorApp {
         return this.updateHover();
       }
       if (this.tool.kind !== 'select') return this.placeAtHover();
+      // The rotate ring round the selection: a drag turns it.
+      if (this.ring.begin({ x: e.clientX, y: e.clientY })) {
+        canvas().setPointerCapture(e.pointerId);
+        return this.updateHover();
+      }
       const hit = this.pick();
       if (!hit) {
         // Empty ground: drag a box to select what's in it (Shift adds to the selection); a plain click selects nothing.
@@ -2360,6 +2450,10 @@ export class EditorApp {
         return;
       }
       if (e.button === 0) {
+        if (this.ring.drag) {
+          this.ring.end();
+          return this.updateHover();
+        }
         if (this.brush) {
           this.brush = null;
           this.history.endStroke();
@@ -2387,6 +2481,7 @@ export class EditorApp {
       if (this.active && e.target === canvas()) e.preventDefault();
     });
     window.addEventListener('blur', () => {
+      this.ring.cancel();
       this.keys.clear();
       this.looking = null;
       this.marquee = null;
@@ -2470,6 +2565,11 @@ export class EditorApp {
           break;
         case 'KeyV':
         case 'Escape':
+          // Esc drops a turn by the ring mid-drag (nothing turns).
+          if (e.code === 'Escape' && this.ring.cancel()) {
+            this.updateHover();
+            break;
+          }
           // Esc clears a measurement first (the measure tool stays in hand).
           if (e.code === 'Escape' && this.measure.clear() && this.tool.kind === 'measure') {
             this.updateHover();
@@ -4144,6 +4244,7 @@ export class EditorApp {
       row('Y', numberInput(p.y, 1, (v) => update('Move set piece', { ...p, y: v }))),
       row('Level', numberInput(p.z, 1, (v) => update('Move set piece', { ...p, z: v }))),
       row('Rotation', text(`${p.rotation * 90}° (R turns it)`)),
+      this.quickFacings({ tiles: [], entities: [], setPieces: [p.id] }, (p.rotation * Math.PI) / 2),
     );
     // Ports: where it meets what's round it; one a wall stands in is a warning (and red on its outline).
     const states = setPiecePortStates(p, def, this.mapBoxes());
@@ -4614,6 +4715,7 @@ export class EditorApp {
         row('Y', numberInput(t.y, 1, (v) => set({ y: v }))),
         row('Level', numberInput(t.z, 1, (v) => set({ z: v }))),
         row('Rotation', text(`${t.rotation * 90}°`)),
+        this.quickFacings({ tiles: [t.id], entities: [] }, (t.rotation * Math.PI) / 2),
       );
       const def = coreCatalog.get(t.tile);
       const wallsHead = document.createElement('h3');
@@ -4770,6 +4872,13 @@ export class EditorApp {
   }
 
   /** Inspector fields for one entity: position, facing and its kind's settings. */
+  /** The inspector's quick facings for one thing: 0°, 90°, 180°, 270° in one click (one undo step each). */
+  private quickFacings(sel: Selection, facing: number): HTMLElement {
+    return quickFacings(facing, (deg) => {
+      this.run(`Face ${deg}°`, setFacingCommand(this.doc, sel, deg, coreCatalog, this.placeLib));
+    });
+  }
+
   private entityInspector(el: HTMLElement, e: MapEntity): void {
     const doc = this.doc;
     const update = (label: string, patch: Partial<MapEntity>) => this.run(label, { kind: 'updateEntities', before: [e], after: [{ ...e, ...patch } as MapEntity] });
@@ -4793,7 +4902,7 @@ export class EditorApp {
       row('Height', numberInput(e.position[1], 0.25, (v) => setPos(1, v))),
       row('Z', numberInput(e.position[2], 0.5, (v) => setPos(2, v))),
     );
-    if ('yaw' in e) el.append(row('Facing °', numberInput(Math.round((e.yaw * 180) / Math.PI), Math.round((yawStep(e.kind) * 180) / Math.PI), (deg) => update('Turn', { yaw: normalizeYaw((deg * Math.PI) / 180) }))));
+    if ('yaw' in e) el.append(row('Facing °', numberInput(Math.round((e.yaw * 180) / Math.PI), Math.round((yawStep(e.kind) * 180) / Math.PI), (deg) => update('Turn', { yaw: normalizeYaw((deg * Math.PI) / 180) }))), this.quickFacings({ tiles: [], entities: [e.id] }, e.yaw));
 
     const toggle = (label: string, value: boolean, patch: (v: boolean) => Partial<MapEntity>) => {
       const c = document.createElement('input');
