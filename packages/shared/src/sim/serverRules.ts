@@ -4,6 +4,7 @@ import { teamCount } from './hostRules.ts';
 import { isCoopMode, isTwoTeamMode } from './matchSetup.ts';
 import { MAX_TEAMS } from './npc.ts';
 import { BOT_CAST_CHOICES } from '../content/botThemes.ts';
+import { DEFAULT_FIRETEAM_SIZE, fireteamMode, fireteamSize } from './fireteams.ts';
 import { WEAPON_SET_DEFS, WEAPON_SET_IDS, isWeaponSetId } from './weaponSets.ts';
 import { GAME_MODES, MODE_LABELS, SCORE_LIMIT_MAX, isGameMode, isTeamMode, rulesForMode, type GameMode, type MatchRules } from './rules.ts';
 
@@ -126,6 +127,10 @@ export const SERVER_RULES: readonly RuleSpec[] = [
   {
     key: 'leaders', label: 'Team leaders', help: 'Each team has a leader (gold star) whose orders every bot on the team follows. Leader hunt (Team Deathmatch): downing the enemy leader scores 3 extra.', type: choice(['off', 'Off'], ['on', 'On'], ['vip', 'Leader hunt']), apply: 'next',
     modes: teamMode, read: (r) => (r.leaders === 'vip' ? 'vip' : r.leaders ? 'on' : 'off'), write: (r, v) => (v === 'off' ? delete r.leaders : (r.leaders = v === 'vip' && r.mode === 'core.tdm' ? 'vip' : true)),
+  },
+  {
+    key: 'fireteams', label: 'Fireteams', help: 'Every player leads a squad of bots of this size (the leader included), ordered by the order wheel (hold B); bot-led squads of the same size fill each team.', type: choice(['off', 'Off'], ['4', 'Squads of 4'], ['5', 'Squads of 5'], ['6', 'Squads of 6']), apply: 'next',
+    modes: fireteamMode, read: (r) => (r.fireteams ? String(r.fireteams) : 'off'), write: (r, v) => (v === 'off' ? delete r.fireteams : (r.fireteams = fireteamSize(Number(v) || DEFAULT_FIRETEAM_SIZE))),
   },
   {
     key: 'squadspawn', label: 'Spawn on teammates', help: 'Team modes: respawn beside a teammate who is out of the fight.', type: onOff, apply: 'next',
@@ -387,7 +392,7 @@ export function applyServerRules(rules: MatchRules, sr: ServerRules, map: MapDoc
 
 /** The MatchRules fields each "next match" rule writes, put back to the base's. */
 const FIELDS: Record<string, (keyof MatchRules)[]> = {
-  assign: ['teamAssign'], teamnames: ['teamNames'], teamcolors: ['teamColors'], leaders: ['leaders'], squadspawn: ['squadSpawn'], streaks: ['killstreaks'], sizes: ['bodySizes'], stats: ['characterStats'], randomchars: ['randomCharacters'], gravity: ['gravity'], fall: ['fallDamage'],
+  assign: ['teamAssign'], teamnames: ['teamNames'], teamcolors: ['teamColors'], leaders: ['leaders'], fireteams: ['fireteams'], squadspawn: ['squadSpawn'], streaks: ['killstreaks'], sizes: ['bodySizes'], stats: ['characterStats'], randomchars: ['randomCharacters'], gravity: ['gravity'], fall: ['fallDamage'],
   lethality: ['lethality'], ballistics: ['ballistics'], emotes: ['emotes'], weapons: ['weapons'], classes: ['classes', 'classLimit'], vehicles: ['vehicleDamage'], flagreturn: ['flagReturnSeconds'], hill: ['hillSeconds'],
   fortbuild: ['fortBuildSeconds'], fortcombat: ['fortCombatSeconds'], fortcycles: ['fortCycles'], fortbudget: ['fortBudget'], laps: ['raceLaps'], racevehicle: ['raceVehicle'], racecombat: ['raceCombat'],
 };

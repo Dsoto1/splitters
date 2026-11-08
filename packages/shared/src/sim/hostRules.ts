@@ -2,6 +2,7 @@ import type { MapDocument } from '../map/schema.ts';
 import type { HostRulesPatch } from '../protocol.ts';
 import { MAX_PLAYER_SLOTS } from './constants.ts';
 import { limitsScale, mapPlayerCaps, suggestedLimits } from './matchSetup.ts';
+import { fireteamMode } from './fireteams.ts';
 import { MODE_LABELS, isTeamMode, isTwoTeamMode, mapCanRun, rulesForMap, rulesForMode, type GameMode, type MatchRules } from './rules.ts';
 
 /** Rules that aren't about the map or the mode: they stay as the host set them when the map changes. */
@@ -34,6 +35,7 @@ export function rulesForTravel(prev: MatchRules, map: MapDocument, fill: number,
   const sameMode = base.mode === prev.mode;
   if (sameMode) for (const k of SAME_MODE) put(k);
   if (prev.leaders && isTeamMode(base.mode)) out.leaders = prev.leaders;
+  if (prev.fireteams && fireteamMode(base.mode)) out.fireteams = prev.fireteams;
   if (classesClash(out)) delete out.classes;
   const teams = teamCount(out);
   // The map's most for the mode (MapMaker's player caps, else the automatic ones): a smaller map in the rotation

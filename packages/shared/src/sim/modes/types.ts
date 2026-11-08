@@ -129,6 +129,11 @@ export interface ModeLogic {
   // Optional hooks (Breakthrough).
   /** The spawn points this player may use now (Breakthrough: its side's group for the sector in play); null: the match's usual choice. */
   spawnSpots?(c: Combatant): readonly SpawnSpot[] | null;
+  /**
+   * Fireteams' "Defend the objective" (sim/fireteams.ts): the mode's objective for `team` nearest `near` (the hill in
+   * play, the sector's objectives), or null for none. Absent: the side's trips to hold, else any of its trips.
+   */
+  defendSpot?(team: string, near: Vec3): Vec3 | null;
   /** May this player spawn beside this teammate (squad spawn)? Absent: yes. */
   spawnBeside?(c: Combatant, mate: Combatant): boolean;
   /** Seconds the match clock shows while in play (Breakthrough: the sector clock); null: the match's own. */
