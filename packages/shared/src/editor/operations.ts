@@ -271,12 +271,13 @@ export function yawStep(kind: MapEntity['kind'] | 'tile', fine = false): number 
 }
 
 /**
- * Turn the selection. One thing (or one moving build) turns in place by its kind's step (yawStep,
+ * Turn the selection. `angle` (radians, the rotate ring and the inspector's quick facings) turns it by that much;
+ * otherwise by a step: one thing (or one moving build) turns in place by its kind's step (yawStep,
  * Shift: `fine`); a mover's build turns about the mover. A group (tiles, or several things) turns
  * as one about its centre (routes, being offsets, turn with their marker): a quarter turn, or with `fine` the finer step when nothing in it is
  * tied to the grid (tiles, zones, liquids).
  */
-export function rotateCommand(doc: MapDocument, sel: Selection, catalog: TileCatalog = coreCatalog, opts: { fine?: boolean; library?: SetPieceLibrary } = {}): EditCommand | { error: string } {
+export function rotateCommand(doc: MapDocument, sel: Selection, catalog: TileCatalog = coreCatalog, opts: { fine?: boolean; library?: SetPieceLibrary; angle?: number } = {}): EditCommand | { error: string } {
   const { tiles: selTiles, entities, setPieces } = selected(doc, sel);
   if (!selTiles.length && !entities.length && !setPieces.length) return { error: 'nothing selected' };
   // Set pieces turn like tiles: about a cell, by quarter turns (each about its anchor when it turns alone).
@@ -291,11 +292,13 @@ export function rotateCommand(doc: MapDocument, sel: Selection, catalog: TileCat
   let angle: number;
   let pivot: [number, number];
   if (single) {
-    angle = yawStep(entities[0]!.kind, opts.fine);
+    angle = opts.angle ?? yawStep(entities[0]!.kind, opts.fine);
     pivot = [entities[0]!.position[0], entities[0]!.position[2]];
   } else {
-    if (opts.fine && gridBound) return { error: 'tiles, zones and liquids turn in quarter turns' };
-    angle = opts.fine ? yawStep('block', true) : Math.PI / 2;
+    if (opts.fine && gridBound && opts.angle === undefined) return { error: 'tiles, zones and liquids turn in quarter turns' };
+    angle = opts.angle ?? (opts.fine ? yawStep('block', true) : Math.PI / 2);
+    // Turned by a given angle (the rotate ring, quick facings), what is tied to the grid takes whole quarter turns only.
+    if (gridBound && Math.abs(angle - Math.round(angle / (Math.PI / 2)) * (Math.PI / 2)) > 1e-6) return { error: 'tiles, set pieces, zones and liquids turn in quarter turns' };
     if (oneBuild) pivot = [movers[0]!.position[0], movers[0]!.position[2]];
     else if (tiles.length) {
       // About a cell (or a cell corner) so every tile lands on a whole cell.
@@ -328,7 +331,7 @@ export function rotateCommand(doc: MapDocument, sel: Selection, catalog: TileCat
 
   const turn4 = (x: number, y: number, rotation: number) => {
     const [wx, wz] = about(x * cellSize, y * cellSize);
-    return { x: Math.round(wx / cellSize), y: Math.round(wz / cellSize), rotation: ((rotation + quarters) % 4) as Rotation };
+    return { x: Math.round(wx / cellSize), y: Math.round(wz / cellSize), rotation: ((((rotation + quarters) % 4) + 4) % 4) as Rotation };
   };
   const rotated = selTiles.map((t) => ({ ...t, ...turn4(t.x, t.y, t.rotation) }));
   const turnedPieces = setPieces.map((p) => ({ ...p, ...turn4(p.x, p.y, p.rotation) }));

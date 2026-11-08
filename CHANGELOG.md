@@ -8,6 +8,27 @@ made only on a commit that passed CI on a check branch.
 
 ## Unreleased
 
+**MapMaker: measure, props on surfaces, Randomise** (MapMaker overhaul Phase 1, items 3 and 4):
+- **Measure tool** (U, or Measure in the tool bar): click two points for the distance, the height difference and the
+  slope (degrees and percent); a third click chains a path and shows its total. It snaps to the grid, to surfaces and
+  to objects' tops (Ctrl or Alt: no snap) and says whether a player could walk, jump or not make the step and the gap
+  (from the real movement numbers). Right-click takes a point back; the line and its numbers stay until the next
+  measure or Esc. Editor-only: nothing goes in the map.
+- **Props land on what's under the pointer:** a tabletop, a roof, a ledge or the ground (bedded into it), as the
+  see-through preview shows; against a wall, at its foot.
+- **Randomise** (Props tab, off by default): each placement gets a random turn (any way, or within ±90°, ±45°, ±15°),
+  size (±5 to ±30 %, within the prop's allowed scale) and variant where the prop has them. The preview shows the
+  next one, so what you see is what you place.
+
+**MapMaker: turning by mouse** (MapMaker overhaul Phase 3, item 9; owner, 2026-11-07):
+- **A rotate ring** round the selection's gizmo: drag it to turn the selection about its centre. It snaps by the
+  selected thing's own step, as R does (props and vehicles 15°, spawns 45°, the rest 90°; Shift: the finer step);
+  tiles, set pieces, zones and water keep to quarter turns. The angle shows by the pointer while you drag, Esc cancels,
+  and one drag is one undo step.
+- **Quick facings** in the inspector: 0°, 90°, 180°, 270° in one click, for anything with a facing (tiles and set
+  pieces too).
+- Fixed: turning tiles or set pieces the other way (a negative quarter turn) could give them a rotation out of range.
+
 **Fireteams, part 1** (owner-approved, 2026-11-08; docs/FIRETEAMS_PLAN.md):
 - A new **variant** for Team Deathmatch, Capture the Flag, King of the Hill, Bomb, Hostage and Breakthrough (Match
   setup's Variants row; servers `rules fireteams 5`). The host picks the **squad size**: 4, 5 or 6, you included.
