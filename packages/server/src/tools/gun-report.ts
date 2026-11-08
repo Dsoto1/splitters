@@ -255,8 +255,9 @@ class Lab {
   }
 
   /**
-   * The damage model's kill (`ideal`: the gunplay cone off): the fewest rounds that kill with the trigger let go after
-   * them (rounds still in flight, splash and burns counted), and the time that kill took. A multi-pellet weapon's
+   * The damage model's kill (`ideal`: the gunplay cone off): the time from the first round to the kill with the
+   * trigger held, and the fewest rounds that kill with the trigger let go after them (rounds still in flight, splash
+   * and burns counted). A multi-pellet weapon's
    * pattern is random, so it is the median over `trials` seeds. `one`: what a single round did (unarmoured: health
    * lost, at most the target's 100).
    */
@@ -272,14 +273,16 @@ class Lab {
       let found = hold.ticks !== null;
       if (found) {
         // ...then fewer rounds, released after them, while that still kills.
-        let best = { ticks: hold.ticks!, stk: hold.rounds };
+        // The kill's time is the held trigger's (a burn or a round in flight finishing it off can't beat it).
+        let stk = hold.rounds;
         for (let n = hold.rounds - 1; n >= 1; n--) {
           this.reset(def, dist, armour, s * 104729, true);
           const k = this.kill(aim, 'ideal', n);
           if (k.ticks === null) break;
-          best = { ticks: k.ticks, stk: n };
+          // (A burst trigger finishes its burst: the rounds that actually left.)
+          stk = k.rounds;
         }
-        runs.push(best);
+        runs.push({ ticks: hold.ticks!, stk });
       }
       if (s === 1) {
         this.reset(def, dist, armour, s * 104729, true);

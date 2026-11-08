@@ -2752,25 +2752,25 @@
    "ttk": {
     "10": {
      "unarmoured.body": {
-      "ideal": 5400,
+      "ideal": 3600,
       "stk": 1,
       "hip": 3600,
       "ads": 3600
      },
      "unarmoured.head": {
-      "ideal": 5517,
+      "ideal": 3600,
       "stk": 1,
       "hip": 3600,
       "ads": 3600
      },
      "armoured.body": {
-      "ideal": 7333,
+      "ideal": 6283,
       "stk": 2,
       "hip": 6283,
       "ads": 6283
      },
      "armoured.head": {
-      "ideal": 7550,
+      "ideal": 6283,
       "stk": 2,
       "hip": 6283,
       "ads": 6283
@@ -2778,25 +2778,25 @@
     },
     "25": {
      "unarmoured.body": {
-      "ideal": 5417,
+      "ideal": 4100,
       "stk": 1,
       "hip": 4100,
       "ads": 4100
      },
      "unarmoured.head": {
-      "ideal": 5533,
+      "ideal": 4117,
       "stk": 1,
       "hip": 4117,
       "ads": 4117
      },
      "armoured.body": {
-      "ideal": 7600,
+      "ideal": 6500,
       "stk": 2,
       "hip": 6500,
       "ads": 6500
      },
      "armoured.head": {
-      "ideal": 7817,
+      "ideal": 6500,
       "stk": 2,
       "hip": 6500,
       "ads": 6500
@@ -2804,25 +2804,25 @@
     },
     "50": {
      "unarmoured.body": {
-      "ideal": 5767,
+      "ideal": 4983,
       "stk": 1,
       "hip": 4983,
       "ads": 4983
      },
      "unarmoured.head": {
-      "ideal": 5850,
+      "ideal": 5000,
       "stk": 1,
       "hip": 5000,
       "ads": 5000
      },
      "armoured.body": {
-      "ideal": 7317,
+      "ideal": 6533,
       "stk": 3,
       "hip": 6533,
       "ads": 6533
      },
      "armoured.head": {
-      "ideal": 7483,
+      "ideal": 6717,
       "stk": 3,
       "hip": 6717,
       "ads": 6717
@@ -2830,13 +2830,13 @@
     },
     "100": {
      "unarmoured.body": {
-      "ideal": 7100,
+      "ideal": 6333,
       "stk": 1,
       "hip": 6333,
       "ads": 6333
      },
      "unarmoured.head": {
-      "ideal": 7150,
+      "ideal": 6383,
       "stk": 1,
       "hip": 6383,
       "ads": 6383
@@ -2856,18 +2856,18 @@
     }
    },
    "sweep": {
-    "5": 5400,
-    "10": 5400,
-    "15": 5417,
-    "20": 5417,
-    "25": 5417,
-    "30": 5433,
-    "35": 5500,
-    "40": 5583,
-    "50": 5767,
-    "60": 5967,
-    "75": 6267,
-    "100": 7100,
+    "5": 3433,
+    "10": 3600,
+    "15": 3767,
+    "20": 3933,
+    "25": 4100,
+    "30": 4267,
+    "35": 4450,
+    "40": 4617,
+    "50": 4983,
+    "60": 5050,
+    "75": 5500,
+    "100": 6333,
     "125": null,
     "150": null
    },
@@ -3249,25 +3249,25 @@
     "10": {
      "unarmoured.body": {
       "ideal": 533,
-      "stk": 4,
+      "stk": 6,
       "hip": 533,
       "ads": 533
      },
      "unarmoured.head": {
       "ideal": 133,
-      "stk": 1,
+      "stk": 3,
       "hip": 133,
       "ads": 133
      },
      "armoured.body": {
       "ideal": 1333,
-      "stk": 10,
+      "stk": 12,
       "hip": 1333,
       "ads": 1333
      },
      "armoured.head": {
       "ideal": 533,
-      "stk": 4,
+      "stk": 6,
       "hip": 533,
       "ads": 533
      }
@@ -3275,25 +3275,25 @@
     "25": {
      "unarmoured.body": {
       "ideal": 550,
-      "stk": 4,
+      "stk": 6,
       "hip": 550,
       "ads": 550
      },
      "unarmoured.head": {
       "ideal": 150,
-      "stk": 1,
+      "stk": 3,
       "hip": 150,
       "ads": 150
      },
      "armoured.body": {
       "ideal": 1350,
-      "stk": 10,
+      "stk": 12,
       "hip": 1350,
       "ads": 1350
      },
      "armoured.head": {
       "ideal": 550,
-      "stk": 4,
+      "stk": 6,
       "hip": 550,
       "ads": 550
      }
@@ -3327,25 +3327,25 @@
     "100": {
      "unarmoured.body": {
       "ideal": 967,
-      "stk": 7,
+      "stk": 9,
       "hip": 1167,
       "ads": 967
      },
      "unarmoured.head": {
       "ideal": 500,
-      "stk": 4,
+      "stk": 5,
       "hip": 567,
       "ads": 500
      },
      "armoured.body": {
       "ideal": 2100,
-      "stk": 16,
+      "stk": 17,
       "hip": null,
       "ads": 2167
      },
      "armoured.head": {
       "ideal": 967,
-      "stk": 7,
+      "stk": 9,
       "hip": null,
       "ads": 1000
      }
@@ -3368,20 +3368,20 @@
     "150": 1033
    },
    "sweepStk": {
-    "5": 4,
-    "10": 4,
-    "15": 4,
-    "20": 4,
-    "25": 4,
-    "30": 4,
-    "35": 4,
+    "5": 6,
+    "10": 6,
+    "15": 6,
+    "20": 6,
+    "25": 6,
+    "30": 6,
+    "35": 6,
     "40": 7,
     "50": 7,
     "60": 7,
-    "75": 7,
-    "100": 7,
-    "125": 7,
-    "150": 7
+    "75": 9,
+    "100": 9,
+    "125": 9,
+    "150": 9
    },
    "firstHit": {
     "10": {
@@ -5149,25 +5149,25 @@
    "ttk": {
     "10": {
      "unarmoured.body": {
-      "ideal": 6567,
+      "ideal": 2750,
       "stk": 3,
       "hip": 2750,
       "ads": 2750
      },
      "unarmoured.head": {
-      "ideal": 6617,
+      "ideal": 2800,
       "stk": 3,
       "hip": 2800,
       "ads": 2800
      },
      "armoured.body": {
-      "ideal": 6750,
+      "ideal": 5550,
       "stk": 9,
       "hip": 5550,
       "ads": 5550
      },
      "armoured.head": {
-      "ideal": 6817,
+      "ideal": 5600,
       "stk": 9,
       "hip": 5600,
       "ads": 5600
@@ -5253,9 +5253,9 @@
     }
    },
    "sweep": {
-    "5": 5933,
-    "10": 6567,
-    "15": 7267,
+    "5": 2200,
+    "10": 2750,
+    "15": 3400,
     "20": null,
     "25": null,
     "30": null,
@@ -7339,7 +7339,7 @@
     }
    },
    "sweep": {
-    "5": 3567,
+    "5": 900,
     "10": null,
     "15": null,
     "20": null,
