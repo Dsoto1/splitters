@@ -3242,7 +3242,14 @@ async function teamKillCheck(page) {
   // What the page draws for it: effects, HUD lines and the kill marker, recorded as they happen.
   await page.evaluate(() => {
     const cs = window.__cs;
-    const seen = (window.__tkSeen = { fx: [], msgs: [], marker: false });
+    const seen = (window.__tkSeen = { fx: [], msgs: [], marker: false, feed: [] });
+    // Each kill-feed line as it is drawn (it fades after 5 s): who, the TK flag passed, the line's class and text.
+    const kill = cs.hud.kill.bind(cs.hud);
+    cs.hud.kill = (...a) => {
+      kill(...a);
+      const line = document.getElementById('feed').firstElementChild;
+      seen.feed.push({ killer: a[0], victim: a[1], tk: !!line?.classList.contains('tk'), text: line?.textContent.trim() ?? '', edge: line ? getComputedStyle(line).borderRightColor : '' });
+    };
     const fx = cs.view.playGameplayFx.bind(cs.view);
     cs.view.playGameplayFx = (name, ...rest) => (seen.fx.push(name), fx(name, ...rest));
     const msg = cs.hud.showMessage.bind(cs.hud);
@@ -3269,21 +3276,21 @@ async function teamKillCheck(page) {
     return { tick: m.tick, kills0: me.kills, slot: mate.slot };
   });
   if (!shot) return { dead: false };
-  // The kill reaches the page: a feed line naming the teammate.
-  const name = await page.evaluate((slot) => window.__cs.hud.name(slot), shot.slot);
-  await page.waitForFunction((n) => [...document.querySelectorAll('#feed div')].some((d) => d.textContent.includes(n)), name, { timeout: T(10000) }).catch(() => {});
-  const inMatch = await sim(page, (m, me) => ({ dead: !globalThis.__ffMate.alive, kills: me.kills, streak: me.streak ?? 0 }));
-  const page_ = await page.evaluate((n) => {
-    const line = [...document.querySelectorAll('#feed div')].find((d) => d.textContent.includes(n));
+  // The kill reaches the page: its feed line drawn.
+  await page.waitForFunction((slot) => window.__tkSeen.feed.some((f) => f.victim === slot), shot.slot, { timeout: T(15000) }).catch(() => {});
+  const inMatch = await sim(page, (m, me) => ({ kills: me.kills, streak: me.streak ?? 0 }));
+  const page_ = await page.evaluate((slot) => {
     const seen = window.__tkSeen;
+    const line = seen.feed.find((f) => f.victim === slot) ?? null;
     return {
-      feed: line ? { tk: line.classList.contains('tk'), text: line.textContent.trim(), edge: getComputedStyle(line).borderRightColor } : null,
+      dead: !!line,
+      feed: line,
       bursts: seen.fx.filter((f) => f === 'streak').length,
       inARow: seen.msgs.some((t) => /in a row|kill streak/i.test(t)),
       marker: seen.marker || document.getElementById('hitmarker').classList.contains('kill'),
       lifeKills: window.__cs.lifeKills.get(window.__cs.slot) ?? 0,
     };
-  }, name);
+  }, shot.slot);
   return { ...inMatch, kills0: shot.kills0, ...page_ };
 }
 
