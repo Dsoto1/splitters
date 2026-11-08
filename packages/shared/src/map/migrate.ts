@@ -69,6 +69,9 @@ export const MIGRATIONS: ReadonlyMap<number, Migration> = new Map<number, Migrat
   // spawn group); a team setup of up to 48 a team and recommended players up to 96 (large maps). Additive: v28 data
   // is valid as is.
   [28, (doc) => ({ ...doc })],
+  // v29 -> v30: optional `metadata.cardCamera` (the menu card shot's camera, MapMaker's Card shot). Absent = the
+  // automatic camera choice, as before: v29 data is valid as is.
+  [29, (doc) => ({ ...doc })],
 ]);
 
 /** The race track's own settings as they were in v22 (missing = the v22 defaults). */

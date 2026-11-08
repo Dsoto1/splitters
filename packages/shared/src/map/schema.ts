@@ -19,7 +19,8 @@ import { WEAPON_CATEGORIES } from '../sim/weapons.ts';
  * lights and blocks, pitched blocks, team-only buttons/doors/zones and tinted liquids, v21 vehicles that ride on water, v22 the map's picture: `metadata.thumbnail`
  * and the camera it was taken from, `metadata.thumbnailCamera`, v23 one path primitive, v24 random weapon pickups:
  * a pickup's `random` category and `keepFixed`, v25 the `zipline` entity, v27 set pieces, v28 the weapon set, v29 Breakthrough's
- * `sector` and `objective` entities and spawn groups: a spawn's `sector` and `side`).
+ * `sector` and `objective` entities and spawn groups: a spawn's `sector` and `side`, v30 the menu card shot's camera,
+ * `metadata.cardCamera`).
  *
  * Maps are data, never code. Every placed item carries a stable string ID and
  * references catalog content by content ID. Domains the spec reserves
@@ -48,6 +49,13 @@ export const MapThumbnail = z
   .regex(/^data:image\/(jpeg|webp);base64,[A-Za-z0-9+/]+={0,2}$/, 'the map picture must be an image captured in MapMaker');
 /** Where a map's picture is taken from: the camera position and the point it looks at (world metres). */
 export const ThumbnailCamera = z.object({ position: Vec3Tuple, target: Vec3Tuple });
+/**
+ * The menu card shot's camera (v30; MapMaker → Map properties → Card shot, editor/cardShot.ts): where the camera
+ * stands (world metres) and where it looks: yaw (radians, 0 along +Z, as everywhere) and pitch (radians, up
+ * positive). The card picture (maps/shots/<id>.jpg) is rendered from it by tools/content/capture-map-shots.mjs.
+ */
+export const CardCamera = z.object({ position: Vec3Tuple, yaw: z.number().finite(), pitch: z.number().min(-1.55).max(1.55) });
+export type CardCamera = z.infer<typeof CardCamera>;
 
 /**
  * A map's published identity (map/identity.ts): stamped on export (later on
@@ -98,6 +106,11 @@ export const MapMetadata = z.object({
    * (tools/content/capture-map-shots.mjs; map scripts: `m.thumbnailCamera()`).
    */
   thumbnailCamera: ThumbnailCamera.optional(),
+  /**
+   * The menu card shot's camera (v30), set in MapMaker from the view (eye level by default). No picture is stored:
+   * the capture tooling renders the card picture from it (built-in maps). Absent: the automatic camera choice.
+   */
+  cardCamera: CardCamera.optional(),
   /** Map ID, version ID and content hash, stamped when the map is exported (map/identity.ts). */
   release: MapRelease.optional(),
   /**

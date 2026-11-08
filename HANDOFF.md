@@ -77,12 +77,23 @@ The workflow is unchanged (CLAUDE.md):
 - **Disk:** each session's container is its own; remove a worktree once its branch has landed.
 
 - Claimed: `packages/client/src/editor/**` and `packages/shared/src/editor/**` (Phase 3 part A, set pieces part 5), MapMaker lane, 2026-11-08.
-- Claimed: the next `MAP_FORMAT_VERSION` bump (the card-shot camera, `wip/mapmaker-p3a`), MapMaker lane, 2026-11-08.
-- Claimed: `maps/sandfall_colosseum.json` (rebuild), `maps/step_temple.json` and `maps/shingle_point.json` (card camera only), MapMaker lane, 2026-11-08.
+- Claimed: `maps/sandfall_colosseum.json` (rebuild), MapMaker lane, 2026-11-08.
 - Claimed: the map schema's backdrop Scenery list (a new value `volcano`, no format bump; `wip/mapmaker-sandfall`), MapMaker lane, 2026-11-08.
 - Claimed: `maps/test_coverage.json` (the new set pieces and Arena kit tiles, through MapMaker; `wip/mapmaker-setpieces`), MapMaker lane, 2026-11-08.
+- Claimed: map format v31 (groups and note pins, chained after v30; `wip/mapmaker-p3b`), MapMaker lane, 2026-11-08.
+- Claimed: map format v32 if needed (the finer terrain grid / Change grid and the coast border side; next free MapMaker slot), MapMaker lane, 2026-11-08.
 - Claimed: `content/setpieces/**` and the set-piece alias table (set pieces part 5), MapMaker lane, 2026-11-08.
 - Claimed: `maps/skyward.json`, `maps/sky_islands.json`, `maps/grand_marquee.json`, `maps/obsidian_orb.json`, `maps/reactor.json`, `maps/serpent_gorge.json`, `maps/erosion.json`, `maps/m4_outpost.json`, `maps/iron_compound.json`, trap-spot fixes (this session, `wip/trap-spots`), 2026-11-08.
+- Claimed: `maps/training_range.json` (the Battle Rifle on a rack, through MapMaker), and the new content ids `core.battle_rifle` (weapon code 49) and `core.weapon_battle_rifle` (pickup), gunplay pass 2 (`wip/gunplay-2`), 2026-11-08.
+- **Moved to the MapMaker lane (owner's rule: MapMaker work goes there; 2026-11-08):** the editor half of the Iron
+  Coast job, since the lane holds the editor claim: (1) a finer terrain grid (raise the 161-vertices-a-side cap to 321,
+  1.25 m cells on a 380 m map) and a Terrain → Change grid tool that resamples heights, paint and plants; (2) a "coast"
+  border side (`borderSides`: sand and shallow water carry on past the boundary along the shoreline, cliffs taper to low
+  headlands and dunes, forest only inland; scenery only, no collision or nav). Either may need a format bump: take the
+  one after the card camera's. Please note here when they land: the other session then reshapes Iron Coast in MapMaker
+  (natural cliffs, inland drops to slopes, the coast edge on its east and west ends, A1/A2 zone time). Details:
+  docs/map-briefs/iron_coast/DECISIONS_AND_DEVIATIONS.md and the owner's screenshots described in this file's Iron Coast
+  part 2 entry.
 
 **In flight: MapMaker overhaul (other account)** (owner, 2026-11-08: a second session owns this lane;
 docs/MAPMAKER_OVERHAUL_PLAN.md). Branches `wip/mapmaker-*` / `check/mapmaker-*` only.
@@ -403,6 +414,23 @@ gets overloaded above that: local e2e times out and flakes). Prune landed worktr
   2. After the leader's respawn, a squad on Follow me or Attack that regroups on them, while one on Hold here, Go there
      or Defend the objective keeps its post. Keep that?
   3. The party preset (Part 3) and the squad HUD (Part 2) are next.
+
+### MapMaker overhaul: Play from here, the plan view, the card shot (`wip/mapmaker-p3a`, agent, 2026-11-08; Phase 3 items 1, 2 and 8)
+- **Built:** Play from here (Shift+F5, ▶ Here), the plan view (K, Plan; Export PNG), the card-shot camera (Map
+  properties → Card shot: Set card shot…, eye level, Preview, Clear). As built: docs/MAPMAKER_OVERHAUL_PLAN.md under
+  each item; how-to: BUILDING_KIT.md, "Testing, the plan and the card shot (MapMaker)".
+- **Where:** shared `editor/{playFromHere,planView,cardShot}.ts` (unit tests `mapmakerWorkflow.test.ts`);
+  client `editor/{planView,cardShot}.ts`, wired into `editorApp.ts` with a few lines; the match: `Match.startHere` and
+  `Combatant.startAt` (sim/match.ts), `LocalMatchOptions.startAt` (matchHost.ts), the first life's pitch (session.ts);
+  e2e `editorWorkflowChecks` in `editorux`.
+- **Map format v30:** `metadata.cardCamera` (position, yaw, pitch), a no-op migration, left out of the content hash
+  (like `thumbnailCamera`), so a stamped map's release stays current. `capture-map-shots.mjs` uses it first.
+- **Keys:** Shift+F5 (Play from here) and K (plan view), rows in the key table (`editor/keymap.ts`), so the `?`
+  overlay lists them.
+- **Card shots redone with it** (owner's addendum): Step Temple at eye level on the south-west hill, looking up the
+  terrace stair at the temple; Shingle Point at eye level on the seawall's west end, looking down the beach to the
+  sea. Set through the real editor (scratch Playwright driver: Import, camera, Set card shot…, Enter, Export); each
+  map file's diff is the `cardCamera` and the format version; the pictures from `capture-map-shots.mjs`.
 
 ### MapMaker overhaul: measure, props on surfaces, Randomise, turning by mouse (`wip/mapmaker-p1b`, agent, 2026-11-08; Phase 1 items 3-4 and Phase 3 item 9)
 - **Built:** the measure tool (U), props dropped onto the surface under the pointer, Randomise in the prop tool, the
