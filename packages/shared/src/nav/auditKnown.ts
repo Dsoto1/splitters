@@ -20,7 +20,6 @@ const KNOWN: readonly KnownNavIssue[] = [
   { map: 'skyward', code: 'nav.trap', near: [-40, 4.1, 0], why: 'the plasma gun tower (x -40): a pad up, no way back, as the map says' },
   { map: 'skyward', code: 'nav.trap', near: [40, 4.1, 0], why: 'the disc launcher tower (x 40): a pad up, no way back, as the map says' },
   // For the owner: places players are stuck in too.
-  { map: 'grand_marquee', code: 'nav.trap', near: [0, 5.1, -7], why: "the marquee's top: the street's jump pad throws you onto it and nothing gets you down (1.6 m sign panels on three sides, the terrace 2.9 m up behind): for the owner (a gap in a side panel, or a ladder)" },
   // The reactor core (prop_087, scaled 4x) collides as its shape since the slack pass (2026-11-06), no longer its box:
   // a fall off a bridge goes past it down the shaft the map calls bottomless, onto the shaft's floor 32 m down (above
   // the kill height: fatal with fall damage on, a pit without). One finding each side of the core's foot.
