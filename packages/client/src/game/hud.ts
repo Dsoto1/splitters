@@ -743,6 +743,20 @@ export class Hud {
     window.setTimeout(() => line.remove(), 6000);
   }
 
+  /** Fireteams: your squad's current order ("Squad · Hold here"), or hidden (null: you lead no squad). */
+  setSquadOrder(order: string | null): void {
+    let el = document.getElementById('squad-order');
+    if (!el) {
+      if (order === null) return;
+      el = document.createElement('div');
+      el.id = 'squad-order';
+      el.append(Object.assign(document.createElement('small'), { textContent: 'Squad' }), document.createElement('b'));
+      this.root.append(el);
+    }
+    el.hidden = order === null;
+    if (order !== null) el.querySelector('b')!.textContent = order;
+  }
+
   /** The quick-message menu (B): the numbered messages, or hidden. */
   setMessageMenu(open: boolean, messages: readonly string[]): void {
     let el = document.getElementById('msg-menu');

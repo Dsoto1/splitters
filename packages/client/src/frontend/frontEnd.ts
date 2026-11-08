@@ -49,6 +49,8 @@ import {
   presetPlayers,
   rulesFromSetup,
   setVariant,
+  DEFAULT_FIRETEAM_SIZE,
+  fireteamMode,
   setupFamily,
   setupFit,
   mapPlayerCaps,
@@ -1288,6 +1290,12 @@ export class FrontEnd {
     const FLAG_TIP = 'Seconds a dropped flag lies before it goes home on its own.';
     if (s.mode === 'core.ctf') win.push(field('Flag return', FLAG_TIP, flagReturn()));
     if (s.mode === 'core.koth') win.push(field('Hill moves', 'Seconds before the hill moves to the next spot.', stepper({ value: s.hill ?? 60, min: 15, max: 300, step: 15, id: 'arcade-hill', fmt: (v) => `${v} s`, onChange: (v) => this.change((x) => (x.hill = v === 60 ? undefined : v)) })));
+    // Fireteams (the variant): its squad size, the leader included.
+    if (s.fireteams && fireteamMode(s.mode)) {
+      win.push(
+        field('Squad size', 'Players in each fireteam, its leader included: you and your bots, and every bot-led squad filling the teams.', choice([['4', '4'], ['5', '5'], ['6', '6']], String(s.squadSize ?? DEFAULT_FIRETEAM_SIZE), (v) => this.change((x) => (x.squadSize = Number(v) === DEFAULT_FIRETEAM_SIZE ? undefined : Number(v))), 'arcade-squad-size')),
+      );
+    }
     if (race) win.push(field('Laps', 'Laps of the circuit (a point-to-point track is always one run).', stepper({ value: s.raceLaps ?? raceTrack(map)?.laps ?? 3, min: 1, max: 10, id: 'arcade-laps', onChange: (v) => this.change((x) => (x.raceLaps = v)) })));
     if (forts) {
       win.push(

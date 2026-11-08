@@ -231,7 +231,7 @@ describe('variants', () => {
       expect(Object.keys(v.sets).length).toBeGreaterThan(0);
       for (const c of [...(v.conflicts ?? []), ...(v.needs ?? [])]) expect(SETUP_VARIANTS.some((x) => x.id === c)).toBe(true);
     }
-    expect(SETUP_VARIANTS.map((v) => v.id)).toEqual(['lunar', 'roulette', 'signature', 'jackpots', 'streakpick', 'rerolls', 'swap', 'variety', 'rlteams', 'classes', 'spears', 'discs']);
+    expect(SETUP_VARIANTS.map((v) => v.id)).toEqual(['lunar', 'roulette', 'signature', 'jackpots', 'streakpick', 'rerolls', 'swap', 'variety', 'rlteams', 'classes', 'spears', 'discs', 'fireteams']);
     // A race offers Lunar only; co-op Lunar and Roulette bodies; the Roulette mode Lunar and its own (its bodies are its core).
     expect(variantStates(setup({ mode: 'core.race' }), map, offered).map((v) => v.variant.id)).toEqual(['lunar']);
     expect(variantStates(setup({ mode: 'core.coop' }), map, offered).map((v) => v.variant.id)).toEqual(['lunar', 'roulette']);

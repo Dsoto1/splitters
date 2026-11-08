@@ -934,6 +934,12 @@ img.wicon.large { height: 26px; margin: 0 6px 0 0; }
 #crosshair.gunner::after { top: 31px; left: -6px; height: 2px; width: 76px; background: linear-gradient(90deg, var(--xh) 0 14px, transparent 14px 62px, var(--xh) 62px); }
 
 #feed .say { font-style: italic; }
+/* Fireteams: your squad's order (orange: orders and objectives), above your portrait; the order wheel is the weapon wheel's ring in orange. */
+#squad-order { position: absolute; left: 18px; bottom: 112px; display: flex; gap: 8px; align-items: baseline; padding: 4px 12px 4px 10px; background: linear-gradient(90deg, rgba(11, 15, 26, 0.9), rgba(11, 15, 26, 0.45)); border-left: 3px solid var(--orange); font-family: var(--font-display); text-transform: uppercase; letter-spacing: 0.06em; }
+#squad-order[hidden] { display: none; }
+#squad-order small { font: 600 11px var(--font-display); color: var(--muted); }
+#squad-order b { font: 700 14px var(--font-display); color: var(--orange); }
+html.touch #squad-order { left: calc(8px + env(safe-area-inset-left)); bottom: auto; top: 186px; transform: scale(0.85); transform-origin: top left; }
 #msg-menu { position: absolute; left: 24px; top: 40%; padding: 10px 14px; background: rgba(12, 16, 26, 0.85); border-left: 3px solid var(--cyan, #00d1ff); font: 500 14px var(--font-display); color: var(--text); }
 #msg-menu b { display: block; margin-bottom: 6px; letter-spacing: 0.08em; text-transform: uppercase; }
 #msg-menu kbd { display: inline-block; min-width: 18px; text-align: center; margin-right: 6px; background: #2a3142; border-radius: 3px; }
@@ -1272,27 +1278,33 @@ img.wicon.large { height: 26px; margin: 0 6px 0 0; }
 }
 
 /* The weapon wheel (game/weaponWheel.ts): hold Q (or a controller's Y, or tap Weapons on a phone). */
-#weapon-wheel { position: fixed; inset: 0; z-index: 3; display: flex; align-items: center; justify-content: center; pointer-events: auto; touch-action: none; background: radial-gradient(circle at 50% 50%, rgba(11, 15, 26, 0.35), rgba(11, 15, 26, 0.7)); }
-#weapon-wheel[hidden] { display: none; }
-#weapon-wheel .ww-ring { position: relative; width: min(84vmin, 480px); aspect-ratio: 1; border-radius: 50%; background: radial-gradient(circle, rgba(18, 24, 39, 0.35) 0 22%, rgba(18, 24, 39, 0.85) 23% 68%, rgba(18, 24, 39, 0.35) 69%); box-shadow: 0 0 0 1px rgba(0, 209, 255, 0.25); }
-#weapon-wheel .ww-item { position: absolute; transform: translate(-50%, -50%); width: var(--ww-item, 25%); display: flex; flex-direction: column; align-items: center; gap: 1px; padding: 4px 2px; border: 1px solid transparent; border-radius: 6px; font-family: var(--font-display); text-align: center; color: var(--text); transition: transform 0.08s, background 0.08s; }
-#weapon-wheel .ww-item .ww-icon { width: 100%; height: clamp(26px, 8vmin, 52px); object-fit: contain; filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.6)); }
-#weapon-wheel .ww-item b { font: 600 clamp(10px, 2.4vmin, 14px)/1.1 var(--font-display); text-transform: uppercase; letter-spacing: 0.04em; }
-#weapon-wheel .ww-item small { font: 600 clamp(10px, 2.2vmin, 13px) var(--font-display); color: var(--muted); font-variant-numeric: tabular-nums; }
-#weapon-wheel .ww-item.held { border-color: rgba(0, 209, 255, 0.45); }
+:is(#weapon-wheel, #order-wheel) { position: fixed; inset: 0; z-index: 3; display: flex; align-items: center; justify-content: center; pointer-events: auto; touch-action: none; background: radial-gradient(circle at 50% 50%, rgba(11, 15, 26, 0.35), rgba(11, 15, 26, 0.7)); }
+:is(#weapon-wheel, #order-wheel)[hidden] { display: none; }
+:is(#weapon-wheel, #order-wheel) .ww-ring { position: relative; width: min(84vmin, 480px); aspect-ratio: 1; border-radius: 50%; background: radial-gradient(circle, rgba(18, 24, 39, 0.35) 0 22%, rgba(18, 24, 39, 0.85) 23% 68%, rgba(18, 24, 39, 0.35) 69%); box-shadow: 0 0 0 1px rgba(0, 209, 255, 0.25); }
+:is(#weapon-wheel, #order-wheel) .ww-item { position: absolute; transform: translate(-50%, -50%); width: var(--ww-item, 25%); display: flex; flex-direction: column; align-items: center; gap: 1px; padding: 4px 2px; border: 1px solid transparent; border-radius: 6px; font-family: var(--font-display); text-align: center; color: var(--text); transition: transform 0.08s, background 0.08s; }
+:is(#weapon-wheel, #order-wheel) .ww-item .ww-icon { width: 100%; height: clamp(26px, 8vmin, 52px); object-fit: contain; filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.6)); }
+:is(#weapon-wheel, #order-wheel) .ww-item b { font: 600 clamp(10px, 2.4vmin, 14px)/1.1 var(--font-display); text-transform: uppercase; letter-spacing: 0.04em; }
+:is(#weapon-wheel, #order-wheel) .ww-item small { font: 600 clamp(10px, 2.2vmin, 13px) var(--font-display); color: var(--muted); font-variant-numeric: tabular-nums; }
+:is(#weapon-wheel, #order-wheel) .ww-item.held { border-color: rgba(0, 209, 255, 0.45); }
 /* Many weapons: icons shrink with the item; names (then ammo) move to the middle, which names the one pointed at. */
-#weapon-wheel .ww-ring.compact .ww-item b { display: none; }
-#weapon-wheel .ww-ring.compact .ww-item .ww-icon { height: clamp(18px, 6vmin, 40px); }
-#weapon-wheel .ww-ring.dense .ww-item small { display: none; }
-#weapon-wheel .ww-ring.dense .ww-item .ww-icon { height: clamp(14px, 4.5vmin, 30px); }
-#weapon-wheel .ww-ring.dense .ww-item { padding: 2px 1px; }
-#weapon-wheel .ww-item.empty { opacity: 0.4; }
-#weapon-wheel .ww-item.empty small { color: var(--error); }
-#weapon-wheel .ww-item.on { transform: translate(-50%, -50%) scale(1.12); background: rgba(0, 209, 255, 0.18); border-color: var(--cyan); }
-#weapon-wheel .ww-centre { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 40%; display: flex; flex-direction: column; align-items: center; text-align: center; font-family: var(--font-display); pointer-events: none; }
-#weapon-wheel .ww-centre b { font: italic 700 clamp(13px, 3.4vmin, 20px)/1.1 var(--font-display); text-transform: uppercase; color: var(--cyan); }
-#weapon-wheel .ww-centre small { color: var(--muted); font: 600 clamp(11px, 2.6vmin, 15px) var(--font-display); }
-#weapon-wheel .ww-dot { position: absolute; left: 50%; top: 50%; width: 10px; height: 10px; margin: -5px 0 0 -5px; border-radius: 50%; background: var(--cyan); box-shadow: 0 0 8px var(--cyan); pointer-events: none; }
+:is(#weapon-wheel, #order-wheel) .ww-ring.compact .ww-item b { display: none; }
+:is(#weapon-wheel, #order-wheel) .ww-ring.compact .ww-item .ww-icon { height: clamp(18px, 6vmin, 40px); }
+:is(#weapon-wheel, #order-wheel) .ww-ring.dense .ww-item small { display: none; }
+:is(#weapon-wheel, #order-wheel) .ww-ring.dense .ww-item .ww-icon { height: clamp(14px, 4.5vmin, 30px); }
+:is(#weapon-wheel, #order-wheel) .ww-ring.dense .ww-item { padding: 2px 1px; }
+:is(#weapon-wheel, #order-wheel) .ww-item.empty { opacity: 0.4; }
+:is(#weapon-wheel, #order-wheel) .ww-item.empty small { color: var(--error); }
+:is(#weapon-wheel, #order-wheel) .ww-item.on { transform: translate(-50%, -50%) scale(1.12); background: rgba(0, 209, 255, 0.18); border-color: var(--cyan); }
+:is(#weapon-wheel, #order-wheel) .ww-centre { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 40%; display: flex; flex-direction: column; align-items: center; text-align: center; font-family: var(--font-display); pointer-events: none; }
+:is(#weapon-wheel, #order-wheel) .ww-centre b { font: italic 700 clamp(13px, 3.4vmin, 20px)/1.1 var(--font-display); text-transform: uppercase; color: var(--cyan); }
+:is(#weapon-wheel, #order-wheel) .ww-centre small { color: var(--muted); font: 600 clamp(11px, 2.6vmin, 15px) var(--font-display); }
+:is(#weapon-wheel, #order-wheel) .ww-dot { position: absolute; left: 50%; top: 50%; width: 10px; height: 10px; margin: -5px 0 0 -5px; border-radius: 50%; background: var(--cyan); box-shadow: 0 0 8px var(--cyan); pointer-events: none; }
+#order-wheel .ww-ring { box-shadow: 0 0 0 1px rgba(255, 179, 71, 0.35); }
+#order-wheel .ww-item { width: 30%; }
+#order-wheel .ww-item.held { border-color: rgba(255, 179, 71, 0.55); }
+#order-wheel .ww-item.on { background: rgba(255, 179, 71, 0.2); border-color: var(--orange); }
+#order-wheel .ww-centre b { color: var(--orange); }
+#order-wheel .ww-dot { background: var(--orange); box-shadow: 0 0 6px var(--orange); }
 
 /* Phones and tablets (touchDevice.ts, html.touch): fingers, not a mouse. */
 html.touch { touch-action: manipulation; -webkit-tap-highlight-color: transparent; -webkit-user-select: none; user-select: none; }
@@ -1335,6 +1347,10 @@ html.touch #feed { transform: scale(0.85); transform-origin: top right; }
 #touch-ui .tc-throw { right: calc(14px + env(safe-area-inset-right)); bottom: 146px; width: 50px; height: 50px; }
 #touch-ui .tc-use { right: calc(204px + env(safe-area-inset-right)); bottom: 50px; }
 #touch-ui .tc-wheel { right: calc(158px + env(safe-area-inset-right)); bottom: 160px; width: 64px; height: 64px; border-color: rgba(0, 209, 255, 0.6); }
+/* Fireteams: the Orders button (the order wheel), orange like orders and objectives; only while you lead a squad. */
+#touch-ui .tc-orders { right: calc(230px + env(safe-area-inset-right)); bottom: 136px; border-color: rgba(255, 179, 71, 0.7); }
+#touch-ui .tc-orders.on { background: rgba(255, 179, 71, 0.35); border-color: var(--orange); }
+#touch-ui .tc-orders[hidden] { display: none; }
 #touch-ui .tc-pause { left: calc(8px + env(safe-area-inset-left)); top: 8px; width: 44px; height: 44px; border-radius: 8px; font-size: 15px; }
 /* Held upright: ask for landscape (the controls are laid out for it). */
 #touch-rotate { display: none; }

@@ -7,6 +7,13 @@ import {
   DISC_POWER_LABELS,
   classesInPlay,
   QUICK_MESSAGES,
+  ORDER_ACKS,
+  ORDER_KINDS,
+  ORDER_LABELS,
+  REFUSALS,
+  REFUSAL_TEXT,
+  orderSay,
+  type OrderKind,
   withTrackVehicles,
   CHUTE,
   CHUTE_GLIDER,
@@ -262,6 +269,11 @@ export class GameSession {
   private readonly input: InputState;
   /** The weapon wheel (hold Q, hold a controller's Y, or the Weapons button on a phone). */
   private readonly wheel = new WeaponWheel(document.getElementById('hud')!);
+  /** Fireteams: the order wheel (hold B, hold a controller's d-pad up, or the Orders button on a phone). */
+  private readonly orderWheel = new WeaponWheel(document.getElementById('hud')!, 'order-wheel');
+  /** Fireteams: you lead a squad now (its id), and its current order (the HUD's line); null: you lead none. */
+  private squadLed: number | null = null;
+  private squadOrder: OrderKind | null = null;
   /** Phones and tablets: the on-screen controls (null with a mouse). */
   private touch: TouchControls | null = null;
   private readonly interp = new Interpolator();
@@ -619,6 +631,9 @@ export class GameSession {
     this.wheel.onPoint = (x, y) => this.input.aimWheel(x, y);
     this.wheel.onTouchPick = () => this.input.closeWheel(true);
     this.wheel.onTouchCancel = () => this.input.closeWheel(false);
+    this.orderWheel.onPoint = (x, y) => this.input.aimWheel(x, y);
+    this.orderWheel.onTouchPick = () => this.input.closeWheel(true);
+    this.orderWheel.onTouchCancel = () => this.input.closeWheel(false);
     // Phones and tablets: on-screen controls instead of pointer lock (touchControls.ts).
     if (isTouchDevice()) {
       this.touch = new TouchControls(this.input, $('hud'), { pause: () => this.input.setTouchEngaged(false) });
@@ -1589,6 +1604,7 @@ export class GameSession {
     const end: SessionEnd | undefined = this.welcomed && this.welcomeMap && this.rules ? { board: this.hud.boardData(this.scores, this.slot, true), map: this.welcomeMap, rules: this.rules, fill: Math.max(2, this.lastRoster?.length ?? 2) } : undefined;
     this.hostPanel.remove();
     this.wheel.dispose();
+    this.orderWheel.dispose();
     this.touch?.dispose();
     this.mapPicker?.remove();
     document.getElementById('online-confirm')?.remove();
@@ -1706,7 +1722,7 @@ export class GameSession {
         // Hosting since before the match had loaded (Host this map, a handoff, a map change): list it now that it can be.
         if (this.peerHost) this.updateListing();
         this.updateOnline();
-        (window as unknown as { __cs: unknown }).__cs = { slot: this.slot, hud: this.hud, renderer: this.opts.rendererKind, local: this.local, view: this.view, input: this.input, wheel: this.wheel, mode: this.modeHud, race: () => this.raceHud?.state, transport: this.opts.transport, mounts: this.mounts, forts: this.forts, phase: () => this.phase, rideView: () => this.rideView, host: () => this.hostState, rules: () => this.rules, roulette: () => this.rouletteHud?.debug(), awards: () => this.awardsHud?.debug(), showAwards: (aw: MatchAward[]) => this.awardsHud?.show(aw), heavyOverlay: () => this.hud.heavyOverlay(), rouletteGlow: () => this.rouletteHud?.glowOverlay() ?? null, rouletteHold: (on: boolean) => void (this.rouletteHud && (this.rouletteHud.hold = on)), jackpotGlow: () => this.testJackpot(), timeLeft: () => this.timeLeft, map: loaded.map.metadata.id, spec: () => this.specState(), spectate: (on: boolean) => this.setSpectating(on), thirdPerson: () => this.thirdPerson, tpAim: () => this.tpAim, viewTick: () => this.interp.renderTick() };
+        (window as unknown as { __cs: unknown }).__cs = { slot: this.slot, hud: this.hud, renderer: this.opts.rendererKind, local: this.local, view: this.view, input: this.input, wheel: this.wheel, orderWheel: this.orderWheel, squad: () => ({ led: this.squadLed, order: this.squadOrder }), mode: this.modeHud, race: () => this.raceHud?.state, transport: this.opts.transport, mounts: this.mounts, forts: this.forts, phase: () => this.phase, rideView: () => this.rideView, host: () => this.hostState, rules: () => this.rules, roulette: () => this.rouletteHud?.debug(), awards: () => this.awardsHud?.debug(), showAwards: (aw: MatchAward[]) => this.awardsHud?.show(aw), heavyOverlay: () => this.hud.heavyOverlay(), rouletteGlow: () => this.rouletteHud?.glowOverlay() ?? null, rouletteHold: (on: boolean) => void (this.rouletteHud && (this.rouletteHud.hold = on)), jackpotGlow: () => this.testJackpot(), timeLeft: () => this.timeLeft, map: loaded.map.metadata.id, spec: () => this.specState(), spectate: (on: boolean) => this.setSpectating(on), thirdPerson: () => this.thirdPerson, tpAim: () => this.tpAim, viewTick: () => this.interp.renderTick() };
         this.opts.onReady?.();
         if (this.opts.greeting) this.hud.showMessage(this.opts.greeting, 6);
         void this.prepareMatch();
@@ -2006,6 +2022,8 @@ export class GameSession {
             // Team modes: only your own team hears it.
             const mine = this.hud.team(this.slot)?.id;
             if (!ev.team || !mine || ev.team === mine) this.hud.say(ev.s, QUICK_MESSAGES[ev.m - 1] ?? '');
+          } else if (ev.e === 'squad') {
+            this.squadEvent(ev);
           } else if (ev.e === 'ping') {
             const mine = this.hud.team(this.slot)?.id;
             if (ev.team ? ev.team === mine : ev.s === this.slot) {
@@ -2464,15 +2482,60 @@ export class GameSession {
   private updateWheel(local: LocalPlayer, building: boolean): void {
     const input = this.input;
     input.canOpenWheel = local.alive && !this.seat && !building && local.inventory.size > 0;
-    if (input.wheelOpen && !input.canOpenWheel) input.closeWheel(false);
-    if (input.wheelOpen) {
+    if (input.wheelOpen && input.wheelKind === 'weapon' && !input.canOpenWheel) input.closeWheel(false);
+    if (input.wheelOpen && input.wheelKind === 'weapon') {
       this.wheel.show(wheelEntries(local.ownedCodes(), local.inventory, this.wantWeapon || local.held));
       this.wheel.aim(input.wheelAim.x, input.wheelAim.y);
     }
     const closed = input.takeWheelClose();
-    if (closed === null && (input.wheelOpen || !this.wheel.shown)) return;
+    if (closed === null && ((input.wheelOpen && input.wheelKind === 'weapon') || !this.wheel.shown)) return;
     const pick = this.wheel.hide();
     if (closed && pick && local.inventory.has(pick) && pick !== (this.wantWeapon || local.held)) this.requestWeapon(pick);
+  }
+
+  /**
+   * Fireteams' order wheel, once a frame: it may open while you lead a squad, alive and on foot; open, it shows the
+   * six orders (your squad's current one ringed; Defend the objective dimmed where the mode has none); let go on one
+   * and it goes to the match (fireteams.ts orderSay), which checks it.
+   */
+  private updateOrderWheel(local: LocalPlayer): void {
+    const input = this.input;
+    input.ordersOn = this.squadLed !== null && local.alive && !this.seat && !this.spectator;
+    if (input.wheelOpen && input.wheelKind === 'order' && !input.ordersOn) input.closeWheel(false);
+    if (input.wheelOpen && input.wheelKind === 'order') {
+      const noObjective = this.rules?.mode === 'core.tdm';
+      this.orderWheel.show(ORDER_KINDS.map((k, i) => ({ code: i + 1, name: ORDER_LABELS[k], ammo: ORDER_HINTS[k], empty: k === 'defend' && noObjective, held: k === this.squadOrder, weaponId: '' })));
+      this.orderWheel.aim(input.wheelAim.x, input.wheelAim.y);
+    }
+    const closed = input.takeOrderClose();
+    if (closed === null && ((input.wheelOpen && input.wheelKind === 'order') || !this.orderWheel.shown)) return;
+    const pick = this.orderWheel.hide();
+    const kind = pick ? ORDER_KINDS[pick - 1] : undefined;
+    if (closed && kind) input.queueSay(orderSay(kind));
+  }
+
+  /** Fireteams' news (the 'squad' event): leading a squad, its orders (the HUD's line), the bots' answers, a refusal. */
+  private squadEvent(ev: Extract<GameEvent, { e: 'squad' }>): void {
+    const mine = this.hud.team(this.slot)?.id;
+    if (ev.team && mine && ev.team !== mine) return;
+    const kind = ev.k !== undefined ? ORDER_KINDS[ev.k] : undefined;
+    if (ev.a === 'lead') {
+      if (ev.s === this.slot) {
+        const first = this.squadLed === null;
+        this.squadLed = ev.sq ?? null;
+        this.squadOrder = 'follow';
+        if (first) this.hud.showMessage(`You lead a fireteam of ${ev.n ?? 0} · hold B for orders`, 4);
+      } else if (ev.from === this.slot) this.squadLed = this.squadOrder = null;
+    } else if (ev.a === 'order' && kind) {
+      if (ev.s === this.slot) {
+        this.squadLed = ev.sq ?? this.squadLed;
+        this.squadOrder = kind;
+      }
+      // (The match's own orders, as a squad forms up or an order ends, aren't called out.)
+      if (!ev.auto && ev.s !== this.slot) this.hud.say(ev.s, `${ORDER_LABELS[kind]}!`);
+    } else if (ev.a === 'ack' && kind) this.hud.say(ev.s, ORDER_ACKS[kind]);
+    else if (ev.a === 'deny' && ev.s === this.slot) this.hud.showMessage(REFUSAL_TEXT[REFUSALS[ev.n ?? 0] ?? 'notLeader'], 2.5);
+    this.hud.setSquadOrder(this.squadLed !== null && this.squadOrder ? ORDER_LABELS[this.squadOrder] : null);
   }
 
   private requestWeapon(slot: number): void {
@@ -2645,6 +2708,7 @@ export class GameSession {
         if (next) this.requestWeapon(next);
       }
       this.updateWheel(local, building);
+      this.updateOrderWheel(local);
       this.touch?.update();
       const wheel = this.input.takeWheel();
       // Through a scope the wheel steps between its zoom levels instead of switching weapons.
@@ -3086,3 +3150,6 @@ function phoneHost(): boolean {
     return false;
   }
 }
+
+/** The order wheel's second line for each order: what it goes by. */
+const ORDER_HINTS: Readonly<Record<OrderKind, string>> = { follow: 'On you', hold: 'Where you stand', go: 'Where you aim or ping', attack: 'The enemy you aim at or ping', defend: "The mode's objective", regroup: 'To you, now' };
