@@ -141,6 +141,7 @@ import { testMode } from '../testMode.ts';
 import type { RendererKind } from '../engine.ts';
 import { Hud } from './hud.ts';
 import { MountState } from './mountState.ts';
+import { RiderPlacement } from './riderPlacement.ts';
 import { LocalTransport } from './localTransport.ts';
 import { SYS, netProbe, perfProbe } from './perfProbe.ts';
 import { PerfOverlay, loadPerfOverlay, savePerfOverlay } from './perfOverlay.ts';
@@ -395,6 +396,8 @@ export class GameSession {
   private zones: ZoneSnapshot[] = [];
   /** Turrets, sentries and vehicles, and your seat in one: [mount entity index, seat, gun heat %]. */
   private mounts?: MountState;
+  /** Where riders are drawn (on their seats, see riderPlacement.ts). */
+  private readonly riderPlacement = new RiderPlacement();
   private covers?: CoverState;
   /** Seconds of UAV sweep left for your side: enemies show on the minimap. */
   private uav = 0;
@@ -2516,6 +2519,8 @@ export class GameSession {
   private spectatorCamera(now: number, local: LocalPlayer, fov: number, picks: { step: number; toggle: boolean }): CameraPose | null {
     const cast = (o: Vec3, d: Vec3, len: number) => local.physics.raycastWorld(o, d, len);
     const poses = this.interp.sample(now);
+    // Someone you watch in a vehicle: on their seat, as they are drawn (the blend steps once a frame, below).
+    if (this.mounts) this.riderPlacement.place(poses, this.mounts.seatedRiders(), (i, o) => this.view.seatPoint(i, o), 0);
     const rule = this.spectateRule();
     const kc = this.spectator ? null : this.specCam.killCam();
     if (kc) {
@@ -2924,7 +2929,7 @@ export class GameSession {
         }
         this.sentLook = { yaw: cmd.yaw, pitch: cmd.pitch };
         this.outbox.push(cmd);
-        this.sfx.localStep(local, before, local.speedTicks > 0 ? SPEED_BOOST : 1);
+        this.sfx.localStep(local, before, local.speedTicks > 0 ? SPEED_BOOST : 1, !!this.seat);
         const ammo = local.inventory.get(local.held);
         if (local.alive && sample.buttons & BUTTON_FIRE && ammo && ammo[0] === 0 && ammo[1] === 0 && local.weapon?.magazine) this.sfx.dryFire(now);
         if (shot) {
@@ -3135,12 +3140,17 @@ export class GameSession {
         if (at) bars.push({ id: m.index, x: at.x, y: at.y, pct: m.health });
       }
       this.hud.setVehicleBars(bars);
+      // Engines run while anyone rides: yours unpositioned, the nearest others' from where they are.
+      if (!document.hidden) this.sfx.engines(this.mounts.mounts.values(), manned?.alive ? manned.index : null, cam);
       if (!local) this.view.updateMounts(this.mounts.mounts.values(), this.mannedTurret());
     }
     this.hud.setStatusTint(statusColor(this.local?.alive ? this.localStatus : 0));
     this.hud.tickHurt();
     this.hud.tickHeavy();
     const poses = this.interp.sample(now);
+    // Riders are drawn on their seats of the vehicle as drawn this frame (not where their own, interpolated pose
+    // has them: that runs behind the vehicle's clock, and at speed they drifted out of the back of it).
+    if (this.mounts) this.riderPlacement.place(poses, this.mounts.seatedRiders(), (i, o) => this.view.seatPoint(i, o), dt);
     // Splashes and ripples where players and projectiles meet water.
     this.view.scenario.liquids.fx.track(poses, shells);
     this.modeHud?.frame(poses, local?.alive ? local.eye : null, this.input.yaw, now);
@@ -3193,7 +3203,7 @@ export class GameSession {
       this.mounts?.sitters(),
     );
     if (tAvatars) perfProbe.add(SYS.avatars, tAvatars);
-    this.sfx.remoteSteps(poses);
+    this.sfx.remoteSteps(poses, this.riderPlacement.placed);
     if (this.fxWatch) {
       const me = this.local;
       this.fxWatch.update(me ? [...poses.filter((p) => p.slot !== this.slot), { slot: this.slot, x: me.state.pos.x, y: me.state.pos.y, z: me.state.pos.z, alive: me.alive, grounded: me.state.grounded, ...(me.state.zip !== undefined ? { zip: me.state.zip } : {}) }] : poses);

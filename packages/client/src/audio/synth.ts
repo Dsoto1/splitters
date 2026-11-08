@@ -11,9 +11,9 @@
 
 export const SYNTH_RATE = 44100;
 
-export type SynthRecipe = 'pistol' | 'rifle' | 'smg' | 'shotgun' | 'sniper' | 'launcher' | 'plasma' | 'swing' | 'dryfire' | 'flame' | 'beep' | 'alarm' | 'laser' | 'railgun' | 'arc' | 'bubble' | 'splat' | 'disc' | 'nail' | 'vortex' | 'freeze' | 'flamelet' | 'hitmark' | 'hum' | 'hithead' | 'hitarmor' | 'killconfirm' | 'splash' | 'crack';
+export type SynthRecipe = 'pistol' | 'rifle' | 'smg' | 'shotgun' | 'sniper' | 'launcher' | 'plasma' | 'swing' | 'dryfire' | 'flame' | 'beep' | 'alarm' | 'laser' | 'railgun' | 'arc' | 'bubble' | 'splat' | 'disc' | 'nail' | 'vortex' | 'freeze' | 'flamelet' | 'hitmark' | 'hum' | 'hithead' | 'hitarmor' | 'killconfirm' | 'splash' | 'crack' | 'engine';
 
-export const SYNTH_RECIPES: readonly SynthRecipe[] = ['pistol', 'rifle', 'smg', 'shotgun', 'sniper', 'launcher', 'plasma', 'swing', 'dryfire', 'flame', 'beep', 'alarm', 'laser', 'railgun', 'arc', 'bubble', 'splat', 'disc', 'nail', 'vortex', 'freeze', 'flamelet', 'hitmark', 'hum', 'hithead', 'hitarmor', 'killconfirm', 'splash', 'crack'];
+export const SYNTH_RECIPES: readonly SynthRecipe[] = ['pistol', 'rifle', 'smg', 'shotgun', 'sniper', 'launcher', 'plasma', 'swing', 'dryfire', 'flame', 'beep', 'alarm', 'laser', 'railgun', 'arc', 'bubble', 'splat', 'disc', 'nail', 'vortex', 'freeze', 'flamelet', 'hitmark', 'hum', 'hithead', 'hitarmor', 'killconfirm', 'splash', 'crack', 'engine'];
 
 /** Small seeded PRNG (mulberry32) returning [-1, 1). */
 function noiseSource(seed: number): () => number {
@@ -429,6 +429,26 @@ function renderHum(seed: number): Float32Array<ArrayBuffer> {
   });
 }
 
+/**
+ * Vehicle engine: a low combustion rumble (a firing pulse train near 46 Hz over its saw and a couple of harmonics,
+ * a breath of exhaust noise on each pulse), low-passed. 1.2 s with a sine-squared fade at both ends, so copies
+ * restarted every 0.6 s add up to a steady drone (SessionAudio.engine pitches each copy by speed).
+ */
+function renderEngine(seed: number): Float32Array<ArrayBuffer> {
+  const lp = new Biquad('lowpass').set(900, 0.7);
+  const o2 = osc();
+  const o3 = osc();
+  const wobble = (seed % 97) / 15;
+  let phase = 0;
+  return render(1.2, seed, (t, u, rnd) => {
+    const f = 46 * (1 + 0.012 * Math.sin(t * 7 + wobble));
+    phase = (phase + f / SYNTH_RATE) % 1;
+    const pulse = Math.exp(-phase * 6);
+    const s = Math.tanh((phase * 2 - 1) * 0.45 + pulse * 0.8 + o2(f * 2) * 0.25 + o3(f * 3) * 0.12 + rnd() * 0.3 * pulse);
+    return lp.run(s) * Math.sin(Math.PI * u) ** 2;
+  });
+}
+
 /** Bubble: a wobbling upward bloop. */
 function renderBubble(seed: number): Float32Array<ArrayBuffer> {
   const o = osc();
@@ -587,5 +607,7 @@ export function synthesize(recipe: SynthRecipe, variant: number): Float32Array<A
       return renderHitArmor(seed, variant);
     case 'killconfirm':
       return renderKillConfirm(seed);
+    case 'engine':
+      return renderEngine(seed);
   }
 }

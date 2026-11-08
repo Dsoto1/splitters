@@ -651,6 +651,13 @@
       "jitter": 0.04,
       "rate": 2.4
     },
+    "vehicle.engine": {
+      "synth": "engine",
+      "variants": 2,
+      "gain": 0.5,
+      "range": "mid",
+      "jitter": 0.02
+    },
     "trap.warn": {
       "synth": "beep",
       "variants": 1,

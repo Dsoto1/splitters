@@ -158,7 +158,7 @@ const RULES = [
   [/^packages\/client\/src\/game\/(peerLink|relay|hub|lan|netTransport|joinCode|party|mapVoteHud)\.ts$/, ['online', 'hostgame', 'hostcontrols', 'party', 'lobby', 'handoff', 'dedicatedhost'], ['client']],
   [/^packages\/client\/src\/game\/hostLeft\.ts$/, ['hostgame', 'handoff'], ['client']],
   [/^packages\/client\/src\/game\/spectatorCam\.ts$/, ['offline', 'teams', 'hostgame'], ['client']],
-  [/^packages\/client\/src\/game\/(mountVisuals|mountState|vehicleCamera)\.ts$/, ['vehicles', 'race'], ['client']],
+  [/^packages\/client\/src\/game\/(mountVisuals|mountState|vehicleCamera|riderPlacement)\.ts$/, ['vehicles', 'race'], ['client']],
   [/^packages\/client\/src\/(game\/raceHud\.ts|roadMeshes\.ts)$/, ['race'], ['client']],
   [/^packages\/client\/src\/game\/fortsClient\.ts$/, ['forts'], ['client']],
   [/^packages\/client\/src\/game\/rouletteHud\.ts$/, ['roulette', 'flashing'], ['client']],
