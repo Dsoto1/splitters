@@ -25,7 +25,7 @@
   "blast": { "radius": 6, "damage": 120 },
   "armour": { "surface": "armor", "sealed": true, "bullets": 0.1, "blasts": 1.25, "melee": 0 },
   "bailHealth": 0.25,
-  "vehicle": { "maxSpeed": 11, "reverseSpeed": 5, "accel": 5, "turnRate": 1, "grip": 0.45, "mass": 6, "pivot": 0.8 },
+  "vehicle": { "maxSpeed": 11, "reverseSpeed": 5, "accel": 5, "turnRate": 1, "idleBrake": 10, "grip": 0.45, "mass": 6, "pivot": 0.8, "routeFit": 0.8 },
   "cockpitEye": [-0.6, 3.35, 1.95],
   "turret": { "seat": 1, "pitch": [-0.17, 0.35] },
   "blurb": "A heavy tank for three: a driver, a cannon gunner firing explosive shells ahead, and a roof machine gun",

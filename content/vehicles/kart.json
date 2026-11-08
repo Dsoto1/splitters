@@ -10,6 +10,6 @@
   "enterRadius": 2.6,
   "respawnSeconds": 30,
   "blast": { "radius": 3.5, "damage": 70 },
-  "vehicle": { "maxSpeed": 20, "reverseSpeed": 7, "accel": 16, "turnRate": 2.6, "grip": 0.32, "mass": 0.4 },
+  "vehicle": { "maxSpeed": 20, "reverseSpeed": 7, "accel": 16, "turnRate": 2.6, "idleBrake": 16, "grip": 0.32, "mass": 0.4 },
   "blurb": "One seat, very quick, no gun: run them over"
 }

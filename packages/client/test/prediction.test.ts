@@ -26,7 +26,7 @@ describe('client prediction', () => {
     match.step();
     const sp = loaded.map.entities.find((e) => e.kind === 'spawn' && e.position[0] === 8 && e.position[2] === -2)!;
     me.move = { ...me.move, pos: { x: sp.position[0], y: sp.position[1], z: sp.position[2] }, velY: 0 };
-    me.yaw = sp.yaw;
+    me.yaw = 'yaw' in sp ? sp.yaw : 0;
     match.step();
     local.reconcile(match.playerSnapshots().find((p) => p.s === me.slot)!, 0, match.privateState(me.slot));
     const start = { ...me.move.pos };

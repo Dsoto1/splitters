@@ -101,6 +101,10 @@ export interface MountView {
   bailHealth?: number;
   /** Turns on the spot (tracks: the vehicle's `pivot`). */
   pivots?: boolean;
+  /** Ground vehicles and hovercraft (not flyers): how far (m) either side of its middle a route must be clear for it (routeFits). */
+  routeHalfWidth?: number;
+  /** On or over water (or another liquid): afloat, in it, or a flyer with water under it. Bots don't get out there. */
+  overWater?: boolean;
 }
 
 /** Can a bot at `feet` get into `m` from where it stands (the match's own rule, sim/mounts.ts enterReach)? */
@@ -138,22 +142,54 @@ const FIT_STEP_UP = 1.2;
 const FIT_PROBE = 2.5;
 /** Off the route's line it may run (m, + right of the way). */
 const FIT_SHIFTS = [0, 0.75, -0.75, 1.5, -1.5, 2.5, -2.5];
+/** The hull's top may graze this much (m) of what is over it (an arcade's lintel a Speeder passes). */
+const FIT_HULL_SLACK = 0.15;
 
 /**
  * Does a vehicle `halfWidth` m either side of its middle fit along `path` (the navmesh's route, sized for people)? Every
  * FIT_STEP m past the first `skip` m (where the vehicle itself stands) the ground is found under the route (a ray down;
  * the route's corners are far apart over open ground, and hills rise between them) and a box that wide (square, so any
  * heading) must be clear from 0.9 to 1.9 m over it. A tank is kept out of passages a person fits through and it
- * doesn't, where it would wedge (Iron Tide's hangar).
+ * doesn't, where it would wedge (Iron Tide's hangar). With `hull` (its height and half length) the box reaches up to
+ * the hull's top over the highest ground within half its length: a hull rides level, so going up stairs its rear
+ * stands as high as its front (Iron Tide's centre stairs, under a beam at 3 m at their foot: a tank stopped on the
+ * first step and was left there, in everyone's way).
  */
 export function routeFits(
-  physics: { boxClear(center: Vec3, half: Vec3): boolean; raycastHit(origin: Vec3, dir: Vec3, max: number): { dist: number } | null },
+  physics: FitPhysics,
   path: readonly Vec3[],
   halfWidth: number,
   skip = 4,
+  upTo = Infinity,
+  hull?: { height: number; reach: number },
 ): boolean {
-  const half = { x: halfWidth, y: FIT_HALF_HEIGHT, z: halfWidth };
   const down = { x: 0, y: -1, z: 0 };
+  // The ground along the route's line (for the hull's reach: the highest ground under it).
+  const line: { along: number; ground: number }[] = [];
+  if (hull) {
+    let along = 0;
+    let prev = path[0]?.y ?? 0;
+    for (let i = 1; i < path.length && along <= upTo + hull.reach; i++) {
+      const a = path[i - 1]!;
+      const b = path[i]!;
+      const len = Math.hypot(b.x - a.x, b.z - a.z);
+      for (let d = 0; d < len; d += FIT_STEP) {
+        const t = d / len;
+        const y = Math.max(prev, a.y + (b.y - a.y) * t) + FIT_PROBE;
+        const hit = physics.raycastHit({ x: a.x + (b.x - a.x) * t, y, z: a.z + (b.z - a.z) * t }, down, FIT_PROBE + 4);
+        const ground = hit ? y - hit.dist : a.y + (b.y - a.y) * t;
+        // (A ledge too high to drive up is caught below; here only the height the hull is carried at.)
+        if (ground <= prev + FIT_STEP_UP) prev = ground;
+        line.push({ along: along + d, ground: prev });
+      }
+      along += len;
+    }
+  }
+  const highest = (at: number, ground: number): number => {
+    let top = ground;
+    for (const p of line) if (Math.abs(p.along - at) <= hull!.reach) top = Math.max(top, p.ground);
+    return top;
+  };
   let along = 0;
   // The ground under the last sample that fitted: a rise of more than FIT_STEP_UP from it in one step is a ledge.
   let prev = path[0]?.y ?? 0;
@@ -166,6 +202,7 @@ export function routeFits(
     const sz = len > 0 ? -(b.x - a.x) / len : 0;
     for (let d = 0; d < len; d += FIT_STEP) {
       if (along + d < skip) continue;
+      if (along + d > upTo) return true;
       const t = d / len;
       const fits = FIT_SHIFTS.some((k) => {
         const x = a.x + (b.x - a.x) * t + sx * k;
@@ -174,7 +211,11 @@ export function routeFits(
         const y = Math.max(prev, a.y + (b.y - a.y) * t) + FIT_PROBE;
         const hit = physics.raycastHit({ x, y, z }, down, FIT_PROBE + 4);
         const ground = hit ? y - hit.dist : a.y + (b.y - a.y) * t;
-        if (ground > prev + FIT_STEP_UP || !physics.boxClear({ x, y: ground + FIT_LIFT, z }, half)) return false;
+        if (ground > prev + FIT_STEP_UP) return false;
+        // From 0.9 m over the ground (over the steps and sills it rides up) to 1.9, or to the hull's top.
+        const bottom = ground + FIT_LIFT - FIT_HALF_HEIGHT;
+        const top = Math.max(bottom + 2 * FIT_HALF_HEIGHT, hull ? highest(along + d, ground) + hull.height - FIT_HULL_SLACK : 0);
+        if (!physics.boxClear({ x, y: (bottom + top) / 2, z }, { x: halfWidth, y: (top - bottom) / 2, z: halfWidth })) return false;
         prev = ground;
         return true;
       });
@@ -183,6 +224,20 @@ export function routeFits(
     along += len;
   }
   return true;
+}
+
+type FitPhysics = { boxClear(center: Vec3, half: Vec3): boolean; raycastHit(origin: Vec3, dir: Vec3, max: number): { dist: number } | null };
+
+/**
+ * Does vehicle `m` fit along `path` (routeFits, at its `routeHalfWidth`), checked from just past its own hull to `upTo`
+ * m along? Flyers (no routeHalfWidth) always do. Bot drivers keep to routes their hull fits: before, a Hauler followed
+ * the foot route into Iron Tide's 3 m doors.
+ */
+export function vehicleRouteFits(physics: FitPhysics, m: Pick<MountView, 'routeHalfWidth' | 'half'>, path: readonly Vec3[], upTo = Infinity): boolean {
+  if (!m.routeHalfWidth || !m.half) return true;
+  const long = Math.max(m.half[0], m.half[2]);
+  const wide = Math.min(m.half[0], m.half[2]);
+  return routeFits(physics, path, m.routeHalfWidth, long + wide + 0.5, upTo, { height: m.half[1] * 2, reach: long });
 }
 
 /** The seat a bot is in. */

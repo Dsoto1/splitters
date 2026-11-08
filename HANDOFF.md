@@ -158,16 +158,56 @@ The workflow is unchanged (CLAUDE.md):
     noise is as large). **Foot-bot stuck recoveries rose on Iron Tide: 3.09 → 5.41 a bot-minute** (Dune Harbor 2.27
     → 2.98), most of it one seed: a Hauler now gets in under Iron Tide's decks, a bot bailed out of it at 12.7 m/s,
     the empty hovercraft glided ~35 m into the 3 m door at (0, 0, 28) and plugged it for 100 s. Before, the dome kept
-    Haulers out from under the decks. **Next (bots / vehicles, owner's call):** bot drivers follow the foot navmesh
-    (`thinkMounted`: `nav.findPath`) through doors narrower than the vehicle; bots bail out at full speed; an
-    empty hovercraft coasts on (accel × 0.35). Options: brake an empty hovercraft, or keep bots from driving routes
-    narrower than the hull, or have foot bots route round a parked vehicle.
+    Haulers out from under the decks. ~~**Next (bots / vehicles, owner's call):** bot drivers follow the foot navmesh
+    through doors narrower than the vehicle; bots bail out at full speed; an empty hovercraft coasts on~~: done, see
+    "Empty vehicles stop, bots park out of the way" just below.
   - **Tanks** (coordinator's question, after the tanks job): not the same cause. `pnpm bot-report iron_tide
     --seeds=1,2,3,4 --seconds=300` (CTF), main 110ee71 vs this: tanks given up stuck 9 in 18 drives → 9 in 16, 9 → 7
     of them at (±4, 0, -2). That spot has 7.4 m over it: it is the row of pillars at z -4 (x ±4..6, solid to 4.1 m),
     the long hull against them, not a ceiling. Left for the tanks work. (bot-report's `vehicles inside the level`
     needs this branch's `boxClear(…, skip, levelOnly)`: run on main's sim it counts each vehicle's own box.)
   - Landed: main = da68ed3 (green on `check/hover-stuck`, run 42429583559).
+
+- **Empty vehicles stop, bots park out of the way** (`wip/hover-regress`, agent, 2026-11-08; the hovercraft item's
+  left-over; green on `check/hover-regress`). All in the shared sim and bot code:
+  - **An empty vehicle brakes** (`vehicle.idleBrake`, m/s², in every vehicle's data; default 10; not ambient track
+    cars): nobody at the wheel, it brakes to a stop, its slide too. A Hauler got out of at 12.7 m/s stops in ~7 m
+    (was ~35). Driven vehicles unchanged (hoverCeiling's open-ground drives match to 1 mm).
+  - **Bots get out slowly**: unless it burns or is about to blow, a driver brakes under `BAIL_SPEED` (3 m/s) before
+    pressing use, and a rider waits till it is that slow. On or over water (`MountView.overWater`: afloat, in a
+    liquid, or a flyer with water under it) they stay aboard up to 8 s more (`EXIT_GROUND_WAIT`) instead of jumping
+    in (bots were left swimming in Iron Tide's moat by the wall at (-20, 0, 72) after a dropship sank there).
+  - **Bot drivers keep to routes their hull fits** (`vehicleRouteFits`, the tanks' `routeFits` for every ground
+    vehicle and hovercraft; flyers none): clear `vehicle.routeFit` × the half width either side (default 0.95, the
+    probe's; the Tank keeps 0.8), and now also high enough for the hull (`half[1]` × 2) over the highest ground
+    within half its length, as a hull rides level. Checked when a bot picks a vehicle (as tanks were) and on each new
+    route at the wheel (80 m ahead): a new route that doesn't fit keeps the route it has; with none, it gets out.
+    Iron Tide's worst foot-bot stuck spot, (-4, 1, 16), turned out to be a tank or jeep driven up the centre stairs,
+    stopped on the first step by the beam at 3 m over their foot (the hover fix's creep guard, correctly) and left
+    plugging them; before the hover fix the probe ratcheted up through the beam.
+  - Not done (optional): foot bots routing round a parked vehicle (the navmesh has no dynamic obstacles).
+  - **Tests** `shared/test/vehicleBail.test.ts` (16): eight vehicles stop within v²/2·idleBrake (a Hauler from
+    12.7 m/s in under 8 m), a bot arriving at speed gets out under 3 m/s (on fire: at once, at speed), stays aboard
+    on Iron Tide's sea, routeFit data, Iron Tide's 3 m door (no Hauler route; a Hover Bike's fits), the centre stairs
+    (no tank or jeep route), a bot in a Hauler sent through the door gets out short of it. 13 of the first 14 fail on
+    main. vehicles-resolved fixture rewritten (only the two new fields).
+  - **bot-limits.json**: the check's 10 s+ idle spells 1.5 → 2.5 a match, longest idle 45 → 50 s. The check's one
+    fernwood_moon match swings on its north rope lift (14 m, a 17 s round trip: bots wait 10-13 s at the top). On main
+    seeds 2-4 of that match give 5, 7 and 3 such spells and a 46 s longest (seed 1: 1 and 32 s); this branch
+    reshuffled seed 1 to 6 and 47 s. Revert if the owner prefers a different fix (the lift wait itself).
+  - **Numbers** (`pnpm bot-report iron_tide dune_harbor --mode=core.tdm --seconds=300`, seeds 1-12: the HANDOFF's
+    four seeds turned out too noisy, a seed swings 200-600 stuck recoveries and runs aren't fully repeatable; foot-bot
+    stuck recoveries a bot-minute, vehicle stalls, wedges, vehicle-seconds inside the level):
+    - pre-hover main (110ee71 + the new bot-report): Iron Tide 2.69, 416 stalls, 8 wedged, 211 s; Dune Harbor 2.02,
+      111, 0, 13 s.
+    - main (d3ed2a0): Iron Tide 3.43, 337, 19, 6 s; Dune Harbor 2.15, 196, 7, 116 s.
+    - this branch: Iron Tide **2.77**, 155, 13, 5 s; Dune Harbor **2.27**, 56, 0, 8 s. Bots spend less time in
+      vehicles (mounted 8.0 → 4.5 % on Iron Tide, 5.7 → 4.6 % on Dune Harbor): they take fewer that don't fit.
+    Iron Tide is back near the old number; Dune Harbor is main's within the noise, not yet pre-hover's 2.02.
+  - **Left over**: (-4, 1, 16) still collects stuck recoveries (292 in 12 matches, from 454 on main): a vehicle still
+    reaches the stairs sometimes (the route check samples every 2 m, and which samples land on the beam varies), and
+    (-12, 1, -48) on Iron Tide (204). Dune Harbor's top spots now (56, 0, 4..8), (36, 0, -4), (-12, 0, -16). Foot bots
+    routing round parked vehicles would cover what remains.
 
 ## Start here (session of 2026-11-04, handed off to the next account)
 

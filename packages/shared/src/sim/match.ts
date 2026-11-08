@@ -129,6 +129,10 @@ export const START_WAIT_SECONDS = 30;
 export const COUNTDOWN_SECONDS = 3;
 /** Vehicle crashes: closing speed (m/s) below which nothing is hurt, and damage per m/s over it (split by weight). */
 const RAM_MIN_SPEED = 5;
+/** A vehicle nobody drives brakes at this rate (m/s²) when its data has no `vehicle.idleBrake`. */
+const DEFAULT_IDLE_BRAKE = 10;
+/** The share of a vehicle's half width a bot's route must be clear for (MountView.routeHalfWidth) without `vehicle.routeFit`: its probe's (0.95). */
+const ROUTE_FIT = 0.95;
 const RAM_DAMAGE = 8;
 /** Bots see hostile sentries as targets with these IDs (+ mount index); never a real actor ID. */
 const SENTRY_VIEW_BASE = 1_000_000;
@@ -210,6 +214,8 @@ interface MountRt {
   moveOwed?: boolean;
   /** Parked and settled since this tick (driveVehicle skips the physics until something moves it). */
   restSince?: number;
+  /** Ambient traffic (a race track's cars): driven by a TrackDriver with nobody in the seat, so never idle-braked. */
+  ambient?: boolean;
   /** Raycast suspension (wheeled light vehicles, sim/suspension.ts): its tuning and the sprung body. */
   suspSetup?: SuspensionSetup;
   susp?: SuspensionState;
@@ -759,6 +765,7 @@ export class Match {
         const index = this.mounts.length;
         this.addMount(base + i, def, { x: car.entity.position[0], y: car.entity.position[1], z: car.entity.position[2] }, car.entity.yaw, null, 12);
         this.mounts[index]!.home = { pos: { x: car.pit[0], y: car.pit[1], z: car.pit[2] }, yaw: car.pitYaw };
+        this.mounts[index]!.ambient = true;
         this.ambient.push({ mount: index, driver: new TrackDriver(((i % 3) - 1) * 0.4, 0.86 + (i % 4) * 0.04), stuck: 0 });
       }
     }
@@ -2524,6 +2531,17 @@ export class Match {
     return out;
   }
 
+  /** Is vehicle `m` on or over water (or another liquid): afloat, its feet in it, or (a flyer) water under it? */
+  private overWater(m: MountRt): boolean {
+    if (m.afloat || liquidAt(this.liquids, { x: m.pos.x, y: m.pos.y + 0.2, z: m.pos.z }) || liquidAt(this.liquids, { x: m.pos.x, y: m.pos.y - 0.5, z: m.pos.z })) return true;
+    if (!m.def.vehicle?.fly) return false;
+    const hit = this.physics.raycastHit({ x: m.pos.x, y: m.pos.y - 0.05, z: m.pos.z }, { x: 0, y: -1, z: 0 }, 60);
+    const below = hit ? m.pos.y - 0.05 - hit.dist : m.pos.y - 60;
+    // The first liquid between it and the ground under it.
+    for (let y = m.pos.y - 0.5; y > below; y -= 1) if (liquidAt(this.liquids, { x: m.pos.x, y, z: m.pos.z })) return true;
+    return false;
+  }
+
   /** Turrets and vehicles as bots see them (built once per tick). */
   private mountViews(actors: readonly Combatant[]): MountView[] {
     const humans = actors.filter((a) => a.kind === 'human' && a.alive);
@@ -2545,6 +2563,8 @@ export class Match {
       ...(m.def.armour && (m.def.armour.bullets ?? 1) < 0.5 ? { armoured: true } : {}),
       ...(m.def.bailHealth !== undefined ? { bailHealth: m.def.bailHealth } : {}),
       ...(m.def.vehicle?.pivot ? { pivots: true } : {}),
+      ...(m.def.vehicle && this.liquids.length && this.overWater(m) ? { overWater: true } : {}),
+      ...(m.def.vehicle && !m.def.vehicle.fly ? { routeHalfWidth: Math.min(m.def.half[0], m.def.half[2]) * (m.def.vehicle.routeFit ?? ROUTE_FIT) } : {}),
       half: m.def.half,
       humanNear: humans.some((h) => horizontalDistance(h.move.pos, m.pos) < 35),
     }));
@@ -4758,7 +4778,16 @@ export class Match {
     let rate = (target === 0 ? v.accel * (v.hover ? 0.35 : 0.8) : braking ? v.accel * 1.8 : v.accel) * dt;
     if (!grounded) rate = 0;
     if (brake && grounded) rate = Math.max(rate, v.accel * 1.2 * dt);
-    m.speed += Math.max(-rate, Math.min(rate, (brake ? 0 : target) - m.speed));
+    const piloted = m.def.seats.some((s, i) => s.role === 'driver' && m.seats[i] !== null);
+    // Nobody at the wheel (and no track driver): it brakes to a stop (`idleBrake`), its slide with it. Before, an empty
+    // hovercraft glided on at accel × 0.35 (a Hauler bailed out of at 12.7 m/s went ~35 m, into a door it then blocked).
+    const idle = !piloted && !m.ambient && grounded ? (v.idleBrake ?? DEFAULT_IDLE_BRAKE) * dt : 0;
+    if (idle) {
+      rate = Math.max(rate, idle);
+      const slide = Math.abs(m.slide);
+      m.slide = slide > idle ? m.slide - Math.sign(m.slide) * idle : 0;
+    }
+    m.speed += Math.max(-rate, Math.min(rate, (brake || idle ? 0 : target) - m.speed));
     // Steering: needs some speed, tightest around half speed, a little lazier flat out; barely any in the air.
     const frac = Math.min(1, Math.abs(m.speed) / v.maxSpeed);
     const steer = Math.min(1, Math.abs(m.speed) / 5) * (1 - 0.35 * frac * frac) * (grounded ? 1 : 0.2) * (brake ? 1.35 : 1);
@@ -4775,7 +4804,6 @@ export class Match {
     const grip = grounded ? Math.min(0.6, (v.grip ?? (v.hover ? 0.06 : 0.25)) * road.grip * loose * wheels) * (brake ? 0.25 : 1) * (m.afloat ? FLOAT.grip : 1) : 0;
     m.slide *= (1 - grip) ** ticks;
     if (Math.abs(m.slide) < 0.02) m.slide = 0;
-    const piloted = m.def.seats.some((s, i) => s.role === 'driver' && m.seats[i] !== null);
     if (v.fly) {
       // Flyers hold their height: climb or dive at the pilot's say, and sink back down with nobody at the controls.
       // Driven into something it can't pass (a wreck's hull, a wall, a prop too tall to ride over), a flyer climbs on

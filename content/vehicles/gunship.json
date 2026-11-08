@@ -39,6 +39,7 @@
     "reverseSpeed": 6,
     "accel": 6,
     "turnRate": 1.1,
+    "idleBrake": 6,
     "hover": true,
     "grip": 0.06,
     "mass": 3,

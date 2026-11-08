@@ -167,6 +167,17 @@ export interface MountDef {
     drift?: number;
     /** Tracks: turns on the spot at this rate (rad/s) standing still, fading out by 5 m/s (where steering takes over). Default none. */
     pivot?: number;
+    /**
+     * With nobody at the wheel it brakes to a stop at this rate (m/s², the slide too), so a vehicle got out of at speed
+     * stops within a few metres instead of coasting on (into a doorway it then blocks). Default 10.
+     */
+    idleBrake?: number;
+    /**
+     * Bots drive only routes clear this share of its half width either side (bots/vehicles.ts routeFits), so they keep
+     * out of doors and passages a person fits and it doesn't. Default 0.95 (the probe's width); the Tank 0.8 (it
+     * pushes past a little scraping).
+     */
+    routeFit?: number;
   };
   sentry?: { weapon: string; range: number; turnRate: number; arc?: ArcSentrySpec };
   /**
