@@ -29,7 +29,7 @@ interface MountLike {
   body: unknown;
   wedged?: { at: unknown };
 }
-type Internals = { mounts: MountLike[]; enterMount(c: Combatant): boolean; physics: { setBoxPose(b: unknown, c: unknown, y: number): void; boxClear(c: unknown, h: unknown): boolean } };
+type Internals = { mounts: MountLike[]; enterMount(c: Combatant): boolean; physics: { setBoxPose(b: unknown, c: unknown, y: number): void } };
 const internals = (match: Match) => match as unknown as Internals;
 
 const rules = { ...DEFAULT_DEATHMATCH_RULES, scoreLimit: 0, respawnDelayTicks: 100_000 };
@@ -68,17 +68,13 @@ function seat(match: Match, model: string, at: [number, number, number], yaw: nu
 
 /**
  * Whether the top of the hull's middle (its upper 40 %, over the probe: the probe's width) is clear of the world: the
- * craft is never pushed up into a deck, a lintel or a ceiling. (The lower part rides over steps and sills.) The
- * vehicle's own box is solid in the world, so it is moved out of the way for the test.
+ * craft is never pushed up into a deck, a lintel or a ceiling. (The lower part rides over steps and sills.) Its own
+ * box is left out.
  */
 function hullClear(match: Match, m: MountLike): boolean {
   const r = Math.min(m.def.half[0], m.def.half[2]) * 0.95 * 0.7;
   const h = m.def.half[1] * 2;
-  const ph = internals(match).physics;
-  ph.setBoxPose(m.body, { x: m.pos.x, y: m.pos.y - 500, z: m.pos.z }, m.yaw);
-  const clear = ph.boxClear({ x: m.pos.x, y: m.pos.y + h * 0.8 - 0.025, z: m.pos.z }, { x: r, y: h * 0.2 - 0.025, z: r });
-  ph.setBoxPose(m.body, { x: m.pos.x, y: m.pos.y + m.def.half[1], z: m.pos.z }, m.yaw);
-  return clear;
+  return match.physics.boxClear({ x: m.pos.x, y: m.pos.y + h * 0.8 - 0.025, z: m.pos.z }, { x: r, y: h * 0.2 - 0.025, z: r }, m.body as Parameters<typeof match.physics.boxClear>[2], true);
 }
 
 /** Drive with `input` for `seconds` or until `done`; the ticks it took (or -1), and whether the hull stayed clear. */

@@ -185,7 +185,7 @@ interface MountRt {
    * Ground vehicles whose probe capsule stands taller than the hull (all of them: its radius follows the hull's
    * width): a probe of the same round bottom cut off at the hull's top (PhysicsWorld.createLowVehicleProbe). It
    * carries the vehicle while something is over the hull that the capsule's dome would catch on (`low`: a deck,
-   * a beam, a low roof), so a vehicle goes, and gets out, wherever its hull fits (Match.vehicleProbe).
+   * a beam, a low roof), so a vehicle goes, and gets out, wherever its hull fits (Match.moveVehicleProbe).
    */
   lowProbe: RAPIER.Collider | null;
   low: boolean;
