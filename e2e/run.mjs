@@ -6635,6 +6635,8 @@ async function startHostService({ hubPort, controlPort, env = {}, idle = false }
     CONTROL_PORT: String(controlPort),
     HOST_STATE_DIR: state,
     STATUS_EVERY: '0',
+    // (Its match stays on its map: no vote between matches.)
+    MAP_VOTE: '0',
     ...env,
   });
   return state;
@@ -7030,9 +7032,11 @@ async function hostcontrolsFlow(browser) {
   /** The end-of-match scoreboard's line under its title (the overlay's, or the pause menu's board while it's open). */
   const boardNote = (page, re) => page.waitForFunction((src) => [...document.querySelectorAll('#scoreboard .sb-note, #pause-scores .sb-note')].some((n) => new RegExp(src).test(n.textContent ?? '')), re.source, { timeout: T(20000) }).then(() => true, () => false);
 
-  // Offline: the player runs the match.
+  // Offline: the player runs the match. The host's "Vote on the next map" is off in this flow (the plain rotation and
+  // replay are what it checks; the flow `party` has the vote).
   const page = await (await browser.newContext({ viewport: { width: 960, height: 540 } })).newPage();
   page.on('pageerror', (e) => errors.push(`offline: ${e.message}`));
+  await page.addInitScript(() => localStorage.setItem('cs.mapVote', '0'));
   await page.goto(`${CLIENT}/?offline=arena`, { waitUntil: 'domcontentloaded' });
   await page.waitForFunction(playing, null, { timeout: T(60000) });
   const state = await page.waitForFunction(() => window.__cs.host(), null, { timeout: T(10000) }).then((h) => h.jsonValue());
@@ -7221,7 +7225,7 @@ async function hostcontrolsFlow(browser) {
   const peer = `&hub=127.0.0.1:${PEER_PORT}`;
   const host = await (await browser.newContext({ viewport: { width: 960, height: 540 } })).newPage();
   host.on('pageerror', (e) => errors.push(`host: ${e.message}`));
-  await host.addInitScript(() => localStorage.setItem('cs.name', 'Hosty'));
+  await host.addInitScript(() => (localStorage.setItem('cs.name', 'Hosty'), localStorage.setItem('cs.mapVote', '0')));
   await host.goto(`${CLIENT}/?offline=arena${peer}`, { waitUntil: 'domcontentloaded' });
   await host.waitForFunction(playing, null, { timeout: T(90000) });
   const hasCode = () => /[A-Z0-9]{6}/.test(document.querySelector('#host-info .host-code b')?.textContent ?? '');
@@ -7273,11 +7277,14 @@ async function hostcontrolsFlow(browser) {
   // After Host game (a match left loading here slowed the friend's rejoin above).
   const solo = await (await browser.newContext({ viewport: { width: 960, height: 540 } })).newPage();
   solo.on('pageerror', (e) => errors.push(`rotation: ${e.message}`));
+  await solo.addInitScript(() => localStorage.setItem('cs.mapVote', '0'));
   await solo.goto(`${CLIENT}/?offline=arena`, { waitUntil: 'domcontentloaded' });
   await solo.waitForFunction(playing, null, { timeout: T(60000) });
   // Offline, the map rotation: queue a map, end the match, and after the scoreboard it goes there instead of replaying.
   const empty = await solo.evaluate(() => document.getElementById('hc-rot-next')?.textContent ?? '');
   check(/^Empty/.test(empty), `an empty rotation replays the map (${empty})`);
+  const voteBox = await solo.evaluate(() => document.getElementById('hc-rot-vote')?.checked ?? null);
+  check(voteBox === false, `the Rotation card's "Vote on the next map" shows the host's setting (off here: ${voteBox})`);
   check(await queueMap(solo, 'void_yard', 'Void Yard'), 'Add map… queues a map: "Next up: Void Yard · Deathmatch"');
   await endMatch(solo);
   check(await boardNote(solo, /Next map: Void Yard \(Deathmatch\)/), 'the end-of-match scoreboard says where the match goes next');
@@ -7294,6 +7301,149 @@ async function hostcontrolsFlow(browser) {
  * advance and keeps it checkpointed; when the host leaves, the successor carries the match on in its own
  * browser (the listing moves with it), and the other friend follows, keeping their place and score.
  */
+/**
+ * Between matches and parties (sim/mapVote.ts, net/party.ts). Offline (?test=1): the match ends, the scoreboard and
+ * the vote share the screen (desktop and phone pictures), keys 1-3 / a tap vote, and the next map loads with the same
+ * players. Online (a hub, as hostgame): a friend joins by the host's invite link onto the host's side (their party,
+ * marked on the scoreboard), both vote, and the party travels to the winner together, on one side again.
+ */
+async function partyFlow(browser) {
+  const errors = [];
+  const shots = process.env.E2E_SHOTS;
+  const shot = (page, name) => (shots ? page.screenshot({ path: `${shots}/party-${name}.png`, timeout: T(60000) }).catch(() => {}) : Promise.resolve());
+  const playing = () => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown';
+  const voteOpen = () => !!window.__cs?.vote?.()?.open && window.__cs.vote().maps.length >= 2;
+  // The lightest of the options (the one to vote for, so the next map loads soon on a slow runner).
+  const sizes = Object.fromEntries(readdirSync(new URL('../maps/', import.meta.url)).filter((f) => f.endsWith('.json')).map((f) => [f.slice(0, -5), readFileSync(new URL(`../maps/${f}`, import.meta.url)).length]));
+  const lightest = (maps) => maps.reduce((best, m, i) => ((sizes[m] ?? 1e9) < (sizes[maps[best]] ?? 1e9) ? i : best), 0);
+
+  // Offline, deterministic: the vote after the match, with keys; the next map with the same players. (Browser tests
+  // replay a map that ends, as ever, unless they ask for the vote: &vote=1.)
+  const page = await (await browser.newContext({ viewport: { width: 1280, height: 720 } })).newPage();
+  page.on('pageerror', (e) => errors.push(`offline: ${e.message}`));
+  await page.goto(`${CLIENT}/?test=1&vote=1&offline=arena`, { waitUntil: 'domcontentloaded', timeout: T(60000) });
+  await page.waitForFunction(playing, null, { timeout: T(90000) });
+  const before = await sim(page, (m) => ({ map: m.map.metadata.id, n: m.combatants().length, people: m.combatants().filter((c) => c.kind === 'human').map((c) => c.name) }));
+  // (The scoreboard, and so the vote, held up while the slow pictures are taken; let go after the vote.)
+  await sim(page, (m) => {
+    m.endMatch();
+    m.holdIntermission(m.tick + 60 * 300);
+  });
+  const opened = await page.waitForFunction(voteOpen, null, { timeout: T(20000) }).then(() => true, () => false);
+  // (The scoreboard opens with the intermission's snapshot, which a loaded page may draw a moment after the vote.)
+  await page.waitForFunction(() => !document.getElementById('scoreboard').hidden, null, { timeout: T(10000) }).catch(() => {});
+  const ballot = await page.evaluate(() => window.__cs.vote());
+  check(opened && ballot.maps.length >= 2 && ballot.maps.length <= 3 && !ballot.maps.includes(before.map) && ballot.left > 3, `the match ends into the scoreboard and a vote on 2-3 other maps (${JSON.stringify(ballot)})`);
+  const screen = await page.evaluate(() => ({ board: !document.getElementById('scoreboard').hidden, cards: document.querySelectorAll('#map-vote .mv-card').length, pause: !document.getElementById('pause').hidden, overlap: (() => { const a = document.getElementById('scoreboard').getBoundingClientRect(); const b = document.getElementById('map-vote').getBoundingClientRect(); return a.bottom > b.top + 1; })() }));
+  check(screen.board && screen.cards === ballot.maps.length && !screen.pause && !screen.overlap, `the scoreboard and the vote's cards share the screen, nothing over them (${JSON.stringify(screen)})`);
+  await shot(page, 'vote-desktop');
+  const pick = lightest(ballot.maps);
+  await page.keyboard.press(`Digit${pick + 1}`);
+  const voted = await page.waitForFunction((i) => window.__cs.vote().mine === i && window.__cs.vote().votes[i] === 1, pick, { timeout: T(10000) }).then(() => true, () => false);
+  check(voted, `key ${pick + 1} votes, and the host counts it (${JSON.stringify(await page.evaluate(() => window.__cs.vote()))})`);
+  await shot(page, 'vote-desktop-voted');
+  // Let go of the scoreboard: the vote closes as planned, the winner shows, the match travels. (The winner is noted as
+  // it shows: a slow page may be on the next map by the time the runner looks.)
+  await page.evaluate(() => {
+    const keep = setInterval(() => window.__cs?.vote?.()?.winner && ((window.__won = window.__cs.vote().winner), clearInterval(keep)), 50);
+  });
+  await sim(page, (m) => (m.phaseEndTick = m.tick + 60 * 6));
+  const won = await page.waitForFunction(() => window.__won ?? null, null, { timeout: T(30000), polling: 100 }).then((h) => h.jsonValue(), () => null);
+  check(won === ballot.maps[pick], `the vote closes on the map with the votes (${won})`);
+  await shot(page, 'vote-desktop-winner');
+  const moved = await simWait(page, (m, _me, id) => m.map.metadata.id === id, ballot.maps[pick], T(120000));
+  await page.waitForFunction(playing, null, { timeout: T(120000) }).catch(() => {});
+  const after = await sim(page, (m) => ({ map: m.map.metadata.id, n: m.combatants().length, people: m.combatants().filter((c) => c.kind === 'human').map((c) => c.name) }));
+  check(moved && after.n === before.n && JSON.stringify(after.people) === JSON.stringify(before.people) && !(await page.evaluate(() => window.__cs.vote()?.open)), `the next map loads by itself with the same players (${JSON.stringify({ before, after })})`);
+  await page.context().close();
+
+  // A phone (landscape, touch): the same screen fits, and a tap votes.
+  const phone = devices['iPhone 13'];
+  const pctx = await browser.newContext({ ...phone, viewport: { width: phone.viewport.height, height: phone.viewport.width }, screen: { width: phone.screen.height, height: phone.screen.width } });
+  const ph = await pctx.newPage();
+  ph.on('pageerror', (e) => errors.push(`phone: ${e.message}`));
+  await ph.goto(`${CLIENT}/?test=1&vote=1&offline=arena`, { waitUntil: 'domcontentloaded', timeout: T(60000) });
+  await ph.waitForFunction(playing, null, { timeout: T(90000) });
+  await sim(ph, (m) => {
+    m.endMatch();
+    // (The scoreboard and the vote held up for the picture and the tap.)
+    m.holdIntermission(m.tick + 60 * 120);
+  });
+  const pOpen = await ph.waitForFunction(voteOpen, null, { timeout: T(20000) }).then(() => true, () => false);
+  const fits = await ph.evaluate(() => {
+    const r = document.getElementById('map-vote').getBoundingClientRect();
+    const b = document.getElementById('scoreboard').getBoundingClientRect();
+    return { inside: r.left >= 0 && r.right <= innerWidth + 1 && r.bottom <= innerHeight + 1, overlap: b.bottom > r.top + 1, cardH: document.querySelector('#map-vote .mv-card')?.getBoundingClientRect().height ?? 0 };
+  });
+  check(pOpen && fits.inside && !fits.overlap && fits.cardH >= 44, `on a phone the vote fits under the scoreboard, cards big enough to tap (${JSON.stringify(fits)})`);
+  await shot(ph, 'vote-phone');
+  await ph.tap('#map-vote .mv-card[data-i="1"]');
+  const tapped = await ph.waitForFunction(() => window.__cs.vote().mine === 1 && window.__cs.vote().votes[1] === 1, null, { timeout: T(10000) }).then(() => true, () => false);
+  check(tapped, 'a tap on a card votes');
+  await shot(ph, 'vote-phone-voted');
+  await pctx.close();
+
+  // Online: a hub, a host, a friend by the host's invite link.
+  const HUB_PORT = +(process.env.E2E_PARTY_HUB_PORT ?? 9079);
+  start('pnpm', ['--filter', '@tiletrigger/server', 'hub'], { PORT: String(HUB_PORT), HOST: '127.0.0.1' });
+  await waitForHttp(`http://127.0.0.1:${HUB_PORT}/lobby/health`, T(30000)).catch(() => {});
+  const hub = `&hub=127.0.0.1:${HUB_PORT}`;
+  const host = await (await browser.newContext({ viewport: { width: 960, height: 540 } })).newPage();
+  host.on('pageerror', (e) => errors.push(`host: ${e.message}`));
+  await host.addInitScript(() => localStorage.setItem('cs.name', 'Hosty'));
+  await host.goto(`${CLIENT}/?offline=void_yard&gamemode=core.tdm${hub}`, { waitUntil: 'domcontentloaded', timeout: T(60000) });
+  await host.waitForFunction(playing, null, { timeout: T(90000) });
+  const hasCode = () => /[A-Z0-9]{6}/.test(document.querySelector('#host-info .host-code b')?.textContent ?? '');
+  for (let i = 0; i < 3; i++) {
+    await host.evaluate(() => document.getElementById('host-game').click());
+    if (await host.waitForFunction(hasCode, null, { timeout: T(30000) }).then(() => true, () => false)) break;
+  }
+  const link = await host.evaluate(() => document.querySelector('#host-info input')?.value ?? '');
+  check(/[?&]join=[A-Z0-9]{6}&party=[A-Za-z0-9]{6,12}/.test(link), `the host's invite link carries the join code and the party (${link})`);
+  const friend = await (await browser.newContext({ viewport: { width: 960, height: 540 } })).newPage();
+  friend.on('pageerror', (e) => errors.push(`friend: ${e.message}`));
+  await friend.addInitScript(() => localStorage.setItem('cs.name', 'Friend'));
+  await friend.goto(link, { waitUntil: 'domcontentloaded', timeout: T(60000) });
+  const joined = await friend.waitForFunction(playing, null, { timeout: T(90000) }).then(() => true, () => false);
+  check(joined, 'a friend joins by the invite link');
+  if (joined) {
+    await simWait(host, (m) => m.combatants().some((c) => c.kind === 'human' && c.name === 'Friend'), null, T(10000));
+    const sides = () => sim(host, (m) => Object.fromEntries(m.combatants().filter((c) => c.kind === 'human').map((c) => [c.name, { team: c.faction, party: c.party ?? null }])));
+    const s1 = await sides();
+    check(s1.Friend && s1.Hosty && s1.Friend.team === s1.Hosty.team && s1.Friend.party === s1.Hosty.party && !!s1.Hosty.party, `the friend lands on the host's side, in the host's party (${JSON.stringify(s1)})`);
+    const fill1 = await sim(host, (m) => m.combatants().length);
+    // The friend can bring more friends: the Match tab's invite link, with the same party.
+    const theirs = await friend.evaluate(() => document.getElementById('pause-invite-link')?.value ?? '');
+    check(theirs.includes(link.match(/join=[A-Z0-9]{6}/)[0]) && theirs.includes(link.match(/party=[A-Za-z0-9]+/)[0]), `the friend's pause menu offers the same invite (${theirs})`);
+    // The match ends: both vote for the same map; the party travels there together.
+    await sim(host, (m) => {
+      m.endMatch();
+      m.holdIntermission(m.tick + 60 * 300);
+    });
+    const both = await Promise.all([host, friend].map((p) => p.waitForFunction(voteOpen, null, { timeout: T(30000) }).then(() => true, () => false)));
+    const maps = await host.evaluate(() => window.__cs.vote().maps);
+    const marked = await friend.evaluate(() => [...document.querySelectorAll('#scoreboard .sb-nm.party')].map((n) => n.textContent));
+    check(both.every(Boolean) && JSON.stringify(maps) === JSON.stringify(await friend.evaluate(() => window.__cs.vote().maps)), `host and friend get the same ballot (${JSON.stringify(maps)})`);
+    check(marked.includes('Hosty') && marked.includes('Friend'), `the scoreboard marks the party (${JSON.stringify(marked)})`);
+    await shot(friend, 'vote-online-friend');
+    const pickO = lightest(maps);
+    await friend.keyboard.press(`Digit${pickO + 1}`);
+    await host.keyboard.press(`Digit${pickO + 1}`);
+    const counted = await host.waitForFunction((i) => window.__cs.vote().votes[i] === 2, pickO, { timeout: T(15000) }).then(() => true, () => false);
+    check(counted, `both votes are counted (${JSON.stringify(await host.evaluate(() => window.__cs.vote()))})`);
+    await sim(host, (m) => (m.phaseEndTick = m.tick + 60 * 6));
+    const together = await simWait(host, (m, _me, id) => m.map.metadata.id === id && m.combatants().some((c) => c.kind === 'human' && c.name === 'Friend'), maps[pickO], T(150000));
+    const s2 = together ? await sides() : {};
+    const fill2 = await sim(host, (m) => m.combatants().length);
+    check(together && s2.Friend?.team === s2.Hosty?.team && fill2 === fill1, `the party goes on to the voted map together, on one side, bots filling the rest (${JSON.stringify({ s2, fill1, fill2 })})`);
+    const friendThere = await friend.waitForFunction((id) => window.__cs?.map === id && window.__cs.local, maps[pickO], { timeout: T(90000) }).then(() => true, () => false);
+    check(friendThere, "the friend's own page is on the new map too");
+  }
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  await host.context().close();
+  await friend.context().close();
+}
+
 async function handoffFlow(browser) {
   // Each of the three pages in a browser of its own (performance round 4, the handoff flake's root cause): in one
   // browser they share one GPU process, whose thread draws every page's frames with SwiftShader, and a page's
@@ -7505,7 +7655,8 @@ function report() {
 
 try {
   start('pnpm', ['--filter', '@tiletrigger/client', 'exec', 'vite', 'preview', '--port', CLIENT_PORT, '--strictPort']);
-  start('pnpm', ['--filter', '@tiletrigger/server', 'start'], { PORT: String(SERVER_PORT), BOT_FILL: '3', QUIET_STATS: '1' });
+  // (The flows' server stays on its map: no vote between matches travelling it elsewhere mid-run.)
+  start('pnpm', ['--filter', '@tiletrigger/server', 'start'], { PORT: String(SERVER_PORT), BOT_FILL: '3', QUIET_STATS: '1', MAP_VOTE: '0' });
   await waitForHttp(CLIENT);
   await sleep(1500);
   const browser = await chromium.launch({ args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
@@ -7513,7 +7664,7 @@ try {
   const open = instrumentBrowser(browser);
   // E2E_ONLY=editor,characters runs a subset; E2E_SHARD=2/8 one of CI's parallel groups (balanced by e2e/timings.json;
   // CI's plan job passes each shard's flows in E2E_ONLY itself).
-  const flows = { editor: editorFlow, editorux: editoruxFlow, offline: offlineFlow, mobile: mobileFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, scenery: sceneryFlow, setpieces: setpiecesFlow, physicsfx: physicsfxFlow, teams: teamsFlow, weaponsets: weaponsetsFlow, ctf: ctfFlow, forts: fortsFlow, breakthrough: breakthroughFlow, roulette: rouletteFlow, arsenal: arsenalFlow, vehicles: vehiclesFlow, race: raceFlow, zombies: zombiesFlow, classes: classesFlow, coverage: coverageFlow, ...Object.fromEntries(MAP_FLOWS.map((name, part) => [name, (b) => mapsFlow(b, part)])), designer: designerFlow, ...Object.fromEntries(CHARACTER_FLOWS.map((name, part) => [name, (b) => charactersFlow(b, part)])), online: onlineFlow, hostgame: hostgameFlow, hostcontrols: hostcontrolsFlow, lobby: lobbyFlow, handoff: handoffFlow, dedicatedhost: dedicatedhostFlow, hostpage: hostpageFlow, webgpu: webgpuFlow, visual: visualFlow, environment: environmentFlow, flashing: flashingFlow, newplayer: newplayerFlow };
+  const flows = { editor: editorFlow, editorux: editoruxFlow, offline: offlineFlow, mobile: mobileFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, scenery: sceneryFlow, setpieces: setpiecesFlow, physicsfx: physicsfxFlow, teams: teamsFlow, weaponsets: weaponsetsFlow, ctf: ctfFlow, forts: fortsFlow, breakthrough: breakthroughFlow, roulette: rouletteFlow, arsenal: arsenalFlow, vehicles: vehiclesFlow, race: raceFlow, zombies: zombiesFlow, classes: classesFlow, coverage: coverageFlow, ...Object.fromEntries(MAP_FLOWS.map((name, part) => [name, (b) => mapsFlow(b, part)])), designer: designerFlow, ...Object.fromEntries(CHARACTER_FLOWS.map((name, part) => [name, (b) => charactersFlow(b, part)])), online: onlineFlow, hostgame: hostgameFlow, hostcontrols: hostcontrolsFlow, party: partyFlow, lobby: lobbyFlow, handoff: handoffFlow, dedicatedhost: dedicatedhostFlow, hostpage: hostpageFlow, webgpu: webgpuFlow, visual: visualFlow, environment: environmentFlow, flashing: flashingFlow, newplayer: newplayerFlow };
   // e2e/flowMap.mjs (change-based selection, shards) must know every flow, and only those.
   const known = new Set(FLOWS);
   const drift = [...Object.keys(flows).filter((f) => !known.has(f)), ...FLOWS.filter((f) => !(f in flows))];

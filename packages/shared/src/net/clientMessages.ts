@@ -1,6 +1,7 @@
 import { HOST_BOT_SKILLS, HOST_BOT_STYLES, type ClientMessage, type HostCommand, type HostRulesPatch } from '../protocol.ts';
 import { isMapId } from '../sim/playlist.ts';
 import { ROTATION_MAX } from '../sim/rotation.ts';
+import { isPartyTag } from './party.ts';
 import { validateBotSet } from '../sim/botSet.ts';
 import { validBotCast } from '../content/botThemes.ts';
 import { SCORE_LIMIT_MAX, isGameMode, type GameMode } from '../sim/rules.ts';
@@ -33,8 +34,10 @@ export function parseClientMessage(text: string): ClientMessage | null {
   switch (o.t) {
     case 'hello':
       return typeof o.protocol === 'number' && typeof o.name === 'string'
-        ? { t: 'hello', protocol: o.protocol, name: o.name, ...(typeof o.look === 'string' && o.look.length <= 64 ? { look: o.look } : {}), ...(typeof o.admin === 'string' && o.admin && o.admin.length <= 200 ? { admin: o.admin } : {}), ...(typeof o.pk === 'string' && /^p_[A-Za-z0-9_-]{8,32}$/.test(o.pk) ? { pk: o.pk } : {}), ...(typeof o.ticket === 'string' && o.ticket.length <= 1000 ? { ticket: o.ticket } : {}) }
+        ? { t: 'hello', protocol: o.protocol, name: o.name, ...(typeof o.look === 'string' && o.look.length <= 64 ? { look: o.look } : {}), ...(typeof o.admin === 'string' && o.admin && o.admin.length <= 200 ? { admin: o.admin } : {}), ...(typeof o.pk === 'string' && /^p_[A-Za-z0-9_-]{8,32}$/.test(o.pk) ? { pk: o.pk } : {}), ...(typeof o.ticket === 'string' && o.ticket.length <= 1000 ? { ticket: o.ticket } : {}), ...(isPartyTag(o.party) ? { party: o.party } : {}) }
         : null;
+    case 'vote':
+      return typeof o.i === 'number' && Number.isInteger(o.i) && o.i >= 0 && o.i < 8 ? { t: 'vote', i: o.i } : null;
     case 'admin':
       return typeof o.token === 'string' && o.token.length <= 200 ? { t: 'admin', token: o.token } : null;
     case 'host': {
@@ -153,6 +156,7 @@ function parseHostCommand(raw: unknown): HostCommand | null {
     case 'rotation': {
       // Shapes only: whether each map is ours and plays that mode is the host's to check.
       if (o.shuffle !== undefined && typeof o.shuffle !== 'boolean') return null;
+      if (o.vote !== undefined && typeof o.vote !== 'boolean') return null;
       if (o.entries !== undefined && !(Array.isArray(o.entries) && o.entries.length <= ROTATION_MAX)) return null;
       const entries: { map: string; mode: GameMode }[] = [];
       for (const e of (o.entries as unknown[] | undefined) ?? []) {
@@ -160,7 +164,7 @@ function parseHostCommand(raw: unknown): HostCommand | null {
         if (!x || !isMapId(x.map) || typeof x.mode !== 'string' || !isGameMode(x.mode)) return null;
         entries.push({ map: x.map, mode: x.mode });
       }
-      return { c: 'rotation', ...(o.entries !== undefined ? { entries } : {}), ...(o.shuffle !== undefined ? { shuffle: o.shuffle as boolean } : {}) };
+      return { c: 'rotation', ...(o.entries !== undefined ? { entries } : {}), ...(o.shuffle !== undefined ? { shuffle: o.shuffle as boolean } : {}), ...(o.vote !== undefined ? { vote: o.vote as boolean } : {}) };
     }
     case 'skip':
       return { c: 'skip' };

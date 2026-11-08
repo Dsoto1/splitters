@@ -32,6 +32,8 @@ export interface HostConfig {
   rotation?: string[];
   /** Play the rotation in a random order. */
   rotationShuffle?: boolean;
+  /** false: no vote on the next map between matches (plain rotation). Absent: the vote is on. */
+  mapVote?: boolean;
   /**
    * The host's own bots (docs/HOSTING.md, "Bot sets"): a built-in set's id (maps/botsets/<id>.json), a list in
    * the text form ("Sir Clank, core.knight, hard; Zorp"), or (in a JSON config, or BOTSET=file.json) a set
@@ -74,7 +76,7 @@ const CODE_RE = /^[A-HJKMNP-Z2-9]{6}$/;
 /** Keys a JSON config may use (the same names as the environment variables, or camelCase). */
 const KEYS: Record<string, string> = {
   HUB: 'hub', MAP: 'map', MODE: 'mode', BOT_FILL: 'botFill', MAX_PLAYERS: 'maxPlayers', BOT_DIFFICULTY: 'botDifficulty', BOT_TAKEBACK: 'botTakeBack',
-  LEADERS: 'leaders', PLAYLIST: 'playlist', ROTATION: 'rotation', ROTATION_SHUFFLE: 'rotationShuffle', BOTSET: 'botSet', SERVER_NAME: 'name', HOST_NAME: 'hostName', VISIBILITY: 'visibility', ADMIN_TOKEN: 'adminToken', JOIN_CODE: 'joinCode', STATUS_EVERY: 'statusEvery', AFK_SECONDS: 'afkSeconds', IDLE_KICK_MINUTES: 'idleKickMinutes', REGION: 'region', RULES: 'rules', MOTD: 'motd',
+  LEADERS: 'leaders', PLAYLIST: 'playlist', ROTATION: 'rotation', ROTATION_SHUFFLE: 'rotationShuffle', MAP_VOTE: 'mapVote', BOTSET: 'botSet', SERVER_NAME: 'name', HOST_NAME: 'hostName', VISIBILITY: 'visibility', ADMIN_TOKEN: 'adminToken', JOIN_CODE: 'joinCode', STATUS_EVERY: 'statusEvery', AFK_SECONDS: 'afkSeconds', IDLE_KICK_MINUTES: 'idleKickMinutes', REGION: 'region', RULES: 'rules', MOTD: 'motd',
 };
 
 export class ConfigError extends Error {}
@@ -163,6 +165,7 @@ export function parseConfig(raw: Record<string, unknown>, cwd = process.cwd()): 
     ...(playlist ? { playlist: resolve(cwd, playlist) } : {}),
     ...(rotation.length ? { rotation } : {}),
     ...(bool(raw.rotationShuffle) ? { rotationShuffle: true } : {}),
+    ...(raw.mapVote !== undefined && raw.mapVote !== '' && !bool(raw.mapVote) ? { mapVote: false } : {}),
     ...(botSet !== undefined ? { botSet } : {}),
     name: name || 'Dedicated host',
     hostName: hostName || 'Host Service',

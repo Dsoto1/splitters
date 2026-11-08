@@ -1170,6 +1170,7 @@ img.wicon.large { height: 26px; margin: 0 6px 0 0; }
 .sb-nm.guest::after { content: 'GUEST'; margin-left: 5px; padding: 0 3px; border: 1px dashed var(--line); color: var(--muted); font-size: 0.62em; letter-spacing: 0.08em; vertical-align: 0.15em; line-height: 1.2; }
 .sb-nm.bot::after { content: 'BOT'; margin-left: 5px; padding: 0 3px; border: 1px solid var(--line); color: var(--muted); font-size: 0.68em; letter-spacing: 0.08em; vertical-align: 0.15em; line-height: 1.2; }
 .sb-mark { flex: none; width: 1em; font-style: normal; text-align: center; font-size: 0.8em; }
+.sb-nm.party::before { content: 'PARTY'; margin-right: 5px; padding: 0 3px; background: rgba(255, 179, 71, 0.16); color: var(--orange); font-size: 0.62em; letter-spacing: 0.08em; vertical-align: 0.15em; line-height: 1.2; }
 .sb-mark.leader { color: #ffd24a; font-size: 1em; text-shadow: 0 0 4px rgba(255, 210, 74, 0.6); }
 .sb-cls { color: var(--muted); font-size: 0.82em; letter-spacing: 0.05em; text-transform: uppercase; }
 .sb-ping { color: var(--muted); }
@@ -1439,6 +1440,56 @@ html.touch #menu .screen.characters, html.touch #menu .screen.profile { padding-
 #rl-storm.on { background: rgba(40, 26, 84, 0.78); }
 #rl-storm.heavy { border-color: #ff9a3c; color: #ffe2c6; background: rgba(60, 30, 10, 0.8); }
 #match-awards { position: absolute; left: 50%; bottom: 7%; transform: translateX(-50%); display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 12px; width: min(900px, calc(100vw - 32px)); padding: 10px 14px 12px; background: rgba(12, 16, 26, 0.9); border-top: 3px solid #ffc93c; font: 500 14px var(--font-display); color: #e8eef7; box-sizing: border-box; z-index: 5; }
+/* Between matches: the vote on the next map (game/mapVoteHud.ts), under the scoreboard; the board moves up for it. */
+#map-vote { position: absolute; left: 50%; bottom: 12px; transform: translateX(-50%); width: min(860px, calc(100vw - 32px)); box-sizing: border-box; padding: 8px 12px 10px; background: rgba(12, 16, 26, 0.94); border-top: 3px solid var(--cyan); box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45); color: var(--text); pointer-events: auto; z-index: 30; }
+#map-vote .mv-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 8px; }
+#map-vote h3 { margin: 0; font: 700 15px var(--font-display); letter-spacing: 0.12em; text-transform: uppercase; color: var(--cyan); }
+#map-vote h3 b { color: var(--text); }
+#map-vote .mv-left { font: 700 15px var(--font-display); color: var(--muted); font-variant-numeric: tabular-nums; }
+#map-vote .mv-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(0, 1fr)); gap: 10px; }
+#map-vote .mv-card { display: grid; grid-template-rows: auto auto auto auto; text-align: left; padding: 0 0 8px; background: var(--surface-2); border: 2px solid transparent; color: var(--text); cursor: pointer; font: inherit; min-width: 0; touch-action: manipulation; transition: border-color 0.12s, background 0.12s; }
+#map-vote .mv-card:hover:not(:disabled), #map-vote .mv-card:focus-visible { border-color: rgba(0, 209, 255, 0.55); outline: none; }
+#map-vote .mv-card.mine { border-color: var(--cyan); background: #18324a; }
+#map-vote .mv-card.won { border-color: var(--orange); background: #2f2a1c; }
+#map-vote .mv-card.lost { opacity: 0.45; }
+#map-vote .mv-card:disabled { cursor: default; }
+#map-vote .mv-pic { position: relative; display: block; aspect-ratio: 16 / 7; background: var(--surface-3) center / cover no-repeat; }
+#map-vote .mv-pic kbd { position: absolute; left: 6px; top: 6px; min-width: 20px; padding: 1px 5px; background: rgba(11, 15, 26, 0.85); border: 1px solid var(--line); color: var(--text); font: 700 12px var(--font-display); text-align: center; }
+#map-vote .mv-name { display: block; padding: 6px 8px 0; font: 700 15px var(--font-display); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#map-vote .mv-mode { display: block; padding: 0 8px; font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
+#map-vote .mv-votes { position: relative; display: block; margin: 6px 8px 0; padding: 2px 6px; background: rgba(255, 255, 255, 0.06); font: 600 12px var(--font-display); overflow: hidden; }
+#map-vote .mv-votes i { position: absolute; left: 0; top: 0; bottom: 0; background: rgba(0, 209, 255, 0.28); transition: width 0.25s; }
+#map-vote .mv-card.won .mv-votes i { background: rgba(255, 179, 71, 0.35); }
+#map-vote .mv-votes b, #map-vote .mv-votes span { position: relative; }
+#map-vote .mv-votes b { margin-right: 3px; }
+#map-vote .mv-hint { margin: 6px 0 0; font-size: 12px; color: var(--muted); text-align: center; }
+#hud.vote-on #scoreboard { top: 10px; transform: translateX(-50%); max-height: calc(100vh - var(--vote-h, 250px) - var(--awards-h, 0px) - 24px); }
+#hud.vote-on #match-awards { bottom: calc(var(--vote-h, 250px) + 4px); top: auto; width: min(860px, calc(100vw - 32px)); padding: 6px 10px 8px; gap: 6px 8px; }
+#hud.vote-on #match-awards .award { min-width: 150px; padding: 4px 8px; }
+#hud.vote-on #match-awards h3 { display: none; }
+.pause-invite { margin: 6px 0; display: grid; grid-template-columns: 1fr auto; gap: 6px; align-items: center; }
+.pause-invite .host-code, .pause-invite .hint { grid-column: 1 / -1; margin: 0; }
+.pause-invite input { min-width: 0; }
+@media (max-height: 640px) {
+  #map-vote .mv-pic { aspect-ratio: 16 / 4; }
+  #map-vote .mv-hint { display: none; }
+  #map-vote .mv-head { margin-bottom: 5px; }
+  #hud.vote-on #match-awards { font-size: 12px; padding: 4px 8px 5px; }
+  #hud.vote-on #match-awards .award { padding: 2px 6px; }
+  #hud.vote-on #match-awards .award b { font-size: 13px; }
+  #hud.vote-on #match-awards .award span { font-size: 11px; }
+}
+@media (max-height: 480px) {
+  #map-vote { padding: 5px 8px 6px; bottom: 4px; }
+  #map-vote .mv-head { margin-bottom: 4px; }
+  #map-vote h3, #map-vote .mv-left { font-size: 13px; }
+  #map-vote .mv-pic { aspect-ratio: 16 / 5; }
+  #map-vote .mv-name { font-size: 13px; padding-top: 3px; }
+  #map-vote .mv-votes { margin-top: 3px; }
+  #map-vote .mv-hint { display: none; }
+  #map-vote .mv-card { padding-bottom: 5px; }
+  #hud.vote-on #match-awards { display: none; }
+}
 #match-awards h3 { flex-basis: 100%; margin: 0 0 2px; text-align: center; font: 700 15px var(--font-display); letter-spacing: 0.12em; text-transform: uppercase; color: #ffc93c; }
 .award { min-width: 180px; padding: 6px 10px; background: #1c2333; text-align: center; }
 .award b { display: block; font: 700 15px var(--font-display); }

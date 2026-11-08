@@ -31,6 +31,7 @@
     "online": 28,
     "hostgame": 76,
     "hostcontrols": 320,
+    "party": 300,
     "lobby": 123,
     "handoff": 127,
     "dedicatedhost": 119,

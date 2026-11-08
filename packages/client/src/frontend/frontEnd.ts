@@ -113,6 +113,7 @@ import { bindFullscreenButton, browserTookEscape, fullscreenSupported, isFullscr
 import { PAD, glyphs, onPadPress } from '../inputMode.ts';
 import { BOT_SET_PRESETS, PLAYLISTS } from '../playlists.ts';
 import { botManager } from './botManager.ts';
+import { joinParty, lastJoin, parseInvite } from '../game/party.ts';
 import { MODE_SHORT, modeIcon } from './modeIcons.ts';
 import { QUICK_MODES, loadQuickPrefs, pickQuickMap, quickSetup, saveQuickPrefs, type QuickMode } from './quickPlay.ts';
 import { setTutorialState, tutorialState } from '../game/tutorial.ts';
@@ -2136,19 +2137,27 @@ export class FrontEnd {
       this.hooks.playOnline(this.server, this.displayName);
     });
     // A friend hosting from their own match (pause menu → Host game) gives you a six-letter code.
-    const code = el('input', { id: 'join-code', placeholder: 'ABC123', maxLength: 7, autocomplete: 'off' });
-    code.style.textTransform = 'uppercase';
-    const joinCode = el('button', { class: 'primary', id: 'join-by-code', type: 'submit', textContent: 'Join by code' });
-    const codeForm = el('form', { class: 'form panel' }, el('h4', { textContent: "Join a friend's game" }), el('label', {}, 'Code', code), joinCode, el('p', { class: 'hint', textContent: 'Your friend hosts from their match: Esc → Host game, then sends you the code or link.' }));
-    codeForm.addEventListener('submit', (e) => {
-      e.preventDefault();
-      const c = code.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
-      if (c.length !== 6) return void (code.style.outline = '2px solid #e74c3c');
+    // A code or a whole invite link (pasted): the link's party puts you on your friend's side.
+    const code = el('input', { id: 'join-code', placeholder: 'ABC123 or invite link', maxLength: 600, autocomplete: 'off', title: 'The six-letter code, or the invite link your friend sent' });
+    const joinCode = el('button', { class: 'primary', id: 'join-by-code', type: 'submit', textContent: 'Join' });
+    const go = (c: string) => {
       if (!this.verified) {
         this.name = name.value.trim() || this.name;
         storage('cs.name', this.name);
       }
       this.hooks.joinCode(c, this.displayName);
+    };
+    // The friend's game you were last in (a few hours): back in with one press.
+    const last = lastJoin();
+    const again = last ? el('button', { type: 'button', class: 'link', id: 'join-again', textContent: `Rejoin your last friend's game (${last.code})` }) : null;
+    again?.addEventListener('click', () => go(last!.code));
+    const codeForm = el('form', { class: 'form panel' }, el('h4', { textContent: "Join a friend's game" }), el('label', {}, 'Code or invite link', code), joinCode, ...(again ? [again] : []), el('p', { class: 'hint', textContent: "Your friend hosts from their match (Esc → Host tab) or a dedicated server, then sends you the code or invite link. Joining with the link puts you on their side (their party); everyone stays together into the next map." }));
+    codeForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const invite = parseInvite(code.value);
+      if (!invite) return void (code.style.outline = '2px solid #e74c3c');
+      joinParty(invite.party);
+      go(invite.code);
     });
     // Hosting: from a match (nothing to install), or a dedicated server (the optional Host Service, explained on /host).
     const hosting = el('div', { class: 'form panel host-options' }, el('h4', { textContent: 'Host a game' }), el('p', { class: 'hint', textContent: 'From any match: Esc → Host game. Nothing to install.' }), el('a', { href: '/host', id: 'host-dedicated', class: 'link', textContent: 'Host a dedicated server…' }));

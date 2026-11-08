@@ -21,6 +21,8 @@ export interface BoardRow {
   bot: boolean;
   /** A person: a verified account (signed in, playing under their username), or a guest (shown only when others are playing). */
   who?: 'acct' | 'guest';
+  /** In your party (they came with you, or by your invite link): marked beside the name. */
+  party?: boolean;
   /** Team colour (or the player's own colour in free-for-all). */
   color: string;
   /** Class name (Classes), else ''. */
@@ -302,7 +304,7 @@ export class ScoreBoard {
       if (f.ping) el.append(e.ping);
       this.rows.set(r.slot, e);
     }
-    const key = `${rank}|${r.name}|${r.bot}|${r.who ?? ''}|${r.color}|${r.cls}|${r.k}|${r.d}|${r.obj}|${r.ping}|${r.leader}|${r.dead}|${r.me}`;
+    const key = `${rank}|${r.name}|${r.bot}|${r.who ?? ''}|${r.color}|${r.cls}|${r.k}|${r.d}|${r.obj}|${r.ping}|${r.leader}|${r.dead}|${r.me}|${r.party ? 1 : 0}`;
     if (key === e.key) return e;
     e.key = key;
     const set = (el: HTMLElement, text: string) => {
@@ -313,7 +315,8 @@ export class ScoreBoard {
     e.name.classList.toggle('bot', r.bot);
     e.name.classList.toggle('acct', r.who === 'acct');
     e.name.classList.toggle('guest', r.who === 'guest');
-    e.name.title = r.who === 'acct' ? 'Signed in: a verified account' : r.who === 'guest' ? 'Guest: not signed in, so the name is just what they typed' : '';
+    e.name.classList.toggle('party', !!r.party);
+    e.name.title = [r.party ? 'In your party' : '', r.who === 'acct' ? 'Signed in: a verified account' : r.who === 'guest' ? 'Guest: not signed in, so the name is just what they typed' : ''].filter(Boolean).join(' · ');
     set(e.mark, r.leader ? '★' : '●');
     e.mark.style.color = r.leader ? '' : r.color;
     e.mark.classList.toggle('leader', r.leader);

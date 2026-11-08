@@ -33,7 +33,7 @@ export function mapIndexPlugin(mapsDir: string): Plugin {
     resolveId: (id) => (id === ID ? RESOLVED : undefined),
     async load(id) {
       if (id !== RESOLVED) return undefined;
-      const { loadMap, playableModes } = await loadShared();
+      const { loadMap, playableModes, mapPlayerCaps } = await loadShared();
       const entries = [];
       for (const file of readdirSync(mapsDir).filter((f) => f.endsWith('.json')).sort()) {
         const path = join(mapsDir, file);
@@ -42,10 +42,13 @@ export function mapIndexPlugin(mapsDir: string): Plugin {
         // Test maps (testOnly, MapMaker's Map properties) are left out of every list the menu draws.
         if (!r.ok || r.map.metadata.testOnly) continue;
         const md = r.map.metadata;
+        const modes = playableModes(r.map);
         entries.push({
           key: file.slice(0, -'.json'.length),
           metadata: { id: md.id, name: md.name, description: md.description, author: md.author, recommendedPlayers: md.recommendedPlayers, ...(md.thumbnail ? { thumbnail: md.thumbnail } : {}) },
-          modes: playableModes(r.map),
+          modes,
+          // The most players each mode takes (the next-map vote leaves out maps too small for the people in a match).
+          caps: modes.map((mode) => mapPlayerCaps(r.map, mode).max),
         });
       }
       return `export default ${JSON.stringify(entries)};`;

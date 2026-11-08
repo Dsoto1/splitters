@@ -17,7 +17,8 @@ const playlist = env.PLAYLIST ? parsePlaylist(JSON.parse(readFileSync(resolve(en
 if (playlist === null) throw new Error(`PLAYLIST ${env.PLAYLIST} is not a valid playlist`);
 
 // ROTATION=frost_basin:tdm,diamond_park:ctf (or preset:team_classics, maps/rotations/): after each match the next of
-// these instead of a replay, round and round; ROTATION_SHUFFLE=1 plays them in a random order.
+// these instead of a replay, round and round; ROTATION_SHUFFLE=1 plays them in a random order. Between matches
+// everyone votes on the next map (MAP_VOTE=0 turns that off).
 const rotation = (env.ROTATION ?? '').split(/[\s,]+/).filter(Boolean);
 
 // BOTSET: the host's own bots: a built-in set (maps/botsets/<id>.json, e.g. knights_vs_space), a JSON file of one
@@ -29,6 +30,8 @@ const server = await startServer({
   playlist,
   ...(rotation.length ? { rotation, rotationShuffle: /^(1|true|yes|on)$/i.test(env.ROTATION_SHUFFLE ?? '') } : {}),
   ...(botSet !== undefined ? { botSet } : {}),
+  // MAP_VOTE=0: no vote on the next map between matches (plain rotation; an empty one replays).
+  ...(/^(0|false|no|off)$/i.test(env.MAP_VOTE ?? '') ? { mapVote: false } : {}),
   port: Number(env.PORT ?? 7777),
   host: env.HOST,
   map: env.MAP ?? defaultMap,

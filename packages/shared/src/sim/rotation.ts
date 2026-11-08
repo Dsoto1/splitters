@@ -34,6 +34,8 @@ export interface RotationState {
   next: number | null;
   /** Index of the entry playing now (the match travelled there), or null. */
   current: number | null;
+  /** Everyone votes on the next map at the end of a match (sim/mapVote.ts); absent from older hosts (no vote). */
+  vote?: boolean;
 }
 
 export const RotationPreset = z.object({
@@ -197,6 +199,32 @@ export class MapRotation {
       up = this.peek();
     }
     return up && fits(up.entry) ? up : this.peek();
+  }
+
+  /**
+   * The match is travelling to `entry` (a vote picked it): when it's in the list, it is the entry playing now, and the
+   * rotation carries on after it. Not in the list: nothing changes. Returns whether it was.
+   */
+  moveTo(entry: RotationEntry): boolean {
+    const index = this.list.findIndex((e) => e.map === entry.map && e.mode === entry.mode);
+    if (index < 0) return false;
+    let at = this.order.indexOf(index, this.pos + 1);
+    if (at < 0) {
+      // Past it this time round: the next time round, from it.
+      this.order = this.nextRound();
+      this.upcoming = null;
+      at = this.order.indexOf(index);
+    }
+    this.pos = at;
+    return true;
+  }
+
+  /** The entries from the next one on, round to the one playing now (what a ballot offers first: sim/mapVote.ts). */
+  upcomingEntries(): RotationEntry[] {
+    const next = this.peek();
+    if (!next) return [];
+    const n = this.list.length;
+    return Array.from({ length: n }, (_, k) => this.list[(next.index + k) % n]!);
   }
 
   /** Move on to the next entry (the match is travelling there) and return it. */
