@@ -1092,6 +1092,7 @@ async function editoruxFlow(browser) {
   await editorGroundChecks(browser);
   await editorMeasureChecks(browser);
   await editorTurnChecks(browser);
+  await editorWorkflowChecks(browser);
 }
 
 /**
@@ -1336,6 +1337,173 @@ async function editorTurnChecks(browser) {
   check(turned?.rotation === 1 && turned.x === room.x && turned.y === room.y, `a tile's quick facing turns it to 90° in place (${JSON.stringify(turned && [turned.x, turned.y, turned.rotation])})`);
   await page.keyboard.press('Control+KeyZ');
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  await page.context().close();
+}
+
+/**
+ * MapMaker overhaul Phase 3 part A (docs/MAPMAKER_OVERHAUL_PLAN.md, items 1, 2 and 8): Play from here (Shift+F5)
+ * starts you at the camera spot and Esc comes back with the view, the selection and undo as they were; the plan view
+ * (K) toggles, selects and moves things, and exports a PNG; the card shot is framed at eye level, saved as the map's
+ * camera (one undo step) and previewed in the card's frame. Screenshots go to E2E_SHOTS when set.
+ */
+async function editorWorkflowChecks(browser) {
+  const page = await (await browser.newContext({ viewport: { width: 1400, height: 820 }, acceptDownloads: true })).newPage();
+  livePages.add(page);
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  const shot = (name) => (process.env.E2E_SHOTS ? page.screenshot({ path: `${process.env.E2E_SHOTS}/editorux-${name}.png` }).catch(() => {}) : Promise.resolve());
+  await page.goto(`${CLIENT}/?mode=editor&test=1`);
+  await page.waitForFunction(() => window.__editor, null, { timeout: T(60000) });
+  page.once('dialog', (d) => d.accept());
+  await newMap(page, 96);
+  const doc = () => page.evaluate(() => window.__editor.doc);
+  const at = (x, y, z) => page.evaluate(([x, y, z]) => window.__editor.view.project({ x, y, z }), [x, y, z]);
+  const camera = () => page.evaluate(() => {
+    const v = window.__editor.view;
+    const p = v.camera.position;
+    return { x: +p.x.toFixed(3), y: +p.y.toFixed(3), z: +p.z.toFixed(3), yaw: +v.yaw.toFixed(4), pitch: +v.pitch.toFixed(4), fov: +v.camera.fov.toFixed(4), mode: v.camera.mode };
+  });
+  const setCamera = (x, y, z, yaw, pitch) =>
+    page.evaluate(([x, y, z, yaw, pitch]) => {
+      const v = window.__editor.view;
+      v.camera.position.set(x, y, z);
+      v.yaw = yaw;
+      v.pitch = pitch;
+      v.applyCamera();
+    }, [x, y, z, yaw, pitch]);
+  await page.evaluate(() => window.__editor.view.focus({ x: 12, y: 0, z: 4 }));
+  await frames(page, 3);
+  // A barrel out on the ground, placed with its tool (an edit to undo later), and selected.
+  await clickTool(page, '[data-tool="prop:prop.barrel"]');
+  const bp = await at(12, 0, 0);
+  await page.mouse.move(bp.x, bp.y);
+  await frames(page, 3);
+  await page.mouse.click(bp.x, bp.y);
+  await frames(page, 3);
+  const barrel = await page.evaluate(() => window.__editor.selection.entities[0]);
+  await page.evaluate((id) => {
+    window.__editor.setTool({ kind: 'select' });
+    window.__editor.setSelection({ tiles: [], entities: [id] });
+  }, barrel);
+
+  // ---- Play from here: out on the open ground south-west of the room, looking north-east.
+  await setCamera(-14, 9, -16, Math.PI / 4, -0.25);
+  await frames(page, 2);
+  const before = { cam: await camera(), rev: await page.evaluate(() => window.__editor.history.revision), sel: await page.evaluate(() => JSON.stringify(window.__editor.selection)) };
+  check(await page.isVisible('#ed-test-here'), 'the top bar has ▶ Here (Play from here) beside PLAY TEST');
+  await page.keyboard.press('Shift+F5');
+  const started = await page.waitForFunction(() => window.__cs?.local && window.__testStartMs, null, { timeout: T(30000) }).then(() => true, () => false);
+  const me = started ? await sim(page, (m, me) => ({ x: me.move.pos.x, y: me.move.pos.y, z: me.move.pos.z, yaw: me.yaw, pitch: me.pitch })).catch((e) => String(e)) : null;
+  check(started && Math.abs(me.x + 14) < 0.3 && Math.abs(me.z + 16) < 0.3 && Math.abs(me.y) < 0.6 && Math.abs(me.yaw - Math.PI / 4) < 0.01 && Math.abs(me.pitch + 0.25) < 0.01, `Shift+F5 starts a test match standing on the ground under the camera, facing its way (${JSON.stringify(me)})`);
+  const room = await sim(page, (m) => m.spawnPoints.map((s) => [Math.round(s.pos.x), Math.round(s.pos.z)])).catch(() => []);
+  check(room.every(([x, z]) => Math.hypot(x + 14, z + 16) > 6), `not at the map's spawn point (${JSON.stringify(room)})`);
+  await frames(page, 10);
+  // The view as you play it (headless pages have no pointer lock, so the pause menu is up: hidden for the picture).
+  await page.addStyleTag({ content: '#pause { visibility: hidden !important; }' }).then((h) => shot('play-from-here').then(() => h.evaluate((el) => el.remove())));
+  await page.keyboard.press('Escape');
+  await page.waitForFunction(() => !document.getElementById('editor').hidden, null, { timeout: T(15000) });
+  await frames(page, 2);
+  const back = { cam: await camera(), rev: await page.evaluate(() => window.__editor.history.revision), sel: await page.evaluate(() => JSON.stringify(window.__editor.selection)) };
+  check(JSON.stringify(back) === JSON.stringify(before), `Esc goes back to MapMaker at the same view, with the selection and history as they were (${JSON.stringify(back.cam)})`);
+  await page.keyboard.press('Control+KeyZ');
+  check(!(await doc()).entities.some((e) => e.id === barrel), 'undo still works after Play from here (the barrel goes)');
+  await page.keyboard.press('Control+KeyY');
+  // Refused, with the reason: the camera outside the map's boundary.
+  await page.evaluate(() => window.__editor.run('Boundary', { kind: 'setBounds', before: null, after: { min: [-30, -30], max: [30, 30], style: 'invisible', height: 8 } }));
+  await setCamera(45, 6, 0, 0, -0.2);
+  await page.click('#ed-test-here');
+  await frames(page, 2);
+  const refused = await page.evaluate(() => ({ toast: document.getElementById('ed-toast').textContent, editor: !document.getElementById('editor').hidden, err: document.getElementById('ed-toast').classList.contains('err') }));
+  check(refused.editor && refused.err && /Can't play from here: .*outside the playable boundary/.test(refused.toast), `outside the boundary it refuses, saying why (${refused.toast})`);
+  await page.keyboard.press('Control+KeyZ');
+
+  // ---- The plan view: K, from straight above, the level's tiles and icons, select and move, PNG.
+  await page.evaluate(() => window.__editor.run('Flag', { kind: 'addEntities', entities: [{ id: 'flag_e2e', kind: 'flag', position: [-8, 0, 8], yaw: 0, team: 'embers' }, { id: 'hill_e2e', kind: 'hill', position: [8, 0, -10], radius: 5 }, { id: 'pick_e2e', kind: 'pickup', position: [-6, 0, -8], item: 'core.health', respawnSeconds: null }] }));
+  const view3d = await camera();
+  await page.mouse.move(700, 400);
+  await page.keyboard.press('KeyK');
+  await frames(page, 3);
+  const plan = await page.evaluate(() => ({ on: window.__editor.plan.on, mode: window.__editor.view.camera.mode, pressed: document.getElementById('ed-plan').getAttribute('aria-pressed'), title: document.getElementById('ed-plan-title')?.textContent, overlay: !!document.getElementById('ed-plan-overlay'), clip: !!window.__editor.view.scene.clipPlane }));
+  check(plan.on && plan.mode === 1 && plan.pressed === 'true' && plan.title === 'Plan · Ground' && plan.overlay && plan.clip, `K switches to the plan view: an orthographic camera from above, cut above the floor, its icons over it (${JSON.stringify(plan)})`);
+  // North is up and east is right on screen.
+  const n = await at(0, 0, 10);
+  const s = await at(0, 0, -10);
+  const e = await at(10, 0, 0);
+  const c0 = await at(0, 0, 0);
+  check(n.y < s.y && e.x > c0.x && Math.abs(n.x - s.x) < 1, `north is up, east to the right (${JSON.stringify({ n, s, e })})`);
+  await shot('plan-view');
+  // Select the barrel by clicking it in the plan, drag it 4 m east, undo.
+  await page.evaluate(() => window.__editor.setSelection({ tiles: [], entities: [] }));
+  const bpos = (await doc()).entities.find((x) => x.id === barrel).position;
+  const p0 = await at(bpos[0], bpos[1] + 0.5, bpos[2]);
+  await page.mouse.move(p0.x, p0.y);
+  await frames(page, 3);
+  await page.mouse.click(p0.x, p0.y);
+  await frames(page, 2);
+  check((await page.evaluate(() => window.__editor.selection.entities)).includes(barrel), 'a click in the plan selects the barrel');
+  const p1 = await at(bpos[0] + 4, bpos[1] + 0.5, bpos[2]);
+  await page.mouse.move(p0.x, p0.y);
+  await page.mouse.down();
+  await page.mouse.move((p0.x + p1.x) / 2, p0.y, { steps: 4 });
+  await page.mouse.move(p1.x, p1.y, { steps: 4 });
+  await frames(page, 2);
+  await page.mouse.up();
+  await frames(page, 2);
+  const moved = (await doc()).entities.find((x) => x.id === barrel).position;
+  check(Math.abs(moved[0] - bpos[0] - 4) < 0.6 && Math.abs(moved[2] - bpos[2]) < 0.6, `dragging it in the plan moves it east (${JSON.stringify(bpos)} → ${JSON.stringify(moved)})`);
+  await page.keyboard.press('Control+KeyZ');
+  // Another level: the level selector picks the plan.
+  await page.keyboard.press('PageUp');
+  await frames(page, 2);
+  const up = await page.evaluate(() => ({ title: document.getElementById('ed-plan-title')?.textContent, cut: window.__editor.plan.cutY }));
+  check(up.title === 'Plan · Level 1' && up.cut > 4, `PgUp shows Level 1's plan, cut above its floor (${JSON.stringify(up)})`);
+  await page.keyboard.press('PageDown');
+  await frames(page, 2);
+  // Export PNG: through the browser's download.
+  const [download] = await Promise.all([page.waitForEvent('download', { timeout: T(20000) }).catch(() => null), page.click('#ed-plan-export')]);
+  const file = download ? await download.path().catch(() => null) : null;
+  const png = file ? readFileSync(file) : null;
+  if (png && process.env.E2E_SHOTS) writeFileSync(`${process.env.E2E_SHOTS}/editorux-plan-export.png`, png);
+  check(download?.suggestedFilename() === 'untitled_map-ground-plan.png' && png && png.subarray(1, 4).toString() === 'PNG' && png.length > 20000, `Export PNG downloads the plan (${download?.suggestedFilename()}, ${png?.length ?? 0} bytes)`);
+  await page.click('#ed-plan');
+  await frames(page, 2);
+  const after = await camera();
+  check(!(await page.evaluate(() => window.__editor.plan.on || !!document.getElementById('ed-plan-overlay') || !!window.__editor.view.scene.clipPlane)) && JSON.stringify(after) === JSON.stringify(view3d), `the Plan button goes back to the 3D view as it was (${JSON.stringify(after)})`);
+
+  // ---- The card shot: Map properties → Set card shot…, eye level by default, Enter saves; Preview in the frame.
+  await page.evaluate(() => window.__editor.setSelection({ tiles: [], entities: [] }));
+  await page.waitForSelector('#ed-card-set', { timeout: T(5000) });
+  check(await page.isDisabled('#ed-card-preview'), 'no card camera yet: Preview is off');
+  await setCamera(-10, 12, -18, 0.6, -0.15);
+  const fov0 = (await camera()).fov;
+  await page.click('#ed-card-set');
+  await frames(page, 3);
+  const framing = await page.evaluate(() => ({ eye: document.getElementById('ed-card-eye')?.checked, crop: document.querySelector('.ed-card-crop')?.getBoundingClientRect().toJSON(), y: window.__editor.view.camera.position.y, fov: window.__editor.view.camera.fov, ground: window.__editor.shownGround ? null : 'none' }));
+  const ratio = framing.crop ? framing.crop.width / framing.crop.height : 0;
+  check(framing.eye && Math.abs(ratio - 16 / 9) < 0.02 && Math.abs(framing.y - (-0.15 + 1.7)) < 0.15 && framing.fov > 0.9, `the card frame is 16:9 with the card's lens, and the camera drops to eye level, 1.7 m over the ground (${JSON.stringify(framing)})`);
+  await shot('card-frame');
+  await page.keyboard.press('Enter');
+  await frames(page, 2);
+  const saved = (await doc()).metadata.cardCamera;
+  check(saved && Math.abs(saved.position[1] - 1.55) < 0.15 && Math.abs(saved.yaw - 0.6) < 0.001 && Math.abs(saved.pitch + 0.15) < 0.001 && (await camera()).fov === fov0, `Enter saves the card camera in the map at eye level, and the lens goes back (${JSON.stringify(saved)})`);
+  check((await doc()).formatVersion === 30, 'the map is format v30');
+  await page.keyboard.press('Control+KeyZ');
+  check((await doc()).metadata.cardCamera === undefined, 'one undo takes the card camera off');
+  await page.keyboard.press('Control+KeyY');
+  // Preview: from somewhere else, the saved shot in the card's frame; Esc goes back.
+  await setCamera(20, 30, 20, 2, -0.8);
+  const elsewhere = await camera();
+  await page.waitForSelector('#ed-card-preview:not([disabled])', { timeout: T(5000) });
+  await page.click('#ed-card-preview');
+  await frames(page, 3);
+  const pv = await camera();
+  check(Math.abs(pv.x - saved.position[0]) < 0.01 && Math.abs(pv.y - saved.position[1]) < 0.01 && Math.abs(pv.yaw - saved.yaw) < 0.001 && (await page.isVisible('.ed-card-frame.preview .ed-card-crop')), `Preview shows the saved shot in the card's frame (${JSON.stringify(pv)})`);
+  await shot('card-preview');
+  await page.keyboard.press('Escape');
+  await frames(page, 2);
+  check(JSON.stringify(await camera()) === JSON.stringify(elsewhere) && !(await page.$('.ed-card-frame')), 'Esc closes the preview, back where you were');
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  livePages.delete(page);
   await page.context().close();
 }
 

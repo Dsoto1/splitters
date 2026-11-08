@@ -409,7 +409,7 @@ class App {
 
   private startTestWith(m: MatchCode, req: TestRequest, t0: number): void {
     this.editor!.hide();
-    this.startSession(m, new m.LocalTransport(req.map, { name: this.front!.name || 'Tester', look: this.front!.look, botFill: req.botFill, difficulty: req.difficulty, ...(TEST ? { test: TEST } : {}) }), {
+    this.startSession(m, new m.LocalTransport(req.map, { name: this.front!.name || 'Tester', look: this.front!.look, botFill: req.botFill, difficulty: req.difficulty, ...(req.startAt ? { startAt: req.startAt } : {}), ...(TEST ? { test: TEST } : {}) }), {
       exitLabel: 'Back to MapMaker',
       exitOnF5: true,
       onReady: () => {

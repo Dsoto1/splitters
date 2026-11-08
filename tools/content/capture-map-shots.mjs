@@ -12,8 +12,9 @@
 //    lots of sky or void lose.
 // 3. The best few distinct views are rendered and scored again on the image itself (detail and
 //    contrast; large flat areas — a wall, a blank sky, one material — lose). The best is kept.
-// A map script can fix the camera with m.thumbnailCamera(position, target) (metadata.thumbnailCamera)
-// where the automatic choice frames a poor view.
+// A map's card camera (MapMaker → Map properties → Card shot: metadata.cardCamera, a position, yaw and pitch)
+// is used as it is when there is one; else a fixed metadata.thumbnailCamera (position, target); else the
+// automatic choice. The lens (FOV, vertical) and the 16:9 frame are MapMaker's card frame's (shared editor/cardShot.ts).
 //
 // Run against a built client being served (pnpm build, then vite preview):
 //   pnpm --filter @tiletrigger/client exec vite preview --port 4799
@@ -342,10 +343,17 @@ async function captureOne(id) {
       view.clearCorpses?.();
       window.__photo = view.photoCamera();
     });
+    // The map's card camera (MapMaker → Map properties → Card shot, metadata.cardCamera) first, then a fixed
+    // thumbnail camera, then the automatic choice.
+    const card = map.metadata.cardCamera;
     const fixed = map.metadata.thumbnailCamera;
     let views;
     let info = '';
-    if (fixed) {
+    if (card) {
+      const [x, y, z] = card.position;
+      views = [{ eye: { x, y, z }, yaw: card.yaw, pitch: card.pitch, tag: 'card camera', score: 0, parts: {} }];
+      info = "the map's card camera";
+    } else if (fixed) {
       const [px, py, pz] = fixed.position;
       const [tx, ty, tz] = fixed.target;
       const yaw = Math.atan2(tx - px, tz - pz);

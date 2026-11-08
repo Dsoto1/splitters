@@ -77,11 +77,11 @@ The workflow is unchanged (CLAUDE.md):
 - **Disk:** each session's container is its own; remove a worktree once its branch has landed.
 
 - Claimed: `packages/client/src/editor/**` and `packages/shared/src/editor/**` (Phase 3 part A, set pieces part 5), MapMaker lane, 2026-11-08.
-- Claimed: the next `MAP_FORMAT_VERSION` bump (the card-shot camera, `wip/mapmaker-p3a`), MapMaker lane, 2026-11-08.
-- Claimed: `maps/sandfall_colosseum.json` (rebuild), `maps/step_temple.json` and `maps/shingle_point.json` (card camera only), MapMaker lane, 2026-11-08.
+- Claimed: `maps/sandfall_colosseum.json` (rebuild), MapMaker lane, 2026-11-08.
 - Claimed: the map schema's backdrop Scenery list (a new value `volcano`, no format bump; `wip/mapmaker-sandfall`), MapMaker lane, 2026-11-08.
 - Claimed: `maps/test_coverage.json` (the new set pieces and Arena kit tiles, through MapMaker; `wip/mapmaker-setpieces`), MapMaker lane, 2026-11-08.
 - Claimed: map format v31 (groups and note pins, chained after v30; `wip/mapmaker-p3b`), MapMaker lane, 2026-11-08.
+- Claimed: map format v32 if needed (the finer terrain grid / Change grid and the coast border side; next free MapMaker slot), MapMaker lane, 2026-11-08.
 - Claimed: `content/setpieces/**` and the set-piece alias table (set pieces part 5), MapMaker lane, 2026-11-08.
 - Claimed: `maps/training_range.json` (the Battle Rifle on a rack, through MapMaker), and the new content ids `core.battle_rifle` (weapon code 49) and `core.weapon_battle_rifle` (pickup), gunplay pass 2 (`wip/gunplay-2`), 2026-11-08.
 - **Moved to the MapMaker lane (owner's rule: MapMaker work goes there; 2026-11-08):** the editor half of the Iron
@@ -428,6 +428,22 @@ gets overloaded above that: local e2e times out and flakes). Prune landed worktr
   "walled" with nothing built beyond; e2e `editorSetPiecePart5Checks` in editorux.
 - **Pitfall:** core.room_tall, core.atrium and orbital.reactor_hall have no roof of their own; a piece that tops out
   with them needs a roof block (the three here have one).
+### MapMaker overhaul: Play from here, the plan view, the card shot (`wip/mapmaker-p3a`, agent, 2026-11-08; Phase 3 items 1, 2 and 8)
+- **Built:** Play from here (Shift+F5, ▶ Here), the plan view (K, Plan; Export PNG), the card-shot camera (Map
+  properties → Card shot: Set card shot…, eye level, Preview, Clear). As built: docs/MAPMAKER_OVERHAUL_PLAN.md under
+  each item; how-to: BUILDING_KIT.md, "Testing, the plan and the card shot (MapMaker)".
+- **Where:** shared `editor/{playFromHere,planView,cardShot}.ts` (unit tests `mapmakerWorkflow.test.ts`);
+  client `editor/{planView,cardShot}.ts`, wired into `editorApp.ts` with a few lines; the match: `Match.startHere` and
+  `Combatant.startAt` (sim/match.ts), `LocalMatchOptions.startAt` (matchHost.ts), the first life's pitch (session.ts);
+  e2e `editorWorkflowChecks` in `editorux`.
+- **Map format v30:** `metadata.cardCamera` (position, yaw, pitch), a no-op migration, left out of the content hash
+  (like `thumbnailCamera`), so a stamped map's release stays current. `capture-map-shots.mjs` uses it first.
+- **Keys:** Shift+F5 (Play from here) and K (plan view), rows in the key table (`editor/keymap.ts`), so the `?`
+  overlay lists them.
+- **Card shots redone with it** (owner's addendum): Step Temple at eye level on the south-west hill, looking up the
+  terrace stair at the temple; Shingle Point at eye level on the seawall's west end, looking down the beach to the
+  sea. Set through the real editor (scratch Playwright driver: Import, camera, Set card shot…, Enter, Export); each
+  map file's diff is the `cardCamera` and the format version; the pictures from `capture-map-shots.mjs`.
 
 ### MapMaker overhaul: measure, props on surfaces, Randomise, turning by mouse (`wip/mapmaker-p1b`, agent, 2026-11-08; Phase 1 items 3-4 and Phase 3 item 9)
 - **Built:** the measure tool (U), props dropped onto the surface under the pointer, Randomise in the prop tool, the

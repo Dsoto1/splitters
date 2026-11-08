@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 29,
+  "formatVersion": 30,
   "metadata": {
     "id": "shingle_point",
     "name": "Shingle Point",
@@ -25,6 +25,15 @@
       "contentHash": "sha256:92281a8675974260bd0fb6c506f17698cc69c4f1cfcb0c4c1e8eefdda5cbcc03",
       "schemaVersion": 29,
       "releasedAt": "2026-11-08T05:24:56.366Z"
+    },
+    "cardCamera": {
+      "position": [
+        -30,
+        17.55,
+        2
+      ],
+      "yaw": 2.75,
+      "pitch": -0.24
     }
   },
   "classicStructure": {

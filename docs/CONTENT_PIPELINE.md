@@ -826,9 +826,10 @@ count what it stores (a placement is one entry, at most 1024).
     raycasting the map's collision world (seeing far, many distinct structures, looking across the play
     area; anything solid within a few metres ahead, close walls, lots of sky or void lose). The best three
     distinct views are rendered and judged again on the image (detail and contrast; big flat areas such as
-    a wall, blank sky or one material lose). Look at the pictures afterwards. Where the choice is poor, fix
-    the camera in the map script, `m.thumbnailCamera(position, target)` (stored as
-    `metadata.thumbnailCamera`), and the tool uses it as is.
+    a wall, blank sky or one material lose). Look at the pictures afterwards. Where the choice is poor, set
+    the card camera in MapMaker: Map properties → **Card shot** (eye level by default, seen in the card's
+    frame; stored as `metadata.cardCamera`, format v30), export the map, and the tool renders from it as is.
+    (An older fixed camera, `metadata.thumbnailCamera`, is used when there is no card camera.)
   - **Plan:** the flat top-down MapMaker schematic, drawn live from the map (`frontend/mapPlan.ts`): tile
     floors, walls, blocks and props as outlines, terrain as height contours, and dots for spawns (team
     colours), pickups, flags, hills, bomb sites, hostages, NPC squads and vehicles.
