@@ -21,11 +21,11 @@
     ],
     "release": {
       "mapId": "m_prmawkdzrmtay5mm",
-      "versionId": "v_ndleqh4duqsaoxwn",
-      "revision": 7,
-      "contentHash": "sha256:b0736d1af0cdff5c89f25132285a5cbe34654bab11eb5a139fd61d77c4b685db",
+      "versionId": "v_ocozkqh2h7xhgt7v",
+      "revision": 8,
+      "contentHash": "sha256:1e460ebe2b4e977d4436d0b7a09216c21bd3fe14736d488be9e9ad61328cc46c",
       "schemaVersion": 29,
-      "releasedAt": "2026-11-08T18:15:47.767Z"
+      "releasedAt": "2026-11-08T19:04:04.514Z"
     }
   },
   "classicStructure": {
@@ -137,6 +137,2304 @@
         "y": 4,
         "z": 0,
         "rotation": 0
+      },
+      {
+        "id": "sp_setpiece_zfgnmgw7wt_0",
+        "tile": "core.room_large",
+        "x": 1,
+        "y": 1,
+        "z": -1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_travertine",
+            "tint": "#d8c8b0"
+          },
+          "walls": {
+            "material": "core.pbr_limestone",
+            "tint": null
+          },
+          "solids": {
+            "material": "core.pbr_limestone",
+            "tint": null
+          },
+          "trim": {
+            "material": "core.pbr_white_marble",
+            "tint": null
+          },
+          "roof": {
+            "material": "core.pbr_roof",
+            "tint": null
+          }
+        }
+      },
+      {
+        "id": "sp_setpiece_zfgnmgw7wt_1",
+        "tile": "core.room_large",
+        "x": -1,
+        "y": 1,
+        "z": -1,
+        "rotation": 3,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_travertine",
+            "tint": "#d8c8b0"
+          },
+          "walls": {
+            "material": "core.pbr_limestone",
+            "tint": null
+          },
+          "solids": {
+            "material": "core.pbr_limestone",
+            "tint": null
+          },
+          "trim": {
+            "material": "core.pbr_white_marble",
+            "tint": null
+          },
+          "roof": {
+            "material": "core.pbr_roof",
+            "tint": null
+          }
+        }
+      },
+      {
+        "id": "sp_setpiece_zfgnmgw7wt_2",
+        "tile": "core.room_large",
+        "x": 1,
+        "y": -1,
+        "z": -1,
+        "rotation": 1,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_travertine",
+            "tint": "#d8c8b0"
+          },
+          "walls": {
+            "material": "core.pbr_limestone",
+            "tint": null
+          },
+          "solids": {
+            "material": "core.pbr_limestone",
+            "tint": null
+          },
+          "trim": {
+            "material": "core.pbr_white_marble",
+            "tint": null
+          },
+          "roof": {
+            "material": "core.pbr_roof",
+            "tint": null
+          }
+        }
+      },
+      {
+        "id": "sp_setpiece_zfgnmgw7wt_3",
+        "tile": "core.room_large",
+        "x": -1,
+        "y": -1,
+        "z": -1,
+        "rotation": 2,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_travertine",
+            "tint": "#d8c8b0"
+          },
+          "walls": {
+            "material": "core.pbr_limestone",
+            "tint": null
+          },
+          "solids": {
+            "material": "core.pbr_limestone",
+            "tint": null
+          },
+          "trim": {
+            "material": "core.pbr_white_marble",
+            "tint": null
+          },
+          "roof": {
+            "material": "core.pbr_roof",
+            "tint": null
+          }
+        }
+      },
+      {
+        "id": "sp_setpiece_zfgnmgw7wt_4",
+        "tile": "core.tunnel_vault",
+        "x": -3,
+        "y": 4,
+        "z": -1,
+        "rotation": 1,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_travertine",
+            "tint": "#d8c8b0"
+          },
+          "walls": {
+            "material": "core.pbr_limestone",
+            "tint": null
+          }
+        }
+      },
+      {
+        "id": "sp_setpiece_zfgnmgw7wt_5",
+        "tile": "core.tunnel_vault",
+        "x": -3,
+        "y": -4,
+        "z": -1,
+        "rotation": 1,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_travertine",
+            "tint": "#d8c8b0"
+          },
+          "walls": {
+            "material": "core.pbr_limestone",
+            "tint": null
+          }
+        }
+      },
+      {
+        "id": "sp_setpiece_zfgnmgw7wt_6",
+        "tile": "core.tunnel_vault_t",
+        "x": -2,
+        "y": 4,
+        "z": -1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_travertine",
+            "tint": "#d8c8b0"
+          },
+          "walls": {
+            "material": "core.pbr_limestone",
+            "tint": null
+          }
+        }
+      },
+      {
+        "id": "sp_setpiece_zfgnmgw7wt_7",
+        "tile": "core.tunnel_vault_t",
+        "x": -2,
+        "y": -4,
+        "z": -1,
+        "rotation": 2,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_travertine",
+            "tint": "#d8c8b0"
+          },
+          "walls": {
+            "material": "core.pbr_limestone",
+            "tint": null
+          }
+        }
+      },
+      {
+        "id": "sp_setpiece_zfgnmgw7wt_8",
+        "tile": "core.tunnel_vault",
+        "x": -1,
+        "y": 4,
+        "z": -1,
+        "rotation": 1,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_travertine",
+            "tint": "#d8c8b0"
+          },
+          "walls": {
+            "material": "core.pbr_limestone",
+            "tint": null
+          }
+        }
+      },
+      {
+        "id": "sp_setpiece_zfgnmgw7wt_9",
+        "tile": "core.tunnel_vault",
+        "x": -1,
+        "y": -4,
+        "z": -1,
+        "rotation": 1,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_travertine",
+            "tint": "#d8c8b0"
+          },
+          "walls": {
+            "material": "core.pbr_limestone",
+            "tint": null
+          }
+        }
+      },
+      {
+        "id": "sp_setpiece_zfgnmgw7wt_10",
+        "tile": "core.tunnel_vault_t",
+        "x": 0,
+        "y": 4,
+        "z": -1,
+        "rotation": 2,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_travertine",
+            "tint": "#d8c8b0"
+          },
+          "walls": {
+            "material": "core.pbr_limestone",
+            "tint": null
+          }
+        }
+      },
+      {
+        "id": "sp_setpiece_zfgnmgw7wt_11",
+        "tile": "core.tunnel_vault_t",
+        "x": 0,
+        "y": -4,
+        "z": -1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_travertine",
+            "tint": "#d8c8b0"
+          },
+          "walls": {
+            "material": "core.pbr_limestone",
+            "tint": null
+          }
+        }
+      },
+      {
+        "id": "sp_setpiece_zfgnmgw7wt_12",
+        "tile": "core.tunnel_vault",
+        "x": 1,
+        "y": 4,
+        "z": -1,
+        "rotation": 1,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_travertine",
+            "tint": "#d8c8b0"
+          },
+          "walls": {
+            "material": "core.pbr_limestone",
+            "tint": null
+          }
+        }
+      },
+      {
+        "id": "sp_setpiece_zfgnmgw7wt_13",
+        "tile": "core.tunnel_vault",
+        "x": 1,
+        "y": -4,
+        "z": -1,
+        "rotation": 1,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_travertine",
+            "tint": "#d8c8b0"
+          },
+          "walls": {
+            "material": "core.pbr_limestone",
+            "tint": null
+          }
+        }
+      },
+      {
+        "id": "sp_setpiece_zfgnmgw7wt_14",
+        "tile": "core.tunnel_vault_t",
+        "x": 2,
+        "y": 4,
+        "z": -1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_travertine",
+            "tint": "#d8c8b0"
+          },
+          "walls": {
+            "material": "core.pbr_limestone",
+            "tint": null
+          }
+        }
+      },
+      {
+        "id": "sp_setpiece_zfgnmgw7wt_15",
+        "tile": "core.tunnel_vault_t",
+        "x": 2,
+        "y": -4,
+        "z": -1,
+        "rotation": 2,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_travertine",
+            "tint": "#d8c8b0"
+          },
+          "walls": {
+            "material": "core.pbr_limestone",
+            "tint": null
+          }
+        }
+      },
+      {
+        "id": "sp_setpiece_zfgnmgw7wt_16",
+        "tile": "core.tunnel_vault",
+        "x": 3,
+        "y": 4,
+        "z": -1,
+        "rotation": 1,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_travertine",
+            "tint": "#d8c8b0"
+          },
+          "walls": {
+            "material": "core.pbr_limestone",
+            "tint": null
+          }
+        }
+      },
+      {
+        "id": "sp_setpiece_zfgnmgw7wt_17",
+        "tile": "core.tunnel_vault",
+        "x": 3,
+        "y": -4,
+        "z": -1,
+        "rotation": 1,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_travertine",
+            "tint": "#d8c8b0"
+          },
+          "walls": {
+            "material": "core.pbr_limestone",
+            "tint": null
+          }
+        }
+      },
+      {
+        "id": "sp_setpiece_zfgnmgw7wt_18",
+        "tile": "core.tunnel_vault",
+        "x": 4,
+        "y": -3,
+        "z": -1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_travertine",
+            "tint": "#d8c8b0"
+          },
+          "walls": {
+            "material": "core.pbr_limestone",
+            "tint": null
+          }
+        }
+      },
+      {
+        "id": "sp_setpiece_zfgnmgw7wt_19",
+        "tile": "core.tunnel_vault",
+        "x": -4,
+        "y": -3,
+        "z": -1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_travertine",
+            "tint": "#d8c8b0"
+          },
+          "walls": {
+            "material": "core.pbr_limestone",
+            "tint": null
+          }
+        }
+      },
+      {
+        "id": "sp_setpiece_zfgnmgw7wt_20",
+        "tile": "core.tunnel_vault_t",
+        "x": 4,
+        "y": -2,
+        "z": -1,
+        "rotation": 1,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_travertine",
+            "tint": "#d8c8b0"
+          },
+          "walls": {
+            "material": "core.pbr_limestone",
+            "tint": null
+          }
+        }
+      },
+      {
+        "id": "sp_setpiece_zfgnmgw7wt_21",
+        "tile": "core.tunnel_vault_t",
+        "x": -4,
+        "y": -2,
+        "z": -1,
+        "rotation": 3,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_travertine",
+            "tint": "#d8c8b0"
+          },
+          "walls": {
+            "material": "core.pbr_limestone",
+            "tint": null
+          }
+        }
+      },
+      {
+        "id": "sp_setpiece_zfgnmgw7wt_22",
+        "tile": "core.tunnel_vault",
+        "x": 4,
+        "y": -1,
+        "z": -1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_travertine",
+            "tint": "#d8c8b0"
+          },
+          "walls": {
+            "material": "core.pbr_limestone",
+            "tint": null
+          }
+        }
+      },
+      {
+        "id": "sp_setpiece_zfgnmgw7wt_23",
+        "tile": "core.tunnel_vault",
+        "x": -4,
+        "y": -1,
+        "z": -1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_travertine",
+            "tint": "#d8c8b0"
+          },
+          "walls": {
+            "material": "core.pbr_limestone",
+            "tint": null
+          }
+        }
+      },
+      {
+        "id": "sp_setpiece_zfgnmgw7wt_24",
+        "tile": "core.tunnel_vault_t",
+        "x": 4,
+        "y": 0,
+        "z": -1,
+        "rotation": 3,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_travertine",
+            "tint": "#d8c8b0"
+          },
+          "walls": {
+            "material": "core.pbr_limestone",
+            "tint": null
+          }
+        }
+      },
+      {
+        "id": "sp_setpiece_zfgnmgw7wt_25",
+        "tile": "core.tunnel_vault_t",
+        "x": -4,
+        "y": 0,
+        "z": -1,
+        "rotation": 1,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_travertine",
+            "tint": "#d8c8b0"
+          },
+          "walls": {
+            "material": "core.pbr_limestone",
+            "tint": null
+          }
+        }
+      },
+      {
+        "id": "sp_setpiece_zfgnmgw7wt_26",
+        "tile": "core.tunnel_vault",
+        "x": 4,
+        "y": 1,
+        "z": -1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_travertine",
+            "tint": "#d8c8b0"
+          },
+          "walls": {
+            "material": "core.pbr_limestone",
+            "tint": null
+          }
+        }
+      },
+      {
+        "id": "sp_setpiece_zfgnmgw7wt_27",
+        "tile": "core.tunnel_vault",
+        "x": -4,
+        "y": 1,
+        "z": -1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_travertine",
+            "tint": "#d8c8b0"
+          },
+          "walls": {
+            "material": "core.pbr_limestone",
+            "tint": null
+          }
+        }
+      },
+      {
+        "id": "sp_setpiece_zfgnmgw7wt_28",
+        "tile": "core.tunnel_vault_t",
+        "x": 4,
+        "y": 2,
+        "z": -1,
+        "rotation": 1,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_travertine",
+            "tint": "#d8c8b0"
+          },
+          "walls": {
+            "material": "core.pbr_limestone",
+            "tint": null
+          }
+        }
+      },
+      {
+        "id": "sp_setpiece_zfgnmgw7wt_29",
+        "tile": "core.tunnel_vault_t",
+        "x": -4,
+        "y": 2,
+        "z": -1,
+        "rotation": 3,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_travertine",
+            "tint": "#d8c8b0"
+          },
+          "walls": {
+            "material": "core.pbr_limestone",
+            "tint": null
+          }
+        }
+      },
+      {
+        "id": "sp_setpiece_zfgnmgw7wt_30",
+        "tile": "core.tunnel_vault",
+        "x": 4,
+        "y": 3,
+        "z": -1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_travertine",
+            "tint": "#d8c8b0"
+          },
+          "walls": {
+            "material": "core.pbr_limestone",
+            "tint": null
+          }
+        }
+      },
+      {
+        "id": "sp_setpiece_zfgnmgw7wt_31",
+        "tile": "core.tunnel_vault",
+        "x": -4,
+        "y": 3,
+        "z": -1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_travertine",
+            "tint": "#d8c8b0"
+          },
+          "walls": {
+            "material": "core.pbr_limestone",
+            "tint": null
+          }
+        }
+      },
+      {
+        "id": "sp_setpiece_zfgnmgw7wt_32",
+        "tile": "core.tunnel_vault_t",
+        "x": 4,
+        "y": 4,
+        "z": -1,
+        "rotation": 1,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_travertine",
+            "tint": "#d8c8b0"
+          },
+          "walls": {
+            "material": "core.pbr_limestone",
+            "tint": null
+          }
+        }
+      },
+      {
+        "id": "sp_setpiece_zfgnmgw7wt_33",
+        "tile": "core.tunnel_vault_t",
+        "x": -4,
+        "y": 4,
+        "z": -1,
+        "rotation": 3,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_travertine",
+            "tint": "#d8c8b0"
+          },
+          "walls": {
+            "material": "core.pbr_limestone",
+            "tint": null
+          }
+        }
+      },
+      {
+        "id": "sp_setpiece_zfgnmgw7wt_34",
+        "tile": "core.tunnel_vault_t",
+        "x": 4,
+        "y": -4,
+        "z": -1,
+        "rotation": 1,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_travertine",
+            "tint": "#d8c8b0"
+          },
+          "walls": {
+            "material": "core.pbr_limestone",
+            "tint": null
+          }
+        }
+      },
+      {
+        "id": "sp_setpiece_zfgnmgw7wt_35",
+        "tile": "core.tunnel_vault_t",
+        "x": -4,
+        "y": -4,
+        "z": -1,
+        "rotation": 3,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_travertine",
+            "tint": "#d8c8b0"
+          },
+          "walls": {
+            "material": "core.pbr_limestone",
+            "tint": null
+          }
+        }
+      },
+      {
+        "id": "sp_setpiece_zfgnmgw7wt_36",
+        "tile": "core.tunnel_vault_cross",
+        "x": 0,
+        "y": 0,
+        "z": -1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_travertine",
+            "tint": "#d8c8b0"
+          },
+          "walls": {
+            "material": "core.pbr_limestone",
+            "tint": null
+          }
+        }
+      },
+      {
+        "id": "sp_setpiece_zfgnmgw7wt_37",
+        "tile": "core.tunnel_vault_t",
+        "x": 0,
+        "y": 1,
+        "z": -1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_travertine",
+            "tint": "#d8c8b0"
+          },
+          "walls": {
+            "material": "core.pbr_limestone",
+            "tint": null
+          }
+        }
+      },
+      {
+        "id": "sp_setpiece_zfgnmgw7wt_38",
+        "tile": "core.tunnel_vault_t",
+        "x": 0,
+        "y": -1,
+        "z": -1,
+        "rotation": 2,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_travertine",
+            "tint": "#d8c8b0"
+          },
+          "walls": {
+            "material": "core.pbr_limestone",
+            "tint": null
+          }
+        }
+      },
+      {
+        "id": "sp_setpiece_zfgnmgw7wt_39",
+        "tile": "core.tunnel_vault_t",
+        "x": 1,
+        "y": 0,
+        "z": -1,
+        "rotation": 1,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_travertine",
+            "tint": "#d8c8b0"
+          },
+          "walls": {
+            "material": "core.pbr_limestone",
+            "tint": null
+          }
+        }
+      },
+      {
+        "id": "sp_setpiece_zfgnmgw7wt_40",
+        "tile": "core.tunnel_vault_t",
+        "x": -1,
+        "y": 0,
+        "z": -1,
+        "rotation": 3,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_travertine",
+            "tint": "#d8c8b0"
+          },
+          "walls": {
+            "material": "core.pbr_limestone",
+            "tint": null
+          }
+        }
+      },
+      {
+        "id": "sp_setpiece_zfgnmgw7wt_41",
+        "tile": "core.tunnel_vault",
+        "x": -2,
+        "y": 3,
+        "z": -1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_travertine",
+            "tint": "#d8c8b0"
+          },
+          "walls": {
+            "material": "core.pbr_limestone",
+            "tint": null
+          }
+        }
+      },
+      {
+        "id": "sp_setpiece_zfgnmgw7wt_42",
+        "tile": "core.tunnel_vault",
+        "x": -2,
+        "y": -3,
+        "z": -1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_travertine",
+            "tint": "#d8c8b0"
+          },
+          "walls": {
+            "material": "core.pbr_limestone",
+            "tint": null
+          }
+        }
+      },
+      {
+        "id": "sp_setpiece_zfgnmgw7wt_43",
+        "tile": "core.tunnel_vault",
+        "x": 2,
+        "y": 3,
+        "z": -1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_travertine",
+            "tint": "#d8c8b0"
+          },
+          "walls": {
+            "material": "core.pbr_limestone",
+            "tint": null
+          }
+        }
+      },
+      {
+        "id": "sp_setpiece_zfgnmgw7wt_44",
+        "tile": "core.tunnel_vault",
+        "x": 2,
+        "y": -3,
+        "z": -1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_travertine",
+            "tint": "#d8c8b0"
+          },
+          "walls": {
+            "material": "core.pbr_limestone",
+            "tint": null
+          }
+        }
+      },
+      {
+        "id": "sp_setpiece_zfgnmgw7wt_45",
+        "tile": "core.tunnel_vault",
+        "x": 3,
+        "y": -2,
+        "z": -1,
+        "rotation": 1,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_travertine",
+            "tint": "#d8c8b0"
+          },
+          "walls": {
+            "material": "core.pbr_limestone",
+            "tint": null
+          }
+        }
+      },
+      {
+        "id": "sp_setpiece_zfgnmgw7wt_46",
+        "tile": "core.tunnel_vault",
+        "x": -3,
+        "y": -2,
+        "z": -1,
+        "rotation": 1,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_travertine",
+            "tint": "#d8c8b0"
+          },
+          "walls": {
+            "material": "core.pbr_limestone",
+            "tint": null
+          }
+        }
+      },
+      {
+        "id": "sp_setpiece_zfgnmgw7wt_47",
+        "tile": "core.tunnel_vault",
+        "x": 3,
+        "y": 2,
+        "z": -1,
+        "rotation": 1,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_travertine",
+            "tint": "#d8c8b0"
+          },
+          "walls": {
+            "material": "core.pbr_limestone",
+            "tint": null
+          }
+        }
+      },
+      {
+        "id": "sp_setpiece_zfgnmgw7wt_48",
+        "tile": "core.tunnel_vault",
+        "x": -3,
+        "y": 2,
+        "z": -1,
+        "rotation": 1,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_travertine",
+            "tint": "#d8c8b0"
+          },
+          "walls": {
+            "material": "core.pbr_limestone",
+            "tint": null
+          }
+        }
+      },
+      {
+        "id": "sp_setpiece_zfgnmgw7wt_49",
+        "tile": "core.tunnel_vault",
+        "x": 0,
+        "y": 5,
+        "z": -1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_travertine",
+            "tint": "#d8c8b0"
+          },
+          "walls": {
+            "material": "core.pbr_limestone",
+            "tint": null
+          }
+        }
+      },
+      {
+        "id": "sp_setpiece_zfgnmgw7wt_50",
+        "tile": "core.room",
+        "x": 0,
+        "y": 7,
+        "z": -1,
+        "rotation": 2,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_travertine",
+            "tint": "#d8c8b0"
+          },
+          "walls": {
+            "material": "core.pbr_limestone",
+            "tint": null
+          },
+          "solids": {
+            "material": "core.pbr_limestone",
+            "tint": null
+          },
+          "trim": {
+            "material": "core.pbr_white_marble",
+            "tint": null
+          },
+          "roof": {
+            "material": "core.pbr_roof",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:E": "wall",
+          "0,0,0:N": "open",
+          "0,0,0:S": "open",
+          "0,0,0:W": "open"
+        },
+        "options": {
+          "ceiling": "vault"
+        }
+      },
+      {
+        "id": "sp_setpiece_zfgnmgw7wt_51",
+        "tile": "core.room",
+        "x": 0,
+        "y": 6,
+        "z": -1,
+        "rotation": 2,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_travertine",
+            "tint": "#d8c8b0"
+          },
+          "walls": {
+            "material": "core.pbr_limestone",
+            "tint": null
+          },
+          "solids": {
+            "material": "core.pbr_limestone",
+            "tint": null
+          },
+          "trim": {
+            "material": "core.pbr_white_marble",
+            "tint": null
+          },
+          "roof": {
+            "material": "core.pbr_roof",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:E": "wall",
+          "0,0,0:N": "open",
+          "0,0,0:S": "open",
+          "0,0,0:W": "open"
+        },
+        "options": {
+          "ceiling": "vault"
+        }
+      },
+      {
+        "id": "sp_setpiece_zfgnmgw7wt_52",
+        "tile": "core.room",
+        "x": 1,
+        "y": 7,
+        "z": -1,
+        "rotation": 1,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_travertine",
+            "tint": "#d8c8b0"
+          },
+          "walls": {
+            "material": "core.pbr_limestone",
+            "tint": null
+          },
+          "solids": {
+            "material": "core.pbr_limestone",
+            "tint": null
+          },
+          "trim": {
+            "material": "core.pbr_white_marble",
+            "tint": null
+          },
+          "roof": {
+            "material": "core.pbr_roof",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:E": "bars",
+          "0,0,0:N": "wall",
+          "0,0,0:S": "bars_gate",
+          "0,0,0:W": "wall"
+        },
+        "options": {
+          "ceiling": "roof"
+        }
+      },
+      {
+        "id": "sp_setpiece_zfgnmgw7wt_53",
+        "tile": "core.room",
+        "x": 1,
+        "y": 6,
+        "z": -1,
+        "rotation": 1,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_travertine",
+            "tint": "#d8c8b0"
+          },
+          "walls": {
+            "material": "core.pbr_limestone",
+            "tint": null
+          },
+          "solids": {
+            "material": "core.pbr_limestone",
+            "tint": null
+          },
+          "trim": {
+            "material": "core.pbr_white_marble",
+            "tint": null
+          },
+          "roof": {
+            "material": "core.pbr_roof",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:E": "wall",
+          "0,0,0:N": "wall",
+          "0,0,0:S": "bars_gate",
+          "0,0,0:W": "open"
+        },
+        "options": {
+          "ceiling": "roof"
+        }
+      },
+      {
+        "id": "sp_setpiece_zfgnmgw7wt_54",
+        "tile": "core.tunnel_vault",
+        "x": 0,
+        "y": 8,
+        "z": -1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_travertine",
+            "tint": "#d8c8b0"
+          },
+          "walls": {
+            "material": "core.pbr_limestone",
+            "tint": null
+          }
+        }
+      },
+      {
+        "id": "sp_setpiece_zfgnmgw7wt_55",
+        "tile": "core.tunnel_vault",
+        "x": 0,
+        "y": 9,
+        "z": -1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_travertine",
+            "tint": "#d8c8b0"
+          },
+          "walls": {
+            "material": "core.pbr_limestone",
+            "tint": null
+          }
+        }
+      },
+      {
+        "id": "sp_setpiece_zfgnmgw7wt_56",
+        "tile": "core.tunnel_vault",
+        "x": 0,
+        "y": 10,
+        "z": -1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_travertine",
+            "tint": "#d8c8b0"
+          },
+          "walls": {
+            "material": "core.pbr_limestone",
+            "tint": null
+          }
+        }
+      },
+      {
+        "id": "sp_setpiece_zfgnmgw7wt_57",
+        "tile": "core.tunnel_vault",
+        "x": 0,
+        "y": -5,
+        "z": -1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_travertine",
+            "tint": "#d8c8b0"
+          },
+          "walls": {
+            "material": "core.pbr_limestone",
+            "tint": null
+          }
+        }
+      },
+      {
+        "id": "sp_setpiece_zfgnmgw7wt_58",
+        "tile": "core.room",
+        "x": 0,
+        "y": -7,
+        "z": -1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_travertine",
+            "tint": "#d8c8b0"
+          },
+          "walls": {
+            "material": "core.pbr_limestone",
+            "tint": null
+          },
+          "solids": {
+            "material": "core.pbr_limestone",
+            "tint": null
+          },
+          "trim": {
+            "material": "core.pbr_white_marble",
+            "tint": null
+          },
+          "roof": {
+            "material": "core.pbr_roof",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:E": "wall",
+          "0,0,0:N": "open",
+          "0,0,0:S": "open",
+          "0,0,0:W": "open"
+        },
+        "options": {
+          "ceiling": "vault"
+        }
+      },
+      {
+        "id": "sp_setpiece_zfgnmgw7wt_59",
+        "tile": "core.room",
+        "x": 0,
+        "y": -6,
+        "z": -1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_travertine",
+            "tint": "#d8c8b0"
+          },
+          "walls": {
+            "material": "core.pbr_limestone",
+            "tint": null
+          },
+          "solids": {
+            "material": "core.pbr_limestone",
+            "tint": null
+          },
+          "trim": {
+            "material": "core.pbr_white_marble",
+            "tint": null
+          },
+          "roof": {
+            "material": "core.pbr_roof",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:E": "wall",
+          "0,0,0:N": "open",
+          "0,0,0:S": "open",
+          "0,0,0:W": "open"
+        },
+        "options": {
+          "ceiling": "vault"
+        }
+      },
+      {
+        "id": "sp_setpiece_zfgnmgw7wt_60",
+        "tile": "core.room",
+        "x": -1,
+        "y": -7,
+        "z": -1,
+        "rotation": 3,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_travertine",
+            "tint": "#d8c8b0"
+          },
+          "walls": {
+            "material": "core.pbr_limestone",
+            "tint": null
+          },
+          "solids": {
+            "material": "core.pbr_limestone",
+            "tint": null
+          },
+          "trim": {
+            "material": "core.pbr_white_marble",
+            "tint": null
+          },
+          "roof": {
+            "material": "core.pbr_roof",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:E": "bars",
+          "0,0,0:N": "wall",
+          "0,0,0:S": "bars_gate",
+          "0,0,0:W": "wall"
+        },
+        "options": {
+          "ceiling": "roof"
+        }
+      },
+      {
+        "id": "sp_setpiece_zfgnmgw7wt_61",
+        "tile": "core.room",
+        "x": -1,
+        "y": -6,
+        "z": -1,
+        "rotation": 3,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_travertine",
+            "tint": "#d8c8b0"
+          },
+          "walls": {
+            "material": "core.pbr_limestone",
+            "tint": null
+          },
+          "solids": {
+            "material": "core.pbr_limestone",
+            "tint": null
+          },
+          "trim": {
+            "material": "core.pbr_white_marble",
+            "tint": null
+          },
+          "roof": {
+            "material": "core.pbr_roof",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:E": "wall",
+          "0,0,0:N": "wall",
+          "0,0,0:S": "bars_gate",
+          "0,0,0:W": "open"
+        },
+        "options": {
+          "ceiling": "roof"
+        }
+      },
+      {
+        "id": "sp_setpiece_zfgnmgw7wt_62",
+        "tile": "core.tunnel_vault",
+        "x": 0,
+        "y": -8,
+        "z": -1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_travertine",
+            "tint": "#d8c8b0"
+          },
+          "walls": {
+            "material": "core.pbr_limestone",
+            "tint": null
+          }
+        }
+      },
+      {
+        "id": "sp_setpiece_zfgnmgw7wt_63",
+        "tile": "core.tunnel_vault",
+        "x": 0,
+        "y": -9,
+        "z": -1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_travertine",
+            "tint": "#d8c8b0"
+          },
+          "walls": {
+            "material": "core.pbr_limestone",
+            "tint": null
+          }
+        }
+      },
+      {
+        "id": "sp_setpiece_zfgnmgw7wt_64",
+        "tile": "core.tunnel_vault",
+        "x": 0,
+        "y": -10,
+        "z": -1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_travertine",
+            "tint": "#d8c8b0"
+          },
+          "walls": {
+            "material": "core.pbr_limestone",
+            "tint": null
+          }
+        }
+      },
+      {
+        "id": "sp_setpiece_zfgnmgw7wt_65",
+        "tile": "core.room",
+        "x": 5,
+        "y": 0,
+        "z": -1,
+        "rotation": 1,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_travertine",
+            "tint": "#d8c8b0"
+          },
+          "walls": {
+            "material": "core.pbr_limestone",
+            "tint": null
+          },
+          "solids": {
+            "material": "core.pbr_limestone",
+            "tint": null
+          },
+          "trim": {
+            "material": "core.pbr_white_marble",
+            "tint": null
+          },
+          "roof": {
+            "material": "core.pbr_roof",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:E": "wall",
+          "0,0,0:N": "open",
+          "0,0,0:S": "open",
+          "0,0,0:W": "open"
+        },
+        "options": {
+          "ceiling": "vault"
+        }
+      },
+      {
+        "id": "sp_setpiece_zfgnmgw7wt_66",
+        "tile": "core.room",
+        "x": 6,
+        "y": 0,
+        "z": -1,
+        "rotation": 1,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_travertine",
+            "tint": "#d8c8b0"
+          },
+          "walls": {
+            "material": "core.pbr_limestone",
+            "tint": null
+          },
+          "solids": {
+            "material": "core.pbr_limestone",
+            "tint": null
+          },
+          "trim": {
+            "material": "core.pbr_white_marble",
+            "tint": null
+          },
+          "roof": {
+            "material": "core.pbr_roof",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:E": "wall",
+          "0,0,0:N": "open",
+          "0,0,0:S": "open",
+          "0,0,0:W": "open"
+        },
+        "options": {
+          "ceiling": "vault"
+        }
+      },
+      {
+        "id": "sp_setpiece_zfgnmgw7wt_67",
+        "tile": "core.room",
+        "x": 5,
+        "y": 1,
+        "z": -1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_travertine",
+            "tint": "#d8c8b0"
+          },
+          "walls": {
+            "material": "core.pbr_limestone",
+            "tint": null
+          },
+          "solids": {
+            "material": "core.pbr_limestone",
+            "tint": null
+          },
+          "trim": {
+            "material": "core.pbr_white_marble",
+            "tint": null
+          },
+          "roof": {
+            "material": "core.pbr_roof",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:E": "bars",
+          "0,0,0:N": "wall",
+          "0,0,0:S": "bars_gate",
+          "0,0,0:W": "wall"
+        },
+        "options": {
+          "ceiling": "roof"
+        }
+      },
+      {
+        "id": "sp_setpiece_zfgnmgw7wt_68",
+        "tile": "core.room",
+        "x": 6,
+        "y": 1,
+        "z": -1,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_travertine",
+            "tint": "#d8c8b0"
+          },
+          "walls": {
+            "material": "core.pbr_limestone",
+            "tint": null
+          },
+          "solids": {
+            "material": "core.pbr_limestone",
+            "tint": null
+          },
+          "trim": {
+            "material": "core.pbr_white_marble",
+            "tint": null
+          },
+          "roof": {
+            "material": "core.pbr_roof",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:E": "wall",
+          "0,0,0:N": "wall",
+          "0,0,0:S": "bars_gate",
+          "0,0,0:W": "open"
+        },
+        "options": {
+          "ceiling": "roof"
+        }
+      },
+      {
+        "id": "sp_setpiece_zfgnmgw7wt_69",
+        "tile": "core.tunnel_vault",
+        "x": 7,
+        "y": 0,
+        "z": -1,
+        "rotation": 1,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_travertine",
+            "tint": "#d8c8b0"
+          },
+          "walls": {
+            "material": "core.pbr_limestone",
+            "tint": null
+          }
+        }
+      },
+      {
+        "id": "sp_setpiece_zfgnmgw7wt_70",
+        "tile": "core.tunnel_vault",
+        "x": 8,
+        "y": 0,
+        "z": -1,
+        "rotation": 1,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_travertine",
+            "tint": "#d8c8b0"
+          },
+          "walls": {
+            "material": "core.pbr_limestone",
+            "tint": null
+          }
+        }
+      },
+      {
+        "id": "sp_setpiece_zfgnmgw7wt_71",
+        "tile": "core.tunnel_vault",
+        "x": 9,
+        "y": 0,
+        "z": -1,
+        "rotation": 1,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_travertine",
+            "tint": "#d8c8b0"
+          },
+          "walls": {
+            "material": "core.pbr_limestone",
+            "tint": null
+          }
+        }
+      },
+      {
+        "id": "sp_setpiece_zfgnmgw7wt_72",
+        "tile": "core.tunnel_vault",
+        "x": 10,
+        "y": 0,
+        "z": -1,
+        "rotation": 1,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_travertine",
+            "tint": "#d8c8b0"
+          },
+          "walls": {
+            "material": "core.pbr_limestone",
+            "tint": null
+          }
+        }
+      },
+      {
+        "id": "sp_setpiece_zfgnmgw7wt_73",
+        "tile": "core.tunnel_vault",
+        "x": -5,
+        "y": 0,
+        "z": -1,
+        "rotation": 1,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_travertine",
+            "tint": "#d8c8b0"
+          },
+          "walls": {
+            "material": "core.pbr_limestone",
+            "tint": null
+          }
+        }
+      },
+      {
+        "id": "sp_setpiece_zfgnmgw7wt_74",
+        "tile": "core.room",
+        "x": -6,
+        "y": 0,
+        "z": -1,
+        "rotation": 3,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_travertine",
+            "tint": "#d8c8b0"
+          },
+          "walls": {
+            "material": "core.pbr_limestone",
+            "tint": null
+          },
+          "solids": {
+            "material": "core.pbr_limestone",
+            "tint": null
+          },
+          "trim": {
+            "material": "core.pbr_white_marble",
+            "tint": null
+          },
+          "roof": {
+            "material": "core.pbr_roof",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:E": "wall",
+          "0,0,0:N": "open",
+          "0,0,0:S": "open",
+          "0,0,0:W": "open"
+        },
+        "options": {
+          "ceiling": "vault"
+        }
+      },
+      {
+        "id": "sp_setpiece_zfgnmgw7wt_75",
+        "tile": "core.room",
+        "x": -7,
+        "y": 0,
+        "z": -1,
+        "rotation": 3,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_travertine",
+            "tint": "#d8c8b0"
+          },
+          "walls": {
+            "material": "core.pbr_limestone",
+            "tint": null
+          },
+          "solids": {
+            "material": "core.pbr_limestone",
+            "tint": null
+          },
+          "trim": {
+            "material": "core.pbr_white_marble",
+            "tint": null
+          },
+          "roof": {
+            "material": "core.pbr_roof",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:E": "wall",
+          "0,0,0:N": "open",
+          "0,0,0:S": "open",
+          "0,0,0:W": "open"
+        },
+        "options": {
+          "ceiling": "vault"
+        }
+      },
+      {
+        "id": "sp_setpiece_zfgnmgw7wt_76",
+        "tile": "core.room",
+        "x": -6,
+        "y": -1,
+        "z": -1,
+        "rotation": 2,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_travertine",
+            "tint": "#d8c8b0"
+          },
+          "walls": {
+            "material": "core.pbr_limestone",
+            "tint": null
+          },
+          "solids": {
+            "material": "core.pbr_limestone",
+            "tint": null
+          },
+          "trim": {
+            "material": "core.pbr_white_marble",
+            "tint": null
+          },
+          "roof": {
+            "material": "core.pbr_roof",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:E": "bars",
+          "0,0,0:N": "wall",
+          "0,0,0:S": "bars_gate",
+          "0,0,0:W": "wall"
+        },
+        "options": {
+          "ceiling": "roof"
+        }
+      },
+      {
+        "id": "sp_setpiece_zfgnmgw7wt_77",
+        "tile": "core.room",
+        "x": -7,
+        "y": -1,
+        "z": -1,
+        "rotation": 2,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_travertine",
+            "tint": "#d8c8b0"
+          },
+          "walls": {
+            "material": "core.pbr_limestone",
+            "tint": null
+          },
+          "solids": {
+            "material": "core.pbr_limestone",
+            "tint": null
+          },
+          "trim": {
+            "material": "core.pbr_white_marble",
+            "tint": null
+          },
+          "roof": {
+            "material": "core.pbr_roof",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:E": "wall",
+          "0,0,0:N": "wall",
+          "0,0,0:S": "bars_gate",
+          "0,0,0:W": "open"
+        },
+        "options": {
+          "ceiling": "roof"
+        }
+      },
+      {
+        "id": "sp_setpiece_zfgnmgw7wt_78",
+        "tile": "core.tunnel_vault",
+        "x": -8,
+        "y": 0,
+        "z": -1,
+        "rotation": 1,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_travertine",
+            "tint": "#d8c8b0"
+          },
+          "walls": {
+            "material": "core.pbr_limestone",
+            "tint": null
+          }
+        }
+      },
+      {
+        "id": "sp_setpiece_zfgnmgw7wt_79",
+        "tile": "core.tunnel_vault",
+        "x": -9,
+        "y": 0,
+        "z": -1,
+        "rotation": 1,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_travertine",
+            "tint": "#d8c8b0"
+          },
+          "walls": {
+            "material": "core.pbr_limestone",
+            "tint": null
+          }
+        }
+      },
+      {
+        "id": "sp_setpiece_zfgnmgw7wt_80",
+        "tile": "core.tunnel_vault",
+        "x": -10,
+        "y": 0,
+        "z": -1,
+        "rotation": 1,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_travertine",
+            "tint": "#d8c8b0"
+          },
+          "walls": {
+            "material": "core.pbr_limestone",
+            "tint": null
+          }
+        }
+      },
+      {
+        "id": "sp_setpiece_ahf9s9w7y2_0",
+        "tile": "core.yard",
+        "x": -3,
+        "y": -3,
+        "z": 1,
+        "rotation": 0
+      },
+      {
+        "id": "sp_setpiece_ahf9s9w7y2_1",
+        "tile": "core.yard",
+        "x": -2,
+        "y": -3,
+        "z": 1,
+        "rotation": 0
+      },
+      {
+        "id": "sp_setpiece_ahf9s9w7y2_2",
+        "tile": "core.yard",
+        "x": -1,
+        "y": -3,
+        "z": 1,
+        "rotation": 0
+      },
+      {
+        "id": "sp_setpiece_ahf9s9w7y2_3",
+        "tile": "core.yard",
+        "x": 0,
+        "y": -3,
+        "z": 1,
+        "rotation": 0
+      },
+      {
+        "id": "sp_setpiece_ahf9s9w7y2_4",
+        "tile": "core.yard",
+        "x": 1,
+        "y": -3,
+        "z": 1,
+        "rotation": 0
+      },
+      {
+        "id": "sp_setpiece_ahf9s9w7y2_5",
+        "tile": "core.yard",
+        "x": 2,
+        "y": -3,
+        "z": 1,
+        "rotation": 0
+      },
+      {
+        "id": "sp_setpiece_ahf9s9w7y2_6",
+        "tile": "core.yard",
+        "x": 3,
+        "y": -3,
+        "z": 1,
+        "rotation": 0
+      },
+      {
+        "id": "sp_setpiece_ahf9s9w7y2_7",
+        "tile": "core.yard",
+        "x": -3,
+        "y": -2,
+        "z": 1,
+        "rotation": 0
+      },
+      {
+        "id": "sp_setpiece_ahf9s9w7y2_8",
+        "tile": "core.yard",
+        "x": 0,
+        "y": -2,
+        "z": 1,
+        "rotation": 0
+      },
+      {
+        "id": "sp_setpiece_ahf9s9w7y2_9",
+        "tile": "core.yard",
+        "x": 3,
+        "y": -2,
+        "z": 1,
+        "rotation": 0
+      },
+      {
+        "id": "sp_setpiece_ahf9s9w7y2_10",
+        "tile": "core.yard",
+        "x": -3,
+        "y": -1,
+        "z": 1,
+        "rotation": 0
+      },
+      {
+        "id": "sp_setpiece_ahf9s9w7y2_11",
+        "tile": "core.yard",
+        "x": 0,
+        "y": -1,
+        "z": 1,
+        "rotation": 0
+      },
+      {
+        "id": "sp_setpiece_ahf9s9w7y2_12",
+        "tile": "core.yard",
+        "x": 3,
+        "y": -1,
+        "z": 1,
+        "rotation": 0
+      },
+      {
+        "id": "sp_setpiece_ahf9s9w7y2_13",
+        "tile": "core.yard",
+        "x": -3,
+        "y": 0,
+        "z": 1,
+        "rotation": 0
+      },
+      {
+        "id": "sp_setpiece_ahf9s9w7y2_14",
+        "tile": "core.yard",
+        "x": -2,
+        "y": 0,
+        "z": 1,
+        "rotation": 0
+      },
+      {
+        "id": "sp_setpiece_ahf9s9w7y2_15",
+        "tile": "core.yard",
+        "x": -1,
+        "y": 0,
+        "z": 1,
+        "rotation": 0
+      },
+      {
+        "id": "sp_setpiece_ahf9s9w7y2_16",
+        "tile": "core.yard",
+        "x": 1,
+        "y": 0,
+        "z": 1,
+        "rotation": 0
+      },
+      {
+        "id": "sp_setpiece_ahf9s9w7y2_17",
+        "tile": "core.yard",
+        "x": 2,
+        "y": 0,
+        "z": 1,
+        "rotation": 0
+      },
+      {
+        "id": "sp_setpiece_ahf9s9w7y2_18",
+        "tile": "core.yard",
+        "x": 3,
+        "y": 0,
+        "z": 1,
+        "rotation": 0
+      },
+      {
+        "id": "sp_setpiece_ahf9s9w7y2_19",
+        "tile": "core.yard",
+        "x": -3,
+        "y": 1,
+        "z": 1,
+        "rotation": 0
+      },
+      {
+        "id": "sp_setpiece_ahf9s9w7y2_20",
+        "tile": "core.yard",
+        "x": 0,
+        "y": 1,
+        "z": 1,
+        "rotation": 0
+      },
+      {
+        "id": "sp_setpiece_ahf9s9w7y2_21",
+        "tile": "core.yard",
+        "x": 3,
+        "y": 1,
+        "z": 1,
+        "rotation": 0
+      },
+      {
+        "id": "sp_setpiece_ahf9s9w7y2_22",
+        "tile": "core.yard",
+        "x": -3,
+        "y": 2,
+        "z": 1,
+        "rotation": 0
+      },
+      {
+        "id": "sp_setpiece_ahf9s9w7y2_23",
+        "tile": "core.yard",
+        "x": 0,
+        "y": 2,
+        "z": 1,
+        "rotation": 0
+      },
+      {
+        "id": "sp_setpiece_ahf9s9w7y2_24",
+        "tile": "core.yard",
+        "x": 3,
+        "y": 2,
+        "z": 1,
+        "rotation": 0
+      },
+      {
+        "id": "sp_setpiece_ahf9s9w7y2_25",
+        "tile": "core.yard",
+        "x": -3,
+        "y": 3,
+        "z": 1,
+        "rotation": 0
+      },
+      {
+        "id": "sp_setpiece_ahf9s9w7y2_26",
+        "tile": "core.yard",
+        "x": -2,
+        "y": 3,
+        "z": 1,
+        "rotation": 0
+      },
+      {
+        "id": "sp_setpiece_ahf9s9w7y2_27",
+        "tile": "core.yard",
+        "x": -1,
+        "y": 3,
+        "z": 1,
+        "rotation": 0
+      },
+      {
+        "id": "sp_setpiece_ahf9s9w7y2_28",
+        "tile": "core.yard",
+        "x": 0,
+        "y": 3,
+        "z": 1,
+        "rotation": 0
+      },
+      {
+        "id": "sp_setpiece_ahf9s9w7y2_29",
+        "tile": "core.yard",
+        "x": 1,
+        "y": 3,
+        "z": 1,
+        "rotation": 0
+      },
+      {
+        "id": "sp_setpiece_ahf9s9w7y2_30",
+        "tile": "core.yard",
+        "x": 2,
+        "y": 3,
+        "z": 1,
+        "rotation": 0
+      },
+      {
+        "id": "sp_setpiece_ahf9s9w7y2_31",
+        "tile": "core.yard",
+        "x": 3,
+        "y": 3,
+        "z": 1,
+        "rotation": 0
+      },
+      {
+        "id": "sp_setpiece_ahf9s9w7y2_32",
+        "tile": "core.yard",
+        "x": 0,
+        "y": 0,
+        "z": 1,
+        "rotation": 0
+      },
+      {
+        "id": "sp_setpiece_ahf9s9w7y2_33",
+        "tile": "core.hatch_corner",
+        "x": 1,
+        "y": 1,
+        "z": 1,
+        "rotation": 0
+      },
+      {
+        "id": "sp_setpiece_ahf9s9w7y2_34",
+        "tile": "core.hatch_corner",
+        "x": 2,
+        "y": 1,
+        "z": 1,
+        "rotation": 3
+      },
+      {
+        "id": "sp_setpiece_ahf9s9w7y2_35",
+        "tile": "core.hatch_corner",
+        "x": 2,
+        "y": 2,
+        "z": 1,
+        "rotation": 2
+      },
+      {
+        "id": "sp_setpiece_ahf9s9w7y2_36",
+        "tile": "core.hatch_corner",
+        "x": 1,
+        "y": 2,
+        "z": 1,
+        "rotation": 1
+      },
+      {
+        "id": "sp_setpiece_ahf9s9w7y2_37",
+        "tile": "core.hatch_corner",
+        "x": -1,
+        "y": 1,
+        "z": 1,
+        "rotation": 3
+      },
+      {
+        "id": "sp_setpiece_ahf9s9w7y2_38",
+        "tile": "core.hatch_corner",
+        "x": -1,
+        "y": 2,
+        "z": 1,
+        "rotation": 2
+      },
+      {
+        "id": "sp_setpiece_ahf9s9w7y2_39",
+        "tile": "core.hatch_corner",
+        "x": -2,
+        "y": 2,
+        "z": 1,
+        "rotation": 1
+      },
+      {
+        "id": "sp_setpiece_ahf9s9w7y2_40",
+        "tile": "core.hatch_corner",
+        "x": -2,
+        "y": 1,
+        "z": 1,
+        "rotation": 0
+      },
+      {
+        "id": "sp_setpiece_ahf9s9w7y2_41",
+        "tile": "core.hatch_corner",
+        "x": 1,
+        "y": -1,
+        "z": 1,
+        "rotation": 1
+      },
+      {
+        "id": "sp_setpiece_ahf9s9w7y2_42",
+        "tile": "core.hatch_corner",
+        "x": 1,
+        "y": -2,
+        "z": 1,
+        "rotation": 0
+      },
+      {
+        "id": "sp_setpiece_ahf9s9w7y2_43",
+        "tile": "core.hatch_corner",
+        "x": 2,
+        "y": -2,
+        "z": 1,
+        "rotation": 3
+      },
+      {
+        "id": "sp_setpiece_ahf9s9w7y2_44",
+        "tile": "core.hatch_corner",
+        "x": 2,
+        "y": -1,
+        "z": 1,
+        "rotation": 2
+      },
+      {
+        "id": "sp_setpiece_ahf9s9w7y2_45",
+        "tile": "core.hatch_corner",
+        "x": -1,
+        "y": -1,
+        "z": 1,
+        "rotation": 2
+      },
+      {
+        "id": "sp_setpiece_ahf9s9w7y2_46",
+        "tile": "core.hatch_corner",
+        "x": -2,
+        "y": -1,
+        "z": 1,
+        "rotation": 1
+      },
+      {
+        "id": "sp_setpiece_ahf9s9w7y2_47",
+        "tile": "core.hatch_corner",
+        "x": -2,
+        "y": -2,
+        "z": 1,
+        "rotation": 0
+      },
+      {
+        "id": "sp_setpiece_ahf9s9w7y2_48",
+        "tile": "core.hatch_corner",
+        "x": -1,
+        "y": -2,
+        "z": 1,
+        "rotation": 3
+      },
+      {
+        "id": "tile_3a6jf7thbg",
+        "tile": "core.stairs_open",
+        "x": 0,
+        "y": 11,
+        "z": -1,
+        "rotation": 0
+      },
+      {
+        "id": "tile_lpuu8hq416",
+        "tile": "core.stairs_open",
+        "x": 0,
+        "y": -11,
+        "z": -1,
+        "rotation": 2
+      },
+      {
+        "id": "tile_ol52tjvuhx",
+        "tile": "core.stairs_open",
+        "x": 11,
+        "y": 0,
+        "z": -1,
+        "rotation": 1
+      },
+      {
+        "id": "tile_5frmpb9jhp",
+        "tile": "core.stairs_open",
+        "x": -11,
+        "y": 0,
+        "z": -1,
+        "rotation": 3
+      },
+      {
+        "id": "tile_3pf7hqi8mg",
+        "tile": "core.stairs_open",
+        "x": 4,
+        "y": 5,
+        "z": -1,
+        "rotation": 0
+      },
+      {
+        "id": "tile_85k7nabf2f",
+        "tile": "core.stairs_open",
+        "x": -4,
+        "y": 5,
+        "z": -1,
+        "rotation": 0
+      },
+      {
+        "id": "tile_wphcmtbc66",
+        "tile": "core.stairs_open",
+        "x": 4,
+        "y": -5,
+        "z": -1,
+        "rotation": 2
+      },
+      {
+        "id": "tile_h3o4iln86p",
+        "tile": "core.stairs_open",
+        "x": -4,
+        "y": -5,
+        "z": -1,
+        "rotation": 2
       }
     ]
   },
@@ -154,6 +2452,1644 @@
       "intensity": 1,
       "range": 9,
       "fixture": "candle"
+    },
+    {
+      "id": "sp_setpiece_zfgnmgw7wt_81",
+      "position": [
+        12,
+        -4,
+        10.9
+      ],
+      "kind": "ladder",
+      "yaw": 3.141592653589793,
+      "height": 4,
+      "width": 0.9
+    },
+    {
+      "id": "sp_setpiece_zfgnmgw7wt_82",
+      "position": [
+        12,
+        -1,
+        16.5
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffb070",
+      "intensity": 1.1,
+      "range": 10,
+      "fixture": "chandelier"
+    },
+    {
+      "id": "sp_setpiece_zfgnmgw7wt_83",
+      "position": [
+        -10.9,
+        -4,
+        12
+      ],
+      "kind": "ladder",
+      "yaw": 1.5707963267948966,
+      "height": 4,
+      "width": 0.9
+    },
+    {
+      "id": "sp_setpiece_zfgnmgw7wt_84",
+      "position": [
+        -16.5,
+        -1,
+        12
+      ],
+      "kind": "light",
+      "yaw": -1.5707963267948966,
+      "color": "#ffb070",
+      "intensity": 1.1,
+      "range": 10,
+      "fixture": "chandelier"
+    },
+    {
+      "id": "sp_setpiece_zfgnmgw7wt_85",
+      "position": [
+        10.9,
+        -4,
+        -12
+      ],
+      "kind": "ladder",
+      "yaw": -1.5707963267948966,
+      "height": 4,
+      "width": 0.9
+    },
+    {
+      "id": "sp_setpiece_zfgnmgw7wt_86",
+      "position": [
+        16.5,
+        -1,
+        -12
+      ],
+      "kind": "light",
+      "yaw": 1.5707963267948966,
+      "color": "#ffb070",
+      "intensity": 1.1,
+      "range": 10,
+      "fixture": "chandelier"
+    },
+    {
+      "id": "sp_setpiece_zfgnmgw7wt_87",
+      "position": [
+        -12,
+        -4,
+        -10.9
+      ],
+      "kind": "ladder",
+      "yaw": 0,
+      "height": 4,
+      "width": 0.9
+    },
+    {
+      "id": "sp_setpiece_zfgnmgw7wt_88",
+      "position": [
+        -12,
+        -1,
+        -16.5
+      ],
+      "kind": "light",
+      "yaw": 3.141592653589793,
+      "color": "#ffb070",
+      "intensity": 1.1,
+      "range": 10,
+      "fixture": "chandelier"
+    },
+    {
+      "id": "sp_setpiece_zfgnmgw7wt_89",
+      "position": [
+        -24,
+        -2,
+        33.77
+      ],
+      "kind": "light",
+      "yaw": 3.141592653589793,
+      "color": "#ffb070",
+      "intensity": 1.1,
+      "range": 8,
+      "fixture": "candle"
+    },
+    {
+      "id": "sp_setpiece_zfgnmgw7wt_90",
+      "position": [
+        -24,
+        -2,
+        -30.23
+      ],
+      "kind": "light",
+      "yaw": 3.141592653589793,
+      "color": "#ffb070",
+      "intensity": 1.1,
+      "range": 8,
+      "fixture": "candle"
+    },
+    {
+      "id": "sp_setpiece_zfgnmgw7wt_91",
+      "position": [
+        -16,
+        -2,
+        33.77
+      ],
+      "kind": "light",
+      "yaw": 3.141592653589793,
+      "color": "#ffb070",
+      "intensity": 1.1,
+      "range": 8,
+      "fixture": "candle"
+    },
+    {
+      "id": "sp_setpiece_zfgnmgw7wt_92",
+      "position": [
+        -16,
+        -2,
+        -33.77
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffb070",
+      "intensity": 1.1,
+      "range": 8,
+      "fixture": "candle"
+    },
+    {
+      "id": "sp_setpiece_zfgnmgw7wt_93",
+      "position": [
+        -8,
+        -2,
+        33.77
+      ],
+      "kind": "light",
+      "yaw": 3.141592653589793,
+      "color": "#ffb070",
+      "intensity": 1.1,
+      "range": 8,
+      "fixture": "candle"
+    },
+    {
+      "id": "sp_setpiece_zfgnmgw7wt_94",
+      "position": [
+        -8,
+        -2,
+        -30.23
+      ],
+      "kind": "light",
+      "yaw": 3.141592653589793,
+      "color": "#ffb070",
+      "intensity": 1.1,
+      "range": 8,
+      "fixture": "candle"
+    },
+    {
+      "id": "sp_setpiece_zfgnmgw7wt_95",
+      "position": [
+        0,
+        -2,
+        30.23
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffb070",
+      "intensity": 1.1,
+      "range": 8,
+      "fixture": "candle"
+    },
+    {
+      "id": "sp_setpiece_zfgnmgw7wt_96",
+      "position": [
+        0,
+        -2,
+        -30.23
+      ],
+      "kind": "light",
+      "yaw": 3.141592653589793,
+      "color": "#ffb070",
+      "intensity": 1.1,
+      "range": 8,
+      "fixture": "candle"
+    },
+    {
+      "id": "sp_setpiece_zfgnmgw7wt_97",
+      "position": [
+        8,
+        -2,
+        33.77
+      ],
+      "kind": "light",
+      "yaw": 3.141592653589793,
+      "color": "#ffb070",
+      "intensity": 1.1,
+      "range": 8,
+      "fixture": "candle"
+    },
+    {
+      "id": "sp_setpiece_zfgnmgw7wt_98",
+      "position": [
+        8,
+        -2,
+        -30.23
+      ],
+      "kind": "light",
+      "yaw": 3.141592653589793,
+      "color": "#ffb070",
+      "intensity": 1.1,
+      "range": 8,
+      "fixture": "candle"
+    },
+    {
+      "id": "sp_setpiece_zfgnmgw7wt_99",
+      "position": [
+        16,
+        -2,
+        33.77
+      ],
+      "kind": "light",
+      "yaw": 3.141592653589793,
+      "color": "#ffb070",
+      "intensity": 1.1,
+      "range": 8,
+      "fixture": "candle"
+    },
+    {
+      "id": "sp_setpiece_zfgnmgw7wt_100",
+      "position": [
+        16,
+        -2,
+        -33.77
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffb070",
+      "intensity": 1.1,
+      "range": 8,
+      "fixture": "candle"
+    },
+    {
+      "id": "sp_setpiece_zfgnmgw7wt_101",
+      "position": [
+        24,
+        -2,
+        33.77
+      ],
+      "kind": "light",
+      "yaw": 3.141592653589793,
+      "color": "#ffb070",
+      "intensity": 1.1,
+      "range": 8,
+      "fixture": "candle"
+    },
+    {
+      "id": "sp_setpiece_zfgnmgw7wt_102",
+      "position": [
+        24,
+        -2,
+        -30.23
+      ],
+      "kind": "light",
+      "yaw": 3.141592653589793,
+      "color": "#ffb070",
+      "intensity": 1.1,
+      "range": 8,
+      "fixture": "candle"
+    },
+    {
+      "id": "sp_setpiece_zfgnmgw7wt_103",
+      "position": [
+        30.23,
+        -2,
+        -24
+      ],
+      "kind": "light",
+      "yaw": 1.5707963267948966,
+      "color": "#ffb070",
+      "intensity": 1.1,
+      "range": 8,
+      "fixture": "candle"
+    },
+    {
+      "id": "sp_setpiece_zfgnmgw7wt_104",
+      "position": [
+        -33.77,
+        -2,
+        -24
+      ],
+      "kind": "light",
+      "yaw": 1.5707963267948966,
+      "color": "#ffb070",
+      "intensity": 1.1,
+      "range": 8,
+      "fixture": "candle"
+    },
+    {
+      "id": "sp_setpiece_zfgnmgw7wt_105",
+      "position": [
+        33.77,
+        -2,
+        -16
+      ],
+      "kind": "light",
+      "yaw": -1.5707963267948966,
+      "color": "#ffb070",
+      "intensity": 1.1,
+      "range": 8,
+      "fixture": "candle"
+    },
+    {
+      "id": "sp_setpiece_zfgnmgw7wt_106",
+      "position": [
+        -33.77,
+        -2,
+        -16
+      ],
+      "kind": "light",
+      "yaw": 1.5707963267948966,
+      "color": "#ffb070",
+      "intensity": 1.1,
+      "range": 8,
+      "fixture": "candle"
+    },
+    {
+      "id": "sp_setpiece_zfgnmgw7wt_107",
+      "position": [
+        30.23,
+        -2,
+        -8
+      ],
+      "kind": "light",
+      "yaw": 1.5707963267948966,
+      "color": "#ffb070",
+      "intensity": 1.1,
+      "range": 8,
+      "fixture": "candle"
+    },
+    {
+      "id": "sp_setpiece_zfgnmgw7wt_108",
+      "position": [
+        -33.77,
+        -2,
+        -8
+      ],
+      "kind": "light",
+      "yaw": 1.5707963267948966,
+      "color": "#ffb070",
+      "intensity": 1.1,
+      "range": 8,
+      "fixture": "candle"
+    },
+    {
+      "id": "sp_setpiece_zfgnmgw7wt_109",
+      "position": [
+        30.23,
+        -2,
+        0
+      ],
+      "kind": "light",
+      "yaw": 1.5707963267948966,
+      "color": "#ffb070",
+      "intensity": 1.1,
+      "range": 8,
+      "fixture": "candle"
+    },
+    {
+      "id": "sp_setpiece_zfgnmgw7wt_110",
+      "position": [
+        -30.23,
+        -2,
+        0
+      ],
+      "kind": "light",
+      "yaw": -1.5707963267948966,
+      "color": "#ffb070",
+      "intensity": 1.1,
+      "range": 8,
+      "fixture": "candle"
+    },
+    {
+      "id": "sp_setpiece_zfgnmgw7wt_111",
+      "position": [
+        30.23,
+        -2,
+        8
+      ],
+      "kind": "light",
+      "yaw": 1.5707963267948966,
+      "color": "#ffb070",
+      "intensity": 1.1,
+      "range": 8,
+      "fixture": "candle"
+    },
+    {
+      "id": "sp_setpiece_zfgnmgw7wt_112",
+      "position": [
+        -33.77,
+        -2,
+        8
+      ],
+      "kind": "light",
+      "yaw": 1.5707963267948966,
+      "color": "#ffb070",
+      "intensity": 1.1,
+      "range": 8,
+      "fixture": "candle"
+    },
+    {
+      "id": "sp_setpiece_zfgnmgw7wt_113",
+      "position": [
+        33.77,
+        -2,
+        16
+      ],
+      "kind": "light",
+      "yaw": -1.5707963267948966,
+      "color": "#ffb070",
+      "intensity": 1.1,
+      "range": 8,
+      "fixture": "candle"
+    },
+    {
+      "id": "sp_setpiece_zfgnmgw7wt_114",
+      "position": [
+        -33.77,
+        -2,
+        16
+      ],
+      "kind": "light",
+      "yaw": 1.5707963267948966,
+      "color": "#ffb070",
+      "intensity": 1.1,
+      "range": 8,
+      "fixture": "candle"
+    },
+    {
+      "id": "sp_setpiece_zfgnmgw7wt_115",
+      "position": [
+        30.23,
+        -2,
+        24
+      ],
+      "kind": "light",
+      "yaw": 1.5707963267948966,
+      "color": "#ffb070",
+      "intensity": 1.1,
+      "range": 8,
+      "fixture": "candle"
+    },
+    {
+      "id": "sp_setpiece_zfgnmgw7wt_116",
+      "position": [
+        -33.77,
+        -2,
+        24
+      ],
+      "kind": "light",
+      "yaw": 1.5707963267948966,
+      "color": "#ffb070",
+      "intensity": 1.1,
+      "range": 8,
+      "fixture": "candle"
+    },
+    {
+      "id": "sp_setpiece_zfgnmgw7wt_117",
+      "position": [
+        33.77,
+        -2,
+        32
+      ],
+      "kind": "light",
+      "yaw": -1.5707963267948966,
+      "color": "#ffb070",
+      "intensity": 1.1,
+      "range": 8,
+      "fixture": "candle"
+    },
+    {
+      "id": "sp_setpiece_zfgnmgw7wt_118",
+      "position": [
+        -33.77,
+        -2,
+        32
+      ],
+      "kind": "light",
+      "yaw": 1.5707963267948966,
+      "color": "#ffb070",
+      "intensity": 1.1,
+      "range": 8,
+      "fixture": "candle"
+    },
+    {
+      "id": "sp_setpiece_zfgnmgw7wt_119",
+      "position": [
+        33.77,
+        -2,
+        -32
+      ],
+      "kind": "light",
+      "yaw": -1.5707963267948966,
+      "color": "#ffb070",
+      "intensity": 1.1,
+      "range": 8,
+      "fixture": "candle"
+    },
+    {
+      "id": "sp_setpiece_zfgnmgw7wt_120",
+      "position": [
+        -33.77,
+        -2,
+        -32
+      ],
+      "kind": "light",
+      "yaw": 1.5707963267948966,
+      "color": "#ffb070",
+      "intensity": 1.1,
+      "range": 8,
+      "fixture": "candle"
+    },
+    {
+      "id": "sp_setpiece_zfgnmgw7wt_121",
+      "position": [
+        0,
+        -1,
+        0
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffb070",
+      "intensity": 1,
+      "range": 8,
+      "fixture": "none"
+    },
+    {
+      "id": "sp_setpiece_zfgnmgw7wt_122",
+      "position": [
+        0,
+        -2,
+        9.77
+      ],
+      "kind": "light",
+      "yaw": 3.141592653589793,
+      "color": "#ffb070",
+      "intensity": 1.1,
+      "range": 8,
+      "fixture": "candle"
+    },
+    {
+      "id": "sp_setpiece_zfgnmgw7wt_123",
+      "position": [
+        0,
+        -2,
+        -9.77
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffb070",
+      "intensity": 1.1,
+      "range": 8,
+      "fixture": "candle"
+    },
+    {
+      "id": "sp_setpiece_zfgnmgw7wt_124",
+      "position": [
+        9.77,
+        -2,
+        0
+      ],
+      "kind": "light",
+      "yaw": -1.5707963267948966,
+      "color": "#ffb070",
+      "intensity": 1.1,
+      "range": 8,
+      "fixture": "candle"
+    },
+    {
+      "id": "sp_setpiece_zfgnmgw7wt_125",
+      "position": [
+        -9.77,
+        -2,
+        0
+      ],
+      "kind": "light",
+      "yaw": 1.5707963267948966,
+      "color": "#ffb070",
+      "intensity": 1.1,
+      "range": 8,
+      "fixture": "candle"
+    },
+    {
+      "id": "sp_setpiece_zfgnmgw7wt_126",
+      "position": [
+        -17.77,
+        -2,
+        24
+      ],
+      "kind": "light",
+      "yaw": 1.5707963267948966,
+      "color": "#ffb070",
+      "intensity": 1.1,
+      "range": 8,
+      "fixture": "candle"
+    },
+    {
+      "id": "sp_setpiece_zfgnmgw7wt_127",
+      "position": [
+        -17.77,
+        -2,
+        -24
+      ],
+      "kind": "light",
+      "yaw": 1.5707963267948966,
+      "color": "#ffb070",
+      "intensity": 1.1,
+      "range": 8,
+      "fixture": "candle"
+    },
+    {
+      "id": "sp_setpiece_zfgnmgw7wt_128",
+      "position": [
+        14.23,
+        -2,
+        24
+      ],
+      "kind": "light",
+      "yaw": 1.5707963267948966,
+      "color": "#ffb070",
+      "intensity": 1.1,
+      "range": 8,
+      "fixture": "candle"
+    },
+    {
+      "id": "sp_setpiece_zfgnmgw7wt_129",
+      "position": [
+        14.23,
+        -2,
+        -24
+      ],
+      "kind": "light",
+      "yaw": 1.5707963267948966,
+      "color": "#ffb070",
+      "intensity": 1.1,
+      "range": 8,
+      "fixture": "candle"
+    },
+    {
+      "id": "sp_setpiece_zfgnmgw7wt_130",
+      "position": [
+        24,
+        -2,
+        -14.23
+      ],
+      "kind": "light",
+      "yaw": 3.141592653589793,
+      "color": "#ffb070",
+      "intensity": 1.1,
+      "range": 8,
+      "fixture": "candle"
+    },
+    {
+      "id": "sp_setpiece_zfgnmgw7wt_131",
+      "position": [
+        -24,
+        -2,
+        -14.23
+      ],
+      "kind": "light",
+      "yaw": 3.141592653589793,
+      "color": "#ffb070",
+      "intensity": 1.1,
+      "range": 8,
+      "fixture": "candle"
+    },
+    {
+      "id": "sp_setpiece_zfgnmgw7wt_132",
+      "position": [
+        24,
+        -2,
+        17.77
+      ],
+      "kind": "light",
+      "yaw": 3.141592653589793,
+      "color": "#ffb070",
+      "intensity": 1.1,
+      "range": 8,
+      "fixture": "candle"
+    },
+    {
+      "id": "sp_setpiece_zfgnmgw7wt_133",
+      "position": [
+        -24,
+        -2,
+        17.77
+      ],
+      "kind": "light",
+      "yaw": 3.141592653589793,
+      "color": "#ffb070",
+      "intensity": 1.1,
+      "range": 8,
+      "fixture": "candle"
+    },
+    {
+      "id": "sp_setpiece_zfgnmgw7wt_134",
+      "position": [
+        -1.77,
+        -2,
+        40
+      ],
+      "kind": "light",
+      "yaw": 1.5707963267948966,
+      "color": "#ffb070",
+      "intensity": 1.1,
+      "range": 8,
+      "fixture": "candle"
+    },
+    {
+      "id": "sp_setpiece_zfgnmgw7wt_135",
+      "position": [
+        4,
+        -4,
+        56
+      ],
+      "name": "Pen gate",
+      "kind": "door",
+      "yaw": 1.5707963267948966,
+      "style": "portcullis",
+      "startOpen": false,
+      "locked": false,
+      "auto": false
+    },
+    {
+      "id": "sp_setpiece_zfgnmgw7wt_136",
+      "position": [
+        4,
+        -4,
+        48
+      ],
+      "name": "Pen gate",
+      "kind": "door",
+      "yaw": 1.5707963267948966,
+      "style": "portcullis",
+      "startOpen": false,
+      "locked": false,
+      "auto": false
+    },
+    {
+      "id": "sp_setpiece_zfgnmgw7wt_137",
+      "position": [
+        9.6,
+        -4,
+        58
+      ],
+      "kind": "prop",
+      "model": "prop.straw_bale",
+      "yaw": 1.870796,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "sp_setpiece_zfgnmgw7wt_138",
+      "position": [
+        10.4,
+        -4,
+        46.2
+      ],
+      "kind": "prop",
+      "model": "prop.straw_bale",
+      "yaw": 1.170796,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "sp_setpiece_zfgnmgw7wt_139",
+      "position": [
+        10.9,
+        -4,
+        53.6
+      ],
+      "kind": "prop",
+      "model": "prop.water_trough",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "sp_setpiece_zfgnmgw7wt_140",
+      "position": [
+        10.9,
+        -4,
+        50.4
+      ],
+      "kind": "prop",
+      "model": "prop.water_trough",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "sp_setpiece_zfgnmgw7wt_141",
+      "position": [
+        -3.47,
+        -1.7,
+        56
+      ],
+      "kind": "light",
+      "yaw": 1.5707963267948966,
+      "color": "#ffb070",
+      "intensity": 1.1,
+      "range": 8,
+      "fixture": "candle"
+    },
+    {
+      "id": "sp_setpiece_zfgnmgw7wt_142",
+      "position": [
+        -3.47,
+        -1.7,
+        48
+      ],
+      "kind": "light",
+      "yaw": 1.5707963267948966,
+      "color": "#ffb070",
+      "intensity": 1.1,
+      "range": 8,
+      "fixture": "candle"
+    },
+    {
+      "id": "sp_setpiece_zfgnmgw7wt_143",
+      "position": [
+        -1.77,
+        -2,
+        64
+      ],
+      "kind": "light",
+      "yaw": 1.5707963267948966,
+      "color": "#ffb070",
+      "intensity": 1.1,
+      "range": 8,
+      "fixture": "candle"
+    },
+    {
+      "id": "sp_setpiece_zfgnmgw7wt_144",
+      "position": [
+        -1.77,
+        -2,
+        72
+      ],
+      "kind": "light",
+      "yaw": 1.5707963267948966,
+      "color": "#ffb070",
+      "intensity": 1.1,
+      "range": 8,
+      "fixture": "candle"
+    },
+    {
+      "id": "sp_setpiece_zfgnmgw7wt_145",
+      "position": [
+        -1.77,
+        -2,
+        80
+      ],
+      "kind": "light",
+      "yaw": 1.5707963267948966,
+      "color": "#ffb070",
+      "intensity": 1.1,
+      "range": 8,
+      "fixture": "candle"
+    },
+    {
+      "id": "sp_setpiece_zfgnmgw7wt_146",
+      "position": [
+        -1.77,
+        -2,
+        -40
+      ],
+      "kind": "light",
+      "yaw": 1.5707963267948966,
+      "color": "#ffb070",
+      "intensity": 1.1,
+      "range": 8,
+      "fixture": "candle"
+    },
+    {
+      "id": "sp_setpiece_zfgnmgw7wt_147",
+      "position": [
+        -4,
+        -4,
+        -56
+      ],
+      "name": "Pen gate",
+      "kind": "door",
+      "yaw": -1.5707963267948966,
+      "style": "portcullis",
+      "startOpen": false,
+      "locked": false,
+      "auto": false
+    },
+    {
+      "id": "sp_setpiece_zfgnmgw7wt_148",
+      "position": [
+        -4,
+        -4,
+        -48
+      ],
+      "name": "Pen gate",
+      "kind": "door",
+      "yaw": -1.5707963267948966,
+      "style": "portcullis",
+      "startOpen": false,
+      "locked": false,
+      "auto": false
+    },
+    {
+      "id": "sp_setpiece_zfgnmgw7wt_149",
+      "position": [
+        -9.6,
+        -4,
+        -58
+      ],
+      "kind": "prop",
+      "model": "prop.straw_bale",
+      "yaw": -1.270796,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "sp_setpiece_zfgnmgw7wt_150",
+      "position": [
+        -10.4,
+        -4,
+        -46.2
+      ],
+      "kind": "prop",
+      "model": "prop.straw_bale",
+      "yaw": -1.970796,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "sp_setpiece_zfgnmgw7wt_151",
+      "position": [
+        -10.9,
+        -4,
+        -53.6
+      ],
+      "kind": "prop",
+      "model": "prop.water_trough",
+      "yaw": -1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "sp_setpiece_zfgnmgw7wt_152",
+      "position": [
+        -10.9,
+        -4,
+        -50.4
+      ],
+      "kind": "prop",
+      "model": "prop.water_trough",
+      "yaw": -1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "sp_setpiece_zfgnmgw7wt_153",
+      "position": [
+        3.47,
+        -1.7,
+        -56
+      ],
+      "kind": "light",
+      "yaw": -1.5707963267948966,
+      "color": "#ffb070",
+      "intensity": 1.1,
+      "range": 8,
+      "fixture": "candle"
+    },
+    {
+      "id": "sp_setpiece_zfgnmgw7wt_154",
+      "position": [
+        3.47,
+        -1.7,
+        -48
+      ],
+      "kind": "light",
+      "yaw": -1.5707963267948966,
+      "color": "#ffb070",
+      "intensity": 1.1,
+      "range": 8,
+      "fixture": "candle"
+    },
+    {
+      "id": "sp_setpiece_zfgnmgw7wt_155",
+      "position": [
+        -1.77,
+        -2,
+        -64
+      ],
+      "kind": "light",
+      "yaw": 1.5707963267948966,
+      "color": "#ffb070",
+      "intensity": 1.1,
+      "range": 8,
+      "fixture": "candle"
+    },
+    {
+      "id": "sp_setpiece_zfgnmgw7wt_156",
+      "position": [
+        -1.77,
+        -2,
+        -72
+      ],
+      "kind": "light",
+      "yaw": 1.5707963267948966,
+      "color": "#ffb070",
+      "intensity": 1.1,
+      "range": 8,
+      "fixture": "candle"
+    },
+    {
+      "id": "sp_setpiece_zfgnmgw7wt_157",
+      "position": [
+        -1.77,
+        -2,
+        -80
+      ],
+      "kind": "light",
+      "yaw": 1.5707963267948966,
+      "color": "#ffb070",
+      "intensity": 1.1,
+      "range": 8,
+      "fixture": "candle"
+    },
+    {
+      "id": "sp_setpiece_zfgnmgw7wt_158",
+      "position": [
+        40,
+        -4,
+        4
+      ],
+      "name": "Pen gate",
+      "kind": "door",
+      "yaw": 0,
+      "style": "portcullis",
+      "startOpen": false,
+      "locked": false,
+      "auto": false
+    },
+    {
+      "id": "sp_setpiece_zfgnmgw7wt_159",
+      "position": [
+        48,
+        -4,
+        4
+      ],
+      "name": "Pen gate",
+      "kind": "door",
+      "yaw": 0,
+      "style": "portcullis",
+      "startOpen": false,
+      "locked": false,
+      "auto": false
+    },
+    {
+      "id": "sp_setpiece_zfgnmgw7wt_160",
+      "position": [
+        38,
+        -4,
+        9.6
+      ],
+      "kind": "prop",
+      "model": "prop.straw_bale",
+      "yaw": 0.3,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "sp_setpiece_zfgnmgw7wt_161",
+      "position": [
+        49.8,
+        -4,
+        10.4
+      ],
+      "kind": "prop",
+      "model": "prop.straw_bale",
+      "yaw": -0.4,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "sp_setpiece_zfgnmgw7wt_162",
+      "position": [
+        42.4,
+        -4,
+        10.9
+      ],
+      "kind": "prop",
+      "model": "prop.water_trough",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "sp_setpiece_zfgnmgw7wt_163",
+      "position": [
+        45.6,
+        -4,
+        10.9
+      ],
+      "kind": "prop",
+      "model": "prop.water_trough",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "sp_setpiece_zfgnmgw7wt_164",
+      "position": [
+        40,
+        -1.7,
+        -3.47
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffb070",
+      "intensity": 1.1,
+      "range": 8,
+      "fixture": "candle"
+    },
+    {
+      "id": "sp_setpiece_zfgnmgw7wt_165",
+      "position": [
+        48,
+        -1.7,
+        -3.47
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffb070",
+      "intensity": 1.1,
+      "range": 8,
+      "fixture": "candle"
+    },
+    {
+      "id": "sp_setpiece_zfgnmgw7wt_166",
+      "position": [
+        56,
+        -2,
+        1.77
+      ],
+      "kind": "light",
+      "yaw": 3.141592653589793,
+      "color": "#ffb070",
+      "intensity": 1.1,
+      "range": 8,
+      "fixture": "candle"
+    },
+    {
+      "id": "sp_setpiece_zfgnmgw7wt_167",
+      "position": [
+        64,
+        -2,
+        1.77
+      ],
+      "kind": "light",
+      "yaw": 3.141592653589793,
+      "color": "#ffb070",
+      "intensity": 1.1,
+      "range": 8,
+      "fixture": "candle"
+    },
+    {
+      "id": "sp_setpiece_zfgnmgw7wt_168",
+      "position": [
+        72,
+        -2,
+        1.77
+      ],
+      "kind": "light",
+      "yaw": 3.141592653589793,
+      "color": "#ffb070",
+      "intensity": 1.1,
+      "range": 8,
+      "fixture": "candle"
+    },
+    {
+      "id": "sp_setpiece_zfgnmgw7wt_169",
+      "position": [
+        80,
+        -2,
+        1.77
+      ],
+      "kind": "light",
+      "yaw": 3.141592653589793,
+      "color": "#ffb070",
+      "intensity": 1.1,
+      "range": 8,
+      "fixture": "candle"
+    },
+    {
+      "id": "sp_setpiece_zfgnmgw7wt_170",
+      "position": [
+        -40,
+        -2,
+        1.77
+      ],
+      "kind": "light",
+      "yaw": 3.141592653589793,
+      "color": "#ffb070",
+      "intensity": 1.1,
+      "range": 8,
+      "fixture": "candle"
+    },
+    {
+      "id": "sp_setpiece_zfgnmgw7wt_171",
+      "position": [
+        -48,
+        -4,
+        -4
+      ],
+      "name": "Pen gate",
+      "kind": "door",
+      "yaw": 3.141592653589793,
+      "style": "portcullis",
+      "startOpen": false,
+      "locked": false,
+      "auto": false
+    },
+    {
+      "id": "sp_setpiece_zfgnmgw7wt_172",
+      "position": [
+        -56,
+        -4,
+        -4
+      ],
+      "name": "Pen gate",
+      "kind": "door",
+      "yaw": 3.141592653589793,
+      "style": "portcullis",
+      "startOpen": false,
+      "locked": false,
+      "auto": false
+    },
+    {
+      "id": "sp_setpiece_zfgnmgw7wt_173",
+      "position": [
+        -46,
+        -4,
+        -9.6
+      ],
+      "kind": "prop",
+      "model": "prop.straw_bale",
+      "yaw": -2.841593,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "sp_setpiece_zfgnmgw7wt_174",
+      "position": [
+        -57.8,
+        -4,
+        -10.4
+      ],
+      "kind": "prop",
+      "model": "prop.straw_bale",
+      "yaw": 2.741593,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "sp_setpiece_zfgnmgw7wt_175",
+      "position": [
+        -50.4,
+        -4,
+        -10.9
+      ],
+      "kind": "prop",
+      "model": "prop.water_trough",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "sp_setpiece_zfgnmgw7wt_176",
+      "position": [
+        -53.6,
+        -4,
+        -10.9
+      ],
+      "kind": "prop",
+      "model": "prop.water_trough",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "sp_setpiece_zfgnmgw7wt_177",
+      "position": [
+        -48,
+        -1.7,
+        3.47
+      ],
+      "kind": "light",
+      "yaw": 3.141592653589793,
+      "color": "#ffb070",
+      "intensity": 1.1,
+      "range": 8,
+      "fixture": "candle"
+    },
+    {
+      "id": "sp_setpiece_zfgnmgw7wt_178",
+      "position": [
+        -56,
+        -1.7,
+        3.47
+      ],
+      "kind": "light",
+      "yaw": 3.141592653589793,
+      "color": "#ffb070",
+      "intensity": 1.1,
+      "range": 8,
+      "fixture": "candle"
+    },
+    {
+      "id": "sp_setpiece_zfgnmgw7wt_179",
+      "position": [
+        -64,
+        -2,
+        1.77
+      ],
+      "kind": "light",
+      "yaw": 3.141592653589793,
+      "color": "#ffb070",
+      "intensity": 1.1,
+      "range": 8,
+      "fixture": "candle"
+    },
+    {
+      "id": "sp_setpiece_zfgnmgw7wt_180",
+      "position": [
+        -72,
+        -2,
+        1.77
+      ],
+      "kind": "light",
+      "yaw": 3.141592653589793,
+      "color": "#ffb070",
+      "intensity": 1.1,
+      "range": 8,
+      "fixture": "candle"
+    },
+    {
+      "id": "sp_setpiece_zfgnmgw7wt_181",
+      "position": [
+        -80,
+        -2,
+        1.77
+      ],
+      "kind": "light",
+      "yaw": 3.141592653589793,
+      "color": "#ffb070",
+      "intensity": 1.1,
+      "range": 8,
+      "fixture": "candle"
+    },
+    {
+      "id": "sp_setpiece_ahf9s9w7y2_49",
+      "position": [
+        0,
+        4,
+        24
+      ],
+      "kind": "prop",
+      "model": "prop.im_column_ionic",
+      "yaw": 0,
+      "scale": 1.6,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "sp_setpiece_ahf9s9w7y2_50",
+      "position": [
+        0,
+        4,
+        -24
+      ],
+      "kind": "prop",
+      "model": "prop.im_column_ionic",
+      "yaw": 0,
+      "scale": 1.6,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "sp_setpiece_ahf9s9w7y2_51",
+      "position": [
+        24,
+        4,
+        0
+      ],
+      "kind": "prop",
+      "model": "prop.im_column_ionic",
+      "yaw": 0,
+      "scale": 1.6,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "sp_setpiece_ahf9s9w7y2_52",
+      "position": [
+        -24,
+        4,
+        0
+      ],
+      "kind": "prop",
+      "model": "prop.im_column_ionic",
+      "yaw": 0,
+      "scale": 1.6,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "sp_setpiece_ahf9s9w7y2_53",
+      "position": [
+        16,
+        4,
+        16
+      ],
+      "kind": "prop",
+      "model": "prop.im_column_ionic",
+      "yaw": 0,
+      "scale": 1.6,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "sp_setpiece_ahf9s9w7y2_54",
+      "position": [
+        -16,
+        4,
+        16
+      ],
+      "kind": "prop",
+      "model": "prop.im_column_ionic",
+      "yaw": 0,
+      "scale": 1.6,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "sp_setpiece_ahf9s9w7y2_55",
+      "position": [
+        16,
+        4,
+        -16
+      ],
+      "kind": "prop",
+      "model": "prop.im_column_ionic",
+      "yaw": 0,
+      "scale": 1.6,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "sp_setpiece_ahf9s9w7y2_56",
+      "position": [
+        -16,
+        4,
+        -16
+      ],
+      "kind": "prop",
+      "model": "prop.im_column_ionic",
+      "yaw": 0,
+      "scale": 1.6,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "sp_setpiece_ahf9s9w7y2_57",
+      "position": [
+        8,
+        4,
+        8
+      ],
+      "kind": "prop",
+      "model": "prop.im_column_ionic",
+      "yaw": 0,
+      "scale": 1.6,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "sp_setpiece_ahf9s9w7y2_58",
+      "position": [
+        -8,
+        4,
+        8
+      ],
+      "kind": "prop",
+      "model": "prop.im_column_ionic",
+      "yaw": 0,
+      "scale": 1.6,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "sp_setpiece_ahf9s9w7y2_59",
+      "position": [
+        8,
+        4,
+        -8
+      ],
+      "kind": "prop",
+      "model": "prop.im_column_ionic",
+      "yaw": 0,
+      "scale": 1.6,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "sp_setpiece_ahf9s9w7y2_60",
+      "position": [
+        -8,
+        4,
+        -8
+      ],
+      "kind": "prop",
+      "model": "prop.im_column_ionic",
+      "yaw": 0,
+      "scale": 1.6,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "sp_setpiece_ahf9s9w7y2_61",
+      "position": [
+        12,
+        3,
+        16.5
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffb070",
+      "intensity": 1.1,
+      "range": 10,
+      "fixture": "chandelier"
+    },
+    {
+      "id": "sp_setpiece_ahf9s9w7y2_62",
+      "position": [
+        -16.5,
+        3,
+        12
+      ],
+      "kind": "light",
+      "yaw": -1.5707963267948966,
+      "color": "#ffb070",
+      "intensity": 1.1,
+      "range": 10,
+      "fixture": "chandelier"
+    },
+    {
+      "id": "sp_setpiece_ahf9s9w7y2_63",
+      "position": [
+        16.5,
+        3,
+        -12
+      ],
+      "kind": "light",
+      "yaw": 1.5707963267948966,
+      "color": "#ffb070",
+      "intensity": 1.1,
+      "range": 10,
+      "fixture": "chandelier"
+    },
+    {
+      "id": "sp_setpiece_ahf9s9w7y2_64",
+      "position": [
+        -12,
+        3,
+        -16.5
+      ],
+      "kind": "light",
+      "yaw": 3.141592653589793,
+      "color": "#ffb070",
+      "intensity": 1.1,
+      "range": 10,
+      "fixture": "chandelier"
     }
   ],
   "factions": [],
@@ -51729,6 +55665,4619 @@
   },
   "weaponSet": "medieval",
   "dependencies": [],
+  "setPieceDefs": [
+    {
+      "id": "local.sandfall_hypogeum_tunnels",
+      "displayName": "Sandfall Hypogeum Tunnels",
+      "family": "custom",
+      "category": "My pieces",
+      "packs": [
+        "imperial"
+      ],
+      "footprint": {
+        "cells": [
+          [
+            10,
+            0
+          ],
+          [
+            10,
+            1
+          ],
+          [
+            10,
+            2
+          ],
+          [
+            9,
+            3
+          ],
+          [
+            10,
+            3
+          ],
+          [
+            9,
+            4
+          ],
+          [
+            10,
+            4
+          ],
+          [
+            10,
+            5
+          ],
+          [
+            6,
+            6
+          ],
+          [
+            7,
+            6
+          ],
+          [
+            8,
+            6
+          ],
+          [
+            9,
+            6
+          ],
+          [
+            10,
+            6
+          ],
+          [
+            11,
+            6
+          ],
+          [
+            12,
+            6
+          ],
+          [
+            13,
+            6
+          ],
+          [
+            14,
+            6
+          ],
+          [
+            6,
+            7
+          ],
+          [
+            8,
+            7
+          ],
+          [
+            12,
+            7
+          ],
+          [
+            14,
+            7
+          ],
+          [
+            6,
+            8
+          ],
+          [
+            7,
+            8
+          ],
+          [
+            8,
+            8
+          ],
+          [
+            9,
+            8
+          ],
+          [
+            11,
+            8
+          ],
+          [
+            12,
+            8
+          ],
+          [
+            13,
+            8
+          ],
+          [
+            14,
+            8
+          ],
+          [
+            3,
+            9
+          ],
+          [
+            4,
+            9
+          ],
+          [
+            6,
+            9
+          ],
+          [
+            8,
+            9
+          ],
+          [
+            9,
+            9
+          ],
+          [
+            10,
+            9
+          ],
+          [
+            11,
+            9
+          ],
+          [
+            12,
+            9
+          ],
+          [
+            14,
+            9
+          ],
+          [
+            0,
+            10
+          ],
+          [
+            1,
+            10
+          ],
+          [
+            2,
+            10
+          ],
+          [
+            3,
+            10
+          ],
+          [
+            4,
+            10
+          ],
+          [
+            5,
+            10
+          ],
+          [
+            6,
+            10
+          ],
+          [
+            9,
+            10
+          ],
+          [
+            10,
+            10
+          ],
+          [
+            11,
+            10
+          ],
+          [
+            14,
+            10
+          ],
+          [
+            15,
+            10
+          ],
+          [
+            16,
+            10
+          ],
+          [
+            17,
+            10
+          ],
+          [
+            18,
+            10
+          ],
+          [
+            19,
+            10
+          ],
+          [
+            20,
+            10
+          ],
+          [
+            6,
+            11
+          ],
+          [
+            8,
+            11
+          ],
+          [
+            9,
+            11
+          ],
+          [
+            10,
+            11
+          ],
+          [
+            11,
+            11
+          ],
+          [
+            12,
+            11
+          ],
+          [
+            14,
+            11
+          ],
+          [
+            15,
+            11
+          ],
+          [
+            16,
+            11
+          ],
+          [
+            6,
+            12
+          ],
+          [
+            7,
+            12
+          ],
+          [
+            8,
+            12
+          ],
+          [
+            9,
+            12
+          ],
+          [
+            11,
+            12
+          ],
+          [
+            12,
+            12
+          ],
+          [
+            13,
+            12
+          ],
+          [
+            14,
+            12
+          ],
+          [
+            6,
+            13
+          ],
+          [
+            8,
+            13
+          ],
+          [
+            12,
+            13
+          ],
+          [
+            14,
+            13
+          ],
+          [
+            6,
+            14
+          ],
+          [
+            7,
+            14
+          ],
+          [
+            8,
+            14
+          ],
+          [
+            9,
+            14
+          ],
+          [
+            10,
+            14
+          ],
+          [
+            11,
+            14
+          ],
+          [
+            12,
+            14
+          ],
+          [
+            13,
+            14
+          ],
+          [
+            14,
+            14
+          ],
+          [
+            10,
+            15
+          ],
+          [
+            10,
+            16
+          ],
+          [
+            11,
+            16
+          ],
+          [
+            10,
+            17
+          ],
+          [
+            11,
+            17
+          ],
+          [
+            10,
+            18
+          ],
+          [
+            10,
+            19
+          ],
+          [
+            10,
+            20
+          ]
+        ],
+        "levels": [
+          0,
+          0
+        ]
+      },
+      "mirror": "free",
+      "ports": [
+        {
+          "side": "N",
+          "cell": [
+            11,
+            12
+          ],
+          "level": 0,
+          "kind": "door"
+        },
+        {
+          "side": "S",
+          "cell": [
+            12,
+            11
+          ],
+          "level": 0,
+          "kind": "door"
+        },
+        {
+          "side": "E",
+          "cell": [
+            12,
+            11
+          ],
+          "level": 0,
+          "kind": "door"
+        },
+        {
+          "side": "W",
+          "cell": [
+            11,
+            12
+          ],
+          "level": 0,
+          "kind": "door"
+        },
+        {
+          "side": "W",
+          "cell": [
+            8,
+            11
+          ],
+          "level": 0,
+          "kind": "door"
+        },
+        {
+          "side": "E",
+          "cell": [
+            9,
+            12
+          ],
+          "level": 0,
+          "kind": "door"
+        },
+        {
+          "side": "N",
+          "cell": [
+            9,
+            12
+          ],
+          "level": 0,
+          "kind": "door"
+        },
+        {
+          "side": "S",
+          "cell": [
+            8,
+            11
+          ],
+          "level": 0,
+          "kind": "door"
+        },
+        {
+          "side": "E",
+          "cell": [
+            12,
+            9
+          ],
+          "level": 0,
+          "kind": "door"
+        },
+        {
+          "side": "W",
+          "cell": [
+            11,
+            8
+          ],
+          "level": 0,
+          "kind": "door"
+        },
+        {
+          "side": "S",
+          "cell": [
+            11,
+            8
+          ],
+          "level": 0,
+          "kind": "door"
+        },
+        {
+          "side": "N",
+          "cell": [
+            12,
+            9
+          ],
+          "level": 0,
+          "kind": "door"
+        },
+        {
+          "side": "S",
+          "cell": [
+            9,
+            8
+          ],
+          "level": 0,
+          "kind": "door"
+        },
+        {
+          "side": "N",
+          "cell": [
+            8,
+            9
+          ],
+          "level": 0,
+          "kind": "door"
+        },
+        {
+          "side": "W",
+          "cell": [
+            8,
+            9
+          ],
+          "level": 0,
+          "kind": "door"
+        },
+        {
+          "side": "E",
+          "cell": [
+            9,
+            8
+          ],
+          "level": 0,
+          "kind": "door"
+        },
+        {
+          "side": "N",
+          "cell": [
+            14,
+            14
+          ],
+          "level": 0,
+          "kind": "door"
+        },
+        {
+          "side": "N",
+          "cell": [
+            6,
+            14
+          ],
+          "level": 0,
+          "kind": "door"
+        },
+        {
+          "side": "S",
+          "cell": [
+            14,
+            6
+          ],
+          "level": 0,
+          "kind": "door"
+        },
+        {
+          "side": "S",
+          "cell": [
+            6,
+            6
+          ],
+          "level": 0,
+          "kind": "door"
+        },
+        {
+          "side": "N",
+          "cell": [
+            10,
+            20
+          ],
+          "level": 0,
+          "kind": "door"
+        },
+        {
+          "side": "S",
+          "cell": [
+            10,
+            0
+          ],
+          "level": 0,
+          "kind": "door"
+        },
+        {
+          "side": "E",
+          "cell": [
+            20,
+            10
+          ],
+          "level": 0,
+          "kind": "door"
+        },
+        {
+          "side": "W",
+          "cell": [
+            0,
+            10
+          ],
+          "level": 0,
+          "kind": "door"
+        }
+      ],
+      "parts": [
+        {
+          "tile": "core.room_large",
+          "x": 11,
+          "y": 11,
+          "z": 0,
+          "rotation": 0,
+          "surfaces": {
+            "floor": {
+              "role": "paving"
+            },
+            "walls": {
+              "role": "stone"
+            },
+            "solids": {
+              "role": "stone"
+            },
+            "trim": {
+              "role": "trim"
+            },
+            "roof": {
+              "role": "roof"
+            }
+          },
+          "kind": "tile"
+        },
+        {
+          "tile": "core.room_large",
+          "x": 9,
+          "y": 11,
+          "z": 0,
+          "rotation": 3,
+          "surfaces": {
+            "floor": {
+              "role": "paving"
+            },
+            "walls": {
+              "role": "stone"
+            },
+            "solids": {
+              "role": "stone"
+            },
+            "trim": {
+              "role": "trim"
+            },
+            "roof": {
+              "role": "roof"
+            }
+          },
+          "kind": "tile"
+        },
+        {
+          "tile": "core.room_large",
+          "x": 11,
+          "y": 9,
+          "z": 0,
+          "rotation": 1,
+          "surfaces": {
+            "floor": {
+              "role": "paving"
+            },
+            "walls": {
+              "role": "stone"
+            },
+            "solids": {
+              "role": "stone"
+            },
+            "trim": {
+              "role": "trim"
+            },
+            "roof": {
+              "role": "roof"
+            }
+          },
+          "kind": "tile"
+        },
+        {
+          "tile": "core.room_large",
+          "x": 9,
+          "y": 9,
+          "z": 0,
+          "rotation": 2,
+          "surfaces": {
+            "floor": {
+              "role": "paving"
+            },
+            "walls": {
+              "role": "stone"
+            },
+            "solids": {
+              "role": "stone"
+            },
+            "trim": {
+              "role": "trim"
+            },
+            "roof": {
+              "role": "roof"
+            }
+          },
+          "kind": "tile"
+        },
+        {
+          "tile": "core.tunnel_vault",
+          "x": 7,
+          "y": 14,
+          "z": 0,
+          "rotation": 1,
+          "surfaces": {
+            "floor": {
+              "role": "paving"
+            },
+            "walls": {
+              "role": "stone"
+            }
+          },
+          "kind": "tile"
+        },
+        {
+          "tile": "core.tunnel_vault",
+          "x": 7,
+          "y": 6,
+          "z": 0,
+          "rotation": 1,
+          "surfaces": {
+            "floor": {
+              "role": "paving"
+            },
+            "walls": {
+              "role": "stone"
+            }
+          },
+          "kind": "tile"
+        },
+        {
+          "tile": "core.tunnel_vault_t",
+          "x": 8,
+          "y": 14,
+          "z": 0,
+          "rotation": 0,
+          "surfaces": {
+            "floor": {
+              "role": "paving"
+            },
+            "walls": {
+              "role": "stone"
+            }
+          },
+          "kind": "tile"
+        },
+        {
+          "tile": "core.tunnel_vault_t",
+          "x": 8,
+          "y": 6,
+          "z": 0,
+          "rotation": 2,
+          "surfaces": {
+            "floor": {
+              "role": "paving"
+            },
+            "walls": {
+              "role": "stone"
+            }
+          },
+          "kind": "tile"
+        },
+        {
+          "tile": "core.tunnel_vault",
+          "x": 9,
+          "y": 14,
+          "z": 0,
+          "rotation": 1,
+          "surfaces": {
+            "floor": {
+              "role": "paving"
+            },
+            "walls": {
+              "role": "stone"
+            }
+          },
+          "kind": "tile"
+        },
+        {
+          "tile": "core.tunnel_vault",
+          "x": 9,
+          "y": 6,
+          "z": 0,
+          "rotation": 1,
+          "surfaces": {
+            "floor": {
+              "role": "paving"
+            },
+            "walls": {
+              "role": "stone"
+            }
+          },
+          "kind": "tile"
+        },
+        {
+          "tile": "core.tunnel_vault_t",
+          "x": 10,
+          "y": 14,
+          "z": 0,
+          "rotation": 2,
+          "surfaces": {
+            "floor": {
+              "role": "paving"
+            },
+            "walls": {
+              "role": "stone"
+            }
+          },
+          "kind": "tile"
+        },
+        {
+          "tile": "core.tunnel_vault_t",
+          "x": 10,
+          "y": 6,
+          "z": 0,
+          "rotation": 0,
+          "surfaces": {
+            "floor": {
+              "role": "paving"
+            },
+            "walls": {
+              "role": "stone"
+            }
+          },
+          "kind": "tile"
+        },
+        {
+          "tile": "core.tunnel_vault",
+          "x": 11,
+          "y": 14,
+          "z": 0,
+          "rotation": 1,
+          "surfaces": {
+            "floor": {
+              "role": "paving"
+            },
+            "walls": {
+              "role": "stone"
+            }
+          },
+          "kind": "tile"
+        },
+        {
+          "tile": "core.tunnel_vault",
+          "x": 11,
+          "y": 6,
+          "z": 0,
+          "rotation": 1,
+          "surfaces": {
+            "floor": {
+              "role": "paving"
+            },
+            "walls": {
+              "role": "stone"
+            }
+          },
+          "kind": "tile"
+        },
+        {
+          "tile": "core.tunnel_vault_t",
+          "x": 12,
+          "y": 14,
+          "z": 0,
+          "rotation": 0,
+          "surfaces": {
+            "floor": {
+              "role": "paving"
+            },
+            "walls": {
+              "role": "stone"
+            }
+          },
+          "kind": "tile"
+        },
+        {
+          "tile": "core.tunnel_vault_t",
+          "x": 12,
+          "y": 6,
+          "z": 0,
+          "rotation": 2,
+          "surfaces": {
+            "floor": {
+              "role": "paving"
+            },
+            "walls": {
+              "role": "stone"
+            }
+          },
+          "kind": "tile"
+        },
+        {
+          "tile": "core.tunnel_vault",
+          "x": 13,
+          "y": 14,
+          "z": 0,
+          "rotation": 1,
+          "surfaces": {
+            "floor": {
+              "role": "paving"
+            },
+            "walls": {
+              "role": "stone"
+            }
+          },
+          "kind": "tile"
+        },
+        {
+          "tile": "core.tunnel_vault",
+          "x": 13,
+          "y": 6,
+          "z": 0,
+          "rotation": 1,
+          "surfaces": {
+            "floor": {
+              "role": "paving"
+            },
+            "walls": {
+              "role": "stone"
+            }
+          },
+          "kind": "tile"
+        },
+        {
+          "tile": "core.tunnel_vault",
+          "x": 14,
+          "y": 7,
+          "z": 0,
+          "rotation": 0,
+          "surfaces": {
+            "floor": {
+              "role": "paving"
+            },
+            "walls": {
+              "role": "stone"
+            }
+          },
+          "kind": "tile"
+        },
+        {
+          "tile": "core.tunnel_vault",
+          "x": 6,
+          "y": 7,
+          "z": 0,
+          "rotation": 0,
+          "surfaces": {
+            "floor": {
+              "role": "paving"
+            },
+            "walls": {
+              "role": "stone"
+            }
+          },
+          "kind": "tile"
+        },
+        {
+          "tile": "core.tunnel_vault_t",
+          "x": 14,
+          "y": 8,
+          "z": 0,
+          "rotation": 1,
+          "surfaces": {
+            "floor": {
+              "role": "paving"
+            },
+            "walls": {
+              "role": "stone"
+            }
+          },
+          "kind": "tile"
+        },
+        {
+          "tile": "core.tunnel_vault_t",
+          "x": 6,
+          "y": 8,
+          "z": 0,
+          "rotation": 3,
+          "surfaces": {
+            "floor": {
+              "role": "paving"
+            },
+            "walls": {
+              "role": "stone"
+            }
+          },
+          "kind": "tile"
+        },
+        {
+          "tile": "core.tunnel_vault",
+          "x": 14,
+          "y": 9,
+          "z": 0,
+          "rotation": 0,
+          "surfaces": {
+            "floor": {
+              "role": "paving"
+            },
+            "walls": {
+              "role": "stone"
+            }
+          },
+          "kind": "tile"
+        },
+        {
+          "tile": "core.tunnel_vault",
+          "x": 6,
+          "y": 9,
+          "z": 0,
+          "rotation": 0,
+          "surfaces": {
+            "floor": {
+              "role": "paving"
+            },
+            "walls": {
+              "role": "stone"
+            }
+          },
+          "kind": "tile"
+        },
+        {
+          "tile": "core.tunnel_vault_t",
+          "x": 14,
+          "y": 10,
+          "z": 0,
+          "rotation": 3,
+          "surfaces": {
+            "floor": {
+              "role": "paving"
+            },
+            "walls": {
+              "role": "stone"
+            }
+          },
+          "kind": "tile"
+        },
+        {
+          "tile": "core.tunnel_vault_t",
+          "x": 6,
+          "y": 10,
+          "z": 0,
+          "rotation": 1,
+          "surfaces": {
+            "floor": {
+              "role": "paving"
+            },
+            "walls": {
+              "role": "stone"
+            }
+          },
+          "kind": "tile"
+        },
+        {
+          "tile": "core.tunnel_vault",
+          "x": 14,
+          "y": 11,
+          "z": 0,
+          "rotation": 0,
+          "surfaces": {
+            "floor": {
+              "role": "paving"
+            },
+            "walls": {
+              "role": "stone"
+            }
+          },
+          "kind": "tile"
+        },
+        {
+          "tile": "core.tunnel_vault",
+          "x": 6,
+          "y": 11,
+          "z": 0,
+          "rotation": 0,
+          "surfaces": {
+            "floor": {
+              "role": "paving"
+            },
+            "walls": {
+              "role": "stone"
+            }
+          },
+          "kind": "tile"
+        },
+        {
+          "tile": "core.tunnel_vault_t",
+          "x": 14,
+          "y": 12,
+          "z": 0,
+          "rotation": 1,
+          "surfaces": {
+            "floor": {
+              "role": "paving"
+            },
+            "walls": {
+              "role": "stone"
+            }
+          },
+          "kind": "tile"
+        },
+        {
+          "tile": "core.tunnel_vault_t",
+          "x": 6,
+          "y": 12,
+          "z": 0,
+          "rotation": 3,
+          "surfaces": {
+            "floor": {
+              "role": "paving"
+            },
+            "walls": {
+              "role": "stone"
+            }
+          },
+          "kind": "tile"
+        },
+        {
+          "tile": "core.tunnel_vault",
+          "x": 14,
+          "y": 13,
+          "z": 0,
+          "rotation": 0,
+          "surfaces": {
+            "floor": {
+              "role": "paving"
+            },
+            "walls": {
+              "role": "stone"
+            }
+          },
+          "kind": "tile"
+        },
+        {
+          "tile": "core.tunnel_vault",
+          "x": 6,
+          "y": 13,
+          "z": 0,
+          "rotation": 0,
+          "surfaces": {
+            "floor": {
+              "role": "paving"
+            },
+            "walls": {
+              "role": "stone"
+            }
+          },
+          "kind": "tile"
+        },
+        {
+          "tile": "core.tunnel_vault_t",
+          "x": 14,
+          "y": 14,
+          "z": 0,
+          "rotation": 1,
+          "surfaces": {
+            "floor": {
+              "role": "paving"
+            },
+            "walls": {
+              "role": "stone"
+            }
+          },
+          "kind": "tile"
+        },
+        {
+          "tile": "core.tunnel_vault_t",
+          "x": 6,
+          "y": 14,
+          "z": 0,
+          "rotation": 3,
+          "surfaces": {
+            "floor": {
+              "role": "paving"
+            },
+            "walls": {
+              "role": "stone"
+            }
+          },
+          "kind": "tile"
+        },
+        {
+          "tile": "core.tunnel_vault_t",
+          "x": 14,
+          "y": 6,
+          "z": 0,
+          "rotation": 1,
+          "surfaces": {
+            "floor": {
+              "role": "paving"
+            },
+            "walls": {
+              "role": "stone"
+            }
+          },
+          "kind": "tile"
+        },
+        {
+          "tile": "core.tunnel_vault_t",
+          "x": 6,
+          "y": 6,
+          "z": 0,
+          "rotation": 3,
+          "surfaces": {
+            "floor": {
+              "role": "paving"
+            },
+            "walls": {
+              "role": "stone"
+            }
+          },
+          "kind": "tile"
+        },
+        {
+          "tile": "core.tunnel_vault_cross",
+          "x": 10,
+          "y": 10,
+          "z": 0,
+          "rotation": 0,
+          "surfaces": {
+            "floor": {
+              "role": "paving"
+            },
+            "walls": {
+              "role": "stone"
+            }
+          },
+          "kind": "tile"
+        },
+        {
+          "tile": "core.tunnel_vault_t",
+          "x": 10,
+          "y": 11,
+          "z": 0,
+          "rotation": 0,
+          "surfaces": {
+            "floor": {
+              "role": "paving"
+            },
+            "walls": {
+              "role": "stone"
+            }
+          },
+          "kind": "tile"
+        },
+        {
+          "tile": "core.tunnel_vault_t",
+          "x": 10,
+          "y": 9,
+          "z": 0,
+          "rotation": 2,
+          "surfaces": {
+            "floor": {
+              "role": "paving"
+            },
+            "walls": {
+              "role": "stone"
+            }
+          },
+          "kind": "tile"
+        },
+        {
+          "tile": "core.tunnel_vault_t",
+          "x": 11,
+          "y": 10,
+          "z": 0,
+          "rotation": 1,
+          "surfaces": {
+            "floor": {
+              "role": "paving"
+            },
+            "walls": {
+              "role": "stone"
+            }
+          },
+          "kind": "tile"
+        },
+        {
+          "tile": "core.tunnel_vault_t",
+          "x": 9,
+          "y": 10,
+          "z": 0,
+          "rotation": 3,
+          "surfaces": {
+            "floor": {
+              "role": "paving"
+            },
+            "walls": {
+              "role": "stone"
+            }
+          },
+          "kind": "tile"
+        },
+        {
+          "tile": "core.tunnel_vault",
+          "x": 8,
+          "y": 13,
+          "z": 0,
+          "rotation": 0,
+          "surfaces": {
+            "floor": {
+              "role": "paving"
+            },
+            "walls": {
+              "role": "stone"
+            }
+          },
+          "kind": "tile"
+        },
+        {
+          "tile": "core.tunnel_vault",
+          "x": 8,
+          "y": 7,
+          "z": 0,
+          "rotation": 0,
+          "surfaces": {
+            "floor": {
+              "role": "paving"
+            },
+            "walls": {
+              "role": "stone"
+            }
+          },
+          "kind": "tile"
+        },
+        {
+          "tile": "core.tunnel_vault",
+          "x": 12,
+          "y": 13,
+          "z": 0,
+          "rotation": 0,
+          "surfaces": {
+            "floor": {
+              "role": "paving"
+            },
+            "walls": {
+              "role": "stone"
+            }
+          },
+          "kind": "tile"
+        },
+        {
+          "tile": "core.tunnel_vault",
+          "x": 12,
+          "y": 7,
+          "z": 0,
+          "rotation": 0,
+          "surfaces": {
+            "floor": {
+              "role": "paving"
+            },
+            "walls": {
+              "role": "stone"
+            }
+          },
+          "kind": "tile"
+        },
+        {
+          "tile": "core.tunnel_vault",
+          "x": 13,
+          "y": 8,
+          "z": 0,
+          "rotation": 1,
+          "surfaces": {
+            "floor": {
+              "role": "paving"
+            },
+            "walls": {
+              "role": "stone"
+            }
+          },
+          "kind": "tile"
+        },
+        {
+          "tile": "core.tunnel_vault",
+          "x": 7,
+          "y": 8,
+          "z": 0,
+          "rotation": 1,
+          "surfaces": {
+            "floor": {
+              "role": "paving"
+            },
+            "walls": {
+              "role": "stone"
+            }
+          },
+          "kind": "tile"
+        },
+        {
+          "tile": "core.tunnel_vault",
+          "x": 13,
+          "y": 12,
+          "z": 0,
+          "rotation": 1,
+          "surfaces": {
+            "floor": {
+              "role": "paving"
+            },
+            "walls": {
+              "role": "stone"
+            }
+          },
+          "kind": "tile"
+        },
+        {
+          "tile": "core.tunnel_vault",
+          "x": 7,
+          "y": 12,
+          "z": 0,
+          "rotation": 1,
+          "surfaces": {
+            "floor": {
+              "role": "paving"
+            },
+            "walls": {
+              "role": "stone"
+            }
+          },
+          "kind": "tile"
+        },
+        {
+          "tile": "core.tunnel_vault",
+          "x": 10,
+          "y": 15,
+          "z": 0,
+          "rotation": 0,
+          "surfaces": {
+            "floor": {
+              "role": "paving"
+            },
+            "walls": {
+              "role": "stone"
+            }
+          },
+          "kind": "tile"
+        },
+        {
+          "tile": "core.room",
+          "x": 10,
+          "y": 17,
+          "z": 0,
+          "rotation": 2,
+          "surfaces": {
+            "floor": {
+              "role": "paving"
+            },
+            "walls": {
+              "role": "stone"
+            },
+            "solids": {
+              "role": "stone"
+            },
+            "trim": {
+              "role": "trim"
+            },
+            "roof": {
+              "role": "roof"
+            }
+          },
+          "edges": {
+            "0,0,0:E": "wall",
+            "0,0,0:N": "open",
+            "0,0,0:S": "open",
+            "0,0,0:W": "open"
+          },
+          "options": {
+            "ceiling": "vault"
+          },
+          "kind": "tile"
+        },
+        {
+          "tile": "core.room",
+          "x": 10,
+          "y": 16,
+          "z": 0,
+          "rotation": 2,
+          "surfaces": {
+            "floor": {
+              "role": "paving"
+            },
+            "walls": {
+              "role": "stone"
+            },
+            "solids": {
+              "role": "stone"
+            },
+            "trim": {
+              "role": "trim"
+            },
+            "roof": {
+              "role": "roof"
+            }
+          },
+          "edges": {
+            "0,0,0:E": "wall",
+            "0,0,0:N": "open",
+            "0,0,0:S": "open",
+            "0,0,0:W": "open"
+          },
+          "options": {
+            "ceiling": "vault"
+          },
+          "kind": "tile"
+        },
+        {
+          "tile": "core.room",
+          "x": 11,
+          "y": 17,
+          "z": 0,
+          "rotation": 1,
+          "surfaces": {
+            "floor": {
+              "role": "paving"
+            },
+            "walls": {
+              "role": "stone"
+            },
+            "solids": {
+              "role": "stone"
+            },
+            "trim": {
+              "role": "trim"
+            },
+            "roof": {
+              "role": "roof"
+            }
+          },
+          "edges": {
+            "0,0,0:E": "bars",
+            "0,0,0:N": "wall",
+            "0,0,0:S": "bars_gate",
+            "0,0,0:W": "wall"
+          },
+          "options": {
+            "ceiling": "roof"
+          },
+          "kind": "tile"
+        },
+        {
+          "tile": "core.room",
+          "x": 11,
+          "y": 16,
+          "z": 0,
+          "rotation": 1,
+          "surfaces": {
+            "floor": {
+              "role": "paving"
+            },
+            "walls": {
+              "role": "stone"
+            },
+            "solids": {
+              "role": "stone"
+            },
+            "trim": {
+              "role": "trim"
+            },
+            "roof": {
+              "role": "roof"
+            }
+          },
+          "edges": {
+            "0,0,0:E": "wall",
+            "0,0,0:N": "wall",
+            "0,0,0:S": "bars_gate",
+            "0,0,0:W": "open"
+          },
+          "options": {
+            "ceiling": "roof"
+          },
+          "kind": "tile"
+        },
+        {
+          "tile": "core.tunnel_vault",
+          "x": 10,
+          "y": 18,
+          "z": 0,
+          "rotation": 0,
+          "surfaces": {
+            "floor": {
+              "role": "paving"
+            },
+            "walls": {
+              "role": "stone"
+            }
+          },
+          "kind": "tile"
+        },
+        {
+          "tile": "core.tunnel_vault",
+          "x": 10,
+          "y": 19,
+          "z": 0,
+          "rotation": 0,
+          "surfaces": {
+            "floor": {
+              "role": "paving"
+            },
+            "walls": {
+              "role": "stone"
+            }
+          },
+          "kind": "tile"
+        },
+        {
+          "tile": "core.tunnel_vault",
+          "x": 10,
+          "y": 20,
+          "z": 0,
+          "rotation": 0,
+          "surfaces": {
+            "floor": {
+              "role": "paving"
+            },
+            "walls": {
+              "role": "stone"
+            }
+          },
+          "kind": "tile"
+        },
+        {
+          "tile": "core.tunnel_vault",
+          "x": 10,
+          "y": 5,
+          "z": 0,
+          "rotation": 0,
+          "surfaces": {
+            "floor": {
+              "role": "paving"
+            },
+            "walls": {
+              "role": "stone"
+            }
+          },
+          "kind": "tile"
+        },
+        {
+          "tile": "core.room",
+          "x": 10,
+          "y": 3,
+          "z": 0,
+          "rotation": 0,
+          "surfaces": {
+            "floor": {
+              "role": "paving"
+            },
+            "walls": {
+              "role": "stone"
+            },
+            "solids": {
+              "role": "stone"
+            },
+            "trim": {
+              "role": "trim"
+            },
+            "roof": {
+              "role": "roof"
+            }
+          },
+          "edges": {
+            "0,0,0:E": "wall",
+            "0,0,0:N": "open",
+            "0,0,0:S": "open",
+            "0,0,0:W": "open"
+          },
+          "options": {
+            "ceiling": "vault"
+          },
+          "kind": "tile"
+        },
+        {
+          "tile": "core.room",
+          "x": 10,
+          "y": 4,
+          "z": 0,
+          "rotation": 0,
+          "surfaces": {
+            "floor": {
+              "role": "paving"
+            },
+            "walls": {
+              "role": "stone"
+            },
+            "solids": {
+              "role": "stone"
+            },
+            "trim": {
+              "role": "trim"
+            },
+            "roof": {
+              "role": "roof"
+            }
+          },
+          "edges": {
+            "0,0,0:E": "wall",
+            "0,0,0:N": "open",
+            "0,0,0:S": "open",
+            "0,0,0:W": "open"
+          },
+          "options": {
+            "ceiling": "vault"
+          },
+          "kind": "tile"
+        },
+        {
+          "tile": "core.room",
+          "x": 9,
+          "y": 3,
+          "z": 0,
+          "rotation": 3,
+          "surfaces": {
+            "floor": {
+              "role": "paving"
+            },
+            "walls": {
+              "role": "stone"
+            },
+            "solids": {
+              "role": "stone"
+            },
+            "trim": {
+              "role": "trim"
+            },
+            "roof": {
+              "role": "roof"
+            }
+          },
+          "edges": {
+            "0,0,0:E": "bars",
+            "0,0,0:N": "wall",
+            "0,0,0:S": "bars_gate",
+            "0,0,0:W": "wall"
+          },
+          "options": {
+            "ceiling": "roof"
+          },
+          "kind": "tile"
+        },
+        {
+          "tile": "core.room",
+          "x": 9,
+          "y": 4,
+          "z": 0,
+          "rotation": 3,
+          "surfaces": {
+            "floor": {
+              "role": "paving"
+            },
+            "walls": {
+              "role": "stone"
+            },
+            "solids": {
+              "role": "stone"
+            },
+            "trim": {
+              "role": "trim"
+            },
+            "roof": {
+              "role": "roof"
+            }
+          },
+          "edges": {
+            "0,0,0:E": "wall",
+            "0,0,0:N": "wall",
+            "0,0,0:S": "bars_gate",
+            "0,0,0:W": "open"
+          },
+          "options": {
+            "ceiling": "roof"
+          },
+          "kind": "tile"
+        },
+        {
+          "tile": "core.tunnel_vault",
+          "x": 10,
+          "y": 2,
+          "z": 0,
+          "rotation": 0,
+          "surfaces": {
+            "floor": {
+              "role": "paving"
+            },
+            "walls": {
+              "role": "stone"
+            }
+          },
+          "kind": "tile"
+        },
+        {
+          "tile": "core.tunnel_vault",
+          "x": 10,
+          "y": 1,
+          "z": 0,
+          "rotation": 0,
+          "surfaces": {
+            "floor": {
+              "role": "paving"
+            },
+            "walls": {
+              "role": "stone"
+            }
+          },
+          "kind": "tile"
+        },
+        {
+          "tile": "core.tunnel_vault",
+          "x": 10,
+          "y": 0,
+          "z": 0,
+          "rotation": 0,
+          "surfaces": {
+            "floor": {
+              "role": "paving"
+            },
+            "walls": {
+              "role": "stone"
+            }
+          },
+          "kind": "tile"
+        },
+        {
+          "tile": "core.room",
+          "x": 15,
+          "y": 10,
+          "z": 0,
+          "rotation": 1,
+          "surfaces": {
+            "floor": {
+              "role": "paving"
+            },
+            "walls": {
+              "role": "stone"
+            },
+            "solids": {
+              "role": "stone"
+            },
+            "trim": {
+              "role": "trim"
+            },
+            "roof": {
+              "role": "roof"
+            }
+          },
+          "edges": {
+            "0,0,0:E": "wall",
+            "0,0,0:N": "open",
+            "0,0,0:S": "open",
+            "0,0,0:W": "open"
+          },
+          "options": {
+            "ceiling": "vault"
+          },
+          "kind": "tile"
+        },
+        {
+          "tile": "core.room",
+          "x": 16,
+          "y": 10,
+          "z": 0,
+          "rotation": 1,
+          "surfaces": {
+            "floor": {
+              "role": "paving"
+            },
+            "walls": {
+              "role": "stone"
+            },
+            "solids": {
+              "role": "stone"
+            },
+            "trim": {
+              "role": "trim"
+            },
+            "roof": {
+              "role": "roof"
+            }
+          },
+          "edges": {
+            "0,0,0:E": "wall",
+            "0,0,0:N": "open",
+            "0,0,0:S": "open",
+            "0,0,0:W": "open"
+          },
+          "options": {
+            "ceiling": "vault"
+          },
+          "kind": "tile"
+        },
+        {
+          "tile": "core.room",
+          "x": 15,
+          "y": 11,
+          "z": 0,
+          "rotation": 0,
+          "surfaces": {
+            "floor": {
+              "role": "paving"
+            },
+            "walls": {
+              "role": "stone"
+            },
+            "solids": {
+              "role": "stone"
+            },
+            "trim": {
+              "role": "trim"
+            },
+            "roof": {
+              "role": "roof"
+            }
+          },
+          "edges": {
+            "0,0,0:E": "bars",
+            "0,0,0:N": "wall",
+            "0,0,0:S": "bars_gate",
+            "0,0,0:W": "wall"
+          },
+          "options": {
+            "ceiling": "roof"
+          },
+          "kind": "tile"
+        },
+        {
+          "tile": "core.room",
+          "x": 16,
+          "y": 11,
+          "z": 0,
+          "rotation": 0,
+          "surfaces": {
+            "floor": {
+              "role": "paving"
+            },
+            "walls": {
+              "role": "stone"
+            },
+            "solids": {
+              "role": "stone"
+            },
+            "trim": {
+              "role": "trim"
+            },
+            "roof": {
+              "role": "roof"
+            }
+          },
+          "edges": {
+            "0,0,0:E": "wall",
+            "0,0,0:N": "wall",
+            "0,0,0:S": "bars_gate",
+            "0,0,0:W": "open"
+          },
+          "options": {
+            "ceiling": "roof"
+          },
+          "kind": "tile"
+        },
+        {
+          "tile": "core.tunnel_vault",
+          "x": 17,
+          "y": 10,
+          "z": 0,
+          "rotation": 1,
+          "surfaces": {
+            "floor": {
+              "role": "paving"
+            },
+            "walls": {
+              "role": "stone"
+            }
+          },
+          "kind": "tile"
+        },
+        {
+          "tile": "core.tunnel_vault",
+          "x": 18,
+          "y": 10,
+          "z": 0,
+          "rotation": 1,
+          "surfaces": {
+            "floor": {
+              "role": "paving"
+            },
+            "walls": {
+              "role": "stone"
+            }
+          },
+          "kind": "tile"
+        },
+        {
+          "tile": "core.tunnel_vault",
+          "x": 19,
+          "y": 10,
+          "z": 0,
+          "rotation": 1,
+          "surfaces": {
+            "floor": {
+              "role": "paving"
+            },
+            "walls": {
+              "role": "stone"
+            }
+          },
+          "kind": "tile"
+        },
+        {
+          "tile": "core.tunnel_vault",
+          "x": 20,
+          "y": 10,
+          "z": 0,
+          "rotation": 1,
+          "surfaces": {
+            "floor": {
+              "role": "paving"
+            },
+            "walls": {
+              "role": "stone"
+            }
+          },
+          "kind": "tile"
+        },
+        {
+          "tile": "core.tunnel_vault",
+          "x": 5,
+          "y": 10,
+          "z": 0,
+          "rotation": 1,
+          "surfaces": {
+            "floor": {
+              "role": "paving"
+            },
+            "walls": {
+              "role": "stone"
+            }
+          },
+          "kind": "tile"
+        },
+        {
+          "tile": "core.room",
+          "x": 4,
+          "y": 10,
+          "z": 0,
+          "rotation": 3,
+          "surfaces": {
+            "floor": {
+              "role": "paving"
+            },
+            "walls": {
+              "role": "stone"
+            },
+            "solids": {
+              "role": "stone"
+            },
+            "trim": {
+              "role": "trim"
+            },
+            "roof": {
+              "role": "roof"
+            }
+          },
+          "edges": {
+            "0,0,0:E": "wall",
+            "0,0,0:N": "open",
+            "0,0,0:S": "open",
+            "0,0,0:W": "open"
+          },
+          "options": {
+            "ceiling": "vault"
+          },
+          "kind": "tile"
+        },
+        {
+          "tile": "core.room",
+          "x": 3,
+          "y": 10,
+          "z": 0,
+          "rotation": 3,
+          "surfaces": {
+            "floor": {
+              "role": "paving"
+            },
+            "walls": {
+              "role": "stone"
+            },
+            "solids": {
+              "role": "stone"
+            },
+            "trim": {
+              "role": "trim"
+            },
+            "roof": {
+              "role": "roof"
+            }
+          },
+          "edges": {
+            "0,0,0:E": "wall",
+            "0,0,0:N": "open",
+            "0,0,0:S": "open",
+            "0,0,0:W": "open"
+          },
+          "options": {
+            "ceiling": "vault"
+          },
+          "kind": "tile"
+        },
+        {
+          "tile": "core.room",
+          "x": 4,
+          "y": 9,
+          "z": 0,
+          "rotation": 2,
+          "surfaces": {
+            "floor": {
+              "role": "paving"
+            },
+            "walls": {
+              "role": "stone"
+            },
+            "solids": {
+              "role": "stone"
+            },
+            "trim": {
+              "role": "trim"
+            },
+            "roof": {
+              "role": "roof"
+            }
+          },
+          "edges": {
+            "0,0,0:E": "bars",
+            "0,0,0:N": "wall",
+            "0,0,0:S": "bars_gate",
+            "0,0,0:W": "wall"
+          },
+          "options": {
+            "ceiling": "roof"
+          },
+          "kind": "tile"
+        },
+        {
+          "tile": "core.room",
+          "x": 3,
+          "y": 9,
+          "z": 0,
+          "rotation": 2,
+          "surfaces": {
+            "floor": {
+              "role": "paving"
+            },
+            "walls": {
+              "role": "stone"
+            },
+            "solids": {
+              "role": "stone"
+            },
+            "trim": {
+              "role": "trim"
+            },
+            "roof": {
+              "role": "roof"
+            }
+          },
+          "edges": {
+            "0,0,0:E": "wall",
+            "0,0,0:N": "wall",
+            "0,0,0:S": "bars_gate",
+            "0,0,0:W": "open"
+          },
+          "options": {
+            "ceiling": "roof"
+          },
+          "kind": "tile"
+        },
+        {
+          "tile": "core.tunnel_vault",
+          "x": 2,
+          "y": 10,
+          "z": 0,
+          "rotation": 1,
+          "surfaces": {
+            "floor": {
+              "role": "paving"
+            },
+            "walls": {
+              "role": "stone"
+            }
+          },
+          "kind": "tile"
+        },
+        {
+          "tile": "core.tunnel_vault",
+          "x": 1,
+          "y": 10,
+          "z": 0,
+          "rotation": 1,
+          "surfaces": {
+            "floor": {
+              "role": "paving"
+            },
+            "walls": {
+              "role": "stone"
+            }
+          },
+          "kind": "tile"
+        },
+        {
+          "tile": "core.tunnel_vault",
+          "x": 0,
+          "y": 10,
+          "z": 0,
+          "rotation": 1,
+          "surfaces": {
+            "floor": {
+              "role": "paving"
+            },
+            "walls": {
+              "role": "stone"
+            }
+          },
+          "kind": "tile"
+        },
+        {
+          "position": [
+            92,
+            0,
+            90.9
+          ],
+          "kind": "ladder",
+          "yaw": 3.141592653589793,
+          "height": 4,
+          "width": 0.9
+        },
+        {
+          "position": [
+            92,
+            3,
+            96.5
+          ],
+          "kind": "light",
+          "yaw": 0,
+          "color": "#ffb070",
+          "intensity": 1.1,
+          "range": 10,
+          "fixture": "chandelier"
+        },
+        {
+          "position": [
+            69.1,
+            0,
+            92
+          ],
+          "kind": "ladder",
+          "yaw": 1.5707963267948966,
+          "height": 4,
+          "width": 0.9
+        },
+        {
+          "position": [
+            63.5,
+            3,
+            92
+          ],
+          "kind": "light",
+          "yaw": -1.5707963267948966,
+          "color": "#ffb070",
+          "intensity": 1.1,
+          "range": 10,
+          "fixture": "chandelier"
+        },
+        {
+          "position": [
+            90.9,
+            0,
+            68
+          ],
+          "kind": "ladder",
+          "yaw": -1.5707963267948966,
+          "height": 4,
+          "width": 0.9
+        },
+        {
+          "position": [
+            96.5,
+            3,
+            68
+          ],
+          "kind": "light",
+          "yaw": 1.5707963267948966,
+          "color": "#ffb070",
+          "intensity": 1.1,
+          "range": 10,
+          "fixture": "chandelier"
+        },
+        {
+          "position": [
+            68,
+            0,
+            69.1
+          ],
+          "kind": "ladder",
+          "yaw": 0,
+          "height": 4,
+          "width": 0.9
+        },
+        {
+          "position": [
+            68,
+            3,
+            63.5
+          ],
+          "kind": "light",
+          "yaw": 3.141592653589793,
+          "color": "#ffb070",
+          "intensity": 1.1,
+          "range": 10,
+          "fixture": "chandelier"
+        },
+        {
+          "position": [
+            56,
+            2,
+            113.77
+          ],
+          "kind": "light",
+          "yaw": 3.141592653589793,
+          "color": "#ffb070",
+          "intensity": 1.1,
+          "range": 8,
+          "fixture": "candle"
+        },
+        {
+          "position": [
+            56,
+            2,
+            49.77
+          ],
+          "kind": "light",
+          "yaw": 3.141592653589793,
+          "color": "#ffb070",
+          "intensity": 1.1,
+          "range": 8,
+          "fixture": "candle"
+        },
+        {
+          "position": [
+            64,
+            2,
+            113.77
+          ],
+          "kind": "light",
+          "yaw": 3.141592653589793,
+          "color": "#ffb070",
+          "intensity": 1.1,
+          "range": 8,
+          "fixture": "candle"
+        },
+        {
+          "position": [
+            64,
+            2,
+            46.23
+          ],
+          "kind": "light",
+          "yaw": 0,
+          "color": "#ffb070",
+          "intensity": 1.1,
+          "range": 8,
+          "fixture": "candle"
+        },
+        {
+          "position": [
+            72,
+            2,
+            113.77
+          ],
+          "kind": "light",
+          "yaw": 3.141592653589793,
+          "color": "#ffb070",
+          "intensity": 1.1,
+          "range": 8,
+          "fixture": "candle"
+        },
+        {
+          "position": [
+            72,
+            2,
+            49.77
+          ],
+          "kind": "light",
+          "yaw": 3.141592653589793,
+          "color": "#ffb070",
+          "intensity": 1.1,
+          "range": 8,
+          "fixture": "candle"
+        },
+        {
+          "position": [
+            80,
+            2,
+            110.23
+          ],
+          "kind": "light",
+          "yaw": 0,
+          "color": "#ffb070",
+          "intensity": 1.1,
+          "range": 8,
+          "fixture": "candle"
+        },
+        {
+          "position": [
+            80,
+            2,
+            49.77
+          ],
+          "kind": "light",
+          "yaw": 3.141592653589793,
+          "color": "#ffb070",
+          "intensity": 1.1,
+          "range": 8,
+          "fixture": "candle"
+        },
+        {
+          "position": [
+            88,
+            2,
+            113.77
+          ],
+          "kind": "light",
+          "yaw": 3.141592653589793,
+          "color": "#ffb070",
+          "intensity": 1.1,
+          "range": 8,
+          "fixture": "candle"
+        },
+        {
+          "position": [
+            88,
+            2,
+            49.77
+          ],
+          "kind": "light",
+          "yaw": 3.141592653589793,
+          "color": "#ffb070",
+          "intensity": 1.1,
+          "range": 8,
+          "fixture": "candle"
+        },
+        {
+          "position": [
+            96,
+            2,
+            113.77
+          ],
+          "kind": "light",
+          "yaw": 3.141592653589793,
+          "color": "#ffb070",
+          "intensity": 1.1,
+          "range": 8,
+          "fixture": "candle"
+        },
+        {
+          "position": [
+            96,
+            2,
+            46.23
+          ],
+          "kind": "light",
+          "yaw": 0,
+          "color": "#ffb070",
+          "intensity": 1.1,
+          "range": 8,
+          "fixture": "candle"
+        },
+        {
+          "position": [
+            104,
+            2,
+            113.77
+          ],
+          "kind": "light",
+          "yaw": 3.141592653589793,
+          "color": "#ffb070",
+          "intensity": 1.1,
+          "range": 8,
+          "fixture": "candle"
+        },
+        {
+          "position": [
+            104,
+            2,
+            49.77
+          ],
+          "kind": "light",
+          "yaw": 3.141592653589793,
+          "color": "#ffb070",
+          "intensity": 1.1,
+          "range": 8,
+          "fixture": "candle"
+        },
+        {
+          "position": [
+            110.23,
+            2,
+            56
+          ],
+          "kind": "light",
+          "yaw": 1.5707963267948966,
+          "color": "#ffb070",
+          "intensity": 1.1,
+          "range": 8,
+          "fixture": "candle"
+        },
+        {
+          "position": [
+            46.23,
+            2,
+            56
+          ],
+          "kind": "light",
+          "yaw": 1.5707963267948966,
+          "color": "#ffb070",
+          "intensity": 1.1,
+          "range": 8,
+          "fixture": "candle"
+        },
+        {
+          "position": [
+            113.77,
+            2,
+            64
+          ],
+          "kind": "light",
+          "yaw": -1.5707963267948966,
+          "color": "#ffb070",
+          "intensity": 1.1,
+          "range": 8,
+          "fixture": "candle"
+        },
+        {
+          "position": [
+            46.23,
+            2,
+            64
+          ],
+          "kind": "light",
+          "yaw": 1.5707963267948966,
+          "color": "#ffb070",
+          "intensity": 1.1,
+          "range": 8,
+          "fixture": "candle"
+        },
+        {
+          "position": [
+            110.23,
+            2,
+            72
+          ],
+          "kind": "light",
+          "yaw": 1.5707963267948966,
+          "color": "#ffb070",
+          "intensity": 1.1,
+          "range": 8,
+          "fixture": "candle"
+        },
+        {
+          "position": [
+            46.23,
+            2,
+            72
+          ],
+          "kind": "light",
+          "yaw": 1.5707963267948966,
+          "color": "#ffb070",
+          "intensity": 1.1,
+          "range": 8,
+          "fixture": "candle"
+        },
+        {
+          "position": [
+            110.23,
+            2,
+            80
+          ],
+          "kind": "light",
+          "yaw": 1.5707963267948966,
+          "color": "#ffb070",
+          "intensity": 1.1,
+          "range": 8,
+          "fixture": "candle"
+        },
+        {
+          "position": [
+            49.77,
+            2,
+            80
+          ],
+          "kind": "light",
+          "yaw": -1.5707963267948966,
+          "color": "#ffb070",
+          "intensity": 1.1,
+          "range": 8,
+          "fixture": "candle"
+        },
+        {
+          "position": [
+            110.23,
+            2,
+            88
+          ],
+          "kind": "light",
+          "yaw": 1.5707963267948966,
+          "color": "#ffb070",
+          "intensity": 1.1,
+          "range": 8,
+          "fixture": "candle"
+        },
+        {
+          "position": [
+            46.23,
+            2,
+            88
+          ],
+          "kind": "light",
+          "yaw": 1.5707963267948966,
+          "color": "#ffb070",
+          "intensity": 1.1,
+          "range": 8,
+          "fixture": "candle"
+        },
+        {
+          "position": [
+            113.77,
+            2,
+            96
+          ],
+          "kind": "light",
+          "yaw": -1.5707963267948966,
+          "color": "#ffb070",
+          "intensity": 1.1,
+          "range": 8,
+          "fixture": "candle"
+        },
+        {
+          "position": [
+            46.23,
+            2,
+            96
+          ],
+          "kind": "light",
+          "yaw": 1.5707963267948966,
+          "color": "#ffb070",
+          "intensity": 1.1,
+          "range": 8,
+          "fixture": "candle"
+        },
+        {
+          "position": [
+            110.23,
+            2,
+            104
+          ],
+          "kind": "light",
+          "yaw": 1.5707963267948966,
+          "color": "#ffb070",
+          "intensity": 1.1,
+          "range": 8,
+          "fixture": "candle"
+        },
+        {
+          "position": [
+            46.23,
+            2,
+            104
+          ],
+          "kind": "light",
+          "yaw": 1.5707963267948966,
+          "color": "#ffb070",
+          "intensity": 1.1,
+          "range": 8,
+          "fixture": "candle"
+        },
+        {
+          "position": [
+            113.77,
+            2,
+            112
+          ],
+          "kind": "light",
+          "yaw": -1.5707963267948966,
+          "color": "#ffb070",
+          "intensity": 1.1,
+          "range": 8,
+          "fixture": "candle"
+        },
+        {
+          "position": [
+            46.23,
+            2,
+            112
+          ],
+          "kind": "light",
+          "yaw": 1.5707963267948966,
+          "color": "#ffb070",
+          "intensity": 1.1,
+          "range": 8,
+          "fixture": "candle"
+        },
+        {
+          "position": [
+            113.77,
+            2,
+            48
+          ],
+          "kind": "light",
+          "yaw": -1.5707963267948966,
+          "color": "#ffb070",
+          "intensity": 1.1,
+          "range": 8,
+          "fixture": "candle"
+        },
+        {
+          "position": [
+            46.23,
+            2,
+            48
+          ],
+          "kind": "light",
+          "yaw": 1.5707963267948966,
+          "color": "#ffb070",
+          "intensity": 1.1,
+          "range": 8,
+          "fixture": "candle"
+        },
+        {
+          "position": [
+            80,
+            3,
+            80
+          ],
+          "kind": "light",
+          "yaw": 0,
+          "color": "#ffb070",
+          "intensity": 1,
+          "range": 8,
+          "fixture": "none"
+        },
+        {
+          "position": [
+            80,
+            2,
+            89.77
+          ],
+          "kind": "light",
+          "yaw": 3.141592653589793,
+          "color": "#ffb070",
+          "intensity": 1.1,
+          "range": 8,
+          "fixture": "candle"
+        },
+        {
+          "position": [
+            80,
+            2,
+            70.23
+          ],
+          "kind": "light",
+          "yaw": 0,
+          "color": "#ffb070",
+          "intensity": 1.1,
+          "range": 8,
+          "fixture": "candle"
+        },
+        {
+          "position": [
+            89.77,
+            2,
+            80
+          ],
+          "kind": "light",
+          "yaw": -1.5707963267948966,
+          "color": "#ffb070",
+          "intensity": 1.1,
+          "range": 8,
+          "fixture": "candle"
+        },
+        {
+          "position": [
+            70.23,
+            2,
+            80
+          ],
+          "kind": "light",
+          "yaw": 1.5707963267948966,
+          "color": "#ffb070",
+          "intensity": 1.1,
+          "range": 8,
+          "fixture": "candle"
+        },
+        {
+          "position": [
+            62.23,
+            2,
+            104
+          ],
+          "kind": "light",
+          "yaw": 1.5707963267948966,
+          "color": "#ffb070",
+          "intensity": 1.1,
+          "range": 8,
+          "fixture": "candle"
+        },
+        {
+          "position": [
+            62.23,
+            2,
+            56
+          ],
+          "kind": "light",
+          "yaw": 1.5707963267948966,
+          "color": "#ffb070",
+          "intensity": 1.1,
+          "range": 8,
+          "fixture": "candle"
+        },
+        {
+          "position": [
+            94.23,
+            2,
+            104
+          ],
+          "kind": "light",
+          "yaw": 1.5707963267948966,
+          "color": "#ffb070",
+          "intensity": 1.1,
+          "range": 8,
+          "fixture": "candle"
+        },
+        {
+          "position": [
+            94.23,
+            2,
+            56
+          ],
+          "kind": "light",
+          "yaw": 1.5707963267948966,
+          "color": "#ffb070",
+          "intensity": 1.1,
+          "range": 8,
+          "fixture": "candle"
+        },
+        {
+          "position": [
+            104,
+            2,
+            65.77
+          ],
+          "kind": "light",
+          "yaw": 3.141592653589793,
+          "color": "#ffb070",
+          "intensity": 1.1,
+          "range": 8,
+          "fixture": "candle"
+        },
+        {
+          "position": [
+            56,
+            2,
+            65.77
+          ],
+          "kind": "light",
+          "yaw": 3.141592653589793,
+          "color": "#ffb070",
+          "intensity": 1.1,
+          "range": 8,
+          "fixture": "candle"
+        },
+        {
+          "position": [
+            104,
+            2,
+            97.77
+          ],
+          "kind": "light",
+          "yaw": 3.141592653589793,
+          "color": "#ffb070",
+          "intensity": 1.1,
+          "range": 8,
+          "fixture": "candle"
+        },
+        {
+          "position": [
+            56,
+            2,
+            97.77
+          ],
+          "kind": "light",
+          "yaw": 3.141592653589793,
+          "color": "#ffb070",
+          "intensity": 1.1,
+          "range": 8,
+          "fixture": "candle"
+        },
+        {
+          "position": [
+            78.23,
+            2,
+            120
+          ],
+          "kind": "light",
+          "yaw": 1.5707963267948966,
+          "color": "#ffb070",
+          "intensity": 1.1,
+          "range": 8,
+          "fixture": "candle"
+        },
+        {
+          "position": [
+            84,
+            0,
+            136
+          ],
+          "name": "Pen gate",
+          "kind": "door",
+          "yaw": 1.5707963267948966,
+          "style": "portcullis",
+          "startOpen": false,
+          "locked": false,
+          "auto": false
+        },
+        {
+          "position": [
+            84,
+            0,
+            128
+          ],
+          "name": "Pen gate",
+          "kind": "door",
+          "yaw": 1.5707963267948966,
+          "style": "portcullis",
+          "startOpen": false,
+          "locked": false,
+          "auto": false
+        },
+        {
+          "position": [
+            89.6,
+            0,
+            138
+          ],
+          "kind": "prop",
+          "model": "prop.straw_bale",
+          "yaw": 1.870796,
+          "scale": 1,
+          "solid": true,
+          "tint": null
+        },
+        {
+          "position": [
+            90.4,
+            0,
+            126.2
+          ],
+          "kind": "prop",
+          "model": "prop.straw_bale",
+          "yaw": 1.170796,
+          "scale": 1,
+          "solid": true,
+          "tint": null
+        },
+        {
+          "position": [
+            90.9,
+            0,
+            133.6
+          ],
+          "kind": "prop",
+          "model": "prop.water_trough",
+          "yaw": 1.5707963267948966,
+          "scale": 1,
+          "solid": true,
+          "tint": null
+        },
+        {
+          "position": [
+            90.9,
+            0,
+            130.4
+          ],
+          "kind": "prop",
+          "model": "prop.water_trough",
+          "yaw": 1.5707963267948966,
+          "scale": 1,
+          "solid": true,
+          "tint": null
+        },
+        {
+          "position": [
+            76.53,
+            2.3,
+            136
+          ],
+          "kind": "light",
+          "yaw": 1.5707963267948966,
+          "color": "#ffb070",
+          "intensity": 1.1,
+          "range": 8,
+          "fixture": "candle"
+        },
+        {
+          "position": [
+            76.53,
+            2.3,
+            128
+          ],
+          "kind": "light",
+          "yaw": 1.5707963267948966,
+          "color": "#ffb070",
+          "intensity": 1.1,
+          "range": 8,
+          "fixture": "candle"
+        },
+        {
+          "position": [
+            78.23,
+            2,
+            144
+          ],
+          "kind": "light",
+          "yaw": 1.5707963267948966,
+          "color": "#ffb070",
+          "intensity": 1.1,
+          "range": 8,
+          "fixture": "candle"
+        },
+        {
+          "position": [
+            78.23,
+            2,
+            152
+          ],
+          "kind": "light",
+          "yaw": 1.5707963267948966,
+          "color": "#ffb070",
+          "intensity": 1.1,
+          "range": 8,
+          "fixture": "candle"
+        },
+        {
+          "position": [
+            78.23,
+            2,
+            160
+          ],
+          "kind": "light",
+          "yaw": 1.5707963267948966,
+          "color": "#ffb070",
+          "intensity": 1.1,
+          "range": 8,
+          "fixture": "candle"
+        },
+        {
+          "position": [
+            78.23,
+            2,
+            40
+          ],
+          "kind": "light",
+          "yaw": 1.5707963267948966,
+          "color": "#ffb070",
+          "intensity": 1.1,
+          "range": 8,
+          "fixture": "candle"
+        },
+        {
+          "position": [
+            76,
+            0,
+            24
+          ],
+          "name": "Pen gate",
+          "kind": "door",
+          "yaw": -1.5707963267948966,
+          "style": "portcullis",
+          "startOpen": false,
+          "locked": false,
+          "auto": false
+        },
+        {
+          "position": [
+            76,
+            0,
+            32
+          ],
+          "name": "Pen gate",
+          "kind": "door",
+          "yaw": -1.5707963267948966,
+          "style": "portcullis",
+          "startOpen": false,
+          "locked": false,
+          "auto": false
+        },
+        {
+          "position": [
+            70.4,
+            0,
+            22
+          ],
+          "kind": "prop",
+          "model": "prop.straw_bale",
+          "yaw": -1.270796,
+          "scale": 1,
+          "solid": true,
+          "tint": null
+        },
+        {
+          "position": [
+            69.6,
+            0,
+            33.8
+          ],
+          "kind": "prop",
+          "model": "prop.straw_bale",
+          "yaw": -1.970796,
+          "scale": 1,
+          "solid": true,
+          "tint": null
+        },
+        {
+          "position": [
+            69.1,
+            0,
+            26.4
+          ],
+          "kind": "prop",
+          "model": "prop.water_trough",
+          "yaw": -1.5707963267948966,
+          "scale": 1,
+          "solid": true,
+          "tint": null
+        },
+        {
+          "position": [
+            69.1,
+            0,
+            29.6
+          ],
+          "kind": "prop",
+          "model": "prop.water_trough",
+          "yaw": -1.5707963267948966,
+          "scale": 1,
+          "solid": true,
+          "tint": null
+        },
+        {
+          "position": [
+            83.47,
+            2.3,
+            24
+          ],
+          "kind": "light",
+          "yaw": -1.5707963267948966,
+          "color": "#ffb070",
+          "intensity": 1.1,
+          "range": 8,
+          "fixture": "candle"
+        },
+        {
+          "position": [
+            83.47,
+            2.3,
+            32
+          ],
+          "kind": "light",
+          "yaw": -1.5707963267948966,
+          "color": "#ffb070",
+          "intensity": 1.1,
+          "range": 8,
+          "fixture": "candle"
+        },
+        {
+          "position": [
+            78.23,
+            2,
+            16
+          ],
+          "kind": "light",
+          "yaw": 1.5707963267948966,
+          "color": "#ffb070",
+          "intensity": 1.1,
+          "range": 8,
+          "fixture": "candle"
+        },
+        {
+          "position": [
+            78.23,
+            2,
+            8
+          ],
+          "kind": "light",
+          "yaw": 1.5707963267948966,
+          "color": "#ffb070",
+          "intensity": 1.1,
+          "range": 8,
+          "fixture": "candle"
+        },
+        {
+          "position": [
+            78.23,
+            2,
+            0
+          ],
+          "kind": "light",
+          "yaw": 1.5707963267948966,
+          "color": "#ffb070",
+          "intensity": 1.1,
+          "range": 8,
+          "fixture": "candle"
+        },
+        {
+          "position": [
+            120,
+            0,
+            84
+          ],
+          "name": "Pen gate",
+          "kind": "door",
+          "yaw": 0,
+          "style": "portcullis",
+          "startOpen": false,
+          "locked": false,
+          "auto": false
+        },
+        {
+          "position": [
+            128,
+            0,
+            84
+          ],
+          "name": "Pen gate",
+          "kind": "door",
+          "yaw": 0,
+          "style": "portcullis",
+          "startOpen": false,
+          "locked": false,
+          "auto": false
+        },
+        {
+          "position": [
+            118,
+            0,
+            89.6
+          ],
+          "kind": "prop",
+          "model": "prop.straw_bale",
+          "yaw": 0.3,
+          "scale": 1,
+          "solid": true,
+          "tint": null
+        },
+        {
+          "position": [
+            129.8,
+            0,
+            90.4
+          ],
+          "kind": "prop",
+          "model": "prop.straw_bale",
+          "yaw": -0.4,
+          "scale": 1,
+          "solid": true,
+          "tint": null
+        },
+        {
+          "position": [
+            122.4,
+            0,
+            90.9
+          ],
+          "kind": "prop",
+          "model": "prop.water_trough",
+          "yaw": 0,
+          "scale": 1,
+          "solid": true,
+          "tint": null
+        },
+        {
+          "position": [
+            125.6,
+            0,
+            90.9
+          ],
+          "kind": "prop",
+          "model": "prop.water_trough",
+          "yaw": 0,
+          "scale": 1,
+          "solid": true,
+          "tint": null
+        },
+        {
+          "position": [
+            120,
+            2.3,
+            76.53
+          ],
+          "kind": "light",
+          "yaw": 0,
+          "color": "#ffb070",
+          "intensity": 1.1,
+          "range": 8,
+          "fixture": "candle"
+        },
+        {
+          "position": [
+            128,
+            2.3,
+            76.53
+          ],
+          "kind": "light",
+          "yaw": 0,
+          "color": "#ffb070",
+          "intensity": 1.1,
+          "range": 8,
+          "fixture": "candle"
+        },
+        {
+          "position": [
+            136,
+            2,
+            81.77
+          ],
+          "kind": "light",
+          "yaw": 3.141592653589793,
+          "color": "#ffb070",
+          "intensity": 1.1,
+          "range": 8,
+          "fixture": "candle"
+        },
+        {
+          "position": [
+            144,
+            2,
+            81.77
+          ],
+          "kind": "light",
+          "yaw": 3.141592653589793,
+          "color": "#ffb070",
+          "intensity": 1.1,
+          "range": 8,
+          "fixture": "candle"
+        },
+        {
+          "position": [
+            152,
+            2,
+            81.77
+          ],
+          "kind": "light",
+          "yaw": 3.141592653589793,
+          "color": "#ffb070",
+          "intensity": 1.1,
+          "range": 8,
+          "fixture": "candle"
+        },
+        {
+          "position": [
+            160,
+            2,
+            81.77
+          ],
+          "kind": "light",
+          "yaw": 3.141592653589793,
+          "color": "#ffb070",
+          "intensity": 1.1,
+          "range": 8,
+          "fixture": "candle"
+        },
+        {
+          "position": [
+            40,
+            2,
+            81.77
+          ],
+          "kind": "light",
+          "yaw": 3.141592653589793,
+          "color": "#ffb070",
+          "intensity": 1.1,
+          "range": 8,
+          "fixture": "candle"
+        },
+        {
+          "position": [
+            32,
+            0,
+            76
+          ],
+          "name": "Pen gate",
+          "kind": "door",
+          "yaw": 3.141592653589793,
+          "style": "portcullis",
+          "startOpen": false,
+          "locked": false,
+          "auto": false
+        },
+        {
+          "position": [
+            24,
+            0,
+            76
+          ],
+          "name": "Pen gate",
+          "kind": "door",
+          "yaw": 3.141592653589793,
+          "style": "portcullis",
+          "startOpen": false,
+          "locked": false,
+          "auto": false
+        },
+        {
+          "position": [
+            34,
+            0,
+            70.4
+          ],
+          "kind": "prop",
+          "model": "prop.straw_bale",
+          "yaw": -2.841593,
+          "scale": 1,
+          "solid": true,
+          "tint": null
+        },
+        {
+          "position": [
+            22.2,
+            0,
+            69.6
+          ],
+          "kind": "prop",
+          "model": "prop.straw_bale",
+          "yaw": 2.741593,
+          "scale": 1,
+          "solid": true,
+          "tint": null
+        },
+        {
+          "position": [
+            29.6,
+            0,
+            69.1
+          ],
+          "kind": "prop",
+          "model": "prop.water_trough",
+          "yaw": 3.141592653589793,
+          "scale": 1,
+          "solid": true,
+          "tint": null
+        },
+        {
+          "position": [
+            26.4,
+            0,
+            69.1
+          ],
+          "kind": "prop",
+          "model": "prop.water_trough",
+          "yaw": 3.141592653589793,
+          "scale": 1,
+          "solid": true,
+          "tint": null
+        },
+        {
+          "position": [
+            32,
+            2.3,
+            83.47
+          ],
+          "kind": "light",
+          "yaw": 3.141592653589793,
+          "color": "#ffb070",
+          "intensity": 1.1,
+          "range": 8,
+          "fixture": "candle"
+        },
+        {
+          "position": [
+            24,
+            2.3,
+            83.47
+          ],
+          "kind": "light",
+          "yaw": 3.141592653589793,
+          "color": "#ffb070",
+          "intensity": 1.1,
+          "range": 8,
+          "fixture": "candle"
+        },
+        {
+          "position": [
+            16,
+            2,
+            81.77
+          ],
+          "kind": "light",
+          "yaw": 3.141592653589793,
+          "color": "#ffb070",
+          "intensity": 1.1,
+          "range": 8,
+          "fixture": "candle"
+        },
+        {
+          "position": [
+            8,
+            2,
+            81.77
+          ],
+          "kind": "light",
+          "yaw": 3.141592653589793,
+          "color": "#ffb070",
+          "intensity": 1.1,
+          "range": 8,
+          "fixture": "candle"
+        },
+        {
+          "position": [
+            0,
+            2,
+            81.77
+          ],
+          "kind": "light",
+          "yaw": 3.141592653589793,
+          "color": "#ffb070",
+          "intensity": 1.1,
+          "range": 8,
+          "fixture": "candle"
+        }
+      ]
+    },
+    {
+      "id": "local.sandfall_arena_floor_l0",
+      "displayName": "Sandfall Arena Floor L0",
+      "family": "custom",
+      "category": "My pieces",
+      "packs": [],
+      "footprint": {
+        "cells": [
+          [
+            0,
+            0
+          ],
+          [
+            1,
+            0
+          ],
+          [
+            2,
+            0
+          ],
+          [
+            3,
+            0
+          ],
+          [
+            4,
+            0
+          ],
+          [
+            5,
+            0
+          ],
+          [
+            6,
+            0
+          ],
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            1
+          ],
+          [
+            2,
+            1
+          ],
+          [
+            3,
+            1
+          ],
+          [
+            4,
+            1
+          ],
+          [
+            5,
+            1
+          ],
+          [
+            6,
+            1
+          ],
+          [
+            0,
+            2
+          ],
+          [
+            1,
+            2
+          ],
+          [
+            2,
+            2
+          ],
+          [
+            3,
+            2
+          ],
+          [
+            4,
+            2
+          ],
+          [
+            5,
+            2
+          ],
+          [
+            6,
+            2
+          ],
+          [
+            0,
+            3
+          ],
+          [
+            1,
+            3
+          ],
+          [
+            2,
+            3
+          ],
+          [
+            3,
+            3
+          ],
+          [
+            4,
+            3
+          ],
+          [
+            5,
+            3
+          ],
+          [
+            6,
+            3
+          ],
+          [
+            0,
+            4
+          ],
+          [
+            1,
+            4
+          ],
+          [
+            2,
+            4
+          ],
+          [
+            3,
+            4
+          ],
+          [
+            4,
+            4
+          ],
+          [
+            5,
+            4
+          ],
+          [
+            6,
+            4
+          ],
+          [
+            0,
+            5
+          ],
+          [
+            1,
+            5
+          ],
+          [
+            2,
+            5
+          ],
+          [
+            3,
+            5
+          ],
+          [
+            4,
+            5
+          ],
+          [
+            5,
+            5
+          ],
+          [
+            6,
+            5
+          ],
+          [
+            0,
+            6
+          ],
+          [
+            1,
+            6
+          ],
+          [
+            2,
+            6
+          ],
+          [
+            3,
+            6
+          ],
+          [
+            4,
+            6
+          ],
+          [
+            5,
+            6
+          ],
+          [
+            6,
+            6
+          ]
+        ],
+        "levels": [
+          0,
+          1
+        ]
+      },
+      "mirror": "none",
+      "ports": [
+        {
+          "side": "S",
+          "cell": [
+            0,
+            0
+          ],
+          "level": 1,
+          "kind": "opening"
+        },
+        {
+          "side": "W",
+          "cell": [
+            0,
+            0
+          ],
+          "level": 1,
+          "kind": "opening"
+        },
+        {
+          "side": "S",
+          "cell": [
+            1,
+            0
+          ],
+          "level": 1,
+          "kind": "opening"
+        },
+        {
+          "side": "S",
+          "cell": [
+            2,
+            0
+          ],
+          "level": 1,
+          "kind": "opening"
+        },
+        {
+          "side": "S",
+          "cell": [
+            3,
+            0
+          ],
+          "level": 1,
+          "kind": "opening"
+        },
+        {
+          "side": "S",
+          "cell": [
+            4,
+            0
+          ],
+          "level": 1,
+          "kind": "opening"
+        },
+        {
+          "side": "S",
+          "cell": [
+            5,
+            0
+          ],
+          "level": 1,
+          "kind": "opening"
+        },
+        {
+          "side": "E",
+          "cell": [
+            6,
+            0
+          ],
+          "level": 1,
+          "kind": "opening"
+        },
+        {
+          "side": "S",
+          "cell": [
+            6,
+            0
+          ],
+          "level": 1,
+          "kind": "opening"
+        },
+        {
+          "side": "W",
+          "cell": [
+            0,
+            1
+          ],
+          "level": 1,
+          "kind": "opening"
+        },
+        {
+          "side": "E",
+          "cell": [
+            6,
+            1
+          ],
+          "level": 1,
+          "kind": "opening"
+        },
+        {
+          "side": "W",
+          "cell": [
+            0,
+            2
+          ],
+          "level": 1,
+          "kind": "opening"
+        },
+        {
+          "side": "E",
+          "cell": [
+            6,
+            2
+          ],
+          "level": 1,
+          "kind": "opening"
+        },
+        {
+          "side": "W",
+          "cell": [
+            0,
+            3
+          ],
+          "level": 1,
+          "kind": "opening"
+        },
+        {
+          "side": "E",
+          "cell": [
+            6,
+            3
+          ],
+          "level": 1,
+          "kind": "opening"
+        },
+        {
+          "side": "W",
+          "cell": [
+            0,
+            4
+          ],
+          "level": 1,
+          "kind": "opening"
+        },
+        {
+          "side": "E",
+          "cell": [
+            6,
+            4
+          ],
+          "level": 1,
+          "kind": "opening"
+        },
+        {
+          "side": "W",
+          "cell": [
+            0,
+            5
+          ],
+          "level": 1,
+          "kind": "opening"
+        },
+        {
+          "side": "E",
+          "cell": [
+            6,
+            5
+          ],
+          "level": 1,
+          "kind": "opening"
+        },
+        {
+          "side": "N",
+          "cell": [
+            0,
+            6
+          ],
+          "level": 1,
+          "kind": "opening"
+        },
+        {
+          "side": "W",
+          "cell": [
+            0,
+            6
+          ],
+          "level": 1,
+          "kind": "opening"
+        },
+        {
+          "side": "N",
+          "cell": [
+            1,
+            6
+          ],
+          "level": 1,
+          "kind": "opening"
+        },
+        {
+          "side": "N",
+          "cell": [
+            2,
+            6
+          ],
+          "level": 1,
+          "kind": "opening"
+        },
+        {
+          "side": "N",
+          "cell": [
+            3,
+            6
+          ],
+          "level": 1,
+          "kind": "opening"
+        },
+        {
+          "side": "N",
+          "cell": [
+            4,
+            6
+          ],
+          "level": 1,
+          "kind": "opening"
+        },
+        {
+          "side": "N",
+          "cell": [
+            5,
+            6
+          ],
+          "level": 1,
+          "kind": "opening"
+        },
+        {
+          "side": "N",
+          "cell": [
+            6,
+            6
+          ],
+          "level": 1,
+          "kind": "opening"
+        },
+        {
+          "side": "E",
+          "cell": [
+            6,
+            6
+          ],
+          "level": 1,
+          "kind": "opening"
+        }
+      ],
+      "parts": [
+        {
+          "tile": "core.yard",
+          "x": 0,
+          "y": 0,
+          "z": 1,
+          "rotation": 0,
+          "kind": "tile"
+        },
+        {
+          "tile": "core.yard",
+          "x": 1,
+          "y": 0,
+          "z": 1,
+          "rotation": 0,
+          "kind": "tile"
+        },
+        {
+          "tile": "core.yard",
+          "x": 2,
+          "y": 0,
+          "z": 1,
+          "rotation": 0,
+          "kind": "tile"
+        },
+        {
+          "tile": "core.yard",
+          "x": 3,
+          "y": 0,
+          "z": 1,
+          "rotation": 0,
+          "kind": "tile"
+        },
+        {
+          "tile": "core.yard",
+          "x": 4,
+          "y": 0,
+          "z": 1,
+          "rotation": 0,
+          "kind": "tile"
+        },
+        {
+          "tile": "core.yard",
+          "x": 5,
+          "y": 0,
+          "z": 1,
+          "rotation": 0,
+          "kind": "tile"
+        },
+        {
+          "tile": "core.yard",
+          "x": 6,
+          "y": 0,
+          "z": 1,
+          "rotation": 0,
+          "kind": "tile"
+        },
+        {
+          "tile": "core.yard",
+          "x": 0,
+          "y": 1,
+          "z": 1,
+          "rotation": 0,
+          "kind": "tile"
+        },
+        {
+          "tile": "core.yard",
+          "x": 3,
+          "y": 1,
+          "z": 1,
+          "rotation": 0,
+          "kind": "tile"
+        },
+        {
+          "tile": "core.yard",
+          "x": 6,
+          "y": 1,
+          "z": 1,
+          "rotation": 0,
+          "kind": "tile"
+        },
+        {
+          "tile": "core.yard",
+          "x": 0,
+          "y": 2,
+          "z": 1,
+          "rotation": 0,
+          "kind": "tile"
+        },
+        {
+          "tile": "core.yard",
+          "x": 3,
+          "y": 2,
+          "z": 1,
+          "rotation": 0,
+          "kind": "tile"
+        },
+        {
+          "tile": "core.yard",
+          "x": 6,
+          "y": 2,
+          "z": 1,
+          "rotation": 0,
+          "kind": "tile"
+        },
+        {
+          "tile": "core.yard",
+          "x": 0,
+          "y": 3,
+          "z": 1,
+          "rotation": 0,
+          "kind": "tile"
+        },
+        {
+          "tile": "core.yard",
+          "x": 1,
+          "y": 3,
+          "z": 1,
+          "rotation": 0,
+          "kind": "tile"
+        },
+        {
+          "tile": "core.yard",
+          "x": 2,
+          "y": 3,
+          "z": 1,
+          "rotation": 0,
+          "kind": "tile"
+        },
+        {
+          "tile": "core.yard",
+          "x": 4,
+          "y": 3,
+          "z": 1,
+          "rotation": 0,
+          "kind": "tile"
+        },
+        {
+          "tile": "core.yard",
+          "x": 5,
+          "y": 3,
+          "z": 1,
+          "rotation": 0,
+          "kind": "tile"
+        },
+        {
+          "tile": "core.yard",
+          "x": 6,
+          "y": 3,
+          "z": 1,
+          "rotation": 0,
+          "kind": "tile"
+        },
+        {
+          "tile": "core.yard",
+          "x": 0,
+          "y": 4,
+          "z": 1,
+          "rotation": 0,
+          "kind": "tile"
+        },
+        {
+          "tile": "core.yard",
+          "x": 3,
+          "y": 4,
+          "z": 1,
+          "rotation": 0,
+          "kind": "tile"
+        },
+        {
+          "tile": "core.yard",
+          "x": 6,
+          "y": 4,
+          "z": 1,
+          "rotation": 0,
+          "kind": "tile"
+        },
+        {
+          "tile": "core.yard",
+          "x": 0,
+          "y": 5,
+          "z": 1,
+          "rotation": 0,
+          "kind": "tile"
+        },
+        {
+          "tile": "core.yard",
+          "x": 3,
+          "y": 5,
+          "z": 1,
+          "rotation": 0,
+          "kind": "tile"
+        },
+        {
+          "tile": "core.yard",
+          "x": 6,
+          "y": 5,
+          "z": 1,
+          "rotation": 0,
+          "kind": "tile"
+        },
+        {
+          "tile": "core.yard",
+          "x": 0,
+          "y": 6,
+          "z": 1,
+          "rotation": 0,
+          "kind": "tile"
+        },
+        {
+          "tile": "core.yard",
+          "x": 1,
+          "y": 6,
+          "z": 1,
+          "rotation": 0,
+          "kind": "tile"
+        },
+        {
+          "tile": "core.yard",
+          "x": 2,
+          "y": 6,
+          "z": 1,
+          "rotation": 0,
+          "kind": "tile"
+        },
+        {
+          "tile": "core.yard",
+          "x": 3,
+          "y": 6,
+          "z": 1,
+          "rotation": 0,
+          "kind": "tile"
+        },
+        {
+          "tile": "core.yard",
+          "x": 4,
+          "y": 6,
+          "z": 1,
+          "rotation": 0,
+          "kind": "tile"
+        },
+        {
+          "tile": "core.yard",
+          "x": 5,
+          "y": 6,
+          "z": 1,
+          "rotation": 0,
+          "kind": "tile"
+        },
+        {
+          "tile": "core.yard",
+          "x": 6,
+          "y": 6,
+          "z": 1,
+          "rotation": 0,
+          "kind": "tile"
+        },
+        {
+          "tile": "core.yard",
+          "x": 3,
+          "y": 3,
+          "z": 1,
+          "rotation": 0,
+          "kind": "tile"
+        },
+        {
+          "tile": "core.hatch_corner",
+          "x": 4,
+          "y": 4,
+          "z": 1,
+          "rotation": 0,
+          "kind": "tile"
+        },
+        {
+          "tile": "core.hatch_corner",
+          "x": 5,
+          "y": 4,
+          "z": 1,
+          "rotation": 3,
+          "kind": "tile"
+        },
+        {
+          "tile": "core.hatch_corner",
+          "x": 5,
+          "y": 5,
+          "z": 1,
+          "rotation": 2,
+          "kind": "tile"
+        },
+        {
+          "tile": "core.hatch_corner",
+          "x": 4,
+          "y": 5,
+          "z": 1,
+          "rotation": 1,
+          "kind": "tile"
+        },
+        {
+          "tile": "core.hatch_corner",
+          "x": 2,
+          "y": 4,
+          "z": 1,
+          "rotation": 3,
+          "kind": "tile"
+        },
+        {
+          "tile": "core.hatch_corner",
+          "x": 2,
+          "y": 5,
+          "z": 1,
+          "rotation": 2,
+          "kind": "tile"
+        },
+        {
+          "tile": "core.hatch_corner",
+          "x": 1,
+          "y": 5,
+          "z": 1,
+          "rotation": 1,
+          "kind": "tile"
+        },
+        {
+          "tile": "core.hatch_corner",
+          "x": 1,
+          "y": 4,
+          "z": 1,
+          "rotation": 0,
+          "kind": "tile"
+        },
+        {
+          "tile": "core.hatch_corner",
+          "x": 4,
+          "y": 2,
+          "z": 1,
+          "rotation": 1,
+          "kind": "tile"
+        },
+        {
+          "tile": "core.hatch_corner",
+          "x": 4,
+          "y": 1,
+          "z": 1,
+          "rotation": 0,
+          "kind": "tile"
+        },
+        {
+          "tile": "core.hatch_corner",
+          "x": 5,
+          "y": 1,
+          "z": 1,
+          "rotation": 3,
+          "kind": "tile"
+        },
+        {
+          "tile": "core.hatch_corner",
+          "x": 5,
+          "y": 2,
+          "z": 1,
+          "rotation": 2,
+          "kind": "tile"
+        },
+        {
+          "tile": "core.hatch_corner",
+          "x": 2,
+          "y": 2,
+          "z": 1,
+          "rotation": 2,
+          "kind": "tile"
+        },
+        {
+          "tile": "core.hatch_corner",
+          "x": 1,
+          "y": 2,
+          "z": 1,
+          "rotation": 1,
+          "kind": "tile"
+        },
+        {
+          "tile": "core.hatch_corner",
+          "x": 1,
+          "y": 1,
+          "z": 1,
+          "rotation": 0,
+          "kind": "tile"
+        },
+        {
+          "tile": "core.hatch_corner",
+          "x": 2,
+          "y": 1,
+          "z": 1,
+          "rotation": 3,
+          "kind": "tile"
+        },
+        {
+          "position": [
+            24,
+            4,
+            48
+          ],
+          "kind": "prop",
+          "model": "prop.im_column_ionic",
+          "yaw": 0,
+          "scale": 1.6,
+          "solid": true,
+          "tint": null
+        },
+        {
+          "position": [
+            24,
+            4,
+            0
+          ],
+          "kind": "prop",
+          "model": "prop.im_column_ionic",
+          "yaw": 0,
+          "scale": 1.6,
+          "solid": true,
+          "tint": null
+        },
+        {
+          "position": [
+            48,
+            4,
+            24
+          ],
+          "kind": "prop",
+          "model": "prop.im_column_ionic",
+          "yaw": 0,
+          "scale": 1.6,
+          "solid": true,
+          "tint": null
+        },
+        {
+          "position": [
+            0,
+            4,
+            24
+          ],
+          "kind": "prop",
+          "model": "prop.im_column_ionic",
+          "yaw": 0,
+          "scale": 1.6,
+          "solid": true,
+          "tint": null
+        },
+        {
+          "position": [
+            40,
+            4,
+            40
+          ],
+          "kind": "prop",
+          "model": "prop.im_column_ionic",
+          "yaw": 0,
+          "scale": 1.6,
+          "solid": true,
+          "tint": null
+        },
+        {
+          "position": [
+            8,
+            4,
+            40
+          ],
+          "kind": "prop",
+          "model": "prop.im_column_ionic",
+          "yaw": 0,
+          "scale": 1.6,
+          "solid": true,
+          "tint": null
+        },
+        {
+          "position": [
+            40,
+            4,
+            8
+          ],
+          "kind": "prop",
+          "model": "prop.im_column_ionic",
+          "yaw": 0,
+          "scale": 1.6,
+          "solid": true,
+          "tint": null
+        },
+        {
+          "position": [
+            8,
+            4,
+            8
+          ],
+          "kind": "prop",
+          "model": "prop.im_column_ionic",
+          "yaw": 0,
+          "scale": 1.6,
+          "solid": true,
+          "tint": null
+        },
+        {
+          "position": [
+            32,
+            4,
+            32
+          ],
+          "kind": "prop",
+          "model": "prop.im_column_ionic",
+          "yaw": 0,
+          "scale": 1.6,
+          "solid": true,
+          "tint": null
+        },
+        {
+          "position": [
+            16,
+            4,
+            32
+          ],
+          "kind": "prop",
+          "model": "prop.im_column_ionic",
+          "yaw": 0,
+          "scale": 1.6,
+          "solid": true,
+          "tint": null
+        },
+        {
+          "position": [
+            32,
+            4,
+            16
+          ],
+          "kind": "prop",
+          "model": "prop.im_column_ionic",
+          "yaw": 0,
+          "scale": 1.6,
+          "solid": true,
+          "tint": null
+        },
+        {
+          "position": [
+            16,
+            4,
+            16
+          ],
+          "kind": "prop",
+          "model": "prop.im_column_ionic",
+          "yaw": 0,
+          "scale": 1.6,
+          "solid": true,
+          "tint": null
+        },
+        {
+          "position": [
+            36,
+            3,
+            40.5
+          ],
+          "kind": "light",
+          "yaw": 0,
+          "color": "#ffb070",
+          "intensity": 1.1,
+          "range": 10,
+          "fixture": "chandelier"
+        },
+        {
+          "position": [
+            7.5,
+            3,
+            36
+          ],
+          "kind": "light",
+          "yaw": -1.5707963267948966,
+          "color": "#ffb070",
+          "intensity": 1.1,
+          "range": 10,
+          "fixture": "chandelier"
+        },
+        {
+          "position": [
+            40.5,
+            3,
+            12
+          ],
+          "kind": "light",
+          "yaw": 1.5707963267948966,
+          "color": "#ffb070",
+          "intensity": 1.1,
+          "range": 10,
+          "fixture": "chandelier"
+        },
+        {
+          "position": [
+            12,
+            3,
+            7.5
+          ],
+          "kind": "light",
+          "yaw": 3.141592653589793,
+          "color": "#ffb070",
+          "intensity": 1.1,
+          "range": 10,
+          "fixture": "chandelier"
+        }
+      ]
+    }
+  ],
   "setPieces": [
     {
       "id": "setpiece_44bb7mzhxj",
