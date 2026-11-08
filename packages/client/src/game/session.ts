@@ -155,7 +155,7 @@ import { TouchControls } from './touchControls.ts';
 import { WeaponWheel, wheelEntries } from './weaponWheel.ts';
 import { isTouchDevice } from '../touchDevice.ts';
 import { CoachHud } from './coachHud.ts';
-import { TipBook } from './tips.ts';
+import { TipBook, type TipId } from './tips.ts';
 import { Tutorial, setTutorialState } from './tutorial.ts';
 import { zoomLookScale } from './lookFilter.ts';
 import { markerSetting } from './crosshair.ts';
@@ -2500,6 +2500,8 @@ export class GameSession {
     if (this.opts.tips !== false && !tutorial) this.tips = new TipBook();
     if (!this.tutorial && !this.tips) return;
     this.coach = new CoachHud($('hud'), isTouchDevice(), tutorial ? { onSkip: () => this.skipTutorial() } : null);
+    // Browser tests: the tip showing, and a situation set off by hand.
+    if (this.tips) (window as unknown as { __tips: unknown }).__tips = { current: () => this.tips?.current ?? null, trigger: (id: TipId) => this.tips?.trigger(id, performance.now() / 1000) };
     if (!tutorial) return;
     // Pause menu: Skip tutorial beside Resume.
     const skip = document.createElement('button');
@@ -2564,9 +2566,16 @@ export class GameSession {
         }
         if (best) {
           const p = { x: best.x, y: best.y + 2.2, z: best.z };
-          const screen = this.view.project(p);
           const eye = local.eye;
-          this.hud.setMarker(screen && { ...screen, dist: Math.hypot(p.x - eye.x, p.y - eye.y, p.z - eye.z) });
+          const w = innerWidth;
+          const h = innerHeight;
+          let screen = this.view.project(p);
+          // Off screen (behind you, or to a side): held at the edge on its side, so it always shows the way.
+          if (!screen || screen.x < 40 || screen.x > w - 40 || screen.y < 40 || screen.y > h - 40) {
+            const right = (p.x - eye.x) * Math.cos(this.input.yaw) - (p.z - eye.z) * Math.sin(this.input.yaw);
+            screen = { x: right >= 0 ? w * 0.78 : w * 0.22, y: h * 0.5 };
+          }
+          this.hud.setMarker({ ...screen, dist: Math.hypot(p.x - eye.x, p.y - eye.y, p.z - eye.z) });
         }
       }
     }

@@ -212,7 +212,7 @@ button.cta:hover { background: #ffc46e; }
 .quick-play .qp-foot { display: flex; justify-content: space-between; gap: 10px; margin-top: 12px; }
 .quick-play .qp-link { padding: 6px 10px; background: transparent; color: var(--muted); font-size: 12px; }
 .quick-play .qp-link:hover, .quick-play .qp-link:focus-visible { color: var(--text); outline: none; border-color: var(--cyan); }
-.first-run { position: absolute; left: 44px; bottom: 76px; width: min(320px, 40vw); padding: 10px 14px 12px; border-left: 3px solid var(--orange); }
+.first-run { position: absolute; right: 36px; top: 116px; width: min(360px, 40vw); padding: 10px 14px 12px; border-left: 3px solid var(--orange); }
 .first-run .kicker { font: 700 11px var(--font-display); letter-spacing: 0.16em; color: var(--orange); text-transform: uppercase; }
 .first-run p { margin: 4px 0 10px; font-size: 14px; line-height: 1.4; }
 .first-run-acts { display: flex; gap: 8px; }
@@ -1354,8 +1354,8 @@ html.touch #feed { transform: scale(0.85); transform-origin: top right; }
   #menu .screen.home { padding: 14px 24px 56px; }
   .logo { font-size: clamp(30px, 5vw, 44px); }
   .logo-sub { margin-top: 4px; font-size: 11px; }
-  .nav { gap: 5px; margin-top: 12px; width: min(280px, 44vw); }
-  .nav button { font-size: 16px; padding: 7px 14px; min-height: 40px; }
+  .nav { gap: 4px; margin-top: 12px; width: min(280px, 44vw); }
+  .nav button { font-size: 16px; padding: 6px 14px; min-height: 37px; }
   .featured { right: 20px; bottom: 56px; width: min(300px, 38vw); }
   .featured-pic { height: 110px; }
   .featured .card-plan { display: none; }
@@ -1370,7 +1370,9 @@ html.touch #feed { transform: scale(0.85); transform-origin: top right; }
   .quick-play .qp-sub { margin: 4px 0 8px; font-size: 12px; }
   .quick-play .qp-mode { padding: 10px; }
   .quick-play .qp-foot { margin-top: 8px; }
-  .first-run { left: auto; right: 20px; bottom: auto; top: 70px; width: min(300px, 38vw); padding: 8px 10px 10px; }
+  /* The offer takes the featured map's place (there's no room for both beside the menu). */
+  .home.first-visit .featured { display: none; }
+  .first-run { top: auto; right: 20px; bottom: 56px; width: min(300px, 38vw); padding: 8px 10px 10px; }
   .first-run p { margin: 2px 0 8px; font-size: 12px; }
   .first-run-acts button { padding: 6px 10px; font-size: 12px; }
   .menu-footer { padding: 0 20px; }
@@ -1444,4 +1446,10 @@ html.touch #menu .screen.characters, html.touch #menu .screen.profile { padding-
 @media (max-width: 600px) {
   #rl-card b { font-size: 22px; }
   .rl-pick-card img { width: 56px; height: 56px; }
+}
+/* Shorter still (a phone sideways with the browser's bars, ~340 px): the six buttons in two columns, above the footer
+   (touch keeps its 40 px finger height). */
+@media (max-height: 380px) {
+  .nav { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; margin-top: 8px; width: min(340px, 46vw); }
+  .nav button { font-size: 13px; padding: 4px 10px; gap: 8px; min-height: 34px; letter-spacing: 0.04em; }
 }

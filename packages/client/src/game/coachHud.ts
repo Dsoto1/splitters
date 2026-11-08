@@ -36,7 +36,7 @@ export class CoachHud {
     p.className = 'coach-panel';
     p.innerHTML =
       '<div class="tut-head"><span class="tut-kicker">Tutorial</span><span class="tut-count"></span>' +
-      `<button type="button" id="tutorial-skip" class="tut-skip" title="Skip the tutorial and go back to the main menu">Skip${touch ? '' : ' <small>Esc · Skip</small>'}</button></div>` +
+      `<button type="button" id="tutorial-skip" class="tut-skip" title="Skip the tutorial and go back to the main menu">Skip${touch ? '' : ' <small>Esc pauses</small>'}</button></div>` +
       `<div class="tut-dots">${TUTORIAL_STEPS.map(() => '<i></i>').join('')}</div>` +
       '<b class="tut-title"></b><p class="tut-text"></p><div class="tut-bar"><i></i></div>';
     p.querySelector('#tutorial-skip')!.addEventListener('click', (e) => {

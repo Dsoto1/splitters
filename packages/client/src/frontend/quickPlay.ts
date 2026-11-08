@@ -57,7 +57,8 @@ export function quickSetup(mode: QuickMode, map: MapDocument, key: string, devic
 
 /** What Quick Play remembers in this browser: the mode chosen last, and the map it played. */
 export interface QuickPrefs {
-  mode: QuickMode;
+  /** Null until Quick Play has been used here. */
+  mode: QuickMode | null;
   last: string | null;
 }
 
@@ -66,9 +67,9 @@ const KEY = 'tiletrigger.quickPlay';
 export function loadQuickPrefs(): QuickPrefs {
   try {
     const raw = JSON.parse(localStorage.getItem(KEY) ?? 'null') as Partial<QuickPrefs> | null;
-    return { mode: QUICK_MODES.includes(raw?.mode as QuickMode) ? (raw!.mode as QuickMode) : 'core.tdm', last: typeof raw?.last === 'string' ? raw.last : null };
+    return { mode: QUICK_MODES.includes(raw?.mode as QuickMode) ? (raw!.mode as QuickMode) : null, last: typeof raw?.last === 'string' ? raw.last : null };
   } catch {
-    return { mode: 'core.tdm', last: null };
+    return { mode: null, last: null };
   }
 }
 

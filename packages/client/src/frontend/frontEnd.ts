@@ -696,16 +696,17 @@ export class FrontEnd {
       this.go('play');
     });
     requestAnimationFrame(featuredPic.draw);
+    const offer = this.firstRun();
     return el(
       'div',
-      { class: 'screen home' },
+      { class: `screen home${offer.length ? ' first-visit' : ''}` },
       el('h1', { class: 'logo' }, el('span', { class: 'tile', textContent: 'Tile ' }), el('span', { class: 'trigger', textContent: 'Trigger' })),
       el('p', { class: 'logo-sub', textContent: 'Make. Play. Die. Repeat.' }),
       el('p', { class: 'logo-version', textContent: `v${__APP_VERSION__}` }),
       nav,
       this.profileEntry(),
       card,
-      ...this.firstRun(),
+      ...offer,
       ...(this.quickOpen ? [this.quickPanel()] : []),
     );
   }
@@ -739,7 +740,7 @@ export class FrontEnd {
     later.addEventListener('click', () => {
       this.firstRunOn = false;
       document.getElementById('first-run')?.remove();
-      this.setStatus('The tutorial is in Quick Play and in Options → General whenever you want it.');
+      document.querySelector('.screen.home')?.classList.remove('first-visit');
     });
     return [
       el(
@@ -756,7 +757,7 @@ export class FrontEnd {
     this.quickOpen = true;
     this.firstRunOn = false;
     this.go('home');
-    const mode = loadQuickPrefs().mode;
+    const mode = loadQuickPrefs().mode ?? 'core.tdm';
     document.querySelector<HTMLButtonElement>(`#quick-play [data-mode="${mode}"]`)?.focus();
   }
 
