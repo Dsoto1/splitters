@@ -845,6 +845,15 @@ big matches), so they pass side by side. And a bot strafing in a fight is no lon
 the same second (they reverse by themselves when something stops them: the stuck recovery only threw away its cover and
 route).
 
+## Low roofs and large bodies (Bot AI Phase C follow-up, part 2)
+The navmesh is built for the standard 1.8 m body. Ground with less headroom than a large body (2.12 m) stands in, and
+a large body's radius round it, is marked `LOW_AREA` (`nav/solo.ts`). A large body's route search (`NavWorld.findPath`
+`tall`) prices it at `LOW_ROOF_COST` = 4 a metre (`nav/index.ts`; the owner's moderate price, 2026-11-08; it was
+1,000, any way round, in 0.9.0). So a large bot goes round a low stretch when the way round costs less than four times
+its length, and crouches through it otherwise; a route that goes under (or starts or ends there) turns on its duck
+(`BotBrain.lowRoute`, `mustDuck`). Small and standard bodies route as before. `bot-report` prints stuck recoveries by
+body size, ducking, and tall routes under a low roof. Measured: BOT_AI_PLAN.md, "Part 2" and "The moderate price".
+
 ## Routes along a group's corridor, and the search budget (Bot AI Phase C item 4)
 The team brain's groups take different corridors to the objective (Phase B). A bot took its corridor by its via and
 then the shortest way on, and was back on the main way by the trip's middle (60 % of a team on the busiest way on the
