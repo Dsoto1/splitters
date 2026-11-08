@@ -58,6 +58,12 @@ distance, and a body kept for the next player of its look stands up fresh.
 - `pnpm bot-report <maps> --mode=core.roulette [--roulette=lunar,rerolls,swap,variety]` reports kills by character and
   body size, picks and rerolls.
 
+**Bot AI Phase C follow-up, part 1** (docs/BOT_AI_PLAN.md, "Phase C follow-up"): a bot standing on a ledge outside a
+wall, where the walkable ground nearest it was the room behind the wall (Capitol Mall's office sills), now steps off
+toward ground it can walk to instead of pushing into the wall; bots following their group's corridor are counted on
+it, so the team spreads its groups by them. Measured on 48 CTF matches: as before.
+(Large bots ducking under low roofs is held back for a decision: fewer stuck bots, but fewer captures.)
+
 **Bot AI Phase C, items 1-4** (docs/BOT_AI_PLAN.md, "Phase C items 1-4, measured"; docs/BOTS.md):
 - Bots drop off ledges, jump gaps and jump up onto ledges as players do: links found at load and each checked by
   playing it through the real movement code; flankers, scouts, snipers and Arena bots use them most, and snipers look

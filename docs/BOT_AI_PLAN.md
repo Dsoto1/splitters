@@ -627,6 +627,74 @@ playtest (`check/bots-c` CI and the 4 v 4 numbers in HANDOFF).
 Qasr Medina's the most (a second or so: its flat roofs' 280 drop candidates). Links are cached per navmesh, so the next
 match on a map pays nothing.
 
+### Phase C follow-up (part 1 landed 2026-11-07: off a sill, corridor followers counted; the duck held back)
+The coordinator's list after items 1-4 landed: route spread, CTF captures, the Range's 8 v 8, stuck recoveries,
+Capitol Mall's office. Baselines: main 0531b29c (Phase C items 1-4 and the day's fixes), and 0d03c3bd (before items
+1-4). The CTF sample: the eight maps of "Phase C items 1-4, measured", **seeds 1-6** (48 matches, 180 s; seeds 1-3
+alone were too few to tell captures apart).
+
+**Part 1, landed (measured against main 0531b29c):**
+- **Off a sill outside a wall** (`NavWorld.wayOnto` with a walk-clear check): a bot on ground the navmesh doesn't
+  cover took the nearest polygon within 2 m as its start even when it was behind a wall, and its route went through
+  the wall. Capitol Mall's office trap at (140, 4, 8) was this (150-300 stuck recoveries a match before main's small
+  fixes). General code, no map change. `parkour.test.ts`: a bot put on that sill gets off.
+- **Corridor followers count on their corridor** (`BotBrain.byCorridor`): bots routing along a group's corridor by
+  `pathAlong` weren't counted by `BotBrain.corridor`, so neither the team brain's crowd price nor bot-report's "how the
+  bots went" saw them.
+
+| Sample | main | Part 1 | With the duck (held back) |
+|---|---|---|---|
+| CTF, 48 matches: captures (flag takes); matches with one | 48 (265); 30 | 50 (264); 30 | 40 (268); 24 |
+| CTF: captures per take | 0.18 | 0.19 | 0.15 |
+| CTF: stuck recoveries a bot-minute | 1.32 | 1.31 | 1.18 |
+| CTF: busiest way; idle out of a fight; frozen | 59 %; 5.3 %; 0.8 % | 59 %; 5.3 %; 0.8 % | 61 %; 5.4 %; 0.7 % |
+| Team Deathmatch (Eagle Spires, Twin Spires, Riot Junction; seeds 1-4): stuck a bot-minute; kills a minute | - | - | 0.90 → 0.90; 23.3 → 24.9 |
+| Breakthrough Range 8 v 8, seeds 1-24: broke through; sectors | 19; 65 of 72 | - | 18; 61 of 72 |
+
+Part 1 plays main's matches in 41 of the 48 CTF matches exactly (the sill and the counting rarely come up on this
+sample). The Team Deathmatch and Range columns are the branch with the duck; both within their noise (the Range: 40
+against 38 over 48 seeds before). CI: `check/bots-c2`.
+
+**Held back: large bots duck** (`BotBrain.mustDuck`, commit 2c586e5a, reverted in c69cd330): a body taller than the
+navmesh's 1.8 m (large looks, 2.12 m) crouches where there's no room to stand a step ahead (or a step up) but room to
+crouch. It does what it was for: Diamond Park's stuck recoveries 159 → 79 a match (the dugout steps at (8, 0, -8) and
+(24, 0, -8)), all CTF 1.32 → 1.18 a bot-minute. But captures fell 48 → 40, Diamond Park 13 → 9 over seeds 1-12 (flag
+takes the same, 80 and 79: large bots now get down the dugout steps instead of giving up there, and carriers that
+crouch don't sprint), and botCtf.test's two capture-within-five-minutes matches (Diamond Park seed 1, Sunken Kingdom
+seed 3) went without one; without the duck both pass. It's a gameplay call (bots that duck as a player does, against
+a few captures); the owner's. To try next with it: large bots route round low roofs (a cost on polygons under low
+headroom) rather than crouching through.
+
+**CTF captures per take, the ablations** (main 0531b29c with each part of items 1-4 switched off in a scratch build;
+48 matches each):
+
+| Build | Captures (takes) | Captures per take | Matches with one | Stuck a bot-minute |
+|---|---|---|---|---|
+| Before items 1-4 (0d03c3bd) | 61 (255) | 0.24 (seeds 1-3: 0.26, as measured before) | 26 | 1.34 |
+| main (items 1-4) | 48 (265) | 0.18 | 30 | 1.32 |
+| main without parkour links | 39 (269) | 0.15 | 24 | 1.31 |
+| main without keeping right and the strafing rule | 55 (256) | 0.21 | 30 | 1.43 |
+| main without either | 44 (258) | 0.17 | 23 | 1.38 |
+
+Neither explains it. Parkour off is no better (worse, if anything); keeping right off gets about half the gap back, but
+with both off it's back at main's figure, so that half is noise: at 48 matches captures move by about ±10 between
+builds that differ in one rule (one changed decision reshuffles a match). The drop itself, 0.24 → 0.18, is under two
+standard errors. The strafing rule does what it was for (stuck 1.43 → 1.32 with it). Not looked at: ground that goes
+(item 2) and the corridor routes and search budget (item 4); a cleaner measure than captures (a carrier's run home:
+distance made before it drops, by map) would need fewer matches. **No change made.**
+
+**What didn't (earlier on the branch):** **bots in no group taking a corridor of their own** (the cheapest by the crowd
+price, claimed at once so a respawn wave spreads, only corridors within 1.3 times the shortest, followed all the way by
+`pathAlong`): CTF captures 26 → 13, flag takes 155 → 94, and the busiest way 60 → 72 % (the length cap left Qasr Medina
+one corridor; the old left/right lanes spread loose bots better). Reverted (`5275543d`).
+
+**Route spread, still open:** the busiest way is about 60 % on main. Only groups (trips of 180 m and more) follow
+corridors; loose bots take left/right lanes, which re-join the main way by the trip's middle. On a two-way trip the
+busiest way can only drop under half with an even split. Next to try: loose side-lane bots routed by a corridor's
+via (the point furthest from the other corridors) instead of `laneWaypoint`, measured on the 48 matches for captures.
+
+**Next step:** the owner's call on the duck; then route spread.
+
 ## Phase D: polish and tools
 1. **Memory:**
    - last-known enemy spots kept for a while;
