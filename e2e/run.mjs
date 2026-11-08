@@ -6446,6 +6446,8 @@ async function startHostService({ hubPort, controlPort, env = {}, idle = false }
     CONTROL_PORT: String(controlPort),
     HOST_STATE_DIR: state,
     STATUS_EVERY: '0',
+    // (Its match stays on its map: no vote between matches.)
+    MAP_VOTE: '0',
     ...env,
   });
   return state;
@@ -7464,7 +7466,8 @@ function report() {
 
 try {
   start('pnpm', ['--filter', '@tiletrigger/client', 'exec', 'vite', 'preview', '--port', CLIENT_PORT, '--strictPort']);
-  start('pnpm', ['--filter', '@tiletrigger/server', 'start'], { PORT: String(SERVER_PORT), BOT_FILL: '3', QUIET_STATS: '1' });
+  // (The flows' server stays on its map: no vote between matches travelling it elsewhere mid-run.)
+  start('pnpm', ['--filter', '@tiletrigger/server', 'start'], { PORT: String(SERVER_PORT), BOT_FILL: '3', QUIET_STATS: '1', MAP_VOTE: '0' });
   await waitForHttp(CLIENT);
   await sleep(1500);
   const browser = await chromium.launch({ args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
