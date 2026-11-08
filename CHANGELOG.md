@@ -15,6 +15,45 @@ your browser was still loading it.
 **Flaky e2e checks fixed at the cause** (tests only): mobile (bots knocking the player into the air before the jump
 tap), physicsfx (bodies dropped and blasts set off by cover, a race with bots respawning, range bots in front of the glass), characters3 (a weapon key pressed while only the view
 lagged) and weaponsets (a respawn picking up last life's dropped gun).
+**Team kills show as team kills, and reward nothing** (owner's bug report, 2026-11-08: "Teamkills should not count
+towards a kill streak (should end one) or show anything rewarding. It should actually show in the upper right that it
+was a TK."):
+- **The kill feed marks it.** With friendly fire on, downing a teammate shows in the kill feed (upper right) with a
+  **TK** tag and a warning-yellow edge, for everyone who sees the feed.
+- **Nothing rewarding.** No kill or points for you or your side, no kill marker or kill-confirm sound, no multi-kill
+  call, no headshot mark, no "kills in a row" or streak burst, no streak reward (UAV and the rest), no revenge or
+  nemesis callout, nothing toward the end-of-match awards (Longest Streak, Nemesis, Most Revenge), no Roulette credit
+  (bonuses, rerolls, kills toward a streak pick) and no mode credit. It still counts as your teammate's death.
+- **It ends your streak.** A team kill sets your kill streak back to nothing (and Roulette's kills toward a streak pick).
+- **Every way it can happen:** rounds, rocket and other blasts, grenades, running a teammate over, turrets, burns and
+  a barrel you set off; by players and bots; in every team mode. Running a teammate over now needs friendly fire on and
+  then hurts like any other friendly fire (it never did before). Your own deaths are unchanged.
+
+**Breakthrough Range is a test map again** (owner, 2026-11-08): hidden from every list (Play, Match setup, Quick
+Play, rotations, the host's picker, the vote). Breakthrough is played on Iron Coast.
+
+**MapMaker: Play from here, the plan view, the card shot** (MapMaker overhaul Phase 3, items 1, 2 and 8):
+- **Play from here** (Shift+F5, or ▶ Here beside PLAY TEST): a test match with you standing on the floor or ground
+  below the camera, facing where it looks (the nearest spot with room to stand, within 4 m). Where there's nowhere to
+  stand (nothing below, no room, too steep, outside the boundary) it says why instead. Esc (or the pause menu's Back to
+  MapMaker) brings you back to the same view, with the selection and undo as they were.
+- **The plan view** (K, or Plan in the top bar): the level being edited from straight above, cut a little above its
+  floor so rooms show inside, with the tiles outlined (the level below faint) and icons for spawns (in their team's
+  colour), objectives, flags, hills and pickups. The level selector picks the level; select and move things as usual;
+  the wheel zooms, a right drag or WASD pans, Home fits the map. **Export PNG** saves the plan with a key.
+- **The card shot** (Map properties → Card shot): set the menu card's shot from the view, at eye level (1.7 m over the
+  ground or floor under the camera) unless you untick it, seen through the card's own 16:9 frame and lens; Preview
+  shows it again. It is stored in the map as a camera (map format v30, `metadata.cardCamera`; older maps load as they
+  were), and the card picture is rendered from it by the capture tool.
+**Fixes**
+- Debris from a vehicle or turret blowing up no longer falls through the ground: its chunks start above it, and any
+  that get under the world anyway are cleared away.
+
+**Bots:** large bots crouch through a short low roof (a dugout's stair top, a low doorway) when the way round is long,
+and go round a long one (docs/BOT_AI_PLAN.md, "The moderate price"; in 0.9.0 they went round however far). Measured on
+48 CTF matches and a Team Deathmatch sample: the same stuck recoveries and captures; Diamond Park's large bots crouch
+through its dugout steps, about 10 s a match.
+
 **MapMaker: feedback while building** (MapMaker overhaul Phase 1, part A; docs/MAPMAKER_OVERHAUL_PLAN.md):
 - **The ghost says why.** Beside the pointer, before you click, a refused tile or set piece says why in a few words
   ("Overlaps the Corridor on Ground", "Past the build limit (16 levels up or down)"; the status line has the whole
@@ -230,9 +269,10 @@ distance, and a body kept for the next player of its look stands up fresh.
 wall, where the walkable ground nearest it was the room behind the wall (Capitol Mall's office sills), now steps off
 toward ground it can walk to instead of pushing into the wall; bots following their group's corridor are counted on
 it, so the team spreads its groups by them. Measured on 48 CTF matches: as before.
-(Large bots ducking under low roofs is held back for a decision: fewer stuck bots, but fewer captures.)
+(Large bots ducking wherever there's no room to stand was held back: fewer stuck bots, but fewer captures; part 2 below
+went in instead.)
 
-**Bot AI Phase C follow-up, part 2** (docs/BOT_AI_PLAN.md, "Part 2"; on `wip/bots-lowroof`, held back for the owner):
+**Bot AI Phase C follow-up, part 2** (docs/BOT_AI_PLAN.md, "Part 2"):
 large bots go round roofs too low for them to stand under (a dugout's stair top, a low doorway) instead of walking into
 them and sticking there, and crouch through one only where nothing else gets them where they're going. Small and
 standard bots keep their routes. Measured on 48 CTF matches: about 15 % fewer stuck recoveries, no ducking, but fewer captures

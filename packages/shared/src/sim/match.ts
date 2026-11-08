@@ -438,6 +438,8 @@ export interface Combatant {
   spawnedAt?: number;
   /** Spawn protection runs until this tick (0: none, or dropped by firing): Match.shielded. */
   shieldUntil?: number;
+  /** MapMaker's Play from here: where this player's lives start (feet, facing) until play begins (Match.startHere). */
+  startAt?: { pos: Vec3; yaw: number; pitch: number };
 }
 
 interface Projectile {
@@ -1461,6 +1463,20 @@ export class Match {
   }
 
   /** `team`: the faction to join (default: the rules' team assignment). */
+  /**
+   * MapMaker's Play from here (editor/playFromHere.ts): put a player at a spot now, feet there and facing that way,
+   * and start any life before play begins there too (the countdown's). Once play begins, the spawn points again.
+   */
+  startHere(c: Combatant, at: { pos: Vec3; yaw: number; pitch: number }): void {
+    c.startAt = { pos: { ...at.pos }, yaw: at.yaw, pitch: at.pitch };
+    if (!c.alive) return;
+    // Out of a race car or the drop plane the spawn may have put them in: on foot, where asked.
+    this.leaveMount(c, false);
+    c.move = { pos: { ...at.pos }, velY: 0, grounded: false };
+    c.yaw = at.yaw;
+    c.pitch = at.pitch;
+  }
+
   addHuman(name: string, look?: string, team?: string | null): Combatant | null {
     const c = this.addCombatant('human', name, team);
     if (c) this.chooseLook(c, validLookId(look));
@@ -5107,7 +5123,8 @@ export class Match {
       const lx = rel.x * Math.cos(m.yaw) - rel.z * Math.sin(m.yaw);
       const lz = rel.x * Math.sin(m.yaw) + rel.z * Math.cos(m.yaw);
       if (Math.abs(lx) > m.def.half[0] + PLAYER.radius || Math.abs(lz) > m.def.half[2] + PLAYER.radius || Math.abs(c.move.pos.y - m.pos.y) > 1.5) continue;
-      if (driver && driver !== c && !this.hostile(driver, c)) continue;
+      // Teammates only with friendly fire on (canHurt): then it is a team kill like any other.
+      if (driver && driver !== c && !this.canHurt(driver, c)) continue;
       m.runOver.set(c.slot, this.tick + 30);
       this.push(c, { x: dir.x + (lx >= 0 ? 1 : -1) * Math.cos(m.yaw) * 0.6, y: 0.4, z: dir.z - (lx >= 0 ? 1 : -1) * Math.sin(m.yaw) * 0.6 }, Math.abs(m.speed) * 0.8);
       this.damage(c, Math.abs(m.speed) * 5, driver, 'core.roadkill');
@@ -5565,25 +5582,34 @@ export class Match {
     victim.alive = false;
     victim.health = 0;
     if (!victim.npc) this.dropWeapon(victim);
-    this.pendingEvents.push({ e: 'kill', killer: killer?.slot ?? null, victim: victim.slot, weapon, ...(head ? { hs: 1 as const } : {}) });
-    // Only players score; NPC kills of players count as the player's death.
-    // Kills never go down: a team kill just earns nothing (no kill, no streak).
+    // A team kill (friendly fire on: a teammate downed by your round, blast, grenade, vehicle, turret or burn; every
+    // source ends here): marked in the kill feed (`tk`) for everyone, and nothing rewarding. No kill, no score, no
+    // streak (it ends the killer's), no streak reward, no kill confirmation, no callout or award credit, no Roulette
+    // or mode credit. Kills never go down.
     const teamKill = !!killer && killer !== victim && !this.hostile(killer, victim);
+    this.pendingEvents.push({ e: 'kill', killer: killer?.slot ?? null, victim: victim.slot, weapon, ...(head && !teamKill ? { hs: 1 as const } : {}), ...(teamKill ? { tk: 1 as const } : {}) });
+    // Only players score; NPC kills of players count as the player's death.
     if (killer && !killer.npc && !teamKill) killer.kills++;
     if (killer && killer !== victim && !teamKill) killer.bot?.onKill(this.tick);
     victim.streak = 0;
-    if (killer && killer !== victim && !killer.npc && killer.alive && !teamKill) {
+    if (teamKill) {
+      killer!.streak = 0;
+      this.awards.endStreak(killer!.slot);
+      this.roulette?.endStreak(killer!);
+    } else if (killer && killer !== victim && !killer.npc && killer.alive) {
       killer.streak = (killer.streak ?? 0) + 1;
       this.streakReward(killer);
     }
+    // Whoever gets credit for it: nobody for a team kill (the death still counts).
+    const credited = teamKill ? null : killer;
     if (!victim.npc) {
       // Awards and callouts (sim/awards.ts): a scoring kill, else just a death (a fall, their own grenade, a team kill).
-      const scored = !!killer && killer !== victim && !killer.npc && !teamKill;
-      for (const call of this.awards.kill(scored ? killer!.slot : null, victim.slot)) this.pendingEvents.push({ e: 'callout', ...call });
+      const scored = !!credited && credited !== victim && !credited.npc;
+      for (const call of this.awards.kill(scored ? credited!.slot : null, victim.slot)) this.pendingEvents.push({ e: 'callout', ...call });
     }
     if (victim.npc) {
       victim.npc.removeAt = this.tick + TICK_RATE * 2;
-      this.encounters.onNpcKilled(victim.slot, killer?.slot ?? null);
+      this.encounters.onNpcKilled(victim.slot, credited?.slot ?? null);
       return;
     }
     victim.deaths++;
@@ -5599,8 +5625,8 @@ export class Match {
     // Suicides (falls, own grenades, traps) are just a death, counted for stats.
     if (!killer) victim.selfKills++;
     this.scenario.playerKilled(victim.slot, killer?.slot ?? null);
-    if (this.isLeader(victim)) this.leaderDown(victim, killer);
-    this.mode?.onKill(victim, killer);
+    if (this.isLeader(victim)) this.leaderDown(victim, credited);
+    this.mode?.onKill(victim, credited);
     if (this.roulette) {
       const scorer = killer && !killer.npc && killer !== victim && !teamKill ? killer : null;
       const r = this.roulette.onKill(victim, scorer, !!scorer);
@@ -5608,8 +5634,8 @@ export class Match {
       if (scorer && r.swap && scorer.alive) this.swapLook(scorer, r.swap);
       if (victim.kind === 'bot') this.roulette.botChoose(victim, this.botBodyStyle(victim));
     }
-    if (!killer || killer.npc || this.rules.scoreLimit <= 0) return;
-    const score = this.teams && killer.faction ? (this.teamScores().get(killer.faction) ?? 0) : killer.kills;
+    if (!credited || credited.npc || this.rules.scoreLimit <= 0) return;
+    const score = this.teams && credited.faction ? (this.teamScores().get(credited.faction) ?? 0) : credited.kills;
     if (score >= this.rules.scoreLimit) this.endRound();
   }
 
@@ -5830,13 +5856,15 @@ export class Match {
     const leader = this.fireteamSpawn(c);
     const squad = leader !== undefined ? leader : this.teams && this.rules.squadSpawn !== false && this.rng() < 0.7 ? this.squadSpawnSpot(c) : null;
     if (!squad && best) this.spawnUsed.set(best, this.tick);
-    const sp = squad ?? best ?? { pos: { x: 0, y: 0, z: 0 }, yaw: 0 };
+    // Play from here: until play begins, this player's lives start where MapMaker's camera was (startHere).
+    const at = c.startAt;
+    const sp = at ? { pos: at.pos, yaw: at.yaw } : (squad ?? best ?? { pos: { x: 0, y: 0, z: 0 }, yaw: 0 });
     if (rotating && c.faction) this.spawnSides.note(c.faction, sp.pos);
     c.streak = 0;
     c.order = undefined;
     c.move = { pos: { ...sp.pos }, velY: 0, grounded: false };
     c.yaw = sp.yaw;
-    c.pitch = 0;
+    c.pitch = at?.pitch ?? 0;
     c.health = c.maxHealth;
     c.armor = 0;
     c.alive = true;
@@ -5884,6 +5912,8 @@ export class Match {
     const roll = rl?.rollOf(c);
     this.pendingEvents.push({ e: 'spawn', s: c.slot, ...(relook ? { l: c.look } : {}), ...(roll ? { j: roll === 'jackpot' ? (1 as const) : (2 as const) } : {}), ...(rl ? { nx: rl.upcoming(c, 3) } : {}) });
     if (rl && c.kind === 'bot') rl.botChoose(c, this.botBodyStyle(c));
+    // Play from here: on foot where you asked (no grid, no plane).
+    if (at) return;
     // Race: straight into your vehicle, on the grid or at your last checkpoint.
     this.race?.onSpawn(c.slot);
     // Air drop maps start you (or always spawn you) in the transport plane.
@@ -6243,7 +6273,11 @@ export class Match {
     // Drop routes start from their first point as play begins (off the map's edge, for a run-in).
     for (const m of this.mounts) if (m.route) m.routeT0 = this.tick;
     this.phase = 'playing';
-    for (const c of this.combatants()) c.spawnedAt = this.tick;
+    for (const c of this.combatants()) {
+      c.spawnedAt = this.tick;
+      // Play from here: from now on, lives start at the spawn points.
+      c.startAt = undefined;
+    }
     this.phaseEndTick = this.roundEndTick();
     this.mode?.reset();
     this.zombies?.reset();

@@ -8,6 +8,42 @@ A briefing for the next Claude session or agent picking up this repo. Read
 **Owner rule for the queue (2026-11-08):** new ideas go to the END of the queue. Only bugs or problematic gameplay
 jump ahead, or something the owner explicitly bumps.
 
+**Release 0.9.0 (2026-11-08, owner-approved "wait for the passenger fix, then release together"):** main 4d8f205
+(green on `check/release-090`, run 42502393727; three e2e shards failed first in flows the release doesn't touch,
+arsenal, weaponsets and hostgame, as on other branches that hour, and passed on a re-run of the failed jobs). CI
+released v0.9.0 from that build (tag and release with its assets). Fireteams part 1 and MapMaker's measure tool and
+turning by mouse went in with it.
+
+**Team kills (`wip/tk`, 2026-11-08; the owner's bug report).** "Teamkills should not count towards a kill streak
+(should end one) or show anything rewarding. It should actually show in the upper right that it was a TK."
+- **Where:** every kill goes through `Match.kill` (bullets, splash, grenades, roadkill, turrets, burns, barrels, a
+  sealed crew's wreck), so the rule is there. A team kill (`killer` not hostile to the victim, not themselves) emits
+  `{ e: 'kill', ..., tk: 1 }` (never `hs`), ends the killer's streak (`streak = 0`, `MatchAwards.endStreak`,
+  `RouletteDirector.endStreak`), and credits nobody: `credited = null` for awards/callouts, the mode's `onKill`, the
+  leader bounty, NPC encounters and the score-limit check. Before, the killer's streak was kept (not ended).
+- **Client:** `session.ts` (no kill confirm, no headshot mark, `streakMoment` drops the killer's life kills),
+  `sessionAudio.ts` (no confirm sounds or multi-kill), `hud.kill(..., teamKill)`: `.tk` line with a `TK` tag
+  (`#feed .tk`, `--warning`).
+- **Roadkill** now reads `canHurt` (it read `hostile`): with friendly fire on a vehicle hurts teammates too (it never
+  did); off, unchanged.
+- **Tests:** `packages/shared/test/teamKill.test.ts` (each source fired for real by a person and a bot: rifle, rocket
+  blast, frag, run over, MG turret, flamethrower burn, a barrel shot; the same on an enemy still scores; FF off and
+  half; every team mode incl. Forts in its fight phase; awards; Roulette with teams; self-kills);
+  `packages/client/test/teamKill.test.ts` (sounds); e2e `teams` → `friendlyFireChecks` → `teamKillCheck` (`?test=1`:
+  a TK primed one kill short of the first burst shows the TK feed line and no burst, message or kill marker).
+- **Breakthrough Range hidden again** (`maps/test_breakthrough.json` `metadata.testOnly`, ticked in the real MapMaker:
+  Import, a click on Map properties' "Test map", Export, revision 6); its card picture removed (content:check: test
+  maps ship none). e2e `breakthrough` reaches it by `?testmap=test_breakthrough`; mapIndexPlugin and server testMaps
+  expect it hidden. bot-report still plays it by name (the HANDOFF commands); its suites skip test maps.
+  (`maps/test_breakthrough.json` is no other lane's claim; this branch's edit to it lands with it, so no claim stays open.)
+**Debris through the world fixed; low roofs at the moderate price (`wip/debris-lowroof`, 2026-11-08).**
+- **Debris:** a vehicle or turret's blast scattered chunks from under the terrain's surface (a one-sided mesh), and they
+  fell out of the world. Chunks now start clear of the ground (`EffectsWorld.clearOfGround`), and any that still get
+  20 m under the level are removed (`belowWorld`). "Fixed (2026-11-08)" further down; `debrisGround.test.ts`.
+- **Low roofs:** large bots' routes price ground under a low roof at `LOW_ROOF_COST` = 4 a metre (was 1,000, on main
+  since 0.9.0): measured, Diamond Park only plays differently (captures 10 → 7, takes 69 → 85 over 12 seeds, stuck the
+  same); Bot AI Phase C follow-up below.
+
 **Passengers at speed fixed (`wip/passengers`, 2026-11-08; the owner's bug report, top priority).** "Those seated don't
 move in lock step with the vehicle, their bodies drift back ... hearing their footsteps instead of an engine sound."
 - **Root cause:** a rider was drawn from their own pose, snapshot-interpolated 100 ms behind the server
@@ -69,11 +105,25 @@ The workflow is unchanged (CLAUDE.md):
 - **Disk:** each session's container is its own; remove a worktree once its branch has landed.
 
 - Claimed: `packages/client/src/editor/**` and `packages/shared/src/editor/**` (Phase 3 part A, set pieces part 5), MapMaker lane, 2026-11-08.
-- Claimed: the next `MAP_FORMAT_VERSION` bump (the card-shot camera, `wip/mapmaker-p3a`), MapMaker lane, 2026-11-08.
-- Claimed: `maps/sandfall_colosseum.json` (rebuild), `maps/step_temple.json` and `maps/shingle_point.json` (card camera only), MapMaker lane, 2026-11-08.
+- Claimed: `maps/sandfall_colosseum.json` (rebuild), MapMaker lane, 2026-11-08.
 - Claimed: the map schema's backdrop Scenery list (a new value `volcano`, no format bump; `wip/mapmaker-sandfall`), MapMaker lane, 2026-11-08.
 - Claimed: `maps/test_coverage.json` (the new set pieces and Arena kit tiles, through MapMaker; `wip/mapmaker-setpieces`), MapMaker lane, 2026-11-08.
+- Claimed: map format v31 (groups and note pins, chained after v30; `wip/mapmaker-p3b`), MapMaker lane, 2026-11-08.
+- Claimed: map format v32 if needed (the finer terrain grid / Change grid and the coast border side; next free MapMaker slot), MapMaker lane, 2026-11-08.
 - Claimed: `content/setpieces/**` and the set-piece alias table (set pieces part 5), MapMaker lane, 2026-11-08.
+- Claimed: `maps/training_range.json` (the Battle Rifle on a rack, through MapMaker), and the new content ids `core.battle_rifle` (weapon code 49) and `core.weapon_battle_rifle` (pickup), gunplay pass 2 (`wip/gunplay-2`), 2026-11-08.
+- Claimed: `maps/<id>.json` for apex_ring, atomic_court, backwoods, blackout, canyon, capitol_mall, citadel, coldwater_gulch, crossroads, dead_reel, dockside_depot, dune_harbor, dustwater, eagle_spires, fernwood_moon, fort_meadow, gallows_yard, hollowmere_manor, iron_coast, jungle_steps, norman_shores, pharaohs_reach, primeval_park, qasr_medina, rail_stockyard, sandgate, sandsweep, serene_city, st_johns, sunken_kingdom, sunstone_crag (their Kenney trees, bushes, hedges and cacti → our species, MapMaker's Replace all driven in the real editor), Environment Phase 2 (`wip/env-p2`), 2026-11-08.
+- Claimed: the new content ids `env.broadleaf.maple`, `env.broadleaf.acacia`, `env.conifer.spruce`, `env.palm.coconut`, `env.palm.leaning`, `env.cactus.saguaro`, `env.shrub.laurel`, `env.hedge.privet`, `env.hedge.yew`; the leaves and bark atlases (`tools/content/env/**`, `content/environment/**`); the border forest and backdrop scenery's trees (`client/src/borderVisuals.ts`, `backdrop.ts`), Environment Phase 2 (`wip/env-p2`), 2026-11-08.
+- Asked of the MapMaker lane (data only, inside its editor claim): Environment Phase 2 adds its species to and retires the Kenney trees, bushes, hedges and cacti from the Nature tables of `client/src/editor/paletteCatalog.ts` (`RETIRED_PROPS`, `GROUND_COVER_SPECIES`, `REPLACEMENTS`), no other editor file; merged with origin/main before landing, 2026-11-08.
+- **Moved to the MapMaker lane (owner's rule: MapMaker work goes there; 2026-11-08):** the editor half of the Iron
+  Coast job, since the lane holds the editor claim: (1) a finer terrain grid (raise the 161-vertices-a-side cap to 321,
+  1.25 m cells on a 380 m map) and a Terrain → Change grid tool that resamples heights, paint and plants; (2) a "coast"
+  border side (`borderSides`: sand and shallow water carry on past the boundary along the shoreline, cliffs taper to low
+  headlands and dunes, forest only inland; scenery only, no collision or nav). Either may need a format bump: take the
+  one after the card camera's. Please note here when they land: the other session then reshapes Iron Coast in MapMaker
+  (natural cliffs, inland drops to slopes, the coast edge on its east and west ends, A1/A2 zone time). Details:
+  docs/map-briefs/iron_coast/DECISIONS_AND_DEVIATIONS.md and the owner's screenshots described in this file's Iron Coast
+  part 2 entry.
 
 **In flight: MapMaker overhaul (other account)** (owner, 2026-11-08: a second session owns this lane;
 docs/MAPMAKER_OVERHAUL_PLAN.md). Branches `wip/mapmaker-*` / `check/mapmaker-*` only.
@@ -86,6 +136,25 @@ docs/MAPMAKER_OVERHAUL_PLAN.md). Branches `wip/mapmaker-*` / `check/mapmaker-*` 
   - bot hints in MapMaker (Phase 4 item 3, and Bot AI Phase D's MapMaker part; the format goes in docs/BOTS.md);
   - Environment Phase 3's MapMaker tools (PROCEDURAL_ENVIRONMENT §11), after the other session's Environment Phase 2
     lands. Please note it here when it does.
+- **The owner's answers (2026-11-08)** to the MapMaker questions so far:
+  - **Keep as built:**
+    - the measure tool on U;
+    - Randomise variants for plant species only;
+    - Randomise resets each session;
+    - the draw estimate stays as is for now;
+    - `?` opens the key list;
+    - the plan view's cut stays;
+    - the plan export shows the five kinds only;
+    - Iron Compound keeps the gantry id, which loads as the bridge.
+  - **To build:**
+    - the jump hint samples the ground along the line;
+    - spawns, pickups, props, vehicles and NPCs over nothing or outside the boundary are refused (a red ghost, no
+      place);
+    - the budget bar moves into the bottom status bar;
+    - Shingle Point's card stays the cliff-top view, backed up so the cliff-top buildings' crest shows;
+    - "fix em all": swap every old big piece that has a set-piece version (town and city gate, pylon, warehouse,
+      hangar, bunker, city crossroads) on every map that uses one, in MapMaker. Each map is claimed first; the other
+      session's maps get asked first.
 - **The split of `editorApp.ts`** (Phase 2) waits until Iron Coast's MapMaker changes (finer terrain grid, Terrain →
   Change grid, a "coast" border side) and the race-mode removal (the race layer reworded to track / NPC traffic) are on
   main. This line will say when it starts. Please say here when those land.
@@ -162,19 +231,16 @@ Phase 1 items 1, 2, 5): the ghost says why, the live budget bar, the `?` key lis
      without keep-right and the strafing rule 0.21, without both 0.17. Neither explains the drop; at 48 matches
      captures move about ±10 between builds, and the drop is under two standard errors. The strafing rule does cut
      stuck recoveries (1.43 → 1.32). Not ablated: ground that goes, corridor routes.
-   - **Part 2, large bots route round low roofs (owner's option a): done, held back for the owner** (`wip/bots-lowroof`
-     @ fc4d701 and its docs commits; green on `check/bots-lowroof`, run 42428308885). BOT_AI_PLAN.md, "Part 2", has the tables.
-     - **How:** the navmesh marks ground with less headroom than a large body (2.12 m) as `LOW_AREA` (`nav/solo.ts`,
-       Recast splits polygons there); tall bodies' searches price it at 1,000 a metre (`findPath` `tall`), small and
-       standard ones don't change. A route that still goes under (no way round, or it starts or ends there) turns on
-       the duck (`lowRoute`, `mustDuck`). `botLowRoof.test.ts`.
-     - **Measured against main b8854c6:** stuck 1.31 → 1.12 a bot-minute (large bodies 1.54 → 1.01; Diamond Park 2.17
-       → 1.04 over seeds 1-12), ducking 0.0 s a match; TDM stuck 1.04 → 0.76, kills the same; the Range 19 → 19.
-       **But captures 50 → 43** (48 matches), all of it Diamond Park and Qasr Medina: Diamond Park 13 → 5 over seeds
-       1-12, flag takes up, returns 36 → 51 (large bodies' 6 → 17). Un-stuck large defenders, not crouching carriers.
-       A moderate price (4 a metre) gave Diamond Park 9 captures, ducking 6 s a match.
-     - **The owner's call:** land it, land it with the moderate price, or neither. Not landed: the goal was the stuck
-       reduction without the capture loss.
+   - **Part 2, large bots route round low roofs (owner's option a): on main since 0.9.0, at the moderate price since
+     2026-11-08** (`wip/bots-lowroof` @ fc4d701 reached main at the full price while these notes said held back; the
+     owner then chose the moderate price, `wip/debris-lowroof`). BOT_AI_PLAN.md, "Part 2" and "The moderate price".
+     - **How:** the navmesh marks ground with less headroom than a large body (2.12 m) as `LOW_AREA` (`nav/solo.ts`);
+       tall bodies' searches price it at `LOW_ROOF_COST` = 4 a metre (`nav/index.ts`; was 1,000), small and standard
+       ones don't change. A route that still goes under turns on the duck (`lowRoute`, `mustDuck`). `botLowRoof.test.ts`.
+     - **Moderate against full price** (main 4d8f205, 180 s): CTF 48 matches captures 62 → 61, stuck 1.27 → 1.27 a
+       bot-minute (large 1.17 → 1.18), ducking 0 → 1.3 s a match; only Diamond Park changes: seeds 1-12 captures
+       10 → 7, takes 69 → 85, stuck 1.14 → 1.13, ducking ~10 s a match. Qasr Medina (seeds 1-12) and TDM identical.
+       (At the first measurement, b8854c6, the full price had Diamond Park at 5 captures; on today's main it's 10.)
    - **Next:** route spread (CTF's busiest way about 60 %): route loose side-lane bots through a corridor's via
      instead of `laneWaypoint`, measured on the 48 matches.
    - **The measuring commands** (run each on the branch and on a detached worktree of main; `--compare=a.json,b.json`
@@ -397,6 +463,23 @@ gets overloaded above that: local e2e times out and flakes). Prune landed worktr
   2. After the leader's respawn, a squad on Follow me or Attack that regroups on them, while one on Hold here, Go there
      or Defend the objective keeps its post. Keep that?
   3. The party preset (Part 3) and the squad HUD (Part 2) are next.
+
+### MapMaker overhaul: Play from here, the plan view, the card shot (`wip/mapmaker-p3a`, agent, 2026-11-08; Phase 3 items 1, 2 and 8)
+- **Built:** Play from here (Shift+F5, ▶ Here), the plan view (K, Plan; Export PNG), the card-shot camera (Map
+  properties → Card shot: Set card shot…, eye level, Preview, Clear). As built: docs/MAPMAKER_OVERHAUL_PLAN.md under
+  each item; how-to: BUILDING_KIT.md, "Testing, the plan and the card shot (MapMaker)".
+- **Where:** shared `editor/{playFromHere,planView,cardShot}.ts` (unit tests `mapmakerWorkflow.test.ts`);
+  client `editor/{planView,cardShot}.ts`, wired into `editorApp.ts` with a few lines; the match: `Match.startHere` and
+  `Combatant.startAt` (sim/match.ts), `LocalMatchOptions.startAt` (matchHost.ts), the first life's pitch (session.ts);
+  e2e `editorWorkflowChecks` in `editorux`.
+- **Map format v30:** `metadata.cardCamera` (position, yaw, pitch), a no-op migration, left out of the content hash
+  (like `thumbnailCamera`), so a stamped map's release stays current. `capture-map-shots.mjs` uses it first.
+- **Keys:** Shift+F5 (Play from here) and K (plan view), rows in the key table (`editor/keymap.ts`), so the `?`
+  overlay lists them.
+- **Card shots redone with it** (owner's addendum): Step Temple at eye level on the south-west hill, looking up the
+  terrace stair at the temple; Shingle Point at eye level on the seawall's west end, looking down the beach to the
+  sea. Set through the real editor (scratch Playwright driver: Import, camera, Set card shot…, Enter, Export); each
+  map file's diff is the `cardCamera` and the format version; the pictures from `capture-map-shots.mjs`.
 
 ### MapMaker overhaul: measure, props on surfaces, Randomise, turning by mouse (`wip/mapmaker-p1b`, agent, 2026-11-08; Phase 1 items 3-4 and Phase 3 item 9)
 - **Built:** the measure tool (U), props dropped onto the surface under the pointer, Randomise in the prop tool, the
@@ -3670,16 +3753,22 @@ passed on a re-run, and the changes involved didn't touch hosting.
   page stalls and the host cuts them off. Candidates: a longer silence limit while a page is catching up, or keep-alive
   pings from the worker. Queue with the next hosting or perf task.
 
-### Open bug (found 2026-11-05): explosion debris can fall through the world
-On the env + intake merge (`check/env-land2`), physicsfx counted 32 debris bodies where it expected 10, with the
-fastest moving at about 60 m/s, on both attempts.
-- 22 extra is exactly one explosion's debris (view.ts `explosion()`: 16 + 6).
-- 60 m/s matches about 3 s of free fall at g = 20. So those chunks were falling through the world rather than
-  landing.
-- Likely source: the test's 500-damage mass blast destroying a vehicle or turret near the spawn on Rockfall Canyon.
-- The test now checks only its own burst (`check/env-land3`), and its message lists the older chunks and their
-  colours.
-- **Still to find:** why explosion debris doesn't collide with the ground in the effects world.
+### Fixed (2026-11-08, `wip/debris-lowroof`): explosion debris fell through the world
+Found 2026-11-05 on `check/env-land2`: physicsfx counted 32 debris bodies where it expected 10, the fastest at about
+60 m/s (3 s of free fall at g = 20); 22 extra is one vehicle explosion's debris (`View.vehicleExplosion`: 16 + 6).
+- **Root cause:** a vehicle or turret blows up centred its half-height above its base (`Match.destroyMount`), and
+  `View.debris` scattered the chunks' starts over a cube up to 2.4 m across round that point (size = 0.4 × the blast
+  radius). Chunks that started under the terrain's surface were under a one-sided triangle mesh with nothing below,
+  and fell out of the world. Reproduced headless: every vehicle and turret on Rockfall Canyon blown up by the
+  physicsfx flow's 500-damage blast, 6 of 264 chunks gone. (A second, smaller one: the effects world answered no
+  rays until its first step.)
+- **Fix:** `debrisBurst` / `vehicleDebris` (shared `sim/effectsPhysics.ts`, the view's spawn maths moved there) and
+  `EffectsWorld.clearOfGround`: each chunk starts on the first static surface under the burst's centre height when it
+  would start below it. `EffectsWorld` steps once when built, so rays see the level at once. **Safety net:**
+  `EffectsWorld.belowWorld` (20 m under the lowest static shape); the view removes such a chunk.
+- **Tests:** `shared/test/debrisGround.test.ts` (the canyon blasts, four seeds: all 22 chunks of each blast settle on
+  the ground, under 1.5 m/s; the old spawns lose chunks below the world's floor). physicsfx: "0 older chunks still
+  about" after the mass blast.
 
 ### New map briefs to discuss with the owner (received 2026-11-05; not started)
 - `docs/map-briefs/MAP_02_The_Spillway.md`: a hydroelectric dam in a gorge; battlefield scale, 32–64 players.

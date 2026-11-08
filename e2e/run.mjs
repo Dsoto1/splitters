@@ -1091,6 +1091,7 @@ async function editoruxFlow(browser) {
   await editorGroundChecks(browser);
   await editorMeasureChecks(browser);
   await editorTurnChecks(browser);
+  await editorWorkflowChecks(browser);
 }
 
 /**
@@ -1335,6 +1336,173 @@ async function editorTurnChecks(browser) {
   check(turned?.rotation === 1 && turned.x === room.x && turned.y === room.y, `a tile's quick facing turns it to 90° in place (${JSON.stringify(turned && [turned.x, turned.y, turned.rotation])})`);
   await page.keyboard.press('Control+KeyZ');
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  await page.context().close();
+}
+
+/**
+ * MapMaker overhaul Phase 3 part A (docs/MAPMAKER_OVERHAUL_PLAN.md, items 1, 2 and 8): Play from here (Shift+F5)
+ * starts you at the camera spot and Esc comes back with the view, the selection and undo as they were; the plan view
+ * (K) toggles, selects and moves things, and exports a PNG; the card shot is framed at eye level, saved as the map's
+ * camera (one undo step) and previewed in the card's frame. Screenshots go to E2E_SHOTS when set.
+ */
+async function editorWorkflowChecks(browser) {
+  const page = await (await browser.newContext({ viewport: { width: 1400, height: 820 }, acceptDownloads: true })).newPage();
+  livePages.add(page);
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  const shot = (name) => (process.env.E2E_SHOTS ? page.screenshot({ path: `${process.env.E2E_SHOTS}/editorux-${name}.png` }).catch(() => {}) : Promise.resolve());
+  await page.goto(`${CLIENT}/?mode=editor&test=1`);
+  await page.waitForFunction(() => window.__editor, null, { timeout: T(60000) });
+  page.once('dialog', (d) => d.accept());
+  await newMap(page, 96);
+  const doc = () => page.evaluate(() => window.__editor.doc);
+  const at = (x, y, z) => page.evaluate(([x, y, z]) => window.__editor.view.project({ x, y, z }), [x, y, z]);
+  const camera = () => page.evaluate(() => {
+    const v = window.__editor.view;
+    const p = v.camera.position;
+    return { x: +p.x.toFixed(3), y: +p.y.toFixed(3), z: +p.z.toFixed(3), yaw: +v.yaw.toFixed(4), pitch: +v.pitch.toFixed(4), fov: +v.camera.fov.toFixed(4), mode: v.camera.mode };
+  });
+  const setCamera = (x, y, z, yaw, pitch) =>
+    page.evaluate(([x, y, z, yaw, pitch]) => {
+      const v = window.__editor.view;
+      v.camera.position.set(x, y, z);
+      v.yaw = yaw;
+      v.pitch = pitch;
+      v.applyCamera();
+    }, [x, y, z, yaw, pitch]);
+  await page.evaluate(() => window.__editor.view.focus({ x: 12, y: 0, z: 4 }));
+  await frames(page, 3);
+  // A barrel out on the ground, placed with its tool (an edit to undo later), and selected.
+  await clickTool(page, '[data-tool="prop:prop.barrel"]');
+  const bp = await at(12, 0, 0);
+  await page.mouse.move(bp.x, bp.y);
+  await frames(page, 3);
+  await page.mouse.click(bp.x, bp.y);
+  await frames(page, 3);
+  const barrel = await page.evaluate(() => window.__editor.selection.entities[0]);
+  await page.evaluate((id) => {
+    window.__editor.setTool({ kind: 'select' });
+    window.__editor.setSelection({ tiles: [], entities: [id] });
+  }, barrel);
+
+  // ---- Play from here: out on the open ground south-west of the room, looking north-east.
+  await setCamera(-14, 9, -16, Math.PI / 4, -0.25);
+  await frames(page, 2);
+  const before = { cam: await camera(), rev: await page.evaluate(() => window.__editor.history.revision), sel: await page.evaluate(() => JSON.stringify(window.__editor.selection)) };
+  check(await page.isVisible('#ed-test-here'), 'the top bar has ▶ Here (Play from here) beside PLAY TEST');
+  await page.keyboard.press('Shift+F5');
+  const started = await page.waitForFunction(() => window.__cs?.local && window.__testStartMs, null, { timeout: T(30000) }).then(() => true, () => false);
+  const me = started ? await sim(page, (m, me) => ({ x: me.move.pos.x, y: me.move.pos.y, z: me.move.pos.z, yaw: me.yaw, pitch: me.pitch })).catch((e) => String(e)) : null;
+  check(started && Math.abs(me.x + 14) < 0.3 && Math.abs(me.z + 16) < 0.3 && Math.abs(me.y) < 0.6 && Math.abs(me.yaw - Math.PI / 4) < 0.01 && Math.abs(me.pitch + 0.25) < 0.01, `Shift+F5 starts a test match standing on the ground under the camera, facing its way (${JSON.stringify(me)})`);
+  const room = await sim(page, (m) => m.spawnPoints.map((s) => [Math.round(s.pos.x), Math.round(s.pos.z)])).catch(() => []);
+  check(room.every(([x, z]) => Math.hypot(x + 14, z + 16) > 6), `not at the map's spawn point (${JSON.stringify(room)})`);
+  await frames(page, 10);
+  // The view as you play it (headless pages have no pointer lock, so the pause menu is up: hidden for the picture).
+  await page.addStyleTag({ content: '#pause { visibility: hidden !important; }' }).then((h) => shot('play-from-here').then(() => h.evaluate((el) => el.remove())));
+  await page.keyboard.press('Escape');
+  await page.waitForFunction(() => !document.getElementById('editor').hidden, null, { timeout: T(15000) });
+  await frames(page, 2);
+  const back = { cam: await camera(), rev: await page.evaluate(() => window.__editor.history.revision), sel: await page.evaluate(() => JSON.stringify(window.__editor.selection)) };
+  check(JSON.stringify(back) === JSON.stringify(before), `Esc goes back to MapMaker at the same view, with the selection and history as they were (${JSON.stringify(back.cam)})`);
+  await page.keyboard.press('Control+KeyZ');
+  check(!(await doc()).entities.some((e) => e.id === barrel), 'undo still works after Play from here (the barrel goes)');
+  await page.keyboard.press('Control+KeyY');
+  // Refused, with the reason: the camera outside the map's boundary.
+  await page.evaluate(() => window.__editor.run('Boundary', { kind: 'setBounds', before: null, after: { min: [-30, -30], max: [30, 30], style: 'invisible', height: 8 } }));
+  await setCamera(45, 6, 0, 0, -0.2);
+  await page.click('#ed-test-here');
+  await frames(page, 2);
+  const refused = await page.evaluate(() => ({ toast: document.getElementById('ed-toast').textContent, editor: !document.getElementById('editor').hidden, err: document.getElementById('ed-toast').classList.contains('err') }));
+  check(refused.editor && refused.err && /Can't play from here: .*outside the playable boundary/.test(refused.toast), `outside the boundary it refuses, saying why (${refused.toast})`);
+  await page.keyboard.press('Control+KeyZ');
+
+  // ---- The plan view: K, from straight above, the level's tiles and icons, select and move, PNG.
+  await page.evaluate(() => window.__editor.run('Flag', { kind: 'addEntities', entities: [{ id: 'flag_e2e', kind: 'flag', position: [-8, 0, 8], yaw: 0, team: 'embers' }, { id: 'hill_e2e', kind: 'hill', position: [8, 0, -10], radius: 5 }, { id: 'pick_e2e', kind: 'pickup', position: [-6, 0, -8], item: 'core.health', respawnSeconds: null }] }));
+  const view3d = await camera();
+  await page.mouse.move(700, 400);
+  await page.keyboard.press('KeyK');
+  await frames(page, 3);
+  const plan = await page.evaluate(() => ({ on: window.__editor.plan.on, mode: window.__editor.view.camera.mode, pressed: document.getElementById('ed-plan').getAttribute('aria-pressed'), title: document.getElementById('ed-plan-title')?.textContent, overlay: !!document.getElementById('ed-plan-overlay'), clip: !!window.__editor.view.scene.clipPlane }));
+  check(plan.on && plan.mode === 1 && plan.pressed === 'true' && plan.title === 'Plan · Ground' && plan.overlay && plan.clip, `K switches to the plan view: an orthographic camera from above, cut above the floor, its icons over it (${JSON.stringify(plan)})`);
+  // North is up and east is right on screen.
+  const n = await at(0, 0, 10);
+  const s = await at(0, 0, -10);
+  const e = await at(10, 0, 0);
+  const c0 = await at(0, 0, 0);
+  check(n.y < s.y && e.x > c0.x && Math.abs(n.x - s.x) < 1, `north is up, east to the right (${JSON.stringify({ n, s, e })})`);
+  await shot('plan-view');
+  // Select the barrel by clicking it in the plan, drag it 4 m east, undo.
+  await page.evaluate(() => window.__editor.setSelection({ tiles: [], entities: [] }));
+  const bpos = (await doc()).entities.find((x) => x.id === barrel).position;
+  const p0 = await at(bpos[0], bpos[1] + 0.5, bpos[2]);
+  await page.mouse.move(p0.x, p0.y);
+  await frames(page, 3);
+  await page.mouse.click(p0.x, p0.y);
+  await frames(page, 2);
+  check((await page.evaluate(() => window.__editor.selection.entities)).includes(barrel), 'a click in the plan selects the barrel');
+  const p1 = await at(bpos[0] + 4, bpos[1] + 0.5, bpos[2]);
+  await page.mouse.move(p0.x, p0.y);
+  await page.mouse.down();
+  await page.mouse.move((p0.x + p1.x) / 2, p0.y, { steps: 4 });
+  await page.mouse.move(p1.x, p1.y, { steps: 4 });
+  await frames(page, 2);
+  await page.mouse.up();
+  await frames(page, 2);
+  const moved = (await doc()).entities.find((x) => x.id === barrel).position;
+  check(Math.abs(moved[0] - bpos[0] - 4) < 0.6 && Math.abs(moved[2] - bpos[2]) < 0.6, `dragging it in the plan moves it east (${JSON.stringify(bpos)} → ${JSON.stringify(moved)})`);
+  await page.keyboard.press('Control+KeyZ');
+  // Another level: the level selector picks the plan.
+  await page.keyboard.press('PageUp');
+  await frames(page, 2);
+  const up = await page.evaluate(() => ({ title: document.getElementById('ed-plan-title')?.textContent, cut: window.__editor.plan.cutY }));
+  check(up.title === 'Plan · Level 1' && up.cut > 4, `PgUp shows Level 1's plan, cut above its floor (${JSON.stringify(up)})`);
+  await page.keyboard.press('PageDown');
+  await frames(page, 2);
+  // Export PNG: through the browser's download.
+  const [download] = await Promise.all([page.waitForEvent('download', { timeout: T(20000) }).catch(() => null), page.click('#ed-plan-export')]);
+  const file = download ? await download.path().catch(() => null) : null;
+  const png = file ? readFileSync(file) : null;
+  if (png && process.env.E2E_SHOTS) writeFileSync(`${process.env.E2E_SHOTS}/editorux-plan-export.png`, png);
+  check(download?.suggestedFilename() === 'untitled_map-ground-plan.png' && png && png.subarray(1, 4).toString() === 'PNG' && png.length > 20000, `Export PNG downloads the plan (${download?.suggestedFilename()}, ${png?.length ?? 0} bytes)`);
+  await page.click('#ed-plan');
+  await frames(page, 2);
+  const after = await camera();
+  check(!(await page.evaluate(() => window.__editor.plan.on || !!document.getElementById('ed-plan-overlay') || !!window.__editor.view.scene.clipPlane)) && JSON.stringify(after) === JSON.stringify(view3d), `the Plan button goes back to the 3D view as it was (${JSON.stringify(after)})`);
+
+  // ---- The card shot: Map properties → Set card shot…, eye level by default, Enter saves; Preview in the frame.
+  await page.evaluate(() => window.__editor.setSelection({ tiles: [], entities: [] }));
+  await page.waitForSelector('#ed-card-set', { timeout: T(5000) });
+  check(await page.isDisabled('#ed-card-preview'), 'no card camera yet: Preview is off');
+  await setCamera(-10, 12, -18, 0.6, -0.15);
+  const fov0 = (await camera()).fov;
+  await page.click('#ed-card-set');
+  await frames(page, 3);
+  const framing = await page.evaluate(() => ({ eye: document.getElementById('ed-card-eye')?.checked, crop: document.querySelector('.ed-card-crop')?.getBoundingClientRect().toJSON(), y: window.__editor.view.camera.position.y, fov: window.__editor.view.camera.fov, ground: window.__editor.shownGround ? null : 'none' }));
+  const ratio = framing.crop ? framing.crop.width / framing.crop.height : 0;
+  check(framing.eye && Math.abs(ratio - 16 / 9) < 0.02 && Math.abs(framing.y - (-0.15 + 1.7)) < 0.15 && framing.fov > 0.9, `the card frame is 16:9 with the card's lens, and the camera drops to eye level, 1.7 m over the ground (${JSON.stringify(framing)})`);
+  await shot('card-frame');
+  await page.keyboard.press('Enter');
+  await frames(page, 2);
+  const saved = (await doc()).metadata.cardCamera;
+  check(saved && Math.abs(saved.position[1] - 1.55) < 0.15 && Math.abs(saved.yaw - 0.6) < 0.001 && Math.abs(saved.pitch + 0.15) < 0.001 && (await camera()).fov === fov0, `Enter saves the card camera in the map at eye level, and the lens goes back (${JSON.stringify(saved)})`);
+  check((await doc()).formatVersion === 30, 'the map is format v30');
+  await page.keyboard.press('Control+KeyZ');
+  check((await doc()).metadata.cardCamera === undefined, 'one undo takes the card camera off');
+  await page.keyboard.press('Control+KeyY');
+  // Preview: from somewhere else, the saved shot in the card's frame; Esc goes back.
+  await setCamera(20, 30, 20, 2, -0.8);
+  const elsewhere = await camera();
+  await page.waitForSelector('#ed-card-preview:not([disabled])', { timeout: T(5000) });
+  await page.click('#ed-card-preview');
+  await frames(page, 3);
+  const pv = await camera();
+  check(Math.abs(pv.x - saved.position[0]) < 0.01 && Math.abs(pv.y - saved.position[1]) < 0.01 && Math.abs(pv.yaw - saved.yaw) < 0.001 && (await page.isVisible('.ed-card-frame.preview .ed-card-crop')), `Preview shows the saved shot in the card's frame (${JSON.stringify(pv)})`);
+  await shot('card-preview');
+  await page.keyboard.press('Escape');
+  await frames(page, 2);
+  check(JSON.stringify(await camera()) === JSON.stringify(elsewhere) && !(await page.$('.ed-card-frame')), 'Esc closes the preview, back where you were');
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  livePages.delete(page);
   await page.context().close();
 }
 
@@ -3343,7 +3511,7 @@ async function friendlyFireChecks(browser) {
     const errors = [];
     page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
     await page.addInitScript((on) => localStorage.setItem('cs.arcade', JSON.stringify({ map: 'sandgate', mode: 'core.tdm', bots: 3, skill: 'easy', scoreLimit: 40, minutes: 10, ...(on ? { friendlyFire: 'on' } : {}) })), ff === 'on');
-    await page.goto(CLIENT);
+    await page.goto(`${CLIENT}/?test=1`);
     await page.click('#nav-play');
     await page.click('#arcade-start');
     await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown', null, { timeout: T(90000) });
@@ -3381,13 +3549,76 @@ async function friendlyFireChecks(browser) {
       }
       return r;
     });
+    // A team kill (friendly fire on): the feed marks it TK, and nothing rewards it: no kill, the streak ends, no
+    // streak burst or "in a row", no kill marker. Primed one kill short of the first burst and streak reward.
+    if (ff === 'on') out.tk = await teamKillCheck(page);
     out[ff] = { ...shot, hurt: after?.hurt ?? null, errors: errors.join('; ') };
     await page.context().close();
   }
+  const tk = out.tk;
+  check(tk?.dead && tk.feed?.tk && /\bTK\b/.test(tk.feed.text), `a team kill shows in the kill feed (upper right) marked TK (${JSON.stringify(tk)})`);
+  check(tk?.dead && tk.kills === tk.kills0 && tk.streak === 0 && !tk.bursts && !tk.inARow && !tk.marker && tk.lifeKills === 0, `a team kill rewards nothing: no kill, the streak ends, no streak burst, no kill marker (${JSON.stringify(tk)})`);
   check(out.on.rule === 'on' && out.off.rule === 'off', `Match setup's friendly fire reaches the match (on: ${out.on.rule}, off: ${out.off.rule})`);
   check(out.on.mate && out.on.clear && out.on.hurt > 0, `friendly fire on: your rounds hurt a teammate in front of you (${JSON.stringify(out.on)})`);
   check(out.off.mate && out.off.clear && out.off.hurt === 0, `friendly fire off: your rounds pass through a teammate unhurt (${JSON.stringify(out.off)})`);
   check(!out.on.errors && !out.off.errors, `no page errors in the friendly fire matches (${out.on.errors}${out.off.errors})`);
+}
+
+/** Friendly fire on: you down a teammate in front of you. What the page showed for it (teams flow, friendlyFireChecks). */
+async function teamKillCheck(page) {
+  // What the page draws for it: effects, HUD lines and the kill marker, recorded as they happen.
+  await page.evaluate(() => {
+    const cs = window.__cs;
+    const seen = (window.__tkSeen = { fx: [], msgs: [], marker: false, feed: [] });
+    // Each kill-feed line as it is drawn (it fades after 5 s): who, the TK flag passed, the line's class and text.
+    const kill = cs.hud.kill.bind(cs.hud);
+    cs.hud.kill = (...a) => {
+      kill(...a);
+      const line = document.getElementById('feed').firstElementChild;
+      seen.feed.push({ killer: a[0], victim: a[1], tk: !!line?.classList.contains('tk'), text: line?.textContent.trim() ?? '', edge: line ? getComputedStyle(line).borderRightColor : '' });
+    };
+    const fx = cs.view.playGameplayFx.bind(cs.view);
+    cs.view.playGameplayFx = (name, ...rest) => (seen.fx.push(name), fx(name, ...rest));
+    const msg = cs.hud.showMessage.bind(cs.hud);
+    cs.hud.showMessage = (text, ...rest) => (seen.msgs.push(text), msg(text, ...rest));
+    const confirm = cs.hud.killConfirm.bind(cs.hud);
+    cs.hud.killConfirm = (...a) => ((seen.marker = true), confirm(...a));
+    // Two kills this life already, on the page and in the match: one more would be the first burst.
+    cs.lifeKills.set(cs.slot, 2);
+  });
+  const shot = await sim(page, (m, me) => {
+    const mate = globalThis.__ffMate;
+    if (!mate?.alive) return null;
+    const at = { x: me.move.pos.x + Math.sin(me.yaw) * 4, y: me.move.pos.y, z: me.move.pos.z + Math.cos(me.yaw) * 4 };
+    mate.move = { ...mate.move, pos: at, velY: 0, vx: 0, vz: 0, grounded: true };
+    mate.health = 1;
+    mate.armor = 0;
+    mate.invulnerable = false;
+    mate.shieldUntil = 0;
+    me.streak = 2;
+    const eye = { x: me.move.pos.x, y: me.move.pos.y + 1.6, z: me.move.pos.z };
+    me.pitch = Math.atan2(at.y + 1.2 - eye.y, 4);
+    const gun = [...me.weapons.values()].map((w) => w.def).find((d) => d.kind === 'hitscan' && d.damage > 0);
+    for (let i = 0; i < 3 && mate.alive; i++) m.fireNow(me, { ...gun, alt: undefined }, 0);
+    return { tick: m.tick, kills0: me.kills, slot: mate.slot };
+  });
+  if (!shot) return { dead: false };
+  // The kill reaches the page: its feed line drawn.
+  await page.waitForFunction((slot) => window.__tkSeen.feed.some((f) => f.victim === slot), shot.slot, { timeout: T(15000) }).catch(() => {});
+  const inMatch = await sim(page, (m, me) => ({ kills: me.kills, streak: me.streak ?? 0 }));
+  const page_ = await page.evaluate((slot) => {
+    const seen = window.__tkSeen;
+    const line = seen.feed.find((f) => f.victim === slot) ?? null;
+    return {
+      dead: !!line,
+      feed: line,
+      bursts: seen.fx.filter((f) => f === 'streak').length,
+      inARow: seen.msgs.some((t) => /in a row|kill streak/i.test(t)),
+      marker: seen.marker || document.getElementById('hitmarker').classList.contains('kill'),
+      lifeKills: window.__cs.lifeKills.get(window.__cs.slot) ?? 0,
+    };
+  }, shot.slot);
+  return { ...inMatch, kills0: shot.kills0, ...page_ };
 }
 
 /**
@@ -4007,8 +4238,8 @@ async function ctfFlow(browser) {
 }
 
 /**
- * Breakthrough (core.breakthrough) on the Breakthrough Range (maps/test_breakthrough.json: a map every list offers,
- * Breakthrough its only mode; its id kept from when it was a test map). Match Setup offers the mode on a map with sectors, with its own settings
+ * Breakthrough (core.breakthrough) on the Breakthrough Range (maps/test_breakthrough.json: a test map, metadata.testOnly,
+ * that no list offers; the test reaches it with ?testmap=; Breakthrough its only mode). Match Setup offers the mode on a map with sectors, with its own settings
  * (reinforcements, sector time, second round), and greys it out on one without, saying why. In the match the HUD
  * shows your side, the sector strip, the pool and the objectives (marked, drawn in the world, on the minimap); bots
  * take the first sector on their own (the clock run forward, you kept out of it); both sides' spawns move on, the
@@ -4170,7 +4401,14 @@ async function breakthroughFlow(browser) {
   await page.addInitScript(() => {
     if (!localStorage.getItem('cs.arcade')) localStorage.setItem('cs.arcade', JSON.stringify({ map: 'sandgate', mode: 'core.tdm', bots: 3, skill: 'normal', scoreLimit: 40, minutes: 10, scoreAuto: true, timeAuto: true, teams: [4, 4] }));
   });
+  // The Breakthrough Range is a test map: Match Setup's list leaves it out, unless a test asks for it (?testmap=).
   await page.goto(`${CLIENT}/?test=1&god=1`);
+  await page.waitForFunction(() => window.__front, null, { timeout: T(30000) });
+  await page.evaluate(() => document.getElementById('nav-play').click());
+  await page.waitForSelector('#arcade-map', { state: 'attached', timeout: T(30000) });
+  const hidden = await page.evaluate(() => [...document.getElementById('arcade-map').options].some((o) => o.value === 'test_breakthrough'));
+  check(!hidden, 'Match Setup does not list the Breakthrough Range (a test map)');
+  await page.goto(`${CLIENT}/?test=1&god=1&testmap=test_breakthrough`);
   await page.waitForFunction(() => window.__front, null, { timeout: T(30000) });
   await page.evaluate(() => document.getElementById('nav-play').click());
   await page.waitForSelector('#arcade-map', { state: 'attached', timeout: T(30000) });
@@ -4178,9 +4416,9 @@ async function breakthroughFlow(browser) {
   await page.waitForSelector('.mode-tag-off[data-mode="core.breakthrough"]', { timeout: T(30000) }).catch(() => {});
   const off = await page.evaluate(() => document.querySelector('.mode-tag-off[data-mode="core.breakthrough"]')?.dataset.tip ?? null);
   check(/sectors/.test(off ?? ''), `Match Setup greys Breakthrough out on a map without sectors, saying why (${off})`);
-  // The Breakthrough Range is an ordinary map now (no test hook): Match Setup's map list offers it by its name.
+  // With ?testmap= the Range joins Match Setup's map list, by its name.
   const listed = await page.evaluate(() => [...document.getElementById('arcade-map').options].find((o) => o.value === 'test_breakthrough')?.textContent ?? null);
-  check(/Breakthrough Range/.test(listed ?? ''), `Match Setup lists the Breakthrough Range without any test hook (${listed})`);
+  check(/Breakthrough Range/.test(listed ?? ''), `with ?testmap= Match Setup lists the Breakthrough Range (${listed})`);
   // The map with sectors: Breakthrough is offered, its own settings in "what wins".
   // (The setup's map list: picked as its select does, the map browser being the way a player picks.)
   await page.evaluate(() => {
