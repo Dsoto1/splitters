@@ -3145,6 +3145,8 @@ export class BotBrain {
       this.driveLeft = { left: Infinity, tick };
       this.dodge = null;
       this.roadkill = null;
+      // (A trip for shells belongs to the tank it was made in: not carried into the next seat.)
+      this.tankResupply = false;
     }
     this.mountPlan = null;
     let forward = 0;
