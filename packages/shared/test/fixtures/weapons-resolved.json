@@ -4519,6 +4519,153 @@
     "head": 2,
     "legs": 0.75
    }
+  },
+  {
+   "code": 49,
+   "id": "core.battle_rifle",
+   "def": {
+    "id": "core.battle_rifle",
+    "displayName": "Battle Rifle",
+    "category": "rifle",
+    "kind": "hitscan",
+    "slot": 3,
+    "family": "battle_rifle",
+    "damage": 25,
+    "spread": 0.001,
+    "fireIntervalTicks": 12,
+    "range": 600,
+    "magazine": 20,
+    "reserveMax": 100,
+    "pickupAmmo": 40,
+    "reloadTicks": 126,
+    "reload": {
+     "type": "magazine",
+     "tactical": 100,
+     "empty": 126,
+     "out": 0.3,
+     "in": 0.7
+    },
+    "raiseTicks": 22,
+    "ammo": "rifle",
+    "falloff": {
+     "start": 40,
+     "end": 100,
+     "min": 0.75,
+     "curve": "smooth"
+    },
+    "kick": {
+     "pitch": [
+      0.026,
+      0.03,
+      0.034
+     ],
+     "yaw": [
+      0.004,
+      -0.003,
+      0.005,
+      -0.004
+     ],
+     "variance": 0.004,
+     "delay": 6,
+     "settle": 6,
+     "rate": 0.1,
+     "visual": 0.85
+    },
+    "botDesirability": 0.66,
+    "botRange": [
+     8,
+     70
+    ],
+    "pellets": 1,
+    "view": {
+     "model": "guns/frontier_rifle.glb",
+     "fallback": "weapons/rifle.glb",
+     "viewOffset": [
+      0.2,
+      -0.2,
+      0.58
+     ],
+     "tracer": "#ffe2a0",
+     "hold": {
+      "style": "long",
+      "grip": [
+       0,
+       -0.075,
+       -0.225
+      ],
+      "support": [
+       0,
+       -0.07,
+       0.105
+      ],
+      "shoulder": [
+       0,
+       0.01,
+       -0.47
+      ]
+     },
+     "muzzleAt": [
+      0,
+      0.033,
+      0.48
+     ],
+     "zoomFov": 0.62,
+     "sound": "fire.heavy"
+    }
+   },
+   "gunplay": {
+    "family": "battle_rifle",
+    "ballistic": {
+     "velocity": 880,
+     "gravityScale": 1,
+     "energy": 1800,
+     "tracerEvery": 2
+    },
+    "accuracy": {
+     "base": 0.001,
+     "move": 0.02,
+     "air": 0.06,
+     "perShot": 0.004,
+     "tight": 1,
+     "max": 0.03,
+     "recovery": 6,
+     "ads": 0.3,
+     "adsTicks": 16
+    },
+    "kick": {
+     "pitch": [
+      0.026,
+      0.03,
+      0.034
+     ],
+     "yaw": [
+      0.004,
+      -0.003,
+      0.005,
+      -0.004
+     ],
+     "variance": 0.004,
+     "delay": 6,
+     "settle": 6,
+     "rate": 0.1,
+     "visual": 0.85
+    },
+    "reload": {
+     "type": "magazine",
+     "tactical": 100,
+     "empty": 126,
+     "out": 0.3,
+     "in": 0.7
+    },
+    "falloff": {
+     "start": 40,
+     "end": 100,
+     "min": 0.75,
+     "curve": "smooth"
+    },
+    "head": 2,
+    "legs": 0.85
+   }
   }
  ],
  "bySlot": [
@@ -4540,6 +4687,7 @@
   "core.burst_rifle",
   "core.laser_rifle",
   "core.marksman",
+  "core.battle_rifle",
   "core.shotgun",
   "core.sawed_off",
   "core.auto_shotgun",
