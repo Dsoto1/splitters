@@ -234,6 +234,22 @@ gets overloaded above that: local e2e times out and flakes). Prune landed worktr
 - Earlier the same day: content scalability steps 2–6, perf toolset, flaky e2e fixes, Runway Nine airliner, map
   reworks batches 2–3, character fixes rounds 2–3 (see the entries below and CHANGELOG).
 
+### Flaky e2e checks, root-caused (`wip/flaky-e2e`, agent, 2026-11-08; test-only, e2e/run.mjs)
+- **mobile**, "a tap on the pad middle jumps": the training range's deathmatch bots shot the god-mode player about
+  (knockback from swarm rockets and rounds, no damage): the tap could land mid-air (a jump is taken on the ground only).
+  The flow plays the range alone (`&bots=1`) and taps once grounded.
+- **physicsfx**: the "blast throws a bot" check blasted beside wherever a bot stood (behind cover: not thrown), and the
+  mass ring went 10 m along a view that depended on bot positions (a body thrown into a rock). Both now go off on a
+  fixed open spot found on a 4 m grid over the map (level ground, nothing within 5 m in the sim's level or the effects
+  world), with you placed 10 m off facing it. The far-death check waits for a bot back alive and drawn (it threw
+  "reading 'move'" when none had respawned yet).
+- **characters3**, scope check: `__give` already puts the marksman in hand; pressing 3 while only the view lagged cycled
+  on to the rifle in the same slot. It waits for the held gun and presses only while it isn't the marksman.
+- **weaponsets**, Chaos lives: the gun you die with drops at your body (rules.dropWeapons); idle at your spawn, the next
+  life could spawn on the same point and pick last life's oddball up (four weapons). The test respawn clears the
+  lying drops. For the owner: a redeploy (K) can land you on your own dropped oddball in Chaos; the spawn choice's
+  fresh-death penalty makes it rare, not impossible.
+
 ### Ammo Boxes by the tank routes (`wip/ammo-boxes`, agent, 2026-11-08; owner-approved follow-up to Tanks 2 item 2)
 
 **Maps** (MapMaker only: Import → palette Ammo Box (`pickup:core.ammo`) placed by hovering the spot → Export, Playwright

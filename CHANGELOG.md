@@ -8,6 +8,10 @@ made only on a commit that passed CI on a check branch.
 
 ## Unreleased
 
+**Flaky e2e checks fixed at the cause** (tests only): mobile (bots knocking the player into the air before the jump
+tap), physicsfx (blasts by cover and a race with bots respawning), characters3 (a weapon key pressed while only the view
+lagged) and weaponsets (a respawn picking up last life's dropped gun).
+
 **Gunplay audit, measured** (owner-approved; no weapon changed): `pnpm gun-report` drives the shared sim and measures
 every gun: time to kill at 10/25/50/100 m on an unarmoured and an armoured player (body and head; ideal, hip and
 aimed), shots to kill, first shot, draw, reloads and reload cancels, recoil recovery, hip/aimed/running spread and
