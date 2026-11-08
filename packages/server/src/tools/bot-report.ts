@@ -2,7 +2,7 @@ import { readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { cpus, loadavg } from 'node:os';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { BOT_DIFFICULTIES, CHARACTER_PROFILES, bodyClass, getLook, CORE_BOT_PROFILES, CORE_WEAPONS, THROWABLE_DEFS, TICK_RATE, WEAPON_SET_IDS, getWeaponSet, hasTag, initPhysics, isGameMode, isWeaponSetId, loadMap, mapCanRun, matchWeaponSet, rulesForMode, setThrowables, setWeaponIds, throwableWeaponId, type BotProfile, type GameEvent, type GameMode, type MapDocument } from '@tiletrigger/shared';
+import { BOT_DIFFICULTIES, CHARACTER_PROFILES, bodyClass, getLook, getMountDef, CORE_BOT_PROFILES, CORE_WEAPONS, THROWABLE_DEFS, TICK_RATE, WEAPON_SET_IDS, getWeaponSet, hasTag, initPhysics, isGameMode, isWeaponSetId, loadMap, mapCanRun, matchWeaponSet, rulesForMode, setThrowables, setWeaponIds, throwableWeaponId, type BotProfile, type GameEvent, type GameMode, type MapDocument } from '@tiletrigger/shared';
 import { BreakthroughMode, CtfMode, FortsMode, KothMode, Match, ctfRoleOf, initNavigation, placeOn, simProfile } from '@tiletrigger/shared/match';
 import { Behaviour } from './botMeasures.ts';
 import { drawNavPictures } from './navPictures.ts';
@@ -211,6 +211,21 @@ export interface MatchRow {
    */
   boarding?: { tries: number; failed: number; gaveUp: number; back: number };
   /**
+   * Vehicles wedged (Match's MountRt.wedged: driven with the throttle open and going nowhere for 3 s): how many times
+   * and the ticks one spent wedged with someone aboard; stalls (a driver on the throttle, under 1 cm a tick for 1 s or
+   * more: bot drivers back out long before 3 s) and their ticks; by vehicle id, and where stalls began most (4 m cells);
+   * vehicle-seconds inside the level (the top of the hull's middle in something solid: pushed up into a ceiling) and
+   * where; and where each vehicle was at the end.
+   */
+  wedges?: { times: number; ticks: number; stalls: number; stallTicks: number; inside?: number; insideAt?: [string, number][]; parked?: string[]; byVehicle: Record<string, [times: number, ticks: number, stalls: number]>; at: [string, number][] };
+  /**
+   * Tanks (sealed vehicles, MountArmour.sealed): bot-seconds at the wheel, in the gun seats and with it moving; metres
+   * driven; shells fired; kills from aboard by weapon; the bots' drives (BotBrain.tankLog: taken, back-outs, given up
+   * stuck, bail-outs about to blow, trips to an ammo pickup); tanks destroyed and crew who died with them; and the
+   * health a tank lost by what hit it is not measured (the sim keeps no tally).
+   */
+  tanks?: { stuckAt: [number, number, number][]; count: number; driving: number; gunning: number; moving: number; metres: number; shells: number; kills: Record<string, number>; drives: number; backOuts: number; stuck: number; bails: number; resupply: number; destroyed: number; crewKilled: number; refills: number };
+  /**
    * Roulette (sim/roulette.ts): lives dealt and kills by character (the killer's look) and by body size, characters
    * played, picks earned (3 kills in a life) and taken, reroll tokens spent, jackpot lives, Giant Slayer and air kills,
    * the bonus points, and the awards (kind: the winner's name).
@@ -392,7 +407,26 @@ function play(map: MapDocument, mode: GameMode, seed: number, seconds: number, s
   const lastStuck = new Map<number, number>();
   const stuckAt = new Map<string, number>();
   const behaviour = new Behaviour(match);
+  type WedgeMount = { def: { id: string; vehicle?: unknown; seats: { role: string }[]; half: [number, number, number] }; pos: { x: number; y: number; z: number }; seats: (number | null)[]; drive: { forward: number }; wedged?: unknown; alive: boolean; body: unknown };
+  const wedgeMounts = ((match as unknown as { mounts: WedgeMount[] }).mounts ?? []).filter((m) => m.def.vehicle);
+  const lastPos = new Map<WedgeMount, { x: number; z: number; run: number }>();
+  const wasWedged = new Set<WedgeMount>();
+  // Inside the level: the top of the hull's middle (its upper 40 %, the probe's width) overlapping something solid.
+  const insideNow = (wm: WedgeMount): boolean => {
+    const [hx, hy, hz] = wm.def.half;
+    const r = Math.min(hx, hz) * 0.95 * 0.7;
+    const h = hy * 2;
+    return !match.physics.boxClear({ x: wm.pos.x, y: wm.pos.y + h * 0.8 - 0.025, z: wm.pos.z }, { x: r, y: h * 0.2 - 0.025, z: r }, wm.body as Parameters<typeof match.physics.boxClear>[2], true);
+  };
+  const insideAt = new Map<string, number>();
+  let insideSeconds = 0;
+  const wedges = { times: 0, ticks: 0, stalls: 0, stallTicks: 0, byVehicle: {} as Record<string, [number, number, number]>, at: new Map<string, number>() };
   const weaponKills: Record<string, number> = {};
+  // Tanks: the sealed mounts, and who sat in which last tick (the crew killed with one are out of it by the kill event).
+  const tankIds = new Set(match.mountStates().filter((m) => getMountDef(m.id)?.armour?.sealed).map((m) => m.index));
+  const tanks: NonNullable<MatchRow['tanks']> = { stuckAt: [], count: tankIds.size, driving: 0, gunning: 0, moving: 0, metres: 0, shells: 0, kills: {}, drives: 0, backOuts: 0, stuck: 0, bails: 0, resupply: 0, destroyed: 0, crewKilled: 0, refills: 0 };
+  const tankCrew = new Map<number, number>();
+  const tankLast = new Map<number, { shells: number; alive: boolean; x: number; z: number }>();
   const rl: MatchRow['roulette'] = match.roulette ? { lives: {}, kills: {}, bySize: { small: [0, 0], standard: [0, 0], large: [0, 0] }, earned: 0, picks: 0, rerolls: 0, jackpots: 0, giant: 0, air: 0, bonus: 0, awards: {} } : undefined;
   const out: MatchRow = { map: map.metadata.id, mode, seed, seconds, players: total, takes: 0, captures: 0, returns: 0, drops: 0, firstTake: null, firstCapture: null, runs, kills: 0, objective: {}, tickMs: 0, tickP95: 0, set: matchWeaponSet(rules, map), weaponKills, bots: [] };
   const tickMs: number[] = [];
@@ -422,7 +456,75 @@ function play(map: MapDocument, mode: GameMode, seed: number, seconds: number, s
     if (bt && btRow && btRow.poolStart === 0 && bt.pool > 0) btRow.poolStart = bt.pool;
     if (bt && btRow) btRow.poolLeft = bt.pool;
     behaviour.events(match, events);
+    if (k % TICK_RATE === 0)
+      for (const wm of wedgeMounts) {
+        if (!wm.alive || !insideNow(wm)) continue;
+        insideSeconds++;
+        const key = `${Math.round(wm.pos.x / 4) * 4},${Math.round(wm.pos.y / 4) * 4},${Math.round(wm.pos.z / 4) * 4} ${wm.def.id}`;
+        insideAt.set(key, (insideAt.get(key) ?? 0) + 1);
+      }
+    for (const wm of wedgeMounts) {
+      const row = (wedges.byVehicle[wm.def.id] ??= [0, 0, 0]);
+      const cell = `${Math.round(wm.pos.x / 4) * 4},${Math.round(wm.pos.y / 4) * 4},${Math.round(wm.pos.z / 4) * 4} ${wm.def.id}`;
+      // Stalls: a driver on the throttle and the vehicle going nowhere (under 1 cm a tick) for a second or more.
+      const was = lastPos.get(wm);
+      const driven = wm.def.seats.some((s, i) => s.role === 'driver' && wm.seats[i] !== null) && Math.abs(wm.drive.forward) > 0.2;
+      const still = !!was && Math.hypot(wm.pos.x - was.x, wm.pos.z - was.z) < 0.01;
+      const run = driven && still ? (was?.run ?? 0) + 1 : 0;
+      lastPos.set(wm, { x: wm.pos.x, z: wm.pos.z, run });
+      if (run === TICK_RATE) {
+        wedges.stalls++;
+        row[2]++;
+        wedges.at.set(cell, (wedges.at.get(cell) ?? 0) + 1);
+      }
+      if (run >= TICK_RATE) wedges.stallTicks += run === TICK_RATE ? TICK_RATE : 1;
+      if (!wm.wedged) {
+        wasWedged.delete(wm);
+        continue;
+      }
+      if (!wasWedged.has(wm)) {
+        wasWedged.add(wm);
+        wedges.times++;
+        row[0]++;
+      }
+      if (wm.seats.some((x) => x !== null)) {
+        wedges.ticks++;
+        row[1]++;
+      }
+    }
     if (k % TICK_RATE === 0) behaviour.sample(match);
+    if (tankIds.size) {
+      // Crew killed with their tank: a wreck kill of someone aboard one last tick.
+      for (const e of events as GameEvent[]) if (e.e === 'kill' && e.weapon === 'core.wreck' && tankCrew.has(e.victim)) tanks.crewKilled++;
+      tankCrew.clear();
+      for (const m of match.mountStates()) {
+        if (!tankIds.has(m.index)) continue;
+        const shells = m.shells.reduce<number>((a, b) => a + (b ?? 0), 0);
+        const last = tankLast.get(m.index);
+        if (last) {
+          if (last.alive && !m.alive) tanks.destroyed++;
+          if (m.alive && last.alive && shells < last.shells) tanks.shells += last.shells - shells;
+          if (m.alive && last.alive && shells > last.shells + 1) tanks.refills++;
+          if (m.alive && last.alive) tanks.metres += Math.hypot(m.pos.x - last.x, m.pos.z - last.z);
+        }
+        tankLast.set(m.index, { shells, alive: m.alive, x: m.pos.x, z: m.pos.z });
+        if (!m.alive) continue;
+        const def = getMountDef(m.id)!;
+        m.seats.forEach((slot, i) => {
+          if (slot === null || !rec.has(slot)) return;
+          tankCrew.set(slot, m.index);
+          if (def.seats[i]!.role === 'driver') {
+            tanks.driving += 1 / TICK_RATE;
+            if (Math.abs(m.speed) > 0.5) tanks.moving += 1 / TICK_RATE;
+          } else if (def.seats[i]!.weapon) tanks.gunning += 1 / TICK_RATE;
+        });
+      }
+      for (const e of events as GameEvent[]) {
+        if (e.e !== 'kill' || e.killer === null || e.killer === undefined || e.killer === e.victim) continue;
+        const c = match.actor(e.killer);
+        if (c?.mount && tankIds.has(match.mountStates()[c.mount.index]?.index ?? -1)) tanks.kills[e.weapon] = (tanks.kills[e.weapon] ?? 0) + 1;
+      }
+    }
     if (hill && koth) {
       if (koth.holder === 'contested') hill.contested += 1 / TICK_RATE;
       else if (koth.holder) hill.held += 1 / TICK_RATE;
@@ -720,6 +822,24 @@ function play(map: MapDocument, mode: GameMode, seed: number, seconds: number, s
     if (b) for (const k of Object.keys(boarding) as (keyof typeof boarding)[]) boarding[k] += b[k];
   }
   if (boarding.tries || boarding.gaveUp) out.boarding = boarding;
+  if (wedgeMounts.length) out.wedges = { times: wedges.times, ticks: wedges.ticks, stalls: wedges.stalls, stallTicks: wedges.stallTicks, inside: insideSeconds, insideAt: [...insideAt].sort((a, b) => b[1] - a[1]).slice(0, 8), parked: wedgeMounts.filter((wm) => wm.alive).map((wm) => `${wm.def.id} ${wm.pos.x.toFixed(0)},${wm.pos.y.toFixed(0)},${wm.pos.z.toFixed(0)}`), byVehicle: wedges.byVehicle, at: [...wedges.at].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])).slice(0, 12) };
+  if (tankIds.size) {
+    for (const c of bots) {
+      const l = c.bot?.tankLog;
+      if (!l) continue;
+      tanks.drives += l.drives;
+      tanks.backOuts += l.backOuts;
+      tanks.stuck += l.stuck;
+      tanks.bails += l.bails;
+      tanks.resupply += l.resupply;
+      tanks.stuckAt.push(...l.stuckAt);
+    }
+    tanks.driving = Math.round(tanks.driving);
+    tanks.gunning = Math.round(tanks.gunning);
+    tanks.moving = Math.round(tanks.moving);
+    tanks.metres = Math.round(tanks.metres);
+    out.tanks = tanks;
+  }
   if (rl && match.roulette) {
     // The awards as the match would give them now (the report's matches have no end of their own).
     for (const a of match.roulette.awards(match.combatants())) rl.awards[a[0]] ??= `${match.actor(a[1])?.name ?? a[1]} (${a[2]})`;
@@ -846,7 +966,14 @@ function printMatch(m: MatchRow): void {
   if (m.pieces !== undefined) console.log(`forts: ${m.pieces} pieces built`);
   if (m.breakthrough) console.log(`breakthrough: ${breakthroughText(m.breakthrough)}`);
   if (m.roulette) for (const line of rouletteText(m.roulette)) console.log(line);
+  if (m.wedges) console.log(`vehicles: stalled ${m.wedges.stalls} times (${m.wedges.stallTicks} ticks), wedged ${m.wedges.times} times (${m.wedges.ticks} ticks aboard)${Object.values(m.wedges.byVehicle).some((r) => r[0] || r[2]) ? ` | by vehicle (stalls/wedged): ${Object.entries(m.wedges.byVehicle).filter(([, r]) => r[0] || r[2]).map(([k, [n, , st]]) => `${k} ${st}/${n}`).join(', ')}` : ''}${m.wedges.at.length ? ` | stalls where: ${m.wedges.at.map(([k, v]) => `${k} ${v}`).join(', ')}` : ''}`);
+  if (m.wedges?.inside !== undefined) console.log(`vehicles inside the level: ${m.wedges.inside} vehicle-seconds${m.wedges.insideAt?.length ? ` (${m.wedges.insideAt.map(([k, v]) => `${k} ${v} s`).join(', ')})` : ''} | at the end: ${m.wedges.parked?.join(', ')}`);
   if (m.boarding) console.log(`boarding: ${m.boarding.tries} tries, ${m.boarding.failed} failed, ${m.boarding.gaveUp} given up on, ${m.boarding.back} back to one given up on`);
+  if (m.tanks) {
+    const t = m.tanks;
+    const kills = Object.entries(t.kills).sort((a, b) => b[1] - a[1]).map(([w, n]) => `${w.replace(/^core\./, '')} ${n}`).join(', ') || 'none';
+    console.log(`tanks (${t.count}): driven ${t.driving} bot-s (moving ${t.moving} s, ${t.metres} m), guns manned ${t.gunning} bot-s | drives ${t.drives}, back-outs ${t.backOuts}, given up stuck ${t.stuck}, bailed about to blow ${t.bails}, to an ammo pickup ${t.resupply} (refills ${t.refills}) | shells fired ${t.shells}, kills from aboard: ${kills} | destroyed ${t.destroyed}, crew died with it ${t.crewKilled}${t.stuckAt?.length ? ` | given up at ${t.stuckAt.map((p) => `(${p.join(', ')})`).join(' ')}` : ''}`);
+  }
   const searches = sum(m.bots, (r) => r.searches);
   const failures = sum(m.bots, (r) => r.pathFailures);
   console.log(`time: idle ${pct(sum(m.bots, (r) => r.idle), alive)} (out of a fight ${pct(sum(m.bots, (r) => r.idleCalm), alive)}, frozen ${pct(sum(m.bots, (r) => r.frozen), alive)}, no route ${pct(sum(m.bots, (r) => r.why.noPath ?? 0), alive)}) | going to the goal ${pct(sum(m.bots, (r) => r.towardGoal), goalT)} of goal time, at it ${pct(sum(m.bots, (r) => r.atGoal), goalT)} | kills ${m.kills} (${((m.kills / m.seconds) * 60).toFixed(1)}/min) | stuck recoveries ${sum(m.bots, (r) => r.stuck)} (loops ${sum(m.bots, (r) => r.loops)}) | route searches ${searches}, no route ${failures} (${pct(failures, searches)})`);

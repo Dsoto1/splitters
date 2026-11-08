@@ -121,6 +121,8 @@ export class LocalPlayer {
   /** The seat's gun (set by the session while seated), its heat, and whether the seat can't shoot at all (driving). */
   seatGun: WeaponDefinition | null = null;
   private seatAmmo: [number, number, number, number] = [0, 0, 0, 0];
+  /** The seat gun's rounds aboard when limited (the Tank's shells, PrivateState.mo[3]); null: it never runs dry. */
+  private seatShells: number | null = null;
   unarmed = false;
   /** Movement multiplier from status effects (server value). */
   statusSpeed = 1;
@@ -411,6 +413,11 @@ export class LocalPlayer {
         if (!this.seatGun) this.startReload();
         return none;
       }
+      // A seat gun out of shells (as the server's spendRound) doesn't fire.
+      if (this.seatGun && this.seatShells !== null) {
+        if (this.seatShells <= 0 || (def.heat && ammo[3] >= 100)) return none;
+        this.seatShells--;
+      }
       if (def.heat) {
         if (ammo[3] >= 100) return none;
         ammo[3] = Math.min(100, ammo[3] + def.heat.perShot * 100);
@@ -496,6 +503,7 @@ export class LocalPlayer {
       [this.bodySpeed, this.jump, this.stamina] = (me.bs ?? [1000, 1000, 1000]).map((v) => v / 1000) as [number, number, number];
       this.mounted = !!me.mo;
       this.seatAmmo = [0, 0, 0, me.mo?.[2] ?? 0];
+      this.seatShells = me.mo?.[3] ?? null;
       this.throwable = me.gr ? { kind: THROWABLES[me.gr[0]] ?? 'frag', count: me.gr[1] } : null;
       this.speedTicks = me.sp;
       this.damageTicks = me.dm;

@@ -368,7 +368,7 @@ in JSON, the behaviour in code (driving, suspension, flying, sentry aim and the 
 
 | File | Holds |
 |---|---|
-| `content/vehicles/<id>.json` | one mount: `kind` (`turret`, `sentry`, `vehicle`), `order` (MapMaker palette order), model, health, collision box, seats (role, label, place, mounted `weapon`, aim `arc`), get-in reach, respawn, blast, the `vehicle` handling (speeds, grip, mass, hover, fly, suspension) or the `sentry` block, drawing numbers (`rideHeight`, `wheels`, `cockpitEye`, `glow`), `blurb` and `notes` |
+| `content/vehicles/<id>.json` | one mount: `kind` (`turret`, `sentry`, `vehicle`), `order` (MapMaker palette order), model, health, collision box, seats (role, label, place, mounted `weapon`, aim `arc`), get-in reach, respawn, blast, `armour` and `bailHealth`, the `vehicle` handling (speeds, grip, mass, hover, fly, suspension, `pivot`) or the `sentry` block, drawing numbers (`rideHeight`, `wheels`, `cockpitEye`, `glow`), `blurb` and `notes` |
 | `content/npcs.json` | every NPC role: its network `code`, health, weapon, speed, size (`scale`), `damage` multiple, `creature` / `melee`, the character `look` it is drawn as, and `bot` (what its bot profile changes from `NPC_PROFILE`) |
 
 #### How to add a vehicle or turret
@@ -393,6 +393,24 @@ in JSON, the behaviour in code (driving, suspension, flying, sentry aim and the 
    closing the deck under a turning turret), and give the mount `turret: { seat, pitch }`: that seat's aim turns the
    turret within its `arc` and pitches the barrel within `pitch` (drawing only; shots leave from the gunner's eye as on
    every mounted weapon). Measure the boxes and pivots on a first build without `parts`.
+   **Tanks and armour** (owner, 2026-11-07; the Tank is the example):
+   - `armour`: `surface` (a surface type from content/surface-types.json: its ballistic class decides what rounds do
+     to the hull, `armor` stops them all, its impact the sparks and sound; empty: metal), the share of each kind of
+     damage it takes, `bullets` (every hitscan and ballistic round), `blasts` (splash and a projectile's direct hit:
+     rockets, grenades, shells) and `melee` (each default 1; crashes, falls and hazards always take full damage), and
+     `sealed`: nobody aboard can be shot, blasted or struck from outside, and everyone still inside dies with it when it
+     is destroyed (credited to whoever destroyed it). The Tank: `armor`, bullets 0.1, blasts 1.25, melee 0, sealed.
+   - A seat's `ammo` (`max`, optional `start`, `refillSeconds`): limited rounds for its mounted gun, one back every
+     `refillSeconds` (0: none over time) and all of them when the vehicle, crewed, drives over any ammo pickup that is
+     up (it takes it). The HUD counts them (`PrivateState.mo[3]`). The Tank's cannon: 10, one every 15 s.
+   - A gunner seat's `driverFires`: while it is empty the driver fires its gun, the shot kept within its arc (and a
+     turret seat's aim turns the model's turret). At most one per vehicle; the driver must have no gun of their own.
+   - `vehicle.pivot` (rad/s): tracks, turning on the spot, fading out by 5 m/s. The Tank: 0.8.
+   - `bailHealth`: bots get out below this share of health (default 0.3; the Tank 0.25), or when it is on fire.
+   Bots: drivers fight from a sealed vehicle (close to 28 m, hold and turn the hull onto the target), fire limited
+   shells only at targets worth one (a vehicle, a turret or a sentry; someone on foot past 10 m while over 30 % of the
+   load is left, or with another enemy beside them), drive to an ammo pickup within 120 m when out, and prefer a tank
+   to another vehicle (15 m further, 20 m more detour). `pnpm bot-report` prints a `tanks` line for maps with one.
 5. **Generate and check:** `pnpm content:vehicles` (`node tools/content/vehicles.mjs`) checks the schema (an unknown
    field is an error), the weapons, the models, the seats by kind and the order, and writes
    `packages/shared/src/content/mounts.generated.ts`; `--check` only verifies it is up to date.

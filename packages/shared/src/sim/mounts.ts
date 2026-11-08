@@ -84,7 +84,42 @@ export interface SeatDef {
    * (radians), so the knees pass either side of the saddle and the feet reach footrests at its sides. Default 0.
    */
   straddle?: number;
+  /**
+   * Limited ammunition for this seat's mounted gun (the Tank's cannon): `max` rounds aboard (and at a respawn, `start`
+   * if given), one more back every `refillSeconds` (0: none back over time), and all of them back when the vehicle,
+   * crewed, drives over an ammo pickup. Absent: it never runs dry (heat paces it, if anything).
+   */
+  ammo?: SeatAmmo;
+  /**
+   * While nobody sits in this gunner seat, the driver fires its gun (aimed where they look, the shot kept within the
+   * seat's arc): a tank with a crew of one can still fight. The seat's gunner takes it back on getting in.
+   */
+  driverFires?: boolean;
 }
+
+/** A mounted gun's limited ammunition (SeatDef.ammo). */
+export interface SeatAmmo {
+  max: number;
+  start?: number;
+  refillSeconds: number;
+}
+
+/**
+ * Armour (MountDef.armour): what the hull is made of for bullets (a surface type: its ballistic class decides
+ * penetration and ricochet, its impact the sparks and sound), the share of each kind of damage it takes, and whether
+ * it shuts its crew in (`sealed`: nobody aboard can be hurt from outside; they die with it when it is destroyed).
+ */
+export interface MountArmour {
+  surface?: string;
+  sealed?: boolean;
+  /** Damage taken from bullets and other hitscan rounds, from blasts (splash and a projectile's direct hit) and from melee. Default 1 each. */
+  bullets?: number;
+  blasts?: number;
+  melee?: number;
+}
+
+/** What hurt a mount (damage shares: MountArmour). Crashes, falls and hazards always take full damage. */
+export type MountHit = 'bullet' | 'blast' | 'melee' | 'other';
 
 export interface MountDef {
   id: MountModel | typeof AIRPLANE_MODEL | typeof DROPSHIP_DROP_MODEL;
@@ -124,6 +159,8 @@ export interface MountDef {
     suspension?: SuspensionTuning;
     /** Share of tyre grip lost at top speed (rising with the square of speed): loose at speed, so it powerslides. Default 0. */
     drift?: number;
+    /** Tracks: turns on the spot at this rate (rad/s) standing still, fading out by 5 m/s (where steering takes over). Default none. */
+    pivot?: number;
   };
   sentry?: { weapon: string; range: number; turnRate: number; arc?: ArcSentrySpec };
   /**
@@ -154,6 +191,10 @@ export interface MountDef {
   turret?: { seat: number; pitch?: [number, number] };
   /** A model drawn instead when `model` fails to load (the one it replaced: the Tank's Quaternius model). */
   fallback?: string;
+  /** Armour: its surface, damage shares by kind and a sealed crew (MountArmour). Absent: metal, full damage, riders exposed. */
+  armour?: MountArmour;
+  /** Bots aboard get out below this share of health (default BAIL_HEALTH, bots/vehicles.ts), or once it is on fire. */
+  bailHealth?: number;
   /** One line for MapMaker. */
   blurb: string;
 }
@@ -289,6 +330,33 @@ export function mountDamageState(fraction: number, burning = false): MountDamage
   if (fraction < MOUNT_SMOKE_FRACTION) return 'smoking';
   return 'intact';
 }
+
+/** The share of an amount of damage of kind `hit` a mount takes (MountArmour; crashes and hazards always full). */
+export function armourScale(def: MountDef, hit: MountHit): number {
+  const a = def.armour;
+  if (!a) return 1;
+  return (hit === 'bullet' ? a.bullets : hit === 'blast' ? a.blasts : hit === 'melee' ? a.melee : 1) ?? 1;
+}
+
+/** Its crew can't be hurt from outside (and die with it): MountArmour.sealed. */
+export const sealedMount = (def: MountDef): boolean => !!def.armour?.sealed;
+
+/**
+ * The seat whose mounted gun the rider of seat `seat` fires, or null: their own seat's gun; for the driver with none,
+ * a gunner seat marked `driverFires` while it is empty (`taken(i)`: someone sits in seat i). The match, the client's
+ * HUD and prediction, and the bots all ask this.
+ */
+export function firingSeat(def: MountDef, seat: number, taken: (i: number) => boolean): number | null {
+  const s = def.seats[seat];
+  if (!s) return null;
+  if (s.weapon) return seat;
+  if (s.role !== 'driver') return null;
+  const i = def.seats.findIndex((x) => x.driverFires && x.weapon);
+  return i >= 0 && !taken(i) ? i : null;
+}
+
+/** Ticks per round back of limited mounted ammunition (SeatAmmo.refillSeconds; 0: none back over time). */
+export const ammoRefillTicks = (a: SeatAmmo, tickRate: number): number => (a.refillSeconds > 0 ? Math.max(1, Math.round(a.refillSeconds * tickRate)) : 0);
 
 /** Weight in tonnes for crashes: vehicles their own; turrets and sentries are bolted down, so count as heavy. */
 export const mountMass = (def: MountDef): number => def.vehicle?.mass ?? 4;

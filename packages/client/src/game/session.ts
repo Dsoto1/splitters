@@ -29,6 +29,7 @@ import {
   rouletteOn,
   cockpitEye,
   mountToWorld,
+  firingSeat,
   viewDirection,
   thirdPersonCamera,
   thirdPersonAim,
@@ -394,7 +395,7 @@ export class GameSession {
   /** Team pings on screen: where, who (an enemy when `target` is set), until when. */
   private pings: { id: number; at: Vec3; target?: number; until: number; from: number }[] = [];
   private nextPingId = 1;
-  private seat: [number, number, number] | null = null;
+  private seat: [number, number, number] | [number, number, number, number] | null = null;
   private localStatus = 0;
   private lastWeapon = 0;
 
@@ -2553,7 +2554,10 @@ export class GameSession {
       if (this.mounts) this.view.updateMounts(this.mounts.mounts.values(), this.mannedTurret());
       const ride = local.alive && this.seat ? this.mounts?.mounts.get(this.seat[0]) : undefined;
       const seatDef = ride?.def.seats[this.seat?.[1] ?? 0];
-      const seatGun = seatDef?.weapon ? CORE_WEAPONS[seatDef.weapon] : undefined;
+      // The gun this seat fires: its own, or (the driver) an empty gunner seat's marked driverFires (the Tank's cannon).
+      const gunSeat = ride && this.seat ? firingSeat(ride.def, this.seat[1], (i) => (ride.seats[i] ?? -1) >= 0 && ride.seats[i] !== this.slot) : null;
+      const gunWeapon = gunSeat === null ? undefined : ride!.def.seats[gunSeat]?.weapon;
+      const seatGun = gunWeapon ? CORE_WEAPONS[gunWeapon] : undefined;
       const handsBusy = !!seatDef && (seatDef.role === 'driver' || !!seatDef.weapon || !!ride?.def.airplane);
       local.seatGun = seatGun ?? null;
       local.unarmed = (seatDef?.role === 'driver' && !seatGun) || !!ride?.def.airplane;
@@ -2678,7 +2682,7 @@ export class GameSession {
       this.hud.setStamina(local.state.stamina ?? 1, !!local.state.winded, local.alive, this.seat ? 0 : (local.state.stance ?? 0));
       // On a vehicle or turret gun the crosshair becomes a gunner's reticle (heat shown round it).
       this.hud.setGunnerReticle(seatGun && this.seat ? this.seat[2] : null);
-      if (seatGun && this.seat) this.hud.setMountedGun(seatGun.displayName, this.seat[2]);
+      if (seatGun && this.seat) this.hud.setMountedGun(seatGun.displayName, this.seat[2], this.seat[3], gunSeat === null ? undefined : ride?.def.seats[gunSeat]?.ammo?.max);
       else this.hud.setWeapons(local.inventory, local.held, local.reloadTicks > 0, local.alive, handsBusy);
       this.hud.setThrowable(local.throwable, local.alive);
       // Holding G: show where the throw will go (bounces and the blast area).
