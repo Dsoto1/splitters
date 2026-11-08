@@ -10,7 +10,7 @@ made only on a commit that passed CI on a check branch.
 
 **Empty vehicles stop; bots park out of the way** (follow-up to the hovercraft fix): a vehicle nobody drives now brakes
 to a stop within a few metres (`vehicle.idleBrake` in its data) instead of gliding on; bots slow under 3 m/s before
-getting out (unless it is burning or about to blow); bot drivers keep off routes their vehicle doesn't fit
+getting out (unless it is burning or about to blow), and don't jump out over water; bot drivers keep off routes their vehicle doesn't fit
 (`vehicle.routeFit`, the tanks' route check for every ground vehicle and hovercraft), so they no longer drive a Hauler
 into Iron Tide's 3 m doors, or a tank up its centre stairs under a beam, and leave them plugging the way. Driven vehicles handle exactly as before.
 **Hovercraft no longer get stuck under structures** (owner, 2026-11-07: a Hauler stuck under Iron Tide's platforms):
