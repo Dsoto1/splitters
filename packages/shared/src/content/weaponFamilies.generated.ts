@@ -57,7 +57,17 @@ export const FAMILY_DEFAULTS: Readonly<Record<(typeof WEAPON_FAMILIES)[number], 
   },
   rifle: {
     ballistic: { velocity: 820, gravityScale: 1, energy: 1200, tracerEvery: 3, tracerFinal: 3 },
-    accuracy: { base: 0.005, move: 0.008, air: 0.035, perShot: 0.0012, tight: 3, max: 0.025, recovery: 8, ads: 0.2, adsTicks: 14 },
+    accuracy: {
+      base: 0.0015,
+      move: 0.008,
+      air: 0.035,
+      perShot: 0.0012,
+      tight: 3,
+      max: 0.025,
+      recovery: 8,
+      ads: 0.4,
+      adsTicks: 14,
+    },
     kick: {
       pitch: [0.01, 0.0085],
       yaw: [0, 0.001, 0.002, 0.002, 0.001, 0, -0.001, -0.002, -0.002, -0.001],

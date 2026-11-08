@@ -278,14 +278,14 @@
      "tracerFinal": 3
     },
     "accuracy": {
-     "base": 0.005,
+     "base": 0.0015,
      "move": 0.008,
      "air": 0.035,
      "perShot": 0.0012,
      "tight": 3,
      "max": 0.025,
      "recovery": 8,
-     "ads": 0.2,
+     "ads": 0.4,
      "adsTicks": 14
     },
     "kick": {
@@ -1614,14 +1614,14 @@
      "tracerFinal": 3
     },
     "accuracy": {
-     "base": 0.005,
+     "base": 0.0015,
      "move": 0.008,
      "air": 0.035,
      "perShot": 0.0012,
      "tight": 3,
      "max": 0.025,
      "recovery": 8,
-     "ads": 0.2,
+     "ads": 0.4,
      "adsTicks": 14
     },
     "kick": {

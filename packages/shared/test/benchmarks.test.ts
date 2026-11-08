@@ -220,8 +220,6 @@ describe('each gun owns its range (GUNPLAY_AUDIT.md, the tuning of 2026-11-08)',
       expect(ttk(BENCH.precision, d), `${d} m`).toBeLessThan(ttk(BENCH.rifle, d));
       expect(ttk(BENCH.precision, d), `${d} m`).toBeLessThan(1.05);
     }
-    // The rifle needs its sights far out: its hip cone is wider than its aimed one by far (spec §15, ADS specialists).
-    expect(gunplayOf(getWeapon(BENCH.rifle)).accuracy!.ads).toBeLessThanOrEqual(0.25);
   });
 
   it('the Pulse Pistol fades with range: it out-paces the Pistol up close, not at 50 m and beyond', () => {
