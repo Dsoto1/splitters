@@ -87,7 +87,9 @@ describe('host controls mid-match', () => {
   });
 
   it('a map change keeps the host\'s rules and players', () => {
-    const map = yard();
+    // (Player caps set for the yard as MapMaker would: its automatic ones hold only 5; playerCaps.test has those.)
+    const base = yard();
+    const map = { ...base, metadata: { ...base.metadata, playerCaps: { 'core.deathmatch': { recommended: 10, max: 24 }, 'core.tdm': { recommended: 10, max: 24 } } } };
     const ffa = rulesForTravel({ ...DEFAULT_RULES['core.deathmatch'], scoreLimit: 30, botStyle: 'arena', bodySizes: false }, map, 10);
     expect(ffa.fill).toBe(10);
     expect(ffa.rules).toMatchObject({ mode: 'core.deathmatch', scoreLimit: 30, botStyle: 'arena', bodySizes: false });

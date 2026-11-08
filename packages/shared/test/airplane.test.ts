@@ -308,8 +308,13 @@ describe('drop routes in and out of bounds', () => {
       const bots = [0, 1, 2].map((i) => match.addBot(`bot${i}`, CORE_BOT_PROFILES[i % CORE_BOT_PROFILES.length]!, BOT_DIFFICULTIES.normal)!);
       expect(bots.every((b) => b.mount)).toBe(true);
       const jumpedAt = new Map<number, number>();
+      // Bots that land may knife each other (a Deathmatch); none dies of the drop.
+      const knifed = new Set<number>();
       for (let i = 0; i < TICK_RATE * 40; i++) {
-        match.step();
+        for (const e of match.step()) if (e.e === 'kill') {
+          expect(e.weapon).toBe('core.knife');
+          knifed.add(e.victim);
+        }
         for (const b of bots) if (!b.mount && !jumpedAt.has(b.slot)) jumpedAt.set(b.slot, craftOf(match).pos.x);
         if (bots.every((b) => !b.mount && b.move.grounded)) break;
       }
@@ -319,7 +324,7 @@ describe('drop routes in and out of bounds', () => {
         expect(x).toBeLessThan(40);
       }
       for (const b of bots) {
-        expect(b.alive).toBe(true);
+        expect(b.alive || knifed.has(b.slot)).toBe(true);
         expect(b.move.pos.y).toBeLessThan(2);
         expect(b.move.pos.x).toBeGreaterThan(-4);
         expect(b.move.pos.x).toBeLessThan(36);
