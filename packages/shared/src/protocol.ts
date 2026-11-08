@@ -349,6 +349,13 @@ export type GameEvent =
   | { e: 'heal'; s: number; t: number; n: number }
   /** A quick message (QUICK_MESSAGES index + 1) from player `s`; team modes send it to their team only (`team`). */
   | { e: 'say'; s: number; m: number; team?: string }
+  /**
+   * Fireteams (sim/fireteams.ts): `s` leads squad `sq` of `n` now (`lead`; `from` the leader before, a person when
+   * `h`), `s` gave their squad order `k` (ORDER_KINDS index; `auto`: the match did, as the squad formed up or an order
+   * ended), bot `s` answers order `k` (`ack`, the callout), or leader `s`'s order was refused (`deny`, `n` its
+   * REFUSALS index). Team modes send it to the squad's team only (`team`).
+   */
+  | { e: 'squad'; a: 'lead' | 'order' | 'ack' | 'deny'; s: number; sq?: number; k?: number; n?: number; h?: 1; from?: number; auto?: 1; team?: string }
   /** A ping from `s` at `p` (an enemy when `t` is set); team modes send it to their team only (`team`). */
   | { e: 'ping'; s: number; p: Tuple3; t?: number; team?: string }
   /** A kill-streak reward: `s` earned `r` (index into STREAK_REWARDS). */

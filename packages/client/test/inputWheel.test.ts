@@ -154,3 +154,68 @@ describe('touch pad tap read late as a hold', () => {
     input.dispose();
   });
 });
+
+describe('Fireteams order wheel input', () => {
+  let now = 1000;
+  afterEach(() => vi.restoreAllMocks());
+  const clock = () => vi.spyOn(performance, 'now').mockImplementation(() => now);
+
+  it('leading a squad, a tap of B is still the quick-message menu; holding it opens the order wheel, letting go gives the order', async () => {
+    clock();
+    const { orderSay } = await import('@tiletrigger/shared');
+    const input = await make();
+    input.ordersOn = true;
+    key('keydown', 'KeyB');
+    now += 60;
+    input.frame(1 / 60);
+    key('keyup', 'KeyB');
+    expect(input.msgMenu).toBe(true);
+    expect(input.wheelOpen).toBe(false);
+    key('keydown', 'KeyB');
+    key('keyup', 'KeyB');
+    expect(input.msgMenu).toBe(false);
+    // Held: the order wheel (closing any menu), not the weapon wheel.
+    key('keydown', 'KeyB');
+    now += 250;
+    input.frame(1 / 60);
+    expect(input.wheelOpen).toBe(true);
+    expect(input.wheelKind).toBe('order');
+    key('keyup', 'KeyB');
+    expect(input.wheelOpen).toBe(false);
+    expect(input.msgMenu).toBe(false);
+    expect(input.takeWheelClose()).toBeNull();
+    expect(input.takeOrderClose()).toBe(true);
+    // The session queues the order picked: it goes with the next input.
+    input.queueSay(orderSay('hold'));
+    expect(input.sample().say).toBe(orderSay('hold'));
+    input.dispose();
+  });
+
+  it('not leading a squad, B is the menu at once and never opens the order wheel', async () => {
+    clock();
+    const input = await make();
+    key('keydown', 'KeyB');
+    expect(input.msgMenu).toBe(true);
+    now += 400;
+    input.frame(1 / 60);
+    expect(input.wheelOpen).toBe(false);
+    key('keyup', 'KeyB');
+    expect(input.msgMenu).toBe(true);
+    expect(input.openWheel('touch', 'order')).toBe(false);
+    input.dispose();
+  });
+
+  it('the weapon wheel key does not close the order wheel (one wheel at a time)', async () => {
+    clock();
+    const input = await make();
+    input.ordersOn = true;
+    expect(input.openWheel('touch', 'order')).toBe(true);
+    expect(input.openWheel('key')).toBe(false);
+    key('keydown', 'KeyQ');
+    key('keyup', 'KeyQ');
+    expect(input.wheelOpen).toBe(true);
+    input.closeWheel(false);
+    expect(input.takeOrderClose()).toBe(false);
+    input.dispose();
+  });
+});

@@ -117,6 +117,11 @@ export class KothMode implements ModeLogic {
     return out;
   }
 
+  /** Fireteams' "Defend the objective": the hill in play. */
+  defendSpot(): Vec3 | null {
+    return { ...this.hill.pos };
+  }
+
   /**
    * The team brain's brief: everyone goes for the hill; while the other team holds it, they gather first and retake it
    * together (a group push), otherwise straight in.
