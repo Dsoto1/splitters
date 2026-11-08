@@ -396,6 +396,21 @@ gets overloaded above that: local e2e times out and flakes). Prune landed worktr
      or Defend the objective keeps its post. Keep that?
   3. The party preset (Part 3) and the squad HUD (Part 2) are next.
 
+### Set pieces, part 5: the brainstorm list, retired tiles, MAP 21's sea wall (`wip/mapmaker-setpieces`, agent, 2026-11-08; MapMaker lane)
+- **Built** (docs/SET_PIECES_PLAN.md, "As built: part 5"): twelve pieces (the catwalk bridge in three lengths) in their
+  own families: Power Core Hall, Catwalk Bridge, Twin-Stair Overlook, Atrium Tower, Loading Dock, Sunken Arena (new kit
+  tiles Arena Pit / Tiers / Tiers (Corner)), Reactor Room, Bunker Cluster, Courtyard Gate, Server Vault, Crossroads
+  Plaza, Ramp Junction; and **Sea Wall** / **Sea Wall (Breached)** for Iron Coast (not placed there: main hands them over).
+- **Retired tiles:** `content/setpieces/aliases.json` (generated into `SET_PIECE_TILE_ALIASES`); `map/setPieceAliases.ts`
+  plays a retired tile as its piece (loadMap as played); MapMaker keeps it and offers Replace all in the tile inspector
+  (`editor/retiredTiles.ts`, `replaceTilesWithSetPieceCommand`). Only `military.gantry` → Catwalk Bridge (Up) so far;
+  the other old pieces are parked (owner questions in the plan's table). No format change.
+- **Tests:** `setPieces5.test.ts` (bots along every way through and up both ends of every climb, in every turn and
+  mirror; players climb; the alias; Replace all and undo; the sea wall and breach); `setPiecePlay.test.ts` judges
+  "walled" with nothing built beyond; e2e `editorSetPiecePart5Checks` in editorux.
+- **Pitfall:** core.room_tall, core.atrium and orbital.reactor_hall have no roof of their own; a piece that tops out
+  with them needs a roof block (the three here have one).
+
 ### MapMaker overhaul: measure, props on surfaces, Randomise, turning by mouse (`wip/mapmaker-p1b`, agent, 2026-11-08; Phase 1 items 3-4 and Phase 3 item 9)
 - **Built:** the measure tool (U), props dropped onto the surface under the pointer, Randomise in the prop tool, the
   rotate ring on the selection gizmo and the inspector's quick facings. As built: docs/MAPMAKER_OVERHAUL_PLAN.md under
