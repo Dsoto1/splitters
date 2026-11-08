@@ -2325,8 +2325,10 @@ async function physicsfxFlow(browser) {
     for (const c of m.slots) if (c && c !== me && c !== bot) c.alive = false;
     const f = window.__cs.view.camera.getForwardRay(1).direction;
     const len = Math.hypot(f.x, f.z) || 1;
-    const at = open ?? { x: me.move.pos.x + (f.x / len) * 4, y: me.move.pos.y, z: me.move.pos.z + (f.z / len) * 4 };
-    bot.move = { ...bot.move, pos: { x: at.x, y: at.y + 0.5, z: at.z }, vx: 0, vz: 0, velY: 0, grounded: false };
+    // 4 m in front of you, towards the open ground.
+    const d = open ? { x: open.x - me.move.pos.x, z: open.z - me.move.pos.z } : { x: f.x, z: f.z };
+    const dl = Math.hypot(d.x, d.z) || len;
+    bot.move = { ...bot.move, pos: { x: me.move.pos.x + (d.x / dl) * 4, y: me.move.pos.y + 0.5, z: me.move.pos.z + (d.z / dl) * 4 }, vx: 0, vz: 0, velY: 0, grounded: false };
     window.__botSlot = bot.slot;
     window.__autoInput = { buttons: 0 };
   }, open0.at);
@@ -2342,11 +2344,7 @@ async function physicsfxFlow(browser) {
     const me = m.slots[window.__cs.slot];
     const bot = m.slots[window.__botSlot];
     const standing = window.__cs.view.avatars.get(bot.slot)?.anim?.ch.joints.get('Head')?.getAbsolutePosition().y ?? null;
-    // Pushed away from you as a round from 4 m would (4.8 m/s out, 2 up).
-    const dx = bot.move.pos.x - me.move.pos.x;
-    const dz = bot.move.pos.z - me.move.pos.z;
-    const d = Math.hypot(dx, dz) || 1;
-    window.__cs.view.pushPlayer(bot.slot, { x: (dx / d) * 4.8, y: 2, z: (dz / d) * 4.8 });
+    window.__cs.view.pushPlayer(bot.slot, { x: (bot.move.pos.x - me.move.pos.x) * 1.2, y: 2, z: (bot.move.pos.z - me.move.pos.z) * 1.2 });
     m.damage(bot, 500, me, 'core.pistol');
     return standing;
   });
@@ -2833,16 +2831,12 @@ async function glassChecks(browser) {
       window.__cs.input.pitch = -0.02;
     }, z);
     await page.waitForTimeout(T(600)); // wait-ok: the view turns to the panel
-    // Each shot: the trigger held until the round has gone (the magazine drops; a held trigger fires on a frame, and a
-    // loaded CI page can go a second without one), then let go for a frame or two.
-    const mag = () => window.__match.slots[window.__cs.slot].weapons.get(window.__match.slots[window.__cs.slot].current)?.mag ?? 0;
     for (let k = 0; k < n; k++) {
       if (await page.evaluate(done)) break;
-      const before = await page.evaluate(mag);
       await page.evaluate(() => (window.__autoInput = { buttons: 2 }));
-      await page.waitForFunction(([src, b]) => eval(src)() < b, [mag.toString(), before], { timeout: T(5000) }).catch(() => {});
+      await page.waitForTimeout(T(200)); // wait-ok: holds the trigger for a shot
       await page.evaluate(() => (window.__autoInput = { buttons: 0 }));
-      await frames(page, 2);
+      await page.waitForTimeout(T(250)); // wait-ok: between shots
     }
   };
   const z = (i) => -8 - i * 2.6;
@@ -2863,8 +2857,7 @@ async function glassChecks(browser) {
     return { health: s ? s[1] : null, cracks: window.__cs.view.scenario.glass.counts.cracks };
   });
   check(proof.health !== null && proof.health > 0 && proof.health < 100 && proof.cracks > 0, `bulletproof glass stops the rounds, cracks where they strike and holds (${JSON.stringify(proof)})`);
-  // (Until it breaks: one round a shot.)
-  await fireAt(z(0), 20, () => window.__match.scenario.destructibleAlive('panel_0') === false);
+  await fireAt(z(0), 5, () => window.__match.scenario.destructibleAlive('panel_0') === false);
   await page.waitForFunction(() => window.__cs.view.scene.meshes.some((m) => m.name === 'glassShard'), null, { timeout: T(5000) }).catch(() => {});
   const broke = await page.evaluate(() => ({ alive: window.__match.scenario.destructibleAlive('panel_0'), shards: window.__cs.view.scene.meshes.filter((m) => m.name === 'glassShard').length }));
   check(broke.alive === false && broke.shards > 0, `the glass panel shatters into shards (${JSON.stringify(broke)})`);
