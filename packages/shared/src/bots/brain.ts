@@ -319,6 +319,8 @@ const SHELTERED_TARGET_SCALE = 3;
 const NO_FIT_SECONDS = 20;
 /** At the wheel, the route ahead is checked for fit (routeFits) this far (m) on each new route. */
 const FIT_AHEAD = 80;
+/** Getting out because the route is too narrow only over walkable ground: the navmesh this near (m) under it. */
+const NARROW_EXIT_REACH = { x: 1, y: 1.5, z: 1 };
 /** A pickup a bot got stuck going for is left alone this long (s). */
 const PICKUP_GIVE_UP_SECONDS = 90;
 /** How far (m) a bot goes to hop into a teammate's vehicle. */
@@ -3104,7 +3106,8 @@ export class BotBrain {
       // Get out: arrived (and not fighting from it), about to blow (or on fire), stuck for good (a back-out didn't free
       // it), or a fight with no gun (not from a sealed one: inside is the safest place there is).
       if ((left < 14 && !engaging && !resupply) || aboutToBlow(m) || this.drive.stuck || (target && !seat.weapon && !m.sealed && horizontalDistance(m.pos, target.pos) < 22)) leave = true;
-      if (this.routeTooNarrow && !engaging) {
+      // (Not over water, or off the walkable ground: out there it would only have to swim back. On it drives till it is.)
+      if (this.routeTooNarrow && !engaging && view.nav.closestPoint(m.pos, NARROW_EXIT_REACH)) {
         leave = true;
         this.avoidMounts.set(m.index, tick + TICK_RATE * NO_FIT_SECONDS);
       }

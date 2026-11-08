@@ -9,7 +9,7 @@ import { beforeAll, describe, expect, it } from 'vitest';
 import { BOT_DIFFICULTIES, CORE_BOT_PROFILES, DEFAULT_DEATHMATCH_RULES, MOUNT_DEFS, TICK_RATE, initPhysics, loadMap, rulesForMode, type MapDocument, type PlayerInput } from '../src/index.ts';
 import { Match, initNavigation, type Combatant } from '../src/match.ts';
 import { BAIL_SPEED } from '../src/bots/brain.ts';
-import { vehicleRouteFits, type MountView } from '../src/bots/vehicles.ts';
+import { routeFits, vehicleRouteFits, type MountView } from '../src/bots/vehicles.ts';
 import { makeMap } from './helpers.ts';
 
 beforeAll(() => Promise.all([initPhysics(), initNavigation()]));
@@ -180,6 +180,30 @@ describe('bot drivers keep to routes their hull fits (vehicleRouteFits)', () => 
     expect(vehicleRouteFits(match.physics, view('hauler'), path, 8)).toBe(true);
     // A flyer (no routeHalfWidth) goes anywhere.
     expect(vehicleRouteFits(match.physics, { half: MOUNT_DEFS.hauler.half }, path)).toBe(true);
+  });
+
+  it("Iron Tide's centre stairs (a beam at 3 m over their foot): a tank's or jeep's level hull doesn't fit up them", () => {
+    // Driven up them, the tank and the gun jeep stop on the first step (their hull's rear meets the beam at x -4.5..-4,
+    // 3-4 m up) and were left there, plugging the stairs: Iron Tide's worst foot-bot stuck spot, (-4, 1, 16).
+    const match = new Match(ironTide, tdm, 1);
+    match.step();
+    const path = internals(match).nav.findPath({ x: 1, y: 0, z: 16 }, { x: -11, y: 4, z: 16 })!;
+    expect(path).toBeTruthy();
+    const views = internals(match).mountViews([]);
+    const view = (id: string) => views.find((v) => MOUNT_DEFS[id as 'tank'].half === v.half)!;
+    expect(vehicleRouteFits(match.physics, view('tank'), path)).toBe(false);
+    expect(vehicleRouteFits(match.physics, view('gun_jeep'), path)).toBe(false);
+    // Without the hull's height (the clearance alone, as before) the tank's route passed.
+    const tank = view('tank');
+    expect(routeFits(match.physics, path, tank.routeHalfWidth!, 5)).toBe(true);
+    // Across an open yard every vehicle's route fits.
+    const field = new Match(yard('hauler', 8, 14), rules, 1);
+    field.step();
+    const open = internals(field).nav.findPath({ x: 4, y: 0, z: 4 }, { x: 50, y: 0, z: 100 })!;
+    for (const id of ['tank', 'gun_jeep', 'speeder', 'hauler', 'hover_bike', 'armored_rover']) {
+      const d = MOUNT_DEFS[id as 'tank'];
+      expect(vehicleRouteFits(field.physics, { half: d.half, routeHalfWidth: Math.min(d.half[0], d.half[2]) * (d.vehicle!.routeFit ?? 0.95) }, open), id).toBe(true);
+    }
   });
 
   it('a bot at the wheel of a Hauler, sent through that door, gets out short of it instead of driving in', () => {
