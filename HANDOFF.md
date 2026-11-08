@@ -136,6 +136,25 @@ docs/MAPMAKER_OVERHAUL_PLAN.md). Branches `wip/mapmaker-*` / `check/mapmaker-*` 
   - bot hints in MapMaker (Phase 4 item 3, and Bot AI Phase D's MapMaker part; the format goes in docs/BOTS.md);
   - Environment Phase 3's MapMaker tools (PROCEDURAL_ENVIRONMENT §11), after the other session's Environment Phase 2
     lands. Please note it here when it does.
+- **The owner's answers (2026-11-08)** to the MapMaker questions so far:
+  - **Keep as built:**
+    - the measure tool on U;
+    - Randomise variants for plant species only;
+    - Randomise resets each session;
+    - the draw estimate stays as is for now;
+    - `?` opens the key list;
+    - the plan view's cut stays;
+    - the plan export shows the five kinds only;
+    - Iron Compound keeps the gantry id, which loads as the bridge.
+  - **To build:**
+    - the jump hint samples the ground along the line;
+    - spawns, pickups, props, vehicles and NPCs over nothing or outside the boundary are refused (a red ghost, no
+      place);
+    - the budget bar moves into the bottom status bar;
+    - Shingle Point's card stays the cliff-top view, backed up so the cliff-top buildings' crest shows;
+    - "fix em all": swap every old big piece that has a set-piece version (town and city gate, pylon, warehouse,
+      hangar, bunker, city crossroads) on every map that uses one, in MapMaker. Each map is claimed first; the other
+      session's maps get asked first.
 - **The split of `editorApp.ts`** (Phase 2) waits until Iron Coast's MapMaker changes (finer terrain grid, Terrain →
   Change grid, a "coast" border side) and the race-mode removal (the race layer reworded to track / NPC traffic) are on
   main. This line will say when it starts. Please say here when those land.
