@@ -8,6 +8,14 @@ A briefing for the next Claude session or agent picking up this repo. Read
 **Owner rule for the queue (2026-11-08):** new ideas go to the END of the queue. Only bugs or problematic gameplay
 jump ahead, or something the owner explicitly bumps.
 
+**Debris through the world fixed; low roofs at the moderate price (`wip/debris-lowroof`, 2026-11-08).**
+- **Debris:** a vehicle or turret's blast scattered chunks from under the terrain's surface (a one-sided mesh), and they
+  fell out of the world. Chunks now start clear of the ground (`EffectsWorld.clearOfGround`), and any that still get
+  20 m under the level are removed (`belowWorld`). "Fixed (2026-11-08)" further down; `debrisGround.test.ts`.
+- **Low roofs:** large bots' routes price ground under a low roof at `LOW_ROOF_COST` = 4 a metre (was 1,000, on main
+  since 0.9.0): measured, Diamond Park only plays differently (captures 10 → 7, takes 69 → 85 over 12 seeds, stuck the
+  same); Bot AI Phase C follow-up below.
+
 **Passengers at speed fixed (`wip/passengers`, 2026-11-08; the owner's bug report, top priority).** "Those seated don't
 move in lock step with the vehicle, their bodies drift back ... hearing their footsteps instead of an engine sound."
 - **Root cause:** a rider was drawn from their own pose, snapshot-interpolated 100 ms behind the server
@@ -71,6 +79,8 @@ The workflow is unchanged (CLAUDE.md):
 - Claimed: `packages/client/src/editor/**` and `packages/shared/src/editor/**` (Phase 3 part A, set pieces part 5), MapMaker lane, 2026-11-08.
 - Claimed: the next `MAP_FORMAT_VERSION` bump (the card-shot camera, `wip/mapmaker-p3a`), MapMaker lane, 2026-11-08.
 - Claimed: `maps/sandfall_colosseum.json` (rebuild), `maps/step_temple.json` and `maps/shingle_point.json` (card camera only), MapMaker lane, 2026-11-08.
+- Claimed: the map schema's backdrop Scenery list (a new value `volcano`, no format bump; `wip/mapmaker-sandfall`), MapMaker lane, 2026-11-08.
+- Claimed: `maps/test_coverage.json` (the new set pieces and Arena kit tiles, through MapMaker; `wip/mapmaker-setpieces`), MapMaker lane, 2026-11-08.
 - Claimed: `content/setpieces/**` and the set-piece alias table (set pieces part 5), MapMaker lane, 2026-11-08.
 
 **In flight: MapMaker overhaul (other account)** (owner, 2026-11-08: a second session owns this lane;
@@ -160,19 +170,16 @@ Phase 1 items 1, 2, 5): the ghost says why, the live budget bar, the `?` key lis
      without keep-right and the strafing rule 0.21, without both 0.17. Neither explains the drop; at 48 matches
      captures move about ±10 between builds, and the drop is under two standard errors. The strafing rule does cut
      stuck recoveries (1.43 → 1.32). Not ablated: ground that goes, corridor routes.
-   - **Part 2, large bots route round low roofs (owner's option a): done, held back for the owner** (`wip/bots-lowroof`
-     @ fc4d701 and its docs commits; green on `check/bots-lowroof`, run 42428308885). BOT_AI_PLAN.md, "Part 2", has the tables.
-     - **How:** the navmesh marks ground with less headroom than a large body (2.12 m) as `LOW_AREA` (`nav/solo.ts`,
-       Recast splits polygons there); tall bodies' searches price it at 1,000 a metre (`findPath` `tall`), small and
-       standard ones don't change. A route that still goes under (no way round, or it starts or ends there) turns on
-       the duck (`lowRoute`, `mustDuck`). `botLowRoof.test.ts`.
-     - **Measured against main b8854c6:** stuck 1.31 → 1.12 a bot-minute (large bodies 1.54 → 1.01; Diamond Park 2.17
-       → 1.04 over seeds 1-12), ducking 0.0 s a match; TDM stuck 1.04 → 0.76, kills the same; the Range 19 → 19.
-       **But captures 50 → 43** (48 matches), all of it Diamond Park and Qasr Medina: Diamond Park 13 → 5 over seeds
-       1-12, flag takes up, returns 36 → 51 (large bodies' 6 → 17). Un-stuck large defenders, not crouching carriers.
-       A moderate price (4 a metre) gave Diamond Park 9 captures, ducking 6 s a match.
-     - **The owner's call:** land it, land it with the moderate price, or neither. Not landed: the goal was the stuck
-       reduction without the capture loss.
+   - **Part 2, large bots route round low roofs (owner's option a): on main since 0.9.0, at the moderate price since
+     2026-11-08** (`wip/bots-lowroof` @ fc4d701 reached main at the full price while these notes said held back; the
+     owner then chose the moderate price, `wip/debris-lowroof`). BOT_AI_PLAN.md, "Part 2" and "The moderate price".
+     - **How:** the navmesh marks ground with less headroom than a large body (2.12 m) as `LOW_AREA` (`nav/solo.ts`);
+       tall bodies' searches price it at `LOW_ROOF_COST` = 4 a metre (`nav/index.ts`; was 1,000), small and standard
+       ones don't change. A route that still goes under turns on the duck (`lowRoute`, `mustDuck`). `botLowRoof.test.ts`.
+     - **Moderate against full price** (main 4d8f205, 180 s): CTF 48 matches captures 62 → 61, stuck 1.27 → 1.27 a
+       bot-minute (large 1.17 → 1.18), ducking 0 → 1.3 s a match; only Diamond Park changes: seeds 1-12 captures
+       10 → 7, takes 69 → 85, stuck 1.14 → 1.13, ducking ~10 s a match. Qasr Medina (seeds 1-12) and TDM identical.
+       (At the first measurement, b8854c6, the full price had Diamond Park at 5 captures; on today's main it's 10.)
    - **Next:** route spread (CTF's busiest way about 60 %): route loose side-lane bots through a corridor's via
      instead of `laneWaypoint`, measured on the 48 matches.
    - **The measuring commands** (run each on the branch and on a detached worktree of main; `--compare=a.json,b.json`
@@ -3644,16 +3651,22 @@ passed on a re-run, and the changes involved didn't touch hosting.
   page stalls and the host cuts them off. Candidates: a longer silence limit while a page is catching up, or keep-alive
   pings from the worker. Queue with the next hosting or perf task.
 
-### Open bug (found 2026-11-05): explosion debris can fall through the world
-On the env + intake merge (`check/env-land2`), physicsfx counted 32 debris bodies where it expected 10, with the
-fastest moving at about 60 m/s, on both attempts.
-- 22 extra is exactly one explosion's debris (view.ts `explosion()`: 16 + 6).
-- 60 m/s matches about 3 s of free fall at g = 20. So those chunks were falling through the world rather than
-  landing.
-- Likely source: the test's 500-damage mass blast destroying a vehicle or turret near the spawn on Rockfall Canyon.
-- The test now checks only its own burst (`check/env-land3`), and its message lists the older chunks and their
-  colours.
-- **Still to find:** why explosion debris doesn't collide with the ground in the effects world.
+### Fixed (2026-11-08, `wip/debris-lowroof`): explosion debris fell through the world
+Found 2026-11-05 on `check/env-land2`: physicsfx counted 32 debris bodies where it expected 10, the fastest at about
+60 m/s (3 s of free fall at g = 20); 22 extra is one vehicle explosion's debris (`View.vehicleExplosion`: 16 + 6).
+- **Root cause:** a vehicle or turret blows up centred its half-height above its base (`Match.destroyMount`), and
+  `View.debris` scattered the chunks' starts over a cube up to 2.4 m across round that point (size = 0.4 × the blast
+  radius). Chunks that started under the terrain's surface were under a one-sided triangle mesh with nothing below,
+  and fell out of the world. Reproduced headless: every vehicle and turret on Rockfall Canyon blown up by the
+  physicsfx flow's 500-damage blast, 6 of 264 chunks gone. (A second, smaller one: the effects world answered no
+  rays until its first step.)
+- **Fix:** `debrisBurst` / `vehicleDebris` (shared `sim/effectsPhysics.ts`, the view's spawn maths moved there) and
+  `EffectsWorld.clearOfGround`: each chunk starts on the first static surface under the burst's centre height when it
+  would start below it. `EffectsWorld` steps once when built, so rays see the level at once. **Safety net:**
+  `EffectsWorld.belowWorld` (20 m under the lowest static shape); the view removes such a chunk.
+- **Tests:** `shared/test/debrisGround.test.ts` (the canyon blasts, four seeds: all 22 chunks of each blast settle on
+  the ground, under 1.5 m/s; the old spawns lose chunks below the world's floor). physicsfx: "0 older chunks still
+  about" after the mass blast.
 
 ### New map briefs to discuss with the owner (received 2026-11-05; not started)
 - `docs/map-briefs/MAP_02_The_Spillway.md`: a hydroelectric dam in a gorge; battlefield scale, 32–64 players.
