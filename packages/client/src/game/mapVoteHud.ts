@@ -72,30 +72,58 @@ export class MapVoteHud {
     this.render();
   }
 
+  /** The ballot drawn for (its maps): the cards are built once and updated in place, so a tap never lands on a card being replaced. */
+  private built = '';
+
   private render(): void {
     const s = this.state;
     this.panel.hidden = !s;
     document.getElementById('hud')?.classList.toggle('vote-on', !!s);
-    if (!s) return void this.panel.replaceChildren();
+    if (!s) {
+      this.built = '';
+      return void this.panel.replaceChildren();
+    }
+    const key = s.o.map((o) => `${o.map}:${o.mode}`).join();
+    if (key !== this.built) {
+      this.built = key;
+      const cards = s.o
+        .map((o, i) => {
+          const pic = this.picture(o.map);
+          return `<button type="button" class="mv-card" data-i="${i}" data-map="${escapeHtml(o.map)}">`
+            + `<span class="mv-pic"${pic ? ` style="background-image:url('${encodeURI(pic)}')"` : ''}><kbd>${i + 1}</kbd></span>`
+            + `<span class="mv-name">${escapeHtml(o.name)}</span><span class="mv-mode">${escapeHtml(MODE_LABELS[o.mode] ?? o.mode)}</span>`
+            + `<span class="mv-votes"><i></i><b></b><span></span></span>`
+            + `</button>`;
+        })
+        .join('');
+      this.panel.innerHTML = `<div class="mv-head"><h3></h3><span class="mv-left" aria-live="polite"></span></div><div class="mv-cards">${cards}</div><p class="mv-hint"></p>`;
+    }
     const done = s.w !== undefined;
     const total = s.n.reduce((a, b) => a + b, 0);
-    const head = done
-      ? `<h3>Next map: <b>${escapeHtml(s.o[s.w!]?.name ?? '')}</b></h3><span class="mv-left">${s.by === 'host' ? 'Tie: the host decided · ' : s.by === 'order' ? 'Tie · ' : s.by === 'none' ? 'No votes · ' : ''}Loading in ${VOTE_RESULT_SECONDS} s</span>`
-      : `<h3>Vote for the next map</h3><span class="mv-left" aria-live="polite">${s.left} s</span>`;
-    const cards = s.o
-      .map((o, i) => {
-        const pic = this.picture(o.map);
-        const cls = ['mv-card', this.mine === i ? 'mine' : '', done && s.w === i ? 'won' : '', done && s.w !== i ? 'lost' : ''].filter(Boolean).join(' ');
-        const share = total ? Math.round(((s.n[i] ?? 0) / total) * 100) : 0;
-        return `<button type="button" class="${cls}" data-i="${i}" data-map="${escapeHtml(o.map)}"${done ? ' disabled' : ''} aria-pressed="${this.mine === i}">`
-          + `<span class="mv-pic"${pic ? ` style="background-image:url('${encodeURI(pic)}')"` : ''}><kbd>${i + 1}</kbd></span>`
-          + `<span class="mv-name">${escapeHtml(o.name)}</span><span class="mv-mode">${escapeHtml(MODE_LABELS[o.mode] ?? o.mode)}</span>`
-          + `<span class="mv-votes"><i style="width:${share}%"></i><b>${s.n[i] ?? 0}</b> vote${s.n[i] === 1 ? '' : 's'}</span>`
-          + `</button>`;
-      })
-      .join('');
-    const hint = done ? '' : `<p class="mv-hint">${this.mine === null ? 'Press 1-' + s.o.length + ', click or tap a map' : 'Voted: change it any time until the vote closes'}</p>`;
-    this.panel.innerHTML = `<div class="mv-head">${head}</div><div class="mv-cards">${cards}</div>${hint}`;
+    const set = (el: Element | null, text: string) => {
+      if (el && el.textContent !== text) el.textContent = text;
+    };
+    const h3 = this.panel.querySelector('h3')!;
+    const title = done ? `Next map: ${s.o[s.w!]?.name ?? ''}` : 'Vote for the next map';
+    if (h3.dataset.t !== title) {
+      h3.dataset.t = title;
+      h3.innerHTML = done ? `Next map: <b>${escapeHtml(s.o[s.w!]?.name ?? '')}</b>` : 'Vote for the next map';
+    }
+    set(this.panel.querySelector('.mv-left'), done ? `${s.by === 'host' ? 'Tie: the host decided · ' : s.by === 'order' ? 'Tie · ' : s.by === 'none' ? 'No votes · ' : ''}Loading in ${VOTE_RESULT_SECONDS} s` : `${s.left} s`);
+    this.panel.querySelectorAll<HTMLButtonElement>('.mv-card').forEach((b, i) => {
+      b.classList.toggle('mine', this.mine === i);
+      b.classList.toggle('won', done && s.w === i);
+      b.classList.toggle('lost', done && s.w !== i);
+      b.disabled = done;
+      b.setAttribute('aria-pressed', String(this.mine === i));
+      const n = s.n[i] ?? 0;
+      (b.querySelector('.mv-votes i') as HTMLElement).style.width = `${total ? Math.round((n / total) * 100) : 0}%`;
+      set(b.querySelector('.mv-votes b'), String(n));
+      set(b.querySelector('.mv-votes span'), n === 1 ? 'vote' : 'votes');
+    });
+    const hint = this.panel.querySelector<HTMLElement>('.mv-hint')!;
+    hint.hidden = done;
+    set(hint, this.mine === null ? `Press 1-${s.o.length}, click or tap a map` : 'Voted: change it any time until the vote closes');
     this.panel.classList.toggle('closed', done);
     this.layout();
   }
