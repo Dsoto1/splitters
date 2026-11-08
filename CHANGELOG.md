@@ -8,6 +8,15 @@ made only on a commit that passed CI on a check branch.
 
 ## Unreleased
 
+**Fixes**
+- Debris from a vehicle or turret blowing up no longer falls through the ground: its chunks start above it, and any
+  that get under the world anyway are cleared away.
+
+**Bots:** large bots crouch through a short low roof (a dugout's stair top, a low doorway) when the way round is long,
+and go round a long one (docs/BOT_AI_PLAN.md, "The moderate price"; in 0.9.0 they went round however far). Measured on
+48 CTF matches and a Team Deathmatch sample: the same stuck recoveries and captures; Diamond Park's large bots crouch
+through its dugout steps, about 10 s a match.
+
 ## 0.9.0 (2026-11-08)
 
 **MapMaker: measure, props on surfaces, Randomise** (MapMaker overhaul Phase 1, items 3 and 4):
@@ -211,9 +220,10 @@ distance, and a body kept for the next player of its look stands up fresh.
 wall, where the walkable ground nearest it was the room behind the wall (Capitol Mall's office sills), now steps off
 toward ground it can walk to instead of pushing into the wall; bots following their group's corridor are counted on
 it, so the team spreads its groups by them. Measured on 48 CTF matches: as before.
-(Large bots ducking under low roofs is held back for a decision: fewer stuck bots, but fewer captures.)
+(Large bots ducking wherever there's no room to stand was held back: fewer stuck bots, but fewer captures; part 2 below
+went in instead.)
 
-**Bot AI Phase C follow-up, part 2** (docs/BOT_AI_PLAN.md, "Part 2"; on `wip/bots-lowroof`, held back for the owner):
+**Bot AI Phase C follow-up, part 2** (docs/BOT_AI_PLAN.md, "Part 2"):
 large bots go round roofs too low for them to stand under (a dugout's stair top, a low doorway) instead of walking into
 them and sticking there, and crouch through one only where nothing else gets them where they're going. Small and
 standard bots keep their routes. Measured on 48 CTF matches: about 15 % fewer stuck recoveries, no ducking, but fewer captures
