@@ -69,6 +69,8 @@ export interface LocalMatchOptions {
   spectate?: boolean;
   /** The party this browser's player is in (shared net/party.ts): friends whose invite link carries it join their team. */
   party?: string;
+  /** MapMaker's Play from here: this browser's player starts here (feet, facing; editor/playFromHere.ts), not at a spawn. */
+  startAt?: { pos: [number, number, number]; yaw: number; pitch: number };
 }
 
 /** The game browser listing of a hosted match, for the successor to carry on (net/handoff.ts): its name only. */
@@ -251,6 +253,8 @@ export class MatchHost {
       me = match.addHuman(this.opts.name, this.opts.look)!;
       if (this.opts.party) me.party = this.opts.party;
       if (this.opts.carry) match.applyCarry(me, this.opts.carry);
+      const at = this.opts.startAt;
+      if (at) match.startHere(me, { pos: { x: at.pos[0], y: at.pos[1], z: at.pos[2] }, yaw: at.yaw, pitch: at.pitch });
     }
     me.account = !!this.opts.verified;
     if (test?.god) me.invulnerable = true;

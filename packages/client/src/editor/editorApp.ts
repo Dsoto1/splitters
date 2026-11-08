@@ -1,6 +1,9 @@
 import type { AbstractEngine } from '@babylonjs/core/Engines/abstractEngine';
 import {
   EditHistory,
+  playFromHereSpot,
+  blockBoxes,
+  propBoxes,
   BOT_CAST_CHOICES,
   BOT_CAST_MAX,
   CHARACTER_GROUPS,
@@ -328,6 +331,8 @@ import {
 } from './paletteCatalog.ts';
 import { envRendererOn } from '../environment/envFlag.ts';
 import { thumbnailSection, type ThumbHost } from './makerThumb.ts';
+import { PlanView } from './planView.ts';
+import { cardShotSection, type CardShotHost } from './cardShot.ts';
 import { libraryThumb } from './libraryThumbs.ts';
 import { isOwner, openPublishDialog } from './ownerPublish.ts';
 import { DEFAULT_HEIGHT_GRID_SMOOTHING, HEIGHT_GRID_SMOOTHING, MAX_HEIGHT_GRID_BYTES, parseAsciiGrid, terrainFromHeightGrid } from './heightGrid.ts';
@@ -345,6 +350,8 @@ export interface TestRequest {
   map: MapDocument;
   botFill: number;
   difficulty: 'easy' | 'normal' | 'hard';
+  /** Play from here: you start at this spot (feet), facing this way, not at a spawn point. */
+  startAt?: { pos: [number, number, number]; yaw: number; pitch: number };
 }
 
 export interface EditorHost {
@@ -690,6 +697,8 @@ export class EditorApp {
   private readonly surfaces = new SurfaceBoxes();
   /** The rotate ring on the selection gizmo: drag to turn (MapMaker overhaul Phase 3 item 9). */
   private readonly ring: RotateRing;
+  /** The plan view (K): the level from straight above (MapMaker overhaul Phase 3 item 2). */
+  readonly plan: PlanView;
   private level = 0;
   private showAll = false;
   /** The last placing tool, so the toolbar's Place button can pick it up again. */
@@ -786,6 +795,22 @@ export class EditorApp {
       },
       $('editor'),
     );
+    this.plan = new PlanView({
+      view: this.view,
+      doc: () => this.viewDoc,
+      level: () => this.level,
+      ground: () => this.shownGround,
+      selected: () => new Set([...this.selection.tiles, ...this.selection.entities, ...this.selPieces()]),
+      showAll: () => this.showAll,
+      setShowAll: (on) => this.setShowAll(on, true),
+      toast: (t, bad) => this.toast(t, bad),
+      changed: (on) => {
+        const b = $('ed-plan');
+        b.classList.toggle('on', on);
+        b.setAttribute('aria-pressed', String(on));
+        this.updateHover();
+      },
+    });
     this.propOpts = new PropPlaceOptions(testMode()?.seed ?? Math.floor(Math.random() * 2 ** 31), () => this.updateHover());
     // The top bar steps through its compact layouts until it fits, whenever its width or contents change.
     const top = $('ed-top');
@@ -930,6 +955,17 @@ export class EditorApp {
     return `the ${s.kind === 'door' ? 'door' : 'opening'} on the ${side} side (${levelName(s.z)})`;
   }
 
+  /** What the card shot (cardShot.ts) needs from the editor. */
+  private readonly cardHost: CardShotHost = {
+    view: () => this.view,
+    current: () => this.doc,
+    standOn: () => [...this.mapBoxes(), ...blockBoxes(this.viewDoc), ...propBoxes(this.viewDoc)],
+    ground: () => this.shownGround,
+    run: (label, cmd) => this.run(label, cmd),
+    leavePlan: () => this.plan.exit(),
+    toast: (message, error) => this.toast(message, error),
+  };
+
   /** What Set thumbnail (makerThumb.ts) needs from the editor. */
   private readonly thumbHost: ThumbHost = {
     view: () => this.view,
@@ -981,11 +1017,13 @@ export class EditorApp {
       const f = k('KeyW') - k('KeyS');
       const r = k('KeyD') - k('KeyA');
       const u = k('KeyE') - k('KeyQ');
-      if (f || r || u) this.view.fly(f * speed, r * speed, u * speed);
+      if (this.plan.on) (f || r) && this.plan.move(r * speed, f * speed);
+      else if (f || r || u) this.view.fly(f * speed, r * speed, u * speed);
     }
     if (this.stroke) this.strokeStep(dt);
     this.refresh(false);
     this.measure.frame();
+    this.plan.update();
     this.view.render();
   }
 
@@ -1912,13 +1950,15 @@ export class EditorApp {
 
   /** Home: the starting overview of the level being edited. */
   private resetView(): void {
+    if (this.plan.on) return this.plan.fit();
     this.view.resetView({ x: 0, y: this.level * this.doc.classicStructure.levelHeight, z: 0 });
     this.toast('View reset (Home)');
   }
 
   private focusSelection(): void {
     const target = this.selectionCenter();
-    if (target) this.view.focus(target);
+    if (target && this.plan.on) this.plan.centre(target.x, target.z);
+    else if (target) this.view.focus(target);
   }
 
   private selectionCenter(): Vec3 | null {
@@ -2351,7 +2391,9 @@ export class EditorApp {
         // A right-click that wobbles a few pixels is still a click (secondaryClick), not a look.
         this.looking.travel += Math.abs(dx) + Math.abs(dy);
         if (this.looking.travel > 6) this.looking.moved = true;
-        if (this.looking.button === 2) this.view.look(dx * LOOK_SENSITIVITY, -dy * LOOK_SENSITIVITY);
+        // The plan view: a drag pans (the ground follows the pointer).
+        if (this.plan.on) this.plan.pan(dx, dy);
+        else if (this.looking.button === 2) this.view.look(dx * LOOK_SENSITIVITY, -dy * LOOK_SENSITIVITY);
         else this.view.fly(0, -dx * 0.05, dy * 0.05);
         return;
       }
@@ -2472,7 +2514,8 @@ export class EditorApp {
         e.preventDefault();
         // Mouse wheels send big steps, touchpads many small ones: move by how far it scrolled.
         const px = e.deltaMode === 1 ? e.deltaY * 16 : e.deltaY;
-        this.view.dolly(Math.max(-3, Math.min(3, -px * 0.03)) * (e.shiftKey ? 3 : 1));
+        if (this.plan.on) this.plan.zoom(px * (e.shiftKey ? 3 : 1), e.clientX, e.clientY);
+        else this.view.dolly(Math.max(-3, Math.min(3, -px * 0.03)) * (e.shiftKey ? 3 : 1));
         this.updatePointer(e.clientX, e.clientY);
       },
       { passive: false },
@@ -2492,7 +2535,9 @@ export class EditorApp {
       if (!this.active) return;
       if (e.code === 'F5') {
         e.preventDefault();
-        this.test();
+        // Shift+F5: Play from here (workflowKeys.ts).
+        if (e.shiftKey) this.playFromHere();
+        else this.test();
         return;
       }
       if (isTyping() || document.querySelector('#editor dialog[open]')) return;
@@ -2581,6 +2626,10 @@ export class EditorApp {
         case 'KeyH':
           this.setShowAll(!this.showAll);
           break;
+        // K: the plan view (workflowKeys.ts).
+        case 'KeyK':
+          this.plan.toggle();
+          break;
         case 'Slash':
           // Search the palette.
           $<HTMLInputElement>('ed-search').focus();
@@ -2643,10 +2692,10 @@ export class EditorApp {
     this.toast('Pick a piece, prop, item or NPC from the palette on the left to place it');
   }
 
-  private setShowAll(on: boolean): void {
+  private setShowAll(on: boolean, quiet = false): void {
     this.showAll = on;
     $<HTMLInputElement>('ed-showall').checked = on;
-    this.toast(on ? 'Showing every level (the others ghosted)' : `Showing ${levelName(this.level)} and below`);
+    if (!quiet) this.toast(on ? 'Showing every level (the others ghosted)' : `Showing ${levelName(this.level)} and below`);
   }
 
   /** The always-visible tool bar over the view: modes, then actions, each with its key. */
@@ -4401,6 +4450,11 @@ export class EditorApp {
       this.toast(`Imported ${r.map.metadata.name}${errors ? ` (${errors} problem${errors === 1 ? '' : 's'} to fix before it plays: see the list)` : ''}`);
     });
     $('ed-test').addEventListener('click', () => this.test());
+    $('ed-test-here').addEventListener('click', () => this.playFromHere());
+    $('ed-plan').addEventListener('click', (e) => {
+      this.plan.toggle();
+      (e.currentTarget as HTMLElement).blur();
+    });
     this.setupSidebars();
     $('ed-status').addEventListener('click', () => $('ed-issues').scrollIntoView({ behavior: 'smooth' }));
     $('ed-level-up').addEventListener('click', () => this.setLevel(this.level + 1));
@@ -4550,6 +4604,8 @@ export class EditorApp {
       el.append(h2('Map properties'));
       // The map's picture (Set thumbnail) and plan (reference board: map properties).
       el.append(thumbnailSection(this.thumbHost));
+      // The menu card shot's camera (MapMaker overhaul Phase 3 item 8).
+      el.append(cardShotSection(this.cardHost));
       const name = document.createElement('input');
       name.type = 'text';
       name.id = 'ed-prop-name';
@@ -5890,6 +5946,7 @@ export class EditorApp {
   }
 
   private replaceDocument(doc: MapDocument): void {
+    this.plan.exit();
     this.history.reset(doc);
     this.savedRevision = this.history.revision;
     this.selection = emptySelection();
@@ -6002,7 +6059,25 @@ export class EditorApp {
     dialog.showModal();
   }
 
-  test(): void {
+  /**
+   * Play from here (MapMaker overhaul Phase 3 item 1; Shift+F5, the top bar's ▶ Here): a test match with you standing
+   * on the nearest walkable ground below the camera, facing where it looks (shared editor/playFromHere.ts). Refused,
+   * with the reason, where there's nowhere to stand. Back in MapMaker the view, selection and undo are as they were.
+   */
+  playFromHere(): void {
+    const p = this.view.camera.position;
+    // The plan view's camera is high above: start from its cut, on the level shown.
+    const c = this.plan.on ? { x: p.x, y: this.plan.cutY, z: p.z } : p;
+    const doc = this.viewDoc;
+    const boxes = [...this.mapBoxes(), ...blockBoxes(doc), ...blockBoxes(doc, true), ...propBoxes(doc), ...propBoxes(doc, true)];
+    // The plan view looks straight down: you start looking ahead.
+    const pitch = this.plan.on ? 0 : this.view.pitch;
+    const spot = playFromHereSpot({ camera: { x: c.x, y: c.y, z: c.z }, yaw: this.view.yaw, pitch, boxes, ground: this.shownGround, bounds: this.doc.bounds });
+    if (!spot.ok) return this.toast(`Can't play from here: ${spot.reason}`, true);
+    this.test({ pos: spot.position, yaw: spot.yaw, pitch: spot.pitch });
+  }
+
+  test(startAt?: TestRequest['startAt']): void {
     const errors = this.allIssues().filter((i) => i.severity === 'error');
     if (errors.length) {
       this.toast(`Fix ${errors.length} error${errors.length > 1 ? 's' : ''} before testing: ${errors[0]!.message}`, true);
@@ -6016,7 +6091,7 @@ export class EditorApp {
     const fill = teams ? Math.min(32, teams.reduce((a, b) => a + b, 0)) : botCount + 1;
     // As played: paths laid into the ground, terrain under the floors (what loadMap gives every match).
     const played = loadMap(this.doc);
-    this.host.startTest({ map: played.ok ? played.map : this.doc, botFill: fill, difficulty });
+    this.host.startTest({ map: played.ok ? played.map : this.doc, botFill: fill, difficulty, ...(startAt ? { startAt } : {}) });
   }
 
   toast(message: string, error = false): void {
