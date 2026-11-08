@@ -279,6 +279,7 @@ class App {
           this.playPlaylist(id, botFill, skill);
         },
         joinCode: (code, name) => void this.joinCode(code, name),
+        playTutorial: () => void this.playTutorial(),
       }, this.menuScene, this.portraits, audio, params);
       this.engine.runRenderLoop(() => this.frame());
     })();
@@ -445,6 +446,26 @@ class App {
     // &bots=96 (load tests): that many players in all, split evenly over two teams.
     if (bots > 0 && rules.teamSizes?.length === 2) rules.teamSizes = [Math.ceil(bots / 2), Math.floor(bots / 2)];
     this.playLocal(arena.map, rules, bots > 0 ? bots : botFill, 'normal');
+  }
+
+  /**
+   * The tutorial (main menu → Tutorial; offered once on a first visit): the Training Range alone, Deathmatch with no
+   * bots and no time or score limit, the step card over it (game/tutorial.ts). Leaving or Skip goes back to the menu.
+   */
+  async playTutorial(): Promise<void> {
+    void loadMatchCode().catch(() => undefined);
+    await this.init();
+    const map = await loadBuiltInMap('training_range').catch(() => null);
+    if (!map) return void this.showMenu("The Training Range didn't load");
+    const rules: MatchRules = { ...rulesForMode(map, 'core.deathmatch'), timeLimitSeconds: 0, scoreLimit: 0 };
+    void this.withMatch((m) =>
+      this.startSession(m, new m.LocalTransport(map, { name: this.front!.displayName || 'Player', verified: this.front!.verified, look: this.front!.look, botFill: 1, difficulty: 'normal', rules, ...(TEST ? { test: TEST } : {}) }), {
+        exitLabel: 'Leave tutorial',
+        exitOnF5: false,
+        tutorial: true,
+        onExit: (reason) => void this.showMenu(reason ?? ''),
+      }),
+    );
   }
 
   /**
@@ -764,7 +785,7 @@ class App {
     reconnectBanner(null);
   }
 
-  private startSession(m: MatchCode, transport: Transport, o: { exitLabel: string; exitOnF5: boolean; hostable?: boolean; chain?: boolean; hosting?: Travel['hosting']; autoHost?: boolean; greeting?: string; rotation?: SessionOptions['rotation']; onExit: (reason?: string, travel?: Travel, how?: 'lost' | 'rejected', end?: SessionEnd) => void; onReady?: () => void }): GameSession {
+  private startSession(m: MatchCode, transport: Transport, o: { exitLabel: string; exitOnF5: boolean; hostable?: boolean; chain?: boolean; hosting?: Travel['hosting']; autoHost?: boolean; greeting?: string; rotation?: SessionOptions['rotation']; tutorial?: boolean; onExit: (reason?: string, travel?: Travel, how?: 'lost' | 'rejected', end?: SessionEnd) => void; onReady?: () => void }): GameSession {
     // A match has its own loading screen (players, map and weapons).
     finishBoot();
     $('menu').hidden = true;
@@ -788,6 +809,9 @@ class App {
       ...(o.greeting ? { greeting: o.greeting } : {}),
       mapPicker: this.mapPicker(m),
       ...(o.rotation ? { rotation: o.rotation } : {}),
+      ...(o.tutorial ? { tutorial: true } : {}),
+      // First-time tips: off in browser tests (?test=1, automated browsers) unless asked for (&tips=1, &newplayer=1).
+      tips: (!TEST && !navigator.webdriver) || params.get('tips') === '1' || params.get('newplayer') === '1',
       onExit: (reason, travel, how, end) => {
         if (this.session === session) this.session = undefined;
         o.onExit(reason, travel, how, end);
@@ -905,6 +929,7 @@ else if (params.get('mode') === 'assets') {
   })();
 } else if (params.get('mode') === 'editor') void app.openEditor();
 else if (params.get('mode') === 'designer') void app.openDesigner();
+else if (params.has('tutorial')) void app.playTutorial();
 else if (params.has('offline')) {
   const which = params.get('offline');
   // &classes=1 (or a number: the per-team class limit) plays with Classes; &weapons=chaos a weapon set (standard,

@@ -1445,7 +1445,7 @@ async function offlineFlow(browser) {
   // opens Character Select too). Sign-in lives there, not in the bottom bar.
   const navIds = await page.$$eval('#menu .nav button', (bs) => bs.map((b) => b.id));
   const badge = await page.evaluate(() => ({ text: document.querySelector('#profile-badge')?.textContent ?? '', footer: !!document.querySelector('.menu-footer #sign-in, .menu-footer #profile-link, .menu-footer .menu-links') }));
-  check(navIds.join() === 'nav-play,nav-mapmaker,nav-characters,nav-online,nav-options' && /Profile/.test(badge.text) && /Guest/i.test(badge.text) && !badge.footer, `the main menu has Characters beside the Profile entry, and sign-in leaves the bottom bar (${navIds.join(', ')}; "${badge.text}")`);
+  check(navIds.join() === 'nav-quick,nav-play,nav-mapmaker,nav-characters,nav-online,nav-options' && /Profile/.test(badge.text) && /Guest/i.test(badge.text) && !badge.footer, `the main menu has Characters beside the Profile entry, and sign-in leaves the bottom bar (${navIds.join(', ')}; "${badge.text}")`);
   await page.click('#nav-characters');
   await page.waitForSelector('.char-grid', { timeout: T(10000) }).catch(() => {});
   const charsOpen = await page.isVisible('.char-grid');
@@ -5224,6 +5224,103 @@ async function environmentFlow(browser) {
   await page.context().close();
 }
 
+/**
+ * New players: the first visit's tutorial offer, the tutorial on the Training Range (a step done by doing it, Skip
+ * from the pause menu back to the menu, touch words on a phone), Quick Play into a Deathmatch against bots on a map
+ * of its list, and a first-time tip (once only, clear of the crosshair). Automated browsers get neither the offer nor
+ * tips unless they ask (&newplayer=1, &tips=1).
+ */
+async function newplayerFlow(browser) {
+  const page = await (await browser.newContext({ viewport: { width: 1280, height: 720 } })).newPage();
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
+  page.on('dialog', (d) => d.accept());
+  // Without asking, a test page has no offer.
+  await page.goto(`${CLIENT}/?test=1&name=Tester`);
+  await page.waitForFunction(() => window.__front && !document.getElementById('menu').hidden, null, { timeout: T(60000) });
+  check(!(await page.$('#first-run')), 'browser tests see no first-visit tutorial offer unless they ask');
+  await page.goto(`${CLIENT}/?test=1&name=Tester&newplayer=1`);
+  await page.waitForFunction(() => window.__front && !document.getElementById('menu').hidden, null, { timeout: T(60000) });
+  const first = await page.evaluate(() => ({ offer: !!document.querySelector('#first-run'), nav: [...document.querySelectorAll('#menu .nav button')].map((b) => b.id), stored: localStorage.getItem('tiletrigger.tutorial') }));
+  check(first.offer && first.nav[0] === 'nav-quick' && first.stored === 'offered', `a first visit: Quick Play heads the menu and the tutorial is offered, once (${JSON.stringify(first)})`);
+
+  // The tutorial: the card, a step done by doing it, Skip.
+  await page.click('#first-run-start');
+  const started = await page.waitForFunction(() => window.__tutorial && window.__cs?.phase?.() === 'playing' && window.__cs.local?.alive, null, { timeout: T(120000) }).then(() => true, () => false);
+  const card = started ? await page.evaluate(() => ({ step: window.__tutorial.state().step, count: document.querySelector('#tutorial .tut-count')?.textContent, text: document.querySelector('#tutorial .tut-text')?.innerHTML ?? '', skip: !!document.querySelector('#tutorial-skip'), pauseSkip: !!document.querySelector('#pause-skip-tutorial'), map: window.__cs.map })) : null;
+  check(!!card && card.step === 'look' && card.count === '1 / 10' && /<kbd>Mouse<\/kbd>/.test(card.text) && card.skip && card.pauseSkip && card.map === 'training_range', `Start tutorial opens the Training Range with the first step's card, Skip on it and in the pause menu (${JSON.stringify(card)})`);
+  // Move: walking forward 5 m finishes it (and nothing else does: standing still keeps it).
+  await page.evaluate(() => window.__tutorial.goTo(1));
+  await frames(page, 30);
+  const stillMove = await page.evaluate(() => window.__tutorial.state());
+  await page.evaluate(() => (window.__autoInput = { forward: 1 }));
+  const moved = await page.waitForFunction(() => window.__tutorial.state().step === 'sprint', null, { timeout: T(60000) }).then(() => true, () => false);
+  await page.evaluate(() => (window.__autoInput = { forward: 1, buttons: 128 }));
+  const sprinted = await page.waitForFunction(() => window.__tutorial.state().step === 'crouch', null, { timeout: T(60000) }).then(() => true, () => false);
+  await page.evaluate(() => (window.__autoInput = { buttons: 256 }));
+  const crouched = await page.waitForFunction(() => window.__tutorial.state().step === 'shoot', null, { timeout: T(60000) }).then(() => true, () => false);
+  await page.evaluate(() => delete window.__autoInput);
+  const dots = await page.$$eval('#tutorial .tut-dots i', (ds) => ds.map((d) => d.className));
+  check(stillMove.step === 'move' && stillMove.progress === 0 && moved && sprinted && crouched && dots.slice(0, 4).every((c) => c === 'done') && dots[4] === 'on', `a step completes on its action: walking finishes Move, sprinting Sprint, crouching Crouch, and the dots follow (${JSON.stringify({ stillMove, moved, sprinted, crouched, dots })})`);
+  // Skip (the pause menu's: Esc pauses): back to the main menu, and the offer won't come back.
+  await page.evaluate(() => document.getElementById('pause-skip-tutorial').click());
+  const back = await page.waitForFunction(() => !document.getElementById('menu').hidden && window.__front.screen === 'home', null, { timeout: T(30000) }).then(() => true, () => false);
+  const after = await page.evaluate(() => ({ stored: localStorage.getItem('tiletrigger.tutorial'), card: !!document.querySelector('#tutorial'), skipBtn: !!document.querySelector('#pause-skip-tutorial') }));
+  check(back && after.stored === 'skipped' && !after.card && !after.skipBtn, `Skip leaves the tutorial for the main menu and counts it as seen (${JSON.stringify({ back, ...after })})`);
+  await page.reload();
+  await page.waitForFunction(() => window.__front && !document.getElementById('menu').hidden, null, { timeout: T(60000) });
+  check(!(await page.$('#first-run')), 'the next visit offers it no more');
+
+  // Quick Play: two clicks into a Deathmatch against bots, on a map of its list, the map's recommended players.
+  await page.click('#nav-quick');
+  await page.waitForSelector('#quick-play');
+  const choice = await page.$$eval('#quick-play .qp-mode', (bs) => bs.map((b) => b.dataset.mode));
+  await page.click('#qp-dm');
+  const playing = await page.waitForFunction(() => window.__cs?.phase?.() === 'playing' && window.__quickPlay, null, { timeout: T(120000) }).then(() => true, () => false);
+  const qp = playing ? await page.evaluate(() => ({ ...window.__quickPlay, mode: window.__cs.rules().mode, map: window.__cs.map, saved: JSON.parse(localStorage.getItem('tiletrigger.quickPlay')) })) : null;
+  check(choice.join() === 'core.tdm,core.deathmatch' && !!qp && qp.mode === 'core.deathmatch' && ['citadel', 'crossroads', 'bunker_cross', 'halcyon_station'].includes(qp.map) && qp.fill >= 8 && qp.setup.skill === 'normal' && qp.saved?.mode === 'core.deathmatch', `Quick Play → Deathmatch starts a match against normal bots on one of its maps (${JSON.stringify(qp && { map: qp.map, mode: qp.mode, fill: qp.fill, saved: qp.saved })})`);
+  await page.goto(`${CLIENT}/?test=1&name=Tester`);
+  await page.waitForFunction(() => window.__front && !document.getElementById('menu').hidden, null, { timeout: T(60000) });
+  await page.click('#nav-quick');
+  await page.waitForSelector('#quick-play');
+  const remembered = await page.evaluate(() => ({ focus: document.activeElement?.dataset?.mode, last: document.querySelector('#quick-play .qp-last')?.closest('.qp-mode')?.dataset.mode }));
+  await page.keyboard.press('Escape');
+  const closed = await page.waitForFunction(() => !document.querySelector('#quick-play'), null, { timeout: T(5000) }).then(() => true, () => false);
+  check(remembered.focus === 'core.deathmatch' && remembered.last === 'core.deathmatch' && closed, `Quick Play remembers the last choice (focused and marked), and Esc closes it (${JSON.stringify({ ...remembered, closed })})`);
+
+  // A first-time tip: shown once, low in the middle, clear of the crosshair; seen, it doesn't come back.
+  await page.goto(`${CLIENT}/?offline=arena&test=1&god=1&bots=1&name=Tester&tips=1`);
+  await page.waitForFunction(() => window.__tips && window.__cs?.phase?.() === 'playing', null, { timeout: T(120000) });
+  await page.evaluate(() => window.__tips.trigger('reload'));
+  const shown = await page.waitForFunction(() => document.querySelector('#coach-tip.on'), null, { timeout: T(10000) }).then(() => true, () => false);
+  const tip = await page.evaluate(() => {
+    const r = document.getElementById('coach-tip').getBoundingClientRect();
+    const cx = innerWidth / 2;
+    const cy = innerHeight / 2;
+    return { text: document.getElementById('coach-tip').textContent, clear: r.bottom < cy - 60 || r.top > cy + 60 || r.right < cx - 60 || r.left > cx + 60, seen: JSON.parse(localStorage.getItem('tiletrigger.tips')).seen };
+  });
+  check(shown && /reload/i.test(tip.text) && tip.clear && tip.seen.includes('reload'), `a tip shows once its situation happens, clear of the crosshair, and is remembered (${JSON.stringify(tip)})`);
+  // Two situations at once: the first shows, the other waits (frames drawn between, so the HUD has had its turn).
+  const one = await page.evaluate(() => new Promise((done) => {
+    window.__tips.trigger('reload');
+    window.__tips.trigger('vehicle');
+    window.__tips.trigger('armor');
+    requestAnimationFrame(() => requestAnimationFrame(() => done({ shown: document.querySelectorAll('#coach-tip.on').length, current: window.__tips.current() })));
+  }));
+  check(one.shown <= 1 && one.current !== 'armor', `one tip at a time: the others wait their turn (${JSON.stringify(one)})`);
+
+  // On a phone the tutorial speaks of the touch controls.
+  const phone = devices['Pixel 7'];
+  const mobile = await (await browser.newContext({ ...phone, viewport: { width: phone.viewport.height, height: phone.viewport.width }, screen: { width: phone.screen.height, height: phone.screen.width } })).newPage();
+  mobile.on('pageerror', (e) => errors.push(e.message));
+  await mobile.goto(`${CLIENT}/?tutorial&test=1&name=Tester`);
+  const touchCard = await mobile.waitForFunction(() => window.__tutorial && document.querySelector('#tutorial .tut-text')?.textContent, null, { timeout: T(120000) }).then(() => mobile.evaluate(() => document.querySelector('#tutorial .tut-text').textContent), () => '');
+  check(/drag/i.test(touchCard) && !/mouse/i.test(touchCard), `on a phone the steps name the touch controls ("${touchCard}")`);
+  await mobile.context().close();
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  await page.context().close();
+}
+
 async function visualFlow(browser) {
   const { existsSync, readFileSync } = await import('node:fs');
   const { PNG } = await import('pngjs');
@@ -7338,7 +7435,7 @@ try {
   const open = instrumentBrowser(browser);
   // E2E_ONLY=editor,characters runs a subset; E2E_SHARD=2/8 one of CI's parallel groups (balanced by e2e/timings.json;
   // CI's plan job passes each shard's flows in E2E_ONLY itself).
-  const flows = { editor: editorFlow, editorux: editoruxFlow, offline: offlineFlow, mobile: mobileFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, scenery: sceneryFlow, setpieces: setpiecesFlow, physicsfx: physicsfxFlow, teams: teamsFlow, weaponsets: weaponsetsFlow, ctf: ctfFlow, forts: fortsFlow, breakthrough: breakthroughFlow, roulette: rouletteFlow, arsenal: arsenalFlow, vehicles: vehiclesFlow, race: raceFlow, zombies: zombiesFlow, classes: classesFlow, coverage: coverageFlow, ...Object.fromEntries(MAP_FLOWS.map((name, part) => [name, (b) => mapsFlow(b, part)])), designer: designerFlow, ...Object.fromEntries(CHARACTER_FLOWS.map((name, part) => [name, (b) => charactersFlow(b, part)])), online: onlineFlow, hostgame: hostgameFlow, hostcontrols: hostcontrolsFlow, lobby: lobbyFlow, handoff: handoffFlow, dedicatedhost: dedicatedhostFlow, hostpage: hostpageFlow, webgpu: webgpuFlow, visual: visualFlow, environment: environmentFlow, flashing: flashingFlow };
+  const flows = { editor: editorFlow, editorux: editoruxFlow, offline: offlineFlow, mobile: mobileFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, scenery: sceneryFlow, setpieces: setpiecesFlow, physicsfx: physicsfxFlow, teams: teamsFlow, weaponsets: weaponsetsFlow, ctf: ctfFlow, forts: fortsFlow, breakthrough: breakthroughFlow, roulette: rouletteFlow, arsenal: arsenalFlow, vehicles: vehiclesFlow, race: raceFlow, zombies: zombiesFlow, classes: classesFlow, coverage: coverageFlow, ...Object.fromEntries(MAP_FLOWS.map((name, part) => [name, (b) => mapsFlow(b, part)])), designer: designerFlow, ...Object.fromEntries(CHARACTER_FLOWS.map((name, part) => [name, (b) => charactersFlow(b, part)])), online: onlineFlow, hostgame: hostgameFlow, hostcontrols: hostcontrolsFlow, lobby: lobbyFlow, handoff: handoffFlow, dedicatedhost: dedicatedhostFlow, hostpage: hostpageFlow, webgpu: webgpuFlow, visual: visualFlow, environment: environmentFlow, flashing: flashingFlow, newplayer: newplayerFlow };
   // e2e/flowMap.mjs (change-based selection, shards) must know every flow, and only those.
   const known = new Set(FLOWS);
   const drift = [...Object.keys(flows).filter((f) => !known.has(f)), ...FLOWS.filter((f) => !(f in flows))];

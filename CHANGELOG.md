@@ -8,6 +8,19 @@ made only on a commit that passed CI on a check branch.
 
 ## Unreleased
 
+**New players** (owner-approved, 2026-11-08):
+- **Quick Play** heads the main menu: pick Team Deathmatch or Deathmatch and you're in a match against normal bots,
+  on one of our well-tested maps for that mode (not the one you played last), with as many players as the map
+  recommends for the mode (fewer on a phone). It remembers your last choice. "Choose map and rules…" opens Match setup.
+- **Tutorial** on the Training Range, about two minutes: look, move, sprint, crouch, shoot, aim down the sights,
+  reload, switch weapon, throw a grenade, drive the buggy. Each step finishes when you do it; a card shows what to
+  press (keyboard and mouse, or the touch controls on a phone) and how far you are; Skip is always there (and in the
+  pause menu). It's offered once on your first visit (never forced), and is in Quick Play and Options → General.
+  The Training Range gained a buggy and Frag Grenades by each group of spawns (MapMaker).
+- **First-time tips**: a short hint the first time you run low on ammo, have a vehicle in reach, see a pickup, pick up
+  armour, spawn protected or die. Each shows once, one at a time, below the crosshair. Options → HUD turns them off
+  or shows them all again.
+
 **Flaky e2e checks fixed at the cause** (tests only): mobile (bots knocking the player into the air before the jump
 tap), physicsfx (blasts by cover and a race with bots respawning), characters3 (a weapon key pressed while only the view
 lagged) and weaponsets (a respawn picking up last life's dropped gun).

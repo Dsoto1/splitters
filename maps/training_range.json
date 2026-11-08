@@ -18,11 +18,11 @@
     ],
     "release": {
       "mapId": "m_pdfp7ts5t32gemes",
-      "versionId": "v_u34gmht4hlcdjouy",
-      "revision": 1,
-      "contentHash": "sha256:c56b75b16c987ea1eee63ac9a53b7f5dc40997cca59b91343faa9f2f7503bade",
+      "versionId": "v_idtyo5s6ifmsfosb",
+      "revision": 2,
+      "contentHash": "sha256:d203942a1003b51672e92505fc2bcd7005199ae22c588acaa1d87da533979e4d",
       "schemaVersion": 29,
-      "releasedAt": "2026-11-08T07:45:21.550Z"
+      "releasedAt": "2026-11-08T10:02:07.902Z"
     }
   },
   "classicStructure": {
@@ -6650,267 +6650,315 @@
     },
     {
       "id": "pickup_ekrqxstr16",
-      "kind": "pickup",
       "position": [
         -12,
         0,
         -22
       ],
+      "kind": "pickup",
       "item": "core.weapon_hand_cannon",
       "respawnSeconds": 5
     },
     {
       "id": "pickup_3n235pv1oz",
-      "kind": "pickup",
       "position": [
         -12,
         0,
         -18
       ],
+      "kind": "pickup",
       "item": "core.weapon_machine_pistol",
       "respawnSeconds": 5
     },
     {
       "id": "pickup_83reavktfo",
-      "kind": "pickup",
       "position": [
         -12,
         0,
         -14
       ],
+      "kind": "pickup",
       "item": "core.weapon_sawed_off",
       "respawnSeconds": 5
     },
     {
       "id": "pickup_6zlwkdt8y3",
-      "kind": "pickup",
       "position": [
         -12,
         0,
         -10
       ],
+      "kind": "pickup",
       "item": "core.weapon_auto_shotgun",
       "respawnSeconds": 5
     },
     {
       "id": "pickup_jrtyepj7rp",
-      "kind": "pickup",
       "position": [
         -12,
         0,
         -6
       ],
+      "kind": "pickup",
       "item": "core.weapon_launcher",
       "respawnSeconds": 5
     },
     {
       "id": "pickup_inq9aipltk",
-      "kind": "pickup",
       "position": [
         -12,
         0,
         -2
       ],
+      "kind": "pickup",
       "item": "core.weapon_railgun",
       "respawnSeconds": 5
     },
     {
       "id": "pickup_wi4ho8ca33",
-      "kind": "pickup",
       "position": [
         -12,
         0,
         2
       ],
+      "kind": "pickup",
       "item": "core.weapon_plasma",
       "respawnSeconds": 5
     },
     {
       "id": "pickup_zlsiuwh1ug",
-      "kind": "pickup",
       "position": [
         -12,
         0,
         6
       ],
+      "kind": "pickup",
       "item": "core.weapon_pulse_pistol",
       "respawnSeconds": 5
     },
     {
       "id": "pickup_6tweacke6m",
-      "kind": "pickup",
       "position": [
         -12,
         0,
         10
       ],
+      "kind": "pickup",
       "item": "core.weapon_laser_rifle",
       "respawnSeconds": 5
     },
     {
       "id": "pickup_7uar2m0i99",
-      "kind": "pickup",
       "position": [
         -12,
         0,
         14
       ],
+      "kind": "pickup",
       "item": "core.weapon_nailgun",
       "respawnSeconds": 5
     },
     {
       "id": "pickup_2ee3q5cgbj",
-      "kind": "pickup",
       "position": [
         -12,
         0,
         18
       ],
+      "kind": "pickup",
       "item": "core.weapon_flak",
       "respawnSeconds": 5
     },
     {
       "id": "pickup_azewwg7z21",
-      "kind": "pickup",
       "position": [
         -12,
         0,
         22
       ],
+      "kind": "pickup",
       "item": "core.weapon_guided",
       "respawnSeconds": 5
     },
     {
       "id": "pickup_9ub9w6ja6r",
-      "kind": "pickup",
       "position": [
         -15,
         0,
         -22
       ],
+      "kind": "pickup",
       "item": "core.weapon_swarm",
       "respawnSeconds": 5
     },
     {
       "id": "pickup_coehsj8kjp",
-      "kind": "pickup",
       "position": [
         -15,
         0,
         -18
       ],
+      "kind": "pickup",
       "item": "core.weapon_blast_rockets",
       "respawnSeconds": 5
     },
     {
       "id": "pickup_thl0nkfedj",
-      "kind": "pickup",
       "position": [
         -15,
         0,
         -14
       ],
+      "kind": "pickup",
       "item": "core.weapon_disc_launcher",
       "respawnSeconds": 5
     },
     {
       "id": "pickup_8np7bt897v",
-      "kind": "pickup",
       "position": [
         -15,
         0,
         -10
       ],
+      "kind": "pickup",
       "item": "core.weapon_arc_caster",
       "respawnSeconds": 5
     },
     {
       "id": "pickup_3fruyf5bpp",
-      "kind": "pickup",
       "position": [
         -15,
         0,
         -6
       ],
+      "kind": "pickup",
       "item": "core.weapon_freeze_ray",
       "respawnSeconds": 5
     },
     {
       "id": "pickup_5pn91n9pz2",
-      "kind": "pickup",
       "position": [
         -15,
         0,
         -2
       ],
+      "kind": "pickup",
       "item": "core.weapon_flamethrower",
       "respawnSeconds": 5
     },
     {
       "id": "pickup_xe5g9lehu1",
-      "kind": "pickup",
       "position": [
         -15,
         0,
         2
       ],
+      "kind": "pickup",
       "item": "core.weapon_goo_gun",
       "respawnSeconds": 5
     },
     {
       "id": "pickup_uzvhpr479j",
-      "kind": "pickup",
       "position": [
         -15,
         0,
         6
       ],
+      "kind": "pickup",
       "item": "core.weapon_bubble_blaster",
       "respawnSeconds": 5
     },
     {
       "id": "pickup_soabhlvmd7",
-      "kind": "pickup",
       "position": [
         -15,
         0,
         10
       ],
+      "kind": "pickup",
       "item": "core.weapon_oil_slicker",
       "respawnSeconds": 5
     },
     {
       "id": "pickup_m8jm44lcxl",
-      "kind": "pickup",
       "position": [
         -15,
         0,
         14
       ],
+      "kind": "pickup",
       "item": "core.weapon_singularity",
       "respawnSeconds": 5
     },
     {
       "id": "pickup_ok7o5ywlld",
-      "kind": "pickup",
       "position": [
         -15,
         0,
         18
       ],
+      "kind": "pickup",
       "item": "core.weapon_flare_gun",
       "respawnSeconds": 5
     },
     {
       "id": "pickup_r0wmxg5lcl",
-      "kind": "pickup",
       "position": [
         -15,
         0,
         22
       ],
+      "kind": "pickup",
       "item": "core.weapon_gilded_pistol",
       "respawnSeconds": 5
+    },
+    {
+      "id": "mount_aycukf1xxi",
+      "kind": "mount",
+      "position": [
+        -26,
+        0,
+        30
+      ],
+      "model": "buggy",
+      "yaw": 1.571,
+      "faction": null,
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_nzho7wyyec",
+      "kind": "pickup",
+      "position": [
+        -20,
+        0,
+        27
+      ],
+      "item": "core.grenades",
+      "respawnSeconds": null
+    },
+    {
+      "id": "mount_p72c4xd8t3",
+      "kind": "mount",
+      "position": [
+        206,
+        0,
+        -32
+      ],
+      "model": "buggy",
+      "yaw": -1.571,
+      "faction": null,
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_0ccofxyqjq",
+      "kind": "pickup",
+      "position": [
+        194,
+        0,
+        -24
+      ],
+      "item": "core.grenades",
+      "respawnSeconds": null
     }
   ],
   "factions": [
