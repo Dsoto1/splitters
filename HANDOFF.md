@@ -239,12 +239,18 @@ gets overloaded above that: local e2e times out and flakes). Prune landed worktr
   (knockback from swarm rockets and rounds, no damage): the tap could land mid-air (a jump is taken on the ground only).
   The flow plays the range alone (`&bots=1`) and taps once grounded.
 - **physicsfx**: the "blast throws a bot" check blasted beside wherever a bot stood (behind cover: not thrown), and the
-  mass ring went 10 m along a view that depended on bot positions (a body thrown into a rock). Both now go off on a
-  fixed open spot found on a 4 m grid over the map (level ground, nothing within 5 m in the sim's level or the effects
-  world), with you placed 10 m off facing it; the first killed bot falls there too (locally under load one body placed
-  4 m ahead of wherever you spawned was flung 10 m up: worth a look if it shows in play). The far-death check waits
-  for a bot back alive and drawn (it threw "reading 'move'" when none had respawned yet). Its glass checks play the
-  range alone (`&bots=1`): bots respawning in front of the panels took the rounds (CI: bulletproof panel at full health).
+  mass ring went 10 m along a view that depended on bot positions (a body thrown into a rock). Now the bots are held
+  from the start (they drove vehicles onto the spot and shot you about), and the first ragdoll, the throw and the mass
+  ring all go off on one fixed open spot found on a 4 m grid over the map (level ground, nothing within 5 m in the
+  sim's level or the effects world, no vehicle), with you placed 10 m off facing it, once the view has you there. The
+  first bot is killed with no attacker (it could be your teammate: no friendly fire, nothing died). The far-death check
+  waits for a bot back alive and drawn (it threw "reading 'move'" when none had respawned yet).
+- **physicsfx glass** (range): played alone (`&bots=1`; bots respawned in front of the panels and took the rounds, CI:
+  bulletproof panel at full health); each shot holds the trigger until the round goes (a fixed hold could pass with no
+  frame seeing it); the panel's break and shards are noted as they happen (broken glass is back after the map's 4 s,
+  sooner than a loaded page looked again).
+- **weaponsets** Match setup: Advanced rules is opened by its `aria-expanded` state until its Weapons fold shows (a
+  click while the setup redrew left it shut, locally).
 - **characters3** far bodies (`core.hyena` drawn 1.5 of 2.12 m, check/quickplay 05a1515, both attempts; not reproduced
   in 5 local runs): the message now also says where you are against the crowd's setup and whether you died.
 - **characters3**, scope check: `__give` already puts the marksman in hand; pressing 3 while only the view lagged cycled
