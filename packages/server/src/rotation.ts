@@ -1,6 +1,6 @@
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
-import { isMapId, isRetiredMap, parseRotationPreset, playableModes, type GameMode, type MapDocument, type RotationLookup, type RotationPreset } from '@tiletrigger/shared';
+import { isMapId, isRetiredMap, mapPlayerCaps, parseRotationPreset, playableModes, type GameMode, type MapDocument, type RotationLookup, type RotationPreset, type VoteCandidate } from '@tiletrigger/shared';
 
 /**
  * A dedicated server's (and Host Service's) side of the map rotation
@@ -71,4 +71,54 @@ export function expandRotation(items: readonly unknown[], presets: readonly Rota
     else dropped.push(`no built-in rotation "${preset.slice(0, 40)}"`);
   }
   return { items: out, dropped };
+}
+
+/**
+ * Between matches (shared sim/mapVote.ts): what a ballot can offer from our suite. Each map's playable modes and its
+ * player cap (the most players) in each, read once per map and kept. `warm()` reads them a map at a time in the
+ * background, so the first vote doesn't stall the tick loop loading the whole suite. `forget()` after the suite changes.
+ */
+export function suitePool(mapsDir: string, load: (id: string) => MapDocument | null): {
+  /** Our suite's maps that play `mode`, with their caps for it (maps not read yet are read now). */
+  forMode(mode: GameMode): VoteCandidate[];
+  /** One map's candidate entry in `mode`, or null when it isn't ours or can't play it. */
+  entry(id: string, mode: GameMode): VoteCandidate | null;
+  warm(): void;
+  forget(): void;
+} {
+  const known = new Map<string, { name: string; caps: Map<GameMode, number> } | null>();
+  const ids = () => (existsSync(mapsDir) ? readdirSync(mapsDir).filter((f) => f.endsWith('.json')).map((f) => f.slice(0, -5)).filter((id) => isMapId(id) && !isRetiredMap(id)).sort() : []);
+  const read = (id: string) => {
+    if (!known.has(id)) {
+      const m = isMapId(id) && !isRetiredMap(id) ? load(id) : null;
+      known.set(id, m && !m.metadata.testOnly ? { name: m.metadata.name, caps: new Map(playableModes(m).map((mode) => [mode, mapPlayerCaps(m, mode).max])) } : null);
+    }
+    return known.get(id) ?? null;
+  };
+  const entry = (id: string, mode: GameMode): VoteCandidate | null => {
+    const info = read(id);
+    const max = info?.caps.get(mode);
+    return info && max !== undefined ? { map: id, mode, name: info.name, max } : null;
+  };
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  return {
+    forMode: (mode) => ids().flatMap((id) => entry(id, mode) ?? []),
+    entry,
+    warm() {
+      const todo = ids().filter((id) => !known.has(id));
+      const step = () => {
+        const id = todo.shift();
+        if (id === undefined) return void (timer = undefined);
+        read(id);
+        timer = setTimeout(step, 50);
+        timer.unref?.();
+      };
+      if (!timer) step();
+    },
+    forget() {
+      known.clear();
+      if (timer) clearTimeout(timer);
+      timer = undefined;
+    },
+  };
 }

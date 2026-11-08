@@ -93,3 +93,47 @@ describe('scenario chains on a dedicated server', () => {
     a.ws.close();
   }, 30_000);
 });
+
+describe('between matches on a dedicated server: the vote on the next map', () => {
+  const suite = () => {
+    const dir = mkdtempSync(join(tmpdir(), 'tt-vote-'));
+    for (const id of ['room_a', 'room_b', 'room_c']) writeFileSync(join(dir, `${id}.json`), JSON.stringify(room(id)));
+    return dir;
+  };
+
+  it('the match ends, everyone gets the ballot (the map just played left out), a vote picks the map and everyone travels there', async () => {
+    const dir = suite();
+    server = await startServer({ port: 0, map: join(dir, 'room_a.json'), mapsDir: dir, botFill: 2, seed: 1, startGate: false, rules: { ...DEFAULT_DEATHMATCH_RULES, intermissionTicks: 60 } });
+    const a = connect(server.port, 'Alice');
+    await a.waitFor('welcome');
+    expect(server.command({ c: 'end' }, 'test')).toBeNull();
+    const open = await a.waitFor('vote');
+    expect(open.v?.o.map((o) => o.map).sort()).toEqual(['room_b', 'room_c']);
+    expect(open.v?.left).toBeGreaterThan(5);
+    const want = open.v!.o.findIndex((o) => o.map === 'room_c');
+    a.ws.send(JSON.stringify({ t: 'vote', i: want }));
+    // The scoreboard is held (the match doesn't start itself over), and the winner comes with the vote's close.
+    await new Promise((r) => setTimeout(r, 2000));
+    expect(server.match.phase).toBe('intermission');
+    expect(await a.waitFor('travel', 25_000)).toEqual({ t: 'travel', map: 'room c' });
+    await new Promise((r) => setTimeout(r, 100));
+    expect(server.match.map.metadata.id).toBe('room_c');
+    expect(server.rotation().vote).toBe(true);
+    a.ws.close();
+  }, 40_000);
+
+  it('MAP_VOTE off: plain rotation (here empty, so the map replays), and admins can turn it back on', async () => {
+    const dir = suite();
+    server = await startServer({ port: 0, map: join(dir, 'room_a.json'), mapsDir: dir, botFill: 2, seed: 1, startGate: false, mapVote: false, rules: { ...DEFAULT_DEATHMATCH_RULES, intermissionTicks: 60 } });
+    const a = connect(server.port, 'Alice');
+    await a.waitFor('welcome');
+    server.command({ c: 'end' }, 'test');
+    await new Promise((r) => setTimeout(r, 2500));
+    await expect(a.waitFor('vote', 100)).rejects.toThrow();
+    expect(server.match.map.metadata.id).toBe('room_a');
+    expect(server.match.phase).not.toBe('intermission');
+    expect(server.command({ c: 'rotation', vote: true }, 'test')).toBeNull();
+    expect(server.mapVote()).toBe(true);
+    a.ws.close();
+  }, 30_000);
+});
