@@ -278,6 +278,7 @@ Iron Maw and Frost Basin tanks never got down to 3 shells. Driving/shell totals 
 **For the owner:** (1) the spots above are first picks; move them in MapMaker if a lane reads better elsewhere. (2) a
 general Ammo Box also refills infantry: the Coldwater and Frost Basin ones sit on open lanes 16-40 m from other ammo,
 none in a chokepoint.
+
 ### New players: Quick Play, the tutorial, first-time tips (`wip/quickplay`, agent, 2026-11-08; owner-approved brief; CI on `check/quickplay`)
 
 **Quick Play** (`frontend/quickPlay.ts`, FrontEnd `openQuickPlay`/`quickPlay`): first item of the main menu (`#nav-quick`,
