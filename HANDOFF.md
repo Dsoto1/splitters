@@ -49,6 +49,10 @@ view of a vehicle ... the driver's seat looks empty."
   hidden in the cockpit, appears already sitting when H goes to the chase view (it eased up from standing over a few
   frames). Screenshots (scratchpad, may not survive): `driver-body/{before,after}/vehicles-passenger-speed.png`,
   `chase-before-after-zoom.png`, `after/close-chase*.png`, `after/vehicles-driver-cockpit.png`.
+- **Status:** `check/driver-body` @ edb8a24 (run 42501601388): every flow green (vehicles included) except `party`
+  ("the party goes on to the voted map together" / "The match has not started"), which fails the same way on
+  check/coord, check/release-090 and check/flaky-e2e this afternoon: not from this change. **Not landed**: land it once
+  party is fixed on main (merge origin/main, re-run check/driver-body, fast-forward main).
 - **Pitfall:** `/home/user/wt-pickups` (the node_modules other worktrees symlinked to) was deleted on 2026-11-08 during
   the disk-full cleanup; this worktree's links now point into `/home/user/splitters/node_modules`.
 
