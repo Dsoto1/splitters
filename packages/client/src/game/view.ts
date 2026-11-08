@@ -192,7 +192,7 @@ const CALM_MOMENT = { scale: 0.8, gain: 0.55 } as const;
 const SHIELD_SHIMMER = 0.32;
 const SHIELD_GLOW = new Color3(0.35, 0.7, 1);
 /** How much of SHIELD_GLOW the body takes at most (a faint tint, the body still reads). */
-const SHIELD_GLOW_PEAK = 0.14;
+const SHIELD_GLOW_PEAK = 0.08;
 
 interface Avatar {
   /** Spawn protection's glow on the body now (0..1, eased), and the tenth it was last set at. */
@@ -1212,6 +1212,16 @@ export class GameView {
     const cam = this.scene.activeCamera?.globalPosition;
     if (cam && Math.hypot(cam.x - at.x, cam.y - at.y, cam.z - at.z) > ACCENT_RANGE) return;
     this.vfx.play(fx.pack, fx.effect, new Vector3(at.x, at.y, at.z), { scale: fx.scale, minor: true, ...(up ? { up: new Vector3(up.x, up.y, up.z) } : {}) });
+  }
+
+  /** `at` moved `by` metres toward the camera (an effect on a body: on its near side, not inside it). */
+  towardCamera(at: Vec3, by: number): Vec3 {
+    const cam = this.scene.activeCamera?.globalPosition;
+    if (!cam) return at;
+    const d = Math.hypot(cam.x - at.x, cam.y - at.y, cam.z - at.z);
+    if (d < by * 2) return at;
+    const k = by / d;
+    return { x: at.x + (cam.x - at.x) * k, y: at.y + (cam.y - at.y) * k, z: at.z + (cam.z - at.z) * k };
   }
 
   /** A moment of play's effect (content/vfx.json map.gameplay: `pickup.health`, `spawn`, `portal`, `pad`, `trap.shock`, `zipline` …). */
