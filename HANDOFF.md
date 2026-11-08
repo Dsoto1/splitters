@@ -382,6 +382,12 @@ gets overloaded above that: local e2e times out and flakes). Prune landed worktr
   in 5 local runs): the message now also says where you are against the crowd's setup and whether you died.
 - **characters3**, scope check: `__give` already puts the marksman in hand; pressing 3 while only the view lagged cycled
   on to the rifle in the same slot. It waits for the held gun and presses only while it isn't the marksman.
+- **party** (a real bug): a friend sent `travel` (the vote's winner, the rotation, Change map) rejoined the host's code
+  once, 1.2 s later; the host's browser was still loading the next map (40+ s on a loaded runner), the try failed and
+  the friend went back to the menu while the party played on (CI: "s2": {}, both attempts, on every check run that ran
+  it). Rejoining after a travel now keeps trying for up to 2 minutes whatever each try says (a refusal still ends it):
+  `packages/client/src/game/rejoinPolicy.ts`, `test/rejoinPolicy.test.ts`. The flow's message now traces the travel
+  (what the host told its friends, the friend's notices, the host's map and phase as it goes).
 - **weaponsets**, Chaos lives: the gun you die with drops at your body (rules.dropWeapons); idle at your spawn, the next
   life could spawn on the same point and pick last life's oddball up (four weapons). The test respawn clears the
   lying drops. For the owner: a redeploy (K) can land you on your own dropped oddball in Chaos; the spawn choice's

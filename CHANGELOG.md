@@ -61,6 +61,10 @@ made only on a commit that passed CI on a check branch.
   armour, spawn protected or die. Each shows once, one at a time, below the crosshair. Options → HUD turns them off
   or shows them all again.
 
+**Friends stay with the party after a vote**: a friend in your hosted game follows you to the next map (the vote's
+winner, the rotation, Change map) until your match there lets them in, instead of giving up after one early try while
+your browser was still loading it.
+
 **Flaky e2e checks fixed at the cause** (tests only): mobile (bots knocking the player into the air before the jump
 tap), physicsfx (bodies dropped and blasts set off by cover, a race with bots respawning, range bots in front of the glass), characters3 (a weapon key pressed while only the view
 lagged) and weaponsets (a respawn picking up last life's dropped gun).
