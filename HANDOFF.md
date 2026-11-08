@@ -51,9 +51,22 @@ The workflow is unchanged (CLAUDE.md):
 docs/MAPMAKER_OVERHAUL_PLAN.md). Branches `wip/mapmaker-*` / `check/mapmaker-*` only.
 - **Now:** Phase 1 (the ghost says why, the live budget bar, the `?` overlay; the measure tool, props snap to surfaces with
   randomise), then Phase 3 item 9 (the rotate ring, quick facings) and the rest of Phase 3 that doesn't need the split.
+- **Also in this lane** (owner's addendum, 2026-11-08; the other session took these off its queue):
+  - set pieces: the 12-piece brainstorm list, retiring the old big pieces they replace (MapMaker's Replace all and
+    the load-time alias table), and the MAP 21 sea wall with its breach;
+  - the card shots of Step Temple (eye level) and Shingle Point, redone with Phase 3 item 8's card-shot camera;
+  - bot hints in MapMaker (Phase 4 item 3, and Bot AI Phase D's MapMaker part; the format goes in docs/BOTS.md);
+  - Environment Phase 3's MapMaker tools (PROCEDURAL_ENVIRONMENT §11), after the other session's Environment Phase 2
+    lands. Please note it here when it does.
 - **The split of `editorApp.ts`** (Phase 2) waits until Iron Coast's MapMaker changes (finer terrain grid, Terrain →
   Change grid, a "coast" border side) and the race-mode removal (the race layer reworded to track / NPC traffic) are on
   main. This line will say when it starts. Please say here when those land.
+- **Also in this lane (owner, 2026-11-08, moved from the other session's queue):** set pieces (the 12-piece list,
+  retiring old big pieces via Replace all + aliases, MAP 21 sea wall and breach); redo Step Temple's (eye level) and
+  Shingle Point's card shots with Phase 3 item 8's card-shot camera; bot hints in MapMaker (Phase 4 item 3 = Bot AI
+  Phase D's MapMaker part; keep the format small, document it in docs/BOTS.md); Environment Phase 3's MapMaker tools
+  once Environment Phase 2 lands. The other session keeps Iron Coast, race removal, Environment Phase 2 and the map
+  rebuilds (Sandfall Colosseum, Whiteout Station).
 
 **In flight at the switch** (each branch pushed, tree clean; scratchpad files did not survive the switch):
 1. **Friendly fire** (`wip/friendly-fire` @ 318023ed). Green at 1a347140 (run 42408271804, with its new e2e check).
