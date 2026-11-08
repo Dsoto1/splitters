@@ -21,8 +21,8 @@
         {"kind":"tile","tile":"core.stairs_open","x":2,"y":0,"z":0,"rotation":2,"surfaces":{"floor":{"role":"paving"},"solids":{"role":"stone"},"trim":{"role":"trim"}}},
         {"kind":"tile","tile":"core.room","x":1,"y":0,"z":0,"rotation":0,"edges":{"0,0,0:N":"arch","0,0,0:S":"arch","0,0,0:E":"open","0,0,0:W":"open"},"surfaces":{"floor":{"role":"paving"},"walls":{"role":"stone"},"solids":{"role":"stone"},"underside":{"role":"stone"},"trim":{"role":"trim"}},"options":{"ceiling":"open"}},
         {"kind":"tile","tile":"core.platform","x":1,"y":0,"z":1,"rotation":0,"edges":{"0,0,0:N":"half","0,0,0:S":"railing","0,0,0:E":"open","0,0,0:W":"open"},"surfaces":{"floor":{"role":"paving"},"walls":{"role":"stone"},"solids":{"role":"stone"},"trim":{"role":"trim"}}},
-        {"kind":"prop","model":"prop.sandbag_wall_low","position":[-2,4,2.6],"yaw":0,"scale":1},
-        {"kind":"prop","model":"prop.sandbag_wall_low","position":[2,4,2.6],"yaw":0,"scale":1},
+        {"kind":"prop","model":"prop.sandbag_wall_low","position":[6,4,2.6],"yaw":0,"scale":1},
+        {"kind":"prop","model":"prop.sandbag_wall_low","position":[10,4,2.6],"yaw":0,"scale":1},
         {"kind":"light","position":[0,2.6,0],"fixture":"bulb","color":"#ffd9a0","intensity":0.8,"range":8}
       ],
       "notes": {"design":"Open Stairs climb from both ends onto a Platform on level 1; under it a Room with no ceiling of its own (the platform is its roof), arches north and south. The piece is its own mirror image, so it says mirror \"none\" (its stairs are not): turn it instead."}

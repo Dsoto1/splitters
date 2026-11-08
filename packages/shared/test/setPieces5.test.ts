@@ -11,6 +11,7 @@ import {
   buildMapGeometry,
   builtInSetPieces,
   emptyInput,
+  getProp,
   initPhysics,
   invertCommand,
   loadMap,
@@ -169,6 +170,27 @@ describe('the new pieces expand into what they are made of', () => {
     expect(kinds('setpiece.server_vault')).toMatchObject({ tiles: 4, doors: 4, tileIds: ['core.room'] });
     expect(kinds('setpiece.crossroads_plaza')).toMatchObject({ tiles: 9, tileIds: ['core.intersection', 'core.street', 'core.yard'] });
     expect(kinds('setpiece.ramp_junction')).toMatchObject({ tiles: 8, tileIds: ['core.corridor_clear', 'core.platform_rail', 'core.ramp', 'core.room'] });
+  });
+
+  // Blocks over a floor (the gallery, the roofs, the core's cap) hang from walls and columns and are not checked here.
+  it('nothing floats: every prop, and every untilted block on its level, stands on a floor, a block or the ground', () => {
+    for (const id of [...Object.keys(WALKS), 'setpiece.sea_wall', 'setpiece.sea_wall_breach']) {
+      const map = withPiece(id, 0);
+      const physics = new PhysicsWorld(buildMapGeometry(map), mapTerrainMesh(map));
+      for (const e of map.entities) {
+        if (!e.id.startsWith('sp_piece_') || (e.kind !== 'prop' && e.kind !== 'block') || (e.kind === 'block' && (e.pitch || e.roll || Math.abs(e.position[1] - Math.round(e.position[1] / 4) * 4) > 0.01))) continue;
+        // Straight down from 5 cm over a prop's base, from just under a block's (its own collision would answer first); a block
+        // on the ground at level 0 stands on the terrain.
+        const [x, y, z] = e.position;
+        const hit = e.kind === 'block' ? physics.raycastHit({ x, y: y - 0.01, z }, { x: 0, y: -1, z: 0 }, 0.3) : physics.raycastHit({ x, y: y + 0.05, z }, { x: 0, y: -1, z: 0 }, 0.4);
+        // A prop's own collision may answer: then look from under its base instead.
+        const under = e.kind === 'prop' && hit && hit.dist < 0.02 ? physics.raycastHit({ x, y: y - 0.01, z }, { x: 0, y: -1, z: 0 }, 0.3) : hit;
+        // Or on another prop (a computer on a desk: props that don't collide).
+        const onProp = map.entities.some((o) => o.kind === 'prop' && o !== e && Math.abs(o.position[0] - x) < 0.8 && Math.abs(o.position[2] - z) < 0.8 && Math.abs(o.position[1] + (getProp(o.model)?.size[1] ?? 0) * o.scale - y) < 0.15);
+        if (onProp || (e.kind === 'block' && Math.abs(y) < 0.01)) continue;
+        expect(under, `${id}: ${e.kind} ${'name' in e ? e.name : ''} ${'model' in e ? e.model : ''} at ${e.position}`).not.toBeNull();
+      }
+    }
   });
 
   it('the catwalk bridges are open: no wall anywhere (open ground under the deck, open stairs)', () => {
