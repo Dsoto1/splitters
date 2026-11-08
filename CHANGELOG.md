@@ -24,6 +24,7 @@ was a TK."):
 
 **Breakthrough Range is a test map again** (owner, 2026-11-08): hidden from every list (Play, Match setup, Quick
 Play, rotations, the host's picker, the vote). Breakthrough is played on Iron Coast.
+
 **Fixes**
 - Debris from a vehicle or turret blowing up no longer falls through the ground: its chunks start above it, and any
   that get under the world anyway are cleared away.
