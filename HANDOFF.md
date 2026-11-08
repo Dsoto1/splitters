@@ -54,6 +54,12 @@ docs/MAPMAKER_OVERHAUL_PLAN.md). Branches `wip/mapmaker-*` / `check/mapmaker-*` 
 - **The split of `editorApp.ts`** (Phase 2) waits until Iron Coast's MapMaker changes (finer terrain grid, Terrain →
   Change grid, a "coast" border side) and the race-mode removal (the race layer reworded to track / NPC traffic) are on
   main. This line will say when it starts. Please say here when those land.
+- **Also in this lane (owner, 2026-11-08, moved from the other session's queue):** set pieces (the 12-piece list,
+  retiring old big pieces via Replace all + aliases, MAP 21 sea wall and breach); redo Step Temple's (eye level) and
+  Shingle Point's card shots with Phase 3 item 8's card-shot camera; bot hints in MapMaker (Phase 4 item 3 = Bot AI
+  Phase D's MapMaker part; keep the format small, document it in docs/BOTS.md); Environment Phase 3's MapMaker tools
+  once Environment Phase 2 lands. The other session keeps Iron Coast, race removal, Environment Phase 2 and the map
+  rebuilds (Sandfall Colosseum, Whiteout Station).
 
 **In flight at the switch** (each branch pushed, tree clean; scratchpad files did not survive the switch):
 1. **Friendly fire** (`wip/friendly-fire` @ 318023ed). Green at 1a347140 (run 42408271804, with its new e2e check).
