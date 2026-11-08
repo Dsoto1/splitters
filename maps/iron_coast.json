@@ -19,11 +19,11 @@
     ],
     "release": {
       "mapId": "m_volbp47vkztqi47u",
-      "versionId": "v_lk243cjrempdtiad",
-      "revision": 17,
-      "contentHash": "sha256:9f1f67ee431116a063eb4fc115c38982c11ce3dada464dc28b3b226c4475620a",
+      "versionId": "v_2uev6uyjxqw3lxcm",
+      "revision": 20,
+      "contentHash": "sha256:91c2a26d129cf7b8ca99276c7f9b59b6c1d9a28eab56d1236ff65b602a35664c",
       "schemaVersion": 29,
-      "releasedAt": "2026-11-08T05:35:35.589Z"
+      "releasedAt": "2026-11-08T05:57:25.390Z"
     }
   },
   "classicStructure": {
@@ -6248,6 +6248,32 @@
       "solid": true,
       "tint": null,
       "id": "prop_7j3hyw82q7"
+    },
+    {
+      "id": "mount_sgsatz3m7s",
+      "kind": "mount",
+      "position": [
+        -92,
+        -0.15,
+        -55.5
+      ],
+      "model": "turret_mg",
+      "yaw": -3.139,
+      "faction": null,
+      "respawnSeconds": null
+    },
+    {
+      "id": "mount_wh9rpxh3x3",
+      "kind": "mount",
+      "position": [
+        92,
+        0.85,
+        -57.5
+      ],
+      "model": "turret_mg",
+      "yaw": -3.139,
+      "faction": null,
+      "respawnSeconds": null
     }
   ],
   "factions": [],
