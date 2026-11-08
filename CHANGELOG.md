@@ -15,6 +15,17 @@ your browser was still loading it.
 **Flaky e2e checks fixed at the cause** (tests only): mobile (bots knocking the player into the air before the jump
 tap), physicsfx (bodies dropped and blasts set off by cover, a race with bots respawning, range bots in front of the glass), characters3 (a weapon key pressed while only the view
 lagged) and weaponsets (a respawn picking up last life's dropped gun).
+**MapMaker: feedback while building** (MapMaker overhaul Phase 1, part A; docs/MAPMAKER_OVERHAUL_PLAN.md):
+- **The ghost says why.** Beside the pointer, before you click, a refused tile or set piece says why in a few words
+  ("Overlaps the Corridor on Ground", "Past the build limit (16 levels up or down)"; the status line has the whole
+  reason). Spawns, pickups, props, vehicles and NPCs over nothing say "No floor under it", outside the boundary say so,
+  and the scenery zone is a note ("Outside the playable area: scenery zone"), never a refusal.
+- **A live budget bar** beside the level strip: green **OK**, amber **Near** (80 %), red **Over**, naming the budget
+  nearest its limit (entities, props, prop models, a draw estimate, lights, destructibles, vehicles, the environment
+  species budgets, the file's size). Click the name to select what it counts; the arrow lists every budget. Counted
+  from each edit, not a full check every frame.
+- **`?` lists every key** MapMaker binds, grouped (also the tool bar's **Keys** button); Esc or `?` closes it. The
+  keys, the fly camera and the list all come from one table, so it can't go stale. `/` still searches the palette.
 
 ## 0.9.0 (2026-11-08)
 
