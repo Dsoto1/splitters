@@ -14,15 +14,19 @@ import {
   withPathsLaid,
   addSpawnCommand,
   buildMapGeometry,
-  checkPlacement,
+  tileGhostCheck,
+  checkNote,
+  entityGhostNote,
+  zoneNote as zoneGhostNote,
+  type GhostNote,
+  type GhostEntityKind,
+  type PlacementCheck,
   BUILD_LEVELS,
   buildZone,
   levelName,
   placeTileCommand,
   setUpperFloorsCommand,
   upperFloorLevels,
-  upperFloorAt,
-  isBareFloor,
   coreCatalog,
   deleteCommand,
   duplicateCommand,
@@ -646,7 +650,7 @@ export class EditorApp {
   private pieceMirror = false;
   private pieceLook = '';
   /** What the set piece tool's ghost shows now: the placement it would make, whether it fits (and why not), its ports. */
-  private pieceHover: { def: SetPieceDefinition; placement: SetPiecePlacement; ok: boolean; reason: string; blocked: number } | null = null;
+  private pieceHover: { def: SetPieceDefinition; placement: SetPiecePlacement; ok: boolean; reason: string; short: string; blocked: number } | null = null;
   /** Box select (Select tool, drag on empty ground): the rectangle on screen. */
   private marquee: { x0: number; y0: number; x1: number; y1: number; add: boolean; moved: boolean } | null = null;
   /** Facing for the next prop placed. */
@@ -1900,7 +1904,7 @@ export class EditorApp {
     const at = this.pointerAt;
     const lines: string[] = [];
     /** Lines in red (why it can't be placed) or amber (a warning), by index in `lines`. */
-    const marks = new Map<number, 'bad' | 'warn'>();
+    const marks = new Map<number, 'bad' | 'warn' | 'note'>();
     let title = '';
     let tone = '';
     const themeName = coreThemes.get(this.doc.classicStructure.theme)?.displayName ?? this.doc.classicStructure.theme;
@@ -1915,16 +1919,31 @@ export class EditorApp {
         title = g.def.displayName;
         tone = g.ok ? 'place' : 'bad';
         lines.push(...this.pieceLines(g.def, g.placement), `${levelName(this.level)} · cell ${this.hoverCell[0]}, ${this.hoverCell[1]}`);
-        if (!g.ok) marks.set(lines.push(`✗ ${g.reason}`) - 1, 'bad');
+        // The ghost says why (ghostWhy.ts): a few words here, the whole reason on the status line.
+        if (!g.ok) marks.set(lines.push(`✗ ${g.short}`) - 1, 'bad');
         else if (g.blocked) marks.set(lines.push(`⚠ ${g.blocked} of its ports face${g.blocked === 1 ? 's' : ''} a wall (red): open the wall there, or place it elsewhere`) - 1, 'warn');
-        else lines.push('Click to place');
+        else {
+          const zone = this.hoverPoint && zoneGhostNote(this.doc, g.placement.x * this.doc.classicStructure.cellSize, g.placement.y * this.doc.classicStructure.cellSize);
+          if (zone) marks.set(lines.push(`ℹ ${zone.text}`) - 1, 'note');
+          lines.push('Click to place');
+        }
       } else if (this.tool.kind === 'tile' && this.hoverCell) {
         const def = coreCatalog.get(this.tool.tile);
         if (def) {
           title = def.displayName;
           lines.push(...tileLines(def, this.rotation), `${levelName(this.level)} · cell ${this.hoverCell[0]}, ${this.hoverCell[1]}`);
-          tone = 'place';
+          const check = this.tileGhost(this.tool.tile, [this.hoverCell[0], this.hoverCell[1], this.level]);
+          const why = checkNote(check) ?? zoneGhostNote(this.doc, this.hoverCell[0] * this.doc.classicStructure.cellSize, this.hoverCell[1] * this.doc.classicStructure.cellSize);
+          if (why) marks.set(lines.push(`${why.tone === 'bad' ? '✗' : 'ℹ'} ${why.text}`) - 1, why.tone === 'bad' ? 'bad' : 'note');
+          tone = check.ok ? 'place' : 'bad';
         }
+      } else if (this.entityGhost()) {
+        // Spawns, pickups, props, vehicles, NPCs and objects: shown only when there is something to say.
+        const g = this.entityGhost()!;
+        title = g.title;
+        tone = g.note.tone === 'warn' ? 'warn' : 'place';
+        marks.set(lines.push(`${g.note.tone === 'warn' ? '⚠' : 'ℹ'} ${g.note.text}`) - 1, g.note.tone === 'warn' ? 'warn' : 'note');
+        lines.push('Click to place');
       } else if (this.tool.kind === 'select' || this.tool.kind === 'erase') {
         const hit = this.pick();
         if (hit) {
@@ -2050,11 +2069,9 @@ export class EditorApp {
     const cell = this.hoverCell ? ([this.hoverCell[0], this.hoverCell[1], this.level] as [number, number, number]) : null;
     this.view.setHoverCell(this.doc, this.tool.kind === 'tile' || this.tool.kind === 'setpiece' || this.tool.kind === 'spawn' || this.tool.kind === 'pickup' || this.tool.kind === 'scenario' || this.tool.kind === 'npc' ? cell : null);
     if (this.tool.kind === 'tile' && cell) {
-      // A Platform over another piece's empty upper storey becomes its floor: that's fine too.
-      const ok =
-        checkPlacement(this.doc, [{ id: '__ghost', tile: this.tool.tile, x: cell[0], y: cell[1], z: cell[2], rotation: this.rotation }]).ok ||
-        (isBareFloor(coreCatalog.get(this.tool.tile)) && upperFloorAt(this.doc, cell[0], cell[1], cell[2])?.has === false);
-      this.view.setGhost(this.doc, this.tool.tile, cell, this.rotation, ok);
+      const check = this.tileGhost(this.tool.tile, cell);
+      if (!check.ok) $('ed-target').textContent = `Can't place here: ${check.reason}`;
+      this.view.setGhost(this.doc, this.tool.tile, cell, this.rotation, check.ok);
     } else {
       this.view.setGhost(this.doc, null, null, 0, true);
     }
@@ -2081,7 +2098,7 @@ export class EditorApp {
     const at = `${t.piece}:${this.rotation}:${this.pieceMirror}:${cell.join(',')}:${this.history.revision}:${this.myPiecesRev}`;
     if (this.ghostPorts?.at !== at) this.ghostPorts = { at, states: setPiecePortStates(placement, def, [...this.mapBoxes(), ...this.ownBoxes(placement, def)]) };
     const ports = this.ghostPorts.states;
-    this.pieceHover = { def, placement, ok: check.ok, reason: check.ok ? '' : check.reason, blocked: ports.filter((s) => s.blockedBy).length };
+    this.pieceHover = { def, placement, ok: check.ok, reason: check.ok ? '' : check.reason, short: check.ok ? '' : check.short, blocked: ports.filter((s) => s.blockedBy).length };
     const theme = this.doc.classicStructure.theme;
     // Built once per piece, turn, mirror and look (at the grid's origin) and moved with the pointer.
     const key = `${t.piece}:${this.rotation}:${this.pieceMirror}:${look}:${theme}:${this.myPiecesRev}`;
@@ -2094,6 +2111,44 @@ export class EditorApp {
 
   /** The ghost's ports, and the cell, turn and document version they were worked out for. */
   private ghostPorts: { at: string; states: ReturnType<typeof setPiecePortStates> } | null = null;
+
+  /**
+   * Whether the tile tool's ghost fits, and why not (ghostWhy.ts): worked out once per tile, cell, turn and document
+   * version, so moving within a cell costs nothing.
+   */
+  private tileGhost(tile: string, cell: [number, number, number]): PlacementCheck {
+    const at = `${tile}:${cell.join(',')}:${this.rotation}:${this.history.revision}`;
+    if (this.tileGhostAt?.at !== at) this.tileGhostAt = { at, check: tileGhostCheck(this.doc, tile, cell[0], cell[1], cell[2], this.rotation) };
+    return this.tileGhostAt.check;
+  }
+  private tileGhostAt: { at: string; check: PlacementCheck } | null = null;
+
+  /**
+   * The note beside the pointer for the entity tools (spawns, pickups, props, vehicles, NPCs, objects): nothing under
+   * it, outside the boundary, the scenery zone (ghostWhy.ts). Once per spot and document version.
+   */
+  private entityGhost(): { title: string; note: GhostNote } | null {
+    const t = this.tool;
+    let kind: GhostEntityKind;
+    let at: [number, number, number] | null;
+    let title: string;
+    let model = '';
+    if (t.kind === 'spawn') [kind, at, title] = ['spawn', this.placeSpot(), 'Spawn point'];
+    else if (t.kind === 'pickup') [kind, at, title] = ['pickup', this.placeSpot(), getItem(t.item)?.displayName ?? 'Pickup'];
+    else if (t.kind === 'prop') [kind, at, title, model] = ['prop', this.propSpot(t.model), getProp(t.model)?.displayName ?? 'Prop', t.model];
+    else if (t.kind === 'mount') [kind, at, title] = ['mount', this.placeSpot(), MOUNT_DEFS[t.model].displayName];
+    else if (t.kind === 'npc') [kind, at, title] = ['npc', this.placeSpot(), NPC_PALETTE.find((x) => x.key === t.key)?.label ?? 'NPC'];
+    else if (t.kind === 'scenario') [kind, at, title] = ['object', this.scenarioSpot(t.key)?.p ?? null, SCENARIO_PALETTE.find((x) => x.key === t.key)?.label ?? 'Object'];
+    else return null;
+    if (!at) return null;
+    const key = `${t.kind}:${title}:${at.join(',')}:${this.history.revision}`;
+    if (this.entityGhostAt?.key !== key) {
+      const note = entityGhostNote(this.doc, kind, at, { boxes: this.mapBoxes(), terrain: this.shownGround }, model);
+      this.entityGhostAt = { key, value: note && { title, note } };
+    }
+    return this.entityGhostAt.value;
+  }
+  private entityGhostAt: { key: string; value: { title: string; note: GhostNote } | null } | null = null;
 
   private updateDrag(): void {
     const d = this.drag;

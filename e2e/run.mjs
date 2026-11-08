@@ -1166,7 +1166,7 @@ async function editorSetPieceChecks(browser) {
   // Red where it can't go, with the reason, and a click there places nothing.
   await hover(16, 0, 8.5);
   const red = await ghost();
-  check(red && !red.ok && /tone-bad/.test(red.tip) && /overlaps the Carriageway set piece/.test(red.tipText) && /can't go here/.test(await page.textContent('#ed-target')), `over another piece the ghost is red and says why (${red?.reason})`);
+  check(red && !red.ok && /tone-bad/.test(red.tip) && /overlaps the Carriageway set piece/i.test(red.tipText) && /can't go here/.test(await page.textContent('#ed-target')), `over another piece the ghost is red and says why (${red?.reason})`);
   await shot('ghost-red');
   await page.mouse.click((await at(16, 0, 8.5)).x, (await at(16, 0, 8.5)).y);
   check((await doc()).setPieces.length === 1 && /Can't place Carriageway/.test(await page.textContent('#ed-toast')), 'a click there places nothing and says why');

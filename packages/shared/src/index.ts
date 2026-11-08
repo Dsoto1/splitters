@@ -94,6 +94,7 @@ export * from './editor/commands.ts';
 export * from './editor/operations.ts';
 export * from './editor/setPieceEdit.ts';
 export * from './editor/buildArea.ts';
+export * from './editor/ghostWhy.ts';
 export * from './editor/stylePacks.ts';
 export * from './editor/scatter.ts';
 export * from './editor/npcs.ts';
