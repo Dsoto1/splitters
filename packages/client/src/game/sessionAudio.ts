@@ -404,7 +404,8 @@ export class SessionAudio {
         if (ev.victim === me) this.audio.play('death');
         else if (at) this.audio.play('death', { at });
         if (at && this.bloodOn()) this.audio.play('blood.splat', { at });
-        if (ev.killer === me && ev.victim !== me) {
+        // A team kill: the death sounds only, no kill confirmation.
+        if (ev.killer === me && ev.victim !== me && !ev.tk) {
           const t = now / 1000;
           this.recentKills = [...this.recentKills.filter((k) => t - k < MULTI_KILL_WINDOW), t];
           // Crunchy kill confirmation (GUNPLAY_SPEC §22): short, and each kill in a row climbs a step, so a multi-kill is a rhythm.

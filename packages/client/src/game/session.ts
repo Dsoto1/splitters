@@ -494,6 +494,8 @@ export class GameSession {
   private streakMoment(ev: Extract<GameEvent, { e: 'kill' }>, poses: () => ReturnType<Interpolator['sample']>): void {
     this.lifeKills.delete(ev.victim);
     if (ev.killer === null || ev.killer === undefined || ev.killer === ev.victim) return;
+    // A team kill ends the killer's streak (no burst, no "in a row").
+    if (ev.tk) return void this.lifeKills.delete(ev.killer);
     const n = (this.lifeKills.get(ev.killer) ?? 0) + 1;
     this.lifeKills.set(ev.killer, n);
     if (!(n === 3 || n === 5 || n === 7 || (n >= 10 && n % 5 === 0)) || document.hidden) return;
@@ -2120,9 +2122,10 @@ export class GameSession {
             const at = this.view.chestOf(ev.s);
             if (at) this.view.playGameplayFx(`pickup.${getItem(ev.item)?.effect.kind ?? 'item'}`, at);
           } else if (ev.e === 'kill') {
-            this.hud.kill(ev.killer, ev.victim, ev.weapon, this.slot, !!ev.hs);
+            this.hud.kill(ev.killer, ev.victim, ev.weapon, this.slot, !!ev.hs, !!ev.tk);
             if (ev.victim === this.slot && ev.killer !== null && ev.killer !== this.slot && this.local && msg.phase === 'playing') this.startKillCam(ev.killer, ev.weapon);
-            if (ev.killer === this.slot && ev.victim !== this.slot) {
+            // A team kill confirms nothing: no kill marker, no multi-kill.
+            if (ev.killer === this.slot && ev.victim !== this.slot && !ev.tk) {
               // Kill confirmation (GUNPLAY_SPEC §22): a sharper marker that escalates with kills in a row.
               const t = performance.now();
               this.killTimes = [...this.killTimes.filter((k) => t - k < MULTI_KILL_MS), t];
@@ -2131,7 +2134,7 @@ export class GameSession {
             const at = this.view.chestOf(ev.victim);
             if (at) this.view.blood.kill(at);
             if (at && ev.hs) this.view.blood.hit({ x: at.x, y: at.y + 0.55, z: at.z }, { x: 0, y: 0.6, z: 0 }, 2.2);
-            if (ev.hs && ev.killer === this.slot) this.hud.headshot();
+            if (ev.hs && !ev.tk && ev.killer === this.slot) this.hud.headshot();
           } else if (ev.e === 'round_end') {
             if (ev.outcome === 'victory') this.chainOn(ev.next);
             // Nowhere else to go: this browser's rotation moves on after the scoreboard.
