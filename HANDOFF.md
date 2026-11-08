@@ -8,6 +8,34 @@ A briefing for the next Claude session or agent picking up this repo. Read
 **Owner rule for the queue (2026-11-08):** new ideas go to the END of the queue. Only bugs or problematic gameplay
 jump ahead, or something the owner explicitly bumps.
 
+**Release 0.9.0 (2026-11-08, owner-approved "wait for the passenger fix, then release together"):** main 4d8f205
+(green on `check/release-090`, run 42502393727; three e2e shards failed first in flows the release doesn't touch,
+arsenal, weaponsets and hostgame, as on other branches that hour, and passed on a re-run of the failed jobs). CI
+released v0.9.0 from that build (tag and release with its assets). Fireteams part 1 and MapMaker's measure tool and
+turning by mouse went in with it.
+
+**Team kills (`wip/tk`, 2026-11-08; the owner's bug report).** "Teamkills should not count towards a kill streak
+(should end one) or show anything rewarding. It should actually show in the upper right that it was a TK."
+- **Where:** every kill goes through `Match.kill` (bullets, splash, grenades, roadkill, turrets, burns, barrels, a
+  sealed crew's wreck), so the rule is there. A team kill (`killer` not hostile to the victim, not themselves) emits
+  `{ e: 'kill', ..., tk: 1 }` (never `hs`), ends the killer's streak (`streak = 0`, `MatchAwards.endStreak`,
+  `RouletteDirector.endStreak`), and credits nobody: `credited = null` for awards/callouts, the mode's `onKill`, the
+  leader bounty, NPC encounters and the score-limit check. Before, the killer's streak was kept (not ended).
+- **Client:** `session.ts` (no kill confirm, no headshot mark, `streakMoment` drops the killer's life kills),
+  `sessionAudio.ts` (no confirm sounds or multi-kill), `hud.kill(..., teamKill)`: `.tk` line with a `TK` tag
+  (`#feed .tk`, `--warning`).
+- **Roadkill** now reads `canHurt` (it read `hostile`): with friendly fire on a vehicle hurts teammates too (it never
+  did); off, unchanged.
+- **Tests:** `packages/shared/test/teamKill.test.ts` (each source fired for real by a person and a bot: rifle, rocket
+  blast, frag, run over, MG turret, flamethrower burn, a barrel shot; the same on an enemy still scores; FF off and
+  half; every team mode incl. Forts in its fight phase; awards; Roulette with teams; self-kills);
+  `packages/client/test/teamKill.test.ts` (sounds); e2e `teams` → `friendlyFireChecks` → `teamKillCheck` (`?test=1`:
+  a TK primed one kill short of the first burst shows the TK feed line and no burst, message or kill marker).
+- **Breakthrough Range hidden again** (`maps/test_breakthrough.json` `metadata.testOnly`, ticked in the real MapMaker:
+  Import, a click on Map properties' "Test map", Export, revision 6); its card picture removed (content:check: test
+  maps ship none). e2e `breakthrough` reaches it by `?testmap=test_breakthrough`; mapIndexPlugin and server testMaps
+  expect it hidden. bot-report still plays it by name (the HANDOFF commands); its suites skip test maps.
+
 **Passengers at speed fixed (`wip/passengers`, 2026-11-08; the owner's bug report, top priority).** "Those seated don't
 move in lock step with the vehicle, their bodies drift back ... hearing their footsteps instead of an engine sound."
 - **Root cause:** a rider was drawn from their own pose, snapshot-interpolated 100 ms behind the server
