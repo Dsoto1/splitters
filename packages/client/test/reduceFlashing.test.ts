@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { NullEngine } from '@babylonjs/core/Engines/nullEngine';
 import { Scene } from '@babylonjs/core/scene';
 import { REDUCE_FLASHING_EVENT, SAFE_BLINK, SAFE_LIGHT, blastStrength, blinkLevel, ease, indicator, loadReduceFlashing, reduceFlashing, resetReduceFlashingCache, saveReduceFlashing } from '../src/game/reduceFlashing.ts';
-import { CALM_HURT, HURT_LOOKS, HurtFade } from '../src/game/hurtVignette.ts';
+import { CALM_HEAVY, CALM_HURT, HEAVY_LOOK, HURT_LOOKS, HeavyFade, HurtFade } from '../src/game/hurtVignette.ts';
 import { STEADY_ARC, SteadyArcs } from '../src/game/steadyArcs.ts';
 
 const store = new Map<string, string>();
@@ -191,5 +191,25 @@ describe('steady lightning', () => {
     expect(arcs.count).toBe(0);
     expect(scene.meshes.filter((m) => m.name.startsWith('steadyArc')).length).toBe(0);
     expect(STEADY_ARC.hold + STEADY_ARC.release).toBeLessThan(1);
+  });
+});
+
+describe('the heavy-hit edge', () => {
+  it('darkens (a dim brown, never bright or saturated red): classic snaps on and is gone in 0.45 s, calm eases in and out, fainter', () => {
+    const [r, g, b] = HEAVY_LOOK.color;
+    expect(Math.max(r, g, b)).toBeLessThan(60);
+    expect(lin(r) / (lin(r) + lin(g) + lin(b))).toBeLessThan(0.8);
+    const f = new HeavyFade();
+    f.hit(90, 1000);
+    expect(f.update(1000, false)).toBeGreaterThan(0.9);
+    expect(f.update(1460, false)).toBe(0);
+    const c = new HeavyFade();
+    let now = 1000;
+    c.hit(90, now);
+    expect(c.update((now += 16), true)).toBeLessThan(0.2);
+    let peak = 0;
+    for (let i = 0; i < 120; i++) peak = Math.max(peak, c.update((now += 1000 / 60), true));
+    expect(peak).toBeLessThanOrEqual(CALM_HEAVY.peak + 1e-9);
+    expect(c.level).toBe(0);
   });
 });

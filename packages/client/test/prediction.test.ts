@@ -21,7 +21,12 @@ describe('client prediction', () => {
     const toServer: { at: number; input: PlayerInput }[] = [];
     const toClient: { at: number; snap: PlayerSnapshot; ack: number; priv: PrivateState | undefined }[] = [];
 
-    // Seed the client with the spawn state, as the first snapshot would.
+    // Seed the client with the spawn state, as the first snapshot would. (On the spawn point at (8, -2), out in the
+    // open, whichever the match picked: it picks one at random among the safest few.)
+    match.step();
+    const sp = loaded.map.entities.find((e) => e.kind === 'spawn' && e.position[0] === 8 && e.position[2] === -2)!;
+    me.move = { ...me.move, pos: { x: sp.position[0], y: sp.position[1], z: sp.position[2] }, velY: 0 };
+    me.yaw = 'yaw' in sp ? sp.yaw : 0;
     match.step();
     local.reconcile(match.playerSnapshots().find((p) => p.s === me.slot)!, 0, match.privateState(me.slot));
     const start = { ...me.move.pos };

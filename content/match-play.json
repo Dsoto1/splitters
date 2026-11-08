@@ -1,0 +1,38 @@
+{
+  "$comment": "How free-for-all and team fights play (docs/GAME_MODES.md, \"Spawns, protection and awards\"; sim/spawns.ts, sim/awards.ts). `spawnProtection`: seconds of spawn protection by mode (a shield nobody else's damage gets through, dropped the moment you fire, throw or strike; modes not listed have none). `botFireBefore`: a bot under spawn protection holds its fire (gets its bearings) until this many seconds before its shield runs out, unless an unshielded enemy is right on top of it: more seconds, more firing earlier and more spawn deaths; fewer, the reverse. `spawnChoice`: how a spawn point is chosen, the same for people and bots: every candidate is scored (distance to the nearest enemy up to `enemyRange` m, and past `farRange` m `farWeight` a metre off, so a spawn is safe but not out of the game; each of the `sightEnemies` nearest enemies within `sightRange` m with a clear line to it costs `seenPenalty`, checked for the best `sightCandidates`; each death within `deathRadius` m in the last `deathSeconds` costs up to `deathPenalty`, less with distance and time; team modes on shared spawns: each living teammate out of a fight within `mateRange` m adds `mateBonus`, up to `mateMax`, and a side keeps its own part of the map: `sideWeight` a metre nearer the side's own spawns than the enemy's, at most `sideMax` either way), then one is picked at random among the best `safeFew` within `margin` of the best. `heavyHit`: damage in one hit that counts as a heavy hit (the big-hit effect, the screen edge). `awards`: the end-of-match awards' thresholds (most accurate needs `accuracyMinShots` rounds fired; the longest streak at least `streakMin` kills; a nemesis at least `nemesisMin` kills of one player; most revenge kills at least `revengeMin`). `callouts`: `nemesis` kills of you in a row, with none back, make that player your nemesis (the callout). Edit, then run `node tools/content/match-play.mjs`.",
+  "spawnProtection": {
+    "core.deathmatch": 3,
+    "core.tdm": 3,
+    "core.roulette": 2
+  },
+  "botFireBefore": 1,
+  "spawnChoice": {
+    "enemyRange": 30,
+    "farRange": 50,
+    "farWeight": 0.3,
+    "sightRange": 50,
+    "sightCandidates": 8,
+    "sightEnemies": 4,
+    "seenPenalty": 35,
+    "deathRadius": 12,
+    "deathSeconds": 10,
+    "deathPenalty": 18,
+    "mateRange": 25,
+    "mateBonus": 6,
+    "mateMax": 3,
+    "sideWeight": 0.2,
+    "safeFew": 3,
+    "margin": 8,
+    "sideMax": 8
+  },
+  "heavyHit": 45,
+  "awards": {
+    "accuracyMinShots": 25,
+    "streakMin": 3,
+    "nemesisMin": 3,
+    "revengeMin": 1
+  },
+  "callouts": {
+    "nemesis": 3
+  }
+}

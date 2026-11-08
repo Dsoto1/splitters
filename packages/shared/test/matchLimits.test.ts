@@ -31,7 +31,7 @@ beforeAll(() => Promise.all([initPhysics(), initNavigation()]));
 function campus(): MapDocument {
   const at: [number, number, number][] = Array.from({ length: 41 }, (_, i) => [(i % 8) * 6, 0, Math.floor(i / 8) * 6]);
   const map = makeMap([], at);
-  return { ...map, metadata: { ...map.metadata, recommendedPlayers: { min: 8, max: 32 }, supportedModes: ['core.tdm', 'core.deathmatch', 'core.ctf', 'core.koth', 'core.elim'] }, teamSetup: { sizes: [12, 12] } };
+  return { ...map, metadata: { ...map.metadata, recommendedPlayers: { min: 8, max: 32 }, supportedModes: ['core.tdm', 'core.deathmatch', 'core.ctf', 'core.koth', 'core.elim'], playerCaps: { 'core.tdm': { recommended: 24, max: 64 } } }, teamSetup: { sizes: [12, 12] } };
 }
 
 /** A co-op mission made for 1–4 (no team layout). */

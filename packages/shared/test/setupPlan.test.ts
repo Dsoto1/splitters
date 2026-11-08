@@ -37,7 +37,8 @@ function stJohns(): MapDocument {
   const map = makeMap([], at);
   return {
     ...map,
-    metadata: { ...map.metadata, recommendedPlayers: { min: 8, max: 32 }, supportedModes: ['core.tdm', 'core.deathmatch', 'core.ctf', 'core.koth', 'core.elim'] },
+    // Its player caps as set in MapMaker (the test map is far smaller than the real one, whose automatic caps these are).
+    metadata: { ...map.metadata, recommendedPlayers: { min: 8, max: 32 }, supportedModes: ['core.tdm', 'core.deathmatch', 'core.ctf', 'core.koth', 'core.elim'], playerCaps: { 'core.tdm': { recommended: 24, max: 122 } } },
     teamSetup: { sizes: [12, 12] },
     entities: map.entities.map((e, i) => (e.kind === 'spawn' && i < 24 ? { ...e, faction: i < 12 ? 'embers' : 'tide' } : e)),
   };
@@ -191,14 +192,17 @@ describe('the fit indicator', () => {
     const size = big.items.find((i) => i.topic === 'size')!;
     expect(size).toMatchObject({ level: 'warn', fix: { label: 'Use 12v12', teams: [12, 12] } });
     expect(size.text).toMatch(/The map suggests 12v12/);
-    expect(big.items.map((i) => i.topic)).toEqual(['size', 'spawns', 'performance']);
+    expect(big.items.map((i) => i.topic)).toEqual(['caps', 'size', 'spawns', 'performance']);
+    expect(big.items[0]).toMatchObject({ topic: 'caps', level: 'info' });
     // 16v16 fits; the map's own layout is still offered.
     const sixteen = setupFit(setup({ teams: [16, 16] }), map, desk);
     expect(sixteen.level).toBe('fits');
     expect(sixteen.items.find((i) => i.topic === 'size')).toMatchObject({ level: 'info', fix: { label: 'Use 12v12' } });
     const tiny = setupFit(setup({ teams: [24, 24] }), small(), desk);
     expect(tiny).toMatchObject({ level: 'problem', label: 'Problem' });
-    expect(tiny.items.find((i) => i.level === 'problem')).toMatchObject({ topic: 'size', fix: { label: 'Use 4v4', teams: [4, 4] } });
+    // Over the map's most for the mode (its player caps): a problem, with its recommended as the fix.
+    expect(tiny.items.find((i) => i.level === 'problem')).toMatchObject({ topic: 'caps', fix: { label: 'Use 8', teams: [4, 4] } });
+    expect(tiny.items.find((i) => i.topic === 'size')).toMatchObject({ level: 'warn', fix: { label: 'Use 4v4', teams: [4, 4] } });
   });
 
   it('a setup asking for more than the device runs, or the grid holds, plays what fits and says so', () => {
