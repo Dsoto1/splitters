@@ -3352,7 +3352,7 @@ async function friendlyFireChecks(browser) {
     const errors = [];
     page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
     await page.addInitScript((on) => localStorage.setItem('cs.arcade', JSON.stringify({ map: 'sandgate', mode: 'core.tdm', bots: 3, skill: 'easy', scoreLimit: 40, minutes: 10, ...(on ? { friendlyFire: 'on' } : {}) })), ff === 'on');
-    await page.goto(CLIENT);
+    await page.goto(`${CLIENT}/?test=1`);
     await page.click('#nav-play');
     await page.click('#arcade-start');
     await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown', null, { timeout: T(90000) });
@@ -3390,13 +3390,76 @@ async function friendlyFireChecks(browser) {
       }
       return r;
     });
+    // A team kill (friendly fire on): the feed marks it TK, and nothing rewards it: no kill, the streak ends, no
+    // streak burst or "in a row", no kill marker. Primed one kill short of the first burst and streak reward.
+    if (ff === 'on') out.tk = await teamKillCheck(page);
     out[ff] = { ...shot, hurt: after?.hurt ?? null, errors: errors.join('; ') };
     await page.context().close();
   }
+  const tk = out.tk;
+  check(tk?.dead && tk.feed?.tk && /\bTK\b/.test(tk.feed.text), `a team kill shows in the kill feed (upper right) marked TK (${JSON.stringify(tk)})`);
+  check(tk?.dead && tk.kills === tk.kills0 && tk.streak === 0 && !tk.bursts && !tk.inARow && !tk.marker && tk.lifeKills === 0, `a team kill rewards nothing: no kill, the streak ends, no streak burst, no kill marker (${JSON.stringify(tk)})`);
   check(out.on.rule === 'on' && out.off.rule === 'off', `Match setup's friendly fire reaches the match (on: ${out.on.rule}, off: ${out.off.rule})`);
   check(out.on.mate && out.on.clear && out.on.hurt > 0, `friendly fire on: your rounds hurt a teammate in front of you (${JSON.stringify(out.on)})`);
   check(out.off.mate && out.off.clear && out.off.hurt === 0, `friendly fire off: your rounds pass through a teammate unhurt (${JSON.stringify(out.off)})`);
   check(!out.on.errors && !out.off.errors, `no page errors in the friendly fire matches (${out.on.errors}${out.off.errors})`);
+}
+
+/** Friendly fire on: you down a teammate in front of you. What the page showed for it (teams flow, friendlyFireChecks). */
+async function teamKillCheck(page) {
+  // What the page draws for it: effects, HUD lines and the kill marker, recorded as they happen.
+  await page.evaluate(() => {
+    const cs = window.__cs;
+    const seen = (window.__tkSeen = { fx: [], msgs: [], marker: false, feed: [] });
+    // Each kill-feed line as it is drawn (it fades after 5 s): who, the TK flag passed, the line's class and text.
+    const kill = cs.hud.kill.bind(cs.hud);
+    cs.hud.kill = (...a) => {
+      kill(...a);
+      const line = document.getElementById('feed').firstElementChild;
+      seen.feed.push({ killer: a[0], victim: a[1], tk: !!line?.classList.contains('tk'), text: line?.textContent.trim() ?? '', edge: line ? getComputedStyle(line).borderRightColor : '' });
+    };
+    const fx = cs.view.playGameplayFx.bind(cs.view);
+    cs.view.playGameplayFx = (name, ...rest) => (seen.fx.push(name), fx(name, ...rest));
+    const msg = cs.hud.showMessage.bind(cs.hud);
+    cs.hud.showMessage = (text, ...rest) => (seen.msgs.push(text), msg(text, ...rest));
+    const confirm = cs.hud.killConfirm.bind(cs.hud);
+    cs.hud.killConfirm = (...a) => ((seen.marker = true), confirm(...a));
+    // Two kills this life already, on the page and in the match: one more would be the first burst.
+    cs.lifeKills.set(cs.slot, 2);
+  });
+  const shot = await sim(page, (m, me) => {
+    const mate = globalThis.__ffMate;
+    if (!mate?.alive) return null;
+    const at = { x: me.move.pos.x + Math.sin(me.yaw) * 4, y: me.move.pos.y, z: me.move.pos.z + Math.cos(me.yaw) * 4 };
+    mate.move = { ...mate.move, pos: at, velY: 0, vx: 0, vz: 0, grounded: true };
+    mate.health = 1;
+    mate.armor = 0;
+    mate.invulnerable = false;
+    mate.shieldUntil = 0;
+    me.streak = 2;
+    const eye = { x: me.move.pos.x, y: me.move.pos.y + 1.6, z: me.move.pos.z };
+    me.pitch = Math.atan2(at.y + 1.2 - eye.y, 4);
+    const gun = [...me.weapons.values()].map((w) => w.def).find((d) => d.kind === 'hitscan' && d.damage > 0);
+    for (let i = 0; i < 3 && mate.alive; i++) m.fireNow(me, { ...gun, alt: undefined }, 0);
+    return { tick: m.tick, kills0: me.kills, slot: mate.slot };
+  });
+  if (!shot) return { dead: false };
+  // The kill reaches the page: its feed line drawn.
+  await page.waitForFunction((slot) => window.__tkSeen.feed.some((f) => f.victim === slot), shot.slot, { timeout: T(15000) }).catch(() => {});
+  const inMatch = await sim(page, (m, me) => ({ kills: me.kills, streak: me.streak ?? 0 }));
+  const page_ = await page.evaluate((slot) => {
+    const seen = window.__tkSeen;
+    const line = seen.feed.find((f) => f.victim === slot) ?? null;
+    return {
+      dead: !!line,
+      feed: line,
+      bursts: seen.fx.filter((f) => f === 'streak').length,
+      inARow: seen.msgs.some((t) => /in a row|kill streak/i.test(t)),
+      marker: seen.marker || document.getElementById('hitmarker').classList.contains('kill'),
+      lifeKills: window.__cs.lifeKills.get(window.__cs.slot) ?? 0,
+    };
+  }, shot.slot);
+  return { ...inMatch, kills0: shot.kills0, ...page_ };
 }
 
 /**
@@ -4005,8 +4068,8 @@ async function ctfFlow(browser) {
 }
 
 /**
- * Breakthrough (core.breakthrough) on the Breakthrough Range (maps/test_breakthrough.json: a map every list offers,
- * Breakthrough its only mode; its id kept from when it was a test map). Match Setup offers the mode on a map with sectors, with its own settings
+ * Breakthrough (core.breakthrough) on the Breakthrough Range (maps/test_breakthrough.json: a test map, metadata.testOnly,
+ * that no list offers; the test reaches it with ?testmap=; Breakthrough its only mode). Match Setup offers the mode on a map with sectors, with its own settings
  * (reinforcements, sector time, second round), and greys it out on one without, saying why. In the match the HUD
  * shows your side, the sector strip, the pool and the objectives (marked, drawn in the world, on the minimap); bots
  * take the first sector on their own (the clock run forward, you kept out of it); both sides' spawns move on, the
@@ -4168,7 +4231,14 @@ async function breakthroughFlow(browser) {
   await page.addInitScript(() => {
     if (!localStorage.getItem('cs.arcade')) localStorage.setItem('cs.arcade', JSON.stringify({ map: 'sandgate', mode: 'core.tdm', bots: 3, skill: 'normal', scoreLimit: 40, minutes: 10, scoreAuto: true, timeAuto: true, teams: [4, 4] }));
   });
+  // The Breakthrough Range is a test map: Match Setup's list leaves it out, unless a test asks for it (?testmap=).
   await page.goto(`${CLIENT}/?test=1&god=1`);
+  await page.waitForFunction(() => window.__front, null, { timeout: T(30000) });
+  await page.evaluate(() => document.getElementById('nav-play').click());
+  await page.waitForSelector('#arcade-map', { state: 'attached', timeout: T(30000) });
+  const hidden = await page.evaluate(() => [...document.getElementById('arcade-map').options].some((o) => o.value === 'test_breakthrough'));
+  check(!hidden, 'Match Setup does not list the Breakthrough Range (a test map)');
+  await page.goto(`${CLIENT}/?test=1&god=1&testmap=test_breakthrough`);
   await page.waitForFunction(() => window.__front, null, { timeout: T(30000) });
   await page.evaluate(() => document.getElementById('nav-play').click());
   await page.waitForSelector('#arcade-map', { state: 'attached', timeout: T(30000) });
@@ -4176,9 +4246,9 @@ async function breakthroughFlow(browser) {
   await page.waitForSelector('.mode-tag-off[data-mode="core.breakthrough"]', { timeout: T(30000) }).catch(() => {});
   const off = await page.evaluate(() => document.querySelector('.mode-tag-off[data-mode="core.breakthrough"]')?.dataset.tip ?? null);
   check(/sectors/.test(off ?? ''), `Match Setup greys Breakthrough out on a map without sectors, saying why (${off})`);
-  // The Breakthrough Range is an ordinary map now (no test hook): Match Setup's map list offers it by its name.
+  // With ?testmap= the Range joins Match Setup's map list, by its name.
   const listed = await page.evaluate(() => [...document.getElementById('arcade-map').options].find((o) => o.value === 'test_breakthrough')?.textContent ?? null);
-  check(/Breakthrough Range/.test(listed ?? ''), `Match Setup lists the Breakthrough Range without any test hook (${listed})`);
+  check(/Breakthrough Range/.test(listed ?? ''), `with ?testmap= Match Setup lists the Breakthrough Range (${listed})`);
   // The map with sectors: Breakthrough is offered, its own settings in "what wins".
   // (The setup's map list: picked as its select does, the map browser being the way a player picks.)
   await page.evaluate(() => {

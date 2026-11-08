@@ -109,6 +109,12 @@ export class MatchAwards {
     return out;
   }
 
+  /** A team kill: it ends the killer's streak (Longest Streak) and earns nothing (no pair, no revenge, no nemesis run). */
+  endStreak(slot: number): void {
+    const t = this.tally.get(slot);
+    if (t) t.streak = 0;
+  }
+
   /**
    * The awards for the players still in the match (`slots`, in slot order; ties go to the lower slot; an award
    * nobody earned isn't given).
