@@ -183,7 +183,7 @@ export class HostPanel {
     const entries: RotationEntry[] = r.entries.map((e) => ({ map: e.map, mode: e.mode }));
     const set = (list: RotationEntry[]) => this.hooks.command({ c: 'rotation', entries: list });
     const next = r.next !== null ? r.entries[r.next] : undefined;
-    const head = el('p', { class: 'hc-rot-next', id: 'hc-rot-next', textContent: next ? `Next up: ${next.name} · ${MODE_LABELS[next.mode]}` : 'Empty: the match replays this map. Add maps, or start from a preset.' });
+    const head = el('p', { class: 'hc-rot-next', id: 'hc-rot-next', textContent: next ? `Next up: ${next.name} · ${MODE_LABELS[next.mode]}` : r.vote ? 'Empty: everyone votes on the next map from our maps for this mode. Add maps to put them on the ballot first.' : 'Empty: the match replays this map. Add maps, or start from a preset.' });
     const list = el('ol', { class: 'hc-rot', id: 'hc-rot-list' });
     r.entries.forEach((e, i) => {
       const button = (id: string, text: string, title: string, disabled: boolean, act: () => void) => {
@@ -226,6 +226,12 @@ export class HostPanel {
     skip.addEventListener('click', () => this.hooks.command({ c: 'skip' }));
     const clear = el('button', { id: 'hc-rot-clear', textContent: 'Clear', title: 'Empty the rotation (matches replay their map)', disabled: !r.entries.length });
     clear.addEventListener('click', () => set([]));
+    // Between matches, everyone votes on the next map (sim/mapVote.ts); off: plain rotation. Older hosts: no box.
+    const vote = r.vote === undefined ? null : el('input', { type: 'checkbox', id: 'hc-rot-vote', checked: r.vote });
+    vote?.addEventListener('change', () => this.hooks.command({ c: 'rotation', vote: vote.checked }));
+    const voteRow = vote
+      ? [el('div', { class: 'hc-row hc-rot-tools' }, el('label', { class: 'hc-check', title: 'At the end of a match everyone votes on the next map: two or three of our maps that fit the players here, the rotation\'s next first. Ties go to your vote. Off: plain rotation (an empty one replays the map).' }, vote, ' Vote on the next map'))]
+      : [];
     return [
       card(
         'Rotation',
@@ -234,6 +240,7 @@ export class HostPanel {
         ...(r.entries.length ? [list] : []),
         el('div', { class: 'hc-row hc-rot-tools' }, add, preset),
         el('div', { class: 'hc-row hc-rot-tools' }, el('label', { class: 'hc-check' }, shuffle, ' Shuffle'), skip, clear),
+        ...voteRow,
       ),
     ];
   }

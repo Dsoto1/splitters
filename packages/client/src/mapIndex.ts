@@ -19,6 +19,8 @@ export interface MapIndexEntry {
   metadata: MapMeta;
   /** playableModes(map). */
   modes: GameMode[];
+  /** The most players the map takes in each of `modes` (mapPlayerCaps), in the same order. */
+  caps?: number[];
 }
 
 /** Every built-in map that loads (sorted by key). */

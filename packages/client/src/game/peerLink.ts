@@ -7,6 +7,7 @@ import { baseIceServers, loadRelay, sessionIce } from './relay.ts';
 import { makeJoinCode } from './joinCode.ts';
 import { netProbe } from './netProbe.ts';
 import { playerKey } from './playerKey.ts';
+import { myParty } from './party.ts';
 import { SnapshotCoalescer } from './snapshotMerge.ts';
 import { adminToken, rememberAdminToken } from './netTransport.ts';
 import { accessToken } from '../account.ts';
@@ -350,7 +351,7 @@ export class PeerTransport implements Transport {
         this.linked = true;
         clearTimeout(timeout);
         const admin = adminToken(`code:${this.code}`);
-        this.send({ t: 'hello', protocol: PROTOCOL_VERSION, name: this.name, look: this.look, pk: playerKey(), ...(this.ticket ? { ticket: this.ticket } : {}), ...(admin ? { admin } : {}) });
+        this.send({ t: 'hello', protocol: PROTOCOL_VERSION, name: this.name, look: this.look, pk: playerKey(), party: myParty(), ...(this.ticket ? { ticket: this.ticket } : {}), ...(admin ? { admin } : {}) });
         heardAt = performance.now();
         let tickAt = heardAt;
         this.pingTimer = window.setInterval(() => {
@@ -478,6 +479,10 @@ export class PeerTransport implements Transport {
 
   sendSpectate(on: boolean): void {
     this.send({ t: 'spectate', on });
+  }
+
+  sendVote(i: number): void {
+    this.send({ t: 'vote', i });
   }
 
   /** Admin login and commands: a dedicated host (Host Service) runs them for its admin; a browser host refuses them. */

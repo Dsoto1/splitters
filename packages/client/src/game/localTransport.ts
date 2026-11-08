@@ -1,4 +1,4 @@
-import { BROWSER_HOST_MAX_GUESTS, MAX_PLAYER_SLOTS, type CarryOver, type GameMode, type HostCommand, type HostState, type MapDocument, type MatchRules, type PlayerInput, type RotationCommand, type ServerMessage } from '@tiletrigger/shared';
+import { BROWSER_HOST_MAX_GUESTS, MAX_PLAYER_SLOTS, type CarryOver, type GameMode, type HostCommand, type HostState, type MapDocument, type MatchRules, type PlayerInput, type RotationCommand, type ServerMessage, type VoteOption } from '@tiletrigger/shared';
 import { deviceMaxPlayers } from '../touchDevice.ts';
 import { MatchHost, dispatchToHost, sinkTo, type FromSimHost, type HostFacts, type HostListing, type LocalMatchOptions, type ToSimHost } from './matchHost.ts';
 import { playerKey } from './playerKey.ts';
@@ -419,6 +419,15 @@ export class LocalTransport implements Transport {
 
   sendSpectate(on: boolean): void {
     this.toHost({ k: 'spectate', on });
+  }
+
+  sendVote(i: number): void {
+    this.toHost({ k: 'vote', i });
+  }
+
+  /** Between matches: open the vote on these maps (the page picked them from our suite). */
+  openVote(options: VoteOption[]): void {
+    this.toHost({ k: 'voteopen', options });
   }
 
   private readonly onPageHide = () => this.sayGoodbye();

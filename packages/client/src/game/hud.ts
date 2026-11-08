@@ -941,6 +941,9 @@ export class Hud {
     const race = this.raceOrder;
     // Guests are marked once more than one person plays (an online match), so a typed name can't pass for an account.
     const people = [...this.roster.values()].filter((p) => !p.bot).length;
+    // Your party (net/party.ts): the people who came with you, when there are any.
+    const myParty = this.roster.get(localSlot)?.py;
+    const inParty = myParty ? [...this.roster.values()].filter((p) => !p.bot && p.py === myParty).length > 1 : false;
     const row = (s: ScoreEntry): BoardRow => {
       const p = this.roster.get(s.s);
       const cls = this.classes.get(s.s);
@@ -950,6 +953,7 @@ export class Hud {
         name: this.name(s.s),
         bot: !!p?.bot,
         ...(p && !p.bot ? (p.acct ? { who: 'acct' as const } : people > 1 ? { who: 'guest' as const } : {}) : {}),
+        ...(inParty && p && !p.bot && p.py === myParty ? { party: true } : {}),
         color: this.team(s.s)?.color ?? slotColor(s.s),
         cls: cls === undefined ? '' : (CLASS_DEFS[CLASS_IDS[cls] ?? 'rocketeer']?.name ?? ''),
         k: s.k,
