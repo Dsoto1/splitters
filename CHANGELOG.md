@@ -22,7 +22,7 @@ made only on a commit that passed CI on a check branch.
   or shows them all again.
 
 **Flaky e2e checks fixed at the cause** (tests only): mobile (bots knocking the player into the air before the jump
-tap), physicsfx (blasts by cover and a race with bots respawning), characters3 (a weapon key pressed while only the view
+tap), physicsfx (bodies dropped and blasts set off by cover, a race with bots respawning, range bots in front of the glass), characters3 (a weapon key pressed while only the view
 lagged) and weaponsets (a respawn picking up last life's dropped gun).
 
 **Gunplay audit, measured** (owner-approved; no weapon changed): `pnpm gun-report` drives the shared sim and measures

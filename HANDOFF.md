@@ -241,8 +241,12 @@ gets overloaded above that: local e2e times out and flakes). Prune landed worktr
 - **physicsfx**: the "blast throws a bot" check blasted beside wherever a bot stood (behind cover: not thrown), and the
   mass ring went 10 m along a view that depended on bot positions (a body thrown into a rock). Both now go off on a
   fixed open spot found on a 4 m grid over the map (level ground, nothing within 5 m in the sim's level or the effects
-  world), with you placed 10 m off facing it. The far-death check waits for a bot back alive and drawn (it threw
-  "reading 'move'" when none had respawned yet).
+  world), with you placed 10 m off facing it; the first killed bot falls there too (locally under load one body placed
+  4 m ahead of wherever you spawned was flung 10 m up: worth a look if it shows in play). The far-death check waits
+  for a bot back alive and drawn (it threw "reading 'move'" when none had respawned yet). Its glass checks play the
+  range alone (`&bots=1`): bots respawning in front of the panels took the rounds (CI: bulletproof panel at full health).
+- **characters3** far bodies (`core.hyena` drawn 1.5 of 2.12 m, check/quickplay 05a1515, both attempts; not reproduced
+  in 5 local runs): the message now also says where you are against the crowd's setup and whether you died.
 - **characters3**, scope check: `__give` already puts the marksman in hand; pressing 3 while only the view lagged cycled
   on to the rifle in the same slot. It waits for the held gun and presses only while it isn't the marksman.
 - **weaponsets**, Chaos lives: the gun you die with drops at your body (rules.dropWeapons); idle at your spawn, the next
