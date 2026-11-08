@@ -50,6 +50,51 @@ function sameShape(a: EffectShape, b: EffectShape): boolean {
 /** The effects world's gravity (m/s²; a little more than real for snappier debris). */
 const EFFECTS_GRAVITY = 20;
 
+/** Metres under the lowest static shape below which a body has left the world (it fell through): it is removed. */
+export const EFFECTS_FLOOR_MARGIN = 20;
+
+/** One chunk of a debris burst: its cube's edge, where it starts, how it flies and spins. */
+export interface DebrisChunk {
+  size: number;
+  start: Vec3;
+  vel: Vec3;
+  spin: Vec3;
+}
+
+/** A vehicle or turret blowing up throws two bursts (charred and rust-red chunks), sized to its blast. */
+export function vehicleDebris(radius: number): { size: number; count: number; speed: number }[] {
+  return [
+    { size: Math.max(1, radius * 0.4), count: 16, speed: 1.8 },
+    { size: Math.max(0.8, radius * 0.3), count: 6, speed: 2.2 },
+  ];
+}
+
+/**
+ * The chunks of a debris burst round `at` (a broken crate, a vehicle blowing up): starts scattered over a
+ * `size` cube round it, thrown up and out. Starts can be under the ground (a blast centred less than `size` / 2
+ * above it); EffectsWorld.clearOfGround lifts them out.
+ */
+export function debrisBurst(at: Vec3, size: number, count: number, speed: number, rnd: () => number = Math.random): DebrisChunk[] {
+  const out: DebrisChunk[] = [];
+  for (let k = 0; k < count; k++) {
+    const s = size * (0.15 + rnd() * 0.2);
+    const vel = { x: (rnd() - 0.5) * 6 * speed, y: (2 + rnd() * 4) * speed, z: (rnd() - 0.5) * 6 * speed };
+    const spin = { x: rnd() * 8, y: rnd() * 8, z: rnd() * 8 };
+    const start = { x: at.x + (rnd() - 0.5) * size, y: at.y + (rnd() - 0.5) * size, z: at.z + (rnd() - 0.5) * size };
+    out.push({ size: s, start, vel, spin });
+  }
+  return out;
+}
+
+/** The lowest point of an environment shape. */
+function shapeBottom(sh: EnvWorldShape): number {
+  if (sh.kind === 'capsule') return Math.min(sh.a[1], sh.b[1]) - sh.r;
+  const pts = sh.kind === 'hull' ? sh.points : sh.positions;
+  let y = Infinity;
+  for (let i = 1; i < pts.length; i += 3) y = Math.min(y, pts[i]!);
+  return y;
+}
+
 export class EffectsWorld {
   /** Gravity a multiple of the usual (Lunar's floaty ragdolls, the gravity storm). */
   setGravityScale(scale: number): void {
@@ -64,8 +109,14 @@ export class EffectsWorld {
   /** The environment shape behind each environment collider (trunks, limbs, boulders, cliffs): its surface. */
   private readonly envSurfaces = new Map<number, SurfaceTypeId>();
 
+  /** The lowest point of the level's static shapes (terrain, boxes, environment): nothing can rest below it. */
+  readonly floor: number;
+
   constructor(boxes: readonly WorldBox[], terrain: { positions: Float32Array; indices: Uint32Array } | null = null, shapes: readonly EnvWorldShape[] = []) {
     this.world = new RAPIER.World({ x: 0, y: -EFFECTS_GRAVITY, z: 0 });
+    let floor = Infinity;
+    if (terrain) for (let i = 1; i < terrain.positions.length; i += 3) floor = Math.min(floor, terrain.positions[i]!);
+    for (const b of boxes) floor = Math.min(floor, b.min[1]);
     const statics = groups(GROUP_STATIC, GROUP_DEBRIS | GROUP_RAGDOLL | GROUP_STATIC);
     if (terrain) this.world.createCollider(RAPIER.ColliderDesc.trimesh(terrain.positions, terrain.indices).setCollisionGroups(statics));
     // The same environment colliders as the game's physics (sim/physics.ts envColliderDesc), so a round's
@@ -85,6 +136,31 @@ export class EffectsWorld {
       else if (b.yaw) desc.setRotation({ x: 0, y: Math.sin(b.yaw / 2), z: 0, w: Math.cos(b.yaw / 2) });
       this.boxes.set(this.world.createCollider(desc).handle, b);
     }
+    for (const sh of shapes) floor = Math.min(floor, shapeBottom(sh));
+    this.floor = Number.isFinite(floor) ? floor : 0;
+    // Rays see colliders only once a step has put them in the query structure: one empty step, so the level answers
+    // the first ray (a blast's air-burst test, a debris chunk's clearOfGround) before the first frame's step.
+    this.world.step();
+  }
+
+  /** A body this far down has fallen out of the world (through it, or off its edge): nothing will stop it now. */
+  belowWorld(y: number): boolean {
+    return y < this.floor - EFFECTS_FLOOR_MARGIN;
+  }
+
+  /**
+   * Where a debris chunk of half-height `half` starting at `start` should start so it isn't under the ground or in
+   * a level shape: the first static surface under the burst's centre height (`at`), straight down over the chunk,
+   * with the chunk lifted onto it when it starts below. A chunk started under the terrain's surface is beneath a
+   * one-sided mesh with nothing below it and falls out of the world (a vehicle blowing up centres its burst only its
+   * half-height above the ground, and scatters chunks over a cube up to 2.4 m across).
+   */
+  clearOfGround(at: Vec3, start: Vec3, half: number): Vec3 {
+    const top = Math.max(at.y, start.y) + half;
+    const hit = this.raycast({ x: start.x, y: top, z: start.z }, { x: 0, y: -1, z: 0 }, top - start.y + half + 0.05);
+    if (!hit) return start;
+    const floor = top - hit.dist;
+    return start.y - half < floor + 0.02 ? { x: start.x, y: floor + half + 0.02, z: start.z } : start;
   }
 
   /** Fixed 60 Hz steps taken so far (simulated time, for ragdolls' settle and freeze on slow frames too). */

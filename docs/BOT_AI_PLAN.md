@@ -627,7 +627,7 @@ playtest (`check/bots-c` CI and the 4 v 4 numbers in HANDOFF).
 Qasr Medina's the most (a second or so: its flat roofs' 280 drop candidates). Links are cached per navmesh, so the next
 match on a map pays nothing.
 
-### Phase C follow-up (part 1 landed 2026-11-07: off a sill, corridor followers counted; the duck held back; part 2, large bots round low roofs, held back)
+### Phase C follow-up (part 1 landed 2026-11-07: off a sill, corridor followers counted; the duck held back; part 2, large bots round low roofs, landed in 0.9.0, at the moderate price since 2026-11-08)
 The coordinator's list after items 1-4 landed: route spread, CTF captures, the Range's 8 v 8, stuck recoveries,
 Capitol Mall's office. Baselines: main 0531b29c (Phase C items 1-4 and the day's fixes), and 0d03c3bd (before items
 1-4). The CTF sample: the eight maps of "Phase C items 1-4, measured", **seeds 1-6** (48 matches, 180 s; seeds 1-3
@@ -665,8 +665,10 @@ seed 3) went without one; without the duck both pass. It's a gameplay call (bots
 a few captures); the owner's. To try next with it: large bots route round low roofs (a cost on polygons under low
 headroom) rather than crouching through.
 
-**Part 2, held back for the owner: large bots route round low roofs** (owner's option a, 2026-11-07; `wip/bots-lowroof`,
-fc4d701; green on `check/bots-lowroof`, run 42428308885 (characters3's scope check failed once, as on `check/tanks`; passed on the re-run); not landed: the captures fell):
+**Part 2, landed: large bots route round low roofs** (owner's option a, 2026-11-07; `wip/bots-lowroof`, fc4d701; green on
+`check/bots-lowroof`, run 42428308885 (characters3's scope check failed once, as on `check/tanks`; passed on the re-run)).
+It reached main and 0.9.0 at the full price (1,000 a metre) while these notes still called it held back; the owner chose
+the moderate price on 2026-11-08 (`LOW_ROOF_COST` = 4, below, "The moderate price"). As first measured:
 - **The navmesh marks low headroom** (`nav/solo.ts`): generateSoloNavMesh's own steps, with one added after the erosion:
   walkable cells with less room over them than a large body stands in (1.18 × 1.8 m and 5 cm) and the cells within a
   large body's radius (0.4 m) of them get area `LOW_AREA`, so Recast splits polygons there. Read straight off the WASM
@@ -674,7 +676,8 @@ fc4d701; green on `check/bots-lowroof`, run 42428308885 (characters3's scope che
   561 m²; Eagle Spires' 6,165 m² are inside its rock, left out already). Ground under a low roof isn't open ground
   (`markExposure` skips it).
 - **Per size class, one navmesh:** a tall body's search (`NavWorld.findPath` `tall`: size over 1.02) prices `LOW_AREA` at
-  1,000 a metre, so any way round is taken; small and standard bodies' searches don't change (the area costs them 1).
+  `LOW_ROOF_COST` a metre (first 1,000, so any way round was taken; 4 since 2026-11-08); small and standard bodies'
+  searches don't change (the area costs them 1).
   A corridor route under a low roof is refused for a tall body (`pathAlong` `tall`).
 - **The last resort, and how it's decided:** the route goes under a low roof only when the costly search finds no
   other (or it starts or ends there: getting out from under one, a goal under one). Then `lastLow` is set, the bot's
@@ -706,8 +709,31 @@ and defend. Two checks: the marking alone (large bodies routing as before, seeds
 2.38 → 1.59; a moderate price instead (4 a metre: crouch through a short low strip when the way round is long, seeds
 1-12) Diamond Park 9 captures, returns 49, stuck 1.16, ducking 6 s a match. The Qasr Medina drop (13 m² of low ground)
 is within the ±10 that one changed decision makes. So un-sticking large bots costs Diamond Park captures whichever way
-it's done: the stuck bots were defenders out of play. **The owner's call:** land it (fewer stuck bots, better defence,
-fewer captures on Diamond Park), land it with the moderate price, or neither.
+it's done: the stuck bots were defenders out of play. The owner's call was between landing it, landing it with the
+moderate price, or neither; it landed at the full price, and then:
+
+**The moderate price** (owner, 2026-11-08: `LOW_ROOF_COST` = 4 in `nav/index.ts`; `wip/debris-lowroof`). A large bot
+goes round a low stretch when the way round costs less than four times its length (bots' cover routes price open ground
+up to 1.45 a metre, so the way round counts a little dearer), and crouches through otherwise: a lintel's metre is crouched
+through rather than a 15 m detour; an 11 m low tunnel is gone round (`botLowRoof.test.ts`). Measured against main
+4d8f205 (the full price), `pnpm bot-report`, 180 s matches:
+
+| Sample | 1,000 a metre (main) | 4 a metre |
+|---|---|---|
+| CTF, the eight maps, seeds 1-6 (48 matches): captures (matches with one) | 62 (30) | 61 (31) |
+| CTF: stuck recoveries a bot-minute (large bodies); ducking a match | 1.27 (1.17); 0.0 s | 1.27 (1.18); 1.3 s |
+| CTF: tall routes under a low roof | 101 of 252,473 | 1,507 of 249,582 |
+| Diamond Park, seeds 1-12: captures, takes, returns | 10, 69, 33 | 7, 85, 38 |
+| Diamond Park: stuck a bot-minute (large bodies); ducking a match | 1.14 (1.14); 0.2 s | 1.13 (1.17); 9.7 s |
+| Qasr Medina, seeds 1-12: captures, takes; stuck a bot-minute | 11, 68; 1.20 | 11, 68; 1.20 |
+| Team Deathmatch (Eagle Spires, Twin Spires, Riot Junction; seeds 1-4): stuck a bot-minute; kills a minute | 0.88; 28.0 | 0.88; 28.0 |
+
+Only Diamond Park plays differently (its dugouts' stair tops are the only low ground most routes meet): the other
+seven CTF maps, Qasr Medina's extra seeds and the Team Deathmatch sample play the same matches exactly. On Diamond Park
+large bots now crouch through the stair tops (about 10 s a match) rather than walk round, with more flag takes (69 →
+85) but not more captures (10 → 7, within the ±3 that twelve matches move by). Stuck recoveries stay at the full
+price's level. Main had moved since the first measurement (b8854c6): at the full price Diamond Park now makes 10
+captures over seeds 1-12, not 5, so the gap the moderate price was to close isn't there on today's main.
 
 **CTF captures per take, the ablations** (main 0531b29c with each part of items 1-4 switched off in a scratch build;
 48 matches each):
@@ -737,7 +763,7 @@ corridors; loose bots take left/right lanes, which re-join the main way by the t
 busiest way can only drop under half with an even split. Next to try: loose side-lane bots routed by a corridor's
 via (the point furthest from the other corridors) instead of `laneWaypoint`, measured on the 48 matches for captures.
 
-**Next step:** the owner's call on part 2 (large bots round low roofs, above); then route spread.
+**Next step:** route spread (part 2 is settled: the moderate price, above).
 
 ## Phase D: polish and tools
 1. **Memory:**
