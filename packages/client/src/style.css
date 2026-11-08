@@ -194,6 +194,28 @@ button.cta:hover { background: #ffc46e; }
 .map-thumbs .map-thumb.plan { aspect-ratio: 1; }
 .card-pic { flex: none; width: 100%; aspect-ratio: 16 / 9; }
 .featured .meta-text { flex: 1; min-width: 0; }
+/* Main menu: Quick Play (a choice of two modes over the menu) and the first visit's tutorial offer (frontEnd.ts). */
+.nav #nav-quick:not(.on) { border-color: rgba(0, 209, 255, 0.55); color: var(--cyan); }
+.nav #nav-quick:not(.on)::before { background: var(--cyan); }
+.quick-play { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 3; width: min(560px, calc(100vw - 32px)); padding: 16px 18px 14px; border-top: 3px solid var(--cyan); }
+.quick-play .qp-head { display: flex; align-items: center; }
+.quick-play h3 { margin: 0; font: italic 700 26px/1 var(--font-display); text-transform: uppercase; letter-spacing: 0.04em; }
+.quick-play .qp-close { margin-left: auto; padding: 4px 10px; }
+.quick-play .qp-sub { margin: 6px 0 12px; color: var(--muted); font-size: 14px; }
+.quick-play .qp-modes { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.quick-play .qp-mode { position: relative; display: flex; flex-direction: column; align-items: flex-start; gap: 4px; padding: 14px 14px 12px; text-align: left; text-transform: none; letter-spacing: 0; background: rgba(11, 15, 26, 0.72); }
+.quick-play .qp-mode svg { width: 28px; height: 28px; color: var(--cyan); }
+.quick-play .qp-mode b { font: 700 18px var(--font-display); text-transform: uppercase; letter-spacing: 0.04em; }
+.quick-play .qp-mode small { font: 500 13px var(--font-body); color: var(--muted); }
+.quick-play .qp-mode:focus-visible, .quick-play .qp-mode:hover { outline: none; border-color: var(--cyan); background: rgba(0, 209, 255, 0.14); }
+.quick-play .qp-last { position: absolute; top: 10px; right: 10px; padding: 1px 6px; border-radius: 3px; background: rgba(0, 209, 255, 0.16); color: var(--cyan); font: 700 10px var(--font-display); font-style: normal; letter-spacing: 0.1em; text-transform: uppercase; }
+.quick-play .qp-foot { display: flex; justify-content: space-between; gap: 10px; margin-top: 12px; }
+.quick-play .qp-link { padding: 6px 10px; background: transparent; color: var(--muted); font-size: 12px; }
+.quick-play .qp-link:hover, .quick-play .qp-link:focus-visible { color: var(--text); outline: none; border-color: var(--cyan); }
+.first-run { position: absolute; right: 36px; top: 116px; width: min(360px, 40vw); padding: 10px 14px 12px; border-left: 3px solid var(--orange); }
+.first-run .kicker { font: 700 11px var(--font-display); letter-spacing: 0.16em; color: var(--orange); text-transform: uppercase; }
+.first-run p { margin: 4px 0 10px; font-size: 14px; line-height: 1.4; }
+.first-run-acts { display: flex; gap: 8px; }
 .card-plan { flex: none; width: 64px; height: 64px; }
 .map-card .meta { display: flex; gap: 10px; align-items: center; height: 76px; padding: 0 8px 0 12px; }
 .map-card .meta-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
@@ -1333,8 +1355,8 @@ html.touch #feed { transform: scale(0.85); transform-origin: top right; }
   #menu .screen.home { padding: 14px 24px 56px; }
   .logo { font-size: clamp(30px, 5vw, 44px); }
   .logo-sub { margin-top: 4px; font-size: 11px; }
-  .nav { gap: 5px; margin-top: 12px; width: min(280px, 44vw); }
-  .nav button { font-size: 16px; padding: 7px 14px; min-height: 40px; }
+  .nav { gap: 4px; margin-top: 12px; width: min(280px, 44vw); }
+  .nav button { font-size: 16px; padding: 6px 14px; min-height: 37px; }
   .featured { right: 20px; bottom: 56px; width: min(300px, 38vw); }
   .featured-pic { height: 110px; }
   .featured .card-plan { display: none; }
@@ -1344,6 +1366,16 @@ html.touch #feed { transform: scale(0.85); transform-origin: top right; }
   .player-badge { padding: 5px 8px 5px 5px; }
   .player-badge img { width: 40px; height: 40px; }
   .profile-entry .cta { padding: 6px 12px; font-size: 12px; }
+  .quick-play { padding: 10px 12px; }
+  .quick-play h3 { font-size: 20px; }
+  .quick-play .qp-sub { margin: 4px 0 8px; font-size: 12px; }
+  .quick-play .qp-mode { padding: 10px; }
+  .quick-play .qp-foot { margin-top: 8px; }
+  /* The offer takes the featured map's place (there's no room for both beside the menu). */
+  .home.first-visit .featured { display: none; }
+  .first-run { top: auto; right: 20px; bottom: 56px; width: min(300px, 38vw); padding: 8px 10px 10px; }
+  .first-run p { margin: 2px 0 8px; font-size: 12px; }
+  .first-run-acts button { padding: 6px 10px; font-size: 12px; }
   .menu-footer { padding: 0 20px; }
   /* Character Select: a smaller head and info panel, so the grid keeps most of the height. */
   #menu .screen.characters, #menu .screen.profile { padding: 10px 20px 52px; }
@@ -1465,4 +1497,10 @@ html.touch #menu .screen.characters, html.touch #menu .screen.profile { padding-
 @media (max-width: 600px) {
   #rl-card b { font-size: 22px; }
   .rl-pick-card img { width: 56px; height: 56px; }
+}
+/* Shorter still (a phone sideways with the browser's bars, ~340 px): the six buttons in two columns, above the footer
+   (touch keeps its 40 px finger height). */
+@media (max-height: 380px) {
+  .nav { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; margin-top: 8px; width: min(340px, 46vw); }
+  .nav button { font-size: 13px; padding: 4px 10px; gap: 8px; min-height: 34px; letter-spacing: 0.04em; }
 }

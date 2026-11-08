@@ -23,7 +23,7 @@ export const COVERAGE_MAP = 'test_coverage';
 export const FLOWS = [
   'editor', 'editorux', 'offline', 'mobile', 'vault', 'outpost', 'sandgate', 'citadel', 'canyon', 'scenery', 'setpieces', 'physicsfx',
   'teams', 'weaponsets', 'ctf', 'forts', 'breakthrough', 'roulette', 'arsenal', 'vehicles', 'race', 'zombies', 'classes', 'coverage', ...MAP_FLOWS,
-  'designer', ...CHARACTER_FLOWS, 'online', 'hostgame', 'hostcontrols', 'party', 'lobby', 'handoff', 'dedicatedhost', 'hostpage', 'webgpu', 'visual', 'environment', 'flashing',
+  'designer', ...CHARACTER_FLOWS, 'online', 'hostgame', 'hostcontrols', 'party', 'lobby', 'handoff', 'dedicatedhost', 'hostpage', 'webgpu', 'visual', 'environment', 'flashing', 'newplayer',
 ];
 
 /** Maps that have a flow of their own, so the tour leaves them out. */
@@ -45,7 +45,7 @@ const MAP_USERS = {
   canyon: ['canyon', 'scenery', 'physicsfx', 'arsenal', 'vehicles'],
   skyward: ['scenery'],
   sky_islands: ['setpieces'],
-  training_range: ['physicsfx'],
+  training_range: ['physicsfx', 'newplayer'],
   bunker_cross: ['ctf'],
   fort_meadow: ['forts'],
   twin_spires: ['classes'],
@@ -148,7 +148,9 @@ const RULES = [
   // The procedural environment (renderer behind ?env=1, materials, the lab).
   [/^packages\/client\/src\/(environment\/|tools\/envLab\.ts$)/, ['environment', 'webgpu', 'scenery', 'visual'], ['client']],
   [/^packages\/client\/src\/tools\//, NONE, ['client']],
-  [/^packages\/client\/src\/frontend\//, ['offline', 'mobile', 'teams', 'weaponsets', 'breakthrough', 'roulette', 'lobby', 'hostgame', 'hostcontrols', 'party', 'dedicatedhost', 'designer', ...CHARACTER_FLOWS, 'editor', 'webgpu', 'visual'], ['client']],
+  // New players: the tutorial, first-time tips and their HUD (Quick Play is frontend/).
+  [/^packages\/client\/src\/game\/(tutorial|tips|coachHud)\.ts$|^packages\/client\/src\/game\/coach\.css$/, ['newplayer', 'offline', 'mobile'], ['client']],
+  [/^packages\/client\/src\/frontend\//, ['newplayer', 'offline', 'mobile', 'teams', 'weaponsets', 'breakthrough', 'roulette', 'lobby', 'hostgame', 'hostcontrols', 'party', 'dedicatedhost', 'designer', ...CHARACTER_FLOWS, 'editor', 'webgpu', 'visual'], ['client']],
   [/^packages\/client\/src\/hostPage\.ts$/, ['hostpage'], ['client']],
   [/^packages\/client\/src\/audio\//, ['offline'], ['client']],
   [/^packages\/client\/src\/game\/(hostPanel|pauseMenu)\.ts$/, ['offline', 'weaponsets', 'hostgame', 'hostcontrols', 'party', 'lobby', 'dedicatedhost'], ['client']],

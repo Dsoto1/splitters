@@ -115,6 +115,10 @@ import { BOT_SET_PRESETS, PLAYLISTS } from '../playlists.ts';
 import { botManager } from './botManager.ts';
 import { joinParty, lastJoin, parseInvite } from '../game/party.ts';
 import { MODE_SHORT, modeIcon } from './modeIcons.ts';
+import { QUICK_MODES, loadQuickPrefs, pickQuickMap, quickSetup, saveQuickPrefs, type QuickMode } from './quickPlay.ts';
+import { setTutorialState, tutorialState } from '../game/tutorial.ts';
+import { loadTipState, resetTips, setTipsOn } from '../game/tips.ts';
+import { testMode } from '../testMode.ts';
 
 /** The "Inspired by …" line for a homage map (nothing for our own designs). */
 function inspired(key: string): HTMLElement[] {
@@ -254,6 +258,8 @@ export interface FrontEndHooks {
   playPlaylist(id: string, botFill: number, skill: ArcadeSetup['skill'], botSet?: BotSet | null): void;
   /** Join a friend's hosted game by its code. */
   joinCode(code: string, name: string): void;
+  /** The tutorial on the Training Range (game/tutorial.ts). */
+  playTutorial(): void;
 }
 
 type ScreenId = 'home' | 'play' | 'characters' | 'online' | 'options' | 'profile';
@@ -502,7 +508,8 @@ export class FrontEnd {
     this.scene.setShot(screen === 'home' ? 'home' : 'side');
     this.body.replaceChildren(this.build(screen));
     this.footerHints.replaceChildren(...this.hints(screen));
-    if (screen === 'home') (this.body.querySelector('.nav button.on') as HTMLButtonElement | null)?.focus({ preventScroll: true });
+    if (screen === 'home' && this.quickOpen) this.body.querySelector<HTMLButtonElement>(`#quick-play [data-mode="${loadQuickPrefs().mode ?? 'core.tdm'}"]`)?.focus({ preventScroll: true });
+    else if (screen === 'home') (this.body.querySelector('.nav button.on') as HTMLButtonElement | null)?.focus({ preventScroll: true });
   }
 
   /**
@@ -599,7 +606,7 @@ export class FrontEnd {
   private onPad(button: number): void {
     if (this.root.hidden) return;
     // A window over the menu (the Bots window): B closes what's on top, A presses, the d-pad moves inside it.
-    const top = document.getElementById('bm-pick-wrap') ?? document.getElementById('bot-manager');
+    const top = document.getElementById('bm-pick-wrap') ?? document.getElementById('bot-manager') ?? document.getElementById('quick-play');
     const scope: HTMLElement = top ?? this.root;
     const move = (dir: 1 | -1) => {
       const items = [...scope.querySelectorAll<HTMLElement>('button, input, select, summary, [tabindex="0"]')].filter((e) => !(e as HTMLButtonElement).disabled && e.offsetParent !== null);
@@ -659,6 +666,7 @@ export class FrontEnd {
   // ---------------------------------------------------------------- home
 
   private readonly navItems: { id: string; label: string; act: () => void }[] = [
+    { id: 'nav-quick', label: 'Quick Play', act: () => this.openQuickPlay() },
     { id: 'nav-play', label: 'Play', act: () => this.go('play') },
     { id: 'nav-mapmaker', label: 'MapMaker', act: () => this.hooks.openEditor() },
     { id: 'nav-characters', label: 'Characters', act: () => this.go('characters') },
@@ -690,22 +698,149 @@ export class FrontEnd {
       this.go('play');
     });
     requestAnimationFrame(featuredPic.draw);
+    const offer = this.firstRun();
     return el(
       'div',
-      { class: 'screen home' },
+      { class: `screen home${offer.length ? ' first-visit' : ''}` },
       el('h1', { class: 'logo' }, el('span', { class: 'tile', textContent: 'Tile ' }), el('span', { class: 'trigger', textContent: 'Trigger' })),
       el('p', { class: 'logo-sub', textContent: 'Make. Play. Die. Repeat.' }),
       el('p', { class: 'logo-version', textContent: `v${__APP_VERSION__}` }),
       nav,
       this.profileEntry(),
       card,
+      ...offer,
+      ...(this.quickOpen ? [this.quickPanel()] : []),
     );
+  }
+
+  // ---------------------------------------------------------------- new players: Quick Play, the tutorial's offer
+
+  /** Quick Play's choice is open over the main menu. */
+  private quickOpen = false;
+  /** The first visit's tutorial offer shows on the main menu (until answered or the page is left). */
+  private firstRunOn: boolean | null = null;
+  /** Browser tests (?test=1, or any automated browser) see neither the first-visit offer nor tips, unless they ask (&newplayer=1). */
+  private readonly newPlayerAsked = new URLSearchParams(location.search).get('newplayer') === '1';
+  private automated(): boolean {
+    return !this.newPlayerAsked && (!!testMode() || !!navigator.webdriver);
+  }
+
+  /** The first visit: a small card offering the tutorial (never forced; Not now, or anything else, and it's gone). */
+  private firstRun(): HTMLElement[] {
+    if (this.firstRunOn === null) {
+      this.firstRunOn = tutorialState() === 'new' && !this.automated();
+      // Offered once: it doesn't come back on the next visit, answered or not.
+      if (this.firstRunOn) setTutorialState('offered');
+    }
+    if (!this.firstRunOn || this.quickOpen) return [];
+    const start = el('button', { type: 'button', class: 'primary', id: 'first-run-start', textContent: 'Start tutorial' });
+    const later = el('button', { type: 'button', id: 'first-run-dismiss', textContent: 'Not now' });
+    start.addEventListener('click', () => {
+      this.firstRunOn = false;
+      this.hooks.playTutorial();
+    });
+    later.addEventListener('click', () => {
+      this.firstRunOn = false;
+      document.getElementById('first-run')?.remove();
+      document.querySelector('.screen.home')?.classList.remove('first-visit');
+    });
+    return [
+      el(
+        'div',
+        { class: 'first-run panel', id: 'first-run', role: 'region', ariaLabel: 'New here?' },
+        el('div', { class: 'kicker', textContent: 'New here?' }),
+        el('p', { textContent: 'A two-minute tutorial on the Training Range: moving, shooting, grenades and a buggy. Skip it any time.' }),
+        el('div', { class: 'first-run-acts' }, start, later),
+      ),
+    ];
+  }
+
+  private openQuickPlay(): void {
+    this.quickOpen = true;
+    this.firstRunOn = false;
+    this.go('home');
+  }
+
+  private closeQuickPlay(): void {
+    this.quickOpen = false;
+    this.go('home');
+  }
+
+  /** Quick Play's choice: Team Deathmatch or Deathmatch (the last one picked marked and focused), the tutorial, or Match setup. */
+  private quickPanel(): HTMLElement {
+    const prefs = loadQuickPrefs();
+    const lines: Record<QuickMode, string> = { 'core.tdm': 'Two teams, a point a kill', 'core.deathmatch': 'Everyone for themselves' };
+    const modes = el('div', { class: 'qp-modes' });
+    for (const mode of QUICK_MODES) {
+      const b = el('button', { type: 'button', class: 'qp-mode', id: mode === 'core.tdm' ? 'qp-tdm' : 'qp-dm' }, modeIcon(mode), el('b', { textContent: MODE_LABEL[mode] }), el('small', { textContent: lines[mode] }));
+      b.dataset.mode = mode;
+      if (mode === prefs.mode) b.append(el('i', { class: 'qp-last', textContent: 'Last played' }));
+      b.addEventListener('click', () => void this.quickPlay(mode));
+      modes.append(b);
+    }
+    const close = el('button', { type: 'button', class: 'qp-close', title: 'Close (Esc)', textContent: '✕' });
+    close.dataset.cancel = '';
+    close.setAttribute('aria-label', 'Close');
+    close.addEventListener('click', () => this.closeQuickPlay());
+    const tutorial = el('button', { type: 'button', class: 'qp-link', id: 'qp-tutorial', textContent: 'New here? Tutorial · 2 min' });
+    tutorial.addEventListener('click', () => this.hooks.playTutorial());
+    const custom = el('button', { type: 'button', class: 'qp-link', id: 'qp-setup', textContent: 'Choose map and rules…' });
+    custom.addEventListener('click', () => {
+      this.quickOpen = false;
+      this.go('play');
+    });
+    const panel = el(
+      'div',
+      { class: 'quick-play panel', id: 'quick-play', role: 'dialog', ariaLabel: 'Quick Play' },
+      el('div', { class: 'qp-head' }, el('h3', { textContent: 'Quick Play' }), close),
+      el('p', { class: 'qp-sub', textContent: 'Straight into a match against bots, on a map picked for you.' }),
+      modes,
+      el('div', { class: 'qp-foot' }, tutorial, custom),
+    );
+    // Arrows move between the choices.
+    panel.addEventListener('keydown', (e) => {
+      if (!e.key.startsWith('Arrow')) return;
+      const items = [...panel.querySelectorAll<HTMLButtonElement>('.qp-mode, .qp-link')];
+      const at = items.indexOf(document.activeElement as HTMLButtonElement);
+      const step = e.key === 'ArrowDown' || e.key === 'ArrowRight' ? 1 : -1;
+      items[(at + step + items.length) % items.length]?.focus();
+      e.preventDefault();
+      e.stopPropagation();
+    });
+    return panel;
+  }
+
+  /**
+   * Quick Play: a map from the mode's list (quickPlay.ts: official, fits this device, not last time's), loaded; the
+   * map's recommended player count for the mode, normal bots; started like Match setup's Start (offline).
+   */
+  private async quickPlay(mode: QuickMode): Promise<void> {
+    const prefs = loadQuickPrefs();
+    const candidates = this.maps.map((m) => ({ key: m.key, modes: m.modes, recommendedMax: m.metadata.recommendedPlayers.max, official: !m.group }));
+    const key = pickQuickMap(mode, candidates, deviceMaxPlayers(), prefs.last, testMode() ? 0 : Math.random());
+    const entry = key ? this.maps.find((m) => m.key === key) : undefined;
+    if (!entry) return this.setStatus('Quick Play has no map for that mode here.');
+    saveQuickPrefs({ mode, last: entry.key });
+    this.setStatus(`Quick Play: ${MODE_LABEL[mode]} on ${entry.metadata.name}…`);
+    let map: MapDocument;
+    try {
+      map = await entry.load();
+    } catch {
+      return this.setStatus(`${entry.metadata.name} failed to load`);
+    }
+    if (this.root.hidden) return;
+    this.quickOpen = false;
+    const setup = quickSetup(mode, map, entry.key, deviceMaxPlayers());
+    const { rules, fill } = rulesFromSetup(setup, map, playerCap(mode, map, deviceMaxPlayers()).max);
+    (window as unknown as { __quickPlay: unknown }).__quickPlay = { map: entry.key, mode, fill, setup };
+    this.hooks.playLocal(map, rules, fill, 'normal', false, null, false);
   }
 
   private setNav(i: number): void {
     this.navIndex = (i + this.navItems.length) % this.navItems.length;
     this.body.querySelectorAll('.nav button').forEach((b, j) => b.classList.toggle('on', j === this.navIndex));
-    (this.body.querySelectorAll('.nav button')[this.navIndex] as HTMLButtonElement | undefined)?.focus({ preventScroll: true });
+    // (Quick Play's choice open over the menu keeps the keyboard.)
+    if (!this.quickOpen) (this.body.querySelectorAll('.nav button')[this.navIndex] as HTMLButtonElement | undefined)?.focus({ preventScroll: true });
   }
 
   /** Your account's state in a word or two, for the Profile entry: Guest, ✓ Signed in, or Pick a username. */
@@ -2291,6 +2426,18 @@ export class FrontEnd {
     calmFlashes.addEventListener('change', () => saveReduceFlashing(calmFlashes.checked));
     const fullscreen = el('button', { type: 'button' });
     bindFullscreenButton(fullscreen);
+    const tutorialBtn = el('button', { type: 'button', id: 'opt-tutorial', textContent: 'Start tutorial' });
+    tutorialBtn.addEventListener('click', () => this.hooks.playTutorial());
+    // First-time tips (game/tips.ts): on unless switched off; Show tips again forgets the ones seen.
+    const tipsOn = el('input', { type: 'checkbox', checked: !loadTipState().off });
+    tipsOn.id = 'opt-tips';
+    tipsOn.addEventListener('change', () => setTipsOn(tipsOn.checked));
+    const tipsReset = el('button', { type: 'button', id: 'opt-tips-reset', textContent: 'Reset tips' });
+    tipsReset.addEventListener('click', () => {
+      resetTips();
+      tipsOn.checked = true;
+      tipsReset.textContent = 'Done: tips show again';
+    });
     const mouse = loadMousePrefs();
     const sens = el('input', { type: 'range', min: '0.2', max: '4', step: '0.1', value: String(mouse.sensitivity) });
     const sensVal = el('output', { textContent: `${mouse.sensitivity.toFixed(1)}×` });
@@ -2425,6 +2572,7 @@ export class FrontEnd {
     const crosshairPreview = el('div', { class: 'opt-stack' }, crosshairs, colours);
     const sections: [string, string, HTMLElement[]][] = [
       ['general', 'General', [
+        row('Tutorial', tutorialBtn, 'Two minutes on the Training Range: moving, shooting, grenades and a buggy. Skip it any time.'),
         row('Player name', name, this.verified ? 'Your username: change it in Profile.' : 'What other players see.'),
         row('Clan tag', clan, 'Up to five letters, shown before your name.'),
         row('Volume', el('span', { class: 'opt-range' }, volume, volumeVal)),
@@ -2457,6 +2605,8 @@ export class FrontEnd {
         row('Hit marker', hitStyle, 'What flashes on the crosshair when you hit someone.'),
         row('Teammate marker', allySel),
         row('Enemy marker', enemySel, 'Off: only teammates are marked.'),
+        row('First-time tips', toggle(tipsOn), 'A short hint the first time something happens in a match: low ammo, a vehicle in reach, a pickup, armour, spawn protection, your first death. Each shows once.'),
+        row('Show tips again', tipsReset, 'Every tip shows once more.'),
       ]],
       ['accessibility', 'Accessibility', [
         row('Reduce flashing', toggle(calmFlashes), 'On by default. Lightning glows steadily instead of crackling, blasts and muzzle flashes near you are dimmer and fade in, blinking lights pulse gently at most once a second, and taking damage tints the screen edge a dull red that eases in. For players sensitive to flashing light (photosensitive epilepsy). Also in the pause menu (Settings).'),
@@ -2509,12 +2659,15 @@ export class FrontEnd {
       const t = e.target as HTMLElement | null;
       if (t && (t.tagName === 'TEXTAREA' || (t instanceof HTMLInputElement && !['checkbox', 'radio', 'range', 'button'].includes(t.type)))) return t.blur();
       // Match setup's saved setups menu, open: Esc closes it (one level per press).
+      if (this.screen === 'home' && this.quickOpen) return this.closeQuickPlay();
       const menu = this.screen === 'play' ? this.root.querySelector<HTMLDetailsElement>('#setup-saved[open]') : null;
       if (menu) {
         menu.open = false;
         return menu.querySelector('summary')?.focus();
       }
       this.back();
+    } else if (this.screen === 'home' && this.quickOpen) {
+      // Quick Play's choice is open: its own buttons take the keys.
     } else if (this.screen === 'home' && (e.key === 'ArrowDown' || e.key === 'ArrowUp')) {
       e.preventDefault();
       this.setNav(this.navIndex + (e.key === 'ArrowDown' ? 1 : -1));

@@ -21,6 +21,27 @@ made only on a commit that passed CI on a check branch.
   **Rejoin your last friend's game**.
 - **Player caps hold for people too:** a join past the map's most for the mode is turned away ("match full").
 
+**New players** (owner-approved, 2026-11-08):
+- **Quick Play** heads the main menu: pick Team Deathmatch or Deathmatch and you're in a match against normal bots,
+  on one of our well-tested maps for that mode (not the one you played last), with as many players as the map
+  recommends for the mode (fewer on a phone). It remembers your last choice. "Choose map and rules…" opens Match setup.
+- **Tutorial** on the Training Range, about two minutes: look, move, sprint, crouch, shoot, aim down the sights,
+  reload, switch weapon, throw a grenade, drive the buggy. Each step finishes when you do it; a card shows what to
+  press (keyboard and mouse, or the touch controls on a phone) and how far you are; Skip is always there (and in the
+  pause menu). It's offered once on your first visit (never forced), and is in Quick Play and Options → General.
+  The Training Range gained a buggy and Frag Grenades by each group of spawns (MapMaker).
+- **First-time tips**: a short hint the first time you run low on ammo, have a vehicle in reach, see a pickup, pick up
+  armour, spawn protected or die. Each shows once, one at a time, below the crosshair. Options → HUD turns them off
+  or shows them all again.
+
+**Gunplay audit, measured** (owner-approved; no weapon changed): `pnpm gun-report` drives the shared sim and measures
+every gun: time to kill at 10/25/50/100 m on an unarmoured and an armoured player (body and head; ideal, hip and
+aimed), shots to kill, first shot, draw, reloads and reload cancels, recoil recovery, hip/aimed/running spread and
+falloff. docs/GUNPLAY_AUDIT.md is the report card (strengths, weaknesses against the direction doc, outliers, a ranked
+list of candidate improvements, the spec's G0-G6 checklist), with the numbers (docs/gunplay-audit.json) and a TTK
+chart (docs/gunplay-ttk.svg). The **Training Range** now has every gun of the arsenal on two racks behind the firing
+line (placed in MapMaker).
+
 **Deathmatch and Team Deathmatch play better** (owner, 2026-11-08):
 - **Safer spawns.** Every spawn point is scored for its distance to the nearest enemy, enemy sight lines to it and
   fresh deaths near it, and one is picked at random among the safest few, the same for people and bots. Team modes

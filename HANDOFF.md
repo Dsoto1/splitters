@@ -302,6 +302,92 @@ Iron Maw and Frost Basin tanks never got down to 3 shells. Driving/shell totals 
 general Ammo Box also refills infantry: the Coldwater and Frost Basin ones sit on open lanes 16-40 m from other ammo,
 none in a chokepoint.
 
+### New players: Quick Play, the tutorial, first-time tips (`wip/quickplay`, agent, 2026-11-08; owner-approved brief; green on `check/quickplay` at 973e65f, run 42471172929; LANDED: main 973e65f)
+
+**Quick Play** (`frontend/quickPlay.ts`, FrontEnd `openQuickPlay`/`quickPlay`): first item of the main menu (`#nav-quick`,
+highlighted by default). It opens a small choice over the menu: Team Deathmatch or Deathmatch (the last one marked
+"Last played" and focused; Enter, arrows, Esc and controller B work), plus "New here? Tutorial" and "Choose map and
+rules…" (Match setup). Rules:
+- maps from `QUICK_MAPS` only (TDM: sandgate, canyon, crossroads, halcyon_station, frost_basin; DM: citadel,
+  crossroads, bunker_cross, halcyon_station: the maps the TDM/DM tables and bot-report samples play), only official
+  entries (no `group`), only if they play the mode;
+- maps whose recommended most (metadata) is over this device's limit are left out when any fit (phones);
+- not the map played last time when there's another; random among the rest (test mode: the first);
+- players: `mapPlayerCaps(map, mode).recommended`, capped by the device; DM = you + rec−1 bots, TDM = two even teams
+  of ⌊rec/2⌋; normal bots; the mode's own score, time following the size; offline, through `rulesFromSetup` →
+  `hooks.playLocal` (Match setup's own path). Remembered: `localStorage tiletrigger.quickPlay` {mode, last}.
+  Match setup's saved setup (`cs.arcade`) is left alone.
+
+**Tutorial** (`game/tutorial.ts` rules, `game/coachHud.ts` + `coach.css` the card, session.ts `coachFrame`; main.ts
+`playTutorial`, also `?tutorial`): Training Range, Deathmatch, no bots, no time or score limit. Ten steps, each done
+by its action as the session sees it (inputs sampled each tick and the predicted player, never a timer): look (2 rad
+of turning), move (5 m with a movement input), sprint (1.2 s), crouch (0.4 s), shoot (3 rounds), aim (2 rounds while
+aiming or scoped), reload (a reload running), switch (another weapon in hand), throw (a throwable count going down),
+drive (15 m in a vehicle's driver seat; the HUD marker points at the nearest vehicle, held at the screen's side when
+it's out of view). The card: "Tutorial n / 10", dots, the step's words for keyboard and mouse or for the touch
+controls (`[X]` → key caps), a progress bar, Skip (on the card, tappable on touch; and `#pause-skip-tutorial` beside
+Resume, since Esc pauses). Skip or Leave → main menu. About 1.5-2.5 minutes with reading.
+- Offered once: a first visit's main menu shows a "New here?" card (`#first-run`: Start tutorial / Not now; on short
+  screens it takes the featured map's place). `localStorage tiletrigger.tutorial`: offered → skipped / done. Also in
+  Quick Play's choice and Options → General → Tutorial.
+- **Map (MapMaker, Playwright driving Import → palette → inspector X/Z → Export; the export took it to format 29):**
+  Training Range gained a Buggy and Frag Grenades by each spawn group: buggy (-26, 30) and grenades (-20, 27) west (behind the second weapon rows main added at x -12 and -15),
+  buggy (206, -32) and grenades (194, -24) east (two east spawns exist). Nothing else changed; validate-map 0 issues.
+  (wip/gunplay-audit may edit the range too: these are behind/beside the spawn rows, away from the lanes.)
+
+**First-time tips** (`game/tips.ts` TipBook, shown by coachHud): reload (magazine at a quarter or less, rounds in
+reserve), vehicle (one in reach to enter), pickup (one 1-8 m ahead), armour (you picked some up), shield (spawn
+protection on you), death (you died: spectate keys). Once each ever (`localStorage tiletrigger.tips` {off, seen}),
+one at a time (6 s, 1.5 s gap; a waiting tip older than 12 s is dropped unseen), low in the middle (73 %; phones 67 %,
+left of the Use button), never over the crosshair, fade only (nothing for Reduce flashing to calm). Options → HUD:
+First-time tips (switch) and Show tips again (reset). Off in the tutorial.
+- **Browser tests:** the first-visit offer and tips are off under `?test=1` and in automated browsers
+  (`navigator.webdriver`), unless the page asks (`&newplayer=1`; tips also `&tips=1`), so other flows and baselines
+  don't see them. Hooks: `window.__tutorial` (state, goTo, skip), `window.__tips` (current, trigger), `window.__quickPlay`.
+
+**Menu on short screens:** six buttons now; at ≤380 px tall (a phone sideways with browser bars) they go in two
+columns (touch keeps its 40 px buttons). Menu baseline regenerated (only menu.png).
+
+**Tests:** `packages/client/test/newPlayer.test.ts` (each step on its own action and not by waiting, dead frames,
+timing; tips once only, one at a time, stale dropped, off; Quick Play's map choice and sizes); e2e flow `newplayer`
+(offer, Start tutorial, a step completing from input, Skip back to the menu, Quick Play → Deathmatch, remembered
+choice, a tip once and clear of the crosshair, touch words on a phone), mapped in flowMap (tutorial/tips/coachHud,
+frontend/, training_range). offline flow's nav check now expects `nav-quick` first. Pictures (agent scratchpad
+`quickplay/`): 01-menu-first-visit-*, 02-quick-play-*, 10-tutorial-step01..11-*, 20-tip-vehicle-* (desktop 1280×720
+and phone 750×342 touch).
+
+**CI notes:** the first check run (05a1515) failed only characters3's far-bodies check (`core.hyena` at 52/98 m drawn
+1.5 of 2.12 m, both attempts; canyon, nothing this branch draws); the merged commit's run passed it, and failed only
+physicsfx (blast throws on canyon, then the bulletproof glass's health read before the hit landed: one crack, health
+100), which passed on a re-run of the failed job. Both look like timing flakes; watch for them.
+
+**For the owner:**
+1. Quick Play's map lists (above): add or drop maps? The lists live in `frontend/quickPlay.ts`.
+2. Quick Play is the highlighted first item, so Enter on the main menu opens it (it was Play). Keep?
+3. The tutorial's drive step uses the Buggy; the range has two (one per spawn group). Fine, or a different vehicle?
+
+### Gunplay audit, measured (`wip/gunplay-audit`, agent, 2026-11-08; owner-approved brief: measurement first, no tuning; green on `check/gunplay-audit`, run 42466478881; LANDED: main f1a16d3)
+
+- **Tool:** `pnpm gun-report` (`packages/server/src/tools/gun-report.ts`) drives the real shared sim (Match) on a flat
+  deck, one perfect shooter and one standard target, for every gun (34): TTK at 10/25/50/100 m (body/head,
+  unarmoured/full armour; ideal, hip and ADS medians of `--trials` seeds), shots to kill, first shot, draw, reload
+  tactical/empty and cancels, recoil settle, cones, falloff, drop. `--json`, `--svg` (TTK chart), `--from=<json>`
+  redraws. About 3 minutes. Private parts of Match it hooks: `fire`, `spreadDir`, `spawn`, `rng`, `bullets`.
+- **Report card:** docs/GUNPLAY_AUDIT.md (numbers: docs/gunplay-audit.json; chart: docs/gunplay-ttk.svg). Headline:
+  responsiveness is right (0 ms first shot, 0 ms reload cancel by fire, 133 ms swap to the Pistol from anything);
+  the Assault Rifle beats the SMG at the SMG's range (0.50 vs 0.60 s at 10 m; hip at 25 m 0.52 vs 3.50 s) and is the
+  best gun from 20 m out; shotguns kill in one shell only to ~5 m (Sawed-Off 8 shells at 10 m); Machine Pistol
+  dominated by the SMG; Marksman out-kills the Precision Rifle on body shots; Pulse Pistol (beam, no falloff) beats
+  the Pistol at range. Appendix A: the G0-G6 checklist with file:line evidence (G0/G1 done; G2 no lever action; G3 no
+  multi-client latency/loss test; G4 weapon choice by hand-set botRange; G5 lethality/ballistics/friendly fire only).
+- **Training Range:** every gun not on the front rack (24) now lies on two racks at x -12 and -15 (placed with
+  MapMaker's palette and inspector, exported; validate-map 0 issues). Still missing (listed in the audit, appendix C):
+  damage readout on hit, humanoid dummies that don't shoot back, armoured targets, a trajectory view.
+- **CI note:** physicsfx's canyon blast checks failed on first attempts here (a bot stood by a wall; nothing from this branch runs there) and passed on re-run; watch it.
+- **Next (owner picks from the audit's ranked list):** 1 SMG vs rifle identity, 2 shotgun room range, 3 damage
+  numbers option, 4 precision rifle body case, 5 melee breaks reloads / auto-reload, 6 recoil-wall readout,
+  7 8-client latency/loss harness (G3), 8 bot weapon choice from measured ranges (G4).
+
 ### Deathmatch and Team Deathmatch (`wip/tdm-dm`, agent, 2026-11-08; owner-approved brief; green on `check/tdm-dm` at 95f3f80, run 42455479068; LANDED: main 95f3f80)
 
 **The brief:** in the Roulette bench (48 bots, Sandgate, free-for-all) 71 % of Deathmatch kills were within 3 s of the
