@@ -67,8 +67,16 @@ function storage(key: string, value?: string): string | null {
   }
 }
 
-/** The host's "Vote on the next map" (pause menu → Host → Rotation): on unless turned off, remembered here. */
-const mapVoteOn = (): boolean => storage('cs.mapVote') !== '0';
+/**
+ * The host's "Vote on the next map" (pause menu → Host → Rotation): on unless turned off, remembered here. Browser tests
+ * (?test=1) play on as they always did (a match that ends replays its map) unless they ask for the vote (&vote=1).
+ */
+const mapVoteOn = (): boolean => {
+  const asked = params.get('vote');
+  if (asked === '1' || asked === '0') return asked === '1';
+  const saved = storage('cs.mapVote');
+  return TEST ? saved === '1' : saved !== '0';
+};
 const saveMapVote = (on: boolean): void => void storage('cs.mapVote', on ? '1' : '0');
 
 type Mode = 'menu' | 'editor' | 'game' | 'designer';

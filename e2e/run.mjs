@@ -7126,10 +7126,11 @@ async function partyFlow(browser) {
   const sizes = Object.fromEntries(readdirSync(new URL('../maps/', import.meta.url)).filter((f) => f.endsWith('.json')).map((f) => [f.slice(0, -5), readFileSync(new URL(`../maps/${f}`, import.meta.url)).length]));
   const lightest = (maps) => maps.reduce((best, m, i) => ((sizes[m] ?? 1e9) < (sizes[maps[best]] ?? 1e9) ? i : best), 0);
 
-  // Offline, deterministic: the vote after the match, with keys; the next map with the same players.
+  // Offline, deterministic: the vote after the match, with keys; the next map with the same players. (Browser tests
+  // replay a map that ends, as ever, unless they ask for the vote: &vote=1.)
   const page = await (await browser.newContext({ viewport: { width: 1280, height: 720 } })).newPage();
   page.on('pageerror', (e) => errors.push(`offline: ${e.message}`));
-  await page.goto(`${CLIENT}/?test=1&offline=arena`, { waitUntil: 'domcontentloaded', timeout: T(60000) });
+  await page.goto(`${CLIENT}/?test=1&vote=1&offline=arena`, { waitUntil: 'domcontentloaded', timeout: T(60000) });
   await page.waitForFunction(playing, null, { timeout: T(90000) });
   const before = await sim(page, (m) => ({ map: m.map.metadata.id, n: m.combatants().length, people: m.combatants().filter((c) => c.kind === 'human').map((c) => c.name) }));
   // (The scoreboard, and so the vote, held up while the slow pictures are taken; let go after the vote.)
@@ -7170,7 +7171,7 @@ async function partyFlow(browser) {
   const pctx = await browser.newContext({ ...phone, viewport: { width: phone.viewport.height, height: phone.viewport.width }, screen: { width: phone.screen.height, height: phone.screen.width } });
   const ph = await pctx.newPage();
   ph.on('pageerror', (e) => errors.push(`phone: ${e.message}`));
-  await ph.goto(`${CLIENT}/?test=1&offline=arena`, { waitUntil: 'domcontentloaded', timeout: T(60000) });
+  await ph.goto(`${CLIENT}/?test=1&vote=1&offline=arena`, { waitUntil: 'domcontentloaded', timeout: T(60000) });
   await ph.waitForFunction(playing, null, { timeout: T(90000) });
   await sim(ph, (m) => {
     m.endMatch();

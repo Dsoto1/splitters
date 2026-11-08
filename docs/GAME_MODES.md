@@ -93,7 +93,8 @@ ended (12 s vote, 3 s winner, the map's load and the start countdown). Nobody is
   own); nobody voted: the first map (so a quiet match carries the rotation on). A winner in the rotation moves the
   rotation there (`MapRotation.moveTo`): it carries on after it.
 - **The host's setting:** pause menu → Host → Rotation → **Vote on the next map** (on by default; a browser keeps it
-  in `cs.mapVote`); off is plain rotation. Dedicated: `MAP_VOTE=0` (server and Host Service config `mapVote: false`),
+  in `cs.mapVote`); off is plain rotation. Browser tests (`?test=1`) keep the old replay unless they ask (`&vote=1`;
+  `&vote=0` turns it off anywhere); the perf tools measure one map with it off. Dedicated: `MAP_VOTE=0` (server and Host Service config `mapVote: false`),
   and admins switch it in game (`{ c: "rotation", vote }`), kept for the next start by the Host Service.
 - **On screen** (`game/mapVoteHud.ts`, `#map-vote`): the scoreboard moves up, the awards sit between it and the vote;
   a card per map (its picture, name, mode, votes, a bar), the seconds left. **1-3** (keyboard), a click or a tap
