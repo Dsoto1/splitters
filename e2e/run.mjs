@@ -2940,7 +2940,7 @@ async function friendlyFireChecks(browser) {
     await page.goto(CLIENT);
     await page.click('#nav-play');
     await page.click('#arcade-start');
-    await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() === 'playing', null, { timeout: T(60000) });
+    await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown', null, { timeout: T(90000) });
     // A teammate held 4 m in front of you, three rounds of your gun fired straight at their chest.
     const shot = await sim(page, (m, me) => {
       const mate = m.combatants().find((c) => c !== me && c.alive && c.faction === me.faction && !c.mount);
@@ -5346,6 +5346,85 @@ async function environmentFlow(browser) {
 }
 
 /**
+ * Fireteams (docs/FIRETEAMS_PLAN.md, Part 1): the variant on in Match setup (its squad size beside the score) → you
+ * lead a squad of bots (the HUD's order line) → hold B: the order wheel (a tap of B is still the quick-message menu) →
+ * pick Hold here → a bot answers, and the squad holds there while you go off. Screenshot of the wheel:
+ * e2e-artifacts/fireteams-wheel-desktop.png. (The phone's Orders button: packages/client/test/inputWheel.test.ts; a
+ * second match on a phone here would cost another minute and a half of the shards' budget.)
+ */
+async function fireteamsFlow(browser) {
+  const page = await (await browser.newContext({ viewport: { width: 1280, height: 720 } })).newPage();
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
+  await page.addInitScript(() => localStorage.setItem('cs.arcade', JSON.stringify({ map: 'sandgate', mode: 'core.tdm', bots: 11, skill: 'easy', scoreLimit: 200, minutes: 20, fireteams: true })));
+  await page.goto(`${CLIENT}/?test=1&god=1`);
+  await page.click('#nav-play');
+  await page.waitForSelector('#setup-variant-fireteams', { timeout: T(30000) });
+  const setup = await page.evaluate(() => ({ on: document.getElementById('setup-variant-fireteams')?.getAttribute('aria-pressed'), size: document.querySelector('#arcade-squad-size .tab.on')?.textContent }));
+  check(setup.on === 'true' && setup.size === '5', `Match setup: the Fireteams variant is on, squads of 5 by default (${JSON.stringify(setup)})`);
+  await page.click('#arcade-start');
+  await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown', null, { timeout: T(90000) });
+  // You lead a squad: the match says so, and the HUD shows its order.
+  const led = await page.waitForFunction(() => window.__cs.squad().led !== null && document.querySelector('#squad-order b')?.textContent === 'Follow me', null, { timeout: T(15000) }).then(() => true, () => false);
+  const squad = await sim(page, (m, me) => {
+    const s = m.fireteams?.squadOf(me.slot);
+    return s ? { leader: s.leader === me.slot, members: s.members.length, human: s.human, others: m.fireteams.squads.filter((q) => q !== s && q.team === s.team).map((q) => q.members.length) } : null;
+  });
+  check(led && squad?.leader && squad.human && squad.members === 5, `you lead a fireteam of 5 (HUD "Follow me"; ${JSON.stringify(squad)})`);
+  check(!!squad && squad.others.length > 0 && squad.others.every((n) => n >= 2 && n <= 5), `bot-led squads fill the rest of your team (${JSON.stringify(squad?.others)})`);
+  // Play: the pointer is captured on a real desktop; a headless page without pointer lock plays as touch does.
+  await page.click('#resume').catch(() => {});
+  await page.evaluate(() => document.pointerLockElement || window.__cs.input.setTouchEngaged(true));
+  // A tap of B: the quick-message menu, as without Fireteams.
+  await page.keyboard.press('KeyB');
+  const menu = await page.waitForFunction(() => !document.getElementById('msg-menu')?.hidden && document.getElementById('order-wheel')?.hidden !== false, null, { timeout: T(5000) }).then(() => true, () => false);
+  await page.keyboard.press('KeyB');
+  await page.waitForFunction(() => document.getElementById('msg-menu')?.hidden !== false, null, { timeout: T(5000) }).catch(() => {});
+  check(menu, 'a tap of B opens the quick-message menu, not the order wheel');
+  // Hold B: the order wheel, six orders, your squad's current one ringed.
+  const at = await sim(page, (m, me) => ({ x: me.move.pos.x, z: me.move.pos.z }));
+  await page.keyboard.down('KeyB');
+  const opened = await page.waitForFunction(() => !document.getElementById('order-wheel').hidden && document.querySelectorAll('#order-wheel .ww-item').length === 6, null, { timeout: T(5000) }).then(() => true, () => false);
+  const items = await page.$$eval('#order-wheel .ww-item', (is) => is.map((i) => ({ name: i.querySelector('b').textContent, held: i.classList.contains('held'), dim: i.classList.contains('empty') })));
+  check(opened && items.map((i) => i.name).join('|') === 'Follow me|Hold here|Go there|Attack that|Defend the objective|Regroup', `holding B opens the order wheel (${items.map((i) => i.name).join(', ')})`);
+  check(items[0]?.held && items[4]?.dim, `the wheel rings your squad's order (Follow me) and dims Defend the objective in Team Deathmatch (${JSON.stringify(items)})`);
+  const box = await page.locator('#order-wheel .ww-item[data-code="2"]').boundingBox();
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+  await page.evaluate(() => window.__cs.input.aimWheel(0.87, -0.5));
+  await page.waitForFunction(() => document.querySelector('#order-wheel .ww-item.on b')?.textContent === 'Hold here', null, { timeout: T(5000) }).catch(() => {});
+  await page.screenshot({ path: `${ARTIFACTS}/fireteams-wheel-desktop.png` });
+  // Let go of B on Hold here: the order goes, a bot answers, the HUD says Hold here.
+  await page.keyboard.up('KeyB');
+  const held = await simWait(page, (m, me) => m.fireteams?.squadOf(me.slot)?.order.kind === 'hold', null, T(10000));
+  const ack = await page.waitForFunction(() => [...document.querySelectorAll('#feed .say, .say')].some((l) => /Holding here!/.test(l.textContent)) && document.querySelector('#squad-order b')?.textContent === 'Hold here', null, { timeout: T(10000) }).then(() => true, () => false);
+  check(held, 'letting go of B on Hold here gives your squad the order (checked by the match)');
+  check(ack, 'a squadmate answers "Holding here!" and the HUD shows Hold here');
+  const spot = await sim(page, (m, me) => m.fireteams.squadOf(me.slot).order.pos);
+  // You go off (to a teammate of another squad, out of sight of the spot); the squad stays where you told it.
+  const away = await sim(page, (m, me, p) => {
+    const s = m.fireteams.squadOf(me.slot);
+    const mate = m.combatants().filter((c) => c.alive && c.faction === me.faction && !s.members.includes(c.slot)).sort((a, b) => Math.hypot(b.move.pos.x - p.x, b.move.pos.z - p.z) - Math.hypot(a.move.pos.x - p.x, a.move.pos.z - p.z))[0];
+    if (!mate) return null;
+    me.move = { pos: { x: mate.move.pos.x + 1, y: mate.move.pos.y + 0.2, z: mate.move.pos.z }, velY: 0, grounded: false };
+    return { tick: m.tick, x: Math.round(me.move.pos.x), z: Math.round(me.move.pos.z) };
+  }, spot);
+  const holding = await meWait(page, (m, me, a) => {
+    const s = m.fireteams.squadOf(me.slot);
+    const bots = s.members.filter((x) => x !== me.slot).map((x) => m.slots[x]).filter((c) => c?.alive);
+    const near = bots.filter((c) => Math.hypot(c.move.pos.x - a.p.x, c.move.pos.z - a.p.z) < 8).length;
+    return m.tick - a.tick > 8 * 60 && s.order.kind === 'hold' && bots.length > 0 && near * 2 > bots.length;
+  }, { p: spot, tick: away?.tick ?? 0 }, 25);
+  const where = await sim(page, (m, me, p) => {
+    const s = m.fireteams.squadOf(me.slot);
+    return { me: Math.round(Math.hypot(me.move.pos.x - p.x, me.move.pos.z - p.z)), bots: s.members.filter((x) => x !== me.slot).map((x) => m.slots[x]).filter((c) => c?.alive).map((c) => Math.round(Math.hypot(c.move.pos.x - p.x, c.move.pos.z - p.z))) };
+  }, spot);
+  check(!!away && holding && where.me > 12, `the squad holds where you gave the order after you go off (you ${where.me} m from it, the squad ${where.bots.join(', ')} m; from ${JSON.stringify(at)} to ${JSON.stringify(away)})`);
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  await page.context().close();
+}
+
+
+/**
  * New players: the first visit's tutorial offer, the tutorial on the Training Range (a step done by doing it, Skip
  * from the pause menu back to the menu, touch words on a phone), Quick Play into a Deathmatch against bots on a map
  * of its list, and a first-time tip (once only, clear of the crosshair). Automated browsers get neither the offer nor
@@ -7700,7 +7779,7 @@ try {
   const open = instrumentBrowser(browser);
   // E2E_ONLY=editor,characters runs a subset; E2E_SHARD=2/8 one of CI's parallel groups (balanced by e2e/timings.json;
   // CI's plan job passes each shard's flows in E2E_ONLY itself).
-  const flows = { editor: editorFlow, editorux: editoruxFlow, offline: offlineFlow, mobile: mobileFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, scenery: sceneryFlow, setpieces: setpiecesFlow, physicsfx: physicsfxFlow, teams: teamsFlow, weaponsets: weaponsetsFlow, ctf: ctfFlow, forts: fortsFlow, breakthrough: breakthroughFlow, roulette: rouletteFlow, arsenal: arsenalFlow, vehicles: vehiclesFlow, race: raceFlow, zombies: zombiesFlow, classes: classesFlow, coverage: coverageFlow, ...Object.fromEntries(MAP_FLOWS.map((name, part) => [name, (b) => mapsFlow(b, part)])), designer: designerFlow, ...Object.fromEntries(CHARACTER_FLOWS.map((name, part) => [name, (b) => charactersFlow(b, part)])), online: onlineFlow, hostgame: hostgameFlow, hostcontrols: hostcontrolsFlow, party: partyFlow, lobby: lobbyFlow, handoff: handoffFlow, dedicatedhost: dedicatedhostFlow, hostpage: hostpageFlow, webgpu: webgpuFlow, visual: visualFlow, environment: environmentFlow, flashing: flashingFlow, newplayer: newplayerFlow };
+  const flows = { editor: editorFlow, editorux: editoruxFlow, offline: offlineFlow, mobile: mobileFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, scenery: sceneryFlow, setpieces: setpiecesFlow, physicsfx: physicsfxFlow, teams: teamsFlow, weaponsets: weaponsetsFlow, ctf: ctfFlow, forts: fortsFlow, breakthrough: breakthroughFlow, roulette: rouletteFlow, arsenal: arsenalFlow, vehicles: vehiclesFlow, race: raceFlow, zombies: zombiesFlow, classes: classesFlow, coverage: coverageFlow, ...Object.fromEntries(MAP_FLOWS.map((name, part) => [name, (b) => mapsFlow(b, part)])), designer: designerFlow, ...Object.fromEntries(CHARACTER_FLOWS.map((name, part) => [name, (b) => charactersFlow(b, part)])), online: onlineFlow, hostgame: hostgameFlow, hostcontrols: hostcontrolsFlow, party: partyFlow, lobby: lobbyFlow, handoff: handoffFlow, dedicatedhost: dedicatedhostFlow, hostpage: hostpageFlow, webgpu: webgpuFlow, visual: visualFlow, environment: environmentFlow, flashing: flashingFlow, newplayer: newplayerFlow, fireteams: fireteamsFlow };
   // e2e/flowMap.mjs (change-based selection, shards) must know every flow, and only those.
   const known = new Set(FLOWS);
   const drift = [...Object.keys(flows).filter((f) => !known.has(f)), ...FLOWS.filter((f) => !(f in flows))];

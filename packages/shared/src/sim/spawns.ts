@@ -89,13 +89,50 @@ export const SPAWN_DEATHS_KEPT = 64;
 export const SPAWN_DEATH_TICKS = Math.round(W.deathSeconds * TICK_RATE);
 
 /** How far the nearest living enemy is from a spawn point (height counts double); Infinity with none. */
-function nearestEnemy(sp: SpawnSpot, c: SpawnChoice): number {
+function nearestEnemy(sp: SpawnSpot, c: Pick<SpawnChoice, 'enemies'>): number {
   let nearest = Infinity;
   for (const e of c.enemies) {
     const d = horizontalDistance(sp.pos, e) + Math.abs(sp.pos.y - e.y) * 2;
     if (d < nearest) nearest = d;
   }
   return nearest;
+}
+
+/** Fresh deaths near a point: each within deathRadius in the last deathSeconds, less with distance and age (0 = none). */
+function freshDeaths(pos: Vec3, deaths: readonly SpawnDeath[], tick: number): number {
+  let fresh = 0;
+  for (const d of deaths) {
+    const age = tick - d.tick;
+    if (age < 0 || age >= SPAWN_DEATH_TICKS) continue;
+    const dist = horizontalDistance(d.pos, pos) + Math.abs(d.pos.y - pos.y);
+    if (dist < W.deathRadius) fresh += (1 - dist / W.deathRadius) * (1 - age / SPAWN_DEATH_TICKS);
+  }
+  return fresh;
+}
+
+/** Fireteams: the nearest enemy must be at least this far (m, height counting double) for a squad to respawn beside its leader. */
+export const LEADER_SPAWN_RANGE = 20;
+
+/**
+ * Fireteams (sim/fireteams.ts): whether a squadmate may respawn beside its leader standing at `pos`, by the spawn
+ * choice's own safety measures (the same weights, content/match-play.json spawnChoice): no living enemy within
+ * LEADER_SPAWN_RANGE, not a killing ground (fresh deaths there worth less than half of one at its feet), and none of
+ * the `sightEnemies` nearest enemies within `sightRange` with a clear line to it (at most that many rays).
+ */
+export function leaderSpotSafe(pos: Vec3, c: Pick<SpawnChoice, 'tick' | 'enemies' | 'deaths' | 'sees'>): boolean {
+  const spot: SpawnSpot = { pos, yaw: 0, team: null };
+  if (nearestEnemy(spot, c) < LEADER_SPAWN_RANGE) return false;
+  if (c.deaths && freshDeaths(pos, c.deaths, c.tick) >= 0.5) return false;
+  if (!c.sees) return true;
+  const near: { p: Vec3; d: number }[] = [];
+  for (const e of c.enemies) {
+    const d = horizontalDistance(e, pos);
+    if (d < W.sightRange) near.push({ p: e, d });
+  }
+  near.sort((a, b) => a.d - b.d);
+  const head = { x: pos.x, y: pos.y + 1.6, z: pos.z };
+  for (const e of near.slice(0, W.sightEnemies)) if (c.sees({ x: e.p.x, y: e.p.y + 1.6, z: e.p.z }, head)) return false;
+  return true;
 }
 
 /**
@@ -126,17 +163,8 @@ export function spawnScore(sp: SpawnSpot, c: SpawnChoice): number {
   const used = c.lastUsed.get(sp);
   if (used !== undefined && c.tick - used < SPAWN_RECENT_TICKS) score -= RECENT_PENALTY * (1 - (c.tick - used) / SPAWN_RECENT_TICKS);
   // Fresh bodies: somebody just died here (whoever killed them may still be watching it).
-  if (c.deaths) {
-    let fresh = 0;
-    for (const d of c.deaths) {
-      const age = c.tick - d.tick;
-      if (age < 0 || age >= SPAWN_DEATH_TICKS) continue;
-      const dist = horizontalDistance(d.pos, sp.pos) + Math.abs(d.pos.y - sp.pos.y);
-      if (dist < W.deathRadius) fresh += (1 - dist / W.deathRadius) * (1 - age / SPAWN_DEATH_TICKS);
-    }
-    // A killing ground, at most twice the penalty however many fell there.
-    score -= W.deathPenalty * Math.min(2, fresh);
-  }
+  // (A killing ground, at most twice the penalty however many fell there.)
+  if (c.deaths) score -= W.deathPenalty * Math.min(2, freshDeaths(sp.pos, c.deaths, c.tick));
   if (c.mates) {
     let near = 0;
     for (const m of c.mates) if (horizontalDistance(m, sp.pos) < W.mateRange && ++near >= W.mateMax) break;

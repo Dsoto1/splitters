@@ -180,7 +180,8 @@ Phase 1 items 1, 2, 5): the ghost says why, the live budget bar, the `?` key lis
 3. **Sound pass 2** (Sonniss and Freesound). Both are approved, and their hosts are on the environment's allowlist.
    - Sonniss sits behind a Cloudflare browser check, so the owner puts the chosen packs in the Drive.
    - Freesound needs an API key: ask with the credential form, never in chat.
-4. **Fireteams.**
+4. ~~**Fireteams.**~~ Part 1 done: see "Fireteams, part 1" below. Parts 2 (formations, bounding, the squad HUD) and 3
+   (squad scores, MVP, the party preset) are next.
 5. **The MapMaker overhaul.** Its Phase 3 item 9 is the rotate ring.
 6. **Community maps.**
 7. **Kit-prop generators.**
@@ -303,6 +304,53 @@ gets overloaded above that: local e2e times out and flakes). Prune landed worktr
 - f5cc70b Capitol Mall domes, roofs; Capitol Dome / Copper Dome / Pediment / Pyramidion props; room Roof surface.
 - Earlier the same day: content scalability steps 2–6, perf toolset, flaky e2e fixes, Runway Nine airliner, map
   reworks batches 2–3, character fixes rounds 2–3 (see the entries below and CHANGELOG).
+
+### Fireteams, part 1 (`wip/fireteams`, agent, 2026-11-08; owner said "Go"; green on `check/fireteams` at 4610a3b, run 42493762584; LANDED: main 4610a3b; docs/FIRETEAMS_PLAN.md "Part 1", docs/BOTS.md "Fireteams")
+- **What players see:** a **Fireteams** variant chip in Match setup for TDM, CTF, KotH, Bomb, Hostage and
+  Breakthrough, with **Squad size 4 / 5 / 6** (5 standard) beside the score. In play, "You lead a fireteam of 5 ·
+  hold B for orders" and an orange **SQUAD · FOLLOW ME** line over your portrait.
+  - **Hold B** opens the order wheel: the weapon wheel's ring in orange, six orders, your squad's current one ringed.
+    Defend the objective is dimmed in TDM. A tap of B is still the quick messages.
+  - A controller holds d-pad up (a tap pings); a phone gets an **Orders** button by Weapons.
+  - Let go on an order: a squadmate answers in the chat ("Holding here!") and the HUD line changes.
+  - Servers: `rules fireteams 5`.
+- **Code:** `shared/src/sim/fireteams.ts`, holding the squads (`sync`), orders (`checkOrder`, `order`, `step`) and
+  `memberGoal`.
+  - The Match hooks: `stepFireteams`, `squadOrder` (say 110-115), `fireteamGoal` in `botGoal`, `fireteamSpawn` (with
+    `spawns.ts leaderSpotSafe`) and `squadObjective` (`ModeLogic.defendSpot`: KotH, Breakthrough, CTF, Forts).
+  - The director takes fixed squads (`update`'s `fixed`). The 'squad' event; `OrderGoal.squad` (weight 1.3).
+  - Client: `input.ts` (wheelKind, ordersOn, B / d-pad hold, takeOrderClose), `weaponWheel.ts` (an id), `session.ts`
+    (updateOrderWheel, squadEvent), `hud.ts setSquadOrder`, `touchControls.ts` (Orders), and the Match setup squad size.
+- **Joining:** `takeOverBot` and `BotFiller.join` are untouched (wip/party's party join landed first). The squads follow
+  the roster, so a joiner takes over a bot-led squad by itself.
+- **Proof:**
+  - unit `shared/test/fireteams.test.ts` (17: assignment incl. join, leave, takeover, away and back, small teams;
+    order checks; member goals; the order's weight in the choice; leader down and back; carried out; Match setup;
+    in a match: Hold here from the wheel, a refusal, respawn beside the leader or not, a friend's takeover, the squad
+    holding);
+  - `client/test/inputWheel.test.ts` (+3: tap vs hold of B, one wheel at a time);
+  - serverRules and setupPlan lists updated;
+  - e2e flow **`fireteams`**: Sandgate TDM `?test=1`, the variant on, you lead 5, a tap of B is the menu, hold B opens
+    the wheel, pick Hold here, the answer and the HUD, then you go off and the squad holds 8 s later. The flow is
+    registered in flowMap (sandgate, frontend, the wheel and touch files), with timings 130 s (the 16-shard budget
+    allowed no more, which is why the phone part went to a unit test).
+- **Measured:** FIRETEAMS_PLAN.md "Part 1, measured". Cohesion is much better (distance to the leader 20-57 % less).
+  **But kills and CTF captures fell** (captures 2.0 → 1.0 / 0.5 a match on Bunker Cross / Diamond Park): members follow
+  a bot leader, not the objective. A "share the leader's objective" variant was tried and reverted (worse). Bench:
+  bot thinking about main's (table there; the box was at load 25-33).
+- **Screenshots** (this session's scratchpad, may not survive): `fireteams/fireteams-wheel-desktop.png`,
+  `fireteams-wheel-phone.png`, `fireteams-ordered-desktop.png`, `fireteams-hud-*.png`.
+- **Pitfalls:**
+  - this container's local e2e couldn't start a match within 90 s under load (swiftshader), and the default GL closes the
+    page about 25 s into a match: CI is where the flow runs;
+  - physicsfx's canyon blast and glass checks flaked once more on a check run (as noted above);
+  - bench numbers at load 25+ are not comparable with the 2.5 ms guard: re-measure on a quiet machine.
+- **For the owner:**
+  1. Land Part 1 with fewer captures in bot-only CTF, or first make bot-led squads push the objective (Part 2's
+     formations).
+  2. After the leader's respawn, a squad on Follow me or Attack that regroups on them, while one on Hold here, Go there
+     or Defend the objective keeps its post. Keep that?
+  3. The party preset (Part 3) and the squad HUD (Part 2) are next.
 
 ### Ammo Boxes by the tank routes (`wip/ammo-boxes`, agent, 2026-11-08; owner-approved follow-up to Tanks 2 item 2)
 

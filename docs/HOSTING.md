@@ -498,6 +498,7 @@ mode playing.
 | Mix up weapon pickups | Match rules → Mix up weapon pickups | `rules mix on` | `RULES.mix` | live |
 | Drop weapon on death | Match rules → Drop weapon on death | `rules drops off` | `RULES.drops` | live |
 | Team leaders, Leader hunt | Match rules → Team leaders | `rules leaders vip` | `RULES.leaders` (or `LEADERS`) | next match |
+| Fireteams (squad size 4/5/6; docs/FIRETEAMS_PLAN.md) | Match rules → Fireteams | `rules fireteams 5` (`off`) | `RULES.fireteams` | next match |
 | Spawn on teammates | Match rules | `rules squadspawn off` | `RULES.squadspawn` | next match |
 | Kill streaks | Match rules | `rules streaks off` | `RULES.streaks` | next match |
 | Character sizes | Match rules | `rules sizes off` | `RULES.sizes` | next match |

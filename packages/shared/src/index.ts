@@ -38,6 +38,7 @@ export * from './sim/hitbox.ts';
 export * from './sim/characterStats.ts';
 export * from './sim/randomLooks.ts';
 export * from './sim/roulette.ts';
+export * from './sim/fireteams.ts';
 export * from './sim/awards.ts';
 export { MATCH_PLAY } from './content/matchPlay.generated.ts';
 export { spawnProtection } from './sim/spawns.ts';

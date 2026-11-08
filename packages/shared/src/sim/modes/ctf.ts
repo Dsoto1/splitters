@@ -183,6 +183,13 @@ export class CtfMode implements ModeLogic {
     return { attack, intercept: carrier !== null ? { pos: { ...own.pos }, to: { ...enemy.base }, slot: carrier } : null, playbook: playbookFor('core.ctf').team };
   }
 
+  /** Fireteams' "Defend the objective": our flag where it is (at its base, or lying where it fell; its base while carried off). */
+  defendSpot(team: string): Vec3 | null {
+    const own = this.flagOf(team);
+    if (!own) return null;
+    return { ...(own.state === FLAG_CARRIED ? own.base : own.pos) };
+  }
+
   /** Each team's way from its own flag to the enemy's (its attackers' trip, and the way an enemy carrier runs home with its flag). */
   botTrips(): readonly BotTripSpec[] {
     const [a, b] = this.flags;

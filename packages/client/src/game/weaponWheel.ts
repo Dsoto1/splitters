@@ -52,9 +52,10 @@ export class WeaponWheel {
   /** A finger let go on the middle: close without switching. */
   onTouchCancel?: () => void;
 
-  constructor(parent: HTMLElement) {
+  /** `id`: the overlay's id ('order-wheel': Fireteams' order wheel, the same ring with orders on it, no icons). */
+  constructor(parent: HTMLElement, id = 'weapon-wheel') {
     this.el = document.createElement('div');
-    this.el.id = 'weapon-wheel';
+    this.el.id = id;
     this.el.hidden = true;
     this.ring = document.createElement('div');
     this.ring.className = 'ww-ring';
@@ -126,7 +127,7 @@ export class WeaponWheel {
         const a = (i / n) * Math.PI * 2;
         it.style.left = `${50 + Math.sin(a) * 37}%`;
         it.style.top = `${50 - Math.cos(a) * 37}%`;
-        const icon = weaponIcon(e.weaponId, 'ww-icon');
+        const icon = e.weaponId ? weaponIcon(e.weaponId, 'ww-icon') : null;
         const name = document.createElement('b');
         const ammo = document.createElement('small');
         it.append(...(icon ? [icon] : []), name, ammo);
