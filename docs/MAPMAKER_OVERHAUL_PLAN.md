@@ -35,19 +35,66 @@ Already done from the owner's earlier ask: **the real buildable area.**
    - Next to the cursor, before you click, it now also says why it's refused: overlap, past the build limit, no floor
      under it, and so on (`checkPlacement`, `buildLimitReason`).
    - The same goes for props and set pieces.
+   - **As built (2026-11-08, `wip/mapmaker-p1a`):** `PlacementCheck` refusals carry `short` beside `reason`
+     (`checkLayout`, `buildLimitShort`); `shared/src/editor/ghostWhy.ts` has `tileGhostCheck` (the Platform-on-an-
+     upper-storey rule too), `zoneNote` and `entityGhostNote` (spawns, pickups, props, vehicles, NPCs: "No floor
+     under it" from the ground within 1.5 m or a floor, block or wall top within 1 m, as the spawn check; outside the
+     boundary; the scenery note; hung props and objects only get the zone notes). The hover card shows it (red ✗,
+     amber ⚠, blue ℹ, each with its words); the status line has the whole reason. Worked out once per cell / spot and
+     document version. Entities are warned, not refused (owner's call, HANDOFF). Tests `shared/test/ghostWhy.test.ts`;
+     e2e in `editorux` (`editorPhase1aChecks`).
 2. **A live budget bar.**
    - It covers entities, destructibles, vehicles, lights, props and draw estimate, the environment budget and the map's
      size (RESOURCE_BUDGETS, MAP_BUDGETS.md).
    - It is colour-coded and names whatever tips a budget over.
    - It updates on each edit from cheap counters, not a full validation every frame.
+   - **As built (2026-11-08, `wip/mapmaker-p1a`):** `shared/src/editor/budgetCounters.ts`: `BUDGET_ROWS` (entities,
+     props, prop models, draws, lights, destructibles, vehicles, the four environment budgets, the file's size),
+     `countBudgets` (from scratch) and `BudgetTracker`, fed by `EditHistory.onChange` (each command, undo's inverse,
+     reset): it counts only what the command touches; a set-piece, theme or set-piece-definition edit recounts the
+     parts (as played, from the cached expansion); a settings edit re-measures the file without its items (the
+     file's size is exact: `serializeMap`'s bytes, per item cached). The draw estimate is a draw per different
+     untinted prop model, per tinted prop, per species variant and per liquid, against 80 + 24 + 32 (owner's call).
+     UI `client/src/editor/budgetBar.ts`: a pill beside the level strip (OK / Near at 80 % / Over, colour and word),
+     naming the worst budget; its name selects what it counts (`budgetCulprits`); the arrow lists every row. Test
+     `shared/test/budgetCounters.test.ts` (counters = full count after commands, a batch, a stroke, every undo and
+     redo; over a budget exactly when the validator warns).
 3. **A measure tool.** Click two points to get the distance, the height difference and the slope. It snaps to cells
    and surfaces.
+   - **As built** (`wip/mapmaker-p1b`): the Measure tool, U and the tool bar (`editor/measureTool.ts`; the maths in
+     shared `editor/measure.ts`, unit-tested in `mapmakerTools.test.ts`). Two clicks: distance, rise, slope in degrees
+     and percent; a third chains a path with its total; right-click takes a point back; Esc clears; it stays on screen
+     with another tool until then. Points snap to the Snap step on surfaces and the ground, to an object's top's middle
+     (props, blocks), and a wall face's height to the step; Ctrl or Alt: free. Each stretch says whether a player
+     could make it, from `PLAYER` (`sim/constants.ts`, as `sim/movement.ts` moves): the step (walk ≤ 0.3 m, jump ≤
+     1.22 m, "too high") and the gap (a sprinting jump's reach to that height). Labels are DOM over the view; nothing
+     is stored. e2e: `editorMeasureChecks` in `editorux`.
 4. **Props snap to surfaces, with randomise.**
    - A prop drops onto whatever is under the cursor: a tabletop, a roof, the ground.
    - Optionally, each placement gets a random turn, size and variant within a range.
+   - **As built** (`wip/mapmaker-p1b`): `propDrop` (shared `editor/surfaceSnap.ts`) casts the pointer's ray at the map
+     as drawn (tiles shown, blocks, solid props: `editor/surfaceBoxes.ts`, once per document version) and the ground
+     as shown (`shownGround`). A top: the prop sits on it; a side: it stands off the face and drops to what is below;
+     the ground: bedded into the document's ground (the view re-beds it). The grid snap still applies to x and z, and
+     the prop lands on what is under the snapped spot. Over nothing (open air on an upper level), the level's plane,
+     as before. Randomise (`editor/propPlaceOptions.ts`, `rollProp` in shared `editor/propRandom.ts`): off by default;
+     turn any / ±90 / ±45 / ±15 / none, size ±0-30 % clamped to the prop's allowed scale (0.25-4, an environment
+     species' own range), a variant for props with variants (the environment species). Seeded (`?test=1`: seed 1),
+     roll by roll, and the ghost (`setPropGhost`, now with scale and variant) shows the next roll. Unit tests: table,
+     roof, ground, a wall's foot, the snapped edge; e2e: table, ground, Randomise in `editorux`.
 5. **A shortcut overlay.**
    - Press `?` to see every key.
    - It is generated from the same table the keys are bound with, so it can't go stale.
+   - **As built (2026-11-08, `wip/mapmaker-p1a`):** `shared/src/editor/keymap.ts`: `EDITOR_KEYS` (pressed keys, first
+     match wins), `EDITOR_KEY_NOTES` (held keys: `FLY_KEYS`, `FREE_PLACE_KEYS`; the mouse; the palette's own keys),
+     `matchEditorKey`, `editorKeyGroups`. MapMaker's keydown handler is `matchEditorKey` plus `keyActions` (a Record
+     over every action); the fly camera and free placing read their codes from the table. Every key does what it did,
+     except Shift+/ (`?`), which opens the list (/ still searches). Phase 1B's U (measure) and its Esc order (a ring
+     drag cancelled first, then a measurement cleared, then Select) are in the table (`measure`, `escape`), as are the
+     measure tool's no-snap keys (`FREE_MEASURE_KEYS`) and the ring drag in the Mouse group. Overlay `client/src/editor/keyOverlay.ts`: a modal
+     dialog (MapMaker's keys are off while it's open), the tool bar's **Keys** button. Test `shared/test/keymap.test.ts`
+     (every key × Shift × Ctrl/⌘ against the old handler; every key it answers is listed; no key matched by hand in
+     editorApp.ts).
 
 ## Phase 2: the interface
 1. **Mode tabs:** Build, Props, Gameplay, Logic, Environment, Paths, Test. Each has its own palette and inspector.
@@ -92,6 +139,18 @@ Already done from the owner's earlier ask: **the real buildable area.**
      props and vehicles 15°), with Shift for the finer step.
    - **Show the angle while dragging,** and let Esc cancel the drag. A drag is one undo step.
    - **Quick facings:** four buttons in the inspector (0°, 90°, 180°, 270°) set the facing in one click.
+   - **As built** (`wip/mapmaker-p1b`): the ring (`editor/rotateRing.ts`, drawn by `EditorView.setRing` beside
+     `setGizmo`) is a circle round the selection's centre, clear of what is selected (at least 2.2 m). The pointer
+     grabs it within 12 px on screen; the status line says so. A drag measures the turn from where it was grabbed,
+     snaps it with `ringStep` (the selection's own `yawStep`, Shift the fine one; the coarsest step of a mixed
+     selection; tiles, set pieces, zones and water 90° always) and previews it (things turned, tiles and set pieces
+     outlined where they'd land, red where they can't), the angle in a label by the pointer and spokes and an arc on
+     the ring. Letting go runs `turnByCommand`, which is `rotateCommand` with an `angle` (new): one undo step, about
+     the centre exactly as R. Esc (or leaving the window) cancels. Quick facings (`editor/quickFacings.ts`,
+     `setFacingCommand`): a Face row of four buttons under Facing ° (things), and under Rotation (tiles, set pieces),
+     the current one lit. Fixed on the way: `rotateCommand` with a negative quarter turn left tiles' rotation
+     negative. Unit tests in `mapmakerTools.test.ts`; e2e `editorTurnChecks` in `editorux` (a prop and a spawn turned
+     by dragging, Shift, Esc, undo, quick facings on a spawn and a tile).
 
 ## Phase 4: testing the map
 1. **A bot test run from MapMaker.**

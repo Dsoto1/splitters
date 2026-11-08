@@ -1077,6 +1077,7 @@ async function editoruxFlow(browser) {
   });
   await page.keyboard.press('Control+KeyZ');
   check((await doc()).entities.length === before, 'a stroke undoes in one step');
+  await editorPhase1aChecks(page, { doc, at, clickAt, settle, shot });
   // The same layout at 1280×720: panels narrow, the tool bar drops its labels, nothing overlaps.
   await page.setViewportSize({ width: 1280, height: 720 });
   await page.evaluate(() => document.querySelector('#ed-modes [data-ws="build"]').click());
@@ -1088,6 +1089,358 @@ async function editoruxFlow(browser) {
   await page.context().close();
   await editorSetPieceChecks(browser);
   await editorGroundChecks(browser);
+  await editorMeasureChecks(browser);
+  await editorTurnChecks(browser);
+}
+
+/**
+ * MapMaker overhaul Phase 1 items 3 and 4 (docs/MAPMAKER_OVERHAUL_PLAN.md): the measure tool (U, the tool bar), props
+ * dropped onto a table and the ground, and Randomise with the ghost showing what the click places. Screenshots go to
+ * E2E_SHOTS when set.
+ */
+async function editorMeasureChecks(browser) {
+  const page = await (await browser.newContext({ viewport: { width: 1400, height: 820 } })).newPage();
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  const shot = (name) => (process.env.E2E_SHOTS ? page.screenshot({ path: `${process.env.E2E_SHOTS}/editorux-${name}.png` }).catch(() => {}) : Promise.resolve());
+  await page.goto(`${CLIENT}/?mode=editor&test=1`);
+  await page.waitForFunction(() => window.__editor, null, { timeout: T(60000) });
+  page.once('dialog', (d) => d.accept());
+  await newMap(page);
+  const doc = () => page.evaluate(() => window.__editor.doc);
+  const at = (x, y, z) => page.evaluate(([x, y, z]) => window.__editor.view.project({ x, y, z }), [x, y, z]);
+  // The pointer's hover follows once a frame: let it catch up before clicking.
+  const hoverAt = async (x, y, z) => {
+    const p = await at(x, y, z);
+    await page.mouse.move(p.x, p.y);
+    await frames(page, 3);
+    return p;
+  };
+  const clickAt = async (x, y, z) => {
+    const p = await hoverAt(x, y, z);
+    await page.mouse.click(p.x, p.y);
+    await frames(page, 3);
+  };
+  const focus = async (x, y, z) => {
+    await page.evaluate(([x, y, z]) => window.__editor.view.focus({ x, y, z }), [x, y, z]);
+    await page.waitForFunction(([x, y, z]) => {
+      const p = window.__editor.view.project({ x, y, z });
+      return Math.abs(p.x - innerWidth / 2) < innerWidth / 4 && Math.abs(p.y - innerHeight / 2) < innerHeight / 4;
+    }, [x, y, z], { timeout: T(10000) }).catch(() => {});
+    await frames(page, 3);
+  };
+  const props = async () => (await doc()).entities.filter((e) => e.kind === 'prop');
+  await focus(0, 0, 0);
+
+  // A table in the start room, then a crate dropped onto its top (0.8 m), not the floor under it.
+  await clickTool(page, '[data-tool="prop:prop.table"]');
+  await clickAt(0, 0, 1);
+  const table = (await props()).find((e) => e.model === 'prop.table');
+  check(table && table.position[1] === 0, `a table placed on the room's floor (${JSON.stringify(table?.position)})`);
+  await clickTool(page, '[data-tool="prop:prop.crate_small"]');
+  await hoverAt(0.3, 0.8, 1.2);
+  const ghostY = await page.evaluate(() => window.__editor.view.scene.getNodeByName('propGhost')?.position.y);
+  await clickAt(0.3, 0.8, 1.2);
+  const crate = (await props()).find((e) => e.model === 'prop.crate_small');
+  check(crate && Math.abs(crate.position[1] - 0.8) < 0.001 && Math.abs(ghostY - 0.8) < 0.001, `a prop dropped on the table sits on its top, as its ghost showed (crate ${JSON.stringify(crate?.position)}, ghost y ${ghostY})`);
+  await page.mouse.move(10, 400);
+  await shot('prop-on-table');
+
+  // The measure tool: U and the tool bar; floor to the table's top (snapped to its middle), then a third point chains.
+  await page.keyboard.press('KeyU');
+  check(await page.evaluate(() => window.__editor.tool.kind === 'measure') && (await page.getAttribute('#ed-tb-measure', 'class')).includes('active') && (await page.textContent('#ed-toolhint')).includes('Measure'), 'U picks the measure tool, lit in the tool bar with its hint');
+  const rev = await page.evaluate(() => window.__editor.history.revision);
+  await clickAt(-2.2, 0, 2.6);
+  await clickAt(0.6, 0.8, 0.8);
+  const m1 = await page.evaluate(() => ({ points: window.__editor.measure.points.map((p) => p.at), labels: [...document.querySelectorAll('.ed-measure-label:not(.live)')].map((l) => l.textContent), status: document.getElementById('ed-target').textContent }));
+  const [a, b] = m1.points;
+  const dist = a && b ? Math.hypot(b.x - a.x, b.y - a.y, b.z - a.z) : 0;
+  check(a && b && a.x === -2 && a.y === 0 && a.z === 2.5 && b.x === 0 && b.y === 0.8 && b.z === 1, `measure points snap to the grid on the floor and to the table top's middle (${JSON.stringify(m1.points)})`);
+  check(m1.labels.length === 1 && m1.labels[0].startsWith(`${dist.toFixed(2)} m`) && /up 80 cm/.test(m1.labels[0]) && /jumpable/.test(m1.labels[0]) && /step jumpable/.test(m1.status), `two points show the distance, the height difference, the slope and whether it's jumpable (${m1.labels.join(' | ')})`);
+  await clickAt(2, 0, 2.5);
+  const m2 = await page.evaluate(() => ({ n: window.__editor.measure.points.length, labels: [...document.querySelectorAll('.ed-measure-label:not(.live)')].map((l) => l.textContent), total: window.__editor.measure.measurement.total }));
+  check(m2.n === 3 && m2.labels.length === 3 && m2.labels.at(-1) === `Total ${m2.total.toFixed(2)} m`, `a third click chains the path and shows its total (${m2.labels.join(' | ')})`);
+  await page.mouse.move(700, 790);
+  await frames(page, 3);
+  await shot('measure');
+  check((await page.evaluate(() => window.__editor.history.revision)) === rev && !JSON.stringify(await doc()).includes('measure'), 'measuring is editor-only: no edit, nothing in the map');
+  // Ctrl: no snap.
+  await page.keyboard.down('Control');
+  await hoverAt(-1.37, 0, 2.21);
+  const free = await page.evaluate(() => window.__editor.measure.hover);
+  await page.keyboard.up('Control');
+  check(free?.snapped === 'free' && Math.abs(free.at.x + 1.37) < 0.05, `with Ctrl the point follows the pointer, unsnapped (${JSON.stringify(free)})`);
+  // It stays on screen with another tool, until Esc.
+  await page.keyboard.press('KeyV');
+  const kept = await page.$$eval('.ed-measure-label', (l) => l.map((x) => x.textContent));
+  check(kept.length === 3, `the measurement stays on screen with another tool (${kept.join(' | ')})`);
+  await page.keyboard.press('Escape');
+  check((await page.$$('.ed-measure-label')).length === 0 && !(await page.evaluate(() => window.__editor.view.scene.getMeshByName('measureLines'))), 'Esc clears it');
+
+  // Props on the ground: a terrain map, a barrel bedded into the ground under the pointer (not floating on the level).
+  page.once('dialog', (d) => d.accept());
+  await newMap(page, 96);
+  await focus(20, 0, 20);
+  await clickTool(page, '[data-tool="prop:prop.barrel"]');
+  await hoverAt(20, 0, 20);
+  await clickAt(20, 0, 20);
+  const barrel = (await props())[0];
+  // The terrain's height under the barrel (shared terrainHeightAt: the mesh's two triangles per square).
+  const onTerrain = await page.evaluate((p) => {
+    const t = window.__editor.doc.terrain;
+    const y = (c, r) => t.baseY + (t.heights[r * t.cols + c] ?? 0) / 100;
+    const fx = (p[0] - t.origin[0]) / t.spacing;
+    const fz = (p[2] - t.origin[1]) / t.spacing;
+    const c = Math.floor(fx);
+    const r = Math.floor(fz);
+    const u = fx - c;
+    const v = fz - r;
+    return v >= u ? y(c, r) + (y(c + 1, r + 1) - y(c, r + 1)) * u + (y(c, r + 1) - y(c, r)) * v : y(c, r) + (y(c + 1, r) - y(c, r)) * u + (y(c + 1, r + 1) - y(c + 1, r)) * v;
+  }, barrel?.position);
+  check(barrel && barrel.position[1] <= onTerrain + 0.001 && barrel.position[1] > onTerrain - 0.3, `a prop on the ground is bedded into it (y ${barrel?.position[1]}, ground ${onTerrain.toFixed(2)})`);
+
+  // Randomise: off by default; on, each placement gets a turn and size, the ghost showing the next one exactly.
+  check(!(await page.isChecked('#ed-prop-random')), 'Randomise is off by default');
+  await page.click('#ed-prop-random');
+  await page.selectOption('#ed-prop-random-size', '0.2');
+  await page.evaluate(() => document.activeElement?.blur());
+  await hoverAt(24, 0, 18);
+  const ghost = await page.evaluate(() => {
+    const n = window.__editor.view.scene.getNodeByName('propGhost');
+    return n && { yaw: n.rotation.y, scale: n.scaling.x };
+  });
+  await clickAt(24, 0, 18);
+  const first = (await props()).at(-1);
+  check(ghost && first && Math.abs(first.yaw - ghost.yaw) < 1e-6 && Math.abs(first.scale - ghost.scale) < 1e-6 && (first.yaw !== 0 || first.scale !== 1), `the ghost shows the random turn and size the click places (ghost ${JSON.stringify(ghost)}, placed yaw ${first?.yaw}, scale ${first?.scale})`);
+  for (const [x, z] of [[17, 18], [22, 15], [25, 22], [18, 23], [21, 25], [15, 20]]) await clickAt(x, 0, z);
+  const scatter = (await props()).slice(-7);
+  check(scatter.length === 7 && new Set(scatter.map((e) => e.yaw)).size === 7 && scatter.every((e) => e.scale >= 0.8 && e.scale <= 1.2), `a randomised scatter: every turn different, sizes within ±20 % (${scatter.map((e) => `${e.yaw}/${e.scale}`).join(', ')})`);
+  await page.mouse.move(700, 790);
+  await frames(page, 10);
+  await shot('randomise');
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  await page.context().close();
+}
+
+/**
+ * MapMaker overhaul Phase 3 item 9 (docs/MAPMAKER_OVERHAUL_PLAN.md): turning by mouse. The rotate ring on the
+ * selection gizmo turns a prop and a spawn by their own steps, shows the angle while dragging, Esc cancels a drag, a
+ * drag is one undo step; the inspector's quick facings set the facing in one click (a tile's too). Screenshots go to
+ * E2E_SHOTS when set.
+ */
+async function editorTurnChecks(browser) {
+  const page = await (await browser.newContext({ viewport: { width: 1400, height: 820 } })).newPage();
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  const shot = (name) => (process.env.E2E_SHOTS ? page.screenshot({ path: `${process.env.E2E_SHOTS}/editorux-${name}.png` }).catch(() => {}) : Promise.resolve());
+  await page.goto(`${CLIENT}/?mode=editor&test=1`);
+  await page.waitForFunction(() => window.__editor, null, { timeout: T(60000) });
+  page.once('dialog', (d) => d.accept());
+  await newMap(page);
+  const doc = () => page.evaluate(() => window.__editor.doc);
+  const at = (x, y, z) => page.evaluate(([x, y, z]) => window.__editor.view.project({ x, y, z }), [x, y, z]);
+  const yawOf = async (id) => (await doc()).entities.find((e) => e.id === id)?.yaw;
+  const deg = (r) => Math.round((r * 180) / Math.PI);
+  await page.evaluate(() => window.__editor.view.focus({ x: 12, y: 0, z: 4 }));
+  await page.waitForFunction(() => {
+    const p = window.__editor.view.project({ x: 12, y: 0, z: 4 });
+    return Math.abs(p.x - innerWidth / 2) < innerWidth / 4 && Math.abs(p.y - innerHeight / 2) < innerHeight / 4;
+  }, null, { timeout: T(10000) }).catch(() => {});
+  await frames(page, 3);
+  // A barrel and a spawn, placed with their tools.
+  const place = async (tool, x, z) => {
+    await clickTool(page, tool);
+    const p = await at(x, 0, z);
+    await page.mouse.move(p.x, p.y);
+    await frames(page, 3);
+    await page.mouse.click(p.x, p.y);
+    await frames(page, 3);
+    return page.evaluate(() => window.__editor.selection.entities[0]);
+  };
+  const barrel = await place('[data-tool="prop:prop.barrel"]', 12, 0);
+  const spawn = await place('[data-tool="spawn"]', 12, 8);
+  // A point on the ring of the selected thing at `centre`, facing `a` (radians; 0 is +Z, a quarter turn +X).
+  const ringAt = async (centre, a) => {
+    const r = await page.evaluate(() => window.__editor.ringRadius());
+    return at(centre[0] + Math.sin(a) * r, centre[1], centre[2] + Math.cos(a) * r);
+  };
+  const select = async (id) => {
+    await page.evaluate((id) => {
+      window.__editor.setTool({ kind: 'select' });
+      window.__editor.setSelection({ tiles: [], entities: [id] });
+    }, id);
+    await frames(page, 3);
+  };
+  /** Drag the ring from facing `from` to `to` (radians) round `centre`, through the facings between; `finish` lets go (or `esc` cancels first). */
+  const dragRing = async (centre, from, to, { finish = true, esc = false, midShot = '' } = {}) => {
+    const a = await ringAt(centre, from);
+    await page.mouse.move(a.x, a.y);
+    await frames(page, 3);
+    const hot = await page.evaluate(() => window.__editor.ring.hot && /Drag the ring/.test(document.getElementById('ed-target').textContent));
+    await page.mouse.down();
+    for (let i = 1; i <= 6; i++) {
+      const p = await ringAt(centre, from + ((to - from) * i) / 6);
+      await page.mouse.move(p.x, p.y, { steps: 2 });
+    }
+    await frames(page, 3);
+    const mid = await page.evaluate(() => ({ label: document.getElementById('ed-ring-angle')?.hidden ? null : document.getElementById('ed-ring-angle')?.textContent, turn: window.__editor.ring.drag?.turn ?? null }));
+    if (midShot) await shot(midShot);
+    if (esc) await page.keyboard.press('Escape');
+    if (finish) await page.mouse.up();
+    await frames(page, 3);
+    return { hot, ...mid };
+  };
+
+  // The barrel (a prop: 15° steps): from the south (180°) round to the east (90°) is -90°.
+  await select(barrel);
+  check(await page.evaluate(() => !!window.__editor.view.scene.getMeshByName('gizmoRing')), 'a selected prop has the rotate ring on its gizmo');
+  const rev0 = await page.evaluate(() => window.__editor.history.revision);
+  const d1 = await dragRing([12, 0, 0], Math.PI, Math.PI / 2 + 0.03, { midShot: 'rotate-ring' });
+  check(d1.hot && d1.label === '-90°', `the ring lights under the pointer and shows the angle while dragging (${JSON.stringify(d1)})`);
+  check(Math.abs((await yawOf(barrel)) + Math.PI / 2) < 0.002 && (await page.evaluate(() => window.__editor.history.revision)) === rev0 + 1, `letting go turns the prop -90°, one edit (yaw ${await yawOf(barrel)})`);
+  await page.keyboard.press('Control+KeyZ');
+  check((await yawOf(barrel)) === 0, 'one undo takes the whole drag back');
+  // 20° of drag snaps to the prop's 15° step; with Shift, to its 5° step.
+  await dragRing([12, 0, 0], 0, (20 * Math.PI) / 180);
+  check(deg(await yawOf(barrel)) === 15, `a prop snaps to its 15° step (${deg(await yawOf(barrel))}°)`);
+  await page.keyboard.down('Shift');
+  await dragRing([12, 0, 0], 0, (22 * Math.PI) / 180);
+  await page.keyboard.up('Shift');
+  check(deg(await yawOf(barrel)) === 35, `with Shift, the finer 5° step (${deg(await yawOf(barrel))}°)`);
+  // Esc cancels a drag: nothing turns.
+  const before = await yawOf(barrel);
+  const esc = await dragRing([12, 0, 0], 0, Math.PI / 2, { esc: true });
+  check(esc.turn !== 0 && (await yawOf(barrel)) === before && !(await page.isVisible('#ed-ring-angle')), `Esc cancels the drag: no turn (${esc.label}, yaw ${await yawOf(barrel)})`);
+
+  // The spawn (45° steps): about 50° of drag turns it 45°.
+  await select(spawn);
+  const s0 = await yawOf(spawn);
+  await dragRing([12, 0, 8], 0, (50 * Math.PI) / 180);
+  check(deg((await yawOf(spawn)) - s0) === 45, `a spawn snaps to its 45° step (${deg((await yawOf(spawn)) - s0)}°)`);
+
+  // Quick facings: one click each, one undo step; the current one lit.
+  await page.click('#ed-inspector .ed-quick-facings [data-facing="180"]');
+  await frames(page, 2);
+  check(Math.abs(Math.abs(await yawOf(spawn)) - Math.PI) < 0.002 && (await page.getAttribute('#ed-inspector .ed-quick-facings [data-facing="180"]', 'class'))?.includes('active'), `the 180° quick facing turns the spawn round and lights (${await yawOf(spawn)})`);
+  await page.mouse.move(700, 790);
+  await shot('quick-facings');
+  await page.keyboard.press('Control+KeyZ');
+  check(deg(await yawOf(spawn)) === deg(s0) + 45, 'one undo puts the spawn back');
+  // A tile: the start room faces 90° in one click (quarter turns only, in place).
+  const room = (await doc()).classicStructure.tiles[0];
+  await page.evaluate((id) => window.__editor.setSelection({ tiles: [id], entities: [] }), room.id);
+  await frames(page, 2);
+  await page.click('#ed-inspector .ed-quick-facings [data-facing="90"]');
+  const turned = (await doc()).classicStructure.tiles.find((t) => t.id === room.id);
+  check(turned?.rotation === 1 && turned.x === room.x && turned.y === room.y, `a tile's quick facing turns it to 90° in place (${JSON.stringify(turned && [turned.x, turned.y, turned.rotation])})`);
+  await page.keyboard.press('Control+KeyZ');
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  await page.context().close();
+}
+
+/**
+ * MapMaker overhaul Phase 1, part A (docs/MAPMAKER_OVERHAUL_PLAN.md): the ghost says why it's refused, beside the
+ * pointer; the live budget bar changes on an edit and on undo, goes amber near a budget and selects what it counts; `?`
+ * (and the tool bar's Keys button) opens every key, grouped, and Esc or `?` closes it.
+ */
+async function editorPhase1aChecks(page, { doc, at, clickAt, settle, shot }) {
+  await page.evaluate(() => window.__editor.view.focus({ x: 0, y: 0, z: -16 }));
+  await settle();
+  // The ghost says why: a corridor over a corridor is refused, and the note beside the pointer names it and its level.
+  await clickTool(page, '[data-tool="tile:core.corridor"]');
+  await clickAt(-8, 0, -16);
+  const placed = (await doc()).classicStructure.tiles.some((t) => t.x === -1 && t.y === -2 && t.z === 0);
+  const p = await at(-8, 0, -16);
+  await page.mouse.move(p.x + 3, p.y + 2);
+  await settle();
+  const why = await page.evaluate(() => ({ cls: document.getElementById('ed-tip').className, text: document.getElementById('ed-tip').textContent, shown: !document.getElementById('ed-tip').hidden, status: document.getElementById('ed-target').textContent, ghost: window.__editor.tileGhostAt?.check }));
+  check(placed && why.shown && /tone-bad/.test(why.cls) && why.text.includes('Overlaps the Corridor on Ground') && /^Overlaps Corridor on Ground: pick a free cell/.test(why.status), `a refused ghost says why beside the pointer (${why.text}; ${why.status.slice(0, 60)})`);
+  await shot('ghost-why');
+  // Past the build limit (a level past the top).
+  const limit = await page.evaluate(() => {
+    const ed = window.__editor;
+    const c = ed.tileGhost('core.corridor', [0, 0, 17]);
+    return c.ok ? '' : c.short;
+  });
+  check(limit === 'Past the build limit (16 levels up or down)', `the ghost names the build limit (${limit})`);
+  // A spawn over nothing (up on Level 1, the ground 4 m below): a warning, not a refusal.
+  await page.evaluate(() => {
+    window.__editor.setTool({ kind: 'spawn' });
+    window.__editor.setLevel(1);
+  });
+  await settle();
+  const off = await at(32, 4, -16);
+  await page.mouse.move(off.x, off.y);
+  await settle();
+  const spawnWhy = await page.evaluate(() => ({ text: document.getElementById('ed-tip').textContent, shown: !document.getElementById('ed-tip').hidden, onTerrain: window.__editor.hoverOnTerrain }));
+  check(!spawnWhy.onTerrain && spawnWhy.shown && spawnWhy.text.includes('No floor under it'), `a spawn over nothing says "No floor under it" (${JSON.stringify(spawnWhy)})`);
+  await shot('spawn-why');
+  await page.evaluate(() => {
+    window.__editor.setTool({ kind: 'select' });
+    window.__editor.setLevel(0);
+  });
+
+  // The live budget bar: Props goes up by one with a prop and back with undo.
+  const bar = () =>
+    page.evaluate(() => {
+      const el = document.getElementById('ed-budget');
+      const row = (id) => document.querySelector(`#ed-budget-rows [data-budget="${id}"]`)?.closest('.ed-budget-row');
+      return { level: el?.dataset.level, sum: el?.querySelector('.ed-budget-sum')?.textContent ?? '', props: row('props')?.querySelector('.ed-budget-amt')?.textContent ?? '', lights: row('lights')?.querySelector('.ed-budget-amt')?.textContent ?? '', lightsWord: row('lights')?.querySelector('.ed-budget-word')?.textContent ?? '' };
+    });
+  const b0 = await bar();
+  await clickTool(page, '[data-tool="prop:prop.barrel"]');
+  await clickAt(0, 0, -24);
+  await settle();
+  const b1 = await bar();
+  await page.evaluate(() => window.__editor.setTool({ kind: 'select' }));
+  await page.keyboard.press('Control+KeyZ');
+  await settle();
+  const b2 = await bar();
+  const n = (t) => Number(t.split('/')[0].replace(/[^0-9]/g, ''));
+  check(n(b1.props) === n(b0.props) + 1 && b2.props === b0.props && /Budget OK/i.test(b0.sum), `the budget bar counts a placed prop and its undo (${b0.props} → ${b1.props} → ${b2.props}; ${b0.sum})`);
+  // Near a budget: 220 of 256 lights goes amber, names Lights, and clicking the name selects them.
+  await page.evaluate(() => {
+    const ed = window.__editor;
+    const lights = Array.from({ length: 220 }, (_, i) => ({ id: `light_e2e_${i}`, kind: 'light', position: [(i % 20) * 2 - 20, 3, Math.floor(i / 20) * 2 - 30], yaw: 0, color: '#ffd9a0', intensity: 1, range: 6, fixture: 'ceiling' }));
+    ed.history.execute('Lights', { kind: 'addEntities', entities: lights });
+  });
+  await settle();
+  const near = await bar();
+  await page.click('#ed-budget-toggle');
+  await settle();
+  await shot('budget-near');
+  await page.click('#ed-budget .ed-budget-sum [data-budget="lights"]');
+  await settle();
+  const selected = await page.evaluate(() => window.__editor.selection.entities.filter((id) => id.startsWith('light_e2e_')).length);
+  check(near.level === 'near' && /Near:\s*Lights/.test(near.sum) && near.lightsWord === 'Near' && selected === 220, `220 lights: the bar goes amber with its word, names Lights, and selects them (${near.sum}; ${selected} selected)`);
+  await page.click('#ed-budget-toggle');
+  await page.evaluate(() => window.__editor.setSelection({ tiles: [], entities: [] }));
+  await page.keyboard.press('Control+KeyZ');
+  await settle();
+  check((await bar()).level === 'ok', 'undo takes the bar back to OK');
+
+  // `?`: every key, grouped, from the key table; Esc and `?` close it; so does the tool bar's Keys button open it.
+  await page.mouse.move(5, 400);
+  await page.keyboard.press('Shift+Slash');
+  await settle();
+  const keys = await page.evaluate(() => ({ open: document.getElementById('ed-keys')?.open, rows: [...document.querySelectorAll('#ed-keys .ed-keys-row dt')].map((d) => d.textContent), groups: [...document.querySelectorAll('#ed-keys h3')].map((h) => h.textContent) }));
+  const has = (k) => keys.rows.includes(k);
+  check(keys.open && has('R') && has('Ctrl+Z') && ['V', 'P', 'X', 'B', 'O', 'T', 'G', 'N', 'U', 'Esc'].every(has) && keys.groups.includes('Tools'), `? opens the key list with R, Ctrl+Z and the tool keys (${keys.rows.length} rows; ${keys.groups.join(', ')})`);
+  await shot('keys');
+  await page.keyboard.press('Escape');
+  await settle();
+  const afterEsc = await page.evaluate(() => ({ open: document.getElementById('ed-keys')?.open, tool: window.__editor.tool.kind }));
+  await page.click('#ed-tb-keys');
+  await settle();
+  const byButton = await page.evaluate(() => document.getElementById('ed-keys')?.open);
+  await page.keyboard.press('Shift+Slash');
+  await settle();
+  const afterQ = await page.evaluate(() => document.getElementById('ed-keys')?.open);
+  check(!afterEsc.open && byButton && !afterQ, `Esc closes it, the Keys button opens it, ? closes it (${JSON.stringify({ afterEsc, byButton, afterQ })})`);
+  // / still searches the palette.
+  await page.keyboard.press('Slash');
+  check(await page.evaluate(() => document.activeElement?.id === 'ed-search'), '/ still searches the palette');
+  await page.evaluate(() => document.activeElement?.blur());
 }
 
 /**
@@ -1166,7 +1519,7 @@ async function editorSetPieceChecks(browser) {
   // Red where it can't go, with the reason, and a click there places nothing.
   await hover(16, 0, 8.5);
   const red = await ghost();
-  check(red && !red.ok && /tone-bad/.test(red.tip) && /overlaps the Carriageway set piece/.test(red.tipText) && /can't go here/.test(await page.textContent('#ed-target')), `over another piece the ghost is red and says why (${red?.reason})`);
+  check(red && !red.ok && /tone-bad/.test(red.tip) && /overlaps the Carriageway set piece/i.test(red.tipText) && /can't go here/.test(await page.textContent('#ed-target')), `over another piece the ghost is red and says why (${red?.reason})`);
   await shot('ghost-red');
   await page.mouse.click((await at(16, 0, 8.5)).x, (await at(16, 0, 8.5)).y);
   check((await doc()).setPieces.length === 1 && /Can't place Carriageway/.test(await page.textContent('#ed-toast')), 'a click there places nothing and says why');

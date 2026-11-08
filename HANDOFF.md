@@ -47,6 +47,33 @@ The workflow is unchanged (CLAUDE.md):
 - give agents their own port ranges (4950-4959, 4970-4979, 4980-4989);
 - tell agents a CI failure in `attest-build-provenance` (a transparency-log 500 or 404) is GitHub's signing service: re-run the failed job.
 
+**Working in tandem (owner, 2026-11-08): two sessions land on main in parallel.** Both follow this.
+- **Claim before you edit shared ground.** Add a line here ("Claimed: <what>, <session>, <date>") before touching
+  `packages/client/src/editor/**`, `packages/shared/src/editor/**`, the map schema or `MAP_FORMAT_VERSION`
+  (`shared/src/map/mapKeys.ts`), palette or content ids, or any `maps/<id>.json`; remove it when you land. If the
+  other session holds a claim, wait or ask the owner. The MapMaker lane owns the editor code and the maps it builds
+  (sandfall_colosseum, whiteout_station, MAP 02, MAP 04); the other session owns Iron Coast, race removal and
+  Environment Phase 2 until each lands.
+- **Map format bumps:** one at a time, claimed here. Whoever lands second takes the next number and chains its
+  migration after the first one's.
+- **Generated files** (content locks and tables, palette atlases, provenance, `maps/test_coverage.json`,
+  `e2e/timings.json`): on a merge conflict, take either side and regenerate with the repo's tools
+  (`pnpm content:rebuild` and the rest); never hand-merge them.
+- **HANDOFF.md and CHANGELOG.md** merge with `merge=union` (.gitattributes): both sides' lines are kept. After a
+  merge, read the touched section once and fix the order.
+- **Hot shared files** (`e2e/run.mjs`, `e2e/flowMap.mjs`, `match.ts`, `session.ts`, `style.css`): keep changes small
+  and in their own functions or blocks; merge origin/main before every push to a check/ branch.
+- **Landing:** merge origin/main, push to check/, land only that green commit by fast-forward. Never force-push,
+  rebase pushed commits, or push to the other session's branches. If main moved, merge and re-check.
+- **Releases:** a session cutting a release says so here first; the other holds its pushes to main until it lands.
+- **Disk:** each session's container is its own; remove a worktree once its branch has landed.
+
+- Claimed: `packages/client/src/editor/**` and `packages/shared/src/editor/**` (Phase 3 part A, set pieces part 5), MapMaker lane, 2026-11-08.
+- Claimed: the next `MAP_FORMAT_VERSION` bump (the card-shot camera, `wip/mapmaker-p3a`), MapMaker lane, 2026-11-08.
+- Claimed: `maps/sandfall_colosseum.json` (rebuild), `maps/step_temple.json` and `maps/shingle_point.json` (card camera only), MapMaker lane, 2026-11-08.
+- Claimed: the map schema's backdrop Scenery list (a new value `volcano`, no format bump; `wip/mapmaker-sandfall`), MapMaker lane, 2026-11-08.
+- Claimed: `content/setpieces/**` and the set-piece alias table (set pieces part 5), MapMaker lane, 2026-11-08.
+
 **In flight: MapMaker overhaul (other account)** (owner, 2026-11-08: a second session owns this lane;
 docs/MAPMAKER_OVERHAUL_PLAN.md). Branches `wip/mapmaker-*` / `check/mapmaker-*` only.
 - **Now:** Phase 1 (the ghost says why, the live budget bar, the `?` overlay; the measure tool, props snap to surfaces with
@@ -71,6 +98,15 @@ docs/MAPMAKER_OVERHAUL_PLAN.md). Branches `wip/mapmaker-*` / `check/mapmaker-*` 
   MAP 02 The Spillway and MAP 04 Verdant Protocol (docs/map-briefs/). Build with MapMaker only, using our generated
   foliage (no Kenney trees, bushes, flowers or grass anywhere; owner 2026-11-08). The full pass over every map comes
   after all of this, one map at a time, judging whether each map needs it.
+
+**MapMaker Phase 1, part A** (`wip/mapmaker-p1a`, other account; docs/MAPMAKER_OVERHAUL_PLAN.md "As built" under
+Phase 1 items 1, 2, 5): the ghost says why, the live budget bar, the `?` key list.
+- **Owner's calls, built the conservative way:** (1) entities over nothing or outside the boundary are warned beside
+  the pointer, not refused; (2) the draw estimate (a draw per different untinted prop model, tinted prop, species
+  variant and liquid, budget 136 = 80 + 24 + 32); (3) Shift+/ (`?`) now opens the key list instead of searching.
+- **Pitfall:** new MapMaker keys go in `EDITOR_KEYS` (shared/src/editor/keymap.ts) with a `keyActions` entry in
+  editorApp.ts; `keymap.test.ts` fails on a `case 'KeyX':` matched by hand or a held-key list (`['AltLeft', …]`)
+  written in editorApp.ts. Phase 1B's U and Esc order are folded in.
 
 **In flight at the switch** (each branch pushed, tree clean; scratchpad files did not survive the switch):
 1. **Friendly fire** (`wip/friendly-fire` @ 318023ed). Green at 1a347140 (run 42408271804, with its new e2e check).
@@ -360,6 +396,19 @@ gets overloaded above that: local e2e times out and flakes). Prune landed worktr
   2. After the leader's respawn, a squad on Follow me or Attack that regroups on them, while one on Hold here, Go there
      or Defend the objective keeps its post. Keep that?
   3. The party preset (Part 3) and the squad HUD (Part 2) are next.
+
+### MapMaker overhaul: measure, props on surfaces, Randomise, turning by mouse (`wip/mapmaker-p1b`, agent, 2026-11-08; Phase 1 items 3-4 and Phase 3 item 9)
+- **Built:** the measure tool (U), props dropped onto the surface under the pointer, Randomise in the prop tool, the
+  rotate ring on the selection gizmo and the inspector's quick facings. As built: docs/MAPMAKER_OVERHAUL_PLAN.md under
+  each item; how-to: BUILDING_KIT.md, "Measuring and placing props (MapMaker)".
+- **Where:** shared `editor/{raycast,surfaceSnap,measure,propRandom,turnRing}.ts` (unit tests `mapmakerTools.test.ts`;
+  `raycastBoxes` moved here from the client); client `editor/{measureTool,propPlaceOptions,surfaceBoxes,rotateRing,
+  quickFacings}.ts`, wired into `editorApp.ts` with a few lines each; e2e `editorMeasureChecks` and `editorTurnChecks`
+  in `editorux`.
+- **Keys:** only U (measure) is new, one `case 'KeyU'` in the keydown switch; fold it into `wip/mapmaker-p1a`'s key
+  table (`keymap.ts`) when both are on main. Esc now also cancels a ring drag and clears a measurement (in that order,
+  before the old Esc).
+- **Not stored:** no map field, no format bump. Randomise's settings live for the session only.
 
 ### Ammo Boxes by the tank routes (`wip/ammo-boxes`, agent, 2026-11-08; owner-approved follow-up to Tanks 2 item 2)
 

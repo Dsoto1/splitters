@@ -14,15 +14,27 @@ import {
   withPathsLaid,
   addSpawnCommand,
   buildMapGeometry,
-  checkPlacement,
+  tileGhostCheck,
+  checkNote,
+  entityGhostNote,
+  zoneNote as zoneGhostNote,
+  type GhostNote,
+  type GhostEntityKind,
+  type PlacementCheck,
+  BudgetTracker,
+  budgetCulprits,
+  FLY_KEYS,
+  FLY_PAUSE_KEYS,
+  FREE_PLACE_KEYS,
+  FREE_MEASURE_KEYS,
+  matchEditorKey,
+  type KeyAction,
   BUILD_LEVELS,
   buildZone,
   levelName,
   placeTileCommand,
   setUpperFloorsCommand,
   upperFloorLevels,
-  upperFloorAt,
-  isBareFloor,
   coreCatalog,
   deleteCommand,
   duplicateCommand,
@@ -264,6 +276,14 @@ import {
   type SetPiecePlacement,
   type SetPieceRole,
   type SetPieceExpansion,
+  propDrop,
+  ringStep,
+  setFacingCommand,
+  snapMeasurePoint,
+  turnByCommand,
+  turnLabel,
+  type MeasurePoint,
+  surfaceHit,
 } from '@tiletrigger/shared';
 import { MAP_INDEX, isBuiltInMap, loadBuiltInMap } from '../mapIndex.ts';
 
@@ -290,6 +310,14 @@ import {
 } from './storage.ts';
 import { tileIcon } from './tileIcon.ts';
 import { raycastBoxes, type BoxHit } from './raycast.ts';
+import { BudgetBar } from './budgetBar.ts';
+import { KeyOverlay } from './keyOverlay.ts';
+import { MeasureTool } from './measureTool.ts';
+import { RotateRing } from './rotateRing.ts';
+import { quickFacings } from './quickFacings.ts';
+import { PropPlaceOptions } from './propPlaceOptions.ts';
+import { SurfaceBoxes } from './surfaceBoxes.ts';
+import { testMode } from '../testMode.ts';
 import { materialThumbnail } from '../materials/patterns.ts';
 import { itemColor } from '../game/pickupVisuals.ts';
 import { LogicPanel } from './logicPanel.ts';
@@ -377,7 +405,7 @@ function starterMap(size: number | null, ground: TerrainMaterial): MapDocument {
   return size ? { ...doc, terrain: { ...newTerrain(size, 2, [0, 0], ground), baseY: -0.15 } } : doc;
 }
 
-type Tool = { kind: 'select' } | { kind: 'erase' } | { kind: 'npc'; key: string } | { kind: 'tile'; tile: string } | { kind: 'setpiece'; piece: string } | { kind: 'spawn' } | { kind: 'pickup'; item: string } | { kind: 'scenario'; key: ScenarioPaletteKey } | { kind: 'paint' } | { kind: 'edge'; style: EdgeStyle } | { kind: 'prop'; model: string } | { kind: 'terrain' } | { kind: 'mount'; model: MountModel } | { kind: 'scatter'; set: ScatterSetId } | { kind: 'path' } | { kind: 'route' };
+type Tool = { kind: 'select' } | { kind: 'erase' } | { kind: 'npc'; key: string } | { kind: 'tile'; tile: string } | { kind: 'setpiece'; piece: string } | { kind: 'spawn' } | { kind: 'pickup'; item: string } | { kind: 'scenario'; key: ScenarioPaletteKey } | { kind: 'paint' } | { kind: 'edge'; style: EdgeStyle } | { kind: 'prop'; model: string } | { kind: 'terrain' } | { kind: 'mount'; model: MountModel } | { kind: 'scatter'; set: ScatterSetId } | { kind: 'path' } | { kind: 'route' } | { kind: 'measure' };
 
 /** What the pointer can pick: a tile, an entity, or a set piece (any of its parts picks the whole placement). */
 type Hit = { kind: 'tile' | 'entity' | 'setpiece'; id: string };
@@ -546,6 +574,7 @@ const TOOL_ICONS: Record<string, string> = {
   paint: '<path d="M4 15.5l8.5-8.5 5 5-8.5 8.5H4z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M13.5 6l2.5-2.5 5 5L18.5 11" fill="none" stroke="currentColor" stroke-width="2"/>',
   edge: '<path d="M3 5h18v14H3zM3 9.7h18M3 14.3h18M9 5v4.7M15 5v4.7M6 9.7v4.6M12 9.7v4.6M18 9.7v4.6M9 14.3V19M15 14.3V19" fill="none" stroke="currentColor" stroke-width="1.7"/>',
   terrain: '<path d="M2.5 19l6-10 4 6 2.5-3.5 6.5 7.5z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="17" cy="6" r="2" fill="currentColor"/>',
+  measure: '<path d="M3.5 15.5l12-12 5 5-12 12z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M7.5 11.5l2 2M10 9l1.5 1.5M12.5 6.5l2 2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>',
   delete: '<path d="M5 7h14M10 7V4.5h4V7M7 7l1 13h8l1-13" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M10.5 10.5v6M13.5 10.5v6" stroke="currentColor" stroke-width="1.6"/>',
 };
 
@@ -646,7 +675,7 @@ export class EditorApp {
   private pieceMirror = false;
   private pieceLook = '';
   /** What the set piece tool's ghost shows now: the placement it would make, whether it fits (and why not), its ports. */
-  private pieceHover: { def: SetPieceDefinition; placement: SetPiecePlacement; ok: boolean; reason: string; blocked: number } | null = null;
+  private pieceHover: { def: SetPieceDefinition; placement: SetPiecePlacement; ok: boolean; reason: string; short: string; blocked: number } | null = null;
   /** Box select (Select tool, drag on empty ground): the rectangle on screen. */
   private marquee: { x0: number; y0: number; x1: number; y1: number; add: boolean; moved: boolean } | null = null;
   /** Facing for the next prop placed. */
@@ -667,6 +696,17 @@ export class EditorApp {
   private readonly paths: PathTool;
   /** Mover and plane routes, drawn on the map with the Paths tool's hands. */
   private readonly routes: RouteTool;
+  /** The live budget bar and its counters (MapMaker overhaul Phase 1 item 2). */
+  private readonly budgets: BudgetTracker;
+  private readonly budgetBar: BudgetBar;
+  /** The measure tool (U): its points and labels, editor-only. */
+  private readonly measure: MeasureTool;
+  /** The prop tool's placing options: Randomise. */
+  private readonly propOpts: PropPlaceOptions;
+  /** What props and the measure tool land on, per document version and view. */
+  private readonly surfaces = new SurfaceBoxes();
+  /** The rotate ring on the selection gizmo: drag to turn (MapMaker overhaul Phase 3 item 9). */
+  private readonly ring: RotateRing;
   private level = 0;
   private showAll = false;
   /** The last placing tool, so the toolbar's Place button can pick it up again. */
@@ -682,7 +722,7 @@ export class EditorApp {
 
   /** One placement rule for every kind: hold Ctrl (or Shift) to place without snapping. */
   private freePlacing(): boolean {
-    return ['ControlLeft', 'ControlRight', 'MetaLeft', 'ShiftLeft', 'ShiftRight'].some((k) => this.keys.has(k));
+    return FREE_PLACE_KEYS.some((k) => this.keys.has(k));
   }
   /** Last pointer position over the view, for the hover card. */
   private pointerAt: { x: number; y: number } | null = null;
@@ -749,12 +789,37 @@ export class EditorApp {
       pointer: () => this.pointerAt,
     });
     this.routes = new RouteTool({ doc: () => this.doc, run: (label, cmd) => this.run(label, cmd), toast: (t, bad) => this.toast(t, bad), scene: this.view.scene });
+    this.measure = new MeasureTool({ scene: this.view.scene, project: (p) => this.view.projectInView(p), overlay: $('editor') });
+    this.ring = new RotateRing(
+      {
+        center: () => (this.selCount() ? this.selectionCenter() : null),
+        radius: () => this.ringRadius(),
+        step: (fine) => ringStep(this.doc, this.selection, fine),
+        project: (p) => this.view.projectInView(p),
+        onPlane: (y) => (this.pointerAt ? this.view.pickPlane(this.pointerAt.x, this.pointerAt.y, y) : null),
+        preview: (turn) => this.previewTurn(turn),
+        commit: (turn) => this.run(`Turn ${turnLabel(turn)}`, turnByCommand(this.doc, this.selection, turn, coreCatalog, this.placeLib)),
+        draw: (r) => this.view.setRing(r ? this.selectionCenter() : null, r),
+      },
+      $('editor'),
+    );
+    this.propOpts = new PropPlaceOptions(testMode()?.seed ?? Math.floor(Math.random() * 2 ** 31), () => this.updateHover());
     // The top bar steps through its compact layouts until it fits, whenever its width or contents change.
     const top = $('ed-top');
     new ResizeObserver(() => fitTopBar(top)).observe(top);
     new MutationObserver(() => fitTopBar(top)).observe($('ed-status'), { childList: true, characterData: true, subtree: true });
     void document.fonts?.ready.then(() => fitTopBar(top));
     this.history = new EditHistory(starterMap(STARTER_TERRAIN, 'grass'));
+    // The live budget bar: counters kept from each edit (budgetCounters.ts), drawn when the document changes.
+    this.budgets = new BudgetTracker(this.history.doc, this.setPieceLib);
+    this.history.onChange = (c) => (c.reset ? this.budgets.reset(c.reset) : this.budgets.apply(c.command, c.doc));
+    this.budgetBar = new BudgetBar($('editor'), (id, row) => {
+      const ids = budgetCulprits(this.doc, id);
+      if (!ids.length) return this.toast(`Nothing to select for ${row.label.toLowerCase()}${this.doc.setPieces?.length ? ' (set pieces count as their parts: select the set pieces themselves)' : ''}`, true);
+      this.setTool({ kind: 'select' });
+      this.setSelection({ tiles: [], entities: ids });
+      this.toast(`Selected ${ids.length} counted as ${row.label.toLowerCase()} (${row.what})`);
+    });
     this.logic = new LogicPanel({
       doc: () => this.doc,
       commit: (label, after) => this.run(label, { kind: 'setLogic', before: this.doc.logic, after }),
@@ -937,16 +1002,18 @@ export class EditorApp {
   frame(dt: number): void {
     if (!this.active) return;
     const typing = isTyping();
-    if (!typing && !this.keys.has('ControlLeft') && !this.keys.has('ControlRight') && !this.keys.has('MetaLeft')) {
+    // The fly camera's held keys come from the key table (keymap.ts), as the `?` overlay lists them.
+    if (!typing && !FLY_PAUSE_KEYS.some((c) => this.keys.has(c))) {
       const k = (c: string) => (this.keys.has(c) ? 1 : 0);
-      const speed = FLY_SPEED * (this.keys.has('ShiftLeft') ? 3 : 1) * dt;
-      const f = k('KeyW') - k('KeyS');
-      const r = k('KeyD') - k('KeyA');
-      const u = k('KeyE') - k('KeyQ');
+      const speed = FLY_SPEED * (this.keys.has(FLY_KEYS.fast) ? 3 : 1) * dt;
+      const f = k(FLY_KEYS.forward) - k(FLY_KEYS.back);
+      const r = k(FLY_KEYS.right) - k(FLY_KEYS.left);
+      const u = k(FLY_KEYS.up) - k(FLY_KEYS.down);
       if (f || r || u) this.view.fly(f * speed, r * speed, u * speed);
     }
     if (this.stroke) this.strokeStep(dt);
     this.refresh(false);
+    this.measure.frame();
     this.view.render();
   }
 
@@ -976,6 +1043,7 @@ export class EditorApp {
       this.updateSelectionVisuals();
       this.syncToolbar();
       this.validate();
+      this.budgetBar.update(this.budgets.counts);
       this.renderInspector();
       this.updateTopBar();
       this.updateHover();
@@ -1070,10 +1138,12 @@ export class EditorApp {
     const pane: Partial<Record<Tool['kind'], string>> = { paint: 'paint', edge: 'advanced', terrain: 'terrain' };
     this.paths.setActive(tool.kind === 'path');
     this.routes.setActive(tool.kind === 'route');
+    this.measure.setActive(tool.kind === 'measure');
     // The pane holding the tool's card (props sit in Props, Nature or Vehicles; scenario pieces in several tabs).
     const card = document.querySelector<HTMLElement>(`#ed-palette .ed-pane [data-tool="${CSS.escape(toolKey(tool))}"]`);
     const at = card?.closest<HTMLElement>('.ed-pane')?.dataset.pane ?? pane[tool.kind];
     if (at) this.showPane(at);
+    if (tool.kind === 'prop') this.propOpts.mount(card?.closest('.ed-pane') ?? null);
     if (tool.kind !== 'terrain') {
       this.terrainHover = null;
       this.view.setBrushRing(null, 0, 0, 0);
@@ -1102,7 +1172,7 @@ export class EditorApp {
     $('ed-tb-place-what').textContent = this.lastPlace ? this.toolName(this.lastPlace) : '';
     const hints: Record<Tool['kind'], [string, string]> = {
       // One line per tool, in the same order: left-click · right-click (takes back what the tool does) · R · modifiers.
-      select: ['Select', 'Click picks · right-click: menu · drag moves · R turns (Shift+R a little) · Shift+click adds · Alt+click one piece of a build · Del deletes'],
+      select: ['Select', 'Click picks · right-click: menu · drag moves · R turns (Shift+R a little), or drag the ring round it · Shift+click adds · Alt+click one piece of a build · Del deletes'],
       erase: ['Erase', 'Click or drag deletes what is outlined in red (a whole moving build; Alt: one piece) · Ctrl+Z brings it back'],
       tile: ['Place', 'Click places the green piece · right-click removes a tile · R turns it 90° · PgUp/PgDn level'],
       setpiece: ['Place', 'Click places the set piece where it shows green (red says why not) · right-click removes a set piece · R turns it 90° · M mirrors it · PgUp/PgDn level'],
@@ -1112,12 +1182,13 @@ export class EditorApp {
       npc: ['Place', 'Click drops the NPCs here · right-click removes them · R turns them 90° (Shift+R 15°) · soldiers, faction and orders in the inspector'],
       paint: ['Paint', 'Click or drag paints surfaces and the ground (terrain) · right-click (Shift+drag) resets them to the theme · Alt+click or I picks a style up'],
       edge: ['Walls', 'Click or drag along wall and floor edges to build them this way · right-click (Shift+drag) resets them · O cycles the style'],
-      prop: ['Place', 'Click places the prop (Ctrl: no snap) · right-click removes a prop · R turns it 15° (Shift+R 5°)'],
+      prop: ['Place', 'Click places the prop on what is under the pointer: a tabletop, a roof, the ground (Ctrl: no snap) · right-click removes a prop · R turns it 15° (Shift+R 5°) · Randomise in the Props tab'],
       mount: ['Place', 'Click places it · right-click removes a vehicle · R turns it 15° (Shift+R 5°) · players get in and out with E'],
       terrain: ['Terrain', 'Hold to sculpt or paint · Shift: the opposite (lower / raise) · [ ] brush size · T cycles brushes'],
       scatter: ['Place', 'Click or drag plants patches · right-click (Shift+drag) clears that kind of plant · [ ] brush size'],
       path: ['Paths', 'Click adds a point after the selected one (two clicks start a path) · click the first point with the last selected to join the ends · right-click or Del removes one · drag a point to move it · Shift+click a path inserts one · click another path to edit it'],
       route: ['Route', 'Click adds a point after the selected one · right-click or Del removes one · drag a point to move it · Shift+click a stretch inserts one · Esc when done'],
+      measure: ['Measure', "Click two points: distance, height and slope · a third click chains a path with its total · snaps to the grid, surfaces and objects' tops (Ctrl or Alt: no snap) · right-click takes a point back · Esc clears"],
     };
     // A zipline's ends go where you click (the Route tool's hands, two points only).
     if (tool.kind === 'route' && this.routes.label === 'zipline end') hints.route = ['Zipline ends', 'Click the ground or a platform to put the far end there (click the start first to move that) · drag either end · Esc when done'];
@@ -1126,7 +1197,7 @@ export class EditorApp {
     const hintEl = $('ed-toolhint');
     hintEl.className = `tool-${tool.kind === 'erase' ? 'erase' : PLACING.has(tool.kind) ? 'place' : 'other'}`;
     hintEl.innerHTML = `<b>${escapeHtml(name + what)}</b> ${escapeHtml(hint)}`;
-    $('ed-hint').textContent = 'Right-drag look · WASD/QE fly · wheel zoom · V select · P place · X erase · B paint · O walls · T terrain · N scatter · G paths · Esc: Select tool';
+    $('ed-hint').textContent = 'Right-drag look · WASD/QE fly · wheel zoom · V select · P place · X erase · B paint · O walls · T terrain · N scatter · G paths · U measure · Esc: Select tool · ? every key';
     this.updateHover();
   }
 
@@ -1167,6 +1238,54 @@ export class EditorApp {
     this.view.setOutlines(this.doc, this.selection.tiles, offset, bad, this.selectedPieceOutlines());
     this.view.setEntities(this.viewDoc, this.level, this.showAll, new Set(this.selection.entities));
     this.view.setGizmo(offset ? null : this.selectionCenter());
+    if (offset) this.view.setRing(null, null);
+    else this.ring.redraw();
+  }
+
+  /** The rotate ring's radius: clear of what is selected (its cells, the props' size), never under 2.2 m. */
+  private ringRadius(): number {
+    const c = this.selectionCenter();
+    if (!c) return 2.2;
+    const { cellSize } = this.doc.classicStructure;
+    let r = 0;
+    const reach = (x: number, z: number, half: number) => (r = Math.max(r, Math.hypot(x - c.x, z - c.z) + half));
+    const tiles = new Set(this.selection.tiles);
+    const ents = new Set(this.selection.entities);
+    for (const t of this.doc.classicStructure.tiles) if (tiles.has(t.id)) reach(t.x * cellSize, t.y * cellSize, cellSize * 0.71);
+    for (const e of this.doc.entities) {
+      if (!ents.has(e.id)) continue;
+      const size = e.kind === 'prop' ? (getProp(e.model)?.size ?? [1, 1, 1]).map((v) => v * e.scale) : 'size' in e && Array.isArray(e.size) ? e.size : [1, 1, 1];
+      reach(e.position[0], e.position[2], Math.hypot(size[0]!, size[2]!) / 2);
+    }
+    for (const id of this.selPieces()) {
+      const p = this.placementOf(id);
+      const def = p && this.pieceDef(p.piece);
+      if (p && def) for (const cell of setPieceFootprint(p, def)) reach(cell[0] * cellSize, cell[1] * cellSize, cellSize * 0.71);
+    }
+    return Math.max(2.2, r + 0.6);
+  }
+
+  /** The rotate ring's drag: the selection shown turned by `turn` (tiles and set pieces outlined where they'd land, red where they can't), or as it is. */
+  private previewTurn(turn: number | null): void {
+    if (turn === null) {
+      this.view.setOutlines(this.doc, this.selection.tiles, undefined, false, this.selectedPieceOutlines());
+      this.view.setEntities(this.viewDoc, this.level, this.showAll, new Set(this.selection.entities));
+      return;
+    }
+    const cmd = turnByCommand(this.doc, this.selection, turn, coreCatalog, this.placeLib);
+    if ('error' in cmd) {
+      this.view.setOutlines(this.doc, this.selection.tiles, undefined, true, this.selectedPieceOutlines());
+      return;
+    }
+    const after = applyCommand(this.doc, cmd);
+    const pieces = this.selPieces().flatMap((id) => {
+      const p = (after.setPieces ?? []).find((x) => x.id === id);
+      const o = p && this.pieceOutline(p);
+      return o ? [o] : [];
+    });
+    this.view.setOutlines(after, this.selection.tiles, undefined, false, pieces);
+    const ents = cmd.kind === 'batch' ? cmd.commands.find((c) => c.kind === 'updateEntities') : cmd.kind === 'updateEntities' ? cmd : undefined;
+    if (ents && this.selection.entities.length) this.view.setEntities(applyCommand(this.viewDoc, ents), this.level, this.showAll, new Set(this.selection.entities));
   }
 
   /** The selected set pieces' footprints and ports (a port facing a wall flagged). */
@@ -1284,10 +1403,14 @@ export class EditorApp {
       const name = getItem(this.tool.item)?.displayName ?? 'pickup';
       if (this.run(`Place ${name}`, { kind: 'addEntities', entities: [{ id, kind: 'pickup', position: p, item: this.tool.item, respawnSeconds: null }] })) this.setSelection({ tiles: [], entities: [id] });
     } else if (this.tool.kind === 'prop' && this.hoverPoint) {
-      const p = this.propSpot(this.tool.model)!;
+      // Where the ghost shows it: on the surface under the pointer, with Randomise's next turn, size and variant.
+      const { at: p, yaw, scale, variant } = this.propPlacement(this.tool.model);
       const id = newId('prop');
       const name = getProp(this.tool.model)?.displayName ?? 'prop';
-      if (this.run(`Place ${name}`, { kind: 'addEntities', entities: [{ id, kind: 'prop', position: p, model: this.tool.model, yaw: this.propYaw, scale: 1, solid: true, tint: null }] })) this.setSelection({ tiles: [], entities: [id] });
+      if (this.run(`Place ${name}`, { kind: 'addEntities', entities: [{ id, kind: 'prop', position: p!, model: this.tool.model, yaw, scale, solid: true, tint: null, ...(variant !== undefined ? { variant } : {}) }] })) {
+        this.propOpts.placed();
+        this.setSelection({ tiles: [], entities: [id] });
+      }
     } else if (this.tool.kind === 'mount' && this.hoverPoint) {
       const p = this.placeSpot()!;
       const id = newId('mount');
@@ -1443,6 +1566,9 @@ export class EditorApp {
         return this.paths.erase(this.hoverPoint);
       case 'route':
         return this.routes.erase(this.hoverPoint);
+      case 'measure':
+        this.measure.back();
+        return this.updateHover();
       case 'terrain':
         return this.toast('Terrain: Shift-drag does the opposite (lower, or raise)');
       case 'erase':
@@ -1762,13 +1888,55 @@ export class EditorApp {
     return [snap(h.x, this.snapStep(step)), y, snap(h.z, this.snapStep(step))];
   }
 
-  /** Where a prop of `model` goes under the pointer (snapped; Ctrl or Shift for free placement; bedded into terrain). */
-  private propSpot(model: string): [number, number, number] | null {
+  /** The prop tool's next placement of `model`: where (propSpot) and, with Randomise, its turn, size and variant. */
+  private propPlacement(model: string): { at: [number, number, number] | null; yaw: number; scale: number; variant?: number } {
+    const roll = this.propOpts.next(model, this.propYaw);
+    return { at: this.propSpot(model, roll.yaw, roll.scale), yaw: roll.yaw, scale: roll.scale, ...(roll.variant !== undefined ? { variant: roll.variant } : {}) };
+  }
+
+  /**
+   * Where a prop of `model` goes under the pointer: on whatever the pointer is over (a tabletop, a roof, a ledge, the
+   * ground: surfaceSnap's propDrop against the map as drawn and the ground as shown), its x and z snapped (Ctrl or
+   * Shift: free). On the ground it is bedded into the document's own ground (the view re-beds it on the ground as
+   * shown). Over nothing, on the level being edited, as before.
+   */
+  private propSpot(model: string, yaw = this.propYaw, scale = 1): [number, number, number] | null {
     if (!this.hoverPoint) return null;
     const free = this.freePlacing();
-    const p: [number, number, number] = [free ? Math.round(this.hoverPoint.x * 100) / 100 : snap(this.hoverPoint.x, this.snapStep(0.25)), this.level * this.doc.classicStructure.levelHeight, free ? Math.round(this.hoverPoint.z * 100) / 100 : snap(this.hoverPoint.z, this.snapStep(0.25))];
-    if (this.hoverOnTerrain && this.doc.terrain) p[1] = settledPropY(this.doc.terrain, { model, position: p, yaw: this.propYaw, scale: 1 }) ?? p[1];
+    const step = this.snapStep(0.25);
+    const snapXZ = (v: number) => (free ? Math.round(v * 100) / 100 : snap(v, step));
+    const ray = this.ray;
+    const def = getProp(model);
+    const drop = ray ? propDrop(ray.origin, ray.dir, this.surfaceBoxes(), this.shownGround, { model, yaw, scale, ...(def ? { size: def.size } : {}) }, snapXZ) : null;
+    // On an upper level, the level's own plane where it is nearer (placing over open air up there, as before).
+    const plane = this.level > 0 && !this.hoverOnTerrain && ray ? Math.hypot(this.hoverPoint.x - ray.origin.x, this.hoverPoint.y - ray.origin.y, this.hoverPoint.z - ray.origin.z) : Infinity;
+    if (drop && drop.hit.distance <= plane) {
+      const p = drop.position;
+      if (drop.on === 'ground' && this.doc.terrain) p[1] = settledPropY(this.doc.terrain, { model, position: p, yaw, scale }) ?? p[1];
+      return p;
+    }
+    const p: [number, number, number] = [snapXZ(this.hoverPoint.x), this.level * this.doc.classicStructure.levelHeight, snapXZ(this.hoverPoint.z)];
+    if (this.hoverOnTerrain && this.doc.terrain) p[1] = settledPropY(this.doc.terrain, { model, position: p, yaw, scale }) ?? p[1];
     return p;
+  }
+
+  /** What props and the measure tool land on: the map as drawn, with its blocks and solid props. */
+  private surfaceBoxes(): WorldBox[] {
+    return this.surfaces.get(this.viewDoc, this.visibleBoxes, this.level, this.showAll);
+  }
+
+  /** The measure tool's point under the pointer: snapped to the grid, surfaces and objects' tops (Ctrl or Alt: free). */
+  private measurePointAtHover(): MeasurePoint | null {
+    const ray = this.ray;
+    if (!ray) return null;
+    const boxes = this.surfaceBoxes();
+    const hit = surfaceHit(ray.origin, ray.dir, boxes, this.shownGround);
+    const free = FREE_MEASURE_KEYS.some((k) => this.keys.has(k));
+    if (!hit) {
+      const p = this.hoverPoint;
+      return p ? { at: { x: p.x, y: p.y, z: p.z }, snapped: 'free' } : null;
+    }
+    return snapMeasurePoint(hit, boxes, this.shownGround, this.snapStep(0.5), free, (id) => this.surfaces.objects.has(id));
   }
 
   /** Home: the starting overview of the level being edited. */
@@ -1861,6 +2029,7 @@ export class EditorApp {
     }
     this.hoverCell = this.hoverPoint ? [Math.round(this.hoverPoint.x / cellSize), Math.round(this.hoverPoint.z / cellSize), this.level] : null;
     if (this.tool.kind === 'path') this.paths.hover(this.hoverPoint);
+    if (this.tool.kind === 'measure') this.measure.setHover(this.measurePointAtHover());
     this.paintGround = null;
     if (this.tool.kind === 'paint' || this.tool.kind === 'edge') {
       const ray = this.view.pointerRay(clientX, clientY);
@@ -1900,7 +2069,7 @@ export class EditorApp {
     const at = this.pointerAt;
     const lines: string[] = [];
     /** Lines in red (why it can't be placed) or amber (a warning), by index in `lines`. */
-    const marks = new Map<number, 'bad' | 'warn'>();
+    const marks = new Map<number, 'bad' | 'warn' | 'note'>();
     let title = '';
     let tone = '';
     const themeName = coreThemes.get(this.doc.classicStructure.theme)?.displayName ?? this.doc.classicStructure.theme;
@@ -1915,16 +2084,31 @@ export class EditorApp {
         title = g.def.displayName;
         tone = g.ok ? 'place' : 'bad';
         lines.push(...this.pieceLines(g.def, g.placement), `${levelName(this.level)} · cell ${this.hoverCell[0]}, ${this.hoverCell[1]}`);
-        if (!g.ok) marks.set(lines.push(`✗ ${g.reason}`) - 1, 'bad');
+        // The ghost says why (ghostWhy.ts): a few words here, the whole reason on the status line.
+        if (!g.ok) marks.set(lines.push(`✗ ${g.short}`) - 1, 'bad');
         else if (g.blocked) marks.set(lines.push(`⚠ ${g.blocked} of its ports face${g.blocked === 1 ? 's' : ''} a wall (red): open the wall there, or place it elsewhere`) - 1, 'warn');
-        else lines.push('Click to place');
+        else {
+          const zone = this.hoverPoint && zoneGhostNote(this.doc, g.placement.x * this.doc.classicStructure.cellSize, g.placement.y * this.doc.classicStructure.cellSize);
+          if (zone) marks.set(lines.push(`ℹ ${zone.text}`) - 1, 'note');
+          lines.push('Click to place');
+        }
       } else if (this.tool.kind === 'tile' && this.hoverCell) {
         const def = coreCatalog.get(this.tool.tile);
         if (def) {
           title = def.displayName;
           lines.push(...tileLines(def, this.rotation), `${levelName(this.level)} · cell ${this.hoverCell[0]}, ${this.hoverCell[1]}`);
-          tone = 'place';
+          const check = this.tileGhost(this.tool.tile, [this.hoverCell[0], this.hoverCell[1], this.level]);
+          const why = checkNote(check) ?? zoneGhostNote(this.doc, this.hoverCell[0] * this.doc.classicStructure.cellSize, this.hoverCell[1] * this.doc.classicStructure.cellSize);
+          if (why) marks.set(lines.push(`${why.tone === 'bad' ? '✗' : 'ℹ'} ${why.text}`) - 1, why.tone === 'bad' ? 'bad' : 'note');
+          tone = check.ok ? 'place' : 'bad';
         }
+      } else if (this.entityGhost()) {
+        // Spawns, pickups, props, vehicles, NPCs and objects: shown only when there is something to say.
+        const g = this.entityGhost()!;
+        title = g.title;
+        tone = g.note.tone === 'warn' ? 'warn' : 'place';
+        marks.set(lines.push(`${g.note.tone === 'warn' ? '⚠' : 'ℹ'} ${g.note.text}`) - 1, g.note.tone === 'warn' ? 'warn' : 'note');
+        lines.push('Click to place');
       } else if (this.tool.kind === 'select' || this.tool.kind === 'erase') {
         const hit = this.pick();
         if (hit) {
@@ -1963,18 +2147,29 @@ export class EditorApp {
     // Placing tools show what they'd put down, see-through, before you click (first: every other tool hides them).
     // One ghost for every kind that has a model: where it would land, facing the way it would face.
     const t = this.tool;
-    const ghost: { kind: 'prop' | 'mount' | 'spawn' | 'pickup'; model: string; at: [number, number, number] | null; yaw: number } | null =
+    const ghost: { kind: 'prop' | 'mount' | 'spawn' | 'pickup'; model: string; at: [number, number, number] | null; yaw: number; scale?: number; variant?: number } | null =
       this.looking ? null
-      : t.kind === 'prop' ? { kind: 'prop', model: t.model, at: this.propSpot(t.model), yaw: this.propYaw }
+      : t.kind === 'prop' ? { kind: 'prop', model: t.model, ...this.propPlacement(t.model) }
       : t.kind === 'mount' ? { kind: 'mount', model: t.model, at: this.placeSpot(), yaw: this.propYaw }
       : t.kind === 'spawn' ? { kind: 'spawn', model: 'spawn', at: this.placeSpot(), yaw: this.spawnYaw }
       : t.kind === 'pickup' ? { kind: 'pickup', model: t.item, at: this.placeSpot(), yaw: 0 }
       : null;
-    this.view.setPropGhost(ghost?.model ?? null, ghost?.at ?? null, ghost?.yaw ?? 0, ghost?.kind ?? 'prop');
+    this.view.setPropGhost(ghost?.model ?? null, ghost?.at ?? null, ghost?.yaw ?? 0, ghost?.kind ?? 'prop', ghost?.scale !== undefined ? { scale: ghost.scale, ...(ghost.variant !== undefined ? { variant: ghost.variant } : {}) } : undefined);
     const objects = this.looking ? null : this.objectGhost();
     this.view.setEntityGhost(this.doc, objects?.key ?? null, objects?.entities ?? []);
     this.updatePieceGhost();
     if (this.tool.kind === 'select' || this.tool.kind === 'erase') {
+      // Select: the rotate ring round the selection lights under the pointer (and, held, turns it).
+      const onRing = this.tool.kind === 'select' && !this.drag && !this.looking && !this.marquee && (!!this.ring.drag || this.ring.hover(this.pointerAt));
+      if (onRing) {
+        this.view.setPickHighlight(this.doc, null, 'pick', this.history.revision);
+        $('ed-target').textContent = this.ring.drag ? `Turning ${turnLabel(this.ring.drag.turn)} · Shift: finer · Esc cancels` : 'Drag the ring to turn the selection (Shift: a finer step)';
+        this.view.setFaceHighlight(null, null);
+        this.view.setHoverCell(this.doc, null);
+        this.view.setGhost(this.doc, null, null, 0, true);
+        return;
+      }
+      if (this.tool.kind === 'erase' || this.drag || this.looking || this.marquee) this.ring.hover(null);
       const target = this.drag || this.looking || this.marquee ? null : this.pick();
       const cells = target?.kind === 'setpiece' ? (this.expansion.footprints.get(target.id) ?? []) : [];
       this.view.setPickHighlight(this.doc, target, this.tool.kind === 'erase' ? 'erase' : 'pick', this.history.revision, cells);
@@ -1985,6 +2180,13 @@ export class EditorApp {
       return;
     }
     this.view.setPickHighlight(this.doc, null, 'pick', 0);
+    if (this.tool.kind === 'measure') {
+      $('ed-target').textContent = this.measure.summary();
+      this.view.setFaceHighlight(null, null);
+      this.view.setHoverCell(this.doc, null);
+      this.view.setGhost(this.doc, null, null, 0, true);
+      return;
+    }
     if (this.tool.kind === 'scatter') {
       const p = this.hoverPoint;
       this.view.setBrushRing(p ? this.shownGround : null, p?.x ?? 0, p?.z ?? 0, this.brushRadius, '#6fdc6a');
@@ -2050,11 +2252,10 @@ export class EditorApp {
     const cell = this.hoverCell ? ([this.hoverCell[0], this.hoverCell[1], this.level] as [number, number, number]) : null;
     this.view.setHoverCell(this.doc, this.tool.kind === 'tile' || this.tool.kind === 'setpiece' || this.tool.kind === 'spawn' || this.tool.kind === 'pickup' || this.tool.kind === 'scenario' || this.tool.kind === 'npc' ? cell : null);
     if (this.tool.kind === 'tile' && cell) {
-      // A Platform over another piece's empty upper storey becomes its floor: that's fine too.
-      const ok =
-        checkPlacement(this.doc, [{ id: '__ghost', tile: this.tool.tile, x: cell[0], y: cell[1], z: cell[2], rotation: this.rotation }]).ok ||
-        (isBareFloor(coreCatalog.get(this.tool.tile)) && upperFloorAt(this.doc, cell[0], cell[1], cell[2])?.has === false);
-      this.view.setGhost(this.doc, this.tool.tile, cell, this.rotation, ok);
+      const check = this.tileGhost(this.tool.tile, cell);
+      // The whole reason on the status line (the note beside the pointer has it in a few words).
+      if (!check.ok) $('ed-target').textContent = check.reason.charAt(0).toUpperCase() + check.reason.slice(1);
+      this.view.setGhost(this.doc, this.tool.tile, cell, this.rotation, check.ok);
     } else {
       this.view.setGhost(this.doc, null, null, 0, true);
     }
@@ -2081,7 +2282,7 @@ export class EditorApp {
     const at = `${t.piece}:${this.rotation}:${this.pieceMirror}:${cell.join(',')}:${this.history.revision}:${this.myPiecesRev}`;
     if (this.ghostPorts?.at !== at) this.ghostPorts = { at, states: setPiecePortStates(placement, def, [...this.mapBoxes(), ...this.ownBoxes(placement, def)]) };
     const ports = this.ghostPorts.states;
-    this.pieceHover = { def, placement, ok: check.ok, reason: check.ok ? '' : check.reason, blocked: ports.filter((s) => s.blockedBy).length };
+    this.pieceHover = { def, placement, ok: check.ok, reason: check.ok ? '' : check.reason, short: check.ok ? '' : check.short, blocked: ports.filter((s) => s.blockedBy).length };
     const theme = this.doc.classicStructure.theme;
     // Built once per piece, turn, mirror and look (at the grid's origin) and moved with the pointer.
     const key = `${t.piece}:${this.rotation}:${this.pieceMirror}:${look}:${theme}:${this.myPiecesRev}`;
@@ -2094,6 +2295,44 @@ export class EditorApp {
 
   /** The ghost's ports, and the cell, turn and document version they were worked out for. */
   private ghostPorts: { at: string; states: ReturnType<typeof setPiecePortStates> } | null = null;
+
+  /**
+   * Whether the tile tool's ghost fits, and why not (ghostWhy.ts): worked out once per tile, cell, turn and document
+   * version, so moving within a cell costs nothing.
+   */
+  private tileGhost(tile: string, cell: [number, number, number]): PlacementCheck {
+    const at = `${tile}:${cell.join(',')}:${this.rotation}:${this.history.revision}`;
+    if (this.tileGhostAt?.at !== at) this.tileGhostAt = { at, check: tileGhostCheck(this.doc, tile, cell[0], cell[1], cell[2], this.rotation) };
+    return this.tileGhostAt.check;
+  }
+  private tileGhostAt: { at: string; check: PlacementCheck } | null = null;
+
+  /**
+   * The note beside the pointer for the entity tools (spawns, pickups, props, vehicles, NPCs, objects): nothing under
+   * it, outside the boundary, the scenery zone (ghostWhy.ts). Once per spot and document version.
+   */
+  private entityGhost(): { title: string; note: GhostNote } | null {
+    const t = this.tool;
+    let kind: GhostEntityKind;
+    let at: [number, number, number] | null;
+    let title: string;
+    let model = '';
+    if (t.kind === 'spawn') [kind, at, title] = ['spawn', this.placeSpot(), 'Spawn point'];
+    else if (t.kind === 'pickup') [kind, at, title] = ['pickup', this.placeSpot(), getItem(t.item)?.displayName ?? 'Pickup'];
+    else if (t.kind === 'prop') [kind, at, title, model] = ['prop', this.propSpot(t.model), getProp(t.model)?.displayName ?? 'Prop', t.model];
+    else if (t.kind === 'mount') [kind, at, title] = ['mount', this.placeSpot(), MOUNT_DEFS[t.model].displayName];
+    else if (t.kind === 'npc') [kind, at, title] = ['npc', this.placeSpot(), NPC_PALETTE.find((x) => x.key === t.key)?.label ?? 'NPC'];
+    else if (t.kind === 'scenario') [kind, at, title] = ['object', this.scenarioSpot(t.key)?.p ?? null, SCENARIO_PALETTE.find((x) => x.key === t.key)?.label ?? 'Object'];
+    else return null;
+    if (!at) return null;
+    const key = `${t.kind}:${title}:${at.join(',')}:${this.history.revision}`;
+    if (this.entityGhostAt?.key !== key) {
+      const note = entityGhostNote(this.doc, kind, at, { boxes: this.mapBoxes(), terrain: this.shownGround }, model);
+      this.entityGhostAt = { key, value: note && { title, note } };
+    }
+    return this.entityGhostAt.value;
+  }
+  private entityGhostAt: { key: string; value: { title: string; note: GhostNote } | null } | null = null;
 
   private updateDrag(): void {
     const d = this.drag;
@@ -2197,6 +2436,11 @@ export class EditorApp {
         else this.view.fly(0, -dx * 0.05, dy * 0.05);
         return;
       }
+      if (this.ring.drag) {
+        this.updatePointer(e.clientX, e.clientY);
+        this.ring.move({ x: e.clientX, y: e.clientY }, e.shiftKey);
+        return this.updateHover();
+      }
       if (this.marquee) {
         const m = this.marquee;
         m.x1 = e.clientX;
@@ -2243,7 +2487,16 @@ export class EditorApp {
       }
       if (this.tool.kind === 'path') return this.paths.pointerDown(this.hoverPoint, e.shiftKey);
       if (this.tool.kind === 'route') return this.routes.pointerDown(this.hoverPoint, e.shiftKey);
+      if (this.tool.kind === 'measure') {
+        if (this.measure.hover) this.measure.click(this.measure.hover);
+        return this.updateHover();
+      }
       if (this.tool.kind !== 'select') return this.placeAtHover();
+      // The rotate ring round the selection: a drag turns it.
+      if (this.ring.begin({ x: e.clientX, y: e.clientY })) {
+        canvas().setPointerCapture(e.pointerId);
+        return this.updateHover();
+      }
       const hit = this.pick();
       if (!hit) {
         // Empty ground: drag a box to select what's in it (Shift adds to the selection); a plain click selects nothing.
@@ -2278,6 +2531,10 @@ export class EditorApp {
         return;
       }
       if (e.button === 0) {
+        if (this.ring.drag) {
+          this.ring.end();
+          return this.updateHover();
+        }
         if (this.brush) {
           this.brush = null;
           this.history.endStroke();
@@ -2305,135 +2562,110 @@ export class EditorApp {
       if (this.active && e.target === canvas()) e.preventDefault();
     });
     window.addEventListener('blur', () => {
+      this.ring.cancel();
       this.keys.clear();
       this.looking = null;
       this.marquee = null;
       this.drawMarquee();
     });
     window.addEventListener('keyup', (e) => this.keys.delete(e.code));
+    // Every key comes from the one key table (keymap.ts): it finds the binding, `keyActions` runs it. The `?` overlay
+    // lists the same table.
     window.addEventListener('keydown', (e) => {
       if (!this.active) return;
-      if (e.code === 'F5') {
+      const b = matchEditorKey(e);
+      if (b?.always) {
         e.preventDefault();
-        this.test();
+        this.keyActions[b.action](e);
         return;
       }
       if (isTyping() || document.querySelector('#editor dialog[open]')) return;
       this.keys.add(e.code);
-      const mod = e.ctrlKey || e.metaKey;
-      if (mod) {
-        const k = e.code;
-        if (k === 'KeyZ' && e.shiftKey) this.redo();
-        else if (k === 'KeyZ') this.undo();
-        else if (k === 'KeyY') this.redo();
-        else if (k === 'KeyS') this.save();
-        else if (k === 'KeyD') this.duplicate();
-        else return;
-        e.preventDefault();
-        return;
-      }
-      // \ folds the palette away (and back), Shift+\ the side panel.
-      if (e.code === 'Backslash') {
-        this.toggleSidebar(e.shiftKey ? 'right' : 'pal');
-        e.preventDefault();
-        return;
-      }
-      switch (e.code) {
-        case 'KeyR':
-          this.rotate(e.shiftKey);
-          break;
-        case 'KeyM':
-          this.mirror();
-          break;
-        case 'KeyF':
-          this.focusSelection();
-          break;
-        case 'Home':
-          this.resetView();
-          break;
-        case 'KeyL':
-          this.logic.toggle();
-          break;
-        case 'KeyB':
-          this.setTool({ kind: 'paint' });
-          break;
-        case 'KeyT': {
-          const i = this.tool.kind === 'terrain' ? (TERRAIN_BRUSHES.indexOf(this.terrainBrush) + 1) % TERRAIN_BRUSHES.length : TERRAIN_BRUSHES.indexOf(this.terrainBrush);
-          this.setTerrainBrush(TERRAIN_BRUSHES[i]!);
-          break;
-        }
-        case 'KeyO':
-          this.wallsTool(this.tool.kind === 'edge');
-          break;
-        case 'KeyX':
-          this.setTool({ kind: 'erase' });
-          break;
-        // G: Paths (Shift+G: Paths on the race track), N: Scatter (the last set you used).
-        case 'KeyG':
-          if (e.shiftKey) this.paths.preset('race');
-          this.setTool({ kind: 'path' });
-          break;
-        case 'KeyN':
-          this.setTool({ kind: 'scatter', set: this.lastScatter });
-          break;
-        case 'KeyP':
-          this.placeTool();
-          break;
-        case 'KeyI':
-          if (this.tool.kind === 'paint') this.pickStyleAtHover();
-          break;
-        case 'KeyV':
-        case 'Escape':
-          if (this.tool.kind === 'select') this.setSelection(emptySelection());
-          this.setTool({ kind: 'select' });
-          break;
-        case 'KeyH':
-          this.setShowAll(!this.showAll);
-          break;
-        case 'Slash':
-          // Search the palette.
-          $<HTMLInputElement>('ed-search').focus();
-          $<HTMLInputElement>('ed-search').select();
-          break;
-        case 'Delete':
-        case 'Backspace':
-          if (this.tool.kind === 'path' && this.paths.deleteSelected()) break;
-          if (this.tool.kind === 'route' && this.routes.deleteSelected()) break;
-          this.deleteSelection();
-          break;
-        // One meaning per key: PgUp/PgDn change the level (Shift: move the selection a level), [ ] the brush size.
-        case 'PageUp':
-          if (e.shiftKey) this.nudge(0, 0, 1);
-          else this.setLevel(this.level + 1);
-          break;
-        case 'PageDown':
-          if (e.shiftKey) this.nudge(0, 0, -1);
-          else this.setLevel(this.level - 1);
-          break;
-        case 'BracketRight':
-          if (this.tool.kind === 'terrain' || this.tool.kind === 'scatter') this.setBrushRadius(this.brushRadius + 2);
-          break;
-        case 'BracketLeft':
-          if (this.tool.kind === 'terrain' || this.tool.kind === 'scatter') this.setBrushRadius(this.brushRadius - 2);
-          break;
-        case 'ArrowUp':
-          this.nudge(0, 1, 0);
-          break;
-        case 'ArrowDown':
-          this.nudge(0, -1, 0);
-          break;
-        case 'ArrowLeft':
-          this.nudge(-1, 0, 0);
-          break;
-        case 'ArrowRight':
-          this.nudge(1, 0, 0);
-          break;
-        default:
-          return;
-      }
+      if (!b) return;
+      this.keyActions[b.action](e);
       e.preventDefault();
     });
   }
+
+  /** What each key in the table does (one handler per action: a Record, so none is left out). */
+  private readonly keyActions: Record<KeyAction, (e: KeyboardEvent) => void> = {
+    test: () => this.test(),
+    undo: () => this.undo(),
+    redo: () => this.redo(),
+    save: () => this.save(),
+    duplicate: () => this.duplicate(),
+    togglePalette: () => this.toggleSidebar('pal'),
+    toggleSidePanel: () => this.toggleSidebar('right'),
+    rotate: () => this.rotate(false),
+    rotateFine: () => this.rotate(true),
+    mirror: () => this.mirror(),
+    focus: () => this.focusSelection(),
+    resetView: () => this.resetView(),
+    logic: () => this.logic.toggle(),
+    paint: () => this.setTool({ kind: 'paint' }),
+    terrain: () => {
+      const i = this.tool.kind === 'terrain' ? (TERRAIN_BRUSHES.indexOf(this.terrainBrush) + 1) % TERRAIN_BRUSHES.length : TERRAIN_BRUSHES.indexOf(this.terrainBrush);
+      this.setTerrainBrush(TERRAIN_BRUSHES[i]!);
+    },
+    walls: () => this.wallsTool(this.tool.kind === 'edge'),
+    erase: () => this.setTool({ kind: 'erase' }),
+    // U: the measure tool (MapMaker overhaul Phase 1 item 3).
+    measure: () => this.setTool({ kind: 'measure' }),
+    // G: Paths (Shift+G: Paths on the race track), N: Scatter (the last set you used).
+    paths: () => this.setTool({ kind: 'path' }),
+    raceTrack: () => {
+      this.paths.preset('race');
+      this.setTool({ kind: 'path' });
+    },
+    scatter: () => this.setTool({ kind: 'scatter', set: this.lastScatter }),
+    place: () => this.placeTool(),
+    pickStyle: () => {
+      if (this.tool.kind === 'paint') this.pickStyleAtHover();
+    },
+    select: () => this.selectTool(),
+    escape: () => {
+      // Esc drops a turn by the ring mid-drag (nothing turns).
+      if (this.ring.cancel()) return this.updateHover();
+      // Esc clears a measurement first (the measure tool stays in hand).
+      if (this.measure.clear() && this.tool.kind === 'measure') return this.updateHover();
+      this.selectTool();
+    },
+    showAll: () => this.setShowAll(!this.showAll),
+    search: () => {
+      $<HTMLInputElement>('ed-search').focus();
+      $<HTMLInputElement>('ed-search').select();
+    },
+    keys: () => this.keyOverlay.open(),
+    delete: () => {
+      if (this.tool.kind === 'path' && this.paths.deleteSelected()) return;
+      if (this.tool.kind === 'route' && this.routes.deleteSelected()) return;
+      this.deleteSelection();
+    },
+    // One meaning per key: PgUp/PgDn change the level (Shift: move the selection a level), [ ] the brush size.
+    levelUp: () => this.setLevel(this.level + 1),
+    levelDown: () => this.setLevel(this.level - 1),
+    liftSelection: () => this.nudge(0, 0, 1),
+    lowerSelection: () => this.nudge(0, 0, -1),
+    brushBigger: () => {
+      if (this.tool.kind === 'terrain' || this.tool.kind === 'scatter') this.setBrushRadius(this.brushRadius + 2);
+    },
+    brushSmaller: () => {
+      if (this.tool.kind === 'terrain' || this.tool.kind === 'scatter') this.setBrushRadius(this.brushRadius - 2);
+    },
+    nudgeNorth: () => this.nudge(0, 1, 0),
+    nudgeSouth: () => this.nudge(0, -1, 0),
+    nudgeWest: () => this.nudge(-1, 0, 0),
+    nudgeEast: () => this.nudge(1, 0, 0),
+  };
+
+  /** V (and Esc, once nothing else wants it): the Select tool; with Select in hand, select none. */
+  private selectTool(): void {
+    if (this.tool.kind === 'select') this.setSelection(emptySelection());
+    this.setTool({ kind: 'select' });
+  }
+
+  /** The `?` overlay: every key in the table, grouped (keyOverlay.ts). */
+  private readonly keyOverlay = new KeyOverlay($('editor'));
 
   // ---------------------------------------------------------------- UI
 
@@ -2481,11 +2713,13 @@ export class EditorApp {
     add('ed-tb-paint', 'paint', 'Paint', 'B', 'Paint surfaces', () => this.setTool({ kind: 'paint' }), 'paint');
     add('ed-tb-walls', 'edge', 'Walls', 'O', 'Walls & openings: doors, windows, arches on any side', () => this.wallsTool(false), 'edge');
     add('ed-tb-terrain', 'terrain', 'Terrain', 'T', 'Sculpt and paint the terrain', () => this.setTerrainBrush(this.terrainBrush), 'terrain');
+    add('ed-tb-measure', 'measure', 'Measure', 'U', 'Measure: distance, height difference and slope between points', () => this.setTool({ kind: 'measure' }), 'measure');
     const sep = document.createElement('span');
     sep.className = 'tb-sep';
     bar.append(sep);
     add('ed-tb-rotate', 'rotate', 'Rotate', 'R', 'Rotate the selection, or the piece you are placing (Shift+R: a finer step)', () => this.rotate());
     add('ed-tb-delete', 'delete', 'Delete', 'Del', 'Delete the selection', () => this.deleteSelection());
+    this.keyOverlay.mountButton(bar);
     this.syncToolbar();
   }
 
@@ -4052,6 +4286,7 @@ export class EditorApp {
       row('Y', numberInput(p.y, 1, (v) => update('Move set piece', { ...p, y: v }))),
       row('Level', numberInput(p.z, 1, (v) => update('Move set piece', { ...p, z: v }))),
       row('Rotation', text(`${p.rotation * 90}° (R turns it)`)),
+      this.quickFacings({ tiles: [], entities: [], setPieces: [p.id] }, (p.rotation * Math.PI) / 2),
     );
     // Ports: where it meets what's round it; one a wall stands in is a warning (and red on its outline).
     const states = setPiecePortStates(p, def, this.mapBoxes());
@@ -4522,6 +4757,7 @@ export class EditorApp {
         row('Y', numberInput(t.y, 1, (v) => set({ y: v }))),
         row('Level', numberInput(t.z, 1, (v) => set({ z: v }))),
         row('Rotation', text(`${t.rotation * 90}°`)),
+        this.quickFacings({ tiles: [t.id], entities: [] }, (t.rotation * Math.PI) / 2),
       );
       const def = coreCatalog.get(t.tile);
       const wallsHead = document.createElement('h3');
@@ -4678,6 +4914,13 @@ export class EditorApp {
   }
 
   /** Inspector fields for one entity: position, facing and its kind's settings. */
+  /** The inspector's quick facings for one thing: 0°, 90°, 180°, 270° in one click (one undo step each). */
+  private quickFacings(sel: Selection, facing: number): HTMLElement {
+    return quickFacings(facing, (deg) => {
+      this.run(`Face ${deg}°`, setFacingCommand(this.doc, sel, deg, coreCatalog, this.placeLib));
+    });
+  }
+
   private entityInspector(el: HTMLElement, e: MapEntity): void {
     const doc = this.doc;
     const update = (label: string, patch: Partial<MapEntity>) => this.run(label, { kind: 'updateEntities', before: [e], after: [{ ...e, ...patch } as MapEntity] });
@@ -4701,7 +4944,7 @@ export class EditorApp {
       row('Height', numberInput(e.position[1], 0.25, (v) => setPos(1, v))),
       row('Z', numberInput(e.position[2], 0.5, (v) => setPos(2, v))),
     );
-    if ('yaw' in e) el.append(row('Facing °', numberInput(Math.round((e.yaw * 180) / Math.PI), Math.round((yawStep(e.kind) * 180) / Math.PI), (deg) => update('Turn', { yaw: normalizeYaw((deg * Math.PI) / 180) }))));
+    if ('yaw' in e) el.append(row('Facing °', numberInput(Math.round((e.yaw * 180) / Math.PI), Math.round((yawStep(e.kind) * 180) / Math.PI), (deg) => update('Turn', { yaw: normalizeYaw((deg * Math.PI) / 180) }))), this.quickFacings({ tiles: [], entities: [e.id] }, e.yaw));
 
     const toggle = (label: string, value: boolean, patch: (v: boolean) => Partial<MapEntity>) => {
       const c = document.createElement('input');

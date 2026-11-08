@@ -6,7 +6,7 @@ import { DESTRUCTIBLE_SPECS, TRAP_SPECS } from '../sim/scenarioDefs.ts';
 import { ELECTRIC_FENCE } from '../map/border.ts';
 import { BREAKTHROUGH_MAX_SECTORS, MAP_FORMAT, MAP_FORMAT_VERSION, type BreakthroughObjective, type MapDocument, type MapEntity, type Rotation, type SurfaceStyle, type TilePlacement, type TrapKind, type BlockBehaviour, type Liquid, type LightFixture, type EncounterEntrance, type GlassKind } from '../map/schema.ts';
 import { newId, type EditCommand } from './commands.ts';
-import { buildLimitReason, insideBuildLimit } from './buildArea.ts';
+import { buildLimitReason, buildLimitShort, insideBuildLimit } from './buildArea.ts';
 import { getProp } from '../content/props.ts';
 import { envVariant, getEnvSpecies } from '../content/environment.ts';
 import { DEFAULT_TEAMS, mapTeams } from '../sim/npc.ts';
@@ -25,7 +25,12 @@ export interface Selection {
 
 export const emptySelection = (): Selection => ({ tiles: [], entities: [] });
 
-export type PlacementCheck = { ok: true } | { ok: false; reason: string; conflicts: string[] };
+/**
+ * Whether a placement fits. A refusal has its `reason` (what is in the way and what to do instead: toasts, the status
+ * line) and `short`, the same in a few words for the ghost's note beside the pointer ("Overlaps the Corridor on
+ * Level 1").
+ */
+export type PlacementCheck = { ok: true } | { ok: false; reason: string; short: string; conflicts: string[] };
 
 /** Grid cells a placement would occupy. */
 export function placementCells(p: Pick<TilePlacement, 'tile' | 'x' | 'y' | 'z' | 'rotation'>, catalog: TileCatalog = coreCatalog): [number, number, number][] | null {
@@ -70,7 +75,7 @@ export function checkLayout(doc: MapDocument, moving: { tiles?: readonly TilePla
   let first: { occ: CellOccupant; z: number; byPiece: boolean } | undefined;
   let inside: { p: SetPiecePlacement; z: number; byPiece: boolean } | undefined;
   const claim = (id: string, x: number, y: number, z: number, byPiece: boolean): PlacementCheck | null => {
-    if (!insideBuildLimit(x, y, z)) return { ok: false, reason: buildLimitReason(doc, z), conflicts: [] };
+    if (!insideBuildLimit(x, y, z)) return { ok: false, reason: buildLimitReason(doc, z), short: buildLimitShort(z), conflicts: [] };
     const key = cellKey(x, y, z);
     const hit = cells.get(key);
     if (hit) {
@@ -89,7 +94,7 @@ export function checkLayout(doc: MapDocument, moving: { tiles?: readonly TilePla
   };
   for (const p of tiles) {
     const pc = placementCells(p, catalog);
-    if (!pc) return { ok: false, reason: `unknown tile ${p.tile}`, conflicts: [] };
+    if (!pc) return { ok: false, reason: `unknown tile ${p.tile}`, short: 'Unknown tile', conflicts: [] };
     for (const [x, y, z] of pc) {
       const refused = claim(p.id, x, y, z, false);
       if (refused) return refused;
@@ -97,8 +102,8 @@ export function checkLayout(doc: MapDocument, moving: { tiles?: readonly TilePla
   }
   for (const p of placements) {
     const def = pieces.get(p.piece);
-    if (!def) return { ok: false, reason: `unknown set piece ${p.piece}`, conflicts: [] };
-    if (p.mirror && (def.mirror === 'none' || setPieceMirrorProblem(def, catalog))) return { ok: false, reason: `${def.displayName} can't be mirrored: place it unmirrored`, conflicts: [] };
+    if (!def) return { ok: false, reason: `unknown set piece ${p.piece}`, short: 'Unknown set piece', conflicts: [] };
+    if (p.mirror && (def.mirror === 'none' || setPieceMirrorProblem(def, catalog))) return { ok: false, reason: `${def.displayName} can't be mirrored: place it unmirrored`, short: `${def.displayName} can't be mirrored`, conflicts: [] };
     for (const [x, y, z] of setPieceFootprint(p, def)) {
       const refused = claim(p.id, x, y, z, true);
       if (refused) return refused;
@@ -107,14 +112,18 @@ export function checkLayout(doc: MapDocument, moving: { tiles?: readonly TilePla
   if (!conflicts.size) return { ok: true };
   const name = (p: SetPiecePlacement) => pieces.get(p.piece)?.displayName ?? p.piece;
   let reason = 'overlaps another of the pieces being placed: spread them out';
-  if (first) reason = first.byPiece ? `its footprint overlaps ${first.occ.def.displayName} on ${levelName(first.z)}: pick a free spot, or move or delete the ${first.occ.def.displayName} first` : overlapReason(first.occ, first.z);
-  else if (inside) {
+  let short = 'Overlaps another piece being placed';
+  if (first) {
+    reason = first.byPiece ? `its footprint overlaps ${first.occ.def.displayName} on ${levelName(first.z)}: pick a free spot, or move or delete the ${first.occ.def.displayName} first` : overlapReason(first.occ, first.z);
+    short = `Overlaps the ${first.occ.def.displayName} on ${levelName(first.z)}`;
+  } else if (inside) {
     const n = name(inside.p);
     reason = inside.byPiece
       ? `its footprint overlaps the ${n} set piece on ${levelName(inside.z)}: pick a free spot, or move the ${n}`
       : `inside the ${n} set piece on ${levelName(inside.z)} (it holds every cell of its footprint): pick a free cell or another level, move the ${n}, or explode it into its parts to build into it`;
+    short = inside.byPiece ? `Overlaps the ${n} set piece on ${levelName(inside.z)}` : `Inside the ${n} set piece on ${levelName(inside.z)}`;
   }
-  return { ok: false, reason, conflicts: [...conflicts] };
+  return { ok: false, reason, short, conflicts: [...conflicts] };
 }
 
 /** Why a cell can't take a new tile, and what to do instead. */
@@ -271,12 +280,13 @@ export function yawStep(kind: MapEntity['kind'] | 'tile', fine = false): number 
 }
 
 /**
- * Turn the selection. One thing (or one moving build) turns in place by its kind's step (yawStep,
+ * Turn the selection. `angle` (radians, the rotate ring and the inspector's quick facings) turns it by that much;
+ * otherwise by a step: one thing (or one moving build) turns in place by its kind's step (yawStep,
  * Shift: `fine`); a mover's build turns about the mover. A group (tiles, or several things) turns
  * as one about its centre (routes, being offsets, turn with their marker): a quarter turn, or with `fine` the finer step when nothing in it is
  * tied to the grid (tiles, zones, liquids).
  */
-export function rotateCommand(doc: MapDocument, sel: Selection, catalog: TileCatalog = coreCatalog, opts: { fine?: boolean; library?: SetPieceLibrary } = {}): EditCommand | { error: string } {
+export function rotateCommand(doc: MapDocument, sel: Selection, catalog: TileCatalog = coreCatalog, opts: { fine?: boolean; library?: SetPieceLibrary; angle?: number } = {}): EditCommand | { error: string } {
   const { tiles: selTiles, entities, setPieces } = selected(doc, sel);
   if (!selTiles.length && !entities.length && !setPieces.length) return { error: 'nothing selected' };
   // Set pieces turn like tiles: about a cell, by quarter turns (each about its anchor when it turns alone).
@@ -291,11 +301,13 @@ export function rotateCommand(doc: MapDocument, sel: Selection, catalog: TileCat
   let angle: number;
   let pivot: [number, number];
   if (single) {
-    angle = yawStep(entities[0]!.kind, opts.fine);
+    angle = opts.angle ?? yawStep(entities[0]!.kind, opts.fine);
     pivot = [entities[0]!.position[0], entities[0]!.position[2]];
   } else {
-    if (opts.fine && gridBound) return { error: 'tiles, zones and liquids turn in quarter turns' };
-    angle = opts.fine ? yawStep('block', true) : Math.PI / 2;
+    if (opts.fine && gridBound && opts.angle === undefined) return { error: 'tiles, zones and liquids turn in quarter turns' };
+    angle = opts.angle ?? (opts.fine ? yawStep('block', true) : Math.PI / 2);
+    // Turned by a given angle (the rotate ring, quick facings), what is tied to the grid takes whole quarter turns only.
+    if (gridBound && Math.abs(angle - Math.round(angle / (Math.PI / 2)) * (Math.PI / 2)) > 1e-6) return { error: 'tiles, set pieces, zones and liquids turn in quarter turns' };
     if (oneBuild) pivot = [movers[0]!.position[0], movers[0]!.position[2]];
     else if (tiles.length) {
       // About a cell (or a cell corner) so every tile lands on a whole cell.
@@ -328,7 +340,7 @@ export function rotateCommand(doc: MapDocument, sel: Selection, catalog: TileCat
 
   const turn4 = (x: number, y: number, rotation: number) => {
     const [wx, wz] = about(x * cellSize, y * cellSize);
-    return { x: Math.round(wx / cellSize), y: Math.round(wz / cellSize), rotation: ((rotation + quarters) % 4) as Rotation };
+    return { x: Math.round(wx / cellSize), y: Math.round(wz / cellSize), rotation: ((((rotation + quarters) % 4) + 4) % 4) as Rotation };
   };
   const rotated = selTiles.map((t) => ({ ...t, ...turn4(t.x, t.y, t.rotation) }));
   const turnedPieces = setPieces.map((p) => ({ ...p, ...turn4(p.x, p.y, p.rotation) }));
