@@ -2521,7 +2521,8 @@ async function physicsfxFlow(browser) {
     clearInterval(window.__massHold);
     window.__massHold = setInterval(() => victims.forEach((c, i) => {
       if (!c.alive) return;
-      c.move = { ...c.move, pos: { ...spots[i] }, velY: 0, grounded: true };
+      // (No speed carried: the bot thrown above still had its throw's, which the blast's push then had to overcome.)
+      c.move = { ...c.move, pos: { ...spots[i] }, vx: 0, vz: 0, velY: 0, grounded: true };
       c.health = Math.max(c.health, 100);
     }), 5);
     window.__massSpots = spots;
@@ -2774,7 +2775,9 @@ async function glassChecks(browser) {
   const page = await ctx.newPage();
   const errors = [];
   page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
-  await page.goto(`${CLIENT}/?offline=training_range&test=1&god=1`);
+  // You alone on the range (&bots=1): its deathmatch bots respawned in front of the panels and took the rounds meant
+  // for them (CI: the bulletproof panel at full health after a dozen shots), and shot you about.
+  await page.goto(`${CLIENT}/?offline=training_range&test=1&god=1&bots=1`);
   await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown' && window.__match, null, { timeout: T(60000) });
   const drawn = await page.evaluate(() => {
     const g = window.__cs.view.scenario.glass.counts;
@@ -6162,7 +6165,7 @@ async function farBodies(browser) {
           c.health = Math.max(c.health, 100);
         }
       }, 5);
-      return { yaw, slots: bots.map((c) => c.slot) };
+      return { yaw, slots: bots.map((c) => c.slot), from: { x: p.x, y: p.y, z: p.z } };
     }
     return null;
   });
@@ -6218,6 +6221,8 @@ async function farBodies(browser) {
   const back = await page.evaluate((slots) => slots.filter((s) => window.__cs.view.avatars.get(s)?.culled === false).length, setup.slots);
   const r = await wholeBodies(page, 12, setup.slots);
   const broken = r.failed.map((f) => `${f.look} at ${f.dist} m, frame ${f.frame}: ${f.height} of ${f.want} m drawn${f.nonNumbers ? `, ${f.nonNumbers} vertices not numbers` : ''}${f.off.length ? `, ${f.off.join(', ')}` : ''}`);
+  // (For a failure: where you are now against where the crowd was set out from, and whether you are alive.)
+  if (r.failed.length) broken.push(`you ${await sim(page, (m, me, from) => `${Math.hypot(me.move.pos.x - from.x, me.move.pos.z - from.z).toFixed(1)} m from the setup, ${me.alive ? 'alive' : 'dead'}, ${me.deaths} deaths`, setup.from)}`);
   check(slept >= 8 && back >= 8 && r.checked >= 6 && r.failed.length === 0, `far characters draw their whole bodies after a fight, asleep out of view and awake again (${slept} slept, ${back} back in view, ${r.checked} checked past the low-detail switch of ${r.seen} seen; broken: ${broken.join('; ') || 'none'})`);
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await page.context().close();
